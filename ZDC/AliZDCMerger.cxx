@@ -27,6 +27,7 @@
 #include <TDirectory.h>
 #include <TNtuple.h>
 #include <TSystem.h>
+#include <TROOT.h>
 
 // --- AliRoot header files
 #include "AliZDCMerger.h"
@@ -55,10 +56,7 @@ AliZDCMerger::AliZDCMerger()
     fFnBgr       = 0;
     fBgrFile     = 0;
     fNEvBgr	 = 0;
-    fTrHBgr      = 0;
     fHitsBgr     = 0;
-    fTrSDBgr     = 0;
-    fTrDBgr      = 0;
     fImpPar      = 0;
     fSpecn       = 0;
     fSpecp       = 0;
@@ -75,11 +73,7 @@ AliZDCMerger::AliZDCMerger()
 //____________________________________________________________________________
 AliZDCMerger::~AliZDCMerger()
 {
-// Destructor
-    if (fBgrFile)    delete fBgrFile;
-    if (fTrHBgr)     delete fTrHBgr;
-    if (fTrSDBgr)    delete fTrSDBgr;
-    if (fHitsBgr)    delete fHitsBgr;
+    // Destructor
     if (fSpecnFile)  delete fSpecnFile;
     if (fSpecpFile)  delete fSpecpFile;
 }
@@ -105,7 +99,7 @@ void AliZDCMerger::Background(Float_t &fImpPar, Int_t &fSpecn, Int_t &fSpecp)
 {
     
     // --- Open the background file
-    if (fMerge && !fBgrFile) fBgrFile = OpenBgrFile();
+  if (fMerge && !fBgrFile) fBgrFile = OpenBgrFile();
     
     // --- Read from the TreeE impact parameter (b),
     //     # of spectators n and p (fSpecn, fSpecp)
@@ -122,7 +116,7 @@ void AliZDCMerger::Background(Float_t &fImpPar, Int_t &fSpecn, Int_t &fSpecp)
 //      }
 //    }
     
-    gAlice->GetEvent(fNEvBgr);
+    //    gAlice->GetEvent(fNEvBgr);  this is done in the steering macro
     AliHeader *header = gAlice->GetHeader();
     AliGenEventHeader* mcHeader = header->GenEventHeader();
     fImpPar = ((AliGenHijingEventHeader*) mcHeader)->ImpactParameter();
@@ -139,7 +133,9 @@ void AliZDCMerger::Background(Float_t &fImpPar, Int_t &fSpecn, Int_t &fSpecp)
 TFile* AliZDCMerger::OpenBgrFile()
 {
     // Initialise background event
-    TFile *file = new TFile(fFnBgr,"UPDATE");
+  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(fFnBgr);
+  if(!file)cerr<<"AliZDCMerger: background file "<<fFnBgr<<" not found\n";
+  //    TFile *file = new TFile(fFnBgr,"UPDATE");
     printf("\n AliZDCMerger --- Background event -> %s file opened \n", fFnBgr);
     fHitsBgr = new TClonesArray("AliZDCHit",1000);
     fMHits   = new TClonesArray("AliZDCMergedHit",1000);
@@ -185,13 +181,6 @@ void AliZDCMerger::Mixing()
     
    AliZDC *ZDC = (AliZDC *)gAlice->GetModule("ZDC");
 //    if(ZDC) printf("\n	Ho trovato lo ZDC!\n");
-
-    // Hits tree
-    if(fTrHBgr) delete fTrHBgr;
-    fTrHBgr = 0;        
-    // SDigits tree
-    if(fTrSDBgr) delete fTrSDBgr;
-    fTrSDBgr = 0;    
 
 //    fNEvBgr = 0; // Let's suppose to have 1 full Hijing event per file
     // Hits tree
@@ -345,7 +334,6 @@ void AliZDCMerger::Digitize(Int_t fNMhits, TClonesArray *fMHits)
 
   AliZDC *ZDC = (AliZDC *)gAlice->GetModule("ZDC");
 //  if(ZDC) printf("\n 	Ho trovato lo ZDC!\n");
-
   Int_t lightQ, lightC, sector[2], digit;
   Int_t PMCZN = 0, PMCZP = 0, PMQZN[4], PMQZP[4], PMZEM1 = 0, PMZEM2 = 0;
   Int_t i;

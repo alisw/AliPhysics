@@ -57,8 +57,6 @@ protected:
    Int_t	fNEvBgr;	// Number of events in background file
    TTree        *fTrHBgr;	// Hits tree for background event
    TClonesArray *fHitsBgr;	// TClonesArray of background hits
-   TTree        *fTrSDBgr;	// SDigits tree for background event
-   TTree        *fTrDBgr;	// Digits tree for background event
    Float_t 	fImpPar;	// Impact Parameter of the collision
    Int_t        fSpecn;		// Number of spectator n
    Int_t        fSpecp;		// Number of spectator p
