@@ -965,7 +965,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     // --- Place the ghost volume in its mother volume (ALIC) and make it 
     //     invisible
     //    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
-    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., idrotm[199], "ONLY");
+    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., idrotm[199], "MANY");
     //gMC->Gsatt("ITSV", "SEEN", 0);
 
     // --- Define ghost volume containing the six layers and fill it with air 
@@ -4238,11 +4238,11 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   // --- Place subdetectors' mother volumes and supports' mother volumes
   //     into ITS mother volume ITSD
     
-  gMC->Gspos("IT12",1,"ITSD",0.0,0.0,0.0,0,"ONLY");  // SPD mother volume
-  gMC->Gspos("IT34",1,"ITSD",0.0,0.0,0.0,0,"ONLY");  // SDD mother volume
-  gMC->Gspos("IT56",1,"ITSD",0.0,0.0,0.0,0,"ONLY");  // SSD mother volume
-  gMC->Gspos("IS02",1,"ITSD",0.0,0.0,0.0,0,"ONLY");  // SDD cones/supports
-  gMC->Gspos("IS01",1,"ITSD",0.0,0.0,0.0,0,"ONLY");  // SSD cones/supports
+  gMC->Gspos("IT12",1,"ITSD",0.0,0.0,0.0,0,"MANY");  // SPD mother volume
+  gMC->Gspos("IT34",1,"ITSD",0.0,0.0,0.0,0,"MANY");  // SDD mother volume
+  gMC->Gspos("IT56",1,"ITSD",0.0,0.0,0.0,0,"MANY");  // SSD mother volume
+  gMC->Gspos("IS02",1,"ITSD",0.0,0.0,0.0,0,"MANY");  // SDD cones/supports
+  gMC->Gspos("IS01",1,"ITSD",0.0,0.0,0.0,0,"MANY");  // SSD cones/supports
         
 
   // ****************************  SERVICES  *********************************
