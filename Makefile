@@ -94,6 +94,7 @@ AliRoot$(VERSION).tar.gz AliLibs$(VERSION).tar.gz AliOffline$(VERSION).tar.gz:
                 gtar cvfz $@ --exclude '*.o' --exclude '*Cint.*' \
                 --exclude '*/roothtml/*' --exclude '*/CVS' \
 		--exclude Make-depend --exclude '*html/gif' \
+		--exclude "*$(ALICE_TARGET)*" \
                 `cat /tmp/saves` 
 
 htmldocnew:		FORCE
