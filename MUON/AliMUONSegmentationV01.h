@@ -114,9 +114,9 @@ public AliMUONSegmentationV0 {
 
     //
     // Current pad during integration (cursor for disintegration)
-    Int_t   fSector; // Current sector
+    Int_t   fSector;   // Current sector
     //
-    TObjArray *fCorr; // Correction functions
+    TObjArray *fCorrA; // Array of correction functions
 };
 #endif
 

@@ -66,13 +66,6 @@ public AliMUONSegmentationTrigger {
   float fXofysmax[126][16]; // x-max
   float fYofysmin[126][16]; // y-min
   float fYofysmax[126][16]; // y-max
-
-// Current pad during integration (cursor for disintegration)
-  Int_t fIx;  // pad coord.  x 
-  Int_t fIy;  // pad coord.  y 
-  Float_t fX; // real coord. x
-  Float_t fY; // real ccord. y
-
 };
 #endif
 
