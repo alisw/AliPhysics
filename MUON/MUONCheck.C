@@ -173,7 +173,7 @@ void MUONdigits(char * filename="galice.root", Int_t event2Check=0)
       muondata.GetCathode(icathode);
       // Loop on chambers
       for( ichamber=0; ichamber<nchambers; ichamber++) {
-	printf(">>> Chamber %d\n",ichamber);
+	printf(">>> Chamber %d\n",ichamber+1);
 	
 	Int_t idigit, ndigits;
 	ndigits = (Int_t) muondata.Digits(ichamber)->GetEntriesFast();
@@ -192,9 +192,11 @@ void MUONdigits(char * filename="galice.root", Int_t event2Check=0)
 	  Int_t TCharges0 = mDigit->TrackCharge(0);  //charge per track making this digit (up to 10)
 	  Int_t TCharges1 = mDigit->TrackCharge(1);
 	  Int_t TCharges2 = mDigit->TrackCharge(2);
-	  
-	  printf(">>> Digit %4d cathode %1d hit %4d PadX %3d PadY %3d Signal %4d Physics %4d Track0 %4d TrackCharge0 %4d Track1 %'d TrackCharge1 %4d Track2 %4d TrackCharge2 %4d \n",idigit, Cathode,Hit, PadX, PadY, Signal, Physics, 
-	  Track0, TCharges0, Track1, TCharges1, Track2, TCharges2);
+	  Int_t idDE = mDigit->DetElemId();
+		  
+	  printf(">>>IdDE %d Digit %4d cathode %1d hit %4d PadX %3d PadY %3d Signal %4d Physics %4d Track0 %4d TrackCharge0 %4d Track1 %4d TrackCharge1 %4d Track2 %4d TrackCharge2 %4d \n",
+		 idDE, idigit, Cathode,Hit, PadX, PadY, Signal, Physics, Track0, 
+		 TCharges0, Track1, TCharges1, Track2, TCharges2);
 	} // end digit loop
       } // end chamber loop
       muondata.ResetDigits();
