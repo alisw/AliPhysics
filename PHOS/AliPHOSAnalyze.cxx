@@ -180,16 +180,18 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
     }  
   
   Int_t iSDigit ;
-  const AliPHOSDigit * sdigit ;
+  AliPHOSDigit * sdigit ;
   
-  for(iSDigit = 0; iSDigit < gime->NSDigits(); iSDigit++)
+  TClonesArray * sdigits = gime->SDigits(branchTitle,ffileName) ;
+  if(sdigits)
+    for(iSDigit = 0; iSDigit < sdigits->GetEntriesFast(); iSDigit++)
       {
-	sdigit = gime->SDigit(iSDigit) ;
+	sdigit = (AliPHOSDigit*)sdigits->At(iSDigit) ;
 	Int_t relid[4];
 	phosgeom->AbsToRelNumbering(sdigit->GetId(), relid) ;
 	Float_t x,z ;
 	phosgeom->RelPosInModule(relid,x,z) ;
-  	Float_t e = gime->SDigitizer()->Calibrate(sdigit->GetAmp()) ;
+  	Float_t e = gime->SDigitizer(branchTitle)->Calibrate(sdigit->GetAmp()) ;
 	if(relid[0]==Nmod){
 	  if(relid[1]==0)  //EMC
 	    sdigitOccupancy->Fill(x,z,e) ;
@@ -202,112 +204,119 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
   
   //Plot digits
   Int_t iDigit ;
-  const AliPHOSDigit * digit ;
-  for(iDigit = 0; iDigit < gime->NDigits(); iDigit++)
-    {
-      digit = gime->Digit(iDigit) ;
-      Int_t relid[4];
-      phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-      Float_t x,z ;
-      phosgeom->RelPosInModule(relid,x,z) ;
-      Float_t e = gime->SDigitizer()->Calibrate(digit->GetAmp()) ;
-      if(relid[0]==Nmod){
-	if(relid[1]==0)  //EMC
-	  digitOccupancy->Fill(x,z,e) ;
-	if((relid[1]>0)&&(relid[1]<17))
-	  ppsdUp->Fill(x,z,e) ;
-	if(relid[1]>16)
-	  ppsdLow->Fill(x,z,e) ;
+  AliPHOSDigit * digit ;
+  TClonesArray * digits = gime->Digits(branchTitle) ;
+  if(digits)
+    for(iDigit = 0; iDigit < digits->GetEntriesFast(); iDigit++)
+      {
+	digit = (AliPHOSDigit*) digits->At(iDigit) ;
+	Int_t relid[4];
+	phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+	Float_t x,z ;
+	phosgeom->RelPosInModule(relid,x,z) ;
+	Float_t e = gime->SDigitizer(branchTitle)->Calibrate(digit->GetAmp()) ;
+	if(relid[0]==Nmod){
+	  if(relid[1]==0)  //EMC
+	    digitOccupancy->Fill(x,z,e) ;
+	  if((relid[1]>0)&&(relid[1]<17))
+	    ppsdUp->Fill(x,z,e) ;
+	  if(relid[1]>16)
+	    ppsdLow->Fill(x,z,e) ;
+	}
       }
-    }
-
-
+  
+  
   //Plot RecPoints
   Int_t irecp ;
   TVector3 pos ;
+  TObjArray * emcrp = gime->EmcRecPoints(branchTitle) ;
+  TObjArray * cpvrp = gime->CpvRecPoints(branchTitle) ;
+  if(cpvrp)
+    for(irecp = 0; irecp < emcrp->GetEntriesFast() ; irecp ++){
+      const AliPHOSEmcRecPoint * emc= (AliPHOSEmcRecPoint *) emcrp->At(irecp) ;
+      if(emc->GetPHOSMod()==Nmod){
+	emc->GetLocalPosition(pos) ;
+	emcOccupancy->Fill(pos.X(),pos.Z(),emc->GetEnergy());
+      }
+    }
   
-  for(irecp = 0; irecp < gime->NEmcRecPoints() ; irecp ++){
-    const AliPHOSEmcRecPoint * emc= gime->EmcRecPoint(irecp) ;
-    if(emc->GetPHOSMod()==Nmod){
-      emc->GetLocalPosition(pos) ;
-      emcOccupancy->Fill(pos.X(),pos.Z(),emc->GetEnergy());
-    }
-  }
-
-
-  for(irecp = 0; irecp < gime->NCpvRecPoints() ; irecp ++){
-    const AliPHOSRecPoint * cpv = gime->CpvRecPoint(irecp) ;
-    if((strcmp(cpv->ClassName(),"AliPHOSPpsdRecPoint" )) == 0){  // PPSD Rec Point
-      AliPHOSPpsdRecPoint * ppsd = (AliPHOSPpsdRecPoint*) cpv ;
-      ppsd->GetLocalPosition(pos) ;
-      if(ppsd->GetPHOSMod()==Nmod){
+  if(cpvrp)
+    for(irecp = 0; irecp < cpvrp->GetEntriesFast() ; irecp ++){
+      const AliPHOSRecPoint * cpv = (AliPHOSRecPoint *) cpvrp->At(irecp) ;
+      if((strcmp(cpv->ClassName(),"AliPHOSPpsdRecPoint" )) == 0){  // PPSD Rec Point
+	AliPHOSPpsdRecPoint * ppsd = (AliPHOSPpsdRecPoint*) cpv ;
 	ppsd->GetLocalPosition(pos) ;
-	if(ppsd->GetUp())
-	  ppsdUpCl->Fill(pos.X(),pos.Z(),ppsd->GetEnergy());
-	else
-	  ppsdLowCl->Fill(pos.X(),pos.Z(),ppsd->GetEnergy());
+	if(ppsd->GetPHOSMod()==Nmod){
+	  ppsd->GetLocalPosition(pos) ;
+	  if(ppsd->GetUp())
+	    ppsdUpCl->Fill(pos.X(),pos.Z(),ppsd->GetEnergy());
+	  else
+	    ppsdLowCl->Fill(pos.X(),pos.Z(),ppsd->GetEnergy());
+	}
+      }
+      else{
+	AliPHOSCpvRecPoint * cpv1 = (AliPHOSCpvRecPoint*) cpv ;
+	if(cpv1->GetPHOSMod()==Nmod){
+	  cpv1->GetLocalPosition(pos) ;
+	  ppsdUpCl->Fill(pos.X(),pos.Z(),cpv1->GetEnergy());
+	}
       }
     }
-    else{
-      AliPHOSCpvRecPoint * cpv1 = (AliPHOSCpvRecPoint*) cpv ;
-      if(cpv1->GetPHOSMod()==Nmod){
-	cpv1->GetLocalPosition(pos) ;
-	ppsdUpCl->Fill(pos.X(),pos.Z(),cpv1->GetEnergy());
-      }
-    }
-  }
   
   
   //Plot RecParticles
   const AliPHOSRecParticle * recParticle ;
   Int_t iRecParticle ;
-  for(iRecParticle = 0; iRecParticle < gime->NRecParticles() ;iRecParticle++ )
-    {
-      recParticle =  gime->RecParticle(iRecParticle) ;
-      Int_t moduleNumberRec ;
-      Double_t recX, recZ ;
-      phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
-      if(moduleNumberRec == Nmod){
-
-	Double_t minDistance = 5. ;
-	Int_t closestPrimary = -1 ;
-	
-
-	//extract list of primaries: it is stored at EMC RecPoints
-	Int_t emcIndex = gime->TrackSegment(recParticle->GetPHOSTSIndex())->GetEmcIndex() ;
-	Int_t numberofprimaries ;
-	Int_t * listofprimaries  = gime->EmcRecPoint(emcIndex)->GetPrimaries(numberofprimaries)  ;
-	Int_t index ;
-	const TParticle * primary ;
-	Double_t distance = minDistance ;
-	
-	for ( index = 0 ; index < numberofprimaries ; index++){
-	  primary = gime->Primary(listofprimaries[index]) ;
-	  Int_t moduleNumber ;
-	  Double_t primX, primZ ;
-	  phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-	  if(moduleNumberRec == moduleNumber)
-	    distance = TMath::Sqrt((recX-primX)*(recX-primX)+(recZ-primZ)*(recZ-primZ) ) ;
-	  if(minDistance > distance)
-	    {
-	      minDistance = distance ;
-	      closestPrimary = listofprimaries[index] ;
-	    }
-	}
-	
-	if(closestPrimary >=0 ){
+  TClonesArray * rps = gime->RecParticles(branchTitle) ;
+  TClonesArray * tss = gime->TrackSegments(branchTitle) ;
+  if(rps && tss && emcrp)
+    for(iRecParticle = 0; iRecParticle < rps->GetEntriesFast() ;iRecParticle++ )
+      {
+	recParticle =  (AliPHOSRecParticle *) rps->At(iRecParticle) ;
+	Int_t moduleNumberRec ;
+	Double_t recX, recZ ;
+	phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+	if(moduleNumberRec == Nmod){
 	  
-	  Int_t primaryType = gime->Primary(closestPrimary)->GetPdgCode() ;
+	  Double_t minDistance = 5. ;
+	  Int_t closestPrimary = -1 ;
 	  
-	  if(primaryType==22)
-	    recPhot->Fill(recZ,recX,recParticle->Energy()) ;
-	  else
-	    if(primaryType==-2112)
-	      recNbar->Fill(recZ,recX,recParticle->Energy()) ; 
+	  
+	  //extract list of primaries: it is stored at EMC RecPoints
+	  Int_t emcIndex = ((AliPHOSTrackSegment *) tss->At(recParticle->GetPHOSTSIndex()))->GetEmcIndex() ;
+	  Int_t numberofprimaries ;
+	  Int_t * listofprimaries  = ((AliPHOSEmcRecPoint *)emcrp->At(emcIndex))->GetPrimaries(numberofprimaries)  ;
+	  Int_t index ;
+	  const TParticle * primary ;
+	  Double_t distance = minDistance ;
+	  
+	  for ( index = 0 ; index < numberofprimaries ; index++){
+	    primary = gime->Primary(listofprimaries[index]) ;
+	    Int_t moduleNumber ;
+	    Double_t primX, primZ ;
+	    phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+	    if(moduleNumberRec == moduleNumber)
+	      distance = TMath::Sqrt((recX-primX)*(recX-primX)+(recZ-primZ)*(recZ-primZ) ) ;
+	    if(minDistance > distance)
+	      {
+		minDistance = distance ;
+		closestPrimary = listofprimaries[index] ;
+	      }
+	  }
+	  
+	  if(closestPrimary >=0 ){
+	    
+	    Int_t primaryType = gime->Primary(closestPrimary)->GetPdgCode() ;
+	    
+	    if(primaryType==22)
+	      recPhot->Fill(recZ,recX,recParticle->Energy()) ;
+	    else
+	      if(primaryType==-2112)
+		recNbar->Fill(recZ,recX,recParticle->Energy()) ; 
+	  }
 	}
       }
-    }
-
+  
   
   //Plot made histograms
   digitOccupancy->Draw("box") ;
@@ -418,13 +427,15 @@ void AliPHOSAnalyze::Ls(){
     //copy EM RecParticles to the "total" list        
     const AliPHOSRecParticle * recParticle ;
     Int_t iRecParticle ;
-    for(iRecParticle = 0; iRecParticle < gime->NRecParticles()  ;iRecParticle++ )
-      {
-	recParticle = gime->RecParticle(iRecParticle) ;
-	if((recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM))
-	  new( (*allRecParticleList)[iRecPhot++] ) AliPHOSRecParticle(*recParticle) ;
-      }
+    TClonesArray * rp = gime->RecParticles(branchTitle) ;
+    if(rp) 
+      for(iRecParticle = 0; iRecParticle < rp->GetEntriesFast()  ;iRecParticle++ )
+	{
+	  recParticle = (AliPHOSRecParticle *) rp->At(iRecParticle) ;
+	  if((recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA)||
+	     (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM))
+	    new( (*allRecParticleList)[iRecPhot++] ) AliPHOSRecParticle(*recParticle) ;
+	}
     
     Int_t mevent = event%nMixedEvents ; //event number in the "mixed" cicle
     nRecParticles[mevent] = iRecPhot-1 ;  
@@ -540,63 +551,67 @@ void AliPHOSAnalyze::Ls(){
 
     const AliPHOSRecParticle * recParticle ;
     Int_t iRecParticle ;
-    for(iRecParticle = 0; iRecParticle < gime->NRecParticles() ;iRecParticle++ ){
-      recParticle = gime->RecParticle(iRecParticle) ;
-      
-      //find the closest primary
-      Int_t moduleNumberRec ;
-      Double_t recX, recZ ;
-      phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
-      
-      Double_t minDistance  = 100. ;
-      Int_t closestPrimary = -1 ;
-      
-      //extract list of primaries: it is stored at EMC RecPoints
-      Int_t emcIndex = gime->TrackSegment(recParticle->GetPHOSTSIndex())->GetEmcIndex() ;
-      Int_t numberofprimaries ;
-      Int_t * listofprimaries  = gime->EmcRecPoint(emcIndex)->GetPrimaries(numberofprimaries)  ;
-
-      Int_t index ;
-      const TParticle * primary ;
-      Double_t distance = minDistance ;
-      Double_t dX, dZ; 
-      Double_t dXmin = 0.; 
-      Double_t dZmin = 0. ;
-      for ( index = 0 ; index < numberofprimaries ; index++){
-	primary = gime->Primary(listofprimaries[index]) ;
-	Int_t moduleNumber ;
-	Double_t primX, primZ ;
-	phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-	if(moduleNumberRec == moduleNumber) {
-	  dX = recX - primX;
-	  dZ = recZ - primZ;
-	  distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
-	  if(minDistance > distance) {
-	    minDistance = distance ;
-	    dXmin = dX;
-	    dZmin = dZ;
-	    closestPrimary = listofprimaries[index] ;
+    TClonesArray * rp = gime->RecParticles(branchTitle) ;
+    TClonesArray * tss = gime->TrackSegments(branchTitle) ;
+    TObjArray * emcrp = gime->EmcRecPoints(branchTitle) ;
+    if(rp && tss && emcrp)
+      for(iRecParticle = 0; iRecParticle < rp->GetEntriesFast() ; iRecParticle++ ){
+	recParticle = (AliPHOSRecParticle *) rp->At(iRecParticle) ;
+	
+	//find the closest primary
+	Int_t moduleNumberRec ;
+	Double_t recX, recZ ;
+	phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+	
+	Double_t minDistance  = 100. ;
+	Int_t closestPrimary = -1 ;
+	
+	//extract list of primaries: it is stored at EMC RecPoints
+	Int_t emcIndex = ((AliPHOSTrackSegment *)tss->At(recParticle->GetPHOSTSIndex()))->GetEmcIndex() ;
+	Int_t numberofprimaries ;
+	Int_t * listofprimaries  = ((AliPHOSEmcRecPoint *) emcrp->At(emcIndex))->GetPrimaries(numberofprimaries)  ;
+	
+	Int_t index ;
+	const TParticle * primary ;
+	Double_t distance = minDistance ;
+	Double_t dX, dZ; 
+	Double_t dXmin = 0.; 
+	Double_t dZmin = 0. ;
+	for ( index = 0 ; index < numberofprimaries ; index++){
+	  primary = gime->Primary(listofprimaries[index]) ;
+	  Int_t moduleNumber ;
+	  Double_t primX, primZ ;
+	  phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+	  if(moduleNumberRec == moduleNumber) {
+	    dX = recX - primX;
+	    dZ = recZ - primZ;
+	    distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
+	    if(minDistance > distance) {
+	      minDistance = distance ;
+	      dXmin = dX;
+	      dZmin = dZ;
+	      closestPrimary = listofprimaries[index] ;
+	    }
 	  }
 	}
-      }
-
-      //if found primary, fill histograms
-      if(closestPrimary >=0 ){
-	const TParticle * primary = gime->Primary(closestPrimary) ;
-	if(primary->GetPdgCode() == 22){
-	  hAllEnergy->Fill(primary->Energy(), recParticle->Energy()) ;
-	  if(recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA){
-	    hPhotEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
-	    hEMEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
-	  }
-	  else
-	    if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM)
+	
+	//if found primary, fill histograms
+	if(closestPrimary >=0 ){
+	  const TParticle * primary = gime->Primary(closestPrimary) ;
+	  if(primary->GetPdgCode() == 22){
+	    hAllEnergy->Fill(primary->Energy(), recParticle->Energy()) ;
+	    if(recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA){
+	      hPhotEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
 	      hEMEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
+	    }
+	    else
+	      if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM)
+		hEMEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
+	  }
 	}
       }
-    }
   }
-
+  
   //write filled histograms
   efile->cd() ;
   hAllEnergy->Write(0,kOverwrite) ;
@@ -605,7 +620,7 @@ void AliPHOSAnalyze::Ls(){
   //  efile->Write() ;
   efile->Close() ;
   delete efile ;
-
+  
 }
 //____________________________________________________________________________
 void AliPHOSAnalyze::PositionResolution(const char * branchTitle)    
@@ -660,64 +675,68 @@ void AliPHOSAnalyze::PositionResolution(const char * branchTitle)
     
     const AliPHOSRecParticle * recParticle ;
     Int_t iRecParticle ;
-    for(iRecParticle = 0; iRecParticle < gime->NRecParticles() ;iRecParticle++ ){
-      recParticle = gime->RecParticle(iRecParticle) ;
-      
-      //find the closest primary
-      Int_t moduleNumberRec ;
-      Double_t recX, recZ ;
-      phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
-      
-      Double_t minDistance  = 100. ;
-      Int_t closestPrimary = -1 ;
-      
-      //extract list of primaries: it is stored at EMC RecPoints
-      Int_t emcIndex = gime->TrackSegment(recParticle->GetPHOSTSIndex())->GetEmcIndex() ;
-      Int_t numberofprimaries ;
-      Int_t * listofprimaries  = gime->EmcRecPoint(emcIndex)->GetPrimaries(numberofprimaries)  ;
-
-      Int_t index ;
-      const TParticle * primary ;
-      Double_t distance = minDistance ;
-      Double_t dX = 1000; // incredible number
-      Double_t dZ = 1000; // for the case if no primary will be found
-      Double_t dXmin = 0.; 
-      Double_t dZmin = 0. ;
-      for ( index = 0 ; index < numberofprimaries ; index++){
-	primary = gime->Primary(listofprimaries[index]) ;
-	Int_t moduleNumber ;
-	Double_t primX, primZ ;
-	phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-	if(moduleNumberRec == moduleNumber) {
-	  dX = recX - primX;
-	  dZ = recZ - primZ;
-	  distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
-	  if(minDistance > distance) {
-	    minDistance = distance ;
-	    dXmin = dX;
-	    dZmin = dZ;
-	    closestPrimary = listofprimaries[index] ;
+    TClonesArray * rp = gime->RecParticles(branchTitle) ;
+    TClonesArray * tss= gime->TrackSegments(branchTitle) ;
+    TObjArray * emcrp = gime->EmcRecPoints(branchTitle) ;
+    if( rp && tss && emcrp )
+      for(iRecParticle = 0; iRecParticle < rp->GetEntriesFast() ;iRecParticle++ ){
+	recParticle = (AliPHOSRecParticle *) rp->At(iRecParticle) ;
+	
+	//find the closest primary
+	Int_t moduleNumberRec ;
+	Double_t recX, recZ ;
+	phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+	
+	Double_t minDistance  = 100. ;
+	Int_t closestPrimary = -1 ;
+	
+	//extract list of primaries: it is stored at EMC RecPoints
+	Int_t emcIndex = ((AliPHOSTrackSegment *) tss->At(recParticle->GetPHOSTSIndex()))->GetEmcIndex() ;
+	Int_t numberofprimaries ;
+	Int_t * listofprimaries  = ((AliPHOSEmcRecPoint *) emcrp->At(emcIndex))->GetPrimaries(numberofprimaries)  ;
+	
+	Int_t index ;
+	const TParticle * primary ;
+	Double_t distance = minDistance ;
+	Double_t dX = 1000; // incredible number
+	Double_t dZ = 1000; // for the case if no primary will be found
+	Double_t dXmin = 0.; 
+	Double_t dZmin = 0. ;
+	for ( index = 0 ; index < numberofprimaries ; index++){
+	  primary = gime->Primary(listofprimaries[index]) ;
+	  Int_t moduleNumber ;
+	  Double_t primX, primZ ;
+	  phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+	  if(moduleNumberRec == moduleNumber) {
+	    dX = recX - primX;
+	    dZ = recZ - primZ;
+	    distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
+	    if(minDistance > distance) {
+	      minDistance = distance ;
+	      dXmin = dX;
+	      dZmin = dZ;
+	      closestPrimary = listofprimaries[index] ;
+	    }
 	  }
 	}
-      }
-      
-      //if found primary, fill histograms
-      if(closestPrimary >=0 ){
-	const TParticle * primary = gime->Primary(closestPrimary) ;
-	if(primary->GetPdgCode() == 22){
-	  hAllPosition->Fill(primary->Energy(), minDistance) ;
-	  hAllPositionX->Fill(primary->Energy(), dX) ;
-	  hAllPositionZ->Fill(primary->Energy(), dZ) ;
-	  if(recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA){
-	    hPhotPosition->Fill(primary->Energy(), minDistance ) ; 
-	    hEMPosition->Fill(primary->Energy(), minDistance ) ; 
-	  }
-	  else
-	    if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM)
+	
+	//if found primary, fill histograms
+	if(closestPrimary >=0 ){
+	  const TParticle * primary = gime->Primary(closestPrimary) ;
+	  if(primary->GetPdgCode() == 22){
+	    hAllPosition->Fill(primary->Energy(), minDistance) ;
+	    hAllPositionX->Fill(primary->Energy(), dX) ;
+	    hAllPositionZ->Fill(primary->Energy(), dZ) ;
+	    if(recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA){
+	      hPhotPosition->Fill(primary->Energy(), minDistance ) ; 
 	      hEMPosition->Fill(primary->Energy(), minDistance ) ; 
+	    }
+	    else
+	      if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM)
+		hEMPosition->Fill(primary->Energy(), minDistance ) ; 
+	  }
 	}
       }
-    }
   }
   
   //Write output histgrams
@@ -730,8 +749,8 @@ void AliPHOSAnalyze::PositionResolution(const char * branchTitle)
   pfile->Write() ;
   pfile->Close() ;
   delete pfile ;
-
-
+  
+  
 }
 //____________________________________________________________________________
 void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
@@ -894,155 +913,159 @@ void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
     //========== Now scan over RecParticles            
     const AliPHOSRecParticle * recParticle ;
     Int_t iRecParticle ;
-    for(iRecParticle = 0; iRecParticle < gime->NRecParticles(); iRecParticle++ ){
-      recParticle = gime->RecParticle(iRecParticle) ;
-      //fill histo spectrum of all RecParticles
-      hAllRP->Fill(CorrectedEnergy(recParticle->Energy())) ;
-      
-      //==========find the closest primary	
-      Int_t moduleNumberRec ;
-      Double_t recX, recZ ;
-      phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
-      
-      Double_t minDistance  = 100. ;
-      Int_t closestPrimary = -1 ;
-      
-      //extract list of primaries: it is stored at EMC RecPoints
-      Int_t emcIndex = gime->TrackSegment(recParticle->GetPHOSTSIndex())->GetEmcIndex() ;
-      Int_t numberofprimaries ;
-      Int_t * listofprimaries  = gime->EmcRecPoint(emcIndex)->GetPrimaries(numberofprimaries)  ;
-      Int_t index ;
-      const TParticle * primary ;
-      Double_t distance = minDistance ;
-      Double_t dX, dZ; 
-      Double_t dXmin = 0.; 
-      Double_t dZmin = 0. ;
-      for ( index = 0 ; index < numberofprimaries ; index++){
-	primary = gime->Primary(listofprimaries[index]) ;
-	Int_t moduleNumber ;
-	Double_t primX, primZ ;
-	phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-	if(moduleNumberRec == moduleNumber) {
-	  dX = recX - primX;
-	  dZ = recZ - primZ;
-	  distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
-	  if(minDistance > distance) {
-	    minDistance = distance ;
-	    dXmin = dX;
-	    dZmin = dZ;
-	    closestPrimary = listofprimaries[index] ;
+    TClonesArray * rp = gime->RecParticles(RecPointsTitle) ;
+    TClonesArray * tss= gime->TrackSegments(RecPointsTitle) ;
+    TObjArray * emcrp = gime->EmcRecPoints(RecPointsTitle) ;
+    if( rp && tss && emcrp )      
+      for(iRecParticle = 0; iRecParticle < rp->GetEntriesFast(); iRecParticle++ ){
+	recParticle = (AliPHOSRecParticle *) rp->At(iRecParticle) ;
+	//fill histo spectrum of all RecParticles
+	hAllRP->Fill(CorrectedEnergy(recParticle->Energy())) ;
+	
+	//==========find the closest primary	
+	Int_t moduleNumberRec ;
+	Double_t recX, recZ ;
+	phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+	
+	Double_t minDistance  = 100. ;
+	Int_t closestPrimary = -1 ;
+	
+	//extract list of primaries: it is stored at EMC RecPoints
+	Int_t emcIndex = ((AliPHOSTrackSegment *) tss->At(recParticle->GetPHOSTSIndex()))->GetEmcIndex() ;
+	Int_t numberofprimaries ;
+	Int_t * listofprimaries  = ((AliPHOSEmcRecPoint *) emcrp->At(emcIndex))->GetPrimaries(numberofprimaries)  ;
+	Int_t index ;
+	const TParticle * primary ;
+	Double_t distance = minDistance ;
+	Double_t dX, dZ; 
+	Double_t dXmin = 0.; 
+	Double_t dZmin = 0. ;
+	for ( index = 0 ; index < numberofprimaries ; index++){
+	  primary = gime->Primary(listofprimaries[index]) ;
+	  Int_t moduleNumber ;
+	  Double_t primX, primZ ;
+	  phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+	  if(moduleNumberRec == moduleNumber) {
+	    dX = recX - primX;
+	    dZ = recZ - primZ;
+	    distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
+	    if(minDistance > distance) {
+	      minDistance = distance ;
+	      dXmin = dX;
+	      dZmin = dZ;
+	      closestPrimary = listofprimaries[index] ;
+	    }
 	  }
 	}
-      }
-      
-      //===========define the "type" of closest primary
-      if(closestPrimary >=0 ){
-	Int_t primaryCode = -1;
-	const TParticle * primary = gime->Primary(closestPrimary) ;
-	Int_t primaryType = primary->GetPdgCode() ;
-	if(primaryType == 22) // photon ?
-	  primaryCode = 0 ;
-	else
-	  if(primaryType == 2112) // neutron
-	    primaryCode = 1 ; 
+	
+	//===========define the "type" of closest primary
+	if(closestPrimary >=0 ){
+	  Int_t primaryCode = -1;
+	  const TParticle * primary = gime->Primary(closestPrimary) ;
+	  Int_t primaryType = primary->GetPdgCode() ;
+	  if(primaryType == 22) // photon ?
+	    primaryCode = 0 ;
 	  else
-	    if(primaryType == -2112) // Anti neutron
-	      primaryCode = 2 ;
+	    if(primaryType == 2112) // neutron
+	      primaryCode = 1 ; 
 	    else
-	      if(primaryType == -2122) //Anti proton
-		primaryCode = 4 ;
-	      else {
-		TParticle tempo(*primary) ; 
-		if(tempo.GetPDG()->Charge())
-		  primaryCode = 3 ;
-	      }
-
-	//==========Now look at the type of RecParticle
-	Float_t energy = CorrectedEnergy(recParticle->Energy()) ;
-	if(recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA){
-	  hPhot->Fill(energy ) ; 	
-	  switch(primaryCode){
-	  case 0:
-	    hPhotReg->Fill(energy ) ; 
-	    break ;
-	  case 1:
-	    hNReg->Fill(energy ) ; 
-	    break ;
-	  case 2:
-	    hNBarReg->Fill(energy ) ; 
-	    break ;
-	  case 3:
-	    hChargedReg->Fill(energy ) ;
-	    break ;
-	  case 4:
-	    hPbarReg->Fill(energy ) ;
-	    break ;
-	  default:
-	    break ;
+	      if(primaryType == -2112) // Anti neutron
+		primaryCode = 2 ;
+	      else
+		if(primaryType == -2122) //Anti proton
+		  primaryCode = 4 ;
+		else {
+		  TParticle tempo(*primary) ; 
+		  if(tempo.GetPDG()->Charge())
+		    primaryCode = 3 ;
+		}
+	  
+	  //==========Now look at the type of RecParticle
+	  Float_t energy = CorrectedEnergy(recParticle->Energy()) ;
+	  if(recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA){
+	    hPhot->Fill(energy ) ; 	
+	    switch(primaryCode){
+	    case 0:
+	      hPhotReg->Fill(energy ) ; 
+	      break ;
+	    case 1:
+	      hNReg->Fill(energy ) ; 
+	      break ;
+	    case 2:
+	      hNBarReg->Fill(energy ) ; 
+	      break ;
+	    case 3:
+	      hChargedReg->Fill(energy ) ;
+	      break ;
+	    case 4:
+	      hPbarReg->Fill(energy ) ;
+	      break ;
+	    default:
+	      break ;
+	    }
 	  }
-	}
-	if((recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kGAMMAHA)){ //with PPSD signal
-	  hPPSD->Fill(energy ) ; 
-	  switch(primaryCode){
-	  case 0:
-	    hPhotPPSD->Fill(energy ) ; 
-	    break ;
-	  case 1:
-	    hNPPSD->Fill(energy ) ; 
-	    break ;
-	  case 2:
-	    hNBarPPSD->Fill(energy ) ;
-	    break ;
-	  case 3:
-	    hChargedPPSD->Fill(energy ) ;
-	    break ;
-	  case 4:
-	    hPbarPPSD->Fill(energy ) ;
-	    break ;
-	  default:
-	    break ;
+	  if((recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA)||
+	     (recParticle->GetType() == AliPHOSFastRecParticle::kGAMMAHA)){ //with PPSD signal
+	    hPPSD->Fill(energy ) ; 
+	    switch(primaryCode){
+	    case 0:
+	      hPhotPPSD->Fill(energy ) ; 
+	      break ;
+	    case 1:
+	      hNPPSD->Fill(energy ) ; 
+	      break ;
+	    case 2:
+	      hNBarPPSD->Fill(energy ) ;
+	      break ;
+	    case 3:
+	      hChargedPPSD->Fill(energy ) ;
+	      break ;
+	    case 4:
+	      hPbarPPSD->Fill(energy ) ;
+	      break ;
+	    default:
+	      break ;
+	    }
 	  }
-	}
-	if((recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kELECTRON)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kABSURDEM) ){ //with EM shower
-	  hShape->Fill(energy ) ;
-	  switch(primaryCode){
-	  case 0:
-	    hPhotEM->Fill(energy ) ; 
-	    break ;
-	  case 1:
-	    hNEM->Fill(energy ) ; 
-	    break ;
-	  case 2:
-	    hNBarEM->Fill(energy ) ; 
-	    break ;
-	  case 3:
-	    hChargedEM->Fill(energy ) ; 
-	    break ;
-	  case 4:
-	    hPbarEM->Fill(energy ) ; 
-	    break ;
-	  default:
-	    break ;
+	  if((recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA)||
+	     (recParticle->GetType() == AliPHOSFastRecParticle::kELECTRON)||
+	     (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM)||
+	     (recParticle->GetType() == AliPHOSFastRecParticle::kABSURDEM) ){ //with EM shower
+	    hShape->Fill(energy ) ;
+	    switch(primaryCode){
+	    case 0:
+	      hPhotEM->Fill(energy ) ; 
+	      break ;
+	    case 1:
+	      hNEM->Fill(energy ) ; 
+	      break ;
+	    case 2:
+	      hNBarEM->Fill(energy ) ; 
+	      break ;
+	    case 3:
+	      hChargedEM->Fill(energy ) ; 
+	      break ;
+	    case 4:
+	      hPbarEM->Fill(energy ) ; 
+	      break ;
+	    default:
+	      break ;
+	    }
 	  }
+	  
+	  if((recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA)||
+	     (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALHA) ||
+	     (recParticle->GetType() == AliPHOSFastRecParticle::kGAMMAHA) ||
+	     (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM) ) //nuetral
+	    hVeto->Fill(energy ) ;
+	  
+	  //fill number of primaries identified as ...
+	  if(primaryCode >= 0) // Primary code defined
+	    counter[recParticle->GetType()][primaryCode]++ ; 
+	  
 	}
 	
-	if((recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALHA) ||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kGAMMAHA) ||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM) ) //nuetral
-	  hVeto->Fill(energy ) ;
-	
-	//fill number of primaries identified as ...
-	if(primaryCode >= 0) // Primary code defined
-	  counter[recParticle->GetType()][primaryCode]++ ; 
-	
-      }
-      
-    } // no closest primary found
+      } // no closest primary found
   }     
   
   
