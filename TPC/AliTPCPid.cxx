@@ -1,7 +1,7 @@
 #include "AliTPCPid.h"
 #include "TMath.h"
 //#include "AliITSIOTrack.h"
-#include <iostream.h>
+#include "Riostream.h"
 ClassImp(AliTPCPid)
 // Correction 13.01.2003 Z.S.,Dubna
 //            22.01.2003
