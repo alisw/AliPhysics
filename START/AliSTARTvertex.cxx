@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.5  2001/07/27 13:03:12  hristov
+Default Branch split level set to 99
+
 Revision 1.4  2000/12/22 16:17:15  hristov
 Updated  START code from Alla
 
@@ -91,7 +94,7 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
       Float_t c = 299792458/1.e9;  //speed of light cm/ps
       //Float_t c = 0.3;  //speed of light mm/ps
       Float_t Zposit=timePs*c;// for 0 vertex
-      vertex->Set(Zposit);
+      vertex->Set((Int_t) Zposit);
       tr->Fill();
       tr->Write();
       }

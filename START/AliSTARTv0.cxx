@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/09/19 18:41:59  alla
+Asimmetric START geometry
+
 Revision 1.12  2001/04/25 14:09:34  alla
 Curent bur fixed
 
@@ -349,6 +352,7 @@ void AliSTARTv0::CreateMaterials()
    AliMedium(8, "Steel$", 0, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
    AliMedium(11, "Brass  $", 6, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
    AliMedium(9, "Ribber  $", 7, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(12, "Lucite$", 8, 1, isxfld, sxmgmx, 10., .01, 1., .003, .003);  
 
 //  geant3->Gsckov(idtmed[2105], 14, ppckov, absco_quarz, effic_all,rindex_quarz);
 
