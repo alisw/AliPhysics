@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/05/08 15:53:45  cblume
+Resolved merge conflict
+
 Revision 1.3  2000/04/28 14:49:27  cblume
 Only one declaration of iDict in MakeDigits()
 
@@ -233,38 +236,6 @@ Bool_t AliTRDdigitizer::Open(const Char_t *name, Int_t nEvent)
     printf("No entries in the trees for event %d.\n",fEvent);
     return kFALSE;
   }
-
-  return kTRUE;
-
-}
-
-//_____________________________________________________________________________
-Float_t AliTRDdigitizer::PadResponse(Float_t x)
-{
-  //
-  // The pad response for the chevron pads. 
-  // We use a simple Gaussian approximation which should be good
-  // enough for our purpose.
-  //
-
-  // The parameters for the response function
-  const Float_t aa  =  0.8872;
-  const Float_t bb  = -0.00573;
-  const Float_t cc  =  0.454;
-  const Float_t cc2 =  cc*cc;
-
-  // Get the pointer to the detector class and check for version 1
-  fTRD = (AliTRD*) gAlice->GetDetector("TRD");
-  if (fTRD->IsVersion() != 1) {
-    printf("AliTRDdigitizer::Open -- ");
-    printf("TRD must be version 1 (slow simulator).\n");
-    exit(1);
-  }
-
-  // Get the geometry
-  fGeo = fTRD->GetGeometry();
-  printf("AliTRDdigitizer::Open -- ");
-  printf("Geometry version %d\n",fGeo->IsVersion());
 
   return kTRUE;
 
