@@ -28,14 +28,14 @@ class AliGenHijing : public AliGenerator
     virtual void    Init();
     // set centre of mass energy
     virtual void    SetEnergyCMS(Float_t energy=5500) {fEnergyCMS=energy;}
-    virtual void    SetReferenceFrame(TString frame=TString("CMS"))
+    virtual void    SetReferenceFrame(TString frame="CMS")
 	{fFrame=frame;}
-    virtual void    SetProjectile(TString proj=TString("A"),
+    virtual void    SetProjectile(TString proj="A",
 				  Int_t a=208, Int_t z=82)
 	{fProjectile = proj;
 	fAProjectile = a;
 	fZProjectile = z;}    
-    virtual void    SetTarget(TString tar=TString("A"),
+    virtual void    SetTarget(TString tar="A",
 			      Int_t a=208, Int_t z=82)
 	{fTarget = tar;
 	fATarget = a;
