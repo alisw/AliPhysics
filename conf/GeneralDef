@@ -56,7 +56,8 @@ MAKEDEPEND    = $(ROOTSYS)/bin/makedepend
  
 ROOTLIBS      = -L$(ROOTSYS)/lib -lBase -lCint -lClib -lCont -lFunc -lGraf \
                 -lGraf3d -lHist -lHtml -lMeta -lMinuit -lNet -lPostscript \
-                -lProof -lRint -lTree -lUnix -lZip -lMatrix -lMeta -lPhysics
+                -lProof -lRint -lTree -lUnix -lZip -lMatrix -lMeta -lPhysics \
+		-lNew
 
 # Alice libraries
 
