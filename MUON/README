@@ -253,12 +253,13 @@ gener->SetSigma(0,0,0.0);       // Sigma in (X,Y,Z) (cm) on IP position
 gener->Init();
  
 ===========================================================
- csh Script for the full reconstruction
+ csh Script for the full reconstruction with raw data generator
 ===========================================================
 
 
 aliroot -b << EOF  
 AliSimulation MuonSim("YourConfig.C")
+MuonSim.SetWriteRawData("MUON");
 MuonSim.Run(XXX)
 .q
 EOF

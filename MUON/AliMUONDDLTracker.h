@@ -5,7 +5,8 @@
 
 
 #include <TObject.h>
-static const Int_t  bufsize = 1024;
+#include "AliRawDataHeader.h"
+
 
 class AliMUONDDLTracker : public TObject {
 
@@ -13,30 +14,61 @@ public:
    AliMUONDDLTracker();
    virtual ~AliMUONDDLTracker(){;}
 
-   UInt_t  GetRawData(Int_t n) const {return fData[n];}
-   Int_t   GetLength()  const {return fLength;}
-   Int_t   GetBusPatchId()  const {return fBusPatchId;}
-   Int_t   GetEoD()     const {return fEndOfDDL;}  
+   // Block header
+   Int_t   GetTotalBlkLength() const {return fTotalBlkLength;}
+   Int_t   GetBlkLength()      const {return fBlkLength;}
+   Int_t   GetDspId()          const {return fDSPId;}
+   Int_t   GetBlkTriggerWord(Int_t n) const {return fBlkTriggerWord[n];}
+   const Int_t   GetPadding()  const {return fPadding;}
 
-   Char_t   GetParity(Int_t n)    {return (Char_t)(fData[n] >> 29) &  0x7;}
-   UShort_t GetManuId(Int_t n)    {return (UShort_t)(fData[n] >> 18) &  0x7FF;}
-   Char_t   GetChannelId(Int_t n) {return (Char_t)(fData[n] >> 12) & 0x3F;}
-   UShort_t GetCharge(Int_t n)    {return (UShort_t)(fData[n] & 0xFFF);}
+   void    SetTotalBlkLength(Int_t l) {fTotalBlkLength = l;}
+   void    SetBlkLength(Int_t l)      {fBlkLength = l;}
+   void    SetDSPId(Int_t d)          {fDSPId = d;}  
+   void    SetBlkTriggerWord(Int_t w, Int_t n) {fBlkTriggerWord[n] = w;}
 
-   void    SetRawData(UInt_t w) {fData[fLength++] = w;}
-   void    SetLength(Int_t l) {fLength = l;}
-   void    SetBusPatchId(Int_t b) {fBusPatchId = b;}  
-   void    SetEoD(Int_t e) {fEndOfDDL = e;}  
+   // DSP header
+   Int_t   GetTotalDspLength() const {return fTotalDspLength;}
+   Int_t   GetDspLength()      const {return fDspLength;}
+   Int_t   GetDspId1()         const {return fDSPId1;}
+   Int_t   GetDspTriggerWord(Int_t n) const {return fDspTriggerWord[n];}
+   Int_t   GetEventWord()      const {return fEventWord;}
 
-   Int_t* GetAddress() {return &fLength;}
+   void    SetTotalDspLength(Int_t l) {fTotalDspLength = l;}
+   void    SetDspLength(Int_t l)      {fDspLength = l;}
+   void    SetDSPId1(Int_t d)         {fDSPId1 = d;}  
+   void    SetDspTriggerWord(Int_t w, Int_t n) {fDspTriggerWord[n] = w;}
+   void    SetEventWord(Int_t w)      {fEventWord = w;}
+
+   Int_t* GetBlkHeader() {return &fTotalBlkLength;}
+   Int_t* GetDspHeader() {return &fTotalDspLength;}
+
+   AliRawDataHeader GetHeader(){return fHeader;}
+   Int_t GetHeaderSize() {return sizeof(AliRawDataHeader)/4;} // in words
+
+   const Int_t   GetEoD()      const {return fEndOfDDL;}  
 
  private:
-   
-   Int_t     fLength;           // length of data
-   Int_t     fBusPatchId;       // bus patch id
-   UInt_t    fData[bufsize];    // data 
-   Int_t     fEndOfDDL  ;       // end of DDL
 
+   // block header
+   Int_t     fTotalBlkLength;    // total length of block structure
+   Int_t     fBlkLength;         // length of raw data
+   Int_t     fDSPId;             // Dsp id
+   Int_t     fBlkTriggerWord[4]; // counter trigger word
+   Int_t     fPadding;           // padding dummy word for 64 bits transfer
+
+   // Dsp header
+   Int_t     fTotalDspLength;     // total length of block structure
+   Int_t     fDspLength;          // length of raw data
+   Int_t     fDSPId1;             // Dsp id ??
+   Int_t     fDspTriggerWord[4];  // counter trigger word ?
+   Int_t     fEventWord;          // nb word odd = 1, even = 0
+
+   static const Int_t fEndOfDDL;  // end of DDL
+
+
+   AliRawDataHeader fHeader;   // header of DDL
+ 
+ 
    ClassDef(AliMUONDDLTracker,1)  // MUON DDL Tracker
 };
 #endif

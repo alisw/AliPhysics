@@ -4,11 +4,17 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TObject.h>
+#include "AliMUONSubEventTracker.h"
+#include "AliMUONSubEventTrigger.h"
+
 class TClonesArray;
 class AliLoader;
 class AliMUONData;
 class AliMUONDigit;
 class AliMUONDDLTracker;
+class AliMUONDDLTrigger;
+
+//class AliMUONTriggerDecision;
 
 class AliMUONRawData : public TObject 
 {
@@ -24,6 +30,20 @@ class AliMUONRawData : public TObject
   Int_t GetPrintLevel(void) const {return fPrintLevel;}
   void SetPrintLevel(Int_t printLevel) {fPrintLevel = printLevel;}
 
+  void AddData1(AliMUONSubEventTracker* event) {
+    TClonesArray &temp = *fSubEventArray[0];
+    new(temp[temp.GetEntriesFast()])AliMUONSubEventTracker(*event); 
+  }
+
+  void AddData2(AliMUONSubEventTracker* event) {
+    TClonesArray &temp = *fSubEventArray[1];
+    new(temp[temp.GetEntriesFast()])AliMUONSubEventTracker(*event); 
+  }
+
+  void GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit* digit, Int_t &busPatchId,
+		       UShort_t &manuId, UChar_t &channelId, UShort_t &charge);
+
+
  protected:
   AliMUONRawData();                  // Default constructor
   AliMUONRawData (const AliMUONRawData& rhs); // copy constructor
@@ -32,11 +52,10 @@ class AliMUONRawData : public TObject
  private:
   static const Int_t fgkDefaultPrintLevel;     // Default print level
 
-  Int_t                   fNCh;                // Number of chambers   
-  Int_t                   fNTrackingCh;        // Number of tracking chambers*
-  Int_t                   fNTriggerCh;         // Number of trigger chambers*
 
   AliMUONData*            fMUONData;           //! Data container for MUON subsystem 
+/*   AliMUONTriggerDecision* fTrigDec;            //! calculated trigger from digits tmp solution */
+/*   AliMUONData*            fTrigData; */
 
  // print level
   Int_t fPrintLevel;
@@ -51,7 +70,19 @@ class AliMUONRawData : public TObject
   FILE* fFile1;
   FILE* fFile2;
 
-  Int_t WriteDDL(Int_t iCh);
+  // array to sub event tracker
+  TClonesArray* fSubEventArray[2];
+
+  // array to sub event trigger
+  TClonesArray* fSubEventTrigArray[2];
+
+  // DDL class pointers
+  AliMUONDDLTracker* fDDLTracker;
+  AliMUONDDLTrigger* fDDLTrigger;
+
+  // writing raw data
+  Int_t WriteTrackerDDL(Int_t iCh);
+  Int_t WriteTriggerDDL();
 
   ClassDef(AliMUONRawData,0) // MUON cluster reconstructor in ALICE
 };

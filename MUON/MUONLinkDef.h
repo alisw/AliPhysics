@@ -12,7 +12,7 @@
 #pragma link C++ class  AliMUONHit+;
 #pragma link C++ class  AliMUONPadHit+;
 #pragma link C++ class  AliMUONDigit+;
-#pragma link C++ class  AliMUONTransientDigit+;
+#pragma link C++ clagss  AliMUONTransientDigit+;
 #pragma link C++ class  AliMUONReconstHit+;
 #pragma link C++ class  AliMUONRawCluster+;
 #pragma link C++ class  AliMUONGlobalTrigger+;
@@ -49,7 +49,10 @@
 #pragma link C++ class  AliMUONTrackHit+;
 #pragma link C++ class  AliMUONTrackParam+;
 #pragma link C++ class  AliMUONTriggerConstants+;
+#pragma link C++ class  AliMUONDDLTrigger+;
 #pragma link C++ class  AliMUONDDLTracker+;
+#pragma link C++ class  AliMUONSubEventTracker+;
+#pragma link C++ class  AliMUONSubEventTrigger+;
 #pragma link C++ class  AliMUONRawData+;
 #pragma link C++ class  AliMUONReconstructor+;
 #pragma link C++ class  AliMUONSegmentationSlatModule+;

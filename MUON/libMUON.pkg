@@ -33,12 +33,12 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONSegmentationSlatModule.cxx AliMUONSegmentationSlatModuleN.cxx \
 	       AliMUONSegmentationSlat.cxx AliMUONSegmentationSlatN.cxx \
 	       AliMUONRecoEvent.cxx AliMUONRecoTrack.cxx AliMUONRecoDisplay.cxx \
-               AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx AliMUONDigitizerv1.cxx AliMUONDigitizerv2.cxx AliMUONSDigitizerv1.cxx \
+               AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx AliMUONDigitizerv1.cxx AliMUONDigitizerv2.cxx \
+               AliMUONSDigitizerv1.cxx \
                AliMUONTrackK.cxx AliMUONClusterFinderAZ.cxx AliMUONPixel.cxx \
                AliMUONLoader.cxx AliMUONData.cxx  AliMUONDataInterface.cxx \
-               AliMUONDDLTracker.cxx \
-               AliMUONRawData.cxx
-
+               AliMUONDDLTrigger.cxx AliMUONSubEventTrigger.cxx AliMUONDDLTracker.cxx \
+               AliMUONRawData.cxx AliMUONSubEventTracker.cxx 
 
 
 SRCS     += AliMUONSt1Segmentation.cxx AliMUONSt1Response.cxx \

@@ -13,25 +13,23 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliMUONDDLTracker.h"
-#include "AliRawDataHeader.h"
+#include "AliMUONDDLTrigger.h"
 
-ClassImp(AliMUONDDLTracker)
- const Int_t AliMUONDDLTracker::fEndOfDDL = 0x0FFFFFFFF;
-
+ClassImp(AliMUONDDLTrigger)
+ 
 //___________________________________________
-AliMUONDDLTracker::AliMUONDDLTracker()
+AliMUONDDLTrigger::AliMUONDDLTrigger()
   :  TObject(),
-     fTotalBlkLength(0),
-     fBlkLength(0),
-     fDSPId(0),
-     fPadding(0x0DEADDEAD),
-     fTotalDspLength(0),
-     fDspLength(0),
-     fDSPId1(0),
-     fEventWord(0) 
+     fddlWord(),
+     fGlobalInput(),
+     fGlobalOutput(0),
+     fEndOfDDL(0xDEADFACE)
 {
   //ctor
-  for (Int_t i = 0; i < 4; i++)
-    fBlkTriggerWord[i] = fDspTriggerWord[i] = 0;
+}
+
+//___________________________________________
+AliMUONDDLTrigger::~AliMUONDDLTrigger()
+{
+  //dtor
 }
