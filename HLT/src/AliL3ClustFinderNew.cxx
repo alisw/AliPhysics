@@ -144,7 +144,7 @@ void AliL3ClustFinderNew::ProcessDigits()
 {
   //Loop over rows, and call processrow
   AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fDigitRowData;
-  
+  fNClusters = 0; 
   for(Int_t i=fFirstRow; i<=fLastRow; i++)
     {
       fCurrentRow = i;
