@@ -129,7 +129,7 @@ void AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
       AliHeader *header = runLoader->GetHeader();
       AliGenEventHeader* genHeader = header->GenEventHeader();
       TArrayF *o = new TArrayF(3); 
-      genHeader->PrimaryVertex(*o);
+      if (genHeader) genHeader->PrimaryVertex(*o);
       Float_t zVertex=o->At(2);
 
       for (Int_t i=0; i<5; i++)
