@@ -18,6 +18,7 @@ c#include "calorSize.inc"
       real C_2PI 
       real etaCellSize 
       real phiCellSize 
+      real arg
       INTEGER NMAX,JMAX
       parameter(NMAX=30000,JMAX=100) ! 10-oct-2201
       integer ncell, ierror, mode, ncell_tot
@@ -226,8 +227,18 @@ c*-sum up unused cells within required distance of given eta/phi
 ! 5-oct-2001 by PAI
             
 c*-reject cluster below minimum Ej_min
+c* protection (am)
             etas=eta+etas/ets
-            if(ets*cosh(etas/ets).lt.ej_min) then
+            arg = 0.
+            if (arg .ne. 0.) then
+               if (abs(etas/ets) .lt. 23.719) then
+                  arg = ets * cosh(etas/ets)
+               else
+                  arg = 1.e10
+               endif
+            endif
+            
+            if(arg .lt. ej_min) then
                do k=1,ncell
                   if(flag(k).le.0) flag(k)=0
                enddo
