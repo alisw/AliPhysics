@@ -18,50 +18,73 @@
 #include "AliMC.h"
 #include "AliMagF.h"
 
+#include "AliConst.h"
+#include "AliPDG.h"
+
 #include <iostream.h>
 #include <TNode.h>
 #include <TGeometry.h>
 #include <TBRIK.h>
 
+#include <TLorentzVector.h>
+#include <TVector3.h>
+#include <TParticle.h>
+
+
 #include "AliRICHGeometry.h"
 #include "AliRICHSegmentationV1.h"
 #include "AliRICHResponseV0.h"
-
-
+#include "AliRICHHit.h"
 
 ClassImp(AliRICHv3)
 
-AliRICHv3::AliRICHv3(const char *pcName, const char *pcTitle)
-      	  :AliRICH(pcName,pcTitle)
+//______________________________________________________________
+//    Implementation of the RICH version 3 with azimuthal rotation
+
+
+AliRICHv3::AliRICHv3(const char *sName, const char *sTitle)
+      	  :AliRICH(sName,sTitle)
 {
-   cout<<ClassName()<<"::named ctor>\n"; // no way to control it as ctor is called before call to SetDebugXXXX()
+// The named ctor currently creates a single copy of 
+// AliRICHGeometry AliRICHSegmentationV1 AliRICHResponseV0
+// and initialises the corresponding models of all 7 chambers with these stuctures.
+// Note: all chambers share the single copy of models. MUST be changed later (???).
+   cout<<ClassName()<<"::named ctor(sName,sTitle)>\n"; // no way to control it as ctor is called before call to SetDebugXXXX()
 
    fCkovNumber=fFreonProd=fDebugLevel=0;
    
-   AliRICHGeometry       *pRICHGeometry    =new AliRICHGeometry;
-   AliRICHSegmentationV1 *pRICHSegmentation=new AliRICHSegmentationV1;
-   AliRICHResponseV0     *pRICHResponse    =new AliRICHResponseV0;
+   AliRICHGeometry       *pRICHGeometry    =new AliRICHGeometry;           // ??? to be moved to AlRICHChamber::named ctor
+   AliRICHSegmentationV1 *pRICHSegmentation=new AliRICHSegmentationV1;     // ??? to be moved to AlRICHChamber::named ctor
+   AliRICHResponseV0     *pRICHResponse    =new AliRICHResponseV0;         // ??? to be moved to AlRICHChamber::named ctor
      
    fChambers = new TObjArray(kNCH);
    for (Int_t i=0; i<kNCH; i++){    
-      fChambers->AddAt(new AliRICHChamber,i);
+      fChambers->AddAt(new AliRICHChamber,i); // ??? to be changed to named ctor of AliRICHChamber
       SetGeometryModel(i,pRICHGeometry);
       SetSegmentationModel(i,pRICHSegmentation);
       SetResponseModel(i,pRICHResponse);
-      ((AliRICHChamber*)fChambers->At(i))->Init(i);    
+      ((AliRICHChamber*)fChambers->At(i))->Init(i); // ??? to be removed     
    }
 }//AliRICHv3::ctor(const char *pcName, const char *pcTitle)
 
+AliRICHv3::~AliRICHv3()
+{
+// Dtor deletes RICH models. In future (???) AliRICHChamber will be responsible for that.
+   if(IsDebugStart()) cout<<ClassName()<<"::dtor()>\n";
+      
+   delete GetChamber(0)->GetGeometryModel();
+   delete GetChamber(0)->GetResponseModel();
+   delete GetChamber(0)->GetSegmentationModel();
+}//AliRICHv3::dtor()
+
 void AliRICHv3::CreateMaterials()
 {
+// Provides material definition for simulation (currently GEANT)    
    if(IsDebugStart()) cout<<ClassName()<<"::CreateMaterials()>\n";
    
-//
-// Defines all RICH materials
-//   
-    Int_t   isxfld = gAlice->Field()->Integ();
-    Float_t sxmgmx = gAlice->Field()->Max();
-    Int_t i;
+   Int_t   isxfld = gAlice->Field()->Integ();
+   Float_t sxmgmx = gAlice->Field()->Max();
+   Int_t i;
     
 
     //Photons energy intervals
@@ -296,7 +319,8 @@ void AliRICHv3::CreateMaterials()
 
 void AliRICHv3::CreateGeometry()
 {
-   if(fDebug) cout<<ClassName()<<"::CreateGeometry()>\n";
+// Provides geometry structure for simulation (currently GEANT volumes tree)         
+   if(IsDebugStart()) cout<<ClassName()<<"::CreateGeometry()>\n";
 
   AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH"); 
   AliRICHSegmentationV0*  segmentation;
@@ -653,84 +677,85 @@ void AliRICHv3::CreateGeometry()
 
 // Place chambers into mother volume ALIC
            
-   Double_t dOffset        = 490 + 1.276 - geometry->GetGapThickness()/2;  // distance from center of mother volume ALIC to methane
-   Double_t dAlpha         = 19.5;                                         // angle between centers of chambers - y-z plane
-   Double_t dBeta          = 20;                                           // angle between center of chambers - y-x plane
-   Double_t dRotAngle = geometry->GetRotationAngle();                 // the whole RICH is to be rotated in x-y plane + means clockwise rotation 
-
-   Double_t dCosAlpha    = TMath::Cos(dAlpha*TMath::Pi()/180);
-   Double_t dSinAlpha    = TMath::Sin(dAlpha*TMath::Pi()/180);
-   Double_t dCosBeta     = TMath::Cos(dBeta*TMath::Pi()/180);
-   Double_t dSinBeta     = TMath::Sin(dBeta*TMath::Pi()/180); 
- 
-   Double_t dCosRot = TMath::Cos(dRotAngle*TMath::Pi()/180);
-   Double_t dSinRot = TMath::Sin(dRotAngle*TMath::Pi()/180); 
-
-   Double_t dX,dY,dZ;
-   TRotMatrix *pRotMatrix; // tmp pointer 
+   Double_t dOffset        = geometry->GetOffset() - geometry->GetGapThickness()/2;  // distance from center of mother volume ALIC to methane
+   
+   Double_t dAlpha         = geometry->GetAlphaAngle(); // angle between centers of chambers - y-z plane
+   Double_t dAlphaRad      = dAlpha*kDegrad;
+   
+   Double_t dBeta          = geometry->GetBetaAngle();   // angle between center of chambers - y-x plane
+   Double_t dBetaRad       = dBeta*kDegrad;
+   
+   Double_t dRotAngle      = geometry->GetRotationAngle();     // the whole RICH is to be rotated in x-y plane + means clockwise rotation 
+   Double_t dRotAngleRad   = dRotAngle*kDegrad;
+   
+    
+   TRotMatrix *pRotMatrix; // tmp pointer
+   
+   TVector3 vector(0,dOffset,0); // Position of chamber 2 without rotation
+    
 // Chamber 0  standalone (no other chambers in this row) 
                    AliMatrix(idrotm[1000],      90, -dRotAngle           , 90-dAlpha     , 90-dRotAngle        , dAlpha        , -90           ); 
    pRotMatrix=new TRotMatrix("rot993","rot993", 90, -dRotAngle           , 90-dAlpha     , 90-dRotAngle        , dAlpha        , -90           );
 
-   dX=0;                         dY=dOffset*dCosAlpha;               dZ=dOffset*dSinAlpha;     // before azimuthal rotation
-   dX=dX*dCosRot+dY*dSinRot;     dY=-dX*dSinRot+dY*dCosRot;                                    // after azimuthal rotation
+   vector.SetXYZ(0,dOffset,0);  vector.RotateX(dAlphaRad); 
+   vector.RotateZ(-dRotAngleRad);
    
-   gMC->Gspos("RICH",1,"ALIC",dX,dY,dZ,idrotm[1000], "ONLY");           
-   Chamber(0).SetChamberTransform(dX,dY,dZ,pRotMatrix);
+   gMC->Gspos("RICH",1,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1000], "ONLY");           
+   Chamber(0).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
 // Chamber 1   
                    AliMatrix(idrotm[1001],      90, -dBeta-dRotAngle     , 90            , 90-dBeta-dRotAngle  , 0             ,   0           );  
    pRotMatrix=new TRotMatrix("rot994","rot994", 90, -dBeta-dRotAngle     , 90            , 90-dBeta-dRotAngle  , 0             ,   0           );  
    
-   dX=dOffset*dSinBeta;          dY=dOffset*dCosBeta;                dZ=0;                    // before azimuthal rotation
-   dX=dX*dCosRot+dY*dSinRot;     dY=-dX*dSinRot+dY*dCosRot;                                   // after azimuthal rotation
+   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(-dBetaRad); 
+   vector.RotateZ(-dRotAngleRad);
    
-   gMC->Gspos("RICH",2,"ALIC",dX,dY,dZ,idrotm[1001], "ONLY");           
-   Chamber(1).SetChamberTransform(dX,dY,dZ,pRotMatrix);
+   gMC->Gspos("RICH",2,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1001], "ONLY");           
+   Chamber(1).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
 // Chamber 2   the top one with no Alpha-Beta rotation
                    AliMatrix(idrotm[1002],      90, -dRotAngle           , 90            , 90-dRotAngle        , 0             ,   0           );
    pRotMatrix=new TRotMatrix("rot995","rot995", 90, -dRotAngle           , 90            , 90-dRotAngle        , 0             ,   0           );
    
-   dX=0;                         dY=dOffset;                        dZ=0;                    // before azimuthal rotation
-   dX=dX*dCosRot+dY*dSinRot;     dY=-dX*dSinRot+dY*dCosRot;                                  // after azimuthal rotation
-   
-   gMC->Gspos("RICH",3,"ALIC",dX,dY,dZ,idrotm[1002], "ONLY");           
-   Chamber(2).SetChamberTransform(dX,dY,dZ,pRotMatrix);
+   vector.SetXYZ(0,dOffset,0);
+   vector.RotateZ(-dRotAngleRad);
+      
+   gMC->Gspos("RICH",3,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1002], "ONLY");           
+   Chamber(2).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
 // Chamber 3
                    AliMatrix(idrotm[1003],      90,  dBeta-dRotAngle     , 90.           , 90+dBeta-dRotAngle  , 0             ,   0           );
    pRotMatrix=new TRotMatrix("rot996","rot996", 90,  dBeta-dRotAngle     , 90.           , 90+dBeta-dRotAngle  , 0             ,   0           );
    
-   dX=-dOffset*dSinBeta;         dY=dOffset*dCosBeta;               dZ=0;                    // before azimuthal rotation
-   dX=dX*dCosRot+dY*dSinRot;     dY=-dX*dSinRot+dY*dCosRot;                                  // after azimuthal rotation
+   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); 
+   vector.RotateZ(-dRotAngleRad);
    
-   gMC->Gspos("RICH",4,"ALIC",dX,dY,dZ,idrotm[1003], "ONLY");           
-   Chamber(3).SetChamberTransform(dX,dY,dZ,pRotMatrix);
+   gMC->Gspos("RICH",4,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1003], "ONLY");           
+   Chamber(3).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
 // Chamber 4   
                    AliMatrix(idrotm[1004],      90,  360-dBeta-dRotAngle , 108.2         , 90-dBeta-dRotAngle  , 18.2          ,  90-dBeta     );
    pRotMatrix=new TRotMatrix("rot997","rot997", 90,  360-dBeta-dRotAngle , 108.2         , 90-dBeta-dRotAngle  , 18.2          ,  90-dBeta     );
    
-   dX=dOffset*dSinBeta;          dY=dOffset*dCosAlpha*dCosBeta;     dZ=-dOffset*dSinAlpha;   // before azimuthal rotation
-   dX=dX*dCosRot+dY*dSinRot;     dY=-dX*dSinRot+dY*dCosRot;                                  // after azimuthal rotation
+   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(-dBetaRad); vector.RotateX(-dAlphaRad); 
+   vector.RotateZ(-dRotAngleRad);
    
-   gMC->Gspos("RICH",5,"ALIC",dX,dY,dZ,idrotm[1004], "ONLY");
-   Chamber(4).SetChamberTransform(dX,dY,dZ,pRotMatrix);
+   gMC->Gspos("RICH",5,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1004], "ONLY");
+   Chamber(4).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
 // Chamber 5   
                    AliMatrix(idrotm[1005],      90, -dRotAngle           , 90+dAlpha     , 90-dRotAngle        , dAlpha        ,  90           );     
    pRotMatrix=new TRotMatrix("rot998","rot998", 90, -dRotAngle           , 90+dAlpha     , 90-dRotAngle        , dAlpha        ,  90           );     
    
-   dX=0;                         dY=dOffset*dCosAlpha;              dZ=-dOffset*dSinAlpha;   // before azimuthal rotation
-   dX=dX*dCosRot+dY*dSinRot;     dY=-dX*dSinRot+dY*dCosRot;                                  // after azimuthal rotation
-   
-   gMC->Gspos("RICH",6,"ALIC",dX,dY,dZ,idrotm[1005], "ONLY");           
-   Chamber(5).SetChamberTransform(dX,dY,dZ,pRotMatrix);
+   vector.SetXYZ(0,dOffset,0); vector.RotateX(-dAlphaRad); 
+   vector.RotateZ(-dRotAngleRad);
+      
+   gMC->Gspos("RICH",6,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1005], "ONLY");           
+   Chamber(5).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
 // Chamber 6           
                    AliMatrix(idrotm[1006],      90,  dBeta-dRotAngle     , 108.2         , 90+dBeta-dRotAngle  , 18.2          ,  90+dBeta     );    
    pRotMatrix=new TRotMatrix("rot999","rot999", 90,  dBeta-dRotAngle     , 108.2         , 90+dBeta-dRotAngle  , 18.2          ,  90+dBeta     );    
    
-   dX=-dOffset*dSinBeta;         dY=dOffset*dCosAlpha*dCosBeta;     dZ=-dOffset*dSinAlpha;   // before azimuthal rotation
-   dX=dX*dCosRot+dY*dSinRot;     dY=-dX*dSinRot+dY*dCosRot;                                  // after azimuthal rotation
-   
-   gMC->Gspos("RICH",7,"ALIC",dX,dY,dZ,idrotm[1006], "ONLY");
-   Chamber(6).SetChamberTransform(dX,dY,dZ,pRotMatrix);
+   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); vector.RotateX(-dAlphaRad); 
+   vector.RotateZ(-dRotAngleRad);
+      
+   gMC->Gspos("RICH",7,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1006], "ONLY");
+   Chamber(6).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
       
 }//void AliRICHv3::CreateGeometry()
 
@@ -739,17 +764,17 @@ void AliRICHv3::CreateGeometry()
 
 void AliRICHv3::Init()
 {
-  if(fDebug) cout<<ClassName()<<"::Init()>\n";
+// Makes nothing for a while   
+   if(IsDebugStart()) cout<<ClassName()<<"::Init()>\n";
     
 }
 
 
 void AliRICHv3::BuildGeometry()    
-{
-//
-// Builds a TNode geometry for event display
-//
-  if(fDebug) cout<<ClassName()<<"::BuildGeometry()>\n";
+{                                      
+// Provides geometry structure for event display (ROOT TNode tree)
+   
+   if(IsDebugStart()) cout<<ClassName()<<"::BuildGeometry()>\n";
   
     TNode *node, *subnode, *top;
     
@@ -758,12 +783,11 @@ void AliRICHv3::BuildGeometry()
     top=gAlice->GetGeometry()->GetNode("alice");
 
     AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH"); 
-    AliRICHSegmentationV0*  segmentation;
     AliRICHChamber*       iChamber;
     AliRICHGeometry*  geometry;
  
     iChamber = &(pRICH->Chamber(0));
-    segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel(0);
+    AliRICHSegmentationV1* segmentation=(AliRICHSegmentationV1*) iChamber->GetSegmentationModel(0);
     geometry=iChamber->GetGeometryModel();
     
     new TBRIK("S_RICH","S_RICH","void",71.09999,11.5,73.15);
@@ -949,3 +973,511 @@ void AliRICHv3::BuildGeometry()
     fNodes->Add(node); 
     
 }//AliRICHv3::BuildGeometry()
+
+void AliRICHv3::StepManager()
+{
+// The active Step Manager is realised currently in AliRICHv3 for debug
+// leaving StepManager in AliRICH intact. To be removed in future. 
+
+    Int_t          copy, id;
+    static Int_t   idvol;
+    static Int_t   vol[2];
+    Int_t          ipart;
+    static Float_t hits[22];
+    static Float_t ckovData[19];
+    TLorentzVector position;
+    TLorentzVector momentum;
+    Float_t        pos[3];
+    Float_t        mom[4];
+    Float_t        localPos[3];
+    Float_t        localMom[4];
+    Float_t        localTheta,localPhi;
+    Float_t        theta,phi;
+    Float_t        destep, step;
+    Float_t        ranf[2];
+    Int_t          nPads;
+    Float_t        coscerenkov;
+    static Float_t eloss, xhit, yhit, tlength;
+    const  Float_t kBig=1.e10;
+       
+    TClonesArray &lhits = *fHits;
+    TParticle *current = (TParticle*)(*gAlice->Particles())[gAlice->CurrentTrack()];
+
+ //if (current->Energy()>1)
+   //{
+        
+    // Only gas gap inside chamber
+    // Tag chambers and record hits when track enters 
+    
+    idvol=-1;
+    id=gMC->CurrentVolID(copy);
+    Float_t cherenkovLoss=0;
+    //gAlice->KeepTrack(gAlice->CurrentTrack());
+    
+    gMC->TrackPosition(position);
+    pos[0]=position(0);
+    pos[1]=position(1);
+    pos[2]=position(2);
+    //bzero((char *)ckovData,sizeof(ckovData)*19);
+    ckovData[1] = pos[0];                 // X-position for hit
+    ckovData[2] = pos[1];                 // Y-position for hit
+    ckovData[3] = pos[2];                 // Z-position for hit
+    ckovData[6] = 0;                      // dummy track length
+    //ckovData[11] = gAlice->CurrentTrack();
+    
+    //printf("\n+++++++++++\nTrack: %d\n++++++++++++\n",gAlice->CurrentTrack());
+
+    //AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
+    
+    /********************Store production parameters for Cerenkov photons************************/ 
+//is it a Cerenkov photon? 
+    if (gMC->TrackPid() == 50000050) { 
+
+      //if (gMC->VolId("GAP ")==gMC->CurrentVolID(copy))
+        //{                    
+	  Float_t ckovEnergy = current->Energy();
+	  //energy interval for tracking
+	  if  (ckovEnergy > 5.6e-09 && ckovEnergy < 7.8e-09 )       
+	    //if (ckovEnergy > 0)
+	    {
+	      if (gMC->IsTrackEntering()){        //is track entering?
+		//printf("Track entered (1)\n");
+		if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy))
+		  {                                                          //is it in freo?
+		    if (gMC->IsNewTrack()){                          //is it the first step?
+		      //printf("I'm in!\n");
+		      Int_t mother = current->GetFirstMother(); 
+		      
+		      //printf("Second Mother:%d\n",current->GetSecondMother());
+		      
+		      ckovData[10] = mother;
+		      ckovData[11] = gAlice->CurrentTrack();
+		      ckovData[12] = 1;             //Media where photon was produced 1->Freon, 2->Quarz
+		      //printf("Produced in FREO\n");
+		      fCkovNumber++;
+		      fFreonProd=1;
+		      //printf("Index: %d\n",fCkovNumber);
+		    }    //first step question
+		  }        //freo question
+		
+		if (gMC->IsNewTrack()){                                  //is it first step?
+		  if (gMC->VolId("QUAR")==gMC->CurrentVolID(copy))             //is it in quarz?
+		    {
+		      ckovData[12] = 2;
+		      //printf("Produced in QUAR\n");
+		    }    //quarz question
+		}        //first step question
+		
+		//printf("Before %d\n",fFreonProd);
+	      }   //track entering question
+	      
+	      if (ckovData[12] == 1)                                        //was it produced in Freon?
+		//if (fFreonProd == 1)
+		{
+		  if (gMC->IsTrackEntering()){                                     //is track entering?
+		    //printf("Track entered (2)\n");
+		    //printf("Current volume (should be META): %s\n",gMC->CurrentVolName());
+		    //printf("VolId: %d, CurrentVolID: %d\n",gMC->VolId("META"),gMC->CurrentVolID(copy));
+		    if (gMC->VolId("META")==gMC->CurrentVolID(copy))                //is it in gap?      
+		      {
+			//printf("Got in META\n");
+			gMC->TrackMomentum(momentum);
+			mom[0]=momentum(0);
+			mom[1]=momentum(1);
+			mom[2]=momentum(2);
+			mom[3]=momentum(3);
+			// Z-position for hit
+			
+			
+			/**************** Photons lost in second grid have to be calculated by hand************/ 
+			
+			Float_t cophi = TMath::Cos(TMath::ATan2(mom[0], mom[1]));
+			Float_t t = (1. - .025 / cophi) * (1. - .05 /  cophi);
+			gMC->Rndm(ranf, 1);
+			//printf("grid calculation:%f\n",t);
+			if (ranf[0] > t) {
+			  gMC->StopTrack();
+			  ckovData[13] = 5;
+			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+			  //printf("Added One (1)!\n");
+			  //printf("Lost one in grid\n");
+			}
+			/**********************************************************************************/
+		      }    //gap
+		    
+		    //printf("Current volume (should be CSI) (1): %s\n",gMC->CurrentVolName());
+		    //printf("VolId: %d, CurrentVolID: %d\n",gMC->VolId("CSI "),gMC->CurrentVolID(copy));
+		    if (gMC->VolId("CSI ")==gMC->CurrentVolID(copy))             //is it in csi?      
+		      {
+			//printf("Got in CSI\n");
+			gMC->TrackMomentum(momentum);
+			mom[0]=momentum(0);
+			mom[1]=momentum(1);
+			mom[2]=momentum(2);
+			mom[3]=momentum(3);
+			
+			/********* Photons lost by Fresnel reflection have to be calculated by hand********/ 
+			/***********************Cerenkov phtons (always polarised)*************************/
+			
+			Float_t cophi = TMath::Cos(TMath::ATan2(mom[0], mom[1]));
+			Float_t t = Fresnel(ckovEnergy*1e9,cophi,1);
+			gMC->Rndm(ranf, 1);
+			if (ranf[0] < t) {
+			  gMC->StopTrack();
+			  ckovData[13] = 6;
+			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+			  //printf("Added One (2)!\n");
+			  //printf("Lost by Fresnel\n");
+			}
+			/**********************************************************************************/
+		      }
+		  } //track entering?
+		  
+		  
+		  /********************Evaluation of losses************************/
+		  /******************still in the old fashion**********************/
+		  
+		  TArrayI procs;
+		  Int_t i1 = gMC->StepProcesses(procs);            //number of physics mechanisms acting on the particle
+		  for (Int_t i = 0; i < i1; ++i) {
+		    //        Reflection loss 
+		    if (procs[i] == kPLightReflection) {        //was it reflected
+		      ckovData[13]=10;
+		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
+			ckovData[13]=1;
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
+			ckovData[13]=2;
+		      //gMC->StopTrack();
+		      //AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		    } //reflection question
+		     
+		    //        Absorption loss 
+		    else if (procs[i] == kPLightAbsorption) {              //was it absorbed?
+		      //printf("Got in absorption\n");
+		      ckovData[13]=20;
+		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
+			ckovData[13]=11;
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
+			ckovData[13]=12;
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("META")) 
+			ckovData[13]=13;
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("GAP ")) 
+			ckovData[13]=13;
+		      
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("SRIC")) 
+			ckovData[13]=15;
+		      
+		      //        CsI inefficiency 
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("CSI ")) {
+			ckovData[13]=16;
+		      }
+		      gMC->StopTrack();
+		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		      //printf("Added One (3)!\n");
+		      //printf("Added cerenkov %d\n",fCkovNumber);
+		    } //absorption question 
+		    
+		    
+		    //        Photon goes out of tracking scope 
+		    else if (procs[i] == kPStop) {                 //is it below energy treshold?
+		      ckovData[13]=21;
+		      gMC->StopTrack();
+		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		      //printf("Added One (4)!\n");
+		    }	// energy treshold question	    
+		  }  //number of mechanisms cycle
+		  /**********************End of evaluation************************/
+		} //freon production question
+	    } //energy interval question
+	//}//inside the proximity gap question
+    } //cerenkov photon question
+      
+    /**************************************End of Production Parameters Storing*********************/ 
+    
+    
+    /*******************************Treat photons that hit the CsI (Ckovs and Feedbacks)************/ 
+    
+    if (gMC->TrackPid() == 50000050 || gMC->TrackPid() == 50000051) {
+      //printf("Cerenkov\n");
+      
+      //if (gMC->TrackPid() == 50000051)
+	//printf("Tracking a feedback\n");
+      
+      if (gMC->VolId("CSI ")==gMC->CurrentVolID(copy))
+	{
+	  //printf("Current volume (should be CSI) (2): %s\n",gMC->CurrentVolName());
+	  //printf("VolId: %d, CurrentVolID: %d\n",gMC->VolId("CSI "),gMC->CurrentVolID(copy));
+	  //printf("Got in CSI\n");
+	  //printf("Tracking a %d\n",gMC->TrackPid());
+	  if (gMC->Edep() > 0.){
+		gMC->TrackPosition(position);
+		gMC->TrackMomentum(momentum);
+		pos[0]=position(0);
+		pos[1]=position(1);
+		pos[2]=position(2);
+		mom[0]=momentum(0);
+		mom[1]=momentum(1);
+		mom[2]=momentum(2);
+		mom[3]=momentum(3);
+		Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
+		Double_t rt = TMath::Sqrt(tc);
+		theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
+		phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
+		gMC->Gmtod(pos,localPos,1);                                                                    
+		gMC->Gmtod(mom,localMom,2);
+		
+		gMC->CurrentVolOffID(2,copy);
+		vol[0]=copy;
+		idvol=vol[0]-1;
+
+		//Int_t sector=((AliRICHChamber*) (*fChambers)[idvol])
+			//->Sector(localPos[0], localPos[2]);
+		//printf("Sector:%d\n",sector);
+
+		/*if (gMC->TrackPid() == 50000051){
+		  fFeedbacks++;
+		  printf("Feedbacks:%d\n",fFeedbacks);
+		}*/	
+		
+        //PH		((AliRICHChamber*) (*fChambers)[idvol])
+		((AliRICHChamber*)fChambers->At(idvol))
+		    ->SigGenInit(localPos[0], localPos[2], localPos[1]);
+		if(idvol<kNCH) {	
+		    ckovData[0] = gMC->TrackPid();        // particle type
+		    ckovData[1] = pos[0];                 // X-position for hit
+		    ckovData[2] = pos[1];                 // Y-position for hit
+		    ckovData[3] = pos[2];                 // Z-position for hit
+		    ckovData[4] = theta;                      // theta angle of incidence
+		    ckovData[5] = phi;                      // phi angle of incidence 
+		    ckovData[8] = (Float_t) fNSDigits;      // first sdigit
+		    ckovData[9] = -1;                       // last pad hit
+		    ckovData[13] = 4;                       // photon was detected
+		    ckovData[14] = mom[0];
+		    ckovData[15] = mom[1];
+		    ckovData[16] = mom[2];
+		    
+		    destep = gMC->Edep();
+		    gMC->SetMaxStep(kBig);
+		    cherenkovLoss  += destep;
+		    ckovData[7]=cherenkovLoss;
+		    
+		    nPads = Hits2SDigits(localPos[0],localPos[2],cherenkovLoss,idvol,kCerenkov);
+		    		    
+		    if (fNSDigits > (Int_t)ckovData[8]) {
+			ckovData[8]= ckovData[8]+1;
+			ckovData[9]= (Float_t) fNSDigits;
+		    }
+
+		    //printf("Cerenkov loss: %f\n", cherenkovLoss);
+
+		    ckovData[17] = nPads;
+		    //printf("nPads:%d",nPads);
+		    
+		    //TClonesArray *Hits = RICH->Hits();
+		    AliRICHHit *mipHit =  (AliRICHHit*) (fHits->UncheckedAt(0));
+		    if (mipHit)
+		      {
+			mom[0] = current->Px();
+			mom[1] = current->Py();
+			mom[2] = current->Pz();
+			Float_t mipPx = mipHit->MomX();
+			Float_t mipPy = mipHit->MomY();
+			Float_t mipPz = mipHit->MomZ();
+			
+			Float_t r = mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2];
+			Float_t rt = TMath::Sqrt(r);
+			Float_t mipR = mipPx*mipPx + mipPy*mipPy + mipPz*mipPz;	
+			Float_t mipRt = TMath::Sqrt(mipR);
+			if ((rt*mipRt) > 0)
+			  {
+			    coscerenkov = (mom[0]*mipPx + mom[1]*mipPy + mom[2]*mipPz)/(rt*mipRt);
+			  }
+			else
+			  {
+			    coscerenkov = 0;
+			  }
+			Float_t cherenkov = TMath::ACos(coscerenkov);
+			ckovData[18]=cherenkov;
+		      }
+		    //if (sector != -1)
+		    //{
+		    AddHit(gAlice->CurrentTrack(),vol,ckovData);
+		    AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		    //printf("Added One (5)!\n");
+		    //}
+		}
+	    }
+	}
+    }
+    
+    /***********************************************End of photon hits*********************************************/
+    
+
+    /**********************************************Charged particles treatment*************************************/
+
+    else if (gMC->TrackCharge())
+    //else if (1 == 1)
+      {
+//If MIP
+	/*if (gMC->IsTrackEntering())
+	  {                
+	    hits[13]=20;//is track entering?
+	  }*/
+	if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy))
+	  {
+	    gMC->TrackMomentum(momentum);
+	    mom[0]=momentum(0);
+	    mom[1]=momentum(1);
+	    mom[2]=momentum(2);
+	    mom[3]=momentum(3);
+	    hits [19] = mom[0];
+	    hits [20] = mom[1];
+	    hits [21] = mom[2];
+	    fFreonProd=1;
+	  }
+
+	if (gMC->VolId("GAP ")== gMC->CurrentVolID(copy)) {
+// Get current particle id (ipart), track position (pos)  and momentum (mom)
+	    
+	    gMC->CurrentVolOffID(3,copy);
+	    vol[0]=copy;
+	    idvol=vol[0]-1;
+
+	    //Int_t sector=((AliRICHChamber*) (*fChambers)[idvol])
+			//->Sector(localPos[0], localPos[2]);
+	    //printf("Sector:%d\n",sector);
+	    
+	    gMC->TrackPosition(position);
+	    gMC->TrackMomentum(momentum);
+	    pos[0]=position(0);
+	    pos[1]=position(1);
+	    pos[2]=position(2);
+	    mom[0]=momentum(0);
+	    mom[1]=momentum(1);
+	    mom[2]=momentum(2);
+	    mom[3]=momentum(3);
+	    gMC->Gmtod(pos,localPos,1);                                                                    
+	    gMC->Gmtod(mom,localMom,2);
+	    
+	    ipart  = gMC->TrackPid();
+	    //
+	    // momentum loss and steplength in last step
+	    destep = gMC->Edep();
+	    step   = gMC->TrackStep();
+  
+	    //
+	    // record hits when track enters ...
+	    if( gMC->IsTrackEntering()) {
+//		gMC->SetMaxStep(fMaxStepGas);
+		Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
+		Double_t rt = TMath::Sqrt(tc);
+		theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
+		phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
+		
+
+		Double_t localTc = localMom[0]*localMom[0]+localMom[2]*localMom[2];
+		Double_t localRt = TMath::Sqrt(localTc);
+		localTheta   = Float_t(TMath::ATan2(localRt,Double_t(localMom[1])))*kRaddeg;                       
+		localPhi     = Float_t(TMath::ATan2(Double_t(localMom[2]),Double_t(localMom[0])))*kRaddeg;    
+		
+		hits[0] = Float_t(ipart);         // particle type
+		hits[1] = localPos[0];                 // X-position for hit
+		hits[2] = localPos[1];                 // Y-position for hit
+		hits[3] = localPos[2];                 // Z-position for hit
+		hits[4] = localTheta;                  // theta angle of incidence
+		hits[5] = localPhi;                    // phi angle of incidence 
+		hits[8] = (Float_t) fNSDigits;    // first sdigit
+		hits[9] = -1;                     // last pad hit
+		hits[13] = fFreonProd;           // did id hit the freon?
+		hits[14] = mom[0];
+		hits[15] = mom[1];
+		hits[16] = mom[2];
+		hits[18] = 0;               // dummy cerenkov angle
+
+		tlength = 0;
+		eloss   = 0;
+		fFreonProd = 0;
+	
+		Chamber(idvol).LocaltoGlobal(localPos,hits+1);
+	   
+		
+		//To make chamber coordinates x-y had to pass localPos[0], localPos[2]
+		xhit    = localPos[0];
+		yhit    = localPos[2];
+		// Only if not trigger chamber
+		if(idvol<kNCH) {
+		    //
+		    //  Initialize hit position (cursor) in the segmentation model 
+          //PH		    ((AliRICHChamber*) (*fChambers)[idvol])
+		    ((AliRICHChamber*)fChambers->At(idvol))
+			->SigGenInit(localPos[0], localPos[2], localPos[1]);
+		}
+	    }
+	    
+	    // 
+	    // Calculate the charge induced on a pad (disintegration) in case 
+	    //
+	    // Mip left chamber ...
+	    if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()){
+		gMC->SetMaxStep(kBig);
+		eloss   += destep;
+		tlength += step;
+		
+				
+		// Only if not trigger chamber
+		if(idvol<kNCH) {
+		  if (eloss > 0) 
+		    {
+		      if(gMC->TrackPid() == kNeutron)
+			printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
+		      nPads = Hits2SDigits(xhit,yhit,eloss,idvol,kMip);
+		      hits[17] = nPads;
+		      //printf("nPads:%d",nPads);
+		    }
+		}
+		
+		hits[6]=tlength;
+		hits[7]=eloss;
+		if (fNSDigits > (Int_t)hits[8]) {
+		    hits[8]= hits[8]+1;
+		    hits[9]= (Float_t) fNSDigits;
+		}
+		
+		//if(sector !=-1)
+		new(lhits[fNhits++]) AliRICHHit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+		eloss = 0; 
+		//
+		// Check additional signal generation conditions 
+		// defined by the segmentation
+		// model (boundary crossing conditions) 
+	    } else if 
+          //PH		(((AliRICHChamber*) (*fChambers)[idvol])
+		(((AliRICHChamber*)fChambers->At(idvol))
+		 ->SigGenCond(localPos[0], localPos[2], localPos[1]))
+	    {
+          //PH		((AliRICHChamber*) (*fChambers)[idvol])
+		((AliRICHChamber*)fChambers->At(idvol))
+		    ->SigGenInit(localPos[0], localPos[2], localPos[1]);
+		if (eloss > 0) 
+		  {
+		    if(gMC->TrackPid() == kNeutron)
+		      printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
+		    nPads = Hits2SDigits(xhit,yhit,eloss,idvol,kMip);
+		    hits[17] = nPads;
+		    //printf("Npads:%d",NPads);
+		  }
+		xhit     = localPos[0];
+		yhit     = localPos[2]; 
+		eloss    = destep;
+		tlength += step ;
+		//
+		// nothing special  happened, add up energy loss
+	    } else {        
+		eloss   += destep;
+		tlength += step ;
+	    }
+	}
+      }
+    /*************************************************End of MIP treatment**************************************/
+   //}
+}// void AliRICHv3::StepManager()
