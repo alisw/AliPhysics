@@ -917,16 +917,16 @@ void AliITSvPPRasymm::CreateGeometry(){
   dgh[18] = -48;   
   dgh[19] = 6;
   dgh[20] = rlim+0.1;
-  dgh[21] = -28;   
+  dgh[21] = -28.6;   
   dgh[22] = 6;
   dgh[23] = rlim+0.1;    
-  dgh[24] = -26.2;  
+  dgh[24] = -27.6;  
   dgh[25] = 3.295;
   dgh[26] = rlim+0.1; 
-  dgh[27] = 26.2;   
+  dgh[27] = 27.6;   
   dgh[28] = 3.295;
   dgh[29] = rlim+0.1;
-  dgh[30] = 28;   
+  dgh[30] = 28.6;   
   dgh[31] = 6;
   dgh[32] = rlim+0.1;
   dgh[33] = 48;   
@@ -1846,22 +1846,22 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[0] = 0;
   dits[1] = 360;
   dits[2] = 6;
-  dits[3] = -34.6;
+  dits[3] = -34.6; 
   dits[4] = 23.49;
   dits[5] = 28;
-  dits[6] = -27.35; 
+  dits[6] = -23.65; 
   dits[7] = 23.49;
   dits[8] = 28;
-  dits[9] = -27.35;  
+  dits[9] = -23.65;  
   dits[10] = 14.59; 
   dits[11] = 28;
-  dits[12] = 27.35;   
+  dits[12] = 23.65;   
   dits[13] = 14.59;
   dits[14] = 28;
-  dits[15] = 27.35;    
+  dits[15] = 23.65;    
   dits[16] = 23.49;
   dits[17] = 28;
-  dits[18] = 34.6;
+  dits[18] = 34.6;  
   dits[19] = 23.49;
   dits[20] = 28;
   gMC->Gsvolu("IT34", "PCON", idtmed[209], dits, 21);  
@@ -2540,7 +2540,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   gMC->Gsvolu("IC01", "TUBE", idtmed[289], dits, 3);   
 
   dits[0] = 8.3;
-  dits[1] = 10;
+  dits[1] = 9.995;
   dits[2] = 17.5/2.;
   gMC->Gsvolu("IC02", "TUBE", idtmed[289], dits, 3);    
   
@@ -2594,7 +2594,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[30] = 34.65;
   dits[31] = 10;
   dits[32] = 28.6;
-  dits[33] = 42.6263;
+  dits[33] = 42.7;
   dits[34] = 10;
   dits[35] = 28.6;
   dits[36] = 59.7;
@@ -2610,9 +2610,9 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[5] = 12.25;      
   dits[6] = 40.15;
   dits[7] = 10.75;
-  dits[8] = 13.96;   //13.25
+  dits[8] = 13.96;   
   dits[9] = 40.15;
-  dits[10] = 12.46;  //12.46
+  dits[10] = 12.46;  
   dits[11] = 13.96;
   dits[12] = 55.75;
   dits[13] = 27;
@@ -2628,7 +2628,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[0] = 0;
   dits[1] = 50;
   dits[2] = 3;
-  dits[3] = 35;  
+  dits[3] = 39;  
   dits[4] = 14;
   dits[5] = 18.75;
   dits[6] = 46.7-3;
@@ -2642,7 +2642,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[0] = 0;
   dits[1] = 25;
   dits[2] = 3;
-  dits[3] = 40;
+  dits[3] = 49;
   dits[4] = 23.4;
   dits[5] = 26.4;
   dits[6] = 56.1-3;
@@ -4195,7 +4195,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dgh[5] = 12.;    
   dgh[6] = 168.;
   gMC->Gsvolu("ICU1", "CONS", idtmed[213], dgh, 7);    
-  gMC->Gspos("ICU1", 1, "ITSV", 0., 0., 97.7+dgh[0], 0, "ONLY");   
+  gMC->Gspos("ICU1", 1, "ITSV", 0., 0., 97.5+dgh[0], 0, "ONLY");   
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     LOWER PART
@@ -4425,7 +4425,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dgh[0] = 0.;        
   dgh[1] = 3.;         
   dgh[2] = 5.;  // 5. comes from the fact that the volume has to be 567.6/2 cm^3       
-  gMC->Gsvolu("ISR1", "TUBE", idtmed[210], dgh, 3);   
+  gMC->Gsvolu("ISR1", "TUBE", idtmed[284], dgh, 3);   
   gMC->Gspos("ISR1", 1, "ALIC", 54.9, 11., 79.5, 0, "ONLY");   
   gMC->Gspos("ISR1", 2, "ALIC", 54.9, -11., 79.5, 0, "ONLY");   
   gMC->Gspos("ISR1", 3, "ALIC", -54.9, 11., 79.5, 0, "ONLY"); 
@@ -4487,7 +4487,13 @@ void AliITSvPPRasymm::CreateMaterials(){
   
   Int_t  isxfld  = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
-  
+
+  // Freon
+  Float_t afre[2]  = { 12.011,18.9984032 };
+  Float_t zfre[2]  = { 6.,9. };
+  Float_t wfre[2]  = { 5.,12. };
+  Float_t densfre  = 1.5;  
+
   // --- Define the various materials and media for GEANT --- 
   
   AliMaterial(1,"SI$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
@@ -4522,6 +4528,9 @@ void AliITSvPPRasymm::CreateMaterials(){
 
   AliMaterial(12,"WATER$",0.14322E+02,0.72167E+01,0.10000E+01,0.35759E+02,0.94951E+02);
   AliMedium(12,"WATER$",12,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
+
+  AliMixture(13,"Freon$",afre,zfre,densfre,-2,wfre);
+  AliMedium(13,"Freon$",13,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
 
   AliMaterial(14,"COPPER$",0.63546E+02,0.29000E+02,0.89600E+01,0.14300E+01,0.99900E+03);
   AliMedium(14,"COPPER$",14,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
@@ -4577,7 +4586,7 @@ void AliITSvPPRasymm::CreateMaterials(){
   AliMaterial(65,"INOX$",0.55098E+02,0.2572E+02,0.7900E+01,0.17800E+01,0.99900E+03);
   AliMedium(65,"INOX$",65,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
 
-  AliMaterial(68,"ROHACELL$",0.12011E+02,0.60000E+01,0.500E-01,0.666500E+03,0.99900E+03);
+  AliMaterial(68,"ROHACELL$",0.123974E+02,0.62363E+01,0.500E-01,0.80986E+03,0.99900E+03);
   AliMedium(68,"ROHACELL$",68,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
 
   AliMaterial(69,"SDD C AL (M55J)$",0.138802E+02,0.71315E+01,0.19837E+01,0.176542E+02,0.99900E+03);
@@ -4627,6 +4636,10 @@ void AliITSvPPRasymm::CreateMaterials(){
 
   AliMaterial(84,"SDD/SSD rings$",0.123565E+02,0.64561E+01,0.18097E+01,0.229570E+02,0.99900E+03);
   AliMedium(84,"SDD/SSD rings$",84,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
+
+  AliMaterial(85,"inox/alum$",0.321502E+02,0.153383E+02,0.30705E+01,0.69197E+01,0.99900E+03);
+  AliMedium(85,"inox/alum$",85,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
+
 
   // Special media
 

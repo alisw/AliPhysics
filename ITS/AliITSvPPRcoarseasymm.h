@@ -27,6 +27,12 @@ class AliITSvPPRcoarseasymm : public AliITS {
 	return 6;}
     virtual void   DrawModule();
     virtual void   StepManager();
+    virtual void   SetRails(Int_t v=1){ 
+	 // Set flag for rails
+	 fRails = v;}	    
+    virtual Int_t GetRails(){ 
+	 // Get flag for rails
+	 return fRails;}		  
     virtual Int_t GetMajorVersion(){// return Major Version Number
 	return fMajorVersion;}
     virtual Int_t GetMinorVersion(){// return Major Version Number
@@ -36,7 +42,8 @@ class AliITSvPPRcoarseasymm : public AliITS {
  private:
     Int_t  fMajorVersion;     // Major version number == IsVersion
     Int_t  fMinorVersion;     // Minor version number
-
+    Int_t  fRails;            // flag to switch rails on (=1) and off (=0)
+    
     ClassDef(AliITSvPPRcoarseasymm,1)  //Hits manager for set:ITS version 6 
                                        // PPR coarse Geometry asymmetric
 };
