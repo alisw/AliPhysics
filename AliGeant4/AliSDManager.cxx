@@ -178,9 +178,10 @@ AliModule* AliSDManager::FindAliModule(G4LogicalVolume* lv) const
   // find module from gAlice
   AliModule* module = gAlice->GetModule(moduleName);
   if (!module) {
-    G4String text = "AliSDManager::Configure:\n";
+    G4String text = "AliSDManager::FindAliModule:\n";
     text = text + "    AliModule " + moduleName;
-    text = text + " has not been found in gAlice.";
+    text = text + " (mapped from logical volume " + lv->GetName() + ")\n";
+    text = text + "    has not been found in gAlice.";
     AliGlobals::Exception(text);
   }  
    
