@@ -15,13 +15,19 @@
 
 /*
 $Log$
+Revision 1.2  2000/07/10 16:07:19  fca
+Release version of ITS code
+
 */
 
 #include <TParticle.h>
 #include <TRandom.h>
 
-
 #include "AliITS.h"
+#include "AliITShit.h"
+#include "AliITSRecPoint.h"
+#include "AliITSmodule.h"
+#include "AliITSgeom.h"
 #include "AliITSsimulationFastPointsV0.h"
 #include "AliITSstatistics.h"
 
@@ -105,8 +111,8 @@ void AliITSsimulationFastPointsV0::AddSPD(Float_t &e,
   AliITSRecPoint rpSPD;
 
   rpSPD.fTracks[0]=trackNumber;
-  rpSPD.fTracks[1]=0;
-  rpSPD.fTracks[2]=0;
+  rpSPD.fTracks[1]=-3;
+  rpSPD.fTracks[2]=-3;
   rpSPD.SetX(fSx->GetMean());
   rpSPD.SetZ(fSz->GetMean());
   rpSPD.SetdEdX(0.0);
@@ -118,7 +124,6 @@ void AliITSsimulationFastPointsV0::AddSPD(Float_t &e,
   a2 = fSz->GetRMS(); a2 *= a2; a2 += kRMSz*kRMSz;
   //  if(a1>1.E5) printf(" sigmaZ2= %e\n",a2);
   rpSPD.SetSigmaZ2(a2);
-  rpSPD.SetProbability(1.0);
 
   (mod->GetITS())->AddRecPoint(rpSPD);
 }
@@ -134,8 +139,8 @@ void AliITSsimulationFastPointsV0::AddSDD(Float_t &e,
   AliITSRecPoint rpSDD;
 
   rpSDD.fTracks[0]=trackNumber;
-  rpSDD.fTracks[1]=0;
-  rpSDD.fTracks[2]=0;
+  rpSDD.fTracks[1]=-3;
+  rpSDD.fTracks[2]=-3;
   rpSDD.SetX(fSx->GetMean());
   rpSDD.SetZ(fSz->GetMean());
   rpSDD.SetdEdX(e);
@@ -147,7 +152,6 @@ void AliITSsimulationFastPointsV0::AddSDD(Float_t &e,
   a2 = fSz->GetRMS(); a2 *= a2; a2 += kRMSz*kRMSz;
   //  if(a1>1.E5) printf(" sigmaZ2= %e\n",a2);
   rpSDD.SetSigmaZ2(a2);
-  rpSDD.SetProbability(1.0);
 
   (mod->GetITS())->AddRecPoint(rpSDD);
 }
@@ -163,8 +167,8 @@ void AliITSsimulationFastPointsV0::AddSSD(Float_t &e,
   AliITSRecPoint rpSSD;
 
   rpSSD.fTracks[0]=trackNumber;
-  rpSSD.fTracks[1]=0;
-  rpSSD.fTracks[2]=0;
+  rpSSD.fTracks[1]=-3;
+  rpSSD.fTracks[2]=-3;
   rpSSD.SetX(fSx->GetMean());
   rpSSD.SetZ(fSz->GetMean());
   rpSSD.SetdEdX(e);
@@ -176,7 +180,6 @@ void AliITSsimulationFastPointsV0::AddSSD(Float_t &e,
   a2 = fSz->GetRMS(); a2 *= a2; a2 += kRMSz*kRMSz;
   //  if(a1>1.E5) printf(" sigmaZ2= %e RMSx=%e RMSz=%e\n",a2,fSx->GetRMS(),fSz->GetRMS());
   rpSSD.SetSigmaZ2(a2);
-  rpSSD.SetProbability(1.0);
 
   (mod->GetITS())->AddRecPoint(rpSSD);
 }

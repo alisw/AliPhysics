@@ -19,6 +19,10 @@ $Log$
 #include <TRandom.h>
 
 #include "AliITS.h"
+#include "AliITShit.h"
+#include "AliITSRecPoint.h"
+#include "AliITSmodule.h"
+#include "AliITSgeom.h"
 #include "AliRun.h"
 #include "AliITSsimulationFastPoints.h"
 
@@ -74,6 +78,7 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod, Int_t mo
 
 
    numofhits = mod->GetNhits();
+   printf("numofhits %d \n",numofhits);
    flag = 1;
    for(ihit=0;ihit<numofhits;ihit++){
      AliITShit *hit=mod->GetHit(ihit);
@@ -134,21 +139,21 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod, Int_t mo
 	   deltaDe = (float)(random[k+2].Gaus(0,sigmade));
            // Apply energy threshold and trasform back to global reference 
            // system
+
 	   if ( (hitdestep+deltaDe) > thrde ){
 	       locals[0] = xl + deltaXl;
 	       locals[1] = yl;
 	       locals[2] = zl + deltaZl;
 	       AliITSRecPoint rp;
 	       rp.fTracks[0]=hittrack;
-	       rp.fTracks[1]=0;
-	       rp.fTracks[2]=0;
+	       rp.fTracks[1]=-3;
+	       rp.fTracks[2]=-3;
 	       rp.SetX(locals[0]);
 	       rp.SetZ(locals[2]);
 	       rp.SetdEdX(hitdestep+deltaDe);
 	       rp.SetQ(kdEdXtoQ*(hitdestep+deltaDe));  // number of e
 	       rp.SetSigmaX2(sigmarphi*sigmarphi);
 	       rp.SetSigmaZ2(sigmaz*sigmaz);
-	       rp.SetProbability(1.0);
 	       aliITS->AddRecPoint(rp);
 	       /*
 	       gm->LtoG(hitlay,hitlad,hitdet,locals,globals);
