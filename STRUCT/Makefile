@@ -24,19 +24,19 @@ HDRS          = $(SRCS:.cxx=.h) STRUCTLinkDef.h
 
 DICT          = STRUCTCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
+DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
-FOBJS         = $(patsubst %.f,$(ALICE_TARGET)/%.o,$(FSRCS))
+FOBJS         = $(patsubst %.f,tgt_$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(CSRCS))
+COBJS         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
+OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 

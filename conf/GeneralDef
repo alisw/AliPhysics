@@ -6,25 +6,25 @@ $(ALICE_ROOT)/include/%.h : %.h
 	@[ -d $(dir $@) ] || mkdir $(dir $@)
 	@cp -p $? $(ALICE_ROOT)/include
  
-$(ALICE_TARGET)/%.o : %.cxx
+tgt_$(ALICE_TARGET)/%.o : %.cxx
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@$(CXX) $(CXXFLAGS) -c $*.cxx -o $(ALICE_TARGET)/$*.o
+	@$(CXX) $(CXXFLAGS) -c $*.cxx -o tgt_$(ALICE_TARGET)/$*.o
 
-$(ALICE_TARGET)/%.o : %.c
+tgt_$(ALICE_TARGET)/%.o : %.c
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@$(CC) $(CFLAGS) -c $*.c -o $(ALICE_TARGET)/$*.o
+	@$(CC) $(CFLAGS) -c $*.c -o tgt_$(ALICE_TARGET)/$*.o
 
-$(ALICE_TARGET)/%.o : %.f
+tgt_$(ALICE_TARGET)/%.o : %.f
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@$(F77) $(FFLAGS) -c $*.f -o $(ALICE_TARGET)/$*.o
+	@$(F77) $(FFLAGS) -c $*.f -o tgt_$(ALICE_TARGET)/$*.o
 
-$(ALICE_TARGET)/%.o : %.F
+tgt_$(ALICE_TARGET)/%.o : %.F
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@$(F77) $(FFLAGS) -c $*.F -o $(ALICE_TARGET)/$*.o
+	@$(F77) $(FFLAGS) -c $*.F -o tgt_$(ALICE_TARGET)/$*.o
 
 # Needed binary directories
-LIBDIR = $(ALICE_ROOT)/lib/$(ALICE_TARGET)
-BINDIR = $(ALICE_ROOT)/bin/$(ALICE_TARGET)
+LIBDIR = $(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)
+BINDIR = $(ALICE_ROOT)/bin/tgt_$(ALICE_TARGET)
 
 
 # Current Version

@@ -13,7 +13,7 @@ SRCS          =
 
 FSRCS	= $(wildcard spdf/*.F)
 
-FOBJS	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
+FOBJS	= $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(FSRCS))
 
 SRCS	= $(FSRCS)
 OBJS	= $(FOBJS)

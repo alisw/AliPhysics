@@ -19,7 +19,7 @@ HDRS          = $(SRCS:.cxx=.h) CASTORLinkDef.h
 
 DICT          = CASTORCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
+DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
@@ -27,11 +27,11 @@ FOBJS         = $(FSRCS:.f=.o)
 
 # C Objects
 
-COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
+COBJS         = $(patsubst %.c,tgt_$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
+OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 

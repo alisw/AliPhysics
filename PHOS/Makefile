@@ -19,7 +19,7 @@ HDRS          = $(SRCS:.cxx=.h) PHOSLinkDef.h
 
 DICT          = PHOSCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
+DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN sources
 
@@ -27,15 +27,15 @@ FSRCS = AliPHOSf.F AliPHOScommon.F
 
 # FORTRAN Objectrs
 
-FOBJS         = $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
+FOBJS         = $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
+COBJS         = $(patsubst %.c,tgt_$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
+OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -48,13 +48,13 @@ FFLAGS      = $(FOPT)
 ##### Other Libraries #####
 
 SHSRCS  = $(wildcard shaker/*.f)
-SHOBJS  = $(patsubst %.f,$(ALICE_TARGET)/%.o,$(SHSRCS))
+SHOBJS  = $(patsubst %.f,tgt_$(ALICE_TARGET)/%.o,$(SHSRCS))
 
 RCSRCS  = $(wildcard reconstruction/*.f)  
-RCOBJS  = $(patsubst %.f,$(ALICE_TARGET)/%.o,$(RCSRCS))
+RCOBJS  = $(patsubst %.f,tgt_$(ALICE_TARGET)/%.o,$(RCSRCS))
 
 DUSRCS	= libPHOSdummy.cxx
-DUOBJS	= $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DUSRCS))
+DUOBJS	= $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DUSRCS))
 
 ALSRCS  = $(SRCS) $(SHSRCS) $(RCSRCS) $(DUSRCS) dummies.c
 

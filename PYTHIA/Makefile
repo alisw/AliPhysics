@@ -15,14 +15,14 @@ SRCS          =
 FSRCS	= $(filter-out %pdfset.F,$(filter-out %structm.F,$(wildcard pythia/*.F))) \
           $(wildcard jetset/*.F)
 
-FOBJS	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
+FOBJS	= $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(FSRCS))
 
 SRCS	= $(FSRCS)
 OBJS	= $(FOBJS)
 
 DSRCS	= dummypythia.F
 
-DOBJS	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(DSRCS))
+DOBJS	= $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(DSRCS))
 
 # C++ compilation flags
 

@@ -27,7 +27,7 @@ FSRCS		= loadmod.F pydata.F ludata.F
 
 # FORTRAN Objectrs
 
-FOBJS		= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
+FOBJS		= $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Sources
 
@@ -35,7 +35,7 @@ CSRCS		= dummies.c
 
 # C Objects
 
-COBJS		= $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS)) 
+COBJS		= $(patsubst %.c,tgt_$(ALICE_TARGET)/%.o,$(CSRCS)) 
 
 # C++ Sources
 
@@ -43,7 +43,7 @@ SRCS		= aliroot.cxx
 
 # C++ Objects
 
-OBJS		= $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
+OBJS		= $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # Global Macros
 

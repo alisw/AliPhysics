@@ -273,9 +273,9 @@ endif
 
 CXXSRC	=
 
-FOBJ	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRC))
-COBJ	= $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRC))
-CXXOBJ	= $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(CXXSRC))
+FOBJ	= $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(FSRC))
+COBJ	= $(patsubst %.c,tgt_$(ALICE_TARGET)/%.o,$(CSRC))
+CXXOBJ	= $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(CXXSRC))
 
 SRCS	= $(FSRC) $(CSRC) $(CXXSRC)
 OBJS	= $(FOBJ) $(COBJ) $(CXXOBJ)

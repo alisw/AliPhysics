@@ -23,23 +23,23 @@ GHDRS          = $(filter-out gucode.h,$(GSRCS:.cxx=.h)) TGeant3LinkDef.h
 
 GDICT          = TGeant3Cint.cxx
 GDICTH         = $(GDICT:.cxx=.h)
-GDICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(GDICT))
+GDICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(GDICT))
 
 # Geant Objects
 
-GOBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(GSRCS)) $(FOBJS) $(GDICTO)
+GOBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(GSRCS)) $(FOBJS) $(GDICTO)
 
 # FORTRAN Objectrs
 
-FOBJS         = $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
+FOBJS         = $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
+COBJS         = $(patsubst %.c,tgt_$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
+OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # Dummy Geant321 class
 
@@ -55,16 +55,16 @@ DHDRS          = TGeant3.h TGeant3LinkDef.h
 
 DDICT          = TGeant3DummyCint.cxx
 DDICTH         = $(DDICT:.cxx=.h)
-DDICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DDICT))
+DDICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DDICT))
 
 # Geant Objects
 
-DOBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DSRCS)) $(DDICTO)
+DOBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DSRCS)) $(DDICTO)
 
 # Dummy Routines in Geant321
 
 JSRCS		= G3Dummy.cxx
-JOBJS		= $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(JSRCS))
+JOBJS		= $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(JSRCS))
 
 # C++ compilation flags
 

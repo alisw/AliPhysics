@@ -23,17 +23,17 @@ GCSRC	= $(wildcard $(patsubst %,%/*.c,$(GDIRS)))
 GCXXSRC	= $(wildcard $(patsubst %,%/*.cxx,$(GDIRS))) 
 
 GSRC	= $(GFSRC) $(GCSRC)
-GFOBJ	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(GFSRC))
-GCOBJ	= $(patsubst %.c,$(ALICE_TARGET)/%.o,$(GCSRC))
-GCXXOBJ	= $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(GCXXSRC))
+GFOBJ	= $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(GFSRC))
+GCOBJ	= $(patsubst %.c,tgt_$(ALICE_TARGET)/%.o,$(GCSRC))
+GCXXOBJ	= $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(GCXXSRC))
 GOBJ	= $(GFOBJ) $(GCOBJ) $(GCXXOBJ)
 
 XFSRC	= $(wildcard $(patsubst %,%/*.F,$(XDIRS))) 
 XCSRC	= $(wildcard $(patsubst %,%/*.c,$(XDIRS))) 
 
 XSRC	= $(XFSRC) $(XCSRC) $(XCXXSRC)
-XFOBJ	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(XFSRC))
-XCOBJ	= $(patsubst %.c,$(ALICE_TARGET)/%.o,$(XCSRC))
+XFOBJ	= $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(XFSRC))
+XCOBJ	= $(patsubst %.c,tgt_$(ALICE_TARGET)/%.o,$(XCSRC))
 XOBJ	= $(XFOBJ) $(XCOBJ) $(XCXXOBJ)
 
 SRCS	= $(GSRC) $(XSRC)
