@@ -285,7 +285,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
 	    w /= (GetStripPitch()*1.0E-4); // w is converted in units of pitch
 	    */
 	    { // replacement block for the above.
-		Float_t xp=x*1.E-4,zp=z*1.e-4; // microns
+		Float_t xp=x*1.e+4,zp=z*1.e+4; // microns
 		GetSegmentation()->GetPadTxz(xp,zp);
 		if(k==0) w = xp; // P side strip number
 		else w = zp; // N side strip number
@@ -294,6 +294,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
 	    if((w<(-0.5)) || (w>(GetNStrips()-0.5))) {
 		// this check rejects hits in regions not covered by strips
 		// 0.5 takes into account boundaries 
+		//cout << "x,z="<<x<<","<<z<<" w="<<w<<" Nstrips="<<GetNStrips()<<endl;
 		return; // There are dead region on the SSD sensitive volume.
 	    } // end if
 
