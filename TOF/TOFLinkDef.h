@@ -27,9 +27,7 @@
 #pragma link C++ class  AliTOFMerger+;
 #pragma link C++ class  AliTOFSDigit+;
 #pragma link C++ class  AliTOFHitMap+;
-#pragma link C++ class  AliTOFPad+;
 #pragma link C++ class  AliTOFtrack+;
-#pragma link C++ class  AliTOFRecHit+;
 #pragma link C++ class  AliTOFDigitMap+;
 
 #pragma link C++ class  AliTOFpidESD+;
