@@ -258,6 +258,8 @@ static void CheckLabels(Int_t lab[3]) {
   // Tries to find mother's labels
   //------------------------------------------------------------
 
+  if(lab[0]<0 && lab[1]<0 && lab[2]<0) return; // In case of no labels just exit
+
   Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
   for (Int_t i=0;i<3;i++){
     Int_t label = lab[i];
@@ -282,10 +284,11 @@ static void CheckLabels2(Int_t lab[10]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
   //------------------------------------------------------------
-
-  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
   Int_t nlabels =0; 
   for (Int_t i=0;i<10;i++) if (lab[i]>=0) nlabels++;
+  if(nlabels == 0) return; // In case of no labels just exit
+
+  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
 
   for (Int_t i=0;i<10;i++){
     Int_t label = lab[i];
@@ -346,10 +349,13 @@ static void CheckLabels2(Int_t lab[10]) {
 }
 
 static void AddLabel(Int_t lab[10], Int_t label) {
+
+  if(label<0) return; // In case of no label just exit
+
   Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
   if (label>ntracks) return;
   for (Int_t i=0;i<10;i++){
-    if (label<0) break;
+    //    if (label<0) break;
     if (lab[i]==label) break;
     if (lab[i]<0) {
       lab[i]= label;
@@ -524,7 +530,7 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
        for (Int_t iy=ymin; iy<=ymax;iy+=idy){
 	 //
 	 Int_t ndigits =0;
-	 Double_t y=0.,z=0.,q=0.;	 
+	 Float_t y=0.,z=0.,q=0.;	 
 	 for (Int_t l=0; l<ni; l++) {
 	   d=(AliITSdigitSPD*)digits->UncheckedAt(idx[l]);
 	   if (zmax-zmin>=idz || ymax-ymin>=idy){
@@ -532,7 +538,7 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
 	     if (TMath::Abs( d->GetCoord1()-iz)>0.75*idz) continue;
 	   }
 	   ndigits++;
-	   Double_t qq=d->GetSignal();
+	   Float_t qq=d->GetSignal();
 	   y+=qq*fYSPD[d->GetCoord2()]; z+=qq*fZSPD[d->GetCoord1()]; q+=qq;   
 	  
 	 }     
@@ -610,9 +616,6 @@ void AliITSclustererV2::FindClustersSPD(AliITSRawStream* input,
 	  Int_t ymax = ymin;
 	  Int_t zmin = (idxBins[0] % kNzBins) - 1;
 	  Int_t zmax = zmin;
-	  Float_t y = 0.;
-	  Float_t z = 0.;
-	  Float_t q = 0.;
 	  for (Int_t idx = 0; idx < nBins; idx++) {
 	    Int_t iy = (idxBins[idx] / kNzBins) - 1;
 	    Int_t iz = (idxBins[idx] % kNzBins) - 1;
@@ -620,31 +623,50 @@ void AliITSclustererV2::FindClustersSPD(AliITSRawStream* input,
 	    if (ymax < iy) ymax = iy;
 	    if (zmin > iz) zmin = iz;
 	    if (zmax < iz) zmax = iz;
-
-	    Float_t qBin = bins[idxBins[idx]].GetQ();
-	    y += qBin * fYSPD[iy]; 
-	    z += qBin * fZSPD[iz]; 
-	    q += qBin;   
 	  }
-	  y /= q; 
-	  z /= q;
-	  y -= fHwSPD; 
-	  z -= fHlSPD;
 
-	  Float_t hit[5];  // y, z, sigma(y)^2, sigma(z)^2, charge
-	  hit[0] = -y-fYshift[iModule]; 
-	  if (iModule <= fLastSPD1) hit[0] = -hit[0];
-	  hit[1] = z+fZshift[iModule];
-	  hit[2] = fYpitchSPD*fYpitchSPD/12.;
-	  hit[3] = fZ1pitchSPD*fZ1pitchSPD/12.;
-//	  hit[4] = q;
-	  hit[4] = (zmax-zmin+1)*100 + (ymax-ymin+1);
+	  Int_t idy = 0; // max 2 clusters
+	  if ((iModule <= fLastSPD1) &&idy<3) idy=3;
+	  if ((iModule > fLastSPD1) &&idy<4) idy=4; 
+	  Int_t idz =3;
+	  for (Int_t iiz=zmin; iiz<=zmax;iiz+=idz)
+	    for (Int_t iiy=ymin; iiy<=ymax;iiy+=idy){
+	      //
+	      Int_t ndigits =0;
+	      Float_t y=0.,z=0.,q=0.;	 
+	      for (Int_t idx = 0; idx < nBins; idx++) {
+		Int_t iy = (idxBins[idx] / kNzBins) - 1;
+		Int_t iz = (idxBins[idx] % kNzBins) - 1;
+		if (zmax-zmin>=idz || ymax-ymin>=idy){
+		  if (TMath::Abs(iy-iiy)>0.75*idy) continue;
+		  if (TMath::Abs(iz-iiz)>0.75*idz) continue;
+		}
+		ndigits++;
+		Float_t qBin = bins[idxBins[idx]].GetQ();
+		y += qBin * fYSPD[iy]; 
+		z += qBin * fZSPD[iz]; 
+		q += qBin;   
+	      }
+	      if (ndigits==0) continue;
+	      y /= q; 
+	      z /= q;
+	      y -= fHwSPD; 
+	      z -= fHlSPD;
 
-	  CheckLabels(label);
-	  Int_t info[3]={0,0,0};
-	  new (clusters[iModule]->AddrAt(nClusters)) 
-	    AliITSclusterV2(label, hit,info); 
-	  nClusters++;
+	      Float_t hit[5];  // y, z, sigma(y)^2, sigma(z)^2, charge
+	      hit[0] = -(-y+fYshift[iModule]); 
+	      if (iModule <= fLastSPD1) hit[0] = -hit[0];
+	      hit[1] = -z+fZshift[iModule];
+	      hit[2] = fYpitchSPD*fYpitchSPD/12.;
+	      hit[3] = fZ1pitchSPD*fZ1pitchSPD/12.;
+	      //	  hit[4] = q;
+	      hit[4] = (zmax-zmin+1)*100 + (ymax-ymin+1);
+	      //	  CheckLabels(label);
+	      Int_t info[3]={ymax-ymin+1,zmax-zmin+1,fNlayer[iModule]};
+	      new (clusters[iModule]->AddrAt(nClusters)) 
+		AliITSclusterV2(label, hit,info); 
+	      nClusters++;
+	    }
 	}
 
 	nClustersSPD += nClusters;
@@ -807,12 +829,14 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	       if (dj>maxj) maxj=dj;
 	       if (dj<minj) minj=dj;
 	       //
-	       if (TMath::Abs(di)<2&&TMath::Abs(dj)<2){
-		 AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-		 for (Int_t itrack=0;itrack<10;itrack++){
-		   Int_t track = (d->GetTracks())[itrack];
-		   if (track>=0) {
-		     AddLabel(milab, track); 
+	       if(digits) {
+		 if (TMath::Abs(di)<2&&TMath::Abs(dj)<2){
+		   AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
+		   for (Int_t itrack=0;itrack<10;itrack++){
+		     Int_t track = (d->GetTracks())[itrack];
+		     if (track>=0) {
+		       AddLabel(milab, track); 
+		     }
 		   }
 		 }
 	       }
@@ -926,6 +950,7 @@ FindClustersSDD(const TClonesArray *digits, TClonesArray *clusters) {
 
   delete[] bins[0];
   delete[] bins[1];
+
 }
 
 void AliITSclustererV2::FindClustersSDD(AliITSRawStream* input, 
@@ -962,13 +987,15 @@ void AliITSclustererV2::FindClustersSDD(AliITSRawStream* input,
     }
 
     // fill the current digit into the bins array
-    Int_t iz = input->GetCoord1()+1;
-    Int_t side = ((iz <= fNzSDD) ? 0 : 1);
-    iz -= side*fNzSDD;
-    Int_t index = (input->GetCoord2()+1) * kNzBins + iz;
-    bins[side][index].SetQ(input->GetSignal());
-    bins[side][index].SetMask(1);
-    bins[side][index].SetIndex(index);
+    if(input->GetSignal()>=3) {
+      Int_t iz = input->GetCoord1()+1;
+      Int_t side = ((iz <= fNzSDD) ? 0 : 1);
+      iz -= side*fNzSDD;
+      Int_t index = (input->GetCoord2()+1) * kNzBins + iz;
+      bins[side][index].SetQ(input->GetSignal());
+      bins[side][index].SetMask(1);
+      bins[side][index].SetIndex(index);
+    }
   }
 
   Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD);
@@ -1546,15 +1573,15 @@ FindClustersSSD(const TClonesArray *alldigits, TClonesArray *clusters) {
   c[*n].SetNd(nd);
   c[*n].SetLabels(lab);
   //Split suspiciously big cluster
-  if (nd>3) {
-     c[*n].SetY(y/q-0.5*nd);
+  if (nd>4 && nd<25) {
+     c[*n].SetY(y/q-0.25*nd);
      c[*n].SetQ(0.5*q);
      (*n)++;
      if (*n==MAX) {
         Error("FindClustersSSD","Too many 1D clusters !");
         return;
      }
-     c[*n].SetY(y/q+0.5*nd);
+     c[*n].SetY(y/q+0.25*nd);
      c[*n].SetQ(0.5*q);
      c[*n].SetNd(nd);
      c[*n].SetLabels(lab);
@@ -1578,20 +1605,23 @@ void AliITSclustererV2::FindClustersSSD(AliITSRawStream* input,
   const Int_t MAX = 1000;
   Ali1Dcluster clusters1D[2][MAX];
   Int_t nClusters[2] = {0, 0};
+  Int_t lab[3]={-2,-2,-2};
   Float_t q = 0.;
   Float_t y = 0.;
   Int_t nDigits = 0;
   Int_t prevStrip = -1;
   Int_t prevFlag = -1;
+  Int_t prevModule = -1;
 
   // read raw data input stream
   while (kTRUE) {
     Bool_t next = input->Next();
 
+    if(input->GetSignal()<3 && next) continue;
     // check if a new cluster starts
     Int_t strip = input->GetCoord2();
     Int_t flag = input->GetCoord1();
-    if ((!next || input->IsNewModule() ||
+    if ((!next || (input->GetModuleID() != prevModule)||
 	 (strip-prevStrip > 1) || (flag != prevFlag)) &&
 	(nDigits > 0)) {
       if (nClusters[prevFlag] == MAX) {
@@ -1602,26 +1632,28 @@ void AliITSclustererV2::FindClustersSSD(AliITSRawStream* input,
       cluster.SetY(y/q);
       cluster.SetQ(q);
       cluster.SetNd(nDigits);
+      cluster.SetLabels(lab);
 
       //Split suspiciously big cluster
-      if (nDigits > 3) {
-	cluster.SetY(y/q - 0.5*nDigits);
+      if (nDigits > 4&&nDigits < 25) {
+	cluster.SetY(y/q - 0.25*nDigits);
         cluster.SetQ(0.5*q);
 	if (nClusters[prevFlag] == MAX) {
 	  Error("FindClustersSSD", "Too many 1D clusters !");
 	  return;
 	}
 	Ali1Dcluster& cluster2 = clusters1D[prevFlag][nClusters[prevFlag]++];
-	cluster2.SetY(y/q + 0.5*nDigits);
+	cluster2.SetY(y/q + 0.25*nDigits);
 	cluster2.SetQ(0.5*q);
 	cluster2.SetNd(nDigits);
+	cluster2.SetLabels(lab);
       }
       y = q = 0.;
       nDigits = 0;
     }
 
-    if (!next || input->IsNewModule()) {
-      Int_t iModule = input->GetPrevModuleID();
+    if (!next || (input->GetModuleID() != prevModule)) {
+      Int_t iModule = prevModule;
 
       // when all data from a module was read, search for clusters
       if (prevFlag >= 0) {
@@ -1645,6 +1677,8 @@ void AliITSclustererV2::FindClustersSSD(AliITSRawStream* input,
     nDigits++;
     prevStrip = strip;
     prevFlag = flag;
+    prevModule = input->GetModuleID();
+
   }
 
   Info("FindClustersSSD", "found clusters in ITS SSD: %d", nClustersSSD);

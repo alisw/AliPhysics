@@ -88,6 +88,9 @@ private:
 
   static void FindCluster(Int_t k,Int_t maxz,AliBin *bins,Int_t &n,Int_t *idx);
 
+protected:
+  Int_t fNModules;             // total number of modules
+
 private:
   Int_t fEvent;           //event number
 
@@ -96,7 +99,6 @@ private:
   Float_t fZshift[2200];       //z-shifts of detector local coor. systems 
   Int_t fNdet[2200];            //detector index  
   Int_t fNlayer[2200];          //detector layer
-  Int_t fNModules;             // total number of modules
 
   //SPD related values:
   Int_t fLastSPD1;       //index of the last SPD1 detector
