@@ -1,0 +1,35 @@
+#include "AliSignal.h"
+ 
+ClassImp(AliSignal) // Class implementation to enable ROOT I/O
+ 
+AliSignal::AliSignal()
+{
+// Creation of an AliSignal object and initialisation of parameters
+ Reset();
+}
+///////////////////////////////////////////////////////////////////////////
+AliSignal::~AliSignal()
+{
+// Destructor to delete dynamically allocated memory
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::Reset()
+{
+// Reset all values
+ Float_t r[3]={0,0,0};
+ SetPosition(r,"sph");
+ fSignal=0;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetSignal(Float_t sig)
+{
+// Store signal value
+ fSignal=sig;
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliSignal::GetSignal()
+{
+// Provide signal value
+ return fSignal;
+}
+///////////////////////////////////////////////////////////////////////////
