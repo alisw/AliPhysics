@@ -38,6 +38,7 @@
 #include "AliMUONDigitizerv1.h"
 #include "AliMUONHit.h"
 #include "AliMUONTransientDigit.h"
+#include "AliMUONTriggerDecision.h"
 
 ClassImp(AliMUONDigitizerv1)
 
@@ -51,12 +52,19 @@ AliMUONDigitizerv1::AliMUONDigitizerv1() : AliMUONDigitizer()
 AliMUONDigitizerv1::AliMUONDigitizerv1(AliRunDigitizer* manager) : AliMUONDigitizer(manager)
 {
 	// ctor which should be used
+
 }
 
 //___________________________________________
 AliMUONDigitizerv1::~AliMUONDigitizerv1()
 {
-	// Destructor
+	// dtor
+}
+//-----------------------------------------------------------------------
+
+void AliMUONDigitizerv1::CleanupTriggerArrays()
+{
+  fTrigDec->ClearDigits();
 }
 
 //-----------------------------------------------------------------------
@@ -178,7 +186,34 @@ void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Ali
 void AliMUONDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
 {
 // Derived to add digits to TreeD.
-	fMUONData->AddDigit(chamber, tracks, charges, digits);   
+  fMUONData->AddDigit(chamber, tracks, charges, digits);  
+};
+
+//------------------------------------------------------------------------
+void AliMUONDigitizerv1::AddDigitTrigger(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
+{
+// Derived to add digits to TreeD for trigger.
+  fTrigDec->AddDigit(chamber, tracks, charges, digits); 
+};
+
+//------------------------------------------------------------------------
+void AliMUONDigitizerv1::FillTriggerOutput()
+{
+// Derived to fill TreeD and resets the trigger array in fMUONData.
+
+	if (GetDebug() > 2) Info("FillTriggerOutput", "Filling trees with trigger.");
+	fMUONData->Fill("GLT");
+	fMUONData->ResetTrigger();
+};
+
+//------------------------------------------------------------------------
+void AliMUONDigitizerv1::CreateTrigger()
+{
+  fMUONData->MakeBranch("GLT");
+  fMUONData->SetTreeAddress("GLT");
+  fTrigDec->Digits2Trigger(); 
+  FillTriggerOutput();	
+
 };
 
 //------------------------------------------------------------------------

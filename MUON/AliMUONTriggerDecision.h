@@ -23,7 +23,7 @@ class AliMUON;
 class AliMUONTriggerDecision : public TObject 
 {
  public:
-  AliMUONTriggerDecision(AliLoader* loader, Int_t iprint = 0); // constructor
+  AliMUONTriggerDecision(AliLoader* loader, Int_t iprint = 0, AliMUONData* data = 0); // constructor
   AliMUONTriggerDecision(); // constructor
   ~AliMUONTriggerDecision();                  // destructor
   
@@ -46,7 +46,13 @@ class AliMUONTriggerDecision : public TObject
 		    Int_t &iTrigger);    
   void GlobalTrigger();
 
-  void   Digits2Trigger(); // main function
+  void Digits2Trigger(); // main function
+
+  void Trigger2Trigger();
+
+  void ClearDigits();
+  TClonesArray* Digits(Int_t DetectionPlane);
+  void AddDigit(Int_t id, Int_t* tracks, Int_t* charges, Int_t* digits);
 
   // print-debug
   void PrintBitPatXInput(Int_t icirc);
@@ -112,6 +118,8 @@ class AliMUONTriggerDecision : public TObject
   
   AliLoader*     fLoader;             //! alice loader
   TObjArray*     fTriggerCircuit;     //! List of Trigger Circuit
+  TObjArray*     fDigits;             // temp array for digits (both cathodes !) for trigger
+
   AliMUONData*   fMUONData;           //! Data container for MUON subsystem 
   AliMUON*       fMUON;               //! pointer to MUON  
 

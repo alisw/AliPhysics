@@ -34,7 +34,7 @@
 ClassImp(AliMUONTriggerDecision)
 
 //----------------------------------------------------------------------
-AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint)
+AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint, AliMUONData* data)
   : TObject()
 {
 // Constructor 
@@ -89,7 +89,10 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint)
   fLoader = loader;
 
   // initialize container
-  fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
+  if (data == 0)
+    Error("TriggerDecision","No MUONdata for trigger\n");
+  else
+    fMUONData = data;
 
   // Loading AliRun master
   AliRunLoader* runloader = fLoader->GetRunLoader();
@@ -105,6 +108,11 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint)
     pCir = &(fMUON->TriggerCircuit(icirc));
     fTriggerCircuit->AddAt(pCir, icirc);
   }
+
+  // setting digits
+  fDigits = new TObjArray(AliMUONConstants::NCh()); //NTriggerCh
+  for (Int_t i=0; i<AliMUONConstants::NCh() ;i++) 
+    fDigits->AddAt(new TClonesArray("AliMUONDigit",10000),i);
 }
 
 //----------------------------------------------------------------------
@@ -127,17 +135,49 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(const AliMUONTriggerDecision& rhs
   Fatal("AliMUONTriggerDecision", "Not implemented.");
 }
 
+//----------------------------------------------------------------------
+void AliMUONTriggerDecision::ClearDigits()
+{
+  for ( int i=0;i<AliMUONConstants::NCh();i++ ) 
+    if ((*fDigits)[i]) ((TClonesArray*)fDigits->At(i))->Clear();
+}
+
+//----------------------------------------------------------------------
+TClonesArray* AliMUONTriggerDecision::Digits(Int_t DetectionPlane)
+{
+  //Getting List of Digits
+  if (fDigits)
+    return ((TClonesArray*) fDigits->At(DetectionPlane));
+  else
+    return NULL;
+}
+
+//_____________________________________________________________________________
+void AliMUONTriggerDecision::AddDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
+{
+  //
+  // Add a MUON digit to the list of Digits of the detection plane id
+  //
+  TClonesArray &ldigits = *Digits(id); 
+  new(ldigits[ldigits.GetEntriesFast()]) AliMUONDigit(tracks,charges,digits);
+}
 
 //----------------------------------------------------------------------
 AliMUONTriggerDecision::~AliMUONTriggerDecision()
 {
 // Destructor
   if (fTriggerCircuit){
-    fTriggerCircuit->Clear();// Sets pointers to 0 sinche it is not the owner
+    fTriggerCircuit->Clear();// Sets pointers to 0 since it is not the owner
     delete fTriggerCircuit;
   } 
-  if (fMUONData)
-    delete fMUONData;
+//   if (fMUONData)
+//     delete fMUONData;
+
+  if (fDigits) {
+    fDigits->Delete();
+    delete fDigits;
+  }
+
 }
 
 //----------------------------------------------------------------------
@@ -246,29 +286,28 @@ void AliMUONTriggerDecision::SetBit(){
 // 3) remove soft background
 // 4) set the bit patterns
 
-
+  Int_t cathode;
   AliMUONTriggerCircuit* triggerCircuit;
 
-  for (Int_t chamber=11; chamber<15; chamber++){
-    for (Int_t cathode=1; cathode<3; cathode++){
-      
-      //      AliMUONChamber*   iChamber = &(pMUON->Chamber(chamber-1));
-      //       AliSegmentation*  segmentation;
-      fLoader->TreeD()->GetEvent(cathode-1);
-      TClonesArray *muonDigits = fMUONData->Digits(chamber-1);
+  for (Int_t chamber = 11; chamber < 15; chamber++){
+    //    for (Int_t cathode=1; cathode<3; cathode++){  
+    //     fMUONData->GetCathode(cathode-1);
+
+      TClonesArray *muonDigits = Digits(chamber-1);
       Int_t ndigits = muonDigits->GetEntriesFast();
-      if (fDebug>3)
-	printf("\n 1 Found %d digits in %p %d \n ", ndigits, (void*)muonDigits,chamber-1);
+      if (fDebug>=3)
+	printf("\nFound %d digits in %p %d \n", ndigits, (void*)muonDigits,chamber-1);
 
       AliMUONDigit  *mdig;
       
-      for (Int_t digit=0; digit<ndigits; digit++) {
+      for (Int_t digit = 0; digit < ndigits; digit++) {
 	mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);
 // get the center of the pad Id 
   	Int_t ix=mdig->PadX();
   	Int_t iy=mdig->PadY();
-	if (fDebug>3)
-	printf("digits %d ix %d iy %d \n",digit,ix,iy);
+	cathode = mdig->Cathode() + 1;
+	if (fDebug>=3)
+	printf("cathode %d ix %d iy %d \n",cathode,ix,iy);
 
 // get the sum of the coded charge 
 // see coding convention in AliMUONChamberTrigger::DisIntegration 	
@@ -376,7 +415,7 @@ void AliMUONTriggerDecision::SetBit(){
 	}  // remove soft background
       }   // end loop on digit
       fMUONData->ResetDigits();
-    }    // end loop on cathode
+      //    }    // end loop on cathode
   }     // end loop on chamber
 }  
 
@@ -1352,9 +1391,9 @@ void AliMUONTriggerDecision::GetGlobalTrigger(Int_t singlePlus[3],
 }
 //_______________________________________________________________________
 void AliMUONTriggerDecision::Digits2Trigger(){
-// call the Trigger Algorithm and fill TreeR
+// call the Trigger Algorithm and fill TreeD
 
-  
+
   fMUONData->ResetTrigger();
   Trigger();   
   AliMUONGlobalTrigger* pGloTrig = new AliMUONGlobalTrigger(fGlobalSinglePlus, fGlobalSingleMinus,
@@ -1362,8 +1401,6 @@ void AliMUONTriggerDecision::Digits2Trigger(){
 						       fGlobalPairLike);  
   // add a local trigger in the list 
   fMUONData->AddGlobalTrigger(*pGloTrig);
-
-  Int_t i;
   
   for (Int_t icirc=0; icirc<AliMUONConstants::NTriggerCircuit(); icirc++) { 
     if(GetITrigger(icirc)==1) {
@@ -1374,7 +1411,7 @@ void AliMUONTriggerDecision::Digits2Trigger(){
       localtr[1] = GetStripX11(icirc);
       localtr[2] = GetDev(icirc);
       localtr[3] = GetStripY11(icirc);
-      for (i=0; i<2; i++) {    // convert the Lut output in 1 digit 
+      for (Int_t i=0; i<2; i++) {    // convert the Lut output in 1 digit 
 	localtr[4] = localtr[4]+Int_t(loLpt[i]*TMath::Power(2,i));
 	localtr[5] = localtr[5]+Int_t(loHpt[i]*TMath::Power(2,i));
 	localtr[6] = localtr[6]+Int_t(loApt[i]*TMath::Power(2,i));
@@ -1383,4 +1420,11 @@ void AliMUONTriggerDecision::Digits2Trigger(){
       fMUONData->AddLocalTrigger(*pLocTrig);  // add a local trigger in the list
     }
   }
+}
+//_______________________________________________________________________
+void AliMUONTriggerDecision::Trigger2Trigger() {
+// copy trigger from TreeD to TreeR
+
+  fMUONData->SetTreeAddress("GLT");
+  fMUONData->GetTriggerD();
 }

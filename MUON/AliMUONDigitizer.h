@@ -16,6 +16,7 @@ class AliMUON;
 class AliMUONData;
 class AliMUONLoader;
 class AliMUONTransientDigit;
+class AliMUONTriggerDecision;
 
 class AliMUONDigitizer : public AliDigitizer
 {
@@ -41,7 +42,8 @@ public:
 	virtual void Exec(Option_t* option = 0);
 
 	Int_t GetDebug() const {return fDebug;}       // Get debug level.
-	void SetDebug(Int_t level){fDebug = level;}   // Set debug level.    
+	void SetDebug(Int_t level){fDebug = level;}   // Set debug level.  
+  
 
 protected:
         AliMUONDigitizer(const AliMUONDigitizer& rhs);
@@ -70,7 +72,7 @@ protected:
 	     AddOrUpdateTransientDigit(td);  // Adds to the fTDList preventing duplicates.
 	 */
 	virtual void GenerateTransientDigits() = 0;
-	
+
 	// Loops over the fTDList of transient digits to write them to the output stream.
 	virtual void CreateDigits();
 
@@ -163,11 +165,18 @@ protected:
 	// Sorts the 3 most significant tracks.    
 	void SortTracks(Int_t *tracks, Int_t *charges, Int_t ntr) const;
 
+	// trigger purpose
+	virtual Bool_t FetchTriggerPointer(AliMUONLoader* loader);
+	virtual void CreateTrigger() = 0;
+	virtual void CleanupTriggerArrays() = 0;
+	virtual void FillTriggerOutput() = 0;
+	virtual void AddDigitTrigger(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6]) = 0;
 
-	AliRunLoader* fRunLoader;        //! Global run loader.
-	AliMUONLoader* fGime;            //! MUON specific loader.
-	AliMUON* fMUON;                 //! Pointer to MUON module.
-	AliMUONData* fMUONData;          //! muon data interface
+	AliRunLoader* fRunLoader;         //! Global run loader.
+	AliMUONLoader* fGime;             //! MUON specific loader.
+	AliMUON* fMUON;                   //! Pointer to MUON module.
+	AliMUONData* fMUONData;           //! muon data interface
+	AliMUONTriggerDecision* fTrigDec; //!trigger pointer
 
 	AliMUONHitMapA1 **fHitMap;      //! pointer to array of pointers to hitmaps
 	TObjArray *fTDList;             //! list of AliMUONTransientDigits
@@ -178,6 +187,7 @@ protected:
 private:
 
 	Int_t fDebug;                   //! Debug level.
+
 
 	ClassDef(AliMUONDigitizer, 1)   // MUON merging/digitization
 };    

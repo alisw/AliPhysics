@@ -89,12 +89,15 @@ class AliMUONData : public TNamed
     void           GetCathodeS(Int_t ic) const {fLoader->TreeS()->GetEvent(ic);}
     void           GetRawClusters() const {fLoader->TreeR()->GetEvent(0);}
     void           GetTrigger() const {fLoader->TreeR()->GetEvent(0);}
+    void           GetTriggerD() const {fLoader->TreeD()->GetEvent(0);}
     Int_t          GetSplitLevel() const {return fSplitLevel;}
     void           GetRecTracks() const {fLoader->TreeT()->GetEvent(0);}
     void           GetRecTriggerTracks() const {fLoader->TreeT()->GetEvent(0);}
 
     Bool_t        IsRawClusterBranchesInTree();
+    Bool_t        IsDigitsBranchesInTree();
     Bool_t        IsTriggerBranchesInTree();
+    Bool_t        IsTriggerBranchesInTreeD();
     Bool_t        IsTrackBranchesInTree();
     Bool_t        IsTriggerTrackBranchesInTree();
 

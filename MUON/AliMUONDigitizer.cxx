@@ -30,6 +30,7 @@
 #include "AliMUONDigitizer.h"
 #include "AliMUONTransientDigit.h"
 #include "AliMUONHitMapA1.h"
+#include "AliMUONTriggerDecision.h"
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +63,7 @@ AliMUONDigitizer::AliMUONDigitizer() :
 	fGime = NULL;
 	fMUON = NULL;
 	fMUONData = NULL;
+	fTrigDec = NULL;
 };
 
 //___________________________________________
@@ -81,6 +83,7 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) :
 	fGime = NULL;
 	fMUON = NULL;
 	fMUONData = NULL;
+	fTrigDec = NULL;
 };
 
 //___________________________________________
@@ -96,7 +99,11 @@ AliMUONDigitizer::AliMUONDigitizer(const AliMUONDigitizer& rhs)
 AliMUONDigitizer::~AliMUONDigitizer() 
 {
 // Destructor
-  delete fMUONData;
+  if (fMUONData)
+    delete fMUONData;
+
+  if (fTrigDec)
+    delete fTrigDec;
 }
 
 //-------------------------------------------------------------------
@@ -138,8 +145,9 @@ void AliMUONDigitizer::Exec(Option_t* option)
 		return;
 	};
 
-	if (! FetchLoaders(fManager->GetInputFolderName(0), fRunLoader, fGime) ) return;
+	if (!FetchLoaders(fManager->GetInputFolderName(0), fRunLoader, fGime) ) return;
 	if (! FetchGlobalPointers(fRunLoader) ) return;
+	if (! FetchTriggerPointer(fGime) ) return;
 
 	InitArrays();
 	
@@ -170,9 +178,11 @@ void AliMUONDigitizer::Exec(Option_t* option)
 	Bool_t ok = FetchLoaders(fManager->GetOutputFolderName(), fRunLoader, fGime);
 	if (ok) ok = InitOutputData(fGime);
 	if (ok) CreateDigits();
+	if (ok) CreateTrigger();
 	if (ok) CleanupOutputData(fGime);
 
 	CleanupArrays();
+	CleanupTriggerArrays();
 };
 
 //--------------------------------------------------------------------------
@@ -343,6 +353,7 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
 
 	OnWriteTransientDigit(td);
 	AddDigit(td->Chamber(), tracks, charges, digits);
+	AddDigitTrigger(td->Chamber(), tracks, charges, digits);
 };
 
 //------------------------------------------------------------------------
@@ -386,6 +397,7 @@ Bool_t AliMUONDigitizer::FetchLoaders(const char* foldername, AliRunLoader*& run
 		return kFALSE; 
 	}
 	return kTRUE;
+
 };
 
 //------------------------------------------------------------------------
@@ -430,9 +442,22 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 		Error("FetchGlobalPointers", "Could not find AliMUONData object in runloader 0x%X.", (void*)runloader);
 		return kFALSE;
 	};
+
 	return kTRUE;
 }
+//-----------------------------------------------------------------------
+Bool_t  AliMUONDigitizer::FetchTriggerPointer(AliMUONLoader* loader)
+{
+  if (fMUONData == NULL) {
+    Error("FetchTriggerPointer", "MUONData not found");
+    return kFALSE;
+  }
 
+  if (fTrigDec == NULL) 
+      fTrigDec = new AliMUONTriggerDecision(loader,0,fMUONData);
+  
+  return kTRUE;
+}
 //------------------------------------------------------------------------
 void AliMUONDigitizer::ParseOptions(Option_t* options)
 {
@@ -504,6 +529,7 @@ void AliMUONDigitizer::CleanupArrays()
 	fTDList->Delete();
 	delete fTDList;
 	fTDList = NULL;
+
 };
 
 //------------------------------------------------------------------------

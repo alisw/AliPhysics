@@ -209,6 +209,7 @@ void AliMUONData::AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
 				   Int_t *pairUnlike, Int_t *pairLike)
 {
   // add a MUON Global Trigger to the list (only one GlobalTrigger per event !)
+ 
   TClonesArray &globalTrigger = *fGlobalTrigger;
   new(globalTrigger[fNglobaltrigger++]) 
     AliMUONGlobalTrigger(singlePlus, singleMinus,  singleUndef, pairUnlike, pairLike);
@@ -216,7 +217,7 @@ void AliMUONData::AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
 //_____________________________________________________________________________
 void AliMUONData::AddGlobalTrigger(const AliMUONGlobalTrigger& trigger )
 {
-  // add a MUON Global Trigger to the list (only one GlobalTrigger per event !)
+  // add a MUON Global Trigger to the list (only one GlobalTrigger per event !);
   TClonesArray &globalTrigger = *fGlobalTrigger;
   new(globalTrigger[fNglobaltrigger++]) AliMUONGlobalTrigger(trigger);
 }
@@ -334,6 +335,23 @@ Bool_t   AliMUONData::IsRawClusterBranchesInTree()
   }
 }
 //____________________________________________________________________________
+Bool_t   AliMUONData::IsDigitsBranchesInTree()
+{
+  // Checking if there are RawCluster Branches In TreeR
+  if (TreeD()==0x0) {
+    Error("TreeD","No treeD in memory");
+    return kFALSE;
+  }
+  else {
+     char branchname[30];
+     sprintf(branchname,"%sDigits1",GetName());
+     TBranch * branch = 0x0;
+     branch = TreeD()->GetBranch(branchname);
+     if (branch)  return kTRUE;
+     else return kFALSE;    
+  }
+}
+//____________________________________________________________________________
 Bool_t   AliMUONData::IsTriggerBranchesInTree()
 {
   // Checking if there are Trigger Branches In TreeR
@@ -350,6 +368,24 @@ Bool_t   AliMUONData::IsTriggerBranchesInTree()
      else return kFALSE;    
   }
 }
+//____________________________________________________________________________
+Bool_t   AliMUONData::IsTriggerBranchesInTreeD()
+{
+  // Checking if there are Trigger Branches In TreeR
+ if (TreeD()==0x0) {
+    Error("TreeD","No treeD in memory");
+    return kFALSE;
+  }
+  else {
+     char branchname[30];
+     sprintf(branchname,"%sLocalTrigger",GetName());
+     TBranch * branch = 0x0;
+     branch = TreeD()->GetBranch(branchname);
+     if (branch)  return kTRUE;
+     else return kFALSE;    
+  }
+}
+
 //____________________________________________________________________________
 Bool_t   AliMUONData::IsTrackBranchesInTree()
 {
@@ -392,25 +428,47 @@ void AliMUONData::Fill(Option_t* option)
   const char *cD   = strstr(option,"D");   // Digits branches in TreeD
   const char *cS   = strstr(option,"S");   // SDigits branches in TreeS
   const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR
-  const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeR
+  const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeD
+  const char *cTC = strstr(option,"TC");   // global and local Trigger branches Copy in TreeR
   const char *cRT  = strstr(option,"RT");  // Reconstructed Track in TreeT
-  const char *cRL = strstr(option,"RL");  // Reconstructed Trigger Track in TreeT
+  const char *cRL = strstr(option,"RL");   // Reconstructed Trigger Track in TreeT
 
   //const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
   
   char branchname[30];
   TBranch * branch = 0x0;
 
-  //
   // Filling TreeH
   if ( TreeH() && cH ) {
     TreeH()->Fill();
   }  
-  //
+ 
   // Filling TreeD
-  if ( TreeD() && cD) {
-    TreeD()->Fill();
+
+  if ( TreeD() && cD ) {
+    if ( IsTriggerBranchesInTreeD() ) {
+      for (int i=0; i<AliMUONConstants::NCh(); i++) {
+	sprintf(branchname,"%sDigits%d",GetName(),i+1);
+	branch = TreeD()->GetBranch(branchname);
+	branch->Fill();
+      }
+    } else 
+      TreeD()->Fill();
   }
+
+  // filling trigger
+  if ( TreeD() && cGLT ) {
+    if ( IsDigitsBranchesInTree() ) {
+      sprintf(branchname,"%sLocalTrigger",GetName());
+      branch = TreeD()->GetBranch(branchname); 
+      branch->Fill();
+      sprintf(branchname,"%sGlobalTrigger",GetName());
+      branch = TreeD()->GetBranch(branchname);
+      branch->Fill();
+    } else
+      TreeD()->Fill();
+  }
+
   // Filling TreeS
   if ( TreeS() && cS) {
     TreeS()->Fill();
@@ -432,7 +490,7 @@ void AliMUONData::Fill(Option_t* option)
   
  //
   // filling trigger 
-  if ( TreeR()  && cGLT) {
+  if ( TreeR()  && cTC) {
     if (IsRawClusterBranchesInTree()) {
       // Branch per branch filling
       sprintf(branchname,"%sLocalTrigger",GetName());
@@ -482,7 +540,8 @@ void AliMUONData::MakeBranch(Option_t* option)
   const char *cD   = strstr(option,"D");   // Digits branches in TreeD
   const char *cS   = strstr(option,"S");   // Digits branches in TreeS
   const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR
-  const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeR
+  const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeD
+  const char *cTC = strstr(option,"TC");   // global and local Trigger branches Copy in TreeR
   const char *cRT  = strstr(option,"RT");  // Reconstructed Track in TreeT
   const char *cRL  = strstr(option,"RL");  // Reconstructed Trigger Track in TreeT
   //const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
@@ -539,7 +598,46 @@ void AliMUONData::MakeBranch(Option_t* option)
       //Info("MakeBranch","Making Branch %s for digits in detection plane %d\n",branchname,iDetectionPlane+1);
       }
   }
-  
+ 
+   if (TreeD() && cGLT ) {
+    //
+    // one branch for global trigger
+    //
+    sprintf(branchname,"%sGlobalTrigger",GetName());
+    branch = 0x0;
+    
+    if (fGlobalTrigger == 0x0) {
+      fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger"); 
+      fNglobaltrigger = 0;
+    }
+    branch = TreeD()->GetBranch(branchname);
+    if (branch) {  
+      Info("MakeBranch","Branch GlobalTrigger is already in treeD.");
+      return ;
+    }
+    branch = TreeD()->Branch(branchname, &fGlobalTrigger, kBufferSize);
+    //Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);
+    
+    //
+    // one branch for local trigger
+    //  
+    sprintf(branchname,"%sLocalTrigger",GetName());
+    branch = 0x0;
+    
+    if (fLocalTrigger == 0x0) {
+      fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);
+      fNlocaltrigger = 0;
+    }
+    branch = TreeD()->GetBranch(branchname);
+    if (branch) {  
+      Info("MakeBranch","Branch LocalTrigger is already in treeD.");
+      return;
+    }
+    branch = TreeD()->Branch(branchname, &fLocalTrigger, kBufferSize);
+    //Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);  
+  }
+
+
   //Creating Branches for SDigits
   if (TreeS() && cS ) {
     // one branch for Sdigits per chamber
@@ -604,7 +702,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     }
   }
 
-  if (TreeR() && cGLT ) {
+  if (TreeR() && cTC ) {
     //
     // one branch for global trigger
     //
@@ -617,7 +715,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     }
     branch = TreeR()->GetBranch(branchname);
     if (branch) {  
-      Info("MakeBranch","Branch %s is already in tree.",GetName());
+      Info("MakeBranch","Branch GlobalTrigger is already in treeR.");
       return ;
     }
     branch = TreeR()->Branch(branchname, &fGlobalTrigger, kBufferSize);
@@ -635,7 +733,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     }
     branch = TreeR()->GetBranch(branchname);
     if (branch) {  
-      Info("MakeBranch","Branch %s is already in tree.",GetName());
+      Info("MakeBranch","Branch LocalTrigger is already in treeR.");
       return;
     }
     branch = TreeR()->Branch(branchname, &fLocalTrigger, kBufferSize);
@@ -767,7 +865,8 @@ void AliMUONData::SetTreeAddress(Option_t* option)
   const char *cD   = strstr(option,"D");   // Digits branches in TreeD
   const char *cS   = strstr(option,"S");   // SDigits branches in TreeS
   const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR
-  const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeR
+  const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeD
+  const char *cTC = strstr(option,"TC");   // global and local Trigger branches Copy in TreeR
   const char *cRT  = strstr(option,"RT");  // Reconstructed Track in TreeT
   const char *cRL  = strstr(option,"RL");  // Reconstructed Trigger Track in TreeT
   //const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
@@ -809,6 +908,12 @@ void AliMUONData::SetTreeAddress(Option_t* option)
 	fNdigits[i]=0;
       }
     }
+    if (fLocalTrigger == 0x0 && cGLT) {
+      fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);
+    }
+    if (fGlobalTrigger== 0x0 && cGLT) {
+        fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1); 
+    }
   }
 
   if (TreeD() && fDigits && cD) {
@@ -824,6 +929,19 @@ void AliMUONData::SetTreeAddress(Option_t* option)
       }
     }
   }
+  if ( TreeD()  && fLocalTrigger && cGLT) {
+    sprintf(branchname,"%sLocalTrigger",GetName());
+    branch = TreeD()->GetBranch(branchname);
+    if (branch) branch->SetAddress(&fLocalTrigger);
+    else Warning("SetTreeAddress","(%s) Failed for LocalTrigger. Can not find branch in treeD.",GetName());
+  }
+  if ( TreeD() && fGlobalTrigger && cGLT) {
+    sprintf(branchname,"%sGlobalTrigger",GetName());
+    branch = TreeD()->GetBranch(branchname);
+    if (branch) branch->SetAddress(&fGlobalTrigger);
+    else Warning("SetTreeAddress","(%s) Failed for GlobalTrigger. Can not find branch in treeD.",GetName());
+  }
+
   //
   // Branch address for Sdigit tree
   if ( TreeS() && cS) {
@@ -860,10 +978,10 @@ void AliMUONData::SetTreeAddress(Option_t* option)
 	fNrawclusters[i]=0;
       }
     }
-    if (fLocalTrigger == 0x0 && cGLT) {
+    if (fLocalTrigger == 0x0 && cTC) {
       fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);
     }
-    if (fGlobalTrigger== 0x0 && cGLT) {
+    if (fGlobalTrigger== 0x0 && cTC) {
         fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1); 
     }
 
@@ -878,17 +996,17 @@ void AliMUONData::SetTreeAddress(Option_t* option)
       }
     }
   }
-  if ( TreeR()  && fLocalTrigger && cGLT) {
+  if ( TreeR()  && fLocalTrigger && cTC) {
     sprintf(branchname,"%sLocalTrigger",GetName());
     branch = TreeR()->GetBranch(branchname);
     if (branch) branch->SetAddress(&fLocalTrigger);
-    else Warning("SetTreeAddress","(%s) Failed for LocalTrigger. Can not find branch in tree.",GetName());
+    else Warning("SetTreeAddress","(%s) Failed for LocalTrigger. Can not find branch in treeR.",GetName());
   }
-  if ( TreeR() && fGlobalTrigger && cGLT) {
+  if ( TreeR() && fGlobalTrigger && cTC) {
     sprintf(branchname,"%sGlobalTrigger",GetName());
     branch = TreeR()->GetBranch(branchname);
     if (branch) branch->SetAddress(&fGlobalTrigger);
-    else Warning("SetTreeAddress","(%s) Failed for LocalTrigger. Can not find branch in tree.",GetName());
+    else Warning("SetTreeAddress","(%s) Failed for GlobalTrigger. Can not find branch in treeR.",GetName());
   }
 
   if ( TreeT() ) {

@@ -1047,7 +1047,7 @@ Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
       return kFALSE;
     }
 
-    fMUONData->SetTreeAddress("GLT");
+    fMUONData->SetTreeAddress("TC");
     fMUONData->GetTrigger();
 
     // global trigger for trigger pattern

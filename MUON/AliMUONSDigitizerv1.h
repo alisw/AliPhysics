@@ -28,6 +28,14 @@ class AliMUONSDigitizerv1 : public AliMUONDigitizerv1
 	virtual void FillOutputData();
 	virtual void CleanupOutputData(AliMUONLoader* muonloader);
 
+	// to disable trigger in SDigitizer
+	void CreateTrigger(){return;}
+	Bool_t FetchTriggerPointer(AliMUONLoader* /*loader*/ ){return kTRUE;}
+	void CleanupTriggerArrays(){return;}
+	void FillTriggerOutput(){return;}
+	void AddDigitTrigger(Int_t /*chamber*/, Int_t* /*tracks[kMAXTRACKS]*/, 
+			     Int_t* /*charges[kMAXTRACKS]*/, Int_t* /*digits[6]*/){return;}
+
 	ClassDef(AliMUONSDigitizerv1, 0)
 };    
 #endif

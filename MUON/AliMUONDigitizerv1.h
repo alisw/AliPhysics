@@ -23,14 +23,14 @@ class AliMUONTransientDigit;
 
 class AliMUONDigitizerv1 : public AliMUONDigitizer 
 {
-  public:
+ public:
 	AliMUONDigitizerv1();
 	virtual ~AliMUONDigitizerv1();
 	
 	// Preferred constructor which assigns the manager object.
 	AliMUONDigitizerv1(AliRunDigitizer * manager);
     
-  protected:
+ protected:
 	// Generation of a TransientDigits from a hit object.
 	void MakeTransientDigitsFromHit(Int_t itrack, Int_t ihit, AliMUONHit * mHit);
 	
@@ -43,7 +43,13 @@ class AliMUONDigitizerv1 : public AliMUONDigitizer
 	virtual void CleanupOutputData(AliMUONLoader* muonloader);
 	virtual Bool_t InitInputData(AliMUONLoader* muonloader);
 	virtual void CleanupInputData(AliMUONLoader* muonloader);
-   
+
+	// for trigger purpose
+	virtual void CreateTrigger();
+	virtual void CleanupTriggerArrays();
+	virtual void AddDigitTrigger(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6]);
+	virtual void FillTriggerOutput();
+
 	ClassDef(AliMUONDigitizerv1, 2)
 };    
 #endif

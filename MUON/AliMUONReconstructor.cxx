@@ -64,8 +64,8 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader);
   AliMUONData* dataCluster = recoCluster->GetMUONData();
 
-  AliMUONTriggerDecision* trigDec = new AliMUONTriggerDecision(loader);
-  AliMUONData* dataTrig = trigDec->GetMUONData();
+  AliMUONTriggerDecision* trigDec = new AliMUONTriggerDecision(loader,0,dataCluster);
+  //  AliMUONData* dataTrig = trigDec->GetMUONData();
 
 
   for (Int_t i = 0; i < 10; i++) {
@@ -93,10 +93,10 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     dataCluster->Fill("RC"); 
 
     // trigger branch
-    dataTrig->MakeBranch("GLT");
-    dataTrig->SetTreeAddress("D,GLT");
-    trigDec->Digits2Trigger(); 
-    dataTrig->Fill("GLT");
+    dataCluster->MakeBranch("TC");
+    dataCluster->SetTreeAddress("TC");
+    trigDec->Trigger2Trigger(); 
+    dataCluster->Fill("TC");
 
     loader->WriteRecPoints("OVERWRITE");
 
@@ -120,9 +120,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     //--------------------------- Resetting branches -----------------------
     dataCluster->ResetDigits();
     dataCluster->ResetRawClusters();
-
-    dataTrig->ResetDigits();
-    dataTrig->ResetTrigger();
+    dataCluster->ResetTrigger();
 
     dataEvent->ResetRawClusters();
     dataEvent->ResetTrigger();
