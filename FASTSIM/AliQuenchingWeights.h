@@ -30,10 +30,15 @@ class AliQuenchingWeights : public TObject {
 
   void Reset();
   Int_t SampleEnergyLoss();
-  Double_t GetELossRandom(Int_t ipart, Double_t length, Double_t e=1.e6) const;
+  Int_t SampleEnergyLoss(Int_t ipart, Double_t R);
+
+  Double_t GetELossRandom(Int_t ipart, Double_t length, Double_t e=1.e10) const;
   Double_t CalcQuenchedEnergy(Int_t ipart, Double_t length, Double_t e)  const;
-  Double_t GetELossRandom(Int_t ipart, TH1F *hell, Double_t e=1.e6) const;
+  Double_t GetELossRandom(Int_t ipart, TH1F *hell, Double_t e=1.e10) const;
   Double_t CalcQuenchedEnergy(Int_t ipart, TH1F *hell, Double_t e)  const;
+
+  Double_t GetELossRandomK(Int_t ipart, Double_t I0, Double_t I1, Double_t e=1.e10);
+  Double_t CalcQuenchedEnergyK(Int_t ipart, Double_t I0, Double_t I1, Double_t e);
 
   //multiple soft scattering approximation
   Int_t InitMult(const Char_t *contall="$(ALICE_ROOT)/FASTSIM/data/cont_mult.all",
@@ -64,21 +69,42 @@ class AliQuenchingWeights : public TObject {
     {if(fMultSoft) return CalcWC(fQTransport,l);
      else return CalcWCbar(fMu,l);}
 
+  Double_t CalcWCk(Double_t I1) const 
+    {if(fMultSoft) return CalcWCk(fK,I1);
+     else return -1;} //not implemented!
+
+  Double_t CalcWCk(Double_t k, Double_t I1) const 
+    {if(fMultSoft) return k*I1/fgkConvFmToInvGeV;
+     else return -1;} //not implemented!
+
   Double_t CalcR(Double_t wc, Double_t l) const; 
+
+  Double_t CalcRk(Double_t I0, Double_t I1) const
+    {return CalcRk(fK,I0,I1);} 
+
+  Double_t CalcRk(Double_t k, Double_t I0, Double_t I1) const; 
+
+  Double_t CalcQk(Double_t I0, Double_t I1) const
+    {return CalcQk(fK,I0,I1);} 
+
+  Double_t CalcQk(Double_t k, Double_t I0, Double_t I1) const
+      {return I0*I0/2/I1/fgkConvFmToInvGeV/fgkConvFmToInvGeV*k;}
 
   Int_t CalcLengthMax(Double_t q) const
     {Double_t l3max=fgkRMax/.5/q/fgkConvFmToInvGeV/fgkConvFmToInvGeV;
      return (Int_t)TMath::Power(l3max,1./3.);} 
 
-  const TH1F* GetHisto(Int_t ipart,Int_t l) const;
+  const TH1F* GetHisto(Int_t ipart,Double_t length) const;
 
   void SetMu(Double_t m=1.) {fMu=m;}
   void SetQTransport(Double_t q=1.) {fQTransport=q;}
+  void SetK(Double_t k=4.e5) {fK=k;} //about 1 GeV^2/fm
   void SetECMethod(kECMethod type=kDefault);
   void SetLengthMax(Int_t l=20) {fLengthMax=l;}
 
   Float_t GetMu()           const {return fMu;}
   Float_t GetQTransport()   const {return fQTransport;}
+  Float_t GetK()            const {return fK;}
   Bool_t  GetECMethod()     const {return fECMethod;}
   Bool_t  GetTablesLoaded() const {return fTablesLoaded;}
   Bool_t  GetMultSoft()     const {return fMultSoft;}
@@ -86,33 +112,47 @@ class AliQuenchingWeights : public TObject {
 
   TH1F* ComputeQWHisto (Int_t ipart,Double_t medval,Double_t length)  const; 
   TH1F* ComputeQWHistoX(Int_t ipart,Double_t medval,Double_t length)  const; 
-  TH1F* ComputeELossHisto (Int_t ipart,Double_t medval,Double_t l,Double_t e=1.e6) const; 
-  TH1F* ComputeELossHisto (Int_t ipart,Double_t medval,TH1F *hEll,Double_t e=1.e6) const; 
+  TH1F* ComputeQWHistoX(Int_t ipart,Double_t R)                       const; 
+  TH1F* ComputeELossHisto(Int_t ipart,Double_t medval,Double_t l,Double_t e=1.e10) const; 
+  TH1F* ComputeELossHisto(Int_t ipart,Double_t medval,TH1F *hEll,Double_t e=1.e10) const; 
+  TH1F* ComputeELossHisto(Int_t ipart,Double_t R)                                  const; 
+
+  Double_t GetMeanELoss(Int_t ipart,Double_t medval,Double_t l) const;
+  Double_t GetMeanELoss(Int_t ipart,Double_t medval,TH1F *hEll) const; 
+  Double_t GetMeanELoss(Int_t ipart,Double_t R) const; 
   
-  void PlotDiscreteWeights(Int_t len=4) const;
-  void PlotContWeights(Int_t itype,Int_t len) const;
-  void PlotContWeights(Int_t itype,Double_t medval) const;
-  void PlotAvgELoss(Int_t len ,Double_t e=1.e6) const;
-  void PlotAvgELoss(TH1F *hEll,Double_t e=1.e6) const;
-  void PlotAvgELossVsPt(Double_t medval,Int_t len) const;
-  void PlotAvgELossVsPt(Double_t medval,TH1F *hEll) const;
+  void PlotDiscreteWeights(Double_t len=4)             const; 
+  void PlotContWeights(Int_t itype,Double_t len)       const;
+  void PlotContWeightsVsL(Int_t itype,Double_t medval) const;
+  void PlotAvgELoss(Double_t len ,Double_t e=1.e10)    const;
+  void PlotAvgELoss(TH1F *hEll,Double_t e=1.e10)       const;
+  void PlotAvgELossVsEll(Double_t e=1.e10)             const;
+  void PlotAvgELossVsPt(Double_t medval,Double_t len)  const;
+  void PlotAvgELossVsPt(Double_t medval,TH1F *hEll)    const;
 
  protected:
+  Int_t GetIndex(Double_t len) const;
+
   static const Double_t fgkConvFmToInvGeV; //conversion factor
-  static const Double_t fgkRMax; //max. tabled value of R
+  static const Int_t    fgBins;            //number of bins for hists
+  static const Double_t fgMaxBin;          //max. value of wc
+  static const Double_t fgkRMax;           //max. tabled value of R
+
   static Int_t fgCounter;//static instance counter
   Int_t fInstanceNumber; //instance number of class
 
   Bool_t fMultSoft;     //approximation type
   Bool_t fECMethod;     //energy constraint method
-  Double_t fQTransport; //transport coefficient
+  Double_t fQTransport; //transport coefficient [GeV^2/fm]]
   Double_t fMu;         //Debye screening mass
+  Double_t fK;          //proportional constant [fm]
   Int_t fLengthMax;     //maximum length
   Int_t fLengthMaxOld;  //maximum length used for histos
 
   //discrete and cont part of quenching for
   //both parton type and different lengths
   TH1F ***fHistos; //!
+  TH1F *fHisto; //!
 
   // data strucs for tables
   Double_t fxx[400];      //sampled energy quark
