@@ -8,6 +8,8 @@
 
 binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
 
+  AliL3Transform::Init(path);
+  
   if(sp) {
     singlepatch(in,first,last,path);
     return;
@@ -15,15 +17,9 @@ binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
 
   char name[256];
   const Int_t npatch = 6;
-  AliL3Logger l;
-  //l.UnSet(AliL3Logger::kDebug);
-  //l.UnSet(AliL3Logger::kAll);
-  //l.Set(AliL3Logger::kInformational);
-  l.UseStderr();
-  //l.UseStream();
-
+  
   //read init file
-  AliL3Transform::Init(path);
+  
 
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
   fFileHandler->SetAliInput(in);
@@ -31,16 +27,41 @@ binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
   for(int slice=first; slice<=last; slice++){
     for(int patch=0;patch<npatch;patch++){
       cerr<<"reading slice: "<<slice<<" patch: "<<patch<<" and storing to: "<<path<<"/digits_"<<slice<<"_"<<patch<<".raw"<<endl;
-      fFileHandler->Free();
       fFileHandler->Init(slice,patch);      
       sprintf(name,"%s/digits_%d_%d.raw",path,slice,patch);
       fFileHandler->SetBinaryOutput(name);
       fFileHandler->AliDigits2CompBinary();
       fFileHandler->CloseBinaryOutput();      
+      fFileHandler->Free();
       cerr<<" done"<<endl;
     }      
   }
   fFileHandler->CloseAliInput();
+}
+
+void write2rootfile(char *in,int first,int last,char *path)
+{
+  //Write new rootfile, using data from the binary files. 
+
+  AliL3Transform::Init(path);
+  char filename[1024];
+  sprintf(filename,"%s/digitfile.root",path);
+  file = TFile::Open(filename,"READ");
+  if(file->IsOpen())
+    {
+      cout<<"Delete file "<<filename<<endl;
+      return;
+    }
+  for(int slice=first; slice<=last; slice++)
+    {
+      for(int patch=0; patch<=5; patch++)
+	{
+	  c = new AliL3Compress(slice,patch,path);
+	  c->WriteRootFile(filename,in);
+	  delete c;
+	}
+    }
+  
 }
  
 void singlepatch(char* in,int first=0, int last=0,char *path=".",int event=0)
@@ -52,9 +73,6 @@ void singlepatch(char* in,int first=0, int last=0,char *path=".",int event=0)
   l.UseStderr();
   //l.UseStream();
   
-  //read init file
-  AliL3Transform::Init(path);
-
   char name[256];
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
   fFileHandler->SetAliInput(in);
