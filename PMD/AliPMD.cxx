@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/11/06 09:07:13  morsch
+Set  fRecPoints to zero in default constructor.
+
 Revision 1.9  2000/10/30 09:03:59  morsch
 Prototype for PMD reconstructed hits (AliPMDRecPoint) added.
 
@@ -288,8 +291,9 @@ void AliPMD::ResetHits()
   //
   // Reset number of hits and the hits array
   //
-  fNRecPoints   = 0;
-  if (fRecPoints)   fRecPoints->Clear();
+    AliDetector::ResetHits();
+    fNRecPoints   = 0;
+    if (fRecPoints)   fRecPoints->Clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
