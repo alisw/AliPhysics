@@ -56,6 +56,7 @@ FSRCS	= dummies.F hbcdf.F fzdummies.F \
 	  packlib/kernlib/kerngen/tcgen/lenocc.F \
 	  packlib/kernlib/kerngen/tcgen/lorenf.F \
 	  packlib/kernlib/kerngen/tcgen/ranmar.F \
+	  packlib/kernlib/kerngen/tcgen/sortzv.F \
 	  packlib/kernlib/kerngen/tcgen/traceq.F \
 	  packlib/kernlib/kerngen/tcgen/ubits.F \
 	  packlib/kernlib/kerngen/tcgen/uoptc.F \
