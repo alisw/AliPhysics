@@ -638,3 +638,30 @@ AliMUON& AliMUON::operator = (const AliMUON& /*rhs*/)
 // dummy version
     return *this;
 }
+//________________________________________________________________________
+void AliMUON::RemapTrackHitIDs(Int_t* map)
+{
+// Remaps the track numbers in the hits arrays, so that they correspond
+// to the entry indices in the Kine tree.
+// The correspondance is not direct. To get the real index into the Kine tree
+// compute the particle index as follows:
+//
+//   num_primaries = AliStack::GetNprimary();
+//   num_tracks = AliStack::GetNtracks();
+//   track = AliMUONHit::Track()
+//
+//   if (track < num_primaries)
+//       particleindex = track + num_tracks - num_primaries;
+//   else
+//       particleindex = track - num_primaries;
+	
+	// Remap the track numbers based on the specified map.
+	AliMUONData* data = GetMUONData();
+	TClonesArray* hits = data->Hits();
+	for (Int_t i = 0; i < hits->GetEntriesFast(); i++)
+	{
+		AliMUONHit* hit = static_cast<AliMUONHit*>( hits->At(i) );
+		hit->SetTrack( map[hit->Track()] );
+	};
+};
+

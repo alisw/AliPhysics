@@ -114,6 +114,9 @@ class AliMUON : public  AliDetector {
     // Copy Operator
     AliMUON& operator = (const AliMUON& rhs);
 
+  // Inherited and overridden from AliModule:
+    virtual void RemapTrackHitIDs(Int_t * map);
+
  protected:
     Int_t                 fNCh;                // Number of chambers   
     Int_t                 fNTrackingCh;        // Number of tracking chambers*

@@ -7,6 +7,7 @@
 #pragma link C++ class  AliMUONv1+;
 #pragma link C++ class  AliMUONv3+;
 #pragma link C++ class  AliMUONData+;
+#pragma link C++ class  AliMUONDataInterface+;
 #pragma link C++ class  AliMUONLoader+;
 #pragma link C++ class  AliMUONHit+;
 #pragma link C++ class  AliMUONPadHit+;
