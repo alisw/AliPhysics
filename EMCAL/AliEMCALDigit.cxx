@@ -48,11 +48,11 @@ ClassImp(AliEMCALDigit)
 
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
-  fNMaxPrimary = 20 ; 
+  fNMaxPrimary = 0 ; 
   fNiparent     = 0 ;
-  fNMaxiparent = 40; //fNMaxPrimary*10;
-  fPrimary = new Int_t[fNMaxPrimary] ;
-  fIparent = new Int_t[fNMaxiparent] ; 
+  fNMaxiparent = 0; 
+  fPrimary = 0 ;
+  fIparent = 0 ;
 }
 
 //____________________________________________________________________________
