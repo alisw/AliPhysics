@@ -147,7 +147,7 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry()
 
 
   // Calculate distance from IP to upper cover
-  fIPtoOuterCoverDistance = fIPtoCrystalSurface - fAirGapLed - fAirGapWidthY - 
+  fIPtoOuterCoverDistance = fIPtoCrystalSurface - fAirGapLed - fInnerThermoWidthY - fAirGapWidthY - 
                             fCoolerWidthY - fOuterThermoWidthY - fAlCoverThickness ; 
 
   Float_t tanA = fOuterThermoWidthXUp / (2.*fIPtoOuterCoverDistance) ; 

@@ -37,7 +37,6 @@
 #include "TRandom.h"
 #include "TTree.h"
 
-
 // --- Standard library ---
 
 #include <stdio.h>
@@ -381,6 +380,18 @@ void AliPHOSv1::StepManager(void)
     xyze[0] = pos[0] ;
     xyze[1] = pos[1] ;
     xyze[2] = pos[2] ;
+
+    //Put in the TreeK particle entering PHOS
+    if(gMC->IsTrackEntering() ) {
+      Float_t  xyzm[3]={pos[0],pos[1],pos[2]} ;      
+      Float_t  xyzd[3] ;
+      gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
+      // Select tracks coming to the crystal from up or down
+      if (xyzd[1] >  GetGeometry()->GetCrystalSize(1)/2-0.002 ||
+	  xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2+0.002) 
+	gAlice->KeepTrack(tracknumber) ;
+    }
+    
     Float_t global[3], local[3] ;
     global[0] = pos[0] ;
     global[1] = pos[1] ;
