@@ -36,6 +36,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+
 #define DEBUG
 #include <TMath.h>
 #include <TGeometry.h>
@@ -56,7 +57,6 @@
 #include "AliFMDReconstruction.h"
 #include "AliFMDReconstParticles.h"
 #include <stdlib.h>
-
 
 ClassImp (AliFMD)
   //_____________________________________________________________________________
@@ -231,6 +231,7 @@ void AliFMD::ResetDigits ()
 }
 
 //-------------------------------------------------------------------------
+
 void  AliFMD::Init ()
 {
   //
@@ -258,8 +259,10 @@ void  AliFMD::Init ()
     fIdSens2 = gMC->VolId ("GRN2");	//Si sensetive volume
     fIdSens3 = gMC->VolId ("GRN3");	//Si sensetive volume
     fIdSens4 = gMC->VolId ("GRN4");	//Si sensetive volume
+    fIdSens5 = gMC->VolId ("GRN5");	//Si sensetive volume
 
 }
+
 //---------------------------------------------------------------------
 void AliFMD::MakeBranch (Option_t * option, const char *file)
 {
@@ -337,7 +340,7 @@ void AliFMD::SetTreeAddress ()
 void AliFMD::SetRingsSi1(Int_t ringsSi1)
 {
   //  fRingsSi1=ringsSi1;
-  fRingsSi1=256;
+  fRingsSi1=768;
 }
 void AliFMD::SetSectorsSi1(Int_t sectorsSi1)
 {
@@ -345,7 +348,7 @@ void AliFMD::SetSectorsSi1(Int_t sectorsSi1)
 }
 void AliFMD::SetRingsSi2(Int_t ringsSi2)
 {
-  fRingsSi2=128;
+  fRingsSi2=384;
 }
 void AliFMD::SetSectorsSi2(Int_t sectorsSi2)
 {
@@ -434,7 +437,6 @@ void AliFMD::Digits2Reco()
   char * fileHeader=0;
   AliFMDReconstruction * reconstruction =
     new AliFMDReconstruction(fileHeader,fileReconParticles) ;
-  //  fReconParticles=new TClonesArray("AliFMDReconstParticles",1000);
   reconstruction->Exec("");
   delete  reconstruction;
 }

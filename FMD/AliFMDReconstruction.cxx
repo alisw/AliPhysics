@@ -27,10 +27,10 @@
 #include "TFile.h"
 #include "TROOT.h"
 #include "TFolder.h"
+#include <Riostream.h>
 
 // --- Standard library ---
 #include <stdlib.h>
-#include <Riostream.h>
 
 // --- AliRoot header files ---
 
@@ -40,7 +40,6 @@
 #include "AliFMDv1.h"
 #include "AliFMDReconstruction.h"
 #include "AliRun.h"
-
 ClassImp(AliFMDReconstruction)
 
         
@@ -69,102 +68,236 @@ AliFMDReconstruction::AliFMDReconstruction(char* HeaderFile, char *ReconstPartic
 
 AliFMDReconstruction::~AliFMDReconstruction()
 {
- 
 }
-
-//____________________________________________________________________________
+//----------------------------------------------------------------------------
 
 void AliFMDReconstruction::Exec(Option_t *option) 
 { 
+  printf (" AliFMDReconstruction starting \n");
  //Collects all digits in the same active volume into number of particles
+  
+  Int_t const NumVolums=5;
+  Int_t const NumSectors=40;
+  Int_t const NumRings=768;
+  Int_t PadADC[10][50][800];
+  Int_t ivol, iSector, iRing;
+  Int_t Ne1; 
+  //Int_t NumberOfRings[5]=  {256,128,256,128,256};
+  Int_t NumberOfSectors[5]=  {20,40,20,40,20};
+  // number of ring for boundary 0.1 eta
+   Int_t EtaIntervalInner []=
+      {0, 55, 110, 165, 221, 276, 331, 386, 442,
+	497, 552, 607, 663, 718, 767 };
+   /*
+     {0,  18, 36,   55,  73,
+      92, 110, 128, 147, 165,
+      184, 202, 221, 239, 255};*/
+   Int_t  EtaIntervalOuter []=  //{0, 21, 43, 65, 86, 108, 127};
+     {0, 65, 130, 195, 260, 325, 383};
+ Int_t EtaInterval[20];
+  
 
-  AliFMD * FMD = (AliFMD *) gAlice->GetDetector("FMD");
+  Int_t size_EtaIntervalInner=sizeof (EtaIntervalInner)/sizeof(EtaIntervalInner[0]);
+
+  Int_t size_EtaIntervalOuter=sizeof (EtaIntervalOuter)/sizeof(EtaIntervalOuter[0]);
+
+  AliFMD * FMD = (AliFMD *) gAlice->GetDetector("FMD");  
   TClonesArray *fReconParticles=FMD->ReconParticles();
-  if(fNevents == 0) fNevents=(Int_t)gAlice->TreeD()->GetEntries(); 
+  if(fNevents == 0) fNevents=(Int_t)gAlice->TreeE()->GetEntries(); 
   for(Int_t ievent=0;ievent<fNevents;ievent++)
     { 
+      for (Int_t i=0; i<NumVolums; i++)
+	for(Int_t j=0; j<NumSectors; j++)
+	  for(Int_t ij=0; ij<NumRings; ij++)
+	    PadADC[i][j][ij]=0;                    //zhachem ???
       gAlice->GetEvent(ievent) ;
       if(gAlice->TreeH()==0) return; 
       if(gAlice->TreeR()==0) gAlice->MakeTree("R");
       //Make branches
+      AliFMDdigit  *fmdDigit;
       FMD->MakeBranch("R");
       
-      Int_t threshold[]={ 0,     14,  28,    42,   57, 
-			  72,    89,  104,  124,  129, 
-			  164,  174,  179,  208,  228, 
-			  248,  268,   317,  337,  357, 
-			  392,  407,  416,  426,  436, 
-			  461,  468,  493,  506,  515, 
-			  541,  566,  592,  617,  642, 
-			  668,  693,  719,  744,  770, 
-			  795,  821,  846,  871,  897, 
-			  922,  948,  973,  999, 1024};
-      
+      Int_t zeroADC=1;
+      // Int_t  threshold_array_size=30;
 
-      /*
-	Int_t threshold[]={    0,  18,  37,  56,   76, 
-	                      96, 119, 138, 165,  172, 
-               	             218, 231, 238, 277,  304, 
-	                     330, 357, 423, 449,  476, 
-	                     522, 542, 555, 568,  581, 
-                             614, 624, 657, 674,  687, 
-	                     700, 713, 720, 727,  733, 
-	                     740, 759, 778, 797,  816, 
-	                     834, 853, 872, 891,  910, 
-	                     929, 948, 967, 986,  1024};
-      */
-      
-      int threshold_array_size=sizeof(threshold)/sizeof(threshold[0]);
-      AliFMDdigit  *fmdDigit;
-      //    cout<<" AliFMDdigit "<<AliFMDdigit<<endl;
+      // cout<<" AliFMDdigit "<<AliFMDdigit<<endl;
       if (FMD)
 	{
 	  gAlice->TreeD()->GetEvent(0); 
 	  TClonesArray *FMDdigits=FMD->Digits();
 	  Int_t nDigits=FMDdigits->GetEntries();
-	   Int_t RecParticles[4];
+	   Int_t RecParticles[6];
 	   Int_t nRecPart=0 ;
+	   Int_t ZeroPads=0;
+	   Int_t NumberOfPads=0; //To avoid warning
+	   Int_t pedestal;
+	   Float_t channelWidth=(22400*50)/1024;
 	   for (Int_t digit=0;digit<nDigits;digit++) 
 	     {
-	      fmdDigit=(AliFMDdigit*)FMDdigits->UncheckedAt(digit);    
-	      RecParticles[0] = fmdDigit->Volume();
-	      RecParticles[1] = fmdDigit->NumberOfSector();
-	      RecParticles[2] = fmdDigit->NumberOfRing();
-	      Int_t ADC=fmdDigit->ADCsignal(); 
-	      RecParticles[3]=0; //case when fmdDigit->ADCsignal()==0
-	      for (int i=0;i<threshold_array_size-1;i++)
-		    {
-		      if(ADC>threshold[i]&&ADC<=threshold[i+1])
-			 RecParticles[3]=i;		 
-		    }
-	      new((*fReconParticles)[nRecPart++]) AliFMDReconstParticles(RecParticles); 
+	       fmdDigit=(AliFMDdigit*)FMDdigits->UncheckedAt(digit);    
+	       ivol=fmdDigit->Volume();
+	       iSector=fmdDigit->NumberOfSector();
+	       iRing=fmdDigit->NumberOfRing();
+	       pedestal=Int_t(gRandom->Gaus(500,250));
+	       PadADC[ivol-1][iSector-1][iRing-1]=
+		 fmdDigit->ADCsignal()
+		 -Int_t(Float_t(pedestal)/channelWidth);
+	       if (PadADC[ivol-1][iSector-1][iRing-1]<0) 
+		 PadADC[ivol-1][iSector-1][iRing-1]=0;
 	     } //digit loop
-	 }//if FMD
-       gAlice->TreeR()->Reset();
-       gAlice->TreeR()->Fill(); 
-       gAlice->TreeR()->Write(0,TObject::kOverwrite);
-    } //event loop
-  cout<<"\nAliFMDReconstruction::Exec finished"<<endl;
-}
-//__________________________________________________________________
+	   Int_t Rmin=0; Int_t Rmax=0; //To avoid warning
+	   Int_t Smin=0; Int_t Smax=0; //To avoid warning
+		   
+	   for (ivol=1; ivol<=NumVolums; ivol++)
+	     {
+	       if (ivol==1||ivol==3||ivol==5)
+		 {
+		   Ne1=size_EtaIntervalInner;
+		   for(Int_t ieta=0; ieta<Ne1; ieta++)
+		     EtaInterval[ieta]=EtaIntervalInner[ieta];
+		 }
+	       if (ivol==2||ivol==4)
+		 {
+		   Ne1=size_EtaIntervalOuter;
+		   for( Int_t ieta=0; ieta<Ne1; ieta++)
+		     EtaInterval[ieta]=EtaIntervalOuter[ieta];
+		 }
 
-void AliFMDReconstruction::SetReconstParticlesFile(char * file )
+
+		   for (Int_t e1=0;e1<Ne1-1;e1++) // vol<=NumVolums
+		     {
+		       Rmin=EtaInterval[e1];
+		   Rmax=EtaInterval[e1+1];
+		   ZeroPads=0;
+		   Smin=0;
+		   Smax=NumberOfSectors[ivol-1]; 
+		   for (Int_t iring=Rmin; iring<Rmax; iring++) 
+		     {
+		       NumberOfPads=(Rmax-Rmin)*(Smax-Smin);
+		       for 
+			 (Int_t isector=1;
+			  isector<=NumberOfSectors[ivol-1]; 
+			  isector++) 
+			 if(PadADC[ivol-1][isector-1][iring-1]<zeroADC)
+			   ZeroPads++;
+		     } //ring
+		   /*
+		   cout<<"\nRmin="<<Rmin;
+		   cout<<"\nRmax="<<Rmax;
+		   cout<<"\nSmin="<<Smin;
+		   cout<<"\nSmax="<<Smax;
+	       
+		   cout<<"\nvolume "<<ivol<<" zero "<<ZeroPads<<
+		     " NumberOfPads "<<NumberOfPads<<endl;
+		   */
+		   Float_t zerosRatio= 
+		     (Float_t)ZeroPads/(Float_t)NumberOfPads;
+		   //  cout<<"\nzerosRatio="<<zerosRatio;		      
+		   RecParticles[0]=ivol;
+		   RecParticles[1]=Smin;
+		   RecParticles[2]=Smax;
+		   RecParticles[3]=Rmin;
+		   RecParticles[4]=Rmax;
+		   if (zerosRatio>0.1 ||(ivol==2||ivol==4))
+		     RecParticles[5]=
+		       Determination_by_Poisson
+		       (PadADC,ivol,Rmin,Rmax,Smin,Smax);
+		   else
+		     RecParticles[5]=
+		       Determination_by_thresholds
+		       (PadADC,ivol,Rmin,Rmax,Smin,Smax);
+		   //  cout<<" nDeterm "<<RecParticles[5]<<endl;
+		   new((*fReconParticles)[nRecPart++]) 
+		 AliFMDReconstParticles(RecParticles);   	       
+	} // eta
+    } // volume
+	   
+	   // if(zerosRatio<0.01) Determination_by_counting (ZeroPads) ;	   
+	}//if FMD
+      gAlice->TreeR()->Reset();
+      gAlice->TreeR()->Fill(); 
+      gAlice->TreeR()->Write(0,TObject::kOverwrite);
+    } //event loop
+  // cout<<"\nAliFMDReconstruction::Exec finished"<<endl;
+};
+
+//------------------------------------------------------------
+Int_t AliFMDReconstruction::Determination_by_thresholds
+(Int_t PadADC[][50][800],Int_t volume, Int_t Rmin, Int_t Rmax, 
+ Int_t Smin, Int_t Smax)
 {
-   if (!fReconstParticlesFile.IsNull()) 
-    cout<<"\nChanging reconstructed particles file from "<<
-      (char *) fReconstParticlesFile.Data()<< " to "<<file<<endl;
-    fReconstParticlesFile=file;
+  
+  Int_t thresholdInner[30]={
+    0,     14,  28,    42,   57,     
+    72,    89,  104,  124,  129, 
+    164,  174,  179,  208,  228, 
+    248,  268,   317,  337,  357, 
+    392,  407,  416,  426,  436, 
+    461,  468,  493,  506,  515}; 
+
+  Int_t thresholdOuter[30]={0, 18, 48, 77, 105,
+			    132, 165, 198, 231, 
+			    264, 286, 308, 334, 
+			    352, 374, 418, 440,
+			    462, 484, 506, 528,
+			    550, 572, 594, 616}; 
+  Int_t threshold[30];
+  for (Int_t it=0; it<30; it++) {
+    if(volume==1||volume==3||volume==5) threshold[it]=thresholdInner[it];
+    if(volume==2||volume==4) threshold[it]=thresholdOuter[it];
+  }
+  Int_t threshold_array_size = 30;     
+  Int_t NumPart=0;
+  //Inner Si
+  for (Int_t iring=Rmin; iring<Rmax; iring++) 
+    {
+      for (Int_t isector=Smin; isector<Smax; isector++) 
+	{
+	  for (int i=0;i<threshold_array_size-1;i++)
+	    {	      
+	      if(PadADC[volume-1][isector][iring]>threshold[i]
+		 &&PadADC[volume-1][isector][iring]<=threshold[i+1])
+		{
+		  NumPart+=i;
+		  break;
+		}; // if in threshol interval
+	    }; //threshold_array_size
+	}; //iring
+    }; //sector
+  // cout<<"\nEnd threshol method"<<endl;
+  return NumPart;
 }
-//__________________________________________________________________
-void AliFMDReconstruction::Print(Option_t* option)const
+
+
+ //__________________________________________________________________
+
+Int_t AliFMDReconstruction::Determination_by_Poisson (Int_t PadADC[][50][800],
+					   Int_t vol, Int_t rmin, Int_t rmax, 
+					   Int_t secmin, Int_t secmax)
 {
-  cout<<"------------------- "<<GetName() <<" -------------"<< endl ;
-  if(fReconstParticlesFile.IsNull())
-    cout<<"\nWriting reconstructed particles to file"<<endl ;
-  else
-    cout<<"\nWriting reconstructed particles to file  "<<
-      (char*) fReconstParticlesFile.Data() << endl ;
-}
+  Int_t threshold_adc=1;   
+  Int_t zeropads=0;
+  for (Int_t i=rmin;i<rmax;i++)
+    {
+      for (Int_t j=secmin;j<secmax;j++)
+	{
+	  if (PadADC[vol-1][j][i]<threshold_adc) zeropads++;
+	};
+    };
+  Float_t lambda=-TMath::Log(Float_t(zeropads)/
+			     ( Float_t(secmax-secmin)*
+			       Float_t(rmax-rmin))); //+1 zdes' ne nado
+  Int_t Recon=(Int_t)(lambda*(secmax-secmin)*(rmax-rmin)); //+1 zdes' ne nado
+  //  cout<<"\nEnd Poisson method"<<endl;
+  return Recon;
+};
+
+//------------------------------------------------------------------
+
+
+
+
+
 
 
 
