@@ -87,6 +87,8 @@ protected:
   Float_t fRecalibrationFactor ;    // Recalibration factor
   Float_t fElectronsPerGeV ;        // Number of electrons per GeV created in the PIN by a ionizing particle
   Float_t fAPDGain ;                // APD Gain
+  Float_t fLightFactor ;            //! a calculated factor
+  Float_t fAPDFactor ;              //! a calculated factor
 
   ClassDef(AliPHOSv1,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 

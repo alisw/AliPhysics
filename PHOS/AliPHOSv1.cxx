@@ -75,7 +75,9 @@ AliPHOSv0()
   fLightYieldAttenuation  = 0. ;  
   fRecalibrationFactor    = 0. ;    
   fElectronsPerGeV        = 0. ;
-  fAPDGain                = 0. ;    
+  fAPDGain                = 0. ;  
+  fLightFactor            = 0. ; 
+  fAPDFactor              = 0. ; 
 
 }
 
@@ -116,10 +118,13 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   // The APD Gain is 300
   fLightYieldMean = 47000;
   fIntrinsicPINEfficiency = 0.02655 ; //APD= 0.1875/0.1271 * 0.018 (PIN)
-  fLightYieldAttenuation = 0.0045 ; 
-  fRecalibrationFactor = 13.418/ fLightYieldMean ;
-  fElectronsPerGeV = 2.77e+8 ;
-  fAPDGain= 300. ;
+  fLightYieldAttenuation  = 0.0045 ; 
+  fRecalibrationFactor    = 13.418/ fLightYieldMean ;
+  fElectronsPerGeV        = 2.77e+8 ;
+  fAPDGain                = 300. ;
+  fLightFactor            = fLightYieldMean * fIntrinsicPINEfficiency ; 
+  fAPDFactor              = (fRecalibrationFactor/100.) * fAPDGain ; 
+
 
   Int_t nb   = GetGeometry()->GetNModules() ; 
   
@@ -403,13 +408,12 @@ void AliPHOSv1::StepManager(void)
       
       //Calculates the light yield, the number of photns produced in the
       //crystal 
-      Float_t lightYield = gRandom->Poisson(fLightYieldMean * lostenergy *
-					    fIntrinsicPINEfficiency * 
+      Float_t lightYield = gRandom->Poisson(fLightFactor * lostenergy *
 					    exp(-fLightYieldAttenuation *
 						(local[1]+GetGeometry()->GetCrystalSize(1)/2.0 ))
 					    ) ;
       //Calculates de energy deposited in the crystal  
-      xyze[4] = (fRecalibrationFactor/100.) * fAPDGain * lightYield  ;
+      xyze[4] = fAPDFactor * lightYield  ;
       
       // add current hit to the hit list
       AddHit(fIshunt, primary,tracknumber, absid, xyze);
