@@ -23,25 +23,11 @@
 //		       Lawrence Berkeley Laboratory                           //
 //****************************************************************************//
 
-//*KEEP,THIJING.
-#include "THijing.h"
-//*KEEP,HCOMMON.
-#include "Hcommon.h"
-//*KEEP,TMCParticle.
-//#include "TMCParticle.h"
-//*KEEP,TParticle,T=C++.
-#include "TParticle.h"
-//*KEND.
 
-//*KEEP,TCanvas.
-//#include "TCanvas.h"
-//*KEEP,TView.
-//#include "TView.h"
-//*KEEP,TROOT.
+#include "THijing.h"
+#include "Hcommon.h"
+#include "TParticle.h"
 #include "TROOT.h"
-//*KEEP,TPaveText.
-//#include "TPaveText.h"
-//*KEND.
 
 #ifndef WIN32
 # define hijset hijset_
@@ -60,54 +46,28 @@
 #endif
 
 #ifndef WIN32
-//extern "C" void type_of_call hijset(float &efrm, const char *frame, 
-//				   const char *proj, const char *targ,
-//				   int &iap, int &izp, int &iat,
-//				   int &izt, Long_t l_frame, 
-//				   Long_t l_proj, Long_t l_targ);
 extern "C" void type_of_call hijset(Float_t & , const char *, 
 				   const char *, const char *,
 				   Int_t & , Int_t &, Int_t &,
 				   Int_t &, const int, 
 				   const int, const int);
 extern "C" float type_of_call profile(Float_t &);
-
-//extern "C" void type_of_call hijing(const char *frame, float &bmin,
-//                                   float &bmax, Long_t l_frame);
 extern "C" void type_of_call hijing(const char *, Float_t  &,
                                    Float_t &, const int);
-
 extern "C" void type_of_call rluget_hijing(Int_t & lfn, Int_t & move);
 
 extern "C" void type_of_call rluset_hijing(Int_t & lfn, Int_t & move);
 
 #else
-//extern "C" void type_of_call hijset(float &efrm, const char *frame, 
-//				   Long_t l_frame, const char *proj, 
-//				   Long_t l_proj,  const char *targ, 
-//				   Long_t l_targ,
-//				   int &iap, int &izp, int &iat,
-//				   int &izt);
-//extern "C" void type_of_call hijing(const char *frame, Long_t l_frame, 
-//				   float &bmin, float &bmax);
 #endif
 
 
 
 ClassImp(THijing)
 
-// void THijing::Streamer(TBuffer &R__b){}
-//______________________________________________________________________________
 THijing::THijing() : TGenerator("Hijing","Hijing")
 {
-// THijing constructor: creates a TClonesArray in which it will store all
-// particles. Note that there may be only one functional THijing object
-// at a time, so it's not use to create more than one instance of it.
-
-//    delete fParticles; // was allocated as TObjArray in TGenerator
-
-//    fParticles = new TClonesArray("TMCParticle",50);
-
+// Default constructor 
 }
 
 //______________________________________________________________________________
@@ -116,14 +76,9 @@ THijing::THijing(Float_t efrm, const char *frame="CMS",
 	Int_t izp=82, Int_t iat=207, Int_t izt=82, Float_t bmin=0, 
 	Float_t bmax=20) : TGenerator("Hijing","Hijing")
 {
-// THijing constructor: creates a TClonesArray in which it will store all
-// particles. Note that there may be only one functional THijing object
+// THijing constructor: 
+// Note that there may be only one functional THijing object
 // at a time, so it's not use to create more than one instance of it.
-
-//    delete fParticles; // was allocated as TObjArray in TGenerator
-
-//    fParticles = new TClonesArray("TMCParticle",50);
-
       fEfrm=efrm;
       fFrame=frame;
       fProj=proj;
@@ -139,92 +94,11 @@ THijing::THijing(Float_t efrm, const char *frame="CMS",
 //______________________________________________________________________________
 THijing::~THijing()
 {
-// Destroys the object, deletes and disposes all TMCParticles currently on list.
-
-//    if (fParticles) {
-//     fParticles->Delete();
-//      delete fParticles;
-//      fParticles = 0;
-//   }
+// Destructor
 }
 
-//______________________________________________________________________________
-//void THijing::Draw(Option_t *option)
-//{
-// Event display - not supported for THijing yet.
 
-//   if (!gPad) {
-//      if (!gROOT->GetMakeDefCanvas()) return;
-//      (gROOT->GetMakeDefCanvas())();
-//      gPad->GetCanvas()->SetFillColor(13);
-//   }
 
-//   static Float_t rbox = 1000;
-//   Float_t rmin[3],rmax[3];
-//   TView *view = gPad->GetView();
-//   if (!strstr(option,"same")) {
-//      if (view) { view->GetRange(rmin,rmax); rbox = rmax[2];}
-//      gPad->Clear();
-//   }
-
-//   AppendPad(option);
-
-//   view = gPad->GetView();
-//   //    compute 3D view
-//   if (view) {
-//      view->GetRange(rmin,rmax);
-//      rbox = rmax[2];
-//   } else {
-//      view = new TView(1);
-//      view->SetRange(-rbox,-rbox,-rbox, rbox,rbox,rbox );
-//   }
-
-//   TPaveText *pt = new TPaveText(-0.94,0.85,-0.25,0.98,"br");
-//   pt->AddText((char*)GetName());
-//   pt->AddText((char*)GetTitle());
-//   pt->SetFillColor(42);
-//   pt->Draw();
-//}
-
-//______________________________________________________________________________
-//TObjArray *THijing::ImportParticles(Option_t *)
-//{
-// Fills TClonesArray fParticles list with particles from common LUJETS.
-// Old contents of a list are cleared. This function should be called after
-// any change in common LUJETS, however GetParticles() method  calls it
-// automatically - user don't need to care about it. In case you make a call
-// to LuExec() you must call this method yourself to transfer new data from
-// common LUJETS to the fParticles list.
-//
-//   fParticles->Clear();
-//
-//   Int_t numpart   = LUJETS.n;
-//   TClonesArray &a = *((TClonesArray*)fParticles);
-//
-//   for (Int_t i = 0; i < numpart; i++) {
-//	new(a[i]) TMCParticle(LUJETS.k[0][i] ,
-//			      LUJETS.k[1][i] ,
-//			      LUJETS.k[2][i] ,
-//			      LUJETS.k[3][i] ,
-//			      LUJETS.k[4][i] ,
-//
-//			      LUJETS.p[0][i] ,
-//			      LUJETS.p[1][i] ,
-//			      LUJETS.p[2][i] ,
-//			      LUJETS.p[3][i] ,
-//			      LUJETS.p[4][i] ,
-//
-//			      LUJETS.v[0][i] ,
-//			      LUJETS.v[1][i] ,
-//			      LUJETS.v[2][i] ,
-//			      LUJETS.v[3][i] ,
-//			      LUJETS.v[4][i]);
-
-//   }
-//   return fParticles;
-//}
-
-//______________________________________________________________________________
 Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 {
 //
@@ -239,22 +113,22 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 //  If the option = "All", all the particles are stored.
 //
   if (particles == 0) return 0;
-  TClonesArray &Particles = *particles;
-  Particles.Clear();
+  TClonesArray &particlesR = *particles;
+  particlesR.Clear();
   Int_t numpart = HIMAIN1.natt;
   printf("\n THijing: HIJING stack contains %d particles.", numpart);
   printf("\n THijing: Total energy:         %f           ", HIMAIN1.eatt);
   printf("\n THijing: Number of hard scatterings: %d     ", HIMAIN1.jatt);
   Int_t nump = 0;
   if (!strcmp(option,"") || !strcmp(option,"Final")) {
-      for (Int_t i = 0; i<=numpart; i++) {
+      for (Int_t i = 0; i <= numpart; i++) {
 	  
 	  if (HIMAIN2.katt[3][i] == 1) {
 //
 //  Use the common block values for the TParticle constructor
 //
 	    nump++;
-	    new(Particles[i]) TParticle(
+	    new(particlesR[i]) TParticle(
 		  HIMAIN2.katt[0][i] ,
 		  HIMAIN2.katt[1][i] ,
 		  -1 ,
@@ -276,19 +150,19 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
       }
   }
   else if (!strcmp(option,"All")) {
-      nump=numpart; 
-      for (Int_t i = 0; i<=numpart; i++) {
+      nump = numpart; 
+      for (Int_t i = 0; i <= numpart; i++) {
 
 	  Int_t iParent = HIMAIN2.katt[2][i]-1;
 	  
 	  if (iParent >= 0) {
-	      TParticle *mother = (TParticle*) (Particles.UncheckedAt(iParent));	   
+	      TParticle *mother = (TParticle*) (particlesR.UncheckedAt(iParent));	   
 	      mother->SetLastDaughter(i);
 	      if (mother->GetFirstDaughter()==-1)
 		  mother->SetFirstDaughter(i);
 	  }
 
-	  new(Particles[i]) TParticle(
+	  new(particlesR[i]) TParticle(
 	      HIMAIN2.katt[0][i] ,
 	      HIMAIN2.katt[1][i] ,
 	      iParent,
@@ -314,101 +188,121 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 //______________________________________________________________________________
 void THijing::SetEFRM(Float_t efrm)
 {
+// Set the centre of mass (CMS) or lab-energy (LAB)
    fEfrm=efrm;
 } 
 //______________________________________________________________________________
 void THijing::SetFRAME(const char* frame)
 {
+// Set the frame type ("CMS" or "LAB")
    fFrame=frame;
 } 
 //______________________________________________________________________________
 void THijing::SetPROJ(const char* proj)
 {
+// Set the projectile type
    fProj=proj;
 } 
 //______________________________________________________________________________
 void THijing::SetTARG(const char* targ)
 {
+// Set the target type
    fTarg=targ;
 } 
 //______________________________________________________________________________
 void THijing::SetIAP(Int_t iap)
 {
+// Set the projectile atomic number
    fIap=iap;
 } 
 //______________________________________________________________________________
 void THijing::SetIZP(Int_t izp)
 {
+// Set the projectile charge number
    fIzp=izp;
 } 
 //______________________________________________________________________________
 void THijing::SetIAT(Int_t iat)
 {
+// Set the target atomic number
    fIat=iat;
 } 
 //______________________________________________________________________________
 void THijing::SetIZT(Int_t izt)
 {
+// Set the target charge number
    fIzt=izt;
 } 
 //______________________________________________________________________________
 void THijing::SetBMIN(Float_t bmin)
 {
+// Set the minimum impact parameter
    fBmin=bmin;
 } 
 //______________________________________________________________________________
 void THijing::SetBMAX(Float_t bmax)
 {
+// Set the maximum impact parameter
    fBmax=bmax;
 } 
 //______________________________________________________________________________
 Float_t THijing::GetEFRM() const
 {
+// Get the centre of mass (CMS) or lab-energy (LAB)
    return fEfrm;
 } 
 //______________________________________________________________________________
 const char* THijing::GetFRAME() const
 {
+// Get the frame type ("CMS" or "LAB")
    return fFrame.Data();
 } 
 //______________________________________________________________________________
 const char* THijing::GetPROJ() const
 {
+// Get the projectile type
    return fProj;
 } 
 //______________________________________________________________________________
 const char* THijing::GetTARG() const
 {
+// Set the target type
    return fTarg;
 } 
 //______________________________________________________________________________
 Int_t THijing::GetIAP() const
 {
+// Get the projectile atomic number
    return fIap;
 } 
 //______________________________________________________________________________
 Int_t THijing::GetIZP() const
 {
+// Get the projectile charge number
    return fIzp;
 } 
 //______________________________________________________________________________
 Int_t THijing::GetIAT() const
 {
+// Get the target atomic number
    return fIat;
 } 
 //______________________________________________________________________________
 Int_t THijing::GetIZT() const
 {
+// Get the target charge number
    return fIzt;
 } 
 //______________________________________________________________________________
 Float_t THijing::GetBMIN() const
 {
+// Get the minimum impact parameter
    return fBmin;
 } 
 //______________________________________________________________________________
 Float_t THijing::GetBMAX() const
 {
+// Get the maximum impact parameter
    return fBmax;
 } 
 
@@ -417,6 +311,7 @@ Float_t THijing::GetBMAX() const
 //______________________________________________________________________________
 void THijing::SetHIPR1(Int_t key,Float_t value)
 {
+// Set the values of array HIPR1 in common HIPARNT
    if ( key<1 || key>100 ) {
       printf ("ERROR in THijing:SetHIPR1(key,value): \n ");
       printf ("      key=%i is out of range [1..100]!\n",key);
@@ -430,6 +325,7 @@ void THijing::SetHIPR1(Int_t key,Float_t value)
 //______________________________________________________________________________
 Float_t THijing::GetHIPR1(Int_t key) const
 {
+// Get the values of array HIPR1 in common HIPARNT
    if ( key<1 || key>100 ) {
       printf ("ERROR in THijing:GetHIPR1(key): \n ");
       printf ("      key=%i is out of range [1..100]!\n",key);
@@ -443,6 +339,7 @@ Float_t THijing::GetHIPR1(Int_t key) const
 //______________________________________________________________________________
 void THijing::SetIHPR2(Int_t key,Int_t value)
 {
+// Set the values of array HIPR2 in common HIPARNT
    if ( key<1 || key>50 ) {
       printf ("ERROR in THijing:SetIHPR2(key,value): \n ");
       printf ("      key=%i is out of range [1..50]!\n",key);
@@ -456,6 +353,7 @@ void THijing::SetIHPR2(Int_t key,Int_t value)
 //______________________________________________________________________________
 Int_t THijing::GetIHPR2(Int_t key) const
 {
+// Get the values of array HIPR2 in common HIPARNT
    if ( key<1 || key>50 ) {
       printf ("ERROR in THijing:GetIHPR2(key): \n ");
       printf ("      key=%i is out of range [1..50]!\n",key);
@@ -470,6 +368,7 @@ Int_t THijing::GetIHPR2(Int_t key) const
 //______________________________________________________________________________
 Float_t THijing::GetHINT1(Int_t key) const
 {
+// Get the values of array HINT1 in common HIPARNT
    if ( key<1 || key>100 ) {
       printf ("ERROR in THijing:GetHINT1(key): \n ");
       printf ("      key=%i is out of range [1..100]!\n",key);
@@ -484,6 +383,7 @@ Float_t THijing::GetHINT1(Int_t key) const
 //______________________________________________________________________________
 Int_t THijing::GetIHNT2(Int_t key) const
 {
+// Get the values of array HINT2 in common HIPARNT
    if ( key<1 || key>50 ) {
       printf ("ERROR in THijing:GetIHNT2(key): \n ");
       printf ("      key=%i is out of range [1..50]!\n",key);
@@ -500,7 +400,7 @@ Int_t THijing::GetIHNT2(Int_t key) const
 //______________________________________________________________________________
 Int_t  THijing::GetNATT() const
 {
-
+// Get the number of particles produces
    return HIMAIN1.natt;
 
 }
@@ -508,6 +408,7 @@ Int_t  THijing::GetNATT() const
 //______________________________________________________________________________
 Float_t  THijing::GetEATT() const
 {
+// Get total energy of particles
 
    return HIMAIN1.eatt;
 
@@ -516,6 +417,7 @@ Float_t  THijing::GetEATT() const
 //______________________________________________________________________________
 Int_t  THijing::GetJATT() const
 {
+// Get number of hard scatterings
 
    return HIMAIN1.jatt;
 
@@ -524,6 +426,7 @@ Int_t  THijing::GetJATT() const
 //______________________________________________________________________________
 Int_t  THijing::GetNT() const
 {
+// Get number of target participants
 
    return HIMAIN1.nt;
 
@@ -532,7 +435,7 @@ Int_t  THijing::GetNT() const
 //______________________________________________________________________________
 Int_t  THijing::GetNP() const
 {
-
+// Get number of projectile participants
    return HIMAIN1.np;
 
 }
@@ -541,13 +444,14 @@ Int_t  THijing::GetNP() const
 //______________________________________________________________________________
 Int_t  THijing::GetN0() const
 {
-
+// Get number of N-N collisions
    return HIMAIN1.n0;
 
 }
 //______________________________________________________________________________
 Int_t  THijing::GetN01() const
 {
+// Get number of N-wounded collisions
 
    return HIMAIN1.n01;
 
@@ -556,6 +460,7 @@ Int_t  THijing::GetN01() const
 //______________________________________________________________________________
 Int_t  THijing::GetN10() const
 {
+// Get number of wounded-N collisions
 
    return HIMAIN1.n10;
 
@@ -564,6 +469,7 @@ Int_t  THijing::GetN10() const
 //______________________________________________________________________________
 Int_t  THijing::GetN11() const
 {
+// Get number of wounded-wounded collisions
 
    return HIMAIN1.n11;
 
@@ -572,6 +478,7 @@ Int_t  THijing::GetN11() const
 //______________________________________________________________________________
 Float_t  THijing::GetBB() const
 {
+// Get impact parameter
 
    return HIMAIN1.bb;
 
@@ -582,6 +489,7 @@ Float_t  THijing::GetBB() const
 //______________________________________________________________________________
 Int_t THijing::GetKATT(Int_t key1, Int_t key2) const
 {
+// Get values of array KATT in common HIMAIN2
    if ( key1<1 || key1>200000 ) {
       printf("ERROR in THijing::GetKATT(key1,key2):\n");
       printf("      key1=%i is out of range [1..200000]\n",key1);
@@ -600,6 +508,7 @@ Int_t THijing::GetKATT(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPATT(Int_t key1, Int_t key2) const
 {
+// Get values of array PATT in common HIMAIN2
    if ( key1<1 || key1>200000 ) {
       printf("ERROR in THijing::GetPATT(key1,key2):\n");
       printf("      key1=%i is out of range [1..130000]\n",key1);
@@ -617,6 +526,7 @@ Float_t THijing::GetPATT(Int_t key1, Int_t key2) const
 
 Float_t THijing::GetVATT(Int_t key1, Int_t key2) const
 {
+// Get values of array VATT in common HIMAIN2
    if ( key1<1 || key1>200000 ) {
       printf("ERROR in THijing::GetVATT(key1,key2):\n");
       printf("      key1=%i is out of range [1..130000]\n",key1);
@@ -637,6 +547,7 @@ Float_t THijing::GetVATT(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Int_t THijing::GetNPJ(Int_t key) const
 {
+// Get values of array NPJ of common HIJJET1
    if ( key<1 || key>300 ) {
       printf("ERROR in THijing::GetNPJ(key):\n");
       printf("      key=%i is out of range [1..300]\n",key);
@@ -648,6 +559,7 @@ Int_t THijing::GetNPJ(Int_t key) const
 //______________________________________________________________________________
 Int_t THijing::GetKFPJ(Int_t key1, Int_t key2) const
 {
+// Get values of array KFPJ in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetKFPJ(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -665,6 +577,7 @@ Int_t THijing::GetKFPJ(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPJPX(Int_t key1, Int_t key2) const
 {
+// Get values of array PJPX in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPJPX(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -682,6 +595,7 @@ Float_t THijing::GetPJPX(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPJPY(Int_t key1, Int_t key2) const
 {
+// Get values of array PJPY in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPJPY(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -699,6 +613,7 @@ Float_t THijing::GetPJPY(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPJPZ(Int_t key1, Int_t key2) const
 {
+// Get values of array PJPZ in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPJPZ(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -716,6 +631,7 @@ Float_t THijing::GetPJPZ(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPJPE(Int_t key1, Int_t key2) const
 {
+// Get values of array PJPE in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPJPE(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -733,6 +649,7 @@ Float_t THijing::GetPJPE(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPJPM(Int_t key1, Int_t key2) const
 {
+// Get values of array PJPM in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPJPM(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -750,6 +667,7 @@ Float_t THijing::GetPJPM(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Int_t THijing::GetNTJ(Int_t key) const
 {
+// Get values of array NTJ in common HIJJET1
    if ( key<1 || key>300 ) {
       printf("ERROR in THijing::GetNTJ(key):\n");
       printf("      key=%i is out of range [1..300]\n",key);
@@ -761,6 +679,7 @@ Int_t THijing::GetNTJ(Int_t key) const
 //______________________________________________________________________________
 Int_t THijing::GetKFTJ(Int_t key1, Int_t key2) const
 {
+// Get values of array KFTJ in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetKFTJ(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -778,6 +697,7 @@ Int_t THijing::GetKFTJ(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPJTX(Int_t key1, Int_t key2) const
 {
+// Get values of array PJTX in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPJTX(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -795,6 +715,7 @@ Float_t THijing::GetPJTX(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPJTY(Int_t key1, Int_t key2) const
 {
+// Get values of array PJTY in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPJTY(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -812,6 +733,7 @@ Float_t THijing::GetPJTY(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPJTZ(Int_t key1, Int_t key2) const
 {
+// Get values of array PJTZ in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPJTZ(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -829,6 +751,7 @@ Float_t THijing::GetPJTZ(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPJTE(Int_t key1, Int_t key2) const
 {
+// Get values of array PJTE in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPJTE(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -846,6 +769,7 @@ Float_t THijing::GetPJTE(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPJTM(Int_t key1, Int_t key2) const
 {
+// Get values of array PJTM in common HIJJET1
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPJTM(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -865,12 +789,14 @@ Float_t THijing::GetPJTM(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Int_t THijing::GetNSG() const
 {
+// Get value of NSG in common HIJJET2
    return HIJJET2.nsg;
 }
 
 //______________________________________________________________________________
 Int_t THijing::GetNJSG(Int_t key) const
 {
+// Get values of array NJSG in common HIJJET2
    if ( key<1 || key>900 ) {
       printf ("ERROR in THijing:GetNJSG(key): \n ");
       printf ("      key=%i is out of range [1..900]!\n",key);
@@ -884,6 +810,7 @@ Int_t THijing::GetNJSG(Int_t key) const
 //______________________________________________________________________________
 Int_t THijing::GetIASG(Int_t key1, Int_t key2) const
 {
+// Get values of IASG in common HIJJET2
    if ( key1<1 || key1>900 ) {
       printf("ERROR in THijing::GetIASG(key1):\n");
       printf("      key1=%i is out of range [1..900]\n",key1);
@@ -901,6 +828,7 @@ Int_t THijing::GetIASG(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Int_t THijing::GetK1SG(Int_t key1, Int_t key2) const
 {
+// Get values of K1SG in common HIJJET2
    if ( key1<1 || key1>900 ) {
       printf("ERROR in THijing::GetK1SG(key1):\n");
       printf("      key1=%i is out of range [1..900]\n",key1);
@@ -918,6 +846,7 @@ Int_t THijing::GetK1SG(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Int_t THijing::GetK2SG(Int_t key1, Int_t key2) const
 {
+// Get values of K2SG in common HIJJET2
    if ( key1<1 || key1>900 ) {
       printf("ERROR in THijing::GetK2SG(key1):\n");
       printf("      key1=%i is out of range [1..900]\n",key1);
@@ -935,6 +864,7 @@ Int_t THijing::GetK2SG(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPXSG(Int_t key1, Int_t key2) const
 {
+// Get values of PXSG in common HIJJET2
    if ( key1<1 || key1>900 ) {
       printf("ERROR in THijing::GetPXSG(key1):\n");
       printf("      key1=%i is out of range [1..900]\n",key1);
@@ -952,6 +882,7 @@ Float_t THijing::GetPXSG(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPYSG(Int_t key1, Int_t key2) const
 {
+// Get values of PYSG in common HIJJET2
    if ( key1<1 || key1>900 ) {
       printf("ERROR in THijing::GetPYSG(key1):\n");
       printf("      key1=%i is out of range [1..900]\n",key1);
@@ -969,6 +900,7 @@ Float_t THijing::GetPYSG(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPZSG(Int_t key1, Int_t key2) const
 {
+// Get values of PZSG in common HIJJET2
    if ( key1<1 || key1>900 ) {
       printf("ERROR in THijing::GetPZSG(key1):\n");
       printf("      key1=%i is out of range [1..900]\n",key1);
@@ -986,6 +918,7 @@ Float_t THijing::GetPZSG(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPESG(Int_t key1, Int_t key2) const
 {
+// Get values of PESG in common HIJJET2
    if ( key1<1 || key1>900 ) {
       printf("ERROR in THijing::GetPESG(key1):\n");
       printf("      key1=%i is out of range [1..900]\n",key1);
@@ -1003,6 +936,7 @@ Float_t THijing::GetPESG(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPMSG(Int_t key1, Int_t key2) const
 {
+// Get values of PMSG in common HIJJET2
    if ( key1<1 || key1>900 ) {
       printf("ERROR in THijing::GetPMSG(key1):\n");
       printf("      key1=%i is out of range [1..900]\n",key1);
@@ -1022,6 +956,7 @@ Float_t THijing::GetPMSG(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Int_t THijing::GetNFP(Int_t key1, Int_t key2) const
 {
+// Get values of array NFP in common HISTRNG
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetNFP(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -1039,6 +974,7 @@ Int_t THijing::GetNFP(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPP(Int_t key1, Int_t key2) const
 {
+// Get values of array PP in common HISTRNG
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPP(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -1056,6 +992,7 @@ Float_t THijing::GetPP(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Int_t THijing::GetNFT(Int_t key1, Int_t key2) const
 {
+// Get values of array NFT in common HISTRNG
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetNFT(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -1073,6 +1010,7 @@ Int_t THijing::GetNFT(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPT(Int_t key1, Int_t key2) const
 {
+// Get values of array PT in common HISTRNG
    if ( key1<1 || key1>300 ) {
       printf("ERROR in THijing::GetPT(key1):\n");
       printf("      key1=%i is out of range [1..300]\n",key1);
@@ -1089,6 +1027,7 @@ Float_t THijing::GetPT(Int_t key1, Int_t key2) const
 
 void THijing::SetPARJ(Int_t key, Float_t parm) 
 {
+// Set values of array PARJ in common HISTRNG
     if ( key < 1 || key > 200) {
 	printf("ERROR in THijing::SetPARJ(key,parm):\n");
 	printf("      key=%i is out of range [1..200]\n",key);
@@ -1100,6 +1039,7 @@ void THijing::SetPARJ(Int_t key, Float_t parm)
 
 void THijing::SetMSTJ(Int_t key, Int_t parm) 
 {
+// Set values of array MSTJ in common HISTRNG
     if ( key < 1 || key > 200) {
 	printf("ERROR in THijing::SetMSTJ(key,parm):\n");
 	printf("      key=%i is out of range [1..200]\n",key);

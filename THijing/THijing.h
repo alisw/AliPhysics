@@ -1,7 +1,6 @@
-#ifndef ROOT_THijing
-#define ROOT_THijing
+#ifndef THIJING_H
+#define THIJING_H
 
-//+SEQ,CopyRight,T=NOINCLUDE.
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -12,25 +11,11 @@
 //////////////////////////////////////////////////////////////////////////
 
 #ifndef ROOT_TGenerator
-//*KEEP,TGenerator.
 #include "TGenerator.h"
-//*KEND.
 #endif
 
 class THijing : public TGenerator {
 
-protected:
-
-   Float_t      fEfrm;
-   TString      fFrame;
-   TString      fProj;
-   TString      fTarg;
-   Int_t        fIap;
-   Int_t        fIzp;
-   Int_t        fIat;
-   Int_t        fIzt;
-   Float_t      fBmin;
-   Float_t      fBmax;
 
 public:
    
@@ -45,8 +30,6 @@ public:
    virtual void        GenerateEvent();
 
    virtual Int_t       ImportParticles(TClonesArray *particles, Option_t *option="");
-
-//   virtual void        SetupTest();
 
 
    //Parameters for the generation:
@@ -206,6 +189,19 @@ public:
 
    virtual void         Rluget(Int_t lfn, Int_t move=0);
    virtual void         Rluset(Int_t lfn, Int_t move=0);   
+
+   protected:
+
+    Float_t      fEfrm;  // Energy in the centre of mass (CMS) or lab-frame (LAB)
+    TString      fFrame; // Reference frame CMS or LAB
+    TString      fProj;  // Projectile name
+    TString      fTarg;  // Target name
+    Int_t        fIap;   // Atomic number of projectile
+    Int_t        fIzp;   // Charge number of projectile 
+    Int_t        fIat;   // Atomic number of target
+    Int_t        fIzt;   // Charge number of target
+    Float_t      fBmin;  // Minimum impact parameter
+    Float_t      fBmax;  // Maximum impact parameter
 
    ClassDef(THijing,1)  //Interface to Hijing Event Generator
 };
