@@ -370,7 +370,7 @@ void AliTOF::CreateGeometry()
   Float_t par[10], fil_min, fil_max;
   Float_t fil1;
   //
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-499;
   //
   phos_x = 214.6;
   phos_r = 467.;
@@ -556,13 +556,13 @@ void AliTOF::CreateMaterials()
   stemax = -1.;
   deemax = -.3;
   stmin  = -.8;
-  AliMedium(500, "Vacuum  $", 0, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(501, "Air $", 0, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(505, "G10$", 5, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(506, "DME$", 6, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(507, "CO2$", 7, 0, ISXFLD, SXMGMX, 10., -.01, -.1, .01, -.01);
-  AliMedium(508, "ALUMINA$", 8, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(510, "DME$", 6, 1, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
+  AliMedium(0, "Vacuum  $", 0, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
+  AliMedium(1, "Air $", 0, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
+  AliMedium(5, "G10$", 5, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
+  AliMedium(6, "DME$", 6, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
+  AliMedium(7, "CO2$", 7, 0, ISXFLD, SXMGMX, 10., -.01, -.1, .01, -.01);
+  AliMedium(8, "ALUMINA$", 8, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
+  AliMedium(10, "DME$", 6, 1, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
 }
 
 //_____________________________________________________________________________

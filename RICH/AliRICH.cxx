@@ -370,7 +370,7 @@ void AliRICH::StepManager()
   // new (changed NROOTH from 10 to 25!!!!!!!!!!!!!) 
   
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-999;
   
   //--------------------------------------------------------------------------
   
@@ -1451,7 +1451,7 @@ void AliRICHv1::CreateGeometry()
 
   AliMC* pMC = AliMC::GetMC();
 
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-999;
   
   Int_t i;
   Float_t zs;
@@ -1695,7 +1695,7 @@ void AliRICHv1::CreateMaterials()
   Float_t radlal, densal, tmaxfd, deemax, stemax;
   Float_t aal, zal, radlgri, densfre, radlhon, densgri, denshon,densqua, densmet, wmatfre[2], wmatmet[2], wmatqua[2];
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-999;
   
   AliMC* pMC = AliMC::GetMC();
   TGeant3 *geant3 = (TGeant3*) pMC;
@@ -1798,16 +1798,16 @@ void AliRICHv1::CreateMaterials()
   epsil  = .001;
   stmin  = -.001;
   
-  AliMedium(1001, "DEFAULT MEDIUM AIR$", 1, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1002, "HONEYCOMB$", 6, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1003, "QUARZO$", 20, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1004, "FREON$", 30, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1005, "METANO$", 40, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1006, "CSI$", 16, 1, ISXFLD, SXMGMX,tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1007, "GRIGLIA$", 11, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1008, "QUARZOO$", 21, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1009, "GAP$", 41, 1, ISXFLD, SXMGMX,tmaxfd, .1, -deemax, epsil, -stmin);
-  AliMedium(1010, "ALUMINUM$", 50, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(1, "DEFAULT MEDIUM AIR$", 1, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(2, "HONEYCOMB$", 6, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(3, "QUARZO$", 20, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(4, "FREON$", 30, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "METANO$", 40, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(6, "CSI$", 16, 1, ISXFLD, SXMGMX,tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(7, "GRIGLIA$", 11, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(8, "QUARZOO$", 21, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(9, "GAP$", 41, 1, ISXFLD, SXMGMX,tmaxfd, .1, -deemax, epsil, -stmin);
+  AliMedium(10, "ALUMINUM$", 50, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   
   //     Switch on delta-ray production in the methane and freon gaps 

@@ -9,9 +9,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef ROOT_TObject
 #include <TObject.h>
-#endif
 
 class TCanvas;
 class TPad;

@@ -6,7 +6,6 @@
 #include <TAttLine.h>
 #include <TAttMarker.h>
 #include <TArrayI.h>
-//#include <Gtypes.h>
 #include <AliHit.h>
 
 class AliModule : public TNamed , public TAttLine, public TAttMarker {
@@ -36,6 +35,7 @@ public:
   // Inline functions
   virtual  int           GetNdigits() {return 0;}
   virtual  int           GetNhits()   {return 0;}
+  virtual  TArrayI      *GetIdtmed()   {return fIdtmed;}
   virtual  TList        *Histograms() {return fHistograms;}
   virtual  TList        *Nodes()  {return fNodes;}
   virtual  TClonesArray *Digits() {return 0;}

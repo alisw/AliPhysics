@@ -59,7 +59,7 @@ void AliTOFv0::CreateGeometry()
   Float_t rp1, rp2;
   Float_t par[10], fil_min, fil_max, ysz, fil0;
   //
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-499;
   //
   // barrel size along Z axis 
   //  rp1 = 360.;
@@ -191,7 +191,7 @@ void AliTOFv0::StepManager()
   //
   // Get the pointer to the MonteCarlo
   AliMC *pMC= AliMC::GetMC();
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-499;
   if(pMC->GetMedium()==idtmed[510-1] && 
      pMC->TrackEntering() && pMC->TrackCharge()
      && (id=pMC->CurrentVol(0,copy))==fIdSens) {

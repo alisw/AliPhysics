@@ -90,7 +90,6 @@ AliRun::AliRun()
   fImedia    = 0;
   fTrRmax    = 1.e10;
   fTrZmax    = 1.e10;
-  fIdtmed    = 0;
   fInitDone  = kFALSE;
   fLego      = 0;
   fPDGDB     = 0;        //Particle factory object!
@@ -177,8 +176,6 @@ AliRun::AliRun(const char *name, const char *title)
   // Prepare the tracking medium lists
   fImedia = new TArrayI(1000);
   for(i=0;i<1000;i++) (*fImedia)[i]=-99;
-  fIdtmed = new Int_t[fNdets*100];
-  for(i=0;i<fNdets*100;i++) fIdtmed[i]=0;
   //
   // Make particles
   fPDGDB     = TDatabasePDG::Instance();        //Particle factory object!
@@ -190,7 +187,6 @@ AliRun::~AliRun()
   //
   // Defaullt AliRun destructor
   //
-  delete [] fIdtmed;
   delete fImedia;
   delete fField;
   delete fMC;
@@ -860,7 +856,8 @@ void AliRun::MediaTable()
   // Built media table to get from the media number to
   // the detector id
   //
-  Int_t kz, ibeg, nz, idt, lz, i, k, ind;
+  Int_t kz, nz, idt, lz, i, k, ind;
+  //  Int_t ibeg;
   TObjArray &dets = *gAlice->Detectors();
   AliModule *det;
   //
@@ -868,10 +865,10 @@ void AliRun::MediaTable()
   for (kz=0;kz<fNdets;kz++) {
     // If detector is defined
     if((det=(AliModule*) dets[kz])) {
-      ibeg=100*kz-1;
-      for(nz=ibeg==-1?1:0;nz<100;nz++) {
+        TArrayI &idtmed = *(det->GetIdtmed()); 
+        for(nz=0;nz<100;nz++) {
 	// Find max and min material number
-	if((idt=fIdtmed[ibeg+nz])) {
+	if((idt=idtmed[nz])) {
 	  det->LoMedium() = det->LoMedium() < idt ? det->LoMedium() : idt;
 	  det->HiMedium() = det->HiMedium() > idt ? det->HiMedium() : idt;
 	}
@@ -881,7 +878,8 @@ void AliRun::MediaTable()
 	det->HiMedium() = 0;
       } else {
 	if(det->HiMedium() > fImedia->GetSize()) {
-	  Error("MediaTable","Increase fImedia");
+	  Error("MediaTable","Increase fImedia from %d to %d",
+		fImedia->GetSize(),det->HiMedium());
 	  return;
 	}
 	// Tag all materials in rage as belonging to detector kz
@@ -924,8 +922,8 @@ void AliRun::SetTransPar(char* filename)
   // Read filename to set the transport parameters
   //
 
-  AliMC* pMC = AliMC::GetMC();
 
+  AliMC* pMC = AliMC::GetMC();
   const Int_t ncuts=10;
   const Int_t nflags=11;
   const Int_t npars=ncuts+nflags;
@@ -934,6 +932,7 @@ void AliRun::SetTransPar(char* filename)
 			       "BREM","COMP","DCAY","DRAY","HADR","LOSS",
 			       "MULS","PAIR","PHOT","RAYL"};
   char line[256];
+  char detName[7];
   char* filtmp;
   Float_t cut[ncuts];
   Int_t flag[nflags];
@@ -945,7 +944,7 @@ void AliRun::SetTransPar(char* filename)
   lun=fopen(filtmp,"r");
   delete [] filtmp;
   if(!lun) {
-    printf(" * AliRun::SetTransPar * file %s does not exist!\n",filename);
+    Warning("SetTransPar","File %s does not exist!\n",filename);
     return;
   }
   //
@@ -974,39 +973,50 @@ void AliRun::SetTransPar(char* filename)
     if(!iret) continue;
     if(line[0]=='*') continue;
     // Read the numbers
-    iret=sscanf(line,"%d %f %f %f %f %f %f %f %f %f %f %d %d %d %d %d %d %d %d %d %d %d",
-		&itmed,&cut[0],&cut[1],&cut[2],&cut[3],&cut[4],&cut[5],&cut[6],&cut[7],&cut[8],&cut[9],
-		&flag[0],&flag[1],&flag[2],&flag[3],&flag[4],&flag[5],&flag[6],&flag[7],&flag[8],
-		&flag[9],&flag[10]);
+    iret=sscanf(line,"%s %d %f %f %f %f %f %f %f %f %f %f %d %d %d %d %d %d %d %d %d %d %d",
+		detName,&itmed,&cut[0],&cut[1],&cut[2],&cut[3],&cut[4],&cut[5],&cut[6],&cut[7],&cut[8],
+		&cut[9],&flag[0],&flag[1],&flag[2],&flag[3],&flag[4],&flag[5],&flag[6],&flag[7],
+		&flag[8],&flag[9],&flag[10]);
     if(!iret) continue;
     if(iret<0) {
       //reading error
-      printf(" *   Error reading file %s\n",filename);
+      Warning("SetTransPar","Error reading file %s\n",filename);
       continue;
     }
-    // Check that the tracking medium code is valid
-    if(0<itmed && itmed < 100*fNdets) {
-      ktmed=fIdtmed[itmed-1];
-      if(!ktmed) {
-	printf(" *     Invalid tracking medium code %d *\n",itmed);
+    // Check that the module exist
+    AliModule *mod = GetModule(detName);
+    if(mod) {
+      // Get the array of media numbers
+      TArrayI &idtmed = *mod->GetIdtmed();
+      // Check that the tracking medium code is valid
+      if(0<=itmed && itmed < 100) {
+	ktmed=idtmed[itmed];
+	if(!ktmed) {
+	  Warning("SetTransPar","Invalid tracking medium code %d for %s\n",itmed,mod->GetName());
+	  continue;
+	}
+	// Set energy thresholds
+	for(kz=0;kz<ncuts;kz++) {
+	  if(cut[kz]>=0) {
+	    printf(" *  %-6s set to %10.3E for tracking medium code %4d %s\n",
+		   pars[kz],cut[kz],itmed,mod->GetName());
+	    pMC->Gstpar(ktmed,pars[kz],cut[kz]);
+	  }
+	}
+	// Set transport mechanisms
+	for(kz=0;kz<nflags;kz++) {
+	  if(flag[kz]>=0) {
+	    printf(" *  %-6s set to %10d for tracking medium code %4d for %s\n",
+		   pars[ncuts+kz],flag[kz],itmed,mod->GetName());
+	    pMC->Gstpar(ktmed,pars[ncuts+kz],Float_t(flag[kz]));
+	  }
+	}
+      } else {
+	Warning("SetTransPar","Invalid medium code %d *\n",itmed);
 	continue;
       }
-      // Set energy thresholds
-      for(kz=0;kz<ncuts;kz++) {
-	if(cut[kz]>=0) {
-	  printf(" *  %-6s set to %10.3E for tracking medium code %4d  *\n",pars[kz],cut[kz],itmed);
-	  pMC->Gstpar(ktmed,pars[kz],cut[kz]);
-	}
-      }
-      // Set transport mechanisms
-      for(kz=0;kz<nflags;kz++) {
-	if(flag[kz]>=0) {
-	  printf(" *  %-6s set to %10d for tracking medium code %4d  *\n",pars[ncuts+kz],flag[kz],itmed);
-	  pMC->Gstpar(ktmed,pars[ncuts+kz],Float_t(flag[kz]));
-	}
-      }
     } else {
-      printf(" *     Invalid tracking medium code %d *\n",itmed);
+      Warning("SetTransPar","Module %s not present\n",detName);
       continue;
     }
   }
@@ -1425,7 +1435,6 @@ void AliRun::ReadEuclid(const char* filnam, Int_t id_det, const char* topvol)
   //
 
   AliMC* pMC = AliMC::GetMC();
-
   Int_t i, nvol, iret, itmed, irot, numed, npar, ndiv, iaxe;
   Int_t ndvmx, nr, flag;
   char key[5], card[77], natmed[21];
@@ -1454,7 +1463,8 @@ void AliRun::ReadEuclid(const char* filnam, Int_t id_det, const char* topvol)
     printf(" *** GREUCL *** Could not open file %s\n",filnam);
     return;
   }
-  //* --- definition of rotation matrix 0 ---
+  //* --- definition of rotation matrix 0 ---  
+  TArrayI &idtmed = *(det->GetIdtmed());
   idrot[0]=0;
   nvol=0;
  L10:
@@ -1473,7 +1483,8 @@ void AliRun::ReadEuclid(const char* filnam, Int_t id_det, const char* topvol)
     while(i<20) natmed[i++]=' ';
     natmed[i]='\0';
     //
-    pMC->Gckmat(fIdtmed[itmed+id_det*100-1],natmed);
+    //    pMC->Gckmat(idtmed[itmed+id_det*100-1],natmed);
+    pMC->Gckmat(idtmed[itmed],natmed);
     //*
   } else if (!strcmp(key,"ROTM")) {
     sscanf(&card[4],"%d %f %f %f %f %f %f",&irot,&teta1,&phi1,&teta2,&phi2,&teta3,&phi3);
@@ -1485,7 +1496,7 @@ void AliRun::ReadEuclid(const char* filnam, Int_t id_det, const char* topvol)
       for(i=0;i<npar;i++) fscanf(lun,"%f",&par[i]);
       fscanf(lun,"%*c");
     }
-    pMC->Gsvolu( name, shape, fIdtmed[numed+id_det*100-1], par, npar);
+    pMC->Gsvolu( name, shape, idtmed[numed], par, npar);
     //*     save the defined volumes
     strcpy(volst[++nvol],name);
     istop[nvol]=1;
@@ -1496,15 +1507,15 @@ void AliRun::ReadEuclid(const char* filnam, Int_t id_det, const char* topvol)
     //*
   } else if (!strcmp(key,"DVN2")) {
     sscanf(&card[5],"'%[^']' '%[^']' %d %d %f %d",name, mother, &ndiv, &iaxe, &orig, &numed);
-    pMC->Gsdvn2( name, mother, ndiv, iaxe, orig,fIdtmed[numed+id_det*100-1]);
+    pMC->Gsdvn2( name, mother, ndiv, iaxe, orig,idtmed[numed]);
     //*
   } else if (!strcmp(key,"DIVT")) {
     sscanf(&card[5],"'%[^']' '%[^']' %f %d %d %d", name, mother, &step, &iaxe, &numed, &ndvmx);
-    pMC->Gsdvt ( name, mother, step, iaxe, fIdtmed[numed+id_det*100-1], ndvmx);
+    pMC->Gsdvt ( name, mother, step, iaxe, idtmed[numed], ndvmx);
     //*
   } else if (!strcmp(key,"DVT2")) {
     sscanf(&card[5],"'%[^']' '%[^']' %f %d %f %d %d", name, mother, &step, &iaxe, &orig, &numed, &ndvmx);
-    pMC->Gsdvt2 ( name, mother, step, iaxe, orig, fIdtmed[numed+id_det*100-1], ndvmx );
+    pMC->Gsdvt2 ( name, mother, step, iaxe, orig, idtmed[numed], ndvmx );
     //*
   } else if (!strcmp(key,"POSI")) {
     sscanf(&card[5],"'%[^']' %d '%[^']' %f %f %f %d '%[^']'", name, &nr, mother, &xo, &yo, &zo, &irot, konly);
@@ -1606,6 +1617,7 @@ void AliRun::ReadEuclidMedia(const char* filnam, Int_t id_det)
   // Retrieve Mag Field parameters
   Int_t ISXFLD=gAlice->Field()->Integ();
   Float_t SXMGMX=gAlice->Field()->Max();
+  TArrayI &idtmed = *(det->GetIdtmed());
   //
  L10:
   for(i=0;i<130;i++) card[i]=0;
@@ -1638,9 +1650,9 @@ void AliRun::ReadEuclidMedia(const char* filnam, Int_t id_det)
     while(i<20) natmed[i++]=' ';
     natmed[i]='\0';
     //
-    det->AliMedium(itmed+id_det*100,natmed,nmat,isvol,ISXFLD,SXMGMX,tmaxfd,
+    det->AliMedium(itmed,natmed,nmat,isvol,ISXFLD,SXMGMX,tmaxfd,
 		   stemax,deemax,epsil,stmin,ubuf,nwbuf);
-    (*fImedia)[fIdtmed[itmed+id_det*100-1]-1]=id_det;
+    (*fImedia)[idtmed[itmed]-1]=id_det;
     //*
   }
   //*

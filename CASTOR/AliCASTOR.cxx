@@ -197,7 +197,7 @@ void AliCASTORv1::CreateGeometry()
   Int_t i;
   static Int_t debugFlag = 0;
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-1499;
 
   
   // >--------------------------------------------------------------------<*
@@ -695,7 +695,7 @@ void AliCASTORv1::CreateMaterials()
   Int_t   ISXFLD = gAlice->Field()->Integ();
   Float_t SXMGMX = gAlice->Field()->Max();
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-1499;
   
   Float_t cute, ubuf[1], cutg, epsil, awmix[3], dwmix, stmin;
   Int_t isvol;
@@ -758,24 +758,24 @@ void AliCASTORv1::CreateMaterials()
   deemax = -.2;  // Maximum permitted fractional energy loss. 
   epsil  = .01;  // Boundary crossing precision (cm). 
   stmin  = -.1;  // Minimum permitted step size inside absorber (cm). 
-  AliMedium(1501, "Vacuum$", 1, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1502, "Air   $", 2, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(1, "Vacuum$", 1, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(2, "Air   $", 2, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   // **> Options for Cherenkov fibres and cladding. 
   isvol = 1;    // Declare fibre core as sensitive. 
-  AliMedium(1503, "Quartz$", 3, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(3, "Quartz$", 3, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   isvol = 0;    // Declare fibre cladding as not sensitive. 
-  AliMedium(1504, "FQuartz$", 4, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(4, "FQuartz$", 4, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   // **> Options for absorber material (not sensitive). 
   isvol  = 0;   // Sensitive volume flag. 
   stemax = .5;  // Maximum permitted step size (cm). 
   deemax = .5;  // Maximum permitted fractional energy loss. 
   stmin  = .1;  // Minimum permitted step size inside absorber (cm). 
-  AliMedium(1505, "W Mix $",  5, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1506, "Pb208 $",  6, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1507, "Fe56  $ ", 7, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(1508, "Cu63  $ ", 8, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "W Mix $",  5, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(6, "Pb208 $",  6, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(7, "Fe56  $ ", 7, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(8, "Cu63  $ ", 8, isvol, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   // **> Select material for the Cherenkov fibres. 
   fOdFiber    = 1503;

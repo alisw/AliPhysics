@@ -217,10 +217,9 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
   //        =  3       constant magnetic field along z
   //  
   Int_t kmed;
-  Int_t *idtmed = gAlice->Idtmed();
   AliMC::GetMC()->Medium(kmed,name, (*fIdmate)[nmat], isvol, ifield, fieldm,
 			 tmaxfd, stemax, deemax, epsil,	stmin, ubuf, nbuf); 
-  idtmed[numed-1]=kmed;
+  (*fIdtmed)[numed]=kmed;
 } 
  
 //_____________________________________________________________________________

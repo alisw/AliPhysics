@@ -208,53 +208,53 @@ void AliTRD::CreateMaterials()
   //////////////////////////////////////////////////////////////////////////
 
   // Al Frame 
-  AliMedium(1301, "Al Frame$",   1, 0, ISXFLD, SXMGMX
+  AliMedium(1, "Al Frame$",   1, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Air 
-  AliMedium(1302, "Air$",        2, 0, ISXFLD, SXMGMX
+  AliMedium(2, "Air$",        2, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Polyethilene 
-  AliMedium(1303, "Radiator$",   3, 0, ISXFLD, SXMGMX
+  AliMedium(3, "Radiator$",   3, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Xe 
-  AliMedium(1304, "Xe$",         4, 1, ISXFLD, SXMGMX
+  AliMedium(4, "Xe$",         4, 1, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Cu pads 
-  AliMedium(1305, "Padplane$",   5, 1, ISXFLD, SXMGMX
+  AliMedium(5, "Padplane$",   5, 1, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Fee + cables 
-  AliMedium(1306, "Readout$",    1, 0, ISXFLD, SXMGMX
+  AliMedium(6, "Readout$",    1, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // C frame 
-  AliMedium(1307, "C Frame$",    6, 0, ISXFLD, SXMGMX
+  AliMedium(7, "C Frame$",    6, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Mylar foils 
-  AliMedium(1308, "Mylar$",      7, 0, ISXFLD, SXMGMX
+  AliMedium(8, "Mylar$",      7, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   if (fGasMix == 1) {
     // Gas-mixture (Xe/CO2) 
-    AliMedium(1309, "Gas-mix$",   10, 1, ISXFLD, SXMGMX
+    AliMedium(9, "Gas-mix$",   10, 1, ISXFLD, SXMGMX
                   , tmaxfd, stemax, deemax, epsil, stmin);
   }
   else {
     // Gas-mixture (Xe/Isobutane) 
-    AliMedium(1309, "Gas-mix$",   11, 1, ISXFLD, SXMGMX
+    AliMedium(9, "Gas-mix$",   11, 1, ISXFLD, SXMGMX
                   , tmaxfd, stemax, deemax, epsil, stmin);
   }
   // Nomex-honeycomb (use carbon for the time being) 
-  AliMedium(1310, "Nomex$",      6, 0, ISXFLD, SXMGMX
+  AliMedium(10, "Nomex$",      6, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Kapton foils (use Mylar for the time being) 
-  AliMedium(1311, "Kapton$",     7, 0, ISXFLD, SXMGMX
+  AliMedium(11, "Kapton$",     7, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Gas-filling of the radiator 
-  AliMedium(1312, "CO2$",        8, 0, ISXFLD, SXMGMX
+  AliMedium(12, "CO2$",        8, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // G10-plates
-  AliMedium(1313, "G10-plates$",12, 0, ISXFLD, SXMGMX
+  AliMedium(13, "G10-plates$",12, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Cooling water
-  AliMedium(1314, "Water$",     13, 0, ISXFLD, SXMGMX
+  AliMedium(14, "Water$",     13, 0, ISXFLD, SXMGMX
                 , tmaxfd, stemax, deemax, epsil, stmin);
 
 }

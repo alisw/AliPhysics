@@ -50,7 +50,7 @@ void AliFRAMEv1::CreateGeometry()
   //End_Html
   AliMC* pMC = AliMC::GetMC();
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-1199;
 
   Float_t dphi, dz_small, zpos, ddphi;
   Float_t tspar[5];
@@ -327,11 +327,11 @@ void AliFRAMEv1::CreateMaterials()
   //    Air 
   
   // 0.2 T. FIELD (L3) 
-  AliMedium(1215, "AIR_L3_US        ", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR_L3_US        ", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Steel 
   
-  AliMedium(1219, "ST_L3_US          ", 19, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(19, "ST_L3_US          ", 19, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
 }
 
 

@@ -301,7 +301,7 @@ void AliZDCv1::CreateGeometry()
   Float_t zd1, zd2;
   
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-799;
   
   // -- Mother of the ZDC 
   conpar[0] = 0.;
@@ -802,7 +802,7 @@ void AliZDCv1::CreateMaterials()
   
   AliMC* pMC = AliMC::GetMC();
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-799;
   
   Float_t dens, ubuf[1], wmat[2];
   Int_t isvol_active;
@@ -893,19 +893,19 @@ void AliZDCv1::CreateMaterials()
   inofld = 0;
   fieldm = 0.;
   
-  AliMedium(801, "ZW", 1, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(802, "ZBRASS", 2, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(803, "ZSIO2", 3, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(804, "ZLEAD", 4, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(805, "ZCOPP", 5, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(806, "ZTANT", 6, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(852, "ZIRON", 52, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(890, "ZVOID", 90, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(892, "Air", 92, 0, inofld, fieldm, tmaxfd, stemax,deemax, epsil, stmin);
+  AliMedium(1, "ZW", 1, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(2, "ZBRASS", 2, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(3, "ZSIO2", 3, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(4, "ZLEAD", 4, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "ZCOPP", 5, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(6, "ZTANT", 6, isvol_active, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(52, "ZIRON", 52, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(90, "ZVOID", 90, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(92, "Air", 92, 0, inofld, fieldm, tmaxfd, stemax,deemax, epsil, stmin);
   
   fieldm = 45.;
-  //    AliMedium(891, "ZVOIM", 91, isvol, isxfld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(891, "ZVOIM", 91, isvol, isxfld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  //    AliMedium(91, "ZVOIM", 91, isvol, isxfld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(91, "ZVOIM", 91, isvol, isxfld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   
   // Thresholds for showering in the ZDCs 
   

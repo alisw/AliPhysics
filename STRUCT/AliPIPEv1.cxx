@@ -57,7 +57,7 @@ void AliPIPEv1::CreateGeometry()
 
   const Double_t z_flange = 150;
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-1999;
   
   
   abs_d   = 90.;  // DEFINES DRIFT LENGTH 
@@ -299,18 +299,18 @@ void AliPIPEv1::CreateMaterials()
   
   //    Air 
   
-  AliMedium(2015, "AIR_L3_US", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR_L3_US", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Beryllium 
   
-  AliMedium(2005, "BE_L3_US", 5, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "BE_L3_US", 5, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Vacuum 
   
-  AliMedium(2016, "VA_L3_US", 16, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(16, "VA_L3_US", 16, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Steel 
   
-  AliMedium(2019, "ST_L3_US", 19, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(19, "ST_L3_US", 19, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
 }
 

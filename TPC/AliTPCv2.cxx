@@ -51,7 +51,7 @@ void AliTPCv2::CreateGeometry()
 
   AliMC* pMC = AliMC::GetMC();
 
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-399;
 
   AliTPCParam * fTPCParam = &(fDigParam->GetParam());
 
@@ -736,7 +736,7 @@ void AliTPCv2::Init()
   // Initialises version 2 of the TPC after that it has been built
   //
   AliMC* pMC=AliMC::GetMC();
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-399;
   AliTPC::Init();
   fIdSens1=pMC->VolId("TLGA"); // L-sector
   fIdSens2=pMC->VolId("TSGA"); // S-sector 

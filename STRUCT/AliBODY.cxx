@@ -74,7 +74,7 @@ void AliBODY::CreateGeometry()
   //End_Html
 
   Float_t DALIC[10];
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()+1;
   AliMC *pMC = AliMC::GetMC();
   //
   if(gAlice->GetModule("ZDC")) {

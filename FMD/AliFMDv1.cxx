@@ -71,7 +71,7 @@ void AliFMDv1::CreateGeometry()
   const Float_t v3 = 5.62;
   const Float_t v4 = 16.0;
   
-  Int_t *idtmed = gAlice->Idtmed();    
+  Int_t *idtmed = fIdtmed->GetArray()-899;    
   
   // ******************************************************** 
   //     DEFINE RIGHT DISK#3  OF FMD 
@@ -877,10 +877,10 @@ void AliFMDv1::CreateMaterials()
   deemax = -.3;  // Maximum fractional energy loss, DLS 
   stmin  = -.8;
   // ******************************************************** 
-  AliMedium(900, "STEEL_L3          ", 0, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(901, "LEAD_GLASS_L3     ", 1, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(902, "SILICON_L3        ", 2, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(903, "CERAMIC_L3        ", 3, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(904, "COVAR_L3          ", 4, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(0, "STEEL_L3          ", 0, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(1, "LEAD_GLASS_L3     ", 1, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(2, "SILICON_L3        ", 2, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(3, "CERAMIC_L3        ", 3, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(4, "COVAR_L3          ", 4, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
 }
 

@@ -67,7 +67,7 @@ void AliPIPEv3::CreateGeometry()
   Float_t thick;
 
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-1999;
 //     the mother of all beam pipes
 
   tpar[0] = 0.;
@@ -374,24 +374,24 @@ void AliPIPEv3::CreateMaterials()
   
   //    Air 
   
-  AliMedium(2015, "AIR_L3_US", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR_L3_US", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Beryllium 
   
-  AliMedium(2005, "BE_L3_US", 5, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "BE_L3_US", 5, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
 
   
     //    Aluminium 
   
-  AliMedium(2004, "AL_L3_US", 4, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(4, "AL_L3_US", 4, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
 
   //   Vacuum
 
-  AliMedium(2016, "VA_L3_US", 16, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(16, "VA_L3_US", 16, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Steel 
   
-  AliMedium(2019, "ST_L3_US", 19, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(19, "ST_L3_US", 19, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
 }
 //
 void AliPIPEv3::Undulation(char *undul, Float_t pitch, Float_t thick,
@@ -421,7 +421,7 @@ void AliPIPEv3::Undulation(char *undul, Float_t pitch, Float_t thick,
   Float_t dcone1[5], dcone2[5], dcone3[5], dcone4[5], dcone5[5],
     dcone6[5], dcone7[5], dcone8[5];
   Float_t xc, yc, zc, dundul[3];
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-1999;
 
   // Function Body
 

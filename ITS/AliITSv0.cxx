@@ -88,7 +88,7 @@ void AliITSv0::CreateGeometry()
   Float_t rzcone;
   Float_t dgh[15];
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-199;
   
   //     CONVERT INTO CM (RL(SI)=9.36 CM) 
   for (i = 0; i < 6; ++i) {

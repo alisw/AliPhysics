@@ -50,7 +50,6 @@ protected:
   Float_t       fTrRmax;       //Maximum radius for tracking
   Float_t       fTrZmax;       //Maximu z for tracking
   AliGenerator *fGenerator;    //Generator used in the MC
-  Int_t        *fIdtmed;       //Array to contain media numbers
   Bool_t        fInitDone;     //true when initialisation done
   AliLego      *fLego;         //pointer to aliLego object if it exists
   TDatabasePDG *fPDGDB;        //Particle factory object!
@@ -128,7 +127,6 @@ public:
    virtual  AliGenerator* Generator() {return fGenerator;}
    virtual  void SetGenerator(AliGenerator *generator);
    virtual  void EnergySummary();
-   virtual  Int_t* Idtmed() {return fIdtmed;}
    virtual  const TDatabasePDG* PDGDB() const {return fPDGDB;}
 
   // Functions from GEOCAD

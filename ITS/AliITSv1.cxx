@@ -90,7 +90,7 @@ void AliITSv1::CreateGeometry()
   Int_t idrotm[399];
   Float_t dgh[15];
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-199;
   
   //     CONVERT INTO CM (RL(SI)=9.36 CM) 
   for (i = 0; i < 6; ++i) {

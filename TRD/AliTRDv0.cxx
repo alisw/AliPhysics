@@ -85,7 +85,7 @@ void AliTRDv0::CreateGeometry()
   Float_t par_nc[nparnc];
   Float_t par_oc[nparoc];
 
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed =fIdtmed->GetArray()-1299;
   
   AliMC* pMC = AliMC::GetMC();
 

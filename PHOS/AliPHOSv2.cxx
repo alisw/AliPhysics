@@ -249,7 +249,7 @@ void AliPHOSv2::CreateMaterials()
   Float_t WTX[4]={292.0, 68.0, 462.0, 736.0};
   Float_t DTX=1.75;
 
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-699;
 
   AliMixture(0, "PbWO4$", AX, ZX, DX, -3, WX);
   AliMixture(1, "Polystyrene$", AP, ZP, DP, -2, WP);
@@ -263,36 +263,36 @@ void AliPHOSv2::CreateMaterials()
   AliMixture(8, "Textolit$", ATX, ZTX, DTX, -4, WTX);
   AliMaterial(99, "Air$", 14.61, 7.3, 0.001205, 30420., 67500., 0, 0);
   
-  AliMedium(700, "PHOS Xtal    $", 0, 1,
+  AliMedium(0, "PHOS Xtal    $", 0, 1,
 	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0);
-  AliMedium(701, "CPV scint.   $", 1, 1,
+  AliMedium(1, "CPV scint.   $", 1, 1,
 	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0);
-  AliMedium(702, "Al parts     $", 2, 0,
+  AliMedium(2, "Al parts     $", 2, 0,
 	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0);
-  AliMedium(703, "Tyvek wrapper$", 3, 0,
+  AliMedium(3, "Tyvek wrapper$", 3, 0,
 	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0);
-  AliMedium(704, "Polyst. foam $", 4, 0,
+  AliMedium(4, "Polyst. foam $", 4, 0,
 	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0);
-  AliMedium(705, "Titan. cover $", 5, 0,
+  AliMedium(5, "Titan. cover $", 5, 0,
 	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.0001, 0.0001, 0, 0);
-  AliMedium(706, "Si PIN       $", 6, 0,
+  AliMedium(6, "Si PIN       $", 6, 0,
 	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.01, 0.01, 0, 0);
-  AliMedium(707, "Thermo Insul.$", 7, 0,
+  AliMedium(7, "Thermo Insul.$", 7, 0,
 	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0);
-  AliMedium(708, "Textolit     $", 8, 0,
+  AliMedium(8, "Textolit     $", 8, 0,
 	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0);
-  AliMedium(799, "Air          $", 99, 0,
+  AliMedium(99, "Air          $", 99, 0,
 	    ISXFLD, SXMGMX, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0);
 
   // --- Set decent energy thresholds for gamma and electron tracking
-  pMC->Gstpar(idtmed[700],"CUTGAM",0.5E-4);
-  pMC->Gstpar(idtmed[700],"CUTELE",1.0E-4);
+  pMC->Gstpar(idtmed[699],"CUTGAM",0.5E-4);
+  pMC->Gstpar(idtmed[699],"CUTELE",1.0E-4);
   // --- Generate explicitly delta rays in the titan cover ---
-  pMC->Gstpar(idtmed[705],"LOSS",3.);
-  pMC->Gstpar(idtmed[705],"DRAY",1.);
+  pMC->Gstpar(idtmed[704],"LOSS",3.);
+  pMC->Gstpar(idtmed[704],"DRAY",1.);
   // --- and in aluminium parts ---
-  pMC->Gstpar(idtmed[702],"LOSS",3.);
-  pMC->Gstpar(idtmed[702],"DRAY",1.);
+  pMC->Gstpar(idtmed[701],"LOSS",3.);
+  pMC->Gstpar(idtmed[701],"DRAY",1.);
 
 }
 
@@ -411,7 +411,7 @@ void AliPHOSv2::CreateGeometry()
   Float_t CBS_R=GetRadius(1);
 
   // Get pointer to the array containing media indeces
-  Int_t *IDTMED = gAlice->Idtmed();
+  Int_t *IDTMED = fIdtmed->GetArray()-699;
 
   // --- Define PHOS box volume, fill with thermo insulating foam ---
   DPHOS[0]=FTI_X/2.0;
@@ -600,7 +600,7 @@ void AliPHOSv2::StepManager(void)
   Int_t blrc[4]; // (box, layer, row, column) indices
   Float_t xyze[4]; // position wrt MRS and energy deposited
 
-  Int_t *IDTMED=gAlice->Idtmed();
+  Int_t *IDTMED=fIdtmed->GetArray()-699;
 
   if(pMC->GetMedium()==IDTMED[700]){ // We are inside a CPV sensitive pad
 

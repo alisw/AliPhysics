@@ -54,7 +54,7 @@ void AliTPCv0::CreateGeometry()
 
   AliMC* pMC = AliMC::GetMC();
 
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-399;
 
   Float_t tana, rlsl, wlsl, rssl, rlsu, wssl, wlsu,
     rssu, wssu, alpha, x, y, sec_thick;

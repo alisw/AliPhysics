@@ -110,7 +110,7 @@ void AliPMDv1::CreateInside()
   Float_t x4=delx/4.; 
  Float_t ypos[13]={(-70.-x4-delx),-(70.+x4),(70.+x4),(70.+x4+delx),-x4+2*delx,-x4+delx,-x4,-x4-delx,-x4-2*delx,-3*x4-delx,-x4-delx/2.,-3*x4+delx,-3*x4+2*delx};
 // Float_t ypos[13]={(-70.-x4-delx),-(70.+x4),(70.+x4),(70.+x4+delx),(4*dely),(2*dely),0.,-(2*dely),-(4*dely),-3*x4-delx,-x4-delx/2.,-3*x4+delx,-3*x4+2*delx};
-  Int_t *idtmed = gAlice->Idtmed();    
+  Int_t *idtmed = fIdtmed->GetArray()-599;
   
   //  VOLUMES Names : begining with D for all PMD volumes, 
   // The names of SIZE variables begin with S and have more meaningful
@@ -232,7 +232,7 @@ void AliPMDv1::CreatePads()
   Int_t number;
   Int_t ihrotm,irotdm;
   const Float_t root3_cons = sqrt(3) /2.; 
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-599;
  
   AliMatrix(ihrotm, 90., 30.,   90.,  120., 0., 0.);
   AliMatrix(irotdm, 90., 180.,  90.,  270., 180., 0.);
@@ -424,7 +424,7 @@ void AliPMDv1::CreateMaterials()
   Float_t zsteel[4] = { 26.,24.,28.,14. };
   Float_t wsteel[4] = { .715,.18,.1,.005 };
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-599;
   Int_t isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   
@@ -458,20 +458,20 @@ void AliPMDv1::CreateMaterials()
   AliMixture(5, "ArCO2$", ag, zg, dg, 2, wg);
   
   // Define tracking media 
-  AliMedium(601, "Pb conv.$", 1,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
-  AliMedium(602, " S steel$", 19, 0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
-  AliMedium(607, "W  conv.$", 7,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
-  AliMedium(608, "G10plate$", 8,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
-  AliMedium(604, "Al      $", 4,  0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(606, "Fe      $", 6,  0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(605, "ArCO2   $", 5,  1, 0, isxfld, sxmgmx, .1,  .1, .1,  .1);
-  AliMedium(609, "SILICON $", 9,  1, 0, isxfld, sxmgmx, .1,  .1, .1,  .1);
-  AliMedium(610, "Be      $", 10, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(698, "Vacuum  $", 98, 0, 0, isxfld, sxmgmx, 1., .1, .1,  10);
-  AliMedium(699, "Air gaps$", 99, 0, 0, isxfld, sxmgmx, 1., .1, .1,  .1);
-  AliMedium(615, "Cu      $", 15, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(616, "C       $", 16, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(617, "PLOYCARB$", 17, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
+  AliMedium(1, "Pb conv.$", 1,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
+  AliMedium(2, " S steel$", 19, 0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
+  AliMedium(7, "W  conv.$", 7,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
+  AliMedium(8, "G10plate$", 8,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
+  AliMedium(4, "Al      $", 4,  0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
+  AliMedium(6, "Fe      $", 6,  0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
+  AliMedium(5, "ArCO2   $", 5,  1, 0, isxfld, sxmgmx, .1,  .1, .1,  .1);
+  AliMedium(9, "SILICON $", 9,  1, 0, isxfld, sxmgmx, .1,  .1, .1,  .1);
+  AliMedium(10, "Be      $", 10, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
+  AliMedium(98, "Vacuum  $", 98, 0, 0, isxfld, sxmgmx, 1., .1, .1,  10);
+  AliMedium(99, "Air gaps$", 99, 0, 0, isxfld, sxmgmx, 1., .1, .1,  .1);
+  AliMedium(15, "Cu      $", 15, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
+  AliMedium(16, "C       $", 16, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
+  AliMedium(17, "PLOYCARB$", 17, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
   
   // --- Generate explicitly delta rays in the iron, aluminium and lead --- 
   pMC->Gstpar(idtmed[600], "LOSS", 3.);
@@ -544,7 +544,7 @@ void AliPMDv1::Init()
   for(i=0;i<80;i++) printf("*");
   printf("\n");
   //
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-599;
   fMedSens=idtmed[605-1];
 }
 

@@ -128,7 +128,7 @@ void AliITSv3::CreateGeometry()
   {"TR51","TR52","TR53","TR54","TR55","TR56","TR57","TR58",
    "TR59","TR60","TR61","TR62","TR63","TR64","TR65","TR66"};
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-199;
   
   // --- Define a ghost volume containing the whole ITS and fill it with air
   //     or vacuum 

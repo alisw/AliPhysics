@@ -59,7 +59,7 @@ void AliTPCv1::CreateGeometry()
 
   AliMC* pMC = AliMC::GetMC();
 
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-399;
 
 
   AliTPCParam * fTPCParam = &(fDigParam->GetParam());

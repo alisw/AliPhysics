@@ -62,7 +62,7 @@ void AliFMDv0::CreateGeometry()
   Float_t rout, z;
   Float_t par[3], rin;
   
-  Int_t *idtmed = gAlice->Idtmed();    
+  Int_t *idtmed = fIdtmed->GetArray()-899;    
   
   // ******************************************************** 
   //       DEFINE RIGHT DISK#3  OF FMD 
@@ -349,9 +349,9 @@ void AliFMDv0::CreateMaterials()
   deemax = -.3;  // Maximum fractional energy loss, DLS 
   stmin  = -.8;
   // ******************************************************** 
-  AliMedium(901, "FMD_R1_L3        ", 1, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(902, "FMD_R2_L3        ", 2, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(903, "FMD_R3_L3        ", 3, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(1, "FMD_R1_L3        ", 1, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(2, "FMD_R2_L3        ", 2, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(3, "FMD_R3_L3        ", 3, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
 }
 
 

@@ -188,15 +188,15 @@ void AliITS::CreateMaterials()
   AliMixture( 7, "SPD Water $", awat, zwat, denswat, -2, wwat);
   AliMixture( 8, "SPD Freon$",  afre, zfre, densfre, -2, wfre);
   // ** 
-  AliMedium(200, "SPD Si$",      0, 1, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(201, "SPD Si chip$", 1, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(202, "SPD Si bus$",  2, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(203, "SPD C$",       3, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(204, "SPD Air$",     4, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(205, "SPD Vacuum$",  5, 0, ISXFLD, SXMGMX, 10.,  1., .1, .1,    10.);
-  AliMedium(206, "SPD Al$",      6, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(207, "SPD Water $",  7, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(208, "SPD Freon$",   8, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(0, "SPD Si$",      0, 1, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(1, "SPD Si chip$", 1, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(2, "SPD Si bus$",  2, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(3, "SPD C$",       3, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(4, "SPD Air$",     4, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(5, "SPD Vacuum$",  5, 0, ISXFLD, SXMGMX, 10.,  1., .1, .1,    10.);
+  AliMedium(6, "SPD Al$",      6, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(7, "SPD Water $",  7, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(8, "SPD Freon$",   8, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
   
   //    225-249 --> Silicon Drift Detectors (detectors, chips, buses, cooling,..)
   
@@ -224,19 +224,19 @@ void AliITS::CreateMaterials()
   AliMaterial(37, "SDD Kapton$", 12.011, 6., 1.3, 31.27, 999);
   // ** 
   // check A and Z 
-  AliMedium(225, "SDD Si$",      25, 1, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(226, "SDD Si chip$", 26, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(227, "SDD Si bus$",  27, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(228, "SDD C$",       28, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(229, "SDD Air$",     29, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(230, "SDD Vacuum$",  30, 0, ISXFLD, SXMGMX, 10.,  1., .1, .1,    10.);
-  AliMedium(231, "SDD Al$",      31, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(232, "SDD Water $",  32, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(233, "SDD Freon$",   33, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(234, "SDD PCB$",     34, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(235, "SDD Copper$",  35, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(236, "SDD Ceramics$",36, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(237, "SDD Kapton$",  37, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(25, "SDD Si$",      25, 1, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(26, "SDD Si chip$", 26, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(27, "SDD Si bus$",  27, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(28, "SDD C$",       28, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(29, "SDD Air$",     29, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(30, "SDD Vacuum$",  30, 0, ISXFLD, SXMGMX, 10.,  1., .1, .1,    10.);
+  AliMedium(31, "SDD Al$",      31, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(32, "SDD Water $",  32, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(33, "SDD Freon$",   33, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(34, "SDD PCB$",     34, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(35, "SDD Copper$",  35, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(36, "SDD Ceramics$",36, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(37, "SDD Kapton$",  37, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
   
   //    250-274 --> Silicon Strip Detectors (detectors, chips, buses, cooling,..)
   
@@ -269,20 +269,20 @@ void AliITS::CreateMaterials()
   // check A and Z 
   AliMaterial(63, "SDD G10FR4$", 17.749, 8.875, 1.8, 21.822, 999.);
   // ** 
-  AliMedium(250, "SSD Si$",      50, 1, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(251, "SSD Si chip$", 51, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(252, "SSD Si bus$",  52, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(253, "SSD C$",       53, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(254, "SSD Air$",     54, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(255, "SSD Vacuum$",  55, 0, ISXFLD, SXMGMX, 10.,  1., .1, .1,    10.);
-  AliMedium(256, "SSD Al$",      56, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(257, "SSD Water $",  57, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(258, "SSD Freon$",   58, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(259, "SSD PCB$",     59, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(260, "SSD Copper$",  60, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(261, "SSD Ceramics$",61, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(262, "SSD Kapton$",  62, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(263, "SSD G10FR4$",  63, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(50, "SSD Si$",      50, 1, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(51, "SSD Si chip$", 51, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(52, "SSD Si bus$",  52, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(53, "SSD C$",       53, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(54, "SSD Air$",     54, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(55, "SSD Vacuum$",  55, 0, ISXFLD, SXMGMX, 10.,  1., .1, .1,    10.);
+  AliMedium(56, "SSD Al$",      56, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(57, "SSD Water $",  57, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(58, "SSD Freon$",   58, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(59, "SSD PCB$",     59, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(60, "SSD Copper$",  60, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(61, "SSD Ceramics$",61, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(62, "SSD Kapton$",  62, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(63, "SSD G10FR4$",  63, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
   
   //     275-299 --> General (end-caps, frames, cooling, cables, etc.) 
   
@@ -299,13 +299,13 @@ void AliITS::CreateMaterials()
   // positive 
   AliMixture(81, "GEN Water $", awat, zwat, denswat, 2, wwat);
   // ** 
-  AliMedium(275, "GEN C$",         75, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(276, "GEN Air$",       76, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(277, "GEN Vacuum$",    77, 0, ISXFLD, SXMGMX, 10., .1,  .1, .1,    10.);
-  AliMedium(278, "GEN POLYETHYL$", 78, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(279, "GEN SERVICES$",  79, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(280, "GEN Copper$",    80, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(281, "GEN Water $",    81, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(75, "GEN C$",         75, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(76, "GEN Air$",       76, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(77, "GEN Vacuum$",    77, 0, ISXFLD, SXMGMX, 10., .1,  .1, .1,    10.);
+  AliMedium(78, "GEN POLYETHYL$", 78, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(79, "GEN SERVICES$",  79, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(80, "GEN Copper$",    80, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(81, "GEN Water $",    81, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
 }
 
 //_____________________________________________________________________________

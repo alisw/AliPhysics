@@ -198,7 +198,7 @@ class AliPHOS : public AliDetector {
   virtual void          DefPars();
   virtual void          AddPHOSCradles();
 
-
+  /*
 
   virtual Int_t GetPHOS_IDTMED_PbWO4         (void){return gAlice->Idtmed()[700-1];}
   virtual Int_t GetPHOS_IDTMED_CPV           (void){return gAlice->Idtmed()[701-1];}
@@ -207,7 +207,15 @@ class AliPHOS : public AliDetector {
   virtual Int_t GetPHOS_IDTMED_PIN           (void){return gAlice->Idtmed()[706-1];}
   virtual Int_t GetPHOS_IDTMED_AIR           (void){return gAlice->Idtmed()[799-1];}
   
+  */
   
+  virtual Int_t GetPHOS_IDTMED_PbWO4         (void){return (*fIdtmed)[0];}
+  virtual Int_t GetPHOS_IDTMED_CPV           (void){return (*fIdtmed)[1];}
+  virtual Int_t GetPHOS_IDTMED_Al            (void){return (*fIdtmed)[2];}
+  virtual Int_t GetPHOS_IDTMED_Tyvek         (void){return (*fIdtmed)[3];}
+  virtual Int_t GetPHOS_IDTMED_PIN           (void){return (*fIdtmed)[4];}
+  virtual Int_t GetPHOS_IDTMED_AIR           (void){return (*fIdtmed)[99];}
+
   virtual Int_t   &GetPHOS_Ndiv_magic    (void) {return PHOS_Ndiv_magic;}
   virtual Float_t  GetCrystalSideSize    (void) const {return PHOScell[0]; }
   virtual Float_t  GetCrystalLength      (void) const {return PHOScell[1]; }

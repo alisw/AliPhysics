@@ -76,7 +76,7 @@ void AliMUONv0::Trigger(Float_t (*x)[4], Float_t (*y)[4], Int_t& iflag)
 //___________________________________________
 void AliMUONv0::CreateGeometry()
 {
-    Int_t *idtmed = gAlice->Idtmed();
+    Int_t *idtmed = fIdtmed->GetArray()-1099;
     AliMC* pMC = AliMC::GetMC();
 //
 //   Note: all chambers have the same structure, which could be 
@@ -1238,23 +1238,23 @@ void AliMUONv0::CreateMaterials()
     stmin  = -.8;
     //
     //    Air 
-    AliMedium(1101, "AIR_CH_US         ", 15, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(1, "AIR_CH_US         ", 15, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
     //
     //    Aluminum 
 
-    AliMedium(1104, "ALU_CH_US          ", 9, 0, ISXFLD, SXMGMX, tmaxfd, fMaxStepAlu, 
+    AliMedium(4, "ALU_CH_US          ", 9, 0, ISXFLD, SXMGMX, tmaxfd, fMaxStepAlu, 
 	    fMaxDestepAlu, epsil, stmin);
     //
     //    Ar-isoC4H10 gas 
 
-    AliMedium(1106, "AR_CH_US          ", 20, 1, ISXFLD, SXMGMX, tmaxfd, fMaxStepGas, 
+    AliMedium(6, "AR_CH_US          ", 20, 1, ISXFLD, SXMGMX, tmaxfd, fMaxStepGas, 
 	    fMaxDestepGas, epsil, stmin);
 //
     //    Ar-Isobuthane-Forane-SF6 gas 
 
-    AliMedium(1107, "GAS_CH_TRIGGER    ", 21, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(7, "GAS_CH_TRIGGER    ", 21, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
 
-    AliMedium(1108, "BAKE_CH_TRIGGER   ", 19, 0, ISXFLD, SXMGMX, tmaxfd, fMaxStepAlu, 
+    AliMedium(8, "BAKE_CH_TRIGGER   ", 19, 0, ISXFLD, SXMGMX, tmaxfd, fMaxStepAlu, 
 	    fMaxDestepAlu, epsil, stmin);
 
 }

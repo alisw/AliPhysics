@@ -104,7 +104,7 @@ void AliTRDv2::CreateGeometry()
 
   Int_t icham;
 
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-1299;
   
   AliMC* pMC = AliMC::GetMC();
 

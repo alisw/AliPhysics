@@ -623,16 +623,16 @@ void AliTPC::CreateMaterials()
   AliMaterial(9, "Silicon", asi, zsi, desi, radsi, 999.);
   AliMaterial(99, "Air$", 14.61, 7.3, .001205, 30420., 67500.);
   
-  AliMedium(400, "Al wall$",  0, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1);
-  AliMedium(402, "Gas mix1$", 3, 0, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
-  AliMedium(403, "Gas mix2$", 3, 0, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
-  AliMedium(404, "Gas mix3$", 4, 1, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
-  AliMedium(405, "G10 pln$",  5, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
-  AliMedium(406, "Mylar  $",  6, 0, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
-  AliMedium(407, "CO2    $",  7, 0, ISXFLD, SXMGMX, 10., .01,.1, .01,  .01);
-  AliMedium(408, "Carbon $",  8, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
-  AliMedium(409, "Silicon$",  9, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
-  AliMedium(499, "Air gap$", 99, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
+  AliMedium(0, "Al wall$",  0, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1);
+  AliMedium(2, "Gas mix1$", 3, 0, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
+  AliMedium(3, "Gas mix2$", 3, 0, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
+  AliMedium(4, "Gas mix3$", 4, 1, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
+  AliMedium(5, "G10 pln$",  5, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
+  AliMedium(6, "Mylar  $",  6, 0, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
+  AliMedium(7, "CO2    $",  7, 0, ISXFLD, SXMGMX, 10., .01,.1, .01,  .01);
+  AliMedium(8, "Carbon $",  8, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
+  AliMedium(9, "Silicon$",  9, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
+  AliMedium(99, "Air gap$", 99, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
 }
 
 //_____________________________________________________________________________

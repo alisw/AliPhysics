@@ -56,7 +56,7 @@ void AliPHOSv0::CreateGeometry()
     Int_t idrotm[99];
     Float_t xp1, yp1, xp2, yp2;
     
-    Int_t *idtmed = gAlice->Idtmed();
+    Int_t *idtmed = fIdtmed->GetArray()-699;
 
 // --- Dimensions of PbWO4 crystal --- 
       const Float_t XTL_X=2.2;
@@ -221,7 +221,7 @@ void AliPHOSv0::CreateMaterials()
     Float_t wf[2] = { 1.,1. };
     Float_t df    = .3;
 
-    Int_t *idtmed = gAlice->Idtmed();
+    Int_t *idtmed = fIdtmed->GetArray()-699;
     
     AliMixture( 0, "PbWO4$",       ax, zx, dx, -3, wx);
     AliMixture( 1, "Polystyrene$", ap, zp, dp, -2, wp);
@@ -231,12 +231,12 @@ void AliPHOSv0::CreateMaterials()
     AliMixture( 4, "Foam$",  af, zf, df, -2, wf);
     AliMaterial(9, "Air$", 14.61, 7.3, .001205, 30420., 67500);
 
-    AliMedium(700, "PHOS Xtal    $", 0, 1, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
-    AliMedium(701, "CPV scint.   $", 1, 1, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
-    AliMedium(702, "Al parts     $", 2, 0, ISXFLD, SXMGMX, 10., .1, .1, .001, .001);
-    AliMedium(703, "Tyvek wrapper$", 3, 0, ISXFLD, SXMGMX, 10., .1, .1, .001, .001);
-    AliMedium(704, "Polyst. foam $", 4, 0, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
-    AliMedium(799, "Air          $", 9, 0, ISXFLD, SXMGMX, 10., 1., .1, .1, 10.);
+    AliMedium(0, "PHOS Xtal    $", 0, 1, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
+    AliMedium(1, "CPV scint.   $", 1, 1, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
+    AliMedium(2, "Al parts     $", 2, 0, ISXFLD, SXMGMX, 10., .1, .1, .001, .001);
+    AliMedium(3, "Tyvek wrapper$", 3, 0, ISXFLD, SXMGMX, 10., .1, .1, .001, .001);
+    AliMedium(4, "Polyst. foam $", 4, 0, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
+    AliMedium(99, "Air          $", 9, 0, ISXFLD, SXMGMX, 10., 1., .1, .1, 10.);
 
 // --- Generate explicitly delta rays in aluminium parts --- 
     pMC->Gstpar(idtmed[701], "LOSS", 3.);

@@ -21,7 +21,7 @@
 ClassImp(AliTOFv3)
  
 //_____________________________________________________________________________
-AliTOFv3::AliTOFv3() : AliTOF()
+AliTOFv3::AliTOFv3()
 {
   //
   // Default constructor
@@ -80,7 +80,7 @@ void AliTOFv3::TOFpc(Float_t xm, Float_t ym, Float_t zm0,
   Float_t xsz, ysz, zsz;
   Int_t nzp0, nzp1, nzp2;
   
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-499;
   
   // X size of PPC plate 
   xsz = 54.;
@@ -310,7 +310,7 @@ void AliTOFv3::StepManager()
   Int_t vol[3];
   Int_t copy, id;
   AliMC *pMC= AliMC::GetMC();
-  Int_t *idtmed = gAlice->Idtmed();
+  Int_t *idtmed = fIdtmed->GetArray()-499;
   if(pMC->GetMedium()==idtmed[510-1] && 
      pMC->TrackEntering() && pMC->TrackCharge()
      && pMC->CurrentVol(0,copy)==fIdSens) {

@@ -59,7 +59,7 @@ void AliITSv4::CreateGeometry()
   AliMC* pMC = AliMC::GetMC();
 #ifndef NEW
   Int_t ivers=4*10+fMinorVersion;
-  its_geo4(ivers, gAlice->Idtmed());
+  its_geo4(ivers, fIdtmed->GetArray()-200;
 #else
 // *** DEFINITION OF THE GEOMETRY OF THE ITS *** 
 // *** RB APR-1990 CATANIA *** 
@@ -109,7 +109,7 @@ void AliITSv4::CreateGeometry()
     static Double_t xcc1, ycc1, xcc2, ycc2;
     Float_t atheta910;
 
-    Int_t *idtmed = gAlice->Idtmed();
+    Int_t *idtmed = fIdtmed->GetArray()-199;
     
 #define natra_ref(a_0,a_1) &natra[(a_1)*4 + a_0 - 4]
 #define natra1_ref(a_0,a_1) &natra1[(a_1)*4 + a_0 - 4]
