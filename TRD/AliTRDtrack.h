@@ -7,7 +7,6 @@
 #include <AliKalmanTrack.h>
 #include <TMath.h>
 
-#include "AliBarrelTrack.h"
 #include "AliTRDgeometry.h"
 #include "TVector2.h"
 
@@ -113,7 +112,6 @@ public:
                    Double_t h01, Int_t plane);
 
   //
-  void GetBarrelTrack(AliBarrelTrack *track);
   void AddNWrong() {fNWrong++;}
   
   Int_t GetNWrong() const {return fNWrong;}

@@ -32,7 +32,6 @@
 #include "AliTRDgeometryHole.h"
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
-#include "AliBarrelTrack.h"
 #include "AliESD.h"
 
 #include "AliTRDtracker.h"
@@ -190,14 +189,6 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
 
   fVocal = kFALSE;
 
-
-  // Barrel Tracks [SR, 03.04.2003]
-
-  fBarrelFile = 0;
-  fBarrelTree = 0;
-  fBarrelArray = 0;
-  fBarrelTrack = 0;
-
   savedir->cd();
 }   
 
@@ -227,81 +218,6 @@ AliTRDtracker::~AliTRDtracker()
     delete fTrSec[geomS];
   }
 }   
-
-//_____________________________________________________________________
-
-void AliTRDtracker::SetBarrelTree(const char *mode) {
-  //
-  //
-  //
-
-  if (!IsStoringBarrel()) return;
-
-  TDirectory *sav = gDirectory;
-  if (!fBarrelFile) fBarrelFile = new TFile("AliBarrelTracks.root", "UPDATE");
-
-  char buff[40];
-  sprintf(buff,  "BarrelTRD_%d_%s", GetEventNumber(), mode);
-
-  fBarrelFile->cd();
-  fBarrelTree = new TTree(buff, "Barrel TPC tracks");
-  
-  Int_t nRefs = fgkLastPlane - fgkFirstPlane + 1;
-
-  if (!fBarrelArray) fBarrelArray = new TClonesArray("AliBarrelTrack", nRefs);
-  for(Int_t i=0; i<nRefs; i++) new((*fBarrelArray)[i]) AliBarrelTrack();
-  
-  fBarrelTree->Branch("tracks", &fBarrelArray);
-  sav->cd();
-}
-  
-//_____________________________________________________________________
-
-void AliTRDtracker::StoreBarrelTrack(AliTRDtrack *ps, Int_t refPlane, Int_t isIn) {
-  //
-  //
-  //
-  
-  if (!IsStoringBarrel()) return;
-  
-  static Int_t nClusters;
-  static Int_t nWrong;
-  static Double_t chi2;
-  static Int_t index;
-  static Bool_t wasLast = kTRUE;
-  
-  Int_t newClusters, newWrong;
-  Double_t newChi2;
-  
-  if (wasLast) {   
- 
-    fBarrelArray->Clear();
-    nClusters = nWrong = 0;
-    chi2 = 0.0;
-    index = 0;
-    wasLast = kFALSE;
-  }
-  
-  fBarrelTrack = (AliBarrelTrack*)(*fBarrelArray)[index++];
-  ps->GetBarrelTrack(fBarrelTrack);
-  
-  newClusters = ps->GetNumberOfClusters() - nClusters; 
-  newWrong = ps->GetNWrong() - nWrong;
-  newChi2 = ps->GetChi2() - chi2;
-  
-  nClusters =  ps->GetNumberOfClusters();
-  nWrong = ps->GetNWrong();
-  chi2 = ps->GetChi2();  
-
-  if (refPlane != fgkLastPlane) {
-    fBarrelTrack->SetNClusters(newClusters, newChi2);
-    fBarrelTrack->SetNWrongClusters(newWrong);
-  } else {
-    wasLast = kTRUE;
-  } 
-
-  fBarrelTrack->SetRefPlane(refPlane, isIn);
-}
 
 //_____________________________________________________________________
 

@@ -278,35 +278,7 @@ AliTRDtrack::~AliTRDtrack()
   fBackupTrack=0;
 
 }
-            
-//_____________________________________________________________________________
 
-void  AliTRDtrack::GetBarrelTrack(AliBarrelTrack *track) {
-  //
-  //
-  //
-  
-  if (!track) return;
-  Double_t xr, vec[5], cov[15];
-
-  track->SetLabel(GetLabel());
-  track->SetX(fX, fAlpha);
-  track->SetNClusters(GetNumberOfClusters(), GetChi2());
-  track->SetNWrongClusters(fNWrong);
-  track->SetNRotate(fNRotate);
-  Double_t times[10];
-  GetIntegratedTimes(times);
-  track->SetTime(times, GetIntegratedLength());
-
-  track->SetMass(GetMass());
-  track->SetdEdX(GetdEdx());
-
-  GetExternalParameters(xr, vec);
-  track->SetStateVector(vec);
-
-  GetExternalCovariance(cov);
-  track->SetCovarianceMatrix(cov);
-}
 //____________________________________________________________________________
 void AliTRDtrack::GetExternalParameters(Double_t& xr, Double_t x[5]) const {
   //

@@ -15,7 +15,7 @@ AliRunDigitizer.cxx AliDigitizer.cxx AliStream.cxx \
 AliMergeCombi.cxx AliMagFMaps.cxx AliFieldMap.cxx \
 AliGausCorr.cxx AliTrackReference.cxx \
 AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
-AliMemoryWatcher.cxx AliBarrelTrack.cxx \
+AliMemoryWatcher.cxx \
 AliVertexer.cxx \
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
 AliReconstructor.cxx

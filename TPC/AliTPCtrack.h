@@ -26,7 +26,6 @@
 
 #include "AliTPCreco.h"
 #include "AliExternalTrackParam.h"
-class AliBarrelTrack;
 class AliESDtrack;
 
 //_____________________________________________________________________________
@@ -74,15 +73,6 @@ public:
   void GetExternalCovariance(Double_t cov[15]) const ;
 
   // [SR, 01.04.2003]
-
-  void GetBarrelTrack(AliBarrelTrack *track)const;
-
-  void ResetNWrong() {fNWrong = 0;}
-  void ResetNRotation() {fNRotation = 0;}
-  
-  Int_t GetNWrong() const {return fNWrong;}
-  Int_t GetNRotation() const {return fNRotation;}
-
   Int_t GetNumber() const {return fNumber;}
   void  SetNumber(Int_t n) {fNumber = n;} 
   //
@@ -142,8 +132,6 @@ protected:
   Int_t fIndex[kMaxRow];       // indices of associated clusters 
   Float_t fPoints[4];            //first, max dens row  end points of the track and max density
   //[SR, 01.04.2003]
-  Int_t fNWrong;         // number of wrong clusters
-  Int_t fNRotation;      // number of rotations
   Int_t fNumber;         // magic number used for number of clusters
   // MI addition
   Float_t fSdEdx;           // sigma of dedx 
@@ -159,7 +147,8 @@ protected:
   AliExternalTrackParam   fReference; // track parameters at the middle of the chamber
   Float_t  fKinkPoint[12];      //radius, of kink,  dfi and dtheta
   Int_t    fKinkIndexes[3];     // kink indexes - minus = mother + daughter
-  ClassDef(AliTPCtrack,1)   // Time Projection Chamber reconstructed tracks
+
+  ClassDef(AliTPCtrack,2)   // Time Projection Chamber reconstructed tracks
 };
 
 inline 

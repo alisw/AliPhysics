@@ -51,13 +51,6 @@ AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
   fParam = (AliTPCParam*) par;
   fSeeds=0;
 
-  // [SR 17.03.2003]
-  
-  fBarrelFile = 0;
-  fBarrelTree = 0;
-  fBarrelArray = 0;
-  fBarrelTrack = 0;
-  
 }
 
 //_____________________________________________________________________________
@@ -71,98 +64,7 @@ AliTPCtracker::~AliTPCtracker() {
     fSeeds->Delete(); 
     delete fSeeds;
   }
-
-  // [SR, 01.04.2003]
-  if (fBarrelFile) {
-    fBarrelFile->Close();
-    delete fBarrelFile;
-  }
 }
-
-//_____________________________________________________________________________
- 
-void AliTPCtracker::SetBarrelTree(const char *mode) {
-  //
-  // Creates a tree for BarrelTracks
-  // mode = "back" or "refit"
-  //
-  // [SR, 01.04.2003]
-  //
-  
-  if (!IsStoringBarrel()) return;
-  
-  TDirectory *sav = gDirectory;
-  if (!fBarrelFile) fBarrelFile = new TFile("AliBarrelTracks.root", "UPDATE");
-
-  char buff[40];
-  sprintf(buff, "BarrelTPC_%d_%s", GetEventNumber(), mode);
-
-  fBarrelFile->cd();
-  fBarrelTree = new TTree(buff, "Barrel TPC tracks");
-  
-  if (!fBarrelArray) fBarrelArray = new TClonesArray("AliBarrelTrack", 4);
-  for(Int_t i=0; i<4; i++) new((*fBarrelArray)[i]) AliBarrelTrack();
-  
-  fBarrelTree->Branch("tracks", &fBarrelArray);
-  
-  sav->cd();
-}
-//_____________________________________________________________________________
-
-void AliTPCtracker::StoreBarrelTrack(AliTPCtrack *ps, Int_t refPlane, Int_t isIn) {
-  //
-  // Stores Track at a given reference plane
-  // 
-  // refPlane: 1-4
-  // isIn: 1 - backward, 2 - refit
-  //
-  
-  if (!IsStoringBarrel()) return;
-  if (refPlane < 0 || refPlane > 4) return;
-  if (isIn > 2) return;
-
-  static Int_t nClusters;
-  static Int_t nWrong;
-  static Double_t chi2;
-  static Int_t index;
-
-  Int_t newClusters, newWrong;
-  Double_t newChi2;
-
-  if ( (refPlane == 1 && isIn == kTrackBack) || 
-       (refPlane == 4 && isIn == kTrackRefit) ) {
-    
-    fBarrelArray->Clear();
-    nClusters = nWrong = 0;
-    chi2 = 0.0;
-    index = 0;
-  }
-
-  // propagate
-  Double_t refX = 0;
-  if (refPlane == 1) refX = fParam->GetInnerRadiusLow();
-  if (refPlane == 2) refX = fParam->GetInnerRadiusUp();
-  if (refPlane == 3) refX = fParam->GetOuterRadiusLow();
-  if (refPlane == 4) refX = fParam->GetOuterRadiusUp();
-
-  ps->PropagateTo(refX);
-
-  fBarrelTrack = (AliBarrelTrack*)(*fBarrelArray)[index++];
-  ps->GetBarrelTrack(fBarrelTrack);
-  
-  newClusters = ps->GetNumberOfClusters() - nClusters; 
-  newWrong = ps->GetNWrong() - nWrong;
-  newChi2 = ps->GetChi2() - chi2;
-
-  nClusters =  ps->GetNumberOfClusters();
-  nWrong = ps->GetNWrong();
-  chi2 = ps->GetChi2();
-
-  fBarrelTrack->SetNClusters(newClusters, newChi2);
-  fBarrelTrack->SetNWrongClusters(newWrong);
-  fBarrelTrack->SetRefPlane(refPlane, isIn);
-}
-
 
 //_____________________________________________________________________________
 Double_t f1(Double_t x1,Double_t y1,
@@ -790,9 +692,6 @@ Int_t AliTPCtracker::PropagateBack(AliESD *event) {
 
     if ( (status & AliESDtrack::kITSout) == 0 ) s.ResetCovariance();
 
-    s.ResetNWrong();
-    s.ResetNRotation();
-    
     Int_t nc=t.GetNumberOfClusters();
     s.SetNumber(nc); //set number of the cluster to start with
 

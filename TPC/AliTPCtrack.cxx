@@ -25,7 +25,6 @@
 
 #include "AliTPCtrack.h"
 #include "AliCluster.h"
-#include "AliBarrelTrack.h"
 #include "AliESDtrack.h"
 
 ClassImp(AliTPCtrack)
@@ -38,7 +37,7 @@ AliTPCtrack::AliTPCtrack(): AliKalmanTrack()
   //-------------------------------------------------
   fX = fP0 = fP1 = fP2 = fP3 = fP3 = fP4 = 0.0;
   fAlpha = fdEdx = 0.0;
-  fNWrong = fNRotation = fNumber = 0;  // [SR, 01.04.2003]
+  fNumber = 0;  // [SR, 01.04.2003]
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
 }
 
@@ -167,39 +166,7 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) : AliKalmanTrack(t) {
   fLab2       = t.fLab2;
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=t.fKinkIndexes[i];
 }
-//_____________________________________________________________________________
 
-void  AliTPCtrack::GetBarrelTrack(AliBarrelTrack *track) const{
-  //
-  // Create a Barrel Track out of this track
-  // Current track is propagated to the reference plane
-  // by the tracker
-  //
-  // [SR, 01.04.2003]
-  
-  if (!track) return;
-  Double_t xr, vec[5], cov[15];
-
-  track->SetLabel(GetLabel());
-  track->SetX(fX, fAlpha);
-  track->SetNClusters(GetNumberOfClusters(), GetChi2());
-  Double_t times[10];
-  GetIntegratedTimes(times);
-  track->SetTime(times, GetIntegratedLength());
-
-  track->SetMass(GetMass());
-  track->SetdEdX(GetdEdx());
-
-  track->SetNWrongClusters(fNWrong);
-  track->SetNRotate(fNRotation);
-
-  GetExternalParameters(xr, vec);
-  track->SetStateVector(vec);
-  
-  GetExternalCovariance(cov);
-  track->SetCovarianceMatrix(cov);
-
-}
 //_____________________________________________________________________________
 Int_t AliTPCtrack::Compare(const TObject *o) const {
   //-----------------------------------------------------------------
@@ -402,14 +369,6 @@ Int_t AliTPCtrack::Update(const AliCluster *c, Double_t chisq, UInt_t index) {
   //-----------------------------------------------------------------
   // This function associates a cluster with this track.
   //-----------------------------------------------------------------
-
-  // update the number of wrong SR[20.03.2003]
-  Int_t absLabel = TMath::Abs(GetLabel());
-  if ( (c->GetLabel(0) != absLabel) && 
-       (c->GetLabel(0) != absLabel) &&
-       (c->GetLabel(0) != absLabel)) fNWrong++;
-  //
-
   Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2();
   r00+=fC00; r01+=fC10; r11+=fC11;
   Double_t det=r00*r11 - r01*r01;
@@ -468,9 +427,6 @@ Int_t AliTPCtrack::Rotate(Double_t alpha)
   //-----------------------------------------------------------------
   // This function rotates this track.
   //-----------------------------------------------------------------
-
-  if (alpha != 0) fNRotation++;  // [SR, 01.04.2003]
-
   fAlpha += alpha;
   if (fAlpha<-TMath::Pi()) fAlpha += 2*TMath::Pi();
   if (fAlpha>=TMath::Pi()) fAlpha -= 2*TMath::Pi();

@@ -16,7 +16,6 @@ class AliTRDgeometry;
 class AliTRDparameter;
 class AliTRDtrack;
 class AliTRDcluster;
-class AliBarrelTrack;
 class AliESD;
 
 const unsigned kMaxLayersPerSector = 1000;  
@@ -245,14 +244,6 @@ class AliTRDtracker : public AliTracker {
 
   static const Int_t fgkFirstPlane;   // Id of the first (innermost) reference plane 
   static const Int_t fgkLastPlane;    // Id of the last (outermost) reference plane
-  
-  void SetBarrelTree(const char *mode);
-  void StoreBarrelTrack(AliTRDtrack *ps, Int_t refPlane, Int_t isIn);
-  
-  TFile *fBarrelFile;                // Some kind of barrel file
-  TTree *fBarrelTree;                // And a barrel tree
-  TClonesArray *fBarrelArray;        // Wow, there even an array for that barrel
-  AliBarrelTrack *fBarrelTrack;      // And, finally, the track
 
  private:
 
@@ -271,7 +262,7 @@ class AliTRDtracker : public AliTracker {
   Double_t      ExpectedSigmaY2(Double_t r, Double_t tgl, Double_t pt) const;
   Double_t      ExpectedSigmaZ2(Double_t r, Double_t tgl) const;
 
-  ClassDef(AliTRDtracker,1)           // manager base class  
+  ClassDef(AliTRDtracker,2)           // manager base class  
 
 };
 
