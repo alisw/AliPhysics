@@ -19,9 +19,9 @@
 /////////////////////////////////////////////////////////////////////////
 #include <fstream.h>
 #include "TObjArray.h"
-//#include "AliITSgeomSPD.h"
-//#include "AliITSgeomSDD.h"
-//#include "AliITSgeomSSD.h"
+#include "AliITSgeomSPD.h"
+#include "AliITSgeomSDD.h"
+#include "AliITSgeomSSD.h"
 
 
 struct AliITSgeomS {
