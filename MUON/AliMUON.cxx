@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.20  2000/06/26 14:02:38  morsch
+Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
+
 Revision 1.19  2000/06/22 13:40:51  morsch
 scope problem on HP, "i" declared once
 pow changed to TMath::Power (PH, AM)
@@ -731,7 +734,7 @@ void AliMUON::SetSigmaIntegration(Int_t id, Float_t p1)
 }
 
 //___________________________________________
-void AliMUON::SetMaxAdc(Int_t id, Float_t p1)
+void AliMUON::SetMaxAdc(Int_t id, Int_t p1)
 {
     Int_t i=2*(id-1);
     ((AliMUONChamber*) (*fChambers)[i])->SetMaxAdc(p1);
@@ -865,7 +868,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
     Int_t digits[5]; 
 
     AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
-    AliMUONHitMap * hitMap[AliMUONConstants::NCh()];
+    AliMUONHitMap** hitMap= new AliMUONHitMap* [AliMUONConstants::NCh()];
     for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {hitMap[i]=0;}
     if (addBackground ) {
 	if(first) {
@@ -916,8 +919,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
     Int_t countadr=0;
     for (int icat=0; icat<2; icat++) { 
 	Int_t counter=0;
-	Int_t nmuon[AliMUONConstants::NCh()];
-
+	Int_t * nmuon = new Int_t [AliMUONConstants::NCh()];
 	for (Int_t i =0; i<AliMUONConstants::NCh(); i++) {
 	    iChamber=(AliMUONChamber*) (*fChambers)[i];
 	    if (iChamber->Nsec()==1 && icat==1) {
@@ -935,8 +937,11 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 
 	TTree *treeH = gAlice->TreeH();
 	Int_t ntracks =(Int_t) treeH->GetEntries();
-	Float_t xhit[AliMUONConstants::NCh()][2];
-	Float_t yhit[AliMUONConstants::NCh()][2];
+	Int_t jj;
+	Float_t ** xhit = new Float_t * [2];
+	for (jj=0; jj<2; jj++) xhit[jj] = new Float_t  [AliMUONConstants::NCh()];
+	Float_t ** yhit = new Float_t * [2];
+	for (jj=0; jj<2; jj++) yhit[jj] = new Float_t  [AliMUONConstants::NCh()];
 	
 	for (Int_t track=0; track<ntracks; track++) {
 	    gAlice->ResetHits();
@@ -1168,8 +1173,10 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	    
 	    if (fAli) file =fAli->GetCurrentFile();
 	    file->cd();
-	} // if addBackground	
-	
+	} // if addBackground
+	delete [] xhit;
+	delete [] yhit;
+
 	Int_t tracks[10];
 	Int_t charges[10];
 	Int_t nentries=list->GetEntriesFast();
@@ -1235,6 +1242,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	gAlice->TreeD()->Fill();
 	pMUON->ResetDigits();
 	list->Delete();
+
 	
 	for(Int_t ii=0;ii<AliMUONConstants::NCh();++ii) {
 	    if (hitMap[ii]) {
@@ -1243,8 +1251,9 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 		hitMap[ii]=0;
 	    }
 	}
+	delete [] nmuon;    
     } //end loop over cathodes
-    
+    delete [] hitMap;
     char hname[30];
     sprintf(hname,"TreeD%d",nev);
     gAlice->TreeD()->Write(hname);
