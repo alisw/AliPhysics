@@ -55,6 +55,7 @@ class AliLog: public TObject {
 
   // the following public methods are used by the preprocessor macros 
   // and should not be called directly
+  static Bool_t IsDebugEnabled() {return fgDebugEnabled;}
   static Int_t GetDebugLevel(const char* module, const char* className);
   static void  Message(UInt_t level, const char* message, 
                        const char* module, const char* className,
@@ -103,9 +104,9 @@ class AliLog: public TObject {
 #define AliDebugLevelClass() -1
 #define AliDebugLevelGeneral(scope) -1
 #else
-#define AliDebugLevel() ((fgDebugEnabled) ? AliLog::GetDebugLevel(__MODULE__, ClassName()) : -1)
-#define AliDebugLevelClass() ((fgDebugEnabled) ? AliLog::GetDebugLevel(__MODULE__, Class()->GetName()) : -1)
-#define AliDebugLevelGeneral(scope) ((fgDebugEnabled) ? AliLog::GetDebugLevel(__MODULE__, scope) : -1)
+#define AliDebugLevel() ((AliLog::IsDebugEnabled()) ? AliLog::GetDebugLevel(__MODULE__, ClassName()) : -1)
+#define AliDebugLevelClass() ((AliLog::IsDebugEnabled()) ? AliLog::GetDebugLevel(__MODULE__, Class()->GetName()) : -1)
+#define AliDebugLevelGeneral(scope) ((AliLog::IsDebugEnabled()) ? AliLog::GetDebugLevel(__MODULE__, scope) : -1)
 #endif
 
 #ifdef LOG_NO_DEBUG
@@ -113,9 +114,9 @@ class AliLog: public TObject {
 #define AliDebugClass(level, message)
 #define AliDebugGeneral(scope, level, message)
 #else
-#define AliDebug(level, message) {if (fgDebugEnabled) AliLog::Debug(level, message, __MODULE__, ClassName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliDebugClass(level, message) {if (fgDebugEnabled) AliLog::Debug(level, message, __MODULE__, Class()->GetName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliDebugGeneral(scope, level, message) {if (fgDebugEnabled) AliLog::Debug(level, message, __MODULE__, scope, __FUNCTION__, __FILE__, __LINE__);}
+#define AliDebug(level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, __MODULE__, ClassName(), __FUNCTION__, __FILE__, __LINE__);}
+#define AliDebugClass(level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, __MODULE__, Class()->GetName(), __FUNCTION__, __FILE__, __LINE__);}
+#define AliDebugGeneral(scope, level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, __MODULE__, scope, __FUNCTION__, __FILE__, __LINE__);}
 #endif
 
 #ifdef LOG_NO_INFO
