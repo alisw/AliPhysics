@@ -1,0 +1,181 @@
+# Top level Makefile for AliRoot System
+#
+# Author: Jan-Erik Revsbech (revsbech@fys.ku.dk)
+#         Developed on idea of Boris Polichtchouk (Boris.Polichtchouk@cern.ch), 15/4/2001
+
+
+##### include general path/location macros #####
+override ALICE_ROOT=$(shell pwd)
+
+include build/Makefile.config
+
+# Where to install libraries and binaries
+LIBPATH=lib/tgt_$(ALICE_TARGET)
+BINPATH=bin/tgt_$(ALICE_TARGET)
+
+##### include machine dependent macros #####
+
+#include $(filter-out DEBUG,build/Makefile.$(ALICE_TARGET))
+include build/Makefile.$(ALICE_TARGET)
+
+# Check if called with debug
+ifeq ($(ALIDEBUG),YES)
+override ALICE_TARGET:=$(ALICE_TARGET)DEBUG
+FFLAGS := -g $(filter-out -O%,$(FFLAGS))
+CXXFLAGS := -g $(filter-out -O%,$(CXXLAGS))
+CFLAGS := -g $(filter-out -O%,$(CLAGS))
+endif
+
+
+##### Modules to build #####
+
+#needs to add:  VZERO TGeant4 AliGeant4 GEODB Euclid  
+#
+
+MODULES:=STEER TPC PMD CONTAINERS ZDC STRUCT RALICE EMCAL \
+	ALIFAST CASTOR FMD START TGeant3 EVGEN THijing TMEVSIM \
+	 MEVSIM PDF PYTHIA PYTHIA6  TRD GEANT321 MINICERN TOF \
+	ITS RICH PHOS MUON HIJING LHC HBTP THbtp
+
+MODULES += ALIROOT 
+
+MODDIRS := MODULES
+		 
+# look for include files in each of the moduled
+CXXFLAGS += $(patsubst %,-I%,$(ALICE_ROOT))
+CXXFLAGS += $(patsubst %,-I$(ALICE_ROOT)/%,$(MODULES))
+CXXFLAGS += $(patsubst %,-I%,$(ROOTSYS)/include)
+
+FFLAGS += $(patsubst %,-I%,$(ALICE_ROOT))
+FFLAGS += $(patsubst %,-I$(ALICE_ROOT)/%,$(MODULES))
+FFLAGS += $(patsubst %,-I%,$(ROOTSYS)/include)
+
+CINTFLAGS += $(patsubst %,-I%,$(ALICE_ROOT))
+CINTFLAGS += $(patsubst %,-I$(ALICE_ROOT)/%,$(MODULES))
+CINTFLAGS += $(patsubst %,-I%,$(ROOTSYS)/include)
+
+DEPINC += $(patsubst %,-I%,$(ALICE_ROOT))
+DEPINC += $(patsubst %,-I$(ALICE_ROOT)/%,$(MODULES))
+DEPINC += $(patsubst %,-I%,$(ROOTSYS)/include)
+
+
+LIBS := $(ROOTLIBS) $(SYSLIBS) $(GLIBS)
+
+
+# default target
+default:     alilibs  aliroot
+
+# each module must add to this
+ALLLIBS :=
+ALLEXECS :=
+INCLUDEFILES :=
+BINLIBS := 
+
+
+BINLIBDIRS := -L$(ALICE_ROOT)/$(LIBPATH)
+
+.PHONY:		alilibs aliroot makedistr 
+
+#Dependencies of module.mk files
+
+include build/module.dep
+
+# Check if module.mk is present for the library
+%.mk:
+	@echo "***** Creating $@ file *****";
+	share/alibtool mkmodule  $(patsubst %/module.mk,%,$@) > $@;
+
+# If cleaning, do not include dependencies or module.mk files.
+ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
+
+# description of each module
+include $(patsubst %,%/module.mk,$(MODULES))
+
+# include dependencies if not making them!
+ifneq ($(MAKECMDGOALS),depend)
+include $(INCLUDEFILES)
+endif
+
+endif
+
+# targets
+
+aliroot: $(BINPATH) $(ALLEXECS) bin
+
+
+alilibs: $(LIBPATH) $(ALLLIBS) lib
+
+# Single Makefile "distribution": Makefile + modules + mkdepend scripts
+makedistr: $(MODULES)	 
+	 tar -cvf MakeDistr.tar $(patsubst %,%/*.pkg,$(MODULES)) \
+		Makefile create build/* 
+
+all: aliroot
+
+depend: $(INCLUDEFILES)
+
+debug:
+	@echo "***** Entering DEBUG mode. *****"
+	@(export ALIDEBUG=YES && $(MAKE) -f Makefile.flat )
+lib: 
+	@mkdir lib
+	@mkdir lib/tgt_$(ALICE_TARGET)
+
+bin: 
+	@mkdir bin
+	@mkdir bin/tgt_$(ALICE_TARGET)
+
+$(MODULES):
+	@echo "***** Making $@ *****"
+	mkdir -p $@
+
+$(BINPATH):
+	@echo "***** Making $@ *****"
+	mkdir -p $@
+
+$(LIBPATH):
+	@echo "***** Making $@ *****"
+	mkdir -p $@
+
+
+cleanall:
+	@echo "***** Cleaning up everything ****"
+	rm -rf $(patsubst %,%/module.mk,$(MODULES)) 
+	rm -rf $(patsubst %,%/tgt_$(ALICE_TARGET),$(MODULES))
+	rm -rf lib/tgt_$(ALICE_TARGET)
+	rm -rf bin/tgt_$(ALICE_TARGET)
+
+clean: clean-modules clean-depend clean-objects clean-libs clean-bins
+
+clean-modules:
+	@echo "***** Cleaning up module.mk files *****"
+	rm -rf $(patsubst %,%/module.mk,$(MODULES)) 
+
+clean-depend:
+	@echo "***** Cleaning up dependencies *****"
+	rm -rf */tgt_$(ALICE_TARGET)/*.d
+	rm -rf */tgt_$(ALICE_TARGET)/*/*.d
+	rm -rf */tgt_$(ALICE_TARGET)/*/*/*.d
+	rm -rf */tgt_$(ALICE_TARGET)/*/*/*/*.d
+
+clean-objects:
+	@echo "***** Cleaning up .o files *****"
+	rm -rf */tgt_$(ALICE_TARGET)/*.o
+	rm -rf */tgt_$(ALICE_TARGET)/*/*.o
+	rm -rf */tgt_$(ALICE_TARGET)/*/*/*.o
+	rm -rf */tgt_$(ALICE_TARGET)/*/*/*/*.o
+
+clean-libs:
+	@echo "***** Cleaning up library files *****"
+	rm -rf lib/tgt_$(ALICE_TARGET)/*
+
+clean-bins:
+	@echo "***** Cleaning up binary files *****"
+	rm -rf bin/tgt_$(ALICE_TARGET)
+
+
+
+
+
+
+
