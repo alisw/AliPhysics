@@ -15,6 +15,9 @@
 
 /*
  $Log$
+ Revision 1.10  2002/10/14 14:57:00  hristov
+ Merging the VirtualMC branch to the main development branch (HEAD)
+
  Revision 1.8.8.1  2002/06/10 17:51:14  hristov
  Merged with v3-08-02
 
@@ -41,10 +44,17 @@
  fix a small memory leak associated with digitization and reconstruction.
 
 */
-
+////////////////////////////////////////////////////////////////////////
+// This Class owns the classes needed to to detector simulations and
+// reconstruction. This includes the detector segmentation classes,
+// the detector responce classes, the detector simulatin classes, and
+// the detector reconstruction (clustering) classes for all of the ITS
+// detectors.
+////////////////////////////////////////////////////////////////////////
 #include "AliITSDetType.h"
 #include "AliITSClusterFinder.h"
 #include "AliITSsimulation.h"
+
 
 ClassImp(AliITSDetType)	 
 

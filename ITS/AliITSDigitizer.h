@@ -10,8 +10,6 @@
 class TObjArray;
 class TTree;
 
-#include <TClonesArray.h> // function of this class used in inline functions.
-
 class AliRunDigitizer;
 
 #include "AliDigitizer.h" // Base class from which this one is derived
@@ -29,9 +27,9 @@ class AliITSDigitizer : public AliDigitizer{
     // number of files.
     virtual void Exec(Option_t* opt=0);
     // Sets a particular module active
-    virtual void SetModuleActive(Int_t i){if(fActive) fActive[i] = kTRUE;}
+    virtual void SetModuleActive(Int_t i){if(fModActive) fModActive[i] = kTRUE;}
     // Sets a particular module inactive
-    virtual void SetModuleInActive(Int_t i){if(fActive) fActive[i] = kFALSE;}
+    virtual void SetModuleInActive(Int_t i){if(fModActive) fModActive[i] = kFALSE;}
     // Sets Region of Interst Flag. if fRiof=0 then no Region of Interest
     // cut applyed
     virtual void SetByRegionOfInterestFlag(Int_t i=0){fRoif = i;};
@@ -56,7 +54,7 @@ class AliITSDigitizer : public AliDigitizer{
     virtual void SetByRegionOfInterest(TTree *ts);
  private:
     AliITS *fITS;      //! local pointer to ITS
-    Bool_t *fActive;   //! flag to indicate which module to digitize.
+    Bool_t *fModActive;//! flag to indicate which module to digitize.
     Bool_t  fInit;     //! flag to indecate Initilization when well.
     Int_t   fRoif;     //! Region of interest flag.
     Int_t   fRoiifile; //! The file number with which to determing the region
