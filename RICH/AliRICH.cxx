@@ -107,6 +107,7 @@ AliRICH::AliRICH(const char *name, const char *title)
   }
   SetMarkerColor(kRed);
   fCkovNumber=fFreonProd=0;
+  fChambers = 0;
   CreateChambers();
   if(GetDebug())Info("named ctor","Stop.");
 }//AliRICH::AliRICH(const char *name, const char *title)
