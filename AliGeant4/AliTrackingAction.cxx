@@ -17,6 +17,7 @@
 #include <G4VSensitiveDetector.hh>
 #include <G4VHitsCollection.hh>
 
+#include <TTree.h>
 #include <TParticle.h>
 
 // static data members
