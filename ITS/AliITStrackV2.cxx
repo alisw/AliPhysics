@@ -25,7 +25,7 @@
 #include <iostream.h>
 
 #include "AliCluster.h"
-#include "../TPC/AliTPCtrack.h"
+#include "AliTPCtrack.h"
 #include "AliITStrackV2.h"
 
 ClassImp(AliITStrackV2)

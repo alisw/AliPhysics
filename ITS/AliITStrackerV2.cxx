@@ -25,7 +25,7 @@
 
 #include "AliITSgeom.h"
 #include "AliITSRecPoint.h"
-#include "../TPC/AliTPCtrack.h"
+#include "AliTPCtrack.h"
 #include "AliITSclusterV2.h"
 #include "AliITStrackerV2.h"
 
