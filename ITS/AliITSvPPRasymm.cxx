@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.47  2001/10/04 22:33:39  nilsen
+Fixed bugs in SetDefaults.
+
 Revision 1.46  2001/10/01 19:34:08  nilsen
 Fixed a bug in asigning detector types in SetDefaults under SSD layer 6.
 
@@ -361,11 +364,11 @@ void AliITSvPPRasymm::CreateGeometry(){
   Float_t di1d3[3], di20a[3], di1d2[3];                      // for layer 2  
   Float_t di108[3], di104[3];                                // for both layers  
 
-  Float_t ddet1=300.;     // total detector thickness on layer 1 (micron)
-  Float_t dchip1=300.;    // total chip thickness on layer 1 (micron)
+  Float_t ddet1=200.;     // total detector thickness on layer 1 (micron)
+  Float_t dchip1=200.;    // total chip thickness on layer 1 (micron)
   
-  Float_t ddet2=300.;     // total detector thickness on layer 2 (micron)                         
-  Float_t dchip2=300.;    // total chip thickness on layer 2 (micron)
+  Float_t ddet2=200.;     // total detector thickness on layer 2 (micron)                         
+  Float_t dchip2=200.;    // total chip thickness on layer 2 (micron)
   
   Float_t dbus=300.;      // total bus thickness on both layers (micron)
 
@@ -376,26 +379,26 @@ void AliITSvPPRasymm::CreateGeometry(){
 
   if(ddet1 < 100. || ddet1 > 300.) {
      cout << "ITS - WARNING: the detector thickness for layer 1 is outside the range of [100,300] microns."
-	  " The default value of 300 microns will be used." << endl;
-	  ddet1=300.;
+	  " The default value of 200 microns will be used." << endl;
+	  ddet1=200.;
   }
   
   if(ddet2 < 100. || ddet2 > 300.) {
      cout << "ITS - WARNING: the detector thickness for layer 2 is outside the range of [100,300] microns."
-	  " The default value of 300 microns will be used." << endl;
-	  ddet2=300.;
+	  " The default value of 200 microns will be used." << endl;
+	  ddet2=200.;
   }
   
   if(dchip1 < 100. || dchip1 > 300.) {
      cout << "ITS - WARNING: the chip thickness for layer 1 is outside the range of [100,300] microns."
-	  " The default value of 300 microns will be used." << endl;
-	  dchip1=300.;
+	  " The default value of 200 microns will be used." << endl;
+	  dchip1=200.;
   }
   
   if(dchip2 < 100. || dchip2 > 300.) {
      cout << "ITS - WARNING: the chip thickness for layer 2 is outside the range of [100,300] microns."
-	  " The default value of 300 microns will be used." << endl;
-	  dchip2=300.;
+	  " The default value of 200 microns will be used." << endl;
+	  dchip2=200.;
   }      
 
   Int_t rails = 1;       // flag for rails (1 --> rails in; 0 --> rails out)
