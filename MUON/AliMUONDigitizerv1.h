@@ -11,49 +11,31 @@
 // 
 // Gines MARTINEZ Subatech Feb 2003 
 
-#include "AliDigitizer.h"
-class AliRunDigitizer;
-class AliMUONPadHit;
-class AliMUONHitMapA1;
+#include "AliMUONDigitizer.h"
 
-class AliMUONDigitizerv1 : public AliDigitizer {
-
- public:    
-    AliMUONDigitizerv1();
-    AliMUONDigitizerv1(AliRunDigitizer * manager);
-    virtual ~AliMUONDigitizerv1();
-
-    // Create a new TransientDigit
-    virtual void   AddTransientDigit(AliMUONTransientDigit * mTD);
-    // Do the main work
-    virtual void   Exec(Option_t* option=0);
-    // Verifying a TransientDigit
-    virtual Bool_t ExistTransientDigit(AliMUONTransientDigit * mTD); 
-    // Getting debug level 
-    Int_t          GetDebug() const {return fDebug;}       // get debug level
-    // Initialize merging and digitization
-    virtual Bool_t Init();
-    // Generation of a TransientDigit : Response function of the chamber
-    virtual void   MakeTransientDigit(Int_t itrack, Int_t ihit, AliMUONHit * mHit);
-    // Setting debug level
-    void           SetDebug(Int_t level){fDebug = level;}   // set debug level    
-    enum {kBgTag = -1};
-    // Updating a TransientDigit
-    virtual void   UpdateTransientDigit(Int_t itrack, AliMUONTransientDigit * mTD);
+class AliMUONDigitizerv1 : public AliMUONDigitizer 
+{
+public:
+	AliMUONDigitizerv1();
+	
+	// Preferred constructor which assigns the manager object.
+	AliMUONDigitizerv1(AliRunDigitizer * manager);
     
-    private:    
-    void           SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr);
-    
-    private:
-    AliMUONHitMapA1 **fHitMap;      //! pointer to array of pointers to hitmaps
-    TObjArray *fTDList;             //! list of AliMUONTransientDigits
-    Int_t fTDCounter;                 //! nr. of AliMUONTransientDigits
-    Int_t fDebug;                   //! debug level
-    Int_t fMask;                    //! mask dependent on input file
-    Bool_t fSignal;                 //! kTRUE if signal file is processed
-
-
-    ClassDef(AliMUONDigitizerv1,1) 
+protected:
+	// Generation of a TransientDigits from a hit object.
+	void MakeTransientDigitsFromHit(Int_t itrack, Int_t ihit, AliMUONHit * mHit);
+	
+	// The following methods are all derived from AliMUONDigitizer
+	virtual void GenerateTransientDigits();
+	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6]);
+	virtual Int_t GetSignalFrom(AliMUONTransientDigit* td);
+	virtual Bool_t InitOutputData(AliMUONLoader* muonloader);
+	virtual void FillOutputData();
+	virtual void CleanupOutputData(AliMUONLoader* muonloader);
+	virtual Bool_t InitInputData(AliMUONLoader* muonloader);
+	virtual void CleanupInputData(AliMUONLoader* muonloader);
+   
+	ClassDef(AliMUONDigitizerv1, 1)
 };    
 #endif
 
