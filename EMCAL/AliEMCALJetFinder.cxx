@@ -16,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/01/21 12:47:47  morsch
+Possibility to include K0long and neutrons.
+
 Revision 1.4  2002/01/21 11:03:21  morsch
 Phi propagation introduced in FillFromTracks.
 
@@ -26,8 +29,10 @@ Revision 1.3  2002/01/18 05:07:56  morsch
 
 */
 
-//*-- Author: Andreas Morsch (CERN)
-//*           J.L. Klay      (LBL)
+//*-- Authors: Andreas Morsch   (CERN)
+//*            J.L. Klay        (LBL)
+//*            Aleksei Pavlinov (WSU) 
+
 // From root ...
 #include <TClonesArray.h>
 #include <TTree.h>
@@ -89,6 +94,7 @@ AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
     fEtaT      = 0;
     fPhiT      = 0;
     fHadronCorrector = 0;
+//
     SetPtCut();
     SetMomentumSmearing();
     SetEfficiencySim();
