@@ -52,7 +52,7 @@ class AliPHOSDigit : public AliDigitNew {
   void    SetAmp(Int_t Amp) { 
     // sets the amplitude data member 
     fAmp=Amp ; } 
-  void    SetTime(Float_t Time) {fTime = Time ;}
+  void SetTime(Float_t Time) {fTime = Time ;}
   void ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
 
  private:

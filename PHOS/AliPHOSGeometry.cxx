@@ -416,12 +416,12 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
   // Converts the relative numbering into the local PHOS-module (x, z) coordinates
   // Note: sign of z differs from that in the previous version (Yu.Kharlov, 12 Oct 2000)
   
-  Int_t row        = relid[2] ; //offset along x axiz
-  Int_t column     = relid[3] ; //offset along z axiz
+  Int_t row        = relid[2] ; //offset along x axis
+  Int_t column     = relid[3] ; //offset along z axis
 
   
   if ( relid[1] == 0 ) { // its a PbW04 crystal 
-    x = - ( GetNPhi()/2. - row    + 0.5 ) *  GetCrystalSize(0) ; // position ox Xtal with respect
+    x = - ( GetNPhi()/2. - row    + 0.5 ) *  GetCrystalSize(0) ; // position of Xtal with respect
     z =   ( GetNZ()  /2. - column + 0.5 ) *  GetCrystalSize(2) ; // of center of PHOS module  
   }  
   else  {    
