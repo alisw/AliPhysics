@@ -58,7 +58,9 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
 //	
 	stack->FinishEvent();
 	header->SetStack(stack);
+	rl->TreeE()->Fill();
 	rl->WriteKinematics("OVERWRITE");
+
     } // event loop
 //
 //                         Termination
@@ -67,8 +69,10 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
 //  Stack
     stack->FinishRun();
 //  Write file
-    gener->Write();
     rl->WriteHeader("OVERWRITE");
+    gener->Write();
+    rl->Write();
+    
 }
 
 
