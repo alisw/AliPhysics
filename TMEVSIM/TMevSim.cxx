@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/03/25 10:15:23  morsch
+Root interface to MevSim code as TGenerator realisation (Sylwester Radomski et al.)
+
 */
 
 ////////////////////////////////////////////////////////////////////////////
@@ -395,7 +398,7 @@ $Log$
 
 
 
-#include <fstream>
+#include <fstream.h>
 #include <iomanip.h>
 #include "TMevSim.h"
 
@@ -555,9 +558,10 @@ void        TMevSim::Initialize() {
 
      for (Int_t cnt1 = 0; cnt1 < NFLOWTERMS; cnt1++) {
        *file << "  ";
-       for (Int_t cnt2 = 0; cnt2 < 4; cnt2++) *file << params->GetVnMeanComponent(cnt1, cnt2) << "  ";
+       Int_t cnt2;
+       for (cnt2 = 0; cnt2 < 4; cnt2++) *file << params->GetVnMeanComponent(cnt1, cnt2) << "  ";
        *file << "  \n  ";
-       for (Int_t cnt2 = 0; cnt2 < 4; cnt2++) *file << params->GetVnStDevComponent(cnt1, cnt2) << "  ";
+       for (cnt2 = 0; cnt2 < 4; cnt2++) *file << params->GetVnStDevComponent(cnt1, cnt2) << "  ";
        *file << "  \n";
      }
    }
