@@ -15,13 +15,19 @@
 
 //-----------------------------------------------------------------
 //           Implementation of the TRD PID class
-// Very naive one... And the implementation is even poorer... 
-// Should be made better by the detector experts...
+// Assigns the electron and pion liklihoods for each ESD track.
+// The AliTRDprobdist class is instantiated here.
+// The function MakePID(AliESD *event) calculates the probability
+// of having dedx and the probability of having timbin at a given 
+// momentum (mom) and particle type k (0 for e) and (2 for pi)
+// from the precalculated timbin distributions. 
+// Prashant Shukla <shukla@pi0.physi.uni-heidelberg.de>
 //-----------------------------------------------------------------
 
 #include "AliTRDpidESD.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
+#include "AliTRDprobdist.h"
 
 ClassImp(AliTRDpidESD)
 
@@ -85,19 +91,67 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
   //
   //  This function calculates the "detector response" PID probabilities 
   //
+  // The class AliTRDprobdist contains precalculated prob dis.
+  AliTRDprobdist *pd = new AliTRDprobdist();
+  //  Double_t ebin[200], ppi[200], pel[200];
+  //  pd->GetData(2,ebin,ppi,pel);
+  //  for(Int_t ie=0; ie<10; ie++)  
+  //    printf(" %f %f %f \n", ebin[ie], ppi[ie], pel[ie]);
+
   Int_t ntrk=event->GetNumberOfTracks();
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=event->GetTrack(i);
     if ((t->GetStatus()&AliESDtrack::kTRDin)==0)
        if ((t->GetStatus()&AliESDtrack::kTRDout)==0)
           if ((t->GetStatus()&AliESDtrack::kTRDrefit)==0) continue;
+    //    Int_t ns=AliESDtrack::kSPECIES;
+    Int_t ns=AliPID::kSPECIES;
+    Double_t p[10];
+    Double_t mom=t->GetP();
+    for (Int_t j=0; j<ns; j++) {
+      p[j]=1.;
+      for (Int_t ilayer=0; ilayer <6; ilayer++) {
+        Double_t dedx=t->GetTRDsignals(ilayer);
+        Int_t timbin=t->GetTRDTimBin(ilayer);
+        if (j==0 || j==2){
+          p[j]*= pd->GetProbability(j,mom,dedx);
+          p[j]*= pd->GetProbabilityT(j,mom,timbin);
+          p[j]*= 100;
+        }
+      } // loop over layers
+    } //loop over particle species
+    //    printf(" %f  %d  %f  %f  %f \n", mom, timbin, p[0], p[1], p[2]);
+    if(p[0]) p[0]= p[0]/(p[0]+p[2]); 
+    if(p[2]) p[2]= 1.-p[0];
+    t->SetTRDpid(p);
+  } //loop over track
+  delete pd;
+  return 0;
+}
+
+
+/*
+//_________________________________________________________________________
+MakePID(AliESD *event)
+{
+  //
+  //  This function calculates the "detector response" PID probabilities 
+  //
+  Int_t ntrk=event->GetNumberOfTracks();
+  for (Int_t i=0; i<ntrk; i++) {
+    AliESDtrack *t=event->GetTrack(i);
+    if ((t->GetStatus()&AliESDtrack::kTRDin)==0)
+       if ((t->GetStatus()&AliESDtrack::kTRDout)==0)
+          if ((t->GetStatus()&AliESDtrack::kTRDrefit)==0) continue;
+	  //    Int_t ns=AliESDtrack::kSPECIES;
     Int_t ns=AliPID::kSPECIES;
     Double_t p[10];
     for (Int_t j=0; j<ns; j++) {
       Double_t mass=AliPID::ParticleMass(j);
+      Double_t mass=masses[j];
       Double_t mom=t->GetP();
       Double_t dedx=t->GetTRDsignal()/fMIP;
-      Double_t bethe=Bethe(mom/mass); 
+      Double_t bethe= AliTRDpidESD::Bethe(mom/mass); 
       Double_t sigma=fRes*bethe;
       if (TMath::Abs(dedx-bethe) > fRange*sigma) {
 	p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
@@ -106,6 +160,12 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
       p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
     }
     t->SetTRDpid(p);
+    //    if(i==50) printf("%f %f %f \n", p[0], p[1], p[2]);
   }
   return 0;
 }
+
+*/
+
+
+

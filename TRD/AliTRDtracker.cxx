@@ -2587,6 +2587,11 @@ void AliTRDtracker::CookdEdxTimBin(AliTRDtrack& TRDtrack)
   // Setting the fdEdxPlane and fTimBinPlane variabales 
   Double_t Total_ch = 0;
   for (Int_t iPlane = 0; iPlane < kNPlane; iPlane++) {
+    // Quality control of TRD track.
+    if (nCluster[iPlane]<= 5) {
+      clscharge[iPlane]=0.0;
+      timebin[iPlane]=-1;
+    }
     if (nCluster[iPlane]) clscharge[iPlane] /= nCluster[iPlane];
     TRDtrack.SetPIDsignals(clscharge[iPlane], iPlane);
     TRDtrack.SetPIDTimBin(timebin[iPlane], iPlane);
