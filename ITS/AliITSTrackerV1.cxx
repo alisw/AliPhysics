@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.19  2001/11/21 10:49:07  barbera
+Bug correction suggested by Rene done
+
 Revision 1.18  2001/11/20 15:46:17  barbera
 Point coordinated are calculated in cylindrical reference frame once and for all at the beginning of tracking V1
 
@@ -751,7 +754,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	// if(fPtref<0.2 ) fChi2max=20.;
 	//if(fPtref<0.2 ) fChi2max=10.;
 	//if(fPtref<0.1 ) fChi2max=5.;
-	cout << "\n Pt = " << fPtref <<"\n";  //stampa
+	//cout << "\n Pt = " << fPtref <<"\n";  //stampa
 	RecursiveTracking(list);   
 	list->Delete();
 	delete list;
@@ -785,11 +788,11 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	// cout<<" progressive track number = "<<j<<"\r";
 	// cout<<j<<"\r";
 	Int_t numOfCluster=(*fresult).GetNumClust();  
-	cout<<" progressive track number = "<<j<<"\n";    // stampa
+	//cout<<" progressive track number = "<<j<<"\n";    // stampa
 	Long_t labITS=(*fresult).GetLabel();
-	cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
+	//cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
 	Int_t lab=track->GetLabel();		    
-	cout << " TPC track label = " << lab <<"\n";      // stampa
+	//cout << " TPC track label = " << lab <<"\n";      // stampa
 	//propagation to vertex
 
 	Double_t rbeam=3.;
