@@ -46,12 +46,122 @@ AliAOD::AliAOD():
 }
 /**************************************************************************/
 
+AliAOD::AliAOD(const AliAOD& in):
+ TObject(in),
+ fParticles((TClonesArray*)in.fParticles->Clone()),
+  fIsRandomized(in.fIsRandomized),
+  fPrimaryVertexX(fPrimaryVertexX),
+  fPrimaryVertexY(in.fPrimaryVertexY),
+  fPrimaryVertexZ(in.fPrimaryVertexZ),
+  fParticleClass(in.fParticleClass)
+{
+//copy constructor
+}
+/**************************************************************************/
+
+AliAOD& AliAOD::operator=(const AliAOD& in)
+{
+//assigment operator  
+
+  if (this == &in ) return *this;
+  
+  delete fParticles;
+  fParticles = (TClonesArray*)in.fParticles->Clone();
+  fIsRandomized = in.fIsRandomized ;
+  fPrimaryVertexX = in.fPrimaryVertexX ;
+  fPrimaryVertexY = in.fPrimaryVertexY ;
+  fPrimaryVertexZ = in.fPrimaryVertexZ ;
+  fParticleClass = in.fParticleClass ; //althought it is pointer, this points to object in class list of gROOT
+  return *this;
+}
+
+/**************************************************************************/
+
 AliAOD::~AliAOD()
 {
   //Destructor
   //fParticleClass does not belong to AliAOD -> Do not delete it
   delete fParticles;
   
+}
+/**************************************************************************/
+
+void AliAOD::CopyData(AliAOD* aod)
+{
+ //Copys all data from aod, but leaves local type of particles
+ if (aod == 0x0) return;
+ if (aod == this) return;
+ 
+ AliAOD& in = *this;
+ 
+ fIsRandomized = in.fIsRandomized ;
+ fPrimaryVertexX = in.fPrimaryVertexX ;
+ fPrimaryVertexY = in.fPrimaryVertexY ;
+ fPrimaryVertexZ = in.fPrimaryVertexZ ;
+ fParticleClass = in.fParticleClass ; //althought it is pointer, this points to object in class list of gROOT
+
+ 
+ if (in.fParticles == 0x0)
+  {//if in obj has null fParticles we delete ours
+    delete fParticles;
+    fParticles = 0x0;
+  }
+ else
+  { 
+    if (fParticles)
+     { //if ours particles were already created
+       if (fParticles->GetClass() != in.fParticles->GetClass())
+        {//if in obj has 
+          delete fParticles;
+          fParticles = (TClonesArray*)in.fParticles->Clone();
+        }
+       else
+        {
+         //it should be faster than cloning
+          Int_t inentr = in.fParticles->GetEntriesFast();
+          Int_t curentr = fParticles->GetEntriesFast();
+
+          TClonesArray& arr = *fParticles;
+
+          //we have to take care about different sizes of arrays
+          if ( curentr < inentr )
+           {
+             for (Int_t i = 0; i < curentr; i++)
+              {
+                TObject& inobj = *(in.fParticles->At(i));
+                TObject& obj = *(fParticles->At(i));
+                obj = inobj;
+              }
+
+             for (Int_t i = curentr; i < inentr; i++)
+              {
+                TObject& inobj = *(in.fParticles->At(i));
+                TObject& obj =  *((TObject*)(fParticleClass->New(arr[i])));
+                obj = inobj;
+              }
+           }
+          else 
+           {
+             for (Int_t i = 0; i < inentr; i++)
+              {
+                TObject& inobj = *(in.fParticles->At(i));
+                TObject& obj = *(fParticles->At(i));
+                obj = inobj;
+              }
+             
+             for (Int_t i = curentr ; i >= inentr ; i--)
+              {
+                fParticles->RemoveAt(i);
+              }
+           }
+        } 
+     }
+    else
+     {
+       fParticles = (TClonesArray*)in.fParticles->Clone();
+     } 
+  } 
+ 
 }
 /**************************************************************************/
 

@@ -388,27 +388,33 @@ Bool_t  AliReader::Rejected(Int_t pid)
 }
 /*************************************************************************************/
 
-TString& AliReader::GetDirName(Int_t entry)
+TString AliReader::GetDirName(Int_t entry)
 {
 //returns directory name of next one to read
-  TString* retval;//return value
+  TString  retval;//return value
   if (fDirs ==  0x0)
-   {
-     retval = new TString(".");
-     return *retval;
+   { 
+     if (entry == 0)
+      {
+       retval = ".";
+       return retval;
+      }
+     else
+      {
+        return retval;
+      }  
    }
 
   if ( (entry>fDirs->GetEntries()) || (entry<0))//if out of bounds return empty string
    {                                            //note that entry==0 is accepted even if array is empty (size=0)
      Error("GetDirName","Name out of bounds");
-     retval = new TString();
-     return *retval;
+     return retval;
    }
 
   if (fDirs->GetEntries() == 0)
    { 
-     retval = new TString(".");
-     return *retval;
+     retval = ".";
+     return retval;
    }
 
   TClass *objclass = fDirs->At(entry)->IsA();
@@ -419,11 +425,11 @@ TString& AliReader::GetDirName(Int_t entry)
   if(dir == 0x0)
    {
      Error("GetDirName","Object in TObjArray is not a TObjString or its descendant");
-     retval = new TString();
-     return *retval;
+     return retval;
    }
   if (gDebug > 0) Info("GetDirName","Returned ok %s",dir->String().Data());
-  return dir->String();
+  retval = dir->String();
+  return retval;
 }
 /*************************************************************************************/
 

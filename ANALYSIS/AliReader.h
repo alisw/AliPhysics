@@ -129,7 +129,7 @@ class AliReader: public TNamed
     Bool_t               Rejected(Int_t pid);//Checks if a given pid passes cuts
     void                 Blend();//Mixes current events in a symmetric way so after mixing thy are consistent
     
-    TString&             GetDirName(Int_t entry);
+    TString              GetDirName(Int_t entry);
     
   private:
   

@@ -12,8 +12,8 @@
 #endif
 
 
-void WriteAOD(Option_t* datatype, Option_t* processopt="TracksAndParticles",
-                Int_t first = -1,Int_t last = -1,
+void WriteAOD(Option_t* datatype, Int_t first = -1,Int_t last = -1,
+                Option_t* processopt="TracksAndParticles",
                 char *outfile = "AOD.root")
  {
 //datatype defines type of data to be read

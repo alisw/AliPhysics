@@ -22,9 +22,11 @@ void analysis(Int_t first = -1, Int_t last = -1, const char* directory=".")
      }
    }
 
-  AliReaderESD* reader = new AliReaderESD(dirs);
-  reader->ReadSimulatedData(kTRUE);
-  reader->SetReadMostProbableOnly(kTRUE);
+  AliReaderAOD* reader = new AliReaderAOD("AOD.root");
+  reader->SetDirs(dirs);
+//  AliReaderESD* reader = new AliReaderESD(dirs);
+//  reader->ReadSimulatedData(kTRUE);
+//  reader->SetReadMostProbableOnly(kTRUE);
 
 /*  
    //example PID cuts

@@ -21,8 +21,12 @@ class AliAOD: public TObject {
 public:
   AliAOD();
   virtual ~AliAOD();
-
-  virtual TClonesArray*    GetParticles() {return fParticles;};
+  
+  AliAOD(const AliAOD& in);
+  virtual AliAOD& operator=(const AliAOD& in);
+  virtual void             CopyData(AliAOD* aod);//Copys all data from aod, but leaves local type of particles
+  
+  virtual TClonesArray*    GetParticles() const {return fParticles;} 
   virtual void             SetParticleClassName(const char* classname);
   virtual void             SetParticleClass(TClass* pclass);
   
@@ -34,6 +38,7 @@ public:
                                        Double_t vx, Double_t vy, Double_t vz, Double_t time);
   
   virtual void             Reset();
+  
   void                     SwapParticles(Int_t i, Int_t j);//swaps particles positions; used by AliReader::Blend
   Bool_t                   IsRandomized() const {return fIsRandomized;}
   void                     SetRandomized(Bool_t flag = kTRUE){fIsRandomized = flag;}
@@ -45,6 +50,7 @@ public:
   void                     Move(Double_t x, Double_t y, Double_t z);//moves all spacial coordinates about this vector
   virtual void             SetOwner(Bool_t owner);
   virtual void             Print(Option_t* /*option*/ = 0);
+  const TClass*            GetParticleClass() const {return fParticleClass;}
 private:
   TClonesArray            *fParticles;   // array of AOD particles, AliAOD is owner of particles
   Bool_t                   fIsRandomized;//flag indicating if positions of particles were randomized - used by HBTAN
