@@ -19,6 +19,7 @@
 #include "AliITSsegmentationSDD.h"
 #include "AliITS.h"
 #include "AliITSgeom.h"
+#include "AliITSgeomSDD.h"
 #include "AliRun.h"
 #include "AliITSresponse.h"
 

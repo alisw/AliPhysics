@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2001/01/30 09:23:13  hristov
+Streamers removed (R.Brun)
+
 Revision 1.26  2000/11/30 11:13:11  barbera
  Added changes suggested by Federico Carminati on nov, 30, 2000
 
@@ -68,7 +71,8 @@ Introduction of the Copyright and cvs Log
 // See AliITSv5::StepManager().
 #define ALIITSPRINTGEOM 0 // default. don't print out gemetry information
 //#define ALIITSPRINTGEOM 1 // print out geometry information
-
+#include <iostream.h>
+#include <iomanip.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <TMath.h>

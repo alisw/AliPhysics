@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2001/01/30 09:23:13  hristov
+Streamers removed (R.Brun)
+
 Revision 1.29  2001/01/26 20:01:09  hristov
 Major upgrade of AliRoot code
 
@@ -128,6 +131,9 @@ the AliITS class.
 // futher information.
 //
 ///////////////////////////////////////////////////////////////////////////////
+#include <iostream.h>
+#include <iomanip.h>
+#include <fstream.h>
 #include <stdlib.h>
 #include <TMath.h>
 #include <TRandom.h>

@@ -18,7 +18,7 @@
 
 #include "AliITSsegmentationSSD.h"
 #include "AliITSgeom.h"
-
+#include "AliITSgeomSSD.h"
 
 ClassImp(AliITSsegmentationSSD)
 AliITSsegmentationSSD::AliITSsegmentationSSD(){
