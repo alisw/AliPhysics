@@ -339,6 +339,19 @@ Int_t AliGenMUONlib::IpJpsi(TRandom *)
 // J/Psi composition
     return 443;
 }
+Int_t AliGenMUONlib::IpJpsiFamily(TRandom *)
+{
+// J/Psi composition
+  Int_t ip;
+  Float_t r = gRandom->Rndm();
+  if (r < 0.98) {
+    ip = 443;
+  } else {
+    ip = 100443;
+  }
+  return ip;
+}
+
 
 //                      Upsilon
 //
@@ -486,6 +499,21 @@ Int_t AliGenMUONlib::IpUpsilon(TRandom *)
 {
 // y composition
     return 553;
+}
+Int_t AliGenMUONlib::IpUpsilonFamily(TRandom *)
+{
+// y composition
+  Int_t ip;
+  Float_t r = gRandom->Rndm();
+  
+  if (r < 0.712) {
+    ip = 553;
+  } else if (r < 0.896) {
+    ip = 100553;
+  } else {
+    ip = 200553;
+  }
+  return ip;
 }
 
 //
@@ -675,6 +703,7 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
     case kEta:
 	func=PtEta;
 	break;
+    case kJpsiFamily:
     case kJpsi:
 	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=PtJpsiPbPb;
@@ -687,6 +716,7 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
     case kJpsiFromB:
 	func = PtJpsiBPbPb;
 	break;
+    case kUpsilonFamily:
     case kUpsilon:
 	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=PtUpsilonPbPb;
@@ -695,7 +725,7 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	} else {
 	    func=PtUpsilon;
 	}
-	break;
+	break;  
     case kCharm:
 	func=PtCharm;
 	break;
@@ -732,6 +762,7 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
     case kOmega:
 	func=YOmega;
 	break;
+    case kJpsiFamily:
     case kJpsi:
 	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=YJpsiPbPb;
@@ -740,11 +771,11 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	} else {
 	    func=YJpsi;
 	}
-	
 	break;
     case kJpsiFromB:
 	func = YJpsiBPbPb;
 	break;
+    case kUpsilonFamily:
     case kUpsilon:
 	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=YUpsilonPbPb;
@@ -788,6 +819,9 @@ GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* /*tname*/) const
     case kOmega:
 	func=IpOmega;
 	break;
+    case kJpsiFamily:
+      	func=IpJpsiFamily;
+	break;
     case kJpsi:
     case kJpsiFromB:
 	func=IpJpsi;
@@ -795,6 +829,9 @@ GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* /*tname*/) const
     case kUpsilon:
 	func=IpUpsilon;
 	break;
+    case kUpsilonFamily:
+      func=IpUpsilonFamily;
+      break;
     case kCharm:
 	func=IpCharm;
 	break;
