@@ -50,9 +50,6 @@ public:
 private:
   Bool_t StartRootFiles(void) ;
   Bool_t CloseRootFiles(void) ;
-
-private:
-  void FinishRun() ;
   Bool_t ProcessRawFile() ;
   void Swab4(void *from, void *to, size_t nwords)  ;
   void Swab2(void *from, void *to, size_t nwords)  ;

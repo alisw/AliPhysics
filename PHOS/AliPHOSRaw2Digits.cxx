@@ -68,6 +68,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <netinet/in.h>
 
 // --- AliRoot header files ---
 #include "AliPHOSDigit.h"
@@ -160,7 +161,6 @@ void AliPHOSRaw2Digits::Exec(Option_t * option){
 
   ProcessRawFile() ;
 
-  FinishRun() ;
 } 
 //____________________________________________________________________________ 
 Bool_t AliPHOSRaw2Digits::Init(void){
@@ -198,7 +198,7 @@ Bool_t AliPHOSRaw2Digits::StartRootFiles(void ){
   if(!gener)    
     gener = new AliGenBox(1);
   Float_t ox = fTarget[1]; 
-  Float_t oy = fTarget[2]-460.; 
+  Float_t oy = fTarget[2]+460.; 
   Float_t oz = fTarget[0];
   gener->SetOrigin(ox, oy, oz);
 
@@ -249,6 +249,12 @@ Bool_t AliPHOSRaw2Digits::StartRootFiles(void ){
 //____________________________________________________________________________ 
 Bool_t AliPHOSRaw2Digits::CloseRootFiles(void ){
   //cleans everething to start next root file
+  if(fHeaderFile){
+    printf("writing gAlice \n") ;
+    fHeaderFile->cd() ;
+    gAlice->Write(0,TObject::kOverwrite);
+    gAlice->TreeE()->Write(0,TObject::kOverwrite);
+  }
 
   delete gAlice ;
   
@@ -527,6 +533,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
     }
     fEvent++ ;
   }
+  CloseRootFiles() ;
   
   fStatus = 1 ;  
   return kTRUE ;  
@@ -567,13 +574,6 @@ void AliPHOSRaw2Digits::Swab2(void *from, void *to, size_t nwords)
   }
 }
 
-//____________________________________________________________________________ 
-void AliPHOSRaw2Digits::FinishRun(){
-  //Write geometry and header tree
-  gAlice->Write(0,TObject::kOverwrite);
-  gAlice->TreeE()->Write(0,TObject::kOverwrite);
-  
-}
 //____________________________________________________________________________ 
 void AliPHOSRaw2Digits::WriteDigits(void){
   //In this method we create TreeD, write digits and Raw2Digits to it
