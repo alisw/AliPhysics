@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:07  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,6 +71,7 @@ AliCASTOR::AliCASTOR(const char *name, const char *title)
   //
   // Create a tree of castor hits
   fHits   = new TClonesArray("AliCASTORhit",  405);
+  gAlice->AddHitList(fHits);
   
   fIshunt     =  0;
    

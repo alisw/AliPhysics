@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  1999/11/05 09:29:23  fca
+Accept only signals > 0
+
 Revision 1.15  1999/10/08 06:26:53  fca
 Removed ClustersIndex - not used anymore
 
@@ -94,6 +97,7 @@ AliTPC::AliTPC(const char *name, const char *title)
   //
   // Initialise arrays of hits and digits 
   fHits     = new TClonesArray("AliTPChit",  176);
+  gAlice->AddHitList(fHits);
   //  fDigits   = new TClonesArray("AliTPCdigit",10000);
   //MI change
   fDigParam= new AliTPCD;

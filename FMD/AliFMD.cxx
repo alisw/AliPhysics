@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:14  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,6 +69,7 @@ AliFMD::AliFMD(const char *name, const char *title)
   //
   // Initialise Hit array
   fHits   = new TClonesArray("AliFMDhit",  405);
+  gAlice->AddHitList(fHits);
   
   fIshunt     =  0;
 }

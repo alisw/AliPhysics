@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/11/14 14:33:25  fca
+Correct problems with distructors and pointers, thanks to I.Hrivnacova
+
 Revision 1.8  1999/09/29 09:24:19  fca
 Introduction of the Copyright and cvs Log
 
@@ -117,6 +120,7 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
   //
 
   fHits       = new TClonesArray("AliITShit", 1560);
+  gAlice->AddHitList(fHits);
   fDigits     = new TClonesArray("AliITSdigit",1000);
   fITSpoints  = new TObjArray();
   fITSmodules = 0; //new AliITSmodules();

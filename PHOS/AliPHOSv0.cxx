@@ -13,6 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/*
+$Log$
+*/
+
 //_________________________________________________________________________
 // Manager class for PHOS version SUBATECH
 //*-- Author : Y. Schutz SUBATECH 
@@ -64,6 +68,7 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   //     is used for the digitization part.
 
   fHits   = new TClonesArray("AliPHOSHit",100) ;
+  gAlice->AddHitList(fHits);
   fDigits = new TClonesArray("AliPHOSDigit",100) ;
   fTmpHits= new TClonesArray("AliPHOSHit",100) ;
 

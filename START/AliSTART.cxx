@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  1999/11/12 15:04:00  fca
+Modifications from A.Maevskaya
+
 Revision 1.3  1999/09/29 09:24:29  fca
 Introduction of the Copyright and cvs Log
 
@@ -82,6 +85,7 @@ AliSTART::AliSTART(const char *name, const char *title)
   //
   // Initialise Hit array
   fHits   = new TClonesArray("AliSTARThit",  405);
+  gAlice->AddHitList(fHits);
   
   fIshunt     =  0;
   fIdSens1    =  0;

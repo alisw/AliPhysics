@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  1999/11/02 17:04:25  fca
+Small syntax change for HP compiler
+
 Revision 1.14  1999/11/02 16:57:02  fca
 Avoid non ansi warnings on HP compilers
 
@@ -131,6 +134,7 @@ AliTRD::AliTRD(const char *name, const char *title)
 
   // Allocate the hit array
   fHits      = new TClonesArray("AliTRDhit"    ,  405);
+  gAlice->AddHitList(fHits);
 
   // Allocate the digits array
   fDigits    = new TClonesArray("AliTRDdigit"  ,10000);

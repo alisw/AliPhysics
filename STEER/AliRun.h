@@ -54,6 +54,7 @@ protected:
   Bool_t        fInitDone;     //true when initialisation done
   AliLego      *fLego;         //pointer to aliLego object if it exists
   TDatabasePDG *fPDGDB;        //Particle factory object!
+  TList        *fHitLists;     //Lists of hits to be remapped by PurifyKine
   
 public:
    // Creators - distructors
@@ -63,6 +64,7 @@ public:
 
    virtual  void  AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const;
    virtual  void  AddDigit(Int_t id, Int_t *tracks, Int_t *digits) const;
+   virtual  void  AddHitList(TCollection *hitList) {fHitLists->Add(hitList);}
    virtual  void  Browse(TBrowser *b);
    virtual  void  Build();
    virtual  void  BuildSimpleGeometry();

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  1999/12/03 11:14:31  fca
+Fixing previous wrong checking
+
 Revision 1.21  1999/11/25 10:40:08  fca
 Fixing daughters information also in primary tracks
 
@@ -122,6 +125,7 @@ AliRun::AliRun()
   fInitDone  = kFALSE;
   fLego      = 0;
   fPDGDB     = 0;        //Particle factory object!
+  fHitLists  = 0;
 }
 
 //_____________________________________________________________________________
@@ -182,6 +186,9 @@ AliRun::AliRun(const char *name, const char *title)
   //
   // Make particles
   fPDGDB     = TDatabasePDG::Instance();        //Particle factory object!
+  //
+  // Create HitLists list
+  fHitLists  = new TList();
 }
 
 //_____________________________________________________________________________
@@ -210,6 +217,7 @@ AliRun::~AliRun()
     fParticles->Delete();
     delete fParticles;
   }
+  delete fHitLists;
 }
 
 //_____________________________________________________________________________
@@ -1138,6 +1146,7 @@ void AliRun::PurifyKine()
     }
   }
   
+#ifdef old
   // Now loop on all detectors and reset the hits
   TIter next(fModules);
   AliModule *detector;
@@ -1152,6 +1161,19 @@ void AliRun::PurifyKine()
       OneHit->SetTrack(map[OneHit->GetTrack()]);
     }
   }
+#else
+
+  // Now loop on all registered hit lists
+  TIter next(fHitLists);
+  TCollection *hitList;
+  while((hitList = (TCollection*)next())) {
+    TIter nexthit(hitList);
+    AliHit *hit;
+    while((hit = (AliHit*)nexthit())) {
+      hit->SetTrack(map[hit->GetTrack()]);
+    }
+  }
+#endif
 
   fHgwmk=nkeep-1;
   particles.SetLast(fHgwmk);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/11/03 13:17:07  fca
+Have ProdProcess return const char*
+
 Revision 1.13  1999/10/26 06:04:48  fca
 Introduce TLorentzVector in AliMC::GetSecondary. Thanks to I.Hrivnacova
 
@@ -189,6 +192,7 @@ AliMUON::AliMUON(const char *name, const char *title)
 //End_Html
  
    fHits     = new TClonesArray("AliMUONhit",1000);
+   gAlice->AddHitList(fHits);
    fClusters = new TClonesArray("AliMUONcluster",10000);
    fNclusters  =  0;
    fIshunt     =  0;

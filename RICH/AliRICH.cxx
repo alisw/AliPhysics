@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/11/03 13:17:07  fca
+Have ProdProcess return const char*
+
 Revision 1.13  1999/10/26 06:04:49  fca
 Introduce TLorentzVector in AliMC::GetSecondary. Thanks to I.Hrivnacova
 
@@ -74,6 +77,7 @@ AliRICH::AliRICH(const char *name, const char *title)
 //End_Html
     
     fHits       = new TClonesArray("AliRICHhit",1000  );
+    gAlice->AddHitList(fHits);
     fClusters   = new TClonesArray("AliRICHcluster",10000);
     fCerenkovs  = new TClonesArray("AliRICHCerenkov",20000);
     fNclusters  =  0;

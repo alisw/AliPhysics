@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  1999/11/05 22:39:06  fca
+New hits structure
+
 Revision 1.10  1999/11/01 20:41:57  fca
 Added protections against using the wrong version of FRAME
 
@@ -78,6 +81,7 @@ AliTOF::AliTOF(const char *name, const char *title)
   // AliTOF standard constructor
   // 
   fHits   = new TClonesArray("AliTOFhit",  405);
+  gAlice->AddHitList(fHits);
   //
   fIshunt     =  0;
   //
