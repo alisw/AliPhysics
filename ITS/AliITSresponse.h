@@ -143,17 +143,30 @@ class AliITSresponse : public TObject {
     // electrons or holes through a distance l [cm] caused by an applied
     // voltage v [volt] through a distance d [cm] in any material at a
     // temperature T [degree K].
-    virtual Double_t SigmaDiffusion3D(Double_t  l) const ;
+    virtual Double_t SigmaDiffusion3D(Double_t  l) const;
     // Returns the Gaussian sigma == <x^2 +y^2+z^2> [cm^2] due to the
     // defusion of electrons or holes through a distance l [cm] caused by an
     // applied voltage v [volt] through a distance d [cm] in any material at a
     // temperature T [degree K].
-    virtual Double_t SigmaDiffusion2D(Double_t l) const ;
+    virtual Double_t SigmaDiffusion2D(Double_t l) const;
     // Returns the Gaussian sigma == <x^2+z^2> [cm^2] due to the defusion of
     // electrons or holes through a distance l [cm] caused by an applied
     // voltage v [volt] through a distance d [cm] in any material at a
     // temperature T [degree K].
-    virtual Double_t SigmaDiffusion1D(Double_t l) const ;
+    virtual Double_t SigmaDiffusion1D(Double_t l) const;
+    // Compute the thickness of the depleted region in a Si detector, version A
+    virtual Double_t DepletedRegionThicknessA(Double_t dopCons,
+                                              Double_t voltage,
+                                              Double_t elecCharge,
+                                              Double_t voltBuiltIn=0.5)const;
+    // Compute the thickness of the depleted region in a Si detector, version B
+    virtual Double_t DepletedRegionThicknessB(Double_t resist,Double_t voltage,
+                                              Double_t mobility,
+                                              Double_t voltBuiltIn=0.5,
+                                              Double_t dielConst=1.E-12)const;
+    // Computes the temperature dependance of the reverse bias current
+    virtual Double_t ReverseBiasCurrent(Double_t temp,Double_t revBiasCurT1,
+                                    Double_t tempT1,Double_t energy=1.2)const;
     // Prints out the content of this class in ASCII format.
     virtual void Print(ostream *os) const;
     // Reads in the content of this class in the format of Print

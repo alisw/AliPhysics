@@ -255,6 +255,80 @@ Double_t AliITSresponse::SigmaDiffusion1D(Double_t l) const {
     return TMath::Sqrt(kcon*fT*fdv*l);  // [cm]
 }
 //----------------------------------------------------------------------
+Double_t AliITSresponse::DepletedRegionThicknessA(Double_t dopCons,
+                                                 Double_t voltage,
+                                                 Double_t elecCharge,
+                                                 Double_t voltBuiltIn)const{
+    // Computes the thickness of the depleted region in Si due to the 
+    // application of an external bias voltage. From the Particle Data
+    // Book, 28.8 Silicon semiconductor detectors equation 28.19 (2004)
+    // Physics Letters B "Review of Particle Physics" Volume 592, Issue 1-4
+    // July 15 2004, ISSN 0370-2693 page 263. First equation.
+    // Inputs:
+    //    Double_t dopCons           "N" doping concentration
+    //    Double_t voltage           "V" external bias voltage
+    //    Double_t elecCharge        "e" electronic charge
+    //    Double_t voltBuiltIn=0.5   "V_bi" "built-in" Voltage (~0.5V for
+    //                               resistivities typically used in detectors)
+    // Output:
+    //    none.
+    // Return:
+    //    The thickness of the depleted region
+
+    return TMath::Sqrt(2.0*(voltage+voltBuiltIn)/(dopCons*elecCharge));
+}
+//----------------------------------------------------------------------
+Double_t AliITSresponse::DepletedRegionThicknessB(Double_t resist,
+                                                 Double_t voltage,
+                                                 Double_t mobility,
+                                                 Double_t voltBuiltIn,
+                                                 Double_t dielConst)const{
+    // Computes the thickness of the depleted region in Si due to the 
+    // application of an external bias voltage. From the Particle Data
+    // Book, 28.8 Silicon semiconductor detectors equation 28.19 (2004)
+    // Physics Letters B "Review of Particle Physics" Volume 592, Issue 1-4
+    // July 15 2004, ISSN 0370-2693 page 263. Second Equation.
+    // Inputs:
+    //    Double_t resist            "rho" resistivity (typically 1-10 kOhm cm)
+    //    Double_t voltage           "V" external bias voltage
+    //    Double_t mobility          "mu" charge carrier mobility
+    //                                  (electons 1350, holes 450 cm^2/V/s)
+    //    Double_t voltBuiltIn=0.5   "V_bi" "built-in" Voltage (~0.5V for
+    //                               resistivities typically used in detectors)
+    //    Double_t dielConst=1.E-12  "epsilon" dielectric constant = 11.9 *
+    //                                (permittivity of free space) or ~ 1 pF/cm
+    // Output:
+    //    none.
+    // Return:
+    //    The thickness of the depleted region
+
+    return TMath::Sqrt(2.8*resist*mobility*dielConst*(voltage+voltBoultIn));
+}
+//----------------------------------------------------------------------
+Double_t AliITSresponse::ReverseBiasCurrent(Double_t temp,
+                                            Double_t revBiasCurT1,
+                                            Double_t tempT1,
+                                            Double_t energy)const{
+    // Computes the temperature dependance of the reverse bias current
+    // of Si detectors. From the Particle Data
+    // Book, 28.8 Silicon semiconductor detectors equation 28.21 (2004)
+    // Physics Letters B "Review of Particle Physics" Volume 592, Issue 1-4
+    // July 15 2004, ISSN 0370-2693 page 263.
+    // Inputs:
+    //    Double_t temp         The temperature at which the current is wanted
+    //    Double_t revBiasCurT1 The reference bias current at temp T1
+    //    Double_t tempT1       The temperature correstponding to revBiasCurT1 
+    //    Double_t energy=1.2   Some energy [eV]
+    // Output:
+    //    none.
+    // Return:
+    //    The reverse bias current at the tempeature temp.
+    const kBoltz = 8.617343E-5; //[eV/K]
+
+    return revBiasCurT1*(temp*temp/(tempT1*tempT1))*
+        TMath::Exp(-0.5*energy*(tempT1-temp)/(kBoltz*tempT1*temp));
+}
+//----------------------------------------------------------------------
 void AliITSresponse::Print(ostream *os) const {
   // Standard output format for this class.
   // Inputs:
