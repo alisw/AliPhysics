@@ -9,7 +9,7 @@
   #include "TStopwatch.h"
 #endif
 
-Int_t AliTPCFindClusters(Int_t n) {
+Int_t AliTPCFindClusters(Int_t n=1) {
    TFile *out=TFile::Open("AliTPCclusters.root","new");
    if (!out->IsOpen()) {cerr<<"Delete old AliTPCclusters.root !\n"; return 1;}
    TFile *in=TFile::Open("rfio:galice.root");
