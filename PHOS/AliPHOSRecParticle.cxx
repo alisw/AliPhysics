@@ -31,6 +31,7 @@
 // --- AliRoot header files ---
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSGetter.h" 
+#include "AliPHOSGeometry.h" 
 
 //____________________________________________________________________________
   AliPHOSRecParticle::AliPHOSRecParticle(): fPHOSTrackSegment(0)  ,  fDebug( kFALSE )
@@ -95,9 +96,53 @@ const Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const
 }
 
 //____________________________________________________________________________
+const TParticle * AliPHOSRecParticle::GetPrimary() const  
+{
+  // Get the primary particle at the origine of the RecParticle and 
+  // which has deposited the largest energy in SDigits
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  if (!gime) 
+    Error("GetPrimary", "Getter not yet instantiated") ; 
+  gime->Event(gime->EventNumber(), "SRTPX") ; 
+  if(GetNPrimaries() == 0)
+    return 0 ;
+  if(GetNPrimaries() == 1)
+    return GetPrimary(0) ;
+  Int_t AbsId = 0;
+  Int_t module ;
+  const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
+   Double_t x,z ;
+  geom->ImpactOnEmc(static_cast<double>(Theta()),static_cast<double>(Phi()), module,z,x);
+  Int_t amp = 0 ;
+  Int_t iPrim=-1 ;
+  if(module != 0){
+    geom->RelPosToAbsId(module,x,z,AbsId) ;
+   TClonesArray * sdigits = gime->SDigits() ;
+   AliPHOSDigit * sdig ;
+    
+   for(Int_t i = 0 ; i < sdigits->GetEntriesFast() ; i++){
+     sdig = static_cast<AliPHOSDigit *>(sdigits->At(i)) ;
+     if((sdig->GetId() == AbsId)){
+       if((sdig->GetAmp() > amp) && (sdig->GetNprimary())){
+	 amp = sdig->GetAmp() ;
+	 iPrim = sdig->GetPrimary(1) ;
+       } 
+       // do not scan rest of list
+       if(sdig->GetId() > AbsId)
+	 continue ; 
+     }
+   }
+  }
+  if(iPrim >= 0)
+    return gime->Primary(iPrim) ;
+  else
+    return 0 ;
+} 
+  
+//____________________________________________________________________________
 const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const  
 {
-  // Get the list of primary particles at the origine of the RecParticle
+  // Get one of the primary particles at the origine of the RecParticle
   if ( index > GetNPrimariesToRecParticles() ) { 
     if (fDebug) 
       Warning("GetPrimary", "AliPHOSRecParticle::GetPrimary -> %d is larger that the number of primaries %d", 

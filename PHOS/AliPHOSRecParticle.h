@@ -36,6 +36,7 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
   virtual const Int_t GetNPrimaries() const ;
   TVector3 GetPos() const { return fPos ; } 
   virtual const TParticle * GetPrimary(Int_t index) const ;
+  virtual const TParticle * GetPrimary() const ;
   const Double_t *GetPID();
   void    SetDebug() { fDebug = kTRUE ; } 
   void    SetPos(TVector3 pos) { fPos.SetXYZ( pos.X(), pos.Y(), pos.Z() ); } 
