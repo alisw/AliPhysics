@@ -267,7 +267,7 @@ position
  
 
 gener->Init();
-gAlice->SetField(-2,1);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
+gAlice->SetField(0,1);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
 Int_t iFRAME  =0;
 Int_t iMAG    =0;
@@ -418,8 +418,8 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetResponseModel(chamber-1, response0);	    
 //
 //--------------------------------------------------------
-// Configuration for Chamber TC3/4 -----------------------
-///^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Configuration for Chamber TC3/4 (Station 2) -----------
+///^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Float_t rseg2[4]={23.5, 87.7, 122.4, 122.5};
      Float_t rseg2[4]={23.5, 47.1, 87.7, 122.5};
      Int_t   nseg2[4]={4, 4, 2, 1};
@@ -469,20 +469,30 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 
 
 //--------------------------------------------------------
-// Configuration for Chamber TC5/6 -----------------------
+// Configuration for Chamber TC5/6  (Station 3) ----------          
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  Int_t   nseg3[4]={4, 4, 2, 1};
- Int_t   npcb5[32] = {0,0,0,2,
-		      0,0,1,2,
+/*
+ Int_t   npcb5[32] = {0,0,2,0,
+		      0,1,2,0,
 		      0,2,1,1,
 		      0,2,1,0,
 		      0,2,1,0, 
 		      0,2,1,1, 
-		      0,0,1,2, 
-		      0,0,0,2};
- 
+		      0,1,2,0, 
+		      0,0,2,0};
+ */ 
+ Int_t   npcb5[32] = {0,0,1,1,
+		      0,1,1,1,
+		      0,2,1,1,
+		      0,1,1,1,
+		      0,1,1,1, 
+		      0,2,1,1, 
+		      0,1,1,1, 
+		      0,0,1,1};
+
  Float_t shift = 1.5/2.;
- Float_t xpos5[8]    = {2., 2., 2., 32., 32., 2., 2., 2.};
+ Float_t xpos5[8]    = {2., 2., 2., 42., 42., 2., 2., 2.};
  Float_t ypos5       = -(4.*(40.-2.*shift)+shift);
 
  chamber=5;
@@ -558,7 +568,6 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 		    0,0,2,2, 
 		    0,0,0,3, 
 		    0,0,0,2};
- // Int_t   npcb7[28] = {0,3,2,2, 0,3,2,2, 0,2,2,2, 0,0,3,3, 0,0,2,3, 0,0,0,4, 0,0,0,2 };   
  Float_t xpos7[11]   = {2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2.};
  Float_t ypos7       = -(20.+5.*(40.-2.*shift));
  
@@ -700,7 +709,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetResponseModel(chamber-1, response0);	    
 
 //--------------------------------------------------------
-// Configuration for Trigger stations -------------------- 
+// Configuration for Trigger Stations -------------------- 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
  AliMUONResponseTrigger* responseTrigger0 =  new AliMUONResponseTrigger;
