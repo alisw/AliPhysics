@@ -6,6 +6,13 @@
 /*
   $Id$
  */
+
+//
+// Class for the display of ITS // Version 11
+// with the new geometry
+// A proper description of this class will follow
+//
+
 #include <TTask.h>
 #include <TGeoTube.h>
 
@@ -27,7 +34,7 @@ class DisplayITSv11 : public TTask {
     virtual void EngineeringSupRB24();
     virtual void EngineeringSupRB26();
     //
-    virtual Int_t GetDebugITS(){return fITSdebug;}
+    virtual Int_t GetDebugITS() const {return fITSdebug;}
     //
     void SetITSdebugOn(){fITSdebug=1;}
     void SetITSdebugOff(){fITSdebug=0;}
@@ -45,7 +52,11 @@ class DisplayITSv11 : public TTask {
     void SetAxisOff(){fAxis=0;}
     void SetDisplayAngles(Double_t lon,Double_t lat,Double_t psi){
         fLongitude=lon;fLatitude=lat;fPsi=psi;}
-  private:
+private:
+    DisplayITSv11(const DisplayITSv11 & disp) : TTask(disp) {
+      Fatal("copy ctor","Not implemented\n");}
+    DisplayITSv11 & operator = (const DisplayITSv11 & ) {
+      Fatal("= operator","Not implemented\n"); return *this;}
     void Displaying(TGeoVolume *v,TCanvas *c,Int_t ipad);
     TGeoManager *fmgr;  // pointer to the geometry manager.
     AliITS      *fits;  // pointer to AliITS
@@ -53,18 +64,19 @@ class DisplayITSv11 : public TTask {
     TGeoVolume *fITS;   // Pointer to the ITS mother volume
     TGeoShape  *fClip;  // Clipping Volume.
     //
-    Int_t fITSdebug;
-    Int_t fNsegments;
-    Int_t fCut;
-    Int_t fAxis;
-    Int_t fPerspective;
-    Int_t fSolid;
-    Double_t fRmin[3],fRmax[3];
-    Double_t fPhimincut;
-    Double_t fPhimaxcut;
-    Double_t fLongitude;
-    Double_t fLatitude;
-    Double_t fPsi;
+    Int_t fITSdebug;             // Debug flag
+    Int_t fNsegments;            // Number of segment
+    Int_t fCut;                  // Cut value
+    Int_t fAxis;                 // Axis value
+    Int_t fPerspective;          // Perspective option
+    Int_t fSolid;                // Solid value
+    Double_t fRmin[3];           // Minimum radius value 
+    Double_t fRmax[3];           // Maximum radius value
+    Double_t fPhimincut;         // Min phi cut
+    Double_t fPhimaxcut;         // Max phi cut
+    Double_t fLongitude;         // Longitute value
+    Double_t fLatitude;          // Latitude value
+    Double_t fPsi;               // Psi
 
     ClassDef(DisplayITSv11,1) // Task to display ITS v11 Geometry
 };
