@@ -49,6 +49,7 @@ public:
 
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
+  virtual void  Digits2Raw();
   
  protected:
   Float_t fPar[4];           // pmdin, pmdout, thgas, thcell

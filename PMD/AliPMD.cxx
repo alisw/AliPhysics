@@ -55,6 +55,7 @@
 #include "AliMC.h"
 #include "AliPMDDigitizer.h"
 #include "AliPMDhit.h"
+#include "AliPMDDDLRawData.h"
   
 ClassImp(AliPMD)
  
@@ -369,5 +370,22 @@ AliDigitizer* AliPMD::CreateDigitizer(AliRunDigitizer* manager) const
   return new AliPMDDigitizer(manager);
 }
 // ---------------------------------------------------------------------------
+void AliPMD::Digits2Raw()
+{ 
+// convert digits of the current event to raw data
+
+  fLoader->LoadDigits();
+  TTree* digits = fLoader->TreeD();
+  if (!digits) {
+    Error("Digits2Raw", "no digits tree");
+    return;
+  }
+
+  AliPMDDDLRawData rawWriter;
+  rawWriter.WritePMDRawData(digits);
+
+  fLoader->UnloadDigits();
+}
+
 
 
