@@ -33,9 +33,9 @@
 //             // Makes SDigitis for all events stored in galice.root
 //  root [2] s->SetPedestalParameter(0.001)
 //             // One can change parameters of digitization
-//  root [3] s->SetSDigitsBranch("Redestal 0.001")
+// root [3] s->SetSDigitsBranch("Pedestal 0.001")
 //             // and write them into the new branch
-//  root [4] s->ExeciteTask("deb all tim")
+// root [4] s->ExecuteTask("deb all tim")
 //             // available parameters:
 //             deb - print # of produced SDigitis
 //             deb all  - print # and list of produced SDigits
@@ -106,7 +106,8 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char* headerFile, const char *sDigits
   
   //add Task to //root/Tasks folder
   TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  roottasks->Add(this) ; 
+  TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
+  phostasks->Add(this) ; 
   
   fIsInitialized = kTRUE ;
 }
@@ -143,7 +144,8 @@ void AliPHOSSDigitizer::Init()
     
     // add Task to //root/Tasks folder
     TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-    roottasks->Add(this) ; 
+    TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
+    phostasks->Add(this) ; 
     
     fIsInitialized = kTRUE ;
   }
@@ -336,7 +338,9 @@ void AliPHOSSDigitizer::Print(Option_t* option)const
 //__________________________________________________________________
 Bool_t AliPHOSSDigitizer::operator==( AliPHOSSDigitizer const &sd )const
 {
-  // SDigitizer are identical if the same threshold is in use
+  // Equal operator.
+  // SDititizers are equal if their pedestal, slope and threshold are equal
+
   if( (fA==sd.fA)&&(fB==sd.fB)&&(fPrimThreshold==sd.fPrimThreshold))
     return kTRUE ;
   else
