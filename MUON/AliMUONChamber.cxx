@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.10  2001/03/20 13:17:30  egangler
+fChargeCorrel moved from AliMUONChamber to AliMUONResponse as decided by
+January meeting.
+Setters and Getters are modified accordingly.
+This modification is transparent to the user code
+
 Revision 1.9  2001/01/26 21:35:54  morsch
 All pointers set to 0 in default constructor.
 
@@ -92,8 +98,8 @@ ClassImp(AliMUONChamber)
 {
 // Construtor with chamber id 
     fSegmentation = new TObjArray(2);
-    (*fSegmentation)[0] = 0;
-    (*fSegmentation)[1] = 0;    
+    fSegmentation->AddAt(0,0);
+    fSegmentation->AddAt(0,1);
     fResponse=0;
     fnsec=1;
     fReconstruction=0;

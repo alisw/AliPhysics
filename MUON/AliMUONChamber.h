@@ -49,7 +49,7 @@ public TObject
 //  
 // Set segmentation model
   virtual void    SetSegmentationModel(Int_t i, AliSegmentation* thisSegmentation) {
-      (*fSegmentation)[i-1] = thisSegmentation;
+      fSegmentation->AddAt(thisSegmentation,i-1);
   }
 // Set Cluster reconstruction model  
   virtual void    SetReconstructionModel(AliMUONClusterFinderVS *thisReconstruction) {

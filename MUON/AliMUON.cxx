@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.52  2001/06/14 13:49:22  hristov
+Write a TreeD in SDigits2Digits method (needed to be compatible with alirun script)
+
 Revision 1.51  2001/05/31 10:19:52  morsch
 Fix for new AliRun::RunReco().
 
@@ -316,7 +319,7 @@ AliMUON::AliMUON(const char *name, const char *title)
    Int_t i;
    
    for (i=0; i<AliMUONConstants::NCh() ;i++) {
-       (*fDchambers)[i] = new TClonesArray("AliMUONDigit",10000); 
+       fDchambers->AddAt(new TClonesArray("AliMUONDigit",10000),i); 
        fNdch[i]=0;
    }
 
@@ -325,7 +328,7 @@ AliMUON::AliMUON(const char *name, const char *title)
    fRawClusters = new TObjArray(AliMUONConstants::NTrackingCh());
 
    for (i=0; i<AliMUONConstants::NTrackingCh();i++) {
-       (*fRawClusters)[i] = new TClonesArray("AliMUONRawCluster",10000); 
+       fRawClusters->AddAt(new TClonesArray("AliMUONRawCluster",10000),i); 
        fNrawch[i]=0;
    }
 
@@ -356,9 +359,9 @@ AliMUON::AliMUON(const char *name, const char *title)
 	    ch = 2 * st + stCH;
 //
 	    if (ch < AliMUONConstants::NTrackingCh()) {
-		(*fChambers)[ch] = new AliMUONChamber(ch);
+	      fChambers->AddAt(new AliMUONChamber(ch),ch);
 	    } else {
-		(*fChambers)[ch] = new AliMUONChamberTrigger(ch);
+	      fChambers->AddAt(new AliMUONChamberTrigger(ch),ch);
 	    }
 	    
 	    AliMUONChamber* chamber = (AliMUONChamber*) (*fChambers)[ch];
@@ -374,6 +377,7 @@ AliMUON::AliMUON(const char *name, const char *title)
 //
 	} // Chamber stCH (0, 1) in 
     }     // Station st (0...)
+//    fChambers->SetLast(AliMUONConstants::NCh());
     fMaxStepGas=0.01; 
     fMaxStepAlu=0.1; 
     fMaxDestepGas=-1;
@@ -389,7 +393,7 @@ AliMUON::AliMUON(const char *name, const char *title)
    // cp new design of AliMUONTriggerDecision
    fTriggerCircuits = new TObjArray(AliMUONConstants::NTriggerCircuit());
    for (Int_t circ=0; circ<AliMUONConstants::NTriggerCircuit(); circ++) {
-     (*fTriggerCircuits)[circ] = new AliMUONTriggerCircuit();     
+     fTriggerCircuits->AddAt(new AliMUONTriggerCircuit(),circ);     
 
    }
      fMerger = 0;
@@ -1224,21 +1228,28 @@ AliMUON& AliMUON::operator = (const AliMUON& rhs)
     return *this;
 }
 
+////////////////////////////////////////////////////////////////////////
+void AliMUON::MakeBranchInTreeD(TTree *treeD, const char *file)
+{
+    //
+    // Create TreeD branches for the MUON.
+    //
 
+  const Int_t kBufferSize = 4000;
+  char branchname[30];
+    
+  //
+  // one branch for digits per chamber
+  // 
+  for (Int_t i=0; i<AliMUONConstants::NCh() ;i++) {
+    sprintf(branchname,"%sDigits%d",GetName(),i+1);	
+    if (fDchambers && treeD) {
+      MakeBranchInTree(treeD, 
+		       branchname, &((*fDchambers)[i]), kBufferSize, file);
+      printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
+    }
+  }
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//___________________________________________
 

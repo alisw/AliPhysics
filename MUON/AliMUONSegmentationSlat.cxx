@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/05/16 14:57:17  alibrary
+New files for folders and Stack
+
 Revision 1.11  2001/01/26 21:25:48  morsch
 Empty default constructors and.
 
@@ -492,7 +495,7 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
     fNpx=0;
 // for each slat in the quadrant (+,+)    
     for (islat=0; islat<fNSlats; islat++) {
-	(*fSlats)[islat] = CreateSlatModule();
+        fSlats->AddAt(CreateSlatModule(),islat);
 
 	AliMUONSegmentationSlatModule *slat =  Slat(islat);
 	// Configure Slat

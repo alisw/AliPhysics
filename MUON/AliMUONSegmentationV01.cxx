@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2001/05/16 14:57:17  alibrary
+New files for folders and Stack
+
 Revision 1.18  2001/04/11 12:33:56  morsch
 Bug in GetPadC in case of staggered planes corrected. (Thanks to J.P. Cussonneau)
 
@@ -133,9 +136,9 @@ AliMUONSegmentationV01::AliMUONSegmentationV01(Int_t nsec)
     (*fNDiv)[0]=(*fNDiv)[1]=(*fNDiv)[2]=(*fNDiv)[3]=0;     
     (*fDpxD)[0]=(*fDpxD)[1]=(*fDpxD)[2]=(*fDpxD)[3]=0;     
     fCorrA = new TObjArray(3);
-    (*fCorrA)[0]=0;
-    (*fCorrA)[1]=0;
-    (*fCorrA)[2]=0;
+    fCorrA->AddAt(0,0);
+    fCorrA->AddAt(0,1);
+    fCorrA->AddAt(0,2);
     fOffsetY=0;
 } 
 
@@ -661,7 +664,7 @@ void AliMUONSegmentationV01::Draw(const char* opt) const
 void AliMUONSegmentationV01::SetCorrFunc(Int_t isec, TF1* func)
 {
 // Set the correction function
-    (*fCorrA)[isec]=func;
+    fCorrA->AddAt(func,isec);
 }
 
 TF1* AliMUONSegmentationV01::CorrFunc(Int_t isec) const
