@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2001/10/21 18:35:56  hristov
+Several pointers were set to zero in the default constructors to avoid memory management problems
+
 Revision 1.29  2001/10/15 08:12:24  morsch
 - Vertex smearing with truncated gaussian.
 - Store triggered jet info before and after final state radiation into mc-heade
@@ -152,6 +155,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     SetImpactParameterRange();
     SetTarget();
     SetProjectile();
+    SetBoostLHC();
     fKeep       =  0;
     fQuench     =  1;
     fShadowing  =  1;
@@ -265,6 +269,8 @@ void AliGenHijing::Generate()
       fHijing->GenerateEvent();
       fTrials++;
       fHijing->ImportParticles(particles,"All");
+      if (fLHC) Boost(particles);
+      
       Int_t np = particles->GetEntriesFast();
       printf("\n **************************************************%d\n",np);
       Int_t nc = 0;
@@ -523,6 +529,39 @@ Bool_t AliGenHijing::Stable(TParticle*  particle)
     }
 }
 
+
+void AliGenHijing::Boost(TClonesArray* particles)
+{
+//
+// Boost cms into LHC lab frame
+//
+    Double_t dy    = - 0.5 * TMath::Log(Double_t(fZProjectile) * Double_t(fATarget) / 
+				      (Double_t(fZTarget)    * Double_t(fAProjectile)));
+    Double_t beta  = TMath::TanH(dy);
+    Double_t gamma = 1./TMath::Sqrt(1.-beta*beta);
+    Double_t gb    = gamma * beta;
+
+    printf("\n Boosting particles to lab frame %f %f %f", dy, beta, gamma);
+    
+    Int_t i;
+    Int_t np = particles->GetEntriesFast();
+    for (i = 0; i < np; i++) 
+    {
+	TParticle* iparticle = (TParticle*) particles->At(i);
+
+	Double_t e   = iparticle->Energy();
+	Double_t px  = iparticle->Px();
+	Double_t py  = iparticle->Py();
+	Double_t pz  = iparticle->Pz();
+
+	Double_t eb  = gamma * e -      gb * pz;
+	Double_t pzb =   -gb * e +   gamma * pz;
+
+	iparticle->SetMomentum(px, py, pzb, eb);
+    }
+}
+
+
 void AliGenHijing::MakeHeader()
 {
 // Builds the event header, to be called after each event
@@ -565,6 +604,7 @@ void AliGenHijing::MakeHeader()
     header->SetPrimaryVertex(fEventVertex);
     gAlice->SetGenEventHeader(header);    
 }
+
 
 AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
 {

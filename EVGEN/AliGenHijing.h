@@ -59,9 +59,13 @@ class AliGenHijing : public AliGenMC
     virtual void    SetRadiation(Int_t flag=3)        {fRadiation  = flag;}    
     virtual void    SetSpectators(Int_t spects=1)     {fSpectators = spects;}
     virtual void    SetPtMinJet(Float_t ptmin)        {fPtMinJet   = ptmin;}
+    virtual void    SetBoostLHC(Int_t flag=0)         {fLHC        = flag;}
+    
+	    
     AliGenHijing &  operator=(const AliGenHijing & rhs);
 // Physics Routines	    
     virtual void EvaluateCrossSections();
+    virtual void Boost(TClonesArray* particles);
     virtual TGraph* CrossSection()     {return fDsigmaDb;}
     virtual TGraph* BinaryCollisions() {return fDnDb;}    
  protected:
@@ -104,7 +108,8 @@ class AliGenHijing : public AliGenMC
 // ZDC proposal (by Chiara) to store num. of SPECTATORS protons and neutrons
     Int_t 	fSpecn;		 // Num. of spectator neutrons
     Int_t 	fSpecp;		 // Num. of spectator protons
-     
+    Int_t       fLHC;            // Assume LHC as lab frame
+    
  private:
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
