@@ -121,6 +121,17 @@ void AliPHOSGeometry::Init(void)
   }
 }
 
+
+//____________________________________________________________________________
+Bool_t AliPHOSGeometry::IsInEMC(const Int_t id) const { 
+    Int_t relid[4] ; 
+    AbsToRelNumbering(id, relid) ; 
+    if ( relid[1] == 0 ) 
+      return kTRUE ; 
+    else 
+      return kFALSE ; 
+  }
+
 //____________________________________________________________________________
 Float_t AliPHOSGeometry::GetCPVBoxSize(Int_t index)  const
 {

@@ -84,7 +84,7 @@ public:
   void ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & z, Double_t & x) const ; 
                                                          // calculates the impact coordinates of a neutral particle  
                                                          // emitted in direction theta and phi in ALICE
- 
+  Bool_t IsInEMC(const Int_t id) const ;
   void   RelPosInModule(const Int_t * RelId, Float_t & y, Float_t & z) const ; // gets the position of element (pad or Xtal) relative to 
                                                                          // center of PHOS module  
   void   RelPosInAlice(const Int_t AbsId, TVector3 &  pos) const ;             // gets the position of element (pad or Xtal) relative to 
