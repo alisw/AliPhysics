@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2001/03/29 05:28:56  barbera
+Rails material changed from aluminum to carbon fiber according with the decision of the last Technical Board
+
 Revision 1.28  2001/03/28 06:40:20  barbera
 Central and services mother volumes made consistenf for detailed and coarse geometry. Switch for rails added to the coarse geometries
 
@@ -4158,35 +4161,86 @@ void AliITSvPPRasymm::CreateGeometry(){
   
 
   // --- DEFINE CABLES AT THE END OF THE ITS CONES - COPPER PART
-  
+  //     UPPER PART
+
   dgh[0] = 46.;    
   dgh[1] = 46.+1.0;  
   dgh[2] = 9.5;
+  dgh[3] = 12.;
+  dgh[4] = 168.;
   
-  gMC->Gsvolu("ICCU", "TUBE", idtmed[213], dgh, 3);  
-  gMC->Gspos("ICCU", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
-  gMC->Gspos("ICCU", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");
+  gMC->Gsvolu("I1CU", "TUBS", idtmed[213], dgh, 5);  
+  gMC->Gspos("I1CU", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
+  gMC->Gspos("I1CU", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");
   
+  // --- DEFINE CABLES AT THE END OF THE ITS CONES - COPPER PART
+  //     LOWER PART
+
+  dgh[0] = 46.;    
+  dgh[1] = 46.+1.0;  
+  dgh[2] = 9.5;
+  dgh[3] = 192.;
+  dgh[4] = 348.;
+  
+  gMC->Gsvolu("I2CU", "TUBS", idtmed[213], dgh, 5);  
+  gMC->Gspos("I2CU", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
+  gMC->Gspos("I2CU", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");
+
+
   // --- DEFINE CABLES AT THE END OF THE ITS CONES - CARBON PART
+  //     UPPER PART
   
   dgh[0] = 46.+1.0;  
   dgh[1] = 46.+1.0+1.5;   
   dgh[2] = 9.5;
+  dgh[3] = 12.;
+  dgh[4] = 168.;
   
-  gMC->Gsvolu("ICCC", "TUBE", idtmed[225], dgh, 3);  
-  gMC->Gspos("ICCC", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
-  gMC->Gspos("ICCC", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");  
+  gMC->Gsvolu("I1CC", "TUBS", idtmed[225], dgh, 5);  
+  gMC->Gspos("I1CC", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
+  gMC->Gspos("I1CC", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");  
   
+  // --- DEFINE CABLES AT THE END OF THE ITS CONES - CARBON PART
+  //     LOWER PART
+  
+  dgh[0] = 46.+1.0;  
+  dgh[1] = 46.+1.0+1.5;   
+  dgh[2] = 9.5;
+  dgh[3] = 192.;
+  dgh[4] = 348.;
+  
+  gMC->Gsvolu("I2CC", "TUBS", idtmed[225], dgh, 5);  
+  gMC->Gspos("I2CC", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
+  gMC->Gspos("I2CC", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");  
+
+
   // --- DEFINE PATCH PANELS AT THE END OF THE ITS CONES
+  //     UPPER PART
   
   dgh[0] = 46.;  
   dgh[1] = 56.;
   dgh[2] = 2.25;
+  dgh[3] = 12.;
+  dgh[4] = 168.;
   
-  gMC->Gsvolu("IPAN", "TUBE", idtmed[210], dgh, 3);  
-  gMC->Gspos("IPAN", 1, "ITSV", 0., 0., 95.25, 0, "ONLY");  
-  gMC->Gspos("IPAN", 2, "ITSV", 0., 0., -95.25, idrotm[200], "ONLY"); 
+  gMC->Gsvolu("IPA1", "TUBS", idtmed[210], dgh, 5);  
+  gMC->Gspos("IPA1", 1, "ITSV", 0., 0., 95.25, 0, "ONLY");  
+  gMC->Gspos("IPA1", 2, "ITSV", 0., 0., -95.25, idrotm[200], "ONLY"); 
   
+  // --- DEFINE PATCH PANELS AT THE END OF THE ITS CONES
+  //     LOWER PART
+  
+  dgh[0] = 46.;  
+  dgh[1] = 56.;
+  dgh[2] = 2.25;
+  dgh[3] = 192.;
+  dgh[4] = 348.;
+  
+  gMC->Gsvolu("IPA2", "TUBS", idtmed[210], dgh, 5);  
+  gMC->Gspos("IPA2", 1, "ITSV", 0., 0., 95.25, 0, "ONLY");  
+  gMC->Gspos("IPA2", 2, "ITSV", 0., 0., -95.25, idrotm[200], "ONLY"); 
+
+
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     UPPER PART
   
