@@ -1317,7 +1317,7 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
     fEmcRecPoints = 0 ; 
   }
 
-  //  fEmcRecPoints= new RecPointsList("AliPHOSEmcRecPoint", 100) ; if TClonesArray
+  //  fEmcRecPoints= new RecPointsList("AliPHOSEmcRecPoint", 1000) ; if TClonesArray
   fEmcRecPoints= new RecPointsList(100) ; 
 
   if ( fEmcRecPoints && gAlice->TreeR() ) {
@@ -1333,7 +1333,7 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
     fPpsdRecPoints = 0 ; 
   }
 
-  //  fPpsdRecPoints = new RecPointsList("AliPHOSPpsdRecPoint", 100) ; if TClonesArray
+  //  fPpsdRecPoints = new RecPointsList("AliPHOSPpsdRecPoint", 1000) ; if TClonesArray
   fPpsdRecPoints = new RecPointsList(100) ;
 
   if ( fPpsdRecPoints && gAlice->TreeR() ) {
@@ -1349,7 +1349,7 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
     fTrackSegments = 0 ; 
   }
 
-  fTrackSegments = new TrackSegmentsList("AliPHOSTrackSegment", 100) ;
+  fTrackSegments = new TrackSegmentsList("AliPHOSTrackSegment", 1000) ;
   if ( fTrackSegments && gAlice->TreeR() ) { 
     sprintf(branchname,"%sTS",GetName()) ;
     gAlice->TreeR()->Branch(branchname, &fTrackSegments, fBufferSize) ;
@@ -1360,7 +1360,7 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
     delete fRecParticles ; 
     fRecParticles = 0 ; 
   }
-  fRecParticles = new RecParticlesList("AliPHOSRecParticle", 100) ;
+  fRecParticles = new RecParticlesList("AliPHOSRecParticle", 1000) ;
   if ( fRecParticles && gAlice->TreeR() ) { 
      sprintf(branchname,"%sRP",GetName()) ;
      gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize) ;
