@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2001/03/13 09:30:35  cblume
+Update of digitization. Moved digit branch definition to AliTRD
+
 Revision 1.20  2001/02/25 20:19:00  hristov
 Minor correction: loop variable declared only once for HP, Sun
 
@@ -427,11 +430,11 @@ void AliTRDdigitizer::Init()
   InitDetector();
 
   // The default parameter for the digitization
-  fGasGain        = 2.0E3;
-  fChipGain       = 20.;
+  fGasGain        = 3300.;
+  fChipGain       = 8.0;
   fNoise          = 1000.;
   fADCoutRange    = 1023.;          // 10-bit ADC
-  fADCinRange     = 2000.;          // 2V input range
+  fADCinRange     = 1000.;          // 1V input range
   fADCthreshold   = 1;
 
   // For the summable digits

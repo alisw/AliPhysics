@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 
 Revision 1.1.4.5  2000/10/15 23:40:01  cblume
 Remove AliTRDconst
@@ -183,18 +186,14 @@ Bool_t AliTRDclusterizer::Open(const Char_t *name, Int_t nEvent)
   }
 
   // Get AliRun object from file or create it if not on file
-  //if (!gAlice) {
-    gAlice = (AliRun*) fInputFile->Get("gAlice");
-    if (gAlice) {
-      printf("AliTRDclusterizer::Open -- ");
-      printf("AliRun object found on file.\n");
-    }
-    else {
+  if (!(gAlice)) {
+    gAlice = (AliRun *) fInputFile->Get("gAlice");
+    if (!(gAlice)) {
       printf("AliTRDclusterizer::Open -- ");
       printf("Could not find AliRun object.\n");
       return kFALSE;
     }
-  //}
+  }
 
   fEvent = nEvent;
 
@@ -205,6 +204,13 @@ Bool_t AliTRDclusterizer::Open(const Char_t *name, Int_t nEvent)
     printf("No entries in the trees for event %d.\n",fEvent);
     return kFALSE;
   }
+
+  // Create a tree for the reconstructed points
+  TTree *recPointTree = new TTree("ClusterTree","Tree with clusters and rec. points");
+  TObjArray *ioArray = 0;
+  recPointTree->Branch("TRDrecPoints","TObjArray",&ioArray,32000,0);
+//   TObjArray *iopointer = 0;
+//   recPointTree->Branch("Clusters","TObjArray",&iopointer,32000,0);
 
   return kTRUE;
 
@@ -217,6 +223,7 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
   // Fills TRDrecPoints branch in TRDrecPoints## tree with rec. points 
   // found in detector = det. For det=-1 writes the tree. 
   // For det=-2 recreates the tree.
+  //
 
   Char_t treeName[14];
   sprintf(treeName,"TRDrecPoints%d", fEvent);
@@ -228,8 +235,9 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     return kTRUE;
   }
 
-  TTree *tree=(TTree*)fInputFile->Get(treeName);
-  TBranch *branch=tree->GetBranch("TRDrecPoints");
+  //TTree *tree = (TTree *) fInputFile->Get(treeName);
+  TTree *tree = (TTree *) fInputFile->Get("ClusterTree");
+  TBranch *branch = tree->GetBranch("TRDrecPoints");
 
   if(!branch) {
     TObjArray *ioArray = 0;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2000/11/30 17:38:08  cblume
+Changes to get in line with new STEER and EVGEN
+
 Revision 1.25  2000/11/15 14:30:16  cblume
 Fixed bug in calculating detector no. of extra hit
 
@@ -534,18 +537,20 @@ void AliTRDv1::StepManager()
   const Double_t kBig     = 1.0E+12;
 
   // Ionization energy
-  const Float_t  kWion    = 22.04;
-  // Maximum energy for e+ e- g for the step-size calculation
-  const Float_t  kPTotMax = 0.002;
+  const Float_t  kWion        = 22.04;
+  // Maximum momentum for e+ e- g 
+  const Float_t  kPTotMaxEl   = 0.002;
+  // Minimum momentum for the step size adjustment
+  const Float_t  kPTotMinStep = 1.0e-5;
   // Plateau value of the energy-loss for electron in xenon
   // taken from: Allison + Comb, Ann. Rev. Nucl. Sci. (1980), 30, 253
   //const Double_t kPlateau = 1.70;
   // the averaged value (26/3/99)
-  const Float_t  kPlateau = 1.55;
+  const Float_t  kPlateau     = 1.55;
   // dN1/dx|min for the gas mixture (90% Xe + 10% CO2)
-  const Float_t  kPrim    = 48.0;
+  const Float_t  kPrim        = 48.0;
   // First ionization potential (eV) for the gas mixture (90% Xe + 10% CO2)
-  const Float_t  kPoti    = 12.1;
+  const Float_t  kPoti        = 12.1;
 
   // PDG code electron
   const Int_t    kPdgElectron = 11;
@@ -726,7 +731,7 @@ void AliTRDv1::StepManager()
         pTot = mom.Rho();
         iPdg = TMath::Abs(gMC->TrackPid());
         if ( (iPdg != kPdgElectron) ||
-	    ((iPdg == kPdgElectron) && (pTot < kPTotMax))) {
+	    ((iPdg == kPdgElectron) && (pTot < kPTotMaxEl))) {
           aMass     = gMC->TrackMass();
           betaGamma = pTot / aMass;
           pp        = kPrim * BetheBloch(betaGamma);
@@ -740,6 +745,8 @@ void AliTRDv1::StepManager()
         }
       
         // Calculate the maximum step size for the next tracking step
+        // introduce a lower momentum cut
+        //if ((pp > 0) && (pTot > kPTotMinStep)) {
         if (pp > 0) {
           do 
             gMC->Rndm(random,1);
