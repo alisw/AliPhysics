@@ -47,17 +47,7 @@ void MUONrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
 // Get pointers to Alice detectors and Digits containers
     AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON");
     for (Int_t i=0; i<10; i++) {
- 	AliMUONChamber* iChamber= &(MUON->Chamber(i));
-	AliMUONResponse* response =  iChamber->ResponseModel();
-	AliMUONSegmentation*  seg1 = iChamber->SegmentationModel(1);
-	AliMUONSegmentation*  seg2 = iChamber->SegmentationModel(2);
-//
 	RecModel = new AliMUONClusterFinderVS();
-	RecModel->SetNperMax(90);
-	RecModel->SetClusterSize(100);
-	RecModel->SetDeclusterFlag(0);
-	RecModel->SetSegmentation(seg1,seg2);
-	RecModel->SetResponse(response); 
 //	RecModel->SetTracks(16,17);    
 //	RecModel->SetTracks(266,267);    
 	MUON->SetReconstructionModel(i,RecModel);
