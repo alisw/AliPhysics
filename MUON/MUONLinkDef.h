@@ -24,12 +24,13 @@
 #pragma link C++ class  AliMUONResponseTriggerV1+;
 #pragma link C++ class  AliMUONSegmentationV01+;
 #pragma link C++ class  AliMUONSegmentationV02+;
-#pragma link C++ class  AliMUONSegmentationV04+;
-#pragma link C++ class  AliMUONSegmentationV05+;
-#pragma link C++ class  AliMUONSegmentationV1+;
 #pragma link C++ class  AliMUONSegmentationTrigger+;
 #pragma link C++ class  AliMUONSegmentationTriggerX+;
 #pragma link C++ class  AliMUONSegmentationTriggerY+;
+#pragma link C++ class  AliMUONSegmentationDetectionElement+;
+#pragma link C++ class  AliMUONSegmentIndex+;
+#pragma link C++ class  AliMUONSegmentManuIndex+;
+#pragma link C++ class  AliMUONSegmentPosition+;
 #pragma link C++ class  AliMUONChamber+;
 #pragma link C++ class  AliMUONChamberTrigger+;
 #pragma link C++ class  AliMUONPoints+;
