@@ -196,6 +196,7 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
 
   // Initializations
   // AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+  MUON->SetTreeAddress(); 
   AliMUONEventReconstructor *Reco = new AliMUONEventReconstructor();
 
   Reco->SetRecGeantHits(RecGeantHits);
@@ -210,19 +211,12 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
   cout << "AliMUONEventReconstructor: actual parameters" << endl;
   Reco->Dump();
 //   gObjectTable->Print();
-
   // Loop over events
-  for (Int_t event = FirstEvent; event <= LastEvent; event++) {
-    MUON->ResetRawClusters();
+  for (Int_t event = FirstEvent; event < LastEvent; event++) {
     cout << "Event: " << event << endl;
-    RunLoader->GetEvent(event);
-    // Addressing
-    MUON->SetTreeAddress(); 
-
-
-
- //     Int_t nparticles = gAlice->GetEvent(event);
-//      cout << "nparticles: " << nparticles << endl;
+    RunLoader->GetEvent(event);   
+    //     Int_t nparticles = gAlice->GetEvent(event);
+    //      cout << "nparticles: " << nparticles << endl;
     // prepare background file and/or event if necessary
     if (RecGeantHits == 1) {
       if (event == FirstEvent) Reco->SetBkgGeantFile(BkgGeantFileName);
@@ -234,7 +228,7 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
     // Fill Ntuple
     AliMUONEventRecNtupleFill(Reco, 0);
 //     gObjectTable->Print();
-
+    MUON->ResetRawClusters();
   } // Event loop
     // Write Ntuple
     AliMUONEventRecNtupleFill(Reco, -1);
