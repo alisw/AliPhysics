@@ -5,9 +5,12 @@
 # Author: Anders Vestbo   #                    
 ###########################
 
+ifndef USEPACKAGE
 #USEPACKAGE = ROOT
 USEPACKAGE = ALIROOT
+endif
 
+#used if USEPACKAGE=anything else
 DEFSTR = -Dno_root
 
 CXX         = g++
@@ -16,10 +19,13 @@ CXXFLAGS    = -O2 -Wall -fPIC -Woverloaded-virtual
 LDFLAGS     = -O2
 SOFLAGS     = -shared
 
+ifndef TOPDIR
 TOPDIR = $(HOME)/level3code
-OBJDIR = lib
+endif
+ifndef LIBDIR
 LIBDIR = $(LEVEL3)/lib_$(USERNAME)
-
+endif
+OBJDIR = lib
 
 ifeq ($(USEPACKAGE),ROOT) 
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp
@@ -33,6 +39,15 @@ endif
 
 #Save the particle id's
 #DEFSTR += -Ddo_mc
+
+#Use logging classes
+DEFSTR += -Duse_logging
+
+ifdef MLUCDIR
+INCLUDES += -I$(MLUCDIR)/include
+else
+INCLUDES += -I/prog/alice/level3/kip/MLUC/include
+endif
 
 SRCS	= AliL3Modeller.cxx AliL3ModelTrack.cxx AliL3Compress.cxx
 
