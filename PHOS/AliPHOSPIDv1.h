@@ -29,7 +29,7 @@ public:
 
   virtual void MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl, 
 			     AliPHOSRecParticle::RecParticlesList * rpl ) ; // does the job
-  void Print() ; 
+  virtual void Print(const char *) ; 
   virtual void SetDispersionCutOff(Float_t Dcut) {fCutOnDispersion = Dcut ; }    
   virtual void SetShowerProfileCuts(Float_t l1m, Float_t l1M, Float_t l2m, Float_t l2M) ; 
 

@@ -86,7 +86,7 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
 }
 
 //____________________________________________________________________________
-void  AliPHOSPIDv1:: Print() 
+void  AliPHOSPIDv1:: Print(const char * opt) 
 {
   // Print the parameters used for the particle type identification
   

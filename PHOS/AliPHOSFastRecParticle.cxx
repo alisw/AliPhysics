@@ -222,7 +222,7 @@ void AliPHOSFastRecParticle::Paint(Option_t *)
 }
 
 //____________________________________________________________________________
-void AliPHOSFastRecParticle::Print()
+void AliPHOSFastRecParticle::Print(const char * opt)
 {
   // Print the typr, energy and momentum
   

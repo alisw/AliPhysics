@@ -37,6 +37,10 @@ class AliPHOSRecPoint : public AliRecPoint {
   virtual ~AliPHOSRecPoint(){
     // dtor
   }
+  virtual  void   AddDigit(AliDigitNew &){
+    // do not use this definition but the one below
+    assert(0==1) ; 
+  }
   virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy) = 0 ; 
   virtual Int_t   Compare(TObject * obj) { 
     // check why this is done

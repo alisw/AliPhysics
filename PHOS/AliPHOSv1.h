@@ -31,13 +31,11 @@ public:
     // requested by the Coding Convention
     assert(0==1) ; 
   }
- 
   virtual ~AliPHOSv1(void) ;
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) ; 
-         // adds a pre-digitilized hit to the hit tree 
   Int_t          Digitize(Float_t Energy);
-  virtual void   FinishEvent(void) ;                                // makes the digits from the hits 
+  virtual void   FinishEvent(void) ;                               
   Int_t IsVersion(void) const { return 1 ; }
   virtual void   MakeBranch(Option_t* opt) ;
   virtual  AliPHOSRecPoint::RecPointsList *  PpsdRecPoints() {
@@ -48,11 +46,17 @@ public:
   void           ResetClusters(){} ;
   virtual void   ResetDigits() ; 
   virtual void   ResetReconstruction() ; // Reset reconstructed objects
-  void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {fReconstructioner = &Reconstructioner ;} 
+  void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {
+    // sets the reconstructionner object to be used
+    fReconstructioner = &Reconstructioner ;
+  } 
   void           SetDigitThreshold(Float_t th) { fDigitThreshold = th ; } 
   virtual void   SetTreeAddress(); 
-  virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
-  virtual TString Version(void){ return TString("v1"); }
+  virtual void   StepManager(void) ;                              
+  virtual TString Version(void){ 
+    // returns the version number 
+    return TString("v1") ; 
+  }
 
   AliPHOSv1 & operator = (const AliPHOSv1 & rvalue)  {
     // assignement operator requested by coding convention

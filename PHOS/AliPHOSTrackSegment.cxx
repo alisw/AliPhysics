@@ -477,7 +477,7 @@ void AliPHOSTrackSegment::Paint(Option_t *)
 }
 
 //____________________________________________________________________________
-void AliPHOSTrackSegment::Print()
+void AliPHOSTrackSegment::Print(const char * opt)
 {
   // Print all information on this track Segment
   

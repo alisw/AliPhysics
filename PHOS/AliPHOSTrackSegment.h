@@ -73,7 +73,7 @@ public:
     return fPpsdUpRecPoint ; 
   }
   virtual void  Paint(Option_t * option="");
-  void    Print() ;
+  virtual void  Print(const char *) ;
   void    SetIndexInList(Int_t val) { 
     // sets the index value  of this in the list 
     fIndexInList = val ; 

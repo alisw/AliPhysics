@@ -46,7 +46,7 @@ class AliPHOSFastRecParticle : public TParticle {
   } 
   TString Name() ; 
   virtual void Paint(Option_t * option="");
-  void Print() ; 
+  virtual void Print(const char *) ; 
   void SetPrimary(Int_t index) { 
     // sets the primary particle index
     fPrimary = index ; 
