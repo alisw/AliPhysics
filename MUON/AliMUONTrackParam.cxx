@@ -542,7 +542,7 @@ Double_t AliMUONTrackParam::P()
 }
  //__________________________________________________________________________
 void AliMUONTrackParam::ExtrapOneStepHelix(Double_t charge, Double_t step, 
-					 Double_t *vect, Double_t *vout) 
+					 Double_t *vect, Double_t *vout) const
 {
 //    ******************************************************************
 //    *                                                                *
@@ -661,7 +661,7 @@ void AliMUONTrackParam::ExtrapOneStepHelix(Double_t charge, Double_t step,
 
  //__________________________________________________________________________
 void AliMUONTrackParam::ExtrapOneStepHelix3(Double_t field, Double_t step, 
-					       Double_t *vect, Double_t *vout)
+					       Double_t *vect, Double_t *vout) const
 {
 // 
 //     ******************************************************************
@@ -739,7 +739,7 @@ void AliMUONTrackParam::ExtrapOneStepHelix3(Double_t field, Double_t step,
 }
  //__________________________________________________________________________
 void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step, 
-						     Double_t* vect, Double_t* vout)
+						     Double_t* vect, Double_t* vout) const
 {
 // 
 //     ******************************************************************
@@ -984,7 +984,7 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
     return;
 }
 //___________________________________________________________
- void  AliMUONTrackParam::GetField(Double_t *Position, Double_t *Field) 
+ void  AliMUONTrackParam::GetField(Double_t *Position, Double_t *Field) const
 {
     // interface to "gAlice->Field()->Field" for arguments in double precision
 

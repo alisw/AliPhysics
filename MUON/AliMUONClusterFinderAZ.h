@@ -85,6 +85,13 @@ protected:
   Int_t FindLocalMaxima(Int_t *localMax, Double_t *maxVal); // find local maxima 
   void  FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t *isLocalMax); // flag local max
   void  FindCluster(Int_t *localMax, Int_t iMax); // find cluster around local max
+
+  // dummy method for overloading warnings
+  void FindCluster(int, int, int, AliMUONRawCluster&) {return;}
+  void FindLocalMaxima(AliMUONRawCluster*) {return;}
+  void Split(AliMUONRawCluster*) {return;}
+  void AddRawCluster(const AliMUONRawCluster&) {return;}
+
   // This function is used for fitting
   void  Fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 

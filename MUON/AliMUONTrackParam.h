@@ -46,6 +46,13 @@ class AliMUONTrackParam : public TObject
   Double_t TotalMomentumEnergyLoss(Double_t thetaLimit, Double_t pTotal, Double_t theta);
   void FieldCorrection(Double_t Z); // makes simple magnetic field correction through the absorber 
 
+  void ExtrapOneStepHelix(Double_t charge, Double_t step, 
+			  Double_t *vect, Double_t *vout) const;
+  void ExtrapOneStepHelix3(Double_t field, Double_t step, 
+			   Double_t *vect, Double_t *vout) const;
+
+  void ExtrapOneStepRungekutta(Double_t charge, Double_t step, 
+			       Double_t* vect, Double_t* vout) const;
  protected:
  private:
   Double_t fInverseBendingMomentum; // Inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)
@@ -57,15 +64,8 @@ class AliMUONTrackParam : public TObject
 
   void SetGeant3Parameters(Double_t *VGeant3, Double_t ForwardBackward);
   void GetFromGeant3Parameters(Double_t *VGeant3, Double_t Charge);
-  void ExtrapOneStepHelix(Double_t charge, Double_t step, 
-			  Double_t *vect, Double_t *vout);
-  void ExtrapOneStepHelix3(Double_t field, Double_t step, 
-			   Double_t *vect, Double_t *vout);
 
-  void ExtrapOneStepRungekutta(Double_t charge, Double_t step, 
-			       Double_t* vect, Double_t* vout);
-
-  void GetField(Double_t *Position, Double_t *Field);
+  void GetField(Double_t *Position, Double_t *Field) const;
 
   ClassDef(AliMUONTrackParam, 1) // Track parameters in ALICE dimuon spectrometer
     };

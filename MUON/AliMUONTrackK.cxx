@@ -44,39 +44,6 @@ void mnvertLocalK(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail);
 
 ClassImp(AliMUONTrackK) // Class implementation in ROOT context
 
-  // A few calls in Fortran or from Fortran (extrap.F).
-#ifndef WIN32 
-# define extrap_onestep_helix extrap_onestep_helix_
-# define extrap_onestep_helix3 extrap_onestep_helix3_
-# define extrap_onestep_rungekutta extrap_onestep_rungekutta_
-# define gufld_double gufld_double_
-#else 
-# define extrap_onestep_helix EXTRAP_ONESTEP_HELIX
-# define extrap_onestep_helix3 EXTRAP_ONESTEP_HELIX3
-# define extrap_onestep_rungekutta EXTRAP_ONESTEP_RUNGEKUTTA
-# define gufld_double GUFLD_DOUBLE
-#endif 
-
-extern "C" {
-  void type_of_call extrap_onestep_helix
-  (Double_t &Charge, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
-
-  void type_of_call extrap_onestep_helix3
-  (Double_t &Field, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
-
-  void type_of_call extrap_onestep_rungekutta
-  (Double_t &Charge, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
-
-  void type_of_call gufld_double(Double_t *Position, Double_t *Field) {
-    //interface to "gAlice->Field()->Field" for arguments in double precision
-    Float_t x[3], b[3];
-    x[0] = Position[0]; x[1] = Position[1]; x[2] = Position[2];
-    gAlice->Field()->Field(x, b);
-    Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
-  }
-    
-}
-
 Int_t AliMUONTrackK::fgDebug = -1;
 Int_t AliMUONTrackK::fgNOfPoints = 0; 
 AliMUON* AliMUONTrackK::fgMUON = NULL;
@@ -656,7 +623,7 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
   Int_t iFB, nTries;
   Double_t dZ, step, distance, charge;
   Double_t vGeant3[7], vGeant3New[7];
-
+  AliMUONTrackParam* trackParam = 0;
   nTries = 0;
   // First step using linear extrapolation
   dZ = zEnd - fPosition;
@@ -673,7 +640,8 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
   do {
     step = TMath::Abs(step);
     // Propagate parameters
-    extrap_onestep_rungekutta(charge,step,vGeant3,vGeant3New);
+    trackParam->ExtrapOneStepRungekutta(charge,step,vGeant3,vGeant3New);
+    //    extrap_onestep_rungekutta(charge,step,vGeant3,vGeant3New);
     distance = zEnd - vGeant3New[2];
     step *= dZ/(vGeant3New[2]-fPositionNew);
     nTries ++;
@@ -691,7 +659,9 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
     do {
       // binary search
       // Propagate parameters
-      extrap_onestep_rungekutta(charge,step,vGeant3,vGeant3New);
+      //   extrap_onestep_rungekutta(charge,step,vGeant3,vGeant3New);
+      trackParam->ExtrapOneStepRungekutta(charge,step,vGeant3,vGeant3New);
+
       distance = zEnd - vGeant3New[2];
       step /= 2;
       nTries ++;

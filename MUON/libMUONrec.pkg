@@ -1,7 +1,5 @@
 # $Id$
 
-FSRCS= extrap.F
-
 SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONClusterFinderVS.cxx \
        AliMUONClusterFinderAZ.cxx \
