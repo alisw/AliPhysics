@@ -126,7 +126,7 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
   if(strstr(option,"print"))
     Print("") ; 
 
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ;
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
 
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1;
