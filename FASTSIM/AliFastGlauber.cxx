@@ -515,10 +515,13 @@ Double_t AliFastGlauber::WPathLength(Double_t* x, Double_t* par)
 	if (!iopt) {
 	    l += (2. * rw / w);
 	} else {
-	    l+= TMath::Sqrt(2. * rw * dr / fWSta->Eval(0.01) / fWSta->Eval(0.01));
+	    l+= 2. * rw * dr / fWSta->Eval(0.01) / fWSta->Eval(0.01);
 	}
     } // interactions
-    return (l / Double_t(npi));
+    if (!iopt) 
+	return (l / Double_t(npi));
+    else 
+	return (TMath::Sqrt(l / Double_t(npi)));
 }
 
 Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* /*par*/)
