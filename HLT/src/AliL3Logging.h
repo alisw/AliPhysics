@@ -5,8 +5,8 @@
 
 #ifdef use_logging
 
-#include "/prog/alice/level3/L3Package/kip/MLUC/include/MLUCLog.hpp"
-#include "/prog/alice/level3/L3Package/kip/MLUC/include/MLUCLogServer.hpp"
+#include "/prog/alice/level3/kip/MLUC/include/MLUCLog.hpp"
+#include "/prog/alice/level3/kip/MLUC/include/MLUCLogServer.hpp"
 
 typedef MLUCLog AliL3Log;
 typedef MLUCLogServer AliL3LogServer;
