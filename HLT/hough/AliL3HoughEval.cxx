@@ -131,7 +131,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
 	      if(pad < p) continue;
 	      if(pad > p) break;
 	      UShort_t time = digPt[j].fTime;
-	      Double_t eta = AliL3Transform::GetEta(padrow,pad,time);
+	      Double_t eta = AliL3Transform::GetEta(fSlice,padrow,pad,time);
 	      Int_t pixel_index = fHoughTransformer->GetEtaIndex(eta);
 	      if(pixel_index != track->GetEtaIndex()) continue;
 	      total_charge += digPt[j].fCharge;
@@ -218,7 +218,7 @@ void AliL3HoughEval::FindEta(AliL3TrackArray *tracks)
 		  if(pad < p) continue;
 		  if(pad > p) break;
 		  UShort_t time = digPt[j].fTime;
-		  Double_t eta = AliL3Transform::GetEta(padrow,pad,time);
+		  Double_t eta = AliL3Transform::GetEta(fSlice,padrow,pad,time);
 		  Int_t pixel_index = (Int_t)(eta/etaslice);
 		  if(pixel_index > track->GetEtaIndex()+1) continue;
 		  if(pixel_index < track->GetEtaIndex()-1) break;

@@ -493,7 +493,7 @@ void AliL3HoughTransformerLUT::TransformCircle()
     }
 }
 
-Int_t AliL3HoughTransformerLUT::GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi,Int_t &nhits)
+Int_t AliL3HoughTransformerLUT::GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi)
 {
   if(!fDoMC)
     {
