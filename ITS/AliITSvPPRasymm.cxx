@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/02/05 13:34:57  barbera
+Updated version of the ITS detailed geometry
+
 Revision 1.5  2001/01/30 09:23:13  hristov
 Streamers removed (R.Brun)
 
@@ -1740,7 +1743,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[8] = 1E-03;
   dits[9] = 1E-03;
   dits[10] = 0;
-  gMC->Gsvolu("I303", "TRAP", idtmed[209], dits, 11);  
+  gMC->Gsvolu("I303", "TRAP", idtmed[206], dits, 11);  
 
   dits[0] = 1.8125;
   dits[1] = 3.81;
@@ -1753,7 +1756,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[8] = 1E-03;
   dits[9] = 1E-03;
   dits[10] = 0;
-  gMC->Gsvolu("I403", "TRAP", idtmed[209], dits, 11);  
+  gMC->Gsvolu("I403", "TRAP", idtmed[206], dits, 11);  
 
   dits[0] = 3.5;
   dits[1] = 0.01499; // not 0.015 because it is included into I302 which is 0.015
