@@ -81,7 +81,7 @@ class AliRICH : public  AliDetector {
 // Set Reconstruction Model
     virtual void   SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconstruction);
 // Response Simulation
-    virtual void   MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id,Response_t res);
+    virtual Int_t   MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id,Response_t res);
 // Return reference to Chamber #id
     virtual AliRICHChamber& Chamber(Int_t id) {return *((AliRICHChamber *) (*fChambers)[id]);}
 // Retrieve pad hits for a given Hit
@@ -111,8 +111,8 @@ class AliRICH : public  AliDetector {
     TObjArray            *fRawClusters;        // List of raw clusters
     TObjArray            *fRecHits;            // List of rec. hits
     Int_t                *fNrawch;             // Number of raw clusters
-    Int_t                *fNrechits;           // Number of rec hits
-//  
+    Int_t                *fNrechits;           // Number of rec hits 
+
  protected:
     
     ClassDef(AliRICH,1)  //Hits manager for set:RICH
