@@ -32,11 +32,11 @@ class TTask ;
 
 #include "AliRun.h"
 #include "AliEMCALv1.h" 
+#include "AliEMCALHit.h" 
+#include "AliEMCALDigit.h" 
+#include "AliEMCALDigitizer.h" 
+#include "AliEMCALSDigitizer.h"
 class AliEMCALGeometry ;
-class AliEMCALHit ;
-class AliEMCALDigit ;
-class AliEMCALDigitizer ;
-class AliEMCALSDigitizer ;
 //class AliEMCALEmcRecPoint ;
 //class AliEMCALCpvRecPoint ;
 //class AliEMCALClusterizer ;
@@ -91,7 +91,7 @@ class AliEMCALGetter : public TObject {
   Int_t  EventNumber()       { return (Int_t) gAlice->GetEvNumber() ; }
   Int_t  MaxEvent()          { return (Int_t) gAlice->TreeE()->GetEntries() ; }
   static AliEMCALGetter * GetInstance(const char* headerFile,
-				     const char* branchTitle = "Default" ) ; 
+				     const char* branchTitle = "Default", const Option_t * rw="" ) ; 
   static AliEMCALGetter *   GetInstance() ; 
 
   const AliEMCALv1 *         EMCAL()  ;  
@@ -103,21 +103,32 @@ class AliEMCALGetter : public TObject {
   // QA Tasks
   //TTask * QATasks(const char * name = 0) const { return (TTask*)(ReturnT("QATasks", name)) ; }
 
+  // Primaries
+  TClonesArray *  Primaries(void) const { return (TClonesArray*)(ReturnO("Primaries")) ; }
+  
+  
   // Hits
-        TClonesArray *  Hits(void) const { return (TClonesArray*)(ReturnO("Hits")) ; }
-
+  const TClonesArray *  Hits(void) { return static_cast<const TClonesArray*>(ReturnO("Hits")) ; }
+  const AliEMCALHit * Hit(Int_t index)  { return static_cast<const AliEMCALHit*>(Hits()->At(index) );}
+  
   // SDigits
-        TClonesArray *  SDigits(const char * name = 0, const char * file=0) const 
-	                              { return (TClonesArray*)(ReturnO("SDigits", name, file)) ; }
-
-   AliEMCALSDigitizer *  SDigitizer(const char * name =0) const 
-                                      { return ((AliEMCALSDigitizer*)(ReturnT("SDigitizer", name))) ; }
-
+  TClonesArray *  SDigits(const char * name = 0, const char * file=0) { 
+    return static_cast<TClonesArray*>(ReturnO("SDigits", name, file)) ; 
+  }
+  const AliEMCALDigit *  SDigit(Int_t index) { return static_cast<const AliEMCALDigit*>(SDigits()->At(index)) ;}
+  
+  AliEMCALSDigitizer *  SDigitizer(const char * name =0) const { 
+    return ((AliEMCALSDigitizer*)(ReturnT("SDigitizer", name))) ; 
+  }
+ 
   // Digits
-        TClonesArray *  Digits(const char * name = 0)   const 
-                             { return (TClonesArray*)(ReturnO("Digits", name)) ; }
-    AliEMCALDigitizer *  Digitizer(const char * name =0) const 
-                             { return (AliEMCALDigitizer*)(ReturnT("Digitizer", name)) ; }
+   TClonesArray *  Digits(const char * name = 0)const  { 
+    return static_cast<TClonesArray*>(ReturnO("Digits", name)) ; 
+  }
+  const AliEMCALDigit *  Digit(Int_t index) { return static_cast<const AliEMCALDigit *>(Digits()->At(index)) ;}
+  AliEMCALDigitizer *  Digitizer(const char * name =0) const { 
+    return (AliEMCALDigitizer*)(ReturnT("Digitizer", name)) ; 
+  }
 
   // RecPoints
   //TObjArray * EmcRecPoints(const char * name = 0) const { 
@@ -156,9 +167,9 @@ class AliEMCALGetter : public TObject {
 
  private:
 
-  AliEMCALGetter(const char* headerFile, const char* branchTitle ="Default") ; 
+  AliEMCALGetter(const char* headerFile, const char* branchTitle ="Default", const Option_t * rw ="") ; 
   void CreateWhiteBoard() const ; 
-  const TObject * ReturnO(TString what, TString name=0, TString file=0) const ; 
+  TObject * ReturnO(TString what, TString name=0, TString file=0) const ; 
   const TTask * ReturnT(TString what,TString name=0) const ; 
   void DefineBranchTitles(char* branch, char* branchTitle) ;
   void ReadTreeD() ;
@@ -168,20 +179,20 @@ class AliEMCALGetter : public TObject {
   //void ReadTreeQA() ;
   void ReadPrimaries() ;
 
-  void * HitsRef(void) const ;
-  void * SDigitsRef(const char * name, const char * file = 0 ) const;
-  void * DigitsRef (const char * name)   const ;
-  //void * EmcRecPointsRef (const char * name) const ;
-  //void * CpvRecPointsRef (const char * name) const ;
-  //void * TrackSegmentsRef(const char * name)   const ;
-  //void * RecParticlesRef (const char * name)   const ;
-  //void * AlarmsRef (void)   const ;
+  TObject ** HitsRef(void) const ;
+  TObject ** SDigitsRef(const char * name, const char * file = 0 ) const;
+  TObject ** DigitsRef (const char * name)   const ;
+  //TObject ** EmcRecPointsRef (const char * name) const ;
+  //TObject ** CpvRecPointsRef (const char * name) const ;
+  //TObject ** TrackSegmentsRef(const char * name)   const ;
+  //TObject ** RecParticlesRef (const char * name)   const ;
+  //TObject ** AlarmsRef (void)   const ;
 
-  void * SDigitizerRef (const char * name) const ; 
-  void * DigitizerRef  (const char * name) const ; 
-  //void * ClusterizerRef(const char * name) const ; 
-  //void * TSMakerRef    (const char * name) const ; 
-  //void * PIDRef        (const char * name) const ; 
+  TObject ** SDigitizerRef (const char * name) const ; 
+  TObject ** DigitizerRef  (const char * name) const ; 
+  //TObject ** ClusterizerRef(const char * name) const ; 
+  //TObject ** TSMakerRef    (const char * name) const ; 
+  //TObject ** PIDRef        (const char * name) const ; 
 
  private:
 
