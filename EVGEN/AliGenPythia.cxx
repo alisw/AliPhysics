@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.43  2001/10/21 18:35:56  hristov
+Several pointers were set to zero in the default constructors to avoid memory management problems
+
 Revision 1.42  2001/10/15 08:21:55  morsch
 Vertex truncation settings moved to AliGenMC.
 
@@ -289,6 +292,7 @@ void AliGenPythia::Generate()
 	if (gAlice->GetEvNumber()>=fDebugEventFirst &&
 	    gAlice->GetEvNumber()<=fDebugEventLast) fPythia->Pylist(1);
 	fTrials++;
+	
 	fPythia->ImportParticles(fParticles,"All");
 
 //
@@ -377,7 +381,7 @@ void AliGenPythia::Generate()
 // Semi-stable or de-selected: diselect decay products:
 // 
 //
-			if (pSelected[i] == -1 ||  fDecayer->GetLifetime(kf) > 10e-15)
+			if (pSelected[i] == -1 ||  fDecayer->GetLifetime(kf) > fMaxLifeTime)
 			{
 			    Int_t ipF = iparticle->GetFirstDaughter();
 			    Int_t ipL = iparticle->GetLastDaughter();	

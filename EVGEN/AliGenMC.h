@@ -36,7 +36,7 @@ class AliGenMC : public AliGenerator
     virtual void SetChildYRange(Float_t ymin = -12, Float_t ymax = 12)
 	{fChildYMin = ymin;
 	fChildYMax  = ymax;}
-
+  virtual void SetMaximumLifetime(Float_t time = 1.e-15) {fMaxLifeTime = time;}
  protected:
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip);
@@ -61,6 +61,8 @@ class AliGenMC : public AliGenerator
     Float_t     fChildYMin;     // Children minimum y
     Float_t     fChildYMax;     // Children maximum y
     Decay_t     fForceDecay;    // Decay channel forced
+    Float_t     fMaxLifeTime;   // Maximum lifetime for unstable particles
+    
     ClassDef(AliGenMC,2)       // AliGenerator implementation for generators using MC methods
 };
 #endif

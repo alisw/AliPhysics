@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2001/10/21 18:35:56  hristov
+Several pointers were set to zero in the default constructors to avoid memory management problems
+
 Revision 1.32  2001/07/27 17:09:36  morsch
 Use local SetTrack, KeepTrack and SetHighWaterMark methods
 to delegate either to local stack or to stack owned by AliRun.
@@ -344,7 +347,7 @@ void AliGenParam::Generate()
 	      wgtch=fChildWeight*fPtParaFunc(& ptd, &dummy);
 	  }
 	  xmt=sqrt(pt*pt+am*am);
-      if (TMath::Abs(ty)==1) ty=0;
+	  if (TMath::Abs(ty)==1.) ty=0.;
 	  pl=xmt*ty/sqrt(1.-ty*ty);
 	  theta=TMath::ATan2(pt,pl);
 // Cut on theta
@@ -404,7 +407,6 @@ void AliGenParam::Generate()
 // flagged particle
 
 		      if (pFlag[i] == 1) {
-			  printf("\n deselected %d", i);
 			  ipF = iparticle->GetFirstDaughter();
 			  ipL = iparticle->GetLastDaughter();	
 			  if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
@@ -419,8 +421,7 @@ void AliGenParam::Generate()
 			  Double_t lifeTime = fDecayer->GetLifetime(kf);
 			  Double_t mass     = particle->Mass();
 			  Double_t width    = particle->Width();
-			  printf("\n lifetime %d %e %e %e ", i, lifeTime, mass, width);
-			  if (lifeTime > (Double_t) 1.e-15) {
+			  if (lifeTime > (Double_t) fMaxLifeTime) {
 			      ipF = iparticle->GetFirstDaughter();
 			      ipL = iparticle->GetLastDaughter();	
 			      if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
@@ -431,6 +432,7 @@ void AliGenParam::Generate()
 		      } // ks==1 ?
 //
 // children
+		      
 		      if (ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll && trackIt[i])
 		      {
 			  if (fCutOnChild) {
@@ -482,7 +484,6 @@ void AliGenParam::Generate()
 			  } else {
 			      iparent = -1;
 			  }
-			  printf("\n SetTrack %d %d %d %d", i, kf, iparent, trackIt[i]);
 			  SetTrack(fTrackIt*trackIt[i], iparent, kf,
 					   pc, och, polar,
 					   0, kPDecay, nt, wgtch);
