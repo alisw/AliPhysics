@@ -5,7 +5,7 @@
 include $(ALICE_ROOT)/conf/GeneralDef
 include $(ALICE_ROOT)/conf/MachineDef.$(ALICE_TARGET)
 
-MAKEFLAGS = -s
+MAKEFLAGS += -s
 
 ##### MACROS #####
 
