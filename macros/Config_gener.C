@@ -9,6 +9,9 @@ Int_t ntracks=1;
 void Config()
 {
 
+  // libraries required by geant321
+  gSystem->Load("libgeant321");
+
 new TGeant3("C++ Interface to Geant3");
 
 //=======================================================================
