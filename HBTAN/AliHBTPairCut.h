@@ -61,7 +61,7 @@ class AliHBTPairCut: public TNamed
   void SetQSideCMSLRange(Double_t min, Double_t max);
   void SetQLongCMSLRange(Double_t min, Double_t max);
   void SetAvSeparationRange(Double_t min,Double_t max = 10e5);//Anti-Merging Cut
-  void SetPixelSeparation(Double_t drphi=0.01,Double_t dz = 0.08);//Anti-Merging Cut for first pixel layer
+  void SetITSSeparation(Int_t layer, Double_t drphi=0.01,Double_t dz = 0.08);//Anti-Merging Cut for first pixel layer
   void SetClusterOverlapRange(Double_t min,Double_t max);//Anti-Splitting Max range -0.5 1.0
       
   AliHBTParticleCut* GetFirstPartCut() const {return fFirstPartCut;}
@@ -301,18 +301,19 @@ class AliHBTSeparationCut: public AliHbtBasePairCut
 };
 /******************************************************************/
   
-class AliHBTPixelSeparationCut: public AliHbtBasePairCut
+class AliHBTITSSeparationCut: public AliHbtBasePairCut
 {
 //Anti merging cut for the first layer of pixels
  public:
-  AliHBTPixelSeparationCut(Double_t deltarphi = 0.01, Double_t deltaz = 0.08):
-    AliHbtBasePairCut(deltarphi,deltaz,kHbtPairCutPropPixelSepar){}
-  virtual ~AliHBTPixelSeparationCut(){}
+  AliHBTITSSeparationCut(Int_t layer, Double_t deltarphi = 0.01, Double_t deltaz = 0.08):
+    AliHbtBasePairCut(deltarphi,deltaz,kHbtPairCutPropPixelSepar),fLayer(layer){}
+  virtual ~AliHBTITSSeparationCut(){}
   Bool_t   Pass(AliHBTPair* pair) const;
-
+  Int_t    GetLayer() const {return fLayer;}
  protected:
+  Int_t fLayer;//index of the layer that distance should be measured 0: 1st pixels
   virtual Double_t  GetValue(AliHBTPair* /*pair*/) const {return 0.0;}//not used
-  ClassDef(AliHBTPixelSeparationCut,1)
+  ClassDef(AliHBTITSSeparationCut,1)
 };
 /******************************************************************/
 

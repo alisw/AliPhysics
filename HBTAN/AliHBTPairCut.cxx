@@ -249,12 +249,19 @@ void AliHBTPairCut::SetAvSeparationRange(Double_t min, Double_t max)
 }
 /**********************************************************/
 
-void AliHBTPairCut::SetPixelSeparation(Double_t drphi, Double_t dz)
+void AliHBTPairCut::SetITSSeparation(Int_t layer, Double_t drphi, Double_t dz)
 {
   //Anti-Merging Cut for first pixel layer
-  AliHbtBasePairCut* cut= FindCut(kHbtPairCutPropPixelSepar);
-  if(cut) cut->SetRange(drphi,dz);//In this cut fMin is drphi, and fMax dz
-  else fCuts[fNCuts++] = new AliHBTPixelSeparationCut(drphi,dz);
+  AliHBTITSSeparationCut* cut= dynamic_cast<AliHBTITSSeparationCut*>(FindCut(kHbtPairCutPropPixelSepar));
+  if(cut) 
+   {
+     if (layer == cut->GetLayer())
+      {
+        cut->SetRange(drphi,dz);//In this cut fMin is drphi, and fMax dz
+        return;
+      }
+   }
+  fCuts[fNCuts++] = new AliHBTITSSeparationCut(layer,drphi,dz);
 }
 /**********************************************************/
 
@@ -404,9 +411,9 @@ Double_t AliHBTSeparationCut::GetValue(AliHBTPair* pair) const
 }
 /******************************************************************/
 
-ClassImp(AliHBTPixelSeparationCut)
+ClassImp(AliHBTITSSeparationCut)
 
-Bool_t AliHBTPixelSeparationCut::Pass(AliHBTPair* pair) const
+Bool_t AliHBTITSSeparationCut::Pass(AliHBTPair* pair) const
 {
  //Checks if two tracks do not cross first pixels too close to each other
  //If two tracks use the same cluster in pixels they are given
@@ -430,8 +437,8 @@ Bool_t AliHBTPixelSeparationCut::Pass(AliHBTPair* pair) const
      return kTRUE;//reject 
    }
   Float_t  x1=0.0,y1=0.0,z1=0.0,x2=0.0,y2=0.0,z2=0.0;
-  tpts1->PositionAt(0,x1,y1,z1);
-  tpts2->PositionAt(0,x2,y2,z2);
+  tpts1->PositionAt(fLayer,x1,y1,z1);
+  tpts2->PositionAt(fLayer,x2,y2,z2);
   
 //  Info("Pass","rphi %f z %f",fMin,fMax);
 //  Info("Pass","P1: %f %f %f", x1,y1,z1);
