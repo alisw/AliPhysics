@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/04/17 11:37:54  cblume
+Replaced Fill3() by Fill()
+
 Revision 1.1  2000/02/28 19:00:13  cblume
 Add new TRD classes
 
@@ -269,6 +272,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   Int_t   iRow, iCol, iTime;
   Int_t   nBytes = 0;
+  Int_t   iDict;
 
   Int_t   totalSizeDigits = 0;
   Int_t   totalSizeDict0  = 0;
@@ -505,7 +509,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
         // Allocate memory space for the digits buffer
         Digits->Allocate(nRowMax,nColMax,nTimeMax);
 
-        for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+        for (iDict = 0; iDict < kNDict; iDict++) {
           Dictionary[iDict] = (AliTRDdataArray *) fDictionary[iDict]->At(iDet);
           Dictionary[iDict]->Allocate(nRowMax,nColMax,nTimeMax);
 	}
@@ -532,7 +536,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
               // Store the track index in the dictionary
               // Note: We store index+1 in order to allow the array to be compressed
-              for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+              for (iDict = 0; iDict < kNDict; iDict++) {
                 Dictionary[iDict]->SetData(iRow,iCol,iTime
                                           ,Matrix->GetTrack(iRow,iCol,iTime,iDict)+1);
 	      }
@@ -545,7 +549,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
         // Compress the arrays
         Digits->Compress(1,fADCthreshold);
-        for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+        for (iDict = 0; iDict < kNDict; iDict++) {
           Dictionary[iDict]->Compress(1,0);
 	}
 
