@@ -5,3 +5,5 @@ HDRS= $(SRCS:.cxx=.h)
 DHDR:=THijingLinkDef.h
 
 EXPORT:=THijing.h  AliGenHijingEventHeader.h
+
+EINCLUDE:=HIJING
