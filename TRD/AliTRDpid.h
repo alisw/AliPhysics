@@ -54,6 +54,7 @@ class AliTRDpid : public TNamed {
           void          SetPIDindexMax(Int_t max)           { fPIDindexMax   = max;    };
 
           void          SetThreePadOnly(Bool_t only)        { fThreePadOnly  = only;   };
+          void          SetEvent(Int_t event)               { fEvent         = event;  };
 
           TObjArray    *GetTrackArray()                     { return fTrackArray;      }; 
           TObjArray    *GetClusterArray()                   { return fClusterArray;    };
@@ -79,6 +80,8 @@ class AliTRDpid : public TNamed {
   Int_t           fPIDindexMax;      //  Upper index MC particles to be considered
 
   Bool_t          fThreePadOnly;     //  Use only three pad cluster in the charge sum
+
+  Int_t           fEvent;            //  Event number
 
   TObjArray      *fTrackArray;       //! Array containing the tracks
   TObjArray      *fClusterArray;     //! Array containing the cluster

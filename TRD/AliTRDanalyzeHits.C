@@ -14,17 +14,17 @@ Int_t AliTRDanalyzeHits()
   gAlice->GetEvent(0);
 
   // Get the pointer to the TRD detector 
-  AliTRD *TRD = (AliTRD *) gAlice->GetDetector("TRD");
-  if (!TRD) {
+  AliTRD *trd = (AliTRD *) gAlice->GetDetector("TRD");
+  if (!trd) {
     cout << "<AliTRDanalyzeHits> No TRD detector found" << endl;
     rc = 2;
     return rc;
   }
 
   // Get the pointer to the geometry object
-  AliTRDgeometryFull *TRDgeometry;
-  if (TRD) {
-    TRDgeometry = (AliTRDgeometryFull *) TRD->GetGeometry();
+  AliTRDgeometryFull *geo;
+  if (trd) {
+    geo = (AliTRDgeometryFull *) trd->GetGeometry();
   }
   else {
     cout << "<AliTRDanalyzeHits> No TRD geometry found" << endl;
@@ -36,13 +36,13 @@ Int_t AliTRDanalyzeHits()
   TH1F *hQdedx  = new TH1F("hQdedx","Charge dedx-hits",100,0.0,1000.0);
   TH1F *hQtr    = new TH1F("hQtr"  ,"Charge TR-hits"  ,100,0.0,1000.0);
 
-  Float_t rmin   = TRDgeometry->Rmin();
-  Float_t rmax   = TRDgeometry->Rmax();
-  Float_t length = TRDgeometry->GetChamberLengthI(0);
-  Float_t width  = TRDgeometry->GetChamberWidth(0);
-  Int_t   ncol   = TRDgeometry->GetColMax(0);
-  Int_t   nrow   = TRDgeometry->GetRowMax(0,2,13);
-  Int_t   ntime  = ((Int_t) (rmax - rmin) / TRDgeometry->GetTimeBinSize());
+  Float_t rmin   = geo->Rmin();
+  Float_t rmax   = geo->Rmax();
+  Float_t length = geo->GetChamberLengthI(0);
+  Float_t width  = geo->GetChamberWidth(0);
+  Int_t   ncol   = geo->GetColMax(0);
+  Int_t   nrow   = geo->GetRowMax(0,2,13);
+  Int_t   ntime  = ((Int_t) (rmax - rmin) / geo->GetTimeBinSize());
 
   TH2F *hZY     = new TH2F("hZY"   ,"Y vs Z (chamber 0)", nrow,-length/2.,length/2.
                                                         ,ntime,      rmin,     rmax);
@@ -59,8 +59,8 @@ Int_t AliTRDanalyzeHits()
                                     ,50,0.0,1000.0);
 
   // Get the pointer hit tree
-  TTree *HitTree = gAlice->TreeH();  
-  if (!HitTree) {
+  TTree *hitTree = gAlice->TreeH();  
+  if (!hitTree) {
     cout << "<AliTRDanalyzeHits> No hit tree found" << endl;
     rc = 4;
     return rc;
@@ -71,7 +71,7 @@ Int_t AliTRDanalyzeHits()
 
   // Get the number of entries in the hit tree
   // (Number of primary particles creating a hit somewhere)
-  Int_t nTrack = (Int_t) HitTree->GetEntries();
+  Int_t nTrack = (Int_t) hitTree->GetEntries();
   cout << "<AliTRDanalyzeHits> Found " << nTrack 
        << " primary particles with hits" << endl;
 
@@ -79,7 +79,7 @@ Int_t AliTRDanalyzeHits()
   for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
 
     gAlice->ResetHits();
-    nBytes += HitTree->GetEvent(iTrack);
+    nBytes += hitTree->GetEvent(iTrack);
 
     Int_t nPrimE = 0;
     Int_t nPrimP = 0;
@@ -87,14 +87,14 @@ Int_t AliTRDanalyzeHits()
     Int_t nTotP  = 0;    
 
     // Get the number of hits in the TRD created by this particle
-    Int_t nHit = TRD->Hits()->GetEntriesFast();
+    Int_t nHit = trd->Hits()->GetEntriesFast();
 
     // Loop through the TRD hits  
     for (Int_t iHit = 0; iHit < nHit; iHit++) {
 
       countHits++;
 
-      AliTRDhit *hit = (AliTRDhit *) TRD->Hits()->UncheckedAt(iHit);
+      AliTRDhit *hit = (AliTRDhit *) trd->Hits()->UncheckedAt(iHit);
 
       Float_t x     = hit->X();
       Float_t y     = hit->Y();
@@ -102,7 +102,7 @@ Int_t AliTRDanalyzeHits()
       Float_t q     = hit->GetCharge();
       Int_t   track = hit->Track();
       Int_t   det   = hit->GetDetector();
-      Int_t   plane = TRDgeometry->GetPlane(det);
+      Int_t   plane = geo->GetPlane(det);
 
       if      (hit->FromDrift()) {
         hQdedx->Fill(q);

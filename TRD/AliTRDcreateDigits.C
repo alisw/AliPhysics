@@ -14,32 +14,38 @@ Int_t AliTRDcreateDigits()
   gAlice->GetEvent(0);
 
   // Create the TRD digitzer 
-  AliTRDdigitizer *Digitizer = new AliTRDdigitizer("digitizer","Digitizer class");
-  Digitizer->InitDetector();
+  AliTRDdigitizer *digitizer = new AliTRDdigitizer("digitizer","Digitizer class");
+  digitizer->InitDetector();
 
   // Set the parameter (for TRF ~200ns)
-  Digitizer->SetGasGain(1600.);
-  Digitizer->SetChipGain(8.0);
-  Digitizer->SetNoise(1000.);
-  Digitizer->SetADCinRange(1000.);
-  Digitizer->SetADCoutRange(1023.);
-  Digitizer->SetADCthreshold(0);
-  Digitizer->SetVerbose(1);
+  digitizer->SetGasGain(1600.);
+  digitizer->SetChipGain(8.0);
+  digitizer->SetNoise(1000.);
+  digitizer->SetADCinRange(1000.);
+  digitizer->SetADCoutRange(1023.);
+  digitizer->SetADCthreshold(0);
+  digitizer->SetVerbose(1);
 
   // Create the digits
-  if (!(Digitizer->MakeDigits())) {
+  if (!(digitizer->MakeDigits())) {
     rc = 2;
     return rc;
   }
 
   // Write the digits into the input file
-  if (!(Digitizer->WriteDigits())) {
+  if (!(digitizer->MakeBranch())) {
     rc = 3;
     return rc;
   }
 
+  // Write the digits into the input file
+  if (!(digitizer->WriteDigits())) {
+    rc = 4;
+    return rc;
+  }
+
   // Save the digitizer class in the AliROOT file
-  if (!(Digitizer->Write())) {
+  if (!(digitizer->Write())) {
     rc = 4;
     return rc;
   }

@@ -40,7 +40,8 @@ class AliTRDcluster : public TObject {
           Bool_t  From4pad() const                { return TestBit(k4pad);  }
           Bool_t  From5pad() const                { return TestBit(k5pad);  }
           Bool_t  FromLarge() const               { return TestBit(kLarge); }
-
+          Bool_t  Isolated() const                { return (TestBit(k2pad) || TestBit(k3pad)); }
+ 
           void    SetDetector(Int_t d)            { fDetector  = d; }
           void    SetLocalTimeBin(Int_t t)        { fTimeBin   = t; }
           void    SetQ(Float_t q)                 { fQ         = q; }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/05/31 16:53:26  alibrary
+Correction to the destructor
+
 Revision 1.9  2001/05/21 16:45:47  hristov
 Last minute changes (C.Blume)
 
@@ -218,6 +221,7 @@ void AliTRDsim::Init()
 
   if (fSpectrum) delete fSpectrum;
   fSpectrum   = new TH1D("TRspectrum","TR spectrum",fSpNBins,fSpLower,fSpUpper);
+  fSpectrum->SetDirectory(0);
 
   // Set the sigma values 
   SetSigma();

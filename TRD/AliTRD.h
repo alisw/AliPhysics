@@ -19,7 +19,6 @@ class AliDigit;
 class AliTRDhit;
 class AliTRDsim;
 class AliTRDgeometry;
-class AliTRDdataArrayI;
 
 //_____________________________________________________________________________
 class AliTRD : public AliDetector {
@@ -34,7 +33,6 @@ class AliTRD : public AliDetector {
           AliTRD    &operator=(const AliTRD &trd);
 
   virtual void       AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q);
-  virtual void       AddDigit(Int_t *digits, Int_t *amp);    
   virtual void       AddCluster(Float_t *pos, Int_t *digits
                               , Int_t det, Float_t amp, Int_t *tracks
                               , Float_t sigmaY2, Int_t iType);
@@ -95,10 +93,7 @@ class AliTRD : public AliDetector {
   Int_t                fDrawTR;             //  Switches marking the TR photons in the display
   Int_t                fDisplayType;        //  Display type (0: normal, 1: detailed) 
 
-  AliTRDdataArrayI    *fDigitsArray;        //! Digits array
-  AliTRDdataArrayI    *fDictionaryArray[3]; //! Dictionary array 
-
-  ClassDef(AliTRD,3)                        //  Transition Radiation Detector base class
+  ClassDef(AliTRD,4)                        //  Transition Radiation Detector base class
 
 };
 

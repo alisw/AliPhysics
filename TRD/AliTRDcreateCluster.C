@@ -7,40 +7,40 @@ Int_t AliTRDcreateCluster()
   Int_t rc = 0;
 
   // Create the clusterizer
-  AliTRDclusterizerV1 *Clusterizer =
+  AliTRDclusterizerV1 *clusterizer =
     new AliTRDclusterizerV1("clusterizer","Clusterizer class");
 
   // Set the parameter
-  Clusterizer->SetClusMaxThresh(0);
-  Clusterizer->SetClusSigThresh(0);
-  Clusterizer->Dump();
+  clusterizer->SetClusMaxThresh(0);
+  clusterizer->SetClusSigThresh(0);
+  clusterizer->Dump();
  
   // Open the file
-  if (!(Clusterizer->Open("TRD_test.root",0))) {
+  if (!(clusterizer->Open("TRD_test.root",0))) {
     rc = 1;
     return rc;
   }    
 
   // Load the digits
-  if (!(Clusterizer->ReadDigits())) {
+  if (!(clusterizer->ReadDigits())) {
     rc = 2;
     return rc;
   }    
 
   // Find the cluster
-  if (!(Clusterizer->MakeClusters())) {
+  if (!(clusterizer->MakeClusters())) {
     rc = 3;
     return rc;
   }
 
   // Write the cluster tree into the file 
-  if (!(Clusterizer->WriteClusters(-1))) {
+  if (!(clusterizer->WriteClusters(-1))) {
     rc = 4;
     return rc;
   }
 
   // Save the clusterizer class in the file
-  if (!(Clusterizer->Write())) {
+  if (!(clusterizer->Write())) {
     rc = 5;
     return rc;
   }

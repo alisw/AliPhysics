@@ -30,13 +30,16 @@ class AliTRDdigitizer : public TNamed {
 
   virtual void         Copy(TObject &d);
   virtual void         Init();
-  virtual Bool_t       Open(const Char_t *name, Int_t nEvent = 0);
-  virtual Bool_t       MakeDigits();
-  virtual Bool_t       Merge(TTree *trees, Int_t *mask, Int_t nin, Int_t event);
-  virtual void         ReInit();
-  virtual Bool_t       SumSDigits();
-  virtual Bool_t       WriteDigits();
   virtual Bool_t       InitDetector();
+  virtual void         ReInit();
+  virtual Bool_t       Open(const Char_t *name, Int_t nEvent = 0);
+  virtual Bool_t       MakeBranch(const Char_t *file = 0);
+  virtual Bool_t       MakeDigits();
+  virtual void         AddSDigitsManager(AliTRDdigitsManager *man);
+  virtual Bool_t       ConvertSDigits();
+  virtual Bool_t       MergeSDigits();
+  virtual Bool_t       SDigits2Digits();
+  virtual Bool_t       WriteDigits();
 
   virtual void         SetGasGain(Float_t gasgain)          { fGasGain        = gasgain;  };
   virtual void         SetNoise(Float_t noise)              { fNoise          = noise;    };
@@ -58,10 +61,11 @@ class AliTRDdigitizer : public TNamed {
   virtual void         SetCompress(Int_t c = 1)             { fCompress       = c;        };
   virtual void         SetVerbose(Int_t v = 1)              { fVerbose        = v;        };
   virtual void         SetSDigits(Int_t v = 1)              { fSDigits        = v;        };
+  virtual void         SetSDigitsScale(Float_t s)           { fSDigitsScale   = s;        };
   virtual void         SetEvent(Int_t v = 0)                { fEvent          = v;        };
-  virtual void         SetManager(AliTRDdigitsManager *man) { fDigits         = man;      };    
+  virtual void         SetManager(AliTRDdigitsManager *man) { fDigitsManager  = man;      };    
 
-  AliTRDdigitsManager *Digits() const                       { return fDigits;             };
+  AliTRDdigitsManager *Digits() const                       { return fDigitsManager;      };
 
           Float_t      GetGasGain() const                   { return fGasGain;            };
           Float_t      GetNoise() const                     { return fNoise;              };
@@ -79,6 +83,7 @@ class AliTRDdigitizer : public TNamed {
           Float_t      GetTimeCoupling() const              { return fTimeCoupling;       };
           Bool_t       GetCompress() const                  { return fCompress;           };
           Bool_t       GetSDigits() const                   { return fSDigits;            };
+          Float_t      GetSDigitsScale() const              { return fSDigitsScale;       };
           Float_t      GetTimeBinWidth() const              { return fTimeBinWidth;       };
   virtual Float_t      GetDiffusionL(Float_t vd, Float_t b);
   virtual Float_t      GetDiffusionT(Float_t vd, Float_t b);
@@ -86,50 +91,51 @@ class AliTRDdigitizer : public TNamed {
 
  protected:
 
-  TFile               *fInputFile;       //! ALIROOT-filename
-  AliTRDdigitsManager *fDigits;          //! TRD digits manager
-  AliTRD              *fTRD;             //! TRD detector class
-  AliTRDgeometry      *fGeo;             //! TRD geometry
+  TFile               *fInputFile;          //! ALIROOT-file
+  AliTRDdigitsManager *fDigitsManager;      //! Manager for the output digits
+  AliTRDdigitsManager *fSDigitsManager;     //! Manager for the summed input s-digits
+  TList               *fSDigitsManagerList; //! List of managers of input s-digits
+  AliTRD              *fTRD;                //! TRD detector class
+  AliTRDgeometry      *fGeo;                //! TRD geometry
   
-  Int_t                fEvent;           //! Event number
+  Int_t                fEvent;              //! Event number
 
-  Float_t              fField;           // Magnetic field
-  Float_t              fGasGain;         // Gas gain
-  Float_t              fNoise;           // Electronics noise
-  Float_t              fChipGain;        // Electronics gain
-  Float_t              fADCoutRange;     // ADC output range (number of channels)
-  Float_t              fADCinRange;      // ADC input range (input charge)
-  Float_t              fSinRange;        // Input range for summable digits 
-  Float_t              fSoutRange;       // Output range for summable digits 
-  Int_t                fADCthreshold;    // ADC threshold in ADC channel
-  Int_t                fDiffusionOn;     // Switch for the diffusion
-  Float_t              fDiffusionT;      // Diffusion in transverse direction
-  Float_t              fDiffusionL;      // Diffusion in longitudinal direction
-  Int_t                fElAttachOn;      // Switch for the electron attachment
-  Float_t              fElAttachProp;    // Propability for electron attachment (for 1m)
-  Int_t                fExBOn;           // Switch for the ExB effects
-  Float_t              fOmegaTau;        // Tangens of the Lorentz angle 
-  Float_t              fLorentzFactor;   // Factor due to Lorentz force
-  Int_t                fPRFOn;           // Switch for the pad response
-  Float_t             *fPRFsmp;          //!Sampled pad response
-  Int_t                fPRFbin;          // Number of bins for the PRF
-  Float_t              fPRFlo;           // Lower boundary of the PRF
-  Float_t              fPRFhi;           // Higher boundary of the PRF
-  Float_t              fPRFwid;          // Bin width of the sampled PRF
-  Int_t                fPRFpad;          // Distance to next pad in PRF
-  Int_t                fTRFOn;           // Switch for the time response
-  Float_t             *fTRFsmp;          //!Integrated time response
-  Int_t                fTRFbin;          // Number of bins for the TRF
-  Float_t              fTRFlo;           // Lower boundary of the TRF
-  Float_t              fTRFhi;           // Higher boundary of the TRF
-  Float_t              fTRFwid;          // Bin width of the integrated TRF
-  Float_t              fDriftVelocity;   // Drift velocity (cm / mus)
-  Float_t              fTimeBinWidth;    // Time bin width in ns
-  Float_t              fPadCoupling;     // Pad coupling factor
-  Float_t              fTimeCoupling;    // Time coupling factor (image charge of moving ions)
-  Bool_t               fCompress;        // Switch to keep only compressed data in memory
-  Int_t                fVerbose;         // Sets the verbose level
-  Bool_t               fSDigits;         // Switch for the summable digits
+  Float_t              fField;              //  Magnetic field
+  Float_t              fGasGain;            //  Gas gain
+  Float_t              fNoise;              //  Electronics noise
+  Float_t              fChipGain;           //  Electronics gain
+  Float_t              fADCoutRange;        //  ADC output range (number of channels)
+  Float_t              fADCinRange;         //  ADC input range (input charge)
+  Int_t                fADCthreshold;       //  ADC threshold in ADC channel
+  Int_t                fDiffusionOn;        //  Switch for the diffusion
+  Float_t              fDiffusionT;         //  Diffusion in transverse direction
+  Float_t              fDiffusionL;         //  Diffusion in longitudinal direction
+  Int_t                fElAttachOn;         //  Switch for the electron attachment
+  Float_t              fElAttachProp;       //  Propability for electron attachment (for 1m)
+  Int_t                fExBOn;              //  Switch for the ExB effects
+  Float_t              fOmegaTau;           //  Tangens of the Lorentz angle 
+  Float_t              fLorentzFactor;      //  Factor due to Lorentz force
+  Int_t                fPRFOn;              //  Switch for the pad response
+  Float_t             *fPRFsmp;             //! Sampled pad response
+  Int_t                fPRFbin;             //  Number of bins for the PRF
+  Float_t              fPRFlo;              //  Lower boundary of the PRF
+  Float_t              fPRFhi;              //  Higher boundary of the PRF
+  Float_t              fPRFwid;             //  Bin width of the sampled PRF
+  Int_t                fPRFpad;             //  Distance to next pad in PRF
+  Int_t                fTRFOn;              //  Switch for the time response
+  Float_t             *fTRFsmp;             //! Integrated time response
+  Int_t                fTRFbin;             //  Number of bins for the TRF
+  Float_t              fTRFlo;              //  Lower boundary of the TRF
+  Float_t              fTRFhi;              //  Higher boundary of the TRF
+  Float_t              fTRFwid;             //  Bin width of the integrated TRF
+  Float_t              fDriftVelocity;      //  Drift velocity (cm / mus)
+  Float_t              fTimeBinWidth;       //  Time bin width in ns
+  Float_t              fPadCoupling;        //  Pad coupling factor
+  Float_t              fTimeCoupling;       //  Time coupling factor (image charge of moving ions)
+  Bool_t               fCompress;           //  Switch to keep only compressed data in memory
+  Int_t                fVerbose;            //  Sets the verbose level
+  Bool_t               fSDigits;            //  Switch for the summable digits
+  Float_t              fSDigitsScale;       //  Scale factor for the summable digits 
 
  private:
 
@@ -141,7 +147,7 @@ class AliTRDdigitizer : public TNamed {
   virtual void         SamplePRF();
   virtual void         SampleTRF();
 
-  ClassDef(AliTRDdigitizer,4)            // Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,5)               //  Produces TRD-Digits
 
 };
 

@@ -11,6 +11,8 @@
 //  Array for TRD detector segments containing digits //
 ////////////////////////////////////////////////////////
 
+class TTree;
+
 class AliTRDdataArray;
 
 //_____________________________________________________________________________
@@ -27,8 +29,8 @@ class AliTRDsegmentArray : public AliTRDsegmentArrayBase {
   virtual void             Delete();
   virtual void             Delete(const char *) { Delete(); };
 
-  virtual Bool_t           LoadArray(const Char_t *branchname);
-  virtual Bool_t           StoreArray(const Char_t *branchname);
+  virtual Bool_t           LoadArray(const Char_t *branchname, TTree *tree = 0);
+  virtual Bool_t           StoreArray(const Char_t *branchname, TTree *tree = 0);
 
   virtual AliTRDdataArray *GetDataArray(Int_t det) const;
   virtual AliTRDdataArray *GetDataArray(Int_t sec, Int_t cha, Int_t pla) const;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/05/28 17:07:58  hristov
+Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
+
 Revision 1.12  2001/05/21 17:42:58  hristov
 Constant casted to avoid the ambiguity
 
@@ -139,6 +142,7 @@ AliTRDclusterizerV1::~AliTRDclusterizerV1()
 
   if (fDigitsManager) {
     delete fDigitsManager;
+    fDigitsManager = NULL;
   }
 
 }
@@ -211,6 +215,8 @@ void AliTRDclusterizerV1::Init()
     fLUT[ilut] = lut[ilut];
   }
 
+  fDigitsManager->CreateArrays();
+
 }
 
 //_____________________________________________________________________________
@@ -225,6 +231,8 @@ Bool_t AliTRDclusterizerV1::ReadDigits()
     printf("No input file open\n");
     return kFALSE;
   }
+
+  fDigitsManager->Open(fInputFile->GetName());
 
   // Read in the digit arrays
   return (fDigitsManager->ReadDigits());  

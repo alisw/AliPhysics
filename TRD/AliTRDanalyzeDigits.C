@@ -16,8 +16,8 @@ Int_t AliTRDanalyzeDigits()
   Int_t nPart = gAlice->GetEvent(0);
 
   // Get the pointer to the TRD detector 
-  AliTRD *TRD = (AliTRD *) gAlice->GetDetector("TRD");
-  if (!TRD) {
+  AliTRD *trd = (AliTRD *) gAlice->GetDetector("TRD");
+  if (!trd) {
     cout << "<AliTRDanalyzeDigits> No TRD detector found" << endl;
     rc = 2;
     return rc;
@@ -25,15 +25,15 @@ Int_t AliTRDanalyzeDigits()
 
   // Get the digitizer object
   TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
-  AliTRDdigitizer *Digitizer = (AliTRDdigitizer *) file->Get("digitizer");
-  if (!Digitizer) {
+  AliTRDdigitizer *digitizer = (AliTRDdigitizer *) file->Get("digitizer");
+  if (!digitizer) {
     cout << "<AliTRDanalyzeDigits> No digitizer object found" << endl;
     rc = 3;
     return rc;
   }
 
   // Define the histograms
-  Int_t adcRange = ((Int_t) Digitizer->GetADCoutRange());
+  Int_t adcRange = ((Int_t) digitizer->GetADCoutRange());
   TH1F *hAmpAll   = new TH1F("hAmpAll"  ,"Amplitude of the digits (all)"
                             ,adcRange+1,-0.5,((Float_t) adcRange)+0.5);
   TH1F *hAmpEl    = new TH1F("hAmpEl"   ,"Amplitude of the digits (electrons)"
@@ -44,9 +44,9 @@ Int_t AliTRDanalyzeDigits()
                             ,5,-0.5,4.5);
 
   // Get the pointer to the geometry object
-  AliTRDgeometry *TRDgeometry;
-  if (TRD) {
-    TRDgeometry = TRD->GetGeometry();
+  AliTRDgeometry *geo;
+  if (trd) {
+    geo = trd->GetGeometry();
   }
   else {
     cout << "<AliTRDanalyzeDigits> No TRD geometry found" << endl;
@@ -55,21 +55,23 @@ Int_t AliTRDanalyzeDigits()
   }
 
   // Create the digits manager
-  AliTRDdigitsManager *DigitsManager = new AliTRDdigitsManager();
+  AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
+
+  digitsManager->Open("TRD_test.root");
 
   // Read the digits from the file
-  if (!(DigitsManager->ReadDigits())) {
+  if (!(digitsManager->ReadDigits())) {
     cout << "<AliTRDanalyzeDigits> Cannot read the digits" << endl;
     rc = 5;
     return rc;
   }
 
-  AliTRDmatrix *TRDmatrix;
+  AliTRDmatrix *matrix;
 
   Int_t countDigits = 0;
-  Int_t iSec        = TRD->GetSensSector();
-  Int_t iCha        = TRD->GetSensChamber();
-  Int_t timeMax     = TRDgeometry->GetTimeTotal();
+  Int_t iSec        = trd->GetSensSector();
+  Int_t iCha        = trd->GetSensChamber();
+  Int_t timeMax     = geo->GetTimeTotal();
 
   TProfile *hAmpTimeEl = new TProfile("hAmpTimeEl","Amplitude of the digits (electrons)"
 				      ,timeMax,-0.5,((Double_t) timeMax)-0.5);
@@ -79,12 +81,12 @@ Int_t AliTRDanalyzeDigits()
   // Loop over all planes
   for (Int_t iPla = 0; iPla < kNpla; iPla++) {
 
-    Int_t iDet   = TRDgeometry->GetDetector(iPla,iCha,iSec);
-    Int_t rowMax = TRDgeometry->GetRowMax(iPla,iCha,iSec);
-    Int_t colMax = TRDgeometry->GetColMax(iPla);
+    Int_t iDet   = geo->GetDetector(iPla,iCha,iSec);
+    Int_t rowMax = geo->GetRowMax(iPla,iCha,iSec);
+    Int_t colMax = geo->GetColMax(iPla);
   
     if (iPla == 0) {
-      TRDmatrix = new AliTRDmatrix(rowMax,colMax,timeMax,iSec,iCha,iPla);
+      matrix = new AliTRDmatrix(rowMax,colMax,timeMax,iSec,iCha,iPla);
     }
 
     // Loop through the detector pixel
@@ -92,20 +94,19 @@ Int_t AliTRDanalyzeDigits()
       for (Int_t  col = 0;  col <  colMax;  col++) {
         for (Int_t  row = 0;  row <  rowMax;  row++) {
 
-          AliTRDdigit *Digit = DigitsManager->GetDigit(row,col,time,iDet);
-          Int_t amp = Digit->GetAmp();
-
-          Int_t track0 = DigitsManager->GetTrack(0,row,col,time,iDet);
-          Int_t track1 = DigitsManager->GetTrack(1,row,col,time,iDet);
-          TParticle *Part = 0;
+          AliTRDdigit *digit    = digitsManager->GetDigit(row,col,time,iDet);
+          Int_t        amp      = digit->GetAmp();
+          Int_t        track0   = digitsManager->GetTrack(0,row,col,time,iDet);
+          Int_t        track1   = digitsManager->GetTrack(1,row,col,time,iDet);
+          TParticle   *particle = 0;
           if (track0 > -1) {
-            Part = gAlice->Particle(track0);
+            particle = gAlice->Particle(track0);
 	  }
 
           if (amp > 0) {
             countDigits++;
             if (iPla == 0) {
-              TRDmatrix->SetSignal(row,col,time,amp);
+              matrix->SetSignal(row,col,time,amp);
 	    }
 	  }
 
@@ -118,18 +119,18 @@ Int_t AliTRDanalyzeDigits()
 	  }          
 
 	  // Electron digit
-          if ((Part) && (Part->GetPdgCode() ==   11) && (track1 < 0)) {
+          if ((particle) && (particle->GetPdgCode() ==   11) && (track1 < 0)) {
             hAmpEl->Fill(amp);
             hAmpTimeEl->Fill(time,amp);
 	  }
 
           // Pion digit
-          if ((Part) && (Part->GetPdgCode() == -211) && (track1 < 0)) {
+          if ((particle) && (particle->GetPdgCode() == -211) && (track1 < 0)) {
             hAmpPi->Fill(amp);
             hAmpTimePi->Fill(time,amp);
 	  }
 
-          delete Digit;
+          delete digit;
 
         }
       }
@@ -140,10 +141,10 @@ Int_t AliTRDanalyzeDigits()
   cout << "<AliTRDanalyzeDigits> Found " << countDigits << " digits in total" << endl;
 
   // Display the detector matrix
-  TRDmatrix->Draw();
-  TRDmatrix->ProjRow();
-  TRDmatrix->ProjCol();
-  TRDmatrix->ProjTime();
+  matrix->Draw();
+  matrix->ProjRow();
+  matrix->ProjCol();
+  matrix->ProjTime();
 
   TCanvas *cDigits = new TCanvas("cDigits","AliTRDanalyzeDigits",50,50,600,800);
   cDigits->Divide(2,3);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/11/06 17:19:41  cblume
+Add detailed geometry and simple simulator
+
 Revision 1.12  2001/05/16 14:57:28  alibrary
 New files for folders and Stack
 
@@ -98,13 +101,16 @@ AliTRDdigitsManager::AliTRDdigitsManager():TObject()
   // Default constructor
   //
 
-  fIsRaw = kFALSE;
+  fIsRaw   = kFALSE;
+  fEvent   = 0;
+  fVerbose = 0;
+  fSDigits = 0;
 
-  fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",AliTRDgeometry::Ndet());
-
+  fFile    = NULL;
+  fTree    = NULL;
+  fDigits  = NULL;
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-    fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
-                                               ,AliTRDgeometry::Ndet());
+    fDictionary[iDict] = NULL;
   }
 
 }
@@ -127,14 +133,27 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
   // AliTRDdigitsManager destructor
   //
 
+  if (fFile) {
+    fFile->Close();
+    delete fFile;
+    fFile = NULL;
+  }
+
+  if (fTree) {
+    delete fTree;
+    fTree = NULL;
+  }
+
   if (fDigits) {
     fDigits->Delete();
     delete fDigits;
+    fDigits = NULL;
   }
 
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
     fDictionary[iDict]->Delete();
     delete fDictionary[iDict];
+    fDictionary[iDict] = NULL;
   }
 
 }
@@ -146,9 +165,28 @@ void AliTRDdigitsManager::Copy(TObject &m)
   // Copy function
   //
 
-  ((AliTRDdigitsManager &) m).fIsRaw = fIsRaw;
+  ((AliTRDdigitsManager &) m).fIsRaw   = fIsRaw;
+  ((AliTRDdigitsManager &) m).fEvent   = fEvent;
+  ((AliTRDdigitsManager &) m).fVerbose = fVerbose;
+  ((AliTRDdigitsManager &) m).fSDigits = fSDigits;
 
   TObject::Copy(m);
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdigitsManager::CreateArrays()
+{
+  //
+  // Create the data arrays
+  //
+
+  fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",AliTRDgeometry::Ndet());
+
+  for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+    fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
+                                               ,AliTRDgeometry::Ndet());
+  }
 
 }
 
@@ -175,32 +213,94 @@ Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time
 }
  
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::MakeBranch(char *file)
+Bool_t AliTRDdigitsManager::Open(const Char_t *name)
 {
   //
-  // Creates the branches for the digits and the dictionary in the digits tree
+  // Opens the file for the TRD digits
+  //
+
+  fFile = (TFile*) gROOT->GetListOfFiles()->FindObject(name);
+  if (!fFile) {
+    if (fVerbose > 0) {
+      printf("AliTRDdigitsManager::Open -- ");
+      printf("Open the AliROOT-file %s.\n",name);
+    }
+    fFile = new TFile(name,"UPDATE");
+    if (!fFile) return kFALSE;
+  }
+  else {
+    if (fVerbose > 0) {
+      printf("AliTRDdigitsManager::Open -- ");
+      printf("%s is already open.\n",name);
+    }
+  }
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDdigitsManager::MakeBranch(const Char_t *file)
+{
+  //
+  // Creates the tree and branches for the digits and the dictionary
   //
 
   Int_t buffersize = 64000;
 
   Bool_t status = kTRUE;
 
-  //TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("TRD.Digits.root");
+  AliTRD *trd = (AliTRD *) gAlice->GetDetector("TRD") ;
 
-  AliTRD * TRD = (AliTRD *) gAlice->GetDetector("TRD") ;
+  // Create the TRD digits tree
+  Char_t treeName[12];
+  if (fSDigits) {
+    sprintf(treeName,"TreeS%d_TRD",fEvent);
+    fTree = new TTree(treeName,"TRD SDigits");
+  }
+  else {
+    sprintf(treeName,"TreeD%d_TRD",fEvent);
+    fTree = new TTree(treeName,"TRD Digits");
+  }
 
-  if (gAlice->TreeD()) {
+  if (fVerbose > 0) {
+    printf("AliTRDdigitsManager::MakeBranch -- ");
+    printf("Creating tree %s\n",treeName);
+  }
 
-    // Make the branch for the digits
-    if (fDigits) {
-      const AliTRDdataArray *kDigits = 
-           (AliTRDdataArray *) fDigits->At(0);
-      if (kDigits) {
-           TRD->MakeBranchInTree(gAlice->TreeD(), 
-                                "TRDdigits", kDigits->IsA()->GetName(),
-                                &kDigits,buffersize, 1,file);
+  // Make the branch for the digits
+  if (fDigits) {
+    const AliTRDdataArray *kDigits = (AliTRDdataArray *) fDigits->At(0);
+    if (kDigits) {
+      trd->MakeBranchInTree(fTree,"TRDdigits",kDigits->IsA()->GetName()
+                                 ,&kDigits,buffersize,99,file);
+      if (fVerbose > 0) {
         printf("AliTRDdigitsManager::MakeBranch -- ");
         printf("Making branch TRDdigits\n");
+      }
+    }
+    else {
+      status = kFALSE;
+    }
+  }
+  else {
+    status = kFALSE;
+  }
+
+  // Make the branches for the dictionaries
+  for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+    Char_t branchname[15];
+    sprintf(branchname,"TRDdictionary%d",iDict);
+    if (fDictionary[iDict]) {
+      const AliTRDdataArray *kDictionary = 
+              (AliTRDdataArray *) fDictionary[iDict]->At(0);
+      if (kDictionary) {
+        trd->MakeBranchInTree(fTree,branchname,kDictionary->IsA()->GetName()
+                             ,&kDictionary,buffersize,99,file);
+        if (fVerbose > 0) {
+          printf("AliTRDdigitsManager::MakeBranch -- ");
+          printf("Making branch %s\n",branchname);
+	}
       }
       else {
         status = kFALSE;
@@ -209,33 +309,6 @@ Bool_t AliTRDdigitsManager::MakeBranch(char *file)
     else {
       status = kFALSE;
     }
-
-    // Make the branches for the dictionaries
-    for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-      Char_t branchname[15];
-      sprintf(branchname,"TRDdictionary%d",iDict);
-      if (fDictionary[iDict]) {
-        const AliTRDdataArray *kDictionary = 
-             (AliTRDdataArray *) fDictionary[iDict]->At(0);
-        if (kDictionary) {
-            TRD->MakeBranchInTree(gAlice->TreeD(), 
-                             branchname,kDictionary->IsA()->GetName(),
-                             &kDictionary,buffersize, 1,file);
-          printf("AliTRDdigitsManager::MakeBranch -- ");
-          printf("Making branch %s\n",branchname);
-	}
-        else {
-          status = kFALSE;
-	}
-      }
-      else {
-        status = kFALSE;
-      }
-    }
-
-  }
-  else {
-    status = kFALSE;
   }
 
   return status;
@@ -251,12 +324,42 @@ Bool_t AliTRDdigitsManager::ReadDigits()
 
   Bool_t status = kTRUE;
 
-  status = fDigits->LoadArray("TRDdigits");
+  // Get the digits tree
+  Char_t treeName[12];
+  if (fSDigits) {
+    sprintf(treeName,"TreeS%d_TRD",fEvent);
+  }
+  else {
+    sprintf(treeName,"TreeD%d_TRD",fEvent);
+  }
+  if (fFile) {
+    fTree = (TTree *) fFile->Get(treeName);
+  }
+  else {
+    fTree = (TTree *) gDirectory->Get(treeName);
+  }
+  if (!fTree) {
+    if (fVerbose > 0) {
+      printf("AliTRDdigitsManager::ReadDigits -- ");
+      printf("Could not find tree %s.\n",treeName);
+    }
+    return kFALSE;
+  }
+
+  if (!fDigits) {
+    if (fVerbose > 0) {
+      printf("AliTRDdigitsManager::ReadDigits -- ");
+      printf("Create the data arrays.\n");
+    }
+    CreateArrays();
+  }
+
+  status = fDigits->LoadArray("TRDdigits",fTree);
 
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
     Char_t branchname[15];
     sprintf(branchname,"TRDdictionary%d",iDict);
-    status = fDictionary[iDict]->LoadArray(branchname);
+    status = fDictionary[iDict]->LoadArray(branchname,fTree);
   }  
 
   if (fDigits->TestBit(AliTRDdigit::RawDigit())) {
@@ -277,15 +380,8 @@ Bool_t AliTRDdigitsManager::WriteDigits()
   // Writes out the TRD-digits and the dictionaries
   //
 
-  // Create the branches
-  if (!(gAlice->TreeD()->GetBranch("TRDdigits"))) { 
-    printf("AliTRDdigitsManager::WriteDigits -- ");
-    printf("Call MakeBranch\n");
-    if (!MakeBranch()) return kFALSE;
-  }
-
   // Store the contents of the segment array in the tree
-  if (!fDigits->StoreArray("TRDdigits")) {
+  if (!fDigits->StoreArray("TRDdigits",fTree)) {
     printf("AliTRDdigitsManager::WriteDigits -- ");
     printf("Error while storing digits in branch TRDdigits\n");
     return kFALSE;
@@ -293,12 +389,15 @@ Bool_t AliTRDdigitsManager::WriteDigits()
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
     Char_t branchname[15];
     sprintf(branchname,"TRDdictionary%d",iDict);
-    if (!fDictionary[iDict]->StoreArray(branchname)) {
+    if (!fDictionary[iDict]->StoreArray(branchname,fTree)) {
       printf("AliTRDdigitsManager::WriteDigits -- ");
       printf("Error while storing dictionary in branch %s\n",branchname);
       return kFALSE;
     }
   }
+
+  // Write the new tree to the output file
+  fTree->Write();
 
   return kTRUE;
 

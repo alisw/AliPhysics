@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.13  2001/05/30 12:17:47  hristov
+Loop variables declared once
+
 Revision 1.12  2001/05/28 17:07:58  hristov
 Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
 
@@ -696,7 +699,9 @@ void AliTRDtracker::ReadClusters(TObjArray *array, const Char_t *filename)
   TFile *file = TFile::Open(filename);
   if (!file->IsOpen()) {printf("Can't open file %s !\n",filename); return;} 
 
-  TTree *ClusterTree = (TTree*)file->Get("ClusterTree");
+  Char_t treeName[12];
+  sprintf(treeName,"TreeR%d_TRD",fEvent);
+  TTree *ClusterTree = (TTree*) file->Get(treeName);
 
   TObjArray *ClusterArray = new TObjArray(400); 
  
@@ -868,7 +873,9 @@ Int_t AliTRDtracker::WriteTracks(const Char_t *filename) {
     printf("%s is already open.\n",filename);
   }
 
-  TTree tracktree("TreeT","Tree with TRD tracks");
+  Char_t treeName[12];
+  sprintf(treeName,"TreeT%d_TRD",fEvent);
+  TTree tracktree(treeName,"Tree with TRD tracks");
 
   AliTRDtrack *iotrack=0;
   tracktree.Branch("tracks","AliTRDtrack",&iotrack,32000,0);  

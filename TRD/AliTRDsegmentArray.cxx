@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/03/13 09:30:35  cblume
+Update of digitization. Moved digit branch definition to AliTRD
+
 Revision 1.6  2000/11/01 14:53:21  cblume
 Merge with TRD-develop
 
@@ -130,16 +133,22 @@ void AliTRDsegmentArray::Delete()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDsegmentArray::LoadArray(const Char_t *branchname)
+Bool_t AliTRDsegmentArray::LoadArray(const Char_t *branchname, TTree *tree)
 {
   //
   // Loads all segments of the array from the branch <branchname> of
-  // the digits tree
+  // the digits tree <tree>
   //
 
-  // Connect the digits tree
-  fTree = gAlice->TreeD();
-  if (!fTree) return kFALSE;
+  fTree = tree;
+
+  // Connect the digits tree as default
+  if (!fTree) {
+    printf("AliTRDsegmentArray::LoadArray -- ");
+    printf("Use default TreeD\n");
+    fTree = gAlice->TreeD();
+    if (!fTree) return kFALSE;
+  }
 
   // Get the branch
   fBranch = fTree->GetBranch(branchname);
@@ -162,16 +171,22 @@ Bool_t AliTRDsegmentArray::LoadArray(const Char_t *branchname)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDsegmentArray::StoreArray(const Char_t *branchname)
+Bool_t AliTRDsegmentArray::StoreArray(const Char_t *branchname, TTree *tree)
 {
   //
   // Stores all segments of the array in the branch <branchname> of 
-  // the digits tree
+  // the digits tree <tree>
   //
 
-  // Connect the digits tree
-  fTree = gAlice->TreeD();
-  if (!fTree) return kFALSE;
+  fTree = tree;
+
+  // Connect the digits tree as default
+  if (!fTree) {
+    printf("AliTRDsegmentArray::StoreArray -- ");
+    printf("Use default TreeD\n");
+    fTree = gAlice->TreeD();
+    if (!fTree) return kFALSE;
+  }
 
   // Get the branch
   fBranch = fTree->GetBranch(branchname);

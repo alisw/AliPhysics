@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/10/21 18:30:02  hristov
+Several pointers were set to zero in the default constructors to avoid memory management problems
+
 Revision 1.8  2001/05/07 08:06:44  cblume
 Speedup of the code. Create only AliTRDcluster
 
@@ -229,9 +232,11 @@ Bool_t AliTRDclusterizer::OpenOutput(const Char_t *name)
   }
 
   // Create a tree for the cluster
-  fClusterTree = new TTree("ClusterTree","Tree with TRDcluster");
+  Char_t treeName[12];
+  sprintf(treeName,"TreeR%d_TRD",fEvent);
+  fClusterTree = new TTree(treeName,"TRD cluster");
   TObjArray *ioArray = 0;
-  fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
+  fClusterTree->BranchOld("TRDcluster","TObjArray",&ioArray,32000,0);
 
   if (savedir) {
     savedir->cd();

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/11/06 17:19:41  cblume
+Add detailed geometry and simple simulator
+
 Revision 1.1  2001/05/07 08:08:05  cblume
 Update of TRD code
 
@@ -67,6 +70,8 @@ AliTRDpid::AliTRDpid():TNamed()
   fPIDindexMin   = 0;
   fPIDindexMax   = 0;
 
+  fEvent         = 0;
+
   fThreePadOnly  = kFALSE;
 
 }
@@ -82,6 +87,8 @@ AliTRDpid::AliTRDpid(const char* name, const char* title):TNamed(name,title)
   fClusterArray = NULL;
   fGeometry     = NULL;
   fFileKine     = NULL;
+
+  fEvent        = 0;
 
   Init();
 
@@ -108,11 +115,13 @@ AliTRDpid::~AliTRDpid()
   if (fClusterArray) {
     fClusterArray->Delete();
     delete fClusterArray;
+    fClusterArray = NULL;
   }
 
   if (fTrackArray) {
     fTrackArray->Delete();
     delete fTrackArray;
+    fTrackArray = NULL;
   }
 
   fFileKine->Close();
@@ -147,6 +156,7 @@ void AliTRDpid::Copy(TObject &p)
   ((AliTRDpid &) p).fPIDindexMin   = fPIDindexMin;
   ((AliTRDpid &) p).fPIDindexMax   = fPIDindexMax;
   ((AliTRDpid &) p).fThreePadOnly  = fThreePadOnly;
+  ((AliTRDpid &) p).fEvent         = fEvent;
 
 }
 
@@ -320,6 +330,8 @@ Bool_t AliTRDpid::ReadKine(const Char_t *name, Int_t event)
     return kFALSE;
   }
 
+  fEvent = event;
+
   return kTRUE;
 
 }
@@ -388,7 +400,9 @@ Bool_t AliTRDpid::ReadTracks(const Char_t *name)
     }
   }
 
-  TTree   *trackTree   = (TTree *) file->Get("TreeT");
+  Char_t treeName[12];
+  sprintf(treeName,"TreeT%d_TRD",fEvent);
+  TTree   *trackTree   = (TTree *) file->Get(treeName);
   TBranch *trackBranch = trackTree->GetBranch("tracks");
 
   Int_t nEntry = ((Int_t) trackTree->GetEntries());
