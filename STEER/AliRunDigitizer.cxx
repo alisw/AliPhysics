@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/07/30 14:04:18  jchudoba
+correct bug in the initialization
+
 Revision 1.2  2001/07/28 10:44:32  hristov
 Loop variable declared once; typos corrected
 
@@ -33,43 +36,45 @@ Manager class for merging/digitization
 // Sdigits into Digits. 
 //
 // Only one instance of this class is created in the macro:
-//   AliRunDigitizer * manager = new AliRunDigitizer();
+//   AliRunDigitizer * manager = 
+//      new AliRunDigitizer(nInputStreams,SPERB);
+// where nInputStreams is number of input streams and SPERB is
+// signals per background variable, which determines how combinations
+// of signal and background events are generated.
 // Then instances of specific detector digitizers are created:
 //   AliMUONDigitizer *dMUON  = new AliMUONDigitizer(manager)
-// and the manager is configured (you have to specify input files 
-// and an output file). The manager generates a combination of input 
-// events according to an option set by SetCombinationType. Then it
-// connects appropriate trees from the input files, creates TreeD 
-// in the output and runs once per event Digitize method of all existing 
-// AliDetDigitizers (without any option). AliDetDigitizers ask manager
-// for a TTree with input (manager->GetNextTreeH(TTree *) 
-// or manager->GetNextTreeS(TTree *),
+// and the I/O configured (you have to specify input files 
+// and an output file). The manager connects appropriate trees from 
+// the input files according a combination returned by AliMergeCombi 
+// classcreates. It creates TreeD in the output and runs once per 
+// event Digitize method of all existing AliDetDigitizers 
+// (without any option). AliDetDigitizers ask manager
+// for a TTree with input (manager->GetInputTreeS(Int_t i),
 // merge all inputs, digitize it, and save it in the TreeD 
 // obtained by manager->GetTreeD(). Output events are stored with 
 // numbers from 0, this default can be changed by 
 // manager->SetFirstOutputEventNr(Int_t) method. The particle numbers
 // in the output are shifted by MASK, which is taken from manager.
 //
-// Single input file is permitted. Maximum MAXFILESTOMERGE can be merged.
+// Single input file is permitted. Maximum MAXSTREAMSTOMERGE can be merged.
 // Input from the memory (on-the-fly merging) is not yet 
 // supported, as well as access to the input data by invoking methods
 // on the output data.
 //
-// Access to the geometrical data is via gAlice for now (supposing the 
-// same geometry in all input files), gAlice is taken from the defined 
-// input file.
+// Access to the some data is via gAlice for now (supposing the 
+// same geometry in all input files), gAlice is taken from the first 
+// input file on the first stream.
 //
 // Example with MUON digitizer:
 //
-//   AliRunDigitizer * manager = new AliRunDigitizer();
-//   manager->SetInput("1track_10events_phi45_60.root");
-//   manager->SetInput("1track_10events_phi120_135.root");
-//   manager->SetOutputDir("/home/z2/jchudoba/batch/jobtmp");
-//   manager->SetOutputFile("digits.root");
-//   AliMUONDigitizer *dMUON  = new AliMUONDigitizer(manager);
-//   manager->SetNrOfEventsToWrite(3);
-//   manager->SetCopyTreesFromInput(1);
-//   manager->Digitize();
+//  AliRunDigitizer * manager = new AliRunDigitizer(2,1);
+//  manager->SetInputStream(0,"1track_10events_phi45_60.root");
+//  manager->SetInputStream(1,"1track_10events_phi120_135.root");
+//  manager->SetOutputDir("/tmp");
+//  manager->SetOutputFile("digits.root");
+//  AliMUONDigitizer *dMUON  = new AliMUONDigitizer(manager);
+//  manager->SetNrOfEventsToWrite(1);
+//  manager->Digitize();
 //
 //////////////////////////////////////////////////////////////////////// 
 
@@ -89,42 +94,60 @@ Manager class for merging/digitization
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "TParticle.h"
+#include "AliStream.h"
+#include "AliMergeCombi.h"
 
 ClassImp(AliRunDigitizer)
 
 ////////////////////////////////////////////////////////////////////////
 
-  AliRunDigitizer::AliRunDigitizer() : TNamed("AliRunDigitizer","")
+AliRunDigitizer::AliRunDigitizer() : TNamed("AliRunDigitizer","")
 {
 // default ctor
-
-  Int_t i;
-
-  for (i=0;i<MAXDETECTORS;i++) fDigitizers[i]=0;
+  cerr<<"Don't use"<<endl;
+  fCombi = 0;
+  fInputFiles = 0;
   fNDigitizers = 0;
   fNinputs = 0;
+  fInputStreams = 0;
+}
+
+////////////////////////////////////////////////////////////////////////
+AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb) : TNamed("AliRunDigitizer","")
+{
+// default ctor
+  if (nInputStreams == 0) {
+    Error("AliRunDigitizer","Specify nr of input streams");
+    return;
+  }
+  Int_t i;
+  for (i=0;i<MAXDETECTORS;i++) fDigitizers[i]=0;
+  fNDigitizers = 0;
+  fNinputs = nInputStreams;
   fOutputFileName = "digits.root";
   fOutputDirName = "/tmp/";
-  fCombination.Set(MAXFILESTOMERGE);
-  for (i=0;i<MAXFILESTOMERGE;i++) {
+  fCombination.Set(MAXSTREAMSTOMERGE);
+  for (i=0;i<MAXSTREAMSTOMERGE;i++) {
     fArrayTreeS[i]=fArrayTreeH[i]=fArrayTreeTPCS[i]=NULL;
     fCombination[i]=-1;
   }
   fkMASKSTEP = 10000000;
   fkMASK[0] = 0;
-  for (i=1;i<MAXFILESTOMERGE;i++) {
+  for (i=1;i<MAXSTREAMSTOMERGE;i++) {
     fkMASK[i] = fkMASK[i-1] + fkMASKSTEP;
   }
-  fInputFileNames = new TClonesArray("TObjString",1);
+  fInputStreams = new TClonesArray("AliStream",nInputStreams);
+  TClonesArray &lInputStreams = *fInputStreams;
+  for (i=0;i<nInputStreams;i++) {
+    new(lInputStreams[i]) AliStream();
+  }
   fInputFiles = new TClonesArray("TFile",1);
-  fMinNEvents = 99999999;
-  fCombinationType=1;
-  fCombinationFileName = "combination.txt";
   fOutput = 0;
   fEvent = 0;
   fNrOfEventsToWrite = 0;
   fNrOfEventsWritten = 0;
   fCopyTreesFromInput = -1;
+  fCombi = new AliMergeCombi(nInputStreams,sperb);
   fDebug = 3;
   if (GetDebug()>2) 
     cerr<<"AliRunDigitizer::AliRunDigitizer() called"<<endl;
@@ -135,8 +158,19 @@ ClassImp(AliRunDigitizer)
 AliRunDigitizer::~AliRunDigitizer() {
 // dtor
 
-  if (fInputFiles) delete fInputFiles;
-  if (fInputFileNames) delete fInputFileNames;
+  if (fInputFiles) {
+    delete fInputFiles;
+    fInputFiles = 0;
+  }
+  if (fInputStreams) {
+    delete fInputStreams;
+    fInputStreams = 0;
+  }
+  if (fCombi) {
+    delete fCombi;
+    fCombi = 0;
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -155,135 +189,13 @@ void AliRunDigitizer::AddDigitizer(AliDigitizer *digitizer)
 
 ////////////////////////////////////////////////////////////////////////
 
-Bool_t AliRunDigitizer::SetInput(char *inputFile)
+void AliRunDigitizer::SetInputStream(Int_t i, char *inputFile)
 {
-// receives the name of the input file. Opens it and stores pointer 
-// to it, returns kFALSE if fails
-// if inputFile = MEMORY, uses pointers from gAlice - not yet implemented
-
-// input cannot be output - open READ only
-  TFile *file = new((*fInputFiles)[fNinputs]) TFile(inputFile,"READ"); 
-
-  if (GetDebug()>2) cerr<<"AliRunDigitizer::SetInput: file = "<<file<<endl;
-  if (!file->IsOpen()) {
-    cerr<<"ERROR: AliRunDigitizer::SetInput: cannot open file "
-	<<inputFile<<endl;
-    return kFALSE;
+  if (i > fInputStreams->GetLast()) {
+    Error("SetInputStream","Input stream number too high");
+    return;
   }
-
-// find Header and get nr of events there
-  TTree * te = (TTree *) file->Get("TE") ;
-  if (!te) {
-    cerr<<"ERROR: AliRunDigitizer::SetInput:  input file does "
-	<<"not contain TE"<<endl;
-    return kFALSE;
-  }
-  Int_t nEntries = (Int_t) te->GetEntries();
-
-  if (GetDebug()>2) cerr<<"AliRunDigitizer::SetInput: nEntries = "
-			<<nEntries<<endl;
-  if (nEntries < 1) {
-    cerr<<"ERROR: AliRunDigitizer::SetInput:  input file does "
-	<<"not contain any event"<<endl;
-    return kFALSE;
-  }
-
-  if (nEntries < fMinNEvents) fNrOfEventsToWrite = fMinNEvents = nEntries;
-
-// find gAlice object if it is a first input file
-//  this is only temporary solution, we need gAlice to access detector
-//  geometry parameters. Unfortunately I have to include AliRun header file.
-  if (fNinputs == 0) {
-    gAlice = (AliRun*)file->Get("gAlice");
-    if (GetDebug() > 2) cerr<<"gAlice taken from the first input: "
-			    <<gAlice<<endl;
-    if (!gAlice) {
-      cerr<<"ERROR: AliRunDigitizer::SetInput:  first input file "
-	  <<"does not contain gAlice object"<<endl;
-      return kFALSE;
-    }
-  }
-    
-// store this file name if it is OK
-  new((*fInputFileNames)[fNinputs])  TObjString(inputFile);
-  fNinputs++;
-  if (GetDebug() > 2) cerr<<"fNinputs = "<<fNinputs<<endl;
-  return kTRUE;
-}
-
-////////////////////////////////////////////////////////////////////////
-Bool_t AliRunDigitizer::MakeCombination()
-{
-// make a new combination of events from different files
-
-  Int_t type = fCombinationType;
-  if (fNrOfEventsWritten >= fNrOfEventsToWrite) return kFALSE;
-
-  switch (type) {
-	
-  case 1:
-// type = 1:  1-1-1 - take the same event number from each file
-    if (fCombination[0]<fMinNEvents-1) {	
-      for (Int_t i=0;i<fNinputs;i++) fCombination[i]++;
-      return kTRUE;
-    }
-    if (GetDebug()>2)
-      cerr<<"AliRunDigitizer::MakeCombination: Warning: "
-	  <<"maximum number of Events in an input file "
-	  <<"was reached."<<endl;
-    break;
-
-  case 2:
-// type = 2: read from the file combinations.ascii
-//  not yet implemented 100% correctly - requires 4 entries in the row
-    static FILE *fp ;
-    static Int_t linesRead;
-    if (!fp) {
-      fp = fopen(fCombinationFileName.Data(),"r");
-      linesRead = 0;
-    }
-    if (!fp) {
-      cerr<<"AliRunDigitizer::MakeCombination ERROR: "
-	  <<"Cannot open input file with combinations."<<endl;
-      return kFALSE;
-    }
-    Int_t var[4], nInputs;
-    char line[80];
-// since I do not close or rewind the file, the position should be correct
-    if (fgets(line,80,fp)) {
-      nInputs = sscanf(&line[0],"%d%d%d%d",&var[0],&var[1],&var[2],&var[3]);
-      if (nInputs != fNinputs) {
-	cerr<<"AliRunDigitizer::MakeCombination ERROR: "
-	    <<"Nr. of input files is different from nr "
-	    <<"integers defining the combination"<<endl;
-	return kFALSE;
-      }
-      while(nInputs--) {
-	fCombination[nInputs] = var[nInputs];
-      }
-      return kTRUE;
-    } else {
-      cerr<<"AliRunDigitizer::MakeCombination ERROR: "
-	  <<"no more input in the file with combinations"<<endl;
-      return kFALSE;
-    }
-
-  default:
-    cerr<<"AliRunDigitizer::MakeCombination: ERROR: "
-	<<"wrong type of required combination type: "<<type<<endl;
-  }
-  return kFALSE;
-}
-
-////////////////////////////////////////////////////////////////////////
-void AliRunDigitizer::PrintCombination()
-{
-// debug method to print current combination
-
-  cerr<<"AliRunDigitizer::PrintCombination: Current events combination:"<<endl;
-  for (Int_t i=0;i<fNinputs;i++) {
-    cerr<<"File: "<<((TObjString *)fInputFileNames->At(i))->GetString()<<"\tEvent: "<<fCombination[i]<<endl;
-  }
+  static_cast<AliStream*>(fInputStreams->At(i))->AddFile(inputFile);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -298,41 +210,56 @@ void AliRunDigitizer::Digitize()
   }
 // take gAlice from the first input file. It is needed to access
 //  geometry data
-  while (MakeCombination()) {
-    if (GetDebug()>2) PrintCombination();
+  if (!static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice()) {
+    cerr<<"gAlice object not found in the first file of "
+	<<"the 1st stream"<<endl;
+    return;
+  }
+  Int_t eventsCreated = 0;
+  while (eventsCreated++ < fNrOfEventsToWrite) {
+//    if (GetDebug()>2) PrintCombination();
     ConnectInputTrees();
-    InitPerEvent();
+    InitEvent();
 // loop over all registered digitizers and let them do the work
     for (Int_t i=0;i<fNDigitizers; i++) {
       fDigitizers[i]->Digitize();
     }
-    FinishPerEvent();
+    FinishEvent();
   }
   FinishGlobal();
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliRunDigitizer::ConnectInputTrees()
+Bool_t AliRunDigitizer::ConnectInputTrees()
 {
 // fill arrays fArrayTreeS, fArrayTreeH and fArrayTreeTPCS with 
 // pointers to the correct events according fCombination values
 // null pointers can be in the output, AliDigitizer has to check it
 
-  TFile *file;
   TTree *tree;
   char treeName[20];
+  Int_t serialNr;
+  Int_t eventNr[MAXSTREAMSTOMERGE], delta[MAXSTREAMSTOMERGE];
+  fCombi->Combination(eventNr, delta);
   for (Int_t i=0;i<fNinputs;i++) {
-    file = (TFile*)(*fInputFiles)[i];
-    sprintf(treeName,"TreeS%d",fCombination[i]);
-    tree = (TTree *) file->Get(treeName);
-    fArrayTreeS[i] = tree;
-    sprintf(treeName,"TreeH%d",fCombination[i]);
-    tree = (TTree *) file->Get(treeName);
-    fArrayTreeH[i] = tree;
-    sprintf(treeName,"TreeD_75x40_100x60_%d",fCombination[i]);
-    tree = (TTree *) file->Get(treeName);
-    fArrayTreeTPCS[i] = tree;
-   }
+    if (delta[i] == 1) {
+      AliStream *iStream = static_cast<AliStream*>(fInputStreams->At(i));
+      if (!iStream->NextEventInStream(serialNr)) return kFALSE;
+      sprintf(treeName,"TreeS%d",serialNr);
+      tree = static_cast<TTree*>(iStream->CurrentFile()->Get(treeName));
+      fArrayTreeS[i] = tree;
+      sprintf(treeName,"TreeH%d",serialNr);
+      tree = static_cast<TTree*>(iStream->CurrentFile()->Get(treeName));
+      fArrayTreeH[i] = tree;
+      sprintf(treeName,"TreeS_75x40_100x60_%d",serialNr);
+      tree = static_cast<TTree*>(iStream->CurrentFile()->Get(treeName));
+      fArrayTreeTPCS[i] = tree;
+    } else if (delta[i] != 0) {
+      Error("ConnectInputTrees","Only delta 0 or 1 is implemented");
+      return kFALSE;
+    }
+  }
+  return kTRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -366,80 +293,22 @@ Bool_t AliRunDigitizer::InitOutputGlobal()
 
 
 ////////////////////////////////////////////////////////////////////////
-void AliRunDigitizer::InitPerEvent()
+void AliRunDigitizer::InitEvent()
 {
 // Creates TreeDxx in the output file, called from Digitize() once for 
 //  each event. xx = fEvent
 
   if (GetDebug()>2) 
-    cerr<<"AliRunDigitizer::InitPerEvent: fEvent = "<<fEvent<<endl;
+    cerr<<"AliRunDigitizer::InitEvent: fEvent = "<<fEvent<<endl;
   fOutput->cd();
   char hname[30];
   sprintf(hname,"TreeD%d",fEvent);
   fTreeD = new TTree(hname,"Digits");
-//  fTreeD->Write();   // Do I have to write it here???
-}
-
-
-////////////////////////////////////////////////////////////////////////
-TTree* AliRunDigitizer::GetNextTreeH(TTree *current) const
-{
-// returns next one after the current one
-// returns the first if the current is NULL
-// returns NULL if the current is the last one
-
-  if (fNinputs <= 0) return 0;
-  if (current == 0) return fArrayTreeH[0];
-  for (Int_t i=0; i<fNinputs-1; i++) {
-    if (current == fArrayTreeH[i]) return fArrayTreeH[i+1];
-  }
-  return 0;
-}
-////////////////////////////////////////////////////////////////////////
-TTree* AliRunDigitizer::GetNextTreeS(TTree *current) const
-{
-// returns next one after the current one
-// returns the first if the current is NULL
-// returns NULL if the current is the last one
-
-  if (fNinputs <= 0) return 0;
-  if (current == 0) return fArrayTreeS[0];
-  for (Int_t i=0; i<fNinputs-1; i++) {
-    if (current == fArrayTreeS[i]) return fArrayTreeS[i+1];
-  }
-  return 0;
-}
-////////////////////////////////////////////////////////////////////////
-TTree* AliRunDigitizer::GetNextTreeTPCS(TTree *current) const
-{
-// returns next one after the current one
-// returns the first if the current is NULL
-// returns NULL if the current is the last one
-
-  if (fNinputs <= 0) return 0;
-  if (current == 0) return fArrayTreeTPCS[0];
-  for (Int_t i=0; i<fNinputs-1; i++) {
-    if (current == fArrayTreeTPCS[i]) return fArrayTreeTPCS[i+1];
-  }
-  return 0;
+  fTreeD->Write();   // Do I have to write it here???
 }
 
 ////////////////////////////////////////////////////////////////////////
-Int_t AliRunDigitizer::GetNextMask(Int_t current) const
-{
-// returns next one after the current one
-// returns the first if the current is negative
-// returns negative if the current is the last one
-
-  if (fNinputs <= 0) return -1;
-  if (current < 0) return fkMASK[0]; 
-  for (Int_t i=0; i<fNinputs-1; i++) {
-    if (current == fkMASK[i]) return fkMASK[i+1];
-  }
-  return -1;
-}
-////////////////////////////////////////////////////////////////////////
-void AliRunDigitizer::FinishPerEvent()
+void AliRunDigitizer::FinishEvent()
 {
 // called at the end of loop over digitizers
 
@@ -533,7 +402,7 @@ Int_t* AliRunDigitizer::GetInputEventNumbers(Int_t event)
 // merged in the output event event
 
 // simplified for now, implement later
-  Int_t a[MAXFILESTOMERGE];
+  Int_t a[MAXSTREAMSTOMERGE];
   for (Int_t i = 0; i < fNinputs; i++) {
     a[i] = event;
   }
@@ -548,34 +417,6 @@ Int_t AliRunDigitizer::GetInputEventNumber(Int_t event, Int_t input)
 // simplified for now, implement later
   return event;
 }
-////////////////////////////////////////////////////////////////////////
-TFile* AliRunDigitizer::ConnectInputFile(Int_t input)
-{
-// open input file with index input
-// 1st file has index 0
-// return 0x0 if fails
-
-// check if file with index input is already open
-  TFile *file = 0;
-  if (fInputFiles->GetEntriesFast() > input)
-    file = static_cast<TFile *>(fInputFiles->At(input));
-
-  if (!file) {
-    // find the file name and open it
-    TObjString *fn = static_cast<TObjString *>(fInputFileNames->At(input));
-    file = new((*fInputFiles)[input]) TFile((fn->GetString()).Data(),"READ");
-    if (!file) {
-      Error("ConnectInputFile","Cannot open input file");
-      return 0;
-    }
-    if (!file->IsOpen()) {
-      Error("ConnectInputFile","Cannot open input file");
-      return 0;
-    }
-  }
-  return file;
-}
-
 ////////////////////////////////////////////////////////////////////////
 TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t event)
 {
@@ -634,7 +475,6 @@ TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t input, Int_t event)
     entry = i+header->GetNsecondary();
   else 
     entry = i-header->GetNprimary();
-//  tK->GetEntry(0);          // do I need this???
   Int_t bytesRead = tK->GetEntry(entry);
 //  new ((*fParticles)[nentries]) TParticle(*fParticleBuffer);
   if (bytesRead)

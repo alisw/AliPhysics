@@ -22,22 +22,25 @@
 #include "TParticle.h"
 
 #define MAXDETECTORS 20
-#define MAXFILESTOMERGE  4
+#define MAXSTREAMSTOMERGE  4
 
 // --- AliRoot header files ---
 
 class AliDigitizer;
+class AliMergeCombi;
 
 class AliRunDigitizer: public TNamed {
 
 public:
   AliRunDigitizer();
+  AliRunDigitizer(Int_t nInputStream, Int_t sperb);
   virtual ~AliRunDigitizer();
   void      AddDigitizer(AliDigitizer *digitizer);
   void      SetOutputFile(TString fn) {fOutputFileName = fn;}
   TString   GetOutputFile() {return fOutputFileName;}
   void      SetOutputDir(TString dn) {fOutputDirName = dn;}
   TString   GetOutputDir() {return fOutputDirName;}
+  void      SetInputStream(Int_t stream, char *inputName);
   void      SetFirstOutputEventNr(Int_t i) {fEvent = i;}
   void      SetNrOfEventsToWrite(Int_t i) {fNrOfEventsToWrite = i;}
   void      SetCopyTreesFromInput(Int_t i) {fCopyTreesFromInput = i;}
@@ -46,9 +49,6 @@ public:
   Bool_t    SetInput(char* inputFileString);
   void      SetCombinationFileName(TString fn) {fCombinationFileName = fn;} 
   TString   GetCombinationFileName() {return fCombinationFileName;}
-  void      SetCombinationType(Int_t i) {fCombinationType = i;}
-  Int_t     GetCombinationType() const {return fCombinationType;}
-  void      PrintCombination();   // debug method
   Int_t     GetNinputs() const {return fNinputs;}
   Int_t     GetMask(Int_t i) const {return fkMASK[i];}
   TTree*    GetInputTreeS(Int_t i) const {return fArrayTreeS[i];}
@@ -93,7 +93,7 @@ private:
                                                 //  digitizers
 // the constant 20 corresponds to  MAXDETECTORS = 20 - could be done better
   Int_t             fNDigitizers;         //! nr. of registered digitizers
-  Int_t             fkMASK[MAXFILESTOMERGE];  //! masks for track ids from
+  Int_t             fkMASK[MAXSTREAMSTOMERGE];  //! masks for track ids from
                                               //  different source files
   Int_t             fkMASKSTEP;           // step to increase MASK for
                                           // each input file
@@ -106,24 +106,22 @@ private:
   Int_t             fCopyTreesFromInput;  // from which input file the trees
                                           // should be copied, -1 for no copies
   TTree *           fTreeD;               //! output TreeD
-  Int_t             fNinputs;             // nr of input files
-  TClonesArray *    fInputFileNames;      // input files names
-  TClonesArray *    fInputFiles;          //! pointers to file handles
-  TTree *           fArrayTreeS[MAXFILESTOMERGE];   //! array with p. to TreeS
-  TTree *           fArrayTreeTPCS[MAXFILESTOMERGE];   //! array with p. to TreeD_75x40_100x60_x (TPC Sdigits)
-  TTree *           fArrayTreeH[MAXFILESTOMERGE];   //! array with p. to TreeH
-  Int_t             fMinNEvents;          // min nr. of events found in inputs
+  Int_t             fNinputs;             // nr of input streams - can be taken from the TClonesArray dimension
+  Int_t             fNinputsGiven;        // nr of input streams given by user
+  TClonesArray *    fInputStreams;        // input streams
+  TClonesArray *    fInputFiles;          // current input files
+  TTree *           fArrayTreeS[MAXSTREAMSTOMERGE];   //! array with p. to TreeS
+  TTree *           fArrayTreeTPCS[MAXSTREAMSTOMERGE];   //! array with p. to TreeD_75x40_100x60_x (TPC Sdigits)
+  TTree *           fArrayTreeH[MAXSTREAMSTOMERGE];   //! array with p. to TreeH
+  AliMergeCombi *   fCombi;               // pointer to the combination object
   TArrayI           fCombination;         //! combination of events from
-  Int_t             fCombinationType;     // defines the algorithm how
-                                          // to generated combination
   TString           fCombinationFileName; // fn with combinations (used
                                           // with type 2 of comb.)
-  Bool_t            MakeCombination();    // create next combination
-  void              ConnectInputTrees();
+  Bool_t            ConnectInputTrees();
   Bool_t            InitGlobal();
   Bool_t            InitOutputGlobal();
-  void              InitPerEvent();
-  void              FinishPerEvent();
+  void              InitEvent();
+  void              FinishEvent();
   void              FinishGlobal();
   Int_t             fDebug;                //! specifies debug level, 0 is min
   
