@@ -132,7 +132,8 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
    AliITS *ITS  = (AliITS*) gAlice->GetModule("ITS");
    if (!ITS) { cout << "no ITS" << endl; return; }
    
-   AliITSgeom *aliitsgeo = ITS->GetITSgeom();
+   //AliITSgeom *aliitsgeo = ITS->GetITSgeom();
+   AliITSgeom *geom = ITS->GetITSgeom();
 
    //Int_t cp[8]={0,0,0,0,0,0,0,0};
 
@@ -205,31 +206,32 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
      // check hits
      
      Int_t nmodules=0;
+     Int_t mod;
      
      ITS->InitModules(-1,nmodules); 
      ITS->FillModules(nev,0,nmodules,"","");
      
      TObjArray *fITSmodules = ITS->GetModules();
      
-     Int_t first1 = aliitsgeo->GetStartDet(2); // SSD
-     Int_t last1 = aliitsgeo->GetLastDet(2);   // SSD
-     Int_t first = aliitsgeo->GetStartDet(1);  // SDD
-     Int_t last = aliitsgeo->GetLastDet(1);    // SDD
-     Int_t first0 = aliitsgeo->GetStartDet(0);  // SPD
-     Int_t last0 = aliitsgeo->GetLastDet(0);    // SPD
+     Int_t first0 = geom->GetStartDet(0);  // SPD
+     Int_t last0 = geom->GetLastDet(0);    // SPD
+     Int_t first1 = geom->GetStartDet(1);  // SDD
+     Int_t last1 = geom->GetLastDet(1);    // SDD
+     Int_t first2 = geom->GetStartDet(2);  // SSD
+     Int_t last2 = geom->GetLastDet(2);    // SSD
 
-     //  For the SPD: first0 = 0, last0 = 239, 240 modules;  
-     //  for the SDD: first1 = 240, last1 = 499, 260 modules;  
-     //  for the SPD: first2 = 500, last2 = 2269, 1770 modules;
-       
-     printf("det type %d first, last %d %d \n",0,first0,last0);
-     printf("det type %d first, last %d %d \n",1,first,last);
-     printf("det type %d first1, last1 %d %d \n",2,first1,last1);
+     //  For the SPD: first0 = 0, last0 = 239     (240 modules);  
+     //  for the SDD: first1 = 240, last1 = 499   (260 modules);  
+     //  for the SSD: first2 = 500, last2 = 2269  (1770 modules).  
 
-     // module loop
-     for (Int_t mod=first1; mod<last1; mod++) {
+     printf("det type %d first0, last0 %d %d \n",0,first0,last0);
+     printf("det type %d first1, last1 %d %d \n",1,first1,last1);
+     printf("det type %d first2, last2 %d %d \n",2,first2,last2);
 
-              TTree *TR = gAlice->TreeR();
+     // module loop for the SSD
+     for (mod=first2; mod<last2+1; mod++) {
+
+       TTree *TR = gAlice->TreeR();
        Int_t nentrec=TR->GetEntries();
        //printf("Found %d entries in the RecPoints tree\n",nentrec);
       
@@ -240,8 +242,8 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
        //cout << "RECPOINTS: reset" << endl;
        ITS->ResetRecPoints();
        //cout << "RECPOINTS: get" << endl;
-       //TR->GetEvent(mod+1);
-       TR->GetEvent(mod);
+       //TR->GetEvent(mod+1);   // for the V3.04 AliRoot
+       TR->GetEvent(mod);       // for the V3.05 AliRoot
 
        Int_t nrecp = ITSrec->GetEntries();
        totpoints += nrecp;
@@ -249,7 +251,6 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
        if (!nrecp) continue;
        Int_t nclusters = ITSclu->GetEntries();
        totclust += nclusters;
-       if (nclusters) cout<<"ncluster ="<<nclusters<<endl;
        //if (nclusters) printf("Found %d clusters for module %d\n",nrecc,mod);
        
        AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod);
@@ -421,7 +422,6 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	} // hit loop       
 
 	if(flaghit == 1) {
-	  cout<<" flaghit Ok"<<endl;
 
 	  if(noverlaps == 0) noverlaps = 1; // cluster contains one or more
 	  // delta rays only
