@@ -7,10 +7,10 @@
 
 #include <TObject.h>
 #include <TObjArray.h>
+#include <TArrayI.h>  // used in inline functions GetHitTrackIndex,GetHitHitIndex, and GetHitTrackAndHitIndex.
 
 class AliITS;
 class AliITShit;
-#include "TArrayI.h"
 
 
 class AliITSmodule:public TObject{
