@@ -6,6 +6,7 @@
 //
 // class implements pair of particles and taking care of caluclation (almost)
 // all of pair properties (Qinv, InvMass,...)
+// 
 // more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
 //
 ////////////////////////////////////////////////////////////////////////////
@@ -121,6 +122,62 @@ AliHBTPair::AliHBTPair(AliHBTParticle* part1, AliHBTParticle* part2, Bool_t rev)
   
  }
 /************************************************************************/
+AliHBTPair::AliHBTPair(const AliHBTPair& in):
+ TObject(in),
+ fPart1(0x0),
+ fPart2(0x0),
+ fSwapedPair(0x0),
+ fQSideCMSLC(0.0),
+ fQSideCMSLCNotCalc(kTRUE),
+ fQOutCMSLC(0.0),
+ fQOutCMSLCNotCalc(kTRUE),
+ fQLongCMSLC(0.0),
+ fQLongCMSLCNotCalc(kTRUE),
+ fQInv(0.0),
+ fQInvNotCalc(kTRUE),
+ fInvMass(0.0),
+ fInvMassNotCalc(kTRUE),
+ fKt(0.0),
+ fKtNotCalc(kTRUE),
+ fKStar(0.0),
+ fKStarNotCalc(kTRUE),
+ fPInv(0.0),
+ fQSide(0.0),
+ fOut(0.0),
+ fQLong(0.0),
+ fMt(0.0),
+ fMtNotCalc(kTRUE),
+ fInvMassSqr(0.0),
+ fMassSqrNotCalc(kTRUE),
+ fQInvL(0.0),
+ fQInvLNotCalc(kTRUE),
+ fWeight(0.0),
+ fWeightNotCalc(kTRUE),
+ fPxSum(0.0),
+ fPySum(0.0),
+ fPzSum(0.0),
+ fESum(0.0),
+ fSumsNotCalc(kTRUE),
+ fPxDiff(0.0),
+ fPyDiff(0.0),
+ fPzDiff(0.0),
+ fEDiff(0.0),
+ fDiffsNotCalc(kTRUE),
+ fGammaCMSLC(0.0),
+ fGammaCMSLCNotCalc(kTRUE),
+ fChanged(kTRUE)
+{
+ //cpy constructor
+ in.Copy(*this);
+}
+/************************************************************************/
+
+const AliHBTPair& AliHBTPair::operator=(const AliHBTPair& in)
+{
+ //Assigment operator
+ in.Copy(*this);
+ return *this;
+}
 
 Double_t AliHBTPair::GetInvMass()
 {
@@ -256,25 +313,25 @@ Double_t AliHBTPair::GetKStar()
    { 
     CalculateSums();
 
-    Double_t Ptrans = fPxSum*fPxSum + fPySum*fPySum;
-    Double_t Mtrans = fESum*fESum - fPzSum*fPzSum;
-    Double_t Pinv =   TMath::Sqrt(Mtrans - Ptrans);
+    Double_t ptrans = fPxSum*fPxSum + fPySum*fPySum;
+    Double_t mtrans = fESum*fESum - fPzSum*fPzSum;
+    Double_t pinv =   TMath::Sqrt(mtrans - ptrans);
 
-    Double_t Q = (fPart1->GetMass()*fPart1->GetMass() - fPart2->GetMass()*fPart2->GetMass())/Pinv;
+    Double_t q = (fPart1->GetMass()*fPart1->GetMass() - fPart2->GetMass()*fPart2->GetMass())/pinv;
     
     CalculateQInvL();
     
-    Q = Q*Q - fQInvL;
-    if ( Q < 0)
+    q = q*q - fQInvL;
+    if ( q < 0)
      {
-        Info("GetKStar","Q = %f",Q);
+        Info("GetKStar","q = %f",q);
         fPart1->Print();
         fPart2->Print();
-        Q = TMath::Abs(Q);
+        q = TMath::Abs(q);
      }
      
-    Q = TMath::Sqrt(Q);
-    fKStar = Q/2.;
+    q = TMath::Sqrt(q);
+    fKStar = q/2.;
     fKStarNotCalc = kFALSE;
    }
   return fKStar;

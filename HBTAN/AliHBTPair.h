@@ -12,8 +12,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-
-
 #include "AliHBTParticle.h"
 
 
@@ -22,8 +20,13 @@ class AliHBTPair: public TObject
  public:
    AliHBTPair(Bool_t rev = kFALSE); //contructor
    AliHBTPair(AliHBTParticle* part1, AliHBTParticle* part2, Bool_t rev = kFALSE); //contructor
+   AliHBTPair(const AliHBTPair& in);
+   
    virtual ~AliHBTPair(){}
-   void SetParticles(AliHBTParticle*,AliHBTParticle*); //sets particles in the pair
+   
+   const AliHBTPair& operator=(const AliHBTPair& in);
+   
+   void SetParticles(AliHBTParticle* p1,AliHBTParticle* p2); //sets particles in the pair
    AliHBTPair* GetSwapedPair() {return fSwapedPair;} //returns pair with swapped particles
    
    AliHBTParticle* Particle1() const {return fPart1;} //returns pointer to first particle
@@ -80,8 +83,8 @@ class AliHBTPair: public TObject
    Double_t fKt; //K == sum vector of particle's momenta. Kt transverse component
    Bool_t   fKtNotCalc;//flag indicating if fKt is already calculated for this pair
    
-   Double_t fKStar; //
-   Bool_t   fKStarNotCalc;
+   Double_t fKStar; // KStar
+   Bool_t   fKStarNotCalc;// flag indicating if fKStar is calculated
    
    Double_t fPInv;  //invariant momentum
    
@@ -93,7 +96,7 @@ class AliHBTPair: public TObject
    Bool_t   fMtNotCalc;//flag indicating if Mt is calculated for current pair
       
    Double_t fInvMassSqr;//squre of invariant mass
-   Bool_t   fMassSqrNotCalc; //
+   Bool_t   fMassSqrNotCalc; //flag indicating if fInvMassSqr for this pair
    void     CalculateInvMassSqr();
    
    Double_t fQInvL; //Qinv in longitudional direction
