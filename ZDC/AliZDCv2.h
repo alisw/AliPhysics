@@ -21,7 +21,7 @@ public:
   virtual void  CreateZDC();
   virtual void  CreateMaterials();
   virtual Int_t IsVersion() const {return 1;}
-  virtual void  DrawModule();
+  virtual void  DrawModule() const;
   virtual void  Init();
   virtual void  InitTables();
   virtual void  StepManager();
@@ -64,7 +64,7 @@ protected:
   Float_t fZEMLength; // ZEM length
   
   // Parameters for tracking studies
-  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected;
+  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected; // For proton acceptance
   
    ClassDef(AliZDCv2,2)  // Zero Degree Calorimeter version 1
 }; 

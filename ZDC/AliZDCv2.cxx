@@ -77,11 +77,11 @@ AliZDCv2::AliZDCv2(const char *name, const char *title)
   //
   // Check that DIPO, ABSO, DIPO and SHIL is there (otherwise tracking is wrong!!!)
   
-  AliModule* PIPE=gAlice->GetModule("PIPE");
-  AliModule* ABSO=gAlice->GetModule("ABSO");
-  AliModule* DIPO=gAlice->GetModule("DIPO");
-  AliModule* SHIL=gAlice->GetModule("SHIL");
-  if((!PIPE) || (!ABSO) || (!DIPO) || (!SHIL)) {
+  AliModule* pipe=gAlice->GetModule("PIPE");
+  AliModule* abso=gAlice->GetModule("ABSO");
+  AliModule* dipo=gAlice->GetModule("DIPO");
+  AliModule* shil=gAlice->GetModule("SHIL");
+  if((!pipe) || (!abso) || (!dipo) || (!shil)) {
     Error("Constructor","ZDC needs PIPE, ABSO, DIPO and SHIL!!!\n");
     exit(1);
   } 
@@ -161,6 +161,9 @@ void AliZDCv2::CreateGeometry()
 //_____________________________________________________________________________
 void AliZDCv2::CreateBeamLine()
 {
+  //
+  // Create the beam line elements
+  //
   
   Float_t zq, zd1, zd2;
   Float_t conpar[9], tubpar[3], tubspar[5], boxpar[3];
@@ -546,8 +549,11 @@ void AliZDCv2::CreateBeamLine()
 //_____________________________________________________________________________
 void AliZDCv2::CreateZDC()
 {
+ //
+ // Create the various ZDCs (ZN + ZP)
+ //
   
-  Float_t DimPb[6], DimVoid[6];
+  Float_t dimPb[6], dimVoid[6];
   
   Int_t *idtmed = fIdtmed->GetArray();
 
@@ -681,15 +687,15 @@ void AliZDCv2::CreateZDC()
 
   gMC->Gsdvn("ZETR", "ZEM ", fDivZEM[2], 1); 	     	// Tranches 
   
-  DimPb[0] = fDimZEMPb;					// Lead slices 
-  DimPb[1] = fDimZEM[2];
-  DimPb[2] = fDimZEM[1];
-  DimPb[3] = 90.-fDimZEM[3];
-  DimPb[4] = 0.;
-  DimPb[5] = 0.;
-  gMC->Gsvolu("ZEL0", "PARA", idtmed[5], DimPb, 6);
-  gMC->Gsvolu("ZEL1", "PARA", idtmed[5], DimPb, 6);
-  //gMC->Gsvolu("ZEL2", "PARA", idtmed[5], DimPb, 6);
+  dimPb[0] = fDimZEMPb;					// Lead slices 
+  dimPb[1] = fDimZEM[2];
+  dimPb[2] = fDimZEM[1];
+  dimPb[3] = 90.-fDimZEM[3];
+  dimPb[4] = 0.;
+  dimPb[5] = 0.;
+  gMC->Gsvolu("ZEL0", "PARA", idtmed[5], dimPb, 6);
+  gMC->Gsvolu("ZEL1", "PARA", idtmed[5], dimPb, 6);
+  //gMC->Gsvolu("ZEL2", "PARA", idtmed[5], dimPb, 6);
   
   // --- Position the lead slices in the tranche 
   Float_t zTran = fDimZEM[0]/fDivZEM[2]; 
@@ -698,14 +704,14 @@ void AliZDCv2::CreateZDC()
   gMC->Gspos("ZEL1", 1, "ZETR", fDimZEMPb, 0., 0., 0, "ONLY");
   
   // --- Vacuum zone (to be filled with fibres)
-  DimVoid[0] = (zTran-2*fDimZEMPb)/2.;
-  DimVoid[1] = fDimZEM[2];
-  DimVoid[2] = fDimZEM[1];
-  DimVoid[3] = 90.-fDimZEM[3];
-  DimVoid[4] = 0.;
-  DimVoid[5] = 0.;
-  gMC->Gsvolu("ZEV0", "PARA", idtmed[10], DimVoid,6);
-  gMC->Gsvolu("ZEV1", "PARA", idtmed[10], DimVoid,6);
+  dimVoid[0] = (zTran-2*fDimZEMPb)/2.;
+  dimVoid[1] = fDimZEM[2];
+  dimVoid[2] = fDimZEM[1];
+  dimVoid[3] = 90.-fDimZEM[3];
+  dimVoid[4] = 0.;
+  dimVoid[5] = 0.;
+  gMC->Gsvolu("ZEV0", "PARA", idtmed[10], dimVoid,6);
+  gMC->Gsvolu("ZEV1", "PARA", idtmed[10], dimVoid,6);
   
   // --- Divide the vacuum slice into sticks along x axis
   gMC->Gsdvn("ZES0", "ZEV0", fDivZEM[0], 3); 
@@ -716,9 +722,9 @@ void AliZDCv2::CreateZDC()
   gMC->Gspos("ZEMF", 1,"ZES1", 0., 0., 0., irot2, "ONLY");
   
   // --- Positioning the vacuum slice into the tranche
-  Float_t DisplFib = fDimZEM[1]/fDivZEM[0];
-  gMC->Gspos("ZEV0", 1,"ZETR", -DimVoid[0], 0., 0., 0, "ONLY");
-  gMC->Gspos("ZEV1", 1,"ZETR", -DimVoid[0]+zTran, 0., DisplFib, 0, "ONLY");
+  Float_t displFib = fDimZEM[1]/fDivZEM[0];
+  gMC->Gspos("ZEV0", 1,"ZETR", -dimVoid[0], 0., 0., 0, "ONLY");
+  gMC->Gspos("ZEV1", 1,"ZETR", -dimVoid[0]+zTran, 0., displFib, 0, "ONLY");
 
   // --- Positioning the ZEM into the ZDC - rotation for 90 degrees  
   // NB -> In AliZDCv2 ZEM is positioned in ALIC (instead of in ZDC) volume
@@ -736,7 +742,7 @@ void AliZDCv2::CreateZDC()
 }
  
 //_____________________________________________________________________________
-void AliZDCv2::DrawModule()
+void AliZDCv2::DrawModule() const
 {
   //
   // Draw a shaded view of the Zero Degree Calorimeter version 1
@@ -1045,6 +1051,10 @@ void AliZDCv2::Init()
 //_____________________________________________________________________________
 void AliZDCv2::InitTables()
 {
+ //
+ // Read light tables for Cerenkov light production parameterization 
+ //
+
   Int_t k, j;
 
   char *lightfName1,*lightfName2,*lightfName3,*lightfName4,
@@ -1130,7 +1140,7 @@ void AliZDCv2::StepManager()
 
   Int_t j, vol[2], ibeta=0, ialfa, ibe, nphe;
   Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, radius, out;
-  Float_t xalic[3], z, GuiEff, GuiPar[4]={0.31,-0.0004,0.0197,0.7958};
+  Float_t xalic[3], z, guiEff, guiPar[4]={0.31,-0.0004,0.0197,0.7958};
   TLorentzVector s, p;
   const char *knamed;
 
@@ -1401,12 +1411,12 @@ void AliZDCv2::StepManager()
 	 z = -xalic[2]+fPosZEM[2]+2*fZEMLength-xalic[1];
 //	 z = xalic[2]-fPosZEM[2]-fZEMLength-xalic[1]*(TMath::Tan(45.*kDegrad));
 //         printf("\n	fPosZEM[2]+2*fZEMLength = %f", fPosZEM[2]+2*fZEMLength);
-	 GuiEff = GuiPar[0]*(GuiPar[1]*z*z+GuiPar[2]*z+GuiPar[3]);
+	 guiEff = guiPar[0]*(guiPar[1]*z*z+guiPar[2]*z+guiPar[3]);
 //         printf("\n	xalic[0] = %f	xalic[1] = %f	xalic[2] = %f	z = %f	\n",
 //	        xalic[0],xalic[1],xalic[2],z);
-	 out = out*GuiEff;
+	 out = out*guiEff;
 	 nphe = gRandom->Poisson(out);
-//         printf("	out*GuiEff = %f	nphe = %d", out, nphe);
+//         printf("	out*guiEff = %f	nphe = %d", out, nphe);
 //	 printf("ZEM --- ibeta = %d, ialfa = %d, ibe = %d"
 //	        "	-> out = %f, nphe = %d\n", ibeta, ialfa, ibe, out, nphe);
 	 if(vol[1] == 1){
