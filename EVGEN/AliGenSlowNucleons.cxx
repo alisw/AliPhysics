@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2003/03/25 09:55:24  morsch
+Numbers of slow nucleons either from model or user set.
+
 Revision 1.1  2003/03/24 16:49:23  morsch
 Slow nucleon generator and model.
 
@@ -97,8 +100,6 @@ void AliGenSlowNucleons::Generate()
   //
   // Communication with Gray Particle Model 
   // 
-    Int_t ngp, ngn, nbp, nbn;
-
     if (fCollisionGeometry) {
 	Float_t b   = fCollisionGeometry->ImpactParameter();
 	Int_t  nn   = fCollisionGeometry->NN();
@@ -106,7 +107,7 @@ void AliGenSlowNucleons::Generate()
 	Int_t  nnw  = fCollisionGeometry->NNw();
 	Int_t  nwnw = fCollisionGeometry->NwNw();
 
-	fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, ngp, ngn, nbp, nbn);
+	fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
 	if (fDebug) {
 	    printf("Nucleons %d %d %d %d \n", fNgp, fNgn, fNbp, fNbn);
 	    fDebugHist->Fill(Float_t(fNgp + fNgn + fNbp + fNbn), fCollisionGeometry->NwN(), 1.);
@@ -119,8 +120,13 @@ void AliGenSlowNucleons::Generate()
     Float_t p[3];
     Float_t origin[3] = {0., 0., 0.};
     Float_t polar [3] = {0., 0., 0.};    
-    Int_t nt, i;
+    Int_t nt, i, j;
     Int_t kf;
+    
+    if(fVertexSmear == kPerEvent) {
+	Vertex();
+	for (j=0; j < 3; j++) origin[j] = fVertex[j];
+    } // if kPerEvent
 //
 //  Gray protons
 //
