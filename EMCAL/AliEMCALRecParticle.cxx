@@ -40,7 +40,7 @@ ClassImp(AliEMCALRecParticle)
   AliEMCALRecParticle::AliEMCALRecParticle(): fEMCALRecPoint(0), fDebug(kFALSE)
 {
   // ctor
-  const Int_t nSPECIES = AliESDtrack::kSPECIESN;
+  const Int_t nSPECIES = AliPID::kSPECIESN;
   for(Int_t i = 0; i<nSPECIES ; i++)
     fPID[i]=0.;
 }
@@ -74,7 +74,7 @@ AliEMCALRecParticle::AliEMCALRecParticle(const AliEMCALRecParticle & rp)
   fPolarTheta  = rp.fPolarTheta;
   fPolarPhi    = rp.fPolarPhi;
   fParticlePDG = rp.fParticlePDG; 
-  const Int_t nSPECIES = AliESDtrack::kSPECIESN;
+  const Int_t nSPECIES = AliPID::kSPECIESN;
   for(Int_t i = 0; i<nSPECIES ; i++)
     fPID[i]=rp.fPID[i];  
 }

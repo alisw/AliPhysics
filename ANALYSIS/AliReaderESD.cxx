@@ -82,7 +82,7 @@ AliReaderESD::AliReaderESD(const Char_t* esdfilename, const Char_t* galfilename)
 
 {
   //cosntructor
-  if ( ((Int_t)kNSpecies) != ((Int_t)AliESDtrack::kSPECIES))
+  if ( ((Int_t)kNSpecies) != ((Int_t)AliPID::kSPECIES))
     Fatal("AliReaderESD","ESD defintions probobly changed. Ask Youra.");
 }
 /********************************************************************/
@@ -134,7 +134,7 @@ AliReaderESD::AliReaderESD(TObjArray* dirs,const Char_t* esdfilename, const Char
  fTPCC44Max(10e5)
 {
   //cosntructor
-  if ( ((Int_t)kNSpecies) != ((Int_t)AliESDtrack::kSPECIES))
+  if ( ((Int_t)kNSpecies) != ((Int_t)AliPID::kSPECIES))
     Fatal("AliReaderESD","ESD defintions probobly changed. Ask Youra.");
 }
 /********************************************************************/
@@ -369,7 +369,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
       
      //Here we apply Bayes' formula
      Double_t rc=0.;
-     for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) rc+=concentr[s]*pidtable[s];
+     for (Int_t s=0; s<AliPID::kSPECIES; s++) rc+=concentr[s]*pidtable[s];
      if (rc==0.0) 
       {
         if (AliVAODParticle::GetDebug() > 2) 
@@ -377,7 +377,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
         continue;
       }
 
-     for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) w[s]=concentr[s]*pidtable[s]/rc;
+     for (Int_t s=0; s<AliPID::kSPECIES; s++) w[s]=concentr[s]*pidtable[s]/rc;
 
      if (AliVAODParticle::GetDebug() > 4)
       { 
@@ -433,7 +433,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
         //find the most probable PID
         Int_t spec = 0;
         Float_t maxprob = w[0];
-        for (Int_t s=1; s<AliESDtrack::kSPECIES; s++) 
+        for (Int_t s=1; s<AliPID::kSPECIES; s++) 
          {
            if (w[s]>maxprob)
             {

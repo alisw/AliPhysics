@@ -132,7 +132,7 @@ private:
   TMatrix    *fParameters;               //! Matrix of identification Parameters
 
   //Initial pid population
-  Double_t fInitPID[AliESDtrack::kSPECIESN] ; // Initial population to do bayesian PID
+  Double_t fInitPID[AliPID::kSPECIESN] ; // Initial population to do bayesian PID
   // pid probability function parameters
   // ToF
   Double_t fTphoton[3] ;                // gaussian tof response for photon

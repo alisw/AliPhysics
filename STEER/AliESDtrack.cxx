@@ -67,7 +67,7 @@ fRICHsignal(-1)
   // The default ESD constructor 
   //
   fID =0;
-  for (Int_t i=0; i<kSPECIES; i++) {
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) {
     fTrackTime[i]=0.;
     fR[i]=1.;
     fITSr[i]=1.;
@@ -77,7 +77,7 @@ fRICHsignal(-1)
     fRICHr[i]=1.;
   }
   
-  for (Int_t i=0; i<kSPECIESN; i++) {
+  for (Int_t i=0; i<AliPID::kSPECIESN; i++) {
     fPHOSr[i]  = 1.;
     fEMCALr[i] = 1.;
   }
@@ -119,8 +119,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   fLabel =track.fLabel;
   fTrackLength =track.fTrackLength;
   fD=track.fD; fZ=track.fZ;
-  for (Int_t i=0;i<kSPECIES;i++) fTrackTime[i] =track.fTrackTime[i];
-  for (Int_t i=0;i<kSPECIES;i++)  fR[i] =track.fR[i];
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] =track.fTrackTime[i];
+  for (Int_t i=0;i<AliPID::kSPECIES;i++)  fR[i] =track.fR[i];
   fStopVertex =track.fStopVertex;
   //
   fRalpha =track.fRalpha;
@@ -149,7 +149,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   fITSncls =track.fITSncls;       
   for (Int_t i=0;i<6;i++) fITSindex[i]=track.fITSindex[i];    
   fITSsignal =track.fITSsignal;     
-  for (Int_t i=0;i<kSPECIES;i++) fITSr[i]=track.fITSr[i]; 
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=track.fITSr[i]; 
   fITSLabel =track.fITSLabel;       
   fITSFakeRatio =track.fITSFakeRatio;   
   fITStrack =0;  //coping separatelly - in user code
@@ -159,7 +159,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   for (Int_t i=0;i<180;i++) fTPCindex[i]=track.fTPCindex[i];  
   fTPCClusterMap=track.fTPCClusterMap;  
   fTPCsignal=track.fTPCsignal;      
-  for (Int_t i=0;i<kSPECIES;i++) fTPCr[i]=track.fTPCr[i]; 
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i]=track.fTPCr[i]; 
   fTPCLabel=track.fTPCLabel;       
   for (Int_t i=0;i<4;i++) {fTPCPoints[i]=track.fTPCPoints[i];}
   for (Int_t i=0; i<3;i++)   { fKinkIndexes[i]=track.fKinkIndexes[i];}
@@ -174,27 +174,27 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
       fTRDsignals[i]=track.fTRDsignals[i]; 
       fTRDTimBin[i]=track.fTRDTimBin[i];
   }
-  for (Int_t i=0;i<kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
   fTRDLabel=track.fTRDLabel;       
   fTRDtrack=0; 
   //
   fTOFchi2=track.fTOFchi2;        
   fTOFindex=track.fTOFindex;       
   fTOFsignal=track.fTOFsignal;      
-  for (Int_t i=0;i<kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
   for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
   for (Int_t i=0;i<10;i++) fTOFInfo[i]=track.fTOFInfo[i];
   //
   for (Int_t i=0;i<3;i++) fPHOSpos[i]=track.fPHOSpos[i]; 
   fPHOSsignal=track.fPHOSsignal; 
-  for (Int_t i=0;i<kSPECIESN;i++) fPHOSr[i]=track.fPHOSr[i]; 
+  for (Int_t i=0;i<AliPID::kSPECIESN;i++) fPHOSr[i]=track.fPHOSr[i]; 
   //
   for (Int_t i=0;i<3;i++) fEMCALpos[i]=track.fEMCALpos[i]; 
   fEMCALsignal=track.fEMCALsignal; 
-  for (Int_t i=0;i<kSPECIESN;i++) fEMCALr[i]=track.fEMCALr[i]; 
+  for (Int_t i=0;i<AliPID::kSPECIESN;i++) fEMCALr[i]=track.fEMCALr[i]; 
   //
   fRICHsignal=track.fRICHsignal;     
-  for (Int_t i=0;i<kSPECIES;i++) fRICHr[i]=track.fRICHr[i];
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fRICHr[i]=track.fRICHr[i];
   
   
 }
@@ -213,23 +213,23 @@ Double_t AliESDtrack::GetMass() const {
   // Returns the mass of the most probable particle type
   Float_t max=0.;
   Int_t k=-1;
-  for (Int_t i=0; i<kSPECIES; i++) {
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) {
     if (fR[i]>max) {k=i; max=fR[i];}
   }
   if (k==0) { // dE/dx "crossing points" in the TPC
      Double_t p=GetP();
      if ((p>0.38)&&(p<0.48))
-        if (fR[0]<fR[3]*10.) return 0.49368;
+        if (fR[0]<fR[3]*10.) return AliPID::ParticleMass(AliPID::kKaon);
      if ((p>0.75)&&(p<0.85))
-        if (fR[0]<fR[4]*10.) return 0.93827;
+        if (fR[0]<fR[4]*10.) return AliPID::ParticleMass(AliPID::kProton);
      return 0.00051;
   }
-  if (k==1) return 0.10566; 
-  if (k==2||k==-1) return 0.13957;
-  if (k==3) return 0.49368;
-  if (k==4) return 0.93827;
+  if (k==1) return AliPID::ParticleMass(AliPID::kMuon); 
+  if (k==2||k==-1) return AliPID::ParticleMass(AliPID::kPion);
+  if (k==3) return AliPID::ParticleMass(AliPID::kKaon);
+  if (k==4) return AliPID::ParticleMass(AliPID::kProton);
   AliWarning("Undefined mass !");
-  return 0.13957;
+  return AliPID::ParticleMass(AliPID::kPion);
 }
 
 //_______________________________________________________________________
@@ -659,19 +659,19 @@ Bool_t AliESDtrack::GetXYZAt(Double_t x, Double_t *r) const {
 //_______________________________________________________________________
 void AliESDtrack::GetIntegratedTimes(Double_t *times) const {
   // Returns the array with integrated times for each particle hypothesis
-  for (Int_t i=0; i<kSPECIES; i++) times[i]=fTrackTime[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) times[i]=fTrackTime[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetIntegratedTimes(const Double_t *times) {
   // Sets the array with integrated times for each particle hypotesis
-  for (Int_t i=0; i<kSPECIES; i++) fTrackTime[i]=times[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) fTrackTime[i]=times[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetITSpid(const Double_t *p) {
   // Sets values for the probability of each particle type (in ITS)
-  for (Int_t i=0; i<kSPECIES; i++) fITSr[i]=p[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) fITSr[i]=p[i];
   SetStatus(AliESDtrack::kITSpid);
 }
 
@@ -681,7 +681,7 @@ void AliESDtrack::SetITSChi2MIP(const Float_t *chi2mip){
 //_______________________________________________________________________
 void AliESDtrack::GetITSpid(Double_t *p) const {
   // Gets the probability of each particle type (in ITS)
-  for (Int_t i=0; i<kSPECIES; i++) p[i]=fITSr[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fITSr[i];
 }
 
 //_______________________________________________________________________
@@ -706,14 +706,14 @@ Int_t AliESDtrack::GetTPCclusters(Int_t *idx) const {
 //_______________________________________________________________________
 void AliESDtrack::SetTPCpid(const Double_t *p) {  
   // Sets values for the probability of each particle type (in TPC)
-  for (Int_t i=0; i<kSPECIES; i++) fTPCr[i]=p[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) fTPCr[i]=p[i];
   SetStatus(AliESDtrack::kTPCpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetTPCpid(Double_t *p) const {
   // Gets the probability of each particle type (in TPC)
-  for (Int_t i=0; i<kSPECIES; i++) p[i]=fTPCr[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fTPCr[i];
 }
 
 //_______________________________________________________________________
@@ -729,14 +729,14 @@ Int_t AliESDtrack::GetTRDclusters(UInt_t *idx) const {
 //_______________________________________________________________________
 void AliESDtrack::SetTRDpid(const Double_t *p) {  
   // Sets values for the probability of each particle type (in TRD)
-  for (Int_t i=0; i<kSPECIES; i++) fTRDr[i]=p[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) fTRDr[i]=p[i];
   SetStatus(AliESDtrack::kTRDpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetTRDpid(Double_t *p) const {
   // Gets the probability of each particle type (in TRD)
-  for (Int_t i=0; i<kSPECIES; i++) p[i]=fTRDr[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fTRDr[i];
 }
 
 //_______________________________________________________________________
@@ -755,7 +755,7 @@ Float_t AliESDtrack::GetTRDpid(Int_t iSpecies) const
 //_______________________________________________________________________
 void AliESDtrack::SetTOFpid(const Double_t *p) {  
   // Sets the probability of each particle type (in TOF)
-  for (Int_t i=0; i<kSPECIES; i++) fTOFr[i]=p[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) fTOFr[i]=p[i];
   SetStatus(AliESDtrack::kTOFpid);
 }
 
@@ -768,7 +768,7 @@ void AliESDtrack::SetTOFLabel(const Int_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::GetTOFpid(Double_t *p) const {
   // Gets probabilities of each particle type (in TOF)
-  for (Int_t i=0; i<kSPECIES; i++) p[i]=fTOFr[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fTOFr[i];
 }
 
 //_______________________________________________________________________
@@ -794,40 +794,40 @@ void AliESDtrack::SetTOFInfo(Float_t*info) {
 //_______________________________________________________________________
 void AliESDtrack::SetPHOSpid(const Double_t *p) {  
   // Sets the probability of each particle type (in PHOS)
-  for (Int_t i=0; i<kSPECIESN; i++) fPHOSr[i]=p[i];
+  for (Int_t i=0; i<AliPID::kSPECIESN; i++) fPHOSr[i]=p[i];
   SetStatus(AliESDtrack::kPHOSpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetPHOSpid(Double_t *p) const {
   // Gets probabilities of each particle type (in PHOS)
-  for (Int_t i=0; i<kSPECIESN; i++) p[i]=fPHOSr[i];
+  for (Int_t i=0; i<AliPID::kSPECIESN; i++) p[i]=fPHOSr[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetEMCALpid(const Double_t *p) {  
   // Sets the probability of each particle type (in EMCAL)
-  for (Int_t i=0; i<kSPECIESN; i++) fEMCALr[i]=p[i];
+  for (Int_t i=0; i<AliPID::kSPECIESN; i++) fEMCALr[i]=p[i];
   SetStatus(AliESDtrack::kEMCALpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetEMCALpid(Double_t *p) const {
   // Gets probabilities of each particle type (in EMCAL)
-  for (Int_t i=0; i<kSPECIESN; i++) p[i]=fEMCALr[i];
+  for (Int_t i=0; i<AliPID::kSPECIESN; i++) p[i]=fEMCALr[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetRICHpid(const Double_t *p) {  
   // Sets the probability of each particle type (in RICH)
-  for (Int_t i=0; i<kSPECIES; i++) fRICHr[i]=p[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) fRICHr[i]=p[i];
   SetStatus(AliESDtrack::kRICHpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetRICHpid(Double_t *p) const {
   // Gets probabilities of each particle type (in RICH)
-  for (Int_t i=0; i<kSPECIES; i++) p[i]=fRICHr[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fRICHr[i];
 }
 
 
@@ -835,14 +835,14 @@ void AliESDtrack::GetRICHpid(Double_t *p) const {
 //_______________________________________________________________________
 void AliESDtrack::SetESDpid(const Double_t *p) {  
   // Sets the probability of each particle type for the ESD track
-  for (Int_t i=0; i<kSPECIES; i++) fR[i]=p[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) fR[i]=p[i];
   SetStatus(AliESDtrack::kESDpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetESDpid(Double_t *p) const {
   // Gets probability of each particle type for the ESD track
-  for (Int_t i=0; i<kSPECIES; i++) p[i]=fR[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fR[i];
 }
 
 //_______________________________________________________________________
@@ -850,54 +850,54 @@ void AliESDtrack::Print(Option_t *) const {
   // Prints info on the track
   
   printf("ESD track info\n") ; 
-  Double_t p[kSPECIESN] ; 
+  Double_t p[AliPID::kSPECIESN] ; 
   Int_t index = 0 ; 
   if( IsOn(kITSpid) ){
     printf("From ITS: ") ; 
     GetITSpid(p) ; 
-    for(index = 0 ; index < kSPECIES; index++) 
+    for(index = 0 ; index < AliPID::kSPECIES; index++) 
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetITSsignal()) ;
   } 
   if( IsOn(kTPCpid) ){
     printf("From TPC: ") ; 
     GetTPCpid(p) ; 
-    for(index = 0 ; index < kSPECIES; index++) 
+    for(index = 0 ; index < AliPID::kSPECIES; index++) 
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetTPCsignal()) ;
   }
   if( IsOn(kTRDpid) ){
     printf("From TRD: ") ; 
     GetTRDpid(p) ; 
-    for(index = 0 ; index < kSPECIES; index++) 
+    for(index = 0 ; index < AliPID::kSPECIES; index++) 
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetTRDsignal()) ;
   }
   if( IsOn(kTOFpid) ){
     printf("From TOF: ") ; 
     GetTOFpid(p) ; 
-    for(index = 0 ; index < kSPECIES; index++) 
+    for(index = 0 ; index < AliPID::kSPECIES; index++) 
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetTOFsignal()) ;
   }
   if( IsOn(kRICHpid) ){
     printf("From TOF: ") ; 
     GetRICHpid(p) ; 
-    for(index = 0 ; index < kSPECIES; index++) 
+    for(index = 0 ; index < AliPID::kSPECIES; index++) 
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetRICHsignal()) ;
   }
   if( IsOn(kPHOSpid) ){
     printf("From PHOS: ") ; 
     GetPHOSpid(p) ; 
-    for(index = 0 ; index < kSPECIESN; index++) 
+    for(index = 0 ; index < AliPID::kSPECIESN; index++) 
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetPHOSsignal()) ;
   }
   if( IsOn(kEMCALpid) ){
     printf("From EMCAL: ") ; 
     GetEMCALpid(p) ; 
-    for(index = 0 ; index < kSPECIESN; index++) 
+    for(index = 0 ; index < AliPID::kSPECIESN; index++) 
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetEMCALsignal()) ;
   }

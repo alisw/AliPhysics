@@ -24,6 +24,7 @@
 
 #include <TBits.h>
 #include <TObject.h>
+#include "AliPID.h"
 class AliKalmanTrack;
 
 const Int_t kNPlane = 6;
@@ -178,12 +179,6 @@ public:
     kESDpid=0x40000000,
     kTIME=0x80000000
   }; 
-  enum {
-    kSPECIES=5, // Number of particle species recognized by the PID
-    kSPECIESN=10, //  Number of charged+neutral particle species recognized by the PHOS/EMCAL PID
-    kElectron=0, kMuon=1, kPion=2, kKaon=3, kProton=4, kPhoton=5, 
-    kPi0=6, kNeutron=7, kKaon0=8, kEleCon=9 // PHOS/EMCAL definition
-  };
 protected:
   ULong_t   fFlags;        // Reconstruction status flags 
   Int_t     fLabel;        // Track label
@@ -191,8 +186,8 @@ protected:
   Float_t   fTrackLength;  // Track length
   Float_t   fD;            // Impact parameter in XY-plane
   Float_t   fZ;            // Impact parameter in Z 
-  Float_t   fTrackTime[kSPECIES]; // TOFs estimated by the tracking
-  Float_t   fR[kSPECIES];         // combined "detector response probability"
+  Float_t   fTrackTime[AliPID::kSPECIES]; // TOFs estimated by the tracking
+  Float_t   fR[AliPID::kSPECIES];         // combined "detector response probability"
 
   Int_t     fStopVertex;          // Index of stop vertex
 
@@ -227,7 +222,7 @@ protected:
   Int_t   fITSncls;        // number of clusters assigned in the ITS
   UInt_t  fITSindex[6];    //! indices of the assigned ITS clusters
   Float_t fITSsignal;      // detector's PID signal
-  Float_t fITSr[kSPECIES]; // "detector response probabilities" (for the PID)
+  Float_t fITSr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fITSLabel;       // label according TPC
   Float_t fITSFakeRatio;   // ration of fake tracks
   AliKalmanTrack * fITStrack; //! OWNER: pointer to the ITS track -- currently for debug purpose
@@ -238,7 +233,7 @@ protected:
   Int_t  fTPCindex[180];  //! indices of the assigned TPC clusters
   TBits   fTPCClusterMap;  // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   Float_t fTPCsignal;      // detector's PID signal
-  Float_t fTPCr[kSPECIES]; // "detector response probabilities" (for the PID)
+  Float_t fTPCr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTPCLabel;       // label according TPC
   Float_t fTPCPoints[4];   // TPC points -first, max. dens, last and max density
   Int_t   fKinkIndexes[3]; // array of indexes of posible kink candidates 
@@ -252,7 +247,7 @@ protected:
   Float_t fTRDsignal;      // detector's PID signal
   Float_t fTRDsignals[kNPlane];  // TRD signals from all six planes
   Int_t fTRDTimBin[kNPlane];     // Time bin of Max cluster from all six planes
-  Float_t fTRDr[kSPECIES]; // "detector response probabilities" (for the PID)
+  Float_t fTRDr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTRDLabel;       // label according TRD
   AliKalmanTrack * fTRDtrack; //! OWNER: pointer to the TRD track -- currently for debug purpose
 
@@ -260,23 +255,23 @@ protected:
   Float_t fTOFchi2;        // chi2 in the TOF
   UInt_t  fTOFindex;       // index of the assigned TOF cluster
   Float_t fTOFsignal;      // detector's PID signal
-  Float_t fTOFr[kSPECIES]; // "detector response probabilities" (for the PID)
+  Float_t fTOFr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTOFLabel[3];       // TOF label 
   Float_t fTOFInfo[10];       //! TOF informations
 
   // PHOS related track information 
   Float_t fPHOSpos[3]; // position localised by PHOS in global coordinate system
   Float_t fPHOSsignal; // energy measured by PHOS
-  Float_t fPHOSr[kSPECIESN]; // PID information from PHOS
+  Float_t fPHOSr[AliPID::kSPECIESN]; // PID information from PHOS
 
   // EMCAL related track information 
   Float_t fEMCALpos[3]; //position localised by EMCAL in global coordinate system
   Float_t fEMCALsignal; // energy measured by EMCAL
-  Float_t fEMCALr[kSPECIESN]; // PID information from EMCAL
+  Float_t fEMCALr[AliPID::kSPECIESN]; // PID information from EMCAL
 
   // HMPID related track information
   Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
-  Float_t fRICHr[kSPECIES];// "detector response probabilities" (for the PID)
+  Float_t fRICHr[AliPID::kSPECIES];// "detector response probabilities" (for the PID)
   	
   ClassDef(AliESDtrack,11)  //ESDtrack 
 };

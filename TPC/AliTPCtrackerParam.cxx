@@ -1425,22 +1425,22 @@ void AliTPCtrackerParam::CookdEdx(Double_t pt,Double_t eta) {
 
   if (p<0.6) {
     if (dEdx < 39.+ 12./(p+0.25)/(p+0.25)) { 
-      t.AssignMass(0.13957); new(&fTrack) AliTPCtrack(t); return;
+      t.AssignMass(AliPID::ParticleMass(AliPID::kPion)); new(&fTrack) AliTPCtrack(t); return;
     }
     if (dEdx < 39.+ 12./p/p) { 
-      t.AssignMass(0.49368); new(&fTrack) AliTPCtrack(t); return;
+      t.AssignMass(AliPID::ParticleMass(AliPID::kKaon)); new(&fTrack) AliTPCtrack(t); return;
     }
-    t.AssignMass(0.93827); new(&fTrack) AliTPCtrack(t); return;
+    t.AssignMass(AliPID::ParticleMass(AliPID::kProton)); new(&fTrack) AliTPCtrack(t); return;
   }
 
   if (p<1.2) {
     if (dEdx < 39.+ 12./(p+0.25)/(p+0.25)) { 
-      t.AssignMass(0.13957); new(&fTrack) AliTPCtrack(t); return;
+      t.AssignMass(AliPID::ParticleMass(AliPID::kPion)); new(&fTrack) AliTPCtrack(t); return;
     }
-    t.AssignMass(0.93827); new(&fTrack) AliTPCtrack(t); return;
+    t.AssignMass(AliPID::ParticleMass(AliPID::kProton)); new(&fTrack) AliTPCtrack(t); return;
   }
 
-  t.AssignMass(0.13957); new(&fTrack) AliTPCtrack(t); return;
+  t.AssignMass(AliPID::ParticleMass(AliPID::kPion)); new(&fTrack) AliTPCtrack(t); return;
 }
 //-----------------------------------------------------------------------------
 void AliTPCtrackerParam::CookTrack(Double_t pt,Double_t eta) {

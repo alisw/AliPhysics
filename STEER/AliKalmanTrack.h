@@ -13,7 +13,7 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
-#include "AliESDtrack.h"
+#include "AliPID.h"
 
 class AliCluster;
 
@@ -104,9 +104,8 @@ protected:
   static Double_t fgConvConst; //conversion constant cm -> GeV/c
 
   // variables for time integration (S.Radomski@gsi.de)
-  static const Int_t fgkTypes = AliESDtrack::kSPECIES;  // Number of track types (e,mu,pi,k,p)
   Bool_t  fStartTimeIntegral;       // indicator wether integrate time
-  Double_t fIntegratedTime[5];       // integrated time
+  Double_t fIntegratedTime[AliPID::kSPECIES];       // integrated time
   Double_t fIntegratedLength;        // integrated length
   
   ClassDef(AliKalmanTrack,3)    // Reconstructed track

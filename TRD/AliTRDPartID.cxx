@@ -53,9 +53,6 @@ Bool_t AliTRDPartID::MakePID(AliESDtrack* track)
 {
 // This function calculates the "detector response" PID probabilities 
 
-  static const Double_t masses[AliESDtrack::kSPECIES] = 
-    {0.000511, 0.105658, 0.139570, 0.493677, 0.938272};
-
   if (((track->GetStatus()&AliESDtrack::kTRDin) == 0) &&
       ((track->GetStatus()&AliESDtrack::kTRDout) == 0)) return kFALSE;
   Double_t momentum = track->GetP();
@@ -63,8 +60,8 @@ Bool_t AliTRDPartID::MakePID(AliESDtrack* track)
 
   // get the probability densities
   Double_t pSum = 0;
-  for (Int_t iSpecies = 0; iSpecies < AliESDtrack::kSPECIES; iSpecies++) {
-    Double_t expectedSignal = fBetheBloch->Eval(momentum/masses[iSpecies]);
+  for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) {
+    Double_t expectedSignal = fBetheBloch->Eval(momentum/AliPID::ParticleMass(iSpecies));
     Double_t expectedError = fRes * expectedSignal;
     Double_t measuredSignal = track->GetTRDsignal();
     if (TMath::Abs(measuredSignal - expectedSignal) > fRange * expectedError) {
@@ -80,7 +77,7 @@ Bool_t AliTRDPartID::MakePID(AliESDtrack* track)
 
   // "normalize" the probability densities
   if (pSum <= 0) return kFALSE;
-  for (Int_t iSpecies = 0; iSpecies < AliESDtrack::kSPECIES; iSpecies++) {
+  for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) {
     track->SetTRDpid(iSpecies, track->GetTRDpid(iSpecies) / pSum);
   }
 

@@ -23,9 +23,6 @@
 
 #include "AliKalmanTrack.h"
 #include "AliLog.h"
-#include "AliPDG.h"
-#include "TPDGCode.h"
-#include "TDatabasePDG.h"
 
 ClassImp(AliKalmanTrack)
 
@@ -35,7 +32,7 @@ Double_t AliKalmanTrack::fgConvConst;
 AliKalmanTrack::AliKalmanTrack():
   fLab(-3141593),
   fChi2(0),
-  fMass(0.13957),
+  fMass(AliPID::ParticleMass(AliPID::kPion)),
   fN(0)
 {
   //
@@ -87,7 +84,7 @@ void AliKalmanTrack::StartTimeIntegral()
   //  AliWarning("Reseting Recorded Time.");
 
   fStartTimeIntegral = kTRUE;
-  for(Int_t i=0; i<fgkTypes; i++) fIntegratedTime[i] = 0;  
+  for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i] = 0;  
   fIntegratedLength = 0;
 }
 //_______________________________________________________________________
@@ -119,9 +116,6 @@ void AliKalmanTrack:: AddTimeStep(Double_t length)
   
   fIntegratedLength += length;
 
-  static Int_t pdgCode[fgkTypes]  = {kElectron, kMuonMinus, kPiPlus, kKPlus, kProton};
-  TDatabasePDG *db = TDatabasePDG::Instance();
-
   Double_t xr, param[5];
   Double_t pt, tgl;
   
@@ -133,9 +127,9 @@ void AliKalmanTrack:: AddTimeStep(Double_t length)
 
   if (length > 100) return;
 
-  for (Int_t i=0; i<fgkTypes; i++) {
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) {
     
-    Double_t mass = db->GetParticle(pdgCode[i])->Mass();
+    Double_t mass = AliPID::ParticleMass(i);
     Double_t correction = TMath::Sqrt( pt*pt * (1 + tgl*tgl) + mass * mass ) / p;
     Double_t time = length * correction / kcc;
 
@@ -163,21 +157,19 @@ Double_t AliKalmanTrack::GetIntegratedTime(Int_t pdg) const
     return 0.;
   }
 
-  static Int_t pdgCode[fgkTypes] = {kElectron, kMuonMinus, kPiPlus, kKPlus, kProton};
-
-  for (Int_t i=0; i<fgkTypes; i++)
-    if (pdgCode[i] == TMath::Abs(pdg)) return fIntegratedTime[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++)
+    if (AliPID::ParticleCode(i) == TMath::Abs(pdg)) return fIntegratedTime[i];
 
   AliWarning(Form("Particle type [%d] not found", pdg));
   return 0;
 }
 
 void AliKalmanTrack::GetIntegratedTimes(Double_t *times) const {
-  for (Int_t i=0; i<fgkTypes; i++) times[i]=fIntegratedTime[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) times[i]=fIntegratedTime[i];
 }
 
 void AliKalmanTrack::SetIntegratedTimes(const Double_t *times) {
-  for (Int_t i=0; i<fgkTypes; i++) fIntegratedTime[i]=times[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i]=times[i];
 }
 
 //_______________________________________________________________________
@@ -191,10 +183,8 @@ void AliKalmanTrack::PrintTime() const
   // Prints time for all hypothesis
   //
 
-  static Int_t pdgCode[fgkTypes] = {kElectron, kMuonMinus, kPiPlus, kKPlus, kProton};
-
-  for (Int_t i=0; i<fgkTypes; i++)
-    printf("%d: %.2f  ", pdgCode[i], fIntegratedTime[i]);
+  for (Int_t i=0; i<AliPID::kSPECIES; i++)
+    printf("%d: %.2f  ", AliPID::ParticleCode(i), fIntegratedTime[i]);
   printf("\n");  
 }
 

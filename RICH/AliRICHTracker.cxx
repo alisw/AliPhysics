@@ -8,7 +8,6 @@
 #include "AliRICHRecon.h"
 #include <AliStack.h>
 #include <TParticle.h>
-#include <TDatabasePDG.h>
 #include <TMath.h>
 ClassImp(AliRICHTracker)
 //__________________________________________________________________________________________________
@@ -166,11 +165,9 @@ Int_t AliRICHTracker::LoadClusters(TTree *pTree)
 void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *richPID)
 {
 // 
-  Double_t height[5];Double_t totalHeight=0;
-  Int_t code[5]={kElectron,kMuonPlus,kPiPlus,kKPlus,kProton};
-  TDatabasePDG *db = new TDatabasePDG();
-  for(Int_t iPart=0;iPart<4;iPart++){
-    Double_t mass = db->GetParticle(code[iPart])->Mass();
+  Double_t height[AliPID::kSPECIES];Double_t totalHeight=0;
+  for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++){
+    Double_t mass = AliPID::ParticleMass(iPart);
     Double_t refIndex=AliRICHParam::IndOfRefC6F14(6.755);
     Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(refIndex*pmod);
     if(cosThetaTh>=1) {break;}
@@ -180,5 +177,5 @@ void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *richPID
     height[iPart] = TMath::Gaus(thetaCer,thetaTh,sigmaThetaTh);
     totalHeight +=height[iPart];
   }
-  for(Int_t iPart=0;iPart<5;iPart++) richPID[iPart] = height[iPart]/totalHeight;    
+  for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) richPID[iPart] = height[iPart]/totalHeight;    
 }//CalcProb

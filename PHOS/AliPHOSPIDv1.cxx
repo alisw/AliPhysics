@@ -324,7 +324,7 @@ void AliPHOSPIDv1::InitParameters()
   fZcharged[3] =-4.68e-2 ;  fZcharged[4] =-9.21e-3 ; fZcharged[5] = 4.91e-2 ;//mean
   fZcharged[6] = 1.425   ;  fZcharged[7] =-5.90e-2 ; fZcharged[8] = 5.07e-2 ;//sigma
   
-  for (Int_t i =0; i<  AliESDtrack::kSPECIESN ; i++)
+  for (Int_t i =0; i<  AliPID::kSPECIESN ; i++)
     fInitPID[i] = 1.;
   
 }
@@ -822,7 +822,7 @@ void  AliPHOSPIDv1::MakePID()
   // construct the PID weight from a Bayesian Method
   
   Int_t index ;
-  const Int_t kSPECIES = AliESDtrack::kSPECIESN ;
+  const Int_t kSPECIES = AliPID::kSPECIESN ;
   Int_t nparticles = AliPHOSGetter::Instance()->RecParticles()->GetEntriesFast() ;
   
   //   const Int_t kMAXPARTICLES = 2000 ; 
@@ -863,40 +863,40 @@ void  AliPHOSPIDv1::MakePID()
     Double_t time = recpar->ToF() ;
     //cout<<">>>>>>>Energy "<<en<<"Time "<<time<<endl;
     //Electrons initial population to be removed
-    fInitPID[AliESDtrack::kEleCon]   = 0. ;
+    fInitPID[AliPID::kEleCon]   = 0. ;
     
     // now get the signals probability
     // s(pid) in the Bayesian formulation
     
-    stof[AliESDtrack::kPhoton][index]   = 1.; 
-    stof[AliESDtrack::kElectron][index] = 1.;
-    stof[AliESDtrack::kPion][index]     = 1.; 
-    stof[AliESDtrack::kKaon][index]     = 1.; 
-    stof[AliESDtrack::kProton][index]   = 1.;
-    stof[AliESDtrack::kNeutron][index]  = 1.;
-    stof[AliESDtrack::kEleCon][index]   = 1.;
-    stof[AliESDtrack::kKaon0][index]    = 1.;
-    stof[AliESDtrack::kMuon][index]     = 1.; 
+    stof[AliPID::kPhoton][index]   = 1.; 
+    stof[AliPID::kElectron][index] = 1.;
+    stof[AliPID::kPion][index]     = 1.; 
+    stof[AliPID::kKaon][index]     = 1.; 
+    stof[AliPID::kProton][index]   = 1.;
+    stof[AliPID::kNeutron][index]  = 1.;
+    stof[AliPID::kEleCon][index]   = 1.;
+    stof[AliPID::kKaon0][index]    = 1.;
+    stof[AliPID::kMuon][index]     = 1.; 
     
     if(en < 2.) {
-      stof[AliESDtrack::kPhoton][index]   = fTFphoton     ->Eval(time) ; //gaus distribution
-      stof[AliESDtrack::kPion][index]     = fTFpiong      ->Eval(time) ; //gaus distribution
-      stof[AliESDtrack::kElectron][index] = stof[AliESDtrack::kPion][index]  ;                               
+      stof[AliPID::kPhoton][index]   = fTFphoton     ->Eval(time) ; //gaus distribution
+      stof[AliPID::kPion][index]     = fTFpiong      ->Eval(time) ; //gaus distribution
+      stof[AliPID::kElectron][index] = stof[AliPID::kPion][index]  ;                               
 	
       if(time < fTkaonl[1])
-	stof[AliESDtrack::kKaon][index]     = fTFkaong      ->Eval(time) ; //gaus distribution
+	stof[AliPID::kKaon][index]     = fTFkaong      ->Eval(time) ; //gaus distribution
       else 
-	stof[AliESDtrack::kKaon][index]     = fTFkaonl      ->Eval(time) ; //landau distribution
+	stof[AliPID::kKaon][index]     = fTFkaonl      ->Eval(time) ; //landau distribution
       if(time < fThhadronl[1])
-	stof[AliESDtrack::kProton][index]   = fTFhhadrong   ->Eval(time) ; //gaus distribution
+	stof[AliPID::kProton][index]   = fTFhhadrong   ->Eval(time) ; //gaus distribution
       else
-	stof[AliESDtrack::kProton][index]   = fTFhhadronl   ->Eval(time) ; //landau distribution
+	stof[AliPID::kProton][index]   = fTFhhadronl   ->Eval(time) ; //landau distribution
       
-      stof[AliESDtrack::kNeutron][index]  = stof[AliESDtrack::kProton][index] ;
-      stof[AliESDtrack::kEleCon][index]   = stof[AliESDtrack::kPhoton][index] ;
+      stof[AliPID::kNeutron][index]  = stof[AliPID::kProton][index] ;
+      stof[AliPID::kEleCon][index]   = stof[AliPID::kPhoton][index] ;
       // a conversion electron has the photon ToF
-      stof[AliESDtrack::kKaon0][index]    = stof[AliESDtrack::kKaon][index] ;
-      stof[AliESDtrack::kMuon][index]     = stof[AliESDtrack::kPhoton][index] ;
+      stof[AliPID::kKaon0][index]    = stof[AliPID::kKaon][index] ;
+      stof[AliPID::kMuon][index]     = stof[AliPID::kPhoton][index] ;
     } 
     
     //    Info("MakePID", "Dispersion");
@@ -905,33 +905,33 @@ void  AliPHOSPIDv1::MakePID()
     Float_t dispersion = emc->GetDispersion();
     //dispersion is not well defined if the cluster is only in few crystals
     
-    sdp[AliESDtrack::kPhoton][index]   = 1. ;
-    sdp[AliESDtrack::kElectron][index] = 1. ;
-    sdp[AliESDtrack::kPion][index]     = 1. ; 
-    sdp[AliESDtrack::kKaon][index]     = 1. ; 
-    sdp[AliESDtrack::kProton][index]   = 1. ;
-    sdp[AliESDtrack::kNeutron][index]  = 1. ;
-    sdp[AliESDtrack::kEleCon][index]   = 1. ; 
-    sdp[AliESDtrack::kKaon0][index]    = 1. ; 
-    sdp[AliESDtrack::kMuon][index]     = 1. ; 
+    sdp[AliPID::kPhoton][index]   = 1. ;
+    sdp[AliPID::kElectron][index] = 1. ;
+    sdp[AliPID::kPion][index]     = 1. ; 
+    sdp[AliPID::kKaon][index]     = 1. ; 
+    sdp[AliPID::kProton][index]   = 1. ;
+    sdp[AliPID::kNeutron][index]  = 1. ;
+    sdp[AliPID::kEleCon][index]   = 1. ; 
+    sdp[AliPID::kKaon0][index]    = 1. ; 
+    sdp[AliPID::kMuon][index]     = 1. ; 
     
     if(en > 0.5 && emc->GetMultiplicity() > 3){ 
-      sdp[AliESDtrack::kPhoton][index]   = GausF   (en , dispersion, fDphoton) ;
-      sdp[AliESDtrack::kElectron][index] = sdp[AliESDtrack::kPhoton][index] ;
-      sdp[AliESDtrack::kPion][index]     = LandauF(en , dispersion, fDhadron ) ; 
-      sdp[AliESDtrack::kKaon][index]     = sdp[AliESDtrack::kPion][index]  ; 
-      sdp[AliESDtrack::kProton][index]   = sdp[AliESDtrack::kPion][index]  ;
-      sdp[AliESDtrack::kNeutron][index]  = sdp[AliESDtrack::kPion][index]  ;
-      sdp[AliESDtrack::kEleCon][index]   = sdp[AliESDtrack::kPhoton][index]; 
-      sdp[AliESDtrack::kKaon0][index]    = sdp[AliESDtrack::kPion][index]  ; 
-      sdp[AliESDtrack::kMuon][index]     = fDFmuon ->Eval(dispersion) ; //landau distribution
+      sdp[AliPID::kPhoton][index]   = GausF   (en , dispersion, fDphoton) ;
+      sdp[AliPID::kElectron][index] = sdp[AliPID::kPhoton][index] ;
+      sdp[AliPID::kPion][index]     = LandauF(en , dispersion, fDhadron ) ; 
+      sdp[AliPID::kKaon][index]     = sdp[AliPID::kPion][index]  ; 
+      sdp[AliPID::kProton][index]   = sdp[AliPID::kPion][index]  ;
+      sdp[AliPID::kNeutron][index]  = sdp[AliPID::kPion][index]  ;
+      sdp[AliPID::kEleCon][index]   = sdp[AliPID::kPhoton][index]; 
+      sdp[AliPID::kKaon0][index]    = sdp[AliPID::kPion][index]  ; 
+      sdp[AliPID::kMuon][index]     = fDFmuon ->Eval(dispersion) ; //landau distribution
     }
     
 //     Info("MakePID","multiplicity %d, dispersion %f", emc->GetMultiplicity(), dispersion);
-//     Info("MakePID","ss: photon %f, hadron %f ",  sdp[AliESDtrack::kPhoton][index],  sdp[AliESDtrack::kPion][index]);
+//     Info("MakePID","ss: photon %f, hadron %f ",  sdp[AliPID::kPhoton][index],  sdp[AliPID::kPion][index]);
     
 //       cout<<">>>>>multiplicity "<<emc->GetMultiplicity()<<", dispersion "<< dispersion<<endl ;
-//       cout<<"<<<<<ss: photon   "<<sdp[AliESDtrack::kPhoton][index]<<", hadron    "<<sdp[AliESDtrack::kPion][index]<<endl;
+//       cout<<"<<<<<ss: photon   "<<sdp[AliPID::kPhoton][index]<<", hadron    "<<sdp[AliPID::kPion][index]<<endl;
 
     // CPV-EMC  Distance
     //       Info("MakePID", "Distance");
@@ -966,38 +966,38 @@ void  AliPHOSPIDv1::MakePID()
     //    else
     //      cout<<">>>>>>>>>>>CHARGED>>>>>>>>>>>"<<endl;
     
-    scpv[AliESDtrack::kPion][index]     =  pcpvcharged  ; 
-    scpv[AliESDtrack::kKaon][index]     =  pcpvcharged  ; 
-    scpv[AliESDtrack::kProton][index]   =  pcpvcharged  ;
-    scpv[AliESDtrack::kPhoton][index]   =  pcpvneutral  ;
-    scpv[AliESDtrack::kElectron][index] =  pcpvelectron ;
-    scpv[AliESDtrack::kNeutron][index]  =  pcpvneutral  ; 
-    scpv[AliESDtrack::kEleCon][index]   =  pcpvelectron ; 
-    scpv[AliESDtrack::kKaon0][index]    =  pcpvneutral  ; 
-    scpv[AliESDtrack::kMuon][index]     =  pcpvelectron ; 
+    scpv[AliPID::kPion][index]     =  pcpvcharged  ; 
+    scpv[AliPID::kKaon][index]     =  pcpvcharged  ; 
+    scpv[AliPID::kProton][index]   =  pcpvcharged  ;
+    scpv[AliPID::kPhoton][index]   =  pcpvneutral  ;
+    scpv[AliPID::kElectron][index] =  pcpvelectron ;
+    scpv[AliPID::kNeutron][index]  =  pcpvneutral  ; 
+    scpv[AliPID::kEleCon][index]   =  pcpvelectron ; 
+    scpv[AliPID::kKaon0][index]    =  pcpvneutral  ; 
+    scpv[AliPID::kMuon][index]     =  pcpvelectron ; 
     
     //   Info("MakePID", "CPV passed");
 
     //Pi0
-    stof[AliESDtrack::kPi0][index]      = 0. ;  
-    scpv[AliESDtrack::kPi0][index]      = 0. ;
-    sdp [AliESDtrack::kPi0][index]      = 0. ;
-    fInitPID[AliESDtrack::kPi0]         = 0. ;
+    stof[AliPID::kPi0][index]      = 0. ;  
+    scpv[AliPID::kPi0][index]      = 0. ;
+    sdp [AliPID::kPi0][index]      = 0. ;
+    fInitPID[AliPID::kPi0]         = 0. ;
 
     if(en > 30.){
       // pi0 are detected via decay photon
-      stof[AliESDtrack::kPi0][index]  = fTFphoton  ->Eval(time) ;
-      scpv[AliESDtrack::kPi0][index]  = pcpvneutral  ;
-      sdp [AliESDtrack::kPi0][index]  = 1. ;
+      stof[AliPID::kPi0][index]  = fTFphoton  ->Eval(time) ;
+      scpv[AliPID::kPi0][index]  = pcpvneutral  ;
+      sdp [AliPID::kPi0][index]  = 1. ;
       if(emc->GetMultiplicity() > 3)
-	sdp [AliESDtrack::kPi0][index]  = GausPol2(en , dispersion, fDpi0) ;
+	sdp [AliPID::kPi0][index]  = GausPol2(en , dispersion, fDpi0) ;
     }
     
     if(en > 0.5){
       //Muons deposit few energy
-      scpv[AliESDtrack::kMuon][index]     =  0 ;
-      stof[AliESDtrack::kMuon][index]     =  0 ;
-      sdp [AliESDtrack::kMuon][index]     =  0 ;
+      scpv[AliPID::kMuon][index]     =  0 ;
+      stof[AliPID::kMuon][index]     =  0 ;
+      sdp [AliPID::kMuon][index]     =  0 ;
     }
 
     if(en > 0.5){
@@ -1010,26 +1010,26 @@ void  AliPHOSPIDv1::MakePID()
       cout<<">>>>electron : px*pz "<<pcpvelectron <<" hadron: px*pz "<<pcpvcharged<<endl;  
       
 
-      cout<<"Photon   , pid "<< fInitPID[AliESDtrack::kPhoton]<<" tof "<<stof[AliESDtrack::kPhoton][index]
-	  <<", cpv "<<scpv[AliESDtrack::kPhoton][index]<<", ss "<<sdp[AliESDtrack::kPhoton][index]<<endl;
-      cout<<"EleCon   , pid "<< fInitPID[AliESDtrack::kEleCon]<<", tof "<<stof[AliESDtrack::kEleCon][index]
-	  <<", cpv "<<scpv[AliESDtrack::kEleCon][index]<<" ss "<<sdp[AliESDtrack::kEleCon][index]<<endl;
-      cout<<"Electron , pid "<< fInitPID[AliESDtrack::kElectron]<<", tof "<<stof[AliESDtrack::kElectron][index]
-	  <<", cpv "<<scpv[AliESDtrack::kElectron][index]<<" ss "<<sdp[AliESDtrack::kElectron][index]<<endl;
-      cout<<"Muon     , pid "<< fInitPID[AliESDtrack::kMuon]<<", tof "<<stof[AliESDtrack::kMuon][index]
-	  <<", cpv "<<scpv[AliESDtrack::kMuon][index]<<" ss "<<sdp[AliESDtrack::kMuon][index]<<endl;
-      cout<<"Pi0      , pid "<< fInitPID[AliESDtrack::kPi0]<<", tof "<<stof[AliESDtrack::kPi0][index]
-	  <<", cpv "<<scpv[AliESDtrack::kPi0][index]<<" ss "<<sdp[AliESDtrack::kPi0][index]<<endl;
-      cout<<"Pion     , pid "<< fInitPID[AliESDtrack::kPion]<<", tof "<<stof[AliESDtrack::kPion][index]
-	  <<", cpv "<<scpv[AliESDtrack::kPion][index]<<" ss "<<sdp[AliESDtrack::kPion][index]<<endl;
-      cout<<"Kaon0    , pid "<< fInitPID[AliESDtrack::kKaon0]<<", tof "<<stof[AliESDtrack::kKaon0][index]
-	  <<", cpv "<<scpv[AliESDtrack::kKaon0][index]<<" ss "<<sdp[AliESDtrack::kKaon0][index]<<endl;
-      cout<<"Kaon     , pid "<< fInitPID[AliESDtrack::kKaon]<<", tof "<<stof[AliESDtrack::kKaon][index]
-	  <<", cpv "<<scpv[AliESDtrack::kKaon][index]<<" ss "<<sdp[AliESDtrack::kKaon][index]<<endl;
-      cout<<"Neutron  , pid "<< fInitPID[AliESDtrack::kNeutron]<<", tof "<<stof[AliESDtrack::kNeutron][index]
-	  <<", cpv "<<scpv[AliESDtrack::kNeutron][index]<<" ss "<<sdp[AliESDtrack::kNeutron][index]<<endl;
-      cout<<"Proton   , pid "<< fInitPID[AliESDtrack::kProton]<<", tof "<<stof[AliESDtrack::kProton][index]
-	  <<", cpv "<<scpv[AliESDtrack::kProton][index]<<" ss "<<sdp[AliESDtrack::kProton][index]<<endl;
+      cout<<"Photon   , pid "<< fInitPID[AliPID::kPhoton]<<" tof "<<stof[AliPID::kPhoton][index]
+	  <<", cpv "<<scpv[AliPID::kPhoton][index]<<", ss "<<sdp[AliPID::kPhoton][index]<<endl;
+      cout<<"EleCon   , pid "<< fInitPID[AliPID::kEleCon]<<", tof "<<stof[AliPID::kEleCon][index]
+	  <<", cpv "<<scpv[AliPID::kEleCon][index]<<" ss "<<sdp[AliPID::kEleCon][index]<<endl;
+      cout<<"Electron , pid "<< fInitPID[AliPID::kElectron]<<", tof "<<stof[AliPID::kElectron][index]
+	  <<", cpv "<<scpv[AliPID::kElectron][index]<<" ss "<<sdp[AliPID::kElectron][index]<<endl;
+      cout<<"Muon     , pid "<< fInitPID[AliPID::kMuon]<<", tof "<<stof[AliPID::kMuon][index]
+	  <<", cpv "<<scpv[AliPID::kMuon][index]<<" ss "<<sdp[AliPID::kMuon][index]<<endl;
+      cout<<"Pi0      , pid "<< fInitPID[AliPID::kPi0]<<", tof "<<stof[AliPID::kPi0][index]
+	  <<", cpv "<<scpv[AliPID::kPi0][index]<<" ss "<<sdp[AliPID::kPi0][index]<<endl;
+      cout<<"Pion     , pid "<< fInitPID[AliPID::kPion]<<", tof "<<stof[AliPID::kPion][index]
+	  <<", cpv "<<scpv[AliPID::kPion][index]<<" ss "<<sdp[AliPID::kPion][index]<<endl;
+      cout<<"Kaon0    , pid "<< fInitPID[AliPID::kKaon0]<<", tof "<<stof[AliPID::kKaon0][index]
+	  <<", cpv "<<scpv[AliPID::kKaon0][index]<<" ss "<<sdp[AliPID::kKaon0][index]<<endl;
+      cout<<"Kaon     , pid "<< fInitPID[AliPID::kKaon]<<", tof "<<stof[AliPID::kKaon][index]
+	  <<", cpv "<<scpv[AliPID::kKaon][index]<<" ss "<<sdp[AliPID::kKaon][index]<<endl;
+      cout<<"Neutron  , pid "<< fInitPID[AliPID::kNeutron]<<", tof "<<stof[AliPID::kNeutron][index]
+	  <<", cpv "<<scpv[AliPID::kNeutron][index]<<" ss "<<sdp[AliPID::kNeutron][index]<<endl;
+      cout<<"Proton   , pid "<< fInitPID[AliPID::kProton]<<", tof "<<stof[AliPID::kProton][index]
+	  <<", cpv "<<scpv[AliPID::kProton][index]<<" ss "<<sdp[AliPID::kProton][index]<<endl;
       cout<<"######################################################"<<endl;
     }
   }
@@ -1456,10 +1456,10 @@ void  AliPHOSPIDv1::WriteRecParticles()
 //_______________________________________________________________________
 void AliPHOSPIDv1::SetInitPID(const Double_t *p) {
   // Sets values for the initial population of each particle type 
-  for (Int_t i=0; i<AliESDtrack::kSPECIESN; i++) fInitPID[i] = p[i];
+  for (Int_t i=0; i<AliPID::kSPECIESN; i++) fInitPID[i] = p[i];
 }
 //_______________________________________________________________________
 void AliPHOSPIDv1::GetInitPID(Double_t *p) const {
   // Gets values for the initial population of each particle type 
-  for (Int_t i=0; i<AliESDtrack::kSPECIESN; i++) p[i] = fInitPID[i];
+  for (Int_t i=0; i<AliPID::kSPECIESN; i++) p[i] = fInitPID[i];
 }

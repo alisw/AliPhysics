@@ -218,10 +218,6 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
   //Match ESD tracks to clusters in TOF
 
-  static const Double_t kMasses[]={
-    0.000511, 0.105658, 0.139570, 0.493677, 0.938272, 1.875613
-  };
-  
   Int_t nSteps=(Int_t)(fTOFHeigth/0.1);
 
   //PH Arrays (moved outside of the loop)
@@ -419,8 +415,8 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     t->SetTOFcluster(c->GetIndex());
     Double_t time[10]; t->GetIntegratedTimes(time);
     Double_t mom=t->GetP();
-    for(Int_t j=0;j<=5;j++){
-      Double_t mass=kMasses[j];
+    for(Int_t j=0;j<=AliPID::kSPECIES;j++){
+      Double_t mass=AliPID::ParticleMass(j);
       time[j]+=(recL-trackPos[3][0])/3e-2*TMath::Sqrt(mom*mom+mass*mass)/mom;
     }
 

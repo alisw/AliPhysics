@@ -38,7 +38,7 @@ Int_t AliESDpid::MakePID(AliESD *event)
   //
   Int_t ntrk=event->GetNumberOfTracks();
   for (Int_t i=0; i<ntrk; i++) {
-    Int_t ns=AliESDtrack::kSPECIES;
+    Int_t ns=AliPID::kSPECIES;
     Double_t p[10]={1.,1.,1.,1.,1.,1.,1.,1.,1.,1.};
     const Double_t keps=1e-13;
 

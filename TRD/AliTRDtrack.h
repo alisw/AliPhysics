@@ -8,6 +8,7 @@
 #include <TMath.h>
 
 #include "AliTRDgeometry.h"
+#include "AliESDtrack.h"
 #include "TVector2.h"
 
 class AliTRDcluster;

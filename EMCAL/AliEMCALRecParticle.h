@@ -48,7 +48,7 @@ class AliEMCALRecParticle : public AliEMCALFastRecParticle {
   Int_t fEMCALRecPoint ; // pointer to the associated track segment in EMCAL  
   Bool_t fDebug ; // to steer debug output 
   TVector3 fPos ; // position in the global alice coordinate system 
-  Double_t fPID[AliESDtrack::kSPECIESN] ; // PID probability densities
+  Double_t fPID[AliPID::kSPECIESN] ; // PID probability densities
 
   ClassDef(AliEMCALRecParticle,3)  // Reconstructed Particle
 };

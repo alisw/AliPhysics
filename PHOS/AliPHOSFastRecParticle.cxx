@@ -509,15 +509,15 @@ void AliPHOSFastRecParticle::Print()const
 	 Pz() ) ; 
   printf("  TOF = %.3e ns\n", ToF() ) ; 
   printf("  PID weight: \n" ) ;
-  printf("             photon ->              %f\n", fPID[AliESDtrack::kPhoton] ) ; 
-  printf("             electron ->            %f\n", fPID[AliESDtrack::kElectron] ) ; 
-  printf("             Conversion electron -> %f\n", fPID[AliESDtrack::kEleCon] ) ; 
-  printf("             muon ->                %f\n", fPID[AliESDtrack::kMuon] ) ; 
-  printf("             neutral pion ->        %f\n", fPID[AliESDtrack::kPi0] ) ; 
-  printf("             charged pion ->        %f\n", fPID[AliESDtrack::kPion] ) ; 
-  printf("             charged kaon ->        %f\n", fPID[AliESDtrack::kKaon] ) ; 
-  printf("             neutral kaon ->        %f\n", fPID[AliESDtrack::kKaon0] ) ; 
-  printf("             proton ->              %f\n", fPID[AliESDtrack::kProton] ) ; 
-  printf("             neutron ->             %f\n", fPID[AliESDtrack::kNeutron] ) ; 
+  printf("             photon ->              %f\n", fPID[AliPID::kPhoton] ) ; 
+  printf("             electron ->            %f\n", fPID[AliPID::kElectron] ) ; 
+  printf("             Conversion electron -> %f\n", fPID[AliPID::kEleCon] ) ; 
+  printf("             muon ->                %f\n", fPID[AliPID::kMuon] ) ; 
+  printf("             neutral pion ->        %f\n", fPID[AliPID::kPi0] ) ; 
+  printf("             charged pion ->        %f\n", fPID[AliPID::kPion] ) ; 
+  printf("             charged kaon ->        %f\n", fPID[AliPID::kKaon] ) ; 
+  printf("             neutral kaon ->        %f\n", fPID[AliPID::kKaon0] ) ; 
+  printf("             proton ->              %f\n", fPID[AliPID::kProton] ) ; 
+  printf("             neutron ->             %f\n", fPID[AliPID::kNeutron] ) ; 
 
 }

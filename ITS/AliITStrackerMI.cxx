@@ -242,7 +242,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESD *event) {
       t->fD[0] = t->GetD(GetX(),GetY());
       t->fD[1] = t->GetZat(GetX())-GetZ(); 
       Double_t vdist = TMath::Sqrt(t->fD[0]*t->fD[0]+t->fD[1]*t->fD[1]);
-      if (t->GetMass()<0.13) t->SetMass(0.13957); // MI look to the esd - mass hypothesys  !!!!!!!!!!!
+      if (t->GetMass()<0.13) t->SetMass(AliPID::ParticleMass(AliPID::kPion)); // MI look to the esd - mass hypothesys  !!!!!!!!!!!
       // write expected q
       t->fExpQ = TMath::Max(0.8*t->fESDtrack->GetTPCsignal(),30.);
 

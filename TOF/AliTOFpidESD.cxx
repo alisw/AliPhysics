@@ -43,10 +43,6 @@ Int_t AliTOFpidESD::MakePID(AliESD *event)
   //  This function calculates the "detector response" PID probabilities
   //                Just for a bare hint... 
 
-  static const Double_t kMasses[]={
-    0.000511, 0.105658, 0.139570, 0.493677, 0.938272, 1.875613
-  };
-
   Int_t ntrk=event->GetNumberOfTracks();
   AliESDtrack **tracks=new AliESDtrack*[ntrk];
 
@@ -64,8 +60,8 @@ Int_t AliTOFpidESD::MakePID(AliESD *event)
     Double_t time[10]; t->GetIntegratedTimes(time);
     Double_t p[10];
     Double_t mom=t->GetP();
-    for (Int_t j=0; j<AliESDtrack::kSPECIES; j++) {
-      Double_t mass=kMasses[j];
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) {
+      Double_t mass=AliPID::ParticleMass(j);
       Double_t dpp=0.01;      //mean relative pt resolution;
       if (mom>0.5) dpp=0.01*mom;
       Double_t sigma=dpp*time[j]/(1.+ mom*mom/(mass*mass));
