@@ -8,6 +8,10 @@
 
 #include "AliL3TransBit.h"
 
+#if GCCVERSION == 3
+using namespace std;
+#endif
+
 //_____________________________________________________________
 // AliL3Transbit (taken from the offline AliROOT code)
 //
