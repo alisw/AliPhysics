@@ -4,7 +4,7 @@ AliHBTReaderESD.cxx   AliHBTReaderInternal.cxx \
 AliHBTReaderTPC.cxx   \
 AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx    \
 AliHBTParticle.cxx    AliHBTParticleCut.cxx \
-AliHBTPair.cxx        AliHBTPairCut.cxx \
+AliHBTPair.cxx       \
 AliHBTEvent.cxx       AliHBTRun.cxx \
 AliHBTFunction.cxx    AliHBTCorrelFctn.cxx  \
 AliHBTMonitorFunction.cxx       AliHBTTwoTrackEffFctn.cxx \

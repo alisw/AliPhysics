@@ -206,9 +206,9 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   /****   Q OUT Correlation Function   ************************/
   /************************************************************/
   
-  AliHBTQOutCMSLCCorrelFctn* qoutP = new AliHBTQOutCMSLCCorrelFctn();
+  AliHBTQOutLCMSCorrelFctn* qoutP = new AliHBTQOutLCMSCorrelFctn();
   qoutP->Rename("qoutP","Particle (simulated) Q_{out} CF \\pi^{+} \\pi^{+}");
-  AliHBTQOutCMSLCCorrelFctn* qoutT = new AliHBTQOutCMSLCCorrelFctn(); 
+  AliHBTQOutLCMSCorrelFctn* qoutT = new AliHBTQOutLCMSCorrelFctn(); 
   qoutT->Rename("qoutT","Track (recontructed) Q_{out} CF \\pi^{+} \\pi^{+}");
 
   AliHBTPairCut *outPairCut = new AliHBTPairCut();
@@ -225,9 +225,9 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   /****   Q SIDE Correlation Function   ***********************/
   /************************************************************/
   
-  AliHBTQSideCMSLCCorrelFctn* qsideP = new AliHBTQSideCMSLCCorrelFctn(100,qinvmax); 
+  AliHBTQSideLCMSCorrelFctn* qsideP = new AliHBTQSideLCMSCorrelFctn(100,qinvmax); 
   qsideP->Rename("qsideP","Particle (simulated) Q_{side} CF \\pi^{+} \\pi^{+}");
-  AliHBTQSideCMSLCCorrelFctn* qsideT = new AliHBTQSideCMSLCCorrelFctn(100,qinvmax); 
+  AliHBTQSideLCMSCorrelFctn* qsideT = new AliHBTQSideLCMSCorrelFctn(100,qinvmax); 
   qsideT->Rename("qsideT","Track (recontructed) Q_{side} CF \\pi^{+} \\pi^{+}");
 
   AliHBTPairCut *sidePairCut = new AliHBTPairCut();
@@ -244,9 +244,9 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   /****   Q LONG Correlation Function   ***********************/
   /************************************************************/
     
-  AliHBTQLongCMSLCCorrelFctn* qlongP = new AliHBTQLongCMSLCCorrelFctn(100,qinvmax);
+  AliHBTQLongLCMSCorrelFctn* qlongP = new AliHBTQLongLCMSCorrelFctn(100,qinvmax);
   qlongP->Rename("qlongP","Particle (simulated) Q_{long} CF \\pi^{+} \\pi^{+}");
-  AliHBTQLongCMSLCCorrelFctn* qlongT = new AliHBTQLongCMSLCCorrelFctn(100,qinvmax); 
+  AliHBTQLongLCMSCorrelFctn* qlongT = new AliHBTQLongLCMSCorrelFctn(100,qinvmax); 
   qlongT->Rename("qlongT","Track (recontructed) Q_{long} CF \\pi^{+} \\pi^{+}");
 
   AliHBTPairCut *longPairCut = new AliHBTPairCut();
@@ -270,34 +270,34 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
 
 
 
-  AliHBTQInvResolVsKtFctn qinvVsktF(200,1.0,0.0,300,0.015,-0.015);    //QInvCMSLC  Res   Vs   Kt
+  AliHBTQInvResolVsKtFctn qinvVsktF(200,1.0,0.0,300,0.015,-0.015);    //QInvLCMS  Res   Vs   Kt
   if (threeDcuts)  qinvVsktF.SetPairCut(paircut);
   //analysis->AddResolutionFunction(&qinvVsktF);
 
-  AliHBTQOutResolVsKtFctn qoutVsktF(200,1.0,0.0,300,0.05,-0.05);    //QOutCMSLC  Res   Vs   Kt
+  AliHBTQOutResolVsKtFctn qoutVsktF(200,1.0,0.0,300,0.05,-0.05);    //QOutLCMS  Res   Vs   Kt
   if (threeDcuts)  qoutVsktF.SetPairCut(outPairCut);
   //analysis->AddResolutionFunction(&qoutVsktF);
 
-  AliHBTQSideResolVsKtFctn qsideVsktF(200,1.0,0.0,300,0.015,-0.015);   //QSideCMSLC Res   Vs   Kt
+  AliHBTQSideResolVsKtFctn qsideVsktF(200,1.0,0.0,300,0.015,-0.015);   //QSideLCMS Res   Vs   Kt
   if (threeDcuts)  qsideVsktF.SetPairCut(sidePairCut);
   //analysis->AddResolutionFunction(&qsideVsktF);
 
-  AliHBTQLongResolVsKtFctn qlongVsktF(200,1.0,0.0,300,0.015,-0.015);   //QLongCMSLC Res   Vs   Kt
+  AliHBTQLongResolVsKtFctn qlongVsktF(200,1.0,0.0,300,0.015,-0.015);   //QLongLCMS Res   Vs   Kt
   if (threeDcuts)  qlongVsktF.SetPairCut(longPairCut);
   //analysis->AddResolutionFunction(&qlongVsktF);
 
-  AliHBTQInvResolVsQInvFctn qInvVsqinvF(200,qinvmax,qinvmin,300,0.015,-0.015); //QInvCMSLC Res   Vs   QInvCMSLC
+  AliHBTQInvResolVsQInvFctn qInvVsqinvF(200,qinvmax,qinvmin,300,0.015,-0.015); //QInvLCMS Res   Vs   QInvLCMS
   //analysis->AddResolutionFunction(&qInvVsqinvF);
 
-  AliHBTQOutResolVsQInvFctn qoutVsqinvF(200,qinvmax,qinvmin,300,0.05,-0.05);  //QOutCMSLC  Res   Vs   QInvCMSLC
+  AliHBTQOutResolVsQInvFctn qoutVsqinvF(200,qinvmax,qinvmin,300,0.05,-0.05);  //QOutLCMS  Res   Vs   QInvLCMS
   if (threeDcuts)  qoutVsqinvF.SetPairCut(outPairCut);
   //analysis->AddResolutionFunction(&qoutVsqinvF);
 
-  AliHBTQSideResolVsQInvFctn qsideVsqinvF(200,qinvmax,qinvmin,300,0.015,-0.015); //QSideCMSLC Res   Vs   QInvCMSLC
+  AliHBTQSideResolVsQInvFctn qsideVsqinvF(200,qinvmax,qinvmin,300,0.015,-0.015); //QSideLCMS Res   Vs   QInvLCMS
   if (threeDcuts)  qsideVsqinvF.SetPairCut(sidePairCut);
   //analysis->AddResolutionFunction(&qsideVsqinvF);
 
-  AliHBTQLongResolVsQInvFctn qlongVsqinvF(200,qinvmax,qinvmin,300,0.015,-0.015); //QLongCMSLC Res   Vs   QInvCMSLC
+  AliHBTQLongResolVsQInvFctn qlongVsqinvF(200,qinvmax,qinvmin,300,0.015,-0.015); //QLongLCMS Res   Vs   QInvLCMS
   if (threeDcuts)  qlongVsqinvF.SetPairCut(longPairCut);
   //analysis->AddResolutionFunction(&qlongVsqinvF);
 
@@ -322,16 +322,16 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   //analysis->AddResolutionFunction(&pairPhiVsKt);
 
 
-  AliHBTQOutResolVsQOutFctn qoutVsqoutF;  //QOutCMSLC  Res   Vs   QOut
+  AliHBTQOutResolVsQOutFctn qoutVsqoutF;  //QOutLCMS  Res   Vs   QOut
   if (threeDcuts) qoutVsqoutF.SetPairCut(outPairCut);
   //analysis->AddResolutionFunction(&qoutVsqoutF);
 
-  AliHBTQSideResolVsQSideFctn qsideVsqsideF;//QSideCMSLC Res   Vs   QSide
+  AliHBTQSideResolVsQSideFctn qsideVsqsideF;//QSideLCMS Res   Vs   QSide
   if (threeDcuts) qsideVsqsideF.SetPairCut(sidePairCut);
   //analysis->AddResolutionFunction(&qsideVsqsideF);
 
   
-  AliHBTQLongResolVsQLongFctn qlongVsqlongF;//QLongCMSLC Res   Vs   QLong
+  AliHBTQLongResolVsQLongFctn qlongVsqlongF;//QLongLCMS Res   Vs   QLong
   if (threeDcuts) qlongVsqlongF.SetPairCut(longPairCut);
   //analysis->AddResolutionFunction(&qlongVsqlongF);
 

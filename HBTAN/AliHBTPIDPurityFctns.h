@@ -29,8 +29,8 @@ class AliHBTMonPIDPurityVsPtFctn: public AliHBTMonTwoParticleFctn1D, public AliH
     void Rename(const Char_t * name);
     void Rename(const Char_t * name, const Char_t * title);
     TH1* GetResult();
-    Double_t GetValue(AliHBTParticle * /*track*/,AliHBTParticle * /*part*/) const { return 0.0; }
-    void Process(AliHBTParticle * track,AliHBTParticle * part);
+    Double_t GetValue(AliVAODParticle * /*track*/,AliVAODParticle * /*part*/) const { return 0.0; }
+    void Process(AliVAODParticle * track,AliVAODParticle * part);
   protected:
     TH1D* fGood;
     TH1D* fAll;
@@ -48,8 +48,8 @@ class AliHBTMonPIDContaminationVsPtFctn: public AliHBTMonTwoParticleFctn1D, publ
     void Rename(const Char_t * name);
     void Rename(const Char_t * name, const Char_t * title);
     TH1* GetResult();
-    Double_t GetValue(AliHBTParticle * /*track*/,AliHBTParticle * /*part*/) const { return 0.0; }
-    void Process(AliHBTParticle * track,AliHBTParticle * part);
+    Double_t GetValue(AliVAODParticle * /*track*/,AliVAODParticle * /*part*/) const { return 0.0; }
+    void Process(AliVAODParticle * track,AliVAODParticle * part);
   protected:
     TH1D* fWrong;  
     TH1D* fAll;

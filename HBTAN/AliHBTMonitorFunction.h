@@ -41,12 +41,12 @@ Zbigniew.Chajecki@cern.ch
 */
 ///////////////////////////////////////////////////////////////////////
 
-#include "AliHBTParticleCut.h"
+#include "AliAODParticleCut.h"
 
 #include <TH2.h>
 #include <TH3.h>
 
-class AliHBTParticle;
+class AliVAODParticle;
 
 class AliHBTMonitorFunction: public TNamed
 //Abstract base class for HBT functions
@@ -68,19 +68,19 @@ class AliHBTMonitorFunction: public TNamed
     void Rename(const Char_t * name); 
     void Rename(const Char_t * name, const Char_t * title); 
     
-    void SetParticleCut(AliHBTParticleCut* cut);
+    void SetParticleCut(AliAODParticleCut* cut);
 
-    virtual AliHBTParticle* CheckParticle(AliHBTParticle* particle) const;
+    virtual AliVAODParticle* CheckParticle(AliVAODParticle* particle) const;
 
   protected:
-    AliHBTParticleCut*      fParticleCut;//Particle cut
+    AliAODParticleCut*      fParticleCut;//Particle cut
     
   private:  
    ClassDef(AliHBTMonitorFunction,1)
 };
 /******************************************************************/
 /******************************************************************/
-inline AliHBTParticle* AliHBTMonitorFunction::CheckParticle(AliHBTParticle* particle) const
+inline AliVAODParticle* AliHBTMonitorFunction::CheckParticle(AliVAODParticle* particle) const
 {
   //check if particle meets the cut criteria
   if(fParticleCut->Pass(particle)) //if the particle is BAD
@@ -104,7 +104,7 @@ class AliHBTMonOneParticleFctn: public AliHBTMonitorFunction
     
     AliHBTMonOneParticleFctn& operator=(const AliHBTMonOneParticleFctn& /*in*/){MayNotUse("operator=");return *this;} 
     
-    virtual void Process(AliHBTParticle* particle) = 0;
+    virtual void Process(AliVAODParticle* particle) = 0;
     
   protected:
   private:  
@@ -127,10 +127,10 @@ class AliHBTMonOneParticleFctn1D: public AliHBTMonOneParticleFctn
   AliHBTMonOneParticleFctn1D& operator=(const AliHBTMonOneParticleFctn1D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return this->fResult;}
 
-  void Process(AliHBTParticle* particle);
+  void Process(AliVAODParticle* particle);
 
  protected:
-  virtual Double_t GetValue(AliHBTParticle* particle) const = 0; 
+  virtual Double_t GetValue(AliVAODParticle* particle) const = 0; 
   TH1D* fResult;//histogram to be filled
  private:
   ClassDef(AliHBTMonOneParticleFctn1D,2)
@@ -149,10 +149,10 @@ class AliHBTMonOneParticleFctn2D: public AliHBTMonOneParticleFctn
   AliHBTMonOneParticleFctn2D& operator=(const AliHBTMonOneParticleFctn2D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return this->fResult;}
   
-  void Process(AliHBTParticle* particle);
+  void Process(AliVAODParticle* particle);
 
  protected:
-  virtual void GetValues(AliHBTParticle* particle, Double_t&, Double_t&) const = 0;
+  virtual void GetValues(AliVAODParticle* particle, Double_t&, Double_t&) const = 0;
 
   TH2D* fResult;//histogram to be filled
   
@@ -195,7 +195,7 @@ class AliHBTMonTwoParticleFctn: public AliHBTMonitorFunction
     AliHBTMonTwoParticleFctn& operator=(const AliHBTMonTwoParticleFctn& /*in*/){MayNotUse("operator=");return *this;} 
     
     virtual void 
-    Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle) = 0;
+    Process(AliVAODParticle* trackparticle, AliVAODParticle* partparticle) = 0;
 	     
   protected:
   private:  
@@ -217,10 +217,10 @@ class AliHBTMonTwoParticleFctn1D: public AliHBTMonTwoParticleFctn
   AliHBTMonTwoParticleFctn1D& operator=(const AliHBTMonTwoParticleFctn1D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return this->fResult;}
   
-  void Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
+  void Process(AliVAODParticle* trackparticle, AliVAODParticle* partparticle);
   
  protected:
-  virtual Double_t GetValue(AliHBTParticle* trackparticle, AliHBTParticle* partparticle) const = 0;
+  virtual Double_t GetValue(AliVAODParticle* trackparticle, AliVAODParticle* partparticle) const = 0;
 
   TH1D* fResult;//histogram to be filled
 
@@ -240,10 +240,10 @@ class AliHBTMonTwoParticleFctn2D: public AliHBTMonTwoParticleFctn
   AliHBTMonTwoParticleFctn2D& operator=(const AliHBTMonTwoParticleFctn2D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return this->fResult;}
   
-  void Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
+  void Process(AliVAODParticle* trackparticle, AliVAODParticle* partparticle);
   
  protected:
-  virtual void GetValues(AliHBTParticle*,AliHBTParticle*, Double_t&, Double_t&) const = 0;
+  virtual void GetValues(AliVAODParticle*,AliVAODParticle*, Double_t&, Double_t&) const = 0;
 
   TH2D* fResult;//histogram to be filled
   
@@ -266,10 +266,10 @@ class AliHBTMonTwoParticleFctn3D: public AliHBTMonTwoParticleFctn
   AliHBTMonTwoParticleFctn3D& operator=(const AliHBTMonTwoParticleFctn3D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return this->fResult;}
   
-  void Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
+  void Process(AliVAODParticle* trackparticle, AliVAODParticle* partparticle);
 
  protected:
-  virtual void GetValues(AliHBTParticle*,AliHBTParticle*, Double_t&, Double_t&,Double_t&) const = 0;
+  virtual void GetValues(AliVAODParticle*,AliVAODParticle*, Double_t&, Double_t&,Double_t&) const = 0;
 
   TH3D* fResult; //histogram to be filled
   

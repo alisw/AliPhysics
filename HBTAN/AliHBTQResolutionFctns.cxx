@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 //                                                                //
 // General Remark:                                                //
-// CMSLC means                                                    //
+// LCMS means                                                    //
 // Center of Mass System Longitudially Co-moving                  //
 //                                                                //
 //                                                                //
@@ -77,8 +77,8 @@ void AliHBTQOutResolVsQInvFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* par
 {
   //returns Qoutsim-Qoutrec for y
   //returns Qinv for x
-  Double_t tqout = trackpair->GetQOutCMSLC();
-  y = partpair->GetQOutCMSLC() - tqout;
+  Double_t tqout = trackpair->GetQOutLCMS();
+  y = partpair->GetQOutLCMS() - tqout;
   if (tqout < 0.0) y = -y;
   x = partpair->GetQInv();
 }
@@ -103,8 +103,8 @@ void AliHBTQSideResolVsQInvFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* pa
 {
   //returns Qsidesim-Qsiderec for y
   //returns Qinv for x
-  y = partpair->GetQSideCMSLC() - trackpair->GetQSideCMSLC();
-  if (trackpair->GetQSideCMSLC() < 0.0) y = -y;
+  y = partpair->GetQSideLCMS() - trackpair->GetQSideLCMS();
+  if (trackpair->GetQSideLCMS() < 0.0) y = -y;
   x = partpair->GetQInv();
 }
 
@@ -128,8 +128,8 @@ void AliHBTQLongResolVsQInvFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* pa
 {
   //returns Qlongsim-Qlongrec for y
   //returns Qinv for x
-  y = partpair->GetQLongCMSLC() - trackpair->GetQLongCMSLC();
-  if (trackpair->GetQLongCMSLC() < 0.0) y = -y;
+  y = partpair->GetQLongLCMS() - trackpair->GetQLongLCMS();
+  if (trackpair->GetQLongLCMS() < 0.0) y = -y;
   x = partpair->GetQInv();
 }
 
@@ -175,8 +175,8 @@ void AliHBTQOutResolVsKtFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partp
 {
   //returns Qoutsim-Qoutrec for y
   //returns Kt for x
-  y = partpair->GetQOutCMSLC() - trackpair->GetQOutCMSLC();
-  if (trackpair->GetQOutCMSLC() < 0.0) y = -y;
+  y = partpair->GetQOutLCMS() - trackpair->GetQOutLCMS();
+  if (trackpair->GetQOutLCMS() < 0.0) y = -y;
   x = partpair->GetKt();
 }
 
@@ -199,8 +199,8 @@ void AliHBTQSideResolVsKtFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* part
 {
   //returns Qsidesim-Qsiderec for y
   //returns Kt for x
-  y = partpair->GetQSideCMSLC() - trackpair->GetQSideCMSLC();
-  if (trackpair->GetQSideCMSLC() < 0.0) y = -y;
+  y = partpair->GetQSideLCMS() - trackpair->GetQSideLCMS();
+  if (trackpair->GetQSideLCMS() < 0.0) y = -y;
   x = partpair->GetKt();
 }
 
@@ -223,8 +223,8 @@ void AliHBTQLongResolVsKtFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* part
 {
   //returns Qlongsim-Qlongrec for y
   //returns Kt for x
-  y = partpair->GetQLongCMSLC() - trackpair->GetQLongCMSLC();
-  if (trackpair->GetQLongCMSLC() < 0.0) y = -y;
+  y = partpair->GetQLongLCMS() - trackpair->GetQLongLCMS();
+  if (trackpair->GetQLongLCMS() < 0.0) y = -y;
   x = partpair->GetKt();
 }
 /******************************************************************/
@@ -246,8 +246,8 @@ AliHBTQOutResolVsQOutFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 void AliHBTQOutResolVsQOutFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y) const
 {
 //returns values of the function
-  x = partpair->GetQOutCMSLC();
-  y = x - trackpair->GetQOutCMSLC();
+  x = partpair->GetQOutLCMS();
+  y = x - trackpair->GetQOutLCMS();
 }
  
 /******************************************************************/
@@ -268,8 +268,8 @@ AliHBTQSideResolVsQSideFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 void AliHBTQSideResolVsQSideFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y) const
 {
 //returns values of the function
-  x = partpair->GetQSideCMSLC(); 
-  y = x - trackpair->GetQSideCMSLC();
+  x = partpair->GetQSideLCMS(); 
+  y = x - trackpair->GetQSideLCMS();
 }
 
 /******************************************************************/
@@ -290,8 +290,8 @@ AliHBTQLongResolVsQLongFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 void AliHBTQLongResolVsQLongFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y) const
 {
 //returns values of the function
- x = partpair->GetQLongCMSLC(); 
- y = x - trackpair->GetQLongCMSLC();
+ x = partpair->GetQLongLCMS(); 
+ y = x - trackpair->GetQLongLCMS();
 }
 
 /******************************************************************/

@@ -41,7 +41,7 @@
 ClassImp( AliHBTFunction )
 
 AliHBTFunction::AliHBTFunction():
- fPairCut(new AliHBTEmptyPairCut()), //dummy cut  
+ fPairCut(new AliAODEmptyPairCut()), //dummy cut  
  fWriteNumAndDen(kFALSE)
 {
 //Default constructor
@@ -50,7 +50,7 @@ AliHBTFunction::AliHBTFunction():
 
 AliHBTFunction::AliHBTFunction(const char* name,const char* title):
  TNamed(name,title),
- fPairCut(new AliHBTEmptyPairCut()), //dummy cut  
+ fPairCut(new AliAODEmptyPairCut()), //dummy cut  
  fWriteNumAndDen(kFALSE)
 {
 //Constructor  
@@ -59,7 +59,7 @@ AliHBTFunction::AliHBTFunction(const char* name,const char* title):
 
 AliHBTFunction::AliHBTFunction(const AliHBTFunction & source):
  TNamed(source),
- fPairCut((AliHBTPairCut*)source.fPairCut->Clone()),
+ fPairCut((AliAODPairCut*)source.fPairCut->Clone()),
  fWriteNumAndDen(source.fWriteNumAndDen)
 {
 // Copy constructor needed by the coding conventions
@@ -69,7 +69,7 @@ AliHBTFunction::AliHBTFunction(const AliHBTFunction & source):
 AliHBTFunction::~AliHBTFunction()
 {
 //destructor  
-  if (AliHBTParticle::GetDebug() > 1)
+  if (AliVAODParticle::GetDebug() > 1)
    {
      Info("~AliHBTFunction","Deleting %s",GetName());
    }
@@ -80,30 +80,30 @@ AliHBTFunction & AliHBTFunction::operator= (const AliHBTFunction & source)
 {
  // Assignment needed by the coding conventions
   delete fPairCut;
-  fPairCut = (AliHBTPairCut*)source.fPairCut->Clone();
+  fPairCut = (AliAODPairCut*)source.fPairCut->Clone();
   return * this;
 }
 
 void AliHBTFunction::WriteFunction()
 {
 //writes result of the function to file
-   if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","%s",GetName());
+   if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","%s",GetName());
    if (fWriteNumAndDen)
     { 
-     if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Writing Num & Den");
+     if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Writing Num & Den");
      if (GetNumerator()) GetNumerator()->Write();
      if (GetDenominator()) GetDenominator()->Write();
-     if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Writing Num & Den Done");
+     if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Writing Num & Den Done");
     } 
-   if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Getting Result");
+   if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Getting Result");
    TH1* res = GetResult();
-   if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Getting Result Done");
+   if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Getting Result Done");
    
    if (res) 
     { 
-      if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Writing Result");
+      if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Writing Result");
       res->Write();
-      if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Writing Result Done");
+      if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Writing Result Done");
     }
 }
 /******************************************************************/
@@ -112,7 +112,7 @@ TH1* AliHBTFunction::GetRatio(Double_t normfactor)
  {
  //returns ratio of numerator and denominator
  //
-   if (AliHBTParticle::GetDebug()>0) Info("GetRatio","Norm. Factor is %f for %s",normfactor,GetName());
+   if (AliVAODParticle::GetDebug()>0) Info("GetRatio","Norm. Factor is %f for %s",normfactor,GetName());
    
    if (normfactor == 0.0)
     {
@@ -131,7 +131,7 @@ TH1* AliHBTFunction::GetRatio(Double_t normfactor)
    
  }
 /******************************************************************/
-void AliHBTFunction::SetPairCut(AliHBTPairCut* cut)
+void AliHBTFunction::SetPairCut(AliAODPairCut* cut)
 {
 //Sets new Pair Cut. Old one is deleted
 //Note that it is created new object instead of simple pointer set
@@ -147,7 +147,7 @@ void AliHBTFunction::SetPairCut(AliHBTPairCut* cut)
      return;
    }
  delete fPairCut;
- fPairCut = (AliHBTPairCut*)cut->Clone();
+ fPairCut = (AliAODPairCut*)cut->Clone();
  
 }
 
@@ -206,14 +206,14 @@ void AliHBTFunction::InitFunction()
 {
 //Iniotializes fctn.: Resets histograms
 //In case histograms are not created in ctor, builds with default parameters
-  if (AliHBTParticle::GetDebug()>1) Info("InitFunction","%s",GetName());
+  if (AliVAODParticle::GetDebug()>1) Info("InitFunction","%s",GetName());
   if ( !(GetNumerator()&&GetDenominator()) ) BuildHistos();
   GetNumerator()->Reset();
   GetDenominator()->Reset();
 
   GetNumerator()->SetDirectory(0x0);
   GetDenominator()->SetDirectory(0x0);
-  if (AliHBTParticle::GetDebug()>1) Info("InitFunction","Done");
+  if (AliVAODParticle::GetDebug()>1) Info("InitFunction","Done");
 }
 /******************************************************************/
 /******************************************************************/
@@ -361,7 +361,7 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
  //Calculates the factor that should be used to scale 
  //quatience of num and den to 1 at tail
  
-  if (AliHBTParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
+  if (AliVAODParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
   if(!num) 
    {
      Error("Scale","No numerator");
@@ -384,7 +384,7 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
     Error("Scale","Number of bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
-  if (AliHBTParticle::GetDebug()>0) Info("Scale","No errors detected");
+  if (AliVAODParticle::GetDebug()>0) Info("Scale","No errors detected");
 
   Double_t densum = 0.0;
   Double_t numsum = 0.0;
@@ -400,13 +400,13 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
      }
    }
   
-  if(AliHBTParticle::GetDebug() > 0)
+  if(AliVAODParticle::GetDebug() > 0)
     Info("Scale","numsum=%f densum=%f fNBinsToScaleX=%d",numsum,densum,fNBinsToScale);
   
   if (numsum == 0) return 0.0;
   Double_t ret = densum/numsum;
 
-  if(AliHBTParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
+  if(AliVAODParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
   return ret;
 } 
 
@@ -545,7 +545,7 @@ Double_t AliHBTFunction2D::Scale()
 // Calculates the factor that should be used to scale 
 // quatience of fNumerator and fDenominator to 1 at 
 // given region
-  if (AliHBTParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
+  if (AliVAODParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
   if(!fNumerator) 
    {
      Error("Scale","No numerator");
@@ -576,7 +576,7 @@ Double_t AliHBTFunction2D::Scale()
     return 0.0;
    }
 
-  if (AliHBTParticle::GetDebug()>0) Info("Scale","No errors detected");
+  if (AliVAODParticle::GetDebug()>0) Info("Scale","No errors detected");
 
   Int_t offsetX = nbinsX - fNBinsToScaleX - 1; //bin that we start loop over bins in axis X
   Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis X
@@ -594,13 +594,13 @@ Double_t AliHBTFunction2D::Scale()
        }
      }
   
-  if(AliHBTParticle::GetDebug() > 0) 
+  if(AliVAODParticle::GetDebug() > 0) 
     Info("Scale","numsum=%f densum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d",numsum,densum,fNBinsToScaleX,fNBinsToScaleY);
   
   if (numsum == 0) return 0.0;
   Double_t ret = densum/numsum;
 
-  if(AliHBTParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
+  if(AliVAODParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
   return ret;
 } 
 
@@ -751,7 +751,7 @@ Double_t AliHBTFunction3D::Scale()
   // Calculates the factor that should be used to scale 
   // quatience of fNumerator and fDenominator to 1 at 
   // given volume
-  if (AliHBTParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
+  if (AliVAODParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
   if(!fNumerator) 
    {
      Error("Scale","No numerator");
@@ -789,7 +789,7 @@ Double_t AliHBTFunction3D::Scale()
     return 0.0;
    }
 
-  if (AliHBTParticle::GetDebug()>0) Info("Scale","No errors detected");
+  if (AliVAODParticle::GetDebug()>0) Info("Scale","No errors detected");
 
   Int_t offsetX = nbinsX - fNBinsToScaleX - 1; //bin that we start loop over bins in axis X
   Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis Y
@@ -810,14 +810,14 @@ Double_t AliHBTFunction3D::Scale()
          }
        }
   
-  if(AliHBTParticle::GetDebug() > 0) 
+  if(AliVAODParticle::GetDebug() > 0) 
     Info("Scale","numsum=%f densum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d fNBinsToScaleZ=%d",
           numsum,densum,fNBinsToScaleX,fNBinsToScaleY,fNBinsToScaleZ);
   
   if (numsum == 0) return 0.0;
   Double_t ret = densum/numsum;
 
-  if(AliHBTParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
+  if(AliVAODParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
   return ret;
 } 
 /******************************************************************/
@@ -1080,9 +1080,6 @@ void AliHBTTwoPairFctn1D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
   // Fills the numerator using pairs from the same event
   partpair  = CheckPair(partpair);
   if( partpair == 0x0) return;
-  
-  if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
-    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
     
   Double_t x = GetValue(trackpair,partpair);
   fNumerator->Fill(x);
@@ -1095,9 +1092,6 @@ void AliHBTTwoPairFctn1D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
   partpair  = CheckPair(partpair);
   if( partpair == 0x0) return;
   
-  if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
-    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-    
   Double_t x = GetValue(trackpair,partpair);
   fDenominator->Fill(x);
 }
@@ -1153,9 +1147,6 @@ void AliHBTTwoPairFctn2D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
   partpair  = CheckPair(partpair);  //check cuts
   if (partpair == 0x0) return;
   
-  if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
-    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-    
   Double_t x,y;
   GetValues(trackpair,partpair,x,y);
   fNumerator->Fill(x,y);
@@ -1168,9 +1159,6 @@ void AliHBTTwoPairFctn2D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
   
-  if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
-    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-    
   Double_t x,y;
   GetValues(trackpair,partpair,x,y);
   fDenominator->Fill(x,y);
@@ -1230,9 +1218,6 @@ void AliHBTTwoPairFctn3D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
   partpair  = CheckPair(partpair);
   if( partpair == 0x0) return;
   
-  if (partpair->GetSwapedPair() == 0x0)//it means that CheckPair returned swapped pair
-    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-    
   Double_t x,y,z;
   GetValues(trackpair,partpair,x,y,z);
   fNumerator->Fill(x,y,z);
@@ -1246,9 +1231,6 @@ void AliHBTTwoPairFctn3D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
   partpair  = CheckPair(partpair);
   if( partpair == 0x0) return;
   
-  if (partpair->GetSwapedPair() == 0x0)//it means that CheckPair returned swapped pair
-    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-    
   Double_t x,y,z;
   GetValues(trackpair,partpair,x,y,z);
   fDenominator->Fill(x,y,z);

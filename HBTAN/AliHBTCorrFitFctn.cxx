@@ -51,10 +51,10 @@ void AliHBTCorrFitFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTP
    
    if (fill)
     {  
-      const AliHBTParticle& p1 = *(trackpair->Particle1());
-      const AliHBTParticle& p2 = *(trackpair->Particle2());
-      fNtuple->Fill(p1.Px(),p1.Py(),p1.Pz(),p1.Energy(),
-                    p2.Px(),p2.Py(),p2.Pz(),p2.Energy());
+      const AliVAODParticle& p1 = *(trackpair->Particle1());
+      const AliVAODParticle& p2 = *(trackpair->Particle2());
+      fNtuple->Fill(p1.Px(),p1.Py(),p1.Pz(),p1.E(),
+                    p2.Px(),p2.Py(),p2.Pz(),p2.E());
     }
 }
 /****************************************************************/

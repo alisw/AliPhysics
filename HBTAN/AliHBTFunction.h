@@ -18,12 +18,12 @@
 #include <TH2D.h>
 #include <TH3D.h>
 
-#include "AliHBTPairCut.h"
+#include "AliAODPairCut.h"
 #include "AliHBTPair.h"
 
 
 class AliHBTAnalysis;
-class AliHBTParticleCut;
+class AliVAODParticleCut;
 
 class AliHBTFunction: public TNamed
 {
@@ -47,13 +47,13 @@ class AliHBTFunction: public TNamed
     void Rename(const Char_t * name); //renames the function and histograms ==title is the same that name
     void Rename(const Char_t * name, const Char_t * title); //renames and retitle the function and histograms
     
-    void SetPairCut(AliHBTPairCut* cut);
+    void SetPairCut(AliAODPairCut* cut);
     
     virtual AliHBTPair* CheckPair(AliHBTPair* pair);
     void  SetWriteNumAndDen(Bool_t flag = kFALSE){fWriteNumAndDen = flag;}
   protected:
     virtual void BuildHistos() = 0;//builds default histograms
-    AliHBTPairCut*   fPairCut;     //pair cut
+    AliAODPairCut*   fPairCut;     //pair cut
     Bool_t           fWriteNumAndDen; //flag indicating whether numerator and denominator should be writted together with a result
     ClassDef(AliHBTFunction,3)
 };
@@ -66,7 +66,7 @@ inline AliHBTPair* AliHBTFunction::CheckPair(AliHBTPair* pair)
 //   It is notallowed to change the order here beacause analysis enforce the order
 
 //   {//it is BAD 
-//    pair = pair->GetSwapedPair();
+//    pair = pair->GetSwappedPair();
 //    if(pair)
 //     if(fPairCut->Pass(pair)) //so try reverse combination
 //       { 

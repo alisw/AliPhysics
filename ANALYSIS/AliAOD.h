@@ -19,9 +19,10 @@ class TParticle;
 
 class AliAOD: public TObject {
 public:
-  AliAOD(){}
+  AliAOD(){SetOwner(kTRUE);}
   virtual ~AliAOD() { Reset(); }
 
+  virtual void             SetOwner(Bool_t owner){fParticles.SetOwner(owner);}
   virtual TObjArray*       GetParticles() {return &fParticles;};
   virtual Int_t            GetNumberOfParticles() const  {return fParticles.GetEntriesFast();}
   virtual AliVAODParticle*  GetParticle(Int_t index) const {return (AliVAODParticle*) fParticles[index];}

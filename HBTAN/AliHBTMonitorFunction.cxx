@@ -44,21 +44,21 @@ Zbigniew.Chajecki@cern.ch
 ClassImp( AliHBTMonitorFunction )
 
 AliHBTMonitorFunction::AliHBTMonitorFunction():
- fParticleCut(new AliHBTEmptyParticleCut())
+ fParticleCut(new AliAODEmptyParticleCut())
 {
   //ctor
 }
 /******************************************************************/
 AliHBTMonitorFunction::AliHBTMonitorFunction(const char* name,const char* title):
  TNamed(name,title),
- fParticleCut(new AliHBTEmptyParticleCut())
+ fParticleCut(new AliAODEmptyParticleCut())
 {
   //ctor
 }
 /******************************************************************/
 AliHBTMonitorFunction::AliHBTMonitorFunction(const AliHBTMonitorFunction& /*in*/):
  TNamed(),
- fParticleCut(new AliHBTEmptyParticleCut())
+ fParticleCut(new AliAODEmptyParticleCut())
 {
   //cpy ctor
   // We cannot copy because it is a mess with names (histogram and functions)
@@ -91,7 +91,7 @@ void AliHBTMonitorFunction::Write()
 void AliHBTMonitorFunction::Init()
  {
    //Writes an function to disk
-   if (AliHBTParticle::GetDebug()>0) Info("Init","%s",GetName());
+   if (AliVAODParticle::GetDebug()>0) Info("Init","%s",GetName());
    
    if (GetResult() == 0x0)
     {
@@ -100,11 +100,11 @@ void AliHBTMonitorFunction::Init()
     }
    GetResult()->Reset();
    GetResult()->SetDirectory(0x0);
-   if (AliHBTParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
+   if (AliVAODParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
  }
 /******************************************************************/
 
-void AliHBTMonitorFunction::SetParticleCut(AliHBTParticleCut* cut)
+void AliHBTMonitorFunction::SetParticleCut(AliAODParticleCut* cut)
 {
 //Sets new Particle Cut. Old one is deleted
 //Note that it is created new object instead of simple pointer set
@@ -120,7 +120,7 @@ void AliHBTMonitorFunction::SetParticleCut(AliHBTParticleCut* cut)
      return;
    }
  delete fParticleCut;
- fParticleCut = (AliHBTParticleCut*)cut->Clone();
+ fParticleCut = (AliAODParticleCut*)cut->Clone();
  
 }
 /******************************************************************/
@@ -203,7 +203,7 @@ AliHBTMonOneParticleFctn1D::~AliHBTMonOneParticleFctn1D()
 }
 /******************************************************************/
 
-void AliHBTMonOneParticleFctn1D::Process(AliHBTParticle* particle)
+void AliHBTMonOneParticleFctn1D::Process(AliVAODParticle* particle)
 {
  //Fills the result
    particle = CheckParticle(particle);
@@ -234,7 +234,7 @@ AliHBTMonOneParticleFctn2D::~AliHBTMonOneParticleFctn2D()
   //dtor
   delete fResult;
 }
-void AliHBTMonOneParticleFctn2D::Process(AliHBTParticle* particle)
+void AliHBTMonOneParticleFctn2D::Process(AliVAODParticle* particle)
 {
   //fills the function for one particle
   particle = CheckParticle(particle);
@@ -319,7 +319,7 @@ AliHBTMonTwoParticleFctn1D::~AliHBTMonTwoParticleFctn1D()
 }
 /******************************************************************/
 void AliHBTMonTwoParticleFctn1D::
-Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
+Process(AliVAODParticle* trackparticle, AliVAODParticle* partparticle)
 {
   //fills the function for one particle
   partparticle  = CheckParticle(partparticle);
@@ -358,7 +358,7 @@ AliHBTMonTwoParticleFctn2D::~AliHBTMonTwoParticleFctn2D()
 }
 /******************************************************************/
 void AliHBTMonTwoParticleFctn2D::
-Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
+Process(AliVAODParticle* trackparticle, AliVAODParticle* partparticle)
 {
   //fills the function for one particle
   partparticle  = CheckParticle(partparticle);
@@ -376,7 +376,7 @@ Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
 ClassImp(AliHBTMonTwoParticleFctn3D)
 
 void AliHBTMonTwoParticleFctn3D::
-Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
+Process(AliVAODParticle* trackparticle, AliVAODParticle* partparticle)
 {
   //fills the function for one particle
   partparticle  = CheckParticle(partparticle);

@@ -25,6 +25,7 @@
 ClassImp(AliHBTTrackPoints)
 
 Int_t AliHBTTrackPoints::fgDebug = 0;
+
 AliHBTTrackPoints::AliHBTTrackPoints():
  fN(0),
  fX(0x0),

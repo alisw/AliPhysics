@@ -38,34 +38,47 @@ public:
   virtual Double_t         Theta() const {return FourMomentum().Theta();};
   virtual Double_t         Eta() const {return FourMomentum().Eta();};
   virtual Double_t         Y() const {return FourMomentum().Rapidity();};
+  
+  virtual void             SetMomentum(Double_t/*px*/,Double_t/*py*/,Double_t/*pz*/,Double_t/*E*/) = 0;
+  virtual void             SetProductionVertex(Double_t /*vx*/, Double_t /*vy*/, Double_t /*vz*/, Double_t /*t*/) = 0;
 
   // PID
   virtual Double_t         Charge() const = 0;
   virtual Double_t         GetProbability(Int_t pdg) const = 0;
+  virtual Double_t         GetPidProb() const = 0;
   virtual Int_t            GetMostProbable() const = 0;
   
   virtual Int_t            GetPdgCode() const = 0;//We need to assume some PID (f.e. energy calculation) 
                                                   //sotimes one track can apear in analysis twise (e.g. ones as pion ones as kaon)
+  virtual Int_t            GetNumberOfPids() const = 0; //returns number of non zero PID probabilities
+  virtual Int_t            GetNthPid         (Int_t idx) const = 0;//These two methods are made to be able to
+  virtual Float_t          GetNthPidProb     (Int_t idx) const = 0;//copy pid information i.e. in copy ctors
   
   // vertices
   virtual TVector3         ProductionVertex() const = 0;
   virtual Double_t         Vx() const {return ProductionVertex().X();};
   virtual Double_t         Vy() const {return ProductionVertex().Y();};
   virtual Double_t         Vz() const {return ProductionVertex().Z();};
+  virtual Double_t         T()  const {return 0.0;};
+
   virtual AliVAODParticle*  Mother() const {return NULL;};
   virtual Bool_t           HasDecayVertex() const {return kFALSE;};
   virtual TVector3         DecayVertex() const {return TVector3();};
   virtual Int_t            NumberOfDaughters() const {return 0;};
-  virtual AliVAODParticle*  Daughter(Int_t /*index*/) const {return NULL;};
+  virtual AliVAODParticle* Daughter(Int_t /*index*/) const {return NULL;};
 
-
+  virtual Int_t            GetUID() const { return 0;}//returns unique ID of this track 
+                                                      //(may happen than the same track is selected
+                                                      //twise, f.g. as a pion and as a kaon than both have the same UID)
+                                                      
   // type information
   virtual Bool_t           IsSimulated() {return kFALSE;};
   virtual Bool_t           IsTrack() {return kFALSE;};
   virtual Bool_t           IsCluster() {return kFALSE;};
 
   //HBT specific 
-  virtual AliTrackPoints*  GetTrackPoints() const {return 0x0;}
+  virtual AliTrackPoints*  GetTPCTrackPoints() const {return 0x0;}
+  virtual AliTrackPoints*  GetITSTrackPoints() const {return 0x0;}
   virtual AliClusterMap*   GetClusterMap() const {return 0x0;}
   virtual void             Print() const = 0;
 

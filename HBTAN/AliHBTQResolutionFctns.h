@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 //                                                                //
 // General Remark:                                                //
-// CMSLC means                                                    //
+// LCMS means                                                    //
 // Center of Mass System Longitudially Co-moving                  //
 //                                                                //
 //                                                                //
@@ -18,28 +18,28 @@
 ////////////////////////////////////////////////////////////////////
 
 
-class AliHBTKtResolVsQInvFctn;  //Kt Res   Vs   QInvCMSLC 
+class AliHBTKtResolVsQInvFctn;  //Kt Res   Vs   QInvLCMS 
 
-class AliHBTQOutResolVsQInvFctn;  //QOutCMSLC  Res   Vs   QInvCMSLC 
-class AliHBTQSideResolVsQInvFctn; //QSideCMSLC Res   Vs   QInvCMSLC 
-class AliHBTQLongResolVsQInvFctn; //QLongCMSLC Res   Vs   QInvCMSLC 
-class AliHBTQInvResolVsQInvFctn;  //QInvCMSLC Res   Vs   QInvCMSLC 
+class AliHBTQOutResolVsQInvFctn;  //QOutLCMS  Res   Vs   QInvLCMS 
+class AliHBTQSideResolVsQInvFctn; //QSideLCMS Res   Vs   QInvLCMS 
+class AliHBTQLongResolVsQInvFctn; //QLongLCMS Res   Vs   QInvLCMS 
+class AliHBTQInvResolVsQInvFctn;  //QInvLCMS Res   Vs   QInvLCMS 
 
-class AliHBTPairThetaResolVsQInvFctn;//PairTheta Res   Vs   QInvCMSLC
-class AliHBTPairPhiResolVsQInvFctn;  //PairPhi   Res   Vs   QInvCMSLC
+class AliHBTPairThetaResolVsQInvFctn;//PairTheta Res   Vs   QInvLCMS
+class AliHBTPairPhiResolVsQInvFctn;  //PairPhi   Res   Vs   QInvLCMS
 
-class AliHBTQInvResolVsKtFctn;    //QInvCMSLC  Res   Vs   Kt
-class AliHBTQOutResolVsKtFctn;    //QOutCMSLC  Res   Vs   Kt
-class AliHBTQSideResolVsKtFctn;   //QSideCMSLC Res   Vs   Kt
-class AliHBTQLongResolVsKtFctn;   //QLongCMSLC Res   Vs   Kt
+class AliHBTQInvResolVsKtFctn;    //QInvLCMS  Res   Vs   Kt
+class AliHBTQOutResolVsKtFctn;    //QOutLCMS  Res   Vs   Kt
+class AliHBTQSideResolVsKtFctn;   //QSideLCMS Res   Vs   Kt
+class AliHBTQLongResolVsKtFctn;   //QLongLCMS Res   Vs   Kt
 
 class AliHBTPairThetaResolVsKtFctn;   //PairTheta Res   Vs   Kt
 class AliHBTPairPhiResolVsKtFctn;   //PairPhi Res   Vs   Kt
 
 
-class AliHBTQOutResolVsQOutFctn;  //QOutCMSLC  Res   Vs   QOut
-class AliHBTQSideResolVsQSideFctn;//QSideCMSLC Res   Vs   QSide
-class AliHBTQLongResolVsQLongFctn;//QLongCMSLC Res   Vs   QLong
+class AliHBTQOutResolVsQOutFctn;  //QOutLCMS  Res   Vs   QOut
+class AliHBTQSideResolVsQSideFctn;//QSideLCMS Res   Vs   QSide
+class AliHBTQLongResolVsQLongFctn;//QLongLCMS Res   Vs   QLong
 
 
  

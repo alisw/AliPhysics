@@ -1,13 +1,23 @@
-SRCS= AliAOD.cxx \
+SRCS= AliAOD.cxx AliEventBuffer.cxx \
       AliVAODParticle.cxx AliAODParticle.cxx \
+      AliAODPair.cxx        AliAODPairCut.cxx \
       AliAODParticleCut.cxx AliAODRun.cxx \
       AliRunAnalysis.cxx AliAnalysis.cxx AliEventCut.cxx \
       AliReader.cxx AliReaderESD.cxx\
       AliTrackPoints.cxx AliClusterMap.cxx \
       AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx AliFlowAnalysis.cxx \
 
-HDRS= $(SRCS:.cxx=.h)
+HDRS= $(SRCS:.cxx=.h) 
 
 DHDR:=ANALYSISLinkDef.h
+
+EXPORT:=AliAOD.h AliEventBuffer.h\
+      AliVAODParticle.h     AliAODParticle.h \
+      AliAODPair.h          AliAODPairCut.h  \
+      AliAODParticleCut.h   AliAODRun.h      \
+      AliRunAnalysis.h      AliAnalysis.h      AliEventCut.h \
+      AliReader.h           AliReaderESD.h   \
+      AliTrackPoints.h      AliClusterMap.h  \
+      AliFlowAnalysis.h  
 
 EINCLUDE:= TPC CONTAINERS ITS

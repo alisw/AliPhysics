@@ -164,11 +164,13 @@ extern "C" void type_of_call setpdist(Double_t& r);
 /**************************************************************/
 
 #include "AliHBTPair.h"
-#include "AliHBTParticle.h"
+#include "AliVAODParticle.h"
 #include "WLedCOMMONS.h"
 #include <TRandom.h>   
 #include <TMath.h>     
 #include <TPDGCode.h>
+#include <TParticlePDG.h>
+#include <TDatabasePDG.h>
 
 
 ClassImp(AliHBTLLWeights)  
@@ -263,8 +265,8 @@ Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
   static const Double_t kcmtofm = 1.e13;
   static const Double_t kcmtoOneOverGeV = kcmtofm*fgkWcons;  
   
-  AliHBTParticle *part1 = partpair->Particle1();
-  AliHBTParticle *part2 = partpair->Particle2();
+  AliVAODParticle *part1 = partpair->Particle1();
+  AliVAODParticle *part2 = partpair->Particle2();
 
   if ( (part1 == 0x0) || (part2 == 0x0))
    {

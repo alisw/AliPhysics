@@ -33,7 +33,7 @@ AliHBTMonPxDistributionFctn::AliHBTMonPxDistributionFctn(Int_t nbins, Double_t m
   Rename("Px","Px");
 }
 
-Double_t AliHBTMonPxDistributionFctn::GetValue(AliHBTParticle * particle) const
+Double_t AliHBTMonPxDistributionFctn::GetValue(AliVAODParticle * particle) const
 { 
  //returns value for that function
  return particle->Px();

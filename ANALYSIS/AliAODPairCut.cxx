@@ -2,31 +2,31 @@
 //____________________________________
 /////////////////////////////////////////////////////////////////////////
 //
-// Class AliHBTPairCut:
+// Class AliAODPairCut:
 //
 // implements cut on the pair of particles
 // more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
 // Author: Piotr.Skowronski@cern.ch
 //-------------------------------------------------------------------
 
-#include "AliHBTPairCut.h"
-#include "AliHBTPair.h"
-#include "AliHBTParticleCut.h"
-#include "AliHBTTrackPoints.h"
-#include "AliHBTClusterMap.h"
+#include "AliAODPairCut.h"
+#include "AliAODPair.h"
+#include "AliAODParticleCut.h"
+#include "AliTrackPoints.h"
+#include "AliClusterMap.h"
 
-ClassImp(AliHBTPairCut)
-const Int_t AliHBTPairCut::fgkMaxCuts = 50;
+ClassImp(AliAODPairCut)
+const Int_t AliAODPairCut::fgkMaxCuts = 50;
 /**********************************************************/
 
-AliHBTPairCut::AliHBTPairCut():
+AliAODPairCut::AliAODPairCut():
   fNCuts(0)
 {
   //constructor
-  fFirstPartCut = new AliHBTEmptyParticleCut(); //empty cuts
-  fSecondPartCut= new AliHBTEmptyParticleCut(); //empty cuts
+  fFirstPartCut = new AliAODEmptyParticleCut(); //empty cuts
+  fSecondPartCut= new AliAODEmptyParticleCut(); //empty cuts
     
-  fCuts = new AliHbtBasePairCut*[fgkMaxCuts];
+  fCuts = new AliAODBasePairCut*[fgkMaxCuts];
   for (Int_t i = 0;i<fNCuts;i++)
    {
      fCuts[i] = 0x0;
@@ -34,41 +34,41 @@ AliHBTPairCut::AliHBTPairCut():
 }
 /**********************************************************/
 
-AliHBTPairCut::AliHBTPairCut(const AliHBTPairCut& in):
+AliAODPairCut::AliAODPairCut(const AliAODPairCut& in):
  TNamed(in)
 {
   //copy constructor
-  fCuts = new AliHbtBasePairCut*[fgkMaxCuts];
+  fCuts = new AliAODBasePairCut*[fgkMaxCuts];
   fNCuts = in.fNCuts;
 
-  fFirstPartCut = (AliHBTParticleCut*)in.fFirstPartCut->Clone();
-  fSecondPartCut = (AliHBTParticleCut*)in.fSecondPartCut->Clone();
+  fFirstPartCut = (AliAODParticleCut*)in.fFirstPartCut->Clone();
+  fSecondPartCut = (AliAODParticleCut*)in.fSecondPartCut->Clone();
  
   for (Int_t i = 0;i<fNCuts;i++)
     {
-      fCuts[i] = (AliHbtBasePairCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
+      fCuts[i] = (AliAODBasePairCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
     }
 }
 /**********************************************************/
 
-AliHBTPairCut&  AliHBTPairCut::operator=(const AliHBTPairCut& in)
+AliAODPairCut&  AliAODPairCut::operator=(const AliAODPairCut& in)
 {
   //assignment operator
-  fCuts = new AliHbtBasePairCut*[fgkMaxCuts];
+  fCuts = new AliAODBasePairCut*[fgkMaxCuts];
   fNCuts = in.fNCuts;
 
-  fFirstPartCut = (AliHBTParticleCut*)in.fFirstPartCut->Clone();
-  fSecondPartCut = (AliHBTParticleCut*)in.fSecondPartCut->Clone();
+  fFirstPartCut = (AliAODParticleCut*)in.fFirstPartCut->Clone();
+  fSecondPartCut = (AliAODParticleCut*)in.fSecondPartCut->Clone();
  
   for (Int_t i = 0;i<fNCuts;i++)
     {
-      fCuts[i] = (AliHbtBasePairCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
+      fCuts[i] = (AliAODBasePairCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
     }
   return * this;
 }
 /**********************************************************/
 
-AliHBTPairCut::~AliHBTPairCut()
+AliAODPairCut::~AliAODPairCut()
 {
   //destructor
   if (fFirstPartCut != fSecondPartCut)
@@ -86,7 +86,7 @@ AliHBTPairCut::~AliHBTPairCut()
 
 /**********************************************************/
 
-void AliHBTPairCut::AddBasePairCut(AliHbtBasePairCut* basecut)
+void AliAODPairCut::AddBasePairCut(AliAODBasePairCut* basecut)
 {
   //adds the base pair cut (cut on one value)
   
@@ -100,7 +100,7 @@ void AliHBTPairCut::AddBasePairCut(AliHbtBasePairCut* basecut)
 }
 /**********************************************************/
 
-Bool_t AliHBTPairCut::Pass(AliHBTPair* pair) const
+Bool_t AliAODPairCut::Pass(AliAODPair* pair) const
 {
   //methods which checks if given pair meets all criteria of the cut
   //if it meets returns FALSE
@@ -121,7 +121,7 @@ Bool_t AliHBTPairCut::Pass(AliHBTPair* pair) const
 }
 /**********************************************************/
 
-Bool_t AliHBTPairCut::PassPairProp(AliHBTPair* pair) const
+Bool_t AliAODPairCut::PassPairProp(AliAODPair* pair) const
 {
   //methods which checks if given pair meets all criteria of the cut
   //if it meets returns FALSE
@@ -135,7 +135,7 @@ Bool_t AliHBTPairCut::PassPairProp(AliHBTPair* pair) const
 }
 /**********************************************************/
 
-void AliHBTPairCut::Print()
+void AliAODPairCut::Print()
 {
  //Prints the cut
   for (Int_t i = 0;i<fNCuts;i++)
@@ -145,7 +145,7 @@ void AliHBTPairCut::Print()
 }
 /**********************************************************/
 
-void AliHBTPairCut::SetFirstPartCut(AliHBTParticleCut* cut)
+void AliAODPairCut::SetFirstPartCut(AliAODParticleCut* cut)
 {
   // set cut for the first particle
   if(!cut) 
@@ -154,12 +154,12 @@ void AliHBTPairCut::SetFirstPartCut(AliHBTParticleCut* cut)
       return;
     }
   delete fFirstPartCut;
-  fFirstPartCut = (AliHBTParticleCut*)cut->Clone();
+  fFirstPartCut = (AliAODParticleCut*)cut->Clone();
   
 }
 /**********************************************************/
 
-void AliHBTPairCut::SetSecondPartCut(AliHBTParticleCut* cut)
+void AliAODPairCut::SetSecondPartCut(AliAODParticleCut* cut)
 {
   // set cut for the second particle
   if(!cut) 
@@ -168,11 +168,11 @@ void AliHBTPairCut::SetSecondPartCut(AliHBTParticleCut* cut)
       return;
     }
   delete fSecondPartCut;
-  fSecondPartCut = (AliHBTParticleCut*)cut->Clone();
+  fSecondPartCut = (AliAODParticleCut*)cut->Clone();
 }
 /**********************************************************/
 
-void AliHBTPairCut::SetPartCut(AliHBTParticleCut* cut)
+void AliAODPairCut::SetPartCut(AliAODParticleCut* cut)
 {
   //sets the the same cut on both particles
   if(!cut) 
@@ -183,80 +183,80 @@ void AliHBTPairCut::SetPartCut(AliHBTParticleCut* cut)
   if (fFirstPartCut == fSecondPartCut) fSecondPartCut = 0x0;
   
   delete fFirstPartCut;
-  fFirstPartCut = (AliHBTParticleCut*)cut->Clone();
+  fFirstPartCut = (AliAODParticleCut*)cut->Clone();
   
   delete fSecondPartCut; //even if null should not be harmful
   fSecondPartCut = fFirstPartCut;
 }
 /**********************************************************/
 
-void AliHBTPairCut::SetQInvRange(Double_t min, Double_t max)
+void AliAODPairCut::SetQInvRange(Double_t min, Double_t max)
 {
   // set range of accepted invariant masses
-  AliHBTQInvCut* cut= (AliHBTQInvCut*)FindCut(kHbtPairCutPropQInv);
+  AliAODQInvCut* cut= (AliAODQInvCut*)FindCut(kHbtPairCutPropQInv);
   if(cut) cut->SetRange(min,max);
-  else fCuts[fNCuts++] = new AliHBTQInvCut(min,max);
+  else fCuts[fNCuts++] = new AliAODQInvCut(min,max);
 }
 /**********************************************************/
-void AliHBTPairCut::SetQOutCMSLRange(Double_t min, Double_t max)
+void AliAODPairCut::SetQOutCMSLRange(Double_t min, Double_t max)
 {
   // set range of accepted QOut in CMS
-  AliHBTQOutLCMSCut* cut= (AliHBTQOutLCMSCut*)FindCut(kHbtPairCutPropQOutLCMS);
+  AliAODQOutLCMSCut* cut= (AliAODQOutLCMSCut*)FindCut(kHbtPairCutPropQOutLCMS);
   if(cut) cut->SetRange(min,max);
-  else fCuts[fNCuts++] = new AliHBTQOutLCMSCut(min,max);
+  else fCuts[fNCuts++] = new AliAODQOutLCMSCut(min,max);
 }
 
 /**********************************************************/
-void AliHBTPairCut::SetQSideCMSLRange(Double_t min, Double_t max)
+void AliAODPairCut::SetQSideCMSLRange(Double_t min, Double_t max)
 {
   // set range of accepted QSide in CMS
-  AliHBTQSideLCMSCut* cut= (AliHBTQSideLCMSCut*)FindCut(kHbtPairCutPropQSideLCMS);
+  AliAODQSideLCMSCut* cut= (AliAODQSideLCMSCut*)FindCut(kHbtPairCutPropQSideLCMS);
   if(cut) cut->SetRange(min,max);
-  else fCuts[fNCuts++] = new AliHBTQSideLCMSCut(min,max);
+  else fCuts[fNCuts++] = new AliAODQSideLCMSCut(min,max);
 }
 
 /**********************************************************/
-void AliHBTPairCut::SetQLongCMSLRange(Double_t min, Double_t max)
+void AliAODPairCut::SetQLongCMSLRange(Double_t min, Double_t max)
 {
   // set range of accepted QLong in CMS
-  AliHBTQLongLCMSCut* cut= (AliHBTQLongLCMSCut*)FindCut(kHbtPairCutPropQLongLCMS);
+  AliAODQLongLCMSCut* cut= (AliAODQLongLCMSCut*)FindCut(kHbtPairCutPropQLongLCMS);
   if(cut) cut->SetRange(min,max);
-  else fCuts[fNCuts++] = new AliHBTQLongLCMSCut(min,max);
+  else fCuts[fNCuts++] = new AliAODQLongLCMSCut(min,max);
 }
 
 /**********************************************************/
 
-void AliHBTPairCut::SetKtRange(Double_t min, Double_t max)
+void AliAODPairCut::SetKtRange(Double_t min, Double_t max)
 {
   // set range of accepted Kt (?)
-  AliHBTKtCut* cut= (AliHBTKtCut*)FindCut(kHbtPairCutPropKt);
+  AliAODKtCut* cut= (AliAODKtCut*)FindCut(kHbtPairCutPropKt);
   if(cut) cut->SetRange(min,max);
-  else fCuts[fNCuts++] = new AliHBTKtCut(min,max);
+  else fCuts[fNCuts++] = new AliAODKtCut(min,max);
 }
 /**********************************************************/
 
-void AliHBTPairCut::SetKStarRange(Double_t min, Double_t max)
+void AliAODPairCut::SetKStarRange(Double_t min, Double_t max)
 {
   // set range of accepted KStar (?)
-  AliHBTKStarCut* cut= (AliHBTKStarCut*)FindCut(kHbtPairCutPropKStar);
+  AliAODKStarCut* cut= (AliAODKStarCut*)FindCut(kHbtPairCutPropKStar);
   if(cut) cut->SetRange(min,max);
-  else fCuts[fNCuts++] = new AliHBTKStarCut(min,max);
+  else fCuts[fNCuts++] = new AliAODKStarCut(min,max);
 }
 /**********************************************************/
 
-void AliHBTPairCut::SetAvSeparationRange(Double_t min, Double_t max)
+void AliAODPairCut::SetAvSeparationRange(Double_t min, Double_t max)
 {
   //sets avarage separation cut ->Anti-Merging cut
-  AliHbtBasePairCut* cut= FindCut(kHbtPairCutPropAvSepar);
+  AliAODBasePairCut* cut= FindCut(kHbtPairCutPropAvSepar);
   if(cut) cut->SetRange(min,max);
-  else fCuts[fNCuts++] = new AliHBTAvSeparationCut(min,max);
+  else fCuts[fNCuts++] = new AliAODAvSeparationCut(min,max);
 }
 /**********************************************************/
 
-void AliHBTPairCut::SetITSSeparation(Int_t layer, Double_t drphi, Double_t dz)
+void AliAODPairCut::SetITSSeparation(Int_t layer, Double_t drphi, Double_t dz)
 {
   //Anti-Merging Cut for first pixel layer
-  AliHBTITSSeparationCut* cut= dynamic_cast<AliHBTITSSeparationCut*>(FindCut(kHbtPairCutPropPixelSepar));
+  AliAODITSSeparationCut* cut= dynamic_cast<AliAODITSSeparationCut*>(FindCut(kHbtPairCutPropPixelSepar));
   if(cut) 
    {
      if (layer == cut->GetLayer())
@@ -265,12 +265,12 @@ void AliHBTPairCut::SetITSSeparation(Int_t layer, Double_t drphi, Double_t dz)
         return;
       }
    }
-  fCuts[fNCuts++] = new AliHBTITSSeparationCut(layer,drphi,dz);
+  fCuts[fNCuts++] = new AliAODITSSeparationCut(layer,drphi,dz);
 //  Info("SetITSSeparation","Added %d at address %#x",fNCuts-1,fCuts[fNCuts-1]);
 }
 /**********************************************************/
 
-void AliHBTPairCut::SetClusterOverlapRange(Double_t min,Double_t max)
+void AliAODPairCut::SetClusterOverlapRange(Double_t min,Double_t max)
 {
   //sets cluster overlap factor cut ->Anti-Splitting cut
   //cluster overlap factor ranges between 
@@ -280,13 +280,13 @@ void AliHBTPairCut::SetClusterOverlapRange(Double_t min,Double_t max)
   // splitted track: one particle that is recontructed twise
   // STAR uses range from -0.5 to 0.6 
   
-  AliHbtBasePairCut* cut= FindCut(kHbtPairCutPropClOverlap);
+  AliAODBasePairCut* cut= FindCut(kHbtPairCutPropClOverlap);
   if(cut) cut->SetRange(min,max);
-  else fCuts[fNCuts++] = new AliHBTCluterOverlapCut(min,max);
+  else fCuts[fNCuts++] = new AliAODCluterOverlapCut(min,max);
 }
 /**********************************************************/
 
-AliHbtBasePairCut* AliHBTPairCut::FindCut(AliHBTPairCutProperty property)
+AliAODBasePairCut* AliAODPairCut::FindCut(AliAODPairCutProperty property)
 {
   // Find the cut corresponding to "property"
   for (Int_t i = 0;i<fNCuts;i++)
@@ -300,7 +300,7 @@ AliHbtBasePairCut* AliHBTPairCut::FindCut(AliHBTPairCutProperty property)
 }
 /**********************************************************/
 
-void AliHBTPairCut::Streamer(TBuffer &b)
+void AliAODPairCut::Streamer(TBuffer &b)
 {
   // Stream all objects in the array to or from the I/O buffer.
   
@@ -323,11 +323,11 @@ void AliHBTPairCut::Streamer(TBuffer &b)
              b >> fCuts[i];
            }
         }
-      b.CheckByteCount(R__s, R__c,AliHBTPairCut::IsA());
+      b.CheckByteCount(R__s, R__c,AliAODPairCut::IsA());
     } 
   else 
     {
-      R__c = b.WriteVersion(AliHBTPairCut::IsA(), kTRUE);
+      R__c = b.WriteVersion(AliAODPairCut::IsA(), kTRUE);
       TObject::Streamer(b);
       
 //      printf("Streamer Cut 1 %#x Cut 2 %#x\n",fFirstPartCut,fSecondPartCut);
@@ -346,36 +346,36 @@ void AliHBTPairCut::Streamer(TBuffer &b)
 }
 /******************************************************************/
 
-ClassImp(AliHBTEmptyPairCut)
+ClassImp(AliAODEmptyPairCut)
   
-void AliHBTEmptyPairCut::Streamer(TBuffer &b)
+void AliAODEmptyPairCut::Streamer(TBuffer &b)
 {
 //streamer for empty pair cut
-  AliHBTPairCut::Streamer(b);
+  AliAODPairCut::Streamer(b);
 }
 /******************************************************************/
 
-ClassImp(AliHbtBasePairCut)
-ClassImp(AliHBTQInvCut)
-ClassImp(AliHBTKtCut)
-ClassImp(AliHBTQSideLCMSCut)
-ClassImp(AliHBTQOutLCMSCut)
-ClassImp(AliHBTQLongLCMSCut)
+ClassImp(AliAODBasePairCut)
+ClassImp(AliAODQInvCut)
+ClassImp(AliAODKtCut)
+ClassImp(AliAODQSideLCMSCut)
+ClassImp(AliAODQOutLCMSCut)
+ClassImp(AliAODQLongLCMSCut)
 
 /******************************************************************/
-ClassImp(AliHBTAvSeparationCut)
+ClassImp(AliAODAvSeparationCut)
     
-Double_t AliHBTAvSeparationCut::GetValue(AliHBTPair* pair) const 
+Double_t AliAODAvSeparationCut::GetValue(AliAODPair* pair) const 
 {
   //chacks if avarage distance of two tracks is in given range
-  AliHBTTrackPoints* tpts1 = pair->Particle1()->GetTrackPoints();
+  AliTrackPoints* tpts1 = pair->Particle1()->GetTPCTrackPoints();
   if ( tpts1 == 0x0)
    {//it could be simulated pair
 //     Warning("GetValue","Track 1 does not have Track Points. Pair NOT Passed.");
      return -1.0;
    }
 
-  AliHBTTrackPoints* tpts2 = pair->Particle2()->GetTrackPoints();
+  AliTrackPoints* tpts2 = pair->Particle2()->GetTPCTrackPoints();
   if ( tpts2 == 0x0)
    {
 //     Warning("GetValue","Track 2 does not have Track Points. Pair NOT Passed.");
@@ -385,19 +385,19 @@ Double_t AliHBTAvSeparationCut::GetValue(AliHBTPair* pair) const
   return tpts1->AvarageDistance(*tpts2);
 }
 /******************************************************************/
-ClassImp(AliHBTSeparationCut)
+ClassImp(AliAODSeparationCut)
     
-Double_t AliHBTSeparationCut::GetValue(AliHBTPair* pair) const 
+Double_t AliAODSeparationCut::GetValue(AliAODPair* pair) const 
 {
   //chacks if avarage distance of two tracks is in given range
-  AliHBTTrackPoints* tpts1 = pair->Particle1()->GetTrackPoints();
+  AliTrackPoints* tpts1 = pair->Particle1()->GetTPCTrackPoints();
   if ( tpts1 == 0x0)
    {//it could be simulated pair
 //     Warning("GetValue","Track 1 does not have Track Points. Pair NOT Passed.");
      return -1.0;
    }
 
-  AliHBTTrackPoints* tpts2 = pair->Particle2()->GetTrackPoints();
+  AliTrackPoints* tpts2 = pair->Particle2()->GetTPCTrackPoints();
   if ( tpts2 == 0x0)
    {
 //     Warning("GetValue","Track 2 does not have Track Points. Pair NOT Passed.");
@@ -416,9 +416,9 @@ Double_t AliHBTSeparationCut::GetValue(AliHBTPair* pair) const
 }
 /******************************************************************/
 
-ClassImp(AliHBTITSSeparationCut)
+ClassImp(AliAODITSSeparationCut)
 
-Bool_t AliHBTITSSeparationCut::Pass(AliHBTPair* pair) const
+Bool_t AliAODITSSeparationCut::Pass(AliAODPair* pair) const
 {
  //Checks if two tracks do not cross first pixels too close to each other
  //If two tracks use the same cluster in pixels they are given
@@ -428,14 +428,14 @@ Bool_t AliHBTITSSeparationCut::Pass(AliHBTPair* pair) const
  //and negative for a little bit different theta angle (Qlong=epsilon)
  //Such tracks "attracks" each other.
  
-  AliHBTTrackPoints* tpts1 = pair->Particle1()->GetITSTrackPoints();
+  AliTrackPoints* tpts1 = pair->Particle1()->GetITSTrackPoints();
   if ( tpts1 == 0x0)
    {//it could be simulated pair
      Warning("Pass","Track 1 does not have ITS Track Points. Pair NOT Passed.");
      return kTRUE;//reject 
    }
 
-  AliHBTTrackPoints* tpts2 = pair->Particle2()->GetITSTrackPoints();
+  AliTrackPoints* tpts2 = pair->Particle2()->GetITSTrackPoints();
   if ( tpts2 == 0x0)
    {
      Warning("Pass","Track 2 does not have ITS Track Points. Pair NOT Passed.");
@@ -463,9 +463,9 @@ Bool_t AliHBTITSSeparationCut::Pass(AliHBTPair* pair) const
 }
 /******************************************************************/
 
-ClassImp(AliHBTCluterOverlapCut)
+ClassImp(AliAODCluterOverlapCut)
 
-Double_t  AliHBTCluterOverlapCut::GetValue(AliHBTPair* pair) const
+Double_t  AliAODCluterOverlapCut::GetValue(AliAODPair* pair) const
 {
   //Returns Cluter Overlap Factor
   //It ranges between -0.5 (in all padrows both tracks have cluters) 
@@ -473,14 +473,14 @@ Double_t  AliHBTCluterOverlapCut::GetValue(AliHBTPair* pair) const
   // When Overlap Factor is 1 this pair of tracks in highly probable to be
   // splitted track: one particle that is recontructed twise
 
-  AliHBTClusterMap* cm1 = pair->Particle1()->GetClusterMap();
+  AliClusterMap* cm1 = pair->Particle1()->GetClusterMap();
   if ( cm1 == 0x0)
    {
      Warning("GetValue","Track 1 does not have Cluster Map. Returning -0.5.");
      return -.5;
    }
 
-  AliHBTClusterMap* cm2 = pair->Particle2()->GetClusterMap();
+  AliClusterMap* cm2 = pair->Particle2()->GetClusterMap();
   if ( cm2 == 0x0)
    {
      Warning("GetValue","Track 2 does not have Cluster Map. Returning -0.5.");
@@ -489,9 +489,9 @@ Double_t  AliHBTCluterOverlapCut::GetValue(AliHBTPair* pair) const
   return cm1->GetOverlapFactor(*cm2);
 }
 /******************************************************************/
-ClassImp(AliHBTOutSideSameSignCut)
+ClassImp(AliAODOutSideSameSignCut)
 
-Bool_t AliHBTOutSideSameSignCut::Pass(AliHBTPair *p) const
+Bool_t AliAODOutSideSameSignCut::Pass(AliAODPair *p) const
 {
   //returns kTRUE if pair DO NOT meet cut criteria
   
@@ -503,9 +503,9 @@ Bool_t AliHBTOutSideSameSignCut::Pass(AliHBTPair *p) const
   return kTRUE ;//rejected
 }
 /******************************************************************/
-ClassImp(AliHBTOutSideDiffSignCut)
+ClassImp(AliAODOutSideDiffSignCut)
 
-Bool_t AliHBTOutSideDiffSignCut::Pass(AliHBTPair *p) const
+Bool_t AliAODOutSideDiffSignCut::Pass(AliAODPair *p) const
 {
   //returns kTRUE if pair DO NOT meet cut criteria
   
@@ -517,32 +517,32 @@ Bool_t AliHBTOutSideDiffSignCut::Pass(AliHBTPair *p) const
   return kFALSE;//accepted
 }
 /******************************************************************/
-ClassImp( AliHBTLogicalOperPairCut )
+ClassImp( AliAODLogicalOperPairCut )
 
-AliHBTLogicalOperPairCut::AliHBTLogicalOperPairCut():
- AliHbtBasePairCut(-10e10,10e10,kHbtPairCutPropNone),
- fFirst(new AliHBTDummyBasePairCut),
- fSecond(new AliHBTDummyBasePairCut)
+AliAODLogicalOperPairCut::AliAODLogicalOperPairCut():
+ AliAODBasePairCut(-10e10,10e10,kHbtPairCutPropNone),
+ fFirst(new AliAODDummyBasePairCut),
+ fSecond(new AliAODDummyBasePairCut)
 {
  //ctor
 }
 /******************************************************************/
 
-AliHBTLogicalOperPairCut::AliHBTLogicalOperPairCut(AliHbtBasePairCut* first, AliHbtBasePairCut* second):
- AliHbtBasePairCut(-10e10,10e10,kHbtPairCutPropNone),
- fFirst((first)?(AliHbtBasePairCut*)first->Clone():0x0),
- fSecond((second)?(AliHbtBasePairCut*)second->Clone():0x0)
+AliAODLogicalOperPairCut::AliAODLogicalOperPairCut(AliAODBasePairCut* first, AliAODBasePairCut* second):
+ AliAODBasePairCut(-10e10,10e10,kHbtPairCutPropNone),
+ fFirst((first)?(AliAODBasePairCut*)first->Clone():0x0),
+ fSecond((second)?(AliAODBasePairCut*)second->Clone():0x0)
 {
   //ctor
   //note that base cuts are copied, not just pointers assigned
   if ( (fFirst && fSecond) == kFALSE) 
    {
-     Fatal("AliHBTLogicalOperPairCut","One of parameters is NULL!");
+     Fatal("AliAODLogicalOperPairCut","One of parameters is NULL!");
    }
 }
 /******************************************************************/
 
-AliHBTLogicalOperPairCut::~AliHBTLogicalOperPairCut()
+AliAODLogicalOperPairCut::~AliAODLogicalOperPairCut()
 {
   //destructor
   delete fFirst;
@@ -550,7 +550,7 @@ AliHBTLogicalOperPairCut::~AliHBTLogicalOperPairCut()
 }
 /******************************************************************/
 
-Bool_t AliHBTLogicalOperPairCut::AliHBTDummyBasePairCut::Pass(AliHBTPair* /*pair*/)  const
+Bool_t AliAODLogicalOperPairCut::AliAODDummyBasePairCut::Pass(AliAODPair* /*pair*/)  const
 {
   //checks if particles passes properties defined by this cut
   Warning("Pass","You are using dummy base cut! Probobly some logical cut is not set up properly");
@@ -558,7 +558,7 @@ Bool_t AliHBTLogicalOperPairCut::AliHBTDummyBasePairCut::Pass(AliHBTPair* /*pair
 }
 /******************************************************************/
 
-void AliHBTLogicalOperPairCut::Streamer(TBuffer &b)
+void AliAODLogicalOperPairCut::Streamer(TBuffer &b)
 {
   // Stream all objects in the array to or from the I/O buffer.
   UInt_t R__s, R__c;
@@ -573,11 +573,11 @@ void AliHBTLogicalOperPairCut::Streamer(TBuffer &b)
      TObject::Streamer(b);
      b >> fFirst;
      b >> fSecond;
-     b.CheckByteCount(R__s, R__c,AliHBTLogicalOperPairCut::IsA());
+     b.CheckByteCount(R__s, R__c,AliAODLogicalOperPairCut::IsA());
    } 
   else 
    {
-     R__c = b.WriteVersion(AliHBTLogicalOperPairCut::IsA(), kTRUE);
+     R__c = b.WriteVersion(AliAODLogicalOperPairCut::IsA(), kTRUE);
      TObject::Streamer(b);
      b << fFirst;
      b << fSecond;
@@ -586,27 +586,27 @@ void AliHBTLogicalOperPairCut::Streamer(TBuffer &b)
 }
 
 /******************************************************************/
-ClassImp(AliHBTOrPairCut)
+ClassImp(AliAODOrPairCut)
 
-Bool_t AliHBTOrPairCut::Pass(AliHBTPair * p) const
+Bool_t AliAODOrPairCut::Pass(AliAODPair * p) const
 {
   //returns true when rejected 
   //AND operation is a little bit misleading but is correct
   //User wants to build logical cuts with natural (positive) logic
-  //while HBTAN use inernally reverse (returns true when rejected)
+  //while ALIAN use inernally reverse (returns true when rejected)
   if (fFirst->Pass(p) && fSecond->Pass(p) ) return kTRUE;//rejected (both rejected, returned kTRUE)
   return kFALSE;//accepted, at least one accepted (returned kFALSE)
 }
 /******************************************************************/
 
-ClassImp(AliHBTAndPairCut)
+ClassImp(AliAODAndPairCut)
 
-Bool_t AliHBTAndPairCut::Pass(AliHBTPair * p)  const
+Bool_t AliAODAndPairCut::Pass(AliAODPair * p)  const
 {
   //returns true when rejected 
   //OR operation is a little bit misleading but is correct
   //User wants to build logical cuts with natural (positive) logic
-  //while HBTAN use inernally reverse (returns true when rejected)
+  //while ALIAN use inernally reverse (returns true when rejected)
   if (fFirst->Pass(p) || fSecond->Pass(p)) return kTRUE;//rejected (any of two rejected(returned kTRUE) )
   return kFALSE;//accepted (both accepted (returned kFALSE))
 }

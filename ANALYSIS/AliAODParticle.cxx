@@ -24,7 +24,7 @@ ClassImp(AliAODParticle)
 AliAODParticle::AliAODParticle():  
  fPdgIdx(0), fIdxInEvent(0),fNPids(0),fPids(0x0),fPidProb(0x0),
  fCalcMass(0),fPx(0), fPy(0),fPz(0),fE(0), fVx(0), fVy(0),fVz(0),fVt(0),
- fTrackPoints(0x0),fClusterMap(0x0)
+ fTPCTrackPoints(0x0),fITSTrackPoints(0x0),fClusterMap(0x0)
 {//empty particle
 }
 //______________________________________________________________________________
@@ -36,7 +36,7 @@ AliAODParticle::AliAODParticle(Int_t pdg, Int_t idx,
   fCalcMass(0), 
   fPx(px), fPy(py),fPz(pz),fE(etot), 
   fVx(vx), fVy(vy),fVz(vz),fVt(time),
-  fTrackPoints(0x0),fClusterMap(0x0)
+  fTPCTrackPoints(0x0),fITSTrackPoints(0x0),fClusterMap(0x0)
 {
 //mormal constructor
   SetPdgCode(pdg);
@@ -57,7 +57,7 @@ AliAODParticle::AliAODParticle(Int_t pdg, Float_t prob, Int_t idx,
   fCalcMass(0), 
   fPx(px), fPy(py),fPz(pz),fE(etot), 
   fVx(vx), fVy(vy),fVz(vz),fVt(time),
-  fTrackPoints(0x0),fClusterMap(0x0)
+  fTPCTrackPoints(0x0),fITSTrackPoints(0x0),fClusterMap(0x0)
 {
 //mormal constructor
   SetPdgCode(pdg,prob);
@@ -70,6 +70,7 @@ AliAODParticle::AliAODParticle(Int_t pdg, Float_t prob, Int_t idx,
   }
 }
 //______________________________________________________________________________
+
 AliAODParticle::AliAODParticle(const AliAODParticle& in):
    AliVAODParticle(in),
    fPdgIdx(in.fPdgIdx), fIdxInEvent(in.fIdxInEvent),
@@ -77,7 +78,7 @@ AliAODParticle::AliAODParticle(const AliAODParticle& in):
    fCalcMass(in.GetCalcMass()),
    fPx(in.Px()),fPy(in.Py()),fPz(in.Pz()),fE(in.Energy()), 
    fVx(in.Vx()),fVy(in.Vy()),fVz(in.Vz()),fVt(in.T()),
-   fTrackPoints(0x0), fClusterMap(0x0)
+   fTPCTrackPoints(0x0),fITSTrackPoints(0x0),fClusterMap(0x0)
 {
  //Copy constructor
  for(Int_t i = 0; i<fNPids; i++)
@@ -86,20 +87,50 @@ AliAODParticle::AliAODParticle(const AliAODParticle& in):
     fPidProb[i] = in.fPidProb[i];
   }
  
- if (in.fTrackPoints)
-   fTrackPoints = (AliTrackPoints*)in.fTrackPoints->Clone();
+ if (in.fTPCTrackPoints)
+   fTPCTrackPoints = (AliTrackPoints*)in.fTPCTrackPoints->Clone();
+ if (in.fITSTrackPoints)
+   fITSTrackPoints = (AliTrackPoints*)in.fITSTrackPoints->Clone();
  if (in.fClusterMap)
    fClusterMap = (AliClusterMap*)in.fClusterMap->Clone();
 }
-
 //______________________________________________________________________________
+
+AliAODParticle::AliAODParticle(const AliVAODParticle& in):
+   AliVAODParticle(in),
+   fPdgIdx(0), fIdxInEvent(in.GetUID()),
+   fNPids(0),fPids(0x0),fPidProb(0x0),
+   fCalcMass(-1.0),
+   fPx(in.Px()),fPy(in.Py()),fPz(in.Pz()),fE(in.E()), 
+   fVx(in.Vx()),fVy(in.Vy()),fVz(in.Vz()),fVt(in.T()),
+   fTPCTrackPoints(0x0),fITSTrackPoints(0x0),fClusterMap(0x0)
+{
+ //Copy constructor
+ 
+ for(Int_t i = 0; i<in.GetNumberOfPids(); i++)
+  {
+    SetPIDprobability(in.GetNthPid(i),in.GetNthPidProb(i));
+  }
+ SetPdgCode(in.GetPdgCode(),in.GetPidProb());
+ 
+ AliTrackPoints* tpts = in.GetTPCTrackPoints();
+ if (tpts)  SetTPCTrackPoints((AliTrackPoints*)tpts->Clone());
+ 
+ tpts = in.GetITSTrackPoints();  
+ if (tpts) SetITSTrackPoints((AliTrackPoints*)tpts->Clone());
+   
+ AliClusterMap* clmap = in.GetClusterMap();
+ if (clmap) SetClusterMap((AliClusterMap*)clmap->Clone());
+}
+//______________________________________________________________________________
+
 AliAODParticle::AliAODParticle(const TParticle &p,Int_t idx):
    fPdgIdx(0), fIdxInEvent(idx),
    fNPids(0),fPids(0x0),fPidProb(0x0),
    fCalcMass(p.GetCalcMass()),
    fPx(p.Px()),fPy(p.Py()),fPz(p.Pz()),fE(p.Energy()), 
    fVx(p.Vx()),fVy(p.Vy()),fVz(p.Vz()),fVt(p.T()),
-   fTrackPoints(0x0),fClusterMap(0x0)
+   fTPCTrackPoints(0x0),fITSTrackPoints(0x0),fClusterMap(0x0)
 {
  //all copied in the initialization
  SetPdgCode(p.GetPdgCode());
@@ -111,7 +142,8 @@ AliAODParticle::~AliAODParticle()
 //dtor  
   delete [] fPids;
   delete [] fPidProb;
-  delete fTrackPoints;
+  delete fTPCTrackPoints;
+  delete fITSTrackPoints;
   delete fClusterMap;
 }
 //______________________________________________________________________________
@@ -143,8 +175,11 @@ AliAODParticle& AliAODParticle::operator=(const AliAODParticle& in)
   fVz = in.Vz();
   fVt = in.T();
   
-  delete fTrackPoints;
-  fTrackPoints = (in.fTrackPoints)?(AliTrackPoints*)fTrackPoints->Clone():0x0;
+  delete fTPCTrackPoints;
+  fTPCTrackPoints = (in.fTPCTrackPoints)?(AliTrackPoints*)fTPCTrackPoints->Clone():0x0;
+
+  delete fITSTrackPoints;
+  fITSTrackPoints = (in.fITSTrackPoints)?(AliTrackPoints*)fITSTrackPoints->Clone():0x0;
   
   delete fClusterMap;
   fClusterMap =  (in.fClusterMap)?(AliClusterMap*)in.fClusterMap->Clone():0x0;
@@ -226,7 +261,7 @@ void AliAODParticle::SetPIDprobability(Int_t pdg, Float_t prob)
   fPdgIdx = GetPidSlot(currentpid);
   if (fPdgIdx == -1) fPdgIdx = 0;
   
-  if (totprob > (1.0+0.000001))//place for numerical error
+  if (totprob > (1.0+0.000001))//space for numerical error
    {
      Warning("SetId","Total probability is greater than unity (%f)!!!",totprob);
      Print();

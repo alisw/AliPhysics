@@ -41,28 +41,6 @@
 #pragma link C++ class AliHBTEmptyParticleCut-;
 #pragma link C++ class AliHbtBaseCut+;
 
-#pragma link C++ class AliHBTPairCut-;
-#pragma link C++ class AliHBTEmptyPairCut-;
-#pragma link C++ class AliHbtBasePairCut+;
-
-#pragma link C++ class AliHBTQInvCut+;
-#pragma link C++ class AliHBTKtCut+;
-#pragma link C++ class AliHBTKStarCut+;
-#pragma link C++ class AliHBTQSideCMSLCCut+;
-#pragma link C++ class AliHBTQOutCMSLCCut+;
-#pragma link C++ class AliHBTQLongCMSLCCut+;
-#pragma link C++ class AliHBTDeltaPhiCut+;
-#pragma link C++ class AliHBTDeltaThetaCut+;
-#pragma link C++ class AliHBTAvSeparationCut+;
-#pragma link C++ class AliHBTSeparationCut+;
-#pragma link C++ class AliHBTITSSeparationCut+;
-#pragma link C++ class AliHBTCluterOverlapCut+;
-#pragma link C++ class AliHBTOutSideSameSignCut+;
-#pragma link C++ class AliHBTOutSideDiffSignCut+;
-#pragma link C++ class AliHBTLogicalOperPairCut-;
-#pragma link C++ class AliHBTOrPairCut+;
-#pragma link C++ class AliHBTAndPairCut+;
-    
 #pragma link C++ class AliHBTMomentumCut+;
 #pragma link C++ class AliHBTPtCut+;
 #pragma link C++ class AliHBTEnergyCut+;
@@ -95,9 +73,9 @@
 #pragma link C++ class AliHBTQInvCorrelFctn+;
 #pragma link C++ class AliHBTOutSideLongFctn+;
 #pragma link C++ class AliHBTTwoKStarCorrelFctn+;
-#pragma link C++ class AliHBTQOutCMSLCCorrelFctn+;
-#pragma link C++ class AliHBTQLongCMSLCCorrelFctn+;
-#pragma link C++ class AliHBTQSideCMSLCCorrelFctn+;
+#pragma link C++ class AliHBTQOutLCMSCorrelFctn+;
+#pragma link C++ class AliHBTQLongLCMSCorrelFctn+;
+#pragma link C++ class AliHBTQSideLCMSCorrelFctn+;
 #pragma link C++ class AliHBTAvSeparCorrelFctn+;
 
 #pragma link C++ class AliHBTInvMassCorrelFctn+;

@@ -18,7 +18,7 @@
 //                                                                        //
 //                                                                        //
 // more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html   //
-// resonsible: Piotr Skowronski@cern.ch                                   //
+// responsible: Piotr Skowronski@cern.ch                                   //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 

@@ -24,10 +24,10 @@ class AliHBTTrackPoints: public TObject
     enum ETypes{kITS = 1};
 
     AliHBTTrackPoints();
-    AliHBTTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr=30, Float_t r0 = 84.1); //min TPC R  = 84.1; max TPC R =  246.6cm, 
-    AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t dr=30,Float_t r0 = 84.1); //min TPC R  = 84.1; max TPC R =  246.6cm, 
     AliHBTTrackPoints(AliHBTTrackPoints::ETypes type, AliESDtrack* track);
-    AliHBTTrackPoints(const AliHBTTrackPoints& in);
+    AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t dr=30,Float_t r0 = 84.1); //min TPC R  = 84.1; max TPC R =  246.6cm, 
+    AliHBTTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr=30, Float_t r0 = 84.1); //min TPC R  = 84.1; max TPC R =  246.6cm, 
+//    AliHBTTrackPoints(const AliHBTTrackPoints& in);
     
     virtual ~AliHBTTrackPoints();
     AliHBTTrackPoints& operator=(const AliHBTTrackPoints& in);

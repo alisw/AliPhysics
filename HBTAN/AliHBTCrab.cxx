@@ -10,7 +10,8 @@
 /////////////////////////////////////////////////////////////////////////
  
 #include "AliHBTPair.h"
-
+#include "AliVAODParticle.h"
+#include "TDatabasePDG.h"
 #include <TMath.h>
 
 #include "volya_complex.h"
@@ -145,15 +146,15 @@ void AliHBTCrab::GetComQuantities(const AliHBTPair* pair,
  static const Double_t kCmToFm = 1.e13;
 // static const Double_t cmtoOneOverGeV = kCmToFm*fgkWcons;
  
- AliHBTParticle *part1 = pair->Particle1();
- AliHBTParticle *part2 = pair->Particle2();
+ AliVAODParticle *part1 = pair->Particle1();
+ AliVAODParticle *part2 = pair->Particle2();
 
- p1[0] = part1->Energy()*1000.0;
+ p1[0] = part1->E()*1000.0;
  p1[1] = part1->Px()*1000.0;
  p1[2] = part1->Py()*1000.0;
  p1[3] = part1->Pz()*1000.0;
  
- p2[0] = part2->Energy()*1000.0;
+ p2[0] = part2->E()*1000.0;
  p2[1] = part2->Px()*1000.0;
  p2[2] = part2->Py()*1000.0;
  p2[3] = part2->Pz()*1000.0;
@@ -227,7 +228,7 @@ void AliHBTCrab::GetComQuantities(const AliHBTPair* pair,
   else //identical
   {
   //  const double  kdotp=fMass2*fMass2-fMass1*fMass1;
-   const double  kdotp = part2->GetMass()*part2->GetMass()- part1->GetMass()*part1->GetMass();
+   const double  kdotp = part2->Mass()*part2->Mass()- part1->Mass()*part1->Mass();
    *test=1;
    *mom=-(p2[0]-p1[0])*(p2[0]-p1[0]);
    ptot2=(p1[0]+p2[0])*(p1[0]+p2[0]);

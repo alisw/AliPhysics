@@ -7,7 +7,7 @@
   #include "AliHBTReaderTPC.h"
   #include "AliHBTParticleCut.h"
   #include "AliHBTEvent.h"
-  #include "AliHBTPairCut.h"
+  #include "AliAODPairCut.h"
   #include "AliHBTQResolutionFctns.h"
   #include "AliHBTTwoTrackEffFctn.h"
   #include "AliHBTCorrelFctn.h"

@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 // class AliHBTQInvCorrelFctn
-// class AliHBTQOutCMSLCCorrelFctn
-// class AliHBTQLongCMSLCCorrelFctn
-// class AliHBTQSideCMSLCCorrelFctn
+// class AliHBTQOutLCMSCorrelFctn
+// class AliHBTQLongLCMSCorrelFctn
+// class AliHBTQSideLCMSCorrelFctn
 // class AliHBTInvMassCorrelFctn
 // class AliHBTTwoKStarCorrelFctn
 //
@@ -71,9 +71,9 @@ void AliHBTOutSideLongFctn::GetValues(AliHBTPair* pair, Double_t& x, Double_t& y
   //calculates values of that function
   //qout qside and qlong
   
-  x=pair->GetQOutCMSLC(); 
-  y=pair->GetQSideCMSLC(); 
-  z=pair->GetQLongCMSLC();
+  x=pair->GetQOutLCMS(); 
+  y=pair->GetQSideLCMS(); 
+  z=pair->GetQLongLCMS();
   if (fAbs)
    {
      x = TMath::Abs(x);
@@ -84,9 +84,9 @@ void AliHBTOutSideLongFctn::GetValues(AliHBTPair* pair, Double_t& x, Double_t& y
 
 /*************************************************************************************/ 
 
-ClassImp(AliHBTQOutCMSLCCorrelFctn)
+ClassImp(AliHBTQOutLCMSCorrelFctn)
     
-AliHBTQOutCMSLCCorrelFctn::AliHBTQOutCMSLCCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+AliHBTQOutLCMSCorrelFctn::AliHBTQOutLCMSCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
   //ctor
@@ -95,7 +95,7 @@ AliHBTQOutCMSLCCorrelFctn::AliHBTQOutCMSLCCorrelFctn(Int_t nbins, Double_t maxXv
 }
 /*************************************************************************************/ 
     
-TH1* AliHBTQOutCMSLCCorrelFctn::GetResult()
+TH1* AliHBTQOutLCMSCorrelFctn::GetResult()
 {
  //returns the scaled ratio
  delete fRatio;
@@ -106,9 +106,9 @@ TH1* AliHBTQOutCMSLCCorrelFctn::GetResult()
 /*************************************************************************************/ 
 /*************************************************************************************/ 
 
-ClassImp(AliHBTQLongCMSLCCorrelFctn)
+ClassImp(AliHBTQLongLCMSCorrelFctn)
     
-AliHBTQLongCMSLCCorrelFctn::AliHBTQLongCMSLCCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+AliHBTQLongLCMSCorrelFctn::AliHBTQLongLCMSCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
   //ctor
@@ -117,7 +117,7 @@ AliHBTQLongCMSLCCorrelFctn::AliHBTQLongCMSLCCorrelFctn(Int_t nbins, Double_t max
 }
 /*************************************************************************************/ 
     
-TH1* AliHBTQLongCMSLCCorrelFctn::GetResult()
+TH1* AliHBTQLongLCMSCorrelFctn::GetResult()
 {
  //returns the scaled ratio
  delete fRatio;
@@ -128,9 +128,9 @@ TH1* AliHBTQLongCMSLCCorrelFctn::GetResult()
 /*************************************************************************************/ 
 /*************************************************************************************/ 
 
-ClassImp(AliHBTQSideCMSLCCorrelFctn)
+ClassImp(AliHBTQSideLCMSCorrelFctn)
     
-AliHBTQSideCMSLCCorrelFctn::AliHBTQSideCMSLCCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+AliHBTQSideLCMSCorrelFctn::AliHBTQSideLCMSCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
  //ctor
@@ -139,7 +139,7 @@ AliHBTQSideCMSLCCorrelFctn::AliHBTQSideCMSLCCorrelFctn(Int_t nbins, Double_t max
 }
 /*************************************************************************************/ 
     
-TH1* AliHBTQSideCMSLCCorrelFctn::GetResult()
+TH1* AliHBTQSideLCMSCorrelFctn::GetResult()
 {
  //returns the scaled ratio
  delete fRatio;

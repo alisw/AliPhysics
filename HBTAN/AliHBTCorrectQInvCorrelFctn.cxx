@@ -37,6 +37,9 @@
 #include <TH3.h>
 #include <TF1.h>
 #include <TRandom.h>
+#include <AliAODParticle.h>
+
+
 ClassImp(AliHBTCorrectQInvCorrelFctn)
 
 AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(const char* name,const char* title):
@@ -197,7 +200,7 @@ void AliHBTCorrectQInvCorrelFctn::ProcessSameEventParticles(AliHBTPair* pair)
 void AliHBTCorrectQInvCorrelFctn::ProcessDiffEventParticles(AliHBTPair* pair)
 {
 //Process different events 
-  static AliHBTParticle part1, part2;
+  static AliAODParticle part1, part2;
   static AliHBTPair smearedpair(&part1,&part2);
   
   pair = CheckPair(pair);
@@ -232,7 +235,7 @@ void AliHBTCorrectQInvCorrelFctn::Smear(AliHBTPair* pair,AliHBTPair& smeared)
 }
 /******************************************************************/
 
-void AliHBTCorrectQInvCorrelFctn::Smear(AliHBTParticle* part, AliHBTParticle* smeared)
+void AliHBTCorrectQInvCorrelFctn::Smear(AliVAODParticle* part, AliVAODParticle* smeared)
 {
  //Smears momenta
   Double_t sin2theta = TMath::Sin(part->Theta());
@@ -250,7 +253,7 @@ void AliHBTCorrectQInvCorrelFctn::Smear(AliHBTParticle* part, AliHBTParticle* sm
   Double_t smearedPz = part->Pz()*(1.0+dPtDivPt) - pt*dtheta/sin2theta;
 //  fourmom.setZ(pz*(1.0+dPtDivPt) - pT*dtheta/sin2theta);
   
-  Double_t mass2 = part->GetMass()*part->GetMass();
+  Double_t mass2 = part->Mass()*part->Mass();
   Double_t e = mass2 + smearedPx*smearedPx + 
                        smearedPy*smearedPy + 
                        smearedPz*smearedPz;

@@ -32,6 +32,7 @@ public:
                                 // ****** constructors and destructor
   AliAODParticle();
   AliAODParticle(const AliAODParticle& in); 
+  AliAODParticle(const AliVAODParticle& in); 
  
   AliAODParticle(Int_t pdg, Int_t idx, Double_t px, Double_t py, Double_t pz, Double_t etot,
                  Double_t vx, Double_t vy, Double_t vz, Double_t time);
@@ -51,11 +52,12 @@ public:
   void           SetPIDprobability(Int_t pdg, Float_t prob = 1.0);
   Float_t        GetPIDprobability(Int_t pdg) const;
   Double_t       GetProbability(Int_t pdg) const {return GetPIDprobability(pdg);}
+  
   Int_t          GetMostProbable() const { return (fPids)?fPids[0]:0;}
   
   Int_t          GetPdgCode      () const { return (fPids)?fPids[fPdgIdx]:0;}
 
-  Float_t        GetPidProb      () const { return (fPidProb)?fPidProb[fPdgIdx]:0;}
+  Double_t        GetPidProb      () const { return (fPidProb)?fPidProb[fPdgIdx]:0;}
   
   Int_t          GetUID          () const { return fIdxInEvent;}
   Int_t          GetNumberOfPids () const { return fNPids;}
@@ -118,15 +120,17 @@ public:
                              {SetProductionVertex(v.X(),v.Y(),v.Z(),v.T());}
   void           SetCalcMass(Double_t mass) {fCalcMass = mass;}
   
-  void           SetUID(Int_t id){fIdxInEvent = id;}
+  void            SetUID(Int_t id){fIdxInEvent = id;}
   
-  const Char_t*  GetName() const; 
-  void           Print() const;
+  const Char_t*   GetName() const; 
+  void            Print() const;
   
-  void           SetTrackPoints(AliTrackPoints* tpts){fTrackPoints = tpts;}
-  AliTrackPoints* GetTrackPoints() const {return fTrackPoints;}
-  void           SetClusterMap(AliClusterMap* cm){fClusterMap = cm;}
-  AliClusterMap* GetClusterMap() const {return fClusterMap;}
+  void            SetTPCTrackPoints(AliTrackPoints* tpts){fTPCTrackPoints = tpts;}
+  AliTrackPoints* GetTPCTrackPoints() const {return fTPCTrackPoints;}
+  void            SetITSTrackPoints(AliTrackPoints* tpts){fITSTrackPoints = tpts;}
+  AliTrackPoints* GetITSTrackPoints() const {return fITSTrackPoints;}
+  void            SetClusterMap(AliClusterMap* cm){fClusterMap = cm;}
+  AliClusterMap*  GetClusterMap() const {return fClusterMap;}
   
   
 protected:
@@ -152,7 +156,8 @@ private:
   Double_t       fVz;                   // z of production vertex
   Double_t       fVt;                   // t of production vertex
 
-  AliTrackPoints* fTrackPoints;      // track positions along trajectory - used by anti-merging cut
+  AliTrackPoints* fTPCTrackPoints;      // track positions along trajectory - used by anti-merging cut
+  AliTrackPoints* fITSTrackPoints;      // track positions along trajectory - used by anti-merging cut
   AliClusterMap*  fClusterMap;       // bit map of cluters occupation; 1 if has cluter on given layer/padrow/...
     
   ClassDef(AliAODParticle,3)  // TParticle vertex particle information

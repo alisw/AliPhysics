@@ -7,7 +7,7 @@
 //
 // Central Object Of HBTAnalyser: 
 // This class performs main looping within HBT Analysis
-// User must plug a reader of Type AliHBTReader
+// User must plug a reader of Type AliReader
 // User plugs in coorelation and monitor functions
 // as well as monitor functions
 //
@@ -20,16 +20,16 @@
 ////////////////////////////////////////////////////////////////////////////
 //_________________________________________________________
 
-#include <TObject.h>
-#include "AliHBTPairCut.h"
-#include "AliHBTParticleCut.h"
+#include <AliAnalysis.h>
+#include "AliAODPairCut.h"
+#include "AliAODParticleCut.h"
 
 class AliHBTCut;
-class AliHBTPair;
+//class AliHBTPair;
 
 class AliHBTRun;
-class AliHBTEvent;
-class AliHBTReader;
+class AliAOD;
+class AliReader;
 class AliHBTOnePairFctn;      
 class AliHBTTwoPairFctn;
 
@@ -38,7 +38,7 @@ class AliHBTMonTwoParticleFctn;
 
 class TList;
 
-class AliHBTAnalysis: public TObject
+class AliHBTAnalysis: public AliAnalysis
  {
    public:
      AliHBTAnalysis();
@@ -46,9 +46,13 @@ class AliHBTAnalysis: public TObject
      AliHBTAnalysis& operator=(const AliHBTAnalysis& /*right*/);
      virtual ~AliHBTAnalysis();
 
+     Int_t  Init();
+     Int_t ProcessEvent(AliAOD* aodrec, AliAOD* aodsim = 0x0);
+     Int_t Finish();
+     
      virtual void Process(Option_t* option = "TracksAndParticles");
      
-     void SetGlobalPairCut(AliHBTPairCut* cut);
+     void SetGlobalPairCut(AliAODPairCut* cut);
      
      void AddTrackFunction(AliHBTOnePairFctn* f);
      void AddParticleFunction(AliHBTOnePairFctn* f);
@@ -60,7 +64,7 @@ class AliHBTAnalysis: public TObject
 
      void AddResolutionFunction(AliHBTTwoPairFctn* f){AddParticleAndTrackFunction(f);}
      
-     void SetReader(AliHBTReader* r){fReader = r;}
+     void SetReader(AliReader* r){fReader = r;}
      
      void WriteFunctions();
      
@@ -68,7 +72,6 @@ class AliHBTAnalysis: public TObject
      void SetOwner(Bool_t owner=kTRUE){fIsOwner=owner;}
      Bool_t IsOwner() const {return fIsOwner;}
      Bool_t IsNonIdentAnalysis();
-     void   Init();
      void   ResetFunctions();
      void   SetDisplayInfo(Int_t howoften){fDisplayMixingInfo = howoften;}//defines every each line info about mixing is displayed
      
@@ -81,9 +84,9 @@ class AliHBTAnalysis: public TObject
      
      Bool_t RunCoherencyCheck();
      
-     void FilterOut(AliHBTEvent* outpart1, AliHBTEvent* outpart2, AliHBTEvent* inpart,
-                    AliHBTEvent* outtrack1, AliHBTEvent* outtrack2, AliHBTEvent* intrack)const;
-     void FilterOut(AliHBTEvent* out1, AliHBTEvent* out2, AliHBTEvent* in)const;
+     void FilterOut(AliAOD* outpart1, AliAOD* outpart2, AliAOD* inpart,
+                    AliAOD* outtrack1, AliAOD* outtrack2, AliAOD* intrack)const;
+     void FilterOut(AliAOD* out1, AliAOD* out2, AliAOD* in)const;
      void DeleteFunctions();
      
      virtual void ProcessTracks();
@@ -94,7 +97,7 @@ class AliHBTAnalysis: public TObject
      virtual void ProcessParticlesNonIdentAnal();
      virtual void ProcessTracksNonIdentAnal();
 
-     AliHBTReader* fReader;//! Pointer to reader
+     AliReader* fReader;//! Pointer to reader
      
      UInt_t fNTrackFunctions; //! Number of Tracks functions 
      UInt_t fNParticleFunctions; //! Number of particles functions
@@ -118,32 +121,32 @@ class AliHBTAnalysis: public TObject
      /* Control parameters  */
      /**********************************************/
 
-     AliHBTPairCut*          fPairCut;//! Pair cut applied for all mixed particles
+     AliAODPairCut*   fPairCut;//! Pair cut applied for all mixed particles
       
      Int_t  fBufferSize; //!defines the size of buffer for mixed events; -1==MIX All
      Int_t  fDisplayMixingInfo;//!defines every which particle mixing info is displayed
      Bool_t fIsOwner;//!defines of all functions are supposed to be deleted while by the way of analysis defaulr false
 
    private:
-     Bool_t (AliHBTAnalysis::*fkPass)(AliHBTPair* partpair, AliHBTPair* trackpair) const;//Pointer to function that performes pair cut
-     Bool_t (AliHBTAnalysis::*fkPass1)(AliHBTParticle* partpair, AliHBTParticle* trackpair) const;//Pointer to function that performes cut on first particle
-     Bool_t (AliHBTAnalysis::*fkPass2)(AliHBTParticle* partpair, AliHBTParticle* trackpair) const;//Pointer to function that performes cut on second particle
-     Bool_t (AliHBTAnalysis::*fkPassPairProp)(AliHBTPair* partpair, AliHBTPair* trackpair) const;//Pointer to function that performes pair cut
+     Bool_t (AliHBTAnalysis::*fkPass)(AliAODPair* partpair, AliAODPair* trackpair) const;//Pointer to function that performes pair cut
+     Bool_t (AliHBTAnalysis::*fkPass1)(AliVAODParticle* partpair, AliVAODParticle* trackpair) const;//Pointer to function that performes cut on first particle
+     Bool_t (AliHBTAnalysis::*fkPass2)(AliVAODParticle* partpair, AliVAODParticle* trackpair) const;//Pointer to function that performes cut on second particle
+     Bool_t (AliHBTAnalysis::*fkPassPairProp)(AliAODPair* partpair, AliAODPair* trackpair) const;//Pointer to function that performes pair cut
      
-     Bool_t PassPartAndTrack (AliHBTPair* partpair, AliHBTPair* trackpair) const {return (fPairCut->Pass(partpair))?kTRUE:fPairCut->Pass(trackpair);}
-     Bool_t PassPartAndTrack1(AliHBTParticle* part, AliHBTParticle* track) const;
-     Bool_t PassPartAndTrack2(AliHBTParticle* part, AliHBTParticle* track) const;
-     Bool_t PassPairPropPartAndTrack (AliHBTPair* partpair, AliHBTPair* trackpair) const {return (fPairCut->PassPairProp(partpair))?kTRUE:fPairCut->PassPairProp(trackpair);}
+     Bool_t PassPartAndTrack (AliAODPair* partpair, AliAODPair* trackpair) const {return (fPairCut->Pass((AliAODPair*)partpair))?kTRUE:fPairCut->Pass((AliAODPair*)trackpair);}
+     Bool_t PassPartAndTrack1(AliVAODParticle* part, AliVAODParticle* track) const;
+     Bool_t PassPartAndTrack2(AliVAODParticle* part, AliVAODParticle* track) const;
+     Bool_t PassPairPropPartAndTrack (AliAODPair* partpair, AliAODPair* trackpair) const {return (fPairCut->PassPairProp((AliAODPair*)partpair))?kTRUE:fPairCut->PassPairProp((AliAODPair*)trackpair);}
      
-     Bool_t PassPart (AliHBTPair* partpair, AliHBTPair* /*trackpair*/) const{return fPairCut->Pass(partpair);}
-     Bool_t PassPart1(AliHBTParticle* part, AliHBTParticle* /*track*/) const{return fPairCut->GetFirstPartCut()->Pass(part);}
-     Bool_t PassPart2(AliHBTParticle* part, AliHBTParticle* /*track*/) const{return fPairCut->GetSecondPartCut()->Pass(part);}
-     Bool_t PassPairPropPart (AliHBTPair* partpair, AliHBTPair* /*trackpair*/) const{return fPairCut->PassPairProp(partpair);}
+     Bool_t PassPart (AliAODPair* partpair, AliAODPair* /*trackpair*/) const {return fPairCut->Pass((AliAODPair*)partpair);}
+     Bool_t PassPart1(AliVAODParticle* part, AliVAODParticle* /*track*/) const {return fPairCut->GetFirstPartCut()->Pass(part);}
+     Bool_t PassPart2(AliVAODParticle* part, AliVAODParticle* /*track*/) const {return fPairCut->GetSecondPartCut()->Pass(part);}
+     Bool_t PassPairPropPart (AliAODPair* partpair, AliAODPair* /*trackpair*/) const {return fPairCut->PassPairProp((AliAODPair*)partpair);}
      
-     Bool_t PassTrack (AliHBTPair* /*partpair*/, AliHBTPair* trackpair) const{return fPairCut->Pass(trackpair);}
-     Bool_t PassTrack1(AliHBTParticle* /*part*/, AliHBTParticle* track) const{return fPairCut->GetFirstPartCut()->Pass(track);}
-     Bool_t PassTrack2(AliHBTParticle* /*part*/, AliHBTParticle* track) const{return fPairCut->GetSecondPartCut()->Pass(track);}
-     Bool_t PassPairPropTrack (AliHBTPair* /*partpair*/, AliHBTPair* trackpair) const{return fPairCut->PassPairProp(trackpair);}
+     Bool_t PassTrack (AliAODPair* /*partpair*/, AliAODPair* trackpair) const {return fPairCut->Pass((AliAODPair*)trackpair);}
+     Bool_t PassTrack1(AliVAODParticle* /*part*/, AliVAODParticle* track) const {return fPairCut->GetFirstPartCut()->Pass(track);}
+     Bool_t PassTrack2(AliVAODParticle* /*part*/, AliVAODParticle* track) const {return fPairCut->GetSecondPartCut()->Pass(track);}
+     Bool_t PassPairPropTrack (AliAODPair* /*partpair*/, AliAODPair* trackpair) const {return fPairCut->PassPairProp((AliAODPair*)trackpair);}
 
      static const UInt_t fgkFctnArraySize;//!
      static const UInt_t fgkDefaultMixingInfo;//!
@@ -152,17 +155,17 @@ class AliHBTAnalysis: public TObject
      ClassDef(AliHBTAnalysis,0)
  };
  
-inline Bool_t AliHBTAnalysis::PassPartAndTrack1(AliHBTParticle* part,AliHBTParticle* track) const
+inline Bool_t AliHBTAnalysis::PassPartAndTrack1(AliVAODParticle* part,AliVAODParticle* track) const
 {
 //Checks first particle from both, particle and track pairs
-  AliHBTParticleCut* pc = fPairCut->GetFirstPartCut();
+  AliAODParticleCut* pc = fPairCut->GetFirstPartCut();
   return (pc->Pass(part))?kTRUE:pc->Pass(track);
 }
 /*************************************************************************************/ 
-inline Bool_t AliHBTAnalysis::PassPartAndTrack2(AliHBTParticle* part,AliHBTParticle* track) const
+inline Bool_t AliHBTAnalysis::PassPartAndTrack2(AliVAODParticle* part,AliVAODParticle* track) const
 {
 //Checks second particle from both, particle and track pairs
-  AliHBTParticleCut* pc = fPairCut->GetSecondPartCut();
+  AliAODParticleCut* pc = fPairCut->GetSecondPartCut();
   return (pc->Pass(part))?kTRUE:pc->Pass(track);
 }
 /*************************************************************************************/ 

@@ -50,7 +50,7 @@ class AliHBTWeightTheorQOutFctn: public AliHBTOnePairFctn1D, public AliHBTCorrel
 
   protected:
     Double_t GetValue(AliHBTPair* partpair) const
-      { return partpair->GetQOutCMSLC();}
+      { return partpair->GetQOutLCMS();}
 
     ClassDef(AliHBTWeightTheorQOutFctn,1)
 };
@@ -67,7 +67,7 @@ class AliHBTWeightTheorQSideFctn: public AliHBTOnePairFctn1D, public AliHBTCorre
     
   protected:
     Double_t GetValue(AliHBTPair* partpair) const
-      { return partpair->GetQSideCMSLC();} 
+      { return partpair->GetQSideLCMS();} 
 
     ClassDef(AliHBTWeightTheorQSideFctn,1)
 };
@@ -84,7 +84,7 @@ class AliHBTWeightTheorQLongFctn: public AliHBTOnePairFctn1D, public AliHBTCorre
   
   protected:
     Double_t GetValue(AliHBTPair* partpair) const
-      { return partpair->GetQLongCMSLC();} 
+      { return partpair->GetQLongLCMS();} 
 
     ClassDef(AliHBTWeightTheorQLongFctn,1)
 };
@@ -104,7 +104,7 @@ class AliHBTWeightTheorOSLFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelF
   
   protected:
     void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const
-      { x=TMath::Abs(pair->GetQOutCMSLC()); y=TMath::Abs(pair->GetQSideCMSLC()); z=TMath::Abs(pair->GetQLongCMSLC());} 
+      { x=TMath::Abs(pair->GetQOutLCMS()); y=TMath::Abs(pair->GetQSideLCMS()); z=TMath::Abs(pair->GetQLongLCMS());} 
 
     ClassDef(AliHBTWeightTheorOSLFctn,1)
 };

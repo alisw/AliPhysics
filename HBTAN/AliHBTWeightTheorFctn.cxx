@@ -78,7 +78,7 @@ void  AliHBTWeightTheorQOutFctn::ProcessSameEventParticles(AliHBTPair* partpair)
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
   Double_t weight = partpair->GetWeight();
-  if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQOutCMSLC(),weight);
+  if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQOutLCMS(),weight);
 } 
 
 /**************************************************************/
@@ -112,7 +112,7 @@ void  AliHBTWeightTheorQSideFctn::ProcessSameEventParticles(AliHBTPair* partpair
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
   Double_t weight = partpair->GetWeight();
-  if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQSideCMSLC(),weight);
+  if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQSideLCMS(),weight);
 } 
 /**************************************************************/
 
@@ -146,7 +146,7 @@ void  AliHBTWeightTheorQLongFctn::ProcessSameEventParticles(AliHBTPair* partpair
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
   Double_t weight = partpair->GetWeight();
-  if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQLongCMSLC(),weight);
+  if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQLongLCMS(),weight);
 } 
 /**************************************************************/
 
@@ -182,9 +182,9 @@ void AliHBTWeightTheorOSLFctn::ProcessSameEventParticles(AliHBTPair* partpair)
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
   Double_t weight = partpair->GetWeight();
-  Double_t out = TMath::Abs(partpair->GetQOutCMSLC());
-  Double_t side = TMath::Abs(partpair->GetQSideCMSLC());
-  Double_t lon = TMath::Abs(partpair->GetQLongCMSLC());
+  Double_t out = TMath::Abs(partpair->GetQOutLCMS());
+  Double_t side = TMath::Abs(partpair->GetQSideLCMS());
+  Double_t lon = TMath::Abs(partpair->GetQLongLCMS());
 
 /*  
   if (out < 0.01)

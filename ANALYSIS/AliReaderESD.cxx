@@ -475,7 +475,7 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
         //Single Particle cuts on cluster map and track points rather do not have sense
         if (tpts)
          {
-           track->SetTrackPoints(tpts); 
+           track->SetTPCTrackPoints(tpts);
          }
 
         if (cmap) 

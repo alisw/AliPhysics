@@ -52,7 +52,7 @@ void AliHBTMonPIDPurityVsPtFctn::Write()
 void AliHBTMonPIDPurityVsPtFctn::Init()
 {
 //Initializes fuction
-  if (AliHBTParticle::GetDebug()>0) Info("Init","%s",GetName());
+  if (AliVAODParticle::GetDebug()>0) Info("Init","%s",GetName());
 
   if (fResult == 0x0)
    {   
@@ -86,7 +86,7 @@ void AliHBTMonPIDPurityVsPtFctn::Init()
   fAll->SetDirectory(0x0);
   fAll->Sumw2();
 
-  if (AliHBTParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
+  if (AliVAODParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
 }
 
 /******************************************************************/
@@ -163,7 +163,7 @@ TH1* AliHBTMonPIDPurityVsPtFctn::GetResult()
 }
 /******************************************************************/
 
-void AliHBTMonPIDPurityVsPtFctn::Process(AliHBTParticle * track,AliHBTParticle * part)
+void AliHBTMonPIDPurityVsPtFctn::Process(AliVAODParticle * track,AliVAODParticle * part)
 {
  //process the particle/track
  Double_t pt = part->Pt();
@@ -214,7 +214,7 @@ void AliHBTMonPIDContaminationVsPtFctn::Write()
 void AliHBTMonPIDContaminationVsPtFctn::Init()
 {
 //Initializes fuction
-  if (AliHBTParticle::GetDebug()>0) Info("Init","%s",GetName());
+  if (AliVAODParticle::GetDebug()>0) Info("Init","%s",GetName());
 
   if (fResult == 0x0)
    {   
@@ -247,7 +247,7 @@ void AliHBTMonPIDContaminationVsPtFctn::Init()
   fAll->SetDirectory(0x0);
   fAll->Sumw2();
   
-  if (AliHBTParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
+  if (AliVAODParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
 }
 
 /******************************************************************/
@@ -323,7 +323,7 @@ TH1* AliHBTMonPIDContaminationVsPtFctn::GetResult()
 }
 /******************************************************************/
 
-void AliHBTMonPIDContaminationVsPtFctn::Process(AliHBTParticle * track, AliHBTParticle * part)
+void AliHBTMonPIDContaminationVsPtFctn::Process(AliVAODParticle * track, AliVAODParticle * part)
 {
  //process the particle/track
  Double_t pt = part->Pt();
@@ -354,8 +354,8 @@ AliHBTQInvCorrelFctnPerfectPID::AliHBTQInvCorrelFctnPerfectPID(Int_t nbins, Doub
 void AliHBTQInvCorrelFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //Fills numerator
-  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
-  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+  if (trackpair->Particle1()->GetPdgCode() != partpair->Particle1()->GetPdgCode()) return;
+  if (trackpair->Particle2()->GetPdgCode() != partpair->Particle2()->GetPdgCode()) return;
 
   trackpair  = CheckPair(trackpair);
   if (trackpair == 0x0) return;
@@ -369,8 +369,8 @@ void AliHBTQInvCorrelFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* track
 void AliHBTQInvCorrelFctnPerfectPID::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //Fills numerator
-  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
-  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+  if (trackpair->Particle1()->GetPdgCode() != partpair->Particle1()->GetPdgCode()) return;
+  if (trackpair->Particle2()->GetPdgCode() != partpair->Particle2()->GetPdgCode()) return;
 
   trackpair  = CheckPair(trackpair);
   if (trackpair == 0x0) return;
@@ -408,8 +408,8 @@ AliHBTWeightQInvCorrelFctnPerfectPID::AliHBTWeightQInvCorrelFctnPerfectPID(Int_t
 void AliHBTWeightQInvCorrelFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //Fills numerator
-  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
-  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+  if (trackpair->Particle1()->GetPdgCode() != partpair->Particle1()->GetPdgCode()) return;
+  if (trackpair->Particle2()->GetPdgCode() != partpair->Particle2()->GetPdgCode()) return;
 
   trackpair  = CheckPair(trackpair);
   if (trackpair == 0x0) return;
@@ -423,8 +423,8 @@ void AliHBTWeightQInvCorrelFctnPerfectPID::ProcessSameEventParticles(AliHBTPair*
 void AliHBTWeightQInvCorrelFctnPerfectPID::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //Fills numerator
-  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
-  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+  if (trackpair->Particle1()->GetPdgCode() != partpair->Particle1()->GetPdgCode()) return;
+  if (trackpair->Particle2()->GetPdgCode() != partpair->Particle2()->GetPdgCode()) return;
 
   trackpair  = CheckPair(trackpair);
   if (trackpair == 0x0) return;
@@ -466,8 +466,8 @@ AliHBTWeightQOutSQideQLongFctnPerfectPID::AliHBTWeightQOutSQideQLongFctnPerfectP
 void AliHBTWeightQOutSQideQLongFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //Fills numerator
-  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
-  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+  if (trackpair->Particle1()->GetPdgCode() != partpair->Particle1()->GetPdgCode()) return;
+  if (trackpair->Particle2()->GetPdgCode() != partpair->Particle2()->GetPdgCode()) return;
 
   trackpair  = CheckPair(trackpair);
   if (trackpair == 0x0) return;
@@ -475,9 +475,9 @@ void AliHBTWeightQOutSQideQLongFctnPerfectPID::ProcessSameEventParticles(AliHBTP
   if (partpair == 0x0) return;
 
   Double_t weight = partpair->GetWeight();
-  Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
-  Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
-  Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+  Double_t out = TMath::Abs(trackpair->GetQOutLCMS());
+  Double_t side = TMath::Abs(trackpair->GetQSideLCMS());
+  Double_t lon = TMath::Abs(trackpair->GetQLongLCMS());
   fNumerator->Fill(out,side,lon,weight);
 }
 /*************************************************************/
@@ -485,17 +485,17 @@ void AliHBTWeightQOutSQideQLongFctnPerfectPID::ProcessSameEventParticles(AliHBTP
 void AliHBTWeightQOutSQideQLongFctnPerfectPID::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //Fills numerator
-  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
-  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+  if (trackpair->Particle1()->GetPdgCode() != partpair->Particle1()->GetPdgCode()) return;
+  if (trackpair->Particle2()->GetPdgCode() != partpair->Particle2()->GetPdgCode()) return;
 
   trackpair  = CheckPair(trackpair);
   if (trackpair == 0x0) return;
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
 
-  Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
-  Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
-  Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+  Double_t out = TMath::Abs(trackpair->GetQOutLCMS());
+  Double_t side = TMath::Abs(trackpair->GetQSideLCMS());
+  Double_t lon = TMath::Abs(trackpair->GetQLongLCMS());
   fDenominator->Fill(out,side,lon);
 }
 /******************************************************************/
@@ -530,17 +530,17 @@ AliHBTQOutSQideQLongFctnPerfectPID::AliHBTQOutSQideQLongFctnPerfectPID
 void AliHBTQOutSQideQLongFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //Fills numerator
-  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
-  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+  if (trackpair->Particle1()->GetPdgCode() != partpair->Particle1()->GetPdgCode()) return;
+  if (trackpair->Particle2()->GetPdgCode() != partpair->Particle2()->GetPdgCode()) return;
 
   trackpair  = CheckPair(trackpair);
   if (trackpair == 0x0) return;
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
   
-  Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
-  Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
-  Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+  Double_t out = TMath::Abs(trackpair->GetQOutLCMS());
+  Double_t side = TMath::Abs(trackpair->GetQSideLCMS());
+  Double_t lon = TMath::Abs(trackpair->GetQLongLCMS());
   fNumerator->Fill(out,side,lon);
 }
 /*************************************************************/
@@ -548,17 +548,17 @@ void AliHBTQOutSQideQLongFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* t
 void AliHBTQOutSQideQLongFctnPerfectPID::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //Fills numerator
-  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
-  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+  if (trackpair->Particle1()->GetPdgCode() != partpair->Particle1()->GetPdgCode()) return;
+  if (trackpair->Particle2()->GetPdgCode() != partpair->Particle2()->GetPdgCode()) return;
 
   trackpair  = CheckPair(trackpair);
   if (trackpair == 0x0) return;
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
   
-  Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
-  Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
-  Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+  Double_t out = TMath::Abs(trackpair->GetQOutLCMS());
+  Double_t side = TMath::Abs(trackpair->GetQSideLCMS());
+  Double_t lon = TMath::Abs(trackpair->GetQLongLCMS());
   fDenominator->Fill(out,side,lon);
 }
 /******************************************************************/
@@ -634,9 +634,9 @@ void AliHBTPairPIDProbVsQOutSQideQLongFctn::ProcessSameEventParticles(AliHBTPair
   pair  = CheckPair(pair);
   if (pair == 0x0) return;
   Double_t weight = pair->GetPIDProb();
-  Double_t out = TMath::Abs(pair->GetQOutCMSLC());
-  Double_t side = TMath::Abs(pair->GetQSideCMSLC());
-  Double_t lon = TMath::Abs(pair->GetQLongCMSLC());
+  Double_t out = TMath::Abs(pair->GetQOutLCMS());
+  Double_t side = TMath::Abs(pair->GetQSideLCMS());
+  Double_t lon = TMath::Abs(pair->GetQLongLCMS());
   fNumerator->Fill(out,side,lon,weight);
 }
 /*************************************************************/
@@ -647,9 +647,9 @@ void AliHBTPairPIDProbVsQOutSQideQLongFctn::ProcessDiffEventParticles(AliHBTPair
   pair  = CheckPair(pair);
   if (pair == 0x0) return;
   Double_t weight = pair->GetPIDProb();
-  Double_t out = TMath::Abs(pair->GetQOutCMSLC());
-  Double_t side = TMath::Abs(pair->GetQSideCMSLC());
-  Double_t lon = TMath::Abs(pair->GetQLongCMSLC());
+  Double_t out = TMath::Abs(pair->GetQOutLCMS());
+  Double_t side = TMath::Abs(pair->GetQSideLCMS());
+  Double_t lon = TMath::Abs(pair->GetQLongLCMS());
   fDenominator->Fill(out,side,lon,weight);
 }
 /*************************************************************/
@@ -697,8 +697,8 @@ AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID::AliHBTTwoTrackEffFctnPtThetaPhiPerfec
 void AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //Fills numerator
-  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
-  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+  if (trackpair->Particle1()->GetPdgCode() != partpair->Particle1()->GetPdgCode()) return;
+  if (trackpair->Particle2()->GetPdgCode() != partpair->Particle2()->GetPdgCode()) return;
 
   trackpair  = CheckPair(trackpair);
   if (trackpair == 0x0) return;
@@ -715,8 +715,8 @@ void AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID::ProcessSameEventParticles(AliHBT
 void AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //Fills numerator
-  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
-  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+  if (trackpair->Particle1()->GetPdgCode() != partpair->Particle1()->GetPdgCode()) return;
+  if (trackpair->Particle2()->GetPdgCode() != partpair->Particle2()->GetPdgCode()) return;
 
   trackpair  = CheckPair(trackpair);
   if (trackpair == 0x0) return;
