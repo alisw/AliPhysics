@@ -12,7 +12,6 @@ PACKAGE = EMCAL
 SRCS          =  AliEMCAL.cxx  AliEMCALGeometry.cxx AliEMCALv0.cxx \
 	         AliEMCALv1.cxx AliEMCALHit.cxx AliEMCALDigit.cxx \
                  AliEMCALSDigitizer.cxx AliEMCALDigitizer.cxx \
-		 AliEMCALGetter.cxx \
 		 AliEMCALJetFinder.cxx AliEMCALJet.cxx AliEMCALFast.cxx \
 	         AliEMCALGetter.cxx AliEMCALTick.cxx \
 		 AliEMCALRecPoint.cxx AliEMCALTowerRecPoint.cxx \
