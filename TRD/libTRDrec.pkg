@@ -13,6 +13,7 @@ SRCS= AliTRDpixel.cxx \
       AliTRDpidLQ.cxx \
       AliTRDPartID.cxx \
       AliTRDpidESD.cxx \
+      AliTRDprobdist.cxx \
       AliTRDReconstructor.cxx
 
 HDRS= $(SRCS:.cxx=.h)                

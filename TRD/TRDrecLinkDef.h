@@ -28,6 +28,7 @@
 #pragma link C++ class  AliTRDpidLQ+;
 #pragma link C++ class  AliTRDPartID+;
 #pragma link C++ class  AliTRDpidESD+;
+#pragma link C++ class  AliTRDprobdist+;
 
 #pragma link C++ class  AliTRDReconstructor+;
 
