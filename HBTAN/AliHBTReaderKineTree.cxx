@@ -166,7 +166,7 @@ Int_t AliHBTReaderKineTree::OpenNextFile()
  if ( fRunLoader == 0x0)
   {
     Error("OpenNextFile","Can't open session from file %s",filename.Data());
-    return 0x0;
+    return 1;
   }
   
  if (fRunLoader->GetNumberOfEvents() <= 0)
@@ -174,13 +174,13 @@ Int_t AliHBTReaderKineTree::OpenNextFile()
     Error("OpenNextFile","There is no events in this directory.");
     delete fRunLoader;
     fRunLoader = 0x0;
-    return 1;
+    return 2;
   }
   
  if (fRunLoader->LoadKinematics())
   {
     Error("OpenNextFile","Error occured while loading kinematics.");
-    return 1;
+    return 3;
   }
   
  fCurrentEvent = 0;
