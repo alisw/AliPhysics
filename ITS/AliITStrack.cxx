@@ -446,13 +446,20 @@ void AliITStrack::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double_t
 //  add energy loss
 
   TVector s(6);  
-  //s(0)=0.0026+0.00283; s(1)=0.018; s(2)=0.0094; s(3)=0.0095; s(4)=0.0091; s(5)=0.0087;
+  s(0)=0.0026+0.00283; s(1)=0.018; s(2)=0.0094; s(3)=0.0095; s(4)=0.0091; s(5)=0.0087;
   //0.00277 is added in the first layer to take into account the energy loss in the beam pipe
 
   //for(int k=0; k<6; k++) cout<<s(k)<<" "; cout<<"\n";
-  
+  for(int k=0; k<6; k++) s(k)=s(k)*1.6;
+ 
   
   Double_t phi=fX0;
+  
+  if(phi<0.174 ) s(5)=s(5)+0.012; 
+   if(phi>6.1 ) s(5)=s(5)+0.012; // to take into account rail 
+   if(phi>2.96 && phi<3.31 ) s(5)=s(5)+0.012;   
+  
+   
   Double_t tgl=fX3;
   Double_t theta=((TMath::Pi())/2.)-TMath::ATan(tgl);
   //phi*=180./TMath::Pi();
@@ -471,13 +478,16 @@ void AliITStrack::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double_t
   if(i>=imax) i=imax-1;
   if(j<0) j=0;
   if(j>=jmax) j=jmax-1;
-  
+  /*
   s(0) = 0.0028/TMath::Sin(theta)+( rl->GetRadMatrix1() )(i,j);   // 0.0028 takes into account the beam pipe
   s(1) = ( rl->GetRadMatrix2() )(i,j);
   s(2) = ( rl->GetRadMatrix3() )(i,j);
   s(3) = ( rl->GetRadMatrix4() )(i,j);
   s(4) = ( rl->GetRadMatrix5() )(i,j);
   s(5) = ( rl->GetRadMatrix6() )(i,j);
+  
+
+  */  
   
   //for(int k=0; k<6; k++) cout<<s(k)<<" "; getchar();
     
@@ -508,6 +518,7 @@ void AliITStrack::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double_t
   if(fX4 < 0.) sign=-1.; 
   pt=sign*p/sqcl; 
   Double_t CC=(0.299792458*0.2)/(pt*100.);
+  //Double_t CC=(0.299792458*0.5)/(pt*100.);
   fX4=CC;
   
 }
@@ -540,11 +551,16 @@ void AliITStrack::AddMS(AliITSRad *rl) {
    
   TVector s(6);
 
-  //s(0)=0.0026+0.00283; s(1)=0.018; s(2)=0.0094; s(3)=0.0095; s(4)=0.0091; s(5)=0.0087;
+  s(0)=0.0026+0.00283; s(1)=0.018; s(2)=0.0094; s(3)=0.0095; s(4)=0.0091; s(5)=0.0087;
 //0.00277 is added in the first layer to take into account the energy loss in the beam pipe 
 
-
+  for(int k=0; k<6; k++) s(k)=s(k)*1.6;
+  
   Double_t phi=fX0;
+ if(phi<0.174 ) s(5)=s(5)+0.012; //aggiunta provvisoria
+  if(phi>6.1 ) s(5)=s(5)+0.012; //aggiunta provvisoria  
+   if(phi>2.96 && phi< 3.31) s(5)=s(5)+0.012; //aggiunta provvisoria 
+      
   Double_t tgl=fX3;
   Double_t theta=((TMath::Pi())/2.)-TMath::ATan(tgl);
   Double_t rad40=(TMath::Pi())*40./180.;      // rivedere
@@ -559,14 +575,14 @@ void AliITStrack::AddMS(AliITSRad *rl) {
   if(i>=imax) i=imax-1;
   if(j<0) j=0;
   if(j>=jmax) j=jmax-1;
-  
+  /*
   s(0) = 0.0028/TMath::Sin(theta)+( rl->GetRadMatrix1() )(i,j);   // 0.0028 takes into account the beam pipe
   s(1) = ( rl->GetRadMatrix2() )(i,j);
   s(2) = ( rl->GetRadMatrix3() )(i,j);
   s(3) = ( rl->GetRadMatrix4() )(i,j);
   s(4) = ( rl->GetRadMatrix5() )(i,j);
   s(5) = ( rl->GetRadMatrix6() )(i,j);
-      
+   */   
   Double_t mass=0.1396;
   Int_t layer=(Int_t)GetLayer();
   

@@ -1,5 +1,6 @@
 #ifndef __CINT__
   #include "alles.h"
+ #include "AliTPCtracker.h"  
 #endif
 
 struct GoodTrack {
@@ -16,13 +17,14 @@ Int_t TPCtracks() {
   Int_t i;
    gBenchmark->Start("AliTPCComparison");
   //to run alone 
-// AliKalmanTrack::SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());   
+ AliKalmanTrack::SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());   
 
    TFile *cf=TFile::Open("AliTPCclusters.root");
    if (!cf->IsOpen()) {cerr<<"Can't open AliTPCclusters.root !\n"; return 1;}
    AliTPCParam *digp= (AliTPCParam*)cf->Get("75x40_100x60");
    if (!digp) { cerr<<"TPC parameters have not been found !\n"; return 2; }
-
+   AliTPCtracker *tracker = new AliTPCtracker(digp);
+/*   
 // Load clusters
    AliTPCClustersArray *ca=new AliTPCClustersArray;
    ca->Setup(digp);
@@ -30,12 +32,18 @@ Int_t TPCtracks() {
    ca->ConnectTree("Segment Tree");
    Int_t nentr=Int_t(ca->GetTree()->GetEntries());
    for (i=0; i<nentr; i++) ca->LoadEntry(i);
-
+*/
+// Load clusters
+   tracker->LoadInnerSectors();
+   tracker->LoadOuterSectors();
+   
 // Load tracks
    TFile *tf=TFile::Open("AliTPCtracks.root");
    if (!tf->IsOpen()) {cerr<<"Can't open AliTPCtracks.root !\n"; return 3;}
    TObjArray tarray(2000);
-   TTree *tracktree=(TTree*)tf->Get("TreeT");
+  // TTree *tracktree=(TTree*)tf->Get("TreeT");
+   TTree *tracktree=(TTree*)tf->Get("TPCf");
+   if (!tracktree) {cerr<<"Can't get a tree with TPC tracks !\n"; return 4;}   
    TBranch *tbranch=tracktree->GetBranch("tracks");
    nentr=(Int_t)tracktree->GetEntries();
    
@@ -44,12 +52,16 @@ Int_t TPCtracks() {
        iotrack=new AliTPCtrack;
        tbranch->SetAddress(&iotrack);
        tracktree->GetEvent(i);
-       iotrack->CookLabel(ca);
+       //iotrack->CookLabel(ca);
+       tracker->CookLabel(iotrack,0.1);       
        tarray.AddLast(iotrack);
-   }   
+   }
+   
+   delete tracker; 
+        
    tf->Close();
 
-   delete ca;
+   //delete ca;
    cf->Close();
 
 /////////////////////////////////////////////////////////////////////////
@@ -88,7 +100,8 @@ Int_t TPCtracks() {
       cerr<<"Preparing tracks for matching with the ITS...\n";
       tarray.Sort();
       tf=TFile::Open("AliTPCtracks.root","recreate");
-      tracktree=new TTree("TreeT","Tree with TPC tracks");
+     // tracktree=new TTree("TreeT","Tree with TPC tracks");
+     tracktree=new TTree("TPCf","Tree with TPC tracks");
       tracktree->Branch("tracks","AliTPCtrack",&iotrack,32000,0);
       for (i=0; i<nentr; i++) {
           iotrack=(AliTPCtrack*)tarray.UncheckedAt(i);
@@ -108,14 +121,26 @@ Int_t TPCtracks() {
    TH1F *hmpt=new TH1F("hmpt","Relative Pt resolution (pt>4GeV/c)",30,-60,60); 
    hmpt->SetFillColor(6);
 
+   AliTPCtrack *trk=(AliTPCtrack*)tarray.UncheckedAt(0);
+   Double_t pmin=0.1*(100/0.299792458/0.2/trk->GetConvConst());
+   Double_t pmax=6.0+pmin;   
+   /*
    TH1F *hgood=new TH1F("hgood","Good tracks",30,0.1,6.1);    
    TH1F *hfound=new TH1F("hfound","Found tracks",30,0.1,6.1);
    TH1F *hfake=new TH1F("hfake","Fake tracks",30,0.1,6.1);
    TH1F *hg=new TH1F("hg","",30,0.1,6.1); //efficiency for good tracks
    hg->SetLineColor(4); hg->SetLineWidth(2);
-   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,0.1,6.1);
+   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,0.1,6.1);   
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
-
+   */
+   TH1F *hgood=new TH1F("hgood","Good tracks",30,pmin,pmax);    
+   TH1F *hfound=new TH1F("hfound","Found tracks",30,pmin,pmax);
+   TH1F *hfake=new TH1F("hfake","Fake tracks",30,pmin,pmax);
+   TH1F *hg=new TH1F("hg","",30,pmin,pmax); //efficiency for good tracks
+   hg->SetLineColor(4); hg->SetLineWidth(2);
+   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,pmin,pmax);
+   hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
+      
    TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
    TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,200.);
    hep->SetMarkerStyle(8);
@@ -135,6 +160,7 @@ Int_t TPCtracks() {
       Float_t ptg=
       TMath::Sqrt(gt[ngood].px*gt[ngood].px + gt[ngood].py*gt[ngood].py);
 
+      if (ptg<pmin) continue;
       hgood->Fill(ptg);
 
       AliTPCtrack *track=0;
@@ -266,12 +292,17 @@ Int_t TPCtracks() {
    hg->SetYTitle("Tracking efficiency");
    hg->SetXTitle("Pt (GeV/c)");
    hg->Draw();
-
+   /*
    TLine *line1 = new TLine(0,1.0,7,1.0); line1->SetLineStyle(4);
    line1->Draw("same");
    TLine *line2 = new TLine(0,0.9,7,0.9); line2->SetLineStyle(4);
    line2->Draw("same");
-
+    */
+   TLine *line1 = new TLine(pmin,1.0,pmax,1.0); line1->SetLineStyle(4);
+   line1->Draw("same");
+   TLine *line2 = new TLine(pmin,0.9,pmax,0.9); line2->SetLineStyle(4);
+   line2->Draw("same"); 
+      
    hf->SetFillColor(1);
    hf->SetFillStyle(3013);
    hf->SetLineColor(2);
@@ -390,7 +421,8 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
           digp->AdjustSectorRow(digits->GetID(),sec,row);
           cerr<<sec<<' '<<row<<"                                     \r";
           digits->First();
-          while (digits->Next()) {
+         // while (digits->Next()) {
+          do { //Many thanks to J.Chudoba who noticed this	 
               Int_t it=digits->CurrentRow(), ip=digits->CurrentColumn();
               Short_t dig = digits->GetDigit(it,ip);
               Int_t idx0=digits->GetTrackID(it,ip,0); 
@@ -399,7 +431,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
               if (idx0>=0 && dig>=zero) count[idx0]+=1;
               if (idx1>=0 && dig>=zero) count[idx1]+=1;
               if (idx2>=0 && dig>=zero) count[idx2]+=1;
-          }
+          } while (digits->Next());
           for (Int_t j=0; j<np; j++) {
               if (count[j]>1) {
                  if (sec>=digp->GetNInnerSector())
@@ -468,7 +500,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    }
    delete[] good;
 
-   //delete gAlice; gAlice=0;
+   delete gAlice; gAlice=0;
 
    file->Close();
    gBenchmark->Stop("AliTPCComparison");

@@ -1,6 +1,6 @@
 #include "iostream.h"
 
-void ITStracking(Int_t evNumber1=0,Int_t evNumber2=0,int min_t, int max_t,Bool_t flagvert=1) {
+void ITStracking(Int_t evNumber1=0,Int_t evNumber2=0,int min_t=-1, int max_t=0,Bool_t flagvert=1) {
 
   const char *filename="galice.root";
   
