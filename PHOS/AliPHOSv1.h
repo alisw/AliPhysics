@@ -32,23 +32,10 @@ public:
   virtual ~AliPHOSv1(void) ;
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits) ; 
-  // Float_t        Calibrate(Int_t amp){ return (amp - fDigitizeA)/fDigitizeB ; }
-  // Int_t          Digitize(Float_t Energy){ return (Int_t ) (fDigitizeA + Energy*fDigitizeB); }
-  // virtual void   Hits2SDigits() ;
-  virtual void   MakeBranch(Option_t* opt, char *file=0 ) ;
-  // void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
-  // void           ResetClusters(){} ;
-  // virtual void   SDigits2Digits() ;  
-  virtual Int_t  IsVersion(void) const {
+ virtual Int_t  IsVersion(void) const {
     // Gives the version number 
     return 1 ; 
   }
-
-  //  virtual void   ResetReconstruction() ; // Reset reconstructed objects
-  // void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {
-    // sets the reconstructionner object to be used
-  //   fReconstructioner = &Reconstructioner ;
-  // }  
 
   virtual void   StepManager(void) ;                              
   virtual TString Version(void){ 
