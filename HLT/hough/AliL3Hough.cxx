@@ -14,6 +14,7 @@
 #include "AliL3Hough.h"
 #include "AliL3HoughTransformer.h"
 #include "AliL3HoughClusterTransformer.h"
+#include "AliL3HoughTransformerLUT.h"
 #include "AliL3HoughTransformerVhdl.h"
 #include "AliL3HoughMaxFinder.h"
 #ifdef use_aliroot
@@ -78,6 +79,7 @@ AliL3Hough::AliL3Hough()
 
   SetTransformerParams();
   SetThreshold();
+  SetNSaveIterations();
 }
 
 AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv)
@@ -156,20 +158,15 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 
   for(Int_t i=0; i<fNPatches; i++)
     {
-      //VESTBO: Changes here, slice information is in principle not needed
-      //by the HoughTransformers. You always gave here a one, I changed
-      //it to zero and have Init function with is called in ReadData (see
-      //a few lines below.). I did not have time to think about it longer
-      //as there was that strange bug, but we should either consider not
-      //to give slice at all or to give it correcty (thats what I am doing
-      //a the moment.) 
-
       switch (fVersion){ //choose Transformer
       case 1: 
-	fHoughTransformer[i] = new AliL3HoughTransformerVhdl(0,i,fNEtaSegments);
+	fHoughTransformer[i] = new AliL3HoughTransformerLUT(0,i,fNEtaSegments);
 	break;
       case 2:
 	fHoughTransformer[i] = new AliL3HoughClusterTransformer(0,i,fNEtaSegments);
+	break;
+      case 3:
+	fHoughTransformer[i] = new AliL3HoughTransformerVhdl(0,i,fNEtaSegments,fNSaveIterations);
 	break;
       default:
 	fHoughTransformer[i] = new AliL3HoughTransformer(0,i,fNEtaSegments);
@@ -242,6 +239,7 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
 	    sprintf(name,"%sdigits_c8_%d_%d.raw",fPath,slice,i);
 	  else
 	    sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,i);
+
 	  fMemHandler[i]->SetBinaryInput(name);
 	  digits = (AliL3DigitRowData *)fMemHandler[i]->CompBinary2Memory(ndigits);
 	  fMemHandler[i]->CloseBinaryInput();
@@ -255,11 +253,10 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
 	  cerr<<"You cannot read from rootfile now"<<endl;
 #endif
 	}
-      fHoughTransformer[i]->SetInputData(ndigits,digits);
 
-      //VESTBO: due to bug commented out!!!
-      //fHoughTransformer[i]->Init(slice,i,fNEtaSegments);
-      //fHoughTransformer[i]->Print();
+      //set input data and init transformer
+      fHoughTransformer[i]->SetInputData(ndigits,digits);
+      fHoughTransformer[i]->Init(slice,i,fNEtaSegments);
     }
 }
 

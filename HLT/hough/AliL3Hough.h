@@ -25,7 +25,7 @@ class AliL3Hough {
   Bool_t fUse8bits;
   Int_t fNEtaSegments;
   Int_t fNPatches;
-  Int_t fVersion; //for HoughTransformer
+  Int_t fVersion; //which HoughTransformer to use
   Int_t fCurrentSlice;
 
   Float_t fLowPt;
@@ -33,7 +33,8 @@ class AliL3Hough {
   Int_t fNBinX;
   Int_t fNBinY;
   Int_t fThreshold;
-  
+  Int_t fNSaveIterations; //for HoughtransformerVhld
+
   AliL3MemHandler **fMemHandler; //!
   AliL3HoughBaseTransformer **fHoughTransformer; //!
   AliL3HoughEval **fEval; //!
@@ -79,6 +80,7 @@ class AliL3Hough {
   void SetWriteDigits() {fWriteDigits = kTRUE;}
   void SetTransformerParams(Int_t nx=64, Int_t ny=64,Float_t lpt=0.1,Float_t phi=30) {fNBinX=nx;fNBinY=ny;fLowPt=lpt;fPhi=phi;}
   void SetThreshold(Int_t t=3) {fThreshold=t;}
+  void SetNSaveIterations(Int_t t=10) {fNSaveIterations=t;}
 
   //Getters
   AliL3HoughBaseTransformer *GetTransformer(Int_t i) {if(!fHoughTransformer[i]) return 0; return fHoughTransformer[i];}
