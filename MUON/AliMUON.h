@@ -10,29 +10,24 @@
 ////////////////////////////////////////////////
 //  AliDetector Class for MUON subsystem      //
 ////////////////////////////////////////////////
+#include "TObjArray.h"
 #include "AliDetector.h"
 #include "AliMUONData.h"
 #include "AliMUONChamber.h"
 
 class AliLoader;
-class AliMUONTriggerCircuit;
-class AliMUONTriggerDecision;
 class AliSegmentation;
+class AliMUONTriggerCircuit;
+class AliMUONData;
 class AliMUONResponse;
 class AliMUONMerger;
 class AliMUONHit;
 class AliMUONPadHit;
 class AliMUONRawCluster;
-class AliMUONClusterFinderVS;
 class AliMUONReconstHit;
 class AliMUONMerger;
 class AliMUONVGeometryBuilder;
 class AliESD;
-
-class TVector;
-#include "TObjArray.h"
-class TFile;
-class TTree;
 
 
 class AliMUON : public  AliDetector {
