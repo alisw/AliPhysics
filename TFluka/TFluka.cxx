@@ -1054,7 +1054,9 @@ void TFluka::InitPhysics()
 //
 // Check if new output file has to be opened
 	for (Int_t isci = 0; isci < isc; isci++) {
-	    mopi = dynamic_cast<TFlukaScoringOption*> (fUserScore->At(isc));
+
+	    
+	    mopi = dynamic_cast<TFlukaScoringOption*> (fUserScore->At(isci));
 	    if(strncmp(mopi->GetFileName(), fileName, size)==0) {
 		// 
 		// No, the file already exists
