@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/05/25 07:59:54  morsch
+Initialization print-out in debug mode only.
+
 Revision 1.1  2001/05/11 13:18:05  morsch
 C++ version of spaceframe with specs according to Jan Bielski Feb. 2001
 
@@ -91,7 +94,11 @@ void AliFRAMEv2::CreateGeometry()
   Float_t dwl    = 3.14;
   Float_t dwh    = 0.96;
 
-  Float_t dymod[3] = {70., 224., 341.};
+// old
+//  Float_t dymod[3] = {70., 224., 341.};
+//  new
+  Float_t dymod[3] = {59.5, 178.5, 341.};
+
 //
 // Frame mother volume
 //
