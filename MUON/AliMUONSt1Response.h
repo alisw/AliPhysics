@@ -50,14 +50,16 @@ public:
     void PrintStatistics() const;
 
 
- protected:
+private:
 
    //private types
     typedef map<string,AliMUONSt1ResponseParameter*> TParamsMap;
     typedef map<string,TList*> TListMap;
     static const Int_t fgkNofZones=4;
+    static const TString fgkTopDir;
+    static const TString fgkDataDir;
     static const TString fgkConfigBaseName;
-    static const TString fgkStandardIniFileName;
+    static const TString fgkStandardIniFileName;    
 
     // static names
     static const TString fgkBaseName ;

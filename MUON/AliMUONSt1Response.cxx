@@ -28,6 +28,7 @@
 #include <TMath.h>
 #include <TRandom.h>
 #include <TSystem.h>
+#include <Riostream.h>
 #include <MIntPair.h>
 #include <MPlaneSegmentation.h>
 #include <MPad.h>
@@ -46,6 +47,8 @@
 
 ClassImp(AliMUONSt1Response);
 
+const TString AliMUONSt1Response::fgkTopDir = getenv("ALICE_ROOT");
+const TString AliMUONSt1Response::fgkDataDir = "/MUON/data/";
 const TString AliMUONSt1Response::fgkConfigBaseName = "configChamber";
 const TString AliMUONSt1Response::fgkStandardIniFileName = "st1StdParameter.ini";
 
@@ -183,8 +186,7 @@ void AliMUONSt1Response::ReadCouplesOfFloatRanges(const string& value,TList* lis
 void AliMUONSt1Response::SetPairToParam(const string& name,const string& value,AliMUONSt1ResponseParameter* param) const
 {
 // set a (name,value) pair to <param>
-  TString path=getenv("ALICE_ROOT");
-  path+="/MUON/";
+  TString path = fgkTopDir + fgkDataDir ;
   const char* nm = name.c_str();
   if (fgkStateName.CompareTo(nm,TString::kIgnoreCase)==0){
     param->SetState(atoi(value.c_str()));
@@ -258,8 +260,7 @@ void AliMUONSt1Response::SetPairToListElem(const string& name,const string& valu
 void AliMUONSt1Response::ReadIniFile(Int_t plane)
 {
   //Read the ini file and fill the <plane>th structures 
-  TString path=getenv("ALICE_ROOT");
-  path+="/MUON/";
+  TString path = fgkTopDir + fgkDataDir ;
   //read .ini file
   if (gSystem->AccessPathName(path+fIniFileName[plane],kReadPermission)){
     Fatal("ReadIniFile",
@@ -400,8 +401,7 @@ void AliMUONSt1Response::ReadFiles()
 // Define the current response rules with respect to the description
 // given in the "configChamber1.ini" and "configChamber2.ini" files.
   Int_t i;
-  TString path=getenv("ALICE_ROOT");
-  path+="/MUON/";
+  TString path = fgkTopDir + fgkDataDir ;
 
   TString configFileName = path + fgkConfigBaseName + Form("%d.ini",fChamber);
   if (gSystem->AccessPathName(configFileName,kReadPermission)){
