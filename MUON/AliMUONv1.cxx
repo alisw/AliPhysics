@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/10/25 19:55:35  morsch
+Switches for each station individually for debug and lego.
+
 Revision 1.11  2000/10/22 16:44:01  morsch
 Update of slat geometry for stations 3,4,5 (A. deFalco)
 
@@ -1018,7 +1021,7 @@ void AliMUONv1::CreateGeometry()
 
      for (i = 0; i<nSlats5; i++){
        slatLength5[i] = pcbLength * nPCB5[i] + 2. * dSlatLength; 
-       xSlat5 = slatLength5[i]/2. + vFrameLength/2.; 
+       xSlat5 = slatLength5[i]/2. - vFrameLength/2.; 
        if (i==0) xSlat5 += 37.5;
        ySlat5 = sensHeight * i - yOverlap * i; 
        spar[0] = slatLength5[i]/2.; 
