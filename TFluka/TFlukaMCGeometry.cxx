@@ -522,26 +522,31 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix = new TGeoMixture("SPDBUS", 1, 1.906);
          element = table->GetElement(9);
          mix->DefineElement(0, element, 1.);
+         z = element->Z();
          break;
       case 19: // SDD/SSD rings   - unknown composition
          mix = new TGeoMixture("SDDRINGS", 1, 1.8097);
          element = table->GetElement(6);
          mix->DefineElement(0, element, 1.);
+         z = element->Z();
          break;
       case 20: // SPD end ladder   - unknown composition
          mix = new TGeoMixture("SPDEL", 1, 3.6374);
          element = table->GetElement(22);
          mix->DefineElement(0, element, 1.);
+         z = element->Z();
          break;
       case 21: // SDD end ladder   - unknown composition
          mix = new TGeoMixture("SDDEL", 1, 0.3824);
          element = table->GetElement(30);
          mix->DefineElement(0, element, 1.);
+         z = element->Z();
          break;
       case 22: // SSD end ladder   - unknown composition
          mix = new TGeoMixture("SSDEL", 1, 0.68);
          element = table->GetElement(16);
          mix->DefineElement(0, element, 1.);
+         z = element->Z();
          break;
    }
    mix->SetZ(z);      
@@ -586,8 +591,8 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
 //   element->SetTitle("ARGON");  // NEON not in neutron xsec table
    Int_t nelements = table->GetNelements();
    TList *matlist = gGeoManager->GetListOfMaterials();
-   TList *medlist = gGeoManager->GetListOfMedia();
-   Int_t nmed = medlist->GetSize();
+//   TList *medlist = gGeoManager->GetListOfMedia();
+//   Int_t nmed = medlist->GetSize();
    TIter next(matlist);
    Int_t nmater = matlist->GetSize();
    Int_t nfmater = 0;
@@ -612,7 +617,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       nfmater++;
    }
    Int_t indmat = nfmater;
-   TGeoMedium *med;
+//   TGeoMedium *med;
    // Adjust material names and add them to FLUKA list
    for (i=0; i<nmater; i++) {
       mat = (TGeoMaterial*)matlist->At(i);
@@ -626,6 +631,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       } 
       matname = mat->GetName();
       FlukaMatName(matname);
+/*
       // material with one element: create it as mixture since it can be duplicated    
       if (!mat->IsMixture()) {
          // normal materials
@@ -645,6 +651,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
          }                              
          mat = (TGeoMaterial*)mix;
       }
+*/    
       mat->SetIndex(nfmater+3);
       objstr = new TObjString(matname.Data());
       fMatList->Add(mat);
@@ -657,7 +664,6 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       mat = (TGeoMaterial*)fMatList->At(i);
 //      mat->SetUsed(kFALSE);
       mix = 0;
-//      out << "* " << mat->GetName() << endl;   
       out << setw(10) << "MATERIAL  ";
       out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
       objstr = (TObjString*)fMatNames->At(i);
@@ -682,7 +688,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       out << setw(8) << matname.Data() << endl;
       if (!mix) {
          // add LOW-MAT card for NEON to associate with ARGON neutron xsec
-         if (z==10 && matname.Contains("NEON")) {
+         if (z==10) {
             out << setw(10) << "LOW-MAT   ";
             out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
             out << setw(10) << setiosflags(ios::fixed) << setprecision(1) << Double_t(mat->GetIndex());
@@ -693,7 +699,33 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
             out << setw(10) << " ";
 //            out << setw(8) << matname.Data() << endl;
             out << setw(8) << " " << endl;
-         }   
+         } 
+         else { 
+            element = table->GetElement((int)z);
+            TString elename = element->GetTitle();
+            ToFlukaString(elename);
+            if( matname.CompareTo( elename ) != 0 ) {
+               out << setw(10) << "LOW-MAT   ";
+               out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
+               out << setw(10) << setiosflags(ios::fixed) << setprecision(1) << Double_t(mat->GetIndex());
+               out << setw(10) << setiosflags(ios::fixed) << setprecision(1) << z;
+               out << setw(10) << setiosflags(ios::fixed) << setprecision(1) << " ";
+               out << setw(10) << setiosflags(ios::fixed) << setprecision(1) << " ";
+               out << setw(10) << " ";
+               out << setw(10) << " ";
+               // missing material at Low Energy Cross Section Table
+               if( (int)z==10 || (int)z==21 || (int)z==34 || (int)z==37 || (int)z==39 || (int)z==44 ||
+                   (int)z==45 || (int)z==46 || (int)z==52 || (int)z==57 || (int)z==59 || (int)z==60 ||
+                   (int)z==61 || (int)z==65 || (int)z==66 || (int)z==67 || (int)z==68 || (int)z==69 ||
+                   (int)z==70 || (int)z==71 || (int)z==72 || (int)z==76 || (int)z==77 || (int)z==78 ||
+                   (int)z==81 || (int)z==84 || (int)z==85 || (int)z==86 || (int)z==87 || (int)z==88 ||
+                   (int)z==89 || (int)z==91 )
+                  out << setw(8) << "UNKNOWN " << endl;
+               else
+                  out << setw(8) << elename.Data() << endl;
+   //               out << setw(8) << " " << endl;
+            }
+         }
          continue;
       }   
       counttothree = 0;
@@ -785,16 +817,49 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    if (!gFluka->IsGeneratePemf()) return;
    // Write peg files
    char number[20];
+   Int_t countMatOK = 0;
+   Int_t countElemError = 0;
+   Int_t countNoStern = 0;
+   Int_t countMixError = 0;
+   Int_t countGas = 0;
+ //  Int_t countGasError = 0;
+   Int_t countPemfError = 0;
    for (i=indmat; i<nfmater; i++) {
       mat = (TGeoMaterial*)fMatList->At(i);
       if (!mat->IsUsed()) continue;
       sname = "mat";
       sprintf(number, "%d", i);
       sname.Append(number);
-      WritePegFile(i);
+      cout << endl;
+      cout << endl;
+      cout << "******************************************************************************" << endl;
+      cout << "******************************************************************************" << endl;
+      cout << endl;
+      WritePegFile(i, &countNoStern, &countElemError, &countMixError, &countGas);
       sname.Prepend("$FLUPRO/pemf/rpemf peg/");
       gSystem->Exec(sname.Data());
+      
+      // check if the pemf file was created
+      TString sname = Form("peg/mat%d.pemf", i);
+      ifstream in( sname.Data() );
+      if ( in ) {
+         countMatOK++;
+         in.close();
+      }
+      else {
+         cout << "ERROR Fail to create the pemf file " << sname << endl;
+         countPemfError++; 
+      }
    }
+   cout << "Materials (pemf created)   " << countMatOK         << endl;
+   cout << "Not Sternheimer par. found  " << countNoStern   << endl;
+   cout << "Elements with error definitions (Z not integer)  " << countElemError      << endl;
+   cout << "Mixtures with error definitions (Z not integer) " << countMixError  << endl;
+   cout << "Posible Gas (rho < 0.01) " << countGas           << endl;
+  // cout << "Posible Gas (without pressure information) " << countGasError           << endl;
+    cout << "Pemf files Error    " << countPemfError     << endl;
+   cout << endl << endl;
+   
    sname = "cat peg/*.pemf > peg/alice.pemf";         
    gSystem->Exec(sname.Data());
    sname = "mv peg/alice.pemf alice.pemf";
@@ -802,9 +867,11 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
 }
 
 //_____________________________________________________________________________
-void TFlukaMCGeometry::WritePegFile(Int_t imat) const
+void TFlukaMCGeometry::WritePegFile(Int_t imat, Int_t *NoStern, Int_t *ElemError,
+                       Int_t *MixError, Int_t *countGas) const
 {
-// Write the .peg file for one material
+   // Write the .peg file for one material
+   
    TGeoMaterial *mat = (TGeoMaterial*)fMatList->At(imat);
    TString name = ((TObjString*)fMatNames->At(imat))->GetString();
    TString line;
@@ -826,31 +893,109 @@ void TFlukaMCGeometry::WritePegFile(Int_t imat) const
    if (mat->IsMixture()) {
       mix = (TGeoMixture*)mat;
       nel = mix->GetNelements();
-   }   
+   } 
+     
    if (nel==1) {
+      cout  << "( Element ) " << name << "  Z=" << mat->GetZ() << " Rho " << mat->GetDensity() << endl;
+
+      Double_t zel = mat->GetZ();
+      if( (zel-Int_t(zel))>0.001 || zel < 1 ) {
+         cout << " ERROR: A Element with not integer Z=" << zel << endl;
+         cout << endl;
+         (*ElemError)++;
+         return;
+      }
+      
       out << "ELEM" << endl;
       out << " &INP IRAYL=1, RHO=" << dens << ", " << endl;
-      if (dens<0.01) out << " GASP=1." << endl;
+      
+      // check for the Sternheimer parameters
+      Double_t *issb_parm = GetISSB( mat->GetDensity(), 1, &zel, 0 );
+      if( issb_parm[0] > 0 && issb_parm[1] > 0 ) {
+         cout << "Sternheimer parameters found" << endl;
+         out << ", ISSB=1, IEV=" << issb_parm[0] << ", CBAR=" << issb_parm[1]
+             << ", X0=" << issb_parm[2] << "," << endl;
+         out << "X1=" <<issb_parm[3] <<", AFACT="<<issb_parm[4] <<", SK="
+             << issb_parm[5] << ", DELTA0=" << issb_parm[6];
+      } 
+      else {
+         cout << "WARNING: Strange element, Sternheimer parameters  not found" << endl;
+        (*NoStern)++;
+      }
+
+      if (dens<0.01) {
+        (*countGas)++;
+        out << " GASP=1." << endl;
+      }
+      
       out << " &END" <<  endl;
       out << name.Data() << endl;
       out << elem->GetName() << endl;
-   } else {
-      out << "MIXT" << endl;
-      out << " &INP IRAYL=1, NE=" << nel << ", RHOZ=";
-      line = "";
-      for (i=0; i<nel; i++) {
-         sprintf(number, "%f", mix->GetWmixt()[i]);
-         line += number;
-         line += ", ";
-         if (line.Length() > 30) {
-            out << line.Data() << endl;
-            line = "";
-         }   
+      
+   } 
+   else {
+   
+      cout  << "( Mixture )  " << name << "  Rho " << dens << " nElem " << nel << endl;
+    
+      Double_t *zt = new Double_t[nel];
+      Double_t *wt = new Double_t[nel];
+      for (int j=0; j<nel; j++) {
+         zt[j] = (mix->GetZmixt())[j];
+         wt[j] = (mix->GetWmixt())[j];
+         if( (zt[j]-Int_t(zt[j])) > 0.001 || zt[j] < 1 ) {
+            cout << "ERROR Mixture " << name << " with an element with not integer Z=" << zt[j] << endl;
+            cout << endl;
+            (*MixError)++;
+            // just continue since the mixtures are not patch, 
+            // but the final release should include the return   
+            //  return;         
+         }
       }
-      if (line.Length()) out << " " << line.Data() << endl;   
-      out << " RHO=" << dens;
-      if (dens<0.01) out << ", GASP=1." << endl; 
-      out << " &END" << endl;
+      Double_t *issb_parm = GetISSB( mat->GetDensity(), nel, zt, wt );
+      out << "MIXT" << endl;
+      out << " &INP IRAYL=1, NE=" << nel << ", RHOZ=" << wt[0] << ",";
+      line = Form(" &INP IRAYL=1, NE=%d RHOZ=%g", nel, wt[0]);
+      for(int j=1; j<nel; j++) {
+         out << " " << wt[j] << ",";
+         line += Form(" %g,", wt[j] );
+         if( line.Length() > 60 ) { out << endl; line = ""; }
+      }
+      out << " RHO=" << mat->GetDensity() << ", ";
+      line += Form(" RHO=%g, ", mat->GetDensity());
+      if( line.Length() > 60 ) { out << endl; line = ""; }
+      
+      if( issb_parm[0] > 0 && issb_parm[1] > 0 ) {
+         cout << "Sternheimer parameters found" << endl;
+         out << " ISSB=1, IEV=" << issb_parm[0] << ",";
+         line += Form(" ISSB=1, IEV=%g,", issb_parm[0]);
+         if( line.Length() > 60 ) { out << endl; line = "";  }
+         out << " CBAR=" << issb_parm[1] << ",";
+         line += Form(" CBAR=%g,",issb_parm[1]);
+         if( line.Length() > 60 ) { out << endl; line = "";  }
+         out << " X0=" << issb_parm[2] << ",";
+         line += Form(" X0=%g,", issb_parm[2]);
+         if( line.Length() > 60 ) { out << endl; line = "";  }
+         out << " X1=" << issb_parm[3] << ",";
+         line += Form(" X1=%g,", issb_parm[3]);
+         if( line.Length() > 60 ) { out << endl; line = "";  }
+         out << " AFACT="<< issb_parm[4] << ",";
+         line += Form(" AFACT=%g,", issb_parm[4]);
+         if( line.Length() > 60 ) { out << endl; line = "";  }
+         out << " SK=" << issb_parm[5] << ",";
+         line += Form(" SK=%g,", issb_parm[5]);
+         if( line.Length() > 60 ) { out << endl; line = "";  }
+      }
+      else {
+         cout << "Sternheimer parameters  not found" << endl;
+         (*NoStern)++;
+      }
+      
+      if (dens<0.01){
+         (*countGas)++;
+         out << " GASP=1." << endl;
+      }
+      
+      out << " &END" <<  endl;
       out << name.Data() << endl;
       for (i=0; i<nel; i++) {
          elem = mix->GetElement(i);
@@ -859,7 +1004,11 @@ void TFlukaMCGeometry::WritePegFile(Int_t imat) const
          out << line.Data() << " ";
       }
       out << endl;
+      
+      delete [] zt;
+      delete [] wt;
    }
+   
    out << "ENER" << endl;
    out << " $INP AE=0.56099906, UE=3000000., AP=.03, UP=3000000. $END" << endl;
    out << "PWLF" << endl;
@@ -869,6 +1018,143 @@ void TFlukaMCGeometry::WritePegFile(Int_t imat) const
    out << "TEST" << endl;
    out << " $INP $END" << endl;
    out.close();
+}
+
+Double_t * TFlukaMCGeometry::GetISSB(Double_t rho, Int_t nElem, Double_t *zelem, Double_t *welem ) const
+{
+   // Read the density effect parameters
+   // from R.M. Sternheimer et al. Atomic Data
+   // and Nuclear Data Tables, Vol. 30 No. 2
+   //
+   // return the parameters if the element/mixture match with one of the list
+   // otherwise returns the parameters set to 0
+   
+   struct sternheimerData {
+      TString     longname;           // element/mixture name
+      Int_t       nelems;             // number of constituents N
+      Int_t       Z[20];              //[nelems] Z
+      Double_t    wt[20];             //[nelems] weight fraction
+      Double_t    density;            // g/cm3
+      Double_t    iev;                // Average Ion potential (eV)
+                                   // ****   Sternheimer parameters  ****
+      Double_t    cbar;               // CBAR
+      Double_t    x0;                 // X0
+      Double_t    x1;                 // X1
+      Double_t    afact;              // AFACT
+      Double_t    sk;                 // SK
+      Double_t    delta0;             // DELTA0
+   };
+   
+   TString     shortname;
+   TString     formula;
+   Int_t       num;
+   char        state;
+   
+   static Double_t parameters[7];
+   memset( parameters, 0, sizeof(Double_t) );
+
+   static sternheimerData sternDataArray[300];
+   static Bool_t isFileRead = kFALSE;
+   
+   // Read the data file if is needed
+   if( isFileRead == kFALSE ) {
+      TString sSternheimerInp = getenv("ALICE_ROOT");
+      sSternheimerInp +="/TFluka/input/Sternheimer.data";
+   
+      ifstream in(sSternheimerInp);
+      char line[100];
+      in.getline(line, 100);   
+      in.getline(line, 100);   
+      in.getline(line, 100);   
+      in.getline(line, 100);   
+      in.getline(line, 100);   
+      in.getline(line, 100);   
+      
+      
+      Int_t is = 0;
+      while( !in.eof() ) {
+         in >> shortname >> num     >> sternDataArray[is].nelems 
+            >> sternDataArray[is].longname  >> formula >> state;
+         if( in.eof() ) break;
+         for(int i=0; i<sternDataArray[is].nelems; i++) {
+            in >> sternDataArray[is].Z[i] >> sternDataArray[is].wt[i]; 
+         }
+         in >> sternDataArray[is].density; 
+         in >> sternDataArray[is].iev; 
+         in >> sternDataArray[is].cbar; 
+         in >> sternDataArray[is].x0; 
+         in >> sternDataArray[is].x1; 
+         in >> sternDataArray[is].afact; 
+         in >> sternDataArray[is].sk;
+         if( sternDataArray[is].nelems == 1 ) in >> sternDataArray[is].delta0;
+         is++;
+      }
+      isFileRead = kTRUE;
+      in.close();
+   }   
+   
+   Int_t is = 0;
+   while( is < 280 ) {
+   
+      // check for elements
+      if( sternDataArray[is].nelems == 1 && nElem == 1
+          && sternDataArray[is].Z[0] == Int_t(*zelem)
+          && TMath::Abs( (sternDataArray[is].density - rho)/sternDataArray[is].density ) < 0.1 ) {
+         cout << sternDataArray[is].longname << "   #elems:" <<  sternDataArray[is].nelems << "  Rho:" 
+              << sternDataArray[is].density << endl;
+         cout << sternDataArray[is].iev   << " " 
+              << sternDataArray[is].cbar  << " " 
+              << sternDataArray[is].x0    << " " 
+              << sternDataArray[is].x1    << " " 
+              << sternDataArray[is].afact << " " 
+              << sternDataArray[is].sk    << " " 
+              << sternDataArray[is].delta0 << endl;
+         
+         parameters[0] = sternDataArray[is].iev;
+         parameters[1] = sternDataArray[is].cbar;
+         parameters[2] = sternDataArray[is].x0;
+         parameters[3] = sternDataArray[is].x1;
+         parameters[4] = sternDataArray[is].afact;
+         parameters[5] = sternDataArray[is].sk;
+         parameters[6] = sternDataArray[is].delta0;
+         return parameters;        
+      }
+      
+      // check for mixture
+      int nmatch = 0;
+      if( sternDataArray[is].nelems > 1 && sternDataArray[is].nelems == nElem ) {
+         for(int j=0; j<sternDataArray[is].nelems; j++) {
+            if( sternDataArray[is].Z[j] == Int_t(zelem[j]) && 
+               TMath::Abs( (sternDataArray[is].wt[j] - welem[j])/sternDataArray[is].wt[j] ) < 0.1 )
+            nmatch++;            
+         }
+      }
+
+      if( sternDataArray[is].nelems > 1 && 
+          TMath::Abs( (sternDataArray[is].density - rho)/sternDataArray[is].density ) < 0.1 
+          && nmatch == sternDataArray[is].nelems ) {
+         cout << sternDataArray[is].longname << "   #elem:" <<  sternDataArray[is].nelems << "  Rho:" 
+              << sternDataArray[is].density << endl;
+         cout << sternDataArray[is].iev   << " " 
+              << sternDataArray[is].cbar  << " " 
+              << sternDataArray[is].x0    << " " 
+              << sternDataArray[is].x1    << " " 
+              << sternDataArray[is].afact << " " 
+              << sternDataArray[is].sk    << " " 
+              << sternDataArray[is].delta0 << endl;
+
+         parameters[0] = sternDataArray[is].iev;
+         parameters[1] = sternDataArray[is].cbar;
+         parameters[2] = sternDataArray[is].x0;
+         parameters[3] = sternDataArray[is].x1;
+         parameters[4] = sternDataArray[is].afact;
+         parameters[5] = sternDataArray[is].sk;
+         parameters[6] = 0;
+         return parameters;        
+      }
+      is++; 
+   }   
+   return parameters;        
 }
 
 //_____________________________________________________________________________
