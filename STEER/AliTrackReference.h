@@ -20,8 +20,8 @@ public:
   virtual void SetTrack(Int_t track) {fTrack=track;}
   virtual void SetLength(Float_t length){fLength=length;}
   virtual void SetTime(Float_t time) {fTime = time;}
-  virtual Float_t GetLength(){return fLength;}
-  virtual Float_t GetTime(){return fTime;}
+  virtual Float_t GetLength() const {return fLength;}
+  virtual Float_t GetTime() const {return fTime;}
   virtual Int_t Label() const {return fTrack;}
   virtual void SetLabel(Int_t track) {fTrack=track;}
   virtual Float_t R() const {return TMath::Sqrt(fX*fX+fY*fY);}

@@ -356,7 +356,10 @@ Bool_t AliRunDigitizer::InitGlobal()
 
   TList* subTasks = GetListOfTasks();
   if (subTasks) {
-    subTasks->ForEach(AliDigitizer,Init)();
+    //    subTasks->ForEach(AliDigitizer,Init)();
+    TIter next(subTasks);
+    while (AliDigitizer * dig = (AliDigitizer *) next())
+      dig->Init();
   }  
   return kTRUE;
 }
