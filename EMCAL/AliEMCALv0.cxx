@@ -66,7 +66,7 @@ void AliEMCALv0::BuildGeometry()
 
   // make the container of entire calorimeter
 
-  new TTUBS("EMCA", "Tubs that contains the calorimeter", "void", 
+  new TTUBS("EMCAL", "Tubs that contains the calorimeter", "void", 
 	    fGeom->GetEnvelop(0),     // rmin 
 	    fGeom->GetEnvelop(1),     // rmax
 	    fGeom->GetEnvelop(2)/2.0, // half length in Z
