@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/04/19 13:07:45  morsch
+  Digits, clusters and reconstruction results added.
+
 */
 
 
@@ -795,7 +798,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
    Int_t nrechits = RICHrechits->GetEntriesFast();
    printf ("nrechits:%d\n",nrechits);
    if (nrechits == 0) return;
-   if (fRecpoints == 0) fRecpoints = new TObjArray(nrechits);
+   if (fRecpoints == 0) fRecpoints = new TObjArray(50);
    
    iChamber = &(RICH->Chamber(chamber));
    AliRICHRecHit  *mRec;
@@ -974,9 +977,9 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
 	    }
             points->SetMarkerStyle(5);
             points->SetMarkerSize(1.);
-            points->SetParticle(current->GetPdgCode());
+            points->SetParticle(mHit->fTrack);
 	    points->SetHitIndex(hit);
-            points->SetTrackIndex(mHit->fTrack);
+            points->SetTrackIndex(track);
             points->SetDigitIndex(-1);
             points->SetPoint(hit,mHit->fX, mHit->fY, mHit->fZ);
 	    npoints++;
@@ -1274,7 +1277,7 @@ AliRICHEllipse::AliRICHEllipse(Float_t cx, Float_t cy, Float_t omega, Float_t th
     fOmega = omega;
     fTheta = theta;
     fPhi = phi;
-    h=10;
+    h=11.25;
 }
 
 //________________________________________________________________________________
@@ -1292,9 +1295,11 @@ void AliRICHEllipse::CreatePoints(Int_t chamber)
   
   for(Float_t i=0;i<1000;i++)
     {
-
+      
+      Float_t counter=0;
+      
       c0=0;c1=0;c2=0;
-      while((c1*c1-4*c2*c0)<=0)
+      while((c1*c1-4*c2*c0)<=0 && counter<1000)
 	{
 	  //Choose which side to go...
 	  if(i>250 && i<750) s1=1; 
@@ -1315,8 +1320,12 @@ void AliRICHEllipse::CreatePoints(Int_t chamber)
 	  //cout<<"Trial: y="<<y<<"c0="<<c0<<" c1="<<c1<<" c2="<<c2<<endl;
 	  //printf("Result:%f\n\n",c1*c1-4*c2*c0);
 	  //i+=.01;
+	  counter +=1;
 	}
       
+      if (counter>=1000)
+	y=0; 
+
       //Choose which side to go...
       //if(gRandom->Rndm(1)>.5) s=1; 
       //else s=-1;
@@ -1327,7 +1336,7 @@ void AliRICHEllipse::CreatePoints(Int_t chamber)
       //cout<<"x="<<xtrial<<" y="<<cy+y<<endl;
       //printf("Coordinates: %f %f\n",xtrial,fCy+y);
 
-      Float_t VecLoc[3]={xtrial/.8,6.276,(fCy+y)/.8};
+      Float_t VecLoc[3]={xtrial,6.276,(fCy+y)};
       Float_t  VecGlob[3];
       iChamber->LocaltoGlobal(VecLoc,VecGlob);
       SetPoint(i,VecGlob[0],VecGlob[1],VecGlob[2]);
