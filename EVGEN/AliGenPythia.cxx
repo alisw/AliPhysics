@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.44  2001/11/27 13:13:07  morsch
+Maximum lifetime for long-lived particles to be put on the stack is parameter.
+It can be set via SetMaximumLifetime(..).
+
 Revision 1.43  2001/10/21 18:35:56  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -400,7 +404,7 @@ void AliGenPythia::Generate()
 // Track final state particle
 		if (ks == 1) trackIt[i] = 1;
 // Track semi-stable particles
-		if ((ks ==1) || (fDecayer->GetLifetime(kf)> 10e-15))  trackIt[i] = 1;
+		if ((ks ==1) || (fDecayer->GetLifetime(kf) > fMaxLifeTime))  trackIt[i] = 1;
 // Track particles selected by process if undecayed. 
 		if (fForceDecay == kNoDecay) {
 		    if (ParentSelected(kf)) trackIt[i] = 1;
