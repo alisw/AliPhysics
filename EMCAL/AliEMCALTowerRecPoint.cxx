@@ -345,7 +345,7 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
   Float_t cyl_radius = emcalgeom->GetIPDistance()+emcalgeom->GetAirGap() ;
   Float_t x =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ;
   Float_t y =  cyl_radius * TMath::Sin(fPhi * kDeg2Rad ) ; 
-  Float_t z =  cyl_radius * TMath::Tan(fTheta * kDeg2Rad ) ; 
+  Float_t z =  cyl_radius / TMath::Tan(fTheta * kDeg2Rad ) ; 
   
 // Calculates the dispersion in coordinates 
   wtot = 0.;
@@ -357,7 +357,7 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
     emcalgeom->PosInAlice(relid, thetai, phii);
     Float_t xi =  cyl_radius * TMath::Cos(phii * kDeg2Rad ) ;
     Float_t yi =  cyl_radius * TMath::Sin(phii * kDeg2Rad ) ; 
-    Float_t zi =  cyl_radius * TMath::Tan(thetai * kDeg2Rad ) ; 
+    Float_t zi =  cyl_radius / TMath::Tan(thetai * kDeg2Rad ) ; 
 
     Float_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
     d += w*((xi-x)*(xi-x) + (yi-y)*(yi-y)+ (zi-z)*(zi-z) ) ; 
