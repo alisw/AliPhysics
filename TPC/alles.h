@@ -38,7 +38,6 @@
 #include "AliTPCClustersRow.h"
 #include "AliTPCClustersArray.h"
 #include "AliTPCcluster.h"
-#include "AliH2F.h"
 #include "TMinuit.h"
 #include "AliTPC.h"
 #include "AliTPCv1.h"

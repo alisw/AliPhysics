@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2003/02/13 09:30:46  hristov
+Updated version taken from v3-08-Release (A.Dainese)
+
 Revision 1.9.2.1  2002/10/15 12:52:42  hristov
 Changes and bug fixes for the next round of PPR
 
@@ -80,6 +83,7 @@ logs added
 #include <TMatrixD.h>
 #include <TNtuple.h>
 #include <TSystem.h>
+#include <TH2F.h>
 //------ AliRoot headers ------
 #include "alles.h"
 #include "AliGausCorr.h"
