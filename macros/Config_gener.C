@@ -131,7 +131,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
      gener->SetPtRange(0,10);
      gener->SetOrigin(0,0,0);          //vertex position
      gener->SetSigma(0,0,0);//Sigma in (X,Y,Z) (cm) on IP position
-     gener->ForceDecay(dimuon);
+     gener->SetForceDecay(dimuon);
      gener->SetCutOnChild(1);
      break;
      
@@ -191,7 +191,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
      gener->SetMomentumRange(0,999);
 
      AliGenParam *jpsi = new AliGenParam(1,jpsi_p);
-     jpsi->ForceDecay(dimuon);
+     jpsi->SetForceDecay(dimuon);
      jpsi->SetCutOnChild(1);
 
      
@@ -356,7 +356,7 @@ TPC->SetSens(1);
 
 if(iTOF) {
 //=================== TOF parameters ============================
-AliTOF *TOF  = new AliTOFv2("TOF","normal TOF");
+AliTOF *TOF  = new AliTOFv1("TOF","normal TOF");
 }
 
 if(iRICH) {
