@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/02/19 22:14:55  nilsen
+Fix for all 4 versions 11, 12, 21, and 22.
+
 Revision 1.16  2001/02/19 20:10:34  barbera
 Set option=2 and thickness=2 as default values --> SetMinorVersion=22
 
@@ -256,19 +259,31 @@ void AliITSvPPRasymm::CreateGeometry(){
   Int_t idrotm[1999], i;
   Float_t dgh[50];
 
+  Float_t dits1[3], di101[3], di107[3], di10b[3], di106[3];  // for layer 1 
+  Float_t di103[3], di10a[3], di102[3];                      // for layer 1
+  Float_t dits2[3], di1d1[3], di1d7[3], di20b[3], di1d6[3];  // for layer 2
+  Float_t di1d3[3], di20a[3], di1d2[3];                      // for layer 2  
+  Float_t di108[3], di104[3];                                // for both layers  
 
-  // Default values
+  Float_t ddet1=300.;     // total detector thickness on layer 1 (micron)
+  Float_t dchip1=300.;    // total chip thickness on layer 1 (micron)
   
-  Int_t thickness=2;  // detector thickness = 300 um - chip thickness = 300 um
-  Int_t option=2;     // option 'b' for det/chip/bus stacking
+  Float_t ddet2=300.;     // total detector thickness on layer 2 (micron)                         
+  Float_t dchip2=300.;    // total chip thickness on layer 2 (micron)
   
-  // These values are NOT the default ones so leave them commented !
+  Float_t dbus=200.;      // total bus thickness on both layers (micron)
+   
+  ddet1  = ddet1*0.0001/2.; // conversion from tot length in um to half in cm
+  ddet2  = ddet2*0.0001/2.; // conversion from tot length in um to half in cm	
+  dchip1 = dchip1*0.0001/2.;// conversion from tot length in um to half in cm	
+  dchip2 = dchip2*0.0001/2.;// conversion from tot length in um to half in cm	
+  dbus   = dbus*0.0001/2.;	 // conversion from tot length in um to half in cm       
+		
+  Float_t deltax, deltay; 
 
-//  Int_t thickness=1; // detector thickness = 100 um - chip thickness = 150 um
-//  Int_t option=1;    // option 'a' for det/chip/bus stacking
 
-  thickness = fMinorVersion/10;
-  option    = fMinorVersion - 10*thickness;
+  Int_t thickness = fMinorVersion/10;
+  Int_t option    = fMinorVersion - 10*thickness;
   
   Int_t *idtmed = fIdtmed->GetArray()-199;
 
@@ -812,716 +827,9 @@ void AliITSvPPRasymm::CreateGeometry(){
   //gMC->Gsatt("ITSD", "SEEN", 0);
 
 
-
   // --- Define SPD (option 'a') volumes ----------------------------
   
   // SPD - option 'a' 
-  // detector thickness = 100 microns
-  // chip thickness = 150 microns
-  // (this is NOT the default)
-
-  if (option == 1 && thickness == 1) {
-
-     dits[0] = 3.7;
-     dits[1] = 7.75;
-     dits[2] = 24;
-     gMC->Gsvolu("IT12", "TUBE", idtmed[254], dits, 3);   
-
-     dits[0] = 3.7;
-     dits[1] = 7.7;
-     dits[2] = 24;
-     dits[3] = 57;
-     dits[4] = 100;
-     gMC->Gsvolu("I12A", "TUBS", idtmed[254], dits, 5); 
-
-     dits[0] = 0.843;
-     dits[1] = 0.025;
-     dits[2] = 19.344;
-     gMC->Gsvolu("I10A", "BOX ", idtmed[254], dits, 3);  
-
-     dits[0] = 0.843;
-     dits[1] = 0.025;
-     dits[2] = 19.344;
-     gMC->Gsvolu("I20A", "BOX ", idtmed[254], dits, 3);  
-
-     dits[0] = 1.3673;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I123", "BOX ", idtmed[253], dits, 3);
-
-     dits[0] = 0.06;
-     dits[1] = 0.08;
-     dits[2] = 24;
-     dits[3] = -36.79;
-     dits[4] = 21.834;
-     gMC->Gsvolu("I121", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.1253;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I122", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.04;
-     dits[1] = 0.06 ;
-     dits[2] = 24;
-     dits[3] = 126.79;
-     dits[4] = 270;
-     gMC->Gsvolu("I120", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.1134;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I144", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.25;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     gMC->Gsvolu("I113", "BOX ", idtmed[254], dits, 3);  
-
-     dits[0] = 0.077;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I143", "BOX ", idtmed[253], dits, 3);   
-
-     dits[0] = 0.04;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 90;
-     gMC->Gsvolu("I142", "TUBS", idtmed[253], dits, 5); 
-
-     dits[0] = 0.0695;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I141", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.06;
-     dits[1] = 0.08;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 108;
-     gMC->Gsvolu("I140", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.1835;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I139", "BOX ", idtmed[253], dits, 3);
-
-     dits[0] = 0.1894 ;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I138", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.04;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 75.261;
-     gMC->Gsvolu("I137", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 1.3401;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I136", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.05;
-     dits[1] = 0.07;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 72.739;
-     gMC->Gsvolu("I135", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.1193;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I134", "BOX ", idtmed[253], dits, 3);    
-
-     dits[0] = 0.163;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I133", "BOX ", idtmed[253], dits, 3);   
-
-     dits[0] = 0.04;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 157.633;
-     gMC->Gsvolu("I132", "TUBS", idtmed[253], dits, 5); 
-
-     dits[0] = 0.2497;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I131", "BOX ", idtmed[253], dits, 3); 
-
-     dits[0] = 0.06;
-     dits[1] = 0.08;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 148.633;
-     gMC->Gsvolu("I130", "TUBS", idtmed[253], dits, 5); 
-
-     dits[0] = 0.292;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I129", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.163;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I128", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.04;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 161.297;
-     gMC->Gsvolu("I126", "TUBS", idtmed[253], dits, 5);
-
-     dits[0] = 0.2433;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I125", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.06;
-     dits[1] = 0.08;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 42.883;
-     gMC->Gsvolu("I124", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.793;
-     dits[1] = 0.0125;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I103", "BOX ", idtmed[254], dits, 3);  
-
-     dits[0] = 0.793;
-     dits[1] = 0.015 ;
-     dits[2] = 2.5;
-     gMC->Gsvolu("I105", "BOX ", idtmed[201], dits, 3);  
-
-     dits[0] = 0.843;
-     dits[1] = 0.01;
-     dits[2] = 14.344;
-     gMC->Gsvolu("I104", "BOX ", idtmed[275], dits, 3);  // bus
-
-     dits[0] = 0.793;
-     dits[1] = 0.0125;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I1D3", "BOX ", idtmed[254], dits, 3);
-
-     dits[0] = 0.06;
-     dits[1] = 0.08;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 80;
-     gMC->Gsvolu("I112", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.04;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 80;
-     gMC->Gsvolu("I111", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.15;
-     dits[1] = 0.0146;
-     dits[2] = 24;
-     gMC->Gsvolu("I118", "BOX ", idtmed[273], dits, 3);  
-
-     dits[0] = 0.1315;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I110", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.025;
-     dits[1] = 0.035;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 180;
-     gMC->Gsvolu("I114", "TUBS", idtmed[264], dits, 5);  
-
-     dits[0] = 0;
-     dits[1] = 0.025;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 180;
-     gMC->Gsvolu("I115", "TUBS", idtmed[211], dits, 5);   
-
-     dits[0] = 0.063;
-     dits[1] = 0.035;
-     dits[2] = 24;
-     gMC->Gsvolu("I116", "BOX ", idtmed[264], dits, 3); 
-
-     dits[0] = 0.705;
-     dits[1] = 0.005;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I101", "BOX ", idtmed[250], dits, 3);  
-
-     dits[0] = 0.793;
-     dits[1] = 0.0075;
-     dits[2] = 0.68;
-     gMC->Gsvolu("I102", "BOX ", idtmed[201], dits, 3);   // chip
-
-     dits[0] = 0.705;
-     dits[1] = 0.005;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I1D1", "BOX ", idtmed[250], dits, 3);
-
-     dits[0] = 0.063;
-     dits[1] = 0.025;
-     dits[2] = 24;
-     gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3);  
-
-     dits[0] = 0.64;
-     dits[1] = 0.005;
-     dits[2] = 3.48;
-     gMC->Gsvolu("ITS1", "BOX ", idtmed[200], dits, 3);   // detector
-
-     dits[0] = 0.64;
-     dits[1] = 0.005;
-     dits[2] = 3.48;
-     gMC->Gsvolu("ITS2", "BOX ", idtmed[200], dits, 3);   // detector  
-
-     dits[0] = 3.701;
-     dits[1] = 7.699;
-     dits[2] = 4;
-     dits[3] = 57.1;
-     dits[4] = 99.9;  
-     gMC->Gsvolu("I650", "TUBS", idtmed[254], dits, 5);  // was I150 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.5;
-     dits[2] = 1.5;
-     gMC->Gsvolu("I676", "TUBE", idtmed[274], dits, 3); // was I176 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.18;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I673", "TUBE", idtmed[274], dits, 3); // was I173 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.18;
-     dits[2] = 3;
-     gMC->Gsvolu("I671", "TUBE", idtmed[274], dits, 3); // was I171 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.075;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I669", "TUBE", idtmed[264], dits, 3); // was I169 in old geom.
-
-     dits[0] = 3.5;
-     dits[1] = 5.6;
-     dits[2] = 0.55;
-     dits[3] = 0;
-     dits[4] = 38;
-     gMC->Gsvolu("I667", "TUBS", idtmed[263], dits, 5); // was I167 in old geom.
-
-     dits[0] = 6.6;
-     dits[1] = 7.6;
-     dits[2] = 0.5;
-     dits[3] = 0;
-     dits[4] = 9;
-     gMC->Gsvolu("I666", "TUBS", idtmed[263], dits, 5); // was I166 in old geom.
-
-     dits[0] = 0.26;
-     dits[1] = 0.32;
-     dits[2] = 0.55;
-     gMC->Gsvolu("I678", "TUBE", idtmed[263], dits, 3); // was I178 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.3;
-     dits[2] = 1.5;
-     gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); // was I177 in old geom.
-
-     dits[0] = 0.07;
-     dits[1] = 0.125;
-     dits[2] = 0.3;
-     gMC->Gsvolu("I675", "TUBE", idtmed[263], dits, 3); // was I175 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.1;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); // was I174 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.1;
-     dits[2] = 3;
-     gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); // was I172 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.0746;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); // was I170 in old geom.
-
-     dits[0] = 3.7;
-     dits[1] = 5.4;
-     dits[2] = 0.35;
-     dits[3] = 2;
-     dits[4] = 36;
-     gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); // was I168 in old geom.
-
-  }
-
-
-  // --- Define SPD (option 'b') volumes ----------------------------
-  
-  // SPD - option 'b' 
-  // detector thickness = 100 microns
-  // chip thickness = 150 microns
-  // (this is NOT the default)
-
-  if (option == 2 && thickness == 1) {
-
-     dits[0] = 3.7;
-     dits[1] = 7.75;
-     dits[2] = 24;
-     gMC->Gsvolu("IT12", "TUBE", idtmed[254], dits, 3);   
-
-     dits[0] = 3.7;
-     dits[1] = 7.7;
-     dits[2] = 24;
-     dits[3] = 57;
-     dits[4] = 100;
-     gMC->Gsvolu("I12B", "TUBS", idtmed[254], dits, 5); 
-
-     dits[0] = 0.843;
-     dits[1] = 0.025;
-     dits[2] = 19.344;
-     gMC->Gsvolu("I10B", "BOX ", idtmed[254], dits, 3);  
-
-     dits[0] = 0.843;
-     dits[1] = 0.025;
-     dits[2] = 19.344;
-     gMC->Gsvolu("I20B", "BOX ", idtmed[254], dits, 3);  
-
-     dits[0] = 1.3673;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I123", "BOX ", idtmed[253], dits, 3);
-
-     dits[0] = 0.06;
-     dits[1] = 0.08;
-     dits[2] = 24;
-     dits[3] = -36.79;
-     dits[4] = 21.834;
-     gMC->Gsvolu("I121", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.1253;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I122", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.04;
-     dits[1] = 0.06 ;
-     dits[2] = 24;
-     dits[3] = 126.79;
-     dits[4] = 270;
-     gMC->Gsvolu("I120", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.1134;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I144", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.25;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     gMC->Gsvolu("I113", "BOX ", idtmed[254], dits, 3);  
-
-     dits[0] = 0.077;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I143", "BOX ", idtmed[253], dits, 3);   
-
-     dits[0] = 0.04;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 90;
-     gMC->Gsvolu("I142", "TUBS", idtmed[253], dits, 5); 
-
-     dits[0] = 0.0695;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I141", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.06;
-     dits[1] = 0.08;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 108;
-     gMC->Gsvolu("I140", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.1835;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I139", "BOX ", idtmed[253], dits, 3);
-
-     dits[0] = 0.1894 ;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I138", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.04;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 75.261;
-     gMC->Gsvolu("I137", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 1.3401;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I136", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.05;
-     dits[1] = 0.07;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 72.739;
-     gMC->Gsvolu("I135", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.1193;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I134", "BOX ", idtmed[253], dits, 3);    
-
-     dits[0] = 0.163;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I133", "BOX ", idtmed[253], dits, 3);   
-
-     dits[0] = 0.04;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 157.633;
-     gMC->Gsvolu("I132", "TUBS", idtmed[253], dits, 5); 
-
-     dits[0] = 0.2497;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I131", "BOX ", idtmed[253], dits, 3); 
-
-     dits[0] = 0.06;
-     dits[1] = 0.08;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 148.633;
-     gMC->Gsvolu("I130", "TUBS", idtmed[253], dits, 5); 
-
-     dits[0] = 0.292;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I129", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.163;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I128", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.04;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 161.297;
-     gMC->Gsvolu("I126", "TUBS", idtmed[253], dits, 5);
-
-     dits[0] = 0.2433;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I125", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.06;
-     dits[1] = 0.08;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 42.883;
-     gMC->Gsvolu("I124", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.793;
-     dits[1] = 0.015 ;
-     dits[2] = 2.5;
-     gMC->Gsvolu("I105", "BOX ", idtmed[201], dits, 3);  
-
-     dits[0] = 0.793;
-     dits[1] = 0.0125;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I107", "BOX ", idtmed[254], dits, 3);    
-
-     dits[0] = 0.705;
-     dits[1] = 0.01;
-     dits[2] = 2.5;
-     gMC->Gsvolu("I109", "BOX ", idtmed[275], dits, 3);  
-
-     dits[0] = 0.705;
-     dits[1] = 0.01;
-     dits[2] = 14.344;
-     gMC->Gsvolu("I108", "BOX ", idtmed[275], dits, 3);    // bus
-
-     dits[0] = 0.7975;
-     dits[1] = 0.0125;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I1D7", "BOX ", idtmed[254], dits, 3);
-
-     dits[0] = 0.06;
-     dits[1] = 0.08;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 80;
-     gMC->Gsvolu("I112", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.04;
-     dits[1] = 0.06;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 80;
-     gMC->Gsvolu("I111", "TUBS", idtmed[253], dits, 5);  
-
-     dits[0] = 0.15;
-     dits[1] = 0.0146;
-     dits[2] = 24;
-     gMC->Gsvolu("I118", "BOX ", idtmed[273], dits, 3);  
-
-     dits[0] = 0.1315;
-     dits[1] = 0.01;
-     dits[2] = 24;
-     gMC->Gsvolu("I110", "BOX ", idtmed[253], dits, 3);  
-
-     dits[0] = 0.025;
-     dits[1] = 0.035;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 180;
-     gMC->Gsvolu("I114", "TUBS", idtmed[264], dits, 5);  
-
-     dits[0] = 0;
-     dits[1] = 0.025;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 180;
-     gMC->Gsvolu("I115", "TUBS", idtmed[211], dits, 5);   
-
-     dits[0] = 0.063;
-     dits[1] = 0.035;
-     dits[2] = 24;
-     gMC->Gsvolu("I116", "BOX ", idtmed[264], dits, 3); 
-
-     dits[0] = 0.7975;
-     dits[1] = 0.0075;
-     dits[2] = 0.68;
-     gMC->Gsvolu("I106", "BOX ", idtmed[203], dits, 3);   // chip
-
-     dits[0] = 0.705;
-     dits[1] = 0.005;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I101", "BOX ", idtmed[250], dits, 3);  
-
-     dits[0] = 0.705;
-     dits[1] = 0.005;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I1D1", "BOX ", idtmed[250], dits, 3);    
-
-     dits[0] = 0.063;
-     dits[1] = 0.025;
-     dits[2] = 24;
-     gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3);  
-
-     dits[0] = 0.64;
-     dits[1] = 0.005;
-     dits[2] = 3.48;
-     gMC->Gsvolu("ITS1", "BOX ", idtmed[200], dits, 3);   // detector
-
-     dits[0] = 0.64;
-     dits[1] = 0.005;
-     dits[2] = 3.48;
-     gMC->Gsvolu("ITS2", "BOX ", idtmed[200], dits, 3);   // detector 
-
-     dits[0] = 3.701;
-     dits[1] = 7.699;
-     dits[2] = 4;
-     dits[3] = 57.1;
-     dits[4] = 99.9;  
-     gMC->Gsvolu("I650", "TUBS", idtmed[254], dits, 5);  // was I150 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.5;
-     dits[2] = 1.5;
-     gMC->Gsvolu("I676", "TUBE", idtmed[274], dits, 3); // was I176 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.18;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I673", "TUBE", idtmed[274], dits, 3); // was I173 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.18;
-     dits[2] = 3;
-     gMC->Gsvolu("I671", "TUBE", idtmed[274], dits, 3); // was I171 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.075;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I669", "TUBE", idtmed[264], dits, 3); // was I169 in old geom.
-
-     dits[0] = 3.5;
-     dits[1] = 5.6;
-     dits[2] = 0.55;
-     dits[3] = 0;
-     dits[4] = 38;
-     gMC->Gsvolu("I667", "TUBS", idtmed[263], dits, 5); // was I167 in old geom.
-
-     dits[0] = 6.6;
-     dits[1] = 7.6;
-     dits[2] = 0.5;
-     dits[3] = 0;
-     dits[4] = 9;
-     gMC->Gsvolu("I666", "TUBS", idtmed[263], dits, 5); // was I166 in old geom.
-
-     dits[0] = 0.26;
-     dits[1] = 0.32;
-     dits[2] = 0.55;
-     gMC->Gsvolu("I678", "TUBE", idtmed[263], dits, 3); // was I178 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.3;
-     dits[2] = 1.5;
-     gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); // was I177 in old geom.
-
-     dits[0] = 0.07;
-     dits[1] = 0.125;
-     dits[2] = 0.3;
-     gMC->Gsvolu("I675", "TUBE", idtmed[263], dits, 3); // was I175 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.1;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); // was I174 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.1;
-     dits[2] = 3;
-     gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); // was I172 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.0746;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); // was I170 in old geom.
-
-     dits[0] = 3.7;
-     dits[1] = 5.4;
-     dits[2] = 0.35;
-     dits[3] = 2;
-     dits[4] = 36;
-     gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); // was I168 in old geom.
-
-  }
-
-  // --- Define SPD (option 'a') volumes ----------------------------
-  
-  // SPD - option 'a' 
-  // detector thickness = 300 microns
-  // chip thickness = 300 microns
   // (this is NOT the default)
 
   if (option == 1 && thickness == 2) {
@@ -1538,16 +846,16 @@ void AliITSvPPRasymm::CreateGeometry(){
      dits[4] = 100;
      gMC->Gsvolu("I12A", "TUBS", idtmed[254], dits, 5);    // sector
 
-     dits[0] = 0.843;
-     dits[1] = 0.0425;
-     dits[2] = 19.344;
-     gMC->Gsvolu("I10A", "BOX ", idtmed[254], dits, 3);    // lower ladder
-
-     dits[0] = 0.843;
-     dits[1] = 0.0425;
-     dits[2] = 19.344;
-     gMC->Gsvolu("I20A", "BOX ", idtmed[254], dits, 3);    // upper ladder
-
+     di10a[0] = 0.843;
+     di10a[1] = ddet1+dchip1+dbus+0.0025;
+     di10a[2] = 19.344;
+     gMC->Gsvolu("I10A", "BOX ", idtmed[254], di10a, 3);    // mother volume
+                                                            // on layer 1
+     di20a[0] = 0.843;
+     di20a[1] = ddet2+dchip2+dbus+0.0025;
+     di20a[2] = 19.344;
+     gMC->Gsvolu("I20A", "BOX ", idtmed[254], di20a, 3);    // mother volume
+                                                            // on layer 2
      dits[0] = 1.3673;
      dits[1] = 0.01;
      dits[2] = 24;
@@ -1693,26 +1001,27 @@ void AliITSvPPRasymm::CreateGeometry(){
      dits[4] = 42.883;
      gMC->Gsvolu("I124", "TUBS", idtmed[253], dits, 5);  
 
-     dits[0] = 0.793;
-     dits[1] = 0.03;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I103", "BOX ", idtmed[254], dits, 3); // contains det and chip  
-
+     di103[0] = 0.793;
+     di103[1] = ddet1+dchip1;
+     di103[2] = 3.536;
+     gMC->Gsvolu("I103", "BOX ", idtmed[254], di103, 3); // contains det and chip  
+                                                         // layer 1
      dits[0] = 0.793;
      dits[1] = 0.015;
      dits[2] = 2.5;
      gMC->Gsvolu("I105", "BOX ", idtmed[201], dits, 3);  
 
-     dits[0] = 0.843;
-     dits[1] = 0.01;
-     dits[2] = 14.344;
-     gMC->Gsvolu("I104", "BOX ", idtmed[275], dits, 3);  // bus
+     di104[0] = 0.843;
+     di104[1] = dbus;
+     di104[2] = 14.344;
+     gMC->Gsvolu("I104", "BOX ", idtmed[275], di104, 3);  // bus for both layers
 
+     di1d3[0] = 0.793;
+     di1d3[1] = ddet2+dchip2;
+     di1d3[2] = 3.536;
+     gMC->Gsvolu("I1D3", "BOX ", idtmed[254], di1d3, 3); // contains det and chip
+                                                         // layer 2
      dits[0] = 0.793;
-     dits[1] = 0.03;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I1D3", "BOX ", idtmed[254], dits, 3); // contains det and chip
-
      dits[0] = 0.06;
      dits[1] = 0.08;
      dits[2] = 24;
@@ -1756,35 +1065,40 @@ void AliITSvPPRasymm::CreateGeometry(){
      dits[2] = 24;
      gMC->Gsvolu("I116", "BOX ", idtmed[264], dits, 3); 
 
-     dits[0] = 0.705;
-     dits[1] = 0.015;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I101", "BOX ", idtmed[250], dits, 3);   // contains detector 
+     di102[0] = 0.793;
+     di102[1] = dchip1;
+     di102[2] = 0.68;
+     gMC->Gsvolu("I102", "BOX ", idtmed[201], di102, 3);   // chip layer 1
+	  
+     di1d2[0] = 0.793;
+     di1d2[1] = dchip2;
+     di1d2[2] = 0.68;
+     gMC->Gsvolu("I1D2", "BOX ", idtmed[201], di1d2, 3);   // chip	layer 2
 
-     dits[0] = 0.793;
-     dits[1] = 0.015;
-     dits[2] = 0.68;
-     gMC->Gsvolu("I102", "BOX ", idtmed[201], dits, 3);   // chip
-
-     dits[0] = 0.705;
-     dits[1] = 0.015;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I1D1", "BOX ", idtmed[250], dits, 3);   // contains detector 
-
+     di101[0] = 0.705;
+     di101[1] = ddet1;
+     di101[2] = 3.536;
+     gMC->Gsvolu("I101", "BOX ", idtmed[250], di101, 3);   // contains detector 
+                                                           // layer 1
+     di1d1[0] = 0.705;
+     di1d1[1] = ddet2;
+     di1d1[2] = 3.536;
+     gMC->Gsvolu("I1D1", "BOX ", idtmed[250], di1d1, 3);   // contains detector 
+                                                           // layer 2
      dits[0] = 0.063;
      dits[1] = 0.025;
      dits[2] = 24;
      gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3);  
 
-     dits[0] = 0.64;
-     dits[1] = 0.015;
-     dits[2] = 3.48;
-     gMC->Gsvolu("ITS1", "BOX ", idtmed[200], dits, 3);   // detector
+     dits1[0] = 0.64;
+     dits1[1] = ddet1;
+     dits1[2] = 3.48;
+     gMC->Gsvolu("ITS1", "BOX ", idtmed[200], dits1, 3);   // detector layer 1
 
-     dits[0] = 0.64;
-     dits[1] = 0.015;
-     dits[2] = 3.48;
-     gMC->Gsvolu("ITS2", "BOX ", idtmed[200], dits, 3);   // detector  
+     dits2[0] = 0.64;
+     dits2[1] = ddet2;
+     dits2[2] = 3.48;
+     gMC->Gsvolu("ITS2", "BOX ", idtmed[200], dits2, 3);   // detector layer 2
 
      dits[0] = 3.701;
      dits[1] = 7.699;
@@ -1869,8 +1183,6 @@ void AliITSvPPRasymm::CreateGeometry(){
   // --- Define SPD (option 'b') volumes ----------------------------
   
   // SPD - option 'b' 
-  // detector thickness = 300 microns
-  // chip thickness = 300 microns
   // (this is the default)
 
   if (option == 2 && thickness == 2) {
@@ -1887,15 +1199,17 @@ void AliITSvPPRasymm::CreateGeometry(){
      dits[4] = 100;
      gMC->Gsvolu("I12B", "TUBS", idtmed[254], dits, 5);   // sector
 
-     dits[0] = 0.843;
-     dits[1] = 0.0425;
-     dits[2] = 19.344;
-     gMC->Gsvolu("I10B", "BOX ", idtmed[254], dits, 3);   // lower ladder
+     di10b[0] = 0.843;
+     di10b[1] = ddet1+dchip1+dbus+0.0025;  
+     di10b[2] = 19.344;
+     gMC->Gsvolu("I10B", "BOX ", idtmed[254], di10b, 3);   // mother volume 
+	                                                        // on layer 1
 
-     dits[0] = 0.843;
-     dits[1] = 0.0425;   
-     dits[2] = 19.344;
-     gMC->Gsvolu("I20B", "BOX ", idtmed[254], dits, 3);   // upper ladder
+     di20b[0] = 0.843;
+     di20b[1] = ddet2+dchip2+dbus+0.0025;   
+     di20b[2] = 19.344;
+     gMC->Gsvolu("I20B", "BOX ", idtmed[254], di20b, 3);   // mother volume
+	                                                        // layer 2
 
      dits[0] = 1.3673;
      dits[1] = 0.01;
@@ -2047,26 +1361,26 @@ void AliITSvPPRasymm::CreateGeometry(){
      dits[2] = 2.5;
      gMC->Gsvolu("I105", "BOX ", idtmed[201], dits, 3);  
 
-     dits[0] = 0.793;
-     dits[1] = 0.03;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I107", "BOX ", idtmed[254], dits, 3); // contains det and chip   
-
+     di107[0] = 0.793;
+     di107[1] = ddet1+dchip1;
+     di107[2] = 3.536;
+     gMC->Gsvolu("I107", "BOX ", idtmed[254], di107, 3); // contains det and chip   
+                                                         // layer 1
      dits[0] = 0.705;
      dits[1] = 0.01;
      dits[2] = 2.5;
      gMC->Gsvolu("I109", "BOX ", idtmed[275], dits, 3);  
 
-     dits[0] = 0.705;
-     dits[1] = 0.01;
-     dits[2] = 14.344;
-     gMC->Gsvolu("I108", "BOX ", idtmed[275], dits, 3); // bus 
+     di108[0] = 0.705;
+     di108[1] = dbus;
+     di108[2] = 14.344;
+     gMC->Gsvolu("I108", "BOX ", idtmed[275], di108, 3); // bus for both layers 
 
-     dits[0] = 0.7975;
-     dits[1] = 0.03;   
-     dits[2] = 3.536;
-     gMC->Gsvolu("I1D7", "BOX ", idtmed[254], dits, 3); // contains det and chip
-
+     di1d7[0] = 0.7975;
+     di1d7[1] = ddet2+dchip2;   
+     di1d7[2] = 3.536;
+     gMC->Gsvolu("I1D7", "BOX ", idtmed[254], di1d7, 3); // contains det and chip
+                                                         // layer 2
      dits[0] = 0.06;
      dits[1] = 0.08;
      dits[2] = 24;
@@ -2110,35 +1424,40 @@ void AliITSvPPRasymm::CreateGeometry(){
      dits[2] = 24;
      gMC->Gsvolu("I116", "BOX ", idtmed[264], dits, 3); 
 
-     dits[0] = 0.7975;
-     dits[1] = 0.015;   
-     dits[2] = 0.68;
-     gMC->Gsvolu("I106", "BOX ", idtmed[203], dits, 3);   // chip
+     di106[0] = 0.7975;
+     di106[1] = dchip1;   
+     di106[2] = 0.68;
+     gMC->Gsvolu("I106", "BOX ", idtmed[201], di106, 3);   // chip layer 1
 
-     dits[0] = 0.705;
-     dits[1] = 0.015;
-     dits[2] = 3.536;
-     gMC->Gsvolu("I101", "BOX ", idtmed[250], dits, 3);  // contains detector  
+     di1d6[0] = 0.7975;
+     di1d6[1] = dchip2;   
+     di1d6[2] = 0.68;
+     gMC->Gsvolu("I1D6", "BOX ", idtmed[201], di1d6, 3);   // chip layer 2
 
-     dits[0] = 0.705;
-     dits[1] = 0.015;   
-     dits[2] = 3.536;
-     gMC->Gsvolu("I1D1", "BOX ", idtmed[250], dits, 3);  // contains detector  
-
+     di101[0] = 0.705;
+     di101[1] = ddet1;
+     di101[2] = 3.536;
+     gMC->Gsvolu("I101", "BOX ", idtmed[250], di101, 3);  // contains detector  
+                                                          // layer 1
+     di1d1[0] = 0.705;
+     di1d1[1] = ddet2;   
+     di1d1[2] = 3.536;
+     gMC->Gsvolu("I1D1", "BOX ", idtmed[250], di1d1, 3);  // contains detector  
+                                                          // layer 2
      dits[0] = 0.063;
      dits[1] = 0.025;
      dits[2] = 24;
      gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3);  
 
-     dits[0] = 0.64;
-     dits[1] = 0.015;
-     dits[2] = 3.48;
-     gMC->Gsvolu("ITS1", "BOX ", idtmed[200], dits, 3);   // detector
+     dits1[0] = 0.64;
+     dits1[1] = ddet1;
+     dits1[2] = 3.48;
+     gMC->Gsvolu("ITS1", "BOX ", idtmed[200], dits1, 3);   // detector layer 1
 
-     dits[0] = 0.64;
-     dits[1] = 0.015;  
-     dits[2] = 3.48;
-     gMC->Gsvolu("ITS2", "BOX ", idtmed[200], dits, 3);   // detector 
+     dits2[0] = 0.64;
+     dits2[1] = ddet2;  
+     dits2[2] = 3.48;
+     gMC->Gsvolu("ITS2", "BOX ", idtmed[200], dits2, 3);   // detector layer 2
 
      dits[0] = 3.701;
      dits[1] = 7.699;
@@ -3126,325 +2445,6 @@ void AliITSvPPRasymm::CreateGeometry(){
   // --- Place SPD (option 'a') volumes into their mother volume IT12
   
   // SPD - option 'a' 
-  // detector thickness = 100 microns
-  // chip thickness = 150 microns
-  // (this is NOT the default)
-
-  if (option == 1 && thickness == 1) {
-  
-     gMC->Gspos("I12A",5,"IT12",0.0,0.0,0.0,idrotm[238],"MANY");
-     gMC->Gspos("I12A",6,"IT12",0.0,0.0,0.0,idrotm[236],"MANY");
-     gMC->Gspos("I12A",7,"IT12",0.0,0.0,0.0,idrotm[239],"MANY");
-     gMC->Gspos("I12A",8,"IT12",0.0,0.0,0.0,idrotm[233],"MANY");
-     gMC->Gspos("I12A",9,"IT12",0.0,0.0,0.0,idrotm[240],"MANY");
-     gMC->Gspos("I12A",10,"IT12",0.0,0.0,0.0,idrotm[241],"MANY");
-     gMC->Gspos("I12A",2,"IT12",0.0,0.0,0.0,idrotm[242],"MANY");
-     gMC->Gspos("I12A",3,"IT12",0.0,0.0,0.0,idrotm[234],"MANY");
-     gMC->Gspos("I12A",4,"IT12",0.0,0.0,0.0,idrotm[243],"MANY");
-     gMC->Gspos("I12A",1,"IT12",0.0,0.0,0.0,0,"MANY");
-     gMC->Gspos("I10A",2,"I12A",0.203,3.8206,0.0,idrotm[244],"ONLY");
-     gMC->Gspos("I10A",1,"I12A",1.4531,3.8152,0.0,idrotm[245],"ONLY");
-     gMC->Gspos("I20A",1,"I12A",3.0174,6.5143,0.0,idrotm[246],"ONLY");
-     gMC->Gspos("I20A",2,"I12A",1.9612,6.9062,0.0,idrotm[247],"ONLY");
-     gMC->Gspos("I20A",3,"I12A",0.8567,7.1279,0.0,idrotm[248],"ONLY");
-     gMC->Gspos("I20A",4,"I12A",-0.2689,7.1742,0.0,idrotm[249],"ONLY");
-     gMC->Gspos("I123",2,"I12A",-0.2978,5.5196,0.0,idrotm[214],"ONLY");
-     gMC->Gspos("I121",2,"I12A",-0.2385,4.1518,0.0,idrotm[213],"ONLY");
-     gMC->Gspos("I122",2,"I12A",-0.2968,4.0207,0.0,idrotm[212],"ONLY");
-     gMC->Gspos("I120",2,"I12A",-0.3672,3.9056,0.0,0,"ONLY");
-     gMC->Gspos("I144",1,"I12A",-0.2538,3.8556,0.0,0,"ONLY");
-     gMC->Gspos("I113",3,"I12A",0.1095,3.9056,0.0,0,"ONLY");
-     gMC->Gspos("I143",1,"I12A",0.4365,3.8556,0.0,idrotm[236],"ONLY");
-     gMC->Gspos("I142",1,"I12A",0.5136,3.9056,0.0,idrotm[235],"ONLY");
-     gMC->Gspos("I141",1,"I12A",0.5636,3.9752,0.0,idrotm[201],"ONLY");
-     gMC->Gspos("I140",1,"I12A",0.6336,4.0447,0.0,idrotm[234],"ONLY");
-     gMC->Gspos("I139",1,"I12A",0.8297,4.0545,0.0,idrotm[207],"ONLY");
-     gMC->Gspos("I113",5,"I12A",1.2575,3.9681,0.0,idrotm[207],"ONLY");
-     gMC->Gspos("I138",1,"I12A",1.66,3.7848,0.0,idrotm[207],"ONLY");
-     gMC->Gspos("I137",1,"I12A",1.8556,3.7738,0.0,idrotm[233],"ONLY");
-     gMC->Gspos("I136",1,"I12A",2.6224,4.874,0.0,idrotm[232],"ONLY");
-     gMC->Gspos("I135",1,"I12A",3.2967,6.0337,0.0,idrotm[231],"ONLY");
-     gMC->Gspos("I134",1,"I12A",3.266,6.1636,0.0,idrotm[230],"ONLY");
-     gMC->Gspos("I113",1,"I12A",2.9903,6.4144,0.0,idrotm[211],"ONLY");
-     gMC->Gspos("I133",3,"I12A",2.7631,6.7627,0.0,idrotm[230],"ONLY");
-     gMC->Gspos("I132",3,"I12A",2.62,6.8555,0.0,idrotm[229],"ONLY");
-     gMC->Gspos("I131",3,"I12A",2.648,6.6023,0.0,idrotm[228],"ONLY");
-     gMC->Gspos("I130",3,"I12A",2.6569,6.3431,0.0,idrotm[227],"ONLY");
-     gMC->Gspos("I129",3,"I12A",2.3906,6.4819,0.0,idrotm[226],"ONLY");
-     gMC->Gspos("I113",2,"I12A",1.9488,6.7998,0.0,idrotm[210],"ONLY");
-     gMC->Gspos("I133",2,"I12A",1.6699,7.1085,0.0,idrotm[226],"ONLY");
-     gMC->Gspos("I132",2,"I12A",1.5142,7.1777,0.0,idrotm[225],"ONLY");
-     gMC->Gspos("I131",2,"I12A",1.5814,6.932,0.0,idrotm[224],"ONLY");
-     gMC->Gspos("I130",2,"I12A",1.6308,6.6774,0.0,idrotm[223],"ONLY");
-     gMC->Gspos("I129",2,"I12A",1.346,6.7728,0.0,idrotm[222],"ONLY");
-     gMC->Gspos("I113",6,"I12A",0.8599,7.0176,0.0,idrotm[209],"ONLY");
-     gMC->Gspos("I133",1,"I12A",0.5362,7.2789,0.0,idrotm[222],"ONLY");
-     gMC->Gspos("I132",1,"I12A",0.3715,7.3228,0.0,idrotm[221],"ONLY");
-     gMC->Gspos("I131",1,"I12A",0.4763,7.0907,0.0,idrotm[220],"ONLY");
-     gMC->Gspos("I130",1,"I12A",0.5649,6.8469,0.0,idrotm[219],"ONLY");
-     gMC->Gspos("I129",1,"I12A",0.2688,6.8966,0.0,idrotm[218],"ONLY");
-     gMC->Gspos("I113",4,"I12A",-0.2497,7.0624,0.0,idrotm[208],"ONLY");
-     gMC->Gspos("I128",1,"I12A",-0.6103,7.2698,0.0,idrotm[218],"ONLY");
-     gMC->Gspos("I126",2,"I12A",-0.7799,7.2874,0.0,idrotm[217],"ONLY");
-     gMC->Gspos("I125",2,"I12A",-0.6315,7.0883,0.0,idrotm[216],"ONLY");
-     gMC->Gspos("I124",2,"I12A",-0.4965,6.8742,0.0,idrotm[215],"ONLY");
-     gMC->Gspos("I103",3,"I10A",-0.05,0.0075,-3.536,idrotm[237],"ONLY");
-     gMC->Gspos("I103",4,"I10A",-0.05,0.0075,-10.708,idrotm[237],"ONLY");
-     gMC->Gspos("I103",1,"I10A",-0.05,0.0075,10.708,0,"ONLY");
-     gMC->Gspos("I103",2,"I10A",-0.05,0.0075,3.536,0,"ONLY");
-     gMC->Gspos("I105",1,"I10A",-0.05,0.01,-16.844,idrotm[237],"ONLY");
-     gMC->Gspos("I105",2,"I10A",-0.05,0.01,16.844,0,"ONLY");
-     gMC->Gspos("I104",1,"I10A",0.0,-0.015,0.0,0,"ONLY");
-     gMC->Gspos("I1D3",3,"I20A",-0.05,0.0075,-3.536,idrotm[237],"ONLY");
-     gMC->Gspos("I1D3",4,"I20A",-0.05,0.0075,-10.708,idrotm[237],"ONLY");
-     gMC->Gspos("I1D3",1,"I20A",-0.05,0.0075,10.708,0,"ONLY");
-     gMC->Gspos("I1D3",2,"I20A",-0.05,0.0075,3.536,0,"ONLY");
-     gMC->Gspos("I105",3,"I20A",-0.05,0.01,-16.844,idrotm[237],"ONLY");
-     gMC->Gspos("I105",4,"I20A",-0.05,0.01,16.844,0,"ONLY");
-     gMC->Gspos("I104",2,"I20A",0.0,-0.015,0.0,0,"ONLY");
-     gMC->Gspos("I112",2,"I113",0.25,0.02,0.0,idrotm[206],"ONLY");
-     gMC->Gspos("I111",2,"I113",0.1318,-0.0008,0.0,idrotm[205],"ONLY");
-     gMC->Gspos("I118",1,"I113",0.0,-0.0454,0.0,0,"ONLY");
-     gMC->Gspos("I110",1,"I113",0.0,0.0492,0.0,0,"ONLY");
-     gMC->Gspos("I114",1,"I113",0.063,0.0042,0.0,idrotm[202],"ONLY");
-     gMC->Gspos("I115",1,"I113",0.063,0.0042,0.0,idrotm[202],"ONLY");
-     gMC->Gspos("I115",2,"I113",-0.063,0.0042,0.0,idrotm[201],"ONLY");
-     gMC->Gspos("I114",2,"I113",-0.063,0.0042,0.0,idrotm[201],"ONLY");
-     gMC->Gspos("I116",1,"I113",0.0,0.0042,0.0,0,"ONLY");
-     gMC->Gspos("I111",1,"I113",-0.1318,-0.0008,0.0,idrotm[204],"ONLY");
-     gMC->Gspos("I112",1,"I113",-0.25,0.02,0.0,idrotm[203],"ONLY");
-     gMC->Gspos("I101",1,"I103",-0.088,0.0075,0.0,0,"ONLY");
-     gMC->Gspos("I102",1,"I103",0.0,-0.005,-2.8,0,"ONLY");
-     gMC->Gspos("I102",2,"I103",0.0,-0.005,-1.4,0,"ONLY");
-     gMC->Gspos("I102",3,"I103",0.0,-0.005,0.0,0,"ONLY");
-     gMC->Gspos("I102",4,"I103",0.0,-0.005,1.4,0,"ONLY");
-     gMC->Gspos("I102",5,"I103",0.0,-0.005,2.8,0,"ONLY");
-     gMC->Gspos("I1D1",1,"I1D3",-0.088,0.0075,0.0,0,"ONLY");
-     gMC->Gspos("I102",6,"I1D3",0.0,-0.005,-2.8,0,"ONLY");
-     gMC->Gspos("I102",7,"I1D3",0.0,-0.005,-1.4,0,"ONLY");
-     gMC->Gspos("I102",8,"I1D3",0.0,-0.005,0.0,0,"ONLY");
-     gMC->Gspos("I102",9,"I1D3",0.0,-0.005,1.4,0,"ONLY");
-     gMC->Gspos("I102",10,"I1D3",0.0,-0.005,2.8,0,"ONLY");
-     gMC->Gspos("I117",1,"I116",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("ITS1",1,"I101",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("ITS2",1,"I1D1",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("I650",16,"IT12",0.0,0.0,22.0,idrotm[1104],"MANY");
-     gMC->Gspos("I650",20,"IT12",0.0,0.0,22.0,idrotm[1130],"MANY");
-     gMC->Gspos("I650",18,"IT12",0.0,0.0,22.0,idrotm[1117],"MANY");
-     gMC->Gspos("I650",1,"IT12",0.0,0.0,22.0,0,"MANY");
-     gMC->Gspos("I650",4,"IT12",0.0,0.0,22.0,idrotm[1106],"MANY");
-     gMC->Gspos("I650",6,"IT12",0.0,0.0,22.0,idrotm[1039],"MANY");
-     gMC->Gspos("I650",8,"IT12",0.0,0.0,22.0,idrotm[1107],"MANY");
-     gMC->Gspos("I650",10,"IT12",0.0,0.0,22.0,idrotm[1065],"MANY");
-     gMC->Gspos("I650",12,"IT12",0.0,0.0,22.0,idrotm[1078],"MANY");
-     gMC->Gspos("I650",14,"IT12",0.0,0.0,22.0,idrotm[1091],"MANY");
-     gMC->Gspos("I650",19,"IT12",0.0,0.0,-22.0,idrotm[1108],"MANY");
-     gMC->Gspos("I650",2,"IT12",0.0,0.0,-22.0,idrotm[1109],"MANY");
-     gMC->Gspos("I650",3,"IT12",0.0,0.0,-22.0,idrotm[1110],"MANY");
-     gMC->Gspos("I650",5,"IT12",0.0,0.0,-22.0,idrotm[1111],"MANY");
-     gMC->Gspos("I650",7,"IT12",0.0,0.0,-22.0,idrotm[1112],"MANY");
-     gMC->Gspos("I650",9,"IT12",0.0,0.0,-22.0,idrotm[1113],"MANY");
-     gMC->Gspos("I650",11,"IT12",0.0,0.0,-22.0,idrotm[1114],"MANY");
-     gMC->Gspos("I650",13,"IT12",0.0,0.0,-22.0,idrotm[1115],"MANY");
-     gMC->Gspos("I650",15,"IT12",0.0,0.0,-22.0,idrotm[1116],"MANY");
-     gMC->Gspos("I650",17,"IT12",0.0,0.0,-22.0,idrotm[1118],"MANY");
-     gMC->Gspos("I666",1,"I650",0.0,0.0,0.25,idrotm[1003],"MANY");
-     gMC->Gspos("I667",1,"I650",0.1102,0.9945,0.45,idrotm[1088],"ONLY");
-     gMC->Gspos("I669",3,"I650",0.1883,4.0372,-3.2,0,"ONLY");
-     gMC->Gspos("I671",3,"I650",0.1883,4.0372,0.6,0,"ONLY");
-     gMC->Gspos("I669",2,"I650",1.3343,4.0609,-3.2,0,"ONLY");
-     gMC->Gspos("I671",2,"I650",1.3343,4.0609,0.6,0,"ONLY");
-     gMC->Gspos("I669",6,"I650",2.9567,6.1959,-3.2,idrotm[1089],"ONLY");
-     gMC->Gspos("I671",6,"I650",2.9567,6.1959,0.6,idrotm[1089],"ONLY");
-     gMC->Gspos("I669",5,"I650",1.9511,6.5822,-3.2,idrotm[1011],"ONLY");
-     gMC->Gspos("I671",5,"I650",1.9511,6.5822,0.6,idrotm[1011],"ONLY");
-     gMC->Gspos("I669",4,"I650",0.8974,6.8064,-3.2,idrotm[1090],"ONLY");
-     gMC->Gspos("I671",4,"I650",0.8974,6.8064,0.6,idrotm[1090],"ONLY");
-     gMC->Gspos("I669",1,"I650",-0.1784,6.863,-3.2,0,"ONLY");
-     gMC->Gspos("I671",1,"I650",-0.1784,6.863,0.6,0,"ONLY");
-     gMC->Gspos("I673",1,"I650",0.2173,4.8037,1.8,0,"ONLY");
-     gMC->Gspos("I673",6,"I650",1.5093,4.5605,1.8,0,"ONLY");
-     gMC->Gspos("I673",4,"I650",-0.173,6.2531,1.8,idrotm[1092],"ONLY");
-     gMC->Gspos("I673",3,"I650",0.8073,6.2032,1.8,idrotm[1093],"ONLY");
-     gMC->Gspos("I673",2,"I650",1.7678,6.0005,1.8,idrotm[1094],"ONLY");
-     gMC->Gspos("I673",5,"I650",2.6847,5.6501,1.8,0,"ONLY");
-     gMC->Gspos("I676",2,"I650",1.7618,5.2269,2.5,0,"ONLY");
-     gMC->Gspos("I676",1,"I650",0.4018,5.5869,2.5,0,"ONLY");
-     gMC->Gspos("I668",1,"I667",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("I670",1,"I669",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("I672",1,"I671",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("I674",1,"I673",0.0,0.0,0.0,0,"MANY");
-     gMC->Gspos("I675",1,"I673",0.0,0.0,-0.5,0,"ONLY");
-     gMC->Gspos("I677",1,"I676",0.0,0.0,0.0,0,"MANY");
-     gMC->Gspos("I678",1,"I676",0.0,0.0,-0.95,0,"ONLY");  
-
-  }
-
-
-  // --- Place SPD (option 'b') volumes into their mother volume IT12
-  
-  // SPD - option 'b' 
-  // detector thickness = 100 microns
-  // chip thickness = 150 microns
-  // (this is NOT the default)
-
-  if (option == 2 && thickness == 1) {
-  
-     gMC->Gspos("I12B",1,"IT12",0.0,0.0,0.0,0,"MANY");
-     gMC->Gspos("I12B",8,"IT12",0.0,0.0,0.0,idrotm[233],"MANY");
-     gMC->Gspos("I12B",7,"IT12",0.0,0.0,0.0,idrotm[244],"MANY");
-     gMC->Gspos("I12B",6,"IT12",0.0,0.0,0.0,idrotm[236],"MANY");
-     gMC->Gspos("I12B",2,"IT12",0.0,0.0,0.0,idrotm[245],"MANY");
-     gMC->Gspos("I12B",3,"IT12",0.0,0.0,0.0,idrotm[234],"MANY");
-     gMC->Gspos("I12B",4,"IT12",0.0,0.0,0.0,idrotm[246],"MANY");
-     gMC->Gspos("I12B",5,"IT12",0.0,0.0,0.0,idrotm[247],"MANY");
-     gMC->Gspos("I12B",9,"IT12",0.0,0.0,0.0,idrotm[248],"MANY");
-     gMC->Gspos("I12B",10,"IT12",0.0,0.0,0.0,idrotm[249],"MANY");
-     gMC->Gspos("I10B",2,"I12B",0.203,3.8206,0.0,idrotm[238],"ONLY");
-     gMC->Gspos("I10B",1,"I12B",1.4531,3.8152,0.0,idrotm[239],"ONLY");
-     gMC->Gspos("I20B",1,"I12B",3.0174,6.5143,0.0,idrotm[240],"ONLY");
-     gMC->Gspos("I20B",2,"I12B",1.9612,6.9062,0.0,idrotm[241],"ONLY");
-     gMC->Gspos("I20B",3,"I12B",0.8567,7.1279,0.0,idrotm[242],"ONLY");
-     gMC->Gspos("I20B",4,"I12B",-0.2689,7.1742,0.0,idrotm[243],"ONLY");
-     gMC->Gspos("I123",1,"I12B",-0.2978,5.5196,0.0,idrotm[214],"ONLY");
-     gMC->Gspos("I121",1,"I12B",-0.2385,4.1518,0.0,idrotm[213],"ONLY");
-     gMC->Gspos("I122",1,"I12B",-0.2968,4.0207,0.0,idrotm[212],"ONLY");
-     gMC->Gspos("I120",1,"I12B",-0.3672,3.9056,0.0,0,"ONLY");
-     gMC->Gspos("I144",1,"I12B",-0.2538,3.8556,0.0,0,"ONLY");
-     gMC->Gspos("I113",3,"I12B",0.1095,3.9056,0.0,0,"ONLY");
-     gMC->Gspos("I143",1,"I12B",0.4365,3.8556,0.0,idrotm[236],"ONLY");
-     gMC->Gspos("I142",1,"I12B",0.5136,3.9056,0.0,idrotm[235],"ONLY");
-     gMC->Gspos("I141",1,"I12B",0.5636,3.9752,0.0,idrotm[237],"ONLY");
-     gMC->Gspos("I140",1,"I12B",0.6336,4.0447,0.0,idrotm[234],"ONLY");
-     gMC->Gspos("I139",1,"I12B",0.8297,4.0545,0.0,idrotm[207],"ONLY");
-     gMC->Gspos("I113",5,"I12B",1.2575,3.9681,0.0,idrotm[207],"ONLY");
-     gMC->Gspos("I138",1,"I12B",1.66,3.7848,0.0,idrotm[207],"ONLY");
-     gMC->Gspos("I137",1,"I12B",1.8556,3.7738,0.0,idrotm[233],"ONLY");
-     gMC->Gspos("I136",1,"I12B",2.6224,4.874,0.0,idrotm[232],"ONLY");
-     gMC->Gspos("I135",1,"I12B",3.2967,6.0337,0.0,idrotm[231],"ONLY");
-     gMC->Gspos("I134",1,"I12B",3.266,6.1636,0.0,idrotm[230],"ONLY");
-     gMC->Gspos("I113",1,"I12B",2.9903,6.4144,0.0,idrotm[211],"ONLY");
-     gMC->Gspos("I133",3,"I12B",2.7631,6.7627,0.0,idrotm[230],"ONLY");
-     gMC->Gspos("I132",3,"I12B",2.62,6.8555,0.0,idrotm[229],"ONLY");
-     gMC->Gspos("I131",3,"I12B",2.648,6.6023,0.0,idrotm[228],"ONLY");
-     gMC->Gspos("I130",3,"I12B",2.6569,6.3431,0.0,idrotm[227],"ONLY");
-     gMC->Gspos("I129",3,"I12B",2.3906,6.4819,0.0,idrotm[226],"ONLY");
-     gMC->Gspos("I113",2,"I12B",1.9488,6.7998,0.0,idrotm[210],"ONLY");
-     gMC->Gspos("I133",2,"I12B",1.6699,7.1085,0.0,idrotm[226],"ONLY");
-     gMC->Gspos("I132",2,"I12B",1.5142,7.1777,0.0,idrotm[225],"ONLY");
-     gMC->Gspos("I131",2,"I12B",1.5814,6.932,0.0,idrotm[224],"ONLY");
-     gMC->Gspos("I130",2,"I12B",1.6308,6.6774,0.0,idrotm[223],"ONLY");
-     gMC->Gspos("I129",2,"I12B",1.346,6.7728,0.0,idrotm[222],"ONLY");
-     gMC->Gspos("I113",6,"I12B",0.8599,7.0176,0.0,idrotm[209],"ONLY");
-     gMC->Gspos("I133",1,"I12B",0.5362,7.2789,0.0,idrotm[222],"ONLY");
-     gMC->Gspos("I132",1,"I12B",0.3715,7.3228,0.0,idrotm[221],"ONLY");
-     gMC->Gspos("I131",1,"I12B",0.4763,7.0907,0.0,idrotm[220],"ONLY");
-     gMC->Gspos("I130",1,"I12B",0.5649,6.8469,0.0,idrotm[219],"ONLY");
-     gMC->Gspos("I129",1,"I12B",0.2688,6.8966,0.0,idrotm[218],"ONLY");
-     gMC->Gspos("I113",4,"I12B",-0.2497,7.0624,0.0,idrotm[208],"ONLY");
-     gMC->Gspos("I128",1,"I12B",-0.6103,7.2698,0.0,idrotm[218],"ONLY");
-     gMC->Gspos("I126",1,"I12B",-0.7799,7.2874,0.0,idrotm[217],"ONLY");
-     gMC->Gspos("I125",1,"I12B",-0.6315,7.0883,0.0,idrotm[216],"ONLY");
-     gMC->Gspos("I124",1,"I12B",-0.4965,6.8742,0.0,idrotm[215],"ONLY");
-     gMC->Gspos("I105",3,"I10B",-0.05,-0.01,-16.844,idrotm[201],"ONLY");
-     gMC->Gspos("I105",4,"I10B",-0.05,-0.01,16.844,0,"ONLY");
-     gMC->Gspos("I107",2,"I10B",-0.0455,-0.0125,3.536,0,"ONLY");
-     gMC->Gspos("I107",1,"I10B",-0.0455,-0.0125,10.708,0,"ONLY");
-     gMC->Gspos("I107",4,"I10B",-0.0455,-0.0125,-10.708,idrotm[201],"ONLY");
-     gMC->Gspos("I107",3,"I10B",-0.0455,-0.0125,-3.536,idrotm[201],"ONLY");
-     gMC->Gspos("I109",1,"I10B",-0.138,0.015,-16.844,idrotm[201],"ONLY");
-     gMC->Gspos("I109",2,"I10B",-0.138,0.015,16.844,0,"ONLY");
-     gMC->Gspos("I108",1,"I10B",-0.138,0.01,0.0,0,"ONLY");
-     gMC->Gspos("I105",1,"I20B",-0.05,-0.01,-16.844,idrotm[201],"ONLY");
-     gMC->Gspos("I105",2,"I20B",-0.05,-0.01,16.844,0,"ONLY");
-     gMC->Gspos("I1D7",2,"I20B",-0.0455,-0.0125,3.536,0,"ONLY");
-     gMC->Gspos("I1D7",1,"I20B",-0.0455,-0.0125,10.708,0,"ONLY");
-     gMC->Gspos("I1D7",4,"I20B",-0.0455,-0.0125,-10.708,idrotm[201],"ONLY");
-     gMC->Gspos("I1D7",3,"I20B",-0.0455,-0.0125,-3.536,idrotm[201],"ONLY");
-     gMC->Gspos("I109",3,"I20B",-0.138,0.015,-16.844,idrotm[201],"ONLY");
-     gMC->Gspos("I109",4,"I20B",-0.138,0.015,16.844,0,"ONLY");
-     gMC->Gspos("I108",2,"I20B",-0.138,0.01,0.0,0,"ONLY");
-     gMC->Gspos("I112",2,"I113",0.25,0.02,0.0,idrotm[206],"ONLY");
-     gMC->Gspos("I111",2,"I113",0.1318,-0.0008,0.0,idrotm[205],"ONLY");
-     gMC->Gspos("I118",1,"I113",0.0,-0.0454,0.0,0,"ONLY");
-     gMC->Gspos("I110",1,"I113",0.0,0.0492,0.0,0,"ONLY");
-     gMC->Gspos("I114",1,"I113",0.063,0.0042,0.0,idrotm[202],"ONLY");
-     gMC->Gspos("I115",1,"I113",0.063,0.0042,0.0,idrotm[202],"ONLY");
-     gMC->Gspos("I115",2,"I113",-0.063,0.0042,0.0,idrotm[237],"ONLY");
-     gMC->Gspos("I114",2,"I113",-0.063,0.0042,0.0,idrotm[237],"ONLY");
-     gMC->Gspos("I116",1,"I113",0.0,0.0042,0.0,0,"ONLY");
-     gMC->Gspos("I111",1,"I113",-0.1318,-0.0008,0.0,idrotm[204],"ONLY");
-     gMC->Gspos("I112",1,"I113",-0.25,0.02,0.0,idrotm[203],"ONLY");
-     gMC->Gspos("I106",1,"I107",0.0,-0.005,-1.4,0,"ONLY");
-     gMC->Gspos("I106",2,"I107",0.0,-0.005,0.0,0,"ONLY");
-     gMC->Gspos("I106",3,"I107",0.0,-0.005,1.4,0,"ONLY");
-     gMC->Gspos("I106",4,"I107",0.0,-0.005,2.8,0,"ONLY");
-     gMC->Gspos("I106",5,"I107",0.0,-0.005,-2.8,0,"ONLY");
-     gMC->Gspos("I101",1,"I107",0.0,0.0075,0.0,0,"ONLY");
-     gMC->Gspos("I106",6,"I1D7",0.0,-0.005,-1.4,0,"ONLY");
-     gMC->Gspos("I106",7,"I1D7",0.0,-0.005,0.0,0,"ONLY");
-     gMC->Gspos("I106",8,"I1D7",0.0,-0.005,1.4,0,"ONLY");
-     gMC->Gspos("I106",9,"I1D7",0.0,-0.005,2.8,0,"ONLY");
-     gMC->Gspos("I106",10,"I1D7",0.0,-0.005,-2.8,0,"ONLY");
-     gMC->Gspos("I1D1",1,"I1D7",0.0,0.0075,0.0,0,"ONLY");
-     gMC->Gspos("I117",1,"I116",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("ITS1",1,"I101",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("ITS2",1,"I1D1",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("I650",16,"IT12",0.0,0.0,22.0,idrotm[1104],"MANY");
-     gMC->Gspos("I650",20,"IT12",0.0,0.0,22.0,idrotm[1130],"MANY");
-     gMC->Gspos("I650",18,"IT12",0.0,0.0,22.0,idrotm[1117],"MANY");
-     gMC->Gspos("I650",1,"IT12",0.0,0.0,22.0,0,"MANY");
-     gMC->Gspos("I650",4,"IT12",0.0,0.0,22.0,idrotm[1106],"MANY");
-     gMC->Gspos("I650",6,"IT12",0.0,0.0,22.0,idrotm[1039],"MANY");
-     gMC->Gspos("I650",8,"IT12",0.0,0.0,22.0,idrotm[1107],"MANY");
-     gMC->Gspos("I650",10,"IT12",0.0,0.0,22.0,idrotm[1065],"MANY");
-     gMC->Gspos("I650",12,"IT12",0.0,0.0,22.0,idrotm[1078],"MANY");
-     gMC->Gspos("I650",14,"IT12",0.0,0.0,22.0,idrotm[1091],"MANY");
-     gMC->Gspos("I650",19,"IT12",0.0,0.0,-22.0,idrotm[1108],"MANY");
-     gMC->Gspos("I650",2,"IT12",0.0,0.0,-22.0,idrotm[1109],"MANY");
-     gMC->Gspos("I650",3,"IT12",0.0,0.0,-22.0,idrotm[1110],"MANY");
-     gMC->Gspos("I650",5,"IT12",0.0,0.0,-22.0,idrotm[1111],"MANY");
-     gMC->Gspos("I650",7,"IT12",0.0,0.0,-22.0,idrotm[1112],"MANY");
-     gMC->Gspos("I650",9,"IT12",0.0,0.0,-22.0,idrotm[1113],"MANY");
-     gMC->Gspos("I650",11,"IT12",0.0,0.0,-22.0,idrotm[1114],"MANY");
-     gMC->Gspos("I650",13,"IT12",0.0,0.0,-22.0,idrotm[1115],"MANY");
-     gMC->Gspos("I650",15,"IT12",0.0,0.0,-22.0,idrotm[1116],"MANY");
-     gMC->Gspos("I650",17,"IT12",0.0,0.0,-22.0,idrotm[1118],"MANY");
-     gMC->Gspos("I666",1,"I650",0.0,0.0,0.25,idrotm[1003],"MANY");
-     gMC->Gspos("I667",1,"I650",0.1102,0.9945,0.45,idrotm[1088],"ONLY");
-     gMC->Gspos("I669",3,"I650",0.1883,4.0372,-3.2,0,"ONLY");
-     gMC->Gspos("I671",3,"I650",0.1883,4.0372,0.6,0,"ONLY");
-     gMC->Gspos("I669",2,"I650",1.3343,4.0609,-3.2,0,"ONLY");
-     gMC->Gspos("I671",2,"I650",1.3343,4.0609,0.6,0,"ONLY");
-     gMC->Gspos("I669",6,"I650",2.9567,6.1959,-3.2,idrotm[1089],"ONLY");
-     gMC->Gspos("I671",6,"I650",2.9567,6.1959,0.6,idrotm[1089],"ONLY");
-     gMC->Gspos("I669",5,"I650",1.9511,6.5822,-3.2,idrotm[1011],"ONLY");
-     gMC->Gspos("I671",5,"I650",1.9511,6.5822,0.6,idrotm[1011],"ONLY");
-     gMC->Gspos("I669",4,"I650",0.8974,6.8064,-3.2,idrotm[1090],"ONLY");
-     gMC->Gspos("I671",4,"I650",0.8974,6.8064,0.6,idrotm[1090],"ONLY");
-     gMC->Gspos("I669",1,"I650",-0.1784,6.863,-3.2,0,"ONLY");
-     gMC->Gspos("I671",1,"I650",-0.1784,6.863,0.6,0,"ONLY");
-     gMC->Gspos("I673",1,"I650",0.2173,4.8037,1.8,0,"ONLY");
-     gMC->Gspos("I673",6,"I650",1.5093,4.5605,1.8,0,"ONLY");
-     gMC->Gspos("I673",4,"I650",-0.173,6.2531,1.8,idrotm[1092],"ONLY");
-     gMC->Gspos("I673",3,"I650",0.8073,6.2032,1.8,idrotm[1093],"ONLY");
-     gMC->Gspos("I673",2,"I650",1.7678,6.0005,1.8,idrotm[1094],"ONLY");
-     gMC->Gspos("I673",5,"I650",2.6847,5.6501,1.8,0,"ONLY");
-     gMC->Gspos("I676",2,"I650",1.7618,5.2269,2.5,0,"ONLY");
-     gMC->Gspos("I676",1,"I650",0.4018,5.5869,2.5,0,"ONLY");
-     gMC->Gspos("I668",1,"I667",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("I670",1,"I669",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("I672",1,"I671",0.0,0.0,0.0,0,"ONLY");
-     gMC->Gspos("I674",1,"I673",0.0,0.0,0.0,0,"MANY");
-     gMC->Gspos("I675",1,"I673",0.0,0.0,-0.5,0,"ONLY");
-     gMC->Gspos("I677",1,"I676",0.0,0.0,0.0,0,"MANY");
-     gMC->Gspos("I678",1,"I676",0.0,0.0,-0.95,0,"ONLY");  
-
-  }
-
-  // SPD - option 'a' 
-  // detector thickness = 300 microns
-  // chip thickness = 300 microns
   // (this is NOT the default)
 
   if (option == 1 && thickness == 2) {
@@ -3459,12 +2459,24 @@ void AliITSvPPRasymm::CreateGeometry(){
      gMC->Gspos("I12A",3,"IT12",0.0,0.0,0.0,idrotm[234],"MANY");
      gMC->Gspos("I12A",4,"IT12",0.0,0.0,0.0,idrotm[243],"MANY");
      gMC->Gspos("I12A",1,"IT12",0.0,0.0,0.0,0,"MANY");
-     gMC->Gspos("I10A",2,"I12A",0.203-0.0009,3.8206-0.0175,0.0,idrotm[244],"ONLY");
-     gMC->Gspos("I10A",1,"I12A",1.4531-0.0063,3.8152-0.0164,0.0,idrotm[245],"ONLY");
-     gMC->Gspos("I20A",1,"I12A",3.0174+0.0074,6.5143+0.0159,0.0,idrotm[246],"ONLY");
-     gMC->Gspos("I20A",2,"I12A",1.9612+0.0048,6.9062+0.0168,0.0,idrotm[247],"ONLY");
-     gMC->Gspos("I20A",3,"I12A",0.8567+0.0021,7.1279+0.0174,0.0,idrotm[248],"ONLY");
-     gMC->Gspos("I20A",4,"I12A",-0.2689-0.0006,7.1742+0.0175,0.0,idrotm[249],"ONLY");
+     deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  // see definition of idrotm[244]
+	  deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);  // see definition of idrotm[244]
+     gMC->Gspos("I10A",2,"I12A",0.203+deltax,3.8206+deltay,0.0,idrotm[244],"ONLY");	  
+     deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  // see definition of idrotm[245]
+	  deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);  // see definition of idrotm[245]  
+     gMC->Gspos("I10A",1,"I12A",1.4531+deltax,3.8152+deltay,0.0,idrotm[245],"ONLY");
+     deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  // see definition of idrotm[246]
+	  deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);  // see definition of idrotm[246]  
+     gMC->Gspos("I20A",1,"I12A",3.0174+deltax,6.5143+deltay,0.0,idrotm[246],"ONLY");
+     deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  // see definition of idrotm[247]
+	  deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);  // see definition of idrotm[247] 
+     gMC->Gspos("I20A",2,"I12A",1.9612+deltax,6.9062+deltay,0.0,idrotm[247],"ONLY");
+     deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  // see definition of idrotm[248]
+	  deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);  // see definition of idrotm[248] 
+     gMC->Gspos("I20A",3,"I12A",0.8567+deltax,7.1279+deltay,0.0,idrotm[248],"ONLY");
+     deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  // see definition of idrotm[249]
+	  deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);  // see definition of idrotm[249] 
+     gMC->Gspos("I20A",4,"I12A",-0.2689+deltax,7.1742+deltay,0.0,idrotm[249],"ONLY");
      gMC->Gspos("I123",2,"I12A",-0.2978,5.5196,0.0,idrotm[214],"ONLY");
      gMC->Gspos("I121",2,"I12A",-0.2385,4.1518,0.0,idrotm[213],"ONLY");
      gMC->Gspos("I122",2,"I12A",-0.2968,4.0207,0.0,idrotm[212],"ONLY");
@@ -3505,20 +2517,20 @@ void AliITSvPPRasymm::CreateGeometry(){
      gMC->Gspos("I126",2,"I12A",-0.7799,7.2874,0.0,idrotm[217],"ONLY");
      gMC->Gspos("I125",2,"I12A",-0.6315,7.0883,0.0,idrotm[216],"ONLY");
      gMC->Gspos("I124",2,"I12A",-0.4965,6.8742,0.0,idrotm[215],"ONLY");
-     gMC->Gspos("I103",3,"I10A",-0.05,0.0075,-3.536,idrotm[237],"ONLY");
-     gMC->Gspos("I103",4,"I10A",-0.05,0.0075,-10.708,idrotm[237],"ONLY");
-     gMC->Gspos("I103",1,"I10A",-0.05,0.0075,10.708,0,"ONLY");
-     gMC->Gspos("I103",2,"I10A",-0.05,0.0075,3.536,0,"ONLY");
+     gMC->Gspos("I103",3,"I10A",-0.05,-di10a[1]+2.*di104[1]+di103[1],-3.536,idrotm[237],"ONLY");
+     gMC->Gspos("I103",4,"I10A",-0.05,-di10a[1]+2.*di104[1]+di103[1],-10.708,idrotm[237],"ONLY");
+     gMC->Gspos("I103",1,"I10A",-0.05,-di10a[1]+2.*di104[1]+di103[1],10.708,0,"ONLY");
+     gMC->Gspos("I103",2,"I10A",-0.05,-di10a[1]+2.*di104[1]+di103[1],3.536,0,"ONLY");
      gMC->Gspos("I105",1,"I10A",-0.05,0.01,-16.844,idrotm[237],"ONLY");
      gMC->Gspos("I105",2,"I10A",-0.05,0.01,16.844,0,"ONLY");
-     gMC->Gspos("I104",1,"I10A",0.0,-0.015-0.0175,0.0,0,"ONLY");
-     gMC->Gspos("I1D3",3,"I20A",-0.05,0.0075,-3.536,idrotm[237],"ONLY");
-     gMC->Gspos("I1D3",4,"I20A",-0.05,0.0075,-10.708,idrotm[237],"ONLY");
-     gMC->Gspos("I1D3",1,"I20A",-0.05,0.0075,10.708,0,"ONLY");
-     gMC->Gspos("I1D3",2,"I20A",-0.05,0.0075,3.536,0,"ONLY");
+     gMC->Gspos("I104",1,"I10A",0.0,-di10a[1]+di104[1],0.0,0,"ONLY");
+     gMC->Gspos("I1D3",3,"I20A",-0.05,-di20a[1]+2.*di104[1]+di1d3[1],-3.536,idrotm[237],"ONLY");
+     gMC->Gspos("I1D3",4,"I20A",-0.05,-di20a[1]+2.*di104[1]+di1d3[1],-10.708,idrotm[237],"ONLY");
+     gMC->Gspos("I1D3",1,"I20A",-0.05,-di20a[1]+2.*di104[1]+di1d3[1],10.708,0,"ONLY");
+     gMC->Gspos("I1D3",2,"I20A",-0.05,-di20a[1]+2.*di104[1]+di1d3[1],3.536,0,"ONLY");
      gMC->Gspos("I105",3,"I20A",-0.05,0.01,-16.844,idrotm[237],"ONLY");
      gMC->Gspos("I105",4,"I20A",-0.05,0.01,16.844,0,"ONLY");
-     gMC->Gspos("I104",2,"I20A",0.0,-0.015-0.0175,0.0,0,"ONLY");
+     gMC->Gspos("I104",2,"I20A",0.0,-di20a[1]+di104[1],0.0,0,"ONLY");
      gMC->Gspos("I112",2,"I113",0.25,0.02,0.0,idrotm[206],"ONLY");
      gMC->Gspos("I111",2,"I113",0.1318,-0.0008,0.0,idrotm[205],"ONLY");
      gMC->Gspos("I118",1,"I113",0.0,-0.0454,0.0,0,"ONLY");
@@ -3530,18 +2542,18 @@ void AliITSvPPRasymm::CreateGeometry(){
      gMC->Gspos("I116",1,"I113",0.0,0.0042,0.0,0,"ONLY");
      gMC->Gspos("I111",1,"I113",-0.1318,-0.0008,0.0,idrotm[204],"ONLY");
      gMC->Gspos("I112",1,"I113",-0.25,0.02,0.0,idrotm[203],"ONLY");
-     gMC->Gspos("I101",1,"I103",-0.088,0.0075+0.0075,0.0,0,"ONLY");
-     gMC->Gspos("I102",1,"I103",0.0,-0.005-0.01,-2.8,0,"ONLY");
-     gMC->Gspos("I102",2,"I103",0.0,-0.005-0.01,-1.4,0,"ONLY");
-     gMC->Gspos("I102",3,"I103",0.0,-0.005-0.01,0.0,0,"ONLY");
-     gMC->Gspos("I102",4,"I103",0.0,-0.005-0.01,1.4,0,"ONLY");
-     gMC->Gspos("I102",5,"I103",0.0,-0.005-0.01,2.8,0,"ONLY");
-     gMC->Gspos("I1D1",1,"I1D3",-0.088,0.0075+0.0075,0.0,0,"ONLY");
-     gMC->Gspos("I102",6,"I1D3",0.0,-0.005-0.01,-2.8,0,"ONLY");
-     gMC->Gspos("I102",7,"I1D3",0.0,-0.005-0.01,-1.4,0,"ONLY");
-     gMC->Gspos("I102",8,"I1D3",0.0,-0.005-0.01,0.0,0,"ONLY");
-     gMC->Gspos("I102",9,"I1D3",0.0,-0.005-0.01,1.4,0,"ONLY");
-     gMC->Gspos("I102",10,"I1D3",0.0,-0.005-0.01,2.8,0,"ONLY");
+     gMC->Gspos("I101",1,"I103",-0.088,ddet1,0.0,0,"ONLY");
+     gMC->Gspos("I102",1,"I103",0.0,-dchip1,-2.8,0,"ONLY");
+     gMC->Gspos("I102",2,"I103",0.0,-dchip1,-1.4,0,"ONLY");
+     gMC->Gspos("I102",3,"I103",0.0,-dchip1,0.0,0,"ONLY");
+     gMC->Gspos("I102",4,"I103",0.0,-dchip1,1.4,0,"ONLY");
+     gMC->Gspos("I102",5,"I103",0.0,-dchip1,2.8,0,"ONLY");
+     gMC->Gspos("I1D1",1,"I1D3",-0.088,ddet2,0.0,0,"ONLY");
+     gMC->Gspos("I1D2",1,"I1D3",0.0,-dchip2,-2.8,0,"ONLY");
+     gMC->Gspos("I1D2",2,"I1D3",0.0,-dchip2,-1.4,0,"ONLY");
+     gMC->Gspos("I1D2",3,"I1D3",0.0,-dchip2,0.0,0,"ONLY");
+     gMC->Gspos("I1D2",4,"I1D3",0.0,-dchip2,1.4,0,"ONLY");
+     gMC->Gspos("I1D2",5,"I1D3",0.0,-dchip2,2.8,0,"ONLY");
      gMC->Gspos("I117",1,"I116",0.0,0.0,0.0,0,"ONLY");
      gMC->Gspos("ITS1",1,"I101",0.0,0.0,0.0,0,"ONLY");
      gMC->Gspos("ITS2",1,"I1D1",0.0,0.0,0.0,0,"ONLY");
@@ -3601,8 +2613,6 @@ void AliITSvPPRasymm::CreateGeometry(){
   // --- Place SPD (option 'b') volumes into their mother volume IT12
   
   // SPD - option 'b' 
-  // detector thickness = 300 microns
-  // chip thickness = 300 microns
   // (this is the default)
 
   if (option == 2 && thickness == 2) {
@@ -3617,12 +2627,24 @@ void AliITSvPPRasymm::CreateGeometry(){
      gMC->Gspos("I12B",5,"IT12",0.0,0.0,0.0,idrotm[247],"MANY");
      gMC->Gspos("I12B",9,"IT12",0.0,0.0,0.0,idrotm[248],"MANY");
      gMC->Gspos("I12B",10,"IT12",0.0,0.0,0.0,idrotm[249],"MANY");
-     gMC->Gspos("I10B",2,"I12B",0.203-0.0009,3.8206-0.0175,0.0,idrotm[238],"ONLY");
-     gMC->Gspos("I10B",1,"I12B",1.4531-0.0063,3.8152-0.0164,0.0,idrotm[239],"ONLY");
-     gMC->Gspos("I20B",1,"I12B",3.0174+0.0074,6.5143+0.0159,0.0,idrotm[240],"ONLY");
-     gMC->Gspos("I20B",2,"I12B",1.9612+0.0048,6.9062+0.0168,0.0,idrotm[241],"ONLY");
-     gMC->Gspos("I20B",3,"I12B",0.8567+0.0021,7.1279+0.0174,0.0,idrotm[242],"ONLY");
-     gMC->Gspos("I20B",4,"I12B",-0.2689-0.0006,7.1742+0.0175,0.0,idrotm[243],"ONLY");
+     deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  // see definition of idrotm[238]
+	  deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);  // see definition of idrotm[238]
+     gMC->Gspos("I10B",2,"I12B",0.203+deltax,3.8206+deltay,0.0,idrotm[238],"ONLY");	  
+     deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  // see definition of idrotm[239]
+	  deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);  // see definition of idrotm[239]  
+     gMC->Gspos("I10B",1,"I12B",1.4531+deltax,3.8152+deltay,0.0,idrotm[239],"ONLY");
+     deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  // see definition of idrotm[240]
+	  deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);  // see definition of idrotm[240]  
+     gMC->Gspos("I20B",1,"I12B",3.0174+deltax,6.5143+deltay,0.0,idrotm[240],"ONLY");
+     deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  // see definition of idrotm[241]
+	  deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);  // see definition of idrotm[241] 
+     gMC->Gspos("I20B",2,"I12B",1.9612+deltax,6.9062+deltay,0.0,idrotm[241],"ONLY");
+     deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  // see definition of idrotm[242]
+	  deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);  // see definition of idrotm[242] 
+     gMC->Gspos("I20B",3,"I12B",0.8567+deltax,7.1279+deltay,0.0,idrotm[242],"ONLY");
+     deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  // see definition of idrotm[243]
+	  deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);  // see definition of idrotm[243] 
+     gMC->Gspos("I20B",4,"I12B",-0.2689+deltax,7.1742+deltay,0.0,idrotm[243],"ONLY");
      gMC->Gspos("I123",1,"I12B",-0.2978,5.5196,0.0,idrotm[214],"ONLY");
      gMC->Gspos("I121",1,"I12B",-0.2385,4.1518,0.0,idrotm[213],"ONLY");
      gMC->Gspos("I122",1,"I12B",-0.2968,4.0207,0.0,idrotm[212],"ONLY");
@@ -3665,22 +2687,22 @@ void AliITSvPPRasymm::CreateGeometry(){
      gMC->Gspos("I124",1,"I12B",-0.4965,6.8742,0.0,idrotm[215],"ONLY");
      gMC->Gspos("I105",3,"I10B",-0.05,-0.01,-16.844,idrotm[201],"ONLY");
      gMC->Gspos("I105",4,"I10B",-0.05,-0.01,16.844,0,"ONLY");
-     gMC->Gspos("I107",2,"I10B",-0.0455,-0.0125,3.536,0,"ONLY");
-     gMC->Gspos("I107",1,"I10B",-0.0455,-0.0125,10.708,0,"ONLY");
-     gMC->Gspos("I107",4,"I10B",-0.0455,-0.0125,-10.708,idrotm[201],"ONLY");
-     gMC->Gspos("I107",3,"I10B",-0.0455,-0.0125,-3.536,idrotm[201],"ONLY");
+     gMC->Gspos("I107",2,"I10B",-0.0455,-di10b[1]+di107[1],3.536,0,"ONLY");
+     gMC->Gspos("I107",1,"I10B",-0.0455,-di10b[1]+di107[1],10.708,0,"ONLY");
+     gMC->Gspos("I107",4,"I10B",-0.0455,-di10b[1]+di107[1],-10.708,idrotm[201],"ONLY");
+     gMC->Gspos("I107",3,"I10B",-0.0455,-di10b[1]+di107[1],-3.536,idrotm[201],"ONLY");
      gMC->Gspos("I109",1,"I10B",-0.138,0.015,-16.844,idrotm[201],"ONLY");
      gMC->Gspos("I109",2,"I10B",-0.138,0.015,16.844,0,"ONLY");
-     gMC->Gspos("I108",1,"I10B",-0.138,0.01+0.0175,0.0,0,"ONLY");
+     gMC->Gspos("I108",1,"I10B",-0.138,-di10b[1]+2.*di107[1]+di108[1],0.0,0,"ONLY");
      gMC->Gspos("I105",1,"I20B",-0.05,-0.01,-16.844,idrotm[201],"ONLY");
      gMC->Gspos("I105",2,"I20B",-0.05,-0.01,16.844,0,"ONLY");
-     gMC->Gspos("I1D7",2,"I20B",-0.0455,-0.0125,3.536,0,"ONLY");
-     gMC->Gspos("I1D7",1,"I20B",-0.0455,-0.0125,10.708,0,"ONLY");
-     gMC->Gspos("I1D7",4,"I20B",-0.0455,-0.0125,-10.708,idrotm[201],"ONLY");
-     gMC->Gspos("I1D7",3,"I20B",-0.0455,-0.0125,-3.536,idrotm[201],"ONLY");
+     gMC->Gspos("I1D7",2,"I20B",-0.0455,-di20b[1]+di1d7[1],3.536,0,"ONLY");
+     gMC->Gspos("I1D7",1,"I20B",-0.0455,-di20b[1]+di1d7[1],10.708,0,"ONLY");
+     gMC->Gspos("I1D7",4,"I20B",-0.0455,-di20b[1]+di1d7[1],-10.708,idrotm[201],"ONLY");
+     gMC->Gspos("I1D7",3,"I20B",-0.0455,-di20b[1]+di1d7[1],-3.536,idrotm[201],"ONLY");
      gMC->Gspos("I109",3,"I20B",-0.138,0.015,-16.844,idrotm[201],"ONLY");
      gMC->Gspos("I109",4,"I20B",-0.138,0.015,16.844,0,"ONLY");
-     gMC->Gspos("I108",2,"I20B",-0.138,0.01+0.0175,0.0,0,"ONLY");
+     gMC->Gspos("I108",2,"I20B",-0.138,-di20b[1]+2.*di1d7[1]+di108[1],0.0,0,"ONLY");
      gMC->Gspos("I112",2,"I113",0.25,0.02,0.0,idrotm[206],"ONLY");
      gMC->Gspos("I111",2,"I113",0.1318,-0.0008,0.0,idrotm[205],"ONLY");
      gMC->Gspos("I118",1,"I113",0.0,-0.0454,0.0,0,"ONLY");
@@ -3692,18 +2714,18 @@ void AliITSvPPRasymm::CreateGeometry(){
      gMC->Gspos("I116",1,"I113",0.0,0.0042,0.0,0,"ONLY");
      gMC->Gspos("I111",1,"I113",-0.1318,-0.0008,0.0,idrotm[204],"ONLY");
      gMC->Gspos("I112",1,"I113",-0.25,0.02,0.0,idrotm[203],"ONLY");
-     gMC->Gspos("I106",1,"I107",0.0,-0.005-0.01,-1.4,0,"ONLY");
-     gMC->Gspos("I106",2,"I107",0.0,-0.005-0.01,0.0,0,"ONLY");
-     gMC->Gspos("I106",3,"I107",0.0,-0.005-0.01,1.4,0,"ONLY");
-     gMC->Gspos("I106",4,"I107",0.0,-0.005-0.01,2.8,0,"ONLY");
-     gMC->Gspos("I106",5,"I107",0.0,-0.005-0.01,-2.8,0,"ONLY");
-     gMC->Gspos("I101",1,"I107",0.0,0.0075+0.0075,0.0,0,"ONLY");
-     gMC->Gspos("I106",6,"I1D7",0.0,-0.005-0.01,-1.4,0,"ONLY");
-     gMC->Gspos("I106",7,"I1D7",0.0,-0.005-0.01,0.0,0,"ONLY");
-     gMC->Gspos("I106",8,"I1D7",0.0,-0.005-0.01,1.4,0,"ONLY");
-     gMC->Gspos("I106",9,"I1D7",0.0,-0.005-0.01,2.8,0,"ONLY");
-     gMC->Gspos("I106",10,"I1D7",0.0,-0.005-0.01,-2.8,0,"ONLY");
-     gMC->Gspos("I1D1",1,"I1D7",0.0,0.0075+0.0075,0.0,0,"ONLY");
+     gMC->Gspos("I106",1,"I107",0.0,-dchip1,-1.4,0,"ONLY");
+     gMC->Gspos("I106",2,"I107",0.0,-dchip1,0.0,0,"ONLY");
+     gMC->Gspos("I106",3,"I107",0.0,-dchip1,1.4,0,"ONLY");
+     gMC->Gspos("I106",4,"I107",0.0,-dchip1,2.8,0,"ONLY");
+     gMC->Gspos("I106",5,"I107",0.0,-dchip1,-2.8,0,"ONLY");
+     gMC->Gspos("I101",1,"I107",0.0,ddet1,0.0,0,"ONLY");
+     gMC->Gspos("I1D6",1,"I1D7",0.0,-dchip2,-1.4,0,"ONLY");
+     gMC->Gspos("I1D6",2,"I1D7",0.0,-dchip2,0.0,0,"ONLY");
+     gMC->Gspos("I1D6",3,"I1D7",0.0,-dchip2,1.4,0,"ONLY");
+     gMC->Gspos("I1D6",4,"I1D7",0.0,-dchip2,2.8,0,"ONLY");
+     gMC->Gspos("I1D6",5,"I1D7",0.0,-dchip2,-2.8,0,"ONLY");
+     gMC->Gspos("I1D1",1,"I1D7",0.0,ddet2,0.0,0,"ONLY");
      gMC->Gspos("I117",1,"I116",0.0,0.0,0.0,0,"ONLY");
      gMC->Gspos("ITS1",1,"I101",0.0,0.0,0.0,0,"ONLY");
      gMC->Gspos("ITS2",1,"I1D1",0.0,0.0,0.0,0,"ONLY");
