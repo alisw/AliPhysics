@@ -152,10 +152,11 @@ G4int TG4StepManager::GetVolumeID(G4VPhysicalVolume* physVolume) const
     }   	
   }  
   else {
-    G4String text = "TG4StepManager::CurrentVol: \n";
+    G4String text = "TG4StepManager::GetVolumeID: \n";
     text = text + "    Volume " + physVolume->GetName();
     text = text + " has not a sensitive detector.";
-    TG4Globals::Exception(text);
+    //TG4Globals::Exception(text);
+    TG4Globals::Warning(text);
     return 0;
   }      	
 } 
