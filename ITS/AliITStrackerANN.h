@@ -16,6 +16,7 @@ class AliITStrackerANN : public AliITStrackerV2
 {
 public:
 
+
 	/* Constructors */
 	AliITStrackerANN() : AliITStrackerV2() { /* does nothing */ };
 	AliITStrackerANN(const AliITSgeom *geom, Int_t msglev = 0);
@@ -274,9 +275,9 @@ private:
 	Double_t Weight(AliITSneuron *nAB, AliITSneuron *nBC); 
 
 	/* Usefuls constant angle values */
-	static const Double_t fgkPi     = 3.141592653; // pi
-	static const Double_t fgkHalfPi = 1.570796327; // pi / 2
-	static const Double_t fgkTwoPi  = 6.283185307; // 2 * pi
+	static const Double_t fgkPi; // pi
+	static const Double_t fgkHalfPi; // pi / 2
+	static const Double_t fgkTwoPi; // 2 * pi
 	
 	/* Primary vertex position */
 	Double_t fVertexX; // X
@@ -320,6 +321,8 @@ private:
 	/* ALICE related objects */
 	AliITSgeom  *fGeom;       //! ITS Geometry
 	
+	friend class AliITStrackerANN::AliITStrackANN;
+
 	/* ROOT class implementation routines */
 	ClassDef(AliITStrackerANN, 1)
 };

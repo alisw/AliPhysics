@@ -18,6 +18,7 @@
 // Email : alberto.pulvirenti@ct.infn.it
 // ---------------------------------------------------------------------------------
 
+#include <Riostream.h>
 #include <TMath.h>
 #include <TString.h>
 #include <TObjArray.h>
@@ -34,8 +35,9 @@
 
 #include "AliITStrackerANN.h"
 
-class iostream;
-using namespace std;
+const Double_t AliITStrackerANN::fgkPi     = 3.141592653; // pi
+const Double_t AliITStrackerANN::fgkHalfPi = 1.570796327; // pi / 2
+const Double_t AliITStrackerANN::fgkTwoPi  = 6.283185307; // 2 * pi
 
 ClassImp(AliITStrackerANN)
 
@@ -1684,7 +1686,7 @@ Double_t AliITStrackerANN::Weight(AliITSneuron *nAB, AliITSneuron *nBC)
  ******************************************/
  
 //__________________________________________________________________________________ 
-inline AliITStrackerANN::AliITSnode::AliITSnode()
+AliITStrackerANN::AliITSnode::AliITSnode()
 : fUsed(kFALSE), fClusterRef(-1), 
   fMatches(NULL), fInnerOf(NULL), fOuterOf(NULL), 
   fNext(NULL), fPrev(NULL)
@@ -1723,7 +1725,7 @@ AliITStrackerANN::AliITSnode::~AliITSnode()
 }
 
 //__________________________________________________________________________________ 
-inline Double_t AliITStrackerANN::AliITSnode::GetPhi() const
+Double_t AliITStrackerANN::AliITSnode::GetPhi() const
 {
 	// Calculates the 'phi' (azimutal) angle, and returns it
 	// in the range between 0 and 2Pi radians.
@@ -1737,7 +1739,7 @@ inline Double_t AliITStrackerANN::AliITSnode::GetPhi() const
 }
  
 //__________________________________________________________________________________ 
-inline Double_t AliITStrackerANN::AliITSnode::GetError(Option_t *option)
+Double_t AliITStrackerANN::AliITSnode::GetError(Option_t *option)
 {
 	// Returns the error or the square error of 
 	// values related to the coordinates in different systems.
@@ -1800,7 +1802,7 @@ AliITStrackerANN::AliITSneuron::AliITSneuron
 }
  
 //__________________________________________________________________________________
-inline Double_t AliITStrackerANN::AliITSneuron::Activate(Double_t temperature)
+Double_t AliITStrackerANN::AliITSneuron::Activate(Double_t temperature)
 {
 	// This computes the new activation of a neuron, and returns
 	// its activation variation as a consequence of the updating.
@@ -2068,7 +2070,7 @@ Bool_t AliITStrackerANN::AliITStrackANN::RiemannFit()
 		//----
 		s[j] = (p->GetR2sq() - dt * dt) / (1. + curv * dt);
 		if (s[j] < 0.) {
-			if (fabs(s[j]) < 1.E-6) s[j] = 0.;
+			if (TMath::Abs(s[j]) < 1.E-6) s[j] = 0.;
 			else {
 				Error("RiemannFit", "Square root argument error: %17.15g < 0", s[j]);
 				return kFALSE;
