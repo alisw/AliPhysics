@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/10/28 13:02:51  cblume
+Bug fix in GetTiltingAngle()
+
 Revision 1.8  2002/10/14 14:57:44  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -501,8 +504,8 @@ void AliTRDparameter::SetNRowPad()
                                  , { 16, 16, 12, 16, 16 }
                                  , { 16, 16, 12, 16, 16 }
                                  , { 16, 16, 12, 16, 16 }
-                                 , { 14, 16, 12, 16, 14 }
-                                 , { 13, 16, 12, 16, 13 } };
+                                 , { 16, 16, 12, 16, 16 }
+                                 , { 16, 16, 12, 16, 16 } };
 
   Float_t rpadW = AliTRDgeometry::RpadW();
 
