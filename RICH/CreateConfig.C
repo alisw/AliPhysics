@@ -152,7 +152,7 @@ void KirConfig::CreateConfigFile()
   fprintf(fp,"  gSystem->Load(\"libgeant321\");\n");
   fprintf(fp,"  new TGeant3(\"C++ Interface to Geant3\");\n\n");
 //File
-  fprintf(fp,"  AliRunLoader *pAL=AliRunLoader::Open(\"galice.root\",AliConfig::fgkDefaultEventFolderName,\"recreate\");\n");    
+  fprintf(fp,"  AliRunLoader *pAL=AliRunLoader::Open(\"galice.root\",AliConfig::GetDefaultEventFolderName(),\"recreate\");\n");    
   fprintf(fp,"  pAL->SetCompressionLevel(2);\n");
   fprintf(fp,"  pAL->SetNumberOfEventsPerFile(1000);\n");
   fprintf(fp,"  gAlice->SetRunLoader(pAL);\n\n");
@@ -217,7 +217,7 @@ void KirConfig::CreateConfigFile()
       fprintf(fp,"  for(int i=1;i<=7;i++){\n");
       fprintf(fp,"    AliGenFixed *pFixed=new AliGenFixed(1);\n");
       fprintf(fp,"    pFixed->SetPart(%i); pFixed->SetMomentum(2.5+i*0.4); pFixed->SetOrigin(0,0,0);\n",fGenPartIdCombo->GetSelected());
-      fprintf(fp,"    pFixed->SetPhiRange(gRICH->C(i)->PhiD()); pFixed->SetThetaRange(gRICH->C(i)->ThetaD()-2);\n");                             
+      fprintf(fp,"    pFixed->SetPhiRange(pRICH->C(i)->PhiD()); pFixed->SetThetaRange(pRICH->C(i)->ThetaD()-2);\n");                             
       fprintf(fp,"    pCocktail->AddGenerator(pFixed,Form(\"Fixed %i\",i),1);\n  }\n");  
       fprintf(fp,"  pCocktail->Init();\n");
     break;
@@ -226,7 +226,7 @@ void KirConfig::CreateConfigFile()
       fprintf(fp,"  for(int i=1;i<=7;i++){\n");
       fprintf(fp,"    AliGenFixed *pFixed=new AliGenFixed(1);\n");
       fprintf(fp,"    pFixed->SetPart(%i); pFixed->SetMomentum(2.5+i*0.4); pFixed->SetOrigin(0,0,0);\n",fGenPartIdCombo->GetSelected());
-      fprintf(fp,"    pFixed->SetPhiRange(gRICH->C(i)->PhiD()); pFixed->SetThetaRange(gRICH->C(i)->ThetaD()-2);\n");                             
+      fprintf(fp,"    pFixed->SetPhiRange(pRICH->C(i)->PhiD()); pFixed->SetThetaRange(pRICH->C(i)->ThetaD()-2);\n");                             
       fprintf(fp,"    pCocktail->AddGenerator(pFixed,Form(\"Fixed %i\",i),1);\n  }\n");  
       fprintf(fp,"  AliGenPythia *pPythia = new AliGenPythia(-1);\n");
       fprintf(fp,"  pPythia->SetMomentumRange(0,999999); pPythia->SetPhiRange(20,80); pPythia->SetThetaRange(75,115);\n");
