@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.35  2003/01/15 04:59:38  morsch
+- TPC eff. from AliEMCALFast
+- Correction in PropagatePhi()
+
 Revision 1.34  2003/01/14 10:50:18  alibrary
 Cleanup of STEER coding conventions
 
@@ -749,11 +753,6 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 		printf("\n Simulated Jet (pt, eta, phi): %d %f %f %f\n", 
 		       part-5, pT, eta, phi);
 	    }
-
-//	    if (mpart == 21)
-		
-//		printf("\n Simulated Jet (pt, eta, phi): %d %d %f %f %f",
-//		       part, mpart, pT, eta, phi); 
 	}
 	
 	fTrackList[part] = 0; 
@@ -762,12 +761,9 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	fPhiT[part]      = phi;
 	fPdgT[part]      = mpart;
 	
-// today
-	if (part < 2) continue;
-
-	// move to fLego->Fill because hadron correction must apply 
-	// if particle hit to EMCAL - 11-feb-2002
-	//	if (pT == 0 || pT < fPtCut) continue;
+//	if (part < 2) continue;
+	if (MPart->GetStatusCode() != 1) continue;
+	
 	TParticlePDG* pdgP = 0;
 // charged or neutral 
 	pdgP  = MPart->GetPDG();
@@ -778,21 +774,12 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	        if (!fK0N) { 
 		    continue;
 		} else {
-// today
-/*
 		    if (mpart != kNeutron    &&
 			mpart != kNeutronBar &&
 			mpart != kK0Long) continue;
-*/
 		}
 	    }
 	}
-
-// skip partons
-	if (TMath::Abs(mpart) <= 6         ||
-	    mpart == 21                    ||
-	    mpart == 92) continue;
-
 	if (TMath::Abs(eta)<=0.9) fNChTpc++;
 // final state only
 	if (child1 >= 0 && child1 < npart) continue;
@@ -811,8 +798,8 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
         Float_t pw;
 	if (fSmear && TMath::Abs(chTmp)) {
 	    pw = AliEMCALFast::SmearMomentum(1,p);
-        // p changed - take into account when calculate pT,
-	// pz and so on ..  ?
+	    // p changed - take into account when calculate pT,
+	    // pz and so on ..  ?
             pT = (pw/p) * pT;
             if(fDebug >= 4) printf("\n Smearing : p %8.4f change to %8.4f ", p, pw);
             p  = pw;
@@ -824,8 +811,8 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	    eff =  AliEMCALFast::Efficiency(2,p);
             if(fhEff) fhEff->Fill(p, eff);
 	    if (AliEMCALFast::RandomReject(eff)) {
-              if(fDebug >= 5) printf(" reject due to unefficiency ");
-              continue;
+		if(fDebug >= 5) printf(" reject due to unefficiency ");
+		continue;
             }
 	}
 //
@@ -837,28 +824,28 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	Bool_t curls = kFALSE; // hit two the EMCAL (no curl)
 	Float_t phiHC=0.0, dpH=0.0, dphi=0.0, eTdpH=0;
         if(TMath::Abs(chTmp)) {
-        // hadr. correction only for charge particle 
-	  dphi  = PropagatePhi(pT, chTmp, curls);
-	  phiHC = phi + dphi;
-	  if (fDebug >= 6) {
-             printf("\n Delta phi %f pT %f ", dphi, pT);
-	     if (curls) printf("\n !! Track is curling");
-          }
-          if(!curls) fhTrackPtBcut->Fill(pT);
-	
-	  if (fHCorrection && !curls) {
-	      if (!fHadronCorrector)
-		 Fatal("AliEMCALJetFinder",
-		    "Hadronic energy correction required but not defined !");
-
-	      dpH    = fHadronCorrector->GetEnergy(p, eta, 7);
-              eTdpH  = dpH*TMath::Sin(theta);
-
-	      if (fDebug >= 7) printf(" phi %f phiHC %f eTcorr %f\n", 
-	      phi, phiHC, -eTdpH); // correction is negative
-	      fLego->Fill(eta, phiHC, -eTdpH );
-              fhLegoHadrCorr->Fill(eta, phiHC, eTdpH);
-	  }
+	    // hadr. correction only for charge particle 
+	    dphi  = PropagatePhi(pT, chTmp, curls);
+	    phiHC = phi + dphi;
+	    if (fDebug >= 6) {
+		printf("\n Delta phi %f pT %f ", dphi, pT);
+		if (curls) printf("\n !! Track is curling");
+	    }
+	    if(!curls) fhTrackPtBcut->Fill(pT);
+	    
+	    if (fHCorrection && !curls) {
+		if (!fHadronCorrector)
+		    Fatal("AliEMCALJetFinder",
+			  "Hadronic energy correction required but not defined !");
+		
+		dpH    = fHadronCorrector->GetEnergy(p, eta, 7);
+		eTdpH  = dpH*TMath::Sin(theta);
+		
+		if (fDebug >= 7) printf(" phi %f phiHC %f eTcorr %f\n", 
+					phi, phiHC, -eTdpH); // correction is negative
+		fLego->Fill(eta, phiHC, -eTdpH );
+		fhLegoHadrCorr->Fill(eta, phiHC, eTdpH);
+	    }
         }
 //
 //  More to do ? Just think about it !
@@ -866,23 +853,22 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	if (phi > fPhiMax || phi < fPhiMin )   continue;
 
         if(TMath::Abs(chTmp) ) { // charge particle
-	  if (pT > fPtCut && !curls) {
-	     if (fDebug >= 8) printf("Charge :  fLego->Fill(%5.2f, %5.2f, %6.2f, %d)\n",
-				      eta , phi, pT, fNtS); 
-             fLego->Fill(eta, phi, pT);
-             fhLegoTracks->Fill(eta, phi, pT); // 20-feb for checking
-	     fTrackList[part] = 1;
-	     fNtS++;
-          }
-	} else if(ich==0 && fK0N) {
-	  // case of n, nbar and K0L
-	     if (fDebug >= 9) printf("Neutral :  fLego->Fill(%5.2f, %5.2f, %6.2f, %d)\n",
-				      eta , phi, pT, fNtS); 
+	    if (pT > fPtCut && !curls) {
+		if (fDebug >= 8) printf("Charge :  fLego->Fill(%5.2f, %5.2f, %6.2f, %d)\n",
+					eta , phi, pT, fNtS); 
+		fLego->Fill(eta, phi, pT);
+		fhLegoTracks->Fill(eta, phi, pT); // 20-feb for checking
+		fTrackList[part] = 1;
+		fNtS++;
+	    }
+	} else if(ich == 1 || fK0N) {
+	    // case of n, nbar and K0L
+	    if (fDebug >= 9) printf("Neutral :  fLego->Fill(%5.2f, %5.2f, %6.2f, %d)\n",
+				    eta , phi, pT, fNtS); 
             fLego->Fill(eta, phi, pT);
 	    fTrackList[part] = 1;
 	    fNtS++;
         }
-
     } // primary loop    
     Float_t etsum = 0.;
     for(Int_t i=0; i<fLego->GetSize(); i++) {
