@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.55  2002/04/17 10:23:56  morsch
+Coding Rule violations corrected.
+
 Revision 1.54  2002/03/28 11:49:10  morsch
 Pass status code in SetTrack.
 
@@ -293,6 +296,7 @@ void AliGenPythia::Init()
 	fFlavorSelect    =  4;	
 	break;
     case kPyBeauty:
+    case kPyBeautyPbMNR:
 	fParentSelect[0]=  511;
 	fParentSelect[1]=  521;
 	fParentSelect[2]=  531;
