@@ -92,7 +92,7 @@ void AliRICHClusterFinder::FindClusters(Int_t iChamber)
     FindLocalMaxima();  //find number of local maxima and initial center of gravity
     AliDebug(1,"After FindLocalMaxima:");ToAliDebug(1,fRawCluster.Print());  
     
-    if(AliRICHParam::IsResolveClusters()&&fNlocals<=10){
+    if(AliRICHParam::IsResolveClusters()&&fNlocals<=6&&fRawCluster.Size()>1){
       FitCoG(); //serialization of resolved clusters will happen inside
     }else{//cluster size=1 or resolving is switched off
       WriteRawCluster();//simply output the formed raw cluster without deconvolution
@@ -261,9 +261,9 @@ void AliRICHClusterFinder::FitCoG()
   pMinuit->SetFCN(RICHMinMathieson);
   
   Double_t vstart,lower, upper;
-  Double_t stepX= 0.001;
-  Double_t stepY= 0.001;
-  Double_t stepQ= 0.0001;
+  Double_t stepX= 0.01;
+  Double_t stepY= 0.01;
+  Double_t stepQ= 0.01;
   
   for(Int_t i=0;i<fNlocals;i++) {
     AliDebug(1,Form(" local minimum n. %i with Xstart %f and Ystart %f",i,fLocalX[i],fLocalY[i]));
