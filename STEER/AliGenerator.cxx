@@ -65,13 +65,12 @@ AliGenerator::AliGenerator():
   fChildWeight(0),
   fAnalog(0),
   fVertexSmear(kNoSmear),
-  fVertexSource(kExternal),
+  fVertexSource(kInternal),
   fCutVertexZ(0),
   fTrackIt(0),
   fOrigin(3),
   fOsigma(3),
   fVertex(3),
-  fEventVertex(0),
   fStack(0),
   fCollisionGeometry(0)
 {
@@ -121,13 +120,12 @@ AliGenerator::AliGenerator(Int_t npart):
   fChildWeight(0),
   fAnalog(0),
   fVertexSmear(kNoSmear),
-  fVertexSource(kExternal),
+  fVertexSource(kInternal),
   fCutVertexZ(0),
   fTrackIt(0),
   fOrigin(3),
   fOsigma(3),
   fVertex(3),
-  fEventVertex(0),
   fStack(0),
   fCollisionGeometry(0)
 {
@@ -181,13 +179,12 @@ AliGenerator::AliGenerator(const AliGenerator &gen):
   fChildWeight(0),
   fAnalog(0),
   fVertexSmear(kNoSmear),
-  fVertexSource(kExternal),
+  fVertexSource(kInternal),
   fCutVertexZ(0),
   fTrackIt(0),
   fOrigin(3),
   fOsigma(3),
   fVertex(3),
-  fEventVertex(0),
   fStack(0)
 {
   //
@@ -345,7 +342,9 @@ void AliGenerator::Vertex()
   //
     if (fVertexSource == kInternal) {
 	VertexInternal();
-    } else {
+    } else if (fVertexSource == kContainer) {
+	;
+    } else if (fVertexSource == kExternal) {
 	VertexExternal();
     }
 }
@@ -368,12 +367,19 @@ void AliGenerator::VertexInternal()
     // Obtain calculated vertex 
     // Default is gaussian smearing
     Float_t random[6];
-    Rndm(random,6);
-    for (Int_t j = 0; j<3 ; j++) {
-	fVertex[j]=
-	    fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-	    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+    Float_t dv[3];
+    Int_t j;
+    
+    dv[2] = 1.e10;
+    while(TMath::Abs(dv[2]) > fCutVertexZ*fOsigma[2]) {
+	Rndm(random,6);
+	for (j=0; j < 3; j++) {
+	    dv[j] = fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+	}
     }
+    for (j=0; j < 3; j++) fVertex[j] = fOrigin[j] + dv[j];
+    
 }
 
 //_______________________________________________________________________
@@ -438,4 +444,8 @@ void AliGenerator:: SetHighWaterMark(Int_t nt)
   else 
      gAlice->SetHighWaterMark(nt);
    
+}
+void AliGenerator::FinishRun()
+{
+    ;
 }
