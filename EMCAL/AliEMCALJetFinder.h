@@ -67,6 +67,7 @@ class AliEMCALJetFinder : public TTask {
     virtual void BookLego();
     virtual void DumpLego();
     virtual void ResetMap();
+    virtual Float_t PropagatePhi(Float_t pt, Float_t charge, Bool_t& curls);
  protected:
     TClonesArray*                  fJets;            //! List of Jets
     TH2F*                          fLego;            //! Lego Histo

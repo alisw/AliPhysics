@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.3  2002/01/18 05:07:56  morsch
+- hadronic correction
+- filling of digits
+- track selection upon EMCAL information
+
 */
 
 //*-- Author: Andreas Morsch (CERN)
@@ -39,6 +44,8 @@ $Log$
 #include "AliEMCALHadronCorrection.h"
 #include "Ecommon.h"
 #include "AliRun.h"
+#include "AliMagF.h"
+#include "AliMagFCM.h"
 #include "AliEMCAL.h"
 #include "AliHeader.h"
 
@@ -452,9 +459,10 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 
 	if (part < 2) continue;
 	if (pT == 0 || pT < fPtCut) continue;
+	TParticlePDG* pdgP = 0;
 // charged or neutral 
 	if (ich == 0) {
-	    TParticlePDG* pdgP = MPart->GetPDG();
+	    pdgP = MPart->GetPDG();
 	    if (pdgP->Charge() == 0) continue;
 	} 
 // skip partons
@@ -470,6 +478,14 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	if (fDebug > 1) 
 	printf("\n sel:%5d %5d %5d %8.2f %8.2f %8.2f",
 	part, mpart, child1, eta, phi, pT);
+//
+//
+// phi propagation 
+
+	Bool_t curls = kFALSE;
+	Float_t dphi = PropagatePhi(pT, pdgP->Charge(), curls);
+	if (curls) continue;
+	phi += dphi;
 //
 // Momentum smearing goes here ...
 //
@@ -865,6 +881,37 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 	delete[] phiT;
     } // jet loop loop
 }
+
+Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curls)
+{
+// Propagates phi angle to EMCAL radius
+//
+    Float_t dPhi = 0.;
+// Get field
+    Float_t b =  ((AliMagFCM*) gAlice->Field())->SolenoidField();
+// Get EMCAL radius 
+    Float_t rEMCAL = AliEMCALGeometry::GetInstance()->GetIPDistance();
+//
+//
+// bending radies
+    Float_t rB = 3.3356 * pt / b;
+    
+//
+// check if particle is curling below EMCAL
+    if (2.*rB < rEMCAL) {
+	curls = kTRUE;
+	return dPhi;
+    }
+//
+// if not calculate delta phi
+    Float_t phi = TMath::ACos(1.-rEMCAL*rEMCAL/(2.*rB*rB));
+    dPhi = TMath::ATan2(1.-TMath::Cos(phi), TMath::Sin(phi));
+    dPhi = TMath::Sign(dPhi, charge);
+//    
+    return dPhi;
+    
+}
+
 
 void hf1(Int_t& id, Float_t& x, Float_t& wgt)
 {
