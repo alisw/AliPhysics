@@ -75,6 +75,10 @@ public:
   Double_t 
   GetPredictedChi2(const AliCluster *cluster, Double_t *m, Double_t x0) const;
   Int_t Invariant() const;
+  static void SetSigmaYV(Double_t val){fSigmaYV = val;}
+  static void SetSigmaZV(Double_t val){fSigmaZV = val;}
+  static Double_t GetSigmaYV()  {return fSigmaYV;}
+  static Double_t GetSigmaZV()  {return fSigmaZV;}
  
 private:
   Double_t fX;              // X-coordinate of this track (reference plane)
@@ -97,8 +101,10 @@ private:
   UInt_t fIndex[kMaxLayer]; // indices of associated clusters 
 
   Float_t fdEdxSample[4];   // array of dE/dx samples b.b.
+  static Double_t fSigmaYV; //! uncert. on primary vert. pos. in rphi plane
+  static Double_t fSigmaZV; //!  uncert. on primary vert. pos. along beam axis
 
-  ClassDef(AliITStrackV2,1)   //ITS reconstructed track
+  ClassDef(AliITStrackV2,2)   //ITS reconstructed track
 };
 
 inline 

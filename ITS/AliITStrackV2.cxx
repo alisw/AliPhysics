@@ -32,7 +32,8 @@
 ClassImp(AliITStrackV2)
 
 const Int_t kWARN=5;
-
+Double_t AliITStrackV2::fSigmaYV = 0.005;
+Double_t AliITStrackV2::fSigmaZV = 0.01;
 //____________________________________________________________________________
 AliITStrackV2::AliITStrackV2():AliKalmanTrack(),
   fX(0),
@@ -255,11 +256,11 @@ Double_t x0) const {
      v33 = theta2*(1.+ GetTgl()*GetTgl())*(1. + GetTgl()*GetTgl());
   }
   Double_t sy2=c->GetSigmaY2(), sz2=c->GetSigmaZ2();
-  v22+=kSigmaYV*kSigmaYV/dr/dr;
+  v22+=fSigmaYV*fSigmaYV/dr/dr;
   v22+=sy2/dr/dr;
   Double_t v20=sy2/dr;
 
-  v33+=kSigmaZV*kSigmaZV/dr/dr;
+  v33+=fSigmaZV*fSigmaZV/dr/dr;
   v33+=sz2/dr/dr;
   Double_t v31=sz2/dr;
 
@@ -634,7 +635,7 @@ Int_t AliITStrackV2::Improve(Double_t x0,Double_t yv,Double_t zv) {
   Double_t parp=0.5*(fP4*fX + dy*TMath::Sqrt(4/r2-fP4*fP4));
   Double_t sigma2p = theta2*(1.- GetSnp()*GetSnp())*(1. + GetTgl()*GetTgl());
   sigma2p += fC00/r2*(1.- dy*dy/r2)*(1.- dy*dy/r2);
-  sigma2p += kSigmaYV*kSigmaYV/r2;
+  sigma2p += fSigmaYV*fSigmaYV/r2;
   sigma2p += 0.25*fC44*fX*fX;
   Double_t eps2p=sigma2p/(fC22+sigma2p);
   fP0 += fC20/(fC22+sigma2p)*(parp-fP2);
@@ -646,7 +647,7 @@ Int_t AliITStrackV2::Improve(Double_t x0,Double_t yv,Double_t zv) {
   Double_t parl=0.5*fP4*dz/TMath::ASin(0.5*fP4*TMath::Sqrt(r2));
   Double_t sigma2l=theta2;
   sigma2l += fC11/r2+fC00*dy*dy*dz*dz/(r2*r2*r2);
-  sigma2l += kSigmaZV*kSigmaZV/r2;
+  sigma2l += fSigmaZV*fSigmaZV/r2;
   Double_t eps2l=sigma2l/(fC33+sigma2l);
   fP1 += fC31/(fC33+sigma2l)*(parl-fP3);
   fP4 += fC43/(fC33+sigma2l)*(parl-fP3);
