@@ -137,10 +137,6 @@ void AliITSClusterFinderSDD::Find1DClusters()
    fMap->SetThreshold(fCutAmplitude);
    fMap->FillMap();
 
-   Float_t noise;
-   Float_t baseline;
-   fResponse->GetNoiseParam(noise,baseline);
-
    Float_t maxadc = fResponse->MaxAdc();    
    Float_t topValue = fResponse->MagicValue();
    Float_t norm = maxadc/topValue;
@@ -149,7 +145,9 @@ void AliITSClusterFinderSDD::Find1DClusters()
    Int_t i;
    Float_t **dfadc = new Float_t*[fNofAnodes];
    for(i=0;i<fNofAnodes;i++) dfadc[i] = new Float_t[fMaxNofSamples];
-   Float_t fadc, fadc1, fadc2;
+   Float_t fadc = 0.;
+   Float_t fadc1 = 0.;
+   Float_t fadc2 = 0.;
    Int_t j,k,idx,l,m;
    for(j=0;j<2;j++) {
      for(k=0;k<fNofAnodes;k++) {
@@ -213,9 +211,6 @@ void AliITSClusterFinderSDD::Find1DClusters()
 	 if(lthrt >= lthrmint && lthra >= lthrmina) ilcl = 1;
 	 //printf("ilcl %d\n",ilcl);
 
-	 Float_t b,n;
-	 fResponse->GetNoiseParam(n,b);
-
 	 if(ilcl) {
 	   nofFoundClusters++;
 	   Int_t tstop = tstart;
@@ -259,7 +254,7 @@ void AliITSClusterFinderSDD::Find1DClusters()
 	     clusterMult++;
 	     if(its == tstop) {
 	       // charge from ADC back to nA 
-	       clusterCharge /= norm;
+	       //clusterCharge /= norm;
 	       if(clusterCharge <= 0.) printf("clusterCharge %f norm %f\n",clusterCharge,norm);
 	       clusterTime /= (clusterCharge/fTimeStep);   // ns
 	       clusterCharge *= (fTimeStep/160.);          // keV
@@ -270,6 +265,9 @@ void AliITSClusterFinderSDD::Find1DClusters()
 
 	   Float_t clusteranodePath = (clusterAnode - fNofAnodes/2)*anodePitch;
 	   Float_t clusterDriftPath = clusterTime*fDriftSpeed;
+	   if(TMath::Abs(clusterDriftPath) > fSddLength) {
+	     Warning("AliITSClusterFinderSDD","Cluster drift path %f bigger then the detector size - please parametrise the time correction as a function of the drift time!",clusterDriftPath);
+	   }
 	   clusterDriftPath = fSddLength-clusterDriftPath;
 
 	   if(clusterCharge <= 0.) break;
@@ -387,7 +385,7 @@ void AliITSClusterFinderSDD::GetRecPoints()
   Int_t i;
   Int_t ix, iz, idx=-1;
   AliITSdigitSDD *dig=0;
-  Int_t maxt=fSegmentation->Npx();
+  //Int_t maxt=fSegmentation->Npx();
   Int_t ndigits=fDigits->GetEntriesFast();
   for(i=0; i<nofClusters; i++) { 
     AliITSRawClusterSDD *clusterI = (AliITSRawClusterSDD*)fClusters->At(i);
