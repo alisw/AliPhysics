@@ -66,7 +66,7 @@ public:
     void ResetRoad();
     Double_t GetRoad() const {return fRoad;}
     Double_t GetR() const {return fR;}
-    AliITSclusterV2 *GetCluster(Int_t i) const {return fClusters[i];} 
+    AliITSclusterV2 *GetCluster(Int_t i) const {return i<fN? fClusters[i]:0;} 
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
     Double_t GetThickness(Double_t y, Double_t z, Double_t &x0) const;
@@ -90,7 +90,7 @@ public:
     Double_t fRoad;      // road defined by the cluster density
     Int_t FindClusterIndex(Double_t z) const;
   };
-
+  
 protected:
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
@@ -104,11 +104,16 @@ protected:
      fTrackToFollow.~AliITStrackV2();
      new(&fTrackToFollow) AliITStrackV2(t);
   }
+  void AddTrackHypothesys(AliITStrackV2 * track, Int_t esdindex);
+  void CompressTrackHypothesys(Int_t esdindex, Int_t maxsize);
+  AliITStrackV2 * GetBestHypothesys(Int_t esdindex, AliITStrackV2 * original); 
   Int_t fI;                              // index of the current layer
   static AliITSlayer fgLayers[kMaxLayer];// ITS layers
   AliITStrackV2 fTracks[kMaxLayer];      // track estimations at the ITS layers
   AliITStrackV2 fBestTrack;              // "best" track 
   AliITStrackV2 fTrackToFollow;          // followed track
+  TObjArray     fTrackHypothesys;        // ! array with track hypothesys- ARRAY is the owner of tracks- MI
+  Int_t         fCurrentEsdTrack;        // ! current esd track           - MI
   Int_t fPass;                           // current pass through the data 
   Int_t fConstraint[2];                  // constraint flags
 
