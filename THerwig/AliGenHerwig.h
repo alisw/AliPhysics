@@ -37,8 +37,6 @@ class AliGenHerwig : public AliGenMC
     // set centre of mass energy
     virtual void    SetBeamMomenta(Float_t p1=7000., Float_t p2=7000.)
 	{fMomentum1 = p1; fMomentum2 = p2;}
-    virtual void    SetProjectile(TString proj="P")  {fProjectile = proj;}    
-    virtual void    SetTarget(TString tar="P")       {fTarget = tar;}
     virtual void    SetProcess(Int_t proc)       {fProcess = proc;}    
     virtual void    KeepFullEvent();
     virtual void    SetDecaysOff(Int_t flag=1)        {fDecaysOff = flag;}
