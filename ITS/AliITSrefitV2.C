@@ -7,15 +7,15 @@
   #include "TStopwatch.h"
 #endif
 
-Int_t AliITSPropagateBackV2(Int_t nev=1) {
-   cerr<<"Propagating tracks back through the ITS...\n";
+Int_t AliITSrefitV2(Int_t nev=1) {
+   cerr<<"Propagating tracks inward through the ITS...\n";
 
-   TFile *in=TFile::Open("AliITStracksV2.root");
-   if (!in->IsOpen()) {cerr<<"Can't open AliITStracksV2.root !\n"; return 1;}
+   TFile *in=TFile::Open("AliTPCrefited.root");
+   if (!in->IsOpen()) {cerr<<"Can't open AliTPCrefited.root !\n"; return 1;}
 
-   TFile *out=TFile::Open("AliTPCtracks.root","update");
+   TFile *out=TFile::Open("AliITStracksV2.root","update");
    if (!out->IsOpen()) {
-      cerr<<"Can't open AliTPCtracks.root !\n"; return 2;
+      cerr<<"Can't open AliITStracksV2.root !\n"; return 2;
    }
    TFile *file=TFile::Open("AliITSclustersV2.root");
    if (!file->IsOpen()) {
@@ -29,9 +29,11 @@ Int_t AliITSPropagateBackV2(Int_t nev=1) {
    for (Int_t i=0; i<nev; i++) {
      cerr<<"Processing event number : "<<i<<endl;
      tracker.SetEventNumber(i);
-     rc=tracker.PropagateBack(in,out);
+     rc=tracker.RefitInward(in,out);
    }
    timer.Stop(); timer.Print();
+
+   delete geom;
 
    file->Close();
    in->Close();

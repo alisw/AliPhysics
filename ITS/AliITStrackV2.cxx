@@ -315,7 +315,7 @@ Int_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
   if (!CorrectForMaterial(d,x0)) return 0;
 
   // Integrated Time [SR, GSI, 17.02.2003]
-  if (IsStartedTimeIntegral()) {
+  if (IsStartedTimeIntegral() && fX>oldX) {
     Double_t l2 = (fX-oldX)*(fX-oldX)+(fP0-oldY)*(fP0-oldY)+
                   (fP1-oldZ)*(fP1-oldZ);
     AddTimeStep(TMath::Sqrt(l2));

@@ -133,6 +133,40 @@ void AliITStrackerV2::UnloadClusters() {
   for (Int_t i=0; i<kMaxLayer; i++) fLayers[i].ResetClusters();
 }
 
+static Int_t CorrectForDeadZoneMaterial(AliITStrackV2 *t) {
+  //--------------------------------------------------------------------
+  // Correction for the material between the TPC and the ITS
+  // (should it belong to the TPC code ?)
+  //--------------------------------------------------------------------
+  Double_t riw=80., diw=0.0053, x0iw=30; // TPC inner wall ? 
+  Double_t rcd=61., dcd=0.0053, x0cd=30; // TPC "central drum" ?
+  Double_t yr=12.8, dr=0.03; // rods ?
+  Double_t zm=0.2, dm=0.40;  // membrane
+  //Double_t rr=52., dr=0.19, x0r=24., yyr=7.77; //rails
+  Double_t rs=50., ds=0.001; // something belonging to the ITS (screen ?)
+
+  if (t->GetX() > riw) {
+     if (!t->PropagateTo(riw,diw,x0iw)) return 1;
+     if (TMath::Abs(t->GetY())>yr) t->CorrectForMaterial(dr);
+     if (TMath::Abs(t->GetZ())<zm) t->CorrectForMaterial(dm);
+     if (!t->PropagateTo(rcd,dcd,x0cd)) return 1;
+     //Double_t x,y,z; t->GetGlobalXYZat(rr,x,y,z);
+     //if (TMath::Abs(y)<yyr) t->PropagateTo(rr,dr,x0r); 
+     if (!t->PropagateTo(rs,ds)) return 1;
+  } else if (t->GetX() < rs) {
+     if (!t->PropagateTo(rs,-ds)) return 1;
+     //Double_t x,y,z; t->GetGlobalXYZat(rr,x,y,z);
+     //if (TMath::Abs(y)<yyr) t->PropagateTo(rr,-dr,x0r); 
+     if (!t->PropagateTo(rcd,-dcd,x0cd)) return 1;
+     if (!t->PropagateTo(riw,-diw,x0iw)) return 1;
+  } else {
+  ::Error("CorrectForDeadZoneMaterial","track is already in the dead zone !");
+    return 1;
+  }
+  
+  return 0;
+}
+
 Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
   //--------------------------------------------------------------------
   //This functions reconstructs ITS tracks
@@ -167,6 +201,9 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
     AliTPCtrack *itrack=new AliTPCtrack; 
     tpcTree->SetBranchAddress("tracks",&itrack);
     nentr=(Int_t)tpcTree->GetEntries();
+
+    Info("Clusters2Tracks","Number of TPC tracks: %d\n",nentr);
+
     for (Int_t i=0; i<nentr; i++) {
        tpcTree->GetEvent(i);
        AliITStrackV2 *t=0;
@@ -179,13 +216,11 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
        }
        if (TMath::Abs(t->GetD())>4) continue;
 
-       t->PropagateTo(80.,0.0053,30);
-       if (TMath::Abs(t->GetY())>12.8) t->CorrectForMaterial(0.03);
-       if (TMath::Abs(t->GetZ())<0.2) t->CorrectForMaterial(0.40);
-       t->PropagateTo(61.,0.0053,30);
-       //Double_t xk=52.,x,y,z; t->GetGlobalXYZat(xk,x,y,z);
-       //if (TMath::Abs(y)<7.77) t->PropagateTo(xk,0.19,24.); 
-       t->PropagateTo(50.,0.001);
+       if (CorrectForDeadZoneMaterial(t)!=0) {
+	 Warning("Clusters2Tracks",
+                 "failed to correct for the material in the dead zone !\n");
+         continue;
+       }
 
        itsTracks.AddLast(t);
     }
@@ -193,6 +228,7 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
     delete itrack;
   }
   itsTracks.Sort();
+  nentr=itsTracks.GetEntriesFast();
 
   out->cd();
 
@@ -218,16 +254,7 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
        if (fBestTrack.GetNumberOfClusters() < kMaxLayer-kLayersToSkip)continue;
 
        if (fConstraint[fPass]) {
-	  Int_t index[kMaxLayer];
-          Int_t k;
-          for (k=0; k<kMaxLayer; k++) index[k]=-1;
-          Int_t nc=fBestTrack.GetNumberOfClusters();
-          for (k=0; k<nc; k++) { 
-             Int_t idx=fBestTrack.GetClusterIndex(k),nl=(idx&0xf0000000)>>28;
-             index[nl]=idx; 
-          }
-          fBestTrack.~AliITStrackV2(); new(&fBestTrack) AliITStrackV2(*t);
-	  if (!RefitAt(3.7, &fBestTrack, index)) continue;
+	  if (!RefitAt(3.7, t, &fBestTrack)) continue;
        }
 
        fBestTrack.SetLabel(tpcLabel);
@@ -236,13 +263,11 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
        itsTree.Fill();
        UseClusters(&fBestTrack);
        delete itsTracks.RemoveAt(i);
-
      }
   }
 
-  Info("Clusters2Tracks","Number of TPC tracks: %d\n",nentr);
-  Info("Clusters2Tracks","Number of prolonged tracks: %d\n",
-        (Int_t)itsTree.GetEntries());
+  nentr=(Int_t)itsTree.GetEntries();
+  Info("Clusters2Tracks","Number of prolonged tracks: %d\n",nentr);
 
   itsTree.Write();
 
@@ -292,11 +317,11 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
   AliTPCtrack *otrack=0;
   backTree.Branch("tracks","AliTPCtrack",&otrack,32000,2);
 
-  Int_t ntrk=0;
-
   Int_t nentr=(Int_t)itsTree->GetEntries();
-  for (Int_t i=0; i<nentr; i++) {
+  Int_t i;
+  for (i=0; i<nentr; i++) {
     itsTree->GetEvent(i);
+    Int_t itsLabel=itrack->GetLabel(); //save the ITS track label
     ResetTrackToFollow(*itrack);
 
     // propagete to vertex [SR, GSI 17.02.2003]
@@ -308,134 +333,157 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
     fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
     //
 
-    fTrackToFollow.ResetCovariance(); fTrackToFollow.ResetClusters();
+    itrack->ResetCovariance(); itrack->ResetClusters();
+    if (!RefitAt(49.,itrack,&fTrackToFollow)) continue;
 
-    Int_t itsLabel=fTrackToFollow.GetLabel(); //save the ITS track label
-
-    try {
-       Int_t nc=itrack->GetNumberOfClusters();
-       Int_t idx=0, l=0; 
-       const  AliITSclusterV2 *c=0; 
-       if (nc--) {
-          idx=itrack->GetClusterIndex(nc); l=(idx&0xf0000000)>>28;
-          c=(AliITSclusterV2*)GetCluster(idx);
-       }
-       for (fI=0; fI<kMaxLayer; fI++) {
-         AliITSlayer &layer=fLayers[fI];
-         Double_t r=layer.GetR();
-         if (fI==2 || fI==4) {             
-            Double_t rs=0.5*(fLayers[fI-1].GetR() + r);
-            Double_t d=0.0034, x0=38.6;
-            if (fI==2) {rs=9.; d=0.0097; x0=42.;}
-            if (!fTrackToFollow.PropagateTo(rs,-d,x0)) throw "";
-         }
-
-         // remember old position [SR, GSI 18.02.2003]
-	 Double_t oldX, oldY, oldZ;
-	 fTrackToFollow.GetGlobalXYZat(fTrackToFollow.GetX(),oldX,oldY,oldZ);
-	 //
-
-         Double_t x,y,z;
-         if (!fTrackToFollow.GetGlobalXYZat(r,x,y,z)) 
-            throw "AliITStrackerV2::PropagateBack: failed to estimate track !";
-         Double_t phi=TMath::ATan2(y,x);
-         Int_t idet=layer.FindDetectorIndex(phi,z);
-         if (idet<0) 
-         throw "AliITStrackerV2::PropagateBack: failed to find a detector !\n";
-         const AliITSdetector &det=layer.GetDetector(idet);
-         r=det.GetR(); phi=det.GetPhi();
-         if (!fTrackToFollow.Propagate(phi,r)) throw "";
-         fTrackToFollow.SetDetectorIndex(idet);
-
-         const AliITSclusterV2 *cl=0;
-         Int_t index=0;
-         Double_t maxchi2=kMaxChi2;
-
-         if (l==fI) {
-           idet=c->GetDetectorIndex();
-           if (idet != fTrackToFollow.GetDetectorIndex()) {
-             const AliITSdetector &det=layer.GetDetector(idet);
-             r=det.GetR(); phi=det.GetPhi();
-             if (!fTrackToFollow.Propagate(phi,r)) throw "";
-             fTrackToFollow.SetDetectorIndex(idet);
-           }
-           Double_t chi2=fTrackToFollow.GetPredictedChi2(c);
-           if (chi2<kMaxChi2) {
-              cl=c; maxchi2=chi2; index=idx;
-           }
-           if (nc--) {
-              idx=itrack->GetClusterIndex(nc); l=(idx&0xf0000000)>>28;
-              c=(AliITSclusterV2*)GetCluster(idx);
-           } 
-         }
-
-         if (fTrackToFollow.GetNumberOfClusters()>2) {
-           Double_t dz=3*TMath::Sqrt(fTrackToFollow.GetSigmaZ2()+kSigmaZ2[fI]);
-           Double_t dy=3*TMath::Sqrt(fTrackToFollow.GetSigmaY2()+kSigmaY2[fI]);
-           Double_t zmin=fTrackToFollow.GetZ() - dz;
-           Double_t zmax=fTrackToFollow.GetZ() + dz;
-           Double_t ymin=fTrackToFollow.GetY() + phi*r - dy;
-           Double_t ymax=fTrackToFollow.GetY() + phi*r + dy;
-           layer.SelectClusters(zmin,zmax,ymin,ymax);
-
-           const AliITSclusterV2 *cc=0; Int_t ci;
-           while ((cc=layer.GetNextCluster(ci))!=0) {
-              idet=cc->GetDetectorIndex();
-              if (idet != fTrackToFollow.GetDetectorIndex()) continue;
-              Double_t chi2=fTrackToFollow.GetPredictedChi2(cc);
-              if (chi2<maxchi2) {
-                 cl=cc; index=(fI<<28)+ci; maxchi2=chi2;
-              }
-           }
-         }
-
-         if (cl) {
-            if (!fTrackToFollow.Update(cl,maxchi2,index)) 
-              Info("PropagateBack","filtering failed !\n");
-         }
-         {
-          Double_t x0;
-          x=layer.GetThickness(fTrackToFollow.GetY(),fTrackToFollow.GetZ(),x0);
-          fTrackToFollow.CorrectForMaterial(-x,x0); 
-         }
-         	 
-         // track time update [SR, GSI 17.02.2003]
-         Double_t newX, newY, newZ;
-	 fTrackToFollow.GetGlobalXYZat(fTrackToFollow.GetX(),newX,newY,newZ);
-         Double_t dL2 = (oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY) + 
-                        (oldZ-newZ)*(oldZ-newZ);
-	 fTrackToFollow.AddTimeStep(TMath::Sqrt(dL2));
-         //
-
-       }
-
-       fTrackToFollow.PropagateTo(50.,-0.001);
-       //Double_t xk=52.,x,y,z; fTrackToFollow.GetGlobalXYZat(xk,x,y,z);
-       //if (TMath::Abs(y)<7.77) fTrackToFollow.PropagateTo(xk,-0.19,24.); 
-       fTrackToFollow.PropagateTo(61,-0.0053,30);
-       fTrackToFollow.PropagateTo(80.,-0.0053,30);
-
-       fTrackToFollow.SetLabel(itsLabel);
-       otrack=new AliTPCtrack(fTrackToFollow,fTrackToFollow.GetAlpha()); 
-       backTree.Fill(); delete otrack;
-       UseClusters(&fTrackToFollow);
-       ntrk++;
+    if (CorrectForDeadZoneMaterial(&fTrackToFollow)!=0) {
+       Warning("PropagateBack",
+               "failed to correct for the material in the dead zone !\n");
+       continue;
     }
-    catch (const Char_t *msg) {
-       Warning("PropagateBack",msg);
-    }
+   
+    fTrackToFollow.SetLabel(itsLabel);
+    otrack=new AliTPCtrack(fTrackToFollow,fTrackToFollow.GetAlpha()); 
+    backTree.Fill(); delete otrack;
+    UseClusters(&fTrackToFollow);
   }
-
+  i=(Int_t)backTree.GetEntries();
   backTree.Write();
 
   Info("PropagateBack","Number of ITS tracks: %d\n",nentr);
-  Info("PropagateBack","Number of back propagated ITS tracks: %d\n",ntrk);
+  Info("PropagateBack","Number of back propagated ITS tracks: %d\n",i);
 
   delete itrack;
-
   delete itsTree; //Thanks to Mariana Bondila
 
   UnloadClusters();
+
+  savedir->cd();
+
+  return 0;
+}
+
+Int_t AliITStrackerV2::RefitInward(const TFile *inp, TFile *out) {
+  //--------------------------------------------------------------------
+  // This functions refits ITS tracks using the 
+  // "inward propagated" TPC tracks
+  //--------------------------------------------------------------------
+  TFile *in=(TFile*)inp;
+  TDirectory *savedir=gDirectory; 
+
+  if (LoadClusters()!=0) return 1;
+
+  if (!in->IsOpen()) {
+    Error("RefitInward","file with inward TPC tracks is not open !\n");
+    return 2;
+  }
+
+  if (!out->IsOpen()) {
+    Error("RefitInward","file for inward ITS tracks is not open !\n");
+    return 3;
+  }
+
+  Int_t i;
+
+  //LUT used for the track matching (S.Radomski's idea)
+  const Int_t nLab = 400000; // limit on the number of track labels
+  Int_t lut[nLab];
+  for(i=0; i<nLab; i++) lut[i] = -1;
+
+  Char_t tname[100];
+
+  TObjArray itsTracks(15000);
+  {/* Read the ITS tracks */ 
+    sprintf(tname,"TreeT_ITS_%d",GetEventNumber());
+    TTree *itsTree=(TTree*)out->Get(tname);
+    if (!itsTree) {
+      Error("RefitInward","can't get a tree with ITS tracks !\n");
+      return 3;
+    }
+    AliITStrackV2 *itrack=new AliITStrackV2; 
+    itsTree->SetBranchAddress("tracks",&itrack);
+    Int_t nits=(Int_t)itsTree->GetEntries();
+
+    Info("RefitInward","Number of ITS tracks: %d\n",nits);
+
+    for (Int_t i=0; i<nits; i++) {
+       itsTree->GetEvent(i);
+       Int_t lab=TMath::Abs(itrack->GetLabel());
+       if (lab < nLab) {
+         if (lut[lab]>=0) Warning("RefitInward","double track %d\n",lab);
+         lut[lab]=i;
+       } else {
+         Warning("RefitInward","Too big ITS track label: %d\n!",lab);
+         continue;
+       } 
+       itsTracks.AddLast(new AliITStrackV2(*itrack));
+    }
+    delete itsTree;
+    delete itrack;
+  }
+
+  out->cd();
+  
+  //Create the output tree
+  sprintf(tname,"TreeT_ITSinward_%d",GetEventNumber());
+  TTree outTree(tname,"Tree with inward refitted ITS tracks");
+  AliITStrackV2 *otrack=0;
+  outTree.Branch("tracks","AliITStrackV2",&otrack,32000,0);
+
+  //Get the input tree
+  sprintf(tname,"tracksTPC_%d",GetEventNumber());
+  TTree *tpcTree=(TTree*)in->Get(tname);
+  if (!tpcTree) {
+     Error("RefitInward","can't get a tree with TPC tracks !\n");
+     return 3;
+  }
+  AliTPCtrack *itrack=new AliTPCtrack; 
+  tpcTree->SetBranchAddress("tracks",&itrack);
+  Int_t ntpc=(Int_t)tpcTree->GetEntries();
+
+  Info("RefitInward","Number of TPC tracks: %d\n",ntpc);
+
+  for (i=0; i<ntpc; i++) {
+    tpcTree->GetEvent(i);
+    AliITStrackV2 *t=0;
+    try {
+      t=new AliITStrackV2(*itrack);
+    } catch (const Char_t *msg) {
+      Warning("RefitInward",msg);
+      delete t;
+      continue;
+    }
+    //check if this track was reconstructed in the ITS
+    Int_t lab=TMath::Abs(t->GetLabel());
+    if (lab >= nLab) {
+      Warning("RefitInward","Too big TPC track label: %d\n!",lab); 
+      continue;
+    }
+    Int_t idx=lut[lab];
+    if (idx<0) continue; //no prolongation in the ITS for this track
+    
+    if (CorrectForDeadZoneMaterial(t)!=0) {
+       Warning("RefitInward",
+               "failed to correct for the material in the dead zone !\n");
+       continue;
+    }
+
+    //Refitting...
+    otrack=(AliITStrackV2*)itsTracks.UncheckedAt(idx);
+    if (!RefitAt(3.7, t, otrack)) continue;
+    otrack->SetLabel(itrack->GetLabel()); //For comparison only
+    otrack->CookdEdx();
+    CookLabel(otrack,0.); //For comparison only
+    outTree.Fill();
+    delete t;
+  }
+  i=(Int_t)outTree.GetEntries();
+  Info("RefitInward","Number of inward refitted ITS tracks: %d\n",i);
+  outTree.Write();
+
+  delete tpcTree;
+  delete itrack;
+  itsTracks.Delete();
 
   savedir->cd();
 
@@ -606,9 +654,9 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
     SetSampledEdx(c->GetQ(),fTrackToFollow.GetNumberOfClusters()-1); //b.b.
 
   {
- Double_t x0;
+  Double_t x0;
  Double_t d=layer.GetThickness(fTrackToFollow.GetY(),fTrackToFollow.GetZ(),x0);
-   fTrackToFollow.CorrectForMaterial(d,x0);
+  fTrackToFollow.CorrectForMaterial(d,x0);
   }
 
   if (fConstraint[fPass]) {
@@ -912,10 +960,22 @@ Int_t AliITStrackerV2::AliITSlayer::InRoad() const {
   return ncl;
 }
 
-Bool_t AliITStrackerV2::RefitAt(Double_t x, AliITStrackV2 *t, Int_t *index) {
+Bool_t 
+AliITStrackerV2::RefitAt(Double_t x,const AliITStrackV2 *s,AliITStrackV2 *ot) {
   //--------------------------------------------------------------------
   // This function refits a track at a given position
   //--------------------------------------------------------------------
+  AliITStrackV2 save(*ot), *t=&save;
+  Int_t index[kMaxLayer];
+  Int_t k;
+  for (k=0; k<kMaxLayer; k++) index[k]=-1;
+  Int_t nc=t->GetNumberOfClusters();
+  for (k=0; k<nc; k++) { 
+    Int_t idx=t->GetClusterIndex(k),nl=(idx&0xf0000000)>>28;
+    index[nl]=idx; 
+  }
+  t->~AliITStrackV2(); new (t) AliITStrackV2(*s);
+
   Int_t from, to, step;
   if (x > t->GetX()) {
       from=0; to=kMaxLayer;
@@ -931,15 +991,22 @@ Bool_t AliITStrackerV2::RefitAt(Double_t x, AliITStrackV2 *t, Int_t *index) {
  
      {
      Double_t hI=i-0.5*step; 
-     if (hI==1.5 || hI==3.5) {             
+     if (TMath::Abs(hI-1.5)<0.01 || TMath::Abs(hI-3.5)<0.01) {             
         Double_t rs=0.5*(fLayers[i-step].GetR() + r);
         Double_t d=0.0034, x0=38.6; 
-        if (hI==1.5) {rs=9.; d=0.0097; x0=42;}
-        if (!t->PropagateTo(rs,d,x0)) {
+        if (TMath::Abs(hI-1.5)<0.01) {rs=9.; d=0.0097; x0=42;}
+        if (!t->PropagateTo(rs,-step*d,x0)) {
           return kFALSE;
         }
      }
      }
+
+     // remember old position [SR, GSI 18.02.2003]
+     Double_t oldX=0., oldY=0., oldZ=0.;
+     if (t->IsStartedTimeIntegral() && step==1) {
+        t->GetGlobalXYZat(t->GetX(),oldX,oldY,oldZ);
+     }
+     //
 
      Double_t x,y,z;
      if (!t->GetGlobalXYZat(r,x,y,z)) { 
@@ -975,7 +1042,6 @@ Bool_t AliITStrackerV2::RefitAt(Double_t x, AliITStrackV2 *t, Int_t *index) {
         if (chi2<maxchi2) { cl=c; maxchi2=chi2; }
         else return kFALSE;
      }
-
      /*
      if (cl==0)
      if (t->GetNumberOfClusters()>2) {
@@ -995,11 +1061,11 @@ Bool_t AliITStrackerV2::RefitAt(Double_t x, AliITStrackV2 *t, Int_t *index) {
         }
      }
      */
-
      if (cl) {
        if (!t->Update(cl,maxchi2,idx)) {
           return kFALSE;
        }
+       t->SetSampledEdx(cl->GetQ(),t->GetNumberOfClusters()-1);
      }
 
      {
@@ -1007,10 +1073,21 @@ Bool_t AliITStrackerV2::RefitAt(Double_t x, AliITStrackV2 *t, Int_t *index) {
      Double_t d=layer.GetThickness(t->GetY(),t->GetZ(),x0);
      t->CorrectForMaterial(-step*d,x0);
      }
+                 
+     // track time update [SR, GSI 17.02.2003]
+     if (t->IsStartedTimeIntegral() && step==1) {
+        Double_t newX, newY, newZ;
+        t->GetGlobalXYZat(t->GetX(),newX,newY,newZ);
+        Double_t dL2 = (oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY) + 
+                       (oldZ-newZ)*(oldZ-newZ);
+        t->AddTimeStep(TMath::Sqrt(dL2));
+     }
+     //
 
   }
 
   if (!t->PropagateTo(x,0.,0.)) return kFALSE;
+  ot->~AliITStrackV2(); new (ot) AliITStrackV2(*t);
   return kTRUE;
 }
 
@@ -1019,12 +1096,12 @@ void AliITStrackerV2::UseClusters(const AliKalmanTrack *t, Int_t from) const {
   // This function marks clusters assigned to the track
   //--------------------------------------------------------------------
   AliTracker::UseClusters(t,from);
-  /*
+
   AliITSclusterV2 *c=(AliITSclusterV2 *)GetCluster(t->GetClusterIndex(0));
   //if (c->GetQ()>2) c->Use();
   if (c->GetSigmaZ2()>0.1) c->Use();
   c=(AliITSclusterV2 *)GetCluster(t->GetClusterIndex(1));
   //if (c->GetQ()>2) c->Use();
   if (c->GetSigmaZ2()>0.1) c->Use();
-  */
+
 }

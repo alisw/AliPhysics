@@ -37,7 +37,7 @@ public:
   AliITStrackV2();
   AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *);
   AliITStrackV2(const AliITStrackV2& t);
-  Int_t PropagateToVertex(Double_t d=1.2e-3*3., Double_t x0=36.66);
+  Int_t PropagateToVertex(Double_t d=0., Double_t x0=0.);
   Int_t Propagate(Double_t alpha, Double_t xr);
   Int_t CorrectForMaterial(Double_t d, Double_t x0=21.82);
   Int_t PropagateTo(Double_t xr, Double_t d, Double_t x0=21.82);
