@@ -41,12 +41,14 @@ Float_t  AliMUONConstants::fgSqrtKy3St1 = 0.7550;
 
 Float_t  AliMUONConstants::fgChargeCorrel    = 0.11;
 Float_t  AliMUONConstants::fgChargeCorrelSt1 = 1.0; //???
-
+//Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  66.0,   80.,   80., 100., 100.};  
 Float_t  AliMUONConstants::fgPitch     = 0.25;
 Float_t  AliMUONConstants::fgPitchSt1  = 0.21; 
 
-Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  66.0,   80.,   80., 100., 100.};    
-Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 395.,  560.,  563., 850., 900.};  
+//Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  66.0,   80.,   80., 100., 100.};    
+Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  60.0,   76.,   76.5, 100., 100.};  
+//Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 395.,  560.,  563., 850., 900.};  
+Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 363.5,  560.,  563., 850., 900.};  
 Int_t    AliMUONConstants::fgMaxZoom = 20;
 
 //______________________________________________________________________________

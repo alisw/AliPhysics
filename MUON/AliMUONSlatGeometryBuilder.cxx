@@ -254,7 +254,22 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	iChamber2->GetGeometry()->SetMotherVolume("DDIP");
       }
 
-
+      if (!gAlice->GetModule("DIPO")) {
+	// Mother volume for each chamber in st3 are only defined if Dipole volue is there.
+	// Outer excess and inner recess for mother volume radius
+	// with respect to ROuter and RInner
+	Float_t dframep_in = 0.006; 
+	Float_t dframep_out= 0.006; 
+	Float_t tpar[3];
+	Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
+	tpar[0] = iChamber1->RInner()-dframep_in; 
+	tpar[1] = (iChamber1->ROuter()+dframep_out);
+	tpar[2] = dstation;
+	gMC->Gsvolu("CH05", "TUBE", idAir, tpar, 3);
+	gMC->Gsvolu("CH06", "TUBE", idAir, tpar, 3);
+	iChamber1->GetGeometry()->SetVolume("CH05");
+	iChamber2->GetGeometry()->SetVolume("CH06");
+      }
       // volumes for slat geometry (xx=5,..,10 chamber id): 
       // Sxx0 Sxx1 Sxx2 Sxx3  -->   Slat Mother volumes 
       // SxxG                          -->   Sensitive volume (gas)
@@ -638,6 +653,22 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
     Float_t slatLength4[kNslats4];     
 
+
+    // Mother volume for each chamber
+    // Outer excess and inner recess for mother volume radius
+    // with respect to ROuter and RInner
+    Float_t dframep_in = 0.006; 
+    Float_t dframep_out= 0.006; 
+    Float_t tpar[3];
+    Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
+    tpar[0] = iChamber1->RInner()-dframep_in; 
+    tpar[1] = (iChamber1->ROuter()+dframep_out);
+    tpar[2] = dstation;
+    gMC->Gsvolu("CH07", "TUBE", idAir, tpar, 3);
+    gMC->Gsvolu("CH08", "TUBE", idAir, tpar, 3);
+    iChamber1->GetGeometry()->SetVolume("CH07");
+    iChamber2->GetGeometry()->SetVolume("CH08");
+    
     // create and position the slat (mother) volumes 
 
     char idSlatCh7[5];
@@ -896,6 +927,21 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     const Float_t kXpos5[kNslats5] = {38.2, 0., 0., 0., 0., 0., 0.};
     const Float_t kYpos5[kNslats5] = {0., 38.2, 37.9, 37.6, 37.3, 37.05, 36.75};
     Float_t slatLength5[kNslats5]; 
+
+    // Mother volume for each chamber
+    // Outer excess and inner recess for mother volume radius
+    // with respect to ROuter and RInner
+    Float_t dframep_in = 0.006; 
+    Float_t dframep_out= 0.006; 
+    Float_t tpar[3];
+    Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.3;
+    tpar[0] = iChamber1->RInner()-dframep_in; 
+    tpar[1] = (iChamber1->ROuter()+dframep_out);
+    tpar[2] = dstation;
+    gMC->Gsvolu("CH09", "TUBE", idAir, tpar, 3);
+    gMC->Gsvolu("CH10", "TUBE", idAir, tpar, 3);
+    iChamber1->GetGeometry()->SetVolume("CH09");
+    iChamber2->GetGeometry()->SetVolume("CH10");
 
     // create and position the slat (mother) volumes 
 
