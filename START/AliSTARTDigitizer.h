@@ -25,8 +25,8 @@ class AliSTARTDigitizer : public AliDigitizer {
   //  TArrayI *timeRightADC() {return ftimeRightADC;}
   // TArrayI *timeLeftADC() {return ftimeLeftADC;}
   // Do the main work
-  void Exec(Option_t* option=0) ;
-  Bool_t RegisterPhotoE(AliSTARThitPhoton *hit);			//!!!
+  void Exec (Option_t* /*option=0*/) ;
+  Bool_t RegisterPhotoE(/*AliSTARThitPhoton *hit*/);			//!!!
 
   enum {kBgTag = -1};
 

@@ -62,11 +62,11 @@ void AliSTARTvertex::Reconstruct()
   rl->LoadgAlice();
   gAlice = rl->GetAliRun();
   
-  AliSTART* START  = (AliSTART *)gAlice->GetDetector("START");
+  //  AliSTART* START  = (AliSTART *)gAlice->GetDetector("START");
   
   rl->LoadHeader();
   rl->LoadKinematics("READ");
-  Int_t retval;
+
   AliLoader* lstart = rl->GetLoader("STARTLoader");
   lstart->LoadDigits("READ");
  
