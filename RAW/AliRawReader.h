@@ -33,7 +33,9 @@ class AliRawReader: public TObject {
     virtual Int_t    GetEquipmentElementSize() const = 0;
 
     Int_t            GetDataSize() const 
-      {if (fMiniHeader) return fMiniHeader->fSize; else return 0;};
+      {if (fMiniHeader) return fMiniHeader->fSize; 
+      else return GetEquipmentSize();};
+
     Int_t            GetDetectorID() const 
       {if (fMiniHeader) return fMiniHeader->fDetectorID; else return -1;};
     Int_t            GetDDLID() const 
@@ -56,6 +58,8 @@ class AliRawReader: public TObject {
 	  kErrSize=8, kErrOutOfBounds=16};
     virtual Int_t    CheckData() const;
     Int_t            GetErrorCode() {return fErrorCode;};
+
+    void             DumpData(Int_t limit = -1);
 
   protected :
     Bool_t           IsSelected() const;

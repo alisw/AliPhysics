@@ -116,9 +116,9 @@ Bool_t AliRawReader::CheckMiniHeader(AliMiniHeader* miniHeader) const
 
   if (!miniHeader) miniHeader = fMiniHeader;
   if (!miniHeader) return kFALSE;
-  if ((miniHeader->fMagicWord[2] != 0x12) ||
-      (miniHeader->fMagicWord[1] != 0x34) ||
-      (miniHeader->fMagicWord[0] != 0x56)) {
+  UInt_t magicWord = miniHeader->fMagicWord[2]*65536 +
+    miniHeader->fMagicWord[1]*256 + miniHeader->fMagicWord[0];
+  if (magicWord != AliMiniHeader::kMagicWord) {
     return kFALSE;
   }
   return kTRUE;
@@ -188,3 +188,111 @@ Int_t AliRawReader::CheckData() const
   return 0;
 }
 
+
+void AliRawReader::DumpData(Int_t limit)
+{
+// print the raw data
+// if limit is not negative, only the first and last "limit" lines of raw data
+// are printed
+
+  Reset();
+  if (!ReadHeader()) {
+    Error("DumpData", "no header");
+    return;
+  }
+  printf("header:\n"
+	 " type = %d  run = %d  ", GetType(), GetRunNumber());
+  if (GetEventId()) {
+    printf("event = %8.8x %8.8x\n", GetEventId()[1], GetEventId()[0]);
+  } else {
+    printf("event = -------- --------\n");
+  }
+  if (GetTriggerPattern()) {
+    printf(" trigger = %8.8x %8.8x  ",
+	   GetTriggerPattern()[1], GetTriggerPattern()[0]);
+  } else {
+    printf(" trigger = -------- --------  ");
+  }
+  if (GetDetectorPattern()) {
+    printf("detector = %8.8x\n", GetDetectorPattern()[0]);
+  } else {
+    printf("detector = --------\n");
+  }
+  if (GetAttributes()) {
+    printf(" attributes = %8.8x %8.8x %8.8x  ",
+	   GetAttributes()[2], GetAttributes()[1], GetAttributes()[0]);
+  } else {
+    printf(" attributes = -------- -------- --------  ");
+  }
+  printf("GDC = %d\n", GetGDCId());
+  printf("\n");
+
+  do {
+    printf("-------------------------------------------------------------------------------\n");
+    printf("LDC = %d\n", GetLDCId());
+
+    printf("equipment:\n"
+	   " size = %d  type = %d  id = %d\n",
+	   GetEquipmentSize(), GetEquipmentType(), GetEquipmentId());
+    if (GetEquipmentAttributes()) {
+      printf(" attributes = %8.8x %8.8x %8.8x  ", GetEquipmentAttributes()[2],
+	     GetEquipmentAttributes()[1], GetEquipmentAttributes()[0]);
+    } else {
+      printf(" attributes = -------- -------- --------  ");
+    }
+    printf("element size = %d\n", GetEquipmentElementSize());
+
+    printf("mini header:\n"
+	   " size = %d  detector = %d  DDL = %d\n"
+	   " version = %d  compression = %d\n",
+	   GetDataSize(), GetDetectorID(), GetDDLID(),
+	   GetVersion(), IsCompressed());
+
+    printf("\n");
+    if (limit == 0) continue;
+
+    Int_t size = GetDataSize();
+    char line[70];
+    for (Int_t i = 0; i < 70; i++) line[i] = ' ';
+    line[69] = '\0';
+    Int_t pos = 0;
+    Int_t max = 16;
+    UChar_t byte;
+
+    for (Int_t n = 0; n < size; n++) {
+      if (!ReadNextChar(byte)) {
+	Error("DumpData", "couldn't read byte number %d\n", n);
+	break;
+      }
+      if (pos >= max) {
+	printf("%8.8x  %s\n", n-pos, line);
+	for (Int_t i = 0; i < 70; i++) line[i] = ' ';
+	line[69] = '\0';
+	pos = 0;
+	if ((limit > 0) && (n/max == limit)) {
+	  Int_t nContinue = ((size-1)/max+1-limit) * max;
+	  if (nContinue > n) {
+	    printf(" [skipping %d bytes]\n", nContinue-n);
+	    n = nContinue-1;
+	    continue;
+	  }
+	}
+      }
+      Int_t offset = pos/4;
+      if ((byte > 0x20) && (byte < 0x7f)) {
+	line[pos+offset] = byte;
+      } else {
+	line[pos+offset] = '.';
+      }
+      char hex[3];
+      sprintf(hex, "%2.2x", byte);
+      line[max+max/4+3+2*pos+offset] = hex[0];
+      line[max+max/4+4+2*pos+offset] = hex[1];
+      pos++;
+    }
+
+    if (pos > 0) printf("%8.8x  %s\n", size-pos, line);
+    printf("\n");
+	   
+  } while (ReadHeader());
+}
