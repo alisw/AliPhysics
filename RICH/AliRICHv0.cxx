@@ -71,6 +71,6 @@ void AliRICHv0::StepManager()
   TLorentzVector x4;
   gMC->TrackPosition(x4);
   Info("StepManager","x=%f y=%f z=%f r=%f theta=%f phi=%f\n",
-                      x4.X(),x4.Y(),x4.Z(),x4.Rho(),x4.Theta()*r2d,x4.Phi()*r2d);  
+                      x4.X(),x4.Y(),x4.Z(),x4.Rho(),x4.Theta()*kR2d,x4.Phi()*kR2d);  
 }//AliRICHv0::StepManager()
 //__________________________________________________________________________________________________

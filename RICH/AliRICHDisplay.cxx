@@ -417,7 +417,7 @@ void AliRICHDisplay::DisplayColorScale()
 	ylow = y1 + hs*(Float_t(i));
 	yup  = y1 + hs*(Float_t(i+1));
 	color = 701+i;
-	Double_t logscale=Double_t(i+1)*(TMath::Log(adc_satm)/22);
+	Double_t logscale=Double_t(i+1)*(TMath::Log(kadc_satm)/22);
 	Int_t scale=(Int_t)TMath::Exp(logscale);
 	sprintf(label,"%d",scale);
 	box = new TBox(xlow, ylow, xup, yup);
@@ -971,7 +971,7 @@ void AliRICHDisplay::LoadDigits()
 	   fPoints->AddAt(points,counter);
 	   counter++;
 	   Int_t charge=mdig->Signal();
-	   Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(adc_satm)/22));
+	   Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(kadc_satm)/22));
 	   Int_t color=701+index;
 	   if (color>722) color=722;
 	   points->SetMarkerColor(color);

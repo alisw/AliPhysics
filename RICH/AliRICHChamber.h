@@ -38,14 +38,14 @@ public:
   const char* RotMatrixName()      const{return "rot"+fName;}
   TRotation   Rot()                     {return fRot;}
   Double_t    Rho()                const{return fCenterV3.Mag();} 
-  Double_t    ThetaD()             const{return fCenterV3.Theta()*r2d;}    
-  Double_t    PhiD()               const{return fCenterV3.Phi()*r2d;}    
-  Double_t    ThetaXd()            const{return fRot.ThetaX()*r2d;}    
-  Double_t    PhiXd()              const{return fRot.PhiX()*r2d;}    
-  Double_t    ThetaYd()            const{return fRot.ThetaY()*r2d;}    
-  Double_t    PhiYd()              const{return fRot.PhiY()*r2d;}    
-  Double_t    ThetaZd()            const{return fRot.ThetaZ()*r2d;}    
-  Double_t    PhiZd()              const{return fRot.PhiZ()*r2d;}    
+  Double_t    ThetaD()             const{return fCenterV3.Theta()*kR2d;}    
+  Double_t    PhiD()               const{return fCenterV3.Phi()*kR2d;}    
+  Double_t    ThetaXd()            const{return fRot.ThetaX()*kR2d;}    
+  Double_t    PhiXd()              const{return fRot.PhiX()*kR2d;}    
+  Double_t    ThetaYd()            const{return fRot.ThetaY()*kR2d;}    
+  Double_t    PhiYd()              const{return fRot.PhiY()*kR2d;}    
+  Double_t    ThetaZd()            const{return fRot.ThetaZ()*kR2d;}    
+  Double_t    PhiZd()              const{return fRot.PhiZ()*kR2d;}    
   void        RotateX(Double_t a)       {fRot.RotateX(a);fCenterV3.RotateX(a);}
   void        RotateY(Double_t a)       {fRot.RotateY(a);fCenterV3.RotateY(a);}
   void        RotateZ(Double_t a)       {fRot.RotateZ(a);fCenterV3.RotateZ(a);}

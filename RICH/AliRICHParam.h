@@ -41,10 +41,10 @@ public:
   void    Offset(Float_t offset)             {       fOffset=offset;}  
   Float_t Offset()                      const{return fOffset;}  
   void    Angles(Float_t xy,Float_t yz)      {       fAngleXY=xy;fAngleYZ=yz;} 
-  Float_t AngleYZ()                     const{return fAngleYZ*d2r;} 
-  Float_t AngleXY()                     const{return fAngleXY*d2r;} 
+  Float_t AngleYZ()                     const{return fAngleYZ*kD2r;} 
+  Float_t AngleXY()                     const{return fAngleXY*kD2r;} 
   void    AngleRot(Float_t angle)            {       fAngleRot=angle;}
-  Float_t AngleRot()                    const{return fAngleRot*d2r;}                
+  Float_t AngleRot()                    const{return fAngleRot*kD2r;}                
   void    GapThickness(Float_t a)            {       fGapThickness=a;}    
   Float_t GapThickness()                const{return fGapThickness;}      
   void    ProximityGapThickness(Float_t a)   {       fProximityGapThickness=a;}

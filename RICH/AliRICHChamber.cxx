@@ -14,7 +14,7 @@
  **************************************************************************/
 
 #include "AliRICHChamber.h"
-#include "AliRICHConst.h" //for r2d
+#include "AliRICHConst.h" //for kR2d
 #include "AliRICHParam.h"
 #include <TRandom.h>
 #include <TRotMatrix.h>
@@ -79,9 +79,9 @@ AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
       Fatal("named ctor","Wrong chamber number %i, check muster class ctor",iModuleN);
   }//switch(iModuleN)
   RotateZ(pParam->AngleRot());//apply common rotation  
-  fpRotMatrix=new TRotMatrix("rot"+fName,"rot"+fName, Rot().ThetaX()*r2d, Rot().PhiX()*r2d,
-                                                      Rot().ThetaY()*r2d, Rot().PhiY()*r2d,
-                                                      Rot().ThetaZ()*r2d, Rot().PhiZ()*r2d);
+  fpRotMatrix=new TRotMatrix("rot"+fName,"rot"+fName, Rot().ThetaX()*kR2d, Rot().PhiX()*kR2d,
+                                                      Rot().ThetaY()*kR2d, Rot().PhiY()*kR2d,
+                                                      Rot().ThetaZ()*kR2d, Rot().PhiZ()*kR2d);
   fpParam=pParam;
 }
 //______________________________________________________________________________

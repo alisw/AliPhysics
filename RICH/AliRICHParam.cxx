@@ -7,28 +7,73 @@ ClassImp(AliRICHParam)
 
 // RICH main parameters manipulator
 //__________________________________________________________________________________________________
-AliRICHParam::AliRICHParam()
+AliRICHParam::AliRICHParam():
+fNpadX(0),
+fNpadY(0),
+fDeadZone(0),
+fPadSizeX(0),
+fPadSizeY(0),
+fSectorSizeX(0),
+fSectorSizeY(0),
+fWirePitch(0),
+fCurrentPadX(0),
+fCurrentPadY(0),
+fCurrentWire(0),
+fSizeZ(0),
+fAngleRot(0),
+fAngleYZ(0),
+fAngleXY(0),
+fOffset(0),
+fGapThickness(0),
+fProximityGapThickness(0),
+fQuartzLength(0),
+fQuartzWidth(0),
+fQuartzThickness(0),
+fOuterFreonLength(0),
+fOuterFreonWidth(0),
+fInnerFreonLength(0),
+fInnerFreonWidth(0),
+fFreonThickness(0),
+fRadiatorToPads(0),
+fPcSizeX(0),
+fPcSizeY(0),
+fChargeSlope(0),
+fChargeSpreadX(0),
+fChargeSpreadY(0),
+fSigmaIntegration(0),
+fAlphaFeedback(0),
+fEIonisation(0),
+fMaxAdc(0),
+fSqrtKx3(0),
+fKx2(0),
+fKx4(0),
+fSqrtKy3(0),
+fKy2(0),
+fKy4(0),
+fPitch(0),
+fWireSag(0),
+fVoltage(0)
 {//defines the default parameters
   Segmentation         (144,160);           //nx,ny  for the whole chamber
-  DeadZone             (3*cm);              //spacer between PC planes
-  PadSize              (8.4*mm,8.0*mm);     
+  DeadZone             (3*kcm);              //spacer between PC planes
+  PadSize              (8.4*kmm,8.0*kmm);     
   fWirePitch=PadSizeX()/2;
   
-  Size                 (132.6*cm,26*cm,136.7*cm);  //full length, not GEANT half notation
+  Size                 (132.6*kcm,26*kcm,136.7*kcm);  //full length, not GEANT half notation
   AngleRot             (60);                       //rotation of the whole RICH around Z, deg
   Angles               (20,19.5);                  //XY angle, YZ angle  deg  
-  Offset               (490*cm+1.267*cm);          //1.267???????cm distance from IP to the center of module 
-  GapThickness         (8*cm);              
-  ProximityGapThickness(0.4*cm);            
-  QuartzLength         (133*cm);            
-  QuartzWidth          (127.9*cm);          
-  QuartzThickness      (0.5*cm);            
-  OuterFreonLength     (133*cm);            
-  OuterFreonWidth      (41.3*cm);           
-  InnerFreonLength     (133*cm);            
-  InnerFreonWidth      (41.3*cm);           
-  FreonThickness       (1.5*cm);            
-  RadiatorToPads       (80*mm);                 
+  Offset               (490*kcm+1.267*kcm);          //1.267???????cm distance from IP to the center of module 
+  GapThickness         (8*kcm);              
+  ProximityGapThickness(0.4*kcm);            
+  QuartzLength         (133*kcm);            
+  QuartzWidth          (127.9*kcm);          
+  QuartzThickness      (0.5*kcm);            
+  OuterFreonLength     (133*kcm);            
+  OuterFreonWidth      (41.3*kcm);           
+  InnerFreonLength     (133*kcm);            
+  InnerFreonWidth      (41.3*kcm);           
+  FreonThickness       (1.5*kcm);            
+  RadiatorToPads       (80*kmm);                 
   
   ChargeSlope(27.);
   ChargeSpreadX(0.18);ChargeSpreadY(0.18);

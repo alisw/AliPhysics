@@ -1128,7 +1128,7 @@ void AliRICH::CreateGeometry()
   Float_t par[3];
     
 //External aluminium box 
-  par[0]=68.8*cm;par[1]=13*cm;par[2]=70.86*cm;//Original Settings
+  par[0]=68.8*kcm;par[1]=13*kcm;par[2]=70.86*kcm;//Original Settings
   gMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
 //Air 
   par[0]=66.3;   par[1] = 13; par[2] = 68.35; //Original Settings
@@ -1360,7 +1360,7 @@ void AliRICH::GenerateFeedbacks(Float_t eloss)
 //Determine number of feedback photons
   TLorentzVector x4;
   gMC->TrackPosition(x4);//This sould return the current track position
-  Float_t charge=Param()->TotalCharge(gMC->TrackPid(),eloss,5*cm);//??? Totsl Charge
+  Float_t charge=Param()->TotalCharge(gMC->TrackPid(),eloss,5*kcm);//??? Totsl Charge
   Int_t iNphotons=gMC->GetRandom()->Poisson(Param()->AlphaFeedback()*charge);    
   Info("GenerateFeedbacks","N photons=%i",iNphotons);
 //Generate photons

@@ -217,7 +217,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
       printf("Digit %d from particle %d belongs to ring %d \n", digit, fTrackIndex, mdig->Track(0));
 
       Int_t charge=mdig->Signal();
-      Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(adc_satm)/22));
+      Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(kadc_satm)/22));
       Int_t color=701+index;
       if (color>722) color=722;
       points->SetMarkerColor(color);
