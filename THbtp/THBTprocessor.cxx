@@ -1,4 +1,3 @@
-
 #include <TGenerator.h>
 #include "THBTprocessor.h"
 #include <TParticle.h>
@@ -62,11 +61,12 @@ void THBTprocessor::GenerateEvent()
 }
 /*****************************************************************************************/
 void THBTprocessor::Initialize()
-{
+{ 
+  //IT RESETS ALL THE PREVIOUS SETTINGS
   //Call this method to set default values in PARAMETERS & MESH
   //and zero other common block
   
-  cout<<"\nHBT PROCESSOR::Initialize() Setting Default valuses in all COMMON BLOCKS"<<endl;
+  if(gDebug) cout<<"\nHBT PROCESSOR::Initialize() Setting Default valuses in all COMMON BLOCKS"<<endl;
   
   PARAMETERS.ref_control      = 2;
   PARAMETERS.switch_1d        = 3;

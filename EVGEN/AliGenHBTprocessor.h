@@ -70,7 +70,10 @@ class AliGenHBTprocessor : public AliGenerator {
                                                                                    //coherent with AliGenCocktail
                                                                                    //incohernet with AliGenerator
     virtual void SetEtaRange(Float_t etamin = -1.5, Float_t etamax = 1.5);//Pseudorapidity
-    
+    void SetThetaRange(Float_t thetamin = 0, Float_t thetamax = 180); //Azimuthal angle, override AliGenerator method
+                                                                      //which uses this, core fortran HBTProcessor uses Eta (pseudorapidity)
+                                                                      //so these methods has to be synchronized         
+
     virtual void SetNPtBins(Int_t nptbin = 50);
     virtual void SetNPhiBins(Int_t nphibin = 50);
     virtual void SetNEtaBins(Int_t netabin = 50);
@@ -264,8 +267,20 @@ class AliGenHBTprocessor : public AliGenerator {
       Float_t    fPz_max;                // Sector range in pz in GeV/c max
       Float_t    fDelpz;                 // Mom. space sector cell size - pz(GeV/c)
 
-  public:  
+
+      /******* P R O T E C T E D   M E T H O D S  *****/
+  public:    
+        //conveerts Eta (pseudorapidity) to etha(azimuthal angle). Returns radians 
+    static Double_t EtaToTheta(Double_t arg){return 2.*TMath::ATan(TMath::Exp(-arg));}
+        //converts etha(azimuthal angle) to Eta (pseudorapidity). Argument in radians
+    static Double_t ThetaToEta(Double_t arg);
+        //converts Degrees To Radians
+    static Double_t DegreesToRadians(Double_t arg){return arg*TMath::Pi()/180.;}
+          //converts Radians To Degrees 
+    static Double_t RadiansToDegrees(Double_t arg){return arg*180./TMath::Pi();}
+    
     ClassDef(AliGenHBTprocessor,1) // Interface class for AliMevsim
     
 };
+#include <iostream.h>
 #endif

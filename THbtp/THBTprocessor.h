@@ -1,26 +1,23 @@
 #ifndef THBTPROCESSOR_H
 #define THBTPROCESSOR_H
+/*******************************************************/
+//Author Piotr Krzysztof Skowronski e-mial: Piotr.Skowronski@cern.ch
+// C++ Wrapper Class for fortran made HBT Processor written by Lanny Ray
+// 
+// Comunication is done via COMMON BLOCKS declared in HBTprocCOMMON.h
+// using cfortran.h routines
+// User should use class AliGenHBTprocessor and all their interface
+// see there for more description
+//
 
 #include <TGenerator.h>
 #include "HBTprocCOMMON.h"
 
 
-/**************************************************************
-COMMENTS APROPOS HBTPROCESSOR FORTRAN CODE:
-
-SUBROUTINE INITIALIZE HAS TO BE OMITTED, IT RESETS (ZEROES) COMMON BLOCKS
-
-SUBROUTINE KINEMATICS HAS TO BE RENAMED EITHER IN MEVSIM OR IN PROCESSOR 
-AS THEY HAVE IDETICAL DECLARATIONS AND SOMTIMES IS USED THE BAD ONE IN CASE BOTH LIBRARIES ARE LOADED
-
-
-
-
-***************************************************************/
 class THBTprocessor: public TGenerator
   {
     public:
-      THBTprocessor();
+      THBTprocessor(); 
       virtual ~THBTprocessor() {};
       
       virtual void  Initialize();
@@ -29,7 +26,9 @@ class THBTprocessor: public TGenerator
       virtual Int_t ImportParticles(TClonesArray *particles, Option_t *option="");
 
       //Set/Gets
-
+      //comprehensive description off all these methods 
+      //can be found in proper methods of AliGenHBTprocessor
+      
       virtual void SetTrackRejectionFactor(Float_t trf = 1.0) {PARAMETERS.trk_accep = trf;}
       virtual void SetRefControl(Int_t rc =2) {PARAMETERS.ref_control = rc;}
       virtual void SetPIDs(Int_t pid1 = 8,Int_t pid2 = 9) {PARAMETERS.pid[0]=pid1; PARAMETERS.pid[1]=pid2;}
@@ -104,3 +103,13 @@ class THBTprocessor: public TGenerator
   };
 
 #endif
+
+/**************************************************************
+COMMENTS APROPOS HBTPROCESSOR FORTRAN CODE:
+
+SUBROUTINE INITIALIZE HAS TO BE OMITTED, IT RESETS (ZEROES) COMMON BLOCKS
+
+SUBROUTINE KINEMATICS HAS TO BE RENAMED EITHER IN MEVSIM OR IN PROCESSOR 
+AS THEY HAVE IDENTICAL DECLARATIONS AND SOMTIMES IS USED THE BAD ONE IN CASE BOTH LIBRARIES ARE LOADED
+
+****************************************************************/

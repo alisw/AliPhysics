@@ -6,26 +6,24 @@
 // Implementation of the interface for THBTprocessor
 // Author: Piotr Krzysztof Skowronski <Piotr.Skowronski@cern.ch>
 
+// 09.10.2001 Piotr Skowronski
+// 
+// Theta - Eta cohernecy facilities added:
+//    AliGenerator::SetThetaRange method overriden
+//    Static methods added
+//    EtaToTheta
+//    ThetaToEta 
+//    DegreesToRadians
+//    RadiansToDegrees
+//
+// Class description comments put on proper place
+
 // 27.09.2001 Piotr Skowronski
 // removing of redefinition of defaults velues 
 // in method's implementation. 
 //  
 
-#include "AliGenHBTprocessor.h"
-#include "TROOT.h"
-#include <iostream.h>
-
-#include "AliRun.h"
-#include "AliStack.h"
-#include "TParticle.h"
-#include "AliGenCocktailAfterBurner.h"
-
-
-
-const Int_t AliGenHBTprocessor::fgkHBTPMAXPART = 100000;
-
-ClassImp(AliGenHBTprocessor)
-
+//////////////////////////////////////////////////////////////////////////////////
 //Wrapper class for "hbt processor" after burner
 //The origibal code is written in fortran by Lanny Ray
 //and is put in the directory $ALICE_ROOT/HBTprocessor
@@ -54,6 +52,23 @@ ClassImp(AliGenHBTprocessor)
 //         A)  HBT PROCESSOR NEEDS MORE THAN ONE EVENT TO WORK
 //             AS MORE AS IT BETTER WORKS
 //         B)  IT IS ABLE TO "ADD" CORRELATIONS ONLY UP TO TWO PARTICLE TYPES AT ONES
+//////////////////////////////////////////////////////////////////////////////////
+
+#include "AliGenHBTprocessor.h"
+#include "TROOT.h"
+#include <iostream.h>
+
+#include "AliRun.h"
+#include "AliStack.h"
+#include "TParticle.h"
+#include "AliGenCocktailAfterBurner.h"
+
+
+
+const Int_t AliGenHBTprocessor::fgkHBTPMAXPART = 100000;
+
+ClassImp(AliGenHBTprocessor)
+
 
 
 AliGenCocktailAfterBurner*  GetGenerator();
@@ -175,6 +190,7 @@ void AliGenHBTprocessor::Init()
   //sets up parameters in generator
    THBTprocessor *thbtp = fHBTprocessor;
    
+
    thbtp->SetTrackRejectionFactor(fTrackRejectionFactor);
    thbtp->SetRefControl(fReferenceControl);
    
@@ -222,10 +238,7 @@ void AliGenHBTprocessor::Init()
    thbtp->SetPxRange(fPx_min,fPx_max);
    thbtp->SetPyRange(fPy_min,fPy_max);
    thbtp->SetPzRange(fPz_min,fPz_max);
-   thbtp->SetPhiRange(fPhiMin*180/TMath::Pi(),fPhiMax*180/TMath::Pi());
-//   cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
-//   cout<<fPhiMin<<fPhiMax<<endl;
-//   cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
+   thbtp->SetPhiRange(fPhiMin*180./TMath::Pi(),fPhiMax*180./TMath::Pi());
    thbtp->SetEtaRange(fEta_min,fEta_max);
    thbtp->SetNPtBins(fN_pt_bins);
    thbtp->SetNPhiBins(fN_phi_bins);
@@ -256,6 +269,12 @@ void AliGenHBTprocessor::Generate()
             "HBT Processor needs more than 1 event to work properly,\
              but there is only %d set", gAlice->GetEventsPerRun());
     }
+  
+   fHBTprocessor->Initialize(); //reset all fields of common blocks 
+                                   //in case there are many HBT processors
+                  	               //run one after one (i.e. in AliCocktailAfterBurner)
+                                   //between Init() called and Generate there might 
+   Init();                         //be different instance running - be sure that we have our settings
    
    InitStatusCodes(); //Init status codes
    
@@ -343,13 +362,13 @@ void AliGenHBTprocessor::SetPIDs(Int_t pid1,Int_t pid2)
     if(pid1 == pid2)
        {
         fHBTprocessor->SetPIDs(IdFromPDG(pid1) ,0);
-	SetNPIDtypes(1);
-	SetSwitchType(1);
+        SetNPIDtypes(1);
+        SetSwitchType(1);
        }
     else
        { 
         fHBTprocessor->SetPIDs(IdFromPDG(pid1) ,IdFromPDG(pid2));
-	SetNPIDtypes(2);
+        SetNPIDtypes(2);
        }
   }
 /*******************************************************************/
@@ -491,10 +510,11 @@ void AliGenHBTprocessor::SetQ0(Float_t q0)
 void AliGenHBTprocessor::SetSwitch1D(Int_t s1d) 
   {
 //default s1d = 3
-// Sets fSwitch_3d
-//                         = 0 to not compute the 3D two-body correlations.
-//                         = 1 to compute this using the side-out-long form
-//                         = 2 to compute this using the Yanno-Koonin-Pogoredskij form.   
+// Sets fSwitch_1d   
+//                          = 0 to not compute the 1D two-body //orrelations.
+//                          = 1 to compute this using Q-invariant
+//                          = 2 to compute this using Q-total
+//                          = 3 to compute this using Q-3-ve//tor
 
     fSwitch_1d = s1d;
     fHBTprocessor->SetSwitch1D(s1d);
@@ -503,11 +523,10 @@ void AliGenHBTprocessor::SetSwitch1D(Int_t s1d)
 void AliGenHBTprocessor::SetSwitch3D(Int_t s3d) 
   {
 //default s3d = 0
-// Sets fSwitch_3d   
-//                          = 0 to not compute the 1D two-body //orrelations.
-//                          = 1 to compute this using Q-invariant
-//                          = 2 to compute this using Q-total
-//                          = 3 to compute this using Q-3-ve//tor
+// Sets fSwitch_3d
+//                         = 0 to not compute the 3D two-body correlations.
+//                         = 1 to compute this using the side-out-long form
+//                         = 2 to compute this using the Yanno-Koonin-Pogoredskij form.   
      
     fSwitch_3d = s3d;
     fHBTprocessor->SetSwitch3D(s3d);
@@ -618,7 +637,29 @@ void AliGenHBTprocessor::SetEtaRange(Float_t etamin, Float_t etamax)
    fEta_min= etamin;
    fEta_max =etamax;
    fHBTprocessor->SetEtaRange(etamin,etamax);
+   
+   //set the azimothal angle range in the AliGeneraor - 
+   //to keep coherency between azimuthal angle and pseudorapidity
+   //DO NOT CALL this->SetThetaRange, because it calls this method (where we are) 
+   //which must cause INFINITE LOOP
+   AliGenerator::SetThetaRange(RadiansToDegrees(EtaToTheta(fEta_min)), 
+                               RadiansToDegrees(EtaToTheta(fEta_max)));
+   
  }
+/*******************************************************************/
+void AliGenHBTprocessor::SetThetaRange(Float_t thetamin, Float_t thetamax)
+{
+  //default thetamin = 0, thetamax = 180
+  //Azimuthal angle, override AliGenerator method which uses widely (i.e. wrapper generators)
+  //core fortran HBTProcessor uses Eta (pseudorapidity)
+  //so these methods has to be synchronized
+  
+  AliGenerator::SetThetaRange(thetamin,thetamax);
+  
+  SetEtaRange( ThetaToEta(fThetaMin) , ThetaToEta(fThetaMax) );
+
+}
+  
 /*******************************************************************/
 void AliGenHBTprocessor::SetNPtBins(Int_t nptbin)
  {
@@ -813,7 +854,25 @@ Int_t AliGenHBTprocessor::PDGFromId(Int_t id) const
   //
   if(id>0 && id<fNPDGCodes) return fPDGCode[id];
   else return -1;
-}                                  
+}
+Double_t AliGenHBTprocessor::ThetaToEta(Double_t arg)
+ {
+  //converts etha(azimuthal angle) to Eta (pseudorapidity). Argument in radians
+   
+   if(arg>= TMath::Pi()) return  709.0;//This number is the biggest wich not crashes exp(x)
+   if(arg<= 0.0) return -709.0;//
+   
+   arg -= TMath::Pi()/2.;
+   if (arg > 0.0) 
+    { 
+      return -TMath::Log( TMath::Tan(arg/2.)) ;
+    }
+   else 
+    {
+      return TMath::Log( TMath::Tan(-arg/2.)) ;
+    }
+ }
+                                  
 /*******************************************************************/
 /******      ROUTINES    USED    FOR     COMMUNUCATION      ********/
 /********************     WITH      FORTRAN     ********************/
