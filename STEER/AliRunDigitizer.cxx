@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/07/27 12:59:00  jchudoba
+Manager class for merging/digitization
+
 */
 
 ////////////////////////////////////////////////////////////////////////
@@ -92,19 +95,21 @@ ClassImp(AliRunDigitizer)
 {
 // default ctor
 
-  for (Int_t i=0;i<MAXDETECTORS;i++) fDigitizers[i]=0;
+  Int_t i;
+
+  for (i=0;i<MAXDETECTORS;i++) fDigitizers[i]=0;
   fNDigitizers = 0;
   fNinputs = 0;
   fOutputFileName = "digits.root";
   fOutputDirName = "/tmp/";
   fCombination.Set(MAXFILESTOMERGE);
-  for (Int_t i=0;i<MAXFILESTOMERGE;i++) {
+  for (i=0;i<MAXFILESTOMERGE;i++) {
     fArrayTreeS[i]=fArrayTreeH[i]=fArrayTreeTPCS[i]=NULL;
     fCombination[i]=-1;
   }
   fkMASKSTEP = 10000000;
   fkMASK[0] = 0;
-  for (Int_t i=0;i<MAXFILESTOMERGE;i++) {
+  for (i=0;i<MAXFILESTOMERGE;i++) {
     fkMASK[i] = fkMASK[i-1] + fkMASKSTEP;
   }
   fInputFileNames = new TClonesArray("TObjString",1);
