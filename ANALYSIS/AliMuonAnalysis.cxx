@@ -50,13 +50,13 @@ AliMuonAnalysis::~AliMuonAnalysis()
   delete fHRapMuon;
   delete fHRapResonance;
   delete fHPtResonance;
-  delete fHInvMassAll_vs_Pt;
+  delete fHInvMassAllvsPt;
 }
 /*********************************************************/
 
 Int_t AliMuonAnalysis::Init()
 {
-  //Initilizes anaysis
+  //Initilizes analysis
   Info("Init","Histo initialized for MUON Analysis");
 
   fHistoFile         = new TFile("MUONmassPlot.root", "RECREATE");
@@ -68,7 +68,7 @@ Int_t AliMuonAnalysis::Init()
   fHRapMuon          = new TH1F("hRapMuon"," Muon Rapidity",50,-4.5,-2);
   fHRapResonance     = new TH1F("hRapResonance"," Resonance Rapidity",50,-4.5,-2);
   fHPtResonance      = new TH1F("hPtResonance", "Resonance Pt (GeV/c)", 100, 0., 20.);
-  fHInvMassAll_vs_Pt = new TH2F("hInvMassAll_vs_Pt","hInvMassAll_vs_Pt",480,0.,12.,80,0.,20.);
+  fHInvMassAllvsPt = new TH2F("hInvMassAll_vs_Pt","hInvMassAll_vs_Pt",480,0.,12.,80,0.,20.);
 
   return 0; 
 }
@@ -76,7 +76,9 @@ Int_t AliMuonAnalysis::Init()
 
 Int_t AliMuonAnalysis::ProcessEvent(AliAOD* aodrec, AliAOD* aodsim)
 {
- 
+  //
+  // process the event
+  // 
   if (aodrec) {
     GetInvMass(aodrec);
     //    Info("ProcessEvent","Inv Mass Rec");
@@ -106,7 +108,9 @@ Int_t AliMuonAnalysis::Finish()
 
 void AliMuonAnalysis::GetInvMass(AliAOD* aod)
 {
-
+  // get the invariant mass distribution
+  // from the oad events
+ 
   TLorentzVector lorV1, lorV2, lorVtot;
   Float_t massMin = 9.17;
   Float_t massMax = 9.77;
@@ -162,7 +166,7 @@ void AliMuonAnalysis::GetInvMass(AliAOD* aod)
 	Float_t invMass = lorVtot.M();
 
 	fHInvMassAll->Fill(invMass);
-	fHInvMassAll_vs_Pt->Fill(invMass,lorVtot.Pt());
+	fHInvMassAllvsPt->Fill(invMass,lorVtot.Pt());
 
 	if (invMass > massMin && invMass < massMax) {
 	  fHRapResonance->Fill(lorVtot.Rapidity());

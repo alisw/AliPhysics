@@ -41,16 +41,16 @@ class AliMuonAnalysis: public AliAnalysis
     
   private:
 
-    TFile *fHistoFile;
-    TH1F *fHPtMuon;
-    TH1F *fHPtMuonPlus;
-    TH1F *fHPtMuonMinus;
-    TH1F *fHPMuon;
-    TH1F *fHInvMassAll;
-    TH1F *fHRapMuon;
-    TH1F *fHRapResonance;
-    TH1F *fHPtResonance;
-    TH2F *fHInvMassAll_vs_Pt;
+    TFile *fHistoFile;         // histogramm file pointer
+    TH1F *fHPtMuon;            // Muon Pt distribution
+    TH1F *fHPtMuonPlus;        // Muon Plus Pt distribution
+    TH1F *fHPtMuonMinus;       // Muon Minus Pt distribution
+    TH1F *fHPMuon;             // Muon momentum distribution
+    TH1F *fHInvMassAll;        // Invariant mass distribution
+    TH1F *fHRapMuon;           // Muon rapidity distribution
+    TH1F *fHRapResonance;      // Muon rapidity distribution around resonance
+    TH1F *fHPtResonance;       // Muon Pt distribution around resonance
+    TH2F *fHInvMassAllvsPt;    // Invariant mass vs Pt distribution
 
     AliAODParticleCut* fPartCut;//Particle Cut
     ClassDef(AliMuonAnalysis,1)
