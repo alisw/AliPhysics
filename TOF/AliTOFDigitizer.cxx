@@ -289,7 +289,7 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
   Int_t nEntries = (Int_t)tofBranch->GetEntries();                                
 
   // Loop through all entries in the tree
-  Int_t nbytes;
+  Int_t nbytes = 0;
   
   for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) {
     
