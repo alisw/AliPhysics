@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/08/31 08:18:43  jchudoba
+Changes needed to run with Root 3.01
+
 Revision 1.15  2001/05/16 14:57:17  alibrary
 New files for folders and Stack
 
@@ -888,7 +891,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     TClonesArray *muonDigits  = pMUON->DigitsAddress(chamber-1);
     if (muonDigits == 0) return;
 
-    gAlice->ResetDigits();
+//     gAlice->ResetDigits();
     Int_t nent = 0;
  
    if (gAlice->TreeD()) {
@@ -999,7 +1002,7 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t cathode)
     TClonesArray *muonRawClusters  = pMUON->RawClustAddress(chamber-1);
     if (muonRawClusters == 0) return;
 
-    pMUON->ResetRawClusters();
+//     pMUON->ResetRawClusters();
 
     Int_t nent = 0;
     if (gAlice->TreeR()) {
