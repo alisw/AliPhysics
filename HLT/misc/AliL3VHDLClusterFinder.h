@@ -18,8 +18,8 @@ struct VHDLClusterData
   UInt_t fMerge; //number of merges
   UShort_t fRow;     //row of cluster
   UShort_t fLastPad; //last pad on merge
-  //UInt_t fChargeFalling; //for deconvolution
-  //UInt_t fLastCharge;    //for deconvolution
+  UInt_t fChargeFalling; //for deconvolution
+  UInt_t fLastCharge;    //for deconvolution
 };
 typedef struct VHDLClusterData VCData;
 
@@ -29,8 +29,8 @@ typedef struct VHDLClusterData VCData;
 #define N_clmem 5000
 
 
-class AliL3VHDLClusterFinder {
- 
+class AliL3VHDLClusterFinder 
+{
  private:
   AliL3AltroMemHandler fAltromem; //!
   VCData fSeq; //!
@@ -41,7 +41,12 @@ class AliL3VHDLClusterFinder {
   UShort_t fRP,fWP,fOP,fEP,fFP; //pointer in ringbuffer
   UShort_t fLast,fFirst;        //free area in memory
 
-  Bool_t fDeconvTime; //not used for now
+  Int_t fTC; //totalcharge
+  Int_t fMT; //mean in time
+  Int_t fST; //sigma in time
+  Int_t fSM; //seq. mean
+
+  Bool_t fDeconvTime;
   Bool_t fDeconvPad;
   Bool_t fstdout;     
   Bool_t fcalcerr;   
@@ -70,6 +75,7 @@ class AliL3VHDLClusterFinder {
   void CompareSeq();
   void MergeSeq();
   void InsertSeq();
+  void MakeSequence();
   void ProcessSequence();
   //void WriteClusters(Int_t n_clusters,ClusterData *list);
 

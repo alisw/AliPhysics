@@ -25,6 +25,7 @@ using namespace std;
 //</pre> 
 */
 
+
 ClassImp(AliL3VHDLClusterFinder)
 
 AliL3VHDLClusterFinder::AliL3VHDLClusterFinder()
@@ -62,7 +63,6 @@ void AliL3VHDLClusterFinder::ProcessDigits()
   UShort_t rrow=0,rtime=0;
   UChar_t rpad=0,i=n;
   UShort_t *charges=new UShort_t[n];
-  Int_t tc=0,mp=0,mt=0,sp=0,st=0;
 
   fNClusters=0;
   fRow=0;
@@ -71,7 +71,6 @@ void AliL3VHDLClusterFinder::ProcessDigits()
 
   //loop over input data
   while(fAltromem.ReadSequence(rrow,rpad,rtime,i,&charges)){
-    tc=0;mp=0;mt=0;sp=0;st=0;
 #if 0
     cout << "Padrow " << (int)rrow << " pad " << (int)rpad << " time " <<(int)rtime << " charges ";
     for(UChar_t ii=0;ii<i;ii++) cout << (int)charges[ii] << " ";
@@ -85,33 +84,48 @@ void AliL3VHDLClusterFinder::ProcessDigits()
 
     fNRow=rrow;
     fNPad=rpad;
+    fTC=0,fMT=0,fST=0;
 
     //calculate sequence values 
-    //no deconvulution so far
-    for(UChar_t ii=0;ii<i;ii++){
-      tc+=charges[ii];
-      mt+=(rtime-ii)*charges[ii];
-      st+=(rtime-ii)*(rtime-ii)*charges[ii];
-    }
-    mp=rpad*tc;
-    sp=rpad*rpad*tc;
+    if(fDeconvTime){
+      UChar_t ii=0;
+      Int_t sl=0;
+      Int_t charge=0,lcharge=0;
+      Bool_t falling=kFALSE;
+      while(ii<i){
+	charge=charges[ii];
+	if((falling)&&(charge>lcharge)){
+	  fSM=rtime-sl/2;
+	  MakeSequence();
+	  ProcessSequence();
+	  OutputMemory();
 
-    fSeq.fTotalCharge=tc;
-    fSeq.fPad=mp;
-    fSeq.fTime=mt;
-    fSeq.fPad2=sp;
-    fSeq.fTime2=st; 
-    fSeq.fMean=0;
-    //if(tc!=0) fSeq.fMean=mt/tc;
-    if(tc!=0) fSeq.fMean=rtime-i/2;    
-    fSeq.fMerge=0;
-    fSeq.fRow=rrow;
-    fSeq.fLastPad=rpad;
-    
-    //work on this sequence
+	  rtime=rtime-sl;      
+	  falling=kFALSE;
+	  sl=0;
+	  fTC=0,fMT=0,fST=0;
+	} else if(charge<lcharge) falling=kTRUE;
+
+	fTC+=charge;
+	fMT+=(rtime-sl)*charge;
+	fST+=(rtime-sl)*(rtime-sl)*charge;
+	sl++;
+	ii++;
+	lcharge=charge;
+      } //end loop over sequence
+      fSM=rtime-sl/2;
+    } else { /* no deconvolution */
+      for(UChar_t ii=0;ii<i;ii++){
+	fTC+=charges[ii];
+	fMT+=(rtime-ii)*charges[ii];
+	fST+=(rtime-ii)*(rtime-ii)*charges[ii];
+      }
+      fSM=rtime-i/2;
+    }
+
+    MakeSequence();
     ProcessSequence();
-    //output one cluster
-    OutputMemory();
+    OutputMemory();      
 
 #ifdef DEBUG
     fflush(fdeb);
@@ -122,6 +136,27 @@ void AliL3VHDLClusterFinder::ProcessDigits()
   //flush everything left
   FlushMemory();
   while(fOP!=fFP) OutputMemory();
+}
+
+void AliL3VHDLClusterFinder::MakeSequence(){
+  if(!fTC) return;
+
+  Int_t mp=fNPad*fTC;
+  Int_t sp=fNPad*fNPad*fTC;
+
+  fSeq.fTotalCharge=fTC;
+  fSeq.fPad=mp;
+  fSeq.fTime=fMT;
+  fSeq.fPad2=sp;
+  fSeq.fTime2=fST; 
+  fSeq.fMean=0;
+  fSeq.fMean=fSM;
+  fSeq.fMerge=0;
+  fSeq.fRow=fNRow;
+  fSeq.fLastPad=fNPad;
+  fSeq.fChargeFalling=0;
+  if(fDeconvPad) fSeq.fLastCharge=fTC;
+  else fSeq.fLastCharge=0;
 }
 
 void AliL3VHDLClusterFinder::ProcessSequence()
@@ -162,7 +197,6 @@ void AliL3VHDLClusterFinder::FlushMemory()
 
 void AliL3VHDLClusterFinder::CompareSeq()
 {
-
   while(fRP!=fEP){
     Int_t diff=fSeqs[fPList[fRP]].fMean-fSeq.fMean;
 
@@ -171,8 +205,7 @@ void AliL3VHDLClusterFinder::CompareSeq()
       continue;
     } else if(diff<-fMatch){ //no match
       break;                 //insert new cluster       
-    }
-    else { //match found, merge it
+    } else { //match found, merge it
       MergeSeq(); 
       return;
     }
@@ -194,7 +227,20 @@ void AliL3VHDLClusterFinder::MergeSeq()
     LOG(AliL3Log::kWarning,"AliL3VHDLClusterFinder::","Memory Check")
       <<"Sequences can be merged on consecutive pads only."<<ENDLOG;
   }
+  
+  if(fDeconvPad){
+    if(fSeq.fTotalCharge > fSeqs[fPList[fRP]].fLastCharge){
+      if(fSeqs[fPList[fRP]].fChargeFalling){ //The previous pad was falling
+	IncRPointer();
+	InsertSeq(); //start a new cluster
+	return;
+      }		    
+    }
+    else fSeqs[fPList[fRP]].fChargeFalling = 1;
 
+    fSeqs[fPList[fRP]].fLastCharge = fSeq.fTotalCharge;
+  }
+  
   fSeqs[fPList[fRP]].fMean=fSeq.fMean; //take the new mean
   fSeqs[fPList[fRP]].fLastPad=fSeq.fLastPad;
   fSeqs[fPList[fRP]].fTotalCharge+=fSeq.fTotalCharge;

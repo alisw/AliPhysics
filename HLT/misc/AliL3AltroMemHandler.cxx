@@ -93,13 +93,6 @@ void AliL3AltroMemHandler::MakeAltroPackets()
       seqlength=j+1; //number of consecutive times   
       htime=times_per_pad[i]; //abs. time for sequence
 
-/*
-  cout << " counter " << counter << endl;
-  if(htime!=ltime+j){
-  cerr << "Error: " << ltime << " - " << htime << endl;
-  exit(1);
-  }
-*/
       //don't store sequence if it doesn't fit into packet
       if(pcounter+seqlength>=ALTRO_SIZE) break;
 
