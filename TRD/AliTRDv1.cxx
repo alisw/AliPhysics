@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2001/05/16 14:57:28  alibrary
+New files for folders and Stack
+
 Revision 1.28  2001/05/07 08:03:22  cblume
 Generate also hits in the amplification region
 
@@ -328,7 +331,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
         // Gas-mixture (Xe/CO2)
         Double_t muXe = fTR->GetMuXe(energyMeV);
         Double_t muCO = fTR->GetMuCO(energyMeV);
-        sigma = (0.90 * muXe + 0.10 * muCO) * fGasDensity;
+        sigma = (0.85 * muXe + 0.15 * muCO) * fGasDensity;
       }
       else {
         // Gas-mixture (Xe/Isobutane) 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/01/26 19:56:57  hristov
+Major upgrade of AliRoot code
+
 Revision 1.7  2000/12/20 13:00:45  cblume
 Modifications for the HP-compiler
 
@@ -184,20 +187,19 @@ void AliTRDsim::Init()
 {
   //
   // Initialization 
-  // The default radiator are 100 prolypropilene foils of 20 mu thickness
-  // with gaps of 500 mu filled with CO2.
-  //      
+  // The default radiator are 100 prolypropilene foils of 13 mu thickness
+  // with gaps of 60 mu filled with CO2.
   // 
 
   fNFoils     = 100;
 
-  fFoilThick  = 0.0020;
+  fFoilThick  = 0.0013;
   fFoilDens   = 0.92;   
   fFoilZ      = 5.28571;
   fFoilA      = 10.4286;
   fFoilOmega  = Omega(fFoilDens,fFoilZ,fFoilA);
 
-  fGapThick   = 0.0500;
+  fGapThick   = 0.0060;
   fGapDens    = 0.001977;  
   fGapZ       = 7.45455;
   fGapA       = 14.9091;

@@ -35,7 +35,11 @@ class AliTRDcluster : public TObject {
           void    Use()                           { fQ = -fQ; }
           Int_t   GetTrackIndex(Int_t i) const    { return fTracks[i]; }
 
-          Bool_t  FromUnfolding() const           { return TestBit(kUnfold); }
+          Bool_t  From2pad() const                { return TestBit(k2pad);  }
+          Bool_t  From3pad() const                { return TestBit(k3pad);  }
+          Bool_t  From4pad() const                { return TestBit(k4pad);  }
+          Bool_t  From5pad() const                { return TestBit(k5pad);  }
+          Bool_t  FromLarge() const               { return TestBit(kLarge); }
 
           void    SetDetector(Int_t d)            { fDetector  = d; }
           void    SetLocalTimeBin(Int_t t)        { fTimeBin   = t; }
@@ -46,12 +50,20 @@ class AliTRDcluster : public TObject {
           void    SetSigmaY2(Float_t s)           { fSigmaY2   = s; }
           void    SetSigmaZ2(Float_t s)           { fSigmaZ2   = s; }
 
-          void    SetUnfolding()                  { SetBit(kUnfold); }
+          void    Set2pad()                       { SetBit(k2pad);  }
+          void    Set3pad()                       { SetBit(k3pad);  }
+          void    Set4pad()                       { SetBit(k4pad);  }
+          void    Set5pad()                       { SetBit(k5pad);  }
+          void    SetLarge()                      { SetBit(kLarge); }
 
  protected:
 
   enum {
-    kUnfold = 0x00000001    // Cluster results from unfolding procedure
+    k2pad  = 0x00000001,   // 2 pad cluster
+    k3pad  = 0x00000002,   // 3 pad cluster
+    k4pad  = 0x00000004,   // 4 pad cluster
+    k5pad  = 0x00000008,   // 5 pad cluster
+    kLarge = 0x00000016    // Large cluster
   };
 
   Int_t    fDetector;       // TRD detector number

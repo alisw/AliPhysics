@@ -27,19 +27,27 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   virtual void    Init();
   virtual Bool_t  MakeClusters();
   virtual Bool_t  ReadDigits();
+          void    UseLUT()                                { fUseLUT        = kTRUE;  };
+          void    UseCOG()                                { fUseLUT        = kFALSE; };
 
-  virtual void    SetClusMaxThresh(Int_t thresh)          { fClusMaxThresh = thresh; };
-  virtual void    SetClusSigThresh(Int_t thresh)          { fClusSigThresh = thresh; };
+          void    SetClusMaxThresh(Int_t thresh)          { fClusMaxThresh = thresh; };
+          void    SetClusSigThresh(Int_t thresh)          { fClusSigThresh = thresh; };
 
-  virtual Int_t GetClusMaxThresh() const                  { return fClusMaxThresh; };
-  virtual Int_t GetClusSigThresh() const                  { return fClusSigThresh; };
+          Int_t   GetClusMaxThresh() const                { return fClusMaxThresh; };
+          Int_t   GetClusSigThresh() const                { return fClusSigThresh; };
 
  protected:
+ 
+  enum { 
+    kNlut = 128                        //  Dimension of the lookup table
+  };                    
 
   AliTRDdigitsManager *fDigitsManager; //! TRD digits manager
 
-  Int_t              fClusMaxThresh; // Threshold value for cluster maximum
-  Int_t              fClusSigThresh; // Threshold value for cluster signal
+  Int_t                fClusMaxThresh; //  Threshold value for cluster maximum
+  Int_t                fClusSigThresh; //  Threshold value for cluster signal
+  Bool_t               fUseLUT;        //  Switch for the lookup table method
+  Float_t              fLUT[kNlut];    //  The lookup table
 
  private:
 

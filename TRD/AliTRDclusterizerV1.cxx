@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/05/07 08:06:44  cblume
+Speedup of the code. Create only AliTRDcluster
+
 Revision 1.9  2000/11/01 14:53:20  cblume
 Merge with TRD-develop
 
@@ -91,6 +94,8 @@ AliTRDclusterizerV1::AliTRDclusterizerV1():AliTRDclusterizer()
   fClusMaxThresh = 0;
   fClusSigThresh = 0;
 
+  fUseLUT        = kFALSE;
+
 }
 
 //_____________________________________________________________________________
@@ -150,9 +155,13 @@ void AliTRDclusterizerV1::Copy(TObject &c)
   // Copy function
   //
 
+  ((AliTRDclusterizerV1 &) c).fUseLUT        = fUseLUT;
   ((AliTRDclusterizerV1 &) c).fClusMaxThresh = fClusMaxThresh;
   ((AliTRDclusterizerV1 &) c).fClusSigThresh = fClusSigThresh;
   ((AliTRDclusterizerV1 &) c).fDigitsManager = NULL;
+  for (Int_t ilut = 0; ilut < kNlut; ilut++) {
+    ((AliTRDclusterizerV1 &) c).fLUT[ilut] = fLUT[ilut];
+  }
 
   AliTRDclusterizer::Copy(c);
 
@@ -168,6 +177,32 @@ void AliTRDclusterizerV1::Init()
   // The default parameter for the clustering
   fClusMaxThresh = 3;
   fClusSigThresh = 1;
+
+  // Use the lookup table for the position determination
+  fUseLUT        = kTRUE;
+
+  // The lookup table from Bogdan
+  Float_t lut[128] = {  
+    0.0068,  0.0198,  0.0318,  0.0432,  0.0538,  0.0642,  0.0742,  0.0838,
+    0.0932,  0.1023,  0.1107,  0.1187,  0.1268,  0.1347,  0.1423,  0.1493,  
+    0.1562,  0.1632,  0.1698,  0.1762,  0.1828,  0.1887,  0.1947,  0.2002,  
+    0.2062,  0.2118,  0.2173,  0.2222,  0.2278,  0.2327,  0.2377,  0.2428,  
+    0.2473,  0.2522,  0.2567,  0.2612,  0.2657,  0.2697,  0.2743,  0.2783,  
+    0.2822,  0.2862,  0.2903,  0.2943,  0.2982,  0.3018,  0.3058,  0.3092,  
+    0.3128,  0.3167,  0.3203,  0.3237,  0.3268,  0.3302,  0.3338,  0.3368,  
+    0.3402,  0.3433,  0.3462,  0.3492,  0.3528,  0.3557,  0.3587,  0.3613,  
+    0.3643,  0.3672,  0.3702,  0.3728,  0.3758,  0.3783,  0.3812,  0.3837,  
+    0.3862,  0.3887,  0.3918,  0.3943,  0.3968,  0.3993,  0.4017,  0.4042,  
+    0.4067,  0.4087,  0.4112,  0.4137,  0.4157,  0.4182,  0.4207,  0.4227,  
+    0.4252,  0.4272,  0.4293,  0.4317,  0.4338,  0.4358,  0.4383,  0.4403,  
+    0.4423,  0.4442,  0.4462,  0.4482,  0.4502,  0.4523,  0.4543,  0.4563,  
+    0.4582,  0.4602,  0.4622,  0.4638,  0.4658,  0.4678,  0.4697,  0.4712,  
+    0.4733,  0.4753,  0.4767,  0.4787,  0.4803,  0.4823,  0.4837,  0.4857,  
+    0.4873,  0.4888,  0.4908,  0.4922,  0.4942,  0.4958,  0.4972,  0.4988  
+  }; 
+  for (Int_t ilut = 0; ilut < kNlut; ilut++) {
+    fLUT[ilut] = lut[ilut];
+  }
 
 }
 
@@ -227,6 +262,16 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   const Int_t   kNsig    = 5;
   const Int_t   kNtrack  = 3 * kNclus;
 
+  // For the LUT
+  const Float_t kLUTmin  = 0.106113;
+  const Float_t kLUTmax  = 0.995415;
+
+  Int_t   iType          = 0;
+  Int_t   iUnfold        = 0;
+
+  Float_t ratioLeft      = 1.0;
+  Float_t ratioRight     = 1.0;
+
   Float_t padSignal[kNsig];   
   Float_t clusterSignal[kNclus];
   Float_t clusterPads[kNclus];   
@@ -268,8 +313,12 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
         Int_t idet = geo->GetDetector(iplan,icham,isect);
 
-        Int_t nClusters       = 0;
-        Int_t nClustersUnfold = 0;
+        Int_t nClusters      = 0;
+        Int_t nClusters2pad  = 0;
+        Int_t nClusters3pad  = 0;
+        Int_t nClusters4pad  = 0;
+        Int_t nClusters5pad  = 0;
+        Int_t nClustersLarge = 0;
 
         printf("AliTRDclusterizerV1::MakeCluster -- ");
         printf("Analyzing chamber %d, plane %d, sector %d.\n"
@@ -300,10 +349,11 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
               Int_t signalR = digits->GetDataUnchecked(row,col-2,time);
  
 	      // Look for the maximum
-              if ((signalM >= maxThresh) &&
-                  (signalL >= sigThresh) &&
-                  (signalR >= sigThresh)) {
-                if ((signalL < signalM) && (signalR < signalM)) {
+              if (signalM >= maxThresh) {
+                if (((signalL >= sigThresh) &&
+                     (signalL <  signalM))  ||
+                    ((signalR >= sigThresh) &&
+                     (signalR <  signalM))) {
                   // Maximum found, mark the position by a negative signal
                   digits->SetDataUnchecked(row,col-1,time,-signalM);
 		}
@@ -315,8 +365,8 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
         // Now check the maxima and calculate the cluster position
         for ( row = 0;  row <  nRowMax  ;  row++) {
-          for ( col = 1;  col <  nColMax-1;  col++) {
-            for (time = 0; time < nTimeTotal; time++) {
+          for (time = 0; time < nTimeTotal; time++) {
+            for ( col = 1;  col <  nColMax-1;  col++) {
 
               // Maximum found ?             
               if (digits->GetDataUnchecked(row,col,time) < 0) {
@@ -333,34 +383,140 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		  clusterTracks[3*iPad+2] = track2->GetDataUnchecked(row,iPadCol,time) - 1;
                 }
 
-                // Neighbouring maximum on right side?
-                Int_t iType = 0; 
+		// Count the number of pads in the cluster
+                Int_t nPadCount = 0;
+                Int_t ii        = 0;
+                while (TMath::Abs(digits->GetDataUnchecked(row,col-ii  ,time))
+                                                                  >= sigThresh) {
+                  nPadCount++;
+                  ii++;
+                  if (col-ii   <        0) break;
+		}
+                ii = 0;
+                while (TMath::Abs(digits->GetDataUnchecked(row,col+ii+1,time))
+                                                                  >= sigThresh) {
+                  nPadCount++;
+                  ii++;
+                  if (col+ii+1 >= nColMax) break;
+		}
+
+                nClusters++;
+                switch (nPadCount) {
+                case 2:
+                  iType = 0;
+                  nClusters2pad++;
+                  break;
+                case 3:
+                  iType = 1;
+                  nClusters3pad++;
+                  break;
+                case 4:
+                  iType = 2;
+                  nClusters4pad++;
+                  break;
+                case 5:
+                  iType = 3;
+                  nClusters5pad++;
+                  break;
+                default:
+                  iType = 4;
+                  nClustersLarge++;
+                  break;
+		};
+
+		// Don't analyze large clusters
+                //if (iType == 4) continue;
+
+                // Look for 5 pad cluster with minimum in the middle
+                Bool_t fivePadCluster = kFALSE;
                 if (col < nColMax-3) {
                   if (digits->GetDataUnchecked(row,col+2,time) < 0) {
-                    for (iPad = 0; iPad < kNsig; iPad++) {
-                      padSignal[iPad] = TMath::Abs(digits->GetDataUnchecked(row
-                                                                           ,col-1+iPad
-                                                                           ,time));
-                    }
-                    // Unfold the two maxima and set the signal on 
-                    // the overlapping pad to the ratio
-                    clusterSignal[2] *= Unfold(kEpsilon,padSignal);
-                    iType = 1;
+                    fivePadCluster = kTRUE;
+	  	  }
+                  if ((fivePadCluster) && (col < nColMax-5)) {
+                    if (digits->GetDataUnchecked(row,col+4,time) >= sigThresh) {
+                      fivePadCluster = kFALSE;
+		    }
+		  }
+                  if ((fivePadCluster) && (col >         1)) {
+                    if (digits->GetDataUnchecked(row,col-2,time) >= sigThresh) {
+                      fivePadCluster = kFALSE;
+		    }
+		  }
+		}
+
+		// 5 pad cluster
+                // Modify the signal of the overlapping pad for the left part 
+		// of the cluster which remains from a previous unfolding
+                if (iUnfold) {
+                  clusterSignal[0] *= ratioLeft;
+                  iType   = 3;
+                  iUnfold = 0;
+		}
+
+		// Unfold the 5 pad cluster
+                if (fivePadCluster) {
+                  for (iPad = 0; iPad < kNsig; iPad++) {
+                    padSignal[iPad] = TMath::Abs(digits->GetDataUnchecked(row
+                                                                         ,col-1+iPad
+                                                                         ,time));
                   }
+                  // Unfold the two maxima and set the signal on 
+                  // the overlapping pad to the ratio
+                  ratioRight        = Unfold(kEpsilon,padSignal);
+                  ratioLeft         = 1.0 - ratioRight; 
+                  clusterSignal[2] *= ratioRight;
+                  iType   = 3;
+                  iUnfold = 1;
                 }
 
                 Float_t clusterCharge = clusterSignal[0]
                                       + clusterSignal[1]
                                       + clusterSignal[2];
                 
-		// Calculate the position of the cluster by using the
-		// center of gravity method
+		// The position of the cluster
                 clusterPads[0] = row + 0.5;
-                clusterPads[1] = col + 0.5 
-                               + (clusterSignal[2] - clusterSignal[0]) 
-		               / clusterCharge;
 		// Take the shift of the additional time bins into account
                 clusterPads[2] = time - nTimeBefore + 0.5;
+
+                if (fUseLUT) {
+
+  		  // Calculate the position of the cluster by using the
+		  // lookup table method
+                  Float_t ratioLUT;
+                  Float_t signLUT;
+                  Float_t lut = 0.0;
+                  if (clusterSignal[0] > clusterSignal[2]) {
+                    ratioLUT = clusterSignal[0] / clusterSignal[1];
+                    signLUT  = -1.0;
+		  }
+                  else {
+                    ratioLUT = clusterSignal[2] / clusterSignal[1];
+                    signLUT  =  1.0;
+		  }
+                  if      (ratioLUT < kLUTmin) {
+                    lut = 0.0;
+		  }
+                  else if (ratioLUT > kLUTmax) {
+                    lut = 0.5;
+		  }
+                  else {
+                    Int_t indexLUT = TMath::Nint ((kNlut-1) * (ratioLUT - kLUTmin)  
+						            / (kLUTmax  - kLUTmin)); 
+                    lut = fLUT[indexLUT];
+		  }
+                  clusterPads[1] = col + 0.5 + signLUT * lut;
+
+		}
+		else {
+
+  		  // Calculate the position of the cluster by using the
+		  // center of gravity method
+                  clusterPads[1] = col + 0.5 
+                                 + (clusterSignal[2] - clusterSignal[0]) 
+		                 / clusterCharge;
+
+		}
 
                 if (fVerbose) {
                   printf("-----------------------------------------------------------\n");
@@ -381,10 +537,8 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                   printf("        pad2 %d, %d, %d\n",clusterTracks[6]
 			                            ,clusterTracks[7]
                                                     ,clusterTracks[8]);
+                  printf("Type = %d, Number of pads = %d\n",iType,nPadCount);
                 }
-
-                nClusters++;
-                if (iType == 1) nClustersUnfold++;
 
                 // Add the cluster to the output array 
                 fTRD->AddCluster(clusterPads
@@ -410,8 +564,13 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 	fTRD->ResetRecPoints();
 
         printf("AliTRDclusterizerV1::MakeCluster -- ");
-        printf("Found %d (%d unfolded) clusters.\n"
-              ,nClusters,nClustersUnfold);
+        printf("Found %d clusters in total.\n"
+              ,nClusters);
+        printf("                                    2pad:  %d\n",nClusters2pad);
+        printf("                                    3pad:  %d\n",nClusters3pad);
+        printf("                                    4pad:  %d\n",nClusters4pad);
+        printf("                                    5pad:  %d\n",nClusters5pad);
+        printf("                                    Large: %d\n",nClustersLarge);
 
       }    
     }      
@@ -468,7 +627,8 @@ Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Float_t* padSignal)
     newRightSignal[2] = ampRight * PadResponse( 1 - maxRight);
 
     // Calculate new overlapping ratio
-    ratio = newLeftSignal[2] / (newLeftSignal[2] + newRightSignal[0]);
+    ratio = TMath::Min(1.0,newLeftSignal[2] / 
+                          (newLeftSignal[2] + newRightSignal[0]));
 
   }
 

@@ -3,11 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTRDgeometry.h,v 1.8 2001/02/14 18:22:26 cbl
- public:
-
-  enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
-ume Exp $ */
+/* $Id$ */
 
 #include "AliGeometry.h"
 
@@ -43,11 +39,9 @@ class AliTRDgeometry : public AliGeometry {
   static  Float_t  Cheight() { return fgkCheight; };
   static  Float_t  Cspace()  { return fgkCspace;  };
   static  Float_t  Ccframe() { return fgkCcframe; };
-  static  Float_t  SeThick() { return fgkSeThick; };
   static  Float_t  MyThick() { return fgkMyThick; };
   static  Float_t  DrThick() { return fgkDrThick; };
   static  Float_t  AmThick() { return fgkAmThick; };
-  static  Float_t  RaThick() { return fgkRaThick; };
   static  Float_t  DrZpos()  { return fgkDrZpos;  };
 
   virtual void     SetPHOShole() = 0;
@@ -122,9 +116,7 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t fgkCathick;                          // Thickness of the aluminum frame
   static const Float_t fgkCcthick;                          // Thickness of the carbon frame
 
-  static const Float_t fgkSeThick;                          // Thickness of the radiator seal
   static const Float_t fgkRaThick;                          // Thickness of the radiator
-  static const Float_t fgkPeThick;                          // Thickness of the PE-layer in the radiator
   static const Float_t fgkMyThick;                          // Thickness of the mylar-layer
   static const Float_t fgkXeThick;                          // Thickness of the gas volume
   static const Float_t fgkDrThick;                          // Thickness of the drift region
@@ -135,9 +127,7 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t fgkCoThick;                          // Thickness of the PE of the cooling device
   static const Float_t fgkWaThick;                          // Thickness of the cooling water
 
-  static const Float_t fgkSeZpos;                           // Position of the radiator seal
   static const Float_t fgkRaZpos;                           // Position of the radiator
-  static const Float_t fgkPeZpos;                           // Position of the PE-layer in the radiator
   static const Float_t fgkMyZpos;                           // Position of the mylar-layer
   static const Float_t fgkDrZpos;                           // Position of the drift region
   static const Float_t fgkAmZpos;                           // Position of the amplification region

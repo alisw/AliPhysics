@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/05/07 08:04:48  cblume
+New TRF and PRF. Speedup of the code. Digits from amplification region included
+
 Revision 1.22  2001/03/30 14:40:14  cblume
 Update of the digitization parameter
 
@@ -136,6 +139,7 @@ Add new TRD classes
 #include <TF1.h>
 
 #include "AliRun.h"
+#include "AliMagF.h"
 
 #include "AliTRD.h"
 #include "AliTRDhit.h"
@@ -159,7 +163,6 @@ AliTRDdigitizer::AliTRDdigitizer():TNamed()
   fDigits         = NULL;
   fTRD            = NULL;
   fGeo            = NULL;
-  fPRF            = NULL;
   fPRFsmp         = NULL;
   fTRFsmp         = NULL;
 
@@ -185,6 +188,7 @@ AliTRDdigitizer::AliTRDdigitizer():TNamed()
   fPadCoupling    = 0.0;
   fTimeCoupling   = 0.0;
   fTimeBinWidth   = 0.0;
+  fField          = 0.0;
 
   fPRFbin         = 0;
   fPRFlo          = 0.0;
@@ -214,7 +218,6 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
   fDigits        = NULL;
   fTRD           = NULL;
   fGeo           = NULL;
-  fPRF           = NULL;
   fPRFsmp        = NULL;
   fTRFsmp        = NULL;
 
@@ -254,8 +257,6 @@ AliTRDdigitizer::~AliTRDdigitizer()
   if (fDigits) {
     delete fDigits;
   }
-
-  if (fPRF) delete fPRF;
 
 }
 
@@ -307,14 +308,13 @@ void AliTRDdigitizer::Copy(TObject &d)
   ((AliTRDdigitizer &) d).fPadCoupling    = fPadCoupling;
   ((AliTRDdigitizer &) d).fTimeCoupling   = fTimeCoupling;
   ((AliTRDdigitizer &) d).fTimeBinWidth   = fTimeBinWidth;
+  ((AliTRDdigitizer &) d).fField          = fField;
   ((AliTRDdigitizer &) d).fPRFOn          = fPRFOn;
   ((AliTRDdigitizer &) d).fTRFOn          = fTRFOn;
 
   ((AliTRDdigitizer &) d).fCompress       = fCompress;
   ((AliTRDdigitizer &) d).fVerbose        = fVerbose;
   ((AliTRDdigitizer &) d).fSDigits        = fSDigits;
-
-  fPRF->Copy(*((AliTRDdigitizer &) d).fPRF);
 
   ((AliTRDdigitizer &) d).fPRFbin         = fPRFbin;
   ((AliTRDdigitizer &) d).fPRFlo          = fPRFlo;
@@ -426,9 +426,8 @@ void AliTRDdigitizer::Init()
   //
 
   // The default parameter for the digitization
-  // Updated to new TRF 200 ns   
-  fGasGain        = 1600.;
-  fChipGain       = 8.0;
+  fGasGain        = 2800.;
+  fChipGain       = 6.1;
   fNoise          = 1000.;
   fADCoutRange    = 1023.;          // 10-bit ADC
   fADCinRange     = 1000.;          // 1V input range
@@ -438,41 +437,27 @@ void AliTRDdigitizer::Init()
   fSinRange       = 1000000.;
   fSoutRange      = 1000000.;
 
-  // Transverse and longitudinal diffusion coefficients (Xe/Isobutane)
+  // The drift velocity (cm / mus)
+  fDriftVelocity  = 1.5;
+
+  // The magnetic field strength in Tesla
+  fField          = 0.2 * gAlice->Field()->Factor();
+
+  // Diffusion on
   fDiffusionOn    = 1;
-  fDiffusionT     = 0.060;
-  fDiffusionL     = 0.017;
+
+  // E x B effects
+  fExBOn          = 0;
 
   // Propability for electron attachment
   fElAttachOn     = 0;
   fElAttachProp   = 0.0;
 
-  // E x B effects
-  fExBOn          = 0;
-  // omega * tau.= arctan(Lorentz-angle)
-  fOmegaTau       = 0.19438031;
-
   // The pad response function
   fPRFOn          =  1;
-  fPRFlo          = -3.0;
-  fPRFhi          =  3.0;
-  fPRFbin         = 120;
-  fPRFwid         = (fPRFhi - fPRFlo) / ((Float_t) fPRFbin);
-  fPRFpad         = ((Int_t) (1.0 / fPRFwid));
-  // New PRF from Bogdan  25/04/01
-  fPRF            = new TF1("PRF"
-                           ,"[0]*([1]+exp(-pow(sqrt(x*x),[3])/(2.0*[2])))"
-                           ,fPRFlo,fPRFhi);
-  fPRF->SetParameter(0, 0.8303); 
-  fPRF->SetParameter(1,-0.00392); 
-  fPRF->SetParameter(2, 0.472 * 0.472); 
-  fPRF->SetParameter(3, 2.19); 
 
   // The time response function
   fTRFOn          =  1;
-
-  // The drift velocity (cm / mus)
-  fDriftVelocity  = 2.0;
 
   // The pad coupling factor (same number as for the TPC)
   fPadCoupling    = 0.5;
@@ -500,12 +485,19 @@ void AliTRDdigitizer::ReInit()
 
   // The range and the binwidth for the sampled TRF 
   fTRFbin = 100;
-  // Start 0.8 mus before the signal
-  fTRFlo  = -0.8 * fDriftVelocity;
+  // Start 0.2 mus before the signal
+  fTRFlo  = -0.2 * fDriftVelocity;
   // End the maximum driftlength after the signal 
   fTRFhi  = AliTRDgeometry::DrThick() 
           + fGeo->GetTimeAfter() * fGeo->GetTimeBinSize();
   fTRFwid = (fTRFhi - fTRFlo) / ((Float_t) fTRFbin);
+
+  // Transverse and longitudinal diffusion coefficients (Xe/CO2)
+  fDiffusionT     = GetDiffusionT(fDriftVelocity,fField);
+  fDiffusionL     = GetDiffusionL(fDriftVelocity,fField);
+
+  // omega * tau.= tan(Lorentz-angle)
+  fOmegaTau       = GetOmegaTau(fDriftVelocity,fField);
 
   // The Lorentz factor
   if (fExBOn) {
@@ -531,32 +523,112 @@ void AliTRDdigitizer::SampleTRF()
   Int_t   ipos2;
   Float_t diff;
 
-  const Float_t kShift = 0.0;
-  const Float_t kScale = 0.5;
-  //const Float_t kScale = 1.0;
+  const Int_t kNpasa = 200;
+  Float_t time[kNpasa]   = {  -0.280000, -0.270000, -0.260000, -0.250000
+                            , -0.240000, -0.230000, -0.220000, -0.210000
+                            , -0.200000, -0.190000, -0.180000, -0.170000
+                            , -0.160000, -0.150000, -0.140000, -0.130000
+                            , -0.120000, -0.110000, -0.100000, -0.090000
+                            , -0.080000, -0.070000, -0.060000, -0.050000
+                            , -0.040000, -0.030000, -0.020000, -0.010000
+                            , -0.000000,  0.010000,  0.020000,  0.030000
+                            ,  0.040000,  0.050000,  0.060000,  0.070000
+                            ,  0.080000,  0.090000,  0.100000,  0.110000
+                            ,  0.120000,  0.130000,  0.140000,  0.150000
+                            ,  0.160000,  0.170000,  0.180000,  0.190000
+                            ,  0.200000,  0.210000,  0.220000,  0.230000
+                            ,  0.240000,  0.250000,  0.260000,  0.270000
+                            ,  0.280000,  0.290000,  0.300000,  0.310000
+                            ,  0.320000,  0.330000,  0.340000,  0.350000
+                            ,  0.360000,  0.370000,  0.380000,  0.390000
+                            ,  0.400000,  0.410000,  0.420000,  0.430000
+                            ,  0.440000,  0.450000,  0.460000,  0.470000
+                            ,  0.480000,  0.490000,  0.500000,  0.510000
+                            ,  0.520000,  0.530000,  0.540000,  0.550000
+                            ,  0.560000,  0.570000,  0.580000,  0.590000
+                            ,  0.600000,  0.610000,  0.620000,  0.630000
+                            ,  0.640000,  0.650000,  0.660000,  0.670000
+                            ,  0.680000,  0.690000,  0.700000,  0.710000
+                            ,  0.720000,  0.730000,  0.740000,  0.750000
+                            ,  0.760000,  0.770000,  0.780000,  0.790000
+                            ,  0.800000,  0.810000,  0.820000,  0.830000
+                            ,  0.840000,  0.850000,  0.860000,  0.870000
+                            ,  0.880000,  0.890000,  0.900000,  0.910000
+                            ,  0.920000,  0.930000,  0.940000,  0.950000
+                            ,  0.960000,  0.970000,  0.980000,  0.990000
+                            ,  1.000000,  1.010000,  1.020000,  1.030000
+                            ,  1.040000,  1.050000,  1.060000,  1.070000
+                            ,  1.080000,  1.090000,  1.100000,  1.110000
+                            ,  1.120000,  1.130000,  1.140000,  1.150000
+                            ,  1.160000,  1.170000,  1.180000,  1.190000
+                            ,  1.200000,  1.210000,  1.220000,  1.230000
+                            ,  1.240000,  1.250000,  1.260000,  1.270000
+                            ,  1.280000,  1.290000,  1.300000,  1.310000
+                            ,  1.320000,  1.330000,  1.340000,  1.350000
+                            ,  1.360000,  1.370000,  1.380000,  1.390000
+                            ,  1.400000,  1.410000,  1.420000,  1.430000
+                            ,  1.440000,  1.450000,  1.460000,  1.470000
+                            ,  1.480000,  1.490000,  1.500000,  1.510000
+                            ,  1.520000,  1.530000,  1.540000,  1.550000
+                            ,  1.560000,  1.570000,  1.580000,  1.590000
+                            ,  1.600000,  1.610000,  1.620000,  1.630000
+                            ,  1.640000,  1.650000,  1.660000,  1.670000
+			    ,  1.680000,  1.690000,  1.700000,  1.710000 };
 
-  const Int_t kNpasa = 36;
-  Float_t time[kNpasa]   = { -2.80,     -2.40,     -2.00,     -1.60
-                           , -1.20,     -0.80,     -0.60,     -0.40
-                           , -0.30,     -0.20,     -0.10,      0.00
-                           ,  0.10,      0.20,      0.30,      0.40
-                           ,  0.60,      0.80,      1.20,      1.60
-                           ,  2.00,      2.40,      2.80,      3.20
-                           ,  3.60,      4.00,      4.40,      4.80
-                           ,  5.20,      5.60,      7.20,      9.20
-                           , 11.20,     13.20,     15.20,     17.20     };
-  Float_t signal[kNpasa] = {  0.000000,  0.000000,  0.000000,  0.000000
-                           ,  0.000000,  0.000000,  0.015385,  0.086154
-                           ,  0.236923,  0.452308,  0.726154,  1.003077
-                           ,  0.953846,  0.652307,  0.332308,  0.181539
-                           ,  0.120000,  0.083077,  0.049231,  0.024615
-                           ,  0.015385,  0.009231,  0.003077,  0.000000
-                           , -0.003077, -0.006154, -0.009231, -0.012308
-                           , -0.015385, -0.018462, -0.018462, -0.018462
-			   , -0.015385, -0.012308, -0.009231, -0.006154 };
-  for (Int_t ipasa = 0; ipasa < kNpasa; ipasa++) {
-    time[ipasa] = kScale * time[ipasa] + kShift; 
-  }
+  Float_t signal[kNpasa] = {   0.000000,  0.000000,  0.000000,  0.000000 
+                            ,  0.000000,  0.000000,  0.000000,  0.000000
+                            ,  0.000000,  0.000000,  0.000000,  0.000000
+                            ,  0.000000,  0.000000,  0.000000,  0.000098
+                            ,  0.003071,  0.020056,  0.066053,  0.148346
+                            ,  0.263120,  0.398496,  0.540226,  0.674436
+                            ,  0.790977,  0.883083,  0.947744,  0.985714
+                            ,  0.999248,  0.992105,  0.967669,  0.930827
+                            ,  0.884586,  0.833083,  0.778571,  0.723684
+                            ,  0.669173,  0.617293,  0.567669,  0.521805
+                            ,  0.479699,  0.440977,  0.405639,  0.373985
+                            ,  0.345526,  0.320038,  0.297256,  0.276917
+                            ,  0.258797,  0.242632,  0.228195,  0.215301
+                            ,  0.203759,  0.193383,  0.184023,  0.175564
+                            ,  0.167895,  0.160940,  0.154549,  0.148722
+                            ,  0.143308,  0.138346,  0.133722,  0.129398
+                            ,  0.125376,  0.121617,  0.118045,  0.114699
+                            ,  0.111541,  0.108571,  0.105714,  0.103008
+                            ,  0.100414,  0.097970,  0.095602,  0.093346
+                            ,  0.091165,  0.089060,  0.087068,  0.085150
+                            ,  0.083308,  0.081541,  0.079812,  0.078158
+                            ,  0.076541,  0.075000,  0.073496,  0.072068
+                            ,  0.070677,  0.069286,  0.068008,  0.066729
+                            ,  0.065489,  0.064286,  0.063120,  0.061992
+                            ,  0.060902,  0.059850,  0.058797,  0.057820
+                            ,  0.056842,  0.055902,  0.054962,  0.054060
+                            ,  0.053158,  0.052293,  0.051466,  0.050639
+                            ,  0.049850,  0.049060,  0.048308,  0.047556
+                            ,  0.046842,  0.046128,  0.045451,  0.044774
+                            ,  0.044098,  0.043459,  0.042820,  0.042218
+                            ,  0.041617,  0.041015,  0.040451,  0.039887
+                            ,  0.039323,  0.038797,  0.038271,  0.037744
+                            ,  0.037237,  0.036744,  0.036259,  0.035786
+                            ,  0.035323,  0.034872,  0.034429,  0.033996
+                            ,  0.033575,  0.033162,  0.032756,  0.032361
+                            ,  0.031974,  0.031594,  0.031222,  0.030857
+                            ,  0.030496,  0.030143,  0.029793,  0.029451
+                            ,  0.029109,  0.028774,  0.028444,  0.028113
+                            ,  0.027793,  0.027477,  0.027165,  0.026861
+                            ,  0.026564,  0.026271,  0.025981,  0.025699
+                            ,  0.025421,  0.025147,  0.024880,  0.024613
+                            ,  0.024353,  0.024094,  0.023842,  0.023590
+                            ,  0.023346,  0.023102,  0.022865,  0.022628
+                            ,  0.022398,  0.022173,  0.021951,  0.021733
+                            ,  0.021519,  0.021308,  0.021098,  0.020891
+                            ,  0.020688,  0.020485,  0.020286,  0.020090
+                            ,  0.019895,  0.019707,  0.019519,  0.019335
+                            ,  0.019150,  0.018974,  0.018797,  0.018624
+                            ,  0.018451,  0.018282,  0.018113,  0.017947
+			    ,  0.017782,  0.017617,  0.017455,  0.017297 };
+
+  //for (Int_t ipasa = 0; ipasa < kNpasa; ipasa++) {
+  //  time[ipasa] += 0.13; 
+  //}
 
   if (fTRFsmp) delete fTRFsmp;
   fTRFsmp = new Float_t[fTRFbin];
@@ -593,11 +665,31 @@ void AliTRDdigitizer::SamplePRF()
   // Samples the pad response function
   //
 
+  const Int_t kPRFbin = 61;
+  Float_t prf[kPRFbin] = { 0.002340, 0.003380, 0.004900, 0.007080, 0.010220
+                         , 0.014740, 0.021160, 0.030230, 0.042800, 0.059830
+                         , 0.082030, 0.109700, 0.142550, 0.179840, 0.220610
+                         , 0.263980, 0.309180, 0.355610, 0.402790, 0.450350
+                         , 0.497930, 0.545190, 0.591740, 0.637100, 0.680610
+                         , 0.721430, 0.758400, 0.790090, 0.814720, 0.830480
+                         , 0.835930, 0.830480, 0.814710, 0.790070, 0.758390
+                         , 0.721410, 0.680590, 0.637080, 0.591730, 0.545180
+                         , 0.497920, 0.450340, 0.402790, 0.355610, 0.309190
+                         , 0.263990, 0.220630, 0.179850, 0.142570, 0.109720
+                         , 0.082040, 0.059830, 0.042820, 0.030230, 0.021170
+                         , 0.014740, 0.010230, 0.007080, 0.004900, 0.003380
+			 , 0.002340 };
+
+  fPRFlo  = -1.5;
+  fPRFhi  =  1.5;
+  fPRFbin = kPRFbin;
+  fPRFwid = (fPRFhi - fPRFlo) / ((Float_t) fPRFbin);
+  fPRFpad = ((Int_t) (1.0 / fPRFwid));
+
   if (fPRFsmp) delete fPRFsmp;
   fPRFsmp = new Float_t[fPRFbin];
   for (Int_t iBin = 0; iBin < fPRFbin; iBin++) {
-    Float_t bin = (((Float_t ) iBin) + 0.5) * fPRFwid + fPRFlo;
-    fPRFsmp[iBin] = TMath::Max(fPRF->Eval(bin),0.0);
+    fPRFsmp[iBin] = prf[iBin];
   }
 
 }
@@ -1013,7 +1105,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
             // Add the signals
 	    // Note: The time bin number is shifted by nTimeBefore to avoid negative
-	    // time bins. This has to be subtracted lateron.
+	    // time bins. This has to be subtracted later.
             Int_t iCurrentTimeBin = iTimeBin + nTimeBefore;
             signalOld[iPad]  = signals->GetDataUnchecked(rowE,colPos,iCurrentTimeBin);
             signalOld[iPad] += padSignal[iPad] * timeResponse;
@@ -1242,14 +1334,86 @@ Bool_t AliTRDdigitizer::WriteDigits()
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitizer::SetPRF(TF1 *prf)
+Float_t AliTRDdigitizer::GetDiffusionL(Float_t vd, Float_t b)
 {
   //
-  // Defines a new pad response function
+  // Returns the longitudinal diffusion coefficient for a given drift 
+  // velocity <vd> and a B-field <b> for Xe/CO2 (15%).
+  // The values are according to a GARFIELD simulation.
   //
 
-  if (fPRF) delete fPRF;
-  fPRF = prf;     
+  const Int_t kNb = 5;
+  Float_t p0[kNb] = {  0.007440,  0.007493,  0.007513,  0.007672,  0.007831 };
+  Float_t p1[kNb] = {  0.019252,  0.018912,  0.018636,  0.018012,  0.017343 };
+  Float_t p2[kNb] = { -0.005042, -0.004926, -0.004867, -0.004650, -0.004424 };
+  Float_t p3[kNb] = {  0.000195,  0.000189,  0.000195,  0.000182,  0.000169 };
+
+  Int_t ib = ((Int_t) (10 * (b - 0.15)));
+  ib       = TMath::Max(  0,ib);
+  ib       = TMath::Min(kNb,ib);
+
+  Float_t diff = p0[ib] 
+               + p1[ib] * vd
+               + p2[ib] * vd*vd
+               + p3[ib] * vd*vd*vd;
+
+  return diff;
+
+}
+
+//_____________________________________________________________________________
+Float_t AliTRDdigitizer::GetDiffusionT(Float_t vd, Float_t b)
+{
+  //
+  // Returns the transverse diffusion coefficient for a given drift 
+  // velocity <vd> and a B-field <b> for Xe/CO2 (15%).
+  // The values are according to a GARFIELD simulation.
+  //
+
+  const Int_t kNb = 5;
+  Float_t p0[kNb] = {  0.009550,  0.009599,  0.009674,  0.009757,  0.009850 };
+  Float_t p1[kNb] = {  0.006667,  0.006539,  0.006359,  0.006153,  0.005925 };
+  Float_t p2[kNb] = { -0.000853, -0.000798, -0.000721, -0.000635, -0.000541 };
+  Float_t p3[kNb] = {  0.000131,  0.000122,  0.000111,  0.000098,  0.000085 };
+
+  Int_t ib = ((Int_t) (10 * (b - 0.15)));
+  ib       = TMath::Max(  0,ib);
+  ib       = TMath::Min(kNb,ib);
+
+  Float_t diff = p0[ib] 
+               + p1[ib] * vd
+               + p2[ib] * vd*vd
+               + p3[ib] * vd*vd*vd;
+
+  return diff;
+
+}
+
+//_____________________________________________________________________________
+Float_t AliTRDdigitizer::GetOmegaTau(Float_t vd, Float_t b)
+{
+  //
+  // Returns omega*tau (tan(Lorentz-angle)) for a given drift velocity <vd> 
+  // and a B-field <b> for Xe/CO2 (15%).
+  // The values are according to a GARFIELD simulation.
+  //
+
+  const Int_t kNb = 5;
+  Float_t p0[kNb] = {  0.004810,  0.007412,  0.010252,  0.013409,  0.016888 };
+  Float_t p1[kNb] = {  0.054875,  0.081534,  0.107333,  0.131983,  0.155455 };
+  Float_t p2[kNb] = { -0.008682, -0.012896, -0.016987, -0.020880, -0.024623 };
+  Float_t p3[kNb] = {  0.000155,  0.000238,  0.000330,  0.000428,  0.000541 };
+
+  Int_t ib = ((Int_t) (10 * (b - 0.15)));
+  ib       = TMath::Max(  0,ib);
+  ib       = TMath::Min(kNb,ib);
+
+  Float_t alphaL = p0[ib] 
+                 + p1[ib] * vd
+                 + p2[ib] * vd*vd
+                 + p3[ib] * vd*vd*vd;
+
+  return TMath::Tan(alphaL);
 
 }
 

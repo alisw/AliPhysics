@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.28  2001/05/16 14:57:27  alibrary
+New files for folders and Stack
+
+Revision 1.27  2001/05/08 07:05:02  hristov
+Loop variable declared once (HP, Sun)
+
 Revision 1.26  2001/05/07 08:03:22  cblume
 Generate also hits in the amplification region
 
@@ -26,7 +32,6 @@ Major upgrade of AliRoot code
 
 Revision 1.23  2000/11/01 14:53:20  cblume
 Merge with TRD-develop
-
 
 Revision 1.17.2.6  2000/10/15 23:29:08  cblume
 Introduced more detailed geometry for the display
@@ -293,9 +298,23 @@ void AliTRD::AddCluster(Float_t *pos, Int_t *digits, Int_t det, Float_t amp
   c->SetSigmaY2(0.05 * 0.05);
   c->SetSigmaZ2(rowSize * rowSize / 12.);
 
-  if (iType == 1) {
-    c->SetUnfolding();
-  }
+  switch (iType) {
+  case 0:
+    c->Set2pad();
+    break;
+  case 1:
+    c->Set3pad();
+    break;
+  case 2:
+    c->Set4pad();
+    break;
+  case 3:
+    c->Set5pad();
+    break;
+  case 4:
+    c->SetLarge();
+    break;
+  };
 
   fRecPoints->Add(c);
 
@@ -316,7 +335,7 @@ void AliTRD::Hits2Digits()
   digitizer->SetExB();
   digitizer->SetEvent(gAlice->GetEvNumber());
   // Initialization
-  //digitizer->InitDetector();
+  digitizer->InitDetector();
     
   // Create the digits
   digitizer->MakeDigits();
@@ -352,7 +371,7 @@ void AliTRD::Hits2SDigits()
   digitizer->SetEvent(gAlice->GetEvNumber());
 
   // Initialization
-  //digitizer->InitDetector();
+  digitizer->InitDetector();
     
   // Create the digits
   digitizer->MakeDigits();
@@ -414,15 +433,15 @@ void AliTRD::BuildGeometry()
 
   Float_t rmin, rmax;
   Float_t zmax1, zmax2;
+
+  Int_t   iPlan;
  
   const Int_t kColorTRD = 46;
   
   // Find the top node alice
   top = gAlice->GetGeometry()->GetNode("alice");
   
-  switch (fDisplayType) {
-
-  case 0:
+  if      (fDisplayType == 0) {
 
     pgon = new TPGON("S_TRD","TRD","void",0,360,AliTRDgeometry::Nsect(),4);
     rmin = AliTRDgeometry::Rmin();
@@ -436,9 +455,8 @@ void AliTRD::BuildGeometry()
     node->SetLineColor(kColorTRD);
     fNodes->Add(node);
 
-    break;
-
-  case 1:
+  }
+  else if (fDisplayType == 1) {
 
     Char_t name[7];
 
@@ -454,7 +472,7 @@ void AliTRD::BuildGeometry()
     zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
     zmax1 = zmax2 + slope * AliTRDgeometry::DrThick();
 
-    for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+    for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
 
       sprintf(name,"S_TR1%d",iPlan);
       pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
@@ -481,7 +499,7 @@ void AliTRD::BuildGeometry()
     zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
     zmax1 = zmax2 + slope * AliTRDgeometry::AmThick();
 
-    for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+    for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
 
       sprintf(name,"S_TR2%d",iPlan);
       pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
@@ -502,9 +520,7 @@ void AliTRD::BuildGeometry()
 
     }
 
-    break;
-
-  };
+  }
 
 }
  
@@ -587,9 +603,15 @@ void AliTRD::CreateMaterials()
   Float_t wis[2] = {  4., 10. };
   Float_t dis    = 0.00267;
 
+  // For plexiglas (C5H8O2)
+  Float_t apg[3] = { 12.011 ,  1.0    , 15.9994 };
+  Float_t zpg[3] = {  6.0   ,  1.0    ,  8.0    };
+  Float_t wpg[3] = {  5.0   ,  8.0    ,  2.0    };
+  Float_t dpg    = 1.18; 
+
   // For Xe/CO2-gas-mixture 
-  // Xe-content of the Xe/CO2-mixture (90% / 10%) 
-  Float_t fxc    = .90;
+  // Xe-content of the Xe/CO2-mixture (85% / 15%) 
+  Float_t fxc    = .85;
   // Xe-content of the Xe/Isobutane-mixture (97% / 3%) 
   Float_t fxi    = .97;
   Float_t dxe    = .005858;
@@ -610,19 +632,20 @@ void AliTRD::CreateMaterials()
   //     Define Materials 
   //////////////////////////////////////////////////////////////////////////
 
-  AliMaterial( 1, "Al $",  26.98, 13.0, 2.7     ,     8.9 ,    37.2);
-  AliMaterial( 2, "Air$",  14.61,  7.3, 0.001205, 30420.0 , 67500.0);
-  AliMaterial( 4, "Xe $", 131.29, 54.0, dxe     ,  1447.59,     0.0);
-  AliMaterial( 5, "Cu $",  63.54, 29.0, 8.96    ,     1.43,    14.8);
-  AliMaterial( 6, "C  $",  12.01,  6.0, 2.265   ,    18.8 ,    74.4);
-  AliMaterial(12, "G10$",  20.00, 10.0, 1.7     ,    19.4 ,   999.0);
+  AliMaterial( 1, "Al ",  26.98, 13.0, 2.7     ,     8.9 ,    37.2);
+  AliMaterial( 2, "Air",  14.61,  7.3, 0.001205, 30420.0 , 67500.0);
+  AliMaterial( 4, "Xe ", 131.29, 54.0, dxe     ,  1447.59,     0.0);
+  AliMaterial( 5, "Cu ",  63.54, 29.0, 8.96    ,     1.43,    14.8);
+  AliMaterial( 6, "C  ",  12.01,  6.0, 2.265   ,    18.8 ,    74.4);
+  AliMaterial(12, "G10",  20.00, 10.0, 1.7     ,    19.4 ,   999.0);
 
   // Mixtures 
-  AliMixture(3, "Polyethilene$",   ape, zpe, dpe, -2, wpe);
-  AliMixture(7, "Mylar$",          amy, zmy, dmy, -3, wmy);
-  AliMixture(8, "CO2$",            aco, zco, dco, -2, wco);
-  AliMixture(9, "Isobutane$",      ais, zis, dis, -2, wis);
-  AliMixture(13,"Water$",          awa, zwa, dwa, -2, wwa);
+  AliMixture(3, "Polyethilene",   ape, zpe, dpe, -2, wpe);
+  AliMixture(7, "Mylar",          amy, zmy, dmy, -3, wmy);
+  AliMixture(8, "CO2",            aco, zco, dco, -2, wco);
+  AliMixture(9, "Isobutane",      ais, zis, dis, -2, wis);
+  AliMixture(13,"Water",          awa, zwa, dwa, -2, wwa);
+  AliMixture(14,"Plexiglas",      apg, zpg, dpg, -3, wpg);
 
   // Gas mixtures
   Char_t namate[21];
@@ -635,7 +658,7 @@ void AliTRD::CreateMaterials()
   wgm[0] = fxc;
   wgm[1] = 1. - fxc;
   dgm1   = wgm[0] * dxe + wgm[1] * dco;
-  AliMixture(10, "Gas mixture 1$", agm, zgm, dgm1,  2, wgm);
+  AliMixture(10, "Gas mixture 1", agm, zgm, dgm1,  2, wgm);
   // Xe/Isobutane-mixture
   // Get properties of Xe 
   gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
@@ -645,60 +668,63 @@ void AliTRD::CreateMaterials()
   wgm[0] = fxi;
   wgm[1] = 1. - fxi;
   dgm2   = wgm[0] * dxe + wgm[1] * dis;
-  AliMixture(11, "Gas mixture 2$", agm, zgm, dgm2,  2, wgm);
+  AliMixture(11, "Gas mixture 2", agm, zgm, dgm2,  2, wgm);
  
   //////////////////////////////////////////////////////////////////////////
   //     Tracking Media Parameters 
   //////////////////////////////////////////////////////////////////////////
 
   // Al Frame 
-  AliMedium(1, "Al Frame$",   1, 0, isxfld, sxmgmx
+  AliMedium(1, "Al Frame",   1, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Air 
-  AliMedium(2, "Air$",        2, 0, isxfld, sxmgmx
+  AliMedium(2, "Air",        2, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Polyethilene 
-  AliMedium(3, "Radiator$",   3, 0, isxfld, sxmgmx
+  AliMedium(3, "Radiator",   3, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Xe 
-  AliMedium(4, "Xe$",         4, 1, isxfld, sxmgmx
+  AliMedium(4, "Xe",         4, 1, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Cu pads 
-  AliMedium(5, "Padplane$",   5, 1, isxfld, sxmgmx
+  AliMedium(5, "Padplane",   5, 1, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Fee + cables 
-  AliMedium(6, "Readout$",    1, 0, isxfld, sxmgmx
+  AliMedium(6, "Readout",    1, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // C frame 
-  AliMedium(7, "C Frame$",    6, 0, isxfld, sxmgmx
+  AliMedium(7, "C Frame",    6, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Mylar foils 
-  AliMedium(8, "Mylar$",      7, 0, isxfld, sxmgmx
+  AliMedium(8, "Mylar",      7, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   if (fGasMix == 1) {
     // Gas-mixture (Xe/CO2) 
-    AliMedium(9, "Gas-mix$",   10, 1, isxfld, sxmgmx
+    AliMedium(9, "Gas-mix",   10, 1, isxfld, sxmgmx
                   , tmaxfd, stemax, deemax, epsil, stmin);
   }
   else {
     // Gas-mixture (Xe/Isobutane) 
-    AliMedium(9, "Gas-mix$",   11, 1, isxfld, sxmgmx
+    AliMedium(9, "Gas-mix",   11, 1, isxfld, sxmgmx
                   , tmaxfd, stemax, deemax, epsil, stmin);
   }
   // Nomex-honeycomb (use carbon for the time being) 
-  AliMedium(10, "Nomex$",      6, 0, isxfld, sxmgmx
+  AliMedium(10, "Nomex",      6, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Kapton foils (use Mylar for the time being) 
-  AliMedium(11, "Kapton$",     7, 0, isxfld, sxmgmx
+  AliMedium(11, "Kapton",     7, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Gas-filling of the radiator 
-  AliMedium(12, "CO2$",        8, 0, isxfld, sxmgmx
+  AliMedium(12, "CO2",        8, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // G10-plates
-  AliMedium(13, "G10-plates$",12, 0, isxfld, sxmgmx
+  AliMedium(13, "G10-plates",12, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Cooling water
-  AliMedium(14, "Water$",     13, 0, isxfld, sxmgmx
+  AliMedium(14, "Water",     13, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
+  // Rohacell (plexiglas) for the radiator
+  AliMedium(15, "Rohacell",  14, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
 
   // Save the density values for the TRD absorbtion
@@ -809,7 +835,7 @@ void AliTRD::Init()
   }
   
   if (fGasMix == 1)
-    printf("%s: Gas Mixture: 90%% Xe + 10%% CO2\n",ClassName());
+    printf("%s: Gas Mixture: 85%% Xe + 15%% CO2\n",ClassName());
   else
     printf("%s: Gas Mixture: 97%% Xe + 3%% Isobutane\n",ClassName());
 

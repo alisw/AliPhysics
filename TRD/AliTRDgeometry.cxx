@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/05/11 07:56:12  hristov
+Consistent declarations needed on Alpha
+
 Revision 1.10  2001/05/07 08:08:05  cblume
 Update of TRD code
 
@@ -131,9 +134,7 @@ ClassImp(AliTRDgeometry)
   //
   // Thickness of the the material layers
   //
-  const Float_t AliTRDgeometry::fgkSeThick = 0.02;  
-  const Float_t AliTRDgeometry::fgkRaThick = 4.78;  
-  const Float_t AliTRDgeometry::fgkPeThick = 0.20;    
+  const Float_t AliTRDgeometry::fgkRaThick = 0.3646;  
   const Float_t AliTRDgeometry::fgkMyThick = 0.005;
   const Float_t AliTRDgeometry::fgkXeThick = 3.5;
   const Float_t AliTRDgeometry::fgkDrThick = 3.0;
@@ -143,14 +144,13 @@ ClassImp(AliTRDgeometry)
   const Float_t AliTRDgeometry::fgkSuThick = 0.06; 
   const Float_t AliTRDgeometry::fgkFeThick = 0.0044; 
   const Float_t AliTRDgeometry::fgkCoThick = 0.02;
-  const Float_t AliTRDgeometry::fgkWaThick = 0.01;
+//const Float_t AliTRDgeometry::fgkWaThick = 0.01;
+  const Float_t AliTRDgeometry::fgkWaThick = 0.02;
 
   //
   // Position of the material layers
   //
-  const Float_t AliTRDgeometry::fgkSeZpos  = -4.14; 
   const Float_t AliTRDgeometry::fgkRaZpos  = -1.74;
-  const Float_t AliTRDgeometry::fgkPeZpos  =  0.0000;
   const Float_t AliTRDgeometry::fgkMyZpos  =  0.6550;
   const Float_t AliTRDgeometry::fgkDrZpos  =  2.1600;
   const Float_t AliTRDgeometry::fgkAmZpos  =  3.9100;
@@ -158,7 +158,8 @@ ClassImp(AliTRDgeometry)
   const Float_t AliTRDgeometry::fgkSuZpos  =  0.0000;
   const Float_t AliTRDgeometry::fgkFeZpos  =  1.3053;
   const Float_t AliTRDgeometry::fgkCoZpos  =  1.3175;
-  const Float_t AliTRDgeometry::fgkWaZpos  =  1.3325; 
+//const Float_t AliTRDgeometry::fgkWaZpos  =  1.3325; 
+  const Float_t AliTRDgeometry::fgkWaZpos  =  1.3375; 
 
 //_____________________________________________________________________________
 AliTRDgeometry::AliTRDgeometry():AliGeometry()
@@ -300,18 +301,16 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   //                           inner(/middle/outer) chambers
   //
   // The material layers in one chamber:
-  //    UL01       (G10)   --- The gas seal of the radiator
-  //    UL02       (CO2)   --- The gas in the radiator
-  //    UL03       (PE)    --- The foil stack
-  //    UL04       (Mylar) --- Entrance window to the driftvolume and HV-cathode
-  //    UL05       (Xe)    --- The driftvolume
-  //    UL06       (Xe)    --- The amplification region
+  //    UL03       (Rohacell) --- The radiator
+  //    UL04       (Mylar)    --- Entrance window to the driftvolume and HV-cathode
+  //    UL05       (Xe)       --- The driftvolume
+  //    UL06       (Xe)       --- The amplification region
   //    
-  //    UL07       (Cu)    --- The pad plane
-  //    UL08       (G10)   --- The Nomex honeycomb support structure
-  //    UL09       (Cu)    --- FEE and signal lines
-  //    UL10       (PE)    --- The cooling devices
-  //    UL11       (Water) --- The cooling water
+  //    UL07       (Cu)       --- The pad plane
+  //    UL08       (G10)      --- The Nomex honeycomb support structure
+  //    UL09       (Cu)       --- FEE and signal lines
+  //    UL10       (Al)       --- The cooling devices
+  //    UL11       (Water)    --- The cooling water
 
   const Int_t kNparCha = 3;
 
@@ -355,22 +354,16 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   // The material layers inside the chambers
   parCha[0] = -1.;
   parCha[1] = -1.;
-  // G10 layer (radiator seal)
-  parCha[2] = fgkSeThick/2;
-  gMC->Gsvolu("UL01","BOX ",idtmed[1313-1],parCha,kNparCha);
-  // CO2 layer (radiator)
+  // Rohacell layer (radiator)
   parCha[2] = fgkRaThick/2;
-  gMC->Gsvolu("UL02","BOX ",idtmed[1312-1],parCha,kNparCha);
-  // PE layer (radiator)
-  parCha[2] = fgkPeThick/2;
-  gMC->Gsvolu("UL03","BOX ",idtmed[1303-1],parCha,kNparCha);
+  gMC->Gsvolu("UL03","BOX ",idtmed[1315-1],parCha,kNparCha);
   // Mylar layer (entrance window + HV cathode) 
   parCha[2] = fgkMyThick/2;
   gMC->Gsvolu("UL04","BOX ",idtmed[1308-1],parCha,kNparCha);
-  // Xe/Isobutane layer (drift volume, sensitive) 
+  // Xe/Isobutane layer (drift volume) 
   parCha[2] = fgkDrThick/2.;
   gMC->Gsvolu("UL05","BOX ",idtmed[1309-1],parCha,kNparCha);
-  // Xe/Isobutane layer (amplification volume, not sensitive)
+  // Xe/Isobutane layer (amplification volume)
   parCha[2] = fgkAmThick/2.;
   gMC->Gsvolu("UL06","BOX ",idtmed[1309-1],parCha,kNparCha);
   
@@ -383,9 +376,9 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   // Cu layer (FEE + signal lines)
   parCha[2] = fgkFeThick/2;
   gMC->Gsvolu("UL09","BOX ",idtmed[1305-1],parCha,kNparCha);
-  // PE layer (cooling devices)
+  // Al layer (cooling devices)
   parCha[2] = fgkCoThick/2;
-  gMC->Gsvolu("UL10","BOX ",idtmed[1303-1],parCha,kNparCha);
+  gMC->Gsvolu("UL10","BOX ",idtmed[1301-1],parCha,kNparCha);
   // Water layer (cooling)
   parCha[2] = fgkWaThick/2;
   gMC->Gsvolu("UL11","BOX ",idtmed[1314-1],parCha,kNparCha);
@@ -394,19 +387,11 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   xpos = 0;
   ypos = 0;
 
-  // G10 layer (radiator seal)
-  zpos = fgkSeZpos;
-  gMC->Gspos("UL01",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL01",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL01",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-  // CO2 layer (radiator)
+  // Rohacell layer (radiator)
   zpos = fgkRaZpos;
-  gMC->Gspos("UL02",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL02",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL02",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-  // PE layer (radiator)
-  zpos = 0;
-  gMC->Gspos("UL03",1,"UL02",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL03",1,"UCII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL03",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL03",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
   // Mylar layer (entrance window + HV cathode)   
   zpos = fgkMyZpos;
   gMC->Gspos("UL04",1,"UCII",xpos,ypos,zpos,0,"ONLY");
@@ -422,7 +407,6 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   gMC->Gspos("UL06",1,"UCII",xpos,ypos,zpos,0,"ONLY");
   gMC->Gspos("UL06",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
   gMC->Gspos("UL06",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-
   // Cu layer (pad plane)
   zpos = fgkCuZpos;
   gMC->Gspos("UL07",1,"UAII",xpos,ypos,zpos,0,"ONLY");
@@ -438,7 +422,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   gMC->Gspos("UL09",1,"UAII",xpos,ypos,zpos,0,"ONLY");
   gMC->Gspos("UL09",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
   gMC->Gspos("UL09",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
-  // PE layer (cooling devices)
+  // Al layer (cooling devices)
   zpos = fgkCoZpos;
   gMC->Gspos("UL10",1,"UAII",xpos,ypos,zpos,0,"ONLY");
   gMC->Gspos("UL10",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
