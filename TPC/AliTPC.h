@@ -64,7 +64,7 @@ public:
 			   Int_t s7,Int_t s8,Int_t s9,Int_t s10, Int_t s11, Int_t s12);
   virtual void  SetSens(Int_t sens);
   virtual void  StepManager()=0;
-  virtual void  DrawDetector() {}
+  virtual void  DrawModule() {}
   
 private:
   //

@@ -670,7 +670,7 @@ void AliTPCv2::CreateGeometry()
 }
  
 //_____________________________________________________________________________
-void AliTPCv2::DrawDetector()
+void AliTPCv2::DrawModule()
 {
   //
   // Draw a shaded view of the Time Projection Chamber version 1
