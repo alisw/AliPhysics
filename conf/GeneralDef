@@ -67,7 +67,7 @@ ROOTLIBS      := $(filter-out -lNew,$(ROOTLIBS))
 
 ALILIBS	      = -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
                 -lITS -lPHOS -lCASTOR -lRICH -lZDC -lSTRUCT \
-                -lTGeant3 -lSTART -lEVGEN -lSTEER
+                -lTGeant3 -lSTART -lEVGEN -lSTEER -lCONTAINERS
 
 # CERN Libraries 
 
