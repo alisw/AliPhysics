@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:30  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,51 +107,8 @@ void AliHALL::CreateGeometry()
   
   Int_t *idtmed = fIdtmed->GetArray()-1899;
   
-  //abs_d   = 90.;  // DEFINES DRIFT LENGTH 
-  //z_nose  = 102.;
-  //z_cone  = 285.;
-  //theta1  = 24.;  // 1. angle defining the front absorber 
-  //theta2  = 5.;   // 2. angle defining the front absorbe 
-  //acc_max = 9.;   // ANGLE POLAIRE MAXIMUM 
-  //acc_min = 2.;   // ANGLE POLAIRE MINIMUM DE DETECTION 
-  //abs_l   = 503.;
-  //d_steel = 1.;   // THICKNESS OF STEEL SUPPORT 
-  //d_poly  = 7.5;
-  //d_pb    = 2.5;
-  //abs_cc  = 315.; // DEFINES LENGTH OF CARBON 
-  //abs_c   = 358.;
-  //abs_s   = 150.; // DEFINES W-SHIELD LENGTH 
-  //abs_n   = 80.;  // START OF NOSE 
-  //r_abs   = 4.;
-  //r_pb    = .1;
-  //epsilon = .01;
-  //theta_r = 3.;
-  //d_rear  = 35.;
-  //theta_open = .75;
-  
-  //z_l3     = 700.;
-  //zmag_in  = 725.;
-  //zmag_out = 1225.;
   zfil_in  = 1471.;
   zfil_out = 1591.;
-  //zcon_in  = 1900.;
-  //zcon_out = 2e3;
-  //zcone_e  = 859.0875;
-  //spec_l   = 1800.;
-  //zplug_in = 1780.;
-  //zplug_out= 1900.;
-  
-  //     Chamber position 
-  //      CZ1=515.5 
-  //cz1 = 511.;
-  //cz2 = 686.;
-  //cz3 = 971.;
-  //cz4 = 1245.;
-  //cz5 = 1445.;
-  //cz6 = 1610.;
-  //cz7 = 1710.;
-  
-  
   //     RB24/26 TUNNEL FLOOR 
   
   r   = 220.;
@@ -320,16 +280,6 @@ void AliHALL::CreateGeometry()
   gMC->Gspos("HPBS", 1, "HMBS", 202.5,  30.,    0., 0, "ONLY");
   gMC->Gspos("HMBS", 1, "ALIC", 157.5, -50., -820., 0, "ONLY");
   
-  //       MUON FILTER 
-  par[0] = 30.;
-  par[1] = 310.;
-  par[2] = (zfil_out - zfil_in) / 2.;
-  gMC->Gsvolu("HXFI", "TUBE", idtmed[1949], par, 3);
-  dz = (zfil_in + zfil_out) / 2.;
-  par[2] -= 10.;
-  gMC->Gsvolu("HXII", "TUBE", idtmed[1909], par, 3);
-  gMC->Gspos("HXII", 1, "HXFI", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("HXFI", 1, "ALIC", 0., 0., dz, 0, "ONLY");
 }
 
 //_____________________________________________________________________________
