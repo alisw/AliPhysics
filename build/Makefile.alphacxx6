@@ -1,0 +1,77 @@
+# Makefile to build ALIROOT for OSF1
+
+# Which Machine 
+PLATFORM      = alpha
+
+# The compilers
+CXX           = cxx 
+F77	      = f77
+
+# Global optimisation
+OPT           = -g 
+
+CXXOPTS       = $(OPT) -nostdnew -rtti -taso
+COPT	      = $(OPT)
+FOPT	      = $(OPT) -nofor_main -warn noinformational -taso
+CXXFLAGS      = $(CXXOPTS)
+CFLAGS	      = -fPIC -pipe -mcpu=ev5 -D__osf__ -D__alpha
+
+# rootcint flags
+CINTFLAGS     = -D__DECCXX
+
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS = $(filter-out -warn noinformational,$(FFLAGS))
+
+# CERNLIB defines
+
+CLIBDEFS      = -DCERNLIB_DECS -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      = -I. -warn noinformational
+
+# Common Fortran compilation flags
+FFLAGS = $(FOPT) $(CLIBFOPT) $(CLIBDEFS)
+		
+LD            = cxx
+LDFLAGS       = 
+
+SHLD	      = ld
+SOFLAGS       =  -L/usr/lib/cmplrs/cxx -rpath /usr/lib/cmplrs/cxx \
+	        -expect_unresolved "*" -msym -shared \
+	        /usr/lib/cmplrs/cc/crt0.o /usr/lib/cmplrs/cxx/_main.o 
+SOFLAGS += -lUfor -lfor -lFutil
+SOFLAGS += -taso
+
+SHLIB         = -lUfor -lfor -lFutil
+SOEXT 	      = so
+
+ROOTLIBS += 
+
+#System libraries
+SYSLIBS = -lbsd
+
+# Flags for static libraries
+AFLAGS = $(filter-out -rpath /usr/lib/cmplrs/cxx -msym -shared /usr/lib/cmplrs/cc/crt0.o,$(SOFLAGS))
+
+# Additional flags and libraries for building aliroot executable
+EXEFLAGS += -lXm -lXt -lX11 -lPW -lUfor -lfor -lFutil -lots 
+EXEFLAGS += -taso
+
+# Cure funny problem 
+# sometimes in dependencies system include files of the sort
+# /usr/.../filename AND /usr/.../filename.cc are present
+# DEC believes that /usr/.../filename is the executable to be
+# built from /usr/.../filename.cc 
+# Just avoid this to happen
+
+% : %.cc
+	@;
+
+
+
+
+
+
+
+
+

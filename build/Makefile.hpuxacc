@@ -1,0 +1,56 @@
+PLATFORM:= hpux
+
+# The compilers
+
+# The compilers
+CXX           = aCC
+F77	      = f77
+CC	      = cc
+
+# Global optimisation
+OPT           = -O
+
+CXXOPTS       = $(OPT) -Wc,-ansi_for_scope,on +Z -z +W70,495,740,749,823,829 -Dextname
+COPT          = $(OPT) +Z -Ae
+FOPT          = $(OPT) +ppu +Z
+
+
+
+CXXFLAGS      = $(CXXOPTS)
+CFLAGS	      = $(COPT)
+
+# rootcint flags
+CINTFLAGS     = 
+
+# CERNLIB defines
+
+CLIBDEFS      = -DCERNLIB_HPUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      = +z -Ae 
+CLIBFOPT      = -WF,-P
+
+# Common Fortran compilation flags
+FFLAGS = $(CLIBFOPT)  $(CLIBDEFS) $(FOPT)
+
+LD            = aCC
+LDFLAGS       = $(OPT) -z -Wl,+s -Wl,-E
+
+SHLD	      = $(LD)
+SOFLAGS       = -b /usr/lib/libm.sl 
+
+SOEXT 	      = sl
+
+# additional ROOT libraries
+ROOTLIBS  += -lcrypt 
+
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS = $(FFLAGS)
+
+GLIBS         = -L/usr/lib/X11R6 -lX11 
+
+# System libraries
+
+
+
+
+

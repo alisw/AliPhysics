@@ -1,0 +1,66 @@
+PLATFORM:=Darwin
+
+# The compilers
+CXX           = g++ 
+F77	      = g77
+CC	      = gcc
+
+# Global optimisation
+OPT           = -O -g
+
+CXXOPTS       = $(OPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0
+COPT	      = $(OPT) -Wall -W -fno-common -fweak-coalesced
+FOPT	      = $(OPT) -fno-second-underscore 
+CXXFLAGS      = $(CXXOPTS) -I/sw/include
+CFLAGS	      = -Wall -pipe -I/sw/include
+
+# rootcint flags
+CINTFLAGS     = 
+
+# CERNLIB defines
+
+CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      =
+
+# Common Fortran compilation flags
+FFLAGS = $(CLIBFOPT)  $(CLIBDEFS) $(FOPT)
+		
+LD            = export MACOSX_DEPLOYMENT_TARGET=10.3 ; \
+		unset LD_PREBIND ; \
+		g++
+LDFLAGS       = $(OPT) 
+
+SHLD	     := $(LD)
+SOFLAGS      := -bundle -flat_namespace -undefined dynamic_lookup
+#SHLIB        := -lg2c
+SHLIB        :=
+SOEXT 	     := so
+
+DYLD	     := $(LD)
+DYFLAGS       = -dynamiclib -flat_namespace -undefined dynamic_lookup -single_module
+DYLIB        :=
+DYEXT        := dylib
+
+ALLD	      = ar
+ALFLAGS       = cr
+ALLIB         = 
+AEXT 	      = a
+
+
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS = $(FFLAGS)
+
+DEPENDCXXFLAGS = $(CXXFLAGS) -I/usr/include/sys
+
+GLIBS         = -L/usr/X11R6/lib -lX11
+
+#System libraries
+SYSLIBS = -ldl
+
+EXEFLAGS+= -Xlinker -bind_at_load -Xlinker -m #-lg2c
+
+
+
+

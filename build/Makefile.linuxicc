@@ -1,0 +1,74 @@
+PLATFORM:=linuxicc
+
+# The C/C++ compilers
+CXX           = icc
+CC            = icc
+
+# Compiler version:
+ICC_MAJOR    := $(shell $(CXX) -V 2>&1 | awk '{ if (NR==1) print $$8 }' | \
+                cut -d'.' -f1)
+ICC_MINOR    := $(shell $(CXX) -V 2>&1 | awk '{ if (NR==1) print $$8 }' | \
+                cut -d'.' -f2)
+
+# The Fortran compiler
+ifeq ($(ICC_MAJOR),8)
+F77           = ifort
+else
+F77           = ifc
+endif
+
+# Global optimisation
+OPT           = -O -g
+
+CXXOPTS       = $(OPT)
+COPT          = $(OPT)
+FOPT          = $(OPT)
+CXXFLAGS      = $(CXXOPTS)
+CFLAGS        = $(COPT)
+
+# rootcint flags
+CINTFLAGS     =
+
+# CERNLIB defines
+
+CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      =
+
+# Common Fortran compilation flags
+FFLAGS = $(CLIBFOPT) $(CLIBDEFS) $(FOPT)
+
+LD            = icc
+LDFLAGS       = $(OPT)
+
+SHLD          = $(LD)
+SOFLAGS       = -Wl,-soname,$$TMPLIB -shared $(OPT)
+SHLIB         =
+SOEXT 	      = so
+
+ALLD          = ar
+ALFLAGS       = cr
+ALLIB         =
+AEXT 	      = a
+
+# additional ROOT libraries
+ROOTLIBS     += -lcrypt
+
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS  = $(FFLAGS)
+
+LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
+GLIBS         = $(LIBNOVER)
+
+#System libraries
+SYSLIBS =
+
+EXEFLAGS     += -L/usr/local/lib -lXt
+ifeq ($(ICC_MAJOR),8)
+EXEFLAGS     += -L$(shell which ifort | sed -e 's|bin/ifort|lib|') \
+                -lifcore
+else
+EXEFLAGS     += -L$(shell which ifc | sed -e 's|bin/ifc|lib|') \
+                -lF90 -lCEPCF90 -lintrins
+endif

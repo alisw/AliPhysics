@@ -1,0 +1,53 @@
+# Makefile to build ALIROOT for SunOS
+
+# Which Machine 
+PLATFORM      = solaris
+
+# The compilers
+CXX           = /opt/SUNWspro/bin/CC
+CC	      = /opt/SUNWspro/bin/cc
+F77	      = f77
+
+# Global optimisation
+OPT           = -O 
+
+CXXOPTS       = $(OPT) +w -KPIC -features=rtti
+COPT	      = $(OPT) -KPIC -erroff=%none
+FOPT	      = $(OPT) -KPIC
+CXXFLAGS      = $(CXXOPTS)
+CFLAGS	      = 
+
+# rootcint flags
+CINTFLAGS     = 
+
+# CERNLIB defines
+
+CLIBDEFS      = -DCERNLIB_SUN -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      = -xpp=cpp
+		
+SHLIB         =  -L/opt/SUNWspro/lib -lF77 -lM77 /opt/SUNWspro/lib/libsunmath.so.1
+SOEXT 	      = so
+
+LD            = /opt/SUNWspro/bin/CC
+LDFLAGS       = $(OPT) -Qoption ld -t
+
+SHLD	      = $(LD)
+SOFLAGS       = -G $(LDFLAGS) $(SHLIB)  
+
+# Common Fortran compilation flags
+FFLAGS = $(FOPT) $(CLIBFOPT) $(CLIBDEFS) 
+
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS = $(FFLAGS) 
+
+ROOTLIBS += -lm -ldl -lnsl -lsocket
+
+# Additional flags and libraries for building aliroot executable
+EXEFLAGS += -O -Qoption ld -t -L/usr/dt/lib -L/usr/openwin/lib -L/usr/ccs/lib -lXm -lXt -lX11 -lm -lgen -ldl -lsocket -lsunmath 
+
+
+
+
+
