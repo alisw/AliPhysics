@@ -80,9 +80,6 @@ TFlukaCerenkov::TFlukaCerenkov(Int_t npckov, Float_t *ppckov, Float_t *absco, Fl
     if (fMaximumEfficiency > GetGlobalMaximumEfficiency()) {
 	SetGlobalMaximumEfficiency(fMaximumEfficiency);
     }
-    printf("Maximum eff. %f\n",  GetGlobalMaximumEfficiency());
-	
-    
 }
 
 Float_t TFlukaCerenkov::GetAbsorptionCoefficient(Float_t energy)
