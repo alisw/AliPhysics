@@ -10,6 +10,9 @@ export CLASSPATH=$(IRST_INSTALLDIR)
 STRIP=$(IRST_INSTALLDIR)/syntax/strip-cpp.prl
 CODE_CHECK=java rules.RuleChecker
 REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
+# This is to avoid a problem with the declaration of .SECONDARY in the 
+# GeneralMacros
+CHECKS = none
 
 $(ALICE_ROOT)/include/%.h : %.h
 	@[ -d $(dir $@) ] || mkdir $(dir $@)
