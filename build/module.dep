@@ -10,16 +10,19 @@ EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg
 EVGEN/module.mk:	 EVGEN/libEVGEN.pkg
 FMD/module.mk:		 FMD/libFMD.pkg
 FASTSIM/module.mk:	 FASTSIM/libFASTSIM.pkg
+Flugg/module.mk:         Flugg/libFlugg.pkg
 HBTAN/module.mk:	 HBTAN/libHBTAN.pkg
 HBTP/module.mk:		 HBTP/libHBTP.pkg
 HERWIG/module.mk:        HERWIG/libherwig.pkg
 HIJING/module.mk:	 HIJING/libhijing.pkg
+HLT/module.mk:           HLT/libAliL3Src.pkg  HLT/libAliL3Hough.pkg  HLT/libAliL3Misc.pkg  HLT/libAliL3Comp.pkg
 ITS/module.mk:		 ITS/libITS.pkg
 JETAN/module.mk:	 JETAN/libJETAN.pkg
 MEVSIM/module.mk:	 MEVSIM/libmevsim.pkg
 MICROCERN/module.mk:	 MICROCERN/libmicrocern.pkg
 MONITOR/module.mk:       MONITOR/libMONITOR.pkg MONITOR/binmonitorGDC.pkg MONITOR/binmonitorCheck.pkg
 MUON/module.mk:		 MUON/libMUON.pkg
+LHC/module.mk:		 LHC/libLHC.pkg
 PDF/module.mk:		 PDF/libpdf.pkg
 PHOS/module.mk:		 PHOS/libPHOS.pkg
 PMD/module.mk:		 PMD/libPMD.pkg
@@ -31,6 +34,7 @@ START/module.mk:	 START/libSTART.pkg
 STEER/module.mk:	 STEER/libSTEER.pkg
 STRUCT/module.mk:	 STRUCT/libSTRUCT.pkg
 TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg
+TFluka/module.mk:        TFluka/libTFluka.pkg
 THbtp/module.mk:	 THbtp/libTHbtp.pkg
 THerwig/module.mk:	 THerwig/libTHerwig.pkg
 THijing/module.mk:	 THijing/libTHijing.pkg
@@ -41,10 +45,3 @@ TPHIC/module.mk:	 TPHIC/libTPHIC.pkg
 TRD/module.mk:		 TRD/libTRD.pkg
 VZERO/module.mk:	 VZERO/libVZERO.pkg
 ZDC/module.mk:		 ZDC/libZDC.pkg
-LHC/module.mk:		 LHC/libLHC.pkg
-TFluka/module.mk:        TFluka/libTFluka.pkg
-Flugg/module.mk:         Flugg/libFlugg.pkg
-VZERO/module.mk:         VZERO/libVZERO.pkg
-HLT/module.mk:           HLT/libAliL3Src.pkg  HLT/libAliL3Hough.pkg  HLT/libAliL3Misc.pkg  HLT/libAliL3Comp.pkg
-
-
