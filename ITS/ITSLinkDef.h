@@ -156,6 +156,11 @@
 
 #pragma link C++ class AliITSLoader+;
 
+#pragma link C++ class AliITSclusterTable+;
+#pragma link C++ class AliITStrackerSA+;
+#pragma link C++ class AliITStrackSA+;
+#pragma link C++ class AliITSVertexerFast+;
+
 //
 //#pragma link C++ class AliACORDEFunction+;
 //#pragma link C++ class AliACORDEMaterial+;

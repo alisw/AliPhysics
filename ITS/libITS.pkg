@@ -41,6 +41,8 @@ SRCS          = AliITS.cxx AliITSvSPD02.cxx \
 	        AliITSFindClustersV2.cxx \
 	        AliITSRiemannFit.cxx \
 		AliITSFDigitizer.cxx \
+                AliITSclusterTable.cxx AliITStrackSA.cxx AliITStrackerSA.cxx \
+		AliITSVertexerFast.cxx \
 		AliITSDDLRawData.cxx AliITSpidESD.cxx \
                 AliITSRawClusterSPD.cxx AliITSRawClusterSDD.cxx \
 		AliITSRawClusterSSD.cxx \
