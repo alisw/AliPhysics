@@ -389,12 +389,8 @@ void AliITSsimulationSDD::FinishDigits() {
     // introduce the electronics effects and do zero-suppression if required
 
     // Fill maps from fpList.
-    Int_t idx, az;
-    Int_t maxIndex = fpList->GetMaxIndex();    
-    for( Int_t i=0; i<maxIndex; i++ ) {
-        fpList->GetMapIndex( i, az, idx );
-        fHitMap2->SetHit( az, idx, fpList->GetSignal( az, idx ) );
-    } // end for i
+    Int_t maxIndex = fpList->GetEntries();
+    for(Int_t i=0;i<maxIndex;i++) fHitMap2->SetHit(i,fpList->GetSignal(i));
 
     ChargeToSignal();
     ApplyDeadChannels();
