@@ -163,7 +163,7 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
   in->cd();
  
   char   tname[100];
-  Int_t nentr=0; TObjArray itsTracks(10000);
+  Int_t nentr=0; TObjArray itsTracks(15000);
 
   {/* Read TPC tracks */ 
     sprintf(tname,"TreeT_TPC_%d",fEventN);
