@@ -2660,15 +2660,23 @@ const char* TFluka::CurrentVolOffName(Int_t off) const
 }
 
 //______________________________________________________________________________ 
-Int_t TFluka::CurrentMaterial(Float_t & /*a*/, Float_t & /*z*/, 
-		      Float_t & /*dens*/, Float_t & /*radl*/, Float_t & /*absl*/) const
+Int_t TFluka::CurrentMaterial(Float_t & a, Float_t & z, 
+		      Float_t & dens, Float_t & radl, Float_t & absl) const
 {
 //
-//  Return the current medium number  ??? what about material properties
+//  Return the current medium number and material properties
 //
   Int_t copy;
   Int_t id  =  TFluka::CurrentVolID(copy);
   Int_t med =  TFluka::VolId2Mate(id);
+  TGeoVolume*     vol = gGeoManager->GetCurrentVolume();
+  TGeoMaterial*   mat = vol->GetMaterial();
+  a    = mat->GetA();
+  z    = mat->GetZ();
+  dens = mat->GetDensity();
+  radl = mat->GetRadLen();
+  absl = mat->GetIntLen();
+  
   return med;
 }
 
