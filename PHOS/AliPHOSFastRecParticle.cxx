@@ -180,8 +180,14 @@ Bool_t AliPHOSFastRecParticle::IsPhoton(TString purity) const
   else if (purity == "high"  ) photonLike = TestPIDBit(8);
   if (photonLike                                   && //  photon by PCA
       (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  fast by TOF
-      (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0)))  //  neutral by CPV
+      (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0))&& //  neutral by CPV
+      !TestPIDBit(14))                              //  no charged track
     return kTRUE ;
+  else if (photonLike                                   && //  photon by PCA
+	   (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
+	   (!TestPIDBit(2)||!TestPIDBit(1)||!TestPIDBit(0))&& //  charged by CPV
+	   !TestPIDBit(14))                                 //  no charged track, conversion electron
+    return kTRUE ; 
   else
     return kFALSE;
 }
@@ -200,7 +206,8 @@ Bool_t AliPHOSFastRecParticle::IsPi0(TString purity) const
   else Error("IsPi0","Wrong purity type: %s",purity.Data());
   if (pi0Like                                      && //  pi0 by PCA
       (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  fast by TOF
-      (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0)))  //  neutral by CPV
+      (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0))&& //  neutral by CPV
+      !TestPIDBit(14))                              //  no charged track
     return kTRUE ;
   else
     return kFALSE;
@@ -221,7 +228,8 @@ Bool_t AliPHOSFastRecParticle::IsElectron(TString purity) const
   
   if (photonLike                                   && //  photon by PCA
       (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
-     (!TestPIDBit(2)||!TestPIDBit(1)||!TestPIDBit(0)))  //  charged by CPV
+      (!TestPIDBit(2)||!TestPIDBit(1)||!TestPIDBit(0))&& //  charged by CPV
+      TestPIDBit(14))                                  //  no charged track
     return kTRUE ;
   else
     return kFALSE;
@@ -232,7 +240,7 @@ Bool_t AliPHOSFastRecParticle::IsHardPhoton() const
 {
   // Rec.Particle is a hard photon (E > 30 GeV) if its second moment M2x
   // corresponds to photons
-  if (TestPIDBit(12))
+  if (TestPIDBit(12) && !TestPIDBit(14))
     return kTRUE;
   else
     return kFALSE;
@@ -243,7 +251,7 @@ Bool_t AliPHOSFastRecParticle::IsHardPi0() const
 {
   // Rec.Particle is a hard pi0 (E > 30 GeV) if its second moment M2x
   // corresponds to pi0
-  if (TestPIDBit(13))
+  if (TestPIDBit(13)&& !TestPIDBit(14))
     return kTRUE;
   else
     return kFALSE;
