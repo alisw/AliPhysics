@@ -44,36 +44,35 @@ void AliITSiotrack::SetCovMatrix(TMatrix *cov) {
 
 
 Double_t * AliITSiotrack::GetCovMatrix() {
+// Return Covariance Matrix in array format.
 
-  Double_t covar[25];
+  fcovar[0]=fC00;
+  fcovar[1]=fC10;
+  fcovar[2]=fC20;
+  fcovar[3]=fC30;
+  fcovar[4]=fC40;
+  fcovar[5]=fC10;
+  fcovar[6]=fC11;
+  fcovar[7]=fC21;
+  fcovar[8]=fC31;
+  fcovar[9]=fC41;
+  fcovar[10]=fC20;
+  fcovar[11]=fC21;
+  fcovar[12]=fC22;
+  fcovar[13]=fC32;
+  fcovar[14]=fC42;
+  fcovar[15]=fC30;
+  fcovar[16]=fC31;
+  fcovar[17]=fC32;
+  fcovar[18]=fC33;
+  fcovar[19]=fC43;
+  fcovar[20]=fC40;
+  fcovar[21]=fC41;
+  fcovar[22]=fC42;
+  fcovar[23]=fC43;
+  fcovar[24]=fC44;
 
-  covar[0]=fC00;
-  covar[1]=fC10;
-  covar[2]=fC20;
-  covar[3]=fC30;
-  covar[4]=fC40;
-  covar[5]=fC10;
-  covar[6]=fC11;
-  covar[7]=fC21;
-  covar[8]=fC31;
-  covar[9]=fC41;
-  covar[10]=fC20;
-  covar[11]=fC21;
-  covar[12]=fC22;
-  covar[13]=fC32;
-  covar[14]=fC42;
-  covar[15]=fC30;
-  covar[16]=fC31;
-  covar[17]=fC32;
-  covar[18]=fC33;
-  covar[19]=fC43;
-  covar[20]=fC40;
-  covar[21]=fC41;
-  covar[22]=fC42;
-  covar[23]=fC43;
-  covar[24]=fC44;
-  
-  return covar;
+  return fcovar;
   
 }
 /*

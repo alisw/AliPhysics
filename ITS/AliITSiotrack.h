@@ -76,7 +76,8 @@ class AliITSiotrack : public TObject {
   Double_t  fRadius;             //  distance of the point from the origin
   Int_t     fCharge;             //  particle charge  
 
-//  Covariance matrix	 
+//  Covariance matrix
+  Double_t  fcovar[25];              //! Elements of Covariance matrix below
   Double_t  fC00;
   Double_t  fC10, fC11;
   Double_t  fC20, fC21, fC22;
@@ -87,6 +88,3 @@ class AliITSiotrack : public TObject {
 };
 
 #endif
-
-
-
