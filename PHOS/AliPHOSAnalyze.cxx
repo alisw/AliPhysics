@@ -736,8 +736,9 @@ Bool_t AliPHOSAnalyze::OpenRootFile(Text_t * name)
 //____________________________________________________________________________
 void AliPHOSAnalyze::SavingHistograms()
 {
-
-  TFile output("test.root","RECREATE");
+  Text_t outputname[80] ;// = fRootFile->GetName();
+  sprintf(outputname,"%s.analyzed",fRootFile->GetName());
+  TFile output(outputname,"RECREATE");
   output.cd();
   if (fhEmcDigit )         fhEmcDigit->Write()  ;
   if (fhVetoDigit )        fhVetoDigit->Write()  ;

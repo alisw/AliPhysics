@@ -40,6 +40,7 @@ public:
   Int_t   GetId()     { return fId ; }     
   Int_t   GetAmp() {  return fAmp  ; } 
   Bool_t  IsSortable() const{ return kTRUE ; }
+  void    SetAmp(Int_t Amp) {  fAmp=Amp  ; } 
   
 private:
   Int_t fId ;                // absolute id
