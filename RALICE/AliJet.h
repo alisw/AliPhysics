@@ -33,6 +33,11 @@ class AliJet : public TObject,public Ali4Vector
   Float_t GetCharge();               // Provide the total charge of the jet
   Int_t GetNtracks();                // Return the number of tracks in the jet
   AliTrack* GetTrack(Int_t i);       // Provide i-th track of the jet (1=first track)
+  Double_t GetPt();                  // Provide trans. momentum w.r.t. z-axis
+  Double_t GetPl();                  // Provide long. momentum w.r.t. z-axis
+  Double_t GetEt();                  // Provide trans. energy w.r.t. z-axis
+  Double_t GetEl();                  // Provide long. energy w.r.t. z-axis
+  Double_t GetMt();                  // Provide trans. mass w.r.t. z-axis
 
  protected:
   void SetNtinit(Int_t n=2); // Set the initial max. number of tracks for this Jet

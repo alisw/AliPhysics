@@ -38,6 +38,8 @@ class Ali3Vector
   Ali3Vector& operator-=(Ali3Vector& q);         // Subtract vector q
   Ali3Vector& operator*=(Double_t s);            // Multiply with scalar s
   Ali3Vector& operator/=(Double_t s);            // Divide by scalar s
+  Ali3Vector GetVecTrans();                      // Provide transverse vector w.r.t. z-axis
+  Ali3Vector GetVecLong();                       // Provide longitudinal vector w.r.t. z-axis
 
  protected:
   Double_t fV,fTheta,fPhi;    // Vector in spherical coordinates

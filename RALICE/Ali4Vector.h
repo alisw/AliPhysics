@@ -46,6 +46,9 @@ class Ali4Vector
   Ali4Vector& operator*=(Double_t s);               // Multiply with scalar s
   Ali4Vector& operator/=(Double_t s);               // Divide by scalar s
   Int_t GetScalarFlag();                            // Provide the fScalar flag value
+  Ali3Vector GetVecTrans();                         // Provide transverse vector part w.r.t. z-axis
+  Ali3Vector GetVecLong();                          // Provide longitudinal vector part w.r.t. z-axis
+  Double_t GetPseudoRapidity();                     // Provide pseudorapidity of vector part w.r.t z-axis
 
  protected:
   Double_t fV2;      // The Lorentz invariant (v^i*v_i)
@@ -55,6 +58,8 @@ class Ali4Vector
   Double_t fDv0;     // The error on the scalar part
   Double_t fDresult; // The error on the scalar result of an operation (e.g. dotproduct) 
   Int_t fScalar;     // Flag denoting scalar mode
+  Double_t GetScaTrans(); // Provide "transverse value" of scalar part w.r.t. z-axis
+  Double_t GetScaLong();  // Provide "longitudinal value" of scalar part w.r.t. z-axis
 
  ClassDef(Ali4Vector,1) // Handling of Lorentz 4-vectors in various reference frames.
 };

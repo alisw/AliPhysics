@@ -206,9 +206,11 @@ Double_t AliJet::GetEnergy()
 Double_t AliJet::GetMomentum()
 {
 // Return the value of the total jet 3-momentum
- Ali3Vector p=Get3Vector();
- Double_t p2=p.Dot(p);
- return sqrt(p2);
+// The error can be obtained by invoking GetResultError() after
+// invokation of GetMomentum().
+ Double_t norm=fV.GetNorm();
+ fDresult=fV.GetResultError();
+ return norm;
 }
 ///////////////////////////////////////////////////////////////////////////
 Ali3Vector AliJet::Get3Momentum()
@@ -242,5 +244,69 @@ AliTrack* AliJet::GetTrack(Int_t i)
 {
 // Return the i-th track of this jet
  return (AliTrack*)fTracks->At(i-1);
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliJet::GetPt()
+{
+// Provide trans. momentum value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetPt().
+ Ali3Vector v;
+ v=GetVecTrans();
+ Double_t norm=v.GetNorm();
+ fDresult=v.GetResultError();
+
+ return norm;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliJet::GetPl()
+{
+// Provide long. momentum value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetPl().
+ Ali3Vector v;
+ v=GetVecLong();
+ Double_t norm=v.GetNorm();
+ fDresult=v.GetResultError();
+
+ return norm;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliJet::GetEt()
+{
+// Provide trans. energy value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetEt().
+ Double_t et=GetScaTrans();
+
+ return et;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliJet::GetEl()
+{
+// Provide long. energy value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetEl().
+ Double_t el=GetScaLong();
+
+ return el;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliJet::GetMt()
+{
+// Provide transverse mass value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetMt().
+ Double_t pt=GetPt();
+ Double_t dpt=GetResultError();
+ Double_t m=GetInvmass();
+ Double_t dm=GetResultError();
+
+ Double_t mt=sqrt(pt*pt+m*m);
+ Double_t dmt2=0;
+ if (mt) dmt2=(pow((pt*dpt),2)+pow((m*dm),2))/(mt*mt);
+
+ fDresult=sqrt(dmt2);
+ return mt;
 }
 ///////////////////////////////////////////////////////////////////////////

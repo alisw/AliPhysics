@@ -282,10 +282,8 @@ Double_t AliTrack::GetMomentum()
 // Provide the value of the track 3-momentum.
 // The error can be obtained by invoking GetResultError() after
 // invokation of GetMomentum().
-
-// Ali3Vector p=Get3Vector();
-// return sqrt(p.Dot(p));
  Double_t norm=fV.GetNorm();
+ fDresult=fV.GetResultError();
  return norm;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -665,5 +663,89 @@ void AliTrack::RemoveMassHypothesis(Int_t j)
   fDmasses->Set(fNmasses);
   fPmasses->Set(fNmasses);
  }
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetPt()
+{
+// Provide trans. momentum value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetPt().
+ Ali3Vector v;
+ v=GetVecTrans();
+ Double_t norm=v.GetNorm();
+ fDresult=v.GetResultError();
+
+ return norm;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetPl()
+{
+// Provide long. momentum value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetPl().
+ Ali3Vector v;
+ v=GetVecLong();
+ Double_t norm=v.GetNorm();
+ fDresult=v.GetResultError();
+
+ return norm;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetEt()
+{
+// Provide trans. energy value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetEt().
+ Double_t et=GetScaTrans();
+
+ return et;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetEl()
+{
+// Provide long. energy value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetEl().
+ Double_t el=GetScaLong();
+
+ return el;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetMt()
+{
+// Provide transverse mass value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetMt().
+ Double_t pt=GetPt();
+ Double_t dpt=GetResultError();
+ Double_t m=GetMass();
+ Double_t dm=GetResultError();
+
+ Double_t mt=sqrt(pt*pt+m*m);
+ Double_t dmt2=0;
+ if (mt) dmt2=(pow((pt*dpt),2)+pow((m*dm),2))/(mt*mt);
+
+ fDresult=sqrt(dmt2);
+ return mt;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetMt(Int_t j)
+{
+// Provide transverse mass value w.r.t. z-axis and jth mass hypothesis.
+// Note : the first hypothesis is indicated by j=1.
+//        j=0 ==> Hypothesis with highest probability.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetMt(j).
+ Double_t pt=GetPt();
+ Double_t dpt=GetResultError();
+ Double_t m=GetMassHypothesis(j);
+ Double_t dm=GetResultError();
+
+ Double_t mt=sqrt(pt*pt+m*m);
+ Double_t dmt2=0;
+ if (mt) dmt2=(pow((pt*dpt),2)+pow((m*dm),2))/(mt*mt);
+
+ fDresult=sqrt(dmt2);
+ return mt;
 }
 ///////////////////////////////////////////////////////////////////////////

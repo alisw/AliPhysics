@@ -255,3 +255,14 @@
                 subdirectory and file RALICEHeaders.h moved back to the RALICE
                 directory again to enable universal installation scripts.
                 Also name AliEvent.cxx added in Makefile.
+11-jun-2001 NvE ResultError correctly set in GetMomentum() of AliTrack and AliJet.
+12-jun-2001 NvE Error calculation improved for spherical and cylindrical coord.
+                in Ali3Vector::GetErrors().
+13-jun-2001 NvE Memberfunctions GetVecTrans() and GetVecLong() introduced for
+                Ali3Vector and Ali4Vector.
+                Also GetScaTrans(), GetScaLong() and GetPseudoRapidity() introduced
+                for Ali4Vector to provide a basis for e.g. E_trans and E_long calc.
+                Memberfunctions GetPt(), GetPl(), GetEt(), GetEl() and GetMt()
+                introduced for AliTrack and AliJet.
+                For AliTrack there is an additional GetMt(j) to provide the Mt
+                value for the jth mass hypothesis.                

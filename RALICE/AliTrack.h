@@ -50,6 +50,12 @@ class AliTrack : public TObject,public Ali4Vector
   Double_t GetMassHypothesis(Int_t j=0);     // Provide mass of jth hypothesis 
   Double_t GetMassHypothesisProb(Int_t j=0); // Provide prob. of jth mass hypothesis 
   void RemoveMassHypothesis(Int_t j);        // Remove the jth mass hypothesis 
+  Double_t GetPt();                 // Provide trans. momentum w.r.t. z-axis
+  Double_t GetPl();                 // Provide long. momentum w.r.t. z-axis
+  Double_t GetEt();                 // Provide trans. energy w.r.t. z-axis
+  Double_t GetEl();                 // Provide long. energy w.r.t. z-axis
+  Double_t GetMt();                 // Provide trans. mass w.r.t. z-axis
+  Double_t GetMt(Int_t j);          // Provide trans. mass w.r.t. z-axis and jth mass hypothesis
  
  protected:
   Float_t fQ;          // The charge of the particle

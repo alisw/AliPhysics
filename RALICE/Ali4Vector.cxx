@@ -711,3 +711,75 @@ Int_t Ali4Vector::GetScalarFlag()
  return fScalar;
 }
 ///////////////////////////////////////////////////////////////////////////
+Ali3Vector Ali4Vector::GetVecTrans()
+{
+// Provide the transverse vector part w.r.t. z-axis.
+// Error propagation is performed automatically
+  
+ return fV.GetVecTrans();
+}
+///////////////////////////////////////////////////////////////////////////
+Ali3Vector Ali4Vector::GetVecLong()
+{
+// Provide the longitudinal vector part w.r.t. z-axis.
+// Error propagation is performed automatically
+  
+ return fV.GetVecLong();
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t Ali4Vector::GetScaTrans()
+{
+// Provide the "transverse value" of the scalar part w.r.t. z-axis.
+// This provides a basis for e.g. E_trans calculation.
+// Note : the returned value is always positive or zero.
+// The error on the value is available via GetResultError()
+// after invokation of GetScaTrans().
+ Double_t a[3],ea[3];
+
+ fV.GetVector(a,"sph");
+ fV.GetErrors(ea,"sph");
+
+ Double_t s=GetScalar();
+ Double_t ds=GetResultError();
+
+ Double_t st,dst2;
+ st=s*sin(a[1]);
+ dst2=pow((sin(a[1])*ds),2)+pow((s*cos(a[1])*ea[1]),2);
+
+ fDresult=sqrt(dst2);  
+ return fabs(st);
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t Ali4Vector::GetScaLong()
+{
+// Provide the "longitudinal value" of the scalar part w.r.t. z-axis.
+// This provides a basis for e.g. E_long calculation.
+// Note : the returned value can also be negative.
+// The error on the value is available via GetResultError()
+// after invokation of GetScaLong().
+ Double_t a[3],ea[3];
+
+ fV.GetVector(a,"sph");
+ fV.GetErrors(ea,"sph");
+
+ Double_t s=GetScalar();
+ Double_t ds=GetResultError();
+
+ Double_t sl,dsl2;
+ sl=s*cos(a[1]);
+ dsl2=pow((cos(a[1])*ds),2)+pow((s*sin(a[1])*ea[1]),2);
+
+ fDresult=sqrt(dsl2);  
+ return sl;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t Ali4Vector::GetPseudoRapidity()
+{
+// Provide the pseudorapidity value of the vector part w.r.t. z-axis.
+// The error on the value is available via GetResultError()
+// after invokation of GetPseudoRapidity().
+ Double_t eta=fV.GetPseudoRapidity();
+ fDresult=fV.GetResultError();
+ return eta;
+}
+///////////////////////////////////////////////////////////////////////////
