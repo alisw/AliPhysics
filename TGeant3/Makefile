@@ -13,7 +13,7 @@ FSRCS	     = galicef.F
 
 # C++ sources
 
-GSRCS          = TGeant3.cxx TPaveTree.cxx THIGZ.cxx gucode.cxx \
+GSRCS          = TGeant3.cxx TPaveTree.cxx THIGZ.cxx \
                  TGeant3GUI.cxx AliGeant3.cxx
 
 # C++ Headers
