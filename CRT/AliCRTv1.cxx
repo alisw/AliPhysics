@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/10/14 14:55:34  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.1.2.1  2002/10/10 14:40:31  hristov
 Updating VirtualMC to v3-09-02
 
@@ -54,7 +57,7 @@ First version, stand alone detector
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include <TGeometry.h>
 #include <TBRIK.h>
