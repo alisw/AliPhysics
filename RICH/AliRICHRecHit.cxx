@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/12 15:28:06  jbarbosa
+  Cleaned up version.
+
 */
 
 
@@ -22,7 +25,7 @@
  
 ClassImp(AliRICHRecHit)
 
-AliRICHRecHit::AliRICHRecHit(Int_t id, Float_t *rechit)
+AliRICHRecHit::AliRICHRecHit(Int_t id, Float_t *rechit, Float_t *photons, Int_t *padsx, Int_t* padsy)
 {
     //
     // Creates a RICH rec. hit object
@@ -32,6 +35,14 @@ AliRICHRecHit::AliRICHRecHit(Int_t id, Float_t *rechit)
     fOmega        = rechit[2];
     fX            = rechit[3];
     fY            = rechit[4];
+    fEmissPoint   = rechit[5];
+    fGoodPhotons  = (Int_t)rechit[6];
+    for(Int_t i=0; i<100; i++) {
+	fCerPerPhoton[i]  = photons[i];
+	fPadsUsedX[i]    = padsx[i];
+	fPadsUsedY[i]    = padsy[i];
+    }
+    
 }
 
 
