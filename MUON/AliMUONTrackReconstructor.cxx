@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.9  2001/03/12 17:45:48  hristov
+Changes needed on Sun with CC 5.0
+
 Revision 1.8  2001/01/26 22:05:41  morsch
 Unresolved conflicts resolved.
 
@@ -826,9 +829,9 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 		    ygeant[maxidg]   = mHit->X();             // y-pos of hit
 		    clsize1[maxidg]   = 0;     // cluster size on 1-st cathode
 		    clsize2[maxidg]   = 0;     // cluster size on 2-nd cathode
-		    cx[maxidg]     = mHit->Cy();              // Px/P of hit
-		    cy[maxidg]     = mHit->Cx();              // Py/P of hit
-		    cz[maxidg]     = mHit->Cz();              // Pz/P of hit
+		    cx[maxidg]     = mHit->Py();              // Px of hit
+		    cy[maxidg]     = mHit->Px();              // Py of hit
+		    cz[maxidg]     = mHit->Pz();              // Pz of hit
 		    izch[maxidg]   = mHit->Chamber();         
 		    /*      
 		    Int_t pdgtype  = Int_t(mHit->fParticle); // particle number
@@ -916,9 +919,9 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	    ygeant[maxidg]   = mHit->X();           // y-pos of hit
 	    clsize1[maxidg]   = 0;           // cluster size on 1-st cathode
 	    clsize2[maxidg]   = 0;           // cluster size on 2-nd cathode
-	    cx[maxidg]     = mHit->Cy();            // Px/P of hit
-	    cy[maxidg]     = mHit->Cx();            // Py/P of hit
-	    cz[maxidg]     = mHit->Cz();            // Pz/P of hit
+	    cx[maxidg]     = mHit->Py();            // Px of hit
+	    cy[maxidg]     = mHit->Px();            // Py of hit
+	    cz[maxidg]     = mHit->Pz();            // Pz of hit
 	    izch[maxidg]   = mHit->Chamber();       // chamber number
 	    ptotg[maxidg]  = mHit->Momentum();      // P of hit 
 	    
