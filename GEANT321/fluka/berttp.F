@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:15  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:19:54  cernlib
 * Geant
 *
@@ -45,12 +48,12 @@ C---------------------------------------------------------------------
       ELSE
 #if defined(CERNLIB_UNIX)||defined(CERNLIB_CRAY)
          CHROOT=' '
-         CALL GETENVF('CERN_ROOT',CHROOT)
+         CALL GETENVF('ALICE_ROOT',CHROOT)
          LNROOT = LNBLNK(CHROOT)
          IF(LNROOT.LE.0) THEN
             FILNAM='flukaaf.dat'
          ELSE
-            FILNAM=CHROOT(1:LNROOT)//'/lib/flukaaf.dat'
+            FILNAM=CHROOT(1:LNROOT)//'/GEANT321/data/flukaaf.dat'
          ENDIF
          INQUIRE(FILE=FILNAM,EXIST=EXISTS)
          IF(.NOT.EXISTS) THEN
