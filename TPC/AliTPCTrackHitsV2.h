@@ -1,0 +1,86 @@
+#ifndef ALITPCTRACKHITSV2_H
+#define ALITPCTRACKHITSV2_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+////////////////////////////////////////////////
+//  Manager class for TPC   hits                   //
+////////////////////////////////////////////////
+
+#include "TObject.h"
+
+class TClonesArray;
+class AliArrayS;
+class AliTPChit;
+class AliTPCTempHitInfoV2;
+class AliTPCCurrentHitV2;
+
+
+class AliTrackHitsParamV2 : public TObject {
+public:
+  AliTrackHitsParamV2();
+  ~AliTrackHitsParamV2();
+  Int_t fTrackID; // ID of the track
+  Short_t fVolumeID;// volume ID
+  Float_t fR;  //radius
+  Float_t fZ;  //z position
+  Float_t fFi; //radial angle
+  Float_t fAn; //angle with  the radial vector
+  Float_t fAd; //derivation of angle
+  Float_t fTheta; //theta angle
+  Float_t fThetaD; //theta angle derivation
+  Int_t   fNHits; //nuber of thits
+  Short_t * fHitDistance; //[fNHits] array of hits distances
+  Short_t * fCharge; //[fNHits] array of charges
+  static Int_t fgCounter1;
+  static Int_t fgCounter2;  
+  ClassDef(AliTrackHitsParamV2,1)  
+};
+
+
+
+class AliTPCTrackHitsV2 : public TObject {
+public:
+  AliTPCTrackHitsV2(); 
+  ~AliTPCTrackHitsV2();
+  void Clear();
+  void AddHitKartez(Int_t volumeID, Int_t trackID, Double_t x, 
+		    Double_t y, Double_t z,Int_t q);
+  void AddHit(Int_t volumeID, Int_t trackID, Double_t r, 
+	      Double_t z, Double_t fi,Int_t q);
+ 
+  Bool_t First(); //set current hit to first hit 
+  Bool_t Next();  //set current hit to next
+  AliTPChit * GetHit();
+  AliTrackHitsParamV2 * GetParam();
+
+  TClonesArray * GetArray(){return fArray;}
+  Int_t  GetEntriesFast() { return fSize;}
+  void SetHitPrecision(Double_t prec) {fPrecision=prec;}
+  void SetStepPrecision(Double_t prec) {fStep=prec;}
+  void SetMaxDistance(UInt_t distance) {fMaxDistance = distance;}
+  Bool_t  FlushHitStack(Bool_t force=kTRUE);    //
+  Int_t *  GetVolumes(){ return fVolumes;}
+  Int_t GetNVolumes(){return fNVolumes;}
+public:
+  void AddVolume(Int_t volume); //add volumes to tthe list of volumes
+  void FlushHitStack2(Int_t index1, Int_t index2);   //
+  TClonesArray * fArray;  //array of compressed hits
+  Int_t fSize;            //total number of hits in track
+  Double_t fPrecision;  // required precision
+  Double_t fStep;       //unit step size
+  UInt_t fMaxDistance;   //maximal distance between two connected hits 
+  Int_t fNVolumes;      //number of volumes in track  
+  Int_t *  fVolumes;    //[fNVolumes] list of volumes
+  AliTPCTempHitInfoV2 * fTempInfo; //!information about track
+  AliTPCCurrentHitV2  * fCurrentHit; //!information about current hit 
+  static const Double_t fgkPrecision;  //precision 
+  static const Double_t fgkPrecision2;  //precision
+  static Int_t fgCounter1;
+  static Int_t fgCounter2;  
+  ClassDef(AliTPCTrackHitsV2,1) 
+};
+
+
+#endif //ALITPCTRACKHITSV2_H
