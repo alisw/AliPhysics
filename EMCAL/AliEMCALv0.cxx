@@ -58,10 +58,21 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title):
 void AliEMCALv0::BuildGeometry()
 {
 
-  const Int_t kColorArm1   = kBlue ;
-  const Int_t kColorArm2   = kBlue ;
+  const Int_t kColorEmcal   = kGreen ;
+  const Int_t kColorArm1    = kBlue ;
+  const Int_t kColorArm2    = kBlue ;
   const Int_t kColorArm1Active   = kRed ;
   const Int_t kColorArm2Active   = kRed ;
+
+  // make the container of entire calorimeter
+
+  new TTUBS("EMCA", "Tubs that contains the calorimeter", "void", 
+	    fGeom->GetEnvelop(0),     // rmin 
+	    fGeom->GetEnvelop(1),     // rmax
+	    fGeom->GetEnvelop(2)/2.0, // half length in Z
+	    0., 
+	    360.
+	    ) ; 
 
   // make the container of  Arm1
   
@@ -104,7 +115,13 @@ void AliEMCALv0::BuildGeometry()
   TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
   top->cd();
   
-  // Arm 1 inside alice
+  // Calorimeter inside alice 
+  TNode * emcanode = new TNode("EMCAL", "EMCAL Envelop", "EMCAL") ;
+  emcanode->SetLineColor(kColorEmcal) ;
+  fNodes->Add(emcanode) ;
+
+  // Arm 1 inside Calorimeter
+  emcanode->cd(); 
   TNode * envelop1node = new TNode("Envelop1", "Arm1 Envelop", "Envelop1") ;
   envelop1node->SetLineColor(kColorArm1) ;
   fNodes->Add(envelop1node) ;
@@ -144,13 +161,19 @@ void AliEMCALv0::CreateGeometry()
   // Get pointer to the array containing media indices
   Int_t *idtmed = fIdtmed->GetArray() - 1599 ;
 
+  // Create the EMCA volume that contains entirely EMCAL
 
-  // Create tube sectors that contains Arm 1 & 2 
- 
   Float_t envelopA[5] ; 
   envelopA[0] = fGeom->GetEnvelop(0) ;         // rmin
   envelopA[1] = fGeom->GetEnvelop(1) ;         // rmax
   envelopA[2] = fGeom->GetEnvelop(2) / 2.0 ;   // dz
+  envelopA[3] = 0. ;      
+  envelopA[4] = 360.;      
+
+  gMC->Gsvolu("EMCA", "TUBS ", idtmed[1599], envelopA, 5) ; // filled with air
+
+  // Create tube sectors that contains Arm 1 & 2 
+ 
   envelopA[3] = fGeom->GetArm1PhiMin() ;       // minimun phi angle
   envelopA[4] = fGeom->GetArm1PhiMax() ;       // maximun phi angle
 
@@ -178,14 +201,17 @@ void AliEMCALv0::CreateGeometry()
   Int_t idrotm = 1;
   AliMatrix(idrotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ;
 
-  // Position  ENV1 container in ALIC
-  gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+  // Position Calorimeter in ALICE
+  gMC->Gspos("EMCA", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+
+  // Position  ENV1 container in EMCA
+  gMC->Gspos("XEN1", 1, "EMCA", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
   
   // Position  ARM1  into ENV1
   gMC->Gspos("XAR1", 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
 
   // Position  ENV2 container in ALIC  
-  gMC->Gspos("XEN2", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+  gMC->Gspos("XEN2", 1, "EMCA", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
 
   // Position  ARM2  into ENV2
   gMC->Gspos("XAR2", 1, "XEN2", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
