@@ -1,14 +1,14 @@
 #ifndef ALITRDTRACK_H
-#define ALITRDTRACK_H  
+#define ALITRDTRACK_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */ 
+ * See cxx source for full Copyright notice                               */
 
 #include <AliKalmanTrack.h>
-#include <TMath.h>   
+#include <TMath.h>
 
 class AliTRDcluster;
-class AliTPCtrack; 
+class AliTPCtrack;
 
 const unsigned kMAX_CLUSTERS_PER_TRACK=210; 
 
@@ -60,8 +60,7 @@ public:
    Double_t GetY()    const {return fY;}
    Double_t GetZ()    const {return fZ;}
 
-   Int_t    PropagateTo(Double_t xr,
-                   Double_t x0=8.72,Double_t rho=5.86e-3,Double_t pm=0.139);
+   Int_t    PropagateTo(Double_t xr, Double_t x0=8.72, Double_t rho=5.86e-3);
    void     ResetCovariance();   
    Int_t    Rotate(Double_t angle);
 
@@ -91,15 +90,15 @@ protected:
 
    Double_t fY;           // Y-coordinate of the track
    Double_t fZ;           // Z-coordinate of the track
-   Double_t fC;           // track curvature
    Double_t fE;           // C*x0
    Double_t fT;           // tangent of the track dip angle   
+   Double_t fC;           // track curvature
 
    Double_t fCyy;                         // covariance
    Double_t fCzy, fCzz;                   // matrix
-   Double_t fCcy, fCcz, fCcc;             // of the
-   Double_t fCey, fCez, fCec, fCee;       // track
-   Double_t fCty, fCtz, fCtc, fCte, fCtt; // parameters   
+   Double_t fCey, fCez, fCee;             // of the
+   Double_t fCty, fCtz, fCte, fCtt;       // track
+   Double_t fCcy, fCcz, fCce, fCct, fCcc; // parameters   
 
    UInt_t  fIndex[kMAX_CLUSTERS_PER_TRACK];  // global indexes of clusters  
    Float_t fdQdl[kMAX_CLUSTERS_PER_TRACK];   // cluster amplitudes corrected 
