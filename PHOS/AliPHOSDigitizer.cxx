@@ -230,7 +230,10 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 
       //loop over inputs
       for(i=0; i<input; i++){
-	curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ; 	
+	if(((TClonesArray *)sdigArray->At(i))->GetEntriesFast() > index[i] )
+	  curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ; 	
+	else
+	  curSDigit = 0 ;
 	//May be several digits will contribute from the same input
 	while(curSDigit && curSDigit->GetId() == absID){	   
 	  //Shift primary to separate primaries belonging different inputs
@@ -249,7 +252,10 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 	  *digit = *digit + *curSDigit ;  //add energies
 
 	  index[i]++ ;
-	  curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ;
+	  if(((TClonesArray *)sdigArray->At(i))->GetEntriesFast() > index[i] )
+	    curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ; 	
+	  else
+	    curSDigit = 0 ;
 	}
       }
 
@@ -261,7 +267,11 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
       nextSig = 200000 ;
       for(i=0; i<input; i++){
 	sdigits = ((TClonesArray *)sdigArray->At(i)) ;
-	Int_t curNext = ((AliPHOSDigit *) sdigits->At(index[i]))->GetId() ;
+	Int_t curNext = nextSig ;
+	if(sdigits->GetEntriesFast() > index[i] ){
+	  curNext = ((AliPHOSDigit *) sdigits->At(index[i]))->GetId() ;
+	  
+	}
 	if(curNext < nextSig) nextSig = curNext ;
       }
     }
@@ -280,7 +290,10 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
       digit = (AliPHOSDigit *) digits->At(absID-1) ;
       //Add SDigits from all inputs
       for(i=0; i<input; i++){
-	curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ; 	
+	if(((TClonesArray *)sdigArray->At(i))->GetEntriesFast() > index[i] )
+	  curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ; 	
+	else
+	  curSDigit = 0 ;
 	//May be several digits will contribute from the same input
 	while(curSDigit && curSDigit->GetId() == absID){	   
 	  //Shift primary to separate primaries belonging different inputs
@@ -294,14 +307,19 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 	  //add energies
 	  *digit = *digit + *curSDigit ;  
 	  index[i]++ ;
-	  curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ;
+	  if(((TClonesArray *)sdigArray->At(i))->GetEntriesFast() > index[i] )
+	    curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ; 	
+	  else
+	    curSDigit = 0 ;
 	}
       }
       
       //Find next signal module
       for(i=0; i<input; i++){
 	sdigits = (TClonesArray *)sdigArray->At(i) ;
-	Int_t curNext = ((AliPHOSDigit *) sdigits->At(index[i]))->GetId() ;
+	Int_t curNext = nextSig ;
+	if(sdigits->GetEntriesFast() > index[i] )
+	  curNext = ((AliPHOSDigit *) sdigits->At(index[i]))->GetId() ;
 	if(curNext < nextSig) nextSig = curNext ;
       }
       
