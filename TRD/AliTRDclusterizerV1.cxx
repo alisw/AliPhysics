@@ -273,7 +273,8 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
         // Loop through the chamber and find the maxima 
         for ( row = 0;  row <  nRowMax;    row++) {
-          for ( col = 2;  col <  nColMax;    col++) {
+	  //          for ( col = 2;  col <  nColMax;    col++) {
+          for ( col = 4;  col <  nColMax-2;    col++) {
             for (time = 0; time < nTimeTotal; time++) {
 
               Int_t signalL = TMath::Abs(digits->GetDataUnchecked(row,col  ,time));
