@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2001/01/22 21:38:46  jbarbosa
+  Dummy padplane dimensions
+
   Revision 1.3  2000/10/03 21:44:09  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -30,18 +33,32 @@
 
 ClassImp(AliRICHSegmentationV0)
 
+//________________________________________________________________________________
+AliRICHSegmentationV0::AliRICHSegmentationV0()
+{ 
+
+// Default constructor for AliRICHSegmentationV0 (no dead zones)
+
+  fNpx=144;
+  fNpy=160;
+  fDeadZone=0;
+  fSector=-1;
+}
+
 void AliRICHSegmentationV0::Init(Int_t id)
 {
 
 // Initialisation of chambers
+  
+  //printf("*           Initialising SegmentationV0 (no dead zones) in chamber %d            *\n",id+1);
 
-  fNpx=160;
-  fNpy=144;
-  //fNpx=80;
-  //fNpy=48;
-  fPadPlane_Width=-1;
-  fPadPlane_Length=-1;
-  fSector=-1;
+  // parametrised definition
+  
+  Float_t csi_length = fNpy*fDpy + fDeadZone;
+  Float_t csi_width = fNpx*fDpx + 2*fDeadZone;
+  
+  fPadPlane_Width = (csi_width - 2*fDeadZone)/3;
+  fPadPlane_Length = (csi_length - fDeadZone)/2;
 }
 
 
