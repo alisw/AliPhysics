@@ -13,7 +13,7 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 #include "AliRICHParam.h"
-#include <iostream.h>
+#include <Riostream.h>
 
 ClassImp(AliRICHParam)
 Bool_t   AliRICHParam::fgIsWireSag            =kTRUE;
