@@ -430,10 +430,9 @@ Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit) const
   Bool_t rv = kFALSE ; 
   const AliPHOSGeometry * geom = AliPHOSGetter::GetInstance()->PHOSGeometry() ;
 
-  Int_t relid[4] ; 
-  geom->AbsToRelNumbering(digit->GetId(), relid) ; 
+  Int_t nEMC = geom->GetNModules()*geom->GetNPhi()*geom->GetNZ();  
 
-  if ( relid[1] == 0  ) rv = kTRUE; 
+  if(digit->GetId() <= nEMC )   rv = kTRUE; 
 
   return rv ; 
 }
@@ -446,10 +445,9 @@ Bool_t AliPHOSClusterizerv1::IsInCpv(AliPHOSDigit * digit) const
   Bool_t rv = kFALSE ; 
   const AliPHOSGeometry * geom = AliPHOSGetter::GetInstance()->PHOSGeometry() ;
 
-  Int_t relid[4] ; 
-  geom->AbsToRelNumbering(digit->GetId(), relid) ; 
+  Int_t nEMC = geom->GetNModules()*geom->GetNPhi()*geom->GetNZ();
 
-  if ( relid[1] != 0  ) rv = kTRUE; 
+  if(digit->GetId() > nEMC )   rv = kTRUE;
 
   return rv ; 
 }
