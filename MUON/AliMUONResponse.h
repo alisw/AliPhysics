@@ -33,10 +33,14 @@ public TObject {
     virtual Float_t ChargeSpreadY()                           =0;
     // Set maximum Adc-count value
     virtual void    SetMaxAdc(Int_t p1)                       =0;
+    // Set saturation value
+    virtual void    SetSaturation(Int_t p1)                   =0;
     // Set zero suppression threshold
     virtual void    SetZeroSuppression(Int_t val)             =0;
     // Get maximum Adc-count value
     virtual Int_t MaxAdc()                                    =0;
+    // Get saturation value
+    virtual Int_t Saturation()                                =0;
     // Get maximum zero suppression threshold
     virtual Int_t ZeroSuppression()                           =0;
     // Set anode cathode Pitch

@@ -32,10 +32,15 @@ public AliMUONResponse {
     virtual Float_t ChargeSpreadY()    {return fChargeSpreadY;}        
     // Set maximum Adc-count value
     virtual void    SetMaxAdc(Int_t p1) {fMaxAdc=p1;}
+    // Set saturation value
+    virtual void    SetSaturation(Int_t p1) {fSaturation=p1;}
     // Set zero suppression threshold
     virtual void    SetZeroSuppression(Int_t p1) {fZeroSuppression=p1;}
     // Get maximum Adc-count value   
     virtual Int_t   MaxAdc()           {return fMaxAdc;}
+    // Get saturation value   
+    virtual Int_t   Saturation()           {return fSaturation;}
+
     // Get zero suppression threshold
     virtual Int_t   ZeroSuppression() {return fZeroSuppression;}
     // Set anode cathode Pitch
@@ -79,6 +84,7 @@ public AliMUONResponse {
     Float_t fChargeSpreadY;            // Width of the charge distribution in y
     Float_t fSigmaIntegration;         // Number of sigma's used for charge distribution
     Int_t   fMaxAdc;                   // Maximum ADC channel
+    Int_t   fSaturation;               // Pad saturation in ADC channel
     Int_t   fZeroSuppression;          // Zero suppression threshold
     Float_t fChargeCorrel;             // amplitude of charge correlation on 2 cathods
                                        // is RMS of ln(q1/q2)
