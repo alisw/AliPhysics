@@ -228,7 +228,9 @@ void AliMUONDigitizerv1::Exec(Option_t* option)
   //  AliRunLoader *  runloaderout  = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   //AliLoader * gimeout         = runloaderout->GetLoader("MUONLoader"); 
   // New branch per chamber for MUON digit in the tree of digits
-  if (gime->TreeD() == 0x0) gime->MakeDigitsContainer();
+  if (gime->TreeD() == 0x0) {
+    gime->MakeDigitsContainer();
+  }
   TTree* treeD = gime->TreeD();
   muondata->MakeBranch("D");
   muondata->SetTreeAddress("D");
@@ -390,6 +392,7 @@ void AliMUONDigitizerv1::Exec(Option_t* option)
 	// Add digits
 	if (GetDebug()>3) cerr<<"AliMUONDigitzerv1::Exex TransientDigit to Digit"<<endl;
 	if ( digits[2] == icat ) muondata->AddDigit(ich,tracks,charges,digits);
+//	printf("test rm ich %d padX %d padY %d \n",ich, digits[0], digits[1]);
       }
       // Filling list of digits per chamber for a given cathode.
       muondata->Fill("D");
@@ -411,10 +414,10 @@ void AliMUONDigitizerv1::Exec(Option_t* option)
     gime->WriteDigits("OVERWRITE");
     delete [] fHitMap;
     delete fTDList;
-    
     muondata->ResetHits();
+    gime->UnloadHits();
+    gime->UnloadDigits();
 }
-
 //------------------------------------------------------------------------
 void AliMUONDigitizerv1::SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr)
 {
