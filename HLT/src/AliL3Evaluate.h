@@ -16,6 +16,7 @@ struct GoodTrack
   Double_t px,py,pz;
   Double_t x,y,z;
   Int_t nhits;
+  Int_t sector;
 };
 typedef struct GoodTrack GoodTrack;
 
@@ -31,6 +32,7 @@ class TTree;
 class AliSimDigits;
 class TObjArray;
 class TParticle;
+class TNtupleD;
 
 class AliL3Evaluate {
 
@@ -84,11 +86,11 @@ class AliL3Evaluate {
   void FillEffHistosNAIVE();
   void CalcEffHistos();
   void AssignIDs();
-  void GetGoodParticles(Char_t *particle_file);
+  void GetGoodParticles(Char_t *particle_file,Bool_t sector=kFALSE);
   void GetFastClusterIDs(Char_t *path);
   void GetCFeff(Char_t *outfile);
   Int_t GetMCTrackLabel(AliL3Track *track);
-  TNtuple *CalculateResiduals();
+  TNtupleD *CalculateResiduals(Char_t *datapath);
   TNtuple *EvaluatePoints(Char_t *rootfile);
   
   void SetMinPoints(Int_t f) {fMinPointsOnTrack = f;}
