@@ -92,8 +92,8 @@ protected:
   TFolder* fFGeom ;       //  Folder that holds the Geometry definition
   TTask*   fDTask ;       //  TOF Digitizer container
   TTask*   fReTask;       //  TOF Reconstructioner container
-  TClonesArray* fSDigits; //! List of summable digits
-  Int_t    fNSDigits;           // Number of sdigits
+  TClonesArray* fSDigits; //!  List of summable digits
+  Int_t    fNSDigits;           //! Number of sdigits
   TClonesArray* fReconParticles; // List of reconstructed particles
   AliTOFMerger *fMerger;   // ! pointer to merger
   Int_t   fNTof;  // number of TOF sectors
@@ -129,7 +129,7 @@ protected:
 
 private:
 
-  ClassDef(AliTOF,4)  // Time Of Flight base class
+  ClassDef(AliTOF,5)  // Time Of Flight base class
 };
  
 #endif /* ALITOF_H */

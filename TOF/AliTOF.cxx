@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2002/05/03 07:34:19  vicinanz
+Updated SDigitizer; Added AliTOFanalyzeSDigits.C macro
+
 Revision 1.36  2002/04/19 14:40:51  vicinanz
 Updated SDigitizer
 
@@ -170,6 +173,7 @@ AliTOF::AliTOF()
   fReTask = 0x0;
   fIshunt   = 0;
   fSDigits       = 0 ;
+  fNSDigits = 0;
   fDigits        = 0 ;
   fReconParticles = 0x0;
   fName="TOF";
@@ -201,6 +205,7 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   fIshunt  = 0;
   fSDigits       = new TClonesArray("AliTOFSDigit",  1000);
   fDigits        = new TClonesArray("AliTOFdigit",  1000);
+  fNSDigits = 0;
 
   fFGeom = 0x0;
   fDTask = 0x0;
