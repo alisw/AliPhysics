@@ -1048,7 +1048,6 @@ Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],const Int_t NumTable
     cout<<"First one has been found "<<endl;
     cout<<"Number of packets:"<<packetNumber<<endl;
   }//end if
-  AliTPCBuffer160 bufferFile("DDL1.dat",1);
   ULong_t k=0;
   ULong_t wordsRead=0; //number of read coded words
   while(k<packetNumber){
@@ -1090,8 +1089,6 @@ Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],const Int_t NumTable
       }
       if(nextTableType>1){
 	//
-	bufferFile.FillBuffer(symbol);
-	//
 	//ftxt<<symbol<<endl;
 	out[dim]=symbol;
 	dim++;
@@ -1101,14 +1098,11 @@ Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],const Int_t NumTable
       NextTable(symbol,nextTableType,bunchLen,count); 
       if(nextTableType==0){
 	//
-	bufferFile.FillBuffer(time);
-	bufferFile.FillBuffer(bunchLen+2);
 	//ftxt<<time<<endl;
 	//  ftxt<<(bunchLen+2)<<endl;
 	bunchLen=0;
       }
     }//end for
-    bufferFile.WriteTrailer(numWords,padNumber,rowNumber,secNumber);
   }//end while
   return 0; 
 }

@@ -42,6 +42,7 @@
 #include "AliTPCClustersRow.h"
 #include "AliComplexCluster.h"
 #include "AliTPCpolyTrack.h"
+#include "AliRunLoader.h"
 #include "TStopwatch.h"
 
 
@@ -198,7 +199,7 @@ Int_t AliTPCtrackerMI::UpdateTrack(AliTPCseed * track, AliTPCclusterMI* c, Doubl
 
 }
 //_____________________________________________________________________________
-AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCParam *par, Int_t eventn): 
+AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCParam *par): 
 AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
 {
   //---------------------------------------------------------------------
@@ -216,17 +217,6 @@ AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
   fClustersArray.Setup(par);
   fClustersArray.SetClusterType("AliTPCclusterMI");
 
-  char   cname[100];
-  if (eventn==-1) {
-    sprintf(cname,"TreeC_TPC");
-  }
-  else {
-    sprintf(cname,"TreeC_TPC_%d",eventn);
-  }
-
-  fClustersArray.ConnectTree(cname);
-
-  fEventN = eventn;
   fSeeds=0;
   fNtracks = 0;
   fParam = par;
@@ -608,6 +598,10 @@ Int_t AliTPCtrackerMI::LoadClusters()
   for (Int_t i=0; i<j; i++) {
     fClustersArray.LoadEntry(i);
   }
+
+  LoadOuterSectors();
+  LoadInnerSectors();
+
   return 0;
 }
 
@@ -1741,31 +1735,20 @@ Int_t AliTPCtrackerMI::ReadSeeds(const TFile *inp) {
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCtrackerMI::Clusters2Tracks(const TFile *inp, TFile *out) {
+Int_t AliTPCtrackerMI::Clusters2Tracks() {
   //-----------------------------------------------------------------
   // This is a track finder.
   //-----------------------------------------------------------------
-  TDirectory *savedir=gDirectory; 
-
-  if (inp) {
-     TFile *in=(TFile*)inp;
-     if (!in->IsOpen()) {
-        cerr<<"AliTPCtrackerMI::Clusters2Tracks(): input file is not open !\n";
-        return 1;
-     }
+  TTree* clustersTree = AliRunLoader::GetTreeR("TPC", kFALSE);
+  if (!clustersTree) {
+    Error("Clusters2Tracks", "no clusters found");
+    return 1;
   }
+  fClustersArray.ConnectTree(clustersTree);
 
-  if (!out->IsOpen()) {
-     cerr<<"AliTPCtrackerMI::Clusters2Tracks(): output file is not open !\n";
-     return 2;
-  }
-
-  out->cd();
-
-  char   tname[100];
-  sprintf(tname,"TreeT_TPC_%d",fEventN);
-  TTree tracktree(tname,"Tree with TPC tracks");
-  TTree seedtree("Seeds","Seeds");
+  TTree* tracksTree = AliRunLoader::GetTreeT("TPC", kTRUE);
+  TTree& tracktree = *tracksTree;
+//  TTree seedtree("Seeds","Seeds");
   AliTPCtrack *iotrack=0;
   AliTPCseed  *ioseed=0;
   tracktree.Branch("tracks","AliTPCtrack",&iotrack,32000,0);
@@ -1775,13 +1758,6 @@ Int_t AliTPCtrackerMI::Clusters2Tracks(const TFile *inp, TFile *out) {
   LoadClusters();
   printf("Time for loading clusters: \t");timer.Print();timer.Start();
 
-  printf("Loading outer sectors\n");
-  LoadOuterSectors();
-  printf("Time for loading outer sectors: \t");timer.Print();timer.Start();
-
-  printf("Loading inner sectors\n");
-  LoadInnerSectors();
-  printf("Time for loading inner sectors: \t");timer.Print();timer.Start();
   fSectors = fOuterSec;
   fN=fkNOS;
   
@@ -1836,7 +1812,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks(const TFile *inp, TFile *out) {
   vseed->fPoints->ExpandCreateFast(2);
   
   //TBranch * seedbranch =   
-  seedtree.Branch("seeds","AliTPCseed",&vseed,32000,99);
+//  seedtree.Branch("seeds","AliTPCseed",&vseed,32000,99);
   //delete vseed;
   nseed=fSeeds->GetEntriesFast();
 
@@ -1873,12 +1849,11 @@ Int_t AliTPCtrackerMI::Clusters2Tracks(const TFile *inp, TFile *out) {
   UnloadClusters();
   printf("Time for unloading cluster: \t"); timer.Print();timer.Start();
 
-  tracktree.Write();
-  seedtree.Write();
+//  seedtree.Write();
   cerr<<"Number of found tracks : "<<"\t"<<found<<endl;
   
-  savedir->cd();
-  
+  AliRunLoader::GetDetectorLoader("TPC")->WriteTracks("OVERWRITE");
+
   return 0;
 }
 

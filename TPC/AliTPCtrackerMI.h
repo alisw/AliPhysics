@@ -126,8 +126,13 @@ public:
    AliTPCtrackerMI():AliTracker(),fkNIS(0),fkNOS(0) {
       fInnerSec=fOuterSec=0; fSeeds=0; 
    }
-   AliTPCtrackerMI(const AliTPCParam *par, Int_t eventn=0);
+   AliTPCtrackerMI(const AliTPCParam *par);
   ~AliTPCtrackerMI();
+
+   virtual Int_t Clusters2Tracks(AliESD *event) {return -1;};
+   virtual Int_t PropagateBack(AliESD *event) {return -1;};
+   virtual Int_t RefitInward(AliESD *event) {return -1;};
+   virtual Int_t LoadClusters(TTree *) {return -1;};
 
    Int_t ReadSeeds(const TFile *in);
    Int_t LoadClusters();
@@ -135,10 +140,11 @@ public:
 
    void LoadInnerSectors();
    void LoadOuterSectors();
-   AliCluster * GetCluster (int) const {return 0;}
+   AliCluster * GetCluster (Int_t index) const 
+     {return (AliCluster*) GetClusterMI(index);}
    AliTPCclusterMI *GetClusterMI(Int_t index) const;
-   Int_t Clusters2Tracks(const TFile *in, TFile *out);
-   //   Int_t PropagateBack(const TFile *in, TFile *out);
+   Int_t Clusters2Tracks();
+   Int_t PropagateBack() {return -1;};
 
    virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 
    void RotateToLocal(AliTPCseed *seed);

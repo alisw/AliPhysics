@@ -9,6 +9,12 @@
 #ifndef AliTPCCOMPRESSION_H
 #define AliTPCCOMPRESSION_H
 
+#ifdef __CINT__
+class fstream;
+#else
+#include "Riostream.h"
+#endif
+
 class AliTPCHNode;
 class AliTPCHTable;
 
