@@ -20,22 +20,29 @@ void AliPMDDigits2Recpoints(Int_t nevt=1)
   TStopwatch timer;
   timer.Start();
 
-  // Input file name
-  Char_t *alifile = "galice.root"; 
+  // Open the AliRoot file
+  AliRunLoader *fRunLoader = AliRunLoader::Open("galice.root");
+  if (!fRunLoader)
+    {
+      cerr<<"Can't load RunLoader"<<endl;
+      return 1;
+    }
+  fRunLoader->LoadgAlice();
+  gAlice = fRunLoader->GetAliRun();
+
 
   // Create the PMD Cluster Finder 
-  AliPMDClusterFinder *clus = new AliPMDClusterFinder();
+  AliPMDClusterFinder *clus = new AliPMDClusterFinder(fRunLoader);
   
-  // Open the AliRoot file
-  clus->OpengAliceFile(alifile,"DR");
-  
-  Int_t ievt;
-  
-  for (ievt = 0; ievt < nevt; ievt++)
+  clus->SetDebug(1);
+  clus->Load();
+
+  for (Int_t ievt = 0; ievt < nevt; ievt++)
     {
       clus->Digits2RecPoints(ievt);
     }
   clus->UnLoad("R");
+
   timer.Stop();
   timer.Print();
 }
