@@ -97,8 +97,8 @@ void MUONtestrawclust (Int_t evNumber1=0,Int_t evNumber2=0, Int_t ich1=0, Int_t 
 			   mHit=(AliMUONHit*)MUON->NextHit()) 
 		       {
 			   Int_t   nch   = mHit->fChamber;  // chamber number
-			   Float_t x     = mHit->fX;        // x-pos of hit
-			   Float_t y     = mHit->fY;        // y-pos
+			   Float_t x     = mHit->X();        // x-pos of hit
+			   Float_t y     = mHit->Y();        // y-pos
 			   if (nch==(ich+1)){
 			       hresx->Fill(xrec-x,float(1));
 			       hresy->Fill(yrec-y,float(1));	
