@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/30 16:40:03  dibari
+  New configurale version.
+
   Revision 1.4  2000/06/13 13:13:40  jbarbosa
   Correcting previous correction...
 
@@ -72,7 +75,7 @@
 ClassImp(AliRICHv2)
     
 //___________________________________________
-AliRICHv2::AliRICHv2() : AliRICHv1()
+AliRICHv2::AliRICHv2()
 {
 
 // Default constructor fo AliRICHvv2 (full version)
@@ -82,7 +85,7 @@ AliRICHv2::AliRICHv2() : AliRICHv1()
 
 //___________________________________________
 AliRICHv2::AliRICHv2(const char *name, const char *title)
-    : AliRICHv1(name,title)
+    : AliRICH(name,title)
 {
 
 // Full version of RICH with hits and diagnostics, CONFIURABLE

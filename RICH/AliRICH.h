@@ -44,8 +44,10 @@ class AliRICH : public  AliDetector {
 
 
     virtual void   BuildGeometry();
-    virtual void   CreateGeometry() {}
-    virtual void   CreateMaterials() {}
+    virtual void   CreateGeometry();
+    virtual void   CreateMaterials();
+    virtual Float_t AbsoCH4(Float_t x);
+    virtual Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola);
     virtual void   StepManager();
     Int_t          DistancetoPrimitive(Int_t px, Int_t py);
     virtual Int_t  IsVersion() const =0;
@@ -112,7 +114,22 @@ class AliRICH : public  AliDetector {
     Int_t                *fNrechits;           // Number of rec hits 
     Int_t                 fDebugLevel;          // Source debugging level
 
- protected:
+    Int_t fCkovNumber;                   // Number of Cerenkov photons
+    Int_t fCkovQuarz;                    // Cerenkovs crossing quartz
+    Int_t fCkovGap;                      // Cerenkovs crossing gap
+    Int_t fCkovCsi;                      // Cerenkovs crossing csi
+    Int_t fLostRfreo;                    // Cerenkovs reflected in freon
+    Int_t fLostRquar;                    // Cerenkovs reflected in quartz
+    Int_t fLostAfreo;                    // Cerenkovs absorbed in freon 
+    Int_t fLostAquarz;                   // Cerenkovs absorbed in quartz
+    Int_t fLostAmeta;                    // Cerenkovs absorbed in methane
+    Int_t fLostCsi;                      // Cerenkovs below csi quantum efficiency 
+    Int_t fLostWires;                    // Cerenkovs lost in wires
+    Int_t fFreonProd;                    // Cerenkovs produced in freon
+    Float_t fMipx;                       // x coord. of MIP
+    Float_t fMipy;                       // y coord. of MIP
+    Int_t fFeedbacks;                    // Number of feedback photons
+    Int_t fLostFresnel;                  // Cerenkovs lost by Fresnel reflection
     
     ClassDef(AliRICH,1)  //Hits manager for set:RICH
 };

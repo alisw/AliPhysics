@@ -13,7 +13,7 @@
 
 #include "AliRICHv1.h"
 
-class AliRICHv2 : public AliRICHv1 {
+class AliRICHv2 : public AliRICH {
     
  public:
     
@@ -22,6 +22,7 @@ class AliRICHv2 : public AliRICHv1 {
 
     AliRICHv2();
     AliRICHv2(const char *name, const char *title);
+    virtual Int_t  IsVersion() const {return 2;}
     virtual void   Init();
     virtual       ~AliRICHv2() {}
    

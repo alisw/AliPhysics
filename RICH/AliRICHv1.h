@@ -13,7 +13,7 @@
 
 #include "AliRICHv0.h"
 
-class AliRICHv1 : public AliRICHv0 {
+class AliRICHv1 : public AliRICH {
     
  public:
     
@@ -23,8 +23,8 @@ class AliRICHv1 : public AliRICHv0 {
     AliRICHv1();
     AliRICHv1(const char *name, const char *title);
     virtual void   Init();
+    virtual Int_t  IsVersion() const {return 1;}
     virtual       ~AliRICHv1() {}
-    virtual void   StepManager();
 
  private:
     ClassDef(AliRICHv1,1)  //Hits manager for set: RICH full version 
