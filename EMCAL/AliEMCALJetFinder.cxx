@@ -18,6 +18,9 @@
 //*-- Authors: Andreas Morsch   (CERN)
 //*            J.L. Klay        (LBL)
 //*            Aleksei Pavlinov (WSU) 
+//
+//
+//
 
 #include <stdio.h>
 // From root ...
@@ -315,6 +318,7 @@ void AliEMCALJetFinder::Find()
 
 Float_t AliEMCALJetFinder::EMCALConeEnergy(Float_t eta, Float_t phi)
 {
+// Calculate the energy in the cone	
 Float_t newenergy = 0.0;
 Float_t bineta,binphi;
 TAxis *x = fhLegoEMCAL->GetXaxis();
@@ -336,6 +340,7 @@ return newenergy;
 
 Float_t AliEMCALJetFinder::TrackConeEnergy(Float_t eta, Float_t phi)
 {
+// Calculate the track energy in the cone	
 Float_t newenergy = 0.0;
 Float_t bineta,binphi;
 TAxis *x = fhLegoTracks->GetXaxis();
@@ -383,8 +388,8 @@ return eta*phi*0.0;
 
 Float_t AliEMCALJetFinder::WeightedJetEnergy(Float_t eta, Float_t phi)
 {
-
-
+// Calculate the weighted jet energy
+	 
 Float_t newenergy = 0.0;
 Float_t bineta,binphi;
 TAxis *x = fhLegoEMCAL->GetXaxis();
@@ -409,7 +414,7 @@ return newenergy;
 }
 
 	
-Int_t AliEMCALJetFinder::Njets()
+Int_t AliEMCALJetFinder::Njets() const
 {
 // Get number of reconstructed jets
     return EMCALJETS.njet;
@@ -671,8 +676,8 @@ void AliEMCALJetFinder::DumpLego()
 // Dump lego histo into array
 //
     fNcell = 0;
-    TAxis* Xaxis = fLego->GetXaxis();
-    TAxis* Yaxis = fLego->GetYaxis();
+    TAxis* xaxis = fLego->GetXaxis();
+    TAxis* yaxis = fLego->GetYaxis();
     //    fhCellEt->Clear();
     Float_t e, eH;
     for (Int_t i = 1; i <= fNbinEta; i++) {
@@ -687,8 +692,8 @@ void AliEMCALJetFinder::DumpLego()
 	    }
 	    if (e > 0.0) e -= fMinCellEt;
 	    if (e < 0.0) e = 0.;
-	    Float_t eta  = Xaxis->GetBinCenter(i);
-	    Float_t phi  = Yaxis->GetBinCenter(j);	    
+	    Float_t eta  = xaxis->GetBinCenter(i);
+	    Float_t phi  = yaxis->GetBinCenter(j);	    
 	    fEtCell[fNcell]  = e;
 	    fEtaCell[fNcell] = eta;
 	    fPhiCell[fNcell] = phi;
@@ -1158,16 +1163,16 @@ void AliEMCALJetFinder::FillFromHitFlaggedTracks(Int_t flag)
     fNtS  = 0;
     
     for (Int_t track = 0; track < ntracks; track++) {
-	  TParticle *MPart = gAlice->GetMCApp()->Particle(track);
-	  Float_t pT    = MPart->Pt();
-	  Float_t phi   = MPart->Phi();
-	  Float_t eta   = MPart->Eta();
+	  TParticle *mPart = gAlice->GetMCApp()->Particle(track);
+	  Float_t pT    = mPart->Pt();
+	  Float_t phi   = mPart->Phi();
+	  Float_t eta   = mPart->Eta();
 
 	if(fTrackList[track]) {
 	  fPtT[track]       = pT;
 	  fEtaT[track]      = eta;
 	  fPhiT[track]      = phi;
-	  fPdgT[track]      = MPart->GetPdgCode();
+	  fPdgT[track]      = mPart->GetPdgCode();
 	  
 	  if (track < 2) continue;	//Colliding particles?
 	  if (pT == 0 || pT < fPtCut) continue;
@@ -1183,7 +1188,7 @@ void AliEMCALJetFinder::FillFromParticles()
 // 26-feb-2002 PAI - for checking all chain
 // Work on particles level; accept all particle (not neutrino )
     
-    Double_t PX=0, PY=0, PZ=0, E=0; // checking conservation law 
+    Double_t pX=0, pY=0, pZ=0, energy=0; // checking conservation law 
     fNChTpc = 0;
 
     ResetMap();
@@ -1203,23 +1208,23 @@ void AliEMCALJetFinder::FillFromParticles()
 //  Go through the particles
     Int_t mpart, child1, child2, geantPdg;
     Float_t pT, phi, eta, e=0, px=0, py=0, pz=0;
-    TParticle *MPart=0;
+    TParticle *mPart=0;
     for (Int_t part = 0; part < npart; part++) {
 
 	fTrackList[part] = 0;
 
-	MPart   = gAlice->GetMCApp()->Particle(part);
-	mpart   = MPart->GetPdgCode();
-	child1  = MPart->GetFirstDaughter();
-	child2  = MPart->GetLastDaughter();
-	pT      = MPart->Pt();
-	phi     = MPart->Phi();
-	eta     = MPart->Eta();
+	mPart   = gAlice->GetMCApp()->Particle(part);
+	mpart   = mPart->GetPdgCode();
+	child1  = mPart->GetFirstDaughter();
+	child2  = mPart->GetLastDaughter();
+	pT      = mPart->Pt();
+	phi     = mPart->Phi();
+	eta     = mPart->Eta();
 
-        px      = MPart->Px();
-        py      = MPart->Py();
-        pz      = MPart->Pz();
-        e       = MPart->Energy();
+        px      = mPart->Px();
+        py      = mPart->Py();
+        pz      = mPart->Pz();
+        e       = mPart->Energy();
 
 // see pyedit in Pythia's text
         geantPdg = mpart;
@@ -1246,10 +1251,10 @@ void AliEMCALJetFinder::FillFromParticles()
 
 	//        printf("%4i -> %5i(%3i) px %6.1f py %6.1f pz %7.1f e %8.2f child1 %5i %s\n", 
 	//        part, mpart, geantPdg, px, py, pz, e, child1, name.Data());
-        PX += px; 
-        PY += py; 
-        PZ += pz;
-        E  += e; 
+        pX += px; 
+        pY += py; 
+        pZ += pz;
+        energy  += e; 
 
         
 	if (TMath::Abs(eta) <= 0.9) fNChTpc++;
@@ -1265,7 +1270,7 @@ void AliEMCALJetFinder::FillFromParticles()
 
     } // primary loop
     printf("\n                PX %8.2f  PY %8.2f  PZ %8.2f  E %8.2f \n", 
-    PX, PY, PZ, E);
+    pX, pY, pZ, energy);
     DumpLego();
     if(fhChPartMultInTpc) fhChPartMultInTpc->Fill(fNChTpc);
 }
@@ -1292,15 +1297,15 @@ void AliEMCALJetFinder::FillFromPartons()
 //  Go through the partons
     Int_t statusCode=0;
     for (Int_t part = 8; part < npart; part++) {
-	TParticle *MPart = gAlice->GetMCApp()->Particle(part);
-	Int_t mpart   = MPart->GetPdgCode();
+	TParticle *mPart = gAlice->GetMCApp()->Particle(part);
+	Int_t mpart   = mPart->GetPdgCode();
 	//	Int_t child1  = MPart->GetFirstDaughter();
-	Float_t pT    = MPart->Pt();
+	Float_t pT    = mPart->Pt();
 	//	Float_t p     = MPart->P();
-	Float_t phi   = MPart->Phi();
-	Float_t eta   = MPart->Eta();
+	Float_t phi   = mPart->Phi();
+	Float_t eta   = mPart->Eta();
 	//	Float_t theta = MPart->Theta();
-        statusCode    = MPart->GetStatusCode();
+        statusCode    = mPart->GetStatusCode();
 	
 // accept partons (21 - gluon, 92 - string) 
 	if (!(TMath::Abs(mpart) <= 6 || mpart == 21 ||mpart == 92)) continue;
@@ -1333,8 +1338,8 @@ void AliEMCALJetFinder::BuildTrackFlagTable() {
 // Access hit information    
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
     
-    TTree *TK = gAlice->TreeK();		// Get the number of entries in the kine tree
-    Int_t nKTrks = (Int_t) TK->GetEntries();	// (Number of particles created somewhere)
+    TTree *treeK = gAlice->TreeK();		// Get the number of entries in the kine tree
+    Int_t nKTrks = (Int_t) treeK->GetEntries();	// (Number of particles created somewhere)
     
     if(fTrackList) delete[] fTrackList;		//Make sure we get rid of the old one
     fTrackList = new Int_t[nKTrks];		//before generating a new one
@@ -1422,7 +1427,7 @@ void AliEMCALJetFinder::BuildTrackFlagTable() {
 
 Int_t AliEMCALJetFinder
 ::SetTrackFlag(Float_t radius, Int_t code, Double_t charge) {
-
+// Set the flag for the track
     Int_t flag    = 0; 
     Int_t parton  = 0; 
     Int_t neutral = 0;
@@ -1666,16 +1671,26 @@ void hf1(Int_t& , Float_t& , Float_t& )
 }
 
 void AliEMCALJetFinder::DrawLego(Char_t *opt) 
-{if(fLego) fLego->Draw(opt);}
+{
+// Draw lego
+	if(fLego) fLego->Draw(opt);
+}
 
 void  AliEMCALJetFinder::DrawLegoBackground(Char_t *opt) 
-{if(fLegoB) fLegoB->Draw(opt);}
+{
+// Draw background lego
+	if(fLegoB) fLegoB->Draw(opt);
+}
 
 void AliEMCALJetFinder::DrawLegoEMCAL(Char_t *opt) 
-{if(fhLegoEMCAL) fhLegoEMCAL->Draw(opt);}
+{
+// Draw EMCAL Lego
+	if(fhLegoEMCAL) fhLegoEMCAL->Draw(opt);
+}
 
 void AliEMCALJetFinder::DrawHistsForTuning(Int_t mode)
 { 
+// Draw all hists	
   static TPaveText *varLabel=0;
   if(!fC1) {
     fC1 = new TCanvas("C1","Hists. for tunning", 0,25,600,800);
@@ -1716,6 +1731,8 @@ void AliEMCALJetFinder::DrawHistsForTuning(Int_t mode)
 
 void AliEMCALJetFinder::PrintParameters(Int_t mode)
 {
+// Print all parameters out	
+	
   FILE *file=0;
   if(mode==0) file = stdout; // output to terminal
   else {
@@ -1748,6 +1765,7 @@ void AliEMCALJetFinder::PrintParameters(Int_t mode)
 
 void AliEMCALJetFinder::DrawLegos()
 { 
+// Draw all legos	
   if(!fC1) {
     fC1 = new TCanvas("C1","Hists. for tunning", 0,25,600,800);
   }
@@ -1785,6 +1803,7 @@ void AliEMCALJetFinder::DrawLegos()
 
 const Char_t* AliEMCALJetFinder::GetFileNameForParameters(Char_t* dir)
 {
+// Get paramters from a file	
   static TString tmp;
   if(strlen(dir)) tmp = dir;
   tmp += GetTitle();
@@ -1813,6 +1832,7 @@ void AliEMCALJetFinder::RearrangeParticlesMemory(Int_t npart)
 
 Bool_t AliEMCALJetFinder::IsThisPartonsOrDiQuark(Int_t pdg)
 {
+// Return quark info	
   Int_t absPdg = TMath::Abs(pdg);
   if(absPdg<=6) return kTRUE; // quarks
   if(pdg == 21) return kTRUE; // gluon 
@@ -1957,11 +1977,13 @@ void AliEMCALJetFinder::FindChargedJet()
 // 16-jan-2003 - just for convenience
 void AliEMCALJetFinder::Browse(TBrowser* b)
 {
+// Add to browser	
    if(fHistsList)  b->Add((TObject*)fHistsList);
 }
 
 Bool_t AliEMCALJetFinder::IsFolder() const
 {
+// Return folder status	
   if(fHistsList) return kTRUE;
   else           return kFALSE;
 }
