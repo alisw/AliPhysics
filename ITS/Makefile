@@ -44,7 +44,8 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
                 AliITSclusterV2.cxx AliITStrackV2.cxx AliITStrackerV2.cxx \
 		AliITSPid.cxx AliITStrackV2Pid.cxx  \
 		AliITSVertex.cxx \
-		AliV0vertex.cxx AliV0vertexer.cxx
+		AliV0vertex.cxx AliV0vertexer.cxx \
+		AliCascadeVertex.cxx AliCascadeVertexer.cxx
 #		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 
 # Fortran sources

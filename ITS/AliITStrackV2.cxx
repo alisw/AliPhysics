@@ -17,6 +17,7 @@
 //                Implementation of the ITS track class
 //
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //-------------------------------------------------------------------------
 
 #include <TMatrixD.h>
@@ -88,41 +89,24 @@ AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) : AliKalmanTrack(t) {
   fC40=t.fC40;  fC41=t.fC41;  fC42=t.fC42;  fC43=t.fC43;  fC44=t.fC44;
 
   Int_t n=GetNumberOfClusters();
-  //for (Int_t i=0; i<n; i++) fIndex[i]=t.fIndex[i];
-  //b.b.
   for (Int_t i=0; i<n; i++) {
-    fIndex[i]=t.fIndex[i];
-    fdEdxSample[i]=t.fdEdxSample[i];
+      fIndex[i]=t.fIndex[i];
+      if (i<4) fdEdxSample[i]=t.fdEdxSample[i];
   }
-
 }
-/*
+
 //_____________________________________________________________________________
 Int_t AliITStrackV2::Compare(const TObject *o) const {
   //-----------------------------------------------------------------
   // This function compares tracks according to the their curvature
   //-----------------------------------------------------------------
   AliITStrackV2 *t=(AliITStrackV2*)o;
-  Double_t co=TMath::Abs(t->Get1Pt());
-  Double_t c =TMath::Abs(Get1Pt());
+  //Double_t co=TMath::Abs(t->Get1Pt());
+  //Double_t c =TMath::Abs(Get1Pt());
+  Double_t co=t->GetSigmaY2()*t->GetSigmaZ2();
+  Double_t c =GetSigmaY2()*GetSigmaZ2();
   if (c>co) return 1;
   else if (c<co) return -1;
-  return 0;
-}
-*/
-//_____________________________________________________________________________
-Int_t AliITStrackV2::Compare(const TObject *o) const {
-  //-----------------------------------------------------------------
-  // This function compares tracks according to the their curvature
-  //-----------------------------------------------------------------
-  AliITStrackV2 *t=(AliITStrackV2*)o;
-
-  Double_t p2=1./(Get1Pt()*Get1Pt());
-  Double_t b2=p2/(p2 + GetMass()*GetMass());
-  Double_t po2=1./(t->Get1Pt()*t->Get1Pt());
-  Double_t bo2=po2/(po2 + t->GetMass()*t->GetMass());
-  if (p2*b2>po2*bo2) return -1;
-  else if (p2*b2<po2*bo2) return 1;
   return 0;
 }
 
@@ -142,12 +126,12 @@ void AliITStrackV2::GetExternalCovariance(Double_t cc[15]) const {
 }
 
 //____________________________________________________________________________
-Int_t AliITStrackV2::PropagateToVertex(Double_t x0,Double_t rho) {
+Int_t AliITStrackV2::PropagateToVertex(Double_t d,Double_t x0) {
   //------------------------------------------------------------------
   //This function propagates a track to the minimal distance from the origin
   //------------------------------------------------------------------
   Double_t xv=fP2*(fX*fP2 - fP0*TMath::Sqrt(1.- fP2*fP2)); //linear approxim.
-  Propagate(fAlpha,xv,0.,0.);   
+  PropagateTo(xv,d,x0);   
   return 0;
 }
 
@@ -159,7 +143,7 @@ GetGlobalXYZat(Double_t xk, Double_t &x, Double_t &y, Double_t &z) const {
   //------------------------------------------------------------------
   Double_t dx=xk-fX;
   Double_t f1=fP2, f2=f1 + fP4*dx;
-  if (TMath::Abs(f2) >= 0.99999) {
+  if (TMath::Abs(f2) >= 0.9999) {
     Int_t n=GetNumberOfClusters();
     if (n>kWARN) 
       cerr<<n<<" AliITStrackV2::GetGlobalXYZat: Propagation failed !\n";
@@ -276,14 +260,44 @@ Double_t x0) const {
 }
 
 //____________________________________________________________________________
-Int_t 
-AliITStrackV2::PropagateTo(Double_t xk,Double_t x0,Double_t rho) {
+Int_t AliITStrackV2::CorrectForMaterial(Double_t d, Double_t x0) {
+  //------------------------------------------------------------------
+  //This function corrects the track parameters for crossed material
+  //------------------------------------------------------------------
+  Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
+  Double_t beta2=p2/(p2 + GetMass()*GetMass());
+  d*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
+
+  //Multiple scattering******************
+  if (d!=0) {
+    //Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(d);
+     Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*d*9.36*2.33;
+     fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
+     fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
+     fC43 += theta2*fP3*fP4*(1. + fP3*fP3);
+     fC44 += theta2*fP3*fP4*fP3*fP4;
+  }
+
+  //Energy losses************************
+  if (x0!=0.) {
+     d*=x0;
+     Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d;
+     fP4*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
+  }
+
+  if (!Invariant()) return 0;
+
+  return 1;
+}
+
+//____________________________________________________________________________
+Int_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
   //------------------------------------------------------------------
   //This function propagates a track
   //------------------------------------------------------------------
   Double_t x1=fX, x2=xk, dx=x2-x1;
   Double_t f1=fP2, f2=f1 + fP4*dx;
-  if (TMath::Abs(f2) >= 0.99999) {
+  if (TMath::Abs(f2) >= 0.9999) {
     Int_t n=GetNumberOfClusters();
     if (n>kWARN) 
        cerr<<n<<" AliITStrackV2::PropagateTo: Propagation failed !\n";
@@ -338,29 +352,7 @@ AliITStrackV2::PropagateTo(Double_t xk,Double_t x0,Double_t rho) {
 
   fX=x2;
 
-  Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
-  Double_t beta2=p2/(p2 + GetMass()*GetMass());
-
-  //Multiple scattering******************
-  //x0=0.;
-  if (x0!=0) {
-     x0*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
-     Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
-     fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
-     fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
-     fC43 += theta2*fP3*fP4*(1. + fP3*fP3);
-     fC44 += theta2*fP3*fP4*fP3*fP4;
-  }
-
-  //Energy losses************************
-  if (rho!=0.) {
-     rho*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
-     Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*rho;
-     if (x1 < x2) dE=-dE;
-     fP4*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
-  }
-
-  if (!Invariant()) {cout<<"Propagate !\n"; return 0;}
+  if (!CorrectForMaterial(d,x0)) return 0;
 
   return 1;
 }
@@ -435,124 +427,41 @@ Int_t AliITStrackV2::Update(const AliCluster* c, Double_t chi2, UInt_t index) {
   return 1;
 }
 
-
-//____________________________________________________________________________
-Int_t AliITStrackV2::Update(const Double_t* m, Double_t chi2, UInt_t index) {
-  //------------------------------------------------------------------
-  //This function updates track parameters with a vertex constraint
-  //------------------------------------------------------------------
-  Double_t p0=fP0,p1=fP1,p2=fP2,p3=fP3,p4=fP4;
-  Double_t c00=fC00;
-  Double_t c10=fC10, c11=fC11;
-  Double_t c20=fC20, c21=fC21, c22=fC22;
-  Double_t c30=fC30, c31=fC31, c32=fC32, c33=fC33;
-  Double_t c40=fC40, c41=fC41, c42=fC42, c43=fC43, c44=fC44;
-
-
-  TVectorD x(5); x(0)=fP0; x(1)=fP1; x(2)=fP2; x(3)=fP3; x(4)=fP4;
-  TMatrixD C(5,5);
-  C(0,0)=fC00; 
-  C(1,0)=fC10; C(1,1)=fC11; 
-  C(2,0)=fC20; C(2,1)=fC21; C(2,2)=fC22;
-  C(3,0)=fC30; C(3,1)=fC31; C(3,2)=fC32; C(3,3)=fC33;
-  C(4,0)=fC40; C(4,1)=fC41; C(4,2)=fC42; C(4,3)=fC43; C(4,4)=fC44;
-
-  C(0,1)=C(1,0);
-  C(0,2)=C(2,0); C(1,2)=C(2,1);
-  C(0,3)=C(3,0); C(1,3)=C(3,1); C(2,3)=C(3,2);
-  C(0,4)=C(4,0); C(1,4)=C(4,1); C(2,4)=C(4,2); C(3,4)=C(4,3);
-
-  TMatrixD H(4,5); H.UnitMatrix();
-  TMatrixD Ht(TMatrixD::kTransposed,H);
-  TVectorD mm(4); mm(0)=m[0]; mm(1)=m[1]; mm(2)=m[2]; mm(3)=m[3];
-  TMatrixD V(4,4); 
-  V(0,0)=m[4 ]; V(0,1)=m[5 ]; V(0,2)=m[6 ]; V(0,3)=m[7 ];
-  V(1,0)=m[8 ]; V(1,1)=m[9 ]; V(1,2)=m[10]; V(1,3)=m[11];
-  V(2,0)=m[12]; V(2,1)=m[13]; V(2,2)=m[14]; V(2,3)=m[15];
-  V(3,0)=m[16]; V(3,1)=m[17]; V(3,2)=m[18]; V(3,3)=m[19];
-
-  TMatrixD tmp(H,TMatrixD::kMult,C);
-  TMatrixD R(tmp,TMatrixD::kMult,Ht); R+=V;
-
-  R.Invert();
-  
-  TMatrixD K(C,TMatrixD::kMult,Ht); K*=R;
-  
-  TVectorD savex=x;
-  x*=H; x-=mm; x*=-1; x*=K; x+=savex;
-
-  TMatrixD saveC=C;
-  C.Mult(K,tmp); C-=saveC; C*=-1;
-
-  fP0=x(0); fP1=x(1); fP2=x(2); fP3=x(3); fP4=x(4);
-  fC00=C(0,0); 
-  fC10=C(1,0); fC11=C(1,1); 
-  fC20=C(2,0); fC21=C(2,1); fC22=C(2,2);
-  fC30=C(3,0); fC31=C(3,1); fC32=C(3,2); fC33=C(3,3);
-  fC40=C(4,0); fC41=C(4,1); fC42=C(4,2); fC43=C(4,3); fC44=C(4,4);
-
-
-  if (!Invariant()) {
-     fP0=p0; fP1=p1; fP2=p2; fP3=p3; fP4=p4;
-     fC00=c00;
-     fC10=c10; fC11=c11;
-     fC20=c20; fC21=c21; fC22=c22;
-     fC30=c30; fC31=c31; fC32=c32; fC33=c33;
-     fC40=c40; fC41=c41; fC42=c42; fC43=c43; fC44=c44;
-     return 0;
-  }
-
-  Int_t n=GetNumberOfClusters();
-  fIndex[n]=index;
-  SetNumberOfClusters(n+1);
-  SetChi2(GetChi2()+chi2);
-
-  return 1;
-}
-
 Int_t AliITStrackV2::Invariant() const {
   //------------------------------------------------------------------
   // This function is for debugging purpose only
   //------------------------------------------------------------------
   Int_t n=GetNumberOfClusters();
   
-  //if (TMath::Abs(fP1)>11.5)
-  //if (fP1*fP4<0) {
-  //   if (n>kWARN) cerr<<"fP1*fP4="<<fP1*fP4<<' '<<fP1<<endl; return 0;}
-  
-  if (TMath::Abs(fP2)>=1) {if (n>kWARN) cerr<<"fP2="<<fP2<<endl; return 0;}
-
-  if (fC00<=0) {if (n>kWARN) cerr<<"fC00="<<fC00<<endl; return 0;}
-  if (fC11<=0) {if (n>kWARN) cerr<<"fC11="<<fC11<<endl; return 0;}
-  if (fC22<=0) {if (n>kWARN) cerr<<"fC22="<<fC22<<endl; return 0;}
-  if (fC33<=0) {if (n>kWARN) cerr<<"fC33="<<fC33<<endl; return 0;}
-  if (fC44<=0) {if (n>kWARN) cerr<<"fC44="<<fC44<<endl; return 0;}
-  /*
-  TMatrixD m(5,5);
-  m(0,0)=fC00; 
-  m(1,0)=fC10; m(1,1)=fC11; 
-  m(2,0)=fC20; m(2,1)=fC21; m(2,2)=fC22;
-  m(3,0)=fC30; m(3,1)=fC31; m(3,2)=fC32; m(3,3)=fC33;
-  m(4,0)=fC40; m(4,1)=fC41; m(4,2)=fC42; m(4,3)=fC43; m(4,4)=fC44;
-
-  m(0,1)=m(1,0);
-  m(0,2)=m(2,0); m(1,2)=m(2,1);
-  m(0,3)=m(3,0); m(1,3)=m(3,1); m(2,3)=m(3,2);
-  m(0,4)=m(4,0); m(1,4)=m(4,1); m(2,4)=m(4,2); m(3,4)=m(4,3);
-
-  Double_t det=m.Determinant(); 
-
-  if (det <= 0) {
-      if (n>kWARN) { cerr<<" bad determinant "<<det<<endl; m.Print(); } 
-      return 0;
+  if (TMath::Abs(fP2)>=0.9999){
+     if (n>kWARN) cout<<"AliITStrackV2::Invariant : fP2="<<fP2<<endl;
+     return 0;
   }
-  */
+  if (fC00<=0 || fC00>9.) {
+     if (n>kWARN) cout<<"AliITStrackV2::Invariant : fC00="<<fC00<<endl; 
+     return 0;
+  }
+  if (fC11<=0 || fC11>9.) {
+     if (n>kWARN) cout<<"AliITStrackV2::Invariant : fC11="<<fC11<<endl; 
+     return 0;
+  }
+  if (fC22<=0 || fC22>1.) {
+     if (n>kWARN) cout<<"AliITStrackV2::Invariant : fC22="<<fC22<<endl; 
+     return 0;
+  }
+  if (fC33<=0 || fC33>1.) {
+     if (n>kWARN) cout<<"AliITStrackV2::Invariant : fC33="<<fC33<<endl; 
+     return 0;
+  }
+  if (fC44<=0 || fC44>6e-5) {
+     if (n>kWARN) cout<<"AliITStrackV2::Invariant : fC44="<<fC44<<endl;
+     return 0;
+  }
   return 1;
 }
 
 //____________________________________________________________________________
-Int_t 
-AliITStrackV2::Propagate(Double_t alp,Double_t xk,Double_t x0,Double_t rho) {
+Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   //------------------------------------------------------------------
   //This function propagates a track
   //------------------------------------------------------------------
@@ -570,7 +479,7 @@ AliITStrackV2::Propagate(Double_t alp,Double_t xk,Double_t x0,Double_t rho) {
   Double_t sf=fP2, cf=TMath::Sqrt(1.- fP2*fP2);  
 
   Double_t pp2=fP2*ca - cf*sa;
-  if (TMath::Abs(pp2) >= 0.99999) {
+  if (TMath::Abs(pp2) >= 0.9999) {
      Int_t n=GetNumberOfClusters();
      if (n>kWARN) 
         cerr<<n<<" AliITStrackV2::Propagate: Rotation failed !\n";
@@ -589,11 +498,11 @@ AliITStrackV2::Propagate(Double_t alp,Double_t xk,Double_t x0,Double_t rho) {
 
   cf=ca + sf*sa/cf;
 
-  if (!Invariant()) {cout<<dalp<<" Rotate !\n"; return 0;}
+  if (!Invariant()) return 0;
 
   x1=fX; Double_t x2=xk, dx=x2-x1;
   Double_t f1=fP2, f2=f1 + fP4*dx;
-  if (TMath::Abs(f2) >= 0.99999) {
+  if (TMath::Abs(f2) >= 0.9999) {
     Int_t n=GetNumberOfClusters();
     if (n>kWARN) 
        cerr<<n<<" AliITStrackV2::Propagate: Propagation failed !\n";
@@ -672,28 +581,6 @@ AliITStrackV2::Propagate(Double_t alp,Double_t xk,Double_t x0,Double_t rho) {
   fC30=C(3,0); fC31=C(3,1); fC32=C(3,2); fC33=C(3,3);
   fC40=C(4,0); fC41=C(4,1); fC42=C(4,2); fC43=C(4,3); fC44=C(4,4);
 
-  pp2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
-  Double_t beta2=pp2/(pp2 + GetMass()*GetMass());
-
-  //Multiple scattering******************
-  //x0=0.;
-  if (x0!=0.) {
-     x0*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
-     Double_t theta2=14.1*14.1/(beta2*pp2*1e6)*x0;
-     fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
-     fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
-     fC43 += theta2*fP3*fP4*(1. + fP3*fP3);
-     fC44 += theta2*fP3*fP4*fP3*fP4;
-  }
-
-  //Energy losses************************
-  if (rho!=0.) {  
-     rho*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
-     Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*rho;
-     if (x1 < x2) dE=-dE;
-     fP4*=(1.- sqrt(pp2+GetMass()*GetMass())/pp2*dE);
-  }
-
   if (!Invariant()) {
      fP0=p0; fP1=p1; fP2=p2; fP3=p3; fP4=p4;
      fC00=c00;
@@ -717,8 +604,7 @@ Double_t AliITStrackV2::GetD() const {
   Double_t a=2*(fX*fP2 - fP0*TMath::Sqrt(1.- fP2*fP2))-fP4*(fX*fX + fP0*fP0);
   if (fP4<0) a=-a;
   return a/(1 + TMath::Sqrt(sn*sn + cs*cs));
-} 
-
+}
 
 Int_t AliITStrackV2::Improve(Double_t x0,Double_t yv,Double_t zv) {
   //------------------------------------------------------------------
@@ -729,7 +615,48 @@ Int_t AliITStrackV2::Improve(Double_t x0,Double_t yv,Double_t zv) {
   Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
   x0*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
-  Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
+  //Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
+  Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*x0*9.36*2.33;
+  {
+  Double_t parp=0.5*(fP4*fX + dy*TMath::Sqrt(4/r2-fP4*fP4));
+  Double_t sigma2p = theta2*(1.- GetSnp()*GetSnp())*(1. + GetTgl()*GetTgl());
+  sigma2p += fC00/r2*(1.- dy*dy/r2)*(1.- dy*dy/r2);
+  sigma2p += kSigmaYV*kSigmaYV/r2;
+  sigma2p += 0.25*fC44*fX*fX;
+  Double_t eps2p=sigma2p/(fC22+sigma2p);
+  fP0 += fC20/(fC22+sigma2p)*(parp-fP2);
+  fP2 = eps2p*fP2 + (1-eps2p)*parp;
+  fC22 *= eps2p;
+  fC20 *= eps2p;
+  }
+  {
+  Double_t parl=0.5*fP4*dz/TMath::ASin(0.5*fP4*TMath::Sqrt(r2));
+  Double_t sigma2l=theta2;
+  sigma2l += fC11/r2+fC00*dy*dy*dz*dz/(r2*r2*r2);
+  sigma2l += kSigmaZV*kSigmaZV/r2;
+  Double_t eps2l=sigma2l/(fC33+sigma2l);
+  fP1 += fC31/(fC33+sigma2l)*(parl-fP3);
+  fP4 += fC43/(fC33+sigma2l)*(parl-fP3);
+  fP3 = eps2l*fP3 + (1-eps2l)*parl;
+  fC33 *= eps2l; fC43 *= eps2l; 
+  fC31 *= eps2l; 
+  }
+  if (!Invariant()) return 0;
+  return 1;
+} 
+
+/*
+Int_t AliITStrackV2::Improve(Double_t x0,Double_t yv,Double_t zv) {
+  //------------------------------------------------------------------
+  //This function improves angular track parameters  
+  //------------------------------------------------------------------
+  Double_t dy=fP0-yv, dz=fP1-zv;
+  Double_t r2=fX*fX+dy*dy;
+  Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
+  Double_t beta2=p2/(p2 + GetMass()*GetMass());
+  x0*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
+  //Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
+  Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*x0*9.36*2.33;
 
   Double_t par=0.5*(fP4*fX + dy*TMath::Sqrt(4/r2-fP4*fP4));
   Double_t sigma2 = theta2*(1.- GetSnp()*GetSnp())*(1. + GetTgl()*GetTgl());
@@ -758,75 +685,7 @@ Int_t AliITStrackV2::Improve(Double_t x0,Double_t yv,Double_t zv) {
   if (!Invariant()) return 0;
   return 1;
 } 
-
-/*
-Int_t AliITStrackV2::Improve(Double_t x0,Double_t xv,Double_t yv) {
-  //------------------------------------------------------------------
-  //This function improves angular track parameters  
-  //------------------------------------------------------------------
-  TMatrixD I(5,5);
-  TVectorD v(5); v(0)=fP0; v(1)=fP1; v(2)=fP2; v(3)=fP3; v(4)=fP4;
-
-  Double_t r2=fX*fX+fP0*fP0;
-  Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
-  Double_t beta2=p2/(p2 + GetMass()*GetMass());
-  x0*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
-  Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
-
-  v(2)=0.5*(fP4*fX + fP0*TMath::Sqrt(4/r2-fP4*fP4));
-  Double_t sigma2 = theta2*(1.- GetSnp()*GetSnp())*(1. + GetTgl()*GetTgl());
-  sigma2 += fC00/r2*(1.- fP0*fP0/r2)*(1.- fP0*fP0/r2);
-  sigma2 += kSigmaYV*kSigmaYV/r2;
-  I(2,2)=1/sigma2;
-
-  v(3)=0.5*fP4*fP1/TMath::ASin(0.5*fP4*TMath::Sqrt(r2));
-  sigma2=theta2;
-  sigma2 += fC11/r2+fC00*fP0*fP0*fP1*fP1/(r2*r2*r2);
-  sigma2 += kSigmaZV*kSigmaZV/r2;
-  I(3,3)=1/sigma2;
-
-  Double_t tgl=fP3;
-
-  TVectorD x(5); x(0)=fP0; x(1)=fP1; x(2)=fP2; x(3)=fP3; x(4)=fP4;
-  TMatrixD C(5,5);
-  C(0,0)=fC00; 
-  C(1,0)=fC10; C(1,1)=fC11; 
-  C(2,0)=fC20; C(2,1)=fC21; C(2,2)=fC22;
-  C(3,0)=fC30; C(3,1)=fC31; C(3,2)=fC32; C(3,3)=fC33;
-  C(4,0)=fC40; C(4,1)=fC41; C(4,2)=fC42; C(4,3)=fC43; C(4,4)=fC44;
-
-  C(0,1)=C(1,0);
-  C(0,2)=C(2,0); C(1,2)=C(2,1);
-  C(0,3)=C(3,0); C(1,3)=C(3,1); C(2,3)=C(3,2);
-  C(0,4)=C(4,0); C(1,4)=C(4,1); C(2,4)=C(4,2); C(3,4)=C(4,3);
-
-  TMatrixD tmp(I,TMatrixD::kMult,C),U(5,5); U.UnitMatrix();
-  U+=tmp;
-  U.Invert();
-  TMatrixD W1(U);
-  TMatrixD W2(tmp,TMatrixD::kMult,W1);
-
-  v*=W2; x*=W1; x+=v;
-
-  C*=W1;
-
-
-  fP0=x(0); fP1=x(1); fP2=x(2); fP3=x(3); fP4=x(4);
-  fC00=C(0,0); 
-  fC10=C(1,0); fC11=C(1,1); 
-  fC20=C(2,0); fC21=C(2,1); fC22=C(2,2);
-  fC30=C(3,0); fC31=C(3,1); fC32=C(3,2); fC33=C(3,3);
-  fC40=C(4,0); fC41=C(4,1); fC42=C(4,2); fC43=C(4,3); fC44=C(4,4);
-
-  eps=TMath::Sqrt((1+fP3*fP3)/(1+tgl*tgl));
-  fP4*=eps;
-  fC44*=eps*eps; fC43*=eps;fC42*=eps; fC41*=eps; fC40*=eps;
-
-  if (!Invariant()) return 0;
-  return 1;
-} 
 */
-
 void AliITStrackV2::ResetCovariance() {
   //------------------------------------------------------------------
   //This function makes a track forget its history :)  
@@ -842,25 +701,15 @@ void AliITStrackV2::ResetCovariance() {
 
 void AliITStrackV2::CookdEdx(Double_t low, Double_t up) {
   //-----------------------------------------------------------------
-  // This funtion calculates dE/dX within the "low" and "up" cuts.
+  // This function calculates dE/dX within the "low" and "up" cuts.
+  // Origin: Boris Batyunya, JINR, Boris.Batiounia@cern.ch 
   //-----------------------------------------------------------------
   Int_t i;
-  Int_t nc=GetNumberOfClusters();
-  if(nc != 6) cout<<"!!!Warning: ncl isn't 6, ="<<nc<<endl;
-
+  Int_t nc=4;
   // The clusters order is: SSD-2, SSD-1, SDD-2, SDD-1, SPD-2, SPD-1
   // Take only SSD and SDD
-  nc=4;
+
   Int_t swap;//stupid sorting
-
-  cout<<"Start sorting (low,up,nc)..."<<low<<" "<<up<<" "<<nc<<endl;
-
-  /*
-  for (i=0; i<6; i++) {  // b.b.
-      cout<<"! cl befor sort: cl,dEdx ="<<i<<","<<fdEdxSample[i]<<endl;
-    }
-  */
-
   do {
     swap=0;
     for (i=0; i<nc-1; i++) {
@@ -871,22 +720,12 @@ void AliITStrackV2::CookdEdx(Double_t low, Double_t up) {
     }
   } while (swap);
 
-  for (i=0; i<nc; i++) { // b.b.
-    cout<<" i, sorted dEdx ="<<i<<","<<fdEdxSample[i]<<endl;
-  }
-  Int_t nl=Int_t(low*nc), nu=Int_t(up*(nc-1)); //b.b. to take two lowest dEdX
-                                               // values from four ones choose
-                                               // nu=2
-
-  cout<<" Cook: nl,nu, dEdX samples ="<<nl<<" "<<nu<<" ";
+  Int_t nl=Int_t(low*nc), nu=Int_t(up*nc); //b.b. to take two lowest dEdX
+                                           // values from four ones choose
+                                           // nu=2
   Float_t dedx=0;
-  for (i=nl; i<nu; i++){
-    dedx += fdEdxSample[i]; cout<<" "<<fdEdxSample[i]<<" ";}
-  cout<<endl;
-  dedx /= float(nu);
+  for (i=nl; i<nu; i++) dedx += fdEdxSample[i];
+  dedx /= (nu-nl);
 
-  cout<<"! CookdEdx end: dedx ="<<dedx<<endl;
   SetdEdx(dedx);
 }
-  
-

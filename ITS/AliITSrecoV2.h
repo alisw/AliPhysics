@@ -24,8 +24,8 @@
      1.44e-4, 1.44e-4, 7.84e-6, 7.84e-6, 0.006889, 0.006889
    };
 
-   const Double_t kChi2PerCluster=7.;//5.;
-   const Double_t kMaxChi2=15.;//12;
+   const Double_t kChi2PerCluster=5.;//7.;
+   const Double_t kMaxChi2=17.;//15.;
    const Double_t kMaxRoad=3.0;
 
    const Double_t kSigmaYV=0.005e+0;

@@ -40,12 +40,20 @@ void ITSHitsToFastPoints (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal=25, 
    AliITS *ITS  = (AliITS*) gAlice->GetModule("ITS");
    if (!ITS) return;
 
-   // Set the simulation model
+  // Set the simulation model
+
+  /* Bug !!! (I.Belikov)
    AliITSsimulationFastPoints *sim = new AliITSsimulationFastPoints();
 
    for (Int_t i=0;i<3;i++) {
        ITS->SetSimulationModel(i,sim);
    }
+   */
+   
+   for (Int_t i=0;i<3;i++) {
+       ITS->SetSimulationModel(i,new AliITSsimulationFastPoints());
+   }
+   
 
 //
 // Event Loop
@@ -71,8 +79,7 @@ void ITSHitsToFastPoints (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal=25, 
        timer.Stop(); timer.Print();
    } // event loop 
 
-   //delete gAlice;
-   //gAlice=0;
+   delete gAlice; gAlice=0;
    file->Close();
 }
 

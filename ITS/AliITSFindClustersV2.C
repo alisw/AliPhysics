@@ -6,108 +6,48 @@
   #include "AliITSgeom.h"
   #include "AliITSRecPoint.h"
   #include "AliITSclusterV2.h"
-  #include "AliITSsimulationFastPoints.h"
 
   #include "TFile.h"
   #include "TTree.h"
   #include "TParticle.h"
 #endif
 
-//Int_t AliITSFindClustersV2() {
-Int_t AliITSFindClustersV2(char SlowOrFast='s') {
-
+Int_t AliITSFindClustersV2() {
 /****************************************************************
- *  Just something to start with                                *
+ *  This macro converts AliITSRecPoint(s) to AliITSclusterV2(s) *
  ****************************************************************/
-   cerr<<"Looking for clusters...\n";
-   cout<<"!!!! SlowOrFast =  "<<SlowOrFast<<endl;
-///////////////// Conversion AliITSRecPoint -> AliITSclusterV2 //////////////
+   cerr<<"AliITSRecPoint(s) -> AliITSclusterV2(s)...\n";
 
-   //    for the fast recpoints
-  if(SlowOrFast=='f') {
-   cout<<"22 !!!! SlowOrFast =  "<<SlowOrFast<<endl; 
-   /* 
    if (gAlice) {delete gAlice; gAlice=0;}
 
-   TFile *in=TFile::Open("galice.root","update");
-   if (!in->IsOpen()) {
-      cerr<<"Can't open galice.root !\n"; 
-      return 1;
-   }
-   
+   TFile *in=TFile::Open("galice.root");
+   if (!in->IsOpen()) { cerr<<"Can't open galice.root !\n"; return 1; }
+
    if (!(gAlice=(AliRun*)in->Get("gAlice"))) {
       cerr<<"Can't find gAlice !\n";
       return 2;
    }
-
-   Int_t ev=0;
-   gAlice->GetEvent(ev);
-
-   AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
-   if (!ITS) {
-      cerr<<"Can't find the ITS !\n";
-      return 3;
-   }
-
-   gAlice->MakeTree("R"); ITS->MakeBranch("R",0);
-//////////////// Taken from ITSHitsToFastPoints.C ///////////////////////
-   ITS->SetSimulationModel(0,new AliITSsimulationFastPoints());
-   ITS->SetSimulationModel(1,new AliITSsimulationFastPoints());
-   ITS->SetSimulationModel(2,new AliITSsimulationFastPoints());
-   Int_t nsignal=25;
-   Int_t size=-1;
-   Int_t bgr_ev=Int_t(ev/nsignal);
-   ITS->HitsToFastRecPoints(ev,bgr_ev,size," ","All"," ");
-//////////////////////////////////////////////////////////////////////////
-
-   delete gAlice; gAlice=0;
-   in->Close();
-   */
-  }    // end of fast recpoints
-
-
-   // for the slow points
-
-   /*TFile */in=TFile::Open("galice.root");
-
-   if (gAlice) {delete gAlice; gAlice=0;}
-
-   if (!(gAlice=(AliRun*)in->Get("gAlice"))) {
-      cerr<<"Can't find gAlice !\n";
-      return 4;
-   }
-
    gAlice->GetEvent(0);
 
-   /*AliITS */ITS  = (AliITS*)gAlice->GetModule("ITS");
-   if (!ITS) {
-      cerr<<"Can't find the ITS !\n";
-      return 5;
-   }
+   AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
+   if (!ITS) { cerr<<"Can't find the ITS !\n"; return 3; }
    AliITSgeom *geom=ITS->GetITSgeom();
  
    TFile *out=TFile::Open("AliITSclustersV2.root","new");
    if (!out->IsOpen()) {
       cerr<<"Delete old AliITSclustersV2.root !\n"; 
-      return 6;
+      return 4;
    }
    geom->Write();
 
    TClonesArray *clusters=new TClonesArray("AliITSclusterV2",10000);
-   //TTree *cTree=new TTree("cTree","ITS clusters");
    TTree *cTree=new TTree("TreeC_ITS_0","ITS clusters");
    cTree->Branch("Clusters",&clusters);
 
    TTree *pTree=gAlice->TreeR();
-   if (!pTree) {
-      cerr<<"Can't get TreeR !\n";
-      return 7;
-   }
+   if (!pTree) { cerr<<"Can't get TreeR !\n"; return 5; }
    TBranch *branch=pTree->GetBranch("ITSRecPoints");
-   if (!branch) { 
-      cerr<<"Can't get ITSRecPoints branch !\n";
-      return 8;
-   }
+   if (!branch) { cerr<<"Can't get ITSRecPoints branch !\n"; return 6; }
    TClonesArray *points=new TClonesArray("AliITSRecPoint",10000);
    branch->SetAddress(&points);
 
@@ -117,7 +57,7 @@ Int_t AliITSFindClustersV2(char SlowOrFast='s') {
 
    cerr<<"Number of entries: "<<nentr<<endl;
 
-   Float_t kmip; // ADC->mip normalization factor for the SDD and SSD 
+   Float_t lp[5]; Int_t lab[6]; //Why can't it be inside a loop ?
 
    for (Int_t i=0; i<nentr; i++) {
        points->Clear();
@@ -130,39 +70,36 @@ Int_t AliITSFindClustersV2(char SlowOrFast='s') {
        Int_t ndet=(lad-1)*geom->GetNdetectors(lay) + (det-1);
        nclusters+=ncl;
 
-       kmip=1.;
-       if(lay<5&&lay>2){kmip=280.;}; // b.b.
-       if(lay<7&&lay>4){kmip=38.;};
-       //cout<<"i,ncl ="<<i<<","<<ncl<<endl;
+       Float_t kmip=1; // ADC->mip normalization factor for the SDD and SSD 
+       if(lay==4 || lay==3){kmip=280.;};
+       if(lay==6 || lay==5){kmip=38.;};
 
        for (Int_t j=0; j<ncl; j++) {
           AliITSRecPoint *p=(AliITSRecPoint*)points->UncheckedAt(j);
-          Float_t lp[5];
+          //Float_t lp[5];
           lp[0]=-p->GetX()-yshift; if (lay==1) lp[0]=-lp[0];
           lp[1]=p->GetZ()+zshift;
           lp[2]=p->GetSigmaX2();
           lp[3]=p->GetSigmaZ2();
           lp[4]=p->GetQ(); lp[4]/=kmip;
-          Int_t lab[6]; 
+          //Int_t lab[6]; 
           lab[0]=p->GetLabel(0);lab[1]=p->GetLabel(1);lab[2]=p->GetLabel(2);
           lab[3]=ndet;
+
           Int_t label=lab[0];
-
-	  //if(label<=0) cout<<" !!!!!!!lab="<<lab[0]<<" "<<endl;   
-
-  if(label>=0) {  // b.b.
-          TParticle *part=(TParticle*)gAlice->Particle(label);
-          label=-3;
-          while (part->P() < 0.005) {
-             Int_t m=part->GetFirstMother();
-             if (m<0) {cerr<<"Primary momentum: "<<part->P()<<endl; break;}
-             label=m;
-             part=(TParticle*)gAlice->Particle(label);
-          }
-  }
-          if      (lab[1]<0) lab[1]=label;
-          else if (lab[2]<0) lab[2]=label;
-          else cerr<<"No empty labels !\n";
+          if (label>=0) {
+             TParticle *part=(TParticle*)gAlice->Particle(label);
+             label=-3;
+             while (part->P() < 0.005) {
+                Int_t m=part->GetFirstMother();
+                if (m<0) {cerr<<"Primary momentum: "<<part->P()<<endl; break;}
+                label=m;
+                part=(TParticle*)gAlice->Particle(label);
+             }
+             if      (lab[1]<0) lab[1]=label;
+             else if (lab[2]<0) lab[2]=label;
+             else cerr<<"No empty labels !\n";
+	  }
 
           new(cl[j]) AliITSclusterV2(lab,lp);
        }

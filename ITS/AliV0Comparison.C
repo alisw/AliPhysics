@@ -1,3 +1,12 @@
+/****************************************************************************
+ *           Very important, delicate and rather obscure macro.             *
+ *                                                                          *
+ *                  Creates list of "findable" V0s,                         *
+ *             calculates efficiency, resolutions etc.                      *
+ *                                                                          *
+ *   Origin: I.Belikov, IReS, Strasbourg, Jouri.Belikov@cern.ch             *
+ ****************************************************************************/
+
 #ifndef __CINT__
   #include <iostream.h>
   #include <fstream.h>
@@ -113,7 +122,7 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
 
    Double_t mmin=V0mass-V0window, mmax=V0mass+V0window;
    TH1F *v0s =new TH1F("v0s","V0s Effective Mass",40, mmin, mmax);
-   v0s->SetXTitle("(GeV/c)"); v0s->SetFillColor(6);
+   v0s->SetXTitle("(GeV)"); v0s->SetFillColor(6);
 
 
    Double_t pxg=0.,pyg=0.,ptg=0.;
@@ -320,7 +329,11 @@ Int_t good_vertices(GoodVertex *gv, Int_t max) {
       Double_t x=p->Vx(), y=p->Vy(), z=p->Vz(), r2=x*x+y*y;
       if (r2<r2min) continue;
       if (r2>r2max) continue;
- 
+       
+      if (gAlice->Particle(plab)->GetPDG()->Charge() < 0.) {
+         i=plab; plab=nlab; nlab=i;
+      }
+      
       gv[nv].code=code;
       gv[nv].plab=plab; gv[nv].nlab=nlab;
       gv[nv].px=p0->Px(); gv[nv].py=p0->Py(); gv[nv].pz=p0->Pz();

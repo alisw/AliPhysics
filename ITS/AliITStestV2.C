@@ -1,4 +1,4 @@
-Int_t AliITStestV2() {
+Int_t AliITStestV2(Char_t SlowOrFast='s') {
    Int_t rc=0;
 
    if (gAlice) {delete gAlice; gAlice=0;}
@@ -14,6 +14,18 @@ Int_t AliITStestV2() {
    AliKalmanTrack::SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());
    delete gAlice; gAlice=0;
    in->Close();
+
+   if (SlowOrFast=='f') {
+      cerr<<"Fast AliITSRecPoint(s) !\n";
+      gROOT->LoadMacro("$(ALICE_ROOT)/ITS/ITSHitsToFastPoints.C");
+      ITSHitsToFastPoints();
+   } else {
+      cerr<<"Slow AliITSRecPoint(s) !\n";
+      gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSHits2Digits.C");
+      AliITSHits2Digits();
+      gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSFindClusters.C");
+      AliITSFindClusters();
+   }
 
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSFindClustersV2.C");
    if (rc=AliITSFindClustersV2()) return rc;

@@ -53,7 +53,7 @@ public:
     AliITSclusterV2 *GetCluster(Int_t i) const {return fClusters[i];} 
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
-    Double_t GetThickness(Double_t phi, Double_t z) const;
+    Double_t GetThickness(Double_t y, Double_t z) const;
     Int_t InRoad() const ;
     Int_t GetNumberOfClusters() const {return fN;}
   private:
@@ -74,7 +74,7 @@ public:
 
 private:
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
-  Double_t GetEffectiveThickness(Double_t phi, Double_t z) const;
+  Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
   void  FollowProlongation();
   Int_t TakeNextProlongation();
   void ResetBestTrack() {

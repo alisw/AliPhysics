@@ -17,6 +17,7 @@
 //               Implementation of the ITS tracker class
 //
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //-------------------------------------------------------------------------
 #include <TFile.h>
 #include <TTree.h>
@@ -32,7 +33,7 @@
 //#define DEBUG
 
 #ifdef DEBUG
-Int_t LAB=7;
+Int_t LAB=5126;
 #endif
 
 AliITStrackerV2::AliITSlayer AliITStrackerV2::fLayers[kMaxLayer]; // ITS layers
@@ -177,7 +178,18 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
     nentr=(Int_t)tpcTree->GetEntries();
     for (Int_t i=0; i<nentr; i++) {
        tpcTree->GetEvent(i);
-       itsTracks.AddLast(new AliITStrackV2(*itrack));
+       AliITStrackV2 *t=new AliITStrackV2(*itrack);
+       if (TMath::Abs(t->GetD())>4) continue;
+
+       t->PropagateTo(80.,0.0053);
+       if (TMath::Abs(t->GetY())>13.) t->CorrectForMaterial(0.03);
+       if (TMath::Abs(t->GetZ())<0.2) t->CorrectForMaterial(0.40);
+       t->PropagateTo(61.,0.0052);
+       Double_t xk=52.,x,y,z; t->GetGlobalXYZat(xk,x,y,z);
+       if (TMath::Abs(y)<7.77) t->PropagateTo(xk,0.19,24.); 
+       t->PropagateTo(50.,0.001);
+
+       itsTracks.AddLast(t);
     }
     delete tpcTree; //Thanks to Mariana Bondila
     delete itrack;
@@ -198,11 +210,13 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
        AliITStrackV2 *t=(AliITStrackV2*)itsTracks.UncheckedAt(i);
        if (t==0) continue;           //this track has been already tracked
        Int_t tpcLabel=t->GetLabel(); //save the TPC track label
+
 #ifdef DEBUG
 lbl=tpcLabel;
 if (TMath::Abs(tpcLabel)!=LAB) continue;
 cout<<tpcLabel<<" *****************\n";
 #endif
+
        try {
          ResetTrackToFollow(*t);
        } catch (const Char_t *msg) {
@@ -210,43 +224,6 @@ cout<<tpcLabel<<" *****************\n";
          continue;
        }
        ResetBestTrack();
-
-       Double_t r2=fTrackToFollow.GetX()*fTrackToFollow.GetX();
-       Double_t x0=0.082/21.82*2.33*(45*45+40*40)/r2+2.000/41.28*0.03*75*75/r2;
-       if (constraint) fTrackToFollow.Improve(x0,GetY(),GetZ());
-
-       Double_t xk=80.;
-       fTrackToFollow.PropagateTo(xk,0.,0.); //Ne if it's still there
-
-       xk-=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71); //Tedlar
-       xk-=0.02;
-       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);   //Kevlar
-          xk-=2.0;
-          fTrackToFollow.PropagateTo(xk, 2.0/41.28*0.029, 2.0*0.029);//Nomex
-       xk-=0.02;
-       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);   //Kevlar
-       xk-=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71); //Tedlar
-
-       xk=61.;
-       fTrackToFollow.PropagateTo(xk,0.,0.); //C02
-
-       xk -=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/24.01*2.7, 0.005*2.7);    //Al    
-       xk -=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71);  //Tedlar
-       xk -=0.02;
-       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);    //Kevlar
-          xk -=0.5;
-          fTrackToFollow.PropagateTo(xk, 0.5/41.28*.029, 0.5*0.029);  //Nomex  
-       xk -=0.02;
-       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);    //Kevlar
-       xk -=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71);  //Tedlar
-       xk -=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/24.01*2.7, 0.005*2.7);    //Al    
-
 
        for (FollowProlongation(); fI<kMaxLayer; fI++) {
           while (TakeNextProlongation()) FollowProlongation();
@@ -355,24 +332,25 @@ for (Int_t k=0; k<nc; k++) {
          if (!fTrackToFollow.GetGlobalXYZat(r,x,y,z)) 
             throw "AliITStrackerV2::PropagateBack: failed to estimate track !";
          Double_t phi=TMath::ATan2(y,x);
-         Double_t d=layer.GetThickness(phi,z);
          Int_t idet=layer.FindDetectorIndex(phi,z);
          if (idet<0) 
          throw "AliITStrackerV2::PropagateBack: failed to find a detector !\n";
          const AliITSdetector &det=layer.GetDetector(idet);
          r=det.GetR(); phi=det.GetPhi();
-         if (!fTrackToFollow.Propagate(phi,r,d/21.82*2.33,d*2.33)) throw "";
+         if (!fTrackToFollow.Propagate(phi,r)) throw "";
+         fTrackToFollow.SetDetectorIndex(idet);
 
          const AliITSclusterV2 *cl=0;
          Int_t index=0;
          Double_t maxchi2=kMaxChi2;
 
          if (l==fI) {
-           if (idet != c->GetDetectorIndex()) {
-             idet=c->GetDetectorIndex();
+           idet=c->GetDetectorIndex();
+           if (idet != fTrackToFollow.GetDetectorIndex()) {
              const AliITSdetector &det=layer.GetDetector(idet);
              r=det.GetR(); phi=det.GetPhi();
-             if (!fTrackToFollow.Propagate(phi,r,0.,0.)) throw "";
+             if (!fTrackToFollow.Propagate(phi,r)) throw "";
+             fTrackToFollow.SetDetectorIndex(idet);
            }
            Double_t chi2=fTrackToFollow.GetPredictedChi2(c);
            if (chi2<kMaxChi2) {
@@ -395,7 +373,8 @@ for (Int_t k=0; k<nc; k++) {
 
            const AliITSclusterV2 *cc=0; Int_t ci;
            while ((cc=layer.GetNextCluster(ci))!=0) {
-              if (idet != cc->GetDetectorIndex()) continue;
+              idet=cc->GetDetectorIndex();
+              if (idet != fTrackToFollow.GetDetectorIndex()) continue;
               Double_t chi2=fTrackToFollow.GetPredictedChi2(cc);
               if (chi2<maxchi2) {
                  cl=cc; index=(fI<<28)+ci; maxchi2=chi2;
@@ -406,41 +385,18 @@ for (Int_t k=0; k<nc; k++) {
          if (cl) {
             if (!fTrackToFollow.Update(cl,maxchi2,index)) 
               cerr<<"AliITStrackerV2::PropagateBack: filtering failed !\n";
-              continue;
          }
+
+         x=layer.GetThickness(fTrackToFollow.GetY(),fTrackToFollow.GetZ());
+         fTrackToFollow.CorrectForMaterial(-x); 
+
        }
 
-       Double_t xk=61.;
-       fTrackToFollow.PropagateTo(xk,0.,0.); //Air
-
-       xk +=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/24.01*2.7, 0.005*2.7);    //Al    
-       xk +=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71);  //Tedlar
-       xk +=0.02;
-       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);    //Kevlar
-          xk +=0.5;
-          fTrackToFollow.PropagateTo(xk, 0.5/41.28*.029, 0.5*0.029);  //Nomex 
-       xk +=0.02;
-       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);    //Kevlar
-       xk +=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71);  //Tedlar
-       xk +=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/24.01*2.7, 0.005*2.7);    //Al    
-
-       xk=80.;
-       fTrackToFollow.PropagateTo(xk,0.,0.); //CO2
-
-       xk+=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71); //Tedlar
-       xk+=0.02;
-       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);   //Kevlar
-          xk+=2.0;
-          fTrackToFollow.PropagateTo(xk, 2.0/41.28*0.029, 2.0*0.029);//Nomex
-       xk+=0.02;
-       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);   //Kevlar
-       xk+=0.005;
-       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71); //Tedlar
+       Double_t xk=52.,x,y,z; fTrackToFollow.GetGlobalXYZat(xk,x,y,z);
+       if (TMath::Abs(y)<7.77) 
+          fTrackToFollow.PropagateTo(xk,-0.19,24.); 
+       fTrackToFollow.PropagateTo(61,-0.0110);
+       fTrackToFollow.PropagateTo(80.,-0.0053);
 
        fTrackToFollow.SetLabel(itsLabel);
        otrack=new AliTPCtrack(fTrackToFollow,fTrackToFollow.GetAlpha()); 
@@ -465,6 +421,7 @@ for (Int_t k=0; k<nc; k++) {
   return 0;
 }
 
+
 AliCluster *AliITStrackerV2::GetCluster(Int_t index) const {
   //--------------------------------------------------------------------
   //       Return pointer to a given cluster
@@ -482,19 +439,22 @@ void AliITStrackerV2::FollowProlongation() {
   Int_t tryAgain=kLayersToSkip;
 
   while (fI) {
-    fI--;
+    Int_t i=fI-1;
 #ifdef DEBUG
-cout<<fI<<' ';
+cout<<i<<' ';
 #endif
-    AliITSlayer &layer=fLayers[fI];
-    AliITStrackV2 &track=fTracks[fI];
+    AliITSlayer &layer=fLayers[i];
+    AliITStrackV2 &track=fTracks[i];
 
     Double_t r=layer.GetR();
-    if (fI==3 || fI==1) {
-      Double_t rs=0.5*(fLayers[fI+1].GetR() + r);
-      Double_t ds=0.034; if (fI==3) ds=0.039;
-      Double_t dx0r=ds/21.82*2.33, dr=ds*2.33;
-      fTrackToFollow.Propagate(fTrackToFollow.GetAlpha(),rs,dx0r,dr);
+    if (i==3 || i==1) {
+       Double_t rs=0.5*(fLayers[i+1].GetR() + r);
+       Double_t d=0.011; if (i==3) d=0.0053;
+       if (!fTrackToFollow.PropagateTo(rs,d)) {
+	 //cerr<<"AliITStrackerV2::FollowProlongation: "
+         //"propagation failed !\n";
+         break;
+       }
     }
 
     //find intersection
@@ -502,10 +462,9 @@ cout<<fI<<' ';
     if (!fTrackToFollow.GetGlobalXYZat(r,x,y,z)) {
       //cerr<<"AliITStrackerV2::FollowProlongation: "
       //"failed to estimate track !\n";
-     break;
+      break;
     }
     Double_t phi=TMath::ATan2(y,x);
-    Double_t d=layer.GetThickness(phi,z);
     Int_t idet=layer.FindDetectorIndex(phi,z);
     if (idet<0) {
       //cerr<<"AliITStrackerV2::FollowProlongation: "
@@ -516,32 +475,36 @@ cout<<fI<<' ';
     //propagate to the intersection
     const AliITSdetector &det=layer.GetDetector(idet);
     phi=det.GetPhi();
-    if (!fTrackToFollow.Propagate(phi,det.GetR(),d/21.82*2.33,d*2.33)) {
+    if (!fTrackToFollow.Propagate(phi,det.GetR())) {
       //cerr<<"AliITStrackerV2::FollowProlongation: propagation failed !\n";
       break;
     }
-    if (TMath::Abs(fTrackToFollow.GetZ()-GetZ()) > r+1) break;
     fTrackToFollow.SetDetectorIndex(idet);
 
     //Select possible prolongations and store the current track estimation
     track.~AliITStrackV2(); new(&track) AliITStrackV2(fTrackToFollow);
-    Double_t dz=3*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[fI]);
+    Double_t dz=3*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[i]);
     if (dz < 0.5*TMath::Abs(track.GetTgl())) dz=0.5*TMath::Abs(track.GetTgl());
     if (dz > kMaxRoad) {
       //cerr<<"AliITStrackerV2::FollowProlongation: too broad road in Z !\n";
       break;
     }
-    Double_t dy=4*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[fI]);
+
+    if (TMath::Abs(fTrackToFollow.GetZ()-GetZ()) > r+dz) break;
+
+    Double_t dy=4*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[i]);
     if (dy < 0.5*TMath::Abs(track.GetSnp())) dy=0.5*TMath::Abs(track.GetSnp());
     if (dy > kMaxRoad) {
       //cerr<<"AliITStrackerV2::FollowProlongation: too broad road in Y !\n";
       break;
     }
+
     Double_t zmin=track.GetZ() - dz; 
     Double_t zmax=track.GetZ() + dz;
     Double_t ymin=track.GetY() + r*phi - dy;
     Double_t ymax=track.GetY() + r*phi + dy;
-    layer.SelectClusters(zmin,zmax,ymin,ymax);
+    layer.SelectClusters(zmin,zmax,ymin,ymax); 
+    fI--;
 
     //take another prolongation
     if (!TakeNextProlongation()) if (!tryAgain--) break;
@@ -562,20 +525,16 @@ cout<<fI<<' ';
      }
   }
 
-  if (fI) fI++;
 }
-
 
 Int_t AliITStrackerV2::TakeNextProlongation() {
   //--------------------------------------------------------------------
-  //This function takes another track prolongation 
+  // This function takes another track prolongation 
+  //
+  //  dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch 
   //--------------------------------------------------------------------
-  //Double_t m[20];
-  Double_t d=GetEffectiveThickness(0,0); //Think of this !!!!
-
   AliITSlayer &layer=fLayers[fI];
   AliITStrackV2 &t=fTracks[fI];
-  Int_t &constraint=fConstraint[fPass];
 
   Double_t dz=4*TMath::Sqrt(t.GetSigmaZ2() + kSigmaZ2[fI]);
   Double_t dy=4*TMath::Sqrt(t.GetSigmaY2() + kSigmaY2[fI]);
@@ -583,22 +542,18 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
   const AliITSclusterV2 *c=0; Int_t ci=-1;
   Double_t chi2=12345.;
   while ((c=layer.GetNextCluster(ci))!=0) {
-
-#ifdef DEBUG
-//if (fI==0)
-//if (c->GetLabel(0)!=TMath::Abs(lbl)) continue; 
-#endif
-
+    //if (c->GetLabel(0)!=TMath::Abs(lbl)) continue; 
     Int_t idet=c->GetDetectorIndex();
 
     if (t.GetDetectorIndex()!=idet) {
        const AliITSdetector &det=layer.GetDetector(idet);
-       if (!t.Propagate(det.GetPhi(),det.GetR(),0.,0.)) {
+       if (!t.Propagate(det.GetPhi(),det.GetR())) {
          //cerr<<"AliITStrackerV2::TakeNextProlongation: "
          //"propagation failed !\n";
          continue;
        }
        t.SetDetectorIndex(idet);
+       if (TMath::Abs(t.GetZ()-GetZ()) > layer.GetR()+dz) continue;
 
 #ifdef DEBUG
 cout<<fI<<" change detector !\n";
@@ -609,11 +564,7 @@ cout<<fI<<" change detector !\n";
     if (TMath::Abs(t.GetZ() - c->GetZ()) > dz) continue;
     if (TMath::Abs(t.GetY() - c->GetY()) > dy) continue;
 
-    //m[0]=fYV; m[1]=fZV;
-    //chi2=t.GetPredictedChi2(c,m,d/21.82*2.33);
-    chi2=t.GetPredictedChi2(c);
-
-    if (chi2<kMaxChi2) break;
+    chi2=t.GetPredictedChi2(c); if (chi2<kMaxChi2) break;
   }
 
 #ifdef DEBUG
@@ -625,27 +576,32 @@ cout<<fI<<" chi2="<<chi2<<' '<<t.GetY()<<' '<<t.GetZ()<<' '<<dy<<' '<<dz<<endl;
 
   ResetTrackToFollow(t);
 
-  //if (!fTrackToFollow.Update(m,chi2,(fI<<28)+ci)) {
   if (!fTrackToFollow.Update(c,chi2,(fI<<28)+ci)) {
      //cerr<<"AliITStrackerV2::TakeNextProlongation: filtering failed !\n";
      return 0;
   }
-  // b.b. change for the dEdX
-  fTrackToFollow.SetSampledEdx(c->GetQ(),
-                               fTrackToFollow.GetNumberOfClusters()-1);
 
-  if (constraint) fTrackToFollow.Improve(d/21.82*2.33,GetY(),GetZ());
+  fTrackToFollow.
+    SetSampledEdx(c->GetQ(),fTrackToFollow.GetNumberOfClusters()-1); //b.b.
+
+  {
+   Double_t d=layer.GetThickness(fTrackToFollow.GetY(),fTrackToFollow.GetZ());
+   fTrackToFollow.CorrectForMaterial(d);
+  }
+  if (fConstraint[fPass]) {
+     Double_t d=GetEffectiveThickness(0,0); //Think of this !!!!
+     fTrackToFollow.Improve(d,GetY(),GetZ());
+  }
 
 #ifdef DEBUG
 cout<<"accepted lab="<<c->GetLabel(0)<<' '
     <<fTrackToFollow.GetNumberOfClusters()<<' '
-    <<fTrackToFollow.GetY()<<' '<<fTrackToFollow.GetZ()<<endl<<endl;
+    <<fTrackToFollow.GetY()<<' '<<fTrackToFollow.GetZ()<<' '
+    <<fTrackToFollow.Get1Pt()<<endl<<endl;
 #endif
 
   return 1;
 }
-
-
 
 
 AliITStrackerV2::AliITSlayer::AliITSlayer() {
@@ -682,8 +638,9 @@ Int_t AliITStrackerV2::AliITSlayer::InsertCluster(AliITSclusterV2 *c) {
   //This function adds a cluster to this layer
   //--------------------------------------------------------------------
   if (fN==kMaxClusterPerLayer) {
- cerr<<"AliITStrackerV2::AliITSlayer::InsertCluster(): Too many clusters !\n"; 
-   return 1;
+     cerr<<"AliITStrackerV2::AliITSlayer::InsertCluster(): "
+           "Too many clusters !\n";
+     return 1;
   }
 
   if (fN==0) {fClusters[fN++]=c; return 0;}
@@ -769,40 +726,83 @@ cout<<np<<' '<<nz<<endl;
 }
 
 Double_t 
-AliITStrackerV2::AliITSlayer::GetThickness(Double_t phi, Double_t z) const {
+AliITStrackerV2::AliITSlayer::GetThickness(Double_t y, Double_t z) const {
   //--------------------------------------------------------------------
-  //This function returns the thickness of this layer
+  //This function returns the layer thickness at this point (units X0)
   //--------------------------------------------------------------------
-  //-pi<phi<+pi
-  if (3 <fR&&fR<8 ) return 2.5*0.096;
-  if (13<fR&&fR<26) return 1.1*0.088;
-  if (37<fR&&fR<41) return 1.1*0.085;
-  return 1.1*0.081;
+  Double_t d=0.0085;
+
+  if (43<fR&&fR<45) { //SSD2
+     d=0.0036;
+     if (TMath::Abs(y-0.00)>3.40) d+=0.0036;
+     if (TMath::Abs(y-2.50)<0.10) d+=(0.02-0.0036);
+     if (TMath::Abs(y+1.90)<0.10) d+=(0.02-0.0036);
+     for (Int_t i=0; i<12; i++) {
+       if (TMath::Abs(z-3.6*(i+0.5))<0.20) {d+=0.0036; break;}
+       if (TMath::Abs(z+3.6*(i+0.5))<0.20) {d+=0.0036; break;}         
+       if (TMath::Abs(z-3.6*(i+0.929))<0.50) {d+=(0.02-0.0036); break;}
+       if (TMath::Abs(z+3.6*(i+0.104))<0.50) {d+=(0.02-0.0036); break;}
+     }
+  } else 
+  if (37<fR&&fR<41) { //SSD1
+     d=0.0036;
+     if (TMath::Abs(y-0.00)>3.40) d+=0.0036;
+     if (TMath::Abs(y-2.20)<0.10) d+=(0.02-0.0036);
+     if (TMath::Abs(y+2.20)<0.10) d+=(0.02-0.0036);
+     for (Int_t i=0; i<11; i++) {
+       if (TMath::Abs(z-3.6*i)<0.20) {d+=0.0036; break;}
+       if (TMath::Abs(z+3.6*i)<0.20) {d+=0.0036; break;}         
+       if (TMath::Abs(z-3.6*(i+0.54))<0.50) {d+=(0.02-0.0036); break;}
+       if (TMath::Abs(z+3.6*(i+0.58))<0.50) {d+=(0.02-0.0036); break;}         
+     }
+  } else
+  if (13<fR&&fR<26) { //SDD
+     d=0.0034;
+     if (TMath::Abs(y-0.00)>3.30) d+=0.0034;
+     if (TMath::Abs(y-2.10)<0.20) d+=0.0034*3;
+     if (TMath::Abs(y+2.10)<0.20) d+=0.0034*3;
+     for (Int_t i=0; i<4; i++) { 
+       if (TMath::Abs(z-7.3*i)<0.60) {d+=0.0034; break;}
+       if (TMath::Abs(z+7.3*i)<0.60) {d+=0.0034; break;}
+     }
+  } else
+  if (6<fR&&fR<8) {   //SPD2
+     d=0.0093;
+     if (TMath::Abs(y-3.08)>0.45) d+=0.0064;
+     if (TMath::Abs(y-3.03)<0.10) d+=0.0192;
+  } else
+  if (3<fR&&fR<5) {   //SPD1
+     d=0.0093;
+     if (TMath::Abs(y+0.21)>0.55) d+=0.0064;
+     if (TMath::Abs(y+0.10)<0.10) d+=0.0192;
+  }
+
+  d+=0.002;
+
+  return d;
 }
 
-
-Double_t AliITStrackerV2::GetEffectiveThickness(Double_t phi,Double_t z) const
+Double_t AliITStrackerV2::GetEffectiveThickness(Double_t y,Double_t z) const
 {
   //--------------------------------------------------------------------
-  //Returns the thickness between the current layer and the vertex
+  //Returns the thickness between the current layer and the vertex (units X0)
   //--------------------------------------------------------------------
-  //-pi<phi<+pi
-  Double_t d=0.1;
+  Double_t d=0.1/65.19*1.848;
 
   Double_t xn=fLayers[fI].GetR();
   for (Int_t i=0; i<fI; i++) {
     Double_t xi=fLayers[i].GetR();
-    d+=fLayers[i].GetThickness(phi,z)*xi*xi;
+    d+=fLayers[i].GetThickness(y,z)*xi*xi;
   }
 
   if (fI>1) {
     Double_t xi=0.5*(fLayers[1].GetR()+fLayers[2].GetR());
-    d+=0.034*xi*xi;
+    d+=0.011*xi*xi;
   }
 
   if (fI>3) {
     Double_t xi=0.5*(fLayers[3].GetR()+fLayers[4].GetR());
-    d+=0.039*xi*xi;
+    d+=0.0053*xi*xi;
   }
   return d/(xn*xn);
 }
@@ -817,7 +817,7 @@ Int_t AliITStrackerV2::AliITSlayer::InRoad() const {
   for (Int_t i=fI; i<fN; i++) {
     const AliITSclusterV2 *c=fClusters[i];
     if (c->GetZ() > fZmax) break;
-    //if (c->IsUsed()) continue;
+    if (c->IsUsed()) continue;
     const AliITSdetector &det=GetDetector(c->GetDetectorIndex());    
     Double_t y=fR*det.GetPhi() + c->GetY();
 

@@ -7,6 +7,7 @@
 //                       ITS Track Class
 //
 //        Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
+//     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //-------------------------------------------------------------------------
 
 
@@ -36,16 +37,15 @@ public:
   AliITStrackV2():AliKalmanTrack(){}
   AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *);
   AliITStrackV2(const AliITStrackV2& t);
-  Int_t PropagateToVertex(Double_t x0=36.66,Double_t rho=1.2e-3);
-  Int_t Propagate(Double_t alpha, Double_t xr, Double_t x0, Double_t rho);
-  Int_t PropagateTo(Double_t xr,Double_t x0=21.82,Double_t rho=2.33);
-  Int_t Update(const Double_t *m, Double_t chi2, UInt_t i);
+  Int_t PropagateToVertex(Double_t d=1.2e-3*3., Double_t x0=36.66);
+  Int_t Propagate(Double_t alpha, Double_t xr);
+  Int_t CorrectForMaterial(Double_t d, Double_t x0=21.82);
+  Int_t PropagateTo(Double_t xr, Double_t d, Double_t x0=21.82);
   Int_t Update(const AliCluster* cl,Double_t chi2,UInt_t i);
   Int_t Improve(Double_t x0,Double_t yv,Double_t zv);
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}
-  void SetSampledEdx(Float_t q, Int_t i);  // b.b.
-  //void CookdEdx(Double_t low=0., Double_t up=1.) {}
-  void CookdEdx(Double_t low=0., Double_t up=0.8); // b.b.
+  void SetSampledEdx(Float_t q, Int_t i);
+  void CookdEdx(Double_t low=0., Double_t up=0.51);
   void SetDetectorIndex(Int_t i) {SetLabel(i);}
   void ResetCovariance();
   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
@@ -95,7 +95,7 @@ private:
 
   UInt_t fIndex[kMaxLayer]; // indices of associated clusters 
 
-  Float_t fdEdxSample[8];   // array of dE/dx samples b.b.
+  Float_t fdEdxSample[4];   // array of dE/dx samples b.b.
 
   ClassDef(AliITStrackV2,1)   //ITS reconstructed track
 };
@@ -108,21 +108,19 @@ void AliITStrackV2::GetExternalParameters(Double_t& xr, Double_t x[5]) const {
      xr=fX;          
      x[0]=GetY(); x[1]=GetZ(); x[2]=GetSnp(); x[3]=GetTgl(); x[4]=Get1Pt();
 }
-//b.b.
+
 inline
 void AliITStrackV2::SetSampledEdx(Float_t q, Int_t i) {
   //----------------------------------------------------------------------
-  //
+  // This function stores dEdx sample corrected for the track segment length 
+  // Origin: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
   //----------------------------------------------------------------------
+  if (i<0) return;
+  if (i>3) return;
   Double_t s=GetSnp(), t=GetTgl();
-  //cout<<"before  corr!!  i,q="<<i<<" "<<q<<" "<<endl;
   q *= TMath::Sqrt((1-s*s)/(1+t*t));
   fdEdxSample[i]=q;
-  //cout<<"after corr!! i,q="<<i<<" "<<q<<" "<<endl;
 }
-
-
-
 #endif
 
 

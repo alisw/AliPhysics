@@ -133,7 +133,7 @@ Int_t AliITSComparisonV2(Int_t event=0) {
 	cerr<<"Track "<<lab<<" was not found !\n";
         continue;
       }
-      track->Propagate(track->GetAlpha(),3.,0.1/65.19*1.848,0.1*1.848);
+      track->PropagateTo(3.,0.0028,65.19);
       track->PropagateToVertex();
 
       if (lab==tlab) hfound->Fill(ptg);

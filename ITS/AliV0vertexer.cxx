@@ -78,6 +78,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
    for (i=0; i<nneg; i++) {
       if (i%10==0) cerr<<nneg-i<<'\r';
       AliITStrackV2 *ntrk=(AliITStrackV2 *)negtrks.UncheckedAt(i);
+
       for (Int_t k=0; k<npos; k++) {
          AliITStrackV2 *ptrk=(AliITStrackV2 *)postrks.UncheckedAt(k);
 
@@ -171,6 +172,12 @@ Double_t AliV0vertexer::PropagateToDCA(AliITStrackV2 *n, AliITStrackV2 *p) {
   // This function returns the DCA between two tracks
   // The tracks will be moved to the point of DCA ! 
   //--------------------------------------------------------------------
+  Double_t dy2=n->GetSigmaY2() + p->GetSigmaY2();
+  Double_t dz2=n->GetSigmaZ2() + p->GetSigmaZ2();
+  Double_t dx2=dy2; 
+
+  //dx2=dy2=dz2=1.;
+
   Double_t p1[8]; External2Helix(n,p1);
   p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
   Double_t p2[8]; External2Helix(p,p2);
@@ -183,19 +190,19 @@ Double_t AliV0vertexer::PropagateToDCA(AliITStrackV2 *n, AliITStrackV2 *p) {
   Evaluate(p2,t2,r2,g2,gg2);
 
   Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
-  Double_t dm=dx*dx + dy*dy + dz*dz;
+  Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
 
   Int_t max=27;
   while (max--) {
-     Double_t gt1=-(dx*g1[0] + dy*g1[1] + dz*g1[2]);
-     Double_t gt2=+(dx*g2[0] + dy*g2[1] + dz*g2[2]);
-     Double_t h11=g1[0]*g1[0] - dx*gg1[0] + 
-                  g1[1]*g1[1] - dy*gg1[1] +
-                  g1[2]*g1[2] - dz*gg1[2];
-     Double_t h22=g2[0]*g2[0] + dx*gg2[0] + 
-                  g2[1]*g2[1] + dy*gg2[1] +
-                  g2[2]*g2[2] + dz*gg2[2];
-     Double_t h12=-(g1[0]*g2[0] + g1[1]*g2[1] + g1[2]*g2[2]);
+     Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
+     Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
+     Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 + 
+                  (g1[1]*g1[1] - dy*gg1[1])/dy2 +
+                  (g1[2]*g1[2] - dz*gg1[2])/dz2;
+     Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 + 
+                  (g2[1]*g2[1] + dy*gg2[1])/dy2 +
+                  (g2[2]*g2[2] + dz*gg2[2])/dz2;
+     Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
 
      Double_t det=h11*h22-h12*h12;
 
@@ -215,7 +222,7 @@ Double_t AliV0vertexer::PropagateToDCA(AliITStrackV2 *n, AliITStrackV2 *p) {
 
      if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
      if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
-        if ((gt1*gt1+gt2*gt2) > 1.e-4) 
+        if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2) 
 	   cerr<<"AliV0vertexer::PropagateToDCA:"
                  " stopped at not a stationary point !\n";
         Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
@@ -230,7 +237,7 @@ Double_t AliV0vertexer::PropagateToDCA(AliITStrackV2 *n, AliITStrackV2 *p) {
         Evaluate(p1,t1+dt1,r1,g1,gg1);
         Evaluate(p2,t2+dt2,r2,g2,gg2);
         dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
-        dd=dx*dx + dy*dy + dz*dz;
+        dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
 	if (dd<dm) break;
         dt1*=0.5; dt2*=0.5;
         if (div>512) {
@@ -263,7 +270,8 @@ Double_t AliV0vertexer::PropagateToDCA(AliITStrackV2 *n, AliITStrackV2 *p) {
     return 1.e+33;
   }  
 
-  return TMath::Sqrt(dm);
+  //return TMath::Sqrt(dm);
+  return TMath::Sqrt(dx*dx + dy*dy + dz*dz);
 }
 
 
