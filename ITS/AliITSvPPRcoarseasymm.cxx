@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/07 10:58:15  barbera
+Mother volume ITSV corrected
+
 Revision 1.1  2000/10/06 23:09:24  barbera
 New coarse geometry (asymmetric services
 
@@ -287,7 +290,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   //     invisible 
   
   gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
-  //gMC->Gsatt("ITSV", "SEEN", 0); 
+  gMC->Gsatt("ITSV", "SEEN", 0); 
 
 
   // --- Define ghost volume containing the six layers and fill it with air 
@@ -313,7 +316,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   //     invisible 
   
   gMC->Gspos("ITSD", 1, "ITSV", 0., 0., 0., 0, "ONLY");
-  //gMC->Gsatt("ITSD", "SEEN", 0);
+  gMC->Gsatt("ITSD", "SEEN", 0);
   
   //     ITS LAYERS (SILICON) 
   
@@ -353,19 +356,42 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gsvolu("ITS6", "TUBE", idtmed[249], dits, 3);
   gMC->Gspos("ITS6", 1, "ITSD", 0., 0., 0., 0, "ONLY");
   
-  // END-LADDER ELECTRONICS BOXES AND CABLES 
+  // END-LADDER ELECTRONICS BOXES AND CABLES FOR SPD
   
-  gMC->Gsvolu("IELE", "TUBE", idtmed[233], dits, 0); // check the medium !!
-  for (i = 0; i < 6; i++) {
+  gMC->Gsvolu("IEL1", "TUBE", idtmed[208], dits, 0); 
+  for (i = 0; i < 2; i++) {
     dits[0] = rl[i];
     dits[1] = dits[0] + drb[i];
     dits[2] = dzb[i] / 2.;
     zpos = dzl[i] + dits[2];
-    gMC->Gsposp("IELE", i+1, "ITSD", 0., 0., zpos, 0, "ONLY", dits, 3);
-    gMC->Gsposp("IELE", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
+    gMC->Gsposp("IEL1", i+1, "ITSD", 0., 0., zpos, 0, "ONLY", dits, 3);
+    gMC->Gsposp("IEL1", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
   }
+  
+  // END-LADDER ELECTRONICS BOXES AND CABLES FOR SDD
+  
+  gMC->Gsvolu("IEL2", "TUBE", idtmed[237], dits, 0); 
+  for (i = 2; i < 4; i++) {
+    dits[0] = rl[i];
+    dits[1] = dits[0] + drb[i];
+    dits[2] = dzb[i] / 2.;
+    zpos = dzl[i] + dits[2];
+    gMC->Gsposp("IEL2", i+1, "ITSD", 0., 0., zpos, 0, "ONLY", dits, 3);
+    gMC->Gsposp("IEL2", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
+  }
+  
+  // END-LADDER ELECTRONICS BOXES AND CABLES FOR SSD
+  
+  gMC->Gsvolu("IEL3", "TUBE", idtmed[263], dits, 0); 
+  for (i = 4; i < 6; i++) {
+    dits[0] = rl[i];
+    dits[1] = dits[0] + drb[i];
+    dits[2] = dzb[i] / 2.;
+    zpos = dzl[i] + dits[2];
+    gMC->Gsposp("IEL3", i+1, "ITSD", 0., 0., zpos, 0, "ONLY", dits, 3);
+    gMC->Gsposp("IEL3", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
+  }    
     
-
   //    DEFINE END CONES FOR SPD
   
   pcits[0] = 0.;
@@ -377,7 +403,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[6] = 39.4;
   pcits[7] = 10.065;
   pcits[8] = 10.065+2.;	  // check thickness !!
-  gMC->Gsvolu("ICO1", "PCON", idtmed[275], pcits, 9);    // check the medium !!
+  gMC->Gsvolu("ICO1", "PCON", idtmed[209], pcits, 9);    
   AliMatrix(idrotm[200], 90., 0., 90., 90., 180., 0.);
   gMC->Gspos("ICO1", 1, "ITSD", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("ICO1", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
@@ -394,7 +420,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[6] = 57.4;
   pcits[7] = 28.;
   pcits[8] = 28.+3.0;	  // check thickness !!
-  gMC->Gsvolu("ICO2", "PCON", idtmed[275], pcits, 9);    // check the medium !!
+  gMC->Gsvolu("ICO2", "PCON", idtmed[238], pcits, 9);    
   gMC->Gspos("ICO2", 1, "ITSD", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("ICO2", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
 
@@ -410,7 +436,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[6] = 74.0;
   pcits[7] = 47.;
   pcits[8] = 47.+4.0;	  // check thickness !!
-  gMC->Gsvolu("ICO3", "PCON", idtmed[275], pcits, 9);    // check the medium !!
+  gMC->Gsvolu("ICO3", "PCON", idtmed[264], pcits, 9);    
   gMC->Gspos("ICO3", 1, "ITSD", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("ICO3", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
 
@@ -424,7 +450,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[1] = 56.;
   dgh[2] = 9.75;
   
-  gMC->Gsvolu("ICA1", "TUBE", idtmed[275], dgh, 3);  // check medium !!!
+  gMC->Gsvolu("ICA1", "TUBE", idtmed[281], dgh, 3);  
   gMC->Gspos("ICA1", 1, "ITSV", 0., 0., 86.45, 0, "ONLY");
   gMC->Gspos("ICA1", 2, "ITSV", 0., 0., -86.45, idrotm[200], "ONLY");
   
@@ -434,11 +460,11 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[1] = 56.;
   dgh[2] = 2.25;
   
-  gMC->Gsvolu("IPAN", "TUBE", idtmed[275], dgh, 3);  // check medium !!!  
+  gMC->Gsvolu("IPAN", "TUBE", idtmed[282], dgh, 3);   
   gMC->Gspos("IPAN", 1, "ITSV", 0., 0., 98.45, 0, "ONLY");  
   gMC->Gspos("IPAN", 2, "ITSV", 0., 0., -98.45, idrotm[200], "ONLY"); 
   
-  // --- Define cables/cooling on the absorber side
+  // --- Define cables/cooling below the TPC on the absorber side
   
   dgh[0] = 0.;
   dgh[1] = 360.;
@@ -449,7 +475,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[6] = xltpc;
   dgh[7] = 61.8;
   dgh[8] = 65.8;    // same cross section
-  gMC->Gsvolu("ICC1", "PCON", idtmed[275], dgh, 9);  // check medium !!!  
+  gMC->Gsvolu("ICC1", "PCON", idtmed[283], dgh, 9);   
   gMC->Gspos("ICC1", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
   
   // --- Define cables/cooling behind the TPC on the absorber side
@@ -463,15 +489,16 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[6] = xltpc+4.;
   dgh[7] = 62.5;
   dgh[8] = 74.5;    
-  gMC->Gsvolu("ICC2", "PCON", idtmed[275], dgh, 9);  // check medium !!!  
+  gMC->Gsvolu("ICC2", "PCON", idtmed[283], dgh, 9);   
   gMC->Gspos("ICC2", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
   
-  // --- Define cables/cooling on the other side w.r.t. the absorber 
+  // --- Define cables/cooling below the TPC on the other side w.r.t. 
+  //     the absorber 
   
   dgh[0] = 45.;
   dgh[1] = 49.;
   dgh[2] = (xltpc-100.7)/2.;
-  gMC->Gsvolu("ICC3", "TUBE", idtmed[275], dgh, 3);  // check medium !!!  
+  gMC->Gsvolu("ICC3", "TUBE", idtmed[283], dgh, 3);   
   gMC->Gspos("ICC3", 1, "ITSV", 0., 0., -100.7-dgh[2], 0, "ONLY");  
 
   
@@ -486,15 +513,15 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[6] = -xltpc-2.3;
   dgh[7] = 45.;
   dgh[8] = 74.5;    
-  gMC->Gsvolu("ICC4", "PCON", idtmed[275], dgh, 9);  // check medium !!!  
+  gMC->Gsvolu("ICC4", "PCON", idtmed[283], dgh, 9);   
   gMC->Gspos("ICC4", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
     
-  // --- Define hook for the TPC on other side w.r.t. the absorber
+  // --- Define hook to the TPC on other side w.r.t. the absorber
   
   dgh[0] = 74.5;
   dgh[1] = 79.5;
   dgh[2] = 2.5;
-  gMC->Gsvolu("IHOK", "TUBE", idtmed[275], dgh, 3);  // check medium !!!  
+  gMC->Gsvolu("IHOK", "TUBE", idtmed[284], dgh, 3);  
   gMC->Gspos("IHOK", 1, "ITSV", 0., 0., -xltpc-dgh[2], 0, "ONLY");    
   
   
@@ -545,10 +572,15 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   Float_t apoly[2] = { 12.01,1. };
   Float_t zpoly[2] = { 6.,1. };
   Float_t wpoly[2] = { .33,.67 };
-  // SERVICES
+  // old SERVICES
   Float_t zserv[4] = { 1.,6.,26.,29. };
   Float_t aserv[4] = { 1.,12.,55.8,63.5 };
   Float_t wserv[4] = { .014,.086,.42,.48 };
+  // Stainless steel
+  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
+  Float_t zsteel[4] = { 26.,24.,28.,14. };
+  Float_t wsteel[4] = { .715,.18,.1,.005 };
+  
   
   Int_t  isxfld  = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
@@ -568,16 +600,20 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   AliMaterial(6, "SPD Al$",     26.981539, 13., 2.6989, 8.9, 999);
   AliMixture( 7, "SPD Water $", awat, zwat, denswat, -2, wwat);
   AliMixture( 8, "SPD Freon$",  afre, zfre, densfre, -2, wfre);
+  AliMaterial(9, "SPD End ladder$",28.0855, 14., 2.33, 9.36, 999); // check !!!!
+  AliMaterial(10, "SPD cone$",28.0855, 14., 2.33, 9.36, 999);       // check !!!!
   // ** 
-  AliMedium(0, "SPD Si$",      0, 1,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(1, "SPD Si chip$", 1, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(2, "SPD Si bus$",  2, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(3, "SPD C$",       3, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(4, "SPD Air$",     4, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(5, "SPD Vacuum$",  5, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
-  AliMedium(6, "SPD Al$",      6, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(7, "SPD Water $",  7, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(8, "SPD Freon$",   8, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(0, "SPD Si$",       0, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(1, "SPD Si chip$",  1, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(2, "SPD Si bus$",   2, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(3, "SPD C$",        3, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(4, "SPD Air$",      4, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(5, "SPD Vacuum$",   5, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
+  AliMedium(6, "SPD Al$",       6, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(7, "SPD Water $",   7, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(8, "SPD Freon$",    8, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(9, "SPD End ladder",9, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(10, "SPD cone$",   10, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);   
   
   //  225-249 --> Silicon Drift Detectors (detectors, chips, buses, cooling,..)
   
@@ -603,9 +639,11 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   AliMaterial(35, "SDD Copper$", 63.546, 29., 8.96, 1.43, 999);
   AliMixture( 36, "SDD Ceramics$", acer, zcer, denscer, -5, wcer);
   AliMaterial(37, "SDD Kapton$", 12.011, 6., 1.3, 31.27, 999);
+  AliMaterial(38, "SDD End ladder$",28.0855, 14., 2.33, 9.36, 999); // check !!!!
+  AliMaterial(39, "SDD cone$",28.0855, 14., 2.33, 9.36, 999);       // check !!!!
   // ** 
   // check A and Z 
-  AliMedium(25, "SDD Si$",      25, 1,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(25, "SDD Si$",      25, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(26, "SDD Si chip$", 26, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(27, "SDD Si bus$",  27, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(28, "SDD C$",       28, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
@@ -618,6 +656,8 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   AliMedium(35, "SDD Copper$",  35, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(36, "SDD Ceramics$",36, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(37, "SDD Kapton$",  37, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(38, "SDD End ladder",38, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(39, "SDD cone$",   39, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   
   //  250-274 --> Silicon Strip Detectors (detectors, chips, buses, cooling,..)
   
@@ -648,9 +688,11 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   AliMixture( 61, "SSD Ceramics$", acer, zcer, denscer, 5, wcer);
   AliMaterial(62, "SSD Kapton$", 12.011, 6., 1.3, 31.27, 999.);
   // check A and Z 
-  AliMaterial(63, "SDD G10FR4$", 17.749, 8.875, 1.8, 21.822, 999.);
+  AliMaterial(63, "SSD G10FR4$", 17.749, 8.875, 1.8, 21.822, 999.);
+  AliMaterial(64, "SSD End ladder$",28.0855, 14., 2.33, 9.36, 999); // check !!!!
+  AliMaterial(65, "SSD cone$",28.0855, 14., 2.33, 9.36, 999);       // check !!!! 
   // ** 
-  AliMedium(50, "SSD Si$",      50, 1,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(50, "SSD Si$",      50, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(51, "SSD Si chip$", 51, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(52, "SSD Si bus$",  52, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(53, "SSD C$",       53, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
@@ -664,6 +706,8 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   AliMedium(61, "SSD Ceramics$",61, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(62, "SSD Kapton$",  62, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(63, "SSD G10FR4$",  63, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(64, "SPD End ladder",64, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(65, "SPD cone$",   65, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   
   //     275-299 --> General (end-caps, frames, cooling, cables, etc.) 
   
@@ -679,6 +723,10 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   // calls with the same array must specify the number of elements as 
   // positive 
   AliMixture(81, "GEN Water $", awat, zwat, denswat, 2, wwat);
+  AliMaterial(82, "GEN Cables$", 12.011, 6., 2.265, 18.8, 999.);  // check !!!
+  AliMaterial(83, "GEN patch pan$", 12.011, 6., 2.265, 18.8, 999.);  // check !!!  
+  AliMaterial(84, "GEN serv$", 12.011, 6., 2.265, 18.8, 999.);  // check !!!  
+  AliMixture(85, "GEN Inox$", asteel, zsteel, 7.88, 4, wsteel);
   // ** 
   AliMedium(75,"GEN C$",        75, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(76,"GEN Air$",      76, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
@@ -687,6 +735,10 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   AliMedium(79,"GEN SERVICES$", 79, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(80,"GEN Copper$",   80, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(81,"GEN Water $",   81, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(82,"GEN Cables$",   82, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(83,"GEN patch pan$",83, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);  
+  AliMedium(84,"GEN serv$",     84, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(85,"GEN Inox$",     85, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
 }
 //_____________________________________________________________________________
 void AliITSvPPRcoarseasymm::Init(){
