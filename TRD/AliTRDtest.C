@@ -7,7 +7,7 @@ Int_t AliTRDtest()
   Int_t rc = 0;
 
   // Initialize the test setup 
-  gAlice->Init("AliTRDconfig.C");
+  gAlice->Init("$(ALICE_ROOT)/TRD/AliTRDconfig.C");
 
   // Run one event and create the hits
   gAlice->Run(1);
