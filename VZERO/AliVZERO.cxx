@@ -19,6 +19,8 @@
 //                                                                       //
 //                          V-Zero   Detector                            //
 //  This class contains the base procedures for the VZERO  detector      //
+//  Geometry of November 2003 : V0R box is now 4.4 cm thick              //
+//                              scintillators are 2 cm thick             //
 //  All comments should be sent to Brigitte CHEYNIS :                    //
 //                                 b.cheynis@ipnl.in2p3.fr               //
 //                                                                       //
@@ -56,8 +58,8 @@ AliVZERO::AliVZERO(const char *name, const char *title)
    
   gAlice->GetMCApp()->AddHitList(fHits);
 
-  fThickness    =  4.1;   // total thickness of the V0R box
-  fThickness1   =  0.7;   // thickness of the thickest cell (2.5 in version 0)
+  fThickness    =  4.4;   // total thickness of the V0R box in cm
+  fThickness1   =  2.0;   // thickness of scintillating cells in cm
   
   fMaxStepQua   =  0.05; 
   fMaxStepAlu   =  0.01; 

@@ -20,10 +20,13 @@
 //  (V-zero) detector  version 2  as designed by the Lyon group     //
 //   All comments should be sent to Brigitte CHEYNIS :              //
 //                                  b.cheynis@ipnl.in2p3.fr         // 
-//   Geometry of the  4th of november 2002                          //
+//   Geometry of the  26th of november 2003                         //
 //  (circular instead of trapezoidal shapes as in previous versions //
-//   plus changes in cell dimensions and offsets)                   // 
-//   New coordinate system implemented in october 2003              //
+//   plus changes in cell dimensions and offsets) :                 // 
+//   Scintillating cells are now 2 cm thick instead of 0.7 cm       //
+//   V0R sits between Z values  -89.4 and  -85.0 cm                 //
+//   V0L sits between Z values +350.0 and +352.0 cm                 //
+//   New coordinate system has been implemented in october 2003     //
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
@@ -123,8 +126,11 @@ void AliVZEROv2::CreateGeometry()
   theta       = pi/6.0/2.0;       // half angular opening = 15 degrees
     
   halfThickQua= fThickness1/2.0;  // half thickness of elementary cell (inner ring)
-    
-  zdet        =    90.0 - 0.6 -fThickness/2.0;  // distance to vertex (along Z axis)
+  
+// distance 0.6 cm in zdet accounts for the fact V0R box back lid sits 0.6 away from 
+// absorber nose sitting at 90 cm. Will use -zdet later...
+   
+  zdet        =    90.0 - 0.6 -fThickness/2.0;  // distance to vertex (along Z axis)   
   r0          =    4.05;          // closest distance to center of the beam pipe
   height      =    height1 + height2 + height3 + height4 + height5;
   r5          =    r0 + height;
@@ -220,11 +226,13 @@ void AliVZEROv2::CreateGeometry()
       
   gMC->Gsvolu("V0RI","TUBE",idtmed[3010],partube,3);
   
-// Creation of  carbon lids (3 mm thick) to keep v0RI box shut...
+// Creation of  carbon lids (2 mm thick) to keep v0RI box shut...
+
+  Float_t  lidThickness = 0.2;
  
   partube[0] =   r0;
   partube[1] =   r5;
-  partube[2] =   +0.3/2.0;
+  partube[2] =   +lidThickness/2.0;
     
   gMC->Gsvolu("V0CA","TUBE",idtmed[3001],partube,3); 
   gMC->Gspos("V0CA",1,"V0RI",0.0,0.0, fThickness/2.0-partube[2],0,"ONLY");
@@ -257,10 +265,10 @@ void AliVZEROv2::CreateGeometry()
   gMC->Gsvolu("V0R0","TUBS",idtmed[3010],partubs,5);  // air volume 
 
 // Elementary cell of ring 1 :
-// (the cells will be shifted by 3 mm to output fibers) 
+// (cells 2 and 3  will be shifted by 1 cm to output fibers) 
    
-  Float_t   offsetFibers =  0.7;
-  Float_t   offset        =  fThickness/2.0 - 0.3 - fThickness1/2.0; 
+  Float_t   offsetFibers  =  1.0;
+  Float_t   offset        =  fThickness/2.0 - lidThickness - fThickness1/2.0; 
   Float_t   r1            =  r0 + height1;
       
   partubs[0]     =  r0;
@@ -299,7 +307,7 @@ void AliVZEROv2::CreateGeometry()
   partubs[1]     =  r4;
 
   gMC->Gsvolu("V0R4","TUBS",idtmed[3005],partubs,5);  // scintillator volume
-  gMC->Gspos("V0R4",1,"V0R0", 0.0, 0.0 ,  -offset + 3.0 * offsetFibers, 0,"ONLY");
+  gMC->Gspos("V0R4",1,"V0R0", 0.0, 0.0 ,  -offset + 2.0 * offsetFibers, 0,"ONLY");
 
 // Elementary cells of ring 5 :
 
@@ -309,13 +317,13 @@ void AliVZEROv2::CreateGeometry()
   partubs[4]     = 120.0-30.0;
   
   gMC->Gsvolu("V0R5","TUBS",idtmed[3005],partubs,5);  // scintillator volume
-  gMC->Gspos("V0R5",1,"V0R0", 0.0, 0.0 , -offset + 4.0 * offsetFibers, 0,"ONLY");  
+  gMC->Gspos("V0R5",1,"V0R0", 0.0, 0.0 , -offset + 2.0 * offsetFibers, 0,"ONLY");  
 
   partubs[3]     = 120.0-30.0;
   partubs[4]     = 120.0-15.0;
   
   gMC->Gsvolu("V0R6","TUBS",idtmed[3005],partubs,5);  // scintillator volume
-  gMC->Gspos("V0R6",1,"V0R0", 0.0, 0.0 ,  -offset + 4.0 * offsetFibers, 0,"ONLY");
+  gMC->Gspos("V0R6",1,"V0R0", 0.0, 0.0 ,  -offset + 2.0 * offsetFibers, 0,"ONLY");
    
   Float_t  phiDeg = 180./6.; 
 
@@ -420,11 +428,13 @@ void AliVZEROv2::BuildGeometry()
   fNodes->Add(v0Rnode);  
   v0Rnode->SetVisibility(2);     
  
-// Rondelles de carbone (epaisseur 3 mm) de maintien des cellules ...
+// Rondelles de carbone (epaisseur 2 mm) de maintien des cellules ...
+
+  Float_t  lidThickness = 0.2;
   
   partube[0] =   r0;
   partube[1] =   r5;
-  partube[2] =   +0.3/2.0;
+  partube[2] =   +lidThickness/2.0;
   
   TTUBE  *v0CA = new TTUBE("V0CA", "V0CA", "void",partube[0], partube[1], partube[2]);
   
@@ -473,8 +483,8 @@ void AliVZEROv2::BuildGeometry()
   v0R0->SetNumberOfDivisions(ndiv); 						  
 
   Float_t   r1     =  r0 + height1;
-  Float_t   offset = fThickness/2.0 - 0.3 - fThickness1/2.0; 
-  Float_t   offsetFibers = 0.7;
+  Float_t   offset = fThickness/2.0 - lidThickness - fThickness1/2.0; 
+  Float_t   offsetFibers = 1.0;
     
   partubs[0]     =  r0;
   partubs[1]     =  r1;
@@ -576,21 +586,21 @@ void AliVZEROv2::BuildGeometry()
 
     sprintf(nameNode,"SUBDER%d",ndetR);
     v0Rnode0->cd();    
-    v0Rnode4 = new TNode(nameNode,nameNode,v0R4,0.0,0.0, -offset + 3.0*offsetFibers,0);	 
+    v0Rnode4 = new TNode(nameNode,nameNode,v0R4,0.0,0.0, -offset + 2.0*offsetFibers,0);	 
     v0Rnode4->SetLineColor(kColorVZERO);
     fNodes->Add(v0Rnode4);
     ndetR++;
      
     sprintf(nameNode,"SUBDER%d",ndetR);
     v0Rnode0->cd();    
-    v0Rnode5 = new TNode(nameNode,nameNode,v0R5,0.0,0.0, -offset + 4.0*offsetFibers,0);	 
+    v0Rnode5 = new TNode(nameNode,nameNode,v0R5,0.0,0.0, -offset + 2.0*offsetFibers,0);	 
     v0Rnode5->SetLineColor(kColorVZERO);
     fNodes->Add(v0Rnode5);
     ndetR++;
     
     sprintf(nameNode,"SUBDER%d",ndetR);
     v0Rnode0->cd();    
-    v0Rnode6 = new TNode(nameNode,nameNode,v0R6,0.0,0.0, -offset + 4.0*offsetFibers,0);	 
+    v0Rnode6 = new TNode(nameNode,nameNode,v0R6,0.0,0.0, -offset + 2.0*offsetFibers,0);	 
     v0Rnode6->SetLineColor(kColorVZERO);
     fNodes->Add(v0Rnode6);
     ndetR++;
