@@ -64,7 +64,8 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
 { 
   // dtor
 
-  //   delete gMinuit ; 
+  delete gMinuit ; 
+  gMinuit = 0 ;
 }
 
 //____________________________________________________________________________
@@ -209,8 +210,8 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
   emcclu->GetLocalPosition(vecEmc) ;
   PpsdClu->GetLocalPosition(vecPpsd)  ; 
   if(emcclu->GetPHOSMod() == PpsdClu->GetPHOSMod()){ 
-    if(vecPpsd.X() >= vecEmc.X() - fDelta ){ 
-      if(vecPpsd.Z() >= vecEmc.Z() - fDelta ){
+    //    if(vecPpsd.X() >= vecEmc.X() - fDelta ){ 
+    //  if(vecPpsd.Z() >= vecEmc.Z() - fDelta ){
 	// Correct to difference in CPV and EMC position due to different distance to center.
 	// we assume, that particle moves from center
 	Float_t dCPV = fGeom->GetIPtoOuterCoverDistance();
@@ -218,14 +219,17 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	dEMC         = dEMC / dCPV ;
         vecPpsd = dEMC * vecPpsd  - vecEmc ; 
         r = vecPpsd.Mag() ;
-      } // if  zPpsd >= zEmc - fDelta
+	//    } // if  zPpsd >= zEmc - fDelta
       toofar = kFALSE ;
-    } // if  xPpsd >= xEmc - fDelta
-    else 
-      toofar = kTRUE ;
+      //} // if  xPpsd >= xEmc - fDelta
+      // else 
+      //toofar = kTRUE ;
   } 
   else 
     toofar = kTRUE ;
+
+  //toofar = kFALSE ;
+ 
   
   return r ;
 }
@@ -311,15 +315,16 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TArrayI * emcRecPoints,
   
     emc = emcRecPoints->At(linkLow->GetEmc()) ;
     ppsdLow = ppsdRecPointsLow->At(linkLow->GetPpsd()) ;
-    if( (emc >= 0) && (ppsdLow >= 0) ){    // RecPoints not removed yet 
 
+    if( (emc >= 0) && (ppsdLow >= 0) ){    // RecPoints not removed yet 
+      
       new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment((AliPHOSEmcRecPoint *)fPlease->GimeRecPoint(emc,"emc"), 
 							  nullpointer, 
 							  (AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdLow,"ppsd") ) ;
       ((AliPHOSTrackSegment* )trsl->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);    
       //replace index of emc to negative and shifted index of TS      
       emcRecPoints->AddAt(-2 - fNTrackSegments,linkLow->GetEmc()) ;  
-      //replace index of emc to negative and shifted index of TS      
+      //replace index of PPSD Low to negative and shifted index of TS      
       ppsdRecPointsLow->AddAt(-2 - fNTrackSegments,linkLow->GetPpsd()) ; 
       fNTrackSegments++ ;
 
@@ -331,21 +336,25 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TArrayI * emcRecPoints,
     if(emc != -1){ //without ppsd Up yet 
 
       ppsdUp = ppsdRecPointsUp->At(linkUp->GetPpsd()) ;
+      if(ppsdUp >= 0){ //ppsdUp still exist
+	
+	if(emc >= 0){ //without ppsd Low => create new TS
 
-      if(emc >= 0){ //without ppsd Low => create new TS
+	  fNTrackSegments = trsl->GetEntries() ; 
+	  new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) fPlease->GimeRecPoint(emc,"emc"), 
+							      (AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdUp,"ppsd"), 
+							      nullpointer) ;
+	  ((AliPHOSTrackSegment *) trsl->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
+	  fNTrackSegments++ ;
+	}
+	else{ // append ppsd Up to existing TS
+	  ((AliPHOSTrackSegment *)trsl->At(-2-emc))->SetPpsdUpRecPoint((AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdUp,"ppsd"));
+	}
 
-	fNTrackSegments = trsl->GetEntries() ; 
-	new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) fPlease->GimeRecPoint(emc,"emc"), 
-							    (AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdUp,"ppsd"), 
-							    nullpointer) ;
-	((AliPHOSTrackSegment *) trsl->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
-	fNTrackSegments++ ;
-      }
-      else{ // append ppsd Up to existing TS
-	((AliPHOSTrackSegment *)trsl->At(-2-emc))->SetPpsdUpRecPoint((AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdUp,"ppsd"));
-      }
-      emcRecPoints->AddAt(-1,linkUp->GetEmc()) ; //Mark that PPSD Up found 
-      
+	emcRecPoints->AddAt(-1,linkUp->GetEmc()) ; //Mark that PPSD Up found 
+	//replace index of PPSD Up to negative and shifted index of TS      
+	ppsdRecPointsUp->AddAt(-2 - fNTrackSegments,linkUp->GetPpsd()) ; 
+      } //if ppsdUp still exist
     } 
   }	 
 
@@ -385,8 +394,8 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
   TArrayI * ppsdRecPointsLow = new TArrayI(1000) ;  // kept in TClonesArray's emcl and ppsdl
   
   
-  TClonesArray * linklowArray = new TClonesArray("AliPHOSLink", 100);
-  TClonesArray * linkupArray  = new TClonesArray("AliPHOSLink", 100); 
+  TClonesArray * linklowArray = new TClonesArray("AliPHOSLink", 1000);
+  TClonesArray * linkupArray  = new TClonesArray("AliPHOSLink", 1000); 
 
 
   if(fUnfoldFlag){
