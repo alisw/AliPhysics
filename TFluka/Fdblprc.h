@@ -65,9 +65,10 @@ extern "C" {
 //*         loflts = set to true for special off-line testing of speci- *
 //*                  fic routines                                       *
 //*         lusrin = set to true if the user dependent initialization   *
-//*                  routine usrini has been called at least onec       *
+//*                  routine usrini has been called at least once       *
 //*         lnmgeo = set to true for a name-base geometry input         *
 //*         lnminp = set to true for a name-base fluka input            *
+//*         Lfrfmt = set to true for a free-format based Fluka input    *
 //*         lfdrtr = set to true for going in/out feeder/flukam at each *
 //*                  event                                              *
 //*                                                                     *
@@ -150,6 +151,7 @@ const Double_t rhflmn = 1.0e-06;
 //*         sqrsix = square root of  6                                   *
 //*         sqrsev = square root of  7                                   *
 //*         sqrt12 = square root of 12                                   *
+//*         s2fwhm = 2 x square root of 2 x logarithm of 2               *
 //*                                                                      *
 //*----------------------------------------------------------------------*
 //*
@@ -199,6 +201,7 @@ const Double_t sqrfiv = 2.236067977499789696409173668731e+00;
 const Double_t sqrsix = 2.449489742783178098197284074706e+00;
 const Double_t sqrsev = 2.645751311064590590501615753639e+00;
 const Double_t sqrt12 = 3.464101615137754587054892683012e+00;
+const Double_t s2fwhm = 2.354820045030949e+00;
 //*
 //*======================================================================*
 //*======================================================================*
@@ -253,6 +256,7 @@ const Double_t sqrt12 = 3.464101615137754587054892683012e+00;
 //*         sin2tw = sin^2 theta_weinberg                                *
 //*         prmgnm = proton  magnetic moment (magneton)                  *
 //*         anmgnm = neutron magnetic moment (magneton)                  *
+//*         s0thms = sigma_0 Thomson, 8/3 pi r_e^2 (mb)                  *
 //*                                                                      *
 //*   astronomical constants:                                            *
 //*                                                                      *
@@ -269,6 +273,7 @@ const Double_t sqrt12 = 3.464101615137754587054892683012e+00;
 //*         raddeg = from radians to degrees                             *
 //*         degrad = from degrees to radians                             *
 //*         gevomg = from (photon) energy [gev] in 2pi x frequency [s^-1]*
+//*         cmq2mb = from square centimetres to millibarns               *
 //*                                                                      *
 //*   useful constants:                                                  *
 //*                                                                      *
@@ -296,24 +301,24 @@ const Double_t amugrm = 1.6605402e-24;
 const Double_t ammumu = 0.113428913e+00;
 const Double_t amprmu = 1.007276470e+00;
 const Double_t amnemu = 1.008664904e+00;
-//*     parameter ( alpfsc = 1.e+00 / 137.035989561e+00 )
-//*     parameter ( fscto2 = alpfsc * alpfsc )
-//*     parameter ( fscto3 = fscto2 * alpfsc )
-//*     parameter ( fscto4 = fscto3 * alpfsc )
+//* const Double_t alpfsc = 1.e+00 / 137.035989561e+00
+//* const Double_t fscto2 = alpfsc * alpfsc
+//* const Double_t fscto3 = fscto2 * alpfsc
+//* const Double_t fscto4 = fscto3 * alpfsc
 //*    it is important to set the electron mass exactly with the same
 //*    rounding as in the mass tables, so use the explicit expression
-//*     parameter ( amelct = 1.e-16 * amelgr * clight * clight / elcmks )
+//* const Double_t amelct = 1.e-16 * amelgr * clight * clight / elcmks
 //*    it is important to set the amu mass exactly with the same
 //*    rounding as in the mass tables, so use the explicit expression
-//*     parameter ( amugev = 1.e-16 * amugrm * clight * clight / elcmks )
+//* const Double_t amugev = 1.e-16 * amugrm * clight * clight / elcmks
 //*    it is important to set the muon,proton,neutron masses exactly with
 //*    the same rounding as in the mass tables, so use the explicit
 //*    expression
-//*     parameter ( ammuon = ammumu * amugev )
-//*     parameter ( amprtn = amprmu * amugev )
-//*     parameter ( amntrn = amnemu * amugev )
-//*     parameter ( rclsel = elccgs * elccgs / clight / clight / amelgr )
-//*     parameter ( bltzmn = boltzm / elcmks * 1.e-09 )
+//* const Double_t ammuon = ammumu * amugev
+//* const Double_t amprtn = amprmu * amugev
+//* const Double_t amntrn = amnemu * amugev
+//* const Double_t rclsel = elccgs * elccgs / clight / clight / amelgr
+//* const Double_t bltzmn = boltzm / elcmks * 1.e-09
 const Double_t alpfsc = 7.2973530791728595e-3;
 const Double_t fscto2 = 5.3251361962113614e-5;
 const Double_t fscto3 = 3.8859399018437826e-7;
@@ -326,7 +331,7 @@ const Double_t amprtn = 0.93827231e+00;
 const Double_t amntrn = 0.93956563e+00;
 const Double_t amdeut = 1.87561339e+00;
 const Double_t amalph = 3.72738025692891e+00;
-const Double_t cougfm = elccgs*elccgs/elcmks*(1.e-7)*(1.e+1)*(1.e-9);
+const Double_t cougfm = elccgs*elccgs/elcmks*(1.e-7)*(1.e+13)*(1.e-9);
 const Double_t rclsel = 2.8179409183694872e-13;
 const Double_t bltzmn = 8.617385e-14;
 const Double_t a0bohr = plabrc/alpfsc/amelct;
@@ -341,14 +346,16 @@ const Double_t gevmev = 1.0e+3;
 const Double_t ev2gev = 1.0e-9;
 const Double_t gev2ev = 1.0e+9;
 const Double_t emvgev = 1.0e-3;
+const Double_t cmq2mb = 1.0e+27;
 const Double_t algvmv = 6.90775527898214e+00;
 const Double_t raddeg = (180.e+00)/pipipi;
 const Double_t degrad = pipipi/(180.e+00);
 const Double_t gevomg = clight*(1.e+13)/plabrc;
+const Double_t s0thms = eigeig / thrthr * pipipi * rclsel * rclsel * cmq2mb;
 //*  old Fermi-Thomas parametrization of atomic binding energies:
-//*     parameter ( fertho = 15.73       e-9 )
-//*     parameter ( expebn = 7.e+00 / 3.e+00  )
-//*     parameter ( bexc12 = fertho * 65.41634134195703e+00 )
+//*     const Double_t fertho = 15.73       e-9
+//*     const Double_t expebn = 7.e+00 / 3.e+00
+//*     const Double_t bexc12 = fertho * 65.41634134195703e+00
 //*  new Fermi-Thomas parametrization of atomic binding energies:
 const Double_t fertho = 14.33e-9;
 const Double_t expebn = 2.39e+00;
@@ -368,6 +375,7 @@ typedef struct {
    Int_t    lusrin;
    Int_t    lnmgeo;
    Int_t    lnminp;
+   Int_t    lfrfmt;
    Int_t    lfdrtr;
    Int_t    kflgeo;
    Int_t    kfldnr;
