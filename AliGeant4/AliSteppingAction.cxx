@@ -98,8 +98,6 @@ void AliSteppingAction::PrintTrackInfo(const G4Track* track) const
 #endif
 }
 
-#include "AliMC.h"
-
 // public methods
 
 void AliSteppingAction::SteppingAction(const G4Step* step)
