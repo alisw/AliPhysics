@@ -4,7 +4,7 @@
 void AliITSFindPrimaryVertex(Int_t evNumber1=0,Int_t evNumber2=0, const char *filename="galice.root") {
 
   
-  ///////////////// Dynamically link some shared libs ////////////////////////////////
+  ///////////////// Dynamically link some shared libs /////////////////////
   
   if (gClassTable->GetID("AliRun") < 0) {
     gROOT->LoadMacro("loadlibs.C");
@@ -16,16 +16,25 @@ void AliITSFindPrimaryVertex(Int_t evNumber1=0,Int_t evNumber2=0, const char *fi
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
-   if (!file) file = new TFile(filename,"UPDATE");
+   if (!file) file = new TFile(filename);
 
 
-// Get AliRun object from file or create it if not on file
+// Get AliRun object from file 
    if (!gAlice) {
       gAlice = (AliRun*)file->Get("gAlice");
-      if (gAlice) printf("AliRun object found on file\n");
-      if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
+      if (gAlice) {
+	printf("AliRun object found on file\n");
+      }
+      else {
+	printf("AliRun object not found - nothing done\n");
+	return;
+      }
    }
 
+   // Open output file for vertices and Create vertexer
+   TFile *filou = new TFile("vertices.root","recreate");
+   AliITSVertexerIons *vertexer = new AliITSVertexerIons(file,filou);
+   AliITSVertex *V;
 //   Loop over events 
 //
    Int_t Nh=0;
@@ -42,8 +51,7 @@ void AliITSFindPrimaryVertex(Int_t evNumber1=0,Int_t evNumber2=0, const char *fi
      TStopwatch timer;
      timer.Start();
 
-     AliITSVertex *V = new AliITSVertex();
-	  V->Exec();
+     V=vertexer->FindVertexForCurrentEvent(i);
 
      timer.Stop();
      timer.Print();
@@ -58,9 +66,10 @@ void AliITSFindPrimaryVertex(Int_t evNumber1=0,Int_t evNumber2=0, const char *fi
      cout << "Z Resolution = " << V->GetZRes()*10000 << " microns" << endl;
      cout << "Signal/Noise for Z = " << V->GetZSNR() <<endl;
 	 	 
-     delete V;
+     vertexer->WriteCurrentVertex(); 
   } 
   
   file->Close(); 
+  filou->Close();
 }
 

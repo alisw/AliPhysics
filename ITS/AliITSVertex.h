@@ -1,49 +1,97 @@
 #ifndef ALIITSVERTEX_H
 #define ALIITSVERTEX_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-class TTree;
-class TFile;
-class AliITSgeom;
-class AliITSRecPoint;
-class TH1F;
-class TF1;
-class TClonesArray;
-class TObject;
-class AliGenerator;
 
-class AliITSVertex : public TObject  {
+//-------------------------------------------------------
+//                    Primary Vertex Class
+//
+//   Origin: A.Dainese, Padova, andrea.dainese@pd.infn.it
+//-------------------------------------------------------
+
+/*****************************************************************************
+ *                                                                           *
+ * This class deals with primary vertex.                                     *
+ * AliITSVertex objects are created by the class AliITSVertexer and its      *
+ * derived classes.                                                          *
+ * Different constructors are provided:                                      *
+ * - for primary vertex determined with pixels in pp (only Z)                *
+ * - for primary vertex determined with pixels in ion-ion (X,Y,Z)            *
+ * - for primary vertex determined with ITS tracks in pp (X,Y,Z)             *
+ * This class replaces the previous version of AliITSVertex, designed        *
+ * originally only for A-A collisions. The functionalities of the old class  *
+ * are maintained in the AliITSVertexerIons class                            *
+ *                                                                           *
+ *****************************************************************************/
+
+//---- Root headers -----
+#include <TNamed.h>
+
+class AliITSVertex : public TNamed {
  
  public:
  
-        AliITSVertex();
-        virtual ~AliITSVertex();
-		  void Exec();
-        Double_t PhiFunc(Float_t p[]);
+  AliITSVertex();
+  AliITSVertex(Double_t positionZ,Double_t sigmaZ,Int_t nContributors,
+	       Char_t *vtxName="Vertex");
+  AliITSVertex(Double_t phi,Double_t position[3],Double_t covmatrix[6],
+	       Double_t chi2,Int_t nContributors,
+	       Char_t *vtxName="Vertex");
+  AliITSVertex(Double_t position[3],Double_t sigma[3],
+	       Char_t *vtxName="Vertex");
+  AliITSVertex(Double_t position[3],Double_t sigma[3],Double_t snr[3],
+	       Char_t *vtxName="Vertex");
 
-//      This class determines 3D vertex position, resolution and signal 
-//      to noise ratio, for arbitrary location (x,y,z) of the vertex.
-//      Tests have been carried out with vertex locations up to radial 
-//      distances of 10 mm in the transverse plane and up to 15 cm along z.
-//      The procedure has been tested also in case of high magnetic fields
-//      in ALICE, up to B = 0.5 T.
+  virtual ~AliITSVertex();
 
-        Double_t GetZv() {return (Double_t)fPosition[2];}
-        Double_t GetZRes() {return fResolution[2];}
-        Double_t GetZSNR() {return fSNR[2];}
-        Double_t GetYv() {return (Double_t)fPosition[1];}
-        Double_t GetYRes() {return fResolution[1];}
-        Double_t GetYSNR() {return fSNR[1];}
-        Double_t GetXv() {return (Double_t)fPosition[0];}
-        Double_t GetXRes() {return fResolution[0];}
-        Double_t GetXSNR() {return fSNR[0];}
+
+  void     GetXYZ(Double_t position[3]) const;
+  void     GetSigmaXYZ(Double_t sigma[3]) const;
+  void     GetCovMatrix(Double_t covmatrix[6]) const;
+  void     GetSNR(Double_t snr[3]) const;
+
+  void     GetXYZ_ThrustFrame(Double_t position[3]) const;
+  void     GetSigmaXYZ_ThrustFrame(Double_t sigma[3]) const;
+  void     GetCovMatrix_ThrustFrame(Double_t covmatrix[3]) const;
+
+  Double_t GetXv() const;
+  Double_t GetYv() const;
+  Double_t GetZv() const;
+  Double_t GetXRes() const;
+  Double_t GetYRes() const;
+  Double_t GetZRes() const;
+  Double_t GetXSNR() const { return fSNR[0]; }
+  Double_t GetYSNR() const { return fSNR[1]; }
+  Double_t GetZSNR() const { return fSNR[2]; }
+
+  Double_t GetPhi() const { return fPhi; }
+  Double_t GetChi2() const { return fChi2; }
+  Double_t GetChi2toNDF() const 
+    { return fChi2/(2.*(Double_t)fNContributors-3.); }
+  Int_t    GetNContributors() const { return fNContributors; }
+
+  void     PrintStatus() const;
+  void     SetDebug(Int_t dbg = 0) { fDebug = dbg; return; }
         
  private:
     
-        Double_t *fPosition;
-        Double_t *fResolution;
-        Double_t *fSNR;
+  Double_t fPosition[3];  // vertex position
+  Double_t fCovXX,fCovXY,fCovYY,fCovXZ,fCovYZ,fCovZZ;  // vertex covariance matrix
+  Double_t fSNR[3];  // S/N ratio
+  Double_t fPhi;     // position is given in a frame rotated of an angle fPhi around z axis: but in most cases fPhi = 0 ! 
+  Double_t fChi2;  // chi2 of vertex fit
+  Int_t    fNContributors;  // # of tracklets/tracks used for the estimate 
+  Int_t    fDebug;  //! for debugging
 
-ClassDef(AliITSVertex,1) // Class for Vertex finder
-};
+  ClassDef(AliITSVertex,2)  // Class for Primary Vertex
+    };
 
 #endif
+
+
+
+
+
+
+    
