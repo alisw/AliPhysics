@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.30  2002/12/09 16:26:28  morsch
+- Nummber of particles per jet increased to 1000
+- Warning removed.
+
 Revision 1.29  2002/11/21 17:01:40  alibrary
 Removing AliMCProcess and AliMC
 
@@ -969,10 +973,12 @@ void AliEMCALJetFinder::FillFromDigits(Int_t flag)
     nbytes += branchDr->GetEntry(0);
 //
 //  Get digitizer parameters
-    Float_t towerADCped  = digr->GetTowerpedestal();
-    Float_t towerADCcha  = digr->GetTowerchannel();
-    Float_t preshoADCped = digr->GetPreShopedestal();
-    Float_t preshoADCcha = digr->GetPreShochannel();
+    Float_t preADCped = digr->GetPREpedestal();
+    Float_t preADCcha = digr->GetPREchannel();
+    Float_t ecADCped  = digr->GetECpedestal();
+    Float_t ecADCcha  = digr->GetECchannel();
+    Float_t hcADCped  = digr->GetHCpedestal();
+    Float_t hcADCcha  = digr->GetHCchannel();
 
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
     AliEMCALGeometry* geom = 
@@ -980,10 +986,8 @@ void AliEMCALJetFinder::FillFromDigits(Int_t flag)
     
     if (fDebug) {
 	Int_t   ndig = digs->GetEntries();
-	printf("\n Number of Digits: %d %d\n", ndig, nent);
-	printf("\n Parameters: %f %f %f %f\n", 
-	       towerADCped, towerADCcha, preshoADCped, preshoADCcha );
-	printf("\n Geometry: %d %d\n", geom->GetNEta(), geom->GetNPhi());
+	Info("FillFromDigits","Number of Digits: %d %d\n Parameters: PRE : %f %f EC: %f %f HC: %f %f\n Geometry: %d %d", 
+	     ndig, nent, preADCped, preADCcha, ecADCped, ecADCcha, hcADCped, hcADCcha, geom->GetNEta(), geom->GetNPhi());
     }
     
 //
@@ -992,22 +996,29 @@ void AliEMCALJetFinder::FillFromDigits(Int_t flag)
     TIter next(digs);
     while ((sdg = (AliEMCALDigit*)(next())))
     {
-	Double_t pedestal;
-	Double_t channel;
-	if (sdg->GetId() > (geom->GetNZ() * geom->GetNPhi())) 
-	{
-	    pedestal = preshoADCped;
-	    channel  = preshoADCcha; 
-	} else {
-	    pedestal = towerADCped;
-	    channel  = towerADCcha; 
+	Double_t pedestal = 0.;
+	Double_t channel  = 0.;
+	if (geom->IsInPRE(sdg->GetId())) {
+	  pedestal = preADCped;
+	  channel  = preADCcha; 
+	} 
+	else if (geom->IsInECAL(sdg->GetId()))  {
+	  pedestal = ecADCped;
+	  channel  = ecADCcha; 
 	}
+	else if (geom->IsInHCAL(sdg->GetId()))  {
+	  pedestal = hcADCped;
+	  channel  = hcADCcha; 
+	}
+	else 
+	  Fatal("FillFromDigits", "unexpected digit is number!") ; 
 	
 	Float_t eta = sdg->GetEta();
 	Float_t phi = sdg->GetPhi() * TMath::Pi()/180.;
 	Float_t amp = (Float_t) (channel*(sdg->GetAmp())-pedestal);
 	
-	if (fDebug > 1) printf("\n Digit: eta %8.3f phi %8.3f amp %8.3f %8d",
+	if (fDebug > 1) 
+	  Info("FillFromDigits", "Digit: eta %8.3f phi %8.3f amp %8.3f %8d",
 			   eta, phi, amp, sdg->GetAmp());
 	
 	fLego->Fill(eta, phi, fSamplingF*amp);
