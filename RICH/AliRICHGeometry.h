@@ -79,7 +79,7 @@ private:
    Float_t fAlphaAngle;              // Angle between modules in YZ plane
    Float_t fBetaAngle;               // Angle between modules in XY plane
    Float_t fOffset;                  // Modules offset from IP 
-   ClassDef(AliRICHGeometry,2)       // Chamber's main geometry parameters
+   ClassDef(AliRICHGeometry,3)       // Chamber's main geometry parameters
 };
 
 inline AliRICHGeometry::AliRICHGeometry()

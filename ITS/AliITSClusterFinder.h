@@ -121,6 +121,6 @@ class AliITSClusterFinder :public TObject{
     Int_t              fClusterSize;   //! ClusterSize
     Int_t              fNPeaks;        //! NPeaks  
   
-    ClassDef(AliITSClusterFinder,1) //Class for clustering and reconstruction of space points
+    ClassDef(AliITSClusterFinder,2) //Class for clustering and reconstruction of space points
 };
 #endif

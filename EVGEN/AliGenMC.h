@@ -63,7 +63,7 @@ class AliGenMC : public AliGenerator
     Decay_t     fForceDecay;    // Decay channel forced
     Float_t     fMaxLifeTime;   // Maximum lifetime for unstable particles
     
-    ClassDef(AliGenMC,2)       // AliGenerator implementation for generators using MC methods
+    ClassDef(AliGenMC,3)       // AliGenerator implementation for generators using MC methods
 };
 #endif
 
