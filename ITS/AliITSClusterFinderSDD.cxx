@@ -155,6 +155,7 @@ void AliITSClusterFinderSDD::Find1DClusters()
      for(k=0;k<fNofAnodes;k++) {
        idx = j*fNofAnodes+k;
        // signal (fadc) & derivative (dfadc)
+       dfadc[k][255]=0.;
        for(l=0; l<fMaxNofSamples; l++) {
 	 fadc2=(Float_t)fMap->GetSignal(idx,l);
 	 if(l>0) fadc1=(Float_t)fMap->GetSignal(idx,l-1);
@@ -384,7 +385,7 @@ void AliITSClusterFinderSDD::GetRecPoints()
   Int_t i;
   Int_t ix, iz, idx=-1;
   AliITSdigitSDD *dig=0;
-//  Int_t maxt=fSegmentation->Npx();
+  // Int_t maxt=fSegmentation->Npx();
   Int_t ndigits=fDigits->GetEntriesFast();
   for(i=0; i<nofClusters; i++) { 
     AliITSRawClusterSDD *clusterI = (AliITSRawClusterSDD*)fClusters->At(i);

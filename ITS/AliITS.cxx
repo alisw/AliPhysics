@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.23  2000/10/05 20:47:42  nilsen
+fixed dependencies of include files. Tryed but failed to get a root automaticly
+generates streamer function to work. Modified SetDefaults.
+
 Revision 1.9.2.15  2000/10/04 16:56:40  nilsen
 Needed to include stdlib.h
 
@@ -562,70 +566,66 @@ void AliITS::SetDefaults()
 {
   // sets the default segmentation, response, digit and raw cluster classes
 
-  cout << "AliITS::SetDefaults" << endl;
+  printf("SetDefaults\n");
 
   AliITSDetType *iDetType;
 
+
   //SPD 
 
-  iDetType = DetType(0);
-  AliITSresponseSPD *resp0 = (AliITSresponseSPD*) iDetType->GetResponseModel();
+  iDetType=DetType(0); 
   if (!iDetType->GetSegmentationModel()) {
-    AliITSsegmentationSPD *seg0 = new AliITSsegmentationSPD(fITSgeom);
-    SetSegmentationModel(0,seg0);
-  } // end if 
-  if (!resp0){
-    resp0 = new AliITSresponseSPD();
-    SetResponseModel(0,resp0);
-  } // end if
+    AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD(fITSgeom);
+    SetSegmentationModel(0,seg0); 
+  }
+  if (!iDetType->GetResponseModel()) {
+     SetResponseModel(0,new AliITSresponseSPD()); 
+  }
   // set digit and raw cluster classes to be used
-
-  const char *kData0 = resp0->DataType();
+  
+  const char *kData0=(iDetType->GetResponseModel())->DataType();
   if (strstr(kData0,"real")) {
       iDetType->ClassNames("AliITSdigit","AliITSRawClusterSPD");
   } else iDetType->ClassNames("AliITSdigitSPD","AliITSRawClusterSPD");
 
-  // SDD
-  iDetType = DetType(1);
-  AliITSresponseSDD *resp1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
-  //printf("SetDefaults: iDetType %p\n",iDetType);
-  if (!iDetType->GetSegmentationModel()) {
-    AliITSsegmentationSDD *seg1 = new AliITSsegmentationSDD(fITSgeom,resp1);
-    SetSegmentationModel(1,seg1); 
-  } // end if
-  //printf("SetDefaults: segm %p\n",iDetType->GetSegmentationModel());
-  if (!resp1) {
-    resp1 = new AliITSresponseSDD();
-    SetResponseModel(1,resp1); 
+  // SDD					  //
+  iDetType=DetType(1); 
+  if (!iDetType->GetResponseModel()) {
+    SetResponseModel(1,new AliITSresponseSDD()); 
   }
-  //printf("SetDefaults: resp %p\n",iDetType->GetResponseModel());
-  const char *kData1 = resp1->DataType();
-  const char *kopt = resp1->ZeroSuppOption();
+  AliITSresponse *resp1=iDetType->GetResponseModel();
+  if (!iDetType->GetSegmentationModel()) {
+    AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
+    SetSegmentationModel(1,seg1); 
+  }
+  const char *kData1=(iDetType->GetResponseModel())->DataType();
+  const char *kopt=iDetType->GetResponseModel()->ZeroSuppOption();
   if ((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ) {
       iDetType->ClassNames("AliITSdigit","AliITSRawClusterSDD");
   } else iDetType->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
 
   // SSD
-  iDetType = DetType(2); 
-  AliITSresponseSSD *resp2 = (AliITSresponseSSD*)iDetType->GetResponseModel();
+  iDetType=DetType(2); 
   if (!iDetType->GetSegmentationModel()) {
-    AliITSsegmentationSSD *seg2 = new AliITSsegmentationSSD(fITSgeom);
+    AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD(fITSgeom);
     SetSegmentationModel(2,seg2); 
-  } // end if
-  if (!resp2) {
-    resp2 = new AliITSresponseSSD();
-    SetResponseModel(2,resp2); 
-  } // end if
-  const char *kData2 = resp2->DataType();
+  }
+  if (!iDetType->GetResponseModel()) {
+    SetResponseModel(2,new AliITSresponseSSD()); 
+  }
+  const char *kData2=(iDetType->GetResponseModel())->DataType();
   if (strstr(kData2,"real")) {
       iDetType->ClassNames("AliITSdigit","AliITSRawClusterSSD");
   } else iDetType->ClassNames("AliITSdigitSSD","AliITSRawClusterSSD");
 
   if (fgkNTYPES>3) {
     Warning("SetDefaults","Only the three basic detector types are initialised!");
-  } // end if
+  } 
 
 }
+
+
+
 //_____________________________________________________________________________
 void AliITS::SetDefaultSimulation()
 {

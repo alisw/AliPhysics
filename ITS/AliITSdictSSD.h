@@ -1,16 +1,16 @@
 #ifndef ALIITSDICTSSD_H
 #define ALIITSDICTSSD_H
 
-#include <TObject.h>
+#include <Rtypes.h>
 
-class AliITSdictSSD : public TObject{
+class AliITSdictSSD  {
 
 public:
   
   AliITSdictSSD() {
     // constructor
-    fTracks = 0;
-  };
+    ZeroTracks();
+  }
   virtual ~AliITSdictSSD() {
     // destructor
   };
@@ -20,18 +20,16 @@ public:
   Int_t  GetNTracks() {
     // get num of tracks
     return fTracks;
-  };
+  }
   void   ZeroTracks() { 
     // zero tracks
-    for (Int_t i =0;i<10;i++) fTrack[i]=0; fTracks = 0;
-  };
+    for (Int_t i =0;i<10;i++) fTrack[i]=-3; fTracks = 0;
+  }
   
 private:           
   Int_t fTrack[10];    // Track array
   Int_t fTracks;       // Tracks
+};   
 
-  ClassDef(AliITSdictSSD,0) // Temperary dictionary class for SSD simulation
-
-};
 
 #endif

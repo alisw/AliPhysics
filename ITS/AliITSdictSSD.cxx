@@ -1,9 +1,4 @@
-
-#include <stdio.h>
-
 #include "AliITSdictSSD.h"
-
-ClassImp(AliITSdictSSD)
 
 void AliITSdictSSD::AddTrack(Int_t track) {
   // add track
