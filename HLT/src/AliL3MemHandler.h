@@ -142,7 +142,8 @@ class AliL3MemHandler{
   virtual void CloseMCOutput(){return;}
   virtual Bool_t AliDigits2Binary(Int_t event=0){return 0;}
   virtual AliL3DigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event=0){return 0;}
-  virtual Bool_t AliDigits2CompBinary(Int_t event=0){return 0;}  
+  virtual AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0){return 0;}
+  virtual Bool_t AliDigits2CompBinary(Int_t event=0,Bool_t altro=kFALSE){return 0;}  
   virtual void AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile){return;}
   virtual Bool_t AliPoints2Binary(){return 0;}
   virtual AliL3SpacePointData *AliPoints2Memory(UInt_t & npoint){return 0;}
