@@ -25,19 +25,21 @@ public:
   virtual ~AliEMCALJetFinderAlgo();
   virtual void FindJets() = 0 ;
   void InitInput(AliEMCALJetFinderInput* input);
-  void SetDebug(Int_t debug = 0){fDebug = debug; fOutputObject.SetDebug(debug);}
-  AliEMCALJetFinderOutput* GetOutput() { return &fOutputObject;}
+  void SetDebug(Int_t debug = 0){fDebug = debug; if (fOutputPointer) fOutputPointer->SetDebug(debug);}
+  AliEMCALJetFinderOutput* GetOutput() { return fOutputPointer;}
+  void SetOutput(AliEMCALJetFinderOutput *output);
   Float_t PropagatePhi(Float_t pt, Float_t charge, Bool_t& curls);  	
   Bool_t GetPythiaComparison(){return fPythiaComparison;}
   void SetPythiaComparison(Bool_t value){fPythiaComparison=value;}
 protected:
    
   AliEMCALJetFinderInput*        fInputPointer;  // pointer to the input object 
-  AliEMCALJetFinderOutput        fOutputObject;  // output object for results
+  AliEMCALJetFinderOutput*       fOutputPointer;  // output object for results
+  Bool_t                         fOutputAllocated; // flags if ouputobject is woned by JetFinderAlgo
   Int_t				 fDebug; 	 // debug level
   Bool_t 			 fPythiaComparison; // for pyclus comparison
 
-  ClassDef(AliEMCALJetFinderAlgo,3)
+  ClassDef(AliEMCALJetFinderAlgo,4)
 
 };
 #endif

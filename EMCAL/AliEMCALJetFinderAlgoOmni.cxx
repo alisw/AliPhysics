@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.12  2004/03/15 19:59:37  mhorner
+Pyhtia comparison extended
+
 Revision 1.11  2004/03/09 17:06:38  mhorner
 Made more robust
 
@@ -161,7 +164,8 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
  void AliEMCALJetFinderAlgoOmni::InitUnitArray()
    {
      //Initialises unit arrays
-     if(fArrayInitialised) delete[] fUnit;
+     if(fArrayInitialised) delete [] fUnit;
+     if(fArrayInitialised) delete [] fUnitNoCuts;
      fUnit = new AliEMCALJetFinderAlgoUA1Unit[fNumUnits];
      fUnitNoCuts = new AliEMCALJetFinderAlgoUA1Unit[fNumUnits];
      fArrayInitialised = 1;
@@ -178,7 +182,11 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
          //    {
 
      AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
-     AliEMCALGeometry * geom = gime->EMCALGeometry();
+     AliEMCALGeometry * geom;
+     if (gime)
+      geom = gime->EMCALGeometry();
+     else
+      geom = AliEMCALGeometry::GetInstance("EMCAL_55_25","EMCAL");
 
         //    }
          
@@ -552,7 +560,11 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
      //Stores the resulting jet information in appropriate storage structure (TO BE DECIDED!!!!)
      if (fDebug>1) Info("StoreJetInfo","Storing Jet Information");
      AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
-     AliEMCALGeometry * geom = gime->EMCALGeometry();
+     AliEMCALGeometry * geom;
+     if (gime)
+      geom = gime->EMCALGeometry();
+     else
+      geom = AliEMCALGeometry::GetInstance("EMCAL_55_25","EMCAL");
      //Store:
      //fJetESum is the final jet energy (background has been subtracted)
      //fJetEta is the final jet Eta
@@ -560,9 +572,8 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
      //fNumInCone is the final number of cells included in the jet cone
      //fEtaInit is the eta of the initiator cell
      //fPhiInit is the phi of the initiator cell
-     fJet.SetEnergy(fJetESum);
-     fJet.SetEta(fJetEta);
-     fJet.SetPhi(fJetPhi);
+
+     AliEMCALJet jet(fJetESum,fJetPhi,fJetEta);
 
       cout<<"For iteration "<<fNumIter <<" and Jet number " <<fNumJets <<endl;
       cout<<"The jet energy is: " <<fJetESum <<endl;
@@ -665,12 +676,12 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
        }//end count3 for
 
      //Save in JET object
-     fJet.SetTrackList(numTracksInCone,pTArray, etaArray, phiArray, pdgArray);
-     fJet.SetEMCALEnergy(emcalEnergy);
-     fJet.SetEMCALEnergyBGSub(emcalEnergyBGSub);
-     fJet.SetTrackEnergy(trackEnergy);
-     fJet.SetTrackEnergyPtCut(trackEnergyPtCut);
-     fOutputObject.AddJet(&fJet);
+     jet.SetTrackList(numTracksInCone,pTArray, etaArray, phiArray, pdgArray);
+     jet.SetEMCALEnergy(emcalEnergy);
+     jet.SetEMCALEnergyBGSub(emcalEnergyBGSub);
+     jet.SetTrackEnergy(trackEnergy);
+     jet.SetTrackEnergyPtCut(trackEnergyPtCut);
+     fOutputPointer->AddJet(&jet);
      delete[] pTArray;
      delete[] etaArray;
      delete[] phiArray;
@@ -710,7 +721,7 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 
          //Step 4. Find the value of the average background energy
 	 FindBG();
-	 fOutputObject.Reset(kResetJets); //Reset output object to store info for new iteration
+	 fOutputPointer->Reset(kResetJets); //Reset output object to store info for new iteration
 	 fNumJets=0;
 
 	 //Loop over the array of unit objects and flag those with energy below MinCellEt

@@ -44,10 +44,14 @@ AliEMCALJetFinderOutput::AliEMCALJetFinderOutput(){
 	fNMaxParticles=2000;
 	fNMaxPartons=4;
 	fInitialised=kFALSE;
+	fDebug=0;
 	fNPartons=0;
 	fNJets=0;    
 	fNParticles=0;
-								
+
+	fJetsArray=0;
+	fParticlesArray=0;
+	fPartonsArray=0;
 
 if (fDebug>0) Info("AliEMCALJetFinderOutput","Beginning Constructor");
 
@@ -56,7 +60,11 @@ void AliEMCALJetFinderOutput::InitArrays()
 {
 	// Initialise arrays - legacy from TClones days
 if (fDebug>1) Info("AliEMCALJetFinderOutput","Beginning InitArrays");
-
+ fParticlesArray=new TClonesArray("TParticle",fNMaxParticles);
+ fPartonsArray=new TClonesArray("AliEMCALParton",fNMaxPartons);
+ fJetsArray=new TClonesArray("AliEMCALJet",fNMaxJets);
+ //fJetsArray->BypassStreamer(kFALSE);
+ fInitialised=1;
 }
 
 //_______________________________________________________________________
@@ -64,6 +72,9 @@ AliEMCALJetFinderOutput::~AliEMCALJetFinderOutput()
 {
 	// Default destrucotr
 if (fDebug>0) Info("~AliEMCALJetFinderOutput","Beginning Destructor");
+ delete fParticlesArray;
+ delete fPartonsArray;
+ delete fJetsArray;
 }
 
 //_______________________________________________________________________
@@ -77,16 +88,22 @@ if (!fInitialised) InitArrays();
 	resettype == kResetJets||
 	resettype == kResetData ){
 	 fNJets = 0;
+	 if (fJetsArray)
+	   fJetsArray->Clear();
  }
  if (   resettype == kResetAll ||
         resettype == kResetPartons||              
         resettype == kResetData ){
 	 fNPartons = 0;
+	 if (fPartonsArray)
+	   fPartonsArray->Clear();
  }
  if (   resettype == kResetAll ||    
         resettype == kResetParticles||              
         resettype == kResetData ){
 	 fNParticles = 0;
+	 if (fParticlesArray)
+	   fParticlesArray->Clear();
  }
 }
 //________________________________________________________________________
@@ -99,7 +116,7 @@ if (!fInitialised) InitArrays();
 
 
   	if (fNJets < fNMaxJets){
-		new( &fJetsArray[fNJets])   AliEMCALJet( *jet );
+		new(fJetsArray->AddrAt(fNJets))   AliEMCALJet( *jet );
 		fNJets++;
 	}else
 	{
@@ -118,7 +135,7 @@ if (fDebug>1) Info("AddParton","Beginning AddParton");
 if (!fInitialised) InitArrays();
 
 	if (fNPartons < fNMaxPartons){
-		new( &fPartonsArray[fNPartons] )  AliEMCALParton( *parton );
+		new(fPartonsArray->AddrAt(fNPartons))  AliEMCALParton( *parton );
 		fNPartons++;
 	}else
 	{
@@ -136,7 +153,7 @@ if (fDebug>1) Info("AddParticle","Beginning AddParticle");
 if (!fInitialised) InitArrays();
 
 	if (fNParticles < fNMaxParticles){
-		new( &fParticlesArray[fNParticles] )  TParticle( *particle );
+		new(fParticlesArray->AddrAt(fNParticles))  TParticle( *particle );
 		fNParticles++;
 	}else
 	{
@@ -151,7 +168,7 @@ AliEMCALJet* AliEMCALJetFinderOutput::GetJet(Int_t jetID)
 if (fDebug>1) Info("GetJet","Beginning GetJet");
 	
   if (jetID >= fNJets) return 0;
-  return &(fJetsArray[jetID]);
+  return (AliEMCALJet*)fJetsArray->At(jetID);
   
 }
 
@@ -162,7 +179,7 @@ AliEMCALParton* AliEMCALJetFinderOutput::GetParton(Int_t partonID)
 if (fDebug>1) Info("GetParton","Beginning GetParton");
 
   if (partonID >= fNPartons) return 0;
-  return &(fPartonsArray[partonID]);
+  return (AliEMCALParton*) fPartonsArray->At(partonID);
 }
 
 //______________________________________________________________________
@@ -173,7 +190,7 @@ TParticle* AliEMCALJetFinderOutput::GetParticle(Int_t particleID)
 if (fDebug>1) Info("GetParticle","Beginning GetParticle");
 
   if (particleID >= fNParticles) return 0;
-return &(fParticlesArray[particleID]);
+  return (TParticle*) fParticlesArray->At(particleID);
 
 }
 

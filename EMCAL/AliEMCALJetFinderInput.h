@@ -16,6 +16,7 @@
 
 #include "TObject.h"
 #include "TParticle.h"
+#include "TMCParticle.h"
 #include "TClonesArray.h"
 #include "AliEMCALParton.h"
 #include "AliEMCALDigit.h"
@@ -30,8 +31,10 @@ class AliEMCALJetFinderInput : public TObject
 		void SetDebug(Int_t debug=0){fDebug = debug;}
 		void AddEnergyToDigit(Int_t digitID,Int_t denergy); 
 		void AddTrack(TParticle track);
+		void AddTrack(TMCParticle *track);
 		void AddParton(AliEMCALParton *parton);
 		void AddParticle(TParticle *particle);
+		void AddParticle(TMCParticle *particle);
 		AliEMCALDigit* GetDigit(Int_t digitID);
 		Int_t GetNDigits() const {return fNDigits;}
 		TParticle* GetTrack(Int_t trackID);
@@ -58,6 +61,6 @@ class AliEMCALJetFinderInput : public TObject
 		Int_t		fDebug;		// This is the debug value 
 		Bool_t		fInitialised;	// Stores whether or not the arrays have been initialised 
 		
-	ClassDef(AliEMCALJetFinderInput,4)
+	ClassDef(AliEMCALJetFinderInput,5)
 };
 #endif

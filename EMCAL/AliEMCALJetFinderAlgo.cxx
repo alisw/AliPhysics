@@ -33,27 +33,45 @@ ClassImp(AliEMCALJetFinderAlgo)
 AliEMCALJetFinderAlgo::AliEMCALJetFinderAlgo()
 {
    fDebug =0;
+   fOutputPointer=0;
+   fInputPointer=0;
+   fOutputAllocated=kFALSE;
 }
-  AliEMCALJetFinderAlgo::~AliEMCALJetFinderAlgo()
-{
 
+AliEMCALJetFinderAlgo::~AliEMCALJetFinderAlgo()
+{
+  if (fOutputAllocated)
+    delete fOutputPointer;
+}
+
+void AliEMCALJetFinderAlgo::SetOutput(AliEMCALJetFinderOutput* output) {
+  if (fOutputAllocated)
+    delete fOutputPointer;
+  fOutputPointer=output;
+  fOutputAllocated=kFALSE;
 }
 
 void AliEMCALJetFinderAlgo::InitInput(AliEMCALJetFinderInput* input)
 {
 // Take input data	
 if (fDebug>1) Info("InitInput","Beginning InitInput");		
-	fInputPointer = input; 
-	fOutputObject.Reset(kResetAll);	
+	fInputPointer = input;
+	if (fOutputPointer==0) {
+	  
+	  if (fDebug>1) Info("InitInput","Allocating output object");		
+	  fOutputPointer=new AliEMCALJetFinderOutput();
+	  fOutputAllocated=kTRUE;
+	}
+	fOutputPointer->Reset(kResetAll);	
 	// automatically copy parton and particle info to output object
 	 
 	for (Int_t counter = 0 ; counter < fInputPointer->GetNPartons();counter++)
 	{
-		fOutputObject.AddParton(fInputPointer->GetParton(counter));
+		fOutputPointer->AddParton(fInputPointer->GetParton(counter));
 	}
 	for (Int_t counter = 0 ; counter < fInputPointer->GetNParticles();counter++)
 	{
-		fOutputObject.AddParticle(fInputPointer->GetParticle(counter));
+		fOutputPointer->AddParticle(fInputPointer->GetParticle(counter));
 	}
 }
 

@@ -45,17 +45,17 @@ fParticlesArray(0)
 // Defines all TClonesArrays  
 // Creates full array of Digits - all other arrays will have objects created as necessary 
 
-if (fDebug>0) Info("AliEMCALJetFinderInput","Beginning Constructor");	
-
-fInitialised = kFALSE;
-fNDigits = 19152;     // This is the number of digits
-fNMaxDigits = fNDigits;
-fNMaxTracks = 3000;
-fNMaxParticles = 2000;
-fNMaxPartons = 4;
-fNTracks        = 0;
-fNPartons       = 0;
-fNParticles     = 0;
+  //if (fDebug>0) Info("AliEMCALJetFinderInput","Beginning Constructor");	
+  fDebug=0;
+  fInitialised = kFALSE;
+  fNDigits = 19152;     // This is the number of digits
+  fNMaxDigits = fNDigits;
+  fNMaxTracks = 3000;
+  fNMaxParticles = 2000;
+  fNMaxPartons = 4;
+  fNTracks        = 0;
+  fNPartons       = 0;
+  fNParticles     = 0;
 
 }
 
@@ -179,6 +179,30 @@ if (fDebug>5) Info("AddTrack","Beginning AddTrack");
 	}
 
 }
+
+void AliEMCALJetFinderInput::AddTrack(TMCParticle *track)
+{
+// Adds a TParticle to the particle array
+	
+if (fDebug>5) Info("AddTrack","Beginning AddTrack");	
+
+ if (!fInitialised) InitArrays();	
+ if (fNTracks < fNMaxTracks){  
+   new((*fTracksArray)[fNTracks]) 
+     TParticle(track->GetKF(), track->GetKS(), track->GetParent(), 0,
+	       track->GetFirstChild(), track->GetLastChild(),
+	       track->GetPx(), track->GetPy(), track->GetPz(), 
+	       track->GetEnergy(), 
+	       track->GetVx(), track->GetVy(), track->GetVz(), 
+	       track->GetTime());
+   fNTracks++;
+   if (fDebug>5) Info("AddTrack","Added Track %i",fNTracks);	
+ } else {
+   Error("AddTrack","Cannot AddTrack - maximum exceeded");
+ }	
+}
+
+
 void AliEMCALJetFinderInput::AddParton(AliEMCALParton *parton)
 {
 // Adds an AliEMCALParton to the parton array 
@@ -212,6 +236,28 @@ if (fDebug>5) Info("AddParticle","Beginning AddParticle");
 		Error("AddParticle","Cannot AddParticle - maximum exceeded");
 	}
 
+}
+
+void AliEMCALJetFinderInput::AddParticle(TMCParticle *particle)
+{
+// Adds a TParticle to the particle array
+	
+if (fDebug>5) Info("AddParticle","Beginning AddParticle");	
+
+ if (!fInitialised) InitArrays();	
+ if (fNParticles < fNMaxParticles){  
+   new((*fParticlesArray)[fNParticles]) 
+     TParticle(particle->GetKF(), particle->GetKS(), particle->GetParent(), 0,
+	       particle->GetFirstChild(), particle->GetLastChild(),
+	       particle->GetPx(), particle->GetPy(), particle->GetPz(), 
+	       particle->GetEnergy(), 
+	       particle->GetVx(), particle->GetVy(), particle->GetVz(), 
+	       particle->GetTime());
+   fNParticles++;
+   if (fDebug>5) Info("AddParticle","Added Particle %i",fNParticles);	
+ } else {
+   Error("AddParticle","Cannot AddParticle - maximum exceeded");
+ }	
 }
 
 

@@ -69,7 +69,6 @@ protected:
   AliEMCALJetFinderAlgoUA1Unit   *fUnit; //Array of JetFinder Unit objects (treated as the cells)
   AliEMCALJetFinderAlgoUA1Unit   *fUnitNoCuts; //Second array of JetFinder Unit objects ('raw data')
   AliEMCALHadronCorrectionv1 *fHadCorr; //Pointer to Hadron Correction Object
-  AliEMCALJet       fJet;              //Jet object
   AliEMCALJetFinderAlgoBGCalcType_t fBGType; //Method of background calculation to be used 
   Int_t             fNumIter;          //Number of iterations for entire algorithm
   Int_t             fNumUnits;         //Number of units in the unit object array (same as num towers in EMCAL)
@@ -106,7 +105,7 @@ protected:
   Int_t             fNumJets;          //Number of jets in an event
   Bool_t            fArrayInitialised; //To check that array of units is initialised
 
-  ClassDef(AliEMCALJetFinderAlgoOmni,2)
+  ClassDef(AliEMCALJetFinderAlgoOmni,3)
 
 };
 #endif
