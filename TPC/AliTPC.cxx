@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/09/29 09:24:33  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,7 +107,6 @@ AliTPC::AliTPC(const char *name, const char *title)
   fNtracks  = 0;
   fNclusters= 0;
   fDigitsIndex = new Int_t[fNsectors+1];
-  fClustersIndex = new Int_t[fNsectors+1];
   //
   fIshunt     =  0;
   //
@@ -125,7 +127,6 @@ AliTPC::~AliTPC()
   delete fTracks;
   delete fDigParam;
   if (fDigitsIndex)   delete [] fDigitsIndex;
-  if (fClustersIndex) delete [] fClustersIndex;
 }
 
 //_____________________________________________________________________________
@@ -1194,8 +1195,6 @@ void AliTPC::Hits2Clusters()
   //------------------------------------------------------------
   
   
-  //fClustersIndex[0] = 0;
-  
   //
   int Nsectors=fDigParam->GetParam().GetNSector();
   for(Int_t isec=0; isec<Nsectors; isec++){
@@ -1271,11 +1270,9 @@ void AliTPC::Hits2Clusters()
       } // end of loop over hits
     }   // end of loop over tracks 
     
-    //fClustersIndex[isec] = fNclusters; // update clusters index
     
   } // end of loop over sectors
   
-  //fClustersIndex[fNsectors]--; // set end of the clusters buffer
   
 }
 
@@ -2438,7 +2435,6 @@ void AliTPC::Streamer(TBuffer &R__b)
       R__b >> fNsectors;
       R__b >> fNclusters;
       R__b >> fNtracks;
-      fClustersIndex = new Int_t[fNsectors+1];
       fDigitsIndex   = new Int_t[fNsectors+1];
    } else {
       R__b.WriteVersion(AliTPC::IsA());
