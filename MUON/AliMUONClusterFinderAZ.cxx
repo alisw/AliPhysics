@@ -32,6 +32,9 @@
 
 
 ClassImp(AliMUONClusterFinderAZ)
+ 
+ AliMUONClusterFinderAZ* AliMUONClusterFinderAZ::fgClusterFinder = 0x0;
+ TMinuit* AliMUONClusterFinderAZ::fgMinuit = 0x0;
 
 
 //_____________________________________________________________________________
@@ -41,6 +44,8 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw=0, Int_t iReco=0)
   for (Int_t i=0; i<4; i++) {fHist[i] = 0;}
   fMuonDigits = 0;
   fSegmentation[1] = fSegmentation[0] = 0; 
+  fgClusterFinder = 0x0;
+  fgMinuit = 0x0; 
   if (!fgClusterFinder) fgClusterFinder = this;
   if (!fgMinuit) fgMinuit = new TMinuit(8);
   fDraw = draw;
@@ -54,8 +59,6 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw=0, Int_t iReco=0)
   fNextCathode = kFALSE; 
   fColPad = 0;
   */
-  fgClusterFinder = NULL;
-  fgMinuit = NULL;
 }
 
 //_____________________________________________________________________________
