@@ -12,12 +12,19 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <Riostream.h>
-#include <TMath.h>
-#include <TRandom.h>
 
+#include<Riostream.h>
 #include "AliITSresponseSPDdubna.h"
- 
+//////////////////////////////////////////////////////
+//  Response class for set:ITS                      //
+//  Specific subdetector implementation for         //
+//  Silicon pixels                                  //
+//  This is and alternative version                 //
+//  to the default version                          //
+////////////////////////////////////////////////////// 
+const Float_t AliITSresponseSPDdubna::fgkNoiseDefault = 200.;
+const Float_t AliITSresponseSPDdubna::fgkThresholdDefault = 2000.;
+
 //___________________________________________
 ClassImp(AliITSresponseSPDdubna)	
 
@@ -30,8 +37,8 @@ AliITSresponseSPDdubna::AliITSresponseSPDdubna() : AliITSresponse(){
    // Return:
    //    A default constructed AliITSresponseSPD class
 
-   SetNoiseParam();  // fNoise, fBaseline
-   SetThreshold();   // fThreshold
+   SetNoiseParam(fgkNoiseDefault,0.);  // fNoise, fBaseline
+   SetThresholds(fgkThresholdDefault,0.);   // fThreshold
    SetCouplings();   // fCouplCol, fCouplRow
    SetFractionDeadPixels(); // fDeadPixels
    SetDataType();    // fDataType
@@ -57,8 +64,9 @@ Bool_t AliITSresponseSPDdubna::IsPixelDead(Int_t mod,Int_t ix,Int_t iz) const {
   if(ran.Rndm(0)<fDeadPixels) dead = kTRUE;
   return dead;
 }
+
 //----------------------------------------------------------------------
-void AliITSresponseSPDdubna::Print(ostream *os){
+void AliITSresponseSPDdubna::Print(ostream *os) const{
     // Standard output format for this class.
     // Inputs:
     //    ostream *os  Pointer to the output stream
@@ -66,31 +74,17 @@ void AliITSresponseSPDdubna::Print(ostream *os){
     //    none:
     // Return:
     //    none.
-#if defined __GNUC__
-#if __GNUC__ > 2
-    ios::fmtflags fmt;
-#else
-    Int_t fmt;
-#endif
-#else
-#if defined __ICC || defined __ECC
-    ios::fmtflags fmt;
-#else
-    Int_t fmt;
-#endif
-#endif
 
     AliITSresponse::Print(os);
-    fmt = os->setf(ios::scientific);  // set scientific floating point output
     *os << fNoise << " " << fBaseline << " " << fCouplCol << " ";
     *os << fCouplRow << " "<< fThreshold << " " << fDeadPixels << " ";
     *os << fDataType;
 //    *os << " " << endl;
-    os->flags(fmt); // reset back to old formating.
     return;
 }
+
 //----------------------------------------------------------------------
-void AliITSresponseSPDdubna::Read(istream *is){
+void AliITSresponseSPDdubna::Read(istream *is) {
     // Standard input format for this class.
     // Inputs:
     //    ostream *os  Pointer to the output stream
@@ -99,12 +93,13 @@ void AliITSresponseSPDdubna::Read(istream *is){
     // Return:
     //    none.
 
-    AliITSresponseSPDdubna::Read(is);
+    AliITSresponse::Read(is);
     *is >> fNoise >> fBaseline >> fCouplCol >> fCouplRow;
     *is >> fThreshold >> fDeadPixels >> fDataType;
     return;
 }
 //----------------------------------------------------------------------
+
 ostream &operator<<(ostream &os,AliITSresponseSPDdubna &p){
     // Standard output streaming function.
     // Inputs:
@@ -117,6 +112,7 @@ ostream &operator<<(ostream &os,AliITSresponseSPDdubna &p){
     p.Print(&os);
     return os;
 }
+
 //----------------------------------------------------------------------
 istream &operator>>(istream &is,AliITSresponseSPDdubna &r){
     // Standard input streaming function.

@@ -15,12 +15,37 @@
 
 /* $Id$ */
 
-#include <TString.h>
+#include <Riostream.h>
 #include <TRandom.h>
 
 #include "AliITSresponseSDD.h"
 
+//////////////////////////////////////////////////
+//  Response class for set:ITS                      //
+//  Specific subdetector implementation             //
+//  for silicon drift detectors                     //
+//                                                  //
+//                                                  //
+//////////////////////////////////////////////////////
 
+const Int_t AliITSresponseSDD::fgkModules;   
+const Int_t AliITSresponseSDD::fgkChips;  
+const Int_t AliITSresponseSDD::fgkChannels; 
+const Int_t AliITSresponseSDD::fgkMaxAdcDefault = 1024;
+const Float_t AliITSresponseSDD::fgkDynamicRangeDefault = 132.;
+const Float_t AliITSresponseSDD::fgkfChargeLossDefault = 0;
+const Float_t AliITSresponseSDD::fgkDiffCoeffDefault = 3.23;
+const Float_t AliITSresponseSDD::fgkDiffCoeff1Default = 30.;
+const Float_t AliITSresponseSDD::fgkTemperatureDefault = 296.;
+const TString AliITSresponseSDD::fgkParam1Default = "same";
+const TString AliITSresponseSDD::fgkParam2Default = "same";
+const Float_t AliITSresponseSDD::fgkNoiseDefault = 10.;
+const Float_t AliITSresponseSDD::fgkBaselineDefault = 20.;
+const TString AliITSresponseSDD::fgkOptionDefault = "1D";
+const Float_t AliITSresponseSDD::fgkMinValDefault  = 4;
+const Float_t AliITSresponseSDD::fgkDriftSpeedDefault = 7.3;
+const Float_t AliITSresponseSDD::fgkNsigmasDefault = 3.;
+const Int_t AliITSresponseSDD::fgkNcompsDefault = 121;
 //______________________________________________________________________
 ClassImp(AliITSresponseSDD)
 
@@ -28,22 +53,22 @@ AliITSresponseSDD::AliITSresponseSDD(){
   // default constructor
    fGaus = 0;
    SetDeadChannels();
-   SetMaxAdc();
-   SetDiffCoeff();
-   SetDriftSpeed();
-   SetNSigmaIntegration();
-   SetNLookUp();
+   SetMaxAdc(fgkMaxAdcDefault);
+   SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
+   SetDriftSpeed(fgkDriftSpeedDefault);
+   SetNSigmaIntegration(fgkNsigmasDefault);
+   SetNLookUp(fgkNcompsDefault);
    // SetClock();
-   SetNoiseParam();
+   SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
    SetNoiseAfterElectronics();
    SetJitterError();
    SetElectronics();
-   SetDynamicRange();
-   SetChargeLoss();
-   SetMinVal();
-   SetParamOptions();
-   SetTemperature();
-   SetZeroSupp();
+   SetDynamicRange(fgkDynamicRangeDefault);
+   SetChargeLoss(fgkfChargeLossDefault);
+   SetThresholds(fgkMinValDefault,0.);
+   SetParamOptions(fgkParam1Default.Data(),fgkParam2Default.Data());
+   SetTemperature(fgkTemperatureDefault);
+   SetZeroSupp(fgkOptionDefault);
    SetDataType();
    SetFilenames();
    SetOutputOption();
@@ -63,22 +88,22 @@ AliITSresponseSDD::AliITSresponseSDD(const char *dataType){
   // constructor
    fGaus = 0;
    SetDeadChannels();
-   SetMaxAdc();
-   SetDiffCoeff();
-   SetDriftSpeed();
-   SetNSigmaIntegration();
-   SetNLookUp();
+   SetMaxAdc(fgkMaxAdcDefault);
+   SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
+   SetDriftSpeed(fgkDriftSpeedDefault);
+   SetNSigmaIntegration(fgkNsigmasDefault);
+   SetNLookUp(fgkNcompsDefault);
    // SetClock();
-   SetNoiseParam();
+   SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
    SetNoiseAfterElectronics();
    SetJitterError();
    SetElectronics();
-   SetDynamicRange();
-   SetChargeLoss();
-   SetMinVal();
-   SetParamOptions();
-   SetTemperature();
-   SetZeroSupp();
+   SetDynamicRange(fgkDynamicRangeDefault);
+   SetChargeLoss(fgkfChargeLossDefault);
+   SetThresholds(fgkMinValDefault,0.);
+   SetParamOptions(fgkParam1Default.Data(),fgkParam2Default.Data());
+   SetTemperature(fgkTemperatureDefault);
+   SetZeroSupp(fgkOptionDefault);
    SetDataType(dataType);
    SetFilenames();
    SetOutputOption();
@@ -93,6 +118,21 @@ AliITSresponseSDD::AliITSresponseSDD(const char *dataType){
    fCPar[6]=0;
    fCPar[7]=0;
 }
+//______________________________________________________________________
+AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &ob) : AliITSresponse(ob) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Error("AliITSresponseSDD","Copy constructor not allowed\n");
+}
+
+//______________________________________________________________________
+AliITSresponseSDD& AliITSresponseSDD::operator=(const AliITSresponseSDD& /* ob */){
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Error("= operator","Assignment operator not allowed\n");
+  return *this;
+}
+
 //______________________________________________________________________
 AliITSresponseSDD::~AliITSresponseSDD() { 
 
@@ -109,7 +149,7 @@ void AliITSresponseSDD::SetCompressParam(Int_t  cp[8]){
     } // end for i
 }
 //______________________________________________________________________
-void AliITSresponseSDD::GiveCompressParam(Int_t  cp[8]){
+void AliITSresponseSDD::GiveCompressParam(Int_t  cp[8]) const {
   // give compression param
 
     Int_t i;
@@ -118,13 +158,24 @@ void AliITSresponseSDD::GiveCompressParam(Int_t  cp[8]){
     } // end for i
 }
 //______________________________________________________________________
+void AliITSresponseSDD::SetNLookUp(Int_t p1){
+  // Set number of sigmas over which cluster disintegration is performed
+  fNcomps=p1;
+  fGaus = new TArrayF(fNcomps+1);
+  for(Int_t i=0; i<=fNcomps; i++) {
+    Float_t x = -fNsigmas + (2.*i*fNsigmas)/(fNcomps-1);
+    (*fGaus)[i] = exp(-((x*x)/2));
+    //     cout << "fGaus[" << i << "]: " << fGaus->At(i) << endl;
+  }
+}
+//______________________________________________________________________
 void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan){
     // Set fGain to zero to simulate a random distribution of 
     // dead modules, dead chips and single dead channels
 
-    for( Int_t m=0; m<fModules; m++ ) 
-        for( Int_t n=0; n<fChips; n++ ) 
-            for( Int_t p=0; p<fChannels; p++ ) 
+    for( Int_t m=0; m<fgkModules; m++ ) 
+        for( Int_t n=0; n<fgkChips; n++ ) 
+            for( Int_t p=0; p<fgkChannels; p++ ) 
                  fGain[m][n][p] = 1.;
                  
     fDeadModules  = nmod;  
@@ -134,18 +185,18 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan){
     // nothing to do
     if( nmod == 0 && nchip == 0 && nchan == 0 ) return;
 
-    if( nmod < 0 || nmod > fModules ) 
+    if( nmod < 0 || nmod > fgkModules ) 
     { 
         cout << "Wrong number of dead modules: " << nmod << endl; 
         return; 
     }
-    Int_t nmax = (fModules-nmod)*fChips; 
+    Int_t nmax = (fgkModules-nmod)*fgkChips; 
     if( nchip < 0 || nchip > nmax ) 
     { 
         cout << "Wrong number of dead chips: " << nchip << endl; 
         return; 
     }
-    nmax = ((fModules - nmod)*fChips - nchip)*fChannels; 
+    nmax = ((fgkModules - nmod)*fgkChips - nchip)*fgkChannels; 
     if( nchan < 0 || nchan > nmax ) 
     { 
         cout << "Wrong number of dead channels: " << nchan << endl; 
@@ -159,78 +210,78 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan){
     Int_t i; //loop variable
     for( i=0; i<nmod; i++ ) 
     {
-        mod[i] = (Int_t) (1.+fModules*gran->Uniform());
+        mod[i] = (Int_t) (1.+fgkModules*gran->Uniform());
         cout << i+1 << ": Dead module nr: " << mod[i] << endl;
-        for(Int_t n=0; n<fChips; n++)
-            for(Int_t p=0; p<fChannels; p++)
+        for(Int_t n=0; n<fgkChips; n++)
+            for(Int_t p=0; p<fgkChannels; p++)
                 fGain[mod[i]-1][n][p] = 0.;
     }
 
     //  cout << "chips" << endl;
     Int_t * chip     = new Int_t[nchip];
-    Int_t * chip_mod = new Int_t[nchip];
+    Int_t * chipMod = new Int_t[nchip];
     i = 0;
     while( i < nchip ) 
     {
-        Int_t module = (Int_t) (fModules*gran->Uniform() + 1.);
-        if( module <=0 || module > fModules ) 
+        Int_t module = (Int_t) (fgkModules*gran->Uniform() + 1.);
+        if( module <=0 || module > fgkModules ) 
             cout << "Wrong module: " << module << endl;
-        Int_t flag_mod = 0;
+        Int_t flagMod = 0;
         for( Int_t k=0; k<nmod; k++ ) 
-            if( module == mod[k] ) { flag_mod = 1; break; }
-        if( flag_mod == 1 ) continue;
+            if( module == mod[k] ) { flagMod = 1; break; }
+        if( flagMod == 1 ) continue;
         
-        Int_t chi = (Int_t) (fChips*gran->Uniform() + 1.);
-        if( chi <=0 || chi > fChips ) cout << "Wrong chip: " << chi << endl;
+        Int_t chi = (Int_t) (fgkChips*gran->Uniform() + 1.);
+        if( chi <=0 || chi > fgkChips ) cout << "Wrong chip: " << chi << endl;
         i++;
         chip[i-1] = chi; 
-        chip_mod[i-1] = module;
-        for( Int_t m=0; m<fChannels; m++ ) 
+        chipMod[i-1] = module;
+        for( Int_t m=0; m<fgkChannels; m++ ) 
             fGain[module-1][chi-1][m] = 0.;
         cout << i << ": Dead chip nr. " << chip[i-1] << " in module nr: " 
-	     << chip_mod[i-1] << endl;
+	     << chipMod[i-1] << endl;
     }
 
     //  cout << "channels" << endl;
     Int_t * channel      = new Int_t[nchan];
-    Int_t * channel_chip = new Int_t[nchan];
-    Int_t * channel_mod  = new Int_t[nchan];
+    Int_t * channelChip = new Int_t[nchan];
+    Int_t * channelMod  = new Int_t[nchan];
     i = 0;
     while( i < nchan ) 
     {
         Int_t k; //loop variable
-        Int_t module = (Int_t) (fModules*gran->Uniform() + 1.);
-        if( module <=0 || module > fModules ) 
+        Int_t module = (Int_t) (fgkModules*gran->Uniform() + 1.);
+        if( module <=0 || module > fgkModules ) 
             cout << "Wrong module: " << module << endl;
-        Int_t flag_mod = 0;
+        Int_t flagMod = 0;
         for( k=0; k<nmod; k++ ) 
-            if( module == mod[k] ) { flag_mod = 1; break; }
-        if( flag_mod == 1 ) continue;
-        Int_t chipp = (Int_t) (fChips*gran->Uniform() + 1.);
-        if( chipp <=0 || chipp > fChips ) cout << "Wrong chip: "<< chipp<<endl;
-        Int_t flag_chip = 0;
+            if( module == mod[k] ) { flagMod = 1; break; }
+        if( flagMod == 1 ) continue;
+        Int_t chipp = (Int_t) (fgkChips*gran->Uniform() + 1.);
+        if( chipp <=0 || chipp > fgkChips ) cout << "Wrong chip: "<< chipp<<endl;
+        Int_t flagChip = 0;
         for( k=0; k<nchip; k++) 
-            if( chipp == chip[k] && module == chip_mod[k] ) { 
-		flag_chip = 1; break; }
-        if( flag_chip == 1 ) continue;
+            if( chipp == chip[k] && module == chipMod[k] ) { 
+		flagChip = 1; break; }
+        if( flagChip == 1 ) continue;
         i++;
-        channel[i-1] = (Int_t) (fChannels*gran->Uniform() + 1.); 
-        if( channel[i-1] <=0 || channel[i-1] > fChannels ) 
+        channel[i-1] = (Int_t) (fgkChannels*gran->Uniform() + 1.); 
+        if( channel[i-1] <=0 || channel[i-1] > fgkChannels ) 
             cout << "Wrong channel: " << channel[i-1] << endl;
-        channel_chip[i-1] = chipp;
-        channel_mod[i-1] = module;
+        channelChip[i-1] = chipp;
+        channelMod[i-1] = module;
         fGain[module-1][chipp-1][channel[i-1]-1] = 0.;
         cout << i << ": Dead channel nr. " << channel[i-1] << " in chip nr. " 
-	     << channel_chip[i-1] << " in module nr: " << channel_mod[i-1] 
+	     << channelChip[i-1] << " in module nr: " << channelMod[i-1] 
 	     << endl;
     }
     
     delete [] mod;
     delete [] chip;
-    delete [] chip_mod;
+    delete [] chipMod;
     delete [] channel;
-    delete [] channel_mod;
-    delete [] channel_chip;
+    delete [] channelMod;
+    delete [] channelChip;
 }
 //______________________________________________________________________
 void AliITSresponseSDD::PrintGains(){
@@ -247,9 +298,9 @@ void AliITSresponseSDD::PrintGains(){
   cout << "**************************************************" << endl;
 
   // Print SDD electronic gains
-  for(Int_t t=0; t<fModules;t++)
-    for(Int_t u=0; u<fChips;u++)
-      for(Int_t v=0; v<fChannels;v++)
+  for(Int_t t=0; t<fgkModules;t++)
+    for(Int_t u=0; u<fgkChips;u++)
+      for(Int_t v=0; v<fgkChannels;v++)
       {
         if( fGain[t][u][v] != 1.0 )
            cout << "Gain for Module: " << t+1 << ", Chip " << u+1 << 
@@ -273,7 +324,7 @@ void AliITSresponseSDD::Print(){
 
    cout << "Dynamic Range: " << fDynamicRange << endl;
    cout << "Charge Loss: " << fChargeLoss << endl;
-   cout << "Temperature: " << fTemperature << endl;
+   cout << "Temperature: " << Temperature() << " K " << endl;
    cout << "Drift Speed: " << fDriftSpeed << endl;
    cout << "Electronics (1=PASCAL, 2=OLA): " << fElectronics << endl;
 

@@ -1213,7 +1213,9 @@ void AliITSsimulationSDD::Init2D(){
     Float_t *savesigma = new Float_t [fNofMaps];
     char input[100],basel[100],par[100];
     char *filtmp;
-    Int_t minval = fResponse->MinVal();
+    Float_t tmp1,tmp2;
+    fResponse->Thresholds(tmp1,tmp2);
+    Int_t minval = static_cast<Int_t>(tmp1);
 
     fResponse->Filenames(input,basel,par);
     fFileName = par;
@@ -1256,8 +1258,10 @@ void AliITSsimulationSDD::Init2D(){
 void AliITSsimulationSDD::Compress2D(){
     // simple ITS cluster finder -- online zero-suppression conditions
 
-    Int_t db,tl,th;  
-    Int_t minval   = fResponse->MinVal();
+    Int_t db,tl,th; 
+    Float_t tmp1,tmp2;
+    fResponse->Thresholds(tmp1,tmp2); 
+    Int_t minval   = static_cast<Int_t>(tmp1);
     Bool_t write   = fResponse->OutputOption();   
     Bool_t do10to8 = fResponse->Do10to8();
     Int_t nz, nl, nh, low, i, j; 
@@ -1351,7 +1355,9 @@ void AliITSsimulationSDD::Init1D(){
     Float_t *savesigma = new Float_t [fNofMaps];
     char input[100],basel[100],par[100];
     char *filtmp;
-    Int_t minval = fResponse->MinVal();
+    Float_t tmp1,tmp2;
+    fResponse->Thresholds(tmp1,tmp2);
+    Int_t minval = static_cast<Int_t>(tmp1);
 
     fResponse->Filenames(input,basel,par);
     fFileName=par;

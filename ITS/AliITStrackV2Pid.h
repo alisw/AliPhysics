@@ -10,7 +10,7 @@ class AliITStrackV2Pid : public TObject {
 public:
     AliITStrackV2Pid();
     virtual ~AliITStrackV2Pid(){}
-public:
+protected:
     Float_t fWpi,fWk,fWp,fSignal,fMom;
     Float_t fPhi,fLam;
     Int_t   fPcode;

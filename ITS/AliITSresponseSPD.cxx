@@ -12,18 +12,28 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-#include <TMath.h>
+//////////////////////////////////////////////////////
+//  Response class for set:ITS                      //
+//  Specific subdetector implementation for         //
+//  Silicon pixels                                  //
+//  An alternative version "SPDdubna"               //
+//  is also available                               //
+//////////////////////////////////////////////////////
 
 #include "AliITSresponseSPD.h"
+
+const Float_t AliITSresponseSPD::fgkDiffCoeffDefault = 0.;
+const Float_t AliITSresponseSPD::fgkThreshDefault = 2000.;
+const Float_t AliITSresponseSPD::fgkSigmaDefault = 280.;
 
 ClassImp(AliITSresponseSPD)	
 //______________________________________________________________________
 AliITSresponseSPD::AliITSresponseSPD(){
   // constructor
 
-   SetThresholds();
-   SetNoiseParam();
+   SetThresholds(fgkThreshDefault,fgkSigmaDefault);
+   SetDiffCoeff(fgkDiffCoeffDefault,0.);
+   SetNoiseParam(0.,0.);
    SetDataType();
    SetFractionDead();
 }

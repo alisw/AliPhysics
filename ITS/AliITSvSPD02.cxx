@@ -584,7 +584,6 @@ void AliITSvSPD02::SetDefaults(){
     // Get shape info. Do it this way for now.
     s0 = (AliITSgeomSPD*) fITSgeom->GetShape(kSPD);
     AliITSresponse *resp0=new AliITSresponseSPDdubna();
-    ((AliITSresponseSPDdubna*)resp0)->SetNoiseParam();
     resp0->SetTemperature();
     resp0->SetDistanceOverVoltage();
     SetResponseModel(kSPD,resp0);

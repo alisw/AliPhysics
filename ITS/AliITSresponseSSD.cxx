@@ -13,11 +13,24 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <TMath.h>
-#include <TString.h>
 
 #include "AliITSresponseSSD.h"
-#include "AliITSgeom.h"
+//////////////////////////////////////////////////
+//  Response class for set:ITS                      //
+//  Specific subdetector implementation             //
+//  for silicon strips detectors                    //
+//                                                  //
+//                                                  //
+//////////////////////////////////////////////////////
+
+const Float_t AliITSresponseSSD::fgkDiffCoeffDefault = 0.;
+const TString AliITSresponseSSD::fgkOption1Default = "";
+const TString AliITSresponseSSD::fgkOption2Default = "";
+const Float_t AliITSresponseSSD::fgkNoiseNDefault = 625.;
+const Float_t AliITSresponseSSD::fgkNoisePDefault = 420.;
+const Int_t AliITSresponseSSD::fgkNParDefault = 6;
+const Float_t AliITSresponseSSD::fgkSigmaPDefault = 3.;
+const Float_t AliITSresponseSSD::fgkSigmaNDefault = 2.;
 
 ClassImp(AliITSresponseSSD)
 
@@ -33,17 +46,19 @@ AliITSresponseSSD::AliITSresponseSSD(){
     fSigmaN = 0;
     fDiffCoeff = 0;
     fADCpereV  = 0;
+    SetParamOptions(fgkOption1Default.Data(),fgkOption2Default.Data());
+    SetNoiseParam(fgkNoisePDefault,fgkNoiseNDefault);
 }
 //______________________________________________________________________
 AliITSresponseSSD::AliITSresponseSSD(const char *dataType){
     // constructor
 
-    SetDiffCoeff();
-    SetNoiseParam();
+    SetDiffCoeff(fgkDiffCoeffDefault,0.);
+    SetNoiseParam(fgkNoisePDefault,fgkNoiseNDefault);
     SetDataType(dataType);
-    SetSigmaSpread();
-    SetParamOptions();
-    SetNDetParam();   // Sets fNPar=6 by default.
+    SetSigmaSpread(fgkSigmaPDefault,fgkSigmaNDefault);
+    SetParamOptions(fgkOption1Default.Data(),fgkOption2Default.Data());
+    SetNDetParam(fgkNParDefault);   // Sets fNPar=6 by default.
     SetADCpereV();
     fDetPar = new Float_t[fNPar];
     if (fNPar==6) {
@@ -99,7 +114,7 @@ void AliITSresponseSSD::SetDetParam(Float_t  *par){
     } // end for i
 }
 //______________________________________________________________________
-void AliITSresponseSSD::GetDetParam(Float_t  *par){
+void AliITSresponseSSD::GetDetParam(Float_t  *par) const {
     // get det param
     Int_t i;
 
