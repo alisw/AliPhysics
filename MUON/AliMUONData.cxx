@@ -14,6 +14,12 @@
  **************************************************************************/
 
 /* $Id$ */
+// AliMUONData classes
+// Class containing MUON data: hits, digits, rawclusters, globaltrigger, localtrigger, etc ..
+// The classe makes the lik between the MUON data lists and the event trees from loaders
+// Gines Martinez, Subatech,  September 2003
+//
+
 
 //Root includes
 #include "TNamed.h"
@@ -33,6 +39,7 @@ ClassImp(AliMUONData)
 //_____________________________________________________________________________
 AliMUONData::AliMUONData():TNamed()
 {
+  // Default constructor
   fLoader        = 0x0;
   fHits          = 0x0;    // One event in treeH per primary track
   fDigits        = 0x0;  // One event in treeH per detection plane
@@ -48,6 +55,7 @@ AliMUONData::AliMUONData():TNamed()
 AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title):
   TNamed(name,title)
 {
+  // Constructor for AliMUONData
   fLoader        = loader;
   fHits          = 0x0;    // One event in treeH per primary track
   fDigits        = 0x0;  // One event in treeH per detection plane
@@ -94,6 +102,7 @@ AliMUONData::AliMUONData(const AliMUONData& rMUONData):TNamed(rMUONData)
 //_____________________________________________________________________________
 AliMUONData::~AliMUONData()
 {
+  // Destructor for AliMUONData
   if (fHits) {
     fHits->Delete();
     delete fHits;
@@ -145,6 +154,7 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber,
 			 Float_t tof, Float_t momentum, Float_t theta, 
 			 Float_t phi, Float_t length, Float_t destep)
 {
+  // Add new hit to the hit list
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliMUONHit(fIshunt, track, iChamber, 
 				  idpart, X, Y, Z, 
@@ -158,6 +168,7 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber,
 			 Float_t phi, Float_t length, Float_t destep,
 			 Float_t Xref,Float_t Yref,Float_t Zref)
 {
+ // Add new hit to the hit list
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliMUONHit(fIshunt, track, iChamber, 
 				  idpart, X, Y, Z, 
@@ -193,6 +204,7 @@ void AliMUONData::AddRecTrack(const AliMUONTrack& track)
 //____________________________________________________________________________
 TClonesArray*  AliMUONData::Digits(Int_t DetectionPlane) 
 {
+  //Getting List of Digits
   if (fDigits)
     return ( (TClonesArray*) fDigits->At(DetectionPlane) );
   else
@@ -201,6 +213,7 @@ TClonesArray*  AliMUONData::Digits(Int_t DetectionPlane)
 //____________________________________________________________________________
 Bool_t   AliMUONData::IsRawClusterBranchesInTree()
 {
+  // Checking if there are RawCluster Branches In TreeR
   if (TreeR()==0x0) {
     Error("TreeR","No treeR in memory");
     return kFALSE;
@@ -217,6 +230,7 @@ Bool_t   AliMUONData::IsRawClusterBranchesInTree()
 //____________________________________________________________________________
 Bool_t   AliMUONData::IsTriggerBranchesInTree()
 {
+  // Checking if there are Trigger Branches In TreeR
  if (TreeR()==0x0) {
     Error("TreeR","No treeR in memory");
     return kFALSE;
@@ -440,6 +454,7 @@ void AliMUONData::MakeBranch(Option_t* option)
 //____________________________________________________________________________
 TClonesArray*  AliMUONData::RawClusters(Int_t DetectionPlane)
 {
+  // Getting Raw Clusters
   if (fRawClusters) 
     return ( (TClonesArray*) fRawClusters->At(DetectionPlane) );
   else
@@ -493,6 +508,7 @@ void AliMUONData::ResetRecTracks()
 //_____________________________________________________________________________
 void AliMUONData::SetTreeAddress(Option_t* option)
 {
+  //Setting Addresses to the events trees
   const char *cH   = strstr(option,"H");
   const char *cD   = strstr(option,"D");   // Digits branches in TreeD
   const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR

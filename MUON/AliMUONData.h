@@ -100,27 +100,20 @@ class AliMUONData : public TNamed {
 
   
  protected: 
-    AliLoader*  fLoader;
+    AliLoader*  fLoader; //! Detector Loader pointer
+    TClonesArray*   fHits;  // One event in treeH per primary track
+    TObjArray*      fDigits; // One event in treeD and one branch per detection plane
+    TObjArray*      fRawClusters; //One event in TreeR/Rawcluster and one branch per tracking detection plane
+    TClonesArray*   fGlobalTrigger;  // List of Global Trigger One event in TreeR/GlobalTriggerBranch
+    TClonesArray*   fLocalTrigger;  // List of Local Trigger, One event in TreeR/LocalTriggerBranch
+    TClonesArray*   fRecTracks; // pointer to array of reconstructed tracks
 
-    // One event in treeH per primary track
-    TClonesArray*   fHits;    
-    // One event in treeD and one branch per detection plane
-    TObjArray*      fDigits; 
-    //One event in TreeR/Rawcluster and one branch per tracking detection plane
-    TObjArray*      fRawClusters; 
-    //! List of Global Trigger One event in TreeR/GlobalTriggerBranch
-    TClonesArray*   fGlobalTrigger; 
-    //! List of Local Trigger, One event in TreeR/LocalTriggerBranch
-    TClonesArray*   fLocalTrigger;  
-    // pointer to array of reconstructed tracks
-    TClonesArray*   fRecTracks; 
-
-    Int_t           fNhits; //!
-    Int_t*          fNdigits;//!
-    Int_t*          fNrawclusters;//!
-    Int_t           fNglobaltrigger;//!
-    Int_t           fNlocaltrigger;//!
-    Int_t           fNrectracks; //!
+    Int_t           fNhits; //!  Number of Hits
+    Int_t*          fNdigits;//! Number of Digits
+    Int_t*          fNrawclusters;//! Number of Raw Clusters
+    Int_t           fNglobaltrigger;//! Number of Global trigger
+    Int_t           fNlocaltrigger;//! Number of Local trigger
+    Int_t           fNrectracks; //! Number of reconstructed tracks
     Int_t           fSplitLevel; // Splitting of branches 0 no spitting (root files are smaller) 1 splitting (larger output files)
 
     ClassDef(AliMUONData,1)
