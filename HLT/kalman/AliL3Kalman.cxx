@@ -153,10 +153,33 @@ void AliL3Kalman::ProcessTracks()
 
   fKalmanTracks = new AliL3TrackArray();
 
-  // Make a ntuple to store state vector, covariance matrix and chisquare
+  // Make a tree to store state vector, covariance matrix and chisquare
   // Will eventually not need a TTree??
-  TNtuple *kalmanTree = new TNtuple("kalmanTree","kalmantracks","x0:x1:x2:x3:x4:c0:c1:c2:c3:c4:c5:c6:c7:c8:c9:c10:c11:c12:c13:c14:chisq");
+  TTree *kalmanTree = new TTree("kalmanTree","kalmantracks");
   Float_t meas[21];
+  Int_t lab = 123456789;
+  kalmanTree->Branch("x0",&meas[0],"x0/F");
+  kalmanTree->Branch("x1",&meas[1],"x1/F");
+  kalmanTree->Branch("x2",&meas[2],"x2/F");
+  kalmanTree->Branch("x3",&meas[3],"x3/F");
+  kalmanTree->Branch("x4",&meas[4],"x4/F");
+  kalmanTree->Branch("c0",&meas[5],"c0/F");
+  kalmanTree->Branch("c1",&meas[6],"c1/F");
+  kalmanTree->Branch("c2",&meas[7],"c2/F");
+  kalmanTree->Branch("c3",&meas[8],"c3/F");
+  kalmanTree->Branch("c4",&meas[9],"c4/F");
+  kalmanTree->Branch("c5",&meas[10],"c5/F");
+  kalmanTree->Branch("c6",&meas[11],"c6/F");
+  kalmanTree->Branch("c7",&meas[12],"c7/F");
+  kalmanTree->Branch("c8",&meas[13],"c8/F");
+  kalmanTree->Branch("c9",&meas[14],"c9/F");
+  kalmanTree->Branch("c10",&meas[15],"c10/F");
+  kalmanTree->Branch("c11",&meas[16],"c11/F");
+  kalmanTree->Branch("c12",&meas[17],"c12/F");
+  kalmanTree->Branch("c13",&meas[18],"c13/F");
+  kalmanTree->Branch("c14",&meas[19],"c14/F");
+  kalmanTree->Branch("chisq",&meas[20],"chisq/F");
+  kalmanTree->Branch("lab",&lab,"lab/I");
 
   // Go through the tracks from conformal or hough tracker
   for (Int_t iTrack = 0; iTrack < fTracks->GetNTracks(); iTrack++)
@@ -168,6 +191,17 @@ void AliL3Kalman::ProcessTracks()
       AliL3Track *track = (AliL3Track*)fTracks->GetCheckedTrack(iTrack);
       if (!track) continue;
       if (track->GetNumberOfPoints() < fMinPointsOnTrack) continue;    
+
+      UInt_t *hitnum = track->GetHitNumbers();
+      UInt_t id;
+      
+      id = hitnum[0];
+      Int_t slice = (id>>25) & 0x7f;
+      Int_t patch = (id>>22) & 0x7;	
+      UInt_t pos = id&0x3fffff;
+      AliL3SpacePointData *points = fClusters[slice][patch];
+      lab=points[pos].fTrackID[0];
+      //cout << lab << endl;
 
       AliL3KalmanTrack *kalmantrack = new AliL3KalmanTrack();
 
@@ -192,6 +226,7 @@ void AliL3Kalman::ProcessTracks()
       if (Propagate(kalmantrack, track) == 0) 
 	{
 	  save = kFALSE;
+	  continue;
 	}
       
       if (save) {
@@ -227,8 +262,8 @@ void AliL3Kalman::ProcessTracks()
 	outtrack->Set(track);
 
 	// Fill the ntuple with the state vector, covariance matrix and
-	// chisquare
-	kalmanTree->Fill(meas);
+	// chisquare and track label
+	kalmanTree->Fill();
       }
 
       delete track;

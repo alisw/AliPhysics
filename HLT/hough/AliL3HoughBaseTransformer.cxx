@@ -6,10 +6,10 @@
 #include "AliL3StandardIncludes.h"
 
 #include "AliL3Logging.h"
-#include "AliL3HoughBaseTransformer.h"
 #include "AliL3MemHandler.h"
 #include "AliL3DigitData.h"
 #include "AliL3Histogram.h"
+#include "AliL3HoughBaseTransformer.h"
 
 
 //_____________________________________________________________

@@ -6,10 +6,11 @@
 #include "AliL3StandardIncludes.h"
 
 #include "AliL3Logging.h"
-#include "AliL3ModelTrack.h"
 #include "AliL3Transform.h"
-#include "AliL3DataCompressor.h"
 #include "AliL3Vertex.h"
+#include "AliL3DataCompressorHelper.h"
+
+#include "AliL3ModelTrack.h"
 
 #if GCCVERSION == 3
 using namespace std;
@@ -146,6 +147,7 @@ void AliL3ModelTrack::SetCluster(Int_t row,Float_t fpad,Float_t ftime,Float_t ch
   
   cl->fPresent |= 0x2; //set second bit to true, because a fit attempt has been made
   
+  Int_t patch = AliL3Transform::GetPatch(row);
   if(!charge || npads == 1)
     {
       cl->fPresent &= ~0x1; //set first bit to false
@@ -153,18 +155,20 @@ void AliL3ModelTrack::SetCluster(Int_t row,Float_t fpad,Float_t ftime,Float_t ch
   else
     {
       cl->fPresent|=0x1;//set first bit to true
-      cl->fDPad = QuantizePad(row,fpad);
-      cl->fDTime = QuantizeTime(row,ftime);
+      cl->fDPad = (fpad - GetPadHit(row))/(AliL3DataCompressorHelper::GetXYResidualStep(row)/AliL3Transform::GetPadPitchWidth(patch));
+      cl->fDTime = (ftime - GetTimeHit(row))/(AliL3DataCompressorHelper::GetZResidualStep(row)/AliL3Transform::GetZWidth());
       cl->fDCharge = charge;
       if(sigmaY2==0 && sigmaZ2==0)
 	{
-	  cl->fDSigmaY2=0;//if width is zero, shape is not supposed to be written
-	  cl->fDSigmaZ2=0;
+	  cl->fDSigmaY=0;//if width is zero, shape is not supposed to be written
+	  cl->fDSigmaZ=0;
 	}
       else
 	{
-	  cl->fDSigmaY2 = QuantizeSigmaY2(row,sigmaY2);
-	  cl->fDSigmaZ2 = QuantizeSigmaZ2(row,sigmaZ2);
+	  //cl->fDSigmaY2 = (sigmaY2 - GetParSigmaY2(row))/(pow(AliL3DataCompressorHelper::GetXYWidthStep(),2)/pow(AliL3Transform::GetPadPitchWidth(patch),2));
+	  //cl->fDSigmaZ2 = (sigmaZ2 - GetParSigmaZ2(row))/(pow(AliL3DataCompressorHelper::GetZWidthStep(),2)/pow(AliL3Transform::GetZWidth(),2));
+	  cl->fDSigmaY = (sqrt(sigmaY2) - sqrt(GetParSigmaY2(row)))/(AliL3DataCompressorHelper::GetXYWidthStep()/AliL3Transform::GetPadPitchWidth(patch));
+	  cl->fDSigmaZ = (sqrt(sigmaZ2) - sqrt(GetParSigmaZ2(row)))/(AliL3DataCompressorHelper::GetZWidthStep()/AliL3Transform::GetZWidth());
 	}
       cl->fNPads = npads;
     }
@@ -329,58 +333,6 @@ void AliL3ModelTrack::FillTrack()
     }
 }
 
-Float_t AliL3ModelTrack::QuantizePad(Int_t row,Float_t pad)
-{
-  Float_t diff = pad - GetPadHit(row);
-  Float_t step = AliL3DataCompressor::GetPadResidualStep(row);
-  return diff/step;
-} 
-
-Float_t AliL3ModelTrack::RetrievePad(Int_t row,Float_t dpad)
-{
-  Float_t step = AliL3DataCompressor::GetPadResidualStep(row);
-  return dpad*step + GetPadHit(row);
-}
-
-Float_t AliL3ModelTrack::QuantizeTime(Int_t row,Float_t time)
-{
-  Float_t diff = time - GetTimeHit(row);
-  Float_t step = AliL3DataCompressor::GetTimeResidualStep(row);
-  return diff/step;
-} 
-
-Float_t AliL3ModelTrack::RetrieveTime(Int_t row,Float_t dtime)
-{
-  Float_t step = AliL3DataCompressor::GetTimeResidualStep(row);
-  return dtime*step + GetTimeHit(row);
-}
-
-Float_t AliL3ModelTrack::QuantizeSigmaY2(Int_t row,Float_t sigmaY2)
-{
-  Float_t diff = sigmaY2 - GetParSigmaY2(row);
-  Float_t step = AliL3DataCompressor::GetPadSigma2Step(AliL3Transform::GetPatch(row));
-  return diff/step;
-}
-
-Float_t AliL3ModelTrack::RetrieveSigmaY2(Int_t row,Float_t dsigmaY2)
-{
-  Float_t step = AliL3DataCompressor::GetPadSigma2Step(AliL3Transform::GetPatch(row));
-  return dsigmaY2*step + GetParSigmaY2(row);
-}
-
-Float_t AliL3ModelTrack::QuantizeSigmaZ2(Int_t row,Float_t sigmaZ2)
-{
-  Float_t diff = sigmaZ2 - GetParSigmaZ2(row);
-  Float_t step = AliL3DataCompressor::GetTimeSigma2Step();
-  return diff/step;
-}
-
-Float_t AliL3ModelTrack::RetrieveSigmaZ2(Int_t row,Float_t dsigmaZ2)
-{
-  Float_t step = AliL3DataCompressor::GetTimeSigma2Step();
-  return dsigmaZ2*step + GetParSigmaZ2(row);
-}
-
 void AliL3ModelTrack::SetPadHit(Int_t row,Float_t pad)
 {
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
@@ -447,64 +399,73 @@ Int_t AliL3ModelTrack::GetNPads(Int_t row)
 
 Bool_t AliL3ModelTrack::GetPad(Int_t row,Float_t &pad)
 {
+  //(fpad - GetPadHit(row))/(AliL3DataCompressorHelper::GetXYResidualStep(row)/AliL3Transform::GetPadPitchWidth(patch));
   AliL3ClusterModel *cl = GetClusterModel(row);
-  pad = RetrievePad(row,cl->fDPad);
+  Int_t patch = AliL3Transform::GetPatch(row);
+  pad = cl->fDPad*(AliL3DataCompressorHelper::GetXYResidualStep(row)/AliL3Transform::GetPadPitchWidth(patch)) + GetPadHit(row);
   return IsPresent(row);
 }
 
 Bool_t AliL3ModelTrack::GetTime(Int_t row,Float_t &time)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
-  time = RetrieveTime(row,cl->fDTime);
+  time = cl->fDTime*(AliL3DataCompressorHelper::GetZResidualStep(row)/AliL3Transform::GetZWidth()) + GetTimeHit(row);
   return IsPresent(row);
 }
 
 Bool_t AliL3ModelTrack::GetClusterCharge(Int_t row,Int_t &charge)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
-  charge = (Int_t)cl->fDCharge;// + AliL3DataCompressor::GetClusterCharge();
+  charge = (Int_t)cl->fDCharge;// + AliL3DataCompressorHelperHelper::GetClusterCharge();
   return IsPresent(row);
 }
 
-Bool_t AliL3ModelTrack::GetXYWidth(Int_t row,Float_t &width)
+Bool_t AliL3ModelTrack::GetSigmaY2(Int_t row,Float_t &sigma2)
 {
+  //cl->fDSigmaY = (sqrt(sigmaY2) - sqrt(GetParSigmaY2(row)))/(AliL3DataCompressorHelper::GetXYWidthStep()/AliL3Transform::GetPadPitchWidth(patch));
   AliL3ClusterModel *cl = GetClusterModel(row);
-  width = RetrieveSigmaY2(row,cl->fDSigmaY2);
+  Int_t patch = AliL3Transform::GetPatch(row);
+  Float_t sigma = cl->fDSigmaY*(AliL3DataCompressorHelper::GetXYWidthStep()/AliL3Transform::GetPadPitchWidth(patch)) + sqrt(GetParSigmaY2(row));
+  sigma2 = sigma*sigma;
   return IsPresent(row);
 }
 
-Bool_t AliL3ModelTrack::GetZWidth(Int_t row,Float_t &width)
+Bool_t AliL3ModelTrack::GetSigmaZ2(Int_t row,Float_t &sigma2)
 {
+  //cl->fDSigmaZ = (sqrt(sigmaZ2) - sqrt(GetParSigmaZ2(row)))/(AliL3DataCompressorHelper::GetZWidthStep()/AliL3Transform::GetZWidth());
   AliL3ClusterModel *cl = GetClusterModel(row);
-  RetrieveSigmaZ2(row,cl->fDSigmaZ2);
+  Float_t sigma = cl->fDSigmaZ*(AliL3DataCompressorHelper::GetZWidthStep()/AliL3Transform::GetZWidth()) + sqrt(GetParSigmaZ2(row));
+  sigma2 = sigma*sigma;
   return IsPresent(row);
 }
 
 Bool_t AliL3ModelTrack::GetPadResidual(Int_t row,Float_t &res)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
-  res = cl->fDPad;
+  Int_t patch = AliL3Transform::GetPatch(row);
+  res = cl->fDPad*(AliL3DataCompressorHelper::GetXYResidualStep(row)/AliL3Transform::GetPadPitchWidth(patch));
   return IsPresent(row);
 }
 
 Bool_t AliL3ModelTrack::GetTimeResidual(Int_t row,Float_t &res)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
-  res = cl->fDTime;
+  res = cl->fDTime*(AliL3DataCompressorHelper::GetZResidualStep(row)/AliL3Transform::GetZWidth());
   return IsPresent(row);
 }
 
 Bool_t AliL3ModelTrack::GetXYWidthResidual(Int_t row,Float_t &res)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
-  res = cl->fDSigmaY2;
+  Int_t patch = AliL3Transform::GetPatch(row);
+  res = cl->fDSigmaY*(AliL3DataCompressorHelper::GetXYWidthStep()/AliL3Transform::GetPadPitchWidth(patch));
   return IsPresent(row);
 }
 
 Bool_t AliL3ModelTrack::GetZWidthResidual(Int_t row,Float_t &res)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
-  res = cl->fDSigmaZ2;
+  res = cl->fDSigmaZ*(AliL3DataCompressorHelper::GetZWidthStep()/AliL3Transform::GetZWidth());
   return IsPresent(row);
 }
 
@@ -617,7 +578,7 @@ void AliL3ModelTrack::Print(Bool_t everything)
 
   cout<<"Clusters:"<<endl;
   Int_t origslice=-1,counter=0;
-  Float_t fpad,ftime;
+  Float_t fpad,ftime,sigmaY2,sigmaZ2;
   for(Int_t i=AliL3Transform::GetFirstRow(fPatch); i<=AliL3Transform::GetLastRow(fPatch); i++)
     {
       AliL3ClusterModel *cl = GetClusterModel(i);
@@ -628,14 +589,16 @@ void AliL3ModelTrack::Print(Bool_t everything)
 	{
 	  GetPad(i,fpad);
 	  GetTime(i,ftime);
+	  GetSigmaY2(i,sigmaY2);
+	  GetSigmaZ2(i,sigmaZ2);
 	  if(counter==0)
 	    origslice=cl->fSlice;
 	  else if(cl->fSlice != origslice)
 	    cout<<"Change in slice "<<cl->fSlice<<" "<<origslice<<endl;
 	  cout<<i<<" Slice "<<cl->fSlice<<" Dpad "<<cl->fDPad<<" Dtime "<<cl->fDTime<<" Dcharge "<<cl->fDCharge;
-	  cout<<" sigmaY2 "<<GetParSigmaY2(i)<<" sigmaZ2 "<<GetParSigmaZ2(i);
+	  cout<<" sigmaY2 "<<sigmaY2<<" sigmaZ2 "<<sigmaZ2;
+	  cout<<" parsigmaY2 "<<GetParSigmaY2(i)<<" parsigmaZ2 "<<GetParSigmaZ2(i);
 	  cout<<" Pad "<<fpad<<" padhit "<<GetPadHit(i)<<" Time "<<ftime<<" timehit "<<GetTimeHit(i)<<" ";
-	  cout<<"Number of pads "<<GetNPads(i)<<" Overlaps "<<GetNOverlaps(i);
 	  counter++;
 	}
       cout<<endl;

@@ -1,8 +1,7 @@
 //$Id$
 
-void SetHoughParameters(AliL3Hough *hough,Char_t *path)
+void SetHoughParameters(AliL3Hough *hough,Char_t *path,Int_t tversion=1)
 {
-  
   bool binary = kTRUE;    //binary files input
   int n_eta_segments=100;
   double histptmin = 0.5; //mininum pt to find (controls the histogram range)
@@ -10,20 +9,14 @@ void SetHoughParameters(AliL3Hough *hough,Char_t *path)
   int threshold=6000;  //peak threshold
   int nxbins = 140;
   int nybins = 150;
+  //Int_t threshold=5000;  //peak threshold
+  //Int_t nxbins = 190;
+  //Int_t nybins = 200;
   
   int patch=-1; //-1 -> Hough transform on slices (means adding histograms)
   
   hough->SetThreshold(4); //noise threshold on single digits
   hough->SetTransformerParams(nxbins,nybins,histptmin,patch);
-
-/*
-  hough->SetTransformerParams(0.068,histptmin,histptmax,20,0);
-  hough->SetTransformerParams(0.043,histptmin,histptmax,23,1);
-  hough->SetTransformerParams(0.03,histptmin,histptmax,25,2);
-  hough->SetTransformerParams(0.02,histptmin,histptmax,25,3);
-  hough->SetTransformerParams(0.016,histptmin,histptmax,30,4);
-  hough->SetTransformerParams(0.012,histptmin,histptmax,30,5);
-*/
   hough->SetPeakThreshold(threshold,patch);
-  hough->Init(path,binary,n_eta_segments);
+  hough->Init(path,binary,n_eta_segments,kFALSE,tversion);
 }

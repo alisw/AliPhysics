@@ -39,7 +39,7 @@ class AliL3HoughTransformerVhdl : public AliL3HoughTransformerLUT
   void Print();
   void PrintVhdl();
 
-  ClassDef(AliL3HoughTransformerVhdl,1) //Normal Hough transformation class
+  ClassDef(AliL3HoughTransformerVhdl,1) //VHDL Hough transformation class
 
 };
 

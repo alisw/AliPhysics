@@ -7,6 +7,8 @@
 #include "AliL3Merger.h"
 #endif
 
+#include "AliL3RootTypes.h"
+
 class AliL3Merger;
 
 class AliL3TrackMerger : public AliL3Merger {

@@ -32,6 +32,18 @@
 #pragma link C++ class AliL3Fitter;
 #pragma link C++ class AliL3RawDataFileHandler;
 
+#ifdef Darwin
+//new to solve dep problem
+#pragma link C++ class AliL3HoughTrack;
+#pragma link C++ class AliL3ModelTrack;
+#pragma link C++ class AliL3DataCompressorHelper;
+#pragma link C++ class AliL3DDLDataFileHandler;
+#pragma link C++ class AliL3DataHandler;
+#pragma link C++ class AliL3TransBit;
+#pragma link C++ class AliL3TransBit_v1; 
+#pragma link C++ class AliL3TransBit_v2; 
+#endif
+
 #ifdef use_aliroot
 #pragma link C++ class AliL3FileHandler;
 #pragma link C++ class AliL3Evaluate; 

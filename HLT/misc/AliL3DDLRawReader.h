@@ -3,6 +3,8 @@
 #ifndef ALIL3DDLRAWREADER_H
 #define ALIL3DDLRAWREADER_H
 
+#include "AliL3RootTypes.h"
+
 // see description in upcoming ALICE note
 // by D.Favretto and A.K.Mohanty
 struct AliL3DDLMiniHeader 

@@ -13,7 +13,7 @@
 
 DEFSTR = -Dno_root
 OBJDIR = lib_alone
-INCLUDES = -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/comp -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/trigger -I$(ALIHLT_TOPDIR)/kalman
+INCLUDES = -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/comp -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/trigger -I$(ALIHLT_TOPDIR)/kalman
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT) 
 INCLUDES += -I$(ROOTSYS)/include 
@@ -54,7 +54,7 @@ INCLUDES += -I/prog/alice/level3/kip/MLUC/include
 endif
 endif
 
-DEFSTR += $(EXTRADEF)
+DEFSTR += -D$(ARCH) $(EXTRADEF)
 
 DICT  = $(MODNAME)Cint-$(ALIHLT_USEPACKAGE).cxx
 DICTH = $(MODNAME)Cint-$(ALIHLT_USEPACKAGE).h
@@ -71,6 +71,7 @@ endif
 endif
 
 ALIHLT_LIBSO = $(ALIHLT_LIBDIR)/lib$(MODNAME).so
+ALIHLT_DYLIB = $(ALIHLT_LIBDIR)/lib$(MODNAME).dylib
 
 #Default Targets  
 #
@@ -78,11 +79,16 @@ ALIHLT_LIBSO = $(ALIHLT_LIBDIR)/lib$(MODNAME).so
 all: $(OBJDIR) $(ALIHLT_LIBDIR) $(ALIHLT_LIBSO) 
 
 $(ALIHLT_LIBSO): $(OBJS)
-	$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+ifeq ($(ARCH),Darwin)
+	$(LD) $(DYFLAGS) $^ $(LDFLAGS) -o $(ALIHLT_DYLIB)
+endif
+	$(LD) $(SOFLAGS) $^ $(LDFLAGS) -o $@
+
 
 $(DICT): $(HDRS)
 	@echo "Generating dictionary..."
-	rootcint -f $(DICT) -c $(INCLUDES) -DGCCVERSION=$(GCCVERSION) $(DEFSTR) -include AliL3StandardIncludes.h $(HDRS)
+	rootcint -f $(DICT) -c $(CINTCXXFLAGS) $(INCLUDES) -DGCCVERSION=$(GCCVERSION) \
+                    $(DEFSTR) -include AliL3StandardIncludes.h $(HDRS)
 
 $(OBJDIR)/%.o: %.cxx 
 	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
@@ -124,7 +130,7 @@ clean:
 	rm -rf $(OBJDIR)
 
 so:
-	rm -f $(ALIHLT_LIBSO)
+	rm -f $(ALIHLT_LIBSO) $(ALIHLT_DYLIB)
 
 realclean: clean so
 

@@ -11,7 +11,9 @@
 #pragma link C++ class AliL3HoughTransformer;
 #pragma link C++ class AliL3HoughTransformerLUT;
 #pragma link C++ class AliL3HoughTransformerVhdl;
+#ifndef Darwin
 #pragma link C++ class AliL3HoughTrack;
+#endif
 #pragma link C++ class AliL3HoughMaxFinder;
 #pragma link C++ class AliL3HoughEval;
 #pragma link C++ class AliL3Histogram;
@@ -22,7 +24,9 @@
 #pragma link C++ class AliL3HoughDisplay;
 #pragma link C++ class AliL3HoughClusterTransformer;
 #pragma link C++ class AliL3HistogramAdaptive;
+#ifndef Darwin
 #pragma link C++ class AliL3HoughTest;
+#endif
 #pragma link C++ class AliL3HoughTransformerNew;
 
 #ifdef use_aliroot

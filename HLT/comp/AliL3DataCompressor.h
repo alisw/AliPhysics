@@ -3,6 +3,8 @@
 #ifndef AliL3_DataCompressor
 #define AliL3_DataCompressor
 
+#include "AliL3RootTypes.h"
+
 class AliL3SpacePointData;
 class AliL3Benchmark;
 class AliL3TrackArray;
@@ -37,6 +39,7 @@ class AliL3DataCompressor {
   
   UInt_t fNcl[36][6];
   
+  /*
   static Int_t fNumPadBits;
   static Int_t fNumTimeBits;
   static Int_t fNumChargeBits;
@@ -53,7 +56,8 @@ class AliL3DataCompressor {
   static Float_t fPadSigma2Step2;
   static Float_t fTimeSigma2Step;
   static Int_t fClusterCharge;
-  
+  */
+ 
   void SelectRemainingClusters();
   void ExpandTrackData(AliL3TrackArray *tracks);
   void ReadUncompressedData(TempCluster **clusters,Int_t *ncl,const Int_t maxpoints);
@@ -64,7 +68,7 @@ class AliL3DataCompressor {
   void CloseOutputFile();
   
  protected:
-  Char_t fPath[1024];            //!
+  Char_t fPath[1024];   //!
   Int_t fEvent;
   Int_t fNusedClusters;
   Int_t fNunusedClusters;
@@ -82,17 +86,20 @@ class AliL3DataCompressor {
   virtual void LoadData(Int_t event,Bool_t sp=kTRUE);
   virtual void FillData(Int_t minhits,Bool_t expand);
   virtual void WriteRemaining(Bool_t select);
+  void DetermineMinBits();
   void CompressAndExpand();
   void RestoreData(Bool_t remaining_only=kFALSE);
   void DoBench(Char_t *fname="benchmark");
   
+  /*
   void SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shapepad,Int_t shapetime);
   void SetTransverseResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
   void SetLongitudinalResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
-  
+  */
   Int_t GetNusedClusters() {return fNusedClusters;}
   Int_t GetNunusedClusters() {return fNunusedClusters;}
 
+  /*
   static const Int_t GetNPadBits() {return fNumPadBits;}
   static const Int_t GetNTimeBits() {return fNumTimeBits;}
   static const Int_t GetNChargeBits() {return fNumChargeBits;}
@@ -103,7 +110,7 @@ class AliL3DataCompressor {
   static const Int_t GetClusterCharge() {return fClusterCharge;}
   static const Float_t GetPadResidualStep(Int_t row);
   static const Float_t GetTimeResidualStep(Int_t row);
-
+  */
 
   ClassDef(AliL3DataCompressor,1) 
 

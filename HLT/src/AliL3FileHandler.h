@@ -32,23 +32,30 @@ class AliL3FileHandler:public AliL3MemHandler{
 #endif
   AliTPCParam *fParam;
   virtual Bool_t SetAliInput();
-  //  Int_t fLastIndex;
   AliSimDigits *fDigits;
+
   TTree *fDigitsTree;
   FILE *fMC;//!
   
   Bool_t fIndexCreated;   //is index created
   Int_t  fIndex[36][159]; //stores index over digitstree 
                           //for faster access w/o ASVVERSION
+  Bool_t fUseStaticIndex; //take static index
+  static Bool_t fStaticIndexCreated;   //global index created
+  static Int_t  fStaticIndex[36][159]; //global index
 
   Bool_t GetDigitsTree(Int_t event);
   Bool_t CreateIndex();  //create the index
 
  public:
-  AliL3FileHandler();
+  AliL3FileHandler(Bool_t b=kFALSE);
   ~AliL3FileHandler();
 
   void FreeDigitsTree();
+  static void CleanStaticIndex();
+  static Int_t SaveStaticIndex(Char_t *prefix=0,Int_t event=0);
+  static Int_t LoadStaticIndex(Char_t *prefix=0,Int_t event=0);
+
   Bool_t SetAliInput(Char_t *name);
   Bool_t SetAliInput(TFile *file);
 #ifdef use_newio

@@ -56,6 +56,7 @@
 ClassImp(AliLevel3)
 
 Bool_t AliLevel3::fSetTracks2FirstPoint = kTRUE;//Define track parameters at first point
+Bool_t AliLevel3::fDoVertexFit = kTRUE;//Include the vertex in the final track fit
 
 AliLevel3::AliLevel3()
 {
@@ -72,7 +73,6 @@ AliLevel3::AliLevel3(Char_t *infile)
   //meaning rootfiles or raw files.
   
   fInputFile = infile;
-
 }
 
 void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
@@ -99,6 +99,9 @@ void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
   fEta[1] = 1.1;
 
   fEvent=0;
+#ifdef use_aliroot /*just to be sure*/
+  AliL3FileHandler::CleanStaticIndex();
+#endif
 
   switch(npatches){
   case 0:
@@ -143,7 +146,7 @@ void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
   SetMergerParameters();//Set default merger parameters
 #ifdef use_aliroot
   if(filetype==kRoot){
-    fFileHandler = new AliL3FileHandler();
+    fFileHandler = new AliL3FileHandler(kTRUE); //static version
     fFileHandler->SetAliInput(fInputFile);
   }else if(filetype==kRaw){
     fFileHandler = new AliL3DDLDataFileHandler();
@@ -202,7 +205,8 @@ void AliLevel3::SetTrackerParam(Int_t phi_segments, Int_t eta_segments,
 				Double_t min_pt_fit, Double_t maxangle,
 				Double_t goodDist, Double_t hitChi2Cut,
 				Double_t goodHitChi2, Double_t trackChi2Cut,
-				Int_t maxdist,Double_t maxphi,Double_t maxeta,Bool_t vertexconstraint)
+				Int_t maxdist,Double_t maxphi,Double_t maxeta,
+                               Bool_t vertexconstraint)
 {
   //Set parameters input to the tracker
   //If no arguments are given, default parameters will be used
@@ -230,6 +234,9 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
   //inner=2 + outer=38.
 
   fGlobalMerger->Setup(first,last);
+#ifdef use_aliroot
+  if(fEvent!=event) AliL3FileHandler::CleanStaticIndex();
+#endif
   fEvent=event;
   for(Int_t i=first; i<=last; i++){
     ProcessSlice(i);
@@ -547,7 +554,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
 
 void AliLevel3::FitGlobalTracks()
 {
-  AliL3Fitter *fitter = new AliL3Fitter(fVertex);
+  AliL3Fitter *fitter = new AliL3Fitter(fVertex,AliLevel3::DoVertexFit());
   if(fNPatch==1)
     fitter->LoadClusters(fWriteOutPath,fEvent,kTRUE);
   else
@@ -560,7 +567,8 @@ void AliLevel3::FitGlobalTracks()
       AliL3Track *tr = tracks->GetCheckedTrack(i);
       if(!tr) continue;
       fitter->FitHelix(tr);
-      fitter->UpdateTrack(tr);
+      if(AliLevel3::IsTracksAtFirstPoint())
+	tr->UpdateToFirstPoint();
     }
   fBenchmark->Stop("Global track fitter");
   delete fitter;

@@ -23,7 +23,7 @@
 #include <TMath.h>
 #include <TDirectory.h>
 #include <TSystem.h>
-#include <TH2F.h>
+#include <TH1F.h>
 
 #include "AliL3Transform.h"
 #include "AliL3ModelTrack.h"
@@ -89,6 +89,12 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
   else
     sprintf(filename,"%s/offline/AliTPCclustersMI.root",fPath);
   
+  bool compressed=0;
+  if(compressed)
+    {
+      cout<<"AliL3OfflineDataCompressor::LoadData : Taking compressed offline files!!"<<endl;
+      sprintf(filename,"%s/comp/offline/AliTPCclusters.root",fPath);
+    }
   TFile *in = TFile::Open(filename);
   AliTPCParam *param=(AliTPCParam*)in->Get("75x40_100x60_150x60");
 
@@ -102,8 +108,8 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
 #endif  
   if(fMarian==kTRUE)
     {
-      AliTPCtrackerMI *mitracker = (AliTPCtrackerMI*)fTracker;
 #ifdef asvversion
+      AliTPCtrackerMI *mitracker = (AliTPCtrackerMI*)fTracker;
       mitracker->LoadInnerSectors();
       mitracker->LoadOuterSectors();
 #endif
@@ -115,6 +121,10 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
     sprintf(filename,"%s/offline/AliTPCtracks.root",fPath);
   else
     sprintf(filename,"%s/offline/AliTPCtracksMI.root",fPath);
+  
+  if(compressed)
+    sprintf(filename,"%s/comp/offline/AliTPCtracks.root",fPath);
+  
   TFile *tf=TFile::Open(filename);
   
   char tname[100]; sprintf(tname,"TreeT_TPC_%d",event);
@@ -137,6 +147,7 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
   cout<<"Loaded "<<nentr<<" offline tracks"<<endl;
   Int_t slice,padrow;
   Int_t totcounter=0;
+
   for(i=0; i<nentr; i++)
     {
       
@@ -179,8 +190,8 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
 	  fcl = mitracker->GetClusterMI(idx);
 	}
       first[0] = xk;
-      first[1] = fcl->GetY();
-      first[2] = fcl->GetZ();
+      first[1] = par[0];
+      first[2] = par[1];
 
       AliL3Transform::Local2Global(first,slice);
       
@@ -261,7 +272,7 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
 	      cout<<"Track hit "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
 	      exit(5);
 	    }
-	  
+
 	  Float_t angle = 0;
 	  AliL3Transform::Local2GlobalAngle(&angle,slice);
 	  if(!outtrack->CalculateReferencePoint(angle,AliL3Transform::Row2X(padrow)))
@@ -270,6 +281,7 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
 		  <<slice<<" row "<<padrow<<endl;
 	      exit(5);
 	    }
+
 	  Float_t xyz_cross[3] = {outtrack->GetPointX(),outtrack->GetPointY(),outtrack->GetPointZ()};
 	  AliL3Transform::Global2Raw(xyz_cross,sec,row);
 	  /*
@@ -310,7 +322,7 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
   comp->WriteFile(comptracks);
   delete comp;
   delete comptracks;
-
+  
 }
 
 void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
@@ -340,7 +352,9 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
   
   cout<<"Writing remaining clusters "<<endl;
   Int_t nrows = AliL3Transform::GetNRows(),sector,row,sec;
+#ifdef asvversion
   AliTPCtracker *tracker = (AliTPCtracker*)fTracker;
+#endif
   for(Int_t slice=0; slice<=35; slice++)
     {
       sprintf(filename,"%s/comp/remains_%d_%d_%d.raw",fPath,fEvent,slice,-1);
@@ -400,7 +414,7 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
 	      if(cluster->GetZ() < 0 && slice < 18) continue;
 	      if(cluster->GetZ() > 0 && slice > 17) continue;
 	      if(cluster->IsUsed())
-	      	continue;
+		continue;
 	      
 	      if(fWriteIdsToFile)
 		idfile << cluster->GetLabel(0)<<' ';
@@ -463,7 +477,10 @@ void AliL3OfflineDataCompressor::SelectRemainingClusters()
   Int_t gap=(Int_t)(0.125*nrows), shift=(Int_t)(0.5*gap);
   
   Int_t sector,row,sec;
+
+#ifdef asvversion
   AliTPCtracker *tracker = (AliTPCtracker*)fTracker;
+#endif
   for(Int_t slice=0; slice<36; slice++)
     {
       for(Int_t padrow=0; padrow < nrows; padrow++)

@@ -86,12 +86,14 @@ AliL3Hough::AliL3Hough()
   SetThreshold();
   SetNSaveIterations();
   SetPeakThreshold();
+#ifdef use_aliroot
+  //just be sure that index is empty for new event
+    AliL3FileHandler::CleanStaticIndex(); 
+#endif
 }
 
 AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv,Char_t *infile)
 {
-  //Default ctor.
-
   fBinary = binary;
   strcpy(fPath,path);
   fNEtaSegments  = n_eta_segments;
@@ -104,6 +106,11 @@ AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bi
     fInputFile = infile;
   else
     fInputFile = 0;
+
+#ifdef use_aliroot
+  //just be sure that index is empty for new event
+    AliL3FileHandler::CleanStaticIndex(); 
+#endif
 }
 
 AliL3Hough::~AliL3Hough()
@@ -113,16 +120,22 @@ AliL3Hough::~AliL3Hough()
   CleanUp();
   if(fMerger)
     delete fMerger;
+  //cout << "Cleaned class merger " << endl;
   if(fInterMerger)
     delete fInterMerger;
+  //cout << "Cleaned class inter " << endl;
   if(fPeakFinder)
     delete fPeakFinder;
+  //cout << "Cleaned class peak " << endl;
   if(fGlobalMerger)
     delete fGlobalMerger;
+  //cout << "Cleaned class global " << endl;
   if(fBenchmark)
     delete fBenchmark;
+  //cout << "Cleaned class bench " << endl;
   if(fGlobalTracks)
     delete fGlobalTracks;
+  //cout << "Cleaned class globaltracks " << endl;
 }
 
 void AliL3Hough::CleanUp()
@@ -132,16 +145,23 @@ void AliL3Hough::CleanUp()
   for(Int_t i=0; i<fNPatches; i++)
     {
       if(fTracks[i]) delete fTracks[i];
+      //cout << "Cleaned tracks " << i << endl;
       if(fEval[i]) delete fEval[i];
+      //cout << "Cleaned eval " << i << endl;
       if(fHoughTransformer[i]) delete fHoughTransformer[i];
+      //cout << "Cleaned traf " << i << endl;
       if(fMemHandler[i]) delete fMemHandler[i];
+      //cout << "Cleaned mem " << i << endl;
     }
   
   if(fTracks) delete [] fTracks;
+  //cout << "Cleaned class tracks " << endl;
   if(fEval) delete [] fEval;
+  //cout << "Cleaned class eval " << endl;
   if(fHoughTransformer) delete [] fHoughTransformer;
+  //cout << "Cleaned cleass trafo " << endl;
   if(fMemHandler) delete [] fMemHandler;
-  
+  //cout << "Cleaned class mem " << endl;
 }
 
 void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv,Char_t *infile)
@@ -193,6 +213,7 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 
       fHoughTransformer[i]->CreateHistograms(fNBinX[i],fLowPt[i],fNBinY[i],-fPhi[i],fPhi[i]);
       //fHoughTransformer[i]->CreateHistograms(fLowPt[i],fUpperPt[i],fPtRes[i],fNBinY[i],fPhi[i]);
+
       fHoughTransformer[i]->SetLowerThreshold(fThreshold[i]);
       fHoughTransformer[i]->SetUpperThreshold(100);
 
@@ -208,7 +229,7 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
       	{
 	  if(!fInputFile) {
 	    /* In case of reading digits file */
-	    fMemHandler[i] = new AliL3FileHandler();
+	    fMemHandler[i] = new AliL3FileHandler(kTRUE); //use static index
 	    if(!fBinary) {
 	      Char_t filename[1024];
 	      sprintf(filename,"%s/digitfile.root",fPath);
@@ -356,8 +377,13 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
 {
   //Read data from files, binary or root.
   
+#ifdef use_aliroot
+  if(fEvent!=eventnr) //just be sure that index is empty for new event
+    AliL3FileHandler::CleanStaticIndex(); 
+#endif
   fEvent=eventnr;
   fCurrentSlice = slice;
+
   for(Int_t i=0; i<fNPatches; i++)
     {
       fMemHandler[i]->Free();

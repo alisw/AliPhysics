@@ -12,8 +12,8 @@ struct AliL3ClusterModel {
   Float_t fDTime;
   Float_t fDPad;
   Float_t fDCharge;
-  Float_t fDSigmaY2;
-  Float_t fDSigmaZ2;
+  Float_t fDSigmaY;
+  Float_t fDSigmaZ;
   UInt_t fNPads;
   Short_t fSlice;
 #ifdef do_mc

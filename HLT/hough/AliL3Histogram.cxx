@@ -3,7 +3,10 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
+#include <ostream.h>
+
 #include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3Histogram.h"
 
@@ -99,7 +102,7 @@ void AliL3Histogram::Fill(Double_t x,Double_t y,Int_t weight)
   AddBinContent(bin,weight);
 }
 
-Int_t AliL3Histogram::FindBin(Double_t x,Double_t y)
+Int_t AliL3Histogram::FindBin(Double_t x,Double_t y) const
 {
   Int_t xbin = FindXbin(x);
   Int_t ybin = FindYbin(y);
@@ -109,7 +112,7 @@ Int_t AliL3Histogram::FindBin(Double_t x,Double_t y)
   return GetBin(xbin,ybin);
 }
 
-Int_t AliL3Histogram::FindXbin(Double_t x)
+Int_t AliL3Histogram::FindXbin(Double_t x) const
 {
   if(x < fXmin || x > fXmax)
     return 0;
@@ -117,7 +120,7 @@ Int_t AliL3Histogram::FindXbin(Double_t x)
   return 1 + (Int_t)(fNxbins*(x-fXmin)/(fXmax-fXmin));
 }
 
-Int_t AliL3Histogram::FindYbin(Double_t y)
+Int_t AliL3Histogram::FindYbin(Double_t y) const
 {
   if(y < fYmin || y > fYmax)
     return 0;
@@ -125,7 +128,7 @@ Int_t AliL3Histogram::FindYbin(Double_t y)
   return 1 + (Int_t)(fNybins*(y-fYmin)/(fYmax-fYmin));
 }
 
-Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin)
+Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin) const
 {
   if(xbin < fFirstXbin || xbin > fLastXbin)
     return 0;
@@ -135,7 +138,7 @@ Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin)
   return xbin + ybin*(fNxbins+2);
 }
 
-Int_t AliL3Histogram::GetBinContent(Int_t bin)
+Int_t AliL3Histogram::GetBinContent(Int_t bin) const
 {
   if(bin >= fNcells)
     {
@@ -225,7 +228,7 @@ void AliL3Histogram::Add(AliL3Histogram *h1,Double_t weight)
   fEntries += h1->GetNEntries();
 }
 
-Double_t AliL3Histogram::GetBinCenterX(Int_t xbin)
+Double_t AliL3Histogram::GetBinCenterX(Int_t xbin) const
 {
   if(xbin < fFirstXbin || xbin > fLastXbin)
     {
@@ -233,11 +236,11 @@ Double_t AliL3Histogram::GetBinCenterX(Int_t xbin)
 	<<"Bin-value out of range "<<xbin<<ENDLOG;
       return -1;
     }
-  //  return fXmin + (xbin-1) * fBinwidthX + 0.5*fBinwidthX;
+
   return fXmin + (xbin-0.5) * fBinwidthX;
 }
 
-Double_t AliL3Histogram::GetBinCenterY(Int_t ybin)
+Double_t AliL3Histogram::GetBinCenterY(Int_t ybin) const
 {
   if(ybin < fFirstYbin || ybin > fLastYbin)
     {
@@ -245,7 +248,7 @@ Double_t AliL3Histogram::GetBinCenterY(Int_t ybin)
 	<<"Bin-value out of range "<<ybin<<ENDLOG;
       return -1;
     }
-  //  return fYmin + (ybin-1) * fBinwidthY + 0.5*fBinwidthY;
+
   return fYmin + (ybin-0.5) * fBinwidthY;
 }
 
@@ -279,4 +282,18 @@ void AliL3Histogram::CreateRootHisto()
   return;
 #endif
   cerr<<"AliL3Histogram::CreateRootHisto : You need to compile with ROOT in order to create ROOT histogram"<<endl;
+}
+
+ostream& operator<<(ostream &o, const AliL3Histogram &h)
+{
+  for(Int_t xbin=h.GetFirstXbin(); xbin<=h.GetLastXbin(); xbin++)
+    {
+      for(Int_t ybin=h.GetFirstYbin(); ybin<=h.GetLastYbin(); ybin++)
+	{
+	  Int_t bin = h.GetBin(xbin,ybin);
+	  o << h.GetBinContent(bin) << " ";
+	}
+      o << endl;
+    }
+  return o;
 }

@@ -9,6 +9,8 @@
 #include <TH2.h>
 #endif
 
+class ostream;
+
 class AliL3Histogram {
   
  private:
@@ -45,11 +47,11 @@ class AliL3Histogram {
   
   void Reset();
   virtual void Fill(Double_t x,Double_t y,Int_t weight=1);
-  virtual Int_t FindBin(Double_t x,Double_t y);
-  virtual Int_t FindXbin(Double_t x);
-  virtual Int_t FindYbin(Double_t y);
-  Int_t GetBin(Int_t xbin,Int_t ybin);
-  Int_t GetBinContent(Int_t bin);
+  virtual Int_t FindBin(Double_t x,Double_t y) const;
+  virtual Int_t FindXbin(Double_t x) const;
+  virtual Int_t FindYbin(Double_t y) const;
+  Int_t GetBin(Int_t xbin,Int_t ybin) const;
+  Int_t GetBinContent(Int_t bin) const;
   void SetBinContent(Int_t xbin,Int_t ybin,Int_t value);
   void SetBinContent(Int_t bin,Int_t value);
   void AddBinContent(Int_t xbin,Int_t ybin,Int_t weight);
@@ -60,27 +62,29 @@ class AliL3Histogram {
   virtual void Draw(Char_t *option="hist");
   virtual void Print() {};
 
+  friend ostream& operator<< (ostream &o, const AliL3Histogram &h);
+
 #ifdef use_root
   TH2F *GetRootHisto();
 #else
   void *GetRootHisto();
 #endif
     
-  Double_t GetXmin() {return fXmin;}
-  Double_t GetXmax() {return fXmax;}
-  Double_t GetYmin() {return fYmin;}
-  Double_t GetYmax() {return fYmax;}
-  virtual Double_t GetBinCenterX(Int_t xbin);
-  virtual Double_t GetBinCenterY(Int_t ybin);
-  Double_t GetBinWidthX() {return fBinwidthX;}
-  Double_t GetBinWidthY() {return fBinwidthY;}
-  Int_t GetFirstXbin() {return fFirstXbin;}
-  Int_t GetLastXbin() {return fLastXbin;}
-  Int_t GetFirstYbin() {return fFirstYbin;}
-  Int_t GetLastYbin() {return fLastYbin;}
-  Int_t GetNbinsX() {return fNxbins;}
-  Int_t GetNbinsY() {return fNybins;}
-  Int_t GetNEntries() {return fEntries;}
+  Double_t GetXmin() const {return fXmin;}
+  Double_t GetXmax() const {return fXmax;}
+  Double_t GetYmin() const {return fYmin;}
+  Double_t GetYmax() const {return fYmax;}
+  virtual Double_t GetBinCenterX(Int_t xbin) const;
+  virtual Double_t GetBinCenterY(Int_t ybin) const;
+  Double_t GetBinWidthX() const {return fBinwidthX;}
+  Double_t GetBinWidthY() const {return fBinwidthY;}
+  Int_t GetFirstXbin() const {return fFirstXbin;}
+  Int_t GetLastXbin() const {return fLastXbin;}
+  Int_t GetFirstYbin() const {return fFirstYbin;}
+  Int_t GetLastYbin() const {return fLastYbin;}
+  Int_t GetNbinsX() const {return fNxbins;}
+  Int_t GetNbinsY() const {return fNybins;}
+  Int_t GetNEntries() const {return fEntries;}
   
   ClassDef(AliL3Histogram,1) //2D histogram class
     

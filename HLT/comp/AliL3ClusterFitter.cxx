@@ -710,7 +710,8 @@ Bool_t AliL3ClusterFitter::IsMaximum(Int_t pad,Int_t time)
 
 void AliL3ClusterFitter::CalculateWeightedMean(AliL3ModelTrack *track,Int_t *padrange,Int_t *timerange)
 {
-  Float_t sum=0,npads=0;
+  Float_t sum=0;
+  Int_t npads=0;
   Float_t pad=0,time=0;
   Int_t nt = AliL3Transform::GetNTimeBins()+1;
   for(Int_t i=padrange[0]; i<=padrange[1]; i++)
@@ -1122,8 +1123,8 @@ void AliL3ClusterFitter::AddClusters()
 	  
 	  tr->CalculateClusterWidths(i,kTRUE); //Parametrize errors
 	  
-	  tr->GetXYWidth(i,xywidth);
-	  tr->GetZWidth(i,zwidth);
+	  tr->GetSigmaY2(i,xywidth);
+	  tr->GetSigmaZ2(i,zwidth);
 	  Float_t xyz[3];
 	  Int_t sector,row;
 	  AliL3Transform::Slice2Sector(fSlice,i,sector,row);

@@ -3,6 +3,7 @@
 #ifndef ALIL3DDLRAWREADERFILE_H
 #define ALIL3DDLRAWREADERFILE_H
 
+#include "AliL3RootTypes.h"
 #include "AliL3DDLRawReader.h"
 
 class AliL3DDLRawReaderFile: public AliL3DDLRawReader 

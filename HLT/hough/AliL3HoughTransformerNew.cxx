@@ -125,10 +125,12 @@ struct Digit {
   Float_t z;
   Digit *next;
 };
+
 struct EtaContainer {
   void *first;
   void *last;
 };
+
 void AliL3HoughTransformerNew::TransformLineC(Int_t *rowrange,Float_t *phirange)
 {
   AliL3DigitRowData *tempPt = GetDataPointer();

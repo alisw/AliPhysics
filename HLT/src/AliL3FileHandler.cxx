@@ -71,7 +71,71 @@ using namespace std;
 
 ClassImp(AliL3FileHandler)
 
-AliL3FileHandler::AliL3FileHandler()
+// of course on start up the index is not created
+Bool_t AliL3FileHandler::fStaticIndexCreated=kFALSE;
+Int_t  AliL3FileHandler::fStaticIndex[36][159]; 
+
+void AliL3FileHandler::CleanStaticIndex() 
+{ // use this static call to clean static index after
+  // running over one event
+
+  for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
+    for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
+      fStaticIndex[i][j]=-1;
+  }
+  fStaticIndexCreated=kFALSE;
+}
+
+Int_t AliL3FileHandler::SaveStaticIndex(Char_t *prefix,Int_t event) 
+{ // use this static call to store static index after
+  if(!fStaticIndexCreated) return -1;
+
+  Char_t fname[1024];
+  if(prefix)
+    sprintf(fname,"%s-%d.txt",prefix,event);
+  else
+    sprintf(fname,"TPC.Digits.staticindex-%d.txt",event);
+
+  ofstream file(fname,ios::trunc);
+  if(!file.good()) return -1;
+
+  for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
+    for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
+      file << fStaticIndex[i][j] << " ";
+    file << endl;
+  }
+  file.close();
+  return 0;
+}
+
+Int_t AliL3FileHandler::LoadStaticIndex(Char_t *prefix,Int_t event) 
+{ // use this static call to store static index after
+  if(fStaticIndexCreated){
+      LOG(AliL3Log::kWarning,"AliL3FileHandler::LoadStaticIndex","Inxed")
+	<<"Static index already created, will overwrite"<<ENDLOG;
+      CleanStaticIndex();
+  }
+
+  Char_t fname[1024];
+  if(prefix)
+    sprintf(fname,"%s-%d.txt",prefix,event);
+  else
+    sprintf(fname,"TPC.Digits.staticindex-%d.txt",event);
+
+  ifstream file(fname);
+  if(!file.good()) return -1;
+
+  for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
+    for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
+      file >> fStaticIndex[i][j];
+  }
+  file.close();
+
+  fStaticIndexCreated=kTRUE;
+  return 0;
+}
+
+AliL3FileHandler::AliL3FileHandler(Bool_t b)
 {
   //Default constructor
   fInAli = 0;
@@ -79,11 +143,14 @@ AliL3FileHandler::AliL3FileHandler()
   fMC =0;
   fDigits=0;
   fDigitsTree=0;
-  for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
-    for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
-      fIndex[i][j]=-1;
-  }
   fIndexCreated=kFALSE;
+  fUseStaticIndex=b;
+
+  for(Int_t i=0;i<AliL3Transform::GetNSlice();i++)
+    for(Int_t j=0;j<AliL3Transform::GetNRows();j++) 
+      fIndex[i][j]=-1;
+
+  if(fUseStaticIndex&&!fStaticIndexCreated) CleanStaticIndex();
 }
 
 AliL3FileHandler::~AliL3FileHandler()
@@ -324,39 +391,50 @@ Bool_t AliL3FileHandler::AliDigits2CompBinary(Int_t event,Bool_t altro)
 
 Bool_t AliL3FileHandler::CreateIndex()
 {
-  //create the access index
-
-  LOG(AliL3Log::kInformational,"AliL3FileHandler::CreateIndex","Index")
-    <<"Starting to create index, this can take a while."<<ENDLOG;
-
+  //create the access index or copy from static index
   fIndexCreated=kFALSE;
-  for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
-    for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
-      fIndex[i][j]=-1;
-  }
 
-  for(Int_t n=0; n<fDigitsTree->GetEntries(); n++){
-    Int_t sector, row;
-    Int_t lslice,lrow;
-    fDigitsTree->GetEvent(n);
-    fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-    if(!AliL3Transform::Sector2Slice(lslice,lrow,sector,row)){
-      LOG(AliL3Log::kError,"AliL3FileHandler::CreateIndex","Slice/Row")
-	<<AliL3Log::kDec<<"Index could not be created. Wrong values "
-	<<sector<<" "<<row<<ENDLOG;
-      return kFALSE;
+  if(!fStaticIndexCreated || !fUseStaticIndex) { //we have to create index 
+    LOG(AliL3Log::kInformational,"AliL3FileHandler::CreateIndex","Index")
+      <<"Starting to create index, this can take a while."<<ENDLOG;
+
+    for(Int_t n=0; n<fDigitsTree->GetEntries(); n++) {
+      Int_t sector, row;
+      Int_t lslice,lrow;
+      fDigitsTree->GetEvent(n);
+      fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
+      if(!AliL3Transform::Sector2Slice(lslice,lrow,sector,row)){
+	LOG(AliL3Log::kError,"AliL3FileHandler::CreateIndex","Slice/Row")
+	  <<AliL3Log::kDec<<"Index could not be created. Wrong values "
+	  <<sector<<" "<<row<<ENDLOG;
+	return kFALSE;
+      }
+      if(fIndex[lslice][lrow]==-1) {
+	fIndex[lslice][lrow]=n;
+      }
     }
-    if(fIndex[lslice][lrow]==-1) fIndex[lslice][lrow]=n;
-  }
+    if(fUseStaticIndex) { // create static index
+      for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
+	for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
+	  fStaticIndex[i][j]=fIndex[i][j];
+      }
+      fStaticIndexCreated=kTRUE; //remember that index has been created
+    }
 
   LOG(AliL3Log::kInformational,"AliL3FileHandler::CreateIndex","Index")
     <<"Index successfully created."<<ENDLOG;
 
-  //for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
-  //  for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
-  //    cout << fIndex[i][j] << " ";
-  //cout << endl;}
+  } else if(fUseStaticIndex) { //simply copy static index
+    for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
+      for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
+	fIndex[i][j]=fStaticIndex[i][j];
+    }
 
+  LOG(AliL3Log::kInformational,"AliL3FileHandler::CreateIndex","Index")
+    <<"Index successfully taken from static copy."<<ENDLOG;
+
+  }
+ 
   fIndexCreated=kTRUE;
   return kTRUE;
 }
@@ -1105,7 +1183,7 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint,Int_t e
   if(!tpcLoader){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliPoints2Memory","File")
     <<"Pointer to AliLoader for TPC = 0x0 "<<ENDLOG;
-    return kFALSE;
+    return 0;
   }
   fInAli->GetEvent(eventn);
   tpcLoader->LoadRecPoints();

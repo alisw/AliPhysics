@@ -61,6 +61,9 @@
       gErrorIgnoreLevel=kFatal; //dont report errors
       gSystem->Load("MakePileup_C.so");
       gSystem->Load("Read_C.so");
+      gSystem->Load("runhough_C.so");
+      gSystem->Load("deconvclusters_C.so");
+      gSystem->Load("runtracker_C.so");
       gErrorIgnoreLevel=saveErrIgLevel;
 
       if(strcmp("true",getenv("ALIHLT_DOMC"))==0) gSystem->SetIncludePath(" -Ddo_mc");

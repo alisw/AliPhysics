@@ -3,6 +3,8 @@
 #ifndef ALIL3DDLTPCRAWSTREAM_H
 #define ALIL3DDLTPCRAWSTREAM_H
 
+#include "AliL3RootTypes.h"
+
 class AliL3DDLRawReader;
 
 class AliL3DDLTPCRawStream 

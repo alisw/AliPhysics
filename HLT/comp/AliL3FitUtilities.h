@@ -30,8 +30,8 @@ int lev_marq_fit( double x[], double y[], double sig[], int NPT, double a[], int
 #define NR_END 1
 #define FREE_ARG char*
 #define EPSILON             1.0E-12
-#define TRUE 1
-#define FALSE 1
+//#define TRUE 1
+//#define FALSE 1
 #define FIT_PTS     2000
 #define  FIT_MAXPAR   41
 #define NUM_PARS 5

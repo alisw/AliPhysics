@@ -20,8 +20,16 @@ SRCS	= AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx \
           AliL3Vertex.cxx AliL3VertexFinder.cxx \
           AliL3Merger.cxx AliL3GlobalMerger.cxx AliL3ClustFinderNew.cxx \
           AliL3TrackArray.cxx AliL3InterMerger.cxx AliL3Logger.cxx \
-          AliL3MemHandler.cxx AliLevel3.cxx AliL3Benchmark.cxx AliL3Fitter.cxx \
-          AliL3RawDataFileHandler.cxx
+          AliL3MemHandler.cxx AliLevel3.cxx AliL3Benchmark.cxx  \
+          AliL3Fitter.cxx AliL3RawDataFileHandler.cxx
+
+ifeq ($(ARCH),Darwin)
+EXTRA_SRCS = AliL3HoughTrack.cxx AliL3ModelTrack.cxx \
+             AliL3DataCompressorHelper.cxx AliL3DataHandler.cxx \
+             AliL3TransBit.cxx  AliL3DDLDataFileHandler.cxx
+endif
+
+SRCS += $(EXTRA_SRCS)
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT)
 SRCS += AliL3Display.cxx

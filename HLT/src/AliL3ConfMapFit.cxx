@@ -371,15 +371,24 @@ Int_t AliL3ConfMapFit::FitCircle()
       r0   =  sqrt ( lHit->GetX() * lHit->GetX() + lHit->GetY() * lHit->GetY() )  ;
       fTrack->SetPhi0(phi0);
       fTrack->SetR0(r0);
+
     }
-  //
+  
+  //Set the first point on the track to the space point coordinates of the innermost track
+  //This will be updated to lie on the fit later on (AliL3Track::UpdateToFirstPoint).
+  fTrack->SetFirstPoint(x0,y0,0); //Z-value is set in FitLine
+
   psi  = (Double_t)atan2(bcent-y0,acent-x0) ;
   psi  = psi + q * 0.5F * pi ;
   if ( psi < 0 ) psi = psi + 2*pi;
-  
   pt   = (Double_t)(BFACT * AliL3Transform::GetBField() * radius ) ;
+  
+  //Update the track parameters with the parameters from this fit:
   fTrack->SetPsi(psi);
   fTrack->SetPt(pt);
+  fTrack->SetRadius(radius);
+  fTrack->SetCenterX(acent);
+  fTrack->SetCenterY(bcent);
 
   //
 //    Get errors from fast fit

@@ -134,31 +134,6 @@ void AliL3Fitter::SortTrackClusters(AliL3Track *track)
   delete [] mk;
 }
 
-void AliL3Fitter::UpdateTrack(AliL3Track *track)
-{
-  //Update the track parameters to the first point on the track.
-  //This function should be called after the track fit has been
-  //done, in order to calculate the track parameters at the 
-  //first point on the track. 
-  
-  UInt_t *ids = track->GetHitNumbers();
-  Int_t nhits = track->GetNHits();
-  UInt_t id=ids[nhits-1];
-  Int_t slice = (id>>25) & 0x7f;
-  Int_t patch = (id>>22) & 0x7;
-  UInt_t pos = id&0x3fffff;	      
-  AliL3SpacePointData *points = fClusters[slice][patch];
-  if(AliLevel3::IsTracksAtFirstPoint())
-    {
-      track->SetFirstPoint(points[pos].fX,points[pos].fY,track->GetZ0());
-      track->UpdateToFirstPoint();
-    }
-  else
-    {
-      track->SetFirstPoint(fVertex->GetX(),fVertex->GetY(),fVertex->GetZ());
-    }
-}
-
 Int_t AliL3Fitter::FitHelix(AliL3Track *track)
 {
   fTrack = track;
@@ -208,7 +183,6 @@ Int_t AliL3Fitter::FitCircle()
       wsum += fXYWeight[i];
       xav += fXYWeight[i]*points[pos].fX;
       yav += fXYWeight[i]*points[pos].fY;
-      
     }
   if (fVertexConstraint == kTRUE)
     {    
@@ -509,7 +483,11 @@ Int_t AliL3Fitter::FitCircle()
       fTrack->SetPhi0(phi0);
       fTrack->SetR0(r0);
     }
-  //
+  
+  //Set the first point on the track to the space point coordinates of the innermost track
+  //This will be updated to lie on the fit later on (AliL3Track::UpdateToFirstPoint).
+  fTrack->SetFirstPoint(x0,y0,0); //Z-value is set in FitLine
+
   psi  = (Double_t)atan2(bcent-y0,acent-x0) ;
   psi  = psi + q * 0.5F * AliL3Transform::Pi() ;
   if ( psi < 0 ) psi = psi + 2*AliL3Transform::Pi();
@@ -517,7 +495,9 @@ Int_t AliL3Fitter::FitCircle()
   pt   = (Double_t)(AliL3Transform::GetBFact() * AliL3Transform::GetBField() * radius ) ;
   fTrack->SetPsi(psi);
   fTrack->SetPt(pt);
-  //fTrack->SetFirstPoint(x0,y0,0);
+  fTrack->SetRadius(radius);
+  fTrack->SetCenterX(acent);
+  fTrack->SetCenterY(bcent);
   //
 //    Get errors from fast fit
 //

@@ -175,26 +175,18 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
   if(GetPt() > max_Dca) //go for fit of helix in real space
     {
       AliL3ConfMapFit *fit = new AliL3ConfMapFit(this,vertex);
+      ComesFromMainVertex(AliLevel3::DoVertexFit());
       fit->FitHelix();
       
-      AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)lastHit;
+      //AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)lastHit;
       AliL3ConfMapPoint *fHit = (AliL3ConfMapPoint*)firstHit;
+      SetLastPoint(fHit->GetX(),fHit->GetY(),fHit->GetZ());
       
-      if(AliLevel3::IsTracksAtFirstPoint())
+      if(AliLevel3::IsTracksAtFirstPoint())//Set the track fit parameter at the innermost most point
 	{
-	  //Z0 should not be overwritten here, since it is used as a starting
-	  //point for the track swim in UpdateToFirstPoint. fFirstPointX and Y
-	  //will be overwritten in UpdateToFirstPoint with the track fit 
-	  //crossing point.
-	  SetFirstPoint(lHit->GetX(),lHit->GetY(),GetZ0());
 	  UpdateToFirstPoint();
 	}
-      else
-	{
-	  SetFirstPoint(vertex->GetX(),vertex->GetY(),vertex->GetZ());
-	}
       
-      SetLastPoint(fHit->GetX(),fHit->GetY(),fHit->GetZ());
       delete fit;
     }
   else if(GetPt() == 0)
@@ -206,74 +198,7 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
 	"Track with pt<max_Dca :"<<GetPt()<<ENDLOG;
     }
 }
-/*
-void AliL3ConfMapTrack::UpdateToFirstPoint()
-{
-  //Update track parameters to the innermost point on the track.
-  //Basically it justs calculates the intersection of the track, and a cylinder
-  //with radius = r(innermost point). Then the parameters are updated to this point.
-  //Should be called after the helixfit (in FillTracks).
-  
-  //AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)fPoints->Last();
-  AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)lastHit;
-  Double_t radius = sqrt(lHit->GetX()*lHit->GetX()+lHit->GetY()*lHit->GetY());
-  
-  //Get the track parameters
-  
-  Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / abs(GetCharge()) ;
-  Double_t x0    = GetR0() * cos(GetPhi0()) ;
-  Double_t y0    = GetR0() * sin(GetPhi0()) ;
-  Double_t rc    = fabs(GetPt()) / ( BFACT * AliL3Transform::GetBField() )  ;
-  Double_t xc    = x0 - rc * cos(tPhi0) ;
-  Double_t yc    = y0 - rc * sin(tPhi0) ;
-  
-  //Check helix and cylinder intersect
-  
-  Double_t fac1 = xc*xc + yc*yc ;
-  Double_t sfac = sqrt( fac1 ) ;
-    
-  if ( fabs(sfac-rc) > radius || fabs(sfac+rc) < radius ) {
-    LOG(AliL3Log::kError,"AliL3ConfMapTrack::UpdateToLastPoint","Tracks")<<AliL3Log::kDec<<
-      "Track does not intersect"<<ENDLOG;
-    return;
-  }
-  
-  //Find intersection
-  
-  Double_t fac2   = ( radius*radius + fac1 - rc*rc) / (2.00 * radius * sfac ) ;
-  Double_t phi    = atan2(yc,xc) + GetCharge()*acos(fac2) ;
-  Double_t td     = atan2(radius*sin(phi) - yc,radius*cos(phi) - xc) ;
-  
-  //Intersection in z
-  
-  if ( td < 0 ) td = td + 2. * pi ;
-  Double_t deltat = fmod((-GetCharge()*td + GetCharge()*tPhi0),2*pi) ;
-  if ( deltat < 0.      ) deltat += 2. * pi ;
-  if ( deltat > 2.*pi ) deltat -= 2. * pi ;
-  Double_t z = GetZ0() + rc * GetTgl() * deltat ;
- 
-  
-  Double_t xExtra = radius * cos(phi) ;
-  Double_t yExtra = radius * sin(phi) ;
-  
-  Double_t tPhi = atan2(yExtra-yc,xExtra-xc);
-  
-  //if ( tPhi < 0 ) tPhi += 2. * M_PI ;
-  
-  Double_t tPsi = tPhi - GetCharge() * 0.5 * pi / abs(GetCharge()) ;
-  if ( tPsi > 2. * pi ) tPsi -= 2. * pi ;
-  if ( tPsi < 0.        ) tPsi += 2. * pi ;
-  
-  //And finally, update the track parameters
-  
-  SetCenterX(xc);
-  SetCenterY(yc);
-  SetR0(radius);
-  SetPhi0(phi);
-  SetZ0(z);
-  SetPsi(tPsi);
-}
-*/
+
 Int_t AliL3ConfMapTrack::GetMCLabel()
 {
   //For evaluation study.

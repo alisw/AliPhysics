@@ -3,6 +3,7 @@
 #ifndef AliL3_Compress
 #define AliL3_Compress
 
+#include "AliL3RootTypes.h"
 #include "AliL3DataCompressor.h"
 
 class AliL3Compress {
@@ -28,6 +29,7 @@ class AliL3Compress {
   void CompressRemaining(AliL3SpacePointData *points[36][6],UInt_t npoints[36][6]);
   void ExpandRemaining(TempCluster **clusters,Int_t *ncl,Int_t maxclusters);
   void PrintCompRatio(ofstream *outfile=0);
+  void GetEntropy(Float_t &pad_entropy,Float_t &time_entropy);
   
   AliL3TrackArray *GetTracks() {return fTracks;}
   

@@ -23,17 +23,8 @@ class AliL3ModelTrack : public AliL3Track {
   Int_t fPatch;
 
   //Crossing points with padrows
-  Float_t *fPad; //!
-  Float_t *fTime; //!
-  
-  Float_t QuantizePad(Int_t row,Float_t pad);
-  Float_t QuantizeTime(Int_t row,Float_t time);
-  Float_t QuantizeSigmaY2(Int_t row,Float_t dsigmaY2);
-  Float_t QuantizeSigmaZ2(Int_t row,Float_t dsigmaZ2);
-  Float_t RetrievePad(Int_t row,Float_t dpad);
-  Float_t RetrieveTime(Int_t row,Float_t time);
-  Float_t RetrieveSigmaY2(Int_t row,Float_t dsigmaY2);
-  Float_t RetrieveSigmaZ2(Int_t row,Float_t dsigmaZ2);
+  Float_t *fPad;  //!
+  Float_t *fTime;  //!
   
  public:
   AliL3ModelTrack();
@@ -73,8 +64,8 @@ class AliL3ModelTrack : public AliL3Track {
   Bool_t GetPad(Int_t row,Float_t &pad);
   Bool_t GetTime(Int_t row,Float_t &time);
   Bool_t GetClusterCharge(Int_t row,Int_t &charge);
-  Bool_t GetXYWidth(Int_t row,Float_t &width);
-  Bool_t GetZWidth(Int_t row,Float_t &width);
+  Bool_t GetSigmaY2(Int_t row,Float_t &sigma2);
+  Bool_t GetSigmaZ2(Int_t row,Float_t &sigma2);
   Bool_t GetPadResidual(Int_t row,Float_t &res);
   Bool_t GetTimeResidual(Int_t row,Float_t &res);
   Bool_t GetXYWidthResidual(Int_t row,Float_t &res);

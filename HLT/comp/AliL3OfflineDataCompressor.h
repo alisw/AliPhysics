@@ -3,6 +3,7 @@
 #ifndef AliL3_OfflineDataCompressor
 #define AliL3_OfflineDataCompressor
 
+#include "AliL3RootTypes.h"
 #include "AliL3DataCompressor.h"
 
 class AliTracker;

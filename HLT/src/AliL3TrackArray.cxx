@@ -252,7 +252,7 @@ UInt_t AliL3TrackArray::WriteTracks(UInt_t & ntracks,AliL3TrackSegmentData* tr){
 }
 
 UInt_t AliL3TrackArray::WriteTracks(AliL3TrackSegmentData* tr){
-  if(GetTrackType()=='c') return WriteConfMapTracks(tr);
+  //if(GetTrackType()=='c') return WriteConfMapTracks(tr);
   AliL3TrackSegmentData *tP = tr;
   UInt_t *pP;
   UInt_t size = 0;

@@ -408,74 +408,62 @@ Bool_t AliL3Track::CalculatePoint(Double_t xplane){
 void AliL3Track::UpdateToFirstPoint()
 {
   //Update track parameters to the innermost point on the track.
-  //Basically it justs calculates the intersection of the track, and a cylinder
-  //with radius = r(innermost point). Then the parameters are updated to this point.
-  //Should be called after the helixfit (in FillTracks).
-  
-  Double_t radius = sqrt(GetFirstPointX()*GetFirstPointX() + GetFirstPointY()*GetFirstPointY());
-  
-  //Get the track parameters
-  
-  Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / abs(GetCharge()) ;
-  
-  Double_t x0    = GetR0() * cos(GetPhi0()) ;
-  Double_t y0    = GetR0() * sin(GetPhi0()) ;
-  Double_t rc    = fabs(GetPt()) / ( BFACT * AliL3Transform::GetBField() )  ;
-  Double_t xc    = x0 - rc * cos(tPhi0) ;
-  Double_t yc    = y0 - rc * sin(tPhi0) ;
+  //This means that the parameters of the track will be given in the point
+  //of closest approach to the first innermost point, i.e. the point 
+  //lying on the track fit (and not the coordinates of the innermost point itself).
+  //This function assumes that fFirstPoint is already set to the coordinates of the innermost
+  //assigned cluster.
+  //
+  //During the helix-fit, the first point on the track is set to the coordinates
+  //of the innermost assigned cluster. This may be ok, if you just want a fast
+  //estimate of the "global" track parameters; such as the momentum etc.
+  //However, if you later on want to do more precise local calculations, such
+  //as impact parameter, residuals etc, you need to give the track parameters
+  //according to the actual fit.
 
-  //Check helix and cylinder intersect
+  Double_t xc = GetCenterX() - GetFirstPointX();
+  Double_t yc = GetCenterY() - GetFirstPointY();
   
-  Double_t fac1 = xc*xc + yc*yc ;
-  Double_t sfac = sqrt( fac1 ) ;
-    
-  if ( fabs(sfac-rc) > radius || fabs(sfac+rc) < radius ) {
-    LOG(AliL3Log::kError,"AliL3ConfMapTrack::UpdateToLastPoint","Tracks")<<AliL3Log::kDec<<
-      "Track does not intersect"<<ENDLOG;
-    return;
-  }
+  Double_t dist_x1 = xc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t dist_y1 = yc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t distance1 = sqrt(dist_x1*dist_x1 + dist_y1*dist_y1);
   
-  //Find intersection
+  Double_t dist_x2 = xc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t dist_y2 = yc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t distance2 = sqrt(dist_x2*dist_x2 + dist_y2*dist_y2);
   
-  Double_t fac2   = ( radius*radius + fac1 - rc*rc) / (2.00 * radius * sfac ) ;
-  Double_t phi    = atan2(yc,xc) + GetCharge()*acos(fac2) ;
-  Double_t td     = atan2(radius*sin(phi) - yc,radius*cos(phi) - xc) ;
+  //Choose the closest:
+  Double_t point[2];
+  if(distance1 < distance2)
+    {
+      point[0] = dist_x1 + GetFirstPointX();
+      point[1] = dist_y1 + GetFirstPointY();
+    }
+  else
+    {
+      point[0] = dist_x2 + GetFirstPointX();
+      point[1] = dist_y2 + GetFirstPointY();
+    }
+
+  Double_t pointpsi = atan2(point[1]-GetCenterY(),point[0]-GetCenterX());
+  pointpsi -= GetCharge()*0.5*AliL3Transform::Pi();
+  if(pointpsi < 0) pointpsi += 2*AliL3Transform::Pi();
   
-  //Intersection in z
+  //Update the track parameters
+  SetR0(sqrt(point[0]*point[0]+point[1]*point[1]));
+  SetPhi0(atan2(point[1],point[0]));
+  SetFirstPoint(point[0],point[1],GetZ0());
+  SetPsi(pointpsi);
   
-  if ( td < 0 ) td = td + 2. * pi ;
-  Double_t deltat = fmod((-GetCharge()*td + GetCharge()*tPhi0),2*pi) ;
-  if ( deltat < 0.      ) deltat += 2. * pi ;
-  if ( deltat > 2.*pi ) deltat -= 2. * pi ;
-  Double_t z = GetZ0() + rc * GetTgl() * deltat ;
- 
-  
-  Double_t xExtra = radius * cos(phi) ;
-  Double_t yExtra = radius * sin(phi) ;
-  
-  Double_t tPhi = atan2(yExtra-yc,xExtra-xc);
-  
-  //if ( tPhi < 0 ) tPhi += 2. * M_PI ;
-  
-  Double_t tPsi = tPhi - GetCharge() * 0.5 * pi / abs(GetCharge()) ;
-  if ( tPsi > 2. * pi ) tPsi -= 2. * pi ;
-  if ( tPsi < 0.        ) tPsi += 2. * pi ;
-  
-  //And finally, update the track parameters
-  SetCenterX(xc);
-  SetCenterY(yc);
-  SetR0(radius);
-  SetPhi0(phi);
-  SetFirstPoint(radius*cos(phi),radius*sin(phi),z);
-  SetPsi(tPsi);
 }
 
 void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_t &closest_y,Double_t &closest_z)
 {
   //Calculate the point of closest approach to the vertex
+  //This function calculates the minimum distance from the helix to the vertex, and choose 
+  //the corresponding point lying on the helix as the point of closest approach.
   
-  
-  Double_t xc = GetCenterX() - vertex->GetX();//Shift the center of curvature with respect to the vertex
+  Double_t xc = GetCenterX() - vertex->GetX();
   Double_t yc = GetCenterY() - vertex->GetY();
   
   Double_t dist_x1 = xc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));

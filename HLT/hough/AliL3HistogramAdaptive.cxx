@@ -105,7 +105,7 @@ void AliL3HistogramAdaptive::Fill(Double_t x,Double_t y,Int_t weight)
 
 }
 
-Int_t AliL3HistogramAdaptive::FindBin(Double_t x,Double_t y)
+Int_t AliL3HistogramAdaptive::FindBin(Double_t x,Double_t y) const
 {
   
   Int_t xbin = FindXbin(x);
@@ -116,7 +116,7 @@ Int_t AliL3HistogramAdaptive::FindBin(Double_t x,Double_t y)
   return GetBin(xbin,ybin);
 }
 
-Int_t AliL3HistogramAdaptive::FindXbin(Double_t x)
+Int_t AliL3HistogramAdaptive::FindXbin(Double_t x) const
 {
 
   if(x < fXmin || x > fXmax || fabs(x) < fKappaBins[(fNxbins/2-1)])
@@ -140,7 +140,7 @@ Int_t AliL3HistogramAdaptive::FindXbin(Double_t x)
   
 }
 
-Int_t AliL3HistogramAdaptive::FindYbin(Double_t y)
+Int_t AliL3HistogramAdaptive::FindYbin(Double_t y) const
 {
   if(y < fYmin || y > fYmax)
     return 0;
@@ -148,7 +148,7 @@ Int_t AliL3HistogramAdaptive::FindYbin(Double_t y)
   return 1 + (Int_t)(fNybins*(y-fYmin)/(fYmax-fYmin));
 }
 
-Double_t AliL3HistogramAdaptive::GetBinCenterX(Int_t xbin)
+Double_t AliL3HistogramAdaptive::GetBinCenterX(Int_t xbin) const
 {
   if(xbin < fFirstXbin || xbin > fLastXbin)
     {
@@ -177,7 +177,7 @@ Double_t AliL3HistogramAdaptive::GetBinCenterX(Int_t xbin)
 
 }
 
-Double_t AliL3HistogramAdaptive::GetBinCenterY(Int_t ybin)
+Double_t AliL3HistogramAdaptive::GetBinCenterY(Int_t ybin) const
 {
   if(ybin < fFirstYbin || ybin > fLastYbin)
     {

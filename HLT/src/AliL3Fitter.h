@@ -25,7 +25,6 @@ class AliL3Fitter {
   
   void LoadClusters(Char_t *path,Int_t event=0,Bool_t sp=kFALSE);
   void SortTrackClusters(AliL3Track *track);
-  void UpdateTrack(AliL3Track *track);
   Int_t FitHelix(AliL3Track *track);
   Int_t FitCircle();
   Int_t FitLine();

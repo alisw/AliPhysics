@@ -6,7 +6,7 @@
    The path "path" should contain the link to the digitsfile, 
    and the directories called fitter (for the results) and hough
    (for the track files). For NEWIO, make sure that the file 
-   TPC.Digits.root is in the path!
+   TPC.Digits.root is in the path (symlink)!
 
    Also provide the neccessary parameters in SetFitParameters.C.
 
@@ -14,99 +14,151 @@
    supported right now.
 */
 
-void deconvclusters(char *path,int minslice=0,int maxslice=35,int nevent=1)
+#ifndef __CINT__
+#include "AliL3Logger.h"
+#include "AliL3FileHandler.h"
+#include "AliL3DigitData.h"
+#include "AliL3Track.h"
+#include "AliL3Transform.h"
+#include "AliL3Hough.h"
+#include "AliL3Fitter.h"
+#include "AliL3ClusterFitter.h"
+#include "AliL3Vertex.h"
+#include "AliL3TrackArray.h"
+#include <TNtuple.h>
+#include <TRandom.h>
+#include <TSystem.h>
+#include <TStopwatch.h>
+#include <stdio.h>
+#include <iostream.h>
+#include <time.h>
+#endif
+
+void deconvclusters(Char_t *path,Int_t minslice=0,Int_t maxslice=35,Int_t nevent=1)
 {
   
   AliL3Transform::Init(path,kTRUE);
   
-  char filename[1024];
-  AliL3FileHandler *file = new AliL3FileHandler();
+  Char_t filename[1024];
+  AliL3FileHandler *file = new AliL3FileHandler(kTRUE); //static index
   UInt_t ndigits=0;
   
   sprintf(filename,"%s/digitfile.root",path);
-  
   file->SetAliInput(filename);
-  int index=0;
-  
   AliL3ClusterFitter *fitter = new AliL3ClusterFitter(path);
   
-  char macroname[1024];
+#ifdef __CINT__
+  Char_t macroname[1024];
   gROOT->LoadMacro("SetFitParameters.C");
   SetFitParameters(fitter);
+#else /*compiled version */
+  fitter->SetInnerWidthFactor(1,1);
+  fitter->SetOuterWidthFactor(1,1);
+  fitter->SetNmaxOverlaps(5);
+
+  fitter->SetChiSqMax(5,0);
+  fitter->SetChiSqMax(5,1);
+  fitter->SetChiSqMax(5,2);
+#endif
   
-  int patch=-1;
-  int rowrange[2] = {0,AliL3Transform::GetNRows()-1};
-  
-  for(int ev=0; ev<nevent; ev++)
+  TStopwatch tloader;tloader.Stop();
+  TStopwatch tfinder;tfinder.Stop();
+  TStopwatch trefitter;trefitter.Stop();
+
+  Int_t patch=-1;
+  Int_t rowrange[2] = {0,AliL3Transform::GetNRows()-1};  
+  for(Int_t ev=0; ev<nevent; ev++)
     {
-      fitter->LoadSeeds(rowrange,kFALSE,ev);//Takes input from global hough tracks
+      AliL3FileHandler::LoadStaticIndex(0,ev);
+      fitter->LoadSeeds(rowrange,kFALSE,ev); //Takes input from global hough tracks
       
-      for(int slice=minslice; slice<=maxslice; slice++)
+      for(Int_t slice=minslice; slice<=maxslice; slice++)
 	{
+	  tloader.Start(0);
 	  file->Init(slice,-1);
 	  cout<<"Processing event "<<ev<<" slice "<<slice<<" patch "<<patch<<endl;
 	  AliL3DigitRowData *digits = (AliL3DigitRowData*)file->AliAltroDigits2Memory(ndigits,ev);
-	  
 	  fitter->Init(slice,patch);
 	  fitter->SetInputData(digits);
+	  tloader.Stop();
 	  
+	  tfinder.Start(0);
 	  fitter->FindClusters();
-	  
 	  fitter->WriteClusters();
-	  
+	  tfinder.Stop();
+
+	  tloader.Start(0);
 	  file->Free();
-	  
+	  tloader.Stop();
 	}
       
       //If you want a refit of the clusters;-------------------------
+      tloader.Start(0);
       AliL3Vertex vertex;
-      AliL3TrackArray *tracks = fitter->GetSeeds(); //The seeds are the input tracks from circle HT
+      AliL3TrackArray *tracks = fitter->GetSeeds(); //The seeds are the 
+                                                    //input tracks from circle HT
       AliL3Fitter *ft = new AliL3Fitter(&vertex,1);
       sprintf(filename,"%s/fitter/",path);
       ft->LoadClusters(filename,0,kTRUE);
+      tloader.Stop();
+
+      trefitter.Start(0);
       for(Int_t i=0; i<tracks->GetNTracks(); i++)
 	{
-	  track = tracks->GetCheckedTrack(i);
+	  AliL3Track *track = tracks->GetCheckedTrack(i);
 	  if(!track) continue;
 	  if(track->GetNHits() < 40) continue;
 	  ft->SortTrackClusters(track);
 	  ft->FitHelix(track);
-	  ft->UpdateTrack(track);
+	  track->UpdateToFirstPoint();
 	}
-      delete ft;
+      trefitter.Stop();
       //-------------------------------------------------------------
-      
+      tloader.Start(0);
+      delete ft;
       fitter->WriteTracks(5); //Write the final tracks
       file->FreeDigitsTree();
+      tloader.Stop();
     }
+  cout << " --- Timing values --- " << endl;
+  cout << "Data  Loading:        "; tloader.Print("m");
+  cout << "Cluster Deconvolution "; tfinder.Print("m");
+  cout << "Track ReFitter        "; trefitter.Print("m");
+
   delete fitter;
 }
 
-
-void deconvlocally(char *path,int minslice=0,int maxslice=17)
+void deconvlocally(Char_t *path,Int_t minslice=0,Int_t maxslice=17)
 {
   
   AliL3Transform::Init(path,kTRUE);
   
-  char filename[1024];
-  AliL3FileHandler *file = new AliL3FileHandler();
+  Char_t filename[1024];
+  AliL3FileHandler *file = new AliL3FileHandler(kTRUE);
   UInt_t ndigits=0;
   
   sprintf(filename,"%s/digitfile.root",path);
-  
   file->SetAliInput(filename);
-  int index=0;
-  
   AliL3ClusterFitter *fitter = new AliL3ClusterFitter(path);
   
-  char macroname[1024];
+#ifdef __CINT__
+  Char_t macroname[1024];
   sprintf(macroname,"%s/SetFitParameters.C",path);
   gROOT->LoadMacro(macroname);
   SetFitParameters(fitter);
+#else /*compiled version */
+  fitter->SetInnerWidthFactor(1,1);
+  fitter->SetOuterWidthFactor(1,1);
+  fitter->SetNmaxOverlaps(5);
+
+  fitter->SetChiSqMax(5,0);
+  fitter->SetChiSqMax(5,1);
+  fitter->SetChiSqMax(5,2);
+#endif
   
-  int patch=-1;
+  Int_t patch=-1;
   
-  for(int slice=minslice; slice<=maxslice; slice++)
+  for(Int_t slice=minslice; slice<=maxslice; slice++)
     {
       file->Init(slice,patch);
       cout<<"Processing slice "<<slice<<" patch "<<patch<<endl;

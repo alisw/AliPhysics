@@ -14,13 +14,18 @@ endif
 
 include $(ALIHLT_TOPDIR)/Makefile.conf
 
-SRCS = AliL3HoughTransformer.cxx AliL3HoughTrack.cxx AliL3HoughClusterTransformer.cxx \
+SRCS = AliL3HoughTransformer.cxx AliL3HoughClusterTransformer.cxx \
        AliL3HoughEval.cxx AliL3HoughMerger.cxx AliL3HoughBaseTransformer.cxx \
        AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx AliL3HoughTransformerVhdl.cxx \
        AliL3Histogram.cxx AliL3Histogram1D.cxx AliL3HoughMaxFinder.cxx AliL3Hough.cxx \
        AliL3HoughTransformerLUT.cxx AliL3HistogramAdaptive.cxx 
 
-EXTRA_SRCS = AliL3HoughDisplay.cxx AliL3HoughTransformerNew.cxx AliL3HoughTest.cxx
+ifeq ($(ARCH),Darwin)
+## AliL3HoughTrack put into src as symbolic link
+EXTRA_SRCS = AliL3HoughDisplay.cxx AliL3HoughTransformerNew.cxx
+else
+EXTRA_SRCS = AliL3HoughDisplay.cxx AliL3HoughTransformerNew.cxx  AliL3HoughTrack.cxx AliL3HoughTest.cxx
+endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT)
 SRCS += $(EXTRA_SRCS)

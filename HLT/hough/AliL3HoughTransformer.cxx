@@ -16,11 +16,15 @@
 using namespace std;
 #endif
 
+/** \class AliL3HoughTransformer
+<pre>
 //_____________________________________________________________
 // AliL3HoughTransformer
 //
 // Hough transformation class
 //
+</pre>
+*/
 
 ClassImp(AliL3HoughTransformer)
 
@@ -42,16 +46,6 @@ AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta
   fDoMC = kFALSE;
   fEtaOverlap = DoEtaOverlap;
   fDoMC=kFALSE;
-  /*
-  if(DoMC==kTRUE)
-    {
-      if(patch==0)
-	
-fDoMC = kTRUE;
-      else
-	fDoMC = kFALSE;
-    }
-  */
 #ifdef do_mc
   fTrackID = 0;
 #endif
@@ -94,7 +88,7 @@ void AliL3HoughTransformer::CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t
   
   if(ptmin > ptmax)
     {
-      cerr<<"AliL3HoughTransformer.:CreateHistograms: Error in ptrange "<<ptmin<<" "<<ptmax<<endl;
+      cerr<<"AliL3HoughTransformer::CreateHistograms: Error in ptrange "<<ptmin<<" "<<ptmax<<endl;
       return;
     }
   if(psi < 0)
@@ -111,7 +105,6 @@ void AliL3HoughTransformer::CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t
       sprintf(histname,"paramspace_%d",i);
       fParamSpace[i] = new AliL3HistogramAdaptive(histname,ptmin,ptmax,ptres,nybin,-psi,psi);
     }
-  
 }
 
 void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Float_t pt_min,
@@ -234,7 +227,6 @@ Double_t AliL3HoughTransformer::GetEta(Int_t eta_index,Int_t slice)
   return eta;
 }
 
-
 void AliL3HoughTransformer::TransformCircle()
 {
   //Transform the input data with a circle HT.
@@ -343,7 +335,6 @@ void AliL3HoughTransformer::TransformCircle()
     }
 }
 
-
 struct Digit {
   Int_t row;
   Double_t r;
@@ -351,10 +342,12 @@ struct Digit {
   Int_t charge;
   Digit *next;
 };
+
 struct EtaContainer {
   Digit *first;
   Digit *last;
 };
+
 void AliL3HoughTransformer::TransformCircleC(Int_t *row_range,Int_t every)
 {
   //Circle transform, using combinations of every 2 points lying

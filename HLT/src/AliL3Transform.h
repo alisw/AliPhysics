@@ -11,9 +11,9 @@ class AliL3Transform {
   enum VersionType { fV_default=0, fV_deprecated=1, fV_aliroot=10, fV_cosmics=100};
 
  private:
-  const static Double_t fBFACT;
-  const static Double_t fPi;
-  const static Double_t fAnodeWireSpacing; 
+  static const Double_t fBFACT;
+  static const Double_t fPi;
+  static const Double_t fAnodeWireSpacing; 
 
   static Int_t fNPatches; //6 (dont change this) 
   static Int_t fRows[6][2];
