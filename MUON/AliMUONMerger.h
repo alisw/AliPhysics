@@ -6,6 +6,7 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+class TClonesArray;
 class TTree;
 
 class AliMUONPadHit;

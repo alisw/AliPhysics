@@ -17,7 +17,6 @@
 #include "AliEventBaseCut.h"
 
 class AliAOD;
-enum AliEventBaseCut::EEventCutProperty;
 
 class AliEventCut: public TObject
 {

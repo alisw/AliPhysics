@@ -13,7 +13,7 @@
 
 #include <TObject.h>
 
-//class TClonesArray;
+class TClonesArray;
 
 class AliLoader;
 class AliMUONData;

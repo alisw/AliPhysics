@@ -10,12 +10,10 @@
 ///////////////////////////////////////////////////////////
 
 #include <TObjArray.h>
-//#include <TIter.h>
 
 #include "AliEventBaseCut.h"
 
 ClassImp(AliEventCut)
-
 
 AliEventCut::AliEventCut():
  fBaseCuts(10)
