@@ -19,7 +19,7 @@ class TClonesArray ;
 
 // --- Standard library ---
 
-#include <iostream>
+#include <Riostream.h>
 
 // --- AliRoot header files ---
 
