@@ -24,12 +24,15 @@ class AliSignal : public TObject,public AliPosition
   virtual void ResetPosition();                         // Reset position and errors to 0
   virtual void Reset();                                 // Reset signal and pos. values and errors
   void Info(TString f="car");                           // Print signal info for coord. frame f
+  void SetName(TString name);                           // Set the name tag to indicate the kind of signal
+  TString GetName();                                    // Provide the name tag indicating the kind of signal
 
  protected:
   Int_t fNvalues;    // The number of values per signal
   TArrayF* fSignal;  // Signal values
   TArrayF* fDsignal; // Errors on signal values
+  TString fName;     // Name tag to identify the kind of signal
 
- ClassDef(AliSignal,1) // Handling of ALICE (extrapolated) signals.
+ ClassDef(AliSignal,2) // Handling of ALICE (extrapolated) signals.
 };
 #endif

@@ -300,3 +300,4 @@
 14-jan-2002 NvE New schema evolution activated via the "+" behind the classnames
                 in RALICELinkDef.h. Note that the new schema evolution only works
                 correctly for ROOT version 3.02/07 and later.
+14-feb-2002 NvE Support for name tag introduced in AliSignal to indicate the kind of signal.
