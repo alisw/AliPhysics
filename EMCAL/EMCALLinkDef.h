@@ -20,4 +20,6 @@
 #pragma link C++ class AliEMCALJetFinder+;
 #pragma link C++ class AliEMCALJet+;
 #pragma link C++ class AliEMCALFast+;
+#pragma link C++ class AliEMCALHadronCorrection+;		 
+#pragma link C++ class AliEMCALHadronCorrectionv0+;		 
 #endif
