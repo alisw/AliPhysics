@@ -54,15 +54,21 @@ endif
 SRCS	= AliL3HoughTransformer.cxx AliL3Hough.cxx AliL3HoughTrack.cxx\
 	  AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerger.cxx \
 	  AliL3Histogram.cxx AliL3Histogram1D.cxx \
-	  AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx GetGoodParticles.cxx
+	  AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx 
 
 DICT = AliL3HoughCint.cxx
 DICTH = AliL3HoughCint.h
 DICTO = $(OBJDIR)/AliL3HoughCint.o
 
+ifeq ($(USEPACKAGE),ROOT) 
 HDRS = $(SRCS:.cxx=.h) AliL3HoughLinkDef.h
-
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
+endif
+
+ifeq ($(USEPACKAGE),ALIROOT)
+HDRS = $(SRCS:.cxx=.h) GetGoodParticles.h AliL3HoughLinkDef.h
+OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/GetGoodParticles.o $(DICTO)
+endif
 
 LEVELSO = $(LIBDIR)/libAliL3Hough.so
 
