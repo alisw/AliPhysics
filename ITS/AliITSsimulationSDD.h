@@ -62,7 +62,6 @@ class AliITSsimulationSDD : public AliITSsimulation {
     void CompressionParam(Int_t i, Int_t &db, Int_t &tl);
 
     virtual Int_t Convert10to8(Int_t signal) const;// 10 to 8 bit SDD compresion
-    virtual Int_t Convert8to10(Int_t signal) const;//undo 10 to 8 bit SDD compresion
     virtual void ZeroSuppression(const char *opt); // Apply zero suppresion
     virtual void Init2D();   // initiilzes 2D compresion algorithm
     virtual void Compress2D(); // Applies 2D compresion algorithm

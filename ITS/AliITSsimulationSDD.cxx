@@ -817,7 +817,6 @@ void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
     Float_t phys;
     Float_t * charges = new Float_t[size];
 
-//    if( fResponse->Do10to8() ) signal = Convert8to10( signal ); 
     digits[0] = i;
     digits[1] = j;
     digits[2] = signal;
@@ -1088,6 +1087,7 @@ void AliITSsimulationSDD::CompressionParam(Int_t i,Int_t &db,Int_t &tl){
         } else {
             db=fD[0]; tl=fT1[0]; 
         } // end if size <=2 && i>=fNofMaps/2
+    //    Warning("CompressionParam","\n Size= %d . Values i=%d ; db= %d ; tl= %d",size,i,db,tl);
     } // end if size > 2
 }
 //______________________________________________________________________
@@ -1152,27 +1152,6 @@ Int_t AliITSsimulationSDD::Convert10to8(Int_t signal) const {
     if (signal < 512)  return (192+((signal-256)>>3));
     if (signal < 1024) return (224+((signal-512)>>4));
     return 0;
-}
-//______________________________________________________________________
-Int_t AliITSsimulationSDD::Convert8to10(Int_t signal) const {
-    // Undo the lossive 10 to 8 bit compression.
-    // code from Davide C. and Albert W.
-    if (signal < 0 || signal > 255) {
-        Warning("Convert8to10","out of range signal=%d",signal);
-        return 0;
-    } // end if signal <0 || signal >255
-
-    if (signal < 128) return signal;
-    if (signal < 192) {
-        if (TMath::Odd(signal)) return (128+((signal-128)<<1));
-        else  return (128+((signal-128)<<1)+1);
-    } // end if signal < 192
-    if (signal < 224) {
-        if (TMath::Odd(signal)) return (256+((signal-192)<<3)+3);
-        else  return (256+((signal-192)<<3)+4);
-    } // end if signal < 224
-    if (TMath::Odd(signal)) return (512+((signal-224)<<4)+7);
-    return (512+((signal-224)<<4)+8);
 }
 
 /*
@@ -1491,7 +1470,6 @@ void AliITSsimulationSDD::StoreAllDigits(){
         for (j=0; j<fMaxNofSamples; j++) {
             Int_t signal=(Int_t)(fHitMap2->GetSignal(i,j));
             if(do10to8) signal = Convert10to8(signal);
-            if(do10to8) signal = Convert8to10(signal); 
             digits[0] = i;
             digits[1] = j;
             digits[2] = signal;

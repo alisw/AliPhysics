@@ -138,6 +138,34 @@ AliITSresponseSDD::~AliITSresponseSDD() {
 
   if(fGaus) delete fGaus;
 }
+
+//______________________________________________________________________
+Int_t AliITSresponseSDD::Convert8to10(Int_t signal) const {
+  // Undo the lossive 10 to 8 bit compression.
+  // code from Davide C. and Albert W.
+  if(Do10to8()){  // kTRUE if the compression is active
+    if (signal < 0 || signal > 255) {
+      Warning("Convert8to10","out of range signal=%d",signal);
+      return 0;
+    } // end if signal <0 || signal >255
+
+    if (signal < 128) return signal;
+    if (signal < 192) {
+      if (TMath::Odd(signal)) return (128+((signal-128)<<1));
+      else  return (128+((signal-128)<<1)+1);
+    } // end if signal < 192
+    if (signal < 224) {
+      if (TMath::Odd(signal)) return (256+((signal-192)<<3)+3);
+      else  return (256+((signal-192)<<3)+4);
+    } // end if signal < 224
+    if (TMath::Odd(signal)) return (512+((signal-224)<<4)+7);
+    return (512+((signal-224)<<4)+8);
+  }
+  else {  
+    return signal;
+  }
+}
+
 //______________________________________________________________________
 void AliITSresponseSDD::SetCompressParam(Int_t  cp[8]){
   // set compression param

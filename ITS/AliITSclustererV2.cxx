@@ -36,7 +36,6 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
 
   fEvent=0;
   fI=0;
-  f8to10SDD=kTRUE;
 
   Int_t mmax=geom->GetIndexMax();
   if (mmax>2200) {
@@ -93,27 +92,6 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
   fTanN=0.0075;
 }
 
-Int_t AliITSclustererV2::Convert8to10(Int_t signal) {
-    // Taken from AliITSsimulationSDD.cxx
-    // Undo the lossive 10 to 8 bit compression.
-    // code from Davide C. and Albert W.
-    if (signal < 0 || signal > 255) {
-        ::Warning("Convert8to10","out of range signal=%d",signal);
-        return 0;
-    } // end if signal <0 || signal >255
-
-    if (signal < 128) return signal;
-    if (signal < 192) {
-        if (TMath::Odd(signal)) return (128+((signal-128)<<1));
-        else  return (128+((signal-128)<<1)+1);
-    } // end if signal < 192
-    if (signal < 224) {
-        if (TMath::Odd(signal)) return (256+((signal-192)<<3)+3);
-        else  return (256+((signal-192)<<3)+4);
-    } // end if signal < 224
-    if (TMath::Odd(signal)) return (512+((signal-224)<<4)+7);
-    return (512+((signal-224)<<4)+8);
-}
 
 Int_t AliITSclustererV2::Digits2Clusters(TTree *dTree, TTree *cTree) {
   //------------------------------------------------------------
@@ -811,7 +789,6 @@ FindClustersSDD(const TClonesArray *digits, TClonesArray *clusters) {
      Int_t z=d->GetCoord1()+1;   //z
      Int_t q=d->GetSignal();
 
-     if (f8to10SDD) q=Convert8to10(q);
 
      if (z <= fNzSDD) {
        bins[0][y*kNzBins+z].SetQ(q);

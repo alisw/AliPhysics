@@ -1332,38 +1332,40 @@ void AliITS::AddSimDigit(Int_t id, AliITSdigit *d){
 //______________________________________________________________________
 void AliITS::AddSimDigit(Int_t id,Float_t phys,Int_t *digits,Int_t *tracks,
                          Int_t *hits,Float_t *charges){
-    //   Add a simulated digit to the list.
-    // Inputs:
-    //      Int_t id        Detector type number.
-    //      Float_t phys    Physics indicator. See AliITSdigits.h
-    //      Int_t *digits   Integer array containing the digits info. See 
-    //                      AliITSdigit.h
-    //      Int_t *tracks   Integer array [AliITSdigitS?D::GetNTracks()] 
-    //                      containing the track numbers that contributed to
-    //                      this digit.
-    //      Int_t *hits     Integer array [AliITSdigitS?D::GetNTracks()]
-    //                      containing the hit numbers, from AliITSmodule, that
-    //                      contributed to this digit.
-    //      Float_t *charge Floating point array of the signals contributed
-    //                      to this digit by each track.
-    // Outputs:
-    //      none.
-    // Return:
-    //      none.
+  //   Add a simulated digit to the list.
+  // Inputs:
+  //      Int_t id        Detector type number.
+  //      Float_t phys    Physics indicator. See AliITSdigits.h
+  //      Int_t *digits   Integer array containing the digits info. See 
+  //                      AliITSdigit.h
+  //      Int_t *tracks   Integer array [AliITSdigitS?D::GetNTracks()] 
+  //                      containing the track numbers that contributed to
+  //                      this digit.
+  //      Int_t *hits     Integer array [AliITSdigitS?D::GetNTracks()]
+  //                      containing the hit numbers, from AliITSmodule, that
+  //                      contributed to this digit.
+  //      Float_t *charge Floating point array of the signals contributed
+  //                      to this digit by each track.
+  // Outputs:
+  //      none.
+  // Return:
+  //      none.
 
-    TClonesArray &ldigits = *((TClonesArray*)fDtype->At(id));
-    switch(id){
-    case 0:
-        new(ldigits[fNdtype[id]++]) AliITSdigitSPD(digits,tracks,hits);
-        break;
-    case 1:
-        new(ldigits[fNdtype[id]++]) AliITSdigitSDD(phys,digits,tracks,
-                                                   hits,charges);
-        break;
-    case 2:
-        new(ldigits[fNdtype[id]++]) AliITSdigitSSD(digits,tracks,hits);
-        break;
-    } // end switch id
+  TClonesArray &ldigits = *((TClonesArray*)fDtype->At(id));
+  AliITSresponseSDD *resp = 0;
+  switch(id){
+  case 0:
+    new(ldigits[fNdtype[id]++]) AliITSdigitSPD(digits,tracks,hits);
+    break;
+  case 1:
+    resp = (AliITSresponseSDD*)DetType(1)->GetResponseModel();
+    new(ldigits[fNdtype[id]++]) AliITSdigitSDD(phys,digits,tracks,
+					       hits,charges,resp);
+    break;
+  case 2:
+    new(ldigits[fNdtype[id]++]) AliITSdigitSSD(digits,tracks,hits);
+    break;
+  } // end switch id
 }
 //______________________________________________________________________
 void AliITS::MakeTreeC(Option_t *option){

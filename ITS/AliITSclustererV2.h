@@ -22,7 +22,7 @@ class AliITSRawStream;
 
 class AliITSclustererV2 : public TObject {
 public:
-  AliITSclustererV2(){ fEvent=0; fI=0; f8to10SDD=kTRUE;}
+  AliITSclustererV2(){ fEvent=0; fI=0;}
   AliITSclustererV2(const AliITSgeom *geom);
 
   void SetEvent(Int_t event) { fEvent=event; }
@@ -32,8 +32,6 @@ public:
   void FindClustersSPD(AliITSRawStream* input, TClonesArray** clusters);
   void FindClustersSDD(const TClonesArray *dig, TClonesArray *cls);
   void FindClustersSDD(AliITSRawStream* input, TClonesArray** clusters);
-  void Set8to10SDD(Bool_t flag=kTRUE) {f8to10SDD=flag;}
-  static Int_t Convert8to10(Int_t signal);
   void FindClustersSSD(const TClonesArray *dig, TClonesArray *cls);
   void FindClustersSSD(AliITSRawStream* input, TClonesArray** clusters);
 
@@ -118,7 +116,6 @@ private:
   Float_t fHwSDD;         //half width of the SDD detector
   Float_t fHlSDD;         //half length of the SDD detector
   Float_t fYoffSDD;       //some delay in the drift channel   
-  Bool_t f8to10SDD;       // 8 -> 10 conversion flag
 
   //SSD related values:
   Int_t fLastSSD1;        //index of the last SSD1 detector   

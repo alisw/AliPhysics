@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <AliITSdigitSDD.h>
+#include <AliITSresponseSDD.h>
 #include <TArrayI.h>
 #include <TArrayF.h>
 #include <TMath.h>
@@ -27,6 +28,8 @@
 ///////////////////////////////////////////////////////////////////
 
 ClassImp(AliITSdigitSDD)
+
+
 //______________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD():AliITSdigit(){
     // default constructor, zero coordinates and set array
@@ -38,6 +41,7 @@ AliITSdigitSDD::AliITSdigitSDD():AliITSdigit(){
     for(i=0;i<fgkSsdd;i++) fHits[i]   = -1;
     fPhysics = 0;
     for(i=0;i<fgkSsdd;i++) fTcharges[i] = 0;
+    SetSignalExpanded(-1000);
 }
 //________________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits):
@@ -45,21 +49,49 @@ AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits):
     // Creates a simulated SDD digit object to be updated
 
     fPhysics = phys;
+    SetSignalExpanded(-1000);
 }
+
+//________________________________________________________________________
+void AliITSdigitSDD::InitObject(Float_t phys,const Int_t *tracks,
+			   const Int_t *hits,const Float_t *charges){
+  // Protected function used by standard constructors
+  fPhysics = phys;
+  for(Int_t i=0; i<fgkSsdd; i++) {
+    fTcharges[i] = charges[i];
+    fTracks[i]   = tracks[i];
+    fHits[i]     = hits[i];
+  }
+}
+ 
 //_____________________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits,
 			       const Int_t *tracks,const Int_t *hits,
 			       const Float_t *charges):
     AliITSdigit(digits){
-    // Creates a simulated SDD digit object
-
-    fPhysics = phys;
-    for(Int_t i=0; i<fgkSsdd; i++) {
-	fTcharges[i] = charges[i];
-	fTracks[i]   = tracks[i];
-	fHits[i]     = hits[i];
-    } // end for i
+  // standard constructor
+  InitObject(phys,tracks,hits,charges);
+  SetSignalExpanded(-1000);
 }
+//_____________________________________________________________________________
+AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
+    const Int_t *tracks,const Int_t *hits,const Float_t *charges, Int_t sige):
+    AliITSdigit(digits) {
+  //constructor setting also fSignalExpanded
+  InitObject(phys,tracks,hits,charges);
+  SetSignalExpanded(sige);
+}
+
+//_____________________________________________________________________________
+AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
+    const Int_t *tracks,const Int_t *hits,const Float_t *charges,
+    AliITSresponseSDD* resp):
+    AliITSdigit(digits) {
+  //constructor setting fSignalExpanded through AliITSresponseSDD
+  InitObject(phys,tracks,hits,charges);
+  SetSignalExpanded(resp->Convert8to10(digits[2]));
+}
+
 //______________________________________________________________________
 Int_t AliITSdigitSDD::GetListOfTracks(TArrayI &t,TArrayF &c){
     // Fills the TArrayI t with the tracks found in fTracks removing
@@ -123,6 +155,8 @@ Int_t AliITSdigitSDD::GetListOfTracks(TArrayI &t,TArrayF &c){
     //
     return n;
 }
+
+
 //______________________________________________________________________
 void AliITSdigitSDD::Print(ostream *os){
     //Standard output format for this class
@@ -133,6 +167,7 @@ void AliITSdigitSDD::Print(ostream *os){
     for(i=0; i<fgkSsdd; i++) *os <<","<< fTcharges[i];
     for(i=0; i<fgkSsdd; i++) *os <<","<< fTracks[i];
     for(i=0; i<fgkSsdd; i++) *os <<","<< fHits[i];
+    *os <<","<< fSignalExpanded;
 }
 //______________________________________________________________________
 void AliITSdigitSDD::Read(istream *os){
@@ -144,6 +179,7 @@ void AliITSdigitSDD::Read(istream *os){
     for(i=0; i<fgkSsdd; i++) *os >> fTcharges[i];
     for(i=0; i<fgkSsdd; i++) *os >> fTracks[i];
     for(i=0; i<fgkSsdd; i++) *os >> fHits[i];
+    *os >>fSignalExpanded;
 }
 //______________________________________________________________________
 ostream &operator<<(ostream &os,AliITSdigitSDD &source){

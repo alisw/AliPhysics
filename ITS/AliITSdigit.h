@@ -40,6 +40,7 @@ class AliITSdigit: public TObject  {
     virtual Int_t GetCoord1() const {return fCoord1;} // returns fCoord1
     virtual Int_t GetCoord2() const {return fCoord2;} // returns fCoord2
     virtual Int_t GetSignal() const {return fSignal;} // returns fSignal
+    virtual Int_t GetCompressedSignal() const {return GetSignal();} // overloaded in AliITSdigitSDD
     virtual void SetCoord1(Int_t i){fCoord1 = i;} // Sets fCoord1 value
     virtual void SetCoord2(Int_t i){fCoord2 = i;} // Sets fCoord12value
     virtual void SetSignal(Int_t i){fSignal = i;} // Sets fSignal value

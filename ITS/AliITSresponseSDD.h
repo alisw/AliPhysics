@@ -88,6 +88,7 @@ class AliITSresponseSDD : public AliITSresponse {
 	if(i<0 || i>=fNcomps) return 0.;return fGaus->At(i);}
    
 //Declaration of member functions peculiar to this class
+    Int_t Convert8to10(Int_t signal) const; //undo 10 to 8 bit SDD compresion
     void  SetNoiseAfterElectronics(Float_t n=2.38){
 	// Noise after electronics (ADC units)
 	// 2.36 for ALICE from beam test measurements 2001

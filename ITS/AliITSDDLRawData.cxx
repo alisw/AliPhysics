@@ -87,7 +87,7 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
       iz=digs->GetCoord1();  // If iz==0, N side and if iz=1 P side
       ix=digs->GetCoord2();  // Strip Numbar
-      is=digs->GetSignal();  // ADC Signal
+      is=digs->GetCompressedSignal();  // ADC Signal
       // cout<<" Module:"<<mod-500<<" N/P side:"<<iz<<" Strip Number:"<<ix<<" Amplidute:"<<is-1<<endl;
       if (fVerbose==2)
 	ftxt<<"DDL:"<<ddl<<" Mod: "<<modR<<" N/P: "<<iz<<" Strip: "<<ix<<" Value: "<<is-1<<endl;
@@ -131,7 +131,7 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
       iz=digs->GetCoord1();  // Anode
       ix=digs->GetCoord2();  // Time
-      is=digs->GetSignal();  // ADC Signal
+      is=digs->GetCompressedSignal();  // ADC Signal
       if (fVerbose==2)
 	ftxt<<"DDL:"<<ddl<<" MID:"<<modR<<" An:"<<iz<<" T:"<<ix<<" A:"<<is<<endl;
       //      cout<<"Amplitude value:"<<is<<" Time Bucket:"<<ix<<" Anode:"<<iz<<endl;
