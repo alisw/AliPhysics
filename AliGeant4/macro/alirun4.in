@@ -1,0 +1,23 @@
+# $Id$
+# Example of geometry browser.
+# This macro should be started in interactive session:
+# /control/execute alirun4.in
+
+/aliDet/switchOn FRAME
+
+/g4mc/setEM false
+/aliRun/initialize
+
+/aliDet/body/setFrame ALIC
+/aliDet/body/setVolume ALIC
+/aliDet/body/setLVTreeColour Green
+
+/vis/open OGLSX
+#/vis/open DAWNFILE
+
+/vis/scene/create                                              
+/vis/sceneHandler/attach
+
+/g4mc/rootCmd new TG4GeometryGUI()
+/g4mc/root
+

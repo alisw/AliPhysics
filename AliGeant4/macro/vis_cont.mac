@@ -1,0 +1,18 @@
+# $Id$
+# Author: D. Adamova
+# 
+#######################################################################
+#                                                                     #
+#  MACRO FILE NAME: vis_cont.mac                                      #
+#######################################################################
+/vis/sceneHandler/attach
+/vis/camera/reset
+/vis/camera/zoom       1.2 
+/vis/camera/viewpoint  35 35
+/vis/draw/axes         0 0 0 500
+/vis/draw/current         
+/vis/show/view
+#/vis/viewer/refresh
+/vis/viewer/update
+
+#########################################################################
