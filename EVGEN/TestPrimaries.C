@@ -71,7 +71,7 @@ void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
 	    Float_t theta = MPart->Theta();
 	    Float_t phi   = MPart->Phi()-TMath::Pi();
 	    Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
-	    Float_t y     = 0.5*TMath::Log((E+Pz)/(E-Pz+1.e-13));
+	    Float_t y     = 0.5*TMath::Log((E+Pz+1.e-13)/(E-Pz+1.e-13));
 	    
 	    if (child1 >= 0) continue;
 	    if (mpart == kPi0 || mpart == kGamma) continue;
