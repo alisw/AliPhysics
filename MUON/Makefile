@@ -25,7 +25,6 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONHit.cxx AliMUONPadHit.cxx AliMUONDigit.cxx \
                AliMUONTransientDigit.cxx AliMUONRawCluster.cxx \
 	       AliMUONReconstHit.cxx \
-	       AliMUONTrackReconstructor.cxx \
                AliMUONEventReconstructor.cxx \
 	       AliMUONTriggerDecision.cxx \
                AliMUONHitForRec.cxx AliMUONSegment.cxx \
@@ -54,10 +53,6 @@ HDRS          = $(SRCS:.cxx=.h) \
 DICT          = MUONCint.cxx
 DICTH         = $(DICT:.cxx=.h)
 DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
-
-# Fortran sources
-
-FSRCS	      = reco_muon.F extrap.F
 
 # FORTRAN Objectrs
 

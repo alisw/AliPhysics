@@ -33,7 +33,6 @@
 #pragma link C++ class  AliMUONDisplay+;
 #pragma link C++ class  AliMUONClusterFinderVS+;
 #pragma link C++ class  AliMUONHitMapA1+;
-#pragma link C++ class  AliMUONTrackReconstructor+;
 #pragma link C++ class  AliMUONTriggerCircuit+;
 #pragma link C++ class  AliMUONTriggerLut+;
 #pragma link C++ class  AliMUONTriggerDecision+;
