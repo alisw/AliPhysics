@@ -25,8 +25,9 @@ class TFolder ;
 
 #include "TObject.h"
 #include "TTree.h" 
+
 #include "AliDetector.h"
-#include <Riostream.h>
+
 #include "AliTOFSDigitizer.h"
 #include "AliTOFGeometry.h"
 
@@ -36,13 +37,6 @@ public:
   AliTOF(); 
   AliTOF(const char *name, const char *title, Option_t *option="noTimeZero");
   virtual ~AliTOF() ;
-
-  static  Int_t NDDL()        { return kNDDL;};
-  static  Int_t NTRM()        { return kNTRM;}
-  static  Int_t NTdc()        { return kNTdc;};
-  static  Int_t NCh()         { return kNCh;};
-  static  Int_t NPadXTRM()    { return kNCh*kNTdc;};
-
 // getters for AliTOF object status
   //Float_t GetTimeRes() const {return fTimeRes;};
   //Float_t GetChrgRes() const {return fChrgRes;};
@@ -107,16 +101,6 @@ protected:
   AliTOFGeometry *fTOFGeometry; //The TOF Geometry parameters
  
 private:
-
-  // DAQ characteristics
-  // cfr. TOF-TDR pag. 105 for Glossary
-  // TARODA : TOF-ALICE Read Out and Data Acquisition system
-  enum {
-    kNDDL        =    4, // Number of DDL (Detector Data Link) per sector
-    kNTRM        =   10, // Number of TRM ( Readout Module) per DDL
-    kNTdc        =   30, // Number of Tdc (Time to Digital Converter) per TRM
-    kNCh         =    8  // Number of channels per Tdc
-  };
 
   ClassDef(AliTOF,7)  // Time Of Flight base class
 };

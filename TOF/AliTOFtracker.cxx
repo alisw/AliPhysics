@@ -410,7 +410,8 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
     delete trackTOFin;
 
-    Double_t tof=50*c->GetTDC()+32; // in ps
+    //Double_t tof=50*c->GetTDC()+32; // in ps
+    Double_t tof=AliTOFGeometry::TdcBinWidth()*c->GetTDC()+32; // in ps
     t->SetTOFsignal(tof);
     t->SetTOFcluster(c->GetIndex());
     Double_t time[10]; t->GetIntegratedTimes(time);

@@ -34,6 +34,13 @@ class AliTOFGeometry: public TObject{
   static  Int_t MaxTOFTree()  { return kMaxTOFTree;};
 
 
+  static  Int_t NDDL()        { return kNDDL;};
+  static  Int_t NTRM()        { return kNTRM;}
+  static  Int_t NTdc()        { return kNTdc;};
+  static  Int_t NCh()         { return kNCh;};
+  static  Int_t NPadXTRM()    { return kNCh*kNTdc;};
+
+
   static  Float_t RinTOF()      { return fgkxTOF;};
   static  Float_t Rmin()        { return fgkRmin;};
   static  Float_t Rmax()        { return fgkRmax;};
@@ -59,6 +66,8 @@ class AliTOFGeometry: public TObject{
  
   static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / kNSectors; }; 
  
+  static Float_t TdcBinWidth() {return fgkTdcBin;};
+
 
   virtual void    Init();
   virtual void    SetHoles(Bool_t holes) {fHoles = holes;};
@@ -97,6 +106,16 @@ class AliTOFGeometry: public TObject{
     kMaxTOFTree = 5   // numer of geom. levels: 
   };
 
+  // DAQ characteristics
+  // cfr. TOF-TDR pag. 105 for Glossary
+  // TARODA : TOF-ALICE Read Out and Data Acquisition system
+  enum {
+    kNDDL        =    4, // Number of DDL (Detector Data Link) per sector
+    kNTRM        =   10, // Number of TRM ( Readout Module) per DDL
+    kNTdc        =   30, // Number of Tdc (Time to Digital Converter) per TRM
+    kNCh         =    8  // Number of channels per Tdc
+  };
+
   static const Int_t fgkTimeDiff;      // Min signal separation (ps)
 
   static const Float_t fgkRmin;        // Inner radius of the TOF (cm)
@@ -131,6 +150,8 @@ class AliTOFGeometry: public TObject{
   Float_t fAngles[kNPlates][kMaxNstrip]; //Strip Tilt Angles
   Float_t fHeights[kNPlates][kMaxNstrip];//Strip heights
   Float_t fPhiSec; //sector Phi width (deg)
+
+  static const Float_t fgkTdcBin;   // time-window for the TDC bins [ps]
 
   ClassDef(AliTOFGeometry,1) // TOF Geometry base class
 };

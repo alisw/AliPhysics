@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2004/11/05 07:20:08  decaro
+TOF library splitting and conversion of some printout messages in AliLog schema (T.Kuhr)
+
 Revision 1.6  2004/06/15 15:27:59  decaro
 TOF raw data: preliminary implementation and style changes
 
@@ -90,6 +93,8 @@ const Float_t AliTOFGeometry::fgkMuonMass     = 0.10566;// muon mass (Gev/c^2)
 const Float_t AliTOFGeometry::fgkDprecMin = 0.0000075;//num.prec.tolerance on Thmin 
 const Float_t AliTOFGeometry::fgkDprecMax = 0.0000100;//num.prec.tolerance on Thma 
 const Float_t AliTOFGeometry::fgkDprecCen = 0.0000005;//num.prec.tolerance on <Theta> 
+
+const Float_t AliTOFGeometry::fgkTdcBin = 24.4; // time-window for the TDC bins [ps]
 
 //_____________________________________________________________________________
 AliTOFGeometry::AliTOFGeometry()

@@ -32,7 +32,7 @@ Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
 #include <TTree.h>
 #include <TMath.h>
 #include "AliLog.h"
-#include "AliTOF.h"
+
 #include "AliTOFGeometry.h"
 #include "AliTOFdigit.h"
 #include "AliTOFDDLRawData.h"
@@ -133,23 +133,23 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
     
     if (eureka!=digs->GetTotPad()) printf(" eureka = %d AND digs->GetTotPad() = %d",eureka,digs->GetTotPad());
     */
-    if (sector!=iSector || (Int_t)((Float_t)eureka/AliTOF::NPadXTRM()/AliTOF::NTRM())!=iDDL) continue;
+    if (sector!=iSector || (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM()/AliTOFGeometry::NTRM())!=iDDL) continue;
     
     if (fVerbose==2) ftxt <<" Sector: "<<sector<<" plate: "<<plate<<" strip "<<strip<<" padx "<<padx<<" padz "<<padz<<" eureka "<<eureka<<endl;
     
-    iTRM = (Int_t)((Float_t)eureka/AliTOF::NPadXTRM() - AliTOF::NTRM()*iDDL);
+    iTRM = (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM() - AliTOFGeometry::NTRM()*iDDL);
     
-    iTDC = (Int_t)(AliTOF::NTdc()* 
+    iTDC = (Int_t)(AliTOFGeometry::NTdc()* 
 		   (
-		    (Float_t)eureka/AliTOF::NPadXTRM() -
-		    (Int_t)((Float_t)eureka/AliTOF::NPadXTRM())
+		    (Float_t)eureka/AliTOFGeometry::NPadXTRM() -
+		    (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM())
 		    )
 		   );
     
-    iCH  = (Int_t)(AliTOF::NCh() * 
+    iCH  = (Int_t)(AliTOFGeometry::NCh() * 
 		   (
-		    (Float_t)eureka/AliTOF::NPadXTRM()*AliTOF::NTdc() - (Int_t)((Float_t)eureka/AliTOF::NPadXTRM()*AliTOF::NTdc()) -
-		    (Int_t)((Float_t)eureka/AliTOF::NPadXTRM()*AliTOF::NTdc() - (Int_t)((Float_t)eureka/AliTOF::NPadXTRM()*AliTOF::NTdc()))
+		    (Float_t)eureka/AliTOFGeometry::NPadXTRM()*AliTOFGeometry::NTdc() - (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM()*AliTOFGeometry::NTdc()) -
+		    (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM()*AliTOFGeometry::NTdc() - (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM()*AliTOFGeometry::NTdc()))
 		    )
 		   );
     

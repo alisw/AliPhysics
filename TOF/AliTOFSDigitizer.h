@@ -26,6 +26,8 @@ public:
 
   virtual ~AliTOFSDigitizer() ; // dtor
 
+  //static Float_t WidthTdcBin() {return fgkTdcBin;};
+
   virtual void  Exec(Option_t *verboseOption); 
   void SetSDigitsFile(char * /*file*/ ) {;}
   
@@ -69,7 +71,7 @@ public:
   void  SetLogChargeSmearing(Float_t logChargeSmearing){fLogChargeSmearing=logChargeSmearing;}
   void  SetTimeSmearing(Float_t timeSmearing)        {fTimeSmearing=timeSmearing;}
   void  SetAverageTimeFlag(Int_t averageTimeFlag)    {fAverageTimeFlag=averageTimeFlag;}
-  void  SetTdcBin(Float_t tdcBin)                    {fTdcBin=tdcBin;}
+
   void  SetAdcBin(Float_t adcBin)                    {fAdcBin=adcBin;}
   void  SetAdcMean(Float_t adcMean)                  {fAdcMean=adcMean;}
   void  SetAdcRms(Float_t adcRms)                    {fAdcRms=adcRms;}
@@ -100,7 +102,7 @@ public:
   Float_t  GetLogChargeSmearing()const {return fLogChargeSmearing;}
   Float_t  GetTimeSmearing()     const {return fTimeSmearing;}
   Int_t    GetAverageTimeFlag()  const {return fAverageTimeFlag;}
-  Float_t  GetTdcBin()           const {return fTdcBin;}
+
   Float_t  GetAdcBin()           const {return fAdcBin;}
   Float_t  GetAdcMean()          const {return fAdcMean;}
   Float_t  GetAdcRms()           const {return fAdcRms;}
@@ -159,7 +161,7 @@ private:
   Float_t fLogChargeSmearing;// Smearing in log of charge ratio
   Float_t fTimeSmearing;    // Smearing in time in time vs log(q1/q2) plot
   Int_t   fAverageTimeFlag; // flag (see the setter for details)
-  Float_t fTdcBin;      // time-window for the TDC bins [ps]
+
   Float_t fAdcBin;      // charge-window for the ADC bins [pC]
   Float_t fAdcMean;     // mean value for the ADC spectrum [bins]
   Float_t fAdcRms;      // rms value for the ADC spectrum [bins]
