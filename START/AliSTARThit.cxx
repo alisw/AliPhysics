@@ -12,32 +12,29 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /*
 $Log$
-*/ 
+Revision 1.1.1.1  2000/02/15 15:20:19  kir
+Initial import to mni CVS
 
+*/ 
 #include "AliSTARThit.h"
 
 ClassImp(AliSTARThit)
- 
-//_____________________________________________________________________________
+
 AliSTARThit::AliSTARThit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
   AliHit(shunt, track)
 {
-  //
-  // Add a START hit
-  //
+//Normal START hit ctor
   
-  fVolume = vol[0];
-  fPmt=vol[1];
-  fX=hits[0];
-  fY=hits[1];
-  fZ=hits[2];
-  fEdep=hits[3];
-  fEtot=hits[4];
-  fParticle=Int_t (hits[5]);
-  fTime=hits[6];
-
-  // for (Int_t i=0; i<=6; i++) {printf("Hits up %f\n",hits[i]);} 
+   fVolume = vol[0];
+   fPmt=vol[1];
+   fX=hits[0];
+   fY=hits[1];
+   fZ=hits[2];
+   fEdep=hits[3];
+   fEtot=hits[4];
+   fParticle=Int_t (hits[5]);
+   fTime=hits[6];
 }
+ 
