@@ -15,14 +15,17 @@
 
 class AliStack;
 class AliGenEventHeader;
- 
+class AliDetectorEventHeader;
+class TObjArray;
+
 class AliHeader : public TObject {
 public:
   AliHeader();
   AliHeader(const AliHeader& head);
   AliHeader(Int_t run, Int_t event);
   AliHeader(Int_t run, Int_t eventSerialNr, Int_t evNrInRun);
-  virtual ~AliHeader() {}
+  virtual ~AliHeader();
+  
 
   virtual void Reset(Int_t run, Int_t event);
   virtual void Reset(Int_t run, Int_t eventSerialNr, Int_t evNrInRun);
@@ -52,6 +55,10 @@ public:
   virtual  void SetGenEventHeader(AliGenEventHeader* header);
   virtual  AliGenEventHeader*  GenEventHeader() const;
 
+  virtual void AddDetectorEventHeader(AliDetectorEventHeader* header);
+  virtual AliDetectorEventHeader* GetDetectorEventHeader(const char *name) const;
+  
+  
   virtual void Print(const char *opt=0) const;
 
   AliHeader& operator=(const AliHeader& head) 
@@ -61,16 +68,17 @@ protected:
 
   void Copy(TObject& head) const;
 
-  Int_t         fRun;         //Run number
-  Int_t         fNvertex;     //Number of vertices
-  Int_t         fNprimary;    //Number of primary tracks
-  Int_t         fNtrack;      //Number of tracks
-  Int_t         fEvent;       //Event number (serial in the file)
-  Int_t         fEventNrInRun; //Unique Event number within the run
-  AliStack     *fStack;       //Pointer to stack
-  AliGenEventHeader* fGenHeader;    //Event Header for Generator  
-  
-  ClassDef(AliHeader,2) //Alice event header    
+  Int_t         fRun;               //Run number
+  Int_t         fNvertex;           //Number of vertices
+  Int_t         fNprimary;          //Number of primary tracks
+  Int_t         fNtrack;            //Number of tracks
+  Int_t         fEvent;             //Event number (serial in the file)
+  Int_t         fEventNrInRun;      //Unique Event number within the run
+  AliStack     *fStack;             //Pointer to stack
+  AliGenEventHeader* fGenHeader;    //Event Header for Generator
+  TObjArray*         fDetHeaders;   //Event Headers for detector specific information 
+
+  ClassDef(AliHeader,3) //Alice event header    
 };
 
 #endif

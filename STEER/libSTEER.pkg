@@ -18,7 +18,8 @@ AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx \
 AliVertexer.cxx \
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
-AliReconstructor.cxx
+AliReconstructor.cxx \
+AliDetectorEventHeader.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

@@ -22,10 +22,15 @@
 //     Author:
 //-----------------------------------------------------------------------
 
+
 #include <stdio.h>
+#include <TObjArray.h>
 
 #include "AliLog.h"
 #include "AliHeader.h"
+#include "AliDetectorEventHeader.h"
+#include "AliGenEventHeader.h"
+    
  
 ClassImp(AliHeader)
 
@@ -38,7 +43,8 @@ AliHeader::AliHeader():
   fEvent(0),
   fEventNrInRun(0),
   fStack(0),
-  fGenHeader(0)
+  fGenHeader(0),
+  fDetHeaders(0)
 {
   //
   // Default constructor
@@ -55,7 +61,8 @@ AliHeader::AliHeader(const AliHeader& head):
   fEvent(0),
   fEventNrInRun(0),
   fStack(0),
-  fGenHeader(0)
+  fGenHeader(0),
+  fDetHeaders(0)
 {
   //
   // Copy constructor
@@ -72,7 +79,8 @@ AliHeader::AliHeader(Int_t run, Int_t event):
   fEvent(event),
   fEventNrInRun(0),
   fStack(0),
-  fGenHeader(0)
+  fGenHeader(0), 
+  fDetHeaders(0) 
 {
   //
   // Standard constructor
@@ -88,12 +96,27 @@ AliHeader::AliHeader(Int_t run, Int_t event, Int_t evNumber):
   fEvent(event),
   fEventNrInRun(evNumber),
   fStack(0),
-  fGenHeader(0)
+  fGenHeader(0), 
+  fDetHeaders(0) 
 {
   //
   // Standard constructor
   //
 }
+
+AliHeader::~AliHeader()
+{
+    //
+    // Destructor
+    //
+    if (fDetHeaders) {
+	fDetHeaders->Delete();
+	delete fDetHeaders;
+    }
+    delete fGenHeader;
+}
+
+
 
 //_______________________________________________________________________
 void AliHeader::Reset(Int_t run, Int_t event)
@@ -106,6 +129,7 @@ void AliHeader::Reset(Int_t run, Int_t event)
   fNprimary=0;
   fNtrack=0;
   fEvent=event;
+  if (fDetHeaders) fDetHeaders->Clear();
 }
 
 //_______________________________________________________________________
@@ -120,6 +144,7 @@ void AliHeader::Reset(Int_t run, Int_t event, Int_t evNumber)
   fNtrack=0;
   fEvent=event;
   fEventNrInRun=evNumber;
+  if (fDetHeaders) fDetHeaders->Clear();
 }
 
 //_______________________________________________________________________
@@ -160,6 +185,49 @@ void AliHeader::SetGenEventHeader(AliGenEventHeader* header)
 // Set pointer to header for generated event
     fGenHeader = header;
 }
+
+void AliHeader::AddDetectorEventHeader(AliDetectorEventHeader* header)
+{
+// Add a detector specific header
+//
+//  Create the array of headers
+    if (!fDetHeaders) fDetHeaders = new TObjArray(77);
+
+//  Some basic checks
+
+    if (!header) {
+	Warning("AddDetectorEventHeader","Detector %s tries to add empty header \n", header->GetName());
+	return;
+    }
+    
+    if (strlen(header->GetName()) == 0) {
+	Warning("AddDetectorEventHeader","Detector %s tries to add header without name \n", header->GetName());
+	return;
+    }
+    
+    TObject *mod=fDetHeaders->FindObject(header->GetName());
+    if(mod) {
+	Warning("AddDetectorEventHeader","Detector %s tries to add more than one header \n", header->GetName());
+	return;
+    }
+    
+
+//  Add the header to the list 
+    fDetHeaders->Add(header);
+}
+
+AliDetectorEventHeader* AliHeader::GetDetectorEventHeader(const char *name) const
+{
+//
+// Returns detector specific event header
+//
+    if (!fDetHeaders) {
+	Warning("GetDetectorEventHeader","There are no  detector specific headers for this event");
+	return 0x0;
+    }
+    return  dynamic_cast<AliDetectorEventHeader*>(fDetHeaders->FindObject(name)) ;
+}
+
 
 //_______________________________________________________________________
 AliGenEventHeader*  AliHeader::GenEventHeader() const
