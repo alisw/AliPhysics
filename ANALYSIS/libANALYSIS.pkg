@@ -1,0 +1,6 @@
+SRCS= AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx
+
+
+HDRS= $(SRCS:.cxx=.h)
+
+DHDR:=ANALYSISLinkDef.h
