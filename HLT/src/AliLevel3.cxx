@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ASV
 
@@ -114,11 +116,14 @@ void AliLevel3::Init(){
   fGlobalMerger=0;
   fTransformer = new AliL3Transform();
   fDoRoi = kFALSE;
+  fDoNonVertex = kFALSE;
+  fClusterDeconv = kFALSE;
   fEta[0] = 0.;
   fEta[1] = 0.9;
   fUseBinary =kFALSE;
   SetPath("");
-  fFindVertex =kTRUE;
+  fFindVertex =kFALSE;
+  fEvent=0;
   if(1){
     fNPatch = 1;   //number of patches change row in process
     fRow[0][0] = 0;     // first row
@@ -201,26 +206,30 @@ void AliLevel3::SetTrackerParam(Int_t phi_segments, Int_t eta_segments,
 				   Double_t min_pt_fit, Double_t maxangle,
 				   Double_t goodDist, Double_t hitChi2Cut,
 				   Double_t goodHitChi2, Double_t trackChi2Cut,
-				   Int_t maxdist)
+				   Int_t maxdist,Bool_t vertexconstraint)
 {
   //Set parameters input to the tracker
   //If no arguments are given, default parameters will be used
   
   fTracker->SetNSegments(phi_segments,eta_segments);
-  fTracker->MainVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack);
   fTracker->SetMaxDca(min_pt_fit);
-  fTracker->SetTrackletCuts(maxangle,goodDist,true);
-  fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist);
-
+  fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,vertexconstraint);
+  fTracker->SetTrackletCuts(maxangle,goodDist,vertexconstraint);
+  if(vertexconstraint)
+    fTracker->MainVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack);
+  else
+    fTracker->NonVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack);
+  
   fTracker->SetParamDone(true);
 }
 
-void AliLevel3::ProcessEvent(Int_t first,Int_t last){
+void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
   //Do tracking on all slices in region [first,last]
   //Slices numbering in TPC goes from 0-35, which means that 1 slice
   //corresponds to inner+outer sector.E.g. slice 2 corresponds to
   //inner=2 + outer=38.
   fGlobalMerger= new AliL3GlobalMerger(first,last);  
+  fEvent=event;
   for(Int_t i=first; i<=last; i++){
     ProcessSlice(i);
     fGlobalMerger->SetVertex(fVertex);
@@ -232,7 +241,7 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last){
     fTrackData=0;
   }
   fBenchmark->Start("Global Merger");
-  fGlobalMerger->AddAllTracks();
+  //fGlobalMerger->AddAllTracks();
   //fGlobalMerger->Merge();
   fGlobalMerger->SlowMerge();
   fBenchmark->Stop("Global Merger");
@@ -340,7 +349,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
         }
   
         if(1){     //Ali to Memory
-          digits=(AliL3DigitRowData *)fFileHandler->AliDigits2Memory(ndigits);
+          digits=(AliL3DigitRowData *)fFileHandler->AliDigits2Memory(ndigits,fEvent);
           if(fWriteOut){   //Memory to Binary
             fFileHandler->SetBinaryOutput(name);
             fFileHandler->Memory2CompBinary(ndigits,digits);
@@ -354,7 +363,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
   
       fClusterFinder = new AliL3ClustFinderNew(fTransformer);
       fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1]
-                                                               ,maxpoints);
+				,maxpoints);
+      fClusterFinder->SetDeconv(fClusterDeconv);
       fClusterFinder->SetXYError(0.1);
       fClusterFinder->SetZError(0.2);
       fClusterFinder->SetOutputArray(points);
@@ -427,6 +437,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
     fTracker->MainVertexTracking_b();
     fBenchmark->Stop("MainVertexTracking B");
     fBenchmark->Start("Tracking fit");
+    if(fDoNonVertex)
+      fTracker->NonVertexTracking();//Do a second pass for nonvertex tracks
     fTracker->FillTracks();
     fBenchmark->Stop("Tracking fit");
 

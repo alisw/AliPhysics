@@ -55,6 +55,9 @@ class AliLevel3 : public TObject {
   TFile *fInputFile;
   TFile *fOutputFile;
   Bool_t fFindVertex;
+  Bool_t fDoNonVertex;
+  Bool_t fClusterDeconv;
+  Int_t fEvent;
   void Init();
   void WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
                                              Int_t slice,Int_t patch);
@@ -77,15 +80,17 @@ class AliLevel3 : public TObject {
 		       Double_t min_pt_fit=0,Double_t maxangle=1.31,
 		       Double_t goodDist=5,Double_t hitChi2Cut=10,
 		       Double_t goodHitChi2=20,Double_t trackChi2Cut=50,
-		       Int_t maxdist=50);
+		       Int_t maxdist=50,Bool_t vertexconstraint=kTRUE);
 
 
-  void ProcessEvent(Int_t first,Int_t last);
+  void ProcessEvent(Int_t first,Int_t last,Int_t event=0);
   void ProcessSlice(Int_t slice);
 
 
   void UseBinaryInput(char *path){SetPath(path);fUseBinary=kTRUE;}
   void DoMc(char* file="point_mc.dat");
+  void DoNonVertexTracking() {fDoNonVertex=kTRUE;}
+  void FindVertex() {fFindVertex=kTRUE;}
   void DoBench(char* name="benchmark");
   void DoRoi(Float_t e0=0.4,Float_t e1=0.5){fEta[0]=e0;fEta[1]=e1;fDoRoi=kTRUE;}
   void WriteFiles(){fWriteOut = kTRUE;}
