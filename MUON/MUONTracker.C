@@ -97,7 +97,7 @@ void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t 
       }
 
       muondata->MakeBranch("RT");
-      muondata->SetTreeAddress("D,RT");
+      muondata->SetTreeAddress("RT");
       Reco->EventReconstruct();
       // Dump current event
       // Reco->EventDump();
