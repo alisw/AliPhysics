@@ -514,7 +514,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg52->SetNPCBperSector(npcb5); 
  seg52->SetSlatXPositions(xpos5);
  seg52->SetSlatYPosition(ypos5);
- seg52->SetPadSize(1,10);
+ seg52->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
  seg52->SetDAnod(0.25);
  seg52->SetPadDivision(nseg3);
  MUON->SetSegmentationModel(chamber-1, 2, seg52);
@@ -539,7 +539,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg62->SetNPCBperSector(npcb5); 
  seg62->SetSlatXPositions(xpos5);
  seg62->SetSlatYPosition(ypos5);
- seg62->SetPadSize(1,10);
+ seg62->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
  seg62->SetDAnod(0.25);
  seg62->SetPadDivision(nseg3);
  MUON->SetSegmentationModel(chamber-1, 2, seg62);
@@ -590,7 +590,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg72->SetNPCBperSector(npcb7); 
  seg72->SetSlatXPositions(xpos7);
  seg72->SetSlatYPosition(ypos7);
- seg72->SetPadSize(0.5,10.);
+ seg72->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
  seg72->SetDAnod(0.25);
  seg72->SetPadDivision(nseg4);
 
@@ -620,7 +620,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg82->SetNPCBperSector(npcb7); 
  seg82->SetSlatXPositions(xpos7);
  seg82->SetSlatYPosition(ypos7);
- seg82->SetPadSize(0.5,10.);
+ seg82->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
  seg82->SetDAnod(0.25);
  seg82->SetPadDivision(nseg4);
 
@@ -672,7 +672,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg92->SetNPCBperSector(npcb9); 
  seg92->SetSlatXPositions(xpos9);
  seg92->SetSlatYPosition(ypos9);
- seg92->SetPadSize(0.5,10.);
+ seg92->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
  seg92->SetDAnod(0.25);
  seg92->SetPadDivision(nseg4);
 
@@ -702,7 +702,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg102->SetNPCBperSector(npcb9); 
  seg102->SetSlatXPositions(xpos9);
  seg102->SetSlatYPosition(ypos9);
- seg102->SetPadSize(0.5,10.);
+ seg102->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
  seg102->SetDAnod(0.25);
  seg102->SetPadDivision(nseg4);
 
