@@ -292,7 +292,7 @@ void  TG4PhysicsManager::DefineParticles()
   fParticleNameMap.Add("geantino", GetPDGEncoding("geantino"));
 
   // add verbose
-  G4cout << "Particle maps have been filled." << endl;
+  G4cout << "Particle maps have been filled." << G4endl;
   //fParticleNameMap.PrintAll();
   //fParticlePDGMap.PrintAll();
 }    

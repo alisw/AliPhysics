@@ -128,7 +128,7 @@ G4double TG4CutVector::GetMinEkineForGamma(const G4Track& track) const
 //  from "gamma" in G4.)
 // ---
 
-  G4cout << "TG4CutVector::GetMinEkineForGamma start" << endl;
+  G4cout << "TG4CutVector::GetMinEkineForGamma start" << G4endl;
   const G4VProcess* kpCreatorProcess = track.GetCreatorProcess();
   G4String processName = "";
   if (kpCreatorProcess) processName = kpCreatorProcess->GetProcessName();

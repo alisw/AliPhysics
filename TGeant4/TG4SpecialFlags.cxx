@@ -16,7 +16,7 @@ TG4SpecialFlags::TG4SpecialFlags(const G4String& aName)
 {
    // verboseLevel = 1;
    if (verboseLevel>0) {
-     G4cout << GetProcessName() << " is created "<< endl;
+     G4cout << GetProcessName() << " is created "<< G4endl;
    }
 }
 
@@ -73,14 +73,14 @@ G4double TG4SpecialFlags::PostStepGetPhysicalInteractionLength(
         // and entering another logical volume with special flags 
 	proposedStep = minStep;
         fSwitchFlags = kReswitch;
-        if (verboseLevel>0) G4cout << "kReswitch" << endl;
+        if (verboseLevel>0) G4cout << "kReswitch" << G4endl;
       }
       else {
         // particle is exiting a logical volume with special flags
         // and entering a logical volume without special flags 
 	proposedStep = minStep;
         fSwitchFlags = kUnswitch;
-        if (verboseLevel>0) G4cout << "kUnswitch" << endl;
+        if (verboseLevel>0) G4cout << "kUnswitch" << G4endl;
       }
     }
   }
@@ -89,7 +89,7 @@ G4double TG4SpecialFlags::PostStepGetPhysicalInteractionLength(
        // that have not yet been set
        proposedStep = minStep;
        fSwitchFlags = kSwitch;
-       if (verboseLevel>0) G4cout << "kSwitch" << endl;
+       if (verboseLevel>0) G4cout << "kSwitch" << G4endl;
   }  
   return proposedStep;
 }
@@ -115,7 +115,7 @@ G4VParticleChange* TG4SpecialFlags::PostStepDoIt(
       if (verboseLevel>0) {
         G4cout << "Reset process activation back in" 
   	       << track.GetVolume()->GetName() 
-               << endl;
+               << G4endl;
       }
       processManager
         ->SetProcessActivation(fSwitchedProcesses[i],fSwitchedFlags[i]);
@@ -138,7 +138,7 @@ G4VParticleChange* TG4SpecialFlags::PostStepDoIt(
             G4cout << "Set process inactivation for " 
                    << (*processVector)[i]->GetProcessName() << " in " 
     	           << track.GetVolume()->GetName() 
-	           << endl;
+	           << G4endl;
           }
           processManager->SetProcessActivation(i,false);
         }  
@@ -148,7 +148,7 @@ G4VParticleChange* TG4SpecialFlags::PostStepDoIt(
             G4cout << "Set process activation for " 
                    << (*processVector)[i]->GetProcessName() << " in " 
 	           << track.GetVolume()->GetName() 
-	           << endl;
+	           << G4endl;
           }
           processManager->SetProcessActivation(i,true);
         }

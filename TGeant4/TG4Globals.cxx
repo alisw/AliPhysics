@@ -23,8 +23,8 @@ void TG4Globals::Exception(const char* string)
 // ---
 
   if (string)
-  {  cerr << endl << "    " << string << endl; }
-  cerr << "*** TG4Exception: Aborting execution ***" << endl;   
+  {  G4cerr << G4endl << "    " << string << G4endl; }
+  G4cerr << "*** TG4Exception: Aborting execution ***" << G4endl;   
   exit(1);
 }
 
@@ -33,8 +33,8 @@ void TG4Globals::Warning(const char* string)
 // Prints warning message.
 // ---
 
-  cerr << "++++  TG4Warning:  ++++" << endl;   
+  G4cerr << "++++  TG4Warning:  ++++" << G4endl;   
   if (string)
-  {  cerr  << "    " << string << endl; }
-  cerr << "+++++++++++++++++++++++" << endl;   
+  {  G4cerr  << "    " << string << G4endl; }
+  G4cerr << "+++++++++++++++++++++++" << G4endl;   
 }

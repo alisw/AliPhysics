@@ -59,7 +59,7 @@ TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration,
   fRunManager =  new G4RunManager();
   fRunConfiguration->ConfigureRunManager(fRunManager);
   // add verbose level
-  //G4cout << "G4RunManager has been created." << endl;
+  //G4cout << "G4RunManager has been created." << G4endl;
 
   // create geant4 UI
   CreateGeantUI();
@@ -106,7 +106,7 @@ TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration)
   fRunManager =  new G4RunManager();
   fRunConfiguration->ConfigureRunManager(fRunManager);
   // add verbose level
-  //G4cout << "G4RunManager has been created." << endl;
+  //G4cout << "G4RunManager has been created." << G4endl;
 
   // create geant4 UI
   CreateGeantUI();
@@ -254,9 +254,9 @@ void TG4RunManager::StartGeantUI()
   if (!fGeantUISession) CreateGeantUI();
   if (fGeantUISession) {  
     // interactive session
-    G4cout << "Welcome back in Geant4" << endl;
+    G4cout << "Welcome back in Geant4" << G4endl;
     fGeantUISession->SessionStart();
-    G4cout << "Welcome back in Root" << endl;  
+    G4cout << "Welcome back in Root" << G4endl;  
   }
   else {
     // execute Geant4 macro if file is specified as an argument 
@@ -272,9 +272,9 @@ void TG4RunManager::StartRootUI()
 
   if (!fRootUISession) CreateRootUI();
   if (fRootUISession) { 
-    G4cout << "Welcome back in Root" << endl;
+    G4cout << "Welcome back in Root" << G4endl;
     fRootUISession->Run(kTRUE);
-    G4cout << "Welcome back in Geant4" << endl;  
+    G4cout << "Welcome back in Geant4" << G4endl;  
   }
 }
  

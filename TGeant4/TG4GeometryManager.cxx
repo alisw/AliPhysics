@@ -160,7 +160,7 @@ void TG4GeometryManager::GstparCut(G4int itmed, TG3Cut par, G4double parval)
     medium->SetLimits(tg4Limits);
     // add verbose 
     G4cout << "TG4GeometryManager::GstparCut: new TG4Limits() for medium " 
-           << itmed << " has been created." << endl;  
+           << itmed << " has been created." << G4endl;  
   }	   
   // set parameter
   tg4Limits->SetG3Cut(par, parval*GeV);
@@ -195,7 +195,7 @@ void TG4GeometryManager::GstparFlag(G4int itmed, TG3Flag par, G4double parval)
     medium->SetLimits(tg4Limits);
     // add verbose 
     G4cout << "TG4GeometryManager::GstparFlag: new TG4Limits() for medium " 
-           << itmed << " has been created." << endl;  
+           << itmed << " has been created." << G4endl;  
   }
   // set parameter
   tg4Limits->SetG3Flag(par, parval);
@@ -229,8 +229,8 @@ void TG4GeometryManager::FillMediumIdVector()
   }  
 
   // add verbose
-  G4cout << "Total nof materials: " << nofMaterials << endl;
-  G4cout << "Total nof tracking medias: " << fMediumCounter << endl;  
+  G4cout << "Total nof materials: " << nofMaterials << G4endl;
+  G4cout << "Total nof tracking medias: " << fMediumCounter << G4endl;  
 }    
 
 
@@ -394,7 +394,7 @@ G4Material* TG4GeometryManager::MixMaterials(G4String name, G4double density,
     TG4Globals::Exception(text);
   }    
   // add verbose
-  // G4cout << "Nof of materials to be mixed: " << nofMaterials << endl;
+  // G4cout << "Nof of materials to be mixed: " << nofMaterials << G4endl;
 
   // fill vector of materials
   TG4MaterialVector matVector;  
@@ -585,9 +585,9 @@ void  TG4GeometryManager::Gsckov(Int_t itmed, Int_t npckov, Float_t* ppckov,
   material->SetMaterialPropertiesTable(table);
 
   G4cout << "The tables for UV photon tracking set for "
-         << material->GetName() << endl;
+         << material->GetName() << G4endl;
   for (i=0; i<npckov; i++)
-    G4cout << ppckovDbl[i] << " " << rindexDbl[i] << endl;
+    G4cout << ppckovDbl[i] << " " << rindexDbl[i] << G4endl;
 	 
   delete ppckovDbl;
   delete abscoDbl;
@@ -862,7 +862,7 @@ Int_t TG4GeometryManager::VolId(const Text_t* volName) const
         TG4Globals::Exception(
           "TG4GeometryManager::VolId: Unknown sensitive detector type");
         return 0;
-      }   	
+      }
     }   
   }
 
@@ -897,7 +897,7 @@ const char* TG4GeometryManager::VolName(Int_t id) const
         TG4Globals::Exception(
           "TG4GeometryManager::VolId: Unknown sensitive detector type");
         return 0;
-      }   
+      }
       if (sdID == id) return sd->GetName();
     }  
   }
@@ -925,9 +925,9 @@ void TG4GeometryManager::ReadG3Geometry(G4String filePath)
 // ---
 
   // add verbose
-  G4cout << "Reading the call list file " << filePath << "..." << endl;
+  G4cout << "Reading the call list file " << filePath << "..." << G4endl;
   G3CLRead(filePath, NULL);
-  G4cout << "Call list file read completed. Build geometry" << endl;
+  G4cout << "Call list file read completed. Build geometry" << G4endl;
 }
 
  
@@ -962,7 +962,7 @@ G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
   G4cout << "G4 Stat: instantiated " 
          << NofG4LogicalVolumes()  << " logical volumes \n"
 	 << "                      " 
-	 << NofG4PhysicalVolumes() << " physical volumes" << endl;
+	 << NofG4PhysicalVolumes() << " physical volumes" << G4endl;
 
   // position the first entry 
   // (in Geant3 the top volume cannot be positioned)

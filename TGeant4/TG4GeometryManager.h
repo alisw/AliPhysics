@@ -158,15 +158,15 @@ class TG4GeometryManager
 
     // data members
     TG4GeometryOutputManager*   fOutputManager; //output manager 
-    TG4NameMap       fNameMap;         //map of volumes names to modules names
-    vector<G4int>    fMediumIdVector;  //vector of second indexes for materials
-    G4int            fMediumCounter;   //global medium counter
-    G4int            fMaterialCounter; //global material counter
-    G4int            fMatrixCounter;   //global matrix counter
-    G4bool           fUseG3TMLimits;   //if true: G3 limits are passed to G4 
-                                       //(in development)
-    G4bool           fWriteGeometry;   //if true: geometry parameters are written
-                                       //in a file (ASCII)  
+    TG4NameMap    fNameMap;         //map of volumes names to modules names
+    TG4intVector  fMediumIdVector;  //vector of second indexes for materials
+    G4int         fMediumCounter;   //global medium counter
+    G4int         fMaterialCounter; //global material counter
+    G4int         fMatrixCounter;   //global matrix counter
+    G4bool        fUseG3TMLimits;   //if true: G3 limits are passed to G4 
+                                    //(in development)
+    G4bool        fWriteGeometry;   //if true: geometry parameters are written
+                                    //in a file (ASCII)  
 };
 
 // inline methods

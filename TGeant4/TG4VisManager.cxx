@@ -185,9 +185,9 @@ void TG4VisManager::RegisterGraphicsSystems()
 #endif
 
   if (fVerbose > 0) {
-    cout <<
+    G4cout <<
       "\nYou have successfully chosen to use the following graphics systems."
-	 << endl;
+	 << G4endl;
     PrintAvailableGraphicsSystems();
   }
 }
@@ -420,9 +420,9 @@ void TG4VisManager::SetG4Attribute(G4LogicalVolume* const lv,
      lineStyle = G4VisAttributes::dotted; break;
     default:
      if (fVerbose > 0)
-      G4cout << "TG4VisManager::Gsatt() Usage of LSTY :" << endl
-    	     << "ATT = 1,2,3 means line unbroken, dashed or dotted" << endl
-	     << "any other value resets to the default : unbroken" << endl;
+      G4cout << "TG4VisManager::Gsatt() Usage of LSTY :" << G4endl
+    	     << "ATT = 1,2,3 means line unbroken, dashed or dotted" << G4endl
+	     << "any other value resets to the default : unbroken" << G4endl;
      lineStyle = G4VisAttributes::unbroken;
    }       
    break;
@@ -430,11 +430,11 @@ void TG4VisManager::SetG4Attribute(G4LogicalVolume* const lv,
    lineWidth = kAbsVal;
    if (lineWidth > 7) lineWidth = 7;
    if (fVerbose > 0) 
-       G4cout << "TG4VisManager::Gsatt() Usage for LWID :" << endl
+       G4cout << "TG4VisManager::Gsatt() Usage for LWID :" << G4endl
               << "  The VAL you supply means the width of lines in pixels "
-	      << "for the screen and in 0.1*mm for paper." << endl
+	      << "for the screen and in 0.1*mm for paper." << G4endl
 	      << "  Negative values means the same, but for all daughters"
-	      << endl;
+	      << G4endl;
    break;
   case kCOLO:
    if (kAbsVal < 8)	// G3 base colours
@@ -515,12 +515,12 @@ void TG4VisManager::SetG4Attribute(G4LogicalVolume* const lv,
      break;
     default:
      if (fVerbose > 0)
-         G4cout << "TG4VisManager::Gsatt() FILL usage :" << endl
-	        << "  The FILL values you can supply are only :" << endl
-		<< "+/- 1 : forces wireframe drawing (default)" << endl
-		<< "+/- 2 : forces solid drawing" << endl
+         G4cout << "TG4VisManager::Gsatt() FILL usage :" << G4endl
+	        << "  The FILL values you can supply are only :" << G4endl
+		<< "+/- 1 : forces wireframe drawing (default)" << G4endl
+		<< "+/- 2 : forces solid drawing" << G4endl
 		<< "other values sets the drawing style to solid"
-		<< endl;		
+		<< G4endl;		
      drawingStyle = G4VisAttributes::solid;
    }      
  }
@@ -568,7 +568,7 @@ void TG4VisManager::SetColors()
   for (G4int i=0; i<pLVStore->entries(); i++)
   {
     pLV = pLVStore->at(i);
-//    G4cout << "VOLUME : " << pLV->GetName() << endl;
+//    G4cout << "VOLUME : " << pLV->GetName() << G4endl;
     const G4Material* pMaterial = pLV->GetMaterial();
     const G4State kState = pMaterial->GetState();
     G4double density = (pMaterial->GetDensity())*cm3/g;
