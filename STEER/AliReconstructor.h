@@ -15,6 +15,7 @@ class AliESD;
 
 class AliReconstructor: public TObject {
 public:
+  AliReconstructor(): TObject() {};
   virtual ~AliReconstructor() {};
 
   virtual void         Reconstruct(AliRunLoader* runLoader) const = 0;
