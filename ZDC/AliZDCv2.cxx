@@ -13,7 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
@@ -63,8 +62,7 @@ AliZDCv2::AliZDCv2() : AliZDC()
   fMedSensZP  = 0;
   fMedSensZEM = 0;
   fMedSensGR  = 0;
-//  fMedSensPI  = 0;
-//  fMedSensTDI = 0;
+
 }
  
 //_____________________________________________________________________________
@@ -127,10 +125,10 @@ AliZDCv2::AliZDCv2(const char *name, const char *title)
   fDimZP[2] = 75.;    
   fPosZN[0] = 0.;
   fPosZN[1] = 1.2;
-  fPosZN[2] = 11650.; 
-  fPosZP[0] = -23.9;
+  fPosZN[2] = -11650.; 
+  fPosZP[0] = 23.9;
   fPosZP[1] = 0.;
-  fPosZP[2] = 11600.; 
+  fPosZP[2] = -11600.; 
   fFibZN[0] = 0.;
   fFibZN[1] = 0.01825;
   fFibZN[2] = 50.;
@@ -172,32 +170,30 @@ void AliZDCv2::CreateBeamLine()
   Int_t *idtmed = fIdtmed->GetArray();
   
   // -- Mother of the ZDCs (Vacuum PCON)
-  Int_t irotM;
-  gMC->Matrix(irotM,90.,180.,90.,90.,180.,0.); 	
-
   zd1 = 2092.;
   
   conpar[0] = 0.;
   conpar[1] = 360.;
   conpar[2] = 2.;
-  conpar[3] = zd1;
+  conpar[3] = -13500.;
   conpar[4] = 0.;
   conpar[5] = 55.;
-  conpar[6] = 13500.;
+  conpar[6] = -zd1;
   conpar[7] = 0.;
   conpar[8] = 55.;
   gMC->Gsvolu("ZDC ", "PCON", idtmed[11], conpar, 9);
-  gMC->Gspos("ZDC ", 1, "ALIC", 0., 0., 0., irotM, "ONLY");
+  gMC->Gspos("ZDC ", 1, "ALIC", 0., 0., 0., 0, "ONLY");
 
   // -- FIRST SECTION OF THE BEAM PIPE (from compensator dipole to 
   //    	the beginning of D1) 
-    
   tubpar[0] = 6.3/2.;
   tubpar[1] = 6.7/2.;
   // From beginning of ZDC volumes to beginning of D1
   tubpar[2] = (5838.3-zd1)/2.;
   gMC->Gsvolu("QT01", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT01", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT01", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT01 TUBE pipe from z = %f to z= %f (D1 beg.)\n",-zd1,-2*tubpar[2]-zd1);
   
   //-- SECOND SECTION OF THE BEAM PIPE (from the end of D1 to the
   //    	beginning of D2) 
@@ -212,17 +208,21 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 3.47+0.2;
   tubpar[2] = 958.5/2.;
   gMC->Gsvolu("QT02", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT02", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT02", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT02 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
 
   zd1 += 2.*tubpar[2];
   
   conpar[0] = 25./2.;
-  conpar[1] = 6.44/2.;
-  conpar[2] = 6.84/2.;
-  conpar[3] = 10./2.;
-  conpar[4] = 10.4/2.;
+  conpar[1] = 10./2.;
+  conpar[2] = 10.4/2.;
+  conpar[3] = 6.44/2.;
+  conpar[4] = 6.84/2.;
   gMC->Gsvolu("QC01", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QC01", 1, "ZDC ", 0., 0., conpar[0]+zd1, 0, "ONLY");
+  gMC->Gspos("QC01", 1, "ZDC ", 0., 0., -conpar[0]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QC01 CONE pipe from z = %f to z= %f\n",-zd1,-2*conpar[0]-zd1);
 
   zd1 += 2.*conpar[0];
   
@@ -230,7 +230,9 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 10.4/2.;
   tubpar[2] = 50./2.;
   gMC->Gsvolu("QT03", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT03", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT03", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT03 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2]*2.;
   
@@ -238,7 +240,9 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 10.4/2.;
   tubpar[2] = 10./2.;
   gMC->Gsvolu("QT04", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT04", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT04", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT04 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
@@ -246,7 +250,9 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 10.4/2.;
   tubpar[2] = 3.16/2.;
   gMC->Gsvolu("QT05", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT05", 1, "ZDC ", 0., 0., tubpar[0]+zd1, 0, "ONLY");
+  gMC->Gspos("QT05", 1, "ZDC ", 0., 0., -tubpar[0]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT05 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
@@ -254,17 +260,21 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 10.4/2;
   tubpar[2] = 190./2.;
   gMC->Gsvolu("QT06", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT06", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT06", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT06 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
   conpar[0] = 30./2.;
-  conpar[1] = 10./2.;
-  conpar[2] = 10.4/2.;
-  conpar[3] = 20.6/2.;
-  conpar[4] = 21./2.;
+  conpar[1] = 20.6/2.;
+  conpar[2] = 21./2.;
+  conpar[3] = 10./2.;
+  conpar[4] = 10.4/2.;
   gMC->Gsvolu("QC02", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QC02", 1, "ZDC ", 0., 0., conpar[0]+zd1, 0, "ONLY");
+  gMC->Gspos("QC02", 1, "ZDC ", 0., 0., -conpar[0]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QC02 CONE pipe from z = %f to z= %f\n",-zd1,-2*conpar[0]-zd1);
   
   zd1 += conpar[0] * 2.;
   
@@ -272,17 +282,21 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 21./2.;
   tubpar[2] = 450./2.;
   gMC->Gsvolu("QT07", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT07", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT07", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT07 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
   conpar[0] = 13.6/2.;
-  conpar[1] = 20.6/2.;
-  conpar[2] = 21./2.;
-  conpar[3] = 25.4/2.;
-  conpar[4] = 25.8/2.;
+  conpar[1] = 25.4/2.;
+  conpar[2] = 25.8/2.;
+  conpar[3] = 20.6/2.;
+  conpar[4] = 21./2.;
   gMC->Gsvolu("QC03", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QC03", 1, "ZDC ", 0., 0., conpar[0]+zd1, 0, "ONLY");
+  gMC->Gspos("QC03", 1, "ZDC ", 0., 0., -conpar[0]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QC03 CONE pipe from z = %f to z= %f\n",-zd1,-2*conpar[0]-zd1);
   
   zd1 += conpar[0] * 2.;
   
@@ -290,7 +304,9 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 25.8/2.;
   tubpar[2] = 205.8/2.;
   gMC->Gsvolu("QT08", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT08", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT08", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT08 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
@@ -299,35 +315,33 @@ void AliZDCv2::CreateBeamLine()
   // QT09 is 10 cm longer to accomodate TDI
   tubpar[2] = 515.4/2.;
   gMC->Gsvolu("QT09", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT09", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT09", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT09 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   // --- Insert TDI (inside ZDC volume)
-  
   boxpar[0] = 5.6;
   boxpar[1] = 5.6;
   boxpar[2] = 400./2.;
   gMC->Gsvolu("QTD1", "BOX ", idtmed[7], boxpar, 3);
-  gMC->Gspos("QTD1", 1, "ZDC ", 3., 10.6,  tubpar[2]+zd1+56.3, 0, "ONLY");
-  gMC->Gspos("QTD1", 2, "ZDC ", 3., -10.6, tubpar[2]+zd1+56.3, 0, "ONLY");
+  gMC->Gspos("QTD1", 1, "ZDC ", -3., 10.6,  -tubpar[2]-zd1-56.3, 0, "ONLY");
+  gMC->Gspos("QTD1", 2, "ZDC ", -3., -10.6, -tubpar[2]-zd1-56.3, 0, "ONLY");
   
   boxpar[0] = 0.2/2.;
   boxpar[1] = 5.6;
   boxpar[2] = 400./2.;
   gMC->Gsvolu("QTD2", "BOX ", idtmed[6], boxpar, 3);
-  gMC->Gspos("QTD2", 1, "ZDC ", 8.6+boxpar[0], 0., tubpar[2]+zd1+56.3, 0, "ONLY");
+  gMC->Gspos("QTD2", 1, "ZDC ", -8.6-boxpar[0], 0., -tubpar[2]-zd1-56.3, 0, "ONLY");
   
-//  tubspar[0] = 6.2;	// R = 6.2 cm----------------------------------------
-//  tubspar[1] = 6.4;
-//  tubspar[2] = 400./2.;
-//  tubspar[3] = 180.-62.5;
-//  tubspar[4] = 180.+62.5;
   tubspar[0] = 10.5;	// R = 10.5 cm------------------------------------------
   tubspar[1] = 10.7;
   tubspar[2] = 400./2.;
-  tubspar[3] = 180.-75.5;
-  tubspar[4] = 180.+75.5;
+  tubspar[3] = 360.-75.5;
+  tubspar[4] = 75.5; 
   gMC->Gsvolu("QTD3", "TUBS", idtmed[6], tubspar, 5);
-  gMC->Gspos("QTD3", 1, "ZDC ", 0., 0., tubpar[2]+zd1+56.3, 0, "ONLY");
+  gMC->Gspos("QTD3", 1, "ZDC ", 0., 0., -tubpar[2]-zd1-56.3, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	TDI volume from z = %f to z= %f\n",-tubpar[2]-zd1-56.3,-tubpar[2]-zd1-56.3-400.);
 
   zd1 += tubpar[2] * 2.;
   
@@ -336,7 +350,9 @@ void AliZDCv2::CreateBeamLine()
   // QT10 is 10 cm shorter
   tubpar[2] = 690./2.;
   gMC->Gsvolu("QT10", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT10", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT10", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT10 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
@@ -344,17 +360,21 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 50.4/2.;
   tubpar[2] = 778.5/2.;
   gMC->Gsvolu("QT11", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT11", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT11", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT11 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
   conpar[0] = 14.18/2.;
-  conpar[1] = 50./2.;
-  conpar[2] = 50.4/2.;
-  conpar[3] = 55./2.;
-  conpar[4] = 55.4/2.;
+  conpar[1] = 55./2.;
+  conpar[2] = 55.4/2.;
+  conpar[3] = 50./2.;
+  conpar[4] = 50.4/2.;
   gMC->Gsvolu("QC04", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QC04", 1, "ZDC ", 0., 0., conpar[0]+zd1, 0, "ONLY");
+  gMC->Gspos("QC04", 1, "ZDC ", 0., 0., -conpar[0]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QC04 CONE pipe from z = %f to z= %f\n",-zd1,-2*conpar[0]-zd1);
   
   zd1 += conpar[0] * 2.;
   
@@ -362,17 +382,21 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 55.4/2.;
   tubpar[2] = 730./2.;
   gMC->Gsvolu("QT12", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT12", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT12", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT12 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
   conpar[0] = 36.86/2.;
-  conpar[1] = 55./2.;
-  conpar[2] = 55.4/2.;
-  conpar[3] = 68./2.;
-  conpar[4] = 68.4/2.;
+  conpar[1] = 68./2.;
+  conpar[2] = 68.4/2.;
+  conpar[3] = 55./2.;
+  conpar[4] = 55.4/2.;
   gMC->Gsvolu("QC05", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QC05", 1, "ZDC ", 0., 0., conpar[0]+zd1, 0, "ONLY");
+  gMC->Gspos("QC05", 1, "ZDC ", 0., 0., -conpar[0]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QC05 CONE pipe from z = %f to z= %f\n",-zd1,-2*conpar[0]-zd1);
   
   zd1 += conpar[0] * 2.;
   
@@ -380,7 +404,9 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 68.4/2.;
   tubpar[2] = 927.3/2.;
   gMC->Gsvolu("QT13", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT13", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT13", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT13 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
@@ -388,7 +414,9 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 68.4/2.;
   tubpar[2] = 0.2/2.;
   gMC->Gsvolu("QT14", "TUBE", idtmed[8], tubpar, 3);
-  gMC->Gspos("QT14", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("QT14", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  // Ch.debug
+  //printf("\n	QT14 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
   
@@ -396,15 +424,10 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 6.4/2.;
   tubpar[2] = 0.2/2.;
   gMC->Gsvolu("QT15", "TUBE", idtmed[11], tubpar, 3);
-  
   //-- Position QT15 inside QT14
   gMC->Gspos("QT15", 1, "QT14", -7.7, 0., 0., 0, "ONLY");
-  
-  tubpar[0] = 0./2.;
-  tubpar[1] = 6.4/2.;
-  tubpar[2] = 0.2/2.;
-  gMC->Gsvolu("QT16", "TUBE", idtmed[11], tubpar, 3);
-  
+
+  gMC->Gsvolu("QT16", "TUBE", idtmed[11], tubpar, 3);  
   //-- Position QT16 inside QT14
   gMC->Gspos("QT16", 1, "QT14", 7.7, 0., 0., 0, "ONLY");
   
@@ -422,22 +445,21 @@ void AliZDCv2::CreateBeamLine()
   gMC->Gsvolu("QT18", "TUBE", idtmed[7], tubpar, 3);
   
   // -- ROTATE PIPES 
-
-  Float_t angle = 0.143*kDegrad;
+  Float_t angle = 0.143*kDegrad; // Rotation angle
   
-  AliMatrix(im1, 90.-0.143, 0., 90., 90., 0.143, 180.);
+  AliMatrix(im1, 90.+0.143, 0., 90., 90., 0.143, 180.); // x<0
   gMC->Gspos("QT17", 1, "ZDC ", TMath::Sin(angle) * 680.8/ 2. - 9.4, 
-             0., tubpar[2]+zd1, im1, "ONLY");
+             0., -tubpar[2]-zd1, im1, "ONLY"); 
 	     
-  AliMatrix(im2, 90.+0.143, 0., 90., 90., 0.143, 0.);
+  AliMatrix(im2, 90.-0.143, 0., 90., 90., 0.143, 0.); // x>0 (ZP)
   gMC->Gspos("QT18", 1, "ZDC ", 9.7 - TMath::Sin(angle) * 680.8 / 2., 
-             0., tubpar[2]+zd1, im2, "ONLY");
+             0., -tubpar[2]-zd1, im2, "ONLY"); 
 	         
   // --  END OF BEAM PIPE VOLUME DEFINITION.  
   // ----------------------------------------------------------------
    
   // ----------------------------------------------------------------
-  // --  MAGNET DEFINITION  -> LHC OPTICS 6.4  
+  // --  MAGNET DEFINITION  -> LHC OPTICS 6.5  
   // ----------------------------------------------------------------
   // -- INNER TRIPLET 
   
@@ -460,11 +482,11 @@ void AliZDCv2::CreateBeamLine()
   tubpar[2] = 637./2.;
   gMC->Gsvolu("YMQL", "TUBE", idtmed[7], tubpar, 3);
   
-  gMC->Gspos("MQXL", 1, "ZDC ", 0., 0., tubpar[2]+zq, 0, "ONLY");
-  gMC->Gspos("YMQL", 1, "ZDC ", 0., 0., tubpar[2]+zq, 0, "ONLY");
+  gMC->Gspos("MQXL", 1, "ZDC ", 0., 0., -tubpar[2]-zq, 0, "ONLY");
+  gMC->Gspos("YMQL", 1, "ZDC ", 0., 0., -tubpar[2]-zq, 0, "ONLY");
   
-  gMC->Gspos("MQXL", 2, "ZDC ", 0., 0., tubpar[2]+zq+2430., 0, "ONLY");
-  gMC->Gspos("YMQL", 2, "ZDC ", 0., 0., tubpar[2]+zq+2430., 0, "ONLY");
+  gMC->Gspos("MQXL", 2, "ZDC ", 0., 0., -tubpar[2]-zq-2430., 0, "ONLY");
+  gMC->Gspos("YMQL", 2, "ZDC ", 0., 0., -tubpar[2]-zq-2430., 0, "ONLY");
   
   // --  MQX 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
@@ -481,11 +503,11 @@ void AliZDCv2::CreateBeamLine()
   tubpar[2] = 550./2.;
   gMC->Gsvolu("YMQ ", "TUBE", idtmed[7], tubpar, 3);
   
-  gMC->Gspos("MQX ", 1, "ZDC ", 0., 0., tubpar[2]+zq+908.5,  0, "ONLY");
-  gMC->Gspos("YMQ ", 1, "ZDC ", 0., 0., tubpar[2]+zq+908.5,  0, "ONLY");
+  gMC->Gspos("MQX ", 1, "ZDC ", 0., 0., -tubpar[2]-zq-908.5,  0, "ONLY");
+  gMC->Gspos("YMQ ", 1, "ZDC ", 0., 0., -tubpar[2]-zq-908.5,  0, "ONLY");
   
-  gMC->Gspos("MQX ", 2, "ZDC ", 0., 0., tubpar[2]+zq+1558.5, 0, "ONLY");
-  gMC->Gspos("YMQ ", 2, "ZDC ", 0., 0., tubpar[2]+zq+1558.5, 0, "ONLY");
+  gMC->Gspos("MQX ", 2, "ZDC ", 0., 0., -tubpar[2]-zq-1558.5, 0, "ONLY");
+  gMC->Gspos("YMQ ", 2, "ZDC ", 0., 0., -tubpar[2]-zq-1558.5, 0, "ONLY");
   
   // -- SEPARATOR DIPOLE D1 
   
@@ -515,13 +537,12 @@ void AliZDCv2::CreateBeamLine()
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD1 ", "TUBE", idtmed[7], tubpar, 3);
   
-  gMC->Gspos("YD1 ", 1, "ZDC ", 0., 0., tubpar[2]+zd1, 0, "ONLY");
+  gMC->Gspos("YD1 ", 1, "ZDC ", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   gMC->Gspos("MD1 ", 1, "YD1 ", 0., 0., 0., 0, "ONLY");
   
   // -- DIPOLE D2 
   
-  //zd2 = 12147.6;
-  // --- LHC optics v6.4
+ // --- LHC optics v6.4
   zd2 = 12147.6;
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
@@ -538,7 +559,7 @@ void AliZDCv2::CreateBeamLine()
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD2 ", "TUBE", idtmed[7], tubpar, 3);
   
-  gMC->Gspos("YD2 ", 1, "ZDC ", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  gMC->Gspos("YD2 ", 1, "ZDC ", 0., 0., -tubpar[2]-zd2, 0, "ONLY");
   
   gMC->Gspos("MD2 ", 1, "YD2 ", -9.4, 0., 0., 0, "ONLY");
   gMC->Gspos("MD2 ", 2, "YD2 ",  9.4, 0., 0., 0, "ONLY");
@@ -623,8 +644,9 @@ void AliZDCv2::CreateZDC()
   gMC->Gspos("ZNF4", 1, "ZNG4", 0., 0., 0., 0, "ONLY");
   
   // --- Position the neutron calorimeter in ZDC 
-  gMC->Gspos("ZNEU", 1, "ZDC ", fPosZN[0], fPosZN[1], fPosZN[2]+fDimZN[2], 0, "ONLY");
-  
+  gMC->Gspos("ZNEU", 1, "ZDC ", fPosZN[0], fPosZN[1], fPosZN[2]-fDimZN[2], 0, "ONLY");
+  //Ch debug
+  //printf("\n ZN -> %f < z < %f cm\n",fPosZN[2],fPosZN[2]-2*fDimZN[2]);
 
   // -------------------------------------------------------------------------------
   //--> Proton calorimeter (ZP)  
@@ -670,7 +692,9 @@ void AliZDCv2::CreateZDC()
   
 
   // --- Position the proton calorimeter in ZDC 
-  gMC->Gspos("ZPRO", 1, "ZDC ", fPosZP[0], fPosZP[1], fPosZP[2]+fDimZP[2], 0, "ONLY");
+  gMC->Gspos("ZPRO", 1, "ZDC ", fPosZP[0], fPosZP[1], fPosZP[2]-fDimZP[2], 0, "ONLY");
+  //Ch debug
+  //printf("\n ZP -> %f < z < %f cm\n",fPosZP[2],fPosZP[2]-2*fDimZP[2]);
     
   
   // -------------------------------------------------------------------------------
@@ -690,12 +714,13 @@ void AliZDCv2::CreateZDC()
   dimPb[0] = fDimZEMPb;					// Lead slices 
   dimPb[1] = fDimZEM[2];
   dimPb[2] = fDimZEM[1];
-  dimPb[3] = 90.-fDimZEM[3];
+  //dimPb[3] = fDimZEM[3]; //controllare
+  dimPb[3] = 90.-fDimZEM[3]; //originale
   dimPb[4] = 0.;
   dimPb[5] = 0.;
   gMC->Gsvolu("ZEL0", "PARA", idtmed[5], dimPb, 6);
   gMC->Gsvolu("ZEL1", "PARA", idtmed[5], dimPb, 6);
-  //gMC->Gsvolu("ZEL2", "PARA", idtmed[5], dimPb, 6);
+  gMC->Gsvolu("ZEL2", "PARA", idtmed[5], dimPb, 6);
   
   // --- Position the lead slices in the tranche 
   Float_t zTran = fDimZEM[0]/fDivZEM[2]; 
@@ -730,14 +755,17 @@ void AliZDCv2::CreateZDC()
   // NB -> In AliZDCv2 ZEM is positioned in ALIC (instead of in ZDC) volume
   //	   beacause it's impossible to make a ZDC pcon volume to contain
   //	   both hadronics and EM calorimeters. 
-  gMC->Gspos("ZEM ", 1,"ALIC", fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
+  gMC->Gspos("ZEM ", 1,"ALIC", -fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
   
   // Second EM ZDC (same side w.r.t. IP, just on the other side w.r.t. beam pipe)
-  gMC->Gspos("ZEM ", 2,"ALIC", -fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
+  gMC->Gspos("ZEM ", 2,"ALIC", fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
   
   // --- Adding last slice at the end of the EM calorimeter 
-//  Float_t zLastSlice = fPosZEM[2]+fDimZEMPb+fDimZEM[0];
-//  gMC->Gspos("ZEL2", 1,"ALIC", fPosZEM[0], fPosZEM[1], zLastSlice, irot1, "ONLY");
+  Float_t zLastSlice = fPosZEM[2]+fDimZEMPb+2*fDimZEM[0];
+  gMC->Gspos("ZEL2", 1,"ALIC", fPosZEM[0], fPosZEM[1], zLastSlice, irot1, "ONLY");
+  //Ch debug
+  //printf("\n ZEM lenght = %f cm\n",2*fZEMLength);
+  //printf("\n ZEM -> %f < z < %f cm\n",fPosZEM[2],fPosZEM[2]+2*fZEMLength+zLastSlice+fDimZEMPb);
   
 }
  
@@ -1137,15 +1165,15 @@ void AliZDCv2::StepManager()
   //
   // Routine called at every step in the Zero Degree Calorimeters
   //
-
+    
   Int_t j, vol[2], ibeta=0, ialfa, ibe, nphe;
   Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, radius, out;
   Float_t xalic[3], z, guiEff, guiPar[4]={0.31,-0.0004,0.0197,0.7958};
   TLorentzVector s, p;
   const char *knamed;
 
-  for (j=0;j<10;j++) hits[j]=0;
-
+  for (j=0;j<10;j++) hits[j]=999.;
+  
   // --- This part is for no shower developement in beam pipe and TDI
   // If particle interacts with beam pipe or TDI -> return
   if((gMC->GetMedium() == fMedSensPI) || (gMC->GetMedium() == fMedSensTDI)){ 
@@ -1153,14 +1181,22 @@ void AliZDCv2::StepManager()
     if(fNoShower==1) {
       if(gMC->GetMedium() == fMedSensPI) {
         knamed = gMC->CurrentVolName();
-        if((!strncmp(knamed,"MQ",2)) || (!strncmp(knamed,"YM",2)))  fpLostIT += 1;
-        if((!strncmp(knamed,"MD1",3))|| (!strncmp(knamed,"YD1",2))) fpLostD1 += 1;
+	// Ch debug
+	printf("\t fMedSensPI -> medium: %d, Volume: %s \n",gMC->GetMedium(),knamed);
+        if(!strncmp(knamed,"YM", 2))  fpLostIT += 1;
+        if(!strncmp(knamed,"YD1",2))  fpLostD1 += 1;
       }
-      else if(gMC->GetMedium() == fMedSensTDI) fpLostTDI += 1;
+      else if(gMC->GetMedium() == fMedSensTDI){ // NB->Cu = TDI or D1 vacuum chamber
+        knamed = gMC->CurrentVolName();
+	// Ch debug
+	printf("\t fMedSensTDI -> medium: %d, Volume: %s \n",gMC->GetMedium(),knamed);
+        if(!strncmp(knamed,"MD1",3)) fpLostD1 += 1;
+        if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
+      }
+      printf("\n      # of p lost in Inner Triplet = %d\n",fpLostIT);
+      printf("\n      # of p lost in D1  = %d\n",fpLostD1);
+      printf("\n      # of p lost in TDI = %d\n\n",fpLostTDI);
       gMC->StopTrack();
-      //printf("\n      # of p lost in Inner Triplet = %d\n",fpLostIT);
-      //printf("\n      # of p lost in D1  = %d\n",fpLostD1);
-      //printf("\n      # of p lost in TDI = %d\n\n",fpLostTDI);
     }
     return;
   }
@@ -1266,7 +1302,7 @@ void AliZDCv2::StepManager()
 	if(fNoShower==1){
 	  fpDetected += 1;
 	  gMC->StopTrack();
-	  //printf("\n	# of detected p = %d\n\n",fpDetected);
+	  if(vol[0]==2) printf("\n	# of detected p = %d\n\n",fpDetected);
 	  return;
 	}
       }
