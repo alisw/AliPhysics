@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2001/03/01 17:34:47  kowal2
+Correction due to the accuracy problem
+
 Revision 1.29  2001/02/28 16:34:40  kowal2
 Protection against nonphysical values of the avalanche size,
 10**6 is the maximum
@@ -624,7 +627,7 @@ void AliTPC::CreateMaterials()
   // Si
 
   amat[0] = 28.086;
-  zmat[0] = 14.,
+  zmat[0] = 14.;
 
   density = 2.33;
 
