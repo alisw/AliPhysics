@@ -147,7 +147,10 @@ void AliStackingAction::PrepareNewEvent()
   //stackManager->ClearPostponeStack();
   stackManager->ResetPostponeStack();
   fTrackingAction = AliTrackingAction::Instance();
-  fSavePrimaries = fTrackingAction->GetSavePrimaries();
+  if (fTrackingAction)
+    fSavePrimaries = fTrackingAction->GetSavePrimaries();
+  else   
+    fSavePrimaries = false;
 }
 
 

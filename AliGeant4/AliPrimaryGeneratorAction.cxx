@@ -245,7 +245,7 @@ void AliPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     // (they would be stored twice)
     AliTrackingAction* trackingAction
       =  AliTrackingAction::Instance();
-    trackingAction->SetSavePrimaries(false);
+    if (trackingAction) trackingAction->SetSavePrimaries(false);
   }  
   else {
     // use particle gun otherwise
@@ -254,7 +254,7 @@ void AliPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     // primary particles have to be saved
     AliTrackingAction* trackingAction
       =  AliTrackingAction::Instance();
-    trackingAction->SetSavePrimaries(true);
+    if (trackingAction) trackingAction->SetSavePrimaries(true);
   }  
 }
 
