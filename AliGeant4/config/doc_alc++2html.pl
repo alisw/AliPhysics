@@ -39,6 +39,7 @@ if (! grep(/tmpdoc/, `ls`)) {
 
 # select directory that will be processed
 $SOURCEDIR = ". ../TGeant4 ../STEER ../EVGEN ../TGeant3 ../ALIFAST ../ALIROOT ";
+$SOURCEDIR = $SOURCEDIR . ". ../CONTAINERS ../THijing ";
 $SOURCEDIR = $SOURCEDIR . "../CASTOR ../FMD ../ITS ../MUON ../PHOS ../PMD ";
 $SOURCEDIR = $SOURCEDIR . "../RICH ../START ../STRUCT ../TOF ../TPC ../TRD ../ZDC";
 
