@@ -11,8 +11,8 @@
 #include "AliL3MemHandler.h"
 #include "AliL3DigitData.h"
 #ifdef use_newio
-#include "../RAW/AliRawReaderRoot.h"
-#include "../RAW/AliRawReaderDate.h"
+#include "AliRawReaderRoot.h"
+#include "AliRawReaderDate.h"
 #else
 #include "AliL3DDLTPCRawStream.h"
 #include "AliL3DDLRawReaderFile.h"

@@ -25,9 +25,9 @@
 #include "AliL3ITSclusterer.h"
 #include "AliRawReader.h"
 #include "AliITSgeom.h"
-#include "../RAW/AliITSRawStreamSPD.h"
-#include "../RAW/AliITSRawStreamSDD.h"
-#include "../RAW/AliITSRawStreamSSD.h"
+#include "AliITSRawStreamSPD.h"
+#include "AliITSRawStreamSDD.h"
+#include "AliITSRawStreamSSD.h"
 #include <TTree.h>
 #include <TClonesArray.h>
 
