@@ -108,11 +108,11 @@ void AliSTARTv1::CreateGeometry()
 //  1: 
     ppcon[3]  =  14.1/2;
     ppcon[4]  =   4.4;
-    ppcon[5]  =   4.5;
+    ppcon[5]  =   4.6;
 //  2
-    ppcon[6]  = ppcon[3]+1.;
+    ppcon[6]  = ppcon[3]+0.9;
     ppcon[7]  =   4.4;
-    ppcon[8]  =   4.5;
+    ppcon[8]  =   4.6;
 //  3
     ppcon[9]  = ppcon[6];
     ppcon[10] =   4.4;
@@ -130,7 +130,7 @@ void AliSTARTv1::CreateGeometry()
     ppcon[17] =   5.3;
     
 //  6
-    ppcon[18]  = ppcon[12]+5.8;
+    ppcon[18]  = ppcon[15]+5.8;
     ppcon[19] =   5.1;
     ppcon[20] =   5.3;
     
@@ -140,25 +140,27 @@ void AliSTARTv1::CreateGeometry()
     ppcon[23] =   5.9;
     
 //  8
-    ppcon[24]  = ppcon[21]+1.5;
+    ppcon[24]  = ppcon[21]+1.8;
     ppcon[25] =   5.1;
     ppcon[26] =   5.9;
 //  9
-    ppcon[27]  = ppcon[24]+0.5;
-    ppcon[28] =   5.1;
+
+   ppcon[27]  = ppcon[24];
+    ppcon[28] =   3.15;
     ppcon[29] =   5.9;
 
 //  10
-    ppcon[30]  = ppcon[24]+0.5;
+    ppcon[30]  = ppcon[27]+0.3;
     ppcon[31] =   3.15;
     ppcon[32] =   5.9;
-
+    
 //  11
     ppcon[33]  = ppcon[30];
     ppcon[34] =   3.15;
     ppcon[35] =   5.9;
+    
 //  12
-    ppcon[36]  = ppcon[30];
+    ppcon[36]  = ppcon[33];
     ppcon[37] =   3.15;
     ppcon[38] =   3.25;
     
@@ -167,11 +169,11 @@ void AliSTARTv1::CreateGeometry()
     ppcon[40] =   3.15;
     ppcon[41] =   3.25;
 //  14
-    ppcon[42]  = ppcon[36]+4.5;
+    ppcon[42]  = ppcon[39];
     ppcon[43] =   3.15;
     ppcon[44] =   7.6;
 //  15
-    ppcon[45]  = ppcon[42]+0.9;
+    ppcon[45]  = ppcon[42]+1.;
     ppcon[46] =   3.15;
     ppcon[47] =   7.6;
     
@@ -179,7 +181,8 @@ void AliSTARTv1::CreateGeometry()
     z=-69.7;//-14.1/2;
     gMC->Gspos("0SUP",1,"ALIC",0.,0.,z,idrotm[901],"ONLY");
 
-  Float_t zdetRight=69.7,zdetLeft=350;
+
+   Float_t zdetRight=69.7,zdetLeft=350;
  //-------------------------------------------------------------------
  //  START volume 
  //-------------------------------------------------------------------
