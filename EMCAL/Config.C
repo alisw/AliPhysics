@@ -25,11 +25,17 @@ enum PprRad_t
 };
 
 // This part for configuration    
-static PprRun_t run = kJets_50;
+static PprRun_t run          = kHijing_jj75;
 //static PprRun_t run = kJets_100;
-static PprGeo_t geo = kHoles;
-static PprRad_t rad = kGluonRadiation;
+static PprGeo_t geo          = kHoles;
+static PprRad_t rad          = kGluonRadiation;
 static Int_t    eventsPerRun = 100;
+static Int_t    simpleJet    = 1;
+if (rad == kGluonRadiation) 
+{
+    simpleJet = 0;
+}
+
 
 // Comment line 
 static TString  comment;
@@ -602,7 +608,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	// trigger
 	gener->SetTrigger(1);
 	gener->SetPtJet(25.);
-	gener->SetSimpleJets(1);
+	gener->SetSimpleJets(simpleJet);
 	gener->SetRadiation(isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(15.,105.);   
@@ -616,7 +622,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	// trigger
 	gener->SetTrigger(1);
 	gener->SetPtJet(50.);
-	gener->SetSimpleJets(1);
+	gener->SetSimpleJets(simpleJet);
 	gener->SetRadiation(isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(15.,105.);   
@@ -630,7 +636,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	// trigger
 	gener->SetTrigger(1);
 	gener->SetPtJet(75.);
-	gener->SetSimpleJets(1);
+	gener->SetSimpleJets(simpleJet);
 	gener->SetRadiation(isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(15.,105.);   
@@ -644,7 +650,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	// trigger
 	gener->SetTrigger(1);
 	gener->SetPtJet(100.);
-	gener->SetSimpleJets(1);
+	gener->SetSimpleJets(simpleJet);
 	gener->SetRadiation(isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(15.,105.);   
@@ -658,7 +664,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	// trigger
 	gener->SetTrigger(1);
 	gener->SetPtJet(125.);
-	gener->SetSimpleJets(1);
+	gener->SetSimpleJets(simpleJet);
 	gener->SetRadiation(isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(15.,105.);   
@@ -674,7 +680,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	// trigger
 	gener->SetTrigger(2);
 	gener->SetPtJet(25.);
-	gener->SetSimpleJets(1);
+	gener->SetSimpleJets(simpleJet);
 	gener->SetRadiation(isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(15.,105.);   
@@ -688,7 +694,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	// trigger
 	gener->SetTrigger(2);
 	gener->SetPtJet(50.);
-	gener->SetSimpleJets(1);
+	gener->SetSimpleJets(simpleJet);
 	gener->SetRadiation(isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(15.,105.);   
@@ -702,7 +708,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	// trigger
 	gener->SetTrigger(2);
 	gener->SetPtJet(75.);
-	gener->SetSimpleJets(1);
+	gener->SetSimpleJets(simpleJet);
 	gener->SetRadiation(isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(15.,105.);   
@@ -716,7 +722,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	// trigger
 	gener->SetTrigger(2);
 	gener->SetPtJet(100.);
-	gener->SetSimpleJets(1);
+	gener->SetSimpleJets(simpleJet);
 	gener->SetRadiation(isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(15.,105.);   
@@ -730,7 +736,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	// trigger
 	gener->SetTrigger(2);
 	gener->SetPtJet(125.);
-	gener->SetSimpleJets(1);
+	gener->SetSimpleJets(simpleJet);
 	gener->SetRadiation(isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(15.,105.);   
