@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.46  2001/12/19 10:36:19  morsch
+Add possibility if jet kinematic biasing.
+
 Revision 1.45  2001/11/28 08:06:52  morsch
 Use fMaxLifeTime parameter.
 
@@ -287,7 +290,7 @@ void AliGenPythia::Generate()
     Int_t j, kf;
     fTrials=0;
 
-//  Set collision vertex position 
+    //  Set collision vertex position 
     if(fVertexSmear==kPerEvent) {
 	fPythia->SetMSTP(151,1);
 	for (j=0;j<3;j++) {
@@ -332,6 +335,7 @@ void AliGenPythia::Generate()
 	printf("\n **************************************************%d\n",np);
 	Int_t nc = 0;
 	if (fProcess != kPyMb && fProcess != kPyJets && fProcess != kPyDirectGamma) {
+	    
 	    for (i = 0; i<np-1; i++) {
 		iparticle = (TParticle *) fParticles->At(i);
 		Int_t ks = iparticle->GetStatusCode();
@@ -451,6 +455,7 @@ void AliGenPythia::Generate()
 	    if (jev >= fNpart || fNpart == -1) {
 		fKineBias=Float_t(fNpart)/Float_t(fTrials);
 		printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
+		MakeHeader();
 		break;
 	    }
 	}
@@ -517,7 +522,6 @@ Int_t  AliGenPythia::GenerateMB()
     if (pParent) delete[] pParent;
     
     printf("\n I've put %i particles on the stack \n",nc);
-    MakeHeader();
     return nc;
 }
 
@@ -553,6 +557,7 @@ void AliGenPythia::MakeHeader()
 // Builds the event header, to be called after each event
     AliGenEventHeader* header = new AliGenPythiaEventHeader("Pythia");
     ((AliGenPythiaEventHeader*) header)->SetProcessType(fPythia->GetMSTI(1));
+    ((AliGenPythiaEventHeader*) header)->SetTrials(fTrials);
     header->SetPrimaryVertex(fEventVertex);
     gAlice->SetGenEventHeader(header);
 }
