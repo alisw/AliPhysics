@@ -53,9 +53,6 @@
 #pragma link C++ class AliHBTQOutasCorrFctn+;
 #pragma link C++ class AliHBTQSideasCorrFctn+;
 #pragma link C++ class AliHBTQLongasCorrFctn+;
-#pragma link C++ class AliHBTQOutWeightasCorrFctn+;
-#pragma link C++ class AliHBTQSideWeightasCorrFctn+;
-#pragma link C++ class AliHBTQLongWeightasCorrFctn+;
 
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
 #pragma link C++ class AliHBTCorrFitFctn+;
