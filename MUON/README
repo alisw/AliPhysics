@@ -163,7 +163,7 @@ aliroot -b << EOF
 TPluginManager* pluginManager = gROOT->GetPluginManager();
 pluginManager->AddHandler("AliReconstructor", "MUON","AliMUONReconstructor", "MUON","AliMUONReconstructor()")
 AliReconstruction MuonRec("galice.root") 
-MuonRec.SetRunTracking(kFALSE)
+MuonRec.SetRunTracking("")
 MuonRec.SetRunVertexFinder(kFALSE)
 MuonRec.SetRunLocalReconstruction("MUON")
 MuonRec.SetFillESD("MUON")
