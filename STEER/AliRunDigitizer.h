@@ -53,7 +53,10 @@ public:
   TTree*    GetInputTreeS(Int_t i) const {return fArrayTreeS[i];}
   TTree*    GetInputTreeH(Int_t i) const {return fArrayTreeH[i];}
   TTree*    GetInputTreeTPCS(Int_t i) const {return fArrayTreeTPCS[i];}
+  TTree*    GetInputTreeTRDS(Int_t i) const {return fArrayTreeTRDS[i];}
   TTree*    GetTreeD() const {return fTreeD;}
+  TTree*    GetTreeDTPC() const {return fTreeDTPC;} 
+  TTree*    GetTreeDTRD() const {return fTreeDTRD;} 
   void      Digitize(Option_t* option = 0);
   void      Exec(Option_t *option) {this->Digitize();}
   void      ExecuteTask(Option_t* option = 0);
@@ -100,12 +103,15 @@ private:
   Int_t             fCopyTreesFromInput;  // from which input file the trees
                                           // should be copied, -1 for no copies
   TTree *           fTreeD;               //! output TreeD
+  TTree *           fTreeDTPC;            //! output TreeD for TPC
+  TTree *           fTreeDTRD;            //! output TreeD for TRD
   Int_t             fNinputs;             // nr of input streams - can be taken from the TClonesArray dimension
   Int_t             fNinputsGiven;        // nr of input streams given by user
   TClonesArray *    fInputStreams;        // input streams
-  TFile *          fInputFiles[MAXSTREAMSTOMERGE];   //! p. to current input files
+  TFile *           fInputFiles[MAXSTREAMSTOMERGE];   //! p. to current input files
   TTree *           fArrayTreeS[MAXSTREAMSTOMERGE];   //! array with p. to TreeS
   TTree *           fArrayTreeTPCS[MAXSTREAMSTOMERGE];   //! array with p. to TreeD_75x40_100x60_x (TPC Sdigits)
+  TTree *           fArrayTreeTRDS[MAXSTREAMSTOMERGE];   //! array with p. to TreeSx_TRD (TRD Sdigits)
   TTree *           fArrayTreeH[MAXSTREAMSTOMERGE];   //! array with p. to TreeH
   AliMergeCombi *   fCombi;               // pointer to the combination object
   TArrayI           fCombination;         //! combination of events from
@@ -119,7 +125,7 @@ private:
   void              FinishGlobal();
   Int_t             fDebug;                //! specifies debug level, 0 is min
   
-  ClassDef(AliRunDigitizer,2)
+  ClassDef(AliRunDigitizer,3)
 };
 
 #endif // ALIRUNDIGITIZER_H

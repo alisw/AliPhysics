@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/10/21 18:38:43  hristov
+Several pointers were set to zero in the default constructors to avoid memory management problems
+
 Revision 1.7  2001/10/04 15:56:07  jchudoba
 TTask inheritance
 
@@ -238,6 +241,9 @@ Bool_t AliRunDigitizer::ConnectInputTrees()
       sprintf(treeName,"TreeS_75x40_100x60_%d",serialNr);
       tree = static_cast<TTree*>(iStream->CurrentFile()->Get(treeName));
       fArrayTreeTPCS[i] = tree;
+      sprintf(treeName,"TreeS%d_TRD",serialNr);
+      tree = static_cast<TTree*>(iStream->CurrentFile()->Get(treeName));
+      fArrayTreeTRDS[i] = tree;
     } else if (delta[i] != 0) {
       Error("ConnectInputTrees","Only delta 0 or 1 is implemented");
       return kFALSE;
@@ -306,6 +312,23 @@ void AliRunDigitizer::InitEvent()
     fTreeD = new TTree(treeName,"Digits");
     fTreeD->Write(0,TObject::kOverwrite);
   }
+
+// special tree for TPC
+  sprintf(treeName,"TreeD_75x40_100x60_%d",fEvent);
+  fTreeDTPC = static_cast<TTree*>(fOutput->Get(treeName));
+  if (!fTreeDTPC) {
+    fTreeDTPC = new TTree(treeName,"TPC_Digits");
+    fTreeDTPC->Write(0,TObject::kOverwrite);
+  }
+
+// special tree for TRD
+  sprintf(treeName,"TreeD%d_TRD",fEvent);
+  fTreeDTRD = static_cast<TTree*>(fOutput->Get(treeName));
+  if (!fTreeDTRD) {
+    fTreeDTRD = new TTree(treeName,"TRD_Digits");
+    fTreeDTRD->Write(0,TObject::kOverwrite);
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -327,6 +350,14 @@ void AliRunDigitizer::FinishEvent()
   if (fTreeD) {
     delete fTreeD;
     fTreeD = 0;
+  }
+  if (fTreeDTPC) {
+    delete fTreeDTPC;
+    fTreeDTPC = 0;
+  }
+  if (fTreeDTRD) {
+    delete fTreeDTRD;
+    fTreeDTRD = 0;
   }
 }
 ////////////////////////////////////////////////////////////////////////
