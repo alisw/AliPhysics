@@ -13,7 +13,6 @@
 #include <globals.hh>
 
 class AliModule;
-class TG4StepManager;
 
 class G4HCofThisEvent;
 class G4Step;
@@ -32,12 +31,7 @@ class AliSensitiveDetector : public TG4VSensitiveDetector
     AliSensitiveDetector& operator=(const AliSensitiveDetector& right);
   
     // methods
-    virtual void Initialize(G4HCofThisEvent* hc);
-    virtual G4bool ProcessHits(G4Step* step, G4TouchableHistory* history);
-    virtual void EndOfEvent(G4HCofThisEvent* hce);
-    //virtual void clear();
-    virtual void PrintAll();
-    virtual void DrawAll();
+    virtual void UserProcessHits(const G4Track* track, const G4Step* step);
     
   protected:  
     AliSensitiveDetector();
@@ -45,7 +39,6 @@ class AliSensitiveDetector : public TG4VSensitiveDetector
   private:
     // data members
     AliModule*       fModule;      //AliModule
-    TG4StepManager*  fStepManager; //TG4StepManager
 };
 
 #endif //ALI_SENSITIVE_DETECTOR_H

@@ -5,6 +5,7 @@
 
 #include "AliTrackingAction.h"
 #include "AliTrackingActionMessenger.h"
+#include "AliSensitiveDetector.h"
 #include "AliRun.h"
 #include "AliGlobals.h"  
 #include "TG4StepManager.h"
@@ -13,10 +14,10 @@
 #include <G4Track.hh>
 #include <G4Event.hh>
 #include <G4SDManager.hh>
+#include <G4VSensitiveDetector.hh>
 #include <G4VHitsCollection.hh>
 
 #include <TParticle.h>
-#include <TTree.h>
 
 // static data members
 AliTrackingAction* AliTrackingAction::fgInstance = 0;
@@ -94,7 +95,7 @@ void AliTrackingAction::PrepareNewEvent()
   pStepManager->SetSteppingManager(pG4StepManager);
 }
 
-void AliTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
+void AliTrackingAction::PreTrackingAction(const G4Track* aTrack)
 {
 // Called by G4 kernel before starting tracking.
 // ---
@@ -126,10 +127,10 @@ void AliTrackingAction::PreUserTrackingAction(const G4Track* aTrack)
     //  by AlStackingAction in ClassifyNewTrack() method)
     G4String origin = "secondary"; 
     SaveParticle(aTrack, origin);
-  };
+  }
 }
 
-void AliTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
+void AliTrackingAction::PostTrackingAction(const G4Track* aTrack)
 {
 // Called by G4 kernel after finishing tracking.
 // ---

@@ -7,12 +7,9 @@
 #include "AliModule.h" 
 #include "AliRun.h"
 
-#include "TG4StepManager.h"
-
 AliSensitiveDetector::AliSensitiveDetector(G4String sdName, AliModule* module)
   : TG4VSensitiveDetector(sdName),
-    fModule(module),
-    fStepManager(TG4StepManager::Instance())
+    fModule(module)
 {
 //
 }
@@ -20,8 +17,7 @@ AliSensitiveDetector::AliSensitiveDetector(G4String sdName, AliModule* module)
 AliSensitiveDetector::AliSensitiveDetector(G4String sdName, AliModule* module, 
                                            G4int id)
   : TG4VSensitiveDetector(sdName, id),
-    fModule(module),
-    fStepManager(TG4StepManager::Instance())
+    fModule(module)
 {
 //
 }
@@ -31,7 +27,6 @@ AliSensitiveDetector::AliSensitiveDetector(const AliSensitiveDetector& right)
 {
 //
   fModule = right.fModule;
-  fStepManager = right.fStepManager;
 }  
   
 AliSensitiveDetector::AliSensitiveDetector(){
@@ -54,66 +49,28 @@ AliSensitiveDetector::operator=(const AliSensitiveDetector& right)
   TG4VSensitiveDetector::operator=(right);
 
   fModule = right.fModule;
-  fStepManager = right.fStepManager;
 
   return *this;  
 }    
           
 // public methods
 
-void AliSensitiveDetector::Initialize(G4HCofThisEvent* hc)
+void AliSensitiveDetector::UserProcessHits(const G4Track* track, 
+                                           const G4Step* step)
 {
-// This method is called at the beginning of event action
-// before user defined BeginOfEventAction() method.
-}
-
-G4bool AliSensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*)
-{
-// Calls StepManager of associated AliModules.
+// Calls StepManager of associated AliModule.
 // ---
 
   // add energy deposit of the current step
   // directly to AliRun
-  G4int copy;
-  gAlice->AddEnergyDeposit(fID, step->GetTotalEnergyDeposit());
+  if (step) gAlice->AddEnergyDeposit(fID, step->GetTotalEnergyDeposit());
 
   // parent ID -> shunt
-  G4int parentID
-    = step->GetTrack()->GetParentID();
+  G4int parentID = track->GetParentID();
   Int_t shunt = 0;
   if (parentID==0) shunt = 1;
   fModule->SetIshunt(shunt);
 
-  if ((step->GetPreStepPoint()->GetStepStatus() == fGeomBoundary) ||
-      (step->GetTrack()->GetCurrentStepNumber() == 1) ){
-
-    // if first step or crossing boundary
-    // let AliModule process step in PreStepPoint
-    // (this ensures compatibility with G3 that
-    // makes additional step of zero length) 
-
-    fStepManager->SetStep(step, kPreStepPoint);
-    fModule->StepManager();
-  }  
-
-  // let AliModule process step
-  fStepManager->SetStep(step, kPostStepPoint);
   fModule->StepManager();
-
-  return true;
 }
 
-void AliSensitiveDetector::EndOfEvent(G4HCofThisEvent* hce){
-//
-}
-
-//void AliSensitiveDetector::clear()
-//{} 
-
-void AliSensitiveDetector::PrintAll() {
-//
-} 
-
-void AliSensitiveDetector::DrawAll() {
-//
-} 

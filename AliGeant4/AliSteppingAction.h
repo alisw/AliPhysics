@@ -7,7 +7,8 @@
 #ifndef ALI_STEPPING_ACTION_H
 #define ALI_STEPPING_ACTION_H
 
-#include <G4UserSteppingAction.hh>
+#include "TG4SteppingAction.h"
+
 #include <G4ThreeVector.hh>
 #include <globals.hh>
 
@@ -15,7 +16,7 @@ class AliSteppingActionMessenger;
 
 class G4Track;
 
-class AliSteppingAction : public G4UserSteppingAction
+class AliSteppingAction : public TG4SteppingAction
 {
   enum { 
     kCheckNofSteps = 100,
@@ -30,7 +31,7 @@ class AliSteppingAction : public G4UserSteppingAction
     virtual ~AliSteppingAction();
 
     // methods
-    virtual void UserSteppingAction(const G4Step* step);
+    virtual void SteppingAction(const G4Step* step);
     
     // set methods
     void SetLoopVerboseLevel(G4int level);

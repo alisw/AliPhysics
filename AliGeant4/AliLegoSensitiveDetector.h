@@ -13,7 +13,6 @@
 #include <globals.hh>
 
 class AliLego;
-class TG4StepManager;
 
 class G4HCofThisEvent;
 class G4Step;
@@ -32,12 +31,7 @@ class AliLegoSensitiveDetector : public TG4VSensitiveDetector
     AliLegoSensitiveDetector& operator=(const AliLegoSensitiveDetector& right);
 
     // methods
-    virtual void Initialize(G4HCofThisEvent* hc);
-    virtual G4bool ProcessHits(G4Step* step, G4TouchableHistory* history);
-    virtual void EndOfEvent(G4HCofThisEvent* hce);
-    //virtual void clear();
-    virtual void PrintAll();
-    virtual void DrawAll();
+    virtual void UserProcessHits(const G4Track* track, const G4Step* step);
     
     // get methods
     G4VSensitiveDetector* GetStandardSD() const;
@@ -49,7 +43,6 @@ class AliLegoSensitiveDetector : public TG4VSensitiveDetector
     // data members
     AliLego*               fLego;        //lego from AliRoot
     G4VSensitiveDetector*  fStandardSD;  //standard sensitive detector
-    TG4StepManager*        fStepManager; //TG4StepManager
 };
 
 // inline methods

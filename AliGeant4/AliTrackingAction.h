@@ -6,7 +6,8 @@
 #ifndef ALI_TRACKING_ACTION_H
 #define ALI_TRACKING_ACTION_H
 
-#include <G4UserTrackingAction.hh>
+#include "TG4TrackingAction.h"
+
 #include <globals.hh>
 
 #include <TClonesArray.h>
@@ -15,7 +16,7 @@ class AliTrackingActionMessenger;
 
 class G4Track;
 
-class AliTrackingAction : public G4UserTrackingAction 
+class AliTrackingAction : public TG4TrackingAction 
 {
   public:
     AliTrackingAction();
@@ -28,8 +29,8 @@ class AliTrackingAction : public G4UserTrackingAction
 
     // methods
     void PrepareNewEvent();
-    virtual void PreUserTrackingAction(const G4Track* aTrack);
-    virtual void PostUserTrackingAction(const G4Track* aTrack);
+    virtual void PreTrackingAction(const G4Track* aTrack);
+    virtual void PostTrackingAction(const G4Track* aTrack);
     void SaveParticle(const G4Track* track, G4String processName);
     void SaveAndDestroyTrack();
 

@@ -98,9 +98,11 @@ void AliSteppingAction::PrintTrackInfo(const G4Track* track) const
 #endif
 }
 
+#include "AliMC.h"
+
 // public methods
 
-void AliSteppingAction::UserSteppingAction(const G4Step* step)
+void AliSteppingAction::SteppingAction(const G4Step* step)
 {
 // After processing the given number of steps (kCheckNofSteps)
 // the particle position is compared with the previus one
