@@ -5332,16 +5332,25 @@ void AliITSvPPRasymmFMD::StepManager(){
     TLorentzVector position, momentum;
     static TLorentzVector position0;
     static Int_t stat0=0;
-    if((id=gMC->CurrentVolID(copy) == fIDMother)&&
-       (gMC->IsTrackEntering()||gMC->IsTrackExiting())){
+
+    if(!(this->IsActive())){
+	return;
+    } // end if !Active volume.
+
+    if(!(gMC->TrackCharge())) return;
+
+    id=gMC->CurrentVolID(copy);
+
+    Bool_t sensvol = kFALSE;
+    for(Int_t kk=0;kk<6;kk++)if(id == fIdSens[kk])sensvol=kTRUE;
+    if(sensvol && (gMC->IsTrackExiting())){
 	copy = fTrackReferences->GetEntriesFast();
 	TClonesArray &lTR = *fTrackReferences;
 	// Fill TrackReference structure with this new TrackReference.
 	new(lTR[copy]) AliTrackReference(gAlice->GetCurrentTrackNumber());
     } // if Outer ITS mother Volume
-    if(!(this->IsActive())){
-	return;
-    } // end if !Active volume.
+
+
     Int_t   copy1,copy2;  
     Int_t   vol[5];
     TClonesArray &lhits = *fHits;
