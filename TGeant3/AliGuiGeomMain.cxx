@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/07/09 11:46:08  morsch
+Conversion code moved to AliG3toRoot
+
 Revision 1.1  2000/07/13 16:19:10  fca
 Mainly coding conventions + some small bug fixes
 
@@ -870,7 +873,7 @@ void AliGuiGeomMain::SetMaterialComboEntries(TClonesArray *entries)
     Int_t nent = fComboMaterialEntries->GetEntriesFast();
     for (Int_t i=0; i < nent; i++)
     {
-	AddMaterial((AliG3Material*)fComboMaterialEntries->At(i), i+1);
+	AddMaterial((AliG3Material*)fComboMaterialEntries->At(i), i);
 	gCurrentMaterial = (AliG3Material*)fComboMaterialEntries->At(i);
     }
 }
@@ -884,7 +887,7 @@ void AliGuiGeomMain::SetMediaComboEntries(TClonesArray *entries)
     Int_t nent = fComboMediaEntries->GetEntriesFast();
     for (Int_t i=0; i < nent; i++)
     {
-	AddMedium((AliG3Medium*)fComboMediaEntries->At(i), i+1);
+	AddMedium((AliG3Medium*)fComboMediaEntries->At(i), i);
 	gCurrentMedium = (AliG3Medium*)fComboMediaEntries->At(i);
     }
 }
