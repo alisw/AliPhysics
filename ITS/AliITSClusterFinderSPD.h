@@ -15,29 +15,25 @@ class AliITSClusterFinderSPD :
 {
 public:
   AliITSClusterFinderSPD
-  (AliITSsegmentation *segmentation,
-   TClonesArray *digits, TClonesArray *recpoints);
+       (AliITSsegmentation *seg, TClonesArray *dig, TClonesArray *recp);
   AliITSClusterFinderSPD();
   virtual ~AliITSClusterFinderSPD();
-  AliITSClusterFinderSPD(const AliITSClusterFinderSPD &source); // copy constructor
-  AliITSClusterFinderSPD& operator=(const AliITSClusterFinderSPD &source); // assignment operator
   
-  virtual void SetMap();
-  virtual void SetDx(Float_t dx=1.) {
+  void SetDx(Float_t dx=1.) {
     // set dx
     fDx=dx;
   }
-  virtual void SetDz(Float_t dz=0.) {
+  void SetDz(Float_t dz=0.) {
     // set dz
     fDz=dz;
   }
-  virtual void SetNCells(Int_t minc=0) {
+  void SetNCells(Int_t minc=0) {
     // set ncells
     fMinNCells=minc;
   }
   
   // Search for clusters
-  virtual void FindRawClusters(Int_t mod=0);
+  void FindRawClusters(Int_t mod=0);
   void  Find1DClusters();
   void  GroupClusters();
   void  TracksInCluster();
@@ -46,6 +42,11 @@ public:
   }
   void  GetRecPoints();
   
+  private:
+
+  AliITSClusterFinderSPD(const AliITSClusterFinderSPD &source); // copy ctor
+  AliITSClusterFinderSPD& operator=(const AliITSClusterFinderSPD &source); 
+
 private:
   
   TClonesArray       *fClusters;      // clusters

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/05/01 22:37:44  nilsen
+Added a dummy argument to FindRawClusters. Argument used for SSD version.
+
 Revision 1.14  2001/03/05 14:48:46  nilsen
 Fixed a reoccuring bug. Array sizes must be declare const.
 
@@ -43,10 +46,10 @@ AliITSClusterFinderSPD::AliITSClusterFinderSPD
     fSegmentation=seg;
     fDigits=digits;
     fClusters=recp;
-    fNclusters= fClusters->GetEntriesFast();
+    fNclusters= 0;
+    fMap=new AliITSMapA1(fSegmentation,fDigits);
     SetDx();
     SetDz();
-    SetMap();
     SetNCells();
 }
 
@@ -73,42 +76,6 @@ AliITSClusterFinderSPD::~AliITSClusterFinderSPD()
 
 
 }
-//__________________________________________________________________________
-AliITSClusterFinderSPD::AliITSClusterFinderSPD(const AliITSClusterFinderSPD &source){
-  //     Copy Constructor 
-  if(&source == this) return;
-  this->fClusters = source.fClusters ;
-  this->fNclusters = source.fNclusters ;
-  this->fMap = source.fMap ;
-  this->fDz = source.fDz ;
-  this->fDx = source.fDx ;
-  this->fMinNCells = source.fMinNCells ;
-  return;
-}
-
-//_________________________________________________________________________
-AliITSClusterFinderSPD& 
-  AliITSClusterFinderSPD::operator=(const AliITSClusterFinderSPD &source) {
-  //    Assignment operator
-  if(&source == this) return *this;
-  this->fClusters = source.fClusters ;
-  this->fNclusters = source.fNclusters ;
-  this->fMap = source.fMap ;
-  this->fDz = source.fDz ;
-  this->fDx = source.fDx ;
-  this->fMinNCells = source.fMinNCells ;
-  return *this;
-}
-
-//_____________________________________________________________________________
-void AliITSClusterFinderSPD::SetMap()
-{
-  // set map
-
-  if(!fMap) fMap=new AliITSMapA1(fSegmentation,fDigits);
-
-}
-
 //_____________________________________________________________________________
 
 void AliITSClusterFinderSPD::Find1DClusters()
@@ -210,10 +177,10 @@ void AliITSClusterFinderSPD::Find1DClusters()
 	    // Write the points (coordinates and some cluster information) to the
 	    // AliITSRawClusterSPD object
 	    
-	    AliITSRawClusterSPD *clust = new AliITSRawClusterSPD(clusterZ,clusterX,clusterCharge,clusterSizeZ,clusterSizeX,xstart,xstop,xstartfull,xstopfull,zstart,zstop,k);
+	    AliITSRawClusterSPD clust(clusterZ,clusterX,clusterCharge,clusterSizeZ,clusterSizeX,xstart,xstop,xstartfull,xstopfull,zstart,zstop,k);
 
-	    iTS->AddCluster(0,clust);
-	    
+	    iTS->AddCluster(0,&clust);
+
       }    // new cluster (ilcl=1)
     } // X direction loop (it)
   } // Z direction loop (k)
