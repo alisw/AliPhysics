@@ -1,7 +1,7 @@
 enum gentype_t {hijing, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan, doublescan};
 
-gentype_t gentype=hijing;
-ntracks=5000;
+gentype_t gentype=gun;
+ntracks=1;
 
 void Config()
 {
@@ -69,8 +69,8 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*********************************************
      AliGenBox *gener = new AliGenBox(ntracks);
      gener->SetMomentumRange(3,3);
-     gener->SetPhiRange(65,115);
-     gener->SetThetaRange(65,115);
+     gener->SetPhiRange(85,85);
+     gener->SetThetaRange(85,85);
      gener->SetOrigin(0,0,0);   
      gener->SetVertexSmear(perTrack); 
      //vertex position
@@ -84,11 +84,11 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      AliGenScan *gener = new AliGenScan(-1);
      gener->SetMomentumRange(3,3);
      gener->SetPhiRange(90,90);
-     gener->SetThetaRange(90,90);
+     gener->SetThetaRange(95,95);
      //vertex position
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kPiPlus); 
-     gener->SetRange(4, -60, 60, 1, 480, 480, 4, -60, 60);
+     gener->SetRange(1, 0, 0, 1, 480, 480, 1, 0, 0);
      break;
  case doublescan:  
 //*********************************************
@@ -315,7 +315,7 @@ if(iITS) {
 // understandable to the CAD system EUCLID. The default (=0) means that you 
 // dont want to use this facility.
 //
-AliITS *ITS  = new AliITSvn("ITS","normal ITS");
+AliITS *ITS  = new AliITSv5("ITS","normal ITS");
 ITS->SetEUCLID(0);
 }
 
@@ -339,7 +339,7 @@ if(iTPC) {
 
   gROOT->LoadMacro("SetTPCParam.C");
   AliTPCParam *param = SetTPCParam();
-  AliTPC *TPC  = new AliTPCvn("TPC","Normal TPC"); //v1 is default
+  AliTPC *TPC  = new AliTPCv1("TPC","Normal TPC"); //v1 is default
   TPC->SetParam(param); // pass the parameter object to the TPC
 
 // set gas mixture
@@ -361,7 +361,7 @@ AliTOF *TOF  = new AliTOFvn("TOF","normal TOF");
 
 if(iRICH) {
 //=================== RICH parameters ===========================
-    AliRICH *RICH  = new AliRICHv1("RICH","normal RICH");
+    AliRICH *RICH  = new AliRICHv2("RICH","normal RICH");
     
 //
 // Version 0
@@ -371,7 +371,7 @@ if(iRICH) {
 //  Segmentation parameters
     SegmentationV0->SetPadSize(0.84,0.80);
     SegmentationV0->SetDAnod(0.84/2);
-//
+
 //  Geometry parameters
     AliRICHGeometry* GeometryV0 = new AliRICHGeometry;
     GeometryV0->SetGapThickness(8);
@@ -383,12 +383,12 @@ if(iRICH) {
     GeometryV0->SetOuterFreonWidth(40.3);
     GeometryV0->SetInnerFreonLength(131);
     GeometryV0->SetInnerFreonWidth(40.3);
-    GeometryV0->SetFreonThickness(1);
-//
+    GeometryV0->SetFreonThickness(1.5);
+
 //  Response parameters
     AliRICHResponseV0*  Rresponse0   = new AliRICHResponseV0;
     Rresponse0->SetSigmaIntegration(5.);
-    Rresponse0->SetChargeSlope(40.);
+    Rresponse0->SetChargeSlope(20.);
     Rresponse0->SetChargeSpread(0.18, 0.18);
     Rresponse0->SetMaxAdc(1024);
     Rresponse0->SetAlphaFeedback(0.05);
@@ -400,14 +400,15 @@ if(iRICH) {
     Rresponse0->SetKy2(0.962);
     Rresponse0->SetKy4(0.379);
     Rresponse0->SetPitch(0.25);
-//
-//      
+
+      
   for (Int_t i=0; i<7; i++) {
     RICH->SetGeometryModel(i,GeometryV0);
     RICH->SetSegmentationModel(i, SegmentationV0);
     RICH->SetResponseModel(i, Rresponse0);
     RICH->SetNsec(i,1);
-  }
+  }  
+  RICH->SetDebugLevel(0);
 }
 
 
