@@ -9,40 +9,41 @@
 #if !defined( __CINT__) || defined(__MAKECINT__)
   #include <Riostream.h>
   #include <TTree.h>
-  #include "TFile.h"
-  #include "TH1F.h"
-  #include "TH2F.h"
-  #include "TCanvas.h"
-  #include "TStopwatch.h"
-  #include "TParticle.h"
-
-  #include "AliRun.h"
+  #include <TFile.h>
+  #include <TH1F.h>
+  #include <TCanvas.h>
 
   #include "AliESD.h"
 
 #endif
 
-extern AliRun *gAlice;
+Int_t AliESDv0Analysis(const Char_t *dir=".") { 
+   TH1F *hm=(TH1F*)gROOT->FindObject("hm");
+   if (!hm) {
+      hm=new TH1F("hm","Lambda+LambdaBar Effective Mass",60,1.065,1.165);
+      hm->SetXTitle("Mass (GeV/c**2)");
+   }
+   Char_t fname[100];
+   sprintf(fname,"%s/AliESDs.root",dir);
+   TFile *ef=TFile::Open(fname);
+   if (!ef||!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
+   cerr<<"\n****** "<<fname<<" ******\n";
 
-Int_t AliESDv0Analysis(Int_t nev=1) { 
-   TH1F *hm=new TH1F("hm","Effective Mass",40,1.065,1.165);
-   hm->SetXTitle("Mass (GeV/c**2)");
-
-   TFile *ef=TFile::Open("AliESDs.root");
-   if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
    AliESD* event = new AliESD;
+
+
    TTree* tree = (TTree*) ef->Get("esdTree");
    if (!tree) {cerr<<"no ESD tree found\n"; return 1;};
    tree->SetBranchAddress("ESD", &event);
 
-   TStopwatch timer;
    Int_t rc=0,n=0;
 
    //****** Tentative particle type "concentrations"
-   Double_t c[5]={0.0, 0.0, 0.1, 0.1, 0.1};
+   Double_t c[5]={0.0, 0.0, 1, 0, 1};
 
    //******* The loop over events
-   while (tree->GetEvent(n)) {
+    while (tree->GetEvent(n))
+    {
 
      cerr<<"Processing event number : "<<n++<<endl;
 
@@ -51,11 +52,27 @@ Int_t AliESDv0Analysis(Int_t nev=1) {
 
      while (nv0--) {
        AliESDv0 *v0=event->GetV0(nv0);
-       Int_t pi=v0->GetPindex();
-       AliESDtrack *t=event->GetTrack(pi);
-       Int_t isProton=1;
-       if ((t->GetStatus()&AliESDtrack::kESDpid)!=0) {
-	 Double_t r[10]; t->GetESDpid(r);
+
+       Int_t protonIdx=v0->GetPindex();
+       Int_t pionIdx  =v0->GetNindex();
+      
+       v0->ChangeMassHypothesis(3122);
+       Double_t mass=v0->GetEffMass();
+       if (mass>1.17) {  //check also a LambdaBar hypothesis
+          v0->ChangeMassHypothesis(-3122);
+          mass=v0->GetEffMass();
+          if (mass>1.17) continue;
+          Int_t tmp=protonIdx; protonIdx=pionIdx; pionIdx=tmp;
+       } 
+
+       AliESDtrack *protonTrk=event->GetTrack(protonIdx);
+       AliESDtrack *pionTrk  =event->GetTrack(pionIdx);
+
+       if (protonTrk->GetP()<0.5) continue;
+
+       // Check if the "proton track" is a proton
+       if ((protonTrk->GetStatus()&AliESDtrack::kESDpid)!=0) {
+	 Double_t r[10]; protonTrk->GetESDpid(r);
          Double_t rcc=0.;
          Int_t i;
          for (i=0; i<AliESDtrack::kSPECIES; i++) rcc+=(c[i]*r[i]);
@@ -64,27 +81,46 @@ Int_t AliESDv0Analysis(Int_t nev=1) {
          Double_t w[10];
          for (i=0; i<AliESDtrack::kSPECIES; i++) w[i]=c[i]*r[i]/rcc;
 
-         if (w[4]<w[3]) isProton=0;
-         if (w[4]<w[2]) isProton=0;
-         if (w[4]<w[1]) isProton=0;
-	 if (w[4]<w[0]) isProton=0;
+         if (w[4]<w[3]) continue;
+         if (w[4]<w[2]) continue;
+         if (w[4]<w[1]) continue;
+	 if (w[4]<w[0]) continue;
        }
-       if (!isProton) continue;
-       v0->ChangeMassHypothesis(3122);
-       Double_t mass=v0->GetEffMass();
+ 
+       //Check if the "pion track" is a pion
+       if ((pionTrk->GetStatus()&AliESDtrack::kESDpid)!=0) {
+	 Double_t r[10]; pionTrk->GetESDpid(r);
+         Double_t rcc=0.;
+         Int_t i;
+         for (i=0; i<AliESDtrack::kSPECIES; i++) rcc+=(c[i]*r[i]);
+         if (rcc==0.) continue;
+         //Here we apply Bayes' formula
+         Double_t w[10];
+         for (i=0; i<AliESDtrack::kSPECIES; i++) w[i]=c[i]*r[i]/rcc;
+
+         if (w[2]<w[4]) continue;
+         if (w[2]<w[3]) continue;
+         if (w[2]<w[1]) continue;
+	 if (w[2]<w[0]) continue;
+       }
+
        hm->Fill(mass);
      } 
+
    }
 
    delete event;
    ef->Close();
 
-   timer.Stop(); timer.Print();
+   TCanvas *c1=(TCanvas*)gROOT->FindObject("c1");
+   if (!c1) {
+      c1=new TCanvas();
+   }
 
-   hm->Draw();
+   if (hm->GetEntries()>100) hm->Fit("gaus","","",1.11,1.12);
+   else hm->Draw();
 
-   ef->Close();
-
+   c1->Update();
 
    return rc;
 }
