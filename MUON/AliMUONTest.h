@@ -62,8 +62,7 @@ class AliMUONTest : public  TObject
                   AliMUONGeometrySegmentation* segmentation);
  
 
-    void DrawSegmentation(Int_t chamber, 
-                          AliMUONGeometrySegmentation *seg);
+    void DrawSegmentation(AliMUONGeometrySegmentation *seg);
              // TBR			  
 			  
 

@@ -21,7 +21,7 @@ class TArrayI;
 class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation 
 {
  public:
-    AliMUONSt345SlatSegmentation();
+    AliMUONSt345SlatSegmentation(Bool_t bending);
     virtual ~AliMUONSt345SlatSegmentation();
       
     virtual Float_t  Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y, Int_t * dummy);  // Distance between 1 pad and a position
@@ -30,7 +30,6 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     virtual Float_t  Dpx(Int_t isec) const;       // Pad size in x by Sector
     virtual Float_t  Dpy(Int_t isec) const;       // Pad size in y by Sector
     virtual void     Draw(const char */*opt*/ = "") {}  // Not implemented
-   
     virtual void     FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy);  // Initialisation for pad iteration
     virtual void     FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy);
 
@@ -40,10 +39,9 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     virtual Float_t  GetAnod(Float_t xhit) const;  // Anod wire coordinate closest to xhit
     virtual void     GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);  // Transform from pad to real coordinates
     virtual void     GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy);
-    virtual void     GetPadC(Int_t   ix,Int_t   iy,Float_t &x ,Float_t &y ); // Transform from real to pad coordinates
+    virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) {z=0; GetPadC(ix, iy, x , y);}
  
-    virtual void     Init(Int_t detectionElementId); // Initialisation
  
     virtual void     IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2); //Current integration limits
     virtual Int_t    ISector()  {return fSector;} // Current Pad during Integration (current sector)
@@ -76,6 +74,7 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     virtual TF1*     CorrFunc(Int_t) const {return 0x0;} // Get the correction Function
     virtual Int_t    Sector(Float_t /*x*/, Float_t /*y*/) {return 1;}
 
+    virtual void     Init(Int_t detectionElementId); // Initialisation
     // Current integration limits
 
  protected:
@@ -84,10 +83,12 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     AliMUONSt345SlatSegmentation& operator=(const AliMUONSt345SlatSegmentation& rhs);
     
     //  Internal geometry of the slat 
+    Bool_t      fBending;        // 0: Bending or 1:Non Bending segmentation
     Int_t       fId;             // Identifier of detection element
-    Int_t       fNsec;           // Number of densitiy sectors (should be 4, if not not warranty about the output
+    Int_t       fNsec;           // Number of density sectors (should be 4, if not not warranty about the output
     TArrayI*    fNDiv;           // Densities (d1, d2, d3, d4). It should be (4, 4, 2, 1) which goes from beam to out-beam
     TArrayF*    fDpxD;           // x pad width per density sector
+    TArrayF*    fDpyD;           // x pad width per density sector
     Float_t     fDpx;            // x pad base width  
     Float_t     fDpy;            // y pad base width
     Int_t       fNpx;            // Number of pads in x
