@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11.4.10  2000/07/31 13:50:51  barbera
+Updated from the release
+
 Revision 1.17  2000/07/10 16:07:19  fca
 Release version of ITS code
 
@@ -77,18 +80,16 @@ Introduction of the Copyright and cvs Log
 #include <TFile.h>    // only required for Tracking function?
 #include <TCanvas.h>
 #include <TObjArray.h>
+#include <TObjString.h>
 #include <TClonesArray.h>
 
 #include "AliMC.h"
-#include "AliMagF.h"
 #include "AliConst.h"
+#include "AliMagF.h"
 
 #include "AliITShit.h"
 #include "AliITSv3.h"
 #include "AliRun.h"
-
-#include "AliMC.h"
-#include "AliConst.h"
 
 ClassImp(AliITSv3)
  
@@ -98,17 +99,11 @@ AliITSv3::AliITSv3() {
 //    Standard default constructor for the ITS version 3.
 ////////////////////////////////////////////////////////////////////////
 
-    fIdN = 6;
-    fIdName = new TString[fIdN];
-    fIdName[0] = "ITS1";
-    fIdName[1] = "ITS2";
-    fIdName[2] = "ITS3";
-    fIdName[3] = "ITS4";
-    fIdName[4] = "ITS5";
-    fIdName[5] = "ITS6";
-    fIdSens    = new Int_t[fIdN];
-    for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
-    fMinorVersionV3=1;
+    fIdN    = 0;
+    fIdName = 0;
+    fIdSens = 0;
+    fMajorVersion = 3;
+    fMinorVersion = -1;
 }
 //____________________________________________________________________________
 AliITSv3::AliITSv3(const AliITSv3 &source){
@@ -139,8 +134,20 @@ AliITSv3::AliITSv3(const char *name, const char *title) : AliITS(name, title){
 ////////////////////////////////////////////////////////////////////////
 //    Standard constructor for the ITS version 3.
 ////////////////////////////////////////////////////////////////////////
-    fIdN = 6;
-    fIdName = new TString[fIdN];
+
+    fIdN    = 6;
+/*
+//  TObjArray of TObjStrings
+    fIdName = new TObjArray(fIdN);
+    fIdName->AddAt(new TObjString("ITS1"),0);
+    fIdName->AddAt(new TObjString("ITS2"),1);
+    fIdName->AddAt(new TObjString("ITS3"),2);
+    fIdName->AddAt(new TObjString("ITS4"),3);
+    fIdName->AddAt(new TObjString("ITS5"),4);
+    fIdName->AddAt(new TObjString("ITS6"),5);
+*/
+//  Array of TStrings.
+    fIdName    = new TString[fIdN];
     fIdName[0] = "ITS1";
     fIdName[1] = "ITS2";
     fIdName[2] = "ITS3";
@@ -148,8 +155,9 @@ AliITSv3::AliITSv3(const char *name, const char *title) : AliITS(name, title){
     fIdName[4] = "ITS5";
     fIdName[5] = "ITS6";
     fIdSens    = new Int_t[fIdN];
-    for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
-    fMinorVersionV3=1;
+    for (Int_t i=0;i<fIdN;i++) fIdSens[i] = 0;
+    fMajorVersion = 3;
+    fMinorVersion = 1;
 }//__________________________________________________________________________
 void AliITSv3::BuildGeometry(){
 ////////////////////////////////////////////////////////////////////////
@@ -2469,7 +2477,7 @@ void AliITSv3::CreateGeometry(){
   
   // --- Define SSD with the 35+39 lay-out 
   
-  if (fMinorVersionV3 < 3) {
+  if (fMinorVersion < 3) {
     
     //--- Define ghost volume containing the Strip Detectors and fill it with air
     //     or vacuum 
@@ -3019,7 +3027,7 @@ void AliITSv3::CreateGeometry(){
   
   // --- Define SSD with the 32+36 lay-out 
   
-  if (fMinorVersionV3 >2 && fMinorVersionV3 < 6) {
+  if (fMinorVersion >2 && fMinorVersion < 6) {
     
     //--- Define ghost volume containing the Strip Detectors and fill it with air
     //     or vacuum 
@@ -3586,7 +3594,7 @@ void AliITSv3::CreateGeometry(){
   
   //      GOTO 8901                                    ! skip outer wall 
   
-  if (fMinorVersionV3 == 0 || fMinorVersionV3 == 3) {
+  if (fMinorVersion == 0 || fMinorVersion == 3) {
     
     dits[0] = 49.9;
     dits[1] = dits[0] + .06926;
@@ -3602,7 +3610,7 @@ void AliITSv3::CreateGeometry(){
   
   //     GOTO 9012                                    ! skip octagonal frame
   
-  if (fMinorVersionV3 == 1) {
+  if (fMinorVersion == 1) {
     
     rzero    = 34.;
     dtra[0]  = .92;
@@ -3766,7 +3774,7 @@ void AliITSv3::CreateGeometry(){
     gMC->Gspos(knatra1[15], 1, "ITSV", xpos, ypos, zpos, idrotm[5115], "ONLY");
     
     
-  } else if (fMinorVersionV3 == 4) {
+  } else if (fMinorVersion == 4) {
     
     
     rzero    = 34.;
@@ -3938,7 +3946,7 @@ void AliITSv3::CreateGeometry(){
   
   //     GOTO 9123                                    ! skip hexagonal frame
   
-  if (fMinorVersionV3 == 2) {
+  if (fMinorVersion == 2) {
     
     rzero    = 33.5;
     dtra2[0] = .92;
@@ -4170,7 +4178,7 @@ void AliITSv3::CreateGeometry(){
     gMC->Gspos(knatra4[15], 1, "ITSV", xpos, ypos, zpos, idrotm[5225], "ONLY");
     
     
-  } else if (fMinorVersionV3 == 5) {
+  } else if (fMinorVersion == 5) {
     
     
     rzero    = 33.5;
@@ -4482,7 +4490,7 @@ void AliITSv3::CreateGeometry(){
   gMC->Gsvolu("RP04", "PGON", idtmed[274], dpgon, 10);
   gMC->Gspos("RP04", 1, "ITSV", xpos, ypos, zpos, 0, "ONLY");
   
-  if (fMinorVersionV3 < 3 ) {
+  if (fMinorVersion < 3 ) {
     offset2  = 5.2;
     dpgon[0] = offset2 + 360./(2.*35.);
     dpgon[1] = 360.;
@@ -4520,7 +4528,7 @@ void AliITSv3::CreateGeometry(){
     gMC->Gsvolu("RP06", "PGON", idtmed[274], dpgon, 10);
     gMC->Gspos("RP06", 1, "ITSV", xpos, ypos, zpos, 0, "ONLY");
   }
-  if (fMinorVersionV3 > 2 && fMinorVersionV3 < 6) {
+  if (fMinorVersion > 2 && fMinorVersion < 6) {
     offset2  = 5.2;
     dpgon[0] = offset2 + 5.625;
     dpgon[1] = 360.;
@@ -4637,7 +4645,7 @@ void AliITSv3::CreateGeometry(){
   gMC->Gsvolu("LP04", "PGON", idtmed[274], dpgon, 10);
   gMC->Gspos("LP04", 1, "ITSV", xpos, ypos, zpos, 0, "ONLY");
   
-  if (fMinorVersionV3 < 3) {
+  if (fMinorVersion < 3) {
     offset2  = 5.2;
     dpgon[0] = offset2 + 360./(2.*35.);
     dpgon[1] = 360.;
@@ -4675,7 +4683,7 @@ void AliITSv3::CreateGeometry(){
     gMC->Gsvolu("LP06", "PGON", idtmed[274], dpgon, 10);
     gMC->Gspos("LP06", 1, "ITSV", xpos, ypos, zpos, 0, "ONLY");
   }
-  if (fMinorVersionV3 > 2 && fMinorVersionV3 < 6) {
+  if (fMinorVersion > 2 && fMinorVersion < 6) {
     offset2  = 5.2;
     dpgon[0] = offset2 + 5.625;
     dpgon[1] = 360.;
@@ -4721,8 +4729,7 @@ void AliITSv3::CreateGeometry(){
   
   if (fEuclidOut) {
     gMC->WriteEuclid("ITSgeometry", "ITSV", 1, 5);
-  }
-  fMinorVersion = fMinorVersionV3;
+  };
 } 
 //_____________________________________________________________________________
 void AliITSv3::CreateMaterials(){
@@ -4915,7 +4922,6 @@ void AliITSv3::Init(){
 
     AliITS::Init();
     fMajorVersion = 3;
-    fMinorVersion = fMinorVersionV3;
 }
 //_____________________________________________________________________________
 void AliITSv3::StepManager(){
@@ -5055,6 +5061,7 @@ void AliITSv3::StepManager(){
   } // end if printit[layer][ladder][detector]
 #endif
 }
+/*
 //____________________________________________________________________________
 void AliITSv3::Streamer(TBuffer &R__b){
 ////////////////////////////////////////////////////////////////////////
@@ -5075,5 +5082,4 @@ void AliITSv3::Streamer(TBuffer &R__b){
       AliITS::Streamer(R__b);
    } // end if R__b.IsReading()
 }
-
-
+*/

@@ -15,8 +15,11 @@
 
 /*
 $Log$
-Revision 1.20  2000/10/02 21:28:08  fca
-Removal of useless dependecies via forward declarations
+Revision 1.14.2.9  2000/10/05 07:49:27  nilsen
+Removed hit generation from step manager.
+
+Revision 1.14.2.8  2000/07/31 13:50:37  barbera
+Updated from the release
 
 Revision 1.19  2000/07/10 16:07:19  fca
 Release version of ITS code
@@ -77,16 +80,17 @@ Introduction of the Copyright and cvs Log
 #include <TFile.h>    // only required for Tracking function?
 #include <TCanvas.h>
 #include <TObjArray.h>
+#include <TObjString.h>
 #include <TClonesArray.h>
 
 
 #include "AliMC.h"
-#include "AliMagF.h"
 #include "AliConst.h"
+#include "AliRun.h"
+#include "AliMagF.h"
 
 #include "AliITShit.h"
 #include "AliITSv1.h"
-#include "AliRun.h"
 
 
 ClassImp(AliITSv1)
@@ -97,16 +101,11 @@ AliITSv1::AliITSv1() {
 //    Standard default constructor for the ITS version 1.
 ////////////////////////////////////////////////////////////////////////
 
-  fIdN = 6;
-  fIdName = new TString[fIdN];
-  fIdName[0] = "ITS1";
-  fIdName[1] = "ITS2";
-  fIdName[2] = "ITS3";
-  fIdName[3] = "ITS4";
-  fIdName[4] = "ITS5";
-  fIdName[5] = "ITS6";
-  fIdSens    = new Int_t[fIdN];
-  for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+  fIdN    = 0;
+  fIdName = 0;
+  fIdSens = 0;
+  fMajorVersion = 1;
+  fMinorVersion = -1;
 }
 //_____________________________________________________________________________
 AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){
@@ -114,16 +113,29 @@ AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){
 //    Standard constructor for the ITS version 1.
 ////////////////////////////////////////////////////////////////////////
 
-  fIdN = 6;
-  fIdName = new TString[fIdN];
-  fIdName[0] = "ITS1";
-  fIdName[1] = "ITS2";
-  fIdName[2] = "ITS3";
-  fIdName[3] = "ITS4";
-  fIdName[4] = "ITS5";
-  fIdName[5] = "ITS6";
-  fIdSens    = new Int_t[fIdN];
-  for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+    fIdN    = 6;
+/*
+//  TObjArray of TObjStrings
+    fIdName = new TObjArray(fIdN);
+    fIdName->AddAt(new TObjString("ITS1"),0);
+    fIdName->AddAt(new TObjString("ITS2"),1);
+    fIdName->AddAt(new TObjString("ITS3"),2);
+    fIdName->AddAt(new TObjString("ITS4"),3);
+    fIdName->AddAt(new TObjString("ITS5"),4);
+    fIdName->AddAt(new TObjString("ITS6"),5);
+*/
+//  Array of TStrings.
+    fIdName    = new TString[fIdN];
+    fIdName[0] = "ITS1";
+    fIdName[1] = "ITS2";
+    fIdName[2] = "ITS3";
+    fIdName[3] = "ITS4";
+    fIdName[4] = "ITS5";
+    fIdName[5] = "ITS6";
+    fIdSens    = new Int_t[fIdN];
+    for (Int_t i=0;i<fIdN;i++) fIdSens[i] = 0;
+    fMajorVersion = 1;
+    fMinorVersion = 1;
 
 }
 //____________________________________________________________________________
@@ -261,7 +273,7 @@ void AliITSv1::CreateGeometry(){
   
   
   //     PARAMETERS FOR SMALL (1/2) ITS 
-
+/*
   for (i = 0; i < 6; ++i) {
     dzl[i] /= 2.;
     dzb[i] /= 2.;
@@ -273,8 +285,8 @@ void AliITSv1::CreateGeometry(){
   dzfc     /= 2.;
   zmax     /= 2.;
   xltpc    /= 2.;
-  acable    = 15.;
-  
+*/
+  acable    = 15.;  
   
   
   //     EQUAL DISTRIBUTION INTO THE 6 LAYERS 
@@ -895,6 +907,7 @@ void AliITSv1::StepManager(){
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 */
 }
+/*
 //____________________________________________________________________________
 void AliITSv1::Streamer(TBuffer &R__b){
 ////////////////////////////////////////////////////////////////////////
@@ -911,3 +924,4 @@ void AliITSv1::Streamer(TBuffer &R__b){
       AliITS::Streamer(R__b);
    } // end if R__b.IsReading()
 }
+*/

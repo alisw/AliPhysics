@@ -15,9 +15,6 @@
 
 /*
 $Log$
-Revision 1.23  2000/10/02 16:35:23  barbera
-Forward declarations added
-
 Revision 1.14.4.12  2000/10/02 16:04:03  barbera
 Forward declarations added
 
@@ -75,12 +72,13 @@ Introduction of the Copyright and cvs Log
 #include <TFile.h>    // only required for Tracking function?
 #include <TCanvas.h>
 #include <TObjArray.h>
+#include <TObjString.h>
 #include <TClonesArray.h>
 #include <TBRIK.h>
+#include <TSystem.h>
 
-#include "AliRun.h"
 #include "AliMC.h"
-#include "TSystem.h"
+#include "AliRun.h"
 #if ALIITSPRINTGEOM==1
 #include "../TGeant3/TGeant3.h"
 #endif
@@ -97,17 +95,11 @@ AliITSv5::AliITSv5() {
 //    Standard default constructor for the ITS version 5.
 ////////////////////////////////////////////////////////////////////////
 
-    fIdN = 6;
-    fIdName = new TString[fIdN];
-    fIdName[0] = "ITS1";
-    fIdName[1] = "ITS2";
-    fIdName[2] = "ITS3";
-    fIdName[3] = "ITS4";
-    fIdName[4] = "ITS5";
-    fIdName[5] = "ITS6";
-    fIdSens    = new Int_t[fIdN];
-    for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+    fIdN    = 0;
+    fIdName = 0;
+    fIdSens = 0;
     fMajorVersion = 5;
+    fMinorVersion = -1;
 }
 //____________________________________________________________________________
 AliITSv5::AliITSv5(const AliITSv5 &source){
@@ -140,8 +132,19 @@ AliITSv5::AliITSv5(const char *name, const char *title) : AliITS(name, title){
 ////////////////////////////////////////////////////////////////////////
 //    Standard constructor for the ITS version 5.
 ////////////////////////////////////////////////////////////////////////
-    fIdN = 6;
-    fIdName = new TString[fIdN];
+    fIdN    = 6;
+/*
+//  TObjArray of TObjStrings
+    fIdName = new TObjArray(fIdN);
+    fIdName->AddAt(new TObjString("ITS1"),0);
+    fIdName->AddAt(new TObjString("ITS2"),1);
+    fIdName->AddAt(new TObjString("ITS3"),2);
+    fIdName->AddAt(new TObjString("ITS4"),3);
+    fIdName->AddAt(new TObjString("ITS5"),4);
+    fIdName->AddAt(new TObjString("ITS6"),5);
+*/
+//  Array of TStrings.
+    fIdName    = new TString[fIdN];
     fIdName[0] = "ITS1";
     fIdName[1] = "ITS2";
     fIdName[2] = "ITS3";
@@ -149,8 +152,9 @@ AliITSv5::AliITSv5(const char *name, const char *title) : AliITS(name, title){
     fIdName[4] = "ITS5";
     fIdName[5] = "ITS6";
     fIdSens    = new Int_t[fIdN];
-    for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+    for (Int_t i=0;i<fIdN;i++) fIdSens[i] = 0;
     fMajorVersion = 5;
+    fMinorVersion = 1;
 
     fEuclidMaterial = "$ALICE_ROOT/Euclid/ITSgeometry_5.tme";
     fEuclidGeometry = "$ALICE_ROOT/Euclid/ITSgeometry_5.euc";
@@ -748,6 +752,7 @@ void AliITSv5::StepManager(){
 #endif
   return;
 }
+/*
 //____________________________________________________________________________
 void AliITSv5::Streamer(TBuffer &R__b){
 ////////////////////////////////////////////////////////////////////////
@@ -768,3 +773,4 @@ void AliITSv5::Streamer(TBuffer &R__b){
       AliITS::Streamer(R__b);
    } // end if R__b.IsReading()
 }
+*/

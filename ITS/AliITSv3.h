@@ -29,13 +29,9 @@ class AliITSv3 : public AliITS {
     }
     virtual void   SetMinorVersion(Int_t version) {
       // sets the minor version 
-      fMinorVersionV3=version;
+      fMinorVersion=version;
     }
     virtual void   StepManager();
-
- protected:
-    Int_t fMinorVersionV3;  //Minor version identifier
-
    
     ClassDef(AliITSv3,1)//Hits manager for set:ITS version 3, TP detailed geometry
 };
