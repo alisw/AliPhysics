@@ -7,6 +7,7 @@
 //============================================================== 
 #include "TH2.h"
 #include "TH1.h"
+#include "TClonesArray.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TRandom.h"
@@ -23,7 +24,26 @@ TRandom      * gRandom;
 AliRun       * gAlice;
 
 
-void AnaMinv(char * filename)
+Bool_t PhotonId(AliPHOSRecParticle * RecParticle, char *opt)
+{
+  Bool_t PhotonId = kTRUE ;
+  if (strstr(opt,"narrow"))
+    {
+      if ( RecParticle->GetType() & 1) PhotonId= kFALSE ;
+    }
+  if (strstr(opt,"cpv"))
+    {
+      if (  (RecParticle->GetType() &  1<<2) >>2   ) PhotonId= kFALSE ;
+    }
+  if (strstr(opt,"time"))
+    {
+      
+    }
+
+  return PhotonId;
+}
+
+void AnaMinv(char * filename,char * opt)
 {
   TH2F * h_Minv_lowpT       = new TH2F("h_Minv_lowpT","Minv vs pT low",500,0.0,1.0,40,0.,10.);
   TH2F * h_Minv_highpT      = new TH2F("h_Minv_highpT","Minv vs pT high",500,0.0,1.0,50,0.,100.);
@@ -37,7 +57,7 @@ void AnaMinv(char * filename)
   TH1F * h_Phi       = new TH1F("h_Phi","Phi photons",400,-4.,4.);
   TH2F * h_Peta_Phi  = new TH2F("h_Peta_Phi","Pseudo vs Phi",200,-4,4,200,-1.0,1.0);
   TH1F * h_Dispersion= new TH1F("h_Dispersion","Dispersion",50,0.,10.);
-  TH1F * h_Type      = new TH1F("h_Type","Particle Type",10,0.,10.);
+  TH1F * h_Type      = new TH1F("h_Type","Particle Type",9,-1.5,7.5);
 
   TH1F * h_DeltaR   = new TH1F("h_DeltaR","Delta R",400,0.,2.);
   TH1F * h_Asymmetry= new TH1F("h_Asymmetry","Asymmetry",400, -2., 2.);
@@ -55,6 +75,7 @@ void AnaMinv(char * filename)
   Int_t iEvent, iRecParticle1, iRecParticle2;
   Int_t nRecParticle;
   Float_t invariant_mass, invariant_mass_mixed;
+  TClonesArray * RecParticles;
  
   Float_t average_multiplicity = 0.;
 
@@ -62,45 +83,55 @@ void AnaMinv(char * filename)
     {
       TLorentzVector P_photon1, P_photon2, P_photonMixed1, P_photonMixed2 ;
 
-      RecData->Event(iEvent);
+      RecData->Event(iEvent,"R");
       printf(">>> Event %d \n",iEvent);
-      nRecParticle=RecData->NRecParticles();
+      RecParticles = RecData->RecParticles();
+      nRecParticle = RecParticles->GetEntries();
+      printf(">>> >> Recparticle multilicity is %d \n",nRecParticle);
       average_multiplicity += ((Float_t) (nRecParticle) ) / ( (Float_t)gAlice->TreeE()->GetEntries() ) ;
       // Construction de la masse invariante des pairs
       if (nRecParticle > 1) 
 	{
 	  for(iRecParticle1=0; iRecParticle1<nRecParticle; iRecParticle1++)
 	    {
-	      RecParticle1 = (AliPHOSRecParticle *)  RecData->RecParticle(iRecParticle1);
+	      RecParticle1 =  (AliPHOSRecParticle *) RecParticles->At(iRecParticle1);
 	      RecParticle1->Momentum(P_photon1);
+	      printf(">>> >> Photon momentum is %f \n", P_photon1.Pt() ); 
 	      Type = RecParticle1->GetType();
 	      h_Type->Fill(Type);
-	
-
-	      h_Pseudoeta->Fill(P_photon1.PseudoRapidity());
-	      h_Pt->Fill(P_photon1.Pt());
-	      h_Phi->Fill(P_photon1.Phi());
-	      h_Peta_Pt->Fill(P_photon1.Pt(), P_photon1.PseudoRapidity());
-	      h_Peta_Phi->Fill(P_photon1.Phi(), P_photon1.PseudoRapidity() );
+	      // Photon Id check
+	      if ( PhotonId(RecParticle1, opt) )
+		{
+		  
+		  h_Pseudoeta->Fill(P_photon1.PseudoRapidity());
+		  h_Pt->Fill(P_photon1.Pt());
+		  h_Phi->Fill(P_photon1.Phi());
+		  h_Peta_Pt->Fill(P_photon1.Pt(), P_photon1.PseudoRapidity());
+		  h_Peta_Phi->Fill(P_photon1.Phi(), P_photon1.PseudoRapidity() );
 	    
- 	      for(iRecParticle2=iRecParticle1+1; iRecParticle2<nRecParticle; iRecParticle2++)
- 		{
- 		  RecParticle2 = (AliPHOSRecParticle *)  RecData->RecParticle(iRecParticle2);
- 		  RecParticle2->Momentum(P_photon2); 
-		  Asymmetry = TMath::Abs((P_photon1.E()-P_photon2.E())/(P_photon1.E()+P_photon2.E()));
-  		  if ( (P_photon1 != P_photon2) && 
-		       (P_photon1.DeltaR(P_photon2) > RelativeRCut) &&
-		       (Asymmetry < AsymmetryCut)                          )
-  		    {
-		      h_DeltaR->Fill(P_photon1.DeltaR(P_photon2));
-		      h_Asymmetry->Fill( Asymmetry );
-
-		      //   printf("A. p1 es %f \n",P_photon1->E());
-  		      invariant_mass = (P_photon1 + P_photon2).M();
-		      // printf("B. p1 es %f \n",P_photon1->E());
-  		      h_Minv_lowpT->Fill(invariant_mass, (P_photon1 + P_photon2).Pt() );
-  		      h_Minv_highpT->Fill(invariant_mass,(P_photon1 + P_photon2).Pt() );
- 		    }  
+		  for(iRecParticle2=iRecParticle1+1; iRecParticle2<nRecParticle; iRecParticle2++)
+		    {
+		      RecParticle2 = (AliPHOSRecParticle *) RecParticles->At(iRecParticle2);
+		      RecParticle2->Momentum(P_photon2); 
+		      Asymmetry = TMath::Abs((P_photon1.E()-P_photon2.E())/(P_photon1.E()+P_photon2.E()));
+		      //Photon Id Check
+		      if ( PhotonId(RecParticle2, opt) )
+			{
+			  if ( (P_photon1 != P_photon2) && 
+			       (P_photon1.DeltaR(P_photon2) > RelativeRCut) &&
+			       (Asymmetry < AsymmetryCut)                          )
+			    {
+			      h_DeltaR->Fill(P_photon1.DeltaR(P_photon2));
+			      h_Asymmetry->Fill( Asymmetry );
+			      
+			      //   printf("A. p1 es %f \n",P_photon1->E());
+			      invariant_mass = (P_photon1 + P_photon2).M();
+			      // printf("B. p1 es %f \n",P_photon1->E());
+			      h_Minv_lowpT->Fill(invariant_mass, (P_photon1 + P_photon2).Pt() );
+			      h_Minv_highpT->Fill(invariant_mass,(P_photon1 + P_photon2).Pt() );
+			    } 
+			}
+		    }
  		}
  	    }
 	}
@@ -116,7 +147,7 @@ void AnaMinv(char * filename)
   for(iEvent=0; iEvent<Background; iEvent++)
     {
       TLorentzVector P_photon1, P_photon2, P_photonMixed1, P_photonMixed2 ;
-      //      printf(">>> Background Event %d \n",iEvent);
+      //printf(">>> Background Event %d \n",iEvent);
       Pt_Mixed1 =  h_Pt->GetRandom(); 
       Pt_Mixed2 =  h_Pt->GetRandom();
       h_Peta_Phi->GetRandom2(Phi_Mixed1, Y_Mixed1);
@@ -133,10 +164,10 @@ void AnaMinv(char * filename)
 	  h_Minv_highpT_back->Fill(invariant_mass_mixed,(P_photonMixed1 + P_photonMixed2).Pt() );
 	}  
     }
-  
+  printf (">>> Background calculation finished ! \n");
 
   char outputname[80];
-  sprintf(outputname,"%s.Minv",filename);
+  sprintf(outputname,"%s.Minv%s",filename,opt);
   TFile output(outputname,"recreate");
   h_Minv_lowpT->Write();
   h_Minv_highpT->Write();
