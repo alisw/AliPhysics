@@ -84,8 +84,20 @@ G4bool AliSensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*)
   if (parentID==0) shunt = 1;
   fModule->SetIshunt(shunt);
 
+  if ((step->GetPreStepPoint()->GetStepStatus() == fGeomBoundary) ||
+      (step->GetTrack()->GetCurrentStepNumber() == 1) ){
+
+    // if first step or crossing boundary
+    // let AliModule process step in PreStepPoint
+    // (this ensures compatibility with G3 that
+    // makes additional step of zero length) 
+
+    fStepManager->SetStep(step, kPreStepPoint);
+    fModule->StepManager();
+  }  
+
   // let AliModule process step
-  fStepManager->SetStep(step);
+  fStepManager->SetStep(step, kPostStepPoint);
   fModule->StepManager();
 
   return true;
