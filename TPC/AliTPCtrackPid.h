@@ -7,8 +7,8 @@
 /* $Id$ */
 
 #include <TMath.h>
+#include <TObject.h>
 #include "Riostream.h"
-#include "../ITS/AliITStrackV2.h"
 
 //_____________________________________________________________________________
 class AliTPCtrackPid : public TObject {
