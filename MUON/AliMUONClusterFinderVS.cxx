@@ -111,24 +111,25 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
     Float_t qtot;
     
     for (cath=0; cath<2; cath++) {
-	qtot=0;
-	for (i=0; i<fMul[cath]; i++)
-	{
-	    // pointer to digit
-	    fDig[i][cath]=fInput->Digit(cath, c->GetIndex(i, cath));
-	    // pad coordinates
-	    fIx[i][cath]= fDig[i][cath]->PadX();
-	    fIy[i][cath]= fDig[i][cath]->PadY();
-	    // pad charge
-	    fQ[i][cath] = fDig[i][cath]->Signal();
-	    // pad centre coordinates
-	    if (fSegmentationType == 1)
-	      fSeg[cath]->
-		GetPadC(fIx[i][cath], fIy[i][cath], fX[i][cath], fY[i][cath], fZ[i][cath]);
-	    else
-	      fSeg2[cath]->
-		GetPadC(fInput->DetElemId(), fIx[i][cath], fIy[i][cath], fX[i][cath], fY[i][cath], fZ[i][cath]);
-	} // loop over cluster digits
+      qtot=0;
+
+      for (i=0; i<fMul[cath]; i++) {
+	// pointer to digit
+	fDig[i][cath]=fInput->Digit(cath, c->GetIndex(i, cath));
+	// pad coordinates
+	fIx[i][cath]= fDig[i][cath]->PadX();
+	fIy[i][cath]= fDig[i][cath]->PadY();
+	// pad charge
+	fQ[i][cath] = fDig[i][cath]->Signal();
+	// pad centre coordinates
+	if (fSegmentationType == 1)
+	  fSeg[cath]->
+	    GetPadC(fIx[i][cath], fIy[i][cath], fX[i][cath], fY[i][cath], fZ[i][cath]);
+	else
+	  fSeg2[cath]->
+	    GetPadC(fInput->DetElemId(), fIx[i][cath], fIy[i][cath], fX[i][cath], fY[i][cath], fZ[i][cath]);
+      } // loop over cluster digits
+
     }  // loop over cathodes
 
 
@@ -1640,84 +1641,89 @@ void AliMUONClusterFinderVS::FindRawClusters()
 //
 //  Outer Loop over Cathodes
     for (cath=0; cath<2; cath++) {
+
 	for (ndig=0; ndig<fInput->NDigits(cath); ndig++) {
 	    dig = fInput->Digit(cath, ndig);
-	    Int_t i=dig->PadX();
-	    Int_t j=dig->PadY();
-	    if (fHitMap[cath]->TestHit(i,j)==kUsed ||fHitMap[0]->TestHit(i,j)==kEmpty) {
+	    Int_t padx = dig->PadX();
+	    Int_t pady = dig->PadY();
+	    if (fHitMap[cath]->TestHit(padx,pady)==kUsed ||fHitMap[0]->TestHit(padx,pady)==kEmpty) {
 		nskip++;
 		continue;
 	    }
 	    AliDebug(1,Form("\n CATHODE %d CLUSTER %d\n",cath,ncls));
-	    AliMUONRawCluster c;
-	    c.SetMultiplicity(0, 0);
-	    c.SetMultiplicity(1, 0);
-	    c.SetPeakSignal(cath,dig->Signal());
-	    c.SetTrack(0, dig->Hit());
-	    c.SetTrack(1, dig->Track(0));
-	    c.SetTrack(2, dig->Track(1));
+	    AliMUONRawCluster clus;
+	    clus.SetMultiplicity(0, 0);
+	    clus.SetMultiplicity(1, 0);
+	    clus.SetPeakSignal(cath,dig->Signal());
+	    clus.SetTrack(0, dig->Hit());
+	    clus.SetTrack(1, dig->Track(0));
+	    clus.SetTrack(2, dig->Track(1));
+
+	    AliDebug(1,Form("idDE %d Padx %d Pady %d", fInput->DetElemId(), padx, pady));
+
 	    // tag the beginning of cluster list in a raw cluster
-	    c.SetNcluster(0,-1);
+	    clus.SetNcluster(0,-1);
 	    Float_t xcu, ycu;
 	    if (fSegmentationType == 1) {
-	      fSeg[cath]->GetPadC(i,j,xcu, ycu, fZPlane);
-	      fSector= fSeg[cath]->Sector(i,j)/100;
+	      fSeg[cath]->GetPadC(padx,pady, xcu, ycu, fZPlane);
+	      fSector= fSeg[cath]->Sector(padx,pady)/100;
 	    } else {
-	      fSeg2[cath]->GetPadC(fInput->DetElemId(), i,j,xcu, ycu, fZPlane);
-	      fSector= fSeg2[cath]->Sector(fInput->DetElemId(), i,j)/100;
+	      fSeg2[cath]->GetPadC(fInput->DetElemId(), padx, pady, xcu, ycu, fZPlane);
+	      fSector= fSeg2[cath]->Sector(fInput->DetElemId(), padx, pady)/100;
 	    }
-	    AliDebug(1,Form("\n New Seed %d %d ", i,j));
-	
+
+
             
-	    FindCluster(i,j,cath,c);
+	    FindCluster(padx,pady,cath,clus);
 //          ^^^^^^^^^^^^^^^^^^^^^^^^
 	    // center of gravity
-	    if (c.GetX(0)!=0.) c.SetX(0, c.GetX(0)/c.GetCharge(0)); // c.fX[0] /= c.fQ[0];
-// Force on anod
+	    if (clus.GetX(0)!=0.) clus.SetX(0, clus.GetX(0)/clus.GetCharge(0)); // clus.fX[0] /= clus.fQ[0];
+
+	    // Force on anod
 	    if (fSegmentationType == 1) 
-	      c.SetX(0,fSeg[0]->GetAnod(c.GetX(0)));
+	      clus.SetX(0,fSeg[0]->GetAnod(clus.GetX(0)));
 	    else 
-	      c.SetX(0,fSeg2[0]->GetAnod(fInput->DetElemId(), c.GetX(0)));
-	    if (c.GetY(0)!=0.) c.SetY(0, c.GetY(0)/c.GetCharge(0)); // c.fY[0] /= c.fQ[0];
+	      clus.SetX(0,fSeg2[0]->GetAnod(fInput->DetElemId(), clus.GetX(0)));
+	    if (clus.GetY(0)!=0.) clus.SetY(0, clus.GetY(0)/clus.GetCharge(0)); // clus.fY[0] /= clus.fQ[0];
       	    
-	    if(c.GetCharge(1)!=0.) c.SetX(1, c.GetX(1)/c.GetCharge(1));  // c.fX[1] /= c.fQ[1];
+	    if(clus.GetCharge(1)!=0.) clus.SetX(1, clus.GetX(1)/clus.GetCharge(1));  // clus.fX[1] /= clus.fQ[1];
 	    	    			
 	   // Force on anod
 	    if (fSegmentationType == 1) 
-	      c.SetX(1, fSeg[0]->GetAnod(c.GetX(1)));
+	      clus.SetX(1, fSeg[0]->GetAnod(clus.GetX(1)));
 	    else 
-	      c.SetX(1, fSeg2[0]->GetAnod(fInput->DetElemId(),c.GetX(1)));
-	    if(c.GetCharge(1)!=0.) c.SetY(1, c.GetY(1)/c.GetCharge(1));// c.fY[1] /= c.fQ[1];
+	      clus.SetX(1, fSeg2[0]->GetAnod(fInput->DetElemId(),clus.GetX(1)));
+	    if(clus.GetCharge(1)!=0.) clus.SetY(1, clus.GetY(1)/clus.GetCharge(1));// clus.fY[1] /= clus.fQ[1];
 	    
-	    c.SetZ(0, fZPlane);
-	    c.SetZ(1, fZPlane);	    
+	    clus.SetZ(0, fZPlane);
+	    clus.SetZ(1, fZPlane);	    
 
 		AliDebug(1,Form("\n Cathode 1 multiplicite %d X(CG) %f Y(CG) %f\n",
-			c.GetMultiplicity(0),c.GetX(0),c.GetY(0)));
+			clus.GetMultiplicity(0),clus.GetX(0),clus.GetY(0)));
 		AliDebug(1,Form(" Cathode 2 multiplicite %d X(CG) %f Y(CG) %f\n",
-			c.GetMultiplicity(1),c.GetX(1),c.GetY(1)));
+			clus.GetMultiplicity(1),clus.GetX(1),clus.GetY(1)));
 //      Analyse cluster and decluster if necessary
 //	
 	ncls++;
-	c.SetNcluster(1,fNRawClusters);
-	c.SetClusterType(c.PhysicsContribution());
+	clus.SetNcluster(1,fNRawClusters);
+	clus.SetClusterType(clus.PhysicsContribution());
 
 	fNPeaks=0;
 //
 //
-	Decluster(&c);
+	Decluster(&clus);
 //
 //      reset Cluster object
 	{ // begin local scope
-	    for (int k=0;k<c.GetMultiplicity(0);k++) c.SetIndex(k, 0, 0);
+	    for (int k=0;k<clus.GetMultiplicity(0);k++) clus.SetIndex(k, 0, 0);
 	} // end local scope
 
 	{ // begin local scope
-	    for (int k=0;k<c.GetMultiplicity(1);k++) c.SetIndex(k, 1, 0);
+	    for (int k=0;k<clus.GetMultiplicity(1);k++) clus.SetIndex(k, 1, 0);
 	} // end local scope
 	
-	c.SetMultiplicity(0,0);
-	c.SetMultiplicity(1,0);
+	clus.SetMultiplicity(0,0);
+	clus.SetMultiplicity(1,0);
 
 	
 	} // end loop ndig
