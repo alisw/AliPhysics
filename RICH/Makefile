@@ -7,7 +7,7 @@ Sources   	:=$(SRCS)
 OutputDir	:=$(KIR_DIR)/$(Module)
 SoLib		:=$(KIR_DIR)/lib$(Module).so
 
-CxxFlags	:= -g -Wall -fPIC -pipe -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include
+CxxFlags	:= -g -W -Wall -fPIC -fmessage-length=0 -pipe -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include
 
 ifdef ALIVERBOSE
 	Mute		:=
