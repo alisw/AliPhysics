@@ -37,7 +37,7 @@ class AliPMDdigit;
 class AliPMDClustering;
 class AliPMDrecpoint;
 
-using namespace std;
+//using namespace std;
 
 class AliPMDDigitizer
 {

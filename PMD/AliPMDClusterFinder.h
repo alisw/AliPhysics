@@ -33,7 +33,7 @@ class AliPMDClustering;
 class AliPMDcluster;
 class AliPMDrecpoint;
 
-using namespace std;
+//using namespace std;
 
 class AliPMDClusterFinder
 {
