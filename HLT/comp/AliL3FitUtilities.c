@@ -12,22 +12,22 @@ DPOINT *plane;
 
 void f2gauss5(double x,double a[],double *y,double dyda[],int na)
 {
-  //Function describing a sum of 2D gaussians with 5 parameters.
-  //There number of gaussians is na/5.
+  /* Function describing a sum of 2D gaussians with 5 parameters.
+     There number of gaussians is na/5.*/
   
   int i,index;
   double fac,fac1,fac2,ex,ex1,ex2,arg1,arg2,u,v;
   
-  //printf("fitting na %d, with pad %f time %f amplitude %f padwidth %f timewidth %f\n",na,a[2],a[4],a[1],a[3],a[5]);
+  /*printf("fitting na %d, with pad %f time %f amplitude %f padwidth %f timewidth %f\n",na,a[2],a[4],a[1],a[3],a[5]);*/
         index = nint(x);
 	if( index < 0 || index >=FIT_PTS )
 	{
-		fprintf( stderr, "ff2gauss: wrong index %ld\n", index );
+		fprintf( stderr, "ff2gauss: wrong index %d\n", index );
 		return;
 	}
 	u     = plane[index].u;
 	v     = plane[index].v;
-	//printf("u %f v %f\n",u,v);
+	/*printf("u %f v %f\n",u,v);*/
 	*y=0.0;
 	for (i=1;i<=na-1;i+=5)
 	{
@@ -50,9 +50,11 @@ void f2gauss5(double x,double a[],double *y,double dyda[],int na)
 
 void nrerror(char error_text[])
 /* Numerical Recipes standard error handler */
-{
-  //printf("%s\n",error_text);
-  //exit(1);
+{ 
+  /*
+    printf("%s\n",error_text);
+    exit(1);
+  */
 }
 
 void free_vector(double *v, long nl, long nh)
@@ -121,7 +123,7 @@ double **matrix(long nrl,long nrh,long ncl,long nch)
 int gaussj(double **a, int n, double **b, int m)
 {
 	int *indxc,*indxr,*ipiv;
-	int i,icol,irow,j,k,l,ll;
+	int i,icol=0,irow=0,j,k,l,ll;
 	double big,dum,pivinv,swap;
 
 	indxc=ivector(1,n);
@@ -373,7 +375,7 @@ int lev_marq_fit( double x[], double y[], double sig[], int NPT, double a[], int
 		return 0;
 	}
 	else {
-	  //if( control_g.print_fit_errors==2 )
+	  /*if( control_g.print_fit_errors==2 )*/
 	  fprintf( stderr, " runtime error\n" );
 
 	        free_matrix(alpha,1,MA,1,MA);
