@@ -10,6 +10,8 @@ void loadlibs ()
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libdummypythia6");
   gSystem->Load("$(ROOTSYS)/lib/libEGPythia6");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libCONTAINERS");
+  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libdummymevsim");
+  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTMevSim");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libEVGEN");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libRALICE");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libFMD");
