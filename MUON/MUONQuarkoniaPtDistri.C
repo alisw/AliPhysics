@@ -122,7 +122,7 @@ void MUONQuarkoniaPtDistri(char * MUONmassPlotFile="MUONmassPlot.root", Int_t NR
       e_Sigma[ipoint] = hInvMassSub[ipoint]->GetFunction("gaus")->GetParError(2);
       dNdpT[ipoint] = hInvMassSub[ipoint]->Integral(integral1,integral2);
       for(ibin=integral1; ibin<=integral2; ibin++) {
-	e_dNdpT[ipoint]+=hInvMassSub[ipoint]->GetBinContent(ibin)*hInvMassSub[ipoint]->GetBinContent(ibin);
+	e_dNdpT[ipoint]+=hInvMassSub[ipoint]->GetBinError(ibin)*hInvMassSub[ipoint]->GetBinError(ibin);
       }
       e_dNdpT[ipoint] = TMath::Sqrt( e_dNdpT[ipoint]);
     }
@@ -230,7 +230,7 @@ void MUONQuarkoniaPtDistri(char * MUONmassPlotFile="MUONmassPlot.root", Int_t NR
     Int_t   NumberOfResonances = hInvMassSub[NumberOfPoints]->Integral(integral1,integral2);
     Int_t e_NumberOfResonances = 0;
     for(ibin=integral1; ibin<=integral2; ibin++) {
-      e_NumberOfResonances+=hInvMassSub[NumberOfPoints]->GetBinContent(ibin)*hInvMassSub[NumberOfPoints]->GetBinContent(ibin);
+      e_NumberOfResonances+=hInvMassSub[NumberOfPoints]->GetBinError(ibin)*hInvMassSub[NumberOfPoints]->GetBinError(ibin);
     }
     e_NumberOfResonances= TMath::Sqrt( e_NumberOfResonances);
     printf(">>> Number of resonances is %d+-%d in the inv mass range (2sigma) %f, %f \n",NumberOfResonances,e_NumberOfResonances,
