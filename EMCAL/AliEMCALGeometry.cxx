@@ -69,11 +69,11 @@ void AliEMCALGeometry::Init(void){
     //
     if ( name == "EMCALArch1a"  ||
 	 name == "EMCALArch1b" ) {
-	fNZ         = 96;
-	fNPhi       = 144;
+      fNZ         = 96;
+      fNPhi       = 144;
     } // end if
     if ( name == "EMCALArch2a"  ||
-	 name, "EMCALArch2b" ) {
+	 name == "EMCALArch2b" ) {
 	fNZ         = 112;
 	fNPhi       = 168;
     } // end if
@@ -152,7 +152,7 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
 Int_t AliEMCALGeometry::TowerIndex(Int_t ieta,Int_t iphi,Int_t ipre) const {
     // Returns the tower index number from the based on the Z and Phi
     // index numbers. There are 2 times the number of towers to separate
-    // out the full towsers from the pre-towsers.
+    // out the full towers from the pre-showers.
     // Inputs:
     //   Int_t ieta    // index allong z axis [1-fNZ]
     //   Int_t iphi  // index allong phi axis [1-fNPhi]
@@ -378,7 +378,11 @@ void AliEMCALGeometry::XYZFromIndex(const Int_t *relid,Float_t &x,Float_t &y, Fl
     theta = 180.*(2.0*TMath::ATan(TMath::Exp(-eta)))/TMath::Pi();
     
     kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
-    cyl_radius = GetIPDistance()+ GetAirGap() ;
+    if ( ipre == -1 ) 
+      cyl_radius = GetIP2PreShower() ;
+    else 
+      cyl_radius = GetIP2Tower() ;
+
     x =  cyl_radius * TMath::Cos(phi * kDeg2Rad ) ;
     y =  cyl_radius * TMath::Sin(phi * kDeg2Rad ) ; 
     z =  cyl_radius / TMath::Tan(theta * kDeg2Rad ) ; 
