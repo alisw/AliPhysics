@@ -49,6 +49,9 @@ t->Exec();
 #include "TCanvas.h"
 #include "TPad.h"
 #include "TF1.h"
+#include "TView.h"
+#include "TGeometry.h"
+#include "TPolyLine3D.h"
 
 //ALIROOT includes
 #include "AliRun.h"
@@ -62,10 +65,13 @@ t->Exec();
 #include "AliTPCParamSR.h"
 #include "AliTracker.h"
 #include "AliMagF.h"
+#include "AliHelix.h"
+#include "AliPoints.h"
+
 #endif
 #include "AliGenInfo.h" 
 //
-//
+// 
 
 AliTPCParam * GetTPCParam(){
   AliTPCParamSR * par = new AliTPCParamSR;
@@ -98,6 +104,92 @@ Float_t TPCBetheBloch(Float_t bg)
   return ((Float_t)((kp2-aa-bb)*kp1/aa));
 }
 
+AliPointsMI::AliPointsMI(){
+  fN=0;
+  fX=0;
+  fY=0;
+  fZ=0;  
+  fCapacity = 0;
+  fLabel0=0;
+  fLabel1=0;
+}
+
+
+AliPointsMI::AliPointsMI(Int_t n, Float_t *x,Float_t *y, Float_t *z){
+  //
+  //
+  fN=n;
+  fCapacity = 1000+2*n;
+  fX= new Float_t[n];
+  fY= new Float_t[n];
+  fZ= new Float_t[n];
+  memcpy(fX,x,n*sizeof(Float_t));
+  memcpy(fY,y,n*sizeof(Float_t));
+  memcpy(fZ,z,n*sizeof(Float_t));
+  fLabel0=0;
+  fLabel1=0;
+}
+
+void AliPointsMI::Reset()
+{
+  fN=0;
+}
+
+void AliPointsMI::Reset(AliDetector * det, Int_t particle){
+  //
+  // write points from detector points
+  //
+  Reset();
+  if (!det) return;
+  TObjArray *array = det->Points();
+  if (!array) return;
+  for (Int_t i=0;i<array->GetEntriesFast();i++){
+    AliPoints * points = (AliPoints*) array->At(i);
+    if (!points) continue;
+    if (points->GetIndex()!=particle) continue;
+    Int_t npoints = points->GetN();
+    if (npoints<2) continue;
+    Int_t delta = npoints/100;
+    if (delta<1) delta=1;
+    if (delta>10) delta=10;
+    Int_t mypoints = npoints/delta;
+    //
+    fN = mypoints;
+    if (fN>fCapacity){
+      fCapacity = 1000+2*fN;
+      delete []fX;
+      delete []fY;
+      delete []fZ;
+      fX = new Float_t[fCapacity];
+      fY = new Float_t[fCapacity];
+      fZ = new Float_t[fCapacity]; 
+    }   
+    Float_t *xyz = points->GetP();
+    for (Int_t ipoint=0;ipoint<mypoints;ipoint++){
+      Int_t index = 3*ipoint*delta;
+      fX[ipoint]=0;
+      fY[ipoint]=0;
+      fZ[ipoint]=0;
+      if (index+2<npoints*3){
+	fX[ipoint] = xyz[index];
+	fY[ipoint] = xyz[index+1];
+	fZ[ipoint] = xyz[index+2];
+      }
+    }
+  }
+  fLabel0 = particle;
+}
+
+
+AliPointsMI::~AliPointsMI(){
+  fN=0;
+  fCapacity =0;
+  delete[] fX;
+  delete[]fY;
+  delete []fZ;
+  fX=0;fY=0;fZ=0;  
+}
+
 
 
 
@@ -108,6 +200,7 @@ AliMCInfo::AliMCInfo()
   fTPCReferences  = new TClonesArray("AliTrackReference",10);
   fITSReferences  = new TClonesArray("AliTrackReference",10);
   fTRDReferences  = new TClonesArray("AliTrackReference",10);
+  fTOFReferences  = new TClonesArray("AliTrackReference",10);
   fTRdecay.SetTrack(-1);
 }
 
@@ -122,6 +215,10 @@ AliMCInfo::~AliMCInfo()
   if (fTRDReferences){    
     delete fTRDReferences;  
   }
+  if (fTOFReferences){    
+    delete fTOFReferences;  
+  }
+
 }
 
 
@@ -139,7 +236,9 @@ void AliMCInfo::Update()
   //Float_t rlast=0;
   fNTPCRef = fTPCReferences->GetEntriesFast();
   fNITSRef = fITSReferences->GetEntriesFast();
-
+  fNTRDRef = fTRDReferences->GetEntriesFast();
+  fNTOFRef = fTOFReferences->GetEntriesFast();
+  
   for (Int_t iref =0;iref<fTPCReferences->GetEntriesFast();iref++){
     AliTrackReference * ref = (AliTrackReference *) fTPCReferences->At(iref);
     //Float_t r = (ref->X()*ref->X()+ref->Y()*ref->Y());
@@ -199,24 +298,293 @@ void AliMCInfo::Update()
 }
 
 /////////////////////////////////////////////////////////////////////////////////
+/*
 void AliGenV0Info::Update()
 {
   fMCPd[0] = fMCd.fParticle.Px();
   fMCPd[1] = fMCd.fParticle.Py();
   fMCPd[2] = fMCd.fParticle.Pz();
   fMCPd[3] = fMCd.fParticle.P();
+  //
   fMCX[0]  = fMCd.fParticle.Vx();
   fMCX[1]  = fMCd.fParticle.Vy();
   fMCX[2]  = fMCd.fParticle.Vz();
   fMCR       = TMath::Sqrt( fMCX[0]*fMCX[0]+fMCX[1]*fMCX[1]);
+  //
   fPdg[0]    = fMCd.fParticle.GetPdgCode();
   fPdg[1]    = fMCm.fParticle.GetPdgCode();
   //
   fLab[0]    = fMCd.fParticle.GetUniqueID();
   fLab[1]    = fMCm.fParticle.GetUniqueID();
+  //  
+}
+*/
 
+void AliGenV0Info::Update(Float_t vertex[3])
+{
+  fMCPd[0] = fMCd.fParticle.Px();
+  fMCPd[1] = fMCd.fParticle.Py();
+  fMCPd[2] = fMCd.fParticle.Pz();
+  fMCPd[3] = fMCd.fParticle.P();
+  //
+  fMCX[0]  = fMCd.fParticle.Vx();
+  fMCX[1]  = fMCd.fParticle.Vy();
+  fMCX[2]  = fMCd.fParticle.Vz();
+  fMCR       = TMath::Sqrt( fMCX[0]*fMCX[0]+fMCX[1]*fMCX[1]);
+  //
+  fPdg[0]    = fMCd.fParticle.GetPdgCode();
+  fPdg[1]    = fMCm.fParticle.GetPdgCode();
+  //
+  fLab[0]    = fMCd.fParticle.GetUniqueID();
+  fLab[1]    = fMCm.fParticle.GetUniqueID();
+  //
+  //
+  //
+  Double_t x1[3],p1[3];
+  TParticle & pdaughter = fMCd.fParticle;
+  x1[0] = pdaughter.Vx();      
+  x1[1] = pdaughter.Vy();
+  x1[2] = pdaughter.Vz();
+  p1[0] = pdaughter.Px();
+  p1[1] = pdaughter.Py();
+  p1[2] = pdaughter.Pz();
+  Double_t sign = (pdaughter.GetPDG()->Charge()>0)? -1:1;
+  AliHelix dhelix1(x1,p1,sign);
+  //
+  //
+  Double_t x2[3],p2[3];            
+  //
+  TParticle & pmother = fMCm.fParticle;
+  x2[0] = pmother.Vx();      
+  x2[1] = pmother.Vy();      
+  x2[2] = pmother.Vz();      
+  p2[0] = pmother.Px();
+  p2[1] = pmother.Py();
+  p2[2] = pmother.Pz();
+  //
+  //
+  sign = (pmother.GetPDG()->Charge()>0) ? -1:1;
+  AliHelix mhelix(x2,p2,sign);
+  
+  //
+  //
+  //
+  //find intersection linear
+  //
+  Double_t distance1, distance2;
+  Double_t phase[2][2],radius[2];
+  Int_t  points = dhelix1.GetRPHIintersections(mhelix, phase, radius);
+  Double_t delta1=10000,delta2=10000;    
+  if (points>0){
+    dhelix1.LinearDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
+    dhelix1.LinearDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
+    dhelix1.LinearDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
+  }
+  else{
+    fInvMass=-1;
+    return;
+  }
+  if (points==2){    
+    dhelix1.LinearDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
+    dhelix1.LinearDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
+    dhelix1.LinearDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
+  }
+  distance1 = TMath::Min(delta1,delta2);
+  //
+  //find intersection parabolic
+  //
+  points = dhelix1.GetRPHIintersections(mhelix, phase, radius);
+  delta1=10000,delta2=10000;  
+  
+  if (points>0){
+    dhelix1.ParabolicDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
+  }
+  if (points==2){    
+    dhelix1.ParabolicDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
+  }
+  
+  distance2 = TMath::Min(delta1,delta2);
+  //
+  if (delta1<delta2){
+    //get V0 info
+    dhelix1.Evaluate(phase[0][0],fMCXr);
+    dhelix1.GetMomentum(phase[0][0],fMCPdr);
+    mhelix.GetMomentum(phase[0][1],fMCPm);
+    dhelix1.GetAngle(phase[0][0],mhelix,phase[0][1],fMCAngle);
+    fMCRr = TMath::Sqrt(radius[0]);
+  }
+  else{
+    dhelix1.Evaluate(phase[1][0],fMCXr);
+    dhelix1.GetMomentum(phase[1][0],fMCPdr);
+    mhelix.GetMomentum(phase[1][1],fMCPm);
+    dhelix1.GetAngle(phase[1][0],mhelix,phase[1][1],fMCAngle);
+    fMCRr = TMath::Sqrt(radius[1]);
+  }     
+  //            
+  //
+  fMCDist1 = TMath::Sqrt(distance1);
+  fMCDist2 = TMath::Sqrt(distance2);      
+  //
+  //
+  // 
+  Float_t v[3] = {fMCXr[0]-vertex[0],fMCXr[1]-vertex[1],fMCXr[2]-vertex[2]};
+  //Float_t v[3] = {fMCXr[0],fMCXr[1],fMCXr[2]};
+  Float_t p[3] = {fMCPdr[0]+fMCPm[0], fMCPdr[1]+fMCPm[1],fMCPdr[2]+fMCPm[2]};
+  Float_t vnorm2 = v[0]*v[0]+v[1]*v[1];
+  Float_t vnorm3 = TMath::Sqrt(v[2]*v[2]+vnorm2);
+  vnorm2 = TMath::Sqrt(vnorm2);
+  Float_t pnorm2 = p[0]*p[0]+p[1]*p[1];
+  Float_t pnorm3 = TMath::Sqrt(p[2]*p[2]+pnorm2);
+  pnorm2 = TMath::Sqrt(pnorm2);
+  //
+  fPointAngleFi = (v[0]*p[0]+v[1]*p[1])/(vnorm2*pnorm2);
+  fPointAngleTh = (v[2]*p[2]+vnorm2*pnorm2)/(vnorm3*pnorm3);  
+  fPointAngle   = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2])/(vnorm3*pnorm3);
+  Float_t mass1 = fMCd.fMass;
+  Float_t mass2 = fMCm.fMass;
+
+  
+  Float_t e1    = TMath::Sqrt(mass1*mass1+
+			      fMCPdr[0]*fMCPdr[0]+
+			      fMCPdr[1]*fMCPdr[1]+
+			      fMCPdr[2]*fMCPdr[2]);
+  Float_t e2    = TMath::Sqrt(mass2*mass2+
+			      fMCPm[0]*fMCPm[0]+
+			      fMCPm[1]*fMCPm[1]+
+			      fMCPm[2]*fMCPm[2]);
+  
+  fInvMass =  
+    (fMCPm[0]+fMCPdr[0])*(fMCPm[0]+fMCPdr[0])+
+    (fMCPm[1]+fMCPdr[1])*(fMCPm[1]+fMCPdr[1])+
+    (fMCPm[2]+fMCPdr[2])*(fMCPm[2]+fMCPdr[2]);
+  
+  fInvMass = TMath::Sqrt((e1+e2)*(e1+e2)-fInvMass);
+
+    
 }
 
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////
+void AliGenKinkInfo::Update()
+{
+  fMCPd[0] = fMCd.fParticle.Px();
+  fMCPd[1] = fMCd.fParticle.Py();
+  fMCPd[2] = fMCd.fParticle.Pz();
+  fMCPd[3] = fMCd.fParticle.P();
+  //
+  fMCX[0]  = fMCd.fParticle.Vx();
+  fMCX[1]  = fMCd.fParticle.Vy();
+  fMCX[2]  = fMCd.fParticle.Vz();
+  fMCR       = TMath::Sqrt( fMCX[0]*fMCX[0]+fMCX[1]*fMCX[1]);
+  //
+  fPdg[0]    = fMCd.fParticle.GetPdgCode();
+  fPdg[1]    = fMCm.fParticle.GetPdgCode();
+  //
+  fLab[0]    = fMCd.fParticle.GetUniqueID();
+  fLab[1]    = fMCm.fParticle.GetUniqueID();
+  //
+  //
+  //
+  Double_t x1[3],p1[3];
+  TParticle & pdaughter = fMCd.fParticle;
+  x1[0] = pdaughter.Vx();      
+  x1[1] = pdaughter.Vy();
+  x1[2] = pdaughter.Vz();
+  p1[0] = pdaughter.Px();
+  p1[1] = pdaughter.Py();
+  p1[2] = pdaughter.Pz();
+  Double_t sign = (pdaughter.GetPDG()->Charge()>0)? -1:1;
+  AliHelix dhelix1(x1,p1,sign);
+  //
+  //
+  Double_t x2[3],p2[3];            
+  //
+  TParticle & pmother = fMCm.fParticle;
+  x2[0] = pmother.Vx();      
+  x2[1] = pmother.Vy();      
+  x2[2] = pmother.Vz();      
+  p2[0] = pmother.Px();
+  p2[1] = pmother.Py();
+  p2[2] = pmother.Pz();
+  //
+  AliTrackReference & pdecay = fMCm.fTRdecay;
+  x2[0] = pdecay.X();      
+  x2[1] = pdecay.Y();      
+  x2[2] = pdecay.Z();      
+  p2[0] = pdecay.Px();
+  p2[1] = pdecay.Py();
+  p2[2] = pdecay.Pz();
+  //
+  sign = (pmother.GetPDG()->Charge()>0) ? -1:1;
+  AliHelix mhelix(x2,p2,sign);
+  
+  //
+  //
+  //
+  //find intersection linear
+  //
+  Double_t distance1, distance2;
+  Double_t phase[2][2],radius[2];
+  Int_t  points = dhelix1.GetRPHIintersections(mhelix, phase, radius);
+  Double_t delta1=10000,delta2=10000;    
+  if (points>0){
+    dhelix1.LinearDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
+    dhelix1.LinearDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
+    dhelix1.LinearDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
+  }
+  if (points==2){    
+    dhelix1.LinearDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
+    dhelix1.LinearDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
+    dhelix1.LinearDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
+  }
+  distance1 = TMath::Min(delta1,delta2);
+  //
+  //find intersection parabolic
+  //
+  points = dhelix1.GetRPHIintersections(mhelix, phase, radius);
+  delta1=10000,delta2=10000;  
+  
+  if (points>0){
+    dhelix1.ParabolicDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
+  }
+  if (points==2){    
+    dhelix1.ParabolicDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
+  }
+  
+  distance2 = TMath::Min(delta1,delta2);
+  //
+  if (delta1<delta2){
+    //get V0 info
+    dhelix1.Evaluate(phase[0][0],fMCXr);
+    dhelix1.GetMomentum(phase[0][0],fMCPdr);
+    mhelix.GetMomentum(phase[0][1],fMCPm);
+    dhelix1.GetAngle(phase[0][0],mhelix,phase[0][1],fMCAngle);
+    fMCRr = TMath::Sqrt(radius[0]);
+  }
+  else{
+    dhelix1.Evaluate(phase[1][0],fMCXr);
+    dhelix1.GetMomentum(phase[1][0],fMCPdr);
+    mhelix.GetMomentum(phase[1][1],fMCPm);
+    dhelix1.GetAngle(phase[1][0],mhelix,phase[1][1],fMCAngle);
+    fMCRr = TMath::Sqrt(radius[1]);
+  }     
+  //            
+  //
+  fMCDist1 = TMath::Sqrt(distance1);
+  fMCDist2 = TMath::Sqrt(distance2);      
+    
+}
+
+
+Float_t AliGenKinkInfo::GetQt(){
+  //
+  //
+  Float_t momentumd = TMath::Sqrt(fMCPd[0]*fMCPd[0]+fMCPd[1]*fMCPd[1]+fMCPd[2]*fMCPd[2]);
+  return TMath::Sin(fMCAngle[2])*momentumd;
+}
 
 
 
@@ -439,6 +807,7 @@ Int_t AliGenInfoMaker::SetIO(Int_t eventNr)
   fStack = fLoader->Stack();
   //
   fLoader->LoadTrackRefs();
+  fLoader->LoadHits();
   fTreeTR = fLoader->TreeTR();
   //
   AliTPCLoader * tpcl = (AliTPCLoader*)fLoader->GetLoader("TPCLoader");
@@ -503,6 +872,12 @@ Int_t AliGenInfoMaker::Exec()
     if (fDebug>2) cout<<"\n\n\n\tStart loop over TreeK"<<endl;
     if (TreeKLoop()>0) return 1;
     if (fDebug>2) cout<<"\tEnd loop over TreeK"<<endl;
+    //
+    if (BuildKinkInfo()>0) return 1;
+    if (BuildV0Info()>0) return 1;
+    //if (BuildHitLines()>0) return 1;
+    if (fDebug>2) cout<<"\tEnd loop over TreeK"<<endl;
+    //
     for (UInt_t i = 0; i<fNParticles; i++) {
       if (fGenInfo[i]) delete fGenInfo[i]; 
     }
@@ -529,10 +904,34 @@ void AliGenInfoMaker::CreateTreeGenTracks()
   }
   fTreeGenTracks = new TTree("genTracksTree","genTracksTree");  
   AliMCInfo * info = new AliMCInfo;
-  //
   fTreeGenTracks->Branch("MC","AliMCInfo",&info);
   delete info; 
+  //
+  AliGenKinkInfo *kinkinfo = new AliGenKinkInfo;
+  fTreeKinks = new TTree("genKinksTree","genKinksTree");  
+  fTreeKinks->Branch("MC","AliGenKinkInfo",&kinkinfo);
+  delete kinkinfo;
+  //
+  AliGenV0Info *v0info = new AliGenV0Info;
+  fTreeV0 = new TTree("genV0Tree","genV0Tree");  
+  fTreeV0->Branch("MC","AliGenV0Info",&v0info);
+  delete v0info;
+  //
+  //
+  AliPointsMI * points0 = new AliPointsMI;  
+  AliPointsMI * points1 = new AliPointsMI;  
+  AliPointsMI * points2 = new AliPointsMI;  
+  fTreeHitLines = new TTree("HitLines","HitLines");
+  fTreeHitLines->Branch("TPC.","AliPointsMI",&points0,32000,10);
+  fTreeHitLines->Branch("TRD.","AliPointsMI",&points1,32000,10);
+  fTreeHitLines->Branch("ITS.","AliPointsMI",&points2,32000,10);
+  Int_t label=0;
+  fTreeHitLines->Branch("Label",&label,"label/I");
+  //
   fTreeGenTracks->AutoSave();
+  fTreeKinks->AutoSave();
+  fTreeV0->AutoSave();
+  fTreeHitLines->AutoSave();
 }
 ////////////////////////////////////////////////////////////////////////
 void AliGenInfoMaker::CloseOutputFile() 
@@ -544,6 +943,11 @@ void AliGenInfoMaker::CloseOutputFile()
   fFileGenTracks->cd();
   fTreeGenTracks->Write();  
   delete fTreeGenTracks;
+  fTreeKinks->Write();
+  delete fTreeKinks;
+  fTreeV0->Write();
+  delete fTreeV0;
+
   fFileGenTracks->Close();
   delete fFileGenTracks;
   return;
@@ -597,7 +1001,7 @@ Int_t AliGenInfoMaker::TreeKLoop()
     info->Update();
     //////////////////////////////////////////////////////////////////////    
     br->SetAddress(&info);    
-    fTreeGenTracks->Fill();
+    fTreeGenTracks->Fill();    
   }
   fTreeGenTracks->AutoSave();
   if (fDebug > 2) cerr<<"end of TreeKLoop"<<endl;
@@ -605,6 +1009,218 @@ Int_t AliGenInfoMaker::TreeKLoop()
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////
+Int_t  AliGenInfoMaker::BuildKinkInfo()
+{
+  //
+  // Build tree with Kink Information
+  //
+  AliStack * stack = fStack;
+  if (!stack) {cerr<<"Stack was not found!\n"; return 1;}
+  
+  if (fDebug > 0) {
+    cout<<"There are "<<fNParticles<<" primary and secondary particles in event "
+	<<fEventNr<<endl;
+  }  
+  //  Int_t  ipdg = 0;
+  //TParticlePDG *ppdg = 0;
+  // not all generators give primary vertex position. Take the vertex
+  // of the particle 0 as primary vertex.
+  TDatabasePDG  pdg; //get pdg table  
+  //thank you very much root for this
+  TBranch * br = fTreeKinks->GetBranch("MC");
+  //
+  AliGenKinkInfo * kinkinfo = new AliGenKinkInfo;
+  //
+  for (UInt_t iParticle = 0; iParticle < fNParticles; iParticle++) {
+    // load only particles with TR
+    AliMCInfo * info = GetInfo(iParticle);
+    if (!info) continue;
+    if (info->fCharge==0) continue;  
+    if (info->fTRdecay.P()<0.13) continue;  //momenta cut 
+    if (info->fTRdecay.R()>500)  continue;  //R cut - decay outside barrel
+    TParticle & particle = info->fParticle;
+    Int_t first = particle.GetDaughter(0);
+    if (first ==0) continue;
+
+    Int_t last = particle.GetDaughter(1);
+    if (last ==0) last=first;
+    AliMCInfo * info2 =  0;
+    AliMCInfo * dinfo =  0;
+    
+    for (Int_t id2=first;id2<=last;id2++){
+      info2 = GetInfo(id2);
+      if (!info2) continue;
+      TParticle &p2 = info2->fParticle;
+      Double_t r = TMath::Sqrt(p2.Vx()*p2.Vx()+p2.Vy()*p2.Vy());
+      if ( TMath::Abs(info->fTRdecay.R()-r)>0.01) continue;
+      if (!(p2.GetPDG())) continue;
+      dinfo =info2;
+     
+      kinkinfo->fMCm = (*info);
+      kinkinfo->fMCd = (*dinfo);
+      if (kinkinfo->fMCm.fParticle.GetPDG()==0 ||  kinkinfo->fMCd.fParticle.GetPDG()==0) continue;
+      kinkinfo->Update();
+      br->SetAddress(&kinkinfo);    
+      fTreeKinks->Fill();
+    }
+    /*
+    if (dinfo){
+      kinkinfo->fMCm = (*info);
+      kinkinfo->fMCd = (*dinfo);
+      kinkinfo->Update();
+      br->SetAddress(&kinkinfo);    
+      fTreeKinks->Fill();
+    }
+    */
+  }
+  fTreeGenTracks->AutoSave();
+  if (fDebug > 2) cerr<<"end of Kink Loop"<<endl;
+  return 0;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+Int_t  AliGenInfoMaker::BuildV0Info()
+{
+  //
+  // Build tree with V0 Information
+  //
+  AliStack * stack = fStack;
+  if (!stack) {cerr<<"Stack was not found!\n"; return 1;}
+  
+  if (fDebug > 0) {
+    cout<<"There are "<<fNParticles<<" primary and secondary particles in event "
+	<<fEventNr<<endl;
+  }  
+  //  Int_t  ipdg = 0;
+  //TParticlePDG *ppdg = 0;
+  // not all generators give primary vertex position. Take the vertex
+  // of the particle 0 as primary vertex.
+  TDatabasePDG  pdg; //get pdg table  
+  //thank you very much root for this
+  TBranch * br = fTreeV0->GetBranch("MC");
+  //
+  AliGenV0Info * v0info = new AliGenV0Info;
+  //
+  //
+  for (UInt_t iParticle = 0; iParticle < fNParticles; iParticle++) {
+    // load only particles with TR
+    AliMCInfo * info = GetInfo(iParticle);
+    if (!info) continue;
+    if (info->fCharge==0) continue;  
+    //
+    //
+    TParticle & particle = info->fParticle;
+    Int_t mother = particle.GetMother(0);
+    if (mother <=0) continue;
+    //
+    TParticle * motherparticle = stack->Particle(mother);
+    if (!motherparticle) continue;
+    //
+    Int_t last = motherparticle->GetDaughter(1);
+    if (last==(int)iParticle) continue;
+    AliMCInfo * info2 =  info;
+    AliMCInfo * dinfo =  GetInfo(last);
+    if (!dinfo) continue;
+    if (!dinfo->fParticle.GetPDG()) continue;
+    if (!info2->fParticle.GetPDG()) continue;
+    if (dinfo){
+      v0info->fMCm = (*info);
+      v0info->fMCd = (*dinfo);
+      v0info->Update(fVPrim);
+      br->SetAddress(&v0info);    
+      fTreeV0->Fill();
+    }
+  }
+  fTreeV0->AutoSave();
+  if (fDebug > 2) cerr<<"end of V0 Loop"<<endl;
+  return 0;
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////
+Int_t AliGenInfoMaker::BuildHitLines()
+{
+
+//
+// open the file with treeK
+// loop over all entries there and save information about some tracks
+//
+
+  AliStack * stack = fStack;
+  if (!stack) {cerr<<"Stack was not found!\n"; return 1;}
+  
+  if (fDebug > 0) {
+    cout<<"There are "<<fNParticles<<" primary and secondary particles in event "
+	<<fEventNr<<endl;
+  }  
+  Int_t  ipdg = 0;
+  // TParticlePDG *ppdg = 0;
+  // not all generators give primary vertex position. Take the vertex
+  // of the particle 0 as primary vertex.
+  TDatabasePDG  pdg; //get pdg table  
+  //thank you very much root for this
+  AliPointsMI *tpcp = new AliPointsMI;
+  AliPointsMI *trdp = new AliPointsMI;
+  AliPointsMI *itsp = new AliPointsMI;
+  Int_t label =0;
+  //
+  TBranch * brtpc = fTreeHitLines->GetBranch("TPC.");
+  TBranch * brtrd = fTreeHitLines->GetBranch("TRD.");  
+  TBranch * brits = fTreeHitLines->GetBranch("ITS.");
+  TBranch * brlabel = fTreeHitLines->GetBranch("Label");
+  brlabel->SetAddress(&label);
+  brtpc->SetAddress(&tpcp);
+  brtrd->SetAddress(&trdp);
+  brits->SetAddress(&itsp);
+  //
+  AliDetector *dtpc = gAlice->GetDetector("TPC");
+  AliDetector *dtrd = gAlice->GetDetector("TRD");
+  AliDetector *dits = gAlice->GetDetector("ITS");
+ 
+  for (UInt_t iParticle = 0; iParticle < fNParticles; iParticle++) {
+    // load only particles with TR
+    AliMCInfo * info = GetInfo(iParticle);
+    if (!info) continue;
+    Int_t primpart = info->fPrimPart;
+    ipdg = info->fParticle.GetPdgCode();
+    label = iParticle;
+    //
+    gAlice->ResetHits();
+    tpcp->Reset();
+    itsp->Reset();
+    trdp->Reset();
+    tpcp->fLabel1 = ipdg;
+    trdp->fLabel1 = ipdg;
+    itsp->fLabel1 = ipdg;
+    if (dtpc->TreeH()->GetEvent(primpart)){
+      dtpc->LoadPoints(primpart);
+      tpcp->Reset(dtpc,iParticle);
+    }
+    if (dtrd->TreeH()->GetEvent(primpart)){
+      dtrd->LoadPoints(primpart);
+      trdp->Reset(dtrd,iParticle);
+    }
+    if (dits->TreeH()->GetEvent(primpart)){
+      dits->LoadPoints(primpart);
+      itsp->Reset(dits,iParticle);
+    }    
+    //    
+    fTreeHitLines->Fill();
+    dtpc->ResetPoints();
+    dtrd->ResetPoints();
+    dits->ResetPoints();
+  }
+  delete tpcp;
+  delete trdp;
+  delete itsp;
+  fTreeHitLines->AutoSave();
+  if (fDebug > 2) cerr<<"end of TreeKLoop"<<endl;
+  return 0;
+}
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -684,11 +1300,13 @@ Int_t AliGenInfoMaker::TreeTRLoop()
   TClonesArray* TPCArrayTR = new TClonesArray("AliTrackReference");
   TClonesArray* ITSArrayTR = new TClonesArray("AliTrackReference");
   TClonesArray* TRDArrayTR = new TClonesArray("AliTrackReference");
+  TClonesArray* TOFArrayTR = new TClonesArray("AliTrackReference");
   TClonesArray* RunArrayTR = new TClonesArray("AliTrackReference");
   //
   if (treeTR->GetBranch("TPC"))    treeTR->GetBranch("TPC")->SetAddress(&TPCArrayTR);
   if (treeTR->GetBranch("ITS"))    treeTR->GetBranch("ITS")->SetAddress(&ITSArrayTR);
   if (treeTR->GetBranch("TRD"))    treeTR->GetBranch("TRD")->SetAddress(&TRDArrayTR);
+  if (treeTR->GetBranch("TOF"))    treeTR->GetBranch("TOF")->SetAddress(&TOFArrayTR);
   if (treeTR->GetBranch("AliRun")) treeTR->GetBranch("AliRun")->SetAddress(&RunArrayTR);
   //
   //
@@ -701,11 +1319,12 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     for (Int_t iTrackRef = 0; iTrackRef < TPCArrayTR->GetEntriesFast(); iTrackRef++) {
       AliTrackReference *trackRef = (AliTrackReference*)TPCArrayTR->At(iTrackRef);            
       //
-      if (trackRef->Pt()<fgTPCPtCut) continue;
+      if (trackRef->P()<fgTPCPtCut) continue;
       Int_t label = trackRef->GetTrack();      
       AliMCInfo * info = GetInfo(label);
       if (!info) info = MakeInfo(label);
       if (!info) continue;
+      info->fPrimPart =  iPrimPart;
       TClonesArray & arr = *(info->fTPCReferences);
       new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
     }
@@ -715,12 +1334,13 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     for (Int_t iTrackRef = 0; iTrackRef < ITSArrayTR->GetEntriesFast(); iTrackRef++) {
       AliTrackReference *trackRef = (AliTrackReference*)ITSArrayTR->At(iTrackRef);            
       //
-      if (trackRef->Pt()<fgTPCPtCut) continue;
+      if (trackRef->P()<fgTPCPtCut) continue;
       Int_t label = trackRef->GetTrack();      
       AliMCInfo * info = GetInfo(label);
       if ( (!info) && trackRef->Pt()<fgITSPtCut) continue;
       if (!info) info = MakeInfo(label);
       if (!info) continue;
+      info->fPrimPart =  iPrimPart;
       TClonesArray & arr = *(info->fITSReferences);
       new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
     }
@@ -730,13 +1350,31 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     for (Int_t iTrackRef = 0; iTrackRef < TRDArrayTR->GetEntriesFast(); iTrackRef++) {
       AliTrackReference *trackRef = (AliTrackReference*)TRDArrayTR->At(iTrackRef);            
       //
-      if (trackRef->Pt()<fgTPCPtCut) continue;
+      if (trackRef->P()<fgTPCPtCut) continue;
       Int_t label = trackRef->GetTrack();      
       AliMCInfo * info = GetInfo(label);
       if ( (!info) && trackRef->Pt()<fgTRDPtCut) continue;
       if (!info) info = MakeInfo(label);
       if (!info) continue;
+      info->fPrimPart =  iPrimPart;
       TClonesArray & arr = *(info->fTRDReferences);
+      new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
+    }
+    //
+    // Loop over TOF references
+    //
+    for (Int_t iTrackRef = 0; iTrackRef < TOFArrayTR->GetEntriesFast(); iTrackRef++) {
+      AliTrackReference *trackRef = (AliTrackReference*)TOFArrayTR->At(iTrackRef);            
+      Int_t label = trackRef->GetTrack();      
+      AliMCInfo * info = GetInfo(label);
+      if (!info){
+	if (trackRef->Pt()<fgTPCPtCut) continue;
+	if ( (!info) && trackRef->Pt()<fgTOFPtCut) continue;
+      }
+      if (!info) info = MakeInfo(label);
+      if (!info) continue;
+      info->fPrimPart =  iPrimPart;
+      TClonesArray & arr = *(info->fTOFReferences);
       new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
     }
     //
@@ -757,6 +1395,9 @@ Int_t AliGenInfoMaker::TreeTRLoop()
   delete  TPCArrayTR;
   TRDArrayTR->Delete();
   delete  TRDArrayTR;
+  TOFArrayTR->Delete();
+  delete  TOFArrayTR;
+
   ITSArrayTR->Delete();
   delete  ITSArrayTR;
   RunArrayTR->Delete();
@@ -1041,4 +1682,81 @@ TH1F* AliComparisonDraw::CreateResHisto(TH2F* hRes2, TH1F **phMean,  Bool_t draw
 }
 
 
+void   AliComparisonDraw::DrawFriend2D(const char * chx, const char *chy, const char* selection, TTree * tfriend)
+{
+  
+}
 
+
+void   AliComparisonDraw::GetPoints3D(const char * label, const char * chpoints, const char* selection, TTree * tpoints, Int_t color,Float_t rmin){
+  //
+  //
+  if (!fPoints) fPoints = new TObjArray;
+  if (tpoints->GetIndex()==0) tpoints->BuildIndex("Label","Label");
+  AliPointsMI * points = new AliPointsMI;
+  TBranch * br = tpoints->GetBranch(chpoints);
+  br->SetAddress(&points);
+  Int_t npoints = fTree->Draw(label,selection);
+  Float_t xyz[30000];
+  rmin*=rmin;
+  for (Int_t i=0;i<npoints;i++){
+    Int_t index = (Int_t)fTree->GetV1()[i];
+    tpoints->GetEntryWithIndex(index,index);
+    if (points->fN<2) continue;
+    Int_t goodpoints=0;
+    for (Int_t i=0;i<points->fN; i++){
+      xyz[goodpoints*3]   = points->fX[i];
+      xyz[goodpoints*3+1] = points->fY[i];
+      xyz[goodpoints*3+2] = points->fZ[i];
+      if ( points->fX[i]*points->fX[i]+points->fY[i]*points->fY[i]>rmin) goodpoints++;
+    } 
+    TPolyMarker3D * marker = new TPolyMarker3D(goodpoints,xyz); 
+    //    marker->SeWidth(1); 
+    marker->SetMarkerColor(color);
+    marker->SetMarkerStyle(1);
+    fPoints->AddLast(marker);
+  }
+}
+
+void AliComparisonDraw::Draw3D(Int_t min, Int_t max){
+  if (!fPoints) return;
+  Int_t npoints = fPoints->GetEntriesFast();
+  max = TMath::Min(npoints,max);
+  min = TMath::Min(npoints,min);
+
+  for (Int_t i =min; i<max;i++){
+    TObject * obj = fPoints->At(i);
+    if (obj) obj->Draw();
+  }
+}
+
+void AliComparisonDraw:: SavePoints(const char* name)
+{
+  char fname[25];
+  sprintf(fname,"TH_%s.root",name);
+  TFile f(fname,"new");
+  fPoints->Write("Tracks",TObject::kSingleKey);
+  f.Close();
+  sprintf(fname,"TH%s.gif",name);
+  fCanvas->SaveAs(fname);
+}
+
+void   AliComparisonDraw::InitView(){
+  //
+  //
+  AliRunLoader* rl = AliRunLoader::Open();
+  rl->GetEvent(0); 
+  rl->CdGAFile(); 
+  //
+  fCanvas = new TCanvas("cdisplay", "Cluster display",0,0,700,730);
+  fView   = new TView(1);
+  fView->SetRange(-330,-360,-330, 360,360, 330);
+  fCanvas->Clear();
+  fCanvas->SetFillColor(1);
+  fCanvas->SetTheta(90.);
+  fCanvas->SetPhi(0.);
+  //
+  TGeometry *geom =(TGeometry*)gDirectory->Get("AliceGeom");
+  geom->Draw("same");
+
+}

@@ -17,8 +17,13 @@
 #pragma link C++ class  AliESDcascade+;
 #pragma link C++ class  AliESDVertex+;
 #pragma link C++ class  AliESDpid+;
+#pragma link C++ class  AliESDkink+;
+#pragma link C++ class  AliESDV0MI+;
 
 #pragma link C++ class  AliKalmanTrack+;
+#pragma link C++ class  AliHelix+;
+#pragma link C++ class  AliExternalTrackParam+;
+#pragma link C++ class  AliTrackParam+;
 #pragma link C++ class  AliLog+;
 #endif
 

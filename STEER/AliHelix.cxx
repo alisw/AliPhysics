@@ -23,6 +23,7 @@
 
 #include "AliHelix.h"
 #include "AliKalmanTrack.h"
+#include "AliExternalTrackParam.h"
 #include "TMath.h"
 ClassImp(AliHelix)
 
@@ -54,6 +55,44 @@ AliHelix::AliHelix(const AliKalmanTrack &t)
   //
   //circle parameters
   fHelix[4]=fHelix[4]/t.GetConvConst();    // C
+  cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
+
+  Double_t xc, yc, rc;
+  rc  =  1/fHelix[4];
+  xc  =  x-fHelix[2]*rc;
+  yc  =  fHelix[0]+TMath::Sqrt(1-(x-xc)*(x-xc)*fHelix[4]*fHelix[4])/fHelix[4];
+  
+  fHelix[6] = xc*cs - yc*sn;
+  fHelix[7] = xc*sn + yc*cs;
+  fHelix[8] =  TMath::Abs(rc);
+  //
+  //
+  fHelix[5]=x*cs - fHelix[0]*sn;            // x0
+  fHelix[0]=x*sn + fHelix[0]*cs;            // y0
+  //fHelix[1]=                               // z0
+  fHelix[2]=TMath::ASin(fHelix[2]) + alpha; // phi0
+  //fHelix[3]=                               // tgl
+  //
+  //
+  fHelix[5]   = fHelix[6];
+  fHelix[0]   = fHelix[7];
+  //fHelix[5]-=TMath::Sin(fHelix[2])/fHelix[4]; 
+  //fHelix[0]+=TMath::Cos(fHelix[2])/fHelix[4];  
+}
+
+
+AliHelix::AliHelix(const AliExternalTrackParam &t)
+{
+  //
+  // 
+  Double_t alpha,x,cs,sn;
+  const Double_t *param =t.GetParameter(); 
+  for (Int_t i=0;i<5;i++) fHelix[i]=param[i]; 
+  x = t.X();
+  alpha=t.Alpha();
+  //
+  //circle parameters
+  fHelix[4]=fHelix[4]/AliKalmanTrack::GetConvConst();    // C
   cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
 
   Double_t xc, yc, rc;
@@ -150,11 +189,19 @@ void   AliHelix::GetAngle(Double_t t1, AliHelix &h, Double_t t2, Double_t angle[
   Double_t norm2  = TMath::Sqrt(norm2r+g2[2]*g2[2]);
   norm2r         = TMath::Sqrt(norm2r);
   //
-  angle[0]  = TMath::ACos((g1[0]*g2[0]+g1[1]*g2[1])/(norm1r*norm2r));   // angle in phi projection
-  angle[1]  = TMath::ACos(((norm1r*norm2r)+g1[2]*g2[2])/(norm1*norm2)); // angle in rz  projection
-  angle[2]  = TMath::ACos((g1[0]*g2[0]+g1[1]*g2[1]+g1[2]*g2[2])/(norm1*norm2)); //3D angle
+  angle[0]  = (g1[0]*g2[0]+g1[1]*g2[1])/(norm1r*norm2r);   // angle in phi projection
+  if (TMath::Abs(angle[0])<1.) angle[0] = TMath::ACos(angle[0]);
+  else angle[0]=0;
+  //
+  angle[1]  = ((norm1r*norm2r)+g1[2]*g2[2])/(norm1*norm2); // angle in rz  projection
+  if (TMath::Abs(angle[1])<1.) angle[1] = TMath::ACos(angle[1]);
+  else angle[1]=0;
 
-    
+  angle[2]  = (g1[0]*g2[0]+g1[1]*g2[1]+g1[2]*g2[2])/(norm1*norm2); //3D angle
+  if (TMath::Abs(angle[2])<1.) angle[2] = TMath::ACos(angle[2]);
+  else angle[2]=0;
+
+  
   
 
 }
@@ -247,6 +294,7 @@ Int_t    AliHelix::GetRPHIintersections(AliHelix &h, Double_t phase[2][2], Doubl
   Double_t  c2[3] = {h.fHelix[5]-fHelix[5],h.fHelix[0]-fHelix[0],h.fHelix[8]};
 
   Double_t d  = TMath::Sqrt(c2[0]*c2[0]+c2[1]*c2[1]); 
+  if (d<0.000000000001) return 0;
   //
   Double_t x0[2];
   Double_t y0[2];
@@ -255,11 +303,11 @@ Int_t    AliHelix::GetRPHIintersections(AliHelix &h, Double_t phase[2][2], Doubl
     if (d>=(c1[2]+c2[2]+cut)) return 0;
     x0[0] = (d+c1[2]-c2[2])*c2[0]/(2*d)+ fHelix[5];
     y0[0] = (d+c1[2]-c2[2])*c2[1]/(2*d)+ fHelix[0];
-    return 0;
-//      phase[0][0] = GetPhase(x0[0],y0[0]);
-//      phase[0][1] = h.GetPhase(x0[0],y0[0]);
-//      ri[0] = x0[0]*x0[0]+y0[0]*y0[0];
-//      return 1;
+    //    return 0;
+    phase[0][0] = GetPhase(x0[0],y0[0]);
+    phase[0][1] = h.GetPhase(x0[0],y0[0]);
+    ri[0] = x0[0]*x0[0]+y0[0]*y0[0];
+    return 1;
   }
   if ( (d+c2[2])<c1[2]){
     if ( (d+c2[2])+cut<c1[2]) return 0;

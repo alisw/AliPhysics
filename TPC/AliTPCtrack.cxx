@@ -39,9 +39,13 @@ AliTPCtrack::AliTPCtrack(): AliKalmanTrack()
   fX = fP0 = fP1 = fP2 = fP3 = fP3 = fP4 = 0.0;
   fAlpha = fdEdx = 0.0;
   fNWrong = fNRotation = fNumber = 0;  // [SR, 01.04.2003]
+  for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
 }
 
 //_________________________________________________________________________
+
+
+
 AliTPCtrack::AliTPCtrack(UInt_t index, const Double_t xx[5],
 const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
   //-----------------------------------------------------------------
@@ -73,6 +77,7 @@ const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
   fRemoval    = 0;
   fTrackType  = 0;
   fLab2       = 0;
+  for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
 }
 
 //_____________________________________________________________________________
@@ -121,6 +126,7 @@ AliKalmanTrack(t) {
   fRemoval    = 0;
   fTrackType  = 0;
   fLab2       = 0;
+  for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
 }
 
 //_____________________________________________________________________________
@@ -131,6 +137,7 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
   SetNumberOfClusters(t.GetTPCclusters(fIndex));
   SetLabel(t.GetLabel());
   SetMass(t.GetMass());
+  for (Int_t i=0; i<3;i++) fKinkIndexes[i]=t.GetKinkIndex(i);
 
   fdEdx  = t.GetTPCsignal();
   fAlpha = t.GetAlpha();
@@ -139,6 +146,8 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
 
   //Conversion of the track parameters
   Double_t x,p[5]; t.GetExternalParameters(x,p);
+  Double_t c[15]; t.GetExternalCovariance(c);
+
   fX=x;    x=GetConvConst();
   fP0=p[0];
   fP1=p[1];
@@ -147,7 +156,6 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
   fP2=fP4*fX - p[2];
 
   //Conversion of the covariance matrix
-  Double_t c[15]; t.GetExternalCovariance(c);
   c[10]/=x; c[11]/=x; c[12]/=x; c[13]/=x; c[14]/=x*x;
 
   Double_t c22=fX*fX*c[14] - 2*fX*c[12] + c[5];
@@ -206,7 +214,7 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) : AliKalmanTrack(t) {
   fRemoval    = t.fRemoval ;
   fTrackType  = t.fTrackType;
   fLab2       = t.fLab2;
-
+  for (Int_t i=0; i<3;i++) fKinkIndexes[i]=t.fKinkIndexes[i];
 }
 //_____________________________________________________________________________
 
@@ -672,4 +680,66 @@ Double_t AliTPCtrack::GetD(Double_t x, Double_t y) const {
   //  Double_t  delta = TMath::Sqrt(TMath::Abs(x*x-2*x0*x+x0*x0+ y*y-2*y*y0+y0*y0));
   delta -= TMath::Abs(r);
   return delta;  
+}
+
+//
+//
+
+void  AliTPCtrack::UpdatePoints()
+{
+  //--------------------------------------------------
+  //calculates first ,amx dens and last points
+  //--------------------------------------------------
+  Float_t density[160];
+  for (Int_t i=0;i<160;i++) density[i]=-1.;
+  fPoints[0]= 160;
+  fPoints[1] = -1;
+  //
+  Int_t ngood=0;
+  Int_t undeff=0;
+  Int_t nall =0;
+  Int_t range=20;
+  for (Int_t i=0;i<160;i++){
+    Int_t last = i-range;
+    if (nall<range) nall++;
+    if (last>=0){
+      if (fIndex[last]>0&& (fIndex[last]&0x8000)==0) ngood--;
+      if (fIndex[last]==-1) undeff--;
+    }
+    if (fIndex[i]>0&& (fIndex[i]&0x8000)==0)   ngood++;
+    if (fIndex[i]==-1) undeff++;
+    if (nall==range &&undeff<range/2) density[i-range/2] = Float_t(ngood)/Float_t(nall-undeff);
+  }
+  Float_t maxdens=0;
+  Int_t indexmax =0;
+  for (Int_t i=0;i<160;i++){
+    if (density[i]<0) continue;
+    if (density[i]>maxdens){
+      maxdens=density[i];
+      indexmax=i;
+    }
+  }
+  //
+  //max dens point
+  fPoints[3] = maxdens;
+  fPoints[1] = indexmax;
+  //
+  // last point
+  for (Int_t i=indexmax;i<160;i++){
+    if (density[i]<0) continue;
+    if (density[i]<maxdens/2.) {
+      break;
+    }
+    fPoints[2]=i;
+  }
+  //
+  // first point
+  for (Int_t i=indexmax;i>0;i--){
+    if (density[i]<0) continue;
+    if (density[i]<maxdens/2.) {
+      break;
+    }
+    fPoints[0]=i;
+  }
+  //
 }

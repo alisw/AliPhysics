@@ -20,7 +20,9 @@ class AliESDtrack : public TObject {
 public:
   AliESDtrack();
   AliESDtrack(const AliESDtrack& track);
-  virtual ~AliESDtrack();  
+  virtual ~AliESDtrack();
+  void SetID(Int_t id) { fID =id;}
+  Int_t GetID(){ return fID;}
   void SetStatus(ULong_t flags) {fFlags|=flags;}
   void ResetStatus(ULong_t flags) {fFlags&=~flags;}
   Bool_t UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags);
@@ -79,10 +81,15 @@ public:
 
   void SetTPCpid(const Double_t *p);
   void GetTPCpid(Double_t *p) const;
+  void SetTPCPoints(Float_t points[4]){for (Int_t i=0;i<4;i++) fTPCPoints[i]=points[i];}
+  void SetKinkIndexes(Int_t points[3]) {for (Int_t i=0;i<3;i++) fKinkIndexes[i] = points[i];}
+  void SetV0Indexes(Int_t points[3]) {for (Int_t i=0;i<3;i++) fV0Indexes[i] = points[i];}
   Float_t GetTPCsignal() const {return fTPCsignal;}
   Float_t GetTPCchi2() const {return fTPCchi2;}
   Int_t GetTPCclusters(Int_t *idx) const;
   Int_t GetTPCLabel() const {return fTPCLabel;}
+  Int_t GetKinkIndex(Int_t i) const { return fKinkIndexes[i];}
+  Int_t GetV0Index(Int_t i) const { return fV0Indexes[i];}
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   
   void SetTRDpid(const Double_t *p);
@@ -91,6 +98,7 @@ public:
   Float_t GetTRDsignal() const {return fTRDsignal;}
   Float_t GetTRDchi2() const {return fTRDchi2;}
   Int_t GetTRDclusters(UInt_t *idx) const;
+  Int_t GetTRDncls() const {return fTRDncls;}
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
   Int_t GetTRDLabel() const {return fTRDLabel;}
@@ -101,7 +109,11 @@ public:
   Float_t GetTOFsignal() const {return fTOFsignal;}
   Float_t GetTOFchi2() const {return fTOFchi2;}
   void    SetTOFpid(const Double_t *p);
+  void    SetTOFLabel(const Int_t *p);
   void    GetTOFpid(Double_t *p) const;
+  void    GetTOFLabel(Int_t *p) const;
+  void    GetTOFInfo(Float_t *info) const;
+  void    SetTOFInfo(Float_t *info);
   UInt_t  GetTOFcluster() const {return fTOFindex;}
   void  SetTOFcluster(UInt_t index) {fTOFindex=index;}
   
@@ -159,7 +171,7 @@ public:
 protected:
   ULong_t   fFlags;        // Reconstruction status flags 
   Int_t     fLabel;        // Track label
-
+  Int_t     fID;           // Unique ID of the track
   Float_t   fTrackLength;         // Track length
   Float_t   fTrackTime[kSPECIES]; // TOFs estimated by the tracking
   Float_t   fR[kSPECIES];         // combined "detector response probability"
@@ -216,11 +228,14 @@ protected:
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
-  UInt_t  fTPCindex[180];  //! indices of the assigned TPC clusters
+  Int_t  fTPCindex[180];  //! indices of the assigned TPC clusters
   TBits   fTPCClusterMap;  // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   Float_t fTPCsignal;      // detector's PID signal
   Float_t fTPCr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTPCLabel;       // label according TPC
+  Float_t fTPCPoints[4];   // TPC points -first, max. dens, last and max density
+  Int_t   fKinkIndexes[3]; // array of indexes of posible kink candidates 
+  Int_t   fV0Indexes[3]; // array of indexes of posible kink candidates 
   // TRD related track information
   Float_t fTRDchi2;        // chi2 in the TRD
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
@@ -235,9 +250,10 @@ protected:
   UInt_t  fTOFindex;       // index of the assigned TOF cluster
   Float_t fTOFsignal;      // detector's PID signal
   Float_t fTOFr[kSPECIES]; // "detector response probabilities" (for the PID)
-
+  Int_t   fTOFLabel[3];       // TOF label 
+  Float_t fTOFInfo[10];       //! TOF informations
   // PHOS related track information 
-  Float_t fPHOSpos[3]; //position localised by PHOS in global coordinate system
+  Float_t fPHOSpos[3]; // position localised by PHOS in global coordinate system
   Float_t fPHOSsignal; // energy measured by PHOS
   Float_t fPHOSr[kSPECIESN]; // PID information from PHOS
 
@@ -250,7 +266,7 @@ protected:
   Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
   Float_t fRICHr[kSPECIES];// "detector response probabilities" (for the PID)
   	
-  ClassDef(AliESDtrack,8)  //ESDtrack 
+  ClassDef(AliESDtrack,9)  //ESDtrack 
 };
 
 #endif 

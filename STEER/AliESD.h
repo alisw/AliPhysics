@@ -20,9 +20,11 @@
 #include "AliESDPmdTrack.h"
 #include "AliESDVertex.h"
 #include "AliESDcascade.h"
+#include "AliESDkink.h"
 #include "AliESDtrack.h"
 #include "AliESDHLTtrack.h"
 #include "AliESDv0.h"
+#include "AliESDV0MI.h"
 
 class AliESD : public TObject {
 public:
@@ -51,8 +53,11 @@ public:
     return (AliESDPmdTrack *)fPmdTracks.UncheckedAt(i);
   }
 
-  void AddTrack(const AliESDtrack *t) {
-    new(fTracks[fTracks.GetEntriesFast()]) AliESDtrack(*t);
+  Int_t  AddTrack(const AliESDtrack *t) {
+    AliESDtrack * track = new(fTracks[fTracks.GetEntriesFast()]) AliESDtrack(*t);
+    track->SetID(fTracks.GetEntriesFast()-1);
+    return  track->GetID();
+    
   }
   void AddHLTConfMapTrack(const AliESDHLTtrack *t) {
     new(fHLTConfMapTracks[fHLTConfMapTracks.GetEntriesFast()]) AliESDHLTtrack(*t);
@@ -73,6 +78,7 @@ public:
   void AddV0(const AliESDv0 *v) {
     new(fV0s[fV0s.GetEntriesFast()]) AliESDv0(*v);
   }
+  void UpdateV0PIDs();
 
   AliESDcascade *GetCascade(Int_t i) const {
     return (AliESDcascade *)fCascades.UncheckedAt(i);
@@ -80,6 +86,25 @@ public:
   void AddCascade(const AliESDcascade *c) {
     new(fCascades[fCascades.GetEntriesFast()]) AliESDcascade(*c);
   }
+
+  AliESDkink *GetKink(Int_t i) const {
+    return (AliESDkink *)fKinks.UncheckedAt(i);
+  }
+  Int_t AddKink(const AliESDkink *c) {
+    AliESDkink * kink = new(fKinks[fKinks.GetEntriesFast()]) AliESDkink(*c);
+    kink->SetID(fKinks.GetEntriesFast());
+    return fKinks.GetEntriesFast()-1;
+  }
+
+  AliESDV0MI *GetV0MI(Int_t i) const {
+    return (AliESDV0MI *)fV0MIs.UncheckedAt(i);
+  }
+  Int_t AddV0MI(const AliESDV0MI *c) {
+    AliESDV0MI * v0 = new(fV0MIs[fV0MIs.GetEntriesFast()]) AliESDV0MI(*c);
+    v0->SetID(fV0MIs.GetEntriesFast()-1);
+    return fV0MIs.GetEntriesFast()-1;
+  }
+
 
   void SetVertex(AliESDVertex* vertex) {
     new(&fPrimaryVertex) AliESDVertex(*vertex);
@@ -97,6 +122,8 @@ public:
   Int_t GetNumberOfPmdTracks() const {return fPmdTracks.GetEntriesFast();}
   Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
   Int_t GetNumberOfCascades() const {return fCascades.GetEntriesFast();}
+  Int_t GetNumberOfKinks() const {return fKinks.GetEntriesFast();}
+  Int_t GetNumberOfV0MIs() const {return fV0MIs.GetEntriesFast();}
   Int_t GetNumberOfPHOSParticles() const {return fPHOSParticles;}
   void  SetNumberOfPHOSParticles(Int_t part) { fPHOSParticles = part ; }
   void  SetFirstPHOSParticle(Int_t index) { fFirstPHOSParticle = index ; } 
@@ -145,6 +172,8 @@ protected:
   TClonesArray fPmdTracks;       // PMD ESD tracks
   TClonesArray fV0s;             // V0 vertices
   TClonesArray fCascades;        // Cascade vertices
+  TClonesArray fKinks;           // Kinks
+  TClonesArray fV0MIs;           // V0MI
   Int_t        fPHOSParticles;   // Number of PHOS particles (stored as fTracks)
   Int_t        fEMCALParticles;  // Number of EMCAL particles (stored as fTracks)
   Int_t        fFirstPHOSParticle; // First PHOS particle in the fTracks list 

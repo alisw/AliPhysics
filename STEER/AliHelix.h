@@ -17,12 +17,14 @@
 
 class AliCluster;
 class AliKalmanTrack;
+class AliExternalTrackParam;
 
 class AliHelix : public TObject {
 public:
   AliHelix();
   AliHelix(const AliHelix &t);
   AliHelix(const AliKalmanTrack &t);
+  AliHelix(const AliExternalTrackParam &t);
   AliHelix(Double_t x[3], Double_t p[3], Double_t charge=1, Double_t conversion=0.);
   virtual ~AliHelix(){};
   inline void Evaluate(Double_t t, Double_t r[3]);

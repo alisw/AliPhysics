@@ -14,34 +14,14 @@
 #include "AliTracker.h"
 #include "AliITStrackMI.h"
 #include "AliITSclusterV2.h"
+#include "AliV0vertex.h"
 
 class AliESD;
 class AliITSgeom;
 class TTree;
 class AliHelix;
 class AliV0vertex;
-
-
-class AliITSRecV0Info: public TObject {
-  friend class AliITStrackerMI;
-protected:
-  void Update(Float_t vertex[3], Float_t mass1, Float_t mass2);
-  Double_t       fDist1;    //info about closest distance according closest MC - linear DCA
-  Double_t       fDist2;    //info about closest distance parabolic DCA
-  Double_t       fInvMass;  //reconstructed invariant mass -
-  //
-  Double_t       fPdr[3];    //momentum at vertex daughter  - according approx at DCA
-  Double_t       fXr[3];     //rec. position according helix
-  //
-  Double_t       fPm[3];    //momentum at the vertex mother
-  Double_t       fAngle[3]; //three angles
-  Double_t       fRr;       // rec position of the vertex 
-  Int_t          fLab[2];   //MC label of the partecle 
-  Float_t        fPointAngleFi; //point angle fi
-  Float_t        fPointAngleTh; //point angle theta
-  Float_t        fPointAngle;   //point angle full
-  ClassDef(AliITSRecV0Info,1)  // container for  
-};
+class AliESDV0MI;
 
 
 
@@ -190,8 +170,8 @@ public:
 
 protected:
   void FindV0(AliESD *event);  //try to find V0
-  Double_t  TestV0(AliHelix *h1, AliHelix *h2, AliITSRecV0Info *vertex);  //try to find V0 - return DCA
-  Double_t  FindBestPair(Int_t esdtrack0, Int_t esdtrack1,AliITSRecV0Info *vertex);  // try to find best pair from the tree of track hyp.
+  Double_t  TestV0(AliHelix *h1, AliHelix *h2, AliESDV0MI *vertex);  //try to find V0 - return DCA
+  Double_t  FindBestPair(Int_t esdtrack0, Int_t esdtrack1,AliESDV0MI *vertex);  // try to find best pair from the tree of track hyp.
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliITStrackMI *t,Float_t wrong) const;
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
@@ -235,6 +215,7 @@ protected:
   AliITStrackMI fBestTrack;              // "best" track 
   AliITStrackMI fTrackToFollow;          // followed track
   TObjArray     fTrackHypothesys;        // ! array with track hypothesys- ARRAY is the owner of tracks- MI
+  TObjArray     fV0Array;                // ! array of V0
   Int_t         fBestTrackIndex[100000]; // ! index of the best track
   Int_t         fCurrentEsdTrack;        // ! current esd track           - MI
   Int_t fPass;                           // current pass through the data 

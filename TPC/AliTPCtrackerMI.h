@@ -35,6 +35,8 @@ class AliTPCseed : public AliTPCtrack {
      AliTPCseed(const AliTPCtrack &t);
      AliTPCseed(const AliTPCseed &s);
      AliTPCseed(const AliKalmanTrack &t, Double_t a);
+     AliTPCseed(UInt_t index, const Double_t xx[5], 
+                const Double_t cc[15], Double_t xr, Double_t alpha);     
      Int_t Compare(const TObject *o) const;
      void Reset(Bool_t all = kTRUE);
      Int_t GetProlongation(Double_t xr, Double_t &y, Double_t & z) const;
@@ -42,9 +44,6 @@ class AliTPCseed : public AliTPCtrack {
      virtual Int_t Update(const AliTPCclusterMI* c, Double_t chi2, UInt_t i);
      AliTPCTrackerPoint * GetTrackPoint(Int_t i);
      void RebuildSeed(); // rebuild seed to be ready for storing
-     AliTPCseed(UInt_t index, const Double_t xx[5], 
-                const Double_t cc[15], Double_t xr, Double_t alpha);
-
      Double_t GetDensityFirst(Int_t n);
      Double_t GetSigma2C() const {return fC44;};
      void GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_t &foundable, Int_t &shared, Bool_t plus2);
@@ -136,6 +135,9 @@ public:
   void WriteTracks(TTree * tree);  
   void DeleteSeeds();
   void SetDebug(Int_t debug){ fDebug = debug;}
+  void FindKinks(TObjArray * array, AliESD * esd);
+  void UpdateKinkQualityM(AliTPCseed * seed);
+
    Int_t ReadSeeds(const TFile *in);
    TObjArray * GetSeeds(){return fSeeds;}
    //   
@@ -143,6 +145,7 @@ public:
    AliTPCclusterMI *GetClusterMI(Int_t index) const;
    Int_t Clusters2Tracks();
    virtual void  CookLabel(AliTPCseed *t,Float_t wrong) const; 
+   virtual Int_t   CookLabel(AliTPCseed *t,Float_t wrong, Int_t first,Int_t last ) const; 
    
    void RotateToLocal(AliTPCseed *seed);
   
@@ -260,6 +263,7 @@ private:
    void  SignShared(TObjArray * arr);
 
    void  RemoveUsed(TObjArray * arr, Float_t factor1, Float_t factor2,  Int_t removalindex);
+   void  RemoveUsed2(TObjArray * arr, Float_t factor1, Float_t factor2, Int_t minimal);
    void  RemoveDouble(TObjArray * arr, Float_t factor1, Float_t factor2,  Int_t removalindex);
 
    void  StopNotActive(TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const;

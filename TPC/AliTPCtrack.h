@@ -25,7 +25,7 @@
 #include <TMath.h>
 
 #include "AliTPCreco.h"
-
+#include "AliExternalTrackParam.h"
 class AliBarrelTrack;
 class AliESDtrack;
 
@@ -106,7 +106,8 @@ public:
   Int_t PropagateTo(Double_t xr,Double_t x0=28.94,Double_t rho=0.9e-3);
   Int_t Update(const AliCluster* c, Double_t chi2, UInt_t i);
   void ResetCovariance();
- 
+  void UpdatePoints();//update points 
+  Float_t* GetPoints() {return fPoints;}
   //
   //  TClonesArray * fHelixIn;    //array of helixes  
   //TClonesArray * fHelixOut;   //array of helixes 
@@ -115,7 +116,10 @@ public:
   Float_t Density2(Int_t row0, Int_t row1); //calculate cluster density
   Double_t GetZat0() const;
   Double_t GetD(Double_t x=0, Double_t y=0) const;
-
+  AliExternalTrackParam & GetReference(){ return fReference;}
+  void UpdateReference(){ new (&fReference) AliExternalTrackParam(*this);}
+  Int_t  GetKinkIndex(Int_t i) const{ return fKinkIndexes[i];}
+  Int_t*  GetKinkIndexes() { return fKinkIndexes;}
 protected: 
   Double_t fX;              // X-coordinate of this track (reference plane)
   Double_t fAlpha;          // Rotation angle the local (TPC sector)
@@ -136,7 +140,7 @@ protected:
   Double_t fC40, fC41, fC42, fC43, fC44; // parameters
 
   Int_t fIndex[kMaxRow];       // indices of associated clusters 
-
+  Float_t fPoints[4];            //first, max dens row  end points of the track and max density
   //[SR, 01.04.2003]
   Int_t fNWrong;         // number of wrong clusters
   Int_t fNRotation;      // number of rotations
@@ -152,8 +156,9 @@ protected:
   Int_t fTrackType;       // track type - 0 - normal - 1 - kink -  2 -V0  3- double found
   Int_t fLab2;            // index of corresponding track (kink, V0, double)
   Int_t   fNShared;       // number of shared points 
+  AliExternalTrackParam   fReference; // track parameters at the middle of the chamber
   Float_t  fKinkPoint[12];      //radius, of kink,  dfi and dtheta
-
+  Int_t    fKinkIndexes[3];     // kink indexes - minus = mother + daughter
   ClassDef(AliTPCtrack,1)   // Time Projection Chamber reconstructed tracks
 };
 

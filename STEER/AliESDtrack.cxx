@@ -66,6 +66,7 @@ fRICHsignal(-1)
   //
   // The default ESD constructor 
   //
+  fID =0;
   for (Int_t i=0; i<kSPECIES; i++) {
     fTrackTime[i]=0.;
     fR[i]=1.;
@@ -93,7 +94,12 @@ fRICHsignal(-1)
   }
   for (i=0; i<6; i++)  { fITSindex[i]=0; }
   for (i=0; i<180; i++){ fTPCindex[i]=0; }
+  for (i=0; i<3;i++)   { fKinkIndexes[i]=0;}
+  for (i=0; i<3;i++)   { fV0Indexes[i]=-1;}
   for (i=0; i<130; i++) { fTRDindex[i]=0; }
+  for (Int_t i=0;i<4;i++) {fTPCPoints[i]=-1;}
+  for (Int_t i=0;i<3;i++) {fTOFLabel[i]=-1;}
+  for (Int_t i=0;i<10;i++) {fTOFInfo[i]=-1;}
   fTPCLabel = 0;
   fTRDLabel = 0;
   fITSLabel = 0;
@@ -107,6 +113,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   //
   //copy constructor
   //
+  fID = track.fID;
   fFlags = track.fFlags;
   fLabel =track.fLabel;
   fTrackLength =track.fTrackLength;
@@ -162,6 +169,9 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   fTPCsignal=track.fTPCsignal;      
   for (Int_t i=0;i<kSPECIES;i++) fTPCr[i]=track.fTPCr[i]; 
   fTPCLabel=track.fTPCLabel;       
+  for (Int_t i=0;i<4;i++) {fTPCPoints[i]=track.fTPCPoints[i];}
+  for (Int_t i=0; i<3;i++)   { fKinkIndexes[i]=track.fKinkIndexes[i];}
+  for (Int_t i=0; i<3;i++)   { fV0Indexes[i]=track.fV0Indexes[i];}
   //
   fTRDchi2=track.fTRDchi2;        
   fTRDncls=track.fTRDncls;       
@@ -176,6 +186,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   fTOFindex=track.fTOFindex;       
   fTOFsignal=track.fTOFsignal;      
   for (Int_t i=0;i<kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
+  for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
+  for (Int_t i=0;i<10;i++) fTOFInfo[i]=track.fTOFInfo[i];
   //
   for (Int_t i=0;i<3;i++) fPHOSpos[i]=track.fPHOSpos[i]; 
   fPHOSsignal=track.fPHOSsignal; 
@@ -258,7 +270,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
   case kTPCin: case kTPCrefit:
     fTPCLabel = t->GetLabel();
     fIalpha=fRalpha;
-    fIx=fRx;
+    fIx=fRx;    
     {
       Int_t i;
       for (i=0; i<5; i++) fIp[i]=fRp[i];
@@ -339,8 +351,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
        t->GetExternalCovariance(fXc); //can be done better
     }
   case kTRDin: case kTRDrefit:
-    fTRDLabel = t->GetLabel();
- 
+    fTRDLabel = t->GetLabel(); 
     fTRDncls=t->GetNumberOfClusters();
     fTRDchi2=t->GetChi2();
     for (Int_t i=0;i<fTRDncls;i++) fTRDindex[i]=t->GetClusterIndex(i);
@@ -768,9 +779,33 @@ void AliESDtrack::SetTOFpid(const Double_t *p) {
 }
 
 //_______________________________________________________________________
+void AliESDtrack::SetTOFLabel(const Int_t *p) {  
+  // Sets  (in TOF)
+  for (Int_t i=0; i<3; i++) fTOFLabel[i]=p[i];
+}
+
+//_______________________________________________________________________
 void AliESDtrack::GetTOFpid(Double_t *p) const {
   // Gets probabilities of each particle type (in TOF)
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fTOFr[i];
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetTOFLabel(Int_t *p) const {
+  // Gets (in TOF)
+  for (Int_t i=0; i<3; i++) p[i]=fTOFLabel[i];
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetTOFInfo(Float_t *info) const {
+  // Gets (in TOF)
+  for (Int_t i=0; i<10; i++) info[i]=fTOFInfo[i];
+}
+
+//_______________________________________________________________________
+void AliESDtrack::SetTOFInfo(Float_t*info) {
+  // Gets (in TOF)
+  for (Int_t i=0; i<10; i++) fTOFInfo[i]=info[i];
 }
 
 

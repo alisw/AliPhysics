@@ -4,7 +4,7 @@ SRCS:=  AliTPCcluster.cxx \
         AliClustersArray.cxx AliTPCClustersArray.cxx \
 	AliTPCclusterer.cxx AliTPCclustererMI.cxx \
 	AliTPCtrack.cxx AliTPCtracker.cxx \
-	AliHelix.cxx AliTPCpolyTrack.cxx AliTPCtrackerMI.cxx \
+	AliTPCpolyTrack.cxx AliTPCtrackerMI.cxx \
 	AliTPCPid.cxx AliTPCtrackPid.cxx AliTPCpidESD.cxx \
 	AliTPCReconstructor.cxx
         

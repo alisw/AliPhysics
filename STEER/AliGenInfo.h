@@ -45,6 +45,7 @@ public:
   AliTrackReference  fTrackRefOut;   // decay track reference saved in the output tree
   AliTrackReference  fTRdecay;       // track reference at decay point
   //
+  Int_t fPrimPart;                   // index of primary particle in TreeH
   TParticle fParticle;           // generated particle 
   Float_t   fMass;               // mass of the particle
   Float_t fCharge;               //
@@ -61,10 +62,13 @@ public:
   Float_t fPrim;               // theoretical dedx in tpc according particle momenta and mass
   digitRow fTPCRow;               // information about digits row pattern
   Int_t fNTPCRef;                 // tpc references counter
-  Int_t fNITSRef;                 // tpc references counter
+  Int_t fNITSRef;                 // ITS references counter
+  Int_t fNTRDRef;                  // TRD references counter
+  Int_t fNTOFRef;                  // TOF references counter
   TClonesArray * fTPCReferences;  //containner with all track references -in the TPC
   TClonesArray * fITSReferences;  //container with ITS references
   TClonesArray * fTRDReferences;  //container with TRD references  
+  TClonesArray * fTOFReferences;  //container with TRD references  
   //
   ClassDef(AliMCInfo,3)  // container for 
 };
@@ -74,9 +78,9 @@ ClassImp(AliMCInfo)
 
 class AliGenV0Info: public TObject {
 public:
-  AliMCInfo fMCd;      //info about daughter particle
-  AliMCInfo fMCm;      //info about mother particle
-  void Update();        // put some derived info to special field 
+  AliMCInfo fMCd;      //info about daughter particle - second particle for V0
+  AliMCInfo fMCm;      //info about mother particle   - first particle for V0
+  void Update(Float_t vertex[3]);        // put some derived info to special field 
   Double_t    fMCDist1;    //info about closest distance according closest MC - linear DCA
   Double_t    fMCDist2;    //info about closest distance parabolic DCA
   //
@@ -91,9 +95,42 @@ public:
   Double_t     fMCR;        //exact r position of the vertex
   Int_t        fPdg[2];   //pdg code of mother and daugter particles
   Int_t        fLab[2];   //MC label of the partecle
+  //
+  Double_t       fInvMass;  //reconstructed invariant mass -
+  Float_t        fPointAngleFi; //point angle fi
+  Float_t        fPointAngleTh; //point angle theta
+  Float_t        fPointAngle;   //point angle full
+  //
   ClassDef(AliGenV0Info,1)  // container for  
 };
 ClassImp(AliGenV0Info)
+
+
+
+
+class AliGenKinkInfo: public TObject {
+public:
+  AliMCInfo fMCd;      //info about daughter particle - second particle for V0
+  AliMCInfo fMCm;      //info about mother particle   - first particle for V0
+  void Update();        // put some derived info to special field 
+  Float_t GetQt();      //
+  Double_t    fMCDist1;    //info about closest distance according closest MC - linear DCA
+  Double_t    fMCDist2;    //info about closest distance parabolic DCA
+  //
+  Double_t     fMCPdr[3];    //momentum at vertex daughter  - according approx at DCA
+  Double_t     fMCPd[4];     //exact momentum from MC info
+  Double_t     fMCX[3];      //exact position of the vertex
+  Double_t     fMCXr[3];     //rec. position according helix
+  //
+  Double_t     fMCPm[3];    //momentum at the vertex mother
+  Double_t     fMCAngle[3]; //three angels
+  Double_t     fMCRr;       // rec position of the vertex 
+  Double_t     fMCR;        //exact r position of the vertex
+  Int_t        fPdg[2];   //pdg code of mother and daugter particles
+  Int_t        fLab[2];   //MC label of the partecle
+  ClassDef(AliGenKinkInfo,1)  // container for  
+};
+ClassImp(AliGenKinkInfo)
 
 
 
@@ -119,6 +156,9 @@ public:
   Int_t TreeKLoop();
   Int_t TreeTRLoop();
   Int_t TreeDLoop();
+  Int_t BuildKinkInfo();  // build information about MC kinks
+  Int_t BuildV0Info();  // build information about MC kinks
+  Int_t BuildHitLines();  // build information about MC kinks
   //void  FillInfo(Int_t iParticle);
   void SetFirstEventNr(Int_t i) {fFirstEventNr = i;}
   void SetNEvents(Int_t i) {fNEvents = i;}
@@ -139,8 +179,11 @@ public:
   Int_t fNEvents;                 //! number of events to process
   Int_t fFirstEventNr;            //! first event to process
   UInt_t fNParticles;              //! number of particles in TreeK
-  TTree *fTreeGenTracks;          //! output tree with generated tracks
-  char  fFnRes[1000];                   //! output file name with stored tracks
+  TTree * fTreeGenTracks;          //! output tree with generated tracks
+  TTree * fTreeKinks;             //!  output tree with Kinks
+  TTree * fTreeV0;                //!  output tree with V0
+  TTree * fTreeHitLines;          //! tree with hit lines
+  char  fFnRes[1000];             //! output file name with stored tracks
   TFile *fFileGenTracks;          //! output file with stored fTreeGenTracks
   //
   AliRunLoader * fLoader;         //! pointer to the run loader
@@ -152,7 +195,7 @@ public:
   Int_t fNInfos;                  //! number of tracks with infos
   //
   AliTPCParam* fParamTPC;         //! AliTPCParam
-  Double_t fVPrim[3];             //! primary vertex position
+  Float_t fVPrim[3];             //! primary vertex position
                                   // the fVDist[3] contains size of the 3-vector
 
 private:
@@ -164,9 +207,10 @@ private:
   static const Int_t seedRow22 = 130;  // seedRow12 - shift
   static const Double_t kRaddeg = 180./3.14159265358979312;
   // 
-  static const Double_t fgTPCPtCut = 0.1; // do not store particles with generated pT less than this
+  static const Double_t fgTPCPtCut = 0.03; // do not store particles with generated pT less than this
   static const Double_t fgITSPtCut = 0.2; // do not store particles with generated pT less than this
   static const Double_t fgTRDPtCut = 0.2; // do not store particles with generated pT less than this
+  static const Double_t fgTOFPtCut = 0.15; // do not store particles with generated pT less than this
  
   ClassDef(AliGenInfoMaker,1)    // class which creates and fills tree with TPCGenTrack objects
 };
@@ -176,6 +220,8 @@ ClassImp(AliGenInfoMaker)
 
 class AliComparisonDraw: public TObject{
 public:
+  AliComparisonDraw(){fPoints=0; fView=0;}
+  void InitView();
   TH1F * DrawXY(const char * chx, const char *chy, const char* selection, 
 		const char * quality,Int_t nbins, Float_t minx, Float_t maxx, 
 		Float_t miny, Float_t maxy);
@@ -193,14 +239,39 @@ public:
   static TH1F*  CreateEffHisto(TH1F* hGen, TH1F* hRec);
   static TH1F*  CreateResHisto(TH2F* hRes2, TH1F **phMean, 
 				Bool_t drawBinFits = kTRUE,Bool_t overflowBinFits = kFALSE);
+  void   DrawFriend2D(const char * chx, const char *chy, const char* selection, TTree * tfriend);
+  void   GetPoints3D(const char * label, const char * chpoints, const char* selection, TTree * tpoints, Int_t color=6, Float_t rmin=4.);
+  void   Draw3D(Int_t min=0, Int_t max = 10000);
+  void SavePoints(const char* name);
  public: 
   TTree * fTree;
   TH1F  * fRes;  //temporary file
   TH1F  * fMean;  //temporary file
+  TView * fView;  //3D view
+  TCanvas *fCanvas; //canvas
+  TObjArray *fPoints;
   ClassDef(AliComparisonDraw,1)
 };
 ClassImp(AliComparisonDraw)
 
+
+class AliPointsMI: public TObject{
+ public:
+  AliPointsMI();
+  AliPointsMI(Int_t n, Float_t *x,Float_t *y, Float_t *z);
+  void Reset();
+  void Reset(AliDetector * det, Int_t particle);  //load points for given particle
+  ~AliPointsMI();
+  Int_t   fN;  //number of points;
+  Float_t *fX; //[fN] pointer to x
+  Float_t *fY; //[fN] pointer to y
+  Float_t *fZ; //[fN] pointer to Z  
+  Int_t   fCapacity; //!allocated size of the x,y,x
+  Int_t   fLabel0; //label
+  Int_t   fLabel1; //label
+  ClassDef(AliPointsMI,1)
+};
+ClassImp(AliPointsMI)
 
 
 AliTPCParam * GetTPCParam();

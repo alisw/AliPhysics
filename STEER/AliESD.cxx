@@ -44,8 +44,10 @@ AliESD::AliESD():
   fHLTHoughTracks("AliESDHLTtrack",15000),
   fMuonTracks("AliESDMuonTrack",30),
   fPmdTracks("AliESDPmdTrack",3000),
-  fV0s("AliESDv0",200),
+  fV0s("AliESDv0",200),  
   fCascades("AliESDcascade",20),
+  fKinks("AliESDkink",4000),
+  fV0MIs("AliESDV0MI",4000),
   fPHOSParticles(0), 
   fEMCALParticles(0), 
   fFirstPHOSParticle(-1), 
@@ -65,6 +67,28 @@ AliESD::~AliESD()
   fPmdTracks.Delete();
   fV0s.Delete();
   fCascades.Delete();
+  fKinks.Delete();
+  fV0MIs.Delete();
+}
+
+void AliESD::UpdateV0PIDs()
+{
+  //
+  //
+  //
+  Int_t nV0 = GetNumberOfV0MIs();
+  for (Int_t i=0;i<nV0;i++){
+    AliESDV0MI * v0 = GetV0MI(i);
+    AliESDtrack* tp = GetTrack(v0->fIndex[0]);
+    AliESDtrack* tm = GetTrack(v0->fIndex[1]);
+    if (!tm || !tp){
+      printf("BBBUUUUUUUGGGG\n");
+    }
+    Double_t pp[5],pm[5];
+    tp->GetESDpid(pp);
+    tm->GetESDpid(pm);
+    v0->UpdatePID(pp,pm);    
+  }
 }
 
 //______________________________________________________________________________
@@ -121,4 +145,6 @@ void AliESD::Print(Option_t *) const
   printf("                 pmd       %d\n", GetNumberOfPmdTracks());
   printf("                 v0        %d\n", GetNumberOfV0s());
   printf("                 cascades  %d\n)", GetNumberOfCascades());
+  printf("                 kinks     %d\n)", GetNumberOfKinks());
+  printf("                 V0MIs     %d\n)", GetNumberOfV0MIs());
 }
