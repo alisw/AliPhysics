@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.8  2001/09/05 09:09:38  hristov
+  The energy of feedback photons calculated correctly
+
   Revision 1.7  2001/05/10 12:32:27  jbarbosa
   Changed call to SetTrack.
 
@@ -49,6 +52,24 @@
 //___________________________________________
 ClassImp(AliRICHResponseV0)
 
+AliRICHResponseV0::AliRICHResponseV0()
+{
+   SetSigmaIntegration(5.);
+   SetChargeSlope(27.);
+   SetChargeSpread(0.18, 0.18);
+   SetMaxAdc(4096);
+   SetAlphaFeedback(0.036);
+   SetEIonisation(26.e-9);
+   SetSqrtKx3(0.77459667);
+   SetKx2(0.962);
+   SetKx4(0.379);
+   SetSqrtKy3(0.77459667);
+   SetKy2(0.962);
+   SetKy4(0.379);
+   SetPitch(0.25);
+   SetWireSag(1);		      // 1->On, 0->Off
+   SetVoltage(2150);		      // Should only be 2000, 2050, 2100 or 2150
+}//AliRICHResponseV0::ctor()
 Float_t AliRICHResponseV0::IntPH(Float_t eloss, Float_t yhit)
 {
     // Get number of electrons and return charge
