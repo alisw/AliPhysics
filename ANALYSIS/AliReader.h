@@ -19,7 +19,7 @@
 class AliAODRun;
 class AliAOD;
 class AliAODParticleCut;
-class AliAODParticle;
+class AliVAODParticle;
 class TString;
 class TH1I;
  
@@ -87,7 +87,7 @@ class AliReader: public TNamed
     TH1I*                fTrackCounter; //histogram with number of tracks read
     
     virtual Int_t        ReadNext() = 0; //this methods reads next event and put result in fTracksEvent and/or fParticlesEvent
-    Bool_t               Pass(AliAODParticle* p);
+    Bool_t               Pass(AliVAODParticle* p);
     Bool_t               Pass(Int_t pid);
     void                 Blend();
     

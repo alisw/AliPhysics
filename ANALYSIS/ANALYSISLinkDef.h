@@ -10,8 +10,8 @@
 #pragma link C++ class AliAnalysis+;
 
 #pragma link C++ class AliAOD+;
+#pragma link C++ class AliVAODParticle+;
 #pragma link C++ class AliAODParticle+;
-#pragma link C++ class AliAODStdParticle+;
 
 #pragma link C++ class AliAODRun+;
 

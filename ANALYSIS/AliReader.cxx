@@ -323,7 +323,7 @@ Int_t AliReader::Read(AliAODRun* particles, AliAODRun *tracks)
 }      
 /*************************************************************************************/
 
-Bool_t AliReader::Pass(AliAODParticle* p)
+Bool_t AliReader::Pass(AliVAODParticle* p)
 {
  //Method examines whether particle meets all cut and particle type criteria
   

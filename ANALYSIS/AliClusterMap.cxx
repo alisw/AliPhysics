@@ -17,7 +17,7 @@
 
 #include "AliESDtrack.h"
 #include "AliTPCtrack.h"
-#include "AliAODParticle.h"
+#include "AliVAODParticle.h"
 #include <TString.h>
 const Int_t AliClusterMap::fNPadRows = 159;
 
@@ -33,7 +33,7 @@ AliClusterMap::AliClusterMap(AliESDtrack* track):
 {
  //ctor
  
- if (AliAODParticle::GetDebug() > 2)
+ if (AliVAODParticle::GetDebug() > 2)
   { 
     Info("AliClusterMap(AliESDtrack*)","");
     Print();
@@ -48,7 +48,7 @@ AliClusterMap::AliClusterMap(AliTPCtrack* track):
  
  //Does not work since indeces in the claster index array 
  //in the TPC track does not correspond to the padraw segmatation
- if (AliAODParticle::GetDebug() > 9) 
+ if (AliVAODParticle::GetDebug() > 9) 
    Info("AliClusterMap",
       "#####################################################################"); 
  if (track == 0x0)
@@ -64,7 +64,7 @@ AliClusterMap::AliClusterMap(AliTPCtrack* track):
     Int_t sect = (idx&0xff000000)>>24;
     Int_t row = (idx&0x00ff0000)>>16;
     if (sect > 18) row +=63; //if it is outer sector, add number of inner sectors
-    if (AliAODParticle::GetDebug() > 9)  
+    if (AliVAODParticle::GetDebug() > 9)  
       Info("AliClusterMap","Cl.idx is %d, sect %d, row %d",idx,sect,row);
       
     fPadRawMap.SetBitNumber(row,kTRUE);
@@ -96,7 +96,7 @@ AliClusterMap::AliClusterMap(AliTPCtrack* track):
      }
   }
   
- if (AliAODParticle::GetDebug() > 2)
+ if (AliVAODParticle::GetDebug() > 2)
   { 
     Info("AliClusterMap(AliTPCtrack*)","");
     Print();
@@ -169,7 +169,7 @@ Float_t AliClusterMap::GetOverlapFactor(const AliClusterMap& clmap) const
   if (nh > 0) retval = ((Float_t)an)/((Float_t)nh);
   else Warning("GetOverlapFactor","Number of counted cluters is 0.");
   
-  if (AliAODParticle::GetDebug() > 2)
+  if (AliVAODParticle::GetDebug() > 2)
    {
      Info("GetOverlapFactor","Splitting Quality Factor is %f. SumAn = %d, SumClusters %d",retval,an,nh); 
      if (retval == 1.0) 

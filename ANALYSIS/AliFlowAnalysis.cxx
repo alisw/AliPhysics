@@ -18,7 +18,7 @@
 
 #include <AliStack.h>
 #include <AliAOD.h>
-#include <AliAODParticle.h>
+#include <AliVAODParticle.h>
 #include <AliAODParticleCut.h>
 
 #include <AliESDtrack.h>
@@ -94,7 +94,7 @@ Double_t AliFlowAnalysis::GetEventPlane(AliAOD* aod)
 
   for (Int_t i=0; i<mult; i++) 
    {
-     AliAODParticle* aodtrack = aod->GetParticle(i);
+     AliVAODParticle* aodtrack = aod->GetParticle(i);
      if (aodtrack == 0x0)
       {
         Error("AliFlowAnalysis::GetEventPlane","Can not get track %d", i);
@@ -135,7 +135,7 @@ void AliFlowAnalysis::GetFlow(AliAOD* aod,Double_t& v2,Double_t& psi)
 
   for (Int_t i=0; i<mult; i++) 
    {
-     AliAODParticle* aodtrack = aod->GetParticle(i);
+     AliVAODParticle* aodtrack = aod->GetParticle(i);
      if (aodtrack == 0x0)
       {
         Error("AliFlowAnalysis::GetEventPlane","Can not get track %d", i);

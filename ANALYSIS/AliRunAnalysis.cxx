@@ -27,7 +27,7 @@
 
 #include "AliEventCut.h"
 #include "AliReader.h"
-#include "AliAODParticle.h"
+#include "AliVAODParticle.h"
 
 
 ClassImp(AliRunAnalysis)
@@ -79,7 +79,7 @@ Int_t AliRunAnalysis::Run()
       /******************************/ 
       if ( Pass(eventrec,eventsim) )
        {
-         if (AliAODParticle::GetDebug()) Info("Run","Event rejected by Event Cut");
+         if (AliVAODParticle::GetDebug()) Info("Run","Event rejected by Event Cut");
          continue; //Did not pass the 
        }
       /******************************/ 
@@ -88,7 +88,7 @@ Int_t AliRunAnalysis::Run()
       for (Int_t an = 0; an < fAnalysies.GetEntries(); an++)
        {
            AliAnalysis* analysis = (AliAnalysis*)fAnalysies.At(an);
-           analysis->ProcessEvent(eventsim,eventrec);
+           analysis->ProcessEvent(eventrec,eventsim);
        }
     
   }//end of loop over events

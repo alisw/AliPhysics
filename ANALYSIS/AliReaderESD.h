@@ -54,7 +54,7 @@ class AliReaderESD: public AliReader
 
     
     enum ESpecies {kESDElectron = 0, kESDMuon, kESDPion, kESDKaon, kESDProton, kNSpecies};
-    static Int_t  GetSpeciesPdgCode(ESpecies spec);//skowron
+    static Int_t  GetSpeciesPdgCode(ESpecies spec);
     
     Int_t         ReadESD(AliESD* esd);
     

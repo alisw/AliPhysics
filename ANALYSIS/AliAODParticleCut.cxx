@@ -81,7 +81,7 @@ AliAODParticleCut::~AliAODParticleCut()
 } 
 /******************************************************************/
 
-Bool_t AliAODParticleCut::Pass(AliAODParticle* p) const
+Bool_t AliAODParticleCut::Pass(AliVAODParticle* p) const
 {
 //method checks all the cuts that are set (in the list)
 //If any of the baseCuts rejects particle False(rejection) is returned
@@ -424,7 +424,7 @@ AliAODLogicalOperCut::~AliAODLogicalOperCut()
 }
 /******************************************************************/
 
-Bool_t AliAODLogicalOperCut::AliAODDummyBaseCut::Pass(AliAODParticle* /*part*/)  const
+Bool_t AliAODLogicalOperCut::AliAODDummyBaseCut::Pass(AliVAODParticle* /*part*/)  const
 {
   //checks if particles passes properties defined by this cut
   Warning("Pass","You are using dummy base cut! Probobly some logical cut is not set up properly");
@@ -462,7 +462,7 @@ void AliAODLogicalOperCut::Streamer(TBuffer &b)
 /******************************************************************/
 ClassImp(AliAODOrCut)
 
-Bool_t AliAODOrCut::Pass(AliAODParticle * p) const
+Bool_t AliAODOrCut::Pass(AliVAODParticle * p) const
 {
   //returns true when rejected 
   //AND operation is a little bit misleading but is correct
@@ -475,7 +475,7 @@ Bool_t AliAODOrCut::Pass(AliAODParticle * p) const
 
 ClassImp(AliAODAndCut)
 
-Bool_t AliAODAndCut::Pass(AliAODParticle * p)  const
+Bool_t AliAODAndCut::Pass(AliVAODParticle * p)  const
 {
   //returns true when rejected 
   //OR operation is a little bit misleading but is correct

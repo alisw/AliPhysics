@@ -24,7 +24,7 @@
 #include <TParticle.h>
 #include "AliAOD.h"
 
-#include "AliAODStdParticle.h"
+#include "AliAODParticle.h"
 
 ClassImp(AliAOD)
 
@@ -38,7 +38,7 @@ void  AliAOD::AddParticle(TParticle* part, Int_t idx)
      Error("AddParticle(TParticle*,Int_t)","pointer to particle is NULL");
      return;
    }
-  AddParticle( new AliAODStdParticle(*part,idx) );
+  AddParticle( new AliAODParticle(*part,idx) );
 }
 /**************************************************************************/
 
@@ -47,7 +47,7 @@ void  AliAOD::AddParticle(Int_t pdg, Int_t idx,
                           Double_t vx, Double_t vy, Double_t vz, Double_t time)
 {
   //adds particle to event
-  AddParticle(new  AliAODStdParticle(pdg,idx,px,py,pz,etot,vx,vy,vz,time));
+  AddParticle(new  AliAODParticle(pdg,idx,px,py,pz,etot,vx,vy,vz,time));
 }
 /**************************************************************************/
 
@@ -57,7 +57,7 @@ void AliAOD::SwapParticles(Int_t i, Int_t j)
   if ( (i<0) || (i>=GetNumberOfParticles()) ) return;
   if ( (j<0) || (j>=GetNumberOfParticles()) ) return;
 
-  AliAODParticle* tmp = (AliAODParticle*)fParticles.At(i);
+  AliVAODParticle* tmp = (AliVAODParticle*)fParticles.At(i);
   fParticles.AddAt(fParticles.At(j),i);
   fParticles.AddAt(tmp,j);
 }

@@ -1,5 +1,5 @@
 SRCS= AliAOD.cxx \
-      AliAODParticle.cxx AliAODStdParticle.cxx \
+      AliVAODParticle.cxx AliAODParticle.cxx \
       AliAODParticleCut.cxx AliAODRun.cxx \
       AliRunAnalysis.cxx AliAnalysis.cxx AliEventCut.cxx \
       AliReader.cxx AliReaderESD.cxx\

@@ -1,81 +1,161 @@
 #ifndef ALIAODPARTICLE_H
 #define ALIAODPARTICLE_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
-
+//___________________________________________________________
 /////////////////////////////////////////////////////////////
 //
-// base class for AOD particles
+// class AliAODParticle
+//
+// Ali HBT Particle: simplified class TParticle
+// Simplified in order to minimize the size of the object
+//  - we want to keep a lot of such a objects in memory
+// Additionaly adjusted for HBT Analysies purposes
+// + pointer to Track Points
+// + pointer to Cluster Map(s)
+//
+// Piotr.Skowronski@cern.ch
 //
 /////////////////////////////////////////////////////////////
 
-#include <TObject.h>
-#include <TLorentzVector.h>
-#include <TVector3.h>
+#include "AliVAODParticle.h"
+//#include <TLorentzVector.h>
+//#include <TMath.h>
+#include <TDatabasePDG.h>
 
-#include "AliAnalysis.h"
 
+class TParticle;
 class AliTrackPoints;
 class AliClusterMap;
 
-class AliAODParticle : public TObject {
+class AliAODParticle: public AliVAODParticle
+{
 public:
-   AliAODParticle(){}
-   virtual ~AliAODParticle(){}
-  // kinematics
-  virtual TLorentzVector   FourMomentum() const = 0;
-  virtual TVector3         Momentum() const {return FourMomentum().Vect();};
-  virtual Double_t         Mass() const {return FourMomentum().M();};
-  virtual Double_t         E() const {return FourMomentum().E();};
-  virtual Double_t         P() const {return FourMomentum().P();};
-  virtual Double_t         Pt() const {return FourMomentum().Pt();};
-  virtual Double_t         Px() const {return FourMomentum().Px();};
-  virtual Double_t         Py() const {return FourMomentum().Py();};
-  virtual Double_t         Pz() const {return FourMomentum().Pz();};
-  virtual Double_t         Phi() const {return FourMomentum().Phi();};
-  virtual Double_t         Theta() const {return FourMomentum().Theta();};
-  virtual Double_t         Eta() const {return FourMomentum().Eta();};
-  virtual Double_t         Y() const {return FourMomentum().Rapidity();};
+                                // ****** constructors and destructor
+  AliAODParticle();
+  AliAODParticle(const AliAODParticle& in); 
+ 
+  AliAODParticle(Int_t pdg, Int_t idx, Double_t px, Double_t py, Double_t pz, Double_t etot,
+                 Double_t vx, Double_t vy, Double_t vz, Double_t time);
 
-  // PID
-  virtual Double_t         Charge() const = 0;
-  virtual Double_t         GetProbability(Int_t pdg) const = 0;
-  virtual Int_t            GetMostProbable() const = 0;
+  AliAODParticle(Int_t pdg, Float_t prob, Int_t idx, Double_t px, Double_t py, Double_t pz, Double_t etot,
+                 Double_t vx, Double_t vy, Double_t vz, Double_t time);
+
+  AliAODParticle(const TParticle& p, Int_t idx);
+
+  virtual ~AliAODParticle();
   
-  virtual Int_t            GetPdgCode() const = 0;//We need to assume some PID (f.e. energy calculation) 
-                                                  //sotimes one track can apear in analysis twise (e.g. ones as pion ones as kaon)
+  AliAODParticle& operator=(const AliAODParticle& in); 
   
-  // vertices
-  virtual TVector3         ProductionVertex() const = 0;
-  virtual Double_t         Vx() const {return ProductionVertex().X();};
-  virtual Double_t         Vy() const {return ProductionVertex().Y();};
-  virtual Double_t         Vz() const {return ProductionVertex().Z();};
-  virtual AliAODParticle*  Mother() const {return NULL;};
-  virtual Bool_t           HasDecayVertex() const {return kFALSE;};
-  virtual TVector3         DecayVertex() const {return TVector3();};
-  virtual Int_t            NumberOfDaughters() const {return 0;};
-  virtual AliAODParticle*  Daughter(Int_t /*index*/) const {return NULL;};
+  TLorentzVector FourMomentum() const {TLorentzVector v(fPx,fPy,fPz,fE);return v;}
+  TVector3       ProductionVertex() const {TVector3 v(fVx,fVy,fVz);return v;}
+  
+  void           SetPIDprobability(Int_t pdg, Float_t prob = 1.0);
+  Float_t        GetPIDprobability(Int_t pdg) const;
+  Double_t       GetProbability(Int_t pdg) const {return GetPIDprobability(pdg);}
+  Int_t          GetMostProbable() const { return (fPids)?fPids[0]:0;}
+  
+  Int_t          GetPdgCode      () const { return (fPids)?fPids[fPdgIdx]:0;}
+
+  Float_t        GetPidProb      () const { return (fPidProb)?fPidProb[fPdgIdx]:0;}
+  
+  Int_t          GetUID          () const { return fIdxInEvent;}
+  Int_t          GetNumberOfPids () const { return fNPids;}
+  Int_t          GetNthPid         (Int_t idx) const;
+  Float_t        GetNthPidProb     (Int_t idx) const;
+      
+  void           SetPdgCode(Int_t pdg, Float_t prob = 1.0);
+  Double_t       GetCalcMass     () const { return fCalcMass; }
+  Double_t       Mass            () const { return (GetPDG())?GetPDG()->Mass():-1.;}
+  
+  
+  TParticlePDG*  GetPDG          () const {return TDatabasePDG::Instance()->GetParticle(GetPdgCode());}
+  Double_t       Charge          () const { return (GetPDG())?GetPDG()->Charge():1.e8;}
+  
+  Int_t          Beauty          ()  { return GetPDG()->Beauty(); }
+  Int_t          Charm           ()  { return GetPDG()->Charm(); }
+  Int_t          Strangeness     ()  { return GetPDG()->Strangeness();}
+  void ProductionVertex(TLorentzVector &v) const { v.SetXYZT(fVx,fVy,fVz,fVt);}
 
 
-  // type information
-  virtual Bool_t           IsSimulated() {return kFALSE;};
-  virtual Bool_t           IsTrack() {return kFALSE;};
-  virtual Bool_t           IsCluster() {return kFALSE;};
+  Double_t         Vx    () const { return fVx;}
+  Double_t         Vy    () const { return fVy;}
+  Double_t         Vz    () const { return fVz;}
+  Double_t         T     () const { return fVt;}
 
-  //HBT specific 
-  virtual AliTrackPoints*  GetTrackPoints() const {return 0x0;}
-  virtual AliClusterMap*   GetClusterMap() const {return 0x0;}
-  virtual void             Print() const = 0;
+  Double_t         Px    () const { return fPx; } //X coordinate of the momentum
+  Double_t         Py    () const { return fPy; } //Y coordinate of the momentum
+  Double_t         Pz    () const { return fPz; } //Z coordinate of the momentum
+  Double_t         P     () const                 //momentum
+    { return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz); }
+  
+  void Momentum(TLorentzVector &v) const { v.SetPxPyPzE(fPx,fPy,fPz,fE);}
+    
+  Double_t         Pt    () const  //transverse momentum
+    { return TMath::Sqrt(fPx*fPx+fPy*fPy); }
+  Double_t         Energy() const { return fE; }
+  
+                                   //Pseudo Rapidity
+  Double_t         Eta   () const { if (P() != fPz) return 0.5*TMath::Log((P()+fPz)/(P()-fPz)); 
+                                    else return 1.e30;}
 
-  static void    SetDebug(Int_t dbg=1){fgDebug=dbg;}
-  static Int_t   GetDebug(){return fgDebug;}
+                                   //Rapidity
+  Double_t         Y     () const { if (fE  != fPz) return 0.5*TMath::Log((fE+fPz)/(fE-fPz));
+                                    else return 1.e30;}
+
+  Double_t         Phi   () const { return TMath::Pi()+TMath::ATan2(-fPy,-fPx); }
+
+  Double_t         Theta () const { return (fPz==0)?TMath::PiOver2():TMath::ACos(fPz/P()); }
+
+  // setters
+
+  void           SetMomentum(Double_t px, Double_t py, Double_t pz, Double_t e)
+                             {fPx=px; fPy=py; fPz=pz; fE=e;}
+  void           SetMomentum(const TLorentzVector& p)
+                             {SetMomentum(p.Px(),p.Py(),p.Pz(),p.Energy());}
+
+  void           SetProductionVertex(Double_t vx, Double_t vy, Double_t vz, Double_t t)
+                             {fVx=vx; fVy=vy; fVz=vz; fVt=t;}
+  void           SetProductionVertex(const TLorentzVector& v)
+                             {SetProductionVertex(v.X(),v.Y(),v.Z(),v.T());}
+  void           SetCalcMass(Double_t mass) {fCalcMass = mass;}
+  
+  void           SetUID(Int_t id){fIdxInEvent = id;}
+  
+  const Char_t*  GetName() const; 
+  void           Print() const;
+  
+  void           SetTrackPoints(AliTrackPoints* tpts){fTrackPoints = tpts;}
+  AliTrackPoints* GetTrackPoints() const {return fTrackPoints;}
+  void           SetClusterMap(AliClusterMap* cm){fClusterMap = cm;}
+  AliClusterMap* GetClusterMap() const {return fClusterMap;}
+  
+  
+protected:
+  Int_t          GetPidSlot(Int_t pdg) const;//returns position of the given PID in fPids (and fPidProb) array.
 
 private:
-  static Int_t fgDebug;//! debug level for all the analysis package
+  Char_t         fPdgIdx;               // index of PDG code of the particle in fPids
+  Int_t          fIdxInEvent;           // index of a particle: the same particle can appear in the event
+                                        //  many times with different pid's. Idx allows to check that they are the same particles
+  Int_t          fNPids;                // number of non-zero proboble Pids
+  Int_t         *fPids;                 // [fNPids] Array with PIDs
+  Float_t       *fPidProb;              // [fNPids] PIDs probabilities
+  Double_t       fCalcMass;             // Calculated mass
 
-  ClassDef(AliAODParticle,1)  // base class for AOD particles
+  
+  Double_t       fPx;                   // x component of momentum
+  Double_t       fPy;                   // y component of momentum
+  Double_t       fPz;                   // z component of momentum
+  Double_t       fE;                    // Energy
+
+  Double_t       fVx;                   // x of production vertex
+  Double_t       fVy;                   // y of production vertex
+  Double_t       fVz;                   // z of production vertex
+  Double_t       fVt;                   // t of production vertex
+
+  AliTrackPoints* fTrackPoints;      // track positions along trajectory - used by anti-merging cut
+  AliClusterMap*  fClusterMap;       // bit map of cluters occupation; 1 if has cluter on given layer/padrow/...
+    
+  ClassDef(AliAODParticle,3)  // TParticle vertex particle information
 };
 
 #endif

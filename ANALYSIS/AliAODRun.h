@@ -17,7 +17,7 @@
 #include "AliAOD.h"
 #include <TObjArray.h>
 
-class AliAODParticle;
+class AliVAODParticle;
 class TParticle;
 
 class AliAODRun: public TObject
@@ -26,7 +26,7 @@ class AliAODRun: public TObject
     AliAODRun();
     virtual ~AliAODRun();
 
-    void            AddParticle(Int_t event, AliAODParticle* part); //inerface to AliAOD::AddParticle(AliAODParticle*) 
+    void            AddParticle(Int_t event, AliVAODParticle* part); //inerface to AliAOD::AddParticle(AliVAODParticle*) 
     void            AddParticle(Int_t event, TParticle* part, Int_t idx);//inerface to AliAOD::AddParticle(TParticle*) 
     
     //inerface to AliAOD::AddParticle(Int_t.Double_t,Double_t,Double_t,Double_t,Double_t,Double_t,Double_t,Double_t,Double_t)
@@ -35,7 +35,7 @@ class AliAODRun: public TObject
                                 Double_t vx, Double_t vy, Double_t vz, Double_t time); 
     
     void            SetEvent(Int_t number, AliAOD* event);
-    AliAODParticle* GetParticle(Int_t event, Int_t n); //returns nth particle from event
+    AliVAODParticle* GetParticle(Int_t event, Int_t n); //returns nth particle from event
     AliAOD*    GetEvent(Int_t event) const; //returns AliAOD number "event"
     
     Int_t           GetNumberOfEvents() const; //returns number of events
@@ -64,7 +64,7 @@ AliAOD* AliAODRun::GetEvent(Int_t event) const
 }
 /**************************************************************************/
 inline
-AliAODParticle* AliAODRun::GetParticle(Int_t event, Int_t n) 
+AliVAODParticle* AliAODRun::GetParticle(Int_t event, Int_t n) 
 {
  //returns nth particle from event number event
   AliAOD* e = GetEvent(event);

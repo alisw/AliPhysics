@@ -13,7 +13,7 @@
 
 #include <TObject.h>
 #include <TObjArray.h>
-#include "AliAODParticle.h"
+#include "AliVAODParticle.h"
 
 class TParticle;
 
@@ -24,8 +24,8 @@ public:
 
   virtual TObjArray*       GetParticles() {return &fParticles;};
   virtual Int_t            GetNumberOfParticles() const  {return fParticles.GetEntriesFast();}
-  virtual AliAODParticle*  GetParticle(Int_t index) const {return (AliAODParticle*) fParticles[index];}
-  virtual void             AddParticle(AliAODParticle* particle)  {fParticles.Add(particle);};
+  virtual AliVAODParticle*  GetParticle(Int_t index) const {return (AliVAODParticle*) fParticles[index];}
+  virtual void             AddParticle(AliVAODParticle* particle)  {fParticles.Add(particle);};
   virtual void             AddParticle(TParticle* part, Int_t idx); //adds particle to the event
   virtual void             AddParticle(Int_t pdg, Int_t idx, Double_t px, Double_t py, Double_t pz, Double_t etot,
                                        Double_t vx, Double_t vy, Double_t vz, Double_t time);

@@ -3,7 +3,7 @@ void analysis(Int_t first = -1, Int_t last = -1, const char* directory=".")
 
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libANALYSIS");
 
-  AliAODParticle::SetDebug(0);
+  AliVAODParticle::SetDebug(0);
   AliRunAnalysis* analysis = new AliRunAnalysis();
   
   ::Info("analysis.C","Setting dirs");

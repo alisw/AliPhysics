@@ -39,7 +39,7 @@ void AliAODRun::Reset()
  }
 /**************************************************************************/
 
-void AliAODRun::AddParticle(Int_t event, AliAODParticle* part)
+void AliAODRun::AddParticle(Int_t event, AliVAODParticle* part)
 {
  //Adds particle to event
  //if there is no event of this number, crate it and add to the collection
