@@ -5,5 +5,6 @@
 #pragma link off all functions;
  
 #pragma link C++ class THijing+;
-
+#pragma link C++ class AliGenHijing+;
+#pragma link C++ class AliGenHijingEventHeader+;
 #endif

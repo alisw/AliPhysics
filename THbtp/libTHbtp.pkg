@@ -1,8 +1,8 @@
-SRCS= THBTprocessor.cxx 
+SRCS= THBTprocessor.cxx AliGenHBTprocessor.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 
-DHDR= THBTprocessorLinkDef.h
+DHDR= THBTprocessorLinkDef.h 
 
 EXPORT:=HBTprocCOMMON.h THBTprocessor.h
 

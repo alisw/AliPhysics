@@ -1,7 +1,7 @@
-SRCS= THijing.cxx
+SRCS= THijing.cxx AliGenHijing.cxx AliGenHijingEventHeader.cxx
 
-HDRS= THijing.h
+HDRS= $(SRCS:.cxx=.h) 
 
 DHDR:=THijingLinkDef.h
 
-EXPORT:=THijing.h
+EXPORT:=THijing.h  AliGenHijingEventHeader.h

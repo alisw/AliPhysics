@@ -5,5 +5,5 @@
 #pragma link off all functions;
  
 #pragma link C++ class THBTprocessor+;
-
+#pragma link C++ class AliGenHBTprocessor+;
 #endif
