@@ -281,10 +281,15 @@ void AliModuleConstruction::SetVolumeVisibility(G4LogicalVolume* lv,
 
   if (lv) {
     const G4VisAttributes* kpVisAttributes = lv->GetVisAttributes ();
-    G4Colour oldColour   = kpVisAttributes->GetColour();
+    G4VisAttributes* newVisAttributes; 
+    if (kpVisAttributes) {
+      G4Colour oldColour   = kpVisAttributes->GetColour();
+      newVisAttributes = new G4VisAttributes(oldColour); 
+    }  
+    else
+      newVisAttributes = new G4VisAttributes();
     delete kpVisAttributes;
 
-    G4VisAttributes* newVisAttributes = new G4VisAttributes(oldColour); 
     newVisAttributes->SetVisibility(visibility); 
 
     lv->SetVisAttributes(newVisAttributes);
