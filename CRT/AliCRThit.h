@@ -26,11 +26,11 @@ public:
   virtual ~AliCRThit() {}
 
        // getters for AliCRThit object
-  Float_t   Getnmou() const {return fnmou;}
-  Float_t   Getmtyp()  const {return fmtyp;}
-  Float_t Getxpit()     const {return fxpit;}
-  Float_t Getypit()     const {return fypit;}
-  Float_t Getzpit()     const {return fzpit;}
+  Float_t Getnmou() const {return fnmou;}
+  Float_t GetId()   const {return fId;}
+  Float_t GetX()     const {return fX;}
+  Float_t GetY()     const {return fY;}
+  Float_t GetZ()     const {return fZ;}
   Float_t Getpxug()     const {return fpxug;}
   Float_t Getpyug()     const {return fpyug;}
   Float_t Getpzug()     const {return fpzug;}
@@ -42,10 +42,10 @@ public:
   Int_t fVolume;
   Int_t fCopy;
   Float_t      fnmou; 
-  Float_t      fmtyp;
-  Float_t    fxpit;      //
-  Float_t    fypit;    // 
-  Float_t    fzpit;    // 
+  Float_t      fId;
+  Float_t    fX;      //
+  Float_t    fY;    // 
+  Float_t    fZ;    // 
   Float_t    fpxug;     //
   Float_t    fpyug;      //
   Float_t    fpzug;      //
