@@ -33,7 +33,7 @@ Binary(char* in,int first, int last,char *path="."){
   fFileHandler->CloseAliInput();
 }
  
-void singlepatch(char* in,int first, int last,char *path="",int event=0)
+void singlepatch(char* in,int first=0, int last=0,char *path=".",int event=0)
 {
   AliL3Logger l;
   //l.UnSet(AliL3Logger::kDebug);
@@ -42,11 +42,11 @@ void singlepatch(char* in,int first, int last,char *path="",int event=0)
   //l.UseStdout();
   l.UseStream();
   
-  char fname[100];
-  sprintf(fname,"%sevent_%d/",path,event);
   char name[256];
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
   fFileHandler->SetAliInput(in);
+  AliL3Transform::Init(path);
+
   Int_t srow[2] = {0,175};
   int patch=0;
   for(int slice=first; slice<=last; slice++)
@@ -54,7 +54,7 @@ void singlepatch(char* in,int first, int last,char *path="",int event=0)
       cerr<<"reading slice: "<<slice;
       fFileHandler->Free();
       fFileHandler->Init(slice,patch,srow);
-      sprintf(name,"%sdigits_%d_%d.raw",fname,slice,patch);
+      sprintf(name,"%s/digits_%d_%d.raw",path,slice,patch);
       fFileHandler->SetBinaryOutput(name);
       fFileHandler->AliDigits2CompBinary(event);
       fFileHandler->CloseBinaryOutput();      
@@ -63,3 +63,6 @@ void singlepatch(char* in,int first, int last,char *path="",int event=0)
   fFileHandler->CloseAliInput();
   
 }
+
+
+
