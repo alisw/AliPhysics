@@ -51,12 +51,12 @@ extern "C" {
 const Int_t mxxrgn = 10000;
 const Int_t mxxmdf = 510;
 const Int_t mxxmde = 502;
-const Int_t mfstck = 2500;
+const Int_t mfstck = 5500;
 const Int_t mestck = 100;
 const Int_t mostck = 2000;
 const Int_t mxprsn = 100;
 const Int_t mxpdpm = 800;
-const Int_t mxpscs = 1999;
+const Int_t mxpscs = 3999;
 const Int_t mxoutu = 50;
 const Int_t nallwp = 64;
 const Int_t nelemx = 80;
