@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2001/11/14 12:08:44  cblume
+Remove unneccessary header files
+
 Revision 1.34  2001/11/14 10:50:45  cblume
 Changes in digits IO. Add merging of summable digits
 
@@ -143,6 +146,7 @@ Introduction of the Copyright and cvs Log
 #include <TPGON.h> 
 #include <TFile.h>
 #include <TROOT.h>
+#include <TParticle.h>
 
 #include "AliRun.h"
 #include "AliConst.h"
@@ -161,6 +165,7 @@ Introduction of the Copyright and cvs Log
 #include "AliTRDrecPoint.h"
 #include "AliTRDcluster.h"
 #include "AliTRDdigitsManager.h"
+#include "AliTRDtrackHits.h"  
 
 ClassImp(AliTRD)
  
@@ -185,7 +190,10 @@ AliTRD::AliTRD()
   fFoilDensity   = 0;
 
   fDrawTR        = 0;
-  fDisplayType   = 0; 
+  fDisplayType   = 0;
+ 
+  fTrackHits     = 0; 
+  fHitType       = 0; 
 
 }
  
@@ -239,6 +247,9 @@ AliTRD::AliTRD(const char *name, const char *title)
   fDrawTR        = 0;
   fDisplayType   = 0;
 
+  fTrackHits     = 0;
+  fHitType       = 2;
+
   SetMarkerColor(kWhite);   
 
 }
@@ -265,12 +276,19 @@ AliTRD::~AliTRD()
 
   if (fGeometry) {
     delete fGeometry;
+    fGeometry  = 0;
   }
   if (fHits) {
     delete fHits;
+    fHits      = 0;
   }
   if (fRecPoints) {
     delete fRecPoints;
+    fRecPoints = 0;
+  }
+  if (fTrackHits) {
+    delete fTrackHits;
+    fTrackHits = 0;
   }
 
 }
@@ -339,7 +357,7 @@ void AliTRD::Hits2Digits()
 
   AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
                                                   ,"TRD digitizer class");
-  digitizer->SetVerbose(GetDebug());
+  digitizer->SetDebug(GetDebug());
 
   // Set the parameter
   digitizer->SetDiffusion();
@@ -373,7 +391,7 @@ void AliTRD::Hits2SDigits()
 
   AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
                                                   ,"TRD digitizer class");
-  digitizer->SetVerbose(GetDebug());
+  digitizer->SetDebug(GetDebug());
 
   // For the summable digits
   digitizer->SetSDigits(kTRUE);
@@ -411,7 +429,7 @@ void AliTRD::SDigits2Digits()
    // Create the TRD digitizer
   AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
                                                   ,"TRD digitizer class");  
-  digitizer->SetVerbose(GetDebug());
+  digitizer->SetDebug(GetDebug());
 
   // Set the parameter
   digitizer->SetEvent(gAlice->GetEvNumber());
@@ -421,7 +439,7 @@ void AliTRD::SDigits2Digits()
 
   // Read the s-digits via digits manager
   AliTRDdigitsManager *sdigitsManager = new AliTRDdigitsManager();
-  sdigitsManager->SetVerbose(GetDebug());
+  sdigitsManager->SetDebug(GetDebug());
   sdigitsManager->SetSDigits(kTRUE);
   if (fDigitsFile) {
     sdigitsManager->Open(fDigitsFile);
@@ -445,14 +463,25 @@ void AliTRD::SDigits2Digits()
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q)
+void AliTRD::AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q
+                  , Bool_t inDrift)
 {
   //
   // Add a hit for the TRD
+  // 
+  // The data structure is set according to fHitType:
+  //   bit0: standard TClonesArray
+  //   bit1: compressed trackHits structure
   //
 
-  TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliTRDhit(fIshunt,track,det,hits,q);
+  if (fHitType & 1) {
+    TClonesArray &lhits = *fHits;
+    new(lhits[fNhits++]) AliTRDhit(fIshunt,track,det,hits,q);
+  }
+
+  if (fHitType > 1) {
+    AddHit2(track,det,hits,q,inDrift);
+  }
 
 }
 
@@ -498,10 +527,8 @@ void AliTRD::BuildGeometry()
     Float_t slope = (AliTRDgeometry::Zmax1() - AliTRDgeometry::Zmax2())
                   / (AliTRDgeometry::Rmax()  - AliTRDgeometry::Rmin());
 
-    rmin  = AliTRDgeometry::Rmin() + AliTRDgeometry::Ccframe()/2.
-                                   + AliTRDgeometry::DrZpos()
-                                   - AliTRDgeometry::DrThick()/2.;
-    rmax  = rmin + AliTRDgeometry::DrThick();
+    rmin  = AliTRDgeometry::Rmin() + AliTRDgeometry::CraHght();
+    rmax  = rmin                   + AliTRDgeometry::CdrHght();
 
     Float_t thickness = rmin - AliTRDgeometry::Rmin();
     zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
@@ -574,6 +601,7 @@ void AliTRD::Copy(TObject &trd)
   ((AliTRD &) trd).fFoilDensity = fFoilDensity;
   ((AliTRD &) trd).fDrawTR      = fDrawTR;
   ((AliTRD &) trd).fDisplayType = fDisplayType;
+  ((AliTRD &) trd).fHitType     = fHitType;
 
   //AliDetector::Copy(trd);
 
@@ -823,9 +851,9 @@ void AliTRD::DrawModule()
     gMC->Gsatt("BTR1","SEEN", 0);
     gMC->Gsatt("BTR2","SEEN", 0);
     gMC->Gsatt("BTR3","SEEN", 0);
-    gMC->Gsatt("TRD1","SEEN", 0);
-    gMC->Gsatt("TRD2","SEEN", 0);
-    gMC->Gsatt("TRD3","SEEN", 0);
+    gMC->Gsatt("UTR1","SEEN", 0);
+    gMC->Gsatt("UTR2","SEEN", 0);
+    gMC->Gsatt("UTR3","SEEN", 0);
   }
   else {
     gMC->Gsatt("B071","SEEN", 0);
@@ -835,18 +863,18 @@ void AliTRD::DrawModule()
     gMC->Gsatt("BTR1","SEEN", 0);
     gMC->Gsatt("BTR2","SEEN", 0);
     gMC->Gsatt("BTR3","SEEN", 0);
-    gMC->Gsatt("TRD1","SEEN", 0);
+    gMC->Gsatt("UTR1","SEEN", 0);
     if (fGeometry->GetPHOShole())
-      gMC->Gsatt("TRD2","SEEN", 0);
+      gMC->Gsatt("UTR2","SEEN", 0);
     if (fGeometry->GetRICHhole())
-      gMC->Gsatt("TRD3","SEEN", 0);
+      gMC->Gsatt("UTR3","SEEN", 0);
   }
-  gMC->Gsatt("UCII","SEEN", 0);
-  gMC->Gsatt("UCIM","SEEN", 0);
-  gMC->Gsatt("UCIO","SEEN", 0);
-  gMC->Gsatt("UL02","SEEN", 1);
-  gMC->Gsatt("UL05","SEEN", 1);
-  gMC->Gsatt("UL06","SEEN", 1);
+//   gMC->Gsatt("UCII","SEEN", 0);
+//   gMC->Gsatt("UCIM","SEEN", 0);
+//   gMC->Gsatt("UCIO","SEEN", 0);
+//   gMC->Gsatt("UL02","SEEN", 1);
+//   gMC->Gsatt("UL05","SEEN", 1);
+//   gMC->Gsatt("UL06","SEEN", 1);
   
   gMC->Gdopt("hide", "on");
   gMC->Gdopt("shad", "on");
@@ -916,14 +944,20 @@ void AliTRD::LoadPoints(Int_t track)
   // Hit originating from TR photons are given a different color
   //
 
-  if (!fDrawTR) {
-    AliDetector::LoadPoints(track);
-    return;
+  //if (!fDrawTR) {
+  //  AliDetector::LoadPoints(track);
+  //  return;
+  //}
+
+  if ((fHits == 0) && (fTrackHits == 0)) return;
+
+  Int_t nhits;
+  if (fHitType < 2) {
+    nhits = fHits->GetEntriesFast();
   }
-
-  if (fHits == 0) return;
-
-  Int_t nhits  = fHits->GetEntriesFast();
+  else {
+    nhits = fTrackHits->GetEntriesFast();
+  } 
   if (nhits == 0) return;
 
   Int_t tracks = gAlice->GetNtrack();
@@ -946,18 +980,17 @@ void AliTRD::LoadPoints(Int_t track)
     limiT[i] = 0;
   }
   
-  AliTRDpoints  *points = 0;
-  Float_t       *fp     = 0;
-  Int_t          trk;
-  Int_t          chunk  = nhits / 4 + 1;
+  AliTRDpoints *points = 0;
+  Float_t      *fp     = 0;
+  Int_t         trk;
+  Int_t         chunk  = nhits / 4 + 1;
 
   // Loop over all the hits and store their position
-  for (Int_t hit = 0; hit < nhits; hit++) {
-
-    ahit = (AliTRDhit *) fHits->UncheckedAt(hit);
+  ahit = (AliTRDhit *) FirstHit(-1);
+  while (ahit) {
 
     // dEdx hits
-    if (ahit->FromDrift() || ahit->FromAmplification()) {
+    if (ahit->GetCharge() >= 0) {
 
       trk = ahit->GetTrack();
       if (ntrkE[trk] == limiE[trk]) {
@@ -980,7 +1013,7 @@ void AliTRD::LoadPoints(Int_t track)
 
     }
     // TR photon hits
-    else if (ahit->FromTRphoton()) {
+    else if ((ahit->GetCharge() < 0) && (fDrawTR)) {
 
       trk = ahit->GetTrack();
       if (ntrkT[trk] == limiT[trk]) {
@@ -1002,6 +1035,8 @@ void AliTRD::LoadPoints(Int_t track)
       ntrkT[trk]++;
 
     }
+
+    ahit = (AliTRDhit *) NextHit();
 
   }
 
@@ -1063,6 +1098,10 @@ void AliTRD::MakeBranch(Option_t* option, const char *file)
     MakeBranchInTree(gAlice->TreeD(),branchname,&fDigits,buffersize,file);
   }	
 
+  if (fHitType > 1) {
+    MakeBranch2(option,file); 
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -1114,6 +1153,10 @@ void AliTRD::SetTreeAddress()
         branch->SetAddress(&fRecPoints);
       }
     }
+  }
+
+  if (fHitType > 0) {
+    SetTreeAddress2();    
   }
 
 }
@@ -1170,8 +1213,237 @@ AliTRD &AliTRD::operator=(const AliTRD &trd)
 
 } 
 
+//_____________________________________________________________________________
+void AliTRD::FinishPrimary()
+{
+  //
+  // Store the hits in the containers after all primaries are finished
+  //
 
+  if (fTrackHits) { 
+    fTrackHits->FlushHitStack();
+  }
 
+}
+
+//_____________________________________________________________________________
+void AliTRD::RemapTrackHitIDs(Int_t *map)
+{
+  //
+  // Remap the track IDs
+  //
+
+  if (!fTrackHits) {
+    return;
+  }
+
+  if (fTrackHits) {
+    TClonesArray *arr = fTrackHits->GetArray();;
+    for (Int_t i = 0; i < arr->GetEntriesFast(); i++){
+      AliTrackHitsParamV2 *info = (AliTrackHitsParamV2 *) (arr->At(i));
+      info->fTrackID = map[info->fTrackID];
+    }
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::ResetHits()
+{
+  //
+  // Reset the hits
+  //
+
+  AliDetector::ResetHits();
+  if (fTrackHits) {
+    fTrackHits->Clear();
+  }
+
+}
+
+//_____________________________________________________________________________
+AliHit* AliTRD::FirstHit(Int_t track)
+{
+  //
+  // Return the first hit of a track
+  //
+
+  if (fHitType > 1) {
+    return FirstHit2(track);
+  }
+
+  return AliDetector::FirstHit(track);
+
+}
+
+//_____________________________________________________________________________
+AliHit* AliTRD::NextHit()
+{
+  //
+  // Returns the next hit of a track
+  //
+
+  if (fHitType > 1) {
+    return NextHit2();
+  }
+
+  return AliDetector::NextHit();
+
+}
+
+//_____________________________________________________________________________
+AliHit* AliTRD::FirstHit2(Int_t track)
+{
+  //
+  // Initializes the hit iterator.
+  // Returns the address of the first hit of a track.
+  // If <track> >= 0 the track is read from disk,
+  // while if <track> < 0 the first hit of the current
+  // track is returned.
+  //
+
+  if (track >= 0) {
+    gAlice->ResetHits();
+    gAlice->TreeH()->GetEvent(track);
+  }
+  
+  if (fTrackHits) {
+    fTrackHits->First();
+    return (AliHit*) fTrackHits->GetHit();
+  }
+  else {
+    return 0;
+  }
+
+}
+
+//_____________________________________________________________________________
+AliHit* AliTRD::NextHit2()
+{
+  //
+  // Returns the next hit of the current track
+  //
+
+  if (fTrackHits) {
+    fTrackHits->Next();
+    return (AliHit *) fTrackHits->GetHit();
+  }
+  else {
+    return 0;
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::MakeBranch2(Option_t *option, const char *file)
+{
+  //
+  // Create a new branch in the current Root tree.
+  // The branch of fHits is automatically split.
+  //
+
+  if (fHitType < 2) {
+    return;
+  }
+
+  char branchname[10];
+  sprintf(branchname,"%s2",GetName());
+
+  // Get the pointer to the header
+  const char *cH = strstr(option,"H");
+ 
+  if (!fTrackHits) {
+    fTrackHits = new AliTRDtrackHits();
+  }
+
+  if (fTrackHits && gAlice->TreeH() && cH) {
+
+    gAlice->TreeH()->Branch(branchname,"AliTRDtrackHits"
+                                      ,&fTrackHits
+                                      ,fBufferSize,99);
+
+    if (GetDebug() > 1) {
+      printf("<AliTRD::MakeBranch2> Making Branch %s for trackhits\n"
+            ,branchname);
+    }
+
+    const char folder[] = "RunMC/Event/Data";
+
+    if (GetDebug()) {
+      printf("<AliTRD::MakeBranch2> %15s: Publishing %s to %s\n"
+            ,ClassName(),branchname,folder);
+    }
+
+    Publish(folder,&fTrackHits,branchname);
+
+    if (file) {
+      TBranch *b = gAlice->TreeH()->GetBranch(branchname);
+      TDirectory *wd = gDirectory;
+      b->SetFile(file);
+      TIter next(b->GetListOfBranches());
+      while ((b = (TBranch*) next())) {
+        b->SetFile(file);
+      }
+      wd->cd();
+      if (GetDebug() > 1) {
+        printf("<AliTRD::MakeBranch2> Diverting branch %s to file %s\n"
+              ,branchname,file);
+      }
+    }
+
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::SetTreeAddress2()
+{
+  //
+  // Set the branch address for the trackHits tree
+  //
+
+  TBranch *branch;
+
+  char branchname[20];
+
+  sprintf(branchname,"%s2",GetName());
+  
+  // Branch address for hit tree
+  TTree *treeH = gAlice->TreeH();
+  if ((treeH) && (fHitType > 0)) {
+    branch = treeH->GetBranch(branchname);
+    if (branch) {
+      branch->SetAddress(&fTrackHits);
+    }
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::AddHit2(Int_t track, Int_t det, Float_t *hits, Int_t q
+                   , Bool_t inDrift)
+{
+  //
+  // Add a hit to the list
+  //
+
+  Int_t rtrack;
+
+  if (fIshunt) {
+    Int_t primary = gAlice->GetPrimary(track);
+    gAlice->Particle(primary)->SetBit(kKeepBit);
+    rtrack = primary;
+  } 
+  else {
+    rtrack = track;
+    gAlice->FlagTrack(track);
+  }
+
+  if ((fTrackHits) && (fHitType > 0)) {
+    fTrackHits->AddHitTRD(det,rtrack,hits[0],hits[1],hits[2],q,inDrift);
+  }
+
+}
 
 
 

@@ -53,13 +53,6 @@ class AliTRDv1 : public AliTRD {
 
  protected:
 
-  Int_t        fIdSensDr;               // Sensitive volume identifier (drift region)
-  Int_t        fIdSensAm;               // Sensitive volume identifier (amplification region)
-
-  Int_t        fIdChamber1;             // Driftchamber volume identifier
-  Int_t        fIdChamber2;             // Driftchamber volume identifier 
-  Int_t        fIdChamber3;             // Driftchamber volume identifier 
-
   Int_t        fSensSelect;             // Switch to select only parts of the detector
   Int_t        fSensPlane;              // Sensitive detector plane
   Int_t        fSensChamber;            // Sensitive detector chamber
@@ -74,7 +67,7 @@ class AliTRDv1 : public AliTRD {
 
   TF1         *fDeltaE;                 // Energy distribution of the delta-electrons
    
-  ClassDef(AliTRDv1,1)                  // Transition Radiation Detector version 1 (slow simulator)
+  ClassDef(AliTRDv1,2)                  // Transition Radiation Detector version 1 (slow simulator)
 
 };
 

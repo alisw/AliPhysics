@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2001/05/21 16:45:47  hristov
+Last minute changes (C.Blume)
+
 Revision 1.29  2001/05/16 14:57:28  alibrary
 New files for folders and Stack
 
@@ -135,13 +138,6 @@ AliTRDv1::AliTRDv1():AliTRD()
   // Default constructor
   //
 
-  fIdSensDr        =  0;
-  fIdSensAm        =  0;
-
-  fIdChamber1      =  0;
-  fIdChamber2      =  0;
-  fIdChamber3      =  0;
-
   fSensSelect      =  0;
   fSensPlane       = -1;
   fSensChamber     = -1;
@@ -160,13 +156,6 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   //
   // Standard constructor for Transition Radiation Detector version 1
   //
-
-  fIdSensDr        =  0;
-  fIdSensAm        =  0;
-
-  fIdChamber1      =  0;
-  fIdChamber2      =  0;
-  fIdChamber3      =  0;
 
   fSensSelect      =  0;
   fSensPlane       = -1;
@@ -222,13 +211,6 @@ void AliTRDv1::Copy(TObject &trd)
   //
   // Copy function
   //
-
-  ((AliTRDv1 &) trd).fIdSensDr        = fIdSensDr;
-  ((AliTRDv1 &) trd).fIdSensAm        = fIdSensAm;
-
-  ((AliTRDv1 &) trd).fIdChamber1      = fIdChamber1;
-  ((AliTRDv1 &) trd).fIdChamber2      = fIdChamber2;
-  ((AliTRDv1 &) trd).fIdChamber3      = fIdChamber3;
 
   ((AliTRDv1 &) trd).fSensSelect      = fSensSelect;
   ((AliTRDv1 &) trd).fSensPlane       = fSensPlane;
@@ -290,7 +272,6 @@ void AliTRDv1::CreateTRhit(Int_t det)
   const Int_t   kNTR         = 50;
 
   TLorentzVector mom, pos;
-  TClonesArray  &lhits = *fHits;
 
   // Create TR at the entrance of the chamber
   if (gMC->IsTrackEntering()) {
@@ -357,10 +338,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
 
       // Add the hit to the array. TR photon hits are marked 
       // by negative charge
-      AliTRDhit *hit = new(lhits[fNhits++]) AliTRDhit(fIshunt
-                                                     ,gAlice->CurrentTrack()
-                                                     ,det,posHit,-q);
-      hit->SetTRphoton();
+      AddHit(gAlice->CurrentTrack(),det,posHit,-q,kTRUE); 
 
     }
 
@@ -405,16 +383,6 @@ void AliTRDv1::Init()
   Float_t poti = TMath::Log(kPoti);
   Float_t eEnd = TMath::Log(kEend);
   fDeltaE = new TF1("deltae",Ermilova,poti,eEnd,0);
-
-  // Identifier of the sensitive volume (drift region)
-  fIdSensDr   = gMC->VolId("UL05");
-  // Identifier of the sensitive volume (amplification region)
-  fIdSensAm   = gMC->VolId("UL06");
-
-  // Identifier of the TRD-driftchambers
-  fIdChamber1 = gMC->VolId("UCIO");
-  fIdChamber2 = gMC->VolId("UCIM");
-  fIdChamber3 = gMC->VolId("UCII");
 
   if(fDebug) {
     printf("%s: ",ClassName());
@@ -530,8 +498,6 @@ void AliTRDv1::StepManager()
   // a spectrum taken from Ermilova et al.
   //
 
-  Int_t    iIdSens, icSens;
-  Int_t    iIdChamber, icChamber;
   Int_t    pla = 0;
   Int_t    cha = 0;
   Int_t    sec = 0;
@@ -550,10 +516,18 @@ void AliTRDv1::StepManager()
   Double_t betaGamma, pp;
   Double_t stepSize;
 
-  TLorentzVector pos, mom;
-  TClonesArray  &lhits = *fHits;
+  Bool_t   drRegion = kFALSE;
+  Bool_t   amRegion = kFALSE;
 
-  const Double_t kBig     = 1.0E+12;
+  TString  cIdCurrent;
+  TString  cIdSensDr = "J";
+  TString  cIdSensAm = "K";
+  Char_t   cIdChamber[2];
+
+  TLorentzVector pos, mom;
+
+  const Int_t    kNplan       = AliTRDgeometry::Nplan();
+  const Double_t kBig         = 1.0E+12;
 
   // Ionization energy
   const Float_t  kWion        = 22.04;
@@ -584,11 +558,16 @@ void AliTRDv1::StepManager()
       (!gMC->IsTrackDisappeared())) {
 
     // Inside a sensitive volume?
-    iIdSens = gMC->CurrentVolID(icSens);
-    if  ((iIdSens == fIdSensDr) ||
-         (iIdSens == fIdSensAm)) {
-
-      iIdChamber = gMC->CurrentVolOffID(1,icChamber);
+    drRegion = kFALSE;
+    amRegion = kFALSE;
+    cIdCurrent = gMC->CurrentVolName();
+    if (cIdCurrent[1] == cIdSensDr) {
+      drRegion = kTRUE;
+    }
+    if (cIdCurrent[1] == cIdSensAm) {
+      amRegion = kTRUE;
+    }
+    if (drRegion || amRegion) {
 
       // The hit coordinates and charge
       gMC->TrackPosition(pos);
@@ -605,22 +584,12 @@ void AliTRDv1::StepManager()
         phi = phi -  90.;
       sec = ((Int_t) (phi / 20));
 
-      // The chamber number 
-      //   0: outer left
-      //   1: middle left
-      //   2: inner
-      //   3: middle right
-      //   4: outer right
-      if      (iIdChamber == fIdChamber1)
-        cha = (hits[2] < 0 ? 0 : 4);
-      else if (iIdChamber == fIdChamber2)       
-        cha = (hits[2] < 0 ? 1 : 3);
-      else if (iIdChamber == fIdChamber3)       
-        cha = 2;
-
-      // The plane number
-      // The numbering starts at the innermost plane
-      pla = icChamber - TMath::Nint((Float_t) (icChamber / 7)) * 6 - 1;
+      // The plane and chamber number
+      cIdChamber[0] = cIdCurrent[2];
+      cIdChamber[1] = cIdCurrent[3];
+      Int_t idChamber = atoi(cIdChamber);
+      cha = ((Int_t) idChamber / kNplan);
+      pla = ((Int_t) idChamber % kNplan);
 
       // Check on selected volumes
       Int_t addthishit = 1;
@@ -648,7 +617,7 @@ void AliTRDv1::StepManager()
         det = fGeometry->GetDetector(pla,cha,sec);
 
 	// Special hits and TR photons only in the drift region
-        if (iIdSens == fIdSensDr) {
+        if (drRegion) {
 
           // Create some special hits with amplitude 0 at the entrance and
           // exit of each chamber that contain the momentum components of the particle
@@ -657,10 +626,8 @@ void AliTRDv1::StepManager()
             moms[0] = mom[0];
             moms[1] = mom[1];
             moms[2] = mom[2];
-            AliTRDhit *hitTest = new(lhits[fNhits++]) AliTRDhit(fIshunt
-                                                               ,gAlice->CurrentTrack()
-                                                               ,det,moms,0);
-            hitTest->SetTest();
+            AddHit(gAlice->CurrentTrack(),det,moms,0,kTRUE);
+            AddHit(gAlice->CurrentTrack(),det,hits,0,kTRUE); 
           }
 
           // Create the hits from TR photons
@@ -676,14 +643,11 @@ void AliTRDv1::StepManager()
         qTot = ((Int_t) (eDelta / kWion) + 1);
 
 	// Create a new dEdx hit
-        AliTRDhit *hit = new(lhits[fNhits++]) AliTRDhit(fIshunt
-                                                       ,gAlice->CurrentTrack()
-                                                       ,det,hits,qTot);
-        if (iIdSens == fIdSensDr) {
-          hit->SetDrift();
+        if (drRegion) {
+          AddHit(gAlice->CurrentTrack(),det,hits,qTot,kTRUE);       
 	}
         else {
-          hit->SetAmplification();
+          AddHit(gAlice->CurrentTrack(),det,hits,qTot,kFALSE);      
 	}
 
         // Calculate the maximum step size for the next tracking step

@@ -45,15 +45,9 @@ class AliTRDv0 : public AliTRD {
 
  protected:
 
-  Int_t        fIdSens;     // Sensitive volume identifier
-
-  Int_t        fIdChamber1; // Driftchamber volume identifier
-  Int_t        fIdChamber2; // Driftchamber volume identifier
-  Int_t        fIdChamber3; // Driftchamber volume identifier
-
   Int_t        fHitsOn;     // Used to switch hits on
 
-  ClassDef(AliTRDv0,1)      // Transition Radiation Detector version 0 (fast simulator)
+  ClassDef(AliTRDv0,2)      // Transition Radiation Detector version 0 (fast simulator)
 
 };
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/11/30 17:38:08  cblume
+Changes to get in line with new STEER and EVGEN
+
 Revision 1.17  2000/11/01 14:53:21  cblume
 Merge with TRD-develop
 
@@ -66,6 +69,8 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <stdlib.h> 
+
 #include <TMath.h>
 #include <TRandom.h>
 #include <TVector.h> 
@@ -88,12 +93,7 @@ AliTRDv0::AliTRDv0():AliTRD()
   // AliTRDv0 default constructor
   //
 
-  fIdSens     = 0;
   fHitsOn     = 0;
-
-  fIdChamber1 = 0;
-  fIdChamber2 = 0;
-  fIdChamber3 = 0;
 
 }
 
@@ -105,12 +105,7 @@ AliTRDv0::AliTRDv0(const char *name, const char *title)
   // Standard constructor for Transition Radiation Detector version 0
   //
 
-  fIdSens     = 0;
   fHitsOn     = 0;
-
-  fIdChamber1 = 0;
-  fIdChamber2 = 0;
-  fIdChamber3 = 0;
 
 }
 
@@ -160,14 +155,6 @@ void AliTRDv0::Init()
 
   AliTRD::Init();
 
-  // Identifier of the sensitive volume (amplification region)
-  fIdSens     = gMC->VolId("UL06");
-
-  // Identifier of the TRD-driftchambers
-  fIdChamber1 = gMC->VolId("UCIO");
-  fIdChamber2 = gMC->VolId("UCIM");
-  fIdChamber3 = gMC->VolId("UCII");
-
   printf("          Fast simulator\n\n");
   for (Int_t i = 0; i < 80; i++) printf("*");
   printf("\n");
@@ -186,25 +173,29 @@ void AliTRDv0::StepManager()
   Int_t   pla = 0; 
   Int_t   cha = 0;
   Int_t   sec = 0; 
-  Int_t   iIdSens, icSens; 
-  Int_t   iIdChamber, icChamber;
 
   Float_t hits[3];
   Int_t   det;
 
   TLorentzVector p;
-  TClonesArray  &lhits = *fHits;
+
+  // Use pad plane as sensitive volume
+  TString  cIdSens = "L";
+  TString  cIdCurrent;
+  Char_t   cIdChamber[2];
+
+  const Int_t kNplan = AliTRDgeometry::Nplan();
 
   // Writing out hits enabled?
   if (!(fHitsOn)) return;
 
   // Use only charged tracks and count them only once per volume
   if (gMC->TrackCharge()    && 
-      gMC->IsTrackExiting()) {
+      gMC->IsTrackEntering()) {
     
     // Check on sensitive volume
-    iIdSens = gMC->CurrentVolID(icSens);
-    if (iIdSens == fIdSens) { 
+    cIdCurrent = gMC->CurrentVolName();
+    if (cIdCurrent[1] == cIdSens) {
 
       gMC->TrackPosition(p);
       for (Int_t i = 0; i < 3; i++) hits[i] = p[i];
@@ -218,29 +209,15 @@ void AliTRDv0::StepManager()
         phi = phi -  90.;
       sec = ((Int_t) (phi / 20));
 
-      // The chamber number 
-      //   0: outer left
-      //   1: middle left
-      //   2: inner
-      //   3: middle right
-      //   4: outer right
-      iIdChamber = gMC->CurrentVolOffID(1,icChamber);
-      if      (iIdChamber == fIdChamber1)
-        cha = (hits[2] < 0 ? 0 : 4);
-      else if (iIdChamber == fIdChamber2)       
-        cha = (hits[2] < 0 ? 1 : 3);
-      else if (iIdChamber == fIdChamber3)       
-        cha = 2;
-
-      // The plane number (0 - 5)
-      pla = icChamber - TMath::Nint((Float_t) (icChamber / 7)) * 6 - 1;
+      // The plane and chamber number
+      cIdChamber[0] = cIdCurrent[2];
+      cIdChamber[1] = cIdCurrent[3];
+      Int_t idChamber = atoi(cIdChamber);
+      cha = ((Int_t) idChamber / kNplan);
+      pla = ((Int_t) idChamber % kNplan);
       det = fGeometry->GetDetector(pla,cha,sec);
 
-      new(lhits[fNhits++]) AliTRDhit(fIshunt
-                                    ,gAlice->CurrentTrack()
-                                    ,det
-                                    ,hits
-                                    ,0);
+      AddHit(gAlice->CurrentTrack(),det,hits,0,kTRUE);       
 
     }
 
