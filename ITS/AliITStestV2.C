@@ -1,4 +1,4 @@
-Int_t AliITStestV2(Char_t SlowOrFast='f') {
+Int_t AliITStestV2(Char_t SlowOrFast='s') {
    Int_t rc=0;
 
    if (gAlice) {delete gAlice; gAlice=0;}
