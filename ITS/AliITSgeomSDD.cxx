@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.10  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.9  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -283,6 +288,11 @@ istream &operator>>(istream &is,AliITSgeomSDD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.10  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.9  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -297,8 +307,12 @@ Additional smaller modifications are still to come.
 ClassImp(AliITSgeomSDD256)
 
 AliITSgeomSDD256::AliITSgeomSDD256() : AliITSgeomSDD(){
+    // Default Constructor
+}
+//----------------------------------------------------------------------
+AliITSgeomSDD256::AliITSgeomSDD256(Int_t npar,Float_t *par) : AliITSgeomSDD(){
 ////////////////////////////////////////////////////////////////////////
-//    default constructor
+//    constructor
 /*
 Pads for probe cards in ALICE-D2       /05.03.2000/
 (X,Y) coordinates are quoted in microns and referred to the centers of 
@@ -705,7 +719,7 @@ _____________________________________________
 //    cout << "AliITSgeomSDD256 default creator called: start" << end;
     AnodeLowEdges[0] = kAnodesZ;
     for(i=0;i<kNAnodes;i++) AnodeLowEdges[i+1] = kAnodePitch+AnodeLowEdges[i];
-    AliITSgeomSDD::ResetSDD(kDxyz,kPeriod,kVelocity,kAnodeXL,kAnodeXR,
+    AliITSgeomSDD::ResetSDD(par,kPeriod,kVelocity,kAnodeXL,kAnodeXR,
 			    kNAnodes+1,AnodeLowEdges,
 			    kNAnodes+1,AnodeLowEdges);
 //    cout << "AliITSgeomSDD256 default creator called: end" << endl;
@@ -731,6 +745,11 @@ istream &operator>>(istream &is,AliITSgeomSDD256 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.10  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.9  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.

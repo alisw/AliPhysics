@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/04/26 22:44:34  nilsen
+Bug fix.
+
 Revision 1.9  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -215,6 +218,9 @@ istream &operator>>(istream &is,AliITSgeomSPD &r){
 
 /*
 $Log$
+Revision 1.10  2001/04/26 22:44:34  nilsen
+Bug fix.
+
 Revision 1.9  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -309,6 +315,9 @@ istream &operator>>(istream &is,AliITSgeomSPD300 &r){
 //=====================================================================
 /*
 $Log$
+Revision 1.10  2001/04/26 22:44:34  nilsen
+Bug fix.
+
 Revision 1.9  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -341,9 +350,19 @@ Fixed bug in copy and operator =.
 
 ClassImp(AliITSgeomSPD425Short)
 
-AliITSgeomSPD425Short::AliITSgeomSPD425Short(){
+AliITSgeomSPD425Short::AliITSgeomSPD425Short() : AliITSgeomSPD(){
 ////////////////////////////////////////////////////////////////////////
 //    default constructor, for ITS post TDR geometry. This only consists of
+// a default constructor to construct the defalut post TDR SPD detector 
+// geometry 256 X 197 425 by 50 micron pixels with interleaved 625 by 50
+// micron pixels (large detector).
+////////////////////////////////////////////////////////////////////////
+}
+//----------------------------------------------------------------------
+AliITSgeomSPD425Short::AliITSgeomSPD425Short(Int_t npar,Float_t *par) :
+                                                              AliITSgeomSPD(){
+////////////////////////////////////////////////////////////////////////
+//    Standard constructor, for ITS post TDR geometry. This only consists of
 // a default constructor to construct the defalut post TDR SPD detector 
 // geometry 256 X 197 425 by 50 micron pixels with interleaved 625 by 50
 // micron pixels (large detector).
@@ -358,7 +377,7 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(){
     const Int_t   knbinx = 256;    // number of pixels along x direction.
     const Float_t kbinz0 = 0.0425; // cm; Standard pixel size in z direction.
     const Float_t kbinz1 = 0.0625; // cm; Special pixel size in z direction.
-    const Int_t   knbinz = 161;    // number of pixels along z direction.
+    const Int_t   knbinz = 160;    // number of pixels along z direction.
     Int_t i;
     Float_t dx,dz,*binSizeX,*binSizeZ;
 
@@ -389,7 +408,8 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(){
     for(i=0;i<knbinz;i++) dz += binSizeZ[i];
     dz *= 0.5;
 
-    SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",dx,kdy,dz);
+    SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",
+	     par[0],par[1],par[2]);
     if(TMath::Abs(dx-kdx)>1.0E-4 || TMath::Abs(dz-kdz)>1.0E-4) 
 	Warning("Default Creator","Detector size may not be write.");
 
@@ -422,6 +442,9 @@ istream &operator>>(istream &is,AliITSgeomSPD425Short &r){
 
 /*
 $Log$
+Revision 1.10  2001/04/26 22:44:34  nilsen
+Bug fix.
+
 Revision 1.9  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2001/05/10 00:12:59  nilsen
+Finished fixing up the default segmentation for the PPR geometry.
+
 Revision 1.36  2001/05/09 01:02:21  nilsen
 Finished fixing SetDefaults for the segmentation of SPD, SDD, and SSD.
 
@@ -4848,7 +4851,7 @@ void AliITSvPPRasymm::InitAliITSgeom(){
 			fITSgeom->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
 			if(!(fITSgeom->IsShapeDefined((Int_t)kSPD)))
                              fITSgeom->ReSetShape(kSPD,
-						  new AliITSgeomSPD425Short());
+                                         new AliITSgeomSPD425Short(npar,par));
 		    } // end for det
 		} // end for k
             } // end for j
@@ -4866,19 +4869,20 @@ void AliITSvPPRasymm::InitAliITSgeom(){
 		    case 3: case 4:
 			fITSgeom->CreatMatrix(mod,lay,lad,det,kSDD,t,r);
 			if(!(fITSgeom->IsShapeDefined(kSDD))) 
-			    fITSgeom->ReSetShape(kSDD,new AliITSgeomSDD256());
+			    fITSgeom->ReSetShape(kSDD,
+                                            new AliITSgeomSDD256(npar,par));
 			    break;
 			case 5:
 			    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
 			    if(!(fITSgeom->IsShapeDefined(kSSD))) 
 				fITSgeom->ReSetShape(kSSD,
-                                                  new AliITSgeomSSD275and75());
+                                         new AliITSgeomSSD275and75(npar,par));
 			    break;
 			case 6:
 			    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSDp,t,r);
 			    if(!(fITSgeom->IsShapeDefined(kSSDp))) 
 				fITSgeom->ReSetShape(kSSDp,
-                                                  new AliITSgeomSSD75and275());
+                                         new AliITSgeomSSD75and275(npar,par));
 			    break;
 			} // end switch
 		} // end for det
@@ -4958,7 +4962,7 @@ void AliITSvPPRasymm::SetDefaults(){
     iDetType=DetType(1);
     s1 = (AliITSgeomSDD*) fITSgeom->GetShape(kSDD);// Get shape info. Do it this way for now.
     AliITSresponseSDD *resp1=new AliITSresponseSDD();
-    resp1->SetDriftSpeed(5.665); // set drift speed to 5.665 microns/ns.
+    resp1->SetDriftSpeed(7.3); // set drift speed to 7.3 microns/ns.
     SetResponseModel(1,resp1);
     AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
     seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
@@ -5086,22 +5090,22 @@ void AliITSvPPRasymm::StepManager(){
   // Only entering charged tracks
   if((id = gMC->CurrentVolID(copy)) == fIdSens[0]) {
       vol[0] = 1;
-      id = gMC->CurrentVolOffID(0,copy);
+      id = gMC->CurrentVolOffID(2,copy);
       //detector copy in the ladder = 1<->4  (ITS1 < I101 < I103 < I10A)
       vol[1] = copy;
-      gMC->CurrentVolOffID(1,copy1);
+      gMC->CurrentVolOffID(3,copy1);
       //ladder copy in the module   = 1<->2  (I10A < I12A)
-      gMC->CurrentVolOffID(2,copy2);
+      gMC->CurrentVolOffID(4,copy2);
       //module copy in the layer    = 1<->10 (I12A < IT12)
       vol[2] = copy1+(copy2-1)*2;//# of ladders in one module  = 2
   } else if(id == fIdSens[1]){
       vol[0] = 2;
-      id = gMC->CurrentVolOffID(0,copy);
+      id = gMC->CurrentVolOffID(2,copy);
       //detector copy in the ladder = 1<->4  (ITS2 < I1D1 < I1D3 < I20A)
       vol[1] = copy;
-      gMC->CurrentVolOffID(1,copy1);
+      gMC->CurrentVolOffID(3,copy1);
       //ladder copy in the module   = 1<->4  (I20A < I12A)
-      gMC->CurrentVolOffID(2,copy2);
+      gMC->CurrentVolOffID(4,copy2);
       //module copy in the layer    = 1<->10 (I12A < IT12)
       vol[2] = copy1+(copy2-1)*4;//# of ladders in one module  = 4
   } else if(id == fIdSens[2]){

@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.10  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.9  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -248,6 +253,11 @@ istream &operator>>(istream &is,AliITSgeomSSD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.10  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.9  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -311,6 +321,11 @@ istream &operator>>(istream &is,AliITSgeomSSD175 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.10  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.9  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -326,6 +341,10 @@ AliITSgeomSSD275and75::AliITSgeomSSD275and75() : AliITSgeomSSD(){
 ////////////////////////////////////////////////////////////////////////
 //    default constructor
 ////////////////////////////////////////////////////////////////////////
+}
+//----------------------------------------------------------------------
+AliITSgeomSSD275and75::AliITSgeomSSD275and75(Int_t npar,Float_t *par) : 
+                                                            AliITSgeomSSD(){
     const Float_t kDxyz[] ={3.6500,0.0150,2.000};//cm. (Geant 3.12 units)
     // Size of sensitive detector area x,y(thickness),z
     const Float_t kangleA  = 0.0275; // angle in rad. of anode and cathodes
@@ -348,7 +367,7 @@ AliITSgeomSSD275and75::AliITSgeomSSD275and75() : AliITSgeomSSD(){
     leA[kNstrips] =  kDxyz[0];
     leC[kNstrips] = -kDxyz[0];
 //    cout << "AliITSgeomSSD275and75 default creator called: start" << endl;
-    AliITSgeomSSD::ResetSSD(kDxyz,kangleA,kangleC,
+    AliITSgeomSSD::ResetSSD(par,kangleA,kangleC,
 				 kNstrips+1,leA,kNstrips+1,leC);
     delete leA;
     delete leC;
@@ -375,6 +394,11 @@ istream &operator>>(istream &is,AliITSgeomSSD275and75 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.10  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.9  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -389,6 +413,9 @@ AliITSgeomSSD75and275::AliITSgeomSSD75and275() : AliITSgeomSSD(){
 ////////////////////////////////////////////////////////////////////////
 //    default constructor
 ////////////////////////////////////////////////////////////////////////
+}
+AliITSgeomSSD75and275::AliITSgeomSSD75and275(Int_t npar,Float_t *par) : 
+                                                            AliITSgeomSSD(){
     const Float_t kDxyz[] ={3.6500,0.0150,2.000};//cm. (Geant 3.12 units)
     // Size of sensitive detector area x,y(thickness),z
     const Float_t kangleA  = 0.0075; // angle in rad. of anode and cathodes
@@ -411,7 +438,7 @@ AliITSgeomSSD75and275::AliITSgeomSSD75and275() : AliITSgeomSSD(){
     leA[kNstrips] =  kDxyz[0];
     leC[kNstrips] = -kDxyz[0];
 //    cout << "AliITSgeomSSD275and75 default creator called: start" << endl;
-    AliITSgeomSSD::ResetSSD(kDxyz,kangleA,kangleC,
+    AliITSgeomSSD::ResetSSD(par,kangleA,kangleC,
 				 kNstrips+1,leA,kNstrips+1,leC);
     delete leA;
     delete leC;

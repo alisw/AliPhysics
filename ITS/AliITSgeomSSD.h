@@ -130,6 +130,7 @@ class AliITSgeomSSD275and75 : public AliITSgeomSSD {
 
  public:
     AliITSgeomSSD275and75();
+    AliITSgeomSSD275and75(Int_t npar,Float_t *par);
 
     // This clas now has version 0 so that it will not be written to a root
     // file. This is good since there are no longer any data members to this
@@ -160,6 +161,7 @@ class AliITSgeomSSD75and275 : public AliITSgeomSSD {
 
  public:
     AliITSgeomSSD75and275();
+    AliITSgeomSSD75and275(Int_t npar,Float_t *par);
 
     // This clas now has version 0 so that it will not be written to a root
     // file. This is good since there are no longer any data members to this

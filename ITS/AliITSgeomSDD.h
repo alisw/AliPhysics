@@ -91,6 +91,7 @@ class AliITSgeomSDD256 : public AliITSgeomSDD {
 
  public:
     AliITSgeomSDD256();
+    AliITSgeomSDD256(Int_t npar,Float_t *par);
 
     // This clas now has version 0 so that it will not be written to a root
     // file. This is good since there are no longer any data members to this
