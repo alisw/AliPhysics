@@ -370,7 +370,7 @@ if(iRICH) {
     AliRICHSegmentationV1* SegmentationV0 = new AliRICHSegmentationV1;
 //
 //  Segmentation parameters
-    SegmentationV0->SetPadSize(0.84,0.80);
+    SegmentationV0->SetPadSize(0.8,0.84);
     SegmentationV0->SetDAnod(0.84/2);
 
 //  Geometry parameters
