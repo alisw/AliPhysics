@@ -4,15 +4,21 @@
 // See the class description in the header file.
 
 #include "TG4XMLConvertor.h"
+#include "TG4Polycone.h"
+#include "TG4Polyhedra.h"
 #include "TG3Units.h"
 
 #include <G4LogicalVolume.hh>
+#include <G4PVReplica.hh>
 #include <G4Material.hh>
 #include <G4VSolid.hh>
 #include <G4Box.hh>
 #include <G4Tubs.hh>
+#include <G4Cons.hh>
 #include <G4Trd.hh>
 #include <G4Trap.hh>
+#include <G4Polycone.hh>
+#include <G4Polyhedra.hh>
 #include <globals.hh>
 
 #include <g4std/iostream>
@@ -78,27 +84,26 @@ void TG4XMLConvertor::WriteBox(G4String lvName, const G4Box* box,
 // ---
 
   // get parameters
-  G4double x = box->GetXHalfLength()/TG3Units::Length();
-  G4double y = box->GetYHalfLength()/TG3Units::Length();
-  G4double z = box->GetZHalfLength()/TG3Units::Length();
+  G4double x = box->GetXHalfLength()/TG3Units::Length()*2.;
+  G4double y = box->GetYHalfLength()/TG3Units::Length()*2.;
+  G4double z = box->GetZHalfLength()/TG3Units::Length()*2.;
 
   // compose element string template
-  G4String element1 
-    = "<box   name=\"###########   material=\"!!!!!!!!!!!!!!!!!!!!!   X_Y_Z=\"";
-  G4String element2 = "\" />";
-  
-  // put solid and material names
-  PutName(element1, lvName, "#");
-  PutName(element1, materialName, "!");
+  G4String quota = "\"";
+  G4String element1 = "<box    name=\"" + lvName + quota;
+  G4String element2 = "material=\"" + materialName + quota;
+  G4String element3 = "X_Y_Z=\"";
+  G4String element4 = "\" />";
+  G4String indention = fBasicIndention + fBasicIndention;
   
   // write element
-  fOutFile << fBasicIndention
-           << element1
-           << G4std::setw(7) << G4std::setprecision(2) << x*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << z*2.
-	   << element2
-	   << G4endl;
+  fOutFile << fBasicIndention << element1 << G4endl  
+           << indention       << element2 << G4endl
+	   << indention       << element3
+           << G4std::setw(7) << G4std::setprecision(2) << x << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << y << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << z 
+	   << element4 << G4endl << G4endl;
 }
  
 void TG4XMLConvertor::WriteTubs(G4String lvName, const G4Tubs* tubs, 
@@ -110,31 +115,72 @@ void TG4XMLConvertor::WriteTubs(G4String lvName, const G4Tubs* tubs,
   // get parameters
   G4double rmin = tubs->GetInnerRadius()/TG3Units::Length();
   G4double rmax = tubs->GetOuterRadius()/TG3Units::Length();
-  G4double hz   = tubs->GetZHalfLength()/TG3Units::Length();
+  G4double hz   = tubs->GetZHalfLength()/TG3Units::Length()*2.;
   G4double sphi = tubs->GetStartPhiAngle()/TG3Units::Angle();
   G4double dphi = tubs->GetDeltaPhiAngle()/TG3Units::Angle();
 
   // compose element string template
-  G4String element1 
-    = "<tubs  name=\"###########   material=\"!!!!!!!!!!!!!!!!!!!!!   Rio_Z=\"";
-  G4String element2 = "\"  profile=\"";
-  G4String element3 = "\" />";
-  
-  // put solid and material names
-  PutName(element1, lvName, "#");
-  PutName(element1, materialName, "!");
+  G4String quota = "\"";
+  G4String element1 = "<tubs   name=\"" + lvName + quota; 
+  G4String element2 = "material=\"" + materialName + quota;
+  G4String element3 = "profile=\"";
+  G4String element4 = "Rio_Z  =\"";
+  G4String element5 = "\" />";
+  G4String indention = fBasicIndention + fBasicIndention;
   
   // write element
-  fOutFile << fBasicIndention
-           << element1
+  fOutFile << fBasicIndention << element1 << G4endl
+	   << indention       << element2 << G4endl
+	   << indention       << element3
+           << G4std::setw(7)  << G4std::setprecision(2) << sphi << "  "
+           << G4std::setw(7)  << G4std::setprecision(2) << sphi+dphi
+	   << quota << G4endl 	   	   
+	   << indention       << element4
            << G4std::setw(7) << G4std::setprecision(2) << rmin << "  "
            << G4std::setw(7) << G4std::setprecision(2) << rmax << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << hz*2.
-	   << element2
-           << G4std::setw(7) << G4std::setprecision(2) << sphi << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << sphi+dphi
-	   << element3
-	   << G4endl;
+           << G4std::setw(7) << G4std::setprecision(2) << hz 
+	   << element5 << G4endl << G4endl;
+}  
+
+
+void TG4XMLConvertor::WriteCons(G4String lvName, const G4Cons* cons, 
+                                G4String materialName)
+{
+// Writes G4cons solid.
+// ---
+
+  // get parameters
+  G4double rmin1 = cons->GetInnerRadiusMinusZ()/TG3Units::Length();
+  G4double rmax1 = cons->GetOuterRadiusMinusZ()/TG3Units::Length();
+  G4double rmin2 = cons->GetInnerRadiusPlusZ()/TG3Units::Length();
+  G4double rmax2 = cons->GetOuterRadiusPlusZ()/TG3Units::Length();
+  G4double hz   = cons->GetZHalfLength()/TG3Units::Length()*2.;
+  G4double sphi = cons->GetStartPhiAngle()/TG3Units::Angle();
+  G4double dphi = cons->GetDeltaPhiAngle()/TG3Units::Angle();
+
+  // compose element string template
+  G4String quota = "\"";
+  G4String element1 = "<cons   name=\"" + lvName + quota; 
+  G4String element2 = "material=\"" + materialName + quota;
+  G4String element3 = "profile=\"";
+  G4String element4 = "Rio1_Rio2_Z  =\"";
+  G4String element5 = "\" />";
+  G4String indention = fBasicIndention + fBasicIndention;
+  
+  // write element
+  fOutFile << fBasicIndention << element1 << G4endl
+	   << indention       << element2 << G4endl
+	   << indention       << element3
+           << G4std::setw(7)  << G4std::setprecision(2) << sphi << "  "
+           << G4std::setw(7)  << G4std::setprecision(2) << sphi+dphi
+	   << quota << G4endl 	   	   
+	   << indention       << element4
+           << G4std::setw(7) << G4std::setprecision(2) << rmin1 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << rmax1 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << rmin2 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << rmax2 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << hz 
+	   << element5 << G4endl << G4endl;
 }  
 
 
@@ -145,32 +191,30 @@ void TG4XMLConvertor::WriteTrd(G4String lvName, const G4Trd* trd,
 // ---
 
   // get parameters
-  G4double x1 = trd->GetXHalfLength1()/TG3Units::Length();
-  G4double x2 = trd->GetXHalfLength2()/TG3Units::Length();
-  G4double y1 = trd->GetYHalfLength1()/TG3Units::Length();
-  G4double y2 = trd->GetYHalfLength2()/TG3Units::Length();
-  G4double hz = trd->GetZHalfLength()/TG3Units::Length();
+  G4double x1 = trd->GetXHalfLength1()/TG3Units::Length()*2;
+  G4double x2 = trd->GetXHalfLength2()/TG3Units::Length()*2;
+  G4double y1 = trd->GetYHalfLength1()/TG3Units::Length()*2;
+  G4double y2 = trd->GetYHalfLength2()/TG3Units::Length()*2;
+  G4double hz = trd->GetZHalfLength()/TG3Units::Length()*2;
 
   // compose element string template
-  G4String element1 
-    = "<trd   name=\"###########   material=\"!!!!!!!!!!!!!!!!!!!!!   Xmp_Ymp_Z=\"";
-  G4String element2 = "\" />";
-  
-  // put solid and material names
-  // put solid and material names
-  PutName(element1, lvName, "#");
-  PutName(element1, materialName, "!");
+  G4String quota = "\"";
+  G4String element1 = "<trd    name=\"" + lvName + quota; 
+  G4String element2 = "material=\"" + materialName + quota;
+  G4String element3 = "Xmp_Ymp_Z=\"";
+  G4String element4 = "\" />";
+  G4String indention = fBasicIndention + fBasicIndention;
   
   // write element
-  fOutFile << fBasicIndention
-           << element1
-           << G4std::setw(7) << G4std::setprecision(2) << x1*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << x2*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y1*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y2*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << hz*2.
-	   << element2
-	   << G4endl;
+  fOutFile << fBasicIndention << element1 << G4endl
+	   << indention       << element2 << G4endl
+	   << indention       << element3
+           << G4std::setw(7) << G4std::setprecision(2) << x1 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << x2 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << y1 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << y2 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << hz
+	   << element4 << G4endl << G4endl;
 }  
 
 
@@ -181,15 +225,15 @@ void TG4XMLConvertor::WriteTrap(G4String lvName, const G4Trap* trap,
 // ---
 
   // get parameters
-  G4double dz = trap->GetZHalfLength()/TG3Units::Length();
+  G4double dz = trap->GetZHalfLength()/TG3Units::Length()*2.;
   G4ThreeVector symAxis = trap->GetSymAxis();
-  G4double y1 = trap->GetYHalfLength1()/TG3Units::Length();
-  G4double x1 = trap->GetXHalfLength1()/TG3Units::Length();
-  G4double x2 = trap->GetXHalfLength2()/TG3Units::Length();
+  G4double y1 = trap->GetYHalfLength1()/TG3Units::Length()*2.;
+  G4double x1 = trap->GetXHalfLength1()/TG3Units::Length()*2.;
+  G4double x2 = trap->GetXHalfLength2()/TG3Units::Length()*2.;
   G4double tanAlpha1 = trap->GetTanAlpha1();
-  G4double y2 = trap->GetYHalfLength2()/TG3Units::Length();
-  G4double x3 = trap->GetXHalfLength3()/TG3Units::Length();
-  G4double x4 = trap->GetXHalfLength4()/TG3Units::Length();
+  G4double y2 = trap->GetYHalfLength2()/TG3Units::Length()*2.;
+  G4double x3 = trap->GetXHalfLength3()/TG3Units::Length()*2.;
+  G4double x4 = trap->GetXHalfLength4()/TG3Units::Length()*2.;
   G4double tanAlpha2 = trap->GetTanAlpha2();
 
   // ordering of parameters in XML element
@@ -204,39 +248,167 @@ void TG4XMLConvertor::WriteTrap(G4String lvName, const G4Trap* trap,
   G4double alpha2 = atan(tanAlpha2) / deg;
 
   // compose element string template
-  G4String element1 
-    = "<trap  name=\"###########   material=\"!!!!!!!!!!!!!!!!!!!!!   Xmumdpupd_Ymp_Z=\"";
-  G4String element2
-    = "                                                              inclination=\""; 
-  G4String element3 = "   declination=\""; 
-  G4String element4 = "\" />";
-  G4String quota = "\"";   
-  
-  // put solid and material names
-  // put solid and material names
-  PutName(element1, lvName, "#");
-  PutName(element1, materialName, "!");
-  
+  G4String quota = "\"";
+  G4String element1 = "<trap   name=\"" + lvName + quota; 
+  G4String element2 = "material=\"" + materialName + quota;
+  G4String element3 = "Xmumdpupd_Ymp_Z=\"";
+  G4String element4 = "inclination=\""; 
+  G4String element5 = "declination=\""; 
+  G4String element6 = "\" />";
+  G4String indention = fBasicIndention + fBasicIndention;
+
   // write element
-  fOutFile << fBasicIndention
-           << element1
-           << G4std::setw(7) << G4std::setprecision(2) << x2*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << x1*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << x4*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << x3*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y2*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y1*2. << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << dz*2. << quota << G4endl
-           << fBasicIndention
-	   << element2
+  fOutFile << fBasicIndention << element1 << G4endl
+	   << indention       << element2 << G4endl
+	   << indention       << element3
+           << G4std::setw(7) << G4std::setprecision(2) << x2 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << x1 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << x4 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << x3 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << y2 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << y1 << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << dz 
+	   << quota << G4endl
+           << indention       << element4
            << G4std::setw(7) << G4std::setprecision(2) << inc1 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << inc2 << quota
-	   << element3
+           << G4std::setw(7) << G4std::setprecision(2) << inc2 
+	   << quota << G4endl
+	   << indention       << element5
            << G4std::setw(7) << G4std::setprecision(2) << alpha1 << "  "
            << G4std::setw(7) << G4std::setprecision(2) << alpha2 
-	   << element4
-	   << G4endl;
+	   << element6 << G4endl << G4endl;
 }  
+
+void TG4XMLConvertor::WritePolycone(G4String lvName, const G4Polycone* polycone, 
+                                    G4String materialName)
+{
+// Writes G4Polycone solid.
+// ---
+
+  // get profile parameters
+  G4double sphi = polycone->GetStartPhi()/TG3Units::Angle();
+  G4double ephi = polycone->GetEndPhi()/TG3Units::Angle();
+  
+  // get polycone Z planes parameters
+  TG4Polycone historicalPolycone = TG4Polycone(*polycone);
+
+  G4int nofZPlanes = historicalPolycone.GetNofZPlanes();
+  G4double* rminArray = historicalPolycone.GetRmin();
+  G4double* rmaxArray = historicalPolycone.GetRmax();
+  G4double* zArray    = historicalPolycone.GetZ();
+
+  // compose element string template
+  G4String quota = "\"";
+  G4String element1 = "<pcon   name=\"" + lvName + quota; 
+  G4String element2 = "material=\"" + materialName + quota;
+  G4String element3 = "profile=\"";
+  G4String element4 = "\" >";
+  G4String element5 = "<polyplane Rio_Z=\"";
+  G4String element6 = "\" />";
+  G4String element7 = "</pcon>";
+  G4String indention = fBasicIndention + fBasicIndention;
+  
+  // write pcon element
+  fOutFile << fBasicIndention << element1 << G4endl
+	   << indention       << element2 << G4endl
+	   << indention       << element3
+           << G4std::setw(7) << G4std::setprecision(2) << sphi << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << ephi
+	   << element4 << G4endl;
+
+  // write polyplane elements
+  for (G4int i=0; i<nofZPlanes; i++) {
+  
+    // set units
+    G4double rmin = rminArray[i]/TG3Units::Length();
+    G4double rmax = rmaxArray[i]/TG3Units::Length();
+    G4double z    = zArray[i]/TG3Units::Length();
+
+    fOutFile << indention << element5
+             << G4std::setw(7) << G4std::setprecision(2) << rmin << "  "
+             << G4std::setw(7) << G4std::setprecision(2) << rmax << "  " 
+             << G4std::setw(7) << G4std::setprecision(2) << z 
+	     << element6
+	     << G4endl;
+  }
+  
+  // close pcon element
+  fOutFile << fBasicIndention
+           << element7 << G4endl << G4endl;  	     
+}  
+
+
+void TG4XMLConvertor::WritePolyhedra(G4String lvName, const G4Polyhedra* polyhedra, 
+                                    G4String materialName)
+{
+// Writes G4Polycone solid.
+// ---
+
+  // get parameters
+  G4int nofSides = polyhedra->GetNumSide();
+  G4double sphi = polyhedra->GetStartPhi()/TG3Units::Angle();
+  G4double ephi = polyhedra->GetEndPhi()/TG3Units::Angle();
+  
+  // get polyhedra Z planes parameters
+  TG4Polyhedra historicalPolyhedra = TG4Polyhedra(*polyhedra);
+
+  G4int nofZPlanes = historicalPolyhedra.GetNofZPlanes();
+  G4double* rminArray = historicalPolyhedra.GetRmin();
+  G4double* rmaxArray = historicalPolyhedra.GetRmax();
+  G4double* zArray    = historicalPolyhedra.GetZ();
+
+  // compose element string template
+  G4String quota = "\"";
+  G4String element1 = "<phedra name=\"" + lvName + quota; 
+  G4String element2 = "material=\"" + materialName + quota;
+  G4String element3 = "profile=\"";
+  G4String element4 = "sides =\"";
+  G4String element5 = "Ris=\"";
+  G4String element6 = "Ros=\"";
+  G4String element7 = "Zs =\"";
+  G4String element8 = "\" />";
+  G4String indention = fBasicIndention + fBasicIndention;
+  
+  // write element
+  fOutFile << fBasicIndention << element1 << G4endl
+	   << indention       << element2 << G4endl
+	   << indention       << element3
+           << G4std::setw(7) << G4std::setprecision(2) << sphi << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << ephi
+	   << quota << G4endl
+	   << indention       << element4 
+	   << nofSides
+	   << quota << G4endl;
+
+  fOutFile << indention << element5;
+  G4int i;
+  for (i=0; i<nofZPlanes; i++) {  
+    // set units    
+    G4double rmin = rminArray[i]/TG3Units::Length();
+    if (i>0) fOutFile << "  ";
+    fOutFile << G4std::setw(7) << G4std::setprecision(2) << rmin;
+  };
+  fOutFile << quota << G4endl;
+
+  fOutFile << indention << element6;
+  for (i=0; i<nofZPlanes; i++) {  
+    // set units
+    G4double rmax = rmaxArray[i]/TG3Units::Length();
+    if (i>0) fOutFile << "  ";
+    fOutFile << G4std::setw(7) << G4std::setprecision(2) << rmax;
+  };
+  fOutFile << quota << G4endl;
+
+  fOutFile << indention << element7;
+  for (i=0; i<nofZPlanes; i++) {  
+    // set units
+    G4double z = zArray[i]/TG3Units::Length();
+    if (i>0) fOutFile << "  ";
+    fOutFile << G4std::setw(7) << G4std::setprecision(2) << z;
+  };
+  fOutFile << element8 << G4endl << G4endl;
+}  
+
 
 // public methods
 
@@ -389,6 +561,12 @@ void TG4XMLConvertor::WriteSolid(G4String lvName, const G4VSolid* solid,
     return;
   }
   
+  const G4Cons* cons = dynamic_cast<const G4Cons*>(solid);
+  if (cons) { 
+    WriteCons(lvName, cons, materialName); 
+    return;
+  }
+  
   const G4Trd* trd = dynamic_cast<const G4Trd*>(solid);
   if (trd) { 
     WriteTrd(lvName, trd, materialName); 
@@ -398,6 +576,18 @@ void TG4XMLConvertor::WriteSolid(G4String lvName, const G4VSolid* solid,
   const G4Trap* trap = dynamic_cast<const G4Trap*>(solid);
   if (trap) { 
     WriteTrap(lvName, trap, materialName); 
+    return;
+  }
+  
+  const G4Polycone* polycone = dynamic_cast<const G4Polycone*>(solid);
+  if (polycone) { 
+    WritePolycone(lvName, polycone, materialName); 
+    return;
+  }
+  
+  const G4Polyhedra* polyhedra = dynamic_cast<const G4Polyhedra*>(solid);
+  if (polyhedra) { 
+    WritePolyhedra(lvName, polyhedra, materialName); 
     return;
   }
   
@@ -566,6 +756,66 @@ void TG4XMLConvertor::WritePositionWithRotation(
 	   << G4std::setw(8) << G4std::setprecision(5) << zx << "  "  
 	   << G4std::setw(8) << G4std::setprecision(5) << zy << "  "  
 	   << G4std::setw(8) << G4std::setprecision(5) << zz 
+	   << element4
+	   << G4endl;
+}  
+
+void TG4XMLConvertor::WriteReplica(G4String lvName, G4PVReplica* pvr) 
+{
+// Writes position without rotation with a given solid name. 
+// ---
+
+  // get parameters
+  EAxis axis;
+  G4int nReplicas;
+  G4double width;
+  G4double offset;
+  G4bool consuming;
+  pvr->GetReplicationData(axis, nReplicas, width, offset, consuming);
+  
+  G4String tag;
+  switch (axis) {
+    case kXAxis: tag = "X"; break;
+    case kYAxis: tag = "Y"; break;
+    case kZAxis: tag = "Z"; break;
+    case kRho:   tag = "R"; break;
+    case kPhi:   tag = "Phi"; break;
+  }  
+
+  // set units
+  G4double value0 = offset;
+  G4double dValue = width;
+  if (axis != kPhi) {
+    value0 = value0/TG3Units::Length();
+    dValue = dValue/TG3Units::Length();
+  }  
+  else  {
+    value0 = value0/TG3Units::Angle();
+    dValue = dValue/TG3Units::Angle();
+  }  
+  
+  // set tag and attributes names
+  G4String a0 = "mpos"; a0 = a0 + tag;
+  G4String a1 = tag;  a1 = a1 + "0";
+  G4String a2 = "d";  a2 = a2 + tag; 
+
+  // compose element string template
+  G4String element1 = "<" + a0 + "      volume=\"###########   ncopy=\"";
+  G4String element2 = "\"   " + a1 + "=\"";
+  G4String element3 = "\"   " + a2 + "=\"";
+  G4String element4 = "\" />";
+  
+  // put solid name
+  PutName(element1, lvName, "#");
+  
+  // write element
+  fOutFile << fIndention
+           << element1
+           << G4std::setw(8) << G4std::setprecision(2) << nReplicas
+	   << element2
+           << G4std::setw(8) << G4std::setprecision(2) << value0
+	   << element3	   
+           << G4std::setw(8) << G4std::setprecision(2) << dValue
 	   << element4
 	   << G4endl;
 }  
