@@ -15,7 +15,7 @@
 
 #include <TObjArray.h>
 #include "Riostream.h"
-#include <math.h>
+#include "TMath.h"
 #include "AliTPCCompression.h"
 #include "AliTPCBuffer160.h"
 #include "AliTPCHuffman.h"
@@ -188,30 +188,30 @@ Int_t AliTPCCompression::FillTables(const char* fSource,AliTPCHTable* table[],co
   stat<<"Number of Central Samples....."<<Stat[3]<<endl;
   stat<<"Number of Border Samples......"<<Stat[4]<<endl;
   stat<<"-----------------------------------------"<<endl;
-  ULong_t FileDimension=(ULong_t)ceil(double((CountTrailer*4+CountWords+fFillWords+EndFill)*10/8));
+  ULong_t FileDimension=(ULong_t)TMath::Ceil(double((CountTrailer*4+CountWords+fFillWords+EndFill)*10/8));
   stat<<"Total file Size in bytes.."<<FileDimension<<endl;
-  Double_t Percentage=ceil((fFillWords+EndFill)*125)/FileDimension;
-  stat<<"Fill Words................"<<(ULong_t)ceil((fFillWords+EndFill)*10/8)<<" bytes   "<<Percentage<<"%"<<endl;  
+  Double_t Percentage=TMath::Ceil((fFillWords+EndFill)*125)/FileDimension;
+  stat<<"Fill Words................"<<(ULong_t)TMath::Ceil((fFillWords+EndFill)*10/8)<<" bytes   "<<Percentage<<"%"<<endl;  
   Percentage=(Double_t)CountTrailer*500/FileDimension;
   stat<<"Trailer..................."<<CountTrailer*5<<" bytes   "<<Percentage<<"%"<<endl;
 
   Percentage=(Double_t)((Stat[0]+Stat[1]+Stat[2]+Stat[3]+Stat[4])) *125/FileDimension;
-  stat<<"Data......................"<<(ULong_t)ceil((Stat[0]+Stat[1]+Stat[2]+Stat[3]+Stat[4])*10/8)<<" bytes   "<<Percentage<<"%"<<endl;
+  stat<<"Data......................"<<(ULong_t)TMath::Ceil((Stat[0]+Stat[1]+Stat[2]+Stat[3]+Stat[4])*10/8)<<" bytes   "<<Percentage<<"%"<<endl;
 
   Percentage=(Double_t)(Stat[0]*125)/FileDimension;
-  stat<<"Bunch....................."<<(ULong_t)ceil(Stat[0]*10/8)<<" bytes  "<<Percentage<<"%"<<endl;  //  
+  stat<<"Bunch....................."<<(ULong_t)TMath::Ceil(Stat[0]*10/8)<<" bytes  "<<Percentage<<"%"<<endl;  //  
   Percentage=(Double_t)(Stat[1]*125)/FileDimension;
-  stat<<"Time......................"<<(ULong_t)ceil(Stat[1]*10/8)<<" bytes  "<<Percentage<<"%"<<endl;  //  
+  stat<<"Time......................"<<(ULong_t)TMath::Ceil(Stat[1]*10/8)<<" bytes  "<<Percentage<<"%"<<endl;  //  
 
 
   Percentage=(Double_t)((Stat[2]+Stat[3]+Stat[4])) *125/FileDimension;
-  stat<<"Amplitude values.........."<<(ULong_t)ceil((Stat[2]+Stat[3]+Stat[4])*10/8)<<" bytes  "<<Percentage<<"%"<<endl;
+  stat<<"Amplitude values.........."<<(ULong_t)TMath::Ceil((Stat[2]+Stat[3]+Stat[4])*10/8)<<" bytes  "<<Percentage<<"%"<<endl;
   Percentage=(Double_t)(Stat[2]*125)/FileDimension;
-  stat<<"     One Samples..............."<<(ULong_t)ceil(Stat[2]*10/8)<<" bytes  "<<Percentage<<"%"<<endl;  //  
+  stat<<"     One Samples..............."<<(ULong_t)TMath::Ceil(Stat[2]*10/8)<<" bytes  "<<Percentage<<"%"<<endl;  //  
   Percentage=(Double_t)(Stat[3]*125)/FileDimension;
-  stat<<"     Central Samples..........."<<(ULong_t)ceil(Stat[3]*10/8)<<" bytes  "<<Percentage<<"%"<<endl;  //  
+  stat<<"     Central Samples..........."<<(ULong_t)TMath::Ceil(Stat[3]*10/8)<<" bytes  "<<Percentage<<"%"<<endl;  //  
   Percentage=(Double_t)(Stat[4]*125)/FileDimension;
-  stat<<"     Border Samples............"<<(ULong_t)ceil(Stat[4]*10/8)<<" bytes  "<<Percentage<<"%"<<endl;  //  
+  stat<<"     Border Samples............"<<(ULong_t)TMath::Ceil(Stat[4]*10/8)<<" bytes  "<<Percentage<<"%"<<endl;  //  
   stat.close();
   return 0;
 }
@@ -251,7 +251,7 @@ Int_t AliTPCCompression::CreateTables(const char* fSource,const Int_t NumTables)
   */
   AliTPCHTable ** table = new AliTPCHTable*[NumTables];
   //The table is inizialized with the rigth number of rows 
-  for(Int_t i=0;i<NumTables;i++){table[i]=new  AliTPCHTable((Int_t)(pow(2,n)));}
+  for(Int_t i=0;i<NumTables;i++){table[i]=new  AliTPCHTable((Int_t)(TMath::Power(2,n)));}
   //The frequencies are calculated and the tables are filled
   if (fVerbose)
     cout<<"Filling tables...\n";
@@ -649,9 +649,9 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
     delete table[i];
   }//end for
   delete [] table;
-  Double_t dimension=(ULong_t)ceil((Stat[0]+Stat[1]+Stat[2]+Stat[3]+Stat[4])/8)+TrailerNumber*5;
+  Double_t dimension=(ULong_t)TMath::Ceil((Stat[0]+Stat[1]+Stat[2]+Stat[3]+Stat[4])/8)+TrailerNumber*5;
   stat<<"Trailer Dimension in bytes......"<<TrailerNumber*5<<endl;
-  stat<<"Data Dimension in bytes........."<<(ULong_t)ceil((Stat[0]+Stat[1]+Stat[2]+Stat[3]+Stat[4])/8)<<endl;
+  stat<<"Data Dimension in bytes........."<<(ULong_t)TMath::Ceil((Stat[0]+Stat[1]+Stat[2]+Stat[3]+Stat[4])/8)<<endl;
   stat<<"Compressed file dimension......."<<(ULong_t)dimension<<endl;
   /*
   stat<<(ULong_t)TrailerNumber<<endl;
@@ -668,14 +668,14 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
   Double_t ratio=(dimension/FillWords)*100;
   stat<<"Compression ratio (Compressed/Uncompressed)..."<<ratio<<"%"<<endl;
   stat<<endl;
-  stat<<"Bunch length size in bytes......"<<(ULong_t)ceil(Stat[0]/8)<<" Comppression.."<<(Stat[0]/NumElem[0])*10<<"%"<<endl;
+  stat<<"Bunch length size in bytes......"<<(ULong_t)TMath::Ceil(Stat[0]/8)<<" Comppression.."<<(Stat[0]/NumElem[0])*10<<"%"<<endl;
   
-  stat<<"Time gap size in bytes.........."<<(ULong_t)ceil(Stat[1]/8)<<" Comppression.."<<(Stat[1]/NumElem[1])*10<<"%"<<endl;
-  stat<<"Amplitude values in bytes......."<<(ULong_t)ceil((Stat[2]+Stat[3]+Stat[4])/8)<<" Comppression.."<<
+  stat<<"Time gap size in bytes.........."<<(ULong_t)TMath::Ceil(Stat[1]/8)<<" Comppression.."<<(Stat[1]/NumElem[1])*10<<"%"<<endl;
+  stat<<"Amplitude values in bytes......."<<(ULong_t)TMath::Ceil((Stat[2]+Stat[3]+Stat[4])/8)<<" Comppression.."<<
     ((Stat[2]+Stat[3]+Stat[4])/(NumElem[2]+NumElem[3]+NumElem[4]))*10<<"%"<<endl;
-  stat<<"     One Samples in bytes............"<<(ULong_t)ceil(Stat[2]/8)<<" Comppression.."<<(Stat[2]/NumElem[2])*10<<"%"<<endl;
-  stat<<"     Central Samples size in bytes..."<<(ULong_t)ceil(Stat[3]/8)<<" Comppression.."<<(Stat[3]/NumElem[3])*10<<"%"<<endl;
-  stat<<"     Border Samples size in bytes...."<<(ULong_t)ceil(Stat[4]/8)<<" Comppression.."<<(Stat[4]/NumElem[4])*10<<"%"<<endl;
+  stat<<"     One Samples in bytes............"<<(ULong_t)TMath::Ceil(Stat[2]/8)<<" Comppression.."<<(Stat[2]/NumElem[2])*10<<"%"<<endl;
+  stat<<"     Central Samples size in bytes..."<<(ULong_t)TMath::Ceil(Stat[3]/8)<<" Comppression.."<<(Stat[3]/NumElem[3])*10<<"%"<<endl;
+  stat<<"     Border Samples size in bytes...."<<(ULong_t)TMath::Ceil(Stat[4]/8)<<" Comppression.."<<(Stat[4]/NumElem[4])*10<<"%"<<endl;
   stat<<endl;
   stat<<"Average number of bits per word"<<endl;
   stat<<"Bunch length ......"<<Stat[0]/NumElem[0]<<endl;
@@ -716,7 +716,7 @@ void AliTPCCompression::CreateTrees(AliTPCHNode *RootNode[],const Int_t NumTable
       node=RootNode[k];
       for(Int_t j=1;j<=CodeLen;j++){
 	ULong_t bit,val=0;
-	val=(ULong_t)pow(2,CodeLen-j);
+	val=(ULong_t)TMath::Power(2,CodeLen-j);
 	bit=(ULong_t)Code&val; 
 	AliTPCHNode *temp=node;
 	if(bit){
@@ -773,7 +773,7 @@ void AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],const Int_t 
       node=RootNode[k];
       for(Int_t j=1;j<=CodeLen;j++){
 	ULong_t bit,val=0;
-	val=(ULong_t)pow(2,CodeLen-j);
+	val=(ULong_t)TMath::Power(2,CodeLen-j);
 	bit=(ULong_t)Code&val; 
 	AliTPCHNode *temp=node;
 	if(bit){
@@ -834,7 +834,7 @@ ULong_t AliTPCCompression::ReadWord(Int_t NumberOfBit){
       fReadBits=0;
     }//end if
     ULong_t mask=0;
-    mask=(ULong_t)pow(2,fReadBits);
+    mask=(ULong_t)TMath::Power(2,fReadBits);
     bit=fBuffer&mask;
     bit=bit>>fReadBits;
     fReadBits++;

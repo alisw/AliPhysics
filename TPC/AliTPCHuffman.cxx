@@ -18,8 +18,7 @@
 ////////////////////////////////////////////////
 
 #include <TObjArray.h>
-#include <iostream.h>
-#include <fstream.h>
+#include "Riostream.h"
 #include "TMath.h"
 #include "AliTPCHuffman.h"
 #include "AliTPCBuffer160.h"

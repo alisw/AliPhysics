@@ -14,9 +14,10 @@
  **************************************************************************/
 
 #include <stdlib.h>
-#include <iostream.h>
+#include "Riostream.h"
 #include <TClonesArray.h>
 #include <TTree.h>
+#include "TMath.h"
 #include <AliITS.h>
 #include <AliITSgeom.h>
 #include <AliITSdigit.h>
@@ -232,7 +233,7 @@ void AliITSDDLRawData::PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit,
   ULong_t Sum;
   //The BaseWord is being filled with 1 from StartBit to StopBit
   Length=StopBit-StartBit+1;
-  Sum=(ULong_t)pow(2,Length)-1;
+  Sum=(ULong_t)TMath::Power(2,Length)-1;
   if(Word > Sum){
     cout<<"WARNING::Word to be filled is not within desired length"<<endl;
     cout<<"Word:"<<Word<<" Start bit:"<<StartBit<<" Stop Bit:"<<StopBit<<endl;
@@ -243,7 +244,7 @@ void AliITSDDLRawData::PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit,
   BaseWord=BaseWord|OffSet;
   //The Word to be filled is shifted to the position StartBit
   //and the remaining  Left and Right bits are filled with 1
-  Sum=(ULong_t)pow(2,StartBit)-1;
+  Sum=(ULong_t)TMath::Power(2,StartBit)-1;
   DummyWord=0xFFFFFFFF<<Length;
   DummyWord +=Word;
   DummyWord<<=StartBit;
@@ -258,7 +259,7 @@ void AliITSDDLRawData::UnpackWord(ULong_t PackedWord, Int_t StartBit, Int_t Stop
   ULong_t OffSet;
   Int_t Length;
   Length=StopBit-StartBit+1;
-  OffSet=(ULong_t)pow(2,Length)-1;
+  OffSet=(ULong_t)TMath::Power(2,Length)-1;
   OffSet<<=StartBit;
   Word=PackedWord&OffSet;
   Word>>=StartBit;
