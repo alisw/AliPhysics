@@ -355,8 +355,6 @@ Int_t AliHBTAnalysis::ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim)
   AliAOD * trackEvent = aodrec, *partEvent = aodsim;
   AliAOD* trackEvent1 = new AliAOD();
   AliAOD* partEvent1 = new AliAOD();
-  partEvent1->SetOwner(kTRUE);
-  trackEvent1->SetOwner(kTRUE);
 
   AliAOD * trackEvent2,*partEvent2;
   
@@ -530,7 +528,6 @@ Int_t AliHBTAnalysis::ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim)
   
   AliAOD* partEvent = aodsim;
   AliAOD* partEvent1 = new AliAOD();
-  partEvent1->SetOwner(kTRUE);
 
   AliAOD* partEvent2;
   
@@ -654,7 +651,6 @@ Int_t AliHBTAnalysis::ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/)
   
   AliAOD* trackEvent = aodrec;
   AliAOD* trackEvent1 = new AliAOD();
-  trackEvent1->SetOwner(kTRUE);
 
   AliAOD* trackEvent2;
   
@@ -964,7 +960,6 @@ Int_t AliHBTAnalysis::ProcessSimNonId(AliAOD* /*aodrec*/, AliAOD* aodsim)
   if (partEvent2==0x0)//in case fBufferSize == 0 and pointers are created do not eneter
    {
      partEvent2  = new AliAOD();
-     partEvent2->SetOwner(kTRUE);
    }
 
   FilterOut(partEvent1, partEvent2, rawpartEvent);
@@ -1077,7 +1072,6 @@ Int_t AliHBTAnalysis::ProcessRecNonId(AliAOD* aodrec, AliAOD* /*aodsim*/)
   if ( trackEvent2==0x0 )//in case fBufferSize == 0 and pointers are created do not eneter
    {
      trackEvent2 = new AliAOD();
-     trackEvent2->SetOwner(kTRUE);
    }
 
   FilterOut(trackEvent1, trackEvent2, rawtrackEvent);
