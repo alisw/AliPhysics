@@ -5,29 +5,38 @@
 //********************************************************************
 
 #if !defined( __CINT__) || defined(__MAKECINT__)
+  #include <TMath.h>
+  #include <TError.h>
   #include <Riostream.h>
-  #include "TKey.h"
-  #include "TFile.h"
-  #include "TH1F.h"
-  #include "TH2F.h"
-  #include "TCanvas.h"
-  #include "TStopwatch.h"
-  #include "TParticle.h"
-  #include "TROOT.h"
+  #include <TH1F.h>
+  #include <TH2F.h>
+  #include <TParticle.h>
+  #include <TCanvas.h>
+  #include <TBenchmark.h>
+  #include <TKey.h>
+  #include <TROOT.h>
 
-  #include "AliRun.h"
-  #include "AliStack.h"
-  #include "AliRunLoader.h"
-  #include "AliLoader.h"
-
-  #include "AliESD.h"
+  #include <AliStack.h>
+  #include <AliRunLoader.h>
+  #include <AliRun.h>
+  #include <AliESD.h>
 #endif
 
 extern AliRun *gAlice;
+extern TBenchmark *gBenchmark;
 extern TROOT *gROOT;
 
+static Int_t allpisel=0;
+static Int_t allkasel=0;
+static Int_t allprsel=0;
+static Int_t allnsel=0;
+
 Int_t AliESDComparison(const Char_t *dir=".") { 
-   Double_t pi=0.2,pa=2;
+   gBenchmark->Start("AliESDComparison");
+
+   ::Info("AliESDComparison.C","Doing comparison...");
+
+   Double_t pi=0.2,pa=3;
 
    TH2F *tpcHist=(TH2F*)gROOT->FindObject("tpcHist");
    if (!tpcHist)
@@ -85,16 +94,16 @@ Int_t AliESDComparison(const Char_t *dir=".") {
    sprintf(fname,"%s/galice.root",dir);
    AliRunLoader *rl = AliRunLoader::Open(fname);
    if (rl == 0x0) {
-      cerr<<"Can not open session"<<endl;
+      ::Error("AliESDComparison.C","Can not open session !");
       return 1;
    }
    if (rl->LoadgAlice()) {
-      cerr<<"LoadgAlice returned error"<<endl;
+      ::Error("AliESDComparison.C","LoadgAlice returned error !");
       delete rl;
       return 1;
    }
    if (rl->LoadHeader()) {
-      cerr<<"LoadHeader returned error"<<endl;
+      ::Error("AliESDComparison.C","LoadHeader returned error !");
       delete rl;
       return 1;
    }
@@ -102,10 +111,11 @@ Int_t AliESDComparison(const Char_t *dir=".") {
 
    sprintf(fname,"%s/AliESDs.root",dir);
    TFile *ef=TFile::Open(fname);
-   if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
-
-   TStopwatch timer;
-   Int_t rc=0,n=0;
+   if (!ef || !ef->IsOpen()) {
+      ::Error("AliESDComparison.C","Can't AliESDs.root !"); 
+      delete rl;
+      return 1;
+   }
    TKey *key=0;
    TIter next(ef->GetListOfKeys());
 
@@ -113,91 +123,92 @@ Int_t AliESDComparison(const Char_t *dir=".") {
    Double_t c[5]={0.01, 0.01, 0.85, 0.10, 0.05};
 
    //******* The loop over events
+   Int_t e=0;
    while ((key=(TKey*)next())!=0) {
-     rl->GetEvent(n);
-     AliStack *stack = rl->Stack();
+      cout<<endl<<endl<<"********* Processing event number: "<<e<<"*******\n";
 
-     cerr<<"Processing event number : "<<n++<<endl;
+      rl->GetEvent(e); ef->cd();
+ 
+      e++;
 
-     ef->cd();
+      AliESD *event=(AliESD*)key->ReadObj();
 
-     AliESD *event=(AliESD*)key->ReadObj();
+      Int_t ntrk=event->GetNumberOfTracks();
+      cerr<<"Number of ESD tracks : "<<ntrk<<endl; 
 
-     Int_t ntrk=event->GetNumberOfTracks();
-     cerr<<"Number of ESD tracks : "<<ntrk<<endl; 
+      Int_t pisel=0,kasel=0,prsel=0,nsel=0;
 
-     // ****** The loop over tracks
+      AliStack *stack = rl->Stack();
 
-     Int_t pisel=0,kasel=0,prsel=0,nsel=0;
+      while (ntrk--) {
+         AliESDtrack *t=event->GetTrack(ntrk);
 
-     while (ntrk--) {
-       AliESDtrack *t=event->GetTrack(ntrk);
+         UInt_t status=AliESDtrack::kESDpid;
+         status|=AliESDtrack::kITSpid; 
+         status|=AliESDtrack::kTPCpid; 
+         status|=AliESDtrack::kTOFpid; 
 
-       UInt_t status=AliESDtrack::kESDpid;
-       status|=AliESDtrack::kITSpid; 
-       status|=AliESDtrack::kTPCpid; 
-       status|=AliESDtrack::kTOFpid; 
+        if ((t->GetStatus()&status) == status) {
+           nsel++;
 
-       if ((t->GetStatus()&status) == status) {
-         nsel++;
+           Double_t p=t->GetP();
+	   Double_t dedx=t->GetTPCsignal();
+           tpcHist->Fill(p,dedx,1);
 
-         Double_t p=t->GetP();
-	 Double_t dedx=t->GetTPCsignal();
-         tpcHist->Fill(p,dedx,1);
+           Int_t lab=TMath::Abs(t->GetLabel());
+           TParticle *part=stack->Particle(lab);
+           Int_t code=part->GetPdgCode();
 
-         Int_t lab=TMath::Abs(t->GetLabel());
-         TParticle *part=stack->Particle(lab);
-         Int_t code=part->GetPdgCode();
+           Double_t r[10]; t->GetESDpid(r);
 
-         Double_t r[10]; t->GetESDpid(r);
+           Double_t rcc=0.;
+           Int_t i;
+           for (i=0; i<AliESDtrack::kSPECIES; i++) rcc+=(c[i]*r[i]);
+           if (rcc==0.) continue;
 
-         Double_t rcc=0.;
-         Int_t i;
-         for (i=0; i<AliESDtrack::kSPECIES; i++) rcc+=(c[i]*r[i]);
-         if (rcc==0.) continue;
+	   //Here we apply Bayes' formula
+           Double_t w[10];
+           for (i=0; i<AliESDtrack::kSPECIES; i++) w[i]=c[i]*r[i]/rcc;
 
-	 //Here we apply Bayes' formula
-         Double_t w[10];
-         for (i=0; i<AliESDtrack::kSPECIES; i++) w[i]=c[i]*r[i]/rcc;
+           if (TMath::Abs(code)==2212) prR->Fill(p);
+           if (w[4]>w[3] && w[4]>w[2] && w[4]>w[1] && w[4]>w[0]) {//proton
+	      prsel++;
+	      prG->Fill(p);
+              if (TMath::Abs(code)!=2212) prF->Fill(p);
+           }
 
-         if (TMath::Abs(code)==2212) prR->Fill(p);
-         if (w[4]>w[3] && w[4]>w[2] && w[4]>w[1] && w[4]>w[0]) {//proton
-	    prsel++;
-	    prG->Fill(p);
-            if (TMath::Abs(code)!=2212) prF->Fill(p);
-         }
+           if (TMath::Abs(code)==321) kaR->Fill(p);
+           if (w[3]>w[4] && w[3]>w[2] && w[3]>w[1] && w[3]>w[0]) {//kaon
+	      kasel++;
+	      kaG->Fill(p);
+              if (TMath::Abs(code)!=321) kaF->Fill(p);
+           }
 
-         if (TMath::Abs(code)==321) kaR->Fill(p);
-         if (w[3]>w[4] && w[3]>w[2] && w[3]>w[1] && w[3]>w[0]) {//kaon
-	    kasel++;
-	    kaG->Fill(p);
-            if (TMath::Abs(code)!=321) kaF->Fill(p);
-         }
+	   if (TMath::Abs(code)==211) piR->Fill(p);
+	   if (w[2]>w[3] && w[2]>w[4] && w[2]>w[1] && w[2]>w[0]) {//pion
+	      pisel++;
+	      piG->Fill(p);
+	      if (TMath::Abs(code)!=211) piF->Fill(p);
+           }
+	}
+      }
+      delete event;
+      cout<<"Number of selected ESD tracks : "<<nsel<<endl;
+      cout<<"Number of selected pion ESD tracks : "<<pisel<<endl;
+      cout<<"Number of selected kaon ESD tracks : "<<kasel<<endl;
+      cout<<"Number of selected proton ESD tracks : "<<prsel<<endl;
 
-	 if (TMath::Abs(code)==211) piR->Fill(p);
-	 if (w[2]>w[3] && w[2]>w[4] && w[2]>w[1] && w[2]>w[0]) {//pion
-	    pisel++;
-	    piG->Fill(p);
-	    if (TMath::Abs(code)!=211) piF->Fill(p);
-         }
+      allnsel+=nsel; allpisel+=pisel; allkasel+=kasel; allprsel+=prsel;
 
-       }
+   } // ***** End of the loop over events
 
-     } 
-     delete event;
-     cerr<<"Number of selected ESD tracks : "<<nsel<<endl;
-     cerr<<"Number of selected pion ESD tracks : "<<pisel<<endl;
-     cerr<<"Number of selected kaon ESD tracks : "<<kasel<<endl;
-     cerr<<"Number of selected proton ESD tracks : "<<prsel<<endl;
-
-   }
-
-   timer.Stop(); timer.Print();
+   ef->Close();
 
    TCanvas *c1=(TCanvas*)gROOT->FindObject("c1");
-   if (c1) delete c1; 
-   c1=new TCanvas("c1","",0,0,600,1200);
-   c1->Divide(1,4);
+   if (!c1) {
+      c1=new TCanvas("c1","",0,0,600,1200);
+      c1->Divide(1,4);
+   }
 
    c1->cd(1);
    tpcHist->Draw();
@@ -226,12 +237,37 @@ Int_t AliESDComparison(const Char_t *dir=".") {
    prGood->Draw("hist");
    prFake->Draw("same");
 
+   c1->Update();
+
+   cout<<endl;
+   cout<<endl;
+   e=(Int_t)piR->GetEntries();
+   Int_t o=(Int_t)piG->GetEntries();
+   if (e*o) cout<<"Efficiency (contamination) for pions : "<<
+      piGood->GetEntries()/e<<'('<<piF->GetEntries()/o<<')'<<endl; 
+   e=(Int_t)kaR->GetEntries();
+   o=(Int_t)kaG->GetEntries();
+   if (e*o) cout<<"Efficiency (contamination) for kaons : "<<
+      kaGood->GetEntries()/e<<'('<<kaF->GetEntries()/o<<')'<<endl; 
+   e=(Int_t)prR->GetEntries();
+   o=(Int_t)prG->GetEntries();
+   if (e*o) cout<<"Efficiency (contamination) for protons : "<<
+      prGood->GetEntries()/e<<'('<<prF->GetEntries()/o<<')'<<endl;
+   cout<<endl; 
+
+   cout<<"Total number of selected ESD tracks : "<<allnsel<<endl;
+   cout<<"Total number of selected pion ESD tracks : "<<allpisel<<endl;
+   cout<<"Total number of selected kaon ESD tracks : "<<allkasel<<endl;
+   cout<<"Total number of selected proton ESD tracks : "<<allprsel<<endl;
+
    ef->Close();
    TFile fc("AliESDComparison.root","RECREATE");
    c1->Write();
    fc.Close();
 
-   delete rl;
+   gBenchmark->Stop("AliESDComparison");
+   gBenchmark->Show("AliESDComparison");
 
-   return rc;
+   delete rl;
+   return 0;
 }

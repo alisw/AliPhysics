@@ -9,266 +9,292 @@
  ****************************************************************************/
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+  #include <TMath.h>
+  #include <TError.h>
   #include <Riostream.h>
-  #include <fstream.h>
+  #include <TH1F.h>
+  #include <TH2F.h>
+  #include <TTree.h>
+  #include <TParticle.h>
+  #include <TCanvas.h>
+  #include <TLine.h>
+  #include <TText.h>
+  #include <TBenchmark.h>
+  #include <TStyle.h>
+  #include <TKey.h>
+  #include <TROOT.h>
 
-  #include "AliRun.h"
-  #include "AliHeader.h"
   #include "AliStack.h"
+  #include "AliHeader.h"
+  #include "AliTrackReference.h"
   #include "AliRunLoader.h"
-  #include "AliLoader.h"
-  #include "AliITSLoader.h"
-  #include "AliITS.h"
-  #include "AliITSgeom.h"
-  #include "AliITStrackerV2.h"
-  #include "AliITStrackV2.h"
-  #include "AliITSclusterV2.h"
-  #include "AliMagF.h"
+  #include "AliRun.h"
   #include "AliESD.h"
 
-  #include "TFile.h"
-  #include "TKey.h"
-  #include "TTree.h"
-  #include "TH1.h"
-  #include "TH2.h"
-  #include "TObjArray.h"
-  #include "TStyle.h"
-  #include "TCanvas.h"
-  #include "TLine.h"
-  #include "TText.h"
-  #include "TParticle.h"
+  #include "AliITS.h"
+  #include "AliITSgeom.h"
+  #include "AliITStrackV2.h"
+  #include "AliITSclusterV2.h"
+  #include "AliITSLoader.h"
 #endif
 
-struct GoodTrackITS {
-  Int_t lab;
-  Int_t code;
-  Float_t px,py,pz;
-  Float_t x,y,z;
-};
-
-Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, 
-const char* evfoldname = AliConfig::fgkDefaultEventFolderName);
+Int_t GoodTracksITS(const Char_t *dir=".");
 
 extern AliRun *gAlice;
+extern TBenchmark *gBenchmark;
+extern TROOT *gROOT;
 
-Int_t AliITSComparisonV2(Float_t ptcutl=0.2, Float_t ptcuth=10.) {
-   cerr<<"Doing comparison...\n";
-   if (gAlice) {
-      delete gAlice->GetRunLoader();
-      delete gAlice; 
-      gAlice=0;
-   }
-   
-   AliRunLoader *rl = AliRunLoader::Open("galice.root");
-   if (!rl) {
-       cerr<<"AliITSComparisonV2.C :Can't start sesion !\n";
-       return 1;
-   }
-   rl->LoadgAlice();
-   if (rl->GetAliRun())
-   AliKalmanTrack::SetConvConst(
-     1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField()
-   );
-   else {
-      cerr<<"AliITSComparisonV2.C :Can't get AliRun !\n";
-      return 1;
-   }
-   //rl->UnloadgAlice();
+static Int_t allgood=0;
+static Int_t allselected=0;
+static Int_t allfound=0;
+
+Int_t AliITSComparisonV2
+(Float_t ptcutl=0.2, Float_t ptcuth=10., const Char_t *dir=".", Float_t ratio=0.0) {
+   gBenchmark->Start("AliITSComparisonV2");
+
+   ::Info("AliITSComparisonV2.C","Doing comparison...");
    
 
-   /* Generate a list of "good" tracks */
-   const Int_t MAX=15000;
-   GoodTrackITS gt[MAX];
-   Int_t ngood=0;
-   ifstream in("good_tracks_its");
-   if (in) {
-      cerr<<"Reading good tracks...\n";
-      while (in>>gt[ngood].lab>>gt[ngood].code>>
-                 gt[ngood].px>>gt[ngood].py>>gt[ngood].pz>>
-                 gt[ngood].x >>gt[ngood].y >>gt[ngood].z) {
-         ngood++;
-	 //PH         cerr<<ngood<<'\r';
-         if (ngood==MAX) {
-            cerr<<"Too many good tracks !\n";
-            break;
-         }
-      }
-      if (!in.eof()) cerr<<"Read error (good_tracks_its) !\n";
-   } else {
-      cerr<<"Marking good tracks (this will take a while)...\n";
-      ngood=good_tracks_its(gt,MAX,AliConfig::fgkDefaultEventFolderName);
-      ofstream out("good_tracks_its");
-      if (out) {
-	for (Int_t ngd=0; ngd<ngood; ngd++)
-	  out<<gt[ngd].lab<<' '<<gt[ngd].code<<' '
-             <<gt[ngd].px<<' '<<gt[ngd].py<<' '<<gt[ngd].pz<<' '
-             <<gt[ngd].x <<' '<<gt[ngd].y <<' '<<gt[ngd].z <<endl;
-      } else cerr<<"Can not open file (good_tracks_its) !\n";
-      out.close();
-   }
+   TH1F *hp=(TH1F*)gROOT->FindObject("hp");
+   if (!hp) hp=new TH1F("hp","PHI resolution",50,-20.,20.); 
+   hp->SetFillColor(4);
 
-   TObjArray tarray(2000);
-   { /*Load tracks*/
-   TFile *ef=TFile::Open("AliESDs.root");
-   if ((!ef)||(!ef->IsOpen())) {
-     ef=TFile::Open("AliESDits.root");
-     if ((!ef)||(!ef->IsOpen())) {
-       ::Fatal("AliITSComparisonV2.C","Can't open AliESDits.root !");
-     }
-   }
-   TKey *key=0;
-   TIter next(ef->GetListOfKeys());
-   if ((key=(TKey*)next())!=0) {
-     AliESD *event=(AliESD*)key->ReadObj();
-     Int_t ntrk=event->GetNumberOfTracks();
-     for (Int_t i=0; i<ntrk; i++) {
-        AliESDtrack *t=event->GetTrack(i);
-	UInt_t status=t->GetStatus();
-	UInt_t flags=AliESDtrack::kTPCin|AliESDtrack::kITSin;
+   TH1F *hl=(TH1F*)gROOT->FindObject("hl");
+   if (!hl) hl=new TH1F("hl","LAMBDA resolution",50,-20,20);
+   hl->SetFillColor(4);
 
-        if ((status&AliESDtrack::kITSrefit)==0)
-	  if ((status&flags)!=flags) continue;
-
-        AliITStrackV2 *iotrack=0;
-        iotrack=new AliITStrackV2(*t);
-        //if (t->GetConstrainedChi2()>=20) continue;   //  constrained 
-        //else iotrack=new AliITStrackV2(*t,kTRUE);    //     track
-        if ((status&flags)==flags) {
-           iotrack->PropagateTo(3.,0.0028,65.19);
-           iotrack->PropagateToVertex();
-        }
-        tarray.AddLast(iotrack);
-     }
-     delete event;
-   }
-   ef->Close();
-   }
-   Int_t nentr=tarray.GetEntriesFast();
-
-   TH1F *hp=new TH1F("hp","PHI resolution",50,-20.,20.); hp->SetFillColor(4);
-   TH1F *hl=new TH1F("hl","LAMBDA resolution",50,-20,20);hl->SetFillColor(4);
-   TH1F *hpt=new TH1F("hpt","Relative Pt resolution",30,-10.,10.); 
-   hpt->SetFillColor(2); 
-   TH1F *hmpt=new TH1F("hmpt","Transverse impact parameter",30,-300,300); 
+   TH1F *hpt=(TH1F*)gROOT->FindObject("hpt");
+   if (!hpt) hpt=new TH1F("hpt","Relative Pt resolution",30,-10.,10.); 
+   hpt->SetFillColor(2);
+ 
+   TH1F *hmpt=(TH1F*)gROOT->FindObject("hmpt");
+   if (!hmpt) 
+      hmpt=new TH1F("hmpt","Transverse impact parameter",30,-300,300); 
    hmpt->SetFillColor(6);
-   TH1F *hz=new TH1F("hz","Longitudinal impact parameter",30,-300,300); 
 
-   AliITStrackV2 *trk=(AliITStrackV2*)tarray.UncheckedAt(0);
-   Double_t pmin=0.1*(100/0.299792458/0.2/trk->GetConvConst());
-   Double_t pmax=6.0+pmin;
+   TH1F *hz=(TH1F*)gROOT->FindObject("hz");
+   if (!hz) hz=new TH1F("hz","Longitudinal impact parameter",30,-300,300); 
 
-   TH1F *hgood=new TH1F("hgood","Good tracks",30,pmin,pmax);    
-   TH1F *hfound=new TH1F("hfound","Found tracks",30,pmin,pmax);
-   TH1F *hfake=new TH1F("hfake","Fake tracks",30,pmin,pmax);
-   TH1F *hg=new TH1F("hg","",30,pmin,pmax); //efficiency for good tracks
+
+
+   TH1F *hgood=(TH1F*)gROOT->FindObject("hgood");
+   if (!hgood) hgood=new TH1F("hgood","Good tracks",30,0.2,6.1);
+    
+   TH1F *hfound=(TH1F*)gROOT->FindObject("hfound");
+   if (!hfound) hfound=new TH1F("hfound","Found tracks",30,0.2,6.1);
+
+   TH1F *hfake=(TH1F*)gROOT->FindObject("hfake");
+   if (!hfake) hfake=new TH1F("hfake","Fake tracks",30,0.2,6.1);
+
+   TH1F *hg=(TH1F*)gROOT->FindObject("hg");
+   if (!hg) hg=new TH1F("hg","Efficiency for good tracks",30,0.2,6.1);
    hg->SetLineColor(4); hg->SetLineWidth(2);
-   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,pmin,pmax);
+
+   TH1F *hf=(TH1F*)gROOT->FindObject("hf");
+   if (!hf) hf=new TH1F("hf","Efficiency for fake tracks",30,0.2,6.1);
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
 
-   //TH1F *hptw=new TH1F("hptw","Weghted pt",30,pmax,pmin);
+   TH1F *he=(TH1F*)gROOT->FindObject("he");
+   if (!he) 
+      he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
 
-   TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
-   TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,200.);
+   TH2F *hep=(TH2F*)gROOT->FindObject("hep");
+   if (!hep) hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,400.);
    hep->SetMarkerStyle(8);
    hep->SetMarkerSize(0.4);
 
 
-   Int_t notf[MAX], nnotf=0;
-   Int_t fake[MAX], nfake=0;
-   Int_t mult[MAX], numb[MAX], nmult=0;
+   Char_t fname[100];
+   sprintf(fname,"%s/GoodTracksITS.root",dir);
 
-   Int_t ng;
-   for (ng=0; ng<ngood; ng++) {
-      Int_t lab=gt[ng].lab, tlab=-1;
-      Double_t pxg=gt[ng].px, pyg=gt[ng].py, pzg=gt[ng].pz;
-      Double_t ptg=TMath::Sqrt(pxg*pxg+pyg*pyg);
-      if (ptg<ptcutl) continue;
-      if (ptg>ptcuth) continue;
+   TFile *refFile=TFile::Open(fname,"old");
+   if (!refFile || !refFile->IsOpen()) {
+   ::Info("AliITSComparisonV2.C","Marking good tracks (will take a while)...");
+     if (GoodTracksITS(dir)) {
+        ::Error("AliITSComparisonV2.C","Can't generate the reference file !");
+        return 1;
+     }
+   }
+   refFile=TFile::Open(fname,"old");
+   if (!refFile || !refFile->IsOpen()) {
+     ::Error("AliITSComparisonV2.C","Can't open the reference file !");
+     return 1;
+   }   
+  
+   TTree *itsTree=(TTree*)refFile->Get("itsTree");
+   if (!itsTree) {
+     ::Error("AliITSComparisonV2.C","Can't get the reference tree !");
+     return 2;
+   }
+   TBranch *branch=itsTree->GetBranch("ITS");
+   if (!branch) {
+     ::Error("AliITSComparisonV2.C","Can't get the ITS branch !");
+     return 3;
+   }
+   TClonesArray dummy("AliTrackReference",1000), *refs=&dummy;
+   branch->SetAddress(&refs);
 
-      if (ptg>pmin) hgood->Fill(ptg);
 
-      AliITStrackV2 *track=0;
-      Int_t cnt=0;
-      Int_t j;
-      for (j=0; j<nentr; j++) {
-          AliITStrackV2 *trk=(AliITStrackV2*)tarray.UncheckedAt(j);
-          Int_t lbl=trk->GetLabel();
-          if (lab==TMath::Abs(lbl)) {
-	    if (cnt==0) {track=trk; tlab=lbl;}
-            cnt++;
-          }
+   sprintf(fname,"%s/AliESDs.root",dir);
+   TFile *ef=TFile::Open(fname);
+   if ((!ef)||(!ef->IsOpen())) {
+      sprintf(fname,"%s/AliESDits.root",dir);
+      ef=TFile::Open(fname);
+      if ((!ef)||(!ef->IsOpen())) {
+         ::Error("AliITSComparisonV2.C","Can't open AliESDits.root !");
+         return 4;
       }
-      if (cnt==0) {
-        notf[nnotf++]=lab;
+   }
+   TKey *key=0;
+   TIter next(ef->GetListOfKeys());
+
+
+
+   //******* Loop over events *********
+   Int_t e=0;
+   while ((key=(TKey*)next())!=0) {
+     cout<<endl<<endl<<"********* Processing event number: "<<e<<"*******\n";
+ 
+     AliESD *event=(AliESD*)key->ReadObj();
+
+     Float_t field=event->GetMagneticField();
+     AliKalmanTrack::SetConvConst(1000/0.299792458/field);
+ 
+     Int_t nentr=event->GetNumberOfTracks();
+     allfound+=nentr;
+
+     if (itsTree->GetEvent(e++)==0) {
+        cerr<<"No reconstructable tracks !\n";
         continue;
-      } else if (cnt>1){
-        mult[nmult]=lab;
-        numb[nmult]=cnt; nmult++;        
-      }
+     }
 
-      if (ptg>pmin) {
+     Int_t ngood=refs->GetEntriesFast(); 
+     allgood+=ngood;
+
+     const Int_t MAX=15000;
+     Int_t notf[MAX], nnotf=0;
+     Int_t fake[MAX], nfake=0;
+     Int_t mult[MAX], numb[MAX], nmult=0;
+     Int_t k;
+     for (k=0; k<ngood; k++) {
+	AliTrackReference *ref=(AliTrackReference*)refs->UncheckedAt(k); 
+        Int_t lab=ref->Label(), tlab=-1;
+        Float_t ptg=TMath::Sqrt(ref->Px()*ref->Px() + ref->Py()*ref->Py());
+
+        if (ptg<ptcutl) continue;
+        if (ptg>ptcuth) continue;
+
+        allselected++;
+
+        hgood->Fill(ptg);
+
+        AliESDtrack *esd=0;
+        Int_t cnt=0;
+        Int_t pipe=0;
+        for (Int_t i=0; i<nentr; i++) {
+           AliESDtrack *t=event->GetTrack(i);
+	   UInt_t status=t->GetStatus();
+	   UInt_t flags=AliESDtrack::kTPCin|AliESDtrack::kITSin;
+
+           if ((status&AliESDtrack::kITSrefit)==0) continue;
+
+           if ((status&flags)==status) pipe=1;
+
+           Int_t lbl=t->GetLabel();
+           if (lab==TMath::Abs(lbl)) {
+	      if (cnt==0) {esd=t; tlab=lbl;}
+              cnt++;
+           }
+        }
+        if (cnt==0) {
+           notf[nnotf++]=lab;
+           continue;
+        } else if (cnt>1){
+           mult[nmult]=lab;
+           numb[nmult]=cnt; nmult++;        
+        }
+
+	if (esd->GetITSFakeRatio()<ratio) tlab = TMath::Abs(tlab);
+
         if (lab==tlab) hfound->Fill(ptg);
         else {
           fake[nfake++]=lab;
           hfake->Fill(ptg); 
         }
-      }
 
-      Double_t xv,par[5]; track->GetExternalParameters(xv,par);
-      Float_t phi=TMath::ASin(par[2]) + track->GetAlpha();
-      if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
-      if (phi>=TMath::Pi()) phi-=2*TMath::Pi();
-      Float_t lam=TMath::ATan(par[3]); 
-      Float_t pt_1=TMath::Abs(par[4]);
+        AliITStrackV2 track(*esd);
+        if (pipe!=0) {
+           track.PropagateTo(3.,0.0028,65.19);
+           track.PropagateToVertex();  // This is not "exactly" the vertex 
+        }
 
-      Double_t phig=TMath::ATan2(pyg,pxg);
-      hp->Fill((phi - phig)*1000.);
+        Double_t xv,par[5]; track.GetExternalParameters(xv,par);
+        Float_t phi=TMath::ASin(par[2]) + track.GetAlpha();
+        if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
+        if (phi>=TMath::Pi()) phi-=2*TMath::Pi();
+        Float_t lam=TMath::ATan(par[3]); 
+        Float_t pt_1=TMath::Abs(par[4]);
 
-      Double_t lamg=TMath::ATan2(pzg,ptg);
-      hl->Fill((lam - lamg)*1000.);
+        Float_t phig=TMath::ATan2(ref->Py(),ref->Px());
+        hp->Fill((phi - phig)*1000.);
 
-      Double_t d=10000*track->GetD();
-      hmpt->Fill(d);
+        Float_t lamg=TMath::ATan2(ref->Pz(),ptg);
+        hl->Fill((lam - lamg)*1000.);
 
-      //hptw->Fill(ptg,TMath::Abs(d));
+        Double_t d=10000*track.GetD(ref->X(),ref->Y());
+        hmpt->Fill(d);
 
-      Double_t z=10000*track->GetZ();
-      hz->Fill(z);
+        Double_t z=10000*(track.GetZ()-ref->Z());
+        hz->Fill(z);
 
-      hpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
+        hpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
 
-      Float_t mom=1./(pt_1*TMath::Cos(lam));
-      Float_t dedx=track->GetdEdx();
-      hep->Fill(mom,dedx,1.);
-      if (TMath::Abs(gt[ng].code)==211)
-         if (mom>0.4 && mom<0.5) he->Fill(dedx,1.);
-   }
+        Float_t mom=1./(pt_1*TMath::Cos(lam));
+        Float_t dedx=track.GetdEdx();
+        hep->Fill(mom,dedx,1.);
 
+        Int_t pdg=(Int_t)ref->GetLength();  //this is particle's PDG !
 
-   cout<<"\nList of Not found tracks :\n";
-   for (ng=0; ng<nnotf; ng++){
-     cout<<notf[ng]<<"\t";
-     if ((ng%9)==8) cout<<"\n";
-   }
-   cout<<"\n\nList of fake  tracks :\n";
-   for (ng=0; ng<nfake; ng++){
-     cout<<fake[ng]<<"\t";
-     if ((ng%9)==8) cout<<"\n";
-   }
-   cout<<"\n\nList of multiple found tracks :\n";
-   for (ng=0; ng<nmult; ng++) {
-       cout<<"id.   "<<mult[ng]
-           <<"     found - "<<numb[ng]<<"times\n";
-   }
+        if (TMath::Abs(pdg)==211) //pions
+           if (mom>0.4 && mom<0.5) he->Fill(dedx,1.);
+
+     }
+
+     cout<<"\nList of Not found tracks :\n";
+     for (k=0; k<nnotf; k++){
+       cout<<notf[k]<<"\t";
+       if ((k%9)==8) cout<<"\n";
+     }
+     cout<<"\n\nList of fake  tracks :\n";
+     for (k=0; k<nfake; k++){
+       cout<<fake[k]<<"\t";
+       if ((k%9)==8) cout<<"\n";
+     }
+     cout<<"\n\nList of multiple found tracks :\n";
+     for (k=0; k<nmult; k++) {
+         cout<<"id.   "<<mult[k]
+             <<"     found - "<<numb[k]<<"times\n";
+     }
+     cout<<endl;
+
+     cout<<"Number of found tracks : "<<nentr<<endl;
+     cout<<"Number of \"good\" tracks : "<<ngood<<endl;
+
+     refs->Clear();
+     delete event;
+   } //***** End of the loop over events
+
+   ef->Close();
+   
+   delete itsTree;
+   refFile->Close();
+
+   Stat_t ng=hgood->GetEntries(), nf=hfound->GetEntries();
+   if (ng!=0) cout<<"\n\nIntegral efficiency is about "<<nf/ng*100.<<" %\n";
+   cout<<"Total number selected of \"good\" tracks ="<<allselected<<endl<<endl;
+   cout<<"Total number of found tracks ="<<allfound<<endl;
+   cout<<"Total number of \"good\" tracks ="<<allgood<<endl;
    cout<<endl;
-
-   cerr<<"Number of good tracks : "<<ngood<<endl;
-   cerr<<"Number of found tracks : "<<nentr<<endl;
-
-   ng=(Int_t)hgood->GetEntries(); //cerr<<"Good tracks "<<ng<<endl;
-   if (ng!=0)  
-   cerr<<"Integral efficiency is about "<<hfound->GetEntries()/ng*100.<<" %\n";
-   cerr<<endl;
 
    gStyle->SetOptStat(111110);
    gStyle->SetOptFit(1);
@@ -297,14 +323,6 @@ Int_t AliITSComparisonV2(Float_t ptcutl=0.2, Float_t ptcuth=10.) {
    hmpt->SetXTitle("(micron)");
    if (hmpt->GetEntries()<minc) hmpt->Draw(); else hmpt->Fit("gaus"); 
    hz->Draw("same"); c1->cd();
-   //hfound->Sumw2();
-   //hptw->Sumw2(); 
-   //hg->SetMaximum(333);
-   //hg->SetYTitle("Impact Parameter Resolution (micron)");
-   //hg->SetXTitle("Pt (GeV/c)");
-   //hg->GetXaxis()->SetRange(0,10);
-   //hg->Divide(hptw,hfound,1,1.);
-   //hg->DrawCopy(); c1->cd();
    
 
    TPad *p5=new TPad("p5","",0,0.6,1,1); p5->Draw(); p5->cd(); 
@@ -317,9 +335,9 @@ Int_t AliITSComparisonV2(Float_t ptcutl=0.2, Float_t ptcuth=10.) {
    hg->SetXTitle("Pt (GeV/c)");
    hg->Draw();
 
-   TLine *line1 = new TLine(pmin,1.0,pmax,1.0); line1->SetLineStyle(4);
+   TLine *line1 = new TLine(0.2,1.0,6.1,1.0); line1->SetLineStyle(4);
    line1->Draw("same");
-   TLine *line2 = new TLine(pmin,0.9,pmax,0.9); line2->SetLineStyle(4);
+   TLine *line2 = new TLine(0.2,0.9,6.1,0.9); line2->SetLineStyle(4);
    line2->Draw("same");
 
    hf->SetFillColor(1);
@@ -351,113 +369,188 @@ Int_t AliITSComparisonV2(Float_t ptcutl=0.2, Float_t ptcuth=10.) {
    c2->Write();
    fc.Close();
 
+   gBenchmark->Stop("AliITSComparisonV2");
+   gBenchmark->Show("AliITSComparisonV2");
+
    return 0;
 }
 
-Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, const char* evfoldname) {
-   AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
-   if (rl == 0x0) {
-      ::Fatal("AliITSComparisonV2.C::good_tracks_its",
-              "Can not find Run Loader in Folder Named %s",
-              evfoldname);
+
+
+Int_t GoodTracksITS(const Char_t *dir) {
+   if (gAlice) { 
+       delete gAlice->GetRunLoader();
+       delete gAlice;//if everything was OK here it is already NULL
+       gAlice = 0x0;
+   }
+
+   Char_t fname[100];
+   sprintf(fname,"%s/galice.root",dir);
+
+   AliRunLoader *rl = AliRunLoader::Open(fname,"COMPARISON");
+   if (!rl) {
+      ::Error("GoodTracksITS","Can't start session !");
+      return 1;
+   }
+
+   rl->LoadgAlice();
+   rl->LoadHeader();
+   rl->LoadKinematics();
+
+   AliITS *ITS=(AliITS*)rl->GetAliRun()->GetDetector("ITS");
+   if (!ITS) {
+      ::Error("GoodTracksITS","Can't get the ITS !");
+      delete rl;
+      return 2;
+   }
+   AliITSgeom *geom=ITS->GetITSgeom();
+   if (!geom) {
+      ::Error("GoodTracksITS","Can't get the ITS geometry !"); 
+      delete rl;
+      return 3;
    }
 
    AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
    if (itsl == 0x0) {
-       cerr<<"AliITSComparisonV2.C : Can not find ITSLoader\n";
+       ::Error("GoodTracksITS","Can not find the ITSLoader");
        delete rl;
-       return 3;
+       return 4;
    }
-   
-   rl->LoadgAlice();
-   rl->LoadHeader();
-   Int_t np = rl->GetHeader()->GetNtrack();
-
-   Int_t *good=new Int_t[np];
-   Int_t k;
-   for (k=0; k<np; k++) good[k]=0;
-
-   AliITS *ITS=(AliITS*)rl->GetAliRun()->GetDetector("ITS");
-   if (!ITS) {
-      cerr<<"can't get ITS !\n"; exit(8);
-   }
-   AliITSgeom *geom=ITS->GetITSgeom();
-   if (!geom) {
-      cerr<<"can't get ITS geometry !\n"; exit(9);
-   }
-
    itsl->LoadRecPoints();
-   TTree *cTree=itsl->TreeR();
-   if (!cTree) {
-      cerr<<"Can't get cTree !\n"; exit(7);
-   }
-   TBranch *branch=cTree->GetBranch("Clusters");
-   if (!branch) {
-      cerr<<"Can't get clusters branch !\n"; exit(8);
-   }
-   TClonesArray *clusters=new TClonesArray("AliITSclusterV2",10000);
-   branch->SetAddress(&clusters);
+  
 
-   Int_t entr=(Int_t)cTree->GetEntries();
-   for (k=0; k<entr; k++) {
-     cTree->GetEvent(k);
-     Int_t ncl=clusters->GetEntriesFast(); if (ncl==0) continue;
-     Int_t lay,lad,det;  geom->GetModuleId(k,lay,lad,det);
-     if (lay<1 || lay>6) {
-	cerr<<"wrong layer !\n"; exit(10);
+   Int_t nev=rl->GetNumberOfEvents();
+   ::Info("GoodTracksITS","Number of events : %d\n",nev);  
+
+   sprintf(fname,"%s/GoodTracksTPC.root",dir);
+   TFile *tpcFile=TFile::Open(fname);
+   if ((!tpcFile)||(!tpcFile->IsOpen())) {
+       ::Error("GoodTracksITS","Can't open the GoodTracksTPC.root !");
+       delete rl;
+       return 5; 
+   }
+   TClonesArray dum("AliTrackReference",1000), *tpcRefs=&dum;
+   TTree *tpcTree=(TTree*)tpcFile->Get("tpcTree");
+   if (!tpcTree) {
+       ::Error("GoodTracksITS","Can't get the TPC reference tree !");
+       delete rl;
+       return 6;
+   }
+   TBranch *tpcBranch=tpcTree->GetBranch("TPC");
+   if (!tpcBranch) {
+      ::Error("GoodTracksITS","Can't get the TPC reference branch !");
+      delete rl;
+      return 7;
+   }
+   tpcBranch->SetAddress(&tpcRefs);
+
+   sprintf(fname,"%s/GoodTracksITS.root",dir);
+   TFile *itsFile=TFile::Open(fname,"recreate");
+   TClonesArray dummy("AliTrackReference",1000), *itsRefs=&dummy;
+   TTree itsTree("itsTree","Tree with info about the reconstructable ITS tracks");
+   itsTree.Branch("ITS",&itsRefs);
+
+   //********  Loop over generated events 
+   for (Int_t e=0; e<nev; e++) {
+     Int_t k;
+
+     rl->GetEvent(e);  itsFile->cd();
+
+     Int_t np = rl->GetHeader()->GetNtrack();
+     cout<<"Event "<<e<<" Number of particles: "<<np<<endl;
+
+     //******** Fill the "good" masks
+     Int_t *good=new Int_t[np]; for (k=0; k<np; k++) good[k]=0;
+
+     TTree *cTree=itsl->TreeR();
+     if (!cTree) {
+        ::Error("GoodTracksITS","Can't get the cluster tree !"); 
+        delete rl;
+        return 8;
      }
-     while (ncl--) {
-        AliITSclusterV2 *pnt=(AliITSclusterV2*)clusters->UncheckedAt(ncl);
-        Int_t l0=pnt->GetLabel(0);
-	  if (l0>=np) {cerr<<"Wrong label: "<<l0<<endl; continue;}
-        Int_t l1=pnt->GetLabel(1);
-	  if (l1>=np) {cerr<<"Wrong label: "<<l1<<endl; continue;}
-        Int_t l2=pnt->GetLabel(2);
-	  if (l2>=np) {cerr<<"Wrong label: "<<l2<<endl; continue;}
-        Int_t mask=1<<(lay-1);
-        if (l0>=0) good[l0]|=mask; 
-        if (l1>=0) good[l1]|=mask; 
-        if (l2>=0) good[l2]|=mask;
+     TBranch *branch=cTree->GetBranch("Clusters");
+     if (!branch) {
+        ::Error("GoodTracksITS","Can't get the clusters branch !"); 
+        delete rl;
+        return 9;
      }
-   }
-   clusters->Delete(); delete clusters;
-   itsl->UnloadRawClusters();
+     TClonesArray dummy("AliITSclusterV2",10000), *clusters=&dummy;
+     branch->SetAddress(&clusters);
+
+     Int_t entr=(Int_t)cTree->GetEntries();
+     for (k=0; k<entr; k++) {
+         cTree->GetEvent(k);
+         Int_t ncl=clusters->GetEntriesFast(); if (ncl==0) continue;
+         Int_t lay,lad,det;  geom->GetModuleId(k,lay,lad,det);
+         if (lay<1 || lay>6) {
+	    ::Error("GoodTracksITS","Wrong layer !"); 
+            delete rl;
+            return 10;
+         }
+         while (ncl--) {
+            AliITSclusterV2 *pnt=(AliITSclusterV2*)clusters->UncheckedAt(ncl);
+            Int_t l0=pnt->GetLabel(0);
+	       if (l0>=np) {
+// 		 cerr<<"Wrong label: "<<l0<<endl;
+		 continue;
+	       }
+            Int_t l1=pnt->GetLabel(1);
+	       if (l1>=np) {
+// 		 cerr<<"Wrong label: "<<l1<<endl;
+		 continue;
+	       }
+            Int_t l2=pnt->GetLabel(2);
+	       if (l2>=np) {
+// 		 cerr<<"Wrong label: "<<l2<<endl;
+		 continue;
+	       }
+            Int_t mask=1<<(lay-1);
+            if (l0>=0) good[l0]|=mask; 
+            if (l1>=0) good[l1]|=mask; 
+            if (l2>=0) good[l2]|=mask;
+         }
+         clusters->Clear();
+     }
    
-   ifstream in("good_tracks_tpc");
-   if (!in) {
-     cerr<<"can't get good_tracks_tpc !\n"; exit(11);
-   }
-   
-   rl->LoadKinematics();
-   AliStack* stack = rl->Stack();
-   Int_t nt=0;
-   Double_t px,py,pz,x,y,z;
-   Int_t code,lab;
-   while (in>>lab>>code>>px>>py>>pz>>x>>y>>z) {
-      if (good[lab] != 0x3F) continue;
-      TParticle *p = (TParticle*)stack->Particle(lab);
-      if (p == 0x0) {
-         cerr<<"Can not get particle "<<lab<<endl;
-         nt++;
-         if (nt==max) {cerr<<"Too many good tracks !\n"; break;}
-         continue;
-      }
-      gt[nt].lab=lab;
-      gt[nt].code=p->GetPdgCode();
-//**** px py pz - in global coordinate system
-      gt[nt].px=p->Px(); gt[nt].py=p->Py(); gt[nt].pz=p->Pz();
-      gt[nt].x=gt[nt].y=gt[nt].z=0.;
-      nt++;
-      if (nt==max) {cerr<<"Too many good tracks !\n"; break;}
-   }
 
-   delete[] good;
+     //****** select tracks which are "good" enough
+     AliStack* stack = rl->Stack();
 
-   rl->UnloadKinematics();
-   rl->UnloadHeader();
-   rl->UnloadgAlice();
+     tpcTree->GetEvent(e);
+     Int_t nk=tpcRefs->GetEntriesFast();
+     Int_t nt=0;
+     for (k=0; k<nk; k++) {
+        AliTrackReference *tpcRef=(AliTrackReference *)tpcRefs->UncheckedAt(k);
+        Int_t lab=tpcRef->Label();
+        if (good[lab] != 0x3F) continue;
+        TParticle *p = (TParticle*)stack->Particle(lab);
+        if (p == 0x0) {
+           cerr<<"Can not get particle "<<lab<<endl;
+           continue;
+        }
 
-   return nt;
+        AliTrackReference *ref=new((*itsRefs)[nt]) AliTrackReference(*tpcRef);
+        ref->SetMomentum(p->Px(),p->Py(),p->Pz());
+        ref->SetPosition(p->Vx(),p->Vy(),p->Vz());
+        nt++;
+     }
+     tpcRefs->Clear();
+
+     itsTree.Fill();
+     itsRefs->Clear();
+
+     delete[] good;
+
+   } //*** end of the loop over generated events
+
+   itsTree.Write();
+   itsFile->Close();
+
+   delete tpcTree;
+   tpcFile->Close();
+
+   delete rl;
+   return 0;
 }
 
 

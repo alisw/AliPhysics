@@ -8,54 +8,126 @@
  ****************************************************************************/
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+  #include <TMath.h>
+  #include <TError.h>
   #include <Riostream.h>
-  #include <fstream.h>
+  #include <TH1F.h>
+  #include <TTree.h>
+  #include <TParticle.h>
+  #include <TCanvas.h>
+  #include <TLine.h>
+  #include <TText.h>
+  #include <TBenchmark.h>
+  #include <TStyle.h>
+  #include <TKey.h>
+  #include <TROOT.h>
 
-  #include "AliRun.h"
-  #include "AliHeader.h"
   #include "AliStack.h"
+  #include "AliHeader.h"
+  #include "AliTrackReference.h"
   #include "AliRunLoader.h"
+  #include "AliRun.h"
+  #include "AliESD.h"
+
+  #include "AliTOFdigit.h"
   #include "AliLoader.h"
 
-  #include "AliESD.h"
-  #include "AliTOFdigit.h"
-
-  #include "TKey.h"
-  #include "TFile.h"
-  #include "TTree.h"
-  #include "TH1.h"
   #include "TClonesArray.h"
-  #include "TStyle.h"
-  #include "TCanvas.h"
-  #include "TLine.h"
-  #include "TText.h"
-  #include "TParticle.h"
 #endif
 
-struct GoodTrackTOF {
-  Int_t lab;
-  Int_t code;
-  Float_t px,py,pz;
-  Float_t x,y,z;
-};
+Int_t GoodTracksTOF(const Char_t *dir=".");
 
 extern AliRun *gAlice;
+extern TBenchmark *gBenchmark;
+extern TROOT *gROOT;
 
-Int_t AliTOFComparison() {
-   Int_t good_tracks_tof(GoodTrackTOF *gt, const Int_t max);
+static Int_t allgood=0;
+static Int_t allmatched=0;
+static Int_t allmismatched=0;
 
-   cerr<<"Doing comparison...\n";
+Int_t AliTOFComparison(const Char_t *dir=".") {
+   gBenchmark->Start("AliTOFComparison");
+
+   ::Info("AliTOFComparison.C","Doing comparison...");
+   
+
+   Double_t pmin=0.2;
+   Double_t pmax=3.0;
+
+   TH1F *hgood=(TH1F*)gROOT->FindObject("hgood");    
+   if (!hgood) hgood=new TH1F("hgood","Good tracks",30,pmin,pmax);
+    
+   TH1F *hfound=(TH1F*)gROOT->FindObject("hfound");
+   if (!hfound) hfound=new TH1F("hfound","Matched tracks",30,pmin,pmax);
+
+   TH1F *hfake=(TH1F*)gROOT->FindObject("hfake");
+   if (!hfake) hfake=new TH1F("hfake","Mismatched tracks",30,pmin,pmax);
+
+   TH1F *hgp=(TH1F*)gROOT->FindObject("hgp");
+   if (!hgp) hgp=new TH1F("hgp","",30,pmin,pmax);
+   hgp->SetLineColor(4); hgp->SetLineWidth(2);
+
+   TH1F *hfp=(TH1F*)gROOT->FindObject("hfp");
+   if (!hfp) hfp=new TH1F("hfp","Probability of mismatching",30,pmin,pmax);
+   hfp->SetFillColor(1); hfp->SetFillStyle(3013); hfp->SetLineWidth(2);
+
+   TH1F *hgoo=(TH1F*)gROOT->FindObject("hgoo");    
+   if (!hgoo) hgoo=new TH1F("hgoo","Good tracks",30,-1,1);
+    
+   TH1F *hfoun=(TH1F*)gROOT->FindObject("hfoun");
+   if (!hfoun) hfoun=new TH1F("hfoun","Matched tracks",30,-1,1);
+
+   TH1F *hfak=(TH1F*)gROOT->FindObject("hfak");
+   if (!hfak) hfak=new TH1F("hfak","Mismatched tracks",30,-1,1);
+
+   TH1F *hgl=(TH1F*)gROOT->FindObject("hgl");
+   if (!hgl) hgl=new TH1F("hgl","",30,-1,1);
+   hgl->SetLineColor(4); hgl->SetLineWidth(2);
+
+   TH1F *hfl=(TH1F*)gROOT->FindObject("hfl");
+   if (!hfl) hfl=new TH1F("hfl","Probability of mismatching",30,-1,1);
+   hfl->SetFillColor(1); hfl->SetFillStyle(3013); hfl->SetLineWidth(2);
+
+
+
+   Char_t fname[100];
+   sprintf(fname,"%s/GoodTracksTOF.root",dir);
+
+   TFile *refFile=TFile::Open(fname,"old");
+   if (!refFile || !refFile->IsOpen()) {
+   ::Info("AliTOFComparison.C","Marking good tracks (will take a while)...");
+     if (GoodTracksTOF(dir)) {
+        ::Error("AliTOFComparison.C","Can't generate the reference file !");
+        return 1;
+     }
+   }
+   refFile=TFile::Open(fname,"old");
+   if (!refFile || !refFile->IsOpen()) {
+     ::Error("AliTOFComparison.C","Can't open the reference file !");
+     return 1;
+   }   
+
+   TTree *tofTree=(TTree*)refFile->Get("tofTree");
+   if (!tofTree) {
+     ::Error("AliTOFComparison.C","Can't get the reference tree !");
+     return 2;
+   }
+   TBranch *branch=tofTree->GetBranch("TOF");
+   if (!branch) {
+     ::Error("AliTOFComparison.C","Can't get the TOF branch !");
+     return 3;
+   }
+   TClonesArray dummy("AliTrackReference",1000), *refs=&dummy;
+   branch->SetAddress(&refs);
+
 
    if (gAlice) { 
      delete gAlice->GetRunLoader();
      delete gAlice;//if everything was OK here it is already NULL
      gAlice = 0x0;
    }
-
-   TClonesArray dummy("AliTOFdigit",10000), *digits=&dummy;   
-
-   {
-   AliRunLoader *rl = AliRunLoader::Open("galice.root");
+   sprintf(fname,"%s/galice.root",dir);
+   AliRunLoader *rl = AliRunLoader::Open(fname,"COMPARISON");
    if (rl == 0x0) {
       cerr<<"Can not open session"<<endl;
       return 1;
@@ -67,103 +139,65 @@ Int_t AliTOFComparison() {
    }
    tofl->LoadDigits("read");
 
-   rl->GetEvent(0);
 
-   TTree *tofTree=tofl->TreeD();
-   if (!tofTree) {
-      cerr<<"Can't get the TOF cluster tree !\n";
-      return 3;
-   } 
-   TBranch *branch=tofTree->GetBranch("TOF");
-   if (!branch) { 
-      cerr<<"Can't get the branch with the TOF digits !\n";
+   sprintf(fname,"%s/AliESDs.root",dir);
+   TFile *ef=TFile::Open(fname);
+   if ((!ef)||(!ef->IsOpen())) {
+      ::Error("AliTOFComparison.C","Can't open AliESDs.root !");
+      delete rl;
       return 4;
    }
-   branch->SetAddress(&digits);
-
-   tofTree->GetEvent(0);
-
-   delete rl;
-   }
-
-   Int_t nd=digits->GetEntriesFast();
-   cerr<<"Number of digits: "<<nd<<endl;
-
-   const Int_t MAX=15000;
-   GoodTrackTOF gt[MAX];
-   Int_t ngood=0;
-   ifstream in("good_tracks_tof");
-   if (in) {
-      cerr<<"Reading good tracks...\n";
-      while (in>>gt[ngood].lab>>gt[ngood].code>>
-                 gt[ngood].px>>gt[ngood].py>>gt[ngood].pz>>
-                 gt[ngood].x >>gt[ngood].y >>gt[ngood].z) {
-         ngood++;
-         cerr<<ngood<<'\r';
-         if (ngood==MAX) {
-            cerr<<"Too many good tracks !\n";
-            break;
-         }
-      }
-      if (!in.eof()) cerr<<"Read error (good_tracks_its) !\n";
-   } else {
-      cerr<<"Marking good tracks (this will take a while)...\n";
-      ngood=good_tracks_tof(gt,MAX);
-      ofstream out("good_tracks_tof");
-      if (out) {
-        for (Int_t ngd=0; ngd<ngood; ngd++)
-          out<<gt[ngd].lab<<' '<<gt[ngd].code<<' '
-             <<gt[ngd].px<<' '<<gt[ngd].py<<' '<<gt[ngd].pz<<' '
-             <<gt[ngd].x <<' '<<gt[ngd].y <<' '<<gt[ngd].z <<endl;
-      } else cerr<<"Can not open file (good_tracks_tof) !\n";
-      out.close();
-   }
-
-   Double_t pmin=0.2;
-   Double_t pmax=4.0;
-
-   TH1F *hgood=new TH1F("hgood","Good tracks",30,pmin,pmax);    
-   TH1F *hfound=new TH1F("hfound","Matched tracks",30,pmin,pmax);
-   TH1F *hfake=new TH1F("hfake","Mismatched tracks",30,pmin,pmax);
-   TH1F *hgp=new TH1F("hgp","",30,pmin,pmax); //efficiency for good tracks
-   hgp->SetLineColor(4); hgp->SetLineWidth(2);
-   TH1F *hfp=new TH1F("hfp","Probability of mismatching",30,pmin,pmax);
-   hfp->SetFillColor(1); hfp->SetFillStyle(3013); hfp->SetLineWidth(2);
-
-   TH1F *hgoo=new TH1F("hgoo","Good tracks",30,-1,1);    
-   TH1F *hfoun=new TH1F("hfoun","Matched tracks",30,-1,1);
-   TH1F *hfak=new TH1F("hfak","Mismatched tracks",30,-1,1);
-   TH1F *hgl=new TH1F("hgl","",30,-1,1); //efficiency for good tracks
-   hgl->SetLineColor(4); hgl->SetLineWidth(2);
-   TH1F *hfl=new TH1F("hfl","Probability of mismatching",30,-1,1);
-   hfl->SetFillColor(1); hfl->SetFillStyle(3013); hfl->SetLineWidth(2);
-
-   TCanvas *c1=new TCanvas("c1","",0,0,600,900);
-   c1->Divide(1,2);
-
-   TFile *ef=TFile::Open("AliESDs.root");
-   if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
-
-   TIter next(ef->GetListOfKeys());
    TKey *key=0;
-   Int_t nev=0;
+   TIter next(ef->GetListOfKeys());
+
+
+
+   //******* Loop over events *********
+   Int_t e=0;
    while ((key=(TKey*)next())!=0) {
-     cerr<<"Processing event number : "<<nev++<<endl;
+     cout<<endl<<endl<<"********* Processing event number: "<<e<<"*******\n";
+
+     rl->GetEvent(e); ef->cd();
+
+     TTree *digTree=tofl->TreeD();
+     if (!digTree) {
+        cerr<<"Can't get the TOF cluster tree !\n";
+        return 3;
+     } 
+     TBranch *branch=digTree->GetBranch("TOF");
+     if (!branch) { 
+        cerr<<"Can't get the branch with the TOF digits !\n";
+        return 4;
+     }
+     TClonesArray dummy("AliTOFdigit",10000), *digits=&dummy;   
+     branch->SetAddress(&digits);
+
+     digTree->GetEvent(0);
+     Int_t nd=digits->GetEntriesFast();
+     cerr<<"Number of the TOF digits: "<<nd<<endl;
+
+
 
      AliESD *event=(AliESD*)key->ReadObj();
      Int_t ntrk=event->GetNumberOfTracks();
      cerr<<"Number of ESD tracks : "<<ntrk<<endl; 
 
+
+     if (tofTree->GetEvent(e++)==0) {
+        cerr<<"No reconstructable tracks !\n";
+        continue;
+     }
+
+     Int_t ngood=refs->GetEntriesFast(); 
+
      Int_t matched=0;
      Int_t mismatched=0;
      for (Int_t i=0; i<ngood; i++) {
-         Int_t lab=gt[i].lab;
-         Double_t pxg=gt[i].px, pyg=gt[i].py, pzg=gt[i].pz;
-         Double_t ptg=TMath::Sqrt(pxg*pxg+pyg*pyg);
+	AliTrackReference *ref=(AliTrackReference*)refs->UncheckedAt(i); 
+        Int_t lab=ref->Label();
+        Float_t ptg=TMath::Sqrt(ref->Px()*ref->Px() + ref->Py()*ref->Py());
 
-	 if (ptg<0.1) continue;
-
-         Double_t tgl=pzg/ptg; //tan(lambda)
+        Double_t tgl=ref->Pz()/ptg; //tan(lambda)
 
          if (ptg>pmin) { hgood->Fill(ptg); hgoo->Fill(tgl); }
 
@@ -204,147 +238,220 @@ Int_t AliTOFComparison() {
             cerr<<endl;
          }
      }
+     cout<<"Number of good tracks: "<<ngood<<endl;
+     cout<<"Number of matched tracks: "<<matched<<endl;
+     cout<<"Number of mismatched tracks: "<<mismatched<<endl;
 
-     cerr<<"Number of good tracks: "<<ngood<<endl;
-     cerr<<"Number of matched tracks: "<<matched<<endl;
-     cerr<<"Number of mismatched tracks: "<<mismatched<<endl;
-     if (ngood!=0) cerr<<"Efficiency: "<<Float_t(matched)/ngood<<endl;
+     allgood+=ngood; allmatched+=matched; allmismatched+=mismatched;
 
-     hfound->Sumw2(); hgood->Sumw2(); hfake->Sumw2();
-     hgp->Divide(hfound,hgood,1,1.,"b");
-     hfp->Divide(hfake,hgood,1,1.,"b");
-     hgp->SetMaximum(1.4);
-     hgp->SetYTitle("Matching efficiency");
-     hgp->SetXTitle("Pt (GeV/c)");
+     refs->Clear();
+     delete event;
+   } //***** End of the loop over events
 
-     hfoun->Sumw2(); hgoo->Sumw2(); hfak->Sumw2();
-     hgl->Divide(hfoun,hgoo,1,1.,"b");
-     hfl->Divide(hfak,hgoo,1,1.,"b");
-     hgl->SetMaximum(1.4);
-     hgl->SetYTitle("Matching efficiency");
-     hgl->SetXTitle("Tan(lambda)");
+   ef->Close();
+   
+   delete tofTree;
+   refFile->Close();
 
-     c1->cd(1);
+   if (allgood!=0) cerr<<"\n\nEfficiency: "<<Float_t(allmatched)/allgood<<endl;
+   cout<<"Total number of good tracks: "<<allgood<<endl;
+   cout<<"Total number of matched tracks: "<<allmatched<<endl;
+   cout<<"Total number of mismatched tracks: "<<allmismatched<<endl;
 
-     hgp->Draw();
-     hfp->Draw("histsame");
-     TLine *line1 = new TLine(pmin,1.0,pmax,1.0); line1->SetLineStyle(4);
-     line1->Draw("same");
-     TLine *line2 = new TLine(pmin,0.9,pmax,0.9); line2->SetLineStyle(4);
-     line2->Draw("same");
-
-     c1->cd(2);
-
-     hgl->Draw();
-     hfl->Draw("histsame");
-     TLine *line3 = new TLine(-1,1.0,1,1.0); line3->SetLineStyle(4);
-     line3->Draw("same");
-     TLine *line4 = new TLine(-1,0.9,1,0.9); line4->SetLineStyle(4);
-     line4->Draw("same");
-
-     break;
+   TCanvas *c1=(TCanvas*)gROOT->FindObject("c1");
+   if (!c1) {
+      c1=new TCanvas("c1","",0,0,600,900);
+      c1->Divide(1,2);
    }
+   hfound->Sumw2(); hgood->Sumw2(); hfake->Sumw2();
+   hgp->Divide(hfound,hgood,1,1.,"b");
+   hfp->Divide(hfake,hgood,1,1.,"b");
+   hgp->SetMaximum(1.4);
+   hgp->SetYTitle("Matching efficiency");
+   hgp->SetXTitle("Pt (GeV/c)");
 
+   hfoun->Sumw2(); hgoo->Sumw2(); hfak->Sumw2();
+   hgl->Divide(hfoun,hgoo,1,1.,"b");
+   hfl->Divide(hfak,hgoo,1,1.,"b");
+   hgl->SetMaximum(1.4);
+   hgl->SetYTitle("Matching efficiency");
+   hgl->SetXTitle("Tan(lambda)");
+
+   c1->cd(1);
+
+   hgp->Draw();
+   hfp->Draw("histsame");
+   TLine *line1 = new TLine(pmin,1.0,pmax,1.0); line1->SetLineStyle(4);
+   line1->Draw("same");
+   TLine *line2 = new TLine(pmin,0.9,pmax,0.9); line2->SetLineStyle(4);
+   line2->Draw("same");
+
+   c1->cd(2);
+
+   hgl->Draw();
+   hfl->Draw("histsame");
+   TLine *line3 = new TLine(-1,1.0,1,1.0); line3->SetLineStyle(4);
+   line3->Draw("same");
+   TLine *line4 = new TLine(-1,0.9,1,0.9); line4->SetLineStyle(4);
+   line4->Draw("same");
+
+   c1->Update();
+   
    TFile fc("AliTOFComparison.root","RECREATE");
    c1->Write();
    fc.Close();
 
+   gBenchmark->Stop("AliTOFComparison");
+   gBenchmark->Show("AliTOFComparison");
+
+   delete rl;
    return 0;
 }
 
-Int_t good_tracks_tof(GoodTrackTOF *gt, const Int_t max) {
-   ifstream in("good_tracks_its");
-   if (!in) {
-     cerr<<"Can't get good_tracks_its !\n"; exit(11);
-   }   
-
-   AliRunLoader *rl = AliRunLoader::Open("galice.root","COMPARISON");
-   if (!rl) {
-       cerr<<"Can't start session !\n";
-       exit(1);
+Int_t GoodTracksTOF(const Char_t *dir) {
+   if (gAlice) { 
+       delete gAlice->GetRunLoader();
+       delete gAlice;//if everything was OK here it is already NULL
+       gAlice = 0x0;
    }
 
-   rl->GetEvent(0);
+   Char_t fname[100];
+   sprintf(fname,"%s/galice.root",dir);
 
+   AliRunLoader *rl = AliRunLoader::Open(fname,"COMPARISON");
+   if (!rl) {
+      ::Error("GoodTracksTOF","Can't start session !");
+      return 1;
+   }
 
    rl->LoadgAlice();
    rl->LoadHeader();
-   Int_t np = rl->GetHeader()->GetNtrack();
+   rl->LoadKinematics();
 
-   Int_t *good=new Int_t[np];
-   Int_t k;
-   for (k=0; k<np; k++) good[k]=0;
 
    AliLoader* tofl = rl->GetLoader("TOFLoader");
    if (tofl == 0x0) {
-      cerr<<"Can not get the TOF loader"<<endl;
-      exit(2);
+      ::Error("GoodTracksTOF","Can not get the TOF loader !");
+      delete rl;
+      return 2;
    }
    tofl->LoadDigits("read");
 
-   TTree *dTree=tofl->TreeD();
-   if (!dTree) {
-      cerr<<"Can't get the TOF cluster tree !\n";
-      exit(3);
-   } 
+   Int_t nev=rl->GetNumberOfEvents();
+   ::Info("GoodTracksTOF","Number of events : %d\n",nev);  
 
-   TBranch *branch=dTree->GetBranch("TOF");
-   if (!branch) { 
-     cerr<<"Can't get the branch with the TOF digits !\n";
-     exit(4);
+   sprintf(fname,"%s/GoodTracksITS.root",dir);
+   TFile *itsFile=TFile::Open(fname);
+   if ((!itsFile)||(!itsFile->IsOpen())) {
+       ::Error("GoodTracksTOF","Can't open the GoodTracksITS.root !");
+       delete rl;
+       return 5; 
    }
-   TClonesArray dummy("AliTOFdigit",10000), *digits=&dummy;
-   branch->SetAddress(&digits);
+   TClonesArray dum("AliTrackReference",1000), *itsRefs=&dum;
+   TTree *itsTree=(TTree*)itsFile->Get("itsTree");
+   if (!itsTree) {
+       ::Error("GoodTracksTOF","Can't get the ITS reference tree !");
+       delete rl;
+       return 6;
+   }
+   TBranch *itsBranch=itsTree->GetBranch("ITS");
+   if (!itsBranch) {
+      ::Error("GoodTracksTOF","Can't get the ITS reference branch !");
+      delete rl;
+      return 7;
+   }
+   itsBranch->SetAddress(&itsRefs);
+
+
+   sprintf(fname,"%s/GoodTracksTOF.root",dir);
+   TFile *tofFile=TFile::Open(fname,"recreate");
+   TClonesArray dummy("AliTrackReference",1000), *tofRefs=&dummy;
+   TTree tofTree("tofTree","Tree with info about the reconstructable TOF tracks");
+   tofTree.Branch("TOF",&tofRefs);
+
+
+   //********  Loop over generated events 
+   for (Int_t e=0; e<nev; e++) {
+
+     rl->GetEvent(e); tofFile->cd();
+
+     Int_t np = rl->GetHeader()->GetNtrack();
+     cout<<"Event "<<e<<" Number of particles: "<<np<<endl;
+
+     //******** Fill the "good" masks
+     Int_t *good=new Int_t[np]; Int_t k; for (k=0; k<np; k++) good[k]=0;
+
+     TTree *dTree=tofl->TreeD();
+     if (!dTree) {
+        ::Error("GoodTracksTOF","Can't get the TOF cluster tree !");
+        delete rl;
+        return 8;
+     } 
+     TBranch *branch=dTree->GetBranch("TOF");
+     if (!branch) { 
+        ::Error("GoodTracksTOF","Can't get the branch with the TOF digits !");
+        return 9;
+     }
+     TClonesArray dummy("AliTOFdigit",10000), *digits=&dummy;
+     branch->SetAddress(&digits);
    
-  dTree->GetEvent(0);
-  Int_t nd=digits->GetEntriesFast();
-  cerr<<"Number of digits: "<<nd<<endl;
+     dTree->GetEvent(0);
+     Int_t nd=digits->GetEntriesFast();
 
-  for (Int_t i=0; i<nd; i++) {
-    AliTOFdigit *d=(AliTOFdigit*)digits->UncheckedAt(i);
-    Int_t l0=d->GetTrack(0);
-       if (l0>=np) {cerr<<"Wrong label: "<<l0<<endl; continue;}
-    Int_t l1=d->GetTrack(1);
-       if (l1>=np) {cerr<<"Wrong label: "<<l1<<endl; continue;}
-    Int_t l2=d->GetTrack(2);
-       if (l2>=np) {cerr<<"Wrong label: "<<l2<<endl; continue;}
-    if (l0>=0) good[l0]++; 
-    if (l1>=0) good[l1]++; 
-    if (l2>=0) good[l2]++;
-  }
+     for (Int_t i=0; i<nd; i++) {
+       AliTOFdigit *d=(AliTOFdigit*)digits->UncheckedAt(i);
+       Int_t l0=d->GetTrack(0);
+          if (l0>=np) {cerr<<"Wrong label: "<<l0<<endl; continue;}
+       Int_t l1=d->GetTrack(1);
+          if (l1>=np) {cerr<<"Wrong label: "<<l1<<endl; continue;}
+       Int_t l2=d->GetTrack(2);
+          if (l2>=np) {cerr<<"Wrong label: "<<l2<<endl; continue;}
+       if (l0>=0) good[l0]++; 
+       if (l1>=0) good[l1]++; 
+       if (l2>=0) good[l2]++;
+     }
+     digits->Clear();
 
-   
-  rl->LoadKinematics();
-  AliStack* stack = rl->Stack();
-  Int_t nt=0;
-  Double_t px,py,pz,x,y,z;
-  Int_t code,lab;
-  while (in>>lab>>code>>px>>py>>pz>>x>>y>>z) {
-      if (good[lab] == 0) continue;
-      TParticle *p = (TParticle*)stack->Particle(lab);
-      if (p == 0x0) {
-         cerr<<"Can not get particle "<<lab<<endl;
-         exit(1);
-      }
-      if (TMath::Abs(p->Vx())>0.1) continue;
-      if (TMath::Abs(p->Vy())>0.1) continue;
-      //      if (TMath::Abs(p->Vz())>0.1) continue;
 
-      gt[nt].lab=lab;
-      gt[nt].code=p->GetPdgCode();
-//**** px py pz - in global coordinate system
-      gt[nt].px=p->Px(); gt[nt].py=p->Py(); gt[nt].pz=p->Pz();
-      gt[nt].x=p->Vx(); gt[nt].y=p->Vy(); gt[nt].z=p->Vz();
-      nt++;
-      if (nt==max) {cerr<<"Too many good tracks !\n"; break;}
-  }
+     //****** select tracks which are "good" enough
+     AliStack* stack = rl->Stack();
 
-  delete[] good;
+     itsTree->GetEvent(e);
+     Int_t nk=itsRefs->GetEntriesFast();
 
-  rl->UnloadKinematics();
-  rl->UnloadHeader();
-  rl->UnloadgAlice();
-  delete rl;
+     Int_t nt=0;
+     for (k=0; k<nk; k++) {
+        AliTrackReference *itsRef=(AliTrackReference *)itsRefs->UncheckedAt(k);
+        Int_t lab=itsRef->Label();
+        if (good[lab] == 0) continue;
+        TParticle *p = (TParticle*)stack->Particle(lab);
+        if (p == 0x0) {
+           cerr<<"Can not get particle "<<lab<<endl;
+           continue;
+        }
 
-  return nt;
+        if (TMath::Abs(p->Vx())>0.1) continue;
+        if (TMath::Abs(p->Vy())>0.1) continue;
+        //if (TMath::Abs(p->Vz())>0.1) continue;
+
+        new((*tofRefs)[nt]) AliTrackReference(*itsRef);
+        nt++;
+     }
+     itsRefs->Clear();
+
+     tofTree.Fill();
+     tofRefs->Clear();
+
+     delete[] good;
+
+   } //*** end of the loop over generated events
+
+   tofTree.Write();
+   tofFile->Close();
+
+   delete itsTree;
+   itsFile->Close();
+
+   delete rl;
+   return 0;
 }
