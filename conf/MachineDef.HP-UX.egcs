@@ -1,3 +1,5 @@
+# $Id$
+ 
 # Which Machine 
 PLATFORM      = linux
 #en esperant que ca marche...
