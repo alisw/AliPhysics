@@ -34,9 +34,6 @@
 #pragma link C++ class AliEMCALJetFinderAlgo+;
 #pragma link C++ class AliEMCALJetFinderAlgoOmni+;
 #pragma link C++ class AliEMCALJetFinderAlgoUA1Unit+;
-#pragma link C++ class AliEMCALJetFinderAlgoUA1+;
-#pragma link C++ class AliEMCALJetFinderAlgoUA1Revised+;
-#pragma link C++ class AliEMCALJetFinderAlgoUA1Hybrid+;
 #pragma link C++ class AliEMCALJetFinderPlots+;
 #pragma link C++ class AliEMCALJet+;
 #pragma link C++ class AliEMCALJetMicroDst+;

@@ -18,9 +18,6 @@ AliEMCALJetFinderOutput.cxx \
 AliEMCALJetFinderAlgo.cxx \
 AliEMCALJetFinderAlgoOmni.cxx \
 AliEMCALJetFinderAlgoUA1Unit.cxx \
-AliEMCALJetFinderAlgoUA1.cxx \
-AliEMCALJetFinderAlgoUA1Revised.cxx \
-AliEMCALJetFinderAlgoUA1Hybrid.cxx \
 AliEMCALJetFinderPlots.cxx \
 AliEMCALJet.cxx \
 AliEMCALFast.cxx \
