@@ -882,7 +882,7 @@ Bool_t AliL3Transform::ReadInit(Char_t *path)
   Int_t saveErrIgLevel=gErrorIgnoreLevel;
   gErrorIgnoreLevel=kFatal; //dont report errors
   TFile *rootfile = TFile::Open(path);
-  if(rootfile->IsZombie()) 
+  if(!rootfile || rootfile->IsZombie()) 
     { //ok assume its path to alirunfile file
       sprintf(filename,"%s/alirunfile.root",path); //create rootfile name
     } else { //path contains itself the rootfile name

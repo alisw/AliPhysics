@@ -34,7 +34,7 @@ int main(Int_t argc,Char_t **argv)
   sl2 = atoi(argv[3]);
   
   AliLevel3 level3;
-  level3.Init(path,kTRUE,1);
+  level3.Init(path,AliLevel3::kBinary,1);
   level3.SetClusterFinderParam(0,0,kTRUE);
   
   Int_t phi_segments,eta_segments,trackletlength,tracklength;

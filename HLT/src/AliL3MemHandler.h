@@ -172,7 +172,7 @@ class AliL3MemHandler{
   virtual Bool_t RawData2CompMemory(Int_t event=-1){return 0;}
 
   //AliL3DDLDataFileHandler
-  virtual Bool_t SetReaderInput(Char_t *name,Bool_t add=kTRUE){return 0;}
+  virtual Bool_t SetReaderInput(Char_t *name,Int_t event=0){return 0;}
   virtual void CloseReaderInput(){};
 
   virtual AliL3DigitRowData* DDLData2Memory(UInt_t &nrow,Int_t event=-1){return 0;}

@@ -6,6 +6,7 @@
 #include "AliL3StandardIncludes.h"
 #include <TClonesArray.h>
 #include <TSystem.h>
+#include <AliTPC.h>
 
 #include <AliTPCParamSR.h>
 #include <AliTPCDigitsArray.h>
@@ -145,22 +146,18 @@ void AliL3FileHandler::CloseMCOutput()
 
 Bool_t AliL3FileHandler::SetAliInput()
 {
-  if(!fInAli->IsOpen()){
-    LOG(AliL3Log::kError,"AliL3FileHandler::SetAliInput","File Open")
-      <<"Ali File "<<fInAli->GetName()<<" does not exist"<<ENDLOG;
-    return kFALSE;
-  }
-  fParam = (AliTPCParam*)fInAli->Get(AliL3Transform::GetParamName());
+  fInAli->CdGAFile();
+  fParam = AliTPC::LoadTPCParam(gFile);
   if(!fParam){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File")
-      <<"No TPC parameters found in \""<<fInAli->GetName()
+      <<"No TPC parameters found in \""<<gFile->GetName()
       <<"\", creating standard parameters "
       <<"which might not be what you want!"<<ENDLOG;
     fParam = new AliTPCParamSR;
   }
   if(!fParam){ 
     LOG(AliL3Log::kError,"AliL3FileHandler::SetAliInput","File Open")
-      <<"No AliTPCParam "<<AliL3Transform::GetParamName()<<" in File "<<fInAli->GetName()<<ENDLOG;
+      <<"No AliTPCParam "<<AliL3Transform::GetParamName()<<" in File "<<gFile->GetName()<<ENDLOG;
     return kFALSE;
   }
   return kTRUE;
@@ -170,23 +167,23 @@ Bool_t AliL3FileHandler::SetAliInput(Char_t *name)
 {
   //Open the AliROOT file with name.
   
-  fInAli= new TFile(name,"READ");
+  fInAli= AliRunLoader::Open(name);
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File Open")
-    <<"Pointer to TFile = 0x0 "<<ENDLOG;
+    <<"Pointer to AliRunLoader = 0x0 "<<ENDLOG;
     return kFALSE;
   }
   return SetAliInput();
 }
 
-Bool_t AliL3FileHandler::SetAliInput(TFile *file)
+Bool_t AliL3FileHandler::SetAliInput(AliRunLoader *runLoader)
 {
   //Specify already opened AliROOT file to use as an input.
   
-  fInAli=file;
+  fInAli=runLoader;
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File Open")
-    <<"Pointer to TFile = 0x0 "<<ENDLOG;
+    <<"Pointer to AliRunLoader = 0x0 "<<ENDLOG;
     return kFALSE;
   }
   return SetAliInput();
@@ -199,7 +196,6 @@ void AliL3FileHandler::CloseAliInput()
       <<"Nothing to Close"<<ENDLOG;
     return;
   }
-  if(fInAli->IsOpen()) fInAli->Close();
   delete fInAli;
   fInAli = 0;
 }
@@ -211,12 +207,18 @@ Bool_t AliL3FileHandler::IsDigit(Int_t event)
   
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::IsDigit","File")
-    <<"Pointer to TFile = 0x0 "<<ENDLOG;
-    return kTRUE;  //maybe you are using binary input which is Digits!!
+    <<"Pointer to AliRunLoader = 0x0 "<<ENDLOG;
+    return kTRUE;  //maybe you are using binary input which is Digits!!  
   }
-  Char_t name[1024];
-  sprintf(name,"TreeD_%s_%d",AliL3Transform::GetParamName(),event);
-  TTree *t=(TTree*)fInAli->Get(name);
+  AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
+  if(!tpcLoader){
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::IsDigit","File")
+    <<"Pointer to AliLoader for TPC = 0x0 "<<ENDLOG;
+    return kFALSE;
+  }
+  fInAli->GetEvent(event);
+  tpcLoader->LoadDigits();
+  TTree *t=tpcLoader->TreeD();
   if(t){
     LOG(AliL3Log::kInformational,"AliL3FileHandler::IsDigit","File Type")
     <<"Found Digit Tree -> Use Fast Cluster Finder"<<ENDLOG;
@@ -308,13 +310,8 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Memory","File")
-    <<"No Input avalible: no object TFile"<<ENDLOG;
+    <<"No Input avalible: no object AliRunLoader"<<ENDLOG;
     return 0; 
-  }
-  if(!fInAli->IsOpen()){
-    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Memory","File")
-    <<"No Input avalible: TFile not opened"<<ENDLOG;
-    return 0;
   }
   
   if(!fDigitsTree)
@@ -442,13 +439,8 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
   
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliAltroDigits2Memory","File")
-    <<"No Input avalible: no object TFile"<<ENDLOG;
+    <<"No Input avalible: no object AliRunLoader"<<ENDLOG;
     return 0; 
-  }
-  if(!fInAli->IsOpen()){
-    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliAltroDigits2Memory","File")
-    <<"No Input avalible: TFile not opened"<<ENDLOG;
-    return 0;
   }
   if(eventmerge == kTRUE && event >= 1024)
     {
@@ -763,10 +755,15 @@ Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
 {
   //Connects to the TPC digit tree in the AliROOT file.
   
-  fInAli->cd();
-  Char_t dname[100];
-  sprintf(dname,"TreeD_%s_%d",AliL3Transform::GetParamName(),event);
-  fDigitsTree = (TTree*)fInAli->Get(dname);
+  AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
+  if(!tpcLoader){
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::GetDigitsTree","File")
+    <<"Pointer to AliLoader for TPC = 0x0 "<<ENDLOG;
+    return kFALSE;
+  }
+  fInAli->GetEvent(event);
+  tpcLoader->LoadDigits();
+  fDigitsTree = tpcLoader->TreeD();
   if(!fDigitsTree) 
     {
       LOG(AliL3Log::kError,"AliL3FileHandler::GetDigitsTree","Digits Tree")
@@ -800,61 +797,35 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
     }
   
   //Get the original digitstree:
-  Char_t dname[100];
-  sprintf(dname,"TreeD_%s_0",AliL3Transform::GetParamName());
+  AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
+  if(!tpcLoader){
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2RootFile","File")
+    <<"Pointer to AliLoader for TPC = 0x0 "<<ENDLOG;
+    return;
+  }
+  tpcLoader->LoadDigits();
+  TTree *t=tpcLoader->TreeD();
 
-  fInAli->cd();
   AliTPCDigitsArray *old_array = new AliTPCDigitsArray();
   old_array->Setup(fParam);
   old_array->SetClass("AliSimDigits");
 
-  Bool_t ok = old_array->ConnectTree(dname);
+  Bool_t ok = old_array->ConnectTree(t);
   if(!ok)
     {
       printf("AliL3FileHandler::AliDigits2RootFile : No digits tree object\n");
       return;
     }
 
-  Bool_t create=kFALSE;
-  TFile *digFile;
-  
-  if(gSystem->AccessPathName(new_digitsfile))
-    {
-      cout<<"AliL3FileHandler::AliDigits2RootFile : Creating new file :"<<new_digitsfile<<endl;
-      create = kTRUE;
-      digFile = TFile::Open(new_digitsfile,"RECREATE");
-      fParam->Write(fParam->GetTitle());
-    }
-  else
-    {
-      create = kFALSE;
-      digFile = TFile::Open(new_digitsfile,"UPDATE");
-      
-    }
-  if(!digFile->IsOpen())
-    {
-      LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2RootFile","Rootfile")
-	<<"Error opening rootfile "<<new_digitsfile<<ENDLOG;
-      return;
-    }
-  
-  digFile->cd();
+  tpcLoader->SetDigitsFileName(new_digitsfile);
+  tpcLoader->MakeDigitsContainer();
     
   //setup a new one, or connect it to the existing one:
   AliTPCDigitsArray *arr = new AliTPCDigitsArray(); 
   arr->SetClass("AliSimDigits");
   arr->Setup(fParam);
-  if(create)
-    arr->MakeTree();
-  else
-    {
-      Bool_t ok = arr->ConnectTree(dname);
-      if(!ok)
-	{
-	  printf("AliL3FileHandler::AliDigits2RootFile : No digits tree object in existing file\n");
-	  return;
-	}
-    }
+  arr->MakeTree(tpcLoader->TreeD());
+
   Int_t digcounter=0,trackID[3];
 
   for(Int_t i=fRowMin; i<=fRowMax; i++)
@@ -916,15 +887,14 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
       arr->ClearRow(sector,row);  
       old_array->ClearRow(sector,row);
     }
-  digFile->cd();
   char treeName[100];
   sprintf(treeName,"TreeD_%s_0",fParam->GetTitle());
-  
+
   arr->GetTree()->SetName(treeName);
   arr->GetTree()->AutoSave();
+  tpcLoader->WriteDigits("OVERWRITE");
   delete arr;
   delete old_array;
-  digFile->Close();
   
 }
 
@@ -943,24 +913,24 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint,Int_t e
   npoint=0;
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliPoints2Memory","File")
-    <<"No Input avalible: no object TFile"<<ENDLOG;
-    return 0;
-  }
-  if(!fInAli->IsOpen()){
-    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliPoints2Memory","File")
-    <<"No Input avalible: TFile not opend"<<ENDLOG;
+    <<"No Input avalible: no object AliRunLoader"<<ENDLOG;
     return 0;
   }
 
   TDirectory *savedir = gDirectory;
-  fInAli->cd();
-  
-  Char_t cname[100];
-  sprintf(cname,"TreeC_TPC_%d",eventn);
+  AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
+  if(!tpcLoader){
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliPoints2Memory","File")
+    <<"Pointer to AliLoader for TPC = 0x0 "<<ENDLOG;
+    return kFALSE;
+  }
+  fInAli->GetEvent(eventn);
+  tpcLoader->LoadRecPoints();
+
   AliTPCClustersArray carray;
   carray.Setup(fParam);
   carray.SetClusterType("AliTPCcluster");
-  Bool_t clusterok = carray.ConnectTree(cname);
+  Bool_t clusterok = carray.ConnectTree(tpcLoader->TreeR());
   if(!clusterok) return 0;
 
   AliTPCClustersRow ** clusterrow = 

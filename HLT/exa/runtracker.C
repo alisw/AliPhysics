@@ -13,7 +13,7 @@
 void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t nevent=1,Char_t *opath="./")
 {
   //Set your configuration here:
-  Bool_t binary=kFALSE; //Assume input is RLE binary files, or rootfile.
+  AliLevel3::EFileType filetype=AliLevel3::kRaw; //Assume input is RLE binary files, or rootfile.
   Bool_t pileup=kFALSE; //Assume input is pileup event = non RLE binary files.
   Int_t npatches = 1;   //Options; 1, 2 and 6.
   Char_t trackparams[] = "SetTrackingParameters_4000bf04.C"; //Set this to correspond 
@@ -21,7 +21,7 @@ void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t neven
   
   //for aliroot the path should point to a file 
   //containing the tpc geometry called alirunfile.root
-  Bool_t isinit=AliL3Transform::Init(path,!binary);
+  Bool_t isinit=AliL3Transform::Init(path,(filetype!=AliLevel3::kBinary));
   if(!isinit){
     cerr << "Could not create transform settings, please check log for error messages!" << endl;
     return;
@@ -29,16 +29,19 @@ void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t neven
 
   for(Int_t ev=0; ev<nevent; ev++)
     {
-      if(binary)
+      if(filetype==AliLevel3::kBinary)
 	a = new AliLevel3();
       else 
 	{
 	  Char_t fname[1024];
-	  sprintf(fname,"%s/digitfile.root",path);
+	  if(filetype==AliLevel3::kRaw)
+	    sprintf(fname,"%s/raw.root",path);
+	  else
+	    sprintf(fname,"%s/galice.root",path);
 	  a = new AliLevel3(fname);
 	}
       
-      a->Init(path,binary,npatches);
+      a->Init(path,filetype,npatches);
       
       if(pileup)
 	a->DoPileup();

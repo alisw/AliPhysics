@@ -10,8 +10,7 @@
 #include "AliL3Transform.h"
 #include "AliL3MemHandler.h"
 #include "AliL3DigitData.h"
-#include "AliL3DDLTPCRawStream.h"
-#include "AliL3DDLRawReaderFile.h"
+#include "../RAW/AliRawReaderRoot.h"
 
 #include "AliL3DDLDataFileHandler.h"
 
@@ -55,31 +54,14 @@ void AliL3DDLDataFileHandler::FreeAll()
 }
 
 
-Bool_t AliL3DDLDataFileHandler::SetReaderInput(Char_t *name, Bool_t add)
+Bool_t AliL3DDLDataFileHandler::SetReaderInput(Char_t *name,Int_t event)
 {
-  if(fReader){
-    LOG(AliL3Log::kError,"AliL3DDLDataFileHandler::SetReaderInput","File Open")
-      <<"Reader ptr is already in use"<<ENDLOG;
-    return kFALSE;
-  }
-
-  fReader=new AliL3DDLRawReaderFile(name,add);
-  fTPCStream=new AliL3DDLTPCRawStream(fReader);
-
-  return kTRUE;
-}
-
-Bool_t AliL3DDLDataFileHandler::SetReaderInput(AliL3DDLRawReaderFile *rf)
-{
-  if(fReader){
-    LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetReaderInput","File Open")
-      <<"Reader ptr is already in use, delete it first"<<ENDLOG;
-    return kFALSE;
-  }
-
-  //Open the raw data file with given file.
-  fReader = rf;
-  fTPCStream=new AliL3DDLTPCRawStream(fReader);
+  fFilename=name;
+  fEvent=event;
+  if(fReader) delete fReader;
+  if(fTPCStream) delete fTPCStream;
+  fReader=new AliRawReaderRoot(name,event);
+  fTPCStream=new AliTPCRawStream(fReader);
 
   return kTRUE;
 }
@@ -98,8 +80,21 @@ void AliL3DDLDataFileHandler::CloseReaderInput()
   fTPCStream = 0;
 }
 
+Bool_t AliL3DDLDataFileHandler::IsDigit(Int_t i)
+{
+  return kTRUE;
+}
+
 AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t event)
-{                                           //event is not used
+{
+  if(event!=fEvent){
+    fEvent=event;
+    if(fReader) delete fReader;
+    if(fTPCStream) delete fTPCStream;
+    fReader=new AliRawReaderRoot(fFilename,event);
+    fTPCStream=new AliTPCRawStream(fReader);
+  }
+
   AliL3DigitRowData *data = 0;
   nrow=0;
 
@@ -153,8 +148,11 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
   //for(Int_t i=0;i<ddls_to_search;i++) cout << ddls[i] <<endl;
 
   for(Int_t i=0;i<ddls_to_search;i++){
-    fTPCStream->SetDDLID(ddls[i]); //ddl to read out
+    fReader->Reset();
+    fReader->Select(0,ddls[i],ddls[i]+1);
     while (fTPCStream->Next()){
+      
+
       UShort_t dig=fTPCStream->GetSignal();
       if(dig <= AliL3Transform::GetZeroSup()) continue;
       if(dig >= AliL3Transform::GetADCSat())

@@ -30,6 +30,7 @@
 #include "AliL3Fitter.h"
 #ifdef use_aliroot
 #include "AliL3FileHandler.h"
+#include "AliL3DDLDataFileHandler.h"
 #endif
 #include "AliL3Benchmark.h"
 #include "AliL3DigitData.h"
@@ -83,40 +84,14 @@ AliLevel3::AliLevel3(Char_t *infile)
 {
   //Constructor. Calls constructor of the tracker, vertexfinder and merger classes.
   
-  fInputFile = new TFile(infile,"READ");
-  
-  if(!fInputFile->IsOpen())
-    {
-      LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
-	<<"Inputfile "<<infile<<" does not exist!"<<ENDLOG;
-      return;
-    }
+  fInputFile = infile;
 }
 #endif
 
-#ifndef no_root
-AliLevel3::AliLevel3(TFile *in)
-{
-  fInputFile  =  in;
-  if(!in){
-    LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
-    <<"Pointer to InFile 0x0!"<<ENDLOG;
-    return;
-  }  
-  
-  if(!fInputFile->IsOpen())
-    {
-    LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
-    <<"Inputfile does not exist"<<ENDLOG;
-      return;
-    }
-}
-#endif
-
-void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
+void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
 {
 
-  if(!binary && !fInputFile)
+  if((filetype!=kBinary) && !fInputFile)
     {
       LOG(AliL3Log::kError,"AliLevel3::Init","Files")
 	<<"You have not supplied the input rootfile; use the appropriate ctor!"<<ENDLOG;
@@ -126,7 +101,7 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
   fWriteOut = kFALSE;
   fPileUp = kFALSE;
   fNoCF=kFALSE;
-  fUseBinary = binary;
+  fUseBinary = (filetype==kBinary);
   SetPath(path);
   
   fDoRoi = kFALSE;
@@ -181,8 +156,15 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
   fGlobalMerger = new AliL3GlobalMerger();
   SetMergerParameters();//Set default merger parameters
 #ifdef use_aliroot
-  fFileHandler = new AliL3FileHandler();
-  fFileHandler->SetAliInput(fInputFile);
+  if(filetype==kRoot){
+    fFileHandler = new AliL3FileHandler();
+    fFileHandler->SetAliInput(fInputFile);
+  }else if(filetype==kRaw){
+    fFileHandler = new AliL3DDLDataFileHandler();
+    fFileHandler->SetReaderInput(fInputFile);
+  }else{
+    fFileHandler = new AliL3MemHandler();
+  }
 #else
   fFileHandler = new AliL3MemHandler();
 #endif
@@ -281,10 +263,9 @@ void AliLevel3::ProcessSlice(Int_t slice){
   Bool_t UseCF = kFALSE;
 #ifdef use_aliroot
   UseCF = fFileHandler->IsDigit(fEvent);
-#else
+#endif
   if(fUseBinary)
     UseCF = kTRUE; //In case you are not using aliroot
-#endif
   if(fNoCF == kTRUE) //In case you don't want to run with cluster finder
     UseCF = kFALSE;
 
@@ -401,7 +382,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
           fFileHandler->CloseBinaryOutput();
         }
   
-        if(1){   //Ali to Memory
+        if(1){   //Ali to Memory	  
           digits=(AliL3DigitRowData *)fFileHandler->AliAltroDigits2Memory(ndigits,fEvent);
           if(0){ //Memory to Binary
             fFileHandler->SetBinaryOutput(name);

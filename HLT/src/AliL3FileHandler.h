@@ -9,9 +9,9 @@ class TClonesArray;
 
 #include <AliSimDigits.h>
 #include <AliTPCParam.h>
+#include <AliRunLoader.h>
 
 #include <TObject.h>
-#include <TFile.h>
 #include <TTree.h>
 
 class AliL3SpacePointData;
@@ -21,7 +21,7 @@ class AliL3TrackArray;
 
 class AliL3FileHandler:public AliL3MemHandler{
  private:
-  TFile *fInAli;
+  AliRunLoader *fInAli;
   AliTPCParam *fParam;
   Bool_t SetAliInput();
   Int_t fLastIndex;
@@ -42,7 +42,7 @@ class AliL3FileHandler:public AliL3MemHandler{
 
   void FreeDigitsTree();
   Bool_t SetAliInput(Char_t *name);
-  Bool_t SetAliInput(TFile *file);
+  Bool_t SetAliInput(AliRunLoader *runLoader);
   void CloseAliInput(); 
   Bool_t IsDigit(Int_t event);
   
