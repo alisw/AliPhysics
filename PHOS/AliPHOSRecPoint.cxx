@@ -172,10 +172,6 @@ Int_t AliPHOSRecPoint::GetPHOSMod()
 
   phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fPHOSMod = relid[0];
-  if (fPHOSMod<0 || fPHOSMod>phosgeom->GetNModules() ) {
-    cout << "Wrong PHOS module number is found: " << fPHOSMod << endl;
-    return 0;
-  }
   return fPHOSMod ;
 }
 
@@ -186,7 +182,7 @@ Int_t * AliPHOSRecPoint::GetPrimaries(Int_t & number)
   
   AliPHOSDigit * digit ;
   Int_t index ;
-  Int_t maxcounter = 10 ;
+  Int_t maxcounter = 20 ;
   Int_t counter    = 0 ;
   Int_t * tempo    = new Int_t[maxcounter] ;
   AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;

@@ -40,6 +40,8 @@ ClassImp(AliPHOSPID)
 AliPHOSPID::AliPHOSPID()
 {
   // ctor
+  fGeom = AliPHOSGeometry::GetInstance() ;
+
 }
 
 //____________________________________________________________________________

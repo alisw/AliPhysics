@@ -34,7 +34,6 @@
 #include "TTree.h"
 #include "TMath.h"
 #include "TCanvas.h" 
-#include "TStyle.h" 
 
 // --- Standard library ---
 
@@ -53,7 +52,6 @@
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSIndexToObject.h"
-#include "AliPHOSCPV.h"
 
 ClassImp(AliPHOSAnalyze)
 
@@ -89,7 +87,10 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
       fEvt = -999 ; 
 
   }
-  fDebugLevel = 0;
+  fClu = 0 ;
+  fPID = 0 ;
+  fTrs = 0 ;
+  fRec = 0 ;
   ResetHistograms() ;
 }
 
@@ -115,12 +116,23 @@ AliPHOSAnalyze::~AliPHOSAnalyze()
 
   if (fRootFile->IsOpen() ) 
     fRootFile->Close() ; 
-  if(fRootFile) {delete fRootFile ; fRootFile=0 ;}
-  if(fPHOS)     {delete fPHOS     ; fPHOS    =0 ;}
-  if(fClu)      {delete fClu      ; fClu     =0 ;}
-  if(fPID)      {delete fPID      ; fPID     =0 ;}
-  if(fRec)      {delete fRec      ; fRec     =0 ;}
-  if(fTrs)      {delete fTrs      ; fTrs     =0 ;}
+  if(fRootFile)
+    delete fRootFile ;  
+
+  if(fPHOS)
+    delete fPHOS ; 
+
+  if(fClu)
+    delete fClu ; 
+
+  if(fPID)
+    delete fPID ; 
+
+  if(fRec)
+    delete fRec ; 
+
+  if(fTrs)
+    delete fTrs ; 
 
 }
 
@@ -130,11 +142,11 @@ void AliPHOSAnalyze::ActivePPSD(Int_t Nevents=1){
   fhEnergyCorrelations  = new TH2F("hEnergyCorrelations","hEnergyCorrelations",40,  0., 0.15, 30, 0., 3.e-5);
   //========== Create the Clusterizer
   fClu = new AliPHOSClusterizerv1() ; 
-  fClu->SetEmcEnergyThreshold(0.05) ; 
+  fClu->SetEmcEnergyThreshold(0.01) ; 
   fClu->SetEmcClusteringThreshold(0.20) ; 
   fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
   fClu->SetPpsdClusteringThreshold(0.0000001) ; 
-  fClu->SetLocalMaxCut(0.03) ;
+  fClu->SetLocalMaxCut(0.02) ;
   fClu->SetCalibrationParameters(0., 0.00000001) ; 
 
   Int_t ievent;
@@ -151,7 +163,7 @@ void AliPHOSAnalyze::ActivePPSD(Int_t Nevents=1){
 
       //=========== Gets the Kine TTree
       gAlice->TreeK()->GetEvent(0) ;
-      
+            
       //=========== Get the Digit Tree
       gAlice->TreeD()->GetEvent(0) ;
       
@@ -201,6 +213,7 @@ void AliPHOSAnalyze::ActivePPSD(Int_t Nevents=1){
   SaveHistograms() ;
   fhEnergyCorrelations->Draw("BOX") ;
 }
+
 
 //____________________________________________________________________________
 void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)    
@@ -300,83 +313,21 @@ void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)
 }           // endfunction
 
 //____________________________________________________________________________
-void AliPHOSAnalyze::ReconstructCPV(Int_t Nevents )    
-{     
-
-  // Perform reconstruction of EMC and CPV (GPS2 or IHEP) for <Nevents> events
-  // Yuri Kharlov. 19 October 2000
-
-  Int_t ievent ;   
-  for ( ievent=0; ievent<Nevents; ievent++) {  
-    if (ievent==0) {
-      cout << "Analyze > Starting Reconstructing " << endl ; 
-      //========== Create the Clusterizer
-      fClu = new AliPHOSClusterizerv1() ; 
-      fClu->SetEmcEnergyThreshold(0.05) ; 
-      fClu->SetEmcClusteringThreshold(0.20) ; 
-      fClu->SetLocalMaxCut(0.03) ;
-      if      (strcmp(fGeom->GetName(),"GPS2") == 0) {
-	fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
-	fClu->SetPpsdClusteringThreshold(0.0000001) ; 
-      }
-      else if (strcmp(fGeom->GetName(),"IHEP") == 0) {
-	fClu->SetLocalMaxCutCPV(0.03) ;
-	fClu->SetLogWeightCutCPV(4.0) ;
-	fClu->SetPpsdEnergyThreshold    (0.09) ;
-      }
-      fClu->SetCalibrationParameters(0., 0.00000001) ; 
-      
-      //========== Creates the track segment maker
-      fTrs = new AliPHOSTrackSegmentMakerv1()  ;
-      
-      //========== Creates the particle identifier for GPS2 only
-      if      (strcmp(fGeom->GetName(),"GPS2") == 0) {
-	fPID = new AliPHOSPIDv1() ;
-	fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ; 
-      }	  
-      
-      //========== Creates the Reconstructioner
-      fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
-      if (fDebugLevel != 0) fRec -> SetDebugReconstruction(kTRUE);     
-    }
-      
-    if (fDebugLevel != 0 ||
-	(ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
-      cout <<  "======= Analyze ======> Event " << ievent+1 << endl ;
-    
-    //=========== Connects the various Tree's for evt
-    gAlice->GetEvent(ievent);
-    
-    //=========== Gets the Digit TTree
-    gAlice->TreeD()->GetEvent(0) ;
-    
-    //=========== Do the reconstruction
-    fPHOS->Reconstruction(fRec);
-  }
-
-  if(fClu)      {delete fClu      ; fClu     =0 ;}
-  if(fPID)      {delete fPID      ; fPID     =0 ;}
-  if(fRec)      {delete fRec      ; fRec     =0 ;}
-  if(fTrs)      {delete fTrs      ; fTrs     =0 ;}
-  
-}
-//-------------------------------------------------------------------------------------
-
-void AliPHOSAnalyze::Reconstruct(Int_t Nevents )    
+ void AliPHOSAnalyze::Reconstruct(Int_t Nevents,Int_t FirstEvent )    
 {     
   Int_t ievent ;   
-  for ( ievent=0; ievent<Nevents; ievent++)
+  for ( ievent=FirstEvent; ievent<Nevents; ievent++)
     {  
-      if (ievent==0) 
+      if (ievent==FirstEvent) 
 	{
 	  cout << "Analyze > Starting Reconstructing " << endl ; 
 	  //========== Create the Clusterizer
 	  fClu = new AliPHOSClusterizerv1() ; 
-	  fClu->SetEmcEnergyThreshold(0.05) ; 
+	  fClu->SetEmcEnergyThreshold(0.03) ; 
 	  fClu->SetEmcClusteringThreshold(0.20) ; 
-	  fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
-	  fClu->SetPpsdClusteringThreshold(0.0000001) ; 
-	  fClu->SetLocalMaxCut(0.03) ;
+	  fClu->SetPpsdEnergyThreshold    (0.0000001) ; 
+	  fClu->SetPpsdClusteringThreshold(0.0000001) ;
+	  fClu->SetLocalMaxCut(0.02) ;
 	  fClu->SetCalibrationParameters(0., 0.00000001) ; 
 	  
 	  //========== Creates the track segment maker
@@ -386,16 +337,18 @@ void AliPHOSAnalyze::Reconstruct(Int_t Nevents )
 	  //========== Creates the particle identifier
 	  fPID = new AliPHOSPIDv1() ;
 	  fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ; 
+	  fPID->SetDispersionCutOff(2.0) ;
+	  fPID->SetRelativeDistanceCut(3.) ;
 	  
 	  //========== Creates the Reconstructioner  
 	  fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
-//     	  fRec -> SetDebugReconstruction(kTRUE);     
+	  //	  	  fRec -> SetDebugReconstruction(kTRUE);     
 
 	}
       
       //========== Event Number>         
-    if ((ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
-      cout <<  "======= Analyze ======> Event " << ievent+1 << endl ;
+      //      if ( ( log10((Float_t)(ievent+1)) - (Int_t)(log10((Float_t)(ievent+1))) ) == 0. ) 
+	cout <<  "Reconstruct > Event is " << ievent << endl ;  
       
       //=========== Connects the various Tree's for evt
       gAlice->GetEvent(ievent);
@@ -407,268 +360,131 @@ void AliPHOSAnalyze::Reconstruct(Int_t Nevents )
       fPHOS->Reconstruction(fRec);
     }
 
-  if(fClu)      {delete fClu      ; fClu     =0 ;}
-  if(fPID)      {delete fPID      ; fPID     =0 ;}
-  if(fRec)      {delete fRec      ; fRec     =0 ;}
-  if(fTrs)      {delete fTrs      ; fTrs     =0 ;}
+    fClu->Delete();
+    fClu=0 ;
+    fTrs->Delete();
+    fTrs = 0 ;
+    fPID->Delete();
+    fPID = 0 ;
+    fRec->Delete();
+    fRec = 0 ;
+
+}
+//____________________________________________________________________________
+ void AliPHOSAnalyze::InvariantMass(Int_t Nevents )    
+{
+  // Calculates Real and Mixed invariant mass distributions
+  Int_t NMixedEvents = 4 ; //# of events used for calculation of 'mixed' distribution 
+  Int_t MixedLoops = (Int_t )TMath::Ceil(Nevents/NMixedEvents) ;
   
-}
-//-------------------------------------------------------------------------------------
-
-//   TClonesArray AllDigitArray = TClonesArray("AliPHOSDigit",1000) ;
-//   TClonesArray * PhotonsList ;
-//   TClonesArray * FalsDigitsList ;
-//   TClonesArray AllPrimary = TClonesArray("TParticle",5000) ;
-//   TFile * file2 = new TFile("ph100.root") ; // file with added photons
-//   gAlice = (AliRun*) file2->Get("gAlice") ;
-//   Int_t ievent;
-//   Int_t NDigits[Nevents+1] ;
-//   NDigits[0]=0 ;
-//   Int_t NAllDigits = 0;
-//   Int_t NprimPerEvent = 20 ;
-//   for (ievent=0; ievent <Nevents; ievent++)
-//     {
-//       PhotonsList  = gAlice->Particles();  //Primary
-//       FalsDigitsList  = ((AliPHOSv1 *)gAlice->GetDetector("PHOS"))->Digits();  //Digits
-//       gAlice->GetEvent(ievent) ;
-//       gAlice->TreeD()->GetEvent(0) ;
-//       gAlice->TreeK()->GetEvent(0) ;
-//       //Copy Primary
-//       Int_t Nprim ;
-//       for(Nprim = 0 ;Nprim < NprimPerEvent ; Nprim++)
-// 	new (AllPrimary[Nprim+ievent*NprimPerEvent])  TParticle(*((TParticle *) PhotonsList->At(Nprim))) ;
-
-//       //Copy Digits
-//       TIter nextDigit(FalsDigitsList) ;
-//       AliPHOSDigit * FalseDigit ;
-//       NDigits[ievent+1] = NDigits[ievent]+ FalsDigitsList->GetEntriesFast() ; 
-//       while( (FalseDigit = (AliPHOSDigit *) nextDigit()))
-// 	{	 
-// 	  new (AllDigitArray[NAllDigits])  AliPHOSDigit(FalseDigit->GetPrimary(1),FalseDigit->GetId(),FalseDigit->GetAmp()) ;
-// 	  NAllDigits++ ;
-// 	}	  
-//     }
-//   file2->Close() ;
-
-
-
-//       //Add primary particles
-//       cout << "# of Primaries before add " << PrimaryList->GetEntriesFast() << endl;
-//      Int_t NTruePrimary = 0 ;  //PrimaryList->GetEntriesFast() ;
-//       Int_t Nprim ;
-//       for(Nprim = 0; Nprim < NprimPerEvent; Nprim++)
-// 	new ((*PrimaryList)[NTruePrimary+Nprim])  TParticle(*((TParticle *) AllPrimary.At(Nprim+ievent*NprimPerEvent))) ;
-      
-//       cout << "# of Primaries after add " << PrimaryList->GetEntriesFast() <<endl;
-
-//       cout << "Digits before add " << DigitsList->GetEntries() << endl ;
-//       cout << "Digits to add " <<  NDigits[ievent+1]-  NDigits[ievent]<< endl ;
-      
-      //=========== Add fals digits ==============================
-//       TIter nextDigit(DigitsList) ;
-//       AliPHOSDigit * FalseDigit ;
-//       AliPHOSDigit * RealDigit ;
-//       Int_t NTrueDigits = DigitsList->GetEntriesFast() ; 
-//       Int_t Ndigit ;
-//       for(Ndigit=NDigits[ievent];Ndigit<NDigits[ievent+1];Ndigit++)
-// 	{	 
-// 	  FalseDigit = (AliPHOSDigit*) AllDigitArray.At(Ndigit) ;
-// 	  Bool_t Add = kTRUE ; 
-// 	  AliPHOSDigit tmpDigit=AliPHOSDigit(FalseDigit->GetPrimary(1)+NTruePrimary,FalseDigit->GetId(),FalseDigit->GetAmp()) ;
-	  
-// 	  while( (RealDigit = (AliPHOSDigit *) nextDigit()) && Add)
-// 	    {
-// 	      if((*RealDigit) == (tmpDigit)) 
-// 		{
-// 		  *RealDigit=*RealDigit+tmpDigit ;
-// 		  Add = kFALSE ;
-// 		}
-// 	    }
-// 	  if(Add)
-// 	    {
-// 	      new ((*DigitsList)[NTrueDigits])  AliPHOSDigit(FalseDigit->GetPrimary(1)+NTruePrimary,FalseDigit->GetId(),FalseDigit->GetAmp()) ;
-// 	      ((AliPHOSDigit *)DigitsList->At(NTrueDigits))->SetIndexInList(NTrueDigits) ;
-// 	      NTrueDigits++ ;
-// 	    }	  
-// 	}
-//       cout << "Digits after add " << DigitsList->GetEntries() << endl ;
-
-
-//____________________________________________________________________________
-void AliPHOSAnalyze::ReadAndPrintCPV(Int_t Nevents)
-{
-  //
-  // Read and print generated and reconstructed hits in CPV
-  // Author: Yuri Kharlov
-  // 12 October 2000
-  //
-
-  cout << "Start CPV Analysis"<< endl ;
-  for ( Int_t ievent=0; ievent<Nevents; ievent++) {  
-      
-    //========== Event Number>         
-    cout << endl <<  "==== ReadAndPrintCPV ====> Event is " << ievent+1 << endl ;
+  //========== Booking Histograms
+  TH2D * hRealEM   = new TH2D("hRealEM",   "Real for EM particles",      250,0.,1.,40,0.,4.) ;
+  TH2D * hRealPhot = new TH2D("hRealPhot", "Real for kPhoton particles", 250,0.,1.,40,0.,4.) ;
+  TH2D * hMixedEM  = new TH2D("hMixedEM",  "Mixed for EM particles",     250,0.,1.,40,0.,4.) ;
+  TH2D * hMixedPhot= new TH2D("hMixedPhot","Mixed for kPhoton particles",250,0.,1.,40,0.,4.) ;
+  
+  Int_t ievent;
+  Int_t EventInMixedLoop ;
+  
+  Int_t NRecParticles[NMixedEvents] ;
+  
+  AliPHOSRecParticle::RecParticlesList * AllRecParticleList  = new TClonesArray("AliPHOSRecParticle", NMixedEvents*1000) ;
+  
+  for(EventInMixedLoop = 0; EventInMixedLoop < MixedLoops; EventInMixedLoop++  ){
+    Int_t iRecPhot = 0 ;
     
-    //=========== Connects the various Tree's for evt
-    gAlice->GetEvent(ievent);
-
-    //=========== Get the Hits Tree
-    gAlice->ResetHits();
-    gAlice->TreeH()->GetEvent(0);
-    
-    //========== Creating branches ===================================
-    AliPHOSRecPoint::RecPointsList ** EmcRecPoints = fPHOS->EmcRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , EmcRecPoints  ) ;
-    
-    AliPHOSRecPoint::RecPointsList ** CpvRecPoints = fPHOS->PpsdRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", CpvRecPoints ) ;
-
-    //=========== Gets the Reconstruction TTree
-    gAlice->TreeR()->GetEvent(0) ;
-
-    // Read and print CPV hits
-
-    TClonesArray *CPVhits;
-    for (Int_t iModule=0; iModule < fGeom->GetNModules(); iModule++) {
-      CPVModule   cpvModule = fPHOS->GetCPVModule(iModule);
-      CPVhits   = cpvModule.Hits();
-      Int_t nCPVhits  = CPVhits->GetEntriesFast();
-      for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
-	CPVHit        *cpvHit = (CPVHit*)CPVhits->UncheckedAt(ihit);
-	TLorentzVector p      = cpvHit->GetMomentum();
-	Float_t        xgen   = cpvHit->GetX();
-	Float_t        zgen   = cpvHit->GetY();
-	Int_t          ipart  = cpvHit->GetIpart();
-	printf("CPV hit in module %d: ",iModule+1);
-	printf(" p = (%f, %f, %f, %f) GeV,\n",
-	       p.Px(),p.Py(),p.Pz(),p.Energy());
-	printf("               xy = (%8.4f, %8.4f) cm, ipart = %d\n",
-	       xgen,zgen,ipart);
-      }
+    for ( ievent=0; ievent < NMixedEvents; ievent++){        
+      
+      Int_t AbsEventNumber = EventInMixedLoop*NMixedEvents + ievent ;
+      
+      //=========== Connects the various Tree's for evt
+      gAlice->GetEvent(AbsEventNumber);
+      
+      //=========== Get the Digit Tree
+      gAlice->TreeD()->GetEvent(0) ;
+      
+      //========== Creating branches ===================================       
+      
+      AliPHOSRecParticle::RecParticlesList ** RecParticleList  = fPHOS->RecParticles() ;
+      if( (*RecParticleList) )
+	(*RecParticleList)->Clear() ;
+      gAlice->TreeR()->SetBranchAddress( "PHOSRP", RecParticleList ) ;
+      
+      //=========== Gets the Reconstraction TTree
+      gAlice->TreeR()->GetEvent(0) ;
+      
+      AliPHOSRecParticle * RecParticle ;
+      Int_t iRecParticle ;
+      for(iRecParticle = 0; iRecParticle < (*RecParticleList)->GetEntries() ;iRecParticle++ )
+ 	{
+ 	  RecParticle = (AliPHOSRecParticle *) (*RecParticleList)->At(iRecParticle) ;
+	  if((RecParticle->GetType() == AliPHOSFastRecParticle::kGAMMA)||
+	     (RecParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM)){ 
+	    new( (*AllRecParticleList)[iRecPhot] ) AliPHOSRecParticle(*RecParticle) ;
+	    iRecPhot++;
+	  }
+	}
+      
+	NRecParticles[ievent] = iRecPhot-1 ;  
     }
-
-    // Read and print CPV reconstructed points
-
-    TIter nextRP(*fPHOS->PpsdRecPoints() ) ;
-    AliPHOSPpsdRecPoint *cpvRecPoint ;
-    while( ( cpvRecPoint = (AliPHOSPpsdRecPoint *)nextRP() ) ) {
-      TVector3  locpos;
-      cpvRecPoint->GetLocalPosition(locpos);
-      Int_t PHOSModule = cpvRecPoint->GetPHOSMod();
-      printf("CPV recpoint in module %d: (X,Y,Z) = (%f,%f,%f) cm\n",
-	     PHOSModule,locpos.X(),locpos.Y(),locpos.Z());
-    }
-  }
-}
-
-//____________________________________________________________________________
-void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
-{
-  //
-  // Analyzes CPV characteristics
-  // Author: Yuri Kharlov
-  // 9 October 2000
-  //
-
-  // Book histograms
-
-  TH1F *hDx   = new TH1F("hDx"  ,"CPV x-resolution@reconstruction",100,-5. , 5.);
-  TH1F *hDz   = new TH1F("hDz"  ,"CPV z-resolution@reconstruction",100,-5. , 5.);
-  TH1S *hNrp  = new TH1S("hNrp" ,"CPV rec.point multiplicity",      21,-0.5,20.5);
-
-  cout << "Start CPV Analysis"<< endl ;
-  for ( Int_t ievent=0; ievent<Nevents; ievent++) {  
-      
-    //========== Event Number>         
-    if ( (ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
-      cout << endl <<  "==== AnalyzeCPV ====> Event is " << ievent+1 << endl ;
     
-    //=========== Connects the various Tree's for evt
-    gAlice->GetEvent(ievent);
 
-    //=========== Get the Hits Tree
-    gAlice->ResetHits();
-    gAlice->TreeH()->GetEvent(0);
-    
-    //========== Creating branches ===================================
-    AliPHOSRecPoint::RecPointsList ** EmcRecPoints = fPHOS->EmcRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , EmcRecPoints  ) ;
-    
-    AliPHOSRecPoint::RecPointsList ** CpvRecPoints = fPHOS->PpsdRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", CpvRecPoints ) ;
+    //Now calculate invariant mass:
+    Int_t irp1,irp2 ;
+    Int_t NCurEvent = 0 ;
 
-    //=========== Gets the Reconstruction TTree
-    gAlice->TreeR()->GetEvent(0) ;
+    for(irp1 = 0; irp1 < AllRecParticleList->GetEntries()-1; irp1++){
+      AliPHOSRecParticle * rp1 = (AliPHOSRecParticle *)AllRecParticleList->At(irp1) ;
 
-    TIter nextRP(*fPHOS->PpsdRecPoints() ) ;
-    AliPHOSEmcRecPoint *cpvRecPoint ;
-    CPVModule           cpvModule;
-    TClonesArray        *CPVhits;
-    while( ( cpvRecPoint = (AliPHOSEmcRecPoint *)nextRP() ) ) {
-      TVector3  locpos;
-      cpvRecPoint->GetLocalPosition(locpos);
-      Int_t PHOSModule = cpvRecPoint->GetPHOSMod();
-      Int_t rpMult     = cpvRecPoint->GetDigitsMultiplicity();
-      Float_t xrec  = locpos.X();
-      Float_t zrec  = locpos.Z();
-      Float_t dxmin = 1.e+10;
-      Float_t dzmin = 1.e+10;
+      for(irp2 = irp1+1; irp2 < AllRecParticleList->GetEntries(); irp2++){
+	AliPHOSRecParticle * rp2 = (AliPHOSRecParticle *)AllRecParticleList->At(irp2) ;
+	    
+	Double_t InvMass ;
+	InvMass = (rp1->Energy()+rp2->Energy())*(rp1->Energy()+rp2->Energy())-
+	  (rp1->Px()+rp2->Px())*(rp1->Px()+rp2->Px())-
+	  (rp1->Py()+rp2->Py())*(rp1->Py()+rp2->Py())-
+	  (rp1->Pz()+rp2->Pz())*(rp1->Pz()+rp2->Pz()) ;
+	
+	if(InvMass> 0)
+	  InvMass = TMath::Sqrt(InvMass);
+	
+	Double_t Pt ; 
+	Pt = TMath::Sqrt((rp1->Px()+rp2->Px() )*( rp1->Px()+rp2->Px() ) +(rp1->Py()+rp2->Py())*(rp1->Py()+rp2->Py()));
 
-      cpvModule = fPHOS->GetCPVModule(PHOSModule-1);
-      CPVhits   = cpvModule.Hits();
-      Int_t nCPVhits  = CPVhits->GetEntriesFast();
-      for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
-	CPVHit        *cpvHit = (CPVHit*)CPVhits->UncheckedAt(ihit);
-	Float_t        xgen   = cpvHit->GetX();
-	Float_t        zgen   = cpvHit->GetY();
-	if ( TMath::Abs(xgen-xrec) < TMath::Abs(dxmin) ) dxmin = xgen-xrec;
-	if ( TMath::Abs(zgen-zrec) < TMath::Abs(dzmin) ) dzmin = zgen-zrec;
-      }
-      cpvModule.Clear();
-      hDx  ->Fill(dxmin);
-      hDz  ->Fill(dzmin);
-      hNrp ->Fill(rpMult);
-    }
+	if(irp1 > NRecParticles[NCurEvent])
+	  NCurEvent++;
+	    
+	if(irp2 <= NRecParticles[NCurEvent]){ //'Real' event
+	  hRealEM->Fill(InvMass,Pt);
+	  if((rp1->GetType() == AliPHOSFastRecParticle::kGAMMA)&&(rp2->GetType() == AliPHOSFastRecParticle::kGAMMA))
+	    hRealPhot->Fill(InvMass,Pt);
+	}
+	else{
+	  hMixedEM->Fill(InvMass,Pt);
+	  if((rp1->GetType() == AliPHOSFastRecParticle::kGAMMA)&&(rp2->GetType() == AliPHOSFastRecParticle::kGAMMA))
+	    hMixedPhot->Fill(InvMass,Pt);
+	} //real-mixed
+	    
+      } //loop over second rp
+    }//loop over first rp
 
-  }
 
-  // Save histograms
-
-  Text_t outputname[80] ;
-  sprintf(outputname,"%s.analyzed",fRootFile->GetName());
-  TFile output(outputname,"RECREATE");
+    AllRecParticleList->Delete() ;
+  } //Loop over events
+  
+  delete AllRecParticleList ;
+  
+  //writing output
+  TFile output("invmass.root","RECREATE");
   output.cd();
-
-  hDx  ->Write() ;
-  hDz  ->Write() ;
-  hNrp ->Write() ;
-
-  // Plot histograms
-
-  TCanvas *CPVcanvas = new TCanvas("CPV","CPV analysis",20,20,300,900);
-  gStyle->SetOptStat(111111);
-  gStyle->SetOptFit(1);
-  gStyle->SetOptDate(1);
-  CPVcanvas->Divide(3,1);
-
-  CPVcanvas->cd(1);
-  gPad->SetFillColor(10);
-  hNrp->SetFillColor(16);
-  hNrp->Draw();
-
-  CPVcanvas->cd(2);
-  gPad->SetFillColor(10);
-  hDx->SetFillColor(16);
-  hDx->Fit("gaus");
-  hDx->Draw();
-
-  CPVcanvas->cd(3);
-  gPad->SetFillColor(10);
-  hDz->SetFillColor(16);
-  hDz->Fit("gaus");
-  hDz->Draw();
-
-  CPVcanvas->Print("CPV.ps");
+  
+  hRealEM->Write() ;
+  hRealPhot->Write() ;
+  hMixedEM->Write() ;
+  hMixedPhot->Write() ;
+  
+  output.Write();
+  output.Close();
 
 }
 
@@ -698,15 +514,13 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
     {  
       
       //========== Event Number>         
-      if ( ( log10((Float_t)(ievent+1)) - (Int_t)(log10((Float_t)(ievent+1))) ) == 0. ) 
+      //      if ( ( log10((Float_t)(ievent+1)) - (Int_t)(log10((Float_t)(ievent+1))) ) == 0. ) 
 	cout <<  "AnalyzeResolutions > " << "Event is " << ievent << endl ;  
       
       //=========== Connects the various Tree's for evt
       gAlice->GetEvent(ievent);
 
-      
-
-            //=========== Gets the Kine TTree
+      //=========== Gets the Kine TTree
       gAlice->TreeK()->GetEvent(0) ;
       
       //=========== Gets the list of Primari Particles
@@ -715,23 +529,31 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
       TParticle * Primary ;
       Int_t iPrimary ;
       for ( iPrimary = 0 ; iPrimary < PrimaryList->GetEntries() ; iPrimary++)
-	    {
-	      Primary = (TParticle*)PrimaryList->UncheckedAt(iPrimary) ;
-	      Int_t PrimaryType = Primary->GetPdgCode() ;
-	      if( PrimaryType == 22 ) 
-		fhPrimary->Fill(Primary->Energy()) ;
-	    } 
+	{
+	  Primary = (TParticle*)PrimaryList->UncheckedAt(iPrimary) ;
+	  Int_t PrimaryType = Primary->GetPdgCode() ;
+	  if( PrimaryType == 22 ) {
+	    Int_t ModuleNumber ;
+	    Double_t PrimX, PrimZ ;
+	    fGeom->ImpactOnEmc(Primary->Theta(), Primary->Phi(), ModuleNumber, PrimX, PrimZ) ;
+	    if(ModuleNumber){
+	      fhPrimary->Fill(Primary->Energy()) ;
+	      if(Primary->Energy() > 0.3)
+		TotalPrimary++ ;
+	    }
+	  } 
+	}
       
       //=========== Get the Digit Tree
       gAlice->TreeD()->GetEvent(0) ;
-
+      
       //========== Creating branches ===================================       
       AliPHOSRecPoint::RecPointsList ** EmcRecPoints =  fPHOS->EmcRecPoints() ;
       gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP", EmcRecPoints ) ;
-
+      
       AliPHOSRecPoint::RecPointsList ** PpsdRecPoints = fPHOS->PpsdRecPoints() ;
       gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", PpsdRecPoints ) ;
-
+      
       AliPHOSTrackSegment::TrackSegmentsList **  TrackSegmentsList = fPHOS->TrackSegments() ;
       if( (*TrackSegmentsList) )
 	(*TrackSegmentsList)->Clear() ;
@@ -741,25 +563,22 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
       if( (*RecParticleList) )
 	(*RecParticleList)->Clear() ;
       gAlice->TreeR()->SetBranchAddress( "PHOSRP", RecParticleList ) ;
-	    
-
+      
       //=========== Gets the Reconstraction TTree
       gAlice->TreeR()->GetEvent(0) ;
- 
-      cout << ievent << " " << (*EmcRecPoints) << " " <<(*PpsdRecPoints) <<fPHOS->Digits()<< endl ; 
-      cout << "    " << " " << (*EmcRecPoints)->GetEntries() << " " <<(*PpsdRecPoints)->GetEntries() <<fPHOS->Digits()->GetEntries()<< endl ; 
-
+      
       AliPHOSRecParticle * RecParticle ;
       Int_t iRecParticle ;
       for(iRecParticle = 0; iRecParticle < (*RecParticleList)->GetEntries() ;iRecParticle++ )
 	{
 	  RecParticle = (AliPHOSRecParticle *) (*RecParticleList)->At(iRecParticle) ;
+	  fhAllRP->Fill(CorrectEnergy(RecParticle->Energy())) ;
 	  
 	  Int_t ModuleNumberRec ;
 	  Double_t RecX, RecZ ;
 	  fGeom->ImpactOnEmc(RecParticle->Theta(), RecParticle->Phi(), ModuleNumberRec, RecX, RecZ) ;
 	  
-	  Double_t MinDistance = 10000 ;
+	  Double_t MinDistance = 5. ;
 	  Int_t ClosestPrimary = -1 ;
 	  
 	  Int_t numberofprimaries ;
@@ -767,157 +586,206 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	  Int_t index ;
 	  TParticle * Primary ;
 	  Double_t Distance = MinDistance ;
-	  for ( index = 0 ; index < numberofprimaries ; index++)
-	    {
-	      Primary = (TParticle*)PrimaryList->UncheckedAt(listofprimaries[index]) ;
-	      Int_t ModuleNumber ;
-	      Double_t PrimX, PrimZ ;
-	      fGeom->ImpactOnEmc(Primary->Theta(), Primary->Phi(), ModuleNumber, PrimX, PrimZ) ;
-	      if(ModuleNumberRec == ModuleNumber)
-		Distance = TMath::Sqrt((RecX-PrimX)*(RecX-PrimX)+(RecZ-PrimZ)*(RecZ-PrimZ) ) ;
-	      if(MinDistance > Distance)
-		{
-		  MinDistance = Distance ;
-		  ClosestPrimary = listofprimaries[index] ;
-		}
-	    }
+	  for ( index = 0 ; index < numberofprimaries ; index++){
+	    Primary = (TParticle*)PrimaryList->UncheckedAt(listofprimaries[index]) ;
+	    Int_t ModuleNumber ;
+	    Double_t PrimX, PrimZ ;
+	    fGeom->ImpactOnEmc(Primary->Theta(), Primary->Phi(), ModuleNumber, PrimX, PrimZ) ;
+	    if(ModuleNumberRec == ModuleNumber)
+	      Distance = TMath::Sqrt((RecX-PrimX)*(RecX-PrimX)+(RecZ-PrimZ)*(RecZ-PrimZ) ) ;
+	    if(MinDistance > Distance)
+	      {
+		MinDistance = Distance ;
+		ClosestPrimary = listofprimaries[index] ;
+	      }
+	  }
 	  TotalRecPart++ ;
-	  if(ClosestPrimary >=0 )
-	    {
-	      fhPhotonAllEnergy->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy() ) ; 
-	      fhPhotonAllPosition->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(),Distance) ;
-	      TotalRPwithPrim++;
-	      Int_t PrimaryType = ((TParticle *)PrimaryList->At(ClosestPrimary))->GetPdgCode() ;
-	      TParticlePDG* PDGparticle = ((TParticle *)PrimaryList->At(ClosestPrimary))->GetPDG();
-	      Double_t charge =  PDGparticle->Charge() ;
-	      Int_t PrimaryCode ;
-	      switch(PrimaryType)
-		{
-		case 22:
-		  PrimaryCode = 0;  //Photon
-		  break;
-		case 11 :
-		  PrimaryCode = 1;  //Electron
-		  break;
-		case -11 :
-		  PrimaryCode = 1;  //positron
-		  break;
-		case 321 :
-		  PrimaryCode = 4;  //K+
-		  break;
-		case -321 :
-		  PrimaryCode = 4;  //K-
-		  break;
-		case 310 :
-		  PrimaryCode = 4;  //K0s
-		  break;
-		case 130 :
-		  PrimaryCode = 4;  //K0l
-		  break;
-		default:
-		  if(charge)
-		    PrimaryCode = 2; //Charged hadron
-		  else
-		    PrimaryCode = 3; //Neutral hadron
-		  break;
-		}
 
-	      switch(RecParticle->GetType())
-		{
-		case AliPHOSFastRecParticle::kGAMMA:
-		  if(PrimaryType == 22){
-		    fhPhotonEnergy->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy() ) ; 
-		    fhPhotonPosition->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(),Distance) ;
-		    fhPhotonReg->Fill(RecParticle->Energy() ) ;
-		    fhPhotonEM->Fill(RecParticle->Energy() ) ;
-		    fhPhotPhot->Fill(RecParticle->Energy() ) ;
+	  if(ClosestPrimary >=0 ){
+	    TotalRPwithPrim++;
+	    
+	    Int_t PrimaryType = ((TParticle *)PrimaryList->At(ClosestPrimary))->GetPdgCode() ;
+	    TParticlePDG* PDGparticle = ((TParticle *)PrimaryList->At(ClosestPrimary))->GetPDG();
+	    Double_t charge =  PDGparticle->Charge() ;
+	    Int_t PrimaryCode ;
+	    switch(PrimaryType)
+	      {
+	      case 22:
+		PrimaryCode = 0;  //Photon
+		fhAllEnergy->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy()) ;
+		fhAllPosition->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(),MinDistance) ;
+		break;
+	      case 11 :
+		PrimaryCode = 1;  //Electron
+		break;
+	      case -11 :
+		PrimaryCode = 1;  //positron
+		break;
+	      case 321 :
+		PrimaryCode = 4;  //K+
+		break;
+	      case -321 :
+		PrimaryCode = 4;  //K-
+		break;
+	      case 310 :
+		PrimaryCode = 4;  //K0s
+		break;
+	      case 130 :
+		PrimaryCode = 4;  //K0l
+		break;
+	      default:
+		if(charge)
+		  PrimaryCode = 2; //Charged hadron
+		else
+		  PrimaryCode = 3; //Neutral hadron
+		break;
+	      }
+	    
+	    switch(RecParticle->GetType())
+	      {
+	      case AliPHOSFastRecParticle::kGAMMA:
+		if(PrimaryType == 22){
+		  fhPhotEnergy->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy() ) ; 
+		  fhEMEnergy->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy() ) ; 
+		  fhPPSDEnergy->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy() ) ; 
+
+		  fhPhotPosition->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(),MinDistance) ;
+		  fhEMPosition->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(),MinDistance) ;
+		  fhPPSDPosition->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(),MinDistance) ;
+
+		  fhPhotReg->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhPhotEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhPhotPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+
+		  fhPhotPhot->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		}
+		if(PrimaryType == 2112){ //neutron
+		  fhNReg->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhNEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhNPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		}
+		
+		if(PrimaryType == -2112){ //neutron ~
+		  fhNBarReg->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhNBarEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhNBarPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  
+		}
+		if(PrimaryCode == 2){
+		  fhChargedReg->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhChargedEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhChargedPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		}
+		
+		fhAllReg->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		fhAllEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		fhAllPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		fhShape->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		fhVeto->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		fhPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		Counter[0][PrimaryCode]++;
+		break;
+	      case  AliPHOSFastRecParticle::kELECTRON:
+		if(PrimaryType == 22){ 
+		  fhPhotElec->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhEMEnergy->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy() ) ; 
+		  fhEMPosition->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(),MinDistance) ;
+		  fhPhotEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhPhotPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		}	  
+		if(PrimaryType == 2112){ //neutron
+		  fhNEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhNPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		}
+		
+		if(PrimaryType == -2112){ //neutron ~
+		  fhNBarEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhNBarPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  
+		}
+		if(PrimaryCode == 2){
+		  fhChargedEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhChargedPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		}
+		
+		fhAllEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		fhAllPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		fhShape->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		fhPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		Counter[1][PrimaryCode]++;
+		break;
+	      case  AliPHOSFastRecParticle::kNEUTRALHA:
+		if(PrimaryType == 22) 
+		  fhPhotNeuH->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+
+		fhVeto->Fill(CorrectEnergy(RecParticle->Energy()) ) ;		
+		Counter[2][PrimaryCode]++;
+		break ;
+	      case  AliPHOSFastRecParticle::kNEUTRALEM:
+		if(PrimaryType == 22){
+		  fhEMEnergy->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(),RecParticle->Energy() ) ; 
+		  fhEMPosition->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(),MinDistance ) ;
+		
+		  fhPhotNuEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhPhotEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		}
+		if(PrimaryType == 2112) //neutron
+		  fhNEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		
+		if(PrimaryType == -2112) //neutron ~
+		  fhNBarEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		
+		if(PrimaryCode == 2)
+		  fhChargedEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		
+		fhAllEM->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		fhShape->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		fhVeto->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+
+		Counter[3][PrimaryCode]++;
+		break ;
+	      case  AliPHOSFastRecParticle::kCHARGEDHA:
+		if(PrimaryType == 22) //photon
+		  fhPhotChHa->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		
+		Counter[4][PrimaryCode]++ ;
+		break ;
+	      case  AliPHOSFastRecParticle::kGAMMAHA:
+		  if(PrimaryType == 22){ //photon
+		    fhPhotGaHa->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		    fhPPSDEnergy->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy() ) ; 
+		    fhPPSDPosition->Fill(((TParticle *) PrimaryList->At(ClosestPrimary))->Energy(),MinDistance) ;
+		    fhPhotPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
 		  }
 		  if(PrimaryType == 2112){ //neutron
-		    fhNReg->Fill(RecParticle->Energy() ) ;
-		    fhNEM->Fill(RecParticle->Energy() ) ;
+		    fhNPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
 		  }
-		  
+		
 		  if(PrimaryType == -2112){ //neutron ~
-		    fhNBarReg->Fill(RecParticle->Energy() ) ;
-		    fhNBarEM->Fill(RecParticle->Energy() ) ;
-
+		    fhNBarPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ; 
 		  }
 		  if(PrimaryCode == 2){
-		    fhChargedReg->Fill(RecParticle->Energy() ) ;
-		    fhChargedEM->Fill(RecParticle->Energy() ) ;
+		    fhChargedPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
 		  }
+		
+		  fhAllPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhVeto->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		  fhPPSD->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
 
-		  fhAllReg->Fill(RecParticle->Energy() ) ;
-		  fhAllEM->Fill(RecParticle->Energy() ) ;
-		  Counter[0][PrimaryCode]++;
-		  break;
-		case  AliPHOSFastRecParticle::kELECTRON:
-		  if(PrimaryType == 11 || PrimaryType == -11){
-		    fhElectronEnergy->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy() ) ; 
-		    fhElectronPosition->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(),Distance ) ;
-		  }
-		  if(PrimaryType == 22) 
-		    fhPhotElec->Fill(RecParticle->Energy() ) ;
-
-		  Counter[1][PrimaryCode]++;
-		  break;
-		case  AliPHOSFastRecParticle::kNEUTRALHA:
-		  if(PrimaryType == 22) 
-		    fhPhotNeuH->Fill(RecParticle->Energy() ) ;
-
-		  fhNeutralHadronEnergy->Fill( ((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy()) ; 
-		  fhNeutralHadronPosition->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy() ,Distance  ) ;
-		  Counter[2][PrimaryCode]++;
-		  break ;
-		case  AliPHOSFastRecParticle::kNEUTRALEM:
-		  if(PrimaryType == 22 || PrimaryType == 11 || PrimaryType == -11){
-		    fhNeutralEMEnergy->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(),RecParticle->Energy() ) ; 
-		    fhNeutralEMPosition->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(),Distance ) ;
-		  }
-
-		  if(PrimaryType == 22){ //photon
-		    fhPhotNuEM->Fill(RecParticle->Energy() ) ;
-		    fhPhotonEM->Fill(RecParticle->Energy() ) ;
-		  }
-		  if(PrimaryType == 2112) //neutron
-		    fhNEM->Fill(RecParticle->Energy() ) ;
-		  
-		  if(PrimaryType == -2112) //neutron ~
-		    fhNBarEM->Fill(RecParticle->Energy() ) ;
-
-		  if(PrimaryCode == 2)
-		    fhChargedEM->Fill(RecParticle->Energy() ) ;
-
-		  fhAllEM->Fill(RecParticle->Energy() ) ;
-
-		  Counter[3][PrimaryCode]++;
-		  break ;
-		case  AliPHOSFastRecParticle::kCHARGEDHA:
-		  if(PrimaryType == 22) //photon
-		    fhPhotChHa->Fill(RecParticle->Energy() ) ;
-		  
-		  fhChargedHadronEnergy->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(),RecParticle->Energy() ) ; 
-		  fhChargedHadronPosition->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(),Distance ) ;
-		  Counter[4][PrimaryCode]++ ;
-		  break ;
-		case  AliPHOSFastRecParticle::kGAMMAHA:
-		  if(PrimaryType == 22) //photon
-		    fhPhotGaHa->Fill(RecParticle->Energy() ) ;
-		  fhPhotonHadronEnergy->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(), RecParticle->Energy()) ; 
-		  fhPhotonHadronPosition->Fill(((TParticle *)PrimaryList->At(ClosestPrimary))->Energy(),Distance ) ;
 		  Counter[5][PrimaryCode]++ ;
 		  break ;	
-		case  AliPHOSFastRecParticle::kABSURDEM:	      
-		  Counter[6][PrimaryCode]++ ;
-		  break;
-		case  AliPHOSFastRecParticle::kABSURDHA:
-		  Counter[7][PrimaryCode]++ ;
-		  break;
-		default:
-		  Counter[8][PrimaryCode]++ ;
-		  break;
-		}
-	    }
+	      case  AliPHOSFastRecParticle::kABSURDEM:	      
+		Counter[6][PrimaryCode]++ ;
+		fhShape->Fill(CorrectEnergy(RecParticle->Energy()) ) ;
+		break;
+	      case  AliPHOSFastRecParticle::kABSURDHA:
+		Counter[7][PrimaryCode]++ ;
+		break;
+	      default:
+		Counter[8][PrimaryCode]++ ;
+		break;
+	      }
+	  }
 	}  
     }   // endfor
   SaveHistograms();
@@ -971,119 +839,125 @@ void  AliPHOSAnalyze::BookResolutionHistograms()
 {
   // Books the histograms where the results of the Resolution analysis are stored
 
-  if(fhPhotonEnergy)
-    delete fhPhotonEnergy ;
-  if(fhPhotonAllEnergy)
-    delete fhPhotonAllEnergy ;
-  if(fhElectronEnergy)
-    delete fhElectronEnergy ;
-  if(fhElectronAllEnergy)
-    delete fhElectronAllEnergy ;
-  if(fhNeutralHadronEnergy)
-    delete fhNeutralHadronEnergy ;
-  if(fhNeutralEMEnergy)
-    delete fhNeutralEMEnergy ;
-  if(fhNeutralEMAllEnergy)
-    delete fhNeutralEMAllEnergy ;
-  if(fhChargedHadronEnergy)
-    delete fhChargedHadronEnergy ;
-  if(fhPhotonHadronEnergy)
-    delete fhPhotonHadronEnergy ;
-  if(fhPhotonPosition)
-    delete fhPhotonPosition ;
-  if(fhPhotonAllPosition)
-    delete fhPhotonAllPosition ;
-  if(fhElectronPosition)
-    delete fhElectronPosition ;
-  if(fhElectronAllPosition)
-    delete fhElectronAllPosition ;
-  if(fhNeutralHadronPosition)
-    delete fhNeutralHadronPosition ;
-  if(fhNeutralEMPosition)
-    delete fhNeutralEMPosition ;
-  if(fhNeutralEMAllPosition)
-    delete fhNeutralEMAllPosition ;
-  if(fhChargedHadronPosition)
-    delete fhChargedHadronPosition ;
-  if(fhPhotonHadronPosition)
-    delete fhPhotonHadronPosition ;
+//   if(fhAllEnergy)
+//     delete fhAllEnergy ;
+//   if(fhPhotEnergy)
+//     delete fhPhotEnergy ;
+//   if(fhEMEnergy)
+//     delete fhEMEnergy ;
+//   if(fhPPSDEnergy)
+//     delete fhPPSDEnergy ;
 
-  fhPhotonEnergy            = new TH2F("hPhotonEnergy",  "hPhotonEnergy",              100, 0., 5., 100, 0., 5.);
-  fhPhotonAllEnergy         = new TH2F("hPhotonAllEnergy",  "hPhotonAllEnergy",        100, 0., 5., 100, 0., 5.);
-  fhElectronEnergy          = new TH2F("hElectronEnergy","hElectronEnergy",            100, 0., 5., 100, 0., 5.);
-  fhElectronAllEnergy       = new TH2F("hElectronAllEnergy","hElectronAllEnergy",      100, 0., 5., 100, 0., 5.);
-  fhNeutralHadronEnergy     = new TH2F("hNeutralHadronEnergy", "hNeutralHadronEnergy", 100, 0., 5., 100, 0., 5.);
-  fhNeutralEMEnergy         = new TH2F("hNeutralEMEnergy", "hNeutralEMEnergy",         100, 0., 5., 100, 0., 5.);
-  fhNeutralEMAllEnergy      = new TH2F("hNeutralEMAllEnergy", "hNeutralEMAllEnergy",   100, 0., 5., 100, 0., 5.);
-  fhChargedHadronEnergy     = new TH2F("hChargedHadronEnergy", "hChargedHadronEnergy", 100, 0., 5., 100, 0., 5.);
-  fhPhotonHadronEnergy      = new TH2F("hPhotonHadronEnergy","hPhotonHadronEnergy",    100, 0., 5., 100, 0., 5.);
-  fhPhotonPosition          = new TH2F("hPhotonPosition","hPhotonPosition",                20, 0., 5., 100, 0., 5.);
-  fhPhotonAllPosition       = new TH2F("hPhotonAllPosition","hPhotonAllPosition",          20, 0., 5., 100, 0., 5.);
-  fhElectronPosition        = new TH2F("hElectronPosition","hElectronPosition",            20, 0., 5., 100, 0., 5.);
-  fhElectronAllPosition     = new TH2F("hElectronAllPosition","hElectronAllPosition",      20, 0., 5., 100, 0., 5.);
-  fhNeutralHadronPosition   = new TH2F("hNeutralHadronPosition","hNeutralHadronPosition",  20, 0., 5., 100, 0., 5.);
-  fhNeutralEMPosition       = new TH2F("hNeutralEMPosition","hNeutralEMPosition",          20, 0., 5., 100, 0., 5.);
-  fhNeutralEMAllPosition    = new TH2F("hNeutralEMAllPosition","hNeutralEMAllPosition",    20, 0., 5., 100, 0., 5.);
-  fhChargedHadronPosition   = new TH2F("hChargedHadronPosition","hChargedHadronPosition",  20, 0., 5., 100, 0., 5.);
-  fhPhotonHadronPosition    = new TH2F("hPhotonHadronPosition","hPhotonHadronPosition",    20, 0., 5., 100, 0., 5.);
 
-  if(fhPhotonReg)
-    delete fhPhotonReg ;
-  if(fhAllReg)
-    delete fhAllReg ;
-  if(fhNReg)
-    delete fhNReg ;
-  if(fhNReg)
-    delete fhNReg ;
-  if(fhNReg)
-    delete fhNReg ;
-  
-  fhPhotonReg = new TH1F("hPhotonReg","hPhotonReg", 20, 0., 5.);
-  fhAllReg    = new TH1F("hAllReg", "hAllReg",  20, 0., 5.);
-  fhNReg      = new TH1F("hNReg", "hNReg",  20, 0., 5.);
-  fhNBarReg   = new TH1F("hNBarReg", "hNBarReg",  20, 0., 5.);
-  fhChargedReg= new TH1F("hChargedReg", "hChargedReg",  20, 0., 5.);
-  
-  if(fhPhotonEM)
-    delete fhPhotonEM ;
-  if(fhAllEM)
-    delete fhAllEM ;
-  if(fhNEM)
-    delete fhNEM ;
-  if(fhNBarEM)
-    delete fhNBarEM ;
-  if(fhChargedEM)
-    delete fhChargedEM ;
-  
-  fhPhotonEM = new TH1F("hPhotonEM","hPhotonEM", 20, 0., 5.);
-  fhAllEM    = new TH1F("hAllEM", "hAllEM",  20, 0., 5.);
-  fhNEM      = new TH1F("hNEM", "hNEM",  20, 0., 5.);
-  fhNBarEM   = new TH1F("hNBarEM", "hNBarEM",  20, 0., 5.);
-  fhChargedEM= new TH1F("hChargedEM", "hChargedEM",  20, 0., 5.);
-  
-  if(fhPrimary)
-    delete fhPrimary ;
-  fhPrimary= new TH1F("hPrimary", "hPrimary",  20, 0., 5.);
+  fhAllEnergy  = new TH2F("hAllEnergy",  "Energy of any RP with primary photon",100, 0., 5., 100, 0., 5.);
+  fhPhotEnergy = new TH2F("hPhotEnergy", "Energy of kGAMMA with primary photon",100, 0., 5., 100, 0., 5.);
+  fhEMEnergy   = new TH2F("hEMEnergy",   "Energy of EM with primary photon",    100, 0., 5., 100, 0., 5.);
+  fhPPSDEnergy = new TH2F("hPPSDEnergy", "Energy of PPSD with primary photon",  100, 0., 5., 100, 0., 5.);
 
-  if(fhPhotPhot)
-    delete fhPhotPhot ;
-  if(fhPhotElec)
-    delete fhPhotElec ;
-  if(fhPhotNeuH)
-    delete fhPhotNeuH ;
-  if(fhPhotNuEM)
-    delete fhPhotNuEM ;
-  if(fhPhotChHa)
-    delete fhPhotChHa ;
-  if(fhPhotGaHa)
-    delete fhPhotGaHa ;
+//   if(fhAllPosition)
+//     delete fhAllPosition ;
+//   if(fhPhotPosition)
+//     delete fhPhotPosition ;
+//   if(fhEMPosition)
+//     delete fhEMPosition ;
+//   if(fhPPSDPosition)
+//     delete fhPPSDPosition ;
 
-  fhPhotPhot = new TH1F("hPhotPhot","hPhotPhot", 20, 0., 5.);   //Photon registered as photon
-  fhPhotElec = new TH1F("hPhotElec","hPhotElec", 20, 0., 5.);   //Photon registered as Electron
-  fhPhotNeuH = new TH1F("hPhotNeuH","hPhotNeuH", 20, 0., 5.);   //Photon registered as Neutral Hadron
-  fhPhotNuEM = new TH1F("hPhotNuEM","hPhotNuEM", 20, 0., 5.);   //Photon registered as Neutral EM
-  fhPhotChHa = new TH1F("hPhotChHa","hPhotChHa", 20, 0., 5.);   //Photon registered as Charged Hadron
-  fhPhotGaHa = new TH1F("hPhotGaHa","hPhotGaHa", 20, 0., 5.);   //Photon registered as Gamma-Hadron
+
+  fhAllPosition  = new TH2F("hAllPosition",  "Position of any RP with primary photon",100, 0., 5., 100, 0., 5.);
+  fhPhotPosition = new TH2F("hPhotPosition", "Position of kGAMMA with primary photon",100, 0., 5., 100, 0., 5.);
+  fhEMPosition   = new TH2F("hEMPosition",   "Position of EM with primary photon",    100, 0., 5., 100, 0., 5.);
+  fhPPSDPosition = new TH2F("hPPSDPosition", "Position of PPSD with primary photon",  100, 0., 5., 100, 0., 5.);
+
+//   if(fhAllReg)
+//     delete fhAllReg ;
+//   if(fhPhotReg)
+//     delete fhPhotReg ;
+//   if(fhNReg)
+//     delete fhNReg ;
+//   if(fhNBarReg)
+//     delete fhNBarReg ;
+//   if(fhChargedReg)
+//     delete fhChargedReg ;
+  
+  fhAllReg    = new TH1F("hAllReg",    "All primaries registered as photon",  100, 0., 5.);
+  fhPhotReg   = new TH1F("hPhotReg",   "Photon registered as photon",         100, 0., 5.);
+  fhNReg      = new TH1F("hNReg",      "N registered as photon",              100, 0., 5.);
+  fhNBarReg   = new TH1F("hNBarReg",   "NBar registered as photon",           100, 0., 5.);
+  fhChargedReg= new TH1F("hChargedReg", "Charged hadron registered as photon",100, 0., 5.);
+  
+//   if(fhAllEM)
+//     delete fhAllEM ;
+//   if(fhPhotEM)
+//     delete fhPhotEM ;
+//   if(fhNEM)
+//     delete fhNEM ;
+//   if(fhNBarEM)
+//     delete fhNBarEM ;
+//   if(fhChargedEM)
+//     delete fhChargedEM ;
+  
+  fhAllEM    = new TH1F("hAllEM",    "All primary registered as EM",100, 0., 5.);
+  fhPhotEM   = new TH1F("hPhotEM",   "Photon registered as EM", 100, 0., 5.);
+  fhNEM      = new TH1F("hNEM",      "N registered as EM",      100, 0., 5.);
+  fhNBarEM   = new TH1F("hNBarEM",   "NBar registered as EM",   100, 0., 5.);
+  fhChargedEM= new TH1F("hChargedEM","Charged registered as EM",100, 0., 5.);
+
+//   if(fhAllPPSD)
+//     delete fhAllPPSD ;
+//   if(fhPhotPPSD)
+//     delete fhPhotPPSD ;
+//   if(fhNPPSD)
+//     delete fhNPPSD ;
+//   if(fhNBarPPSD)
+//     delete fhNBarPPSD ;
+//   if(fhChargedPPSD)
+//     delete fhChargedPPSD ;
+  
+  fhAllPPSD    = new TH1F("hAllPPSD",    "All primary registered as PPSD",100, 0., 5.);
+  fhPhotPPSD   = new TH1F("hPhotPPSD",   "Photon registered as PPSD", 100, 0., 5.);
+  fhNPPSD      = new TH1F("hNPPSD",      "N registered as PPSD",      100, 0., 5.);
+  fhNBarPPSD   = new TH1F("hNBarPPSD",   "NBar registered as PPSD",   100, 0., 5.);
+  fhChargedPPSD= new TH1F("hChargedPPSD","Charged registered as PPSD",100, 0., 5.);
+  
+//   if(fhPrimary)
+//     delete fhPrimary ;
+  fhPrimary= new TH1F("hPrimary", "hPrimary",  100, 0., 5.);
+
+//   if(fhAllRP)
+//     delete fhAllRP ;
+//   if(fhVeto)
+//     delete fhVeto ;
+//   if(fhShape)
+//     delete fhShape ;
+//   if(fhPPSD)
+//     delete fhPPSD ;
+
+  fhAllRP = new TH1F("hAllRP","All Reconstructed particles",  100, 0., 5.);
+  fhVeto  = new TH1F("hVeto", "All uncharged particles",      100, 0., 5.);
+  fhShape = new TH1F("hShape","All particles with EM shaower",100, 0., 5.);
+  fhPPSD  = new TH1F("hPPSD", "All PPSD photon particles",    100, 0., 5.);
+
+
+//   if(fhPhotPhot)
+//     delete fhPhotPhot ;
+//   if(fhPhotElec)
+//     delete fhPhotElec ;
+//   if(fhPhotNeuH)
+//     delete fhPhotNeuH ;
+//   if(fhPhotNuEM)
+//     delete fhPhotNuEM ;
+//   if(fhPhotChHa)
+//     delete fhPhotChHa ;
+//   if(fhPhotGaHa)
+//     delete fhPhotGaHa ;
+
+  fhPhotPhot = new TH1F("hPhotPhot","hPhotPhot", 100, 0., 5.);   //Photon registered as photon
+  fhPhotElec = new TH1F("hPhotElec","hPhotElec", 100, 0., 5.);   //Photon registered as Electron
+  fhPhotNeuH = new TH1F("hPhotNeuH","hPhotNeuH", 100, 0., 5.);   //Photon registered as Neutral Hadron
+  fhPhotNuEM = new TH1F("hPhotNuEM","hPhotNuEM", 100, 0., 5.);   //Photon registered as Neutral EM
+  fhPhotChHa = new TH1F("hPhotChHa","hPhotChHa", 100, 0., 5.);   //Photon registered as Charged Hadron
+  fhPhotGaHa = new TH1F("hPhotGaHa","hPhotGaHa", 100, 0., 5.);   //Photon registered as Gamma-Hadron
 
 
 }
@@ -1150,8 +1024,7 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
     //========== Creates the Reconstructioner  
     
     fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ;
-//      fRec -> SetDebugReconstruction(kFALSE);     
-    fRec -> SetDebugReconstruction(kTRUE);     
+    fRec -> SetDebugReconstruction(kFALSE);     
     
     //=========== Connect the various Tree's for evt
     
@@ -1587,69 +1460,6 @@ Bool_t AliPHOSAnalyze::OpenRootFile(Text_t * name)
   return  fRootFile->IsOpen() ; 
 }
 //____________________________________________________________________________
-// void AliPHOSAnalyze::SavingHistograms()
-// {
-//   // Saves the histograms in a root file named "name.analyzed" 
-
-//   Text_t outputname[80] ;
-//   sprintf(outputname,"%s.analyzed",fRootFile->GetName());
-//   TFile output(outputname,"RECREATE");
-//   output.cd();
-//   if (fhEmcDigit )         
-//     fhEmcDigit->Write()  ;
-//   if (fhVetoDigit )  
-//     fhVetoDigit->Write()  ;
-//   if (fhConvertorDigit ) 
-//     fhConvertorDigit->Write()   ;
-//   if (fhEmcCluster   )
-//     fhEmcCluster->Write()   ;
-//   if (fhVetoCluster ) 
-//     fhVetoCluster->Write()   ;
-//   if (fhConvertorCluster )
-//     fhConvertorCluster->Write()  ;
-//   if (fhConvertorEmc ) 
-//     fhConvertorEmc->Write()  ;
-//   if (fhPhotonEnergy)    
-//     fhPhotonEnergy->Write() ;
-//   if (fhPhotonPositionX)  
-//     fhPhotonPositionX->Write() ;
-//   if (fhPhotonPositionY)  
-//     fhPhotonPositionX->Write() ;
-//   if (fhElectronEnergy)  
-//     fhElectronEnergy->Write() ;
-//   if (fhElectronPositionX)
-//     fhElectronPositionX->Write() ;
-//   if (fhElectronPositionY) 
-//     fhElectronPositionX->Write() ;
-//   if (fhNeutralHadronEnergy) 
-//     fhNeutralHadronEnergy->Write() ;
-//   if (fhNeutralHadronPositionX)
-//     fhNeutralHadronPositionX->Write() ;
-//   if (fhNeutralHadronPositionY) 
-//     fhNeutralHadronPositionX->Write() ;
-//   if (fhNeutralEMEnergy)   
-//     fhNeutralEMEnergy->Write() ;
-//   if (fhNeutralEMPositionX)
-//     fhNeutralEMPositionX->Write() ;
-//   if (fhNeutralEMPositionY) 
-//     fhNeutralEMPositionX->Write() ;
-//   if (fhChargedHadronEnergy) 
-//     fhChargedHadronEnergy->Write() ;
-//   if (fhChargedHadronPositionX) 
-//     fhChargedHadronPositionX->Write() ;
-//   if (fhChargedHadronPositionY)
-//     fhChargedHadronPositionX->Write() ;
-//   if (fhPhotonHadronEnergy) 
-//     fhPhotonHadronEnergy->Write() ;
-//   if (fhPhotonHadronPositionX) 
-//     fhPhotonHadronPositionX->Write() ;
-//   if (fhPhotonHadronPositionY)
-//     fhPhotonHadronPositionX->Write() ;
-
-//   output.Write();
-//   output.Close();
-// }
-//____________________________________________________________________________
 void AliPHOSAnalyze::SaveHistograms()
 {
   // Saves the histograms in a root file named "name.analyzed" 
@@ -1659,64 +1469,62 @@ void AliPHOSAnalyze::SaveHistograms()
   TFile output(outputname,"RECREATE");
   output.cd();
 
-  if (fhPhotonEnergy)    
-    fhPhotonEnergy->Write() ;
-  if (fhPhotonAllEnergy)    
-    fhPhotonAllEnergy->Write() ;
-  if (fhPhotonPosition)  
-    fhPhotonPosition->Write() ;
-  if (fhPhotonAllPosition)  
-    fhPhotonAllPosition->Write() ;
-  if (fhElectronEnergy)  
-    fhElectronEnergy->Write() ;
-  if (fhElectronAllEnergy)  
-    fhElectronAllEnergy->Write() ;
-  if (fhElectronPosition)
-    fhElectronPosition->Write() ;
-  if (fhElectronAllPosition)
-    fhElectronAllPosition->Write() ;
-  if (fhNeutralHadronEnergy) 
-    fhNeutralHadronEnergy->Write() ;
-  if (fhNeutralHadronPosition)
-    fhNeutralHadronPosition->Write() ;
-  if (fhNeutralEMEnergy)   
-    fhNeutralEMEnergy->Write() ;
-  if (fhNeutralEMAllEnergy)   
-    fhNeutralEMAllEnergy->Write() ;
-  if (fhNeutralEMPosition)
-    fhNeutralEMPosition->Write() ;
-  if (fhNeutralEMAllPosition)
-    fhNeutralEMAllPosition->Write() ;
-  if (fhChargedHadronEnergy) 
-    fhChargedHadronEnergy->Write() ;
-  if (fhChargedHadronPosition) 
-    fhChargedHadronPosition->Write() ;
-  if (fhPhotonHadronEnergy) 
-    fhPhotonHadronEnergy->Write() ;
-  if (fhPhotonHadronPosition) 
-    fhPhotonHadronPosition->Write() ;
-  if (fhPhotonReg) 
-    fhPhotonReg->Write() ;
+  if (fhAllEnergy)    
+    fhAllEnergy->Write() ;
+  if (fhPhotEnergy)    
+    fhPhotEnergy->Write() ;
+  if(fhEMEnergy)
+    fhEMEnergy->Write()  ;
+  if(fhPPSDEnergy)
+    fhPPSDEnergy->Write() ;
+  if(fhAllPosition)
+    fhAllPosition->Write() ;
+  if(fhPhotPosition)
+    fhPhotPosition->Write() ;
+  if(fhEMPosition)
+    fhEMPosition->Write() ;
+  if(fhPPSDPosition)
+    fhPPSDPosition->Write() ;
   if (fhAllReg) 
     fhAllReg->Write() ;
+  if (fhPhotReg) 
+    fhPhotReg->Write() ;
   if(fhNReg)
     fhNReg->Write() ;
   if(fhNBarReg)
     fhNBarReg->Write() ;
   if(fhChargedReg)
     fhChargedReg->Write() ;
-  if (fhPhotonEM) 
-    fhPhotonEM->Write() ;
   if (fhAllEM) 
     fhAllEM->Write() ;
+  if (fhPhotEM) 
+    fhPhotEM->Write() ;
   if(fhNEM)
     fhNEM->Write() ;
   if(fhNBarEM)
     fhNBarEM->Write() ;
   if(fhChargedEM)
     fhChargedEM->Write() ;
+  if (fhAllPPSD) 
+    fhAllPPSD->Write() ;
+  if (fhPhotPPSD) 
+    fhPhotPPSD->Write() ;
+  if(fhNPPSD)
+    fhNPPSD->Write() ;
+  if(fhNBarPPSD)
+    fhNBarPPSD->Write() ;
+  if(fhChargedPPSD)
+    fhChargedPPSD->Write() ;
   if(fhPrimary)
     fhPrimary->Write() ;
+  if(fhAllRP)
+    fhAllRP->Write()  ;
+  if(fhVeto)
+    fhVeto->Write()  ;
+  if(fhShape)
+    fhShape->Write()  ;
+  if(fhPPSD)
+    fhPPSD->Write()  ;
   if(fhPhotPhot)
     fhPhotPhot->Write() ;
   if(fhPhotElec)
@@ -1738,6 +1546,12 @@ void AliPHOSAnalyze::SaveHistograms()
   output.Close();
 }
 //____________________________________________________________________________
+Float_t AliPHOSAnalyze::CorrectEnergy(Float_t ERecPart)
+{
+  return ERecPart/0.8783 ;
+}
+
+//____________________________________________________________________________
 void AliPHOSAnalyze::ResetHistograms()
 {
    fhEnergyCorrelations = 0 ;     //Energy correlations between Eloss in Convertor and PPSD(2)
@@ -1750,40 +1564,31 @@ void AliPHOSAnalyze::ResetHistograms()
    fhConvertorCluster = 0 ;       // Histo of Cluster energies in Convertor
    fhConvertorEmc = 0 ;           // 2d Convertor versus Emc energies
 
-   fhPhotonEnergy = 0 ;           // Spectrum of detected photons with photon primary
-   fhPhotonAllEnergy = 0 ;        // Total spectrum of detected photons
-   fhElectronEnergy = 0 ;         // Spectrum of detected electrons with electron primary
-   fhElectronAllEnergy = 0 ;      // Total spectrum of detected electrons
-   fhNeutralHadronEnergy = 0 ;    // Spectrum of detected neutral hadron
-   fhNeutralEMEnergy = 0 ;        // Spectrum of detected neutral EM with EM primary
-   fhNeutralEMAllEnergy = 0 ;     // Spectrum of detected neutral EM
-   fhChargedHadronEnergy = 0 ;    // Spectrum of detected charged
-   fhPhotonHadronEnergy = 0 ;     // Spectrum of detected Photon-Hadron
-   fhPhotonPosition = 0 ;        // Position Resolution of  photons with photon primary
-   fhPhotonAllPosition = 0 ;     // Position Resolution of  photons
-   fhElectronPosition = 0 ;      // Position Resolution of electrons with electron primary
-   fhElectronAllPosition = 0 ;   // Position Resolution of electrons
-   fhNeutralHadronPosition = 0 ; // Position Resolution of neutral hadron
-   fhNeutralEMPosition = 0 ;     // Position Resolution of neutral EM with EM primary
-   fhNeutralEMAllPosition = 0 ;  // Position Resolution of neutral EM
-   fhChargedHadronPosition = 0 ; // Position Resolution of charged
-   fhPhotonHadronPosition = 0 ;  // Position Resolution of Photon-Hadron
-   fhPhotonPositionY = 0 ;        // Y distribution of detected photons
-   fhElectronPositionY = 0 ;      // Y distribution of detected electrons
-   fhNeutralHadronPositionY = 0 ; // Y distribution of detected neutral hadron
-   fhNeutralEMPositionY = 0 ;     // Y distribution of detected neutral EM
-   fhChargedHadronPositionY = 0 ; // Y distribution of detected charged
-   fhPhotonHadronPositionY = 0 ;  // Y distribution of detected Photon-Hadron
-   fhPhotonReg = 0 ;          
+   fhAllEnergy = 0 ;       
+   fhPhotEnergy = 0 ;        // Total spectrum of detected photons
+   fhEMEnergy = 0 ;         // Spectrum of detected electrons with electron primary
+   fhPPSDEnergy = 0 ;
+   fhAllPosition = 0 ; 
+   fhPhotPosition = 0 ; 
+   fhEMPosition = 0 ; 
+   fhPPSDPosition = 0 ; 
+
+   fhPhotReg = 0 ;          
    fhAllReg = 0 ;          
    fhNReg = 0 ;          
    fhNBarReg = 0 ;          
    fhChargedReg = 0 ;          
-   fhPhotonEM = 0 ;          
+   fhPhotEM = 0 ;          
    fhAllEM = 0 ;          
    fhNEM = 0 ;          
    fhNBarEM = 0 ;          
    fhChargedEM = 0 ;          
+   fhPhotPPSD = 0 ;          
+   fhAllPPSD = 0 ;          
+   fhNPPSD = 0 ;          
+   fhNBarPPSD = 0 ;          
+   fhChargedPPSD = 0 ;          
+
    fhPrimary = 0 ;          
 
    fhPhotPhot = 0 ;

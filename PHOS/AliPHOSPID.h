@@ -22,6 +22,7 @@
 
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSRecParticle.h"
+#include "AliPHOSGeometry.h"
 
 
 
@@ -34,8 +35,16 @@ public:
 
   virtual void MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl, 
 			     AliPHOSRecParticle::RecParticlesList * rpl) {} ; 
+  virtual void Print(const char *){} ; 
   virtual void SetShowerProfileCuts(Float_t, Float_t, Float_t, Float_t) {} ; 
-  virtual void SetDispersionCutOff(Float_t ) {}    
+  virtual void SetDispersionCutOff(Float_t ) {} ;   
+  virtual void SetRelativeDistanceCut(Float_t ) {};
+
+ protected:
+  
+  AliPHOSGeometry      * fGeom ;           // pointer to PHOS geometry  
+
+
 
   ClassDef(AliPHOSPID,1)  // Particle Identifier algorithm (base class)
 

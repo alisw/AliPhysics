@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/10/25 08:24:33  schutz
+  New CPV(GPS2) geometry class
+
 */
 
 //_________________________________________________________________________
@@ -53,8 +56,8 @@ AliPPSDGeometry::AliPPSDGeometry()
   fMicromegasWallThickness  = 0.6 ; 
   fNumberOfModulesPhi       = 4 ; 
   fNumberOfModulesZ         = 4 ; 
-  fNumberOfPadsPhi          = 24 ; 
-  fNumberOfPadsZ            = 24 ;   
+  fNumberOfPadsPhi          = 32 ; 
+  fNumberOfPadsZ            = 32 ;   
   fPCThickness              = 0.1 ; 
   fPhiDisplacement          = 0.8 ;  
   fZDisplacement            = 0.8 ;  

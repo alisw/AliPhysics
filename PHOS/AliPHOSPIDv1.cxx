@@ -38,6 +38,43 @@
 ClassImp( AliPHOSPIDv1) 
 
 //____________________________________________________________________________
+Float_t  AliPHOSPIDv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcclu,AliPHOSPpsdRecPoint * PpsdClu, Bool_t &toofar, Option_t *  Axis)
+{
+  // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
+ 
+  Float_t r;
+  TVector3 vecEmc ;
+  TVector3 vecPpsd ;
+  
+  emcclu->GetLocalPosition(vecEmc) ;
+  PpsdClu->GetLocalPosition(vecPpsd)  ; 
+  if(emcclu->GetPHOSMod() == PpsdClu->GetPHOSMod())
+    { 
+
+      // Correct to difference in CPV and EMC position due to different distance to center.
+      // we assume, that particle moves from center
+      Float_t dCPV = fGeom->GetIPtoOuterCoverDistance();
+      Float_t dEMC = fGeom->GetIPtoCrystalSurface() ;
+      dEMC         = dEMC / dCPV ;
+      vecPpsd = dEMC * vecPpsd  - vecEmc ; 
+      r = vecPpsd.Mag() ;
+      if (Axis == "X") r = vecPpsd.X();
+      if (Axis == "Y") r = vecPpsd.Y();
+      if (Axis == "Z") r = vecPpsd.Z();
+      if (Axis == "R") r = vecPpsd.Mag();
+      
+    } 
+  else 
+    {
+      toofar = kTRUE ;
+    }
+  return r ;
+}
+
+
+
+
+//____________________________________________________________________________
 void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl, 
 				  AliPHOSRecParticle::RecParticlesList * rpl)
 {
@@ -47,6 +84,7 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
   AliPHOSTrackSegment * tracksegment ; 
   Int_t index = 0 ; 
   AliPHOSRecParticle * rp ; 
+  Bool_t tDistance;
   Int_t type ; 
   Int_t showerprofile;  // 0 narrow and 1 wide
   Int_t cpvdetector;  // 1 hit and 0 no hit
@@ -55,13 +93,23 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
   while ( (tracksegment = (AliPHOSTrackSegment *)next()) ) {
     new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ;
     rp = (AliPHOSRecParticle *)rpl->At(index) ; 
-    AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ; 
-    Float_t * lambda = new Float_t[2]; 
-    recp->GetElipsAxis(lambda) ; 
+    AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ;
+    AliPHOSPpsdRecPoint * rpcpv = tracksegment->GetPpsdUpRecPoint() ;
+    AliPHOSPpsdRecPoint * rppc  = tracksegment->GetPpsdLowRecPoint() ;
+ 
+//     Float_t * lambda = new Float_t[2]; 
+//     recp->GetElipsAxis(lambda) ; 
 
- // Looking at the lateral development of the shower
-    if ( ( lambda[0] > fLambda1m && lambda[0] < fLambda1M ) && // shower profile cut
-	 ( lambda[1] > fLambda2m && lambda[1] < fLambda2M ) )	      
+//     // Looking at the lateral development of the shower
+//     if ( ( lambda[0] > fLambda1m && lambda[0] < fLambda1M ) && // shower profile cut
+// 	 ( lambda[1] > fLambda2m && lambda[1] < fLambda2M ) )	      
+//       //    Float_t R ;
+//       //R=(lambda[0]-1.386)*(lambda[0]-1.386)+1.707*1.707*(lambda[1]-1.008)*(lambda[1]-1.008) ;
+//       //if(R<0.35*0.35)
+
+    Float_t Dispersion;
+    Dispersion = recp->GetDispersion();
+    if (Dispersion < fCutOnDispersion)
       showerprofile = 0 ;   // NARROW PROFILE   
     else      
       showerprofile = 1 ;// WIDE PROFILE
@@ -70,13 +118,13 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
     if( tracksegment->GetPpsdLowRecPoint() == 0 )   
       pcdetector = 0 ;  // No hit
     else      
-      pcdetector = 1 ;  // hit
+      if (GetDistanceInPHOSPlane(recp, rppc, tDistance, "R")< fCutOnRelativeDistance)  pcdetector = 1 ;  // hit
   
     // Looking at the photon conversion detector
     if( tracksegment->GetPpsdUpRecPoint() == 0 )
       cpvdetector = 0 ;  // No hit
     else  
-      cpvdetector = 1 ;  // Hit
+      if (GetDistanceInPHOSPlane(recp, rpcpv, tDistance, "R")< fCutOnRelativeDistance) cpvdetector = 1 ;  // Hit
      
     type = showerprofile + 2 * pcdetector + 4 * cpvdetector ;
     rp->SetType(type) ; 
@@ -106,3 +154,13 @@ void  AliPHOSPIDv1::SetShowerProfileCuts(Float_t l1m, Float_t l1M, Float_t l2m, 
   fLambda2m = l2m ; 
   fLambda2M = l2M ; 
 }
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::SetRelativeDistanceCut(Float_t CutOnRelativeDistance)
+{
+  // Modifies the parameters used for the particle type identification
+
+  fCutOnRelativeDistance = CutOnRelativeDistance ; 
+ 
+}
+

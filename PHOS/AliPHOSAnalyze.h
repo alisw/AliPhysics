@@ -35,14 +35,13 @@ public:
 
   void ActivePPSD(Int_t Nevents) ;
   void AnalyzeManyEvents(Int_t Nevtents = 100, Int_t Module=0) ;  // analyzes many events   ;
-  void Reconstruct(Int_t Nevtents = 100) ;
-  void ReconstructCPV(Int_t Nevents = 1) ;  // reconstruct points in EMC and CPV
-  void AnalyzeResolutions(Int_t Nevtents) ; // analyzes Energy and Position resolutions   ;
-  void ReadAndPrintCPV(Int_t Nevents);      // Read & print generated and reconstructed hits in CPV
-  void AnalyzeCPV(Int_t Nevents);           // analyzes various CPV characteristics
+  void InvariantMass(Int_t Nevents = 100) ; 
+  void Reconstruct(Int_t Nevtents = 100,Int_t FirstEvent = 0) ;
+  void AnalyzeResolutions(Int_t Nevtents) ;  // analyzes Energy and Position resolutions   ;
   void BookingHistograms() ;                // booking histograms for the ManyEvent analysis ;
   void BookResolutionHistograms() ;         // booking histograms for the Resoluion analysis ;
   void Copy(TObject & obj) ;                // copies an analysis into an other one   
+  Float_t CorrectEnergy(Float_t ERecPart) ;   //Corrects reconstracted energy
   Bool_t Init(Int_t evt) ;                  // does various initialisations
   void DisplayKineEvent(Int_t evt = -999) ; // displays the Kine events in ALICE coordinate 
   void DisplayRecParticles() ;              // displays RecParticles in ALICE coordinate  
@@ -57,7 +56,6 @@ public:
     assert(0==1) ;
     return *this ; 
   }
-  void SetDebugLevel(Int_t flag) { fDebugLevel = flag; }
  
  private:
   
@@ -71,8 +69,6 @@ public:
   TFile * fRootFile ;                 // the root file that contains the data
   AliPHOSTrackSegmentMaker * fTrs ;   // a tracksegmentmaker ;
 
-  Int_t fDebugLevel;                  // debug level for analysis
-
   TH2F * fhEnergyCorrelations ;     //Energy correlations between Eloss in Convertor and PPSD(2)
 
 
@@ -84,41 +80,44 @@ public:
   TH1F * fhConvertorCluster ;       // Histo of Cluster energies in Convertor
   TH2F * fhConvertorEmc ;           // 2d Convertor versus Emc energies
 
-  TH2F * fhPhotonEnergy ;           // Spectrum of detected photons with photon primary
-  TH2F * fhPhotonAllEnergy ;        // Total spectrum of detected photons
-  TH2F * fhElectronEnergy ;         // Spectrum of detected electrons with electron primary
-  TH2F * fhElectronAllEnergy ;      // Total spectrum of detected electrons
-  TH2F * fhNeutralHadronEnergy ;    // Spectrum of detected neutral hadron
-  TH2F * fhNeutralEMEnergy ;        // Spectrum of detected neutral EM with EM primary
-  TH2F * fhNeutralEMAllEnergy ;     // Spectrum of detected neutral EM
-  TH2F * fhChargedHadronEnergy ;    // Spectrum of detected charged
-  TH2F * fhPhotonHadronEnergy ;     // Spectrum of detected Photon-Hadron
-  TH2F * fhPhotonPosition ;        // Position Resolution of  photons with photon primary
-  TH2F * fhPhotonAllPosition ;     // Position Resolution of  photons
-  TH2F * fhElectronPosition ;      // Position Resolution of electrons with electron primary
-  TH2F * fhElectronAllPosition ;   // Position Resolution of electrons
-  TH2F * fhNeutralHadronPosition ; // Position Resolution of neutral hadron
-  TH2F * fhNeutralEMPosition ;     // Position Resolution of neutral EM with EM primary
-  TH2F * fhNeutralEMAllPosition ;  // Position Resolution of neutral EM
-  TH2F * fhChargedHadronPosition ; // Position Resolution of charged
-  TH2F * fhPhotonHadronPosition ;  // Position Resolution of Photon-Hadron
+  TH2F * fhAllEnergy ;           // Spectrum of detected photons with photon primary
+  TH2F * fhPhotEnergy ;        // Total spectrum of detected photons
+  TH2F * fhEMEnergy ;        // Spectrum of detected neutral EM with EM primary
+  TH2F * fhPPSDEnergy ;
+
+  TH2F * fhAllPosition ;        // Position Resolution of  photons with photon primary
+  TH2F * fhPhotPosition ;     // Position Resolution of  photons
+  TH2F * fhEMPosition ;     // Position Resolution of neutral EM with EM primary
+  TH2F * fhPPSDPosition ;  // Position Resolution of neutral EM
+
   TH1F * fhPhotonPositionY ;        // Y distribution of detected photons
   TH1F * fhElectronPositionY ;      // Y distribution of detected electrons
   TH1F * fhNeutralHadronPositionY ; // Y distribution of detected neutral hadron
   TH1F * fhNeutralEMPositionY ;     // Y distribution of detected neutral EM
   TH1F * fhChargedHadronPositionY ; // Y distribution of detected charged
   TH1F * fhPhotonHadronPositionY ;  // Y distribution of detected Photon-Hadron
-  TH1F * fhPhotonReg ;          
+
+  TH1F * fhPhotReg ;          
   TH1F * fhAllReg ;          
   TH1F * fhNReg ;          
   TH1F * fhNBarReg ;          
   TH1F * fhChargedReg ;          
-  TH1F * fhPhotonEM ;          
+  TH1F * fhPhotEM ;          
   TH1F * fhAllEM ;          
   TH1F * fhNEM ;          
   TH1F * fhNBarEM ;          
   TH1F * fhChargedEM ;          
+  TH1F * fhPhotPPSD ;          
+  TH1F * fhAllPPSD ;          
+  TH1F * fhNPPSD ;          
+  TH1F * fhNBarPPSD ;          
+  TH1F * fhChargedPPSD ;          
+
   TH1F * fhPrimary ;          
+  TH1F * fhAllRP ;
+  TH1F * fhPPSD ;
+  TH1F * fhShape ;
+  TH1F * fhVeto ;
 
   TH1F * fhPhotPhot ;
   TH1F * fhPhotElec ;
