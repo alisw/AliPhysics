@@ -236,11 +236,17 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 		      //fhElectronPositionY->Fill(recpart. ) ; 
 		      //cout << "ELECTRON" << endl;
 		      break;
-		    case kNEUTRON:
-		      fhNeutronEnergy->Fill(recpart.Energy() ) ; 
-		      //fhNeutronPositionX->Fill(recpart. ) ;
-		      //fhNeutronPositionY->Fill(recpart. ) ; 
-		      //cout << "NEUTRON" << endl;
+		    case kNEUTRALHADRON:
+		      fhNeutralHadronEnergy->Fill(recpart.Energy() ) ; 
+		      //fhNeutralHadronPositionX->Fill(recpart. ) ;
+		      //fhNeutralHadronPositionY->Fill(recpart. ) ; 
+		      //cout << "NEUTRAl HADRON" << endl;
+		      break ;
+		    case kNEUTRALEM:
+		      fhNeutralEMEnergy->Fill(recpart.Energy() ) ; 
+		      //fhNeutralEMPositionX->Fill(recpart. ) ;
+		      //fhNeutralEMPositionY->Fill(recpart. ) ; 
+		      //cout << "NEUTRAL EM" << endl;
 		      break ;
 		    case kCHARGEDHADRON :
 		      fhChargedHadronEnergy->Fill(recpart.Energy() ) ; 
@@ -267,31 +273,42 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 //____________________________________________________________________________
 void  AliPHOSAnalyze::BookingHistograms()
 {
-  if (fhEmcDigit )         delete fhEmcDigit  ;
-  if (fhVetoDigit )        delete fhVetoDigit  ;
-  if (fhConvertorDigit )   delete fhConvertorDigit   ;
-  if (fhEmcCluster   )     delete  fhEmcCluster   ;
-  if (fhVetoCluster )      delete fhVetoCluster   ;
-  if (fhConvertorCluster ) delete fhConvertorCluster  ;
-  if (fhConvertorEmc )     delete fhConvertorEmc  ;
-  fhEmcDigit         = new TH1F("hEmcDigit",      "hEmcDigit",         1000,  0. ,  25.);
-  fhVetoDigit        = new TH1F("hVetoDigit",     "hVetoDigit",         500,  0. ,  3.e-5);
-  fhConvertorDigit   = new TH1F("hConvertorDigit","hConvertorDigit",    500,  0. ,  3.e-5);
-  fhEmcCluster       = new TH1F("hEmcCluster",    "hEmcCluster",       1000,  0. ,  30.);
-  fhVetoCluster      = new TH1F("hVetoCluster",   "hVetoCluster",       500,  0. ,  3.e-5);
-  fhConvertorCluster = new TH1F("hConvertorCluster","hConvertorCluster",500,  0. ,  3.e-5);
-  fhConvertorEmc     = new TH2F("hConvertorEmc",  "hConvertorEmc",      200,  1. ,  3., 200, 0., 3.e-5);
-  fhPhotonEnergy     = new TH1F("hPhotonEnergy",  "hPhotonEnergy",     1000,  0. ,  30.);
-  fhElectronEnergy   = new TH1F("hElectronEnergy","hElectronEnergy",   1000,  0. ,  30.);
-  fhNeutronEnergy    = new TH1F("hNeutronEnergy", "hNeutronEnergy",    1000,  0. ,  30.);
-  fhChargedHadronEnergy    = new TH1F("hChargedHadronEnergy", "hChargedHadronEnergy",    1000,  0. ,  30.);
-  fhPhotonPositionX  = new TH1F("hPhotonPositionX","hPhotonPositionX",   500,-80. , 80.);
-  fhElectronPositionX= new TH1F("hElectronPositionX","hElectronPositionX",500,-80. , 80.);
-  fhNeutronPositionX  = new TH1F("hNeutronPositionX","hNeutronPositionX",500,-80. , 80.);
+  if (fhEmcDigit )         
+    delete fhEmcDigit  ;
+  if (fhVetoDigit )     
+    delete fhVetoDigit  ;
+  if (fhConvertorDigit ) 
+    delete fhConvertorDigit   ;
+  if (fhEmcCluster   )  
+    delete  fhEmcCluster   ;
+  if (fhVetoCluster )     
+    delete fhVetoCluster   ;
+  if (fhConvertorCluster )
+    delete fhConvertorCluster  ;
+  if (fhConvertorEmc )    
+    delete fhConvertorEmc  ;
+ 
+  fhEmcDigit                = new TH1F("hEmcDigit",      "hEmcDigit",         1000,  0. ,  25.);
+  fhVetoDigit               = new TH1F("hVetoDigit",     "hVetoDigit",         500,  0. ,  3.e-5);
+  fhConvertorDigit          = new TH1F("hConvertorDigit","hConvertorDigit",    500,  0. ,  3.e-5);
+  fhEmcCluster              = new TH1F("hEmcCluster",    "hEmcCluster",       1000,  0. ,  30.);
+  fhVetoCluster             = new TH1F("hVetoCluster",   "hVetoCluster",       500,  0. ,  3.e-5);
+  fhConvertorCluster        = new TH1F("hConvertorCluster","hConvertorCluster",500,  0. ,  3.e-5);
+  fhConvertorEmc            = new TH2F("hConvertorEmc",  "hConvertorEmc",      200,  1. ,  3., 200, 0., 3.e-5);
+  fhPhotonEnergy            = new TH1F("hPhotonEnergy",  "hPhotonEnergy",     1000,  0. ,  30.);
+  fhElectronEnergy          = new TH1F("hElectronEnergy","hElectronEnergy",   1000,  0. ,  30.);
+  fhNeutralHadronEnergy     = new TH1F("hNeutralHadronEnergy", "hNeutralHadronEnergy",    1000,  0. ,  30.);
+  fhNeutralEMEnergy         = new TH1F("hNeutralEMEnergy", "hNeutralEMEnergy",    1000,  0. ,  30.);
+  fhChargedHadronEnergy     = new TH1F("hChargedHadronEnergy", "hChargedHadronEnergy",    1000,  0. ,  30.);
+  fhPhotonPositionX         = new TH1F("hPhotonPositionX","hPhotonPositionX",   500,-80. , 80.);
+  fhElectronPositionX       = new TH1F("hElectronPositionX","hElectronPositionX",500,-80. , 80.);
+  fhNeutralHadronPositionX  = new TH1F("hNeutralHadronPositionX","hNeutralHadronPositionX",500,-80. , 80.);
+  fhNeutralEMPositionX      = new TH1F("hNeutralEMPositionX","hNeutralEMPositionX",500,-80. , 80.);
   fhChargedHadronPositionX  = new TH1F("hChargedHadronPositionX","hChargedHadronPositionX",500,-80. , 80.);
-  fhPhotonPositionY  = new TH1F("hPhotonPositionY","hPhotonPositionY",   500,-80. , 80.);
-  fhElectronPositionY= new TH1F("hElectronPositionY","hElectronPositionY",500,-80. , 80.);
-  fhNeutronPositionY  = new TH1F("hNeutronPositionY","hNeutronPositionY",500,-80. , 80.);
+  fhPhotonPositionY         = new TH1F("hPhotonPositionY","hPhotonPositionY",   500,-80. , 80.);
+  fhElectronPositionY       = new TH1F("hElectronPositionY","hElectronPositionY",500,-80. , 80.);
+  fhNeutralHadronPositionY  = new TH1F("hNeutralHadronPositionY","hNeutralHadronPositionY",500,-80. , 80.);
+  fhNeutralEMPositionY      = new TH1F("hNeutralEMPositionY","hNeutralEMPositionY",500,-80. , 80.);
   fhChargedHadronPositionY  = new TH1F("hChargedHadronPositionY","hChargedHadronPositionY",500,-80. , 80.);
 
 }
@@ -746,25 +763,50 @@ void AliPHOSAnalyze::SavingHistograms()
   sprintf(outputname,"%s.analyzed",fRootFile->GetName());
   TFile output(outputname,"RECREATE");
   output.cd();
-  if (fhEmcDigit )         fhEmcDigit->Write()  ;
-  if (fhVetoDigit )        fhVetoDigit->Write()  ;
-  if (fhConvertorDigit )   fhConvertorDigit->Write()   ;
-  if (fhEmcCluster   )     fhEmcCluster->Write()   ;
-  if (fhVetoCluster )      fhVetoCluster->Write()   ;
-  if (fhConvertorCluster ) fhConvertorCluster->Write()  ;
-  if (fhConvertorEmc )     fhConvertorEmc->Write()  ;
-  if (fhPhotonEnergy)      fhPhotonEnergy->Write() ;
-  if (fhPhotonPositionX)   fhPhotonPositionX->Write() ;
-  if (fhPhotonPositionY)   fhPhotonPositionX->Write() ;
-  if (fhElectronEnergy)    fhElectronEnergy->Write() ;
-  if (fhElectronPositionX) fhElectronPositionX->Write() ;
-  if (fhElectronPositionY) fhElectronPositionX->Write() ;
-  if (fhNeutronEnergy)     fhNeutronEnergy->Write() ;
-  if (fhNeutronPositionX)  fhNeutronPositionX->Write() ;
-  if (fhNeutronPositionY)  fhNeutronPositionX->Write() ;
-  if (fhChargedHadronEnergy)     fhChargedHadronEnergy->Write() ;
-  if (fhChargedHadronPositionX)  fhChargedHadronPositionX->Write() ;
-  if (fhChargedHadronPositionY)  fhChargedHadronPositionX->Write() ;
+  if (fhEmcDigit )         
+    fhEmcDigit->Write()  ;
+  if (fhVetoDigit )  
+    fhVetoDigit->Write()  ;
+  if (fhConvertorDigit ) 
+    fhConvertorDigit->Write()   ;
+  if (fhEmcCluster   )
+    fhEmcCluster->Write()   ;
+  if (fhVetoCluster ) 
+    fhVetoCluster->Write()   ;
+  if (fhConvertorCluster )
+    fhConvertorCluster->Write()  ;
+  if (fhConvertorEmc ) 
+    fhConvertorEmc->Write()  ;
+  if (fhPhotonEnergy)    
+    fhPhotonEnergy->Write() ;
+  if (fhPhotonPositionX)  
+    fhPhotonPositionX->Write() ;
+  if (fhPhotonPositionY)  
+    fhPhotonPositionX->Write() ;
+  if (fhElectronEnergy)  
+    fhElectronEnergy->Write() ;
+  if (fhElectronPositionX)
+    fhElectronPositionX->Write() ;
+  if (fhElectronPositionY) 
+    fhElectronPositionX->Write() ;
+  if (fhNeutralHadronEnergy) 
+    fhNeutralHadronEnergy->Write() ;
+  if (fhNeutralHadronPositionX)
+    fhNeutralHadronPositionX->Write() ;
+  if (fhNeutralHadronPositionY) 
+    fhNeutralHadronPositionX->Write() ;
+  if (fhNeutralEMEnergy)   
+    fhNeutralEMEnergy->Write() ;
+  if (fhNeutralEMPositionX)
+    fhNeutralEMPositionX->Write() ;
+  if (fhNeutralEMPositionY) 
+    fhNeutralEMPositionX->Write() ;
+  if (fhChargedHadronEnergy) 
+    fhChargedHadronEnergy->Write() ;
+  if (fhChargedHadronPositionX) 
+    fhChargedHadronPositionX->Write() ;
+  if (fhChargedHadronPositionY)
+    fhChargedHadronPositionX->Write() ;
 
   output.Write();
   output.Close();

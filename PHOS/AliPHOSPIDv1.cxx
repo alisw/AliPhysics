@@ -67,9 +67,9 @@ void  AliPHOSPIDv1::GetParticleType(TrackSegmentsList * trsl, RecParticlesList *
       recp->GetElipsAxis(lambda) ; 
       if ( ( lambda[0] > fLambda1m && lambda[0] < fLambda1M ) && // shower profile cut
 	   ( lambda[1] > fLambda2m && lambda[1] < fLambda2M ) )
-	type = kGAMMA ; 
+	type = kNEUTRALEM ; 
       else 
-	type = kNEUTRON ; 
+	type = kNEUTRALHADRON ; 
       delete lambda ; 
    }
     if (type == kCHARGED) { 
