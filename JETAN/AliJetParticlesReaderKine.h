@@ -71,11 +71,13 @@ inline Bool_t AliJetParticlesReaderKine::IsAcceptedParticle(TParticle *p) const
     if((!fNeutral)&&(!ch)) return kFALSE;
   }
 #else
-  if(pcode!=11 && pcode!=22 && pcode!=211 && pcode!=321 && 
-     pcode!=2212 && pcode!=111 && pcode!=211 && pcode!=2112) 
-    return kFALSE; /*keep only e-, gammas, pi, ks, p, n*/
+  if(pcode==11 && pcode!=22 && pcode <= 110) return kFALSE;
+  if(pcode==990 || pcode > 5224) return kFALSE;
+  //if(pcode!=11 && pcode!=22 && pcode!=211 && pcode!=321 && 
+  //   pcode!=2212 && pcode!=111 && pcode!=211 && pcode!=2112) 
+  //  return kFALSE; /*keep only e-, gammas, pi, ks, p, n*/
 
-  if(fEM && (pcode==22 || pcode==111)){
+  if(fEM && (pcode==11 || pcode==22 || pcode==111)){
     // em particles are accepted
   } else {
     TParticlePDG *pdg=p->GetPDG();
