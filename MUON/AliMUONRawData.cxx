@@ -448,7 +448,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
   if (!nEntries)
     Error("AliMUONRawData::WriteTriggerDDL","No Trigger information available");
 
-  buffer = new Int_t [680]; // [16(local)*5 words + 4 words]*8(reg) + 7 words = 679
+  buffer = new Int_t [680]; // [16(local)*5 words + 4 words]*8(reg) + 8 words = 680
 
   for (Int_t iDDL = 0; iDDL < 2; iDDL++) {
     
@@ -538,6 +538,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
     } // Regional card
     
     buffer[index++] = fDDLTrigger->GetEoD(); // End of DDL word
+    buffer[index++] = fDDLTrigger->GetEoD(); // End of DDL word for 64 bits transfer purpose
 
     
     if (iDDL == 0) {
