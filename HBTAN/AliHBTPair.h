@@ -68,7 +68,7 @@ class AliHBTPair: public TObject
    Double_t fKt; //K == sum vector of particle's momenta. Kt transverse component
    Bool_t   fKtNotCalc;//flag indicating if fKt is already calculated for this pair
    
-   Double_t fKStar;
+   Double_t fKStar; //
    Bool_t   fKStarNotCalc;
    
    Double_t fPInv;  //invariant momentum
@@ -138,11 +138,6 @@ void AliHBTPair::SetParticles(AliHBTParticle* p1,AliHBTParticle* p2)
  //and do nothing until will be asked for
 }
 /****************************************************************/
-inline
-Double_t AliHBTPair::GetQSide()
-{
- return 0.0;
-}
 /****************************************************************/
 inline 
 void AliHBTPair::CalculateInvMassSqr()

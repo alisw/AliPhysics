@@ -1,5 +1,6 @@
 #include "AliHBTPair.h"
 #include "AliHBTParticle.h"
+#include <iostream.h>
 
 ClassImp(AliHBTPair)
 
@@ -109,16 +110,33 @@ Double_t AliHBTPair::GetQInv()
   if(fQInvNotCalc)
    {
     CalculateQInvL();
-
-    if (fQInvL < 0.) fQInv =  TMath::Sqrt(-fQInvL);
-    else             fQInv = -TMath::Sqrt( fQInvL);
-
+    fQInv = TMath::Sqrt(TMath::Abs(fQInvL));
     fQInvNotCalc = kFALSE;
    }
-   
   return fQInv;
 }
 
+/************************************************************************/
+Double_t  AliHBTPair::GetQSide()
+{
+ //returns Q side
+
+}
+
+Double_t  AliHBTPair::GetQLong()
+{
+ //returns Q long 
+
+}
+
+Double_t  AliHBTPair::GetQOut()
+{
+ //returns Q out
+   
+}
+/************************************************************************/
+
+/************************************************************************/
 
 
 
