@@ -1,7 +1,12 @@
 void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0) 
 {
 
-// Int_t diaglevel=3;         // 1->Hits, 2->Spectra, 3->Statistics 
+// Diaglevel
+// 1-> Single Ring Hits 
+// 2-> Single Ring Spectra 
+// 3-> Single Ring Statistics
+// 4-> Single Ring Reconstruction
+// 5-> Full Event Hits  
 
 /////////////////////////////////////////////////////////////////////////
 //   This macro is a small example of a ROOT macro
@@ -39,7 +44,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 // Connect the Root Galice file containing Geometry, Kine and Hits
     
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-    if (!file) file = new TFile("galice.root");
+    if (!file) file = new TFile("galice.root","UPDATE");
     
 // Get AliRun object from file or create it if not on file
     
@@ -62,7 +67,32 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
    Int_t ymin= -NpadY/2;
    Int_t ymax=  NpadY/2;
 
-   TH2F *hc0 = new TH2F("hc0","Zoom on center of Chamber 1",100,-50,50,100,-50,50);
+   TH2F *hc0 = new TH2F("hc0","Zoom on center of central chamber",150,-30,30,150,-30,30);
+
+   if (diaglevel == 1)
+
+     {
+       printf("Single Ring Hits\n");
+       TH2F *feedback = new TH2F("feedback","Feedback hit distribution",150,-30,30,150,-30,30);
+       TH2F *mip = new TH2F("mip","Mip hit distribution",30,-3,3,30,-3,3);
+       TH2F *cerenkov = new TH2F("cerenkov","Cerenkov hit distribution",150,-30,30,150,-30,30);
+       TH2F *h = new TH2F("h","Detector hit distribution",150,-30,30,150,-30,30);
+       TH1F *hitsX = new TH1F("hitsX","Distribution of hits along x-axis",150,-30,30);
+       TH1F *hitsY = new TH1F("hitsY","Distribution of hits along z-axis",150,-30,30);
+     }       
+   else
+     {
+       printf("Full Event Hits\n");
+       
+       TH2F *feedback = new TH2F("feedback","Feedback hit distribution",150,-300,300,150,-300,300);
+       TH2F *mip = new TH2F("mip","Mip hit distribution",150,-300,300,150,-300,300);
+       TH2F *cerenkov = new TH2F("cerenkov","Cerenkov hit distribution",150,-300,300,150,-300,300);
+       TH2F *h = new TH2F("h","Detector hit distribution",150,-300,300,150,-300,300); 
+       TH1F *hitsX = new TH1F("digitsX","Distribution of hits along x-axis",200,-300,300);
+       TH1F *hitsY = new TH1F("digitsY","Distribution of hits along z-axis",200,-300,300);
+       
+     }
+
    TH2F *hc1 = new TH2F("hc1","Chamber 1 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
    TH2F *hc2 = new TH2F("hc2","Chamber 2 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
    TH2F *hc3 = new TH2F("hc3","Chamber 3 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
@@ -70,24 +100,22 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
    TH2F *hc5 = new TH2F("hc5","Chamber 5 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
    TH2F *hc6 = new TH2F("hc6","Chamber 6 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
    TH2F *hc7 = new TH2F("hc7","Chamber 7 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
-   TH2F *h = new TH2F("h","Detector hit distribution",150,-300,300,150,-300,300);
+      
    TH1F *Clcharge = new TH1F("Clcharge","Cluster Charge Distribution",500,0.,500.);
-   TH2F *cerenkov = new TH2F("cerenkov","Cerenkov hit distribution",150,-300,300,150,-300,300);
    TH1F *ckovangle = new TH1F("ckovangle","Cerenkov angle per photon",200,.5,1);
    TH1F *hckphi = new TH1F("hckphi","Cerenkov phi angle per photon",620,-3.1,3.1);
-   TH2F *feedback = new TH2F("feedback","Feedback hit distribution",150,-300,300,150,-300,300);
-   TH2F *mip = new TH2F("mip","Mip hit distribution",150,-300,300,150,-300,300);
    TH1F *mother = new TH1F("mother","Cerenkovs per Mip",75,0.,75.);
    TH1F *radius = new TH1F("radius","Mean distance to Mip",100,0.,20.);
-   TH1F *phspectra1 = new TH1F("phspectra","Photon Spectra",200,5.,10.);
-   TH1F *phspectra2 = new TH1F("phspectra","Photon Spectra",200,5.,10.);
-   TH1F *totalphotons = new TH1F("totalphotons","Produced Photons per Mip",100,200,700.);
+   TH1F *phspectra1 = new TH1F("phspectra1","Detected Photon Spectra",200,5.,10.);
+   TH1F *phspectra2 = new TH1F("phspectra2","Produced Photon Spectra",200,5.,10.);
+   TH1F *totalphotonstrack = new TH1F("totalphotonstrack","Produced Photons per Mip",100,200,700.);
+   TH1F *totalphotonsevent = new TH1F("totalphotonsevent","Produced Photons per Mip",100,200,700.);
    TH1F *feedbacks = new TH1F("feedbacks","Produced Feedbacks per Mip",50,0.5,50.);
    TH1F *padnumber = new TH1F("padnumber","Number of pads per cluster",50,-0.5,50.);
-   TH1F *padsev = new TH1F("padsev","Number of pads hit per event",50,0.5,100.);
-   TH1F *clusev = new TH1F("clusev","Number of clusters per event",50,0.5,50.);
-   TH1F *photev = new TH1F("photev","Number of photons per event",50,0.5,50.);
-   TH1F *feedev = new TH1F("feedev","Number of feedbacks per event",50,0.5,50.);
+   TH1F *padsev = new TH1F("padsev","Number of pads hit per MIP",50,0.5,100.);
+   TH1F *clusev = new TH1F("clusev","Number of clusters per MIP",50,0.5,50.);
+   TH1F *photev = new TH1F("photev","Number of detected photons per MIP",50,0.5,50.);
+   TH1F *feedev = new TH1F("feedev","Number of feedbacks per MIP",50,0.5,50.);
    TH1F *padsmip = new TH1F("padsmip","Number of pads per event inside MIP region",50,0.5,50.);
    TH1F *padscl = new TH1F("padscl","Number of pads per event from cluster count",50,0.5,100.);
    TH1F *pionspectra = new TH1F("pionspectra","Pion Spectra",200,.5,10.);
@@ -95,15 +123,13 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
    TH1F *kaonspectra = new TH1F("kaonspectra","Kaon Spectra",100,.5,10.);
    TH1F *kaonspectra = new TH1F("kaonspectra","Kaon Spectra",100,.5,10.);
    TH1F *chargedspectra = new TH1F("chargedspectra","Charged particles above 1 GeV Spectra",100,.5,10.);
-   TH1F *hitsX = new TH1F("digitsX","Distribution of hits along x-axis",200,-300,300);
-   TH1F *hitsY = new TH1F("digitsY","Distribution of hits along z-axis",200,-300,300);
    TH1F *hitsPhi = new TH1F("hitsPhi","Distribution of phi angle of incidence",100,-180,180);
    TH1F *hitsTheta = new TH1F("hitsTheta","Distribution of Theta angle of incidence",100,0,15);
    TH1F *Omega = new TH1F("omega","Reconstructed Cerenkov angle per track",200,.5,1);
    TH1F *Theta = new TH1F("theta","Reconstructed theta incidence angle per track",200,0,15);
    TH1F *Phi = new TH1F("phi","Reconstructed phi incidence per track",200,-180,180);
-   
-   
+   TH1F *PhotonCer = new TH1F("photoncer","Reconstructed Cerenkov angle per photon",200,.5,1);
+   TH2F *PadsUsed = new TH2F("padsused","Pads Used for Reconstruction",100,-30,30,100,-30,30);
    
 
 //   Start loop over events 
@@ -151,41 +177,6 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
        gAlice->TreeD()->GetEvent(nent-1);
        
-
-       TClonesArray *Digits = RICH->DigitsAddress(2);    //  Raw clusters branch
-       Int_t ndigits = Digits->GetEntriesFast();
-       //printf("Digits:%d\n",ndigits);
-       padsev->Fill(ndigits,(float) 1);
-
-       for (Int_t ich=0;ich<7;ich++)
-	 {
-	   TClonesArray *Digits = RICH->DigitsAddress(ich);    //  Raw clusters branch
-	   Int_t ndigits = Digits->GetEntriesFast();
-	   //printf("Digits:%d\n",ndigits);
-	   padsev->Fill(ndigits,(float) 1); 
-	   if (ndigits) {
-	     for (Int_t hit=0;hit<ndigits;hit++) {
-	       dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
-	       //Int_t nchamber = padHit->fChamber;     // chamber number
-	       //Int_t nhit = dHit->fHitNumber;          // hit number
-	       Int_t qtot = dHit->fSignal;                // charge
-	       Int_t ipx  = dHit->fPadX;               // pad number on X
-	       Int_t ipy  = dHit->fPadY;               // pad number on Y
-	       //Int_t iqpad  = dHit->fQpad;           // charge per pad
-	       //Int_t rpad  = dHit->fRSec;            // R-position of pad
-	       //printf ("Pad hit, PadX:%d, PadY:%d\n",ipx,ipy);
-	       if( ipx<=100 && ipy <=100 && ich==0) hc0->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==0) hc1->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==1) hc2->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==2) hc3->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==3) hc4->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==4) hc5->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==5) hc6->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==6) hc7->Fill(ipx,ipy,(float) qtot);
-	     }
-	   }
-	 }
-       
 // Start loop on tracks in the hits containers
        Int_t Nc=0;
        for (Int_t track=0; track<ntracks;track++) {
@@ -222,13 +213,20 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	      
 	      TParticle *current = (TParticle*)(*gAlice->Particles())[index];
 	      //printf("Particle type: %d\n",current->GetPdgCode());
+
+	      hitsTheta->Fill(theta,(float) 1);
+	      if (RICH->GetDebugLevel() == -1)
+		  printf("Theta:%f, Phi:%f\n",theta,phi);
+
+	      //printf("Debug Level:%d\n",RICH->GetDebugLevel());
+
 	      if (TMath::Abs(particle) < 50000000)
 		{
 		  mip->Fill(x,y,(float) 1);
 		  if (current->Energy() - current->GetCalcMass()>1 && freon==1)
 		    {
 		      hitsPhi->Fill(phi,(float) 1);
-		      hitsTheta->Fill(theta,(float) 1);
+		      //hitsTheta->Fill(theta,(float) 1);
 		      //printf("Theta:%f, Phi:%f\n",theta,phi);
 		    }
 		}
@@ -277,6 +275,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 		  
 		 
 		   TParticle *current = (TParticle*)(*gAlice->Particles())[index];
+		   Float_t energyckov = current->Energy();
 		   
 		   if (current->GetPdgCode() == 50000051)
 		   {
@@ -288,6 +287,10 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 		   }
 		   if (current->GetPdgCode() == 50000050)
 		   {
+		     
+		     totalphotonsevent->Fill(ncerenkovs,(float) 1);
+		     phspectra2->Fill(energyckov*1e9,(float) 1);
+		     
 		     if (closs==4)
 		       {
 			 cerenkov->Fill(cx,cy,(float) 1);
@@ -299,7 +302,6 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 			 mom[0] = current->Px();
 			 mom[1] = current->Py();
 			 mom[2] = current->Pz();
-			 Float_t energyckov = current->Energy();
 			 /*mom[0] = cHit->fMomX;
 			   mom[1] = cHit->fMomZ;
 			   mom[2] = cHit->fMomY;*/
@@ -340,8 +342,6 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 			 phspectra1->Fill(energyckov*1e9,(float) 1);
 			 phot++;
 		       }
-		     else
-		       phspectra2->Fill(energyckov*1e9,(float) 1);
 		     for (Int_t nmothers=0;nmothers<=ntracks;nmothers++){
 		       if (cmother == nmothers){
 			 if (closs == 4)
@@ -383,10 +383,21 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 		 Float_t r_omega = recHit->fOmega;                  // Cerenkov angle
 		 Float_t r_theta = recHit->fTheta;                  // Theta angle of incidence
 		 Float_t r_phi   = recHit->fPhi;                    // Phi angle if incidence
+		 Float_t *cer_pho = recHit->fCerPerPhoton;        // Cerenkov angle per photon
+		 Int_t *padsx = recHit->fPadsUsedX;           // Pads Used fo reconstruction (x)
+		 Int_t *padsy = recHit->fPadsUsedY;           // Pads Used fo reconstruction (y)
+		 Int_t goodPhotons = recHit->fGoodPhotons;    // Number of pads used for reconstruction
 		 
 		 Omega->Fill(r_omega,(float) 1);
 		 Theta->Fill(r_theta*180/TMath::Pi(),(float) 1);
 		 Phi->Fill(r_phi*180/TMath::Pi(),(float) 1);
+
+		 for (Int_t i=0; i<goodPhotons; i++)
+		   {
+		     PhotonCer->Fill(cer_pho[i],(float) 1);
+		     PadsUsed->Fill(padsx[i],padsy[i],1);
+		     //printf("Angle:%f, pad: %d %d\n",cer_pho[i],padsx[i],padsy[i]);
+		   }
 		 
 		 //printf("Omega: %f, Theta: %f, Phi: %f\n",r_omega,r_theta,r_phi);
 	       }
@@ -394,7 +405,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        }
        
        for (Int_t nmothers=0;nmothers<ntracks;nmothers++){
-	   totalphotons->Fill(mothers[nmothers],(float) 1);
+	   totalphotonstrack->Fill(mothers[nmothers],(float) 1);
 	   mother->Fill(mothers2[nmothers],(float) 1);
 	   //printf ("Entries in %d : %d\n",nmothers, mothers[nmothers]);
        }
@@ -411,72 +422,80 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        nraw=0;
        padmip=0;
 
+       TClonesArray *Digits = RICH->DigitsAddress(2);    //  Raw clusters branch
+       Int_t ndigits = Digits->GetEntriesFast();
+       //printf("Digits:%d\n",ndigits);
+       padsev->Fill(ndigits,(float) 1);
+       
+       for (Int_t ich=0;ich<7;ich++)
+	 {
+	   TClonesArray *Digits = RICH->DigitsAddress(ich);    //  Raw clusters branch
+	   Int_t ndigits = Digits->GetEntriesFast();
+	   //printf("Digits:%d\n",ndigits);
+	   padsev->Fill(ndigits,(float) 1); 
+	   if (ndigits) {
+	     for (Int_t hit=0;hit<ndigits;hit++) {
+	       dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
+	       //Int_t nchamber = padHit->fChamber;     // chamber number
+	       //Int_t nhit = dHit->fHitNumber;          // hit number
+	       Int_t qtot = dHit->fSignal;                // charge
+	       Int_t ipx  = dHit->fPadX;               // pad number on X
+	       Int_t ipy  = dHit->fPadY;               // pad number on Y
+	       //Int_t iqpad  = dHit->fQpad;           // charge per pad
+	       //Int_t rpad  = dHit->fRSec;            // R-position of pad
+	       //printf ("Pad hit, PadX:%d, PadY:%d\n",ipx,ipy);
+	       if( ipx<=100 && ipy <=100 && ich==2) hc0->Fill(ipx,ipy,(float) qtot);
+	       if( ipx<=162 && ipy <=162 && ich==0) hc1->Fill(ipx,ipy,(float) qtot);
+	       if( ipx<=162 && ipy <=162 && ich==1) hc2->Fill(ipx,ipy,(float) qtot);
+	       if( ipx<=162 && ipy <=162 && ich==2) hc3->Fill(ipx,ipy,(float) qtot);
+	       if( ipx<=162 && ipy <=162 && ich==3) hc4->Fill(ipx,ipy,(float) qtot);
+	       if( ipx<=162 && ipy <=162 && ich==4) hc5->Fill(ipx,ipy,(float) qtot);
+	       if( ipx<=162 && ipy <=162 && ich==5) hc6->Fill(ipx,ipy,(float) qtot);
+	       if( ipx<=162 && ipy <=162 && ich==6) hc7->Fill(ipx,ipy,(float) qtot);
+	     }
+	   }
+	 }
    }
+       
    
    //Create canvases, set the view range, show histograms
 
    switch(diaglevel)
      {
      case 1:
-
-       if (ndigits)
-	 {
-	   TCanvas *c1 = new TCanvas("c1","Alice RICH pad hits",50,10,1200,700);
-	   c1->Divide(4,2);
-	   c1->cd(1);
-	   hc1->SetXTitle("ix (npads)");
-	   hc1->Draw();
-	   c1->cd(2);
-	   hc2->SetXTitle("ix (npads)");
-	   hc2->Draw();
-	   c1->cd(3);
-	   hc3->SetXTitle("ix (npads)");
-	   hc3->Draw();
-	   c1->cd(4);
-	   hc4->SetXTitle("ix (npads)");
-	   hc4->Draw();
-	   c1->cd(5);
-	   hc5->SetXTitle("ix (npads)");
-	   hc5->Draw();
-	   c1->cd(6);
-	   hc6->SetXTitle("ix (npads)");
-	   hc6->Draw();
-	   c1->cd(7);
-	   hc7->SetXTitle("ix (npads)");
-	   hc7->Draw();
-	   c1->cd(8);
-	   hc0->SetXTitle("ix (npads)");
-	   hc0->Draw();
-	 }
+       
+       TCanvas *c1 = new TCanvas("c1","Alice RICH digits",50,50,300,350);
+       hc0->SetXTitle("ix (npads)");
+       hc0->Draw("box");
+	
 //
-       TCanvas *c4 = new TCanvas("c4","Hits per type",400,10,600,700);
+       TCanvas *c4 = new TCanvas("c4","Hits per type",100,100,600,700);
        c4->Divide(2,2);
        
        c4->cd(1);
-       feedback->SetFillColor(42);
-       feedback->SetXTitle("x (pads)");
-       feedback->SetYTitle("y (pads)");
+       feedback->SetXTitle("x (cm)");
+       feedback->SetYTitle("y (cm)");
        feedback->Draw();
        
        c4->cd(2);
-       mip->SetFillColor(42);
-       mip->SetXTitle("x (pads)");
-       mip->SetYTitle("y (pads)");
+       //mip->SetFillColor(42);
+       mip->SetXTitle("x (cm)");
+       mip->SetYTitle("y (cm)");
        mip->Draw();
        
        c4->cd(3);
-       cerenkov->SetFillColor(42);
-       cerenkov->SetXTitle("x (pads)");
-       cerenkov->SetYTitle("y (pads)"); 
+       //cerenkov->SetFillColor(42);
+       cerenkov->SetXTitle("x (cm)");
+       cerenkov->SetYTitle("y (cm)"); 
        cerenkov->Draw();
        
        c4->cd(4);
-       h->SetFillColor(42);
+       //h->SetFillColor(42);
        h->SetXTitle("x (cm)");
        h->SetYTitle("y (cm)");
        h->Draw();
 
-       TCanvas *c10 = new TCanvas("c10","Hits distribution",400,10,600,350);
+       TCanvas *c10 = new TCanvas("c10","Hits distribution",150,150,600,350);
        c10->Divide(2,1);
        
        c10->cd(1);
@@ -494,7 +513,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 //
      case 2:
        
-       TCanvas *c6 = new TCanvas("c6","Photon Spectra",50,10,600,350);
+       TCanvas *c6 = new TCanvas("c6","Photon Spectra",50,50,600,350);
        c6->Divide(2,1);
        
        c6->cd(1);
@@ -506,7 +525,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        phspectra1->SetXTitle("energy (eV)");
        phspectra1->Draw();
        
-       TCanvas *c9 = new TCanvas("c9","Particles Spectra",400,10,600,700);
+       TCanvas *c9 = new TCanvas("c9","Particles Spectra",100,100,600,700);
        c9->Divide(2,2);
        
        c9->cd(1);
@@ -534,10 +553,11 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
      case 3:
        
        if (nrawclusters) {
-	 TCanvas *c3=new TCanvas("c3","Clusters Statistics",400,10,600,700);
+	 TCanvas *c3=new TCanvas("c3","Clusters Statistics",50,50,600,700);
 	 c3->Divide(2,2);
 	 
 	 c3->cd(1);
+	 c3->SetLogy(1);
 	 Clcharge->SetFillColor(42);
 	 Clcharge->SetXTitle("ADC units");
 	 Clcharge->Draw();
@@ -565,49 +585,14 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	   mother->SetXTitle("counts");
 	   mother->Draw();
 	 }
-       
-       TCanvas *c2 = new TCanvas("c2","Angles of incidence",50,10,600,700);
-       c2->Divide(2,2);
-       
-       c2->cd(1);
-       hitsPhi->SetFillColor(42);
-       hitsPhi->Draw();
-       c2->cd(2);
-       hitsTheta->SetFillColor(42);
-       hitsTheta->Draw();
-       c2->cd(3);
-       Phi->SetFillColor(42);
-       Phi->Draw();
-       c2->cd(4);
-       Theta->SetFillColor(42);
-       Theta->Draw();
-       
-       
-       TCanvas *c5 = new TCanvas("c5","Ring Statistics",50,10,600,700);
-       c5->Divide(2,2);
-       
-       c5->cd(1);
-       ckovangle->SetFillColor(42);
-       ckovangle->SetXTitle("angle (radians)");
-       ckovangle->Draw();
-       
-       c5->cd(2);
-       radius->SetFillColor(42);
-       radius->SetXTitle("radius (cm)");
-       radius->Draw();
-       
-       c5->cd(3);
-       Omega->SetFillColor(42);
-       Omega->SetXTitle("angle (radians)");
-       Omega->Draw();
 
-       TCanvas *c7 = new TCanvas("c7","Production Statistics",400,10,600,700);
+       TCanvas *c7 = new TCanvas("c7","Production Statistics",100,100,600,700);
        c7->Divide(2,2);
        
        c7->cd(1);
-       totalphotons->SetFillColor(42);
-       totalphotons->SetXTitle("Photons (counts)");
-       totalphotons->Draw();
+       totalphotonsevent->SetFillColor(42);
+       totalphotonsevent->SetXTitle("Photons (counts)");
+       totalphotonsevent->Draw();
        
        c7->cd(2);
        photev->SetFillColor(42);
@@ -624,6 +609,132 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        padsev->SetXTitle("(counts)");
        padsev->Draw();
 
+       break;
+
+     case 4:
+       
+       TCanvas *c2 = new TCanvas("c2","Angles of incidence",50,50,600,700);
+       c2->Divide(2,2);
+       
+       c2->cd(1);
+       hitsPhi->SetFillColor(42);
+       hitsPhi->Draw();
+       c2->cd(2);
+       hitsTheta->SetFillColor(42);
+       hitsTheta->Draw();
+       c2->cd(3);
+       Phi->SetFillColor(42);
+       Phi->Draw();
+       c2->cd(4);
+       Theta->SetFillColor(42);
+       Theta->Draw();
+       
+       
+       TCanvas *c5 = new TCanvas("c5","Ring Reconstruction",100,100,900,700);
+       c5->Divide(3,2);
+       
+       c5->cd(1);
+       ckovangle->SetFillColor(42);
+       ckovangle->SetXTitle("angle (radians)");
+       ckovangle->Draw();
+       
+       c5->cd(2);
+       radius->SetFillColor(42);
+       radius->SetXTitle("radius (cm)");
+       radius->Draw();
+
+       c5->cd(3);
+       hc0->SetXTitle("pads");
+       hc0->Draw("box"); 
+       
+       c5->cd(5);
+       Omega->SetFillColor(42);
+       Omega->SetXTitle("angle (radians)");
+       Omega->Draw();
+
+       c5->cd(4);
+       PhotonCer->SetFillColor(42);
+       PhotonCer->SetXTitle("angle (radians)");
+       PhotonCer->Draw();
+
+       c5->cd(6);
+       PadsUsed->SetXTitle("pads");
+       PadsUsed->Draw("box"); 
+       
+       break;
+
+     case 5:
+       
+       if (ndigits)
+	 {
+	   TCanvas *c1 = new TCanvas("c1","Alice RICH digits",50,50,1200,700);
+	   c1->Divide(4,2);
+	   c1->cd(1);
+	   hc1->SetXTitle("ix (npads)");
+	   hc1->Draw("box");
+	   c1->cd(2);
+	   hc2->SetXTitle("ix (npads)");
+	   hc2->Draw("box");
+	   c1->cd(3);
+	   hc3->SetXTitle("ix (npads)");
+	   hc3->Draw("box");
+	   c1->cd(4);
+	   hc4->SetXTitle("ix (npads)");
+	   hc4->Draw("box");
+	   c1->cd(5);
+	   hc5->SetXTitle("ix (npads)");
+	   hc5->Draw("box");
+	   c1->cd(6);
+	   hc6->SetXTitle("ix (npads)");
+	   hc6->Draw("box");
+	   c1->cd(7);
+	   hc7->SetXTitle("ix (npads)");
+	   hc7->Draw("box");
+	   c1->cd(8);
+	   hc0->SetXTitle("ix (npads)");
+	   hc0->Draw("box");
+	 }
+//
+       TCanvas *c4 = new TCanvas("c4","Hits per type",100,100,600,700);
+       c4->Divide(2,2);
+       
+       c4->cd(1);
+       feedback->SetXTitle("x (cm)");
+       feedback->SetYTitle("y (cm)");
+       feedback->Draw();
+       
+       c4->cd(2);
+       //mip->SetFillColor(42);
+       mip->SetXTitle("x (cm)");
+       mip->SetYTitle("y (cm)");
+       mip->Draw();
+       
+       c4->cd(3);
+       //cerenkov->SetFillColor(42);
+       cerenkov->SetXTitle("x (cm)");
+       cerenkov->SetYTitle("y (cm)"); 
+       cerenkov->Draw();
+       
+       c4->cd(4);
+       //h->SetFillColor(42);
+       h->SetXTitle("x (cm)");
+       h->SetYTitle("y (cm)");
+       h->Draw();
+
+       TCanvas *c10 = new TCanvas("c10","Hits distribution",150,150,600,350);
+       c10->Divide(2,1);
+       
+       c10->cd(1);
+       hitsX->SetFillColor(42);
+       hitsX->SetXTitle("(cm)");
+       hitsX->Draw();
+       
+       c10->cd(2);
+       hitsY->SetFillColor(42);
+       hitsY->SetXTitle("(cm)");
+       hitsY->Draw();
+       
+      
        break;
        
      }
