@@ -16,7 +16,7 @@ class AliRICHTransientDigit : public AliRICHDigit {
  public:
     AliRICHTransientDigit() {fTrackList=0;}
     AliRICHTransientDigit(Int_t ich, Int_t *digits);
-    virtual ~AliRICHTransientDigit() {}
+    virtual ~AliRICHTransientDigit();
     
     TObjArray  *TrackList()   {return fTrackList;}
     
