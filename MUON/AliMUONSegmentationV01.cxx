@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.12  2000/12/06 11:55:41  morsch
+Introduce  SetOffsetY(Float_t off) method as simplified simulation of pad staggering.
+fOffset is the staggering offset in y.
+
 Revision 1.11  2000/11/06 09:20:43  morsch
 AliMUON delegates part of BuildGeometry() to AliMUONSegmentation using the
 Draw() method. This avoids code and parameter replication.
@@ -97,10 +101,10 @@ AliMUONSegmentationV01::AliMUONSegmentationV01()
     (*fRSec)[0]=(*fRSec)[1]=(*fRSec)[2]=(*fRSec)[3]=0;     
     (*fNDiv)[0]=(*fNDiv)[1]=(*fNDiv)[2]=(*fNDiv)[3]=0;     
     (*fDpxD)[0]=(*fDpxD)[1]=(*fDpxD)[2]=(*fDpxD)[3]=0;     
-    fCorr = new TObjArray(3);
-    (*fCorr)[0]=0;
-    (*fCorr)[1]=0;
-    (*fCorr)[2]=0;
+    fCorrA = new TObjArray(3);
+    (*fCorrA)[0]=0;
+    (*fCorrA)[1]=0;
+    (*fCorrA)[2]=0;
     fOffsetY=0;
 } 
 
@@ -608,12 +612,12 @@ void AliMUONSegmentationV01::Draw(const char* opt) const
 }
 void AliMUONSegmentationV01::SetCorrFunc(Int_t isec, TF1* func)
 {
-    (*fCorr)[isec]=func;
+    (*fCorrA)[isec]=func;
 }
 
 TF1* AliMUONSegmentationV01::CorrFunc(Int_t isec) const
 { 
-    return (TF1*) (*fCorr)[isec];
+    return (TF1*) (*fCorrA)[isec];
 }
 
 AliMUONSegmentationV01& AliMUONSegmentationV01::operator 
