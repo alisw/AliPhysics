@@ -13,7 +13,9 @@ AliEMCALTick.cxx \
 AliEMCALGetter.cxx \
 AliEMCALJet.cxx \
 AliEMCALJetFinder.cxx \
-AliEMCALFast.cxx 
+AliEMCALFast.cxx \
+AliEMCALHadronicCorrection.cxx \
+AliEMCALHadronicCorrectionv0.cxx 
 
 HDRS= \
 AliEMCAL.h \
@@ -28,6 +30,8 @@ AliEMCALTick.h \
 AliEMCALGetter.h \
 AliEMCALJet.h \
 AliEMCALJetFinder.h \
-AliEMCALFast.h
+AliEMCALFast.h \
+AliEMCALHadronicCorrection.h \
+AliEMCALHadronicCorrectionv0.h 
 
 DHDR:=EMCALLinkDef.h
