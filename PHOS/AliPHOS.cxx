@@ -387,7 +387,7 @@ void AliPHOS::FillESD(AliESD* esd) const
   Int_t index ;
   TTask * task ; 
   TString name ; 
-  // set clusterizer task inactive 
+ // set clusterizer task inactive 
   for (index = 0; index < taskslist->GetSize(); index++) {
     task = dynamic_cast<TTask *>(taskslist->At(index)) ; 
     name = task->GetName() ; 
@@ -420,7 +420,6 @@ void AliPHOS::FillESD(AliESD* esd) const
     et->SetPHOSposition(xyz) ; 
     et->SetPHOSsignal  (rp->Energy()) ; 
     et->SetPHOSpid     (rp->GetPID()) ;
-    et->SetStatus(0x10000) ; 
     // add the track to the esd object
     esd->AddTrack(et);
     delete et;
