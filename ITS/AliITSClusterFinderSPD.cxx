@@ -256,8 +256,8 @@ void  AliITSClusterFinderSPD::GroupClusters()
   //Int_t totalNofClusters = fClusters->GetEntriesFast();
   //cout << " Nomber of clusters at the group end ="<< totalNofClusters<<endl;
   
-  delete [] nofClusters;
-  delete nofClusters;
+  delete [] label;
+  delete label;
   
   return;
   
