@@ -2590,7 +2590,7 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
       Float_t pad = fPar->GetRowPadSize(plane,ch,0);
       Float_t row0 = fPar->GetRow0(plane,ch,0);
       Int_t nPads = fPar->GetRowMax(plane,ch,0);
-      zmaxsensitive[ch] = float_t(nPads)*pad/2.;      
+      zmaxsensitive[ch] = Float_t(nPads)*pad/2.;      
       //      zc[ch] = (pad * nPads)/2 + row0 - pad/2;
       zc[ch] = (pad * nPads)/2 + row0;
       //zc[ch] = row0+zmax[ch]-AliTRDgeometry::RpadW();
