@@ -161,10 +161,10 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	track = fESD->GetTrack(iTrack);
 	if (track->IsPHOS()) 
 	  continue ; 
-	track->GetOuterXYZ(xyz, "PHOS");     // track coord on the cylinder of PHOS radius
+	track->GetOuterXYZPHOS(xyz);     // track coord on the cylinder of PHOS radius
 	if ((TMath::Abs(xyz[0])+TMath::Abs(xyz[1])+TMath::Abs(xyz[2]))<=0)
 	  continue;
-	track->GetOuterPxPyPz(pxyz, "PHOS"); // track momentum ibid.
+	track->GetOuterPxPyPzPHOS(pxyz); // track momentum ibid.
 	vecDist = PropagateToPlane(xyz,pxyz,"CPV",cpvClu->GetPHOSMod());
 	// 	Info("GetDistanceInPHOSPlane","Track %d propagation to CPV = (%f,%f,%f)",
  	//     iTrack,vecDist.X(),vecDist.Y(),vecDist.Z());
@@ -179,7 +179,7 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 
       if (iClosestTrack != -1) {
 	track = fESD->GetTrack(iClosestTrack);
-	track->GetOuterPxPyPz(pxyz, "PHOS"); // track momentum ibid.
+	track->GetOuterPxPyPzPHOS(pxyz); // track momentum ibid.
 	TVector3 vecCpvGlobal; // Global position of the CPV recpoint
 	AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
 	const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
