@@ -5,16 +5,11 @@
 
 /* $Id$ */
 
-/////////////////////////////////////////////////////////
-//  Manager and hits classes for set:MUON version 0    //
-/////////////////////////////////////////////////////////
 #include "AliGenerator.h"
 #include "TNamed.h"
 #include "TF1.h"
 #include "TArrayF.h"
 #include "TTree.h"
-
-// Read background particles from a FLUKA boundary source file
 
 class AliGenScan : public AliGenerator
 {
