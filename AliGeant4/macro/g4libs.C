@@ -89,8 +89,9 @@ void g4libs_granular()
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4materials");
 
     // geometry
-    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4magneticfield");
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4geomver");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4volumes");
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4magneticfield");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4geometrymng");    
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4geomBoolean");    
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4csg");                  
@@ -131,11 +132,11 @@ void g4libs_granular()
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_stringfrag");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_HE_gen");      
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_kinetic");     
-    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_preequ");      
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_qgstring");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_HE");          
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_LE");          
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_deex");
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_preequ");      
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_stop");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_neu");         
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_iso");         
@@ -165,7 +166,7 @@ void g4libs_granular()
 
     // interfaces
     //gSystem->Load("/usr/X11R6/lib/libXt");
-    //gSystem->Load("/usr/local/lib/libXm");
+    //gSystem->Load("/usr/X11R6/lib/libXm");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4UIcommon");             
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4UIbasic");              
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4UIGAG");                
@@ -176,6 +177,7 @@ void g4libs_granular()
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4FR");                   
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4OpenGL");               
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4VRML");                 
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4RayTracer");                 
   
     // TGeant4, AliGeant4
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTGeant4");
@@ -218,7 +220,7 @@ void detlibs() {
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTPC");
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTRD");
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libZDC");
-    #gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libITS");
+    //gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libITS");
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libCASTOR");
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libSTART");
     
