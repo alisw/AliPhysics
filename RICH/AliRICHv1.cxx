@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2000/06/13 13:13:40  jbarbosa
+  Correcting previous correction...
+
   Revision 1.3  2000/06/13 13:06:38  jbarbosa
   Fixed compiling error for HP (multiple declaration)
 
@@ -58,6 +61,11 @@
 
 #include "AliRICHv1.h"
 #include "AliRICHHit.h"
+#include "AliRICHSegmentation.h"
+#include "AliRICHResponse.h"
+#include "AliRICHSegmentationV0.h"
+#include "AliRICHResponseV0.h"
+#include "AliRICHGeometry.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include "iostream.h"
@@ -84,15 +92,66 @@ AliRICHv1::AliRICHv1(const char *name, const char *title)
 
 // Full version of RICH with hits and diagnostics
 
+  // Version 0
+// Default Segmentation, no hits
+    AliRICHSegmentationV0* segmentationV0 = new AliRICHSegmentationV0;
+//
+//  Segmentation parameters
+    segmentationV0->SetPadSize(0.84,0.80);
+    segmentationV0->SetDAnod(0.84/2);
+//
+//  Geometry parameters
+    AliRICHGeometry* geometry = new AliRICHGeometry;
+    geometry->SetGapThickness(8);
+    geometry->SetProximityGapThickness(.4);
+    geometry->SetQuartzLength(131);
+    geometry->SetQuartzWidth(126.2);
+    geometry->SetQuartzThickness(.5);
+    geometry->SetOuterFreonLength(131);
+    geometry->SetOuterFreonWidth(40.3);
+    geometry->SetInnerFreonLength(131);
+    geometry->SetInnerFreonWidth(40.3);
+    geometry->SetFreonThickness(1);
+//
+//  Response parameters
+    AliRICHResponseV0*  responseV0   = new AliRICHResponseV0;
+    responseV0->SetSigmaIntegration(5.);
+    responseV0->SetChargeSlope(40.);
+    responseV0->SetChargeSpread(0.18, 0.18);
+    responseV0->SetMaxAdc(1024);
+    responseV0->SetAlphaFeedback(0.05);
+    responseV0->SetEIonisation(26.e-9);
+    responseV0->SetSqrtKx3(0.77459667);
+    responseV0->SetKx2(0.962);
+    responseV0->SetKx4(0.379);
+    responseV0->SetSqrtKy3(0.77459667);
+    responseV0->SetKy2(0.962);
+    responseV0->SetKy4(0.379);
+    responseV0->SetPitch(0.25);
+//
+//
+//    AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
+    
     fCkovNumber=0;
     fFreonProd=0;
-  
-    fChambers = new TObjArray(kNCH);
-    for (Int_t i=0; i<kNCH; i++) {
+    Int_t i=0;
     
-	(*fChambers)[i] = new AliRICHChamber();  
-	
+    fChambers = new TObjArray(kNCH);
+    for (i=0; i<kNCH; i++) {
+      
+      (*fChambers)[i] = new AliRICHChamber();  
+      
     }
+  
+    for (i=0; i<kNCH; i++) {
+      SetGeometryModel(i,geometry);
+      SetSegmentationModel(i, segmentationV0);
+      SetResponseModel(i, responseV0);
+      SetNsec(i,1);
+      SetDebugLevel(0);
+    }
+
+
 }
 
 void AliRICHv1::Init()
@@ -100,7 +159,7 @@ void AliRICHv1::Init()
 
   printf("*********************************** RICH_INIT ***********************************\n");
   printf("*                                                                               *\n");
-  printf("*                    AliRICHv1 Configurable version started                     *\n");
+  printf("*                        AliRICHv1 Full version started                         *\n");
   printf("*                                                                               *\n");
 
   
@@ -156,12 +215,13 @@ void AliRICHv1::Init()
      
     printf("*                            Pads            : %3dx%3d                          *\n",segmentation->Npx(),segmentation->Npy());
     printf("*                            Pad size        : %5.2f x%5.2f mm2                 *\n",segmentation->Dpx(),segmentation->Dpy()); 
-    printf("*                            Gap Thickness   : %5.1f mm                         *\n",geometry->GetGapThickness());
-    printf("*                            Radiator Width  : %5.1f mm                         *\n",geometry->GetQuartzWidth());
-    printf("*                            Radiator Length : %5.1f mm                         *\n",geometry->GetQuartzLength());
-    printf("*                            Freon Thickness : %5.1f mm                         *\n",geometry->GetFreonThickness());
+    printf("*                            Gap Thickness   : %5.1f cm                         *\n",geometry->GetGapThickness());
+    printf("*                            Radiator Width  : %5.1f cm                         *\n",geometry->GetQuartzWidth());
+    printf("*                            Radiator Length : %5.1f cm                         *\n",geometry->GetQuartzLength());
+    printf("*                            Freon Thickness : %5.1f cm                         *\n",geometry->GetFreonThickness());
     printf("*                            Charge Slope    : %5.1f ADC                        *\n",response->ChargeSlope());
-    printf("*                            Feedback Prob.  : %5.2f %%                          *\n",response->AlphaFeedback());
+    printf("*                            Feedback Prob.  : %5.2f %%                         *\n",response->AlphaFeedback()*100);
+    printf("*                            Debug Level     : %3d                              *\n",GetDebugLevel());
     printf("*                                                                               *\n");
     printf("*                                   Success!                                    *\n");
     printf("*                                                                               *\n");
