@@ -15,7 +15,7 @@
 class AliTPCv1 : public AliTPC {
 
 public:
-  AliTPCv1() {}
+  AliTPCv1(); 
   AliTPCv1(const char *name, const char *title);
   virtual      ~AliTPCv1() {}
   virtual void  CreateGeometry();

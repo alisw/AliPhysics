@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/07/10 20:57:39  hristov
+Update of TPC code and macros by M.Kowalski
+
 Revision 1.16  2000/06/30 12:07:50  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -423,38 +426,31 @@ void AliTPCv0::CreateGeometry()
 
   // Daughter volumes 
 
-  // Tpc SAndwich 5 - Al
+  // Tpc SAndwich 5 - Tedlar
 
   dm[0]= 258.;
   dm[1]= 260.05;
   dm[2]= 251.7;
 
-  gMC->Gsvolu("TSA5","TUBE",idtmed[4],dm,3);
+  gMC->Gsvolu("TSA5","TUBE",idtmed[9],dm,3);
 
-  // Tpc SAndwich 6 - Tedlar
-
-  dm[0] += 5.e-3;
-  dm[1] -= 5.e-3;
-
-  gMC->Gsvolu("TSA6","TUBE",idtmed[9],dm,3);
-
-  // Tpc SAndwich 7 - Kevlar
+  // Tpc SAndwich 6 - Kevlar
 
   dm[0] += 5.e-3;
   dm[1] -= 5.e-3;
 
-  gMC->Gsvolu("TSA7","TUBE",idtmed[5],dm,3);
+  gMC->Gsvolu("TSA6","TUBE",idtmed[5],dm,3);
 
-  // Tpc SAndwich 8 - NOMEX
+
+  // Tpc SAndwich 7 - NOMEX
 
   dm[0] += 0.02;
   dm[1] -= 0.02;
 
-  gMC->Gsvolu("TSA8","TUBE",idtmed[6],dm,3);    
+  gMC->Gsvolu("TSA7","TUBE",idtmed[6],dm,3);    
 
-  // 8->7->6->5->TOFC
+  // 7->6->5->TOFC
 
-  gMC->Gspos("TSA8",1,"TSA7",0.,0.,0.,0,"ONLY");
   gMC->Gspos("TSA7",1,"TSA6",0.,0.,0.,0,"ONLY");
   gMC->Gspos("TSA6",1,"TSA5",0.,0.,0.,0,"ONLY"); 
 
@@ -892,38 +888,31 @@ void AliTPCv0::CreateGeometry()
 
   // Daughter volumes
 
-  // Tpc Sandwich 17 - Al
+  // Tpc Sandwich 17 - Tedlar
 
   dm[0]= 77.15;
   dm[1]= 79.2;
   dm[2]= 251.7;
 
-  gMC->Gsvolu("TS17","TUBE",idtmed[4],dm,3);
+  gMC->Gsvolu("TS17","TUBE",idtmed[9],dm,3);
 
-  // Tpc Sandwich 18 - Tedlar
-
-  dm[0]+= 5.e-3;
-  dm[1]-= 5.e-3;
-
-  gMC->Gsvolu("TS18","TUBE",idtmed[9],dm,3);
-
-  // Tpc Sandwich 19 - Kevlar
+  // Tpc Sandwich 18 - Kevlar
 
   dm[0]+= 5.e-3;
   dm[1]-= 5.e-3;
 
-  gMC->Gsvolu("TS19","TUBE",idtmed[5],dm,3);
+  gMC->Gsvolu("TS18","TUBE",idtmed[5],dm,3);
 
-  // Tpc Sandwich 20 - NOMEX
 
-  dm[0]+= 0.06;
-  dm[1]-= 0.06;
+  // Tpc Sandwich 19 - NOMEX
 
-  gMC->Gsvolu("TS20","TUBE",idtmed[6],dm,3);
+  dm[0]+= 0.02;
+  dm[1]-= 0.02;
 
-  // 20->19->18->17
+  gMC->Gsvolu("TS19","TUBE",idtmed[6],dm,3);
 
-  gMC->Gspos("TS20",1,"TS19",0.,0.,0.,0,"ONLY");
+  // 19->18->17
+
   gMC->Gspos("TS19",1,"TS18",0.,0.,0.,0,"ONLY");
   gMC->Gspos("TS18",1,"TS17",0.,0.,0.,0,"ONLY");
 
@@ -1714,7 +1703,6 @@ void AliTPCv0::DrawDetector()
   gMC->Gsatt("TSA5","SEEN",0);
   gMC->Gsatt("TSA6","SEEN",0);
   gMC->Gsatt("TSA7","SEEN",0);
-  gMC->Gsatt("TSA8","SEEN",0);
   gMC->Gsatt("TIIN","COLO",7);
   gMC->Gsatt("TIIN","SEEN",1);
   gMC->Gsatt("TICL","SEEN",0);
@@ -1732,7 +1720,6 @@ void AliTPCv0::DrawDetector()
   gMC->Gsatt("TS17","SEEN",0);
   gMC->Gsatt("TS18","SEEN",0);
   gMC->Gsatt("TS19","SEEN",0);
-  gMC->Gsatt("TS20","SEEN",0);
   gMC->Gsatt("TS21","SEEN",0);
   gMC->Gsatt("TS22","SEEN",0);
   gMC->Gsatt("TS23","SEEN",0);

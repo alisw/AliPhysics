@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2000/10/05 16:16:29  kowal2
+Corrections of the hit recording algorithm.
+
 Revision 1.25  2000/10/02 21:28:18  fca
 Removal of useless dependecies via forward declarations
 
@@ -98,6 +101,8 @@ Introduction of the Copyright and cvs Log
 #include "AliPDG.h"
 #include "AliTPCParam.h"
 #include "AliTPCParamSR.h"
+#include "AliTPCTrackHits.h"
+
 
 ClassImp(AliTPCv2)
  
@@ -487,38 +492,31 @@ void AliTPCv2::CreateGeometry()
 
   // Daughter volumes 
 
-  // Tpc SAndwich 5 - Al
+  // Tpc SAndwich 5 - Tedlar
 
   dm[0]= 258.;
   dm[1]= 260.05;
   dm[2]= 251.7;
 
-  gMC->Gsvolu("TSA5","TUBE",idtmed[4],dm,3);
+  gMC->Gsvolu("TSA5","TUBE",idtmed[9],dm,3);
 
-  // Tpc SAndwich 6 - Tedlar
-
-  dm[0] += 5.e-3;
-  dm[1] -= 5.e-3;
-
-  gMC->Gsvolu("TSA6","TUBE",idtmed[9],dm,3);
-
-  // Tpc SAndwich 7 - Kevlar
+  // Tpc SAndwich 6 - Kevlar
 
   dm[0] += 5.e-3;
   dm[1] -= 5.e-3;
 
-  gMC->Gsvolu("TSA7","TUBE",idtmed[5],dm,3);
+  gMC->Gsvolu("TSA6","TUBE",idtmed[5],dm,3);
+
 
   // Tpc SAndwich 8 - NOMEX
 
   dm[0] += 0.02;
   dm[1] -= 0.02;
 
-  gMC->Gsvolu("TSA8","TUBE",idtmed[6],dm,3);    
+  gMC->Gsvolu("TSA7","TUBE",idtmed[6],dm,3);    
 
-  // 8->7->6->5->TOFC
+  // 7->6->5->TOFC
 
-  gMC->Gspos("TSA8",1,"TSA7",0.,0.,0.,0,"ONLY");
   gMC->Gspos("TSA7",1,"TSA6",0.,0.,0.,0,"ONLY");
   gMC->Gspos("TSA6",1,"TSA5",0.,0.,0.,0,"ONLY"); 
 
@@ -956,38 +954,31 @@ void AliTPCv2::CreateGeometry()
 
   // Daughter volumes
 
-  // Tpc Sandwich 17 - Al
+  // Tpc Sandwich 17 - Tedlar
 
   dm[0]= 77.15;
   dm[1]= 79.2;
   dm[2]= 251.7;
 
-  gMC->Gsvolu("TS17","TUBE",idtmed[4],dm,3);
+  gMC->Gsvolu("TS17","TUBE",idtmed[9],dm,3);
 
-  // Tpc Sandwich 18 - Tedlar
-
-  dm[0]+= 5.e-3;
-  dm[1]-= 5.e-3;
-
-  gMC->Gsvolu("TS18","TUBE",idtmed[9],dm,3);
-
-  // Tpc Sandwich 19 - Kevlar
+  // Tpc Sandwich 18 - Kevlar
 
   dm[0]+= 5.e-3;
   dm[1]-= 5.e-3;
 
-  gMC->Gsvolu("TS19","TUBE",idtmed[5],dm,3);
+  gMC->Gsvolu("TS18","TUBE",idtmed[5],dm,3);
 
-  // Tpc Sandwich 20 - NOMEX
 
-  dm[0]+= 0.06;
-  dm[1]-= 0.06;
+  // Tpc Sandwich 19 - NOMEX
 
-  gMC->Gsvolu("TS20","TUBE",idtmed[6],dm,3);
+  dm[0]+= 0.02;
+  dm[1]-= 0.02;
 
-  // 20->19->18->17
+  gMC->Gsvolu("TS19","TUBE",idtmed[6],dm,3);
 
-  gMC->Gspos("TS20",1,"TS19",0.,0.,0.,0,"ONLY");
+  // 19->18->17
+
   gMC->Gspos("TS19",1,"TS18",0.,0.,0.,0,"ONLY");
   gMC->Gspos("TS18",1,"TS17",0.,0.,0.,0,"ONLY");
 
@@ -1915,7 +1906,6 @@ void AliTPCv2::DrawDetector()
   gMC->Gsatt("TSA5","SEEN",0);
   gMC->Gsatt("TSA6","SEEN",0);
   gMC->Gsatt("TSA7","SEEN",0);
-  gMC->Gsatt("TSA8","SEEN",0);
   gMC->Gsatt("TIIN","COLO",7);
   gMC->Gsatt("TIIN","SEEN",1);
   gMC->Gsatt("TICL","SEEN",0);
@@ -1933,7 +1923,6 @@ void AliTPCv2::DrawDetector()
   gMC->Gsatt("TS17","SEEN",0);
   gMC->Gsatt("TS18","SEEN",0);
   gMC->Gsatt("TS19","SEEN",0);
-  gMC->Gsatt("TS20","SEEN",0);
   gMC->Gsatt("TS21","SEEN",0);
   gMC->Gsatt("TS22","SEEN",0);
   gMC->Gsatt("TS23","SEEN",0);
@@ -2055,7 +2044,6 @@ void AliTPCv2::StepManager()
   Int_t id,copy;
   Float_t hits[4];
   Int_t vol[2];  
-  TClonesArray &lhits = *fHits;
   TLorentzVector p;
   
   vol[1]=0; // preset row number to 0
@@ -2102,7 +2090,7 @@ void AliTPCv2::StepManager()
       // upper sector
 
       vol[0] = copy-1+fTPCParam->GetNInnerSector(); // sector number
-      vol[1] -= fTPCParam->GetNRowLow(); // row number  
+      vol[1] -= fTPCParam->GetNRowLow(); // row number (starts also from 0)  
 
     } 
 
@@ -2115,7 +2103,9 @@ void AliTPCv2::StepManager()
       hits[1]=p[1];
       hits[2]=p[2];
       hits[3]=0.; // this hit has no energy loss
-      new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+      // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+
+      AddHit(gAlice->CurrentTrack(), vol,hits);  //MI change
 
     }
 
@@ -2124,9 +2114,10 @@ void AliTPCv2::StepManager()
      hits[1]=p[1];
      hits[2]=p[2];
      hits[3]=0.; // this hit has no energy loss
-     new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+     // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 
-    
+     AddHit(gAlice->CurrentTrack(), vol,hits);  //MI change    
+
   }
   else return;
     
@@ -2147,7 +2138,14 @@ void AliTPCv2::StepManager()
     
     // Add this hit
     
-    new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+    // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+    if (fHitType&&2){
+      gMC->TrackMomentum(p);
+      Float_t momentum = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
+      Float_t precision =   (momentum>0.1) ? 0.002 :0.01;
+      fTrackHits->SetHitPrecision(precision);
+    }
+    AddHit(gAlice->CurrentTrack(), vol,hits);  //MI change 
     
   } 
   
