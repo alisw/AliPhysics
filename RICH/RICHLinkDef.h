@@ -26,6 +26,7 @@
 #pragma link C++ class  AliRICHDisplay+;
 #pragma link C++ class  AliRICHEllipse+;
 #pragma link C++ class  AliRICHDetect+;
+#pragma link C++ class  AliRICHDetectV1+;
 #pragma link C++ class  AliRICHHitMapA1+;
 #pragma link C++ class  AliRICHTresholdMap+;
 #pragma link C++ class  AliRICHClusterFinder+;
