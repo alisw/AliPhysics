@@ -56,8 +56,6 @@ $(ALICE_ROOT)/lib/libTRD.$(SL):	$(OBJS)
 
 TRDCint.cxx:			$(HDRS)
 
-HEADERS			=	$(filter-out LinkDef,$(HDRS))
-
 depend:				$(SRCS)
 
 TOCLEAN			= $(OBJS) *Cint.h *Cint.cxx
