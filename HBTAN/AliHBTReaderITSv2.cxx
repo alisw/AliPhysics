@@ -1,7 +1,5 @@
-
 #include "AliHBTReaderITSv2.h"
 
-#include <Riostream.h>
 #include <Riostream.h>
 #include <TString.h>
 #include <TObjString.h>
@@ -12,7 +10,6 @@
 #include <AliRun.h>
 #include <AliMagF.h>
 #include <AliITStrackV2.h>
-//#include <AliITSParam.h>
 #include <AliITStrackerV2.h>
 #include <AliITSgeom.h>
 
@@ -24,11 +21,12 @@
 
 ClassImp(AliHBTReaderITSv2)
 
-AliHBTReaderITSv2::
- AliHBTReaderITSv2(const Char_t* trackfilename, const Char_t* clusterfilename,
-	const Char_t* galicefilename)
-                  :fTrackFileName(trackfilename),fClusterFileName(clusterfilename),
-                    fGAliceFileName(galicefilename)
+AliHBTReaderITSv2::AliHBTReaderITSv2(const Char_t* trackfilename, 
+                                     const Char_t* clusterfilename,
+                                     const Char_t* galicefilename):
+ fTrackFileName(trackfilename),
+ fClusterFileName(clusterfilename),
+ fGAliceFileName(galicefilename)
 {
   //constructor, 
   //Defaults:
@@ -41,12 +39,14 @@ AliHBTReaderITSv2::
 }
 /********************************************************************/
 
-AliHBTReaderITSv2::
- AliHBTReaderITSv2(TObjArray* dirs, const Char_t* trackfilename, 
-                   const Char_t* clusterfilename, const Char_t* galicefilename)
-                  : AliHBTReader(dirs),
-                    fTrackFileName(trackfilename),fClusterFileName(clusterfilename),
-                    fGAliceFileName(galicefilename)
+AliHBTReaderITSv2::AliHBTReaderITSv2(TObjArray* dirs, 
+                                     const Char_t* trackfilename, 
+                                     const Char_t* clusterfilename, 
+                                     const Char_t* galicefilename):
+ AliHBTReader(dirs),
+ fTrackFileName(trackfilename),
+ fClusterFileName(clusterfilename),
+ fGAliceFileName(galicefilename)
 {
   //constructor, 
   //Defaults:
@@ -145,7 +145,7 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
  Int_t label; //label of the current track
 
  char tname[100]; //buffer for tree name
- AliITStrackV2 *iotrack= new AliITStrackV2(); //buffer track for reading data from tree
+ AliITStrackV2 *iotrack= 0x0; //buffer track for reading data from tree
 
  if (!particles) //check if an object is instatiated
   {
@@ -181,10 +181,21 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
     if (gAlice->TreeE())//check if tree E exists
      {
       Nevents = (Int_t)gAlice->TreeE()->GetEntries();//if yes get number of events in gAlice
-      cout<<"________________________________________________________\n";
-      cout<<"Found "<<Nevents<<" event(s) in directory "<<GetDirName(currentdir)<<endl;
-      cout<<"Setting Magnetic Field: B="<<gAlice->Field()->SolenoidField()<<"T"<<endl;
-      AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
+      Info("Read","________________________________________________________");
+      Info("Read","Found %d event(s) in directory %s",Nevents,GetDirName(currentdir).Data());
+      Float_t mf;
+      if (fUseMagFFromRun)
+       {
+         mf = gAlice->Field()->SolenoidField();
+         Info("Read","Setting Magnetic Field from run: B=%fT",mf/10.);
+       }
+      else
+       {
+         Info("Read","Setting Own Magnetic Field: B=%fT",fMagneticField);
+         mf = fMagneticField*10.;
+       }
+      AliKalmanTrack::SetConvConst(1000/0.299792458/mf);
+      if (iotrack == 0x0) iotrack = new AliITStrackV2();
      }
     else
      {//if not return an error
