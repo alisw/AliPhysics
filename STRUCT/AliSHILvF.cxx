@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/03/16 16:26:05  morsch
+Put vacuum in beam-pipe not air.
+
 Revision 1.4  2001/01/31 11:55:27  hristov
 Loop variables declared once (required by HP)
 
@@ -1540,7 +1543,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   cpar0[1]=r3V-dVacuS+(zvac11-zvac9)*TMath::Tan(thetaOpen3);
   cpar0[2]=r3V       +(zvac11-zvac9)*TMath::Tan(thetaOpen3);
   cpar0[3]=rVacu;
-  cpar0[4]=rAbs;
+  cpar0[4]=rVacu+dTubeS+dInsuS+dProtS+dFreeS;
   gMC->Gsvolu("YV32", "CONE", idtmed[kSteel+40], cpar0, 5);
 //
 // insulation
@@ -1623,7 +1626,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   AliMatrix(idrotm[1702],90.,  90., 90., 180., 0., 0.);
   AliMatrix(idrotm[1703],90., 180., 90., 270., 0., 0.); 
   AliMatrix(idrotm[1704],90., 270., 90.,   0., 0., 0.); 
-  Int_t ipos;
+  //  Int_t ipos;
   
   dz=-cpar[0];
 // 1.
@@ -1829,13 +1832,15 @@ void AliSHILvF::Init()
   //
   Int_t i;
   //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" SHILvF_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  //
-  // Here the SHIL initialisation code (if any!)
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
+  if(fDebug) {
+    printf("\n%s: ",ClassName());
+    for(i=0;i<35;i++) printf("*");
+    printf(" SHILvF_INIT ");
+    for(i=0;i<35;i++) printf("*");
+    printf("\n%s: ",ClassName());
+    //
+    // Here the SHIL initialisation code (if any!)
+    for(i=0;i<80;i++) printf("*");
+    printf("\n");
+  }
 }

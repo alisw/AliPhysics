@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/03/16 16:26:05  morsch
+Put vacuum in beam-pipe not air.
+
 Revision 1.11  2000/10/27 15:21:24  morsch
 Shield composition after muon project leader meeting: 24/10/2000
 - 1 cm recess in steel for station 3
@@ -999,7 +1002,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   cpar0[1]=r3-dVacuS+(zvac11-zvac9)*TMath::Tan(thetaOpen3);
   cpar0[2]=r3       +(zvac11-zvac9)*TMath::Tan(thetaOpen3);
   cpar0[3]=rVacu;
-  cpar0[4]=rAbs;
+  cpar0[4]=rVacu+dTubeS+dInsuS+dProtS+dFreeS;
   gMC->Gsvolu("YV32", "CONE", idtmed[kSteel+40], cpar0, 5);
 //
 // insulation
@@ -1179,13 +1182,15 @@ void AliSHILv0::Init()
   //
   Int_t i;
   //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" SHILv0_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  //
-  // Here the SHIL initialisation code (if any!)
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
+  if(fDebug) {
+    printf("\n%s: ",ClassName());
+    for(i=0;i<35;i++) printf("*");
+    printf(" SHILv0_INIT ");
+    for(i=0;i<35;i++) printf("*");
+    printf("\n%s: ",ClassName());
+    //
+    // Here the SHIL initialisation code (if any!)
+    for(i=0;i<80;i++) printf("*");
+    printf("\n");
+  }
 }
