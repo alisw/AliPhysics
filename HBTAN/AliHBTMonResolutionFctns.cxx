@@ -1,8 +1,29 @@
 #include "AliHBTMonResolutionFctns.h"
-
-/******************************************************************/
-/******************************************************************/
-/******************************************************************/
+//_______________________________________________________________________________
+/////////////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTMonPxResolutionFctn;
+// class AliHBTMonPyResolutionFctn;
+// class AliHBTMonPzResolutionFctn;
+// class AliHBTMonPResolutionFctn;
+// class AliHBTMonPtResolutionFctn;
+// class AliHBTMonPhiResolutionFctn;
+// class AliHBTMonThetaResolutionFctn;
+// class AliHBTMonPxResolutionVsPtFctn;
+// class AliHBTMonPyResolutionVsPtFctn;
+// class AliHBTMonPzResolutionVsPtFctn;
+// class AliHBTMonPResolutionVsPtFctn;
+// class AliHBTMonPtResolutionVsPtFctn;
+// class AliHBTMonPhiResolutionVsPtFctn;
+// class AliHBTMonThetaResolutionVsPtFctn;
+//
+// Caution: On 2D plots on X axis in simulated values
+// That is contrary to two-particle resolutions where it is reconstructed one
+//
+// added by Zbigniew.Chajecki@cern.ch
+// this classes create resolution functions of particle momentum 
+//
+//////////////////////////////////////////////////////////////////////////////////
 
 ClassImp(AliHBTMonPxResolutionFctn)
 
@@ -10,6 +31,7 @@ AliHBTMonPxResolutionFctn::
 AliHBTMonPxResolutionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
                         AliHBTMonTwoParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("PxResolution","PxResolution");
 }
 /******************************************************************/
@@ -20,6 +42,7 @@ AliHBTMonPyResolutionFctn::
 AliHBTMonPyResolutionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
                         AliHBTMonTwoParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("PyResolution","PyResolution");
 }
 /******************************************************************/
@@ -30,6 +53,7 @@ AliHBTMonPzResolutionFctn::
 AliHBTMonPzResolutionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
                         AliHBTMonTwoParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("PzResolution","PzResolution");
 }
 /******************************************************************/
@@ -40,6 +64,7 @@ AliHBTMonPResolutionFctn::
 AliHBTMonPResolutionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
                         AliHBTMonTwoParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("PResolution","PResolution");
 }
 /******************************************************************/
@@ -50,6 +75,7 @@ AliHBTMonPtResolutionFctn::
 AliHBTMonPtResolutionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
                         AliHBTMonTwoParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("PtResolution","PtResolution");
 }
 /******************************************************************/
@@ -62,6 +88,7 @@ AliHBTMonPxResolutionVsPtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                         Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTMonTwoParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+  //constructor
  Rename("PxResolVsPt","Px resolution vs. Pt");
 }
 /******************************************************************/
@@ -72,6 +99,7 @@ AliHBTMonPyResolutionVsPtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                         Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTMonTwoParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+  //constructor
  Rename("PyResolVsPt","Py resolution vs. Pt");
 }
 /******************************************************************/
@@ -82,6 +110,7 @@ AliHBTMonPzResolutionVsPtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                         Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTMonTwoParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+  //constructor
  Rename("PzResolVsPt","Pz resolution vs. Pt");
 }
 /******************************************************************/
@@ -92,6 +121,7 @@ AliHBTMonPResolutionVsPtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                         Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTMonTwoParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+  //constructor
  Rename("PResolVsPt","P resolution vs. Pt");
 }
 /******************************************************************/
@@ -102,6 +132,7 @@ AliHBTMonPtResolutionVsPtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                         Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTMonTwoParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+  //constructor
  Rename("PtResolVsPt","Pt resolution vs. Pt");
 }
 
@@ -115,6 +146,7 @@ AliHBTMonPhiResolutionFctn::
 AliHBTMonPhiResolutionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
                         AliHBTMonTwoParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("PhiResolution","PhiResolution");
 }
 /******************************************************************/
@@ -124,6 +156,7 @@ AliHBTMonThetaResolutionFctn::
 AliHBTMonThetaResolutionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
                         AliHBTMonTwoParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("ThetaResolution","ThetaResolution");
 }
 /******************************************************************/
@@ -135,6 +168,7 @@ AliHBTMonPhiResolutionVsPtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                         Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTMonTwoParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+  //constructor
  Rename("PhiResolVsPt","Phi resolution vs. Pt");
 }
 /******************************************************************/
@@ -145,10 +179,33 @@ AliHBTMonThetaResolutionVsPtFctn(Int_t nXbins, Double_t maxXval, Double_t minXva
                         Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTMonTwoParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+ //constructor
  Rename("ThetaResolVsPt","Theta resolution vs. Pt");
 }
 /******************************************************************/
 
 
+ClassImp( AliHBTMonPhiResolutionVsPhiFctn )
+
+AliHBTMonPhiResolutionVsPhiFctn::
+AliHBTMonPhiResolutionVsPhiFctn(Int_t nXbins, Double_t maxXval, Double_t minXval, 
+                        Int_t nYbins, Double_t maxYval, Double_t minYval):
+                           AliHBTMonTwoParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
+{
+  //constructor
+ Rename("PhiResolVsPhi","Phi resolution vs. Phi");
+}
+/******************************************************************/
+ClassImp( AliHBTMonThetaResolutionVsThetaFctn )
+
+AliHBTMonThetaResolutionVsThetaFctn::
+AliHBTMonThetaResolutionVsThetaFctn(Int_t nXbins, Double_t maxXval, Double_t minXval, 
+                        Int_t nYbins, Double_t maxYval, Double_t minYval):
+                           AliHBTMonTwoParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
+{
+  //constructor
+ Rename("ThetaResolVsTheta","Theta resolution vs. Theta");
+}
+/******************************************************************/
 
 

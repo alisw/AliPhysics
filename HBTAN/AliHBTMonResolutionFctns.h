@@ -1,8 +1,30 @@
-#ifndef ALIMONPXRESOLUTIONVSPTFCTN_H
-#define ALIMONPXRESOLUTIONVSPTFCTN_H
-
+#ifndef ALIHBTMONRESOLUTIONFCTNS_H
+#define ALIHBTMONRESOLUTIONFCTNS_H
+//_______________________________________________________________________________
+/////////////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTMonPxResolutionFctn;
+// class AliHBTMonPyResolutionFctn;
+// class AliHBTMonPzResolutionFctn;
+// class AliHBTMonPResolutionFctn;
+// class AliHBTMonPtResolutionFctn;
+// class AliHBTMonPhiResolutionFctn;
+// class AliHBTMonThetaResolutionFctn;
+// class AliHBTMonPxResolutionVsPtFctn;
+// class AliHBTMonPyResolutionVsPtFctn;
+// class AliHBTMonPzResolutionVsPtFctn;
+// class AliHBTMonPResolutionVsPtFctn;
+// class AliHBTMonPtResolutionVsPtFctn;
+// class AliHBTMonPhiResolutionVsPtFctn;
+// class AliHBTMonThetaResolutionVsPtFctn;
+//
+// Caution: On 2D plots on X axis in simulated values
+// That is contrary to two-particle resolutions where it is reconstructed one
+//
 // added by Zbigniew.Chajecki@cern.ch
 // this classes create resolution functions of particle momentum 
+//
+//////////////////////////////////////////////////////////////////////////////////
 
 class AliHBTMonPxResolutionFctn;
 class AliHBTMonPyResolutionFctn;
@@ -36,10 +58,7 @@ class AliHBTMonPxResolutionFctn: public AliHBTMonTwoParticleFctn1D
         return (partparticle->Px()-trackparticle->Px()) ;
      } 
    TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPxResolutionFctn,1)
+   ClassDef(AliHBTMonPxResolutionFctn,1)
  };
 /***********************************************************************/
 class AliHBTMonPyResolutionFctn: public AliHBTMonTwoParticleFctn1D
@@ -53,10 +72,7 @@ class AliHBTMonPyResolutionFctn: public AliHBTMonTwoParticleFctn1D
         return (partparticle->Py()-trackparticle->Py()) ;
      } 
    TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPyResolutionFctn,1)
+   ClassDef(AliHBTMonPyResolutionFctn,1)
  };
 /***********************************************************************/
 class AliHBTMonPzResolutionFctn: public AliHBTMonTwoParticleFctn1D
@@ -70,10 +86,7 @@ class AliHBTMonPzResolutionFctn: public AliHBTMonTwoParticleFctn1D
         return (partparticle->Pz()-trackparticle->Pz()) ;
      } 
    TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPzResolutionFctn,1)
+   ClassDef(AliHBTMonPzResolutionFctn,1)
  };
 /***********************************************************************/
 class AliHBTMonPResolutionFctn: public AliHBTMonTwoParticleFctn1D
@@ -87,10 +100,7 @@ class AliHBTMonPResolutionFctn: public AliHBTMonTwoParticleFctn1D
         return (partparticle->P()-trackparticle->P()) ;
      } 
    TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPResolutionFctn,1)
+   ClassDef(AliHBTMonPResolutionFctn,1)
  };
 /***********************************************************************/
 class AliHBTMonPtResolutionFctn: public AliHBTMonTwoParticleFctn1D
@@ -104,10 +114,7 @@ class AliHBTMonPtResolutionFctn: public AliHBTMonTwoParticleFctn1D
         return (partparticle->Pt()-trackparticle->Pt()) ;
      } 
    TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPtResolutionFctn,1)
+   ClassDef(AliHBTMonPtResolutionFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
@@ -124,10 +131,7 @@ class AliHBTMonPxResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
      x = partparticle->Pt();
      y = partparticle->Px()-trackparticle->Px();
     }
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPxResolutionVsPtFctn,1)
+   ClassDef(AliHBTMonPxResolutionVsPtFctn,1)
  };
 /***********************************************************************/
 class AliHBTMonPyResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
@@ -142,10 +146,7 @@ class AliHBTMonPyResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
      x = partparticle->Pt();
      y = partparticle->Py()-trackparticle->Py();
     }
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPyResolutionVsPtFctn,1)
+   ClassDef(AliHBTMonPyResolutionVsPtFctn,1)
  };
 /***********************************************************************/
 class AliHBTMonPzResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
@@ -160,10 +161,7 @@ class AliHBTMonPzResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
      x = partparticle->Pt();
      y = partparticle->Pz()-trackparticle->Pz();
     }
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPzResolutionVsPtFctn,1)
+   ClassDef(AliHBTMonPzResolutionVsPtFctn,1)
  };
 /***********************************************************************/
 class AliHBTMonPResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
@@ -196,10 +194,7 @@ class AliHBTMonPtResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
      x = partparticle->Pt();
      y = partparticle->Pt()-trackparticle->Pt();
     }
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPtResolutionVsPtFctn,1)
+   ClassDef(AliHBTMonPtResolutionVsPtFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
@@ -216,10 +211,7 @@ class AliHBTMonPhiResolutionFctn: public AliHBTMonTwoParticleFctn1D
         return (partparticle->Phi()-trackparticle->Phi()) ;
      } 
    TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPhiResolutionFctn,1)
+   ClassDef(AliHBTMonPhiResolutionFctn,1)
  };
 /***********************************************************************/
 class AliHBTMonThetaResolutionFctn: public AliHBTMonTwoParticleFctn1D
@@ -233,17 +225,14 @@ class AliHBTMonThetaResolutionFctn: public AliHBTMonTwoParticleFctn1D
         return (partparticle->Theta()-trackparticle->Theta()) ;
      } 
    TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonThetaResolutionFctn,1)
+   ClassDef(AliHBTMonThetaResolutionFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
 class AliHBTMonPhiResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
  {
   public: 
-   AliHBTMonPhiResolutionVsPtFctn(Int_t nXbins = 200, Double_t maxXval = 1.4, Double_t minXval = -0.1, 
+   AliHBTMonPhiResolutionVsPtFctn(Int_t nXbins = 200, Double_t maxXval = 1.4, Double_t minXval = 0.0, 
                              Int_t nYbins = 200, Double_t maxYval = 0.05, Double_t minYval =-0.05);
    virtual ~AliHBTMonPhiResolutionVsPtFctn(){}
    TH1* GetResult(){return fResult;}
@@ -252,10 +241,22 @@ class AliHBTMonPhiResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
      x = partparticle->Pt();
      y = partparticle->Phi()-trackparticle->Phi();
     }
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPhiResolutionVsPtFctn,1)
+   ClassDef(AliHBTMonPhiResolutionVsPtFctn,1)
+ };
+/***********************************************************************/
+class AliHBTMonPhiResolutionVsPhiFctn: public AliHBTMonTwoParticleFctn2D
+ {
+  public: 
+   AliHBTMonPhiResolutionVsPhiFctn(Int_t nXbins = 200, Double_t maxXval = TMath::TwoPi(), Double_t minXval = 0.0,
+                             Int_t nYbins = 200, Double_t maxYval = 0.05, Double_t minYval =-0.05);
+   virtual ~AliHBTMonPhiResolutionVsPhiFctn(){}
+   TH1* GetResult(){return fResult;}
+   void GetValues(AliHBTParticle* trackparticle, AliHBTParticle* partparticle, Double_t& x, Double_t& y)
+    {
+     x = partparticle->Phi();
+     y = partparticle->Phi()-trackparticle->Phi();
+    }
+   ClassDef(AliHBTMonPhiResolutionVsPhiFctn,1)
  };
 /***********************************************************************/
 class AliHBTMonThetaResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
@@ -270,11 +271,25 @@ class AliHBTMonThetaResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
      x = partparticle->Pt();
      y = partparticle->Theta()-trackparticle->Theta();
     }
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonThetaResolutionVsPtFctn,1)
+   ClassDef(AliHBTMonThetaResolutionVsPtFctn,1)
  };
+
+/***********************************************************************/
+class AliHBTMonThetaResolutionVsThetaFctn: public AliHBTMonTwoParticleFctn2D
+ {
+  public: 
+   AliHBTMonThetaResolutionVsThetaFctn(Int_t nXbins = 200, Double_t maxXval = TMath::PiOver2(), Double_t minXval = -TMath::PiOver2(),
+                             Int_t nYbins = 200, Double_t maxYval = 0.05, Double_t minYval =-0.05);
+   virtual ~AliHBTMonThetaResolutionVsThetaFctn(){}
+   TH1* GetResult(){return fResult;}
+   void GetValues(AliHBTParticle* trackparticle, AliHBTParticle* partparticle, Double_t& x, Double_t& y)
+    {
+     y = partparticle->Theta()-trackparticle->Theta();
+     x = partparticle->Theta();
+    }
+   ClassDef(AliHBTMonThetaResolutionVsThetaFctn,1)
+ };
+/***********************************************************************/
 /***********************************************************************/
 /***********************************************************************/
 /***********************************************************************/
