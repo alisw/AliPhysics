@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.15  2001/07/27 17:09:36  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.14  2001/03/21 11:28:20  morsch
 Use enum constants for particle selection.
 
@@ -54,7 +59,6 @@ Introduction of the Copyright and cvs Log
 // Author: andreas.morsch@cern.ch
 
 #include "AliGenFLUKAsource.h"
-#include "AliMC.h"
 #include "AliRun.h"
 #include "AliPDG.h"
 
@@ -169,7 +173,6 @@ void AliGenFLUKAsource::FlukaInit()
 void AliGenFLUKAsource::Generate()
 {
 // Generate one event 
-    AliMC* gMC = AliMC::GetMC();
 
     const Int_t kIfluge[28]={kProton, kProtonBar, kElectron, kPositron,
 			  kNuE, kNuEBar, kGamma, kNeutron, kNeutronBar,

@@ -16,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/10/30 13:39:51  hristov
+Warnings cleaned up (Alpha)
+
 Revision 1.3  2002/10/21 09:20:51  alibrary
 Introduce Riostream.h and remove unused variables
 
@@ -36,9 +39,9 @@ Realisation of AliGenReader that reads the old cwn event format.
 #include <TFile.h>
 #include <TTree.h>
 #include <TParticle.h>
+#include <TVirtualMC.h>
 
 #include "AliGenReaderCwn.h"
-#include "AliMC.h"
 ClassImp(AliGenReaderCwn);
 
 

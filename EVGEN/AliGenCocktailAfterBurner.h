@@ -44,7 +44,7 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
     virtual Int_t GetNumberOfEvents() const {return gAlice->GetEventsPerRun() + fNBgEvents;}
     void          SetNBgEvents(Int_t nbg=0){fNBgEvents = nbg;}
 
-    static AliMCProcess IntToMCProcess(Int_t no);
+    static TMCProcess IntToMCProcess(Int_t no);
 
  protected:
     Int_t fNAfterBurners;       // Number of afterburners  

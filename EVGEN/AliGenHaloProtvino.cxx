@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.8.4.1  2002/07/24 08:56:28  alibrary
 Updating EVGEN on TVirtulaMC
 
@@ -62,7 +65,6 @@ Generator to read beam halo file from Protvino group.
 
 #include "AliGenHaloProtvino.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliPDG.h"
 
 #include <TDatabasePDG.h>

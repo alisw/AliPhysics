@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/10/30 13:39:06  hristov
+Missing initialization added (Alpha)
+
 Revision 1.1  2002/01/08 09:59:34  morsch
 Readers for EMCAL primary particle input.
 
@@ -25,7 +28,6 @@ Readers for EMCAL primary particle input.
 #include <TParticle.h>
 
 #include "AliGenReaderEcalHijing.h"
-#include "AliMC.h"
 ClassImp(AliGenReaderEcalHijing)
 
 
