@@ -215,6 +215,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
   TH1F* eleffls=0;
   TH1F *elcon=0;
   TH1F *elid=0;
+  TH1F *elmatch=0;
   TH1F *elall=0;
 
   if(strstr(eventType,"pp")){
@@ -230,6 +231,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
     xaxis=elcon->GetYaxis();
     xaxis->SetLabelSize(.08);
     elid = new TH1F("elid","Identified electrons",10,0,0.6);
+    elmatch = new TH1F("elmatch","N(e)",10,0,0.6);
     elall = new TH1F("elall","Electrons",10,0,0.6);
   }
 
@@ -249,6 +251,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
   xaxis->SetLabelSize(.08);
   TH1F *piid  = new TH1F("piid","Identified pions",15,0,2.5);
   TH1F *piall = new TH1F("piall","Pions",15,0,2.5);
+  TH1F *pimatch = new TH1F("pimatch","N(Pions)",15,0,2.5);
   TH1F *pigen = new TH1F("pigen","Pions",15,0,2.5);
   xaxis=pigen->GetXaxis();
   xaxis->SetLabelSize(.09);
@@ -274,6 +277,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
   xaxis=kacon->GetYaxis();
   xaxis->SetLabelSize(.08);
   TH1F *kaid  = new TH1F("kaid","Identified kaons",15,0,2.5);
+  TH1F *kamatch  = new TH1F("kamatch","N(K)",15,0,2.5);
   TH1F *kaall = new TH1F("kaall","Kaons",15,0,2.5);
   TH1F *kagen = new TH1F("kagen","Kaons",15,0,2.5);
   xaxis=kagen->GetXaxis();
@@ -300,6 +304,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
   xaxis=prcon->GetYaxis();
   xaxis->SetLabelSize(.08);
   TH1F *prid  = new TH1F("prid","Identified protons",15,0,4.4);
+  TH1F *prmatch  = new TH1F("prmatch","N(p)",15,0,4.4);
   TH1F *prall = new TH1F("prall","Protons",15,0,4.4);
   TH1F *prgen = new TH1F("prgen","Protons",15,0,4.4);
   xaxis=prgen->GetXaxis();
@@ -360,23 +365,28 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
     Float_t pvtx=TMath::Sqrt(px*px+py*py+pz*pz);
     Float_t ptvtx=TMath::Sqrt(px*px+py*py);
     Float_t mt=0.;
+    Bool_t isSelected=(imam == 0 && pz !=0 && TMath::ATan(TMath::Abs(ptvtx/pz))>TMath::Pi()*45./180.);
     Int_t abspdgcode=TMath::Abs(pdgcode);
     switch(abspdgcode){
     case 321:
+      if(isSelected && (matc==3 || matc==4)) kamatch->Fill(pvtx);
       mt=TMath::Sqrt(AliTOFConstants::fgkKaonMass*AliTOFConstants::fgkKaonMass+px*px+py*py);
       break;
     case 2212:
+      if(isSelected && (matc==2 || matc==3 || matc==4)) prmatch->Fill(pvtx);
       mt=TMath::Sqrt(AliTOFConstants::fgkProtonMass*AliTOFConstants::fgkProtonMass+px*px+py*py);
       break;
     case 11:
+      if(strstr(eventType,"pp") && (matc==3 || matc==4)) elmatch->Fill(pvtx); //  as in kaon case
       mt=TMath::Sqrt(AliTOFConstants::fgkElectronMass*AliTOFConstants::fgkElectronMass+px*px+py*py);
       break;
     default:
+      if(isSelected && matc>0) pimatch->Fill(pvtx);
       mt=TMath::Sqrt(AliTOFConstants::fgkPionMass*AliTOFConstants::fgkPionMass+px*px+py*py);
       break;
     }
 
-    if (imam == 0 && pz !=0 && TMath::ATan(TMath::Abs(ptvtx/pz))>TMath::Pi()*45./180.)
+    if (isSelected)
       {//only primary +/-45  
 	if (fkaon->IsInside(mass,-pvtx) && matc>2) {
 	  ka++;
@@ -520,7 +530,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
   if (fTask==1) {
     if (strstr(eventType,"pp")){
       eleff->Divide(elall);
-      eleffls->Divide(elid);
+      eleffls->Divide(elmatch);
     }
     // overall efficiency
     pieff->Divide(piall);
@@ -528,9 +538,9 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
     preff->Divide(prall);
 
     // last step efficiency
-    pieffls->Divide(piid);
-    kaeffls->Divide(kaid);
-    preffls->Divide(prid);
+    pieffls->Divide(pimatch);
+    kaeffls->Divide(kamatch);
+    preffls->Divide(prmatch);
 
     pit->Divide(piall);
     kat->Divide(kaall);
@@ -1234,6 +1244,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
       pieffls->Write(0,TObject::kOverwrite);
       picon->Write(0,TObject::kOverwrite);
       piid->Write(0,TObject::kOverwrite);
+      pimatch->Write(0,TObject::kOverwrite);
       piall->Write(0,TObject::kOverwrite);
       pigen->Write(0,TObject::kOverwrite);
       kat->Write(0,TObject::kOverwrite);
@@ -1241,6 +1252,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
       kaeff->Write(0,TObject::kOverwrite);
       kaeffls->Write(0,TObject::kOverwrite);
       kaid->Write(0,TObject::kOverwrite);
+      kamatch->Write(0,TObject::kOverwrite);
       kaall->Write(0,TObject::kOverwrite);
       kagen->Write(0,TObject::kOverwrite);
       kacon->Write(0,TObject::kOverwrite);
@@ -1250,6 +1262,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
       preffls->Write(0,TObject::kOverwrite);
       prcon->Write(0,TObject::kOverwrite);
       prid->Write(0,TObject::kOverwrite);
+      prmatch->Write(0,TObject::kOverwrite);
       prall->Write(0,TObject::kOverwrite);
       prgen->Write(0,TObject::kOverwrite);
       // saving 2-D histos
@@ -1262,6 +1275,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
 	eleff->Write(0,TObject::kOverwrite);
 	elcon->Write(0,TObject::kOverwrite);
 	elid->Write(0,TObject::kOverwrite);
+	elmatch->Write(0,TObject::kOverwrite);
 	elall->Write(0,TObject::kOverwrite);
       }
       cout << "file " << houtfile << " has been created" << endl;
@@ -1279,6 +1293,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
     delete pieffls; pieffls=0;
     delete picon; picon=0;
     delete piid ; piid=0;
+    delete pimatch; pimatch=0;
     delete piall; piall=0;
     delete pigen; pigen=0;
     delete kat  ; kat=0;
@@ -1286,6 +1301,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
     delete kaeff; kaeff=0;
     delete kaeffls; kaeffls=0;
     delete kaid;  kaid=0;
+    delete kamatch; kamatch=0;
     delete kaall; kaall=0;
     delete kagen; kagen=0;
     delete kacon; kacon=0;
@@ -1295,6 +1311,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
     delete preffls; preffls=0;
     delete prcon; prcon=0;
     delete prid;  prid=0;
+    delete prmatch; prmatch=0;
     delete prall; prall=0;
     delete prgen; prgen=0;
     // 2-D
@@ -1320,6 +1337,10 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
     if (elid){ 
       delete elid;
       elid=0;
+    }
+    if (elmatch){ 
+      delete elmatch;
+      elmatch=0;
     }
     if (elall){ 
       delete elall;
