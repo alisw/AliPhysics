@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/09 20:28:51  morsch
+All coding rule violations except RS3 corrected (AM)
+
 Revision 1.4  1999/09/29 09:24:12  fca
 Introduction of the Copyright and cvs Log
 
@@ -184,7 +187,7 @@ NextGeneratorPair(AliGenCocktailEntry*& e1, AliGenCocktailEntry*& e2)
 void AliGenCocktail::Streamer(TBuffer &R__b)
 {
     // Stream an object of class AliGenCocktail.
-    TIter next(fEntries);
+
     AliGenCocktailEntry *entry;
     
     if (R__b.IsReading()) {
@@ -192,6 +195,7 @@ void AliGenCocktail::Streamer(TBuffer &R__b)
 	AliGenerator::Streamer(R__b);
 	R__b >> fNGenerators;
 	R__b >> fEntries;
+	TIter next(fEntries);
 // Stream generation related information
 	while((entry = (AliGenCocktailEntry*)next())) {
 	    entry->Streamer(R__b);
@@ -201,6 +205,7 @@ void AliGenCocktail::Streamer(TBuffer &R__b)
 	AliGenerator::Streamer(R__b);
 	R__b << fNGenerators;
 	R__b << fEntries;
+	TIter next(fEntries); 
 // Stream generation related information
 	while((entry = (AliGenCocktailEntry*)next())) {
 	    entry->Streamer(R__b);
