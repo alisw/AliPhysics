@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2003/11/24 09:48:28  kowal2
+Changes to obey the coding conventions
+
 Revision 1.6  2003/11/24 09:43:03  kowal2
 Obsolete - removed
 
@@ -47,6 +50,12 @@ New class replacing AliCluster
 //                                                                           //
 //                                                                          //
 ///////////////////////////////////////////////////////////////////////////////
+// **************
+//aaaaaaaaa
+//aaaaaaaaa
+//aaaaaaaaa
+//aaaaaaaa
+//aaaaaaaaaa
 
 #include "AliComplexCluster.h"
 

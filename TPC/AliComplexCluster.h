@@ -4,6 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+//
+// this is a class
+// AliComplexCluster
+// by M. Ivanov
+//
 
 #include "TObject.h"
 #include "TMath.h"
@@ -11,10 +16,10 @@
 //
 
 class AliComplexCluster : public TObject {
-public:
   friend class AliTPC;
   friend class AliTPCClusterFinder;
   friend class AliClusters;
+public:
 
   AliComplexCluster() {
     fTracks[0]=fTracks[1]=fTracks[2]=0; 
@@ -52,8 +57,9 @@ private:
 
 
 class AliTPCTrackerPoint  {  
+  friend class AliTPCtrackerMI;
+  friend class AliTPCseed;
  public:
-  Char_t   fIsShared;     // indicate sharing of the point between several tracks
 
   AliTPCTrackerPoint(){fTX=0; fTY=0; fTZ=0; fTAngleZ=0; fTAngleY=0; fIsShared = 0;}
   Float_t  GetX() const  {return (fTX*0.01);}
@@ -87,6 +93,7 @@ class AliTPCTrackerPoint  {
   UShort_t  fSigmaY;     // shape  Y - normalised shape - normaliziation 1 - precision 2 percent
   UShort_t  fErrZ;       // z error estimate - in  mm - 50 mum precision 
   UShort_t  fErrY;       // y error estimate - in  mm - 50 mum precision 
+  Char_t   fIsShared;     // indicate sharing of the point between several tracks
 
   ClassDef(AliTPCTrackerPoint,1)  
 };
@@ -94,13 +101,13 @@ class AliTPCTrackerPoint  {
 class AliTPCClusterPoint  {
  public:
   AliTPCClusterPoint(){fCZ=fCY=fSigmaZ=fSigmaY=fQ=fMax=fCType=0;}
-  inline Float_t  GetZ() const    {return (fCZ*0.01);}
-  inline Float_t  GetY() const   {return (fCY*0.01);}
-  inline Float_t  GetSigmaZ() const {return (fSigmaZ*0.02);}
-  inline Float_t  GetSigmaY() const {return (fSigmaY*0.02);}  
-  inline Int_t  GetType() const  {return fCType;}
-  inline Int_t  GetMax()  const {return fMax;}
-  inline Float_t  GetQ()  const {return fQ;}
+  Float_t  GetZ() const    {return (fCZ*0.01);}
+  Float_t  GetY() const   {return (fCY*0.01);}
+  Float_t  GetSigmaZ() const {return (fSigmaZ*0.02);}
+  Float_t  GetSigmaY() const {return (fSigmaY*0.02);}  
+  Int_t  GetType() const  {return fCType;}
+  Int_t  GetMax()  const {return fMax;}
+  Float_t  GetQ()  const {return fQ;}
 
   //
   void     SetY(Float_t y){ fCY = Short_t(TMath::Nint(y*100.));} 
@@ -125,6 +132,7 @@ class AliTPCClusterPoint  {
 
 
 class AliTPCExactPoint : public TObject{
+  friend class AliTPCtrackerMI;
  public:
   AliTPCExactPoint(){fEZ=fEY=fEAngleZ=fEAngleY=fEAmp=fEPrim=fTrackID=0;}
  private:
@@ -138,14 +146,13 @@ class AliTPCExactPoint : public TObject{
   Int_t   fTrackID;  // id of the track
   Int_t   fRow;      // row
   Int_t   fSec;      //sector
-  friend class AliTPCtrackerMI;
   ClassDef(AliTPCExactPoint,1)  
 };
 
 
 class AliTPCTrackPoint: public TObject{
- public:
   friend class AliTPCtrackerMI;
+ public:
   AliTPCTrackPoint(){}
   // AliTPCClusterPoint & GetCPoint(){return fCPoint;}
   AliTPCTrackerPoint & GetTPoint(){return fTPoint;}
@@ -159,8 +166,8 @@ class AliTPCTrackPoint: public TObject{
 };
 
 class AliTPCTrackPoint2: public AliTPCTrackPoint{
- public:
   friend class AliTPCtrackerMI;
+ public:
   AliTPCTrackPoint2(){}
  private: 
   Float_t fGX;    //global poition of the point
@@ -188,8 +195,8 @@ class AliTPCTrackPoint2: public AliTPCTrackPoint{
 
 
 class AliTPCTrackPointRef: public AliTPCTrackPoint{
- public:
   friend class AliTPCtrackerMI;
+ public:
   AliTPCExactPoint & GetExactPoint(){return fEPoint;}
   AliTPCExactPoint & GetNearestPoint(){return fNPoint;}  
  private:
