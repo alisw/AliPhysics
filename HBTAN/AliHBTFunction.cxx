@@ -620,17 +620,16 @@ Double_t AliHBTFunction3D::Scale()
   if (gDebug>0) Info("Scale","No errors detected");
 
   Int_t offsetX = nbinsX - fNBinsToScaleX - 1; //bin that we start loop over bins in axis X
-  Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis X
-  Int_t offsetZ = nbinsZ - fNBinsToScaleZ - 1; //bin that we start loop over bins in axis X
+  Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis Y
+  Int_t offsetZ = nbinsZ - fNBinsToScaleZ - 1; //bin that we start loop over bins in axis Z
 
   Double_t ratio;
   Double_t sum = 0;
   Int_t N = 0;
   
-  UInt_t i,j,k;
-  for ( j = offsetZ; j< nbinsZ; j++)
-    for ( j = offsetY; j< nbinsY; j++)
-      for ( i = offsetX; i< nbinsX; i++)
+  for (UInt_t k = offsetZ; k<nbinsZ; k++)
+    for (UInt_t j = offsetY; j<nbinsY; j++)
+      for (UInt_t i = offsetX; i<nbinsX; i++)
        {
         if ( fNumerator->GetBinContent(i,j,k) > 0.0 )
          {
