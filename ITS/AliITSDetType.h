@@ -80,6 +80,10 @@ class AliITSDetType:public TObject{
 	strcpy(digit,fDigClassName.Data());
 	strcpy(cluster,fClustClassName.Data()); 
     } 
+    // Return the Digit Class name
+    TString GetDigitClassName(){ return fDigClassName;}
+    // Return the Cluster Class name
+    TString GetClusterClassName(){ return fClustClassName;}
   
  protected:
     AliITSresponse       *fResponse;         // response
