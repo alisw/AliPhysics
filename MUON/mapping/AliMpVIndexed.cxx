@@ -12,7 +12,8 @@
 ClassImp(AliMpVIndexed)
 
 //_____________________________________________________________________________
-AliMpVIndexed::AliMpVIndexed(AliMpIntPair lowLimit, AliMpIntPair highLimit)
+AliMpVIndexed::AliMpVIndexed(const AliMpIntPair& lowLimit, 
+                             const AliMpIntPair& highLimit)
   : TObject(),
     fLowIndicesLimit(lowLimit),
     fHighIndicesLimit(highLimit) {

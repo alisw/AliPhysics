@@ -22,7 +22,7 @@
 ClassImp(AliMpSector)
 
 //_____________________________________________________________________________
-AliMpSector::AliMpSector(TString id, Int_t nofZones, Int_t nofRows, 
+AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows, 
                          AliMpDirection direction) 
   : TObject(),
     fID(id),

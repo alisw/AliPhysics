@@ -13,10 +13,10 @@
 #include <TVector2.h>
 
 #include "AliMpVIndexed.h"
-#include "AliMpIntPair.h"
 
 class AliMpRow;
 class AliMpVMotif;
+class AliMpIntPair;
 
 class AliMpVRowSegment : public AliMpVIndexed
 {
@@ -43,7 +43,8 @@ class AliMpVRowSegment : public AliMpVIndexed
     // set methods
     virtual void      SetOffset(const TVector2& offset) = 0;
     virtual void      SetGlobalIndices() = 0;
-    virtual Int_t     SetIndicesToMotifPosition(Int_t i, AliMpIntPair indices) = 0;
+    virtual Int_t     SetIndicesToMotifPosition(Int_t i, 
+                               const AliMpIntPair& indices) = 0;
     
     // get methods
     virtual AliMpRow*  GetRow() const = 0;

@@ -19,7 +19,7 @@ class AliMpVPadIterator;
 class AliMpVIndexed : public TObject
 {
  public:
-  AliMpVIndexed(AliMpIntPair lowLimit, AliMpIntPair highLimit);
+  AliMpVIndexed(const AliMpIntPair& lowLimit, const AliMpIntPair& highLimit);
   AliMpVIndexed();
   virtual ~AliMpVIndexed();
 
@@ -28,8 +28,8 @@ class AliMpVIndexed : public TObject
   virtual AliMpIntPair  GlobalIndices(const AliMpIntPair& localIndices) const;
 
   // set methods
-  void SetLowIndicesLimit(AliMpIntPair limit);
-  void SetHighIndicesLimit(AliMpIntPair limit);
+  void SetLowIndicesLimit(const AliMpIntPair& limit);
+  void SetHighIndicesLimit(const AliMpIntPair& limit);
 
   // get methods
   Bool_t    HasIndices(const AliMpIntPair& indices) const;
@@ -47,10 +47,10 @@ class AliMpVIndexed : public TObject
 
 // inline functions
 
-inline void AliMpVIndexed::SetLowIndicesLimit(AliMpIntPair limit)
+inline void AliMpVIndexed::SetLowIndicesLimit(const AliMpIntPair& limit)
 { fLowIndicesLimit = limit; }
   
-inline void AliMpVIndexed::SetHighIndicesLimit(AliMpIntPair limit)
+inline void AliMpVIndexed::SetHighIndicesLimit(const AliMpIntPair& limit)
 { fHighIndicesLimit = limit; }  
   
 inline AliMpIntPair AliMpVIndexed::GetLowIndicesLimit() const
