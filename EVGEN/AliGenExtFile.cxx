@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/10/02 21:28:06  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.10  2000/07/11 18:24:55  fca
 Coding convention corrections + few minor bug fixes
 
@@ -53,7 +56,7 @@ Introduction of the Copyright and cvs Log
 //  Constructor
     fName="ExtFile";
     fTitle="Primaries from ext. File";
-    fFileName="dtujet93.root";
+    fFileName="";
     fTreeNtuple=0;
     fNcurrent=0;
 //
@@ -67,7 +70,7 @@ AliGenExtFile::AliGenExtFile(Int_t npart)
 //  Constructor
     fName="ExtFile";
     fTitle="Primaries from ext. File";
-    fFileName="dtujet93.root";
+    fFileName="";
     fTreeNtuple=0;
     fNcurrent=0;
 }
@@ -165,8 +168,8 @@ void AliGenExtFile::Generate()
       fIdpart=gMC->PDGFromId(fIdpart);
       Double_t amass = TDatabasePDG::Instance()->GetParticle(fIdpart)->Mass();
       if(fE<=amass) {
-	Warning("Generate","Particle %d no %d E = %f mass = %f\n",
-		fIdpart,i,fE,amass);
+	Warning("Generate","Particle %d no %d E = %f mass = %f %f %f \n",
+		fIdpart,i,fE,amass, fPhi, fTheta);
 	prwn=0;
       } else {
 	prwn=sqrt((fE+amass)*(fE-amass));
