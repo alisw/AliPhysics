@@ -5,6 +5,9 @@
 #
 # modification history
 # $Log$
+# Revision 1.1  2001/01/26 21:22:02  hristov
+# Major upgrade of AliRoot code
+#
 #
 # SYNOPSIS
 # alirun [[-d <TPC+ITS+..>|-all]]
@@ -138,7 +141,8 @@ AliRun()
 Mktemp()
 ###########################################################################
 {
-  mktemp -qu /tmp/alirun.$$.XXXXXX
+#  mktemp -qu /tmp/alirun.$$.XXXXXX
+   echo /tmp/alirun.$$. 
 }
 
 ###########################################################################
@@ -311,7 +315,7 @@ AliRunDigits()
   else
     for det in $DETECTORS
     do
-      export CONFIG_DETECTOR=$det;  
+      CONFIG_DETECTOR=$det; export CONFIG_DETECTOR 
       if [ "$FORK" = "TRUE" ]
       then
         if [ "$LSF_FORK" = "TRUE" ]
@@ -332,14 +336,14 @@ AliRunDigits()
 
 ###########################################################################
 
-export ALL="MUON RICH TOF ITS TPC PHOS PMD CASTOR ZDC TRD"
-export DETECTORS=""
-export CONFIG_FILE="galice.root"
-export CONFIG=$ALICE_ROOT/macros/Config.C
-export CONFIG_NPARTICLES=50
-export CONFIG_PATH=`pwd`
+ALL="MUON RICH TOF ITS TPC PHOS PMD CASTOR ZDC TRD"; export ALL
+DETECTORS="";                                        export DETECTORS
+CONFIG_FILE="galice.root";                           export CONFIG_FILE
+CONFIG=$ALICE_ROOT/macros/Config.C;                  export CONFIG
+CONFIG_NPARTICLES=50;                                export CONFIG_NPARTICLES
+CONFIG_PATH=`pwd`;                                   export CONFIG_PATH
 
-export ALIRUN_TMPDIR=`Mktemp`
+ALIRUN_TMPDIR=`Mktemp`; export ALIRUN_TMPDIR
 
 DEBUG="FALSE"
 BREAK=""
@@ -359,7 +363,7 @@ for config in $CONFIG_PATH/Config.C $ALICE_ROOT/macros/Config.C
 do
   if [ -f $config ]
   then 
-    export CONFIG=$config
+    CONFIG=$config; export CONFIG
     break
   fi
 done
@@ -422,11 +426,11 @@ do
             ;;
         -split)
             shift 1
-            export CONFIG_SPLIT_FILE="TRUE"
+            CONFIG_SPLIT_FILE="TRUE"; export  CONFIG_SPLIT_FILE
             ;;
         -f)
             shift 1
-            export CONFIG_FILE=$1
+            CONFIG_FILE=$1; export CONFIG_FILE 
             ;;
         -n)
             shift 1
@@ -434,11 +438,11 @@ do
             ;;
         -p)
             shift 1
-            export CONFIG_NPARTICLES=$1
+            CONFIG_NPARTICLES=$1; export CONFIG_NPARTICLES
             ;;
         -seed)
             shift 1
-            export CONFIG_SEED=$1
+            CONFIG_SEED=$1; export CONFIG_SEED
             ;;
         -c) 
             shift 1
@@ -447,7 +451,7 @@ do
             ;;
         -C) 
             shift 1
-            export CONFIG=$1
+            CONFIG=$1; export CONFIG
             ;;
         *)
             shift 1
