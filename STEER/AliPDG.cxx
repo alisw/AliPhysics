@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.3.10.2  2002/10/14 09:45:57  hristov
 Updating VirtualMC to v3-09-02
 
@@ -50,7 +53,7 @@ ClassImp(AliPDG)
 // Add particles to the PDG data base
 
     TDatabasePDG *pdgDB = TDatabasePDG::Instance();
-
+/*
     const Int_t kion=10000000;
     const Int_t kspe=50000000;
 
@@ -59,6 +62,8 @@ ClassImp(AliPDG)
     const Double_t kErg2Gev = 1/1.6021773349e-3;
     const Double_t khShGev = khSlash*kErg2Gev;
     const Double_t kYear2Sec = 3600*24*365.25;
+
+*/
 //
 // Bottom mesons
 // mass and life-time from PDG
@@ -71,7 +76,7 @@ ClassImp(AliPDG)
 //
 // Ions 
 //
-
+/*
   pdgDB->AddParticle("Deuteron","Deuteron",2*kAu2Gev+8.071e-3,kTRUE,
                      0,1,"Ion",kion+10020);
   pdgDB->AddParticle("Triton","Triton",3*kAu2Gev+14.931e-3,kFALSE,
@@ -86,7 +91,7 @@ ClassImp(AliPDG)
 		     0,0,"Special",kspe+50);
   pdgDB->AddParticle("FeedbackPhoton","FeedbackPhoton",0,kFALSE,
 		     0,0,"Special",kspe+51);
-
+*/
 }
 
 

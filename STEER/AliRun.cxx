@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.88  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.82.4.3  2002/10/14 09:45:57  hristov
 Updating VirtualMC to v3-09-02
 
@@ -288,8 +291,8 @@ Introduction of the Copyright and cvs Log
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
 #include "AliHeader.h"
-
 #include "AliDetector.h"
+#include "AliPDG.h"
 
 AliRun *gAlice;
 
@@ -1367,6 +1370,7 @@ void AliRun::InitMC(const char *setup)
   gMC->SetStack(fStack);
 
   gMC->DefineParticles();  //Create standard MC particles
+  AliPDG::AddParticlesToPdgDataBase();  
 
   TObject *objfirst, *objlast;
 
