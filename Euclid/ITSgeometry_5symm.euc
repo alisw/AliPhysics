@@ -902,7 +902,9 @@ VOLU 'IHOK' 'TUBE' 65 3
 !      VOLUMES RAILS
 !
 VOLU 'IRAI' 'BOX ' 64 3
-      0.85 10. 145.
+      0.85 10. 132.75
+! In the symmetric case the rails cannot be longer than 145 cm on the opposite
+! side w.r.t. the absorber
 !
 !      DIVISIONS
 !
@@ -2029,8 +2031,10 @@ POSI 'IHOK' 1 'ITSV' 0. 0. -286.5 0 'ONLY'
 !
 !      POSITIONNEMENTS RAILS
 !
-POSI 'IRAI' 1 'ITSV' 53. 0. 0. 0 'ONLY'
-POSI 'IRAI' 2 'ITSV' -53. 0. 0. 0 'ONLY'
+POSI 'IRAI' 1 'ITSV' 53. 0. -12.25 0 'ONLY'
+POSI 'IRAI' 2 'ITSV' -53. 0. -12.25 0 'ONLY'
+! In the symmetric case the rails cannot be longer than 145 cm on the opposite
+! side w.r.t. the absorber
 !
 !      Positionnements Finals
 !
