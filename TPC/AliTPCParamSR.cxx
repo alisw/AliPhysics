@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/11/02 07:33:15  kowal2
+Improvements of the code.
+
 Revision 1.3  2000/06/30 12:07:50  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -379,7 +382,7 @@ Bool_t AliTPCParamSR::Update()
     {
        Float_t x  = firstpad + fOuterPadPitchLength*(Float_t)i;      
        Float_t y = (x-0.5*fOuterPadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount-
-	            fInnerPadPitchWidth/2.;
+	            fOuterPadPitchWidth/2.;
        fPadRowUp[i] = x;
        fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ;
     }
