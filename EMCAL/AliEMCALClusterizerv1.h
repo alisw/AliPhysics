@@ -41,18 +41,24 @@ public:
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 
-  virtual Float_t Calibrate(Int_t amp, Bool_t inpresho)const ;  // Tranforms Amp to energy 
+  virtual Float_t Calibrate(Int_t amp, Int_t where)const ;  // Tranforms Amp to energy 
 
-  virtual void    GetNumberOfClustersFound(int * numb )const{  numb[0] = fNumberOfTowerClusters ; 
-                                                               numb[1] = fNumberOfPreShoClusters ; }
+  virtual void    GetNumberOfClustersFound(int * numb )const{ numb[0] = fNumberOfPREClusters ; 
+                                                              numb[1] = fNumberOfECClusters ; 
+                                                              numb[2] = fNumberOfHCClusters ; }
 
-  virtual Float_t GetTowerClusteringThreshold()const{ return fTowerClusteringThreshold;}
-  virtual Float_t GetTowerLocalMaxCut()const        { return fTowerLocMaxCut;} 
-  virtual Float_t GetTowerLogWeight()const          { return fW0;}  
-  virtual Float_t GetTimeGate() const             { return fTimeGate ; }
-  virtual Float_t GetPreShoClusteringThreshold()const{ return fPreShoClusteringThreshold;  } 
-  virtual Float_t GetPreShoLocalMaxCut()const        { return fPreShoLocMaxCut;} 
-  virtual Float_t GetPreShoLogWeight()const          { return fW0CPV;}  
+  virtual Float_t GetPREClusteringThreshold()const{ return fPREClusteringThreshold;  } 
+  virtual Float_t GetECClusteringThreshold()const{ return fECClusteringThreshold;}
+  virtual Float_t GetHCClusteringThreshold()const{ return fHCClusteringThreshold;}
+
+  virtual Float_t GetPRELocalMaxCut()const       { return fPRELocMaxCut;} 
+  virtual Float_t GetPREShoLogWeight()const      { return fPREW0;}  
+  virtual Float_t GetECLocalMaxCut()const        { return fECLocMaxCut;} 
+  virtual Float_t GetECLogWeight()const          { return fECW0;}  
+  virtual Float_t GetHCLocalMaxCut()const        { return fHCLocMaxCut;} 
+  virtual Float_t GetHCLogWeight()const          { return fHCW0;}  
+
+  virtual Float_t GetTimeGate() const            { return fTimeGate ; }
   virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
   virtual const Int_t GetRecPointsInRun() const   {return fRecPointsInRun ;} 
 
@@ -60,13 +66,16 @@ public:
 
   virtual void Print(Option_t * option)const ;
 
-  virtual void SetTowerClusteringThreshold(Float_t cluth)  { fTowerClusteringThreshold = cluth ; }
-  virtual void SetTowerLocalMaxCut(Float_t cut)            { fTowerLocMaxCut = cut ; }
-  virtual void SetTowerLogWeight(Float_t w)                { fW0 = w ; }
-  virtual void SetTimeGate(Float_t gate)                   { fTimeGate = gate ;}
-  virtual void SetPreShoClusteringThreshold(Float_t cluth) { fPreShoClusteringThreshold = cluth ; }
-  virtual void SetPreShoLocalMaxCut(Float_t cut)           { fPreShoLocMaxCut = cut ; }
-  virtual void SetPreShoLogWeight(Float_t w)               { fW0CPV = w ; }
+  virtual void SetECClusteringThreshold(Float_t cluth)  { fECClusteringThreshold = cluth ; }
+  virtual void SetECLocalMaxCut(Float_t cut)            { fECLocMaxCut = cut ; }
+  virtual void SetECLogWeight(Float_t w)                { fECW0 = w ; }
+  virtual void SetHCClusteringThreshold(Float_t cluth)  { fHCClusteringThreshold = cluth ; }
+  virtual void SetHCLocalMaxCut(Float_t cut)            { fHCLocMaxCut = cut ; }
+  virtual void SetHCLogWeight(Float_t w)                { fHCW0 = w ; }
+  virtual void SetTimeGate(Float_t gate)                { fTimeGate = gate ;}
+  virtual void SetPREClusteringThreshold(Float_t cluth) { fPREClusteringThreshold = cluth ; }
+  virtual void SetPRELocalMaxCut(Float_t cut)           { fPRELocMaxCut = cut ; }
+  virtual void SetPRELogWeight(Float_t w)               { fPREW0 = w ; }
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )      {fToUnfold = toUnfold ;}  
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
@@ -78,9 +87,6 @@ protected:
 
   void           WriteRecPoints(Int_t event) ;
   virtual void   MakeClusters( ) ;            
-  virtual Bool_t IsInTower (AliEMCALDigit * digit)const ;     // Tells if id digit is in Tower
-  virtual Bool_t IsInPreShower (AliEMCALDigit * digit)const ;     // Tells if id digit is in PreShower
-
   
 private:
 
@@ -105,23 +111,29 @@ private:
 
   Bool_t  fToUnfold ;                // To perform unfolding 
 
-  Int_t   fNumberOfTowerClusters ;     // number of Tower clusters found 
-  Int_t   fNumberOfPreShoClusters ;    // number of PreShower clusters found
- 
+  Int_t   fNumberOfPREClusters ;     // number of clusters found in PRE section 
+  Int_t   fNumberOfECClusters ;      // number of clusters found in EC section
+  Int_t   fNumberOfHCClusters ;      // number of clusters found in HC section
+  
   //Calibration parameters... to be replaced by database 
-  Float_t fADCchannelTower ;           // width of one ADC channel for Tower (GeV)
-  Float_t fADCpedestalTower ;          // pedestal of ADC for Tower (GeV) 
-  Float_t fADCchannelPreSho ;          // width of one ADC channel for Pre Shower (GeV)
-  Float_t fADCpedestalPreSho ;         // pedestal of ADC for PreShower (GeV)
-
-  Float_t fTowerClusteringThreshold ;  // minimum energy to include a EMC digit in a cluster
-  Float_t fPreShoClusteringThreshold ; // minimum energy to include a CPV digit in a cluster
-  Float_t fTowerLocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
-  Float_t fW0 ;                        // logarithmic weight for the cluster center of gravity calculation
-  Float_t fPreShoLocMaxCut ;           //  minimum energy difference to distinguish local maxima in a CPV cluster
-  Float_t fW0CPV ;                   // logarithmic weight for the CPV cluster center of gravity calculation
-  Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
-  Float_t fTimeGate ;                // Maximum time difference between the digits in ont EMC cluster
+  Float_t fADCchannelPRE ;          // width of one ADC channel for PRE section (GeV)
+  Float_t fADCpedestalPRE ;         // pedestal of ADC for PRE section (GeV)
+  Float_t fADCchannelEC ;           // width of one ADC channel for EC section (GeV)
+  Float_t fADCpedestalEC ;          // pedestal of ADC for EC section (GeV) 
+  Float_t fADCchannelHC ;           // width of one ADC channel for HC section (GeV)
+  Float_t fADCpedestalHC ;          // pedestal of ADC for HC section (GeV) 
+ 
+  Float_t fECClusteringThreshold ;  // minimum energy to include a EC digit in a cluster
+  Float_t fHCClusteringThreshold ;  // minimum energy to include a HC digit in a cluster
+  Float_t fPREClusteringThreshold ; // minimum energy to include a PRE digit in a cluster
+  Float_t fECLocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
+  Float_t fECW0 ;                   // logarithmic weight for the cluster center of gravity calculation
+  Float_t fHCLocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
+  Float_t fHCW0 ;                   // logarithmic weight for the cluster center of gravity calculation
+  Float_t fPRELocMaxCut ;           //  minimum energy difference to distinguish local maxima in a CPV cluster
+  Float_t fPREW0 ;                  // logarithmic weight for the CPV cluster center of gravity calculation
+  Int_t fRecPointsInRun ;           //! Total number of recpoints in one run
+  Float_t fTimeGate ;               // Maximum time difference between the digits in ont EMC cluster
     
   ClassDef(AliEMCALClusterizerv1,2)   // Clusterizer implementation version 1
 
