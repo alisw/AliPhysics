@@ -12,6 +12,7 @@
 #include "AliL3ConfMapFit.h"
 #include "AliL3ConfMapTrack.h"
 #include "AliL3Transform.h"
+#include "AliLevel3.h"
 
 /** \class AliL3ConfMapTrack
 <pre>
@@ -179,15 +180,21 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
       AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)lastHit;
       AliL3ConfMapPoint *fHit = (AliL3ConfMapPoint*)firstHit;
       
-      //Z0 should not be overwritten here, since it is used as a starting
-      //point for the track swim in UpdateToFirstPoint. fFirstPointX and Y
-      //will be overwritten in UpdateToFirstPoint with the track fit 
-      //crossing point.
-      SetFirstPoint(lHit->GetX(),lHit->GetY(),GetZ0());
+      if(AliLevel3::IsTracksAtFirstPoint())
+	{
+	  //Z0 should not be overwritten here, since it is used as a starting
+	  //point for the track swim in UpdateToFirstPoint. fFirstPointX and Y
+	  //will be overwritten in UpdateToFirstPoint with the track fit 
+	  //crossing point.
+	  SetFirstPoint(lHit->GetX(),lHit->GetY(),GetZ0());
+	  UpdateToFirstPoint();
+	}
+      else
+	{
+	  SetFirstPoint(vertex->GetX(),vertex->GetY(),vertex->GetZ());
+	}
+      
       SetLastPoint(fHit->GetX(),fHit->GetY(),fHit->GetZ());
-      
-      UpdateToFirstPoint();
-      
       delete fit;
     }
   else if(GetPt() == 0)

@@ -13,6 +13,7 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3MemHandler.h"
 #include "AliL3Transform.h"
+#include "AliLevel3.h"
 
 /** \class AliL3Fitter
 <pre>
@@ -147,8 +148,15 @@ void AliL3Fitter::UpdateTrack(AliL3Track *track)
   Int_t patch = (id>>22) & 0x7;
   UInt_t pos = id&0x3fffff;	      
   AliL3SpacePointData *points = fClusters[slice][patch];
-  track->SetFirstPoint(points[pos].fX,points[pos].fY,track->GetZ0());
-  track->UpdateToFirstPoint();
+  if(AliLevel3::IsTracksAtFirstPoint())
+    {
+      track->SetFirstPoint(points[pos].fX,points[pos].fY,track->GetZ0());
+      track->UpdateToFirstPoint();
+    }
+  else
+    {
+      track->SetFirstPoint(fVertex->GetX(),fVertex->GetY(),fVertex->GetZ());
+    }
 }
 
 Int_t AliL3Fitter::FitHelix(AliL3Track *track)

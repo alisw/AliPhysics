@@ -56,15 +56,17 @@ ClassImp(AliL3DataCompressor)
 Int_t AliL3DataCompressor::fNumTimeBits = 12;
 Int_t AliL3DataCompressor::fNumPadBits = 12;
 Int_t AliL3DataCompressor::fNumChargeBits = 14;
-Int_t AliL3DataCompressor::fNumShapeBits = 14;
-Float_t AliL3DataCompressor::fXYResidualStep1 = 0.03;
-Float_t AliL3DataCompressor::fXYResidualStep2 = 0.03;
-Float_t AliL3DataCompressor::fXYResidualStep3 = 0.03;
-Float_t AliL3DataCompressor::fZResidualStep1 = 0.05;
-Float_t AliL3DataCompressor::fZResidualStep2 = 0.05;
-Float_t AliL3DataCompressor::fZResidualStep3 = 0.05;
-Float_t AliL3DataCompressor::fXYWidthStep = 0.005;
-Float_t AliL3DataCompressor::fZWidthStep = 0.005;
+Int_t AliL3DataCompressor::fNumPadShapeBits = 14;
+Int_t AliL3DataCompressor::fNumTimeShapeBits = 14;
+Float_t AliL3DataCompressor::fPadResidualStep1 = 0.03;
+Float_t AliL3DataCompressor::fPadResidualStep2 = 0.03;
+Float_t AliL3DataCompressor::fPadResidualStep3 = 0.03;
+Float_t AliL3DataCompressor::fTimeResidualStep1 = 0.05;
+Float_t AliL3DataCompressor::fTimeResidualStep2 = 0.05;
+Float_t AliL3DataCompressor::fTimeResidualStep3 = 0.05;
+Float_t AliL3DataCompressor::fPadSigma2Step1 = 0.005;
+Float_t AliL3DataCompressor::fPadSigma2Step2 = 0.005;
+Float_t AliL3DataCompressor::fTimeSigma2Step = 0.005;
 Int_t AliL3DataCompressor::fClusterCharge = 100;
 
 AliL3DataCompressor::AliL3DataCompressor()
@@ -122,38 +124,40 @@ void AliL3DataCompressor::DoBench(Char_t *fname)
   fBenchmark->Analyze(fname);
 }
 
-void AliL3DataCompressor::SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shape)
+void AliL3DataCompressor::SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shapepad,Int_t shapetime)
 {
   fNumPadBits = pad;
   fNumTimeBits = time;
   fNumChargeBits = charge;
-  fNumShapeBits = shape;
+  fNumPadShapeBits = shapepad;
+  fNumTimeShapeBits = shapetime;
 }
 
 void AliL3DataCompressor::SetTransverseResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width)
 {
-  fXYResidualStep1 = res1;
-  fXYResidualStep2 = res2;
-  fXYResidualStep3 = res3;
-  fXYWidthStep = width;
+  fPadResidualStep1 = res1/AliL3Transform::GetPadPitchWidth(0);
+  fPadResidualStep2 = res2/AliL3Transform::GetPadPitchWidth(2);
+  fPadResidualStep3 = res3/AliL3Transform::GetPadPitchWidth(2);
+  fPadSigma2Step1 = width*width/pow(AliL3Transform::GetPadPitchWidth(0),2);
+  fPadSigma2Step2 = width*width/pow(AliL3Transform::GetPadPitchWidth(2),2);
 }
 
 void AliL3DataCompressor::SetLongitudinalResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width)
 {
-  fZResidualStep1 = res1;
-  fZResidualStep2 = res2;
-  fZResidualStep3 = res3;
-  fZWidthStep = width;
+  fTimeResidualStep1 = res1/AliL3Transform::GetZWidth();
+  fTimeResidualStep2 = res2/AliL3Transform::GetZWidth();
+  fTimeResidualStep3 = res3/AliL3Transform::GetZWidth();
+  fTimeSigma2Step = width*width/pow(AliL3Transform::GetZWidth(),2);
 }
 
-const Float_t AliL3DataCompressor::GetXYResidualStep(Int_t row) 
+const Float_t AliL3DataCompressor::GetPadResidualStep(Int_t row) 
 {
   if(row < AliL3Transform::GetNRowLow())
-    return fXYResidualStep1;
+    return fPadResidualStep1;
   else if(row < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1())
-    return fXYResidualStep2;
+    return fPadResidualStep2;
   else if(row < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1() + AliL3Transform::GetNRowUp2())
-    return fXYResidualStep3;
+    return fPadResidualStep3;
   else
     {
       cerr<<"AliL3DataCompressor::GetXYResidualStep : Wrong row number "<<row<<endl;
@@ -161,14 +165,14 @@ const Float_t AliL3DataCompressor::GetXYResidualStep(Int_t row)
     }
 }
 
-const Float_t AliL3DataCompressor::GetZResidualStep(Int_t row) 
+const Float_t AliL3DataCompressor::GetTimeResidualStep(Int_t row) 
 {
   if(row < AliL3Transform::GetNRowLow())
-    return fZResidualStep1;
+    return fTimeResidualStep1;
   else if(row < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1())
-    return fZResidualStep2;
+    return fTimeResidualStep2;
   else if(row < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1() + AliL3Transform::GetNRowUp2())
-    return fZResidualStep3;
+    return fTimeResidualStep3;
   else
     {
       cerr<<"AliL3DataCompressor::GetXYResidualStep : Wrong row number "<<row<<endl;
@@ -326,12 +330,12 @@ void AliL3DataCompressor::FillData(Int_t min_hits,Bool_t expand)
 	  
 	  outtrack->SetPadHit(padrow,xyz_cross[1]);
 	  outtrack->SetTimeHit(padrow,xyz_cross[2]);
-
+	  
+	  outtrack->SetCrossingAngleLUT(padrow,intrack->GetCrossingAngle(padrow,slice));
+	  outtrack->CalculateClusterWidths(padrow,kTRUE);
+	  
 	  if(fWriteClusterShape)
 	    {
-	      Float_t angle = intrack->GetCrossingAngle(padrow,slice);
-	      outtrack->SetCrossingAngleLUT(padrow,angle);
-	      outtrack->CalculateClusterWidths(padrow,kTRUE);
 	      Int_t patch = AliL3Transform::GetPatch(padrow);
 	      Float_t sigmaY2 = points[pos].fSigmaY2 / pow(AliL3Transform::GetPadPitchWidth(patch),2);
 	      Float_t sigmaZ2 = points[pos].fSigmaZ2 / pow(AliL3Transform::GetZWidth(),2);
@@ -423,11 +427,11 @@ void AliL3DataCompressor::ExpandTrackData(AliL3TrackArray *tracks)
 	      AliL3Transform::Global2Local(xyz,last_slice,kTRUE);
 	      
 	      //Check for overflow:
-	      Int_t temp = (Int_t)rint((xyz_cross[1]-xyz[1])/GetXYResidualStep(padrow));
+	      Int_t temp = (Int_t)rint((xyz_cross[1]-xyz[1])/GetPadResidualStep(padrow));
 	      if( abs(temp) > 1<<(GetNPadBits()-1))
 		continue;
 	      
-	      temp = (Int_t)rint((xyz_cross[2]-xyz[2])/GetZResidualStep(padrow));
+	      temp = (Int_t)rint((xyz_cross[2]-xyz[2])/GetTimeResidualStep(padrow));
 	      if( abs(temp) > 1<<(GetNTimeBits()-1))
 		continue;
 	      
@@ -493,6 +497,11 @@ void AliL3DataCompressor::WriteRemaining(Bool_t select)
       return;
     }
 
+  AliL3Compress *comp = new AliL3Compress(-1,-1,fPath,fWriteClusterShape,fEvent);
+  comp->CompressRemaining(fClusters,fNcl);
+  delete comp;
+  return;
+
   cout<<"Writing remaining clusters "<<endl;
   Int_t nrows = AliL3Transform::GetNRows();
   Int_t *npoints = new Int_t[nrows];
@@ -507,8 +516,8 @@ void AliL3DataCompressor::WriteRemaining(Bool_t select)
 	      cerr<<"AliL3DataCompressor::WriteRemaining : Cannot open file "<<filename<<endl;
 	      exit(5);
 	    }
-	  //UInt_t dummy;
-	  AliL3SpacePointData *points = fClusters[i][patch];//->GetDataPointer(dummy);
+
+	  AliL3SpacePointData *points = fClusters[i][patch];
 	  
 	  memset(npoints,0,nrows*sizeof(Int_t));
 	  
@@ -566,13 +575,18 @@ void AliL3DataCompressor::WriteRemaining(Bool_t select)
 		}
 	      
 	      Float_t xyz[3] = {points[j].fX,points[j].fY,points[j].fZ};
-	      AliL3Transform::Global2Local(xyz,i,kTRUE);
+	      Int_t sector,row;
+	      AliL3Transform::Slice2Sector(i,padrow,sector,row);
+	      AliL3Transform::Global2Raw(xyz,sector,row);
 	      
-	      tempPt->fClusters[localcounter].fY = xyz[1];
-	      tempPt->fClusters[localcounter].fZ = xyz[2];
+	      Float_t padw = points[j].fSigmaY2 / pow(AliL3Transform::GetPadPitchWidth(patch),2);
+	      Float_t timew = points[j].fSigmaZ2 / pow(AliL3Transform::GetZWidth(),2);
+	      
+	      tempPt->fClusters[localcounter].fPad = (UShort_t)(xyz[1]*100);
+	      tempPt->fClusters[localcounter].fTime = (UShort_t)(xyz[2]*100);
 	      tempPt->fClusters[localcounter].fCharge = points[j].fCharge;
-	      tempPt->fClusters[localcounter].fSigmaY2 = points[j].fSigmaY2;
-	      tempPt->fClusters[localcounter].fSigmaZ2 = points[j].fSigmaZ2;
+	      tempPt->fClusters[localcounter].fSigmaY2 = (Byte_t)(padw*100);
+	      tempPt->fClusters[localcounter].fSigmaZ2 = (Byte_t)(timew*100);
 	      localcounter++;
 	      fNunusedClusters++;
 	    }
@@ -607,13 +621,21 @@ void AliL3DataCompressor::SelectRemainingClusters()
   
   for(Int_t slice=0; slice<36; slice++)
     {
-      //UInt_t dummy;
-      AliL3SpacePointData *points = fClusters[slice][0];//->GetDataPointer(dummy);
+      AliL3SpacePointData *points = fClusters[slice][0];
       for(UInt_t i=0; i<fNcl[slice][0]; i++)
 	{
 	  if(points[i].fCharge == 0) continue; //Already removed
 	  Int_t padrow = (Int_t)points[i].fPadRow;
 	  
+	  //Check the widths (errors) of the cluster, and remove big bastards:
+	  Float_t xyw = points[i].fSigmaY2 / pow(AliL3Transform::GetPadPitchWidth(AliL3Transform::GetPatch(padrow)),2);
+	  Float_t zw  = points[i].fSigmaZ2 / pow(AliL3Transform::GetZWidth(),2);
+	  if(xyw >= 2.55 || zw >= 2.55)//Because we use 1 byte to store
+	    {
+	      points[i].fCharge = 0;
+	      continue;
+	    }
+
 	  Float_t xyz[3] = {points[i].fX,points[i].fY,points[i].fZ};
 	  Int_t sector,row;
 	  AliL3Transform::Slice2Sector(slice,padrow,sector,row);
@@ -858,6 +880,12 @@ void AliL3DataCompressor::ReadRemaining(TempCluster **clusters,Int_t *ncl,const 
   
   Char_t filename[1024];
   cout<<"Reading remaining clusters "<<endl;
+
+  AliL3Compress *comp = new AliL3Compress(-1,-1,fPath,fWriteClusterShape,fEvent);
+  comp->ExpandRemaining(clusters,ncl,maxpoints);
+  delete comp;
+  return;
+
   AliL3MemHandler mem;
   
   for(Int_t slice=0; slice<=35; slice++)
@@ -894,16 +922,14 @@ void AliL3DataCompressor::ReadRemaining(TempCluster **clusters,Int_t *ncl,const 
 	    {
 	      AliL3RemainingCluster *points = tempPt->fClusters;
 	      Int_t padrow = (Int_t)tempPt->fPadRow;
-	      Int_t patch = AliL3Transform::GetPatch(padrow);
-	      Int_t sector,row;
-	      AliL3Transform::Slice2Sector(slice,padrow,sector,row);
+	      //Int_t sector,row;
+	      //AliL3Transform::Slice2Sector(slice,padrow,sector,row);
 	      //cout<<"Loading slice "<<slice<<" row "<<padrow<<" with "<<(Int_t)tempPt->fNClusters<<" clusters "<<endl;
 	      for(Int_t j=0; j<tempPt->fNClusters; j++)
 		{
 		  
-		  Float_t xyz[3] = {AliL3Transform::Row2X(padrow),points[j].fY,points[j].fZ};
-		  
-		  AliL3Transform::Local2Raw(xyz,sector,row);
+		  //Float_t xyz[3] = {AliL3Transform::Row2X(padrow),points[j].fY,points[j].fZ};
+		  //AliL3Transform::Local2Raw(xyz,sector,row);
 		  
 		  if(ncl[slice] >= maxpoints)
 		    {
@@ -911,12 +937,13 @@ void AliL3DataCompressor::ReadRemaining(TempCluster **clusters,Int_t *ncl,const 
 		      exit(5);
 		    }
 		  //cout<<"slice "<<slice<<" padrow "<<padrow<<" pad "<<xyz[1]<<" time "<<xyz[2]<<endl;
-		  clusters[slice][ncl[slice]].pad = xyz[1];
-		  clusters[slice][ncl[slice]].time = xyz[2];
+		  clusters[slice][ncl[slice]].pad = (Float_t)(points[j].fPad/100.);
+		  clusters[slice][ncl[slice]].time = (Float_t)(points[j].fTime/100.);
 		  clusters[slice][ncl[slice]].charge = points[j].fCharge;
-		  clusters[slice][ncl[slice]].sigmaY2 = points[j].fSigmaY2/pow(AliL3Transform::GetPadPitchWidth(patch),2);
-		  clusters[slice][ncl[slice]].sigmaZ2 = points[j].fSigmaZ2/pow(AliL3Transform::GetZWidth(),2);
+		  clusters[slice][ncl[slice]].sigmaY2 = (Float_t)(points[j].fSigmaY2/100.);
+		  clusters[slice][ncl[slice]].sigmaZ2 = (Float_t)(points[j].fSigmaZ2/100.);
 		  clusters[slice][ncl[slice]].padrow = padrow;
+		  cout<<"padrow "<<padrow<<" pad "<<clusters[slice][ncl[slice]].pad<<" time "<<clusters[slice][ncl[slice]].time<<" charge "<<clusters[slice][ncl[slice]].charge<<" widths "<<clusters[slice][ncl[slice]].sigmaY2<<" "<<clusters[slice][ncl[slice]].sigmaZ2<<endl;
 		  ncl[slice]++;
 		}
 	      Byte_t *dPt = (Byte_t*)tempPt;

@@ -23,28 +23,27 @@ struct AliL3ClusterModel {
 typedef struct AliL3ClusterModel AliL3ClusterModel;
 
 struct AliL3RemainingCluster {
-  Float_t fY;
-  Float_t fZ;
-  UShort_t fCharge;
-  Float_t fSigmaY2;
-  Float_t fSigmaZ2;
+  UShort_t fPad;    //2 bytes
+  UShort_t fTime;   //2 bytes
+  Byte_t fSigmaY2;  //1 byte
+  Byte_t fSigmaZ2;  //1 byte
+  UShort_t fCharge; //2 bytes
 };
 typedef struct AliL3RemainingCluster AliL3RemainingCluster;
 
 struct AliL3RemainingRow {
-  Byte_t fPadRow;
-  UShort_t fNClusters;
+  Byte_t fPadRow;       //1 byte
+  UShort_t fNClusters;  //2 bytes
   AliL3RemainingCluster fClusters[0];
 };
 typedef struct AliL3RemainingRow AliL3RemainingRow;
 
-struct AliL3TrackModel {
-  Float_t fKappa;
-  Float_t fFirstPointX;
-  Float_t fFirstPointY;
-  Float_t fFirstPointZ;
-  Float_t fTgl;
-  Float_t fPsi;
+struct AliL3TrackModel {//5 independent parameters is needed to encode the helix:
+  Float_t fKappa; //Curvature
+  Float_t fPhi;   //Azimuthal angle of DCAO (distance of closest approach to origo)
+  Float_t fD;     //radius of DCA0
+  Float_t fZ0;    //z-coordinate of DCA0
+  Float_t fTgl;   //tan of dipangle
 };
 typedef struct AliL3TrackModel AliL3TrackModel;
 

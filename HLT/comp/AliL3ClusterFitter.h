@@ -17,7 +17,7 @@ class AliL3ClusterFitter : public AliL3Modeller {
   Int_t fNmaxOverlaps;
   Int_t fRowMin;
   Int_t fRowMax;
-  Float_t fChiSqMax[2];
+  Float_t fChiSqMax[3];
   Float_t fYInnerWidthFactor;
   Float_t fZInnerWidthFactor;
   Float_t fYOuterWidthFactor;
@@ -41,6 +41,7 @@ class AliL3ClusterFitter : public AliL3Modeller {
   Bool_t IsMaximum(Int_t pad,Int_t time);
   Bool_t SetFitRange(AliL3ModelTrack *track,Int_t *padrange,Int_t *timerange);
   void SetClusterfitFalse(AliL3ModelTrack *track);
+  void CalculateWeightedMean(AliL3ModelTrack *track,Int_t *padrange,Int_t *timerange);
   
  public:
   AliL3ClusterFitter();
@@ -56,7 +57,8 @@ class AliL3ClusterFitter : public AliL3Modeller {
   void WriteClusters(Bool_t global=kTRUE);
   void WriteTracks(Int_t min_hits);
   void SetNmaxOverlaps(Int_t i) {fNmaxOverlaps=i;}
-  void SetChiSqMax(Float_t f,Bool_t overlapping) {fChiSqMax[(Int_t)overlapping] = f;}
+  //void SetChiSqMax(Float_t f,Bool_t overlapping) {fChiSqMax[(Int_t)overlapping] = f;}
+  void SetChiSqMax(Float_t f,Int_t lpatch) {fChiSqMax[lpatch] = f;}
   void SetInnerWidthFactor(Float_t y,Float_t z) {fYInnerWidthFactor=y; fZInnerWidthFactor=z;}
   void SetOuterWidthFactor(Float_t y,Float_t z) {fYOuterWidthFactor=y; fZOuterWidthFactor=z;}
   

@@ -67,6 +67,10 @@ class AliLevel3 : public TObject {
   
   Bool_t fUseBinary;
   Bool_t fWriteOut;
+  
+  //Define whether track parameters should be given at first point on track (default)
+  //If not, the parameters will be given at the vertex.
+  static Bool_t fSetTracks2FirstPoint; 
 
   Bool_t fClusterDeconv;
   Float_t fXYClusterError;
@@ -109,7 +113,11 @@ class AliLevel3 : public TObject {
   void NoCF() {fNoCF=kTRUE;}
   void DoRoi(Float_t e0=0.4,Float_t e1=0.5){fEta[0]=e0;fEta[1]=e1;fDoRoi=kTRUE;}
   void WriteFiles(Char_t *path="./"){fWriteOut = kTRUE; sprintf(fWriteOutPath,"%s",path);}
-
+  
+  static void SetTracks2FirstPoint()   {fSetTracks2FirstPoint = kTRUE;}
+  static void SetTracks2Vertex()       {fSetTracks2FirstPoint = kFALSE;}
+  static Bool_t IsTracksAtFirstPoint() {return fSetTracks2FirstPoint;}
+  
   ClassDef(AliLevel3,1) //Interface class for Level3-tracking
 };
 

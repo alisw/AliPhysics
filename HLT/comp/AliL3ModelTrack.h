@@ -26,6 +26,15 @@ class AliL3ModelTrack : public AliL3Track {
   Float_t *fPad; //!
   Float_t *fTime; //!
   
+  Float_t QuantizePad(Int_t row,Float_t pad);
+  Float_t QuantizeTime(Int_t row,Float_t time);
+  Float_t QuantizeSigmaY2(Int_t row,Float_t dsigmaY2);
+  Float_t QuantizeSigmaZ2(Int_t row,Float_t dsigmaZ2);
+  Float_t RetrievePad(Int_t row,Float_t dpad);
+  Float_t RetrieveTime(Int_t row,Float_t time);
+  Float_t RetrieveSigmaY2(Int_t row,Float_t dsigmaY2);
+  Float_t RetrieveSigmaZ2(Int_t row,Float_t dsigmaZ2);
+  
  public:
   AliL3ModelTrack();
   virtual ~AliL3ModelTrack();

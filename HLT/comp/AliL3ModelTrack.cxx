@@ -9,6 +9,7 @@
 #include "AliL3ModelTrack.h"
 #include "AliL3Transform.h"
 #include "AliL3DataCompressor.h"
+#include "AliL3Vertex.h"
 
 #if GCCVERSION == 3
 using namespace std;
@@ -145,7 +146,6 @@ void AliL3ModelTrack::SetCluster(Int_t row,Float_t fpad,Float_t ftime,Float_t ch
   
   cl->fPresent |= 0x2; //set second bit to true, because a fit attempt has been made
   
-  Int_t patch = AliL3Transform::GetPatch(row);
   if(!charge || npads == 1)
     {
       cl->fPresent &= ~0x1; //set first bit to false
@@ -153,10 +153,9 @@ void AliL3ModelTrack::SetCluster(Int_t row,Float_t fpad,Float_t ftime,Float_t ch
   else
     {
       cl->fPresent|=0x1;//set first bit to true
-      cl->fDTime = (ftime - GetTimeHit(row))/(AliL3DataCompressor::GetZResidualStep(row)/AliL3Transform::GetZWidth());   
-      cl->fDPad = (fpad - GetPadHit(row))/(AliL3DataCompressor::GetXYResidualStep(row)/AliL3Transform::GetPadPitchWidth(patch));
-      cl->fDCharge = charge;// - AliL3DataCompressor::GetClusterCharge();
-      //cl->fSlice = fSlice;
+      cl->fDPad = QuantizePad(row,fpad);
+      cl->fDTime = QuantizeTime(row,ftime);
+      cl->fDCharge = charge;
       if(sigmaY2==0 && sigmaZ2==0)
 	{
 	  cl->fDSigmaY2=0;//if width is zero, shape is not supposed to be written
@@ -164,14 +163,13 @@ void AliL3ModelTrack::SetCluster(Int_t row,Float_t fpad,Float_t ftime,Float_t ch
 	}
       else
 	{
-	  cl->fDSigmaY2 = (sigmaY2 - GetParSigmaY2(row))/(AliL3DataCompressor::GetXYWidthStep()/pow(AliL3Transform::GetPadPitchWidth(patch),2));
-	  cl->fDSigmaZ2 = (sigmaZ2 - GetParSigmaZ2(row))/(AliL3DataCompressor::GetZWidthStep()/pow(AliL3Transform::GetZWidth(),2));
+	  cl->fDSigmaY2 = QuantizeSigmaY2(row,sigmaY2);
+	  cl->fDSigmaZ2 = QuantizeSigmaZ2(row,sigmaZ2);
 	}
       cl->fNPads = npads;
     }
-  
-  //fNClusters++;
 }
+
 
 void AliL3ModelTrack::Set(AliL3Track *tpt)
 {
@@ -234,15 +232,21 @@ void AliL3ModelTrack::FillModel()
       cerr<<"AliL3ModelTrack::FillModel() : No trackmodel "<<endl;
       return;
     }
+  Double_t impact[3];
+  AliL3Vertex vertex;
+  CalculateHelix();
+  GetClosestPoint(&vertex,impact[0],impact[1],impact[2]);
   fTrackModel->fKappa = GetKappa();
-
-  fTrackModel->fFirstPointX = GetFirstPointX();
-  fTrackModel->fFirstPointY = GetFirstPointY();
-  fTrackModel->fFirstPointZ = GetFirstPointZ();
+  fTrackModel->fPhi = atan2(impact[1],impact[0]);
+  fTrackModel->fD = sqrt(impact[0]*impact[0] + impact[1]*impact[1]);
+  fTrackModel->fZ0 = impact[2];
   fTrackModel->fTgl = GetTgl();
-  fTrackModel->fPsi = GetPsi();
-  //fTrackModel->fLength = (Short_t)GetLength();
-  //fTrackModel->fNClusters = fNClusters;
+  
+  //We have to check on which of the vertex the track fit is lying
+  //This we need to encode the azimuthal angle coordinate of the center of curvature.
+  if(GetRadius() < sqrt(GetCenterX()*GetCenterX()+GetCenterY()*GetCenterY()))
+    fTrackModel->fD *=-1;
+  
 }
 
 void AliL3ModelTrack::FillTrack()
@@ -255,16 +259,27 @@ void AliL3ModelTrack::FillTrack()
       return;
     }
   SetKappa(fTrackModel->fKappa);
-  SetCharge((-1*(Int_t)copysign(1.,GetKappa())));
-  SetFirstPoint(fTrackModel->fFirstPointX,fTrackModel->fFirstPointY,fTrackModel->fFirstPointZ);
-  SetTgl(fTrackModel->fTgl);
-  SetPsi(fTrackModel->fPsi);
-  //SetLength(fTrackModel->fLength);
-  fNClusters = AliL3Transform::GetNRows(fPatch);//fTrackModel->fNClusters;
-  SetPt((AliL3Transform::GetBFact()*AliL3Transform::GetBField())/fabs(GetKappa()));
-    
-  CalculateHelix();
+  Double_t impact[3],psi;
+  Float_t trackPhi0 = fTrackModel->fPhi;
+  if(fTrackModel->fD < 0)
+    trackPhi0 += AliL3Transform::Pi();
+  Int_t charge = -1*(Int_t)copysign(1.,GetKappa());
+  impact[0] = fabs(fTrackModel->fD)*cos(fTrackModel->fPhi);
+  impact[1] = fabs(fTrackModel->fD)*sin(fTrackModel->fPhi);
+  impact[2] = fTrackModel->fZ0;
 
+  psi = trackPhi0 - charge*0.5*AliL3Transform::Pi();
+  if(psi < 0) 
+    psi += 2*AliL3Transform::Pi();
+
+  SetCharge(charge);
+  SetFirstPoint(impact[0],impact[1],impact[2]);
+  SetPsi(psi);
+  SetTgl(fTrackModel->fTgl);
+  SetPt((AliL3Transform::GetBFact()*AliL3Transform::GetBField())/fabs(GetKappa()));
+  fNClusters = AliL3Transform::GetNRows(fPatch);
+  CalculateHelix();
+  
   for(Int_t i=AliL3Transform::GetFirstRow(fPatch); i<=AliL3Transform::GetLastRow(fPatch); i++)
     {
       AliL3ClusterModel *cl = GetClusterModel(i);
@@ -312,6 +327,58 @@ void AliL3ModelTrack::FillTrack()
       CalculateClusterWidths(i,kTRUE);
       
     }
+}
+
+Float_t AliL3ModelTrack::QuantizePad(Int_t row,Float_t pad)
+{
+  Float_t diff = pad - GetPadHit(row);
+  Float_t step = AliL3DataCompressor::GetPadResidualStep(row);
+  return diff/step;
+} 
+
+Float_t AliL3ModelTrack::RetrievePad(Int_t row,Float_t dpad)
+{
+  Float_t step = AliL3DataCompressor::GetPadResidualStep(row);
+  return dpad*step + GetPadHit(row);
+}
+
+Float_t AliL3ModelTrack::QuantizeTime(Int_t row,Float_t time)
+{
+  Float_t diff = time - GetTimeHit(row);
+  Float_t step = AliL3DataCompressor::GetTimeResidualStep(row);
+  return diff/step;
+} 
+
+Float_t AliL3ModelTrack::RetrieveTime(Int_t row,Float_t dtime)
+{
+  Float_t step = AliL3DataCompressor::GetTimeResidualStep(row);
+  return dtime*step + GetTimeHit(row);
+}
+
+Float_t AliL3ModelTrack::QuantizeSigmaY2(Int_t row,Float_t sigmaY2)
+{
+  Float_t diff = sigmaY2 - GetParSigmaY2(row);
+  Float_t step = AliL3DataCompressor::GetPadSigma2Step(AliL3Transform::GetPatch(row));
+  return diff/step;
+}
+
+Float_t AliL3ModelTrack::RetrieveSigmaY2(Int_t row,Float_t dsigmaY2)
+{
+  Float_t step = AliL3DataCompressor::GetPadSigma2Step(AliL3Transform::GetPatch(row));
+  return dsigmaY2*step + GetParSigmaY2(row);
+}
+
+Float_t AliL3ModelTrack::QuantizeSigmaZ2(Int_t row,Float_t sigmaZ2)
+{
+  Float_t diff = sigmaZ2 - GetParSigmaZ2(row);
+  Float_t step = AliL3DataCompressor::GetTimeSigma2Step();
+  return diff/step;
+}
+
+Float_t AliL3ModelTrack::RetrieveSigmaZ2(Int_t row,Float_t dsigmaZ2)
+{
+  Float_t step = AliL3DataCompressor::GetTimeSigma2Step();
+  return dsigmaZ2*step + GetParSigmaZ2(row);
 }
 
 void AliL3ModelTrack::SetPadHit(Int_t row,Float_t pad)
@@ -380,21 +447,15 @@ Int_t AliL3ModelTrack::GetNPads(Int_t row)
 
 Bool_t AliL3ModelTrack::GetPad(Int_t row,Float_t &pad)
 {
-  //(ftime - GetTimeHit(fNClusters))/AliL3DataCompressor::GetXYResidualStep();
-  //(fpad - GetPadHit(fNClusters))/AliL3DataCompressor::GetZResidualStep();
-
   AliL3ClusterModel *cl = GetClusterModel(row);
-  Int_t patch = AliL3Transform::GetPatch(row);
-  pad = cl->fDPad*(AliL3DataCompressor::GetXYResidualStep(row)/AliL3Transform::GetPadPitchWidth(patch)) + GetPadHit(row);
-  
+  pad = RetrievePad(row,cl->fDPad);
   return IsPresent(row);
 }
 
 Bool_t AliL3ModelTrack::GetTime(Int_t row,Float_t &time)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
-  time = cl->fDTime*(AliL3DataCompressor::GetZResidualStep(row)/AliL3Transform::GetZWidth()) + GetTimeHit(row);
-  
+  time = RetrieveTime(row,cl->fDTime);
   return IsPresent(row);
 }
 
@@ -402,25 +463,20 @@ Bool_t AliL3ModelTrack::GetClusterCharge(Int_t row,Int_t &charge)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
   charge = (Int_t)cl->fDCharge;// + AliL3DataCompressor::GetClusterCharge();
-  
   return IsPresent(row);
 }
 
 Bool_t AliL3ModelTrack::GetXYWidth(Int_t row,Float_t &width)
 {
-  //cl->fDSigmaY2 = (sigmaY2 - GetParSigmaY2(row))/AliL3DataCompressor::GetXYWidthStep();
   AliL3ClusterModel *cl = GetClusterModel(row);
-  Int_t patch = AliL3Transform::GetPatch(row);
-  width = cl->fDSigmaY2*(AliL3DataCompressor::GetXYWidthStep()/pow(AliL3Transform::GetPadPitchWidth(patch),2)) + GetParSigmaY2(row);
-
+  width = RetrieveSigmaY2(row,cl->fDSigmaY2);
   return IsPresent(row);
 }
 
 Bool_t AliL3ModelTrack::GetZWidth(Int_t row,Float_t &width)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
-  width = cl->fDSigmaZ2*(AliL3DataCompressor::GetZWidthStep()/pow(AliL3Transform::GetZWidth(),2)) + GetParSigmaZ2(row);
-
+  RetrieveSigmaZ2(row,cl->fDSigmaZ2);
   return IsPresent(row);
 }
 

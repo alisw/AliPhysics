@@ -3,7 +3,7 @@
 #ifndef AliL3_Compress
 #define AliL3_Compress
 
-class AliL3TrackArray;
+#include "AliL3DataCompressor.h"
 
 class AliL3Compress {
   
@@ -25,6 +25,8 @@ class AliL3Compress {
   Bool_t ReadFile(Char_t which,Char_t *filename=0);
   Bool_t CompressFile();
   Bool_t ExpandFile();
+  void CompressRemaining(AliL3SpacePointData *points[36][6],UInt_t npoints[36][6]);
+  void ExpandRemaining(TempCluster **clusters,Int_t *ncl,Int_t maxclusters);
   void PrintCompRatio(ofstream *outfile=0);
   
   AliL3TrackArray *GetTracks() {return fTracks;}

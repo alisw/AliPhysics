@@ -29,6 +29,7 @@
 #include "AliL3ModelTrack.h"
 #include "AliL3Compress.h"
 #include "AliL3TrackArray.h"
+#include "bitio.h"
 
 #include "AliL3OfflineDataCompressor.h"
 
@@ -72,8 +73,15 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
   //Take offline reconstructed tracks as an input.
   //In this case, no remaining clusters are written.
   
-  fSinglePatch = sp;
+  if(fTracker)
+    {
+      fTracker->UnloadClusters();
+      delete fTracker;
+    }
   
+  fSinglePatch = sp;
+  fEvent = event;
+
   char filename[1024];
   AliKalmanTrack::SetConvConst(1000/0.299792458/AliL3Transform::GetSolenoidField());
   if(fMarian==kFALSE)
@@ -336,12 +344,15 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
   for(Int_t slice=0; slice<=35; slice++)
     {
       sprintf(filename,"%s/comp/remains_%d_%d_%d.raw",fPath,fEvent,slice,-1);
-      FILE *outfile = fopen(filename,"w");
-      if(!outfile)
+      BIT_FILE *output = OpenOutputBitFile(filename);
+      if(!output)
 	{
 	  cerr<<"AliL3OfflineDataCompressor::WriteRemaining : Cannot open file "<<filename<<endl;
 	  exit(5);
 	}
+      
+      //Write number of padrows with clusters
+      OutputBits(output,nrows,8);
       
       for(Int_t padrow=0; padrow < nrows; padrow++)
 	{
@@ -358,7 +369,7 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
 	  //cout<<"Getting clusters in sector "<<sec<<" row "<<row<<endl;
 	  Int_t ncl = 0;
 #ifdef asvversion
-	  tracker->GetNClusters(sec,row);
+	  ncl = tracker->GetNClusters(sec,row);
 #endif
 	  	  
 	  Int_t counter=0;
@@ -375,15 +386,11 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
 		continue;
 	      counter++;
 	    }
-
-	  Int_t size = sizeof(AliL3RemainingRow) + counter*sizeof(AliL3RemainingCluster);
-	  Byte_t *data = new Byte_t[size];
-	  AliL3RemainingRow *tempPt = (AliL3RemainingRow*)data;
 	  
-	  tempPt->fPadRow = padrow;
-	  tempPt->fNClusters = counter;
+	  OutputBits(output,padrow,8);//Write padrow #
+	  OutputBits(output,counter,10);//Write number of clusters on this padrow
+
 	  //cout<<"Found "<<counter<<" unused out of "<<ncl<<" clusters on slice "<<slice<<" padrow "<<padrow<<endl;
-	  Int_t local_counter=0;
 	  for(j=0; j<ncl; j++)
 	    {
 	      AliTPCcluster *cluster = 0;
@@ -393,32 +400,53 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
 	      if(cluster->GetZ() < 0 && slice < 18) continue;
 	      if(cluster->GetZ() > 0 && slice > 17) continue;
 	      if(cluster->IsUsed())
-		continue;
+	      	continue;
 	      
 	      if(fWriteIdsToFile)
 		idfile << cluster->GetLabel(0)<<' ';
 	      
-	      if(local_counter > counter)
-		{
-		  cerr<<"AliL3OfflineDataCompressor::WriterRemaining : array out of range "<<local_counter<<" "<<counter<<endl;
-		  return;
-		}
 	      Float_t xyz[3] = {AliL3Transform::Row2X(padrow),cluster->GetY(),cluster->GetZ()};
 	      AliL3Transform::Local2Raw(xyz,sector,row);
-	      //cout<<"y "<<cluster->GetY()<<" z "<<cluster->GetZ()<<" pad "<<xyz[1]<<" time "<<xyz[2]<<endl;
-	      tempPt->fClusters[local_counter].fY = cluster->GetY();
-	      tempPt->fClusters[local_counter].fZ = cluster->GetZ();
-	      tempPt->fClusters[local_counter].fCharge = (UShort_t)cluster->GetQ();
-	      tempPt->fClusters[local_counter].fSigmaY2 = cluster->GetSigmaY2();
-	      tempPt->fClusters[local_counter].fSigmaZ2 = cluster->GetSigmaZ2();
-	      local_counter++;
+
+	      Int_t patch = AliL3Transform::GetPatch(padrow);
+	      Float_t padw = cluster->GetSigmaY2()/pow(AliL3Transform::GetPadPitchWidth(patch),2);
+	      Float_t timew = cluster->GetSigmaZ2()/pow(AliL3Transform::GetZWidth(),2);
+	      
+	      Int_t buff;
+	      //Write pad
+	      buff = (Int_t)rint(xyz[1]*10);
+	      if(buff<0)
+		{
+		  cerr<<"AliL3OfflineDataCompressor:WriteRemaining : Wrong pad value "<<buff<<endl;
+		  exit(5);
+		}
+	      OutputBits(output,buff,11);
+
+	      //Write time
+	      buff = (Int_t)rint(xyz[2]*10);
+	      if(buff<0)
+		{
+		  cerr<<"AliL3OfflineDataCompressor:WriteRemaining : Wrong time value "<<buff<<endl;
+		  exit(5);
+		}
+	      OutputBits(output,buff,13);
+
+	      //Write widths
+	      buff = (Int_t)rint(padw*100);
+	      OutputBits(output,buff,8);
+	      buff = (Int_t)rint(timew*100);
+	      OutputBits(output,buff,8);
+	      
+	      //Write charge 
+	      buff = (Int_t)cluster->GetQ();
+	      if(buff >= 1<<14)
+		buff = (1<<14)-1;
+	      OutputBits(output,buff,14);
+	      
 	      fNunusedClusters++;
 	    }
-	  
-	  fwrite(tempPt,size,1,outfile);
-	  delete [] data;
 	}
-      fclose(outfile);
+      CloseOutputBitFile(output);
     }
   if(fWriteIdsToFile)
     {
@@ -440,8 +468,7 @@ void AliL3OfflineDataCompressor::SelectRemainingClusters()
     {
       for(Int_t padrow=0; padrow < nrows; padrow++)
 	{
-	  if(padrow >= nrows-1-gap-shift) continue;//save all the clusters in this region
-	  
+	  	  
 	  AliL3Transform::Slice2Sector(slice,padrow,sector,row);
 	  sec=sector;
 	  
@@ -458,7 +485,28 @@ void AliL3OfflineDataCompressor::SelectRemainingClusters()
 #endif
 	  for(Int_t j=0; j<ncl; j++)
 	    {
-	      AliTPCcluster *cluster = 0; //todo consti (AliTPCcluster*)tracker->GetCluster(sec,row,j);
+	      AliTPCcluster *cluster = 0;
+#ifdef asvversion
+	      cluster = (AliTPCcluster*)tracker->GetCluster(sec,row,j);
+#endif
+	      if(cluster->IsUsed())
+		continue;
+
+	      //Check the widths (errors) of the cluster, and remove big bastards:
+	      Float_t xyw = cluster->GetSigmaY2() / pow(AliL3Transform::GetPadPitchWidth(AliL3Transform::GetPatch(padrow)),2);
+	      Float_t zw  = cluster->GetSigmaZ2() / pow(AliL3Transform::GetZWidth(),2);
+	      if(xyw >= 2.55 || zw >= 2.55)//Because we use 1 byte to store
+		{
+		  cluster->Use();
+		  continue;
+		}
+	      
+	      //if(padrow >= nrows-1-gap-shift) continue;//save all the clusters in this region
+	      
+	      if(padrow == nrows - 1 || padrow == nrows - 1 - gap ||                 //First seeding
+		 padrow == nrows - 1 - shift || padrow == nrows - 1 - gap - shift)   //Second seeding
+		continue;
+	      
 	      if(cluster->GetZ() < 0 && slice < 18) continue;
 	      if(cluster->GetZ() > 0 && slice > 17) continue;
 	      if(cluster->IsUsed())

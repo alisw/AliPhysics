@@ -55,6 +55,8 @@
 
 ClassImp(AliLevel3)
 
+Bool_t AliLevel3::fSetTracks2FirstPoint = kTRUE;//Define track parameters at first point
+
 AliLevel3::AliLevel3()
 {
   //Default constructor. Should also be used when input is from binary files.

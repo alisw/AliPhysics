@@ -10,107 +10,16 @@ jmp_buf env;
 
 DPOINT *plane;
 
-#ifndef PB
-int build_exp_table()
-/******************************************************************************/
-{
-	exp_header_t tab_h;
-	int i;
-	FLOAT_SIZE *exp_val;
-	FILE  *fp;
-	
-	if( !(fp = fopen( "exp_table", "wb" )))
-	  printf("build_exp_table: I/O error\n");
-		
-	tab_h.float_size = sizeof( FLOAT_SIZE );
-	tab_h.steps     = 100000;
-	tab_h.dmin      = -5;
-	tab_h.dmax      = 1;
-	tab_h.step_size = (tab_h.dmax - tab_h.dmin)/tab_h.steps;
-	if( !(exp_val = (FLOAT_SIZE *)malloc( tab_h.steps * sizeof( FLOAT_SIZE ) ) ) )
-	  printf("build_exp_table: malloc error\n");
-	fwrite((const void *)&tab_h, (size_t)sizeof(exp_header_t), (size_t)1, fp );
-	for( i=0; i<tab_h.steps; ++i ) {
-		exp_val[i] = exp(tab_h.dmin + i*tab_h.step_size);
-	}
-	fwrite((const void *)exp_val, (size_t)sizeof(FLOAT_SIZE), (size_t)tab_h.steps, fp );
-	
-	free( (void *)exp_val );
-	return 0;
-}
-
-#ifdef TEST_TABLE
-test_table()
-/**********************************************************/
-{
-	double i, delta, dmin, dmax, exp_tab();
-	FILE   *fp;
-	
-	fp = fopen( "exp_test", "w" );
-	
-	delta = 6.0/10000.;
-	dmin  = -5.1;
-	dmax  =  1.1;
-	for( i=dmin; i<dmax; i+=delta ){
-		fprintf( fp, "%lf\t%lf\t%lf\n", i, exp(i), exp_tab(i) );
-	}
-	return 0;
-}
-#endif
-double exp_tab(double in)
-{
-	return exp( in );
-}
-#else
-double exp_tab(in)
-/**********************************************************/
-double in;
-{
-	static exp_header_t tab_h;
-	static FLOAT_SIZE   *exp_val=NULL, slope;
-	FILE                *fp=NULL;
-	
-#ifdef HP
-	if( isnan(in) ) {
-		if( (num_nan /100)*100 == num_nan )
-			fprintf( stderr, "exp_tab: NaN %d\n", num_nan );
-		++num_nan;
-		return 1;
-	}
-#endif
-#ifdef MAC
-		return exp( in );
-#else
-	if( !exp_val ) {
-		if( !(fp = fopen( "exp_table", "rb" ))) {
-			build_exp_table();
-		}
-		if( !(fp = fopen( "exp_table", "rb" )))
-			printf("exp_tab: I/O error\n");
-		fread(&tab_h, (size_t)sizeof(exp_header_t), (size_t)1, fp );
-		if( tab_h.float_size != sizeof( FLOAT_SIZE ) )
-			build_exp_table();
-
-		if( !(exp_val = (FLOAT_SIZE *)malloc( tab_h.steps * sizeof( FLOAT_SIZE ) ) ) )
-			printf("exp_tab: malloc error\n");
-		fread(exp_val, (size_t)sizeof(FLOAT_SIZE), (size_t)tab_h.steps, fp );
-		slope = tab_h.steps / (tab_h.dmax - tab_h.dmin);
-	}
-	if( in < tab_h.dmin || in > tab_h.dmax )
-		return exp( in );
-	else
-		return exp_val[(int)((in-tab_h.dmin) * slope)];
-#endif
-}
-#endif
-
 void f2gauss5(double x,double a[],double *y,double dyda[],int na)
 {
+  //Function describing a sum of 2D gaussians with 5 parameters.
+  //There number of gaussians is na/5.
+  
   int i,index;
   double fac,fac1,fac2,ex,ex1,ex2,arg1,arg2,u,v;
   
-	
-	index = nint(x);
+  //printf("fitting na %d, with pad %f time %f amplitude %f padwidth %f timewidth %f\n",na,a[2],a[4],a[1],a[3],a[5]);
+        index = nint(x);
 	if( index < 0 || index >=FIT_PTS )
 	{
 		fprintf( stderr, "ff2gauss: wrong index %ld\n", index );
@@ -118,14 +27,14 @@ void f2gauss5(double x,double a[],double *y,double dyda[],int na)
 	}
 	u     = plane[index].u;
 	v     = plane[index].v;
-	
+	//printf("u %f v %f\n",u,v);
 	*y=0.0;
 	for (i=1;i<=na-1;i+=5)
 	{
 		arg1      = (u-a[i+1])/a[i+2];
 		arg2      = (v-a[i+3])/a[i+4];
-		ex1       = exp_tab(-arg1*arg1);
-		ex2       = exp_tab(-arg2*arg2);
+		ex1       = exp(-0.5*arg1*arg1);
+		ex2       = exp(-0.5*arg2*arg2);
 		ex        = ex1*ex2;
 		fac       = a[i]*ex*2.0;
 		fac1      = fac * arg1;

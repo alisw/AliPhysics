@@ -40,16 +40,18 @@ class AliL3DataCompressor {
   static Int_t fNumPadBits;
   static Int_t fNumTimeBits;
   static Int_t fNumChargeBits;
-  static Int_t fNumShapeBits;
+  static Int_t fNumPadShapeBits;
+  static Int_t fNumTimeShapeBits;
   
-  static Float_t fXYResidualStep1;
-  static Float_t fXYResidualStep2;
-  static Float_t fXYResidualStep3;
-  static Float_t fZResidualStep1;
-  static Float_t fZResidualStep2;
-  static Float_t fZResidualStep3;
-  static Float_t fXYWidthStep;
-  static Float_t fZWidthStep;
+  static Float_t fPadResidualStep1;
+  static Float_t fPadResidualStep2;
+  static Float_t fPadResidualStep3;
+  static Float_t fTimeResidualStep1;
+  static Float_t fTimeResidualStep2;
+  static Float_t fTimeResidualStep3;
+  static Float_t fPadSigma2Step1;
+  static Float_t fPadSigma2Step2;
+  static Float_t fTimeSigma2Step;
   static Int_t fClusterCharge;
   
   void SelectRemainingClusters();
@@ -84,22 +86,23 @@ class AliL3DataCompressor {
   void RestoreData(Bool_t remaining_only=kFALSE);
   void DoBench(Char_t *fname="benchmark");
   
-  void SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shape);
+  void SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shapepad,Int_t shapetime);
   void SetTransverseResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
   void SetLongitudinalResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
   
   Int_t GetNusedClusters() {return fNusedClusters;}
   Int_t GetNunusedClusters() {return fNunusedClusters;}
-  
+
   static const Int_t GetNPadBits() {return fNumPadBits;}
   static const Int_t GetNTimeBits() {return fNumTimeBits;}
   static const Int_t GetNChargeBits() {return fNumChargeBits;}
-  static const Int_t GetNShapeBits() {return fNumShapeBits;}
-  static const Float_t GetXYWidthStep() {return fXYWidthStep;}
-  static const Float_t GetZWidthStep() {return fZWidthStep;}
+  static const Int_t GetNPadShapeBits() {return fNumPadShapeBits;}
+  static const Int_t GetNTimeShapeBits() {return fNumTimeShapeBits;}
+  static const Float_t GetPadSigma2Step(Int_t patch) {return patch < 2 ? fPadSigma2Step1 : fPadSigma2Step2;}
+  static const Float_t GetTimeSigma2Step() {return fTimeSigma2Step;}
   static const Int_t GetClusterCharge() {return fClusterCharge;}
-  static const Float_t GetXYResidualStep(Int_t row);
-  static const Float_t GetZResidualStep(Int_t row);
+  static const Float_t GetPadResidualStep(Int_t row);
+  static const Float_t GetTimeResidualStep(Int_t row);
 
 
   ClassDef(AliL3DataCompressor,1) 

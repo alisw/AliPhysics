@@ -37,7 +37,7 @@ AliL3ClusterFitter::AliL3ClusterFitter()
 {
   plane=0;
   fNmaxOverlaps = 3;
-  fChiSqMax[0]=fChiSqMax[1]=12;
+  fChiSqMax[0]=fChiSqMax[1]=fChiSqMax[2]=12;
   fRowMin=-1;
   fRowMax=-1;
   fFitted=0;
@@ -59,7 +59,7 @@ AliL3ClusterFitter::AliL3ClusterFitter(Char_t *path)
   strcpy(fPath,path);
   plane=0;
   fNmaxOverlaps = 3;
-  fChiSqMax[0]=fChiSqMax[1]=12;
+  fChiSqMax[0]=fChiSqMax[1]=fChiSqMax[2]=12;
   fRowMin=-1;
   fRowMax=-1;
   fFitted=0;
@@ -238,6 +238,7 @@ void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline,Int_t eventnr)
   if(fSeeds)
     delete fSeeds;
   fSeeds = new AliL3TrackArray("AliL3ModelTrack");
+
   tfile.Binary2TrackArray(fSeeds);
   tfile.CloseBinaryInput();
 
@@ -252,7 +253,7 @@ void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline,Int_t eventnr)
 
       if(!offline)
 	{
-	  if(i==0) cerr<<"AliL3ClusterFitter::LoadSeeds : Cutting on pt of 4GeV!!"<<endl;
+	  if(i==0) cerr<<"AliL3ClusterFitter::LoadSeeds : Cutting on pt of 4 GeV!!"<<endl;
 	  if(track->GetPt() > 4.) 
 	    {
 	      fSeeds->Remove(i);
@@ -266,7 +267,14 @@ void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline,Int_t eventnr)
       UInt_t *hitids = track->GetHitNumbers();
 
       Int_t origslice = (hitids[nhits-1]>>25)&0x7f;//Slice of innermost point
-
+      /*
+      if(i==0) cerr<<"Cluster fitter only in HALF TPC!!!"<<endl;
+      if(origslice > 17) 
+	{
+	  fSeeds->Remove(i);
+	  continue;
+	}
+      */
       track->Init(origslice,-1);
       Int_t slice = origslice;
       
@@ -508,9 +516,7 @@ Bool_t AliL3ClusterFitter::CheckCluster(Int_t trackindex)
     }
 
   //Check if any other track contributes to this cluster:
-  //This is done by checking if the tracks are overlapping within
-  //the range defined by the track parameters
-  
+
   for(Int_t t=trackindex+1; t<fProcessTracks->GetNTracks(); t++)
     {
       AliL3ModelTrack *tr = (AliL3ModelTrack*)fProcessTracks->GetCheckedTrack(t);
@@ -518,9 +524,15 @@ Bool_t AliL3ClusterFitter::CheckCluster(Int_t trackindex)
       if(fSeeding)
 	if(tr->GetClusterModel(row)->fSlice != fSlice) continue;
 
+      if(tr->GetPadHit(row) > padr[0] && tr->GetPadHit(row) < padr[1] &&
+	 tr->GetTimeHit(row) > timer[0] && tr->GetTimeHit(row) < timer[1])
+	{
+	  if(SetFitRange(tr,padr,timer))
+	    track->SetOverlap(row,t);
+	}
+      /*
       Int_t xyw = (Int_t)ceil(sqrt(tr->GetParSigmaY2(row))*GetYWidthFactor()); 
       Int_t zw = (Int_t)ceil(sqrt(tr->GetParSigmaZ2(row))*GetZWidthFactor()); 
-      
       if( 
 	 (tr->GetPadHit(row) - xyw > padr[0] && tr->GetPadHit(row) - xyw < padr[1] &&
 	  tr->GetTimeHit(row) - zw > timer[0] && tr->GetTimeHit(row) - zw < timer[1]) ||
@@ -535,14 +547,20 @@ Bool_t AliL3ClusterFitter::CheckCluster(Int_t trackindex)
 	  tr->GetTimeHit(row) + zw > timer[0] && tr->GetTimeHit(row) + zw < timer[1]) 
 	 )
 	{
+	  
 	  if(SetFitRange(tr,padr,timer)) //Expand the cluster fit range
-	    track->SetOverlap(row,t);    //Set overlap
+	    {
+	      track->SetOverlap(row,t);    //Set overlap
+	    }
 	}
+      */
     }
 
   if(fDebug)
     cout<<"Fitting cluster with "<<track->GetNOverlaps(fCurrentPadRow)<<" overlaps"<<endl;
+
   FitClusters(track,padr,timer);
+  //CalculateWeightedMean(track,padr,timer);
   return kTRUE;
 }
 
@@ -555,9 +573,9 @@ Bool_t AliL3ClusterFitter::SetFitRange(AliL3ModelTrack *track,Int_t *padrange,In
   if(row < AliL3Transform::GetNRowLow())
     nsearchbins=25;
   else if(row < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1())
-    nsearchbins=49;
+    nsearchbins=25;
   else
-    nsearchbins=49;
+    nsearchbins=25;
   
   /*
   Int_t padloop[49] = {0,0,0,-1,1,-1,1,-1,1,0,0,-1,1,-1,1 ,2,-2,2,-2,2,-2,2,-2,2,-2
@@ -597,40 +615,66 @@ Bool_t AliL3ClusterFitter::SetFitRange(AliL3ModelTrack *track,Int_t *padrange,In
   //and expanded around using the parametrized cluster width
   //according to track parameters.
   
-  Int_t xyw = (Int_t)ceil(sqrt(track->GetParSigmaY2(row))*GetYWidthFactor());
-  Int_t zw = (Int_t)ceil(sqrt(track->GetParSigmaZ2(row))*GetZWidthFactor());
+  Int_t xyw = 3;
+  Int_t zw =  5;
   
   if(padmax>=0 && timemax>=0)
     {
-      if(fDebug)
-	{
-	  cout<<"Expanding cluster range using expected cluster widths: "<<xyw<<" "<<zw
-	      <<" and setting local maxima pad "<<padmax<<" time "<<timemax<<endl;
-	  if(xyw > 10 || zw > 10)
-	    track->Print();
-	}
-      
       //Set the hit to the local maxima of the cluster.
       //Store the maxima in the cluster model structure,
       //-only temporary, it will be overwritten when calling SetCluster.
       
       track->GetClusterModel(row)->fDPad = padmax;
       track->GetClusterModel(row)->fDTime = timemax;
-
-      for(Int_t i=padmax-xyw; i<=padmax+xyw; i++)
+      
+      Int_t i=padmax,j=timemax;
+      for(Int_t pdir=-1; pdir<=1; pdir+=2)
 	{
-	  for(Int_t j=timemax-zw; j<=timemax+zw; j++)
+	  i=padmax;
+	  while(abs(padmax-i) < xyw)
 	    {
-	      if(i<0 || i>=AliL3Transform::GetNPads(row) || j<0 || j>=AliL3Transform::GetNTimeBins()) continue;
-	      if(fRow[nt*i+j].fCharge)
+	      Bool_t chargeonpad=kFALSE;
+	      for(Int_t tdir=-1; tdir<=1; tdir+=2)
 		{
-		  if(i < padrange[0]) padrange[0]=i;
-		  if(i > padrange[1]) padrange[1]=i;
-		  if(j < timerange[0]) timerange[0]=j;
-		  if(j > timerange[1]) timerange[1]=j;
+		  j=timemax;
+		  while(abs(timemax-j) < zw)
+		    {
+		      if(i<0 || i>=AliL3Transform::GetNPads(row) || j<0 || j>=AliL3Transform::GetNTimeBins()) break;
+		      if(fRow[nt*i+j].fCharge)
+			{
+			  if(i < padrange[0]) padrange[0]=i;
+			  if(i > padrange[1]) padrange[1]=i;
+			  if(j < timerange[0]) timerange[0]=j;
+			  if(j > timerange[1]) timerange[1]=j;
+			  chargeonpad=kTRUE;
+			}
+		      else
+			break;
+		      j+=tdir;
+		    } 
 		}
+	      if(!chargeonpad)
+		break;
+	      i+=pdir;
 	    }
 	}
+      /*
+	for(Int_t i=padmax-xyw; i<=padmax+xyw; i++)
+	{
+	for(Int_t j=timemax-zw; j<=timemax+zw; j++)
+	{
+	if(i<0 || i>=AliL3Transform::GetNPads(row) || j<0 || j>=AliL3Transform::GetNTimeBins()) continue;
+	if(fRow[nt*i+j].fCharge)
+	{
+	if(i < padrange[0]) padrange[0]=i;
+	if(i > padrange[1]) padrange[1]=i;
+	if(j < timerange[0]) timerange[0]=j;
+	if(j > timerange[1]) timerange[1]=j;
+	}
+	}
+	}
+      */
+      
       if(fDebug)
 	cout<<"New padrange "<<padrange[0]<<" "<<padrange[1]<<" "<<" time "<<timerange[0]<<" "<<timerange[1]<<endl;
       return kTRUE;
@@ -646,11 +690,12 @@ Bool_t AliL3ClusterFitter::IsMaximum(Int_t pad,Int_t time)
   Int_t nt = AliL3Transform::GetNTimeBins()+1;
   if(fRow[nt*pad+time].fUsed == kTRUE) return kFALSE; //Peak has been assigned before
   Int_t charge = fRow[nt*pad+time].fCharge;
-  if(charge == 1023 || charge==0) return kFALSE;
+  if(charge == 1024 || charge==0) return kFALSE;
+  //if(charge == 0) return kFALSE;
   
   //fRow[nt*pad+time].fUsed = kTRUE;
   //return kTRUE;
-
+  
   if(charge < fRow[nt*(pad-1)+(time-1)].fCharge) return kFALSE;
   if(charge < fRow[nt*(pad)+(time-1)].fCharge) return kFALSE;
   if(charge < fRow[nt*(pad+1)+(time-1)].fCharge) return kFALSE;
@@ -663,12 +708,47 @@ Bool_t AliL3ClusterFitter::IsMaximum(Int_t pad,Int_t time)
   return kTRUE;
 }
 
+void AliL3ClusterFitter::CalculateWeightedMean(AliL3ModelTrack *track,Int_t *padrange,Int_t *timerange)
+{
+  Float_t sum=0,npads=0;
+  Float_t pad=0,time=0;
+  Int_t nt = AliL3Transform::GetNTimeBins()+1;
+  for(Int_t i=padrange[0]; i<=padrange[1]; i++)
+    {
+      Int_t lsum=0;
+      for(Int_t j=timerange[0]; j<=timerange[1]; j++)
+	{
+	  lsum += fRow[nt*(i-1)+(j-1)].fCharge;
+	  time += j*fRow[nt*(i-1)+(j-1)].fCharge;
+	}
+      if(lsum)
+	npads++;
+      pad += i * lsum;
+    }
+  if(sum)
+    {
+      pad /= sum;
+      time /= sum;
+      track->SetCluster(fCurrentPadRow,pad,time,sum,0,0,npads);
+    }
+  else
+    track->SetCluster(fCurrentPadRow,0,0,0,0,0,0);
+}
+
 void AliL3ClusterFitter::FitClusters(AliL3ModelTrack *track,Int_t *padrange,Int_t *timerange)
 {
   //Handle single and overlapping clusters
-    
-  //Check whether this cluster has been set before:
   
+  /*
+  if( (Int_t)rint(track->GetClusterModel(fCurrentPadRow)->fDPad) <= 1 || 
+      (Int_t)rint(track->GetClusterModel(fCurrentPadRow)->fDPad) >= AliL3Transform::GetNPads(fCurrentPadRow)-2 ||
+      (Int_t)rint(track->GetClusterModel(fCurrentPadRow)->fDTime) <= 1 ||
+      (Int_t)rint(track->GetClusterModel(fCurrentPadRow)->fDTime) >= AliL3Transform::GetNTimeBins()-2)
+    {
+      CalculateWeightedMean(track,padrange,timerange);
+      return;
+    }
+  */
   Int_t size = FIT_PTS;
   Int_t max_tracks = FIT_MAXPAR/NUM_PARS;
   if(track->GetNOverlaps(fCurrentPadRow) > max_tracks)
@@ -759,14 +839,14 @@ void AliL3ClusterFitter::FitClusters(AliL3ModelTrack *track,Int_t *padrange,Int_
 	  a[n_overlaps*NUM_PARS+1] = charge;
 	  a[n_overlaps*NUM_PARS+3] = sqrt(tr->GetParSigmaY2(fCurrentPadRow)) * GetYWidthFactor();
 	  a[n_overlaps*NUM_PARS+5] = sqrt(tr->GetParSigmaZ2(fCurrentPadRow)) * GetZWidthFactor();
-	  a[n_overlaps*NUM_PARS+6] = sqrt(tr->GetParSigmaZ2(fCurrentPadRow)) * GetZWidthFactor();
+	  //a[n_overlaps*NUM_PARS+6] = sqrt(tr->GetParSigmaZ2(fCurrentPadRow)) * GetZWidthFactor();
 	  lista[n_overlaps*NUM_PARS + 1] = 1;
 	  lista[n_overlaps*NUM_PARS + 2] = 1;
 	  lista[n_overlaps*NUM_PARS + 3] = 0;
 	  lista[n_overlaps*NUM_PARS + 4] = 1;
 	  lista[n_overlaps*NUM_PARS + 5] = 0;
-	  lista[n_overlaps*NUM_PARS + 6] = 0;
-	  fit_pars             += 3;
+	  //lista[n_overlaps*NUM_PARS + 6] = 0;
+	  fit_pars             += 3;          //<-------------------
 	}
       else  //Cluster was fitted before
 	{
@@ -783,21 +863,21 @@ void AliL3ClusterFitter::FitClusters(AliL3ModelTrack *track,Int_t *padrange,Int_
 	  xywidth = sqrt(tr->GetParSigmaY2(fCurrentPadRow));
 	  zwidth = sqrt(tr->GetParSigmaZ2(fCurrentPadRow));
 	  if(fDebug)
-	    cout<<"Cluster had been fitted before, pad "<<pad<<" time "<<time<<" charge "<<charge<<" width "<<xywidth<<" "<<zwidth<<endl;
+	    cout<<endl<<"Cluster had been fitted before, pad "<<pad<<" time "<<time<<" charge "<<charge<<" width "<<xywidth<<" "<<zwidth<<endl;
 	  
 	  a[n_overlaps*NUM_PARS+2] = pad;
 	  a[n_overlaps*NUM_PARS+4] = time;
 	  a[n_overlaps*NUM_PARS+1] = charge;
-	  a[n_overlaps*NUM_PARS+3] = sqrt(xywidth) * GetYWidthFactor();
-	  a[n_overlaps*NUM_PARS+5] = sqrt(zwidth) * GetZWidthFactor();
-	  a[n_overlaps*NUM_PARS+6] = sqrt(zwidth) * GetZWidthFactor();
+	  a[n_overlaps*NUM_PARS+3] = xywidth * GetYWidthFactor();
+	  a[n_overlaps*NUM_PARS+5] = zwidth * GetZWidthFactor();
+	  //a[n_overlaps*NUM_PARS+6] = zwidth * GetZWidthFactor();
 
 	  lista[n_overlaps*NUM_PARS + 1] = 1;
 	  lista[n_overlaps*NUM_PARS + 2] = 0;
 	  lista[n_overlaps*NUM_PARS + 3] = 0;
 	  lista[n_overlaps*NUM_PARS + 4] = 0;
 	  lista[n_overlaps*NUM_PARS + 5] = 0;
-	  lista[n_overlaps*NUM_PARS + 6] = 0;
+	  //lista[n_overlaps*NUM_PARS + 6] = 0;
 	  fit_pars             += 1;
 	}
       n_overlaps++;
@@ -853,7 +933,7 @@ void AliL3ClusterFitter::FitClusters(AliL3ModelTrack *track,Int_t *padrange,Int_
       if(time_num_max < time_num)
 	time_num_max = time_num;
     }
-  
+
   if(pad_num <= 1 || time_num_max <=1 || n_overlaps > fNmaxOverlaps || ndata <= fit_pars) //too few to do fit
     {
       SetClusterfitFalse(track);
@@ -902,9 +982,18 @@ void AliL3ClusterFitter::FitClusters(AliL3ModelTrack *track,Int_t *padrange,Int_
 	{
 	  if(tr->IsSet(fCurrentPadRow)) continue;//This cluster has been set before
 	  
-	  if(chisq_f < fChiSqMax[(Int_t)overlapping])//cluster fit is good enough
+	  Int_t lpatch;
+	  if(fCurrentPadRow < AliL3Transform::GetNRowLow())
+	    lpatch=0;
+	  else if(fCurrentPadRow < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1())
+	    lpatch=1;
+	  else 
+	    lpatch=2;
+	  
+	  //if(chisq_f < fChiSqMax[(Int_t)overlapping])//cluster fit is good enough
+	  if(chisq_f < fChiSqMax[lpatch])//cluster fit is good enough
 	    {
-	      tot_charge = (Int_t)(a[n_overlaps*NUM_PARS+1] * a[n_overlaps*NUM_PARS+3] * a[n_overlaps*NUM_PARS+5]);
+	      tot_charge = (Int_t)(2*AliL3Transform::Pi() * a[n_overlaps*NUM_PARS+1] * a[n_overlaps*NUM_PARS+3] * a[n_overlaps*NUM_PARS+5]);
 	      Float_t fpad = a[n_overlaps*NUM_PARS+2];
 	      Float_t ftime = a[n_overlaps*NUM_PARS+4];
 	      if(tot_charge < 0 || fpad < -1 || fpad > AliL3Transform::GetNPads(fCurrentPadRow) || 
@@ -921,8 +1010,17 @@ void AliL3ClusterFitter::FitClusters(AliL3ModelTrack *track,Int_t *padrange,Int_
 		}
 	      
 	      tr->SetCluster(fCurrentPadRow,fpad,ftime,tot_charge,0,0,pad_num);
+	      /*
+		tr->SetCluster(fCurrentPadRow,fpad,ftime,tot_charge,
+		pow(a[n_overlaps*NUM_PARS+3],2),
+		pow(a[n_overlaps*NUM_PARS+5],2),pad_num);
+	      */
 	      if(fDebug)
-		cout<<"Setting cluster in pad "<<a[n_overlaps*NUM_PARS+2]<<" time "<<a[n_overlaps*NUM_PARS+4]<<" charge "<<tot_charge<<endl;
+		{
+		  cout<<"Setting cluster in slice "<<fSlice<<" row "<<fCurrentPadRow<<" pad "<<a[n_overlaps*NUM_PARS+2]<<" time "<<a[n_overlaps*NUM_PARS+4]
+		      <<" padwidth "<<a[n_overlaps*NUM_PARS+3]<<" timewidth "<<a[n_overlaps*NUM_PARS+5]
+		      <<" charge "<<tot_charge<<endl;
+		}
 	      /*
 	      //Set the digits to used:
 	      for(Int_t i=padrange[0]; i<=padrange[1]; i++)
@@ -1021,7 +1119,7 @@ void AliL3ClusterFitter::AddClusters()
 	      tr->Print();
 	      exit(5);
 	    }
-
+	  
 	  tr->CalculateClusterWidths(i,kTRUE); //Parametrize errors
 	  
 	  tr->GetXYWidth(i,xywidth);
