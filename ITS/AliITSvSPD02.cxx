@@ -228,8 +228,9 @@ void AliITSvSPD02::BuildGeometry2002(){
     data[0] = 10.0;
     data[1] = 50.0;
     data[2] = 100.0;
-    TBRIK *iITSVshape = new TBRIK("ITSVshape","ITS Logical Mother Volume","Air",
-				 data[0],data[1],data[2]);
+    TBRIK *iITSVshape = new TBRIK("ITSVshape",
+                                  "ITS Logical Mother Volume","Air",
+                                  data[0],data[1],data[2]);
     TNode *iITSV = new TNode("ITSV","ITS Mother Volume",iITSVshape,
 			    0.0,0.0,0.0,0,0);
     iITSV->cd(); // set ourselve into ITSV subvolume of aALIC
@@ -388,6 +389,7 @@ void AliITSvSPD02::CreateGeometry2002(){
     Float_t dchipMiniBus=750.0E-4,dchiptest=300.0E-4;
     Float_t yposition= 0.0;
 
+    if(gMC==0) return;
     // Define Rotation-reflextion Matrixes needed
     // 0 is the unit matrix
     AliMatrix(idrotm[0], 90.0,0.0, 0.0,0.0, 90.0,270.0);
@@ -558,12 +560,6 @@ void AliITSvSPD02::InitAliITSgeom(){
     //    none.
     // Return:
     //    none.
-    if(strcmp(gMC->GetName(),"TGeant3")) {
-	Error("InitAliITSgeom",
-		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
-	return;
-    } // end if
-    cout << "Reading Geometry transformation directly from Geant 3." << endl;
     const Int_t kltypess = 2;
     const Int_t knlayers = 5;
     const Int_t kndeep = 5;
@@ -572,8 +568,40 @@ void AliITSvSPD02::InitAliITSgeom(){
     Double_t t[3],r[10];
     Float_t  par[20],att[20];
     Int_t    npar,natt,idshape,imat,imed;
-    AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
-    Int_t mod,typ,lay,lad,det,cpy,i,j,k;
+    AliITSGeant3Geometry *ig=0;
+    Int_t mod=0,typ=0,lay=0,lad=0,det=0,cpy=0,i=0,j=0,k=0;
+
+    if(gMC==0) {// No Monti Carlo to init. Default set fITSgeom by hand
+        if(fITSgeom!=0) delete fITSgeom;
+        nlad[0]=1;nlad[1]=1;nlad[2]=1;nlad[3]=1;nlad[4]=1;
+        ndet[0]=1;ndet[1]=1;ndet[2]=1;ndet[3]=1;ndet[4]=1;
+        fITSgeom = new AliITSgeom(0,knlayers,nlad,ndet,mod);
+        r[0] = 1.0; r[1] =  0.0; r[2] = 0.0;
+        r[3] = 0.0; r[4] =  0.0; r[5] = 1.0;
+        r[6] = 0.0; r[7] = -1.0; r[8] = 0.0; r[9] = 1.0; // not Unit.
+        Double_t tt[5][3]={{0.0,0.0,-37.9625}, // 0,0,P00Z+.5*chipMiniBusY
+                           {0.0,0.0,-35.9625}, // 0,0,P00Z+2+.5*chipMiniBusY
+                           {0.0,0.0,  2.0150}, // 0,0,P01Z+38+SPDchipY
+                           {0.0,0.0, 36.5375}, //0,0,PdetZ+34.5+.5*chipMiniBusY
+                           {0.0,0.0, 38.5375}};// 0,0,P00Z+2+.5*chipMiniBusY
+        for(mod=0;mod<5;mod++){
+            lay = 1;
+            lad = 1;
+            det = mod+1;
+            t[0] = tt[mod][0]; t[1] = tt[mod][1]; t[2] = tt[mod][2];
+            fITSgeom->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
+            npar=3;par[0]=0.64;par[1]=0.5*300.0E-4;par[2]=3.48;
+            fITSgeom->ReSetShape(kSPD,new AliITSgeomSPD425Short(npar,par));
+        } // end for det
+        return;
+    } // end if gMC==0
+    if(strcmp(gMC->GetName(),"TGeant3")) {
+	Error("InitAliITSgeom",
+		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
+	return;
+    } // end if
+    cout << "Reading Geometry transformation directly from Geant 3." << endl;
+    ig = new AliITSGeant3Geometry();
     Char_t names[kltypess][kndeep][4];
     Int_t itsGeomTreeCopys[kltypess][kndeep];
     const char *namesA[kltypess][kndeep] = {
@@ -648,7 +676,8 @@ void AliITSvSPD02::Init(){
 //
     for(i=0;i<72;i++) cout << "*";
     cout << endl;
-    fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
+    if(gMC) fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
+    else fIDMother = 0;
 }
 //______________________________________________________________________
 void AliITSvSPD02::SetDefaults(){
