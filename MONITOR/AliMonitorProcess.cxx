@@ -52,9 +52,15 @@
 #ifdef ALI_HLT
 #include <AliLevel3.h>
 #include <AliL3Transform.h>
+#include <AliL3Track.h>
+#include <AliL3TrackArray.h>
 #include <AliL3StandardIncludes.h>
 #include <AliL3HoughMaxFinder.h>
+#include <AliL3HoughBaseTransformer.h>
 #include <AliL3Hough.h>
+#include <AliL3ClusterFitter.h>
+#include <AliL3Vertex.h>
+#include <AliL3Fitter.h>
 #endif
 
 ClassImp(AliMonitorProcess) 
@@ -188,6 +194,7 @@ AliMonitorProcess::~AliMonitorProcess()
 
 #ifdef ALI_HLT
   delete fHLT;
+  delete fHLTHough;
 #endif
 }
 
@@ -619,10 +626,12 @@ void AliMonitorProcess::CreateHLTHough(const char* fileName)
   strcpy(name, fileName);
 
   fHLTHough = new AliL3Hough();
-  fHLTHough->SetTransformerParams(64,64,0.1,30);
-  fHLTHough->Init("./", kFALSE, 20, kFALSE,0,name);
+  fHLTHough->SetThreshold(4);
+  fHLTHough->SetTransformerParams(140,150,0.2,-1);
+  fHLTHough->SetPeakThreshold(6000,-1);
+  fHLTHough->Init("./", kFALSE, 50, kFALSE,0,name);
   fHLTHough->SetAddHistograms();
-  fHLTHough->GetMaxFinder()->SetThreshold(55000); // or 14000 ?
+  //  fHLTHough->GetMaxFinder()->SetThreshold(14000);
 
 }
 #endif
@@ -683,6 +692,10 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(
   return kTRUE;
 
 #else
+  gSystem->Exec("rm -rf hlt/hough");
+  gSystem->MakeDirectory("hlt/hough");
+  gSystem->Exec("rm -rf hlt/fitter");
+  gSystem->MakeDirectory("hlt/fitter");
   if (!fHLTHough) return kFALSE;
 
   //  fHLTHough->Process(0, 35);
@@ -694,12 +707,77 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(
       //      if(fHLTHough->fAddHistograms)
       fHLTHough->AddAllHistograms();
       fHLTHough->FindTrackCandidates();
-      fHLTHough->WriteTracks(i,"./hlt");
+      fHLTHough->AddTracks();
     }
+  fHLTHough->WriteTracks("./hlt/hough");
+
+  // Run cluster fitter
+  AliL3ClusterFitter *fitter = new AliL3ClusterFitter("./hlt");
+
+  // Set debug flag for the cluster fitter
+  //  fitter->Debug();
+
+  // Setting fitter parameters
+  fitter->SetInnerWidthFactor(1,1.5);
+  fitter->SetOuterWidthFactor(1,1.5);
+  fitter->SetNmaxOverlaps(5);
+  
+  //fitter->SetChiSqMax(5,kFALSE); //isolated clusters
+  fitter->SetChiSqMax(5,kTRUE);  //overlapping clusters
+
+  Int_t rowrange[2] = {0,AliL3Transform::GetNRows()-1};
+
+  // Takes input from global hough tracks produced by HT
+  fitter->LoadSeeds(rowrange,kFALSE,iEvent);
+
+  for(Int_t islice = 0; islice <= 35; islice++)
+    {
+      for(Int_t ipatch = 0; ipatch < AliL3Transform::GetNPatches(); ipatch++)
+	{
+	  fitter->Init(islice,ipatch);
+
+	  // Read digits
+	  AliL3DigitRowData *digits = fHLTHough->GetTransformer(ipatch)->GetDataPointer();
+	  fitter->SetInputData(digits);
+	  fitter->FindClusters();
+	  fitter->WriteClusters();
+ 	}
+    }
+
+  // Refit of the clusters
+  AliL3Vertex vertex;
+  //The seeds are the input tracks from circle HT
+  AliL3TrackArray *tracks = fitter->GetSeeds();
+  AliL3Fitter *ft = new AliL3Fitter(&vertex,1);
+
+  // Temporary solution !
+  //  sprintf(command, "rename _5.raw _-1.raw hlt/fitter/points*.raw", iEvent);
+  //  gSystem->Exec(command);
+
+  ft->LoadClusters("./hlt/fitter/",iEvent,kFALSE);
+  for(Int_t i=0; i<tracks->GetNTracks(); i++)
+    {
+      AliL3Track *track = tracks->GetCheckedTrack(i);
+      if(!track) continue;
+      if(track->GetNHits() < 40) continue;
+      ft->SortTrackClusters(track);
+      ft->FitHelix(track);
+      ft->UpdateTrack(track);
+    }
+  delete ft;
+        
+  //Write the final tracks
+  fitter->WriteTracks(5);
+
+  delete fitter;
 
   // remove the event number from the file names
   char command[256];
-  sprintf(command, "rename tracks_ho_%d tracks_ho hlt/*.raw", iEvent);
+  sprintf(command, "rename tracks_%d tracks hlt/hough/*.raw", iEvent);
+  gSystem->Exec(command);
+  sprintf(command, "rename tracks_%d tracks hlt/fitter/*.raw", iEvent);
+  gSystem->Exec(command);
+  sprintf(command, "rename points_%d points hlt/fitter/*.raw", iEvent);
   gSystem->Exec(command);
   return kTRUE;
 #endif
