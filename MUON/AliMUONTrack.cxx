@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.3  2000/06/12 10:11:34  morsch
 Dummy copy constructor and assignment operator added
 
@@ -42,6 +45,8 @@ Addition of files for track reconstruction in C++
 #include "AliMUONHitForRec.h" 
 #include "AliMUONSegment.h" 
 #include "AliMUONTrackHit.h"
+
+#include <stdlib.h>
 
 static AliMUONTrack *trackBeingFitted;
 static AliMUONTrackParam *trackParamBeingFitted;
