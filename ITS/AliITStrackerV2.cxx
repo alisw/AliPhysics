@@ -1242,6 +1242,7 @@ void AliITStrackerV2::SortTrackHypothesys(Int_t esdindex, Float_t likelihoodleve
   fTrackHypothesys.AddAt(newarray,esdindex);
 
   delete [] chi2;
+  delete [] probability;
   delete [] index;
 
 }
@@ -1399,12 +1400,12 @@ AliITStrackV2 * AliITStrackerV2::GetBestHypothesys(Int_t esdindex, AliITStrackV2
       delete array->RemoveAt(i);
       continue;
     }
-    if ( (forwardtrack->GetChi2()/float(forwardtrack->GetNumberOfClusters()-track->GetNSkipped()-track->GetNUsed()))>6) 
-      {
-	delete forwardtrack; 
-	delete array->RemoveAt(i);
-	continue;
-      }
+    if ( (forwardtrack->GetChi2()/float(forwardtrack->GetNumberOfClusters()-track->GetNSkipped()-track->GetNUsed()))>6) {
+      delete forwardtrack; 
+      delete backtrack;
+      delete array->RemoveAt(i);
+      continue;
+    }
     //
     accepted++;
     if (accepted>checkmax){
@@ -1425,6 +1426,7 @@ AliITStrackV2 * AliITStrackerV2::GetBestHypothesys(Int_t esdindex, AliITStrackV2
     //
     
     if (track->GetNumberOfClusters()>maxn){
+      delete besttrack;
       besttrack =  new AliITStrackV2(*forwardtrack);
       maxn      =  track->GetNumberOfClusters();
       minchi2   =  chi2;
@@ -1443,6 +1445,7 @@ AliITStrackV2 * AliITStrackerV2::GetBestHypothesys(Int_t esdindex, AliITStrackV2
   //
   //
   if (!besttrack || besttrack->GetNumberOfClusters()<4) {
+    delete besttrack;
     return 0;
   }
 

@@ -305,6 +305,8 @@ void AliITStrackerSA::FindTracks(TTree *out,Int_t evnumber){
             AliITSclusterV2* kl = (AliITSclusterV2*)GetCluster(index);
 	    if(kl->TestBit(kSAflag)==kTRUE) kl->ResetBit(kSAflag);
           }
+	  delete [] nn;
+	  delete trs;
 	  continue;
         }
         outrack=tr2;  
@@ -327,6 +329,7 @@ void AliITStrackerSA::FindTracks(TTree *out,Int_t evnumber){
        	  if(kl->TestBit(kSAflag)==kTRUE) kl->ResetBit(kSAflag);
         }
       }
+      delete [] nn;
       delete trs;
 
     }//end loop on clusters of layer1
@@ -382,6 +385,7 @@ void AliITStrackerSA::FindTracks(TTree *out,Int_t evnumber){
               AliITSclusterV2* kl = (AliITSclusterV2*)GetCluster(index);
 	      if(kl->TestBit(kSAflag)==kTRUE) kl->ResetBit(kSAflag);
             }
+	    delete trs;
             continue;
           }
           outrack=tr2;
@@ -751,7 +755,13 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
         Float_t seed1,seed2,seed3;
         AliITSRiemannFit fit;
         Int_t rf = fit.FitHelix(3,recp,errs,seed1,seed2,seed3); //this gives phi,tgl,curvature to start Kalman Filter
-        if(rf==0) continue;  
+        if(rf==0) {
+	  for(Int_t i=1;i<3;i++){
+	    delete recp[i];
+	    delete errs[i];
+	  }     
+	  continue;
+	}  
         Double_t phi=seed1;
         Double_t tgl=seed2;
         
@@ -818,7 +828,11 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
                 otrack2->ResetCovariance(); 
                 otrack2->ResetClusters();
                 //fit from layer 6 to layer 1
-                if(RefitAt(3.7,otrack2,ot)) fListOfTracks->AddLast(otrack2);
+                if(RefitAt(3.7,otrack2,ot)) {
+		  fListOfTracks->AddLast(otrack2);
+		} else {
+		  delete otrack2;
+		}
                               
               }       
           
@@ -848,12 +862,20 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
       delete listlayer[i];
     }
     delete listlayer;
+    delete [] firstmod;
     return 0;
   }
 
   AliITStrackV2* otrack =(AliITStrackV2*)FindTrackLowChiSquare(fListOfTracks,dim);
 
-  if(otrack==0) return 0;
+  if(otrack==0) {
+    for(Int_t i=0;i<fGeom->GetNlayers();i++){
+      delete listlayer[i];
+    }
+    delete listlayer; 
+    delete [] firstmod;
+    return 0;
+  }
   Int_t * indexc = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++) indexc[i]=0;
   for(Int_t nind=0;nind<otrack->GetNumberOfClusters();nind++){
