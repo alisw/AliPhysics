@@ -17,6 +17,7 @@
 #pragma link C++ class  AliPDG+;
 
 #pragma link C++ class  AliGenerator+;
+#pragma link C++ class  AliVertexGenerator+;
 #pragma link C++ class  AliRun-;
 #pragma link C++ class  AliModule+;
 #pragma link C++ class  AliDetector+;

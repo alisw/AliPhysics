@@ -18,6 +18,7 @@
 
 #include "AliRndm.h"
 
+class AliVertexGenerator;
 class AliCollisionGeometry;
 class AliStack;
 
@@ -61,6 +62,8 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void SetVertexSource(VertexSource_t source = kInternal) {fVertexSource = source;}
     virtual void SetVertex(Float_t vx, Float_t vy, Float_t vz)
 	{fVertex[0] = vx; fVertex[1] = vy; fVertex[2] = vz;}
+    void SetVertexGenerator(AliVertexGenerator* vertexGenerator)
+      {fVertexGenerator = vertexGenerator; fVertexSource = kExternal; fVertexSmear = kPerEvent;}
     virtual void SetTrackingFlag(Int_t flag=1) {fTrackIt=flag;}
     void Vertex();
     void VertexExternal();
@@ -119,6 +122,7 @@ class AliGenerator : public TNamed, public AliRndm
     VertexSource_t    fVertexSource; //Vertex source (internal/external)
     Float_t     fCutVertexZ;    // Vertex cut in units of sigma_z
     Int_t       fTrackIt;    // if 1, Track final state particles 
+    AliVertexGenerator* fVertexGenerator;  //! Generator for the vertex
     TArrayF     fOrigin;     // Origin of event
     TArrayF     fOsigma;     // Sigma of the Origin of event
     TArrayF     fVertex;     //! Vertex of current event

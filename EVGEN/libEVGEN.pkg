@@ -17,7 +17,8 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliPartonicEnergyLoss.cxx\
 		AliStructFuncType.cxx AliGenSlowNucleons.cxx \
   	        AliGenGeVSimEventHeader.cxx\
-		AliSlowNucleonModel.cxx AliSlowNucleonModelExp.cxx
+		AliSlowNucleonModel.cxx AliSlowNucleonModelExp.cxx \
+		AliVertexGenFile.cxx
 
 # Headerfiles for this particular package (Path respect to own directory)
 HDRS= $(SRCS:.cxx=.h) 

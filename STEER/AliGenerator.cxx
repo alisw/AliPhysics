@@ -42,6 +42,7 @@
 #include "AliRun.h"
 #include "AliStack.h"
 #include "AliMC.h"
+#include "AliVertexGenerator.h"
 
 ClassImp(AliGenerator)
 
@@ -357,12 +358,13 @@ void AliGenerator::Vertex()
 //_______________________________________________________________________
 void AliGenerator::VertexExternal()
 {
-    // Dummy !!!!!!
-    // Obtain vertex from external source 
     //
-    // Should be something like fVertex = gAlice->GetVertex()
-    
-    fVertex[0]=fVertex[1]=fVertex[2]=0;  
+    // Obtain vertex from external source (vertex generator)
+    //
+    TVector3 vertex = fVertexGenerator->GetVertex();
+    fVertex[0] = vertex.X();
+    fVertex[1] = vertex.Y();
+    fVertex[2] = vertex.Z();
 }
 
 //_______________________________________________________________________
