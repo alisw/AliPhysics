@@ -11,12 +11,20 @@
 #include <G4UIdirectory.hh>
 #include <G4UIcmdWithAnInteger.hh>
 #include <G4UIcmdWithoutParameter.hh>
+#include <G4UIcmdWithAString.hh>
+
 
 AliRunMessenger::AliRunMessenger()
 {
 // 
   fRunDirectory = new G4UIdirectory("/aliRun/");
   fRunDirectory->SetGuidance("AliRun control commands.");
+
+  fConfigCmd = new G4UIcmdWithAString("/aliRun/setConfig", this);
+  fConfigCmd->SetGuidance("Set configuration macro name");
+  fConfigCmd->SetParameterName("ConfigName", true);
+  fConfigCmd->SetDefaultValue("Config");
+  fConfigCmd->AvailableForStates(PreInit);
 
   fInitializeCmd = new G4UIcmdWithoutParameter("/aliRun/initialize", this);
   fInitializeCmd->SetGuidance("Initialize AliRun");
@@ -42,6 +50,7 @@ AliRunMessenger::AliRunMessenger(const AliRunMessenger& right) {
 AliRunMessenger::~AliRunMessenger() {
 //
   delete fRunDirectory;
+  delete fConfigCmd;
   delete fInitializeCmd;
   delete fBeamOnCmd;
   delete fLegoCmd;
@@ -73,8 +82,11 @@ void AliRunMessenger::SetNewValue(G4UIcommand* command,
       "AliRunMessenger: gAlice has not been instantiated yet.");
   }      
 
-  if(command == fInitializeCmd) { 
-    gAlice->Init(AliFiles::Config()); 
+  if(command == fConfigCmd) { 
+    AliFiles::Instance()->SetMacroName(newValue); 
+  }   
+  else if(command == fInitializeCmd) { 
+    gAlice->Init(AliFiles::Instance()->GetRootMacroPath()); 
   }   
   else if(command == fBeamOnCmd) { 
     gAlice->Run(fBeamOnCmd->GetNewIntValue(newValue)); 
