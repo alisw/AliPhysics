@@ -108,7 +108,8 @@ void AliModulesComposition::ConstructModules()
   
   // one module constructions
   G4int nofDets = fModuleConstructionVector.entries();
-  for (G4int i=0; i<nofDets; i++) {
+  G4int i;
+  for (i=0; i<nofDets; i++) {
     fModuleConstructionVector[i]->Configure(*AliFiles::Instance());
   }  
   if (fForceAllLVSensitive)
@@ -116,7 +117,7 @@ void AliModulesComposition::ConstructModules()
       // override the setAllLVSensitive by Config.in macro
       // if required
      
-  for (G4int i=0; i<nofDets; i++) {
+  for (i=0; i<nofDets; i++) {
     G4cout << "Module " << fModuleConstructionVector[i]->GetDetName()
            << " will be constructed now." << G4endl;
     fModuleConstructionVector[i]->Construct();
