@@ -8,6 +8,8 @@
 //-------------------------------------------------------------------------
 #include "TObject.h"
 
+class AliKalmanTrack;
+
 class AliESDHLTtrack : public TObject {
 public:
   AliESDHLTtrack();
@@ -84,6 +86,8 @@ public:
 
   void SetPID(Float_t pid) {fPID = pid;}
 
+  Bool_t UpdateTrackParams(const AliKalmanTrack *t);
+
 protected:
   UShort_t fNHits;  // Number of assigned clusters
 
@@ -115,7 +119,7 @@ protected:
   
   Float_t fPID; //so far filled only for conformal mapper tracks
 
-  ClassDef(AliESDHLTtrack,2) //ESD HLT track class
+  ClassDef(AliESDHLTtrack,3) //ESD HLT track class
 };
 
 #endif

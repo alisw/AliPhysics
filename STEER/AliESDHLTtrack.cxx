@@ -22,6 +22,7 @@
 
 #include "TMath.h"
 #include "AliESDHLTtrack.h"
+#include "AliKalmanTrack.h"
 
 ClassImp(AliESDHLTtrack)
 
@@ -58,4 +59,29 @@ Double_t AliESDHLTtrack::GetP() const
 Double_t AliESDHLTtrack::GetPseudoRapidity() const
 {
   return 0.5 * TMath::Log((GetP() + GetPz()) / (GetP() - GetPz()));
+}
+
+Bool_t AliESDHLTtrack::UpdateTrackParams(const AliKalmanTrack *t)
+{
+  // Updates the track parameters
+
+  fNHits = t->GetNumberOfClusters();
+  fMCid = t->GetLabel();
+
+  Double_t alpha = t->GetAlpha();
+  fSector = (UShort_t)(alpha/(2*TMath::Pi()/18));
+  Double_t x,p[5]; t->GetExternalParameters(x,p);
+  if(p[4]<=0)
+    fQ = 1;
+  else
+    fQ = -1;
+  fPt = TMath::Abs(1./p[4]);
+  fTanl = p[3];
+  fPsi = alpha + TMath::ASin(p[2]);
+
+  fFirstPoint[0] = x*TMath::Cos(alpha) - p[0]*TMath::Sin(alpha);
+  fFirstPoint[1] = x*TMath::Sin(alpha) + p[0]*TMath::Cos(alpha);
+  fFirstPoint[2] = p[1];
+
+  return kTRUE;
 }
