@@ -80,6 +80,12 @@ fhRecoBinPt=0;	       // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1)
 fhRecoBinPartonPt=0;    // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
 fhRecoBinJetEt=0;       // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 fhRecoBinInputJetEt=0;  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
+fhJetPT =0;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
+fhPartonPT =0;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
+fhJetPT2 =0;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
+fhPartonPT2 =0;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
+fhRecoBinFragmFcn =0;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
+fhRecoBinPartonFragmFcn =0;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
 }
 
 void AliEMCALJetFinderPlots::InitPlots()
@@ -87,6 +93,10 @@ void AliEMCALJetFinderPlots::InitPlots()
 //========================= CASE 1 =======================================	
     fhFragmFcn = new TH1F("hFragmFcn","Fragmentation Function",100,0,1);
     fhFragmFcn->Sumw2();
+    fhJetPT = new TH1F("hJetPT","P_{T} Distribution",200,0,200);
+    fhJetPT->Sumw2();
+    fhPartonPT = new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
+    fhPartonPT->Sumw2();
     fhPartonFragmFcn = new TH1F("hPartonFragmFcn","Parton Fragmentation Function",100,0,1);
     fhPartonFragmFcn->Sumw2();
     fhPartonJT = new TH1F("hPartonJT","Track Momentum Perpendicular to Parton Axis",100,0.,10.);
@@ -156,6 +166,10 @@ void AliEMCALJetFinderPlots::InitPlots()
 
 fhFragmFcn2 		= new TH1F("hFragmFcn2","Fragmentation Function",100,0,1);
 fhFragmFcn2->Sumw2();
+    fhJetPT2 = new TH1F("hJetPT2","P_{T} Distribution",200,0,200);
+    fhJetPT2->Sumw2();
+    fhPartonPT2 = new TH1F("hPartonPT2","Parton P_{T} Distribution",200,0,1);
+    fhPartonPT2->Sumw2();
 fhPartonFragmFcn2 	= new TH1F("hPartonFragmFcn2","Parton Fragmentation Function",100,0,1);
 fhPartonFragmFcn2->Sumw2();
 fhPartonJT2 		= new TH1F("hPartonJT2","Track Momentum Perpendicular to Parton Axis",100,0.,10.);
@@ -195,10 +209,14 @@ fhInputOutput=	new TH2F("hInputOutput","Input and Reconstruction Correlations;In
 
 //============================== Reconstruction Bin Comparison  ============================================
 
-fhRecoBinPt =new TH1F("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+fhRecoBinPt =new TH1F("fhRecoBinPt","Reconstructed Pt Distribution",200,0,200);
 fhRecoBinPt->Sumw2();
-fhRecoBinPartonPt = new TH1F("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
+fhRecoBinPartonPt = new TH1F("fhRecoBinPartonPt","Input Pt Distribution",200,0,200);
 fhRecoBinPartonPt->Sumw2();
+fhRecoBinFragmFcn =new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
+fhRecoBinFragmFcn->Sumw2();
+fhRecoBinPartonFragmFcn = new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
+fhRecoBinPartonFragmFcn->Sumw2();
 fhRecoBinJetEt = new TH1F("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 fhRecoBinJetEt->Sumw2();
 fhRecoBinInputJetEt = new TH1F("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
@@ -252,6 +270,12 @@ delete 	  fhEtaPhiSpread;
 	delete fhRecoBinJetEt;       // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 	delete fhRecoBinInputJetEt;  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
 	                                
+ 	delete fhJetPT ;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
+	delete fhPartonPT ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
+ 	delete fhJetPT2 ;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
+	delete fhPartonPT2 ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
+	delete fhRecoBinFragmFcn;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
+	delete fhRecoBinPartonFragmFcn;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
 
 }	
 

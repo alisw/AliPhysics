@@ -70,6 +70,14 @@ class AliEMCALJetFinderPlots : public TObject
 	TH1F* GetJetEtRatio2(){return fhJetEtRatio2;}
 	TH1F* GetEtaPhiDist2(){return fhEtaPhiDist2;}
 
+	
+        TH1F* GetJetPt(){return	fhJetPT ;}
+        TH1F* GetPartonPt(){return fhPartonPT ;}
+        TH1F* GetJetPt2(){return 	fhJetPT2;}
+        TH1F* GetPartonPt2(){return fhPartonPT2;}
+        TH1F* GetRecoBinFragmFcn() {return fhRecoBinFragmFcn;}
+        TH1F* GetRecoBinPartonFragmFcn() {return	fhRecoBinPartonFragmFcn;}
+
 	//============================== ALL CASES ============================================
 	
 	TH2F* GetInputOutput(){return fhInputOutput;}
@@ -137,12 +145,18 @@ class AliEMCALJetFinderPlots : public TObject
 	TH1F				*fhRecoBinPartonPt;    // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
 	TH1F				*fhRecoBinJetEt;       // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 	TH1F				*fhRecoBinInputJetEt;  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
+        TH1F* 				fhJetPT ;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
+        TH1F* 				fhPartonPT ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
+        TH1F* 				fhJetPT2 ;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
+        TH1F* 				fhPartonPT2 ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
+        TH1F* 				fhRecoBinFragmFcn;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
+        TH1F* 				fhRecoBinPartonFragmFcn;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
 	
 	
 	Bool_t				fInitialised; // have histograms been initialised
 		
 	
-	ClassDef(AliEMCALJetFinderPlots,5)
+	ClassDef(AliEMCALJetFinderPlots,6)
 	
 };
 #endif
