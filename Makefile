@@ -80,7 +80,7 @@ BINLIBDIRS   := -L$(ALICE_ROOT)/$(LIBPATH)
 #-------------------------------------------------------------------------------
 # Modules to build
 
-ifdef ALIVERBOSE
+ifeq (ALIVERBOSE,2)
 $(warning MAKECMDGOALS=$(MAKECMDGOALS))
 endif
 
@@ -170,7 +170,7 @@ ifeq ($(CLEAN),)
 ifneq ($(MAKECMDGOALS),depend)
 ifneq ($(MAKECMDGOALS),)
 
-ifdef ALIVERBOSE
+ifeq (ALIVERBOSE,2)
 $(warning INCLUDEFILES=$(INCLUDEFILES))
 endif
 -include $(INCLUDEFILES)
