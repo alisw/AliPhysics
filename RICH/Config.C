@@ -31,7 +31,7 @@ geant3->SetPFIS(0);
 geant3->SetDRAY(1);
 geant3->SetANNI(1);
 geant3->SetBREM(1);
-geant3->SetMUNU(1);
+geant3->SetMUNU(1); 
 geant3->SetCKOV(1);
 geant3->SetHADR(3); //Select pure GEANH (HADR 1) or GEANH/NUCRIN (HADR 3)
 geant3->SetLOSS(1);
@@ -59,7 +59,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*********************************************
      AliGenFixed *gener = new AliGenFixed(ntracks);
      gener->SetMomentum(3);
-     gener->SetPhiRange(90);
+     gener->SetPhiRange(75);
      gener->SetThetaRange(90);
      gener->SetOrigin(0,0,0);                 //vertex position
      gener->SetPart(kPiPlus);                 //GEANT particle type
@@ -316,7 +316,7 @@ if(iITS) {
 // understandable to the CAD system EUCLID. The default (=0) means that you 
 // dont want to use this facility.
 //
-AliITS *ITS  = new AliITSvn("ITS","normal ITS");
+AliITS *ITS  = new AliITSv1("ITS","normal ITS");
 ITS->SetEUCLID(0);
 }
 
@@ -340,7 +340,7 @@ if(iTPC) {
 
   gROOT->LoadMacro("SetTPCParam.C");
   AliTPCParam *param = SetTPCParam();
-  AliTPC *TPC  = new AliTPCvn("TPC","Normal TPC"); //v1 is default
+  AliTPC *TPC  = new AliTPCv0("TPC","Normal TPC"); //v1 is default
   TPC->SetParam(param); // pass the parameter object to the TPC
 
 // set gas mixture
@@ -367,7 +367,7 @@ if(iRICH) {
 //
 // Version 0
 // Default Segmentation
-    AliRICHSegmentationV0* SegmentationV0 = new AliRICHSegmentationV0;
+    AliRICHSegmentationV1* SegmentationV0 = new AliRICHSegmentationV1;
 //
 //  Segmentation parameters
     SegmentationV0->SetPadSize(0.84,0.80);
@@ -377,13 +377,13 @@ if(iRICH) {
     AliRICHGeometry* GeometryV0 = new AliRICHGeometry;
     GeometryV0->SetGapThickness(8);
     GeometryV0->SetProximityGapThickness(.4);
-    GeometryV0->SetQuartzLength(131);
-    GeometryV0->SetQuartzWidth(126.2);
+    GeometryV0->SetQuartzLength(133);
+    GeometryV0->SetQuartzWidth(123.9);
     GeometryV0->SetQuartzThickness(.5);
-    GeometryV0->SetOuterFreonLength(131);
-    GeometryV0->SetOuterFreonWidth(40.3);
-    GeometryV0->SetInnerFreonLength(131);
-    GeometryV0->SetInnerFreonWidth(40.3);
+    GeometryV0->SetOuterFreonLength(133);
+    GeometryV0->SetOuterFreonWidth(41.3);
+    GeometryV0->SetInnerFreonLength(133);
+    GeometryV0->SetInnerFreonWidth(41.3);
     GeometryV0->SetFreonThickness(1.5);
 
 //  Response parameters
