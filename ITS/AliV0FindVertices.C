@@ -1,5 +1,5 @@
 #ifndef __CINT__
-  #include <iostream.h>
+  #include "Riostream.h"
   #include "AliV0vertexer.h"
   #include "TFile.h"
   #include "TStopwatch.h"
