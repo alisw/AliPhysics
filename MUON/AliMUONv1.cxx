@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:49  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.14  2000/06/14 14:37:25  morsch
 Initialization of TriggerCircuit added (PC)
 
@@ -1455,8 +1458,9 @@ void AliMUONv1::Init()
    //
 
    printf("\n\n\n Start Init for version 1 - CPC chamber type\n\n\n");
-
-   for (Int_t i=0; i<kNCH; i++) {
+   Int_t i;
+   
+   for (i=0; i<kNCH; i++) {
        ( (AliMUONChamber*) (*fChambers)[i])->Init();
    }
    
@@ -1482,7 +1486,7 @@ void AliMUONv1::Init()
 
    //cp 
    printf("\n\n\n Start Init for Trigger Circuits\n\n\n");
-   for (Int_t i=0; i<kNTriggerCircuit; i++) {
+   for (i=0; i<kNTriggerCircuit; i++) {
      ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
    }
    printf(" Finished Init for Trigger Circuits\n\n\n");
