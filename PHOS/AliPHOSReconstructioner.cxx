@@ -29,7 +29,7 @@
 
 // --- Standard library ---
 
-#include <iomanip>
+#include <iomanip.h>
 
 // --- AliRoot header files ---
 
@@ -182,7 +182,10 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
 	TVector3  locpos; ppsdrecpoint->GetLocalPosition(locpos);
 	Int_t * primaries; 
 	Int_t nprimaries;
-        if (ppsdrecpoint->GetUp()) detector="CPV"; else detector="PC ";
+        if (ppsdrecpoint->GetUp()) 
+	  strcpy(detector, "CPV"); 
+	else 
+	  strcpy(detector, "PC ");
 	primaries = ppsdrecpoint->GetPrimaries(nprimaries);
 	cout << "DebugReconstruction>>> " << 
 	  setw(4) << ppsdrecpoint->GetPHOSMod() << "  "  << 
@@ -283,28 +286,28 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
       switch(rp->GetType())
 	{
 	case kNEUTRAL_EM:
-	  particle = "NEUTRAL_EM";
+	  strcpy( particle, "NEUTRAL_EM");
 	  break;
 	case kNEUTRAL_HA:
-	  particle = "NEUTRAL_HA";
+	  strcpy(particle, "NEUTRAL_HA");
 	  break;
 	case kGAMMA:
-	  particle = "GAMMA     ";
+	  strcpy(particle, "GAMMA");
 	  break ;
 	case kGAMMA_HA: 
-	  particle = "GAMMA_HA  ";
+	  strcpy(particle, "GAMMA_H");
 	  break ;
 	case kABSURD_EM:
-	  particle = "ABSURD_EM " ;
+	  strcpy(particle, "ABSURD_EM") ;
 	  break ;
 	case kABSURD_HA:
-	  particle = "ABSURD_HA " ;
+	  strcpy(particle, "ABSURD_HA") ;
 	  break ;	
 	case kELECTRON:
-	  particle = "ELECTRON  " ;
+	  strcpy(particle, "ELECTRON") ;
 	  break ;
 	case kCHARGED_HA:
-	  particle = "CHARGED_HA" ;
+	  strcpy(particle, "CHARGED_HA") ;
 	  break ; 
 	}
       

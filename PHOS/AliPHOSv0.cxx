@@ -619,8 +619,8 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
     }
   } // PHOS modules
  
-  delete rotname ;  
-  delete nodename ; 
+  delete[] rotname ;  
+  delete[] nodename ; 
 
 }
 

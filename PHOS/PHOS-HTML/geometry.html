@@ -16,14 +16,14 @@
     </h1>
     The simulation is done in two steps, one which describes the detector geometry
     and material and one which does the particle tracking and stores the hits
-    and digits in a TTree itself written on a disk file. These two steps are
+    and digits in a  <a href="http://root.cern.ch/root/html/TTree.html">TTree</a> itself written on a disk file. These two steps are
     steered through the Config.C file(<a href="PHOSConfig_Central.C">example</a>), 
     a root macro launched at the AliRoot prompt. To customize this file you must:
     <br><br>
     <ol>
       <li>
 	select a file name for the root output:
-	<pre>
+	<pre class="code">
 	//=======================================================================
 	//  Create the output file
 	sprintf(filename,"<b>myfilename</b>.root");
@@ -31,7 +31,7 @@
 	</li>
       <li>
 	Define your event generator and simulations parameters:
-	<pre>
+	<pre class="code">
          AliGenCocktail *gener = new AliGenCocktail(); // Cocktail class
          gener->SetPtRange(.02,10.00);                 // Transverse momentum range   
          gener->SetPhiRange(180.,360.);                // Azimuthal angle range  
@@ -43,14 +43,14 @@
       </li>
       <li>
 	Select the detector seen by the tracking:
-	<pre>
+	<pre class="code">
          Int_t iPHOS=1;    // PHOS is in
          Int_t iPMD=0;     // PMD  is out
 	</pre>
       </li>
       <li>
 	Create a PHOS object (<b>GPS2</b> is so far the unique configuration option, see below):
-	<pre> 
+	<pre class="code"> 
          if(iPHOS) {
          //=================== PHOS parameters =========================== 
          AliPHOS *PHOS  = new AliPHOSv0("PHOS","<b>GPS2</b>");
@@ -59,10 +59,9 @@
     </ol>
     <p>
       You van now run the simulation by entering the following command at the aliroot prompt:
-      <pre>
+      <pre class="code">
        aliroot> gAlice->Run(1,"PHOSConfig_Central.C");  
     </pre>
-    </p>
     <h1>
       Geometry
     </h1>
@@ -87,12 +86,12 @@
     of gas detectors identical to the first layer. This second part is positionned
     on top of the EMCA module.
     <p>
-      The class <a href="AliPHOSv0.html"> AliPHOSv0 </a> ( <a href="AliPHOSv0_Tree.ps"> inheritance tree </a>) 
+      The class <a href="./html/AliPHOSv0.html"> AliPHOSv0 </a> ( <a href="./html/AliPHOSv0_Tree.ps"> inheritance tree </a>) 
       describes this geometry. We have defined also a class 
-      <a href="AliPHOSv1.html"> AliPHOSv1 </a> ( <a href="AliPHOSv1_Tree.ps"> inheritance tree </a>) 
+      <a href="./html/AliPHOSv1.html"> AliPHOSv1 </a> ( <a href="./html/AliPHOSv1_Tree.ps"> inheritance tree </a>) 
       which in addition contains the photodiode response and the light transport through the crystal.
     <p>
-      The parameters of the geometry are given in class  <a href="AliPHOSGeometry.html"> AliPHOSGeometry </a>( <a href="AliPHOSGeometry_Tree.ps"> inheritance tree </a>)
+      The parameters of the geometry are given in class  <a href="./html/AliPHOSGeometry.html"> AliPHOSGeometry </a>( <a href="./html/AliPHOSGeometry_Tree.ps"> inheritance tree </a>)
       <br><br>
     <center>
       <img SRC=" images/EMCinAlice.gif" ALT="Geant Tree for PHOS" >
@@ -110,16 +109,16 @@
     </h4>
     <p>
     <center>
-      <img SRC="aliphossimulation.gif" ALT="Geom/Simul class diagram" >
+      <img SRC="./images/aliphossimulation.gif" ALT="Geom/Simul class diagram" >
       <br><br>
       <b> Figure 2.: </b> <i> Class diagram for the geometry/simulation package </i>
     </center>
     <p>
-      <a href="AliPHOS.html"><i><u>AliPHOS</u></a> : </i>This is the base class. It derives from <i>AliDetector.
+      <a href="./html/AliPHOS.html"><i><u>AliPHOS</u></i></a>: This is the base class. It derives from <i>AliDetector.
       </i>It's only purpose is to describe the materials
       (&agrave; la <i>AliMC</i>) needed for the EMCA and PPSD construction.
     <p>
-      <i><u> <a href="AliPHOSv0.html">AliPHOSv4</u></i></a>: It derives from <i>AliPHOS</i>.
+      <a href="./html/AliPHOSv0.html"><i><u>AliPHOSv4</u></i></a>: It derives from <i>AliPHOS</i>.
       <br>
     <ul>
       <li>
@@ -140,12 +139,12 @@
       </li>
     </ul>
     <p>
-      <a href="AliPHOSv1.html"><i><u>AliPHOSv1</u></i></a> : derives from <i>AliPHOSv0</i> and includes the light transport 
+      <a href="./html/AliPHOSv1.html"><i><u>AliPHOSv1</u></i></a> : derives from <i>AliPHOSv0</i> and includes the light transport 
       in the crystal and the response of the PIN photodiode &agrave; la O. H. Oddland.
     <p>
-      <a href="AliPHOSvFast.html"><i><u>AliPHOSvFast</u></i></a> : used for <a href="fastsimulation.html">fast simulation</a>.
+      <a href="./html/AliPHOSvFast.html"><i><u>AliPHOSvFast</u></i></a> : used for <a href="fastsimulation.html">fast simulation</a>.
     <p>
-      <a href="AliPHOSGeometry.html"<i><u>AliPHOSGeometry</u></i>: It derives from <i>TObject</i> to make it
+      <a href="./html/AliPHOSGeometry.html"><i><u>AliPHOSGeometry</u></i></a> : It derives from <i>TObject</i> to make it
 	persistent. It is a singleton, i.e., a pointer to the unique instance of
 	this class is obtained by:
     <center>
@@ -171,13 +170,13 @@
       </li>
     </ul>
     <p>
-       <a href="AliPHOSHitt.html"<i><u>AliPHOSHit</u></i></a>: It derives from <i>AliHit</i>. It stores the
+       <a href="./html/AliPHOSHit.html"><i><u>AliPHOSHit</u></i></a>: It derives from <i>AliHit</i>. It stores the
 	hits as the pair (absolute Id, deposited energy). The hits presently are stored  in the hit TTree 
 	as one hit per elementary cell (EMC crystal or PPSD gas cell) (See the 
 	the AddHit() method in <i>AliPHOSv0</i>).
     <p>
-       <a href="AliPHOSDigit.html"<i><u>AliPHOSDigit</u></i></a> : It derives from <i>AliDigit</i>. It stores
-      the digits as the pair (absolute Id, energy) in the&nbsp; digit TTree (see 
+       <a href="./html/AliPHOSDigit.html"><i><u>AliPHOSDigit</u></i></a> : It derives from <i>AliDigit</i>. It stores
+      the digits as the pair (absolute Id, energy) in the digit Tree (see 
       the FinishEvent() method in <i>AliPHOSv0</i>).
     <h1>
       Usage
@@ -227,9 +226,9 @@
 </address>
 <!-- Created: Wed Nov 17 12:16:58 CET 1999 -->
 <!-- hhmts start -->
-Last modified: Tue Mar 14 18:38:42 CET 2000
+Last modified: Sun Mar 26 17:31:13 CEST 2000
 <!-- hhmts end -->
-<div align=right><a href="http://validator.w3.org/check/referer"><img SRC="vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div>
+<!--  <div align=right><a href="http://validator.w3.org/check/referer"><img SRC="vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div>-->
 
 
 </body>

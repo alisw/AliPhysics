@@ -30,7 +30,7 @@ public:
   AliPHOSRecPoint() ;                   // ctor         
   virtual ~AliPHOSRecPoint(){}          // dtor
   virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy) = 0 ; 
-  virtual Int_t   Compare(TObject * obj) {  assert(0==1) ; }   
+  virtual Int_t   Compare(TObject * obj) {  assert(0==1) ; return 1 ; }   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
   virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;

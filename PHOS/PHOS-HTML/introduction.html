@@ -13,7 +13,7 @@
     </h1>
     <br><br>
     <p>
-      This document result from the effort lead by the Photon Group at SUBATECH
+      This document result from the effort lead by the <a href="htpp://www-subatech.in2p3.fr/~photons">Photon Group at SUBATECH</a>
       to organize within the PHOS collaboration the software needed for the performance
       and physics simulation of PHOS and for the reconstruction of the raw data
       (presently simulated one's and real data in the future). 
@@ -48,7 +48,7 @@
 	repository.
       </li>
       <li>
-	Developpers must comply with the <a href="http://AliSoft.cern.ch/offline/development.html#"a>Coding AliRoot coding convention</a>.
+	Developpers must comply with the <a href="http://AliSoft.cern.ch/offline/development.html#">Coding AliRoot coding convention</a>.
       </li>
       <li>
 	FORTRAN is a strictly prohibited language.
@@ -56,8 +56,12 @@
       <li>
 	Any new piece of code must be documented along the line: what is the purpose,
 	how is it done, how to use it. You can start any new class from a canevas, available in the PHOS package:
-	<br><h3> canevas.h </h3> 
-        <pre>
+      </li>
+    </ol>
+    <h3> 
+      canevas.h 
+    </h3> 
+    <pre>
 #ifndef ALIPHOSXXX_H
 #define ALIPHOSXXX_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -91,9 +95,12 @@ private:
 };
 
 #endif // AliPHOSXXX_H
-        </pre>
-        <br><h3>canevas.cxx </h3>
-        <pre>
+    </pre>
+        <br>
+    <h3>
+      canevas.cxx 
+    </h3>
+    <pre>
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -141,36 +148,30 @@ ClassImp(AliPHOSxxx)
   // ctor
 
 }
-        </pre>
-      </li>
-    </ol>
+    </pre>
     <br><br>
     The PHOS package is organized along two directions which we will try to
     keep as independent as possible. The simulation is the first one, the reconstruction
     the second one. 
     <p>
       <center>
-      <a href="usecase.gif">
-	<img src="usecase.gif" alt="use case diagram" height=334 width=470>
+      <a href="./images/usecase.eps">
+	<img src="./images/usecase.gif" alt="use case diagram" height=334 width=470>
       </a>	
       <br><br>
       <b> Figure 1.: </b> <i> Use case diagram of the simulation and reconstruction for PHOS (click on image for full size)</i>
       </center>
-    </p>
-
-<hr>
-<address class="left">
+    <hr>
+    <address class="left">
       &copy; <a href="mailto:schutz@in2p3.fr">>Groupe Photons Subatech (Yves SCHUTZ)</a>
       <a href="http://www-subatech.in2p3.fr/~photons/subatech/en_index.shtml">[Go
 	to the GPS Home Page]</a>
-</address>
-<!-- Created: Wed Nov 17 12:16:58 CET 1999 -->
-<!-- hhmts start -->
-Last modified: Tue Mar 14 16:21:55 CET 2000
+    </address>
+    <!-- Created: Wed Nov 17 12:16:58 CET 1999 -->
+    <!-- hhmts start -->
+Last modified: Sun Mar 26 17:34:20 CEST 2000
 <!-- hhmts end -->
-<div align=right><a href="http://validator.w3.org/check/referer"><img SRC="vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div>
-
-
+    <!-- <div align=right><a href="http://validator.w3.org/check/referer"><img SRC="vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div> -->
 </body>
 </html>
 

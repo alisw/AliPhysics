@@ -4,704 +4,534 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="GENERATOR" content="Mozilla/4.51 [en] (X11; I; Linux 2.2.5-15 i686) [Netscape]">
-   <title>PHOS Reconstruction Proposal</title>
-<link REL="stylesheet" href="http://www-subatech.in2p3.fr/~photons/gps_alice.css" type="text/css">
+   <title>PHOS Reconstruction in AliRoot</title>
+    <link REL="stylesheet" href="http://www-subatech.in2p3.fr/~photons/gps_alice.css" type="text/css">
 </head>
 <body>
-
-
-<h1>
-PHOS Reconstruction Proposal</h1>
-At the Offline meeting held during the September ALICE week, it was decided
-to make a major step in the design of the overall reconstruction framework.
-This document presents the results of our early brainstorming about the
-design of the reconstruction of the Photon Spectrometer PHOS.
-<br>&nbsp;
-<br>&nbsp;
-<p>
-<hr><a NAME="definitions and objectives"></a>
-<h1>
-Definitions and objectives</h1>
-
-<h2>
-What is PHOS ?</h2>
-We hereby consider that the PHOS detector is the <i>union</i> of two sub-detectors
-: the lead tungstate crystals and the Charged Particle Veto (CPV). Both
-sub-detectors are physically organized in <i>modules</i>. A separate document
-is dedicated to the <a href="PHOS_Proposal.html">PHOS geometry</a>.
-<h2>
-What is the reconstruction ?</h2>
-Using the AliRoot framework, we would like to be able to compare several
-CPV alternatives. The main focus will be on the photon identification capabilities
-of PHOS, i.e. on the hadron rejection capabilities.
-<p>This document describes the reconstruction software we intend to write/have
-written to achieve this objective. <i>Reconstruction</i> is meant as the
-full path from the PHOS digits to physical particles. The PHOS digits are
-obtained by the simulation part of AliRoot.
-<p>The PHOS reconstruction can be divided in three passes:
-<dl>
-<dt>
-<b>Clusterization</b></dt>
-
-<dd>
-We group adjacent crystals (pads) with a signal over a given threshold
-to form <i>clusters</i></dd>
-
-<dt>
-<b>Sub-Tracking</b></dt>
-
-<dd>
-Crystals and CPV clusters are associated to form PHOS <i>sub-tracks</i>.
-Loosely speaking, a PHOS sub-track is just a crystal cluster with an information
-on its charge.</dd>
-
-<dt>
-<b>Identification</b> (Tracking)</dt>
-
-<dd>
-Several (at least one) detector sub-tracks are combined and matched with
-<i>particles</i>.</dd>
-</dl>
-The two first passes are detector specific, i.e. do not require any information
-about other detectors. The last part may (and probably will) depend on
-other detector reconstructions.
-
-<p class="right">The key point in the following presented design is that
-we want to be able to experiment several alternatives in each of the three
-passes.
-<h2>
-Generalization</h2>
-We often tried to generalized our design 'one step up', i.e. up to the
-AliRoot framework itself, by defining pABC (pure Abstract Base Classes)
-which we derive from. This is by no mean of way of saying that this is
-the way to go. It's just a proposal, i.e. <i>a call for discussion</i>.
-Also, we tried to make an effort on the class names, but you might find
-our names strange or badly chosen. If this is the case, please <a href="mailto:aphecetc@in2p3.fr">tell
-us</a> !
-<br><!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-<hr>
-<h1>
-Clusterization</h1>
-The clusterization part of the reconstruction can be summarized by the
-following Use Case :
-<center><img SRC="usecasereconstruction.gif" ALT="[Reconstruction Use Case]" height=355 width=599></center>
-So, the basic functionalities we want here are :
-<dl>
-<dt>
-<b>Storing/Retrieving data</b></dt>
-
-<dd>
-We want to <i>read</i> digits from file, and want to be able to <i>write</i>
-clusters on file,</dd>
-
-<dt>
-<b>Clusterizing</b></dt>
-
-<dd>
-A separate document will detail the clusterization method(s).</dd>
-
-<dt>
-<b>Keeping track of what we did</b></dt>
-
-<dd>
-We would like to be able afterwards to answer questions like "I have a
-cluster in hand, with which method has it been constructed ? With which
-method parameters ?".</dd>
-</dl>
-We would like to insist on the last point. It is far more general than
-a particular PHOS issue, and must be addressed in some way by the AliRoot
-framework itself.
-<p>The following class diagram outlines the clusterization part of the
-PHOS reconstruction : a Clusterizer object groups some Digits into Clusters.
-<center><img SRC="aliphosclusterization.gif" ALT="[Clusterization Class Diagram]" ></center>
-The key point here is the possibility to actually change of clusterization
-method (Clusterizer class) at runtime. The idea is to use the <a href="http://hillside.net/patterns/">Strategy
-Design Pattern</a> (see <a href="#particle_identification">Particle Identification</a>
-for a class diagram).
-<p>The following tables presents a trial CRC study of the PHOS classes
-related to the clusterization that lead to the above class diagram.
-<br><!-- crc template 
-<div class="crc">
-<dl>
-<dt><strong>Classname:</strong>
-<dd><em class="classname">Ali</em>
-<dt><strong>Superclasses :</strong>
-<dd>Ali
-<dt><strong>Subclasses :</strong>
-<dd>Ali
-<dt><strong>Responsabilities: </strong>
-<dd>
-<dt><strong>Collaborators: </strong>
-<dd>Ali
-</dl>
-</div>
--->
-<hr class="small-separation">
-<div class="crc">
-<dl>
-<dt>
-<b>Classname:</b></dt>
-
-<dd>
-<i>AliPHOSDigit</i></dd>
-
-<dt>
-<b>Superclasses :</b></dt>
-
-<dd>
-AliDigit</dd>
-
-<dt>
-<b>Subclasses :</b></dt>
-
-<dd>
-AliPHOSCrystalDigit, AliPHOSCPVDigit</dd>
-
-<dt>
-<b>Responsabilities:</b></dt>
-
-<dd>
-Base class for the storage of PHOS digits. Must identify digits (module,row,column)
-and give access to the corresponding signal (energy).
-<br>It can be added to an AliPHOSCluster.</dd>
-<dt>
-<b>Collaborators:</b></dt>
-
-<dd>
-AliPHOSCluster</dd>
-</dl>
-</div>
-
-<hr class="small-separation">
-<div class="crc">
-<dl>
-<dt>
-<b>Classname:</b></dt>
-
-<dd>
-<i>AliPHOSCluster</i></dd>
-
-<dt>
-<b>Superclasses :</b></dt>
-
-<dd>
-AliCluster (?)</dd>
-
-<dt>
-<b>Subclasses :</b></dt>
-
-<dd>
-AliPHOSCrystalCluster, AliPHOSCPVCluster</dd>
-
-<dt>
-<b>Responsabilities:</b></dt>
-
-<dd>
-Base class for PHOS Xtal/CPV clusters. A cluster must know its module,
-its spatial position, must be able to add digits to itself and to give
-access to (/iterates on) its digits.</dd>
-
-<dt>
-<b>Collaborators:</b></dt>
-
-<dd>
-AliPHOSDigit, AliPHOSGeometry</dd>
-</dl>
-</div>
-
-<hr class="small-separation">
-<div class="crc">
-<dl>
-<dt>
-<b>Classname:</b></dt>
-
-<dd>
-<i>AliPHOSGeometry</i></dd>
-
-<dt>
-<b>Superclasses :</b></dt>
-
-<dd>
-none</dd>
-
-<dt>
-<b>Subclasses :</b></dt>
-
-<dd>
-none</dd>
-
-<dt>
-<b>Responsabilities:</b></dt>
-
-<dd>
-Handles several PHOS Xtal/CPV geometrical characteristics (sizes, positions,
-etc...).
-<br>This class is a <b>Singleton</b>.
-</dd>
-<dt>
-<b>Collaborators:</b></dt>
-
-<dd>
-AliPHOS*Cluster, AliPHOSClusterizer*</dd>
-</dl>
-</div>
-
-<hr class="small-separation">
-<div class="crc">
-<dl>
-<dt>
-<b>Classname:</b></dt>
-
-<dd>
-<i>AliPHOSClusterizer*</i></dd>
-
-<dt>
-<b>Superclasses :</b></dt>
-
-<dd>
-AliClusterizer</dd>
-
-<dt>
-<b>Subclasses :</b></dt>
-
-<dd>
-none</dd>
-
-<dt>
-<b>Responsabilities:</b></dt>
-
-<dd>
-Concrete class(es) which implements the makeClusters method. From a list
-of Ali(PHOS)Digit, this method must compute a list of Ali(PHOS)Cluster.</dd>
-
-<dt>
-<b>Collaborators:</b></dt>
-
-<dd>
-AliPHOS*Digit, AliPHOS*Cluster</dd>
-</dl>
-</div>
-
-<div class="crc">
-<dl>
-<dt>
-<b>Classname:</b></dt>
-
-<dd>
-<i>AliParameter</i></dd>
-
-<dt>
-<b>Superclasses :</b></dt>
-
-<dd>
-none</dd>
-
-<dt>
-<b>Subclasses :</b></dt>
-
-<dd>
-(?) probably many of them</dd>
-
-<dt>
-<b>Responsabilities:</b></dt>
-
-<dd>
-pABC. Keep track of methods used and method parameters used. What should
-be the basic interface for this ???</dd>
-
-<dt>
-<b>Collaborators:</b></dt>
-
-<dd>
-Many classes...</dd>
-</dl>
-</div>
-<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-<hr><a NAME="sub_tracking"></a>
-<h1>
-Sub-Tracking</h1>
-Once we have crystal and CPV clusters, we must associate them to make what
-we would like to call SubTracks. Doing sub-tracks from clusters is, from
-the design point of view, much like going from digits to clusters. We should
-be able to easily change the class which actually do the sub-tracking job
-:
-<center><img SRC="aliphossubtracking.gif" ALT="[SubTracking Class Diagram]"></center>
-
-<div class="crc">
-<dl>
-<dt>
-<b>Classname:</b></dt>
-
-<dd>
-<i>AliPHOSSubTrack</i></dd>
-
-<dt>
-<b>Superclasses :</b></dt>
-
-<dd>
-AliSubTrack (?)</dd>
-
-<dt>
-<b>Subclasses :</b></dt>
-
-<dd>
-none</dd>
-
-<dt>
-<b>Responsabilities:</b></dt>
-
-<dd>
-Concrete storage class for a PHOS subtrack. It must be able to give access
-to its clusters, and to identify itself as being part of PHOS.</dd>
-
-<dt>
-<b>Collaborators:</b></dt>
-
-<dd>
-AliPHOSSubTracker*</dd>
-</dl>
-</div>
-
-<hr class="small-separation">
-<div class="crc">
-<dl>
-<dt>
-<b>Classname:</b></dt>
-
-<dd>
-<i>AliPHOSSubTracker*</i></dd>
-
-<dt>
-<b>Superclasses :</b></dt>
-
-<dd>
-AliSubTracker</dd>
-
-<dt>
-<b>Subclasses :</b></dt>
-
-<dd>
-none</dd>
-
-<dt>
-<b>Responsabilities:</b></dt>
-
-<dd>
-Concrete class(es) which implements the makeSubTracks method. From a list
-of Ali(PHOS)Cluster, this method must compute a list of Ali(PHOS)SubTrack.</dd>
-
-<dt>
-<b>Collaborators:</b></dt>
-
-<dd>
-AliPHOSCluster, AliPHOSSubTrack</dd>
-</dl>
-</div>
-<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-<hr><a NAME="particle_identification"></a>
-<h1>
-Particle Identification</h1>
-Clusterization and subtracking are two activities that are <i>detector-driven</i>.
-We can indeed imagine that the full ALICE reconstruction could be (pseudo-)coded
-in AliRoot like :
-<pre class="code">for each detector in ALICE do {
-&nbsp; detector->Reconstruction() ;
-}</pre>
-assuming that each detector provides a Reconstruction method, and that
-there's a way to parametrize each detector's behavior. The latter could
-be done in the initialization phase of AliRoot, e.g. in the <tt>Config.C</tt>
-file :
-<pre class="code"><i>// Create PHOS clusterizers
-</i>AliPHOSCrystalClusterizerV1 aXtalClusterizer(...) ;
-AliPHOSCPVClusterizerV3 aCPVClusterizer(...) ;
-<i>// Create PHOS SubTracker
-</i>AliPHOSSubTrackerV0 aPHOSSubTracker(...) ;
-<i>// Create a PHOS Reconstructioner
-</i>AliPHOSReconstructioner aPHOSReconstructioner(aXtalClusterizer,
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aCPVClusterizer,
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aPHOSSubTracker) ;
-
-<i>// Create PHOS detector and associate
-&nbsp;a reconstructioner with it
-</i>AliPHOS* phos = new AliPHOSVxx("PHOS",
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "PHOS Version xx",
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &amp;;aPHOSReconstructioner) ;</pre>
-In the above code, the clusterization strategies (for Xtals and CPV) and
-the sub-tracking strategy are managed by a control class AliPHOSReconstrutioner
-which would derive from a pABC AliReconstructioner.
-<center><img SRC="aliphosreconstructioner.gif" ALT="[Reconstruction Class Diagram]" height=312 width=484></center>
-The <tt>detector->Reconstruction()</tt> method would then only delegate
-its job to the selected Reconstructioner (aPHOSReconstructioner in the
-above example).
-<p>If we now turn to the particle identification problem, two cases must
-be considered :
-<dl>
-<dt>
-<b>Standalone PHOS</b></dt>
-
-<dd>
-The particle identification is just a refinement (e.g. computation of some
-new values to cut upon) of subtracking. We only need to access PHOS SubTracks.</dd>
-
-<dt>
-<b>PHOS + other ALICE sub-systems</b></dt>
-
-<dd>
-In this case, we must associate several subtracks, coming from different
-sub-systems, in order to identify particles. One problem to solve is how
-to access other sub-systems SubTracks.</dd>
-</dl>
-For this stage of the analysis, the AliRoot activity can not be detector-driven
-anymore. Instead we would like to propose this activity to be <i>particle
-hunting driven</i>. For example :
-<pre class="code"><i>// we assume that all detectors have produced their subtracks in the event event_number
-</i>AliParticleHunter* aPhotonFinder = new AliPhotonFinder(...) ;
-
-<i>/* the UseDetector("ADET") method should "connect"
-&nbsp;the ParticleHunter with the ADET subtrack branch so it can access
-&nbsp;other detectors subtracks.
-&nbsp;We assume that a subtrack knows in which detector she is, so we
-&nbsp;can recover this information later (e.g. in the FindParticles method).
-*/
-
-</i>aPhotonFinder->UseDetector("ITS") ;
-aPhotonFinder->UseDetector("TPC") ;
-aPhotonFinder->UseDetector("PHOS") ;
-
-for each event do {
-&nbsp; aPhotonFinder->FetchSubTracks(event) ;
-&nbsp; <i>/* The FindParticle method can now plays
-&nbsp;&nbsp; with all the ITS,TPC and PHOS subtracks... */
-</i>&nbsp; aPhotonFinder->FindParticles() ;
-}</pre>
-
-<center><img SRC="classes_identification.gif" ALT="[Identification Class Diagram]" height=279 width=480></center>
-
-<div class="crc">
-<dl>
-<dt>
-<b>Classname:</b></dt>
-
-<dd>
-<i>AliPHOSReconstructioner*</i></dd>
-
-<dt>
-<b>Superclasses :</b></dt>
-
-<dd>
-AliReconstructioner (?)</dd>
-
-<dt>
-<b>Subclasses :</b></dt>
-
-<dd>
-none</dd>
-
-<dt>
-<b>Responsabilities:</b></dt>
-
-<dd>
-This class is control class for the clusterizations and the subtracking.
-It must handles the clusters and subtracks IO. It can be "added" to the
-AliPHOS detector.</dd>
-
-<dt>
-<b>Collaborators:</b></dt>
-
-<dd>
-AliPHOSClusterizer, AliPHOSSubTracker, AliPHOS</dd>
-</dl>
-</div>
-
-<div class="crc">
-<dl>
-<dt>
-<b>Classname:</b></dt>
-
-<dd>
-<i>AliParticleHunter</i></dd>
-
-<dt>
-<b>Superclasses :</b></dt>
-
-<dd>
-non</dd>
-
-<dt>
-<b>Subclasses :</b></dt>
-
-<dd>
-AliPhotonFinder</dd>
-
-<dt>
-<b>Responsabilities:</b></dt>
-
-<dd>
-Associate a number (1..n) different detector subtracks to identify particles.
-It must be able to fetch subtracks for a number of different detectors.
-It handle IO of produced particles.</dd>
-
-<dt>
-<b>Collaborators:</b></dt>
-
-<dd>
-AliSubTrack, AliParticle, AliDetector</dd>
-</dl>
-</div>
-<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-<hr>
-<h1>
-Disk Storage Structure</h1>
-We present in this section how the PHOS reconstructed data will be arranged
-on disk.
-<p>We suppose that there is one TreeR (Reconstruction Tree) per event,
-and we store different kinds of objects in differents branches, i.e. the
-<b>PHOSCPVClusters
-branch</b> contains CPV clusters the <b>PHOSCrystalClusters branch</b>
-contains Crystal clusters, the <b>PHOSSubTracks branch</b> contains PHOS
-SubTracks, and the <b>PHOSParameters branch</b> contains several information
-related to the way Clusters and SubTracks were made. The following figure
-indicates the inter-relation(s) between those branches and the relation
-between those branches and the PHOS branch in the Digit Tree.
-<center><img SRC="TreeR.gif" ALT="[Reconstruction Tree Structure]" height=425 width=483></center>
-
-<h2>
-How are the links implemented ?</h2>
-If we assume that all the above branches are implemented using <a href="http://root.cern.ch/root/html/TClonesArray.html">TClonesArray</a>,
-we could index things using simple integers refering to positions in the
-TClonesArray. For example, a cluster will keep track of its digits by recording
-the list of the digits position in the TClonesArray of the PHOS branch
-in the digit tree. These positions are of course only valid within a given
-event.
-<p>If we want to be less implementation dependant we could probably have
-classes such as <i>AliDigitIdentifier</i> (which could then be anything
-we like, e.g. a simple integer wrapper or a set {event_number, index position}).
-This solution could be more disk-space consuming, but would have the tremendous
-advantage to isolate "logical" references from implementation.
-<h2>
-What should we save ?</h2>
-At least in the beginning of the analysis, we should be able to perform
-the reconstruction step by step, i.e. be able to save clusters, subtracks
-and particles. It would be nice to include a switching mechanism to e.g.
-disconnect the cluster output if we want to save disk space for instance.&nbsp;<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-<hr><a NAME="parameters"></a>
-<h1>
-Keeping the entropy small</h1>
-We come back to the problem stated in the clusterization section about
-'keeping track of what we did'. We don't want to loose too much information
-along our way from the raw data to the particles so we can have some checkpoints.
-<p>We proposed in the above class diagrams to use a generic <tt>AliParameter</tt>
-class which could answer question such as 'what was the sub-tracker method
-and version used to do this sub-track ?' or 'what was the Xtal clustering
-low threshold ?'. This 'AliParameter' could be accessible through methods
-like <tt>AliParameter&amp; AliCluster::GetMakerInformation</tt>. That's
-all nice, but we say nothing about what this AliParameter class is.
-<p>We could imagine a very simple AliParameter implementation using e.g.
-(parameter_name, parameter_value) pairs encapsulated in such an AliParameter
-class. Or, entering fully the Alice Wonderland, we could dream of a much
-more ambitious generic parameter class, in which the actual storage of
-the parameters in done using <a href="http://www.w3.org">XML</a> (the W3
-eXtensible Markup Language). The base AliParameter would then only provide
-basic interface to code/decode XML tags, and each subsystems would provide
-DTD to describes their parameters, which would then ressemble 'parameters
-sheets'. We can imagine DTDs per detector or per domain (geometry, reconstruction,
-physics analysis...).
-<br>The strenght of this approach is the use of a (new) <b>standard</b>
-in which data are represented in structured ASCII files. ASCII files are
-human readable/produceable, easy to exchange between computers, and many
-tools already exists, in a wide variety of languages (C/C++, Java, Perl,
-Python...), to handles XML compliant files.
-<p>But, well, may be this is only a dream... and too much work for our
-purposes. Anyway, comments on this idea are welcome ! More information
-can be found at <a href="http://www.oasis-open.org/cover/">http://www.oasis-open.org/cover/</a>
-<br><!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-<hr>
-<h1>
-Summary</h1>
-To perform the PHOS reconstruction, we need/propose the following classes
-:
-<h2>
-New classes</h2>
-
-<dl>
-<dt>
-<b>Ali(PHOS)Cluster</b></dt>
-
-<dd>
-(pABC) Storage class for groups of digits (per detector)</dd>
-
-<dt>
-<b>Ali(PHOS)SubTrack</b></dt>
-
-<dd>
-(pABC) Storage class for groups of clusters (per detector)</dd>
-
-<dt>
-<b>Ali(PHOS)Reconstructioner</b></dt>
-
-<dd>
-(pABC) Control class for clusterization and subtracking.</dd>
-
-<dt>
-<b>AliParticleHunter</b></dt>
-
-<dd>
-(pABC) Working class to associate different subtracks into particles.</dd>
-
-<dt>
-<b>AliParticle</b></dt>
-
-<dd>
-(pABC?) Storage class for particles.</dd>
-
-<dt>
-<b>AliParameter</b></dt>
-
-<dd>
-(pABC!) Entropy minimizing class. Keeps track of methods/parameters used
-to make clusters, subtracks and particles.</dd>
-
-<dt>
-<b>Ali(Digit,Cluster,SubTrack)Identifier</b></dt>
-
-<dd>
-A simple integer wrapper or a more elaborated way of indexing reconstruction
-objects, so we can go one step back at every analysis step (e.g. access
-the list of clusters a subtrack is made of).</dd>
-</dl>
-
-<h2>
-AliRoot classes impacted</h2>
-
-<dl>
-<dt>
-<b>AliRun</b></dt>
-
-<dd>
-Add Reconstruction method, which would delegate to the corresponding Reconstruction
-methods of the different detectors.</dd>
-
-<dt>
-<b>AliDetector</b></dt>
-
-<dd>
-Add GetSubTracks method (returning a list of subtracks for a given event),
-and Reconstruction method (which delegates its jobs to an AliReconstructioner
-object, selectable at runtime).</dd>
-</dl>
-
+    <h1>
+      PHOS Reconstruction
+    </h1>
+    <hr><hr>
+    <ul>
+      <li>
+	<a href="reconstruction.html#Definitions and objectives">Definitions and objectives</a>
+	<ul>
+	  <li>
+	    <a href="reconstruction.html#What is PHOS">What is PHOS ?</a>
+	  </li>
+	  <li>
+	    <a href="reconstruction.html#Reconstruction design">Reconstruction design</a>
+	  </li>
+	  <li>
+	    <a href="reconstruction.html#How to use it">How to use it</a> 
+	  </li>
+	</ul>
+      <li>
+	<a href="reconstruction.html#Clusterization">Clusterization</a>
+      </li>
+      <li>
+	<a href="reconstruction.html#Sub-Track construction">Sub-Track construction</a>
+      </li>
+      <li>
+	<a href="reconstruction.html#Particle identification">Particle identification</a>
+      </li>
+      <li>
+	<a href="reconstruction.html#Disk Storage Structure">Disk Storage Structure</a>
+      </li>
+      <li>
+	<a href="reconstruction.html#How are the links implemented">How are the links implemented</a>
+      </li>
+    </ul>
+    <a NAME="Definitions and objectives"></a>
+    <hr><hr> 
+   <h1>
+      Definitions and objectives
+    </h1>
+    <a NAME="What is PHOS"></a>   <h2>
+      What is PHOS ?
+    </h2>
+    PHOS is the association of two sub-detectors: 
+    <ul>
+      <li>
+	the lead-tungstate crystals electromagnetic-calorimeter named <b>EMCA</b>, 
+      </li>
+      <li>
+	and a pre-shower gas detector named <b>PPSD</b>. 
+	</li>
+    </ul>
+    Both sub-detectors are physically organized in <i>modules</i>. A separate document
+    is dedicated to the description of the <a href="simulation.html">PHOS geometry</a>.
+    <a NAME="Reconstruction design"></a>   
+    <h2>
+      Reconstruction design
+    </h2>
+    The reconstruction software consists in making <a href="html/AliPHOSRecParticle.html">particles</a> 
+    from the <a href="html/AliPHOSDigit.html">digits</a> generated by the <a href="simulation.html">simulation</a>. 
+   <p>
+    <center>
+      <a href="images/phosreconstructs.eps"> 
+	<img src="images/phosreconstructs.gif" alt="Use Case of reconstruction" width=800>
+      </a>
+      <p>
+	<b> Figure 1.: </b> <i>Use Case for reconstruction. Only PHOS is implemented. Other detectors are ignored. 
+	  Click on image for full scale</i>
+    </center>
+    The PHOS reconstruction is delegated by the <a href="html/AliPHOSv0.html">detector</a> to a 
+    <a href="html/AliPHOSReconstructioner.html">reconstructioner</a> algorithmic object. It proceeds along three steps: 
+    <dl>
+      <dt>
+	<b>Clusterization</b>
+      </dt>
+      <dd>
+	The reconstruction of the showers (total energy loss and incident direction) 
+	induced in the EM calorimeter (<a href="html/AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>)
+	and of the pads hit in the pre-shower detector (<a href="html/AliPHOSPpsdRecPoint.html" >AliPHOSPpsdRecPoint</a>).
+	The clustering is delegated to the algorithmic object <a href="html/AliPHOSClusterizerv1.html">AliPHOSClusterizerv1</a> 
+	which derives from the interface <a href="html/AliPHOSClusterizer.html">AliPHOSClusterizer</a>. The clusterization is controlled
+	by several parameters.
+      </dd>
+      <dt>
+	<b>Sub-Track construction</b>
+      </dt>
+      <dd>
+	Sub tracks are obtained by combining reconstructed points in EMCA and PPSD to form a track segment 
+	(<a href="html/AliPHOSTrackSegment.html">AliPHOSTrackSegment</a>). This construction is delegated to the 
+	algorithmic object <a href="html/AliPHOSTrackSegmentMakerv1.html">AliPHOSTrackSegmentMakerv1</a> 
+	which derives from the interface <a href="html/AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a>. 
+      </dd>
+      <dt>
+	<b>Particle identification</b>
+      </dt>
+      <dd>
+	From each track segment a reconstructed particle (<a href="html/AliPHOSRecParticle.html">AliPHOSRecParticle</a>)
+	is made the identification being based on the information delivered by the PPSD (which PPSD stage is hit) 
+	and by EMCA (shower profile and topology).The identification is delegated to the 
+	algorithmic object <a href="html/AliPHOSPIDv1.html">AliPHOSPIDv1</a> 
+	which derives from the interface <a href="html/AliPHOSPID.html">AliPHOSPID</a>. Several parameters control the identification
+	procedure.
+      </dd>
+    </dl>
+    The first step is detector specific, i.e. does not require any information
+    about other detectors. The two last steps may (and probably will) depend on
+    other detector reconstructions (connecting sub tracks or combining particle identification delivered by 
+    various sub-detectors).
+	<a NAME="How to use it"></a> 
+    <h2>
+      How to use it ?
+    </h2>
+    This is a little piece of code which shows how to use the reconstruction. It can be used in a Root macro or the class
+    <a href="html/AliPHOSAnalyze.html">AliPHOSAnalyze</a> can be used instead together with the GUI interface 
+    <a href="EditorBar.C">EditorBar.C</a>:
+    <pre class="code">
+      fRootFile   = new TFile("MyFileName", "update") ;   // open the root file created by the simulation
+      gAlice = (AliRun*) fRootFile->Get("gAlice");        // get from file the AliRun object
+      fPHOS  = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ; // get from file the detector object
+      fGeom  = AliPHOSGeometry::GetInstance(              // get the geometry used for the simulation
+                     fPHOS->GetGeometry()->GetName(), 
+                     fPHOS->GetGeometry()->GetTitle() ) ;
+
+      //========== Initializes the Index to Object converter
+      fObjGetter = AliPHOSIndexToObject::GetInstance(fPHOS) ; 
+  
+      //========== Create the Clusterizer and set a few parameters
+      fClu =  new AliPHOSClusterizerv1() ; 
+      fClu->SetEmcEnergyThreshold(0.030) ; 
+      fClu->SetEmcClusteringThreshold(1.0) ; 
+      fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
+      fClu->SetPpsdClusteringThreshold(0.0000001) ; 
+      fClu->SetLocalMaxCut(0.03) ;
+      fClu->SetCalibrationParameters(0., 0.00000001) ;  
+      cout <<  "AnalyzeOneEvent > using clusterizer " << fClu->GetName() << endl ; 
+      fClu->PrintParameters() ; 
+    
+      //========== Creates the track segment maker
+      fTrs = new AliPHOSTrackSegmentMakerv1() ;
+      cout <<  "AnalyzeOneEvent > using tack segment maker " << fTrs->GetName() << endl ; 
+      fTrs->UnsetUnfoldFlag() ;
+    
+      //========== Creates the particle identifier
+      fPID = new AliPHOSPIDv1() ;
+      cout <<  "AnalyzeOneEvent > using particle identifier " << fPID->GetName() << endl ; 
+      fPID->SetShowerProfileCuts(0., 0., 0., 0.) ;
+      fPIS->SetDispersionCutOff(0.34) ;
+
+      //========== Creates the Reconstructioner  
+      fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ;     
+    
+      //=========== Connect the various Tree's for evt
+      gAlice->GetEvent(evt);
+    
+      //=========== Fill the fDigits array from the Digit TTree
+      gAlice->TreeD()->GetEvent(0) ;     
+      
+      //=========== Do the reconstruction
+      fPHOS->Reconstruction(fRec);  
+    
+      // =========== Write to the root file
+      fRootFile->Close() ; 
+    </pre>
+    <hr>
+    <a NAME="Clusterization"></a> 
+   <h1>
+      <a href="html/AliPHOSClusterizerv1.html">Clusterization</a>
+    </h1>
+    A <a href="html/AliPHOSDigit.html">digit</a> is a set of two numbers: the id of the elementary cell
+    numbered from 1 to the maximum number of cells (EMCA+PPSD), and a digitized deposited energy. With 
+    the help of the <a href="html/AliPHOSGeometry.html">geometry</a> object the absolute id is converted into
+    a relative numbering with a single EMCA or PPSD module, in terms of rows and columns 
+    ( <i>ALIPHOSGeometry::AbsToRelNumbering()</i> ). A clustering algorithm ( <i> AliPHOSClusterizerv1::MakeClusters()</i> )
+    groups neighbouring cells in EMCA and PPSD ( <i>AliPHOSClusterizerv1::AreNeighbours()</i> ) where two cells
+    are defined as neighbours if they have a common edge or a common corner. The algorithm is controlled with
+    alltogether 4 parameters:
+    <ul>
+      <li> the energy thresholds (one for EMCA, <i>fEmcEnergyThreshold</i> and one for PPSD, <i> fPpsdEnergyThreshold</i>) 
+	which the deposited energy of the digits must surpass to be taken into account for the clusterization;
+      </li>
+      <li> the energy thresholds (one for EMCA, <i>fEmcEnergyThreshold</i> and one for PPSD, <i>fPpsdEnergyThreshold</i>) 
+	which the deposited energy of the digits must surpass to start a cluster.
+      </li>
+    </ul>
+    An ensemble of neighbouring digits is called a reconstructed point. The PHOS clusterizer produces 
+    <a href="html/AliPHOSEmcRecPoint.html">EmcRecPoints</a> and  <a href="html/AliPHOSPpsdRecPoint.html">PpsdRecPoints</a>
+    deriving form the base class <a href="html/AliPHOSRecPoint.html">AliPHOSRecPoint</a>. Each reconstructed point
+    points, through a mechanism described later, to the digits at its origin. Since a digit remembers which
+    primary particle(s) were at its origin, the list of primary particles at the origin of a reconstructed
+    point is provided by the method <i>AliPHOSRecPoint::GetPrimaries()</i>).
+    <p>
+      The reconstructed points are contained in two <a href="http://root.cern.ch/root/html/TObjArray.html">TObjArray</a> 
+      (mandatory because the size of a reconstructed
+      point depends on the number of digits used to build it) which are stored in <i>TreeR</i>, branch <i>PHOSEmcRP</i>
+      for EMCA and branch <i>PHOSPpsdRP</i> for PPSD.
+    </p>
+    <hr>
+    <a NAME="Sub-Track construction"></a> 
+    <h1>
+      <a href="html/AliPHOSTrackSegmentMakerv1.html">Track Segments Maker</a>
+    </h1>
+    Each EMCA reconstructed point is either combined with one or two PPSD reconstructed points to form 
+    a <a href="html/AliPHOSTrackSegment.html">track segment</a> or constitutes a track segment by itself. As a first step
+    the EMCA reconstructed points are unfolded in case there is more than one local maximum ( overlapping
+    showers) to make two new reconstructed points which digit's energy is shared after a fitting procedure.
+    The unfolding procedure can be switch on and off with the method: <i>AliPHOSTrackSegmentMakerv1::(Un)SetUnfoldFlag()</i>.
+    EMCA reconstructed points and PPSD reconstructed points are then linked together to form pairs or triplets
+    according to their relative distance. Each track segment points is linked, through a mechanism described later, to the 
+    reconstructed points at its origin.
+    <p>
+      The track segments are contained in a <a href="http://root.cern.ch/root/html/TClonesArray.html">TClonesArray</a> which are stored in <i>TreeR</i>, branch <i>PHOSTS</i>.
+    </p>
+    <hr>
+    <a NAME="Particle identification"></a> 
+   <h1>
+      <a href="html/AliPHOSPIDv1.html">Particle Identification</a>
+    </h1>
+    Clusterization and track segments making are two activities that are <i>detector-driven</i>. This is not the case for the
+    particle identification. Indeed a particle might be identified by combining the track segments calculated by several
+    detectors. Up to know the implementation for such a mechanism is not yet done. Instead PHOS has its own stand alone
+    particle identification algorithm which associates a <a href="html/AliPHOSRecParticle.html">reconstructed particle</a> to
+    each track segment. The particle identification is controlled by several parameters which can be set by the user. Each
+    reconstructed particle is linked, through a mechanism described later, to the track segment at its origin.
+    The various types of reconstructed particles are the following:
+    <table>
+      <tr>
+	<td><b>NEUTRAL</b>: </td>
+	<td>a reconstructed point in EMCA, none in the two layers of the PPSD;</td>
+      </tr>
+      <tr>
+	<td><b>GAMMA</b>  : </td>
+	<td>a reconstructed point in the lower PPSD layer, none in the upper one, and a reconstructed point in
+	EMCA that satisfies the shower topology cuts;</td>
+      </tr>
+      <tr>
+	<td><b>GAMMAHADRON</b> : </td>
+	<td>as a GAMMA, but the EMCA reconstructed point does not satisfy the shower topology cuts;</td>
+      </tr>
+      <tr>
+	<td><b>CHARGED</b>:  </td>
+	<td>a reconstructed point in EMCA, and one  in the upper layer of the PPSD;</td>
+      </tr>
+      <tr>
+	<td><b>NEUTRALEM</b>: </td>
+	<td>a NEUTRAL particle for which the EMCA reconstructed point satisfies the shower profile cut;</td>
+      </tr>
+      <tr>
+	<td><b>NEUTRALHADRON</b>:</td>
+	<td> a NEUTRAL particle for which the EMCA reconstructed point does not satisfy the shower profile cut;</td>
+      </tr>
+      <tr>
+	<td><b>ELECTRON</b>: </td>
+	<td>a CHARGED particle for which the EMCA reconstructed point satisfies the shower profile cut;</td>
+      </tr>
+      <tr>
+	<td><b>CHARGEDHADRON</b>:</td>
+	<td> a CHARGED particle for which the EMCA reconstructed point does not satisfy the shower profile cut;</td>
+      </tr>
+    </table>
+    <hr>
+    <a NAME="Disk Storage Structure"></a> 
+    <h1>
+      Disk Storage Structure
+    </h1>
+    All the three types of reconstructed objects( reconstructed point, track segment and reconstructed particle) are stored in
+    the reconstruction Tree (<i>TreeR</i>). The container of the reconstructed points is a 
+    <a href="http://root.cern.ch/root/html/TObjArray.html">TObjArray</a> and the container
+    of the track segment and the reconstructed particles is a 
+    <a href="http://root.cern.ch/root/html/TClonesArray.html">TClonesArray</a>. The names of the branches are respectively:
+    PHOSEmcRP, PHOSPpsdRP, PHOSTS and PHOSRP. The <i>TreeR</i> is best seen in the following example: 
+    <pre class="code">
+      root [2] TFile myfile("junk.root")
+      root [3] TTree * reconstructedtree = (TTree *)myfile.Get("TreeR0")
+      root [5] reconstructedtree.Print()
+      ******************************************************************************
+      *Tree    :TreeR0    : Reconstruction                                         *
+      *Entries :        1 : Total  Size =     10882 bytes  File  Size =       4024 *
+      *        :          : Tree compression factor =   5.65                       *
+      ******************************************************************************
+      *Branch  :PHOSEmcRP : PHOSEmcRP                                              *
+      *Entries :        1 : Total  Size =         0 bytes  File Size  =          0 *
+      *Baskets :        0 : Basket Size =     16000 bytes  Compression=   1.00     *
+      *............................................................................*
+      *Branch  :PHOSPpsdRP : PHOSPpsdRP                                            *
+      *Entries :        1 : Total  Size =      8334 bytes  File Size  =       1476 *
+      *Baskets :        1 : Basket Size =     16000 bytes  Compression=   5.65     *
+      *............................................................................*
+      *Branch  :PHOSTS    : PHOSTS                                                 *
+      *Entries :        1 : Total  Size =         0 bytes  File Size  =          0 *
+      *Baskets :        0 : Basket Size =     16000 bytes  Compression=   1.00     *
+      *............................................................................*
+      *Branch  :PHOSRP    : PHOSRP                                                 *
+      *Entries :        1 : Total  Size =         0 bytes  File Size  =          0 *
+      *Entries :        1 : Total  Size =         0 bytes  File Size  =          0 *
+      *Baskets :        0 : Basket Size =     16000 bytes  Compression=   1.00     *
+      *............................................................................*
+      root [6]                       
+    </pre>
+    <center>
+      <img src="images/BranchesInTreeR.gif" alt="branches in reconstructed Tree">
+      <p>
+	<b>Figure 2: </b><i>Branches in TreeR generated by the PHOS reconstruction.
+	  PHOSEmc(Ppsd)RP contains EMCA(PPSD) reconstructed points in
+	  <a href="http://root.cern.ch/root/html/TObjArray.html">TObjArray</a>;
+	  PHOSTS contains track segments in a 
+	  <a href="http://root.cern.ch/root/html/TClonesArray.html">TClonesArray</a>; PHOSRP contains reconstructed
+	  particles in a <a href="http://root.cern.ch/root/html/TClonesArray.html">TClonesArray</a>. </i>
+      </p>
+    </center>
+    <hr>
+     <a NAME="How are the links implemented"></a> 
+    <h1>
+      How are the links implemented ?
+    </h1>
+    An algorithmic class, <a href="html/AliPHOSIndexToObject.html">AliPHOSIndexToObject</a> returns a pointer to the object of
+    interest given the index of its storage in the array 
+    (<a href="http://root.cern.ch/root/html/TObjArray.html">TObjArray</a> or 
+    <a href="http://root.cern.ch/root/html/TClonesArray.html">TClonesArray</a>). It is a singleton (only one instance of the
+    object does exist at run time). It must be initialized once:
+    <pre class="code">
+      AliPHOS * phos = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
+      AliPHOSIndexToObject::GetInstance(phos) ; 
+    </pre>
+    It can then be used as follow, for example for retrieving a particle from the kine tree (<i>TreeK</i>):
+    <pre class="code">
+     AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
+     Int_t index = 123 ; 
+     TParticle * primaryparticle = please->GimePrimaryParticle(index) ;
+    </pre>
+    We shall now detail how the various reconstruction objects are linked together.
+    <h4>
+      Digits to primary particles
+    </h4>
+    <A href="html/AliPHOSDigit.html">Digits</a> have three additional data members (<i>fPrimary1(2,3)</i>) that gives the index
+    of the primary particles (maximum 3) that have contributed to the formation of the digit. Remember that in PHOS a digit is
+    obtained from all the hits accumulated in a single cell. 
+    This is not really elegant, but because the container of digits is a 
+    <a href="http://root.cern.ch/root/html/TClonesArray.html">TClonesArray</a> it is not possible
+    to replace the three data members by an array of integers of variable length as all objects in a 
+    <a href="http://root.cern.ch/root/html/TClonesArray.html">TClonesArray</a> must be identical. To retrieve the particles that
+    have contibuted to a digit, do:
+    <pre class="code">
+    // initialization
+          // open root file
+     TFile rootfile("junk.root") ;               
+          // get AliRun object
+     gAlice = (AliRun *)rootfile.Get("gAlice") ;
+          // get detector object
+     AliPHOSv0 * phos = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
+          // get the geometry associated with the detector
+     AliPHOSGeometry::GetInstance( phos->GetGeometry()->GetName(), phos->GetGeometry()->GetTitle() ) ; 
+          // initializes the index to object converter
+     AliPHOSIndexToObject::GetInstance(phos) ;
+          // get the list of digits
+     TClonesArray * digitslist = phos->Digits() ; 
+          // loop over the list of digits
+     TIter nextdigit(digitslist) ; 
+     AliPHOSDigit * digit ; 
+     TParticle * primaryparticle[3] ; 
+          // get the pointer of the index to object converter
+     AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
+     while ( digit = (AliPHOSDigit * )nextdigit() ) {
+       for ( Int_t i = 0 ; i < digit->GetNprimary() ; i++ ) 
+       primary[i] = please->GimePrimaryParticle(digit->GetPrimary(i) ) ;
+     }     
+    </pre>
+    <h4>
+      Reconstructed point to Digit
+    </h4>
+    A <a href="html/AliPHOSDigit.html">digit</a> has an additional data member which is the index of the object stored
+    in the  <a href="http://root.cern.ch/root/html/TObjArray.html">TObjArray</a>. It is set by 
+    <a href="html/AliPHOSv0.html">FinishEvent()</a>. A <a href="html/AliPHOSRecPoint.html">reconstructed point</a> containing
+    a list of digits, it can retrieve the digit object with the help of 
+    <a href="html/AliPHOSIndexToObject.html">AliPHOSIndexToObject</a>:
+    <pre class="code">
+      // initialization
+          // open root file
+     TFile rootfile("junk.root") ;               
+          // get AliRun object
+     gAlice = (AliRun *)rootfile.Get("gAlice") ;
+          // get detector object
+     AliPHOSv0 * phos = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
+          // get the geometry associated with the detector
+     AliPHOSGeometry::GetInstance( phos->GetGeometry()->GetName(), phos->GetGeometry()->GetTitle() ) ; 
+          // initializes the index to object converter
+     AliPHOSIndexToObject::GetInstance(phos) ;
+          // get the reconstructed points list
+     Int_t evt = 123 ; 
+     TObjArray * recpointslist = phos->EmcRecPoints(evt) ; 
+          // loop over reconstructed points 
+     TIter nextrecpoint(recpointslist) ; 
+          // get the pointer of the index to object converter
+     AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
+     AliPHOSEmcRecPoint * recpoint ;  
+     while ( recpoint = (AliPHOSEmcRecPoint * )nextrecpoint() ) {
+             // get the associated digits list
+       Int_t * digitsindexeslist = recpoint->GetDigitsList() ;
+             // loop over the list of digits
+       for ( Int_t i = 0 ; i < recpoint->GetDigitsMultiplicity() ; i++ ) {
+         AliPHOSDigit * digit = please->GimeDigit(digitsindexeslist[i] ) ;
+               // get the primary particle associated with that digit
+ 	 Int_t numberofprimaries = 0 ; 
+	 Int_t * prim = digit->GetPrimaries(numberofprimaries) ;
+         for (Int_t i = 0 ; i < numberofprimaries ; i++ )
+           // and print them 
+	   please->GimePrimaryParticle( prim[i] )->Print()  ;
+         } 
+       } 
+         // or get the primaries directly from the reconstructed point
+       Int_t numberofprimaries = 0 ; 
+       Int_t * prim = recpoint->GetPrimaries(numberofprimaries) ;  
+     }       
+    </pre>
+    <h4>
+      Track segment to reconstructed point 
+    </h4>
+    A <a href="html/AliPHOSRecPoint.html">reconstructed point</a> has an additional data member which is the index of the object stored
+    in the  <a href="http://root.cern.ch/root/html/TClonesArray.html">TClnesArray</a>. It is set by the 
+    <a href="html/AliPHOSReconstructioner.html">reconstructioner</a>. 
+    A <a href="html/AliPHOSTrackSegment.html">track segment</a> contains the index of one EMCA reconstructed points and two 
+    PPSD reconstructed points, it can retrieve this reconstructed point objects with the help of 
+    <a href="html/AliPHOSIndexToObject.html">AliPHOSIndexToObject</a>:
+    <pre class="code">
+     // initialization
+          // open root file
+     TFile rootfile("junk.root") ;               
+          // get AliRun object
+     gAlice = (AliRun *)rootfile.Get("gAlice") ;
+          // get detector object
+     AliPHOSv0 * phos = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
+          // get the geometry associated with the detector
+     AliPHOSGeometry::GetInstance( phos->GetGeometry()->GetName(), phos->GetGeometry()->GetTitle() ) ; 
+          // initializes the index to object converter
+     AliPHOSIndexToObject::GetInstance(phos) ;
+          // get the track segments list
+     Int_t evt = 123 ; 
+     TClonesArray * tracksegmentslist = phos->TrackSegments(evt) ; 
+          // loop over track segments
+     TIter nexttracksegment(tracksegmentslist) ; 
+     AliPHOSTrackSegment * tracksegment ;  
+         // get the pointer of the index to object converter
+     AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
+     while ( tracksegment = (AliPHOSTrackSegment * )nexttracksegment() ) {
+           // get the associated reconstructed points
+         AliPHOSEmcRecPoint  * emcrecpoint     = please->GimeRecPoint(tracksegment->GetEmcRecPoint(),    "emc" ) ;
+         AliPHOSPpsdRecPoint * ppsduprecpoint  = please->GimeRecPoint(tracksegment->GetPpsdUpRecPoint(), "ppsd" ) ;
+         AliPHOSPpsdRecPoint * ppsdlowrecpoint = please->GimeRecPoint(tracksegment->GetPpsdLowRecPoint(),"ppsd" ) ;
+          // get the primaries particles  
+         Int_t numberofprimariestoemc = 0 ; 
+         Int_t * primemc = tracksegment->GetPrimariesEmc(numberofprimariestoemc) ;
+         Int_t numberofprimariestoppsdup = 0 ; 
+         Int_t * primppsdup = tracksegment->GetPrimariesPpsdUp(numberofprimariestoppsdup) ;
+         Int_t numberofprimariestoppsdlow = 0 ; 
+         Int_t * primppsdlow = tracksegment->GetPrimariesPpsdLow(numberofprimariestoppsdlow) ;
+          // print one as example  
+         please->GimePrimaryParticle( primppsdlow[0] )->Print()  ;     
+       }
+     rootfile.Close() ;
+     gAlice = 0 ; 
+     phos = 0 ; 
+     recparticleslist = 0 ;
+     </pre>    
+    <h4>
+      Reconstructed particle to Track segment  
+    </h4>
+    A <a href="html/AliPHOSTrackSegment.html">track segment</a> has an additional data member which is the index of the object stored
+    in the  <a href="http://root.cern.ch/root/html/TClonesArray.html">TClnesArray</a>. It is set by the 
+    <a href="html/AliPHOSReconstructioner.html">reconstructioner</a>. 
+    A <a href="html/AliPHOSRecParticle.html">reconstructed particle</a> contains the index of a track segment, 
+    it can retrieve this reconstructed point objects with the help of 
+    <a href="html/AliPHOSIndexToObject.html">AliPHOSIndexToObject</a>:
+    <pre class="code">
+     // initialization
+          // open root file
+     TFile rootfile("junk.root") ;               
+          // get AliRun object
+     gAlice = (AliRun *)rootfile.Get("gAlice") ;
+          // get detector object
+     AliPHOSv0 * phos = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
+          // get the geometry associated with the detector
+     AliPHOSGeometry::GetInstance( phos->GetGeometry()->GetName(), phos->GetGeometry()->GetTitle() ) ; 
+          // initializes the index to object converter
+     AliPHOSIndexToObject::GetInstance(phos) ;
+          // get the reconstructed particles list
+     Int_t evt = 123 ; 
+     TClonesArray * recparticleslist = phos->RecParticles(evt) ; 
+     // loop over reconstructed particles
+     TIter nextrecparticle(recparticleslist) ; 
+     AliPHOSRecParticle * recparticle ;  
+       // get the pointer of the index to object converter
+     AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
+     while ( recparticle = (AliPHOSRecParticle * )nextrecparticle() ) {
+           // get the track segment ...
+         AliPHOSTrackSegment  * tracksegment  = recparticle->GetPHOSTrackSegment()  ;
+           // and print it
+	 tracksegment->Print() ;
+           // get the list of primaries ...
+	 Int_t numberofprimaries = 0 ; 
+	 Int_t * prim = recparticle->GetPrimaries(numberofprimaries) ;
+         for (Int_t i = 0 ; i < numberofprimaries ; i++ )
+           // and print them 
+	   please->GimePrimaryParticle( prim[i] )->Print()  ; 
+    }     
+     rootfile.Close() ;
+     gAlice = 0 ; 
+     phos = 0 ; 
+     recparticleslist = 0 ;
+    </pre>
+    A short cut allows to access the primaries at the origin of the reconstructed particle:
+    <pre class="code">
+     Int_t numberofprimaries = 0 ; 
+     Int_t * prim = recparticle->GetPrimariesPpsdLow(numberofprimaries) ;
+    </pre>    
 <hr>
 <address class="left">
-&copy; <a href="mailto:aphecetc@in2p3.fr">Groupe Photons Subatech</a> <a href="http://www-subatech.in2p3.fr/~photons/subatech/en_index.shtml">[Go
+&copy; <a href="mailto:schutz@in2p3.fr">Groupe Photons Subatech</a> <a href="http://www-subatech.in2p3.fr/~photons/subatech/en_index.shtml">[Go
 to the GPS Home Page]</a></address>
 
 <address class="right"> 
 <!-- Created: Tue Oct 26 19:52:56 CEST 1999 -->
 <!-- hhmts start -->
-Last modified: Wed Dec  1 18:54:10 CET 1999
+Last modified: Sun Mar 26 17:20:12 CEST 2000
 <!-- hhmts end --></address>
 
-<div align=right><a href="http://validator.w3.org/check/referer"><img SRC="vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div>
+<!-- <div align=right><a href="http://validator.w3.org/check/referer"><img SRC="images/vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="images/vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div> -->
 
 </body>
 </html>
