@@ -13,7 +13,7 @@
 class AliITSvSPD02 : public AliITS{
  public:
     AliITSvSPD02(); // default constructor
-    AliITSvSPD02(const char *title); // standard constructor
+    AliITSvSPD02(const char *title,Int_t geomnum=2002); // standard constructor
     AliITSvSPD02(const AliITSvSPD02 &source); // Copy constructor
     AliITSvSPD02& operator=(const AliITSvSPD02 &source); // = operator
     virtual ~AliITSvSPD02(); // destructor
@@ -22,7 +22,7 @@ class AliITSvSPD02 : public AliITS{
     virtual void   CreateMaterials();
     virtual Int_t  IsVersion() const {// returns the ITS version number 
                                       return 1;} 
-    virtual void   Init(); 
+    virtual void   Init();
     virtual void   SetDefaults();
     virtual void   DrawModule() const;
     virtual void   StepManager(); 
@@ -54,6 +54,11 @@ class AliITSvSPD02 : public AliITS{
          fChip2 = v;}
     // Replacement default simulation initilization.
     virtual void SetDefaultSimulation();
+    //
+  private:
+    void BuildGeometry2002();
+    void CreateGeometry2002();
+    void CreateMaterials2002();
 
  private:  
     void InitAliITSgeom();
@@ -61,6 +66,7 @@ class AliITSvSPD02 : public AliITS{
     Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
     Int_t  fMajorVersion;     // Major version number == IsVersion
     Int_t  fMinorVersion;     // Minor version number 
+    Int_t  fGeomNumber;       // Geometry version number (year)
     char   fEuclidGeomDet[60];// file where detector transormation are define.
     char   fRead[60];         //! file name to read .det file
     char   fWrite[60];        //! file name to write .det file 
@@ -70,6 +76,6 @@ class AliITSvSPD02 : public AliITS{
     Float_t  fChip2;          // thickness of chip in SPD layer 2 
     Int_t fIDMother;          //! ITS Mother Volume id.
 
-    ClassDef(AliITSvSPD02,1) // Hits manager and geometry for SPD testbeam
+    ClassDef(AliITSvSPD02,2) // Hits manager and geometry for SPD testbeam
 };
 #endif

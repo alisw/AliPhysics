@@ -114,7 +114,7 @@ void Config(){
     } // end if
     if(iITS) {
 	//=================== ITS parameters ============================
-	AliITSvSPD02 *ITS  = new AliITSvSPD02("SPD test beam 2002");
+	AliITSvSPD02 *ITS  = new AliITSvSPD02("SPD test beam 2002",2002);
     }
     return;
 }
