@@ -5,6 +5,13 @@
 
 /* $Id$ */
 
+////////////////////////////////////////////////////////////////////////
+// This class is for the Silicon Strip Detector, SSD, specific geometry.
+// It is being replaced by AliITSsegmentationSSD class. This file also
+// constains classes derived from AliITSgeomSSD which do nothing but
+// initilize this one with predefined values.
+////////////////////////////////////////////////////////////////////////
+
 #include <TObject.h>
 #include <TBRIK.h>
 

@@ -8,6 +8,12 @@
 #include <TObject.h>
 #include <TBRIK.h>
 
+////////////////////////////////////////////////////////////////////////
+// This class is for the Silicon Pixel Detector, SPD, specific geometry.
+// It is being replaced by AliITSsegmentationSPD class. This file also
+// constains classes derived from AliITSgeomSPD which do nothing but
+// initilize this one with predefined values.
+////////////////////////////////////////////////////////////////////////
 
 class TShape;
 

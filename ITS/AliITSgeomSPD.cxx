@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry 
+tree for the ITS pixels. This fixes both the funny distribution of pixel 
+coordinates and the missing hits/digits/points in many sectors of the ITS 
+pixel barrel. Also included is a patch to properly get and use the detector 
+dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/04/26 22:44:34  nilsen
 Bug fix.
 
@@ -29,6 +36,13 @@ set up for new formatted .det file which includes detector information.
 Additional smaller modifications are still to come.
 
 */
+
+////////////////////////////////////////////////////////////////////////
+// This class is for the Silicon Pixel Detector, SPD, specific geometry.
+// It is being replaced by AliITSsegmentationSPD class. This file also
+// constains classes derived from AliITSgeomSPD which do nothing but
+// initilize this one with predefined values.
+////////////////////////////////////////////////////////////////////////
 
 #include <iostream.h>
 #include <iomanip.h>
@@ -218,6 +232,9 @@ istream &operator>>(istream &is,AliITSgeomSPD &r){
 
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/04/26 22:44:34  nilsen
 Bug fix.
 
@@ -315,6 +332,9 @@ istream &operator>>(istream &is,AliITSgeomSPD300 &r){
 //=====================================================================
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/04/26 22:44:34  nilsen
 Bug fix.
 
@@ -368,11 +388,11 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(Int_t npar,Float_t *par) :
 // micron pixels (large detector).
 ////////////////////////////////////////////////////////////////////////
 
-    const Float_t kdx=0.6400,kdy=0.015,kdz=3.480;   // cm; Standard pixel
-                                                    // detector size is 2dx
-                                                    //  wide, 2dz long, and
-                                                    //  2dy thick. Geant 3.12
-                                                    // units.
+    const Float_t kdx=0.6400/*,kdy=0.015*/,kdz=3.480; // cm; Standard pixel
+                                                      // detector size is 2dx
+                                                      //  wide, 2dz long, and
+                                                      //  2dy thick. Geant 3.12
+                                                      // units.
     const Float_t kbinx0 = 0.0050; // cm; Standard pixel size in x direction.
     const Int_t   knbinx = 256;    // number of pixels along x direction.
     const Float_t kbinz0 = 0.0425; // cm; Standard pixel size in z direction.
@@ -442,6 +462,9 @@ istream &operator>>(istream &is,AliITSgeomSPD425Short &r){
 
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/04/26 22:44:34  nilsen
 Bug fix.
 

@@ -4,6 +4,15 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
+
+////////////////////////////////////////////////////////////////////////
+// This class is for the Silicon Drift Detector, SDD, specific geometry.
+// It is being replaced by AliITSsegmentationSDD class. This file also
+// constains classes derived from AliITSgeomSDD which do nothing but
+// initilize this one with predefined values.
+////////////////////////////////////////////////////////////////////////
+
 #include <TObject.h>
 #include <TBRIK.h>
 
@@ -91,7 +100,7 @@ class AliITSgeomSDD256 : public AliITSgeomSDD {
 
  public:
     AliITSgeomSDD256();
-    AliITSgeomSDD256(Int_t npar,Float_t *par);
+    AliITSgeomSDD256(Int_t npar,const Float_t *par);
 
     // This clas now has version 0 so that it will not be written to a root
     // file. This is good since there are no longer any data members to this

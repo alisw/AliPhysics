@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -45,6 +48,14 @@ Revision 1.2  1999/09/29 09:24:20  fca
 Introduction of the Copyright and cvs Log
 
 */
+
+////////////////////////////////////////////////////////////////////////
+// This class is for the Silicon Strip Detector, SSD, specific geometry.
+// It is being replaced by AliITSsegmentationSSD class. This file also
+// constains classes derived from AliITSgeomSSD which do nothing but
+// initilize this one with predefined values.
+////////////////////////////////////////////////////////////////////////
+
 #include <iostream.h>
 #include <iomanip.h>
 #include <stdlib.h>
@@ -161,6 +172,14 @@ AliITSgeomSSD& AliITSgeomSSD::operator=(const AliITSgeomSSD &source) {
 }
 //______________________________________________________________________
 void AliITSgeomSSD::Local2Det(Float_t x,Float_t z,Int_t &a,Int_t &c){
+    // Given a GEANT detector local coordinate, cm, this function returns
+    // the detector specific P and N side strip numbers.
+    // Inputs are:
+    // Float_t x   Geant detector local x coordinate in cm
+    // Float_t z   Geant detector local z coordinate in cm
+    // outputs are:
+    // Int_t &a    Detector anode strip number (P side)
+    // Int_t &c    Detector cathode strip number (N side)
     Float_t d,b;
     Int_t i;
 
@@ -253,6 +272,9 @@ istream &operator>>(istream &is,AliITSgeomSSD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -321,6 +343,9 @@ istream &operator>>(istream &is,AliITSgeomSSD175 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -345,6 +370,10 @@ AliITSgeomSSD275and75::AliITSgeomSSD275and75() : AliITSgeomSSD(){
 //----------------------------------------------------------------------
 AliITSgeomSSD275and75::AliITSgeomSSD275and75(Int_t npar,Float_t *par) : 
                                                             AliITSgeomSSD(){
+    // Default constructor for AliITSgeomSSD with strip angles of
+    // 275 miliradians and 75 miliradians. This constructor initlizes
+    // AliITSgeomSSD with the correct values. This is the miror image
+    // of the AliITSgeomSSD75and275 class.
     const Float_t kDxyz[] ={3.6500,0.0150,2.000};//cm. (Geant 3.12 units)
     // Size of sensitive detector area x,y(thickness),z
     const Float_t kangleA  = 0.0275; // angle in rad. of anode and cathodes
@@ -394,6 +423,9 @@ istream &operator>>(istream &is,AliITSgeomSSD275and75 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -416,6 +448,10 @@ AliITSgeomSSD75and275::AliITSgeomSSD75and275() : AliITSgeomSSD(){
 }
 AliITSgeomSSD75and275::AliITSgeomSSD75and275(Int_t npar,Float_t *par) : 
                                                             AliITSgeomSSD(){
+    // Default constructor for AliITSgeomSSD with strip angles of
+    // 75 miliradians and 275 miliradians. This constructor initlizes
+    // AliITSgeomSSD with the correct values. This is the miror image
+    // of the AliITSgeomSSD275and75 class.
     const Float_t kDxyz[] ={3.6500,0.0150,2.000};//cm. (Geant 3.12 units)
     // Size of sensitive detector area x,y(thickness),z
     const Float_t kangleA  = 0.0075; // angle in rad. of anode and cathodes

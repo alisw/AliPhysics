@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry 
+tree for the ITS pixels. This fixes both the funny distribution of pixel 
+coordinates and the missing hits/digits/points in many sectors of the ITS 
+pixel barrel. Also included is a patch to properly get and use the detector 
+dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -45,11 +52,18 @@ Revision 1.2  1999/09/29 09:24:20  fca
 Introduction of the Copyright and cvs Log
 
 */
+
+////////////////////////////////////////////////////////////////////////
+// This class is for the Silicon Drift Detector, SDD, specific geometry.
+// It is being replaced by AliITSsegmentationSDD class. This file also
+// constains classes derived from AliITSgeomSDD which do nothing but
+// initilize this one with predefined values.
+////////////////////////////////////////////////////////////////////////
+
 #include <iostream.h>
 #include <iomanip.h>
 #include <stdlib.h>
 #include <TShape.h>
-#include <TBRIK.h>
 
 #include "AliITSgeomSDD.h"
 
@@ -288,6 +302,9 @@ istream &operator>>(istream &is,AliITSgeomSDD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -310,7 +327,8 @@ AliITSgeomSDD256::AliITSgeomSDD256() : AliITSgeomSDD(){
     // Default Constructor
 }
 //----------------------------------------------------------------------
-AliITSgeomSDD256::AliITSgeomSDD256(Int_t npar,Float_t *par) : AliITSgeomSDD(){
+AliITSgeomSDD256::AliITSgeomSDD256(Int_t npar,const Float_t *par) : 
+    AliITSgeomSDD(){
 ////////////////////////////////////////////////////////////////////////
 //    constructor
 /*
@@ -704,7 +722,7 @@ _____________________________________________
 #R              (37779, 35085), pad size (184, 140)
 */
 ////////////////////////////////////////////////////////////////////////
-    const Float_t kDxyz[]   = {3.6250,0.01499,4.3794};//cm. (Geant 3.12 units)
+//   const Float_t kDxyz[]   = {3.6250,0.01499,4.3794};//cm. (Geant 3.12 units)
                                       // Size of sensitive region of detector
     const Float_t kPeriod   = 25.0E-09; // 40 MHz sampling frequence
     const Float_t kVelocity = 5.46875E+03; // cm/s drift velocity
@@ -713,15 +731,15 @@ _____________________________________________
     const Int_t   kNAnodes  = 256;  // nuber of anodes connected
     const Float_t kAnodePitch = 0.0294; // cm
     const Float_t kAnodesZ  = -3.7485; // cm Starting location of anodes in z
-    Float_t AnodeLowEdges[kNAnodes+1];
+    Float_t anodeLowEdges[kNAnodes+1];
     Int_t i;
 
 //    cout << "AliITSgeomSDD256 default creator called: start" << end;
-    AnodeLowEdges[0] = kAnodesZ;
-    for(i=0;i<kNAnodes;i++) AnodeLowEdges[i+1] = kAnodePitch+AnodeLowEdges[i];
+   anodeLowEdges[0] = kAnodesZ;
+    for(i=0;i<kNAnodes;i++)anodeLowEdges[i+1] = kAnodePitch+anodeLowEdges[i];
     AliITSgeomSDD::ResetSDD(par,kPeriod,kVelocity,kAnodeXL,kAnodeXR,
-			    kNAnodes+1,AnodeLowEdges,
-			    kNAnodes+1,AnodeLowEdges);
+			    kNAnodes+1,anodeLowEdges,
+			    kNAnodes+1,anodeLowEdges);
 //    cout << "AliITSgeomSDD256 default creator called: end" << endl;
 }
 //________________________________________________________________________
@@ -745,6 +763,9 @@ istream &operator>>(istream &is,AliITSgeomSDD256 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.11  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.10  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -774,16 +795,16 @@ AliITSgeomSDD300::AliITSgeomSDD300() : AliITSgeomSDD(){
     const Float_t kAnodeXL = -3.500; // cm
     const Float_t kAnodeXR = +3.500; // cm
     const Float_t kAnodesZ = -3.75; // cm
-    Float_t AnodeLowEdges[kNAnodes+1];
+    Float_t anodeLowEdges[kNAnodes+1];
     const Float_t kanode = 0.0250;// cm anode separation.
     Int_t i;
 
 //    cout << "AliITSgeomSDD300 default creator called: start" << endl;
-    AnodeLowEdges[0] = kAnodesZ;
-    for(i=0;i<kNAnodes;i++) AnodeLowEdges[i+1] = kanode+AnodeLowEdges[i];
+   anodeLowEdges[0] = kAnodesZ;
+    for(i=0;i<kNAnodes;i++)anodeLowEdges[i+1] = kanode+anodeLowEdges[i];
     AliITSgeomSDD::ResetSDD(kDxyz,kPeriod,kVelocity,kAnodeXL,kAnodeXR,
-			    kNAnodes+1,AnodeLowEdges,
-			    kNAnodes+1,AnodeLowEdges);
+			    kNAnodes+1,anodeLowEdges,
+			    kNAnodes+1,anodeLowEdges);
 //    cout << "AliITSgeomSDD300 default creator called: end" << endl;
 }
 //________________________________________________________________________

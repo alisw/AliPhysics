@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.9  2001/03/23 15:21:56  nilsen
+Added Cylinderical Coordinates for use with Tracking. Fixed a but in the
+Streamer, It was not setting a value for frot[3] as it should when reading.
+
 Revision 1.8  2001/02/09 00:00:57  nilsen
 Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
 bugs in iostream based streamers used to read and write .det files. Fixed
@@ -50,6 +54,17 @@ Revision 1.1.2.1  2000/06/04 16:32:31  Nilsen
 A new class to hold the matrix information needed by AliITSgeom.
 
 */
+
+////////////////////////////////////////////////////////////////////////
+// This is the implementation file for AliITSgeomMatrix class. It 
+// contains the routines to manipulate, setup, and queary the geometry 
+// of a given ITS module. An ITS module may be one of at least three
+// ITS detector technologies, Silicon Pixel, Drift, or Strip Detectors,
+// and variations of these in size and/or layout. These routines let
+// one go between ALICE global coordiantes (cm) to a given modules 
+// specific local coordinates (cm).
+////////////////////////////////////////////////////////////////////////
+
 #include <iostream.h>
 #include <iomanip.h>
 #include <TMath.h>
@@ -400,7 +415,7 @@ void AliITSgeomMatrix::LtoGMomentum(const Double_t l[3],Double_t g[3]){
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLPositionError(Double_t g[3][3],
+void AliITSgeomMatrix::GtoLPositionError(const Double_t g[3][3],
                                                Double_t l[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // Given an Uncertainty matrix in Global coordinates it is rotated so that 
@@ -415,7 +430,7 @@ void AliITSgeomMatrix::GtoLPositionError(Double_t g[3][3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::LtoGPositionError(Double_t l[3][3],
+void AliITSgeomMatrix::LtoGPositionError(const Double_t l[3][3],
                                                Double_t g[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // Given an Uncertainty matrix in Local coordinates it is rotated so that 
@@ -555,7 +570,7 @@ void AliITSgeomMatrix::LtoGMomentumTracking(const Double_t l[3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLPositionErrorTracking(Double_t g[3][3],
+void AliITSgeomMatrix::GtoLPositionErrorTracking(const Double_t g[3][3],
 						 Double_t l[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
@@ -571,21 +586,21 @@ void AliITSgeomMatrix::GtoLPositionErrorTracking(Double_t g[3][3],
 //End_Html
 ////////////////////////////////////////////////////////////////////////
 	Int_t    i,j,k,m;
-	Double_t Rt[3][3];
-	Double_t A0[3][3] = {{0.,+1.,0.},{-1.,0.,0.},{0.,0.,+1.}};
-	Double_t A1[3][3] = {{0.,-1.,0.},{+1.,0.,0.},{0.,0.,+1.}};
+	Double_t rt[3][3];
+	Double_t a0[3][3] = {{0.,+1.,0.},{-1.,0.,0.},{0.,0.,+1.}};
+	Double_t a1[3][3] = {{0.,-1.,0.},{+1.,0.,0.},{0.,0.,+1.}};
 
 	if(fid[0]==1) for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)
-	    Rt[i][k] = A0[i][j]*fm[j][k];
+	    rt[i][k] = a0[i][j]*fm[j][k];
 	else for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)
-	    Rt[i][k] = A1[i][j]*fm[j][k];
+	    rt[i][k] = a1[i][j]*fm[j][k];
 	for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)for(m=0;m<3;m++)
-		l[i][m] = Rt[j][i]*g[j][k]*Rt[k][m];
+		l[i][m] = rt[j][i]*g[j][k]*rt[k][m];
 		// g = R^t l R
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::LtoGPositionErrorTracking(Double_t l[3][3],
+void AliITSgeomMatrix::LtoGPositionErrorTracking(const Double_t l[3][3],
 						 Double_t g[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
@@ -601,16 +616,16 @@ void AliITSgeomMatrix::LtoGPositionErrorTracking(Double_t l[3][3],
 //End_Html
 ////////////////////////////////////////////////////////////////////////
 	Int_t    i,j,k,m;
-	Double_t Rt[3][3];
-	Double_t A0[3][3] = {{0.,+1.,0.},{-1.,0.,0.},{0.,0.,+1.}};
-	Double_t A1[3][3] = {{0.,-1.,0.},{+1.,0.,0.},{0.,0.,+1.}};
+	Double_t rt[3][3];
+	Double_t a0[3][3] = {{0.,+1.,0.},{-1.,0.,0.},{0.,0.,+1.}};
+	Double_t a1[3][3] = {{0.,-1.,0.},{+1.,0.,0.},{0.,0.,+1.}};
 
 	if(fid[0]==1) for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)
-	    Rt[i][k] = A0[i][j]*fm[j][k];
+	    rt[i][k] = a0[i][j]*fm[j][k];
 	else for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)
-	    Rt[i][k] = A1[i][j]*fm[j][k];
+	    rt[i][k] = a1[i][j]*fm[j][k];
 	for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)for(m=0;m<3;m++)
-		g[i][m] = Rt[i][j]*l[j][k]*Rt[m][k];
+		g[i][m] = rt[i][j]*l[j][k]*rt[m][k];
 		// g = R l R^t
 	return;
 }
