@@ -2,6 +2,7 @@
 #include "AliL3FileHandler.h"
 #include "AliL3DigitData.h"
 #include "AliL3Transform.h"
+#include "MakePileup.h"
 #include <stdio.h>
 #include <iostream.h>
 
@@ -9,7 +10,7 @@ void QSort(AliL3DigitData **a,Int_t first,Int_t last);
 Int_t CompareDigits(AliL3DigitData *a,AliL3DigitData *b);
 #endif
 
-void Read2(Int_t triggerevent)
+void MakePileup(Int_t triggerevent)
 {
   Int_t srow[2] = {0,175};
   UInt_t size;
