@@ -36,18 +36,22 @@ SRCS +=  \
 	 mapping/AliMpFiles.cxx  \
 	 mapping/AliMpNeighboursPadIterator.cxx  \
 	 mapping/AliMpPadRow.cxx  \
-	 mapping/AliMpPadRowSegment.cxx  \
+	 mapping/AliMpPadRowLSegment.cxx  \
+	 mapping/AliMpPadRowRSegment.cxx  \
 	 mapping/AliMpReader.cxx  \
 	 mapping/AliMpRow.cxx  \
 	 mapping/AliMpRowSegment.cxx  \
-	 mapping/AliMpRowSegmentSpecial.cxx  \
+	 mapping/AliMpRowSegmentLSpecial.cxx  \
+	 mapping/AliMpRowSegmentRSpecial.cxx  \
 	 mapping/AliMpSectorAreaHPadIterator.cxx  \
 	 mapping/AliMpSectorAreaVPadIterator.cxx  \
 	 mapping/AliMpSector.cxx  \
 	 mapping/AliMpSectorPadIterator.cxx  \
 	 mapping/AliMpSectorSegmentation.cxx  \
 	 mapping/AliMpSubZone.cxx  \
+	 mapping/AliMpVPadRowSegment.cxx  \
 	 mapping/AliMpVRowSegment.cxx  \
+	 mapping/AliMpVRowSegmentSpecial.cxx  \
 	 mapping/AliMpZone.cxx  \
 
 # Category plane

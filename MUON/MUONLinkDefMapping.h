@@ -13,6 +13,7 @@
 #pragma link C++ class  AliMpTransformPadIterator+;
 
 #pragma link C++ enum   AliMpDirection;
+#pragma link C++ enum   AliMpXDirection;
 
 
 #pragma link C++ function operator-(const AliMpIntPair& ,const AliMpIntPair& );
@@ -48,12 +49,17 @@
 #pragma link C++ class  AliMpSubZone+;
 #pragma link C++ class  AliMpRow+;
 #pragma link C++ class  AliMpVRowSegment+;
+#pragma link C++ class  AliMpVRowSegmentSpecial+;
 #pragma link C++ class  AliMpRowSegment+;
-#pragma link C++ class  AliMpRowSegmentSpecial+;
+#pragma link C++ class  AliMpRowSegmentLSpecial+;
+#pragma link C++ class  AliMpRowSegmentRSpecial+;
 #pragma link C++ class  AliMpPadRow+;
-#pragma link C++ class  AliMpPadRowSegment+;
+#pragma link C++ class  AliMpVPadRowSegment+;
+#pragma link C++ class  AliMpPadRowLSegment+;
+#pragma link C++ class  AliMpPadRowRSegment+;
 
 #pragma link C++ enum   AliMpPlaneType;
+#pragma link C++ enum   AliMpStationType;
 
 // $Id$ 
 
