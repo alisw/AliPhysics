@@ -29,7 +29,8 @@
 //  
 //  AliL3MemHandler file;
 //  file.SetBinaryInput(filename);
-//  
+//  file.Init(slice,patch);
+//
 //  UInt_t nrowss;
 //  AliL3DigitRowData *data = file.CompBinary2Memory(nrowss);
 //  
@@ -39,10 +40,10 @@
 //    AliL3DigitData *dataPt = (AliL3DigitData*)data->fDigitData;
 //    for(int j=0; j<data->fNDigit; j++) 
 //      {
-//      pad = dataPt[j].fPad;
-//      time = dataPt[j].fTime;
-//      charge = dataPt[j].fCharge;
-//     }
+//        pad = dataPt[j].fPad;
+//        time = dataPt[j].fTime;
+//        charge = dataPt[j].fCharge;
+//      }
 //     
 //    file.UpdateRowPointer(data);
 //  
@@ -58,6 +59,7 @@
 //  //into a new file, you can do the following:
 //  
 //  AliL3MemHandler newfile;
+//  newfile.Init(slice,patch);
 //  newfile.SetBinaryOutput(newfilename);
 //  newfile.Memory2CompBinary((UInt_t)NumberOfRowsInPatch,(AliL3DigitRowData*)data);
 //  newfile.CloseBinaryOutput();

@@ -40,6 +40,7 @@
 // For reading a AliROOT file into HLT format in memory, do the following:
 //
 // AliL3FileHandler file;
+// file.Init(slice,patch);
 // file.SetAliInput("galice.root");
 // AliL3DigitRowData *dataPt = (AliL3DigitRowData*)file.AliDigits2Memory(nrows,eventnr);
 // 
@@ -49,6 +50,7 @@
 // For converting the data back, and writing it to a new AliROOT file do:
 //
 // AliL3FileHandler file;
+// file.Init(slice,patch);
 // file.SetAliInput("galice.root");
 // file.Init(slice,patch,NumberOfRowsInPatch);
 // file.AliDigits2RootFile(dataPt,"new_galice.root");
