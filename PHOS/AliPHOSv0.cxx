@@ -55,13 +55,12 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
  
   // gets an instance of the geometry parameters class  
    
-  fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
-
-  if (fGeom->IsInitialized() ) 
+  if (strcmp(title,"") != 0 ) 
+    fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
+  if (fGeom!=0)  
     cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
   else
     cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
-
 }
 
 //____________________________________________________________________________

@@ -23,11 +23,10 @@ class AliPHOSv0 : public AliPHOS {
 
 public:
 
-  AliPHOSv0(void){
-    // ctor
-  } 
+  AliPHOSv0() {
+    //ctor
+  }
   AliPHOSv0(const char *name, const char *title="") ;
-  AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
   AliPHOSv0(const AliPHOSv0 & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
@@ -37,16 +36,29 @@ public:
     // dtor
   } 
 
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
+    // useless since there are no hits
+    assert(0==1) ; 
+  }
   virtual void   BuildGeometry(void) ;                              // creates the geometry for the ROOT display
   void           BuildGeometryforPHOS(void) ;                       // creates the PHOS geometry for the ROOT display
   void           BuildGeometryforPPSD(void) ;                       // creates the PPSD geometry for the ROOT display
   virtual void   CreateGeometry(void) ;                             // creates the geometry for GEANT
   void           CreateGeometryforPHOS(void) ;                      // creates the PHOS geometry for GEANT
   void           CreateGeometryforPPSD(void) ;                      // creates the PPSD geometry for GEANT
-  virtual AliPHOSGeometry * GetGeometry() { return fGeom ; }  
+  virtual AliPHOSGeometry * GetGeometry() {
+    // gets the pointer to the AliPHOSGeometry unique instance  
+    return fGeom ; 
+  }  
   virtual void   Init(void) ;                                       // does nothing
-  Int_t IsVersion(void) const { return 0 ; }
-  virtual TString Version(void){ return TString("v0"); }
+  Int_t IsVersion(void) const { 
+    // Gives the version number 
+    return 0 ; 
+  }
+  virtual TString Version(void){ 
+    // As above
+    return TString("v0") ; 
+  }
   
   AliPHOSv0 & operator = (const AliPHOSv0 & rvalue)  {
     // assignement operator requested by coding convention

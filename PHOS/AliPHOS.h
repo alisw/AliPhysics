@@ -25,7 +25,10 @@ class AliPHOS : public AliDetector {
 
  public:
 
-  AliPHOS(const char* name="PHOS", const char* title=""): AliDetector(name,title) {
+  AliPHOS() {
+    // ctor  
+  } 
+  AliPHOS(const char* name, const char* title=""): AliDetector(name,title) {
     // ctor  
   } 
   AliPHOS(const AliPHOS & phos) {
