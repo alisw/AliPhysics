@@ -5,36 +5,32 @@
 
 #include "AliTrackingAction.h"
 #include "AliTrackingActionMessenger.h"
+#include "AliTrackInformation.h"
 #include "AliRun.h"
 #include "AliGlobals.h"  
 #include "TG4StepManager.h"
 #include "TG4PhysicsManager.h"
 
-#include <G4TrackingManager.hh>
 #include <G4Track.hh>
+#include <G4TrackVector.hh>
+#include <G4VUserTrackInformation.hh>
+#include <G4TrackingManager.hh>
+#include <G4SteppingManager.hh>
 
+/*
 #include <TTree.h>
 #include <TParticle.h>
 #include <TClonesArray.h>
+*/
 
 // static data members
 AliTrackingAction* AliTrackingAction::fgInstance = 0;
 
-// static methods
-AliTrackingAction* AliTrackingAction::Instance() {
-// 
-  return fgInstance; 
-}
-
 AliTrackingAction::AliTrackingAction()
-  : fParticles(0),
-    fPrimaryTrackID(0),
+  : fPrimaryTrackID(0),
     fVerboseLevel(2),
     fSavePrimaries(true),
-    fPrimariesCounter(0),
-    fParticlesCounter(0),
-    fTrackCounter(0),
-    fLastParticleIndex(-1)
+    fTrackCounter(0)
 {
 //
   if (fgInstance) { 
@@ -68,6 +64,29 @@ AliTrackingAction::operator=(const AliTrackingAction &right)
   return *this;
 }
 
+// private methods
+
+AliTrackInformation* AliTrackingAction::GetTrackInformation(
+                                           const G4Track* track,
+                                           const G4String& method) const
+{
+// Returns user track information.
+// ---
+ 
+  G4VUserTrackInformation* trackInfo = track->GetUserInformation();
+  if (!trackInfo) return 0;  
+
+  AliTrackInformation* aliTrackInfo
+    = dynamic_cast<AliTrackInformation*>(trackInfo);
+  if (!aliTrackInfo) { 
+     G4String text = "AliTrackingAction::" + method + ":\n";
+     text = text + "   Unknown track information type";
+     AliGlobals::Exception(text);
+  }
+  
+  return aliTrackInfo;
+}    
+  
 // public methods
 
 void AliTrackingAction::PrepareNewEvent()
@@ -77,23 +96,9 @@ void AliTrackingAction::PrepareNewEvent()
 
   fTrackCounter = 0;
 
-  // aliroot
-  if (!fParticles) fParticles = gAlice->Particles();
-
-  // set the particles and primaries counter to the
-  // number of tracks already stored in AliRun::fParticles
-  // (fParticles can already contain primary particles
-  //  saved by AliGenerator)
-  G4int nofTracks = gAlice->GetNtrack();
-  fPrimariesCounter = nofTracks;
-  fParticlesCounter = nofTracks;
-  fLastParticleIndex = nofTracks-1;
-
   // set g4 stepping manager pointer
-  G4SteppingManager* pG4StepManager 
-    = fpTrackingManager->GetSteppingManager();
-  TG4StepManager* pStepManager = TG4StepManager::Instance();
-  pStepManager->SetSteppingManager(pG4StepManager);
+  TG4StepManager* stepManager = TG4StepManager::Instance();
+  stepManager->SetSteppingManager(fpTrackingManager->GetSteppingManager());
 }
 
 void AliTrackingAction::PreTrackingAction(const G4Track* aTrack)
@@ -101,31 +106,46 @@ void AliTrackingAction::PreTrackingAction(const G4Track* aTrack)
 // Called by G4 kernel before starting tracking.
 // ---
 
-  // aliroot
   // track index in the particles array
   G4int trackID = aTrack->GetTrackID();
   G4int parentID = aTrack->GetParentID();
   Int_t trackIndex;
   if (parentID==0) { 
-    trackIndex = trackID; 
+    // in AliRoot (from V3.0) track numbering starts from 0
+    trackIndex = trackID-1; 
   } 
   else { 
-    trackIndex = GetNofSavedTracks(); 
+    trackIndex = gAlice->GetNtrack();
   }
+  
+  // set track index to track information
+  AliTrackInformation* trackInfo
+    = GetTrackInformation(aTrack, "PreTrackingAction");
+  if (!trackInfo) {
+    // create track information and set it to G4Track
+    // if it does not yet exist
+    trackInfo = new AliTrackInformation(trackIndex);
+    fpTrackingManager->SetUserTrackInformation(trackInfo);
+        // the track information is deleted together with its
+        // G4Track object  
+  }
+  else
+    trackInfo->SetTrackParticleID(trackIndex);	
 
-  // in AliRoot (from V3.0) track numbering starts from 0
-  gAlice->SetCurrentTrack(--trackIndex);
+  // set current track number
+  gAlice->SetCurrentTrack(trackIndex);
 
   if (parentID == 0) {  
-    // save primary track
-    SaveAndDestroyTrack();
+    // finish previous primary track
+    FinishPrimaryTrack();
     fPrimaryTrackID = aTrack->GetTrackID();
   }
   else { 
     // save secondary particles info 
-    SaveParticle(aTrack);
+    SaveTrack(aTrack);
   }
   
+  // aliroot pre track actions
   gAlice->PreTrack();
 }
 
@@ -135,11 +155,42 @@ void AliTrackingAction::PostTrackingAction(const G4Track* aTrack)
 // ---
 
   fTrackCounter++;
+  
+  // set parent track particle index to all secondary tracks 
+  G4TrackVector* secondaryTracks 
+    = fpTrackingManager->GetSteppingManager()->GetSecondary();
+  if (secondaryTracks){
+    G4int i;
+    for (i=0; i<secondaryTracks->entries(); i++) {
+      G4Track* track = (*secondaryTracks)[i]; 
 
+      if (track->GetUserInformation()) {
+        // this should never happen
+	G4String text = "AliTrackingAction::PostTrackingAction:\n";
+	text = text + "    Inconsistent track information."; 
+        AliGlobals::Exception(text);
+      }	
+      
+      // get parent track index
+      AliTrackInformation* aliParentInfo
+        = GetTrackInformation(aTrack, "PostTrackingAction");
+      G4int parentParticleID 
+        = aliParentInfo->GetTrackParticleID();
+
+      // create track information and set it to the G4Track
+      AliTrackInformation* trackInfo 
+        = new AliTrackInformation(-1, parentParticleID);
+      track->SetUserInformation(trackInfo);
+        // the track information is deleted together with its
+        // G4Track object  
+    } 	
+  }
+      
+  // aliroot post track actions
   gAlice->PostTrack();
 }
 
-void AliTrackingAction::SaveAndDestroyTrack()
+void AliTrackingAction::FinishPrimaryTrack()
 {
 // Calls AliRun::PurifyKine and fills trees of hits
 // after finishing tracking of each primary track.
@@ -147,80 +198,55 @@ void AliTrackingAction::SaveAndDestroyTrack()
 // for storing the last primary track of the current event.
 // --- 
 
-  if (fPrimaryTrackID>0)
-  {
-     if (fVerboseLevel == 3) { 
-       G4cout << "$$$ Primary track " << fPrimaryTrackID << G4endl;
-     } 
-     else if ( fVerboseLevel == 2 &&  fPrimaryTrackID % 10 == 0 ) {
-         G4cout << "$$$ Primary track " << fPrimaryTrackID  << G4endl;
-     } 
-     else if ( fVerboseLevel == 1 &&  fPrimaryTrackID % 100 == 0 ) {
-         G4cout << "$$$ Primary track " << fPrimaryTrackID  << G4endl;
-     } 
-     
-     // aliroot
-     G4int lastSavedTrack 
-       = gAlice->PurifyKine(fLastParticleIndex, fParticlesCounter);
-     G4int nofPuredSavedTracks 
-       = gAlice->GetNtrack();
-     fLastParticleIndex = lastSavedTrack;
-     fParticlesCounter = nofPuredSavedTracks;
+  if (fPrimaryTrackID>0) {
 
-     if(gAlice->TreeH()) gAlice->TreeH()->Fill();
-     gAlice->ResetHits();
-   }
-   else { 
-     fLastParticleIndex = fPrimariesCounter-1; 
-   }
-   fPrimaryTrackID = 0;
+    // verbose
+    if (fVerboseLevel == 3) { 
+      G4cout << "$$$ Primary track " << fPrimaryTrackID << G4endl;
+    } 
+    else if ( fVerboseLevel == 2 &&  fPrimaryTrackID % 10 == 0 ) {
+      G4cout << "$$$ Primary track " << fPrimaryTrackID  << G4endl;
+    } 
+    else if ( fVerboseLevel == 1 &&  fPrimaryTrackID % 100 == 0 ) {
+      G4cout << "$$$ Primary track " << fPrimaryTrackID  << G4endl;
+    } 
+
+    // aliroot finish primary track         
+    gAlice->FinishPrimary();
+  }
+  fPrimaryTrackID = 0;
 }  
 
-void AliTrackingAction::SaveParticle(const G4Track* track)
+void AliTrackingAction::SaveTrack(const G4Track* track)
 {
-// Converts G4track to TParticle and saves it in AliRun::fParticles
-// array.
+// Get all needed parameters from G4track and pass them
+// to AliRun::SetTrack() that creates corresponding TParticle
+// in the AliRun::fParticles array.
 // ----
 
-  fParticlesCounter++;
-
-  // track history
-  G4int firstDaughter = -1; 
-  G4int lastDaughter = -1;      
+  // parent particle index 
   G4int parentID = track->GetParentID();
-  G4int motherIndex1;
-  G4int motherIndex2 = -1;
+  G4int motherIndex;
   if (parentID == 0) { 
-    motherIndex1 = -1; 
-    fPrimariesCounter++;    
+    motherIndex = -1; 
   }
   else {
-    // set first/last child for already defined particles
-    motherIndex1 = GetParticleIndex(parentID);
-    // aliroot
-    TParticle* parent 
-      = dynamic_cast<TParticle*>(fParticles->UncheckedAt(motherIndex1));
-    if (parent) {  
-      if (parent->GetFirstDaughter()<0) 
-        parent->SetFirstDaughter(fParticlesCounter);
-      parent->SetLastDaughter(fParticlesCounter);
-    }
-    else {
-      AliGlobals::Exception(
-        "AliTrackingAction::SaveParticle: Unknown particle type");
-    }   	
-  };
+    motherIndex 
+      = GetTrackInformation(track,"SaveTrack")->GetParentParticleID();
+  }
      
-  // ?? status of particle 
-  // temporarily used for storing trackID from G4
-  G4int ks = track->GetTrackID();
-   
-  // particle type
-  // is this G3 ekvivalent ?? - check
+  //G4cout << "SaveTrack: TrackID = " << track->GetTrackID()
+  //       << "  Parent ID = " << track->GetParentID() 
+  //       << "  Index = " << gAlice->CurrentTrack() 
+  //       << "  Parent Index = " << motherIndex
+  //       << G4endl;
+
+  // PDG code
   G4int pdg = track->GetDefinition()->GetPDGEncoding();
 
-  // track kinematics
+  // track kinematics  
   G4ThreeVector momentum = track->GetMomentum(); 
+  
   G4double px = momentum.x()/GeV;
   G4double py = momentum.y()/GeV;
   G4double pz = momentum.z()/GeV;
@@ -238,17 +264,7 @@ void AliTrackingAction::SaveParticle(const G4Track* track)
   G4double polY = polarization.y();
   G4double polZ = polarization.z();
 
-  // create TParticle
-  TClonesArray& theCollectionRef = *fParticles;
-  G4int nofParticles = theCollectionRef.GetEntriesFast();
-  TParticle* particle 
-   = new(theCollectionRef[nofParticles]) 
-       TParticle(pdg, ks, motherIndex1, motherIndex1, 
-         firstDaughter, lastDaughter, px, py, pz, e, vx, vy, vz, t);
-  particle->SetPolarisation(polX, polY, polZ);
-  particle->SetBit(kKeepBit, false); 
-  
-  // set production process
+  // production process
   AliMCProcess mcProcess;  
   const G4VProcess* kpProcess = track->GetCreatorProcess();
   if (!kpProcess) {
@@ -260,26 +276,11 @@ void AliTrackingAction::SaveParticle(const G4Track* track)
     // distinguish kPDeltaRay from kPEnergyLoss  
     if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
   }  
-  particle->SetUniqueID(mcProcess);  
+  
+  G4int ntr;
+  // create particle 
+  gAlice->SetTrack(1, motherIndex, pdg, px, py, pz, e, vx, vy, vz, t,
+                   polX, polY, polZ, mcProcess, ntr);  
+                   
 }
 
-G4int AliTrackingAction::GetParticleIndex(G4int trackID)
-{
-// Converts the trackID into the index of the particle
-// in AliRun::fParticles array.
-// ---
-
-  if (trackID <= fPrimariesCounter) { 
-    return trackID-1; 
-  }
-  else
-    for (G4int i=fLastParticleIndex+1; i<fParticlesCounter; i++) {
-      // aliroot
-      TParticle* particle
-        = (TParticle*)fParticles->UncheckedAt(i);
-      if (trackID == particle->GetStatusCode()) return i;
-    }
-
-  AliGlobals::Exception("AliTrackingAction::GetParticleIndex() has failed.");
-  return 0;   
-}
