@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  1999/10/04 18:08:49  fca
+Adding protection against inconsistent Euclid files
+
 Revision 1.19  1999/09/29 07:50:40  fca
 Introduction of the Copyright and cvs Log
 
@@ -1114,19 +1117,21 @@ void AliRun::PurifyKine()
   fNtrack=nkeep;
   
   // Fix daughters information
-  for (i=fHgwmk+1; i<fNtrack; i++) {
+  for (i=0; i<fNtrack; i++) {
     part = (TParticle *)particles.UncheckedAt(i);
     parent = part->GetFirstMother();
-    father = (TParticle *)particles.UncheckedAt(parent);
-    if(father->TestBit(Daughters_Bit)) {
+    if(parent>=0) {
+      father = (TParticle *)particles.UncheckedAt(parent);
+      if(father->TestBit(Daughters_Bit)) {
       
-      if(i<father->GetFirstDaughter()) father->SetFirstDaughter(i);
-      if(i>father->GetLastDaughter())  father->SetLastDaughter(i);
-    } else {
-      // Iitialise daughters info for first pass
-      father->SetFirstDaughter(i);
-      father->SetLastDaughter(i);
-      father->SetBit(Daughters_Bit);
+	if(i<father->GetFirstDaughter()) father->SetFirstDaughter(i);
+	if(i>father->GetLastDaughter())  father->SetLastDaughter(i);
+      } else {
+	// Iitialise daughters info for first pass
+	father->SetFirstDaughter(i);
+	father->SetLastDaughter(i);
+	father->SetBit(Daughters_Bit);
+      }
     }
   }
   
