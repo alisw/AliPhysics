@@ -114,7 +114,7 @@ void AliL3Hough::CleanUp()
   */
 }
 
-void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8=kFALSE)
+void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8=kFALSE,Int_t tv=0)
 {
   fBinary = binary;
   strcpy(fPath,path);
@@ -123,7 +123,7 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit
   fDoIterative = kFALSE; 
   fWriteDigits = kFALSE;
   fUse8bits = bit8;
-  
+  fversion = tv;
   AliL3Transform::Init(fPath);
 
   fNPatches = AliL3Transform::GetNPatches();
@@ -270,7 +270,6 @@ void AliL3Hough::ProcessSliceIter()
       ProcessPatchIter(i);
       fMerger->FillTracks(fTracks[i],i); //Copy tracks to merger
     }
-  
 }
 
 void AliL3Hough::ProcessPatchIter(Int_t patch)
@@ -314,7 +313,6 @@ void AliL3Hough::ProcessPatchIter(Int_t patch)
     <<AliL3Log::kDec<<"Found "<<tracks->GetNTracks()<<" tracks in patch "<<patch<<ENDLOG;
 }
 
-
 void AliL3Hough::AddAllHistograms()
 {
   //Add the histograms within one etaslice.
@@ -349,11 +347,13 @@ void AliL3Hough::FindTrackCandidates()
   
   Double_t initTime,cpuTime;
   initTime = GetCpuTime();
+
   for(Int_t i=0; i<n_patches; i++)
     {
       AliL3HoughBaseTransformer *tr = fHoughTransformer[i];
       Double_t eta_slice = (tr->GetEtaMax()-tr->GetEtaMin())/tr->GetNEtaSegments();
       fTracks[i]->Reset();
+
       for(Int_t j=0; j<fNEtaSegments; j++)
 	{
 	  AliL3Histogram *hist = tr->GetHistogram(j);
@@ -361,8 +361,8 @@ void AliL3Hough::FindTrackCandidates()
 	  fPeakFinder->Reset();
 	  fPeakFinder->SetHistogram(hist);
 	  fPeakFinder->FindMaxima(0,0); //Simple maxima finder
-	  
 	  //fPeakFinder->FindAbsMaxima();
+
 	  for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	    {
 	      if(fPeakFinder->GetWeight(k) == 0) continue;
@@ -548,3 +548,4 @@ Double_t AliL3Hough::GetCpuTime()
  return tv.tv_sec+(((Double_t)tv.tv_usec)/1000000.);
  //return (Double_t)(clock()) / CLOCKS_PER_SEC;
 }
+
