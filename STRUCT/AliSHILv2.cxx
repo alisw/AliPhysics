@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/07/15 08:16:35  morsch
+New shield geometry.
+
 */
 
 
@@ -69,7 +72,7 @@ void AliSHILv2::CreateGeometry()
   //End_Html
 
     Float_t cpar[5], cpar0[5], tpar[3], par1[100], pars1[100], par2[100], par3[100], 
-	par4[21], par0[100];
+	par4[24], par0[100];
     Float_t dz, dZ;
     
     Int_t *idtmed = fIdtmed->GetArray()-1699;
