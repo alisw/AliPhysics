@@ -27,20 +27,20 @@ class AliITSresponseSDD : public AliITSresponse {
 
     void SetElectronics(Int_t p1=1) {// Electronics: Pascal (1) or OLA (2)
 	fElectronics=p1;}
-    Int_t Electronics() {// Electronics: 1 = Pascal; 2 = OLA
+    Int_t Electronics() const {// Electronics: 1 = Pascal; 2 = OLA
 	return fElectronics;}
     void    SetMaxAdc(Float_t p1=1024.) {// Adc-count saturation value
 	fMaxAdc=p1;}
-    Float_t MaxAdc()  {// Get maximum Adc-count value
+    Float_t MaxAdc() const {// Get maximum Adc-count value
 	return fMaxAdc;}
     void    SetChargeLoss(Float_t p1=0.0) {
 	// Set Linear Charge Loss Steepness  // 0.01 for 20%
 	fChargeLoss=p1;}
-    Float_t ChargeLoss(){// Get Charge Loss Coefficient
+    Float_t ChargeLoss() const {// Get Charge Loss Coefficient
 	return fChargeLoss;}
     void    SetDynamicRange(Float_t p1=132.) {// Set Dynamic Range
 	fDynamicRange=p1;}
-    Float_t DynamicRange(){// Get Dynamic Range
+    Float_t DynamicRange() const {// Get Dynamic Range
 	return fDynamicRange;}
     void    SetDiffCoeff(Float_t p1=3.23,Float_t p2=30.) {
 	// Diffusion coefficients
@@ -49,11 +49,11 @@ class AliITSresponseSDD : public AliITSresponse {
 	diff = fDiffCoeff;diff1 = fDiffCoeff1;}
     void    SetDriftSpeed(Float_t p1=7.3) {// Drift velocity
 	fDriftSpeed=p1;}
-    Float_t DriftSpeed() {// drift speed
+    Float_t DriftSpeed() const {// drift speed
 	return fDriftSpeed;}
     void    SetTemperature(Float_t p1=23.) {// Temperature
 	fTemperature=p1;}
-    Float_t Temperature() {// Get temperature
+    Float_t Temperature() const {// Get temperature
 	return fTemperature;}
     void    SetDataType(const char *data="simulated") {
 	// Type of data - real or simulated
@@ -85,7 +85,7 @@ class AliITSresponseSDD : public AliITSresponse {
     void  SetDo10to8(Bool_t bitcomp=kTRUE) {
 	// set the option for 10 to 8 bit compression
 	fBitComp = bitcomp;}
-    Bool_t Do10to8() {// get 10 to 8 compression option
+    Bool_t Do10to8() const {// get 10 to 8 compression option
 	return fBitComp;}
     void    SetZeroSupp (const char *opt="1D") {
 	// Zero-suppression option - could be 1D, 2D or non-ZS 
@@ -95,7 +95,7 @@ class AliITSresponseSDD : public AliITSresponse {
     void  SetMinVal(Int_t mv=4) {
 	// Min value used in 2D - could be used as a threshold setting
 	fMinVal = mv;}
-    Int_t  MinVal() {// min val
+    Int_t  MinVal() const {// min val
 	return fMinVal;}
     void   SetFilenames(const char *f1="",const char *f2="",const char *f3=""){
 	// Set filenames - input, output, parameters ....
@@ -105,7 +105,7 @@ class AliITSresponseSDD : public AliITSresponse {
 	strcpy(param,fFileName3.Data());}
     void  SetOutputOption(Bool_t write=kFALSE) {// set output option
 	fWrite = write;}
-    Bool_t OutputOption()  {// output option
+    Bool_t OutputOption() const {// output option
 	return fWrite;}
     // 
     // Compression parameters
@@ -116,7 +116,7 @@ class AliITSresponseSDD : public AliITSresponse {
     void    SetNSigmaIntegration(Float_t p1=3.) {
 	// Set number of sigmas over which cluster disintegration is performed
 	fNsigmas=p1;}
-    Float_t NSigmaIntegration() {
+    Float_t NSigmaIntegration() const {
 	// Get number of sigmas over which cluster disintegration is performed
 	return fNsigmas;}
     void SetNLookUp(Int_t p1=121) {
@@ -130,12 +130,12 @@ class AliITSresponseSDD : public AliITSresponse {
 	}
     }
     // Get number of intervals in which the gaussian lookup table is divided
-    Int_t GausNLookUp() {return fNcomps;}
-    Float_t IntPH(Float_t) {// Pulse height from scored quantity (eloss)
+    Int_t GausNLookUp() const {return fNcomps;}
+    Float_t IntPH(Float_t) const {// Pulse height from scored quantity (eloss)
 	return 0.;}
-    Float_t IntXZ(AliITSsegmentation *) {// Charge disintegration 
+    Float_t IntXZ(AliITSsegmentation *) const {// Charge disintegration 
 	return 0.;}
-    Float_t GausLookUp(Int_t i) {
+    Float_t GausLookUp(Int_t i) const  {
 	if(i<0 || i>=fNcomps) return 0.;return fGaus->At(i);}
     void SetDeadChannels(Int_t nmodules=0, Int_t nchips=0, Int_t nchannels=0);
     Int_t GetDeadModules() { return fDeadModules; }

@@ -42,7 +42,7 @@ class AliITSresponseSPD :  public AliITSresponse {
     // Type of data - real or simulated
     virtual void    SetDataType(char *data="simulated") {fDataType=data;}
     // Get data typer
-    virtual const char  *DataType() {return fDataType.Data();}
+    virtual const char  *DataType() const {return fDataType.Data();}
 
  protected:
     Float_t fDiffCoeff;       // Sigma diffusion coefficient (not used) 

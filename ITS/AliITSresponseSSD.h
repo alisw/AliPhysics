@@ -54,7 +54,7 @@ class AliITSresponseSSD : public AliITSresponse {
     virtual  void   SetDetParam(Float_t *par);
 
     // Parameters options
-    virtual Int_t   NDetParam() {
+    virtual Int_t   NDetParam() const {
 	// number of param
 	return fNPar;
     }
