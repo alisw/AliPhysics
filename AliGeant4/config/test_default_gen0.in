@@ -1,0 +1,11 @@
+# $Id$
+#
+# basic one geantino generator (test0)
+# (geantino from center in x direction) 
+
+/aliGenerator/set Gun
+/aliGun/direction  1 0 0
+/aliGun/addParticle
+/aliGun/list
+
+/tracking/verbose 1

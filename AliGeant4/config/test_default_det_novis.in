@@ -1,0 +1,19 @@
+# $Id$
+#
+# XXXvWWW
+#
+# basic one module test 
+# with specified test event generator
+# without visualization 
+
+/aliDet/switchOn XXXNNN
+/aliRun/initialize
+#/aliDet/body/listLong
+
+/control/execute gen_testGGG.in
+
+#/tracking/verbose 1
+/aliRun/beamOn 1
+
+/control/exit
+exit

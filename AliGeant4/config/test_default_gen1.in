@@ -1,0 +1,5 @@
+# $Id$
+# aliroot generator (test1)
+
+/aliGenerator/set AliGenerator
+#

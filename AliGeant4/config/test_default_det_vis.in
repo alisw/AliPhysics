@@ -1,0 +1,33 @@
+# $Id$
+#
+# XXXvWWW
+#
+# basic one module test 
+# with specified test event generator
+# and visualization 
+
+/aliDet/switchOn XXXNNN
+/aliRun/initialize
+/aliDet/body/listLong
+
+# generator
+/control/execute gen_testGGG.in
+
+/vis~/create_view/new_graphics_system DAWN
+#/vis~/create_view/new_graphics_system OPACS
+#/vis~/create_view/new_graphics_system OGLIX
+
+# module visualization
+/control/execute vis_testVVV.in
+
+/vis~/draw/current
+/vis~/show/view
+
+/tracking/verbose 1
+/tracking/storeTrajectory 1
+/aliEvent/drawTracks ALL
+
+/aliRun/beamOn 1
+
+/control/exit
+exit

@@ -1,0 +1,6 @@
+# MAG
+
+#/aliDet/mag/setAllSensitive true
+/aliDet/mag/setFrame MAG
+/aliDet/mag/setConfigDir STRUCT
+ 

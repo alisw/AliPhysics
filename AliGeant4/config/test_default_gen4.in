@@ -1,0 +1,12 @@
+# $Id$
+#
+# special lego run
+
+/aliGenerator/set AliGenerator
+/aliEvent/verbose 0
+/aliRun/lego
+
+/g4mc/rootMacro legoSave
+
+/control/exit
+exit

@@ -1,0 +1,9 @@
+# $Id$
+# basic random geantino generator (test3)
+
+/aliGenerator/set Geantino
+/aliGenerator/nofParticles 10
+/aliGun/list
+
+/tracking/verbose 1
+#
