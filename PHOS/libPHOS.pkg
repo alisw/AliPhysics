@@ -13,7 +13,7 @@ SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSLink.cxx AliPHOSSDigitizer.cxx AliPHOSDigitizer.cxx\
 		 AliPHOSReconstructioner.cxx  AliPHOSTrackSegment.cxx \
                  AliPHOSTrackSegmentMaker.cxx AliPHOSTrackSegmentMakerv1.cxx \
-                 AliPHOSRecParticle.cxx AliPHOSPID.cxx AliPHOSPIDv1.cxx \
+                 AliPHOSRecParticle.cxx AliPHOSPID.cxx AliPHOSPIDv0.cxx \
                  AliPHOSAnalyze.cxx AliPHOSFastRecParticle.cxx \
                  AliPHOSGetter.cxx AliPHOSTick.cxx \
 		 AliPHOSQAVirtualCheckable.cxx AliPHOSQAIntCheckable.cxx \
@@ -21,7 +21,7 @@ SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSQAObjectCheckable.cxx AliPHOSQAChecker.cxx AliPHOSQAMeanChecker.cxx AliPHOSQAAlarm.cxx \
                  AliPHOSIhepAnalyze.cxx AliPHOSEvalRecPoint.cxx \
                  AliPHOSRecManager.cxx AliPHOSRecCpvManager.cxx AliPHOSRecEmcManager.cxx \
-                 AliPHOSClusterizerv2.cxx AliPHOSPIDv2.cxx
+                 AliPHOSClusterizerv2.cxx AliPHOSPIDv1.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
