@@ -67,7 +67,7 @@ private:
   Int_t fNTrackSegments ;        // number of track segments found 
   Int_t fTrackSegmentsInRun ;    //! Total number of track segments in one run
 
-  ClassDef( AliEMCALTrackSegmentMakerv1,3)  // Implementation version 1 of algorithm class to make EMCAL track segments 
+  ClassDef( AliEMCALTrackSegmentMakerv1,4)  // Implementation version 1 of algorithm class to make EMCAL track segments 
 
 };
 

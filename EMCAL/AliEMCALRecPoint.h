@@ -92,7 +92,7 @@ protected:
 	  Float_t fTime ;             // Time of the digit with maximal energy deposition
 	  Float_t fCoreRadius;        // The radius in which the core energy is evaluated
 
-  ClassDef(AliEMCALRecPoint,4) // RecPoint for EMCAL (Base Class)
+  ClassDef(AliEMCALRecPoint,5) // RecPoint for EMCAL (Base Class)
  
 };
 

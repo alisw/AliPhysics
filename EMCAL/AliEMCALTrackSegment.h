@@ -44,7 +44,7 @@ public:
   Int_t fECARecPoint ; // The EC reconstructed point index in array stored in TreeR/EMCALECRP
   Int_t fIndexInList ; // The index of this TrackSegment in the list stored in TreeR (to be set by analysis)
   
-  ClassDef(AliEMCALTrackSegment,1)  // Track segment in EMCAL
+  ClassDef(AliEMCALTrackSegment,2)  // Track segment in EMCAL
 
 };
 

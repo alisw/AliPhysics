@@ -219,7 +219,7 @@ private:
  
 
   
-  ClassDef(AliEMCALLoader,3)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliEMCALLoader,4)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 
 };
 
