@@ -18,7 +18,8 @@
 #include "AliMagF.h"
 #include "AliMC.h"
 #include "AliGenerator.h"
-#include "AliLego.h"
+class AliLego;
+//#include "AliLego.h"
 
 enum {Keep_Bit=1, Daughters_Bit=2, Done_Bit=4};
 
@@ -117,7 +118,7 @@ public:
    TClonesArray  *Particles() {return fParticles;};
    virtual  void  PurifyKine();
    virtual  Int_t PurifyKine(Int_t lastSavedTrack, Int_t nofTracks);
-   virtual  void  Reset();
+   virtual  void  BeginEvent();
    virtual  void  ResetDigits();
    virtual  void  ResetHits();
    virtual  void  ResetPoints();
@@ -129,6 +130,7 @@ public:
    virtual  void  RunLego(const char *setup="Config.C",Int_t ntheta=60,Float_t themin=2,Float_t themax=178,
 			  Int_t nphi=60,Float_t phimin=0,Float_t phimax=360,Float_t rmin=0,
 			  Float_t rmax=570,Float_t zmax=10000);
+   virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
    virtual  void  SetCurrentTrack(Int_t track);                           
    virtual  void  SetDebug(const Int_t level=1) {fDebug = level;}
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}

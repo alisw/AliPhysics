@@ -37,8 +37,10 @@ public:
 	  Float_t themax, Int_t nphi, Float_t phimin,
 	  Float_t phimax,Float_t rmin,Float_t rmax,Float_t zmax);
   virtual ~AliLego();
-  virtual void  Run();
   virtual void  StepManager();
+  virtual void  BeginEvent();
+  virtual void  FinishEvent();
+  virtual void  FinishRun();
   
   ClassDef(AliLego,1) //Utility class to compute and draw Radiation Length Map
 

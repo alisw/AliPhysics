@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/01/19 17:16:56  fca
+Introducing a list of lists of hits -- more hits allowed for detector now
+
 Revision 1.14  1999/11/03 13:17:07  fca
 Have ProdProcess return const char*
 
@@ -39,6 +42,8 @@ Introduction of the Copyright and cvs Log
 //  Manager and hits classes for set:MUON     //
 ////////////////////////////////////////////////
 
+#include <TH1.h>
+#include <TH2.h>
 #include <TTUBE.h>
 #include <TBRIK.h>
 #include <TRotMatrix.h>

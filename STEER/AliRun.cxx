@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2000/04/18 19:11:40  fca
+Introduce variable Config.C function signature
+
 Revision 1.29  2000/04/07 11:12:34  fca
 G4 compatibility changes
 
@@ -85,6 +88,7 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include "AliDisplay.h"
 #include "AliMC.h"
+#include "AliLego.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -430,6 +434,9 @@ void AliRun::FinishEvent()
   // Called at the end of the event.
   //
   
+  //
+  if(fLego) fLego->FinishEvent();
+
   //Update the energy deposit tables
   Int_t i;
   for(i=0;i<fEventEnergy.GetSize();i++) {
@@ -485,6 +492,9 @@ void AliRun::FinishRun()
   //
   // Called at the end of the run.
   //
+
+  //
+  if(fLego) fLego->FinishRun();
 
   // Clean detector information
   TIter next(fModules);
@@ -1202,12 +1212,20 @@ void AliRun::PurifyKine()
 }
 
 //_____________________________________________________________________________
-void AliRun::Reset()
+void AliRun::BeginEvent()
 {
   //
   //  Reset all Detectors & kinematics & trees
   //
   char hname[30];
+  //
+
+  //
+  if(fLego) {
+    fLego->BeginEvent();
+    return;
+  }
+
   //
   ResetStack();
   ResetHits();
@@ -1349,8 +1367,11 @@ void AliRun::RunLego(const char *setup,Int_t ntheta,Float_t themin,
   //Create Lego object  
   fLego = new AliLego("lego",ntheta,themin,themax,nphi,phimin,phimax,rmin,rmax,zmax);
 
+  //Prepare MC for Lego Run
+  gMC->InitLego();
+  
   //Run Lego Object
-  fLego->Run();
+  gMC->ProcessRun(ntheta*nphi+1);
   
   // Create only the Root event Tree
   MakeTree("E");

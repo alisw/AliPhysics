@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/04/07 11:12:33  fca
+G4 compatibility changes
+
 Revision 1.11  2000/03/22 13:42:26  fca
 SetGenerator does not replace an existing generator, ResetGenerator does
 
@@ -117,39 +120,48 @@ AliLego::~AliLego()
    delete fHistReta;
 }
 
+//___________________________________________
+void AliLego::BeginEvent()
+{
+// --- Set to 0 radiation length, absorption length and g/cm2 ---
+  fTotRadl = 0;
+  fTotAbso = 0;
+  fTotGcm2 = 0;
+}
 
 //___________________________________________
-void AliLego::Run()
+void AliLego::FinishEvent()
 {
-   // loop on phi,theta bins
-   gMC->InitLego();
-   Float_t thed, phid, eta;
-   for (Int_t i=0; i<=fGener->Nphi()*fGener->Ntheta(); ++i) {
-// --- Set to 0 radiation length, absorption length and g/cm2 ---
-     fTotRadl = 0;
-     fTotAbso = 0;
-     fTotGcm2 = 0;
-     
-     gMC->ProcessEvent();
-     
-     thed = fGener->CurTheta()*kRaddeg;
-     phid = fGener->CurPhi()*kRaddeg;
-     eta  = -TMath::Log(TMath::Tan(TMath::Max(
+  Double_t thed, phid, eta;
+  thed = fGener->CurTheta()*kRaddeg;
+  phid = fGener->CurPhi()*kRaddeg;
+  eta  = -TMath::Log(TMath::Tan(TMath::Max(
 	     TMath::Min((Double_t)(fGener->CurTheta())/2,
 			TMath::Pi()/2-1.e-10),1.e-10)));
 
-     fHistRadl->Fill(phid,thed,fTotRadl);
-     fHistAbso->Fill(phid,thed,fTotAbso);
-     fHistGcm2->Fill(phid,thed,fTotGcm2);
-     fHistReta->Fill(phid,eta,fTotRadl);
-     gAlice->FinishEvent();
-   }
-   // store histograms in current Root file
-   fHistRadl->Write();
-   fHistAbso->Write();
-   fHistGcm2->Write();
-   fHistReta->Write();
+  fHistRadl->Fill(phid,thed,fTotRadl);
+  fHistAbso->Fill(phid,thed,fTotAbso);
+  fHistGcm2->Fill(phid,thed,fTotGcm2);
+  fHistReta->Fill(phid,eta,fTotRadl);
 }
+
+//___________________________________________
+void AliLego::FinishRun()
+{
+   // Store histograms in current Root file
+  fHistRadl->Write();
+  fHistAbso->Write();
+  fHistGcm2->Write();
+  fHistReta->Write();
+
+  // Delete histograms from memory
+  fHistRadl->Delete(); fHistRadl=0;
+  fHistAbso->Delete(); fHistAbso=0;
+  fHistGcm2->Delete(); fHistGcm2=0;
+  fHistReta->Delete(); fHistReta=0;
+
+}
+
 
 //___________________________________________
 void AliLego::StepManager()

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/04/07 11:12:35  fca
+G4 compatibility changes
+
 Revision 1.2  2000/02/29 19:11:17  fca
 Move gucode into AliGeant3.cxx
 
@@ -57,6 +60,7 @@ void AliGeant3::FinishGeometry()
   SetColors();
 }
 
+//____________________________________________________________________________
 void AliGeant3::Init()
 {
   //
@@ -82,7 +86,7 @@ void AliGeant3::ProcessRun(Int_t nevent)
   Int_t todo = TMath::Abs(nevent);
   for (Int_t i=0; i<todo; i++) {
   // Process one run (one run = one event)
-     gAlice->Reset();
+     gAlice->BeginEvent();
      ProcessEvent();
      gAlice->FinishEvent();
   }
