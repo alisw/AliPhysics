@@ -7,6 +7,7 @@
 //  Manager and hits classes for set:Si-FMD     //
 ////////////////////////////////////////////////
  
+#include "TBranch.h"
 #include "AliDetector.h"
 
 class TClonesArray;
