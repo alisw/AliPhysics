@@ -1,5 +1,5 @@
 //_____________________________________________________________________________
-Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 0
+Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
                           , Bool_t sdigits = kFALSE) 
 {
   //  
