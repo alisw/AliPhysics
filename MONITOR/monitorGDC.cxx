@@ -26,10 +26,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TError.h>
+#include <TSysEvtHandler.h>
 #ifdef DATE_SYS
 #include <TROOT.h>
 #include <TSystem.h>
-#include <TSysEvtHandler.h>
 #include <TDatime.h>
 #include "AliRawReaderDate.h"
 #include "event.h"
