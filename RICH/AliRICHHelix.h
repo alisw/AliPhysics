@@ -67,7 +67,7 @@ Bool_t AliRICHHelix::Intersection(TVector3 planePoint,TVector3 planeNorm)
   while(TMath::Abs(dist)>0.0001){
     Propagate(s);                        //calculates helix at the distance s from x0 ALONG the helix
     dist=(fX-planePoint)*planeNorm;      //distance between current helix position and plane
-    if(TMath::Abs(dist) > TMath::Abs(distPrev)) { return kFALSE;}
+    if(TMath::Abs(dist) >= TMath::Abs(distPrev)) { return kFALSE;}
     distPrev=dist;
     s-=dist;
   }
