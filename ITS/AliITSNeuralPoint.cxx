@@ -1,5 +1,11 @@
-#include <stdlib.h>
-#include <Riostream.h>
+// AliITSneuralPoint
+//
+// A class which resumes the information of ITS clusters
+// in the global reference frame.
+// Author: A. Pulvirenti
+
+//#include <stdlib.h>
+//#include <Riostream.h>
 
 #include <TString.h>
 
@@ -94,6 +100,10 @@ AliITSNeuralPoint::AliITSNeuralPoint(AliITSRecPoint *rp, AliITSgeomMatrix *gm)
 AliITSNeuralPoint::AliITSNeuralPoint
 (AliITSclusterV2 *rp, AliITSgeom *geom, Short_t module, Short_t index)
 {
+	// Conversion constructor.
+	// Accepts a AliITSclusterV2 and an AliITSgeom,
+	// and converts the local coord of the AliITSclusterV2 object into global
+	
 	Int_t mod = (Int_t)module, lay, lad, det;
 	fModule = module;
 	fIndex = index;
@@ -124,8 +134,8 @@ AliITSNeuralPoint::AliITSNeuralPoint
 //-------------------------------------------------------------------------------------------------
 //
 Double_t AliITSNeuralPoint::GetPhi() const
-// Returns the azimuthal coordinate in the range 0-2pi
 {
+	// Returns the azimuthal coordinate in the range 0-2pi
 	Double_t q;
 	q = TMath::ATan2(fY,fX); 
 	if (q >= 0.) 
@@ -137,6 +147,7 @@ Double_t AliITSNeuralPoint::GetPhi() const
 //------------------------------------------------------------------------------------------------------
 //
 Double_t AliITSNeuralPoint::GetError(Option_t *option)
+{
 // Returns the error or the square error of
 // values related to the coordinates in different systems.
 // The option argument specifies the coordinate error desired:
@@ -149,7 +160,7 @@ Double_t AliITSNeuralPoint::GetError(Option_t *option)
 //
 // In order to get the error on the cartesian coordinates
 // reference to the inline ErrX(), ErrY() adn ErrZ() methods.
-{
+
 	TString opt(option);
 	Double_t errorSq = 0.0;
 	opt.ToUpper();
@@ -181,10 +192,10 @@ Double_t AliITSNeuralPoint::GetError(Option_t *option)
 //
 //------------------------------------------------------------------------------------------------------
 //
-Bool_t AliITSNeuralPoint::HasID(Int_t ID)
+Bool_t AliITSNeuralPoint::HasID(Int_t ID) const
+{
 // Checks if the recpoint belongs to the GEANT track
 // whose label is specified in the argument
-{
 	if (ID<0) 
 		return kFALSE; 
 	else 
@@ -194,6 +205,7 @@ Bool_t AliITSNeuralPoint::HasID(Int_t ID)
 //------------------------------------------------------------------------------------------------------
 //
 Int_t* AliITSNeuralPoint::SharedID(AliITSNeuralPoint *p)
+{
 // Checks if there is a GEANT track owning both
 // <this> and the recpoint in the argument
 // The return value is an array of 4 integers.
@@ -202,7 +214,7 @@ Int_t* AliITSNeuralPoint::SharedID(AliITSNeuralPoint *p)
 // The other three return the matched labels.
 // If a NULL pointer is passed, the array will be returned as:
 // {0, -1, -1, -1}
-{
+
 	Int_t i, *shared = new Int_t[4];
 	for (i = 0; i < 4; i++) shared[i] = -1;
 	shared[0] = 0;
@@ -218,6 +230,8 @@ Int_t* AliITSNeuralPoint::SharedID(AliITSNeuralPoint *p)
 //
 void AliITSNeuralPoint::ConfMap(Double_t vx, Double_t vy)
 {
+// Performs conformal mapping vertex-constrained
+
 	Double_t dx = fX - vx;
 	Double_t dy = vy - fY;
 	Double_t r2 = dx*dx + dy*dy;

@@ -1,5 +1,5 @@
-#ifndef ALIITSNNEURALTRACKER_H
-#define ALIITSNNEURALTRACKER_H
+#ifndef ALIITSNEURALTRACKER_H
+#define ALIITSNEURALTRACKER_H
 
 class TObjArray;
 class TCanvas;
@@ -20,6 +20,9 @@ class AliITSNeuralTracker : public TObject {
 public:
 
 	         AliITSNeuralTracker();
+				AliITSNeuralTracker(AliITSNeuralTracker &t) {
+				Fatal("AliITSNeuralTracker", "No copy constructor
+				allowed!");exit(0);}
 	virtual ~AliITSNeuralTracker();
 
 	// ******************************************************************************
@@ -57,7 +60,7 @@ public:
 		Int_t     GetSector(Double_t sec_width) {return (Int_t)(GetPhi()/sec_width);}
 		Int_t     GetThetaCell()                {return (Int_t)(ThetaDeg());}
 		
-		Int_t        fPosInTree;
+		Int_t        fPosInTree;  // position in tree of converted points
 
 		TObjArray   *fInnerOf; //!
 		TObjArray   *fOuterOf; //! 
@@ -144,10 +147,10 @@ public:
 	// Neural tracker work-flow
 
 	void     NeuralTracking(const char* filesave, TCanvas*& display);
-	void     Display(TCanvas*& canvas);
+	void     Display(TCanvas*& canvas) const;
 	void     ResetNodes(Int_t isector);
 	Int_t    CreateNeurons(Int_t sector, Int_t curv);  // create neurons
-	Int_t    LinkNeurons();                // create neural connections
+	Int_t    LinkNeurons() const;          // create neural connections
 	Double_t Activate(AliITSneuron* &n);   // calculates the new neural activation
 	Bool_t   Update();                     // an updating cycle
 	void     CleanNetwork();               // removes deactivated units and resolves competitions
@@ -157,7 +160,7 @@ public:
 
 private:
 
-	Bool_t       CheckOccupation(); 
+	Bool_t       CheckOccupation() const; 
 
 	Int_t        fSectorNum;            //  number of azymuthal sectors
 	Double_t     fSectorWidth;          //  width of an azymuthal sector (in RADIANS) [used internally]

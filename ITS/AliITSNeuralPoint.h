@@ -17,7 +17,7 @@ public:
 	AliITSNeuralPoint(AliITSRecPoint *rp, AliITSgeomMatrix *gm);
 	AliITSNeuralPoint(AliITSclusterV2 *rp, AliITSgeom *geom, Short_t module, Short_t index);
 
-	virtual ~ AliITSNeuralPoint() { }
+	virtual ~AliITSNeuralPoint() { }
 
 	Double_t& X()    {return fX;}   // reference to X coord
 	Double_t& Y()    {return fY;}   // reference to Y coord
@@ -51,23 +51,23 @@ public:
 	void      SetModule(Short_t val)        {fModule = val;}
 	void      SetUser(Short_t val)          {fUser = val;}
 	
-	Bool_t    HasID (Int_t ID);
+	Bool_t    HasID (Int_t ID) const;
 	Int_t*    SharedID(AliITSNeuralPoint *p);
 
 protected:
 	
 	Int_t     Chk(Int_t i) const {if(i<0)i=0;if(i>=3)i=3;return i;}
 
-	Double_t  fX;   //
+	Double_t  fX;   // position 
 	Double_t  fY;   // position
-	Double_t  fZ;   //
+	Double_t  fZ;   // position
 	
 	Double_t  fConfX; // conformal mapping X
 	Double_t  fConfY; // conformal mapping Y
 		
-	Double_t  fEX;  //
+	Double_t  fEX;  // position error
 	Double_t  fEY;  // position error
-	Double_t  fEZ;  //
+	Double_t  fEZ;  // position error
 
 	Double_t  fCharge;   // total charge signal in cluster
 

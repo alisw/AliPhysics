@@ -1,13 +1,21 @@
-#include <Riostream.h>
-#include <cstdlib>
-#include <cstring>
+// AliITSNeuralTrack
+//
+// The format of output data from Neural Tracker
+// It can export data in the format of AliITSIOTrack
+// (V1) tracking.
+// Compatibility adaptation to V2 tracking is on the way.
+// Author: A. Pulvirenti
 
-#include <TObject.h>
-#include <TROOT.h>
+#include <Riostream.h>
+//#include <cstdlib>
+//#include <cstring>
+
+//#include <TObject.h>
+//#include <TROOT.h>
 #include <TMath.h>
 #include <TString.h>
-#include <TObjArray.h>
-#include <TH1.h>
+//#include <TObjArray.h>
+//#include <TH1.h>
 #include <TMatrixD.h>
 
 //#include "AliITSVertex.h"
@@ -24,6 +32,8 @@ ClassImp(AliITSNeuralTrack)
 //
 AliITSNeuralTrack::AliITSNeuralTrack() : fMatrix(5,5), fVertex()
 {
+	// Default constructor
+	
 	Int_t i;
 
 	fMass  = 0.1396;   // default assumption: pion
@@ -47,6 +57,34 @@ AliITSNeuralTrack::AliITSNeuralTrack() : fMatrix(5,5), fVertex()
 //
 //
 //
+AliITSNeuralTrack::AliITSNeuralTrack(AliITSNeuralTrack &track) 
+: TObject((TObject&)track), fMatrix(5,5), fVertex()
+{
+// copy constructor
+
+	Int_t i;
+
+	fMass  = 0.1396;   // default assumption: pion
+	fField = 2.0;      // default assumption: B = 0.4 Tesla
+
+	fXC = fYC = fR = fC = 0.0;
+	fTanL = fG0 = fDt = fDz = 0.0;
+	fStateR = fStatePhi = fStateZ = fChi2 = fNSteps = 0.0;
+
+	fLabel = 0;
+	fCount = 0;
+	for (i = 0; i < 6; i++) fPoint[i] = track.fPoint[i];
+
+	fVertex.X() = 0.0;
+	fVertex.Y() = 0.0;
+ 	fVertex.Z() = 0.0;
+	fVertex.ErrX() = 0.0;
+	fVertex.ErrY() = 0.0;
+	fVertex.ErrZ() = 0.0;	
+}
+//
+//
+//
 AliITSNeuralTrack::~AliITSNeuralTrack()
 {
 	Int_t l;
@@ -56,13 +94,14 @@ AliITSNeuralTrack::~AliITSNeuralTrack()
 //
 //
 void AliITSNeuralTrack::AssignLabel()
+{	
 // Assigns a GEANT label to the found track. 
 // Every cluster has up to three labels (it can have less). Then each label is 
 // recorded for each point. Then, counts are made to check if some of the labels
 // appear more than once. Finally, the label which appears most times is assigned
 // to the track in the field fLabel.
 // The number of points containing that label is counted in the fCount data-member. 
-{	
+
 	Bool_t found;
 	Int_t i, j, l, lab, max = 0;
 	
@@ -113,9 +152,10 @@ void AliITSNeuralTrack::AssignLabel()
 //
 //
 void AliITSNeuralTrack::CleanSlot(Int_t i, Bool_t del)
+{
 // Removes a point from the corresponding layer slot in the found track.
 // If the argument is TRUE, the point object is also deleted from heap.
-{
+
 	if (i >= 0 && i < 6) {
 		if (del) delete fPoint[i];
 		fPoint[i] = 0;
@@ -125,10 +165,11 @@ void AliITSNeuralTrack::CleanSlot(Int_t i, Bool_t del)
 //
 //
 void AliITSNeuralTrack::GetModuleData(Int_t layer, Int_t &mod, Int_t &pos)
+{
 // Returns the point coordinates according to the TreeR philosophy in galice.root files
 // that consist in the module number (mod) and the position in the TClonesArray of
 // the points reconstructed in that module for the run being examined.
-{
+
 	if (layer < 0 || layer > 5) {
 		Error("GetModuleData", "Layer out of range: %d", layer);
 		return;
@@ -140,9 +181,10 @@ void AliITSNeuralTrack::GetModuleData(Int_t layer, Int_t &mod, Int_t &pos)
 //
 //
 void AliITSNeuralTrack::Insert(AliITSNeuralPoint *point)
+{
 // A trivial method to insert a point in the tracks;
 // the point is inserted to the slot corresponding to its ITS layer.
-{
+
 	if (!point) return;
 	
 	Int_t layer = point->GetLayer();
@@ -157,9 +199,10 @@ void AliITSNeuralTrack::Insert(AliITSNeuralPoint *point)
 //
 //
 Int_t AliITSNeuralTrack::OccupationMask()
+{
 // Returns a byte which maps the occupied slots. 
 // Each bit represents a layer going from the less significant on.
-{
+
 	Int_t i, check, mask = 0;
 	for (i = 0; i < 6; i++) {
 		check = 1 << i;
@@ -171,10 +214,11 @@ Int_t AliITSNeuralTrack::OccupationMask()
 //
 //
 void AliITSNeuralTrack::PrintLabels()
+{
 // Prints the results of the AssignLabel() method, together with
 // the GEANT labels assigned to each point, in order to evaluate 
 // how the assigned label is distributed among points.
-{
+
 	cout << "Assigned label = " << fLabel << " -- counted " << fCount << " times: " << endl << endl;
 	for (Int_t i = 0; i < 6; i++) {
 		cout << "Point #" << i + 1 << " --> ";
@@ -194,6 +238,8 @@ void AliITSNeuralTrack::PrintLabels()
 //
 Bool_t AliITSNeuralTrack::AddEL(Int_t layer, Double_t sign)
 {
+// Calculates the correction for energy loss
+
 	Double_t width = 0.0;
 	switch (layer) {
 		case 0: width = 0.00260 + 0.00283; break;
@@ -239,6 +285,8 @@ Bool_t AliITSNeuralTrack::AddEL(Int_t layer, Double_t sign)
 //
 Bool_t AliITSNeuralTrack::AddMS(Int_t layer)
 {
+// Calculates the noise perturbation due to multiple scattering
+
 	Double_t width = 0.0;
 	switch (layer) {
 		case 0: width = 0.00260 + 0.00283; break;
@@ -456,9 +504,9 @@ Bool_t AliITSNeuralTrack::SeedCovariance()
 		fMatrix(3,3) += diffL * diffL;
 		fMatrix(4,4) += 100000000.0 * diffC * diffC;
 	}
-	Double_t N = 0.;
-	for (l = 0; l < 6; l++) if (fPoint[l]) N++;
-	fMatrix *= 1./(N++ * N);
+	Double_t n = 0.;
+	for (l = 0; l < 6; l++) if (fPoint[l]) n++;
+	fMatrix *= 1./(n++ * n);
 	return kTRUE;
 }
 //
@@ -604,11 +652,12 @@ Bool_t AliITSNeuralTrack::Filter(AliITSNeuralPoint *test)
 //
 //
 Bool_t AliITSNeuralTrack::KalmanFit()
+{
 // Applies the Kalman Filter to improve the track parameters resolution.
 // First, thre point which lies closer to the estimated helix is chosen.
 // Then, a fit is performed towards the 6th layer
 // Finally, the track is refitted to the 1st layer
-{
+
 	Double_t rho;
 	Int_t l, layer, sign;
 	
@@ -693,63 +742,63 @@ Bool_t AliITSNeuralTrack::RiemannFit()
 	for (i = 0; i < 6; i++) m1(i,0) = 1.0;
 
 	// X - matrix of Rieman projection coordinates
-	TMatrixD X(6,3);
+	TMatrixD mX(6,3);
 	for (i = 0; i < 6; i++) {
-		X(i,0) = fPoint[i]->X();
-		X(i,1) = fPoint[i]->Y();
-		X(i,2) = fPoint[i]->GetR2sq();
+		mX(i,0) = fPoint[i]->X();
+		mX(i,1) = fPoint[i]->Y();
+		mX(i,2) = fPoint[i]->GetR2sq();
 	}
 
 	// W - matrix of weights
 	Double_t xterm, yterm, ex, ey;
-	TMatrixD W(6,6);
+	TMatrixD mW(6,6);
 	for (i = 0; i < 6; i++) {
 		xterm = fPoint[i]->X() * fPoint[i]->GetPhi() - fPoint[i]->Y() / fPoint[i]->GetR2();
 		ex = fPoint[i]->ErrX();
 		yterm = fPoint[i]->Y() * fPoint[i]->GetPhi() + fPoint[i]->X() / fPoint[i]->GetR2();
 		ey = fPoint[i]->ErrY();
-		W(i,i) = fPoint[i]->GetR2sq() / (xterm * xterm * ex * ex + yterm * yterm * ey * ey);
+		mW(i,i) = fPoint[i]->GetR2sq() / (xterm * xterm * ex * ex + yterm * yterm * ey * ey);
 	}
 
 	// Xm - weighted sample mean
-	Double_t Xm = 0.0, Ym = 0.0, Wm = 0.0, sw = 0.0;
+	Double_t meanX = 0.0, meanY = 0.0, meanW = 0.0, sw = 0.0;
 	for (i = 0; i < 6; i++) {
-		Xm += W(i,i) * X(i,0);
-		Ym += W(i,i) * X(i,1);
-		Wm += W(i,i) * X(i,2);
-		sw += W(i,i);
+		meanX += mW(i,i) * mX(i,0);
+		meanY += mW(i,i) * mX(i,1);
+		meanW += mW(i,i) * mX(i,2);
+		sw += mW(i,i);
 	}
-	Xm /= sw;
-	Ym /= sw;
-	Wm /= sw;
+	meanX /= sw;
+	meanY /= sw;
+	meanW /= sw;
 
 	// V - sample covariance matrix
 	for (i = 0; i < 6; i++) {
-		X(i,0) -= Xm;
-		X(i,1) -= Ym;
-		X(i,2) -= Wm;
+		mX(i,0) -= meanX;
+		mX(i,1) -= meanY;
+		mX(i,2) -= meanW;
 	}
-	TMatrixD Xt(TMatrixD::kTransposed, X);
-	TMatrixD WX(W, TMatrixD::kMult, X);
-	TMatrixD V(Xt, TMatrixD::kMult, WX);
+	TMatrixD mXt(TMatrixD::kTransposed, mX);
+	TMatrixD mWX(mW, TMatrixD::kMult, mX);
+	TMatrixD mV(mXt, TMatrixD::kMult, mWX);
 	for (i = 0; i < 3; i++) {
 		for (j = i + 1; j < 3; j++) {
-			V(i,j)  = V(j,i)  = (V(i,j) + V(j,i)) * 0.5;
+			mV(i,j)  = mV(j,i)  = (mV(i,j) + mV(j,i)) * 0.5;
 		}
 	}
 
 	// Eigenvalue problem solving for V matrix
 	Int_t ileast = 0;
-	TVectorD Eval(3), n(3);
-	TMatrixD Evec = V.EigenVectors(Eval);
-	if (Eval(1) < Eval(ileast)) ileast = 1;
-	if (Eval(2) < Eval(ileast)) ileast = 2;
-	n(0) = Evec(0, ileast);
-	n(1) = Evec(1, ileast);
-	n(2) = Evec(2, ileast);
+	TVectorD eval(3), n(3);
+	TMatrixD evec = mV.EigenVectors(eval);
+	if (eval(1) < eval(ileast)) ileast = 1;
+	if (eval(2) < eval(ileast)) ileast = 2;
+	n(0) = evec(0, ileast);
+	n(1) = evec(1, ileast);
+	n(2) = evec(2, ileast);
 
 	// c - known term in the plane intersection with Riemann axes
-	Double_t c = -(Xm * n(0) + Ym * n(1) + Wm * n(2));
+	Double_t c = -(meanX * n(0) + meanY * n(1) + meanW * n(2));
 
 	fXC = -n(0) / (2. * n(2));
 	fYC = -n(1) / (2. * n(2));
@@ -787,15 +836,15 @@ Bool_t AliITSNeuralTrack::RiemannFit()
 		fG0 = angle - 0.5 * TMath::Pi();
 	diff = angle - fG0;
 
-	Double_t D = TMath::Sqrt(fXC*fXC + fYC*fYC) - fR;
+	Double_t d = TMath::Sqrt(fXC*fXC + fYC*fYC) - fR;
 	if (fC >= 0.E0)
-		fDt = D;
+		fDt = d;
 	else
-		fDt = -D;
+		fDt = -d;
 
-	Int_t N = 6;
+	Int_t nn = 6;
 	Double_t halfC = 0.5 * fC;
-	Double_t *s = new Double_t[N], *z = new Double_t[N], *ws = new Double_t[N];
+	Double_t *s = new Double_t[nn], *z = new Double_t[nn], *ws = new Double_t[nn];
 	for (j = 0; j < 6; j++) {
 		p = fPoint[j];
 		if (!p) break;
@@ -807,22 +856,22 @@ Bool_t AliITSNeuralTrack::RiemannFit()
 	}
 
 	// second tep final fit
-	Double_t Ss2 = 0.0, Sz = 0.0, Ssz = 0.0, Ss = 0.0, sumw = 0.0;
-	for (i = 0; i < N; i++) {
-		Ss2 += ws[i] * s[i] * s[i];
-		Sz  += ws[i] * z[i];
-		Ss  += ws[i] * s[i];
-		Ssz += ws[i] * s[i] * z[i];
+	Double_t sums2 = 0.0, sumz = 0.0, sumsz = 0.0, sums = 0.0, sumw = 0.0;
+	for (i = 0; i < nn; i++) {
+		sums2 += ws[i] * s[i] * s[i];
+		sumz  += ws[i] * z[i];
+		sums  += ws[i] * s[i];
+		sumsz += ws[i] * s[i] * z[i];
 		sumw += ws[i];
 	}
-	Ss2 /= sumw;
-	Sz /= sumw;
-	Ss /= sumw;
-	Ssz /= sumw;
-	D = Ss2 - Ss*Ss;
+	sums2 /= sumw;
+	sumz /= sumw;
+	sums /= sumw;
+	sumsz /= sumw;
+	d = sums2 - sums*sums;
 
-	fDz = (Ss2*Sz - Ss*Ssz) / D;
-	fTanL = (Ssz - Ss*Sz) / D;
+	fDz = (sums2*sumz - sums*sumsz) / d;
+	fTanL = (sumsz - sums*sumz) / d;
 
 	delete [] s;
 	delete [] z;
@@ -834,9 +883,10 @@ Bool_t AliITSNeuralTrack::RiemannFit()
 //
 //
 void AliITSNeuralTrack::PrintState(Bool_t matrix)
+{
 // Prints the state vector values.
 // The argument switches on or off the printing of the covariance matrix.
-{
+
 	cout << "\nState vector: " << endl;
 	cout << " Rho = " << fStateR << "\n";
 	cout << " Phi = " << fStatePhi << "\n";
@@ -857,7 +907,7 @@ void AliITSNeuralTrack::PrintState(Bool_t matrix)
 //
 //
 //
-Double_t AliITSNeuralTrack::GetDz()
+Double_t AliITSNeuralTrack::GetDz() const
 {
 //	Double_t argZ = ArgZ(fStateR);
 //	if (argZ > 9.9) {
@@ -870,7 +920,7 @@ Double_t AliITSNeuralTrack::GetDz()
 //
 //
 //
-Double_t AliITSNeuralTrack::GetGamma()
+Double_t AliITSNeuralTrack::GetGamma() const
 {
 // these two parameters are update according to the filtered values
 //	Double_t argPhi = ArgPhi(fStateR);
@@ -884,10 +934,11 @@ Double_t AliITSNeuralTrack::GetGamma()
 //
 //
 //
-Double_t AliITSNeuralTrack::GetPhi(Double_t r)
+Double_t AliITSNeuralTrack::GetPhi(Double_t r) const
+{
 // Gives the value of azymuthal coordinate in the helix
 // as a function of cylindric radius
-{
+
 	Double_t arg = ArgPhi(r);
 	if (arg > 0.9) return 0.0;
 	arg = fG0 + asin(arg);
@@ -898,10 +949,11 @@ Double_t AliITSNeuralTrack::GetPhi(Double_t r)
 //
 //
 //
-Double_t AliITSNeuralTrack::GetZ(Double_t r)
+Double_t AliITSNeuralTrack::GetZ(Double_t r) const
+{
 // gives the value of Z in the helix
 // as a function of cylindric radius
-{
+
 	Double_t arg = ArgZ(r);
 	if (arg > 0.9) return 0.0;
 	return fDz + fTanL * asin(arg) / fC;
@@ -911,6 +963,8 @@ Double_t AliITSNeuralTrack::GetZ(Double_t r)
 //
 Double_t AliITSNeuralTrack::GetdEdX()
 {
+// total energy loss of the track
+
 	Double_t q[4] = {0., 0., 0., 0.}, dedx = 0.0;
         Int_t i = 0, swap = 0;
         for (i = 2; i < 6; i++) {
@@ -964,8 +1018,9 @@ void AliITSNeuralTrack::SetVertex(Double_t *pos, Double_t *err)
 //
 //
 AliITSIOTrack* AliITSNeuralTrack::ExportIOtrack(Int_t min)
-// Exports an object in the standard format for reconstructed tracks
 {
+// Exports an object in the standard format for reconstructed tracks
+
 	Int_t layer = 0;
 	AliITSIOTrack *track = new AliITSIOTrack;
 
@@ -1063,6 +1118,8 @@ Double_t AliITSNeuralTrack::ArgZ(Double_t r) const
 //
 Double_t AliITSNeuralTrack::ArgB(Double_t r) const 
 {
+// UTILITY FUNCTION 
+
 	Double_t arg;
 	arg = (r*r - fDt*fDt);
 	arg /= (r*(1.+ fC*fDt)*(1.+ fC*fDt));
@@ -1073,6 +1130,8 @@ Double_t AliITSNeuralTrack::ArgB(Double_t r) const
 //
 Double_t AliITSNeuralTrack::ArgC(Double_t r) const 
 {
+// UTILITY FUNCTION
+
 	Double_t arg;
 	arg = (1./r - fC * ArgPhi(r));
 	arg /= 1.+ fC*fDt;

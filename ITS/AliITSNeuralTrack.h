@@ -12,6 +12,7 @@ class AliITSNeuralTrack : public TObject {
 
 public:
 	         AliITSNeuralTrack();
+				AliITSNeuralTrack(AliITSNeuralTrack &track);
 	virtual ~AliITSNeuralTrack();
 		
 	// Points insertion and goodness evaluation
@@ -40,31 +41,30 @@ public:
 
 	// Getters
 
-	Int_t    GetLabel()        {return fLabel;}
-	Int_t    GetCount()        {return fCount;}
-	Double_t GetDt()           {return fDt;}
-	Double_t GetDz();          
-	Double_t GetC()            {return fC;}
-	Double_t GetR()            {return fR;}
-	Double_t GetXC()           {return fXC;}
-	Double_t GetYC()           {return fYC;}
-	Double_t GetTanL()         {return fTanL;}
-	Double_t GetGamma();       
-	Double_t GetChi2()         {return fChi2;}
-	Double_t GetStateR()       {return fStateR;}
-	Double_t GetStatePhi()     {return fStatePhi;}
-	Double_t GetStateZ()       {return fStateZ;}
-	Double_t GetCovElement(Int_t i, Int_t j) {return fMatrix(i,j);}
-	Double_t GetPhi(Double_t r);        // phi = gamma0 + asin(argphi(rho))
-	Double_t GetZ(Double_t r);          // z = dz + (tanl / C) * asin(argz(rho))
-	
+	Int_t    GetLabel() const  {return fLabel;}
+	Int_t    GetCount() const  {return fCount;}
+	Double_t GetDt()    const  {return fDt;}
+	Double_t GetDz()    const;          
+	Double_t GetC()     const  {return fC;}
+	Double_t GetR()     const  {return fR;}
+	Double_t GetXC()    const  {return fXC;}
+	Double_t GetYC()    const  {return fYC;}
+	Double_t GetTanL()  const  {return fTanL;}
+	Double_t GetGamma() const;       
+	Double_t GetChi2()  const  {return fChi2;}
+	Double_t GetStateR() const {return fStateR;}
+	Double_t GetStatePhi() const {return fStatePhi;}
+	Double_t GetStateZ() const {return fStateZ;}
+	Double_t GetCovElement(Int_t i, Int_t j) const {return fMatrix(i,j);}
+	Double_t GetPhi(Double_t r) const;  // phi = gamma0 + asin(argphi(rho))
+	Double_t GetZ(Double_t r) const;    // z = dz + (tanl / C) * asin(argz(rho))
 
 	Double_t GetP()       {return GetPt() * (1.0 + fTanL * fTanL);}
 	Double_t GetPt()      {return 0.299792658 * 0.2 * fField * fabs(1./fC/100.);}
 	Double_t GetPz()      {return GetPt() * fTanL;}
 	Double_t GetE()       {return sqrt(fMass*fMass + GetPt()*GetPt());}
 	Double_t GetLambda()  {return atan(fTanL);}
-	Int_t    GetPDGcode() {return fPDG;}
+	Int_t    GetPDGcode() const {return fPDG;}
 	Double_t GetdEdX();
 
 	// Setters
@@ -103,9 +103,9 @@ private:
 	Double_t fDt;       // transverse impact parameter
 	Double_t fDz;       // longitudinal impact parameter
 
-	Double_t fStateR;   //
+	Double_t fStateR;   // state vector coordinates
 	Double_t fStatePhi; // state vector coordinates
-	Double_t fStateZ;   //
+	Double_t fStateZ;   // state vector coordinates
 	TMatrixD fMatrix;   // covariance matrix
 	Double_t fChi2;     // square chi (calculated by Kalman filter)
 	Double_t fNSteps;   // number of Kalman steps
