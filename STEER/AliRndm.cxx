@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/12/01 08:40:48  alibrary
+Correction of a small bug - sRandom can be used now
+
 Revision 1.1  2000/11/30 07:12:48  alibrary
 Introducing new Rndm and QA classes
 
@@ -52,6 +55,9 @@ void AliRndm::Rndm(Float_t* array, const Int_t size) const
 //_____________________________________________________________________________
 void AliRndm::ReadRandom(const char *filename)
 {
+  //
+  // Reads saved random generator status from filename
+  //
   char *fntmp = gSystem->ExpandPathName(filename);
   TFile *file = new TFile(fntmp,"r");
   delete [] fntmp;
@@ -68,6 +74,9 @@ void AliRndm::ReadRandom(const char *filename)
 //_____________________________________________________________________________
 void AliRndm::WriteRandom(const char *filename) const
 {
+  //
+  // Writes random generator status to filename
+  //
   char *fntmp = gSystem->ExpandPathName(filename);
   TFile *file = new TFile(fntmp,"new");
   delete [] fntmp;

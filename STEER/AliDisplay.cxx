@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/12/12 13:18:59  hristov
+Protection against FPE
+
 Revision 1.11  2000/11/30 07:12:48  alibrary
 Introducing new Rndm and QA classes
 
@@ -302,7 +305,11 @@ void AliDisplay::Copy(AliDisplay &disp) const
 }
 
 //----------------------------------------------------------------------------
-void AliDisplay::ShowTrack(Int_t idx) {
+void AliDisplay::ShowTrack(Int_t idx) 
+{
+  //
+  // Display track idx
+  //
    AliDetector *mTPC=(AliDetector*)gAlice->GetModule("TPC");
    TObjArray *points=mTPC->Points();
    int ntracks=points->GetEntriesFast();

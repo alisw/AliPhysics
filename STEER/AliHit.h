@@ -8,12 +8,6 @@
 #include "TObject.h"
 
 class AliHit : public TObject {
-protected:
-  Int_t     fTrack;  // Track number
-  Float_t   fX;      // X position of the hit
-  Float_t   fY;      // Y position of the hit
-  Float_t   fZ;      // Z position of the hit
-
 public:
   AliHit();
   AliHit(Int_t shunt, Int_t track);
@@ -25,6 +19,12 @@ public:
   virtual Float_t Z() const {return fZ;}
   virtual Int_t Track() const {return fTrack;}
   
+protected:
+  Int_t     fTrack;  // Track number
+  Float_t   fX;      // X position of the hit
+  Float_t   fY;      // Y position of the hit
+  Float_t   fZ;      // Z position of the hit
+
   ClassDef(AliHit,1)  //Base class for all Alice hits
 };
 #endif

@@ -12,9 +12,10 @@
 //                                                       //
 ///////////////////////////////////////////////////////////
 
+class TGenerator;
+
 #include "TLorentzVector.h"
 #include "TArrayF.h"
-#include "TGenerator.h"
 #include "AliRndm.h"
 
 typedef enum { kNoSmear, kPerEvent, kPerTrack } VertexSmear_t;

@@ -18,6 +18,7 @@ class AliKalmanTrack : public TObject {
 public:
   AliKalmanTrack() {fN=0; fChi2=0; fLab=-3141593;}
   AliKalmanTrack(const AliKalmanTrack& t);
+  virtual ~AliKalmanTrack() {}
   Int_t Compare(TObject *o);
   void SetLabel(Int_t lab) {fLab=lab;} 
 
@@ -37,11 +38,11 @@ public:
 protected: 
   Int_t fLab;             // track label
 
-  Double_t fP0;           // 
-  Double_t fP1;           // 
-  Double_t fP2;           // track parameters
-  Double_t fP3;           // 
-  Double_t fP4;           // 
+  Double_t fP0;           // track parameter
+  Double_t fP1;           // track parameter
+  Double_t fP2;           // track parameter
+  Double_t fP3;           // track parameter
+  Double_t fP4;           // track parameter
 
   Double_t fC00;                         // covariance
   Double_t fC10, fC11;                   // matrix

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/04 10:08:01  fca
+Correction of minor typing mistakes
+
 Revision 1.8  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -53,6 +56,7 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////
 
 #include "AliGenerator.h"
+#include "TGenerator.h"
 #include "AliRun.h"
 
 ClassImp(AliGenerator)

@@ -25,6 +25,7 @@ public:
     AliLegoGenerator(Int_t nc1, Float_t c1min, Float_t c1max,
 		     Int_t nc2, Float_t c2min, Float_t c2max,
 		     Float_t rmin, Float_t rmax, Float_t zmax);
+    virtual ~AliLegoGenerator() {}
     virtual void    Generate();
     virtual void    SetCoor1Range(Int_t nbin, Float_t c1min, Float_t c1max)
 	{fNCoor1=nbin; fCoor1Min=c1min; fCoor1Max=c1max;}

@@ -14,6 +14,7 @@
 class THijing;
 class TArrayI;
 class TParticle;
+class TClonesArray;
 
 class AliGenHijing : public AliGenerator
 {

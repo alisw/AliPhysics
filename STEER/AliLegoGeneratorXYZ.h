@@ -24,6 +24,7 @@ class AliLegoGeneratorXYZ : public AliLegoGenerator
     AliLegoGeneratorXYZ(Int_t nc1, Float_t c1min, Float_t c1max,
 			Int_t nc2, Float_t c2min, Float_t c2max,
 			Float_t rmin, Float_t rmax, Float_t zmax);
+    virtual ~AliLegoGeneratorXYZ() {}
     virtual void    Generate();
  protected:
     Float_t fDir1[3];  // 1st unit vector spanning the scanning plane
