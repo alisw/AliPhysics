@@ -90,7 +90,7 @@ void AliBarrelRec_TPCparam(Int_t n=-1,Char_t mode='A') {
   //    --- for pp/pA ---
   //    Vtx4Tracking = 'P'   z from pixels, x,y in(0,0)
   Char_t Vtx4Tracking = 'P';
-  // _Primary_vertex_for_analysis_ (AliITSVertex stored in tracks file)
+  // _Primary_vertex_for_analysis_ (AliESDVertex stored in tracks file)
   // Available choices:
   //    Vtx4Analysis = 'C'   Copy the same used for tracking
   //    --- for pp/pA ---
@@ -179,7 +179,7 @@ void CopyVtx(const Char_t *inName,const Char_t *outName) {
 
   for(Int_t ev=0; ev<gNevents; ev++) {
     sprintf(vname,"Vertex_%d",ev);
-    AliITSVertex *vertex = (AliITSVertex*)inFile->Get(vname);
+    AliESDVertex *vertex = (AliESDVertex*)inFile->Get(vname);
     if(!vertex) continue;
     curdir = gDirectory;
     outFile->cd();
@@ -270,12 +270,12 @@ Int_t ITSFindTracksV2(Int_t *skipEvt) {
 
     // set position of primary vertex
     sprintf(vname,"Vertex_%d",ev);
-    AliITSVertex *vertex = (AliITSVertex*)inVertex->Get(vname);
+    AliESDVertex *vertex = (AliESDVertex*)inVertex->Get(vname);
     if(vertex) {
       vertex->GetXYZ(vtx);
       delete vertex;
     } else {
-      printf(" AliITSVertex not found for event %d\n",ev);
+      printf(" AliESDVertex not found for event %d\n",ev);
       printf(" Using (0,0,0) for ITS tracking\n");
       vtx[0] = vtx[1] = vtx[2] = 0.;
     }
@@ -559,18 +559,18 @@ void VtxFromHeader(const Char_t *outName,Bool_t smear) {
 	pos[1] = gRandom->Gaus(pos[1],sigma[1]);
 	pos[2] = gRandom->Gaus(pos[2],sigma[2]);
       }
-      // create AliITSVertex
-      AliITSVertex *vertex = new AliITSVertex(pos,sigma,vname);
+      // create AliESDVertex
+      AliESDVertex *vertex = new AliESDVertex(pos,sigma,vname);
     } else {
       printf(" ! event header not found : setting vertex to (0,0,0) !");
       pos[0] = 0.;
       pos[1] = 0.;
       pos[2] = 0.;
-      // create AliITSVertex
-      AliITSVertex *vertex = new AliITSVertex(pos,sigma,vname);
+      // create AliESDVertex
+      AliESDVertex *vertex = new AliESDVertex(pos,sigma,vname);
     }    
     delete header;
-    // write AliITSVertex to file
+    // write AliESDVertex to file
     curdir = gDirectory;
     outFile->cd();
     if(smear) {

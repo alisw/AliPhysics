@@ -15,7 +15,7 @@
 #include "AliRunLoader.h"
 #include "AliMagF.h"
 #include "AliKalmanTrack.h"
-#include "AliITSVertex.h"
+#include "AliESDVertex.h"
 #include "AliITSVertexer.h"
 #include "AliITSVertexerTracks.h"
 //-------------------------------------

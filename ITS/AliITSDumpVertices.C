@@ -7,7 +7,7 @@ void AliITSDumpVertices(Int_t firstEv=0, Int_t noev=1,
   ITSloader->LoadVertices();
   for(Int_t i=firstEv; i<evmax; i++){
     rl->GetEvent(i);
-    AliITSVertex *vert = ITSloader->GetVertex();
+    AliESDVertex *vert = ITSloader->GetVertex();
     if(vert){
       cout <<"===============================================\n";
       cout <<" Event n. "<<i<<endl;

@@ -54,7 +54,7 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
   Int_t meno200=0;
   Int_t meno110=0;
   Int_t sigmazero=0;
-  AliITSVertex *vert = 0;
+  AliESDVertex *vert = 0;
   for(Int_t i=0; i<rl->TreeE()->GetEntries(); i++){
     rl->GetEvent(i);
     // The true Z coord. is fetched for comparison

@@ -47,7 +47,7 @@ void AliITSFindPrimaryVertex(Int_t evNumber1=0,Int_t NumbofEv=1, const char *fil
   // Open output file for vertices (default name: ITS.Vertex.root 
   // and Create vertexer
   AliITSVertexerIons *vertexer = new AliITSVertexerIons("default");
-  AliITSVertex *V;
+  AliESDVertex *V;
   //   Loop over events 
   //
  
