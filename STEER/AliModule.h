@@ -93,11 +93,13 @@ public:
   //virtual void        Hits2Digits() {}
   virtual void        Init() {}
   virtual void        LoadPoints(Int_t ) {}
-  virtual void        MakeBranch(Option_t *, const char *file=0 ) {}
+  virtual void        MakeBranch(Option_t *, const char *file=0 ) {} 
+  virtual void        MakeBranchTR(Option_t *opt=" ", const char *file=0 ){}
   virtual void        Paint(Option_t *) {}
   virtual void        ResetDigits() {}
   virtual void        ResetSDigits() {}
   virtual void        ResetHits() {}
+  virtual void        ResetTrackReferences() {}
   virtual void        ResetPoints() {}
   virtual void        SetTreeAddress() {}
   virtual void        SetTimeGate(Float_t) {}

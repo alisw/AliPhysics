@@ -114,6 +114,7 @@ public:
    virtual  void  ResetDigits();
    virtual  void  ResetSDigits();
    virtual  void  ResetHits();
+   virtual  void  ResetTrackReferences();
    virtual  void  ResetPoints();
    virtual  void  SetTransPar(char *filename="$(ALICE_ROOT)/data/galice.cuts");
    virtual  void  SetBaseFile(char *filename="galice.root");
@@ -172,6 +173,7 @@ public:
    TTree         *TreeS() {return fTreeS;}
    TTree         *TreeE() {return fTreeE;}
    TTree         *TreeH() {return fTreeH;}
+   TTree         *TreeTR() {return fTreeTR;}
    TTree         *TreeK() ;
    TTree         *TreeR() {return fTreeR;}
 
@@ -189,6 +191,7 @@ protected:
   TTree         *fTreeD;             //! Pointer to Tree for Digits
   TTree         *fTreeS;             //! Pointer to Tree for SDigits
   TTree         *fTreeH;             //! Pointer to Tree for Hits
+  TTree         *fTreeTR;            //! Pointer to Tree for TrackRefernces
   TTree         *fTreeE;             //! Pointer to Tree for Header
   TTree         *fTreeR;             //! Pointer to Tree for Reconstructed Objects
   TObjArray     *fModules;           //  List of Detectors

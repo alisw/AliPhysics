@@ -66,6 +66,7 @@ public:
    virtual void      UnZoom(); // *MENU*
    AliDisplay&       operator= (const AliDisplay &disp);
    
+   void              SetTracksToDisplay(Int_t *tracks, Int_t n);  // set tracks to display
 protected:
    Int_t             fZoomMode;             //=1 if in zoom mode
    Bool_t            fDrawAllViews;         //Flag True if AllViews selected
@@ -97,6 +98,8 @@ protected:
    TArc             *fArcButton;            //Gren/Red button to show Pick/Zoom mode
    TList            *fFruits;               //List for fruits
 
+   Int_t            *fTracksToDisplay;      // array of tracks to display
+   Int_t             fNTracksToDisplay;     // number of tracks to display
    ClassDef(AliDisplay, 0)   //Utility class to display ALICE outline, tracks, hits,..
 };
 

@@ -56,6 +56,7 @@
 #pragma link C++ class  AliMergeCombi+;
 #pragma link C++ class  AliFieldMap-;
 #pragma link C++ class  AliGausCorr+;
+#pragma link C++ class  AliTrackReference+;
 #pragma link C++ class  AliESD+;
 #pragma link C++ class  AliESDTrack+;
 #pragma link C++ class  AliESDVertex+;

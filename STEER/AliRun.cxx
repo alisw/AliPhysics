@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.84  2002/05/21 16:26:07  hristov
+Find correctly TreeK in case CONFIG_SPLIT_FILE is set (Y.Schutz)
+
 Revision 1.83  2002/04/04 13:16:17  jchudoba
 add possibility to write sdigits, digits and rec. points into separate files
 
@@ -292,6 +295,7 @@ AliRun::AliRun()
   fGenerator = 0;
   fTreeD     = 0;
   fTreeH     = 0;
+  fTreeTR    = 0;
   fTreeE     = 0;
   fTreeR     = 0;
   fTreeS     = 0;
@@ -336,6 +340,7 @@ AliRun::AliRun(const char *name, const char *title)
   gAlice     = this;
   fTreeD     = 0;
   fTreeH     = 0;
+  fTreeTR    = 0;
   fTreeE     = 0;
   fTreeR     = 0;
   fTreeS     = 0;
@@ -419,6 +424,7 @@ AliRun::~AliRun()
   delete fLego;
   delete fTreeD;
   delete fTreeH;
+  delete fTreeTR;
   delete fTreeE;
   delete fTreeR;
   delete fTreeS;
@@ -488,6 +494,7 @@ void AliRun::Browse(TBrowser *b)
     
   if (pTreeK) b->Add(pTreeK,pTreeK->GetName());
   if (fTreeH) b->Add(fTreeH,fTreeH->GetName());
+  if (fTreeTR) b->Add(fTreeTR,fTreeH->GetName());
   if (fTreeD) b->Add(fTreeD,fTreeD->GetName());
   if (fTreeE) b->Add(fTreeE,fTreeE->GetName());
   if (fTreeR) b->Add(fTreeR,fTreeR->GetName());
@@ -647,6 +654,12 @@ void AliRun::FinishPrimary()
   if (gAlice->TreeH()) {
     gAlice->TreeH()->Fill();
   }
+
+  // Write out hits if any
+  if (gAlice->TreeTR()) {
+    gAlice->TreeTR()->Fill();
+  }
+
   
   //
   //  if(++count%times==1) gObjectTable->Print();
@@ -661,7 +674,7 @@ void AliRun::BeginPrimary()
   
   // Reset Hits info
   gAlice->ResetHits();
-
+  gAlice->ResetTrackReferences();
 }
 
 //_____________________________________________________________________________
@@ -703,6 +716,7 @@ void AliRun::FinishEvent()
   TTree* pTreeK = fStack->TreeK();
   if (pTreeK) pTreeK->Write(0,TObject::kOverwrite);
   if (fTreeH) fTreeH->Write(0,TObject::kOverwrite);
+  if (fTreeTR) fTreeTR->Write(0,TObject::kOverwrite);
   
   ++fEvent;
   ++fEventNrInRun;
@@ -744,6 +758,10 @@ void AliRun::FinishRun()
   if (fTreeH) {
     delete fTreeH; fTreeH = 0;
   }
+  if (fTreeTR) {
+    delete fTreeTR; fTreeTR = 0;
+  }
+
   if (fTreeD) {
     delete fTreeD; fTreeD = 0;
   }
@@ -876,11 +894,13 @@ Int_t AliRun::GetEvent(Int_t event)
 
   // Reset existing structures
   ResetHits();
+  ResetTrackReferences();
   ResetDigits();
   ResetSDigits();
   
   // Delete Trees already connected
   if (fTreeH) { delete fTreeH; fTreeH = 0;}
+  if (fTreeTR) { delete fTreeTR; fTreeTR = 0;}
   if (fTreeD) { delete fTreeD; fTreeD = 0;}
   if (fTreeR) { delete fTreeR; fTreeR = 0;}
   if (fTreeS) { delete fTreeS; fTreeS = 0;}
@@ -922,6 +942,13 @@ Int_t AliRun::GetEvent(Int_t event)
   fTreeH = (TTree*)gDirectory->Get(treeName);
   if (!fTreeH) {
       Error("GetEvent","cannot find Hits Tree for event:%d\n",event);
+  }
+
+  // Get TracReferences Tree header from file
+  sprintf(treeName,"TreeTR%d",event);
+  fTreeTR = (TTree*)gDirectory->Get(treeName);
+  if (!fTreeTR) {
+      Error("GetEvent","cannot find TrackRefernces Tree for event:%d\n",event);
   }
 
   // get current file name and compare with names containing trees S,D,R
@@ -1343,6 +1370,7 @@ void AliRun::MakeTree(Option_t *option, const char *file)
   // Analyse options
   const char *oK = strstr(option,"K");
   const char *oH = strstr(option,"H");
+  const char *oTR = strstr(option,"T");
   const char *oE = strstr(option,"E");
   const char *oD = strstr(option,"D");
   const char *oR = strstr(option,"R");
@@ -1388,6 +1416,14 @@ void AliRun::MakeTree(Option_t *option, const char *file)
     fTreeH->SetAutoSave(1000000000); //no autosave
     fTreeH->Write(0,TObject::kOverwrite);
   }
+
+  if (oTR && !fTreeTR) {
+    sprintf(hname,"TreeTR%d",fEvent);
+    fTreeTR = new TTree(hname,"TrackReferences");
+    fTreeTR->SetAutoSave(1000000000); //no autosave
+    fTreeTR->Write(0,TObject::kOverwrite);
+  }
+
   if (oD && !fTreeD) {
     sprintf(hname,"TreeD%d",fEvent);
     fTreeD = new TTree(hname,"Digits");
@@ -1411,8 +1447,11 @@ void AliRun::MakeTree(Option_t *option, const char *file)
   TIter next(fModules);
   AliModule *detector;
   while((detector = (AliModule*)next())) {
-     if (oH) detector->MakeBranch(option,file);
+     if (oH) detector->MakeBranch(option,file); 
+     if (oTR) detector->MakeBranchTR(option,file);
   }
+
+
 }
 
 //_____________________________________________________________________________
@@ -1452,6 +1491,7 @@ void AliRun::BeginEvent()
   //
 
   ResetHits();
+  ResetTrackReferences();
   ResetDigits();
   ResetSDigits();
 
@@ -1461,6 +1501,13 @@ void AliRun::BeginEvent()
     sprintf(hname,"TreeH%d",fEvent);
     fTreeH->SetName(hname);
   }
+
+  if(fTreeTR) {
+    fTreeTR->Reset();
+    sprintf(hname,"TreeTR%d",fEvent);
+    fTreeTR->SetName(hname);
+  }
+
   if(fTreeD) {
     fTreeD->Reset();
     sprintf(hname,"TreeD%d",fEvent);
@@ -1520,6 +1567,21 @@ void AliRun::ResetHits()
 }
 
 //_____________________________________________________________________________
+void AliRun::ResetTrackReferences()
+{
+  //
+  //  Reset all Detectors hits
+  //
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
+     detector->ResetTrackReferences();
+  }
+}
+
+
+
+//_____________________________________________________________________________
 void AliRun::ResetPoints()
 {
   //
@@ -1548,7 +1610,7 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
   
   // Create the Root Tree with one branch per detector
 
-   MakeTree("ESDR");
+  MakeTree("ESDRT"); // MI change
 
   if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {
      MakeTree("K","Kine.root");

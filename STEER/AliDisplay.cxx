@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/10/21 18:38:44  hristov
+Several pointers were set to zero in the default constructors to avoid memory management problems
+
 Revision 1.16  2001/07/25 15:23:50  hristov
 Changes needed to run with Root 3.01 (R.Brun)
 
@@ -77,6 +80,7 @@ Introduction of the Copyright and cvs Log
 #include <TMath.h>
 
 #include "AliRun.h"
+#include "AliStack.h"
 #include "AliDetector.h"
 #include "AliDisplay.h"
 #include "AliPoints.h"
@@ -109,6 +113,8 @@ AliDisplay::AliDisplay()
   fZoomButton = 0;
   fArcButton = 0;
   fFruits = 0;
+  fTracksToDisplay =0;
+  fNTracksToDisplay =0;
 }
 
 //_____________________________________________________________________________
@@ -292,7 +298,8 @@ AliDisplay::AliDisplay(Int_t size)
 
    fTrigPad->SetEditable(kFALSE);
    fButtons->SetEditable(kFALSE);
-   
+   fTracksToDisplay =0;
+   fNTracksToDisplay =0;   
 
    fCanvas->cd();
    fCanvas->Update();
@@ -774,6 +781,13 @@ void AliDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 
 }
  
+
+void AliDisplay::SetTracksToDisplay(Int_t *tracks, Int_t n){
+  //
+  // set tracks to display  - MI
+  fTracksToDisplay = tracks;
+  fNTracksToDisplay = n;
+}
 //___________________________________________
 void AliDisplay::LoadPoints()
 {
@@ -784,14 +798,28 @@ void AliDisplay::LoadPoints()
    TIter next(gAlice->Modules());
    AliModule *module;
    Int_t ntracks = gAlice->GetNtrack();
-   for (Int_t track=0; track<ntracks;track++) {
+   
+   // load only wanted tracks
+   if (fNTracksToDisplay>0){
+     Int_t nprim =  gAlice->Stack()->GetNprimary();
+     for (Int_t track=0; track<fNTracksToDisplay;track++) {
       gAlice->ResetHits();
-      gAlice->TreeH()->GetEvent(track);
+      gAlice->TreeH()->GetEvent(nprim-1-gAlice->GetPrimary(fTracksToDisplay[track]));
       while((module = (AliModule*)next())) {
-         module->LoadPoints(track);
+	module->LoadPoints(nprim-1-gAlice->GetPrimary(fTracksToDisplay[track]));
       }
       next.Reset();
+     }
    }
+   else
+     for (Int_t track=0; track<ntracks;track++) {
+       gAlice->ResetHits();
+       gAlice->TreeH()->GetEvent(track);
+       while((module = (AliModule*)next())) {
+         module->LoadPoints(track);
+       }
+       next.Reset();
+     }
 }
 
 //_____________________________________________________________________________

@@ -24,7 +24,7 @@ SRCS          = AliDetector.cxx	AliHeader.cxx	AliMagF.cxx \
 		AliRunDigitizer.cxx AliDigitizer.cxx\
 		AliStream.cxx AliMergeCombi.cxx \
 		AliMagFMaps.cxx AliFieldMap.cxx \
-        AliGausCorr.cxx AliESD.cxx
+                AliGausCorr.cxx AliTrackReference.cxx AliESD.cxx
 
 # C++ Headers
 
