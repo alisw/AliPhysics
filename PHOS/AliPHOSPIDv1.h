@@ -67,6 +67,8 @@ public:
   void SetParameterPhotonBoundary(Int_t i, Float_t param);
   void SetParameterPi0Boundary   (Int_t i, Float_t param);
 
+  //Switch to "on flyght" mode, without writing to TreeR and file  
+  void SetWriting(const Bool_t toWrite = kFALSE){fWrite = toWrite;} 
   void Print() const ; 
 
   virtual const char * Version() const { return "pid-v1" ; }  
@@ -90,11 +92,12 @@ private:
   void          PrintRecParticles(Option_t * option) ;
   virtual void  WriteRecParticles() ; 
   void          SetParameters() ; //Fills the matrix of parameters
-  void Unload(); 
+  void          Unload(); 
 
 private:
 
   Bool_t      fDefaultInit;              //! kTRUE if the task was created by defaut ctor (only parameters are initialized)
+  Bool_t      fWrite ;                   //! To write result to file 
   Int_t       fNEvent ;                  //! current event number
   TString     fFileNamePrincipalPhoton ; //  File name of the photon principals
   TString     fFileNamePrincipalPi0 ;    //  File name of the pi0 principals

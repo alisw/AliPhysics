@@ -46,6 +46,8 @@ public:
           void   MakeLinks() const;      //Evaluates distances(links) between EMC and CPV
           void   MakePairs() ;           //Finds pairs(triplets) with smallest link
   virtual void   Print() const ;
+  //Switch to "on flyght" mode, without writing to TreeR and file  
+  void SetWriting(const Bool_t toWrite = kFALSE){fWrite = toWrite;} 
   virtual void   SetMaxEmcCPVDistance(Float_t r){ fRcpv = r ;} //Maximal distance (in PHOS plane) 
                                                                //between EMCrp and CPVrp
   virtual void   SetMaxCPVTPCDistance(Float_t r){ fRtpc = r ;} //Maximal distance 
@@ -74,6 +76,7 @@ private:
 private:  
 
   Bool_t  fDefaultInit;               //! Says if the task was created by defaut ctor (only parameters are initialized)
+  Bool_t  fWrite ;                   // Write Tracks to TreeT  
  
   Int_t fNTrackSegments ; // number of track segments found 
 

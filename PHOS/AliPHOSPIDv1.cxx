@@ -160,7 +160,9 @@ void AliPHOSPIDv1::Init()
   // Make all memory allocations that are not possible in default constructor
   // Add the PID task to the list of PHOS tasks
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data()) ; 
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  if(!gime)
+    gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data()) ; 
 
   if ( !gime->PID() ) 
     gime->PostPID(this) ;
@@ -170,6 +172,7 @@ void AliPHOSPIDv1::Init()
 void AliPHOSPIDv1::InitParameters()
 {
   // Initialize PID parameters
+  fWrite                   = kTRUE ;
   fRecParticlesInRun = 0 ; 
   fNEvent            = 0 ;            
   fRecParticlesInRun = 0 ;
@@ -220,7 +223,7 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
   }
 
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle()) ; 
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
  
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
@@ -250,7 +253,8 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
 	 gBenchmark->GetCpuTime("PHOSPID"),  
 	 gBenchmark->GetCpuTime("PHOSPID")/nEvents) ;
   }
-  Unload();
+  if(fWrite)
+    Unload();
 }
 
 //____________________________________________________________________________
@@ -552,7 +556,11 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
 
   //account correction to the position of IP
   Float_t xo,yo,zo ; //Coordinates of the origin
-  gAlice->Generator()->GetOrigin(xo,yo,zo) ;
+  if(gAlice && gAlice->GetMCApp() && gAlice->Generator())
+    gAlice->Generator()->GetOrigin(xo,yo,zo) ;
+  else{
+    xo=yo=zo=0.;
+  }
   TVector3 origin(xo,yo,zo);
   dir = dir - origin ;
 
@@ -609,6 +617,7 @@ void  AliPHOSPIDv1::MakePID()
     // now get the signals probability
     // s(pid) in the Bayesian formulation
     // Tof
+
     stof[AliESDtrack::kPhoton][index]   = fTFphoton->Eval(recpar->ToF()) ; 
     stof[AliESDtrack::kPi0][index]      = fTFphoton->Eval(recpar->ToF()) ; // pi0 are detected via decay photon 
     stof[AliESDtrack::kElectron][index] = fTFelectron->Eval(recpar->ToF()) ; 
@@ -619,7 +628,7 @@ void  AliPHOSPIDv1::MakePID()
     stof[AliESDtrack::kEleCon][index]   = fTFphoton->Eval(recpar->ToF()) ; // a conversion electron has the photon ToF
     stof[AliESDtrack::kKaon0][index]    = 0 ; // do not know yet what to to with K0
     stof[AliESDtrack::kMuon][index]     = 0 ; // do not know yet what to do with muon
-
+    
   }
   for (index = 0 ; index < kSPECIES ; index++) 
     pid[index] /= nparticles ; 
@@ -999,16 +1008,18 @@ void  AliPHOSPIDv1::WriteRecParticles()
 
   TClonesArray * recParticles = gime->RecParticles() ; 
   recParticles->Expand(recParticles->GetEntriesFast() ) ;
-  TTree * treeP =  gime->TreeP();
-  
-  //First rp
-  Int_t bufferSize = 32000 ;
-  TBranch * rpBranch = treeP->Branch("PHOSRP",&recParticles,bufferSize);
-  rpBranch->SetTitle(BranchName());
-  
-  rpBranch->Fill() ;
- 
-  gime->WriteRecParticles("OVERWRITE");
-  gime->WritePID("OVERWRITE");
+  if(fWrite){
+    TTree * treeP =  gime->TreeP();
+    
+    //First rp
+    Int_t bufferSize = 32000 ;
+    TBranch * rpBranch = treeP->Branch("PHOSRP",&recParticles,bufferSize);
+    rpBranch->SetTitle(BranchName());
+    
+    rpBranch->Fill() ;
+    
+    gime->WriteRecParticles("OVERWRITE");
+    gime->WritePID("OVERWRITE");
+  }
 }
 

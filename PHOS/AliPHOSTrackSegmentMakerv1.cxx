@@ -236,7 +236,9 @@ void  AliPHOSTrackSegmentMakerv1::Init()
 {
   // Make all memory allocations that are not possible in default constructor
   
-  AliPHOSGetter* gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data());
+  AliPHOSGetter* gime = AliPHOSGetter::Instance();
+  if(!gime)
+    gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data());
   
   fLinkUpArray  = new TClonesArray("AliPHOSLink", 1000); 
   if ( !gime->TrackSegmentMaker() ) {
@@ -255,6 +257,7 @@ void  AliPHOSTrackSegmentMakerv1::InitParameters()
   fCpvFirst  = 0 ;   
   fCpvLast   = 0 ;   
   fLinkUpArray = 0 ;
+  fWrite                   = kTRUE ;
   fTrackSegmentsInRun       = 0 ; 
   SetEventRange(0,-1) ;
 }
@@ -389,7 +392,7 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
     return ; 
   }
   
-  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle()) ;  
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;  
  
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
 
@@ -434,7 +437,8 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
           gBenchmark->GetCpuTime("PHOSTSMaker"), 
           gBenchmark->GetCpuTime("PHOSTSMaker")/nEvents) ;
    }
-  Unload();
+  if(fWrite) //do not unload in "on flight" mode
+    Unload();
 }
 
 //____________________________________________________________________________
@@ -480,15 +484,17 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments()
   TClonesArray * trackSegments = gime->TrackSegments() ; 
   trackSegments->Expand(trackSegments->GetEntriesFast()) ;
 
-  TTree * treeT = gime->TreeT();
- 
-  //First TS
-  Int_t bufferSize = 32000 ; 
-  TBranch * tsBranch = treeT->Branch("PHOSTS",&trackSegments,bufferSize);
-  tsBranch->Fill() ;  
-
-  gime->WriteTracks("OVERWRITE");
-  gime->WriteTrackSegmentMaker("OVERWRITE");
+  if(fWrite){ //We write TreeT
+    TTree * treeT = gime->TreeT();
+    
+    //First TS
+    Int_t bufferSize = 32000 ; 
+    TBranch * tsBranch = treeT->Branch("PHOSTS",&trackSegments,bufferSize);
+    tsBranch->Fill() ;  
+    
+    gime->WriteTracks("OVERWRITE");
+    gime->WriteTrackSegmentMaker("OVERWRITE");
+  }
 }
 
 
