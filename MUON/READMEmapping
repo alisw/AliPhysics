@@ -1,0 +1,128 @@
+ $Id$
+
+
+ The mapping package
+ ====================
+ 
+ See detailed description in ALICE-INT-2003-025.
+
+ Test macros
+ ============
+   cd ../mapping/macro
+   root
+   root [0] .x testMacroName.C    
+                        - see available macros below   
+                   
+   A set of test macros be run at once by test_suite.pl scripts:
+     test_suite.pl      - run all test macros and compare results with
+                          the reference output
+     test_suite_ref.pl  - generates reference output
+                          !! this script will overwrite the refence output
+			     provided with the source;
+			     it should be used only by developers 
+
+   Macros included in the test suite:
+     testReadSector.C
+     testReadMotifType.C
+     testGraphics.C        
+     testSectorFind.C
+     testPlaneFind.C
+     testPrintLimits.C         
+     testExistingPads.C    
+     testPadDimensions.C    
+     testSectorPadIterators.C
+     testMotifTypeIterators.C     
+     testNeighboursPadIterator.C  
+     testAnyPadIterators.C  
+     testPadsUp.C
+     testPlaneAreaIterator.C
+     
+   Other macros (not included in the test suite):
+     testAllIndices.C
+     testUpdateGlobalIndices.C
+   
+
+  Data files format
+  ============
+
+  zones.dat:
+  -------------
+  Describes layout of zones, rows, row segments, subzones, motifs
+
+  SECTOR_DATA
+    number of zones  
+    number of rows  
+    direction of constant pad size (X or Y)
+  
+  ZONE     
+    number of zone  
+    half legth of pad size in x  
+    half legth of pad size in y
+
+  SUBZONE  
+    motif id  
+    motif type_id       
+
+  ROW_SEGMENT  
+    x offset (in number of pads) 
+    y offset (in number of pads) 
+    row number 
+    nof motifs 
+    first motif position Id
+    step to the next motif position Id (+1 or -1)
+  
+  zones_special.dat:
+  ------------------
+  Describes layout of special row segments (with irregular motifs)
+
+  SECTOR_SPECIAL_DATA
+
+  MOTIF
+    zone id
+    motif id  
+    motif type_id       
+
+  ROW
+    row number
+  
+  PAD_ROWS
+    number of these pad rows in row   
+  
+  PAD_ROW_SEGMENT
+    mumber of pads in the rows segment  
+    motif id  
+    motif position id
+  
+  motifX.dat
+  ----------
+  Describes characteristics of the motif type X
+
+  In lines:
+    Berg number
+    Kapton number
+    Pad number
+    Gassi number
+
+  motifSpecialX.dat
+  ------------------
+  Describes characteristics of the special motif with motif Id X;
+  the special motif caontains pads of different size
+
+  In lines:
+    pad index i (in x)
+    pad index j (in y)
+    half legth of pad size in x  
+    half legth of pad size in y
+  
+  padPosX.dat
+  -----------
+  Maps pad numbers used in the motifX.dat files to
+  the local pad indices (i,j)
+
+  In lines:
+    Pad number
+    pad index i (in x)
+    pad index j (in y)
+  
+  
+  
