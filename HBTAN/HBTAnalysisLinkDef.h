@@ -44,10 +44,11 @@
 
 #pragma link C++ class AliHBTAvSeparCorrelFctn+;
 
-#pragma link C++ class AliHBTNonId3DCorrFctn+;          // zch
 #pragma link C++ class AliHBTWeightNonId3DCorrFctn+;    // zch
 #pragma link C++ class AliHBTWeightNonId3DTheorCorrFctn+;    // zch
 
+#pragma link C++ class AliHBTashbtCorrFctn+; //gg
+#pragma link C++ class AliHBTWeightashbtCorrFctn+; //gg
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
 #pragma link C++ class AliHBTCorrFitFctn+;
 
@@ -88,6 +89,8 @@
 #pragma link C++ class AliHBTRStarDistribution+;
 #pragma link C++ class AliHBTRDistribution+;
 
+#pragma link C++ class AliHBTMonThetaDistributionFctn+;
+#pragma link C++ class AliHBTMonPhiDistributionFctn+;
 #pragma link C++ class AliHBTMonPxDistributionFctn+;
 #pragma link C++ class AliHBTMonPyDistributionFctn+;
 #pragma link C++ class AliHBTMonPzDistributionFctn+;
