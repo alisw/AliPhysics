@@ -235,6 +235,14 @@ const UInt_t* AliRawReaderRoot::GetAttributes() const
   return fEvent->GetHeader()->GetTypeAttribute();
 }
 
+const UInt_t* AliRawReaderRoot::GetSubEventAttributes() const
+{
+// get the type attributes from the sub event header
+
+  if (!fSubEvent) return NULL;
+  return fSubEvent->GetHeader()->GetTypeAttribute();
+}
+
 UInt_t AliRawReaderRoot::GetLDCId() const
 {
 // get the LDC Id from the event header

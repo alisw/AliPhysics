@@ -211,6 +211,18 @@ const UInt_t* AliRawReaderDate::GetAttributes() const
 #endif
 }
 
+const UInt_t* AliRawReaderDate::GetSubEventAttributes() const
+{
+// get the type attributes from the sub event header
+
+#ifdef ALI_DATE
+  if (!fSubEvent) return NULL;
+  return fSubEvent->eventTypeAttribute;
+#else
+  return NULL;
+#endif
+}
+
 UInt_t AliRawReaderDate::GetLDCId() const
 {
 // get the LDC Id from the event header

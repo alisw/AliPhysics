@@ -34,6 +34,7 @@ class AliRawReaderRoot: public AliRawReader {
     virtual const UInt_t* GetTriggerPattern() const;
     virtual const UInt_t* GetDetectorPattern() const;
     virtual const UInt_t* GetAttributes() const;
+    virtual const UInt_t* GetSubEventAttributes() const;
     virtual UInt_t   GetLDCId() const;
     virtual UInt_t   GetGDCId() const;
 

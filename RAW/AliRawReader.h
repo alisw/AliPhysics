@@ -37,6 +37,7 @@ class AliRawReader: public TObject {
     virtual const UInt_t* GetTriggerPattern() const = 0;
     virtual const UInt_t* GetDetectorPattern() const = 0;
     virtual const UInt_t* GetAttributes() const = 0;
+    virtual const UInt_t* GetSubEventAttributes() const = 0;
     virtual UInt_t   GetLDCId() const = 0;
     virtual UInt_t   GetGDCId() const = 0;
 
