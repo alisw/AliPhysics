@@ -315,8 +315,8 @@ void AliMUON::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
     // Add a MUON digit to the list
     //
 
-  //PH    TClonesArray &ldigits = *((TClonesArray*)(*fDchambers)[id]);
-    TClonesArray &ldigits = *((TClonesArray*)fDchambers->At(id));
+  //PH    TClonesArray &ldigits = * ((TClonesArray*)(*fDchambers)[id]);
+    TClonesArray &ldigits = * ( (TClonesArray*) fDchambers->At(id) );
     new(ldigits[fNdch[id]++]) AliMUONDigit(tracks,charges,digits);
 }
 
@@ -1125,6 +1125,12 @@ void AliMUON::MakeBranchInTreeD(TTree *treeD, const char *file)
   const Int_t kBufferSize = 4000;
   char branchname[30];
     
+  if (fDchambers  == 0x0)   {
+    fDchambers = new TObjArray(AliMUONConstants::NCh());
+    for (Int_t i=0; i<AliMUONConstants::NCh() ;i++) {
+      fDchambers->AddAt(new TClonesArray("AliMUONDigit",10000),i); 
+    }
+  }
   //
   // one branch for digits per chamber
   // 
