@@ -1,0 +1,123 @@
+\chapter*{Introduction}
+\section*{Purpose of this document}
+
+This document is intended to both explain who to use the ALICE simulation and
+reconstruction code with respect to or using the ITS detector as the
+examples. This document is also to explain how to add new code to the ITS
+simulation and reconstruction library, and who the existing ITS simulation and
+reconstruction code works. All comments from every user is greatly encouraged.
+
+\section*{How to Run AliRoot}
+
+At this point, we will assume that aliroot has been compiled and all the
+necessary environment variables have been defined, including your path. We will
+assume you are in an appropriate directory, for example \texttt{/data} or some
+such thing.
+
+to start with type, at your shell prompt, aliroot to start the program.
+
+\begin{verbatim}
+# aliroot
+Constant Field Map1 created: map= 1, factor= 1.000000
+  *******************************************
+  *                                         *
+  *        W E L C O M E  to  R O O T       *
+  *                                         *
+  *   Version   2.26/00  10 November 2000   *
+  *                                         *
+  *  You are welcome to visit our Web site  *
+  *          http://root.cern.ch            *
+  *                                         *
+  *******************************************
+
+FreeType Engine v1.x used to render TrueType fonts.
+Compiled with thread support.
+
+CINT/ROOT C/C++ Interpreter version 5.14.58, Oct 24 2000
+Type ? for help. Commands must be C++ statements.
+Enclose multiple statements between { }.
+
+WELCOME to ALICE
+
+root [0]
+\end{verbatim}
+
+This will initialize ROOT and load all of the ALICE libraries. At this point you
+can do anything you can do in ROOT in addition you have access to every class
+defined in the ALICE libraries, including the ALICE global variables. One very
+useful ALICE global variable is \texttt{gAlice} which is of type
+\texttt{AliRun}. Of the many function defined in the class \texttt{AliRun} are
+\texttt{Init(const char* setup="Config.C")} and 
+\texttt{Run(const char* setup="Config.C")}. \texttt{Run} both executes
+\texttt{Init} and starts executing an ALICE detector simulation. Both of these
+functions functions load and execute a configuration file. By default this
+configuration file is called \texttt{Config.C}. If such a file exists in your
+local directory, for example \texttt{/data}, or if there is no such file in
+your local directory it will execute the file
+\texttt{\$ALICE\_ROOT/macros/Config.C}. Some other configuration file can be
+run simplely by entering that file's name as the argument, for example
+\texttt{Init("MyConfig.C")} or \texttt{Run("MyConfig.C")} where
+\texttt{MyConfig.C} is either in your local directory (\texttt{/data}) or in
+\texttt{\$ALICE\_ROOT/macros}. Of course the full path of \texttt{MyConfig.C}
+can be used.
+
+Now lets assume you just want to one event using the standard \texttt{Config.C}
+file. This is done simply as
+\begin{verbatim}
+root [0] gAlice->Run()
+Warning in <AliRun::SetField>: Invalid magnetic field flag:  -999; Helix trackin
+g chosen instead
+
+Warning in <AliFRAMEv1::ReadEuclidMedia>: file: $(ALICE_ROOT)/Euclid/frame.tme i
+s now read in
+
+Warning in <AliPIPEv0::ReadEuclidMedia>: file: $(ALICE_ROOT)/Euclid/pipe.tme is 
+now read in
+
+Warning in <AliITSv5::ReadEuclidMedia>: file: /home/CERN/aliroot/dev/Euclid/ITSg
+eometry_5.tme is now read in
+
+
+ MZSTOR.  ZEBRA table base TAB(0) in /MZCC/ at adr   281557647    10C83A8F HEX
+
+ MZSTOR.  Initialize Store  0  in /GCBANK/
+          with Store/Table at absolute adrs    33632021   281557647
+                                        HEX     2012F15    10C83A8F
+                                        HEX    F138F25A           0
+                              relative adrs  -247926182           0
+          with     1 Str. in     2 Links in   5300 Low words in 2999970 words.
+          This store has a fence of   16 words.
+\end{verbatim}
+\vdots
+lots more messages
+
+\vdots
+\begin{verbatim}
+ TOC1      0.171%; TSSW      0.001%; TSWC      0.083%; TSCE      0.000%; TWES      0.001%;
+ TSWB      0.009%; TPEL      2.240%; TPMW      0.901%; TPEW      0.128%; TESR      0.000%;
+ TESB      0.116%; TPLS      0.019%; TPUS      0.023%; TPSS      0.000%; THVM      0.012%;
+ TPSR      0.052%; THVL      0.025%; FLTA      0.003%; FLTB      0.000%; FLTC      0.005%;
+ FMYA      0.016%; FMYB      0.014%; FMYC      0.019%; FPLA      0.023%; FPLB      0.080%;
+ FPLC      0.025%; FSTR      0.138%; FNSF      0.012%; FMYX      0.002%; FGRL      0.004%;
+ FPAD      0.020%; FPEA      0.039%; FPEB      0.007%; FPEC      0.062%; FECA      0.058%;
+ FECB      0.058%; FECC      0.053%; FWAA      0.096%; FWAB      0.148%; FWAC      0.073%;
+ FBPA      0.057%; FBPB      0.018%; FBPC      0.085%; UAFI      0.109%; UAFM      0.018%;
+ UAFO      0.044%; UAII      0.001%; UAIM      0.001%; UAIO      0.001%; UCFI      0.259%;
+ UCFM      0.445%; UCFO      0.312%; UCII      0.000%; UCIM      0.000%; UCIO      0.000%;
+ UL01      0.022%; UL02      0.006%; UL03      0.226%; UL04      0.006%; UL05      0.012%;
+ UL06      0.001%; UL07      0.002%; UL08      0.081%; UL09      0.034%; UL10      0.038%;
+ UL11      0.013%; TRD1      0.003%; TRD2      0.004%; TRD3      0.000%; BR2_      0.018%;
+ CB2_      0.011%; R1R2      0.018%; R2R2      0.898%; R3R2      0.003%; R3L2      0.001%;
+ R1R1      0.414%; R2R1      0.010%; R3R1      0.009%; R1L1      0.036%; R3L1      0.001%;
+ CA02      0.016%; CG02      0.000%; CA03      0.042%; CG03      0.000%; EMCA      0.013%;
+ PTXW      0.013%; PUFP      0.005%; PTCB      0.008%; PPAP      0.005%; PXTL      0.072%;
+ PASP      0.026%; MPPS      0.004%; UAPP      0.000%; LCPP      0.037%; DW11      0.000%;
+ DV11      0.000%; DPPB      0.659%; DPFE      0.157%; DPMD      0.000%; DIQU      0.016%;
+***************************************************************************
+root [1] 
+\end{verbatim}
+
+At this point a file called \texttt{galice.root} is created in your present
+directory. This file contains all of the ``hits'' produced by the simulation,
+all of the particle information, all of the detectors that were defined in the
+simulation, and a lot of other information.
