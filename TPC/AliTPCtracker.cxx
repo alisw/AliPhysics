@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2003/02/28 15:18:16  hristov
+Corrections suggested by J.Chudoba
+
 Revision 1.28  2003/02/27 16:15:52  hristov
 Code for inward refitting (S.Radomski)
 
@@ -965,6 +968,7 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
       if (lab < nLab) lut[lab] = i;
       else {
 	cerr << "AliTPCtracker: The size of the LUT is too small\n";
+      }
     }
   }
   
@@ -976,7 +980,7 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
 
       // No ITS - use TPC track only
       
-      AliTPCseed seed = new AliTPCseed(*tpcTrack, tpcTrack->GetAlpha());
+      AliTPCseed * seed = new AliTPCseed(*tpcTrack, tpcTrack->GetAlpha());
       seed->ResetCovariance();
       fSeeds->AddLast(seed);
       tracks.AddLast(new AliTPCtrack(*tpcTrack));
