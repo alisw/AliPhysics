@@ -29,8 +29,9 @@ class AliHBTReader: public TObject
     virtual Int_t GetNumberOfPartEvents() = 0;
     virtual Int_t GetNumberOfTrackEvents() = 0;
     
-    
     void AddParticleCut(AliHBTParticleCut* cut);
+    
+    void SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
 
   protected:
     
