@@ -41,6 +41,7 @@ class AliTrackingAction : public TG4TrackingAction
     // get methods
     G4int GetVerboseLevel() const;
     G4bool GetSavePrimaries() const;
+    G4int GetNofTracks() const;
     G4int GetNofPrimaryTracks() const;
     G4int GetNofSavedTracks() const;
 
@@ -64,6 +65,7 @@ class AliTrackingAction : public TG4TrackingAction
     G4int          fVerboseLevel;      //verbose level
     G4int          fPrimariesCounter;  //primary particles counter
     G4int          fParticlesCounter;  //particles counter
+    G4int          fTrackCounter;      //tracks counter
     G4int          fLastParticleIndex; //index of the last particle in fParticles
     AliTrackingActionMessenger*  fMessenger; //messenger
 };
@@ -81,6 +83,9 @@ inline G4int AliTrackingAction::GetVerboseLevel() const
 
 inline G4bool AliTrackingAction::GetSavePrimaries() const
 { return fSavePrimaries; }
+
+inline G4int AliTrackingAction::GetNofTracks() const
+{ return fTrackCounter; }
 
 inline G4int AliTrackingAction::GetNofPrimaryTracks() const
 { return fPrimariesCounter; }

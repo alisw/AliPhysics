@@ -36,6 +36,7 @@ AliTrackingAction::AliTrackingAction()
     fSavePrimaries(true),
     fPrimariesCounter(0),
     fParticlesCounter(0),
+    fTrackCounter(0),
     fLastParticleIndex(-1)
 {
 //
@@ -76,6 +77,8 @@ void AliTrackingAction::PrepareNewEvent()
 {
 // Called by G4 kernel at the beginning of event.
 // ---
+
+  fTrackCounter = 0;
 
   // aliroot
   if (!fParticles) fParticles = gAlice->Particles();
@@ -136,12 +139,7 @@ void AliTrackingAction::PostTrackingAction(const G4Track* aTrack)
 // Called by G4 kernel after finishing tracking.
 // ---
 
-  G4String particleName 
-    = aTrack->GetDynamicParticle()->GetDefinition()->GetParticleName();
-  if (particleName == "opticalphoton") {
-    G4cout << "$$$ Track " <<  aTrack->GetTrackID()
-           << " is optical photon." << G4endl;
-  }	                
+  fTrackCounter++;
 }
 
 void AliTrackingAction::SaveAndDestroyTrack()
