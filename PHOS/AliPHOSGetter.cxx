@@ -1100,7 +1100,7 @@ TObject** AliPHOSGetter::TSMakerRef(const char * name) const
     return l->GetObjectRef(tsm) ;
   else {
     cerr << "ERROR: AliPHOSGetter::TSMakerRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS/TrackSegmentMarker/" << name << " not found!" << endl;
-    //abort() ;
+    abort() ;
   } 
 } 
 
@@ -1271,7 +1271,7 @@ TObject** AliPHOSGetter::PIDRef(const char * name) const
     return l->GetObjectRef(pid) ;
   else {
     cerr << "ERROR: AliPHOSGetter::PIDRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS/PID/" <<  name << " not found!" << endl;
-    //abort() ;
+    abort() ;
   }
   
 } 
