@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------
+//  Class for Alice magnetic field with constant mesh
+//  Used in the configuration macros (macros/Config.C, etc.)
+//  Author:
+//-----------------------------------------------------------------------
+
 #include "AliMagFC.h"
 class TVector;
 

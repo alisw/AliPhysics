@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------
+//    Class to debug entry and exit from a volume
+//    Used by AliLego class
+//    Author: A.Morsch
+//-----------------------------------------------------------------------
+
 #include "TNamed.h"
 class AliDebugVolume : public TNamed  {
 

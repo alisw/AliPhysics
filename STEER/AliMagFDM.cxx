@@ -21,8 +21,6 @@
 //   Author:
 //-------------------------------------------------------------------------
 
-#include <stdlib.h>
-
 #include "TSystem.h"
 
 #include "AliMagFDM.h"
@@ -375,10 +373,10 @@ Double_t AliMagFDM::Ba(Int_t kaai,Double_t zaa1, Double_t zaa2,
   //
   // Calculation of field componet for case (keps <r0<= fRdel) at a given axis
   //
-  Double_t fa11,fa12,fa13;
-  Double_t fa21,fa22,fa23;
-  Double_t faY1,faY2;
-  Double_t bba;
+  Double_t fa11=0,fa12=0,fa13=0;
+  Double_t fa21=0,fa22=0,fa23=0;
+  Double_t faY1=0,faY2=0;
+  Double_t bba=0;
 
   switch (kaai) {
   case 0:
@@ -407,7 +405,6 @@ Double_t AliMagFDM::Ba(Int_t kaai,Double_t zaa1, Double_t zaa2,
     break;
   default:
     Fatal("Ba","Invalid value of kaai %d\n",kaai);
-    exit(1);
   }                            
   faY1=alf1*fa11+alf2*fa12+alf3*fa13;
   faY2=alf1*fa21+alf2*fa22+alf3*fa23;
@@ -423,11 +420,11 @@ Double_t AliMagFDM::Bb(Double_t z1,Double_t z2, Double_t y1,Double_t y2,
   //
   // Calculation of field componet at a given axis (general case)
   //
-  Double_t fy1, fy2, ffy;
-  Double_t gy1,gy2,ggy;
-  Double_t bbi;
-  Double_t bf11,bf12,bf21,bf22;
-  Double_t bg11,bg12,bg21,bg22;
+  Double_t fy1=0,fy2=0,ffy=0;
+  Double_t gy1=0,gy2=0,ggy=0;
+  Double_t bbi=0;
+  Double_t bf11=0,bf12=0,bf21=0,bf22=0;
+  Double_t bg11=0,bg12=0,bg21=0,bg22=0;
 
   
   /*-----------------Polar part ------------------*/
@@ -508,7 +505,6 @@ Double_t AliMagFDM::Bb(Double_t z1,Double_t z2, Double_t y1,Double_t y2,
 
   default:
     Fatal("Bb","Invalid value of kv %d\n",kv);
-    exit(1);
   }  
   
   
@@ -687,7 +683,6 @@ printf("fZpdl %e, fPhid %e, fRdel %e, fZpmx %e, fZpmn %e,fRmax %e,fRmin %e \n", 
     }
 //
   } else { 
-    printf("File %s not found !\n",fTitle.Data());
-    exit(1);
+    Fatal("ReadField","File %s not found !\n",fTitle.Data());
   }
 }

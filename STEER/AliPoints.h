@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+// This class contains the points
+// that are used for the ALICE
+// event display
+
 #include "TPolyMarker3D.h"
 class AliDetector;
 class TParticle;

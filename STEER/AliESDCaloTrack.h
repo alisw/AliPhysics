@@ -19,17 +19,21 @@ class AliESDCaloTrack : public TObject {
 
 public:
   AliESDCaloTrack(): TObject(), fRecParticle(0) {}
+  AliESDCaloTrack(const AliESDCaloTrack &act): TObject(act)
+    {fRecParticle = act.fRecParticle;}
   virtual ~AliESDCaloTrack() {
     //PH    delete fRecParticle;
   }
   AliESDCaloTrack(TParticle* recpart);
-  Float_t Px() { return fRecParticle->Px(); }
-  Float_t Py() { return fRecParticle->Py(); }
-  Float_t Pz() { return fRecParticle->Pz(); }
+  Float_t Px() const { return fRecParticle->Px(); }
+  Float_t Py() const { return fRecParticle->Py(); }
+  Float_t Pz() const { return fRecParticle->Pz(); }
 
-  TParticle * GetRecParticle() {return fRecParticle;}
+  TParticle * GetRecParticle() const {return fRecParticle;}
 
 private:
+  AliESDCaloTrack & operator=(const AliESDCaloTrack &)
+    {Fatal("= operator","Not implemented\n"); return *this;}
   TParticle *fRecParticle; // reconstructed particle from PHOS or EMCAL
 
   ClassDef(AliESDCaloTrack,2)  //ESD calorimeter track class 

@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+//
+// base class for reconstruction algorithm
+// Derived classes should implement a default constructor and
+// the virtual methods
+//
+
 #include <TObject.h>
 
 class AliRunLoader;

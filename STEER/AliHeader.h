@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------
+//     Simulation event header class
+//     Collaborates with AliRun, AliStack, and AliGenReaderTreeK classes
+//     Many other classes depend on it
+//-----------------------------------------------------------------------
+
 #include <TObject.h>
 
 class AliStack;

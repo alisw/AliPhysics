@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//   Field with Magnetic Field map
+//   Used by AliRun class
+//   Author:
+//-------------------------------------------------------------------------
+
 #include "AliMagFC.h"
 //
 class AliMagFDM : public AliMagFC

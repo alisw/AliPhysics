@@ -24,7 +24,6 @@
 
 #include <TFile.h>
 #include <TSystem.h>
-#include <TVector.h>
 
 #include "AliFieldMap.h"
 #include "AliMagFMaps.h"

@@ -9,7 +9,7 @@
 // Author: Andreas Morsch <andreas.morsch@cern.ch>
 //
 #include <TNamed.h>
-class TVector;
+#include <TVector.h>
 
 class AliFieldMap : public TNamed
 {

@@ -7,7 +7,7 @@
 
 //-------------------------------------------------------------------------
 //                          Class AliCluster
-//
+//                Generic class for clusters
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 

@@ -7,6 +7,10 @@
 
 #include "TObject.h"
 
+// Class to encapsulate the ALICE updates to TDatabasePDG.h
+// Can be used by TGeant3 and TGeant4
+// Comments to: andreas.morsch@cern.ch 
+
 class AliPDG : public TObject {
 public:
     static void AddParticlesToPdgDataBase();

@@ -34,15 +34,14 @@
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TObjArray.h>
-#include <TPad.h>
 #include <TPaveLabel.h>
 #include <TROOT.h>
 #include <TVirtualMC.h>
 
+#include "AliMC.h"
 #include "AliMCQA.h"
 #include "AliModule.h"
 #include "AliRun.h"
-#include "AliMC.h"
 
 ClassImp(AliMCQA)
 

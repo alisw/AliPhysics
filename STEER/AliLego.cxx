@@ -51,12 +51,11 @@
 #include "TString.h"
 #include "TVirtualMC.h"
 
-#include "AliConst.h"
 #include "AliDebugVolume.h"
 #include "AliLego.h"
 #include "AliLegoGenerator.h"
-#include "AliRun.h"
 #include "AliMC.h"
+#include "AliRun.h"
 
 ClassImp(AliLego)
 

@@ -6,6 +6,12 @@
 
 /* $Id$ */
 
+//---------------------------------------------------------------------
+// Event header base class for generator. 
+// Stores generated event information
+// Author: andreas.morsch@cern.ch
+//---------------------------------------------------------------------
+
 #include <TNamed.h>
 #include <TArrayF.h>
 

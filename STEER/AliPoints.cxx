@@ -33,9 +33,9 @@
 #include "TView.h"
 
 #include "AliDetector.h"
+#include "AliMC.h"
 #include "AliPoints.h"
 #include "AliRun.h"
-#include "AliMC.h"
  
 ClassImp(AliPoints)
 

@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+////////////////////////////////////////////////////////////////////////
+// Class used to generate correlated gaussian numbers with mean
+// zero and known covariance matrix.
+// M.Masera 15.03.2001 9:30 - modified on 26.02.2002 17:40
+////////////////////////////////////////////////////////////////////////
+
 #include <TMatrixD.h>
 class TArrayD;
 

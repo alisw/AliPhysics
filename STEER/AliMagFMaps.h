@@ -6,6 +6,8 @@
 /* $Id$ */
 
 //
+// Magnetic field composed by 3 maps: the L3 magnet, extended region, and
+// dipole magnet
 // Author: Andreas Morsch <andreas.morsch@cern.ch>
 //
 

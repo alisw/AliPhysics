@@ -17,7 +17,7 @@ public:
   AliDigit();
   AliDigit(Int_t *track);
   virtual ~AliDigit() {}
-  virtual Int_t *GetTracks() {return &fTracks[0];}
+  virtual Int_t *GetTracks() {return fTracks;}
   virtual Int_t GetTrack(Int_t i) const 
   {assert(0<=i&&i<=2); return fTracks[i];}
   

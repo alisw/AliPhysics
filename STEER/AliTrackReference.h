@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+// 
+// Track Reference object is created every time particle is 
+// crossing detector bounds. 
+// The object is created by Step Manager
+//
+
 #include "TObject.h"
 #include "TMath.h"
 

@@ -1,6 +1,15 @@
 #ifndef ALIESDPMDTRACK_H
 #define ALIESDPMDTRACK_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+// Event Data Summary Class for pmd tracks
+// This is part of the reconstructed ESD events
+// for the PMD detector
+
 #include "TObject.h"
 
 class AliESDPmdTrack : public TObject {

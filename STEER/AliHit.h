@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+// Base class for hits
+// This class is used as a base class for 
+// hits in the different detectors
+
 #include "TObject.h"
 
 class AliHit : public TObject {

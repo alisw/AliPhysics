@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+//-------------------------------------------------------------------------
+//     Constant magnetic field class
+//     Used by AliRun class
+//     Author:
+//-------------------------------------------------------------------------
+
 #include "AliMagF.h"
 
 class AliMagFC  : public AliMagF

@@ -27,18 +27,18 @@
 
 #include <Riostream.h>
 
-#include "TTree.h"
+#include "TError.h"
 #include "TFile.h"
 #include "TStopwatch.h"
-#include "TError.h"
+#include "TTree.h"
 
 #include "AliDetector.h"
-#include "AliTrackMapper.h"
-#include "AliTrackMap.h"
+#include "AliHit.h"
+#include "AliLoader.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
-#include "AliLoader.h"
-#include "AliHit.h"
+#include "AliTrackMap.h"
+#include "AliTrackMapper.h"
 
 ClassImp(AliTrackMapper)
 
