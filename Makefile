@@ -125,9 +125,10 @@ htmldoc:		FORCE
 			aliroot -b -q "mkhtml.C(\"$$i\")" > /dev/null ;\
                 done ;\
 		./makeExampleList ;
-		@ln -s ../../picts html/roothtml/gif
-		@ln -s ../../../picts html/roothtml/src/gif
-		@ln -s ../../../picts html/roothtml/examples/gif
+		@ln -s ../picts html/picts
+		@ln -s ../../picts html/roothtml/picts
+		@ln -s ../../../picts html/roothtml/src/picts
+		@ln -s ../../../picts html/roothtml/examples/picts
 
 clean:  FORCE
 		@rm -f *~ \#*
