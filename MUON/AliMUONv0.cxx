@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.18  2001/04/06 11:24:43  morsch
+Dependency on implementations of AliSegmentation and AliMUONResponse moved to AliMUONFactory class.
+Static method Build() builds the MUON system out of chambers, segmentation and response.
+
 Revision 1.17  2001/03/17 10:07:20  morsch
 Correct inconsistent variable name / method name / comments.
 
@@ -145,7 +149,11 @@ void AliMUONv0::CreateGeometry()
 	     gMC->Gsvolu(gas, "TUBE", idAir, tpar, 3);
 	 }
 	 gMC->Gspos(gas, 1, alu,  0., 0., 0., 0, "ONLY");
-	 gMC->Gspos(alu, 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+	 if (ch == 4 || ch ==5) {
+	     gMC->Gspos(alu, 1, "DDIP", 0., 0., zpos, 0, "ONLY");
+	 } else {
+	     gMC->Gspos(alu, 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+	 }
      }
 }
 
