@@ -194,7 +194,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
      iChamber1 = iChamber;
      iChamber2 = GetChamber(5);
      
-     iChamber1->GetGeometry()->SetDebug(kTRUE);
+     //iChamber1->GetGeometry()->SetDebug(kTRUE);
      //iChamber2->GetGeometry()->SetDebug(kTRUE);
 
      if (gAlice->GetModule("DIPO")) {

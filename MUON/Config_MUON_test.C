@@ -128,15 +128,15 @@ void Config(char directory[100]="", char option[6]="box")
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY","Alice envelop");
   //=================== ABSO parameters ============================
-  //AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
+  AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
   //=================== DIPO parameters ============================
-  //AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
+  AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
   //================== HALL parameters ============================
- // AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
+  AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
   //=================== PIPE parameters ============================
-  //AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
+  AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
   //=================== SHIL parameters ============================
-  //AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
+  AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
   //=================== MUON Subsystem ===========================
   cout << ">>> Config_MUON_test.C: Creating AliMUONv1 ..."<<endl;
  
@@ -146,10 +146,10 @@ void Config(char directory[100]="", char option[6]="box")
   // New MUONv1 version (geometry defined via builders)
   AliMUON *MUON = new AliMUONv1("MUON", "default");
   //MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
-  //MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
-  //MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
+  MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
+  MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
   MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
-  //MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
+  MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
 }
 
 Float_t EtaToTheta(Float_t arg){
