@@ -15,8 +15,8 @@ class AliGenHalo : public AliGenerator
 {
  
 protected:
-    FILE *fp;
-    const Text_t     *fFileName;          //Choose the file
+  FILE *fp;                             //! Pointer to file
+  const Text_t     *fFileName;          //!Choose the file
   
 public:
     AliGenHalo();

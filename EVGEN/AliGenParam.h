@@ -14,9 +14,9 @@
 class AliGenParam : public AliGenerator
 {
 protected:
-    Double_t (*fPtParaFunc)(Double_t*, Double_t*);
-    Double_t (*fYParaFunc )(Double_t*, Double_t*);
-    Int_t    (*fIpParaFunc )();    
+  Double_t (*fPtParaFunc)(Double_t*, Double_t*); //! Pointer to Pt parametrisation function
+  Double_t (*fYParaFunc )(Double_t*, Double_t*); //! Pointer to Y parametrisation function
+  Int_t    (*fIpParaFunc )();    //! Pointer to particle type parametrisation function
     TF1* fPtPara;
     TF1* fYPara;
     Param_t     fParam;

@@ -15,7 +15,7 @@ class AliGenExtFile : public AliGenerator
 {
  
 protected:
-  const Text_t     *fFileName;         // Choose the file
+  const Text_t     *fFileName;         //! Choose the file
   Int_t           fNcurrent;           // points to the next entry
   TTree           *fTreeNtuple;        // pointer to the TTree
 //Declaration of variables read from the file -- TTree type

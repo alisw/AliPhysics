@@ -89,7 +89,7 @@ void AliGenExtFile::Generate()
   char name[100];
   Float_t amass, charge, tlife;
   Int_t itrtyp;
-  Int_t i, j, nt, Ntracks;
+  Int_t i, j, nt, Ntracks=0;
   //
   NtupleInit();
   TTree *h2=fTreeNtuple;

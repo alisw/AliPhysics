@@ -26,7 +26,7 @@ protected:
   Float_t     fZshift;        //Shift the Z of impact point by this quantity
   Float_t     fFrac;
   
-  const Text_t     *fFileName;          //Choose the file
+  const Text_t     *fFileName;          //!Choose the file
    
   TTree           *fTreeFluka;        //pointer to the TTree
 //Declaration of variables read from the file -- TTree type
