@@ -38,7 +38,7 @@ void RICHrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
       	if (gAlice) printf("AliRun object found on file\n");
 	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
     }
-    
+   
 //
 // Set reconstruction models
 //
@@ -95,6 +95,7 @@ void RICHrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
     RecModel7->SetClusterSize(100);
     RecModel7->SetDeclusterFlag(1);
     RICH->SetReconstructionModel(6,RecModel7);
+     
 //
 //   Loop over events              
 //
@@ -120,9 +121,13 @@ void RICHrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
 	//printf("Found %d entries in the tree (must be one per cathode per event!)\n",nent);
 	if (RICH) {
 	    //printf("Finding clusters for event:%d",nev);
-	    RICH->FindClusters(nev,nent-2);
+	  gAlice->MakeTree("R");
+	  RICH->MakeBranch("R");
+	  RICH->FindClusters(nev,nent-2);
 	}   // end if RICH
-    }   // event loop 
+    } // event loop 
+    file->Close();
+  
    
    
     printf("\nEnd of Macro  *************************************\n");
