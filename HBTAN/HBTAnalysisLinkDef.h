@@ -76,6 +76,8 @@
 #pragma link C++ class AliHBTQSideResolVSQSideFctn+;
 #pragma link C++ class AliHBTQLongResolVSQLongFctn+;
 
+#pragma link C++ class AliHBTLLWeights+;
+#pragma link C++ class AliHBTLLWeightQInvFctn+;
 #pragma link C++ class AliHBTTwoTrackEffFctn+;
 #pragma link C++ class AliHBTTwoTrackEffFctn3D+;
 

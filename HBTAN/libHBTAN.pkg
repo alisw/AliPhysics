@@ -4,7 +4,10 @@ AliHBTCorrelFctn.cxx  AliHBTPairCut.cxx      AliHBTReader.cxx            AliHBTR
 AliHBTEvent.cxx       AliHBTParticle.cxx     AliHBTRun.cxx\
 AliHBTFunction.cxx    AliHBTParticleCut.cxx  \
 AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx AliHBTReaderKineTree.cxx\
-AliHBTTwoTrackEffFctn.cxx AliHBTReaderInternal.cxx
+AliHBTTwoTrackEffFctn.cxx AliHBTReaderInternal.cxx\
+AliHBTLLWeights.cxx AliHBTLLWeightFctn.cxx
+
+FSRCS   = fsiini.F  fsiw.F  led_bldata.F  ltran12.F
 
 HDRS:= $(SRCS:.cxx=.h) 
 
