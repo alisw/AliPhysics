@@ -205,7 +205,8 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
     for (Int_t i=0;i<fTRDncls;i++) fTRDindex[i]=t->GetClusterIndex(i);
     fTRDsignal=t->GetPIDsignal();
     break;
-
+  case kTRDStop:
+    break;
   default: 
     Error("UpdateTrackParams()","Wrong flag !\n");
     return kFALSE;
