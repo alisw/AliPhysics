@@ -12,18 +12,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TMath.h>
-#include <TGeometry.h>
+
 #include "AliTPCv2.h"
-#include "AliRun.h"
-#include <iostream.h>
-#include <fstream.h>
-
-#include "AliMC.h"
-#include "AliConst.h"
-#include <stdlib.h>
-
-#include "AliTPCParam.h"
 #include "AliTPCD.h"
+#include "AliRun.h"
+#include "AliConst.h"
 
 ClassImp(AliTPCv2)
  
