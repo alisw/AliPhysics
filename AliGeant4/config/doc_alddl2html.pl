@@ -349,7 +349,7 @@ print HLPF "        src=\"http://AliSoft.cern.ch/offline/geant4/gif/AliceLogo.gi
 print HLPF "	    width=\"60\" height=\"60\" align=\"absmiddle\" border=1>\n";
 print HLPF "     <td align=center width=40%>\n";
 print HLPF "        <font size=\"+2\">\n";
-print HLPF "           Alice Geant4 Simulation Code Prototype";
+print HLPF "           Alice Geant4 Simulation Code";
 print HLPF "        </font>\n";
 print HLPF "     <td align=right width=30% valign=bottom>\n"; 
 print HLPF "        <font size=\"-1\">\n"; 

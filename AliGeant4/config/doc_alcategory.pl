@@ -8,6 +8,7 @@
 # no test of arguments is performed
 $CAT = $ARGV[0];
 $NAME = $ARGV[1];
+$SELECT = $ARGV[2];
 
 # open output file
 $output =  $ENV{'AG4_INSTALL'} . "/doc/HTML/" . $NAME . "Category.html";
@@ -33,7 +34,7 @@ print OUTPUT "       src=\"http://AliSoft.cern.ch/offline/geant4/gif/AliceLogo.g
 print OUTPUT "	    width=\"60\" height=\"60\" align=\"absmiddle\" border=1>\n";
 print OUTPUT "     <td align=center width=40%>\n";
 print OUTPUT "        <font size=\"+2\">\n";
-print OUTPUT "           Alice Geant4 Simulation Code Prototype        </font>\n";
+print OUTPUT "           Alice Geant4 Simulation Code </font>\n";
 print OUTPUT "     <td align=right width=30% valign=bottom>\n";
 print OUTPUT "        <font size=\"-1\">\n";
 print OUTPUT "        <script language=\"JavaScript\">\n";
@@ -57,7 +58,12 @@ print OUTPUT "  <UL>\n";
 
 # print the linked header files
 $CATSTRING = "\"Category: " . $CAT . "\"";
-@FILELIST = `find . -name \"*.h\" -exec grep -l  $CATSTRING  {} \\;`;
+if ( $SELECT eq "TRUE" ) {
+  @FILELIST = `find . -name \"*.h\" -exec grep -l  $CATSTRING  {} \\;`;
+}
+else {  
+  @FILELIST = `find . -name \"*.h\"`;
+}  
 
 foreach $FILEPATH (@FILELIST) { 
   @TEMP = split('/',$FILEPATH);
