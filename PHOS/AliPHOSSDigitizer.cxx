@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 /* $Id$ */
 
 //_________________________________________________________________________
@@ -83,6 +84,7 @@ ClassImp(AliPHOSSDigitizer)
   fB             = 10000000.;
   fPrimThreshold = 0.01 ;
   fSDigitsInRun  = 0 ; 
+  fSplitFile     = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -93,9 +95,17 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char * headerFile, const char * sDigi
   fB             = 10000000.;
   fPrimThreshold = 0.01 ;
   fSDigitsInRun  = 0 ;
+  fSplitFile     = 0 ; 
   Init();
 }
 
+//____________________________________________________________________________ 
+AliPHOSSDigitizer::~AliPHOSSDigitizer()
+{
+  if (fSplitFile) 
+    if ( fSplitFile->IsOpen() ) 
+      fSplitFile->Close() ; 
+}
 
 //____________________________________________________________________________ 
 void AliPHOSSDigitizer::Init()
@@ -153,10 +163,12 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     Bool_t phosfound = kFALSE, sdigitizerfound = kFALSE ; 
     
     while ( (branch = (static_cast<TBranch*>(next()))) && (!phosfound || !sdigitizerfound) ) {
-      if ( (strcmp(branch->GetName(), "PHOS")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
+      TString thisName( GetName() ) ; 
+      TString branchName( branch->GetTitle() ) ; 
+      branchName.Append(":") ; 
+      if ( (strcmp(branch->GetName(), "PHOS")==0) && thisName.BeginsWith(branchName) )  
 	phosfound = kTRUE ;
-      
-      else if ( (strcmp(branch->GetName(), "AliPHOSSDigitizer")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
+      else if ( (strcmp(branch->GetName(), "AliPHOSSDigitizer")==0) &&  thisName.BeginsWith(branchName) )
 	sdigitizerfound = kTRUE ; 
     }
     
@@ -181,6 +193,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     
     
     //Now make SDigits from hits, for PHOS it is the same, so just copy    
+
     Int_t Nprim =  (Int_t)  (gAlice->TreeH())->GetEntries(); 
     // Attention Nprim is the number of primaries tracked by Geant and this number could be different to the number of Primaries in TreeK;
     Int_t iprim;
@@ -201,6 +214,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 	nSdigits++ ;	
 	
       }
+
     } // loop over iprim
     
     sdigits->Sort() ;
@@ -208,6 +222,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     nSdigits = sdigits->GetEntriesFast() ;
     fSDigitsInRun += nSdigits ;  
     sdigits->Expand(nSdigits) ;
+
     Int_t i ;
     for (i = 0 ; i < nSdigits ; i++) { 
       AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit *>(sdigits->At(i)) ; 
@@ -215,8 +230,8 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     }
 
     if(gAlice->TreeS() == 0)
-	gAlice->MakeTree("S") ;
-        
+      gAlice->MakeTree("S",fSplitFile);
+    
     //First list of sdigits
     Int_t bufferSize = 32000 ;    
     TBranch * sdigitsBranch = gAlice->TreeS()->Branch("PHOS",&sdigits,bufferSize);
@@ -228,15 +243,21 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     TBranch * sdigitizerBranch = gAlice->TreeS()->Branch("AliPHOSSDigitizer","AliPHOSSDigitizer",
 					       &sd,bufferSize,splitlevel); 
     sdigitizerBranch->SetTitle(sdname);
+  
     sdigitsBranch->Fill() ; 
-
+    sdigitizerBranch->Fill() ;
     gAlice->TreeS()->AutoSave() ;
     
     if(strstr(option,"deb"))
       PrintSDigits(option) ;
-    
-  }
   
+  }
+
+  if (fSplitFile) 
+    if ( fSplitFile->IsOpen() ) 
+      fSplitFile->Close() ; 
+  
+
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSSDigitizer");
     cout << "AliPHOSSDigitizer:" << endl ;
@@ -277,38 +298,50 @@ void AliPHOSSDigitizer::SetSDigitsBranch(const char * title )
 }
 
 //__________________________________________________________________
-void AliPHOSSDigitizer::SetSplitFile(const TString splitFileName) const
+void AliPHOSSDigitizer::SetSplitFile(const TString splitFileName) 
 {
   // Diverts the SDigits in a file separate from the hits file
   
   TDirectory * cwd = gDirectory ;
-  TFile * splitFile = gAlice->InitTreeFile("S",splitFileName.Data());
-  splitFile->cd() ; 
-  gAlice->Write();
+  
+  if ( !(gAlice->GetTreeSFileName() == splitFileName) ) {
+    if (gAlice->GetTreeSFile() ) 
+      gAlice->GetTreeSFile()->Close() ; 
+  }
+  
+  fSplitFile = gAlice->InitTreeFile("S",splitFileName.Data());
+  fSplitFile->cd() ; 
+  if ( !fSplitFile->Get("gAlice") ) 
+    gAlice->Write();
   
   TTree *treeE  = gAlice->TreeE();
   if (!treeE) {
-    cerr<<"No TreeE found "<<endl;
+    cerr << "ERROR: AliPHOSSDigitizer::SetSPlitFile -> No TreeE found "<<endl;
     abort() ;
   }      
   
   // copy TreeE
-  AliHeader *header = new AliHeader();
-  treeE->SetBranchAddress("Header", &header);
-  treeE->SetBranchStatus("*",1);
-  TTree *treeENew =  treeE->CloneTree();
-  treeENew->Write();
-  
-  // copy AliceGeom
-  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-  if (!AliceGeom) {
-    cerr<<"AliceGeom was not found in the input file "<<endl;
-    abort() ;
+  if ( !fSplitFile->Get("TreeE") ) {
+    AliHeader *header = new AliHeader();
+    treeE->SetBranchAddress("Header", &header);
+    treeE->SetBranchStatus("*",1);
+    TTree *treeENew =  treeE->CloneTree();
+    treeENew->Write();
   }
-  AliceGeom->Write();
+
+  // copy AliceGeom
+  if ( !fSplitFile->Get("AliceGeom") ) {
+    TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+    if (!AliceGeom) {
+      cerr << "ERROR: AliPHOSSDigitizer::SetSPlitFile -> AliceGeom was not found in the input file "<<endl;
+      abort() ;
+    }
+    AliceGeom->Write();
+  }
+
   cwd->cd() ; 
-  gAlice->MakeTree("S",splitFile);
-  cout << "INFO: AliPHOSSDigitizer::SetSPlitMode -> SDigits will be stored in " << splitFileName.Data() << endl ; 
+  gAlice->MakeTree("S",fSplitFile);
+  cout << "INFO: AliPHOSSDigitizer::SetSPlitFile -> SDigits will be stored in " << splitFileName.Data() << endl ; 
 }
 
 //__________________________________________________________________
