@@ -7,7 +7,7 @@
 //                                                     //
 //-----------------------------------------------------//
 
-#include "AliPMDrecpoint.h"
+#include "AliPMDrecpoint1.h"
 #include <stdio.h>
 
 ClassImp(AliPMDrecpoint)
