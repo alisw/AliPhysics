@@ -89,12 +89,6 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) :
 	muondata = NULL;
 };
 
-//___________________________________________
-AliMUONDigitizer::~AliMUONDigitizer() 
-{
-// Destructor
-}
-
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::Init()
 {
@@ -329,7 +323,7 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t response_charge
 };
 
 //------------------------------------------------------------------------
-void AliMUONDigitizer::OnCreateTransientDigit(AliMUONTransientDigit* /*digit*/, TObject* /*source_object*/)
+void AliMUONDigitizer::OnCreateTransientDigit(AliMUONTransientDigit* digit, TObject* source_object)
 {
 	// Does nothing.
 	//
@@ -338,7 +332,7 @@ void AliMUONDigitizer::OnCreateTransientDigit(AliMUONTransientDigit* /*digit*/, 
 };
 
 //------------------------------------------------------------------------
-void AliMUONDigitizer::OnWriteTransientDigit(AliMUONTransientDigit* /*digit*/)
+void AliMUONDigitizer::OnWriteTransientDigit(AliMUONTransientDigit* digit)
 {
 	// Does nothing.
 	//

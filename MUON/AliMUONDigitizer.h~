@@ -28,9 +28,6 @@ public:
 	 */
 	AliMUONDigitizer(AliRunDigitizer * manager);
 
-	// Destructor
-	virtual ~AliMUONDigitizer();
-
 	// The Init method does nothing.
 	// All initialization happens in Exec at the moment.  
 	virtual Bool_t Init();
@@ -116,7 +113,7 @@ protected:
 	   form a source object from the input stream. The source object could be an AliMUONHit
 	   or AliMUONSDigit for example.
 	 */ 
-	virtual void OnCreateTransientDigit(AliMUONTransientDigit* /*digit*/, TObject* /*source_object*/);
+	virtual void OnCreateTransientDigit(AliMUONTransientDigit* digit, TObject* source_object);
 
 	/* Called by AddDigit(AliMUONTransientDigit*, Int_t) when transient digit is added to the 
 	   muondata object ready for writing to the data trees.

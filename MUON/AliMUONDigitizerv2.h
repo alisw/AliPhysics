@@ -7,8 +7,9 @@
 
 class AliMUONDigitizerv2 : public AliMUONDigitizerv1
 {
-public:    
+  public:    
 	AliMUONDigitizerv2();
+	virtual ~AliMUONDigitizerv2();
 	
 	// Preferred constructor which assigns the manager object.
 	AliMUONDigitizerv2(AliRunDigitizer * manager);

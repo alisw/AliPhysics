@@ -48,6 +48,12 @@ AliMUONDigitizerv2::AliMUONDigitizerv2(AliRunDigitizer* manager) : AliMUONDigiti
 	// ctor which should be used
 }
 
+//___________________________________________
+AliMUONDigitizerv2::~AliMUONDigitizerv2()
+{
+	// Destructor
+}
+
 //-----------------------------------------------------------------------
 void AliMUONDigitizerv2::GenerateTransientDigits()
 {

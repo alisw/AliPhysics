@@ -15,13 +15,14 @@
 
 class AliMUONDigitizerv1 : public AliMUONDigitizer 
 {
-public:
+  public:
 	AliMUONDigitizerv1();
+	virtual ~AliMUONDigitizerv1();
 	
 	// Preferred constructor which assigns the manager object.
 	AliMUONDigitizerv1(AliRunDigitizer * manager);
     
-protected:
+  protected:
 	// Generation of a TransientDigits from a hit object.
 	void MakeTransientDigitsFromHit(Int_t itrack, Int_t ihit, AliMUONHit * mHit);
 	

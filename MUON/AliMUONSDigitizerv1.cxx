@@ -45,6 +45,12 @@ AliMUONSDigitizerv1::AliMUONSDigitizerv1(AliRunDigitizer* manager) : AliMUONDigi
 	// ctor which should be used
 }
 
+//___________________________________________
+AliMUONSDigitizerv1::~AliMUONSDigitizerv1()
+{
+	// Destructor
+}
+
 //------------------------------------------------------------------------
 void AliMUONSDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
 {

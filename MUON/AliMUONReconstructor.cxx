@@ -41,6 +41,10 @@ AliMUONReconstructor::AliMUONReconstructor()
 {
 }
 //_____________________________________________________________________________
+AliMUONReconstructor::~AliMUONReconstructor()
+{
+}
+//_____________________________________________________________________________
 void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
 //  AliLoader
