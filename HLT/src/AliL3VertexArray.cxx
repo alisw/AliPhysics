@@ -102,5 +102,17 @@ void AliL3VertexArray::FindMean(Float_t *vertex,Int_t *array, Int_t len){
     fZSector = mean;
   }
   else{fZSectorErr = fZSector = 0;}
+  sumw=sumw2=sumwx=sumwx2=0;
+  for(Int_t bin = 0;bin<nbin;bin++){
+    sumw   += array[bin];
+    sumw2  += array[bin] * array[bin];
+    sumwx  += array[bin] * vertex[bin];
+    sumwx2 += array[bin] * vertex[bin] * vertex[bin];
+  }
+  if(sumw){
+    Double_t mean = fZSector;
+    Double_t rms2 = fabs(sumwx2/sumw - mean*mean);
+    fZSectorErr = sqrt(rms2/sumw);
+  }
 }
 

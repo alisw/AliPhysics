@@ -75,7 +75,7 @@ void AliL3VertexFinder::Analyze(){
   SetZ(GetZSector());
   SetZErr(GetZSectorErr());
   LOG(AliL3Log::kInformational,"AliL3VertexFinder::Analyze","Result")
-  <<AliL3Log::kDec<<"Vertex: "<<GetZ()<<"  Error: "<<GetZErr()<<ENDLOG;
+  <<AliL3Log::kDec<<"Vertex: "<<GetZ()<<"  RMS: "<<GetZErr()<<ENDLOG;
 }
 
 void AliL3VertexFinder::Write(AliL3Vertex *vertex){
