@@ -42,11 +42,12 @@ AliDetConstruction::AliDetConstruction()
   fDetSwitchVector.Add(new AliDetSwitch("MUON",   2, 1));
   fDetSwitchVector.Add(new AliDetSwitch("PHOS",   2, 1));
   fDetSwitchVector.Add(new AliDetSwitch("PMD",    3, 1));
-  fDetSwitchVector.Add(new AliDetSwitch("RICH",   3, 1));
+  fDetSwitchVector.Add(new AliDetSwitch("RICH",   4, 3));
   fDetSwitchVector.Add(new AliDetSwitch("START",  2, 1));
-  fDetSwitchVector.Add(new AliDetSwitch("TOF",    5, 2));
+  fDetSwitchVector.Add(new AliDetSwitch("TOF",    6, 5));
   fDetSwitchVector.Add(new AliDetSwitch("TPC",    4, 2));
   fDetSwitchVector.Add(new AliDetSwitch("TRD",    2, 1));
+  fDetSwitchVector.Add(new AliDetSwitch("VZERO",  3, 2));
   fDetSwitchVector.Add(new AliDetSwitch("ZDC",    3, 2));
 
   // update messenger
