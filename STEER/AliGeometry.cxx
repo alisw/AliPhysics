@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/05/30 15:02:31  morsch
+Impact method added. (G. Martinez)
+
 Revision 1.2  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -53,9 +56,3 @@ AliGeometry::~AliGeometry()
   // dtor
 }
 //____________________________________________________________________________
-Bool_t  AliGeometry::Impact(const TParticle * particle) const 
-{
-  Bool_t In=kFALSE;
-  
-  return In;
-}

@@ -29,7 +29,7 @@ public:
  
   virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos, TMatrix & mat) const = 0; 
   virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos) const = 0; 
-  virtual Bool_t Impact(const TParticle * particle) const ;
+  virtual Bool_t Impact(const TParticle * particle) const             = 0;
 
 protected:
 
@@ -40,3 +40,6 @@ protected:
 };
 
 #endif // ALIGEOMETRY_H
+
+
+
