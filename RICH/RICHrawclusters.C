@@ -115,7 +115,7 @@ void RICHrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
 	Int_t nbytes = 0;
 
 
-	TClonesArray *Particles = gAlice->Particles();
+	TClonesArray *Particles = (TClonesArray*)gAlice->Particles();
 	TTree *TD = gAlice->TreeD();
 	Int_t nent=gAlice->TreeD()->GetEntries();
 	//printf("Found %d entries in the tree (must be one per cathode per event!)\n",nent);
