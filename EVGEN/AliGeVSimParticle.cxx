@@ -113,7 +113,7 @@ Float_t AliGeVSimParticle::GetDirectedFlow(Float_t pt, Float_t y) {
   
   Float_t v;
   
-  v = (fV1[0] + fV1[1]* pt) * TMath::Sign(1.,y) *
+  v = (fV1[0] + fV1[1]* pt) * TMath::Sign((Float_t)1.,y) *
     (fV1[2] + fV1[3] * TMath::Abs(y*y*y) );
 
   return v;

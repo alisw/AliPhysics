@@ -212,7 +212,7 @@ Float_t AliGenAfterBurnerFlow::GetCoeff
   
   if ((Int_t)fParams[index][1] == 1) { // Directed
     
-    v = (fParams[index][2] + fParams[index][3] * Pt) * TMath::Sign(1.,Y) *
+    v = (fParams[index][2] + fParams[index][3] * Pt) * TMath::Sign((Float_t)1.,Y) *
       (fParams[index][4] + fParams[index][5] * TMath::Abs(Y*Y*Y) );
 
   } else {  // Elliptic

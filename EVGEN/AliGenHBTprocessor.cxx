@@ -76,7 +76,7 @@ AliGenCocktailAfterBurner*  GetGenerator();
 AliGenHBTprocessor::AliGenHBTprocessor(const AliGenHBTprocessor& in)
 {
 //copy contructor
- AliGenHBTprocessor::AliGenHBTprocessor();
+  // AliGenHBTprocessor::AliGenHBTprocessor();
 }
 
 AliGenHBTprocessor::AliGenHBTprocessor() : AliGenerator() 
