@@ -31,7 +31,7 @@ class AliITSstatistics2 : public TObject {
 																 } 
     void AddValue(Float_t y,Float_t x){
 	                                    // default weight F.
-	                                    AddValue(y,x,1.0);
+	                                    AddValue((Double_t)y,(Double_t)x,(Double_t)1.0);
 												  }
     Double_t GetXNth (Int_t order);
     Double_t GetYNth (Int_t order);

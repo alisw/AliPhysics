@@ -29,7 +29,7 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp)
        npar=6;
     }
 
-    Float_t detpar[npar];
+    Float_t *detpar = new Float_t [npar];
     resp->GetDetParam(detpar);
 
     fNInvalid = detpar[0];
@@ -44,6 +44,9 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp)
     Option_t *opt,*dummy;
     resp->ParamOptions(opt,dummy);
     if (strstr(opt,"SetInvalid")) SetInvalidMC(fNInvalid,fISigma);
+	 
+	 delete [] detpar;
+	 delete detpar;
 
 }
 
