@@ -15,6 +15,11 @@
 
 /*
   $Log$
+  Revision 1.62  2002/10/31 08:44:04  morsch
+  Problems with rotated RICH solved:
+  Detector response (fresnel reflection, grid absorption ...) has to be
+  determined using local coordinates.
+
   Revision 1.61  2002/10/29 15:00:08  morsch
   - Diagnostics updated.
   - RecHits structure synchronized.
@@ -251,7 +256,7 @@ AliRICH::AliRICH()
     fCerenkovs  = 0;
     for (Int_t i=0; i<7; i++){
 	fNdch[i]       = 0;
-	fNrawch[i]   = 0;
+	fNrawch[i]     = 0;
 	fNrechits1D[i] = 0;
 	fNrechits3D[i] = 0;
     }
@@ -2198,17 +2203,12 @@ void AliRICH::StepManager()
 			mom[1]=momentum(1);
 			mom[2]=momentum(2);
 			mom[3]=momentum(3);
-			Chamber(idvol).GlobaltoLocal(mom,localMom);
-			// Z-position for hit
 			
-			
-			/**************** Photons lost in second grid have to be calculated by hand************/ 
-			
+			gMC->Gmtod(mom,localMom,2);
 			Float_t cophi = TMath::Cos(TMath::ATan2(localMom[0], localMom[1]));
 			Float_t t = (1. - .025 / cophi) * (1. - .05 /  cophi);
-			//gMC->Rndm(ranf, 1);
+			/**************** Photons lost in second grid have to be calculated by hand************/ 
 			gMC->GetRandom()->RndmArray(1,ranf);
-			//printf("grid calculation:%f\n",t);
 			if (ranf[0] > t) {
 			  gMC->StopTrack();
 			  ckovData[13] = 5;
@@ -2229,22 +2229,25 @@ void AliRICH::StepManager()
 			mom[1]=momentum(1);
 			mom[2]=momentum(2);
 			mom[3]=momentum(3);
-			Chamber(idvol).GlobaltoLocal(mom,localMom);
+
+			gMC->Gmtod(mom,localMom,2);
 			/********* Photons lost by Fresnel reflection have to be calculated by hand********/ 
 			/***********************Cerenkov phtons (always polarised)*************************/
-			
-			Float_t cophi = TMath::Cos(TMath::ATan2(localMom[0], localMom[1]));
-			Float_t t = Fresnel(ckovEnergy*1e9,cophi,1);
-			//gMC->Rndm(ranf, 1);
-			gMC->GetRandom()->RndmArray(1,ranf);
-			if (ranf[0] < t) {
-			  gMC->StopTrack();
-			  ckovData[13] = 6;
-			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
-			  //printf("Added One (2)!\n");
-			  //printf("Lost by Fresnel\n");
-			}
-			/**********************************************************************************/
+			Double_t localTc = localMom[0]*localMom[0]+localMom[2]*localMom[2];
+			Double_t localRt = TMath::Sqrt(localTc);
+			localTheta   = Float_t(TMath::ATan2(localRt,Double_t(localMom[1])));
+			Double_t cotheta = TMath::Abs(cos(localTheta));
+			Float_t t = Fresnel(ckovEnergy*1e9,cotheta,1);
+			    gMC->GetRandom()->RndmArray(1,ranf);
+			    if (ranf[0] < t) {
+			      gMC->StopTrack();
+			      ckovData[13] = 6;
+			      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+				
+			      //printf("Added One (2)!\n");
+			      //printf("Lost by Fresnel\n");
+			    }
+			    /**********************************************************************************/
 		      }
 		  } //track entering?
 		  
@@ -2344,13 +2347,13 @@ void AliRICH::StepManager()
 		idvol=vol[0]-1;
 		
 
-		//gMC->Gmtod(pos,localPos,1);
+		gMC->Gmtod(pos,localPos,1);
 
-		Chamber(idvol).GlobaltoLocal(pos,localPos);
+		//Chamber(idvol).GlobaltoLocal(pos,localPos);
                                                                     
-		//gMC->Gmtod(mom,localMom,2);
+		gMC->Gmtod(mom,localMom,2);
 
-		Chamber(idvol).GlobaltoLocal(mom,localMom);
+		//Chamber(idvol).GlobaltoLocal(mom,localMom);
 		
 		gMC->CurrentVolOffID(2,copy);
 		vol[0]=copy;
@@ -2483,13 +2486,13 @@ void AliRICH::StepManager()
 	    mom[2]=momentum(2);
 	    mom[3]=momentum(3);
 
-	    //gMC->Gmtod(pos,localPos,1);
+	    gMC->Gmtod(pos,localPos,1);
 	    
-	    Chamber(idvol).GlobaltoLocal(pos,localPos);
+	    //Chamber(idvol).GlobaltoLocal(pos,localPos);
                                                                     
-	    //gMC->Gmtod(mom,localMom,2);
+	    gMC->Gmtod(mom,localMom,2);
 
-	    Chamber(idvol).GlobaltoLocal(mom,localMom);
+	    //Chamber(idvol).GlobaltoLocal(mom,localMom);
 	    
 	    ipart  = gMC->TrackPid();
 	    //
