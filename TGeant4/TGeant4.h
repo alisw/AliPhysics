@@ -57,28 +57,45 @@ class TGeant4: public AliMC
                      Int_t isvol, Int_t ifield, Float_t fieldm, Float_t tmaxfd, 
                      Float_t stemax, Float_t deemax, Float_t epsil, 
 		     Float_t stmin, Float_t* ubuf, Int_t nbuf);
+    virtual void  Matrix(Int_t& krot, Double_t thetaX, Double_t phiX, 
+                     Double_t thetaY, Double_t phiY, Double_t thetaZ, 
+		     Double_t phiZ);
     virtual void  Matrix(Int_t& krot, Float_t thetaX, Float_t phiX, 
                      Float_t thetaY, Float_t phiY, Float_t thetaZ, 
 		     Float_t phiZ);
-    virtual void  Gstpar(Int_t itmed, const char *param, Float_t parval); 
+    virtual void Gstpar(Int_t itmed, const char *param, Float_t parval); 
     virtual void  SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
                      Float_t *absco, Float_t *effic, Float_t *rindex);
 
     // functions from GGEOM 
     virtual Int_t Gsvolu(const char *name, const char *shape, Int_t nmed,  
+                         Double_t *upar, Int_t np); 
+    virtual Int_t Gsvolu(const char *name, const char *shape, Int_t nmed,  
                          Float_t *upar, Int_t np); 
     virtual void  Gsdvn(const char *name, const char *mother, Int_t ndiv, 
                         Int_t iaxis); 
     virtual void  Gsdvn2(const char *name, const char *mother, Int_t ndiv, 
+                         Int_t iaxis, Double_t c0i, Int_t numed); 
+    virtual void  Gsdvn2(const char *name, const char *mother, Int_t ndiv, 
                          Int_t iaxis, Float_t c0i, Int_t numed); 
+    virtual void  Gsdvt(const char *name, const char *mother, Double_t step, 
+                        Int_t iaxis, Int_t numed, Int_t ndvmx); 
     virtual void  Gsdvt(const char *name, const char *mother, Float_t step, 
                         Int_t iaxis, Int_t numed, Int_t ndvmx); 
+    virtual void  Gsdvt2(const char *name, const char *mother, Double_t step, 
+                         Int_t iaxis, Double_t c0, Int_t numed, Int_t ndvmx); 
     virtual void  Gsdvt2(const char *name, const char *mother, Float_t step, 
                          Int_t iaxis, Float_t c0, Int_t numed, Int_t ndvmx); 
     virtual void  Gsord(const char *name, Int_t iax); 
     virtual void  Gspos(const char *name, Int_t nr, const char *mother,  
+                        Double_t x, Double_t y, Double_t z, Int_t irot, 
+                        const char *konly="ONLY"); 
+    virtual void  Gspos(const char *name, Int_t nr, const char *mother,  
                         Float_t x, Float_t y, Float_t z, Int_t irot, 
                         const char *konly); 
+    virtual void  Gsposp(const char *name, Int_t nr, const char *mother,  
+                         Double_t x, Double_t y, Double_t z, Int_t irot,
+                         const char *konly, Double_t *upar, Int_t np);
     virtual void  Gsposp(const char *name, Int_t nr, const char *mother,  
                          Float_t x, Float_t y, Float_t z, Int_t irot,
                          const char *konly, Float_t *upar, Int_t np); 
