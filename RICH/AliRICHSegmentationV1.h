@@ -12,7 +12,10 @@ class AliRICHSegmentationV1 : public AliRICHSegmentationV0 {
     
  public:
     AliRICHSegmentationV1();
-    virtual ~AliRICHSegmentationV1();
+    virtual ~AliRICHSegmentationV1() {}
+
+    // Initialisation
+    virtual void Init(Int_t id);
 
     // current sector
     virtual Int_t  ISector() {return fSector;}
