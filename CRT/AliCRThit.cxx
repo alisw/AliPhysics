@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/10/07 11:19:18  gamez
+Changes requested by coding conventions
+
 Revision 1.2  2002/07/25 21:27:22  gamez
 Variables renamed to avoid floating exceptions
 
@@ -88,23 +91,23 @@ AliCRThit& AliCRThit::operator= (const AliCRThit & hit)
    // aisngment operator.
    //
 
-  fId     = hit.fId;
-  fX      = hit.fX;
-  fY      = hit.fY;
-  fZ      = hit.fZ;
-  fPx     = hit.fPx;
-  fPy     = hit.fPy;
-  fPz     = hit.fPz;
-  fMedium = hit.fMedium;
-  fELoss  = hit.fELoss;
-  fCRTh = hit.fCRTh;
-  fCRTMod = hit.fCRTMod;
-  fCRTMag = hit.fCRTMag;
-  fCRTRICH = hit.fCRTRICH;
-  fCRTTPC = hit.fCRTTPC;
+  //fId     = hit.fId;
+  //fX      = hit.fX;
+  //fY      = hit.fY;
+  //fZ      = hit.fZ;
+  //fPx     = hit.fPx;
+  //fPy     = hit.fPy;
+  //fPz     = hit.fPz;
+  //fMedium = hit.fMedium;
+  //fELoss  = hit.fELoss;
+  //fCRTh = hit.fCRTh;
+  //fCRTMod = hit.fCRTMod;
+  //fCRTMag = hit.fCRTMag;
+  //fCRTRICH = hit.fCRTRICH;
+  //fCRTTPC = hit.fCRTTPC;
 
-  fCopy = hit.fCopy;
-  fVolume = hit.fVolume;
+  //fCopy = hit.fCopy;
+  //fVolume = hit.fVolume;
 
   return *this;
 }
