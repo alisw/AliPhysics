@@ -40,6 +40,8 @@ ClassImp(AliEMCALClusterizer)
 {
   // ctor
   fEventFolderName = "" ;  
+  fFirstEvent = 0 ; 
+  fLastEvent  = -1 ; 
 }
 
 //____________________________________________________________________________
@@ -47,7 +49,8 @@ AliEMCALClusterizer::AliEMCALClusterizer(const TString alirunFileName, const TSt
   TTask("EMCAL"+AliConfig::fgkReconstructionerTaskName, alirunFileName), fEventFolderName(eventFolderName)
 {
   // ctor
-  
+  fFirstEvent = 0 ; 
+  fLastEvent  = -1 ;   
 }
 
 //____________________________________________________________________________

@@ -41,6 +41,8 @@ ClassImp(AliPHOSPID)
 {
   // ctor
   fEventFolderName = "" ; 
+  fFirstEvent = 0 ; 
+  fLastEvent  = -1 ; 
 }
 
 
@@ -49,6 +51,8 @@ AliPHOSPID::AliPHOSPID(const TString alirunFileName, const TString eventFolderNa
 :TTask("PHOS"+AliConfig::fgkPIDTaskName, alirunFileName), fEventFolderName(eventFolderName)
 {
   // ctor
+  fFirstEvent = 0 ; 
+  fLastEvent  = -1 ;
 }
 
 //____________________________________________________________________________

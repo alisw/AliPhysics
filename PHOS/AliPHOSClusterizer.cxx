@@ -36,6 +36,8 @@ ClassImp(AliPHOSClusterizer)
   // ctor
 
   fEventFolderName = "" ; 
+  fFirstEvent = 0 ; 
+  fLastEvent  = -1 ; 
 }
 
 //____________________________________________________________________________
@@ -44,6 +46,8 @@ AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName, const TStri
 {
   // ctor
  
+  fFirstEvent = 0 ; 
+  fLastEvent  = -1 ; 
 }
 
 //____________________________________________________________________________

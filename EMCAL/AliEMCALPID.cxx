@@ -40,6 +40,8 @@ ClassImp(AliEMCALPID)
 {
   // ctor
   fEventFolderName = "" ; 
+  fFirstEvent = 0 ; 
+  fLastEvent  = -1 ;
 }
 
 
@@ -48,7 +50,8 @@ AliEMCALPID::AliEMCALPID(const TString alirunFileName, const TString eventFolder
 :TTask("EMCAL"+AliConfig::fgkPIDTaskName, alirunFileName), fEventFolderName(eventFolderName)
 {
   // ctor
-
+  fFirstEvent = 0 ; 
+  fLastEvent  = -1 ; 
 }
 
 //____________________________________________________________________________
