@@ -24,17 +24,19 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 
 //
 //    
-    Float_t ptMinCut  = 1.;
+    Float_t ptMinCut  = 3.;
     Float_t etamin    = 2.543;
     Float_t etar      = 1.457;
     Float_t ptUp      = 20.;   // GeV
-    Float_t dpt       = 0.1;   // GeV
+    Float_t dpt       = 0.01;   // GeV
 //    
 //  For b = 0
 //  (factor 1.28 to scale from 10% most central to b=0)
-//    
-    Float_t scaleC0 = 1.28 * ptUp / dpt;
-    Float_t scaleB0 = 1.28 * ptUp / dpt;
+//
+    Float_t aGlauber = 208. * 208. * 7.03e-4;    // 1/mb
+    
+    Float_t scaleC0 = aGlauber * ptUp / dpt;
+    Float_t scaleB0 = aGlauber * ptUp / dpt;
     Float_t scaleD0 = 1.28 * etar * ptUp / 1.35; // scaled by 1.35 to match ALICE-INT-2002-6
     
 //
@@ -75,27 +77,27 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 //  Heavy Flavors
 //
     
-    TF1*  ptBBLf = new TF1("ptBBLf", "[0] * x / (1. + (x/[1])**2)**[2]", 0., 2.);
-    ptBBLf->SetParameter(0, 1.4651e-02);
-    ptBBLf->SetParameter(1, 9.3409e-01);
-    ptBBLf->SetParameter(2, 1.3583e+00);
+    TF1*  ptBBLf = new TF1("ptBBLf", "[0] * x / (1. + (x/[1])**2)**[2]", 0., 3.);
+    ptBBLf->SetParameter(0, 4.390e-05);
+    ptBBLf->SetParameter(1, 1.8706);
+    ptBBLf->SetParameter(2, 2.6623);
 
-    TF1*  ptBBHf = new TF1("ptBBHf", "[0] * x / (1. + (x/[1])**2)**[2]", 2., ptUp);
-    ptBBHf->SetParameter(0, 7.7122e-03);
-    ptBBHf->SetParameter(1, 2.38);
-    ptBBHf->SetParameter(2, 3.32);
+    TF1*  ptBBHf = new TF1("ptBBHf", "[0] * x / (1. + (x/[1])**2)**[2]", 3., ptUp);
+    ptBBHf->SetParameter(0, 2.5329e-05);
+    ptBBHf->SetParameter(1, 2.6067);
+    ptBBHf->SetParameter(2, 3.3821);
 
     TF1*  ptCCHf = new TF1("ptCCHf", "[0] * x / (1. + (x/[1])**2)**([2] + [3] * x)", 1.5, ptUp);
-    ptCCHf->SetParameter(0, 8.6675e-01);
-    ptCCHf->SetParameter(1, 8.1384e-01);
-    ptCCHf->SetParameter(2, 2.8933e+00);
-    ptCCHf->SetParameter(3, 1.4865e-02);
+    ptCCHf->SetParameter(0, 4.8234e-03);
+    ptCCHf->SetParameter(1, 7.5656e-01);
+    ptCCHf->SetParameter(2, 2.7707e+00);
+    ptCCHf->SetParameter(3, 2.3362e-02);
 
     TF1*  ptCCLf = new TF1("ptCCLf", "[0] * x / (1. + (x/[1])**2)**([2] + [3] * x)", 0., 1.5);
-    ptCCLf->SetParameter(0, 2.4899e+00);
-    ptCCLf->SetParameter(1, 3.8394e-01);
-    ptCCLf->SetParameter(2, 1.5505e+00);
-    ptCCLf->SetParameter(3, 2.4679e-01);
+    ptCCLf->SetParameter(0, 1.190e-02);
+    ptCCLf->SetParameter(1, 3.6343e-01);
+    ptCCLf->SetParameter(2, 1.4689e+00);
+    ptCCLf->SetParameter(3, 2.5772e-01);
     
     TF1*  ptBf = new TF1("ptBf", "[0] * x / (1. + (x/[1])**2)**[2]", 0., ptUp);
     ptBf->SetParameter(0, 1.e5 * 0.7 * 1.125);
@@ -121,6 +123,7 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
     TH1F* ptBH    = new TH1F("ptBH", "pt Spectrum mu from b",          20, 0., 10.);    
     TH1F* ptDH    = new TH1F("ptDH", "pt Spectrum mu from pi/K",       20, 0., 10.);    
     TH1F* ptBH2   = new TH1F("ptBH2", "pt Spectrum mu from b",         20, 0., 10.);    
+    TH1F* costBBH = new TH1F("costBBH", "cos theta*    ", 20, -1, 1.);    
 //
 // Event Loop
 //
@@ -151,8 +154,11 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 	Float_t deta = eta1 - eta2;
 //
 // invariant mass
-	Float_t m2 = 2. * pT1 * pT2 * (TMath::CosH(deta) - TMath::Cos(dphi));
-	Float_t m  = TMath::Sqrt(m2);
+	Float_t m2   = 2. * pT1 * pT2 * (TMath::CosH(deta) - TMath::Cos(dphi));
+	Float_t m    = TMath::Sqrt(m2);
+	Float_t mt2  = pT1 * pT1 + pT2 * pT2 + 2. * pT1 * pT2 * TMath::CosH(deta);
+	Float_t mt   = TMath::Sqrt(mt2);
+	Float_t cost = 2. * pT1 * pT2 * TMath::SinH(deta) / m / mt;  
 
 //
 // Smearing (to be improved)
@@ -179,12 +185,12 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 	}
 
 
-	if (pT1 > 2.) {
+	if (pT1 > 3.) {
 	    wgtB1 = ptBBHf->Eval(pT1) * scaleB;
 	} else {
 	    wgtB1 = ptBBLf->Eval(pT1) * scaleB;
 	}
-	if (pT2 > 2.) {
+	if (pT2 > 3.) {
 	    wgtB2 = ptBBHf->Eval(pT2) * scaleB;
 	} else {
 	    wgtB2 = ptBBLf->Eval(pT2) * scaleB;
@@ -247,6 +253,8 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 	    massBDH->Fill(m, wgtB2 * wgtD1 / 4. * effA);
 	    massCDH->Fill(m, wgtC1 * wgtD2 / 4. * effA);
 	    massCDH->Fill(m, wgtC2 * wgtD1 / 4. * effA);
+
+	    costBBH->Fill(cost, wgtB1 * wgtB2 / 4. * effA);
 	}
 	//
 	// pT - Spectra
@@ -320,5 +328,8 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
     ptCH->Draw("same");
     TCanvas *c4 = new TCanvas("c4","Canvas 5",400,10,600,700);
     ptBH2->Draw();
+
+    TCanvas *c5 = new TCanvas("c5","Canvas 6",400,10,600,700);
+    costBBH->Draw();
  
 }
