@@ -27,7 +27,7 @@ public:
            AliRICHChamber& operator=(const AliRICHChamber&)              {return *this;}
   
   TRotMatrix* RotMatrix()          const{return fpRotMatrix;}
-  const char* RotMatrixName()      const{return "rot"+fName;}
+  TString RotMatrixName()          const{return "rot"+fName;}
   TRotation   Rot()                const{return fRot;}
   Double_t    Rho()                const{return fCenterV3.Mag();} 
   Double_t    ThetaD()             const{return fCenterV3.Theta()*TMath::RadToDeg();}    
