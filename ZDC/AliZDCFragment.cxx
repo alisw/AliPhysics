@@ -67,33 +67,33 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
   Int_t i,j;
 
    // Coefficients of polynomial for average number of IMF
-   const Float_t  ParamNimf[5]={0.011236,1.8364,56.572,-116.24,58.289}; 
+   const Float_t  kParamNimf[5]={0.011236,1.8364,56.572,-116.24,58.289}; 
    // Coefficients of polynomial for fluctuations on average number of IMF
-   const Float_t  ParamFluctNimf[4]={-0.13176,2.9392,-5.2147,2.3092}; 
+   const Float_t  kParamFluctNimf[4]={-0.13176,2.9392,-5.2147,2.3092}; 
    // Coefficients of polynomial for average maximum Z of fragments
-   const Float_t  ParamZmax[4]={0.16899,14.203,-2.8284,65.036}; 
+   const Float_t  kParamZmax[4]={0.16899,14.203,-2.8284,65.036}; 
    // Coefficients of polynomial for fluctuations on maximum Z of fragments
-   const Float_t  ParamFluctZmax[5]={0.013782,-0.17282,1.5065,1.0654,-2.4317}; 
+   const Float_t  kParamFluctZmax[5]={0.013782,-0.17282,1.5065,1.0654,-2.4317}; 
    // Coefficients of polynomial for exponent tau of fragments Z distribution
-   const Float_t  ParamTau[3]={6.7233,-15.85,13.047};  
+   const Float_t  kParamTau[3]={6.7233,-15.85,13.047};  
    //Coefficients of polynomial for average number of alphas
-   const Float_t  ParamNalpha[4]={-0.68554,39.605,-68.311,30.165}; 
+   const Float_t  kParamNalpha[4]={-0.68554,39.605,-68.311,30.165}; 
    // Coefficients of polynomial for fluctuations on average number of alphas
-   const Float_t  ParamFluctNalpha[5]={0.283,6.2141,-17.113,17.394,-6.6084}; 
+   const Float_t  kParamFluctNalpha[5]={0.283,6.2141,-17.113,17.394,-6.6084}; 
    // Coefficients of function for Pb nucleus skin
-   const Float_t  ParamSkinPb[2]={0.93,11.05};
+   const Float_t  kParamSkinPb[2]={0.93,11.05};
    
    // Thickness of nuclear surface
-   const Float_t  NuclearThick = 0.52;
+   const Float_t  kNuclearThick = 0.52;
    // Maximum impact parameter for U [r0*A**(1/3)]
-   const Float_t  bMaxU = 14.87;
+   const Float_t  kbMaxU = 14.87;
    // Maximum impact parameter for Pb [r0*A**(1/3)]
-   const Float_t  bMaxPb = 14.22;
+   const Float_t  kbMaxPb = 14.22;
    // Z of the projectile
-   const Float_t  ZProj = 82.;
+   const Float_t  kZProj = 82.;
    
    // From b(Pb) to b(U)
-   Float_t  bU = fB*bMaxU/bMaxPb;
+   Float_t  bU = fB*kbMaxU/kbMaxPb;
     
    // From b(U) to Zbound(U) 
    // --- A.Schuttauf et al, Nuc.Phys. A607 (1996) 457 ---------------
@@ -101,53 +101,53 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    // which is approx. constant, the constant value is found  
    // integrating the nucleus cross surface from 0 to bmax=R1+R2 where 
    // R = 1.2*A**(1/3). This value has been measured in Aladin (U+U).
-   Float_t  ZbU = bU*bU*TMath::Pi()/7.48;
+   Float_t  zbU = bU*bU*TMath::Pi()/7.48;
    
    //  Rescale Zbound for Pb
-   fZbAverage = ZProj/92.*ZbU;
+   fZbAverage = kZProj/92.*zbU;
    
-   // Zbound is proportional to b**2 up to b < bMaxPb-2*NuclearThick
+   // Zbound is proportional to b**2 up to b < kbMaxPb-2*kNuclearThick
    // and then it is an increasing exponential, imposing that at 
-   // b=bMaxPb-2NuclearThick the two functions have the same derivative
-   Float_t bCore = bMaxPb-2*NuclearThick;
+   // b=kbMaxPb-2kNuclearThick the two functions have the same derivative
+   Float_t bCore = kbMaxPb-2*kNuclearThick;
    if(fB>bCore){
-     fZbAverage=ZProj*(1.-TMath::Exp(-ParamSkinPb[0]*(fB-ParamSkinPb[1])));
+     fZbAverage=kZProj*(1.-TMath::Exp(-kParamSkinPb[0]*(fB-kParamSkinPb[1])));
    }
-   if(fZbAverage>ZProj) fZbAverage = ZProj;
-   Float_t ZbNorm = fZbAverage/ZProj;
-   Float_t bNorm = fB/bMaxPb;
+   if(fZbAverage>kZProj) fZbAverage = kZProj;
+   Float_t zbNorm = fZbAverage/kZProj;
+   Float_t bNorm = fB/kbMaxPb;
    
    // From Zbound to <Nimf>,<Zmax>,tau
    // Polinomial fits to Aladin distribution
    // --- A.Schuttauf et al, Nuc.Phys. A607 (1996) 457.
-   Float_t AverageNimf = ParamNimf[0]+ParamNimf[1]*ZbNorm+ParamNimf[2]*
-           TMath::Power(ZbNorm,2)+ParamNimf[3]*TMath::Power(ZbNorm,3)+
-	   ParamNimf[4]*TMath::Power(ZbNorm,4);
+   Float_t averageNimf = kParamNimf[0]+kParamNimf[1]*zbNorm+kParamNimf[2]*
+           TMath::Power(zbNorm,2)+kParamNimf[3]*TMath::Power(zbNorm,3)+
+	   kParamNimf[4]*TMath::Power(zbNorm,4);
    
    // Add fluctuation: from Singh et al. 
-   Float_t FluctNimf = ParamFluctNimf[0]+ParamFluctNimf[1]*ZbNorm+
-           ParamFluctNimf[2]*TMath::Power(ZbNorm,2)+ParamFluctNimf[3]
-	   *TMath::Power(ZbNorm,3);
+   Float_t fluctNimf = kParamFluctNimf[0]+kParamFluctNimf[1]*zbNorm+
+           kParamFluctNimf[2]*TMath::Power(zbNorm,2)+kParamFluctNimf[3]
+	   *TMath::Power(zbNorm,3);
    Float_t xx = gRandom->Gaus(0.0,1.0);
-   FluctNimf = FluctNimf*xx;
-   fNimf = Int_t(AverageNimf+FluctNimf);
+   fluctNimf = fluctNimf*xx;
+   fNimf = Int_t(averageNimf+fluctNimf);
    Float_t y = gRandom->Rndm();
-   if(y < ((AverageNimf+FluctNimf)-fNimf)) fNimf += 1;
-   if(fNimf ==0 && ZbNorm>0.75) fNimf = 1;
+   if(y < ((averageNimf+fluctNimf)-fNimf)) fNimf += 1;
+   if(fNimf ==0 && zbNorm>0.75) fNimf = 1;
    
-   Float_t AverageZmax = ParamZmax[0]+ParamZmax[1]*ZbNorm+ParamZmax[2]*
-           TMath::Power(ZbNorm,2)+ParamZmax[3]*TMath::Power(ZbNorm,3);
-   fTau = ParamTau[0]+ParamTau[1]*ZbNorm+ParamTau[2]*TMath::Power(ZbNorm,2);
+   Float_t averageZmax = kParamZmax[0]+kParamZmax[1]*zbNorm+kParamZmax[2]*
+           TMath::Power(zbNorm,2)+kParamZmax[3]*TMath::Power(zbNorm,3);
+   fTau = kParamTau[0]+kParamTau[1]*zbNorm+kParamTau[2]*TMath::Power(zbNorm,2);
    
    // Add fluctuation to mean value of Zmax (see Hubele)
-   Float_t FluctZmax = ParamFluctZmax[0]+ParamFluctZmax[1]*ZbNorm+
-           ParamFluctZmax[2]*TMath::Power(ZbNorm,2)+ParamFluctZmax[3]*
-	   TMath::Power(ZbNorm,3)+ParamFluctZmax[4]*TMath::Power(ZbNorm,4);
-   FluctZmax = FluctZmax*ZProj/6.;
+   Float_t fluctZmax = kParamFluctZmax[0]+kParamFluctZmax[1]*zbNorm+
+           kParamFluctZmax[2]*TMath::Power(zbNorm,2)+kParamFluctZmax[3]*
+	   TMath::Power(zbNorm,3)+kParamFluctZmax[4]*TMath::Power(zbNorm,4);
+   fluctZmax = fluctZmax*kZProj/6.;
    Float_t xg = gRandom->Gaus(0.0,1.0);
-   FluctZmax = FluctZmax*xg;
-   fZmax = AverageZmax+FluctZmax;
-   if(fZmax>ZProj) fZmax = ZProj;
+   fluctZmax = fluctZmax*xg;
+   fZmax = averageZmax+fluctZmax;
+   if(fZmax>kZProj) fZmax = kZProj;
    
 //   printf("\n\n ------------------------------------------------------------");   
 //   printf("\n Generation of nuclear fragments\n");   
@@ -156,44 +156,44 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
 
    // Find the number of alpha particles 
    // from Singh et al. : Pb+emulsion
-   Float_t AverageAlpha = ParamNalpha[0]+ParamNalpha[1]*ZbNorm+
-           ParamNalpha[2]*TMath::Power(ZbNorm,2)+ParamNalpha[3]*
-	   TMath::Power(ZbNorm,3);
-   Float_t FluctAlpha = ParamFluctNalpha[0]+ParamFluctNalpha[1]*
-           ZbNorm+ParamFluctNalpha[2]*TMath::Power(ZbNorm,2)+
-	   ParamFluctNalpha[3]*TMath::Power(ZbNorm,3)+
-	   ParamFluctNalpha[4]*TMath::Power(ZbNorm,4);
+   Float_t averageAlpha = kParamNalpha[0]+kParamNalpha[1]*zbNorm+
+           kParamNalpha[2]*TMath::Power(zbNorm,2)+kParamNalpha[3]*
+	   TMath::Power(zbNorm,3);
+   Float_t fluctAlpha = kParamFluctNalpha[0]+kParamFluctNalpha[1]*
+           zbNorm+kParamFluctNalpha[2]*TMath::Power(zbNorm,2)+
+	   kParamFluctNalpha[3]*TMath::Power(zbNorm,3)+
+	   kParamFluctNalpha[4]*TMath::Power(zbNorm,4);
    Float_t xxx = gRandom->Gaus(0.0,1.0);
-   FluctAlpha = FluctAlpha*xxx;
-   fNalpha = Int_t(AverageAlpha+FluctAlpha);
+   fluctAlpha = fluctAlpha*xxx;
+   fNalpha = Int_t(averageAlpha+fluctAlpha);
    Float_t yy = gRandom->Rndm();
-   if(yy < ((AverageAlpha+FluctAlpha)-fNalpha)) fNalpha += 1;
+   if(yy < ((averageAlpha+fluctAlpha)-fNalpha)) fNalpha += 1;
 
    // 2 possibilities:
    // 1) for bNorm < 0.9 ==> first remove alphas, then fragments
    // 2) for bNorm > 0.9 ==> first remove fragments, then alphas
 
-   Int_t Choice = 0;
-   Float_t ZbFrag = 0, SumZ = 0.;
+   Int_t choice = 0;
+   Float_t zbFrag = 0, sumZ = 0.;
 
    if(bNorm<=0.9) {
    // remove alpha from zbound to find zbound for fragments  (Z>=3)
-     ZbFrag = fZbAverage-fNalpha*2;
-     Choice = 1;
+     zbFrag = fZbAverage-fNalpha*2;
+     choice = 1;
    }
    else {
-     ZbFrag = fZbAverage;
-     Choice = 0;
+     zbFrag = fZbAverage;
+     choice = 0;
    }
-//   printf("\n Choice = %d, fZbAverage = %f, ZbFrag = %f \n", Choice, fZbAverage, ZbFrag);
+//   printf("\n choice = %d, fZbAverage = %f, zbFrag = %f \n", choice, fZbAverage, zbFrag);
    
    
-   // Check if ZbFrag < fZmax
-   if(ZbFrag<=fZmax) {
-     if(fNimf>0 && ZbFrag>=2){
+   // Check if zbFrag < fZmax
+   if(zbFrag<=fZmax) {
+     if(fNimf>0 && zbFrag>=2){
        fNimf = 1;
-       fZZ[0] = Int_t(ZbFrag);
-       SumZ = ZbFrag;
+       fZZ[0] = Int_t(zbFrag);
+       sumZ = zbFrag;
      }
      else {
        fNimf = 0;
@@ -246,23 +246,23 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    // Check that the sum of the bound charges is not > than Zbound-Zalfa
    
    for(Int_t ii=0; ii<fNimf; ii++){
-     SumZ += fZZ[ii];
+     sumZ += fZZ[ii];
    }
    
    Int_t k = 0;
-   if(SumZ>ZbFrag){
+   if(sumZ>zbFrag){
      for(i=0; i< fNimf; i++){
        k += 1;
-       SumZ -= fZZ[i];
-       if(SumZ<=ZbFrag){
+       sumZ -= fZZ[i];
+       if(sumZ<=zbFrag){
          fNimf -= (i+1);
          break;
        }
      }
    }
    else {
-     if(Choice == 1) return;
-     Int_t iDiff = Int_t((ZbFrag-SumZ)/2);
+     if(choice == 1) return;
+     Int_t iDiff = Int_t((zbFrag-sumZ)/2);
      if(iDiff<fNalpha){
        fNalpha=iDiff;
        return;
@@ -278,9 +278,9 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    }
    fNimf -= k;
    
-   SumZ=0;
+   sumZ=0;
    for(i=0; i<fNimf; i++){
-     SumZ += fZZ[i];
+     sumZ += fZZ[i];
    }
    
 }
@@ -288,7 +288,10 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
 //_____________________________________________________________________________
 void AliZDCFragment::AttachNeutrons(Int_t *fZZ, Int_t *fNN, Int_t &fZtot,Int_t &fNtot)
 {
-   const Float_t AIon[68]={1.87612,2.80943,3.7284,5.60305,6.53536,
+//
+// Prepare nuclear fragment by attaching a suitable number of neutrons
+//
+   const Float_t kAIon[68]={1.87612,2.80943,3.7284,5.60305,6.53536,
      		     6.53622,8.39479,9.32699,10.2551,11.17793,
      		     13.04378,14.89917,17.6969,18.62284,21.41483,
      		     22.34193,25.13314,26.06034,28.85188,29.7818,
@@ -304,7 +307,7 @@ void AliZDCFragment::AttachNeutrons(Int_t *fZZ, Int_t *fNN, Int_t &fZtot,Int_t &
      		     168.554,171.349,173.4536,177.198,179.0518,
      		     180.675,183.473,188.1345,190.77,193.729,
      		     221.74295};
-   const Int_t ZIon[68]={1,1,2,3,3,
+   const Int_t kZIon[68]={1,1,2,3,3,
      		     4,4,5,5,6,
      		     7,8,9,10,11,
      		     12,13,14,15,16,
@@ -325,16 +328,16 @@ void AliZDCFragment::AttachNeutrons(Int_t *fZZ, Int_t *fNN, Int_t &fZtot,Int_t &
 
    for(Int_t i=0; i<fNimf; i++) {
       for(Int_t j=0; j<68; j++) {
-        iZ = ZIon[j];
+        iZ = kZIon[j];
 	if((fZZ[i]-iZ) == 0){
-	  iA = Int_t(AIon[j]/0.93149432+0.5);
+	  iA = Int_t(kAIon[j]/0.93149432+0.5);
 	  fNN[i] = iA - iZ;
           break;
 	}
 	else if((fZZ[i]-iZ) < 0){
-	  fZZ[i] = ZIon[j-1];
-	  iA = Int_t (AIon[j-1]/0.93149432+0.5);
-	  fNN[i] = iA - ZIon[j-1];
+	  fZZ[i] = kZIon[j-1];
+	  iA = Int_t (kAIon[j-1]/0.93149432+0.5);
+	  fNN[i] = iA - kZIon[j-1];
           break;
 	}
       }
