@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/25 19:56:55  morsch
+Handle correctly slats with less than 3 segmentation zones.
+
 Revision 1.3  2000/10/22 16:56:33  morsch
 - Store chamber number as slat id.
 
@@ -130,7 +133,7 @@ void AliMUONSegmentationSlatModuleN::NextPad()
 
     if (fIy > fNpyS[fSector])  printf("\n this pad %f %f %d %d \n",fX,fY,fIx,fIy);
     GetPadC(fIx, fIy, xc, yc);
-//    printf("\n Next Pad (n)%d %d %f %f %d", fIx,fIy,fX,fY,fSector);
+//    printf("\n Next Pad (n)%d %d %f %f %d %f %d ", fIx,fIy,fX,fY,fSector, fYmax, fIxmax);
 }
 
 Int_t AliMUONSegmentationSlatModuleN::MorePads()
@@ -139,7 +142,7 @@ Int_t AliMUONSegmentationSlatModuleN::MorePads()
 //
 // Are there more pads in the integration region
 {
-    if ((fY >= fYmax  && fIx >= fIxmax) || fIy == -1) {
+    if (fIy == -1) {
 	return 0;
     } else {
 	return 1;

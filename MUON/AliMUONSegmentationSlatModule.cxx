@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/25 19:56:55  morsch
+Handle correctly slats with less than 3 segmentation zones.
+
 Revision 1.3  2000/10/22 16:56:32  morsch
 - Store chamber number as slat id.
 
@@ -183,7 +186,7 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     if (y01 < 0) y01 = 0;
 
     if (x02 >= fCx[fNsec-1]) x02 = fCx[fNsec-1];
-    if (y02 >= fDyPCB) y02 = fDyPCB;
+
     
 
     Int_t isec=-1;
@@ -194,6 +197,8 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
 	    break;
 	}
     }
+    y02 += Dpy(isec);
+    if (y02 >= fDyPCB) y02 = fDyPCB;
    
     //
     // find the pads over which the charge distributes
@@ -202,11 +207,12 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     
     if (fIxmax > fNpx) fIxmax=fNpx;
     if (fIymax > fNpyS[isec]) fIymax = fNpyS[isec];    
+
     fXmin=x01;
-    fXmax=x02;
+    fXmax=x02;    
     fYmin=y01;
-    fYmax=y02;
-    
+    fYmax=y02;    
+  
     // 
     // Set current pad to lower left corner
     if (fIxmax < fIxmin) fIxmax=fIxmin;
@@ -216,10 +222,12 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     
     GetPadC(fIx,fIy,fX,fY);
     fSector=Sector(fIx,fIy);
-//    printf("\n \n First Pad: %d %d %f %f %d %d %d %f" , 
-//	   fIxmin, fIxmax, fXmin, fXmax, fNpx, fId, isec, Dpy(isec));    
-//    printf("\n \n First Pad: %d %d %f %f %d %d %d %f",
-//	   fIymin, fIymax, fYmin, fYmax,  fNpyS[isec], fId, isec, Dpy(isec));
+/*
+    printf("\n \n First Pad: %d %d %f %f %d %d %d %f" , 
+	   fIxmin, fIxmax, fXmin, fXmax, fNpx, fId, isec, Dpy(isec));    
+    printf("\n \n First Pad: %d %d %f %f %d %d %d %f",
+	   fIymin, fIymax, fYmin, fYmax,  fNpyS[isec], fId, isec, Dpy(isec));
+*/
 }
 
 void AliMUONSegmentationSlatModule::NextPad()
