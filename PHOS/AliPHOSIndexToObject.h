@@ -63,18 +63,33 @@ public:
   AliPHOSDigit *        GimeDigit(Int_t index) 
                           {if(fDigits) return (AliPHOSDigit*)fDigits->At(index); 
 			   else        return 0 ;} 
+  Int_t                 GimeNDigits() 
+                          {if(fDigits) return fDigits->GetEntriesFast(); 
+			  else         return 0 ;} 
   TParticle *           GimePrimary(Int_t index) ;
   AliPHOSRecParticle *  GimeRecParticle(Int_t index) 
                           { if(fRecParticles) return (AliPHOSRecParticle*)fRecParticles->At(index); 
 			    else return 0 ;} 
+  Int_t                 GimeNRecParticles() 
+                          { if(fRecParticles) return fRecParticles->GetEntriesFast(); 
+			    else return 0 ;} 
   AliPHOSEmcRecPoint *  GimeEmcRecPoint(Int_t index) 
                           { if(fEmcRecPoints) return (AliPHOSEmcRecPoint*)fEmcRecPoints->At(index);
+			    else return 0 ;} 
+  Int_t                 GimeNEmcRecPoints() 
+                          { if(fEmcRecPoints) return fEmcRecPoints->GetEntriesFast();
 			    else return 0 ;} 
   AliPHOSRecPoint *     GimeCpvRecPoint(Int_t index) 
                           { if(fCpvRecPoints) return (AliPHOSRecPoint*)fCpvRecPoints->At(index); 
 			    else return 0 ;}  
+  Int_t                 GimeNCpvRecPoints() 
+                          { if(fCpvRecPoints) return fCpvRecPoints->GetEntriesFast(); 
+			    else return 0 ;}  
   AliPHOSTrackSegment * GimeTrackSegment(Int_t index) 
                           { if(fTS) return (AliPHOSTrackSegment*)fTS->At(index); 
+			    else return 0 ;} 
+  Int_t                 GimeNTrackSegments() 
+                          { if(fTS) return fTS->GetEntriesFast(); 
 			    else return 0 ;} 
   AliPHOSDigitizer*     GimeDigitizer() 
                           { return fDigitizer; } 
