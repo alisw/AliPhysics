@@ -11,6 +11,7 @@
 
 #include "AliDecayer.h"
 class AliPythia;
+class TClonesArrray;
 
 class AliDecayerPythia :
 public AliDecayer
@@ -20,7 +21,8 @@ public AliDecayer
     void  Copy(AliDecayerPythia &decayer) const;
     
 //    
-    virtual         ~AliDecayerPythia();
+    virtual         ~AliDecayerPythia(){;}
+    
     virtual void    Init();
     virtual void    Decay(Int_t idpart, TLorentzVector *p);
     virtual Int_t   ImportParticles(TClonesArray *particles);
