@@ -117,7 +117,7 @@ void AliPHOSv3::StepManager(void)
   Int_t          copy     ;
   Float_t        lightyield ;   // Light Yield per GeV
   Float_t        apdgain ; // Poisson calculated gain around 300.
-  Float_t        nElectrons ;   // Number of electrons in the PIN diode
+  //Float_t        nElectrons ;   // Number of electrons in the PIN diode
   
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
   Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
