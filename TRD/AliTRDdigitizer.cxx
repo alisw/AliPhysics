@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/11/10 14:57:52  cblume
+Changes in the geometry constants for the DEC compiler
+
 Revision 1.12  2000/11/01 14:53:20  cblume
 Merge with TRD-develop
 
@@ -175,7 +178,7 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
 
   fEvent         = 0;
 
-  fCompress      = kTRUE;
+  fCompress      = kFALSE;
   fVerbose       = 1;
 
   Init();
@@ -615,12 +618,13 @@ Bool_t AliTRDdigitizer::MakeDigits()
               ,nRowMax,nColMax,nTimeMax);
         printf("row0 = %f, col0 = %f, time0 = %f\n"
               ,row0,col0,time0);
+        printf("rowPadSize = %f, colPadSize = %f, timeBinSize = %f\n"
+	       ,rowPadSize,colPadSize,timeBinSize); 
       }
        
       // Don't analyze test hits with amplitude 0.
       if (((Int_t) q) == 0) continue;
 
-      // Get different container if the detector has changed
       if (detector != detectorOld) {
         if (fVerbose > 1) {
           printf("AliTRDdigitizer::MakeDigits -- ");
@@ -651,11 +655,13 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	}
         else {
 	  // Expand an existing one
-          if (fVerbose > 1) {
-            printf("AliTRDdigitizer::MakeDigits -- ");
-            printf("Expand an existing container ... ");
+          if (fCompress) {
+            if (fVerbose > 1) {
+              printf("AliTRDdigitizer::MakeDigits -- ");
+              printf("Expand an existing container ... ");
+	    }
+            signals->Expand();
 	  }
-          if (fCompress) signals->Expand();
 	}
 	// The same for the dictionary
         for (iDict = 0; iDict < kNDict; iDict++) {       
@@ -742,7 +748,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
         if (fVerbose > 2) {
           printf("  electron no. %d, signal = %d\n",iEl,signal);
           printf("  rowE = %d, colE = %d, timeE = %d\n"
-		 ,rowE,colE,timeE);
+	        ,rowE,colE,timeE);
 	}
 
         // Apply the pad response 
@@ -836,10 +842,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
     Int_t nColMax  = fGeo->GetColMax(plane);
     Int_t nTimeMax = fGeo->GetTimeMax();
 
-    if (!(CheckDetector(plane,chamber,sector))) continue;
+    //if (!(CheckDetector(plane,chamber,sector))) continue;
     if (fVerbose > 0) {
       printf("AliTRDdigitizer::MakeDigits -- ");
       printf("Digitization for chamber %d\n",iDet);
+      printf("iDet = %d, nRowMax = %d, nColMax = %d, nTimeMax = %d\n",iDet,nRowMax,nColMax,nTimeMax);
     }
 
     // Add a container for the digits of this detector
@@ -889,14 +896,14 @@ Bool_t AliTRDdigitizer::MakeDigits()
           else {
             adc = ((Int_t) (signalAmp * (fADCoutRange / fADCinRange)));
 	  }
-          if (fVerbose > 2) {
-            printf("  iRow = %d, iCol = %d, iTime = %d\n"
-                  ,iRow,iCol,iTime);
-            printf("  signal = %f, adc = %d\n",signalAmp,adc);
-	  }
 
           // Store the amplitude of the digit if above threshold
           if (adc > fADCthreshold) {
+            if (fVerbose > 2) {
+              printf("  iRow = %d, iCol = %d, iTime = %d\n"
+                    ,iRow,iCol,iTime);
+              printf("  signal = %f, adc = %d\n",signalAmp,adc);
+	    }
             nDigits++;
             digits->SetData(iRow,iCol,iTime,adc);
 	  }
@@ -916,8 +923,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
     totalSizeDict1  += dictionary[1]->GetSize();
     totalSizeDict2  += dictionary[2]->GetSize();
 
+    Float_t nPixel = nRowMax * nColMax * nTimeMax;
     printf("AliTRDdigitizer::MakeDigits -- ");
-    printf("Found %d digits in detector %d.\n",nDigits,iDet);
+    printf("Found %d digits in detector %d (%3.0f).\n"
+          ,nDigits,iDet
+          ,100.0 * ((Float_t) nDigits) / nPixel);
  
     if (fCompress) signals->Compress(1,0);
 
@@ -946,7 +956,7 @@ Bool_t AliTRDdigitizer::CheckDetector(Int_t plane, Int_t chamber, Int_t sector)
   if ((fTRD->GetSensChamber() >=       0) &&
       (fTRD->GetSensChamber() != chamber)) return kFALSE;
   if ((fTRD->GetSensPlane()   >=       0) &&
-      (fTRD->GetSensPlane()   !=  sector)) return kFALSE;
+      (fTRD->GetSensPlane()   !=   plane)) return kFALSE;
   if ( fTRD->GetSensSector()  >=       0) {
     Int_t sens1 = fTRD->GetSensSector();
     Int_t sens2 = sens1 + fTRD->GetSensSectorRange();
