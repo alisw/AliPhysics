@@ -311,6 +311,7 @@ void AliRun::InitLoaders()
   AliModule *mod;
   while((mod = (AliModule*)next()))
    { 
+     mod->SetRunLoader(fRunLoader);
      AliDetector *det = dynamic_cast<AliDetector*>(mod);
      if (det) 
       {
@@ -903,6 +904,7 @@ void AliRun::SetRunLoader(AliRunLoader* rloader)
   while((module = (AliModule*)next())) 
    {
      if (evfold) AliConfig::Instance()->Add(module,evfoldname);
+     module->SetRunLoader(fRunLoader);
      AliDetector* detector = dynamic_cast<AliDetector*>(module);
      if (detector)
       {
