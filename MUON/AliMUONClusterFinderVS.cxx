@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.15  2000/12/21 22:14:38  morsch
+Clean-up of coding rule violations.
+
 Revision 1.14  2000/10/23 16:03:45  morsch
 Correct z-position of all clusters created "on the flight".
 
@@ -1897,7 +1900,7 @@ void fcnCombiS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
     f=chisq;
 }
 
-void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster &c)
+void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster c)
 {
   //
   // Add a raw cluster copy to the list
