@@ -13,6 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+////////////////////////////////////////////////////////////////////////
+// Virtual base class for ITS AliITSMap class. In general a Map is a  //
+// structure where the charge liberated by an ion passing through some//
+// material is collected and a sighned to the appropreate detector    //
+// structure.                                                         //
+////////////////////////////////////////////////////////////////////////
 
 #include "AliITSMap.h"
 
