@@ -1054,25 +1054,27 @@ Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
     gloTrigPat = 0;
     globalTrigger = fMUONData->GlobalTrigger(); 
     gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);	
-    if (gloTrg->SinglePlusLpt())  gloTrigPat|= 0x1;
-    if (gloTrg->SinglePlusHpt())  gloTrigPat|= 0x2;
-    if (gloTrg->SinglePlusApt())  gloTrigPat|= 0x4;
- 
-    if (gloTrg->SingleMinusLpt()) gloTrigPat|= 0x8;
-    if (gloTrg->SingleMinusHpt()) gloTrigPat|= 0x10;
-    if (gloTrg->SingleMinusApt()) gloTrigPat|= 0x20;
- 
-    if (gloTrg->SingleUndefLpt()) gloTrigPat|= 0x40;
-    if (gloTrg->SingleUndefHpt()) gloTrigPat|= 0x80;
-    if (gloTrg->SingleUndefApt()) gloTrigPat|= 0x100;
- 
-    if (gloTrg->PairUnlikeLpt())  gloTrigPat|= 0x200;
-    if (gloTrg->PairUnlikeHpt())  gloTrigPat|= 0x400;
-    if (gloTrg->PairUnlikeApt())  gloTrigPat|= 0x800;
-
-    if (gloTrg->PairLikeLpt())    gloTrigPat|= 0x1000;
-    if (gloTrg->PairLikeHpt())    gloTrigPat|= 0x2000;
-    if (gloTrg->PairLikeApt())    gloTrigPat|= 0x4000;
+    if (gloTrg) {
+      if (gloTrg->SinglePlusLpt())  gloTrigPat|= 0x1;
+      if (gloTrg->SinglePlusHpt())  gloTrigPat|= 0x2;
+      if (gloTrg->SinglePlusApt())  gloTrigPat|= 0x4;
+      
+      if (gloTrg->SingleMinusLpt()) gloTrigPat|= 0x8;
+      if (gloTrg->SingleMinusHpt()) gloTrigPat|= 0x10;
+      if (gloTrg->SingleMinusApt()) gloTrigPat|= 0x20;
+      
+      if (gloTrg->SingleUndefLpt()) gloTrigPat|= 0x40;
+      if (gloTrg->SingleUndefHpt()) gloTrigPat|= 0x80;
+      if (gloTrg->SingleUndefApt()) gloTrigPat|= 0x100;
+      
+      if (gloTrg->PairUnlikeLpt())  gloTrigPat|= 0x200;
+      if (gloTrg->PairUnlikeHpt())  gloTrigPat|= 0x400;
+      if (gloTrg->PairUnlikeApt())  gloTrigPat|= 0x800;
+      
+      if (gloTrg->PairLikeLpt())    gloTrigPat|= 0x1000;
+      if (gloTrg->PairLikeHpt())    gloTrigPat|= 0x2000;
+      if (gloTrg->PairLikeApt())    gloTrigPat|= 0x4000;
+    }
 
  
 
