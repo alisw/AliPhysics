@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.17  2001/10/23 13:03:35  hristov
+  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
+
   Revision 1.16  2001/10/21 18:31:24  hristov
   Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -197,8 +200,10 @@ AliRICHDisplay::AliRICHDisplay(Int_t size)
     SetRange();
     
     // Set front view by default
-    fTheta = 90;
-    fPhi   = 90;
+    //fTheta = 90;              //inclined HMPID
+    //fPhi   = 30;              //inclined HMPID
+    fTheta = 90;               //normal HMPID
+    fPhi   = 90;                //normal HMPID
     fPsi   = 0;
     fChamber = 1;
     fCathode = 1;
@@ -453,7 +458,7 @@ void AliRICHDisplay::DisplayColorScale()
     gPad->Range(x1,y1,x2,y2);
     TText *text = new TText(0,0,"");
     text->SetTextFont(61);
-    text->SetTextSize(0.03);
+    text->SetTextSize(0.2);
     text->SetTextAlign(22);
     
     TBox *box;
@@ -700,7 +705,7 @@ void AliRICHDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
    //add clusters to the pad
    DrawClusters();
    //DrawHits();
-//   DrawCerenkovs();
+   //DrawCerenkovs();
    if (gAlice->TreeR())
      {
        //printf("Calling DrawCoG\n");
@@ -879,7 +884,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     fRecpoints->AddAt(points1D,irec);
 	     points1D->SetMarkerColor(38);
 	     points1D->SetMarkerStyle(8);
-	     points1D->SetMarkerSize(1.);
+	     points1D->SetMarkerSize(.5);
 	     points1D->SetParticle(-1);
 	     points1D->SetHitIndex(-1);
 	     points1D->SetTrackIndex(-1);
@@ -949,9 +954,12 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     //printf("Generating ellipse %d\n",irec);
 	     AliRICHEllipse *ellipse=new AliRICHEllipse(mRec3D->fX,mRec3D->fY,mRec3D->fOmega,mRec3D->fTheta,mRec3D->fPhi,0.75);
 	     printf("Ring at x:%f, y:%f - Omega:%f rad, theta:%3.1f deg, phi:%3.1f deg\n",mRec3D->fX,mRec3D->fY,mRec3D->fOmega,mRec3D->fTheta*180/TMath::Pi(),mRec3D->fPhi*180/TMath::Pi());
-	     ellipse->CerenkovRingDrawing(chamber,irec);
+	     //ellipse->CerenkovRingDrawing(chamber,irec);
 	     //ellipse->SetFillStyle(1001);
+	     ellipse->CreatePoints(chamber);
+	     ellipse->SetMarkerStyle(7);
 	     ellipse->SetMarkerColor(42);
+	     ellipse->SetMarkerSize(1);
 	     ellipse->Draw();
 	     //marker->SetRefObject((TObject*)points3D);
 	     //points3D->Set3DMarker(0, marker); 
