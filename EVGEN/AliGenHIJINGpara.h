@@ -25,6 +25,8 @@ class AliGenHIJINGpara : public AliGenerator
   virtual void Generate();
   virtual void Init();
   AliGenHIJINGpara & operator=(const AliGenHIJINGpara & rhs);
+  virtual void SetPtRange(Float_t ptmin=0, Float_t ptmax=15);
+
  protected:
   Float_t fCutVertexZ; // Vertex truncation
   TF1* fPtpi;          // Parametrised pt distribution for pi
