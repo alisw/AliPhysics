@@ -76,8 +76,6 @@ ClassImp(AliTOFSDigitizer)
 //____________________________________________________________________________ 
   AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("AliTOFSDigitizer","") 
 {
-  fEvent1=evNumber1;
-  fEvent2=fEvent1+nEvents;
   ftail    = 0;
   fSelectedSector=-1; //0; // AdC // by default we sdigitize all sectors
   fSelectedPlate =-1; //0; // AdC // by default we sdigitize all plates in all sectors
@@ -91,10 +89,7 @@ ClassImp(AliTOFSDigitizer)
       file =    TFile::Open(fHeadersFile.Data(),"update") ;
       gAlice = (AliRun *) file->Get("gAlice") ;
   }
-
-  // init parameters for sdigitization
-  InitParameters();
-
+  
   // add Task to //root/Tasks folder
   fRunLoader = AliRunLoader::Open(HeaderFile);//open session and mount on default event folder
   if (fRunLoader == 0x0)
@@ -102,6 +97,19 @@ ClassImp(AliTOFSDigitizer)
      Fatal("AliTOFSDigitizer","Event is not loaded. Exiting");
      return;
    }
+
+  if (nEvents<0) {
+    fEvent1=0;
+    fRunLoader->LoadHeader();
+    fEvent2 = (Int_t)((fRunLoader->TreeE())->GetEntries());
+  } else {
+    fEvent1=evNumber1;
+    fEvent2=fEvent1+nEvents;
+  }
+
+  // init parameters for sdigitization
+  InitParameters();
+
   AliLoader* gime = fRunLoader->GetLoader("TOFLoader");
   if (gime == 0x0)
    {
@@ -178,7 +186,7 @@ Double_t TimeWithTail(Double_t* x, Double_t* par)
 void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) { 
 
   fRunLoader->LoadgAlice();
-  fRunLoader->LoadHeader();
+  //fRunLoader->LoadHeader();
   fRunLoader->LoadKinematics();
   gAlice = fRunLoader->GetAliRun();
   

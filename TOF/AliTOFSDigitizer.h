@@ -20,7 +20,7 @@ class AliTOFSDigitizer: public TTask {
 
 public:
   AliTOFSDigitizer() ;          // ctor
-  AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1=0, Int_t nEvents=1) ; // par ctor
+  AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1=0, Int_t nEvents=-1) ; // par ctor
 
   virtual ~AliTOFSDigitizer() ; // dtor
 
