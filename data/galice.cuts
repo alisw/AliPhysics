@@ -37,7 +37,7 @@
 * CARBON
 * ^^^^^^
 * unshielded
-1606 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1606 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1626 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -46,7 +46,7 @@
 * ALUMINUM
 * ^^^^^^^^
 * unshielded
-1609 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1609 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1629 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -55,7 +55,7 @@
 * IRON
 * ^^^^
 * unshielded
-1610 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1610 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1630 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -64,7 +64,7 @@
 * TUNGSTEN
 * ^^^^^^^^
 * unshielded
-1612 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1612 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1632 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -73,7 +73,7 @@
 * LEAD
 * ^^^^
 * unshielded
-1613 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1613 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1633 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -82,7 +82,7 @@
 * Air
 * ^^^
 * unshielded
-1615 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1615 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1635 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -91,7 +91,7 @@
 * VACUUM
 * ^^^^^^
 * unshielded
-1616 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1616 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1636 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -100,7 +100,7 @@
 * CONCRETE
 * ^^^^^^^^
 * unshielded
-1617 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1617 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1637 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -109,7 +109,7 @@
 * POLY CH_2
 * ^^^^^^^^^
 * unshielded
-1618 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1618 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1638 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -118,7 +118,7 @@
 * STEEL
 * ^^^^^
 * unshielded
-1619 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1619 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1639 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -130,7 +130,7 @@
 * ALUMINUM
 * ^^^^^^^^
 * unshielded
-1709 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1709 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1729 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -139,7 +139,7 @@
 * IRON
 * ^^^^
 * unshielded
-1710 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1710 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1730 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -148,7 +148,7 @@
 * TUNGSTEN
 * ^^^^^^^^
 * unshielded
-1712 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1712 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1732 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -157,7 +157,7 @@
 * LEAD
 * ^^^^
 * unshielded
-1713 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1713 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1733 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -166,7 +166,7 @@
 * Air
 * ^^^
 * unshielded
-1715 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1715 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1735 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -175,7 +175,7 @@
 * VACUUM
 * ^^^^^^
 * unshielded
-1716 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1716 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1736 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
@@ -184,7 +184,7 @@
 * STEEL
 * ^^^^^
 * unshielded
-1719 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+1719 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 1739 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
