@@ -128,21 +128,14 @@ void AliStackingAction::NewStage()
   }
 }
     
-void AliStackingAction::ClearPrimaryStack()
-{
-// Clears the primary stack.
-// ---
-
-  stackManager->ClearPostponeStack();
-}
-
 void AliStackingAction::PrepareNewEvent()
 {
 // Called by G4 kernel at the beginning of event.
 // ---
 
   fStage = 0;
-  ClearPrimaryStack();
+  //stackManager->ClearPostponeStack();
+  stackManager->ResetPostponeStack();
   fTrackingAction = AliTrackingAction::Instance();
   fSavePrimaries = fTrackingAction->GetSavePrimaries();
 }
