@@ -30,20 +30,18 @@
 #include <TClonesArray.h>
 #include "AliMUONRawData.h"
 #include "AliMUONDigit.h"
-#include "AliMUONTriggerDecision.h"
+
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
-#include "AliRun.h" 
-#include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliBitPacking.h" 
+
+#include "AliMUONSubEventTrigger.h"
 #include "AliMUONDDLTracker.h"
 #include "AliMUONDDLTrigger.h"
 
-#include "AliMUON.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
-#include "AliMUONTriggerCircuit.h"
 
 const Int_t AliMUONRawData::fgkDefaultPrintLevel = 0;
 
@@ -141,7 +139,7 @@ Int_t AliMUONRawData::WriteRawData()
 {
  // convert digits of the current event to raw data
 
-  Int_t DDLId;
+  Int_t idDDL;
   Char_t name[20];
 
   fLoader->LoadDigits("READ");
@@ -154,12 +152,12 @@ Int_t AliMUONRawData::WriteRawData()
   for (Int_t ich = 0; ich < AliMUONConstants::NTrackingCh(); ich++) {
  
     // open files
-    DDLId = ich * 2  + 0x900;
-    sprintf(name, "MUON_%d.ddl",DDLId);
+    idDDL = ich * 2  + 0x900;
+    sprintf(name, "MUON_%d.ddl",idDDL);
     fFile1 = fopen(name,"w");
 
-    DDLId = (ich * 2) + 1 + 0x900;
-    sprintf(name, "MUON_%d.ddl",DDLId);
+    idDDL = (ich * 2) + 1 + 0x900;
+    sprintf(name, "MUON_%d.ddl",idDDL);
     fFile2 = fopen(name,"w");
 
     WriteTrackerDDL(ich);
@@ -173,12 +171,12 @@ Int_t AliMUONRawData::WriteRawData()
   // trigger chambers
  
   // open files
-  DDLId = 0xA00;
-  sprintf(name, "MUTR_%d.ddl",DDLId);
+  idDDL = 0xA00;
+  sprintf(name, "MUTR_%d.ddl",idDDL);
   fFile1 = fopen(name,"w");
 
-  DDLId = 0xA00 + 1;
-  sprintf(name, "MUTR_%d.ddl",DDLId);
+  idDDL = 0xA00 + 1;
+  sprintf(name, "MUTR_%d.ddl",idDDL);
   fFile2 = fopen(name,"w");
 
   WriteTriggerDDL();
@@ -562,6 +560,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
 void AliMUONRawData::GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit* digit,
 				     Int_t &busPatchId, UShort_t &manuId, UChar_t &channelId, UShort_t &charge)
 {
+// Dummy mapping for tracker
 
   Int_t offsetX = 0; // offet row
   Int_t offsetY = 0; // offset columns
@@ -639,8 +638,10 @@ void AliMUONRawData::GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit*
 }
 
 //____________________________________________________________________
-Int_t AliMUONRawData::GetGlobalTriggerPattern(AliMUONGlobalTrigger* gloTrg)
+Int_t AliMUONRawData::GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg)
 {
+  // global trigger pattern calculation
+
   Int_t gloTrigPat = 0;
 
   if (gloTrg->SinglePlusLpt())  gloTrigPat|= 0x1;

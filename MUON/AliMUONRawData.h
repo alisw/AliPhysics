@@ -3,9 +3,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* Raw data class for trigger and tracker chambers */
+
 #include <TObject.h>
 #include "AliMUONSubEventTracker.h"
-#include "AliMUONSubEventTrigger.h"
 
 class TClonesArray;
 class AliLoader;
@@ -14,6 +15,7 @@ class AliMUONDigit;
 class AliMUONDDLTracker;
 class AliMUONDDLTrigger;
 class AliMUONGlobalTrigger;
+class AliMUONSubEventTrigger;
 
 class AliMUONRawData : public TObject 
 {
@@ -29,12 +31,12 @@ class AliMUONRawData : public TObject
   Int_t GetPrintLevel(void) const {return fPrintLevel;}
   void SetPrintLevel(Int_t printLevel) {fPrintLevel = printLevel;}
 
-  void AddData1(AliMUONSubEventTracker* event) {
+  void AddData1(const AliMUONSubEventTracker* event) {
     TClonesArray &temp = *fSubEventArray[0];
     new(temp[temp.GetEntriesFast()])AliMUONSubEventTracker(*event); 
   }
 
-  void AddData2(AliMUONSubEventTracker* event) {
+  void AddData2(const AliMUONSubEventTracker* event) {
     TClonesArray &temp = *fSubEventArray[1];
     new(temp[temp.GetEntriesFast()])AliMUONSubEventTracker(*event); 
   }
@@ -42,7 +44,7 @@ class AliMUONRawData : public TObject
   void GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit* digit, Int_t &busPatchId,
 		       UShort_t &manuId, UChar_t &channelId, UShort_t &charge);
 
-  Int_t GetGlobalTriggerPattern(AliMUONGlobalTrigger* gloTrg);
+  Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg);
 
  protected:
   AliMUONRawData();                  // Default constructor
@@ -52,33 +54,24 @@ class AliMUONRawData : public TObject
  private:
   static const Int_t fgkDefaultPrintLevel;     // Default print level
 
+  AliMUONData*  fMUONData;           //! Data container for MUON subsystem 
 
-  AliMUONData*            fMUONData;           //! Data container for MUON subsystem 
-/*   AliMUONTriggerDecision* fTrigDec;            //! calculated trigger from digits tmp solution */
-/*   AliMUONData*            fTrigData; */
+  Int_t         fPrintLevel;         // print level
+ 
+  Int_t         fDebug;              // debug
 
- // print level
-  Int_t fPrintLevel;
+  AliLoader*    fLoader;             //! alice loader
 
-  // debug
-  Int_t fDebug;
+ 
+  FILE*         fFile1;              //! DDL binary file pointer one per 1/2 chamber
+  FILE*         fFile2;              //! DDL binary file pointer one per 1/2 chamber
+
+  TClonesArray* fSubEventArray[2];   //! array to sub event tracker
   
-  // alice loader
-  AliLoader* fLoader;
-
-  // DDL binary file pointer one per 1/2 chamber
-  FILE* fFile1;
-  FILE* fFile2;
-
-  // array to sub event tracker
-  TClonesArray* fSubEventArray[2];
-
-  // array to sub event trigger
-  TClonesArray* fSubEventTrigArray[2];
-
-  // DDL class pointers
-  AliMUONDDLTracker* fDDLTracker;
-  AliMUONDDLTrigger* fDDLTrigger;
+  TClonesArray* fSubEventTrigArray[2]; //! array to sub event trigger
+ 
+  AliMUONDDLTracker* fDDLTracker;      //! DDL tracker class pointers
+  AliMUONDDLTrigger* fDDLTrigger;      //! DDL trigger class pointers
 
   // writing raw data
   Int_t WriteTrackerDDL(Int_t iCh);
