@@ -1079,14 +1079,20 @@ void AliPHOSv0::FinishEvent()
   for ( i = 0 ; i < fNdigits ; i++ ) {
     newdigit =  (AliPHOSDigit * ) fDigits->At(i) ;
     fGeom->AbsToRelNumbering(newdigit->GetId(), relid) ;
+
     if (relid[1]==0){   // Digits belong to EMC (PbW0_4 crystals)
       energyandnoise = newdigit->GetAmp() + Digitize(gRandom->Gaus(0., fPinElectronicNoise)) ;
+
       if (energyandnoise < 0 ) 
 	energyandnoise = 0 ;
+
       newdigit->SetAmp(energyandnoise) ;
+
+      if ( newdigit->GetAmp() < fDigitThreshold ) // if threshold not surpassed, remove digit from list
+	fDigits->RemoveAt(i) ; 
     }
   }
-
+  fDigits->Compress() ; 
   fNTmpHits = 0 ;
   fTmpHits->Delete();
 }
