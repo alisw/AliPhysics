@@ -367,9 +367,9 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
             track2= trackEvent->GetParticle(k);
             trackpair->SetParticles(track1,track2);
 
-            if(fPairCut->Pass(partpair) ) //check pair cut 
+            if(fPairCut->Pass(trackpair) ) //check pair cut 
               { //do not meets crietria of the pair cut, try with swapped pairs
-                if( fPairCut->Pass(partpair->GetSwapedPair()) )
+                if( fPairCut->Pass(trackpair->GetSwapedPair()) )
                   continue; //swaped pairs do not meet criteria of pair cut as well, take next particle
                 else 
                  { //swaped pair meets all the criteria
@@ -998,7 +998,7 @@ void AliHBTAnalysis::ProcessTracksAndParticlesNonIdentAnal()
             track2= trackEvent2->GetParticle(k);
             trackpair->SetParticles(track1,track2);
 
-            if( (fPairCut->PassPairProp(partpair)) ) //check pair cut
+            if( (fPairCut->PassPairProp(trackpair)) ) //check pair cut
              { //do not meets crietria of the pair cut
               continue; 
              }
@@ -1040,7 +1040,7 @@ void AliHBTAnalysis::ProcessTracksAndParticlesNonIdentAnal()
             track2= trackEvent3->GetParticle(k);
             trackpair->SetParticles(track1,track2);
 
-            if( (fPairCut->PassPairProp(partpair)) ) //check pair cut
+            if( (fPairCut->PassPairProp(trackpair)) ) //check pair cut
              { //do not meets crietria of the pair cut
               continue; 
              }
@@ -1344,8 +1344,8 @@ void AliHBTAnalysis::FilterOut(AliHBTEvent* outpart1, AliHBTEvent* outpart2, Ali
      part = inpart->GetParticle(i);
      track = intrack->GetParticle(i);
      
-     if ( (cut1->Pass(part))  ) in1 = kFALSE; //if part  is rejected by cut1, in1 is false
-     if ( (cut2->Pass(part))  ) in2 = kFALSE; //if part  is rejected by cut2, in2 is false
+     if ( (cut1->Pass(track))  ) in1 = kFALSE; //if part  is rejected by cut1, in1 is false
+     if ( (cut2->Pass(track))  ) in2 = kFALSE; //if part  is rejected by cut2, in2 is false
      
      if (gDebug)//to be removed in real analysis     
      if ( in1 && in2 ) //both cuts accepted, should never happen, just in case
