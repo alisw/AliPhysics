@@ -92,7 +92,7 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
 }
 
 //____________________________________________________________________________
-AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit) 
+AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit) : AliDigitNew(digit)
 {
   // copy ctor
   

@@ -33,12 +33,12 @@ public:
   AliEMCALTrackSegmentMaker(const AliEMCALTrackSegmentMaker & tsmaker):TTask(tsmaker) { ; } 
   virtual ~ AliEMCALTrackSegmentMaker() ;
 
-  virtual void    Exec(Option_t * option){Warning("Exec", "Not Defined" ) ; } 
+  virtual void    Exec(Option_t *) = 0;
   virtual const Int_t GetTrackSegmentsInRun()  const {Warning("GetTrackSegmentsInRun", "Not Defined" ) ; return 0 ; } 
 
-  virtual void    Print(Option_t * option)const {Warning("Print", "Not Defined" ) ; }  
+  virtual void    Print(Option_t *) = 0;
   virtual const char * Version() const {Warning("Version", "Not Defined" ) ; return 0 ; }   
-  virtual void WriteTrackSegments(Int_t event){Warning("WriteTrackSegments", "Not Defined" ) ; } 
+  virtual void WriteTrackSegments() = 0;
   
 protected:
   TString fEventFolderName ;  // event folder name

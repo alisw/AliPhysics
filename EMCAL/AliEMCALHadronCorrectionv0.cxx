@@ -52,7 +52,7 @@ AliEMCALHadronCorrectionv0::Instance()
 }
 
 Double_t 
-AliEMCALHadronCorrectionv0::GetEnergy(const Double_t pmom,const Double_t eta,const Int_t gid)
+AliEMCALHadronCorrectionv0::GetEnergy(const Double_t pmom,const Double_t eta,const Int_t /*gid*/)
 {
   Int_t iEta=0; // index 
   Double_t etaw = TMath::Abs(eta);

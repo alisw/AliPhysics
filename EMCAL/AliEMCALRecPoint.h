@@ -47,12 +47,12 @@ class AliEMCALRecPoint : public AliRecPoint {
   virtual Int_t   Compare(const TObject * obj) const = 0 ;   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
-  virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
-  virtual void    EvalAll(Float_t logWeight,TClonesArray * digits) ;  
+  virtual void    ExecuteEvent(Int_t event, Int_t, Int_t) ;
+  virtual void    EvalAll(Float_t /*logWeight*/,TClonesArray * digits) ;  
   virtual void    EvalEMCALArm(AliEMCALDigit * digit) ;  
   virtual void    EvalPrimaries(TClonesArray * digits) ;  
   virtual Int_t   GetEMCALArm(void) const {return fEMCALArm ; }
-  virtual void    GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const {;} // return global position in ALICE
+  virtual void    GetGlobalPosition(TVector3 & /*gpos*/, TMatrix & /*gmat*/) const {;} // return global position in ALICE
   virtual void    GetGlobalPosition(TVector3 & gpos) const ; // return global position (r, theta, phi) in ALICE
   virtual void    GetLocalPosition(TVector3 & lpos) const ; // return loca position (x, y, z) in EMCAL
   //  virtual Int_t   GetEMCALMod(void) const {return fEMCALMod ; }
@@ -67,7 +67,7 @@ class AliEMCALRecPoint : public AliRecPoint {
     return kTRUE ; 
   }  
   virtual void    Paint(Option_t * option="");
-  virtual void    Print(Option_t * opt = "void") const {
+  virtual void    Print(Option_t * /*opt = "void"*/) const {
     // Print prototype
   } 
   

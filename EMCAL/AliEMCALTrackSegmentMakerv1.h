@@ -58,7 +58,7 @@ private:
   void    InitParameters() ;
   void    PrintTrackSegments(Option_t *option) ;
   void    Unload() ;
-  virtual void   WriteTrackSegments(Int_t event) ;
+  virtual void   WriteTrackSegments() ;
 
 private:  
 

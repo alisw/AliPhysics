@@ -61,7 +61,7 @@ AliEMCALHit::AliEMCALHit(){
     fIenergy = 0.0;
 }
 //______________________________________________________________________
-AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit){
+AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit) : AliHit(hit){
     // copy ctor
    
     fId      = hit.fId ; 

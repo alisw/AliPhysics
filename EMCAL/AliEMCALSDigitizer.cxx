@@ -86,7 +86,7 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName, const char *
 
 
 //____________________________________________________________________________ 
-AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) {
+AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) : TTask(sd) {
   //cpy ctor 
 
   fA             = sd.fA ;
@@ -301,7 +301,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 
 
 //__________________________________________________________________
-void AliEMCALSDigitizer::Print(Option_t* option)const
+void AliEMCALSDigitizer::Print(Option_t*)const
 { 
   // Prints parameters of SDigitizer
   Info("Print", "\n------------------- %s -------------", GetName() ) ; 

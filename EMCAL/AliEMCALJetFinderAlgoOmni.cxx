@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.5  2003/09/23 13:31:41  mhorner
+Changed coordinate system
+
 Revision 1.4  2003/09/19 13:16:20  mhorner
 Added additional jet energy info
 
@@ -145,8 +148,7 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
  void AliEMCALJetFinderAlgoOmni::FillUnitArray(AliEMCALJetFinderAlgoUA1FillUnitFlagType_t flag)
    {
      if (fDebug>1) Info("FillUnitArray","Beginning FillUnitArray");
-     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
-
+         //    AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
          //   if (pEMCAL){ 
          //	     AliEMCALGeometry* geom =  AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
          //     }else

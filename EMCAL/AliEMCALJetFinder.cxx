@@ -375,7 +375,7 @@ Float_t AliEMCALJetFinder::HCConeEnergy(Float_t eta, Float_t phi)
 //}
 //return newenergy;
 	
-return 0.0;	
+return eta*phi*0.0;	
 	
 }
 
@@ -1659,7 +1659,7 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
     return dPhi;
 }
 
-void hf1(Int_t& id, Float_t& x, Float_t& wgt)
+void hf1(Int_t& , Float_t& , Float_t& )
 {
 // dummy for hbook calls
     ;

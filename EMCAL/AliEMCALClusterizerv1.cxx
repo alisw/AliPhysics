@@ -149,7 +149,7 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
     if(fToUnfold)
       MakeUnfolding() ;
 
-    WriteRecPoints(ievent) ;
+    WriteRecPoints() ;
 
     if(strstr(option,"deb"))  
       PrintRecPoints(option) ;
@@ -379,7 +379,7 @@ void AliEMCALClusterizerv1::Unload()
 }
  
 //____________________________________________________________________________
-void AliEMCALClusterizerv1::WriteRecPoints(Int_t event)
+void AliEMCALClusterizerv1::WriteRecPoints()
 {
 
   // Creates new branches with given title
@@ -742,10 +742,10 @@ Double_t  AliEMCALClusterizerv1::ShowerShape(Double_t r)
 }
 
 //____________________________________________________________________________
-void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALTowerRecPoint * iniTower, 
-						 Int_t nMax, 
-						 AliEMCALDigit ** maxAt, 
-						 Float_t * maxAtEnergy)
+void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALTowerRecPoint * /*iniTower*/, 
+					   Int_t /*nMax*/, 
+					   AliEMCALDigit ** /*maxAt*/, 
+					   Float_t * /*maxAtEnergy*/)
 {
   // Performs the unfolding of a cluster with nMax overlapping showers 
   
@@ -754,7 +754,9 @@ void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALTowerRecPoint * iniTower,
 }
 
 //_____________________________________________________________________________
-void AliEMCALClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)
+void AliEMCALClusterizerv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * /*Grad*/,
+					       Double_t & /*fret*/,
+					       Double_t * /*x*/, Int_t /*iflag*/)
 {
   // Calculates the Chi square for the cluster unfolding minimization
   // Number of parameters, Gradient, Chi squared, parameters, what to do
@@ -762,7 +764,7 @@ void AliEMCALClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Do
   ::Fatal("UnfoldingChiSquare","Unfolding not implemented") ;
 }
 //____________________________________________________________________________
-void AliEMCALClusterizerv1::Print(Option_t * option)const
+void AliEMCALClusterizerv1::Print(Option_t * /*option*/)const
 {
   // Print clusterizer parameters
 

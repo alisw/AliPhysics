@@ -48,7 +48,9 @@ AliEMCALJetFinderInputPrep::~AliEMCALJetFinderInputPrep()
 
 }
 
-Int_t AliEMCALJetFinderInputPrep::FillFromFile(TString * filename,AliEMCALJetFinderFileType_t fileType, Int_t EventNumber)
+Int_t AliEMCALJetFinderInputPrep::FillFromFile(TString * /*filename*/,
+					       AliEMCALJetFinderFileType_t /*fileType*/,
+					       Int_t /*EventNumber*/)
 {
 return 0;
 }

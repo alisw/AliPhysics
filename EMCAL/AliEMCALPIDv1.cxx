@@ -136,7 +136,7 @@ void  AliEMCALPIDv1::Exec(Option_t * option)
     if(gime->TrackSegments() && //Skip events, where no track segments made
        gime->TrackSegments()->GetEntriesFast()) {   
       MakeRecParticles() ;
-      WriteRecParticles(ievent);
+      WriteRecParticles();
       if(strstr(option,"deb"))
 	PrintRecParticles(option) ;
       //increment the total number of rec particles per run 
@@ -239,7 +239,7 @@ void  AliEMCALPIDv1::MakeRecParticles(){
 }
 
 //____________________________________________________________________________
-void  AliEMCALPIDv1:: Print()
+void  AliEMCALPIDv1:: Print(Option_t * /*option*/) const
 {
   // Print the parameters used for the particle type identification
 
@@ -292,7 +292,7 @@ void AliEMCALPIDv1::Unload()
 }
 
 //____________________________________________________________________________
-void  AliEMCALPIDv1::WriteRecParticles(Int_t event)
+void  AliEMCALPIDv1::WriteRecParticles()
 {
  
   AliEMCALGetter *gime = AliEMCALGetter::Instance() ; 

@@ -37,7 +37,8 @@ ClassImp(AliEMCALRecParticle)
 
 
 //____________________________________________________________________________
- AliEMCALRecParticle::AliEMCALRecParticle(const AliEMCALRecParticle & rp)
+AliEMCALRecParticle::AliEMCALRecParticle(const AliEMCALRecParticle & rp)
+  : AliEMCALFastRecParticle(rp)
 {
   // copy ctor
 

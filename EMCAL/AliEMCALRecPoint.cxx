@@ -88,7 +88,7 @@ Int_t AliEMCALRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
  }
 
 //______________________________________________________________________________
-void AliEMCALRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
+void AliEMCALRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
 {
   // Execute action corresponding to one event
   // This member function is called when a AliEMCALRecPoint is clicked with the locator
@@ -145,7 +145,7 @@ void AliEMCALRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
       clustertext ->Draw("");
     }
     gPad->Update() ; 
-    Print() ;
+    Print("") ;
     delete[] xi ; 
     delete[] zi ; 
    }
@@ -167,7 +167,7 @@ break;
   }
 }
 //____________________________________________________________________________
-void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits) 
+void AliEMCALRecPoint::EvalAll(Float_t /*logWeight*/,TClonesArray * digits) 
 {
   //evaluates (if necessary) all RecPoint data members 
 

@@ -40,9 +40,7 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
 
   virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
   
-  virtual void Print(Option_t * option) const {}
-  void Print() ; 
-  
+  virtual void Print(Option_t * option) const ;
  
   //To turn on or off the Pi0 analysis
   const Bool_t GetPi0Analysis(){return fPi0Analysis;}
@@ -57,7 +55,7 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
   virtual void InitParameters() ;
   void     MakeRecParticles(void ) ;
   void     PrintRecParticles(Option_t * option) ;
-  virtual  void WriteRecParticles(Int_t event) ; 
+  virtual  void WriteRecParticles() ; 
   void Unload(); 
 
  private:

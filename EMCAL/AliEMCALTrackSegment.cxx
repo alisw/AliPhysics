@@ -58,6 +58,7 @@ AliEMCALTrackSegment::AliEMCALTrackSegment( AliEMCALTowerRecPoint * eca, AliEMCA
 
 //____________________________________________________________________________
 AliEMCALTrackSegment::AliEMCALTrackSegment( const AliEMCALTrackSegment & ts) 
+  : TObject(ts)
 {
   // Copy ctor
 
@@ -78,7 +79,7 @@ void AliEMCALTrackSegment::Copy(TObject & obj)
 }
 
 //____________________________________________________________________________
-void AliEMCALTrackSegment::Print(Option_t * opt) const
+void AliEMCALTrackSegment::Print(Option_t *) const
 {
   // Print all information on this track Segment
   

@@ -184,7 +184,7 @@ Int_t AliEMCALTowerRecPoint::Compare(const TObject * obj) const
   return rv ; 
 }
 //______________________________________________________________________________
-void AliEMCALTowerRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
+void AliEMCALTowerRecPoint::ExecuteEvent(Int_t /*event*/, Int_t, Int_t) const
 {
   
   // Execute action corresponding to one event
@@ -679,7 +679,7 @@ void AliEMCALTowerRecPoint::EvalTime(TClonesArray * digits){
   
 }
 //____________________________________________________________________________
-void AliEMCALTowerRecPoint::Print(Option_t * option) 
+void AliEMCALTowerRecPoint::Print(Option_t *) 
 {
   // Print the list of digits belonging to the cluster
   

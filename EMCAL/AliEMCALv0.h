@@ -34,11 +34,6 @@ class AliEMCALv0 : public AliEMCAL {
   } 
   virtual ~AliEMCALv0(){} 
 
-  virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, 
-			Int_t id, Float_t *hits ) {
-    // no hits - useless
-  }
-
   virtual void BuildGeometry();// creates the geometry for the ROOT display
   virtual void CreateGeometry() ;// creates the geometry for GEANT
   virtual void   Init(void) ;                                       // does nothing

@@ -41,7 +41,8 @@ AliEMCALFastRecParticle::AliEMCALFastRecParticle() : TParticle()
 }
 
 //____________________________________________________________________________
- AliEMCALFastRecParticle::AliEMCALFastRecParticle(const AliEMCALFastRecParticle & rp)
+AliEMCALFastRecParticle::AliEMCALFastRecParticle(const AliEMCALFastRecParticle & rp)
+  : TParticle(rp)
 {
   // copy ctor
 
@@ -125,7 +126,7 @@ Int_t AliEMCALFastRecParticle::DistancetoPrimitive(Int_t px, Int_t py)
  }
 
 //______________________________________________________________________________
-void AliEMCALFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
+void AliEMCALFastRecParticle::ExecuteEvent(Int_t event, Int_t /*px*/, Int_t /*py*/)
 {
   //  Execute action corresponding to one event
   //  This member function is called when a AliEMCALFastRecParticle is clicked with the locator
@@ -259,7 +260,7 @@ void AliEMCALFastRecParticle::Paint(Option_t *)
 }
 
 //____________________________________________________________________________
-void AliEMCALFastRecParticle::Print(Option_t * opt)const
+void AliEMCALFastRecParticle::Print(Option_t * /*opt*/)const
 {
   // Print the type, energy and momentum of the reconstructed particle
   

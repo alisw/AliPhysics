@@ -353,7 +353,7 @@ void  AliEMCALTrackSegmentMakerv1::Exec(Option_t * option)
     MakeLinks() ;
     MakePairs() ;
 
-    WriteTrackSegments(ievent) ;
+    WriteTrackSegments() ;
     
     if(strstr(option,"deb"))
       PrintTrackSegments(option) ;
@@ -380,7 +380,7 @@ void AliEMCALTrackSegmentMakerv1::Unload()
 }
 
 //____________________________________________________________________________
-void AliEMCALTrackSegmentMakerv1::Print(Option_t * option)const
+void AliEMCALTrackSegmentMakerv1::Print(Option_t * /*option*/)const
 {
   //  Print TrackSegmentMaker parameters
 
@@ -395,7 +395,7 @@ void AliEMCALTrackSegmentMakerv1::Print(Option_t * option)const
 }
 
 //____________________________________________________________________________
-void AliEMCALTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
+void AliEMCALTrackSegmentMakerv1::WriteTrackSegments()
 {
   // Writes found TrackSegments to TreeR. Creates branches 
   // "EMCALTS" and "AliEMCALTrackSegmentMaker" with the same title.

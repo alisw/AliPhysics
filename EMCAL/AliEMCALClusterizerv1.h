@@ -86,7 +86,7 @@ public:
 
 protected:
 
-  void           WriteRecPoints(Int_t event) ;
+  void           WriteRecPoints() ;
   virtual void   MakeClusters( ) ;            
   
 private:
@@ -100,9 +100,10 @@ private:
   void InitParameters() ;
 
   virtual void   MakeUnfolding() ;
-  void           UnfoldCluster(AliEMCALTowerRecPoint * iniEmc,Int_t Nmax, 
-		       AliEMCALDigit ** maxAt,Float_t * maxAtEnergy ) ; //Unfolds cluster using TMinuit package
-  void           PrintRecPoints(Option_t * option) ;
+  void           UnfoldCluster(AliEMCALTowerRecPoint * /*iniEmc*/, Int_t /*Nmax*/, 
+			       AliEMCALDigit ** /*maxAt*/,
+			       Float_t * /*maxAtEnergy*/ ) ; //Unfolds cluster using TMinuit package
+  void           PrintRecPoints(Option_t * /*option*/) ;
 
 private:
 
