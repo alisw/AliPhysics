@@ -21,6 +21,7 @@
 #pragma link C++ class AliMUONSegmentIndex+;
 #pragma link C++ class AliMUONSegmentManuIndex+;
 #pragma link C++ class AliMUONSegmentPosition+;
+#pragma link C++ class AliMUONSt345SlatSegmentation+;
 // geometry & response
 #pragma link C++ class AliMUONResponse+; 
 #pragma link C++ class AliMUONResponseV0+;

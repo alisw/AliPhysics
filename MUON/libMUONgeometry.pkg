@@ -14,8 +14,7 @@ SRCS  =  AliMUONGeometryConstituent.cxx \
 	 AliMUONVGeometryBuilder.cxx \
 	 AliMUONGeometryBuilder.cxx \
 	 AliMUONGeometryStore.cxx \
-	 AliMUONGeometrySegmentation.cxx \
-         AliMUONSt345SlatSegmentation.cxx
+	 AliMUONGeometrySegmentation.cxx 
 
 HDRS =  $(SRCS:.cxx=.h) 
 
