@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2000/11/15 14:30:16  cblume
+Fixed bug in calculating detector no. of extra hit
+
 Revision 1.24  2000/11/10 14:58:36  cblume
 Introduce additional hit with amplitude 0 at the chamber borders
 
@@ -99,6 +102,7 @@ Introduction of the Copyright and cvs Log
 #include <TVector.h>
 #include <TRandom.h>
 #include <TF1.h>
+#include <TLorentzVector.h>
 
 #include "AliRun.h"
 #include "AliMC.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/11/01 14:53:21  cblume
+Merge with TRD-develop
+
 Revision 1.14.2.3  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -65,7 +68,8 @@ Introduction of the Copyright and cvs Log
 
 #include <TMath.h>
 #include <TRandom.h>
-#include <TVector.h>
+#include <TVector.h> 
+#include <TLorentzVector.h>
 
 #include "AliRun.h"
 #include "AliMC.h"
