@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/06/12 09:54:35  cblume
+Update of tracking code provided by Sergei
+
 Revision 1.8  2001/05/30 12:17:47  hristov
 Loop variables declared once
 
@@ -329,7 +332,7 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
   //Energy losses************************
   if (x1 < x2) d=-d;
   Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d*rho;
-  SetLength(GetLength()+d);
+  //PH  SetLength(GetLength()+d);
 
   cc = fC;
   fC*=(1.- sqrt(p2+pm*pm)/p2*dE);

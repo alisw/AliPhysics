@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.16  2002/06/12 09:54:36  cblume
+Update of tracking code provided by Sergei
+
 Revision 1.14  2001/11/14 10:50:46  cblume
 Changes in digits IO. Add merging of summable digits
 
@@ -1594,7 +1597,7 @@ void AliTRDtracker::CookLabel(AliKalmanTrack* pt, Float_t wrong) const {
 
 
 //__________________________________________________________________
-void AliTRDtracker::UseClusters(const AliKalmanTrack* t, Int_t from = 0) const {
+void AliTRDtracker::UseClusters(const AliKalmanTrack* t, Int_t from) const {
   Int_t ncl=t->GetNumberOfClusters();
   for (Int_t i=from; i<ncl; i++) {
     Int_t index = t->GetClusterIndex(i);
@@ -1657,8 +1660,8 @@ AliTRDtracker::AliTRDpropagationLayer::AliTRDpropagationLayer(Double_t x,
   fYmax = 0;
 
   if(fTimeBinIndex >= 0) { 
-    fClusters = new (AliTRDcluster*)[kMAX_CLUSTER_PER_TIME_BIN];
-    fIndex = new (UInt_t)[kMAX_CLUSTER_PER_TIME_BIN];
+    fClusters = new AliTRDcluster*[kMAX_CLUSTER_PER_TIME_BIN];
+    fIndex = new UInt_t[kMAX_CLUSTER_PER_TIME_BIN];
   }
 
   fHole = kFALSE;
@@ -1826,7 +1829,9 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
 
   Int_t tb, tb_index;
   const Int_t  nChambers = AliTRDgeometry::Ncham();
-  Double_t  Ymax = 0, holeYmax = 0, Zc[nChambers], Zmax[nChambers];
+  Double_t  Ymax = 0, holeYmax = 0;
+  Double_t *  Zc  = new Double_t[nChambers];
+  Double_t * Zmax = new Double_t[nChambers];
   Double_t  holeZmax = 1000.;   // the whole sector is missing
 
 
@@ -2005,6 +2010,8 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
   }
 
   MapTimeBinLayers();
+  delete [] Zc;
+  delete [] Zmax;
 
 }
 
