@@ -20,9 +20,8 @@
 #include <TNamed.h>
 #include <TString.h>
 #include <TObjArray.h>
-#include "AliReconstructor.h"
-#include "AliDetector.h"
 
+class AliReconstructor;
 class AliRunLoader;
 class AliRawReader;
 class AliLoader;
@@ -48,8 +47,13 @@ public:
   void           SetRunLocalReconstruction(const char* detectors) {
     fRunLocalReconstruction = detectors;};
   void           SetRunVertexFinder(Bool_t run) {fRunVertexFinder = run;};
-  void           SetRunTracking(Bool_t run) {fRunTracking = run;};
+  void           SetRunTracking(const char* detectors) {
+    fRunTracking = detectors;};
   void           SetFillESD(const char* detectors) {fFillESD = detectors;};
+  void           SetRunReconstruction(const char* detectors) {
+    SetRunLocalReconstruction(detectors); 
+    SetRunTracking(detectors);
+    SetFillESD(detectors);};
 
   void           SetStopOnError(Bool_t stopOnError) 
     {fStopOnError = stopOnError;}
@@ -59,40 +63,15 @@ public:
   virtual Bool_t Run(const char* input = NULL);
 
 private:
-  class AliDummyReconstructor: public AliReconstructor {
-  public:
-    AliDummyReconstructor(AliDetector* detector) {fDetector = detector;};
-    virtual ~AliDummyReconstructor() {};
-
-    virtual void         Reconstruct(AliRunLoader* /*runLoader*/) const
-      {fDetector->Reconstruct();};
-    virtual AliVertexer* CreateVertexer(AliRunLoader* /*runLoader*/) const 
-      {return fDetector->CreateVertexer();}
-    virtual AliTracker*  CreateTracker(AliRunLoader* /*runLoader*/) const 
-      {return fDetector->CreateTracker();}
-    virtual void         FillESD(AliRunLoader* /*runLoader*/, AliESD* esd) const
-      {fDetector->FillESD(esd);};
-
-    virtual const char*  GetDetectorName() const
-      {return fDetector->GetName();};
-  private:
-    AliDummyReconstructor(const AliDummyReconstructor &drc):
-      AliReconstructor(drc)
-      {Fatal("copy ctor","Not implemented\n");}
-    AliDummyReconstructor & operator=(const AliDummyReconstructor &)
-      {Fatal("= operator","Not implemented\n"); return *this;}
-    AliDetector*         fDetector;   // detector object
-  };
-
   Bool_t         RunLocalReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESD*& esd);
   Bool_t         RunTracking(AliESD*& esd);
   Bool_t         FillESD(AliESD*& esd, const TString& detectors);
 
   Bool_t         IsSelected(TString detName, TString& detectors) const;
-  AliReconstructor* GetReconstructor(const char* detName) const;
+  AliReconstructor* GetReconstructor(Int_t iDet);
   Bool_t         CreateVertexer();
-  Bool_t         CreateTrackers();
+  Bool_t         CreateTrackers(const TString& detectors);
   void           CleanUp(TFile* file = NULL);
 
   Bool_t         ReadESD(AliESD*& esd, const char* recStep) const;
@@ -100,37 +79,25 @@ private:
 
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   Bool_t         fRunVertexFinder;    // run the vertex finder
-  Bool_t         fRunTracking;        // run the barrel tracking
+  TString        fRunTracking;        // run the tracking for these detectors
   TString        fFillESD;            // fill ESD for these detectors
   TString        fGAliceFileName;     // name of the galice file
   TString        fInput;              // name of input file or directory
   Bool_t         fStopOnError;        // stop or continue on errors
   Int_t          fCheckPointLevel;    // level of ESD check points
+  TObjArray      fOptions;            // options for reconstructor objects
 
   AliRunLoader*  fRunLoader;          //! current run loader object
   AliRawReader*  fRawReader;          //! current raw data reader
-  AliLoader*     fITSLoader;          //! loader for ITS
-  AliVertexer*   fITSVertexer;        //! vertexer for ITS
-  AliTracker*    fITSTracker;         //! tracker for ITS
-  AliLoader*     fTPCLoader;          //! loader for TPC
-  AliTracker*    fTPCTracker;         //! tracker for TPC
-  AliLoader*     fTRDLoader;          //! loader for TRD
-  AliTracker*    fTRDTracker;         //! tracker for TRD
-  AliLoader*     fTOFLoader;          //! loader for TOF
-  AliTracker*    fTOFTracker;         //! tracker for TOF
-  AliLoader*     fPHOSLoader;         //! loader for PHOS
-  AliTracker*    fPHOSTracker;        //! tracker for PHOS
-  AliLoader*     fEMCALLoader;        //! loader for EMCAL
-  AliTracker*    fEMCALTracker;       //! tracker for EMCAL
-  AliLoader*     fRICHLoader;         //! loader for RICH
-  AliTracker*    fRICHTracker;        //! tracker for RICH
 
   static const Int_t fgkNDetectors = 15;   //! number of detectors
   static const char* fgkDetectorName[fgkNDetectors]; //! names of detectors
-  TObjArray      fReconstructors;     //! array of reconstructor objects
-  TObjArray      fOptions;            // options for reconstructor objects
+  AliReconstructor*  fReconstructor[fgkNDetectors];  //! array of reconstructor objects
+  AliLoader*     fLoader[fgkNDetectors];   //! detector loaders
+  AliVertexer*   fVertexer;                //! vertexer for ITS
+  AliTracker*    fTracker[fgkNDetectors];  //! trackers
 
-  ClassDef(AliReconstruction, 2)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 3)      // class for running the reconstruction
 };
 
 #endif

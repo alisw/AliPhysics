@@ -57,16 +57,24 @@
 //                                                                           //
 //   rec.SetRunVertexFinder(kFALSE);                                         //
 //                                                                           //
-// The tracking in ITS, TPC and TRD and the creation of ESD tracks can be    //
-// switched off by                                                           //
+// The tracking and the creation of ESD tracks can be switched on for        //
+// selected detectors by                                                     //
 //                                                                           //
-//   rec.SetRunTracking(kFALSE);                                             //
+//   rec.SetRunTracking("...");                                              //
 //                                                                           //
 // The filling of additional ESD information can be steered by               //
 //                                                                           //
 //   rec.SetFillESD("...");                                                  //
 //                                                                           //
-// Again, the string specifies the list of detectors. The default is "ALL".  //
+// Again, for both methods the string specifies the list of detectors.       //
+// The default is "ALL".                                                     //
+//                                                                           //
+// The call of the shortcut method                                           //
+//                                                                           //
+//   rec.SetRunReconstruction("...");                                        //
+//                                                                           //
+// is equivalent to calling SetRunLocalReconstruction, SetRunTracking and    //
+// SetFillESD with the same detector selecting string as argument.           //
 //                                                                           //
 // The reconstruction requires digits or raw data as input. For the creation //
 // of digits and raw data have a look at the class AliSimulation.            //
@@ -92,6 +100,7 @@
 #include <TStopwatch.h>
 
 #include "AliReconstruction.h"
+#include "AliReconstructor.h"
 #include "AliLog.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
@@ -120,36 +129,26 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
 
   fRunLocalReconstruction("ALL"),
   fRunVertexFinder(kTRUE),
-  fRunTracking(kTRUE),
+  fRunTracking("ALL"),
   fFillESD("ALL"),
   fGAliceFileName(gAliceFilename),
   fInput(""),
   fStopOnError(kFALSE),
   fCheckPointLevel(0),
+  fOptions(),
 
   fRunLoader(NULL),
   fRawReader(NULL),
-  fITSLoader(NULL),
-  fITSVertexer(NULL),
-  fITSTracker(NULL),
-  fTPCLoader(NULL),
-  fTPCTracker(NULL),
-  fTRDLoader(NULL),
-  fTRDTracker(NULL),
-  fTOFLoader(NULL),
-  fTOFTracker(NULL),
-  fPHOSLoader(NULL),
-  fPHOSTracker(NULL),
-  fEMCALLoader(NULL),
-  fEMCALTracker(NULL),
-  fRICHLoader(NULL),
-  fRICHTracker(NULL),
 
-  fReconstructors(),
-  fOptions()
+  fVertexer(NULL)
 {
 // create reconstruction object with default parameters
-
+  
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    fReconstructor[iDet] = NULL;
+    fLoader[iDet] = NULL;
+    fTracker[iDet] = NULL;
+  }
 }
 
 //_____________________________________________________________________________
@@ -164,32 +163,22 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fInput(rec.fInput),
   fStopOnError(rec.fStopOnError),
   fCheckPointLevel(0),
+  fOptions(),
 
   fRunLoader(NULL),
   fRawReader(NULL),
-  fITSLoader(NULL),
-  fITSVertexer(NULL),
-  fITSTracker(NULL),
-  fTPCLoader(NULL),
-  fTPCTracker(NULL),
-  fTRDLoader(NULL),
-  fTRDTracker(NULL),
-  fTOFLoader(NULL),
-  fTOFTracker(NULL),
-  fPHOSLoader(NULL),
-  fPHOSTracker(NULL),
-  fEMCALLoader(NULL),
-  fEMCALTracker(NULL),
-  fRICHLoader(NULL),
-  fRICHTracker(NULL),
 
-  fReconstructors(),
-  fOptions()
+  fVertexer(NULL)
 {
 // copy constructor
 
   for (Int_t i = 0; i < fOptions.GetEntriesFast(); i++) {
     if (rec.fOptions[i]) fOptions.Add(rec.fOptions[i]->Clone());
+  }
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    fReconstructor[iDet] = NULL;
+    fLoader[iDet] = NULL;
+    fTracker[iDet] = NULL;
   }
 }
 
@@ -267,55 +256,14 @@ Bool_t AliReconstruction::Run(const char* input)
   gAlice = aliRun;
   AliTracker::SetFieldMap(gAlice->Field());
 
-  // load the reconstructor objects
-  TPluginManager* pluginManager = gROOT->GetPluginManager();
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-    TString detName = fgkDetectorName[iDet];
-    TString recName = "Ali" + detName + "Reconstructor";
-    if (!gAlice->GetDetector(detName) && detName != "HLT") continue;
-
-    if(detName == "HLT") {
-      if (!gROOT->GetClass("AliLevel3")) {
-	gSystem->Load("libAliL3Src.so");
-	gSystem->Load("libAliL3Misc.so");
-	gSystem->Load("libAliL3Hough.so");
-	gSystem->Load("libAliL3Comp.so");
-      }
-    }
-
-    AliReconstructor* reconstructor = NULL;
-    // first check if a plugin is defined for the reconstructor
-    TPluginHandler* pluginHandler = 
-      pluginManager->FindHandler("AliReconstructor", detName);
-    // if not, but the reconstructor class is implemented, add a plugin for it
-    if (!pluginHandler && gROOT->GetClass(recName.Data())) {
-      AliDebug(1, Form("defining plugin for %s", recName.Data()));
-      pluginManager->AddHandler("AliReconstructor", detName, 
-				recName, detName, recName + "()");
-      pluginHandler = pluginManager->FindHandler("AliReconstructor", detName);
-    }
-    if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
-      reconstructor = (AliReconstructor*) pluginHandler->ExecPlugin(0);
-    }
-    // if there is no reconstructor class for the detector use the dummy one
-    if (!reconstructor && gAlice->GetDetector(detName)) {
-      AliDebug(1, Form("using dummy reconstructor for %s", detName.Data()));
-      reconstructor = new AliDummyReconstructor(gAlice->GetDetector(detName));
-    }
-    if (reconstructor) {
-      TObject* obj = fOptions.FindObject(detName.Data());
-      if (obj) reconstructor->SetOption(obj->GetTitle());
-      fReconstructors.Add(reconstructor);
-    }
-  }
-
   // local reconstruction
   if (!fRunLocalReconstruction.IsNull()) {
     if (!RunLocalReconstruction(fRunLocalReconstruction)) {
       if (fStopOnError) {CleanUp(); return kFALSE;}
     }
   }
-  if (!fRunVertexFinder && !fRunTracking && fFillESD.IsNull()) return kTRUE;
+  if (!fRunVertexFinder && fRunTracking.IsNull() && 
+      fFillESD.IsNull()) return kTRUE;
 
   // get vertexer
   if (fRunVertexFinder && !CreateVertexer()) {
@@ -326,7 +274,7 @@ Bool_t AliReconstruction::Run(const char* input)
   }
 
   // get loaders and trackers
-  if (fRunTracking && !CreateTrackers()) {
+  if (!fRunTracking.IsNull() && !CreateTrackers(fRunTracking)) {
     if (fStopOnError) {
       CleanUp(); 
       return kFALSE;
@@ -373,7 +321,7 @@ Bool_t AliReconstruction::Run(const char* input)
     }
 
     // barrel tracking
-    if (fRunTracking) {
+    if (!fRunTracking.IsNull()) {
       if (!ReadESD(esd, "tracking")) {
 	if (!RunTracking(esd)) {
 	  if (fStopOnError) {CleanUp(file); return kFALSE;}
@@ -417,23 +365,22 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
   stopwatch.Start();
 
   TString detStr = detectors;
-  for (Int_t iDet = 0; iDet < fReconstructors.GetEntriesFast(); iDet++) {
-    AliReconstructor* reconstructor = 
-      (AliReconstructor*) fReconstructors[iDet];
-    TString detName = reconstructor->GetDetectorName();
-    if (IsSelected(detName, detStr)) {
-      AliInfo(Form("running reconstruction for %s", detName.Data()));
-      TStopwatch stopwatchDet;
-      stopwatchDet.Start();
-      if (fRawReader) {
-	fRawReader->RewindEvents();
-	reconstructor->Reconstruct(fRunLoader, fRawReader);
-      } else {
-	reconstructor->Reconstruct(fRunLoader);
-      }
-      AliInfo(Form("execution time for %s:", detName.Data()));
-      ToAliInfo(stopwatchDet.Print());
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+    AliReconstructor* reconstructor = GetReconstructor(iDet);
+    if (!reconstructor) continue;
+
+    AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
+    TStopwatch stopwatchDet;
+    stopwatchDet.Start();
+    if (fRawReader) {
+      fRawReader->RewindEvents();
+      reconstructor->Reconstruct(fRunLoader, fRawReader);
+    } else {
+      reconstructor->Reconstruct(fRunLoader);
     }
+    AliInfo(Form("execution time for %s:", fgkDetectorName[iDet]));
+    ToAliInfo(stopwatchDet.Print());
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
@@ -465,9 +412,9 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
     for (Int_t i = 0; i < 3; i++) vtxPos[i] = mcVertex[i];
   }
 
-  if (fITSVertexer) {
+  if (fVertexer) {
     AliInfo("running the ITS vertex finder");
-    vertex = fITSVertexer->FindVertexForCurrentEvent(fRunLoader->GetEventNumber());
+    vertex = fVertexer->FindVertexForCurrentEvent(fRunLoader->GetEventNumber());
     if(!vertex){
       AliWarning("Vertex not found");
       vertex = new AliESDVertex();
@@ -489,9 +436,9 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
     vertex = new AliESDVertex(vtxPos, vtxErr);
   }
   esd->SetVertex(vertex);
-  if (fITSTracker) fITSTracker->SetVertex(vtxPos, vtxErr);
-  if (fTPCTracker) fTPCTracker->SetVertex(vtxPos, vtxErr);
-  if (fTRDTracker) fTRDTracker->SetVertex(vtxPos, vtxErr);
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    if (fTracker[iDet]) fTracker[iDet]->SetVertex(vtxPos, vtxErr);
+  }  
   delete vertex;
 
   AliInfo("execution time:");
@@ -508,204 +455,92 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
   TStopwatch stopwatch;
   stopwatch.Start();
 
-  if (!fTPCTracker) {
-    AliError("no TPC tracker");
-    return kFALSE;
-  }
   AliInfo("running tracking");
 
-  // TPC tracking
-  AliDebug(1, "TPC tracking");
-  fTPCLoader->LoadRecPoints("read");
-  TTree* tpcTree = fTPCLoader->TreeR();
-  if (!tpcTree) {
-    AliError("Can't get the TPC cluster tree");
-    return kFALSE;
-  }
-  fTPCTracker->LoadClusters(tpcTree);
-  if (fTPCTracker->Clusters2Tracks(esd) != 0) {
-    AliError("TPC Clusters2Tracks failed");
-    return kFALSE;
-  }
-  if (fCheckPointLevel > 1) WriteESD(esd, "TPC.tracking");
+  // pass 1: TPC + ITS inwards
+  for (Int_t iDet = 1; iDet >= 0; iDet--) {
+    if (!fTracker[iDet]) continue;
+    AliDebug(1, Form("%s tracking", fgkDetectorName[iDet]));
 
-  if (!fITSTracker) {
-    AliWarning("no ITS tracker");
-  } else {
-
-    GetReconstructor("TPC")->FillESD(fRunLoader, esd); // preliminary
-    AliESDpid::MakePID(esd);                  // PID for the ITS tracker
-
-    // ITS tracking
-    AliDebug(1, "ITS tracking");
-    fITSLoader->LoadRecPoints("read");
-    TTree* itsTree = fITSLoader->TreeR();
-    if (!itsTree) {
-      Error("RunTracking", "Can't get the ITS cluster tree");
+    // load clusters
+    fLoader[iDet]->LoadRecPoints("read");
+    TTree* tree = fLoader[iDet]->TreeR();
+    if (!tree) {
+      AliError(Form("Can't get the %s cluster tree", fgkDetectorName[iDet]));
       return kFALSE;
     }
-    fITSTracker->LoadClusters(itsTree);
-    if (fITSTracker->Clusters2Tracks(esd) != 0) {
-      AliError("ITS Clusters2Tracks failed");
+    fTracker[iDet]->LoadClusters(tree);
+
+    // run tracking
+    if (fTracker[iDet]->Clusters2Tracks(esd) != 0) {
+      AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
       return kFALSE;
     }
-    if (fCheckPointLevel > 1) WriteESD(esd, "ITS.tracking");
+    if (fCheckPointLevel > 1) {
+      WriteESD(esd, Form("%s.tracking", fgkDetectorName[iDet]));
+    }
+  }
 
-    if (fTRDTracker||fTOFTracker||fPHOSTracker||fEMCALTracker||fRICHTracker) {
-      // ITS back propagation
-      AliDebug(1, "ITS back propagation");
-      if (fITSTracker->PropagateBack(esd) != 0) {
-	AliError("ITS backward propagation failed");
-	return kFALSE;
-      }
-      if (fCheckPointLevel > 1) WriteESD(esd, "ITS.back");
+  // pass 2: ALL backwards
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    if (!fTracker[iDet]) continue;
+    AliDebug(1, Form("%s back propagation", fgkDetectorName[iDet]));
 
-      // TPC back propagation
-      AliDebug(1, "TPC back propagation");
-      if (fTPCTracker->PropagateBack(esd) != 0) {
-	AliError("TPC backward propagation failed");
-	return kFALSE;
-      }
-      if (fCheckPointLevel > 1) WriteESD(esd, "TPC.back");
-
-      if (!fTRDTracker) {
-        AliWarning("no TRD tracker");
+    // load clusters
+    if (iDet > 1) {     // all except ITS, TPC
+      TTree* tree = NULL;
+      if (iDet == 3) {   // TOF
+	fLoader[iDet]->LoadDigits("read");
+	tree = fLoader[iDet]->TreeD();
       } else {
-        // TRD back propagation
-        AliDebug(1, "TRD back propagation");
-        fTRDLoader->LoadRecPoints("read");
-        TTree* trdTree = fTRDLoader->TreeR();
-        if (!trdTree) {
-          AliError("Can't get the TRD cluster tree");
-          return kFALSE;
-        }
-        fTRDTracker->LoadClusters(trdTree);
-        if (fTRDTracker->PropagateBack(esd) != 0) {
-          AliError("TRD backward propagation failed");
-          return kFALSE;
-        }
-        if (fCheckPointLevel > 1) WriteESD(esd, "TRD.back");
+	fLoader[iDet]->LoadRecPoints("read");
+	tree = fLoader[iDet]->TreeR();
       }
+      if (!tree) {
+	AliError(Form("Can't get the %s cluster tree", fgkDetectorName[iDet]));
+	return kFALSE;
+      }
+      fTracker[iDet]->LoadClusters(tree);
+    }
 
-      if (!fTOFTracker) {
-	AliWarning("no TOF tracker");
+    // run tracking
+    if (fTracker[iDet]->PropagateBack(esd) != 0) {
+      AliError(Form("%s backward propagation failed", fgkDetectorName[iDet]));
+      return kFALSE;
+    }
+    if (fCheckPointLevel > 1) {
+      WriteESD(esd, Form("%s.back", fgkDetectorName[iDet]));
+    }
+
+    // unload clusters
+    if (iDet > 2) {     // all except ITS, TPC, TRD
+      fTracker[iDet]->UnloadClusters();
+      if (iDet == 3) {   // TOF
+	fLoader[iDet]->UnloadDigits();
       } else {
-	// TOF back propagation
-	AliDebug(1, "TOF back propagation");
-	fTOFLoader->LoadDigits("read");
-	TTree* tofTree = fTOFLoader->TreeD();
-	if (!tofTree) {
-	  AliError("Can't get the TOF digits tree");
-	  return kFALSE;
-	}
-	fTOFTracker->LoadClusters(tofTree);
-	if (fTOFTracker->PropagateBack(esd) != 0) {
-	  AliError("TOF backward propagation failed");
-	  return kFALSE;
-	}
-	if (fCheckPointLevel > 1) WriteESD(esd, "TOF.back");
-	fTOFTracker->UnloadClusters();
-	fTOFLoader->UnloadDigits();
-
-	if (!fPHOSTracker) {
-	  AliWarning("no PHOS tracker");
-	} else {
-	  // PHOS back propagation
-	  AliDebug(1, "PHOS back propagation");
-	  fPHOSLoader->LoadRecPoints("read");
-	  TTree* phosTree = fPHOSLoader->TreeR();
-	  if (!phosTree) {
-	    AliError("Can't get the PHOS cluster tree");
-	    return kFALSE;
-	  }
-	  fPHOSTracker->LoadClusters(phosTree);
-	  if (fPHOSTracker->PropagateBack(esd) != 0) {
-	    AliError("PHOS backward propagation failed");
-	    return kFALSE;
-	  }
-	  if (fCheckPointLevel > 1) WriteESD(esd, "PHOS.back");
-	  fPHOSTracker->UnloadClusters();
-	  fPHOSLoader->UnloadRecPoints();
-	}
-
-	if (!fEMCALTracker) {
-	  AliWarning("no EMCAL tracker");
-	} else {
-	  // EMCAL back propagation
-	  AliDebug(1, "EMCAL back propagation");
-	  fEMCALLoader->LoadRecPoints("read");
-	  TTree* emcalTree = fEMCALLoader->TreeR();
-	  if (!emcalTree) {
-	    AliError("Can't get the EMCAL cluster tree");
-	    return kFALSE;
-	  }
-	  fEMCALTracker->LoadClusters(emcalTree);
-	  if (fEMCALTracker->PropagateBack(esd) != 0) {
-	    AliError("EMCAL backward propagation failed");
-	    return kFALSE;
-	  }
-	  if (fCheckPointLevel > 1) WriteESD(esd, "EMCAL.back");
-	  fEMCALTracker->UnloadClusters();
-	  fEMCALLoader->UnloadRecPoints();
-	}
-
-	if (!fRICHTracker) {
-	  AliWarning("no RICH tracker");
-	} else {
-	  // RICH back propagation
-	  AliDebug(1, "RICH back propagation");
-	  fRICHLoader->LoadRecPoints("read");
-	  TTree* richTree = fRICHLoader->TreeR();
-	  if (!richTree) {
-	    AliError("Can't get the RICH cluster tree");
-	    return kFALSE;
-	  }
-	  fRICHTracker->LoadClusters(richTree);
-	  if (fRICHTracker->PropagateBack(esd) != 0) {
-	    AliError("RICH backward propagation failed");
-	    return kFALSE;
-	  }
-	  if (fCheckPointLevel > 1) WriteESD(esd, "RICH.back");
-	  fRICHTracker->UnloadClusters();
-	  fRICHLoader->UnloadRecPoints();
-	}
+	fLoader[iDet]->UnloadRecPoints();
       }
+    }
+  }
 
-      if (fTRDTracker) {
-        // TRD inward refit
-        AliDebug(1, "TRD inward refit");
-        if (fTRDTracker->RefitInward(esd) != 0) {
-          AliError("TRD inward refit failed");
-          return kFALSE;
-        }
-        if (fCheckPointLevel > 1) WriteESD(esd, "TRD.refit");
-        fTRDTracker->UnloadClusters();
-        fTRDLoader->UnloadRecPoints();
-      }
-    
-      // TPC inward refit
-      AliInfo("TPC inward refit");
-      if (fTPCTracker->RefitInward(esd) != 0) {
-	AliError("TPC inward refit failed");
-	return kFALSE;
-      }
-      if (fCheckPointLevel > 1) WriteESD(esd, "TPC.refit");
-    
-      // ITS inward refit
-      AliInfo("ITS inward refit");
-      if (fITSTracker->RefitInward(esd) != 0) {
-	AliError("ITS inward refit failed");
-	return kFALSE;
-      }
-      if (fCheckPointLevel > 1) WriteESD(esd, "ITS.refit");
+  // pass 3: TRD + TPC + ITS refit inwards
+  for (Int_t iDet = 2; iDet >= 0; iDet--) {
+    if (!fTracker[iDet]) continue;
+    AliDebug(1, Form("%s inward refit", fgkDetectorName[iDet]));
 
-    }  // if TRD tracker or TOF tracker or PHOS tracker ... 
-    fITSTracker->UnloadClusters();
-    fITSLoader->UnloadRecPoints();
+    // run tracking
+    if (fTracker[iDet]->RefitInward(esd) != 0) {
+      AliError(Form("%s inward refit failed", fgkDetectorName[iDet]));
+      return kFALSE;
+    }
+    if (fCheckPointLevel > 1) {
+      WriteESD(esd, Form("%s.refit", fgkDetectorName[iDet]));
+    }
 
-  }  // if ITS tracker
-  fTPCTracker->UnloadClusters();
-  fTPCLoader->UnloadRecPoints();
+    // unload clusters
+    fTracker[iDet]->UnloadClusters();
+    fLoader[iDet]->UnloadRecPoints();
+  }
 
   AliInfo("execution time:");
   ToAliInfo(stopwatch.Print());
@@ -723,20 +558,19 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
   AliInfo("filling ESD");
 
   TString detStr = detectors;
-  for (Int_t iDet = 0; iDet < fReconstructors.GetEntriesFast(); iDet++) {
-    AliReconstructor* reconstructor = 
-      (AliReconstructor*) fReconstructors[iDet];
-    TString detName = reconstructor->GetDetectorName();
-    if (IsSelected(detName, detStr)) {
-      if (!ReadESD(esd, detName.Data())) {
-	AliDebug(1, Form("filling ESD for %s", detName.Data()));
-	if (fRawReader) {
-	  reconstructor->FillESD(fRunLoader, fRawReader, esd);
-	} else {
-	  reconstructor->FillESD(fRunLoader, esd);
-	}
-	if (fCheckPointLevel > 2) WriteESD(esd, detName.Data());
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+    AliReconstructor* reconstructor = GetReconstructor(iDet);
+    if (!reconstructor) continue;
+
+    if (!ReadESD(esd, fgkDetectorName[iDet])) {
+      AliDebug(1, Form("filling ESD for %s", fgkDetectorName[iDet]));
+      if (fRawReader) {
+        reconstructor->FillESD(fRunLoader, fRawReader, esd);
+      } else {
+        reconstructor->FillESD(fRunLoader, esd);
       }
+      if (fCheckPointLevel > 2) WriteESD(esd, fgkDetectorName[iDet]);
     }
   }
 
@@ -787,18 +621,53 @@ Bool_t AliReconstruction::IsSelected(TString detName, TString& detectors) const
 }
 
 //_____________________________________________________________________________
-AliReconstructor* AliReconstruction::GetReconstructor(const char* detName) const
+AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
 {
 // get the reconstructor object for a detector
 
-  for (Int_t iDet = 0; iDet < fReconstructors.GetEntriesFast(); iDet++) {
-    AliReconstructor* reconstructor = 
-      (AliReconstructor*) fReconstructors[iDet];
-    if (strcmp(reconstructor->GetDetectorName(), detName) == 0) {
-      return reconstructor;
+  if (fReconstructor[iDet]) return fReconstructor[iDet];
+
+  // load the reconstructor object
+  TPluginManager* pluginManager = gROOT->GetPluginManager();
+  TString detName = fgkDetectorName[iDet];
+  TString recName = "Ali" + detName + "Reconstructor";
+  if (!gAlice->GetDetector(detName) && (detName != "HLT")) return NULL;
+
+  if (detName == "HLT") {
+    if (!gROOT->GetClass("AliLevel3")) {
+      gSystem->Load("libAliL3Src.so");
+      gSystem->Load("libAliL3Misc.so");
+      gSystem->Load("libAliL3Hough.so");
+      gSystem->Load("libAliL3Comp.so");
     }
   }
-  return NULL;
+
+  AliReconstructor* reconstructor = NULL;
+  // first check if a plugin is defined for the reconstructor
+  TPluginHandler* pluginHandler = 
+    pluginManager->FindHandler("AliReconstructor", detName);
+  // if not, but the reconstructor class is implemented, add a plugin for it
+  if (!pluginHandler && gROOT->GetClass(recName.Data())) {
+    AliDebug(1, Form("defining plugin for %s", recName.Data()));
+    if (gSystem->Load("lib" + detName + "base.so") == 0) {
+      pluginManager->AddHandler("AliReconstructor", detName, 
+				recName, detName + "rec", recName + "()");
+    } else {
+      pluginManager->AddHandler("AliReconstructor", detName, 
+				recName, detName, recName + "()");
+    }
+    pluginHandler = pluginManager->FindHandler("AliReconstructor", detName);
+  }
+  if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
+    reconstructor = (AliReconstructor*) pluginHandler->ExecPlugin(0);
+  }
+  if (reconstructor) {
+    TObject* obj = fOptions.FindObject(detName.Data());
+    if (obj) reconstructor->SetOption(obj->GetTitle());
+    fReconstructor[iDet] = reconstructor;
+  }
+
+  return reconstructor;
 }
 
 //_____________________________________________________________________________
@@ -806,12 +675,12 @@ Bool_t AliReconstruction::CreateVertexer()
 {
 // create the vertexer
 
-  fITSVertexer = NULL;
-  AliReconstructor* itsReconstructor = GetReconstructor("ITS");
+  fVertexer = NULL;
+  AliReconstructor* itsReconstructor = GetReconstructor(0);
   if (itsReconstructor) {
-    fITSVertexer = itsReconstructor->CreateVertexer(fRunLoader);
+    fVertexer = itsReconstructor->CreateVertexer(fRunLoader);
   }
-  if (!fITSVertexer) {
+  if (!fVertexer) {
     AliWarning("couldn't create a vertexer for ITS");
     if (fStopOnError) return kFALSE;
   }
@@ -820,119 +689,27 @@ Bool_t AliReconstruction::CreateVertexer()
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::CreateTrackers()
+Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
 {
 // get the loaders and create the trackers
 
-  fITSTracker = NULL;
-  fITSLoader = fRunLoader->GetLoader("ITSLoader");
-  if (!fITSLoader) {
-    AliWarning("no ITS loader found");
-    if (fStopOnError) return kFALSE;
-  } else {
-    AliReconstructor* itsReconstructor = GetReconstructor("ITS");
-    if (itsReconstructor) {
-      fITSTracker = itsReconstructor->CreateTracker(fRunLoader);
-    }
-    if (!fITSTracker) {
-      AliWarning("couldn't create a tracker for ITS");
+  TString detStr = detectors;
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+    AliReconstructor* reconstructor = GetReconstructor(iDet);
+    if (!reconstructor) continue;
+    TString detName = fgkDetectorName[iDet];
+    if (detName == "HLT") continue;
+    fLoader[iDet] = fRunLoader->GetLoader(detName + "Loader");
+    if (!fLoader[iDet]) {
+      AliWarning(Form("no %s loader found", detName.Data()));
       if (fStopOnError) return kFALSE;
-    }
-  }
-    
-  fTPCTracker = NULL;
-  fTPCLoader = fRunLoader->GetLoader("TPCLoader");
-  if (!fTPCLoader) {
-    AliError("no TPC loader found");
-    if (fStopOnError) return kFALSE;
-  } else {
-    AliReconstructor* tpcReconstructor = GetReconstructor("TPC");
-    if (tpcReconstructor) {
-      fTPCTracker = tpcReconstructor->CreateTracker(fRunLoader);
-    }
-    if (!fTPCTracker) {
-      AliError("couldn't create a tracker for TPC");
-      if (fStopOnError) return kFALSE;
-    }
-  }
-    
-  fTRDTracker = NULL;
-  fTRDLoader = fRunLoader->GetLoader("TRDLoader");
-  if (!fTRDLoader) {
-    AliWarning("no TRD loader found");
-    if (fStopOnError) return kFALSE;
-  } else {
-    AliReconstructor* trdReconstructor = GetReconstructor("TRD");
-    if (trdReconstructor) {
-      fTRDTracker = trdReconstructor->CreateTracker(fRunLoader);
-    }
-    if (!fTRDTracker) {
-      AliWarning("couldn't create a tracker for TRD");
-      if (fStopOnError) return kFALSE;
-    }
-  }
-    
-  fTOFTracker = NULL;
-  fTOFLoader = fRunLoader->GetLoader("TOFLoader");
-  if (!fTOFLoader) {
-    AliWarning("no TOF loader found");
-    if (fStopOnError) return kFALSE;
-  } else {
-    AliReconstructor* tofReconstructor = GetReconstructor("TOF");
-    if (tofReconstructor) {
-      fTOFTracker = tofReconstructor->CreateTracker(fRunLoader);
-    }
-    if (!fTOFTracker) {
-      AliWarning("couldn't create a tracker for TOF");
-      if (fStopOnError) return kFALSE;
-    }
-  }
-
-  fPHOSTracker = NULL;
-  fPHOSLoader = fRunLoader->GetLoader("PHOSLoader");
-  if (!fPHOSLoader) {
-    AliWarning("no PHOS loader found");
-    if (fStopOnError) return kFALSE;
-  } else {
-    AliReconstructor* phosReconstructor = GetReconstructor("PHOS");
-    if (phosReconstructor) {
-      fPHOSTracker = phosReconstructor->CreateTracker(fRunLoader);
-    }
-    if (!fPHOSTracker) {
-      AliWarning("couldn't create a tracker for PHOS");
-      if (fStopOnError) return kFALSE;
-    }
-  }
-
-  fEMCALTracker = NULL;
-  fEMCALLoader = fRunLoader->GetLoader("EMCALLoader");
-  if (!fEMCALLoader) {
-    AliWarning("no EMCAL loader found");
-    if (fStopOnError) return kFALSE;
-  } else {
-    AliReconstructor* emcalReconstructor = GetReconstructor("EMCAL");
-    if (emcalReconstructor) {
-      fEMCALTracker = emcalReconstructor->CreateTracker(fRunLoader);
-    }
-    if (!fEMCALTracker) {
-      AliWarning("couldn't create a tracker for EMCAL");
-      if (fStopOnError) return kFALSE;
-    }
-  }
-
-  fRICHTracker = NULL;
-  fRICHLoader = fRunLoader->GetLoader("RICHLoader");
-  if (!fRICHLoader) {
-    AliWarning("no RICH loader found");
-    if (fStopOnError) return kFALSE;
-  } else {
-    AliReconstructor* tofReconstructor = GetReconstructor("RICH");
-    if (tofReconstructor) {
-      fRICHTracker = tofReconstructor->CreateTracker(fRunLoader);
-    }
-    if (!fRICHTracker) {
-      AliWarning("couldn't create a tracker for RICH");
-      if (fStopOnError) return kFALSE;
+    } else {
+      fTracker[iDet] = reconstructor->CreateTracker(fRunLoader);
+      if (!fTracker[iDet] && (iDet < 7)) {
+	AliWarning(Form("couldn't create a tracker for %s", detName.Data()));
+	if (fStopOnError) return kFALSE;
+      }
     }
   }
 
@@ -944,24 +721,15 @@ void AliReconstruction::CleanUp(TFile* file)
 {
 // delete trackers and the run loader and close and delete the file
 
-  fReconstructors.Delete();
-
-  delete fITSVertexer;
-  fITSVertexer = NULL;
-  delete fITSTracker;
-  fITSTracker = NULL;
-  delete fTPCTracker;
-  fTPCTracker = NULL;
-  delete fTRDTracker;
-  fTRDTracker = NULL;
-  delete fTOFTracker;
-  fTOFTracker = NULL;
-  delete fPHOSTracker;
-  fPHOSTracker = NULL;
-  delete fEMCALTracker;
-  fEMCALTracker = NULL;
-  delete fRICHTracker;
-  fRICHTracker = NULL;
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    delete fReconstructor[iDet];
+    fReconstructor[iDet] = NULL;
+    fLoader[iDet] = NULL;
+    delete fTracker[iDet];
+    fTracker[iDet] = NULL;
+  }
+  delete fVertexer;
+  fVertexer = NULL;
 
   delete fRunLoader;
   fRunLoader = NULL;
