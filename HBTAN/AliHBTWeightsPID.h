@@ -52,7 +52,7 @@ class AliHBTWeightsPID: public TObject
    TF1 *fEffic3polTOF;//comment?
    TF1 *fEffic4polTOF;//comment?
    
-   ClassDef(AliHBTWeightsPID,1)
+   ClassDef(AliHBTWeightsPID,2)
  };
 
 #endif  

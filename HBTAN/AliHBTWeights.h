@@ -17,7 +17,7 @@ class AliHBTWeights: public TObject
    protected:
       static AliHBTWeights* fgWeights;
       
-      ClassDef(AliHBTWeights,1)
+      ClassDef(AliHBTWeights,2)
  };
 
 #endif

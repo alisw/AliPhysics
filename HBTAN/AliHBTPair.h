@@ -35,7 +35,7 @@ class AliHBTPair: public AliAODPair
    Bool_t   fWeightNotCalc;//flag indicating if fWeight is calculated for current pair
    
  private:
-  ClassDef(AliHBTPair,1)
+  ClassDef(AliHBTPair,2)
 };
 
 inline

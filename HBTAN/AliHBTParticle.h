@@ -156,7 +156,7 @@ private:
   AliHBTClusterMap*  fClusterMap;       // bit map of cluters occupation; 1 if has cluter on given layer/padrow/...
     
   static Int_t   fgDebug; //debug printout level
-  ClassDef(AliHBTParticle,3)  // TParticle vertex particle information
+  ClassDef(AliHBTParticle,4)  // TParticle vertex particle information
 };
 
 #endif
