@@ -30,7 +30,7 @@ class AliPHOSPID : public TObject {
 
 public:
 
-  AliPHOSPID(){} ;          // ctor            
+  AliPHOSPID() ;          // ctor            
   virtual ~AliPHOSPID() ; // dtor
 
   virtual void MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl, 
