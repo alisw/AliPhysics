@@ -23,7 +23,7 @@ class AliL3Log{
   enum TLogCmd { kEnd, kPrec, kHex, kDec };
 };
 
-#define LOG( lvl, origin, keyword ) cerr
+#define LOG( lvl, origin, keyword ) cerr<<"["<<origin<<": "<<keyword<<"] "
 
 #define ENDLOG endl
 
