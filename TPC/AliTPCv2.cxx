@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2001/04/20 08:16:47  kowal2
+Protection against too small betaGamma. Thanks to Ivana and Yves.
+
 Revision 1.32  2001/03/13 13:07:34  kowal2
 Corrected bug in the TPC mother volume geometry.
 Thanks to A. Morsch
@@ -2193,7 +2196,7 @@ void AliTPCv2::StepManager()
   else
     {
 
-      betaGamma = TMath::Max(betaGamma,7.e-3); // protection against too small bg
+      betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
       pp=kprim*BetheBloch(betaGamma); 
    
       if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
