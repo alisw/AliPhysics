@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/04/24 11:17:33  kowal2
+New TPC geometry.
+
 Revision 1.22  2001/03/13 13:07:34  kowal2
 Corrected bug in the TPC mother volume geometry.
 Thanks to A. Morsch
@@ -1770,6 +1773,7 @@ void AliTPCv3::StepManager()
     }
   else
     {
+      betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); 
       pp=kprim*BetheBloch(betaGamma);    
       if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
     }
