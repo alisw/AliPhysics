@@ -193,18 +193,17 @@ void AliL3Modeller::FindClusters()
 	  
 	  Int_t hitpad = (Int_t)rint(track->GetPadHit(i));
 	  Int_t hittime = (Int_t)rint(track->GetTimeHit(i));
+
+	  if(!CheckCluster(row,hitpad,hittime)) //Not a good cluster.
+	    {
+	      track->SetCluster(i,0,0,0,0,0,0); 
+	      continue;
+	    }
+
 	  //cout<<"Checking track on row "<<i<<" with pad "<<hitpad<<" time "<<hittime<<endl;
 	  pad = hitpad;
 	  time = hittime;
-	  
-	  /*
-	    if(row[ntimes*pad + time].fCharge == 0 || 
-	    row[ntimes*pad + time].fUsed == kTRUE) //Bad track, or cluster has already been included.
-	    {
-	    track->SetCluster(i,0,0,0,0,0,0);
-	    continue;
-	    }
-	  */
+
 	  Int_t padsign=-1;
 	  Int_t timesign=-1;
 	  
@@ -238,36 +237,25 @@ void AliL3Modeller::FindClusters()
 		    }
 		  
 		  charge = row[index].fCharge;
-		  if(charge==0 && timesign==-1) //zero charge on this timebin, perform checks:
+		  
+		  if(charge==0) //Empty timebin, so try and expand the search within the limits on this pad
 		    {
-		      if(seq_charge==0 && abs(time-hittime) <= fTimeSearch) //No charge found on this pad, look further.
-			//if(seq_charge==0 && abs(time-last_mean) <= fTimeOverlap)
+		      if(seq_charge==0 && abs(time-hittime) <= fTimeSearch)//No sequence yet, keep looking
 			{
-			  //cout<<"Sequence is zero, time "<<time<<" hittime "<<hittime<<" pad "<<pad<<" charge "<<charge<<" index "<<index<<endl;
-			  time--;
+			  if(timesign==-1)
+			    time--;
+			  else
+			    time++;
 			  continue;
 			}
-		      else 
+		      else if(timesign==-1) //Switch search direction
 			{
-			  time = hittime+1;
-			  timesign=1;
+			  time = hittime + 1;
+			  timesign = 1;
 			  continue;
 			}
-		    }
-		  else if(charge==0 && timesign==1)//zero charge on this timebin, perform checks:
-		    {
-		      if(seq_charge==0 && abs(time-hittime) <= fTimeSearch)//No charge found on this pad, look further
-			//if(seq_charge==0 && abs(time-last_mean) <=fTimeOverlap)
-			{
-			  time++;
-			  continue;
-			}
-		      else //Boundary reached, or we have found the other end of the sequence, stop looking on this pad.
-			{
-			  //if(fCurrentPadRow==31)
-			  //   cerr<<"Breaking off at pad "<<pad<<" and time "<<time<<endl;
-			  break;
-			}
+		      else //ok, boundary reached, this pad is done.
+			break;
 		    }
 		  
 		  if(row[ntimes*pad+time].fUsed==kTRUE) //Don't use digits several times. This leads to mult. rec.tracks.
@@ -298,47 +286,27 @@ void AliL3Modeller::FindClusters()
 		  pad += padsign;
 		  npads++;
 		}
-	      else //Nothing more on this pad, goto next pad
+	      else
 		{
-		  if(padsign==-1) 
+		  if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadSearch && pad > 0)
 		    {
-		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadSearch && pad > 0)
-			{
-			  //cout<<"Cluster is zero!"<<endl;
-			  pad--;     //In this case, we haven't found anything yet, 
-			  continue;  //so we will try to expand our search within the natural boundaries.
-			}        
-		      else 
-			{
-			  pad=hitpad+1;
-			  padsign=1; 
-			  continue;
-			}
+		      if(padsign==-1)
+			pad--;
+		      else
+			pad++;
+		      continue;
 		    }
-		  
-		  else if(padsign==1)
+		  else if(padsign==-1)
 		    {
-		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadSearch && pad < AliL3Transform::GetNPads(i)-2)
-			{
-			  //cout<<"Cluster is zero "<<endl;
-			  pad++;     //In this case, we haven't found anything yet, 
-			  continue;  //so we will try to expand our search within the natural boundaries.
-			}
-		      else //We are out of range, or cluster if finished.
-			{
-			  //if(fCurrentPadRow==31)
-			  //cout<<"Out of range; charge "<<cluster.fCharge<<" paddiff "<<abs(pad-hitpad)<<endl;
-			  FillCluster(track,&cluster,i,npads);
-			  break;
-			}
+		      pad = hitpad + 1;
+		      padsign = 1;
+		      continue;
 		    }
-		  else //Nothing more in this cluster
+		  else
 		    {
-		      //if(fCurrentPadRow==31)
-		      //cout<<"Filling final cluster"<<endl;
 		      FillCluster(track,&cluster,i,npads);
 		      break;
-		    } 
+		    }
 		}
 	    }
 	  //cout<<"done"<<endl;
@@ -359,6 +327,102 @@ void AliL3Modeller::FindClusters()
 	cerr<<endl<<"Mismatching hitcounts; nclusters: "<<track->GetNClusters()<<" nrows "<<AliL3Transform::GetNRows(fPatch)<<endl<<endl;
     }
   
+}
+
+Bool_t AliL3Modeller::CheckCluster(Digit *row,Int_t hitpad,Int_t hittime)
+{
+  Int_t ntimes = AliL3Transform::GetNTimeBins()+1;
+  Bool_t seq_was_falling=kFALSE;
+  Int_t last_seq_charge=0;
+  Int_t cluster_charge=0;
+  Int_t time,pad,charge,padsign=-1,timesign=-1;
+  time = hittime;
+  pad = hitpad;
+  //cout<<"Checking cluster "<<hitpad<<" hittime "<<hittime<<endl;
+  while(1)
+    {
+      
+      Bool_t last_was_falling=kFALSE;
+      Int_t last_charge=0;
+      Int_t seq_charge=0;
+      while(1)
+	{
+	  
+	  charge = row[(ntimes*pad+time)].fCharge;
+	  //cout<<"Charge "<<charge<<" on pad "<<pad<<" time "<<time<<endl;
+	  if(charge==0)
+	    {
+	      if(seq_charge==0 && abs(time-hittime) <= fTimeSearch)
+		{
+		  if(timesign==-1)
+		    time--;
+		  else
+		    time++;
+		  continue;
+		}
+	      else if(timesign==-1)
+		{
+		  last_charge = row[(ntimes*hitpad+hittime)].fCharge;
+		  time = hittime+1;
+		  timesign=1;
+		  if(last_charge < row[(ntimes*hitpad+(hittime-1))].fCharge)
+		    last_was_falling=kTRUE;
+		  else
+		    last_was_falling=kFALSE;
+		  continue;
+		}
+	      else
+		break;
+	    }
+
+	  if(charge > last_charge)
+	    {
+	      if(last_was_falling) //This is a overlapping cluster.
+		return kFALSE;
+	    }
+	  else
+	    last_was_falling = kTRUE;
+
+	  cluster_charge+=charge;
+	  seq_charge += charge;
+	  last_charge = charge;
+	  time += timesign;
+	}
+      
+      if(seq_charge)
+	pad += padsign;
+      else
+	{
+	  if(cluster_charge==0 && abs(pad-hitpad)<=fPadSearch && pad > 0)
+	    {
+	      if(padsign==-1)
+		pad--;
+	      else
+		pad++;
+	      continue;
+	    }
+	  else if(padsign==-1)
+	    {
+	      pad = hitpad+1;
+	      padsign = 1;
+	      seq_was_falling=kFALSE;
+	      continue;
+	    }
+	  else
+	    break;
+	}
+      
+      if(seq_charge > last_seq_charge)
+	{
+	  if(seq_was_falling)
+	    return kFALSE;
+	  else
+	    seq_was_falling=kTRUE;
+	}
+      last_seq_charge = seq_charge;
+    }
+  
+  return kTRUE;
 }
 
 void AliL3Modeller::FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row,Int_t npads)

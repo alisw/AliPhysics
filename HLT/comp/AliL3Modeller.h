@@ -47,7 +47,8 @@ class AliL3Modeller {
   void FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row,Int_t npads);
   void CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigmaZ2);
   void FillZeros(AliL3DigitRowData *digPt,Digit *row);
-    
+  Bool_t CheckCluster(Digit *row,Int_t hitpad,Int_t hittime);
+  
  public:
   
   AliL3Modeller();
