@@ -16,7 +16,6 @@ protected:
   Float_t fGeo[3];           // wafer, edge, numqu
   Float_t fPadSize[4];       // size of the pads
   Int_t   fNumPads[4];       // number of the pads
-  
 public:
   AliPMD();
   AliPMD(const char *name, const char *title);
@@ -39,39 +38,13 @@ public:
 };
 
  
-//___________________________________________
- 
-class AliPMDv1 : public AliPMD {
-
-private:
-  Int_t fMedSens;
-  
-public:
-  AliPMDv1();
-  AliPMDv1(const char *name, const char *title);
-  virtual      ~AliPMDv1() {}
-  virtual void  Coordinates();
-  virtual void  Coordnew();
-  virtual void  CreateGeometry();
-  virtual void  CreateInside();
-  virtual void  CreatePads();
-  virtual void  CreateMaterials();
-  virtual void  Init();
-  virtual Int_t IsVersion() const {return 1;}
-  virtual void  StepManager();
-  virtual void  DrawModule();
- 
-   ClassDef(AliPMDv1,1)  //Hits manager for set:PMD
-};
- 
  
 //___________________________________________
  
 class AliPMDhit : public AliHit {
 public:
-  Int_t      fVolume[4];  //array of volumes
+  Int_t      fVolume[5];  //array of volumes
   Float_t    fEnergy;     //Total energy deposited in eV
- 
 public:
   AliPMDhit() {}
   AliPMDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
@@ -97,5 +70,4 @@ public:
  
   ClassDef(AliPMDhit,1)  //Hits object for set:PMD
 };
- 
 #endif
