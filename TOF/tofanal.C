@@ -82,4 +82,6 @@ void tofanal (Int_t evNumber=0)
    hTOFprim->Draw();
    //   hTOFprim->Draw("same");
    c1->Print("tofanal.ps");
+   delete c1;
+   c1 = 0;
 }

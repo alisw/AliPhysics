@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2001/03/12 17:47:25  hristov
+Changes needed on Sun with CC 5.0
+
 Revision 1.18  2001/01/26 19:57:42  hristov
 Major upgrade of AliRoot code
 
@@ -129,13 +132,13 @@ AliTOF::AliTOF(const char *name, const char *title)
   SetMarkerSize(0.4);
 
 // General Geometrical Parameters
-  fNTof    =  18;
-  fRmax    = 399.0;//cm
+  fNTof    =  18;  // number of sectors
+  fRmax    = 399.0;//cm 
   fRmin    = 370.0;//cm
-  fZlenC   = 177.5;//cm
-  fZlenB   = 141.0;//cm
-  fZlenA   = 106.0;//cm
-  fZtof    = 370.5;//cm
+  fZlenC   = 177.5;//cm length of module C
+  fZlenB   = 141.0;//cm length of module B
+  fZlenA   = 106.0;//cm length of module A
+  fZtof    = 370.5;//cm total semi-length of TOF detector
 
 // Strip Parameters
   fStripLn = 122.0;//cm  Strip Length
@@ -150,9 +153,9 @@ AliTOF::AliTOF(const char *name, const char *title)
   fNpadX   =  48;  // Number of pads in a strip along the X direction
   fNpadZ   =   2;  // Number of pads in a strip along the Z direction
   fPadXStr = fNpadX*fNpadZ; //Number of pads per strip
-  fNStripA = 0;
-  fNStripB = 0;
-  fNStripC = 0;
+  fNStripA = 15; // number of strips in A type module 
+  fNStripB = 19; // number of strips in B type module
+  fNStripC = 20; // number of strips in C type module
  
 // Physical performances
   fTimeRes = 100.;//ps
@@ -202,13 +205,13 @@ void AliTOF::CreateGeometry()
   const Double_t kPi=TMath::Pi();
   const Double_t kDegrad=kPi/180.;
   //
-  Float_t xTof, yTof, Wall;
+  Float_t xTof, yTof, wall;
 
   // frame inbetween TOF modules
-  Wall = 4.;//cm
+  wall = 4.;//cm
 
   // Sizes of TOF module with its support etc..
-  xTof = 2.*(fRmin*TMath::Tan(10*kDegrad)-Wall/2-.5);
+  xTof = 2.*(fRmin*TMath::Tan(10*kDegrad)-wall/2-.5);
   yTof = fRmax-fRmin;
 
 //  TOF module internal definitions 
@@ -257,9 +260,11 @@ void AliTOF::CreateMaterials()
   // Defines TOF materials for all versions
   // Authors :   Maxim Martemianov, Boris Zagreev (ITEP) 
   //            18/09/98 
+  // Revision: F. Pierella 5-3-2001
+  // Bologna University
   //
-  Int_t   ISXFLD = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+  Int_t   isxfld = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   //
   //--- Quartz (SiO2) 
   Float_t   aq[2] = { 28.0855,15.9994 };
@@ -267,12 +272,28 @@ void AliTOF::CreateMaterials()
   Float_t   wq[2] = { 1.,2. };
   Float_t   dq = 2.20;
   Int_t nq = -2;
-  // --- Freon
-  Float_t afre[2]  = {12.011,18.9984032 };
-  Float_t zfre[2]  = { 6., 9.};
-  Float_t wfre[2]  = { 5.,12.};
-  Float_t densfre  = 1.5;
-  Int_t nfre = -2;
+  // --- Freon C2F4H2 (TOF-TDR pagg.)
+  // Geant Manual CONS110-1, pag. 43 (Geant, Detector Description and Simulation Tool)
+  Float_t afre[3]  = {12.011,18.998,1.007};
+  Float_t zfre[3]  = { 6., 9., 1.}; 
+  Float_t wfre[3]  = { 2., 4., 2.};
+  Float_t densfre  = 0.00375;   
+// http://www.fi.infn.it/sezione/prevprot/gas/freon.html
+  Int_t nfre = -3; 
+/*
+  //-- Isobutane quencher C4H10 (5% in the sensitive mixture)
+  Float_t aiso[2]  = {12.011,1.007};
+  Float_t ziso[2]  = { 6.,  1.};
+  Float_t wiso[2]  = { 4., 10.};
+  Float_t densiso  = .......;  // (g/cm3) density
+  Int_t nfre = -2; // < 0 i.e. proportion by number of atoms of each kind
+  //-- SF6 (5% in the sensitive mixture)
+  Float_t asf[3]  = {32.066,18.998};
+  Float_t zsf[3]  = { 16., 9.};
+  Float_t wsf[3]  = {  1., 6.}; 
+  Float_t denssf  = .....;   // (g/cm3) density
+  Int_t nfre = -2; // < 0 i.e. proportion by number of atoms of each kind
+*/
   // --- CO2 
   Float_t ac[2]   = {12.,16.};
   Float_t zc[2]   = { 6., 8.};
@@ -285,7 +306,7 @@ void AliTOF::CreateMaterials()
   Float_t wmy[3] = {  5., 4.,  2. };
   Float_t dmy    = 1.39;
   Int_t nmy = -3;
- // For polyethilene (CH2) for honeycomb!!!!
+ // For polyethilene (CH2) - honeycomb -
   Float_t ape[2] = { 12., 1. };
   Float_t zpe[2] = {  6., 1. };
   Float_t wpe[2] = {  1., 2. };
@@ -346,22 +367,22 @@ void AliTOF::CreateMaterials()
   deemax = -.3;   // Maximum fractional energy loss, DLS
   stmin  = -.8;
 
-  AliMedium( 1, "Air$"  ,  1, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 2, "Cu $"  ,  2, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 3, "C  $"  ,  3, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 4, "Pol$"  ,  4, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 5, "G10$"  ,  5, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 6, "DME$"  ,  6, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 7, "CO2$"  ,  7, 0, ISXFLD, SXMGMX, 10., -.01, -.1, .01, -.01);
-  AliMedium( 8,"ALUMINA$", 8, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 9,"Al Frame$",9, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(10, "DME-S$",  6, 1, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(11, "C-TRD$", 10, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(12, "Myl$"  , 11, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(13, "Fre$"  , 12, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(14, "Fre-S$", 12, 1, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(15, "Glass$", 13, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
-  AliMedium(16, "Water$", 14, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 1, "Air$"  ,  1, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 2, "Cu $"  ,  2, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 3, "C  $"  ,  3, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 4, "Pol$"  ,  4, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 5, "G10$"  ,  5, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 6, "DME$"  ,  6, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 7, "CO2$"  ,  7, 0, isxfld, sxmgmx, 10., -.01, -.1, .01, -.01);
+  AliMedium( 8,"ALUMINA$", 8, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 9,"Al Frame$",9, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(10, "DME-S$",  6, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(11, "C-TRD$", 10, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(12, "Myl$"  , 11, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(13, "Fre$"  , 12, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(14, "Fre-S$", 12, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(15, "Glass$", 13, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(16, "Water$", 14, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
 }
 
 //_____________________________________________________________________________
@@ -386,14 +407,14 @@ void AliTOF::Init()
 
 //____________________________________________________________________________
 void AliTOF::MakeBranch(Option_t* option, char *file)
-//
-// Initializes the Branches of the TOF inside the 
-// trees written for each event. 
-//  AliDetector::MakeBranch initializes just the 
-// Branch inside TreeH. Here we add the branch in 
-// TreeD.
-//
 {
+ //
+ // Initializes the Branches of the TOF inside the 
+ // trees written for each event. 
+ //  AliDetector::MakeBranch initializes just the 
+ // Branch inside TreeH. Here we add the branch in 
+ // TreeD.
+ //
 
   AliDetector::MakeBranch(option,file);
 
@@ -430,6 +451,7 @@ void AliTOF::SDigits2Digits()
 
 //____________________________________________________________________________
 void AliTOF::Hits2Digits(Int_t evNumber)
+{
 //
 //  Starting from the Hits Tree (TreeH), this
 // function writes the Digits Tree (TreeD) storing 
@@ -442,61 +464,64 @@ void AliTOF::Hits2Digits(Int_t evNumber)
 //
 // Called by the macro H2D.C
 //
-{
+
   AliTOFhit* currentHit;
-  TTree    *TD, *TH;
+  TTree    *tD, *tH;
   Int_t    tracks[3];
   Int_t    vol[5];
   Float_t  digit[2];
-  TClonesArray* TOFhits=this->Hits();
+  TClonesArray* tofhits=this->Hits();
 
   Int_t nparticles =  gAlice->GetNtrack();
   if (nparticles <= 0) return;
 
-  TD = gAlice->TreeD();
-  TH = gAlice->TreeH();
-  Int_t    ntracks =(Int_t) TH->GetEntries();
+  tD = gAlice->TreeD();
+  tH = gAlice->TreeH();
+  Int_t    ntracks =(Int_t) tH->GetEntries();
   Int_t    nbytes, nhits;
-  TRandom *rnd = new TRandom();
+  TRandom* rnd = new TRandom();
 
   for (Int_t ntk=0; ntk<ntracks; ntk++){
 
-     nbytes = TH->GetEvent(ntk);
-     nhits  = TOFhits->GetEntriesFast();
+     nbytes = tH->GetEvent(ntk);
+     nhits  = tofhits->GetEntriesFast();
 
      for (Int_t hit=0; hit<nhits; hit++){
 
-        currentHit = (AliTOFhit*)(TOFhits->At(hit));
+        currentHit = (AliTOFhit*)(tofhits->At(hit));
 
         vol[0] = currentHit->GetSector();
         vol[1] = currentHit->GetPlate();
-        vol[2] = currentHit->GetPad_x();
-        vol[3] = currentHit->GetPad_z();
+        vol[2] = currentHit->GetPadx();
+        vol[3] = currentHit->GetPadz();
         vol[4] = currentHit->GetStrip();
 
-        Float_t IdealTime = currentHit->GetTof();
-        Float_t TDCTime   = rnd->Gaus(IdealTime, fTimeRes);	
-        digit[0] = TDCTime;
+        Float_t idealtime = currentHit->GetTof();
+        Float_t tdctime   = rnd->Gaus(idealtime, fTimeRes);	
+        digit[0] = tdctime;
 
-        Float_t IdealCharge = currentHit->GetEdep();
-        Float_t ADCcharge = rnd->Gaus(IdealCharge, fChrgRes);
-        digit[1] = ADCcharge;
+        Float_t idealcharge = currentHit->GetEdep();
+        Float_t adccharge = rnd->Gaus(idealcharge, fChrgRes);
+        digit[1] = adccharge;
 
-        Int_t Track = currentHit -> GetTrack();
-        tracks[0] = Track;
+        Int_t tracknum = currentHit -> GetTrack();
+        tracks[0] = tracknum;
 	tracks[1] = 0;
 	tracks[2] = 0;
 
-        Bool_t Overlap = CheckOverlap(vol, digit, Track);
-        if(!Overlap) AddDigit(tracks, vol, digit);
+        Bool_t overlap = CheckOverlap(vol, digit, tracknum);
+        if(!overlap) AddDigit(tracks, vol, digit);
      }
   }
-  TD->Fill();
-  TD->Write();  
+  delete rnd;
+  rnd = 0;
+  tD->Fill();
+  tD->Write();  
 }
 
 //___________________________________________________________________________
 Bool_t AliTOF::CheckOverlap(Int_t* vol, Float_t* digit,Int_t Track)
+{
 //
 // Checks if 2 or more hits belong to the same pad.
 // In this case the data assigned to the digit object
@@ -504,112 +529,113 @@ Bool_t AliTOF::CheckOverlap(Int_t* vol, Float_t* digit,Int_t Track)
 //
 // Called only by Hits2Digits.
 //
-{
-        Bool_t Overlap = 0;
+
+        Bool_t overlap = 0;
         Int_t  vol2[5];
 
         for (Int_t ndig=0; ndig<fNdigits; ndig++){
 	   AliTOFdigit* currentDigit = (AliTOFdigit*)(fDigits->UncheckedAt(ndig));
            currentDigit->GetLocation(vol2);
-           Bool_t Idem=1;
+           Bool_t idem=1;
            for (Int_t i=0;i<=4;i++){
-               if (vol[i]!=vol2[i]) Idem=0;}
-           if (Idem){
- 	      Float_t TDC2 = digit[0];
-              Float_t TDC1 = currentDigit->GetTdc();
-              if (TDC1>TDC2){
-                  currentDigit->SetTdc(TDC2); 
+               if (vol[i]!=vol2[i]) idem=0;}
+           if (idem){
+ 	      Float_t tdc2 = digit[0];
+              Float_t tdc1 = currentDigit->GetTdc();
+              if (tdc1>tdc2){
+                  currentDigit->SetTdc(tdc2); 
                   currentDigit->SetAdc(digit[1]);
               }
               currentDigit->AddTrack(Track);
-              Overlap = 1;
+              overlap = 1;
            }
         }
-        return Overlap;
+        return overlap;
 }
 
 
 //____________________________________________________________________________
 void AliTOF::Digits2Raw(Int_t evNumber)
+{
 //
 // Starting from digits, writes the 
 // Raw Data objects, i.e. a 
 // TClonesArray of 18 AliTOFRawSector objects
 //
 
-{
-  TTree* TD;
+  TTree* tD;
 
   Int_t nparticles = gAlice->GetEvent(evNumber); 
   if (nparticles <= 0) return;
 
-  TD = gAlice->TreeD();
+  tD = gAlice->TreeD();
   
-  TClonesArray* TOFdigits = this->Digits();
-  Int_t ndigits = TOFdigits->GetEntriesFast();
+  TClonesArray* tofdigits = this->Digits();
+  Int_t ndigits = tofdigits->GetEntriesFast();
 
-  TClonesArray* Raw = new TClonesArray("AliTOFRawSector",fNTof+2); 
+  TClonesArray* rawsectors = new TClonesArray("AliTOFRawSector",fNTof+2); 
 
   for (Int_t isect=1;isect<=fNTof;isect++){
-     AliTOFRawSector* currentSector = (AliTOFRawSector*)Raw->UncheckedAt(isect);
-     TClonesArray* RocData = (TClonesArray*)currentSector->GetRocData();
+     AliTOFRawSector* currentSector = (AliTOFRawSector*)rawsectors->UncheckedAt(isect);
+     TClonesArray* rocData = (TClonesArray*)currentSector->GetRocData();
 
      for (Int_t digit=0; digit<ndigits; digit++){
-        AliTOFdigit* currentDigit = (AliTOFdigit*)TOFdigits->UncheckedAt(digit);
+        AliTOFdigit* currentDigit = (AliTOFdigit*)tofdigits->UncheckedAt(digit);
         Int_t sector = currentDigit->GetSector();
         if (sector==isect){
-	    Int_t   Pad    = currentDigit -> GetTotPad();
-	    Int_t   Roc    = (Int_t)(Pad/fNPadXRoc)-1;
-	    if (Roc>=fNRoc) printf("Wrong n. of ROC ! Roc = %i",Roc);
-            Int_t   PadRoc = (Int_t) Pad%fNPadXRoc;
-	    Int_t   Fec    = (Int_t)(PadRoc/fNFec)-1;
-            Int_t   Tdc    = (Int_t)(PadRoc%fNFec)-1;
-            Float_t Time   = currentDigit->GetTdc();
-            Float_t Charge = currentDigit->GetAdc();
-	    AliTOFRoc* currentROC = (AliTOFRoc*)RocData->UncheckedAt(Roc);
-	    Int_t Error    = 0;
-            currentROC->AddItem(Fec, Tdc, Error, Charge, Time);
+	    Int_t   pad    = currentDigit -> GetTotPad();
+	    Int_t   roc    = (Int_t)(pad/fNPadXRoc)-1;
+	    if (roc>=fNRoc) printf("Wrong n. of ROC ! Roc = %i",roc);
+            Int_t   padRoc = (Int_t) pad%fNPadXRoc;
+	    Int_t   fec    = (Int_t)(padRoc/fNFec)-1;
+            Int_t   tdc    = (Int_t)(padRoc%fNFec)-1;
+            Float_t time   = currentDigit->GetTdc();
+            Float_t charge = currentDigit->GetAdc();
+	    AliTOFRoc* currentROC = (AliTOFRoc*)rocData->UncheckedAt(roc);
+	    Int_t error    = 0;
+            currentROC->AddItem(fec, tdc, error, charge, time);
 	}
      }
      
-     UInt_t TotSize=16,RocSize=0;
-     UInt_t RocHead[14],RocChek[14];
-     UInt_t GlobalCheckSum=0;
+     UInt_t totSize=16,rocSize=0;
+     UInt_t rocHead[14],rocChek[14];
+     UInt_t globalCheckSum=0;
 
      for (UInt_t iRoc = 1; iRoc<(UInt_t)fNRoc; iRoc++){
-        AliTOFRoc* currentRoc = (AliTOFRoc*)RocData->UncheckedAt(iRoc); 
-	RocSize  = currentRoc->Items*2+1;
-	TotSize += RocSize*4;
-	if (RocSize>=TMath::Power(2,16)) RocSize=0;
-	RocHead[iRoc]   = iRoc<<28;
-	RocHead[iRoc]  += RocSize;
-	RocChek[iRoc]   = currentRoc->GetCheckSum();
-        Int_t HeadCheck = currentRoc->BitCount(RocHead[iRoc]);
-	GlobalCheckSum += HeadCheck;
-	GlobalCheckSum += RocChek[iRoc];
+        AliTOFRoc* currentRoc = (AliTOFRoc*)rocData->UncheckedAt(iRoc); 
+	rocSize  = currentRoc->GetItems()*2+1;
+	totSize += rocSize*4;
+	if (rocSize>=TMath::Power(2,16)) rocSize=0;
+	rocHead[iRoc]   = iRoc<<28;
+	rocHead[iRoc]  += rocSize;
+	rocChek[iRoc]   = currentRoc->GetCheckSum();
+        Int_t headCheck = currentRoc->BitCount(rocHead[iRoc]);
+	globalCheckSum += headCheck;
+	globalCheckSum += rocChek[iRoc];
      }
      
-     AliTOFRoc* DummyRoc = new AliTOFRoc();
-     TotSize *= 4;
-     if (TotSize>=TMath::Power(2,24)) TotSize=0;
-     UInt_t Header = TotSize;
-     UInt_t SectId = ((UInt_t)isect)<<24;
-     Header += SectId;
-     GlobalCheckSum += DummyRoc->BitCount(Header);
-     currentSector->SetGlobalCS(GlobalCheckSum);
-     currentSector->SetHeader(Header);
+     AliTOFRoc* dummyRoc = new AliTOFRoc();
+     totSize *= 4;
+     if (totSize>=TMath::Power(2,24)) totSize=0;
+     UInt_t header = totSize;
+     UInt_t sectId = ((UInt_t)isect)<<24;
+     header += sectId;
+     globalCheckSum += dummyRoc->BitCount(header);
+     currentSector->SetGlobalCS(globalCheckSum);
+     currentSector->SetHeader(header);
   }  
 }
  
 //____________________________________________________________________________
 void AliTOF::Raw2Digits(Int_t evNumber)
+{
 //
 //  Converts Raw Data objects into digits objects.
 //  We schematize the raw data with a 
 //  TClonesArray of 18 AliTOFRawSector objects
 //
-{
-  TTree    *TD;
+
+  TTree    *tD;
   Int_t    vol[5];
   Int_t    tracks[3];
   Float_t  digit[2];
@@ -621,15 +647,15 @@ void AliTOF::Raw2Digits(Int_t evNumber)
   Int_t nparticles = gAlice->GetEvent(evNumber); 
   if (nparticles <= 0) return;
 
-  TD = gAlice->TreeD();
+  tD = gAlice->TreeD();
   
-  TClonesArray* Raw = new TClonesArray("AliTOFRawSector",fNTof+2);
+  TClonesArray* rawsectors = new TClonesArray("AliTOFRawSector",fNTof+2);
   
   for(Int_t nSec=1; nSec<=fNTof; nSec++){
-     AliTOFRawSector* currentSector = (AliTOFRawSector*)Raw->UncheckedAt(nSec);
-     TClonesArray* RocData = (TClonesArray*)currentSector->GetRocData();
+     AliTOFRawSector* currentSector = (AliTOFRawSector*)rawsectors->UncheckedAt(nSec);
+     TClonesArray* rocData = (TClonesArray*)currentSector->GetRocData();
      for(Int_t nRoc=1; nRoc<=14; nRoc++){
-        AliTOFRoc* currentRoc = (AliTOFRoc*)RocData->UncheckedAt(nRoc);
+        AliTOFRoc* currentRoc = (AliTOFRoc*)rocData->UncheckedAt(nRoc);
         Int_t currentItems = currentRoc->GetItems();
         for(Int_t item=1; item<currentItems; item++){ 
            Int_t nPad = currentRoc->GetTotPad(item);        
@@ -653,62 +679,87 @@ void AliTOF::Raw2Digits(Int_t evNumber)
 	           break;
 	   }
            vol[2] = nStrip;
-           Int_t Pad = nPad%fPadXStr;
-	   if (Pad==0) Pad=fPadXStr;
+           Int_t pad = nPad%fPadXStr;
+	   if (pad==0) pad=fPadXStr;
 	   Int_t nPadX=0, nPadZ=0;
-	   (Pad>fNpadX)? nPadX -= fNpadX : nPadX = Pad ;
+	   (pad>fNpadX)? nPadX -= fNpadX : nPadX = pad ;
 	   vol[3] = nPadX;
-	   (Pad>fNpadX)? nPadZ = 2 : nPadZ = 1 ;
+	   (pad>fNpadX)? nPadZ = 2 : nPadZ = 1 ;
 	   vol[4] = nPadZ;
 	   UInt_t error=0;
-	   Float_t TDC = currentRoc->GetTime(item,error);
-	   if (!error) digit[0]=TDC;
+	   Float_t tdc = currentRoc->GetTime(item,error);
+	   if (!error) digit[0]=tdc;
 	   digit[1] = currentRoc->GetCharge(item);
 	   AddDigit(tracks,vol,digit);
         }
      }
   }
-  TD->Fill();
-  TD->Write();
+  tD->Fill();
+  tD->Write();
 } 
 
 
 /******************************************************************************/
 
 ClassImp(AliTOFhit)
+
+//____________________________________________________________________________
+AliTOFhit::AliTOFhit(const AliTOFhit & hit)
+{
+   //
+   // copy ctor for AliTOFhit object
+   //
+  fTrack  = hit.fTrack;  
+  fX      = hit.fX;
+  fY      = hit.fY;
+  fZ      = hit.fZ;
+  fSector = hit.fSector;
+  fPlate  = hit.fPlate;
+  fStrip  = hit.fStrip;
+  fPadx   = hit.fPadx;
+  fPadz   = hit.fPadz;
+  fPx     = hit.fPx;
+  fPy     = hit.fPy;
+  fPz     = hit.fPz;
+  fPmom   = hit.fPmom;
+  fTof    = hit.fTof;
+  fDx     = hit.fDx;
+  fDy     = hit.fDy;
+  fDz     = hit.fDz;
+  fIncA   = hit.fIncA;
+  fEdep   = hit.fEdep;
+
+}
  
 //______________________________________________________________________________
 AliTOFhit::AliTOFhit(Int_t shunt, Int_t track, Int_t *vol,
                      Float_t *hits)
 :AliHit(shunt, track)
+{
 //
 // Constructor of hit object
 //
-{
-  //
-  // Store a TOF hit
-  // _______________
   //
   // Hit Volume
   // 
   fSector= vol[0];
   fPlate = vol[1];
   fStrip = vol[2];
-  fPad_x = vol[3];
-  fPad_z = vol[4];
+  fPadx = vol[3];
+  fPadz = vol[4];
   //
-  //Position
+  //Position of the hit
   fX = hits[0];
   fY = hits[1];
   fZ = hits[2];
   //
-  // Momentum
+  // Momentum components of the particle in the ALICE frame when hit is produced
   fPx  = hits[3];
   fPy  = hits[4];
   fPz  = hits[5];
   fPmom= hits[6];
   //
-  // Time Of Flight
+  // Time Of Flight for the particle that produces hit
   fTof = hits[7];   //TOF[s]
   //
   // Other Data
@@ -726,76 +777,100 @@ ClassImp(AliTOFdigit)
 //______________________________________________________________________________
 AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol,Float_t *digit)
 :AliDigit(tracks)
+{
 //
 // Constructor of digit object
 //
-{
+
   fSector = vol[0];
   fPlate  = vol[1];
   fStrip  = vol[2];
-  fPad_x  = vol[3];
-  fPad_z  = vol[4];
+  fPadx  = vol[3];
+  fPadz  = vol[4];
   fTdc    = digit[0];
   fAdc    = digit[1];
 }
 
+//____________________________________________________________________________
+AliTOFdigit::AliTOFdigit(const AliTOFdigit & digit)
+{
+  // 
+  // copy ctor for AliTOFdigit object
+  //
+
+  Int_t i ;
+  for ( i = 0; i < 3 ; i++)
+    fTracks[i]  = digit.fTracks[i] ;
+  fSector = digit.fSector;
+  fPlate  = digit.fPlate;
+  fStrip  = digit.fStrip;
+  fPadx   = digit.fPadx;
+  fPadz   = digit.fPadz;
+  fTdc    = digit.fTdc;
+  fAdc    = digit.fAdc;
+
+}
+   
 //______________________________________________________________________________
 void AliTOFdigit::GetLocation(Int_t *Loc)
+{
 //
 // Get the cohordinates of the digit
 // in terms of Sector - Plate - Strip - Pad
 //
-{
+
    Loc[0]=fSector;
    Loc[1]=fPlate;
    Loc[2]=fStrip;
-   Loc[3]=fPad_x;
-   Loc[4]=fPad_z;
+   Loc[3]=fPadx;
+   Loc[4]=fPadz;
 }
 
 //______________________________________________________________________________
 Int_t AliTOFdigit::GetTotPad()
+{
 //
 // Get the "total" index of the pad inside a Sector
 // starting from the digits data.
 //
-{
-  AliTOF* TOF;
+
+  AliTOF* tof;
   
   if(gAlice){
-     TOF =(AliTOF*) gAlice->GetDetector("TOF");
+     tof =(AliTOF*) gAlice->GetDetector("TOF");
   }else{
      printf("AliTOFdigit::GetTotPad - No AliRun object present, exiting");
      return 0;
   }
   
-  Int_t Pad = fPad_x+TOF->fNpadX*(fPad_z-1);
-  Int_t Before=0;
+  Int_t pad = fPadx+tof->GetNpadX()*(fPadz-1);
+  Int_t before=0;
 
   switch(fPlate){ 
-  case 1: Before = 0;
+  case 1: before = 0;
           break;
-  case 2: Before = TOF->fNStripC;
+  case 2: before = tof->GetNStripC();
           break;
-  case 3: Before = TOF->fNStripB + TOF->fNStripC;
+  case 3: before = tof->GetNStripB() + tof->GetNStripC();
           break;
-  case 4: Before = TOF->fNStripA + TOF->fNStripB + TOF->fNStripC;
+  case 4: before = tof->GetNStripA() + tof->GetNStripB() + tof->GetNStripC();
           break;
-  case 5: Before = TOF->fNStripA + 2*TOF->fNStripB + TOF->fNStripC;
+  case 5: before = tof->GetNStripA() + 2*tof->GetNStripB() + tof->GetNStripC();
           break;
   }
   
-  Int_t Strip = fStrip+Before;
-  Int_t PadTot = TOF->fPadXStr*(Strip-1)+Pad;
-  return PadTot;
+  Int_t strip = fStrip+before;
+  Int_t padTot = tof->GetPadXStr()*(strip-1)+pad;
+  return padTot;
 }
 
 //______________________________________________________________________________
 void AliTOFdigit::AddTrack(Int_t track)
+{
 //
 // Add a track to the digit 
 //
-{
+
   if (fTracks[1]==0){
      fTracks[1] = track;
   }else if (fTracks[2]==0){
