@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2000/11/20 09:50:03  schutz
+  AliPHOSCPVHit inherits from AliHit
+
   Revision 1.3  2000/11/13 11:45:36  schutz
   DEC and HP compilers sufisfied
 
@@ -144,29 +147,29 @@ void AliPHOSCPVModule::Print(Option_t *opt)
 
 //______________________________________________________________________________
 
-void AliPHOSCPVModule::MakeBranch(Int_t i)
+void AliPHOSCPVModule::MakeBranch(char *title,Int_t i)
 {
   //
-  // Create a new branch for a CPV module #i in the current Root Tree
+  // Create a new branch for a EMC or CPV module #i in the current Root Tree
   //
 
   char branchname[10];
-  sprintf(branchname,"CPV%d",i);
+  sprintf(branchname,"%s%d",title,i);
   gAlice->TreeH()->Branch(branchname,&fHits, 1000);
 }
 
 //_____________________________________________________________________________
-void AliPHOSCPVModule::SetTreeAddress(Int_t i)
+void AliPHOSCPVModule::SetTreeAddress(char *title, Int_t i)
 {
   //
-  // Set branch address for the Hits Tree for a CPV module #i
+  // Set branch address for the Hits Tree for a CPV or EMC module #i
   //
 
   TBranch *branch;
   char branchname[20];
   TTree *treeH = gAlice->TreeH();
   if (treeH){
-    sprintf(branchname,"CPV%d",i);
+    sprintf(branchname,"%s%d",title,i);
     branch = treeH->GetBranch(branchname);
     if (branch) branch->SetAddress(&fHits);
   }

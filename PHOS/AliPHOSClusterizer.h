@@ -52,6 +52,8 @@ public:
   virtual void SetLogWeightCutCPV(Float_t w) = 0 ; 
   virtual void SetPpsdClusteringThreshold(Float_t cluth) = 0 ; 
   virtual void SetPpsdEnergyThreshold(Float_t enth) = 0 ; 
+  virtual void SetCpvClusteringThreshold(Float_t cluth) = 0 ; 
+  virtual void SetCpvEnergyThreshold(Float_t enth) = 0 ;  
  
   ClassDef(AliPHOSClusterizer,1)  // Clusterization algorithm class (abstract base class)
 

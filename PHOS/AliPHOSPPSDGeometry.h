@@ -47,6 +47,7 @@ public:
   virtual Float_t GetCPVBoxSize(Int_t index)       { return  fPPSDBoxSize[index] ;      }
   virtual Float_t GetPPSDModuleSize(Int_t index)   { return  fPPSDModuleSize[index] ;   }
   virtual Float_t GetZDisplacement(void)           { return  fZDisplacement ;           }
+  virtual void    SetLeadConverterThickness(Float_t x)  { fLeadConverterThickness = x;  }
   
   // CPV functions cannot be used for PPSD
   

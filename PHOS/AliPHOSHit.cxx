@@ -75,7 +75,7 @@ Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
 
   Bool_t rv = kFALSE ; 
 
-  if ( fId == rValue.GetId() && fPrimary == rValue.GetPrimary() ) 
+  if ( fId == rValue.GetId() && fPrimary == rValue.GetPrimary() )
     rv = kTRUE;
   
   return rv;

@@ -42,15 +42,18 @@ class AliPHOSv0 : public AliPHOS {
     // useless since there are no hits
     assert(0==1) ; 
   }
-  virtual void   BuildGeometry(void) ;                              // creates the geometry for the ROOT display
-  void           BuildGeometryforPHOS(void) ;                       // creates the PHOS geometry for the ROOT display
-  void           BuildGeometryforPPSD(void) ;                       // creates the PPSD geometry for the ROOT display
-  void           BuildGeometryforCPV(void) ;                        // creates the CPV  geometry for the ROOT display
-  virtual void   CreateGeometry(void) ;                             // creates the geometry for GEANT
-  void           CreateGeometryforPHOS(void) ;                      // creates the PHOS geometry for GEANT
-  void           CreateGeometryforPPSD(void) ;                      // creates the PPSD geometry for GEANT
-  void           CreateGeometryforCPV(void) ;                       // creates the CPV  geometry for GEANT
-  void           CreateGeometryforSupport(void) ;                   // creates the Support geometry for GEANT
+  virtual void   BuildGeometry(void) ;             // creates the geometry for the ROOT display
+  void           BuildGeometryforPHOS(void) ;      // creates the PHOS geometry for the ROOT display
+  void           BuildGeometryforPPSD(void) ;      // creates the PPSD geometry for the ROOT display
+  void           BuildGeometryforCPV(void) ;       // creates the CPV  geometry for the ROOT display
+  virtual void   CreateGeometry(void) ;            // creates the geometry for GEANT
+  void           CreateGeometryforPHOS(void) ;     // creates the PHOS geometry for GEANT
+  void           CreateGeometryforPPSD(void) ;     // creates the PPSD geometry for GEANT
+  void           CreateGeometryforCPV(void) ;      // creates the CPV  geometry for GEANT
+  void           CreateGeometryforSupport(void) ;  // creates the Support geometry for GEANT
+  virtual Float_t ZMin() const;                    // overall dimension of the module (min)
+  virtual Float_t ZMax() const;                    // overall dimension of the module (max)
+
   virtual AliPHOSGeometry * GetGeometry() {
     // gets the pointer to the AliPHOSGeometry unique instance  
     return fGeom ; 

@@ -54,8 +54,6 @@ AliPHOSGeometry::~AliPHOSGeometry(void)
   if (fRotMatrixArray) fRotMatrixArray->Delete() ; 
   if (fRotMatrixArray) delete fRotMatrixArray ; 
   if (fPHOSAngle     ) delete fPHOSAngle ; 
-//    if (fGeometryEMCA  ) detete fGeometryEMCA;
-//    if (fGeometryCPV   ) detete fGeometryCPV ;
 }
 
 //____________________________________________________________________________
@@ -66,13 +64,32 @@ void AliPHOSGeometry::Init(void)
 
   if ( ((strcmp( fName, "default" )) == 0) || 
        ((strcmp( fName, "GPS2" ))    == 0) ||
-       ((strcmp( fName, "IHEP" ))    == 0) ) {
+       ((strcmp( fName, "IHEP" ))    == 0) ||
+       ((strcmp( fName, "MIXT" ))    == 0) ) {
     fgInit     = kTRUE ; 
-                                             fGeometryEMCA = new AliPHOSEMCAGeometry();
-    if ( ((strcmp( fName, "GPS2" ))  == 0) ) fGeometryCPV  = new AliPHOSPPSDGeometry();
-    if ( ((strcmp( fName, "IHEP" ))  == 0) ) fGeometryCPV  = new AliPHOSCPVGeometry ();
-                                             fGeometrySUPP = new AliPHOSSupportGeometry();
-    fNModules = 5;
+
+    fNModules     = 5;
+    fNPPSDModules = 0;
+    fAngle        = 20;
+
+      fGeometryEMCA = new AliPHOSEMCAGeometry();
+    if      ( ((strcmp( fName, "GPS2" ))  == 0) ) {
+      fGeometryPPSD = new AliPHOSPPSDGeometry();
+      fGeometryCPV  = 0;
+      fNPPSDModules = fNModules;
+    }
+    else if ( ((strcmp( fName, "IHEP" ))  == 0) ) {
+      fGeometryCPV  = new AliPHOSCPVGeometry ();
+      fGeometryPPSD = 0;
+      fNPPSDModules = 0;
+    }
+    else if ( ((strcmp( fName, "MIXT" ))  == 0) ) {
+      fGeometryCPV  = new AliPHOSCPVGeometry ();
+      fGeometryPPSD = new AliPHOSPPSDGeometry();
+      fNPPSDModules = 1;
+    }
+      fGeometrySUPP = new AliPHOSSupportGeometry();
+
     fPHOSAngle = new Float_t[fNModules] ;
     Int_t index ;
     for ( index = 0; index < fNModules; index++ )
@@ -81,10 +98,10 @@ void AliPHOSGeometry::Init(void)
     this->SetPHOSAngles() ; 
     fRotMatrixArray = new TObjArray(fNModules) ; 
   }
- else {
-   fgInit = kFALSE ; 
-   cout << "PHOS Geometry setup: option not defined " << fName << endl ; 
- }
+  else {
+    fgInit = kFALSE ; 
+    cout << "PHOS Geometry setup: option not defined " << fName << endl ; 
+  }
 }
 
 //____________________________________________________________________________
@@ -130,11 +147,13 @@ void AliPHOSGeometry::SetPHOSAngles()
   // Calculates the position in ALICE of the PHOS modules
   
   Double_t const kRADDEG = 180.0 / kPI ;
-  Float_t pphi =  TMath::ATan( GetOuterBoxSize(0)  / ( 2.0 * GetIPtoOuterCoverDistance() ) ) ;
+  Float_t pphi =  2 * TMath::ATan( GetOuterBoxSize(0)  / ( 2.0 * GetIPtoOuterCoverDistance() ) ) ;
   pphi *= kRADDEG ;
+  if (pphi > fAngle) cout << "AliPHOSGeometry: PHOS modules overlap!\n";
+  pphi = fAngle;
   
   for( Int_t i = 1; i <= fNModules ; i++ ) {
-    Float_t angle = pphi * 2 * ( i - fNModules / 2.0 - 0.5 ) ;
+    Float_t angle = pphi * ( i - fNModules / 2.0 - 0.5 ) ;
     fPHOSAngle[i-1] = -  angle ;
   } 
 }
@@ -168,11 +187,34 @@ Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * relid)
     }
     else if ( strcmp(fName,"IHEP") == 0 ) {
       id -=  GetNPhi() * GetNZ() *  GetNModules() ; 
-      relid[0] = (Int_t) TMath::Ceil( id / ( GetNumberOfPadsPhi() * GetNumberOfPadsZ() ) ) ;
+      Float_t nCPV  = GetNumberOfCPVPadsPhi() * GetNumberOfCPVPadsZ() ;
+      relid[0] = (Int_t) TMath::Ceil( id / nCPV ) ;
       relid[1] = 1 ;
-      id -= ( relid[0] - 1 ) * GetNumberOfPadsPhi() * GetNumberOfPadsZ()  ; 
-      relid[2] = (Int_t) TMath::Ceil( id / GetNumberOfPadsZ() ) ;
-      relid[3] = (Int_t) ( id - ( relid[2] - 1 ) * GetNumberOfPadsZ() ) ; 
+      id -= ( relid[0] - 1 ) * nCPV ; 
+      relid[2] = (Int_t) TMath::Ceil( id / GetNumberOfCPVPadsZ() ) ;
+      relid[3] = (Int_t) ( id - ( relid[2] - 1 ) * GetNumberOfCPVPadsZ() ) ; 
+    }
+    else if ( strcmp(fName,"MIXT") == 0 ) {
+      id -=  GetNPhi() * GetNZ() *  GetNModules() ; 
+      Float_t nPPSD = 2 * GetNumberOfModulesPhi() * GetNumberOfModulesZ() *  GetNumberOfPadsPhi() * GetNumberOfPadsZ() ; 
+      Float_t nCPV  = GetNumberOfCPVPadsPhi() * GetNumberOfCPVPadsZ() ;
+      if (id <= nCPV*GetNCPVModules()) { // this pad belons to CPV
+	relid[0] = (Int_t) TMath::Ceil( id / nCPV ) ;
+	relid[1] = 1 ;
+	id -= ( relid[0] - 1 ) * nCPV ; 
+	relid[2] = (Int_t) TMath::Ceil( id / GetNumberOfCPVPadsZ() ) ;
+	relid[3] = (Int_t) ( id - ( relid[2] - 1 ) * GetNumberOfCPVPadsZ() ) ; 
+      }
+      else {                             // this pad belons to PPSD
+	id -= nCPV*GetNCPVModules();
+	relid[0] = (Int_t)TMath::Ceil( id / nPPSD ); 
+	id -= ( relid[0] - 1 ) * nPPSD ;
+	relid[0] += GetNCPVModules();
+	relid[1] = (Int_t)TMath::Ceil( id / ( GetNumberOfPadsPhi() * GetNumberOfPadsZ() ) ) ; 
+	id -= ( relid[1] - 1 ) * GetNumberOfPadsPhi() * GetNumberOfPadsZ() ;
+	relid[2] = (Int_t)TMath::Ceil( id / GetNumberOfPadsPhi() ) ;
+	relid[3] = (Int_t) ( id - ( relid[2] - 1 )  * GetNumberOfPadsPhi() ) ; 
+      }
     }
   } 
   else { // its a PW04 crystal
@@ -352,21 +394,36 @@ void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_
 Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId)
 {
   // Converts the relative numbering into the absolute numbering
-  //  AbsId = 1 to fNModules * fNPhi * fNZ                                                                       -> PbWO4
-  //  AbsId = N(total PHOS crystals) +
-  //          1 to fNModules * 2 * (fNumberOfModulesPhi * fNumberOfModulesZ) * fNumberOfPadsPhi * fNumberOfPadsZ -> PPSD
-  //  AbsId = N(total PHOS crystals) +
-  //          1:fNModules * fNumberOfCPVPadsPhi * fNumberOfCPVPadsZ                                              -> CPV
+  // EMCA crystals:
+  //  AbsId = from 1 to fNModules * fNPhi * fNZ
+  // PPSD gas cell:
+  //  AbsId = from N(total EMCA crystals) + 1
+  //          to NCPVModules * fNumberOfCPVPadsPhi * fNumberOfCPVPadsZ +
+  //          fNModules * 2 * (fNumberOfModulesPhi * fNumberOfModulesZ) * fNumberOfPadsPhi * fNumberOfPadsZ
+  // CPV pad:
+  //  AbsId = from N(total PHOS crystals) + 1
+  //          to NCPVModules * fNumberOfCPVPadsPhi * fNumberOfCPVPadsZ
 
   Bool_t rv = kTRUE ; 
  
-  if      ( relid[1]  >  0 ) { // it is a PPSD pad
-    AbsId =    GetNPhi() * GetNZ() *  GetNModules()                          // the offset to separate EMCA crystals from PPSD pads
-      + ( relid[0] - 1 ) * GetNumberOfModulesPhi() * GetNumberOfModulesZ()   // the pads offset of PHOS modules 
+  if      ( relid[1] > 0 && strcmp(fName,"GPS2")==0) { // it is a PPSD pad
+    AbsId =    GetNPhi() * GetNZ() * GetNModules()                         // the offset to separate EMCA crystals from PPSD pads
+      + ( relid[0] - 1 ) * GetNumberOfModulesPhi() * GetNumberOfModulesZ() // the pads offset of PPSD modules 
                          * GetNumberOfPadsPhi() * GetNumberOfPadsZ() * 2
-      + ( relid[1] - 1 ) * GetNumberOfPadsPhi() * GetNumberOfPadsZ()         // the pads offset of PPSD modules 
-      + ( relid[2] - 1 ) * GetNumberOfPadsPhi()                              // the pads offset of a PPSD row
-      +   relid[3] ;                                                         // the column number
+      + ( relid[1] - 1 ) * GetNumberOfPadsPhi() * GetNumberOfPadsZ()       // the pads offset of PPSD modules 
+      + ( relid[2] - 1 ) * GetNumberOfPadsPhi()                            // the pads offset of a PPSD row
+      +   relid[3] ;                                                       // the column number
+  } 
+
+  else if ( relid[1] > 0 && strcmp(fName,"MIXT")==0) { // it is a PPSD pad
+    AbsId =    GetNPhi() * GetNZ() * GetNModules()                         // the offset to separate EMCA crystals from PPSD pads
+      + GetNCPVModules() * GetNumberOfCPVPadsPhi() * GetNumberOfCPVPadsZ() // the pads offset of CPV modules if any
+      + ( relid[0] - 1 - GetNCPVModules())
+                         * GetNumberOfModulesPhi() * GetNumberOfModulesZ() // the pads offset of PPSD modules 
+                         * GetNumberOfPadsPhi() * GetNumberOfPadsZ() * 2
+      + ( relid[1] - 1 ) * GetNumberOfPadsPhi() * GetNumberOfPadsZ()       // the pads offset of PPSD modules 
+      + ( relid[2] - 1 ) * GetNumberOfPadsPhi()                            // the pads offset of a PPSD row
+      +   relid[3] ;                                                       // the column number
   } 
 
   else if ( relid[1] ==  0 ) { // it is a Phos crystal
@@ -378,8 +435,8 @@ Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId)
 
   else if ( relid[1] == -1 ) { // it is a CPV pad
     AbsId =    GetNPhi() * GetNZ() *  GetNModules()                          // the offset to separate EMCA crystals from CPV pads
-      + ( relid[0] - 1 ) * GetNumberOfPadsPhi() * GetNumberOfPadsZ()         // the pads offset of PHOS modules 
-      + ( relid[2] - 1 ) * GetNumberOfPadsZ()                                // the pads offset of a CPV row
+      + ( relid[0] - 1 ) * GetNumberOfCPVPadsPhi() * GetNumberOfCPVPadsZ()         // the pads offset of PHOS modules 
+      + ( relid[2] - 1 ) * GetNumberOfCPVPadsZ()                                // the pads offset of a CPV row
       +   relid[3] ;                                                         // the column number
   }
   
@@ -391,56 +448,56 @@ Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId)
 void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) 
 {
   // Converts the absolute numbering into the global ALICE coordinates
+  // It works only for the GPS2 geometry
   
-   if (id > 0) { 
-
-  Int_t relid[4] ;
- 
-  AbsToRelNumbering(id , relid) ;
-
-  Int_t phosmodule = relid[0] ; 
-
-  Float_t y0 = 0 ; 
-
-  if ( relid[1] == 0 ) // it is a PbW04 crystal 
-  {  y0 =  -(GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
-      + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness())  ;  
-  }
-  if ( relid[1] > 0 ) { // its a PPSD pad
-    if ( relid[1] >  GetNumberOfModulesPhi() *  GetNumberOfModulesZ() ) // its an bottom module
-     {
-       y0 = -( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() / 2.0)  ;
-     } 
-    else // its an upper module
-      y0 = -( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() - GetLeadToMicro2Gap()
-	-  GetLeadConverterThickness() -  GetMicro1ToLeadGap() - GetMicromegas1Thickness() / 2.0) ; 
-  }
-
-  Float_t x, z ; 
-  RelPosInModule(relid, x, z) ; 
-
-  pos.SetX(x) ;
-  pos.SetZ(z) ;
-  pos.SetY( TMath::Sqrt(x*x + z*z + y0*y0) ) ; 
-
-
-
-   Float_t phi           = GetPHOSAngle( phosmodule) ; 
-   Double_t const kRADDEG = 180.0 / kPI ;
-   Float_t rphi          = phi / kRADDEG ; 
-
-   TRotation rot ;
-   rot.RotateZ(-rphi) ; // a rotation around Z by angle  
-  
-   TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
-  
-   pos.Transform(rot) ; // rotate the baby 
+  if (id > 0 && strcmp(fName,"GPS2")==0) { 
+    
+    Int_t relid[4] ;
+    
+    AbsToRelNumbering(id , relid) ;
+    
+    Int_t phosmodule = relid[0] ; 
+    
+    Float_t y0 = 0 ; 
+    
+    if ( relid[1] == 0 ) { // it is a PbW04 crystal 
+      y0 =  -(GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
+	      + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness())  ;  
+    }
+    if ( relid[1] > 0 ) { // its a PPSD pad
+      if ( relid[1] >  GetNumberOfModulesPhi() *  GetNumberOfModulesZ() ) { // its an bottom module
+	y0 = -( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() / 2.0)  ;
+      } 
+      else // its an upper module
+	y0 = -( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() - GetLeadToMicro2Gap()
+		-  GetLeadConverterThickness() -  GetMicro1ToLeadGap() - GetMicromegas1Thickness() / 2.0) ; 
+    }
+    
+    Float_t x, z ; 
+    RelPosInModule(relid, x, z) ; 
+    
+    pos.SetX(x) ;
+    pos.SetZ(z) ;
+    pos.SetY( TMath::Sqrt(x*x + z*z + y0*y0) ) ; 
+    
+    
+    
+    Float_t phi           = GetPHOSAngle( phosmodule) ; 
+    Double_t const kRADDEG = 180.0 / kPI ;
+    Float_t rphi          = phi / kRADDEG ; 
+    
+    TRotation rot ;
+    rot.RotateZ(-rphi) ; // a rotation around Z by angle  
+    
+    TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
+    
+    pos.Transform(rot) ; // rotate the baby 
   }
   else {
- pos.SetX(0.);
- pos.SetY(0.);
- pos.SetZ(0.);
-       }
+    pos.SetX(0.);
+    pos.SetY(0.);
+    pos.SetZ(0.);
+  }
 } 
 
 //____________________________________________________________________________
@@ -448,34 +505,53 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 {
   // Converts the relative numbering into the local PHOS-module (x, z) coordinates
   // Note: sign of z differs from that in the previous version (Yu.Kharlov, 12 Oct 2000)
+
+  Bool_t padOfCPV  = (strcmp(fName,"IHEP")==0) ||
+                    ((strcmp(fName,"MIXT")==0) && relid[0]<=GetNCPVModules()) ;
+  Bool_t padOfPPSD = (strcmp(fName,"GPS2")==0) ||
+                    ((strcmp(fName,"MIXT")==0) && relid[0]> GetNCPVModules()) ;
   
   Int_t ppsdmodule  ; 
   Float_t x0,z0;
   Int_t row        = relid[2] ; //offset along x axiz
   Int_t column     = relid[3] ; //offset along z axiz
 
-  Float_t padsizeZ = GetPadSizeZ();
-  Float_t padsizeX = GetPadSizePhi();
-
+  Float_t padsizeZ = 0;
+  Float_t padsizeX = 0;
+  Int_t   nOfPadsPhi = 0;
+  Int_t   nOfPadsZ   = 0;
+  if      ( padOfPPSD ) {
+    padsizeZ   = GetPPSDModuleSize(2) / GetNumberOfPadsZ();
+    padsizeX   = GetPPSDModuleSize(0) / GetNumberOfPadsPhi();
+    nOfPadsPhi = GetNumberOfPadsPhi();
+    nOfPadsZ   = GetNumberOfPadsZ();
+  }
+  else if ( padOfCPV  ) {
+    padsizeZ   = GetPadSizeZ();
+    padsizeX   = GetPadSizePhi();
+    nOfPadsPhi = GetNumberOfCPVPadsPhi();
+    nOfPadsZ   = GetNumberOfCPVPadsZ();
+  }
+  
   if ( relid[1] == 0 ) { // its a PbW04 crystal 
     x = - ( GetNPhi()/2. - row    + 0.5 ) *  GetCrystalSize(0) ; // position ox Xtal with respect
     z =   ( GetNZ()  /2. - column + 0.5 ) *  GetCrystalSize(2) ; // of center of PHOS module  
   }  
   else  {    
-    if ( relid[1] >  GetNumberOfModulesPhi() *  GetNumberOfModulesZ() )
-      ppsdmodule =  relid[1]-GetNumberOfModulesPhi() *  GetNumberOfModulesZ(); 
-    else
-      ppsdmodule =  relid[1] ;
-    Int_t modrow = 1+(Int_t)TMath::Ceil( (Float_t)ppsdmodule / GetNumberOfModulesPhi()-1. ) ; 
-    Int_t modcol = ppsdmodule -  ( modrow - 1 ) * GetNumberOfModulesPhi() ;     
-    if ( ((strcmp( fName, "GPS2" ))  == 0) ) {
+    if ( padOfPPSD ) {
+      if ( relid[1] >  GetNumberOfModulesPhi() *  GetNumberOfModulesZ() )
+	ppsdmodule =  relid[1]-GetNumberOfModulesPhi() *  GetNumberOfModulesZ(); 
+      else
+	ppsdmodule =  relid[1] ;
+      Int_t modrow = 1+(Int_t)TMath::Ceil( (Float_t)ppsdmodule / GetNumberOfModulesPhi()-1. ) ; 
+      Int_t modcol = ppsdmodule -  ( modrow - 1 ) * GetNumberOfModulesPhi() ;     
       x0 = (  GetNumberOfModulesPhi() / 2.  - modrow  + 0.5 ) * GetPPSDModuleSize(0) ;
       z0 = (  GetNumberOfModulesZ()   / 2.  - modcol  + 0.5 ) * GetPPSDModuleSize(2)  ;     
     } else {
       x0 = 0;
       z0 = 0;
     }
-    x = - ( GetNumberOfPadsPhi()/2. - row    - 0.5 ) * padsizeX + x0 ; // position of pad  with respect
-    z =   ( GetNumberOfPadsZ()  /2. - column - 0.5 ) * padsizeZ - z0 ; // of center of PHOS module  
+    x = - ( nOfPadsPhi/2. - row    - 0.5 ) * padsizeX + x0 ; // position of pad  with respect
+    z =   ( nOfPadsZ  /2. - column - 0.5 ) * padsizeZ - z0 ; // of center of PHOS module  
   }
 }

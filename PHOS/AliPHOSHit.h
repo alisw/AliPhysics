@@ -43,6 +43,10 @@ class AliPHOSHit : public AliHit {
     // return the identificator of this his
     return fId ; 
   }
+  Int_t   GetPid(void)      const { 
+    // return the particle PDG code which initiates this hit
+    return fPid ; 
+  }
   Int_t   GetPrimary(void)  const { 
     // returns the primary particle id at the origine of this hit 
     return fPrimary ; 

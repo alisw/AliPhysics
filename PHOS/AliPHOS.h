@@ -44,6 +44,8 @@ class AliPHOS : public AliDetector {
     return &fEmcRecPoints ;
   }
   virtual  AliPHOSGeometry * GetGeometry() = 0 ;
+  virtual void Hit2Digit(){}  // Will convert hits to digits in versions v1 etc
+
   virtual Int_t   IsVersion(void) const { return -1 ; } 
   virtual  AliPHOSRecPoint::RecPointsList ** PpsdRecPoints() {
     // to be redefined when ppsd is present
@@ -66,7 +68,6 @@ class AliPHOS : public AliDetector {
     assert(0==1) ;
     return *this ; 
   }
-  void SetDebugLevel(Int_t deb) {fDebugLevel = deb;}
  
  protected:
   
@@ -74,8 +75,6 @@ class AliPHOS : public AliDetector {
   AliPHOSRecPoint::RecPointsList * fPpsdRecPoints ;        // The RecPoints (clusters) list in PPSD (veto)
   AliPHOSTrackSegment::TrackSegmentsList * fTrackSegments ;// The TrackSegment list in PHOS
   AliPHOSRecParticle::RecParticlesList * fRecParticles ;   // The reconstructed particles list in PHOS
-  Int_t  fDebugLevel ;                                     // Debug level
-
 
   ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)
 

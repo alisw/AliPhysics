@@ -68,11 +68,11 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
 } 
 
 //____________________________________________________________________________
- void AliPHOSReconstructioner::Make(DigitsList * dl, 
-				    AliPHOSRecPoint::RecPointsList * emccl, 
-				    AliPHOSRecPoint::RecPointsList * ppsdl, 
-				    AliPHOSTrackSegment::TrackSegmentsList * trsl, 
-				    AliPHOSRecParticle::RecParticlesList * rpl)
+ void AliPHOSReconstructioner::MakePPSD(DigitsList * dl, 
+				        AliPHOSRecPoint::RecPointsList * emccl, 
+				        AliPHOSRecPoint::RecPointsList * ppsdl, 
+				        AliPHOSTrackSegment::TrackSegmentsList * trsl, 
+				        AliPHOSRecParticle::RecParticlesList * rpl)
 {
   // Launches the Reconstruction process in the sequence: Make the reconstructed poins (clusterize)
   //                                                      Make the track segments 
@@ -117,8 +117,6 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
     }
     
   }
-
-
 
   // Making Clusters
   if  (fDebugReconstruction)  cout << "DebugReconstruction>>> Start making reconstructed points (clusterizing)" << endl;
@@ -337,9 +335,9 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
 }
 
 //____________________________________________________________________________
- void AliPHOSReconstructioner::Make(DigitsList * dl, 
-				    AliPHOSRecPoint::RecPointsList * emccl,
-				    AliPHOSRecPoint::RecPointsList * cpvcl)
+ void AliPHOSReconstructioner::MakeCPV(DigitsList * dl, 
+				       AliPHOSRecPoint::RecPointsList * emccl,
+				       AliPHOSRecPoint::RecPointsList * cpvcl)
 {
 
   // Launches the Reconstruction process of EMC and CPV in the sequence:
@@ -358,7 +356,7 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
   fClusterizer->MakeClusters(dl, emccl, cpvcl);
   
   if  (fDebugReconstruction){
-  // Digit Debuging
+    // Digit Debuging
     cout << "AliPHOSReconstructioner: Digit list entries are " << dl->GetEntries()    << endl ;
     cout << "AliPHOSReconstructioner: EMC   list entries are " << emccl->GetEntries() << endl ;
     cout << "AliPHOSReconstructioner: CPV   list entries are " << cpvcl->GetEntries() << endl ;
@@ -401,6 +399,7 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
   AliPHOSCpvRecPoint * cpvrp ; 
   for (index = 0 ; index < cpvcl->GetEntries() ; index++) {
     cpvrp = (AliPHOSCpvRecPoint * )cpvcl->At(index) ; 
+    if (cpvrp->IsCPV()) break;
     cpvrp ->SetIndexInList(index) ; 
     TVector3  locpos;   cpvrp->GetLocalPosition(locpos);
     Int_t lengX,lengZ;  cpvrp->GetClusterLengths(lengX,lengZ);

@@ -382,7 +382,7 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
 {
   // Makes the track segments out of the list of EMC and PPSD Recpoints and stores them in a list
   
-  Int_t phosmod      = 1 ;
+  Int_t phosmod      = fGeom->GetNCPVModules() + 1 ;
   Int_t emcStopedAt  = 0 ; 
   Int_t ppsdStopedAt = 0 ; 
 

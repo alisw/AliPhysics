@@ -39,12 +39,12 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry()
   fNZ         = 64 ; 
 
   fXtlSize[0] =  2.2 ;
-  fXtlSize[1] = 18.0 ;
+  fXtlSize[1] = 22.0 ;
   fXtlSize[2] =  2.2 ;
 
   // all these numbers coming next are subject to changes
 
-  fOuterBoxThickness[0] = 2.8 ;
+  fOuterBoxThickness[0] = 2.5 ;
   fOuterBoxThickness[1] = 5.0 ;      
   fOuterBoxThickness[2] = 5.0 ;
   
@@ -73,7 +73,7 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry()
   fTextolitBoxThickness[1] = 0.0 ;   
   fTextolitBoxThickness[2] = 3.0 ; 
   
-  fAirThickness[0] =  1.56   ;
+  fAirThickness[0] =  0.4   ;
   fAirThickness[1] = 20.5175 ;  
   fAirThickness[2] =  2.48   ;  
   

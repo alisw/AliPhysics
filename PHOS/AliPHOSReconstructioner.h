@@ -42,14 +42,14 @@ public:
   AliPHOSClusterizer * GetClusterizer() { return fClusterizer ; }
   void Init(AliPHOSClusterizer * Clusterizer, AliPHOSTrackSegmentMaker * Tracker, 
 			  AliPHOSPID * Identifier) ;  
-  void Make(TClonesArray * DL, 
-	    AliPHOSRecPoint::RecPointsList * emccl, 
-	    AliPHOSRecPoint::RecPointsList * ppsdl, 
-	    AliPHOSTrackSegment::TrackSegmentsList * trsl, 
-	    AliPHOSRecParticle::RecParticlesList * rpl)    ; // does the job for EMC+PPSD
-  void Make(TClonesArray * DL, 
-	    AliPHOSRecPoint::RecPointsList * emccl, 
-	    AliPHOSRecPoint::RecPointsList * ppsdl) ;        // does the job for EMC+CPV
+  void MakePPSD(TClonesArray * DL, 
+	        AliPHOSRecPoint::RecPointsList * emccl, 
+	        AliPHOSRecPoint::RecPointsList * ppsdl, 
+	        AliPHOSTrackSegment::TrackSegmentsList * trsl, 
+	        AliPHOSRecParticle::RecParticlesList * rpl)    ; // does the job for EMC+PPSD
+  void MakeCPV (TClonesArray * DL, 
+	        AliPHOSRecPoint::RecPointsList * emccl, 
+	        AliPHOSRecPoint::RecPointsList * ppsdl) ;        // does the job for EMC+CPV
 
   void SetDebugReconstruction(Bool_t deb) { fDebugReconstruction = deb; }
 

@@ -19,7 +19,11 @@
 // AddHit, StepManager,and FinishEvent are redefined 
 //                  
 //*-- Author: Gines MARTINEZ (SUBATECH)
-
+//*-- Modified Nov. 22 2000 by Dmitri Peressounko
+// All hits are stored.
+// Note, that primaries will not be assigned to digits:
+// becouse of tiny energy deposition at each step.
+//  
 
 // --- ROOT system ---
 
@@ -49,8 +53,7 @@ ClassImp(AliPHOSv2)
 AliPHOSv2::AliPHOSv2()
 {
   // default ctor
-  fNTmpHits = 0 ; 
-  fTmpHits  = 0 ; 
+
 }
 
 //____________________________________________________________________________
@@ -58,79 +61,25 @@ AliPHOSv2::AliPHOSv2(const char *name, const char *title):
 AliPHOSv1(name,title)
 {
   // ctor
-  
-   fHits= new TClonesArray("AliPHOSHit",1000) ;
 }
 
 //____________________________________________________________________________
 AliPHOSv2::~AliPHOSv2()
 {
   // dtor
-  if ( fTmpHits) {
-    fTmpHits->Delete() ; 
-    delete fTmpHits ;
-    fTmpHits = 0 ; 
-  }
-  
-  if ( fEmcRecPoints ) { 
-    fEmcRecPoints->Delete() ; 
-    delete fEmcRecPoints ; 
-    fEmcRecPoints = 0 ; 
-  }
-  
-  if ( fPpsdRecPoints ) { 
-    fPpsdRecPoints->Delete() ;
-    delete fPpsdRecPoints ;
-    fPpsdRecPoints = 0 ; 
-  }
- 
-  if ( fTrackSegments ) {
-    fTrackSegments->Delete() ; 
-    delete fTrackSegments ;
-    fTrackSegments = 0 ; 
-  }
 }
 
 //____________________________________________________________________________
 void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits, Int_t pid)
 {
   // Add a hit to the hit list.
-  // A PHOS hit is the sum of all hits in a single crystal
-  //   or in a single PPSD gas cell
 
-  Int_t hitCounter ;
-  TClonesArray &ltmphits = *fTmpHits ;
   AliPHOSHit *newHit ;
-  AliPHOSHit *curHit ;
-  Bool_t deja = kFALSE ;
-
-  // In any case, fills the fTmpHit TClonesArray (with "accumulated hits")
 
   newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits, pid) ;
 
-  // We do want to save in TreeH the raw hits 
-  TClonesArray &lhits = *fHits;
-
-  for ( hitCounter = 0 ; hitCounter < fNTmpHits && !deja ; hitCounter++ ) {
-    curHit = (AliPHOSHit*) ltmphits[hitCounter] ;
-  if( *curHit == *newHit ) {
-    *curHit = *curHit + *newHit ;
-    deja = kTRUE ;
-    }
-  }
-         
-  if ( !deja ) {
-    new(ltmphits[fNTmpHits]) AliPHOSHit(*newHit) ;
-    fNTmpHits++ ;
-  }
-
-  // We do want to save in TreeH the raw hits 
-  new(lhits[fNhits]) AliPHOSHit(*newHit) ;    
+  new((*fHits)[fNhits]) AliPHOSHit(*newHit) ;    
   fNhits++ ;
-
-  // Please note that the fTmpHits array must survive up to the
-  // end of the events, so it does not appear e.g. in ResetHits() (
-  // which is called at the end of each primary).  
 
   delete newHit;
 

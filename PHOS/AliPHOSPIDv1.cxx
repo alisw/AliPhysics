@@ -49,7 +49,7 @@ Float_t  AliPHOSPIDv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcclu,AliPHO
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
  
-  Float_t r;
+  Float_t r = 1.e+10;
   TVector3 vecEmc ;
   TVector3 vecPpsd ;
   

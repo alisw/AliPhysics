@@ -8,6 +8,8 @@
 //                  
 //*-- Author: Gines Martinez (SUBATECH)
 
+#include <assert.h>
+
 // --- ROOT system ---
 
 #include "TMarker.h"
@@ -20,6 +22,8 @@
 
 #include "AliRecPoint.h"
 #include "AliPHOSDigit.h"
+#include "AliPHOSGeometry.h"
+class AliPHOSGeometry;
 
 class AliPHOSRecPoint : public AliRecPoint {
 
@@ -71,11 +75,11 @@ class AliPHOSRecPoint : public AliRecPoint {
     return *this ; 
   }
 
- protected:
+protected:
   
   Int_t fPHOSMod ;      // PHOS Module number in which the RecPoint is found
-
-
+  AliPHOSGeometry * fGeom ; // pointer to the PHOS geometry class
+  
   ClassDef(AliPHOSRecPoint,1) // RecPoint for PHOS (Base Class)
  
 };

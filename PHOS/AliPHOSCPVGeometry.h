@@ -64,6 +64,7 @@ public:
   virtual Int_t   GetNumberOfPadsZ(void)           { AssertPPSD("GetNumberOfPadsZ");           return 0; }
   virtual Int_t   GetNumberOfModulesPhi(void)      { AssertPPSD("GetNumberOfModulesPhi");      return 0; }
   virtual Int_t   GetNumberOfModulesZ(void)        { AssertPPSD("GetNumberOfModulesZ");        return 0; }
+  virtual void    SetLeadConverterThickness(Float_t x)  { AssertPPSD("SetLeadConverterThickness");       }
  
 private:
 

@@ -36,22 +36,19 @@ public:
   AliPHOSAnalyze(const AliPHOSAnalyze & ana) ; // cpy ctor                   
   virtual ~AliPHOSAnalyze() ;     // dtor
 
-  void ActivePPSD(Int_t Nevents) ;
-  void AnalyzeManyEvents(Int_t Nevtents = 100, Int_t Module=0) ;  // analyzes many events   ;
-  void AnalyzeResolutions(Int_t Nevtents) ; // analyzes Energy and Position resolutions   ;
+  void DrawRecon(Int_t Nevent= 0,Int_t Nmod = 1) ;  // draws positions of entering and 
+                                                    //reconstructed points in PHOS plain
+  void AnalyzeResolutions (Int_t Nevents) ; // analyzes Energy and Position resolutions   ;
+  void ReadAndPrintEMC(Int_t EvFirst=0, Int_t EvLast=0); // Read & print generated and reconstructed hits in EMC
   void ReadAndPrintCPV(Int_t EvFirst=0, Int_t EvLast=0); // Read & print generated and reconstructed hits in CPV
   void AnalyzeCPV(Int_t Nevents);           // analyzes various CPV characteristics
+  void AnalyzeEMC(Int_t Nevents);           // analyzes EMC resolution
   void InvariantMass(Int_t Nevents = 100) ; 
   void Reconstruct(Int_t Nevtents = 100,Int_t FirstEvent = 0) ;
   void BookingHistograms() ;                // booking histograms for the ManyEvent analysis ;
   void BookResolutionHistograms() ;         // booking histograms for the Resoluion analysis ;
   void Copy(TObject & obj) ;                // copies an analysis into an other one   
   Float_t CorrectEnergy(Float_t ERecPart) ;   //Corrects reconstracted energy
-  Bool_t Init(Int_t evt) ;                  // does various initialisations
-  void DisplayKineEvent(Int_t evt = -999) ; // displays the Kine events in ALICE coordinate 
-  void DisplayRecParticles() ;              // displays RecParticles in ALICE coordinate  
-  void DisplayRecPoints() ;                 // displays RecPoints in module coordinate  
-  void DisplayTrackSegments() ;             // displays TrackSegments in module coordinate  
   Bool_t OpenRootFile(Text_t * name) ;      // opens the root file
   void SaveHistograms() ;                   // Save histograms in a root file
   void ResetHistograms() ;                  // 
@@ -88,15 +85,18 @@ public:
   TH1F * fhConvertorCluster ;       // Histo of Cluster energies in Convertor
   TH2F * fhConvertorEmc ;           // 2d Convertor versus Emc energies
 
-  TH2F * fhAllEnergy ;           // Spectrum of detected photons with photon primary
-  TH2F * fhPhotEnergy ;        // Total spectrum of detected photons
+  TH2F * fhAllEnergy ;       // Spectrum of detected photons with photon primary
+  TH2F * fhPhotEnergy ;      // Total spectrum of detected photons
   TH2F * fhEMEnergy ;        // Spectrum of detected neutral EM with EM primary
-  TH2F * fhPPSDEnergy ;
+  TH2F * fhPPSDEnergy ;      // 
 
-  TH2F * fhAllPosition ;        // Position Resolution of  photons with photon primary
-  TH2F * fhPhotPosition ;     // Position Resolution of  photons
-  TH2F * fhEMPosition ;     // Position Resolution of neutral EM with EM primary
-  TH2F * fhPPSDPosition ;  // Position Resolution of neutral EM
+  TH2F * fhAllPosition ;     // Position Resolution of  photons with photon primary
+  TH2F * fhPhotPosition ;    // Position Resolution of  photons
+  TH2F * fhEMPosition ;      // Position Resolution of neutral EM with EM primary
+  TH2F * fhPPSDPosition ;    // Position Resolution of neutral EM
+
+  TH1F * fhAllPositionX ;    // X-Position Resolution of  photons with photon primary
+  TH1F * fhAllPositionZ ;    // Z-Position Resolution of  photons with photon primary
 
   TH1F * fhPhotonPositionY ;        // Y distribution of detected photons
   TH1F * fhElectronPositionY ;      // Y distribution of detected electrons

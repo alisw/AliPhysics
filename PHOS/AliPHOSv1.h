@@ -39,7 +39,7 @@ public:
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits, Int_t pid) ; 
   Int_t          Digitize(Float_t Energy);
-  virtual void   FinishEvent(void) ;                               
+  virtual void   Hit2Digit(Int_t event) ;
   virtual Int_t  IsVersion(void) const {
     // Gives the version number 
     return 1 ; 
@@ -47,7 +47,6 @@ public:
   virtual void   MakeBranch(Option_t* opt) ;
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
   void           ResetClusters(){} ;
-  virtual void   ResetDigits() ; 
   virtual void   ResetHits() ; 
   virtual void   ResetReconstruction() ; // Reset reconstructed objects
   void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {
@@ -68,9 +67,9 @@ public:
     return *this ; 
   }
 
-  // IHEP's CPV specific functions
-
+  AliPHOSCPVModule &GetEMCModule(int n) { return *(AliPHOSCPVModule*)fEMCModules->operator[](n); }
   AliPHOSCPVModule &GetCPVModule(int n) { return *(AliPHOSCPVModule*)fCPVModules->operator[](n); }
+
   void       CPVDigitize (TLorentzVector p, Float_t *xy, Int_t moduleNumber, TClonesArray *digits) ;
   Float_t    CPVPadResponseFunction(Float_t qhit, Float_t zg, Float_t xg) ;
   Double_t   CPVCumulPadResponse(Double_t x, Double_t y) ;
@@ -78,13 +77,11 @@ public:
 protected:
 
   Float_t fDigitThreshold ;                       // Threshold for the digit registration 
-  Int_t fNTmpHits ;                               //!  Used internally for digitalization
   Float_t fPinElectronicNoise  ;                  // Electronic Noise in the PIN
-  AliPHOSReconstructioner * fReconstructioner ;   // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
-  TClonesArray * fTmpHits ;                       //!  Used internally for digitalization 
+  AliPHOSReconstructioner  * fReconstructioner ;  // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
-
-  TClonesArray * fCPVModules;                     // Array of CPV modules for the IHEP's version of CPV
+  TClonesArray             * fEMCModules;         // Array of EMC modules
+  TClonesArray             * fCPVModules;         // Array of CPV modules for the IHEP's version of CPV
 
   ClassDef(AliPHOSv1,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 

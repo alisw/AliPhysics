@@ -22,6 +22,8 @@
 //*-- Author: Yves Schutz (SUBATECH)
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream.h>
+
 // --- ROOT system ---
 
 #include "TTree.h"

@@ -34,6 +34,8 @@
 //*-- Author: Yves Schutz (SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
+
 // --- ROOT system ---
 
 #include "TMath.h" 
@@ -68,6 +70,8 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1()
   fEmcEnergyThreshold      = 0.01;    
   fPpsdClusteringThreshold = 0.0;
   fPpsdEnergyThreshold     = 0.1;  
+  fCpvClusteringThreshold  = 0.0;
+  fCpvEnergyThreshold      = 0.1;  
   fW0                      = 4.5 ;
   fLocMaxCut               = 0.06 ;
   fW0CPV                   = 4.5 ;
@@ -113,8 +117,8 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)
   }
 
   //Do NOT clusterize upper PPSD  
-  if(fGeom->GetNumberOfCPVLayers() > 1 &&
-     relid1[1] > 0                     &&
+  if( IsInPpsd(d1) && IsInPpsd(d2) &&
+     relid1[1] > 0                 &&
      relid1[1] < fGeom->GetNumberOfPadsPhi()*fGeom->GetNumberOfPadsPhi() ) rv = 2 ;
 
   return rv ; 
@@ -176,8 +180,37 @@ Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit)
   Int_t relid[4] ; 
   fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
 
-  if ( relid[1] == 0  )
-    rv = kTRUE; 
+  if ( relid[1] == 0  ) rv = kTRUE; 
+
+  return rv ; 
+}
+
+//____________________________________________________________________________
+Bool_t AliPHOSClusterizerv1::IsInPpsd(AliPHOSDigit * digit) 
+{
+  // Tells if (true) or not (false) the digit is in a PHOS-EMC module
+ 
+  Bool_t rv = kFALSE ; 
+
+  Int_t relid[4] ; 
+  fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
+
+  if ( relid[1] > 0 && relid[0] > fGeom->GetNCPVModules() ) rv = kTRUE; 
+
+  return rv ; 
+}
+
+//____________________________________________________________________________
+Bool_t AliPHOSClusterizerv1::IsInCpv(AliPHOSDigit * digit) 
+{
+  // Tells if (true) or not (false) the digit is in a PHOS-EMC module
+ 
+  Bool_t rv = kFALSE ; 
+
+  Int_t relid[4] ; 
+  fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
+
+  if ( relid[1] > 0 && relid[0] <= fGeom->GetNCPVModules() ) rv = kTRUE; 
 
   return rv ; 
 }
@@ -207,8 +240,9 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 
     AliPHOSDigit ** clusterdigitslist = new AliPHOSDigit*[dl->GetEntries()] ;   
     Int_t index ;
-    if (( (  IsInEmc(digit) ) && ( Calibrate(digit->GetAmp() ) > fEmcClusteringThreshold  ) ) || 
-        ( ( !IsInEmc(digit) ) && ( Calibrate(digit->GetAmp() ) > fPpsdClusteringThreshold ) ) ) {
+    if (( (  IsInEmc (digit) ) && ( Calibrate(digit->GetAmp() ) > fEmcClusteringThreshold  ) ) || 
+        ( (  IsInPpsd(digit) ) && ( Calibrate(digit->GetAmp() ) > fPpsdClusteringThreshold ) ) ||
+        ( (  IsInCpv (digit) ) && ( Calibrate(digit->GetAmp() ) > fCpvClusteringThreshold  ) ) ) {
   
       Int_t iDigitInCluster = 0 ; 
 
@@ -227,13 +261,17 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	
 	// start a new PPSD cluster
 	if(fNumberOfPpsdClusters >= ppsdl->GetSize()) ppsdl->Expand(2*fNumberOfPpsdClusters+1);
-	if      (strcmp(fGeom->GetName(),"GPS2") == 0) {
+	if      (IsInPpsd(digit)) {
 	  (*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSPpsdRecPoint() ;
 	  clu =  (AliPHOSPpsdRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
 	}
-	else if (strcmp(fGeom->GetName(),"IHEP") == 0) {
+	else if (IsInCpv(digit) ) {
 	  (*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSCpvRecPoint(fW0CPV, fLocMaxCutCPV) ;
 	  clu =  (AliPHOSCpvRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
+	}
+	else {
+	  cout << "AliPHOSClusterizerv1::MakeClusters: unknown configuration " << fGeom->GetName() << endl;
+	  assert(0==1);
 	}
 	fNumberOfPpsdClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp()) ) ;	
@@ -307,5 +345,7 @@ void AliPHOSClusterizerv1::PrintParameters()
        << "                       EMC  Clustering threshold = " << fEmcClusteringThreshold << endl
        << "                       EMC  Energy threshold     = " << fEmcEnergyThreshold << endl                  
        << "                      PPSD  Clustering threshold = " << fPpsdClusteringThreshold << endl
-       << "                      PPSD  Energy threshold     = " << fPpsdEnergyThreshold << endl ;                
+       << "                      PPSD  Energy threshold     = " << fPpsdEnergyThreshold << endl
+       << "                       CPV  Clustering threshold = " << fCpvClusteringThreshold << endl
+       << "                       CPV  Energy threshold     = " << fCpvEnergyThreshold << endl ;                
 }

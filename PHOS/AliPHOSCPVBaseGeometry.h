@@ -48,6 +48,7 @@ public:
   virtual Float_t GetPhiDisplacement(void)          = 0 ;
   virtual Float_t GetPPSDModuleSize(Int_t index)    = 0 ;
   virtual Float_t GetZDisplacement(void)            = 0 ;
+  virtual void    SetLeadConverterThickness(Float_t x) = 0 ;
 
   // Return CPV geometrical parameters
 

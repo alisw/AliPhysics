@@ -54,7 +54,9 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   AliPHOS(name,title)
 {
   // ctor : title is used to identify the layout
-  //        GPS2 = 5 modules (EMC + PPSD)   
+  //        GPS2 = 5 modules (EMC + PPSD)
+  //        IHEP = 5 modules (EMC + CPV)
+  //        MIXT = 4 modules (EMC + CPV) and 1 module (EMC + PPSD)
  
   // gets an instance of the geometry parameters class  
 
@@ -98,12 +100,17 @@ void AliPHOSv0::BuildGeometry()
   //END_HTML  
 
   this->BuildGeometryforPHOS() ; 
-  if      ( ( strcmp(fGeom->GetName(), "GPS2" ) == 0 ) ) 
+  if      (strcmp(fGeom->GetName(),"GPS2") == 0)
     this->BuildGeometryforPPSD() ;
-  else if ( ( strcmp(fGeom->GetName(), "IHEP" ) == 0 ) ) 
+  else if (strcmp(fGeom->GetName(),"IHEP") == 0)
     this->BuildGeometryforCPV() ;
+  else if (strcmp(fGeom->GetName(),"MIXT") == 0) {
+    this->BuildGeometryforPPSD() ;
+    this->BuildGeometryforCPV() ;
+  }
   else
-    cout << "AliPHOSv0::BuildGeometry : no charged particle identification system installed" << endl; 
+    cout << "AliPHOSv0::BuildGeometry : no charged particle identification system installed: "
+	 << "Geometry name = " << fGeom->GetName() << endl; 
 
 }
 
@@ -310,9 +317,15 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
   Int_t number = 988 ; 
   TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
  
-  for( Int_t i = 1; i <= fGeom->GetNModules(); i++ ) { // the number of PHOS modules
+  Int_t firstModule = 0 ; 
+  if      (strcmp(fGeom->GetName(),"GPS2") == 0) 
+    firstModule = 1;
+  else if (strcmp(fGeom->GetName(),"MIXT") == 0) 
+    firstModule = fGeom->GetNModules() - fGeom->GetNPPSDModules() + 1;
+  
+  for( Int_t i = firstModule; i <= fGeom->GetNModules(); i++ ) { // the number of PHOS modules
     Float_t angle = fGeom->GetPHOSAngle(i) ;
-    sprintf(rotname, "%s%d", "rotg", number++) ;
+    sprintf(rotname, "%s%d", "rotg", number+i) ;
     new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
     top->cd();
     sprintf(nodename, "%s%d", "Moduleg", i) ;    
@@ -535,12 +548,19 @@ void AliPHOSv0:: BuildGeometryforCPV(void)
   Float_t r = fGeom->GetIPtoCPVDistance() + fGeom->GetCPVBoxSize(1) / 2.0 ;
   Int_t number = 988 ; 
   TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
-  for( Int_t i = 1; i <= fGeom->GetNModules(); i++ ) { // the number of PHOS modules
+
+  Int_t lastModule = 0 ;
+  if      (strcmp(fGeom->GetName(),"IHEP") == 0) 
+    lastModule = fGeom->GetNModules();
+  else if (strcmp(fGeom->GetName(),"MIXT") == 0) 
+    lastModule = fGeom->GetNModules() - fGeom->GetNPPSDModules();
+  
+  for( Int_t i = 1; i <= lastModule; i++ ) { // the number of PHOS modules
 
     // One CPV module
 
     Float_t angle = fGeom->GetPHOSAngle(i) ;
-    sprintf(rotname, "%s%d", "rotg", number++) ;
+    sprintf(rotname, "%s%d", "rotg", number+i) ;
     new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
     top->cd();
     sprintf(nodename, "%s%d", "CPVModule", i) ;    
@@ -617,38 +637,70 @@ void AliPHOSv0::CreateGeometry()
   // Get pointer to the array containing media indeces
   Int_t *idtmed = fIdtmed->GetArray() - 699 ;
 
+  // Create a box a PHOS module.
+  // In case of MIXT geometry 2 different boxes are needed
+
   Float_t bigbox[3] ; 
   bigbox[0] =   fGeom->GetOuterBoxSize(0) / 2.0 ;
   bigbox[1] = ( fGeom->GetOuterBoxSize(1) + fGeom->GetCPVBoxSize(1) ) / 2.0 ;
   bigbox[2] =   fGeom->GetOuterBoxSize(2) / 2.0 ;
   
-  gMC->Gsvolu("PHOS", "BOX ", idtmed[798], bigbox, 3) ;
+    gMC->Gsvolu("PHOS", "BOX ", idtmed[798], bigbox, 3) ;
+
+  if ( strcmp( fGeom->GetName(),"MIXT") == 0 && fGeom->GetNPPSDModules() > 0) 
+    gMC->Gsvolu("PHO1", "BOX ", idtmed[798], bigbox, 3) ;
   
-  this->CreateGeometryforPHOS() ; 
+    this->CreateGeometryforPHOS() ; 
   if      ( strcmp( fGeom->GetName(), "GPS2") == 0  ) 
     this->CreateGeometryforPPSD() ;
   else if ( strcmp( fGeom->GetName(), "IHEP") == 0  ) 
     this->CreateGeometryforCPV() ;
+  else if ( strcmp( fGeom->GetName(), "MIXT") == 0  ) {
+    this->CreateGeometryforPPSD() ;
+    this->CreateGeometryforCPV() ;
+  }
   else
     cout << "AliPHOSv0::CreateGeometry : no charged particle identification system installed" << endl; 
-  this->CreateGeometryforSupport() ; 
+
+//      this->CreateGeometryforSupport() ; 
   
   // --- Position  PHOS mdules in ALICE setup ---
   
   Int_t idrotm[99] ;
   Double_t const kRADDEG = 180.0 / kPI ;
   
-  for( Int_t i = 1; i <= fGeom->GetNModules(); i++ ) {
+  Int_t lastModule;
+  if (strcmp(fGeom->GetName(),"MIXT") == 0) 
+    lastModule = fGeom->GetNModules() - fGeom->GetNPPSDModules();
+  else
+    lastModule = fGeom->GetNModules();
+
+  Int_t i;
+  for( i = 1; i <= lastModule ; i++ ) {
     
     Float_t angle = fGeom->GetPHOSAngle(i) ;
     AliMatrix(idrotm[i-1], 90.0, angle, 90.0, 90.0+angle, 0.0, 0.0) ;
  
     Float_t r = fGeom->GetIPtoOuterCoverDistance() + ( fGeom->GetOuterBoxSize(1) + fGeom->GetCPVBoxSize(1) ) / 2.0 ;
 
-    Float_t xP1 = r * TMath::Sin( angle / kRADDEG ) ;
+    Float_t xP1 =  r * TMath::Sin( angle / kRADDEG ) ;
     Float_t yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
 
     gMC->Gspos("PHOS", i, "ALIC", xP1, yP1, 0.0, idrotm[i-1], "ONLY") ;
+ 
+  } // for GetNModules
+
+  for( i = lastModule+1; i <= fGeom->GetNModules(); i++ ) {
+    
+    Float_t angle = fGeom->GetPHOSAngle(i) ;
+    AliMatrix(idrotm[i-1], 90.0, angle, 90.0, 90.0+angle, 0.0, 0.0) ;
+ 
+    Float_t r = fGeom->GetIPtoOuterCoverDistance() + ( fGeom->GetOuterBoxSize(1) + fGeom->GetCPVBoxSize(1) ) / 2.0 ;
+
+    Float_t xP1 =  r * TMath::Sin( angle / kRADDEG ) ;
+    Float_t yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
+
+    gMC->Gspos("PHO1", i-lastModule, "ALIC", xP1, yP1, 0.0, idrotm[i-1], "ONLY") ;
  
   } // for GetNModules
 
@@ -686,7 +738,9 @@ void AliPHOSv0::CreateGeometryforPHOS()
 
   Float_t yO =  - fGeom->GetCPVBoxSize(1)  / 2.0 ;
 
-  gMC->Gspos("EMCA", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
+    gMC->Gspos("EMCA", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
+  if ( strcmp( fGeom->GetName(),"MIXT") == 0 && fGeom->GetNPPSDModules() > 0) 
+    gMC->Gspos("EMCA", 1, "PHO1", 0.0, yO, 0.0, 0, "ONLY") ; 
 
   // ---
   // --- Define Textolit Wall box, position inside EMCA ---
@@ -950,7 +1004,10 @@ void AliPHOSv0::CreateGeometryforPPSD()
 
   Float_t yO =  fGeom->GetOuterBoxSize(1) / 2.0 ;
 
-  gMC->Gspos("PPSD", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
+  if ( strcmp( fGeom->GetName(),"MIXT") == 0 && fGeom->GetNPPSDModules() > 0) 
+    gMC->Gspos("PPSD", 1, "PHO1", 0.0, yO, 0.0, 0, "ONLY") ; 
+  else
+    gMC->Gspos("PPSD", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
 
   // Now we build a micromegas module
   // The box containing the whole module filled with epoxy (FR4)
@@ -1013,7 +1070,7 @@ void AliPHOSv0::CreateGeometryforPPSD()
   
   // --- Divide GGPP in X (phi) and Z directions --
   gMC->Gsdvn("GROW", "GGPS", fGeom->GetNumberOfPadsPhi(), 1) ;
-  gMC->Gsdvn("GCEL", "GROW", fGeom->GetNumberOfPadsZ() , 3) ;
+  gMC->Gsdvn("GCEL", "GROW", fGeom->GetNumberOfPadsZ() ,  3) ;
 
   y0 = y0 - fGeom->GetAnodeThickness() / 2.  - ( fGeom->GetConversionGap() +  fGeom->GetAvalancheGap() ) / 2. ; 
 
@@ -1385,6 +1442,22 @@ void AliPHOSv0::CreateGeometryforSupport()
     }
   }
 
+}
+
+//____________________________________________________________________________
+Float_t AliPHOSv0::ZMin(void) const
+{
+  // Overall dimension of the PHOS (min)
+  // Take it twice more than the PHOS module size
+  return -fGeom->GetOuterBoxSize(2);
+}
+
+//____________________________________________________________________________
+Float_t AliPHOSv0::ZMax(void) const
+{
+  // Overall dimension of the PHOS (max)
+  // Take it twice more than the PHOS module size
+  return  fGeom->GetOuterBoxSize(2);
 }
 
 //____________________________________________________________________________
