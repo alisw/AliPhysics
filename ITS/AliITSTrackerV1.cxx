@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.18  2001/11/20 15:46:17  barbera
+Point coordinated are calculated in cylindrical reference frame once and for all at the beginning of tracking V1
+
 Revision 1.10.2.1  2001/10/24 07:26:04  hristov
 All the changes from the head are merged with the release
 
@@ -1047,11 +1050,12 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 	    Float_t distz = 0.0;
 	    Float_t phicm, phicp, distphim, distphip;
 	    phicm=phinters;
-	    if(phinters>fphimax[layerfin-1][ladm]) phicm=phinters-2*pigre;
-	    distphim=TMath::Abs(phicm-fphimax[layerfin-1][ladm]);
+		 if(phinters>fphimax[layerfin-1][ladm-1]) phicm=phinters-2*pigre;  //corretto il 20-11-2001
+		 distphim=TMath::Abs(phicm-fphimax[layerfin-1][ladm-1]);  //corretto il 20-11-2001
 	    phicp=phinters;
-	    if(phinters>fphimin[layerfin-1][ladp]) phicp=phinters-2.*pigre;
-	    distphip=TMath::Abs(phicp-fphimin[layerfin-1][ladp]);
+		 //cout<<" fNlad[layerfin-1] e ladp = "<<fNlad[layerfin-1]<<" "<<ladp<<endl;
+		 if(phinters>fphimin[layerfin-1][ladp-1]) phicp=phinters-2.*pigre;   //corretto il 20-11-2001
+		 distphip=TMath::Abs(phicp-fphimin[layerfin-1][ladp-1]);      //corretto il 20-11-2001
 	    Int_t flagzmin=0;
 	    Int_t flagzmax=0;
 	    idetot=1;

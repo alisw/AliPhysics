@@ -23,18 +23,14 @@ AliITSTrackV1::AliITSTrackV1() {
  
   fTPCtrack = 0;
   fC00=fC10=fC11=fC20=fC21=fC22=fC30=fC31=fC32=fC33=fC40=fC41=fC42=fC43=fC44=0.;
-  flistCluster = new TObjArray; 
+  flistCluster = 0;   
   fNumClustInTrack =0;
   fChi2=-1;
   flabel =0; 
   fVertex.ResizeTo(3); 
   fErrorVertex.ResizeTo(3);
   fLayer = -1; 
-  fClusterInTrack = new TMatrix(6,9);
-  Int_t i,j;
-  for(i=0; i<6; i++){
-  for(j=0; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   
-  } 
+  fClusterInTrack = 0; 
   frtrack=0.;
   fnoclust=0;     
   fd2.ResizeTo(6);
