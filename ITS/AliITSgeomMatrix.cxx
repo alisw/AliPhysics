@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.8  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.7  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -49,6 +54,7 @@ A new class to hold the matrix information needed by AliITSgeom.
 #include <iomanip.h>
 #include <TMath.h>
 #include <TBuffer.h>
+#include <TClass.h>
 
 #include "AliITSgeomMatrix.h"
 
@@ -78,6 +84,7 @@ AliITSgeomMatrix::AliITSgeomMatrix(){
 	fid[i] = 0;
 	frot[i] = ftran[i] = 0.0;
 	for(j=0;j<3;j++) fm[i][j] = 0.0;
+	fCylR = fCylPhi = 0.0;
     }// end for i
     fm[0][0] = fm[1][1] = fm[2][2] = 1.0;
 }
@@ -94,6 +101,8 @@ AliITSgeomMatrix::AliITSgeomMatrix(const AliITSgeomMatrix &sourse){
 		this->fid[i]     = sourse.fid[i];
 		this->frot[i]    = sourse.frot[i];
 		this->ftran[i]   = sourse.ftran[i];
+		this->fCylR      = sourse.fCylR;
+		this->fCylPhi    = sourse.fCylPhi;
 		for(j=0;j<3;j++) this->fm[i][j] = sourse.fm[i][j];
 	}// end for i
 }
@@ -110,6 +119,8 @@ void AliITSgeomMatrix::operator=(const AliITSgeomMatrix &sourse){
 		this->fid[i]     = sourse.fid[i];
 		this->frot[i]    = sourse.frot[i];
 		this->ftran[i]   = sourse.ftran[i];
+		this->fCylR      = sourse.fCylR;
+		this->fCylPhi    = sourse.fCylPhi;
 		for(j=0;j<3;j++) this->fm[i][j] = sourse.fm[i][j];
 	}// end for i
 }
@@ -132,15 +143,18 @@ AliITSgeomMatrix::AliITSgeomMatrix(const Int_t idt,const Int_t id[3],
 */
 //End_Html
 ////////////////////////////////////////////////////////////////////////
-	Int_t i;
+    Int_t i;
 
-	fDetectorIndex = idt; // a value never defined.
-	for(i=0;i<3;i++){
-		fid[i]   = id[i];
-		frot[i]  = rot[i];
-		ftran[i] = tran[i];
-	}// end for i
-	this->MatrixFromAngle();
+    fDetectorIndex = idt; // a value never defined.
+    for(i=0;i<3;i++){
+	fid[i]   = id[i];
+	frot[i]  = rot[i];
+	ftran[i] = tran[i];
+    }// end for i
+    fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
+    fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
+    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+    this->MatrixFromAngle();
 }
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(const Int_t idt, const Int_t id[3],
@@ -162,15 +176,18 @@ AliITSgeomMatrix::AliITSgeomMatrix(const Int_t idt, const Int_t id[3],
 */
 //End_Html
 ////////////////////////////////////////////////////////////////////////
-	Int_t i,j;
+    Int_t i,j;
 
-	fDetectorIndex = idt; // a value never defined.
-	for(i=0;i<3;i++){
-		fid[i]   = id[i];
-		ftran[i] = tran[i];
-		for(j=0;j<3;j++) fm[i][j] = matrix[i][j];
-	}// end for i
-	this->AngleFromMatrix();
+    fDetectorIndex = idt; // a value never defined.
+    for(i=0;i<3;i++){
+	fid[i]   = id[i];
+	ftran[i] = tran[i];
+	for(j=0;j<3;j++) fm[i][j] = matrix[i][j];
+    }// end for i
+    fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
+    fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
+    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+    this->AngleFromMatrix();
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::SixAnglesFromMatrix(Double_t *ang){
@@ -276,6 +293,9 @@ AliITSgeomMatrix::AliITSgeomMatrix(const Double_t rotd[6]/*degrees*/,
 	fid[i]   = id[i];
 	ftran[i] = tran[i];
     }// end for i
+    fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
+    fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
+    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
     this->MatrixFromSixAngles(rotd);
 }
 //----------------------------------------------------------------------
@@ -655,7 +675,24 @@ void AliITSgeomMatrix::Read(istream *is){
     for(i=0;i<3;i++) *is >> ftran[i];
     for(i=0;i<3;i++)for(j=0;j<3;j++)  *is >> fm[i][j];
     AngleFromMatrix(); // compute angles frot[].
+    fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
+    fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
+    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
     return;
+}
+//______________________________________________________________________
+void AliITSgeomMatrix::Streamer(TBuffer &R__b){
+   // Stream an object of class AliITSgeomMatrix.
+
+   if (R__b.IsReading()) {
+      AliITSgeomMatrix::Class()->ReadBuffer(R__b, this);
+      fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
+      fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
+      this->AngleFromMatrix();
+    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+   } else {
+      AliITSgeomMatrix::Class()->WriteBuffer(R__b, this);
+   }
 }
 //----------------------------------------------------------------------
 ostream &operator<<(ostream &os,AliITSgeomMatrix &p){

@@ -159,6 +159,26 @@ class AliITSgeom : public TObject {
                    Float_t &x,Float_t &y,Float_t &z) {
                    GetTrans(GetModuleIndex(lay,lad,det),x,y,z);}
 //
+    //     This function returns the Cartesian translation for a give
+    // module in the Double array t[3]. The units are
+    // those of the Monte Carlo, generally cm.
+    void  GetTransCyln(const Int_t index,Double_t *t) {
+                   GetGeomMatrix(index)->GetTranslationCylinderical(t);}
+    //     This function returns the Cartesian translation for a give
+    // module index in the three floating point variables provided.
+    // x = fx0, y = fy0, z = fz0. The units are those of the Mont
+    // Carlo, generally cm.
+    void  GetTransCyln(const Int_t index,Float_t &x,Float_t &y,Float_t &z) {
+                   Double_t t[3];GetTransCyln(index,t);
+                   x = t[0];y = t[1];z = t[2];}
+    //     This function returns the Cartesian translation for a give
+    // detector on a give ladder in a give layer in the three floating
+    // point variables provided. x = fx0, y = fy0, z = fz0. The units are
+    // those of the Monte Carlo, generally cm.
+    void  GetTransCyln(const Int_t lay,const Int_t lad,const Int_t det,
+                   Float_t &x,Float_t &y,Float_t &z) {
+                   GetTransCyln(GetModuleIndex(lay,lad,det),x,y,z);}
+//
     //      This function returns the Cartesian translation [cm] and the
     // 6 GEANT rotation angles [degrees]for a given layer ladder and
     // detector number, in the TVector x (at least 9 elements large).

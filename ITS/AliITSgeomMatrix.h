@@ -32,7 +32,11 @@ class AliITSgeomMatrix : public TObject {
 	void SetAngles(const Double_t rot[3]){// [radians]
               for(Int_t i=0;i<3;i++)frot[i] = rot[i];this->MatrixFromAngle();}
 	void SetTranslation(const Double_t tran[3]){
-	                    for(Int_t i=0;i<3;i++) ftran[i] = tran[i];}
+	                    for(Int_t i=0;i<3;i++) ftran[i] = tran[i];
+			    fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+
+						  ftran[1]*ftran[1]);
+			    fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
+			    if(fCylPhi<0.0) fCylPhi += TMath::Pi();}
 	void SetMatrix(Double_t matrix[3][3]){ for(Int_t i=0;i<3;i++)
 	 for(Int_t j=0;j<3;j++) fm[i][j]=matrix[i][j];this->AngleFromMatrix();}
 	void SetDetectorIndex(const Int_t idt) {fDetectorIndex = idt;}
@@ -42,6 +46,10 @@ class AliITSgeomMatrix : public TObject {
 	                   for(Int_t i=0;i<3;i++)  rot[i] = frot[i];}
 	void GetTranslation(Double_t tran[3]){
 	                    for(Int_t i=0;i<3;i++) tran[i] = ftran[i];}
+	void GetTranslationCylinderical(Double_t tran[3]){
+	                    tran[0] = fCylR;
+			    tran[1] = fCylPhi;
+			    tran[2] = ftran[2];}
 	void GetMatrix(Double_t matrix[3][3]){for(Int_t i=0;i<3;i++)
 		         for(Int_t j=0;j<3;j++) matrix[i][j] = fm[i][j];}
 	Int_t GetDetectorIndex() {return fDetectorIndex;}
@@ -75,7 +83,13 @@ class AliITSgeomMatrix : public TObject {
 	Int_t    fid[3];         // layer, ladder, detector numbers.
 	Double_t frot[3];        //! vector of rotations about x,y,z [radians].
 	Double_t ftran[3];       // Translation vector of module x,y,z.
+	Double_t fCylR,fCylPhi;  //! Translation vector in Cylinderical coord.
 	Double_t fm[3][3];       // Rotation matrix based on frot.
+
+	// Note, fCylR and fCylPhi are added as data members because it costs
+	// about a factor of 10 to compute them over looking them up. Since
+	// they are used in some tracking algorithms this can be a large cost
+	// in computing time. They are not written out but computed.
 
 	ClassDef(AliITSgeomMatrix,1) // Matrix class used by AliITSgeom.
 };
