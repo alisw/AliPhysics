@@ -123,9 +123,10 @@ void AliRICH::Hits2SDigits()
   for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events loop
     gAlice->GetRunLoader()->GetEvent(iEventN);
     
-    GetLoader()->MakeTree("S");  MakeBranch("S");
-    ResetSdigits();  ResetSpecialsOld();
-
+    if(!GetLoader()->TreeS()) GetLoader()->MakeTree("S");  
+    MakeBranch("S");
+    
+    ResetSdigits();  ResetSpecialsOld();  
     for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
       GetLoader()->TreeH()->GetEntry(iPrimN);
       for(Int_t i=0;i<Specials()->GetEntries();i++){//specials loop          
@@ -156,7 +157,7 @@ void AliRICH::SDigits2Digits()
   for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events loop
     gAlice->GetRunLoader()->GetEvent(iEventN);
     
-    GetLoader()->MakeTree("D");  MakeBranch("D"); //create TreeD with RICH branches 
+    if(!GetLoader()->TreeD()) GetLoader()->MakeTree("D");  MakeBranch("D"); //create TreeD with RICH branches 
     ResetSdigits();ResetDigitsOld();//reset lists of sdigits and digits
     GetLoader()->TreeS()->GetEntry(0);  
     Sdigits()->Sort();
@@ -181,7 +182,7 @@ void AliRICH::SDigits2Digits()
         iNdigitsPerPad=1;tr[1]=tr[2]=kBad;
       }
     }//sdigits loop (sorted)
-    AddDigitOld(chamber,tr,q,dig);//add the last digit
+    if(Sdigits()->GetEntries()) AddDigitOld(chamber,tr,q,dig);//add the last digit
         
     GetLoader()->TreeD()->Fill();  
     GetLoader()->WriteDigits("OVERWRITE");
