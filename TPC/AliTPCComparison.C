@@ -49,7 +49,7 @@ Int_t AliTPCComparison() {
    cf->Close();
 
 /////////////////////////////////////////////////////////////////////////
-   GoodTrack gt[7000];
+   GoodTrack gt[20000];
    Int_t ngood=0;
    ifstream in("good_tracks");
    if (in) {
@@ -59,7 +59,7 @@ Int_t AliTPCComparison() {
 	       >>gt[ngood].x  >>gt[ngood].y >>gt[ngood].z) {
          ngood++;
          cerr<<ngood<<'\r';
-         if (ngood==7000) {
+         if (ngood==20000) {
             cerr<<"Too many good tracks !\n";
             break;
          }
@@ -67,7 +67,7 @@ Int_t AliTPCComparison() {
       if (!in.eof()) cerr<<"Read error (good_tracks) !\n";
    } else {
       cerr<<"Marking good tracks (this will take a while)...\n";
-      ngood=good_tracks(gt,7000);
+      ngood=good_tracks(gt,20000);
       ofstream out("good_tracks");
       if (out) {
          for (Int_t ngd=0; ngd<ngood; ngd++)            
