@@ -1269,31 +1269,6 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
 
 }
 
-//____________________________________________________________________________
-AliPHOSRecPoint::RecPointsList * AliPHOSv0::PpsdRecPoints(Int_t evt) 
-{
-  // returns the pointer to the PPSD RecPoints list
-  // if the list is empty, get it from TreeR on the disk file
-
-  AliPHOSRecPoint::RecPointsList * rv = 0 ; 
-
-  if ( fPpsdRecPoints ) 
-    rv = fPpsdRecPoints ; 
-
-  else {
-    fPpsdRecPoints = new TClonesArray("AliPHOSPpsdRecPoint", 100) ; 
-    gAlice->GetEvent(evt) ; 
-    TTree * fReconstruct = gAlice->TreeR() ; 
-    fReconstruct->SetBranchAddress( "PHOSPpsdRP", &fPpsdRecPoints) ;
-    fReconstruct->GetEvent(0) ;
-    rv =  fPpsdRecPoints ;
-  }
-  
-  fPpsdRecPoints->Expand( fPpsdRecPoints->GetEntries() ) ; 
-    
-  return rv ; 
-  
-}
 
 //_____________________________________________________________________________
 void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
@@ -1426,6 +1401,23 @@ void AliPHOSv0::ResetReconstruction()
   
 }
 //____________________________________________________________________________
+
+//____________________________________________________________________________
+void AliPHOSv0::SetTreeAddress()
+{ 
+  TBranch *branch;
+  AliPHOS::SetTreeAddress();
+
+  //Branch address for TreeR: RecPpsdRecPoint
+  TTree *treeR = gAlice->TreeR();
+  if ( treeR && fPpsdRecPoints ) {
+    branch = treeR->GetBranch("PHOSPpsdRP");
+    if (branch) branch->SetAddress(&fPpsdRecPoints) ;
+  }
+}
+
+//____________________________________________________________________________
+
 void AliPHOSv0::StepManager(void)
 {
   // Accumulates hits as long as the track stays in a single crystal or PPSD gas Cell

@@ -41,12 +41,16 @@ public:
   virtual void   Init(void) ;                                       // does nothing
   Int_t IsVersion(void) const { return 0 ; }
   void           MakeBranch(Option_t* opt) ;
-  virtual AliPHOSRecPoint::RecPointsList* PpsdRecPoints(Int_t evt=0) ; // gets Array of clusters in the PPSD 
+  virtual  AliPHOSRecPoint::RecPointsList *  PpsdRecPoints() {
+    // Getting list of PPSD RecPoints
+    return fPpsdRecPoints ;
+  }
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
   void           ResetClusters(){} ;
   virtual void   ResetDigits() ; 
   void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {fReconstructioner = &Reconstructioner ;} 
   void           SetDigitThreshold(Float_t th) { fDigitThreshold = th ; } 
+  virtual void   SetTreeAddress(); 
   virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
   virtual TString Version(void){ return TString("v0"); }
 protected:
