@@ -11,8 +11,8 @@ PACKAGE = AliL3Hough
 
 
 SRCS	       = AliL3HoughTransformer.cxx AliL3Hough.cxx \
-		 AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerge.cxx \
-		 AliL3Histogram.cxx GetGoodParticles.cxx
+		 AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerger.cxx \
+		 AliL3Histogram.cxx AliL3Histogram1D.cxx GetGoodParticles.cxx AliL3ClusterFinder.cxx
 
 
 # C++ Headers

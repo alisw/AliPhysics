@@ -8,9 +8,11 @@
 #pragma link C++ class AliL3HoughTransformer; 
 #pragma link C++ class AliL3HoughMaxFinder;
 #pragma link C++ class AliL3HoughEval;
-#pragma link C++ class AliL3HoughMerge;
+#pragma link C++ class AliL3HoughMerger;
 #pragma link C++ class AliL3Histogram;
-#pragma link C++ function GetGoodParticles(Int_t,char *,char *);
+#pragma link C++ class AliL3Histogram1D;
+#pragma link C++ class AliL3ClusterFinder;
+#pragma link C++ function GetGoodParticles(Int_t,Int_t,char *,char *);
 
 #endif
 
