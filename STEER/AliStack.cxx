@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/05/22 14:33:16  hristov
+Minor changes
+
 Revision 1.2  2001/05/17 05:49:39  fca
 Reset pointers to daughters
 
@@ -91,12 +94,12 @@ AliStack::~AliStack()
   // Destructor
   //
   
+  delete fParticleBuffer;
   if (fParticles) {
     fParticles->Delete();
     delete fParticles;
   }
   delete fParticleMap;
-  delete fParticleBuffer;
   delete fTreeK;
 }
 
@@ -735,6 +738,7 @@ void AliStack::MakeTree(Int_t event, const char *file)
   }
 }
 
+//_____________________________________________________________________________
 void AliStack::BeginEvent(Int_t event)
 {
 // start a new event
@@ -751,6 +755,7 @@ void AliStack::BeginEvent(Int_t event)
     }
 }
 
+//_____________________________________________________________________________
 void AliStack::FinishRun()
 {
 // Clean TreeK information
@@ -759,6 +764,7 @@ void AliStack::FinishRun()
     }
 }
 
+//_____________________________________________________________________________
 void AliStack::GetEvent(Int_t event)
 {
 //
