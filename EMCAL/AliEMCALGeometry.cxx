@@ -142,7 +142,7 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
     return rv; 
 }
 //______________________________________________________________________
-Int_t AliEMCALGeometry::TowerIndex(Int_t ieta,Int_t iphi,Int_t ipre){
+Int_t AliEMCALGeometry::TowerIndex(Int_t ieta,Int_t iphi,Int_t ipre) const {
     // Returns the tower index number from the based on the Z and Phi
     // index numbers. There are 2 times the number of towers to separate
     // out the full towsers from the pre-towsers.
@@ -168,7 +168,7 @@ Int_t AliEMCALGeometry::TowerIndex(Int_t ieta,Int_t iphi,Int_t ipre){
 }
 //______________________________________________________________________
 void AliEMCALGeometry::TowerIndexes(Int_t index,Int_t &ieta,Int_t &iphi,
-				    Int_t &ipre){
+				    Int_t &ipre) const {
     // given the tower index number it returns the based on the Z and Phi
     // index numbers and if it is for the full tower or the pre-tower number.
     // There are 2 times the number of towers to separate
@@ -200,7 +200,7 @@ void AliEMCALGeometry::TowerIndexes(Int_t index,Int_t &ieta,Int_t &iphi,
     return;
 }
 //______________________________________________________________________
-void AliEMCALGeometry::EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi){
+void AliEMCALGeometry::EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi) const {
     // given the tower index number it returns the based on the eta and phi
     // of the tower.
     // Inputs:
@@ -221,7 +221,7 @@ void AliEMCALGeometry::EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi){
     phi  = phid;
 }
 //______________________________________________________________________
-Int_t AliEMCALGeometry::TowerIndexFromEtaPhi(Float_t eta,Float_t phi){
+Int_t AliEMCALGeometry::TowerIndexFromEtaPhi(Float_t eta,Float_t phi) const {
     // returns the tower index number based on the eta and phi of the tower.
     // Inputs:
     //   Float_t eta  // eta of center of tower in pseudorapidity
@@ -253,7 +253,7 @@ Int_t AliEMCALGeometry::TowerIndexFromEtaPhi(Float_t eta,Float_t phi){
     return TowerIndex(ieta,iphi,0);
 }
 //______________________________________________________________________
-Int_t AliEMCALGeometry::PreTowerIndexFromEtaPhi(Float_t eta,Float_t phi){
+Int_t AliEMCALGeometry::PreTowerIndexFromEtaPhi(Float_t eta,Float_t phi) const {
     // returns the pretower index number based on the eta and phi of the tower.
     // Inputs:
     //   Float_t eta  // eta of center of tower in pseudorapidity
@@ -266,7 +266,7 @@ Int_t AliEMCALGeometry::PreTowerIndexFromEtaPhi(Float_t eta,Float_t phi){
     return GetNEta()*GetNPhi()+TowerIndexFromEtaPhi(eta,phi);
 }
 //______________________________________________________________________
-Bool_t AliEMCALGeometry::AbsToRelNumbering(Int_t AbsId, Int_t *relid){
+Bool_t AliEMCALGeometry::AbsToRelNumbering(Int_t AbsId, Int_t *relid) const {
     // Converts the absolute numbering into the following array/
     //  relid[0] = EMCAL Arm number 1:1 
     //  relid[1] = 0  Not in Pre Shower layers
@@ -292,7 +292,7 @@ Bool_t AliEMCALGeometry::AbsToRelNumbering(Int_t AbsId, Int_t *relid){
 }
 //______________________________________________________________________
 void AliEMCALGeometry::PosInAlice(const Int_t *relid,Float_t &theta,
-				     Float_t &phi){
+				     Float_t &phi) const {
     // Converts the relative numbering into the local EMCAL-module (x, z)
     // coordinates
     Int_t ieta   = relid[2]; // offset along x axis
@@ -310,7 +310,7 @@ void AliEMCALGeometry::PosInAlice(const Int_t *relid,Float_t &theta,
 }
 //______________________________________________________________________
 /*
-Boot_t AliEMCALGeometry::AreNeighbours(Int_t index1,Int_t index2){
+Boot_t AliEMCALGeometry::AreNeighbours(Int_t index1,Int_t index2) const {
     // Returns kTRUE if the two towers are neighbours or not, including
     // diagonals. Both indexes are required to be either towers or preshower.
     // Inputs:
