@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/10/18 14:44:09  jchudoba
+Define constant MAXTRACKS for maximum number of tracks associated with 1 digit
+
 Revision 1.3  2001/10/04 20:01:54  jchudoba
 changes for TTask implementation, some other small editing
 
@@ -35,7 +38,6 @@ merging/digitization classes
 #include "AliMUONDigitizer.h"
 #include "AliMUONConstants.h"
 #include "AliMUONChamber.h"
-#include "AliHitMap.h"
 #include "AliMUONHitMapA1.h"
 #include "AliMUON.h"
 #include "AliMUONHit.h"
@@ -64,8 +66,6 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager)
   fTDList  = 0;
   fHits    = 0;
   fPadHits = 0;
-  fTrList  = 0;
-  fAddress = 0;
   fDebug   = 0; 
   if (GetDebug()>2) 
     cerr<<"AliMUONDigitizer::AliMUONDigitizer"
@@ -80,8 +80,6 @@ AliMUONDigitizer::~AliMUONDigitizer()
   if (fPadHits)    delete fPadHits;
   if (fHitMap)     delete fHitMap;
   if (fTDList)     delete fTDList;
-  if (fTrList)     delete fTrList;
-  if (fAddress)    delete fAddress; 
 }
 
 //------------------------------------------------------------------------
@@ -92,62 +90,50 @@ Bool_t AliMUONDigitizer::Exists(const AliMUONPadHit *mergable)
 }
 
 //------------------------------------------------------------------------
-void AliMUONDigitizer::Update(AliMUONPadHit *mergable)
+void AliMUONDigitizer::Update(AliMUONPadHit *padhit)
 {
-  AliMUONPadHit *padhit = (AliMUONPadHit*) mergable;    
-  AliMUONTransientDigit* pdigit;
-  Int_t ipx      = padhit->PadX();        // pad number on X
-  Int_t ipy      = padhit->PadY();        // pad number on Y
-  Int_t iqpad    = Int_t(padhit->QPad()); // charge per pad
+    AliMUONTransientDigit *pdigit = 
+      static_cast<AliMUONTransientDigit*>(
+      fHitMap[fNch]->GetHit(padhit->PadX(),padhit->PadY()));
 
-  pdigit = (AliMUONTransientDigit*) fHitMap[fNch]->GetHit(ipx, ipy);
-  // update charge
-  //
-  (*pdigit).AddSignal(iqpad);
-  (*pdigit).AddPhysicsSignal(iqpad);		
-  // update list of tracks
-  //
-  TObjArray* fTrList = (TObjArray*)pdigit->TrackList();
-  Int_t lastEntry = fTrList->GetLast();
-  TVector *pTrack = (TVector*)fTrList->At(lastEntry);
-  TVector &ptrk   = *pTrack;
-  TVector &trinfo = *((TVector*) (*fAddress)[fCountadr-1]);
-  Int_t lastTrack = Int_t(ptrk(0));
+    // update charge
+    //
+    Int_t iqpad    = padhit->QPad();        // charge per pad
+    pdigit->AddSignal(iqpad);
+    pdigit->AddPhysicsSignal(iqpad);		
 
-  if (trinfo(0) != kBgTag) {
-    if (lastTrack == fTrack) {
-      Int_t lastCharge = Int_t(ptrk(1));
-      lastCharge += iqpad;
-      fTrList->RemoveAt(lastEntry);
-      trinfo(1) = lastCharge;
-      fTrList->AddAt(&trinfo,lastEntry);
+    // update list of tracks
+    //
+    Int_t track, charge;    
+    track = fTrack+fMask;
+    if (fSignal) {
+      charge = iqpad;
     } else {
-      fTrList->Add(&trinfo);
+      charge = kBgTag;
     }
-  } else {
-    if (lastTrack != -1) fTrList->Add(&trinfo);
-  }
+    pdigit->UpdateTrackList(track,charge);
 }
 
 //------------------------------------------------------------------------
-void AliMUONDigitizer::CreateNew(AliMUONPadHit *mergable)
+void AliMUONDigitizer::CreateNew(AliMUONPadHit *padhit)
 {
 // Create new AliMUONTransientDigit and add it to the fTDList
 
-  AliMUONPadHit *padhit = (AliMUONPadHit*) mergable;    
-  AliMUONTransientDigit* pdigit;
-
-  Int_t ipx      = padhit->PadX();       // pad number on X
-  Int_t ipy      = padhit->PadY();       // pad number on Y
   fTDList->AddAtAndExpand(
     new AliMUONTransientDigit(fNch,fDigits),fCounter);
-  fHitMap[fNch]->SetHit(ipx, ipy, fCounter);
-  fCounter++;
-  pdigit = (AliMUONTransientDigit*)fTDList->At(fTDList->GetLast());
+  fHitMap[fNch]->SetHit(padhit->PadX(),padhit->PadY(),fCounter);
+  AliMUONTransientDigit* pdigit = 
+    (AliMUONTransientDigit*)fTDList->At(fTDList->GetLast());
   // list of tracks
-  TObjArray *fTrList = (TObjArray*)pdigit->TrackList();
-  TVector &trinfo    = *((TVector*) (*fAddress)[fCountadr-1]);
-  fTrList->Add(&trinfo);
+  Int_t track, charge;    
+  track = fTrack+fMask;
+  if (fSignal) {
+    charge = padhit->QPad();
+  } else {
+    charge = kBgTag;
+  }
+  pdigit->AddToTrackList(track,charge);
+  fCounter++;
 }
 
 
@@ -177,7 +163,6 @@ void AliMUONDigitizer::Exec(Option_t* option)
   
   if (GetDebug()>2) cerr<<"   AliMUONDigitizer::Digitize() starts"<<endl;
   fTDList = new TObjArray;
-  if(!fAddress) fAddress = new TClonesArray("TVector",10000);
 
   AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
   if (!pMUON) {
@@ -186,14 +171,12 @@ void AliMUONDigitizer::Exec(Option_t* option)
     return;
   }
   pMUON->MakeBranchInTreeD(fManager->GetTreeD());
-  fHitMap= new AliHitMap* [AliMUONConstants::NCh()];
-  for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {fHitMap[i] = 0;}
+  fHitMap= new AliMUONHitMapA1* [AliMUONConstants::NCh()];
 
   //
   // loop over cathodes
   //
 
-  fCountadr = 0;
   for (int icat = 0; icat < 2; icat++) { 
     fCounter = 0;
     Int_t * nmuon = new Int_t [AliMUONConstants::NCh()];
@@ -208,11 +191,12 @@ void AliMUONDigitizer::Exec(Option_t* option)
 
 
 // Loop over files to digitize
-	
+    fSignal = kTRUE;
     for (Int_t inputFile=0; inputFile<fManager->GetNinputs();
 	 inputFile++) {
 // Connect MUON branches
 
+      if (inputFile > 0 ) fSignal = kFALSE;
       TBranch *branchHits = 0;
       TBranch *branchPadHits = 0;
       TTree *treeH = fManager->GetInputTreeH(inputFile);
@@ -282,17 +266,7 @@ void AliMUONDigitizer::Exec(Option_t* option)
 	    Int_t iqpad    = Int_t(mPad->QPad());  // charge per pad
 	    if (cathode != (icat+1)) continue;
 
-	    new((*fAddress)[fCountadr++]) TVector(2);
-
-	    TVector &trinfo = *((TVector*) (*fAddress)[fCountadr-1]);
-	    Int_t mask = fManager->GetMask(inputFile);
-	    trinfo(0) = (Float_t)(fTrack + mask);  // tag background
-//		    trinfo(0) = (Float_t)fTrack;
-	    if (inputFile == 0) {
-	      trinfo(1) = (Float_t)iqpad;
-	    } else {
-	      trinfo(1) = kBgTag;
-	    }
+	    fMask = fManager->GetMask(inputFile);
 	    fDigits[0] = ipx;
 	    fDigits[1] = ipy;
 	    fDigits[2] = icat;
@@ -304,7 +278,7 @@ void AliMUONDigitizer::Exec(Option_t* option)
 	    }
 	    if (mHit->Particle() == kMuonPlus ||
 		mHit->Particle() == kMuonMinus) {
-	      fDigits[5] = (mPad->HitNumber()) + mask; 
+	      fDigits[5] = (mPad->HitNumber()) + fMask; 
 	    } else fDigits[5] = -1;
 
 	    // build the list of fired pads and update the info, 
@@ -321,8 +295,8 @@ void AliMUONDigitizer::Exec(Option_t* option)
     } // end file loop
     if (GetDebug()>2) cerr<<"END OF FILE LOOP"<<endl;
 
-    Int_t tracks[MAXTRACKS];
-    Int_t charges[MAXTRACKS];
+    Int_t tracks[kMAXTRACKS];
+    Int_t charges[kMAXTRACKS];
     Int_t nentries = fTDList->GetEntriesFast();
 	
     for (Int_t nent = 0; nent < nentries; nent++) {
@@ -345,38 +319,29 @@ void AliMUONDigitizer::Exec(Option_t* option)
       fDigits[4] = address->Physics();
       fDigits[5] = address->Hit();
 	    
-      TObjArray* fTrList = (TObjArray*)address->TrackList();
-      Int_t nptracks = fTrList->GetEntriesFast();
+      Int_t nptracks = address->GetNTracks();
 
-      // this was changed to accomodate the real number of tracks
-
-      if (nptracks > MAXTRACKS) {
+      if (nptracks > kMAXTRACKS) {
 	if (GetDebug() >0) {
 	  cerr<<"AliMUONDigitizer: nptracks > 10 "<<nptracks;
-	  cerr<<"reset to max value "<<MAXTRACKS<<endl;
+	  cerr<<"reset to max value "<<kMAXTRACKS<<endl;
 	}
-	nptracks = MAXTRACKS;
+	nptracks = kMAXTRACKS;
       }
       if (nptracks > 2 && GetDebug() >2) {
 	cerr<<"AliMUONDigitizer: nptracks > 2 "<<nptracks<<endl;
 	printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,fDigits[0],fDigits[1],q);
       }
       for (Int_t tr = 0; tr < nptracks; tr++) {
-	TVector *ppP = (TVector*)fTrList->At(tr);
-	if(!ppP ) {
-	  cerr<<"Error: ppP = "<<ppP<<endl;
-	  return;
-	}
-	TVector &pp  = *ppP;
-	tracks[tr]   = Int_t(pp(0));
-	charges[tr]  = Int_t(pp(1));
+	tracks[tr]   = address->GetTrack(tr);
+	charges[tr]  = address->GetCharge(tr);
       }      //end loop over list of tracks for one pad
       // Sort list of tracks according to charge
       if (nptracks > 1) {
 	SortTracks(tracks,charges,nptracks);
       }
-      if (nptracks < MAXTRACKS ) {
-	for (Int_t i = nptracks; i < MAXTRACKS; i++) {
+      if (nptracks < kMAXTRACKS ) {
+	for (Int_t i = nptracks; i < kMAXTRACKS; i++) {
 	  tracks[i]  = 0;
 	  charges[i] = 0;
 	}
@@ -384,7 +349,6 @@ void AliMUONDigitizer::Exec(Option_t* option)
 	    
       // fill digits
       pMUON->AddDigits(ich,tracks,charges,fDigits);
-      // delete fTrList;
     }
 
     fManager->GetTreeD()->Fill();
@@ -408,7 +372,6 @@ void AliMUONDigitizer::Exec(Option_t* option)
   delete [] fHitMap;
   delete fTDList;
     
-  if (fAddress)    fAddress->Delete();
   if (fHits)    fHits->Delete();
   if (fPadHits) fPadHits->Delete();
 }
