@@ -49,9 +49,10 @@ AliPHOS::AliPHOS():AliDetector()
 
 }
 //____________________________________________________________________________
-AliPHOS::AliPHOS(const char* name, const char* title=""):AliDetector(name,title)
+AliPHOS::AliPHOS(const char* name, const char* title="")
 {
   // ctor
+  AliDetector(name,title) ; 
   fEmcRecPoints  = new AliPHOSRecPoint::RecPointsList(10) ; 
   fPpsdRecPoints = new AliPHOSRecPoint::RecPointsList(10) ;
   fTrackSegments = new AliPHOSTrackSegment::TrackSegmentsList("AliPHOSTrackSegment", 10) ;
