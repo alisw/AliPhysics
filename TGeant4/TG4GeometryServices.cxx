@@ -6,7 +6,7 @@
 #include "TG4GeometryServices.h"
 #include "TG4VSensitiveDetector.h"
 #include "TG4Globals.h"
-#include "TG3Units.h"
+#include "TG4G3Units.h"
 
 #include <G4VSensitiveDetector.hh>
 #include <G4LogicalVolumeStore.hh>
@@ -417,12 +417,12 @@ G4double TG4GeometryServices::GetEffA(G4Material* material) const
     for (G4int i=0; i<nofElements; i++) {
       G4double aOfElement = material->GetElement(i)->GetA();
       G4double massFraction = material->GetFractionVector()[i];      
-      a += aOfElement*massFraction /(TG3Units::AtomicWeight());
+      a += aOfElement*massFraction /(TG4G3Units::AtomicWeight());
     }
   }
   else { 
     a = material->GetA();
-    a /= TG3Units::AtomicWeight();
+    a /= TG4G3Units::AtomicWeight();
   }
   return a;
 }
