@@ -271,3 +271,4 @@
 27-jun-2001 NvE Overloaded memberfunction names Add(AliJet*) and Add(AliVertex*) corrected
                 into AddJet(AliJet*) and AddVertex(AliVertex*) in class AliVertex.
 29-jun-2001 NvE TrackCopy mode introduced in AliJet.
+02-jul-2001 NvE Misplaced statement corrected in AliJet::SetNtinit().

@@ -139,12 +139,12 @@ void AliJet::SetNtinit(Int_t n)
 // Set the initial maximum number of tracks for this jet
  fNtinit=n;
  fNtmax=n;
+ if (fTracks)
  {
   if (fTrackCopy) fTracks->Delete();
   delete fTracks;
   fTracks=0;
  }
- if (fTracks) delete fTracks;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliJet::Reset()
