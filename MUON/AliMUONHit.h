@@ -5,6 +5,16 @@
 
 /* $Id$ */
 
+// MUON classe for MonteCarlo Hits, inherited from AliHit for the 
+// In addition to the ALiHit data member fX, fY, fZ and fTrack, AliMUONHit contains some info about the particle crossing the chamber:
+// Impulsion: fPtot, fPx, fPy and fPz
+// Reference position at the center of the chamber (wire plane) fXref, fYref and fZref
+// Cumulated path along the active volume fTlength for spliting of hits for very inclined tracks 
+// Energy loss of the particle inside the gas active volume.
+// Incident fTheta and fPhi angle with respect of the wire plane of the chamber.
+//
+
+
 #include "AliHit.h"
 
 class AliMUONHit : public AliHit {
@@ -19,27 +29,27 @@ class AliMUONHit : public AliHit {
                Float_t theta, Float_t phi, Float_t length, Float_t destep,
                Float_t Xref, Float_t Yref, Float_t Zref);
     virtual ~AliMUONHit() {}
-    Int_t   Chamber()  {return fChamber;}
-    Float_t Particle() {return fParticle;}    
-    Float_t Theta()    {return fTheta;}
-    Float_t Phi()      {return fPhi;}
-    Float_t Tlength()  {return fTlength;}
-    Float_t Eloss()    {return fEloss;}
-    Float_t Age()      {return fAge;}
-    Int_t   PHfirst()  {return fPHfirst;}
-    Int_t   PHlast()   {return fPHlast;}
-    Float_t Momentum() {return fPTot;}
-    Float_t Px()       {return fPx;}
-    Float_t Py()       {return fPy;}
-    Float_t Pz()       {return fPz;}
-    Float_t Cx()       {return fPx/fPTot;} 
-    Float_t Cy()       {return fPy/fPTot;}
-    Float_t Cz()       {return fPz/fPTot;}
+    Int_t   Chamber()  const {return fChamber;}
+    Float_t Particle() const {return fParticle;}    
+    Float_t Theta()    const {return fTheta;}
+    Float_t Phi()      const {return fPhi;}
+    Float_t Tlength()  const {return fTlength;}
+    Float_t Eloss()    const {return fEloss;}
+    Float_t Age()      const {return fAge;}
+    Int_t   PHfirst()  const {return fPHfirst;}
+    Int_t   PHlast()   const {return fPHlast;}
 
-    Float_t Xref()     {return fXref;}
-    Float_t Yref()     {return fYref;}
-    Float_t Zref()     {return fZref;}
+    Float_t Momentum() const {return fPTot;}
+    Float_t Px()       const {return fPx;}
+    Float_t Py()       const {return fPy;}
+    Float_t Pz()       const {return fPz;}
+    Float_t Cx()       const {return fPx/fPTot;} 
+    Float_t Cy()       const {return fPy/fPTot;}
+    Float_t Cz()       const {return fPz/fPTot;}
 
+    Float_t Xref()     const {return fXref;}
+    Float_t Yref()     const {return fYref;}
+    Float_t Zref()     const {return fZref;}
 
  private:
     Int_t     fChamber;       // Chamber number

@@ -15,6 +15,15 @@
 
 /* $Id$ */
 
+// MUON classe for MonteCarlo Hits, inherited from AliHit for the 
+// In addition to the ALiHit data member fX, fY, fZ and fTrack, AliMUONHit contains some info about the particle crossing the chamber:
+// Impulsion: fPtot, fPx, fPy and fPz
+// Reference position at the center of the chamber (wire plane) fXref, fYref and fZref
+// Cumulated path along the active volume fTlength for spliting of hits for very inclined tracks 
+// Energy loss of the particle inside the gas active volume.
+// Incident fTheta and fPhi angle with respect of the wire plane of the chamber.
+//
+
 #include "TMath.h"
 #include "AliMUONHit.h"
 
