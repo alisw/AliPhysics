@@ -1,0 +1,11 @@
+#ifndef CERNLIB_ISAJET_HCON2_INC
+#define CERNLIB_ISAJET_HCON2_INC
+*
+*
+* hcon2.inc
+*
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION ANWWWW,ADWWWW,AIWWWW
+#endif
+
+#endif

@@ -1,0 +1,11 @@
+#ifndef CERNLIB_ISAJET_WCON2_INC
+#define CERNLIB_ISAJET_WCON2_INC
+*
+*
+* wcon2.inc
+*
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION AQDP,BQDP,EZDP
+#endif
+
+#endif

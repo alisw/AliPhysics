@@ -1,0 +1,10 @@
+#ifndef CERNLIB_ISAJET_IZISAM_INC
+#define CERNLIB_ISAJET_IZISAM_INC
+*
+*
+* izisam.inc
+*
+      INTEGER IZISAM
+      PARAMETER (IZISAM=9)
+
+#endif

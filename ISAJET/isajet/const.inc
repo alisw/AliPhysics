@@ -1,0 +1,11 @@
+#ifndef CERNLIB_ISAJET_CONST_INC
+#define CERNLIB_ISAJET_CONST_INC
+*
+*
+* const.inc
+*
+      COMMON/CONST/PI,SQRT2,ALFA,GF,UNITS
+      SAVE /CONST/
+      REAL      PI,SQRT2,ALFA,GF,UNITS
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef CERNLIB_ISAJET_IZISAL_INC
+#define CERNLIB_ISAJET_IZISAL_INC
+*
+*
+* izisal.inc
+*
+      INTEGER IZISAL
+      PARAMETER (IZISAL=7)
+
+#endif

@@ -1,0 +1,12 @@
+#ifndef CERNLIB_ISAJET_QLMASS_INC
+#define CERNLIB_ISAJET_QLMASS_INC
+*
+*
+* qlmass.inc
+*
+      COMMON/QLMASS/AMLEP(100),NQLEP,NMES,NBARY
+      SAVE /QLMASS/
+      INTEGER   NQLEP,NMES,NBARY
+      REAL      AMLEP
+
+#endif

@@ -1,0 +1,265 @@
+#include "isajet/pilot.h"
+      SUBROUTINE HEVOLV
+C
+C          CARRY OUT BACKWARDS EVOLUTION QK --> QK + W FOR LONGITUDINAL
+C          W-W FUSION, GENERATING Z AND KT**2 FROM RELATION OF W AND
+C          QUARK STRUCTURE FUNCTIONS.
+C
+#include "isajet/itapes.inc"
+#include "isajet/qcdpar.inc"
+#include "isajet/jetpar.inc"
+#include "isajet/pjets.inc"
+#include "isajet/jetset.inc"
+#include "isajet/primar.inc"
+#include "isajet/wcon.inc"
+#include "isajet/const.inc"
+#include "isajet/idrun.inc"
+#include "isajet/hcon.inc"
+C
+      DIMENSION X(2)
+      EQUIVALENCE (X1,X(1))
+      DIMENSION FZIQ(13),IWPICK(2),PFINAL(5),BST1(5),BST2(5),B2B1(5)
+      DIMENSION PSAVE(5,2)
+C          LAMBDA FUNCTION
+      ALAMF(A,B,C)=SQRT((A-B-C)**2-4.*B*C)
+C
+      NJSAVE=NJSET
+      NREJ2=-1
+C
+C          INITIALIZE
+      DO 10 I=1,2
+      DO 10 K=1,5
+10    PSAVE(K,I)=PJSET(K,I)
+20    CONTINUE
+      DO 30 I=1,2
+      DO 30 K=1,5
+30    PJSET(K,I)=PSAVE(K,I)
+      DO 40 K=1,5
+40    PFINAL(K)=QWJET(K)
+      NJSET=NJSAVE
+C
+C          CHOOSE A W AND DO BACKWARDS EVOLUTION FOR QK -> QK + W.
+C
+      IF(RANF().LT..5) THEN
+        IWPICK(1)=1
+        IWPICK(2)=2
+        SGN=+1.
+      ELSE
+        IWPICK(1)=2
+        IWPICK(2)=1
+        SGN=-1.
+      ENDIF
+      DO 100 JJ=1,2
+C
+C          OTHER PARTICLE IS W FOR JJ=1, QUARK FOR JJ=2:
+      IF(JJ.EQ.1) THEN
+        J1=IWPICK(1)
+        J2=IWPICK(2)
+      ELSE
+        J1=IWPICK(2)
+        J2=NJSAVE+1
+        SGN=-SGN
+      ENDIF
+      JTLV1=JTYPE(J1)
+      IF(JTLV1.EQ.10) THEN
+        IW=1
+      ELSEIF(JTLV1.EQ.80) THEN
+        IW=2
+      ELSEIF(JTLV1.EQ.-80) THEN
+        IW=3
+      ELSEIF(JTLV1.EQ.90) THEN
+        IW=4
+      ENDIF
+      XV=(PJSET(4,J1)+ABS(PJSET(3,J1)))/ECM
+      AMV=AMASS(JTLV1)
+C
+C          GENERATE VARIABLES FOR BRANCHING
+C          FIND MAXIMUM OF INTEGRAND USING 20 POINTS IN LOG(Z)
+      FMAX=0.
+      ZMULT=(1./XV)**.05
+      ZIZ=XV
+      DO 110 IZ=1,19
+      ZIZ=ZIZ*ZMULT
+      FSUM=0.
+      DO 115 IQ=2,13
+      IF(MATCH(IQ,IW).NE.0) THEN
+        IFL=IQ/2
+        CIQ=AQ(IFL,IW)**2+BQ(IFL,IW)**2
+        FSUM=FSUM+CIQ*(1.-ZIZ)/ZIZ*STRUC(XV/ZIZ,AMV**2,IQ,IDIN(J1))
+      ENDIF
+115   CONTINUE
+      FMAX=AMAX1(FMAX,FSUM)
+110   CONTINUE
+C          GENERATE Z UNIFORMLY IN (XV,1) AND TEST
+      NREJ1=-1
+120   ZV=XV+(1.-XV)*RANF()
+      FZ=0.
+      DO 130 IQ=2,13
+      IF(MATCH(IQ,IW).NE.0) THEN
+        IFL=IQ/2
+        CIQ=AQ(IFL,IW)**2+BQ(IFL,IW)**2
+        FZIQ(IQ)=CIQ*(1.-ZV)/ZV*STRUC(XV/ZV,AMV**2,IQ,IDIN(J1))
+      ELSE
+        FZIQ(IQ)=0.
+      ENDIF
+130   FZ=FZ+FZIQ(IQ)
+      IF(FZ.LT.FMAX*RANF()) THEN
+        NREJ1=NREJ1+1
+        IF(NREJ1.GT.NTRIES) GO TO 9999
+        GO TO 120
+      ENDIF
+C          DETERMINE QUARK TYPE
+      TRY=RANF()
+      SUM=0.
+      DO 140 IQ=2,13
+      IQ1=IQ
+      SUM=SUM+FZIQ(IQ)/FZ
+140   IF(SUM.GT.TRY) GO TO 150
+150   IQ3=MATCH(IQ1,IW)
+      IQ3=MATCH(IQ3,4)
+C          GENERATE T=-K**2 AND UNIFORM PHI
+      T=AMV**2*(1./RANF()-1.)
+      PHIK=2.*PI*RANF()
+C
+C          SOLVE KINEMATICS FOR THIS SIDE
+      S=(PJSET(4,J1)+PJSET(4,J2))**2-(PJSET(1,J1)+PJSET(1,J2))**2
+     $-(PJSET(2,J1)+PJSET(2,J2))**2-(PJSET(3,J1)+PJSET(3,J2))**2
+      SP=S/ZV
+      IFL1=IQ1/2
+      IFL2=JTYPE(J2)
+      IFL3=IQ3/2
+      AM1=AMASS(IFL1)
+      AM2=PJSET(5,J2)
+      AM3=AMASS(IFL3)
+      AM1SQ=AM1**2
+      AM2SQ=AM2**2
+      AM3SQ=AM3**2
+      IF(SGN.LT.0.) THEN
+        P2PL=PJSET(4,J2)+PJSET(3,J2)
+        P2MN=AM2SQ/P2PL
+      ELSE
+        P2MN=PJSET(4,J2)-PJSET(3,J2)
+        P2PL=AM2SQ/P2MN
+      ENDIF
+C          STEP 1: SOLVE FOR PP1=PJSET(K,NEWV)
+      IF(SGN.GT.0.) THEN
+        PP1PL=(SP-AM1SQ-AM2SQ+ALAMF(SP,AM1SQ,AM2SQ))/(2.*P2MN)
+        PP1MN=AM1SQ/PP1PL
+      ELSE
+        PP1MN=(SP-AM1SQ-AM2SQ+ALAMF(SP,AM1SQ,AM2SQ))/(2.*P2PL)
+        PP1PL=AM1SQ/PP1MN
+      ENDIF
+C          STEP 2: SOLVE FOR K = VIRTUAL W MOMENTUM
+      DEN=PP1PL*P2MN-PP1MN*P2PL
+      AKPL=(+PP1PL*(S+T-AM2SQ)+P2PL*(T+AM3SQ-AM1SQ))/DEN
+      AKMN=(-PP1MN*(S+T-AM2SQ)-P2MN*(T+AM3SQ-AM1SQ))/DEN
+      WPL=PP1PL-AKPL
+      WMN=PP1MN-AKMN
+      AKT2=T+AKPL*AKMN
+C          STEP 3: START OVER IF AKT2 UNPHYSICAL
+      IF(AKT2.LE.0..OR.PP1PL.GE.ECM.OR.PP1MN.GE.ECM.OR.
+     $P2PL.GE.ECM.OR.P2MN.GE.ECM) THEN
+        NREJ2=NREJ2+1
+        IF(NREJ2.GT.NTRIES) GO TO 9999
+        GO TO 20
+      ENDIF
+C
+C          SAVE NEW VECTORS
+      NJ1=NJSET+1
+      NJ2=NJSET+2
+      AKT=SQRT(AKT2)
+      AKX=AKT*COS(PHIK)
+      AKY=AKT*SIN(PHIK)
+      PJSET(1,J1)=AKX
+      PJSET(2,J1)=AKY
+      PJSET(3,J1)=.5*(AKPL-AKMN)
+      PJSET(4,J1)=.5*(AKPL+AKMN)
+      PJSET(5,J1)=-SQRT(T)
+      JDCAY(J1)=JPACK*NJ1+NJ2
+      JET=IABS(JORIG(J1))/JPACK
+C
+      PJSET(1,NJ1)=0.
+      PJSET(2,NJ1)=0.
+      PJSET(3,NJ1)=.5*(PP1PL-PP1MN)
+      PJSET(4,NJ1)=.5*(PP1PL+PP1MN)
+      PJSET(5,NJ1)=AM1
+      JORIG(NJ1)=JPACK*JET+J1
+      JTYPE(NJ1)=IFL1
+      JDCAY(NJ1)=0
+C
+      PJSET(1,NJ2)=-AKX
+      PJSET(2,NJ2)=-AKY
+      PJSET(3,NJ2)=.5*(WPL-WMN)
+      PJSET(4,NJ2)=.5*(WPL+WMN)
+      PJSET(5,NJ2)=AM3
+      JORIG(NJ2)=JPACK*JET+J1
+      JTYPE(NJ2)=IFL3
+      JDCAY(NJ2)=0
+C
+C          BOOST OTHER VECTORS TO NEW FRAME GIVEN BY DIFFERENCE OF
+C          OLD AND NEW FINAL MOMENTA.
+      DO 200 K=1,4
+      BST1(K)=PFINAL(K)
+200   BST2(K)=PJSET(K,J1)+PJSET(K,J2)
+      BMASS=PFINAL(5)
+      BST1(5)=BMASS
+      BST2(5)=BMASS
+C
+C          PARAMETERS FOR COMBINED BOOSTS.
+      BDOTB=BST1(4)*BST2(4)-BST1(1)*BST2(1)-BST1(2)*BST2(2)
+     $-BST1(3)*BST2(3)
+      DO 210 K=1,4
+210   B2B1(K)=BST2(K)-BST1(K)
+C
+      B44=BDOTB/BMASS**2
+      BI41=1./BMASS
+      BI42=(BDOTB-BMASS**2-B2B1(4)*BMASS)/(BMASS**2*(BST2(4)+BMASS))
+      B4K1=BI41
+      B4K2=(BMASS**2-BDOTB-B2B1(4)*BMASS)/(BMASS**2*(BST1(4)+BMASS))
+      BIK1=-1./(BMASS*(BST1(4)+BMASS))
+      BIK2=1./(BMASS*(BST2(4)+BMASS))
+      BIK3=(BMASS**2-BDOTB)/(BMASS**2*(BST1(4)+BMASS)
+     $*(BST2(4)+BMASS))
+C
+C          BOOST FINAL JETS
+      DO 220 J=1,NJSET
+      IF(J.EQ.J1.OR.J.EQ.J2) GO TO 220
+      IF(PJSET(5,J).LT.0.) GO TO 220
+      BP1=0.
+      BP21=0.
+      DO 221 K=1,3
+      BP1=BP1+BST1(K)*PJSET(K,J)
+221   BP21=BP21+B2B1(K)*PJSET(K,J)
+      DO 222 K=1,3
+222   PJSET(K,J)=PJSET(K,J)
+     $+(B2B1(K)*BI41+BST2(K)*BI42)*PJSET(4,J)
+     $+B2B1(K)*BP1*BIK1+BST2(K)*BP21*BIK2+BST2(K)*BP1*BIK3
+      PJSET(4,J)=B44*PJSET(4,J)+BP21*B4K1+BP1*B4K2
+220   CONTINUE
+C
+C          RESET VIRTUAL MOMENTA
+      DO 230 J=1,NJSET
+      IF(J.EQ.J1.OR.J.EQ.J2) GO TO 230
+      IF(PJSET(5,J).GE.0.) GO TO 230
+      JX1=JDCAY(J)/JPACK
+      JX2=JDCAY(J)-JPACK*JX1
+      DO 231 K=1,4
+231   PJSET(K,J)=PJSET(K,JX1)-PJSET(K,JX2)
+      AMJ=PJSET(4,J)**2-PJSET(1,J)**2-PJSET(2,J)**2-PJSET(3,J)**2
+      PJSET(5,J)=-SQRT(ABS(AMJ))
+230   CONTINUE
+C
+C          RESET PFINAL AND NJSET
+      DO 240 K=1,4
+240   PFINAL(K)=PJSET(K,J2)+PJSET(K,NJ1)
+      PFINAL(5)=SQRT(SP)
+      NJSET=NJSET+2
+100   CONTINUE
+      RETURN
+C
+9999  CONTINUE
+      WRITE(ITLIS,9998) IEVT
+9998  FORMAT(/' ***** ERROR IN HEVOLV ... EVENT',I8,' DISCARDED *****')
+      NJSET=-1
+      RETURN
+      END

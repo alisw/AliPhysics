@@ -1,0 +1,10 @@
+#ifndef CERNLIB_ISAJET_IZISAB_INC
+#define CERNLIB_ISAJET_IZISAB_INC
+*
+*
+* izisab.inc
+*
+      INTEGER IZISAB
+      PARAMETER (IZISAB=17)
+
+#endif

@@ -1,0 +1,23 @@
+#ifndef CERNLIB_ISAJET_ZEVEL_INC
+#define CERNLIB_ISAJET_ZEVEL_INC
+*
+*
+* zevel.inc
+*
+      INTEGER   MAXLEN
+      PARAMETER (MAXLEN=1024)
+      COMMON/ZEVEL/IZEVEL(MAXLEN)
+      SAVE /ZEVEL/
+      EQUIVALENCE(ZEVEL(1),IZEVEL(1))
+      EQUIVALENCE(LZEVEL(1),IZEVEL(1))
+      EQUIVALENCE (IZVL1,IZEVEL(1))
+      EQUIVALENCE (IZVL2,IZEVEL(2))
+#if defined(CERNLIB_LEVEL2)
+#include "isajet/l2zevl.inc"
+* Ignoring t=pass
+#endif
+      INTEGER   IZEVEL,IZVL1,IZVL2
+      REAL      ZEVEL(MAXLEN)
+      LOGICAL   LZEVEL(MAXLEN)
+
+#endif

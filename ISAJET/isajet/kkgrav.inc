@@ -1,0 +1,14 @@
+#ifndef CERNLIB_ISAJET_KKGRAV_INC
+#define CERNLIB_ISAJET_KKGRAV_INC
+*
+*
+* kkgrav.inc
+*
+C          KKGravity common
+      COMMON/KKGRAV/NEXTRAD,MASSD,KKGSD,SURFD,UVCUT
+      INTEGER NEXTRAD
+      REAL    MASSD,KKGSD,SURFD
+      LOGICAL UVCUT
+      SAVE /KKGRAV/
+
+#endif

@@ -1,0 +1,11 @@
+#ifndef CERNLIB_ISAJET_RECTP_INC
+#define CERNLIB_ISAJET_RECTP_INC
+*
+*
+* rectp.inc
+*
+      COMMON/RECTP/IRECTP,IREC
+      SAVE /RECTP/
+      INTEGER   IRECTP,IREC
+
+#endif

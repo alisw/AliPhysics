@@ -1,0 +1,11 @@
+#ifndef CERNLIB_ISAJET_LSTPRT_INC
+#define CERNLIB_ISAJET_LSTPRT_INC
+*
+*
+* lstprt.inc
+*
+      COMMON/LSTPRT/LSTPRT
+      SAVE /LSTPRT/
+      INTEGER   LSTPRT
+
+#endif

@@ -1,0 +1,13 @@
+#ifndef CERNLIB_ISAJET_WWPAR1_INC
+#define CERNLIB_ISAJET_WWPAR1_INC
+*
+*
+* wwpar1.inc
+*
+#if defined(CERNLIB_SINGLE)
+      REAL SWW,TWW,UWW,WM2,ZM2,P1WW,P2WW,P3WW,P4WW
+     $,PZERO,S13,P3,Q1,Q3
+     $,CQ,CV,CA,CV1,CA1,CV3,CA3,CS,CT,CU
+#endif
+
+#endif

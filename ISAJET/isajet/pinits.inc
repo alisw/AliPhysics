@@ -1,0 +1,12 @@
+#ifndef CERNLIB_ISAJET_PINITS_INC
+#define CERNLIB_ISAJET_PINITS_INC
+*
+*
+* pinits.inc
+*
+      COMMON/PINITS/PINITS(5,2),IDINIT(2)
+      SAVE /PINITS/
+      INTEGER   IDINIT
+      REAL      PINITS
+
+#endif

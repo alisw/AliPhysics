@@ -1,0 +1,366 @@
+#include "isajet/pilot.h"
+      SUBROUTINE SIGH
+C
+C          COMPUTE THE INTEGRATED WEINBERG-SALAM HIGGS CROSS SECTION
+C          D(SIGMA)/D(QMW**2)D(YW)
+C
+C          SIGMA    = CROSS SECTION SUMMED OVER QUARK TYPES ALLOWED BY
+C                     JETTYPE3 AND WTYPE CARDS.
+C          SIGS(I)  = PARTIAL CROSS SECTION FOR I1 + I2 --> I3 + I4.
+C          INOUT(I) = IOPAK**3*I4 + IOPAK**2*I3 + IOPAK*I2 + I1
+C                     USING JETTYPE CODE.
+C
+C          VER. 7.14: CHECK INITIAL QUARK MASS IS ALLOWED
+C
+#include "isajet/itapes.inc"
+#include "isajet/qcdpar.inc"
+#include "isajet/jetpar.inc"
+#include "isajet/primar.inc"
+#include "isajet/q1q2.inc"
+#include "isajet/jetsig.inc"
+#include "isajet/qsave.inc"
+#include "isajet/wcon.inc"
+#include "isajet/const.inc"
+#include "isajet/jetlim.inc"
+#include "isajet/hcon.inc"
+C
+      DIMENSION AMQCUR(6),LISTW(4),WTHELI(4),FINT(9)
+      DIMENSION X(2)
+      EQUIVALENCE (S,SHAT),(T,THAT),(U,UHAT),(X(1),X1)
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION C,TERM,SUM,FINT,ZLIM
+#endif
+      DATA AMQCUR/.005,.009,.175,1.25,4.50,30./
+      DATA LISTW/10,80,-80,90/
+C          WTHELI ARE WEIGHTS OF HELICITY AMPLITUDES IN SIGMA.
+      DATA WTHELI/1.,2.,2.,4./
+C
+C          FUNCTIONS
+      ACOSH(Z)=ALOG(Z+SQRT(Z**2-1.))
+      ATANH(Z)=.5*ALOG((1.+Z)/(1.-Z))
+C
+C          KINEMATICS (IDENTICAL TO DRELL-YAN)
+C
+      AMQCUR(6)=AMASS(6)
+      QMW2=QMW**2
+      QTMW=SQRT(QMW2+QTW**2)
+      Q0W=QTMW*COSH(YW)
+      QZW=QTMW*SINH(YW)
+      QW=SQRT(QZW**2+QTW**2)
+      IF(QW.NE.0.) THEN
+        CTHW=QZW/QW
+        STHW=QTW/QW
+        IF(ABS(CTHW).LT.1.) THEN
+          THW=ACOS(CTHW)
+        ELSE
+          CTHW=0.
+          STHW=1.
+          THW=.5*PI
+        ENDIF
+      ELSE
+        CTHW=0.
+        STHW=1.
+        THW=.5*PI
+      ENDIF
+      EHAT=QMW
+      SHAT=QMW**2
+      QSQ=SHAT
+      ANEFF=4.+QSQ/(QSQ+AMASS(5)**2)+QSQ/(QSQ+AMASS(6)**2)
+      ALFQSQ=12.*PI/((33.-ANEFF)*ALOG(QSQ/ALAM2))
+      Q2SAVE=QSQ
+      YHAT=YW
+      EY=EXP(YHAT)
+      X1=EHAT/ECM*EY
+      X2=EHAT/(ECM*EY)
+C
+C          INITIALIZE
+C
+      SIGMA=0.
+      NSIGS=0
+      DO 100 I=1,MXSIGS
+100   SIGS(I)=0
+C
+      IF(X1.GE.1..OR.X2.GE.1.) RETURN
+C
+C          COMPUTE STRUCTURE FUNCTIONS
+      DO 110 IH=1,2
+      DO 120 IQ=1,13
+120   QSAVE(IQ,IH)=STRUC(X(IH),QSQ,IQ,IDIN(IH))/X(IH)
+      DO 130 IQ=14,26
+130   QSAVE(IQ,IH)=0.
+      DO 140 IW=2,4
+      AMW=AMASS(LISTW(IW))
+      IF(QMW.GT.2.*AMW) THEN
+        QSAVE(25+IW,IH)=STRUCW(X(IH),IW,IDIN(IH))/X(IH)
+      ELSE
+        QSAVE(25+IW,IH)=0.
+      ENDIF
+140   CONTINUE
+110   CONTINUE
+C
+C          CALCULATE HIGGS-GLUON-GLUON COUPLING FOR GIVEN Q**2
+      ETAR=0.
+      ETAI=0.
+      DO 150 IQ=1,8
+      AMQ=AMASS(IQ)
+      IF(AMQ.LE.0.) GO TO 150
+      RQ=(2.*AMQ/HMASS)**2
+      IF(RQ.GE.1.) THEN
+        ETAR=ETAR+.5*RQ*(1.+(1.-RQ)*ASIN(1./SQRT(RQ))**2)
+      ELSE
+        RQLOG=ALOG((1.+SQRT(1.-RQ))/(1.-SQRT(1.-RQ)))
+        PHIR=.25*(RQLOG**2-PI**2)
+        ETAR=ETAR+.5*RQ*(1.+(RQ-1.)*PHIR)
+        PHII=.5*PI*RQLOG
+        ETAI=ETAI+.5*RQ*(RQ-1.)*PHII
+      ENDIF
+150   CONTINUE
+      ETAHGG=ETAR**2+ETAI**2
+C
+C          GL + GL --> HIGGS
+C
+      SIG0=GF*ALFQSQ**2/(32.*PI*SQRT2)*ETAHGG*X1*X2*UNITS
+      SIG0=SIG0*S/(PI*HMASS*((S-HMASS**2)**2+(HMASS*HGAM)**2))
+      SIG0=SIG0*QSAVE(1,1)*QSAVE(1,2)
+      DO 160 IQ1=2,29
+      IQ2=MATCHH(IQ1)
+      IF(GOQ(IQ1,1).AND.GOQ(IQ2,2)) THEN
+        SIG=SIG0*HGAMS(IQ1)
+        IF(IQ1.GT.25) SIG=SIG*TBRWW(IQ1-25,1)*TBRWW(IQ2-25,2)
+        CALL SIGFIL(SIG,1,1,IQ1,IQ2)
+      ENDIF
+160   CONTINUE
+C
+C          QK + QB --> HIGGS
+C
+      SIG0=PI*GF/(3.*SQRT2*HMASS**2)*X1*X2*UNITS
+      SIG0=SIG0*S/(PI*HMASS*((S-HMASS**2)**2+(HMASS*HGAM)**2))
+      DO 210 IQ1=2,13
+      IQ2=MATCHH(IQ1)
+      AMQ=AMQCUR(IQ1/2)
+      IF(QMW.LE.2*AMQ) GO TO 210
+      SIG1=SIG0*AMQ**2*QSAVE(IQ1,1)*QSAVE(IQ2,2)
+      DO 220 IQ3=2,29
+      IQ4=MATCHH(IQ3)
+      IF(GOQ(IQ3,1).AND.GOQ(IQ4,2)) THEN
+        SIG=SIG1*HGAMS(IQ3)
+        IF(IQ3.GT.25) SIG=SIG*TBRWW(IQ3-25,1)*TBRWW(IQ4-25,2)
+        CALL SIGFIL(SIG,IQ1,IQ2,IQ3,IQ4)
+      ENDIF
+220   CONTINUE
+210   CONTINUE
+C
+C          W+W FUSION AND W+W->W+W IN EFFECTIVE W APPROXIMATION WITH
+C          ANGULAR DISTRIBUTION CUT OFF BY PTMIN.
+C          Z0 Z0 FINAL STATE HAS SYMMETRY FACTOR OF .5
+C
+      IF(QMW.LE.2.*AMASS(80)) GO TO 500
+C
+C          W+ W- --> W+ W-
+C
+      IF(.NOT.((GOQ(27,1).AND.GOQ(28,2)).OR.(GOQ(28,1).AND.GOQ(27,2))))
+     $GO TO 400
+      WM=AMASS(80)
+      PWWCM=.5*SQRT(QMW**2-4.*WM**2)
+      STHLIM=PTMIN(1)/PWWCM
+      IF(STHLIM.LE.1) THEN
+        ZLIM=SQRT(1.-STHLIM**2)
+      ELSE
+        GO TO 400
+      ENDIF
+C          SET UP AMPLITUDES
+      CALL XWWWW
+C          SUM CROSS SECTION TERMS. I,J RUN OVER AMPLITUDE TERMS.
+C          L RUNS OVER HELICITY STATES. N RUNS OVER POWERS.
+C          REMEMBER THAT L=4 IS MISSING SIN(THETA)/SQRT(2)
+      SUM=0.
+      DO 311 I=1,4
+      DO 311 J=I,4
+      CALL SIGINT(FINT,ZLIM,ADWWWW(1,I),ADWWWW(2,I),ADWWWW(1,J),
+     $ADWWWW(2,J))
+        DO 312 L=1,4
+        TERM=0.
+          DO 313 N=0,6
+          C=0.
+          N1=MAX(N-3,0)
+          N2=MIN(3,N)
+          DO 314 K=N1,N2
+314       C=C+ANWWWW(K+1,I,L)*ANWWWW(N-K+1,J,L)
+          C=C*WTHELI(L)
+          IF(J.NE.I) C=2.*C
+          IF(L.EQ.4) THEN
+            TERM=TERM+.5*C*FINT(N+1)-.5*C*FINT(N+3)
+          ELSE
+            TERM=TERM+C*FINT(N+1)
+          ENDIF
+313       CONTINUE
+        SUM=SUM+TERM
+312     CONTINUE
+311   CONTINUE
+C          ADD INTEGRAL OF IMAGINARY PART SQUARED.
+      SUM=SUM+2.*ZLIM*(WTHELI(1)*AIWWWW(1)**2+WTHELI(2)*AIWWWW(2)**2
+     $+WTHELI(3)*AIWWWW(3)**2+WTHELI(4)*AIWWWW(4)**2)
+C          CROSS SECTION
+      SIG0=SUM/(32.*PI*S*SCM)*UNITS
+      SIG1=.5*SIG0*QSAVE(27,1)*QSAVE(28,2)
+      IF(GOQ(27,1).AND.GOQ(28,2)) THEN
+        SIG=SIG1*TBRWW(2,1)*TBRWW(3,2)
+        CALL SIGFIL(SIG,27,28,27,28)
+      ENDIF
+      IF(GOQ(28,1).AND.GOQ(27,2)) THEN
+        SIG=SIG1*TBRWW(3,1)*TBRWW(2,2)
+        CALL SIGFIL(SIG,27,28,28,27)
+      ENDIF
+      SIG1=.5*SIG0*QSAVE(28,1)*QSAVE(27,2)
+      IF(GOQ(27,1).AND.GOQ(28,2)) THEN
+        SIG=SIG1*TBRWW(2,1)*TBRWW(3,2)
+        CALL SIGFIL(SIG,28,27,27,28)
+      ENDIF
+      IF(GOQ(28,1).AND.GOQ(27,2)) THEN
+        SIG=SIG1*TBRWW(3,1)*TBRWW(2,2)
+        CALL SIGFIL(SIG,28,27,28,27)
+      ENDIF
+C
+C          Z0 Z0 --> W+ W-
+C
+C          SET UP AMPLITUDES
+      IF(QMW.LE.2.*AMASS(90)) GO TO 500
+      CALL XZZWW
+C          SUM CROSS SECTION TERMS. I,J RUN OVER AMPLITUDE TERMS.
+C          L RUNS OVER HELICITY STATES. N RUNS OVER POWERS.
+C          REMEMBER THAT L=4 IS MISSING SIN(THETA)/SQRT(2)
+      SUM=0.
+      DO 321 I=1,4
+      DO 321 J=I,4
+      CALL SIGINT(FINT,ZLIM,ADWWWW(1,I),ADWWWW(2,I),ADWWWW(1,J),
+     $ADWWWW(2,J))
+        DO 322 L=1,4
+        TERM=0.
+          DO 323 N=0,6
+          C=0.
+          N1=MAX(N-3,0)
+          N2=MIN(3,N)
+          DO 324 K=N1,N2
+324       C=C+ANWWWW(K+1,I,L)*ANWWWW(N-K+1,J,L)
+          C=C*WTHELI(L)
+          IF(J.NE.I) C=2.*C
+          IF(L.EQ.4) THEN
+            TERM=TERM+.5*C*FINT(N+1)-.5*C*FINT(N+3)
+          ELSE
+            TERM=TERM+C*FINT(N+1)
+          ENDIF
+323       CONTINUE
+        SUM=SUM+TERM
+322     CONTINUE
+321   CONTINUE
+C          ADD INTEGRAL OF IMAGINARY PART SQUARED.
+      SUM=SUM+2.*ZLIM*(WTHELI(1)*AIWWWW(1)**2+WTHELI(2)*AIWWWW(2)**2
+     $+WTHELI(3)*AIWWWW(3)**2+WTHELI(4)*AIWWWW(4)**2)
+C          CROSS SECTION
+      SIG0=SUM/(32.*PI*S*SCM)*UNITS
+      SIG1=.5*SIG0*QSAVE(29,1)*QSAVE(29,2)
+      IF(GOQ(27,1).AND.GOQ(28,2)) THEN
+        SIG=SIG1*TBRWW(2,1)*TBRWW(3,2)
+        CALL SIGFIL(SIG,29,29,27,28)
+      ENDIF
+      IF(GOQ(28,1).AND.GOQ(27,2)) THEN
+        SIG=SIG1*TBRWW(3,1)*TBRWW(2,2)
+        CALL SIGFIL(SIG,29,29,28,27)
+      ENDIF
+C
+C          W+ W- --> Z0 Z0
+C
+400   IF(QMW.LE.2.*AMASS(90)) GO TO 500
+      IF(.NOT.(GOQ(29,1).AND.GOQ(29,2))) GO TO 500
+      WM=AMASS(90)
+      PWWCM=.5*SQRT(QMW**2-4.*WM**2)
+      STHLIM=PTMIN(1)/PWWCM
+      IF(STHLIM.LE.1) THEN
+        ZLIM=SQRT(1.-STHLIM**2)
+      ELSE
+        GO TO 500
+      ENDIF
+C          SET UP AMPLITUDES
+      CALL XWWZZ
+C          SUM CROSS SECTION TERMS. I,J RUN OVER AMPLITUDE TERMS.
+C          L RUNS OVER HELICITY STATES. N RUNS OVER POWERS.
+C          REMEMBER THAT L=4 IS MISSING SIN(THETA)/SQRT(2)
+      SUM=0.
+      DO 411 I=1,4
+      DO 411 J=I,4
+      CALL SIGINT(FINT,ZLIM,ADWWWW(1,I),ADWWWW(2,I),ADWWWW(1,J),
+     $ADWWWW(2,J))
+        DO 412 L=1,4
+        TERM=0.
+          DO 413 N=0,6
+          C=0.
+          N1=MAX(N-3,0)
+          N2=MIN(3,N)
+          DO 414 K=N1,N2
+414       C=C+ANWWWW(K+1,I,L)*ANWWWW(N-K+1,J,L)
+          C=C*WTHELI(L)
+          IF(J.NE.I) C=2.*C
+          IF(L.EQ.4) THEN
+            TERM=TERM+.5*C*FINT(N+1)-.5*C*FINT(N+3)
+          ELSE
+            TERM=TERM+C*FINT(N+1)
+          ENDIF
+413       CONTINUE
+        SUM=SUM+TERM
+412     CONTINUE
+411   CONTINUE
+C          ADD INTEGRAL OF IMAGINARY PART SQUARED.
+      SUM=SUM+2.*ZLIM*(WTHELI(1)*AIWWWW(1)**2+WTHELI(2)*AIWWWW(2)**2
+     $+WTHELI(3)*AIWWWW(3)**2+WTHELI(4)*AIWWWW(4)**2)
+C          CROSS SECTION
+      SIG0=SUM/(32.*PI*S*SCM)*UNITS
+      SIG0=.5*SIG0
+      SIG0=SIG0*TBRWW(4,1)*TBRWW(4,2)
+      SIG=SIG0*QSAVE(27,1)*QSAVE(28,2)
+      CALL SIGFIL(SIG,27,28,29,29)
+      SIG=SIG0*QSAVE(28,1)*QSAVE(27,2)
+      CALL SIGFIL(SIG,28,27,29,29)
+C
+C          Z0 Z0 --> Z0 Z0
+C
+C          SET UP AMPLITUDES
+      CALL XZZZZ
+C          SUM CROSS SECTION TERMS. I,J RUN OVER AMPLITUDE TERMS.
+C          L RUNS OVER HELICITY STATES. N RUNS OVER POWERS.
+C          REMEMBER THAT L=4 IS MISSING SIN(THETA)/SQRT(2)
+      SUM=0.
+      DO 421 I=1,4
+      DO 421 J=I,4
+      CALL SIGINT(FINT,ZLIM,ADWWWW(1,I),ADWWWW(2,I),ADWWWW(1,J),
+     $ADWWWW(2,J))
+        DO 422 L=1,4
+        TERM=0.
+          DO 423 N=0,6
+          C=0.
+          N1=MAX(N-3,0)
+          N2=MIN(3,N)
+          DO 424 K=N1,N2
+424       C=C+ANWWWW(K+1,I,L)*ANWWWW(N-K+1,J,L)
+          C=C*WTHELI(L)
+          IF(J.NE.I) C=2.*C
+          IF(L.EQ.4) THEN
+            TERM=TERM+.5*C*FINT(N+1)-.5*C*FINT(N+3)
+          ELSE
+            TERM=TERM+C*FINT(N+1)
+          ENDIF
+423       CONTINUE
+        SUM=SUM+TERM
+422     CONTINUE
+421   CONTINUE
+C          ADD INTEGRAL OF IMAGINARY PART SQUARED.
+      SUM=SUM+2.*ZLIM*(WTHELI(1)*AIWWWW(1)**2+WTHELI(2)*AIWWWW(2)**2
+     $+WTHELI(3)*AIWWWW(3)**2+WTHELI(4)*AIWWWW(4)**2)
+C          CROSS SECTION
+      SIG0=SUM/(32.*PI*S*SCM)*UNITS
+      SIG0=.5*SIG0
+      SIG0=SIG0*TBRWW(4,1)*TBRWW(4,2)
+      SIG=SIG0*QSAVE(29,1)*QSAVE(29,2)
+      CALL SIGFIL(SIG,29,29,29,29)
+C
+500   RETURN
+      END

@@ -1,0 +1,10 @@
+#ifndef CERNLIB_ISAJET_SSINF_INC
+#define CERNLIB_ISAJET_SSINF_INC
+*
+*
+* ssinf.inc
+*
+      COMMON/SSINF/XLAM
+      DOUBLE PRECISION XLAM
+
+#endif

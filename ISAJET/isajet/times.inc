@@ -1,0 +1,11 @@
+#ifndef CERNLIB_ISAJET_TIMES_INC
+#define CERNLIB_ISAJET_TIMES_INC
+*
+*
+* times.inc
+*
+      COMMON/TIMES/TIME1,TIME2
+      SAVE /TIMES/
+      REAL      TIME1,TIME2
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef CERNLIB_ISAJET_IZISAC_INC
+#define CERNLIB_ISAJET_IZISAC_INC
+*
+*
+* izisac.inc
+*
+      INTEGER IZISAC
+      PARAMETER (IZISAC=6)
+
+#endif

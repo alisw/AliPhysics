@@ -1,0 +1,11 @@
+#ifndef CERNLIB_ISAJET_MYHIST_INC
+#define CERNLIB_ISAJET_MYHIST_INC
+*
+*
+* myhist.inc
+*
+      COMMON/MYHIST/MXHIST,NHSHFT
+      SAVE /MYHIST/
+      INTEGER   MXHIST,NHSHFT
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef CERNLIB_ISAJET_IZISP1_INC
+#define CERNLIB_ISAJET_IZISP1_INC
+*
+*
+* izisp1.inc
+*
+      INTEGER IZISP1
+      PARAMETER (IZISP1=1)
+
+#endif

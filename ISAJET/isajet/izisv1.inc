@@ -1,0 +1,10 @@
+#ifndef CERNLIB_ISAJET_IZISV1_INC
+#define CERNLIB_ISAJET_IZISV1_INC
+*
+*
+* izisv1.inc
+*
+      INTEGER IZISV1
+      PARAMETER (IZISV1=3)
+
+#endif

@@ -1,0 +1,11 @@
+#ifndef CERNLIB_ISAJET_TCPAR_INC
+#define CERNLIB_ISAJET_TCPAR_INC
+*
+*
+* tcpar.inc
+*
+      COMMON/TCPAR/TCMRHO,TCGRHO
+      SAVE /TCPAR/
+      REAL TCMRHO,TCGRHO
+
+#endif

@@ -1,0 +1,18 @@
+#ifndef CERNLIB_ISAJET_JETSIG_INC
+#define CERNLIB_ISAJET_JETSIG_INC
+*
+*
+* jetsig.inc
+*
+      INTEGER   MXSIGS,IOPAK
+      PARAMETER (MXSIGS=3000,IOPAK=100)
+      COMMON/JETSIG/SIGMA,SIGS(MXSIGS),NSIGS,INOUT(MXSIGS),SIGEVT
+      SAVE /JETSIG/
+#if defined(CERNLIB_LEVEL2)
+#include "isajet/l2sigs.inc"
+* Ignoring t=pass
+#endif
+      INTEGER   NSIGS,INOUT
+      REAL      SIGMA,SIGS,SIGEVT
+
+#endif

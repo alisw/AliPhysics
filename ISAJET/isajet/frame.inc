@@ -1,0 +1,12 @@
+#ifndef CERNLIB_ISAJET_FRAME_INC
+#define CERNLIB_ISAJET_FRAME_INC
+*
+*
+* frame.inc
+*
+      COMMON/FRAME/FRAME(5,3),N0JETS,N0W,N0PAIR
+      SAVE /FRAME/
+      INTEGER   N0JETS,N0W,N0PAIR
+      REAL      FRAME
+
+#endif

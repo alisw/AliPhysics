@@ -1,0 +1,11 @@
+#ifndef CERNLIB_ISAJET_PRTOUT_INC
+#define CERNLIB_ISAJET_PRTOUT_INC
+*
+*
+* prtout.inc
+*
+      COMMON/PRTOUT/NEVPRT,NJUMP
+      SAVE /PRTOUT/
+      INTEGER   NEVPRT,NJUMP
+
+#endif

@@ -1,0 +1,12 @@
+#ifndef CERNLIB_ISAJET_DYPAR_INC
+#define CERNLIB_ISAJET_DYPAR_INC
+*
+*
+* dypar.inc
+*
+      COMMON/DYPAR/FLW,RNU2(3),ANORM(3),QPOW(3),PTPOW(3)
+      SAVE /DYPAR/
+      LOGICAL FLW
+      REAL      RNU2,ANORM,QPOW,PTPOW
+
+#endif
