@@ -58,7 +58,7 @@ AliPHOSGeometry::~AliPHOSGeometry(void)
 
   if (fRotMatrixArray) fRotMatrixArray->Delete() ; 
   if (fRotMatrixArray) delete fRotMatrixArray ; 
-  if (fPHOSAngle     ) delete fPHOSAngle ; 
+  if (fPHOSAngle     ) delete[] fPHOSAngle ; 
 }
 //____________________________________________________________________________
 
