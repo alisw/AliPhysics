@@ -28,9 +28,10 @@ src/AliL3VertexArray.cxx \
 src/AliL3VertexFinder.cxx \
 src/AliLevel3.cxx \
 src/AliHLTReconstructor.cxx \
-src/AliL3Log.cxx
+src/AliL3Log.cxx \
+src/AliL3TPCBeamTestMemHandler.cxx
 
-HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
+HDRS:= $(SRCS:.cxx=.h) src/AliL3SpacePointData.h 
 
 DHDR:= src/AliL3SrcLinkDef.h
 

@@ -31,6 +31,7 @@
 #pragma link C++ class AliL3ClustFinderNew;
 #pragma link C++ class AliL3Fitter;
 #pragma link C++ class AliL3RawDataFileHandler;
+#pragma link C++ class AliL3TPCBeamTestMemHandler;
 
 #ifdef use_aliroot
 #pragma link C++ class AliL3FileHandler;
