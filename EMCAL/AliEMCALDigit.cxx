@@ -63,7 +63,7 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
   // ctor with all data 
 
   fNMaxPrimary = 25 ; 
-  fNMaxiparent = 40 ; 
+  fNMaxiparent = 50 ; 
   fPrimary = new Int_t[fNMaxPrimary] ;
   fIparent = new Int_t[fNMaxiparent] ; 
   fAmp         = DigEnergy ;
@@ -249,10 +249,12 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
       fNprimary++ ;
       max1++;}
       if(fNprimary==fNMaxPrimary) {
+
 	TString mess = " NMaxPrimary  =  " ; 
 	mess += fNMaxPrimary ; 
 	mess += " is too small" ; 
 	Fatal("AliEMCALDigit::Operator+ -->" , mess.Data()) ; 
+
       }
     }
   }
@@ -269,10 +271,12 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
       fNiparent++ ;
       max2++;}
       if(fNiparent==fNMaxiparent) {
+
 	TString mess = " NMaxiparent  =  " ; 
 	mess += fNMaxiparent ; 
 	mess += " is too small" ; 
 	Fatal("AliEMCALDigit::Operator+ -->", mess.Data()) ; 
+
       }
     }
   }
