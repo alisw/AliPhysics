@@ -66,8 +66,10 @@ class AliRICH : public  AliDetector {
     virtual void   ResetRecHits1D();
     virtual void   ResetRecHits3D();
     virtual void   FindClusters(Int_t nev,Int_t lastEntry);
-    virtual void   Digitise(Int_t nev,Int_t flag,Option_t *opt=" ",Text_t *name=" ");
+    virtual void   Hits2SDigits();
     virtual void   SDigits2Digits();
+    virtual void   SDigits2Digits(Int_t nev, Int_t flag);
+    virtual void   Digits2Reco();
 // 
 // Configuration Methods (per station id)
 //
@@ -80,28 +82,28 @@ class AliRICH : public  AliDetector {
 // Set Reconstruction Model
     virtual void   SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconstruction);
 // Set source debugging level
-    void SetDebugLevel(Int_t level) {fDebugLevel=level;}
+    void           SetDebugLevel(Int_t level) {fDebugLevel=level;}
 // Set Merger
     virtual void   SetMerger(AliRICHMerger* thisMerger) {fMerger=thisMerger;}  
 // Get source debugging level
-    Int_t GetDebugLevel() {return fDebugLevel;}
+    Int_t          GetDebugLevel() {return fDebugLevel;}
 // Response Simulation
-    virtual Int_t   Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id, ResponseType res);
+    virtual Int_t  Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id, ResponseType res);
 // Return reference to Chamber #id
-    virtual AliRICHChamber& Chamber(Int_t id) {return *((AliRICHChamber *) (*fChambers)[id]);}
+    virtual        AliRICHChamber& Chamber(Int_t id) {return *((AliRICHChamber *) (*fChambers)[id]);}
 // Retrieve pad hits for a given Hit
-    virtual AliRICHSDigit* FirstPad(AliRICHHit *hit, TClonesArray *clusters);
-    virtual AliRICHSDigit* NextPad(TClonesArray *clusters);
+    virtual        AliRICHSDigit* FirstPad(AliRICHHit *hit, TClonesArray *clusters);
+    virtual        AliRICHSDigit* NextPad(TClonesArray *clusters);
 // Return pointers to digits 
-    TObjArray            *Dchambers() {return fDchambers;}
-    Int_t                *Ndch() {return fNdch;}
+    TObjArray     *Dchambers() {return fDchambers;}
+    Int_t         *Ndch() {return fNdch;}
     virtual TClonesArray *DigitsAddress(Int_t id) {return ((TClonesArray *) (*fDchambers)[id]);}
 // Return pointers to rec. hits
-    TObjArray            *RecHits1D() {return fRecHits1D;}
-    Int_t                *Nrechits1D() {return fNrechits1D;}
+    TObjArray     *RecHits1D() {return fRecHits1D;}
+    Int_t         *Nrechits1D() {return fNrechits1D;}
     virtual TClonesArray *RecHitsAddress1D(Int_t id) {return ((TClonesArray *) (*fRecHits1D)[id]);}
-    TObjArray            *RecHits3D() {return fRecHits3D;}
-    Int_t                *Nrechits3D() {return fNrechits3D;}
+    TObjArray     *RecHits3D() {return fRecHits3D;}
+    Int_t         *Nrechits3D() {return fNrechits3D;}
     virtual TClonesArray *RecHitsAddress3D(Int_t id) {return ((TClonesArray *) (*fRecHits3D)[id]);}
     
 // Return pointers to reconstructed clusters
@@ -126,29 +128,29 @@ class AliRICH : public  AliDetector {
     Int_t                 fNrechits3D[kNCH];   // Number of rec hits 
     Int_t                 fDebugLevel;         // Source debugging level
 
-    Int_t fCkovNumber;                   // Number of Cerenkov photons
-    Int_t fCkovQuarz;                    // Cerenkovs crossing quartz
-    Int_t fCkovGap;                      // Cerenkovs crossing gap
-    Int_t fCkovCsi;                      // Cerenkovs crossing csi
-    Int_t fLostRfreo;                    // Cerenkovs reflected in freon
-    Int_t fLostRquar;                    // Cerenkovs reflected in quartz
-    Int_t fLostAfreo;                    // Cerenkovs absorbed in freon 
-    Int_t fLostAquarz;                   // Cerenkovs absorbed in quartz
-    Int_t fLostAmeta;                    // Cerenkovs absorbed in methane
-    Int_t fLostCsi;                      // Cerenkovs below csi quantum efficiency 
-    Int_t fLostWires;                    // Cerenkovs lost in wires
-    Int_t fFreonProd;                    // Cerenkovs produced in freon
-    Float_t fMipx;                       // x coord. of MIP
-    Float_t fMipy;                       // y coord. of MIP
-    Int_t fFeedbacks;                    // Number of feedback photons
-    Int_t fLostFresnel;                  // Cerenkovs lost by Fresnel reflection
+    Int_t fCkovNumber;                         // Number of Cerenkov photons
+    Int_t fCkovQuarz;                          // Cerenkovs crossing quartz
+    Int_t fCkovGap;                            // Cerenkovs crossing gap
+    Int_t fCkovCsi;                            // Cerenkovs crossing csi
+    Int_t fLostRfreo;                          // Cerenkovs reflected in freon
+    Int_t fLostRquar;                          // Cerenkovs reflected in quartz
+    Int_t fLostAfreo;                          // Cerenkovs absorbed in freon 
+    Int_t fLostAquarz;                         // Cerenkovs absorbed in quartz
+    Int_t fLostAmeta;                          // Cerenkovs absorbed in methane
+    Int_t fLostCsi;                            // Cerenkovs below csi quantum efficiency 
+    Int_t fLostWires;                          // Cerenkovs lost in wires
+    Int_t fFreonProd;                          // Cerenkovs produced in freon
+    Float_t fMipx;                             // x coord. of MIP
+    Float_t fMipy;                             // y coord. of MIP
+    Int_t fFeedbacks;                          // Number of feedback photons
+    Int_t fLostFresnel;                        // Cerenkovs lost by Fresnel reflection
 
 
 // Background eent for event mixing
-    Text_t *fFileName;           // ! File with background hits
-    AliRICHMerger *fMerger;   // ! pointer to merger
+    Text_t *fFileName;                         // ! File with background hits
+    AliRICHMerger *fMerger;                    // ! pointer to merger
     
-    ClassDef(AliRICH,1)  //Hits manager for set:RICH
+    ClassDef(AliRICH,1)                        //Hits manager for set:RICH
 };
 #endif
 
