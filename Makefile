@@ -13,7 +13,7 @@ PACKAGE = Main
 
 DOTS = " ................................................................................"
 
-PRETTY =  awk '{print $$0 substr($(DOTS),1,79-length($$0))}'
+PRETTY =  $(AWK) '{print $$0 substr($(DOTS),1,79-length($$0))}'
 
 ##### Module libraries #####
 
@@ -28,6 +28,7 @@ lib bin:
 	@mkdir $@
 
 alilibs:  lib
+	echo MAKEFLAGS = $(MAKEFLAGS)
 	for i in $(ALIROOT_DIRS) ; do \
 	   echo "Making headers in $$i" | $(PRETTY); \
 	   ${MAKE} -C $$i headers ; \
@@ -42,7 +43,7 @@ alilibs:  lib
 	done
 
 aliroot geant321 minicern pdf pythia: bin
-	@DIR=`echo $@ | awk '{print toupper($$0)}'` ; \
+	@DIR=`echo $@ | $(AWK) '{print toupper($$0)}'` ; \
 	echo "Making dependencies in $$DIR" | $(PRETTY); \
 	${MAKE} -C $$DIR depend;\
 	echo "Making in $$DIR" | $(PRETTY); \
