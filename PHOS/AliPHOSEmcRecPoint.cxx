@@ -34,7 +34,7 @@
 
 // --- AliRoot header files ---
 
-#include "AliGenerator.h"
+ #include "AliGenerator.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliRun.h"
@@ -52,6 +52,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() : AliPHOSRecPoint()
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
   fTime = -1. ;
+  fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
    
 }
 
@@ -475,6 +476,7 @@ void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
   EvalElipsAxis(logWeight, digits) ;
   EvalDispersion(logWeight, digits) ;
   EvalCoreEnergy(logWeight, digits);
+  EvalTime(digits) ;
 }
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digits)
@@ -540,6 +542,7 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
   fLocPos.SetY(0.) ;
   fLocPos.SetZ(z - depthz)  ;
 
+  fLocPosM = 0 ;
 }
 
 //____________________________________________________________________________

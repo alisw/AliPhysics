@@ -123,6 +123,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard)
   fARD = ard ;
   SetName("Default");
   SetTitle("aliroot") ;
+  Init() ;
   
 }
 
@@ -145,7 +146,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   // This design avoids scanning over the list of digits to add 
   // contribution to new SDigits only.
 
-  if( !AliPHOSGetter::GetInstance())
+  if( strcmp(GetName(), "") == 0 )
     Init() ;
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
@@ -197,7 +198,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   Int_t i;
   for(i=0; i<input; i++){
     sdigits = (TClonesArray *)sdigArray->At(i) ;
-    if ( !sdigits->GetEntries() )
+    if ( !sdigits->GetEntriesFast() )
       continue ; 
     Int_t curNext = ((AliPHOSDigit *)sdigits->At(0))->GetId() ;
      if(curNext < nextSig) 
@@ -296,6 +297,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 	  curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ; 	
 	else
 	  curSDigit = 0 ;
+
 	//May be several digits will contribute from the same input
 	while(curSDigit && curSDigit->GetId() == absID){	   
 	  //Shift primary to separate primaries belonging different inputs
@@ -315,8 +317,9 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 	    curSDigit = 0 ;
 	}
       }
-      
+
       //Find next signal module
+      nextSig = 200000 ;
       for(i=0; i<input; i++){
 	sdigits = (TClonesArray *)sdigArray->At(i) ;
 	Int_t curNext = nextSig ;
@@ -332,17 +335,18 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   
   
   //remove digits below thresholds
-  for(absID = 0; absID < nEMC ; absID++){
-    digit = (AliPHOSDigit*) digits->At(absID) ;
+  for(i = 0; i < nEMC ; i++){
+    digit = (AliPHOSDigit*) digits->At(i) ;
     if(sDigitizer->Calibrate( digit->GetAmp() ) < fEMCDigitThreshold)
-      digits->RemoveAt(absID) ;
+      digits->RemoveAt(i) ;
     else
       digit->SetTime(gRandom->Gaus(digit->GetTime(),fTimeResolution) ) ;
   }
 
-  for(absID = nEMC; absID < nCPV ; absID++)
-    if(sDigitizer->Calibrate(((AliPHOSDigit*)digits->At(absID))->GetAmp()) < fCPVDigitThreshold)
-      digits->RemoveAt(absID) ;
+
+  for(i = nEMC; i < nCPV ; i++)
+    if(sDigitizer->Calibrate(((AliPHOSDigit*)digits->At(i))->GetAmp()) < fCPVDigitThreshold)
+      digits->RemoveAt(i) ;
     
   digits->Compress() ;  
   
@@ -644,10 +648,11 @@ void AliPHOSDigitizer::PrintDigits(Option_t * option){
     
     //loop over digits
     AliPHOSDigit * digit;
-    cout << "Digit Id    Amplitude     Index "  <<  " Nprim " << " Primaries list " <<  endl;      
+    cout << "EMC digits (with primaries): " << endl ;
+    cout << "Digit Id     Amplitude   Index       Nprim  Primaries list " <<  endl;      
     Int_t maxEmc = gime->PHOSGeometry()->GetNModules()*gime->PHOSGeometry()->GetNCristalsInModule() ;
     Int_t index ;
-    for (index = 0 ; (index < digits->GetEntries()) && 
+    for (index = 0 ; (index < digits->GetEntriesFast()) && 
 	 (((AliPHOSDigit * )  digits->At(index))->GetId() <= maxEmc) ; index++) {
       digit = (AliPHOSDigit * )  digits->At(index) ;
       if(digit->GetNprimary() == 0) continue;
@@ -667,10 +672,11 @@ void AliPHOSDigitizer::PrintDigits(Option_t * option){
     
     //loop over CPV digits
     AliPHOSDigit * digit;
-    cout << "Digit Id " << " Amplitude " <<  " Index "  <<  " Nprim " << " Primaries list " <<  endl;      
+    cout << "CPV digits: " << endl ;
+    cout << "Digit Id     Amplitude   Index       Nprim  Primaries list " <<  endl;      
     Int_t maxEmc = gime->PHOSGeometry()->GetNModules()*gime->PHOSGeometry()->GetNCristalsInModule() ;
     Int_t index ;
-    for (index = 0 ; index < digits->GetEntries(); index++) {
+    for (index = 0 ; index < digits->GetEntriesFast(); index++) {
       digit = (AliPHOSDigit * )  digits->At(index) ;
       if(digit->GetId() > maxEmc){
 	cout << setw(6)  <<  digit->GetId() << "   "  << 	setw(10)  <<  digit->GetAmp() <<   "    "  

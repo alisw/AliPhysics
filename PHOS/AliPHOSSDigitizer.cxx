@@ -63,6 +63,7 @@
 // --- AliRoot header files ---
 #include "AliRun.h"
 #include "AliPHOSDigit.h"
+#include "AliPHOSGeometry.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSSDigitizer.h"
@@ -326,40 +327,67 @@ Bool_t AliPHOSSDigitizer::operator==( AliPHOSSDigitizer const &sd )const
     return kFALSE ;
 }
 //__________________________________________________________________
+//__________________________________________________________________
 void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
 {
   // Prints list of digits produced in the current pass of AliPHOSDigitizer
+
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   TString sdname(GetName()) ;
   sdname.Remove(sdname.Index(GetTitle())-1) ;
   TClonesArray * sdigits = gime->SDigits(sdname.Data()) ; 
 
-  cout << "AliPHOSSDigitizer: event "<<gAlice->GetEvNumber() << endl ;
-  cout << "       Number of entries in SDigits list  " << sdigits->GetEntriesFast() << endl ;
+  cout << "AliPHOSSDigitiser: event " << gAlice->GetEvNumber() << endl ;
+  cout << "      Number of entries in SDigits list " << sdigits->GetEntriesFast() << endl ;
   cout << endl ;
-
-  fSDigitsInRun +=  sdigits->GetEntriesFast() ; 
-  
-  if(strstr(option,"all")){// print all digits
+  if(strstr(option,"all")||strstr(option,"EMC")){
     
     //loop over digits
     AliPHOSDigit * digit;
-    cout << "SDigit Id " << " Amplitude " <<  " Index "  <<  " Nprim " << " Primaries list " <<  endl;    
+    cout << "EMC sdigits " << endl ;
+    cout << "Digit Id    Amplitude     Index     Nprim  Primaries list " <<  endl;      
+    Int_t maxEmc = gime->PHOSGeometry()->GetNModules()*gime->PHOSGeometry()->GetNCristalsInModule() ;
     Int_t index ;
-    for (index = 0 ; index < sdigits->GetEntries() ; index++) {
+    for (index = 0 ; (index < sdigits->GetEntriesFast()) && 
+	 (((AliPHOSDigit * )  sdigits->At(index))->GetId() <= maxEmc) ; index++) {
       digit = (AliPHOSDigit * )  sdigits->At(index) ;
-      cout << setw(8)  <<  digit->GetId() << " "  << 	setw(3)  <<  digit->GetAmp() <<   "  "  
-	   << setw(6)  <<  digit->GetIndexInList() << "  "   
-	   << setw(5)  <<  digit->GetNprimary() <<"  ";
+      if(digit->GetNprimary() == 0) continue;
+      cout << setw(6)  <<  digit->GetId() << "   "  << 	setw(10)  <<  digit->GetAmp() <<   "    "  
+	   << setw(6)  <<  digit->GetIndexInList() << "    "   
+	   << setw(5)  <<  digit->GetNprimary() <<"    ";
       
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++)
-	cout << setw(5)  <<  digit->GetPrimary(iprimary+1) << "  ";
+	cout << setw(5)  <<  digit->GetPrimary(iprimary+1) << "    ";
       cout << endl;  	 
-    }
-    
+    }    
+    cout << endl;
   }
+
+  if(strstr(option,"all")||strstr(option,"CPV")){
+    
+    //loop over CPV digits
+    AliPHOSDigit * digit;
+    cout << "CPV sdigits " << endl ;
+    cout << "Digit Id    Amplitude     Index     Nprim  Primaries list " <<  endl;      
+    Int_t maxEmc = gime->PHOSGeometry()->GetNModules()*gime->PHOSGeometry()->GetNCristalsInModule() ;
+    Int_t index ;
+    for (index = 0 ; index < sdigits->GetEntriesFast(); index++) {
+      digit = (AliPHOSDigit * )  sdigits->At(index) ;
+      if(digit->GetId() > maxEmc){
+	cout << setw(6)  <<  digit->GetId() << "   "  << 	setw(10)  <<  digit->GetAmp() <<   "    "  
+	     << setw(6)  <<  digit->GetIndexInList() << "    "   
+	     << setw(5)  <<  digit->GetNprimary() <<"    ";
+	
+	Int_t iprimary;
+	for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++)
+	  cout << setw(5)  <<  digit->GetPrimary(iprimary+1) << "    ";
+	cout << endl;  	 
+      }    
+    }
+  }
+
 }
 
 //____________________________________________________________________________ 
