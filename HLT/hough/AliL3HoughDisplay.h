@@ -3,8 +3,6 @@
 #ifndef ALIL3HOUGHDISPLAY_H
 #define ALIL3HOUGHDISPLAY_H
 
-#include "AliL3RootTypes.h"
-
 class TGeometry;
 class AliL3TrackArray;
 class AliL3DigitRowData;

@@ -3,7 +3,6 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliL3StandardIncludes.h"
 
 #include <TCanvas.h>
 #include <TView.h>
@@ -14,6 +13,9 @@
 #include <TShape.h>
 #include <TFile.h>
 
+#include "AliL3StandardIncludes.h"
+#include "AliL3RootTypes.h"
+#include "AliL3DigitData.h"
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 #include "AliL3HoughTrack.h"
