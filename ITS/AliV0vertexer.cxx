@@ -21,7 +21,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TObjArray.h>
-#include <Riostream.h>
+#include <iostream.h>
 
 #include "AliV0vertex.h"
 #include "AliV0vertexer.h"
@@ -50,7 +50,9 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
 
    in->cd();
 
-   TTree *trkTree=(TTree*)in->Get("TreeT_ITS_0");
+   Char_t name[100];
+   sprintf(name,"TreeT_ITS_%d",fEventN);
+   TTree *trkTree=(TTree*)in->Get(name);
    TBranch *branch=trkTree->GetBranch("tracks");
    Int_t nentr=(Int_t)trkTree->GetEntries();
 
@@ -73,7 +75,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
 
 
    out->cd();
-   TTree vtxTree("TreeV","Tree with V0 vertices");
+   sprintf(name,"TreeV%d",fEventN);
+   TTree vtxTree(name,"Tree with V0 vertices");
    AliV0vertex *ioVertex=0;
    vtxTree.Branch("vertices","AliV0vertex",&ioVertex,32000,0);
 
@@ -82,17 +85,17 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
       if (i%10==0) cerr<<nneg-i<<'\r';
       AliITStrackV2 *ntrk=(AliITStrackV2 *)negtrks.UncheckedAt(i);
 
-      if (TMath::Abs(ntrk->GetD())<fDPmin) continue;
-      if (TMath::Abs(ntrk->GetD())>fRmax) continue;
+      if (TMath::Abs(ntrk->GetD(fX,fY))<fDPmin) continue;
+      if (TMath::Abs(ntrk->GetD(fX,fY))>fRmax) continue;
 
       for (Int_t k=0; k<npos; k++) {
          AliITStrackV2 *ptrk=(AliITStrackV2 *)postrks.UncheckedAt(k);
 
-         if (TMath::Abs(ptrk->GetD())<fDPmin) continue;
-         if (TMath::Abs(ptrk->GetD())>fRmax) continue;
+         if (TMath::Abs(ptrk->GetD(fX,fY))<fDPmin) continue;
+         if (TMath::Abs(ptrk->GetD(fX,fY))>fRmax) continue;
 
-         if (TMath::Abs(ntrk->GetD())<fDNmin)
-         if (TMath::Abs(ptrk->GetD())<fDNmin) continue;
+         if (TMath::Abs(ntrk->GetD(fX,fY))<fDNmin)
+         if (TMath::Abs(ptrk->GetD(fX,fY))<fDNmin) continue;
 
 
          AliITStrackV2 nt(*ntrk), pt(*ptrk), *pnt=&nt, *ppt=&pt;
@@ -115,10 +118,11 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
 
          Double_t px,py,pz; vertex.GetPxPyPz(px,py,pz);
          Double_t p2=px*px+py*py+pz*pz;
-         Double_t cost=(x*px+y*py+z*pz)/TMath::Sqrt(p2*(r2+z*z));
+         Double_t cost=((x-fX)*px + (y-fY)*py + (z-fZ)*pz)/
+                TMath::Sqrt(p2*((x-fX)*(x-fX) + (y-fY)*(y-fY) + (z-fZ)*(z-fZ)));
 
-         if (cost < (5*fCPAmax-0.9-TMath::Sqrt(r2)*(fCPAmax-1))/4.1) continue;
-         //if (cost < fCPAmax) continue;
+         //if (cost < (5*fCPAmax-0.9-TMath::Sqrt(r2)*(fCPAmax-1))/4.1) continue;
+         if (cost < fCPAmax) continue;
 
          //vertex.ChangeMassHypothesis(); //default is Lambda0 
 

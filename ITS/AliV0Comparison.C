@@ -59,7 +59,7 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
    TFile *vf=TFile::Open("AliV0vertices.root");
    if (!vf->IsOpen()) {cerr<<"Can't open AliV0vertices.root !\n"; return 2;}
    TObjArray varray(1000);
-   TTree *vTree=(TTree*)vf->Get("TreeV");
+   TTree *vTree=(TTree*)vf->Get("TreeV0");
    TBranch *branch=vTree->GetBranch("vertices");
    Int_t nentr=(Int_t)vTree->GetEntries();
    for (Int_t i=0; i<nentr; i++) {
