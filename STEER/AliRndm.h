@@ -23,7 +23,7 @@ public:
   
   // Random number generator bit
   virtual void SetRandom(TRandom *ran=0)
-  {if(ran) fRandom=ran;
+  {if(ran) fRandom=sRandom=ran;
   else fRandom=sRandom=gRandom;}
 
   virtual TRandom* GetRandom() const {return fRandom;}
