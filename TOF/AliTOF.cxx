@@ -731,11 +731,11 @@ void AliTOF::Hits2SDigits()
 
   cout<<"AliTOF::Hits2SDigits> start...\n";
   
-  const char * fileHeader = fLoader->GetRunLoader()->GetFileName().Data();
-  AliTOFSDigitizer * sd = new AliTOFSDigitizer(fileHeader);
-  sd->Print("");
+  AliRunLoader * rl = fLoader->GetRunLoader();
+  AliTOFSDigitizer sd((rl->GetFileName()).Data());
+  sd.Print("");
 
-  sd->Exec("") ;
+  sd.Exec("") ;
 
 }
 
@@ -752,11 +752,11 @@ void AliTOF::Hits2SDigits(Int_t evNumber1, Int_t evNumber2)
       cout << "<AliTOF::Hits2SDigits>: I am making sdigits for the events from the " 
            << evNumber1 << "th to the " << evNumber2-1 << "th \n";
  
-  const char * fileHeader = fLoader->GetRunLoader()->GetFileName().Data();
-  AliTOFSDigitizer * sd = new AliTOFSDigitizer(fileHeader,evNumber1,evNumber2) ;
-  sd->Print("");
+  AliRunLoader * rl = fLoader->GetRunLoader();
+  AliTOFSDigitizer sd((rl->GetFileName()).Data(),evNumber1,evNumber2) ;
+  sd.Print("");
 
-  sd->Exec("") ;
+  sd.Exec("") ;
 
 }
 
