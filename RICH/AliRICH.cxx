@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.21  2000/07/21 10:21:07  morsch
+  fNrawch   = 0; and  fNrechits = 0; in the default constructor.
+
   Revision 1.20  2000/07/10 15:28:39  fca
   Correction of the inheritance scheme
 
@@ -1378,6 +1381,7 @@ void AliRICH::StepManager()
     pos[0]=position(0);
     pos[1]=position(1);
     pos[2]=position(2);
+    bzero(ckovData,sizeof(ckovData)*19);
     ckovData[1] = pos[0];                 // X-position for hit
     ckovData[2] = pos[1];                 // Y-position for hit
     ckovData[3] = pos[2];                 // Z-position for hit
