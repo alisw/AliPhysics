@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.10  2000/10/02 21:28:15  fca
 Removal of useless dependecies via forward declarations
 
@@ -283,7 +286,7 @@ void AliHALL::CreateGeometry()
   pbox[2] = 120.;
   gMC->Gsvolu("HMBS", "BOX ", idtmed[1956], pbox, 3);
   pbox[0] = 85.;
-  pbox[1] = 100.;
+  pbox[1] = 120.;
   gMC->Gsvolu("HBBS", "BOX ", idtmed[1956], pbox, 3);
   gMC->Gspos("HBBS", 1, "HMBS", -157.5, 0., 0., 0, "ONLY");
   pbox[0] = 40.;
