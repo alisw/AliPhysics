@@ -56,7 +56,7 @@
 
 #include "AliGenHBTprocessor.h"
 #include "TROOT.h"
-#include <iostream.h>
+#include <Riostream.h>
 #include <TFile.h>
 #include <TTree.h>
 #include "AliRun.h"

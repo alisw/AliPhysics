@@ -241,5 +241,5 @@ class AliGenHBTprocessor : public AliGenerator
     ClassDef(AliGenHBTprocessor,1) // Interface class for AliMevsim
     
 };
-#include <iostream.h>
+#include <Riostream.h>
 #endif

@@ -34,7 +34,7 @@
 #include <TObjArray.h>
 #include <TList.h>
 #include <TParticle.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 
 ClassImp(AliGenCocktailAfterBurner)
