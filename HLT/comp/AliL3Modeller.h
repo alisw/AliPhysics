@@ -45,9 +45,6 @@ class AliL3Modeller {
   void FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row,Int_t npads);
   void CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigmaZ2);
   void FillZeros(AliL3DigitRowData *digPt,Digit *row);
-#ifdef do_mc
-  void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
-#endif
     
  public:
   
@@ -61,8 +58,9 @@ class AliL3Modeller {
   void WriteRemaining();
   
   void SetInputData(AliL3DigitRowData *digits) {fRowData = digits;}
-  void SetTrackThreshold(Int_t i) {fTrackThreshold=i;}
-
+  void SetTrackThreshold(Int_t i=0) {fTrackThreshold=i;}
+  void SetOverlap(Int_t p=6,Int_t t=8) {fPadOverlap=p;fTimeOverlap=t;}
+  
   AliL3TrackArray *GetTracks() {return fTracks;}
     
   ClassDef(AliL3Modeller,1) //Modeller class

@@ -65,10 +65,7 @@ void AliL3ModelTrack::Init(Int_t slice,Int_t patch)
   memset(fTrackModel,0,sizeof(AliL3TrackModel));
   for(Int_t i=0; i<nrows; i++)
     fOverlap[i]=-1;
-#ifdef do_mc
-  for(Int_t i=0; i<nrows; i++)
-    fClusters[i].fTrackID[0]=fClusters[i].fTrackID[1]=fClusters[i].fTrackID[2]=-2;
-#endif
+
   fClusterCharge = 100;
   
   // 100 micrometers:
@@ -92,14 +89,17 @@ void AliL3ModelTrack::SetCluster(Int_t row,Float_t fpad,Float_t ftime,Float_t ch
       return;
     }
   AliL3ClusterModel *cl = GetClusterModel(row);
-  if(!charge)
+  
+  //Do not save the cluster if there were no charge found, or only 1 pad is present.
+  //In the latter case it is most probably noise.
+  if(!charge || npads == 1)
     cl->fPresent = kFALSE;
   else
     {
       cl->fPresent = kTRUE;
       cl->fDTime = (ftime - GetTimeHit(row))/fXYResidualQ;
       cl->fDPad = (fpad - GetPadHit(row))/fZResidualQ;
-      cl->fDCharge = charge - fClusterCharge;
+      cl->fDCharge = charge;// - fClusterCharge;
       cl->fDSigmaY2 = (sigmaY2 - GetParSigmaY2(row))/fXYWidthQ;
       cl->fDSigmaZ2 = (sigmaZ2 - GetParSigmaZ2(row))/fZWidthQ;
       cl->fNPads = npads;
@@ -108,24 +108,20 @@ void AliL3ModelTrack::SetCluster(Int_t row,Float_t fpad,Float_t ftime,Float_t ch
   fNClusters++;
 }
 
-Int_t AliL3ModelTrack::CheckClustersQuality(UInt_t npads)
+Int_t AliL3ModelTrack::GetNPresentClusters()
 {
-
-  //Check the quality of clusters,- remove clusters with less than
-  //npads. 
-  //Returns the number of good clusters left.
-
+  //Return the number of assigned clusters to the track.
+  //Differs from fNClusters, which should be equal to the 
+  //number of padrows in the present patch.
+  
   Int_t count=0;
 
   for(Int_t i=AliL3Transform::GetFirstRow(fPatch); i<=AliL3Transform::GetLastRow(fPatch); i++)
     {
       AliL3ClusterModel *cl = GetClusterModel(i);
-      if(cl->fNPads < npads)
-	cl->fPresent = kFALSE;
       if(cl->fPresent)
 	count++;
     }
-  
   return count;
 }
 
@@ -186,19 +182,6 @@ void AliL3ModelTrack::FillTrack()
 }
 
 
-void AliL3ModelTrack::SetTrackID(Int_t row,Int_t *trackID)
-{
-#ifdef do_mc
-  AliL3ClusterModel *cluster = GetClusterModel(row);
-  cluster->fTrackID[0] = trackID[0];
-  cluster->fTrackID[1] = trackID[1];
-  cluster->fTrackID[2] = trackID[2];
-  return;
-#endif
-  cerr<<"AliL3ModelTrack::SetTrackID : Compile with do_mc flag"<<endl;
-}
-
-
 void AliL3ModelTrack::SetPadHit(Int_t row,Float_t pad)
 {
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
@@ -234,17 +217,6 @@ void AliL3ModelTrack::SetOverlap(Int_t row,Int_t id)
 }
 
 
-Int_t AliL3ModelTrack::GetTrackID(Int_t row,Int_t index)
-{
-  
-#ifdef do_mc
-  AliL3ClusterModel *cl = GetClusterModel(row);
-  return cl->fTrackID[index];
-#endif
-  cerr<<"AliL3ModelTrack::GetTrackID : Compile with do_mc flag"<<endl;
-}
-
-
 Int_t AliL3ModelTrack::GetNPads(Int_t row)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
@@ -273,7 +245,7 @@ Bool_t AliL3ModelTrack::GetTime(Int_t row,Float_t &time)
 Bool_t AliL3ModelTrack::GetClusterCharge(Int_t row,Int_t &charge)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
-  charge = (Int_t)cl->fDCharge + fClusterCharge;
+  charge = (Int_t)cl->fDCharge;// + fClusterCharge;
   
   return (Bool_t)cl->fPresent;
 }
@@ -282,7 +254,7 @@ Bool_t AliL3ModelTrack::GetXYWidth(Int_t row,Float_t &width)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
   width = cl->fDSigmaY2*fXYWidthQ + GetParSigmaY2(row);
-  
+
   return (Bool_t)cl->fPresent;
 }
 
@@ -290,7 +262,7 @@ Bool_t AliL3ModelTrack::GetZWidth(Int_t row,Float_t &width)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
   width = cl->fDSigmaZ2*fZWidthQ + GetParSigmaZ2(row);
-  
+
   return (Bool_t)cl->fPresent;
 }
 
@@ -390,9 +362,9 @@ void AliL3ModelTrack::Print()
 	  cout<<i<<" Dpad "<<cl->fDPad<<" Dtime "<<cl->fDTime<<" Dcharge "<<cl->fDCharge;
 	  cout<<" DsigmaY2 "<<cl->fDSigmaY2<<" DsigmaZ2 "<<cl->fDSigmaZ2;
 	  cout<<" Padcrossing "<<GetPadHit(i)<<" Timecrossing "<<GetTimeHit(i)<<" ";
-	  cout<<"Number of pads "<<GetNPads(i)<<endl;
+	  cout<<"Number of pads "<<GetNPads(i)<<" Overlapping index "<<GetOverlap(i);
 	}
-      cout<<"Overlapping index "<<GetOverlap(i)<<endl;
+      cout<<endl;
     }
 }
 
@@ -418,7 +390,7 @@ Double_t AliL3ModelTrack::GetParSigmaY2(Int_t row)
   
   Double_t prf = AliL3Transform::GetPRFSigma(fPatch);
   Double_t diffT = AliL3Transform::GetDiffT();
-  Double_t padlength = AliL3Transform::GetPadLength(fPatch);
+  Double_t padlength = AliL3Transform::GetPadLength(row);
   Double_t anode = AliL3Transform::GetAnodeWireSpacing();
   Double_t beta = GetCrossingAngle(row);
   
@@ -451,69 +423,15 @@ Double_t AliL3ModelTrack::GetParSigmaZ2(Int_t row)
   
   Double_t sigma0 = AliL3Transform::GetTimeSigma();
   Double_t diffL = AliL3Transform::GetDiffL();
-  Double_t padlength = AliL3Transform::GetPadLength(fPatch);
+  Double_t padlength = AliL3Transform::GetPadLength(row);
   Double_t tanl = GetTgl();
   
   Double_t sigmaZ2 = sigma0*sigma0 + diffL*diffL*drift + padlength*padlength * tanl*tanl/12;
   
   //Convert back to raw coodinates:
   sigmaZ2 = sigmaZ2/pow(AliL3Transform::GetZWidth(),2);
+  
   return sigmaZ2;
   
 }
 
-void AliL3ModelTrack::AssignTrackID(Float_t wrong)
-{
-  //Assign a track ID to the track, corresponding to the MC TParticle ID.
-  //Can only be done if you compiled with do_mc flag, of course.
-  //The function loops over the assigned clusters, and finds the label (ID)
-  //of each clusters, and assigns the ID with the most hits to the track.
-  //If there are more than wrong% clusters of a different ID, the track is
-  //considered to be fake, and label will be assigned as negative.
-  
-#ifdef do_mc
-  Int_t *lb = new Int_t[GetNClusters()];
-  Int_t *mx = new Int_t[GetNClusters()];
-
-  Int_t i,j;
-  for(Int_t i=0; i<GetNClusters(); i++) 
-    lb[i]=mx[i]=0;
-  
-  Int_t lab=123456789;
-  
-  for(i=0; i<GetNClusters(); i++) 
-    {
-      lab = abs(GetTrackID(i,0));
-      for (j=0; j<GetNClusters(); j++) 
-	if (lb[j]==lab || mx[j]==0) break;
-      lb[j]=lab;
-      (mx[j])++;
-    }
-  
-  Int_t max=0;
-  for (i=0; i<GetNClusters(); i++) 
-    {
-      if(mx[i] > max) 
-	{
-	  max=mx[i]; 
-	  lab=lb[i];
-	}
-    }
-  
-  for (i=0; i<GetNClusters(); i++) 
-    {
-      if(abs(GetTrackID(i,1)) == lab ||
-	 abs(GetTrackID(i,2)) == lab)
-	max++;
-    }
-
-  if ((1.- Float_t(max)/GetNClusters()) > wrong) lab=-lab;
-
-  SetLabel(lab);
-
-  delete[] lb;
-  delete[] mx;
-  return;
-#endif
-  cerr<<"AliL3ModelTrack::AssignTrackID : Compile with do_mc flag"<<endl;
-}

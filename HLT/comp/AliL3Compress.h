@@ -24,7 +24,8 @@ class AliL3Compress {
   Int_t fSlice;
   Int_t fPatch;
   Char_t fPath[100];
-
+  Bool_t fWriteShape;
+  
   void CreateDigitArray(Int_t maxnumber);
   void CreateDigits(Int_t row,Int_t npads,Float_t pad,Float_t time,Int_t charge,Float_t ywidth,Float_t zwidth);
   void QSort(AliL3RandomDigitData **a, Int_t first, Int_t last);
@@ -33,7 +34,7 @@ class AliL3Compress {
 
  public:
   AliL3Compress();
-  AliL3Compress(Int_t slice,Int_t patch,Char_t *path="./");
+  AliL3Compress(Int_t slice,Int_t patch,Char_t *path="./",Bool_t writeshape=kFALSE);
   virtual ~AliL3Compress();
   
   void SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shape);

@@ -37,8 +37,8 @@ AliL3Modeller::AliL3Modeller()
   fTracks=0;
   fTrackThreshold=0;
   fPadOverlap=0;
-  fTimeOverlap=0;
-  fRowData=0;
+  SetOverlap();
+  SetTrackThreshold();
 }
 
 
@@ -54,12 +54,8 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,
 {
   fSlice = slice;
   fPatch = patch;
-  fPadOverlap=6;
-  fTimeOverlap=8;
-  
+
   sprintf(fPath,"%s",path);
-  
-  AliL3Transform::Init(fPath);
   
   fTracks = new AliL3TrackArray("AliL3ModelTrack");
   
@@ -99,21 +95,32 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,
   
   CalculateCrossingPoints();
   
-  if(!houghtracks)
-    CheckForOverlaps();
-
+  CheckForOverlaps();
+  
   UInt_t ndigits=0;
   AliL3DigitRowData *digits=0;
 #ifdef use_aliroot
   fMemHandler = new AliL3FileHandler();
+  fMemHandler->Init(slice,patch);
   if(binary == kFALSE)
     {
-      sprintf(fname,"%s/digitfile",fPath);
+      sprintf(fname,"%s/digitfile.root",fPath);
       fMemHandler->SetAliInput(fname);
       digits = fMemHandler->AliDigits2Memory(ndigits);
     }
+  else
+    {
+      sprintf(fname,"%sdigits_%d_%d.raw",fPath,fSlice,fPatch);
+      if(!fMemHandler->SetBinaryInput(fname))
+	{
+	  cerr<<"AliL3Modeller::Init : Error opening file "<<fname<<endl;
+	  return;
+	}
+      digits=(AliL3DigitRowData*)fMemHandler->CompBinary2Memory(ndigits);
+    }
 #else
   fMemHandler = new AliL3MemHandler();
+  fMemHandler->Init(slice,patch);
   if(binary == kFALSE)
     {
       cerr<<"AliL3Modeller::Init : Compile with AliROOT if you want rootfile as input"<<endl;
@@ -166,6 +173,7 @@ void AliL3Modeller::FindClusters()
       fCurrentPadRow = i;
       memset((void*)row,0,ntimes*npads*sizeof(Digit));
       digPt = (AliL3DigitData*)rowPt->fDigitData;
+      //cout<<"Loading row "<<i<<" with "<<(Int_t)rowPt->fNDigit<<" digits"<<endl;
       for(UInt_t j=0; j<rowPt->fNDigit; j++)
 	{
 	  pad = digPt[j].fPad;
@@ -180,7 +188,6 @@ void AliL3Modeller::FindClusters()
 	{
 	  AliL3ModelTrack *track = (AliL3ModelTrack*)fTracks->GetCheckedTrack(k);
 	  if(!track) continue;
-	  //if(track->GetOverlap(i)>=0) continue;//Track is overlapping
 	  
 	  if(track->GetPadHit(i)<0 || track->GetTimeHit(i)<0 || track->GetOverlap(i)>=0)
 	    {
@@ -222,46 +229,45 @@ void AliL3Modeller::FindClusters()
 		      break;
 		    }
 		  
-		  /*
-		  if(row[index].fUsed == kTRUE)//Only use the digits once....
-		    charge = 0;
-		  else
-		    charge = row[index].fCharge;
-		  */
-		  
 		  charge = row[index].fCharge;
-		  if(charge==0 && timesign==-1)
+		  if(charge==0 && timesign==-1) //zero charge on this timebin, perform checks:
 		    {
-		      if(seq_charge==0 && abs(time-hittime) <= fTimeOverlap/2)
+		      if(seq_charge==0 && abs(time-hittime) <= fTimeOverlap) //No charge found on this pad, look further.
 			{
 			  time--;
 			  continue;
 			}
-		      else
+		      else //Boundary reached, or we have found one end of the sequence,->start looking in the other time direction
 			{
 			  time = hittime+1;
 			  timesign=1;
 			  continue;
 			}
 		    }
-		  else if(charge==0 && timesign==1)
+		  else if(charge==0 && timesign==1)//zero charge on this timebin, perform checks:
 		    {
-		      if(seq_charge==0 && abs(time-hittime) <= fTimeOverlap/2)
+		      if(seq_charge==0 && abs(time-hittime) <= fTimeOverlap)//No charge found on this pad, look further
 			{
 			  time++;
 			  continue;
 			}
-		      else
+		      else //Boundary reached, or we have found the other end of the sequence, stop looking on this pad.
 			{
-			  //cerr<<"Breaking off at pad "<<pad<<" and time "<<time<<endl;
+			  //if(fCurrentPadRow==31)
+			  //   cerr<<"Breaking off at pad "<<pad<<" and time "<<time<<endl;
 			  break;
 			}
 		    }
 		  
-		  //cout<<"Doing pad "<<pad<<" time "<<time<<" charge "<<charge<<endl;
+		  if(row[ntimes*pad+time].fUsed==kTRUE) //Don't use digits several times. This leads to mult. rec.tracks.
+		    {
+		      time += timesign;
+		      continue;
+		    }
 		  
 		  seq_charge += charge;
-		  		  		  
+		  
+		  //Update the cluster parameters with this timebin
 		  cluster.fTime += time*charge;
 		  cluster.fPad += pad*charge;
 		  cluster.fCharge += charge;
@@ -273,7 +279,7 @@ void AliL3Modeller::FindClusters()
 		}
 	      
 	      
-	      if(seq_charge)//There was something on this pad.
+	      if(seq_charge)//There was something on this pad, so keep looking on the neighbouring pad
 		{
 		  pad += padsign;
 		  npads++;
@@ -282,7 +288,7 @@ void AliL3Modeller::FindClusters()
 		{
 		  if(padsign==-1) 
 		    {
-		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadOverlap/2 && pad > 0)
+		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadOverlap && pad > 0)
 			{
 			  pad--; //In this case, we haven't found anything yet, 
 			}        //so we will try to expand our search within the natural boundaries.
@@ -296,20 +302,22 @@ void AliL3Modeller::FindClusters()
 		  
 		  else if(padsign==1)
 		    {
-		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadOverlap/2 && pad < AliL3Transform::GetNPads(i)-2)
+		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadOverlap && pad < AliL3Transform::GetNPads(i)-2)
 			{
 			  pad++;     //In this case, we haven't found anything yet, 
 			  continue;  //so we will try to expand our search within the natural boundaries.
 			}
 		      else //We are out of range, or cluster if finished.
 			{
-			  //cout<<"Outof range; charge "<<cluster.fCharge<<" paddiff "<<abs(pad-hitpad)<<endl;
+			  //if(fCurrentPadRow==31)
+			  //cout<<"Out of range; charge "<<cluster.fCharge<<" paddiff "<<abs(pad-hitpad)<<endl;
 			  FillCluster(track,&cluster,i,npads);
 			  break;
 			}
 		    }
 		  else //Nothing more in this cluster
 		    {
+		      //if(fCurrentPadRow==31)
 		      //cout<<"Filling final cluster"<<endl;
 		      FillCluster(track,&cluster,i,npads);
 		      break;
@@ -318,7 +326,6 @@ void AliL3Modeller::FindClusters()
 	    }
 	  //cout<<"done"<<endl;
 	}
-      
       FillZeros(rowPt,row);
       fMemHandler->UpdateRowPointer(rowPt);
     }
@@ -350,44 +357,7 @@ void AliL3Modeller::FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t ro
   Float_t sigmaY2,sigmaZ2;
   CalcClusterWidth(cluster,sigmaY2,sigmaZ2);
   track->SetCluster(row,fpad,ftime,fcharge,sigmaY2,sigmaZ2,npads);
-#ifdef do_mc
-  Int_t trackID[3];
-  GetTrackID((Int_t)rint(fpad),(Int_t)rint(ftime),trackID);
-  track->SetTrackID(fCurrentPadRow,trackID);
-#endif
 }
-
-#ifdef do_mc
-void AliL3Modeller::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
-{
-
-  AliL3DigitRowData *rowPt = (AliL3DigitRowData*)fRowData;
-  
-  trackID[0]=trackID[1]=trackID[2]=-2;
-
-  for(Int_t i=AliL3Transform::GetFirstRow(fPatch); i<=AliL3Transform::GetLastRow(fPatch); i++)
-    {
-      if(rowPt->fRow < (UInt_t)fCurrentPadRow)
-	{
-	  AliL3MemHandler::UpdateRowPointer(rowPt);
-	  continue;
-	}
-      AliL3DigitData *digPt = (AliL3DigitData*)rowPt->fDigitData;
-      for(UInt_t j=0; j<rowPt->fNDigit; j++)
-	{
-	  Int_t cpad = digPt[j].fPad;
-	  Int_t ctime = digPt[j].fTime;
-	  if(cpad != pad) continue;
-	  if(ctime != time) continue;
-	  trackID[0] = digPt[j].fTrackID[0];
-	  trackID[1] = digPt[j].fTrackID[1];
-	  trackID[2] = digPt[j].fTrackID[2];
-	  break;
-	}
-      break;
-    }
-}
-#endif
 
 void AliL3Modeller::FillZeros(AliL3DigitRowData *rowPt,Digit *row)
 {
@@ -466,7 +436,7 @@ void AliL3Modeller::WriteRemaining()
 
   Char_t fname[100];
   AliL3MemHandler *mem = new AliL3MemHandler();
-  sprintf(fname,"%s/remains_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/remains_%d_%d.raw",fPath,fSlice,fPatch);
   mem->SetBinaryOutput(fname);
   mem->Memory2CompBinary((UInt_t)AliL3Transform::GetNRows(fPatch),(AliL3DigitRowData*)data);
   mem->CloseBinaryOutput();
@@ -484,21 +454,6 @@ void AliL3Modeller::CalculateCrossingPoints()
       return;
     }
   Float_t hit[3];
-  
-  
-  //Remove tracks which are no good:
-  for(Int_t i=0; i<fTracks->GetNTracks(); i++)
-    {
-      AliL3ModelTrack *track = (AliL3ModelTrack*)fTracks->GetCheckedTrack(i);
-      if(!track) continue;
-      if(track->GetFirstPointX() > AliL3Transform::Row2X(AliL3Transform::GetLastRow(fPatch)) || track->GetPt()<0.1)
-	fTracks->Remove(i);
-      if(track->GetNHits() < fTrackThreshold)
-	{
-	  fTracks->Remove(i);
-	  continue;
-	}
-    }
   
   Int_t sector,row;
   for(Int_t i=AliL3Transform::GetLastRow(fPatch); i>=AliL3Transform::GetFirstRow(fPatch); i--)
@@ -518,10 +473,11 @@ void AliL3Modeller::CalculateCrossingPoints()
 	      fTracks->Remove(j);
 	      continue;
 	    }
-	  //cout<<" x "<<track->GetPointX()<<" y "<<track->GetPointY()<<" z "<<track->GetPointZ()<<endl;
+	  //cout<<"X "<<hit[0]<<" Y "<<hit[1]<<" Z "<<hit[2]<<" tgl "<<track->GetTgl()<<endl;
 	  
 	  AliL3Transform::Slice2Sector(fSlice,i,sector,row);
 	  AliL3Transform::Local2Raw(hit,sector,row);
+	  //cout<<"Pad "<<hit[1]<<" time "<<hit[2]<<" in sector "<<sector<<" row "<<row<<endl;
 	  if(hit[1]<0 || hit[1]>AliL3Transform::GetNPads(i) ||
 	     hit[2]<0 || hit[2]>AliL3Transform::GetNTimeBins())
 	    {//Track is leaving the patch, so flag the track hits (<0)
@@ -549,7 +505,7 @@ void AliL3Modeller::CheckForOverlaps()
   //Flag the tracks that overlap
   
   cout<<"Checking for overlaps...";
-  
+  Int_t counter=0;
   for(Int_t i=0; i<fTracks->GetNTracks(); i++)
     {
       AliL3ModelTrack *track1 = (AliL3ModelTrack*)fTracks->GetCheckedTrack(i);
@@ -563,16 +519,20 @@ void AliL3Modeller::CheckForOverlaps()
 	      if(track1->GetPadHit(k)<0 || track1->GetTimeHit(k)<0 ||
 		 track2->GetPadHit(k)<0 || track2->GetTimeHit(k)<0)
 		continue;
-	      if(fabs(track1->GetPadHit(k)-track2->GetPadHit(k)) <= fPadOverlap &&
-		 fabs(track1->GetTimeHit(k)-track2->GetTimeHit(k)) <= fTimeOverlap)
+	      
+	      if(track1->GetOverlap(k)>=0 || track2->GetOverlap(k)>=0) continue;
+	      
+	      if(abs((Int_t)rint(track1->GetPadHit(k))-(Int_t)rint(track2->GetPadHit(k))) <= fPadOverlap &&
+		 abs((Int_t)rint(track1->GetTimeHit(k))-(Int_t)rint(track2->GetTimeHit(k))) <= fTimeOverlap)
 		{
 		  track2->SetOverlap(k,i);
-		  track1->SetOverlap(k,j);
+		  //track1->SetOverlap(k,j);
+		  counter++;
 		}
 	    }
 	}
     }
-  cout<<"done"<<endl;
+  cout<<"found "<<counter<<" done"<<endl;
 }
 
 

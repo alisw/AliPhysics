@@ -35,9 +35,10 @@ AliL3Compress::AliL3Compress()
   fPatch=0;
   fDigits=0;
   fDPt=0;
+  fWriteShape=kFALSE;
 }
 
-AliL3Compress::AliL3Compress(Int_t slice,Int_t patch,Char_t *path)
+AliL3Compress::AliL3Compress(Int_t slice,Int_t patch,Char_t *path,Bool_t writeshape)
 {
   fSlice=slice;
   fPatch=patch;
@@ -46,6 +47,7 @@ AliL3Compress::AliL3Compress(Int_t slice,Int_t patch,Char_t *path)
   fDigits=0;
   fDPt=0;
   sprintf(fPath,"%s",path);
+  fWriteShape=writeshape;
 }
 
 AliL3Compress::~AliL3Compress()
@@ -69,8 +71,13 @@ void AliL3Compress::SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shape)
 void AliL3Compress::WriteFile(AliL3TrackArray *tracks)
 {
   Char_t fname[100];
-  sprintf(fname,"%s/tracks_m_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/tracks_m_%d_%d.raw",fPath,fSlice,fPatch);
   FILE *file = fopen(fname,"w");
+  if(!file)
+    {
+      cerr<<"AliL3Compress::WriteFile : Error opening file "<<fname<<endl;
+      return;
+    }
   Short_t ntracks = tracks->GetNTracks();
   //cout<<"Writing "<<ntracks<<" tracks to file"<<endl;
     
@@ -83,8 +90,8 @@ void AliL3Compress::WriteFile(AliL3TrackArray *tracks)
       if(!track) continue;
       
       //Do not save useless tracks or clusters:
-      //if(track->CheckClustersQuality(2) == 0) 
-      //continue;
+      if(track->GetNPresentClusters() == 0)
+	continue;
       
       track->FillModel();
       model = track->GetModel();
@@ -108,9 +115,9 @@ void AliL3Compress::ReadFile(Char_t which)
 
   Char_t fname[100];
   if(which == 'm')
-    sprintf(fname,"%s/tracks_m_%d_%d.raw",fPath,fSlice,fPatch);
+    sprintf(fname,"%s/comp/tracks_m_%d_%d.raw",fPath,fSlice,fPatch);
   else if(which == 'u')
-    sprintf(fname,"%s/tracks_u_%d_%d.raw",fPath,fSlice,fPatch);
+    sprintf(fname,"%s/comp/tracks_u_%d_%d.raw",fPath,fSlice,fPatch);
   else
     {
       cerr<<"AliL3Compress::ReadFile() : Wrong option"<<endl;
@@ -120,7 +127,7 @@ void AliL3Compress::ReadFile(Char_t which)
   FILE *file = fopen(fname,"r");
   if(!file)
     {
-      cerr<<"Cannot open file "<<fname<<endl;
+      cerr<<"AliL3Compress::ReadFile : Cannot open file "<<fname<<endl;
       return;
     }
 
@@ -135,13 +142,9 @@ void AliL3Compress::ReadFile(Char_t which)
       track->Init(fSlice,fPatch);
       AliL3TrackModel *model = track->GetModel();
       AliL3ClusterModel *clusters = track->GetClusters();
-      //cout<<"Reading model "<<(int)model<<endl;
       if(fread(model,sizeof(AliL3TrackModel),1,file)!=1) break;
-      //cout<<"Reading clusters "<<(int)clusters<<endl;
       if(fread(clusters,(model->fNClusters)*sizeof(AliL3ClusterModel),1,file)!=1) break;
-      //cout<<"Filling track"<<endl;
       track->FillTrack();
-      //track->Print();
     }
 
   fTracks->RemoveLast();
@@ -158,10 +161,10 @@ void AliL3Compress::CompressFile()
     }
   
   Char_t fname[100];
-  sprintf(fname,"%s/tracks_c_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/tracks_c_%d_%d.raw",fPath,fSlice,fPatch);
   BIT_FILE *output = OpenOutputBitFile(fname);
   
-  sprintf(fname,"%s/tracks_m_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/tracks_m_%d_%d.raw",fPath,fSlice,fPatch);
   FILE *input = fopen(fname,"r");
   if(!input)
     {
@@ -172,7 +175,7 @@ void AliL3Compress::CompressFile()
   AliL3TrackModel track;
   AliL3ClusterModel cluster;
   Int_t temp;
-  Short_t power;
+  Int_t power;
   
   Int_t timeo,pado,chargeo,shapeo;
   timeo=pado=chargeo=shapeo=0;
@@ -230,44 +233,43 @@ void AliL3Compress::CompressFile()
 	  
 	  //Write charge information:
 	  temp = (Int_t)cluster.fDCharge;
-	  if(temp<0)
-	    OutputBit(output,0);
-	  else
-	    OutputBit(output,1);
-	  power = 1<<(fNumChargeBits-1);
+	  power = 1<<(fNumChargeBits);
 	  if(abs(temp)>=power)
 	    {
 	      chargeo++;
 	      temp=power - 1;
 	    }
-	  OutputBits(output,abs(temp),(fNumChargeBits-1));
-	  	  
-	  //Write shape information:
-	  temp = (Int_t)cluster.fDSigmaY2;
-	  if(temp<0)
-	    OutputBit(output,0);
-	  else
-	    OutputBit(output,1);
-	  power = 1<<(fNumShapeBits-1);
-	  if(abs(temp) >= power)
-	    {
-	      shapeo++;
-	      temp = power - 1;
-	    }
-	  OutputBits(output,abs(temp),(fNumShapeBits-1));
+	  OutputBits(output,abs(temp),(fNumChargeBits));
 	  
-	  temp = (Int_t)cluster.fDSigmaZ2;
-	  if(temp<0)
-	    OutputBit(output,0);
-	  else
-	    OutputBit(output,1);
-	  power = 1<<(fNumShapeBits-1);
-	  if(abs(temp) >= power)
+	  if(fWriteShape)
 	    {
-	      shapeo++;
-	      temp=power - 1;
+	      //Write shape information:
+	      temp = (Int_t)cluster.fDSigmaY2;
+	      if(temp<0)
+		OutputBit(output,0);
+	      else
+		OutputBit(output,1);
+	      power = 1<<(fNumShapeBits-1);
+	      if(abs(temp) >= power)
+		{
+		  shapeo++;
+		  temp = power - 1;
+		}
+	      OutputBits(output,abs(temp),(fNumShapeBits-1));
+	      
+	      temp = (Int_t)cluster.fDSigmaZ2;
+	      if(temp<0)
+		OutputBit(output,0);
+	      else
+		OutputBit(output,1);
+	      power = 1<<(fNumShapeBits-1);
+	      if(abs(temp) >= power)
+		{
+		  shapeo++;
+		  temp=power - 1;
+		}
+	      OutputBits(output,abs(temp),(fNumShapeBits-1));
 	    }
-	  OutputBits(output,abs(temp),(fNumShapeBits-1));
 	}
     }
   
@@ -290,10 +292,10 @@ void AliL3Compress::ExpandFile()
     }
   
   Char_t fname[100];
-  sprintf(fname,"%s/tracks_c_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/tracks_c_%d_%d.raw",fPath,fSlice,fPatch);
   BIT_FILE *input = OpenInputBitFile(fname);
   
-  sprintf(fname,"%s/tracks_u_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/tracks_u_%d_%d.raw",fPath,fSlice,fPatch);
   FILE *output = fopen(fname,"w");
   if(!output)
     {
@@ -313,7 +315,8 @@ void AliL3Compress::ExpandFile()
       //Read and write track:
       if(fread(&trackmodel,sizeof(AliL3TrackModel),1,input->file)!=1) break;
       fwrite(&trackmodel,sizeof(AliL3TrackModel),1,output);
-      
+
+      memset(clusters,0,AliL3Transform::GetNRows(fPatch)*sizeof(AliL3ClusterModel));
       for(Int_t i=0; i<AliL3Transform::GetNRows(fPatch); i++)
 	{
 	  Int_t temp,sign;
@@ -342,27 +345,25 @@ void AliL3Compress::ExpandFile()
 	  clusters[i].fDPad = temp;
 	  
 	  //Read charge information:
-	  sign = InputBit(input);
-	  temp=InputBits(input,(fNumChargeBits-1));
-	  if(!sign)
-	    temp*=-1;
+	  temp=InputBits(input,(fNumChargeBits));
 	  clusters[i].fDCharge = temp;
 	  
-	  //Read shape information:
-	  sign = InputBit(input);
-	  temp = InputBits(input,(fNumShapeBits-1));
-	  if(!sign)
-	    temp*=-1;
-	  clusters[i].fDSigmaY2 = temp;
-	  
-	  sign = InputBit(input);
-	  temp = InputBits(input,(fNumShapeBits-1));
-	  if(!sign)
-	    temp*=-1;
-	  clusters[i].fDSigmaZ2 = temp;
+	  if(fWriteShape)
+	    {
+	      //Read shape information:
+	      sign = InputBit(input);
+	      temp = InputBits(input,(fNumShapeBits-1));
+	      if(!sign)
+		temp*=-1;
+	      clusters[i].fDSigmaY2 = temp;
+	      
+	      sign = InputBit(input);
+	      temp = InputBits(input,(fNumShapeBits-1));
+	      if(!sign)
+		temp*=-1;
+	      clusters[i].fDSigmaZ2 = temp;
+	    }
 	}
-      
-
       count++;
       fwrite(clusters,(trackmodel.fNClusters)*sizeof(AliL3ClusterModel),1,output);
       
@@ -390,6 +391,11 @@ void AliL3Compress::RestoreData(Char_t which)
   //which == u : restore compressed data
   //which == m : restore uncompressed data
   
+  if(!fWriteShape)
+    {
+      cerr<<"AliL3Compress::RestoreData : Not implemented without shape info "<<endl;
+      return;
+    }
 
   ReadFile(which);
   
@@ -437,11 +443,11 @@ void AliL3Compress::PrintDigits(Int_t padrow)
 
 void AliL3Compress::WriteRestoredData()
 {
-  Char_t fname[100];
+    Char_t fname[100];
   
   //Get the remaining raw data array:
   AliL3MemHandler *mem = new AliL3MemHandler();
-  sprintf(fname,"%s/remains_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/remains_%d_%d.raw",fPath,fSlice,fPatch);
   mem->SetBinaryInput(fname);
   UInt_t numdigits;
   AliL3DigitRowData *origRow = mem->CompBinary2Memory(numdigits);
@@ -527,7 +533,7 @@ void AliL3Compress::WriteRestoredData()
     cerr<<"AliL3Compress::WriteRestoredData() : Written rows: "<<row_counter<<" total rows "<<AliL3Transform::GetNRows(fPatch)<<endl;
   
   mem->Free();  
-  sprintf(fname,"%s/restored_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/restored_%d_%d.raw",fPath,fSlice,fPatch);
   mem->SetBinaryOutput(fname);
   mem->Memory2CompBinary((UInt_t)AliL3Transform::GetNRows(fPatch),(AliL3DigitRowData*)data);
   mem->CloseBinaryOutput();
@@ -625,7 +631,7 @@ void AliL3Compress::CreateDigits(Int_t row,Int_t npads,Float_t pad,Float_t time,
 void AliL3Compress::PrintCompRatio()
 {
   Char_t fname[100];
-  sprintf(fname,"%s/remains_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/remains_%d_%d.raw",fPath,fSlice,fPatch);
   AliL3MemHandler *mem = new AliL3MemHandler();
   if(!mem->SetBinaryInput(fname))
     {
@@ -644,7 +650,7 @@ void AliL3Compress::PrintCompRatio()
     }
   delete mem;
   
-  sprintf(fname,"%s/tracks_c_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/tracks_c_%d_%d.raw",fPath,fSlice,fPatch);
   FILE *file1 = fopen(fname,"r");
   if(!file1)
     {
@@ -722,13 +728,13 @@ void AliL3Compress::WriteRootFile(Char_t *newrootfile)
 #ifdef use_aliroot
   Char_t fname[100];
   AliL3MemHandler *mem = new AliL3MemHandler();
-  sprintf(fname,"%s/restored_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/restored_%d_%d.raw",fPath,fSlice,fPatch);
   mem->SetBinaryInput(fname);
   UInt_t ndigits;
   AliL3DigitRowData *rowPt = (AliL3DigitRowData*)mem->CompBinary2Memory(ndigits);
   mem->CloseBinaryInput();
   
-  sprintf(fname,"%s/digitfile",fPath);
+  sprintf(fname,"%s/digitfile.root",fPath);
   
   AliL3FileHandler *file = new AliL3FileHandler();
   if(!file->SetAliInput(fname))

@@ -36,19 +36,15 @@ class AliL3ModelTrack : public AliL3Track {
   void FillModel();
   void FillTrack();
   void Print();
-  void AssignTrackID(Float_t wrong=0.10);
   
-  void SetTrackID(Int_t row,Int_t *trackID);
   void SetPadHit(Int_t row,Float_t f);
   void SetTimeHit(Int_t row,Float_t f);
   void SetOverlap(Int_t row,Int_t id);
   void SetXYResolution(Float_t f) {fXYResolution=f;}
   void SetZResolution(Float_t f) {fZResolution=f;}
   void SetLabel(Int_t i) {fLabel = i;}
-  Int_t CheckClustersQuality(UInt_t npads=3);
-  
+  Int_t GetNPresentClusters();
 
-  Int_t GetTrackID(Int_t row,Int_t idindex);
   AliL3ClusterModel *GetClusters() {return fClusters;}
   AliL3TrackModel *GetModel() {return fTrackModel;}
   AliL3ClusterModel *GetClusterModel(Int_t row);
