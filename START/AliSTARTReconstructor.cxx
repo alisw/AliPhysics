@@ -25,7 +25,6 @@
 #include "AliSTARTdigit.h"
 #include "AliSTARTReconstructor.h"
 #include <AliESD.h>
-#include "AliSTARTRecPoint.h"
 
 ClassImp(AliSTARTReconstructor)
 
