@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.1  2002/09/09 17:36:05  nilsen
+new TTask to replace non-working AliITSFindClusterV2.C macro.
+
 */
 #include <TROOT.h>
 #include <TFile.h>
@@ -286,7 +289,7 @@ void AliITSFindClustersV2::Exec(const Option_t *opt){
     else sprintf(name,"ITSRecPoints");
     branch = pTree->GetBranch(name);
     if(!branch){
-	Warning("Exec","Can't find branch \%s in TreeR fSlowFast=%d",
+	Warning("Exec","Can't find branch %s in TreeR fSlowFast=%d",
 		name,fSlowFast);
 	return;
     } // end if !branch
