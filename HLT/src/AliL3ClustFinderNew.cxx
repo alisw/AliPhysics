@@ -23,15 +23,16 @@ ClassImp(AliL3ClustFinderNew)
 AliL3ClustFinderNew::AliL3ClustFinderNew()
 {
   fMatch = 4;
-  fThreshold =10;
+  fThreshold = 10;
+  fXYErr = 0.2;
+  fZErr = 0.3;
   fDeconvPad = kTRUE;
   fDeconvTime = kTRUE;
+  fstdout = kFALSE;
 }
 
 AliL3ClustFinderNew::~AliL3ClustFinderNew()
 {
-
-
 }
 
 void AliL3ClustFinderNew::InitSlice(Int_t slice,Int_t patch,Int_t firstrow, Int_t lastrow,Int_t nmaxpoints)
@@ -42,8 +43,8 @@ void AliL3ClustFinderNew::InitSlice(Int_t slice,Int_t patch,Int_t firstrow, Int_
   fCurrentPatch = patch;
   fFirstRow = firstrow;
   fLastRow = lastrow;
-  fDeconvTime = kTRUE;
-  fDeconvPad = kTRUE;
+  //fDeconvTime = kTRUE;
+  //fDeconvPad = kTRUE;
 }
 
 void AliL3ClustFinderNew::InitSlice(Int_t slice,Int_t patch,Int_t nmaxpoints)
@@ -56,16 +57,13 @@ void AliL3ClustFinderNew::InitSlice(Int_t slice,Int_t patch,Int_t nmaxpoints)
 
 void AliL3ClustFinderNew::SetOutputArray(AliL3SpacePointData *pt)
 {
-  
   fSpacePointData = pt;
 }
-
 
 void AliL3ClustFinderNew::Read(UInt_t ndigits,AliL3DigitRowData *ptr)
 {
   fNDigitRowData = ndigits;
   fDigitRowData = ptr;
-  
 }
 
 void AliL3ClustFinderNew::ProcessDigits()
@@ -98,7 +96,7 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
   ClusterData *pad2[2500]; //2 lists for internal memory=2pads
   ClusterData clusterlist[5000]; //Clusterlist
 
-  ClusterData **currentPt; //List of pointers to the current pad
+  ClusterData **currentPt;  //List of pointers to the current pad
   ClusterData **previousPt; //List of pointers to the previous pad
   currentPt = pad2;
   previousPt = pad1;
@@ -136,11 +134,10 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	}
 
       Bool_t new_cluster = kTRUE;
-
       UInt_t seq_charge=0,seq_average=0;
-      
       UInt_t last_charge=0,last_was_falling=0;
       Int_t new_bin=-1;
+
       if(fDeconvTime)
 	{
 	redo: //This is a goto.
@@ -154,7 +151,6 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	  last_was_falling = 0;
 	}
       
-
       while(1) //Loop over current sequence
 	{
 	  if(data[bin].fTime >= AliL3Transform::GetNTimeBins())
@@ -300,7 +296,8 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       Float_t fpad=(Float_t)list[j].fPad/(Float_t)list[j].fTotalCharge;
       Float_t ftime=(Float_t)list[j].fTime/(Float_t)list[j].fTotalCharge;
 
-      //cout<<"WriteCluster: padrow "<<fCurrentRow<<" pad "<<fpad<<" time "<<ftime<<" charge "<<list[j].fTotalCharge<<endl;
+      if(fstdout==kTRUE)
+	cout<<"WriteCluster: padrow "<<fCurrentRow<<" pad "<<fpad<<" time "<<ftime<<" charge "<<list[j].fTotalCharge<<endl;
 
       AliL3Transform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
       AliL3Transform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);

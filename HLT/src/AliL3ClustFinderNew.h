@@ -6,7 +6,6 @@
 
 struct ClusterData
 {
-
   UInt_t fTotalCharge;
   UInt_t fPad;
   UInt_t fTime;
@@ -40,6 +39,7 @@ class AliL3ClustFinderNew {
   Int_t fMaxNClusters;
   Float_t fXYErr;
   Float_t fZErr;
+  Bool_t fstdout;
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
@@ -57,10 +57,13 @@ class AliL3ClustFinderNew {
   void SetOutputArray(AliL3SpacePointData *pt);
   void WriteClusters(Int_t n_clusters,ClusterData *list);
 
-  void SetXYError(Float_t f) {fXYErr = f;}
-  void SetZError(Float_t f) {fZErr = f;}
+  void SetXYError(Float_t f) {fXYErr=f;}
+  void SetZError(Float_t f) {fZErr=f;}
   void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
-  
+  void SetThreshold(UInt_t i) {fThreshold=i;}
+  void SetMatchWidth(UInt_t i) {fMatch=i;}
+  void SetSTDOutput(Bool_t f=kFALSE) {fstdout=f;}  
+
   Int_t GetNumberOfClusters() {return fNClusters;}
   
   ClassDef(AliL3ClustFinderNew,1) //Fast cluster finder
@@ -68,3 +71,4 @@ class AliL3ClustFinderNew {
 };
 
 #endif
+
