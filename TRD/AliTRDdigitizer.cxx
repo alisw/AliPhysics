@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2002/04/12 12:13:23  cblume
+Add Jiris changes
+
 Revision 1.35  2002/03/28 14:59:07  cblume
 Coding conventions
 
@@ -406,20 +409,7 @@ void AliTRDdigitizer::Exec(Option_t* option)
     printf("Called with debug option %d\n",fDebug);
   }
 
-  // Connect the AliRoot file containing Geometry, Kine, and Hits
-  fInputFile = (TFile *) fManager->GetInputTreeTRDS(0)->GetCurrentFile();
-  if (!fInputFile) {
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::Exec> ");
-      printf("Cannot open the input file %s.\n",fInputFile->GetName());
-    }
-  }
-
-  if (gAlice) {
-    delete gAlice;
-    gAlice = 0;
-  }
-  gAlice = (AliRun *) fInputFile->Get("gAlice");
+  // The AliRoot file is already connected by the manager
   if (gAlice) {
     if (fDebug > 0) {
       printf("<AliTRDdigitizer::Exec> ");
@@ -429,8 +419,9 @@ void AliTRDdigitizer::Exec(Option_t* option)
   else {
     printf("<AliTRDdigitizer::Exec> ");
     printf("Could not find AliRun object.\n");
+    return;
   }
-
+                                                                           
   Int_t nInput = fManager->GetNinputs();
   fMasks = new Int_t[nInput];
   for (iInput = 0; iInput < nInput; iInput++) {
@@ -545,6 +536,11 @@ Bool_t AliTRDdigitizer::InitDetector()
 
   // Get the pointer to the detector class and check for version 1
   fTRD = (AliTRD *) gAlice->GetDetector("TRD");
+  if (!fTRD) {
+    printf("<AliTRDdigitizer::InitDetector> ");
+    printf("No TRD module found\n");
+    exit(1);
+  }
   if (fTRD->IsVersion() != 1) {
     printf("<AliTRDdigitizer::InitDetector> ");
     printf("TRD must be version 1 (slow simulator).\n");
