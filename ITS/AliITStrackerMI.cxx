@@ -2522,7 +2522,8 @@ AliITStrackV2 * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackV2
       forwardtrack->fChi2MIP[ichi] = track->fChi2MIP[ichi];
     }
     if (chi2 < minchi2){
-      besttrack = new AliITStrackV2(*forwardtrack);
+      //besttrack = new AliITStrackV2(*forwardtrack);
+      besttrack = track;
       besttrack->SetLabel(track->GetLabel());
       besttrack->fFakeRatio = track->fFakeRatio;
       minchi2   = chi2;
@@ -3105,6 +3106,8 @@ void AliITStrackerMI::UpdateESDtrack(AliITStrackV2* track, ULong_t flags)
   //
   //
   track->UpdateESDtrack(flags);
+  AliITStrackV2 * oldtrack = (AliITStrackV2*)(track->fESDtrack->GetITStrack());
+  if (oldtrack) delete oldtrack; 
   track->fESDtrack->SetITStrack(new AliITStrackV2(*track));
 }
 
