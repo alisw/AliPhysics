@@ -12,7 +12,6 @@
 ///////////////////////////////////////////////////////
 
 class AliTRDdigitsManager;
-class AliTRDparameter;
 
 class AliTRDclusterizerV1 : public AliTRDclusterizer {
 
@@ -27,20 +26,16 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   virtual void     Copy(TObject &c);
   virtual Bool_t   MakeClusters();
   virtual Bool_t   ReadDigits();
-  virtual void     SetParameter(AliTRDparameter *par)      { fPar           = par; };
-
-  AliTRDparameter *GetParameter()                    const { return fPar;          };
 
  protected:
 
   AliTRDdigitsManager *fDigitsManager;      //! TRD digits manager
-  AliTRDparameter     *fPar;                //  TRD digitization parameter object
 
  private:
 
   virtual Float_t  Unfold(Float_t eps, Int_t plane, Float_t *padSignal);
 
-  ClassDef(AliTRDclusterizerV1,4)           // TRD-Cluster finder, slow simulator
+  ClassDef(AliTRDclusterizerV1,5)           // TRD-Cluster finder, slow simulator
 
 };
 

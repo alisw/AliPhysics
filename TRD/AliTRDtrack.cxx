@@ -35,20 +35,13 @@ Add the tracking code
 
 */                                                        
 
-/////////////////////////////////////////////////////////////////////////////
-//                                                                         //
-//  TRD track object                                                       //
-//                                                                         //
-/////////////////////////////////////////////////////////////////////////////
-
 #include <iostream.h>
+#include <TObject.h>   
 
-#include <TObject.h>
-
-#include "AliTRD.h" 
 #include "AliTRDgeometry.h" 
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
+#include "../TPC/AliTPCtrack.h" 
 
 ClassImp(AliTRDtrack)
 
@@ -56,15 +49,18 @@ ClassImp(AliTRDtrack)
 //_____________________________________________________________________________
 
 AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index, 
-const Double_t xx[5], const Double_t cc[15], Double_t xref, Double_t alpha) {
+                         const Double_t xx[5], const Double_t cc[15], 
+                         Double_t xref, Double_t alpha) : AliKalmanTrack() {
   //-----------------------------------------------------------------
   // This is the main track constructor.
   //-----------------------------------------------------------------
-  fLab=-1;
-  fChi2=0.;
-  fdEdx=0.;
+
+  fSeedLab = -1;
 
   fAlpha=alpha;
+  if (fAlpha<-TMath::Pi()) fAlpha += 2*TMath::Pi();
+  if (fAlpha>=TMath::Pi()) fAlpha -= 2*TMath::Pi();   
+
   fX=xref;
 
   fY=xx[0]; fZ=xx[1]; fC=xx[2]; fE=xx[3]; fT=xx[4];
@@ -75,24 +71,28 @@ const Double_t xx[5], const Double_t cc[15], Double_t xref, Double_t alpha) {
   fCey=cc[6];  fCez=cc[7];  fCec=cc[8];  fCee=cc[9];
   fCty=cc[10]; fCtz=cc[11]; fCtc=cc[12]; fCte=cc[13]; fCtt=cc[14];
 
-  fN=0;
-  fIndex[fN]=index;
+  fIndex[0]=index;
+  SetNumberOfClusters(1);
 
-  Float_t q = c->GetQ();
+  fdEdx=0.;
+
+  Double_t q = TMath::Abs(c->GetQ());
   Double_t s = fX*fC - fE, t=fT;
-  q *= TMath::Sqrt((1-s*s)/(1+t*t)); 
-  fdQdl[fN++] = q;
+  if(s*s < 1) q *= TMath::Sqrt((1-s*s)/(1+t*t));
+
+  fdQdl[0] = q;
 }                              
            
 //_____________________________________________________________________________
-AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) {
+AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
   //
   // Copy constructor.
   //
 
-  fLab=t.fLab;
+  SetLabel(t.GetLabel());
+  fSeedLab=t.GetSeedLabel();
 
-  fChi2=t.fChi2;
+  SetChi2(t.GetChi2());
   fdEdx=t.fdEdx;
 
   fAlpha=t.fAlpha;
@@ -106,12 +106,87 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) {
   fCey=t.fCey;  fCez=t.fCez;  fCec=t.fCec;  fCee=t.fCee;
   fCty=t.fCty;  fCtz=t.fCtz;  fCtc=t.fCtc;  fCte=t.fCte;  fCtt=t.fCtt;
 
-  fN=t.fN;
-  for (Int_t i=0; i<fN; i++) {
+  Int_t n=t.GetNumberOfClusters(); 
+  SetNumberOfClusters(n);
+  for (Int_t i=0; i<n; i++) {
     fIndex[i]=t.fIndex[i];
     fdQdl[i]=t.fdQdl[i];
   }
-}                                                       
+}                                
+
+//_____________________________________________________________________________
+AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha) {
+  //
+  // Constructor from AliTPCtrack or AliITStrack .
+  //
+
+  SetLabel(t.GetLabel());
+  SetChi2(0.);
+  SetNumberOfClusters(0);
+
+  fdEdx=0;
+
+  fAlpha = alpha;
+  if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
+  else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
+
+  Double_t x, p[5]; t.GetExternalParameters(x,p);
+
+  fX=x;
+
+  x = GetConvConst();  
+
+  fY=p[0]; fZ=p[1]; fC=p[4]/x;
+  fE=fX*fC-p[2]; fT=p[3];
+
+  //Conversion of the covariance matrix
+  Double_t c[15]; t.GetExternalCovariance(c);
+
+  c[10]/=x; c[11]/=x; c[12]/=x; c[13]/=x; c[14]/=x*x;
+
+  Double_t c22=fX*fX*c[14] - 2*fX*c[12] + c[5];
+  Double_t c32=fX*c[13] - c[8];
+  Double_t c20=fX*c[10] - c[3], c21=fX*c[11] - c[4], c42=fX*c[14] - c[12];
+
+  fCyy=c[0 ];
+  fCzy=c[1 ];   fCzz=c[2 ];
+  fCcy=c[10];   fCcz=c[11];   fCcc=c[14];
+  fCey=c20;     fCez=c21;     fCec=c42;     fCee=c22;
+  fCty=c[6 ];   fCtz=c[7 ];   fCtc=c[13];   fCte=c32;   fCtt=c[9 ];
+
+}              
+
+//____________________________________________________________________________
+void AliTRDtrack::GetExternalParameters(Double_t& xr, Double_t x[5]) const {
+  //
+  // This function returns external TRD track representation
+  //
+     xr=fX;
+     x[0]=GetY();
+     x[1]=GetZ();
+     x[2]=GetSnp();
+     x[3]=GetTgl();
+     x[4]=fC*GetConvConst();
+}           
+
+//_____________________________________________________________________________
+void AliTRDtrack::GetExternalCovariance(Double_t cc[15]) const {
+  //
+  // This function returns external representation of the covriance matrix.
+  //
+  Double_t a=GetConvConst();
+
+  Double_t c22=fX*fX*fCcc-2*fX*fCec+fCee;
+  Double_t c32=fX*fCtc-fCte;
+  Double_t c20=fX*fCcy-fCey, c21=fX*fCcz-fCez, c42=fX*fCcc-fCec;
+
+  cc[0 ]=fCyy;
+  cc[1 ]=fCzy;   cc[2 ]=fCzz;
+  cc[3 ]=c20;    cc[4 ]=c21;    cc[5 ]=c22;
+  cc[6 ]=fCty;   cc[7 ]=fCtz;   cc[8 ]=c32;   cc[9 ]=fCtt;
+  cc[10]=fCcy*a; cc[11]=fCcz*a; cc[12]=c42*a; cc[13]=fCtc*a; cc[14]=fCcc*a*a;
+}               
+                       
 
 //_____________________________________________________________________________
 void AliTRDtrack::GetCovariance(Double_t cc[15]) const {
@@ -125,7 +200,7 @@ void AliTRDtrack::GetCovariance(Double_t cc[15]) const {
 //_____________________________________________________________________________
 Int_t AliTRDtrack::Compare(const TObject *o) const {
 
-// Compares tracks according to their Y2
+// Compares tracks according to their Y2 or curvature
 
   AliTRDtrack *t=(AliTRDtrack*)o;
   //  Double_t co=t->GetSigmaY2();
@@ -144,13 +219,17 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
   //-----------------------------------------------------------------
   // Calculates dE/dX within the "low" and "up" cuts.
   //-----------------------------------------------------------------
-  Int_t i;
-  Int_t nc=GetNclusters();
 
-  Float_t sorted[200];
-  for (i=0; i<200; i++) sorted[i]=fdQdl[i];
+  Int_t i;
+  Int_t nc=GetNumberOfClusters(); 
+
+  Float_t sorted[kMAX_CLUSTERS_PER_TRACK];
+  for (i=0; i < nc; i++) {
+    sorted[i]=fdQdl[i];
+  }
 
   Int_t swap; 
+
   do {
     swap=0;
     for (i=0; i<nc-1; i++) {
@@ -165,6 +244,7 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
   Float_t dedx=0;
   for (i=nl; i<=nu; i++) dedx += sorted[i];
   dedx /= (nu-nl+1);
+
   SetdEdx(dedx);
 }                     
 
@@ -176,14 +256,20 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
   // Propagates a track of particle with mass=pm to a reference plane 
   // defined by x=xk through media of density=rho and radiationLength=x0
 
+  
   if (TMath::Abs(fC*xk - fE) >= 0.99999) {
-    if (fN>4) cerr<<fN<<" AliTRDtrack warning: Propagation failed !\n";
+    Int_t n=GetNumberOfClusters(); 
+    if (n>4) cerr<<n<<" AliTRDtrack warning: Propagation failed !\n";
     return 0;
   }
 
   Double_t x1=fX, x2=x1+(xk-x1), dx=x2-x1, y1=fY, z1=fZ;
-  Double_t c1=fC*x1 - fE, r1=sqrt(1.- c1*c1);
-  Double_t c2=fC*x2 - fE, r2=sqrt(1.- c2*c2);
+  Double_t c1=fC*x1 - fE;
+  if((c1*c1) > 1) return 0;
+  Double_t r1=sqrt(1.- c1*c1);
+  Double_t c2=fC*x2 - fE;
+  if((c2*c2) > 1) return 0;
+  Double_t r2=sqrt(1.- c2*c2);
 
   fY += dx*(c1+c2)/(r1+r2);
   fZ += dx*(c1+c2)/(c1*r2 + c2*r1)*fT;
@@ -225,6 +311,7 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
 
   Double_t d=sqrt((x1-fX)*(x1-fX)+(y1-fY)*(y1-fY)+(z1-fZ)*(z1-fZ));
   Double_t p2=GetPt()*GetPt()*(1.+fT*fT);
+  p2 = TMath::Min(p2,1e+08);  // to avoid division by (1-1) for stiff tracks
   Double_t beta2=p2/(p2 + pm*pm);
 
   Double_t ey=fC*fX - fE, ez=fT;
@@ -240,19 +327,20 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
 
 
   //Energy losses************************
-
+  if (x1 < x2) d=-d;
   Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d*rho;
-  if (x1 < x2) dE=-dE;
+  SetLength(GetLength()+d);
+
+  cc = fC;
   fC*=(1.- sqrt(p2+pm*pm)/p2*dE);
-  //fE*=(1.- sqrt(p2+pm*pm)/p2*dE);
+  fE+=fX*(fC-cc);
 
   return 1;        
 
 }     
 
-
 //_____________________________________________________________________________
-void AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index)
+Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index)
 {
   // Assignes found cluster to the track and updates track information
 
@@ -270,8 +358,9 @@ void AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index)
   Double_t dy=c->GetY() - fY, dz=c->GetZ() - fZ;
   Double_t cur=fC + k20*dy + k21*dz, eta=fE + k30*dy + k31*dz;
   if (TMath::Abs(cur*fX-eta) >= 0.99999) {
-    if (fN>4) cerr<<fN<<" AliTRDtrack warning: Filtering failed !\n";
-    return;
+    Int_t n=GetNumberOfClusters(); 
+    if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
+    return 0;
   }
 
   fY += k00*dy + k01*dz;
@@ -299,16 +388,14 @@ void AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index)
 
   fCtt-=k40*c04+k41*c14;
 
-  fIndex[fN]=index;
+  Int_t n=GetNumberOfClusters();  
+  fIndex[n]=index;
+  SetNumberOfClusters(n+1);  
 
-  Float_t q = c->GetQ();
-  Double_t s = fX*fC - fE, t=fT;
-  q *= TMath::Sqrt((1-s*s)/(1+t*t)); 
-  fdQdl[fN++] = q;
-
-  fChi2 += chisq;   
-
+  SetChi2(GetChi2()+chisq); 
   //  cerr<<"in update: fIndex["<<fN<<"] = "<<index<<endl;
+
+  return 1;
 }                     
 
 //_____________________________________________________________________________
@@ -322,19 +409,27 @@ Int_t AliTRDtrack::Rotate(Double_t alpha)
   Double_t ca=cos(alpha), sa=sin(alpha);
   Double_t r1=fC*fX - fE;
 
+  if (TMath::Abs(r1) >= 0.99999) {
+    Int_t n=GetNumberOfClusters(); 
+    if (n>4) cerr<<n<<" AliTRDtrack warning: Rotation failed !\n";
+    return 0;
+  }
+
   fX = x1*ca + y1*sa;
   fY=-x1*sa + y1*ca;
   fE=fE*ca + (fC*y1 + sqrt(1.- r1*r1))*sa;
 
   Double_t r2=fC*fX - fE;
   if (TMath::Abs(r2) >= 0.99999) {
-    if (fN>4) cerr<<fN<<" AliTRDtrack warning: Rotation failed !\n";
+    Int_t n=GetNumberOfClusters(); 
+    if (n>4) cerr<<n<<" AliTRDtrack warning: Rotation failed !\n";
     return 0;
   }
 
   Double_t y0=fY + sqrt(1.- r2*r2)/fC;
   if ((fY-y0)*fC >= 0.) {
-    if (fN>4) cerr<<fN<<" AliTRDtrack warning: Rotation failed !!!\n";
+    Int_t n=GetNumberOfClusters(); 
+    if (n>4) cerr<<n<<" AliTRDtrack warning: Rotation failed !!!\n";
     return 0;
   }
 
@@ -406,9 +501,15 @@ void AliTRDtrack::GetPxPyPz(Double_t& px, Double_t& py, Double_t& pz) const
 
   Double_t pt=TMath::Abs(GetPt()); // GeV/c
   Double_t r=fC*fX-fE;
-  Double_t y0=fY + sqrt(1.- r*r)/fC;
-  px=-pt*(fY-y0)*fC;    //cos(phi);
-  py=-pt*(fE-fX*fC);   //sin(phi);
+
+  Double_t y0; 
+  if(r > 1) { py = pt; px = 0; }
+  else if(r < -1) { py = -pt; px = 0; }
+  else {
+    y0=fY + sqrt(1.- r*r)/fC;  
+    px=-pt*(fY-y0)*fC;    //cos(phi);
+    py=-pt*(fE-fX*fC);   //sin(phi);
+  }
   pz=pt*fT;
   Double_t tmp=px*TMath::Cos(fAlpha) - py*TMath::Sin(fAlpha);
   py=px*TMath::Sin(fAlpha) + py*TMath::Cos(fAlpha);
@@ -416,74 +517,28 @@ void AliTRDtrack::GetPxPyPz(Double_t& px, Double_t& py, Double_t& pz) const
 
 }                                
 
-//____________________________________________________________________________
-void AliTRDtrack::Streamer(TBuffer &R__b)
+//_________________________________________________________________________
+void AliTRDtrack::GetGlobalXYZ(Double_t& x, Double_t& y, Double_t& z) const
 {
-  Int_t i;
+  // Returns reconstructed track coordinates in the global system.
 
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);
-      R__b >> fLab;
-      R__b >> fChi2;
-      R__b >> fdEdx;
-      R__b >> fAlpha;
-      R__b >> fX;
-      R__b >> fY;
-      R__b >> fZ;
-      R__b >> fC;
-      R__b >> fE;
-      R__b >> fT;
-      R__b >> fCyy;
-      R__b >> fCzy;
-      R__b >> fCzz;
-      R__b >> fCcy;
-      R__b >> fCcz;
-      R__b >> fCcc;
-      R__b >> fCey;
-      R__b >> fCez;
-      R__b >> fCec;
-      R__b >> fCee;
-      R__b >> fCty;
-      R__b >> fCtz;
-      R__b >> fCtc;
-      R__b >> fCte;
-      R__b >> fCtt;
-      R__b >> fN;
-      for (i=0; i<fN; i++) R__b >> fIndex[i];
-      for (i=0; i<fN; i++) R__b >> fdQdl[i];
-   } else {                                
-      R__b.WriteVersion(AliTRDtrack::IsA());
-      TObject::Streamer(R__b);
-      R__b << fLab;
-      R__b << fChi2;
-      R__b << fdEdx;
-      R__b << fAlpha;
-      R__b << fX;
-      R__b << fY;
-      R__b << fZ;
-      R__b << fC;
-      R__b << fE;
-      R__b << fT;
-      R__b << fCyy;
-      R__b << fCzy;
-      R__b << fCzz;
-      R__b << fCcy;
-      R__b << fCcz;
-      R__b << fCcc;
-      R__b << fCey;
-      R__b << fCez;
-      R__b << fCec;
-      R__b << fCee;
-      R__b << fCty;
-      R__b << fCtz;
-      R__b << fCtc;
-      R__b << fCte;
-      R__b << fCtt;
-      R__b << fN;
-      for (i=0; i<fN; i++) R__b << fIndex[i];
-      for (i=0; i<fN; i++) R__b << fdQdl[i];
-   }
-}                                                          
+  x = fX; y = fY; z = fZ; 
+  Double_t tmp=x*TMath::Cos(fAlpha) - y*TMath::Sin(fAlpha);
+  y=x*TMath::Sin(fAlpha) + y*TMath::Cos(fAlpha);
+  x=tmp;            
 
+}                                
 
+//_________________________________________________________________________
+void AliTRDtrack::ResetCovariance() {
+  //
+  // Resets covariance matrix
+  //
+
+  fCyy*=10.;
+  fCzy=0.;   fCzz*=10.;
+  fCcy=0.;   fCcz=0.;   fCcc*=10.;
+  fCey=0.;   fCez=0.;   fCec=0.;   fCee*=10.;
+  fCty=0.;   fCtz=0.;   fCtc=0.;   fCte=0.;   fCtt*=10.;
+
+}                                                         

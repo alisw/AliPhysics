@@ -15,6 +15,7 @@
 #include "AliMCProcess.h"
 
 class AliTRDv1;
+class AliTRDparameter;
  
 class AliTRDsimpleMC : public AliMC {
  
@@ -216,27 +217,28 @@ class AliTRDsimpleMC : public AliMC {
     , kVolDrCh
   };
 
-  Float_t         fMaxStep;            //  Maximum step size
-  Int_t           fNStep;              //  Number of steps
-  Int_t           fTrack;              //  Track number
-  Double_t        fTrackPx;            //  Track px
-  Double_t        fTrackPy;            //  Track py
-  Double_t        fTrackPz;            //  Track pz
-  Double_t        fTrackPtot;          //  Track total momentum
-  Double_t        fTrackEtot;          //  Track total energy
-  Double_t        fTrackX;             //  Track x position
-  Double_t        fTrackY;             //  Track y position
-  Double_t        fTrackZ;             //  Track z position
-  Double_t        fX0;                 //  X position of the beginning of the chamber
-  Double_t        fTrackStep;          //  Track step size
-  Int_t           fTrackPid;           //  Track PID
-  Float_t         fTrackCharge;        //  Track charge
-  Float_t         fTrackMass;          //  Track particle mass
-  Bool_t          fTrackEntering;      //  Track entering chamber
+  Float_t          fMaxStep;            //  Maximum step size
+  Int_t            fNStep;              //  Number of steps
+  Int_t            fTrack;              //  Track number
+  Double_t         fTrackPx;            //  Track px
+  Double_t         fTrackPy;            //  Track py
+  Double_t         fTrackPz;            //  Track pz
+  Double_t         fTrackPtot;          //  Track total momentum
+  Double_t         fTrackEtot;          //  Track total energy
+  Double_t         fTrackX;             //  Track x position
+  Double_t         fTrackY;             //  Track y position
+  Double_t         fTrackZ;             //  Track z position
+  Double_t         fX0;                 //  X position of the beginning of the chamber
+  Double_t         fTrackStep;          //  Track step size
+  Int_t            fTrackPid;           //  Track PID
+  Float_t          fTrackCharge;        //  Track charge
+  Float_t          fTrackMass;          //  Track particle mass
+  Bool_t           fTrackEntering;      //  Track entering chamber
 
-  AliTRDv1       *fTRD;                //! TRD detector object
+  AliTRDv1        *fTRD;                //! TRD detector object
+  AliTRDparameter *fPar;                //! TRD parameter object
 
-  ClassDef(AliTRDsimpleMC,1)           //  Simple TRD Monte Carlo class
+  ClassDef(AliTRDsimpleMC,2)            //  Simple TRD Monte Carlo class
  
 };
 #endif                                                                          

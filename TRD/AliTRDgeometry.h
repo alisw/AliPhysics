@@ -13,6 +13,8 @@
 
 #include "AliGeometry.h"
 
+class AliTRDparameter;
+
 class AliTRDgeometry : public AliGeometry {
 
  public:
@@ -25,8 +27,9 @@ class AliTRDgeometry : public AliGeometry {
   virtual void     CreateGeometry(Int_t *idtmed);
   virtual Int_t    IsVersion() const = 0;
   virtual void     Init();
-  virtual Bool_t   Local2Global(Int_t d, Float_t *local, Float_t *global) const;
-  virtual Bool_t   Local2Global(Int_t p, Int_t c, Int_t s, Float_t *local, Float_t *global) const;
+  virtual Bool_t   Impact(const TParticle * particle) const { return kTRUE; };
+  virtual Bool_t   Local2Global(Int_t d, Float_t *local, Float_t *global, AliTRDparameter *par) const;
+  virtual Bool_t   Local2Global(Int_t p, Int_t c, Int_t s, Float_t *local, Float_t *global, AliTRDparameter *par) const;
   virtual Bool_t   Rotate(Int_t d, Float_t *pos, Float_t *rot) const;
   virtual Bool_t   RotateBack(Int_t d, Float_t *rot, Float_t *pos) const;
 
@@ -58,14 +61,6 @@ class AliTRDgeometry : public AliGeometry {
   virtual void     SetPHOShole() = 0;
   virtual void     SetRICHhole() = 0;
 
-  virtual void     SetNRowPad();
-  virtual void     SetNRowPad(const Int_t p, const Int_t c, const Int_t npad);
-  virtual void     SetColPadSize(const Int_t p, const Float_t s);
-  virtual void     SetNTimeBin(const Int_t nbin);
-  virtual void     SetExpandTimeBin(const Int_t nbefore, const Int_t nafter)
-                                                                  { fTimeBefore = nbefore;
-                                                                    fTimeAfter  = nafter; };
-
   virtual Bool_t   GetPHOShole() const = 0;
   virtual Bool_t   GetRICHhole() const = 0;
 
@@ -78,30 +73,9 @@ class AliTRDgeometry : public AliGeometry {
           Float_t  GetChamberWidth(const Int_t p)                 const { return fCwidth[p];     };
           Float_t  GetChamberLength(const Int_t p, const Int_t c) const { return fClength[p][c]; }; 
 
-   
-          Int_t    GetRowMax(const Int_t p, const Int_t c, const Int_t s)     
-                                                            const { return fRowMax[p][c][s]; };
-          Int_t    GetColMax(const Int_t p)                 const { return fColMax[p];       };
-          Int_t    GetTimeMax()                             const { return fTimeMax;         };
-          Int_t    GetTimeBefore()                          const { return fTimeBefore;      }; 
-          Int_t    GetTimeAfter()                           const { return fTimeAfter;       }; 
-          Int_t    GetTimeTotal()                           const { return fTimeMax 
-                                                                         + fTimeBefore 
-                                                                         + fTimeAfter; };
-
-          Float_t  GetRow0(const Int_t p, const Int_t c, const Int_t s)       
-                                                            const { return fRow0[p][c][s]; };
-          Float_t  GetCol0(const Int_t p)                   const { return fCol0[p];       };
-          Float_t  GetTime0(const Int_t p)                  const { return fTime0[p];      };
-
-          Float_t  GetRowPadSize(const Int_t p, const Int_t c, const Int_t s) 
-                                                            const { return fRowPadSize[p][c][s]; };
-          Float_t  GetColPadSize(const Int_t p)             const { return fColPadSize[p];       };
-          Float_t  GetTimeBinSize()                         const { return fTimeBinSize;         };
-
-  virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat) const; 
-  virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos) const;   
-  virtual Bool_t   Impact(const TParticle * particle) const {return kTRUE;}
+  virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat) const { }; 
+  virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos) const { };
+ 
   static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / fgkNsect; }; 
 
  protected:
@@ -165,24 +139,10 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t fgkCoZpos;                           // Position of the PE of the cooling device
   static const Float_t fgkWaZpos;                           // Position of the colling water
 
-  Int_t                fRowMax[kNplan][kNcham][kNsect];     // Number of pad-rows
-  Int_t                fColMax[kNplan];                     // Number of pad-columns
-  Int_t                fTimeMax;                            // Number of timebins in the drift region
-  Int_t                fTimeBefore;                         // Number of timebins before the drift region
-  Int_t                fTimeAfter;                          // Number of timebins after the drift region
-
   Float_t              fCwidth[kNplan];                     // Outer widths of the chambers
   Float_t              fClength[kNplan][kNcham];            // Outer lengths of the chambers
   Float_t              fClengthPH[kNplan][kNcham];          // For sectors with holes for the PHOS
   Float_t              fClengthRH[kNplan][kNcham];          // For sectors with holes for the RICH
-
-  Float_t              fRow0[kNplan][kNcham][kNsect];       // Row-position of pad 0
-  Float_t              fCol0[kNplan];                       // Column-position of pad 0
-  Float_t              fTime0[kNplan];                      // Time-position of pad 0
-
-  Float_t              fRowPadSize[kNplan][kNcham][kNsect]; // Pad size in z-direction
-  Float_t              fColPadSize[kNplan];                 // Pad size in rphi-direction
-  Float_t              fTimeBinSize;                        // Size of the time buckets
 
   Float_t              fRotA11[kNsect];                     // Matrix elements for the rotation
   Float_t              fRotA12[kNsect];                     // Matrix elements for the rotation
@@ -194,7 +154,7 @@ class AliTRDgeometry : public AliGeometry {
   Float_t              fRotB21[kNsect];                     // Matrix elements for the backward rotation
   Float_t              fRotB22[kNsect];                     // Matrix elements for the backward rotation
 
-  ClassDef(AliTRDgeometry,4)                                // TRD geometry base class
+  ClassDef(AliTRDgeometry,5)                                // TRD geometry base class
 
 };
 

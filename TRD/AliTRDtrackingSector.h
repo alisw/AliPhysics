@@ -16,6 +16,7 @@
 
 class AliTRDtimeBin;
 class AliTRDgeometry;
+class AliTRDparameter;
 
 class AliTRDtrackingSector : public TObject {
 
@@ -34,14 +35,18 @@ public:
   Int_t   GetTimeBin(Int_t det, Int_t local_tb) const;
   Bool_t  TECframe(Int_t tb, Double_t y, Double_t z) const;
 
+  virtual void     SetParameter(AliTRDparameter *par)      { fPar           = par; };
+  AliTRDparameter *GetParameter()                    const { return fPar;          };
+
 protected:
 
   Int_t fN;                                // ???????
   AliTRDgeometry          *fGeom;          // Pointer to TRD geometry
   AliTRDtimeBin           *fTimeBin;       // Pointer to array of AliTRDtimeBin
   Float_t                  fTimeBinSize;   // Time bin size in cm  
+  AliTRDparameter         *fPar;           // TRD parameter
 					      
-  ClassDef(AliTRDtrackingSector,1)  // Provides tools to address clusters which lay within one sector
+  ClassDef(AliTRDtrackingSector,2)  // Provides tools to address clusters which lay within one sector
 
 }; 
 

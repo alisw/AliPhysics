@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/12/05 15:04:34  hristov
+Changes related to the corrections of AliRecPoint
+
 Revision 1.9  2001/05/28 17:07:58  hristov
 Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
 
@@ -98,6 +101,7 @@ Add new TRD classes
 #include "AliTRDhit.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDrecPoint.h"
+#include "AliTRDparameter.h"
 
 ClassImp(AliTRDclusterizerV0)
 
@@ -160,6 +164,15 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
 
   // Get the geometry
   AliTRDgeometry *geo = fTRD->GetGeometry();
+
+  // Create a default parameter class if none is defined
+  if (!fPar) {
+    fPar = new AliTRDparameter("TRDparameter","Standard TRD parameter");
+    if (fVerbose > 0) {
+      printf("<AliTRDclusterizerV0::MakeCluster> ");
+      printf("Create the default parameter object.\n");
+    }
+  }
   
   printf("AliTRDclusterizerV0::MakeCluster -- ");
   printf("Start creating cluster.\n");
@@ -184,14 +197,14 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
     for (Int_t iplan = 0; iplan < AliTRDgeometry::Nplan(); iplan++) {
       for (Int_t isect = 0; isect < AliTRDgeometry::Nsect(); isect++) {
 
-        Int_t   nColMax     = geo->GetColMax(iplan);
-        Float_t row0        = geo->GetRow0(iplan,icham,isect);
-        Float_t col0        = geo->GetCol0(iplan);
-        Float_t time0       = geo->GetTime0(iplan);
+        Int_t   nColMax     = fPar->GetColMax(iplan);
+        Float_t row0        = fPar->GetRow0(iplan,icham,isect);
+        Float_t col0        = fPar->GetCol0(iplan);
+        Float_t time0       = fPar->GetTime0(iplan);
 
-        Float_t rowPadSize  = geo->GetRowPadSize(iplan,icham,isect);
-        Float_t colPadSize  = geo->GetColPadSize(iplan);
-        Float_t timeBinSize = geo->GetTimeBinSize();
+        Float_t rowPadSize  = fPar->GetRowPadSize(iplan,icham,isect);
+        Float_t colPadSize  = fPar->GetColPadSize(iplan);
+        Float_t timeBinSize = fPar->GetTimeBinSize();
 
         // Loop through all entries in the tree
         for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
@@ -320,10 +333,14 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
           smear[2] = (Int_t) ((time0 - smear[2]) / timeBinSize);
 
           // Add the smeared cluster to the output array 
-          Int_t detector  = recPoint1->GetDetector();
-          Int_t digits[3] = {0};
-	  Int_t tr[9] = {-1}; 
-          fTRD->AddCluster(smear,digits,detector,0.0,tr,0,0);
+          Int_t   detector  = recPoint1->GetDetector();
+	  Int_t   tr[9]     = { -1   };
+          Float_t pos[3];
+          Float_t sigma[2]  = {  0.0 };
+          pos[0] = smear[1];
+          pos[1] = smear[0];
+          pos[2] = (time0 - smear[2]) / timeBinSize;
+          fTRD->AddCluster(pos,detector,0.0,tr,sigma,0);
 
 	}
 

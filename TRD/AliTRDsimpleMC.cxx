@@ -14,7 +14,10 @@
  **************************************************************************/
  
 /*
-$Log$                                                          
+$Log$
+Revision 1.1  2001/11/06 17:19:41  cblume
+Add detailed geometry and simple simulator
+                                                          
 */
  
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,6 +35,7 @@ $Log$
 #include "AliTRDsimpleMC.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDv1.h"
+#include "AliTRDparameter.h"
  
 ClassImp(AliTRDsimpleMC)
  
@@ -60,6 +64,7 @@ AliTRDsimpleMC::AliTRDsimpleMC():AliMC()
   fTrackEntering = kFALSE;   
 
   fTRD           = NULL;
+  fPar           = NULL;
                                         
 }                                                                               
 
@@ -89,6 +94,7 @@ AliTRDsimpleMC::AliTRDsimpleMC(const char *name, const char *title)
   fTrackEntering = kFALSE;   
 
   fTRD           = NULL;
+  fPar           = NULL;
                                         
 }                                                                               
  
@@ -158,10 +164,13 @@ void AliTRDsimpleMC::NewTrack(Int_t iTrack, Int_t pdg
   // Starts a new track.
   // 
 
+  if (!fPar) {
+    fPar = new AliTRDparameter("TRDparameter","Standard TRD parameter");
+  }
+
   if (!fTRD) {
     fTRD = (AliTRDv1 *) gAlice->GetDetector("TRD");   
-    AliTRDgeometry *geometry = fTRD->GetGeometry();
-    fX0 = geometry->GetTime0(0) - AliTRDgeometry::DrThick(); 
+    fX0  = fPar->GetTime0(0) - AliTRDgeometry::DrThick(); 
   }
 
   fTRD->ResetHits();

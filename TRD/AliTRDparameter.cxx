@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/04/30 08:30:40  cblume
+gAlice now only read by AliRunDigitizer. Therefore it is just deleted in AliTRDmerge.C
+
 Revision 1.4  2002/04/12 12:13:23  cblume
 Add Jiris changes
 
@@ -382,7 +385,8 @@ void AliTRDparameter::Init()
   fTimeCoupling   = 0.4;
 
   // The tilting angle for the readout pads
-  SetTiltingAngle(5.0);
+  //SetTiltingAngle(5.0);
+  SetTiltingAngle(0.0);
 
   // The magnetic field strength in Tesla
   //fField           = 0.2 * gAlice->Field()->Factor();

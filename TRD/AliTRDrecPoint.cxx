@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/03/28 14:59:07  cblume
+Coding conventions
+
 Revision 1.7  2001/12/05 15:04:34  hristov
 Changes related to the corrections of AliRecPoint
 
@@ -146,25 +149,25 @@ void AliTRDrecPoint::SetLocalPosition(TVector3 &pos)
   // system.
   //
 
-  const Float_t kSq12 = 3.464101615;
+  //const Float_t kSq12 = 3.464101615;
 
   // Set the position
-  fLocPos = pos;
+  //fLocPos = pos;
 
   // Set the error matrix
   // row:  pad-size / sqrt(12)
   // col:  not defined yet
   // time: bin-size / sqrt(12)
-  Int_t plane   = ((AliTRDgeometry *) fGeom)->GetPlane(fDetector);
-  Int_t chamber = ((AliTRDgeometry *) fGeom)->GetChamber(fDetector);
-  Int_t sector  = ((AliTRDgeometry *) fGeom)->GetSector(fDetector);
-  fLocPosM->operator()(0,0) = ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane
-                                                                       ,chamber
-                                                                       ,sector) 
-                            / kSq12;
-  fLocPosM->operator()(1,1) = 0.0;
-  fLocPosM->operator()(2,2) = ((AliTRDgeometry *) fGeom)->GetTimeBinSize() 
-                            / kSq12;
+  //Int_t plane   = ((AliTRDgeometry *) fGeom)->GetPlane(fDetector);
+  //Int_t chamber = ((AliTRDgeometry *) fGeom)->GetChamber(fDetector);
+  //Int_t sector  = ((AliTRDgeometry *) fGeom)->GetSector(fDetector);
+  //fLocPosM->operator()(0,0) = ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane
+  //                                                                     ,chamber
+  //                                                                     ,sector) 
+  //                          / kSq12;
+  //fLocPosM->operator()(1,1) = 0.0;
+  //fLocPosM->operator()(2,2) = ((AliTRDgeometry *) fGeom)->GetTimeBinSize() 
+  //                          / kSq12;
 
   //  printf("rec. point: row = %f, col = %f, time = %f \n",
   //           fLocPos[0],fLocPos[1],fLocPos[2]); 
@@ -179,34 +182,34 @@ void AliTRDrecPoint::SetTrackingYZ(Float_t sigmaY, Float_t sigmaZ)
  // of tracking sector
  //
 
- Int_t plane = ((AliTRDgeometry *) fGeom)->GetPlane(fDetector);
- Int_t chamber = ((AliTRDgeometry *) fGeom)->GetChamber(fDetector);
- Int_t sector = ((AliTRDgeometry *) fGeom)->GetSector(fDetector);
+  //Int_t plane = ((AliTRDgeometry *) fGeom)->GetPlane(fDetector);
+  //Int_t chamber = ((AliTRDgeometry *) fGeom)->GetChamber(fDetector);
+  //Int_t sector = ((AliTRDgeometry *) fGeom)->GetSector(fDetector);
 
 
  // Set the position
 
-  Float_t   padRow    = fLocPos[0];             // Pad Row position
-  Float_t   padCol    = fLocPos[1];             // Pad Column position
+  //Float_t   padRow    = fLocPos[0];             // Pad Row position
+  //Float_t   padCol    = fLocPos[1];             // Pad Column position
 
-  Float_t   col0 = ((AliTRDgeometry *) fGeom)->GetCol0(plane);
-  Float_t   row0 = ((AliTRDgeometry *) fGeom)->GetRow0(plane,chamber,sector);
+  //Float_t   col0 = ((AliTRDgeometry *) fGeom)->GetCol0(plane);
+  //Float_t   row0 = ((AliTRDgeometry *) fGeom)->GetRow0(plane,chamber,sector);
 
   //  Float_t   offset = 0.5 * ((AliTRDgeometry *) fGeom)->GetChamberWidth(plane);
 
-  fY = - (col0 + padCol * ((AliTRDgeometry *) fGeom)->GetColPadSize(plane));
-  fZ =    row0 + padRow * ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane
-                                                                   ,chamber
-                                                                   ,sector);
+  //fY = - (col0 + padCol * ((AliTRDgeometry *) fGeom)->GetColPadSize(plane));
+  //fZ =    row0 + padRow * ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane
+  //                                                                   ,chamber
+  //                                                                 ,sector);
 
   //  fSigmaY = sigmaY * sigmaY;
   //  fSigmaZ = sigmaZ * sigmaZ;
 
-  fSigmaY2 = 0.05 * 0.05;
+//fSigmaY2 = 0.05 * 0.05;
 
-  fSigmaZ2 = ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane,chamber,sector)
-           * ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane,chamber,sector) 
-           / 12.;
+//fSigmaZ2 = ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane,chamber,sector)
+//         * ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane,chamber,sector) 
+//         / 12.;
 
 }                                    
 
@@ -277,3 +280,10 @@ void AliTRDrecPoint::AddTrackIndex(Int_t *track)
   return;
 
 }                    
+
+
+
+
+
+
+

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2002/03/28 14:59:07  cblume
+Coding conventions
+
 Revision 1.37  2002/03/25 20:01:49  cblume
 Introduce parameter class
 
@@ -300,37 +303,23 @@ AliTRD::~AliTRD()
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddCluster(Float_t *pos, Int_t *digits, Int_t det, Float_t amp
-                       , Int_t *tracks, Float_t sigmaY2, Int_t iType)
+void AliTRD::AddCluster(Float_t *pos, Int_t det, Float_t amp
+                      , Int_t *tracks, Float_t *sig, Int_t iType)
 {
   //
   // Add a cluster for the TRD
   //
 
-  Int_t   pla = fGeometry->GetPlane(det);
-  Int_t   cha = fGeometry->GetChamber(det);
-  Int_t   sec = fGeometry->GetSector(det);
-
-  Float_t padRow  = pos[0]; 
-  Float_t padCol  = pos[1]; 
-  Float_t row0    = fGeometry->GetRow0(pla,cha,sec);
-  Float_t col0    = fGeometry->GetCol0(pla);
-  Float_t rowSize = fGeometry->GetRowPadSize(pla,cha,sec);
-  Float_t colSize = fGeometry->GetColPadSize(pla);
-
   AliTRDcluster *c = new AliTRDcluster();
 
   c->SetDetector(det);
   c->AddTrackIndex(tracks);
-
   c->SetQ(amp);
-
+  c->SetY(pos[0]);
+  c->SetZ(pos[1]);
+  c->SetSigmaY2(sig[0]);   
+  c->SetSigmaZ2(sig[1]);
   c->SetLocalTimeBin(((Int_t) pos[2]));
-  c->SetY(col0 + padCol * colSize);
-  c->SetZ(row0 + padRow * rowSize);
-  
-  c->SetSigmaY2((sigmaY2 + 1./12.) * colSize*colSize);   
-  c->SetSigmaZ2(rowSize * rowSize / 12.);
 
   switch (iType) {
   case 0:

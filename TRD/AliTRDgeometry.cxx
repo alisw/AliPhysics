@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/04/05 13:20:12  cblume
+Remove const for CreateGeometry
+
 Revision 1.16  2002/03/28 14:59:07  cblume
 Coding conventions
 
@@ -107,7 +110,7 @@ Add new TRD classes
 #include "AliMC.h"
 
 #include "AliTRDgeometry.h"
-#include "AliTRDrecPoint.h"
+#include "AliTRDparameter.h"
 #include "AliMC.h"
 
 ClassImp(AliTRDgeometry)
@@ -287,28 +290,10 @@ void AliTRDgeometry::Init()
     }
   }
 
-  // The pad size in column direction (rphi-direction)  
-  SetColPadSize(0,0.65);
-  SetColPadSize(1,0.68);
-  SetColPadSize(2,0.71);
-  SetColPadSize(3,0.74);
-  SetColPadSize(4,0.77);
-  SetColPadSize(5,0.80);
-
-  // The pad row (z-direction)
-  SetNRowPad();
-
-  // The number of time bins. Default is 100 ns timbin size
-  SetNTimeBin(15);
-
-  // Additional time bins before and after the drift region.
-  // Default is to only sample the drift region
-  SetExpandTimeBin(0,0);
-
   // The rotation matrix elements
   Float_t phi = 0;
   for (isect = 0; isect < fgkNsect; isect++) {
-    phi = -2.0 * kPI /  (Float_t) fgkNsect * ((Float_t) isect + 0.5);
+    phi = -2.0 * TMath::Pi() /  (Float_t) fgkNsect * ((Float_t) isect + 0.5);
     fRotA11[isect] = TMath::Cos(phi);
     fRotA12[isect] = TMath::Sin(phi);
     fRotA21[isect] = TMath::Sin(phi);
@@ -323,97 +308,6 @@ void AliTRDgeometry::Init()
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::SetNRowPad(const Int_t p, const Int_t c, const Int_t npad)
-{
-  //
-  // Redefines the number of pads in raw direction for
-  // a given plane and chamber number
-  //
-
-  for (Int_t isect = 0; isect < fgkNsect; isect++) {
-
-    fRowMax[p][c][isect] = npad;  
- 
-    fRowPadSize[p][c][isect] = (fClength[p][c] - 2.*fgkRpadW)
- 	                     / ((Float_t) npad);
-
-  }
-
-}
-
-//_____________________________________________________________________________
-void AliTRDgeometry::SetNRowPad()
-{
-  //
-  // Defines the number of pads in row direction
-  //
-
-  Int_t isect;
-  Int_t icham;
-  Int_t iplan;
-
-  Int_t rowMax[kNplan][kNcham] = { { 16, 16, 12, 16, 16 }
-                                 , { 16, 16, 12, 16, 16 }
-                                 , { 16, 16, 12, 16, 16 }
-                                 , { 16, 16, 12, 16, 16 }
-                                 , { 14, 16, 12, 16, 14 }
-                                 , { 13, 16, 12, 16, 13 } };
-
-  for (isect = 0; isect < kNsect; isect++) {
-    for (icham = 0; icham < kNcham; icham++) {
-      for (iplan = 0; iplan < kNplan; iplan++) {
-
-        fRowMax[iplan][icham][isect]     = rowMax[iplan][icham];
- 
-        fRowPadSize[iplan][icham][isect] = (fClength[iplan][icham] - 2.*fgkRpadW)
- 	                                 / ((Float_t) rowMax[iplan][icham]);
-
-        Float_t row0 = fgkRpadW - fClength[iplan][0] 
-                                - fClength[iplan][1] 
-                                - fClength[iplan][2]/2.;
-        for (Int_t ic = 0; ic < icham; ic++) {
-          row0 += fClength[iplan][ic];
-	}
-        fRow0[iplan][icham][isect]       = row0;
-
-      }
-    }
-  }
-
-}
-
-//_____________________________________________________________________________
-void AliTRDgeometry::SetColPadSize(const Int_t p, const Float_t s)
-{
-  //
-  // Redefines the pad size in column direction
-  //
-
-  fColPadSize[p] = s;
-  fCol0[p]       = - fCwidth[p]/2. + fgkCpadW;
-  fColMax[p]     = ((Int_t) ((fCwidth[p] - 2. * fgkCpadW) / s)); 
-
-}
-
-//_____________________________________________________________________________
-void AliTRDgeometry::SetNTimeBin(const Int_t nbin)
-{
-  //
-  // Redefines the number of time bins in the drift region.
-  // The time bin width is defined by the length of the
-  // drift region divided by <nbin>.
-  //
-
-  fTimeMax     = nbin;
-  fTimeBinSize = fgkDrThick / ((Float_t) fTimeMax);
-  for (Int_t iplan = 0; iplan < fgkNplan; iplan++) {
-    fTime0[iplan]  = fgkRmin + fgkCraH + fgkCdrH
-                             + iplan * (fgkCH + fgkVspace);
-  }
-
-}
-
-//_____________________________________________________________________________
 void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
 {
   //
@@ -423,7 +317,9 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::Local2Global(Int_t idet, Float_t *local, Float_t *global) const
+Bool_t AliTRDgeometry::Local2Global(Int_t idet, Float_t *local
+                                   , Float_t *global
+                                   , AliTRDparameter *par) const
 {
   //
   // Converts local pad-coordinates (row,col,time) into 
@@ -434,18 +330,24 @@ Bool_t AliTRDgeometry::Local2Global(Int_t idet, Float_t *local, Float_t *global)
   Int_t isect = GetSector(idet);     // Sector info  (0-17)
   Int_t iplan = GetPlane(idet);      // Plane info   (0-5)
 
-  return Local2Global(iplan,icham,isect,local,global);
+  return Local2Global(iplan,icham,isect,local,global,par);
 
 }
  
 //_____________________________________________________________________________
 Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
-                                  , Float_t *local, Float_t *global) const
+                                  , Float_t *local, Float_t *global
+                                  , AliTRDparameter *par) const
 {
   //
   // Converts local pad-coordinates (row,col,time) into 
   // global ALICE reference frame coordinates (x,y,z)
   //
+
+  if (!par) {
+    Error("Local2Global","No parameter defined\n");
+    return kFALSE;
+  }
 
   Int_t    idet      = GetDetector(iplan,icham,isect); // Detector number
 
@@ -453,16 +355,19 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
   Float_t  padCol    = local[1]+0.5;                   // Pad Column position
   Float_t  timeSlice = local[2]+0.5;                   // Time "position"
 
-  Float_t  row0      = GetRow0(iplan,icham,isect);
-  Float_t  col0      = GetCol0(iplan);
-  Float_t  time0     = GetTime0(iplan);
+  Float_t  row0      = par->GetRow0(iplan,icham,isect);
+  Float_t  col0      = par->GetCol0(iplan);
+  Float_t  time0     = par->GetTime0(iplan);
 
   Float_t  rot[3];
 
   // calculate (x,y,z) position in rotated chamber
-  rot[0] = time0 - (timeSlice - fTimeBefore) * fTimeBinSize;
-  rot[1] = col0  + padCol                    * fColPadSize[iplan];
-  rot[2] = row0  + padRow                    * fRowPadSize[iplan][icham][isect];
+  rot[0] = time0 - (timeSlice - par->GetTimeBefore()) 
+         * par->GetTimeBinSize();
+  rot[1] = col0  + padCol                    
+         * par->GetColPadSize(iplan);
+  rot[2] = row0  + padRow                    
+         * par->GetRowPadSize(iplan,icham,isect);
 
   // Rotate back to original position
   return RotateBack(idet,rot,global);
@@ -562,43 +467,3 @@ Int_t AliTRDgeometry::GetSector(const Int_t d) const
 
 }
 
-//_____________________________________________________________________________
-void AliTRDgeometry::GetGlobal(const AliRecPoint *p, TVector3 &pos
-                             , TMatrix &mat) const
-{
-  // 
-  // Returns the global coordinate and error matrix of a AliTRDrecPoint
-  //
-
-  GetGlobal(p,pos);
-  mat.Zero();
-
-}
-
-//_____________________________________________________________________________
-void AliTRDgeometry::GetGlobal(const AliRecPoint *p, TVector3 &pos) const
-{
-  // 
-  // Returns the global coordinate and error matrix of a AliTRDrecPoint
-  //
-
-  Int_t detector = ((AliTRDrecPoint *) p)->GetDetector();
-
-  Float_t global[3];
-  Float_t local[3];
-  local[0] = ((AliTRDrecPoint *) p)->GetLocalRow();
-  local[1] = ((AliTRDrecPoint *) p)->GetLocalCol();
-  local[2] = ((AliTRDrecPoint *) p)->GetLocalTime();
-
-  if (Local2Global(detector,local,global)) {
-    pos.SetX(global[0]);
-    pos.SetY(global[1]);
-    pos.SetZ(global[2]);
-  }
-  else {
-    pos.SetX(0.0);
-    pos.SetY(0.0);
-    pos.SetZ(0.0);
-  }
-
-}
