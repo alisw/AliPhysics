@@ -196,10 +196,12 @@ void AliTOFDigitizer::CreateDigits()
       tracknum[1]=tofsdigit->GetTrack(islot,1);
       tracknum[2]=tofsdigit->GetTrack(islot,2);
       
-      
+      // new with placement must be used
       // adding a TOF digit for each slot
-      AliTOFdigit* newDigit=new AliTOFdigit(tracknum, vol, digit);
-      fDigits->Add(newDigit);
+      TClonesArray &aDigits = *fDigits;
+      Int_t last=fDigits->GetEntriesFast();
+      new (aDigits[last]) AliTOFdigit(tracknum, vol, digit);
+
     }
     
   } // end loop on sdigits - end digitizing all collected sdigits
@@ -281,8 +283,11 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
 void AliTOFDigitizer::CollectSDigit(AliTOFSDigit * sdigit)
 {
   //
-  // Add a TOF digit
-  // new with placement used
-  AliTOFSDigit sdigitCopy=AliTOFSDigit(*sdigit); // make a copy of the current sdigit
-  fSDigitsArray->Add(&sdigitCopy); // put it into tmp array
+  // Add a TOF sdigit in container
+  // new with placement must be used
+  TClonesArray &aSDigitsArray = *fSDigitsArray;
+  Int_t last=fSDigitsArray->GetEntriesFast();
+  // make a copy of the current sdigit and
+  // put it into tmp array
+  new (aSDigitsArray[last]) AliTOFSDigit(*sdigit);
 }
