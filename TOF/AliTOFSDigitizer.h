@@ -7,7 +7,7 @@
 //_________________________________________________________________________
 //  Task Class for making SDigits in TOF      
 //                  
-//-- Author: F. Pierella
+//-- Authors: F. Pierella, A. De Caro
 
 
 #include "TTask.h"
@@ -21,22 +21,23 @@ class AliTOFSDigitizer: public TTask {
 
 public:
   AliTOFSDigitizer() ;          // ctor
-  AliTOFSDigitizer(char* HeaderFile, char *SdigitsFile = 0) ; 
+  AliTOFSDigitizer(char* HeaderFile, char *SdigitsFile = 0, Int_t evNumber1=0, Int_t nEvents=1) ; // par ctor
 
   virtual ~AliTOFSDigitizer() ; // dtor
-
-//  char *GetSDigitsFile() const {return const_cast<char*>(fSDigitsFile.Data());}  
+ 
   const char *GetSDigitsFile() const {return fSDigitsFile.Data();}  
-  virtual void  Exec(Option_t *option); 
-  void  SetNEvents(Int_t Nevents) {fNevents = Nevents;}
-  Int_t GetNEvents() const {return fNevents;}
+  virtual void  Exec(Option_t *verboseOption, Option_t *allEvents="noAll"); 
   void SetSDigitsFile(char * file ) ;
   void InitParameters();
   virtual void PrintParameters() const ;
   virtual void  SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t geantTime, Int_t& nActivatedPads, Int_t& nFiredPads, Bool_t* isFired, Int_t* nPlace, Float_t* qInduced, Float_t* tofTime, Float_t& averageTime);
-  virtual void Print(Option_t* option) const ;
+  virtual void Print(Option_t* opt) const ;
   TClonesArray *SDigits() const {return fSDigits;}
-  TClonesArray *Hits() const {return fHits;}
+  void  SetFirstEvent(Int_t event1)      {fEvent1=event1;}
+  void  SetSecondEvent(Int_t event2)     {fEvent2=event2;}
+  Int_t GetFirstEvent()  const {return fEvent1;}
+  Int_t GetSecondEvent() const {return fEvent2;}
+  Int_t GetNEvents() const {return (fEvent2-fEvent1);}
 
   // setters and getters for detector simulation
   // it summarizes all it is known about TOF strip 
@@ -66,6 +67,10 @@ public:
   void  SetLogChargeSmearing(Float_t logChargeSmearing){fLogChargeSmearing=logChargeSmearing;}
   void  SetTimeSmearing(Float_t timeSmearing)        {fTimeSmearing=timeSmearing;}
   void  SetAverageTimeFlag(Int_t averageTimeFlag)    {fAverageTimeFlag=averageTimeFlag;}
+  void  SetTdcBin(Float_t tdcBin)                    {fTdcBin=tdcBin;}
+  void  SetAdcBin(Float_t adcBin)                    {fAdcBin=adcBin;}
+  void  SetAdcMean(Float_t adcMean)                  {fAdcMean=adcMean;}
+  void  SetAdcRms(Float_t adcRms)                    {fAdcRms=adcRms;}
 
   Float_t  GetPadefficiency()    const {return fpadefficiency;}
   Int_t    GetEdgeEffect()       const {return fEdgeEffect;}
@@ -92,13 +97,17 @@ public:
   Float_t  GetLogChargeSmearing()const {return fLogChargeSmearing;}
   Float_t  GetTimeSmearing()     const {return fTimeSmearing;}
   Int_t    GetAverageTimeFlag()  const {return fAverageTimeFlag;}
+  Float_t  GetTdcBin()           const {return fTdcBin;}
+  Float_t  GetAdcBin()           const {return fAdcBin;}
+  Float_t  GetAdcMean()          const {return fAdcMean;}
+  Float_t  GetAdcRms()           const {return fAdcRms;}
   
 
 private:
-  Int_t   fNevents;         // Number of events to digitize
+  Int_t   fEvent1;          // lower bound for events to sdigitize
+  Int_t   fEvent2;          // upper bound for events to sdigitize
   TString fSDigitsFile;     // output file 
-  TClonesArray *fSDigits;   // array of summable digits
-  TClonesArray *fHits;      // array of summable digits
+  TClonesArray *fSDigits;   //! array of summable digits
   TF1     *ftail;           // pointer to formula for time with tail
   TString fHeadersFile;     // input file
 
@@ -138,6 +147,10 @@ private:
   Float_t fLogChargeSmearing;// Smearing in log of charge ratio
   Float_t fTimeSmearing;    // Smearing in time in time vs log(q1/q2) plot
   Int_t   fAverageTimeFlag; // flag (see the setter for details)
+  Float_t fTdcBin;      // time-window for the TDC bins [ps]
+  Float_t fAdcBin;      // charge-window for the ADC bins [pC]
+  Float_t fAdcMean;     // mean value for the ADC spectrum [bins]
+  Float_t fAdcRms;      // rms value for the ADC spectrum [bins]
 
  protected:
 

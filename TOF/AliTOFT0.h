@@ -43,7 +43,6 @@ public:
   void          SetTZeroFile(char* file) ;
   void          SetMomBounds(Float_t pLow, Float_t pUp) { fLowerMomBound=pLow; fUpperMomBound=pUp;} // momenta are expressed in [GeV/c]
   virtual void  Print(Option_t* option) const ;
-  TClonesArray *Hits() const {return fHits;}
   Bool_t   operator == (const AliTOFT0 & tzero) const ;
 
 private:
@@ -52,11 +51,9 @@ private:
   Float_t fLowerMomBound;   // momentum lower bound for selected primary tracks 
   Float_t fUpperMomBound;   // momentum upper bound for selected primary tracks 
   TString fT0File ;         // output file; it contains for time being only 3 histos 
-  TClonesArray *fHits;      // array of AliTOFhitT0 
   TString fHeadersFile;     // input file
 
  protected:
-
 
   ClassDef(AliTOFT0,1)  // Calculate the time zero using TOF detector
 

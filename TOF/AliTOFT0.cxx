@@ -92,9 +92,7 @@ ClassImp(AliTOFT0)
   AliTOFT0::AliTOFT0():TTask("AliTOFT0","") 
 {
   // ctor
-  fNevents = 0 ;     
-  fHits = 0 ;
-
+  fNevents = 0 ;
 }
            
 //____________________________________________________________________________ 
@@ -106,7 +104,6 @@ ClassImp(AliTOFT0)
   fUpperMomBound=2. ; // [GeV/c] default value
   fTimeResolution   = 1.2e-10; // 120 ps by default	
   fHeadersFile = headerFile ;
-  fHits = 0 ;
 
   TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data() ) ;
 
@@ -305,27 +302,25 @@ void AliTOFT0::Exec(Option_t *option)
 	    selected=0;
 	    //cout << "starting t0 calculation for current set" << endl;
 	    for (Int_t i1=0; i1<3;i1++) {
+	      beta[0]=momentum[0]/sqrt(massarray[i1]*massarray[i1]+momentum[0]*momentum[0]);
 	      for (Int_t i2=0; i2<3;i2++) { 
+		beta[1]=momentum[1]/sqrt(massarray[i2]*massarray[i2]+momentum[1]*momentum[1]);
 		for (Int_t i3=0; i3<3;i3++) {
+		  beta[2]=momentum[2]/sqrt(massarray[i3]*massarray[i3]+momentum[2]*momentum[2]);
 		  for (Int_t i4=0; i4<3;i4++) {
+		    beta[3]=momentum[3]/sqrt(massarray[i4]*massarray[i4]+momentum[3]*momentum[3]);
 		    for (Int_t i5=0; i5<3;i5++) {
+		      beta[4]=momentum[4]/sqrt(massarray[i5]*massarray[i5]+momentum[4]*momentum[4]);
 		      for (Int_t i6=0; i6<3;i6++) {
+			beta[5]=momentum[5]/sqrt(massarray[i6]*massarray[i6]+momentum[5]*momentum[5]);
 			for (Int_t i7=0; i7<3;i7++) { 
+			  beta[6]=momentum[6]/sqrt(massarray[i7]*massarray[i7]+momentum[6]*momentum[6]);
 			  for (Int_t i8=0; i8<3;i8++) {
+			    beta[7]=momentum[7]/sqrt(massarray[i8]*massarray[i8]+momentum[7]*momentum[7]);
 			    for (Int_t i9=0; i9<3;i9++) {
+			      beta[8]=momentum[8]/sqrt(massarray[i9]*massarray[i9]+momentum[8]*momentum[8]);
 			      for (Int_t i10=0; i10<3;i10++) { 	
-
-				beta[0]=momentum[0]/sqrt(massarray[i1]*massarray[i1]+momentum[0]*momentum[0]);
-				beta[1]=momentum[1]/sqrt(massarray[i2]*massarray[i2]+momentum[1]*momentum[1]);
-				beta[2]=momentum[2]/sqrt(massarray[i3]*massarray[i3]+momentum[2]*momentum[2]);
-				beta[3]=momentum[3]/sqrt(massarray[i4]*massarray[i4]+momentum[3]*momentum[3]);
-				beta[4]=momentum[4]/sqrt(massarray[i5]*massarray[i5]+momentum[4]*momentum[4]);
-				beta[5]=momentum[5]/sqrt(massarray[i6]*massarray[i6]+momentum[5]*momentum[5]);
-				beta[6]=momentum[6]/sqrt(massarray[i7]*massarray[i7]+momentum[6]*momentum[6]);
-				beta[7]=momentum[7]/sqrt(massarray[i8]*massarray[i8]+momentum[7]*momentum[7]);
-				beta[8]=momentum[8]/sqrt(massarray[i9]*massarray[i9]+momentum[8]*momentum[8]);
 				beta[9]=momentum[9]/sqrt(massarray[i10]*massarray[i10]+momentum[9]*momentum[9]);
-				
 				
 				Float_t meantzero=0.;
 				Float_t sumAllweights=0.;
@@ -333,10 +328,9 @@ void AliTOFT0::Exec(Option_t *option)
 				  sqMomError[itz]=((1.-beta[itz]*beta[itz])*0.025)*((1.-beta[itz]*beta[itz])*0.025)*(tracktoflen[itz]/(0.299792*beta[itz]))*(tracktoflen[itz]/(0.299792*beta[itz])); // this gives the square of the momentum error in nanoseconds
 				  sqTrackError[itz]=(timeresolutioninns*timeresolutioninns+sqMomError[itz]); // total error for the current track
 				  sumAllweights+=1./sqTrackError[itz];
-				  // redefining beta, it is useful in order to calculate t zero
-				  beta[itz]*=0.299792;
-				  timezero[itz]=(tracktoflen[itz]/beta[itz])-timeofflight[itz];
-				  weightedtimezero[itz]=((tracktoflen[itz]/beta[itz])-timeofflight[itz])/sqTrackError[itz];// weighted time zero for current track
+
+				  timezero[itz]=(tracktoflen[itz]/(beta[itz]*0.299792))-timeofflight[itz];
+				  weightedtimezero[itz]=((tracktoflen[itz]/(beta[itz]*0.299792))-timeofflight[itz])/sqTrackError[itz];// weighted time zero for current track
 				  meantzero+=weightedtimezero[itz];
 				} // end loop for (Int_t itz=0; itz<10;itz++)
 				meantzero=meantzero/sumAllweights; // it is given in [ns]
