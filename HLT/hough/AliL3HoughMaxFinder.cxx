@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
@@ -633,6 +635,7 @@ void AliL3HoughMaxFinder::FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t *weigh
       xpeaks[i] = top/butt;
       ypeaks[i] = ytop/ybutt;
       weight[i] = w;
+      
       
       //Check if this peak is overlapping with a previous:
       for(Int_t p=0; p<i-1; p++)

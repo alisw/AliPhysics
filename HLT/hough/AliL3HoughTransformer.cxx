@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
@@ -59,11 +61,10 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t pt_min,
 {
   //Set the minimum absolute pt value, and phi0 angles given in degrees.
 
-  Double_t torad = 3.1415/180;
   Double_t bfact = 0.0029980;
   Double_t bfield = 0.2;
   Double_t x = bfact*bfield/pt_min;
-  CreateHistograms(nxbin,-1.*x,x,nybin,phimin*torad,phimax*torad);
+  CreateHistograms(nxbin,-1.*x,x,nybin,phimin*ToRad,phimax*ToRad);
 }
 
 void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
@@ -101,6 +102,14 @@ void AliL3HoughTransformer::SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr)
   fDigitRowData = ptr;
 }
 
+Int_t AliL3HoughTransformer::GetEtaIndex(Double_t eta)
+{
+  
+  Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
+  Double_t index = (eta-fEtaMin)/etaslice;
+  return (Int_t)index;
+}
+
 void AliL3HoughTransformer::TransformCircle()
 {
   //Transform the input data with a circle HT.
@@ -114,7 +123,7 @@ void AliL3HoughTransformer::TransformCircle()
       return;
     }
   
-  Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
+  //Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
   for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
     {
       AliL3DigitData *digPt = tempPt->fDigitData;
@@ -135,7 +144,7 @@ void AliL3HoughTransformer::TransformCircle()
 	  fTransform->Slice2Sector(fSlice,i,sector,row);
 	  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
 	  Double_t eta = fTransform->GetEta(xyz);
-	  Int_t eta_index = (Int_t)((eta-fEtaMin)/etaslice);
+	  Int_t eta_index = GetEtaIndex(eta);//(Int_t)((eta-fEtaMin)/etaslice);
 	  if(eta_index < 0 || eta_index >= fNEtaSegments)
 	    continue;
 	  
@@ -183,7 +192,7 @@ void AliL3HoughTransformer::TransformCircleC()
       rowPt[prow] = tempPt;
       AliL3MemHandler::UpdateRowPointer(tempPt);
     }
-  Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
+  //Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
 
   AliL3DigitData *digPt;
   Double_t r1,r2,phi1,phi2,eta,kappa,phi_0;
@@ -205,7 +214,7 @@ void AliL3HoughTransformer::TransformCircleC()
 	  fTransform->Slice2Sector(fSlice,i,sector,row);
 	  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
 	  eta = fTransform->GetEta(xyz);
-	  eta_index1 = (Int_t)((eta-fEtaMin)/etaslice);
+	  eta_index1 = GetEtaIndex(eta);//(Int_t)((eta-fEtaMin)/etaslice);
 	  if(eta_index1 < 0 || eta_index1 >= fNEtaSegments)
 	    continue;
 	  r1 = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
@@ -233,7 +242,7 @@ void AliL3HoughTransformer::TransformCircleC()
 		  fTransform->Slice2Sector(fSlice,j,sector,row);
 		  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
 		  eta = fTransform->GetEta(xyz);
-		  eta_index2 = (Int_t)((eta-fEtaMin)/etaslice);
+		  eta_index2 = GetEtaIndex(eta);//(Int_t)((eta-fEtaMin)/etaslice);
 		  if(eta_index2 != eta_index1)
 		    continue;
 		  r2 = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
@@ -264,7 +273,7 @@ void AliL3HoughTransformer::TransformLine()
       return;
     }
   
-  Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
+  //Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
   for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
     {
       AliL3DigitData *digPt = tempPt->fDigitData;
@@ -285,7 +294,7 @@ void AliL3HoughTransformer::TransformLine()
 	  fTransform->Slice2Sector(fSlice,i,sector,row);
 	  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
 	  Float_t eta = fTransform->GetEta(xyz);
-	  Int_t eta_index = (Int_t)(eta/etaslice);
+	  Int_t eta_index = GetEtaIndex(eta);//(Int_t)(eta/etaslice);
 	  if(eta_index < 0 || eta_index >= fNEtaSegments)
 	    continue;
 	  

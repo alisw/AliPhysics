@@ -26,6 +26,7 @@ class AliL3HoughTransformer {
   UInt_t fNDigitRowData;
   AliL3DigitRowData *fDigitRowData; //!
   
+  Int_t GetEtaIndex(Double_t eta);
   void DeleteHistograms();
 
  public:

@@ -86,12 +86,11 @@ void AliL3Hough::CleanUp()
       if(fMemHandler[i]) delete fMemHandler[i];
     }
   
-  /*Shitty compiler doesn't allow this:
-    
-  if(fTracks) delete [] fTracks;
-  if(fEval) delete [] fEval;
-  if(fHoughTransformer) delete [] fHoughTransformer;
-  if(fMemHandler) delete [] fMemHandler;
+  /*    
+	if(fTracks) delete [] fTracks;
+	if(fEval) delete [] fEval;
+	if(fHoughTransformer) delete [] fHoughTransformer;
+	if(fMemHandler) delete [] fMemHandler;
   */
 }
 
@@ -233,6 +232,7 @@ void AliL3Hough::ProcessPatchIter(Int_t patch)
   ev->InitTransformer(tr);
   ev->RemoveFoundTracks();
   ev->SetNumOfRowsToMiss(2);
+  ev->SetNumOfPadsToLook(2);
   AliL3Histogram *hist;
   for(Int_t t=0; t<num_of_tries; t++)
     {
@@ -244,10 +244,11 @@ void AliL3Hough::ProcessPatchIter(Int_t patch)
 	  if(hist->GetNEntries()==0) continue;
 	  fPeakFinder->SetHistogram(hist);
 	  Int_t n=1;
-	  Int_t x[n],y[n];
-	  fPeakFinder->FindAbsMaxima(*x,*y);
+	  Float_t x,y;
+	  //fPeakFinder->FindAbsMaxima(*x,*y);
+	  fPeakFinder->FindPeak(3,0.95,5,x,y);
 	  AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->NextTrack();
-	  track->SetTrackParameters(hist->GetBinCenterX(*x),hist->GetBinCenterY(*y),1);
+	  track->SetTrackParameters(x,y,1);
 	  if(!ev->LookInsideRoad(track,i))
 	    {	
 	      tracks->Remove(tracks->GetNTracks()-1);
@@ -383,10 +384,23 @@ void AliL3Hough::WriteTracks(Char_t *path)
 {
   AliL3MemHandler *mem = new AliL3MemHandler();
   Char_t fname[100];
-  sprintf(fname,"%s/tracks.raw",path);
-  mem->SetBinaryOutput(fname);
-  mem->TrackArray2Binary(fTracks[0]);
-  mem->CloseBinaryOutput();
+  if(fAddHistograms)
+    {
+      sprintf(fname,"%s/tracks.raw",path);
+      mem->SetBinaryOutput(fname);
+      mem->TrackArray2Binary(fTracks[0]);
+      mem->CloseBinaryOutput();
+    }
+  else 
+    {
+      for(Int_t i=0; i<fNPatches; i++)
+	{
+	  sprintf(fname,"%s/tracks_%d.raw",path,i);
+	  mem->SetBinaryOutput(fname);
+	  mem->TrackArray2Binary(fTracks[i]);
+	  mem->CloseBinaryOutput();
+	}
+    }
   delete mem;
   
 }
