@@ -107,6 +107,7 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
 
    AliITSDetType *iDetType=ITS->DetType(2);
    AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
+   seg2->SetDetSize(72960.,40000.,303.);
    AliITSresponseSSD *res2 = (AliITSresponseSSD*)iDetType->GetResponseModel();
    res2->SetSigmaSpread(3.,2.);
    AliITSsimulationSSD *sim2=new AliITSsimulationSSD(seg2,res2);
