@@ -187,8 +187,8 @@ AliMUON::AliMUON(const char *name, const char *title)
 	//
 	chamber->InitGeo(AliMUONConstants::DefaultChamberZ(ch));
 	//          Set chamber inner and outer radius to default
-	chamber->SetRInner(AliMUONConstants::Dmin(st)/2);
-	chamber->SetROuter(AliMUONConstants::Dmax(st)/2);
+	chamber->SetRInner(AliMUONConstants::Dmin(st)/2.);
+	chamber->SetROuter(AliMUONConstants::Dmax(st)/2.);
 	//
       } // Chamber stCH (0, 1) in 
     }     // Station st (0...)
@@ -380,27 +380,6 @@ void AliMUON::SetMaxDestepAlu(Float_t p1)
 {
 // Set maximum step size in Alu
   fMaxDestepAlu=p1;
-}
-
-//___________________________________________________________________
-void AliMUON::SetAcceptance(Bool_t acc, Float_t angmin, Float_t angmax)
-{
-// Set acceptance cuts 
-  fAccCut=acc;
-  fAccMin=angmin*TMath::Pi()/180;
-  fAccMax=angmax*TMath::Pi()/180;
-  Int_t ch;
-  if (acc) {
-    for (Int_t st = 0; st < AliMUONConstants::NCh() / 2; st++) {
-      // Loop over 2 chambers in the station
-      for (Int_t stCH = 0; stCH < 2; stCH++) {
-	ch = 2 * st + stCH;
-	//         Set chamber inner and outer radius according to acceptance cuts
-	Chamber(ch).SetRInner(TMath::Abs(AliMUONConstants::DefaultChamberZ(ch)*TMath::Tan(fAccMin)));
-	Chamber(ch).SetROuter(TMath::Abs(AliMUONConstants::DefaultChamberZ(ch)*TMath::Tan(fAccMax)));
-      } // chamber loop
-    } // station loop
-  }
 }
 
 //____________________________________________________________________

@@ -19,7 +19,7 @@
 // -------------------------------
 // Abstract base class for geometry construction per chamber.
 //
-// Author: Eric Dumonteil (dumontei@cea.fr)
+
 
 
 // This Builder is designed according to the enveloppe methode. The basic idea is to be able to allow moves 
@@ -166,6 +166,9 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
   const Float_t kPanelHeight = kSensHeight; 
   const Float_t kPanelWidth  = 2 * kCarbonWidth + kNomexWidth;
 
+  // Frame along the rounded (spacers) slats 
+  const Float_t kRframeHeight = 2.00; 
+
   // spacer around the slat: 2 sticks along length,2 along height  
   // H: the horizontal ones 
   const Float_t kHframeLength = kPcbLength; 
@@ -258,8 +261,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	// Mother volume for each chamber in st3 are only defined if Dipole volue is there.
 	// Outer excess and inner recess for mother volume radius
 	// with respect to ROuter and RInner
-	Float_t dframep_in = 0.006; 
-	Float_t dframep_out= 0.006; 
+	Float_t dframep_in = kRframeHeight; 
+	Float_t dframep_out= kVframeLength + 37.0; // Additional 37 cm gap is needed to wrap the corners of the slats 
 	Float_t tpar[3];
 	Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
 	tpar[0] = iChamber1->RInner()-dframep_in; 
@@ -565,7 +568,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       Double_t divpar[3];
       Double_t dydiv = kSensHeight/ndiv;
       Double_t ydiv  = (kSensHeight - dydiv)/2.;
-      Double_t rmin  = 31.5;  // Corrected in sep04 from PQ-LAT-SR2 de CEA-DSM-DAPNIA-SIS/BE ph HARDY 19-Oct-2002 slat 
+      Double_t rmin  = iChamber1->RInner();// Same radius for both chamber in St3
       Double_t xdiv  = 0.;
       Float_t xvol;
       Float_t yvol;
@@ -598,7 +601,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       // 9 box volumes are used to define the PCB closed to the beam pipe of the slat 122000SR1 of chamber 5 and 6 of St3
       // Accordingly to plan PQ-LAT-SR1 of CEA-DSM-DAPNIA-SIS/BE ph HARDY 8-Oct-2002
       // Rmin = 31.5 cm
-      rmin = 31.5; //in cm  
+      rmin = iChamber1->RInner(); // Same radius for both chamber in St3
       ndiv  = 9; 
       dydiv = kSensHeight/ndiv;           // Vertical size of the box volume approximating the rounded PCB
       ydiv  = -kSensHeight/2 + dydiv/2.;   // Initializing vertical position of the volume from bottom
@@ -657,8 +660,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     // Mother volume for each chamber
     // Outer excess and inner recess for mother volume radius
     // with respect to ROuter and RInner
-    Float_t dframep_in = 0.006; 
-    Float_t dframep_out= 0.006; 
+    Float_t dframep_in = kRframeHeight; 
+    Float_t dframep_out= kVframeLength + 40.0; // Additional 30 cm gap is needed to wrap the corners of the slats 
     Float_t tpar[3];
     Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
     tpar[0] = iChamber1->RInner()-dframep_in; 
@@ -877,7 +880,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     Double_t divpar[3];
     Double_t dydiv = kSensHeight/ndiv;
     Double_t ydiv  = (kSensHeight - dydiv)/2.;
-    Float_t rmin   = 39.5;// Corrected in sep04 from PQ-LAT-NR3 de CEA-DSM-DAPNIA-SIS/BE ph HARDY 19-Oct-2002 slat 
+    Float_t rmin   = iChamber1->RInner(); // Same radius for both chamber of St4
     Float_t xdiv   = 0.; 
     Float_t xvol;
     Float_t yvol;
@@ -931,8 +934,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     // Mother volume for each chamber
     // Outer excess and inner recess for mother volume radius
     // with respect to ROuter and RInner
-    Float_t dframep_in = 0.006; 
-    Float_t dframep_out= 0.006; 
+    Float_t dframep_in = kRframeHeight; 
+    Float_t dframep_out= kVframeLength + 40.0; // Additional 40 cm gap is needed to wrap the corners of the slats 
     Float_t tpar[3];
     Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.3;
     tpar[0] = iChamber1->RInner()-dframep_in; 
@@ -1152,7 +1155,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     Double_t divpar[3];
     Double_t dydiv = kSensHeight/ndiv;
     Double_t ydiv  = (kSensHeight - dydiv)/2.;
-    Float_t rmin   = 39.5;
+    Float_t rmin   = iChamber1->RInner();
     Float_t xdiv   = 0.; 
     Float_t xvol;
     Float_t yvol; 

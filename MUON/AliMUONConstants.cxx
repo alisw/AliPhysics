@@ -40,15 +40,17 @@ Float_t  AliMUONConstants::fgSqrtKx3St1 = 0.7000;
 Float_t  AliMUONConstants::fgSqrtKy3St1 = 0.7550;
 
 Float_t  AliMUONConstants::fgChargeCorrel    = 0.11;
-Float_t  AliMUONConstants::fgChargeCorrelSt1 = 1.0; //???
-//Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  66.0,   80.,   80., 100., 100.};  
+Float_t  AliMUONConstants::fgChargeCorrelSt1 = 1.0; //??? 
 Float_t  AliMUONConstants::fgPitch     = 0.25;
 Float_t  AliMUONConstants::fgPitchSt1  = 0.21; 
 
-//Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  66.0,   80.,   80., 100., 100.};    
-Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  60.0,   76.,   76.5, 100., 100.};  
-//Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 395.,  560.,  563., 850., 900.};  
-Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 363.5,  560.,  563., 850., 900.};  
+// From Alain TOURNAIRE    
+// ALICE / ALICE Engineering baseline / Dimuonspectrometer (DIS) v7-1
+// EDMS Id 335328 for "search in EDMS 
+// These are the diameter (innner and ounner) values of the active surface
+Float_t  AliMUONConstants::fgDmin[7]  = {   36.4,  46.2,  63.0,   79.0,   79.0,  100.0,  100.0};  
+Float_t  AliMUONConstants::fgDmax[7]  = {  176.6, 229.0, 308.84, 418.2,  522.0, 1224.0, 1300.0}; 
+ 
 Int_t    AliMUONConstants::fgMaxZoom = 20;
 
 //______________________________________________________________________________

@@ -103,7 +103,6 @@ class AliMUON : public  AliDetector
     virtual void   SetMaxStepAlu(Float_t p1);
     virtual void   SetMaxDestepGas(Float_t p1);
     virtual void   SetMaxDestepAlu(Float_t p1);
-    virtual void   SetAcceptance(Bool_t acc=0, Float_t angmin=2, Float_t angmax=9);
    
     // Get Stepping Parameters
     virtual Float_t  GetMaxStepGas() const;
