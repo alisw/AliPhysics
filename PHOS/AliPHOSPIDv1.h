@@ -71,7 +71,7 @@ public:
 
   virtual const char * Version() const { return "pid-v1" ; }  
 
-  AliPHOSPIDv1 & operator = (const AliPHOSPIDv1 & pid) { return *this ;} 
+  AliPHOSPIDv1 & operator = (const AliPHOSPIDv1 & /*pid*/) { return *this ;} 
   
 private:
   

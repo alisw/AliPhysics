@@ -39,7 +39,7 @@ public:
   void           SetEventFolderName(TString name) { fEventFolderName = name ; }
 
   Bool_t operator == (const AliPHOSSDigitizer & sd) const ;
-  AliPHOSSDigitizer & operator = (const AliPHOSSDigitizer & sd) {return *this ;}
+  AliPHOSSDigitizer & operator = (const AliPHOSSDigitizer & /*sd*/) {return *this ;}
   
 private:
   void     Init() ;

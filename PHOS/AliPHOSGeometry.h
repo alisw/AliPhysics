@@ -61,7 +61,7 @@ public:
   virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const ;
   virtual Bool_t Impact(const TParticle * particle) const ;
 
-  AliPHOSGeometry & operator = (const AliPHOSGeometry  & rvalue) const {
+  AliPHOSGeometry & operator = (const AliPHOSGeometry  & /*rvalue*/) const {
     // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *(GetInstance()) ; 

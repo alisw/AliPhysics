@@ -51,7 +51,7 @@ public:
 
   void SetEnergyCorrection(const Float_t ecor){fCorrection = ecor ;} 
 
-  AliPHOSAnalyze & operator = (const AliPHOSAnalyze & rvalue)  {
+  AliPHOSAnalyze & operator = (const AliPHOSAnalyze & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ;
     return *this ; 

@@ -48,7 +48,7 @@ public:
     return TString("vImpacts") ; 
   }
 
-  AliPHOSvImpacts & operator = (const AliPHOSvImpacts & rvalue)  {
+  AliPHOSvImpacts & operator = (const AliPHOSvImpacts & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ;
     return *this ; 

@@ -44,7 +44,7 @@ public:
     {if(fPedestals){fPedestals->AddAt(pedestal,AbsId-1) ; fSlopes->AddAt(slope,AbsId-1) ;} }
 
   //To be replaced in real DB when updating will really be necessary
-  void Update(Int_t event,Int_t run){} 
+  void Update(Int_t /*event*/,Int_t /*run*/){} 
 
   AliPHOSCalibrationDB & operator = (const AliPHOSCalibrationDB & ) ;
 private:

@@ -47,7 +47,7 @@ public:
   void SetConTableDB(AliPHOSConTableDB * ctdb){fctdb = ctdb ;}
   void SetMaxEventsPerFile(Int_t nev=20000){fMaxPerFile = nev ;}
   void Print()const ;
-  AliPHOSRaw2Digits & operator = ( AliPHOSRaw2Digits & r2d ) { return *this ; } 
+  AliPHOSRaw2Digits & operator = ( AliPHOSRaw2Digits & /*r2d*/ ) { return *this ; } 
   
 private:
   Bool_t StartRootFiles(void) ;

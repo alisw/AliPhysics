@@ -43,7 +43,7 @@ public:
   virtual void   StepManager(void) ;                              
   virtual const TString Version(void)const { return TString("v1") ;  }
 
-  AliPHOSv1 & operator = (const AliPHOSv1 & rvalue)  {
+  AliPHOSv1 & operator = (const AliPHOSv1 & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ;
     return *this ; 

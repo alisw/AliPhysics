@@ -57,7 +57,7 @@ public:
   //            // From wich step reconstruction begins, 
   //            // title to be set to all reconstructed branches
 
-  AliPHOSReconstructioner & operator = (const AliPHOSReconstructioner & rvalue)  {
+  AliPHOSReconstructioner & operator = (const AliPHOSReconstructioner & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implementeyd") ;
     return *this ; 

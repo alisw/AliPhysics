@@ -31,7 +31,7 @@ public:
   } 
   virtual ~AliPHOSSupportGeometry(void) {}
 
-  AliPHOSSupportGeometry & operator = (const AliPHOSSupportGeometry  & rvalue) {
+  AliPHOSSupportGeometry & operator = (const AliPHOSSupportGeometry  & /*rvalue*/) {
     // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *this ; 

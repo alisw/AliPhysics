@@ -32,7 +32,7 @@ public:
   } 
   virtual ~AliPHOSEMCAGeometry(void) {}
 
-  AliPHOSEMCAGeometry & operator = (const AliPHOSEMCAGeometry  & rvalue) {
+  AliPHOSEMCAGeometry & operator = (const AliPHOSEMCAGeometry  & /*rvalue*/) {
     // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *this ; 

@@ -39,7 +39,7 @@ public:
   void SetMaxConeMove(Double_t move){fMaxConeMove=move ; } ;
   void SetMinConeMove(Double_t move){fMinConeMove=move ; } ;
   void SetStatusCode(Int_t stc = 1){fStatusCode=stc ;} ;
-  AliPHOSJetFinder & operator = (const AliPHOSJetFinder & rvalue)  {
+  AliPHOSJetFinder & operator = (const AliPHOSJetFinder & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ; return *this ; 
   }

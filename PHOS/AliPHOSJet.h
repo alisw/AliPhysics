@@ -61,7 +61,7 @@ public:
   Int_t GetNJetParticles(void)const{return fNpart;}
 
   void Print() ;
-  AliPHOSJet & operator = (const AliPHOSJet & rvalue)  {
+  AliPHOSJet & operator = (const AliPHOSJet & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ; return *this ; 
   }

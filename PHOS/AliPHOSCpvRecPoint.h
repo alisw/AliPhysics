@@ -51,7 +51,7 @@ public:
   Bool_t IsSortable() const { return kTRUE ; }    // tells that this is a sortable object
   void   Print(Option_t *) ; 
 
-  AliPHOSCpvRecPoint & operator = (const AliPHOSCpvRecPoint & rvalue)  {
+  AliPHOSCpvRecPoint & operator = (const AliPHOSCpvRecPoint & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *this ; 

@@ -17,7 +17,7 @@ public:
   void GetNumberOfClustersFound(int* numb ) const;
 
   void Exec(Option_t* option);
-  AliPHOSClusterizerv2 & operator = (const AliPHOSClusterizerv2 & rvalue)  {
+  AliPHOSClusterizerv2 & operator = (const AliPHOSClusterizerv2 & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ;
     return *this ; 

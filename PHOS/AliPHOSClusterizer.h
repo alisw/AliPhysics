@@ -50,7 +50,7 @@ public:
   virtual void SetUnfolding(Bool_t)               = 0;
   void   SetEventFolderName(TString name) { fEventFolderName = name ; }
 
-  AliPHOSClusterizer & operator = (const AliPHOSClusterizer & rvalue)  {return *this ;} 
+  AliPHOSClusterizer & operator = (const AliPHOSClusterizer & /*rvalue*/)  {return *this ;} 
  
   virtual const char * Version() const {Warning("Version", "Not Defined" ) ; return 0 ; }  
 

@@ -72,7 +72,7 @@ public:
 		  const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ; // Add another one file to mix
   void    Print()const ;
  
-  AliPHOSDigitizer & operator = (const AliPHOSDigitizer & rvalue)  {
+  AliPHOSDigitizer & operator = (const AliPHOSDigitizer & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ;
     return *this ; 

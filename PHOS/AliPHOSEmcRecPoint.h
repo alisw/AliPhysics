@@ -70,7 +70,7 @@ public:
   Float_t     GetM4z()   const {return fM4z;  } // Get forth  Z-moment
   Float_t     GetPhixe() const {return fPhixe;} // Get angle between center gravity and eigen vector
 
-  AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & rvalue)  { return *this ; }
+  AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & /*rvalue*/)  { return *this ; }
 
  protected:
           void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             

@@ -96,7 +96,7 @@ public:
   void ReadGains(const char * version="v1",
 		     Int_t ValidRange = 0) ;
 
-  AliPHOSCalibrator & operator = (const AliPHOSCalibrator & rvalue){
+  AliPHOSCalibrator & operator = (const AliPHOSCalibrator & /*rvalue*/){
     Fatal("operator =","assigment operator is not implemented") ;
     return *this ;
  }

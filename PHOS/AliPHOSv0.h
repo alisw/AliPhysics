@@ -59,7 +59,7 @@ class AliPHOSv0 : public AliPHOS {
     return TString("v0") ; 
   }
   
-  AliPHOSv0 & operator = (const AliPHOSv0 & rvalue)  {
+  AliPHOSv0 & operator = (const AliPHOSv0 & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ;
     return *this ; 

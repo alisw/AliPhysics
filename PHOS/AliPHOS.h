@@ -51,7 +51,7 @@ class AliPHOS : public AliDetector {
   virtual TTree * TreeQA() const {return fTreeQA; } 
   virtual const TString Version() const {return TString(" ") ; } 
   virtual void WriteQA() ; 
-  AliPHOS & operator = (const AliPHOS & rvalue)  {
+  AliPHOS & operator = (const AliPHOS & /*rvalue*/)  {
     // assignement operator requested by coding convention
     // but not needed
     Fatal("operator =", "not implemented") ;
