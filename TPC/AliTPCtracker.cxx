@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/05/16 14:57:25  alibrary
+New files for folders and Stack
+
 Revision 1.9  2001/05/11 07:16:56  hristov
 Fix needed on Sun and Alpha
 
@@ -129,7 +132,7 @@ Double_t SigmaZ2(Double_t r, Double_t tgl)
 }
 
 //_____________________________________________________________________________
-inline Double_t f1(Double_t x1,Double_t y1,
+Double_t f1(Double_t x1,Double_t y1,
                    Double_t x2,Double_t y2,
                    Double_t x3,Double_t y3) 
 {
@@ -149,7 +152,7 @@ inline Double_t f1(Double_t x1,Double_t y1,
 
 
 //_____________________________________________________________________________
-inline Double_t f2(Double_t x1,Double_t y1,
+Double_t f2(Double_t x1,Double_t y1,
                    Double_t x2,Double_t y2,
                    Double_t x3,Double_t y3) 
 {
@@ -168,7 +171,7 @@ inline Double_t f2(Double_t x1,Double_t y1,
 }
 
 //_____________________________________________________________________________
-inline Double_t f3(Double_t x1,Double_t y1, 
+Double_t f3(Double_t x1,Double_t y1, 
                    Double_t x2,Double_t y2,
                    Double_t z1,Double_t z2) 
 {

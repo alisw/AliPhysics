@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.10  2001/05/07 08:08:05  cblume
+Update of TRD code
+
 Revision 1.9  2001/02/14 18:22:26  cblume
 Change in the geometry of the padplane
 
@@ -168,7 +171,7 @@ Double_t AliTRDtracker::ExpectedSigmaZ2(Double_t r, Double_t tgl)
 }                  
 
 //_____________________________________________________________________
-inline Double_t f1trd(Double_t x1,Double_t y1,
+Double_t f1trd(Double_t x1,Double_t y1,
                       Double_t x2,Double_t y2,
                       Double_t x3,Double_t y3)
 {
@@ -187,7 +190,7 @@ inline Double_t f1trd(Double_t x1,Double_t y1,
 }          
 
 //_____________________________________________________________________
-inline Double_t f2trd(Double_t x1,Double_t y1,
+Double_t f2trd(Double_t x1,Double_t y1,
                       Double_t x2,Double_t y2,
                       Double_t x3,Double_t y3)
 {
@@ -206,7 +209,7 @@ inline Double_t f2trd(Double_t x1,Double_t y1,
 }          
 
 //_____________________________________________________________________
-inline Double_t f3trd(Double_t x1,Double_t y1,
+Double_t f3trd(Double_t x1,Double_t y1,
                       Double_t x2,Double_t y2,
                       Double_t z1,Double_t z2)
 {

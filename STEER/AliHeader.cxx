@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.4  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -88,26 +91,30 @@ void AliHeader::Print(const char* option)
 
 }
 
-inline AliStack* AliHeader::Stack() const
+AliStack* AliHeader::Stack() const
 {
 // Return pointer to stack
     return fStack;
 }
 
-inline void AliHeader::SetStack(AliStack* stack)
+void AliHeader::SetStack(AliStack* stack)
 {
 // Set pointer to stack
     fStack = stack;
 }
 
-inline void AliHeader::SetGenEventHeader(AliGenEventHeader* header)
+void AliHeader::SetGenEventHeader(AliGenEventHeader* header)
 {
 // Set pointer to header for generated event
     fGenHeader = header;
 }
 
-inline  AliGenEventHeader*  AliHeader::GenEventHeader() const
+iAliGenEventHeader*  AliHeader::GenEventHeader() const
 {
 // Get pointer to header for generated event
     return fGenHeader;
 }
+
+
+
+
