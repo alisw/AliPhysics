@@ -37,18 +37,21 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliCRT.h"
+
 #include <TTree.h>
 
 #include "AliRun.h"
 #include "AliMagF.h"
 
-#include "AliCRT.h"
+#include "AliCRTModule.h"
 
 ClassImp(AliCRT)
 
 //_____________________________________________________________________________
 AliCRT::AliCRT()
-  : AliDetector()
+  : AliDetector(),
+    fModule(0)
 {
   //
   // Default constructor
@@ -57,7 +60,8 @@ AliCRT::AliCRT()
  
 //_____________________________________________________________________________
 AliCRT::AliCRT(const char *name, const char *title)
-  : AliDetector(name, title)
+  : AliDetector(name, title),
+    fModule(0)
 {
   //
   // Standard constructor
@@ -66,7 +70,8 @@ AliCRT::AliCRT(const char *name, const char *title)
 
 //_____________________________________________________________________________
 AliCRT::AliCRT(const AliCRT& crt)
-  : AliDetector(crt)
+  : AliDetector(crt),
+    fModule(crt.fModule)
 {
   //
   // Copy constructor
@@ -80,6 +85,7 @@ AliCRT::~AliCRT()
   //
   // Default destructor
   //
+  if ( fModule ) { delete fModule; fModule = 0; }
 }
 
 //_____________________________________________________________________________

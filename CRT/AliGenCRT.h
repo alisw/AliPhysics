@@ -37,8 +37,8 @@ class AliGenCRT : public AliGenerator {
   void SetZenithalDistributionFunction(TF1 *func) {fZenithDist = func;}
   void SetMomentumResolution(Float_t res=1.) {fPResolution=res;}
 
-  const Float_t GetMomentum();
-  const Float_t GetZenithAngle(Float_t mom);
+  const Float_t GetMomentum() const;
+  const Float_t GetZenithAngle(Float_t mom) const;
 
   // The following methods are for testing pourpuses
   TF1* GetMomentumDistibution() const {return fMomentumDist;}

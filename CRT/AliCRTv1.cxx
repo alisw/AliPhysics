@@ -63,7 +63,7 @@ ClassImp(AliCRTv1)
  
 //_____________________________________________________________________________
 AliCRTv1::AliCRTv1()
-  : AliCRTv0()
+  : AliCRT()
 {
   //
   // Default constructor
@@ -74,7 +74,7 @@ AliCRTv1::AliCRTv1()
  
 //_____________________________________________________________________________
 AliCRTv1::AliCRTv1(const char *name, const char *title)
-  : AliCRTv0(name, title)
+  : AliCRT(name, title)
 {
   //
   // Standard constructor
@@ -96,7 +96,7 @@ AliCRTv1::AliCRTv1(const char *name, const char *title)
 
 //_____________________________________________________________________________
 AliCRTv1::AliCRTv1(const AliCRTv1& crt)
-  : AliCRTv0(crt)
+  : AliCRT(crt)
 {
   //
   // Copy ctor.
@@ -148,6 +148,8 @@ void AliCRTv1::CreateGeometry()
   // Molasse.
   this->CreateMolasse();
 
+  AliCRTConstants* crtConstants = AliCRTConstants::Instance();
+
   // Create a big volume with air barrel above the magnet
   Float_t barrel[10];
   Float_t magnetSides = 3.;
@@ -157,8 +159,8 @@ void AliCRTv1::CreateGeometry()
   barrel[2] = magnetSides;
   barrel[3] = planesPerpendicularToZ;
   barrel[4] = -700.;
-  barrel[5] = AliCRTConstants::fgMagMinRadius;
-  barrel[6] = AliCRTConstants::fgMagMinRadius + 2.; // 2 cm width
+  barrel[5] = crtConstants->MagMinRadius();
+  barrel[6] = crtConstants->MagMinRadius() + 2.; // 2 cm width
   barrel[7] = -barrel[4];
   barrel[8] = barrel[5];
   barrel[9] = barrel[6];
@@ -167,9 +169,9 @@ void AliCRTv1::CreateGeometry()
 
   //
   Float_t box[3];
-  box[0] = AliCRTConstants::fgSinglePaletteLenght/4;
-  box[1] = AliCRTConstants::fgSinglePaletteHeight/2;
-  box[2] = AliCRTConstants::fgSinglePaletteWidth/2;
+  box[0] = crtConstants->SinglePaletteLenght()/4;
+  box[1] = crtConstants->SinglePaletteHeight()/2;
+  box[2] = crtConstants->SinglePaletteWidth()/2;
   gMC->Gsvolu("CRT6", "BOX", idtmed[1113], box, 3);
 
   // In the right side side of the magnet
@@ -181,8 +183,8 @@ void AliCRTv1::CreateGeometry()
 
   // Now put them into the volume created above
   // First above the magnet.
-  const Float_t away = (2.*barrel[5]*TMath::Sin(kDegrad*22.5))/4.;
-  const Int_t nModules = 10;
+  Float_t away = (2.*barrel[5]*TMath::Sin(kDegrad*22.5))/4.;
+  Int_t nModules = 10;
   for (Int_t i = 0; i < nModules; i++) {
     Float_t zCoordinate = i*100 - 450;
     // In the lef side
@@ -331,9 +333,9 @@ void AliCRTv1::CreateShafts()
 
   // Create a mother volume.
   Float_t pbox[3];
-  //pbox[0] = AliCRTConstants::fgDepth*TMath::Tan(67.5*kDegrad);
+  //pbox[0] = AliCRTConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad);
   pbox[0] = 12073.;
-  pbox[1] = AliCRTConstants::fgDepth;
+  pbox[1] = AliCRTConstants::Instance()->Depth();
   pbox[2] = pbox[0];
   gMC->Gsvolu("CRT", "BOX", idtmed[1114], pbox, 3);
   gMC->Gspos("CRT", 1, "ALIC", 0, 0, 0, 0, "ONLY");
@@ -447,19 +449,19 @@ void AliCRTv1::CreateShafts()
   ptube[1] = ptube[0] + 100;
   ptube[2] = (5150 - 1166)/2;
   gMC->Gsvolu("CSF3", "TUBE", idtmed[1116], ptube, 3);
-  gMC->Gspos("CSF3", 1, "CRT", -2100, AliCRTConstants::fgDepth-ptube[2], 0, idrotm[2001], "MANY");
+  gMC->Gspos("CSF3", 1, "CRT", -2100, AliCRTConstants::Instance()->Depth()-ptube[2], 0, idrotm[2001], "MANY");
 
   // PGC2 Access Shaft
   ptube[0] = 1100/2;
   ptube[1] = ptube[0] + 100;
   ptube[2] = (5150 - 690)/2;
   gMC->Gsvolu("CSF4", "TUBE", idtmed[1116], ptube, 3);
-  gMC->Gspos("CSF4", 1, "CRT", 375, AliCRTConstants::fgDepth-ptube[2], 1900 + 2987.7, idrotm[2001], "MANY");
+  gMC->Gspos("CSF4", 1, "CRT", 375, AliCRTConstants::Instance()->Depth()-ptube[2], 1900 + 2987.7, idrotm[2001], "MANY");
 
 }
 
 //_____________________________________________________________________________
-void AliCRTv1::DrawDetector()
+void AliCRTv1::DrawDetector() const
 {
   //
   // Draw a shaded view of the L3 magnet

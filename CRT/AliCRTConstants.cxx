@@ -30,20 +30,142 @@
 
 #include "AliCRTConstants.h"
 
-const Float_t AliCRTConstants::fgCageLenght          = 477.6;
-const Float_t AliCRTConstants::fgCageWidth           = 166.7;
-const Float_t AliCRTConstants::fgCageHeight          =  10.7;
-const Float_t AliCRTConstants::fgSinglePaletteLenght = 363.0;
-const Float_t AliCRTConstants::fgSinglePaletteWidth  =  19.7;
-const Float_t AliCRTConstants::fgSinglePaletteHeight =   1;
-const Float_t AliCRTConstants::fgActiveAreaGap       = 0.7;
-const Float_t AliCRTConstants::fgActiveAreaLenght    = AliCRTConstants::fgSinglePaletteLenght;
-const Float_t AliCRTConstants::fgActiveAreaWidth     = 156.7;
-const Float_t AliCRTConstants::fgActiveAreaHeight    = 2*AliCRTConstants::fgSinglePaletteHeight + AliCRTConstants::fgActiveAreaGap;
-const Float_t AliCRTConstants::fgMagnetWidth         = 654.4;
-const Float_t AliCRTConstants::fgMagnetLenght        = 1200;
-const Float_t AliCRTConstants::fgMagMinRadius        = 790;
-const Float_t AliCRTConstants::fgMagMaxRadius        = AliCRTConstants::fgMagMinRadius + 20;
-const Float_t AliCRTConstants::fgDepth               =4420; // cm
+AliCRTConstants* AliCRTConstants::fgInstance = 0;
+
+const Float_t AliCRTConstants::fgkCageLenght          = 477.6;
+const Float_t AliCRTConstants::fgkCageWidth           = 166.7;
+const Float_t AliCRTConstants::fgkCageHeight          =  10.7;
+const Float_t AliCRTConstants::fgkSinglePaletteLenght = 363.0;
+const Float_t AliCRTConstants::fgkSinglePaletteWidth  =  19.7;
+const Float_t AliCRTConstants::fgkSinglePaletteHeight =   1;
+const Float_t AliCRTConstants::fgkActiveAreaGap       = 0.7;
+const Float_t AliCRTConstants::fgkActiveAreaLenght    = AliCRTConstants::fgkSinglePaletteLenght;
+const Float_t AliCRTConstants::fgkActiveAreaWidth     = 156.7;
+const Float_t AliCRTConstants::fgkActiveAreaHeight    = 2*AliCRTConstants::fgkSinglePaletteHeight + AliCRTConstants::fgkActiveAreaGap;
+const Float_t AliCRTConstants::fgkMagnetWidth         = 654.4;
+const Float_t AliCRTConstants::fgkMagnetLenght        = 1200;
+const Float_t AliCRTConstants::fgkMagMinRadius        = 790;
+const Float_t AliCRTConstants::fgkMagMaxRadius        = AliCRTConstants::fgkMagMinRadius + 20;
+const Float_t AliCRTConstants::fgkDepth               =4420; // cm
 
 ClassImp(AliCRTConstants)
+
+//_____________________________________________________________________________
+AliCRTConstants* AliCRTConstants::Instance()
+{
+  if ( !fgInstance ) {
+    fgInstance = new AliCRTConstants;
+  }
+  return fgInstance;
+}
+
+//_____________________________________________________________________________
+AliCRTConstants::~AliCRTConstants()
+{
+  fgInstance = 0;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::CageLenght() const
+{
+  // Module lenght
+  return fgkCageLenght;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::CageWidth() const
+{
+  // Module width
+  return fgkCageWidth;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::CageHeight() const
+{
+  // Module height
+  return fgkCageHeight;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::SinglePaletteLenght() const
+{
+  // Lenght of the scintillator active zone for a single counter
+  return fgkSinglePaletteLenght;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::SinglePaletteWidth() const
+{
+  // Width of the scintillator active zone for a single counter
+  return fgkSinglePaletteWidth;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::SinglePaletteHeight() const
+{
+  // Height of the scintillator active zone for a single counter
+  return fgkSinglePaletteHeight;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::ActiveAreaGap() const
+{ 
+  // Gap betwen scintillators
+  return fgkActiveAreaGap;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::ActiveAreaLenght() const
+{
+  // Lenght of the scintillator active zone
+  return fgkActiveAreaLenght;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::ActiveAreaWidth() const
+{
+  // Width of the scintillator active zone
+  return fgkActiveAreaWidth;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::ActiveAreaHeight() const
+{
+  // Height of the scintillator active zone
+  return fgkActiveAreaHeight;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::MagnetWidth() const
+{
+  // Magnet  width
+  return fgkMagnetWidth;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::MagnetLenght() const
+{
+  // Magnet lenght
+  return fgkMagnetLenght;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::MagMinRadius() const
+{
+  // Magnet Inner radius
+  return fgkMagMinRadius;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::MagMaxRadius() const
+{
+  // Magnet outer radius
+  return fgkMagMaxRadius;
+}
+
+//_____________________________________________________________________________
+const Float_t AliCRTConstants::Depth() const
+{
+  // Alice IP depth
+  return fgkDepth;
+}

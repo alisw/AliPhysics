@@ -28,38 +28,57 @@ enum ECRMode {
 
 class AliCRTConstants {
 public:
-  // Module dimentions
-  static const Float_t fgCageLenght; // Module lenght
-  static const Float_t fgCageWidth;  // Module width
-  static const Float_t fgCageHeight; // Module height
+  virtual ~AliCRTConstants();
 
-  // The dimensions of the active area of a single palette are:
-  static const Float_t fgSinglePaletteLenght; //
-  static const Float_t fgSinglePaletteWidth; //
-  static const Float_t fgSinglePaletteHeight; //
+  static AliCRTConstants* Instance();
 
-  static const Float_t fgActiveAreaGap; //
+  const Float_t CageLenght() const;
+  const Float_t CageWidth() const;
+  const Float_t CageHeight() const;
 
-  // Aproximate dimensions of the active area of the module.
-  static const Float_t fgActiveAreaLenght;
-  static const Float_t fgActiveAreaWidth; //
-  static const Float_t fgActiveAreaHeight;
+  const Float_t SinglePaletteLenght() const;
+  const Float_t SinglePaletteWidth() const;
+  const Float_t SinglePaletteHeight() const;
 
-  // Magnet
-  static const Float_t fgMagnetWidth; //
-  static const Float_t fgMagnetLenght; //
-  static const Float_t fgMagMinRadius; //
-  static const Float_t fgMagMaxRadius; //
+  const Float_t ActiveAreaGap() const;
+  const Float_t ActiveAreaLenght() const;
+  const Float_t ActiveAreaWidth() const;
+  const Float_t ActiveAreaHeight() const;
 
-  // Surface
-  static const Float_t fgDepth;
+  const Float_t MagnetWidth() const;
+  const Float_t MagnetLenght() const;
+  const Float_t MagMinRadius() const;
+  const Float_t MagMaxRadius() const;
 
-  AliCRTConstants() {}
-  virtual ~AliCRTConstants() {}
+  const Float_t Depth() const;
 
 protected:
+  AliCRTConstants() {}
   AliCRTConstants(const AliCRTConstants& ct) {}
   AliCRTConstants& operator=(const AliCRTConstants& ct) {return *this;}
+
+  static AliCRTConstants* fgInstance;
+
+  static const Float_t fgkCageLenght;
+  static const Float_t fgkCageWidth;
+  static const Float_t fgkCageHeight;
+
+  static const Float_t fgkSinglePaletteLenght;
+  static const Float_t fgkSinglePaletteWidth;
+  static const Float_t fgkSinglePaletteHeight;
+
+  static const Float_t fgkActiveAreaGap;
+
+  static const Float_t fgkActiveAreaLenght;
+  static const Float_t fgkActiveAreaWidth;
+  static const Float_t fgkActiveAreaHeight;
+
+  static const Float_t fgkMagnetWidth;
+  static const Float_t fgkMagnetLenght;
+  static const Float_t fgkMagMinRadius;
+  static const Float_t fgkMagMaxRadius;
+
+  static const Float_t fgkDepth;
 
  private:
   ClassDef(AliCRTConstants, 0)   // CRT(ACORDE) global constants

@@ -8,9 +8,9 @@
 //  Manager class for detector: CRTv1         //
 ////////////////////////////////////////////////
 
-#include "AliCRTv0.h"
+#include "AliCRT.h"
 
-class AliCRTv1 : public AliCRTv0 {
+class AliCRTv1 : public AliCRT {
 public:
   AliCRTv1();
   AliCRTv1(const char *name, const char *title);
@@ -29,7 +29,7 @@ public:
   virtual void    CreateMaterials();
   virtual void    CreateGeometry();
   virtual void    Init();
-  virtual void    DrawDetector();
+  virtual void    DrawDetector() const;
   virtual void    StepManager();
 
 protected:

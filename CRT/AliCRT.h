@@ -11,6 +11,8 @@
 
 #include "AliDetector.h"
 
+class AliCRTModule;
+
 class AliCRT : public AliDetector {
 public:
   AliCRT();
@@ -26,11 +28,12 @@ public:
   virtual TString Version() { return TString(""); }
 
   virtual void SetTreeAddress();
+  virtual void SetModule(AliCRTModule* module) {fModule = module;}
+  virtual const AliCRTModule* GetModule() const {return fModule; }
 
+protected:
+  AliCRTModule* fModule;
 private:
   ClassDef(AliCRT, 1) // Cosmic Ray Trigger (ACORDE) base class
 };
-
-
-// inline TString AliCRT::Version()
 #endif // ALICRT_H

@@ -15,10 +15,11 @@
 
 /* $Id$ */
 
+#include "AliCRThit.h"
+
 #include <TMath.h>
 
 #include "AliConst.h"
-#include "AliCRThit.h"
 
 ClassImp(AliCRThit)
 

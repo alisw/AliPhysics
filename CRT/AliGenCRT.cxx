@@ -35,6 +35,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+#include "AliGenCRT.h"
+
 #include <TMCProcess.h>
 #include <TPDGCode.h>
 #include <TClonesArray.h>
@@ -42,8 +44,6 @@
 
 #include "AliRun.h"
 #include "AliConst.h"
-
-#include "AliGenCRT.h"
 
 ClassImp(AliGenCRT)
 
@@ -106,7 +106,7 @@ AliGenCRT::AliGenCRT(Int_t npart)
 
   // Set the origin above the vertex, on the surface.
   fOrigin[0] = 0.;
-  fOrigin[1] = AliCRTConstants::fgDepth; // At the surface by default.
+  fOrigin[1] = AliCRTConstants::Instance()->Depth(); // At the surface by default.
   fOrigin[2] = 0.;
 }
 
@@ -258,13 +258,13 @@ void AliGenCRT::GenerateOneSingleMuon(Bool_t withFlatMomentum)
 
   // Finaly the origin, with the smearing
   Rndm(random,6);
-  origin[0] = AliCRTConstants::fgDepth*TMath::Tan(zenith*kDegrad)*
+  origin[0] = AliCRTConstants::Instance()->Depth()*TMath::Tan(zenith*kDegrad)*
     TMath::Sin(azimuth*kDegrad);
   // + fOsigma[0]* TMath::Cos(2*random[0]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[1]));
 
-  origin[1] = AliCRTConstants::fgDepth;
+  origin[1] = AliCRTConstants::Instance()->Depth();
 
-  origin[2] = AliCRTConstants::fgDepth*TMath::Tan(zenith*kDegrad)*
+  origin[2] = AliCRTConstants::Instance()->Depth()*TMath::Tan(zenith*kDegrad)*
     TMath::Cos(azimuth*kDegrad);
   // + fOsigma[2]* TMath::Cos(2*random[2]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[3]));;
 
@@ -483,7 +483,7 @@ void AliGenCRT::InitZenithalAngleGeneration()
     if ( !fZenithDist ) {
       
       // initialize the momentum dependent coefficients, a(p) 
-      InitApWeightFactors();
+      this->InitApWeightFactors();
       
       // Define the standard function.
       char* zenithalDisributionFunction = "1 + [0]*(1 - cos(x*3.14159265358979312/180))";
@@ -508,7 +508,7 @@ void AliGenCRT::InitZenithalAngleGeneration()
 }
 
 //____________________________________________________________________________
-const Float_t AliGenCRT::GetZenithAngle(Float_t mom)
+const Float_t AliGenCRT::GetZenithAngle(Float_t mom) const
 {
 
   Float_t zenith = 0.;
@@ -548,7 +548,7 @@ const Float_t AliGenCRT::GetZenithAngle(Float_t mom)
 }
 
 //_____________________________________________________________________________
-const Float_t AliGenCRT::GetMomentum()
+const Float_t AliGenCRT::GetMomentum() const
 {
   //
   //

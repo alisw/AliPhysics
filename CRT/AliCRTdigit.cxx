@@ -15,10 +15,10 @@
 
 /* $Id$ */
 
+#include "AliCRTdigit.h"
+
 #include <TArrayF.h>
 #include <TArrayI.h>
-
-#include "AliCRTdigit.h"
 
 ClassImp(AliCRTdigit)
 
