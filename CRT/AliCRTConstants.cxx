@@ -22,7 +22,6 @@
 // This class serves to group constants needed by CRT detector in 1
 // easily accessible place. All constants are public const static data 
 // members. The class is never instatiated.
-//
 // Author: Arturo Fernandez, Enrique Gamez
 //         FCFM-UAP, Mexico.
 //
@@ -49,6 +48,27 @@ const Float_t AliCRTConstants::fgkMagMaxRadius        = AliCRTConstants::fgkMagM
 const Float_t AliCRTConstants::fgkDepth               =4420; // cm
 
 ClassImp(AliCRTConstants)
+
+//_____________________________________________________________________________
+AliCRTConstants::AliCRTConstants()
+  : TObject()
+{
+  // Default constructor
+}
+
+//_____________________________________________________________________________
+AliCRTConstants::AliCRTConstants(const AliCRTConstants& ct)
+  : TObject(ct)
+{
+  // Copy constructor
+}
+
+//_____________________________________________________________________________
+AliCRTConstants& AliCRTConstants::operator=(const AliCRTConstants&)
+{
+  // Asingment operator
+  return *this;
+}
 
 //_____________________________________________________________________________
 AliCRTConstants* AliCRTConstants::Instance()

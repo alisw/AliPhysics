@@ -18,7 +18,7 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-#include <Rtypes.h>
+#include <TObject.h>
 
 enum ECRMode {
   kSingleMuons,
@@ -26,7 +26,7 @@ enum ECRMode {
   kMuonFlux
 };
 
-class AliCRTConstants {
+class AliCRTConstants : public TObject {
 public:
   virtual ~AliCRTConstants();
 
@@ -53,32 +53,32 @@ public:
   const Float_t Depth() const;
 
 protected:
-  AliCRTConstants() {}
-  AliCRTConstants(const AliCRTConstants& ct) {}
-  AliCRTConstants& operator=(const AliCRTConstants& ct) {return *this;}
+  AliCRTConstants();
+  AliCRTConstants(const AliCRTConstants& ct);
+  AliCRTConstants& operator=(const AliCRTConstants& ct);
 
-  static AliCRTConstants* fgInstance;
+  static AliCRTConstants* fgInstance; // static instanton
 
-  static const Float_t fgkCageLenght;
-  static const Float_t fgkCageWidth;
-  static const Float_t fgkCageHeight;
+  static const Float_t fgkCageLenght; // Cage lenght
+  static const Float_t fgkCageWidth;  // Cage width
+  static const Float_t fgkCageHeight; // Cage height
 
-  static const Float_t fgkSinglePaletteLenght;
-  static const Float_t fgkSinglePaletteWidth;
-  static const Float_t fgkSinglePaletteHeight;
+  static const Float_t fgkSinglePaletteLenght; // Palette lenght
+  static const Float_t fgkSinglePaletteWidth;  // Palette width
+  static const Float_t fgkSinglePaletteHeight; // Palette height
 
-  static const Float_t fgkActiveAreaGap;
+  static const Float_t fgkActiveAreaGap; // Scintillator active area
 
-  static const Float_t fgkActiveAreaLenght;
-  static const Float_t fgkActiveAreaWidth;
-  static const Float_t fgkActiveAreaHeight;
+  static const Float_t fgkActiveAreaLenght; // Active area lenght
+  static const Float_t fgkActiveAreaWidth;  // Active area width
+  static const Float_t fgkActiveAreaHeight; // Active area height
 
-  static const Float_t fgkMagnetWidth;
-  static const Float_t fgkMagnetLenght;
-  static const Float_t fgkMagMinRadius;
-  static const Float_t fgkMagMaxRadius;
+  static const Float_t fgkMagnetWidth;  // Magnet widht
+  static const Float_t fgkMagnetLenght; // Magnet lenght
+  static const Float_t fgkMagMinRadius; // Magnet inside radius
+  static const Float_t fgkMagMaxRadius; // Magnet outer radius
 
-  static const Float_t fgkDepth;
+  static const Float_t fgkDepth; // Alice IP depth from surface
 
  private:
   ClassDef(AliCRTConstants, 0)   // CRT(ACORDE) global constants
