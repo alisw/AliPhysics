@@ -30,11 +30,15 @@ class AliGenExtFile : public AliGenerator
     // generate event
     virtual void Generate();
     AliGenExtFile & operator=(const AliGenExtFile & rhs);
+    enum Code_t {kPDG, kGEANT3};
+    void SetParticleCode(Code_t code) {fCode = code;}
+    
 protected:
     const Text_t     *fFileName;      //! Choose the file
     Int_t             fNcurrent;      // points to the next entry
     TTree            *fTreeNtuple;    // pointer to the TTree
     //Declaration of leaves types
+    Code_t          fCode;            // Particle code type
     Int_t           fNihead;          // Number of entries in integer header  
     Int_t           fIhead[12];       // Integer header
     Int_t           fNrhead;          // Number of entries in float header

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.13  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -73,6 +76,7 @@ Introduction of the Copyright and cvs Log
     fFileName="";
     fTreeNtuple=0;
     fNcurrent=0;
+    fCode = kGEANT3;
 //
 //  Read all particles
     fNpart=-1;
@@ -85,6 +89,7 @@ AliGenExtFile::AliGenExtFile(Int_t npart)
     fName="ExtFile";
     fTitle="Primaries from ext. File";
     fFileName="";
+    fCode = kGEANT3;
     fTreeNtuple=0;
     fNcurrent=0;
 }
@@ -122,7 +127,6 @@ void AliGenExtFile::NtupleInit()
     }
 
     TTree *h2=fTreeNtuple;
-//Set branch addresses
 //Set branch addresses
     h2->SetBranchAddress("Nihead",&fNihead);
     h2->SetBranchAddress("Ihead",fIhead);
@@ -179,7 +183,7 @@ void AliGenExtFile::Generate()
       nTracks=i6;
   }
   for (i=0; i<nTracks; i++) {
-      fIdpart=gMC->PDGFromId(fIdpart);
+      if (fCode == kGEANT3) fIdpart=gMC->PDGFromId(fIdpart);
       Double_t amass = TDatabasePDG::Instance()->GetParticle(fIdpart)->Mass();
       if(fE<=amass) {
 	Warning("Generate","Particle %d no %d E = %f mass = %f %f %f \n",
