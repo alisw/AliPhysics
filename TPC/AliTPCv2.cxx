@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2001/04/24 11:17:33  kowal2
+New TPC geometry.
+
 Revision 1.34  2001/04/23 10:20:18  hristov
 Constant casted to avoid ambiguity
 
@@ -765,13 +768,13 @@ void AliTPCv2::CreateGeometry()
 
   dm[21]=253.6;
   dm[22]=65.6;
-  dm[23]=76.4;
+  dm[23]=74.6;
 
   //
 
-  dm[24]=256.3;
+  dm[24]=256.6;
   dm[25]=65.6;
-  dm[26]=76.4;
+  dm[26]=74.6;
 
   gMC->Gsvolu("TICC","PCON",idtmed[4],dm,27);
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2001/04/24 11:22:01  kowal2
+Protection against too small betagamma
+
 Revision 1.23  2001/04/24 11:17:33  kowal2
 New TPC geometry.
 
@@ -707,13 +710,13 @@ void AliTPCv3::CreateGeometry()
 
   dm[21]=253.6;
   dm[22]=65.6;
-  dm[23]=76.4;
+  dm[23]=74.6;
 
   //
 
-  dm[24]=256.3;
+  dm[24]=256.6;
   dm[25]=65.6;
-  dm[26]=76.4;
+  dm[26]=74.6;
 
   gMC->Gsvolu("TICC","PCON",idtmed[4],dm,27);
 

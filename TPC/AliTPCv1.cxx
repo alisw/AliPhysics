@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/04/24 11:17:33  kowal2
+New TPC geometry.
+
 Revision 1.25  2001/03/13 13:07:34  kowal2
 Corrected bug in the TPC mother volume geometry.
 Thanks to A. Morsch
@@ -702,13 +705,13 @@ void AliTPCv1::CreateGeometry()
 
   dm[21]=253.6;
   dm[22]=65.6;
-  dm[23]=76.4;
+  dm[23]=74.6;
 
   //
 
-  dm[24]=256.3;
+  dm[24]=256.6;
   dm[25]=65.6;
-  dm[26]=76.4;
+  dm[26]=74.6;
 
   gMC->Gsvolu("TICC","PCON",idtmed[4],dm,27);
 
