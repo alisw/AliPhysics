@@ -22,7 +22,7 @@ void Config()
   }
   
   TFluka *fluka = (TFluka *) gMC;
-  fluka->SetInputFileName("muon.inp");
+  fluka->SetInputFileName("alice.inp");
   
   //cout << "<== Config.C..." << endl;
   //return;

@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-void g4libs()
+void loadlibs()
 {
 // Loads granular Geant4 libraries.
 // Change the comment if global libraries are used.
