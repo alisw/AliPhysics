@@ -65,49 +65,7 @@ ClassImp(AliPHOSRecParticle)
   fPolarTheta  = rp.fPolarTheta;
   fPolarPhi    = rp.fPolarPhi;
   fParticlePDG = rp.fParticlePDG; 
-}
-
-//____________________________________________________________________________
-Int_t * AliPHOSRecParticle::GetPrimaries(Int_t & number) 
-{
-  // Retrieves all the primary particles at the origine of this reconstructed particle
-
-//   AliPHOSTrackSegment * ts = GetPHOSTrackSegment() ;
-
-//   Int_t emcnumber = 0 ; 
-//   Int_t * emclist = ts->GetPrimariesEmc(emcnumber) ;
   
-//   Int_t ppsdlnumber = 0 ;
-//   Int_t * ppsdllist = ts->GetPrimariesPpsdLow(ppsdlnumber) ;
- 
-//   Int_t ppsdunumber = 0 ; 
-//   Int_t * ppsdulist = ts->GetPrimariesPpsdUp(ppsdunumber) ;
-
-//   number = emcnumber + ppsdlnumber + ppsdunumber ;
-//   Int_t * list   = new Int_t[number] ;
-  
-//   Int_t index ; 
-//   for ( index = 0 ; index < emcnumber ; index++)
-//     list[index] = emclist[index] ;
-
-//   Int_t jndex ; 
-//   for ( jndex = 0 ; jndex < ppsdlnumber ; jndex++) {
-//     assert(index < number) ;
-//     list[index] = ppsdllist[jndex] ;
-//     index++ ; 
-//   }
-
-//   for ( jndex = 0 ; jndex < ppsdunumber ; jndex++) {
-//     assert(index < number) ;
-//     list[index] = ppsdulist[jndex] ;
-//     index++ ; 
-//   }
-
-//   delete emclist ;
-//   delete ppsdllist ;
-//   delete ppsdulist ;
-
-  return 0 ; //<--- list ; 
 }
 
 

@@ -28,15 +28,10 @@ public:
   
   AliPHOSRecParticle() {  }
   AliPHOSRecParticle(const AliPHOSRecParticle & rp) ;  // ctor
-  virtual ~AliPHOSRecParticle(){
-    // dtor
-  }
+  virtual ~AliPHOSRecParticle(){  }
 
-  Int_t                 GetPHOSTSIndex(){    return fPHOSTrackSegment ;  }
-
-  Int_t *               GetPrimaries(Int_t & number) ;
-  
-  void                  SetTraskSegment(Int_t index){fPHOSTrackSegment = index; }
+  Int_t  GetPHOSTSIndex(){    return fPHOSTrackSegment ;  }
+  void   SetTraskSegment(Int_t index){fPHOSTrackSegment = index; }
 
   typedef TClonesArray RecParticlesList ; 
   
