@@ -508,7 +508,7 @@ void AliL3HoughMaxFinder::FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t &n)
       return;
     }  
   Int_t y_window=2;
-  Int_t x_bin_sides=2;
+  Int_t x_bin_sides=1;
   Int_t max_sum=0;
   
   Int_t xmin = fCurrentHisto->GetFirstXbin();
@@ -594,6 +594,8 @@ void AliL3HoughMaxFinder::FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t &n)
       ytop=0,ybutt=0;	  
       for(Int_t j=xbin-x_bin_sides; j<=xbin+x_bin_sides; j++)
 	{
+	  if(anotherPt[j]->ymin > anotherPt[xbin]->ymax) continue;
+	  if(anotherPt[j]->ymax < anotherPt[xbin]->ymin) continue;
 	  top += fCurrentHisto->GetBinCenterX(j)*anotherPt[j]->weight;
 	  butt += anotherPt[j]->weight;
 	  for(Int_t k=anotherPt[j]->ymin; k<anotherPt[j]->ymax; k++)
