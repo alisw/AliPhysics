@@ -16,6 +16,9 @@
 /*
 
 $Log$
+Revision 1.1  2000/11/01 15:57:13  kowal2
+Moved from the TPC directory
+
 Revision 1.4  2000/10/05 16:01:49  kowal2
 Corrected for memory leaks.
 
@@ -350,6 +353,7 @@ void AliDigits::ExpandBuffer1()
   Int_t i,k;
   fNelems = fNrows*fNcols;
   Short_t * buf = new Short_t[fNelems];
+  memset(buf,0,fNelems*sizeof(Short_t)); //MI change - 4.12.2000
   fIndex->Set(fNcols);
   for (i =0,k=0 ;i<fNcols;i++,k+=fNrows) (*fIndex)[i]=k;
   Int_t col=0;
