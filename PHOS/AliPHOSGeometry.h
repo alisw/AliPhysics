@@ -69,9 +69,9 @@ public:
  
   // General
 
-  static TString Degre(void) { return TString("deg") ; }  // a global for degree (deg)
+  inline static TString Degre(void);  // a global for degree (deg)
 
-  static TString Radian(void){ return TString("rad") ; }  // a global for radian (rad)
+  inline static TString Radian(void);  // a global for radian (rad)
 
   Bool_t AbsToRelNumbering(const Int_t AbsId, Int_t * RelId) const ; 
                                           // converts the absolute PHOS numbering to a relative 
@@ -176,5 +176,9 @@ private:
   ClassDef(AliPHOSGeometry,1)       // PHOS geometry class 
 
 } ;
+
+  inline static TString Degre(void) { return TString("deg") ; }  // a global for degree (deg)
+
+  inline static TString Radian(void){ return TString("rad") ; }  // a global for radian (rad)
 
 #endif // AliPHOSGEOMETRY_H
