@@ -11,11 +11,11 @@
 #include "TG4GeometryManager.h"
 #include "TG4GeometryOutputManager.h"
 #include "TG4GeometryServices.h"
-#include "TG4PhysicsManager.h"
+#include "TG4G3PhysicsManager.h"
+#include "TG4G3Units.h"
 #include "TG4VSensitiveDetector.h"
 #include "TG4Limits.h"
 #include "TG4Globals.h"
-#include "TG3Units.h"
 
 #include <G3toG4.hh> 
 #include <G3toG4BuildTree.hh>
@@ -100,7 +100,7 @@ TG4GeometryManager::operator=(const TG4GeometryManager& right)
 //=============================================================================
 
 
-void TG4GeometryManager::GstparCut(G4int itmed, TG3Cut par, G4double parval)
+void TG4GeometryManager::GstparCut(G4int itmed, TG4G3Cut par, G4double parval)
 {
 // Sets special tracking medium parameter. 
 // It is applied to all logical volumes that use the specified 
@@ -136,7 +136,8 @@ void TG4GeometryManager::GstparCut(G4int itmed, TG3Cut par, G4double parval)
 }
 
 
-void TG4GeometryManager::GstparFlag(G4int itmed, TG3Flag par, G4double parval)
+void TG4GeometryManager::GstparControl(G4int itmed, TG4G3Control par, 
+                                       G4double parval)
 {
 // Sets special tracking medium parameter. 
 // It is applied to all logical volumes that use the specified 
@@ -146,7 +147,7 @@ void TG4GeometryManager::GstparFlag(G4int itmed, TG3Flag par, G4double parval)
   // get medium from table
   G3MedTableEntry* medium = G3Med.get(itmed);
   if (!medium) {
-    G4String text = "TG4GeometryManager::GstparFlag: \n";
+    G4String text = "TG4GeometryManager::GstparControl: \n";
     text = text + "    Medium not found."; 
     G4Exception(text);
   }  
@@ -157,18 +158,18 @@ void TG4GeometryManager::GstparFlag(G4int itmed, TG3Flag par, G4double parval)
   if (limits) {
     tg4Limits = dynamic_cast<TG4Limits*> (limits);
     if (!tg4Limits)
-      G4Exception("TG4GeometryManager::GstparFlag: Wrong limits type.");
+      G4Exception("TG4GeometryManager::GstparControl: Wrong limits type.");
   }    
   else {     
     tg4Limits = new TG4Limits();
     medium->SetLimits(tg4Limits);
 
     // add verbose 
-    G4cout << "TG4GeometryManager::GstparFlag: new TG4Limits() for medium " 
+    G4cout << "TG4GeometryManager::GstparControl: new TG4Limits() for medium" 
            << itmed << " has been created." << G4endl;  
   }
   // set parameter
-  tg4Limits->SetG3Flag(par, parval);
+  tg4Limits->SetG3Control(par, parval);
 }
 
  
@@ -287,7 +288,7 @@ void TG4GeometryManager::Medium(Int_t& kmed, const char *name, Int_t nmat,
 // Creates a temporary "medium" that is used for 
 // assigning corresponding parameters to G4 objects:
 // NTMED is stored as a second material index;
-// ISVOL is used for builing TG3SensVolVector;
+// ISVOL is used for builing G3SensVolVector;
 // STEMAX is passed in TG4Limits (if fUseG3TMLimits is set true);
 // !! The other parameters (IFIELD, FIELDM, TMAXFD, DEEMAX, EPSIL, STMIN)
 // are ignored by Geant4.
@@ -386,10 +387,10 @@ void TG4GeometryManager::Gfmate(Int_t imat, char *name, Float_t &a,
     z = fGeometryServices->GetEffZ(material);
     
     dens = material->GetDensity();
-    dens /= TG3Units::MassDensity();
+    dens /= TG4G3Units::MassDensity();
 
     radl = material->GetRadlen();
-    radl /= TG3Units::Length();
+    radl /= TG4G3Units::Length();
 
     // the following parameters are not defined in Geant4
     absl = 0.; 
@@ -409,9 +410,9 @@ void  TG4GeometryManager::Gstpar(Int_t itmed, const char *param,
 // Passes the tracking medium parameter to TG4Limits.
 // The tracking medium parameter is set only in case
 // its value is different from the "global" physics setup.
-// (If: CheckCut/FlagWithG3Defaults is used checking
+// (If: CheckCut/ControlWithG3Defaults is used checking
 //  is performed with respect to G3 default values.)
-// When any cut/flag parameter is set in limits
+// When any cut/control parameter is set in limits
 // the physics manager is locked and the physics setup
 // cannot be changed.
 // Applying this TG4Limits to particles and physical
@@ -435,24 +436,22 @@ void  TG4GeometryManager::Gstpar(Int_t itmed, const char *param,
   if (fWriteGeometry) 
     fOutputManager->WriteGstpar(itmed, param, parval); 
 
-  // get physics setup
-  TG4PhysicsManager* physicsManager = TG4PhysicsManager::Instance();
-  //TG4CutVector* cutVector = physicsManager->GetCutVector();
-  //TG4FlagVector* flagVector = physicsManager->GetFlagVector();
+  // get G3 physics setup
+  TG4G3PhysicsManager* g3PhysicsManager = TG4G3PhysicsManager::Instance();
 
   G4String name = fGeometryServices->CutName(param); 
-  TG3Cut g3Cut;
-  if (physicsManager->CheckCutWithCutVector(name, parval, g3Cut)) {
-      GstparCut(itmed, g3Cut, parval);
-      physicsManager->Lock();
+  TG4G3Cut cut;
+  if (g3PhysicsManager->CheckCutWithTheVector(name, parval, cut)) {
+      GstparCut(itmed, cut, parval);
+      g3PhysicsManager->Lock();
   }  
   else {
-    TG3Flag g3Flag;
-    if (physicsManager->CheckFlagWithFlagVector(name, parval, g3Flag)) {
-      GstparFlag(itmed, g3Flag, parval);
-      physicsManager->Lock();
+    TG4G3Control control;
+    if (g3PhysicsManager->CheckControlWithTheVector(name, parval, control)) {
+      GstparControl(itmed, control, parval);
+      g3PhysicsManager->Lock();
     } 
-    else if (g3Cut==kNoG3Cuts && g3Flag==kNoG3Flags) { 
+    else if (cut==kNoG3Cuts && control==kNoG3Controls) { 
       G4String text = "TG4GeometryManager::Gstpar:";
       text = text + name;
       text = text + " parameter is not yet implemented.";
@@ -493,8 +492,8 @@ void  TG4GeometryManager::SetCerenkov(Int_t itmed, Int_t npckov,
   // add units
   G4int i;
   for (i=0; i<npckov; i++) {
-    ppckovDbl[i] = ppckovDbl[i]*TG3Units::Energy();
-    abscoDbl[i]  = abscoDbl[i]*TG3Units::Length();
+    ppckovDbl[i] = ppckovDbl[i]*TG4G3Units::Energy();
+    abscoDbl[i]  = abscoDbl[i]*TG4G3Units::Length();
   }  
 
   // create material properties table
