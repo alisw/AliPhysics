@@ -102,6 +102,7 @@ class TG4GeometryManager
     void  Gsposp(const char *name, Int_t nr, const char *mother,  
                          Float_t x, Float_t y, Float_t z, Int_t irot,
                          const char *konly, Float_t *upar, Int_t np); 
+    void  Gsbool(const char* onlyVolName, const char* manyVolName);
         
     // Euclid		       
     void WriteEuclid(const char* fileName, const char* topVolName, 
