@@ -30,11 +30,12 @@ class AliTrackPoints: public TObject
 //    AliTrackPoints(const AliTrackPoints& in);
     
     virtual ~AliTrackPoints();
-    AliTrackPoints& operator=(const AliTrackPoints& in);
+//    AliTrackPoints& operator=(const AliTrackPoints& in);
     
     Double_t AvarageDistance(const AliTrackPoints& tr);
     void PositionAt(Int_t n, Float_t &x, Float_t &y, Float_t &z);
     void Move(Float_t x, Float_t y, Float_t z);
+    Int_t GetN() const {return fN;}
 
     Int_t GetDebug() const {return fgDebug;}
     void  SetDebug(Int_t deblevel){fgDebug = deblevel;} 
