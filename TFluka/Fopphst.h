@@ -55,33 +55,33 @@ extern "C" {
 //*----------------------------------------------------------------------//*
 //*
 typedef struct {
-    Double_t WTOPPH [mostck];
-    Double_t POPTPH [mostck];
-    Double_t XOPTPH [mostck];
-    Double_t YOPTPH [mostck];
-    Double_t ZOPTPH [mostck];
-    Double_t TXOPPH [mostck];
-    Double_t TYOPPH [mostck];
-    Double_t TZOPPH [mostck];
-    Double_t TXPOPP [mostck];
-    Double_t TYPOPP [mostck];
-    Double_t TZPOPP [mostck];
-    Double_t DONEAR [mostck];
-    Double_t AGOPPH [mostck];
-    Double_t TPROPP [mostck];
-    Double_t APROPP [mostck];
-    Double_t CMPOPP [mostck];
-    Double_t SPAROK [mkbmx1][mostck];
-    Int_t    ISPORK [mkbmx2][mostck];
-    Int_t    LOOPPH [mostck];
-    Int_t    LOUOPP [mostck];
-    Int_t    NREGOP [mostck];
-    Int_t    NLATOP [mostck];
-    Int_t    IPROPP [mostck];
-    Int_t    LPROPP [mostck];
-    Int_t    NPROPP [mostck];
-    Int_t    LSTOPP;
-    Int_t    LMXOPP;
+    Double_t wtopph [mostck];
+    Double_t poptph [mostck];
+    Double_t xoptph [mostck];
+    Double_t yoptph [mostck];
+    Double_t zoptph [mostck];
+    Double_t txopph [mostck];
+    Double_t tyopph [mostck];
+    Double_t tzopph [mostck];
+    Double_t txpopp [mostck];
+    Double_t typopp [mostck];
+    Double_t tzpopp [mostck];
+    Double_t donear [mostck];
+    Double_t agopph [mostck];
+    Double_t tpropp [mostck];
+    Double_t apropp [mostck];
+    Double_t cmpopp [mostck];
+    Double_t sparok [mkbmx1][mostck];
+    Int_t    ispork [mkbmx2][mostck];
+    Int_t    loopph [mostck];
+    Int_t    louopp [mostck];
+    Int_t    nregop [mostck];
+    Int_t    nlatop [mostck];
+    Int_t    ipropp [mostck];
+    Int_t    lpropp [mostck];
+    Int_t    npropp [mostck];
+    Int_t    lstopp;
+    Int_t    lmxopp;
 } opphstCommon;
 
 #define OPPHST COMMON_BLOCK(OPPHST,opphst)
