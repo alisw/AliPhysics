@@ -51,9 +51,12 @@ public:
   Int_t * GetPrimariesPpsdLow(Int_t & number) ;
   Int_t * GetPrimariesPpsdUp(Int_t & number) ;
   AliPHOSEmcRecPoint *   GetEmcRecPoint() const ;  
+  Int_t                  GetEmcRecPointIndex() {return fEmcRecPoint; }
   Int_t   GetIndexInList() const { return fIndexInList ; } 
-  AliPHOSPpsdRecPoint *   GetPpsdLowRecPoint() const ;
-  AliPHOSPpsdRecPoint *   GetPpsdUpRecPoint() const ; 
+  AliPHOSPpsdRecPoint *  GetPpsdLowRecPoint() const ;
+  Int_t                  GetPpsdLowRecPointIndex() {return fPpsdLowRecPoint ; }
+  AliPHOSPpsdRecPoint *  GetPpsdUpRecPoint() const ; 
+  Int_t                  GetPpsdUpRecPointIndex() {return fPpsdUpRecPoint ; }
   virtual void  Paint(Option_t * option="");
   void    Print() ;
   void    SetIndexInList(Int_t val) { fIndexInList = val ; } 
