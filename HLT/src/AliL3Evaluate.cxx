@@ -823,7 +823,8 @@ TNtuple *AliL3Evaluate::CalculateResiduals()
 TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
 {
   //Compare points to the exact crossing points of track and padrows.
-  //This assumes that you ran AliTPC::Hits2ExactClusters();
+  //The input file to this function, contains the exact clusters calculated
+  //in AliTPC::Hits2ExactClusters.
     
  
   TNtuple *ntuppel = new TNtuple("ntuppel","residuals","slice:padrow:resy:resz:zHit:pt");
@@ -857,12 +858,15 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
       fTransform->Sector2Slice(slice,padrow,cursec,currow);
       if(slice<fMinSlice || slice>fMaxSlice) continue;
       AliL3SpacePointData *points = fClusters[slice][0];
+      
+      Int_t index = fRowid[slice][padrow];
+      if(!fDigitsTree->GetEvent(index))
+	printf("AliL3Evaluate::EvaluatePoints : ERROR IN DIGITSTREE\n");
+      printf("Checking padrow %d\n",padrow);
+      
       for(UInt_t c=0; c<fNcl[slice][0]; c++)
 	{
 	  if(points[c].fPadRow!=padrow) continue;
-	  Int_t index = fRowid[slice][padrow];
-	  if(!fDigitsTree->GetEvent(index)) 
-	    printf("AliL3Evaluate::EvaluatePoints : ERROR IN DIGITSTREE\n");
 	  for(Int_t m=0; m<num_of_offline; m++)
 	    {
 	      AliComplexCluster *cluster = (AliComplexCluster *)clusters->UncheckedAt(m);
