@@ -257,11 +257,12 @@ AliITSVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       fZsig+=fZCombf->GetBinCenter(n)*fZCombf->GetBinCenter(n)*fZCombf->GetBinContent(n);
     }
     if(num<2){
-      cout<<"ATTENZIONE: num = "<<num<<"; n1= "<<n1<<"; n2 = "<<n2<<endl;
       fZsig = 0.;
     }
     else {
-      fZsig=TMath::Sqrt(fZsig/(num-1)-fZFound*fZFound/num/(num-1));
+      Float_t radi =  fZsig/(num-1)-fZFound*fZFound/num/(num-1);
+      if(radi>0.)fZsig=TMath::Sqrt(radi);
+      else fZsig=0.;
       fZFound/=num;
     }
     goon = TMath::Abs(TMath::Abs(fZFound-fZCombf->GetBinCenter(n1))-TMath::Abs(fZFound-fZCombf->GetBinCenter(n2)))>fTolerance;

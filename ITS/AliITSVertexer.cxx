@@ -37,7 +37,7 @@ AliITSVertexer::AliITSVertexer(TString filename) {
   SetLastEvent(0);
   rl->LoadHeader();
   AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  if(filename.Data()!="default")itsLoader->SetVerticesFileName(filename);
+  if(!filename.Contains("default"))itsLoader->SetVerticesFileName(filename);
   itsLoader->LoadVertices("recreate");
   itsLoader->LoadRecPoints();
   Int_t lst;

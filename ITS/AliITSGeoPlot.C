@@ -12,6 +12,7 @@
 #include<TObject.h>
 #include<TObjArray.h>
 #include<TTree.h>
+#include "AliGenEventHeader.h"
 #include <AliRun.h>
 #include <AliITS.h>
 #include <AliITSgeom.h>
