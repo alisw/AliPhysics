@@ -8,6 +8,9 @@
 //     reads AliITSclusterV2 clusters and creates AliITStrackV2 tracks
 //           Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
+
+#include <TObjArray.h>
+
 #include "AliTracker.h"
 #include "AliITSrecoV2.h"
 #include "AliITStrackV2.h"
