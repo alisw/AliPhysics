@@ -465,6 +465,12 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
       trackEvent1 = trackbuffer.Push(trackEvent1);
      //end of loop over events  
     }//while (fReader->Next() == kFALSE)
+    
+   delete trackpair;
+   delete partpair;
+
+   partbuffer.SetOwner(kTRUE);
+   trackbuffer.SetOwner(kTRUE);
 } 
 /*************************************************************************************/
 
@@ -591,6 +597,9 @@ void AliHBTAnalysis::ProcessTracks()
        }
       trackEvent1 = trackbuffer.Push(trackEvent1); 
     }//while (fReader->Next() == kFALSE)
+    
+   delete  trackpair;
+   trackbuffer.SetOwner(kTRUE);
 }
 
 /*************************************************************************************/
@@ -610,6 +619,7 @@ void AliHBTAnalysis::ProcessParticles()
   AliHBTPair * tmppartpair; //temporary pointer 
   
   AliHBTEventBuffer partbuffer(fBufferSize);
+  partbuffer.SetOwner(kTRUE);
   
   fReader->Rewind();
   Int_t i = -1;
@@ -718,6 +728,8 @@ void AliHBTAnalysis::ProcessParticles()
        }
       partEvent1 = partbuffer.Push(partEvent1); 
     }//while (fReader->Next() == kFALSE)
+   delete partpair; 
+   partbuffer.SetOwner(kTRUE);
 }
 /*************************************************************************************/
 
