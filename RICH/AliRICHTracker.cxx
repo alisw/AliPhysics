@@ -91,7 +91,7 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
   Int_t iNtracks=pStack->GetNtrack();
   AliDebug(1,Form(" Start reconstruction with %i track(s) from Stack",iNtracks));
   
-  Double_t hnvec[12];
+  Double_t hnvec[20];
   
   Double_t b=GetFieldMap()->SolenoidField()/10;// magnetic field in Tesla
   AliDebug(1,Form("Start with simulated %i tracks in %f Tesla field",iNtracks,b));
@@ -105,7 +105,21 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
     TParticle *pParticle = pStack->Particle(iTrackN);
     if(!pParticle) {AliDebug(1,Form("Not a valid TParticle pointer. Track skipped"));continue;}
     AliDebug(1,Form(" PDG code : %i",pParticle->GetPdgCode()));
-    if(pParticle->GetPdgCode()>=50000050) {AliDebug(1,Form("A photon as track... Track skipped"));continue;}
+//
+// problem of PDG code of some extra particles to be solved!!!!!!!!!
+//
+// found problem! Look in TRD directory : codes from Fluka are :
+//
+//    if ((pdg_code == 10010020) ||
+//        (pdg_code == 10010030) ||
+//        (pdg_code == 50000050) ||
+//        (pdg_code == 50000051) ||
+//        (pdg_code == 10020040)) {
+//
+    if(pParticle->GetPdgCode()>=50000050||pParticle->GetPdgCode()==0||pParticle->GetPdgCode()>10000) {AliDebug(1,Form("A photon as track... Track skipped"));continue;}
+//
+// to be updated for us!!
+//
     AliDebug(1,Form("Track %i is a %s with charge %i and momentum %f",
             iTrackN,pParticle->GetPDG()->GetName(),Int_t(pParticle->GetPDG()->Charge()),pParticle->P()));
 //    if(pParticle->GetMother(0)!=-1) continue; //consider only primaries
@@ -146,6 +160,8 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
     hnvec[9]=thetaCerenkov;
     hnvec[10]=recon.GetHoughPhotons();
     hnvec[11]=(Double_t)iMipId;
+    hnvec[12]=(Double_t)iChamber;
+    hnvec[13]=(Double_t)pParticle->GetPdgCode();
     if(hn) hn->Fill(hnvec);
     AliDebug(1,Form("FINAL Theta Cerenkov=%f",thetaCerenkov));
 //    pTrack->SetRICHsignal(thetaCerenkov);

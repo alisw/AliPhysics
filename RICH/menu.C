@@ -299,9 +299,11 @@ void CheckPR()
 {
 //Pattern recognition wirh Stack particles
   TFile *pFile = new TFile("$(HOME)/RPR.root","RECREATE","RICH Pattern Recognition");
-  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:TrackX:TrackY:MinX:MinY:ChargeMIP:ThetaCerenkov:NPhotons:MipIndex");
+  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:TrackX:TrackY:MinX:MinY:ChargeMIP:ThetaCerenkov:NPhotons:MipIndex:Chamber:Particle");
   printf("\n\n");
-    printf("Pattern Recognition done for event %5i",0);
+  printf("Pattern Recognition done for event %5i",0);
+  AliMagF * magf = gAlice->Field();
+  AliTracker::SetFieldMap(magf);
   for(Int_t iEvtN=0;iEvtN<R()->GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
     R()->GetLoader()->GetRunLoader()->GetEvent(iEvtN);
     AliRICHTracker *tr = new AliRICHTracker();
