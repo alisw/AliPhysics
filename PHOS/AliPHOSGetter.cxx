@@ -47,6 +47,8 @@
 #include <TH1D.h>
 #include <TF1.h>
 #include <TGraph.h>
+//#include <TCanvas.h>
+#include <TFrame.h>
 
 // --- Standard library ---
 
@@ -542,6 +544,9 @@ void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHigh
   Double_t energy = time = 0. ; 
 
   if (lowGainFlag) {
+    timezero1 = timezero2 = signalmax = timemax = 0. ;
+    signalF->FixParameter(0, PHOS()->GetRawFormatLowCharge()) ; 
+    signalF->FixParameter(1, PHOS()->GetRawFormatLowGain()) ; 
     Int_t index ; 
     for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
       gLowGain->GetPoint(index, time, signal) ; 
@@ -596,6 +601,40 @@ void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHigh
   AliPHOSDigitizer * digitizer = Digitizer() ; 
   amp = static_cast<Int_t>( (energy - digitizer->GetEMCpedestal()) / digitizer->GetEMCchannel() + 0.5 ) ; 
   }
+  // dessin
+//   TCanvas * c1 = new TCanvas("c1","A Simple Graph Example",200,10,700,500);
+//   c1->SetFillColor(42);
+//   c1->SetGrid();
+//   gLowGain->SetLineColor(2);
+//   gLowGain->SetLineWidth(4);
+//   gLowGain->SetMarkerColor(4);
+//   gLowGain->SetMarkerStyle(21);
+//   gLowGain->SetTitle("Lowgain");
+//   gLowGain->GetXaxis()->SetTitle("X title");
+//   gLowGain->GetYaxis()->SetTitle("Y title");
+//   gLowGain->Draw("ACP");
+  
+//   c1->Update();
+//   c1->GetFrame()->SetFillColor(21);
+//   c1->GetFrame()->SetBorderSize(12);
+//   c1->Modified();
+  
+//   TCanvas * c2 = new TCanvas("c2","A Simple Graph Example",200,10,700,500);
+//   c2->SetFillColor(42);
+//   c2->SetGrid();
+//   gHighGain->SetLineColor(2);
+//   gHighGain->SetLineWidth(4);
+//   gHighGain->SetMarkerColor(4);
+//   gHighGain->SetMarkerStyle(21);
+//   gHighGain->SetTitle("Highgain");
+//   gHighGain->GetXaxis()->SetTitle("X title");
+//   gHighGain->GetYaxis()->SetTitle("Y title");
+//     gHighGain->Draw("ACP");
+  
+//   c2->Update();
+//   c2->GetFrame()->SetFillColor(21);
+//   c2->GetFrame()->SetBorderSize(12);
+//   c2->Modified();
 }
 
 //____________________________________________________________________________ 
@@ -609,9 +648,6 @@ Int_t AliPHOSGetter::ReadRaw(Int_t event)
 
   Bool_t first = kTRUE ;
   
-  TGraph * gLowGain  = new TGraph(PHOS()->GetRawFormatTimeBins()) ; 
-  TGraph * gHighGain = new TGraph(PHOS()->GetRawFormatTimeBins()) ; 
- 
   TF1 * signalF = new TF1("signal", AliPHOS::RawResponseFunction, 0, PHOS()->GetRawFormatTimeMax(), 4);
   signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero") ; 
 
@@ -623,16 +659,23 @@ Int_t AliPHOSGetter::ReadRaw(Int_t event)
   Int_t idigit = 0 ; 
   Int_t amp = 0 ; 
   Double_t time = 0. ; 
-  
+
+  TGraph * gLowGain = new TGraph(PHOS()->GetRawFormatTimeBins()) ; 
+  TGraph * gHighGain= new TGraph(PHOS()->GetRawFormatTimeBins()) ;  
+
   while ( in.Next() ) { // PHOS entries loop 
     if ( (in.IsNewRow() || in.IsNewColumn() || in.IsNewModule()) ) {
       if (!first) {
-	
 	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, amp, time) ; 
 	if (amp > 0) {
 	  new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
 	  idigit++ ; 
 	}
+	Int_t index ; 
+	for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
+	  gLowGain->SetPoint(index, index * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 0) ;  
+	  gHighGain->SetPoint(index, index * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 0) ; 
+	} 
       }
       first = kFALSE ; 
       relId[0] = in.GetModule() ;
@@ -648,7 +691,7 @@ Int_t AliPHOSGetter::ReadRaw(Int_t event)
     }
     if (lowGainFlag)
       gLowGain->SetPoint(in.GetTime(), 
-		     in.GetTime(), 
+		     in.GetTime()* PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 
 		     in.GetSignal()) ;
     else 
       gHighGain->SetPoint(in.GetTime(), 
@@ -662,6 +705,7 @@ Int_t AliPHOSGetter::ReadRaw(Int_t event)
     new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;
     idigit++ ; 
   }
+  digits->Sort() ; 
 
   delete signalF ; 
   delete gLowGain, gHighGain ; 
@@ -675,12 +719,8 @@ Int_t AliPHOSGetter::ReadTreeD()
   // Read the Digits
   
   PhosLoader()->CleanDigits() ;    
-  // gets TreeD from the root file (PHOS.Digits.root)
-  // if ( !IsLoaded("D") ) {
-    PhosLoader()->LoadDigits("UPDATE") ;
-    PhosLoader()->LoadDigitizer("UPDATE") ;
-    //  SetLoaded("D") ; 
-    //} 
+  PhosLoader()->LoadDigits("UPDATE") ;
+  PhosLoader()->LoadDigitizer("UPDATE") ;
   return Digits()->GetEntries() ; 
 }
 
