@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.66  2002/12/09 08:22:56  morsch
+UA1 jet finder (Pycell) for software triggering added.
+
 Revision 1.65  2002/11/19 08:57:10  morsch
 Configuration of pt-kick added.
 
@@ -270,6 +273,7 @@ AliGenPythia::AliGenPythia(Int_t npart)
     SetJetEtRange();
     SetGammaPhiRange();
     SetGammaEtaRange();
+    SetJetReconstructionMode();
     SetPtKick();
     // Options determining what to keep in the stack (Heavy flavour generation)
     fStackFillOpt = kFlavorSelection; // Keep particle with selected flavor
@@ -755,9 +759,11 @@ void AliGenPythia::MakeHeader()
 // Jets that have triggered
     if (fProcess == kPyJets)
     {
-	Int_t ntrig, njet;
-	Float_t jets[4][10];
-	GetJets(5., 1, njet, ntrig, jets);
+	Int_t ntrig;
+	Float_t jets[4][50];
+//	GetJets(5., 1, njet, ntrig, jets);
+	RecJetsUA1(0., 4., 10., 0.7, ntrig, jets);
+	
 	for (Int_t i = 0; i < ntrig; i++) {
 	    ((AliGenPythiaEventHeader*) header)->AddJet(jets[0][i], jets[1][i], jets[2][i], 
 							jets[3][i]);
@@ -789,7 +795,8 @@ Bool_t AliGenPythia::CheckTrigger(TParticle* jet1, TParticle* jet2)
 //
 // Use Pythia clustering on parton level to determine jet axis
 //
-	GetJets(5.0, 1, njets, ntrig, jets);
+	GetJets(njets, ntrig, jets);
+	
 	if (ntrig) triggered = kTRUE;
 //
     } else {
@@ -886,6 +893,7 @@ void AliGenPythia::RecJetsUA1(Float_t eCellMin, Float_t eCellSeed, Float_t eMin,
 	Float_t py    = (fPythia->GetPyjets())->P[1][n+i];
 	Float_t pz    = (fPythia->GetPyjets())->P[2][n+i];
 	Float_t e     = (fPythia->GetPyjets())->P[3][n+i];
+
 	jets[0][i] = px;
 	jets[1][i] = py;
 	jets[2][i] = pz;
@@ -894,7 +902,8 @@ void AliGenPythia::RecJetsUA1(Float_t eCellMin, Float_t eCellSeed, Float_t eMin,
 }
 
 
-void  AliGenPythia::GetJets(Float_t dist, Int_t part, Int_t& nJets, Int_t& nJetsTrig, Float_t jets[4][10])
+
+void  AliGenPythia::GetJets(Int_t& nJets, Int_t& nJetsTrig, Float_t jets[4][10])
 {
 //
 //  Calls the Pythia clustering algorithm to find jets in the current event
@@ -902,18 +911,39 @@ void  AliGenPythia::GetJets(Float_t dist, Int_t part, Int_t& nJets, Int_t& nJets
     Int_t n     = fPythia->GetN();
     nJets       = 0;
     nJetsTrig   = 0;
+    if (fJetReconstruction == kCluster) {
 //
 //  Configure cluster algorithm
 //    
-    fPythia->SetPARU(43, dist);
-    fPythia->SetMSTU(41, part);
+	fPythia->SetPARU(43, 2.);
+	fPythia->SetMSTU(41, 1);
 //
 //  Call cluster algorithm
 //    
-    fPythia->Pyclus(nJets);
+	fPythia->Pyclus(nJets);
 //
 //  Loading jets from common block
 //
+    } else {
+//
+//  Configure detector (EMCAL like)
+//
+	fPythia->SetPARU(51,2.);
+	fPythia->SetMSTU(51,Int_t(96 * 2./0.7));
+	fPythia->SetMSTU(52,3 * 144);
+//
+//  Configure Jet Finder
+//  
+	fPythia->SetPARU(58,  0.0);
+	fPythia->SetPARU(52,  4.0);
+	fPythia->SetPARU(53, 10.0);
+	fPythia->SetPARU(54,  0.7);
+	fPythia->SetMSTU(54,  2);
+//
+//  Run Jet Finder
+	fPythia->Pycell(nJets);
+    }
+
     Int_t i;
     for (i = 0; i < nJets; i++) {
 	Float_t px    = (fPythia->GetPyjets())->P[0][n+i];
@@ -932,13 +962,11 @@ void  AliGenPythia::GetJets(Float_t dist, Int_t part, Int_t& nJets, Int_t& nJets
 	    et  > fEtMinJet  && et  < fEtMaxJet     
 	    ) 
 	{
-//	    printf("\n*Trigger-Jet #%d: %10.3f %10.3f %10.3f %10.3f \n", i, pt, et, eta, phi * kRaddeg);
 	    jets[0][nJetsTrig] = px;
 	    jets[1][nJetsTrig] = py;
 	    jets[2][nJetsTrig] = pz;
 	    jets[3][nJetsTrig] = e;
 	    nJetsTrig++;
-//	    if (et > 55.) fPythia->Pylist(1);
 	    
 	} else {
 //	    printf("\n........-Jet #%d: %10.3f %10.3f %10.3f %10.3f \n", i, pt, et, eta, phi * kRaddeg);

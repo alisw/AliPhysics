@@ -25,9 +25,10 @@ class AliGenPythia : public AliGenMC
 {
  public:
 
-  typedef enum {kFlavorSelection, kParentSelection} StackFillOpt_t;
-  typedef enum {kCountAll, kCountParents, kCountTrackables} CountMode_t;
-
+    typedef enum {kFlavorSelection, kParentSelection} StackFillOpt_t;
+    typedef enum {kCountAll, kCountParents, kCountTrackables} CountMode_t;
+    typedef enum {kCluster, kCell} JetRecMode_t;
+	  
     AliGenPythia();
     AliGenPythia(Int_t npart);
     AliGenPythia(const AliGenPythia &Pythia);
@@ -59,6 +60,7 @@ class AliGenPythia : public AliGenMC
 	{fEtMinJet = etmin; fEtMaxJet = etmax;}
     virtual void    SetJetEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
 	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
+    virtual void    SetJetReconstructionMode(Int_t mode = kCell) {fJetReconstruction = mode;}
     virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
     virtual void    SetGammaEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
@@ -86,7 +88,7 @@ class AliGenPythia : public AliGenMC
     // get cross section of process
     virtual Float_t GetXsection() const {return fXsection;}
     // get triggered jets
-    void GetJets(Float_t dist, Int_t part, Int_t& njets, Int_t& ntrig, Float_t[4][10]);
+    void GetJets(Int_t& njets, Int_t& ntrig, Float_t[4][10]);
     void RecJetsUA1(Float_t eCellMin, Float_t eCellSeed, Float_t eMin, Float_t rMin, 
 		    Int_t& njets, Float_t jets[4][50]);    
     void LoadEvent();
@@ -118,62 +120,62 @@ class AliGenPythia : public AliGenMC
     Int_t  GenerateMB();
     void   MakeHeader();    
 
-    TClonesArray* fParticles;     //Particle  List
+    TClonesArray* fParticles;       //Particle  List
     
-    Process_t   fProcess;         //Process type
-    StrucFunc_t fStrucFunc;       //Structure Function
-    Float_t     fEnergyCMS;       //Centre of mass energy
-    Float_t     fKineBias;        //!Bias from kinematic selection
-    Int_t       fTrials;          //!Number of trials for current event
-    Int_t       fTrialsRun;       //!Number of trials for run
-    Float_t     fQ;               //Mean Q
-    Float_t     fX1;              //Mean x1
-    Float_t     fX2;              //Mean x2
-    Int_t       fNev;             //Number of events 
-    Int_t       fFlavorSelect;    //Heavy Flavor Selection
-    Float_t     fXsection;        //Cross-section
-    AliPythia   *fPythia;         //!Pythia 
-    Float_t     fPtHardMin;       //lower pT-hard cut 
-    Float_t     fPtHardMax;       //higher pT-hard cut
-    Float_t     fYHardMin;        //lower  y-hard cut 
-    Float_t     fYHardMax;        //higher y-hard cut
-    Int_t       fNucA1;           //mass number nucleus side 1
-    Int_t       fNucA2;           //mass number nucleus side 2
-    Int_t       fGinit;           //initial state gluon radiation
-    Int_t       fGfinal;          //final state gluon radiation
-    Float_t     fPtKick;          //Transverse momentum kick
-    Bool_t      fFullEvent;       //!Write Full event if true
-    AliDecayer  *fDecayer;        //!Pointer to the decayer instance
-    Int_t       fDebugEventFirst; //!First event to debug
-    Int_t       fDebugEventLast;  //!Last  event to debug
-    Float_t     fEtMinJet;        //Minimum et of triggered Jet
-    Float_t     fEtMaxJet;        //Maximum et of triggered Jet
-    Float_t     fEtaMinJet;       //Minimum eta of triggered Jet
-    Float_t     fEtaMaxJet;       //Maximum eta of triggered Jet
-    Float_t     fPhiMinJet;       //Minimum phi of triggered Jet
-    Float_t     fPhiMaxJet;       //Maximum phi of triggered Jet
+    Process_t   fProcess;           //Process type
+    StrucFunc_t fStrucFunc;         //Structure Function
+    Float_t     fEnergyCMS;         //Centre of mass energy
+    Float_t     fKineBias;          //!Bias from kinematic selection
+    Int_t       fTrials;            //!Number of trials for current event
+    Int_t       fTrialsRun;         //!Number of trials for run
+    Float_t     fQ;                 //Mean Q
+    Float_t     fX1;                //Mean x1
+    Float_t     fX2;                //Mean x2
+    Int_t       fNev;               //Number of events 
+    Int_t       fFlavorSelect;      //Heavy Flavor Selection
+    Float_t     fXsection;          //Cross-section
+    AliPythia   *fPythia;           //!Pythia 
+    Float_t     fPtHardMin;         //lower pT-hard cut 
+    Float_t     fPtHardMax;         //higher pT-hard cut
+    Float_t     fYHardMin;          //lower  y-hard cut 
+    Float_t     fYHardMax;          //higher y-hard cut
+    Int_t       fNucA1;             //mass number nucleus side 1
+    Int_t       fNucA2;             //mass number nucleus side 2
+    Int_t       fGinit;             //initial state gluon radiation
+    Int_t       fGfinal;            //final state gluon radiation
+    Float_t     fPtKick;            //Transverse momentum kick
+    Bool_t      fFullEvent;         //!Write Full event if true
+    AliDecayer  *fDecayer;          //!Pointer to the decayer instance
+    Int_t       fDebugEventFirst;   //!First event to debug
+    Int_t       fDebugEventLast;    //!Last  event to debug
+    Float_t     fEtMinJet;          //Minimum et of triggered Jet
+    Float_t     fEtMaxJet;          //Maximum et of triggered Jet
+    Float_t     fEtaMinJet;         //Minimum eta of triggered Jet
+    Float_t     fEtaMaxJet;         //Maximum eta of triggered Jet
+    Float_t     fPhiMinJet;         //Minimum phi of triggered Jet
+    Float_t     fPhiMaxJet;         //Maximum phi of triggered Jet
+    Int_t       fJetReconstruction; //Jet Reconstruction mode 
+    Float_t     fEtaMinGamma;       // Minimum eta of triggered gamma
+    Float_t     fEtaMaxGamma;       // Maximum eta of triggered gamma
+    Float_t     fPhiMinGamma;       // Minimum phi of triggered gamma
+    Float_t     fPhiMaxGamma;       // Maximum phi of triggered gamma
 
-    Float_t     fEtaMinGamma;     // Minimum eta of triggered gamma
-    Float_t     fEtaMaxGamma;     // Maximum eta of triggered gamma
-    Float_t     fPhiMinGamma;     // Minimum phi of triggered gamma
-    Float_t     fPhiMaxGamma;     // Maximum phi of triggered gamma
-
-    StackFillOpt_t fStackFillOpt; // Stack filling with all particles with
-                                  // that flavour or only with selected
-                                  // parents and their decays
-    Bool_t fFeedDownOpt;          // Option to set feed down from higher
-                                  // quark families (e.g. b->c)
-    Bool_t fFragmentation;        // Option to activate fragmentation by Pythia
+    StackFillOpt_t fStackFillOpt;   // Stack filling with all particles with
+                                    // that flavour or only with selected
+                                    // parents and their decays
+    Bool_t fFeedDownOpt;            // Option to set feed down from higher
+                                    // quark families (e.g. b->c)
+    Bool_t fFragmentation;          // Option to activate fragmentation by Pythia
     //
 
-    CountMode_t fCountMode;        // Options for counting when the event will be finished.
+    CountMode_t fCountMode;         // Options for counting when the event will be finished.
     // fCountMode = kCountAll         --> All particles that end up in the
     //                                    stack are counted
     // fCountMode = kCountParents     --> Only selected parents are counted
     // fCountMode = kCountTrackabless --> Only particles flagged for tracking
     //                                     are counted
     //
-    ClassDef(AliGenPythia,3) // AliGenerator interface to Pythia
+    ClassDef(AliGenPythia,4) // AliGenerator interface to Pythia
 };
 #endif
 
