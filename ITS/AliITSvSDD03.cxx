@@ -34,7 +34,9 @@
 #include <TClonesArray.h>
 #include <TBRIK.h>
 #include <TSystem.h>
+#include <TVirtualMC.h>
 
+#include "AliMC.h"
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliConst.h"
