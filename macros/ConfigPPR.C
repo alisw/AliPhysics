@@ -876,11 +876,9 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         comment = comment.Append(":Pythia p-p @ 14 TeV");
         AliGenPythia *gener = new AliGenPythia(-1); 
         gener->SetMomentumRange(0,999999);
-        gener->SetPhiRange(-180,180);
         gener->SetThetaRange(0., 180.);
         gener->SetYRange(-12,12);
         gener->SetPtRange(0,1000);
-        gener->SetStrucFunc(kCTEQ4L);   
         gener->SetProcess(kPyMb);
         gener->SetEnergyCMS(14000.);
 	gGener=gener;
