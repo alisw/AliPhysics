@@ -128,7 +128,7 @@ AliMonitorProcess::AliMonitorProcess(
   fRunNumber = 0;
   fSubRunNumber = 0;
   fNEvents = 0;
-  fNEventsMin = 2;
+  fNEventsMin = 1;
   fWriteHistoList = kFALSE;
 
   fTopFolder = new TFolder("Monitor", "monitor histograms");
@@ -398,6 +398,10 @@ Bool_t AliMonitorProcess::ProcessFile()
       fSubRunNumber = 0;
       if (fStopping) break;
     }
+
+    // monitor only central physics events
+    if (rawReader.GetType() != 7) continue;
+    if ((rawReader.GetAttributes()[0] & 0x02) == 0) continue;
 
     if (!ReconstructTPC(&rawReader)) return kFALSE;
     if (fStopping) break;
