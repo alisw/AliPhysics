@@ -83,8 +83,8 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
        if (nparticles <= 0) return;
        if (RICH) 
 	 {
-	   gAlice->MakeTree("D");
-	   RICH->MakeBranch("D");
+	   //gAlice->MakeTree("D");
+	   //RICH->MakeBranch("D");
 	   RICH->Digitise(nev, particle_type);
 	 }
        //if (RICH) gAlice->SDigits2Digits("RICH");
