@@ -837,8 +837,8 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 			}			      
 		      trackOld = track;
 		    }
-		  delete status1;
-		  delete status2;
+		  delete [] status1;
+		  delete [] status2;
 		  Float_t totEdp = 0.;
 		  trEdp = new Float_t[trCount];
 		  fracEdp = new Float_t[trCount];
@@ -868,9 +868,9 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 			}
 		    }
 		  fPRETrackNo[im][ix][iy] = trnarray[ilOld];
-		  delete fracEdp;
-		  delete trEdp;
-		  delete trnarray;
+		  delete [] fracEdp;
+		  delete [] trEdp;
+		  delete [] trnarray;
 		}
 	      else if (nn == 1)
 		{
@@ -917,8 +917,8 @@ void AliPMDDigitizer::TrackAssignment2Cell()
       delete [] pmdTrack[i];
       delete [] pmdEdep[i];
     }
-  delete pmdTrack;
-  delete pmdEdep;
+  delete [] pmdTrack;
+  delete [] pmdEdep;
   // 
   // End of the cell id assignment
   //
@@ -938,10 +938,7 @@ void AliPMDDigitizer::AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber,
   // Add SDigit
   //
   TClonesArray &lsdigits = *fSDigits;
-  AliPMDsdigit *newcell;
-  newcell = new AliPMDsdigit(trnumber,det,smnumber,cellnumber,adc);
-  new(lsdigits[fNsdigit++]) AliPMDsdigit(newcell);
-  delete newcell;
+  new(lsdigits[fNsdigit++]) AliPMDsdigit(trnumber,det,smnumber,cellnumber,adc);
 }
 
 void AliPMDDigitizer::AddDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
@@ -950,10 +947,7 @@ void AliPMDDigitizer::AddDigit(Int_t trnumber, Int_t det, Int_t smnumber,
   // Add Digit
   //
   TClonesArray &ldigits = *fDigits;
-  AliPMDdigit *newcell;
-  newcell = new AliPMDdigit(trnumber,det,smnumber,cellnumber,adc);
-  new(ldigits[fNdigit++]) AliPMDdigit(newcell);
-  delete newcell;
+  new(ldigits[fNdigit++]) AliPMDdigit(trnumber,det,smnumber,cellnumber,adc);
 }
 
 void AliPMDDigitizer::SetZPosition(Float_t zpos)
