@@ -847,11 +847,18 @@ void AliVZEROv2::CreateMaterials()
     Float_t zscin[2] = {1.,6.};
     Float_t wscin[2] = {1.,1.};
     Float_t denscin  = 1.032;
-    
+
+// AIR
+
+    Float_t aAir[4]={12.,14.,16.,36.};
+    Float_t zAir[4]={6.,7.,8.,18.};
+    Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+    Float_t dAir = 1.20479E-3;
+        
 //  Definition of materials :
        
-    AliMaterial( 1, "AIR A$", 14.61, 7.3, .001205, 30420., 67500, 0, 0);
-    AliMaterial(11, "AIR I$", 14.61, 7.3, .001205, 30420., 67500, 0, 0);
+    AliMixture( 1, "AIR A$", aAir,zAir,dAir,4,wAir);
+    AliMixture(11, "AIR I$", aAir,zAir,dAir,4,wAir);
     AliMaterial( 2, "CARBON$"  , 12.01, 6.0, 2.265, 18.8, 49.9, 0, 0);
     AliMixture(  3, "QUA", aqua, zqua, densqua, nlmatqua, wmatqua);
     AliMaterial( 4, "ALUMINIUM1$", 26.98, 13., 2.7, 8.9, 37.2, 0, 0);
@@ -1032,8 +1039,7 @@ void AliVZEROv2::StepManager()
 	step      = gMC->TrackStep();
         eloss    += destep;
 	tlength  += step; 
-	
-	 	 
+
         if  ( gMC->IsTrackEntering()  )  {  
        
             gMC->TrackPosition(pos);
@@ -1043,7 +1049,14 @@ void AliVZEROv2::StepManager()
             Double_t pt   = TMath::Sqrt(tc);
 	    Double_t pmom = TMath::Sqrt(tc+mom[2]*mom[2]);
             theta   = Float_t(TMath::ATan2(pt,Double_t(mom[2])))*kRaddeg;
-            phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
+            phi     = Float_t(TMath::ATan2(Double_t(pos[1]),Double_t(pos[0])))*kRaddeg;
+
+////////////////////////////////////////////////////////////////////////////         
+     Float_t angle1 = Float_t(TMath::ATan2(Double_t(pos[1]),Double_t(pos[0])))*kRaddeg;
+     if(angle1 < 0.0) angle1 = angle1 + 360.0;
+     printf(" RingNumber, copy, phi1  = %f %d %f \n\n", ringNumber,vol[1],angle1); 
+////////////////////////////////////////////////////////////////////////////	
+	 	 
      
             ipart  = gMC->TrackPid();
 
