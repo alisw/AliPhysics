@@ -25,7 +25,7 @@
 #include "AliFMD3Support.h"	// ALIFMD3SUPPORT_H 
 #include "AliLog.h"		// ALILOG_H
 #include <Riostream.h>		// ROOT_Riostream
-// #define FMD3_COMPLICATED_MOTHER
+
 //____________________________________________________________________
 ClassImp(AliFMD3Support);
 
@@ -95,69 +95,57 @@ AliFMD3Support::SetupGeometry(Int_t    airId,
   Double_t minZ  = TMath::Min(fNoseZ - fConeLength, outerZh);
   fAlpha         = tdist / zdist;
   fZ             = fNoseZ + (minZ - fNoseZ) / 2;
-  AliDebug(10, Form("Theta = %lf", theta));
+  AliDebug(30, Form("\tTheta = %lf", theta));
   
   const Char_t* mother = "FMD3";
-#ifdef FMD3_COMPLICATED_MOTHER
-  // ------------- Mother volume -------------------------------------
   Double_t p[3 + 9 * 3];
   Double_t eps = 0;
-  // fZ -= eps;
+  // ------------- Mother volume -------------------------------------
+  // The planes should be defined with increasing Z, as it will become
+  // invalid if not 
   // Global parameters 
   p[0]  = 0;
   p[1]  = 360;
   p[2]  = 8;
-  // First plane (at start of nose)
-  p[3]  = fNoseZ  - fZ + eps;
-  p[4]  = fNoseLowR - eps;
-  p[5]  = fNoseHighR + eps;
-  // Second plane (at end of nose)
-  p[6]  = fNoseZ - fNoseLength  - fZ - eps;
-  p[7]  = fNoseLowR - eps;
-  p[8]  = ConeR(p[6] + fZ) + eps; // fNoseHighR;
-  // Third plane (at front of inner ring)
-  p[9]  = innerZl - fZ + eps;
-  p[10] = innerRl - eps;
-  p[11] = ConeR(p[9] + fZ) + eps;
+  // First plane (at back of back or outer ring)
+  p[3]  = minZ - fZ - eps;
+  p[4]  = outerRl - eps;				   
+  p[5]  = fFlangeR + eps;
+  // Second plane (at front of back, at end of flanges)
+  p[6]  = fNoseZ - zdist - fNoseLength  - fZ  + eps;
+  p[7]  = p[4];
+  p[8]  = p[5];	     
+  // Third plane (at front of back)
+  p[9]  = p[6] - eps/2; 
+  p[10] = p[7];
+  p[11] = ConeR(p[9] + fZ)  + eps;		   
   // Fourth plane (at back of inner ring) 
-  p[12] = innerZh - fZ - eps;
-  p[13] = p[10];
+  p[12] = innerZh - fZ - eps;	  
+  p[13] = outerRl - eps;	  
   p[14] = ConeR(p[12] + fZ) + eps;
   // Fifth plane (at back of inner ring) 
-  p[15] = p[12] - eps/2;
-  p[16] = outerRl - eps;
+  p[15] = p[12] - eps/2;	  
+  p[16] = innerRl - eps;	 
   p[17] = ConeR(p[15] + fZ) + eps;
-  // Sixth plane (at front of back) 
-  p[18] = fNoseZ - zdist - fNoseLength  - fZ  + eps;
-  p[19] = outerRl - eps;
-  p[20] = ConeR(p[18] + fZ)  + eps;
-  // Seventh plane (at front of back, at end of flanges)
-  p[21] = p[18] - eps/2;
-  p[22] = p[19];
-  p[23] = fFlangeR + eps;
-  // Eight (and final) plane (at back of back or outer ring)
-  p[24] = minZ - fZ - eps;
-  p[25] = p[19];
-  p[26] = p[23];
+  // Sixth plane  (at front of inner ring)
+  p[18] = innerZl - fZ + eps;	 
+  p[19] = p[16];		  
+  p[20] = ConeR(p[18] + fZ) + eps;
+  // Seventh plane (at end of nose)
+  p[21] = fNoseZ - fNoseLength  - fZ - eps;	
+  p[22] = fNoseLowR - eps;			
+  p[23] = ConeR(p[21] + fZ) + eps; // fNoseHighR;
+  // Eight (and final) plane (at start of nose)
+  p[24] = fNoseZ  - fZ + eps;
+  p[25] = p[22];
+  p[26] = fNoseHighR + eps;  
+
   // The volume 
   gMC->Gsvolu(mother, "PCON", airId, p, 27);
   if (outerZh - fZ < p[24]) 
     Warning("SetupGeometry", "Outer ring back is at %f (%f), "
 	    "but support ends %f", outerZh, outerZl,
 	    p[24] + fZ);
-#else
-  Double_t p[3];
-  // The simple mother 
-  p[0]  = 0;
-  p[1]  = fFlangeR;
-  p[2]  = TMath::Abs((minZ - fNoseZ) / 2);
-  gMC->Gsvolu(mother, "TUBE", airId, p, 3);
-  (void)innerZl;
-  (void)innerZh;
-  (void)innerRl;
-  (void)outerZl;
-  (void)outerRl;
-#endif
   
   // ------------- Support Structures --------------------------------
   fRotations.Set(fNBeam + fNFlange);
@@ -221,18 +209,18 @@ AliFMD3Support::Geometry(const char* mother, Int_t idRotId, Double_t zTop)
   Double_t z = zTop;
   
   // Placing mother volume 
-  AliDebug(10, Form("Putting %s in %s at z=%lf", name, mother, zTop));
-  gMC->Gspos(name, 1, mother, 0, 0, zTop, idRotId);
+  AliDebug(10, Form("\tPutting %s in %s at z=%lf", name, mother, zTop));
+  gMC->Gspos(name, 1, mother, 0, 0, zTop, idRotId, "ONLY");
 
   // Placing the nose 
   z       = fNoseZ - fNoseLength / 2 - fZ;
-  AliDebug(10, Form("Putting %s in %s at z=%lf-%lf/2-%lf=%lf", 
+  AliDebug(10, Form("\tPutting %s in %s at z=%lf-%lf/2-%lf=%lf", 
 		    fgkNoseName, name, fNoseZ, fNoseLength, fZ, z));
   gMC->Gspos(fgkNoseName, 1, name, 0., 0., z, idRotId, "");
 
   // Placing  the back 
   z       = fNoseZ - fNoseLength - zdist - fBackLength / 2 - fZ;
-  AliDebug(10, Form("Putting %s in %s at z=%lf-%lf-%lf-%lf/2-%lf=%lf", 
+  AliDebug(10, Form("\tPutting %s in %s at z=%lf-%lf-%lf-%lf/2-%lf=%lf", 
 		    fgkBackName, name, fNoseZ, fNoseLength, zdist, 
 		    fBackLength, fZ, z));
   gMC->Gspos(fgkBackName, 1, name, 0., 0., z, idRotId, "");
@@ -240,7 +228,7 @@ AliFMD3Support::Geometry(const char* mother, Int_t idRotId, Double_t zTop)
   // Placing the beams 
   z          = fNoseZ - fNoseLength - zdist / 2 - fZ;
   Double_t r = fNoseHighR + tdist / 2;
-  AliDebug(10, Form("Putting %s's in %s at z=%lf-%lf-%lf/2-%lf=%lf", 
+  AliDebug(10, Form("\tPutting %s's in %s at z=%lf-%lf-%lf/2-%lf=%lf", 
 		    fgkBeamName, name, fNoseZ, fNoseLength, zdist, fZ, z));
   for (Int_t i = 0; i < fNBeam; i++) {
     // cout << "Making beam # " << i << endl;
@@ -254,7 +242,7 @@ AliFMD3Support::Geometry(const char* mother, Int_t idRotId, Double_t zTop)
   // Placing the flanges 
   r         = fBackHighR + (fFlangeR - fBackHighR) / 2;
   z         = fNoseZ - fNoseLength - zdist - fBackLength / 2 - fZ;
-  AliDebug(10, Form("Putting %s in %s at z=%lf-%lf-%lf-%lf/2-%lf=%lf", 
+  AliDebug(10, Form("\tPutting %s in %s at z=%lf-%lf-%lf-%lf/2-%lf=%lf", 
 		    fgkFlangeName, name, fNoseZ, fNoseLength, zdist, 
 		    fBackLength, fZ, z));
   for (Int_t i = 0; i < fNFlange; i++) {
@@ -264,6 +252,7 @@ AliFMD3Support::Geometry(const char* mother, Int_t idRotId, Double_t zTop)
 	       r * TMath::Sin(TMath::Pi() / 180 * phi), 
 	       z, fRotations[fNBeam + i], "");
   }
+
 }
 
 //____________________________________________________________________
@@ -289,7 +278,7 @@ AliFMD3Support::ConeR(Double_t z, Option_t* opt) const
 
 //____________________________________________________________________
 void 
-AliFMD3Support::Gsatt() 
+AliFMD3Support::Gsatt() const
 {
   // Set drawing attributes for the FMD3 Support 
   gMC->Gsatt(fgkNoseName, "SEEN", 1);
