@@ -8,8 +8,10 @@
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libSTEER");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libCONTAINERS");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTPC");
-  gSystem->Load("/usr/local/franken/lib/MLUC/lib/linux-i386/libMLUC.so");
-  gSystem->Load("$(ALICE)/mylibs/libAliL3");
+  gSystem->Load("/prog/alice/MLUC/lib/linux-i386/libMLUC.so");
+  gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliL3.so");
+
+ // gROOT->LoadMacro("../../dev/XFunct.C");
   
   gStyle->SetStatBorderSize(1);
   gStyle->SetTitleBorderSize(0);
