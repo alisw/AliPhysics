@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/11/02 17:15:54  fca
+Correct ansi scoping not accepted by HP compilers
+
 Revision 1.13  1999/11/02 17:14:51  fca
 Correct ansi scoping not accepted by HP compilers
 
@@ -455,7 +458,7 @@ void AliTRDv1::Digits2Clusters()
 
   // Import the digit tree
   gAlice->ResetDigits();
-  Int_t nbytes;
+  Int_t nbytes=0;
   nbytes += DigitTree->GetEvent(1);
 
   // Get the number of digits in the detector
