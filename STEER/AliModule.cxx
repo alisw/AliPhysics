@@ -150,8 +150,10 @@ AliModule::~AliModule()
   //
 
   // Remove this Module from the list of Modules
-  gAlice->Modules()->Remove(this);
-
+  if (gAlice) {
+    TObjArray * modules = gAlice->Modules();
+    if (modules) modules->Remove(this);
+  }
   // Delete ROOT geometry
   if(fNodes) {
     fNodes->Clear();
