@@ -37,7 +37,7 @@
 #include <TObjArray.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <iostream.h>
+#include "Riostream.h"
 
 #include "AliTPCtrackerMI.h"
 #include "AliTPCclusterMI.h"
@@ -525,7 +525,7 @@ void AliTPCtrackerMI::LoadOuterSectors() {
   Int_t j=Int_t(fClustersArray.GetTree()->GetEntries());
   for (Int_t i=0; i<j; i++) {
     //  AliSegmentID *s=fClustersArray.LoadEntry(i);
-    AliSegmentID *s= fClustersArray.At(i);
+    AliSegmentID *s= const_cast<AliSegmentID*>(fClustersArray.At(i));
     Int_t sec,row;
     AliTPCParam *par=(AliTPCParam*)fClustersArray.GetParam();
     par->AdjustSectorRow(s->GetID(),sec,row);
@@ -552,7 +552,7 @@ void AliTPCtrackerMI::LoadInnerSectors() {
   Int_t j=Int_t(fClustersArray.GetTree()->GetEntries());
   for (Int_t i=0; i<j; i++) {
     //   AliSegmentID *s=fClustersArray.LoadEntry(i);
-    AliSegmentID *s=fClustersArray.At(i);
+    AliSegmentID *s=const_cast<AliSegmentID*>(fClustersArray.At(i));
     Int_t sec,row;
     AliTPCParam *par=(AliTPCParam*)fClustersArray.GetParam();
     par->AdjustSectorRow(s->GetID(),sec,row);
@@ -989,7 +989,7 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
 
 
 
-void  AliTPCtrackerMI::RemoveOverlap(TObjArray * arr, Float_t factor, Int_t removalindex , Bool_t shared=kFALSE){
+void  AliTPCtrackerMI::RemoveOverlap(TObjArray * arr, Float_t factor, Int_t removalindex , Bool_t shared){
 
   
 

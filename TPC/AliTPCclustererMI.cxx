@@ -30,7 +30,7 @@
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
-#include <iostream.h>
+#include "Riostream.h"
 #include <TTree.h>
 
 ClassImp(AliTPCclustererMI)
@@ -278,8 +278,8 @@ void AliTPCclustererMI::UnfoldCluster(Int_t * matrix2[7], Float_t recmatrix[5][5
 	Float_t xm1 = sum3i[+3];
 	Float_t x1  = sum3i[2*dk+3];
 	Float_t x2  = sum3i[3*dk+3]; 	
-	Float_t w11   = TMath::Max(4.*xm1-xm2,0.000001);	  
-	Float_t w12   = TMath::Max(4 *x1 -x2,0.);
+	Float_t w11   = TMath::Max((Float_t)(4.*xm1-xm2),(Float_t)0.000001);	  
+	Float_t w12   = TMath::Max((Float_t)(4 *x1 -x2),(Float_t)0.);
 	ratio = w11/(w11+w12);	 
 	for (Int_t dl=-1;dl<=1;dl++)
 	  mratio[dk+1][dl+1] *= ratio;
@@ -311,8 +311,8 @@ void AliTPCclustererMI::UnfoldCluster(Int_t * matrix2[7], Float_t recmatrix[5][5
 	Float_t xm1 = sum3j[+3];
 	Float_t x1  = sum3j[2*dk+3];
 	Float_t x2  = sum3j[3*dk+3]; 	
-	Float_t w11   = TMath::Max(4.*xm1-xm2,0.000001);	  
-	Float_t w12   = TMath::Max(4 *x1 -x2,0.);
+	Float_t w11   = TMath::Max((Float_t)(4.*xm1-xm2),(Float_t)0.000001);	  
+	Float_t w12   = TMath::Max((Float_t)(4 *x1 -x2),(Float_t)0.);
 	ratio = w11/(w11+w12);	 
 	for (Int_t dl=-1;dl<=1;dl++)
 	  mratio[dl+1][dk+1] *= ratio;
@@ -351,10 +351,10 @@ void AliTPCclustererMI::UnfoldCluster(Int_t * matrix2[7], Float_t recmatrix[5][5
 	    //if we have overlap in direction
 	    recmatrix[di+2][dj+2] = mratio[di+1][dj+1]* matrix2[3+di][dj];    
 	    if (TMath::Abs(di)+TMath::Abs(dj)>1){
-	      ratio =  TMath::Min(recmatrix[di+2][dj+2]/(matrix2[3+0*di][1*dj]+1),1.);
+	      ratio =  TMath::Min((Float_t)(recmatrix[di+2][dj+2]/(matrix2[3+0*di][1*dj]+1)),(Float_t)1.);
 	      recmatrix[2*di+2][dj+2] = ratio*recmatrix[di+2][dj+2];
 	      //
-	      ratio =  TMath::Min(recmatrix[di+2][dj+2]/(matrix2[3+1*di][0*dj]+1),1.);
+	      ratio =  TMath::Min((Float_t)(recmatrix[di+2][dj+2]/(matrix2[3+1*di][0*dj]+1)),(Float_t)1.);
 	      recmatrix[di+2][2*dj+2] = ratio*recmatrix[di+2][dj+2];
 	    }
 	    else{
