@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2003/02/18 12:47:59  morsch
+Gmtod and Gdtom added.
+
 Revision 1.13  2003/01/31 14:01:51  morsch
 Major update on
 - Getters related to geometry.
@@ -534,9 +537,11 @@ Int_t TFluka::PDGFromId(Int_t id) const
     if (intfluka == 0) {
 	printf("PDGFromId: Error intfluka = 0");
 	return -1;
+    } else if (intfluka < 0) {
+	printf("PDGFromId: Error intfluka < 0");
+	return -1;
     }
-
-    //MPKDHA() goes from internal to PDG
+    printf("mpdgha called with %d %d \n", id, intfluka);
   return mpdgha(intfluka);
 }
 
