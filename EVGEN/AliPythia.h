@@ -17,6 +17,9 @@ class AliPythia:public TPythia6
     // Pythia initialisation for selected processes
     virtual void ProcInit
 	(Process_t process, Float_t energy, StrucFunc_t strucfunc);
+    // treat protons as inside nuclei
+    virtual void    SetNuclei(Int_t a1, Int_t a2);
+    // return instance of the singleton
     static  AliPythia* Instance();
 
  protected:

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.8  2000/09/06 14:26:24  morsch
+Decayer functionality of AliPythia has been moved to AliDecayerPythia.
+Class is now a singleton.
+
 Revision 1.7  2000/06/09 20:34:50  morsch
 All coding rule violations except RS3 corrected
 
@@ -153,6 +157,27 @@ Int_t AliPythia::CheckedLuComp(Int_t kf)
     printf("\n Lucomp kf,kc %d %d",kf,kc);
     return kc;
 }
+
+void AliPythia::SetNuclei(Int_t a1, Int_t a2)
+{
+// Treat protons as inside nuclei with mass numbers a1 and a2  
+//    The MSTP array in the PYPARS common block is used to enable and 
+//    select the nuclear structure functions. 
+//    MSTP(52)  : (D=1) choice of proton and nuclear structure-function library
+//            =1: internal PYTHIA acording to MSTP(51) 
+//            =2: PDFLIB proton  s.f., with MSTP(51)  = 1000xNGROUP+NSET
+//            =3: PDFLIB proton  s.f. with nuclar correction:
+//                MSTP( 51)  = 1000xNPGROUP+NPSET
+//                MSTP(151)  = 1000xNAGROUP+NASET
+//    MSTP(192) : Mass number of nucleus side 1
+//    MSTP(193) : Mass number of nucleus side 2
+
+    SetMSTP(52,3);
+    SetMSTP(191, 1001);
+    SetMSTP(192, a1);
+    SetMSTP(193, a2);  
+}
+	
 
 AliPythia* AliPythia::Instance()
 {

@@ -34,6 +34,8 @@ class AliGenPythia : public AliGenerator
     virtual void    SetEnergyCMS(Float_t energy=5500) {fEnergyCMS=energy;}
     // force decay type
     virtual void    SetForceDecay(Decay_t decay=semimuonic) {fForceDecay=decay;}
+    // treat protons as inside nuclei
+    virtual void    SetNuclei(Int_t a1, Int_t a2);
     // get cross section of process
     virtual Float_t GetXsection() {return fXsection;}
     // Check PDG code
@@ -53,6 +55,9 @@ class AliGenPythia : public AliGenerator
     AliPythia   *fPythia;       // Pythia 
     Float_t     fPtHardMin;     // lower pT-hard cut 
     Float_t     fPtHardMax;     // higher pT-hard cut
+    Int_t       fNucA1;         // mass number nucleus side 1
+    Int_t       fNucA2;         // mass number nucleus side 2
+    
     AliDecayer  *fDecayer;
  private:
     // check if particle is selected as parent particle

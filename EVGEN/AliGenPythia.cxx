@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2000/09/14 14:05:40  morsch
+dito
+
 Revision 1.22  2000/09/14 14:02:22  morsch
 - Correct conversion from mm to cm when passing particle vertex to MC.
 - Correct handling of fForceDecay == all.
@@ -83,6 +86,8 @@ AliGenPythia::AliGenPythia(Int_t npart)
 // structure function GRVHO
 //
     fXsection  = 0.;
+    fNucA1=0;
+    fNucA2=0;
     fParentSelect.Set(5);
     fChildSelect.Set(5);
     for (Int_t i=0; i<5; i++) fParentSelect[i]=fChildSelect[i]=0;
@@ -123,6 +128,7 @@ void AliGenPythia::Init()
 
     fPythia->SetCKIN(3,fPtHardMin);
     fPythia->SetCKIN(4,fPtHardMax);    
+    if (fNucA1 > 0 && fNucA2 > 0) fPythia->SetNuclei(fNucA1, fNucA2);  
     fPythia->ProcInit(fProcess,fEnergyCMS,fStrucFunc);
 
     //    fPythia->Pylist(0);
@@ -344,6 +350,8 @@ void AliGenPythia::Generate()
 	    if (jev >= fNpart || fNpart == -1) {
 		fKineBias=Float_t(fNpart)/Float_t(fTrials);
 		printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
+// Print x-section summary
+		fPythia->Pystat(1);
 		break;
 	    }
 	}
@@ -475,12 +483,22 @@ Int_t AliGenPythia::CheckPDGCode(Int_t pdgcode)
   //non diffractive state -- return code unchanged
   return pdgcode;
 }
-		  
+
+    
+void AliGenPythia::SetNuclei(Int_t a1, Int_t a2)
+{
+// Treat protons as inside nuclei with mass numbers a1 and a2  
+    fNucA1 = a1;
+    fNucA2 = a2;
+}
+	
+	  
 AliGenPythia& AliGenPythia::operator=(const  AliGenPythia& rhs)
 {
 // Assignment operator
     return *this;
 }
+
 
 
 void AliGenPythia::Streamer(TBuffer &R__b)
