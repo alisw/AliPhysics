@@ -86,8 +86,8 @@ TVector2  AliMpSectorSegmentation::GetVector(Long_t index) const
 // Converts the long index to twovector.
 // ---
 
-  return TVector2(floor((index-1.)/fgkSeparator), 
-                  (index-1.) - floor((index-1.)/fgkSeparator)*fgkSeparator);
+  return TVector2(TMath::Floor((index-1.)/fgkSeparator), 
+                  (index-1.) - TMath::Floor((index-1.)/fgkSeparator)*fgkSeparator);
 }  
 #endif
 
