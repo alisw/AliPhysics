@@ -90,9 +90,9 @@ void AliJetParticle::Clear(Option_t* /*t*/)
   fPy=0.;
   fPz=0.;
   fE=0.;
-  fIdxInEvent=0;
+  fIdxInEvent=-1;
   fType=0;
-  fLabel=0;
+  fLabel=-1;
   fNhits=0;
   fPt=0.;
   fEta=0.;

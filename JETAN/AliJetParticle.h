@@ -20,8 +20,8 @@ class AliJetParticle : public TObject
   public:
   AliJetParticle();
   AliJetParticle(const AliJetParticle& in); 
-  AliJetParticle(const TParticle* p, Int_t idx, Int_t l=0, Int_t ncl=0);
-  AliJetParticle(Float_t px, Float_t py, Float_t pz, Float_t etot, Int_t idx, Int_t l=0, Int_t ncl=0);
+  AliJetParticle(const TParticle* p, Int_t idx, Int_t l=-1, Int_t ncl=0);
+  AliJetParticle(Float_t px, Float_t py, Float_t pz, Float_t etot, Int_t idx, Int_t l=-1, Int_t ncl=0);
   AliJetParticle(Float_t px, Float_t py, Float_t pz, Float_t etot, Int_t idx, Int_t l, Int_t ncl,
                  Float_t pt, Float_t eta, Float_t phi);
   virtual ~AliJetParticle(){};

@@ -17,6 +17,7 @@
 #include <AliESD.h>
 #include <AliESDtrack.h>
 #include <AliESDHLTtrack.h>
+#include <AliL3Track.h>
 #include <AliKalmanTrack.h>
 #include <AliJetEventParticles.h>
 #include "AliJetParticlesReaderHLT.h"
@@ -109,6 +110,7 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
 
   fEventParticles->SetVertex(vertexpos[0],vertexpos[1],vertexpos[2]);
 
+  AliL3Track l3;
   for (Int_t i = 0;i<ntr; i++) {
     AliESDHLTtrack *kesdtrack;
     if(fTrackerType){
@@ -122,6 +124,19 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
         Error("ReadESD","Can not get track %d", i);
         continue;
       }
+
+    if(fTrackerType){
+      //if(!kesdtrack->ComesFromMainVertex()) continue;
+      l3.SetFirstPoint(kesdtrack->GetFirstPointX(),kesdtrack->GetFirstPointY(),kesdtrack->GetFirstPointZ());
+      l3.SetLastPoint(kesdtrack->GetLastPointX(),kesdtrack->GetLastPointY(),kesdtrack->GetLastPointZ());
+      l3.SetCharge(kesdtrack->GetCharge());
+      l3.SetPt(kesdtrack->GetPt());
+      l3.SetTgl(kesdtrack->GetTgl());
+      l3.SetPsi(kesdtrack->GetPsi());
+      l3.CalculateHelix();
+      l3.SetFirstPoint(0,0,0);
+      l3.UpdateToFirstPoint();
+    }
 
     //const Float_t kpid=kesdtrack->GetPID();
     const Int_t knhits=kesdtrack->GetNHits();

@@ -237,7 +237,8 @@ Int_t AliJetParticlesReaderKine::ReadNext()
 	  //kinematic cuts
 	  if(IsAcceptedParticle(p)){ //put particle in event
 	    //if(p->Pt()>20){cout <<p->GetStatusCode() << " ";p->Print(); }
-	    fEventParticles->AddParticle(p,i); 
+	    fEventParticles->AddParticle(p,i,i);//what is the label in case 
+	                                        //events have been merged 
 	  }
 	}
       fCurrentEvent++;
