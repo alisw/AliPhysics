@@ -49,6 +49,8 @@ AliHBTReaderESD::AliHBTReaderESD(const Char_t* esdfilename, const Char_t* galfil
  fNTPCClustMax(150),
  fTPCChi2PerClustMin(0.0),
  fTPCChi2PerClustMax(10e5),
+ fChi2Min(0.0),
+ fChi2Max(10e5),
  fC00Min(0.0),
  fC00Max(10e5),
  fC11Min(0.0),
@@ -93,6 +95,8 @@ AliHBTReaderESD::AliHBTReaderESD(TObjArray* dirs,const Char_t* esdfilename, cons
  fNTPCClustMax(150),
  fTPCChi2PerClustMin(0.0),
  fTPCChi2PerClustMax(10e5),
+ fChi2Min(0.0),
+ fChi2Max(10e5),
  fC00Min(0.0),
  fC00Max(10e5),
  fC11Min(0.0),
@@ -577,12 +581,15 @@ Bool_t AliHBTReaderESD::CheckTrack(AliESDtrack* t) const
 {
   //Performs check of the track
   
-  if ( (t->GetConstrainedChi2() < fChi2Min) || (t->GetConstrainedChi2() > fChi2Min) ) return kTRUE;
+  if ( (t->GetConstrainedChi2() < fChi2Min) || (t->GetConstrainedChi2() > fChi2Max) ) return kTRUE;
   
   if ( (t->GetTPCclusters(0x0) < fNTPCClustMin) || (t->GetTPCclusters(0x0) > fNTPCClustMax) ) return kTRUE;
 
-  Float_t chisqpercl = t->GetTPCchi2()/((Double_t)t->GetTPCclusters(0x0));
-  if ( (chisqpercl < fTPCChi2PerClustMin) || (chisqpercl > fTPCChi2PerClustMin) ) return kTRUE;
+  if (t->GetTPCclusters(0x0) > 0)
+   {
+     Float_t chisqpercl = t->GetTPCchi2()/((Double_t)t->GetTPCclusters(0x0));
+     if ( (chisqpercl < fTPCChi2PerClustMin) || (chisqpercl > fTPCChi2PerClustMax) ) return kTRUE;
+   }
 
   Double_t cc[15];
   t->GetConstrainedExternalCovariance(cc);
