@@ -37,10 +37,9 @@ class AliITStrackV2 : public AliKalmanTrack {
 public:
   AliITStrackV2();
   AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *);
-  AliITStrackV2(AliESDtrack& t) throw (const Char_t *);
+  AliITStrackV2(AliESDtrack& t,Bool_t c=kFALSE) throw (const Char_t *);
   AliITStrackV2(const AliITStrackV2& t);
   Int_t PropagateToVertex(Double_t d=0., Double_t x0=0.);
-  Int_t PropagateToPrimVertex(Double_t x0,Double_t rho){return PropagateToVertex(rho,x0);}
   Int_t Propagate(Double_t alpha, Double_t xr);
   Int_t CorrectForMaterial(Double_t d, Double_t x0=21.82);
   Int_t PropagateTo(Double_t xr, Double_t d, Double_t x0=21.82);
@@ -53,6 +52,7 @@ public:
   void ResetCovariance();
   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
   void UpdateESDtrack(ULong_t flags);
+  void SetConstrainedESDtrack(Double_t chi2);
   
   void *operator new(size_t /* s */,void *p) { return p; }
   void *operator new(size_t s) { return ::operator new(s); }
@@ -66,6 +66,7 @@ public:
   Double_t GetZ()    const {return fP1;}
   Double_t GetSnp()  const {return fP2;}
   Double_t GetTgl()  const {return fP3;}
+  Double_t GetC()    const {return fP4;}
   Double_t
     Get1Pt() const { return (1e-9*TMath::Abs(fP4)/fP4 + fP4)*GetConvConst(); }
   Double_t GetD(Double_t x=0, Double_t y=0) const;

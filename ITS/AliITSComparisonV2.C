@@ -122,9 +122,18 @@ Int_t AliITSComparisonV2() {
         AliESDtrack *t=event->GetTrack(i);
 	UInt_t status=t->GetStatus();
 	UInt_t flags=AliESDtrack::kTPCin|AliESDtrack::kITSin;
+
         if ((status&AliESDtrack::kITSrefit)==0)
-           if ((status&flags)!=status) continue;
-        AliITStrackV2 *iotrack=new AliITStrackV2(*t);
+	  if ((status&flags)!=status) continue;
+
+        AliITStrackV2 *iotrack=0;
+        iotrack=new AliITStrackV2(*t);
+        //if (t->GetConstrainedChi2()>=20) continue;   //  constrained 
+        //else iotrack=new AliITStrackV2(*t,kTRUE);    //     track
+        if ((status&flags)==status) {
+           iotrack->PropagateTo(3.,0.0028,65.19);
+           iotrack->PropagateToVertex();
+        }
         tarray.AddLast(iotrack);
      }
      delete event;
@@ -200,9 +209,6 @@ Int_t AliITSComparisonV2() {
           hfake->Fill(ptg); 
         }
       }
-
-      track->PropagateTo(3.,0.0028,65.19);
-      track->PropagateToVertex();
 
       Double_t xv,par[5]; track->GetExternalParameters(xv,par);
       Float_t phi=TMath::ASin(par[2]) + track->GetAlpha();

@@ -38,6 +38,16 @@ public:
   void GetXYZ(Double_t *r) const;
   Int_t GetSign() const {return (fRp[4]<0) ? 1 : -1;} 
 
+  void SetConstrainedTrackParams(AliKalmanTrack *t, Double_t chi2);
+
+  Double_t GetConstrainedAlpha() const {return fCalpha;}
+  Double_t GetConstrainedChi2() const {return fCchi2;}
+  void GetConstrainedExternalParameters(Double_t &x, Double_t p[5]) const;
+  void GetConstrainedExternalCovariance(Double_t cov[15]) const;
+
+  void GetConstrainedPxPyPz(Double_t *p) const;
+  void GetConstrainedXYZ(Double_t *r) const;
+
   void GetInnerPxPyPz(Double_t *p) const;
   void GetInnerXYZ(Double_t *r) const;
 
@@ -97,6 +107,10 @@ protected:
   Double_t fRx;      // X-coordinate of the track reference plane 
   Double_t fRp[5];   // external track parameters  
   Double_t fRc[15];  // external cov. matrix of the track parameters
+
+//Track parameters constrained to the primary vertex
+  Double_t fCalpha,fCx,fCp[5],fCc[15];
+  Double_t fCchi2; //chi2 at the primary vertex
 
 //Track parameters at the inner wall of the TPC
   Double_t fIalpha,fIx,fIp[5],fIc[15];

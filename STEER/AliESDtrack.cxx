@@ -36,6 +36,7 @@ fTrackLength(0),
 fStopVertex(0),
 fRalpha(0),
 fRx(0),
+fCchi2(1e10),
 fITSchi2(0),
 fITSncls(0),
 fITSsignal(0),
@@ -156,6 +157,19 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
 }
 
 //_______________________________________________________________________
+void 
+AliESDtrack::SetConstrainedTrackParams(AliKalmanTrack *t, Double_t chi2) {
+  //
+  // This function sets the constrained track parameters 
+  //
+  fCalpha=t->GetAlpha();
+  t->GetExternalParameters(fCx,fCp);
+  t->GetExternalCovariance(fCc);
+  fCchi2=chi2;
+}
+
+
+//_______________________________________________________________________
 void AliESDtrack::GetExternalParameters(Double_t &x, Double_t p[5]) const {
   //---------------------------------------------------------------------
   // This function returns external representation of the track parameters
@@ -163,6 +177,33 @@ void AliESDtrack::GetExternalParameters(Double_t &x, Double_t p[5]) const {
   x=fRx;
   for (Int_t i=0; i<5; i++) p[i]=fRp[i];
 }
+//_______________________________________________________________________
+void AliESDtrack::GetExternalCovariance(Double_t c[15]) const {
+  //---------------------------------------------------------------------
+  // This function returns external representation of the cov. matrix
+  //---------------------------------------------------------------------
+  for (Int_t i=0; i<15; i++) c[i]=fRc[i];
+}
+
+
+//_______________________________________________________________________
+void 
+AliESDtrack::GetConstrainedExternalParameters(Double_t &x, Double_t p[5])const{
+  //---------------------------------------------------------------------
+  // This function returns the constrained external track parameters
+  //---------------------------------------------------------------------
+  x=fCx;
+  for (Int_t i=0; i<5; i++) p[i]=fCp[i];
+}
+//_______________________________________________________________________
+void 
+AliESDtrack::GetConstrainedExternalCovariance(Double_t c[15]) const {
+  //---------------------------------------------------------------------
+  // This function returns the constrained external cov. matrix
+  //---------------------------------------------------------------------
+  for (Int_t i=0; i<15; i++) c[i]=fCc[i];
+}
+
 
 Double_t AliESDtrack::GetP() const {
   //---------------------------------------------------------------------
@@ -173,6 +214,23 @@ Double_t AliESDtrack::GetP() const {
   return pt/TMath::Cos(lam);
 }
 
+void AliESDtrack::GetConstrainedPxPyPz(Double_t *p) const {
+  //---------------------------------------------------------------------
+  // This function returns the constrained global track momentum components
+  //---------------------------------------------------------------------
+  Double_t phi=TMath::ASin(fCp[2]) + fCalpha;
+  Double_t pt=1./TMath::Abs(fCp[4]);
+  p[0]=pt*TMath::Cos(phi); p[1]=pt*TMath::Sin(phi); p[2]=pt*fCp[3]; 
+}
+void AliESDtrack::GetConstrainedXYZ(Double_t *xyz) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track position
+  //---------------------------------------------------------------------
+  Double_t phi=TMath::ATan2(fCp[0],fCx) + fCalpha;
+  Double_t r=TMath::Sqrt(fCx*fCx + fCp[0]*fCp[0]);
+  xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fCp[1]; 
+}
+
 void AliESDtrack::GetPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
@@ -181,7 +239,6 @@ void AliESDtrack::GetPxPyPz(Double_t *p) const {
   Double_t pt=1./TMath::Abs(fRp[4]);
   p[0]=pt*TMath::Cos(phi); p[1]=pt*TMath::Sin(phi); p[2]=pt*fRp[3]; 
 }
-
 void AliESDtrack::GetXYZ(Double_t *xyz) const {
   //---------------------------------------------------------------------
   // This function returns the global track position
@@ -190,6 +247,7 @@ void AliESDtrack::GetXYZ(Double_t *xyz) const {
   Double_t r=TMath::Sqrt(fRx*fRx + fRp[0]*fRp[0]);
   xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fRp[1]; 
 }
+
 
 void AliESDtrack::GetInnerPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
@@ -229,14 +287,6 @@ void AliESDtrack::GetOuterXYZ(Double_t *xyz) const {
   Double_t phi=TMath::ATan2(fOp[0],fOx) + fOalpha;
   Double_t r=TMath::Sqrt(fOx*fOx + fOp[0]*fOp[0]);
   xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fOp[1]; 
-}
-
-//_______________________________________________________________________
-void AliESDtrack::GetExternalCovariance(Double_t c[15]) const {
-  //---------------------------------------------------------------------
-  // This function returns external representation of the cov. matrix
-  //---------------------------------------------------------------------
-  for (Int_t i=0; i<15; i++) c[i]=fRc[i];
 }
 
 //_______________________________________________________________________

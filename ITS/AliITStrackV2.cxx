@@ -103,10 +103,11 @@ AliKalmanTrack(t) {
 }
 
 //____________________________________________________________________________
-AliITStrackV2::AliITStrackV2(AliESDtrack& t) throw (const Char_t *) :
+AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
 AliKalmanTrack() {
   //------------------------------------------------------------------
-  //Conversion ESD track -> ITS track
+  // Conversion ESD track -> ITS track.
+  // If c==kTRUE, create the ITS track out of the constrained params.
   //------------------------------------------------------------------
   SetNumberOfClusters(t.GetITSclusters(fIndex));
   SetLabel(t.GetLabel());
@@ -118,7 +119,9 @@ AliKalmanTrack() {
   else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
 
   //Conversion of the track parameters
-  Double_t x,p[5]; t.GetExternalParameters(x,p);
+  Double_t x,p[5]; 
+  if (c) t.GetConstrainedExternalParameters(x,p);
+  else t.GetExternalParameters(x,p);
   fX=x;    x=GetConvConst();
   fP0=p[0]; 
   fP1=p[1]; 
@@ -127,13 +130,14 @@ AliKalmanTrack() {
   fP4=p[4]/x; 
 
   //Conversion of the covariance matrix
-  Double_t c[15]; t.GetExternalCovariance(c);
-
-  fC00=c[0 ];
-  fC10=c[1 ];   fC11=c[2 ];
-  fC20=c[3 ];   fC21=c[4 ];   fC22=c[5 ];
-  fC30=c[6 ];   fC31=c[7 ];   fC32=c[8 ];   fC33=c[9 ];
-  fC40=c[10]/x; fC41=c[11]/x; fC42=c[12]/x; fC43=c[13]/x; fC44=c[14]/x/x;
+  Double_t cv[15]; 
+  if (c) t.GetConstrainedExternalCovariance(cv);
+  else t.GetExternalCovariance(cv);
+  fC00=cv[0 ];
+  fC10=cv[1 ];   fC11=cv[2 ];
+  fC20=cv[3 ];   fC21=cv[4 ];   fC22=cv[5 ];
+  fC30=cv[6 ];   fC31=cv[7 ];   fC32=cv[8 ];   fC33=cv[9 ];
+  fC40=cv[10]/x; fC41=cv[11]/x; fC42=cv[12]/x; fC43=cv[13]/x; fC44=cv[14]/x/x;
 
   if (t.GetStatus()&AliESDtrack::kTIME) {
     StartTimeIntegral();
@@ -148,6 +152,9 @@ AliKalmanTrack() {
 
 void AliITStrackV2::UpdateESDtrack(ULong_t flags) {
   fESDtrack->UpdateTrackParams(this,flags);
+}
+void AliITStrackV2::SetConstrainedESDtrack(Double_t chi2) {
+  fESDtrack->SetConstrainedTrackParams(this,chi2);
 }
 
 //____________________________________________________________________________
@@ -440,6 +447,8 @@ Int_t AliITStrackV2::Update(const AliCluster* c, Double_t chi2, UInt_t index) {
      fC40=c40; fC41=c41; fC42=c42; fC43=c43; fC44=c44;
      return 0;
   }
+
+  if (chi2<0) return 1;
 
   Int_t n=GetNumberOfClusters();
   fIndex[n]=index;
