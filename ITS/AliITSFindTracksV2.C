@@ -1,5 +1,6 @@
 #ifndef __CINT__
   #include <iostream.h>
+  #include "AliITSgeom.h"
   #include "AliITStrackerV2.h"
 
   #include "TFile.h"
@@ -22,6 +23,12 @@ Int_t AliITSFindTracksV2() {
 
    TStopwatch timer;
    AliITStrackerV2 tracker(geom);
+
+   //Double_t xyz[]={0.,0.,0.}; tracker.SetVertex(xyz);  //primary vertex
+   //Int_t flag[]={1};                                   //some default flags
+   //flag[0]= 0; tracker.SetupFirstPass(flag);           //no constraint
+   //flag[0]=-1; tracker.SetupSecondPass(flag);          //skip second pass
+
    Int_t rc=tracker.Clusters2Tracks(in,out);
    timer.Stop(); timer.Print();
 

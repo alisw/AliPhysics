@@ -36,10 +36,17 @@ public:
   AliITStrackV2():AliKalmanTrack(){}
   AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *);
   AliITStrackV2(const AliITStrackV2& t);
-  Int_t 
-  PropagateToVertex(Double_t x0=36.66,Double_t rho=1.2e-3,Double_t pm=0.139);
-  void SetdEdx(Float_t dedx) {fdEdx=dedx;}
+  Int_t PropagateToVertex(Double_t x0=36.66,Double_t rho=1.2e-3);
+  Int_t Propagate(Double_t alpha, Double_t xr, Double_t x0, Double_t rho);
+  Int_t PropagateTo(Double_t xr,Double_t x0=21.82,Double_t rho=2.33);
+  Int_t Update(const Double_t *m, Double_t chi2, UInt_t i);
+  Int_t Update(const AliCluster* cl,Double_t chi2,UInt_t i);
+  Int_t Improve(Double_t x0,Double_t yv,Double_t zv);
+  void SetdEdx(Double_t dedx) {fdEdx=dedx;}
+  void CookdEdx(Double_t low=0., Double_t up=1.) {}
   void SetDetectorIndex(Int_t i) {SetLabel(i);}
+  void ResetCovariance();
+  void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
   
   void *operator new(size_t s,void *p) { return p; }
   void *operator new(size_t s) { return ::operator new(s); }
@@ -47,7 +54,7 @@ public:
   Int_t GetDetectorIndex() const {return GetLabel();}
   Double_t GetX()    const {return fX;}
   Double_t GetAlpha()const {return fAlpha;}
-  Float_t  GetdEdx() const {return fdEdx;}
+  Double_t GetdEdx() const {return fdEdx;}
   Double_t GetY()    const {return fP0;}
   Double_t GetZ()    const {return fP1;}
   Double_t GetSnp()  const {return fP2;}
@@ -56,33 +63,15 @@ public:
   Double_t GetD() const;
   Double_t GetSigmaY2() const {return fC00;}
   Double_t GetSigmaZ2() const {return fC11;}
-
   Int_t Compare(const TObject *o) const;
-
   void GetExternalParameters(Double_t& xr, Double_t x[5]) const ;
   void GetExternalCovariance(Double_t cov[15]) const ;
-
   Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
   Int_t GetGlobalXYZat(Double_t r,Double_t &x,Double_t &y,Double_t &z) const;
-
-  Int_t Propagate(Double_t alpha,
-                  Double_t xr,Double_t x0,Double_t rho,Double_t pm=0.139);
-
   Double_t GetPredictedChi2(const AliCluster *cluster) const;
-  Int_t Update(const AliCluster* cl,Double_t chi2,UInt_t i);
-
-  Double_t GetPredictedChi2(const AliCluster *cluster, Double_t *m,
-                  Double_t x0, Double_t pm=0.139) const;
-  Int_t Update(const Double_t *m, Double_t chi2, UInt_t i);
-  Int_t Improve(Double_t x0,Double_t yv,Double_t zv);
-  void ResetCovariance();
-  void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
-
+  Double_t 
+  GetPredictedChi2(const AliCluster *cluster, Double_t *m, Double_t x0) const;
   Int_t Invariant() const;
-
-  //protected:
-Int_t 
-PropagateTo(Double_t xr,Double_t x0=21.82,Double_t rho=2.33,Double_t pm=0.139);
  
 private:
   Double_t fX;              // X-coordinate of this track (reference plane)

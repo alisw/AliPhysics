@@ -1,5 +1,6 @@
 #ifndef __CINT__
   #include <iostream.h>
+  #include "AliTPCParam.h"
   #include "AliTPCtracker.h"
 
   #include "TFile.h"
@@ -20,10 +21,12 @@ Int_t AliTPCFindTracks(Int_t eventn=1) {
  
    TStopwatch timer;
 
+   Int_t rc=0;
    for (Int_t i=0;i<eventn;i++){
      printf("Processing event %d\n",i);
      AliTPCtracker *tracker = new AliTPCtracker(par,i);
-     Int_t rc=tracker->Clusters2Tracks(0,out);
+     //Double_t xyz[]={0.,0.,0.}; tracker->SetVertex(xyz); //primary vertex
+     rc=tracker->Clusters2Tracks(0,out);
      delete tracker;
    }
    timer.Stop(); timer.Print();
@@ -33,5 +36,5 @@ Int_t AliTPCFindTracks(Int_t eventn=1) {
    in->Close();
    out->Close();
 
-   return 0;
+   return rc;
 }

@@ -125,6 +125,8 @@
 #pragma link C++ class AliITSclusterV2+;
 #pragma link C++ class AliITStrackV2+;
 #pragma link C++ class AliITStrackerV2+;
-#pragma link C++ class  AliITSVertex+;
+#pragma link C++ class  AliV0vertex+;
+#pragma link C++ class  AliV0vertexer+;
 
+#pragma link C++ class  AliITSVertex+;
 #endif

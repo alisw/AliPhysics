@@ -135,9 +135,9 @@ private:
    Int_t fN;               //number of loaded sectors
    AliTPCSector *fSectors; //pointer to loaded sectors;
 
-  Int_t fEventN;                      //event number
+   Int_t fEventN;                      //event number
    AliTPCClustersArray fClustersArray; //array of TPC clusters
-   TObjArray *fSeeds;                  //array of track seeds 
+   TObjArray *fSeeds;                  //array of track seeds
 };
 
 #endif

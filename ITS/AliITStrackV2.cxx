@@ -30,7 +30,7 @@
 
 ClassImp(AliITStrackV2)
 
-const Int_t kWARN=1;
+const Int_t kWARN=5;
 
 //____________________________________________________________________________
 AliITStrackV2::AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *) {
@@ -42,7 +42,9 @@ AliITStrackV2::AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *) {
   SetNumberOfClusters(0);
   //SetConvConst(t.GetConvConst());
 
-  fdEdx  = 0.;
+  fdEdx  = t.GetdEdx();
+  SetMass(t.GetMass());
+
   fAlpha = t.GetAlpha();
   if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
   else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
@@ -88,17 +90,33 @@ AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) : AliKalmanTrack(t) {
   Int_t n=GetNumberOfClusters();
   for (Int_t i=0; i<n; i++) fIndex[i]=t.fIndex[i];
 }
-
+/*
 //_____________________________________________________________________________
 Int_t AliITStrackV2::Compare(const TObject *o) const {
   //-----------------------------------------------------------------
   // This function compares tracks according to the their curvature
   //-----------------------------------------------------------------
-  AliTPCtrack *t=(AliTPCtrack*)o;
+  AliITStrackV2 *t=(AliITStrackV2*)o;
   Double_t co=TMath::Abs(t->Get1Pt());
   Double_t c =TMath::Abs(Get1Pt());
   if (c>co) return 1;
   else if (c<co) return -1;
+  return 0;
+}
+*/
+//_____________________________________________________________________________
+Int_t AliITStrackV2::Compare(const TObject *o) const {
+  //-----------------------------------------------------------------
+  // This function compares tracks according to the their curvature
+  //-----------------------------------------------------------------
+  AliITStrackV2 *t=(AliITStrackV2*)o;
+
+  Double_t p2=1./(Get1Pt()*Get1Pt());
+  Double_t b2=p2/(p2 + GetMass()*GetMass());
+  Double_t po2=1./(t->Get1Pt()*t->Get1Pt());
+  Double_t bo2=po2/(po2 + t->GetMass()*t->GetMass());
+  if (p2*b2>po2*bo2) return -1;
+  else if (p2*b2<po2*bo2) return 1;
   return 0;
 }
 
@@ -118,12 +136,12 @@ void AliITStrackV2::GetExternalCovariance(Double_t cc[15]) const {
 }
 
 //____________________________________________________________________________
-Int_t AliITStrackV2::PropagateToVertex(Double_t x0,Double_t rho,Double_t pm) {
+Int_t AliITStrackV2::PropagateToVertex(Double_t x0,Double_t rho) {
   //------------------------------------------------------------------
   //This function propagates a track to the minimal distance from the origin
   //------------------------------------------------------------------
   Double_t xv=fP2*(fX*fP2 - fP0*TMath::Sqrt(1.- fP2*fP2)); //linear approxim.
-  Propagate(fAlpha,xv,0.,0.,pm);   
+  Propagate(fAlpha,xv,0.,0.);   
   return 0;
 }
 
@@ -136,8 +154,9 @@ GetGlobalXYZat(Double_t xk, Double_t &x, Double_t &y, Double_t &z) const {
   Double_t dx=xk-fX;
   Double_t f1=fP2, f2=f1 + fP4*dx;
   if (TMath::Abs(f2) >= 0.99999) {
-     Int_t n=GetNumberOfClusters();
-    if (n>kWARN) cerr<<n<<" AliITStrackV2 warning: Propagation failed !\n";
+    Int_t n=GetNumberOfClusters();
+    if (n>kWARN) 
+      cerr<<n<<" AliITStrackV2::GetGlobalXYZat: Propagation failed !\n";
     return 0;
   }
 
@@ -164,9 +183,10 @@ Double_t AliITStrackV2::GetPredictedChi2(const AliCluster *c) const
   r00+=fC00; r01+=fC10; r11+=fC11;
 
   Double_t det=r00*r11 - r01*r01;
-  if (TMath::Abs(det) < 1.e-10) {
+  if (TMath::Abs(det) < 1.e-30) {
     Int_t n=GetNumberOfClusters();
-    if (n>4) cerr<<n<<" AliKalmanTrack warning: Singular matrix !\n";
+    if (n>kWARN) 
+       cerr<<n<<" AliKalmanTrack::GetPredictedChi2: Singular matrix !\n";
     return 1e10;
   }
   Double_t tmp=r00; r00=r11; r11=tmp; r01=-r01;
@@ -178,7 +198,7 @@ Double_t AliITStrackV2::GetPredictedChi2(const AliCluster *c) const
 
 //_____________________________________________________________________________
 Double_t AliITStrackV2::GetPredictedChi2(const AliCluster *c,Double_t *m,
-Double_t x0, Double_t pm) const {
+Double_t x0) const {
   //-----------------------------------------------------------------
   // This function calculates a chi2 increment with a vertex contraint 
   //-----------------------------------------------------------------
@@ -209,7 +229,7 @@ Double_t x0, Double_t pm) const {
   //x0=0.;
   if (x0!=0.) {
      Double_t pp2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
-     Double_t beta2=pp2/(pp2 + pm*pm);
+     Double_t beta2=pp2/(pp2 + GetMass()*GetMass());
      x0*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
      Double_t theta2=14.1*14.1/(beta2*pp2*1e6)*x0;
      v22 = theta2*(1.- GetSnp()*GetSnp())*(1. + GetTgl()*GetTgl());
@@ -235,9 +255,10 @@ Double_t x0, Double_t pm) const {
   TMatrixD R(tmp,TMatrixD::kMult,TMatrixD(TMatrixD::kTransposed,H)); R+=V;
   
   Double_t det=R.Determinant();
-  if (TMath::Abs(det) < 1.e-25) {
+  if (TMath::Abs(det) < 1.e-30) {
     Int_t n=GetNumberOfClusters();
-    if (n>kWARN) cerr<<n<<" AliITStrackV2 warning: Singular matrix !\n";
+    if (n>kWARN) 
+       cerr<<n<<" AliITStrackV2::GetPredictedChi2: Singular matrix !\n";
     return 1e10;
   }
 
@@ -250,7 +271,7 @@ Double_t x0, Double_t pm) const {
 
 //____________________________________________________________________________
 Int_t 
-AliITStrackV2::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm) {
+AliITStrackV2::PropagateTo(Double_t xk,Double_t x0,Double_t rho) {
   //------------------------------------------------------------------
   //This function propagates a track
   //------------------------------------------------------------------
@@ -258,7 +279,8 @@ AliITStrackV2::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm) {
   Double_t f1=fP2, f2=f1 + fP4*dx;
   if (TMath::Abs(f2) >= 0.99999) {
     Int_t n=GetNumberOfClusters();
-    if (n>kWARN) cerr<<n<<" AliITStrackV2 warning: Propagation failed !\n";
+    if (n>kWARN) 
+       cerr<<n<<" AliITStrackV2::PropagateTo: Propagation failed !\n";
     return 0;
   }
 
@@ -311,7 +333,7 @@ AliITStrackV2::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm) {
   fX=x2;
 
   Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
-  Double_t beta2=p2/(p2 + pm*pm);
+  Double_t beta2=p2/(p2 + GetMass()*GetMass());
 
   //Multiple scattering******************
   //x0=0.;
@@ -329,7 +351,7 @@ AliITStrackV2::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm) {
      rho*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
      Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*rho;
      if (x1 < x2) dE=-dE;
-     fP4*=(1.- sqrt(p2+pm*pm)/p2*dE);
+     fP4*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
   }
 
   if (!Invariant()) {cout<<"Propagate !\n"; return 0;}
@@ -363,13 +385,7 @@ Int_t AliITStrackV2::Update(const AliCluster* c, Double_t chi2, UInt_t index) {
 
   Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
   Double_t sf=fP2 + k20*dy + k21*dz;
-  /*
-  if (TMath::Abs(sf) >= 0.99999) {
-    Int_t n=GetNumberOfClusters();
-    if (n>kWARN) cerr<<n<<" AliITStrackV2 warning: Filtering failed !\n";
-    return 0;
-  }
-  */
+  
   fP0 += k00*dy + k01*dz;
   fP1 += k10*dy + k11*dz;
   fP2  = sf;
@@ -492,15 +508,19 @@ Int_t AliITStrackV2::Invariant() const {
   //------------------------------------------------------------------
   // This function is for debugging purpose only
   //------------------------------------------------------------------
+  Int_t n=GetNumberOfClusters();
+  
   //if (TMath::Abs(fP1)>11.5)
-  //if (fP1*fP4<0) {cout<<"fP1*fP4="<<fP1*fP4<<' '<<fP1<<endl; return 0;}
-  if (TMath::Abs(fP2)>=1) {cout<<"fP2="<<fP2<<endl; return 0;}
+  //if (fP1*fP4<0) {
+  //   if (n>kWARN) cout<<"fP1*fP4="<<fP1*fP4<<' '<<fP1<<endl; return 0;}
+  
+  if (TMath::Abs(fP2)>=1) {if (n>kWARN) cout<<"fP2="<<fP2<<endl; return 0;}
 
-  if (fC00<=0) {cout<<"fC00="<<fC00<<endl; return 0;}
-  if (fC11<=0) {cout<<"fC11="<<fC11<<endl; return 0;}
-  if (fC22<=0) {cout<<"fC22="<<fC22<<endl; return 0;}
-  if (fC33<=0) {cout<<"fC33="<<fC33<<endl; return 0;}
-  if (fC44<=0) {cout<<"fC44="<<fC44<<endl; return 0;}
+  if (fC00<=0) {if (n>kWARN) cout<<"fC00="<<fC00<<endl; return 0;}
+  if (fC11<=0) {if (n>kWARN) cout<<"fC11="<<fC11<<endl; return 0;}
+  if (fC22<=0) {if (n>kWARN) cout<<"fC22="<<fC22<<endl; return 0;}
+  if (fC33<=0) {if (n>kWARN) cout<<"fC33="<<fC33<<endl; return 0;}
+  if (fC44<=0) {if (n>kWARN) cout<<"fC44="<<fC44<<endl; return 0;}
   /*
   TMatrixD m(5,5);
   m(0,0)=fC00; 
@@ -517,8 +537,7 @@ Int_t AliITStrackV2::Invariant() const {
   Double_t det=m.Determinant(); 
 
   if (det <= 0) {
-      cout<<" bad determinant "<<det<<endl;
-      m.Print(); 
+      if (n>kWARN) { cout<<" bad determinant "<<det<<endl; m.Print(); } 
       return 0;
   }
   */
@@ -526,8 +545,8 @@ Int_t AliITStrackV2::Invariant() const {
 }
 
 //____________________________________________________________________________
-Int_t AliITStrackV2::Propagate(Double_t alp, Double_t xk,
-Double_t x0,Double_t rho,Double_t pm) {
+Int_t 
+AliITStrackV2::Propagate(Double_t alp,Double_t xk,Double_t x0,Double_t rho) {
   //------------------------------------------------------------------
   //This function propagates a track
   //------------------------------------------------------------------
@@ -547,7 +566,8 @@ Double_t x0,Double_t rho,Double_t pm) {
   Double_t pp2=fP2*ca - cf*sa;
   if (TMath::Abs(pp2) >= 0.99999) {
      Int_t n=GetNumberOfClusters();
-     if (n>kWARN) cerr<<n<<" AliITStrackV2 warning: Rotation failed !\n";
+     if (n>kWARN) 
+        cerr<<n<<" AliITStrackV2::Propagate: Rotation failed !\n";
      return 0;
   }
 
@@ -569,7 +589,8 @@ Double_t x0,Double_t rho,Double_t pm) {
   Double_t f1=fP2, f2=f1 + fP4*dx;
   if (TMath::Abs(f2) >= 0.99999) {
     Int_t n=GetNumberOfClusters();
-    if (n>kWARN) cerr<<n<<" AliITStrackV2 warning: Propagation failed !\n";
+    if (n>kWARN) 
+       cerr<<n<<" AliITStrackV2::Propagate: Propagation failed !\n";
     return 0;
   }
 
@@ -646,7 +667,7 @@ Double_t x0,Double_t rho,Double_t pm) {
   fC40=C(4,0); fC41=C(4,1); fC42=C(4,2); fC43=C(4,3); fC44=C(4,4);
 
   pp2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
-  Double_t beta2=pp2/(pp2 + pm*pm);
+  Double_t beta2=pp2/(pp2 + GetMass()*GetMass());
 
   //Multiple scattering******************
   //x0=0.;
@@ -664,7 +685,7 @@ Double_t x0,Double_t rho,Double_t pm) {
      rho*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
      Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*rho;
      if (x1 < x2) dE=-dE;
-     fP4*=(1.- sqrt(pp2+pm*pm)/pp2*dE);
+     fP4*=(1.- sqrt(pp2+GetMass()*GetMass())/pp2*dE);
   }
 
   if (!Invariant()) {
@@ -700,7 +721,7 @@ Int_t AliITStrackV2::Improve(Double_t x0,Double_t yv,Double_t zv) {
   Double_t dy=fP0-yv, dz=fP1-zv;
   Double_t r2=fX*fX+dy*dy;
   Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
-  Double_t beta2=p2/(p2 + 0.14*0.14);
+  Double_t beta2=p2/(p2 + GetMass()*GetMass());
   x0*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
 
@@ -742,7 +763,7 @@ Int_t AliITStrackV2::Improve(Double_t x0,Double_t xv,Double_t yv) {
 
   Double_t r2=fX*fX+fP0*fP0;
   Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
-  Double_t beta2=p2/(p2 + 0.14*0.14);
+  Double_t beta2=p2/(p2 + GetMass()*GetMass());
   x0*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
 

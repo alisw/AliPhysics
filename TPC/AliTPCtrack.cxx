@@ -60,6 +60,7 @@ AliTPCtrack::AliTPCtrack(const AliKalmanTrack& t,Double_t alpha) {
   //-----------------------------------------------------------------
   SetLabel(t.GetLabel());
   SetChi2(0.);
+  SetMass(t.GetMass());
   SetNumberOfClusters(0);
   //SetConvConst(t.GetConvConst());
 
@@ -170,8 +171,7 @@ Double_t AliTPCtrack::GetPredictedChi2(const AliCluster *c) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
-{
+Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho) {
   //-----------------------------------------------------------------
   // This function propagates a track to a reference plane x=xk.
   //-----------------------------------------------------------------
@@ -223,7 +223,7 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
   //Multiple scattering******************
   Double_t d=sqrt((x1-fX)*(x1-fX)+(y1-fP0)*(y1-fP0)+(z1-fP1)*(z1-fP1));
   Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
-  Double_t beta2=p2/(p2 + pm*pm);
+  Double_t beta2=p2/(p2 + GetMass()*GetMass());
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
   //Double_t theta2=1.0259e-6*10*10/20/(beta2*p2)*d*rho;
 
@@ -241,14 +241,14 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
   Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d*rho;
   if (x1 < x2) dE=-dE;
   cc=fP4;
-  fP4*=(1.- sqrt(p2+pm*pm)/p2*dE);
+  fP4*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
   fP2+=fX*(fP4-cc);
 
   return 1;
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCtrack::PropagateToVertex(Double_t x0,Double_t rho,Double_t pm) 
+Int_t AliTPCtrack::PropagateToVertex(Double_t x0,Double_t rho) 
 {
   //-----------------------------------------------------------------
   // This function propagates tracks to the "vertex".
@@ -257,7 +257,7 @@ Int_t AliTPCtrack::PropagateToVertex(Double_t x0,Double_t rho,Double_t pm)
   Double_t tgf=-fP2/(fP4*fP0 + sqrt(1-c*c));
   Double_t snf=tgf/sqrt(1.+ tgf*tgf);
   Double_t xv=(fP2+snf)/fP4;
-  return PropagateTo(xv,x0,rho,pm);
+  return PropagateTo(xv,x0,rho);
 }
 
 //_____________________________________________________________________________

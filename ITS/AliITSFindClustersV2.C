@@ -82,7 +82,6 @@ Int_t AliITSFindClustersV2() {
    geom->Write();
 
    TClonesArray *clusters=new TClonesArray("AliITSclusterV2",10000);
-   //TTree *cTree=new TTree("cTree","ITS clusters");
    TTree *cTree=new TTree("TreeC_ITS_0","ITS clusters");
    cTree->Branch("Clusters",&clusters);
 
@@ -105,6 +104,8 @@ Int_t AliITSFindClustersV2() {
 
    cerr<<"Number of entries: "<<nentr<<endl;
 
+   Float_t lp[5]; Int_t lab[6]; //Why can't it be inside a loop ?
+
    for (Int_t i=0; i<nentr; i++) {
        points->Clear();
        pTree->GetEvent(i);
@@ -117,13 +118,13 @@ Int_t AliITSFindClustersV2() {
        nclusters+=ncl;
        for (Int_t j=0; j<ncl; j++) {
           AliITSRecPoint *p=(AliITSRecPoint*)points->UncheckedAt(j);
-          Float_t lp[5];
+          //Float_t lp[5];
           lp[0]=-p->GetX()-yshift; if (lay==1) lp[0]=-lp[0];
           lp[1]=p->GetZ()+zshift;
           lp[2]=p->GetSigmaX2();
           lp[3]=p->GetSigmaZ2();
           lp[4]=p->GetQ();
-          Int_t lab[6]; 
+          //Int_t lab[6]; 
           lab[0]=p->GetLabel(0);lab[1]=p->GetLabel(1);lab[2]=p->GetLabel(2);
           lab[3]=ndet;
 
@@ -143,7 +144,6 @@ Int_t AliITSFindClustersV2() {
           new(cl[j]) AliITSclusterV2(lab,lp);
        }
        cTree->Fill(); clusters->Delete();
-       points->Delete();
    }
    cTree->Write();
 

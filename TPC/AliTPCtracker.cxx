@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/10/21 19:04:55  hristov
+Several patches were done to adapt the barel reconstruction to the multi-event case. Some memory leaks were corrected. (Yu.Belikov)
+
 Revision 1.13  2001/07/23 12:01:30  hristov
 Initialisation added
 
@@ -66,8 +69,7 @@ Splitted from AliTPCtracking
 
 //_____________________________________________________________________________
 AliTPCtracker::AliTPCtracker(const AliTPCParam *par, Int_t eventn): 
-fkNIS(par->GetNInnerSector()/2), 
-fkNOS(par->GetNOuterSector()/2)
+AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
 {
   //---------------------------------------------------------------------
   // The main TPC tracker constructor
@@ -105,7 +107,7 @@ AliTPCtracker::~AliTPCtracker() {
   //------------------------------------------------------------------
   delete[] fInnerSec;
   delete[] fOuterSec;
-  delete fSeeds;
+  fSeeds->Delete(); delete fSeeds;
 }
 
 //_____________________________________________________________________________
@@ -481,7 +483,7 @@ void AliTPCtracker::MakeSeeds(Int_t i1, Int_t i2) {
       for (Int_t js=0; js < nl+nm+nu; js++) {
 	const AliTPCcluster *kcl;
         Double_t x2,   y2,   z2;
-        Double_t x3=0.,y3=0.;
+        Double_t x3=GetX(), y3=GetY(), z3=GetZ();
 
 	if (js<nl) {
 	  const AliTPCRow& kr2=fOuterSec[(ns-1+fkNOS)%fkNOS][i2];
@@ -502,7 +504,7 @@ void AliTPCtracker::MakeSeeds(Int_t i1, Int_t i2) {
             y2=xx2*sn+y2*cs;
 	  }
 
-        Double_t zz=z1 - z1/x1*(x1-x2); 
+        Double_t zz=z1 - (z1-z3)/(x1-x3)*(x1-x2); 
         if (TMath::Abs(zz-z2)>5.) continue;
 
         Double_t d=(x2-x1)*(0.-y2)-(0.-x2)*(y2-y1);
@@ -518,11 +520,11 @@ void AliTPCtracker::MakeSeeds(Int_t i1, Int_t i2) {
 	if (TMath::Abs(x[3]) > 1.2) continue;
 	Double_t a=asin(x[2]);
 	Double_t zv=z1 - x[3]/x[4]*(a+asin(x[4]*x1-x[2]));
-	if (TMath::Abs(zv)>10.) continue; 
+	if (TMath::Abs(zv-z3)>10.) continue; 
 
         Double_t sy1=kr1[is]->GetSigmaY2(), sz1=kr1[is]->GetSigmaZ2();
         Double_t sy2=kcl->GetSigmaY2(),     sz2=kcl->GetSigmaZ2();
-	Double_t sy3=100*0.025, sy=0.1, sz=0.1;
+	Double_t sy3=400*3./12., sy=0.1, sz=0.1;
 
 	Double_t f40=(f1(x1,y1+sy,x2,y2,x3,y3)-x[4])/sy;
 	Double_t f42=(f1(x1,y1,x2,y2+sy,x3,y3)-x[4])/sy;
@@ -618,7 +620,10 @@ Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
   }
 
   out->cd();
-  TTree tracktree("TPCf","Tree with TPC tracks");
+
+  char   tname[100];
+  sprintf(tname,"TreeT_TPC_%d",fEventN);
+  TTree tracktree(tname,"Tree with TPC tracks");
   AliTPCtrack *iotrack=0;
   tracktree.Branch("tracks","AliTPCtrack",&iotrack,32000,0);
 
@@ -645,7 +650,7 @@ Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
     }
     delete fSeeds->RemoveAt(i);
   }  
-  UnloadOuterSectors();
+  //UnloadOuterSectors();
 
   //tracking in inner sectors
   LoadInnerSectors();
@@ -666,6 +671,7 @@ Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
        if (FollowProlongation(t)) {
           if (t.GetNumberOfClusters() >= Int_t(0.4*nrows)) {
              t.CookdEdx();
+             CookLabel(pt,0.1); //For comparison only
              iotrack=pt;
              tracktree.Fill();
              UseClusters(&t,nc);
@@ -676,17 +682,9 @@ Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
     delete fSeeds->RemoveAt(i); 
   }  
   UnloadInnerSectors();
+  UnloadOuterSectors();
 
-  char   tname[100];
-  if (fEventN==-1) {
-    sprintf(tname,"TreeT_TPC");
-  }
-  else {
-    sprintf(tname,"TreeT_TPC_%d",fEventN);
-  }
-
-
-  tracktree.Write(tname);
+  tracktree.Write();
 
   cerr<<"Number of found tracks : "<<found<<endl;
 
@@ -983,6 +981,23 @@ void AliTPCtracker::AliTPCseed::CookdEdx(Double_t low, Double_t up) {
   for (i=nl; i<=nu; i++) dedx += fdEdxSample[i];
   dedx /= (nu-nl+1);
   SetdEdx(dedx);
+
+  //Very rough PID
+  Double_t p=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt()));
+
+  if (p<0.6) {
+    if (dedx < 39.+ 12./(p+0.25)/(p+0.25)) { SetMass(0.13957); return;}
+    if (dedx < 39.+ 12./p/p) { SetMass(0.49368); return;}
+    SetMass(0.93827); return;
+  }
+
+  if (p<1.2) {
+    if (dedx < 39.+ 12./(p+0.25)/(p+0.25)) { SetMass(0.13957); return;}
+    SetMass(0.93827); return;
+  }
+
+  SetMass(0.13957); return;
+
 }
 
 

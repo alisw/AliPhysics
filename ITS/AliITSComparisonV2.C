@@ -21,67 +21,51 @@
 #endif
 
 struct GoodTrackITS {
-  Int_t event;
   Int_t lab;
   Int_t code;
   Float_t px,py,pz;
   Float_t x,y,z;
 };
 
-Int_t AliITSComparisonV2() {
-   Int_t good_tracks_its(GoodTrackITS *gt, Int_t max);
-
+Int_t AliITSComparisonV2(Int_t event=0) {
    cerr<<"Doing comparison...\n";
 
-   TFile *cf=TFile::Open("AliITSclustersV2.root");
-   if (!cf->IsOpen()) {cerr<<"Can't open AliITSclustersV2.root !\n"; return 1;}
-   AliITSgeom *geom=(AliITSgeom*)cf->Get("AliITSgeom");
-   if (!geom) { cerr<<"Can't get the ITS geometry !\n"; return 2; }
-   AliITStrackerV2 tracker(geom);   
-
-// Load tracks
-   TFile *tf=TFile::Open("AliITStracksV2.root");
-   if (!tf->IsOpen()) {cerr<<"Can't open AliITStracksV2.root !\n"; return 3;}
-   TObjArray tarray(2000);
-   TTree *tracktree=(TTree*)tf->Get("TreeT_ITS_0");
-   if (!tracktree) {cerr<<"Can't get a tree with ITS tracks !\n"; return 4;}
-   TBranch *tbranch=tracktree->GetBranch("tracks");
-   Int_t nentr=(Int_t)tracktree->GetEntries(),i;
-   for (i=0; i<nentr; i++) {
-       AliITStrackV2 *iotrack=new AliITStrackV2;
-       tbranch->SetAddress(&iotrack);
-       tracktree->GetEvent(i);
-
-       Int_t tpcLabel=iotrack->GetLabel();
-       tracker.CookLabel(iotrack,0.);
-       Int_t itsLabel=iotrack->GetLabel();
-       if (itsLabel != tpcLabel) iotrack->SetLabel(-TMath::Abs(itsLabel));
-       if (tpcLabel < 0)         iotrack->SetLabel(-TMath::Abs(itsLabel));
-       /*
-       if (itsLabel==1234) {
-         Int_t nc=iotrack->GetNumberOfClusters();
-         for (Int_t k=0; k<nc; k++) {
-           Int_t index=iotrack->GetClusterIndex(k);
-           AliITSclusterV2 *c=tracker.GetCluster(index);
-           cout<<c->GetLabel(0)<<' '<<c->GetLabel(1)<<' '<<c->GetLabel(2)<<endl;
-         }
-       }
-       */
-       tarray.AddLast(iotrack);
-   }
-   delete tracktree; //Thanks to Mariana Bondila
-   tf->Close();
-   delete geom; //Thanks to Mariana Bondila
-   cf->Close();
-
-/////////////////////////////////////////////////////////////////////////
    const Int_t MAX=15000;
+   Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, const Int_t event);
+
+   Int_t nentr=0; TObjArray tarray(2000);
+   {/* Load tracks */ 
+     TFile *tf=TFile::Open("AliITStracksV2.root");
+     if (!tf->IsOpen()) {cerr<<"Can't open AliITStracksV2.root !\n"; return 3;}
+     char tname[100]; sprintf(tname,"TreeT_ITS_%d",event);
+     TTree *tracktree=(TTree*)tf->Get(tname);
+     if (!tracktree) {cerr<<"Can't get a tree with ITS tracks !\n"; return 4;}
+     TBranch *tbranch=tracktree->GetBranch("tracks");
+     nentr=(Int_t)tracktree->GetEntries();
+     for (Int_t i=0; i<nentr; i++) {
+        AliITStrackV2 *iotrack=new AliITStrackV2;
+        tbranch->SetAddress(&iotrack);
+        tracktree->GetEvent(i);
+        tarray.AddLast(iotrack);
+        /*if (itsLabel != 1234) continue;
+        Int_t nc=iotrack->GetNumberOfClusters();
+        for (Int_t k=0; k<nc; k++) {
+          Int_t index=iotrack->GetClusterIndex(k);
+          AliITSclusterV2 *c=tracker.GetCluster(index);
+          cout<<c->GetLabel(0)<<' '<<c->GetLabel(1)<<' '<<c->GetLabel(2)<<endl;
+	}*/
+     }
+     delete tracktree; //Thanks to Mariana Bondila
+     tf->Close();
+   }
+
+   /* Generate a list of "good" tracks */
    GoodTrackITS gt[MAX];
    Int_t ngood=0;
    ifstream in("good_tracks_its");
    if (in) {
       cerr<<"Reading good tracks...\n";
-      while (in>>gt[ngood].event>>gt[ngood].lab>>gt[ngood].code>>
+      while (in>>gt[ngood].lab>>gt[ngood].code>>
                  gt[ngood].px>>gt[ngood].py>>gt[ngood].pz>>
                  gt[ngood].x >>gt[ngood].y >>gt[ngood].z) {
          ngood++;
@@ -94,11 +78,11 @@ Int_t AliITSComparisonV2() {
       if (!in.eof()) cerr<<"Read error (good_tracks_its) !\n";
    } else {
       cerr<<"Marking good tracks (this will take a while)...\n";
-      ngood=good_tracks_its(gt,MAX);
+      ngood=good_tracks_its(gt,MAX,event);
       ofstream out("good_tracks_its");
       if (out) {
 	for (Int_t ngd=0; ngd<ngood; ngd++)
-	  out<<gt[ngd].event<<' '<<gt[ngd].lab<<' '<<gt[ngd].code<<' '
+	  out<<gt[ngd].lab<<' '<<gt[ngd].code<<' '
              <<gt[ngd].px<<' '<<gt[ngd].py<<' '<<gt[ngd].pz<<' '
              <<gt[ngd].x <<' '<<gt[ngd].y <<' '<<gt[ngd].z <<endl;
       } else cerr<<"Can not open file (good_tracks_its) !\n";
@@ -246,7 +230,7 @@ Int_t AliITSComparisonV2() {
    return 0;
 }
 
-Int_t good_tracks_its(GoodTrackITS *gt, Int_t max) {
+Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, const Int_t event) {
    if (gAlice) {delete gAlice; gAlice=0;}
 
    TFile *file=TFile::Open("galice.root");
@@ -256,7 +240,7 @@ Int_t good_tracks_its(GoodTrackITS *gt, Int_t max) {
      exit(5);
    }
 
-   Int_t np=gAlice->GetEvent(0);
+   Int_t np=gAlice->GetEvent(event);
 
    Int_t *good=new Int_t[np];
    Int_t k;
@@ -275,7 +259,8 @@ Int_t good_tracks_its(GoodTrackITS *gt, Int_t max) {
    if (!cf->IsOpen()){
       cerr<<"Can't open AliITSclustersV2.root !\n"; exit(6);
    }
-   TTree *cTree=(TTree*)cf->Get("TreeC_ITS_0");
+   char cname[100]; sprintf(cname,"TreeC_ITS_%d",event);
+   TTree *cTree=(TTree*)cf->Get(cname);
    if (!cTree) {
       cerr<<"Can't get cTree !\n"; exit(7);
    }
@@ -315,11 +300,10 @@ Int_t good_tracks_its(GoodTrackITS *gt, Int_t max) {
    }
    Int_t nt=0;
    Double_t px,py,pz,x,y,z;
-   Int_t code,lab,event;
-   while (in>>event>>lab>>code>>px>>py>>pz>>x>>y>>z) {
+   Int_t code,lab;
+   while (in>>lab>>code>>px>>py>>pz>>x>>y>>z) {
       if (good[lab] != 0x3F) continue;
       TParticle *p = (TParticle*)gAlice->Particle(lab);
-      gt[nt].event=event;
       gt[nt].lab=lab;
       gt[nt].code=p->GetPdgCode();
 //**** px py pz - in global coordinate system

@@ -32,22 +32,19 @@
 //#define DEBUG
 
 #ifdef DEBUG
-Int_t LAB=236;
+Int_t LAB=7;
 #endif
-
-extern TRandom *gRandom;
 
 AliITStrackerV2::AliITSlayer AliITStrackerV2::fLayers[kMaxLayer]; // ITS layers
 
 AliITStrackerV2::
-AliITStrackerV2(const AliITSgeom *geom, Int_t eventn) throw (const Char_t *) {
+AliITStrackerV2(const AliITSgeom *geom, Int_t eventn) throw (const Char_t *) :
+AliTracker() {
   //--------------------------------------------------------------------
   //This is the AliITStracker constructor
   //It also reads clusters from a root file
   //--------------------------------------------------------------------
- 
-  fEventN = eventn;  //MI change add event number  - used to generate identifier 
-  fYV=fZV=0.;
+  fEventN=eventn;  //MI change add event number  - used to generate identifier 
 
   AliITSgeom *g=(AliITSgeom*)geom;
 
@@ -122,10 +119,7 @@ if (c->GetLabel(0)!=LAB) continue;
 cout<<lay-1<<' '<<lad-1<<' '<<det-1<<' '<<c->GetY()<<' '<<c->GetZ()<<endl;
 #endif
 
-         AliITSdetector &det=fLayers[lay-1].GetDetector(c->GetDetectorIndex());
-         Double_t r=det.GetR(); r=TMath::Sqrt(r*r + c->GetY()*c->GetY());
-         if (r > TMath::Abs(c->GetZ())-0.5)
-            fLayers[lay-1].InsertCluster(new AliITSclusterV2(*c));
+         fLayers[lay-1].InsertCluster(new AliITSclusterV2(*c));
        }
        clusters->Delete();
      }
@@ -137,6 +131,9 @@ cout<<lay-1<<' '<<lad-1<<' '<<det-1<<' '<<c->GetY()<<' '<<c->GetZ()<<endl;
   }
 
   fI=kMaxLayer;
+
+  fPass=0;
+  fConstraint[0]=1; fConstraint[1]=0;
 }
 
 #ifdef DEBUG
@@ -162,112 +159,121 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
      return 2;
   }
 
-  in->cd(); 
-  //
+  in->cd();
+ 
   char   tname[100];
-  sprintf(tname,"TreeT_TPC_%d",fEventN);
-  TTree *tpcTree=(TTree*)in->Get(tname);
+  Int_t nentr=0; TObjArray itsTracks(10000);
 
-  if (!tpcTree) {
-     cerr<<"AliITStrackerV2::Clusters2Tracks() ";
-     cerr<<"can't get a tree with TPC tracks !\n";
-     return 3;
+  {/* Read TPC tracks */ 
+    sprintf(tname,"TreeT_TPC_%d",fEventN);
+    TTree *tpcTree=(TTree*)in->Get(tname);
+    if (!tpcTree) {
+       cerr<<"AliITStrackerV2::Clusters2Tracks(): "
+             "can't get a tree with TPC tracks !\n";
+       return 3;
+    }
+    AliTPCtrack *itrack=new AliTPCtrack; 
+    tpcTree->SetBranchAddress("tracks",&itrack);
+    nentr=(Int_t)tpcTree->GetEntries();
+    for (Int_t i=0; i<nentr; i++) {
+       tpcTree->GetEvent(i);
+       itsTracks.AddLast(new AliITStrackV2(*itrack));
+    }
+    delete tpcTree; //Thanks to Mariana Bondila
+    delete itrack;
   }
-
-  AliTPCtrack *itrack=new AliTPCtrack; 
-  tpcTree->SetBranchAddress("tracks",&itrack);
+  itsTracks.Sort();
 
   out->cd();
-  TTree itsTree("ITSf","Tree with ITS tracks");
+
+  sprintf(tname,"TreeT_ITS_%d",fEventN);
+  TTree itsTree(tname,"Tree with ITS tracks");
   AliITStrackV2 *otrack=&fBestTrack;
   itsTree.Branch("tracks","AliITStrackV2",&otrack,32000,0);
 
-  Int_t ntrk=0;
-
-  Int_t nentr=(Int_t)tpcTree->GetEntries();
-  for (Int_t i=0; i<nentr; i++) {
-
-    if (!tpcTree->GetEvent(i)) continue;
-    Int_t tpcLabel=itrack->GetLabel(); //save the TPC track label
-
+  for (fPass=0; fPass<2; fPass++) {
+     Int_t &constraint=fConstraint[fPass]; if (constraint<0) continue;
+     for (Int_t i=0; i<nentr; i++) {
+       if (i%10==0) cerr<<nentr-i<<" \r";
+       AliITStrackV2 *t=(AliITStrackV2*)itsTracks.UncheckedAt(i);
+       if (t==0) continue;           //this track has been already tracked
+       Int_t tpcLabel=t->GetLabel(); //save the TPC track label
 #ifdef DEBUG
 lbl=tpcLabel;
 if (TMath::Abs(tpcLabel)!=LAB) continue;
 cout<<tpcLabel<<" *****************\n";
 #endif
+       try {
+         ResetTrackToFollow(*t);
+       } catch (const Char_t *msg) {
+         cerr<<msg<<endl;
+         continue;
+       }
+       ResetBestTrack();
 
-    try {
-      ResetTrackToFollow(AliITStrackV2(*itrack));
-    } catch (const Char_t *msg) {
-      cerr<<msg<<endl;
-      continue;
-    }
-    ResetBestTrack();
+       Double_t r2=fTrackToFollow.GetX()*fTrackToFollow.GetX();
+       Double_t x0=0.082/21.82*2.33*(45*45+40*40)/r2+2.000/41.28*0.03*75*75/r2;
+       if (constraint) fTrackToFollow.Improve(x0,GetY(),GetZ());
 
-    fYV=gRandom->Gaus(0.,kSigmaYV); fZV=gRandom->Gaus(0.,kSigmaZV);
+       Double_t xk=80.;
+       fTrackToFollow.PropagateTo(xk,0.,0.); //Ne if it's still there
 
-    Double_t r2=fTrackToFollow.GetX()*fTrackToFollow.GetX();
-    Double_t x0=0.082/21.82*2.33*(45*45+40*40)/r2+2.000/41.28*0.03*75*75/r2;
-    fTrackToFollow.Improve(x0,fYV,fZV);
+       xk-=0.005;
+       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71); //Tedlar
+       xk-=0.02;
+       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);   //Kevlar
+          xk-=2.0;
+          fTrackToFollow.PropagateTo(xk, 2.0/41.28*0.029, 2.0*0.029);//Nomex
+       xk-=0.02;
+       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);   //Kevlar
+       xk-=0.005;
+       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71); //Tedlar
 
-    Double_t xk=80.;
-    fTrackToFollow.PropagateTo(xk,0.,0.); //Ne if it's still there
+       xk=61.;
+       fTrackToFollow.PropagateTo(xk,0.,0.); //C02
 
-    xk-=0.005;
-    fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71); //Tedlar
-    xk-=0.02;
-    fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);   //Kevlar
-       xk-=2.0;
-       fTrackToFollow.PropagateTo(xk, 2.0/41.28*0.029, 2.0*0.029);//Nomex
-    xk-=0.02;
-    fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);   //Kevlar
-    xk-=0.005;
-    fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71); //Tedlar
-
-    xk=61.;
-    fTrackToFollow.PropagateTo(xk,0.,0.); //C02
-
-    xk -=0.005;
-    fTrackToFollow.PropagateTo(xk, 0.005/24.01*2.7, 0.005*2.7);    //Al    
-    xk -=0.005;
-    fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71);  //Tedlar
-    xk -=0.02;
-    fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);    //Kevlar
-       xk -=0.5;
-       fTrackToFollow.PropagateTo(xk, 0.5/41.28*.029, 0.5*0.029);  //Nomex    
-    xk -=0.02;
-    fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);    //Kevlar
-    xk -=0.005;
-    fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71);  //Tedlar
-    xk -=0.005;
-    fTrackToFollow.PropagateTo(xk, 0.005/24.01*2.7, 0.005*2.7);    //Al    
+       xk -=0.005;
+       fTrackToFollow.PropagateTo(xk, 0.005/24.01*2.7, 0.005*2.7);    //Al    
+       xk -=0.005;
+       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71);  //Tedlar
+       xk -=0.02;
+       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);    //Kevlar
+          xk -=0.5;
+          fTrackToFollow.PropagateTo(xk, 0.5/41.28*.029, 0.5*0.029);  //Nomex  
+       xk -=0.02;
+       fTrackToFollow.PropagateTo(xk, 0.02/44.86*1.45, 0.02*1.45);    //Kevlar
+       xk -=0.005;
+       fTrackToFollow.PropagateTo(xk, 0.005/44.77*1.71, 0.005*1.71);  //Tedlar
+       xk -=0.005;
+       fTrackToFollow.PropagateTo(xk, 0.005/24.01*2.7, 0.005*2.7);    //Al    
 
 
-    for (FollowProlongation(); fI<kMaxLayer; fI++) {
-       while (TakeNextProlongation()) FollowProlongation();
-    }
+       for (FollowProlongation(); fI<kMaxLayer; fI++) {
+          while (TakeNextProlongation()) FollowProlongation();
+       }
 
 #ifdef DEBUG
 cout<<fBestTrack.GetNumberOfClusters()<<" number of clusters\n\n";
 #endif
 
-    if (fBestTrack.GetNumberOfClusters() >= kMaxLayer-kLayersToSkip) {
-       cerr << ++ntrk << "                \r";
-       fBestTrack.SetLabel(tpcLabel);
-       UseClusters(&fBestTrack);
-       itsTree.Fill();
-    }
+       if (fBestTrack.GetNumberOfClusters() >= kMaxLayer-kLayersToSkip) {
+          fBestTrack.SetLabel(tpcLabel);
+	  fBestTrack.CookdEdx();
+          CookLabel(&fBestTrack,0.); //For comparison only
+          itsTree.Fill();
+          UseClusters(&fBestTrack);
+          delete itsTracks.RemoveAt(i);
+       }
 
+     }
   }
-  sprintf(tname,"TreeT_ITS_%d",fEventN);
-  itsTree.Write(tname);
+
+  itsTree.Write();
+
+  itsTracks.Delete();
   savedir->cd();
   cerr<<"Number of TPC tracks: "<<nentr<<endl;
-  cerr<<"Number of prolonged tracks: "<<ntrk<<endl;
-
-  delete tpcTree; //Thanks to Mariana Bondila
-
-  delete itrack;
+  cerr<<"Number of prolonged tracks: "<<itsTree.GetEntries()<<endl;
 
   return 0;
 }
@@ -488,48 +494,50 @@ cout<<fI<<' ';
       Double_t rs=0.5*(fLayers[fI+1].GetR() + r);
       Double_t ds=0.034; if (fI==3) ds=0.039;
       Double_t dx0r=ds/21.82*2.33, dr=ds*2.33;
-      fTrackToFollow.Propagate(fTrackToFollow.GetAlpha(),rs,1*dx0r,dr);
+      fTrackToFollow.Propagate(fTrackToFollow.GetAlpha(),rs,dx0r,dr);
     }
 
     //find intersection
     Double_t x,y,z;  
     if (!fTrackToFollow.GetGlobalXYZat(r,x,y,z)) {
-     cerr<<"AliITStrackerV2::FollowProlongation: failed to estimate track !\n";
+      //cerr<<"AliITStrackerV2::FollowProlongation: "
+      //"failed to estimate track !\n";
      break;
     }
     Double_t phi=TMath::ATan2(y,x);
     Double_t d=layer.GetThickness(phi,z);
     Int_t idet=layer.FindDetectorIndex(phi,z);
     if (idet<0) {
-    cerr<<"AliITStrackerV2::FollowProlongation: failed to find a detector !\n";
+      //cerr<<"AliITStrackerV2::FollowProlongation: "
+      //"failed to find a detector !\n";
       break;
     }
 
     //propagate to the intersection
     const AliITSdetector &det=layer.GetDetector(idet);
     phi=det.GetPhi();
-    if (!fTrackToFollow.Propagate(phi,det.GetR(),1*d/21.82*2.33,d*2.33)) {
-      cerr<<"AliITStrackerV2::FollowProlongation: propagation failed !\n";
+    if (!fTrackToFollow.Propagate(phi,det.GetR(),d/21.82*2.33,d*2.33)) {
+      //cerr<<"AliITStrackerV2::FollowProlongation: propagation failed !\n";
       break;
     }
+    if (TMath::Abs(fTrackToFollow.GetZ()-GetZ()) > r+1) break;
     fTrackToFollow.SetDetectorIndex(idet);
 
     //Select possible prolongations and store the current track estimation
     track.~AliITStrackV2(); new(&track) AliITStrackV2(fTrackToFollow);
     Double_t dz=3*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[fI]);
     if (dz < 0.5*TMath::Abs(track.GetTgl())) dz=0.5*TMath::Abs(track.GetTgl());
-    if (dz > kMaxRoad/4) {
+    if (dz > kMaxRoad) {
       //cerr<<"AliITStrackerV2::FollowProlongation: too broad road in Z !\n";
       break;
     }
     Double_t dy=4*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[fI]);
     if (dy < 0.5*TMath::Abs(track.GetSnp())) dy=0.5*TMath::Abs(track.GetSnp());
-    if (dy > kMaxRoad/4) {
+    if (dy > kMaxRoad) {
       //cerr<<"AliITStrackerV2::FollowProlongation: too broad road in Y !\n";
       break;
     }
-
-    Double_t zmin=track.GetZ() - dz;
+    Double_t zmin=track.GetZ() - dz; 
     Double_t zmax=track.GetZ() + dz;
     Double_t ymin=track.GetY() + r*phi - dy;
     Double_t ymax=track.GetY() + r*phi + dy;
@@ -567,6 +575,7 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
 
   AliITSlayer &layer=fLayers[fI];
   AliITStrackV2 &t=fTracks[fI];
+  Int_t &constraint=fConstraint[fPass];
 
   Double_t dz=4*TMath::Sqrt(t.GetSigmaZ2() + kSigmaZ2[fI]);
   Double_t dy=4*TMath::Sqrt(t.GetSigmaY2() + kSigmaY2[fI]);
@@ -585,7 +594,8 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
     if (t.GetDetectorIndex()!=idet) {
        const AliITSdetector &det=layer.GetDetector(idet);
        if (!t.Propagate(det.GetPhi(),det.GetR(),0.,0.)) {
-         cerr<<"AliITStrackerV2::TakeNextProlongation: propagation failed !\n";
+         //cerr<<"AliITStrackerV2::TakeNextProlongation: "
+         //"propagation failed !\n";
          continue;
        }
        t.SetDetectorIndex(idet);
@@ -617,10 +627,10 @@ cout<<fI<<" chi2="<<chi2<<' '<<t.GetY()<<' '<<t.GetZ()<<' '<<dy<<' '<<dz<<endl;
 
   //if (!fTrackToFollow.Update(m,chi2,(fI<<28)+ci)) {
   if (!fTrackToFollow.Update(c,chi2,(fI<<28)+ci)) {
-     cerr<<"AliITStrackerV2::TakeNextProlongation: filtering failed !\n";
+     //cerr<<"AliITStrackerV2::TakeNextProlongation: filtering failed !\n";
      return 0;
   }
-  fTrackToFollow.Improve(d/21.82*2.33,fYV,fZV);
+  if (constraint) fTrackToFollow.Improve(d/21.82*2.33,GetY(),GetZ());
 
 #ifdef DEBUG
 cout<<"accepted lab="<<c->GetLabel(0)<<' '
@@ -640,7 +650,6 @@ AliITStrackerV2::AliITSlayer::AliITSlayer() {
   //--------------------------------------------------------------------
   fN=0;
   fDetectors=0;
-  for (Int_t i=0; i<kMaxClusterPerLayer; i++) fClusters[i]=0;
 }
 
 AliITStrackerV2::AliITSlayer::
@@ -651,7 +660,6 @@ AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd) {
   fR=r; fPhiOffset=p; fZOffset=z;
   fNladders=nl; fNdetectors=nd;
   fDetectors=new AliITSdetector[fNladders*fNdetectors];
-  for (Int_t i=0; i<kMaxClusterPerLayer; i++) fClusters[i]=0;
 
   fN=0;
   fI=0;
@@ -729,6 +737,7 @@ const AliITSclusterV2 *AliITStrackerV2::AliITSlayer::GetNextCluster(Int_t &ci){
     fI=i+1;
     break; 
   }
+
   return cluster;
 }
 
@@ -761,7 +770,7 @@ AliITStrackerV2::AliITSlayer::GetThickness(Double_t phi, Double_t z) const {
   //This function returns the thickness of this layer
   //--------------------------------------------------------------------
   //-pi<phi<+pi
-  if (3 <fR&&fR<8 ) return 2.2*0.096;
+  if (3 <fR&&fR<8 ) return 2.5*0.096;
   if (13<fR&&fR<26) return 1.1*0.088;
   if (37<fR&&fR<41) return 1.1*0.085;
   return 1.1*0.081;
