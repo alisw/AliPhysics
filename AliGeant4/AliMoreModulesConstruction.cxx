@@ -182,9 +182,17 @@ void AliMoreModulesConstruction::Construct()
       G4String dataFilePath = fModuleConstructionVector[i]->GetDataFilePath();
 
       if (readGeometry) {
-        // create G3 geometry from g3calls.dat
-        pGeometryManager->SetWriteGeometry(false);
-        pGeometryManager->ReadG3Geometry(dataFilePath);
+        // TG4GeometryManager uses g3tog4 methods for reading
+	// g3calls.dat files - as these methods do not fill name map
+	// they cannot be used for constructing more modules
+	// together
+	//
+        // pGeometryManager->SetWriteGeometry(false);
+        // pGeometryManager->ReadG3Geometry(dataFilePath);
+	
+	G4String text = "AliMoreModulesConstruction::Construct - Limitation:\n";
+	text = text + "    Reading g3calls.dat is not implemented.";
+	AliGlobals::Exception(text);
       }
       else {	            
         // set geometry output stream for this module
@@ -199,6 +207,9 @@ void AliMoreModulesConstruction::Construct()
 
         // construct G3 geometry
         module->CreateGeometry();
+
+        if (writeGeometry) 
+          pGeometryManager->CloseOutFile();
       }	
 
       // all logical volumes will be made sensitive if any
