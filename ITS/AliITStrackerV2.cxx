@@ -259,6 +259,9 @@ Int_t AliITStrackerV2::Clusters2Tracks(TTree *tpcTree, TTree *itsTree) {
   //--------------------------------------------------------------------
   Int_t nentr=0; TObjArray itsTracks(15000);
 
+   Warning("Clusters2Tracks(TTree *, TTree *)",
+      "Will be removed soon !   Use Clusters2Tracks(AliESD *) instead.");
+
   {/* Read TPC tracks */ 
     AliTPCtrack *itrack=new AliTPCtrack; 
     TBranch *branch=tpcTree->GetBranch("tracks");
@@ -397,94 +400,6 @@ Int_t AliITStrackerV2::PropagateBack(AliESD *event) {
   return 0;
 }
 
-Int_t AliITStrackerV2::PropagateBack(TTree *inp, TTree *out) {
-  //--------------------------------------------------------------------
-  //This functions propagates reconstructed ITS tracks back
-  //--------------------------------------------------------------------
-  Error("PropagateBack","This method is not converted to NewIO yet (Args: %x , %x )\n",inp,out);
-  return 1;
-  /*
-  TFile *in=(TFile*)inp;
-  TDirectory *savedir=gDirectory; 
-
-  if (LoadClusters()!=0) return 1;
-
-  if (!in->IsOpen()) {
-    Error("PropagateBack","file with ITS tracks is not open !\n");
-    return 1;
-  }
-
-  if (!out->IsOpen()) {
-  Error("PropagateBack","file for back propagated ITS tracks is not open !\n");
-  return 2;
-  }
-
-  in->cd();
-
-  Char_t tname[100];
-  sprintf(tname,"TreeT_ITS_%d",GetEventNumber());
-  TTree *itsTree=(TTree*)in->Get(tname);
-  if (!itsTree) {
-    Error("PropagateBack","can't get a tree with ITS tracks !\n");
-    return 3;
-  }
-  AliITStrackV2 *itrack=new AliITStrackV2; 
-  itsTree->SetBranchAddress("tracks",&itrack);
-
-  out->cd();
-
-  sprintf(tname,"TreeT_ITSb_%d",GetEventNumber());
-  TTree backTree(tname,"Tree with back propagated ITS tracks");
-  AliTPCtrack *otrack=0;
-  backTree.Branch("tracks","AliTPCtrack",&otrack,32000,2);
-
-  Int_t nentr=(Int_t)itsTree->GetEntries();
-  Int_t i;
-  for (i=0; i<nentr; i++) {
-    itsTree->GetEvent(i);
-    Int_t itsLabel=itrack->GetLabel(); //save the ITS track label
-    ResetTrackToFollow(*itrack);
-
-    // propagete to vertex [SR, GSI 17.02.2003]
-    fTrackToFollow.PropagateTo(3.,0.0028,65.19);
-    fTrackToFollow.PropagateToVertex();
-
-    // Start Time measurement [SR, GSI 17.02.2003]
-    fTrackToFollow.StartTimeIntegral();
-    fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
-    //
-
-    fTrackToFollow.ResetCovariance(); fTrackToFollow.ResetClusters();
-    if (!RefitAt(49.,&fTrackToFollow,itrack)) continue;
-
-    if (CorrectForDeadZoneMaterial(&fTrackToFollow)!=0) {
-       Warning("PropagateBack",
-               "failed to correct for the material in the dead zone !\n");
-       continue;
-    }
-   
-    fTrackToFollow.SetLabel(itsLabel);
-    otrack=new AliTPCtrack(fTrackToFollow,fTrackToFollow.GetAlpha()); 
-    backTree.Fill(); delete otrack;
-    UseClusters(&fTrackToFollow);
-  }
-  i=(Int_t)backTree.GetEntries();
-  backTree.Write();
-
-  Info("PropagateBack","Number of ITS tracks: %d\n",nentr);
-  Info("PropagateBack","Number of back propagated ITS tracks: %d\n",i);
-
-  delete itrack;
-  delete itsTree; //Thanks to Mariana Bondila
-
-  UnloadClusters();
-
-  savedir->cd();
-
-  return 0;
-  */
-}
-
 Int_t AliITStrackerV2::RefitInward(AliESD *event) {
   //--------------------------------------------------------------------
   // This functions refits ITS tracks using the 
@@ -528,12 +443,12 @@ Int_t AliITStrackerV2::RefitInward(AliESD *event) {
        fTrackToFollow.CookdEdx();
        CookLabel(&fTrackToFollow,0.); //For comparison only
 
-       fTrackToFollow.PropagateTo(3.,0.0028,65.19); //The beam pipe
-       fTrackToFollow.PropagateToVertex();
-
-       fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSrefit);
-       UseClusters(&fTrackToFollow);
-       ntrk++;
+       if (fTrackToFollow.PropagateTo(3.,0.0028,65.19)) //The beam pipe    
+	 if (fTrackToFollow.PropagateToVertex()) {
+            fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSrefit);
+            UseClusters(&fTrackToFollow);
+            ntrk++;
+         }
     }
     delete t;
   }
@@ -541,144 +456,6 @@ Int_t AliITStrackerV2::RefitInward(AliESD *event) {
   Info("RefitInward","Number of refitted tracks: %d\n",ntrk);
 
   return 0;
-}
-
-Int_t AliITStrackerV2::RefitInward(TTree *in, TTree *out) {
-  //--------------------------------------------------------------------
-  // This functions refits ITS tracks using the 
-  // "inward propagated" TPC tracks
-  //--------------------------------------------------------------------
-  Error("RefitInward","This method is not converted to NewIO yet (Args: %x , %x )\n",in,out);
-  return 1;
-  /*
-  TFile *in=(TFile*)inp;
-  TDirectory *savedir=gDirectory; 
-
-  if (LoadClusters()!=0) return 1;
-
-  if (!inSeeds->IsOpen()) {
-    Error("RefitInward","file with inward TPC tracks is not open !\n");
-    return 2;
-  }
-
-  if (!in->IsOpen()) {
-    Error("RefitInward","file with ITS tracks is not open !\n");
-    return 2;
-  }
-
-  if (!out->IsOpen()) {
-    Error("RefitInward","file for inward ITS tracks is not open !\n");
-    return 3;
-  }
-
-  Int_t i;
-
-  //LUT used for the track matching (S.Radomski's idea)
-  const Int_t nLab = 400000; // limit on the number of track labels
-  Int_t lut[nLab];
-  for(i=0; i<nLab; i++) lut[i] = -1;
-
-  Char_t tname[100];
-
-  TObjArray itsTracks(15000);
-  {// Read the ITS tracks  
-    sprintf(tname,"TreeT_ITS_%d",GetEventNumber());
-    TTree *itsTree=(TTree*)in->Get(tname);
-    if (!itsTree) {
-      Error("RefitInward","can't get a tree with ITS tracks !\n");
-      return 3;
-    }
-    AliITStrackV2 *itrack=new AliITStrackV2; 
-    itsTree->SetBranchAddress("tracks",&itrack);
-    Int_t nits=(Int_t)itsTree->GetEntries();
-
-    Info("RefitInward","Number of ITS tracks: %d\n",nits);
-
-    for (Int_t i=0; i<nits; i++) {
-       itsTree->GetEvent(i);
-       Int_t lab=TMath::Abs(itrack->GetLabel());
-       if (lab < nLab) {
-         if (lut[lab]>=0) Warning("RefitInward","double track %d\n",lab);
-         lut[lab]=i;
-       } else {
-         Warning("RefitInward","Too big ITS track label: %d\n!",lab);
-         continue;
-       } 
-       itsTracks.AddLast(new AliITStrackV2(*itrack));
-    }
-    delete itsTree;
-    delete itrack;
-  }
-
-  //Get the input seeds tree
-  inSeeds->cd();
-  sprintf(tname,"tracksTPC_%d",GetEventNumber());
-  TTree *tpcTree=(TTree*)inSeeds->Get(tname);
-  if (!tpcTree) {
-     Error("RefitInward","can't get a tree with TPC tracks !\n");
-     return 3;
-  }
-  AliTPCtrack *itrack=new AliTPCtrack; 
-  tpcTree->SetBranchAddress("tracks",&itrack);
-  Int_t ntpc=(Int_t)tpcTree->GetEntries();
-
-  Info("RefitInward","Number of TPC tracks: %d\n",ntpc);
-
-  //Create the output tree
-  out->cd();
-  sprintf(tname,"TreeT_ITSinward_%d",GetEventNumber());
-  TTree outTree(tname,"Tree with inward refitted ITS tracks");
-  AliITStrackV2 *otrack=0;
-  outTree.Branch("tracks","AliITStrackV2",&otrack,32000,0);
-
-  for (i=0; i<ntpc; i++) {
-    tpcTree->GetEvent(i);
-    try {
-      otrack=new AliITStrackV2(*itrack);
-    } catch (const Char_t *msg) {
-      Warning("RefitInward",msg);
-      delete otrack;
-      continue;
-    }
-    //check if this track was reconstructed in the ITS
-    Int_t lab=TMath::Abs(otrack->GetLabel());
-    if (lab >= nLab) {
-      Warning("RefitInward","Too big TPC track label: %d\n!",lab); 
-      continue;
-    }
-    Int_t idx=lut[lab];
-    if (idx<0) continue; //no prolongation in the ITS for this track
-    
-    if (CorrectForDeadZoneMaterial(otrack)!=0) {
-       Warning("RefitInward",
-               "failed to correct for the material in the dead zone !\n");
-       continue;
-    }
-
-    //Refitting...
-    {
-    AliITStrackV2 *ctrack=(AliITStrackV2*)itsTracks.UncheckedAt(idx);
-    if (!RefitAt(3.7, otrack, ctrack)) continue;
-    }
-    otrack->SetLabel(itrack->GetLabel()); //For comparison only
-    otrack->CookdEdx();
-    CookLabel(otrack,0.); //For comparison only
-    outTree.Fill();
-    delete otrack;
-  }
-  i=(Int_t)outTree.GetEntries();
-  Info("RefitInward","Number of inward refitted ITS tracks: %d\n",i);
-  outTree.Write();
-
-  delete tpcTree;
-  delete itrack;
-  UnloadClusters();
-  itsTracks.Delete();
-
-  savedir->cd();
-
-  return 0;
-  */
 }
 
 AliCluster *AliITStrackerV2::GetCluster(Int_t index) const {

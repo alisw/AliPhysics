@@ -39,11 +39,8 @@ public:
    void UnloadClusters();
 
    AliCluster *GetCluster(Int_t index) const;
-   Int_t Clusters2Tracks(TTree *in, TTree *out);
    Int_t Clusters2Tracks(AliESD *event);
-   Int_t PropagateBack(TTree *in, TTree *out);
    Int_t PropagateBack(AliESD *event);
-   Int_t RefitInward(TTree *inTracks, TTree *outTracks);
    Int_t RefitInward(AliESD *event);
 
    virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 

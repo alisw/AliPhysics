@@ -299,7 +299,13 @@ Double_t AliTPCtrack::GetYat(Double_t xk) const {
 // This function calculates the Y-coordinate of a track at the plane x=xk.
 //-----------------------------------------------------------------
     Double_t c1=fP4*fX - fP2, r1=TMath::Sqrt(1.- c1*c1);
-    Double_t c2=fP4*xk - fP2, r2=TMath::Sqrt(1.- c2*c2);
+    Double_t c2=fP4*xk - fP2;
+    if (c2*c2>0.99999) {
+       Int_t n=GetNumberOfClusters();
+       if (n>4) cerr<<n<<"AliTPCtrack::GetYat: can't evaluate the y-coord !\n";
+       return 1e10;
+    } 
+    Double_t r2=TMath::Sqrt(1.- c2*c2);
     return fP0 + (xk-fX)*(c1+c2)/(r1+r2);
 }
 

@@ -54,8 +54,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
      AliITStrackV2 *iotrack=new AliITStrackV2(*esd);
      iotrack->SetLabel(i);  // now it is the index in array of ESD tracks
      if ((status&AliESDtrack::kITSrefit)==0)   //correction for the beam pipe
-        iotrack->PropagateTo(3.,0.0023,65.19); //material
-     iotrack->PropagateTo(2.5,0.,0.);
+        if (!iotrack->PropagateTo(3.,0.0023,65.19)) continue;
+     if (!iotrack->PropagateTo(2.5,0.,0.)) continue;
 
      if (iotrack->Get1Pt() > 0.) {nneg++; negtrks.AddLast(iotrack);}
      else {npos++; postrks.AddLast(iotrack);}
@@ -125,6 +125,9 @@ Int_t AliV0vertexer::Tracks2V0vertices(TTree *tTree, TTree *vTree) {
   //--------------------------------------------------------------------
   //This function reconstructs V0 vertices
   //--------------------------------------------------------------------
+  Warning("Tracks2V0vertices(TTree*,TTree*)",
+	  "Will be removed soon !  Use Tracks2V0vertices(AliESD*) instead");
+
    TBranch *branch=tTree->GetBranch("tracks");
    if (!branch) {
       Error("Tracks2V0vertices","Can't get the branch !");
@@ -143,7 +146,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(TTree *tTree, TTree *vTree) {
        branch->SetAddress(&iotrack);
        tTree->GetEvent(i);
 
-       iotrack->PropagateTo(3.,0.0023,65.19); iotrack->PropagateTo(2.5,0.,0.);
+       if (!iotrack->PropagateTo(3.,0.0023,65.19)) continue; 
+       if (!iotrack->PropagateTo(2.5,0.,0.)) continue;
 
        if (iotrack->Get1Pt() > 0.) {nneg++; negtrks.AddLast(iotrack);}
        else {npos++; postrks.AddLast(iotrack);}

@@ -28,9 +28,7 @@ public:
   void UnloadClusters();
   Int_t Clusters2Tracks(TTree *in, TTree *out);
   Int_t Clusters2Tracks(AliESD *event);
-  Int_t PropagateBack(TTree *in, TTree *out);
   Int_t PropagateBack(AliESD *event);
-  Int_t RefitInward(TTree *in, TTree *out);
   Int_t RefitInward(AliESD *event);
   Bool_t RefitAt(Double_t x, AliITStrackV2 *seed, const AliITStrackV2 *t);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
