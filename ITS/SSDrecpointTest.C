@@ -222,13 +222,13 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
 	  // Module loop
 
-	  //for (mod=first2; mod<last2+1; mod++) {  // for the "ALL" option
-     for (mod=0; mod<last2-first2+1; mod++) { //for the "SSD" option       
+     for (mod=first2; mod<last2+1; mod++) {  // for the "ALL" option
+       //for (mod=0; mod<last2-first2+1; mod++) { //for the "SSD" option       
 
-       AliITSmodule *Mod = (AliITSmodule *)ITSmodules->At(mod+first2);
+       //AliITSmodule *Mod = (AliITSmodule *)ITSmodules->At(mod+first2);
        // for the "SSD" option
 
-       //AliITSmodule *Mod = (AliITSmodule *)ITSmodules->At(mod);
+       AliITSmodule *Mod = (AliITSmodule *)ITSmodules->At(mod);
        // for the "ALL" option
 
 	      geom->GetModuleId(mod,lay,lad,det);
@@ -369,7 +369,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	    
 	    
 	    // x,z resolution colculation
-	    if((hitstat == 68 || hitsat == 33) && dray == 0) {
+	    if((hitstat == 68 || hitstat == 33) && dray == 0) {
 	      Float_t xmed = (xhit + xhit0)/2;
 	      Float_t zmed = (zhit + zhit0)/2;
 	      Float_t xdif = xmed - xrec;
