@@ -135,7 +135,7 @@ void AliGenFLUKAsource::Generate()
   FlukaInit();
   TTree *h2=fTreeFluka;
   Int_t nentries = (Int_t) h2->GetEntries();
-  if (fNpart == -1) fNpart=nentries;
+  if (fNpart == -1) fNpart=Int_t(nentries*fFrac);
   
   // loop over number of particles
   Int_t nb=0;
@@ -145,6 +145,17 @@ void AliGenFLUKAsource::Generate()
     nb = (Int_t)h2->GetEvent(entry); 
     if (irwn > nentries) {
       printf("No more entries in the FLUKA boundary source file\n");
+      TFile *File=0;
+      // Get AliRun object or create it 
+      if (!gAlice) {
+        gAlice = (AliRun*)File->Get("gAlice");
+        if (gAlice) printf("AliRun object found on file\n");
+        if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
+      }
+      TTree *fAli=gAlice->TreeK();
+      if (fAli) File =fAli->GetCurrentFile();
+      File->cd();
+      printf("Generate - I'm out \n");
       return;
     }   
     if (Ip > 28 || Ip < 0) {

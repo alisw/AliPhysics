@@ -24,7 +24,8 @@ protected:
   Float_t     fAgeMax;        //Maximum age of particle
   Float_t     fAddWeight;     //Add weight for neutrons 
   Float_t     fZshift;        //Shift the Z of impact point by this quantity
-
+  Float_t     fFrac;
+  
   const Text_t     *fFileName;          //Choose the file
    
   TTree           *fTreeFluka;        //pointer to the TTree
@@ -51,16 +52,26 @@ public:
   AliGenFLUKAsource();
   AliGenFLUKAsource(Int_t npart);
   virtual ~AliGenFLUKAsource();
-  virtual void Init() {} 
+  // Initialise 
+  virtual void Init() {}
+  // Initialise fluka data 
   virtual void FlukaInit();
+  // choose particle type
   virtual void SetPartFlag(Int_t ikine) {fIkine=ikine;}
+  // set time cut 
   virtual void SetAgeMax(Float_t agemax) {fAgeMax=agemax;}
+  // use additional weight on neutrals
   virtual void SetAddWeight(Float_t addwgt) {fAddWeight=addwgt;}
+  // z-shift of vertex
   virtual void SetZshift(Float_t zshift) {fZshift=zshift;}
+  // set file name of data file
   virtual void SetFileName(const Text_t *filname) {fFileName=filname;}
+  // read only fraction of data  
+  virtual void SetFraction(Float_t frac=1.){fFrac=frac;}
+  // generate event
   virtual void Generate();
 
-  ClassDef(AliGenFLUKAsource,1)
+  ClassDef(AliGenFLUKAsource,1) //Boundary source
 };
 #endif
 
