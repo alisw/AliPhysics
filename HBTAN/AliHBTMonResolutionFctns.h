@@ -178,7 +178,6 @@ class AliHBTMonPResolutionVsPtFctn: public AliHBTMonTwoParticleFctn2D
     }
   protected:
   private:
-  public:
     ClassDef(AliHBTMonPResolutionVsPtFctn,1)
  };
 /***********************************************************************/
