@@ -153,7 +153,9 @@ void AliEventAction::EndOfEventAction(const G4Event* event)
 
   gAlice->FinishEvent();    
 
-  // print time
-  fTimer->Stop();
-  G4cout << "Time of this event = " << *fTimer << G4endl;
+  if (fVerboseLevel>0) {
+    // print time
+    fTimer->Stop();
+    G4cout << "Time of this event = " << *fTimer << G4endl;
+  }  
  }
