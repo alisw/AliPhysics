@@ -1,6 +1,6 @@
 # $Id$
 
-SRCS:= AliMUONv0.cxx  AliMUONv3.cxx \
+SRCS:= AliMUONv0.cxx \
        AliMUONFactory.cxx \
        AliMUONSt1Segmentation.cxx \
        AliMUONSt12QuadrantSegmentation.cxx \

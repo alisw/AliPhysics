@@ -48,6 +48,7 @@ ClassImp(AliMUONv1)
 AliMUONv1::AliMUONv1() 
   : AliMUON(),
     fStepManagerVersionOld(kFALSE),
+    fStepManagerVersionDE(kFALSE),
     fAngleEffect(kTRUE),
     fStepMaxInActiveGas(0.6),
     fStepSum(0x0),
@@ -65,6 +66,7 @@ AliMUONv1::AliMUONv1()
 AliMUONv1::AliMUONv1(const char *name, const char *title)
   : AliMUON(name,title), 
     fStepManagerVersionOld(kFALSE),
+    fStepManagerVersionDE(kFALSE),
     fAngleEffect(kTRUE),
     fStepMaxInActiveGas(0.6),
     fStepSum(0x0),
@@ -188,23 +190,6 @@ void AliMUONv1::Init()
    }
    AliDebug(1,"Finished Init for Trigger Circuits");
    //cp
-
-   //
-   // Debug info
-   //
-     // Print transformations and SV map
-     for (i=0; i<AliMUONConstants::NCh(); i++) {
- 
-       AliDebug(2,Form("Chamber: %d \n" , i+1 ));
-       AliDebug(2,"===================\n"); 
-     
-       // To do - move PrintLocalTransforms to geometryModule
-       //Chamber(i).GetGeometry()
-       //	   ->GetDetElementStore()->PrintLocalTransforms();
- 
-       if (GetDebug() >1) Chamber(i).GetGeometry()->GetSVMap()->Print("");
-     }
-     AliDebug(2,"\n"); 
 }
 
 //__________________________________________________________________
@@ -254,6 +239,12 @@ TString  AliMUONv1::CurrentVolumePath() const
 void AliMUONv1::StepManager()
 {
   // Stepmanager for the chambers
+  // TBR
+
+ if (fStepManagerVersionDE) {
+    StepManager2();
+    return;
+  }
 
  if (fStepManagerVersionOld) {
     StepManagerOld();
@@ -261,7 +252,7 @@ void AliMUONv1::StepManager()
   }
 
   // Only charged tracks
-  if( !(gMC->TrackCharge()) && !(gMC->TrackPid()==0) ) return; 
+  if( !(gMC->TrackCharge()) ) return; 
   // Only charged tracks
   
   // Only gas gap inside chamber
@@ -281,18 +272,6 @@ void AliMUONv1::StepManager()
   idvol = iChamber -1;
 
   if (idvol == -1) return;
-  
-  if (GetDebug() > 1) {
-    // Fill the global position of detection elements
-    // Only for verification 
-    AliMUONGeometrySVMap* svMap
-      =  Chamber(iChamber-1).GetGeometry()->GetSVMap();
-    Double_t x, y, z;
-    gMC->TrackPosition(x, y, z);	   
-    svMap->AddPosition(CurrentVolumePath(), TGeoTranslation(x, y, z));
-  }   
-  
-  if (gMC->TrackPid()==0) return;
 
   // Filling TrackRefs file for MUON. Our Track references are the active volume of the chambers
   if ( (gMC->IsTrackEntering() || gMC->IsTrackExiting() ) )     
@@ -424,10 +403,174 @@ void AliMUONv1::StepManager()
   }
 }
 
+//_______________________________________________________________________________
+void AliMUONv1::StepManager2()
+{
+  // Stepmanager for the chambers
+
+ if (fStepManagerVersionOld) {
+    StepManagerOld2();
+    return;
+  }
+
+  // Only charged tracks
+  if( !(gMC->TrackCharge()) ) return; 
+  // Only charged tracks
+  
+  // Only gas gap inside chamber
+  // Tag chambers and record hits when track enters 
+  static Int_t   idvol=-1;
+  Int_t   iChamber=0;
+  Int_t   id=0;
+  Int_t   copy;
+  const  Float_t kBig = 1.e10;
+
+
+  //
+  // Only gas gap inside chamber
+  // Tag chambers and record hits when track enters 
+  id=gMC->CurrentVolID(copy);
+  iChamber = GetChamberId(id);
+  idvol = iChamber -1;
+
+  if (idvol == -1) return;
+  
+  // Filling TrackRefs file for MUON. Our Track references are the active volume of the chambers
+  if ( (gMC->IsTrackEntering() || gMC->IsTrackExiting() ) )     
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+  
+   if( gMC->IsTrackEntering() ) {
+     Float_t theta = fTrackMomentum.Theta();
+     if ((TMath::Pi()-theta)*kRaddeg>=15.) gMC->SetMaxStep(fStepMaxInActiveGas); // We use Pi-theta because z is negative
+  }
+
+//  if (GetDebug()) {
+//     Float_t z = ( (AliMUONChamber*)(*fChambers)[idvol])->Z() ;
+//      Info("StepManager Step","Active volume found %d chamber %d Z chamber is %f ",idvol,iChamber, z);
+//   }  
+  // Particule id and mass, 
+  Int_t     ipart = gMC->TrackPid();
+  Float_t   mass  = gMC->TrackMass();
+
+  fDestepSum[idvol]+=gMC->Edep();
+  // Get current particle id (ipart), track position (pos)  and momentum (mom)
+  if ( fStepSum[idvol]==0.0 )  gMC->TrackMomentum(fTrackMomentum);
+  fStepSum[idvol]+=gMC->TrackStep();
+  
+//   if (GetDebug()) {
+//     Info("StepManager Step","iChamber %d, Particle %d, theta %f phi %f mass %f StepSum %f eloss %g",
+//       iChamber,ipart, fTrackMomentum.Theta()*kRaddeg, fTrackMomentum.Phi()*kRaddeg, mass, fStepSum[idvol], gMC->Edep());//     Info("StepManager Step","Track Momentum %f %f %f", fTrackMomentum.X(), fTrackMomentum.Y(), fTrackMomentum.Z()) ;
+//     gMC->TrackPosition(fTrackPosition);
+//     Info("StepManager Step","Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
+//   }
+
+  // Track left chamber or StepSum larger than fStepMaxInActiveGas
+  if ( gMC->IsTrackExiting() || 
+       gMC->IsTrackStop() || 
+       gMC->IsTrackDisappeared()||
+       (fStepSum[idvol]>fStepMaxInActiveGas) ) {
+    
+    if   ( gMC->IsTrackExiting() || 
+           gMC->IsTrackStop() || 
+           gMC->IsTrackDisappeared() ) gMC->SetMaxStep(kBig);
+
+    gMC->TrackPosition(fTrackPosition);
+    Float_t theta = fTrackMomentum.Theta();
+    Float_t phi   = fTrackMomentum.Phi();
+    
+    TLorentzVector backToWire( fStepSum[idvol]/2.*sin(theta)*cos(phi),
+                               fStepSum[idvol]/2.*sin(theta)*sin(phi),
+                               fStepSum[idvol]/2.*cos(theta),0.0       );
+    //     if (GetDebug()) 
+    //       Info("StepManager Exit","Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
+    //     if (GetDebug()) 
+    //        Info("StepManager Exit ","Track backToWire %f %f %f",backToWire.X(),backToWire.Y(),backToWire.Z()) ;
+    fTrackPosition-=backToWire;
+    
+    //-------------- Angle effect 
+    // Ratio between energy loss of particle and Mip as a function of BetaGamma of particle (Energy/Mass)
+    
+    Float_t betaxGamma    = fTrackMomentum.P()/mass;//  pc/mc2
+    Float_t sigmaEffect10degrees;
+    Float_t sigmaEffectThetadegrees;
+    Float_t eLossParticleELossMip;
+    Float_t yAngleEffect=0.;
+    Float_t thetawires      =  TMath::Abs( TMath::ASin( TMath::Sin(TMath::Pi()-theta) * TMath::Sin(phi) ) );// We use Pi-theta because z is negative
+
+
+    if (fAngleEffect){
+    if ( (betaxGamma >3.2)   &&  (thetawires*kRaddeg<=15.) ) {
+      betaxGamma=TMath::Log(betaxGamma);
+      eLossParticleELossMip = fElossRatio->Eval(betaxGamma);
+      // 10 degrees is a reference for a model (arbitrary)
+      sigmaEffect10degrees=fAngleEffect10->Eval(eLossParticleELossMip);// in micrometers
+      // Angle with respect to the wires assuming that chambers are perpendicular to the z axis.
+      sigmaEffectThetadegrees =  sigmaEffect10degrees/fAngleEffectNorma->Eval(thetawires*kRaddeg);  // For 5mm gap  
+      if ( (iChamber==1)  ||  (iChamber==2) )  
+        sigmaEffectThetadegrees/=(1.09833e+00+1.70000e-02*(thetawires*kRaddeg)); // The gap is different (4mm)
+      yAngleEffect=1.e-04*gRandom->Gaus(0,sigmaEffectThetadegrees); // Error due to the angle effect in cm
+    }
+    }
+    
+    // Detection elements ids
+    AliMUONGeometryModule* geometry
+      = Chamber(iChamber-1).GetGeometry();
+
+    AliMUONGeometryDetElement* detElement
+      = geometry->FindBySensitiveVolume(CurrentVolumePath());
+
+    Int_t detElemId = 0;
+    if (detElement) detElemId = detElement->GetUniqueID(); 
+ 
+    if (!detElemId) {
+      cerr << "Chamber id: "
+           << setw(3) << iChamber << "  "
+           << "Current SV: " 
+           <<  CurrentVolumePath() 
+ 	   << "  detElemId: "
+           << setw(5) << detElemId 
+	   << endl;
+      Double_t x, y, z;
+      gMC->TrackPosition(x, y, z);	   
+      cerr << "   global position: "
+           << x << ", " << y << ", " << z
+           << endl;
+      AliError("DetElemId not identified.");
+    }  
+    
+    // One hit per chamber
+    GetMUONData()->AddHit(fIshunt, 
+			  gAlice->GetMCApp()->GetCurrentTrackNumber(), 
+			  detElemId, ipart,
+			  fTrackPosition.X(), 
+			  fTrackPosition.Y()+yAngleEffect, 
+			  fTrackPosition.Z(), 
+			  gMC->TrackTime(),
+			  fTrackMomentum.P(),
+			  theta, 
+			  phi, 
+			  fStepSum[idvol], 
+			  fDestepSum[idvol],                        
+			  fTrackPosition.X(),
+			  fTrackPosition.Y(),
+			  fTrackPosition.Z());
+
+//     if (GetDebug()){
+//       Info("StepManager Exit","Particle exiting from chamber %d",iChamber);
+//       Info("StepManager Exit","StepSum %f eloss geant %g ",fStepSum[idvol],fDestepSum[idvol]);
+//       Info("StepManager Exit","Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
+//     }
+    fStepSum[idvol]  =0; // Reset for the next event
+    fDestepSum[idvol]=0; // Reset for the next event
+  }
+}
+
 //__________________________________________
 void AliMUONv1::StepManagerOld()
 {
   // Old Stepmanager for the chambers
+  // TBR
+  
   Int_t          copy, id;
   static Int_t   idvol =-1;
   static Int_t   vol[2];
@@ -607,26 +750,213 @@ void AliMUONv1::StepManagerOld()
   }
 }
 
-//______________________________________________________________________________
-void   AliMUONv1::FinishRun()
+//__________________________________________
+void AliMUONv1::StepManagerOld2()
 {
-// Print debug info 
-// ---
+  // Old Stepmanager for the chambers
+  Int_t          copy, id;
+  static Int_t   idvol =-1;
+  static Int_t   vol[2];
+  Int_t          ipart;
+  TLorentzVector pos;
+  TLorentzVector mom;
+  Float_t        theta,phi;
+  Float_t        destep, step;
+  
+  static Float_t sstep;
+  static Float_t eloss, eloss2, xhit, yhit, zhit, tof, tlength;
+  const  Float_t kBig = 1.e10;
+  static Float_t hits[15];
 
-  if (GetDebug() <= 1) return;
+  TClonesArray &lhits = *fHits;
 
-  // Print the global positions of detection elements
-  for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {
+  //
+  //
+  // Only charged tracks
+  if( !(gMC->TrackCharge()) ) return; 
+  //
+  // Only gas gap inside chamber
+  // Tag chambers and record hits when track enters 
+  id=gMC->CurrentVolID(copy);
 
-    AliDebug(2,Form("Chamber: %d\n" , i+1 ));
-    AliDebug(2,"===================\n"); 
-     
-    AliMUONGeometrySVMap* svMap
-      = Chamber(i).GetGeometry()->GetSVMap();
+  Int_t iChamber = GetChamberId(id);
+  idvol =  iChamber-1;
+
+  if (idvol == -1) return;
+
+  // Detection elements id
+  AliMUONGeometryModule* geometry
+    = Chamber(iChamber-1).GetGeometry();
+
+  AliMUONGeometryDetElement* detElement
+    = geometry->FindBySensitiveVolume(CurrentVolumePath());
+
+  Int_t detElemId = 0;
+  if (detElement) detElemId = detElement->GetUniqueID(); 
+ 
+  if (!detElemId) {
+    cerr << "Chamber id: "
+         << setw(3) << iChamber << "  "
+         << "Current SV: " 
+         <<  CurrentVolumePath() 
+ 	 << "  detElemId: "
+         << setw(5) << detElemId 
+	 << endl;
+    Double_t x, y, z;
+    gMC->TrackPosition(x, y, z);	   
+    cerr << "   global position: "
+         << x << ", " << y << ", " << z
+         << endl;
+    AliError("DetElemId not identified.");
+  }  
+  vol[0] = detElemId;
+    
+  //
+  // Get current particle id (ipart), track position (pos)  and momentum (mom) 
+  gMC->TrackPosition(pos);
+  gMC->TrackMomentum(mom);
+
+  ipart  = gMC->TrackPid();
+
+  //
+  // momentum loss and steplength in last step
+  destep = gMC->Edep();
+  step   = gMC->TrackStep();
+  // cout<<"------------"<<step<<endl;
+  //
+  // record hits when track enters ...
+  if( gMC->IsTrackEntering()) {
+
+      gMC->SetMaxStep(fMaxStepGas);
+      Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
+      Double_t rt = TMath::Sqrt(tc);
+      Double_t pmom = TMath::Sqrt(tc+mom[2]*mom[2]);
+      Double_t tx = mom[0]/pmom;
+      Double_t ty = mom[1]/pmom;
+      Double_t tz = mom[2]/pmom;
+      Double_t s  = ((AliMUONChamber*)(*fChambers)[idvol])
+          ->ResponseModel()
+          ->Pitch()/tz;
+      theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
+      phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
+      hits[0] = Float_t(ipart);         // Geant3 particle type
+      hits[1] = pos[0]+s*tx;            // X-position for hit
+      hits[2] = pos[1]+s*ty;            // Y-position for hit
+      hits[3] = pos[2]+s*tz;            // Z-position for hit
+      hits[4] = theta;                  // theta angle of incidence
+      hits[5] = phi;                    // phi angle of incidence 
+      hits[8] = 0;//PadHits does not exist anymore  (Float_t) fNPadHits;    // first padhit
+      hits[9] = -1;                     // last pad hit
+      hits[10] = mom[3];                // hit momentum P
+      hits[11] = mom[0];                // Px
+      hits[12] = mom[1];                // Py
+      hits[13] = mom[2];                // Pz
+      tof=gMC->TrackTime();
+      hits[14] = tof;                   // Time of flight
+      tlength  = 0;
+      eloss    = 0;
+      eloss2   = 0;
+      sstep=0;
+      xhit     = pos[0];
+      yhit     = pos[1];      
+      zhit     = pos[2];      
+      Chamber(idvol).ChargeCorrelationInit();
+      // Only if not trigger chamber
+
+//       printf("---------------------------\n");
+//       printf(">>>> Y =  %f \n",hits[2]);
+//       printf("---------------------------\n");
+    
       
-    svMap->SortPositions();
-    svMap->PrintPositions();
-    svMap->ClearPositions();
+
+     //  if(idvol < AliMUONConstants::NTrackingCh()) {
+//        //
+//        //  Initialize hit position (cursor) in the segmentation model 
+//        ((AliMUONChamber*) (*fChambers)[idvol])
+//            ->SigGenInit(pos[0], pos[1], pos[2]);
+//       } else {
+//        //geant3->Gpcxyz();
+//        //printf("In the Trigger Chamber #%d\n",idvol-9);
+//       }
   }
-  AliDebug(2,"\n"); 
-}  
+  eloss2+=destep;
+  sstep+=step;
+
+  // cout<<sstep<<endl;
+
+  // 
+  // Calculate the charge induced on a pad (disintegration) in case 
+  //
+  // Mip left chamber ...
+  if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()){
+      gMC->SetMaxStep(kBig);
+      eloss   += destep;
+      tlength += step;
+      
+      Float_t x0,y0,z0;
+      Float_t localPos[3];
+      Float_t globalPos[3] = {pos[0], pos[1], pos[2]};
+      gMC->Gmtod(globalPos,localPos,1); 
+
+      if(idvol < AliMUONConstants::NTrackingCh()) {
+// tracking chambers
+          x0 = 0.5*(xhit+pos[0]);
+          y0 = 0.5*(yhit+pos[1]);
+          z0 = 0.5*(zhit+pos[2]);
+      } else {
+// trigger chambers
+          x0 = xhit;
+          y0 = yhit;
+          z0 = 0.;
+      }
+      
+
+      //      if (eloss >0)  MakePadHits(x0,y0,z0,eloss,tof,idvol);
+      
+          
+      hits[6] = tlength;   // track length
+      hits[7] = eloss2;    // de/dx energy loss
+
+
+      //      if (fNPadHits > (Int_t)hits[8]) {
+      //          hits[8] = hits[8]+1;
+      //          hits[9] = 0: // PadHits does not exist anymore (Float_t) fNPadHits;
+      //}
+//
+//    new hit 
+      
+      new(lhits[fNhits++]) 
+          AliMUONHit(fIshunt, gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);
+      eloss = 0; 
+      //
+      // Check additional signal generation conditions 
+      // defined by the segmentation
+      // model (boundary crossing conditions)
+      // only for tracking chambers
+  } else if 
+      ((idvol < AliMUONConstants::NTrackingCh()) &&
+       ((AliMUONChamber*) (*fChambers)[idvol])->SigGenCond(pos[0], pos[1], pos[2]))
+  {
+      ((AliMUONChamber*) (*fChambers)[idvol])
+          ->SigGenInit(pos[0], pos[1], pos[2]);
+      
+      Float_t localPos[3];
+      Float_t globalPos[3] = {pos[0], pos[1], pos[2]};
+      gMC->Gmtod(globalPos,localPos,1); 
+
+      eloss    += destep;
+
+      // if (eloss > 0 && idvol < AliMUONConstants::NTrackingCh())
+      //        MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),pos[2],eloss,tof,idvol);
+      xhit     = pos[0];
+      yhit     = pos[1]; 
+      zhit     = pos[2];
+      eloss = 0;
+      tlength += step ;
+      //
+      // nothing special  happened, add up energy loss
+  } else {        
+      eloss   += destep;
+      tlength += step ;
+  }
+}

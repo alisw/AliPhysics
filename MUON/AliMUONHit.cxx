@@ -27,6 +27,8 @@
 #include <TMath.h>
 
 #include "AliMUONHit.h"
+#include "AliMUONVGeometryDEIndexing.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONHit)
  
@@ -42,7 +44,10 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
 	AliHit(shunt, track)
 {
 // Constructor
-    fChamber   = vol[0];
+// TBR
+   
+    fIsDetElemId = kFALSE;
+    fDetElemId = vol[0];
     fParticle  = hits[0];
     fX         = hits[1];
     fY         = hits[2];
@@ -62,6 +67,36 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
     fYref      = 0.;
     fZref      = 0.;
 }
+
+//___________________________________________
+AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits, 
+                       Bool_t /*isDetElemId*/) :
+	AliHit(shunt, track)
+{
+// Constructor
+   
+    fIsDetElemId = kTRUE;
+    fDetElemId = vol[0];
+    fParticle  = hits[0];
+    fX         = hits[1];
+    fY         = hits[2];
+    fZ         = hits[3];
+    fTheta     = hits[4];
+    fPhi       = hits[5];
+    fTlength   = hits[6];
+    fEloss     = hits[7];
+    fPHfirst   = (Int_t) hits[8];
+    fPHlast    = (Int_t) hits[9];
+    fPTot      = hits[10];
+    fPx        = hits[11];
+    fPy        = hits[12];
+    fPz        = hits[13];
+    fAge       = hits[14];
+    fXref      = 0.;
+    fYref      = 0.;
+    fZref      = 0.;
+}
+
 //___________________________________________
 AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t iChamber, Int_t idpart, 
 		       Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
@@ -69,7 +104,10 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t iChamber, Int_t idpart,
 	AliHit(shunt, track)
 {
 // Constructor
-    fChamber   = iChamber;
+// TBR
+
+    fIsDetElemId = kFALSE;
+    fDetElemId = iChamber;
     fParticle  = idpart;
     fX         = X;
     fY         = Y;
@@ -89,6 +127,37 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t iChamber, Int_t idpart,
     fYref      = 0.;
     fZref      = 0.;
 }
+
+//___________________________________________
+AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t detElemId, Int_t idpart, 
+		       Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
+		       Float_t theta, Float_t phi, Float_t length, Float_t destep,
+		       Bool_t /*isDetElemId*/):
+	AliHit(shunt, track)
+{
+// Constructor
+    fIsDetElemId = kTRUE;
+    fDetElemId = detElemId;
+    fParticle  = idpart;
+    fX         = X;
+    fY         = Y;
+    fZ         = Z;
+    fTheta     = theta;
+    fPhi       = phi;
+    fTlength   = length;
+    fEloss     = destep;
+    fPHfirst   = 0;
+    fPHlast    = 0;
+    fPTot      = momentum;
+    fPx        = momentum * TMath::Sin(theta) * TMath::Cos(phi);
+    fPy        = momentum * TMath::Sin(theta) * TMath::Sin(phi);
+    fPz        = momentum * TMath::Cos(theta) ;
+    fAge       = tof;
+    fXref      = 0.;
+    fYref      = 0.;
+    fZref      = 0.;
+}
+
 //-----------------------------------------------------------------------------------------------
 AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t iChamber, Int_t idpart, 
 		       Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
@@ -97,7 +166,10 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t iChamber, Int_t idpart,
 	AliHit(shunt, track)
 {
 // Constructor
-    fChamber   = iChamber;
+// TBR
+
+    fIsDetElemId = kFALSE;
+    fDetElemId = iChamber;
     fParticle  = idpart;
     fX         = X;
     fY         = Y;
@@ -118,4 +190,58 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t iChamber, Int_t idpart,
     fZref      = Zref;
 }
 //-----------------------------------------------------------------------------------------------
+AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t detElemId, Int_t idpart, 
+		       Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
+		       Float_t theta, Float_t phi, Float_t length, Float_t destep,
+		       Float_t Xref,Float_t Yref,Float_t Zref,
+		       Bool_t /*isDetElemId*/):
+	AliHit(shunt, track)
+{
+// Constructor
+    fIsDetElemId = kTRUE;
+    fDetElemId = detElemId;
+    fParticle  = idpart;
+    fX         = X;
+    fY         = Y;
+    fZ         = Z;
+    fTheta     = theta;
+    fPhi       = phi;
+    fTlength   = length;
+    fEloss     = destep;
+    fPHfirst   = 0;
+    fPHlast    = 0;
+    fPTot      = momentum;
+    fPx        = momentum * TMath::Sin(theta) * TMath::Cos(phi);
+    fPy        = momentum * TMath::Sin(theta) * TMath::Sin(phi);
+    fPz        = momentum * TMath::Cos(theta) ;
+    fAge       = tof;
+    fXref      = Xref;
+    fYref      = Yref;
+    fZref      = Zref;
+}
+
+//-----------------------------------------------------------------------------------------------
+Int_t AliMUONHit::DetElemId()const
+{
+// Return detection element ID
+
+  if (!fIsDetElemId) {
+    AliWarning("Detection element Id is not defined.");
+    return 0;
+  }  
+  // end of TBR
+  
+  return fDetElemId;
+}
+
+//-----------------------------------------------------------------------------------------------
+Int_t  AliMUONHit::Chamber()  const
+{  
+// Return chamber ID
+
+  if (!fIsDetElemId) 
+    return fDetElemId;
+  else  
+    return AliMUONVGeometryDEIndexing::GetModuleId(fDetElemId);  
+}
 

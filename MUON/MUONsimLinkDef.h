@@ -4,8 +4,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliMUONv0+; 
-#pragma link C++ class AliMUONv3+; 
-
 
 #pragma link C++ class AliMUONFactory+; 
 
@@ -29,6 +27,7 @@
 #pragma link C++ class AliMUONTriggerDecision+; 
 
 #pragma link C++ class AliMUONTest+; 
+#pragma link C++ enum  AliMUONTests+;
 #endif
 
 

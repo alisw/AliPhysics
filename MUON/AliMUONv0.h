@@ -22,8 +22,7 @@ public:
    virtual void   CreateGeometry();
    virtual void   CreateMaterials();
    virtual void   Init();
-   virtual Int_t  IsVersion() const {return 0;}
-   virtual void   StepManager();
+   virtual Int_t  IsVersion() const {return 0;}  
 private:
    ClassDef(AliMUONv0,1)  // MUON Detector class Version 0 
 };

@@ -52,13 +52,14 @@ class AliMUONData : public TNamed
     virtual void   AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
 			  Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
 			  Float_t tof, Float_t momentum, Float_t theta, 
-			  Float_t phi, Float_t length, Float_t destep);
-    virtual void   AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
+			  Float_t phi, Float_t length, Float_t destep, 
+			  Float_t Xref,Float_t Yref,Float_t Zref);
+			  // TBR
+    virtual void   AddHit2(Int_t fIshunt, Int_t track, Int_t detElemId, 
 			  Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
 			  Float_t tof, Float_t momentum, Float_t theta, 
 			  Float_t phi, Float_t length, Float_t destep, 
 			  Float_t Xref,Float_t Yref,Float_t Zref);
-    virtual void   AddHit(const AliMUONHit& hit); // use copy constructor
     
     virtual void   AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
 				    Int_t *singleUndef, Int_t *pairUnlike, 

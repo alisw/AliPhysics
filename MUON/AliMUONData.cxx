@@ -222,19 +222,6 @@ void AliMUONData::AddGlobalTrigger(const AliMUONGlobalTrigger& trigger )
   TClonesArray &globalTrigger = *fGlobalTrigger;
   new(globalTrigger[fNglobaltrigger++]) AliMUONGlobalTrigger(trigger);
 }
-//_____________________________________________________________________________
-void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
-			 Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
-			 Float_t tof, Float_t momentum, Float_t theta, 
-			 Float_t phi, Float_t length, Float_t destep)
-{
-  // Add new hit to the hit list
-  TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliMUONHit(fIshunt, track, iChamber, 
-				  idpart, X, Y, Z, 
-				  tof, momentum, theta, 
-				  phi, length, destep);
-}
 //____________________________________________________________________________
 void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
 			 Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
@@ -248,13 +235,22 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber,
 				  idpart, X, Y, Z, 
 				  tof, momentum, theta, 
 				  phi, length, destep,
-				  Xref,Yref,Zref);
+				  Xref,Yref,Zref, true);
 }
 //____________________________________________________________________________
-void AliMUONData::AddHit(const AliMUONHit& hit)
+void AliMUONData::AddHit2(Int_t fIshunt, Int_t track, Int_t detElemId, 
+			 Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
+			 Float_t tof, Float_t momentum, Float_t theta, 
+			 Float_t phi, Float_t length, Float_t destep,
+			 Float_t Xref,Float_t Yref,Float_t Zref)
 {
+ // Add new hit to the hit list
   TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliMUONHit(hit);
+  new(lhits[fNhits++]) AliMUONHit(fIshunt, track, detElemId, 
+				  idpart, X, Y, Z, 
+				  tof, momentum, theta, 
+				  phi, length, destep,
+				  Xref,Yref,Zref, true);
 }
 //____________________________________________________________________________
 void AliMUONData::AddLocalTrigger(Int_t *localtr)

@@ -30,10 +30,15 @@ class AliMUONv1 : public AliMUON
    virtual void   Init();
    virtual Int_t  IsVersion() const {return 1;}
    virtual void   StepManager();
-   virtual void   FinishRun();
+                  //TBR
+   virtual void   StepManager2();
    void StepManagerOld();
+                  //TBR
+   void StepManagerOld2();
    void SetStepManagerVersionOld(Bool_t Opt) 
      { fStepManagerVersionOld = Opt; }
+   void SetStepManagerVersionDE(Bool_t Opt) 
+     { fStepManagerVersionDE = Opt; }
    void SetAngleEffect(Bool_t Opt) 
      { fAngleEffect = Opt; }
    void SetStepMaxInActiveGas(Float_t StepMax)
@@ -47,6 +52,7 @@ class AliMUONv1 : public AliMUON
    TString CurrentVolumePath() const;	     
 
    Bool_t  fStepManagerVersionOld; // Version of StepManager, Default is false
+   Bool_t  fStepManagerVersionDE;  // Version of StepManager with DE, Default is false
    Bool_t  fAngleEffect; // Angle Effect along wires, Default is true
    Float_t fStepMaxInActiveGas;    // Step max in active gas default 0.6cm
 

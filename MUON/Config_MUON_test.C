@@ -160,9 +160,8 @@ void Config(char directory[100]="", char option[6]="box")
          // If align = true, the detection elements transformations
 	 // are taken from the input files and not from the code
   
-  //MUON->SetDebug(2);
-        // To check setting of transformations from input files
-	// set align = true, debug level = 2 and run with scan generator
+  // ((AliMUONv1*)MUON)->SetStepManagerVersionDE(true);
+        // To save detection element Id in the hits
   
   //MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
   MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
