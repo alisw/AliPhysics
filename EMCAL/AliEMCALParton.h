@@ -26,14 +26,14 @@ public:
   
 protected:
   Float_t   fEnergy;   // Jet Energy
-  Float_t*  fTrackEnergy;  // Jet Tracks Energy
-  Float_t*  fTrackEta;     // Jet Tracks Eta
-  Float_t*  fTrackPhi;     // Jet Tracks Phi
-  Int_t*    fTrackPDG;       // Jet Tracks PDG code
-  Int_t     fNTracks;
   Float_t   fEta;      // Jet Phi
   Float_t   fPhi;      // Jet Eta
-  ClassDef(AliEMCALParton,3) // Jet for EMCAL
+  Int_t     fNTracks;      // Number of tracks 
+  Float_t  fTrackEnergy[1000];  // Jet Tracks Energy
+  Float_t  fTrackEta[1000];     // Jet Tracks Eta
+  Float_t  fTrackPhi[1000];     // Jet Tracks Phi
+  Int_t    fTrackPDG[1000];     // Jet Tracks PDG code
+  ClassDef(AliEMCALParton,4) // Jet for EMCAL
     
 } ;
 

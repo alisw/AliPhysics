@@ -16,6 +16,9 @@
 /* $Id:  */
 /*
   $Log$
+  Revision 1.3  2003/02/05 17:24:25  morsch
+  Modifiactions by M. Horner.
+
   Revision 1.2  2002/10/14 14:55:35  hristov
   Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -31,16 +34,17 @@
 
 #include "AliEMCALParton.h"
 #include "Ecommon.h"
+#include <iostream.h>
 ClassImp(AliEMCALParton)   
     
 //____________________________________________________________________________
 AliEMCALParton::AliEMCALParton()
 {
   // Default constructor
-  fTrackEnergy = 0;
-  fTrackEta    = 0;
-  fTrackPhi    = 0;
-  fTrackPDG    = 0;
+//  fTrackEnergy = 0;
+//  fTrackEta    = 0;
+//  fTrackPhi    = 0;
+//  fTrackPDG    = 0;
   fNTracks     = 0;
 }
 
@@ -50,36 +54,24 @@ AliEMCALParton::AliEMCALParton(Float_t energy, Float_t phi, Float_t eta)
   fEnergy = energy;
   fPhi    = phi;
   fEta    = eta;
-  fTrackEnergy = 0;
-  fTrackEta    = 0;
-  fTrackPhi    = 0;
-  fTrackPDG    = 0;
+//  fTrackEnergy = 0;
+//  fTrackEta    = 0;
+//  fTrackPhi    = 0;
+//  fTrackPDG    = 0;
   fNTracks     = 0;
 }
 
 void AliEMCALParton::SetTrackList(Int_t NTracks, Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG)
 {
 
-  if (fNTracks)
-  {
-    delete[] fTrackEnergy;
-    delete[] fTrackEta;
-    delete[] fTrackPhi;
-    delete[] fTrackPDG;
-  }
   fNTracks     = NTracks;
-  fTrackEnergy = new Float_t[NTracks];
-  fTrackEta    = new Float_t[NTracks];
-  fTrackPhi    = new Float_t[NTracks];
-  fTrackPDG    = new Int_t[NTracks];
-  
   for (Int_t i=0;i<NTracks;i++)
   {
     fTrackEnergy[i] = Energy[i] ;
     fTrackEta[i]    = Eta[i];
     fTrackPhi[i]    = Phi[i];
     fTrackPDG[i]    = PDG[i];
-  } 
+  }
 }
 
 void AliEMCALParton::GetTrackList(Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG)
@@ -99,9 +91,5 @@ void AliEMCALParton::GetTrackList(Float_t* Energy,  Float_t* Eta, Float_t* Phi, 
 AliEMCALParton::~AliEMCALParton()
 {
   // Destructor
-  delete[] fTrackEnergy;
-  delete[] fTrackEta;
-  delete[] fTrackPhi;
-  delete[] fTrackPDG;
   
 }

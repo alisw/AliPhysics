@@ -18,14 +18,16 @@
 
 #include "AliEMCALHadronCorrectionv1.h"
 #include "AliEMCALGeometry.h"
+#include "iostream.h"
+#include "TMath.h"
 static Double_t par_look_up[HCPARAMETERS][HCPARAMETERSETS] = 
 {  
-    {-1.68945e-04 , -1.68945e-04},   
-    { 2.09684e-02 ,  2.09684e-02},   
-    {-1.45683e-04 , -1.45683e-04},   
-    { 6.64803e-03 ,  6.64803e-03},   
-    { 2.00834e-02 ,  2.00834e-02},   
-    { 9.22074e-07 ,  9.22074e-07}
+    {-2.82271e-4 , -2.39954e-4},   
+    {2.50796e-2  , 2.07172e-2},   
+    {1.02861e-3  , 1.48576e-3},   
+    {2.11539e-2  , -1.38473-2},   
+    {2.27003e-2  , 2.78252e-2},   
+    {1.65078e-6  , 1.51821e-6}
 };
 
 
@@ -39,15 +41,21 @@ void AliEMCALHadronCorrectionv1::SetGeometry(AliEMCALGeometry *geometry)
     if (!geometry)
     {
 	SetParameters();
+	fSamplingFraction = geometry->GetSampling();
+	cout<<"Setting the sampling fraction to :"<<fSamplingFraction<<endl; 
     }else
     {
         SetParameters(geometry->GetName());
+	fSamplingFraction = geometry->GetSampling();
+	cout<<"Setting the sampling fraction to :"<<fSamplingFraction<<endl; 
     }
     return;	
 }	
 	
-void AliEMCALHadronCorrectionv1::SetGeometry(TString name)
+void AliEMCALHadronCorrectionv1::SetGeometry(TString name,Double_t fs = 1.0)
 {
+  cout << "Setting sampling fraction to "<<fSamplingFraction<<endl;	
+   fSamplingFraction = fs;	
   if ( name == ""              ||
        name == "EMCAL_5655_21" ||
        name == "EMCALArch1a"   ||
@@ -55,16 +63,20 @@ void AliEMCALHadronCorrectionv1::SetGeometry(TString name)
        name == "G56_2_55_19"   ||
        name == "G56_2_55_19_104_14" )
   { // set parameters to this hadron correction
+     cout<<"HC parameters!"<<endl;
      for (Int_t i=0;i<6;i++)
      {
 	   fPar[i] = par_look_up[i][0];  
+	   cout <<fPar[i]<<endl;
      }
   }else if( name == "EMCAL_6564_21" ||  
 	    name == "G65_2_64_19" )
   {	  
+      cout<<"HC parameters!"<<endl;
      for (Int_t i=0;i<6;i++)
      {
 	   fPar[i] = par_look_up[i][1];  
+	   cout <<fPar[i]<<endl;
      }
   }else
   {
@@ -100,8 +112,8 @@ AliEMCALHadronCorrectionv1::Instance()
 Double_t 
 AliEMCALHadronCorrectionv1::GetEnergy(const Double_t pmom,const Double_t eta,const Int_t gid)
 {
-
-  Double_t value =  fPar[5]*pmom*pmom*pmom+ fPar[0]*pmom*pmom+fPar[1]*pmom +fPar[2]*pmom*eta +fPar[3]*eta + fPar[4];
-  return value;
+  Double_t etai = TMath::Abs(eta); 
+  Double_t value =  fPar[5]*pmom*pmom*pmom+ fPar[0]*pmom*pmom+fPar[1]*pmom +fPar[2]*pmom*etai +fPar[3]*etai + fPar[4];
+  return fSamplingFraction*value;
    
 }
