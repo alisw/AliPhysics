@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/01/13 11:27:51  morsch
+Overlaps corrected: YCS3, YCS4; Inner radius YS21 corrected
+
 Revision 1.1  2000/01/12 15:44:03  morsch
 Standard version of SHIL
 
@@ -87,22 +90,26 @@ void AliSHILv0::CreateGeometry()
 //
 // Mother volume
 //
+  Float_t d_rear1=d_rear-epsilon;
+
+  Float_t zstart=abs_l-d_rear1;
+
   par0[0]  = 0.;
   par0[1]  = 360.;
   par0[2]  = 13.;
 
-  Float_t dl=(zvac12-abs_l+d_rear)/2.;
-  dz=abs_l-d_rear+dl;
+  Float_t dl=(zvac12-zstart)/2.;
+  dz=zstart+dl;
 //
   par0[3]  = -dl;
   par0[4]  = 0.;
-  par0[5]  = (abs_l-d_rear) * TMath::Tan(acc_min);
+  par0[5]  = zstart * TMath::Tan(acc_min);
 
-  par0[6]  = -dl+d_rear;
+  par0[6]  = -dl+d_rear1;
   par0[7]  = 0.;
   par0[8]  = abs_l * TMath::Tan(acc_min);
 
-  par0[9]  = -dl+d_rear;
+  par0[9]  = -dl+d_rear1;
   par0[10]  = 0.;
   par0[11]  = R11;
 
@@ -147,7 +154,7 @@ void AliSHILv0::CreateGeometry()
   par0[41] = R43;
 
   gMC->Gsvolu("YMOT", "PCON", idtmed[1755], par0, 42);
-  dz=abs_l+dl-d_rear;
+  dz=zstart+dl;
   gMC->Gspos("YMOT", 1, "ALIC", 0., 0., dz, 0, "ONLY");  
 //
 
@@ -161,13 +168,13 @@ void AliSHILv0::CreateGeometry()
   par1[0]  = 0.;
   par1[1]  = 360.;
   par1[2]  = 12.;
-  dl=(zvac4-abs_l+d_rear)/2.;
+  dl=(zvac4-zstart)/2.;
   
   par1[3]  = -dl;
-  par1[4]  = r_abs+(abs_l-d_rear-abs_c) * TMath::Tan(theta_open1);
-  par1[5]  = (abs_l-d_rear)* TMath::Tan(acc_min);
+  par1[4]  = r_abs+(zstart-abs_c) * TMath::Tan(theta_open1);
+  par1[5]  = zstart * TMath::Tan(acc_min);
 
-  par1[6]  = -dl+zvac1-(abs_l-d_rear);
+  par1[6]  = -dl+zvac1-zstart;
   par1[7]  = r_abs+ (zvac1-abs_c) * TMath::Tan(theta_open1);
   par1[8]  = zvac1 * TMath::Tan(acc_min);
 
@@ -175,15 +182,15 @@ void AliSHILv0::CreateGeometry()
   par1[10] = par1[7]+dr11;
   par1[11] = (zvac1+dr11) * TMath::Tan(acc_min);
 
-  par1[12] = -dl+d_rear;
+  par1[12] = -dl+d_rear1;
   par1[13] = par1[10];
   par1[14] = abs_l * TMath::Tan(acc_min);
 
-  par1[15] = -dl+d_rear;
+  par1[15] = -dl+d_rear1;
   par1[16] = par1[10];
   par1[17] = R11;
 
-  par1[18] = -dl+(zvac1+dr11+dB1-abs_l+d_rear);
+  par1[18] = -dl+(zvac1+dr11+dB1-zstart);
   par1[19] = par1[16];
   par1[20] = R11;
 
@@ -207,7 +214,7 @@ void AliSHILv0::CreateGeometry()
   par1[34] = par1[31]-dr13;
   par1[35] = R11;
 
-  par1[36] = -dl+zvac4-abs_l+d_rear;
+  par1[36] = -dl+zvac4-zstart;
   par1[37] = par1[34]+(zvac4-zvac3)*TMath::Tan(theta_open2);
   par1[38] = R11;
 
@@ -228,7 +235,7 @@ void AliSHILv0::CreateGeometry()
 // Steel envelope
   tpar[0]=R11-dRSteel1;
   tpar[1]=R11;
-  tpar[2]=dl-d_rear/2;
+  tpar[2]=dl-d_rear1/2;
   gMC->Gsvolu("YSE1", "TUBE", idtmed[1718], tpar, 3);
   dz=dl-tpar[2];
   
@@ -289,7 +296,7 @@ void AliSHILv0::CreateGeometry()
       gMC->Gspos("YBU1", i+1 , "YBM1", 0., 0.,dz , 0, "ONLY"); 
       dz+=lB1;
   }
-  dz=-dl+(zvac1-abs_l+d_rear)+dr11+tpar[2];
+  dz=-dl+(zvac1-zstart)+dr11+tpar[2];
   gMC->Gspos("YBM1", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
   dz=dl-dr13-(zvac4-zvac3)-tpar[2]-(dr11-dr13);
@@ -318,7 +325,7 @@ void AliSHILv0::CreateGeometry()
   dz= dF1/2.-tpar[2];
   gMC->Gspos("YF12", 2, "YFM1", 0., 0., dz, 0, "ONLY"); 
 
-  dz=-dl+(zvac2-abs_l+d_rear);
+  dz=-dl+(zvac2-zstart);
   gMC->Gspos("YFM1", 2, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
 
@@ -328,18 +335,18 @@ void AliSHILv0::CreateGeometry()
   tpar[1]=rB1;
   tpar[2]=2.*(dB1+dr12-10.*lB1)/4.;
   gMC->Gsvolu("YPF1", "TUBE", idtmed[1758], tpar, 3);
-  dz=-dl+(zvac2-abs_l+d_rear)-dF1/2.-tpar[2];
+  dz=-dl+(zvac2-zstart)-dF1/2.-tpar[2];
   gMC->Gspos("YPF1", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
-  dz=-dl+(zvac2-abs_l+d_rear)+dF1/2.+tpar[2];
+  dz=-dl+(zvac2-zstart)+dF1/2.+tpar[2];
   gMC->Gspos("YPF1", 2, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
 //
 // pipe and heating jackets outside bellows
 //
 // left side
-  cpar0[0]=(zvac1-abs_l+d_rear)/2;
-  cpar0[1]=r_vacu+(abs_l-d_rear-abs_c)*TMath::Tan(theta_open1);
-  cpar0[2]=r_abs +(abs_l-d_rear-abs_c)*TMath::Tan(theta_open1);
+  cpar0[0]=(zvac1-zstart)/2;
+  cpar0[1]=r_vacu+(zstart-abs_c)*TMath::Tan(theta_open1);
+  cpar0[2]=r_abs +(zstart-abs_c)*TMath::Tan(theta_open1);
   cpar0[3]=cpar0[1]+2.*cpar0[0]*TMath::Tan(theta_open1);
   cpar0[4]=cpar0[2]+2.*cpar0[0]*TMath::Tan(theta_open1);
   gMC->Gsvolu("YV11", "CONE", idtmed[1758], cpar0, 5);
