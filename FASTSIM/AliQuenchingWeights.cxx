@@ -863,25 +863,22 @@ Double_t AliQuenchingWeights::GetELossRandom(Int_t ipart, Double_t length, Doubl
   if(l<=0) return 0.;
 
   if(fECMethod==kReweight){
-    TH1F *dummy=new TH1F(*fHistos[ipart-1][l-1]);
-    dummy->SetName("dummy");
-    for(Int_t bin=dummy->FindBin(e)+1;bin<=fgBins;bin++){
-      dummy->SetBinContent(bin,0.);
+    Double_t ret = 2.*e;
+    Int_t ws=0;
+    while(ret>e){
+      ret=fHistos[ipart-1][l-1]->GetRandom(); 
+      if(++ws==1e5){
+	Warning("GetELossRandomK",
+                "Aborted reweighting; maximum loss assigned after 1e5 trials.");
+	return e;
+      }
     }
-    dummy->Scale(1./dummy->Integral());
-    Double_t ret=dummy->GetRandom();
-    delete dummy;
-    return ret;
-    //****** !! ALTERNATIVE WAY OF DOING IT !! ***
-    //Double_t ret = 2.*e;
-    //while(ret>e) ret=fHistos[ipart-1][l-1]->GetRandom(); 
-    //return ret;
-    //********************************************
-  } else { //kDefault
-    Double_t ret=fHistos[ipart-1][l-1]->GetRandom();
-    if(ret>e) return e;
     return ret;
   }
+  //kDefault
+  Double_t ret=fHistos[ipart-1][l-1]->GetRandom();
+  if(ret>e) return e;
+  return ret;
 }
 
 Double_t AliQuenchingWeights::CalcQuenchedEnergy(Int_t ipart, Double_t length, Double_t e) const
@@ -951,25 +948,23 @@ Double_t AliQuenchingWeights::GetELossRandomK(Int_t ipart, Double_t I0, Double_t
   }
 
   if(fECMethod==kReweight){
-    TH1F *dummy=new TH1F(*fHisto);
-    dummy->SetName("dummy");
-    for(Int_t bin=dummy->FindBin(e/wc)+1;bin<=fgBins;bin++){
-      dummy->SetBinContent(bin,0.);
+    Double_t ret = 2.*e;
+    Int_t ws=0;
+    while(ret>e){
+      ret=fHisto->GetRandom(); 
+      if(++ws==1e5){
+	Warning("GetELossRandomK",
+                "Aborted reweighting; maximum loss assigned after 1e5 trials.");
+	return e;
+      }
     }
-    dummy->Scale(1./dummy->Integral());
-    Double_t ret=dummy->GetRandom()*wc;
-    delete dummy;
-    return ret;
-    //****** !! ALTERNATIVE WAY OF DOING IT !! ***
-    //Double_t ret = 2.*e;
-    //while(ret>e) ret=fHisto->GetRandom(); 
-    //return ret;
-    //********************************************
-  } else { //kDefault
-    Double_t ret=fHisto->GetRandom()*wc;
-    if(ret>e) return e;
     return ret;
   }
+
+  //kDefault
+  Double_t ret=fHisto->GetRandom()*wc;
+  if(ret>e) return e;
+  return ret;
 }
 
 Double_t AliQuenchingWeights::CalcQuenchedEnergyK(Int_t ipart, Double_t I0, Double_t I1, Double_t e)
