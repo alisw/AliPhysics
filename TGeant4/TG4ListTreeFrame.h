@@ -33,6 +33,7 @@ public:
     TGListTreeItem*
         AddItem(TObject* obj, TGListTreeItem* parent,const char* name,
                 const TGPicture* open, const TGPicture* closed);    
+    void SendCloseMessage();                
 //---------------------------------------------------------------------------
 
 protected:

@@ -17,6 +17,7 @@
 #include "TG4MaterialsFrames.h"
 #include "TG4Globals.h"
 
+
 #include <TGTab.h>
 #include <TGMenu.h>
 #include <TApplication.h>
@@ -51,7 +52,7 @@ TG4MainFrame::TG4MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
    fPopupMenuHelp->Associate(this);
  
    fMenuBar = new TGMenuBar(this, 1, 1, kHorizontalFrame);
-   fMenuBar->AddPopup("&CloseWindow/ExitRoot",fPopupMenu, fMenuBarItemLayout);
+   fMenuBar->AddPopup("&Main Window",fPopupMenu, fMenuBarItemLayout);
    fMenuBar->AddPopup("&Draw Control", fPopupMenuTest, fMenuBarItemLayout);
    fMenuBar->AddPopup("&Report", fPopupMenuHelp, fMenuBarHelpLayout);
 
@@ -205,20 +206,27 @@ G4String editortxt =
 //---->case Handle Popup menus    
     case kC_COMMAND:
         switch (GET_SUBMSG(msg)) {
+          	
+            case kCM_TAB:
+	       G4cout << "!!!!CLICKING IN A TAB no.  " 
+	              << fTab->GetCurrent() << "   !!!" << G4endl;
+	       break;
+	
             case kCM_MENU:
                switch (parm1) {
 
                    case 1:
-		   
+		     fTab->SetTab(0);
+		     flistTreeFrame->SendCloseMessage();
 		     buttons = kMBOk;
                     // for (Int_t i=1; i<3; i++)
                     //      buttons |= i;
-		     new TGMsgBox(fClient->GetRoot(), this,
-                                  lMsgBTtleBf->GetString(), lMsgBAnnBf2->GetString(),
-                                  icontype, buttons, &retval);
+		    new TGMsgBox(fClient->GetRoot(), this,
+                                 lMsgBTtleBf->GetString(), lMsgBAnnBf2->GetString(),
+                                 icontype, buttons, &retval);
 		           // if not here, produces
 		           // Error in <RootX11ErrorHandler>: BadWindow 
-		           // (invalid Window parameter) (XID: 100663461)		      
+		           // (invalid Window parameter) (XID: 100663461)			   		      
                      TGMainFrame::CloseWindow();
                              break;  
 
@@ -266,17 +274,16 @@ G4String editortxt =
 	   case kCM_BUTTON:
 	       switch(parm1) {
 	       
-	           case 301:
-		     cout << "\n User Limits Summary button pressed " << endl;    
+	           case 301:   
                      fvolumesFrames->DisplayUserLimits();
 	             break;
 		     
 		   case 302:
-		      cout << "\n Cuts button pressed " << endl;
+		      fvolumesFrames->DisplayCuts();
 		      break;
 		      
 		   case 303:
-		      cout << "\n Controls button pressed " << endl;
+		      fvolumesFrames->DisplayControls();
 		      break;
 		      
 		   default:

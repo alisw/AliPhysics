@@ -16,7 +16,6 @@
 #include <TObject.h>
 #include <TGFrame.h>
 #include <TGButton.h>
-#include "TG4MainFrame.h"
 
 class TGLabel;
 class TGTab;
@@ -24,18 +23,20 @@ class TGTextBuffer;
 class TGTextEntry;
 class TGComboBox;
 class G4UserLimits;
+class TG4MainFrame; 
 
 class TG4VolumesFrames : public TObject {
 
 public:   
 
-    TG4VolumesFrames( TGTab* Tab, TGMainFrame* actionFrame);
+    TG4VolumesFrames( TGTab* Tab, TG4MainFrame* actionFrame);
     virtual ~TG4VolumesFrames();
     
     void SetVolumesComboEntries();
     void DisplayVolumeCharacteristics();
     void DisplayUserLimits();
-    void SetPanel(TGMainFrame* ActionFrame);
+    void DisplayCuts();
+    void DisplayControls();
 
 protected:
 
@@ -43,8 +44,11 @@ protected:
     TG4VolumesFrames& operator=(const TG4VolumesFrames& vf) ;
 
 private:
-    TString GetDisplay(G4UserLimits* limits) const;
-
+    TString GetLimitsDisplay(G4UserLimits* limits) const;
+    TString GetCutsDisplay(G4UserLimits* limits) const;
+    TString GetControlsDisplay(G4UserLimits* limits) const;
+    
+    TG4MainFrame*       fPanel;    //main frame
     TGCompositeFrame*   fCapFrame; // the top frame for volumes properties display
     TGCompositeFrame*   fVolSubframe1; // frame for the combo box
     TGCompositeFrame*   fVolSubframe2; //  frame for the text entries        
@@ -60,13 +64,10 @@ private:
     TGTextEntry*        fVolTextEntry[3]; // text entries for vols properties
     TGComboBox*         fVolumesCombo; // volumes  combo box
     TGLabel*            fComboLabel;   // label for combo box
-    
-    TGTextBuffer* fDisplBuff; //buffer containing text for user limits display
-    TG4MainFrame* fPanel;     //main frame
+    TGTextBuffer*       fDisplBuffLimits; //buffer containing text for user limits display
+    TGTextBuffer*       fDisplBuffCuts; //buffer containing text for cuts display
+    TGTextBuffer*       fDisplBuffControls; //buffer containing text for controls display
                                
-
-
-
     void AddLogicalVolumeName( const char* name, Int_t index) const;
 
     ClassDef(TG4VolumesFrames,0)
@@ -75,8 +76,3 @@ private:
   
 #endif
     
-    
-     
-    
-    
- 

@@ -12,11 +12,12 @@
  
 #include "TG4VolumesFrames.h"
 #include "TG4MaterialsFrames.h"
+#include "TG4MainFrame.h"
 #include "TG4Editor.h"
 #include "TG4Globals.h" 
 #include "TG4Limits.h"
 #include "TG4G3CutVector.h"
-#include "TG4G3Cut.h"
+#include "TG4G3ControlVector.h"
 
 #include <TGTextBuffer.h>
 #include <TGTextEntry.h>
@@ -36,7 +37,8 @@
  
  ClassImp(TG4VolumesFrames)
 
-TG4VolumesFrames::TG4VolumesFrames( TGTab* Tab, TGMainFrame* ActionFrame)
+TG4VolumesFrames::TG4VolumesFrames( TGTab* Tab, TG4MainFrame* ActionFrame)
+  : fPanel(ActionFrame)
 { 
 //---> creates the volumes properties display frame
 //---> and plunges it into the main frame
@@ -134,11 +136,23 @@ TG4VolumesFrames::TG4VolumesFrames( TGTab* Tab, TGMainFrame* ActionFrame)
   fGrFrame->Resize(fGrFrame->GetDefaultSize());
 
 // ---> text for the user's limits display window when no volume specified yet 
-  fDisplBuff = new TGTextBuffer(1000);
-  fDisplBuff->Clear(); 
-  fDisplBuff->AddText(0, "\n\n***  No volume specified, "
+  fDisplBuffLimits = new TGTextBuffer(1000);
+  fDisplBuffLimits->Clear(); 
+  fDisplBuffLimits->AddText(0, "\n\n***  No volume specified, "
   "no limits displayed *** ");
   
+// ---> text for the user's cuts display window when no volume specified yet 
+  fDisplBuffCuts = new TGTextBuffer(1000);
+  fDisplBuffCuts->Clear(); 
+  fDisplBuffCuts->AddText(0, "\n\n***  No volume specified, "
+  "no cuts displayed *** ");
+    
+// ---> text for the user's controls display window when no volume specified yet 
+  fDisplBuffControls = new TGTextBuffer(1000);
+  fDisplBuffControls->Clear(); 
+  fDisplBuffControls->AddText(0, "\n\n***  No volume specified, "
+  "no controls displayed *** ");
+      
 
 // ---> making up the Volumes frame   
      fCapFrame->AddFrame(fVolSubframe1,fVolFrameLayout);  
@@ -146,9 +160,6 @@ TG4VolumesFrames::TG4VolumesFrames( TGTab* Tab, TGMainFrame* ActionFrame)
 
 // --->  going to the main frame     
      parent->AddFrame(fCapFrame, fVolFrameLayout);
-     
-     SetPanel(ActionFrame);     
-     
 }
 
 TG4VolumesFrames::TG4VolumesFrames(const TG4VolumesFrames& vf) 
@@ -193,14 +204,10 @@ TG4VolumesFrames::~TG4VolumesFrames()
      delete fVolTextEntry[i];
      delete fLabel[i];
    }
-     delete fDisplBuff;
-}
-
-void TG4VolumesFrames::SetPanel(TGMainFrame* ActionFrame)
-{
-//---> produces the pointer to the main frame
-
-    fPanel = (TG4MainFrame*) ActionFrame;
+     delete fDisplBuffLimits;
+     delete fDisplBuffCuts;
+     delete fDisplBuffControls;
+     
 }
 
 void TG4VolumesFrames::SetVolumesComboEntries() 
@@ -251,11 +258,20 @@ void TG4VolumesFrames::DisplayVolumeCharacteristics()
      G4LogicalVolume* lVolume = (*lComboEntries )[ii];
      G4Material* lvMaterial = ((*lComboEntries )[ii])->GetMaterial();
      lLimits = (TG4Limits*)lVolume->GetUserLimits(); 
-     TString lDisplayLimits = GetDisplay(lLimits); 
-
+     TString lDisplayLimits = GetLimitsDisplay(lLimits);
+     TString lDisplayCuts = GetCutsDisplay(lLimits);
+     TString lDisplayControls = GetControlsDisplay(lLimits);
+     
 //---> fills up the buffer for popup frame display
-     fDisplBuff->Clear(); 
-     fDisplBuff->AddText(0,lDisplayLimits);
+     fDisplBuffLimits->Clear(); 
+     fDisplBuffLimits->AddText(0,lDisplayLimits);
+     
+     fDisplBuffCuts->Clear(); 
+     fDisplBuffCuts->AddText(0,lDisplayCuts);
+     
+     fDisplBuffControls->Clear(); 
+     fDisplBuffControls->AddText(0,lDisplayControls);
+     
 
      G4cout << lVolume->GetName() << "  " 
             << lVolume->GetSolid()->GetEntityType() << "  "
@@ -293,9 +309,18 @@ void TG4VolumesFrames::DisplayVolumeCharacteristics()
         fVolTextBuff[ii]->Clear();          
         gClient->NeedRedraw(fVolTextEntry[ii]);
 	};
-     fDisplBuff->Clear(); 
-     fDisplBuff->AddText(0, "\n\n***  No volume specified, "
+     fDisplBuffLimits->Clear(); 
+     fDisplBuffLimits->AddText(0, "\n\n***  No volume specified, "
      "no limits displayed *** ");
+     
+     fDisplBuffCuts->Clear(); 
+     fDisplBuffCuts->AddText(0, "\n\n***  No volume specified, "
+     "no cuts displayed *** ");
+     
+     fDisplBuffControls->Clear(); 
+     fDisplBuffControls->AddText(0, "\n\n***  No volume specified, "
+     "no controls displayed *** ");
+     
       
      };
 
@@ -309,14 +334,37 @@ void TG4VolumesFrames::DisplayUserLimits()
 {
 //-----> displays User Limits associated with the logical volume 
 
-  const char* cdisplay = fDisplBuff->GetString();
+  const char* cdisplay = fDisplBuffLimits->GetString();
   TG4Editor* ed = new TG4Editor( fCapFrame, 450, 300);
                       ed->LoadBuffer(cdisplay);
 		      ed->Popup();      
 
 }
 
-TString TG4VolumesFrames::GetDisplay(G4UserLimits* limits) const
+void TG4VolumesFrames::DisplayCuts()
+{
+//-----> displays Cuts associated with the logical volume 
+
+  const char* cdisplay = fDisplBuffCuts->GetString();
+  TG4Editor* ed = new TG4Editor( fCapFrame, 450, 300);
+                      ed->LoadBuffer(cdisplay);
+		      ed->Popup();      
+
+}
+
+void TG4VolumesFrames::DisplayControls()
+{
+//-----> displays Controls associated with the logical volume 
+
+  const char* cdisplay = fDisplBuffControls->GetString();
+  TG4Editor* ed = new TG4Editor( fCapFrame, 450, 300);
+                      ed->LoadBuffer(cdisplay);
+		      ed->Popup();      
+
+}
+
+//_______________________________________________________________________
+TString TG4VolumesFrames::GetLimitsDisplay(G4UserLimits* limits) const
 {
 // Returns text for the user limits display in a separate frame
 // ---
@@ -326,33 +374,66 @@ TString TG4VolumesFrames::GetDisplay(G4UserLimits* limits) const
 
   display = "\n\n**************************************";
   display += "\n**************************************\n\n";
-  display += "\" ";
-  display += ((TG4Limits*)limits)->GetName();
-  display += "\"  limits:";
-  display += "\n\n  Max step length (mm): ";
-  TG4Globals::AppendNumberToString( display, limits->GetMaxAllowedStep(dummy)/mm);
-//  sprintf(buff, "%12.5e", fMaxStep/mm );
-//  display += buff;
-  display += "\n\n  Max track length (mm): ";
-  sprintf(buff, "%12.5e", limits->GetUserMaxTrackLength(dummy)/mm );
+
+  const char* lname = ((TG4Limits*)limits)->GetName();
+  sprintf( buff, "\"  %s \"  limits: \n\n  Max step length (mm):   %g ",
+            lname, limits->GetMaxAllowedStep(dummy)/mm );
   display += buff;
-  display += "\n\n  Max time (s)         : ";
-  sprintf(buff, "%12.5e", limits->GetUserMaxTime(dummy)/s );
-  display += buff;
-  display += "\n\n  Min kin. energy (MeV): ";
-  TG4Globals::AppendNumberToString( display, limits->GetUserMinEkine(dummy)/MeV);
-//  sprintf(buff, "%12.5e", fMinEkine/MeV );
-//  display += buff;
-  display += "\n\n  Min range (mm):        " ;
-  TG4Globals::AppendNumberToString( display, limits->GetUserMinRange(dummy)/mm);
-//  sprintf(buff, "%12.5e", fMinRange/mm);
-//  display += buff;
-  display += "\n\n**************************************";
-  display += "\n**************************************\n\n";
   
+  sprintf( buff, "\n\n  Max track length (mm):  %g  \n\n  Max time (s)         :  %g ",
+             limits->GetUserMaxTrackLength(dummy)/mm, limits->GetUserMaxTime(dummy)/s);             
+  display += buff;
+   
+  sprintf( buff, "\n\n  Min kin. energy (MeV):  %g \n\n  Min range (mm):         %g ",
+            limits->GetUserMinEkine(dummy)/MeV, limits->GetUserMinRange(dummy)/mm );
+  display += buff;
+  
+  display += "\n\n**************************************";
+  display += "\n**************************************\n\n";	     
+
+  const char* tmp = display;
+  
+  return TString(tmp);
+
+}
+//===================inserted================================================
+//_______________________________________________________________________
+TString TG4VolumesFrames::GetCutsDisplay(G4UserLimits* limits) const
+{
+// Returns text for the cuts display in a separate frame
+// ---
+  G4String display;
+
+  const TG4G3CutVector* lCutVector = ((TG4Limits*)limits) -> GetCutVector();
+
+  if ( ((TG4Limits*)limits) -> IsCut() )
+     display = lCutVector -> Format(); 
+  else
+     display =  "\n\n****  No special cuts.  **** "; 
+
+  const char* tmp = display;
+  
+  return TString(tmp);
+  
+}
+//_________________________________________________________________________
+TString TG4VolumesFrames::GetControlsDisplay(G4UserLimits* limits) const
+{
+// Returns text for the controls display in a separate frame
+ 
+ G4String display;
+
+ const TG4G3ControlVector* lControlVector = ((TG4Limits*)limits) -> GetControlVector();
+ 
+ if ( ((TG4Limits*)limits) -> IsControl() )
+    display = lControlVector -> Format();
+ else 
+    display =  "\n\n****  No special controls.  **** "; 
+
   const char* tmp = display;
   
   return TString(tmp);
 
 }
 
+//================end of inserted==================================================  

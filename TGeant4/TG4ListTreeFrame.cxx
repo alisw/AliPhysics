@@ -184,4 +184,19 @@ void  TG4ListTreeFrame::DrawSelectedVolume(TGListTreeItem* item)
     G4UImanager::GetUIpointer()->ApplyCommand("/vis/viewer/update");
 }
 
+//________________________________________________________________________________
+void TG4ListTreeFrame::SendCloseMessage()
+{
+//---> Supposed to brighten up the "Volumes" panel
+//---> plus close the Volumes tree to the ALICE icon
+
+  TGListTreeItem* first = fVolumesListTree->GetFirstItem();
+  Int_t btn = kButton1;
+  fVolumesListTree->Clicked( first, btn);
+  fVolumesListTree->DoubleClicked( first, btn);
+  gClient->NeedRedraw(fVolumesListTree);
+
+}
+
+//__________________________________________________________________________________
 
