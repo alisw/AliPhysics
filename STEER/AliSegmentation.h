@@ -20,20 +20,20 @@ public TObject {
     //
     virtual ~AliSegmentation() {}
     // Pad size Dx*Dy 
-    virtual void    SetPadSize(Float_t p1, Float_t p2)                                   = 0;
+    virtual void    SetPadSize(Float_t p1, Float_t p2)                                 = 0;
     // Anod Pitch
-    virtual void    SetDAnod(Float_t D)                                                  = 0;
+    virtual void    SetDAnod(Float_t D)                                                = 0;
     // Transform from pad (wire) to real coordinates and vice versa
     //
     // Anod wire coordinate closest to xhit
-    virtual Float_t GetAnod(Float_t xhit)                                                = 0;
+    virtual Float_t GetAnod(Float_t xhit) const                                        = 0;
     // Transform from pad to real coordinates
-    virtual void    GetPadI(Float_t x, Float_t y, Float_t  z, Int_t   &ix, Int_t  &iy)   = 0;
-    // Transform from real to pad coordinates
-    virtual void    GetPadC(Int_t  ix, Int_t  iy, Float_t &x, Float_t  &y, Float_t &z)   = 0;
+    virtual void    GetPadI(Float_t x, Float_t y, Float_t  z, Int_t   &ix, Int_t  &iy) = 0;
+    // Transform from real to pad coordinatesi
+    virtual void    GetPadC(Int_t  ix, Int_t  iy, Float_t &x, Float_t  &y, Float_t &z) = 0;
     //
     // Initialisation
-    virtual void Init(Int_t chamber)                                                     = 0;
+    virtual void Init(Int_t chamber)                                                   = 0;
     //
     // Get member data
     //
@@ -75,13 +75,13 @@ public TObject {
     //
     // Current pad cursor during disintegration
     // x-coordinate
-    virtual Int_t  Ix() const                                                           = 0;
+    virtual Int_t  Ix()                                                           = 0;
     // y-coordinate
-    virtual Int_t  Iy() const                                                           = 0;
+    virtual Int_t  Iy()                                                           = 0;
     // current sector
-    virtual Int_t  ISector() const                                                      = 0;
+    virtual Int_t  ISector()                                                      = 0;
     // calculate sector from pad coordinates
-    virtual Int_t  Sector(Int_t ix, Int_t iy) const                                     = 0;
+    virtual Int_t  Sector(Int_t ix, Int_t iy)                                     = 0;
     //
     // Signal Generation Condition during Stepping
     virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z)                           = 0;
@@ -91,14 +91,14 @@ public TObject {
     virtual void  IntegrationLimits
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2)                            = 0;
     // Test points for auto calibration
-    virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)                       = 0;
+    virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const                 = 0;
     // Draw the segmentation zones
-    virtual void Draw(const char *opt = "")                                             = 0;
+    virtual void Draw(const char *opt = "") const                                       = 0;
     // Function for systematic corrections
     // Set the correction function
-    virtual void SetCorrFunc(Int_t, TF1*)                                               = 0;
+    virtual void SetCorrFunc(Int_t  TF1*)                                               = 0;
     // Get the correction Function
-    virtual TF1* CorrFunc(Int_t)                                                        = 0;
+    virtual TF1* CorrFunc(Int_t)  const                                                 = 0;
 	    
     ClassDef(AliSegmentation,1) //Segmentation abstract base class 
 };
