@@ -1,3 +1,5 @@
+#ifndef ALIFMDRECONSTRUCTOR_H
+#define ALIFMDRECONSTRUCTOR_H
 // -*- mode: c++ -*- 
 //
 //  Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
@@ -18,14 +20,9 @@
     of empty pads
   */
 /* $Id$ */
-#ifndef ALIFMDRECONSTRUCTOR_H
-#define ALIFMDRECONSTRUCTOR_H
-#ifndef ALIRECONSTRUCTOR_H
-# include <AliReconstructor.h>
-#endif
-#ifndef ALIFMDMAP_H
-# include <AliFMDMap.h>
-#endif
+
+#include <AliReconstructor.h>
+#include <AliFMDMap.h>
 
 //____________________________________________________________________
 class TClonesArray;

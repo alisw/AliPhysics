@@ -40,45 +40,19 @@
 //
 //____________________________________________________________________
 
-#ifndef ALIFMD_H
-# include "AliFMD.h"
-#endif
-#ifndef ALIFMDDIGIT_H
-# include "AliFMDDigit.h"
-#endif
-#ifndef ALIFMDPARTICLES_H
-# include "AliFMDParticles.h"
-#endif
-#ifndef ALIFMDRECONSTRUCTOR_H
-# include "AliFMDReconstructor.h"
-#endif
-#ifndef ALIALTROBUFFER_H
-# include "AliAltroBuffer.h"
-#endif
-#ifndef ALILOG_H
-# include "AliLog.h"
-#endif
-#ifndef ALIRUN_H
-# include "AliRun.h"
-#endif
-#ifndef ALIRUNLOADER_H
-# include "AliRunLoader.h"
-#endif
-#ifndef ALILOADER_H
-# include "AliLoader.h"
-#endif
-#ifndef ALIHEADER_H
-# include "AliHeader.h"
-#endif
-#ifndef ALIGENEVENTHEADER_H
-# include "AliGenEventHeader.h"
-#endif
-#ifndef ALIRAWREADERFILE_H
-# include "AliRawReaderFile.h"
-#endif
-#ifndef ALIFMDRAWSTREAM_H
-# include "AliFMDRawStream.h"
-#endif
+#include "AliFMD.h"
+#include "AliFMDDigit.h"
+#include "AliFMDParticles.h"
+#include "AliFMDReconstructor.h"
+#include "AliAltroBuffer.h"
+#include "AliLog.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliFMDRawStream.h"
+#include "AliRawReader.h"
 
 //____________________________________________________________________
 ClassImp(AliFMDReconstructor);
