@@ -20,6 +20,8 @@ void DrawTrees()
    menu->AddButton("TOF tree",     "((TGeant3*)gMC)->Gdtree(\"FBAR\")","Shows the Geant tree for the TOF");
    menu->AddButton("TRD tree",     "((TGeant3*)gMC)->Gdtree(\"trd\")","Shows the Geant tree for the TRD");
    menu->AddButton("ZDC tree",     "((TGeant3*)gMC)->Gdtree(\"zdc\")","Shows the Geant tree for the ZDC");
+   menu->AddButton("V0R tree", "((TGeant3*)gMC)->Gdtree(\"V0RI\")","Shows the Geant tree for the V0R");
+   menu->AddButton("V0L tree", "((TGeant3*)gMC)->Gdtree(\"V0LE\")","Shows the Geant tree for the V0L");
    menu->Show();
 }
 
