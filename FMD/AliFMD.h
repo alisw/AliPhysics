@@ -21,7 +21,7 @@ public:
   Int_t          DistancetoPrimitive(Int_t, Int_t);
   virtual Int_t  IsVersion() const =0;
   virtual void   Init();
-  virtual void   DrawDetector()=0;
+  virtual void   DrawModule()=0;
   virtual void   StepManager();
   
   ClassDef(AliFMD,1)  //Class for the FMD detector

@@ -706,7 +706,7 @@ void AliFMDv1::CreateGeometry()
 }
  
 //_____________________________________________________________________________
-void AliFMDv1::DrawDetector()
+void AliFMDv1::DrawModule()
 {
   //
   // Draw a shaded view of the FMD version 1

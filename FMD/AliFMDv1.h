@@ -14,7 +14,7 @@ public:
   virtual       ~AliFMDv1() {}
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
-  virtual void   DrawDetector();
+  virtual void   DrawModule();
   virtual Int_t  IsVersion() const {return 1;}
   
   ClassDef(AliFMDv1,1)  //Class for FMD version 1

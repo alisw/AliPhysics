@@ -2,52 +2,136 @@
  
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-AliFMD.o: /soft/root/include/TTUBE.h /soft/root/include/TNode.h
+AliFMD.o: /soft/root/include/TTUBE.h /soft/root/include/TShape.h
+AliFMD.o: /soft/root/include/TNamed.h /soft/root/include/TObject.h
+AliFMD.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
+AliFMD.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+AliFMD.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliFMD.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliFMD.o: /usr/include/gnu/stubs.h
+AliFMD.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliFMD.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliFMD.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliFMD.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliFMD.o: /soft/root/include/TBuffer.h /usr/include/string.h
+AliFMD.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
+AliFMD.o: /soft/root/include/TSeqCollection.h
+AliFMD.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
+AliFMD.o: /soft/root/include/TString.h /soft/root/include/TMath.h
+AliFMD.o: /soft/root/include/TRefCnt.h /soft/root/include/TMaterial.h
+AliFMD.o: /soft/root/include/TAttFill.h /soft/root/include/Gtypes.h
+AliFMD.o: /soft/root/include/Htypes.h /soft/root/include/TAttLine.h
+AliFMD.o: /soft/root/include/X3DBuffer.h /soft/root/include/TPolyLine3D.h
+AliFMD.o: /soft/root/include/TNode.h /soft/root/include/TRotMatrix.h
 AliFMD.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
-AliFMD.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliFMD.o: /soft/root/include/TDirectory.h /soft/root/include/TDatime.h
+AliFMD.o: /soft/root/include/TBrowser.h /soft/root/include/TBrowserImp.h
 AliFMD.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
-AliFMD.o: /soft/root/include/TGeometry.h
-AliFMD.o: /hdb2/offline/pro/include/AliDetector.h /soft/root/include/TNamed.h
-AliFMD.o: /soft/root/include/TClonesArray.h /soft/root/include/TAttLine.h
-AliFMD.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
-AliFMD.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
-AliFMD.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliHeader.h
+AliFMD.o: /soft/root/include/TObjArray.h /soft/root/include/TClonesArray.h
+AliFMD.o: /soft/root/include/TAttMarker.h /soft/root/include/TBranch.h
+AliFMD.o: /soft/root/include/TStringLong.h /soft/root/include/TCut.h
+AliFMD.o: /soft/root/include/TGeometry.h /soft/root/include/THashList.h
+AliFMD.o: /hdb2/offline/pro/include/AliModule.h /soft/root/include/TArrayI.h
+AliFMD.o: /soft/root/include/TArray.h /hdb2/offline/pro/include/AliHit.h
+AliFMD.o: /hdb2/offline/pro/include/AliHeader.h
 AliFMD.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
-AliFMD.o: /hdb2/offline/pro/include/AliMC.h
+AliFMD.o: /soft/root/include/TError.h /hdb2/offline/pro/include/AliMC.h
 AliFMD.o: /hdb2/offline/pro/include/AliGenerator.h
 AliFMD.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
 AliFMD.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
-AliFMD.o: AliFMD.h /hdb2/offline/pro/include/TGeant3.h
+AliFMD.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
+AliFMD.o: /soft/root/include/TAttAxis.h /usr/local/include/g++/fstream.h
+AliFMD.o: /usr/local/include/g++/iostream.h
+AliFMD.o: /usr/local/include/g++/streambuf.h /soft/root/include/TLego.h
+AliFMD.o: /soft/root/include/TF1.h /soft/root/include/TFormula.h
+AliFMD.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
+AliFMD.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
+AliFMD.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliFMD.o: /soft/root/include/TArrayD.h AliFMD.h
+AliFMD.o: /hdb2/offline/pro/include/AliDetector.h
+AliFMD.o: /hdb2/offline/pro/include/TGeant3.h
 AliFMDv0.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
-AliFMDv0.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliFMDv0.o: /soft/root/include/TDirectory.h /soft/root/include/TDatime.h
+AliFMDv0.o: /soft/root/include/TBrowser.h /soft/root/include/TBrowserImp.h
+AliFMDv0.o: /soft/root/include/TList.h /soft/root/include/TSeqCollection.h
+AliFMDv0.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
+AliFMDv0.o: /soft/root/include/TString.h /usr/include/string.h
+AliFMDv0.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliFMDv0.o: /usr/include/gnu/stubs.h
+AliFMDv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliFMDv0.o: /soft/root/include/TMath.h /soft/root/include/TRefCnt.h
 AliFMDv0.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
-AliFMDv0.o: /soft/root/include/TGeometry.h
-AliFMDv0.o: /hdb2/offline/pro/include/AliDetector.h
-AliFMDv0.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
-AliFMDv0.o: /soft/root/include/TAttLine.h /soft/root/include/TAttMarker.h
-AliFMDv0.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
-AliFMDv0.o: /hdb2/offline/pro/include/AliHit.h /soft/root/include/TObject.h
+AliFMDv0.o: /soft/root/include/TObjArray.h /soft/root/include/TClonesArray.h
+AliFMDv0.o: /soft/root/include/TAttMarker.h /soft/root/include/TBranch.h
+AliFMDv0.o: /soft/root/include/TStringLong.h /soft/root/include/TCut.h
+AliFMDv0.o: /soft/root/include/TGeometry.h /soft/root/include/THashList.h
+AliFMDv0.o: /hdb2/offline/pro/include/AliModule.h /soft/root/include/TNamed.h
+AliFMDv0.o: /soft/root/include/TObject.h /soft/root/include/Rtypes.h
+AliFMDv0.o: /soft/root/include/RConfig.h /usr/include/stdio.h
+AliFMDv0.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
+AliFMDv0.o: /usr/include/gnu/types.h
+AliFMDv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliFMDv0.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliFMDv0.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliFMDv0.o: /soft/root/include/TBuffer.h /soft/root/include/Bytes.h
+AliFMDv0.o: /soft/root/include/TAttLine.h /soft/root/include/TArrayI.h
+AliFMDv0.o: /soft/root/include/TArray.h /hdb2/offline/pro/include/AliHit.h
 AliFMDv0.o: /hdb2/offline/pro/include/AliHeader.h
 AliFMDv0.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
-AliFMDv0.o: /hdb2/offline/pro/include/AliMC.h
+AliFMDv0.o: /soft/root/include/TError.h /hdb2/offline/pro/include/AliMC.h
 AliFMDv0.o: /hdb2/offline/pro/include/AliGenerator.h
 AliFMDv0.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
 AliFMDv0.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
-AliFMDv0.o: AliFMDv0.h AliFMD.h
+AliFMDv0.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
+AliFMDv0.o: /soft/root/include/TAttAxis.h /usr/local/include/g++/fstream.h
+AliFMDv0.o: /usr/local/include/g++/iostream.h
+AliFMDv0.o: /usr/local/include/g++/streambuf.h /soft/root/include/TLego.h
+AliFMDv0.o: /soft/root/include/TF1.h /soft/root/include/TFormula.h
+AliFMDv0.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
+AliFMDv0.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
+AliFMDv0.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliFMDv0.o: /soft/root/include/TArrayD.h AliFMDv0.h AliFMD.h
+AliFMDv0.o: /hdb2/offline/pro/include/AliDetector.h
 AliFMDv1.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
-AliFMDv1.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliFMDv1.o: /soft/root/include/TDirectory.h /soft/root/include/TDatime.h
+AliFMDv1.o: /soft/root/include/TBrowser.h /soft/root/include/TBrowserImp.h
+AliFMDv1.o: /soft/root/include/TList.h /soft/root/include/TSeqCollection.h
+AliFMDv1.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
+AliFMDv1.o: /soft/root/include/TString.h /usr/include/string.h
+AliFMDv1.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliFMDv1.o: /usr/include/gnu/stubs.h
+AliFMDv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliFMDv1.o: /soft/root/include/TMath.h /soft/root/include/TRefCnt.h
 AliFMDv1.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
-AliFMDv1.o: /soft/root/include/TGeometry.h
-AliFMDv1.o: /hdb2/offline/pro/include/AliDetector.h
-AliFMDv1.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
-AliFMDv1.o: /soft/root/include/TAttLine.h /soft/root/include/TAttMarker.h
-AliFMDv1.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
-AliFMDv1.o: /hdb2/offline/pro/include/AliHit.h /soft/root/include/TObject.h
+AliFMDv1.o: /soft/root/include/TObjArray.h /soft/root/include/TClonesArray.h
+AliFMDv1.o: /soft/root/include/TAttMarker.h /soft/root/include/TBranch.h
+AliFMDv1.o: /soft/root/include/TStringLong.h /soft/root/include/TCut.h
+AliFMDv1.o: /soft/root/include/TGeometry.h /soft/root/include/THashList.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliModule.h /soft/root/include/TNamed.h
+AliFMDv1.o: /soft/root/include/TObject.h /soft/root/include/Rtypes.h
+AliFMDv1.o: /soft/root/include/RConfig.h /usr/include/stdio.h
+AliFMDv1.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
+AliFMDv1.o: /usr/include/gnu/types.h
+AliFMDv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliFMDv1.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliFMDv1.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliFMDv1.o: /soft/root/include/TBuffer.h /soft/root/include/Bytes.h
+AliFMDv1.o: /soft/root/include/TAttLine.h /soft/root/include/TArrayI.h
+AliFMDv1.o: /soft/root/include/TArray.h /hdb2/offline/pro/include/AliHit.h
 AliFMDv1.o: /hdb2/offline/pro/include/AliHeader.h
 AliFMDv1.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
-AliFMDv1.o: /hdb2/offline/pro/include/AliMC.h
+AliFMDv1.o: /soft/root/include/TError.h /hdb2/offline/pro/include/AliMC.h
 AliFMDv1.o: /hdb2/offline/pro/include/AliGenerator.h
 AliFMDv1.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
 AliFMDv1.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
-AliFMDv1.o: AliFMDv1.h AliFMD.h /hdb2/offline/pro/include/AliConst.h
-AliFMDv1.o: /soft/root/include/TMath.h
+AliFMDv1.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
+AliFMDv1.o: /soft/root/include/TAttAxis.h /usr/local/include/g++/fstream.h
+AliFMDv1.o: /usr/local/include/g++/iostream.h
+AliFMDv1.o: /usr/local/include/g++/streambuf.h /soft/root/include/TLego.h
+AliFMDv1.o: /soft/root/include/TF1.h /soft/root/include/TFormula.h
+AliFMDv1.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
+AliFMDv1.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
+AliFMDv1.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliFMDv1.o: /soft/root/include/TArrayD.h AliFMDv1.h AliFMD.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliDetector.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliConst.h
