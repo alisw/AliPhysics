@@ -50,7 +50,7 @@ typedef unsigned long  ULong_t;       //Unsigned long integer 8 bytes
 typedef float          Float_t;       //Float 4 bytes
 typedef double         Double_t;      //Float 8 bytes
 typedef char           Text_t;        //General string
-typedef unsigned char  Bool_t;        //Boolean (0=false, 1=true)
+typedef bool           Bool_t;        //Boolean (0=false, 1=true) (bool)
 typedef unsigned char  Byte_t;        //Byte (8 bits)
 typedef short          Version_t;     //Class version identifier
 typedef const char     Option_t;      //Option string
