@@ -390,7 +390,7 @@ Float_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(TString particle, TString 
 
 
 //____________________________________________________________________________
-Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Option_t *  axis)const
+Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint * cpv, Option_t *  axis)const
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
   
@@ -417,7 +417,7 @@ Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cp
   return 100000000 ;
 }
 //____________________________________________________________________________
-Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Int_t effPur, Float_t e) const
+Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint * cpv, Int_t effPur, Float_t e) const
 {
   if(effPur>2 || effPur<0)
     Error("GetCPVBit","Invalid Efficiency-Purity choice %d",effPur);
@@ -427,7 +427,7 @@ Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, I
   
   Float_t deltaX = TMath::Abs(GetDistance(emc, cpv,  "X"));
   Float_t deltaZ = TMath::Abs(GetDistance(emc, cpv,  "Z"));
-       
+
   if((deltaX>sigX*(effPur+1))|(deltaZ>sigZ*(effPur+1)))
     return 1;//Neutral
   else
@@ -500,7 +500,7 @@ Int_t  AliPHOSPIDv1::GetHardPi0Bit(AliPHOSEmcRecPoint * emc) const
 }
 
 //____________________________________________________________________________
-TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * )const 
+TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpvRecPoint * )const 
 { 
   // Calculates the momentum direction:
   //   1. if only a EMC RecPoint, direction is given by IP and this RecPoint
@@ -558,9 +558,9 @@ void  AliPHOSPIDv1::MakeRecParticles()
     if(ts->GetEmcIndex()>=0)
       emc = (AliPHOSEmcRecPoint *) emcRecPoints->At(ts->GetEmcIndex()) ;
     
-    AliPHOSRecPoint    * cpv = 0 ;
+    AliPHOSCpvRecPoint * cpv = 0 ;
     if(ts->GetCpvIndex()>=0)
-      cpv = (AliPHOSRecPoint *)   cpvRecPoints->At(ts->GetCpvIndex()) ;
+      cpv = (AliPHOSCpvRecPoint *) cpvRecPoints->At(ts->GetCpvIndex()) ;
     
     // Now set type (reconstructed) of the particle
 
