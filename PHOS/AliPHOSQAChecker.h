@@ -48,7 +48,7 @@ public:
   void StatusAll() { ExecuteTask("S") ; } 
 
   friend void AliPHOSQAVirtualCheckable::AddChecker(AliPHOSQAChecker * ch) ;
-  friend AliPHOSQAVirtualCheckable::AliPHOSQAVirtualCheckable(const char * name) ;
+  //  friend AliPHOSQAVirtualCheckable::AliPHOSQAVirtualCheckable(const char * name) ;
 
 
  private:
