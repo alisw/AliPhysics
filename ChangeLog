@@ -5,9 +5,33 @@
    cvs2cl.pl.  See http://www.red-bean.com/~kfogel/cvs2cl.shtml for more.
   -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+-
 
+1999-06-30 13:39  fca
+
+	* ALIROOT/Makefile, CASTOR/Makefile, EVGEN/AliGenCocktail.cxx,
+	EVGEN/AliGenParam.cxx, EVGEN/AliGenPythia.cxx, EVGEN/Makefile,
+	GEANT321/Makefile, ITS/Makefile, MINICERN/Makefile, MUON/Makefile,
+	PDF/Makefile, PHOS/Makefile, PMD/Makefile, PYTHIA/Makefile,
+	RICH/Makefile, STEER/Makefile, STRUCT/Makefile, TGeant3/Makefile,
+	TOF/Makefile, TPC/Makefile, TRD/Makefile, ZDC/Makefile,
+	conf/GeneralDef, conf/GeneralMacros: Possibility to have different
+	binaries in the same tree introduced
+
+1999-06-30 09:27  fca
+
+	* PHOS/AliPHOS.cxx, PHOS/AliPHOSv1.cxx: Eliminate useless include
+
+1999-06-30 09:24  fca
+
+	* PHOS/utils/prob.cxx, PHOS/utils/ucopy.f, PHOS/utils/vzero.f:
+	These functions now in minicernlib
+
+1999-06-30 08:55  fca
+
+	* FMD/AliFMD.cxx, FMD/Makefile: Removed useless TGeant3 include
+
 1999-06-26 16:58  fca
 
-	* ChangeLog, ChangeLog: Updating ChangeLog
+	* ChangeLog, ChangeLog, ChangeLog: Updating ChangeLog
 
 1999-06-26 16:55  fca
 
