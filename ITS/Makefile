@@ -12,6 +12,7 @@ PACKAGE = ITS
 SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
       AliITSv5symm.cxx AliITSv5asymm.cxx \
       AliITSvPPRcoarseasymm.cxx AliITSvPPRcoarsesymm.cxx\
+      AliITSvPPRasymm.cxx AliITSvPPRsymm.cxx\
       AliITShit.cxx AliITSDetType.cxx \
 		AliITSgeom.cxx AliITSgeomMatrix.cxx \
       AliITSgeomSPD.cxx AliITSgeomSDD.cxx \
