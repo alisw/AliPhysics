@@ -292,7 +292,7 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
     }
     else if(fBeamCrossPlane==2.){
       tetdiv = fBeamCrossAngle;
-      fidiv = 3.*k2PI/4.;
+      fidiv = k2PI/4.;
     }
   }
 
