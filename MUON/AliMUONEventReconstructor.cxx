@@ -742,7 +742,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
      return;
    }
    // Loading AliRun master
-  rl->LoadgAlice();
+  if (rl->GetAliRun() == 0x0) rl->LoadgAlice();
   gAlice = rl->GetAliRun();
 
   // Loading MUON subsystem
@@ -994,7 +994,7 @@ void AliMUONEventReconstructor::MakeTriggerTracks(void)
     TTree* TR = gime->TreeR();
     
     // Loading AliRun master
-    rl->LoadgAlice();
+    if (rl->GetAliRun() == 0x0) rl->LoadgAlice();
     gAlice = rl->GetAliRun();
     
     // Loading MUON subsystem
