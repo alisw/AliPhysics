@@ -38,8 +38,9 @@ public:
     Fatal("cpy ctor", "not implemented") ;
   }
   ~AliPHOSReconstructor() ; //dtor            
-
-  Bool_t                     Debug() const { return fDebug ; }
+  static void                SetDebug()   { fgDebug = kTRUE ; }
+  static void                ResetDebug() { fgDebug = kFALSE ; }
+  static Bool_t              Debug() { return fgDebug ; }
   virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader) const ;
 
@@ -51,7 +52,7 @@ public:
   
 private:
   
-  Bool_t fDebug; //! verbosity controller
+  static Bool_t fgDebug ; //! verbosity controller
 
   ClassDef(AliPHOSReconstructor,2)  // Reconstruction algorithm class (Base Class)
 

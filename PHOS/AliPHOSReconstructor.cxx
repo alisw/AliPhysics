@@ -33,11 +33,13 @@
 #include "AliPHOSPIDv1.h"
 #include "AliPHOSGetter.h"
 
-
+ 
 ClassImp(AliPHOSReconstructor)
 
+Bool_t AliPHOSReconstructor::fgDebug = kFALSE ; 
+
 //____________________________________________________________________________
-  AliPHOSReconstructor::AliPHOSReconstructor() : fDebug(kFALSE) 
+  AliPHOSReconstructor::AliPHOSReconstructor() 
 {
   // ctor
 
