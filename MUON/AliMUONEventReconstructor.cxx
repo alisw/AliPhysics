@@ -32,6 +32,7 @@
 //
 ////////////////////////////////////
 
+#include <stdlib.h>
 #include <Riostream.h>
 #include <TDirectory.h>
 #include <TFile.h>
