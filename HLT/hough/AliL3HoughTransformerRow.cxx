@@ -1202,7 +1202,7 @@ inline void AliL3HoughTransformerRow::FillCluster(UChar_t i,Int_t etaindex,AliL3
 	    <<"Wrong filling "<<binx1<<" "<<binx2<<" "<<i<<" "<<etaclust[etaindex].fStartPad<<" "<<etaclust[etaindex].fEndPad<<ENDLOG;
 	}
 #endif
-	if(nextrow[b] > (b + 1)) {
+	if(nextrow[b] > b) {
 	  Int_t deltab = (nextrow[b] - b - 1);
 	  b += deltab;
 	  alpha1 += deltaalpha1*deltab;
