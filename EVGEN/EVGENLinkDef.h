@@ -28,6 +28,7 @@
 #pragma link C++ class  AliGenFLUKAsource;
 #pragma link C++ class  AliGenHalo;
 #pragma link C++ class  AliDimuCombinator;
+#pragma link C++ class  AliGenPHOSlib;
 #endif
 
 
