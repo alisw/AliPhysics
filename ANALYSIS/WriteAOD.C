@@ -95,15 +95,15 @@ void WriteAOD(Option_t* datatype, Option_t* processopt="TracksAndParticles",
    reader->SetDirs(dirs);
     
    AliAODParticleCut* readerpartcut= new AliAODParticleCut();
-   readerpartcut->SetPtRange(0.0,10000.0);
-   readerpartcut->SetPID(kKPlus);
-   AliAODPIDCut* pidcut = new AliAODPIDCut(kKPlus,0.5);
+   readerpartcut->SetPtRange(0.4,1.2);
+   readerpartcut->SetPID(kPiPlus);
+   AliAODPIDCut* pidcut = new AliAODPIDCut(kPiPlus,0.5);
    readerpartcut->AddBasePartCut(pidcut);
    
    reader->AddParticleCut(readerpartcut);//read this particle type with this cut
 
    cout<<"WriteAOD.C:   P R O C S E S S I N G .....\n\n";
-   AliReaderAOD::WriteAOD(reader,outfile,multcheck);
+   AliReaderAOD::WriteAOD(reader,outfile,"AliAODParticle",multcheck);
    cout<<"\n\nWriteAOD.C:   F I N I S H E D\n";
    
    if (dirs) delete dirs;

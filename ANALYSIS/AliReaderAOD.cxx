@@ -7,7 +7,7 @@ ClassImp(AliReaderAOD)
 #include <TTree.h>
 #include "AliAOD.h"
 
-Int_t AliReaderAOD::WriteAOD(AliReader* reader, const char* outfilename, Bool_t /*multcheck*/)
+Int_t AliReaderAOD::WriteAOD(AliReader* reader, const char* outfilename, const char* pclassname,  Bool_t /*multcheck*/)
 {
 //reads tracks from runs and writes them to file
   ::Info("AliReaderAOD::Write","________________________________________________________");
@@ -29,33 +29,38 @@ Int_t AliReaderAOD::WriteAOD(AliReader* reader, const char* outfilename, Bool_t 
   TTree *tree = new TTree("TAOD","Tree with tracks");
   
   TBranch *recbranch = 0x0, *simbranch = 0x0;
-
-  AliAOD* eventsim = new AliAOD();
-  AliAOD* eventrec = new AliAOD;
   
-  eventsim->SetParticleClassName("AliAODParticle");
-  eventrec->SetParticleClassName("AliAODParticle");
   
-  if (reader->ReadsSim()) simbranch = tree->Branch("simulated","AliAOD",&eventsim,32000,99);
+  AliAOD* eventrec = new AliAOD();//must be created before Branch is called. Otherwise clones array is not splitted
+  AliAOD* eventsim = new AliAOD();//AOD together with fParticles clones array knowing exact type of particles
+  
+  eventrec->SetParticleClassName(pclassname);
+  eventsim->SetParticleClassName(pclassname);
+  
   if (reader->ReadsRec()) recbranch = tree->Branch("reconstructed","AliAOD",&eventrec,32000,99);
+  if (reader->ReadsSim()) simbranch = tree->Branch("simulated","AliAOD",&eventsim,32000,99);
 
+  delete eventsim;
+  delete eventrec;
+  
   reader->Rewind();
   while (reader->Next() == kFALSE)
    {
      
-     if (reader->ReadsSim())
-      {
-        eventsim = reader->GetEventSim();
-//        simbranch->SetAddress(&eventsim);
-      }
- 
      if (reader->ReadsRec())
       {
         eventrec = reader->GetEventRec();
-//        recbranch->SetAddress(&eventrec);
+        recbranch->SetAddress(&eventrec);
       }
+
+     if (reader->ReadsSim())
+      {
+        eventsim = reader->GetEventSim();
+        simbranch->SetAddress(&eventsim);
+      }
+     eventrec->GetParticle(0)->Print();
+     eventsim->GetParticle(0)->Print();
      tree->Fill();
-     tree->Print();
    }
   
   ::Info("AliReaderAOD::Write","Written %d events",tree->GetEntries());

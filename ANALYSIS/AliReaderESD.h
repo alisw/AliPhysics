@@ -54,15 +54,23 @@ class AliReaderESD: public AliReader
     void          SetITSTrackPoints(Bool_t flag = kTRUE){fITSTrackPoints = flag;}
     void          MustTPC(Bool_t flag){fMustTPC = flag;}
 
-    
+    void          SetReadCentralBarrel(Bool_t flag){fReadCentralBarrel = flag;}
+    void          SetReadMuon(Bool_t flag){fReadMuon = flag;}
+    void          SetReadPHOS(Bool_t flag){fReadPHOS = flag;}
+
     enum ESpecies {kESDElectron = 0, kESDMuon, kESDPion, kESDKaon, kESDProton, kNSpecies};
     static Int_t  GetSpeciesPdgCode(ESpecies spec);
     
     Int_t         ReadESD(AliESD* esd);
-    
+    Int_t         ReadESDCentral(AliESD* esd);
+    Int_t         ReadESDMuon(AliESD* esd);
+    Int_t         ReadESDPHOS(AliESD* /*esd*/){return 0;}
+
   protected:
-    Int_t         ReadNext();
-    TFile*        OpenFile(Int_t evno);//opens files to be read for given event
+    virtual Int_t         ReadNext();
+ 
+    virtual TFile*        OpenFile(Int_t evno);//opens files to be read for given event
+
     Bool_t        CheckTrack(AliESDtrack* t) const;
     
     TString       fESDFileName;//name of the file with tracks
@@ -85,7 +93,11 @@ class AliReaderESD: public AliReader
 	              //used by anti-merging cut in non-id analysis
 
     Bool_t        fMustTPC;// must be reconstructed in TPC -> reject tracks reconstructed ITS stand alone
-    
+
+    Bool_t        fReadCentralBarrel; // Flag for reading ESD central track 
+    Bool_t        fReadMuon;// Flag for reading ESD Muon track 
+    Bool_t        fReadPHOS;// Flag for reading ESD Phos 
+
     //Cut Parameters specific to TPC tracks
         
     Int_t         fNTPCClustMin;//Number of clusters min value

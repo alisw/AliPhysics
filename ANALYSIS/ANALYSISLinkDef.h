@@ -22,10 +22,11 @@
 
 #pragma link C++ class AliReader+;
 #pragma link C++ class AliReaderESD+;
-#pragma link C++ class AliReaderAOD+;
+#pragma link C++ class AliReaderESDTree+;
 #pragma link C++ class AliReaderKineTree+;
 
 #pragma link C++ class AliFlowAnalysis+;
+#pragma link C++ class AliMuonAnalysis+;
 
 #pragma link C++ class AliEventCut+;
 #pragma link C++ class AliEventEmptyCut+;

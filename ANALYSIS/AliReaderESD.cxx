@@ -50,6 +50,9 @@ AliReaderESD::AliReaderESD(const Char_t* esdfilename, const Char_t* galfilename)
  fClusterMap(kFALSE),
  fITSTrackPoints(kFALSE),
  fMustTPC(kFALSE),
+ fReadCentralBarrel(kFALSE),
+ fReadMuon(kFALSE),
+ fReadPHOS(kFALSE),
  fNTPCClustMin(0),
  fNTPCClustMax(150),
  fTPCChi2PerClustMin(0.0),
@@ -99,6 +102,9 @@ AliReaderESD::AliReaderESD(TObjArray* dirs,const Char_t* esdfilename, const Char
  fClusterMap(kFALSE),
  fITSTrackPoints(kFALSE),
  fMustTPC(kFALSE),
+ fReadCentralBarrel(kFALSE),
+ fReadMuon(kFALSE),
+ fReadPHOS(kFALSE),
  fNTPCClustMin(0),
  fNTPCClustMax(150),
  fTPCChi2PerClustMin(0.0),
@@ -135,10 +141,11 @@ AliReaderESD::AliReaderESD(TObjArray* dirs,const Char_t* esdfilename, const Char
 AliReaderESD::~AliReaderESD()
 {
  //desctructor
-  delete fRunLoader;
-  delete fKeyIterator;
-  delete fFile;
+    delete fRunLoader;
+    delete fKeyIterator;
+    delete fFile;
 }
+
 /**********************************************************/
 Int_t AliReaderESD::ReadNext()
 {
@@ -155,89 +162,67 @@ Int_t AliReaderESD::ReadNext()
   fEventRec->Reset();
         
   do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
-   {
-     if (fFile == 0x0)
-      {
-       fFile = OpenFile(fCurrentDir);//rl is opened here
-       if (fFile == 0x0)
-         {
-           Error("ReadNext","Cannot get fFile for dir no. %d",fCurrentDir);
-           fCurrentDir++;
-           continue;
-         }
-       fCurrentEvent = 0;
-       fKeyIterator = new TIter(fFile->GetListOfKeys());  
-//       fFile->Dump();
-//       fFile->GetListOfKeys()->Print();
-      } 
-     TKey* key = (TKey*)fKeyIterator->Next();
-     if (key == 0x0)
-      {
-        if (AliVAODParticle::GetDebug() > 2 )
-          {
-            Info("ReadNext","No more keys.");
-          }
-        fCurrentDir++;
-        delete fKeyIterator;
-        fKeyIterator = 0x0;
-        delete fFile;//we have to assume there is no more ESD objects in the fFile
-        fFile = 0x0;
-        delete fRunLoader;
-        fRunLoader = 0x0;
-        continue;
-      }
-     //try to read
-     
-     
-//     TObject* esdobj = key->ReadObj();
-//     if (esdobj == 0x0)
-//      {
-//        if (AliVAODParticle::GetDebug() > 2 )
-//          {
-//            Info("ReadNext","Key read NULL. Key Name is %s",key->GetName());
-//            key->Dump();
-//          }
-//        continue;
-//      }
-//     esdobj->Dump();
-//     AliESD* esd = dynamic_cast<AliESD*>(esdobj);
-     
+    {
+      if (fFile == 0x0)
+	{
+	  fFile = OpenFile(fCurrentDir);//rl is opened here
+	  if (fFile == 0x0)
+	    {
+	      Error("ReadNext","Cannot get fFile for dir no. %d",fCurrentDir);
+	      fCurrentDir++;
+	      continue;
+	    }
+	  fCurrentEvent = 0;
+	}
      TString esdname = "ESD";
      esdname+=fCurrentEvent;
      AliESD* esd = dynamic_cast<AliESD*>(fFile->Get(esdname));
      if (esd == 0x0)
       {
-//        if (AliVAODParticle::GetDebug() > 2 )
-//          {
-//            Info("ReadNext","This key is not an AliESD object %s",key->GetName());
-//          }
         if (AliVAODParticle::GetDebug() > 2 )
           {
             Info("ReadNext","Can not find AliESD object named %s",esdname.Data());
           }
         fCurrentDir++;
-        delete fKeyIterator;
-        fKeyIterator = 0x0;
         delete fFile;//we have to assume there is no more ESD objects in the fFile
         fFile = 0x0;
         delete fRunLoader;
         fRunLoader = 0x0;
         continue;
       }
-     
-     ReadESD(esd);
+      ReadESD(esd);
       
-     fCurrentEvent++;
-     fNEventsRead++;
-     delete esd;
-     return 0;//success -> read one event
-   }while(fCurrentDir < GetNumberOfDirs());//end of loop over directories specified in fDirs Obj Array  
+      fCurrentEvent++;
+      fNEventsRead++;
+      delete esd;
+      return 0;//success -> read one event
+    }while(fCurrentDir < GetNumberOfDirs());//end of loop over directories specified in fDirs Obj Array  
    
   return 1; //no more directories to read
 }
-/**********************************************************/
 
+/**********************************************************/
 Int_t AliReaderESD::ReadESD(AliESD* esd)
+{
+//Reads esd data
+  if (esd == 0x0)
+   {
+     Error("ReadESD","ESD is NULL");
+     return 1;
+   }
+  
+  // seperate each method
+  if (fReadCentralBarrel) ReadESDCentral(esd);
+
+  if (fReadMuon) ReadESDMuon(esd);
+
+  if (fReadPHOS) ReadESDPHOS(esd);
+
+  return 1;
+}
+
+/**********************************************************/
+Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
 {
   //****** Tentative particle type "concentrations"
   static const Double_t concentr[5]={0.05, 0., 0.85, 0.10, 0.05};
@@ -248,12 +233,7 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
   Double_t pos[3];//position
   Double_t vertexpos[3];//vertex position
   //Reads one ESD
-  if (esd == 0x0)
-   {
-     Error("ReadESD","ESD is NULL");
-     return 1;
-   }
-  
+
   TDatabasePDG* pdgdb = TDatabasePDG::Instance();
   if (pdgdb == 0x0)
    {
@@ -578,14 +558,88 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
 }
 
 /**********************************************************/
+Int_t AliReaderESD::ReadESDMuon(AliESD* esd)
+{
+
+  Double_t vertexpos[3];//vertex position, assuming no secondary decay
+
+  const AliESDVertex* vertex = esd->GetVertex();
+
+  if (vertex == 0x0) {
+    Info("ReadESD","ESD returned NULL pointer to vertex - assuming (0.0,0.0,0.0)");
+    vertexpos[0] = 0.0;
+    vertexpos[1] = 0.0;
+    vertexpos[2] = 0.0;
+  } else {
+    vertex->GetXYZ(vertexpos);
+  }
+
+ Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ;
+
+ if (AliVAODParticle::GetDebug() > 0) {
+   Info("ReadESD","Reading Event %d",fCurrentEvent);
+   Info("ReadESD","Found %d tracks.",nTracks);
+ }
+ // settings
+  Float_t Chi2Cut = 100.;
+  Float_t PtCutMin = 1.;
+  Float_t PtCutMax = 10000.;
+  Float_t muonMass = 0.105658389;
+  Int_t pdgcode = -13;
+  Double_t thetaX, thetaY, pYZ;
+  Double_t pxRec1, pyRec1, pzRec1, E1;
+  Int_t charge;
+
+  Int_t ntrackhits;
+  Double_t fitfmin;
+
+  TLorentzVector fV1;
+  fEventRec->Reset();
+  for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
+
+      AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
+
+      thetaX = muonTrack->GetThetaX();
+      thetaY = muonTrack->GetThetaY();
+
+      pYZ     =  1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
+      pzRec1  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaX));
+      pxRec1  = pzRec1 * TMath::Tan(thetaX);
+      pyRec1  = pzRec1 * TMath::Tan(thetaY);
+      charge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
+      E1 = TMath::Sqrt(muonMass * muonMass + pxRec1 * pxRec1 + pyRec1 * pyRec1 + pzRec1 * pzRec1);
+      fV1.SetPxPyPzE(pxRec1, pyRec1, pzRec1, E1);
+
+      ntrackhits = muonTrack->GetNHit();
+      fitfmin    = muonTrack->GetChi2();
+
+      // transverse momentum
+      Float_t pt1 = fV1.Pt();
+
+      // chi2 per d.o.f.
+      Float_t ch1 =  fitfmin / (2.0 * ntrackhits - 5);
+
+      if ((ch1 < Chi2Cut) && (pt1 > PtCutMin) && (pt1 < PtCutMax)) {
+	AliAODParticle* track = new AliAODParticle(pdgcode*charge,1,iTrack, 
+                                                   pxRec1, pyRec1,pzRec1, E1,
+                                                   vertexpos[0], vertexpos[1], vertexpos[2], 0.);
+        fEventRec->AddParticle(track);
+      }
+ 
+  }
+  fTrackCounter->Fill(fEventRec->GetNumberOfParticles());
+  return 0;
+}
+
+/**********************************************************/
 
 void AliReaderESD::Rewind()
 {
   //rewinds reading 
-  delete fKeyIterator;
+  //  delete fKeyIterator;
   delete fFile;
   fFile = 0x0;
-  fKeyIterator = 0x0;
+  // fKeyIterator = 0x0;
   delete fRunLoader;
   fRunLoader = 0x0;
   fCurrentDir = 0;
@@ -596,7 +650,7 @@ void AliReaderESD::Rewind()
 
 TFile* AliReaderESD::OpenFile(Int_t n)
 {
-//opens fFile with kine tree
+//opens fFile with  tree
 
  const TString& dirname = GetDirName(n);
  if (dirname == "")

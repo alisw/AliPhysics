@@ -14,7 +14,8 @@ class AliReaderAOD: public AliReader
     Bool_t        ReadsSim() const {return fReadSim;}
 
 
-    static Int_t WriteAOD(AliReader* reader, const char* outfilename = "AliAOD.root", Bool_t multcheck = kFALSE);//reads tracks from runs and writes them to file
+    static Int_t WriteAOD(AliReader* reader, const char* outfilename = "AliAOD.root", //reads tracks from runs and writes them to file
+                          const char* pclassname = "AliAODParticle", Bool_t multcheck = kFALSE);
     
   protected:
   private:
