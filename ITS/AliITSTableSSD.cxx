@@ -26,7 +26,7 @@ ClassImp(AliITSTableSSD);
 // object starting from the map with energy depositions
 
 //----------------------------------------------------------------------
-AliITSTableSSD::AliITSTableSSD(){
+AliITSTableSSD::AliITSTableSSD() : TObject(){
   // Default Constructor
   fDim=0;
   fArray=0;
@@ -36,18 +36,34 @@ AliITSTableSSD::AliITSTableSSD(){
   }
 }
 //----------------------------------------------------------------------
-AliITSTableSSD::AliITSTableSSD(const AliITSTableSSD & source){
+AliITSTableSSD::AliITSTableSSD(const AliITSTableSSD & source):TObject(source){
   // Copy constructor
-  fDim=source.fDim;
-  fArray = new Int_t [fDim];
-  fCurrUse[0]=(source.fCurrUse)[0];
-  fCurrUse[1]=(source.fCurrUse)[1];
-  fCurrFil[0]=(source.fCurrFil)[0];
-  fCurrFil[1]=(source.fCurrFil)[1];
-  for(Int_t i=0;i<fDim;i++)fArray[i]=(source.fArray)[i];
+
+    if(this == &source) return;
+    fDim=source.fDim;
+    fArray = new Int_t [fDim];
+    fCurrUse[0]=(source.fCurrUse)[0];
+    fCurrUse[1]=(source.fCurrUse)[1];
+    fCurrFil[0]=(source.fCurrFil)[0];
+    fCurrFil[1]=(source.fCurrFil)[1];
+    for(Int_t i=0;i<fDim;i++)fArray[i]=(source.fArray)[i];
 }
 //----------------------------------------------------------------------
-AliITSTableSSD::AliITSTableSSD(Int_t noelem){
+AliITSTableSSD& AliITSTableSSD::operator=(const AliITSTableSSD & source){
+  // = opporator constructor
+
+    if(this == &source) return *this;
+    fDim=source.fDim;
+    fArray = new Int_t [fDim];
+    fCurrUse[0]=(source.fCurrUse)[0];
+    fCurrUse[1]=(source.fCurrUse)[1];
+    fCurrFil[0]=(source.fCurrFil)[0];
+    fCurrFil[1]=(source.fCurrFil)[1];
+    for(Int_t i=0;i<fDim;i++)fArray[i]=(source.fArray)[i];
+    return *this;
+}
+//----------------------------------------------------------------------
+AliITSTableSSD::AliITSTableSSD(Int_t noelem) : TObject(){
   // Standard constructor
   fDim=noelem*2;
   fArray = new Int_t [fDim];
