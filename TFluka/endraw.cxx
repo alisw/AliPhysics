@@ -48,6 +48,7 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
   if (debug) printf("endraw: Depositing energy for : %d %e icode: %d \n", TRACKR.ispusr[mkbmx2-1], rull, icode);
 
   if (icode != 21 && icode != 22) {
+      fluka->SetIcode(icode);
       fluka->SetRull(edep);
       (TVirtualMCApplication::Instance())->Stepping();
   } else {
@@ -55,11 +56,12 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
   // for icode 21,22 the particle has fallen below thresshold 
   // This has to be signalled to the StepManager() 
   //
-      fluka->SetRull(0.);
+      fluka->SetRull(edep);
+      fluka->SetIcode(20);
       (TVirtualMCApplication::Instance())->Stepping();
       fluka->SetTrackIsNew(kFALSE);
       fluka->SetIcode(icode);
-      fluka->SetRull(edep);
+      fluka->SetRull(0.);
       (TVirtualMCApplication::Instance())->Stepping();
   }
 } // end of endraw
