@@ -2206,7 +2206,7 @@ void AliRICHRecon::EstimationOfTheta()
   SetEstimationOfThetaRMS(RMS);
 }
 
-void fcn(Int_t /*&npar*/, Double_t* /*gin*/, Double_t &f, Double_t *par, Int_t iflag)
+void fcn(Int_t& /*npar*/, Double_t* /*gin*/, Double_t &f, Double_t *par, Int_t iflag)
 {
   AliRICHRecon *gMyRecon = (AliRICHRecon*)gMyMinuit->GetObjectFit();
 
