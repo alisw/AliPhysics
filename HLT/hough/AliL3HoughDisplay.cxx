@@ -20,6 +20,7 @@
 #include "AliL3TrackArray.h"
 #include "AliL3MemHandler.h"
 #include "AliL3HoughDisplay.h"
+#include "AliL3DigitData.h"
 
 #if __GNUC__ == 3
 using namespace std;
