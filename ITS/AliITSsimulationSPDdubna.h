@@ -16,14 +16,25 @@ public:
         
   AliITSsimulationSPDdubna();
   AliITSsimulationSPDdubna(AliITSsegmentation *seg, AliITSresponse *res);
-  ~AliITSsimulationSPDdubna();
+  virtual ~AliITSsimulationSPDdubna();
   AliITSsimulationSPDdubna(const AliITSsimulationSPDdubna &source); // copy constructor
   AliITSsimulationSPDdubna& operator=(const AliITSsimulationSPDdubna &source); // ass. operator
 
+  void InitSimulationModule(Int_t module, Int_t event);
+  void SDigitiseModule(AliITSmodule *mod, Int_t mask, Int_t event);
+  void WriteSDigits(AliITSpList *pList);
+  void FinishSDigitiseModule();
+  void SDigitsToDigits(Int_t module, AliITSpList *pList);
   void DigitiseModule(AliITSmodule *mod,Int_t module,Int_t dummy);
-  void ChargeToSignal(Float_t **pList);
-  void GetList(Int_t track, Int_t hit, Float_t **pList, Int_t *IndexRange);
-
+  void UpdateMapSignal(Int_t i, Int_t j, Int_t trk, Int_t ht,
+		       Int_t module, Double_t signal, AliITSpList *pList);
+  void UpdateMapNoise(Int_t i, Int_t j, Int_t ix, Int_t iz, Int_t module,
+		      Double_t sig, Float_t noise, AliITSpList *pList);
+  void HitToDigit(AliITSmodule *mod,Int_t module,Int_t dummy);
+  void HitToSDigit(AliITSmodule *mod, Int_t module, Int_t dummy,
+		   AliITSpList *pList);
+  void ChargeToSignal(AliITSpList *pList);
+  
   void CreateHistograms();
   void ResetHistograms();
   TObjArray*  GetHistArray() {
@@ -33,19 +44,16 @@ public:
 
 private:
 
-  AliITSMapA2  *fMapA2;        // MapA2
-  Float_t      fNoise;         // Noise
-  Float_t      fBaseline;      // Baseline
-  Int_t        fNPixelsX;      // NPixelsX
-  Int_t        fNPixelsZ;      // NPixelsZ
+  AliITSMapA2  *fMapA2;        //! MapA2
+  Float_t      fNoise;         //! Noise
+  Float_t      fBaseline;      //! Baseline
+  Int_t        fNPixelsX;      //! NPixelsX
+  Int_t        fNPixelsZ;      //! NPixelsZ
 
-  TObjArray *fHis;             // just in case for histogramming
+  TObjArray *fHis;             //! just in case for histogramming
     
   ClassDef(AliITSsimulationSPDdubna,1)  // Simulation of SPD clusters
 
 };
 
 #endif 
-
-
-
