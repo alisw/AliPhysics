@@ -99,6 +99,7 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
 
    AliITSDetType *iDetType=ITS->DetType(2);
    AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
+   seg2->SetDetSize(72960.,40000.,303.);
    TClonesArray *dig2  = ITS->DigitsAddress(2);
    AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2);
    ITS->SetReconstructionModel(2,rec2);
