@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-2001, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 #include "AliDigitizer.h"
 
 class AliRunDigitizer;

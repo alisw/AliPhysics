@@ -121,6 +121,8 @@ public:
    void SetDigitsSwitch(Int_t sw){fDigitsSwitch = sw;}
    void SetDefSwitch(Int_t def){fDefaults = def;}
    virtual void  Merge(TTree * intree, Int_t *mask, Int_t nin, Int_t outid);
+   Float_t GetNoise();  //get Current noise  
+   void    GenerNoise(Int_t tablasize);  // make noise table
 
 private:
   //
@@ -136,7 +138,11 @@ private:
                          // index[1] sector number, 
                          // index[2] pad row number  
                          // index[3] pad row number for which signal is calculated
-  
+  Int_t      fNoiseDepth;  //!noise table
+  Float_t *  fNoiseTable;  //![fNoiseDepth] table with noise
+  Int_t      fCurrentNoise; //!index of the noise in  the noise table 
+
+
   ClassDef(AliTPC,4)  // Time Projection Chamber class
 };
 

@@ -22,6 +22,7 @@ public:
   AliSimDigits();
   virtual ~AliSimDigits();
   void AllocateTrack(Int_t length);  //construct empty buffer fTracks with size rows x column x length (number of tracks for one digit)
+  Int_t *GetTracks(){return fTracks->GetArray();}
   Int_t GetTrackIDFast(Int_t row, Int_t column,Int_t level);  //return track ID  at given row and collumn
   void  SetTrackIDFast(Int_t value,Int_t row, Int_t column,Int_t level);  //set ID track at given row and collumn
   virtual Int_t GetTrackID(Int_t row, Int_t column, Int_t level);

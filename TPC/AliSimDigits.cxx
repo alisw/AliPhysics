@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/05 16:01:49  kowal2
+Corrected for memory leaks.
+
 Revision 1.3  2000/06/30 12:07:49  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -255,11 +258,16 @@ void  AliSimDigits::CompresTrackBuffer1()
   buf->Set(fNrows*fNcols*fNlevel); //lets have the nearly the "worst case"
   AliArrayI *  index = new AliArrayI;
   index->Set(fNcols*fNlevel);
+  //  Int_t * pindex = 
 
+  
   Int_t icurrent=-1;  //current index
   Int_t izero;      //number of zero
   Int_t inum;      //number of digits  with the same current track id  
-  Int_t lastID =0;  //last track id
+  Int_t lastID =0;  //last track id  
+  
+  Int_t *cbuff=fTracks->GetArray(); //MI change
+
   for (Int_t lev =0; lev<fNlevel; lev++){    //loop over levels 
     for (Int_t col = 0; col<fNcols; col++){    //loop over columns
       izero = 0;
@@ -267,8 +275,9 @@ void  AliSimDigits::CompresTrackBuffer1()
       lastID = 0;
       (*index)[lev*fNcols+col]=icurrent+1;//set collumn pointer
       Int_t id=0;  //current id
-      for (Int_t row = 0; row< fNrows;row++){ //loop over rows
-	id = GetTrackIDFast(row,col,lev);
+      for (Int_t row = 0; row< fNrows;row++){ //loop over rows        
+	id = *cbuff;  //MI change
+	//	id = GetTrackIDFast(row,col,lev);
 	if (id <= 0) {
 	  if ( inum> 0 ) { //if we have some tracks in buffer
 	    icurrent++;
@@ -306,8 +315,8 @@ void  AliSimDigits::CompresTrackBuffer1()
 	  else {	  
 	    inum++;
 	  }
-	
-      }//end of loop over rows
+	cbuff++;  //MI change
+      }//end of loop over row
       if ( izero > 0 ) { 
 	//if we have currently izero count of non tracks digits
 	icurrent++;	  

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.47  2001/11/19 10:25:34  kowal2
+Nearest integer instead of integer when converting to ADC counts
+
 Revision 1.46  2001/11/07 06:47:12  kowal2
 Removed printouts
 
@@ -220,7 +223,9 @@ AliTPC::AliTPC()
   fDefaults = 0;
   fTrackHits = 0;  
   fHitType = 2;  
-  fTPCParam = 0; 
+  fTPCParam = 0;    
+  fNoiseTable = 0;
+
 }
  
 //_____________________________________________________________________________
@@ -244,6 +249,7 @@ AliTPC::AliTPC(const char *name, const char *title)
   fTrackHits->SetHitPrecision(0.002);
   fTrackHits->SetStepPrecision(0.003);  
   fTrackHits->SetMaxDistance(100); 
+  fNoiseTable =0;
 
   fHitType = 2;
   //
@@ -282,6 +288,8 @@ AliTPC::~AliTPC()
   delete fDigits;
   delete fTPCParam;
   delete fTrackHits; //MI 15.09.2000
+  if (fNoiseTable) delete [] fNoiseTable;
+
 }
 
 //_____________________________________________________________________________
@@ -811,6 +819,36 @@ void AliTPC::CreateMaterials()
     
 }
 
+void AliTPC::GenerNoise(Int_t tablesize)
+{
+  //
+  //Generate table with noise
+  //
+  if (fTPCParam==0) {
+    // error message
+    fNoiseDepth=0;
+    return;
+  }
+  if (fNoiseTable)  delete[] fNoiseTable;
+  fNoiseTable = new Float_t[tablesize];
+  fNoiseDepth = tablesize; 
+  fCurrentNoise =0; //!index of the noise in  the noise table 
+  
+  Float_t norm = fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac();
+  for (Int_t i=0;i<tablesize;i++) fNoiseTable[i]= gRandom->Gaus(0,norm);      
+}
+
+Float_t AliTPC::GetNoise()
+{
+  // get noise from table
+  //  if ((fCurrentNoise%10)==0) 
+  //  fCurrentNoise= gRandom->Rndm()*fNoiseDepth;
+  if (fCurrentNoise>=fNoiseDepth) fCurrentNoise=0;
+  return fNoiseTable[fCurrentNoise++];
+  //gRandom->Gaus(0, fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()); 
+}
+
+
 
 void AliTPC::Digits2Clusters(TFile *of, Int_t eventnumber)
 {
@@ -1220,7 +1258,7 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
 void AliTPC::SDigits2Digits2(Int_t eventnumber)  
 {
   //create digits from summable digits
-
+  GenerNoise(500000); //create teble with noise
   char  sname[100];
   char  dname[100];
   sprintf(sname,"TreeS_%s_%d",fTPCParam->GetTitle(),eventnumber);
@@ -1268,23 +1306,38 @@ void AliTPC::SDigits2Digits2(Int_t eventnumber)
     digarr.ExpandTrackBuffer();
 
     
-    for (Int_t rows=0;rows<nrows; rows++){
-      for (Int_t col=0;col<ncols; col++){
-	Float_t  q  = digarr.GetDigitFast(rows,col);
-	//add noise
-	q = gRandom->Gaus(q,fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()*16); 
-	q/=16;  //conversion faktor
-        q=(Short_t)q; // digits are short integers
+    Short_t * pamp0 = digarr.GetDigits();
+    Int_t   * ptracks0 = digarr.GetTracks();
+    Short_t * pamp1 = digrow->GetDigits();
+    Int_t   * ptracks1 = digrow->GetTracks();
+    Int_t  nelems =nrows*ncols;
+    Int_t saturation = fTPCParam->GetADCSat();
+    //use internal structure of the AliDigits - for speed reason
+    //if you cahnge implementation
+    //of the Alidigits - it must be rewriten -
+    for (Int_t i= 0; i<nelems; i++){
+      //      Float_t q = *pamp0;
+      //q/=16.;  //conversion faktor
+      //Float_t noise= GetNoise(); 
+      //q+=noise;      
+      //q= TMath::Nint(q);
+      Float_t q = TMath::Nint(Float_t(*pamp0)/16.+GetNoise());
+      if (q>zerosup){
+	if (q>saturation) q=saturation;      
+	*pamp1=(Short_t)q;
+	//if (ptracks0[0]==0)
+	//  ptracks1[0]=1;
+	//else
+	ptracks1[0]=ptracks0[0];	
+	ptracks1[nelems]=ptracks0[nelems];
+	ptracks1[2*nelems]=ptracks0[2*nelems];
+      }
+      pamp0++;
+      pamp1++;
+      ptracks0++;
+      ptracks1++;	 
+    }
 
-	if (q > zerosup){
-          if(q > fTPCParam->GetADCSat()) q = (Short_t)(fTPCParam->GetADCSat());
-	  digrow->SetDigitFast(q,rows,col);  
-	  for (Int_t tr=0;tr<3;tr++) 	
-	   
-((AliSimDigits*)digrow)->SetTrackIDFast(digarr.GetTrackIDFast(rows,col,tr)-2,rows,col,tr);
-	}
-       }   
-      }        
     arr->StoreRow(sec,row);
     arr->ClearRow(sec,row);   
     // cerr<<sec<<"\t"<<row<<"\n";   
@@ -1475,6 +1528,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
 
 
   if(fDefaults == 0) SetDefaults();  // check if the parameters are set
+  GenerNoise(500000); //create teble with noise
 
   //setup TPCDigitsArray 
 
@@ -1520,7 +1574,7 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
 
 
   if(fDefaults == 0) SetDefaults();
-
+  GenerNoise(500000); //create table with noise
   //setup TPCDigitsArray 
 
   if(GetDigitsArray()) delete GetDigitsArray();
@@ -1749,8 +1803,8 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 
       if(fDigitsSwitch == 0){
 
-        q = gRandom->Gaus(q,fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()); 
-
+	//        q = gRandom->Gaus(q,fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()); 
+	q+=GetNoise();
         q = TMath::Nint(q);
 
         if(q <=zerosup) continue; // do not fill zeros
@@ -1770,7 +1824,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
       //    
 
       for(Int_t j1=0;j1<3;j1++){
-        tracks[j1] = (pList[gi]) ?(Int_t)(*(pList[gi]+j1)) : -1;
+	tracks[j1] = (pList[gi]) ?(Int_t)(*(pList[gi]+j1)) : -2;
       }
 
 //Begin_Html
