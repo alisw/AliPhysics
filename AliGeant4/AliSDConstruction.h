@@ -5,7 +5,7 @@
 //
 // Class AliSDConstruction
 // -----------------------
-/// Mandatory (TGeant4) class providing method for creating 
+// Mandatory (TGeant4) class providing method for creating 
 // sensitive detectors.
 // It provides also methods for switching between lego 
 // sensitive detectors and the standard ones.
