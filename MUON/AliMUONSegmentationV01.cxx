@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.11  2000/11/06 09:20:43  morsch
+AliMUON delegates part of BuildGeometry() to AliMUONSegmentation using the
+Draw() method. This avoids code and parameter replication.
+
 Revision 1.10  2000/10/18 11:42:06  morsch
 - AliMUONRawCluster contains z-position.
 - Some clean-up of useless print statements during initialisations.
@@ -97,6 +101,7 @@ AliMUONSegmentationV01::AliMUONSegmentationV01()
     (*fCorr)[0]=0;
     (*fCorr)[1]=0;
     (*fCorr)[2]=0;
+    fOffsetY=0;
 } 
 
 Float_t AliMUONSegmentationV01::Dpx(Int_t isec) const
@@ -224,7 +229,11 @@ GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
-    iy = (y>0)? Int_t(y/fDpy)+1 : Int_t(y/fDpy)-1;
+    iy = (y-fOffsetY >0)? 
+      Int_t((y-fOffsetY)/fDpy)+1 
+      : 
+      Int_t((y-fOffsetY)/fDpy)-1;
+  
     if (iy >  fNpy) iy= fNpy;
     if (iy < -fNpy) iy=-fNpy;
 //
@@ -254,7 +263,10 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 {
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
-    y = (iy>0) ? Float_t(iy*fDpy)-fDpy/2. : Float_t(iy*fDpy)+fDpy/2.;
+    y = (iy>0) ? 
+      Float_t(iy*fDpy)-fDpy/2.+fOffsetY 
+      : 
+      Float_t(iy*fDpy)+fDpy/2.-fOffsetY;
 //
 //  Find sector isec
     Int_t isec=AliMUONSegmentationV01::Sector(ix,iy);

@@ -30,6 +30,7 @@ public AliMUONSegmentationV0 {
     virtual  void    SetPadDivision(Int_t ndiv[4]);
     // Radii
     virtual  void    SetSegRadii(Float_t  r[4]);
+    virtual  void    SetOffsetY(Float_t off) {fOffsetY = off;}
     //
     // Transform from pad (wire) to real coordinates and vice versa
     //
@@ -99,6 +100,7 @@ public AliMUONSegmentationV0 {
     TArrayF*    fRSec;           // Sector outer radia
     TArrayI*    fNDiv;           // Pad size division
     TArrayF*    fDpxD;           // y pad width per sector
+    Float_t     fOffsetY;        // Staggering offset in y
     // Segmentation map
     Int_t      fNpxS[10][1000]; // Number of pads per sector in x
     Float_t    fCx[10][1000];   // pad-sector contour x vs y  
