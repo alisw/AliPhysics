@@ -114,6 +114,7 @@ Int_t AliESDcomparison(const Char_t *dir=".") {
    //******* The loop over events
    while ((key=(TKey*)next())!=0) {
      rl->GetEvent(n);
+     ef->cd();
 
      cerr<<"Processing event number : "<<n++<<endl;
 
