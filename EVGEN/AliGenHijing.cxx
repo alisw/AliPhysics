@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2001/12/13 07:56:25  hristov
+Set pointers to zero in the default constructor
+
 Revision 1.34  2001/12/11 16:55:42  morsch
 Correct initialization for jet phi-range.
 
@@ -190,6 +193,9 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fRadiation  =  1;
     fEventVertex.Set(3);
 //
+    SetSimpleJets();
+    
+//
 // Set random number generator   
     sRandom = fRandom;
     fHijing = 0;
@@ -228,9 +234,8 @@ void AliGenHijing::Init()
     fHijing->SetIHPR2(12, fDecaysOff);    
     fHijing->SetIHPR2(21, fKeep);
     fHijing->SetHIPR1(10, fPtMinJet); 	
+    fHijing->SetHIPR1(50, fSimpleJet);
     fHijing->Initialize();
-
-    
 //
     if (fEvaluate) EvaluateCrossSections();
 //
@@ -662,6 +667,9 @@ Bool_t AliGenHijing::CheckTrigger()
     }
     return triggered;
 }
+
+
+
 
 AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
 {
