@@ -27,7 +27,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONSegmentationSlatModule.cxx AliMUONSegmentationSlatModuleN.cxx \
 	       AliMUONSegmentationSlat.cxx AliMUONSegmentationSlatN.cxx \
 	       AliMUONRecoEvent.cxx AliMUONRecoDisplay.cxx \
-               AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx \
+               AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx AliMUONDigitizerv1.cxx \
                AliMUONTrackK.cxx AliMUONClusterFinderAZ.cxx AliMUONPixel.cxx
 
 SRCS     += AliMUONv2.cxx AliMUONSt1Segmentation.cxx AliMUONSt1Response.cxx \
