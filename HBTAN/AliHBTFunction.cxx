@@ -1,12 +1,13 @@
 #include "AliHBTFunction.h"
-//____________________
-//////////////////////////////////////////////////////////////////////
-//
+
+/* $Id: */
+
+//--------------------------------------------------------------------
 //AliHBTFunction
 //Author: Piotr Krzysztof Skowronski
 //Piotr.Skowronski@cern.ch
-/*Base classes for HBT functions
-
+//Base classes for HBT functions
+/*
  OnePairFctn       Function                  TwoPairFctn
    | \    \        /  |   \                      /|\   
    |  \    \      /   |    \                    / | \    
@@ -19,19 +20,17 @@
    |       / \       \|    |    \        /  \     |  \     \              
    |      /   \      /\    |     \      /    \    |   \     |              
    |     /     \    /  \   |      \    /      \   |    \    |               
-   |    /       \  /    \  |       \  /        \  |     \   |                 
+   |    /       \  /    \  |       \  /        \  |     \   |
    |   /         \/      \ |        \/          \ |      \  |               
  OnePair1D   OnePair2D  OnePair3D  TwoPair1D  TwoPair2D TwoPair3D
-
 
 
  four particle functions are intendent to be resolution functions:
  it is mecessary to have simulated particle pair corresponding to given
  recontructed track pair in order to calculate function simualted value 
  and recontructed value, to be further histogrammed
- 
 */
-/////////////////////////////////////////////////////////////////////// 
+//--------------------------------------------------------------------- 
 
 #include <TH2.h>
 #include <TH3.h>
@@ -418,6 +417,7 @@ void AliHBTFunction2D::BuildHistos()
 void AliHBTFunction2D::BuildHistos(Int_t nxbins, Float_t xmax, Float_t xmin,
                                    Int_t nybins, Float_t ymax, Float_t ymin)
 {
+  //Builds numerator and denominator histograms (2d-case)
  TString numstr = fName + " Numerator";  //title and name of the 
                                            //numerator histogram
  TString denstr = fName + " Denominator";//title and name of the 
@@ -444,6 +444,9 @@ void AliHBTFunction2D::SetNumberOfBinsToScale(UInt_t xn, UInt_t yn)
 
 Double_t AliHBTFunction2D::Scale()
 {
+  // Calculates the factor that should be used to scale 
+  // quatience of fNumerator and fDenominator to 1 at 
+  // given region
   if (gDebug>0) Info("Scale","Enetered Scale()");
   if(!fNumerator) 
    {
@@ -612,6 +615,7 @@ void AliHBTFunction3D::BuildHistos(Int_t nxbins, Float_t xmax, Float_t xmin,
                                    Int_t nybins, Float_t ymax, Float_t ymin,
 	               Int_t nzbins, Float_t zmax, Float_t zmin)
 {
+  //Builds numerator and denominator histograms (3d-case)
    TString numstr = fName + " Numerator";  //title and name of the 
                                            //numerator histogram
    TString denstr = fName + " Denominator";//title and name of the 
@@ -631,6 +635,9 @@ void AliHBTFunction3D::BuildHistos(Int_t nxbins, Float_t xmax, Float_t xmin,
 
 Double_t AliHBTFunction3D::Scale()
 {
+  // Calculates the factor that should be used to scale 
+  // quatience of fNumerator and fDenominator to 1 at 
+  // given volume
   if (gDebug>0) Info("Scale","Enetered Scale()");
   if(!fNumerator) 
    {
@@ -758,14 +765,14 @@ AliHBTOnePairFctn1D::AliHBTOnePairFctn1D(const Char_t *name, const Char_t *title
 
 void AliHBTOnePairFctn1D::ProcessSameEventParticles(AliHBTPair* pair)
 {
- //Fills the numerator
+ //Fills the numerator using pair from the same event
    pair = CheckPair(pair);
    if(pair) fNumerator->Fill(GetValue(pair));
 }
 /******************************************************************/
 void AliHBTOnePairFctn1D::ProcessDiffEventParticles(AliHBTPair* pair)
  {
-  //fills denumerator
+  //Fills the denumerator using mixed pairs
    pair = CheckPair(pair);
    if(pair) fDenominator->Fill(GetValue(pair));
   }
@@ -813,6 +820,7 @@ AliHBTOnePairFctn2D::AliHBTOnePairFctn2D(const Char_t *name, const Char_t *title
 
 void AliHBTOnePairFctn2D::ProcessSameEventParticles(AliHBTPair* pair)
 {
+  // Fills the numerator using pairs from the same event
   pair = CheckPair(pair);
   if(pair) 
    { 
@@ -825,6 +833,7 @@ void AliHBTOnePairFctn2D::ProcessSameEventParticles(AliHBTPair* pair)
 
 void AliHBTOnePairFctn2D::ProcessDiffEventParticles(AliHBTPair* pair)
 {
+  // Fills the denumerator using mixed pairs
   pair = CheckPair(pair);
   if(pair) 
    { 
@@ -944,6 +953,7 @@ AliHBTTwoPairFctn1D::AliHBTTwoPairFctn1D(const Char_t *name, const Char_t *title
 
 void AliHBTTwoPairFctn1D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
+  // Fills the numerator using pairs from the same event
   partpair  = CheckPair(partpair);
   if( partpair ) 
    { 
@@ -955,6 +965,7 @@ void AliHBTTwoPairFctn1D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 
 void AliHBTTwoPairFctn1D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
+  // Fills the denumerator usin mixed pairs
   partpair  = CheckPair(partpair);
   if( partpair )
    { 
@@ -1077,6 +1088,7 @@ AliHBTTwoPairFctn3D::AliHBTTwoPairFctn3D(const Char_t *name, const Char_t *title
 
 void AliHBTTwoPairFctn3D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
+  // Fills th numerator using pairs from the same event
   partpair  = CheckPair(partpair);
   if( partpair ) 
    { 
@@ -1089,6 +1101,7 @@ void AliHBTTwoPairFctn3D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 
 void AliHBTTwoPairFctn3D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
+  // Fills the denumerator using mixed pairs
   partpair  = CheckPair(partpair);
   if( partpair ) 
    { 

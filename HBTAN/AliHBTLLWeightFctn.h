@@ -1,13 +1,9 @@
-//This function allows to obtain Q_inv correlation function with weights
-//calculated by Lednicky's alghorithm.
-//Numerator is filled with weighted events. Weights are attributed to reconstructed tracks.
-//Weights are calculated with corresponding simulated particles momenta.
-//Denominator is filled with mixing unweighted reconstructed tracks.
-//One needs both pairs 
-//(simulated and recontructed), thus function is of class AliHBTTwoPairFctn1D.
+#ifndef ALIHBTLLWEIGHTQINVFCTN_H
+#define ALIHBTLLWEIGHTQINVFCTN_H
 
-#ifndef ALIHBTLLWEIGHTFCTN_H
-#define ALIHBTLLWEIGHTFCTN_H
+/* $Id$ */
+
+
 #include "AliHBTFunction.h"
 
 
@@ -25,14 +21,10 @@ class AliHBTLLWeightQInvFctn: public AliHBTTwoPairFctn1D
       void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       
-      Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)         
-           { return trackpair->GetQInv()-partpair->GetQInv();} //isn't use                                                                    
-	
-
-  protected:
-
+      Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) const
+	{ return trackpair->GetQInv()-partpair->GetQInv();} //isn't use                                                                    
   private:
-  public:
+
      ClassDef(AliHBTLLWeightQInvFctn,1)
 };
   

@@ -1,6 +1,8 @@
 #ifndef ALIHBTANALYSIS_H
 #define ALIHBTANALYSIS_H
 
+/* $Id$ */
+
 #include <TObject.h>
 
 class AliHBTParticleCut;
@@ -28,7 +30,7 @@ class AliHBTAnalysis: public TObject
    public:
      AliHBTAnalysis();
      AliHBTAnalysis(const AliHBTAnalysis& in);
-     const AliHBTAnalysis& operator=(const AliHBTAnalysis& right);
+     AliHBTAnalysis& operator=(const AliHBTAnalysis& right);
      virtual ~AliHBTAnalysis();
 
      virtual void Process(Option_t* option = "TracksAndParticles");
@@ -107,7 +109,7 @@ class AliHBTAnalysis: public TObject
      static const UInt_t fgkFctnArraySize;//!
      static const UInt_t fgkDefaultMixingInfo;//!
      static const Int_t  fgkDefaultBufferSize;//!
-   public:
+
      ClassDef(AliHBTAnalysis,0)
  };
 
