@@ -142,6 +142,8 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
 {
   AliEMCALGetter * gime =AliEMCALGetter::Instance(GetTitle(),fEventFolderName);
   gime->EmcalLoader()->CleanDigitizer();
+  delete [] fInputFileNames ; 
+  delete [] fEventNames ; 
 
 }
 
