@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/03/28 07:32:51  hristov
+Loop variables declared only once, old style include (HP,Sun)
+
 Revision 1.1  2001/03/25 10:15:23  morsch
 Root interface to MevSim code as TGenerator realisation (Sylwester Radomski et al.)
 
@@ -452,6 +455,7 @@ TMevSim::TMevSim(Int_t nEvents, Int_t modelType, Int_t reacPlaneCntrl,
    fNScanPts = 100;
    firand = irand;
    fParticleTypeParameters = new TClonesArray("TMevSimPartTypeParams",10);
+   fNPDGCodes = 0;
    DefineParticles();
 }
 //______________________________________________________________________________
