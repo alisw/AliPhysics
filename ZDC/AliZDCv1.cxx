@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/12/14 15:20:02  coppedis
+Hits2Digits method for digitization
+
 Revision 1.9  2000/12/13 10:33:49  coppedis
 Prints only if fDebug==1
 
@@ -1249,6 +1252,7 @@ void AliZDCv1::StepManager()
   TLorentzVector s, p;
   const char *knamed;
 
+  for (j=0;j<10;j++) hits[j]=0;
 
   if((gMC->GetMedium() == fMedSensZN) || (gMC->GetMedium() == fMedSensZP) ||
      (gMC->GetMedium() == fMedSensGR) || (gMC->GetMedium() == fMedSensF1) ||
