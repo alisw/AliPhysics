@@ -10,28 +10,26 @@
 #include "TG4Globals.h"
 #include "TG4NameMap.h"
 #include "TG4IntMap.h"
-#include "TG3Cut.h"
-#include "TG3Flag.h"
-#include "TG3ParticleWSP.h"
 
 #include <Rtypes.h>
 #include "AliMCProcess.h"
 
 #include <globals.hh>
 
-
-class TG4CutVector;
-class TG4FlagVector;
-class TG4PhysicsList;
+class AliDecayer;
+class TG4ParticlesManager;
+class TG4G3PhysicsManager;
 
 class G4ParticleDefinition;
 class G4VProcess;
+class G4VModularPhysicsList;
 
 class TG4PhysicsManager
 {
   public:
-    TG4PhysicsManager();
+    TG4PhysicsManager(G4VModularPhysicsList* physicsList);
     // --> protected
+    // TG4PhysicsManager();
     // TG4PhysicsManager(const TG4PhysicsManager& right);
     virtual ~TG4PhysicsManager();
 
@@ -43,9 +41,13 @@ class TG4PhysicsManager
 
     // set methods
     void SetCut(const char* cutName, Float_t cutValue);
-    void SetProcess(const char* flagName, Int_t flagValue);
+    void SetProcess(const char* controlName, Int_t controlValue);
     Float_t Xsec(char* reac, Float_t energy, Int_t part, Int_t mate);
- 
+    void SetExternalDecayer(AliDecayer* decayer);
+     
+    // get methods
+    AliDecayer* Decayer() const;
+
         // particle table usage         
     Int_t IdFromPDG(Int_t pdgID) const;
     Int_t PDGFromId(Int_t mcID) const;
@@ -55,36 +57,23 @@ class TG4PhysicsManager
     // methods for Geant4 only 
     //
 
-    void Lock();     
+    void CreatePhysicsConstructors();
     void SetProcessActivation();  
-    G4int GetPDGEncodingFast(G4ParticleDefinition* particle);
     AliMCProcess GetMCProcess(const G4VProcess* process);
-    G4bool CheckCutWithCutVector(
-             G4String name, G4double value, TG3Cut& cut);   
-    G4bool CheckFlagWithFlagVector(
-             G4String name, G4double value, TG3Flag& flag); 
-    G4bool CheckCutWithG3Defaults(
-             G4String name, G4double value, TG3Cut& cut); 
-    G4bool CheckFlagWithG3Defaults(
-             G4String name, G4double value, TG3Flag& flag); 
 
     // set methods
-    void SetPhysicsList(TG4PhysicsList* physicsList);
-    void SetG3DefaultCuts();                    
-    void SetG3DefaultProcesses();               
+    void SetPhysicsList(G4VModularPhysicsList* physicsList);
+    void SetEMPhysics(G4bool value);
+    void SetOpticalPhysics(G4bool value);
+    void SetHadronPhysics(G4bool value);
+    void SetSpecialCutsPhysics(G4bool value);
+    void SetSpecialControlsPhysics(G4bool value);
     
     // get methods
-    G4bool IsLock() const;   
-    G4bool IsSpecialCuts() const;
-    G4bool IsSpecialFlags() const;
-    TG4CutVector*  GetCutVector() const;    
-    TG4FlagVector* GetFlagVector() const;   
-    TG4boolVector* GetIsCutVector() const;
-    TG4boolVector* GetIsFlagVector() const;
-    TG3ParticleWSP GetG3ParticleWSP(G4ParticleDefinition* particle) const;
-    void GetG3ParticleWSPName(G4int particleWSP, G4String& name) const;
-    
+    G4VModularPhysicsList* GetPhysicsList() const; 
+   
   protected:
+    TG4PhysicsManager();
     TG4PhysicsManager(const TG4PhysicsManager& right);
 
     // operators
@@ -92,42 +81,25 @@ class TG4PhysicsManager
 
   private:
     // methods
-    void LockException() const;
-    void FillG3CutNameVector();
-    void FillG3FlagNameVector();
     void FillProcessMap();
-    G4int GetPDGEncoding(G4ParticleDefinition* particle);
-    G4int GetPDGEncoding(G4String particleName);
-
-    // set methods
-    void SetCut(TG3Cut cut, G4double cutValue);
-    void SetProcess(TG3Flag flag, G4int flagValue);
-    void SwitchIsCutVector(TG3Cut cut);
-    void SwitchIsFlagVector(TG3Flag flag);
-
-    // get methods
-    TG3Cut  GetG3Cut(G4String cutName);
-    TG3Flag GetG3Flag(G4String flagName);
 
     // static data members
     static TG4PhysicsManager*  fgInstance; //this instance
     
     // data members
-    G4bool           fLock;         //if true: cut/flag vectors cannot be modified
-    TG4PhysicsList*  fPhysicsList;  //physics list
-    TG4CutVector*    fCutVector;    //TG4CutVector  
-    TG4FlagVector*   fFlagVector;   //TG4FlagVector
-    TG4boolVector*   fIsCutVector;  //vector of booleans which cuts are set
-    TG4boolVector*   fIsFlagVector; //vector of booleans which flags are set
-    TG4StringVector  fG3CutNameVector;  //vector of cut parameters names     
-    TG4StringVector  fG3FlagNameVector; //vector of process control parameters
-                                        //names   
-    TG4NameMap       fParticleNameMap;  //the mapping between G4 particle names
-                                        //and TDatabasePDG names 
-    TG4IntMap        fParticlePDGMap;   //the mapping between G4 particle names
-                                        //and TDatabasePDG codes
-    TG4IntMap        fProcessMap;       //the mapping between G4 process names
-                                        //and AliMCProcess codes
+    TG4ParticlesManager*   fParticlesManager; //particles manager
+    TG4G3PhysicsManager*   fG3PhysicsManager; //G3 physics manager
+    G4VModularPhysicsList* fPhysicsList; //physics list
+    AliDecayer*            fDecayer;     //external decayer
+    TG4IntMap              fProcessMap;  //the mapping between G4 process names
+                                         //and AliMCProcess codes
+    G4bool  fSetEMPhysics;          //electromagnetic physics control
+    G4bool  fSetOpticalPhysics;     //optical physics control
+    G4bool  fSetHadronPhysics;      //hadron physics control
+    G4bool  fSetSpecialCutsPhysics; //special cuts process control 
+                                    //(under development)                  
+    G4bool  fSetSpecialControlsPhysics;//special controls process control
+                                    //(under development)
 };
 
 // inline methods
@@ -135,26 +107,26 @@ class TG4PhysicsManager
 inline TG4PhysicsManager* TG4PhysicsManager::Instance() 
 { return fgInstance; }
 
-inline void TG4PhysicsManager::Lock() 
-{ fLock = true; }
-
-inline void TG4PhysicsManager::SetPhysicsList(TG4PhysicsList* physicsList)
+inline void TG4PhysicsManager::SetPhysicsList(G4VModularPhysicsList* physicsList)
 { fPhysicsList = physicsList; }
 
-inline G4bool TG4PhysicsManager::IsLock() const
-{ return fLock; }
+inline void TG4PhysicsManager::SetEMPhysics(G4bool value)
+{ fSetEMPhysics = value; }
 
-inline TG4CutVector* TG4PhysicsManager::GetCutVector() const
-{ return fCutVector; }
+inline void TG4PhysicsManager::SetOpticalPhysics(G4bool value)
+{ fSetOpticalPhysics = value; }
 
-inline TG4FlagVector* TG4PhysicsManager::GetFlagVector() const
-{ return fFlagVector; }
+inline void TG4PhysicsManager::SetHadronPhysics(G4bool value)
+{ fSetHadronPhysics = value; }
 
-inline TG4boolVector* TG4PhysicsManager::GetIsCutVector() const
-{ return fIsCutVector; }
+inline void TG4PhysicsManager::SetSpecialCutsPhysics(G4bool value)
+{ fSetSpecialCutsPhysics = value; }
 
-inline TG4boolVector* TG4PhysicsManager::GetIsFlagVector() const
-{ return fIsFlagVector; }
+inline void TG4PhysicsManager::SetSpecialControlsPhysics(G4bool value)
+{ fSetSpecialControlsPhysics = value; }
+
+inline G4VModularPhysicsList* TG4PhysicsManager::GetPhysicsList() const
+{ return fPhysicsList; }
 
 #endif //TG4_PHYSICS_MANAGER_H
 
