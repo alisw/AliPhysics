@@ -21,7 +21,7 @@
 
 class AliPHOSv0 : public AliPHOS {
 
-public:
+ public:
 
   AliPHOSv0() {
     //ctor
