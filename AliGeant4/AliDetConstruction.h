@@ -43,6 +43,7 @@ class AliDetConstruction : public AliModulesComposition
     // methods
     void BuildDetectors();
     void CreateDetectors();
+    void CheckDependence(const G4String& master, const G4String& slave);
     void CheckDetDependencies();
   
     // data members
