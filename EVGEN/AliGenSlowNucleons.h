@@ -34,7 +34,9 @@ public:
     virtual void   SetCollisionGeometry(AliCollisionGeometry* geom)
 	{fCollisionGeometry = geom;}
     virtual void   SetDebug(Int_t flag = 0) {fDebug = flag;}
-	    
+    virtual void   SetNumbersOfSlowNucleons(Int_t ngp, Int_t ngn, Int_t nbp, Int_t nbn)
+	{fNgp = ngp; fNgn = ngn; fNbp = nbp; fNbn = nbn;}
+    
  protected:
     void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q);
     Double_t Maxwell(Double_t m, Double_t p, Double_t t);
@@ -51,6 +53,10 @@ public:
     Float_t  fBetaSourceG;  // Source beta for gray nucleons
     Float_t  fTemperatureB; // Source Temperature for black nucleons
     Float_t  fBetaSourceB;  // Source beta for black nucleons
+    Int_t    fNgp;          // Number of gray  protons
+    Int_t    fNgn;          // Number of gray  neutrons
+    Int_t    fNbp;          // Number of black protons
+    Int_t    fNbn;          // Number of black neutrons
     Int_t    fDebug;        // Debug flag
     TH2F*    fDebugHist;    // Histogram for debugging
     

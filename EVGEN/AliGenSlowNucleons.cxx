@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2003/03/24 16:49:23  morsch
+Slow nucleon generator and model.
+
 */
 
 /*
@@ -96,23 +99,21 @@ void AliGenSlowNucleons::Generate()
   // 
     Int_t ngp, ngn, nbp, nbn;
 
-    Float_t b = fCollisionGeometry->ImpactParameter();
-    Int_t  nn   = fCollisionGeometry->NN();
-    Int_t  nwn  = fCollisionGeometry->NwN();
-    Int_t  nnw  = fCollisionGeometry->NNw();
-    Int_t  nwnw = fCollisionGeometry->NwNw();
+    if (fCollisionGeometry) {
+	Float_t b   = fCollisionGeometry->ImpactParameter();
+	Int_t  nn   = fCollisionGeometry->NN();
+	Int_t  nwn  = fCollisionGeometry->NwN();
+	Int_t  nnw  = fCollisionGeometry->NNw();
+	Int_t  nwnw = fCollisionGeometry->NwNw();
 
-    printf("AliGenSlowNucleons: Impact parameter from Collision Geometry %f %d %d %d %d\n", 
-	   b, nn, nwn, nnw, nwnw);
-        
-    fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, ngp, ngn, nbp, nbn);
-
-    if (fDebug) {
-	printf("nucleons %d %d %d %d \n", ngp, ngn, nbp, nbn);
-	
-	fDebugHist->Fill(Float_t(ngp + ngn + nbp + nbn), fCollisionGeometry->NwN(), 1.);
-    }
-    
+	fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, ngp, ngn, nbp, nbn);
+	if (fDebug) {
+	    printf("Nucleons %d %d %d %d \n", fNgp, fNgn, fNbp, fNbn);
+	    fDebugHist->Fill(Float_t(fNgp + fNgn + fNbp + fNbn), fCollisionGeometry->NwN(), 1.);
+	    printf("AliGenSlowNucleons: Impact parameter from Collision Geometry %f %d %d %d %d\n", 
+		   b, nn, nwn, nnw, nwnw);
+	}
+    }     
 
    //
     Float_t p[3];
@@ -125,7 +126,7 @@ void AliGenSlowNucleons::Generate()
 //
     fCharge = 1;
     kf = kProton;    
-    for(i = 0; i < ngp; i++) {
+    for(i = 0; i < fNgp; i++) {
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p);
 	SetTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
@@ -136,7 +137,7 @@ void AliGenSlowNucleons::Generate()
 //
     fCharge = 0;
     kf = kNeutron;    
-    for(i = 0; i < ngn; i++) {
+    for(i = 0; i < fNgn; i++) {
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p);
 	SetTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
@@ -147,7 +148,7 @@ void AliGenSlowNucleons::Generate()
 //
     fCharge = 1;
     kf = kProton;    
-    for(i = 0; i < nbp; i++) {
+    for(i = 0; i < fNbp; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p);
 	SetTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
@@ -158,7 +159,7 @@ void AliGenSlowNucleons::Generate()
 //
     fCharge = 0;
     kf = kNeutron;    
-    for(i = 0; i < nbn; i++) {
+    for(i = 0; i < fNbn; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p);
 	SetTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
