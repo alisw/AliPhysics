@@ -78,6 +78,9 @@
 #include "AliReconstruction.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
+#include "AliRawReaderFile.h"
+#include "AliRawReaderDate.h"
+#include "AliRawReaderRoot.h"
 #include "AliTracker.h"
 #include "AliESD.h"
 #include "AliESDVertex.h"
@@ -103,10 +106,12 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fRunTracking(kTRUE),
   fFillESD("ALL"),
   fGAliceFileName(gAliceFilename),
+  fInput(""),
   fStopOnError(kFALSE),
   fCheckPointLevel(0),
 
   fRunLoader(NULL),
+  fRawReader(NULL),
   fITSLoader(NULL),
   fITSVertexer(NULL),
   fITSTracker(NULL),
@@ -133,10 +138,12 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunTracking(rec.fRunTracking),
   fFillESD(rec.fFillESD),
   fGAliceFileName(rec.fGAliceFileName),
+  fInput(rec.fInput),
   fStopOnError(rec.fStopOnError),
   fCheckPointLevel(0),
 
   fRunLoader(NULL),
+  fRawReader(NULL),
   fITSLoader(NULL),
   fITSVertexer(NULL),
   fITSTracker(NULL),
@@ -197,9 +204,21 @@ void AliReconstruction::SetOption(const char* detector, const char* option)
 
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::Run()
+Bool_t AliReconstruction::Run(const char* input)
 {
 // run the reconstruction
+
+  // set the input
+  if (!input) input = fInput.Data();
+  TString fileName(input);
+  if (fileName.EndsWith("/")) {
+    fRawReader = new AliRawReaderFile(fileName);
+  } else if (fileName.EndsWith(".root")) {
+    fRawReader = new AliRawReaderRoot(fileName);
+  } else if (!fileName.IsNull()) {
+    fRawReader = new AliRawReaderDate(fileName);
+    fRawReader->SelectEvents(7);
+  }
 
   // open the run loader
   fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
@@ -298,9 +317,11 @@ Bool_t AliReconstruction::Run()
   gROOT->cd();
 
   // loop over events
+  if (fRawReader) fRawReader->RewindEvents();
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
     Info("Run", "processing event %d", iEvent);
     fRunLoader->GetEvent(iEvent);
+    if (fRawReader) fRawReader->NextEvent();
 
     char fileName[256];
     sprintf(fileName, "ESD_%d.%d_final.root", 
@@ -372,23 +393,28 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
       (AliReconstructor*) fReconstructors[iDet];
     TString detName = reconstructor->GetDetectorName();
     if (IsSelected(detName, detStr)) {
-      Info("RunReconstruction", "running reconstruction for %s", 
+      Info("RunLocalReconstruction", "running reconstruction for %s", 
 	   detName.Data());
       TStopwatch stopwatchDet;
       stopwatchDet.Start();
-      reconstructor->Reconstruct(fRunLoader);
-      Info("RunReconstruction", "execution time for %s:", detName.Data());
+      if (fRawReader) {
+	fRawReader->RewindEvents();
+	reconstructor->Reconstruct(fRunLoader, fRawReader);
+      } else {
+	reconstructor->Reconstruct(fRunLoader);
+      }
+      Info("RunLocalReconstruction", "execution time for %s:", detName.Data());
       stopwatchDet.Print();
     }
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-    Error("RunReconstruction", "the following detectors were not found: %s", 
-	  detStr.Data());
+    Error("RunLocalReconstruction", 
+	  "the following detectors were not found: %s", detStr.Data());
     if (fStopOnError) return kFALSE;
   }
 
-  Info("RunReconstruction", "execution time:");
+  Info("RunLocalReconstruction", "execution time:");
   stopwatch.Print();
 
   return kTRUE;
@@ -608,7 +634,11 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
     if (IsSelected(detName, detStr)) {
       if (!ReadESD(esd, detName.Data())) {
 	Info("FillESD", "filling ESD for %s", detName.Data());
-	reconstructor->FillESD(fRunLoader, esd);
+	if (fRawReader) {
+	  reconstructor->FillESD(fRunLoader, fRawReader, esd);
+	} else {
+	  reconstructor->FillESD(fRunLoader, esd);
+	}
 	if (fCheckPointLevel > 2) WriteESD(esd, detName.Data());
       }
     }
@@ -785,6 +815,8 @@ void AliReconstruction::CleanUp(TFile* file)
 
   delete fRunLoader;
   fRunLoader = NULL;
+  delete fRawReader;
+  fRawReader = NULL;
 
   if (file) {
     file->Close();

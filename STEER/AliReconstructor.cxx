@@ -42,6 +42,27 @@ ClassImp(AliReconstructor)
 
 
 //_____________________________________________________________________________
+void AliReconstructor::Reconstruct(AliRunLoader* /*runLoader*/, 
+				   AliRawReader* /*rawReader*/) const
+{
+// run the local reconstruction with raw data input
+
+  Error("Reconstruct", 
+	"local reconstruction not implemented for raw data input");
+}
+
+//_____________________________________________________________________________
+void AliReconstructor::FillESD(AliRunLoader* runLoader, 
+			       AliRawReader* /*rawReader*/, AliESD* esd) const
+{
+// fill the ESD in case of raw data input.
+// by default the FillESD method for MC is called
+
+  FillESD(runLoader, esd);
+}
+
+
+//_____________________________________________________________________________
 const char* AliReconstructor::GetDetectorName() const
 {
 // get the name of the detector

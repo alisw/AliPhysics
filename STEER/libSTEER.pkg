@@ -25,5 +25,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= STEERLinkDef.h
 
+EINCLUDE:=RAW
+
 EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h
 

@@ -24,6 +24,7 @@
 #include "AliDetector.h"
 
 class AliRunLoader;
+class AliRawReader;
 class AliLoader;
 class AliVertexer;
 class AliTracker;
@@ -41,6 +42,7 @@ public:
   virtual ~AliReconstruction();
 
   void           SetGAliceFile(const char* fileName);
+  void           SetInput(const char* input) {fInput = input;};
   void           SetOption(const char* detector, const char* option);
 
   void           SetRunLocalReconstruction(const char* detectors) {
@@ -54,7 +56,7 @@ public:
   void           SetCheckPointLevel(Int_t checkPointLevel)
     {fCheckPointLevel = checkPointLevel;}
 
-  virtual Bool_t Run();
+  virtual Bool_t Run(const char* input = NULL);
 
 private:
   class AliDummyReconstructor: public AliReconstructor {
@@ -101,10 +103,12 @@ private:
   Bool_t         fRunTracking;        // run the barrel tracking
   TString        fFillESD;            // fill ESD for these detectors
   TString        fGAliceFileName;     // name of the galice file
+  TString        fInput;              // name of input file or directory
   Bool_t         fStopOnError;        // stop or continue on errors
   Int_t          fCheckPointLevel;    // level of ESD check points
 
   AliRunLoader*  fRunLoader;          //! current run loader object
+  AliRawReader*  fRawReader;          //! current raw data reader
   AliLoader*     fITSLoader;          //! loader for ITS
   AliVertexer*   fITSVertexer;        //! vertexer for ITS
   AliTracker*    fITSTracker;         //! tracker for ITS
@@ -120,7 +124,7 @@ private:
   TObjArray      fReconstructors;     //! array of reconstructor objects
   TObjArray      fOptions;            // options for reconstructor objects
 
-  ClassDef(AliReconstruction, 1)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 2)      // class for running the reconstruction
 };
 
 #endif

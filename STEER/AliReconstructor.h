@@ -15,6 +15,7 @@
 #include <TString.h>
 
 class AliRunLoader;
+class AliRawReader;
 class AliVertexer;
 class AliTracker;
 class AliESD;
@@ -26,11 +27,15 @@ public:
   virtual ~AliReconstructor() {};
 
   virtual void         Reconstruct(AliRunLoader* runLoader) const = 0;
+  virtual void         Reconstruct(AliRunLoader* runLoader, 
+				   AliRawReader* rawReader) const;
   virtual AliVertexer* CreateVertexer(AliRunLoader* /*runLoader*/) const 
     {return NULL;}
   virtual AliTracker*  CreateTracker(AliRunLoader* /*runLoader*/) const 
     {return NULL;}
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const = 0;
+  virtual void         FillESD(AliRunLoader* runLoader, 
+			       AliRawReader* rawReader, AliESD* esd) const;
 
   virtual const char*  GetDetectorName() const;
 
