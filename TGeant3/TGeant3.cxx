@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.39  2000/11/30 07:12:54  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.38  2000/10/30 15:19:06  morsch
 Xi(b) (pdg code 5232) added to Pdg data base.
 
@@ -966,6 +969,56 @@ void TGeant3::DefineParticles()
   pdgDB->AddParticle("Omega(c)*0 bar","Omega(c)*0",
 		     2.8000, kFALSE, -1., -0.,"Baryon", -4334);
 
+
+// Xi(cc)
+
+  pdgDB->AddParticle("Xsi(cc)+","Xsi(cc)+",
+		     3.60, kTRUE, -1., +1.,"Baryon",  4412);
+
+  pdgDB->AddParticle("Xsi(cc) bar-","Xsi(cc) bar-",
+		     3.60, kTRUE, -1., -1.,"Baryon", -4412);
+
+  pdgDB->AddParticle("Xsi*(cc)+","Xsi*(cc)+",
+		     3.66, kTRUE, -1., +1.,"Baryon",  4414);
+
+  pdgDB->AddParticle("Xsi*(cc) bar-","Xsi*(cc) bar-",
+		     3.66, kTRUE, -1., -1.,"Baryon", -4414);
+
+
+  pdgDB->AddParticle("Xsi(cc)++","Xsi(cc)++",
+		     3.60, kTRUE, -1., +2.,"Baryon",  4422);
+
+  pdgDB->AddParticle("Xsi(cc) bar--","Xsi(cc) bar--",
+		     3.60, kTRUE, -1., -2.,"Baryon", -4422);
+
+
+  pdgDB->AddParticle("Xsi*(cc)++","Xsi*(cc)++",
+		     3.66, kTRUE, -1., +2.,"Baryon",  4424);
+
+  pdgDB->AddParticle("Xsi*(cc) bar-","Xsi*(cc) bar-",
+		     3.66, kTRUE, -1., -2.,"Baryon", -4424);
+
+  pdgDB->AddParticle("Omega(cc)+","Omega(cc)+",
+		     3.78, kTRUE, -1., +1.,"Baryon",  4432);
+
+  pdgDB->AddParticle("Omega(cc) bar-","Omega(cc) bar-",
+		     3.78, kTRUE, -1., -1.,"Baryon", -4432);
+
+  pdgDB->AddParticle("Omega*(cc)+","Omega*(cc)+",
+		     3.82, kTRUE, -1., +1.,"Baryon",  4434);
+
+  pdgDB->AddParticle("Omega*(cc) bar-","Omega*(cc) bar-",
+		     3.82, kTRUE, -1., -1.,"Baryon", -4434);
+
+
+  pdgDB->AddParticle("Omega*(ccc)+","Omega*(cc)++",
+		     4.91, kTRUE, -1., +2.,"Baryon",  4444);
+
+  pdgDB->AddParticle("Omega*(ccc) bar--","Omega*(cc) bar--",
+		     4.91, kTRUE, -1., -2.,"Baryon", -4444);
+
+
+
 // Bottom baryons
 //
 // mass value from Hijing
@@ -981,6 +1034,168 @@ void TGeant3::DefineParticles()
 
   pdgDB->AddParticle("Xi(b)0 bar","Xi(b)0 bar",
 		     5.8100, kFALSE, -1., -0.,"Baryon", -5232);
+
+// B(s) 
+  pdgDB->AddParticle("Xi'(b)-","Xi'(b)-",
+		     5.9600, kFALSE, -1., -1.,"Baryon", 5312);
+
+  pdgDB->AddParticle("Xi'(b) bar+","Xi'(b) bar+",
+		     5.9600, kFALSE, -1.,  1.,"Baryon", -5312);
+
+  pdgDB->AddParticle("Xi*(b)-","Xi*(b)-",
+		     5.9700, kFALSE, -1., -1.,"Baryon", 5314);
+
+  pdgDB->AddParticle("Xi*(b) bar+","Xi*(b) bar+",
+		     5.9700, kFALSE, -1.,  1.,"Baryon", -5314);
+
+  pdgDB->AddParticle("Xi'(b)0","Xi'(b)0",
+		     5.9600, kFALSE, -1., -0.,"Baryon", 5322);
+
+  pdgDB->AddParticle("Xi'(b) bar0","Xi'(b) bar0",
+		     5.9600, kFALSE, -1.,  0.,"Baryon", -5322);
+
+  pdgDB->AddParticle("Xi*(b)0","Xi*(b)0",
+		     5.9700, kFALSE, -1., -0.,"Baryon", 5324);
+
+  pdgDB->AddParticle("Xi*(b) bar0","Xi*(b) bar0",
+		     5.9700, kFALSE, -1.,  0.,"Baryon", -5324);
+
+  pdgDB->AddParticle("Omega(b)-","Omega(b)-",
+		     6.1200, kFALSE, -1., -1.,"Baryon", 5332);
+
+  pdgDB->AddParticle("Omega(b) bar+","Omega(b) bar+",
+		     6.1200, kFALSE, -1.,  1.,"Baryon", -5332);
+
+  pdgDB->AddParticle("Omega*(b)-","Omega*(b)-",
+		     6.1300, kFALSE, -1., -1.,"Baryon", 5334);
+
+  pdgDB->AddParticle("Omega*(b) bar+","Omega*(b) bar+",
+		     6.1300, kFALSE, -1.,  1.,"Baryon", -5334);
+
+
+  pdgDB->AddParticle("Omega*(b)-","Omega*(b)-",
+		     6.1300, kFALSE, -1., -1.,"Baryon", 5334);
+
+  pdgDB->AddParticle("Omega*(b) bar+","Omega*(b) bar+",
+		     6.1300, kFALSE, -1.,  1.,"Baryon", -5334);
+
+// B(c) 
+
+  pdgDB->AddParticle("Omega(bc)0","Omega(bc)0",
+		     7.1900, kFALSE, -1., -0.,"Baryon", 5342);
+
+  pdgDB->AddParticle("Omega(bc) bar0","Omega(bc) bar0",
+		     7.1900, kFALSE, -1.,  0.,"Baryon", -5342);
+
+  pdgDB->AddParticle("Xi'(bc)0","Xi'(bc)0",
+		     7.0400, kFALSE, -1., -0.,"Baryon", 5412);
+
+  pdgDB->AddParticle("Xi'(bc) bar0","Xi'(bc) bar0",
+		     7.0400, kFALSE, -1.,  0.,"Baryon", -5412);
+
+  pdgDB->AddParticle("Xi*(bc)0","Xi*(bc)0",
+		     7.0500, kFALSE, -1., -0.,"Baryon", 5414);
+
+  pdgDB->AddParticle("Xi*(bc) bar0","Xi*(bc) bar0",
+		     7.0500, kFALSE, -1.,  0.,"Baryon", -5414);
+
+  pdgDB->AddParticle("Xi'(bc)+","Xi'(bc)+",
+		     7.0400, kFALSE, -1., +1.,"Baryon", 5422);
+
+  pdgDB->AddParticle("Xi'(bc) bar-","Xi'(bc) bar-",
+		     7.0400, kFALSE, -1., -1.,"Baryon", -5422);
+
+  pdgDB->AddParticle("Xi*(bc)+","Xi*(bc)+",
+		     7.0500, kFALSE, -1., +1.,"Baryon", 5424);
+
+  pdgDB->AddParticle("Xi*(bc) bar-","Xi*(bc) bar-",
+		     7.0500, kFALSE, -1., -1.,"Baryon", -5424);
+
+  pdgDB->AddParticle("Omega'(bc)0","Omega'(bc)0",
+		     7.2100, kFALSE, -1., -0.,"Baryon", 5432);
+
+  pdgDB->AddParticle("Omega'(bc) bar0","Omega'(bc) bar0",
+		     7.2100, kFALSE, -1.,  0.,"Baryon", -5432);
+
+  pdgDB->AddParticle("Omega*(bc)0","Omega*(bc)0",
+		     7.2200, kFALSE, -1., -0.,"Baryon", 5434);
+
+  pdgDB->AddParticle("Omega*(bc) bar0","Omega*(bc) bar0",
+		     7.2200, kFALSE, -1.,  0.,"Baryon", -5434);
+// B(bcc)
+  pdgDB->AddParticle("Omega(bcc)+","Omega(bcc)+",
+		     8.3100, kFALSE, -1., +1.,"Baryon", 5442);
+
+  pdgDB->AddParticle("Omega(bcc) bar-","Omega(bcc) bar-",
+		     8.3100, kFALSE, -1., -1.,"Baryon", -5442);
+
+  pdgDB->AddParticle("Omega*(bcc)+","Omega*(bcc)+",
+		    8.3100, kFALSE, -1., +1.,"Baryon", 5444);
+
+  pdgDB->AddParticle("Omega*(bcc) bar-","Omega*(bcc) bar-",
+		     8.3100, kFALSE, -1., -1.,"Baryon", -5444);
+
+
+
+
+// B(bb)
+
+  pdgDB->AddParticle("Xsi(bb)-","Xsi(bb)-",
+		     10.4200, kFALSE, -1., -1.,"Baryon", 5512);
+  
+  pdgDB->AddParticle("Xsi(bb) bar+","Xsi(bb) bar+",
+		     10.4200, kFALSE, -1., +1.,"Baryon", -5512);
+
+  pdgDB->AddParticle("Xsi*(bb)-","Xsi*(bb)-",
+		     10.4400, kFALSE, -1., -1.,"Baryon", 5514);
+  
+  pdgDB->AddParticle("Xsi*(bb) bar+","Xsi*(bb) bar+",
+		     10.4400, kFALSE, -1., +1.,"Baryon", -5514);
+
+  pdgDB->AddParticle("Xsi(bb)0","Xsi(bb)0",
+		     10.4200, kFALSE, -1., -0.,"Baryon", 5522);
+  
+  pdgDB->AddParticle("Xsi(bb) bar0","Xsi(bb) bar0",
+		     10.4200, kFALSE, -1., +0.,"Baryon", -5522);
+
+  pdgDB->AddParticle("Xsi*(bb)0","Xsi*(bb)0",
+		     10.4400, kFALSE, -1., -0.,"Baryon", 5524);
+  
+  pdgDB->AddParticle("Xsi*(bb) bar0","Xsi*(bb) bar0",
+		     10.4400, kFALSE, -1., +0.,"Baryon", -5524);
+
+  pdgDB->AddParticle("Omega*(bb)-","Omega(bb)-",
+		     10.6000, kFALSE, -1., -1.,"Baryon", 5532);
+
+  pdgDB->AddParticle("Omega(bb) bar+","Omega(bb) bar+",
+		     10.6000, kFALSE, -1., +1.,"Baryon", -5532);
+
+  pdgDB->AddParticle("Omega*(bb)-","Omega*(bb)-",
+		     10.6000, kFALSE, -1., -1.,"Baryon", 5534);
+
+  pdgDB->AddParticle("Omega*(bb) bar+","Omega*(bb) bar+",
+		     10.6000, kFALSE, -1., +1.,"Baryon", -5534);
+
+// B(bbc)
+
+  pdgDB->AddParticle("Omega(bbc)0","Omega(bbc)0",
+		     11.7100, kFALSE, -1., -0.,"Baryon", 5542);
+
+  pdgDB->AddParticle("Omega(bbc) bar0","Omega(bbc) bar0",
+		     11.7100, kFALSE, -1., +0.,"Baryon", -5542);
+
+  pdgDB->AddParticle("Omega*(bbc)0","Omega*(bbc)0",
+		     11.7100, kFALSE, -1., -0.,"Baryon", 5544);
+
+  pdgDB->AddParticle("Omega*(bbc) bar0","Omega*(bbc) bar0",
+		     11.7100, kFALSE, -1., +0.,"Baryon", -5544);
+// B(bbb)
+
+  pdgDB->AddParticle("Omega*(bbb)-","Omega*(bbb)-",
+		     15.1000, kFALSE, -1., -1.,"Baryon", 5544);
+
+  pdgDB->AddParticle("Omega*(bbb) bar+","Omega*(bbb) bar+",
+		     15.100, kFALSE, -1., +1.,"Baryon", -5544);
 
 //
 //
@@ -2669,6 +2884,7 @@ void  TGeant3::Gspos(const char *name, Int_t nr, const char *mother, Float_t x,
   //
   //  It positions a previously defined volume in the mother.
   //  
+    
   char vname[5];
   Vname(name,vname);
   char vmother[5];
