@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2002/10/14 14:57:44  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.28.6.2  2002/07/24 10:10:13  alibrary
 Updating VirtualMC
 
@@ -107,7 +110,7 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 // --- ROOT system
 #include <TBRIK.h>

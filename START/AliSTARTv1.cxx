@@ -39,8 +39,8 @@
 #include "AliMagF.h"
 #include "AliSTARThit.h"
 
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 
 //#include "TGeant3.h"
 #include <stdlib.h>

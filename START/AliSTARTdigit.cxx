@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.6  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.4.12.1  2002/07/24 09:50:10  alibrary
 Updating VirtualMC
 
@@ -33,7 +36,7 @@ New AliSTART
 
 #include <TArrayI.h>
 #include "AliSTARTdigit.h"
-#include <iostream.h>
+#include <Riostream.h>
 
 ClassImp(AliSTARTdigit)
 

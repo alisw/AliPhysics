@@ -42,8 +42,8 @@
 #include "AliSTARThit.h"
 //#include "AliSTARThitPhoton.h"
 
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 
 //#include "TGeant3.h"
 #include <stdlib.h>

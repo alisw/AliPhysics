@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system
-#include <iostream.h>
+#include <Riostream.h>
 #include <TTree.h>
 #include <TFile.h>
 #include <TDirectory.h>

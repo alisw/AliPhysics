@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/10/19 05:29:38  alla
+bug in meduim fixed
+
 Revision 1.13  2001/09/19 18:41:59  alla
 Asimmetric START geometry
 
@@ -69,8 +72,8 @@ Introduction of the Copyright and cvs Log
 #include "AliMagF.h"
 #include "AliSTARThit.h"
 
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 
 //#include "TGeant3.h"
 #include <stdlib.h>
