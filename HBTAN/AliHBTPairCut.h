@@ -16,6 +16,9 @@ enum AliHBTPairCutProperty
  {
   kHbtPairCutPropQInv, //Q invariant
   kHbtPairCutPropKt,
+  kHbtPairCutPropQSideCMSLC,
+  kHbtPairCutPropQOutCMSLC,
+  kHbtPairCutPropQLongCMSLC,
   kHbtPairCutPropNone
  };
 
@@ -148,6 +151,47 @@ class AliHBTKtCut: public AliHbtBasePairCut
    private:
    public:
      ClassDef(AliHBTKtCut,1)
+ };
+
+
+class AliHBTQSideCMSLCCut: public AliHbtBasePairCut
+ {
+   public:
+    AliHBTQSideCMSLCCut(Double_t min = 0.0, Double_t max = 0.0):
+              AliHbtBasePairCut(min,max,kHbtPairCutPropQSideCMSLC){}
+    virtual ~AliHBTQSideCMSLCCut(){}
+   protected:
+    virtual Double_t  GetValue(AliHBTPair* pair){return pair->GetQSideCMSLC();}
+   private:
+   public:
+     ClassDef(AliHBTQSideCMSLCCut,1)
+ };
+
+
+class AliHBTQOutCMSLCCut: public AliHbtBasePairCut
+ {
+   public:
+    AliHBTQOutCMSLCCut(Double_t min = 0.0, Double_t max = 0.0):
+              AliHbtBasePairCut(min,max,kHbtPairCutPropQOutCMSLC){}
+    virtual ~AliHBTQOutCMSLCCut(){}
+   protected:
+    virtual Double_t  GetValue(AliHBTPair* pair){return pair->GetQOutCMSLC();}
+   private:
+   public:
+     ClassDef(AliHBTQOutCMSLCCut,1)
+ };
+
+class AliHBTQLongCMSLCCut: public AliHbtBasePairCut
+ {
+   public:
+    AliHBTQLongCMSLCCut(Double_t min = 0.0, Double_t max = 0.0):
+              AliHbtBasePairCut(min,max,kHbtPairCutPropQLongCMSLC){}
+    virtual ~AliHBTQLongCMSLCCut(){}
+   protected:
+    virtual Double_t  GetValue(AliHBTPair* pair){return pair->GetQLongCMSLC();}
+   private:
+   public:
+     ClassDef(AliHBTQLongCMSLCCut,1)
  };
 
 #endif
