@@ -16,7 +16,6 @@
 
 // --- ROOT system ---
 //#include "TClonesArray.h"
-#include <assert.h>
 #include "TRandom.h"
 
 class TVector3 ;
@@ -34,9 +33,7 @@ public:
   AliPHOSvFast() ;
   AliPHOSvFast(const char *name, const char *title="") ;
   AliPHOSvFast(const AliPHOSvFast & fast) : AliPHOS(fast) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
-    assert(0==1) ; 
+    Fatal("cpy ctor", "not implemented") ; 
   }
   virtual ~AliPHOSvFast(void) ;
 
@@ -70,9 +67,7 @@ public:
   }
 
   AliPHOSvFast & operator = (const AliPHOSvFast & )  {
-    // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
-    return *this ; 
+    Fatal("operator =", "not implemented") ; return *this ; 
   }
   
 private:
