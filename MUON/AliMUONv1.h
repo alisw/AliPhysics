@@ -21,9 +21,16 @@ public:
    virtual void   Init();
    virtual Int_t  IsVersion() const {return 1;}
    virtual void   StepManager();
+   void StepManagerOld();
+   void SetStepManagerVersionOld(Bool_t Opt) 
+     { fStepManagerVersionOld = Opt; }
+   void SetStepMaxInActiveGas(Float_t StepMax)
+     {fStepMaxInActiveGas = StepMax; }
 protected:
+   Int_t*  fStations; //! allow to externally set which station to create
+   Bool_t  fStepManagerVersionOld; // Version of StepManager, Default is false
+   Float_t fStepMaxInActiveGas; // Step mas in active gas default 0.6cm
    virtual Int_t  GetChamberId(Int_t volId) const;
-   Int_t* fStations; //! allow to externally set which station to create
 private:
    ClassDef(AliMUONv1,1)  // MUON Detector class Version 1
 };
