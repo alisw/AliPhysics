@@ -27,6 +27,7 @@
 #include "AliTRDparameter.h"
 #include "AliTRDclusterizerV1.h"
 #include "AliTRDtracker.h"
+#include "AliTRDpidESD.h"
 #include <TFile.h>
 
 
@@ -73,8 +74,17 @@ AliTracker* AliTRDReconstructor::CreateTracker(AliRunLoader* runLoader) const
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
-				  AliESD* /*esd*/) const
+				  AliESD* esd) const
 {
+// make PID
+
+  Double_t parTRD[] = {
+    187., // Min. Ionizing Particle signal.  Check it !!!
+    0.23, // relative resolution             Check it !!!
+    10.   // PID range (in sigmas)
+  };
+  AliTRDpidESD trdPID(parTRD);
+  trdPID.MakePID(esd);
 }
 
 

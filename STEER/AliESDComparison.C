@@ -151,6 +151,7 @@ Int_t AliESDComparison(const Char_t *dir=".") {
          UInt_t status=AliESDtrack::kESDpid;
          status|=AliESDtrack::kITSpid; 
          status|=AliESDtrack::kTPCpid; 
+         status|=AliESDtrack::kTRDpid; 
          status|=AliESDtrack::kTOFpid; 
 
         if ((t->GetStatus()&status) == status) {
@@ -165,6 +166,7 @@ Int_t AliESDComparison(const Char_t *dir=".") {
            Int_t code=part->GetPdgCode();
 
            Double_t r[10]; t->GetESDpid(r);
+           //t->GetTRDpid(r);
 
            Double_t rcc=0.;
            Int_t i;
