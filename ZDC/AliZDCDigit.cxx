@@ -30,18 +30,20 @@ ClassImp(AliZDCDigit)
 {
   // Default constructor 
   
-  fDetector = 0;
-  fQuadrant = 0;
+  fSector[0]   = 0;
+  fSector[1]   = 0;
   fADCValue = 0;  
 }
 
 //____________________________________________________________________________
-AliZDCDigit::AliZDCDigit(Int_t Det, Int_t Quad, Float_t ADCValue) 
+AliZDCDigit::AliZDCDigit(Int_t *Sector, Int_t ADCValue) 
 {  
   // Constructor 
  
-  fDetector = Det;
-  fQuadrant = Quad;
+  Int_t i;
+  for(i=0; i<2; i++) {
+     fSector[i] = Sector[i];
+  }
   fADCValue = ADCValue;  
 }
 
@@ -50,8 +52,8 @@ AliZDCDigit::AliZDCDigit(const AliZDCDigit & digit)
 {
   // Copy constructor
 
-  fDetector = digit.fDetector;           
-  fQuadrant = digit.fQuadrant;           
+  fSector[0]   = digit.fSector[0];           
+  fSector[1]   = digit.fSector[1];           
   fADCValue = digit.fADCValue;             
 
 }

@@ -17,41 +17,38 @@ class AliZDCDigit : public AliDigitNew {
  public:
   
   AliZDCDigit() ;
-  AliZDCDigit(Int_t Det, Int_t Quad, Float_t ADCValue);
+  AliZDCDigit(Int_t *Sector, Int_t ADCValue);
   AliZDCDigit(const AliZDCDigit & digit);
+  virtual ~AliZDCDigit() {}
 
   // Getters 
-  virtual Float_t   GetDetector() {return fDetector;}
-  virtual Float_t   GetQuadrant() {return fQuadrant;}
+  virtual Float_t   GetSector(Int_t i) {return fSector[i];}
   virtual Float_t   GetADCValue() {return fADCValue;}
-
-  virtual ~AliZDCDigit(){} 
 
   // Operators
   Int_t operator == (AliZDCDigit &digit) {
     // Two digits are equal if they refers to the detector
     // in the same sub-volume (same procedure as for hits)
-    if (fDetector != digit.fDetector) return 0;
-    if (fQuadrant != digit.fQuadrant) return 0;
+    Int_t i;
+    for(i=0; i<2; i++) if(fSector[i]!=digit.GetSector(i)) return 0;
     return 1;
   }
   virtual AliZDCDigit& operator + (AliZDCDigit &digit) {
     // Adds the amplitude of digits 
-
     fADCValue += digit.fADCValue ;
     return *this ;
   }
   
  protected:
 
-  Int_t   fDetector;          // Detector
-  Int_t   fQuadrant;          // Quadrant
+  //Data members
+  Int_t   fSector[2];         // Detecor and tower in which light is produced
   Float_t fADCValue;          // ADC channel value
 
   // Print method
   virtual void Print(Option_t *) {
-     printf(" -> DIGIT: Det =  %d Quad =  %d ADCCh =  %f\n ",
-     fDetector, fQuadrant, fADCValue);
+     printf(" -> DIGIT: Detector =  %d Quadrant =  %d ADCCh =  %f\n ",
+     fSector[0], fSector[1], fADCValue);
   }
     
   ClassDef(AliZDCDigit,1)   // Digits in ZDC 

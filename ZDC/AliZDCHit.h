@@ -19,9 +19,17 @@ public:
 
   // Getters 
   virtual Int_t   GetVolume(Int_t i) {return fVolume[i];}
-  virtual Float_t GetLightPMQ() {return fLightPMQ;}
-  virtual Float_t GetLightPMC() {return fLightPMC;}
-  virtual Float_t GetEnergy() {return fEnergy;}
+  virtual Float_t GetPrimKinEn()     {return fPrimKinEn;}
+  virtual Float_t GetXImpact()       {return fXImpact;}
+  virtual Float_t GetYImpact()       {return fYImpact;}
+  virtual Float_t GetSFlag()         {return fSFlag;}
+  virtual Float_t GetLightPMQ()      {return fLightPMQ;}
+  virtual Float_t GetLightPMC()      {return fLightPMC;}
+  virtual Float_t GetEnergy()        {return fEnergy;}
+
+  // Setters 
+  virtual void SetLightPMQ(Float_t value) {fLightPMQ=value;}
+  virtual void SetLightPMC(Float_t value) {fLightPMC=value;}
 
 
   // Data members
@@ -38,7 +46,6 @@ public:
   // Operators
   Int_t operator == (AliZDCHit &quad) {
      Int_t i;
-//      Superfluo finche' c'e' shunt = 1 !?!?
      if(fTrack!=quad.GetTrack()) return 0;
      for(i=0; i<2; i++) if(fVolume[i]!=quad.GetVolume(i)) return 0;
      return 1;

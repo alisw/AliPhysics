@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/05/15 13:44:57  coppedis
+Changes in AddHit method
+
 Revision 1.22  2001/05/14 09:53:32  coppedis
 Adding functions ZMin and ZMax
 
@@ -66,14 +69,15 @@ Introduction of the Copyright and cvs Log
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Zero Degree Calorimeter                                                  //
-//  This class contains the basic functions for the ZDCs                     //
-//  Functions specific to one particular geometry are      	             //
-//  contained in the derived classes                                         //
+//  			Zero Degree Calorimeter			             //
+//  	     This class contains the basic functions for the ZDCs;           //
+//            functions specific to one particular geometry are              //
+//                      contained in the derived classes                     //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
+#include <iostream.h>
 
 // --- ROOT system
 #include <TBRIK.h>
@@ -85,11 +89,14 @@ Introduction of the Copyright and cvs Log
 // --- AliRoot header files
 #include "AliZDC.h"
 #include "AliZDCHit.h"
-#include "AliRun.h"
+#include "AliZDCDigit.h"
+#include "AliZDCMerger.h"
 #include "AliDetector.h"
 #include "AliCallf77.h"
 #include "AliConst.h"
 #include "AliMC.h"
+#include "AliRun.h"
+#include "AliHeader.h"
 
  
 ClassImp(AliZDC)
@@ -101,14 +108,16 @@ AliZDC::AliZDC()
   // Default constructor for the Zero Degree Calorimeter base class
   //
   
-  fIshunt = 1;
+  fIshunt   = 1;
+  fNoShower = 0;
+  fMerger   = 0;
 
-  fNhits = 0;
+  fHits     = 0;
+  fNhits    = 0;
 
-//  fNStHits = 0;
-
-//  fNPrimaryHits = 0;
-  fNoShower   = 0;
+  fDigits   = 0;
+  fNdigits  = 0;
+  
 }
  
 //_____________________________________________________________________________
@@ -119,19 +128,17 @@ AliZDC::AliZDC(const char *name, const char *title)
   // Standard constructor for the Zero Degree Calorimeter base class
   //
 
-  //
-  // Allocate the array of hits
-  
-  fIshunt =  1;
+  fIshunt   = 1;
+  fNoShower = 0;
+  fMerger   = 0;
 
+  // Allocate the hits array  
   fHits   = new TClonesArray("AliZDCHit",1000);
   gAlice->AddHitList(fHits);
-  
-//  fStHits = new TClonesArray("AliZDCHit",1000);
-//  fNStHits = 0;
 
-//  fNPrimaryHits = 0;
-  fNoShower   = 0;
+  // Allocate the digits array  
+  fDigits = new TClonesArray("AliZDCDigit",1000);
+  
 
 }
 //____________________________________________________________________________ 
@@ -142,14 +149,19 @@ AliZDC::~AliZDC()
   //
 
   fIshunt   = 0;
+  
+//  if(fMerger) delete fMerger;
 
-//  delete fHits;
-//  if(fStHits){
-//    fStHits->Delete();
-//    delete fStHits;
-//    fNStHits = 0;
+//  if(fHits){
+//    fHits->Delete();
+//    delete fHits;
 //  }
-//  delete fDigits;
+
+//  if(fDigits){
+//    fDigits->Delete();
+//    delete fDigits;
+//  }
+
 }
 //_____________________________________________________________________________
 void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
@@ -165,10 +177,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   static Float_t primKinEn, xImpact, yImpact, sFlag;
 
   AliZDCHit *newquad, *curprimquad;
-//  AliZDCHit *curevquad;  
   newquad = new AliZDCHit(fIshunt, track, vol, hits);
-
-//  TClonesArray &lsthits = *fStHits;
   TClonesArray &lhits = *fHits;
   
   if(fNhits==0){
@@ -194,18 +203,6 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
    }
  
   Int_t j;
-//  Int_t i,kStHit = 1;
-//  for(i=0; i<fNStHits; i++){
-//    // If hits are equal (same track, same volume), sum them.
-//     curevquad = (AliZDCHit*) lsthits[i];
-//     kStHit = 1;
-//     if(*curevquad == *newquad){
-//	*curevquad = *curevquad+*newquad;
-//	kStHit = 0;
-//     } 
-//     if(kStHit == 0) break;
-//  }
-
   for(j=0; j<fNhits; j++){
     // If hits are equal (same track, same volume), sum them.
      curprimquad = (AliZDCHit*) lhits[j];
@@ -220,46 +217,37 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
     new(lhits[fNhits]) AliZDCHit(newquad);
     fNhits++;
     
-//    if(kStHit){
-//      new(lsthits[fNStHits]) AliZDCHit(newquad);
-//      fNStHits++;
-//    }
-
-    if(fDebug == 1){ 
-      printf("\n  Primary Hits --------------------------------------------------------\n");
-      fHits->Print("");
-//      printf("\n  Event Hits --------------------------------------------------------\n");
-//      fStHits->Print("");
-    }
-
     delete newquad;
-  }
-//____________________________________________________________________________
-Float_t AliZDC::ZMin(void) const
-{
-  // Minimum dimension of the ZDC module in z
-  return 11600.;
 }
 
-//____________________________________________________________________________
-Float_t AliZDC::ZMax(void) const
-{
-  // Maximum dimension of the ZDC module in z
-  return  11750.;
-}
-  
 //_____________________________________________________________________________
-void AliZDC::ResetDigits()
+void  AliZDC::AddDigit(Int_t *sect, Int_t digit)
 {
-  //
-  // Reset number of digits and the digits array
-  //
-    
-    AliDetector::ResetDigits();
-//    fNStHits = 0;
-//    if(fStHits) fStHits->Clear();
-}
+//
+  AliZDCDigit *newdigit;
+  newdigit = new AliZDCDigit(sect, digit);
 
+//  AliZDCDigit *curdigit;
+//  TClonesArray &ldigits = *fDigits;
+//
+//  Int_t j;
+//  for(j=0; j<fNdigits; j++){
+//     curdigit = (AliZDCDigit*) ldigits[j];
+//     if(*curdigit == *newdigit){
+//	*curdigit = *curdigit+*newdigit;
+//      delete newdigit;
+//      return;
+//     } 
+//  } 
+//
+  
+//  printf("\n	AddDigit -> sector[0] = %d, sector[1] = %d, digit = %d",
+//         sect[0], sect[1], digit);
+  new((*fDigits)[fNdigits]) AliZDCDigit(*newdigit);
+  fNdigits++;
+  delete newdigit;
+}
+      
 //_____________________________________________________________________________
 void AliZDC::BuildGeometry()
 {
@@ -271,7 +259,7 @@ void AliZDC::BuildGeometry()
 
   TNode *node, *top;
   TBRIK *brik;
-  const int kColorZDC  = kRed;
+  const int kColorZDC  = kBlue;
   
   //
   top=gAlice->GetGeometry()->GetNode("alice");
@@ -293,11 +281,140 @@ Int_t AliZDC::DistancetoPrimitive(Int_t , Int_t )
   //
   return 9999;
 }
- 
+
+//____________________________________________________________________________
+Float_t AliZDC::ZMin(void) const
+{
+  // Minimum dimension of the ZDC module in z
+  return 11600.;
+}
+
+//____________________________________________________________________________
+Float_t AliZDC::ZMax(void) const
+{
+  // Maximum dimension of the ZDC module in z
+  return  11750.;
+}
+  
+
 //_____________________________________________________________________________
-void AliZDC::StepManager()
+ void AliZDC::MakeBranch(Option_t *opt, const char *file)
 {
   //
-  // Routine called at every step in the Zero Degree Calorimeter
+  // Create Tree branches for the ZDC
   //
+
+  char branchname[10];
+  sprintf(branchname,"%s",GetName());
+  
+  AliDetector::MakeBranch(opt);
+
+  const char *cS = strstr(opt,"S");
+
+  if (gAlice->TreeS() && cS) {
+    MakeBranchInTree(gAlice->TreeS(), 
+                     branchname, &fHits, fBufferSize, file) ;
+    printf("* AliZDC::MakeBranch    * Making Branch %s for SDigits\n\n",branchname);
+  }
+
+    
+  const char *cD = strstr(opt,"D");
+
+  if (gAlice->TreeD() && cD) {
+    if(fDigits!=0) fDigits->Clear();
+    else fDigits = new TClonesArray ("AliZDCDigit",1000);
+    MakeBranchInTree(gAlice->TreeD(), 
+                     branchname, &fDigits, fBufferSize, file) ;
+    printf("* AliZDC::MakeBranch    * Making Branch %s for Digits\n\n",branchname);
+  }
+
+  
+  const char *cR = strstr(opt,"R");
+
+  if (gAlice->TreeR() && cR) {
+    MakeBranchInTree(gAlice->TreeR(), 
+		     branchname, &fRecPoints, fBufferSize, file) ;
+    printf("* AliZDC::MakeBranch    * Making Branch %s for RecPoints\n\n",branchname);   }
+          
 }
+
+//_____________________________________________________________________________
+void AliZDC::Hits2SDigits()
+{
+
+  if(!fMerger){ 
+    // ### Copy of TreeH in TreeS
+    // Pointer to TreeH
+//    printf("\n 	ZDC digitization (without merging)\n");
+    TTree *treeH = gAlice->TreeH();
+    Int_t ntracks = (Int_t) treeH->GetEntries();
+    Int_t fNhits = 0;
+    gAlice->ResetHits();
+  
+    // Tracks loop
+    for(Int_t itrack=0; itrack<ntracks; itrack++){
+       treeH->GetEvent(itrack);
+       // Hits loop
+       for(AliZDCHit* zdcHit=(AliZDCHit*)this->FirstHit(-1); zdcHit;
+           zdcHit = (AliZDCHit*)this->NextHit()){ 
+	  TClonesArray &sdigits = *fHits;
+	  new (sdigits[fNhits++]) AliZDCHit(zdcHit);
+       }
+    }
+  
+    gAlice->TreeS()->Fill();
+    gAlice->TreeS()->Write(0,TObject::kOverwrite);  
+    gAlice->TreeS()->Reset();  
+  }
+  
+}
+
+//_____________________________________________________________________________
+void AliZDC::SDigits2Digits()
+{
+  if(!fMerger){ // Only digitization
+//    printf("\n        ZDC digitization (without merging) \n");
+    fMerger = new AliZDCMerger();    
+    fMerger->Digitize();
+  }
+  else{	// Merging and digitization
+    printf("\n        ZDC merging and digitization\n");
+    fMerger -> InitMerging();
+  }
+
+  char hname[30];
+  sprintf(hname,"TreeD%d",gAlice->GetHeader()->GetEvent());
+
+  gAlice->TreeD()->Fill();
+  gAlice->TreeD()->Write(0,TObject::kOverwrite);
+  gAlice->TreeD()->Reset();  
+  
+}
+//_____________________________________________________________________________
+void AliZDC::Hits2Digits()
+{
+    gAlice->Hits2SDigits();
+    gAlice->SDigits2Digits();
+}
+
+//_____________________________________________________________________________
+void AliZDC::Digits2Reco()
+{
+    
+}
+
+ 
+//_____________________________________________________________________________
+void   AliZDC::SetMerger(AliZDCMerger* merger)
+{
+// Set pointer to merger 
+    fMerger = merger;
+}
+
+//_____________________________________________________________________________
+AliZDCMerger*  AliZDC::Merger()
+{
+// Return pointer to merger
+    return fMerger;
+}
+
