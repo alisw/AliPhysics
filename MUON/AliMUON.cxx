@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.47  2001/03/05 08:38:36  morsch
+Digitization related methods moved to AliMUONMerger.
+
 Revision 1.46  2001/01/26 21:34:59  morsch
 Use access functions for AliMUONHit, AliMUONDigit and AliMUONPadHit data members.
 
@@ -101,7 +104,7 @@ of chambers with overlapping modules (MakePadHits, Disintegration).
 
 Revision 1.23  2000/06/28 12:19:17  morsch
 More consequent seperation of global input data services (AliMUONClusterInput singleton) and the
-cluster and hit reconstruction algorithms in AliMUONClusterFinderVS.
+cluster and hit reconstruction algorithms in AliMUONClusterFindRawinderVS.
 AliMUONClusterFinderVS becomes the base class for clustering and hit reconstruction.
 It requires two cathode planes. Small modifications in the code will make it usable for
 one cathode plane and, hence, more general (for test beam data).
@@ -946,7 +949,12 @@ void AliMUON::Trigger(Int_t nev){
 
 
 //____________________________________________
-void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
+void AliMUON::Digits2Reco()
+{
+  FindClusters();
+}
+
+void AliMUON::FindClusters()
 {
 //
 //  Perform cluster finding
@@ -959,12 +967,13 @@ void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
 //
 // Loop on chambers and on cathode planes
 //
-    
+    ResetRawClusters();        
     for (Int_t ich = 0; ich < 10; ich++) {
 	AliMUONChamber* iChamber = (AliMUONChamber*) (*fChambers)[ich];
-	AliMUONClusterFinderVS* rec = iChamber->ReconstructionModel();    
+	AliMUONClusterFinderVS* rec = iChamber->ReconstructionModel();
+    
 	gAlice->ResetDigits();
-	gAlice->TreeD()->GetEvent(lastEntry);
+	gAlice->TreeD()->GetEvent(0);
 	TClonesArray *muonDigits = this->DigitsAddress(ich);
 	ndig=muonDigits->GetEntriesFast();
 	printf("\n 1 Found %d digits in %p %d", ndig, muonDigits,ich);
@@ -976,7 +985,7 @@ void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
 		new(lhits1[n++]) AliMUONDigit(*digit);
 	}
 	gAlice->ResetDigits();
-	gAlice->TreeD()->GetEvent(lastEntry+1);
+	gAlice->TreeD()->GetEvent(1);
 	muonDigits  = this->DigitsAddress(ich);
 	ndig=muonDigits->GetEntriesFast();
 	printf("\n 2 Found %d digits in %p %d", ndig, muonDigits, ich);
@@ -996,17 +1005,8 @@ void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
 	dig1->Delete();
 	dig2->Delete();
     } // for ich
-    gAlice->TreeR()->Fill();
-    ResetRawClusters();
-    char hname[30];
-    sprintf(hname,"TreeR%d",nev);
-    gAlice->TreeR()->Write(hname,TObject::kOverwrite);
-    gAlice->TreeR()->Reset();
-    printf("\n End of cluster finding for event %d", nev);
-    
     delete dig1;
     delete dig2;
-    //gObjectTable->Print();
 }
  
 #ifdef never

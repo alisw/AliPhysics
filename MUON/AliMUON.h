@@ -60,7 +60,8 @@ class AliMUON : public  AliDetector {
     virtual void   ResetTrigger();
     virtual void   ResetRawClusters();
     // Cluster Finding
-    virtual void   FindClusters(Int_t event ,Int_t lastEntry);
+    virtual void   Digits2Reco();
+    virtual void   FindClusters();
     // Digitisation 
     virtual void   SDigits2Digits();      
 // Configuration Methods (per station id)
