@@ -199,7 +199,7 @@ Bool_t AliL3HoughTrack::GetCrossingPoint(Int_t padrow,Float_t *xyz)
   
   return true;
 }
-*/
+
 
 Bool_t AliL3HoughTrack::GetCrossingPoint(Int_t slice,Int_t padrow,Float_t *xyz)
 {
@@ -276,4 +276,4 @@ Bool_t AliL3HoughTrack::GetCrossingPoint(Int_t slice,Int_t padrow,Float_t *xyz)
    
    return true;
 }
-
+*/
