@@ -51,7 +51,7 @@ public AliITSsegmentation {
     // starting from (0,0) and return Geant cm detector centered local
     // coordinates, consistant with DetToLocal and LocalToDet functions above.
     virtual void CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Double_t &xu,
-			       Double_t &xl,Double_t &zu);
+			       Double_t &zl,Double_t &zu);
     //
     // Initialisation
     virtual void Init();
