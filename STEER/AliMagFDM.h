@@ -19,10 +19,9 @@ public:
   virtual void Field(Float_t *x, Float_t *b);
   virtual void ReadField(); 
   
-
-  void FZ(Double_t *u, Float_t *Ar, Float_t *du, Int_t *ki, Int_t *kf, Double_t *a1, Double_t *a2 , Int_t *nu);
-  void FRfuncBi(Int_t *kai, Double_t *za1, Double_t *za2, Double_t *al1, Double_t *al2, Double_t *al3, Int_t *ka, Int_t *ma,Double_t  *ba);
-  void FGfuncBi(Double_t *z1, Double_t *z2, Double_t *y1, Double_t *y2, Double_t *x1, Double_t *x2, Int_t *kvr, Int_t *k, Int_t *l, Int_t *m, Double_t *bb); 
+  Int_t FZ(Double_t u, Float_t *Ar, Float_t du, Int_t ki, Int_t nu);
+  Double_t Ba(Int_t kai, Double_t za1, Double_t za2, Double_t al1, Double_t al2, Double_t al3, Int_t ka, Int_t ma);
+  Double_t Bb(Double_t z1, Double_t z2, Double_t y1, Double_t y2, Double_t x1, Double_t x2, Int_t kvr, Int_t k, Int_t l, Int_t m); 
 
 
 protected:

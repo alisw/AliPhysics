@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.8  2000/12/18 10:44:01  morsch
+Possibility to set field map by passing pointer to objet of type AliMagF via
+SetField().
+Example:
+gAlice->SetField(new AliMagFCM("Map2", "$(ALICE_ROOT)/data/field01.dat",2,1.,10.));
+
 Revision 1.7  2000/12/01 11:20:27  alibrary
 Corrector dipole removed from ZDC
 
@@ -50,9 +56,8 @@ ClassImp(AliMagFDM)
 
 //________________________________________
 AliMagFDM::AliMagFDM(const char *name, const char *title, const Int_t integ,
-		     const Float_t factor, const Float_t fmax)
+          const Float_t factor, const Float_t fmax)
   : AliMagF(name,title,integ,factor,fmax)
-  
 {
   //
   // Standard constructor for the Dipole field
@@ -60,8 +65,8 @@ AliMagFDM::AliMagFDM(const char *name, const char *title, const Int_t integ,
   fType = kDipoMap;
   fMap  = 3;
   
-  printf("Field Map for Muon Arm from IP till muon filter %s created: map= %d, factor= %f, file=%s\n",fName.Data(), fMap ,factor,fTitle.Data());
-  
+ printf("Field Map for Muon Arm from IP till muon filter %s created: map= %d, integ= %d, factor= %f, file=%s\n",fName.Data(), fMap ,integ,factor,fTitle.Data());
+ 
 }
 
 //________________________________________
@@ -72,7 +77,7 @@ void AliMagFDM::Field(Float_t *xfi, Float_t *b)
   // Main routine to compute the field in a point
   //
   static  const Double_t keps=0.1E-06;
-  static  const Double_t kpi2=.6283185E+01;
+  static  const Double_t PI2=.6283185E+01;
   static  const Double_t kone=1;
 
   static  const    Int_t  kiip=33; 
@@ -91,9 +96,7 @@ void AliMagFDM::Field(Float_t *xfi, Float_t *b)
   Double_t   bint[3]; 
   
   Double_t r0;
-  
-  Double_t bbj;
-  Int_t iKvar,jb;
+    Int_t iKvar,jb;
 
   Double_t zp1, zp2,xp1,xp2,yp1,yp2; 
   Double_t zz1, zz2,yy1,yy2,x2,x1; 
@@ -103,12 +106,7 @@ void AliMagFDM::Field(Float_t *xfi, Float_t *b)
   x[0] = xfi[0];
   x[1] = xfi[1];
   x[2] = xfi[2];
-    
-  /*  
-  if (x[0]==0) x[0]=0.1E-06;
-  if (x[1]==0) x[1]=0.1E-06;
-  */ 
- b[0]=b[1]=b[2]=0;
+  b[0]=b[1]=b[2]=0;
   //       printf("x[0]  %f,x[1] %f,x[2]  %f\n",x[0],x[1],x[2]); 
 
   Double_t rr=TMath::Sqrt(x[0]*x[0]+x[1]*x[1]);
@@ -139,15 +137,11 @@ void AliMagFDM::Field(Float_t *xfi, Float_t *b)
   zCmax=fZmax;
   yCmin=fYmin;
   yCmax=fYmax;
-  /*          
-if ((kfZbg/100<xL3[2] && xL3[2]<zCmin && r0<rPmax) || ((zCmin<=xL3[2] && xL3[2] <= zCmax ) && (yCmin<=xL3[1] && xL3[1]<= yCmax) &&  (xminn <= xL3[0] && xL3[0] <= xmaxx)))
-  */
 if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2] <= zCmax ) && (yCmin<xL3[1] && xL3[1]<= yCmax) &&  (xminn<xL3[0] && xL3[0] <= xmaxx)))
     {
      if(fMap==3) 
       { 
         if (kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax)
-	//       if (xL3[2]<zCmin && r0<rPmax)   
        {
        //---------------------  Polar part ----------------------
        
@@ -162,16 +156,29 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
        mpi=kmiip;
    
        zpz=xL3[2];
-
-       FZ(&zpz, fZp ,&fZpdl,&kpi,&kp0,&zp1 ,&zp2,&fZpl) ;
-
+       kp0=FZ(zpz, fZp ,fZpdl,kpi,fZpl) ;
+       zp2=(zpz-fZp[kp0])/(fZp[kp0+1]-fZp[kp0]);
+       zp1= kone-zp2;
        yyp=xL3[1]- 0.3;
-       cphi=yyp/r0;
+       cphi=TMath::Abs(yyp/r0);
+       Int_t kcphi=0;
+       if (cphi > kone) {
+        printf("xL3[0] %e, xL3[1] %e, xL3[2] %e, yyp %e, r0 %e, cphi %e\n",xL3[0],xL3[1],xL3[2],yyp,r0,cphi);
+        cphi =kone;
+        kcphi=777;
+       } 
        ph0=TMath::ACos(cphi);
-       if (xL3[0]< 0) {ph0=kpi2 - ph0;}  
-                                  
-       fip=ph0;
-       FZ(&fip,fPhi,&fPhid ,&mpi,&mp0, &xp1,&xp2,&fPhin); 
+       if (xL3[0] < 0 && yyp > 0 ) {ph0=PI2/2 - ph0;}  
+       if (xL3[0] < 0 && yyp < 0 ) {ph0=PI2/2 + ph0;} 
+       if (xL3[0] > 0 && yyp < 0 ) {ph0=PI2 - ph0;}  
+       if (ph0 > PI2) {       ph0=ph0 - PI2;}
+       if (kcphi==777) {
+        printf("xL3[0] %e, xL3[1] %e, xL3[2] %e, yyp %e, r0 %e, ph0 %e\n",xL3[0],xL3[1],xL3[2],yyp,r0,ph0);
+       }  
+       fip=ph0; 
+       mp0=FZ(fip,fPhi,fPhid ,mpi,fPhin);
+       xp2=(fip-fPhi[mp0])/(fPhi[mp0+1]-fPhi[mp0]);
+       xp1=kone-xp2;
 
        Double_t rDel;
        rDel=fRdel;
@@ -195,8 +202,7 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
         for (jb=0; jb<3 ; jb++) 
          {
           iKvar=jb;     
-          FRfuncBi(&iKvar,&zp1,&zp2,&alp1,&alp2,&alp3, &kp0,&mp0, &bbj);
-          bint[jb] = bbj*10 ;
+          bint[jb] = Ba(iKvar,zp1,zp2,alp1,alp2,alp3, kp0,mp0)*10 ;
          } 
         } // end   of keps <=r0 
        }
@@ -204,14 +210,14 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
        {
         rp=r0;
 
-        FZ(&rp,fR ,&fRdel,&lpi,&lp0,&yp1,&yp2,&fRn);
+        lp0=FZ(rp,fR ,fRdel,lpi,fRn);
+        yp2=(rp-fR[lp0])/(fR[lp0+1]-fR[lp0]);
+	yp1=kone-yp2;
 
         for (jb=0; jb<3 ; jb++) 
         {
          iKvar=jb;
-         FGfuncBi(&zp1,&zp2,&yp1,&yp2,&xp1,&xp2,&iKvar,&kp0,&lp0,&mp0,&bbj); 
-
-         bint[jb] = bbj*10 ;
+         bint[jb] = Bb(zp1,zp2,yp1,yp2,xp1,xp2,iKvar,kp0,lp0,mp0)*10 ;
         }
        }
 
@@ -219,8 +225,6 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
        b[1]=bint[1];
        b[2]=bint[2];
 
-//    fprintf(fitest,"-------------   Freg2 run -------------\n");       
-  
    }  
    else 
    {
@@ -239,15 +243,17 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
    xx2 = fAx2*xL3[2] + fCx2;
 
    zzc=xL3[2];
-   FZ(&zzc, fZc ,&fZdel, &kci,&k0, &zz1, &zz2, &fZl);     
+   k0=FZ(zzc, fZc ,fZdel, kci, fZl); 
+   zz2=(zzc-fZc[k0])/(fZc[k0+1]-fZc[k0]);
+   zz1=kone - zz2;;    
 
    yyc=xL3[1];
-   FZ(&yyc, fY , &fYdel,&lci, &l0, &yy1, &yy2,&fYl);  
-
+   l0=FZ(yyc, fY , fYdel,lci,fYl);  
+   yy2=(yyc-fY[l0])/(fY[l0+1]-fY[l0]);;
+   yy1=kone - yy2;    
    xXl = fXl-kone; 
    dx = (xx2-xx1)/xXl;
    xxx= xL3[0]-xx1;
-   //     xm = xxx/dx; 
    m0 = int(xxx/dx);   
 
    if(xL3[0]<(xx1+m0*dx) || xL3[0] >(xx1+(m0+1)*dx)) 
@@ -262,16 +268,16 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
    for (jb=3; jb<6; jb++) 
      {
        iKvar=jb;     
-       FGfuncBi(&zz1,&zz2,&yy1,&yy2,&x1,&x2,&iKvar,&k0, &l0, &m0, &bbj); 
-       bint[jb-3] = bbj*10 ; 
+       bint[jb-3] = Bb(zz1,zz2,yy1,yy2,x1,x2,iKvar,k0, l0, m0)*10 ; 
      }    
  
    b[0]=bint[0];
    b[1]=bint[1];
    b[2]=bint[2]; 
 
-//   fprintf(fitest,"------------   Freg1 run -----------------\n");            
    } 
+ printf("x %f, y %f, z %f:: bx %f, by %f, bz %f\n",xfi[0],xfi[1],xfi[2],b[0],b[1],b[2]); 
+
 
   } else {
         printf("Unknown map of Dipole region %d\n",fMap);
@@ -331,75 +337,50 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
   }
 }
 
-//_________________________________________
+//_____________________  FZ ____________________
 
-void AliMagFDM::FZ(Double_t *u, Float_t  *Ar, Float_t *du,Int_t *ki,Int_t *kf,Double_t *a1,Double_t *a2 ,Int_t *nu)
+Int_t AliMagFDM::FZ(Double_t temp, Float_t  *Ar, Float_t delu,Int_t ik,Int_t nk)
 {
   //
-  // Z component of the field
+  // Quest of a point position at x,y,z (Cartensian) and R,Phi,z (Polar) axises
   //
-  static  const Double_t kone=1;
-  Int_t l,ik,ikj;
-  Double_t temp;
-  Double_t ddu,delu,ar;
+  Int_t l,ikj;
+  Double_t ddu,ar;
 
-  Int_t nk,ku;
-  temp=*u;
-  nk=*nu;
-  ik=*ki;
-  delu=*du; 
-
+  Int_t ku,kf;
+  kf=0;
   ar=Ar[ik];
   ddu=temp-ar;
 
   ku=int(ddu/delu);
-  //  ikj=ik+ku; //falsh
-    ikj=ik+ku+1; //correct
+  ikj=ik+ku+1;
   if (ddu<=0) ikj=0;
 
    for(l=ikj; l<nk; l++)
    {
-     //    if(temp < Ar[l])
+
     if(temp <= Ar[l])
      {
        
-      *kf=l-1;
-      *a2=(temp-Ar[l-1])/(Ar[l]-Ar[l-1]);
-      
-       /*
-      *kf=l;
-      *a2=(temp-Ar[l])/(Ar[l+1]-Ar[l]);
-      */
-       break;
+      kf=l-1;
+      break;
      }
     }
-   //    *a2=(temp-Ar[*kf])/(Ar[*kf+1]-Ar[*kf]);
-    *a1= kone - *a2;
+    return kf;
   }
 
-/*-------------FRfuncBi----------------*/
+/*---------------------Ba------------------*/
 
-void AliMagFDM::FRfuncBi(Int_t *kai,Double_t *za1, Double_t *za2, Double_t *al1, Double_t *al2, Double_t *al3, Int_t *ka, Int_t *ma, Double_t *ba)
+Double_t AliMagFDM::Ba(Int_t kaai,Double_t zaa1, Double_t zaa2, Double_t alf1, Double_t alf2, Double_t alf3, Int_t kaa, Int_t maa)
 {
   //
-  // This method needs to be commented
+  // Calculation of field componet for case (keps <r0<= fRdel) at a given axis
   //
   Double_t fa11,fa12,fa13;
   Double_t fa21,fa22,fa23;
   Double_t faY1,faY2;
   Double_t bba;
-  
-  Double_t zaa1,zaa2,alf1,alf2,alf3;
-  Int_t kaai,kaa,maa;
-  kaai=*kai;
-  kaa=*ka;
-  maa=*ma;
-  zaa1=*za1;
-  zaa2=*za2;
-  alf1=*al1;  
-  alf2=*al2;
-  alf3=*al3; 
-  
+
   switch (kaai) {
   case 0:
     fa11 = fBpx[kaa][0][0];
@@ -426,45 +407,29 @@ void AliMagFDM::FRfuncBi(Int_t *kai,Double_t *za1, Double_t *za2, Double_t *al1,
     fa23 = fBpz[kaa+1][0][maa+1]; 
     break;
   default:
-    Fatal("FRfuncBi","Invalid value of kaai %d\n",kaai);
+    Fatal("Ba","Invalid value of kaai %d\n",kaai);
     exit(1);
   }                            
   faY1=alf1*fa11+alf2*fa12+alf3*fa13;
   faY2=alf1*fa21+alf2*fa22+alf3*fa23;
   bba =  zaa1*faY1+zaa2*faY2;    
-  *ba=bba;
-  
+  return bba;  
 }
 
   
-/*----------- FGfuncBi------------*/
+/*------------------------Bb--------------------------*/
 
-void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy2, Double_t *xx1,Double_t *xx2, Int_t *kvr, Int_t *kk, Int_t *ll, Int_t *mm, Double_t *bb)
+Double_t AliMagFDM::Bb(Double_t z1,Double_t z2, Double_t y1,Double_t y2, Double_t x1,Double_t x2, Int_t kv, Int_t k, Int_t l, Int_t m)
 {  
   //
-  // This method needs to be commented
+  // Calculation of field componet at a given axis (general case)
   //
   Double_t fy1, fy2, ffy;
   Double_t gy1,gy2,ggy;
-  Double_t z1,z2,y1,y2,x1,x2;
-  
-  Int_t k,l,m,kv;
   Double_t bbi;
-  
   Double_t bf11,bf12,bf21,bf22;
   Double_t bg11,bg12,bg21,bg22;
-  k=*kk;
-  l=*ll;
-  m=*mm;
-  
-  kv=*kvr;
-  
-  z1=*zz1;
-  z2=*zz2;
-  y1=*yy1;
-  y2=*yy2;
-  x1=*xx1;
-  x2=*xx2; 
+
   
   /*-----------------Polar part ------------------*/
   
@@ -543,7 +508,7 @@ void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy
     break;
 
   default:
-    Fatal("FGfuncBi","Invalid value of kv %d\n",kv);
+    Fatal("Bb","Invalid value of kv %d\n",kv);
     exit(1);
   }  
   
@@ -559,8 +524,8 @@ void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy
   ggy= y1*gy1 +  y2*gy2;
   
   bbi =  x1*ffy+x2*ggy;
-  
-  *bb=bbi; 
+
+  return bbi;
   
 }     
 //____________________________________________
