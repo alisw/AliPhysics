@@ -229,6 +229,8 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStream* input,
   Int_t kNzBins = fNzSPD + 2;
   Int_t kNyBins = fNySPD + 2;
   Int_t kMaxBin = kNzBins * kNyBins;
+  AliBin *binsSPD = new AliBin[kMaxBin];
+  AliBin *binsSPDInit = new AliBin[kMaxBin];  
   AliBin* bins = NULL;
 
   // read raw data input stream
@@ -242,11 +244,12 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStream* input,
 	clusters[iModule] = new TClonesArray("AliITSclusterV2");
 	Int_t nClusters = ClustersSPD(bins,0,clusters[iModule],kMaxBin,kNzBins,iModule,kTRUE);
 	nClustersSPD += nClusters;
-	delete bins;
+	bins = NULL;
       }
 
       if (!next) break;
-      bins = new AliBin[kMaxBin];
+      bins = binsSPD;
+      memcpy(binsSPD,binsSPDInit,sizeof(AliBin)*kMaxBin);
     }
 
     // fill the current digit into the bins array
@@ -256,6 +259,9 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStream* input,
     bins[index].SetQ(1);
   }
 
+  delete [] binsSPDInit;
+  delete [] binsSPD;
+  
   Info("FindClustersSPD", "found clusters in ITS SPD: %d", nClustersSPD);
 }
 

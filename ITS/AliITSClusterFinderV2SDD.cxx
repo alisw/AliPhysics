@@ -274,6 +274,9 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   Int_t nClustersSDD = 0;
   Int_t kNzBins = fNzSDD + 2;
   Int_t kMaxBin = kNzBins * (fNySDD+2);
+  AliBin *binsSDDInit = new AliBin[kMaxBin];
+  AliBin *binsSDD1 = new AliBin[kMaxBin];
+  AliBin *binsSDD2 = new AliBin[kMaxBin];
   AliBin* bins[2] = {NULL, NULL};
 
   // read raw data input stream
@@ -289,13 +292,16 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 	FindClustersSDD(bins, kMaxBin, kNzBins, NULL, clusters[iModule]);
 	Int_t nClusters = clusters[iModule]->GetEntriesFast();
 	nClustersSDD += nClusters;
-	delete[] bins[0];
-	delete[] bins[1];
+	bins[0] = bins[1] = NULL;
+	
       }
 
       if (!next) break;
-      bins[0] = new AliBin[kMaxBin];
-      bins[1] = new AliBin[kMaxBin];
+      bins[0]=binsSDD1;
+      bins[1]=binsSDD2;
+      memcpy(binsSDD1,binsSDDInit,sizeof(AliBin)*kMaxBin);
+      memcpy(binsSDD2,binsSDDInit,sizeof(AliBin)*kMaxBin);
+
     }
 
     // fill the current digit into the bins array
@@ -309,6 +315,9 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       bins[side][index].SetIndex(index);
     }
   }
+  delete[] binsSDD1;
+  delete[] binsSDD2;
+  delete[] binsSDDInit;
 
   Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD);
 
