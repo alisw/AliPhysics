@@ -114,6 +114,7 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
    } 
   //  return 0 ; 
 }
+
 //____________________________________________________________________________
 const Double_t * AliPHOSRecParticle::GetPID()
 {
@@ -157,6 +158,6 @@ const Double_t * AliPHOSRecParticle::GetPID()
   if (IsFastNeutralHadron())        fPID[7] = 1.0;
   if (IsSlowNeutralHadron())        fPID[8] = 1.0;
 
-  if (IsElecCon()) fPID[9] = 1.0;
+  if (IsEleCon()) fPID[9] = 1.0;
   return fPID;
 }

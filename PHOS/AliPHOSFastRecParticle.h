@@ -69,7 +69,7 @@ class AliPHOSFastRecParticle : public TParticle {
   Bool_t IsSlowChargedHadron() const;
   Bool_t IsFastNeutralHadron() const;
   Bool_t IsSlowNeutralHadron() const;
-  Bool_t IsElecCon(TString purity = "low") const; 
+  Bool_t IsEleCon(TString purity = "low") const; 
 
   TString Name() const ; 
   virtual void Paint(Option_t * option="");

@@ -231,7 +231,7 @@ Bool_t AliPHOSFastRecParticle::IsElectron(TString purity) const
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSFastRecParticle::IsElecCon(TString purity) const
+Bool_t AliPHOSFastRecParticle::IsEleCon(TString purity) const
 {
   // Rec.Particle is an electron if it has a photon-like shape, fast and charged
   // photon-like shape is defined with a purity "low", "medium" or "high"
