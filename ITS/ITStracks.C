@@ -1,3 +1,4 @@
+#include "AliITSgeom.h"
 struct GoodTrack {
   Int_t lab;
   Int_t code;
@@ -61,7 +62,26 @@ Int_t ITStracks(Int_t evNumber1=0,Int_t evNumber2=0,Int_t nclust=5) {
   Int_t numbpoints=0;
   AliITSRecPoint *recp=0;
   Int_t track=-3;
-
+   // Int_t modmin[]={0,80,240,324,500,1282};
+   // Int_t modmax[]={79,239,323,499,1281,2269};
+	 
+	
+	 Int_t modmin[6], modmax[6];
+	 Int_t Nladder[6], Ndetector[6];
+    AliITSgeom *g1 = ITS->GetITSgeom(); 
+ 	 
+    for(Int_t i=0; i<6; i++) {
+    Nladder[i]=g1->GetNladders(i+1);
+    Ndetector[i]=g1->GetNdetectors(i+1);
+	 //cout<<Nladder[i]<<"    "<<Ndetector[i]<<"\n";
+  }
+     for(Int_t i=0; i<6; i++) {
+    modmin[i]=g1->GetModuleIndex(i+1,1,1);
+    modmax[i]=g1->GetModuleIndex(i+1,Nladder[i],Ndetector[i]);    
+	 //cout<<modmin[i]<<"    "<<modmax[i]<<"\n";
+  } 
+  
+  	 
 
   for (int nev=evNumber1; nev<= evNumber2; nev++) {
     Int_t nparticles = gAlice->GetEvent(nev);
@@ -75,11 +95,11 @@ Int_t ITStracks(Int_t evNumber1=0,Int_t evNumber2=0,Int_t nclust=5) {
    // Int_t np=particles->GetEntriesFast();
    Int_t np=gAlice->GetNtrack(); //FCA correction      
     TMatrix goodITS(np,6);
-    Int_t modmin[]={0,80,240,324,500,1282};
-    Int_t modmax[]={79,239,323,499,1281,2269};
-    for(Int_t j=0; j<np; j++){
-       for(Int_t j1=0; j1<6; j1++) goodITS(j,j1)=0; 
-    }
+    //Int_t modmin[]={0,80,240,324,500,1282};
+    //Int_t modmax[]={79,239,323,499,1281,2269};
+   // for(Int_t j=0; j<np; j++){
+   //    for(Int_t j1=0; j1<6; j1++) goodITS(j,j1)=0; 
+   // }
        
        
     Int_t nent=gAlice->TreeR()->GetEntries();

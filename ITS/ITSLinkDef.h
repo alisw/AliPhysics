@@ -118,7 +118,8 @@
 //#pragma link C function GetFloatDialog;
 // This class will always be for ITS only
 #pragma link C++ class  AliITSvtest+;
-
+#pragma link C++ class AliITSTrackerV1+;
+#pragma link C++ class AliITSgeoinfo+;
 #pragma link C++ class AliITSclusterV2+;
 #pragma link C++ class AliITStrackV2+;
 #pragma link C++ class AliITStrackerV2+;
