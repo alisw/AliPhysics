@@ -123,69 +123,84 @@ int main(int argc, char** argv)
     AliRawReaderDate rawReader(ptr);
     if ((rawReader.GetAttributes()[0] & 0x02) != 0) {
 
-      // run the HLT tracker
-      AliLevel3* hlt = new AliLevel3((Char_t*)ptr);
-      hlt->Init("./", AliLevel3::kDate, 1);
+      Int_t errorCode = rawReader.CheckData();
+      if (errorCode && (errorCode != AliRawReader::kErrSize)) {
+	time.Set();
+	if (file) fprintf(file, "%s\n", time.AsString());
+	if (file) fprintf(file, "run: %d  event: %d %d\n", 
+			  rawReader.GetRunNumber(), 
+			  rawReader.GetEventId()[0], 
+			  rawReader.GetEventId()[1]);
+	fprintf(file, "ERROR: %d\n\n", errorCode);
 
-      hlt->SetClusterFinderParam(-1, -1, kTRUE);
+      } else {
+
+	// run the HLT tracker
+	AliLevel3* hlt = new AliLevel3((Char_t*)ptr);
+	hlt->Init("./", AliLevel3::kDate, 1);
+
+	hlt->SetClusterFinderParam(-1, -1, kTRUE);
   
-      Int_t phiSegments = 50;
-      Int_t etaSegments = 100;
-      Int_t trackletlength = 3;
-      Int_t tracklength = 20;//40 or 5
-      Int_t rowscopetracklet = 2;
-      Int_t rowscopetrack = 10;
-      Double_t minPtFit = 0;
-      Double_t maxangle = 0.1745;
-      Double_t goodDist = 5;
-      Double_t maxphi = 0.1;
-      Double_t maxeta = 0.1;
-      Double_t hitChi2Cut = 15;//100 or 15
-      Double_t goodHitChi2 = 5;//20 or 5
-      Double_t trackChi2Cut = 10;//50 or 10
-      hlt->SetTrackerParam(phiSegments, etaSegments, 
-			   trackletlength, tracklength,
-			   rowscopetracklet, rowscopetrack,
-			   minPtFit, maxangle, goodDist, hitChi2Cut,
-			   goodHitChi2, trackChi2Cut, 50, maxphi, maxeta, 
-			   kTRUE);
+	Int_t phiSegments = 50;
+	Int_t etaSegments = 100;
+	Int_t trackletlength = 3;
+	Int_t tracklength = 20;//40 or 5
+	Int_t rowscopetracklet = 2;
+	Int_t rowscopetrack = 10;
+	Double_t minPtFit = 0;
+	Double_t maxangle = 0.1745;
+	Double_t goodDist = 5;
+	Double_t maxphi = 0.1;
+	Double_t maxeta = 0.1;
+	Double_t hitChi2Cut = 15;//100 or 15
+	Double_t goodHitChi2 = 5;//20 or 5
+	Double_t trackChi2Cut = 10;//50 or 10
+	hlt->SetTrackerParam(phiSegments, etaSegments, 
+			     trackletlength, tracklength,
+			     rowscopetracklet, rowscopetrack,
+			     minPtFit, maxangle, goodDist, hitChi2Cut,
+			     goodHitChi2, trackChi2Cut, 50, maxphi, maxeta, 
+			     kTRUE);
   
-      gSystem->Exec("rm -rf hlt");
-      gSystem->MakeDirectory("hlt");
-      hlt->WriteFiles("./hlt/");
-      hlt->ProcessEvent(0, 35, 0);
+	gSystem->Exec("rm -rf hlt");
+	gSystem->MakeDirectory("hlt");
+	hlt->WriteFiles("./hlt/");
+	hlt->ProcessEvent(0, 35, 0);
 
-      time.Set();
-      if (file) fprintf(file, "%s\n", time.AsString());
-      if (file) fprintf(file, "run: %d  event: %d %d\n", 
-			rawReader.GetRunNumber(), 
-			rawReader.GetEventId()[0], rawReader.GetEventId()[1]);
+	time.Set();
+	if (file) fprintf(file, "%s\n", time.AsString());
+	if (file) fprintf(file, "run: %d  event: %d %d\n", 
+			  rawReader.GetRunNumber(), 
+			  rawReader.GetEventId()[0], 
+			  rawReader.GetEventId()[1]);
+	if (errorCode) fprintf(file, "ERROR: %d\n", errorCode);
 
-      AliL3MemHandler memHandler;
-      if (!memHandler.SetBinaryInput("hlt/tracks_0.raw")) {
-	if (file) fprintf(file, "no HLT tracks\n");
-	continue;
-      }
-      AliL3TrackArray* tracks = new AliL3TrackArray;
-      memHandler.Binary2TrackArray(tracks);
-      if (file) fprintf(file, "HLT found %d tracks\n", tracks->GetNTracks());
-      delete tracks;
-      memHandler.CloseBinaryInput();
-
-      hlt->DoBench("hlt");
-      if (file) {
-	FILE* bench = fopen("hlt.dat", "r");
-	while (bench && !feof(bench)) {
-	  char buffer[256];
-	  if (!fgets(buffer, 256, bench)) break;
-	  fprintf(file, "%s", buffer);
+	AliL3MemHandler memHandler;
+	if (!memHandler.SetBinaryInput("hlt/tracks_0.raw")) {
+	  if (file) fprintf(file, "no HLT tracks\n");
+	  continue;
 	}
-	fclose(bench);
-	fprintf(file, "\n");
-      }
+	AliL3TrackArray* tracks = new AliL3TrackArray;
+	memHandler.Binary2TrackArray(tracks);
+	if (file) fprintf(file, "HLT found %d tracks\n", tracks->GetNTracks());
+	delete tracks;
+	memHandler.CloseBinaryInput();
 
-      gSystem->Exec("rm -rf hlt");
-      delete hlt;
+	hlt->DoBench("hlt");
+	if (file) {
+	  FILE* bench = fopen("hlt.dat", "r");
+	  while (bench && !feof(bench)) {
+	    char buffer[256];
+	    if (!fgets(buffer, 256, bench)) break;
+	    fprintf(file, "%s", buffer);
+	  }
+	  fclose(bench);
+	  fprintf(file, "\n");
+	}
+
+	gSystem->Exec("rm -rf hlt");
+	delete hlt;
+      }
     }
 
 #else
