@@ -349,8 +349,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
     vertex = fITSVertexer->FindVertexForCurrentEvent(fRunLoader->GetEventNumber());
     if(!vertex){
       Warning("RunVertexFinder","Vertex not found \n");
-      vtxErr[2]=10000.;
-      vertex = new AliESDVertex(vtxPos, vtxErr);
+      vertex = new AliESDVertex();
     }
     else {
       vertex->SetTruePos(vtxPos);  // store also the vertex from MC
