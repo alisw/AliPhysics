@@ -211,7 +211,6 @@ void AliL3HoughMaxFinder::FindBigMaxima()
     }
 }
 
-
 void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
 {
   //Locate all the maxima in input histogram.
@@ -259,19 +258,20 @@ void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
 	      Float_t max_y = fCurrentHisto->GetBinCenterY(ybin);
 	      
 	      if((Int_t)value[4] <= fThreshold) continue;//central bin below threshold
-	      
 	      if(fNPeaks >= fNMax)
 		{
-		  cerr<<"AliL3HoughMaxFinder::FindMaxima : Array out of range "<<fNPeaks<<endl;
+		  cout<<"AliL3HoughMaxFinder::FindMaxima : Array out of range "<<fNPeaks<<endl;
 		  return;
 		}
+
 	      /*
 	      //Check the gradient:
-	      if(value[4]/value[3] < grad_x || value[4]/value[5] < grad_x ||
-		 value[4]/value[1] < grad_y || value[4]/value[7] < grad_y)
+	      if(value[3]/value[4] > 1./grad_x || value[5]/value[4] < 1./grad_x ||
+		 value[1]/value[4] < 1./grad_y || value[7]/value[4] < 1./grad_y)
 		continue;
 	      */
-	      
+
+
 	      fXPeaks[fNPeaks] = max_x;
 	      fYPeaks[fNPeaks] = max_y;
 	      fWeight[fNPeaks] = (Int_t)value[4];
@@ -310,7 +310,6 @@ void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
     }
   
 }
-
 
 AliL3TrackArray *AliL3HoughMaxFinder::LookForPeaks(AliL3Histogram *hist,Int_t nbins)
 {
@@ -602,8 +601,6 @@ AliL3HoughTrack *AliL3HoughMaxFinder::FindPeakLine(Double_t rho,Double_t theta)
   track->SetTrackParameters(max_bin[0],max_bin[1],max_weight);
   return track;
 }
-
-
 
 void AliL3HoughMaxFinder::FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t *weight,Int_t &n,
 				    Int_t y_window,Int_t x_bin_sides)
