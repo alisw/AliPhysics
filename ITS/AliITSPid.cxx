@@ -1,16 +1,54 @@
+//------------------------------------------------------------//
+// Class for identification of pions,kaons and protons in ITS //
+// Prior particles population (probabilities) are taken from  //
+// Hijing event generator.                                   //
+//------------------------------------------------------------//
+// #include <stdlib.h>
 #include "AliITSPid.h"
 #include "TMath.h"
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TVector.h>
 #include "AliTPCtrack.h"
+#include "AliITSIOTrack.h"
 #include "AliITStrackV2.h"
 #include <TF1.h>
 
 ClassImp(AliITSPid)
+
+
+AliITSPid::AliITSPid(const AliITSPid &source) : TObject(source){
+    // Copy constructor. This is a function which is not allowed to be
+    // done: protected It exits with an error.
+    // Inputs:
+    //      AliITSPid &source  An AliITSPid class.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
+
+  Error("AliITSPid","You are not allowed to make a copy of the AliITSPid\n");
+}
+//______________________________________________________________________
+AliITSPid& AliITSPid::operator=(const AliITSPid& /* source */){
+    // Assignment operator. This is a function which is not allowed to be
+    // done to the ITS. It exits with an error.
+    // Inputs:
+    //      AliITSPid &source  An AliITSPid class.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
+
+  Error("=operator","Assignment operator not allowed for this class\n");
+  return *this;
+}
+
 //
-Float_t AliITSPid::Qtrm(Int_t track)
-{
+  Float_t AliITSPid::Qtrm(Int_t track) {
+//
+// This calculates truncated mean signal for given track.
+//
     TVector q(*( this->GetVec(track)  ));
     Int_t ml=(Int_t)q(0);
     if(ml<1)return 0.;
@@ -36,8 +74,10 @@ Float_t AliITSPid::Qtrm(Int_t track)
     return (q(6));
 }
 
-Float_t AliITSPid::Qtrm(Float_t qarr[6],Int_t narr)
-{
+Float_t AliITSPid::Qtrm(Float_t qarr[6],Int_t narr) const{
+//
+//This calculates truncated mean signal for given signal set.
+//
   Float_t q[6],qm,qmin;
   Int_t nl,ml;
   if(narr>0&&narr<7){ml=narr;}else{return 0;};
@@ -60,8 +100,9 @@ Float_t AliITSPid::Qtrm(Float_t qarr[6],Int_t narr)
     return qm;
 }
 
-Int_t	AliITSPid::Wpik(Float_t pm,Float_t q)
-{
+Int_t	AliITSPid::Wpik(Float_t pm,Float_t q){
+  //Calcutates probabilityes of pions and kaons
+  //Returns particle code for dominant probability.
   Double_t par[6];
   for(int i=0;i<6;i++){par[i]=fGGpi[i]->Eval(pm);}
   fggpi->SetParameters(par);
@@ -88,8 +129,10 @@ Int_t	AliITSPid::Wpik(Float_t pm,Float_t q)
   }else{return 0;}
 }
 //-----------------------------------------------------------
-Int_t	AliITSPid::Wpikp(Float_t pm,Float_t q)
-{
+Int_t	AliITSPid::Wpikp(Float_t pm,Float_t q){
+  //
+  //Calcutates probabilityes of pions,kaons and protons.
+  //Returns particle code for dominant probability.
   Double_t par[6];
   for(int i=0;i<6;i++){par[i]=fGGpi[i]->Eval(pm);}
   fggpi->SetParameters(par);
@@ -126,12 +169,14 @@ Int_t	AliITSPid::Wpikp(Float_t pm,Float_t q)
 //-----------------------------------------------------------
 Int_t	AliITSPid::GetPcode(TClonesArray* rps,Float_t pm)
 {
+  //Returns particle code
   Info("GetPcode","method not implemented - Inputs TClonesArray *%x , Float_t %f",rps,pm); 
     return 0;    
 }
 //-----------------------------------------------------------
 Int_t   AliITSPid::GetPcode(AliTPCtrack *track)
 {
+  //Returns particle code for given track.
       Double_t xk,par[5]; track->GetExternalParameters(xk,par);
       Float_t phi=TMath::ASin(par[2]) + track->GetAlpha();
       if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
@@ -147,6 +192,7 @@ Int_t   AliITSPid::GetPcode(AliTPCtrack *track)
 //------------------------------------------------------------
 Int_t   AliITSPid::GetPcode(AliITSIOTrack *track)
 {
+  //Returns particle code for given track(V1).
     Double_t px,py,pz;
     px=track->GetPx();
     py=track->GetPy();
@@ -163,6 +209,7 @@ return pcode?pcode:211;
 //-----------------------------------------------------------
 Int_t   AliITSPid::GetPcode(AliITStrackV2 *track)
 {
+//Returns particle code for given track(V2).
   if(track==0)return 0;
   //      track->Propagate(track->GetAlpha(),3.,0.1/65.19*1.848,0.1*1.848);
       track->PropagateTo(3.,0.0028,65.19);
@@ -181,6 +228,7 @@ return pcode?pcode:211;
 //-----------------------------------------------------------
 Int_t	AliITSPid::GetPcode(Float_t q,Float_t pm)
 {
+  //Returns particle code for given signal and momentum.
     fWpi=fWk=fWp=0.;     fPcode=0;
 
     if ( pm<=0.400 )
@@ -201,6 +249,7 @@ Int_t	AliITSPid::GetPcode(Float_t q,Float_t pm)
 void	AliITSPid::SetCut(Int_t n,Float_t pm,Float_t pilo,Float_t pihi,
 			Float_t klo,Float_t khi,Float_t plo,Float_t phi)
 {
+  // The cut-table initializer method.
     fCut[n][0]=pm;
     fCut[n][1]=pilo;
     fCut[n][2]=pihi;
@@ -211,20 +260,23 @@ void	AliITSPid::SetCut(Int_t n,Float_t pm,Float_t pilo,Float_t pihi,
     return ;    
 }
 //------------------------------------------------------------
-void AliITSPid::SetVec(Int_t ntrack,TVector info)
+void AliITSPid::SetVec(Int_t ntrack,TVector info) 
 {
+  //Store track info in tracls table
 TClonesArray& arr=*fTrs;
     new( arr[ntrack] ) TVector(info);
 }
 //-----------------------------------------------------------
-TVector* AliITSPid::GetVec(Int_t ntrack)
+TVector* AliITSPid::GetVec(Int_t ntrack) const
 {
+  //Get given track from track table 
 TClonesArray& arr=*fTrs;
     return (TVector*)arr[ntrack];
 }
 //-----------------------------------------------------------
 void AliITSPid::SetEdep(Int_t track,Float_t Edep)
 {
+  //Set dEdx for given track
     TVector xx(0,11);
     if( ((TVector*)fTrs->At(track))->IsValid() )
 	{TVector yy( *((TVector*)fTrs->At(track)) );xx=yy; }
@@ -236,6 +288,7 @@ void AliITSPid::SetEdep(Int_t track,Float_t Edep)
 //-----------------------------------------------------------
 void AliITSPid::SetPmom(Int_t track,Float_t Pmom)
 {
+  //Set momentum for given track
     TVector xx(0,11);
     if( ((TVector*)fTrs->At(track))->IsValid() )
 	{TVector yy( *((TVector*)fTrs->At(track)) );xx=yy; }
@@ -246,6 +299,7 @@ void AliITSPid::SetPmom(Int_t track,Float_t Pmom)
 //-----------------------------------------------------------
 void AliITSPid::SetPcod(Int_t track,Int_t partcode)
 {
+  //Set particle code for given track
     TVector xx(0,11);
     if( ((TVector*)fTrs->At(track))->IsValid() )
 	{TVector yy( *((TVector*)fTrs->At(track)) );xx=yy; }
@@ -257,7 +311,9 @@ void AliITSPid::SetPcod(Int_t track,Int_t partcode)
 }
 //-----------------------------------------------------------
 void AliITSPid::Print(Int_t track)
-{cout<<fMxtrs<<" tracks in AliITSPid obj."<<endl;
+{
+  //Prints information for given track
+cout<<fMxtrs<<" tracks in AliITSPid obj."<<endl;
     if( ((TVector*)fTrs->At(track))->IsValid() )
 	{TVector xx( *((TVector*)fTrs->At(track)) );
 	 xx.Print();
@@ -268,6 +324,7 @@ void AliITSPid::Print(Int_t track)
 //-----------------------------------------------------------
 void AliITSPid::Tab(void)
 {
+  //Make PID for tracks stored in tracks table
 if(fTrs->GetEntries()==0){cout<<"No entries in TAB"<<endl;return;}
 cout<<"------------------------------------------------------------------------"<<endl;
 cout<<"Nq"<<"   q1  "<<"   q2  "<<"   q3  "<<"   q4  "<<"   q5   "<<
@@ -311,6 +368,7 @@ for(Int_t i=0;i<fTrs->GetEntries();i++)
 }
 void AliITSPid::Reset(void)
 {
+  //Reset tracks table
   for(Int_t i=0;i<fTrs->GetEntries();i++){
     TVector xx(0,11);
     TClonesArray &arr=*fTrs;
@@ -320,6 +378,7 @@ void AliITSPid::Reset(void)
 //-----------------------------------------------------------
 AliITSPid::AliITSPid(Int_t ntrack)
 {
+  //Constructor for AliITSPid class
   fSigmin=0.01;
     fTrs = new TClonesArray("TVector",ntrack);
     TClonesArray &arr=*fTrs;
