@@ -11,7 +11,7 @@
 // Data are stored in form of tree of TClonesArray of AliHBTParticle's   //
 //                                                                       //
 // Piotr.Skowronski@cern.ch                                              //
-// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html  //
+// more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html  //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -26,8 +26,6 @@
 #include "AliHBTEvent.h"
 #include "AliHBTParticle.h"
 #include "AliHBTParticleCut.h"
-
-AliHBTReaderInternal test;
 
 ClassImp(AliHBTReaderInternal)
 /********************************************************************/
@@ -75,6 +73,30 @@ AliHBTReaderInternal::AliHBTReaderInternal(TObjArray* dirs, const char *filename
 }
 /********************************************************************/
 
+AliHBTReaderInternal::AliHBTReaderInternal(const AliHBTReaderInternal& in):
+ AliHBTReader(in),
+ fFileName(in.fFileName),
+ fPartBranch(0x0),
+ fTrackBranch(0x0),
+ fTree(0x0),
+ fFile(0x0),
+ fPartBuffer(0x0),
+ fTrackBuffer(0x0)
+{
+  //cpy constructor
+}
+/********************************************************************/
+
+AliHBTReaderInternal& AliHBTReaderInternal::operator=(const AliHBTReaderInternal& in)
+{
+  //Assigment operator
+  if (this == &in) return *this;
+  Rewind();//close current session
+  AliHBTReader::operator=((const AliHBTReader&)in);
+  fFileName = in.fFileName;
+  
+}
+/********************************************************************/
 AliHBTReaderInternal::~AliHBTReaderInternal()
  {
  //desctructor

@@ -29,7 +29,11 @@ class AliHBTReaderInternal: public AliHBTReader
     AliHBTReaderInternal();
     AliHBTReaderInternal(const char *filename);
     AliHBTReaderInternal(TObjArray* dirs, const char *filename);
+    AliHBTReaderInternal(const AliHBTReaderInternal& in);
+    
     virtual ~AliHBTReaderInternal();
+    
+    AliHBTReaderInternal& operator=(const AliHBTReaderInternal& in);
     
     void          Rewind();
     
