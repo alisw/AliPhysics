@@ -35,6 +35,7 @@
 ClassImp(AliL3Transform)
 
 Double_t AliL3Transform::fBField = 0.2;
+Int_t AliL3Transform::fBFieldFactor = 1;
 Int_t AliL3Transform::fVersion = 0;
 Int_t AliL3Transform::fNTimeBins = 446 ;
 Int_t AliL3Transform::fNRowLow = 64 ;
@@ -444,7 +445,8 @@ void AliL3Transform::Init(const Char_t* path)
   while(!feof(fptr)) {
     fscanf(fptr,"%s",d1);
 
-    if(strcmp(d1,"fNTimeBins")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNTimeBins=(Int_t)dummy;}
+    if(strcmp(d1,"fBFieldFactor")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fBFieldFactor=(Int_t)dummy;fBField=fBFieldFactor*0.2;}
+    else if(strcmp(d1,"fNTimeBins")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNTimeBins=(Int_t)dummy;}
     else if(strcmp(d1,"fNRowLow")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowLow=(Int_t)dummy;}    
     if(fNRowLow != 64)
       LOG(AliL3Log::kError,"AliL3Transform::Init","Overflow")
@@ -490,7 +492,6 @@ void AliL3Transform::Init(const Char_t* path)
   fVersion=1; //new version
 
 }
-
 
 Double_t AliL3Transform::GetEta(Float_t *xyz)
 {

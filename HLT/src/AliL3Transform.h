@@ -8,6 +8,7 @@ class AliL3Transform {
  private:
   
   static Double_t fBField;
+  static Int_t fBFieldFactor;
   static Int_t fNTimeBins;
   static Int_t fNRowLow;
   static Int_t fNRowUp;
