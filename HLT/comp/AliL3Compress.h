@@ -26,7 +26,7 @@ class AliL3Compress {
   Char_t fPath[100];
 
   void CreateDigitArray(Int_t maxnumber);
-  void CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge,Float_t ywidth,Float_t zwidth);
+  void CreateDigits(Int_t row,Int_t npads,Float_t pad,Float_t time,Int_t charge,Float_t ywidth,Float_t zwidth);
   void QSort(AliL3RandomDigitData **a, Int_t first, Int_t last);
   Int_t ComparePoints(Int_t row,UShort_t pad,UShort_t time);
   Int_t CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b);
