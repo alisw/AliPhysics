@@ -839,10 +839,6 @@ void AliDIPOv2::CreateMaterials()
   Float_t zG10[5] = { 1.,6.,8.,14.,35. };
   Float_t wG10[5] = { .02089,.22338,.28493,.41342,.05738 };
 
-  Float_t aAlCon[2] = { 14.61, 26.98};
-  Float_t zAlCon[2] = { 7.3, 13.};
-  Float_t wAlCon[2] = { .0004,.9996};
-  
     // AIR
 
   Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
@@ -897,11 +893,6 @@ void AliDIPOv2::CreateMaterials()
   AliMixture(31, "G10$", aG10, zG10, 1.7, 5, wG10);
   AliMixture(51, "G10$", aG10, zG10, 1.7, 5, wG10); 
  
-  //Aluminium Conductor
-  AliMixture(12, "AlCond$", aAlCon, zAlCon, 1.3506, 2, wAlCon);
-  AliMixture(32, "AlCond$", aAlCon, zAlCon, 1.3506, 2, wAlCon);
-  AliMixture(52, "AlCond$", aAlCon, zAlCon, 1.3506, 2, wAlCon);  
-
   // **************** 
   //     Defines tracking media parameters. 
   //     Les valeurs sont commentees pour laisser le defaut 
@@ -952,12 +943,6 @@ void AliDIPOv2::CreateMaterials()
   AliMedium(11, "G10_C0         ", 11, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(31, "G10_C1         ", 31, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(51, "G10_C2         ", 51, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-
-  //Aluminium Contactor
-  AliMedium(12, "AlCond_C0         ", 12, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(32, "AlCond_C1         ", 32, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(52, "AlCond_C2         ", 52, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-
   //
   //    Copper
   AliMedium(17, "Cu_C0            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
