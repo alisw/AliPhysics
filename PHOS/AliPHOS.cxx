@@ -513,10 +513,9 @@ void AliPHOS::Hits2SDigits()
 { 
 // create summable digits
 
-  AliPHOSSDigitizer* phosDigitizer = 
-    new AliPHOSSDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
-  phosDigitizer->SetEventRange(0, -1) ; // do all the events
-  phosDigitizer->ExecuteTask("all") ;
+  AliPHOSSDigitizer phosDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
+  phosDigitizer.SetEventRange(0, -1) ; // do all the events
+  phosDigitizer.ExecuteTask("all") ; 
 }
 
 //____________________________________________________________________________
