@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.34  2001/05/08 15:00:15  hristov
+Corrections for tracking in arbitrary magnenetic field. Changes towards a concept of global Alice track. Back propagation of reconstructed tracks (Yu.Belikov)
+
 Revision 1.33  2001/04/03 12:40:43  kowal2
 Removed printouts
 
@@ -606,7 +609,7 @@ void AliTPC::CreateMaterials()
   
   AliMixture(37, "Mylar",amat,zmat,density,-3,wmat); 
 
-  // G10 60% SiO2 + 40% epoxy, I use A and Z for SiO2
+  // SiO2 - used later for the glass fiber
 
   amat[0]=28.086;
   amat[1]=15.9994;
@@ -617,13 +620,8 @@ void AliTPC::CreateMaterials()
   wmat[0]=1.;
   wmat[1]=2.;
 
-  density = 1.7;
 
-  AliMixture(38,"SiO2",amat,zmat,2.2,-2,wmat); //SiO2 - quartz
- 
-  gMC->Gfmate((*fIdmate)[38],namate,amat[0],zmat[0],rho,X0,absl,buf,nbuf); 
-
-  AliMaterial(39,"G10",amat[0],zmat[0],density,999.,999.); 
+  AliMixture(38,"SiO2",amat,zmat,2.2,-2,wmat); //SiO2 - quartz (rho=2.2)
 
   // Al
 
@@ -689,7 +687,7 @@ void AliTPC::CreateMaterials()
 
   AliMixture(44,"Plexiglas",amat,zmat,density,-3,wmat);
 
-  // Lexan - I use it for epoxy - similar X0 C16H14O3
+  // Epoxy - C14 H20 O3
 
   
   amat[0]=12.011;
@@ -700,13 +698,48 @@ void AliTPC::CreateMaterials()
   zmat[1]=1.;
   zmat[2]=8.;
 
-  wmat[0]=16.;
-  wmat[1]=1.;
+  wmat[0]=14.;
+  wmat[1]=20.;
   wmat[2]=3.;
 
-  density=1.2;
+  density=1.25;
 
   AliMixture(45,"Epoxy",amat,zmat,density,-3,wmat);
+
+  // Carbon
+
+  amat[0]=12.011;
+  zmat[0]=6.;
+  density= 2.265;
+
+  AliMaterial(46,"C",amat[0],zmat[0],density,999.,999.);
+
+  // get epoxy
+
+  gMC->Gfmate((*fIdmate)[45],namate,amat[1],zmat[1],rho,X0,absl,buf,nbuf);
+
+  // Carbon fiber
+
+  wmat[0]=0.644; // by weight!
+  wmat[1]=0.356;
+
+  density=0.5*(1.25+2.265);
+
+  AliMixture(47,"Cfiber",amat,zmat,density,2,wmat);
+
+  // get SiO2
+
+  gMC->Gfmate((*fIdmate)[38],namate,amat[0],zmat[0],rho,X0,absl,buf,nbuf); 
+
+  wmat[0]=0.725; // by weight!
+  wmat[1]=0.275;
+
+  density=1.7;
+
+  AliMixture(39,"G10",amat,zmat,density,2,wmat);
+
+ 
+
 
   //----------------------------------------------------------
   // tracking media for gases
@@ -732,6 +765,7 @@ void AliTPC::CreateMaterials()
   AliMedium(12,"G10",39,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
   AliMedium(13,"Plexiglas",44,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
   AliMedium(14,"Epoxy",45,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
+  AliMedium(15,"Cfiber",47,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
     
 }
 
