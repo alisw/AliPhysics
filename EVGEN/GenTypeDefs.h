@@ -1,14 +1,16 @@
 #ifndef _GenTypeDefs_H
 #define _GenTypeDefs_H
+typedef enum {pion_p, kaon_p, phi_p, jpsi_p, upsilon_p, charm_p, beauty_p}
+Param_t;
 
 typedef enum
-{ charm, beauty, charm_unforced, beauty_unforced, jpsi, jpsi_chi }
+{ charm, beauty, charm_unforced, beauty_unforced, jpsi, jpsi_chi, mb}
 Process_t;
 
 typedef enum
 { semielectronic, dielectron, semimuonic, dimuon,
   b_jpsi_dimuon, b_jpsi_dielectron, 
-  b_psip_dimuon, b_psip_dielectron }
+  b_psip_dimuon, b_psip_dielectron, pitomu, katomu }
 Decay_t;
 
 typedef enum
@@ -20,10 +22,16 @@ typedef enum
     MRS_D0=3030,
     MRS_G=3041,
     CTEQ_2pM=4024,
-    CTEQ_4M=4034
+    CTEQ_4M=4034,
 }
 StrucFunc_t;
 
+typedef enum
+{
+    analog,
+    non_analo
+}
+Weighting_t;
 #endif
 
 
