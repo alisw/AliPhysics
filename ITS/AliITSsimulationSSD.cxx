@@ -135,7 +135,8 @@ void AliITSsimulationSSD::SDigitiseModule(AliITSmodule *mod,Int_t dummy0,
 void AliITSsimulationSSD::SDigitToDigit(Int_t module,AliITSpList *pList){
     // Takes the pList and finishes the digitization.
 
-    FillMapFrompList(pList);
+    //FillMapFrompList(pList);  // commented out to avoid double counting of
+                                // the charge 
 
     ApplyNoise(pList,module);
     ApplyCoupling(pList,module);
