@@ -175,6 +175,32 @@ void AliPHOSPIDv1::InitParameters()
   fRecParticlesInRun = 0 ;
   SetParameters() ; // fill the parameters matrix from parameters file
   SetEventRange(0,-1) ;
+  // initialisation of response function parameters
+  // Tof
+  // Photons
+  fTphoton[0] = 2.97E-1 ; 
+  fTphoton[1] = 1.55E-8 ; 
+  fTphoton[2] = 5.40E-10 ;
+  fTFphoton = new TFormula("ToF response to photon" , "gaus") ; 
+  fTFphoton->SetParameters( fTphoton[0], fTphoton[1], fTphoton[2]) ; 
+  // Electrons
+  fTelectron[0] = 2.73E-1 ; 
+  fTelectron[1] = 1.56E-8 ; 
+  fTelectron[2] = 5.70E-10 ;
+  fTFelectron = new TFormula("ToF response to electron" , "gaus") ; 
+  fTFelectron->SetParameters( fTelectron[0], fTelectron[1], fTelectron[2]) ; 
+  //Charged Hadrons
+  fTchargedhadron[0] = 1.58E-1 ; 
+  fTchargedhadron[1] = 1.64E-8 ; 
+  fTchargedhadron[2] = 3.59E-10 ;
+  fTFchargedhadron = new TFormula("ToF response to charged hadron" , "landau") ; 
+  fTFchargedhadron->SetParameters( fTchargedhadron[0], fTchargedhadron[1], fTchargedhadron[2]) ; 
+  //Neutral Hadrons
+  fTneutralhadron[0] = 9.62E-1 ; 
+  fTneutralhadron[1] = 1.65E-8 ; 
+  fTneutralhadron[2] = 6.46E-10 ;
+  fTFneutralhadron = new TFormula("ToF response to neutral hadron" , "landau") ; 
+  fTFneutralhadron->SetParameters( fTneutralhadron[0], fTneutralhadron[1], fTneutralhadron[2]) ;   
 }
 
 //________________________________________________________________________
@@ -535,17 +561,71 @@ void  AliPHOSPIDv1::MakePID()
   // construct the PID weight from a Bayesian Method
 
   Int_t index ;
-  Float_t pid1, pid2, pid3, pid4, pid5, pid6 ; 
-  pid1 = pid2 = pid3 = pid4 = pid5 = pid6 = 0 ;
+  const Int_t kSPECIES = AliESDtrack::kSPECIESN ;
+  Double_t pid[kSPECIES] = {0., 0., 0., 0., 0., 0.} ;  
   Int_t nparticles = AliPHOSGetter::Instance()->RecParticles()->GetEntriesFast() ;
+  const Int_t kMAXPARTICLES = 200 ; 
+  if (nparticles >= kMAXPARTICLES) 
+    Error("MakePID", "Change size of MAXPARTICLES") ; 
+  Double_t stof[kSPECIES][kMAXPARTICLES] ;
+  // make the normalized distribution of pid for this event 
+  // w(pid) in the Bayesian formulation
   for(index = 0 ; index < nparticles ; index ++) {
     AliPHOSRecParticle * recpar = AliPHOSGetter::Instance()->RecParticle(index) ;  
-    if (recpar->IsPhoton() || recpar->IsHardPhoton())  pid1++ ; 
-    else if (recpar->IsPi0() || recpar->IsHardPi0())   pid2++ ; 
-    else if (recpar->IsElectron())                     pid3++ ; 
-    else if (recpar->IsChargedHadron())                pid4++ ; 
-    else if (recpar->IsNeutralHadron())                pid5++ ; 
-    else if (recpar->IsEleCon())                       pid6++ ;  
+    
+    pid[AliESDtrack::kKaon0] = 0  ; 
+    
+    if (recpar->IsPhoton() || recpar->IsHardPhoton())  
+      pid[AliESDtrack::kPhoton]++ ; 
+    
+    else if (recpar->IsPi0() || recpar->IsHardPi0())   
+      pid[AliESDtrack::kPi0]++ ; 
+    
+    else if (recpar->IsElectron()) {
+      pid[AliESDtrack::kElectron]++ ; 
+      pid[AliESDtrack::kMuon]++ ; 
+    }
+    
+    else if (recpar->IsChargedHadron()){
+      pid[AliESDtrack::kPion]++ ; 
+      pid[AliESDtrack::kKaon]++ ; 
+      pid[AliESDtrack::kProton]++ ;
+    } 
+    
+    else if (recpar->IsNeutralHadron())
+      pid[AliESDtrack::kNeutron]++ ; 
+    
+    else if (recpar->IsEleCon())   
+      pid[AliESDtrack::kEleCon]++ ;
+    
+    // now get the signals probability
+    // s(pid) in the Bayesian formulation
+    // Tof
+    stof[AliESDtrack::kPhoton][index]   = fTFphoton->Eval(recpar->ToF()) ; 
+    stof[AliESDtrack::kPi0][index]      = fTFphoton->Eval(recpar->ToF()) ; // pi0 are detected via decay photon 
+    stof[AliESDtrack::kElectron][index] = fTFelectron->Eval(recpar->ToF()) ; 
+    stof[AliESDtrack::kPion][index]     = fTFchargedhadron->Eval(recpar->ToF()) ; 
+    stof[AliESDtrack::kKaon][index]     = fTFchargedhadron->Eval(recpar->ToF()) ; 
+    stof[AliESDtrack::kProton][index]   = fTFchargedhadron->Eval(recpar->ToF()) ; 
+    stof[AliESDtrack::kNeutron][index]  = fTFneutralhadron->Eval(recpar->ToF()) ; 
+    stof[AliESDtrack::kEleCon][index]   = fTFphoton->Eval(recpar->ToF()) ; // a conversion electron has the photon ToF
+    stof[AliESDtrack::kKaon0][index]    = 0 ; // do not know yet what to to with K0
+
+  }
+  for (index = 0 ; index < kSPECIES ; index++) 
+    pid[index] /= nparticles ; 
+ 
+
+  for(index = 0 ; index < nparticles ; index ++) {
+    // calculates the Bayesian weight
+    Int_t jndex ;
+    Double_t wn = 0.0 ; 
+    for (jndex = 0 ; jndex < kSPECIES ; jndex++) 
+      wn += stof[jndex][index] * pid[jndex] ;
+    AliPHOSRecParticle * recpar = AliPHOSGetter::Instance()->RecParticle(index) ;  
+    for (jndex = 0 ; jndex < kSPECIES ; jndex++) {
+      recpar->SetPID(jndex, stof[jndex][index] * pid[jndex] / wn) ; 
+    }
   }
 }
 

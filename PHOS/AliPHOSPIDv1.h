@@ -106,9 +106,19 @@ private:
   Double_t   *fPPi0 ;                    //! Principal pi0 eigenvalues
   Int_t       fRecParticlesInRun ;       //! Total number of recparticles in one run
   TMatrix    *fParameters;               //! Matrix of identification Parameters
+  // response function parameters
+  // ToF
+  Double_t fTphoton[3] ;                 // gaussian response for photon
+  TFormula * fTFphoton ;                 // the formula   
+  Double_t fTelectron[3] ;               // gaussian response for electrons
+  TFormula * fTFelectron ;               // the formula   
+  Double_t fTchargedhadron[3] ;          // landau   response for charged hadrons
+  TFormula * fTFchargedhadron ;          // the formula   
+  Double_t fTneutralhadron[3] ;          // landau   response for neutral hadrons
+  TFormula * fTFneutralhadron ;          // the formula   
 
 
-  ClassDef( AliPHOSPIDv1,9)  // Particle identifier implementation version 1
+  ClassDef( AliPHOSPIDv1,10)  // Particle identifier implementation version 1
 
 };
 

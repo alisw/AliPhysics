@@ -490,20 +490,31 @@ void AliPHOSFastRecParticle::Print()const
 {
   // Print the type, energy and momentum of the reconstructed particle
 
-  TString message ; 
-  message  = "\n   PID bits are %d%d%d %d%d%d %d%d%d %d%d%d" ; 
-  message += ", type is \"%s\"\n" ; 
-  message += "   (E,Px,Py,Pz) = (% .3e, % .3e, % .3e, % .3e) GeV\n" ; 
-  Info("Print", message.Data(), 
-       TestPIDBit(0),TestPIDBit(1),
-       TestPIDBit(2),TestPIDBit(3),
-       TestPIDBit(4),TestPIDBit(5),
-       TestPIDBit(6),TestPIDBit(7),
-       TestPIDBit(8),TestPIDBit(9),
-       TestPIDBit(10),TestPIDBit(11),
-       Name().Data(), 
-       Energy(), 
-       Px(), 
-       Py(),
-       Pz() ); 
+  Info("Print", "-----------------------------") ;  
+  printf("PID bits are %d%d%d %d%d%d %d%d%d %d%d%d",  
+	 TestPIDBit(0),TestPIDBit(1),
+	 TestPIDBit(2),TestPIDBit(3),
+	 TestPIDBit(4),TestPIDBit(5),
+	 TestPIDBit(6),TestPIDBit(7),
+	 TestPIDBit(8),TestPIDBit(9),
+	 TestPIDBit(10),TestPIDBit(11)) ; 
+  printf(", type is \"%s\"\n", Name().Data()) ; 
+  printf("  (E,Px,Py,Pz) = (% .3e, % .3e, % .3e, % .3e) GeV\n",     
+	 Energy(), 
+	 Px(), 
+	 Py(),
+	 Pz() ) ; 
+  printf("  TOF = %.3e ns\n", ToF() ) ; 
+  printf("  PID weight: \n" ) ;
+  printf("             photon ->              %f\n", fPID[AliESDtrack::kPhoton] ) ; 
+  printf("             electron ->            %f\n", fPID[AliESDtrack::kElectron] ) ; 
+  printf("             Conversion electron -> %f\n", fPID[AliESDtrack::kEleCon] ) ; 
+  printf("             muon ->                %f\n", fPID[AliESDtrack::kMuon] ) ; 
+  printf("             neutral pion ->        %f\n", fPID[AliESDtrack::kPi0] ) ; 
+  printf("             charged pion ->        %f\n", fPID[AliESDtrack::kPion] ) ; 
+  printf("             charged kaon ->        %f\n", fPID[AliESDtrack::kKaon] ) ; 
+  printf("             neutral kaon ->        %f\n", fPID[AliESDtrack::kKaon0] ) ; 
+  printf("             proton ->              %f\n", fPID[AliESDtrack::kProton] ) ; 
+  printf("             neutron ->             %f\n", fPID[AliESDtrack::kNeutron] ) ; 
+
 }

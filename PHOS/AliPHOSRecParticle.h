@@ -18,7 +18,6 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSFastRecParticle.h"
-#include "AliESDtrack.h" 
 
 class TParticle ;
 #include  "TVector3.h"  
@@ -37,8 +36,9 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
   TVector3 GetPos() const { return fPos ; } 
   virtual const TParticle * GetPrimary(Int_t index) const ;
   virtual const TParticle * GetPrimary() const ;
-  const Double_t *GetPID();
+  const Double_t *GetPID() { return fPID ; }
   void    SetDebug() { fDebug = kTRUE ; } 
+  void    SetPID(Int_t type, Double_t weight) ; 
   void    SetPos(TVector3 pos) { fPos.SetXYZ( pos.X(), pos.Y(), pos.Z() ); } 
   void    UnsetDebug() { fDebug = kFALSE ; }
   void    SetTrackSegment(Int_t index){fPHOSTrackSegment = index; }
@@ -50,7 +50,6 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
   Int_t fPHOSTrackSegment ; // pointer to the associated track segment in PHOS  
   Bool_t fDebug ; // to steer debug output
   TVector3 fPos ; // position in the global alice coordinate system 
-  Double_t fPID[AliESDtrack::kSPECIESN] ; // PID probability densities
 
   ClassDef(AliPHOSRecParticle,3)  // Reconstructed Particle
 };

@@ -161,9 +161,9 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
 }
 
 //____________________________________________________________________________
-const Double_t * AliPHOSRecParticle::GetPID()
+void AliPHOSRecParticle::SetPID(Int_t type, Double_t weight)
 {
-  // Get the probability densities that this reconstructed particle
+  // Set the probability densities that this reconstructed particle
   // has a type of i:
   // i       particle types
   // ----------------------
@@ -176,33 +176,7 @@ const Double_t * AliPHOSRecParticle::GetPID()
   // 6       pi0 at high pt
   // 7       neutron
   // 8       K0L
-
- 
-  if (IsElectron()     ) fPID[0] = 1.0;
-  if (IsChargedHadron()) {
-    fPID[1] = 0.25;
-    fPID[2] = 0.25;
-    fPID[3] = 0.25;
-    fPID[4] = 0.25;
-  }
-  if (IsFastChargedHadron()) {
-    fPID[1] = 0.33;
-    fPID[2] = 0.33;
-    fPID[3] = 0.33;
-    fPID[4] = 0.00;
-  }
-  if (IsSlowChargedHadron()) {
-    fPID[1] = 0.00;
-    fPID[2] = 0.00;
-    fPID[3] = 0.00;
-    fPID[4] = 1.00;
-  }
-
-  if (IsPhoton() || IsHardPhoton()) fPID[5] = 1.0;
-  if (IsHardPi0())                  fPID[6] = 1.0;
-  if (IsFastNeutralHadron())        fPID[7] = 1.0;
-  if (IsSlowNeutralHadron())        fPID[8] = 1.0;
-
-  if (IsEleCon()) fPID[9] = 1.0;
-  return fPID;
+  // 9       Conversion electron
+  
+  fPID[type] = weight ; 
 }
