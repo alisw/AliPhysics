@@ -21,7 +21,7 @@
 #include "EVGEN/AliGenSlowNucleons.h"
 #include "EVGEN/AliSlowNucleonModelExp.h"
 #include "EVGEN/AliGenParam.h"
-#include "EVGEN/AliGenGSIlib.h"
+#include "EVGEN/AliGenMUONlib.h"
 #include "EVGEN/AliGenMUONCocktail.h"
 #include "PYTHIA6/AliGenPythia.h"
 #include "STEER/AliMagFMaps.h"
@@ -67,8 +67,7 @@ enum PprRun_t
     kPythia6Jets60_72,   kPythia6Jets72_86,   kPythia6Jets86_104,
     kPythia6Jets104_125, kPythia6Jets125_150, kPythia6Jets150_180,
     kD0PbPb5500, kCharmSemiElPbPb5500, kBeautySemiElPbPb5500,
-    kD_TRD, kB_TRD, kJpsi_TRD,
-    kU_TRD, kPyJJ, kPyGJ, 
+    kCocktailTRD, kPyJJ, kPyGJ, 
     kMuonCocktailCent1, kMuonCocktailPer1, kMuonCocktailPer4, 
     kMuonCocktailCent1HighPt, kMuonCocktailPer1HighPt, kMuonCocktailPer4HighPt,
     kMuonCocktailCent1Single, kMuonCocktailPer1Single, kMuonCocktailPer4Single,
@@ -90,8 +89,7 @@ const char* pprRunName[kRunMax] = {
     "kPythia6Jets60_72",   "kPythia6Jets72_86",   "kPythia6Jets86_104",
     "kPythia6Jets104_125", "kPythia6Jets125_150", "kPythia6Jets150_180",
     "kD0PbPb5500", "kCharmSemiElPbPb5500", "kBeautySemiElPbPb5500",
-    "kD_TRD", "kB_TRD", "kJpsi_TRD",
-    "kU_TRD", "kPyJJ", "kPyGJ", 
+    "kCocktailTRD", "kPyJJ", "kPyGJ", 
     "kMuonCocktailCent1", "kMuonCocktailPer1", "kMuonCocktailPer4",  
     "kMuonCocktailCent1HighPt", "kMuonCocktailPer1HighPt", "kMuonCocktailPer4HighPt",
     "kMuonCocktailCent1Single", "kMuonCocktailPer1Single", "kMuonCocktailPer4Single"
@@ -115,8 +113,8 @@ enum PprMag_t
 
 // This part for configuration    
 //static PprRun_t srun = test50;
-static PprRun_t srun = kMuonCocktailCent1HighPt;
-static PprGeo_t sgeo = kHoles;
+static PprRun_t srun = kCocktailTRD;
+static PprGeo_t sgeo = kNoHoles;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k5kG;
 static Int_t    sseed = 12345; //Set 0 to use the current time
@@ -1169,55 +1167,49 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gGener=gener;
       }
       break;
-    case kD_TRD:
+    case kCocktailTRD:
       {
-	comment = comment.Append(" Charm for TRD at 5.5 TeV");
-	AliGenPythia *gener = new AliGenPythia(1);
-	gener->SetCutOnChild(0);
-	gener->SetStrucFunc(kCTEQ4L);
-	gener->SetProcess(kPyCharm);
-	gener->SetPtHard(0.,-1);
-	gener->SetEnergyCMS(5500.);
-	gener->SetNuclei(208,208);
-	gGener=gener;
-      }
-      break;
-    case kB_TRD:
-      {
-	comment = comment.Append(" Beauty for TRD at 5.5 TeV");
-	AliGenPythia *gener = new AliGenPythia(1);
-	gener->SetCutOnChild(0);
-	gener->SetStrucFunc(kCTEQ4L);
-	gener->SetProcess(kPyBeauty);
-	gener->SetPtHard(0.,-1);
-	gener->SetEnergyCMS(5500.);
-	gener->SetNuclei(208,208);
-	gGener=gener;
-      }
-      break;
-    case kJpsi_TRD:
-      {
-	comment = comment.Append(" J/psi for TRD at 5.5 TeV");
-	AliGenParam *gener = new AliGenParam(1,new AliGenGSIlib(),
-					     AliGenGSIlib::kJPsi,"MUON");
-	gener->SetMomentumRange(0,999);
-	gener->SetPtRange(0,30.);
-	gener->SetPhiRange(0., 360.);
-	gener->SetYRange(-0.9,+0.9);
-	gener->SetForceDecay(kDiElectron);
-	gGener=gener;
-      }
-      break;
-    case kU_TRD:
-      {
-	comment = comment.Append(" Upsilon for TRD at 5.5 TeV");
-	AliGenParam *gener = new AliGenParam(1,new AliGenGSIlib(),
-					     AliGenGSIlib::kUpsilon,"RITMAN");
-	gener->SetMomentumRange(0,999);
-	gener->SetPtRange(0,30.);
-	gener->SetPhiRange(0., 360.);
-	gener->SetYRange(-0.9,0.9);
-	gener->SetForceDecay(kDiElectron);
+	comment = comment.Append(" Cocktail for TRD at 5.5 TeV");
+	AliGenCocktail *gener  = new AliGenCocktail();
+
+	AliGenParam *jpsi = new AliGenParam(10,
+					    new AliGenMUONlib(),
+					    AliGenMUONlib::kJpsiFamily,
+					    "Vogt PbPb");
+
+	jpsi->SetPtRange(0, 100);
+	jpsi->SetYRange(-1., +1.);
+	jpsi->SetForceDecay(kDiElectron);
+
+	AliGenParam *ups = new AliGenParam(10,
+					   new AliGenMUONlib(),
+					   AliGenMUONlib::kUpsilonFamily,
+					   "Vogt PbPb");
+	ups->SetPtRange(0, 100);
+	ups->SetYRange(-1., +1.);
+	ups->SetForceDecay(kDiElectron);
+	
+	AliGenParam *charm = new AliGenParam(10,
+					     new AliGenMUONlib(), 
+					     AliGenMUONlib::kCharm,
+					     "central");
+	charm->SetPtRange(0, 100);
+	charm->SetYRange(-1.5, +1.5);
+	charm->SetForceDecay(kSemiElectronic);
+	
+	
+	AliGenParam *beauty = new AliGenParam(10,
+					      new AliGenMUONlib(), 
+					      AliGenMUONlib::kBeauty,
+					      "central");
+	beauty->SetPtRange(0, 100);
+	beauty->SetYRange(-1.5, +1.5);
+	beauty->SetForceDecay(kSemiElectronic);
+
+	gener->AddGenerator(jpsi,"J/psi",1);
+	gener->AddGenerator(ups,"Upsilon",1);
+	gener->AddGenerator(charm,"Charm",1);
+	gener->AddGenerator(beauty,"Beauty",1);
 	gGener=gener;
       }
       break;
