@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.67  2002/12/09 15:24:09  morsch
+Same trigger routine can use Pycell or Pyclus.
+
 Revision 1.66  2002/12/09 08:22:56  morsch
 UA1 jet finder (Pycell) for software triggering added.
 
@@ -759,10 +762,9 @@ void AliGenPythia::MakeHeader()
 // Jets that have triggered
     if (fProcess == kPyJets)
     {
-	Int_t ntrig;
-	Float_t jets[4][50];
-//	GetJets(5., 1, njet, ntrig, jets);
-	RecJetsUA1(0., 4., 10., 0.7, ntrig, jets);
+	Int_t ntrig, njet;
+	Float_t jets[4][10];
+	GetJets(njet, ntrig, jets);
 	
 	for (Int_t i = 0; i < ntrig; i++) {
 	    ((AliGenPythiaEventHeader*) header)->AddJet(jets[0][i], jets[1][i], jets[2][i], 
@@ -937,7 +939,7 @@ void  AliGenPythia::GetJets(Int_t& nJets, Int_t& nJetsTrig, Float_t jets[4][10])
 	fPythia->SetPARU(58,  0.0);
 	fPythia->SetPARU(52,  4.0);
 	fPythia->SetPARU(53, 10.0);
-	fPythia->SetPARU(54,  0.7);
+	fPythia->SetPARU(54,  1.0);
 	fPythia->SetMSTU(54,  2);
 //
 //  Run Jet Finder
