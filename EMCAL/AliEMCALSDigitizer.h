@@ -65,7 +65,7 @@ private:
   TClonesArray * fSDigits ; //! list of SDigits
   TClonesArray * fHits ;    //! 
 
-  ClassDef(AliEMCALSDigitizer,1)  // description 
+  ClassDef(AliEMCALSDigitizer,2)  // description 
 
 };
 
