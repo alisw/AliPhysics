@@ -1,10 +1,10 @@
 *******************************************************************
-      SUBROUTINE qsimp(sr,sd)
+      SUBROUTINE eloss_qsimp(sr,sd)
       REAL*8           xr,length,noc,qq,nnorm,rri,fracc
       COMMON /input/   xr,length,noc,qq,nnorm,rri,fracc
       INTEGER JMAX
       REAL*8 a1,b1,diff1,d1,sr,sd,EPS,fu1r,fu1d
-      EXTERNAL func1, func2
+      EXTERNAL eloss_func1, eloss_func2
       PARAMETER (EPS=1.e-9, JMAX=12)
       INTEGER j,j1
       REAL*8 osr,ostr,str
@@ -16,46 +16,46 @@
       diff1 = b1-a1
       d1 = 0.5*diff1
 *
-      res=dgauss(func2,a1,b1,1.d-6)
-      call func1(a1,fu1r,fu1d)
+      res=dgauss(eloss_func2,a1,b1,1.d-6)
+      call eloss_func1(a1,fu1r,fu1d)
       sd=fu1d
       sr=res
       END
 
-      function func2(yy)
+      function eloss_func2(yy)
       implicit double precision (a-h,o-z)
-      call func1(yy,fu1r,fu1d)
-      func2=fu1r
+      call eloss_func1(yy,fu1r,fu1d)
+      eloss_func2=fu1r
       return
       end
 
 
 **************************************************************
 *
-      SUBROUTINE func1(yy,funr,fund)
+      SUBROUTINE eloss_func1(yy,funr,fund)
 *
       REAL*8           funr,yy,fund
       REAL*8           xr,length,noc,qq,nnorm,rri,fracc
       COMMON /input/   xr,length,noc,qq,nnorm,rri,fracc
       REAL*8           fragm
-      EXTERNAL         lookup
+      EXTERNAL         eloss_lookup
       REAL*8           cont, disc, wwt, tepsi
 *
       tepsi = yy
       wwt = tepsi
       if(wwt.ge.1.3) then
-         call lookup(rri,1.d0,cont,disc)
+         call eloss_lookup(rri,1.d0,cont,disc)
          funr=0.0
          fund=disc
       else
-         call lookup(rri,wwt,cont,disc)
-         funr = cont*fragm(xr/(1.0-tepsi/fracc),qq)
+         call eloss_lookup(rri,wwt,cont,disc)
+         funr = cont*eloss_fragm(xr/(1.0-tepsi/fracc),qq)
      .         /(1.0-tepsi/fracc)
          fund = disc
       endif
       END
 *******************************************************************
-      SUBROUTINE lookup(rrrr,xxxx,continuous,discrete)
+      SUBROUTINE eloss_lookup(rrrr,xxxx,continuous,discrete)
 *
       REAL*8           xx(400), da(30), ca(30,260), rrr(30)
       COMMON /data/    xx, da, ca, rrr
@@ -106,7 +106,7 @@
 
 c	BKK FF
 
-      FUNCTION fragmbkk(xxx,qqq)
+      FUNCTION eloss_fragmbkk(xxx,qqq)
       REAL*8   alphav, betav, gammav, nv
       REAL*8   alphas, betas, gammas, ns
       REAL*8   sbar, xx, qq, xxx, qqq, lambda, fragv, frags
@@ -139,12 +139,12 @@ c	BKK FF
       fragv = nv*(xx**alphav)*((1.0-xx)**betav)*((1.0+xx)**gammav)
       frags = ns*(xx**alphas)*((1.0-xx)**betas)*((1.0+xx)**gammas)
 c      fragmbkk = (fragv+frags)
-      fragmbkk = fragv
+      eloss_fragmbkk = fragv
       END
 
 ***************************************************************
 
-      FUNCTION fragm(xxx,qqq)
+      FUNCTION eloss_fragm(xxx,qqq)
       REAL*8   alpha, beta, gamma, n
       REAL*8   sbar, xx, qq, xxx, qqq, lambda, fragv, frags
 *
@@ -168,7 +168,7 @@ c	g -> pi+ + pi-
       beta=2.92133+1.48429*sbar+1.32887*sbar**2-1.78696*sbar**3
       gamma=0.23086*sbar-0.29182*sbar**2
 
-      fragm = n*xx**alpha*(1.-xx)**beta*(1.+gamma/xx)/2.
+      eloss_fragm = n*xx**alpha*(1.-xx)**beta*(1.+gamma/xx)/2.
 
       END
 
