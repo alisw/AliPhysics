@@ -20,6 +20,8 @@ void MUONtrigger (char* filename="galice.root",
   // Loading MUON subsystem
   AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+  AliMUONData * muondata = MUON->GetMUONData();
+  muondata->SetLoader(MUONLoader);
 
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
@@ -27,12 +29,12 @@ void MUONtrigger (char* filename="galice.root",
   MUONLoader->LoadDigits("READ");
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   for (Int_t ievent=evNumber1; ievent<=evNumber2; ievent++) { // event loop
+   for (Int_t ievent=evNumber1; ievent<evNumber2; ievent++) { // event loop
        printf("event %d\n",ievent);
        RunLoader->GetEvent(ievent);       
        if (MUONLoader->TreeR() == 0x0) MUONLoader->MakeTree("R");
-       MUON->MakeBranch("R");
-       MUON->SetTreeAddress();
+       muondata->MakeBranch("GLT");
+       muondata->SetTreeAddress("D,GLT");
        MUON->Trigger(ievent);       
    } // event loop 
    MUONLoader->UnloadDigits();
