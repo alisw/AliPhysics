@@ -23,6 +23,8 @@ public:
   AliTOF(const char *name, const char *title);
   virtual        ~AliTOF() {}
   virtual void    AddHit(Int_t, Int_t, Int_t, Int_t, Int_t, Float_t*);
+  virtual void    AddHit(Int_t track, Int_t *vol, Float_t*hits)
+  { AddHit(track, vol[0], vol[1], vol[2], vol[3], hits);}
   virtual void    BuildGeometry();
   virtual void    CreateGeometry();
   virtual void    CreateMaterials();
