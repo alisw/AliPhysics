@@ -1,5 +1,15 @@
 #ifndef ALIHBTEVENTBUFFER_H
 #define ALIHBTEVENTBUFFER_H
+//______________________________________________________
+////////////////////////////////////////////////////////
+//
+// class AliHBTEventBuffer
+//
+// FIFO type event buffer
+//
+// Piotr.Skowronski@cern.ch
+//
+////////////////////////////////////////////////////////
 
 #include <TObject.h>
 #include <TList.h>
@@ -10,7 +20,7 @@ class AliHBTEventBuffer: public TObject
   public:
     AliHBTEventBuffer();
     AliHBTEventBuffer(Int_t size);
-    virtual ~AliHBTEventBuffer(){}
+    virtual ~AliHBTEventBuffer();
     
     AliHBTEvent* Push(AliHBTEvent* event);//adds a new event, and returns old of do not fit in size
     AliHBTEvent* RemoveLast(){return dynamic_cast<AliHBTEvent*>(fEvents.Remove(fEvents.Last()));}
