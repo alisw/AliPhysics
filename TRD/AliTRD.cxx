@@ -31,12 +31,17 @@ AliTRD::AliTRD()
   //
   // Default constructor
   //
+
   fIshunt      = 0;
   fGasMix      = 0;
-  fSensSelect  = 0;
-  fSensPlane   = 0;
-  fSensChamber = 0;
-  fSensSector  = 0;
+
+  // The chamber dimensions
+  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+    fClengthI[iplan] = 0.;
+    fClengthM[iplan] = 0.;
+    fClengthO[iplan] = 0.;
+  }
+
 }
  
 //_____________________________________________________________________________
@@ -47,19 +52,30 @@ AliTRD::AliTRD(const char *name, const char *title)
   // Standard constructor for the TRD
   //
 
-  //
+
+  // Check that FRAME is there otherwise we have no place where to put the TRD
+  AliModule* FRAME = gAlice->GetModule("FRAME");
+  if (!FRAME) {
+    Error("AliTRD","TRD needs FRAME to be present\n");
+    exit(1);
+  }
+
   // Allocate the hit array
- 
   fHits   = new TClonesArray("AliTRDhit",  405);
   
-  fIshunt      = 0;
-  fGasMix      = 0;
-  fSensSelect  = 0;
-  fSensPlane   = 0;
-  fSensChamber = 0;
-  fSensSector  = 0;
+  fIshunt = 0;
+  fGasMix = 0;
+
+  // The chamber dimensions
+  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+    fClengthI[iplan] = 0.;
+    fClengthM[iplan] = 0.;
+    fClengthO[iplan] = 0.;
+    fCwidth[iplan]   = 0.;
+  }
   
   SetMarkerColor(kWhite);   
+
 }
  
 //_____________________________________________________________________________
@@ -68,8 +84,10 @@ void AliTRD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //
   // Add a hit for the TRD
   //
+
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliTRDhit(fIshunt,track,vol,hits);
+
 }
 
 //_____________________________________________________________________________
@@ -78,21 +96,22 @@ void AliTRD::BuildGeometry()
   //
   // Create the ROOT TNode geometry for the TRD
   //
+
   TNode *Node, *Top;
   TPGON *pgon;
   const Int_t kColorTRD = 46;
   
   // Find the top node alice
-  Top=gAlice->GetGeometry()->GetNode("alice");
+  Top = gAlice->GetGeometry()->GetNode("alice");
   
-  pgon = new TPGON("S_TRD","TRD","void",0,360,nsect,4);
-  Float_t ff    = TMath::Cos(kDegrad * 180 / nsect);
-  Float_t rrmin = rmin / ff;
-  Float_t rrmax = rmax / ff;
-  pgon->DefineSection(0,-zmax1,rrmax,rrmax);
-  pgon->DefineSection(1,-zmax2,rrmin,rrmax);
-  pgon->DefineSection(2, zmax2,rrmin,rrmax);
-  pgon->DefineSection(3, zmax1,rrmax,rrmax);
+  pgon = new TPGON("S_TRD","TRD","void",0,360,kNsect,4);
+  Float_t ff    = TMath::Cos(kDegrad * 180 / kNsect);
+  Float_t rrmin = kRmin / ff;
+  Float_t rrmax = kRmax / ff;
+  pgon->DefineSection(0,-kZmax1,rrmax,rrmax);
+  pgon->DefineSection(1,-kZmax2,rrmin,rrmax);
+  pgon->DefineSection(2, kZmax2,rrmin,rrmax);
+  pgon->DefineSection(3, kZmax1,rrmax,rrmax);
   Top->cd();
   Node = new TNode("TRD","TRD","S_TRD",0,0,0,"");
   Node->SetLineColor(kColorTRD);
@@ -101,9 +120,358 @@ void AliTRD::BuildGeometry()
 }
  
 //_____________________________________________________________________________
+void AliTRD::CreateGeometry()
+{
+  //
+  // Creates the volumes for the TRD chambers
+  //
+  // Author: Christoph Blume (C.Blume@gsi.de) 20/07/99
+  //
+  // The volumes:
+  //    TRD        (Air)   --- The TRD mother volume for one sector. 
+  //                           To be placed into the spaceframe.
+  //
+  //    UAFI(/M/O) (Al)    --- The aluminum frame of the inner(/middle/outer) chambers (readout)
+  //    UCFI(/M/O) (C)     --- The carbon frame of the inner(/middle/outer) chambers 
+  //                           (driftchamber + radiator)
+  //    UAII(/M/O) (Air)   --- The inner part of the readout of the inner(/middle/outer) chambers
+  //    UFII(/M/O) (Air)   --- The inner part of the chamner and radiator of the 
+  //                           inner(/middle/outer) chambers
+  //
+  // The material layers in one chamber:
+  //    UL01       (G10)   --- The gas seal of the radiator
+  //    UL02       (CO2)   --- The gas in the radiator
+  //    UL03       (PE)    --- The foil stack
+  //    UL04       (Mylar) --- Entrance window to the driftvolume and HV-cathode
+  //    UL05       (Xe)    --- The driftvolume
+  //    UL06       (Xe)    --- The amplification region
+  //    
+  //    UL07       (Cu)    --- The pad plane
+  //    UL08       (G10)   --- The Nomex honeycomb support structure
+  //    UL09       (Cu)    --- FEE and signal lines
+  //    UL10       (PE)    --- The cooling devices
+  //    UL11       (Water) --- The cooling water
+
+  // Check that FRAME is there otherwise we have no place where to put the TRD
+  AliModule* FRAME = gAlice->GetModule("FRAME");
+  if (!FRAME) return;
+
+  const Int_t npar_trd = 4;
+  const Int_t npar_cha = 3;
+
+  Float_t par_dum[3];
+  Float_t par_trd[npar_trd];
+  Float_t par_cha[npar_cha];
+
+  Float_t xpos, ypos, zpos;
+
+  Int_t *idtmed = fIdtmed->GetArray()-1299;
+
+  // The length of the inner chambers
+  for (Int_t iplan = 0; iplan < kNplan; iplan++) fClengthI[iplan] = 110.0;
+  // The length of the middle chambers
+  fClengthM[0] = 123.5;
+  fClengthM[1] = 131.0;
+  fClengthM[2] = 138.5;
+  fClengthM[3] = 146.0;
+  fClengthM[4] = 153.0;
+  fClengthM[5] = 160.5;
+  // The length of the outer chambers
+  fClengthO[0] = 123.5;
+  fClengthO[1] = 131.0;
+  fClengthO[2] = 134.5;
+  fClengthO[3] = 142.0;
+  fClengthO[4] = 142.0;
+  fClengthO[5] = 134.5;
+
+  // The width of the chambers
+  fCwidth[0] =  99.6;
+  fCwidth[1] = 104.1;
+  fCwidth[2] = 108.5;
+  fCwidth[3] = 112.9;
+  fCwidth[4] = 117.4;
+  fCwidth[5] = 121.8;
+
+  // The TRD mother volume for one sector (Air) (dimensions identical to BTR1-3)
+  par_trd[0] = kSwidth1/2.;
+  par_trd[1] = kSwidth2/2.;
+  par_trd[2] = kSlength/2.;
+  par_trd[3] = kSheight/2.;
+  gMC->Gsvolu("TRD ","TRD1",idtmed[1302-1],par_trd,npar_trd);
+
+  // The aluminum frames - readout + electronics (Al)
+  // The inner chambers
+  gMC->Gsvolu("UAFI","BOX ",idtmed[1301-1],par_dum,0);
+  // The middle chambers
+  gMC->Gsvolu("UAFM","BOX ",idtmed[1301-1],par_dum,0);
+  // The outer chambers
+  gMC->Gsvolu("UAFO","BOX ",idtmed[1301-1],par_dum,0);
+
+  // The inner part of the aluminum frames (Air)
+  // The inner chambers
+  gMC->Gsvolu("UAII","BOX ",idtmed[1302-1],par_dum,0);
+  // The middle chambers
+  gMC->Gsvolu("UAIM","BOX ",idtmed[1302-1],par_dum,0);
+  // The outer chambers
+  gMC->Gsvolu("UAIO","BOX ",idtmed[1302-1],par_dum,0);
+
+  // The carbon frames - radiator + driftchamber (C)
+  // The inner chambers
+  gMC->Gsvolu("UCFI","BOX ",idtmed[1307-1],par_dum,0);
+  // The middle chambers
+  gMC->Gsvolu("UCFM","BOX ",idtmed[1307-1],par_dum,0);
+  // The outer chambers
+  gMC->Gsvolu("UCFO","BOX ",idtmed[1307-1],par_dum,0);
+
+  // The inner part of the carbon frames (Air)
+  // The inner chambers
+  gMC->Gsvolu("UCII","BOX ",idtmed[1302-1],par_dum,0);
+  // The middle chambers
+  gMC->Gsvolu("UCIM","BOX ",idtmed[1302-1],par_dum,0);
+  // The outer chambers
+  gMC->Gsvolu("UCIO","BOX ",idtmed[1302-1],par_dum,0);
+
+  // The material layers inside the chambers
+  par_cha[0] = -1.;
+  par_cha[1] = -1.;
+  // G10 layer (radiator seal)
+  par_cha[2] = kSeThick/2;
+  gMC->Gsvolu("UL01","BOX ",idtmed[1313-1],par_cha,npar_cha);
+  // CO2 layer (radiator)
+  par_cha[2] = kRaThick/2;
+  gMC->Gsvolu("UL02","BOX ",idtmed[1312-1],par_cha,npar_cha);
+  // PE layer (radiator)
+  par_cha[2] = kPeThick/2;
+  gMC->Gsvolu("UL03","BOX ",idtmed[1303-1],par_cha,npar_cha);
+  // Mylar layer (entrance window + HV cathode) 
+  par_cha[2] = kMyThick/2;
+  gMC->Gsvolu("UL04","BOX ",idtmed[1308-1],par_cha,npar_cha);
+  // Xe/Isobutane layer (drift volume, sensitive) 
+  par_cha[2] = kDrThick/2.;
+  gMC->Gsvolu("UL05","BOX ",idtmed[1309-1],par_cha,npar_cha);
+  // Xe/Isobutane layer (amplification volume, not sensitive)
+  par_cha[2] = kAmThick/2.;
+  gMC->Gsvolu("UL06","BOX ",idtmed[1309-1],par_cha,npar_cha);
+  
+  // Cu layer (pad plane)
+  par_cha[2] = kCuThick/2;
+  gMC->Gsvolu("UL07","BOX ",idtmed[1305-1],par_cha,npar_cha);
+  // G10 layer (support structure)
+  par_cha[2] = kSuThick/2;
+  gMC->Gsvolu("UL08","BOX ",idtmed[1313-1],par_cha,npar_cha);
+  // Cu layer (FEE + signal lines)
+  par_cha[2] = kFeThick/2;
+  gMC->Gsvolu("UL09","BOX ",idtmed[1305-1],par_cha,npar_cha);
+  // PE layer (cooling devices)
+  par_cha[2] = kCoThick/2;
+  gMC->Gsvolu("UL10","BOX ",idtmed[1303-1],par_cha,npar_cha);
+  // Water layer (cooling)
+  par_cha[2] = kWaThick/2;
+  gMC->Gsvolu("UL11","BOX ",idtmed[1314-1],par_cha,npar_cha);
+
+  // Position the layers in the chambers
+  xpos = 0;
+  ypos = 0;
+
+  // G10 layer (radiator seal)
+  zpos = kSeZpos;
+  gMC->Gspos("UL01",1,"UCII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL01",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL01",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
+  // CO2 layer (radiator)
+  zpos = kRaZpos;
+  gMC->Gspos("UL02",1,"UCII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL02",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL02",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
+  // PE layer (radiator)
+  zpos = 0;
+  gMC->Gspos("UL03",1,"UL02",xpos,ypos,zpos,0,"ONLY");
+  // Mylar layer (entrance window + HV cathode)   
+  zpos = kMyZpos;
+  gMC->Gspos("UL04",1,"UCII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL04",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL04",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
+  // Xe/Isobutane layer (drift volume) 
+  zpos = kDrZpos;
+  gMC->Gspos("UL05",1,"UCII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL05",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL05",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
+  // Xe/Isobutane layer (amplification volume)
+  zpos = kAmZpos;
+  gMC->Gspos("UL06",1,"UCII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL06",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL06",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
+
+  // Cu layer (pad plane)
+  zpos = kCuZpos;
+  gMC->Gspos("UL07",1,"UAII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL07",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL07",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
+  // G10 layer (support structure)
+  zpos = kSuZpos;
+  gMC->Gspos("UL08",1,"UAII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL08",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL08",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
+  // Cu layer (FEE + signal lines)
+  zpos = kFeZpos; 
+  gMC->Gspos("UL09",1,"UAII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL09",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL09",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
+  // PE layer (cooling devices)
+  zpos = kCoZpos;
+  gMC->Gspos("UL10",1,"UAII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL10",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL10",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
+  // Water layer (cooling)
+  zpos = kWaZpos;
+  gMC->Gspos("UL11",1,"UAII",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL11",1,"UAIM",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UL11",1,"UAIO",xpos,ypos,zpos,0,"ONLY");
+
+  // Position the chambers in the TRD mother volume
+  for (Int_t iplan = 1; iplan <= kNplan; iplan++) {
+
+    // The inner chambers ---------------------------------------------------------------
+
+    // the aluminum frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2.;
+    par_cha[0] = fCwidth[iplan-1]/2.;
+    par_cha[1] = fClengthI[iplan-1]/2.;
+    par_cha[2] = kCaframe/2.;
+    xpos       = 0.;
+    ypos       = 0.;
+    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UAFI",iplan       ,"TRD ",xpos,ypos,zpos,0,"MANY",par_cha,npar_cha);
+
+    // the inner part of the aluminum frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2. - kCathick;
+    par_cha[0] = fCwidth[iplan-1]/2.   - kCathick;
+    par_cha[1] = fClengthI[iplan-1]/2. - kCathick;
+    par_cha[2] = kCaframe/2.;
+    xpos       = 0.;
+    ypos       = 0.;
+    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UAII",iplan       ,"TRD ",xpos,ypos,zpos,0,"ONLY",par_cha,npar_cha);
+
+    // the carbon frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2.;
+    par_cha[0] = fCwidth[iplan-1]/2.;
+    par_cha[1] = fClengthI[iplan-1]/2.;
+    par_cha[2] = kCcframe/2.;
+    xpos       = 0.;
+    ypos       = 0.;
+    zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UCFI",iplan       ,"TRD ",xpos,ypos,zpos,0,"MANY",par_cha,npar_cha);
+
+    // the inner part of the carbon frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2. - kCcthick;
+    par_cha[0] = fCwidth[iplan-1]/2.   - kCcthick;
+    par_cha[1] = fClengthI[iplan-1]/2. - kCcthick;
+    par_cha[2] = kCcframe/2.;
+    xpos       = 0.;
+    ypos       = 0.;
+    zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UCII",iplan       ,"TRD ",xpos,ypos,zpos,0,"ONLY",par_cha,npar_cha);
+
+    // The middle chambers --------------------------------------------------------------
+
+    // the aluminum frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2.;
+    par_cha[0] = fCwidth[iplan-1]/2.;
+    par_cha[1] = fClengthM[iplan-1]/2.;
+    par_cha[2] = kCaframe/2.;
+    xpos       = 0.;
+    ypos       = fClengthI[iplan-1]/2. + fClengthM[iplan-1]/2.;
+    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UAFM",iplan       ,"TRD ",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
+    gMC->Gsposp("UAFM",iplan+kNplan,"TRD ",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
+
+    // the inner part of the aluminum frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2. - kCathick;
+    par_cha[0] = fCwidth[iplan-1]/2.   - kCathick;
+    par_cha[1] = fClengthM[iplan-1]/2. - kCathick;
+    par_cha[2] = kCaframe/2.;
+    xpos       = 0.;
+    ypos       = fClengthI[iplan-1]/2. + fClengthM[iplan-1]/2.;
+    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UAIM",iplan       ,"TRD ",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
+    gMC->Gsposp("UAIM",iplan+kNplan,"TRD ",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
+
+    // the carbon frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2.;
+    par_cha[0] = fCwidth[iplan-1]/2.;
+    par_cha[1] = fClengthM[iplan-1]/2.;
+    par_cha[2] = kCcframe/2.;
+    xpos       = 0.;
+    ypos       = fClengthI[iplan-1]/2. + fClengthM[iplan-1]/2.;
+    zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UCFM",iplan,       "TRD ",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
+    gMC->Gsposp("UCFM",iplan+kNplan,"TRD ",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
+
+    // the inner part of the carbon frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2. - kCcthick;
+    par_cha[0] = fCwidth[iplan-1]/2.   - kCcthick;
+    par_cha[1] = fClengthM[iplan-1]/2. - kCcthick;
+    par_cha[2] = kCcframe/2.;
+    xpos       = 0.;
+    ypos       = fClengthI[iplan-1]/2. + fClengthM[iplan-1]/2.;
+    zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UCIM",iplan       ,"TRD ",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
+    gMC->Gsposp("UCIM",iplan+kNplan,"TRD ",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
+
+    // The outer chambers ---------------------------------------------------------------
+
+    // the aluminum frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2.;
+    par_cha[0] = fCwidth[iplan-1]/2.;
+    par_cha[1] = fClengthO[iplan-1]/2.;
+    par_cha[2] = kCaframe/2.;
+    xpos       = 0.;
+    ypos       = fClengthI[iplan-1]/2. + fClengthM[iplan-1]    + fClengthO[iplan-1]/2.;
+    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UAFO",iplan       ,"TRD ",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
+    gMC->Gsposp("UAFO",iplan+kNplan,"TRD ",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
+
+    // the inner part of the aluminum frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2. - kCathick;
+    par_cha[0] = fCwidth[iplan-1]/2.   - kCathick;
+    par_cha[1] = fClengthO[iplan-1]/2.  - kCathick;
+    par_cha[2] = kCaframe/2.;
+    xpos       = 0.;
+    ypos       = fClengthI[iplan-1]/2. + fClengthM[iplan-1]    + fClengthO[iplan-1]/2.;
+    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UAIO",iplan       ,"TRD ",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
+    gMC->Gsposp("UAIO",iplan+kNplan,"TRD ",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
+
+    // the carbon frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2.;
+    par_cha[0] = fCwidth[iplan-1]/2.;
+    par_cha[1] = fClengthO[iplan-1]/2.;
+    par_cha[2] = kCcframe/2.;
+    xpos       = 0.;
+    ypos       = fClengthI[iplan-1]/2. + fClengthM[iplan-1]    + fClengthO[iplan-1]/2.;
+    zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UCFO",iplan,       "TRD ",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
+    gMC->Gsposp("UCFO",iplan+kNplan,"TRD ",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
+
+    // the inner part of the carbon frame
+    //par_cha[0] = kSwidth1/2. + (iplan-1) * kCwidcha/2. - kCcthick;
+    par_cha[0] = fCwidth[iplan-1]/2.   - kCcthick;
+    par_cha[1] = fClengthO[iplan-1]/2. - kCcthick;
+    par_cha[2] = kCcframe/2.;
+    xpos       = 0.;
+    ypos       = fClengthI[iplan-1]/2. + fClengthM[iplan-1]    + fClengthO[iplan-1]/2.;
+    zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
+    gMC->Gsposp("UCIO",iplan       ,"TRD ",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
+    gMC->Gsposp("UCIO",iplan+kNplan,"TRD ",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
+
+  }
+
+}
+ 
+//_____________________________________________________________________________
 void AliTRD::CreateMaterials()
 {
-
   //
   // Create the materials for the TRD
   // Origin Y.Foka
@@ -176,10 +544,10 @@ void AliTRD::CreateMaterials()
   AliMixture(7, "Mylar$",          amy, zmy, dmy, -3, wmy);
   AliMixture(8, "CO2$",            aco, zco, dco, -2, wco);
   AliMixture(9, "Isobutane$",      ais, zis, dis, -2, wis);
-  AliMixture(13, "Water$"        , awa, zwa, dwa, -2, wwa);
+  AliMixture(13,"Water$",          awa, zwa, dwa, -2, wwa);
 
   // Gas mixtures
-  char namate[21];
+  Char_t namate[21];
   // Xe/CO2-mixture
   // Get properties of Xe 
   gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
@@ -258,13 +626,55 @@ void AliTRD::CreateMaterials()
 }
 
 //_____________________________________________________________________________
+void AliTRD::DrawModule()
+{
+  //
+  // Draw a shaded view of the Transition Radiation Detector version 0
+  //
+
+  // Set everything unseen
+  gMC->Gsatt("*"   ,"SEEN",-1);
+  
+  // Set ALIC mother transparent
+  gMC->Gsatt("ALIC","SEEN", 0);
+  
+  // Set the volumes visible
+  gMC->Gsatt("B032","SEEN", 0);
+  gMC->Gsatt("B028","SEEN", 0);
+  gMC->Gsatt("B029","SEEN", 0);
+  gMC->Gsatt("B030","SEEN", 0);
+  gMC->Gsatt("BTR1","SEEN", 0);
+  gMC->Gsatt("BTR2","SEEN", 0);
+  gMC->Gsatt("BTR3","SEEN", 0);
+  gMC->Gsatt("TRD" ,"SEEN", 0);
+  gMC->Gsatt("UCII","SEEN", 0);
+  gMC->Gsatt("UCIM","SEEN", 0);
+  gMC->Gsatt("UCIO","SEEN", 0);
+  gMC->Gsatt("UL02","SEEN", 1);
+  gMC->Gsatt("UL05","SEEN", 1);
+  gMC->Gsatt("UL06","SEEN", 1);
+  
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 2000, -2000, 2000, -2000, 2000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 12, 9.4, .021, .021);
+  gMC->Gdhead(1111, "Transition Radiation Detector");
+  gMC->Gdman(18, 4, "MAN");
+
+}
+
+//_____________________________________________________________________________
 Int_t AliTRD::DistancetoPrimitive(Int_t , Int_t )
 {
   //
   // Distance between the mouse and the TRD detector on the screen
   // Dummy routine
-  //
-   return 9999;
+  
+  return 9999;
+
 }
  
 //_____________________________________________________________________________
@@ -273,8 +683,9 @@ void AliTRD::Init()
   //
   // Initialise the TRD detector after the geometry has been created
   //
+
   Int_t i;
-  //
+  
   printf("\n");
   for(i=0;i<35;i++) printf("*");
   printf(" TRD_INIT ");
@@ -286,21 +697,16 @@ void AliTRD::Init()
     printf("          Gas Mixture: 90%% Xe + 10%% CO2\n");
   else
     printf("          Gas Mixture: 97%% Xe + 3%% Isobutane\n");
-  if (fSensPlane)
-    printf("          Only plane %d is sensitive\n",fSensPlane);
-  if (fSensChamber)   
-    printf("          Only chamber %d is sensitive\n",fSensChamber);
-  if (fSensSector)
-    printf("          Only sector %d is sensitive\n",fSensSector);
 
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
 }
 
 //_____________________________________________________________________________
 void AliTRD::SetGasMix(Int_t imix)
 {
-
+  //
+  // Defines the gas mixture (imix=0:  Xe/Isobutane imix=1: Xe/CO2)
+  //
+  
   if ((imix < 0) || (imix > 1)) {
     printf("Wrong input value: %d\n",imix);
     printf("Use standard setting\n");
@@ -309,57 +715,6 @@ void AliTRD::SetGasMix(Int_t imix)
   }
 
   fGasMix = imix;
-
-}
-
-//_____________________________________________________________________________
-void AliTRD::SetSensPlane(Int_t iplane)
-{
-
-  if ((iplane < 0) || (iplane > 6)) {
-    printf("Wrong input value: %d\n",iplane);
-    printf("Use standard setting\n");
-    fSensPlane  = 0;
-    fSensSelect = 0;
-    return;
-  }
-
-  fSensSelect = 1;
-  fSensPlane  = iplane;
-
-}
-
-//_____________________________________________________________________________
-void AliTRD::SetSensChamber(Int_t ichamber)
-{
-
-  if ((ichamber < 0) || (ichamber > 5)) {
-    printf("Wrong input value: %d\n",ichamber);
-    printf("Use standard setting\n");
-    fSensChamber = 0;
-    fSensSelect  = 0;
-    return;
-  }
-
-  fSensSelect  = 1;
-  fSensChamber = ichamber;
-
-}
-
-//_____________________________________________________________________________
-void AliTRD::SetSensSector(Int_t isector)
-{
-
-  if ((isector < 0) || (isector > 18)) {
-    printf("Wrong input value: %d\n",isector);
-    printf("Use standard setting\n");
-    fSensSector = 0;
-    fSensSelect = 0;
-    return;
-  }
-
-  fSensSelect = 1;
-  fSensSector = isector;
 
 }
 
@@ -373,15 +728,15 @@ AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
   // Create a TRD hit
   //
 
-  //
   // Store volume hierarchy
   fSector  = vol[0]; 
   fChamber = vol[1];
   fPlane   = vol[2];
-  //
+  
   // Store position and charge
   fX       = hits[0];
   fY       = hits[1];
   fZ       = hits[2];
   fQ       = hits[3];
+
 }

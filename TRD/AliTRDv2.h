@@ -20,13 +20,26 @@ public:
   virtual void  CreateMaterials();
   virtual Int_t IsVersion() const {return 2;}
   virtual void  StepManager();
+  virtual void  SetSensPlane(Int_t iplane = 0);
+  virtual void  SetSensChamber(Int_t ichamber = 0);
+  virtual void  SetSensSector(Int_t isector = 0);
   virtual void  Init();
-  virtual void  DrawModule();
 
 protected:
-  Int_t        fIdSensI[ncham];  // Sensitive volume identifier (inner chambers)
-  Int_t        fIdSensN[ncham];  // Sensitive volume identifier (neighbouring chambers)
-  Int_t        fIdSensO[ncham];  // Sensitive volume identifier (outer chambers)
+  Int_t        fIdSens;          // Sensitive volume identifier
+
+  Int_t        fIdSpace1;        // Spaceframe volume identifier
+  Int_t        fIdSpace2;        // 
+  Int_t        fIdSpace3;        // 
+
+  Int_t        fIdChamber1;      // Driftchamber volume identifier
+  Int_t        fIdChamber2;      // 
+  Int_t        fIdChamber3;      // 
+
+  Int_t        fSensSelect;      // Switch to select only parts of the detector
+  Int_t        fSensPlane;       // Sensitive detector plane
+  Int_t        fSensChamber;     // Sensitive detector chamber
+  Int_t        fSensSector;      // Sensitive detector sector
 
 private:
   virtual Double_t BetheBloch(Double_t bg);
@@ -34,6 +47,7 @@ private:
   TF1         *fDeltaE;          // Energy distribution of the delta-electrons
   
   ClassDef(AliTRDv2,1)           // Transition Radiation Detector version 2
+
 };
 
 #endif

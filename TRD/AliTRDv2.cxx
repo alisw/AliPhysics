@@ -28,438 +28,62 @@ AliTRDv2::AliTRDv2(const char *name, const char *title)
   //
   // Standard constructor for Transition Radiation Detector version 2
   //
-  for (Int_t icham = 0; icham < ncham; ++icham) {
-    fIdSensI[icham] = 0;
-    fIdSensN[icham] = 0;
-    fIdSensO[icham] = 0;
-  }
-  fDeltaE = NULL;
+
+  fIdSens      = 0;
+
+  fIdSpace1    = 0;
+  fIdSpace2    = 0;
+  fIdSpace3    = 0;
+
+  fIdChamber1  = 0;
+  fIdChamber2  = 0;
+  fIdChamber3  = 0;
+
+  fSensSelect  = 0;
+  fSensPlane   = 0;
+  fSensChamber = 0;
+  fSensSector  = 0;
+
+  fDeltaE      = NULL;
 
   SetBufferSize(128000);
+
 }
 
 AliTRDv2::~AliTRDv2()
 {
-   if (fDeltaE)  delete fDeltaE;
+
+  if (fDeltaE)  delete fDeltaE;
+
 }
  
 //_____________________________________________________________________________
 void AliTRDv2::CreateGeometry()
 {
   //
-  // Create geometry for the Transition Radiation Detector version 2
+  // Create the GEANT geometry for the Transition Radiation Detector - Version 2
   // This version covers the full azimuth. 
-  // --- Author :  Christoph Blume (GSI) 20/5/99 
   //
-  // --- Volume names : 
-  //       TRD         --> Mother TRD volume                              (Al) 
-  //       UTRS        --> Sectors of the sub-detector                    (Al)
-  //       UTRI        --> Inner part of the detector frame               (Air) 
-  //     The chambers 
-  //       UCI1-6      --> The frame of the inner chambers                (C) 
-  //       UCN1-6      --> The frame of the neighbouring chambers         (C) 
-  //       UCO1-6      --> The frame of the outer chambers                (C) 
-  //       UII1-6      --> The inner part of the inner chambers           (Air) 
-  //       UIN1-6      --> The inner part of the neighbouring chambers    (Air) 
-  //       UIO1-6      --> The inner part of the outer chambers           (Air) 
-  //     The layers inside a chamber 
-  //       UT0I(N,O)   --> Radiator seal                                  (G10)
-  //       UT1I(N,O)   --> Radiator                                       (CO2)
-  //       UT2I(N,O)   --> Polyethylene of radiator                       (PE)
-  //       UT3I(N,O)   --> Entrance window                                (Mylar)
-  //       UXI(N,O)1-6 --> Gas volume (sensitive)                         (Xe/Isobutane)
-  //       UT5I(N,O)   --> Pad plane                                      (Cu)
-  //       UT6I(N,O)   --> Support structure                              (G10)
-  //       UT7I(N,O)   --> FEE + signal lines                             (Cu)
-  //       UT8I(N,O)   --> Polyethylene of cooling device                 (PE)
-  //       UT9I(N,O)   --> Cooling water                                  (Water)
+  // Author:  Christoph Blume (C.Blume@gsi.de) 20/07/99 
   //
-  //Begin_Html
-  /*
-    <img src="picts/AliTRDv2.gif">
-  */
-  //End_Html
-  //Begin_Html
-  /*
-    <img src="picts/AliTRDv2Tree.gif">
-  */
-  //End_Html
-  
+
   Float_t xpos, ypos, zpos;
-  Int_t   idmat[2];
 
-  const Int_t nparmo = 10;
-  const Int_t nparfr =  4;
-  const Int_t nparch =  3;
-  const Int_t nparic =  4;
-  const Int_t nparnc =  4;
-  const Int_t nparoc = 11;
+  // Check that FRAME is there otherwise we have no place where to put the TRD
+  AliModule* FRAME = gAlice->GetModule("FRAME");
+  if (!FRAME) return;
 
-  Float_t par_mo[nparmo];
-  Float_t par_fr[nparfr];
-  Float_t par_ch[nparch];
-  Float_t par_ic[nparic];
-  Float_t par_nc[nparnc];
-  Float_t par_oc[nparoc];
+  // Define the chambers
+  AliTRD::CreateGeometry();
 
-  Int_t icham;
+  // Position the the TRD-sectors in all TRD-volumes in the spaceframe
+  xpos     = 0.;
+  ypos     = 0.;
+  zpos     = 0.;
+  gMC->Gspos("TRD ",1,"BTR1",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("TRD ",2,"BTR2",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("TRD ",3,"BTR3",xpos,ypos,zpos,0,"ONLY");
 
-  Int_t *idtmed = fIdtmed->GetArray()-1299;
-  
-  //////////////////////////////////////////////////////////////////////////
-  //     Definition of Volumes 
-  //////////////////////////////////////////////////////////////////////////
-  
-  // Definition of the mother volume for the TRD (Al) 
-  par_mo[0] =   0.;
-  par_mo[1] = 360.;
-  par_mo[2] = nsect;
-  par_mo[3] = 2.;
-  par_mo[4] = -zmax1;
-  par_mo[5] = rmin;
-  par_mo[6] = rmax;
-  par_mo[7] =  zmax1;
-  par_mo[8] = rmin;
-  par_mo[9] = rmax;
-  gMC->Gsvolu("TRD ", "PGON", idtmed[1301-1], par_mo, nparmo);
-  gMC->Gsdvn("UTRS", "TRD ", nsect, 2);
-
-  // The minimal width of a sector in rphi-direction
-  Float_t widmi = rmin * TMath::Tan(kPI/nsect);
-  // The maximal width of a sector in rphi-direction
-  Float_t widma = rmax * TMath::Tan(kPI/nsect);
-  // The total thickness of the spaceframe (Al + Air)
-  Float_t frame = widmi - (widpl1 / 2);
-
-  // Definition of the inner part of the detector frame (Air) 
-  par_fr[0] = widmi - alframe / 2.;
-  par_fr[1] = widma - alframe / 2.;
-  par_fr[2] = zmax1;
-  par_fr[3] = (rmax - rmin) / 2;
-  gMC->Gsvolu("UTRI", "TRD1", idtmed[1302-1], par_fr, nparfr); 
-
-  // Some parameter for the chambers 
-  Float_t lendifc = (zmax1 - zmax2) / nmodul;
-  Float_t heightc = (rmax  - rmin ) / nmodul;
-  Float_t widdifc = (widma - widmi) / nmodul;
-
-  // Definition of the chambers 
-  Char_t ctagc[5], ctagi[5];
-  for (icham = 1; icham <= ncham; ++icham) {
-
-    // Carbon frame of the inner chambers (C) 
-    par_ch[0] = widmi + (icham-1) * widdifc - frame;
-    par_ch[1] = zleni   / 2.;
-    par_ch[2] = heightc / 2.;
-    sprintf(ctagc,"UCI%1d",icham);
-    gMC->Gsvolu(ctagc, "BOX ", idtmed[1307-1], par_ch, nparch);
-    // Inner part of the inner chambers (Air) 
-    par_ch[0] -= ccframe;
-    par_ch[1] -= ccframe;
-    sprintf(ctagc,"UII%1d",icham);
-    gMC->Gsvolu(ctagc, "BOX ", idtmed[1302-1], par_ch, nparch);
-
-    // Carbon frame of the neighbouring chambers (C) 
-    par_ch[0] = widmi + (icham-1) * widdifc - frame;
-    par_ch[1] = zlenn   / 2.;
-    par_ch[2] = heightc / 2.;
-    sprintf(ctagc,"UCN%1d",icham);
-    gMC->Gsvolu(ctagc, "BOX ", idtmed[1307-1], par_ch, nparch);
-    // Inner part of the neighbouring chambers (Air) 
-    par_ch[0] -= ccframe;
-    par_ch[1] -= ccframe;
-    sprintf(ctagc,"UIN%1d",icham);
-    gMC->Gsvolu(ctagc, "BOX ", idtmed[1302-1], par_ch, nparch);
-
-    // Carbon frame of the outer chambers (C) 
-    par_ch[0] = widmi + (icham-1) * widdifc - frame;
-    par_ch[1] = (icham - 6) * lendifc / 2. + zleno   / 2.;
-    par_ch[2] = heightc / 2.;
-    sprintf(ctagc,"UCO%1d",icham);
-    gMC->Gsvolu(ctagc, "BOX ", idtmed[1307-1], par_ch, nparch);
-    // Inner part of the outer chambers (Air) 
-    par_ch[0] -= ccframe;
-    par_ch[1] -= ccframe;
-    sprintf(ctagc,"UIO%1d",icham);
-    gMC->Gsvolu(ctagc, "BOX ", idtmed[1302-1], par_ch, nparch);
-
-  }
-
-  // Definition of the layers in each inner chamber 
-  par_ic[0] = -1.;
-  par_ic[1] = -1.;
-  // G10 layer (radiator layer)
-  par_ic[2] = sethick / 2;
-  gMC->Gsvolu("UT0I", "BOX ", idtmed[1313-1], par_ic, nparic);
-  // CO2 layer (radiator)
-  par_ic[2] = rathick / 2;
-  gMC->Gsvolu("UT1I", "BOX ", idtmed[1312-1], par_ic, nparic);
-  // PE layer (radiator)
-  par_ic[2] = pethick / 2;
-  gMC->Gsvolu("UT2I", "BOX ", idtmed[1303-1], par_ic, nparic);
-  // Mylar layer (entrance window + HV cathode) 
-  par_ic[2] = mythick / 2;
-  gMC->Gsvolu("UT3I", "BOX ", idtmed[1308-1], par_ic, nparic);
-  // Xe/Isobutane layer (gasvolume) 
-  par_ic[2] = xethick / 2.;
-  for (icham = 1; icham <= 6; ++icham) {
-    sprintf(ctagc,"UXI%1d",icham);
-    gMC->Gsvolu(ctagc, "BOX ", idtmed[1309-1], par_ic, nparic);
-  }
-  // Cu layer (pad plane)
-  par_ic[2] = cuthick / 2;
-  gMC->Gsvolu("UT5I", "BOX ", idtmed[1305-1], par_ic, nparic);
-  // G10 layer (support structure)
-  par_ic[2] = suthick / 2;
-  gMC->Gsvolu("UT6I", "BOX ", idtmed[1313-1], par_ic, nparic);
-  // Cu layer (FEE + signal lines)
-  par_ic[2] = fethick / 2;
-  gMC->Gsvolu("UT7I", "BOX ", idtmed[1305-1], par_ic, nparic);
-  // PE layer (cooling devices)
-  par_ic[2] = cothick / 2;
-  gMC->Gsvolu("UT8I", "BOX ", idtmed[1303-1], par_ic, nparic);
-  // Water layer (cooling)
-  par_ic[2] = wathick / 2;
-  gMC->Gsvolu("UT9I", "BOX ", idtmed[1314-1], par_ic, nparic);
-
-  // Definition of the layers in each neighbouring chamber 
-  par_nc[0] = -1.;
-  par_nc[1] = -1.;
-  // G10 layer (radiator layer)
-  par_nc[2] = sethick / 2;
-  gMC->Gsvolu("UT0N", "BOX ", idtmed[1313-1], par_nc, nparnc);
-  // CO2 layer (radiator)
-  par_nc[2] = rathick / 2;
-  gMC->Gsvolu("UT1N", "BOX ", idtmed[1312-1], par_nc, nparnc);
-  // PE layer (radiator)
-  par_nc[2] = pethick / 2;
-  gMC->Gsvolu("UT2N", "BOX ", idtmed[1303-1], par_nc, nparnc);
-  // Mylar layer (entrance window + HV cathode) 
-  par_nc[2] = mythick / 2;
-  gMC->Gsvolu("UT3N", "BOX ", idtmed[1308-1], par_nc, nparnc);
-  // Xe/Isobutane layer (gasvolume) 
-  par_nc[2] = xethick / 2.;
-  for (icham = 1; icham <= 6; ++icham) {
-    sprintf(ctagc,"UXN%1d",icham);
-    gMC->Gsvolu(ctagc, "BOX ", idtmed[1309-1], par_nc, nparnc);
-  }
-  // Cu layer (pad plane)
-  par_nc[2] = cuthick / 2;
-  gMC->Gsvolu("UT5N", "BOX ", idtmed[1305-1], par_nc, nparnc);
-  // G10 layer (support structure)
-  par_nc[2] = suthick / 2;
-  gMC->Gsvolu("UT6N", "BOX ", idtmed[1313-1], par_nc, nparnc);
-  // Cu layer (FEE + signal lines)
-  par_nc[2] = fethick / 2;
-  gMC->Gsvolu("UT7N", "BOX ", idtmed[1305-1], par_nc, nparnc);
-  // PE layer (cooling devices)
-  par_nc[2] = cothick / 2;
-  gMC->Gsvolu("UT8N", "BOX ", idtmed[1303-1], par_nc, nparnc);
-  // Water layer (cooling)
-  par_nc[2] = wathick / 2;
-  gMC->Gsvolu("UT9N", "BOX ", idtmed[1314-1], par_nc, nparnc);
-
-  // Definition of the layers in each outer chamber 
-  par_oc[0] = -1.;
-  par_oc[1] = -1.;
-  // G10 layer (radiator layer)
-  par_oc[2] = sethick / 2;
-  gMC->Gsvolu("UT0O", "BOX ", idtmed[1313-1], par_oc, nparoc);
-  // CO2 layer (radiator)
-  par_oc[2] = rathick / 2;
-  gMC->Gsvolu("UT1O", "BOX ", idtmed[1312-1], par_oc, nparoc);
-  // PE layer (radiator)
-  par_oc[2] = pethick / 2;
-  gMC->Gsvolu("UT2O", "BOX ", idtmed[1303-1], par_oc, nparoc);
-  // Mylar layer (entrance window + HV cathode) 
-  par_oc[2] = mythick / 2;
-  gMC->Gsvolu("UT3O", "BOX ", idtmed[1308-1], par_oc, nparoc);
-  // Xe/Isobutane layer (gasvolume) 
-  par_oc[2] = xethick / 2.;
-  for (icham = 1; icham <= 6; ++icham) {
-    sprintf(ctagc,"UXO%1d",icham);
-    gMC->Gsvolu(ctagc, "BOX ", idtmed[1309-1], par_oc, nparoc);
-  }
-  // Cu layer (pad plane)
-  par_oc[2] = cuthick / 2;
-  gMC->Gsvolu("UT5O", "BOX ", idtmed[1305-1], par_oc, nparoc);
-  // G10 layer (support structure)
-  par_oc[2] = suthick / 2;
-  gMC->Gsvolu("UT6O", "BOX ", idtmed[1313-1], par_oc, nparoc);
-  // Cu layer (FEE + signal lines)
-  par_oc[2] = fethick / 2;
-  gMC->Gsvolu("UT7O", "BOX ", idtmed[1305-1], par_oc, nparoc);
-  // PE layer (cooling devices)
-  par_oc[2] = cothick / 2;
-  gMC->Gsvolu("UT8O", "BOX ", idtmed[1303-1], par_oc, nparoc);
-  // Water layer (cooling)
-  par_oc[2] = wathick / 2;
-  gMC->Gsvolu("UT9O", "BOX ", idtmed[1314-1], par_oc, nparoc);
-
-  //////////////////////////////////////////////////////////////////////////
-  //     Positioning of Volumes   
-  //////////////////////////////////////////////////////////////////////////
-
-  // The rotation matrices 
-  AliMatrix(idmat[0],  90.,  90., 180.,   0.,  90.,   0.);
-  AliMatrix(idmat[1],  90.,  90.,   0.,   0.,  90.,   0.);
-
-  // Position of the layers in a chamber 
-  gMC->Gspos("UT2I", 1, "UT1I", 0., 0., pezpos, 0, "ONLY");
-  gMC->Gspos("UT2N", 1, "UT1N", 0., 0., pezpos, 0, "ONLY");
-  gMC->Gspos("UT2O", 1, "UT1O", 0., 0., pezpos, 0, "ONLY");
-  for (icham = 1; icham <= ncham; ++icham) {
-    // The inner chambers 
-    sprintf(ctagi,"UII%1d",icham);
-    sprintf(ctagc,"UXI%1d",icham);
-    gMC->Gspos("UT9I", icham, ctagi, 0., 0., wazpos, 0, "ONLY");
-    gMC->Gspos("UT8I", icham, ctagi, 0., 0., cozpos, 0, "ONLY");
-    gMC->Gspos("UT7I", icham, ctagi, 0., 0., fezpos, 0, "ONLY");
-    gMC->Gspos("UT6I", icham, ctagi, 0., 0., suzpos, 0, "ONLY");
-    gMC->Gspos("UT5I", icham, ctagi, 0., 0., cuzpos, 0, "ONLY");
-    gMC->Gspos(ctagc ,     1, ctagi, 0., 0., xezpos, 0, "ONLY");
-    gMC->Gspos("UT3I", icham, ctagi, 0., 0., myzpos, 0, "ONLY");
-    gMC->Gspos("UT1I", icham, ctagi, 0., 0., razpos, 0, "ONLY");
-    gMC->Gspos("UT0I", icham, ctagi, 0., 0., sezpos, 0, "ONLY");
-    // The neighbouring chambers 
-    sprintf(ctagi,"UIN%1d",icham);
-    sprintf(ctagc,"UXN%1d",icham);
-    gMC->Gspos("UT9N", icham, ctagi, 0., 0., wazpos, 0, "ONLY");
-    gMC->Gspos("UT8N", icham, ctagi, 0., 0., cozpos, 0, "ONLY");
-    gMC->Gspos("UT7N", icham, ctagi, 0., 0., fezpos, 0, "ONLY");
-    gMC->Gspos("UT6N", icham, ctagi, 0., 0., suzpos, 0, "ONLY");
-    gMC->Gspos("UT5N", icham, ctagi, 0., 0., cuzpos, 0, "ONLY");
-    gMC->Gspos(ctagc ,     1, ctagi, 0., 0., xezpos, 0, "ONLY");
-    gMC->Gspos("UT3N", icham, ctagi, 0., 0., myzpos, 0, "ONLY");
-    gMC->Gspos("UT1N", icham, ctagi, 0., 0., razpos, 0, "ONLY");
-    gMC->Gspos("UT0N", icham, ctagi, 0., 0., sezpos, 0, "ONLY");
-    // The outer chambers 
-    sprintf(ctagi,"UIO%1d",icham);
-    sprintf(ctagc,"UXO%1d",icham);
-    gMC->Gspos("UT9O", icham, ctagi, 0., 0., wazpos, 0, "ONLY");
-    gMC->Gspos("UT8O", icham, ctagi, 0., 0., cozpos, 0, "ONLY");
-    gMC->Gspos("UT7O", icham, ctagi, 0., 0., fezpos, 0, "ONLY");
-    gMC->Gspos("UT6O", icham, ctagi, 0., 0., suzpos, 0, "ONLY");
-    gMC->Gspos("UT5O", icham, ctagi, 0., 0., cuzpos, 0, "ONLY");
-    gMC->Gspos(ctagc ,     1, ctagi, 0., 0., xezpos, 0, "ONLY");
-    gMC->Gspos("UT3O", icham, ctagi, 0., 0., myzpos, 0, "ONLY");
-    gMC->Gspos("UT1O", icham, ctagi, 0., 0., razpos, 0, "ONLY");
-    gMC->Gspos("UT0O", icham, ctagi, 0., 0., sezpos, 0, "ONLY");
-  }
-
-  // Position of the inner part of the chambers in the carbon-frames 
-  for (icham = 1; icham <= ncham; ++icham) {
-    xpos = 0.;
-    ypos = 0.;
-    zpos = 0.;
-    // The inner chambers 
-    sprintf(ctagi,"UII%1d",icham);
-    sprintf(ctagc,"UCI%1d",icham);
-    gMC->Gspos(ctagi, 1, ctagc, xpos, ypos, zpos, 0, "ONLY");
-    // The neighbouring chambers 
-    sprintf(ctagi,"UIN%1d",icham);
-    sprintf(ctagc,"UCN%1d",icham);
-    gMC->Gspos(ctagi, 1, ctagc, xpos, ypos, zpos, 0, "ONLY");
-    // The outer chambers 
-    sprintf(ctagi,"UIO%1d",icham);
-    sprintf(ctagc,"UCO%1d",icham);
-    gMC->Gspos(ctagi, 1, ctagc, xpos, ypos, zpos, 0, "ONLY");
-  }
-
-  // Position of the chambers in the full TRD-setup 
-  for (icham = 1; icham <= ncham; ++icham) {
-    // The inner chambers
-    xpos = 0.;
-    ypos = 0.;
-    zpos = (icham-0.5) * heightc - (rmax - rmin) / 2;
-    sprintf(ctagc,"UCI%1d",icham);
-    gMC->Gspos(ctagc, 1, "UTRI", xpos, ypos, zpos, 0, "ONLY");
-    // The neighbouring chambers
-    xpos = 0.;
-    ypos = (zleni + zlenn) / 2.;
-    zpos = (icham-0.5) * heightc - (rmax - rmin) / 2;
-    sprintf(ctagc,"UCN%1d",icham);
-    gMC->Gspos(ctagc, 1, "UTRI", xpos, ypos, zpos, 0, "ONLY");
-    ypos = -ypos;
-    sprintf(ctagc,"UCN%1d",icham);
-    gMC->Gspos(ctagc, 2, "UTRI", xpos, ypos, zpos, 0, "ONLY");
-    // The outer chambers 
-    xpos = 0.;
-    ypos = (zleni / 2. + zlenn + zmax2 + (icham-1) * lendifc) / 2.;
-    zpos = (icham-0.5) * heightc - (rmax-rmin)/2;
-    sprintf(ctagc,"UCO%1d",icham);
-    gMC->Gspos(ctagc, 1, "UTRI", xpos, ypos, zpos, 0, "ONLY");
-    ypos = -ypos;
-    sprintf(ctagc,"UCO%1d",icham);
-    gMC->Gspos(ctagc, 2, "UTRI", xpos, ypos, zpos, 0, "ONLY");
-  }
-
-  // Position of the inner part of the detector frame
-  xpos = (rmax + rmin) / 2;
-  ypos = 0.;
-  zpos = 0.;
-  gMC->Gspos("UTRI", 1, "UTRS", xpos, ypos, zpos, idmat[0], "ONLY");
-
-  // Position of the TRD mother volume in the ALICE experiment 
-  xpos = 0.;
-  ypos = 0.;
-  zpos = 0.;
-  gMC->Gspos("TRD ", 1, "ALIC", xpos, ypos, zpos,        0, "ONLY");
-
-}
-
-//_____________________________________________________________________________
-void AliTRDv2::DrawModule()
-{
-  //
-  // Draw a shaded view of the Transition Radiation Detector version 1
-  //
-
-  // Set everything unseen
-  gMC->Gsatt("*", "seen", -1);
-   
-  // Set ALIC mother transparent
-  gMC->Gsatt("ALIC","SEEN",0);
-  
-  // Set the volumes visible
-  gMC->Gsatt("TRD ","SEEN",0);
-  gMC->Gsatt("UTRS","SEEN",0);
-  gMC->Gsatt("UTRI","SEEN",0);
-  Char_t ctag[5];
-  for (Int_t icham = 0; icham < ncham; ++icham) {
-    sprintf(ctag,"UCI%1d",icham+1);
-    gMC->Gsatt(ctag,"SEEN",0);
-    sprintf(ctag,"UCN%1d",icham+1);
-    gMC->Gsatt(ctag,"SEEN",0);
-    sprintf(ctag,"UCO%1d",icham+1);
-    gMC->Gsatt(ctag,"SEEN",0);
-    sprintf(ctag,"UII%1d",icham+1);
-    gMC->Gsatt(ctag,"SEEN",0);
-    sprintf(ctag,"UIN%1d",icham+1);
-    gMC->Gsatt(ctag,"SEEN",0);
-    sprintf(ctag,"UIO%1d",icham+1);
-    gMC->Gsatt(ctag,"SEEN",0);
-    sprintf(ctag,"UXI%1d",icham+1);
-    gMC->Gsatt(ctag,"SEEN",1);
-    sprintf(ctag,"UXN%1d",icham+1);
-    gMC->Gsatt(ctag,"SEEN",1);
-    sprintf(ctag,"UXO%1d",icham+1);
-    gMC->Gsatt(ctag,"SEEN",1);
-  }
-  gMC->Gsatt("UT1I","SEEN",1);
-  gMC->Gsatt("UT1N","SEEN",1);
-  gMC->Gsatt("UT1O","SEEN",1);
-
-  gMC->Gdopt("hide", "on");
-  gMC->Gdopt("shad", "on");
-  gMC->Gsatt("*", "fill", 7);
-  gMC->SetClipBox(".");
-  gMC->SetClipBox("*", 0, 2000, -2000, 2000, -2000, 2000);
-  gMC->DefaultRange();
-  gMC->Gdraw("alic", 40, 30, 0, 12, 9.4, .021, .021);
-  gMC->Gdhead(1111, "Transition Radiation Detector Version 2");
-  gMC->Gdman(18, 4, "MAN");
-  gMC->Gdopt("hide", "off");
 }
 
 //_____________________________________________________________________________
@@ -468,7 +92,9 @@ void AliTRDv2::CreateMaterials()
   //
   // Create materials for the Transition Radiation Detector version 2
   //
+
   AliTRD::CreateMaterials();
+
 }
 
 //_____________________________________________________________________________
@@ -485,22 +111,93 @@ void AliTRDv2::Init()
 
   AliTRD::Init();
 
-  // Get the sensitive volumes
-  Char_t ctag[5];
-  for (Int_t icham = 0; icham < ncham; ++icham) {
-    sprintf(ctag,"UXI%1d",icham+1);
-    fIdSensI[icham] = gMC->VolId(ctag);
-    sprintf(ctag,"UXN%1d",icham+1);
-    fIdSensN[icham] = gMC->VolId(ctag);
-    sprintf(ctag,"UXO%1d",icham+1);
-    fIdSensO[icham] = gMC->VolId(ctag);
-  }
+  if (fSensPlane)
+    printf("          Only plane %d is sensitive\n",fSensPlane);
+  if (fSensChamber)   
+    printf("          Only chamber %d is sensitive\n",fSensChamber);
+  if (fSensSector)
+    printf("          Only sector %d is sensitive\n",fSensSector);
 
-  Float_t Poti = TMath::Log(kPoti);
-  Float_t Eend = TMath::Log(kEend);
+  for(Int_t i = 0; i < 80; i++) printf("*");
+  printf("\n");
 
   // Ermilova distribution for the delta-ray spectrum
+  Float_t Poti = TMath::Log(kPoti);
+  Float_t Eend = TMath::Log(kEend);
   fDeltaE  = new TF1("deltae",Ermilova,Poti,Eend,0);
+
+  // Identifier of the sensitive volume (drift region)
+  fIdSens     = gMC->VolId("UL05");
+
+  // Identifier of the TRD-spaceframe volumina
+  fIdSpace1   = gMC->VolId("B028");
+  fIdSpace2   = gMC->VolId("B029");
+  fIdSpace3   = gMC->VolId("B030");
+
+  // Identifier of the TRD-driftchambers
+  fIdChamber1 = gMC->VolId("UCIO");
+  fIdChamber2 = gMC->VolId("UCIM");
+  fIdChamber3 = gMC->VolId("UCII");
+
+}
+
+//_____________________________________________________________________________
+void AliTRDv2::SetSensPlane(Int_t iplane)
+{
+  //
+  // Defines the hit-sensitive plane (1-6)
+  //
+
+  if ((iplane < 0) || (iplane > 6)) {
+    printf("Wrong input value: %d\n",iplane);
+    printf("Use standard setting\n");
+    fSensPlane  = 0;
+    fSensSelect = 0;
+    return;
+  }
+
+  fSensSelect = 1;
+  fSensPlane  = iplane;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDv2::SetSensChamber(Int_t ichamber)
+{
+  //
+  // Defines the hit-sensitive chamber (1-5)
+  //
+
+  if ((ichamber < 0) || (ichamber > 5)) {
+    printf("Wrong input value: %d\n",ichamber);
+    printf("Use standard setting\n");
+    fSensChamber = 0;
+    fSensSelect  = 0;
+    return;
+  }
+
+  fSensSelect  = 1;
+  fSensChamber = ichamber;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDv2::SetSensSector(Int_t isector)
+{
+  //
+  // Defines the hit-sensitive sector (1-18)
+  //
+
+  if ((isector < 0) || (isector > 18)) {
+    printf("Wrong input value: %d\n",isector);
+    printf("Use standard setting\n");
+    fSensSector = 0;
+    fSensSelect = 0;
+    return;
+  }
+
+  fSensSelect = 1;
+  fSensSector = isector;
 
 }
 
@@ -508,30 +205,37 @@ void AliTRDv2::Init()
 void AliTRDv2::StepManager()
 {
   //
-  // Called at every step in the Transition Radiation Detector version 2
+  // Called at every step in the Transition Radiation Detector version 2.
+  // Slow simulator. Every charged track produces electron cluster as hits 
+  // along its path across the drift volume. The step size is set acording
+  // to Bethe-Bloch. The energy distribution of the delta electrons follows
+  // a spectrum taken from Ermilova et al.
   //
 
-  Int_t          idSens, icSens, id;
-  Int_t          iPla, iCha, iSec;
-  Int_t          iOut;
-  Int_t          vol[3]; 
-  Int_t          iPid;
+  Int_t    iIdSens, icSens;
+  Int_t    iIdSpace, icSpace;
+  Int_t    iIdChamber, icChamber;
+  Int_t    vol[3]; 
+  Int_t    iPid;
 
-  const Double_t kBig = 1.0E+12;
+  Int_t    secMap1[10] = {  3,  7,  8,  9, 10, 11,  2,  1, 18, 17 };
+  Int_t    secMap2[ 5] = { 16, 15, 14, 13, 12 };
+  Int_t    secMap3[ 3] = {  5,  6,  4 };
 
-  Float_t        hits[4];
-  Float_t        random[1];
-  Float_t        charge;
-  Float_t        aMass;
+  Float_t  hits[4];
+  Float_t  random[1];
+  Float_t  charge;
+  Float_t  aMass;
+
+  Double_t pTot;
+  Double_t qTot;
+  Double_t eDelta;
+  Double_t betaGamma, pp;
 
   TLorentzVector pos, mom;
-
-  Double_t       pTot;
-  Double_t       qTot;
-  Double_t       eDelta;
-  Double_t       betaGamma, pp;
-
   TClonesArray  &lhits = *fHits;
+
+  const Double_t kBig = 1.0E+12;
 
   // Ionization energy
   const Float_t kWion    = 22.04;
@@ -552,31 +256,16 @@ void AliTRDv2::StepManager()
   gMC->SetMaxStep(kBig); 
 
   // Use only charged tracks 
-  if (( gMC->TrackCharge()   ) &&
-      (!gMC->IsTrackStop()     ) && 
+  if (( gMC->TrackCharge()       ) &&
+      (!gMC->IsTrackStop()       ) && 
       (!gMC->IsTrackDisappeared())) {
 
-    // Find the sensitive volume
-    idSens = gMC->CurrentVolID(icSens);
-    iPla   = 0;
-    iOut   = 0;
-    for (Int_t icham = 0; icham < ncham; ++icham) {
-      if (idSens == fIdSensI[icham]) {
-        iOut = 0;
-        iPla = icham + 1;
-      }
-      if (idSens == fIdSensN[icham]) {
-        iOut = 1;
-        iPla = icham + 1;
-      }
-      if (idSens == fIdSensO[icham]) {
-        iOut = 2;
-        iPla = icham + 1;
-      }
-    }
-
     // Inside a sensitive volume?
-    if (iPla) {
+    iIdSens = gMC->CurrentVolID(icSens);
+    if (iIdSens == fIdSens) { 
+
+      iIdSpace   = gMC->CurrentVolOffID(4,icSpace  );
+      iIdChamber = gMC->CurrentVolOffID(1,icChamber);
 
       // Calculate the energy of the delta-electrons
       eDelta = TMath::Exp(fDeltaE->GetRandom()) - kPoti;
@@ -585,24 +274,36 @@ void AliTRDv2::StepManager()
       // The number of secondary electrons created
       qTot = (Double_t) ((Int_t) (eDelta / kWion) + 1);
 
+      // The hit coordinates and charge
+      gMC->TrackPosition(pos);
+      hits[0] = pos[0];
+      hits[1] = pos[1];
+      hits[2] = pos[2];
+      hits[3] = qTot;
+
       // The sector number
-      id = gMC->CurrentVolOffID(4,iSec);
+      if      (iIdSpace == fIdSpace1) 
+        vol[0] = secMap1[icSpace-1];
+      else if (iIdSpace == fIdSpace2) 
+        vol[0] = secMap2[icSpace-1];
+      else if (iIdSpace == fIdSpace3) 
+        vol[0] = secMap3[icSpace-1];
 
-      // The chamber number
+      // The chamber number 
       //   1: outer left
-      //   2: neighbouring left
+      //   2: middle left
       //   3: inner
-      //   4: neighbouring right
+      //   4: middle right
       //   5: outer right
-      id = gMC->CurrentVolOffID(2,iCha);
-      if (iCha == 1) 
-        iCha = 3 + iOut;
-      else
-        iCha = 3 - iOut;
+      if      (iIdChamber == fIdChamber1)
+        vol[1] = (hits[2] < 0 ? 1 : 5);
+      else if (iIdChamber == fIdChamber2)       
+        vol[1] = (hits[2] < 0 ? 2 : 4);
+      else if (iIdChamber == fIdChamber3)       
+        vol[1] = 3;
 
-      vol[0]  = iSec;
-      vol[1]  = iCha;
-      vol[2]  = iPla;
+      // The plane number
+      vol[2] = icChamber - TMath::Nint((Float_t) (icChamber / 7)) * 6;
 
       // Check on selected volumes
       Int_t addthishit = 1;
@@ -612,14 +313,9 @@ void AliTRDv2::StepManager()
         if ((fSensSector)  && (vol[0] != fSensSector )) addthishit = 0;
       }
 
+      // Add this hit
       if (addthishit) {
 
-        // Add this hit
-        gMC->TrackPosition(pos);
-	hits[0]=pos[0];
-	hits[1]=pos[1];
-	hits[2]=pos[2];
-        hits[3] = qTot;
         new(lhits[fNhits++]) AliTRDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 
         // The energy loss according to Bethe Bloch

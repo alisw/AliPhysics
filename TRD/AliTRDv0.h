@@ -14,17 +14,26 @@ public:
   virtual      ~AliTRDv0() {}
   virtual void  CreateGeometry();
   virtual void  CreateMaterials();
-  virtual Int_t IsVersion() const {return 0;}
+  virtual Int_t IsVersion() const       { return 0;       };
+  virtual void  SetHits(Int_t ihit = 1) { fHitsOn = ihit; };
   virtual void  StepManager();
   virtual void  Init();
-  virtual void  DrawModule();
   
 protected:
-  Int_t        fIdSens1;    // 1st sensitive volume identifier
-  Int_t        fIdSens2;    // 2nd sensitive volume identifier
-  Int_t        fIdSens3;    // 3rd sensitive volume identifier
-  
+  Int_t        fIdSens;     // Sensitive volume identifier
+
+  Int_t        fIdSpace1;   // Spaceframe volume identifier
+  Int_t        fIdSpace2;   // 
+  Int_t        fIdSpace3;   // 
+
+  Int_t        fIdChamber1; // Driftchamber volume identifier
+  Int_t        fIdChamber2; // 
+  Int_t        fIdChamber3; // 
+
+  Int_t        fHitsOn;     // Used to switch hits on
+
   ClassDef(AliTRDv0,1)      // Transition Radiation Detector version 0
+
 };
 
 #endif
