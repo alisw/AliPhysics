@@ -30,6 +30,7 @@ class AliSegmentation;
 class AliRICHResponse;
 class AliRICHEllipse;
 class AliRICHGeometry;
+class AliRICHMerger;
 
 class AliRICH : public  AliDetector {
  public:
@@ -80,6 +81,8 @@ class AliRICH : public  AliDetector {
     virtual void   SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconstruction);
 // Set source debugging level
     void SetDebugLevel(Int_t level) {fDebugLevel=level;}
+// Set Merger
+    virtual void   SetMerger(AliRICHMerger* thisMerger) {fMerger=thisMerger;}  
 // Get source debugging level
     Int_t GetDebugLevel() {return fDebugLevel;}
 // Response Simulation
@@ -115,7 +118,6 @@ class AliRICH : public  AliDetector {
     TObjArray            *fDchambers;          // List of digits
     TClonesArray         *fCerenkovs;          // List of cerenkovs
     Int_t                 fNdch[kNCH];         // Number of digits
-    Text_t               *fFileName;           //! Filename for event mixing
     TObjArray            *fRawClusters;        // List of raw clusters
     TObjArray            *fRecHits1D;          // List of rec. hits
     TObjArray            *fRecHits3D;          // List of rec. hits
@@ -140,6 +142,11 @@ class AliRICH : public  AliDetector {
     Float_t fMipy;                       // y coord. of MIP
     Int_t fFeedbacks;                    // Number of feedback photons
     Int_t fLostFresnel;                  // Cerenkovs lost by Fresnel reflection
+
+
+// Background eent for event mixing
+    Text_t *fFileName;           // ! File with background hits
+    AliRICHMerger *fMerger;   // ! pointer to merger
     
     ClassDef(AliRICH,1)  //Hits manager for set:RICH
 };
