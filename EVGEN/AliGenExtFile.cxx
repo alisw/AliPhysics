@@ -84,9 +84,6 @@ void AliGenExtFile::Generate()
   Float_t p[3];
   Float_t random[6];
   Float_t prwn;
-  char name[100];
-  Float_t amass, charge, tlife;
-  Int_t itrtyp;
   Int_t i, j, nt, Ntracks=0;
   //
   NtupleInit();
@@ -120,8 +117,13 @@ void AliGenExtFile::Generate()
   }
   for (i=0; i<Ntracks; i++) {
 
-      gMC->Gfpart(Idpart, name, itrtyp,amass, charge, tlife); 
-      prwn=sqrt((E+amass)*(E-amass));
+      Double_t amass = TDatabasePDG::Instance()->GetParticle(Idpart)->Mass();
+      if(E<=amass) {
+	Warning("Generate","Particle %d no %d E = %f mass = %f\n",Idpart,i,E,amass);
+	prwn=0;
+      } else {
+	prwn=sqrt((E+amass)*(E-amass));
+      }
 
       Theta *= TMath::Pi()/180.;
       Phi    = (Phi-180)*TMath::Pi()/180.;      
