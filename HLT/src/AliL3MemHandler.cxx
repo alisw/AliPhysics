@@ -120,7 +120,7 @@ void AliL3MemHandler::ResetROI()
   for(Int_t i=fRowMin; i<=fRowMax; i++)
     {
       fEtaMinTimeBin[i] = 0;
-      fEtaMaxTimeBin[i] = 445;
+      fEtaMaxTimeBin[i] = AliL3Transform::GetNTimeBins()-1;
     }
 }
 
@@ -725,7 +725,7 @@ Int_t AliL3MemHandler::CompMemory2Memory(UInt_t  nrow,
           time++;
         }
         UShort_t tshift = Read(comp,index,subindex);
-        if(tshift ==0) break;
+        if(tshift == 0) break;
         time += tshift;
       }
     }
