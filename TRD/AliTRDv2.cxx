@@ -700,7 +700,7 @@ Double_t AliTRDv2::BetheBloch(Double_t bg)
 }
 
 //_____________________________________________________________________________
-Double_t Ermilova(Double_t *x, Double_t *par)
+Double_t Ermilova(Double_t *x, Double_t *)
 {
   //
   // Calculates the delta-ray energy distribution according to Ermilova
