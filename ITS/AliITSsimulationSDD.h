@@ -164,6 +164,7 @@ class AliITSsimulationSDD : public AliITSsimulation {
                                    // output of the real part of FFT
     Double_t       *fOutZI;        //! [fScaleSize*fMaxNofSamples] 
                                    // output of the imaginary part of FFT
+    Bool_t         *fAnodeFire;     //! [#of anodes] Flag if there is a signal
 
     TObjArray *fHis;          // just in case for histogramming
     TArrayI    fD;            // decrease values for baseline eq.
