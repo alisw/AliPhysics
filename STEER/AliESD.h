@@ -144,7 +144,9 @@ public:
    {fZDCNEnergy=nEnergy; fZDCPEnergy=pEnergy; fZDCEMEnergy=emEnergy;
     fZDCParticipants=participants;}
 
-  void  Reset();
+  void ResetV0s() { fV0s.Clear(); }
+  void ResetCascades() { fCascades.Clear(); }
+  void Reset();
 
   void  Print(Option_t *option="") const;
    
