@@ -4,7 +4,7 @@
 // See the class description in the header file.
 
 #include "TG4StepManager.h"
-#include "TG4GeometryManager.h"
+#include "TG4GeometryServices.h"
 #include "TG4PhysicsManager.h"
 #include "TG4VSensitiveDetector.h"
 #include "TG4Globals.h"
@@ -133,36 +133,6 @@ G4VPhysicalVolume* TG4StepManager::GetCurrentOffPhysicalVolume(G4int off) const
 
   return mother;  
 }     
-
-G4int TG4StepManager::GetVolumeID(G4VPhysicalVolume* physVolume) const 
-{
-// Returns the sensitive detector ID of the specified
-// physical volume.
-// ---
- 
-  // sensitive detector ID
-  G4VSensitiveDetector* sd
-    = physVolume->GetLogicalVolume()->GetSensitiveDetector();
-  if (sd) {
-    TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-    if (tsd)
-      return tsd->GetID();
-    else {
-      TG4Globals::Exception(
-        "TG4StepManager::GetVolumeID: Unknown sensitive detector type");
-      return 0;
-    }   	
-  }  
-  else {
-    G4String text = "TG4StepManager::GetVolumeID: \n";
-    text = text + "    Volume " + physVolume->GetName();
-    text = text + " has not a sensitive detector.";
-    //TG4Globals::Exception(text);
-    TG4Globals::Warning(text);
-    return 0;
-  }      	
-} 
-
 
 // public methods
 
@@ -305,7 +275,8 @@ Int_t TG4StepManager::CurrentVolID(Int_t& copyNo) const
   copyNo = physVolume->GetCopyNo() + 1;
 
   // sensitive detector ID
-  return GetVolumeID(physVolume);
+  TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
+  return geometryServices->GetVolumeID(physVolume->GetLogicalVolume());
 } 
 
 Int_t TG4StepManager::CurrentVolOffID(Int_t off, Int_t&  copyNo) const
@@ -322,7 +293,8 @@ Int_t TG4StepManager::CurrentVolOffID(Int_t off, Int_t&  copyNo) const
     copyNo = mother->GetCopyNo() + 1;
 
     // sensitive detector ID
-    return GetVolumeID(mother);
+    TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
+    return geometryServices->GetVolumeID(mother->GetLogicalVolume());
   }
   else {
     copyNo = 0;
@@ -367,9 +339,9 @@ Int_t TG4StepManager::CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens,
 
   if (material) {
     G4int nofElements = material->GetNumberOfElements();
-    TG4GeometryManager* pGeometryManager = TG4GeometryManager::Instance();
-    a = pGeometryManager->GetEffA(material);
-    z = pGeometryManager->GetEffZ(material);
+    TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
+    a = geometryServices->GetEffA(material);
+    z = geometryServices->GetEffZ(material);
       
     // density 
     dens = material->GetDensity();
@@ -572,8 +544,8 @@ Int_t TG4StepManager::GetMedium() const
     = GetCurrentPhysicalVolume()->GetLogicalVolume()->GetMaterial();
 
   // medium index  
-  TG4GeometryManager* pGeometryManager = TG4GeometryManager::Instance();
-  return pGeometryManager->GetMediumId(curMaterial);
+  TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
+  return geometryServices->GetMediumId(curMaterial);
 }
 
 void TG4StepManager::TrackMomentum(TLorentzVector& momentum) const
@@ -1003,10 +975,10 @@ void TG4StepManager::GetSecondary(Int_t index, Int_t& particleId,
   }
 }
 
-AliMCProcess TG4StepManager::ProdProcess() const
+AliMCProcess TG4StepManager::ProdProcess(Int_t isec) const
 {
-// The process that has produced the secondary particles
-// in the current step
+// The process that has produced the secondary particles specified 
+// with isec index in the current step.
 // ---
 
   G4int nofSecondaries = NSecondaries();
@@ -1016,41 +988,53 @@ AliMCProcess TG4StepManager::ProdProcess() const
   CheckStep("ProdProcess");
 #endif
 
-/*
-  const G4VProcess* curProcess 
-    = fStep->GetPostStepPoint()->GetProcessDefinedStep();     
-*/
-
   G4TrackVector* secondaryTracks = fSteppingManager->GetSecondary();
  
   // should never happen
   if (!secondaryTracks) {
     TG4Globals::Exception(
       "TG4StepManager::ProdProcess(): secondary tracks vector is empty.");
+
+    return kPNoProcess;  
   }    
 
-  G4Track* firstSecTrack = (*secondaryTracks)[0]; 
-  G4Track* lastSecTrack = (*secondaryTracks)[secondaryTracks->entries()-1]; 
-  
-  const G4VProcess* firstProcess = firstSecTrack->GetCreatorProcess();  
-  const G4VProcess* lastProcess = lastSecTrack->GetCreatorProcess();
-       
-  // check if all secondaries comes from the same process
-  if (firstProcess != lastProcess) {
-    G4String text = "TG4StepManager: ProdProcess():\n";
-    text = text + "   More than one process has created secondary particles.\n";  
-    text = text + "   The creator of the last secondary is returned.";
-    G4cout << "The first process:" <<  firstProcess->GetProcessName(); 
-    TG4Globals::Warning(text);
-  }
-  
-  G4String g4Name = lastProcess->GetProcessName(); 
+  if (isec < nofSecondaries) {
 
-  TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
-  AliMCProcess mcProcess = pPhysicsManager->GetMCProcess(g4Name);
+    // the index of the first secondary of this step
+    G4int startIndex 
+      = secondaryTracks->entries() - nofSecondaries;
+           // (the secondaryTracks vector contains secondaries 
+           // produced by the track at previous steps, too)
+
+    // the secondary track with specified isec index
+    G4Track* track = (*secondaryTracks)[startIndex + isec]; 
+   
+    G4String g4Name = track->GetCreatorProcess()->GetProcessName(); 
   
-  // distinguish kPDeltaRay from kPEnergyLoss  
-  if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
+    TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
+    AliMCProcess mcProcess = pPhysicsManager->GetMCProcess(g4Name);
   
-  return mcProcess;
+    // distinguish kPDeltaRay from kPEnergyLoss  
+    if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
+  
+    return mcProcess;
+  }
+  else {
+    TG4Globals::Exception(
+      "TG4StepManager::GetSecondary(): wrong secondary track index.");
+
+    return kPNoProcess;  
+  }
+}
+
+
+Int_t TG4StepManager::StepProcesses(TArrayI &proc) const
+{
+// Fills the array of processes that were active in the current step.
+// ---
+
+  TG4Globals::Exception(
+     "TG4StepManager::StepProcesses(): not yet implemented.");
+     
+  return 0;   
 }
