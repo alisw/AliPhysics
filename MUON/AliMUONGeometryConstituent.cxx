@@ -92,6 +92,28 @@ AliMUONGeometryConstituent::AliMUONGeometryConstituent(const TString& name,
 }
 
 //______________________________________________________________________________
+AliMUONGeometryConstituent::AliMUONGeometryConstituent(const TString& name, 
+                                   Int_t copyNo, 
+				   const TGeoCombiTrans& transform, 
+				   Int_t npar, Double_t* param)
+				   
+  : TNamed(name, name),
+    fCopyNo(copyNo),
+    fNpar(npar),
+    fParam(0),				   
+    fTransformation(0) 
+{
+  // Create the constituent transformation
+  fTransformation = new TGeoCombiTrans(transform);
+
+  // Volume parameters
+  if (npar > 0) {
+    fParam = new Double_t[npar];
+    for (Int_t i=0; i<npar; i++) fParam[i] = param[i];
+  }  
+}
+
+//______________________________________________________________________________
 AliMUONGeometryConstituent::AliMUONGeometryConstituent()
   : TNamed(),
     fCopyNo(0),

@@ -32,7 +32,10 @@ class AliMUONGeometryConstituent : public TNamed
                          const TGeoTranslation& translation, 
 	  	         const TGeoRotation& rotation,
 			 Int_t npar, Double_t* param);
-    AliMUONGeometryConstituent();
+     AliMUONGeometryConstituent(const TString& name, Int_t copyNo, 
+                         const TGeoCombiTrans& transform,
+			 Int_t npar, Double_t* param);
+   AliMUONGeometryConstituent();
     virtual ~AliMUONGeometryConstituent();
 
     // get methods
