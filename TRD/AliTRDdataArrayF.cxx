@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 Revision 1.1.2.3  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -71,6 +74,8 @@ AliTRDdataArrayF::AliTRDdataArrayF(Int_t nrow, Int_t ncol, Int_t ntime)
   // The row- and column dimensions are compressible.
   //
 
+  fElements = 0;
+
   Allocate(nrow,ncol,ntime);
   
 }
@@ -93,8 +98,7 @@ AliTRDdataArrayF::~AliTRDdataArrayF()
   // Destructor
   //
 
-  if (fElements) fElements->Delete();
-  delete fElements;
+  if (fElements) delete fElements;
   
 }
 
@@ -107,11 +111,10 @@ void AliTRDdataArrayF::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
   // The row- and column dimensions are compressible.
   //
 
-
   if (fNelems < 0) AliTRDdataArray::Allocate(nrow,ncol,ntime);
 
   if (fElements) delete fElements;
-  fElements = new AliTRDarrayF;
+  fElements = new AliTRDarrayF();
   fElements->Set(fNelems);
 
 }
@@ -139,7 +142,7 @@ void AliTRDdataArrayF::Reset()
   //
   
   if (fElements) delete fElements;
-  fElements = new AliTRDarrayF;
+  fElements = new AliTRDarrayF();
   fElements->Set(0); 
 
   AliTRDdataArray::Reset();
@@ -156,7 +159,7 @@ Int_t AliTRDdataArrayF::GetSize()
   Int_t size = sizeof(this);
 
   if (fIndex)    size += sizeof(fIndex)    
-                         + fIndex->GetSize()    * sizeof(Float_t);
+                         + fIndex->GetSize()    * sizeof(Int_t);
   if (fElements) size += sizeof(fElements) 
                          + fElements->GetSize() * sizeof(Float_t);
 
@@ -341,7 +344,8 @@ void AliTRDdataArrayF::Expand1()
 
     // Negative sign counts the unwritten values (under threshold)
     if ((*fElements)[i] < 0) {
-      idx1 -= (Int_t) fElements->At(i);
+      //idx1 -= (Int_t) fElements->At(i);
+      idx1 -= TMath::Nint(fElements->At(i));
     } 
     else {
       buf[(*fIndex)[idx2] + idx1] = fElements->At(i);
@@ -370,17 +374,22 @@ void AliTRDdataArrayF::Compress1()
   // Compress a buffer of type 1
   //
 
-  AliTRDarrayF buf;  
-  buf.Set(fNelems);
-  AliTRDarrayI index;
-  index.Set(fNdim2);
+  //AliTRDarrayF buf;  
+  //buf.Set(fNelems);
+  //AliTRDarrayI index;
+  //index.Set(fNdim2);
+  AliTRDarrayF *buf   = new AliTRDarrayF();  
+  buf->Set(fNelems);
+  AliTRDarrayI *index = new AliTRDarrayI();
+  index->Set(fNdim2);
 
   Int_t icurrent = -1;
   Int_t izero;
   for (Int_t idx2 = 0; idx2 < fNdim2; idx2++){      
 
     // Set the idx2 pointer
-    index[idx2] = icurrent + 1;
+    //index[idx2] = icurrent + 1;
+    (*index)[idx2] = icurrent + 1;
 
     // Reset the zero counter 
     izero = 0;  
@@ -394,31 +403,44 @@ void AliTRDdataArrayF::Compress1()
 	if (izero > 0) {
 	  // If we have currently izero counts under threshold
 	  icurrent++;	  
-	  if (icurrent >= buf.fN) buf.Expand(icurrent*2);
+	  //if (icurrent >= buf.fN) buf.Expand(icurrent*2);
+	  if (icurrent >= buf->fN) buf->Expand(icurrent*2);
           // Store the number of entries below zero
-	  buf[icurrent] = -izero;  
+	  //buf[icurrent] = -izero;  
+	  (*buf)[icurrent] = -izero;  
 	  izero = 0;
 	} 
 	icurrent++;
-	if (icurrent >= buf.fN) buf.Expand(icurrent*2);
-	buf[icurrent] = GetDataFast(idx1,idx2);	    
+	//if (icurrent >= buf.fN) buf.Expand(icurrent*2);
+	if (icurrent >= buf->fN) buf->Expand(icurrent*2);
+	//buf[icurrent] = GetDataFast(idx1,idx2);	    
+	(*buf)[icurrent] = GetDataFast(idx1,idx2);	    
       } // If signal larger than threshold	  	
     } // End of loop over idx1
 
     if (izero > 0) {
       icurrent++;	  
-      if (icurrent >= buf.fN) buf.Expand(icurrent*2);
+      //if (icurrent >= buf.fN) buf.Expand(icurrent*2);
+      if (icurrent >= buf->fN) buf->Expand(icurrent*2);
       // Store the number of entries below zero
-      buf[icurrent] = -izero; 
+      //buf[icurrent] = -izero;  
+      (*buf)[icurrent] = -izero;  
     }
 
   }
 
-  buf.Expand(icurrent+1);
-  (*fElements) = buf;
+  //buf.Expand(icurrent+1);
+  //(*fElements) = buf;
+  //fNelems   = fElements->fN;
+  //fBufType  = 1;
+  //(*fIndex) = index;
+  buf->Expand(icurrent+1);
+  if (fElements) delete fElements;
+  fElements = buf;
   fNelems   = fElements->fN;
   fBufType  = 1;
-  (*fIndex) = index;
+  if (fIndex) delete fIndex;
+  fIndex    = index;
 
 }
 
@@ -443,7 +465,8 @@ void AliTRDdataArrayF::Expand2()
   for (i = 0; i < n; i++){
     // Negative sign counts the unwritten values (under threshold)
     if ((*fElements)[i] < 0) {
-      idx1 -= (Int_t) fElements->At(i); 
+      //idx1 -= (Int_t) fElements->At(i); 
+      idx1 -= TMath::Nint(fElements->At(i)); 
     }
     else {
       buf[(*fIndex)[idx2]+idx1] = fElements->At(i);
@@ -535,7 +558,8 @@ Bool_t AliTRDdataArrayF::First1()
   Int_t i;
   for (i = 0; i < fNelems; i++){
     if (fElements->At(i) < 0) {
-      fCurrentIdx1 -= (Int_t) fElements->At(i);
+      //fCurrentIdx1 -= (Int_t) fElements->At(i);
+      fCurrentIdx1 -= TMath::Nint(fElements->At(i));
     }
     else {     
       fCurrentIdx1++;
@@ -567,7 +591,8 @@ Bool_t AliTRDdataArrayF::Next1()
   Int_t i;
   for (i = fCurrentIndex + 1; i < fNelems; i++){
     if (fElements->At(i) < 0) {
-      fCurrentIdx1 -= (Int_t) fElements->At(i);
+      //fCurrentIdx1 -= (Int_t) fElements->At(i);
+      fCurrentIdx1 -= TMath::Nint(fElements->At(i));
     }
     else {      
       fCurrentIdx1++;
@@ -608,7 +633,8 @@ Float_t AliTRDdataArrayF::GetData1(Int_t idx1, Int_t idx2) const
  
   for (i = fIndex->At(idx2); ((i < n2) && (curidx1 < idx1)); i++){
     if (fElements->At(i) < 0) {
-      curidx1 -= (Int_t) fElements->At(i);
+      //curidx1 -= (Int_t) fElements->At(i);
+      curidx1 -= TMath::Nint(fElements->At(i));
     }
     else {      
       curidx1++;

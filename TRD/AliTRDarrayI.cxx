@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 
 Revision 1.1.4.3  2000/10/06 16:49:46  cblume
 Made Getters const
@@ -65,6 +68,15 @@ Add new TRD classes
 #include "AliTRDarrayI.h"
 
 ClassImp(AliTRDarrayI)
+
+//_____________________________________________________________________________
+AliTRDarrayI::AliTRDarrayI():TArrayI()
+{
+  //
+  // Default constructor
+  //
+
+}
 
 //_____________________________________________________________________________
 AliTRDarrayI::~AliTRDarrayI()

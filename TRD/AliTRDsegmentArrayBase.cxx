@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/01 14:53:21  cblume
+Merge with TRD-develop
+
 Revision 1.1.4.3  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -277,7 +280,7 @@ Bool_t AliTRDsegmentArrayBase::MakeArray(Int_t n)
   if (fTreeIndex) delete fTreeIndex;  
 
   fSegment   = new TObjArray(n);
-  fTreeIndex = new AliTRDarrayI;
+  fTreeIndex = new AliTRDarrayI();
   fTreeIndex->Set(n);
   fNSegment  = n;
   if ((fSegment) && (fTreeIndex)) 

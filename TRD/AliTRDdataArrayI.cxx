@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 Revision 1.1.2.3  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -70,6 +73,8 @@ AliTRDdataArrayI::AliTRDdataArrayI(Int_t nrow, Int_t ncol, Int_t ntime)
   // The row- and column dimensions are compressible.
   //
 
+  fElements = 0;
+
   Allocate(nrow,ncol,ntime);
   
 }
@@ -92,8 +97,7 @@ AliTRDdataArrayI::~AliTRDdataArrayI()
   // Destructor
   //
 
-  if (fElements) fElements->Delete();
-  delete fElements;
+  if (fElements) delete fElements;
   
 }
 
@@ -109,7 +113,7 @@ void AliTRDdataArrayI::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
   if (fNelems < 0) AliTRDdataArray::Allocate(nrow,ncol,ntime);
 
   if (fElements) delete fElements;
-  fElements = new AliTRDarrayI;
+  fElements = new AliTRDarrayI();
   fElements->Set(fNelems);
 
 }
@@ -137,7 +141,7 @@ void AliTRDdataArrayI::Reset()
   //
 
   if (fElements) delete fElements;
-  fElements = new AliTRDarrayI;
+  fElements = new AliTRDarrayI();
   fElements->Set(0); 
 
   AliTRDdataArray::Reset();
@@ -368,17 +372,22 @@ void AliTRDdataArrayI::Compress1()
   // Compress a buffer of type 1
   //
 
-  AliTRDarrayI  buf;  
-  buf.Set(fNelems);
-  AliTRDarrayI  index;
-  index.Set(fNdim2);
+  //AliTRDarrayI  buf;  
+  //buf.Set(fNelems);
+  //AliTRDarrayI  index;
+  //index.Set(fNdim2);
+  AliTRDarrayI *buf   = new AliTRDarrayI();  
+  buf->Set(fNelems);
+  AliTRDarrayI *index = new AliTRDarrayI();
+  index->Set(fNdim2);
 
   Int_t icurrent = -1;
   Int_t izero;
   for (Int_t idx2 = 0; idx2 < fNdim2; idx2++){      
 
     // Set the idx2 pointer
-    index[idx2] = icurrent + 1;
+    //index[idx2] = icurrent + 1;
+    (*index)[idx2] = icurrent + 1;
 
     // Reset the zero counter 
     izero = 0;  
@@ -392,31 +401,44 @@ void AliTRDdataArrayI::Compress1()
 	if (izero > 0) {
 	  // If we have currently izero counts under threshold
 	  icurrent++;	  
-	  if (icurrent >= buf.fN) buf.Expand(icurrent*2);
+	  //if (icurrent >= buf.fN) buf.Expand(icurrent*2);
+	  if (icurrent >= buf->fN) buf->Expand(icurrent*2);
           // Store the number of entries below zero
-	  buf[icurrent] = -izero;  
+	  //buf[icurrent] = -izero;  
+	  (*buf)[icurrent] = -izero;  
 	  izero = 0;
 	} 
 	icurrent++;
-	if (icurrent >= buf.fN) buf.Expand(icurrent*2);
-	buf[icurrent] = GetDataFast(idx1,idx2);	    
+	//if (icurrent >= buf.fN) buf.Expand(icurrent*2);
+	if (icurrent >= buf->fN) buf->Expand(icurrent*2);
+	//buf[icurrent] = GetDataFast(idx1,idx2);	    
+	(*buf)[icurrent] = GetDataFast(idx1,idx2);	    
       } // If signal larger than threshold	  	
     } // End of loop over idx1
 
     if (izero > 0) {
       icurrent++;	  
-      if (icurrent >= buf.fN) buf.Expand(icurrent*2);
+      //if (icurrent >= buf.fN) buf.Expand(icurrent*2);
+      if (icurrent >= buf->fN) buf->Expand(icurrent*2);
       // Store the number of entries below zero
-      buf[icurrent] = -izero; 
+      //buf[icurrent] = -izero; 
+      (*buf)[icurrent] = -izero; 
     }
 
   }
 
-  buf.Expand(icurrent+1);
-  (*fElements) = buf;
+  //buf.Expand(icurrent+1);
+  //(*fElements) = buf;
+  //fNelems   = fElements->fN;
+  //fBufType  = 1;
+  //(*fIndex) = index;
+  buf->Expand(icurrent+1);
+  if (fElements) delete fElements;
+  fElements = buf;
   fNelems   = fElements->fN;
   fBufType  = 1;
-  (*fIndex) = index;
+  if (fIndex) delete fIndex;
+  fIndex    = index;
 
 }
 

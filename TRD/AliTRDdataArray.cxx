@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 Revision 1.1.4.3  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -90,6 +93,8 @@ AliTRDdataArray::AliTRDdataArray(Int_t nrow, Int_t ncol, Int_t ntime)
   // The row- and column dimensions are compressible.
   //
 
+  fIndex   = 0;
+
   Allocate(nrow,ncol,ntime);
 
 }
@@ -112,7 +117,7 @@ AliTRDdataArray::~AliTRDdataArray()
   // AliTRDdataArray destructor
   //
 
-  if (fIndex) fIndex->Delete();
+  if (fIndex) delete fIndex;
   
 }
 
@@ -187,7 +192,7 @@ void AliTRDdataArray::Allocate(Int_t nrow, Int_t ncol,Int_t ntime)
   fNtime  = ntime;
 
   if (fIndex) delete fIndex;
-  fIndex = new AliTRDarrayI;
+  fIndex = new AliTRDarrayI();
   fIndex->Set(fNdim2);
   for (Int_t i = 0, k = 0; i < fNdim2; i++, k += fNdim1) { 
     (*fIndex)[i] = k;
@@ -237,7 +242,7 @@ void AliTRDdataArray::Reset()
   //
 
   if (fIndex) delete fIndex;
-  fIndex = new AliTRDarrayI;
+  fIndex = new AliTRDarrayI();
   fIndex->Set(0); 
 
   fNdim1   = -1;

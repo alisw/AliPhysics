@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.3  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -40,6 +43,15 @@ Add float array
 #include "AliTRDarrayF.h"
 
 ClassImp(AliTRDarrayF)
+
+//_____________________________________________________________________________
+AliTRDarrayF::AliTRDarrayF():TArrayF()
+{
+  //
+  // Default constructor
+  //
+
+}
 
 //_____________________________________________________________________________
 AliTRDarrayF::~AliTRDarrayF()
