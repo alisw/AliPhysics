@@ -35,6 +35,7 @@ ClassImp(AliMagFMaps)
 //_______________________________________________________________________
 AliMagFMaps::AliMagFMaps():
   fSolenoid(0),
+  fSolenoidUser(0.),
   fL3Option(0),
   fFieldRead(0)
 {
@@ -50,6 +51,7 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
                          const Int_t l3):
   AliMagF(name,title,integ,factor,fmax),
   fSolenoid(0),
+  fSolenoidUser(0),
   fL3Option(l3),
   fFieldRead(0)
 {
@@ -60,7 +62,6 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
   fFieldMap[0]  = 0;
   fMap          = map;
   fL3Option     = l3;
-
   ReadField();
   fFieldRead = 1;
   //
@@ -186,10 +187,8 @@ void AliMagFMaps::ReadField()
       case k5kG:
 	  fSolenoid = 5.;
 	  break;
-      case k0kG:
-	  fSolenoid = 0.;
-	  break;
       }
+      fSolenoidUser = fSolenoid;
   }
 }
 
@@ -221,7 +220,7 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
       //
       //     Constant L3 field, if this option was selected
       //
-	  b[2] = fSolenoid;
+	  b[2] = fSolenoidUser;
 	  return;
     }
   } else if (fFieldMap[1]->Inside(x[0], x[1], x[2])) {
