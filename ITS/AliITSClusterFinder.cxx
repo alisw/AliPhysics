@@ -159,8 +159,7 @@ void AliITSClusterFinder::FindRawClusters(Int_t module){
 		if(clust0->IndexOf(dig)>=0) break;
 	    } // end for k
 	    if(k>=nc){
-		Error("FindRawClusters","Digit not found as expected");
-		abort();
+		Fatal("FindRawClusters","Digit not found as expected");
 	    } // end if
 	    if(j[1]>=0){
 		dig = (AliITSdigit*)(digs->At(j[1]));
@@ -170,8 +169,7 @@ void AliITSClusterFinder::FindRawClusters(Int_t module){
 		    if(clust1->IndexOf(dig)>=0) break;
 		} // end for k2
 		if(k2>=nc){
-		    Error("FindRawClusters","Digit not found as expected");
-		    abort();
+		    Fatal("FindRawClusters","Digit not found as expected");
 		} // end if
 	    } // end if j[1]>=0
 	    // Found cluster with neighboring digits add this one to it.
