@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.15  2001/05/21 10:59:49  morsch
+Lost changes from revision 1.13 recovered.
+
 Revision 1.14  2001/05/21 09:39:28  morsch
 Minor modifications on the geometry. (Tapan Nayak)
 
@@ -939,7 +942,7 @@ void AliPMDv1::Init()
       printf("\n%s: ",ClassName());
       printf("                 PMD simulation package (v1) initialised\n");
       printf("%s: parameters of pmd\n",ClassName());
-      printf("%s: %10.2f %10.2f %10.2f
+      printf("%s: %10.2f %10.2f %10.2f \
       %10.2f\n",ClassName(),cell_radius,cell_wall,cell_depth,zdist1 );
       printf("%s: ",ClassName());
       for(i=0;i<80;i++) printf("*");
