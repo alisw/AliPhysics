@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.75  2001/07/28 10:52:27  hristov
+Event number updated correctly (M.Ivanov)
+
 Revision 1.74  2001/07/28 10:39:16  morsch
 GetEventsPerRun() method needed by afterburners added to AliRun.h
 Corresponding setters and getters have been from AliGenerator.
@@ -225,8 +228,6 @@ Introduction of the Copyright and cvs Log
 #include <TBrowser.h>
 #include <TFolder.h>
 #include <TNode.h>
-#include <TKey.h>
-
 #include "TParticle.h"
 #include "AliRun.h"
 #include "AliDisplay.h"
@@ -849,22 +850,16 @@ Int_t AliRun::GetEvent(Int_t event)
   //
   TFile *file = fTreeE->GetCurrentFile();
   char treeName[20];
-  TKey* currentKey;
-  static TIter Iter(gDirectory->GetListOfKeys());
   
   file->cd();
 
   // Get Hits Tree header from file
   sprintf(treeName,"TreeH%d",event);
-  while ((currentKey = (TKey *) Iter.Next())) {
-      if (strcmp(treeName,currentKey->GetName()) == 0) {
-	  fTreeH  = (TTree*)currentKey->ReadObj();
-	  if (!fTreeH)
-	  {Error("GetEvent","cannot find Hits Tree for event:%d\n",event);}
-	  break;
-      }
-  }          
-  
+  fTreeH = (TTree*)gDirectory->Get(treeName);
+  if (!fTreeH) {
+      Error("GetEvent","cannot find Hits Tree for event:%d\n",event);
+  }
+
   // Get Digits Tree header from file
   sprintf(treeName,"TreeD%d",event);
   fTreeD = (TTree*)gDirectory->Get(treeName);
