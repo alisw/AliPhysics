@@ -6,7 +6,7 @@
 #include "AliL3RootTypes.h"
 
 #ifdef do_mc
-const UInt_t MaxTrack=100;
+const UInt_t MaxTrack=120;
 struct TrackIndex {
   Int_t fLabel[MaxTrack];
   UChar_t fNHits[MaxTrack];

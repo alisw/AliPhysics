@@ -187,7 +187,9 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
   if(fDoMC)
     {
       AliL3Histogram *hist = fParamSpace[0];
-      Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
+      Int_t ncellsx = (hist->GetNbinsX()+3)/2;
+      Int_t ncellsy = (hist->GetNbinsY()+3)/2;
+      Int_t ncells = ncellsx*ncellsy;
       if(!fTrackID)
 	{
 	  LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
@@ -339,7 +341,9 @@ void AliL3HoughTransformerRow::Reset()
   if(fDoMC)
     {
       AliL3Histogram *hist = fParamSpace[0];
-      Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
+      Int_t ncellsx = (hist->GetNbinsX()+3)/2;
+      Int_t ncellsy = (hist->GetNbinsY()+3)/2;
+      Int_t ncells = ncellsx*ncellsy;
       for(Int_t i=0; i<GetNEtaSegments(); i++)
 	memset(fTrackID[i],0,ncells*sizeof(TrackIndex));
     }
@@ -624,7 +628,7 @@ void AliL3HoughTransformerRow::TransformCircle()
 				    Int_t label = eta_clust[eta_index].mc_labels[t];
 				    if(label == 0) break;
 				    UInt_t c;
-				    Int_t temp_bin2 = b*nbinx + bin;
+				    Int_t temp_bin2 = ((Int_t)(b/2))*((Int_t)((nbinx+1)/2)) + (Int_t)(bin/2);
 				    for(c=0; c<(MaxTrack-1); c++)
 				      if(fTrackID[eta_index][temp_bin2].fLabel[c] == label || fTrackID[eta_index][temp_bin2].fNHits[c] == 0)
 					break;
@@ -750,7 +754,7 @@ void AliL3HoughTransformerRow::TransformCircle()
 			    Int_t label = eta_clust[eta_index].mc_labels[t];
 			    if(label == 0) break;
 			    UInt_t c;
-			    Int_t temp_bin2 = b*nbinx + bin;
+			    Int_t temp_bin2 = ((Int_t)(b/2))*((Int_t)((nbinx+1)/2)) + (Int_t)(bin/2);
 			    for(c=0; c<(MaxTrack-1); c++)
 			      if(fTrackID[eta_index][temp_bin2].fLabel[c] == label || fTrackID[eta_index][temp_bin2].fNHits[c] == 0)
 				break;
@@ -794,7 +798,12 @@ Int_t AliL3HoughTransformerRow::GetTrackID(Int_t eta_index,Double_t kappa,Double
       return -1;
     }
   AliL3Histogram *hist = fParamSpace[eta_index];
-  Int_t bin = hist->FindBin(kappa,psi);
+  Int_t bin = hist->FindLabelBin(kappa,psi);
+  if(bin==-1) {
+    LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackID()","")
+      <<"Track candidate outside Hough space boundaries: "<<kappa<<" "<<psi<<ENDLOG;
+    return -1;
+  }
   Int_t label=-1;
   Int_t max=0;
   for(UInt_t i=0; i<(MaxTrack-1); i++)
@@ -821,7 +830,8 @@ Int_t AliL3HoughTransformerRow::GetTrackID(Int_t eta_index,Double_t kappa,Double
 	  }
 	}
     }
-  //  cout<<" TrackID label "<<label<<" max "<<max<<" label2 "<<label2<<" max2 "<<max2<<" "<<(Float_t)max2/(Float_t)max<<" "<<fTrackID[eta_index][bin].fLabel[MaxTrack-1]<<" "<<(Int_t)fTrackID[eta_index][bin].fNHits[MaxTrack-1]<<endl;
+  LOG(AliL3Log::kDebug,"AliL3HoughTransformerRow::GetTrackID()","")
+    <<" TrackID"<<" label "<<label<<" max "<<max<<" label2 "<<label2<<" max2 "<<max2<<" "<<(Float_t)max2/(Float_t)max<<" "<<fTrackID[eta_index][bin].fLabel[MaxTrack-1]<<" "<<(Int_t)fTrackID[eta_index][bin].fNHits[MaxTrack-1]<<ENDLOG;
   return label;
 #endif
   LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackID()","")

@@ -157,6 +157,18 @@ Int_t AliL3Histogram::FindBin(Double_t x,Double_t y) const
   return GetBin(xbin,ybin);
 }
 
+Int_t AliL3Histogram::FindLabelBin(Double_t x,Double_t y) const
+{
+  Int_t xbin = FindXbin(x);
+  Int_t ybin = FindYbin(y);
+#ifdef _IFON_
+  if(!xbin || !ybin)
+    return -1;
+#endif
+  
+  return GetLabelBin(xbin,ybin);
+}
+
 Int_t AliL3Histogram::FindXbin(Double_t x) const
 {
   if(x < fXmin || x > fXmax)
@@ -181,6 +193,16 @@ Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin) const
     return 0;
     
   return xbin + ybin*(fNxbins+2);
+}
+
+Int_t AliL3Histogram::GetLabelBin(Int_t xbin,Int_t ybin) const
+{
+  if(xbin < fFirstXbin || xbin > fLastXbin)
+    return -1;
+  if(ybin < fFirstYbin || ybin > fLastYbin)
+    return -1;
+    
+  return (Int_t)(xbin/2) + ((Int_t)(ybin/2))*((Int_t)((fNxbins+3)/2));
 }
 
 Int_t AliL3Histogram::GetBinContent(Int_t bin) const

@@ -51,9 +51,11 @@ class AliL3Histogram {
   virtual void Fill(Int_t xbin,Double_t y,Int_t weight=1);
   virtual void Fill(Int_t xbin,Int_t ybin,Int_t weight=1);
   virtual Int_t FindBin(Double_t x,Double_t y) const;
+  virtual Int_t FindLabelBin(Double_t x,Double_t y) const;
   virtual Int_t FindXbin(Double_t x) const;
   virtual Int_t FindYbin(Double_t y) const;
   Int_t GetBin(Int_t xbin,Int_t ybin) const;
+  Int_t GetLabelBin(Int_t xbin,Int_t ybin) const;
   Int_t GetBinContent(Int_t bin) const;
   void SetBinContent(Int_t xbin,Int_t ybin,Int_t value);
   void SetBinContent(Int_t bin,Int_t value);
