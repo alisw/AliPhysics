@@ -258,9 +258,9 @@ if(iMUON) {
 
 AliMUON *MUON  = new AliMUONv0("MUON","normal MUON");
 
-MUON->SetSMAXAR(0.03);
-MUON->SetSMAXAL(-1);
-//
+MUON->SetMaxStepGas(0.1);
+MUON->SetMaxStepAlu(0.1);
+
 // Version 0
 //
 // First define the number of planes that are segmented (1 or 2) by a call
@@ -273,81 +273,121 @@ MUON->SetSMAXAL(-1);
 //  
  Int_t chamber;
  Int_t station;
-// Default Segmentation
- AliMUONsegmentationV0* segV0 = new AliMUONsegmentationV0;
 // Default response
  AliMUONresponseV0* response0 = new AliMUONresponseV0;
- response0->SetSqrtKx3(0.761577);
- response0->SetKx2(0.972655);
- response0->SetKx4(0.3841);
- response0->SetSqrtKy3(0.714143);
- response0->SetKy2(1.0099);
- response0->SetKy4(0.403);
+ response0->SetSqrtKx3(0.7131);
+ response0->SetKx2(1.0107);
+ response0->SetKx4(0.4036);
+ response0->SetSqrtKy3(0.7642);
+ response0->SetKy2(0.9706);
+ response0->SetKy4(0.3831);
  response0->SetPitch(0.25);
- response0->SetRSIGM(10.);
- response0->SetMUCHSP(5.);
- response0->SetMUSIGM(0.18, 0.18);
- response0->SetMAXADC( 1024);
+ response0->SetSigmaIntegration(10.);
+ response0->SetChargeSlope(50);
+ response0->SetChargeSpread(0.18, 0.18);
+ response0->SetMaxAdc(4096);
 //--------------------------------------------------------
 // Configuration for Chamber TC1/2  (Station 1) ----------           
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- Float_t rseg[4]={17.5, 55.2, 71.3, 95.5};
- Int_t   nseg[4]={4, 4, 2, 1};
-
+// Float_t rseg1[4]={17.5, 55.2, 71.3, 95.5};
+ Float_t rseg1[4]={15.5, 55.2, 71.3, 95.5};
+ Int_t   nseg1[4]={4, 4, 2, 1};
+//
  chamber=1;
 //^^^^^^^^^
  MUON->SetNsec(chamber-1,2);
 //
  AliMUONsegmentationV01 *seg11=new AliMUONsegmentationV01;
- seg11->SetSegRadii(rseg);
- seg11->SetPADSIZ(3.048, 0.508);
- seg11->SetPadDivision(nseg);
+ 
+ seg11->SetSegRadii(rseg1);
+ seg11->SetPADSIZ(3, 0.5);
+ seg11->SetDAnod(3.0/3./4);
+ seg11->SetPadDivision(nseg1);
+ 
  MUON->SetSegmentationModel(chamber-1, 1, seg11);
 //
- AliMUONsegmentationV01 *seg12=new AliMUONsegmentationV01;
- seg12->SetSegRadii(rseg); 
- seg12->SetPADSIZ(2.032, 0.762);
- seg12->SetPadDivision(nseg);
+ AliMUONsegmentationV02 *seg12=new AliMUONsegmentationV02;
+ seg12->SetSegRadii(rseg1); 
+ seg12->SetPADSIZ(0.75, 2.0);
+ seg12->SetDAnod(3.0/3./4);
+ seg12->SetPadDivision(nseg1);
 
  MUON->SetSegmentationModel(chamber-1, 2, seg12);
+
+ MUON->SetResponseModel(chamber-1, response0);	    
 
  chamber=2;
 //^^^^^^^^^
+//
  MUON->SetNsec(chamber-1,2);
- MUON->SetSegmentationModel(chamber-1, 1, seg11);
- MUON->SetSegmentationModel(chamber-1, 2, seg12);
+//
+ AliMUONsegmentationV01 *seg21=new AliMUONsegmentationV01;
+ seg21->SetSegRadii(rseg1);
+ seg21->SetPADSIZ(3, 0.5);
+ seg21->SetDAnod(3.0/3./4);
+ seg21->SetPadDivision(nseg1);
+ MUON->SetSegmentationModel(chamber-1, 1, seg21);
+//
+ AliMUONsegmentationV02 *seg22=new AliMUONsegmentationV02;
+ seg22->SetSegRadii(rseg1); 
+ seg22->SetPADSIZ(0.75, 2.);
+ seg22->SetDAnod(3.0/3./4);
+ seg22->SetPadDivision(nseg1);
+ MUON->SetSegmentationModel(chamber-1, 2, seg22);
 
- station=1;
-//^^^^^^^^^ 
- MUON->SetResponseModel(0, response0);	    
- MUON->SetResponseModel(1, response0);	    
+ MUON->SetResponseModel(chamber-1, response0);	    
 //
 //--------------------------------------------------------
 // Configuration for Chamber TC3/4 -----------------------
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+// Float_t rseg2[4]={23.5, 47.1, 87.7, 122.5};
+ Float_t rseg2[4]={21.5, 47.1, 87.7, 122.5};
+ Int_t   nseg2[4]={4, 4, 2, 1};
+//
  chamber=3;
- MUON->SetNsec(chamber-1,1);
- AliMUONsegmentationV0 *seg34=new AliMUONsegmentationV0;
- seg34->SetDAnod(0.51/3.);
- 
- MUON->SetSegmentationModel(chamber-1, 1, seg34);
+//^^^^^^^^^
+ MUON->SetNsec(chamber-1,2);
+//
+ AliMUONsegmentationV01 *seg31=new AliMUONsegmentationV01;
+ seg31->SetSegRadii(rseg2);
+ seg31->SetPADSIZ(3, 0.5);
+ seg31->SetDAnod(3.0/3./4);
+ seg31->SetPadDivision(nseg2);
+ MUON->SetSegmentationModel(chamber-1, 1, seg31);
+//
+ AliMUONsegmentationV02 *seg32=new AliMUONsegmentationV02;
+ seg32->SetSegRadii(rseg2); 
+ seg32->SetPADSIZ(0.75, 2.);
+ seg32->SetPadDivision(nseg2);
+ seg32->SetDAnod(3.0/3./4);
+
+ MUON->SetSegmentationModel(chamber-1, 2, seg32);
+
  MUON->SetResponseModel(chamber-1, response0);	    
 
  chamber=4;
- MUON->SetNsec(chamber-1,1);
- MUON->SetSegmentationModel(chamber-1, 1, seg34);
- MUON->SetResponseModel(chamber-1, response0);	    
+//^^^^^^^^^
 //
-// Station 2
- station=2;
- MUON->SetPADSIZ(station, 1, 0.75, 0.51);
- MUON->SetMUCHSP(station, 5.);
- MUON->SetMUSIGM(station, 0.18, 0.18);
- MUON->SetRSIGM(station, 10.);
- MUON->SetMAXADC(station, 1024);
+ MUON->SetNsec(chamber-1,2);
+//
+ AliMUONsegmentationV01 *seg41=new AliMUONsegmentationV01;
+ seg41->SetSegRadii(rseg2);
+ seg41->SetPADSIZ(3, 0.5);
+ seg41->SetDAnod(3.0/3./4);
+ seg41->SetPadDivision(nseg2);
+ MUON->SetSegmentationModel(chamber-1, 1, seg41);
+//
+ AliMUONsegmentationV02 *seg42=new AliMUONsegmentationV02;
+ seg42->SetSegRadii(rseg2); 
+ seg42->SetPADSIZ(0.75, 2.);
+ seg42->SetPadDivision(nseg2);
+ seg42->SetDAnod(3.0/3./4);
 
-//
+ MUON->SetSegmentationModel(chamber-1, 2, seg42);
+
+ MUON->SetResponseModel(chamber-1, response0);	    
+
+
 //--------------------------------------------------------
 // Configuration for Chamber TC5/6 -----------------------
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -363,10 +403,10 @@ MUON->SetSMAXAL(-1);
  response5->SetKy2(0.98832946);
  response5->SetKy4(0.39177817);
  response5->SetPitch(0.325);
- response5->SetRSIGM(10.);
- response5->SetMUCHSP(5.);
- response5->SetMUSIGM( 0.4, 0.4);
- response5->SetMAXADC( 1024);
+ response5->SetSigmaIntegration(10.);
+ response5->SetChargeSlope(50);
+ response5->SetChargeSpread(0.4, 0.4);
+ response5->SetMaxAdc(4096);
 
  chamber=5;
  MUON->SetNsec(chamber-1,1);
@@ -382,44 +422,88 @@ MUON->SetSMAXAL(-1);
  station=3;
  MUON->SetPADSIZ(station, 1, 0.975, 0.55);
 
-//
 //--------------------------------------------------------
-// Configuration for Chamber TC7/8/9/10-------------------
+// Configuration for Chamber TC7/8  (Station 4) ----------           
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- chamber=7;
- MUON->SetNsec(chamber-1,1);
- AliMUONsegmentationV0 *seg78=new AliMUONsegmentationV0;
- seg78->SetDAnod(0.51/3.);
+ Int_t   nseg4[4]={4, 4, 2, 1};
 
- MUON->SetSegmentationModel(chamber-1, 1, seg78);
+ chamber=7;
+//^^^^^^^^^
+ MUON->SetNsec(chamber-1,2);
+//
+ AliMUONsegmentationV04 *seg71=new AliMUONsegmentationV04;
+ seg71->SetPADSIZ(10.,0.5);
+ seg71->SetDAnod(0.25);
+ seg71->SetPadDivision(nseg4);
+ MUON->SetSegmentationModel(chamber-1, 1, seg71);
+
+ AliMUONsegmentationV05 *seg72=new AliMUONsegmentationV05;
+ seg72->SetPADSIZ(1,10);
+ seg72->SetDAnod(0.25);
+ seg72->SetPadDivision(nseg4);
+ MUON->SetSegmentationModel(chamber-1, 2, seg72);
+
  MUON->SetResponseModel(chamber-1, response0);	    
 
  chamber=8;
- MUON->SetNsec(chamber-1,1);
- MUON->SetSegmentationModel(chamber-1, 1, seg78);
+//^^^^^^^^^
+ MUON->SetNsec(chamber-1,2);
+ AliMUONsegmentationV04 *seg81=new AliMUONsegmentationV04;
+ seg81->SetPADSIZ(10., 0.5);
+ seg81->SetPadDivision(nseg4);
+ seg81->SetDAnod(0.25);
+ MUON->SetSegmentationModel(chamber-1, 1, seg81);
+
+ AliMUONsegmentationV05 *seg82=new AliMUONsegmentationV05;
+ seg82->SetPADSIZ(1, 10);
+ seg82->SetPadDivision(nseg4);
+ seg82->SetDAnod(0.25);
+ MUON->SetSegmentationModel(chamber-1, 2, seg82);
+
  MUON->SetResponseModel(chamber-1, response0);	    
-//
-// Station 4
- station=4;
- MUON->SetPADSIZ(station, 1, 0.75, 0.5);
-
+//--------------------------------------------------------
+// Configuration for Chamber TC9/10  (Station 5) ---------           
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  chamber=9;
- MUON->SetNsec(chamber-1,1);
- AliMUONsegmentationV0 *seg910=new AliMUONsegmentationV0;
- seg910->SetDAnod(0.51/3.);
+//^^^^^^^^^
+ MUON->SetNsec(chamber-1,2);
+//
+ AliMUONsegmentationV04 *seg91=new AliMUONsegmentationV04;
+ seg91->SetPADSIZ(10.,0.5);
+ seg91->SetDAnod(0.25);
+ seg91->SetPadDivision(nseg4);
+ MUON->SetSegmentationModel(chamber-1, 1, seg91);
 
- MUON->SetSegmentationModel(chamber-1, 1, seg910);
+ AliMUONsegmentationV05 *seg92=new AliMUONsegmentationV05;
+ seg92->SetPADSIZ(1,10);
+ seg92->SetDAnod(0.25);
+ seg92->SetPadDivision(nseg4);
+
+ MUON->SetSegmentationModel(chamber-1, 2, seg92);
+
  MUON->SetResponseModel(chamber-1, response0);	    
 
  chamber=10;
- MUON->SetNsec(chamber-1,1);
- MUON->SetSegmentationModel(chamber-1, 1, seg910);
+//^^^^^^^^^
+ MUON->SetNsec(chamber-1,2);
+ AliMUONsegmentationV04 *seg101=new AliMUONsegmentationV04;
+ seg101->SetPADSIZ(10., 0.5);
+ seg101->SetPadDivision(nseg4);
+ seg101->SetDAnod(0.25);
+ MUON->SetSegmentationModel(chamber-1, 1, seg101);
+
+ AliMUONsegmentationV05 *seg102=new AliMUONsegmentationV05;
+ seg102->SetPADSIZ(1,10);
+ seg102->SetPadDivision(nseg4);
+ seg102->SetDAnod(0.25);
+ MUON->SetSegmentationModel(chamber-1, 2, seg102);
+
  MUON->SetResponseModel(chamber-1, response0);	    
-//
-// Station 5
- station=5;
- MUON->SetPADSIZ(station, 1, 0.75, 0.5);
+//--------------------------------------------------------
+// Configuration for Trigger staions --------------------- 
+// (not yet used/implemented) ----------------------------          
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
  chamber=11;
  MUON->SetNsec(chamber-1,1);
@@ -455,7 +539,7 @@ MUON->SetSMAXAL(-1);
  station=7;
  MUON->SetPADSIZ(station, 1, 0.75, 0.5);
 }
-
+ 
 if(iPHOS) {
 //=================== PHOS parameters ===========================
 
