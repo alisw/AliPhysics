@@ -35,8 +35,10 @@ void reco(TString opt="TVRE", TString name="all", Bool_t debug="kFALSE")
 {
   AliReconstruction rec ; 
   if ( !opt.Contains("T") ) 
-    rec.SetRunTracking(kFALSE) ;
- 
+    rec.SetRunTracking("") ;
+  else
+    rec.SetRunTracking(name.Data()) ;
+
   if ( !opt.Contains("V") ) 
     rec.SetRunVertexFinder(kFALSE) ; 
 
