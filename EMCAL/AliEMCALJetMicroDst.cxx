@@ -21,7 +21,7 @@
 
 #include "AliEMCALJetMicroDst.h"
 #include <assert.h>
-#include <iostream>
+#include <Riostream.h>
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
