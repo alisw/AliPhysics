@@ -195,7 +195,11 @@ public:
    virtual void         Hijing(const char* frame, float bmin, float bmax);
 
    virtual Float_t      Profile(float b);
-   
+
+   // access to Jeteset routines
+
+   virtual void         Rluget(Int_t lfn, Int_t move=0);
+   virtual void         Rluset(Int_t lfn, Int_t move=0);   
 
    ClassDef(THijing,1)  //Interface to Hijing Event Generator
 };

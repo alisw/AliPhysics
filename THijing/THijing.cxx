@@ -47,11 +47,15 @@
 # define hijset hijset_
 # define hijing hijing_
 # define profile profile_
+# define rluget_hijing rluget_hijing__
+# define rluset_hijing rluset_hijing__
 # define type_of_call
 #else
 # define hijset HIJSET
 # define hijing HIJING
 # define profile PROFILE
+# define rluget_hijing RLUGET_HIJING
+# define rluset_hijing RLUSET_HIJING
 # define type_of_call _stdcall
 #endif
 
@@ -72,6 +76,11 @@ extern "C" float type_of_call profile(Float_t &);
 //                                   float &bmax, Long_t l_frame);
 extern "C" void type_of_call hijing(const char *, Float_t  &,
                                    Float_t &, const int);
+
+extern "C" void type_of_call rluget_hijing(Int_t & lfn, Int_t & move);
+
+extern "C" void type_of_call rluset_hijing(Int_t & lfn, Int_t & move);
+
 #else
 //extern "C" void type_of_call hijset(float &efrm, const char *frame, 
 //				   Long_t l_frame, const char *proj, 
@@ -1148,4 +1157,16 @@ Float_t  THijing::Profile(float b)
 }
 
 
+void  THijing::Rluget(Int_t lfn, Int_t move)
+{
+// write seed to file
+  rluget_hijing(lfn, move);
+}
+
+
+void  THijing::Rluset(Int_t lfn, Int_t move)
+{
+// read seed from file 
+  rluset_hijing(lfn, move);
+}
 
