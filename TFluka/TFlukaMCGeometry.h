@@ -121,6 +121,8 @@ class TFlukaMCGeometry : public TVirtualMCGeometry {
    // FLUKA specific methods
     void          CreateFlukaMatFile(const char *fname=0);
     void          PrintHeader(ofstream &out, const char *text) const;
+    Bool_t        IsDebugging() const {return fDebug;}
+    void          SetDebugMode(Bool_t flag=kTRUE) {fDebug = flag;}
     void          SetMreg(Int_t mreg);
     void          SetNextRegion(Int_t mreg, Int_t latt);
     Int_t         RegionId() const; 
@@ -134,6 +136,7 @@ class TFlukaMCGeometry : public TVirtualMCGeometry {
     TFlukaMCGeometry& operator=(const TFlukaMCGeometry& rhs) {return (*this);}
 
     static TFlukaMCGeometry*  fgInstance; // singleton instance
+    Bool_t       fDebug;                  // debug flag
     Int_t        fLastMaterial;           // last FLUKA material index
     Int_t        fNextRegion;             // next region number
     Int_t        fNextLattice;            // next lattice history

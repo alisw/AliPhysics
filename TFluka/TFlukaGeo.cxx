@@ -106,16 +106,14 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fNVolumes      = 0;
    fCurrentFlukaRegion = -1;
    fGeom = new TFlukaMCGeometry("geom", "ALICE geometry");
+   if (verbosity > 2) fGeom->SetDebugMode(kTRUE);
    fMaterials = 0;
 }
 
 //______________________________________________________________________________ 
 TFluka::~TFluka() {
-  if (fVerbosityLevel >=3)
-    cout << "==> TFluka::~TFluka() destructor called." << endl;
-
+// Destructor
   delete fGeom;
-
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::~TFluka() destructor called." << endl;
 }
@@ -126,8 +124,7 @@ TFluka::~TFluka() {
 //______________________________________________________________________________ 
 void TFluka::Init() {
 
-    if (fVerbosityLevel >=3)
-	cout << "==> TFluka::Init() called." << endl;
+    if (fVerbosityLevel >=3) cout << "==> TFluka::Init() called." << endl;
     
     if (!gGeoManager) new TGeoManager("geom", "FLUKA geometry");
     fApplication->ConstructGeometry();
@@ -136,9 +133,11 @@ void TFluka::Init() {
     gGeoManager->CloseGeometry("di");
     gGeoManager->DefaultColors();  // to be removed
     fNVolumes = fGeom->NofVolumes();
-    printf("== Number of volumes: %i\n ==", fNVolumes);
     fGeom->CreateFlukaMatFile("flukaMat.inp");   
-    cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
+    if (fVerbosityLevel >=3) {
+       printf("== Number of volumes: %i\n ==", fNVolumes);
+       cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
+    }   
     // now we have TGeo geometry created and we have to patch alice.inp
     // with the material mapping file FlukaMat.inp
 }
@@ -149,13 +148,11 @@ void TFluka::FinishGeometry() {
 //
 // Build-up table with region to medium correspondance
 //
-  if (fVerbosityLevel >=3)
+  if (fVerbosityLevel >=3) {
     cout << "==> TFluka::FinishGeometry() called." << endl;
-
-   printf("----FinishGeometry - nothing to do with TGeo\n");
-  
-  if (fVerbosityLevel >=3)
+    printf("----FinishGeometry - nothing to do with TGeo\n");
     cout << "<== TFluka::FinishGeometry() called." << endl;
+  }  
 } 
 
 //______________________________________________________________________________ 
@@ -309,7 +306,7 @@ void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
 // Is it needed with TGeo ??? - to clear-up
 //
     
-   printf("Gstpar called with %6d %5s %12.4e %6d\n", itmed, param, parval, fGeom->GetFlukaMaterial(itmed));
+   if (fVerbosityLevel >=3) printf("Gstpar called with %6d %5s %12.4e %6d\n", itmed, param, parval, fGeom->GetFlukaMaterial(itmed));
  
    Bool_t process = kFALSE;
    if (strncmp(param, "DCAY",  4) == 0 ||
@@ -619,7 +616,7 @@ void TFluka::InitPhysics()
   Double_t three = 3.0;
 
   Float_t fLastMaterial = fGeom->GetLastMaterialIndex();
-  printf("   last FLUKA material is %g\n", fLastMaterial);
+  if (fVerbosityLevel >= 3) printf("   last FLUKA material is %g\n", fLastMaterial);
 
   // Prepare  Cerenkov
   TList *matList = gGeoManager->GetListOfMaterials();

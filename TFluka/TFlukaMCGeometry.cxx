@@ -102,6 +102,7 @@ TFlukaMCGeometry::TFlukaMCGeometry(const char *name, const char *title)
   //
   // Standard constructor
   //
+  fDebug        = kFALSE;
   fLastMaterial = 0;
   fNextRegion   = 0;
   fNextLattice  = 0;
@@ -117,6 +118,7 @@ TFlukaMCGeometry::TFlukaMCGeometry()
   //
   // Default constructor
   //
+  fDebug        = kFALSE;
   fLastMaterial = 0;
   fNextRegion   = 0;
   fNextLattice  = 0;
@@ -173,7 +175,7 @@ void TFlukaMCGeometry::Gfmate(Int_t imat, char *name, Float_t &a, Float_t &z,
 		       Float_t &dens, Float_t &radl, Float_t &absl,
 		       Float_t* /*ubuf*/, Int_t& /*nbuf*/)
 {
-   printf("Gfmate %i\n", imat);
+   if (fDebug) printf("Gfmate %i\n", imat);
    TGeoMaterial *mat;
    TIter next (gGeoManager->GetListOfMaterials());
    while ((mat = (TGeoMaterial*)next())) {
@@ -189,7 +191,7 @@ void TFlukaMCGeometry::Gfmate(Int_t imat, char *name, Float_t &a, Float_t &z,
    dens = mat->GetDensity();
    radl = mat->GetRadLen();
    absl = mat->GetIntLen();
-   printf("   ->material found : %s a=%g, z=%g, dens=%g, radl=%g, absl=%g\n", name, a,z,dens,radl,absl);
+   if (fDebug) printf("   ->material found : %s a=%g, z=%g, dens=%g, radl=%g, absl=%g\n", name, a,z,dens,radl,absl);
 }
 
 //_____________________________________________________________________________
@@ -197,8 +199,8 @@ void TFlukaMCGeometry::Gfmate(Int_t imat, char *name, Double_t &a, Double_t &z,
 		       Double_t &dens, Double_t &radl, Double_t &absl,
 		       Double_t* /*ubuf*/, Int_t& /*nbuf*/)
 {
-   printf("Gfmate %i\n", imat);
-    TGeoMaterial *mat;
+   if (fDebug) printf("Gfmate %i\n", imat);
+   TGeoMaterial *mat;
    TIter next (gGeoManager->GetListOfMaterials());
    while ((mat = (TGeoMaterial*)next())) {
      if (mat->GetUniqueID() == (UInt_t)imat) break;
@@ -213,7 +215,7 @@ void TFlukaMCGeometry::Gfmate(Int_t imat, char *name, Double_t &a, Double_t &z,
    dens = mat->GetDensity();
    radl = mat->GetRadLen();
    absl = mat->GetIntLen();
-   printf("   ->material found : %s a=%g, z=%g, dens=%g, radl=%g, absl=%g\n", name, a,z,dens,radl,absl);
+   if (fDebug) printf("   ->material found : %s a=%g, z=%g, dens=%g, radl=%g, absl=%g\n", name, a,z,dens,radl,absl);
 }
 
 //_____________________________________________________________________________
@@ -269,7 +271,7 @@ void TFlukaMCGeometry::Material(Int_t& kmat, const char* name, Double_t a, Doubl
 
   kmat = gGeoManager->GetListOfMaterials()->GetSize();
   gGeoManager->Material(name, a, z, dens, kmat, radl, absl);
-  printf("Material %s: kmat=%i, a=%g, z=%g, dens=%g\n", name, kmat, a, z, dens);
+  if (fDebug) printf("Material %s: kmat=%i, a=%g, z=%g, dens=%g\n", name, kmat, a, z, dens);
 }
 
 //_____________________________________________________________________________
@@ -332,8 +334,10 @@ void TFlukaMCGeometry::Mixture(Int_t& kmat, const char* name, Double_t* a, Doubl
      }
   }
   kmat = gGeoManager->GetListOfMaterials()->GetSize();
-  printf("Mixture %s with %i elem: kmat=%i, dens=%g\n", name, nlmat, kmat, dens);
-  for (Int_t j=0; j<nlmat; j++) printf("  Elem %i: z=%g  a=%g  w=%g\n",j,z[j],a[j],wmat[j]);
+  if (fDebug) {
+     printf("Mixture %s with %i elem: kmat=%i, dens=%g\n", name, nlmat, kmat, dens);
+     for (Int_t j=0; j<nlmat; j++) printf("  Elem %i: z=%g  a=%g  w=%g\n",j,z[j],a[j],wmat[j]);
+  }   
   gGeoManager->Mixture(name, a, z, dens, nlmat, wmat, kmat);
 }
 //_____________________________________________________________________________
@@ -344,7 +348,7 @@ Int_t TFlukaMCGeometry::GetMedium() const
    TGeoNode *node = gGeoManager->GetCurrentNode();
    if (!node) imed = gGeoManager->GetTopNode()->GetVolume()->GetMedium()->GetId();
    else       imed = node->GetVolume()->GetMedium()->GetId();
-   printf("GetMedium=%i\n", imed);
+   if (fDebug) printf("GetMedium=%i\n", imed);
    return imed;
 }
 
@@ -455,7 +459,7 @@ void TFlukaMCGeometry::Medium(Int_t& kmed, const char* name, Int_t nmat, Int_t i
 
   kmed = gGeoManager->GetListOfMedia()->GetSize()+1;
   gGeoManager->Medium(name,kmed,nmat, isvol, ifield, fieldm, tmaxfd, stemax,deemax, epsil, stmin);
-  printf("Medium %s: kmed=%i, nmat=%i, isvol=%i\n", name, kmed, nmat,isvol);
+  if (fDebug) printf("Medium %s: kmed=%i, nmat=%i, isvol=%i\n", name, kmed, nmat,isvol);
 }
 
 //_____________________________________________________________________________
@@ -476,7 +480,7 @@ void TFlukaMCGeometry::Matrix(Int_t& krot, Double_t thex, Double_t phix, Double_
 
   krot = gGeoManager->GetListOfMatrices()->GetEntriesFast();
   gGeoManager->Matrix(krot, thex, phix, they, phiy, thez, phiz);  
-  printf("Rotation %i defined\n", krot);
+  if (fDebug) printf("Rotation %i defined\n", krot);
 }
 
 //_____________________________________________________________________________
@@ -518,7 +522,7 @@ Int_t TFlukaMCGeometry::Gsvolu(const char *name, const char *shape, Int_t nmed,
   Vname(shape,vshape);
 
   TGeoVolume* vol = gGeoManager->Volume(vname, shape, nmed, upar, npar); 
-  printf("Volume %s: id=%i shape=%s, nmed=%i\n", vname, vol->GetNumber(), shape, nmed);
+  if (fDebug) printf("Volume %s: id=%i shape=%s, nmed=%i\n", vname, vol->GetNumber(), shape, nmed);
   return vol->GetNumber();
 } 
  
@@ -543,7 +547,7 @@ void  TFlukaMCGeometry::Gsdvn(const char *name, const char *mother, Int_t ndiv,
   Vname(mother,vmother);
 
   gGeoManager->Division(vname, vmother, iaxis, ndiv, 0, 0, 0, "n");
-  printf("Division %s: mother=%s iaxis=%i ndiv=%i\n", vname, vmother, iaxis, ndiv);
+  if (fDebug) printf("Division %s: mother=%s iaxis=%i ndiv=%i\n", vname, vmother, iaxis, ndiv);
 } 
  
 //_____________________________________________________________________________
@@ -661,7 +665,7 @@ void  TFlukaMCGeometry::Gspos(const char *name, Int_t nr, const char *mother, Do
   
   Double_t *upar=0;
   gGeoManager->Node(vname, nr, vmother, x, y, z, irot, isOnly, upar);
-  printf("Adding daughter %s to %s: cpy=%i irot=%i only=%s\n", vname,vmother,nr,irot,only.Data());
+  if (fDebug) printf("Adding daughter %s to %s: cpy=%i irot=%i only=%s\n", vname,vmother,nr,irot,only.Data());
 } 
  
 //_____________________________________________________________________________
@@ -699,7 +703,7 @@ void  TFlukaMCGeometry::Gsposp(const char *name, Int_t nr, const char *mother,
   Vname(mother,vmother);
 
   gGeoManager->Node(vname,nr,vmother, x,y,z,irot,isOnly,upar,np);
-  printf("Adding daughter(s) %s to %s: cpy=%i irot=%i only=%s\n", vname,vmother,nr,irot,only.Data());
+  if (fDebug) printf("Adding daughter(s) %s to %s: cpy=%i irot=%i only=%s\n", vname,vmother,nr,irot,only.Data());
 } 
  
 //_____________________________________________________________________________
@@ -714,7 +718,7 @@ Int_t TFlukaMCGeometry::VolId(const Text_t *name) const
      printf("VolId: Volume %s not found\n",name);
      return 0;
   }
-  printf("VolId for %s: %i\n", name, uid);
+  if (fDebug) printf("VolId for %s: %i\n", name, uid);
   return uid;     
 }
 
@@ -729,7 +733,7 @@ const char* TFlukaMCGeometry::VolName(Int_t id) const
      Error("VolName","volume with id=%d does not exist",id);
      return "NULL";
   }
-  printf("VolName for id=%i: %s\n", id, volume->GetName());
+  if (fDebug) printf("VolName for id=%i: %s\n", id, volume->GetName());
   return volume->GetName();
 }
 
@@ -756,7 +760,7 @@ Int_t TFlukaMCGeometry::VolId2Mate(Int_t id) const
   }
   TGeoMedium *med = volume->GetMedium();
   if (!med) return 0;
-  printf("VolId2Mate id=%i: idmed=%i\n", id, med->GetId());
+  if (fDebug) printf("VolId2Mate id=%i: idmed=%i\n", id, med->GetId());
   return med->GetId();
 }
 
@@ -768,7 +772,7 @@ Int_t TFlukaMCGeometry::CurrentVolID(Int_t& copyNo) const
   TGeoNode *node = gGeoManager->GetCurrentNode();
   copyNo = node->GetNumber();
   Int_t id = node->GetVolume()->GetNumber();
-  printf("CurrentVolId(cpy=%i) = %i\n", copyNo, id); 
+  if (fDebug) printf("CurrentVolId(cpy=%i) = %i\n", copyNo, id); 
   return id;
 }
 
@@ -782,7 +786,7 @@ Int_t TFlukaMCGeometry::CurrentVolOffID(Int_t off, Int_t& copyNo) const
   TGeoNode *node = gGeoManager->GetMother(off);
   if (!node) return 0;
   copyNo = node->GetNumber();
-  printf("CurrentVolOffId(off=%i,cpy=%i) = %i\n", off,copyNo,node->GetVolume()->GetNumber() ); 
+  if (fDebug) printf("CurrentVolOffId(off=%i,cpy=%i) = %i\n", off,copyNo,node->GetVolume()->GetNumber() ); 
   return node->GetVolume()->GetNumber();
 }
 // FLUKA specific
@@ -794,7 +798,7 @@ const char* TFlukaMCGeometry::CurrentVolName() const
   // Returns the current volume name
   //
   if (gGeoManager->IsOutside()) return 0;
-  printf("CurrentVolName : %s\n", gGeoManager->GetCurrentVolume()->GetName()); 
+  if (fDebug) printf("CurrentVolName : %s\n", gGeoManager->GetCurrentVolume()->GetName()); 
   return gGeoManager->GetCurrentVolume()->GetName();
 }
 //_____________________________________________________________________________
@@ -809,7 +813,7 @@ const char* TFlukaMCGeometry::CurrentVolOffName(Int_t off) const
   if (off==0) return CurrentVolName();
   TGeoNode *node = gGeoManager->GetMother(off);
   if (!node) return 0;
-  printf("CurrentVolOffName(off=%i) : %s\n", off,node->GetVolume()->GetName()); 
+  if (fDebug) printf("CurrentVolOffName(off=%i) : %s\n", off,node->GetVolume()->GetName()); 
   return node->GetVolume()->GetName();
 }
   
@@ -941,7 +945,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    char digit[3];
    Bool_t found = kFALSE;
    
-   printf("Creating materials and compounds\n");
+   if (fDebug) printf("Creating materials and compounds\n");
    for (i=0; i<nmater; i++) {
       mat = (TGeoMaterial*)matlist->At(i);
       if (mat->GetZ()<1E-1) {
@@ -1206,7 +1210,7 @@ void TFlukaMCGeometry::SetMreg(Int_t mreg)
       if (fNextLattice!=999999999) gGeoManager->CdNode(fNextLattice-1);
       return;
    }   
-   printf("ERROR: mreg=%i neither current nor next region\n", mreg);
+   if (fDebug) printf("ERROR: mreg=%i neither current nor next region\n", mreg);
 }
 
 //_____________________________________________________________________________
@@ -1262,7 +1266,7 @@ Int_t idnrwr(const Int_t & /*nreg*/, const Int_t & /*mlat*/)
 // card in fluka input), returns 1 if user wants Fluka always to 
 // use DNEAR (in this case, be sure that GEANT4 DNEAR is unique, 
 // coming from all directions!!!)
-   printf("========== Dummy IDNRWR\n");
+   if (mcgeom->IsDebugging()) printf("========== Dummy IDNRWR\n");
    return 0;
 }
 
@@ -1278,11 +1282,13 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 // particle and all variables that fluka G1 computes.
 
    // Initialize current point/direction
-   printf("========== Inside G1WR\n");
-   printf("   point/dir:(%14.9f, %14.9f, %14.9f, %g, %g, %g)\n", pSx,pSy,pSz,pV[0],pV[1],pV[2]);
+   if (mcgeom->IsDebugging()) {
+      printf("========== Inside G1WR\n");
+      printf("   point/dir:(%14.9f, %14.9f, %14.9f, %g, %g, %g)\n", pSx,pSy,pSz,pV[0],pV[1],pV[2]);
+   }   
    gGeoManager->SetCurrentPoint(pSx, pSy, pSz);
    gGeoManager->SetCurrentDirection(pV);
-   printf("   oldReg=%i  oldLttc=%i  pstep=%f\n",oldReg, oldLttc, propStep);
+   if (mcgeom->IsDebugging()) printf("   oldReg=%i  oldLttc=%i  pstep=%f\n",oldReg, oldLttc, propStep);
    if (oldLttc==999999999) printf("WOOPS - wrong old lattice\n");
    if (gGeoManager->IsOutside()) {
       gGeoManager->SetOutside(kFALSE);
@@ -1290,15 +1296,15 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    }   
    Int_t curLttc = gGeoManager->GetCurrentNodeId()+1;
    Int_t curreg = gGeoManager->GetCurrentVolume()->GetNumber();
-   printf("   curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
+   if (mcgeom->IsDebugging()) printf("   curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
    Bool_t regsame = (curreg==oldReg)?kTRUE:kFALSE;
-   if (!regsame) printf("   REGIONS DOES NOT MATCH\n");
+   if (!regsame && mcgeom->IsDebugging()) printf("   REGIONS DOES NOT MATCH\n");
    if (oldLttc != curLttc) {
-      printf("   HISTORIES DOES NOT MATCH\n");
+      if (mcgeom->IsDebugging()) printf("   HISTORIES DOES NOT MATCH\n");
       gGeoManager->CdNode(oldLttc-1);
       curLttc = gGeoManager->GetCurrentNodeId()+1;
       curreg  = gGeoManager->GetCurrentVolume()->GetNumber();
-      printf("   re-initialized point: curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
+      if (mcgeom->IsDebugging()) printf("   re-initialized point: curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
    }         
    lttcFlag = 0;
    sLt[lttcFlag] = 0.;   
@@ -1318,10 +1324,10 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    while (!done) {
       gGeoManager->FindNextBoundary(-propStep);
       snext = gGeoManager->GetStep();
-      printf("   FindNextBoundary(%g) snext=%g\n", propStep, snext);
+      if (mcgeom->IsDebugging()) printf("   FindNextBoundary(%g) snext=%g\n", propStep, snext);
       if (steptot == 0) {
          saf = gGeoManager->GetSafeDistance();
-         printf("   Safety: %g\n", saf);
+         if (mcgeom->IsDebugging()) printf("   Safety: %g\n", saf);
       }   
       sLt[lttcFlag] = propStep;
       jrLt[lttcFlag] = gGeoManager->GetCurrentNodeId()+1;     
@@ -1342,7 +1348,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
          for (i=0;i<3;i++) point[i]+=(snext+1E-6)*dir[i];
          gGeoManager->FindNode();
          istep = 0;
-         printf("   boundary: step made %g\n", snext);
+         if (mcgeom->IsDebugging()) printf("   boundary: step made %g\n", snext);
          while (gGeoManager->IsSameLocation() && steptot<propStep) {
             if (istep>1E3) {
                printf("Geometry error: could not cross boundary after extra 10 microns\n");
@@ -1367,7 +1373,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
          // !!!!!!!!!!
 
          while (newReg==oldReg && steptot<propStep) {
-            printf("   Entered SAME region... continue\n");
+            if (mcgeom->IsDebugging()) printf("   Entered SAME region... continue\n");
             pst = propStep-steptot;
             gGeoManager->FindNextBoundary(-pst);
             snext = gGeoManager->GetStep();
@@ -1385,7 +1391,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
                }
                newReg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();  
                newLttc = (gGeoManager->IsOutside())?999999999:gGeoManager->GetCurrentNodeId()+1;  
-               printf("Found newreg=%i, newLttc=%i, lttFlag is: %i\n", newReg, newLttc, lttcFlag);
+               if (mcgeom->IsDebugging()) printf("Found newreg=%i, newLttc=%i, lttFlag is: %i\n", newReg, newLttc, lttcFlag);
                sLt[lttcFlag-1] += snext; // correct step in old region
                sLt[lttcFlag] = propStep-snext;
                jrLt[lttcFlag] = newLttc;
@@ -1394,7 +1400,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
                if (newReg != oldReg) break; // lttcFlag=1
                lttcFlag++;
             } else {
-                printf("Not crossing next\n");
+                if (mcgeom->IsDebugging()) printf("Not crossing next\n");
                 lttcFlag--; //0
                 retStep=steptot;
                 sLt[lttcFlag] = retStep;
@@ -1405,18 +1411,22 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
          }
             
          lttcFlag++; //2
-         if (!gGeoManager->IsOutside()) {
-            printf("   ENTERED region %i, newLttc=%i in: %s\n", newReg,newLttc,gGeoManager->GetPath());
-         } else printf("   EXIT GEOMETRY: BLKHOLE reg=%i\n", newReg);
+         if (mcgeom->IsDebugging()) {
+            if (!gGeoManager->IsOutside()) {
+               printf("   ENTERED region %i, newLttc=%i in: %s\n", newReg,newLttc,gGeoManager->GetPath());
+            } else printf("   EXIT GEOMETRY: BLKHOLE reg=%i\n", newReg);
+         }   
       } 
       // no boundary within proposed step
       lttcFlag--;
       done = kTRUE;
    }   
-   printf("=> newReg=%i newLttc=%i lttcFlag=%i\n", newReg, newLttc, lttcFlag);
+   if (mcgeom->IsDebugging()) printf("=> newReg=%i newLttc=%i lttcFlag=%i\n", newReg, newLttc, lttcFlag);
    mcgeom->SetNextRegion(newReg, newLttc);
-   printf("=> snext=%g safe=%g\n", snext, saf);
-   for (Int_t i=0; i<lttcFlag+1; i++) printf("   jrLt[%i]=%i  sLt[%i]=%g\n", i,jrLt[i],i,sLt[i]);
+   if (mcgeom->IsDebugging()) {
+      printf("=> snext=%g safe=%g\n", snext, saf);
+      for (Int_t i=0; i<lttcFlag+1; i++) printf("   jrLt[%i]=%i  sLt[%i]=%g\n", i,jrLt[i],i,sLt[i]);
+   }   
    if (newLttc!=oldLttc) {
       if (gGeoManager->IsOutside()) {
          gGeoManager->SetOutside(kFALSE);
@@ -1424,25 +1434,25 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       }   
       gGeoManager->CdNode(oldLttc-1);
    }   
-   printf("<= G1WR (in: %s)\n", gGeoManager->GetPath());
+   if (mcgeom->IsDebugging()) printf("<= G1WR (in: %s)\n", gGeoManager->GetPath());
 }
 
 //_____________________________________________________________________________
 void g1rtwr()
 {
-   printf("========== Dummy G1RTWR\n");
+   if (mcgeom->IsDebugging()) printf("========== Dummy G1RTWR\n");
 } 
 
 //_____________________________________________________________________________
 void conhwr(Int_t & /*intHist*/, Int_t * /*incrCount*/)
 {
-   printf("========== Dummy CONHWR\n");
+   if (mcgeom->IsDebugging()) printf("========== Dummy CONHWR\n");
 }
 
 //_____________________________________________________________________________
 void inihwr(Int_t &intHist)
 {
-   printf("========== Inside INIHWR -> reinitializing history: %i\n", intHist);
+   if (mcgeom->IsDebugging()) printf("========== Inside INIHWR -> reinitializing history: %i\n", intHist);
    if (gGeoManager->IsOutside()) gGeoManager->CdTop();
    if (intHist<=0) {
 //      printf("=== wrong history number\n");
@@ -1450,8 +1460,10 @@ void inihwr(Int_t &intHist)
    }
    if (intHist==0) gGeoManager->CdTop();
    else gGeoManager->CdNode(intHist-1);
-   printf(" --- current path: %s\n", gGeoManager->GetPath());
-   printf("<= INIHWR\n");
+   if (mcgeom->IsDebugging()) {
+      printf(" --- current path: %s\n", gGeoManager->GetPath());
+      printf("<= INIHWR\n");
+   }   
 }
 
 //_____________________________________________________________________________
@@ -1461,9 +1473,9 @@ void  jomiwr(const Int_t & /*nge*/, const Int_t & /*lin*/, const Int_t & /*lou*/
 // Geometry initialization wrapper called by FLUKAM. Provides to FLUKA the
 // number of regions (volumes in TGeo)
    // build application geometry
-   printf("========== Inside JOMIWR\n");
+   if (mcgeom->IsDebugging()) printf("========== Inside JOMIWR\n");
    flukaReg = gGeoManager->GetListOfUVolumes()->GetEntriesFast();
-   printf("<= JOMIWR: last region=%i\n", flukaReg);
+   if (mcgeom->IsDebugging()) printf("<= JOMIWR: last region=%i\n", flukaReg);
 }   
 
 //_____________________________________________________________________________
@@ -1471,25 +1483,31 @@ void lkdbwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
             Double_t * /*pV*/, const Int_t &oldReg, const Int_t &oldLttc,
             Int_t &newReg, Int_t &flagErr, Int_t &newLttc)             
 {
-   printf("========== Inside LKDBWR (%f, %f, %f)\n",pSx, pSy, pSz);
-//   printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
-   printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   if (mcgeom->IsDebugging()) {
+      printf("========== Inside LKDBWR (%f, %f, %f)\n",pSx, pSy, pSz);
+//      printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
+      printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   }   
    TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
    if (gGeoManager->IsOutside()) {
-      printf("OUTSIDE\n");
       newReg = mcgeom->NofVolumes()+1;
 //      newLttc = gGeoManager->GetCurrentNodeId();
       newLttc = 999999999;
-      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
-      printf("<= LKMGWR\n");
+      if (mcgeom->IsDebugging()) {
+         printf("OUTSIDE\n");
+         printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+         printf("<= LKMGWR\n");
+      }   
       flagErr = newReg;
       return;
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
    flagErr = newReg;
-   printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
-   printf("<= LKDBWR\n");
+   if (mcgeom->IsDebugging()) {
+      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+      printf("<= LKDBWR\n");
+   }   
 }
 
 //_____________________________________________________________________________
@@ -1497,25 +1515,31 @@ void lkfxwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
             Double_t * /*pV*/, const Int_t &oldReg, const Int_t &oldLttc,
             Int_t &newReg, Int_t &flagErr, Int_t &newLttc)
 {
-   printf("========== Inside LKFXWR (%f, %f, %f)\n",pSx, pSy, pSz);
-//   printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
-   printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   if (mcgeom->IsDebugging()) {
+      printf("========== Inside LKFXWR (%f, %f, %f)\n",pSx, pSy, pSz);
+//      printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
+      printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   }   
    TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
    if (gGeoManager->IsOutside()) {
-      printf("OUTSIDE\n");
       newReg = mcgeom->NofVolumes()+1;
 //      newLttc = gGeoManager->GetCurrentNodeId();
       newLttc = 999999999;
-      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
-      printf("<= LKMGWR\n");
+      if (mcgeom->IsDebugging()) {
+         printf("OUTSIDE\n");
+         printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+         printf("<= LKMGWR\n");
+      }   
       flagErr = newReg;
       return;
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
    flagErr = newReg;
-   printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
-   printf("<= LKFXWR\n");
+   if (mcgeom->IsDebugging()) {
+      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+      printf("<= LKFXWR\n");
+   }   
 }
 
 //_____________________________________________________________________________
@@ -1523,25 +1547,31 @@ void lkmgwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
             Double_t * /*pV*/, const Int_t &oldReg, const Int_t &oldLttc,
 		      Int_t &flagErr, Int_t &newReg, Int_t &newLttc)
 {
-   printf("========== Inside LKMGWR (%f, %f, %f)\n",pSx, pSy, pSz);
-//   printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
-   printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   if (mcgeom->IsDebugging()) {
+      printf("========== Inside LKMGWR (%f, %f, %f)\n",pSx, pSy, pSz);
+//      printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
+      printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   }   
    TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
    if (gGeoManager->IsOutside()) {
-      printf("OUTSIDE\n");
       newReg = mcgeom->NofVolumes()+1;
 //      newLttc = gGeoManager->GetCurrentNodeId();
       newLttc = 999999999;
-      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
-      printf("<= LKMGWR\n");
+      if (mcgeom->IsDebugging()) {
+         printf("OUTSIDE\n");
+         printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+         printf("<= LKMGWR\n");
+      }   
       flagErr = newReg;
       return;
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
    flagErr = newReg;
-   printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
-   printf("<= LKMGWR\n");
+   if (mcgeom->IsDebugging()) {
+      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+      printf("<= LKMGWR\n");
+   }   
 }
 
 //_____________________________________________________________________________
@@ -1549,25 +1579,31 @@ void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
           Double_t * /*pV*/, const Int_t &oldReg, const Int_t &oldLttc,
 	       Int_t &newReg, Int_t &flagErr, Int_t &newLttc)
 {
-   printf("========== Inside LKWR (%f, %f, %f)\n",pSx, pSy, pSz);
-//   printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
-   printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   if (mcgeom->IsDebugging()) {
+      printf("========== Inside LKWR (%f, %f, %f)\n",pSx, pSy, pSz);
+//      printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
+      printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   }   
    TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
    if (gGeoManager->IsOutside()) {
-      printf("OUTSIDE\n");
       newReg = mcgeom->NofVolumes()+1;
 //      newLttc = gGeoManager->GetCurrentNodeId();
       newLttc = 999999999;
-      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
-      printf("<= LKMGWR\n");
+      if (mcgeom->IsDebugging()) {
+         printf("OUTSIDE\n");
+         printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+         printf("<= LKMGWR\n");
+      }   
       flagErr = newReg;
       return;
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
    flagErr = newReg;
-   printf("  out: newReg=%i newLttc=%i in %s\n", newReg, newLttc, gGeoManager->GetPath());
-   printf("<= LKWR\n");
+   if (mcgeom->IsDebugging()) {
+      printf("  out: newReg=%i newLttc=%i in %s\n", newReg, newLttc, gGeoManager->GetPath());
+      printf("<= LKWR\n");
+   }   
 }
 
 //_____________________________________________________________________________
@@ -1576,20 +1612,22 @@ void nrmlwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 	         Double_t *norml, const Int_t &oldReg, 
 	         const Int_t &newReg, Int_t &flagErr)
 {
-   printf("========== Inside NRMLWR (%g, %g, %g, %g, %g, %g)\n", pSx,pSy,pSz,pVx,pVy,pVz);
-   printf("   oldReg=%i, newReg=%i\n", oldReg,newReg);
+   if (mcgeom->IsDebugging()) {
+      printf("========== Inside NRMLWR (%g, %g, %g, %g, %g, %g)\n", pSx,pSy,pSz,pVx,pVy,pVz);
+      printf("   oldReg=%i, newReg=%i\n", oldReg,newReg);
+   }   
    Int_t curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
    Int_t curLttc = gGeoManager->GetCurrentNodeId()+1;
-   printf("   curReg=%i, curLttc=%i in: %s\n", curreg, curLttc, gGeoManager->GetPath());
+   if (mcgeom->IsDebugging()) printf("   curReg=%i, curLttc=%i in: %s\n", curreg, curLttc, gGeoManager->GetPath());
    Bool_t regsame = (curreg==oldReg)?kTRUE:kFALSE;
    gGeoManager->SetCurrentPoint(pSx, pSy, pSz);
    gGeoManager->SetCurrentDirection(pVx,pVy,pVz);
    if (!regsame) {
-      printf("   REGIONS DOEN NOT MATCH\n");
+      if (mcgeom->IsDebugging()) printf("   REGIONS DOEN NOT MATCH\n");
       gGeoManager->FindNode();
       curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
       curLttc = gGeoManager->GetCurrentNodeId()+1;
-      printf("   re-initialized point: curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
+      if (mcgeom->IsDebugging()) printf("   re-initialized point: curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
    }
    Double_t *dnorm = gGeoManager->FindNormalFast();
    flagErr = 0;
@@ -1603,18 +1641,20 @@ void nrmlwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    norml[0] = -dnorm[0];   
    norml[1] = -dnorm[1];   
    norml[2] = -dnorm[2]; 
-   printf("   normal to boundary: (%g, %g, %g)\n", norml[0], norml[1], norml[2]);  
+   if (mcgeom->IsDebugging()) printf("   normal to boundary: (%g, %g, %g)\n", norml[0], norml[1], norml[2]);  
    curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
    curLttc = gGeoManager->GetCurrentNodeId()+1;
-   printf("   final location: curReg=%i, curLttc=%i in %s\n", curreg,curLttc,gGeoManager->GetPath());
-   printf("<= NRMLWR\n");
+   if (mcgeom->IsDebugging()) {
+      printf("   final location: curReg=%i, curLttc=%i in %s\n", curreg,curLttc,gGeoManager->GetPath());
+      printf("<= NRMLWR\n");
+   }   
 }
 
 //_____________________________________________________________________________
 void rgrpwr(const Int_t & /*flukaReg*/, const Int_t & /*ptrLttc*/, Int_t & /*g4Reg*/,
             Int_t * /*indMother*/, Int_t * /*repMother*/, Int_t & /*depthFluka*/)
 {
-   printf("=> Dummy RGRPWR\n");
+   if (mcgeom->IsDebugging()) printf("=> Dummy RGRPWR\n");
 }
 
 //_____________________________________________________________________________
@@ -1633,10 +1673,10 @@ Int_t isvhwr(const Int_t &check, const Int_t & intHist)
 
 // For TGeo, just return the current node ID. No copy need to be made.
 
-   printf("=> Inside ISVHWR\n");
+   if (mcgeom->IsDebugging()) printf("=> Inside ISVHWR\n");
    if (check<0) return intHist;
    Int_t histInt = gGeoManager->GetCurrentNodeId()+1;
-   printf("<= ISVHWR: history is: %i in: %s\n", histInt, gGeoManager->GetPath());
+   if (mcgeom->IsDebugging()) printf("<= ISVHWR: history is: %i in: %s\n", histInt, gGeoManager->GetPath());
    return histInt;
 }
 

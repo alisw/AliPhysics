@@ -65,6 +65,8 @@ void stupre()
 
 // Get the pointer to the VMC
   TFluka* fluka =  (TFluka*) gMC;
+  Int_t verbosityLevel = fluka->GetVerbosityLevel();
+  Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
   fluka->SetTrackIsNew(kTRUE);
 //  TVirtualMC* fluka = TFluka::GetMC();
 // Get the stack produced from the generator
@@ -116,7 +118,7 @@ void stupre()
         cppstack->PushTrack(done, parent, pdg,
 			   px, py, pz, e, vx, vy, vz, tof,
 			   polx, poly, polz, mech, ntr, weight, is);
-	cout << endl << " !!! stupre (PAIR, ..) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
+	if (debug) cout << endl << " !!! stupre (PAIR, ..) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
 
 	EMFSTK.iespak[kp][mkbmx2-1] = ntr;
     } // end of lpairp, lphoel, lannfl, lannrs
@@ -129,7 +131,7 @@ void stupre()
 	    cppstack->PushTrack(done, parent, pdg,
 			       px, py, pz, e, vx, vy, vz, tof,
 			       polx, poly, polz, mech, ntr, weight, is);
-	    cout << endl << " !!! stupre (COMPTON) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
+	    if (debug) cout << endl << " !!! stupre (COMPTON) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
 	    EMFSTK.iespak[kp][mkbmx2-1] = ntr;
 	}
     } // end of lcmptn
@@ -141,7 +143,7 @@ void stupre()
 	    cppstack->PushTrack(done, parent, pdg,
 			       px, py, pz, e, vx, vy, vz, tof,
 			       polx, poly, polz, mech, ntr, weight, is);
-	    cout << endl << " !!! stupre (BREMS) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
+	    if (debug) cout << endl << " !!! stupre (BREMS) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
 	    EMFSTK.iespak[kp][mkbmx2-1] = ntr;
 	}
     } // end of lbrmsp
@@ -155,7 +157,7 @@ void stupre()
 				   px, py, pz, e, vx, vy, vz, tof,
 				   polx, poly, polz, mech, ntr, weight, is);
 		EMFSTK.iespak[kp][mkbmx2-1] = ntr;
-	    cout << endl << " !!! stupre (BHABA) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
+	   if (debug) cout << endl << " !!! stupre (BHABA) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
 	    } // end of Bhabha
 	} // lbhabh == 1
 	
@@ -166,7 +168,7 @@ void stupre()
 	    cppstack->PushTrack(done, parent, pdg,
 			       px, py, pz, e, vx, vy, vz, tof,
 			       polx, poly, polz, mech, ntr, weight, is);
-	    cout << endl << " !!! stupre (Moller) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
+	    if (debug) cout << endl << " !!! stupre (Moller) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
 	    EMFSTK.iespak[kp][mkbmx2-1] = ntr;
 	} // end of Delta ray
     } // end of ldltry

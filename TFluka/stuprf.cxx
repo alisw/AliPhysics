@@ -61,6 +61,8 @@ extern "C" {
  
 // Get the pointer to the VMC
   TFluka* fluka =  (TFluka*) gMC;
+  Int_t verbosityLevel = fluka->GetVerbosityLevel();
+  Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
   fluka->SetTrackIsNew(kTRUE);
 //  TVirtualMC* fluka = TFluka::GetMC();
 // Get the stack produced from the generator
@@ -95,19 +97,19 @@ extern "C" {
     
     if (EVTFLG.ldecay == 1) {
 	mech = kPDecay;
-	cout << endl << "Decay" << endl;
+	if (debug) cout << endl << "Decay" << endl;
 	
     } else if (EVTFLG.ldltry == 1) {
 	mech = kPDeltaRay;
-	cout << endl << "Delta Ray" << endl;
+	if (debug) cout << endl << "Delta Ray" << endl;
 	
     } else if (EVTFLG.lpairp == 1) {
 	mech = kPPair;
-	cout << endl << "Pair Production" << endl;
+	if (debug) cout << endl << "Pair Production" << endl;
 	
     } else if (EVTFLG.lbrmsp == 1) {
 	mech = kPBrem;
-	cout << endl << "Bremsstrahlung" << endl;
+	if (debug) cout << endl << "Bremsstrahlung" << endl;
 	
     }
     
@@ -122,7 +124,7 @@ extern "C" {
 		       vx, vy, vz, tof,
 		       polx, poly, polz,
 		       mech, ntr, weight, is);
-    cout << endl << " !!! stuprf: ntr=" << ntr << "pdg " << pdg << " parent=" << parent << "numsec " 
+    if (debug) cout << endl << " !!! stuprf: ntr=" << ntr << "pdg " << pdg << " parent=" << parent << "numsec " 
 	 << numsec << "npprmr " << npprmr << endl;
 //
 //  Save current track number

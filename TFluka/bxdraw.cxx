@@ -24,15 +24,17 @@ void bxdraw(Int_t& icode, Int_t& mreg, Int_t& newreg,
     fluka->SetXsco(xsco);
     fluka->SetYsco(ysco);
     fluka->SetZsco(zsco);
+    Int_t verbosityLevel = fluka->GetVerbosityLevel();
+    Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
 //
 // Double step for boundary crossing
 //
-    printf("bxdraw (ex) \n");
+    if (debug) printf("bxdraw (ex) \n");
     fluka->SetTrackIsExiting();
     fluka->SetCaller(12);
     fluka->SetMreg(mreg);
     (TVirtualMCApplication::Instance())->Stepping(); 
-    printf("bxdraw (en) \n");
+    if (debug) printf("bxdraw (en) \n");
     fluka->SetCaller(11);
     fluka->SetTrackIsEntering();
     fluka->SetMreg(newreg);

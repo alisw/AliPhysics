@@ -1,5 +1,3 @@
-#define METHODDEBUG
-
 // Fortran 
 #include "TCallf77.h"
 
@@ -76,23 +74,24 @@ extern "C" {
    *----------------------------------------------------------------------*/
 
   void source(Int_t& nomore) {
-#ifdef METHODDEBUG
+    // Get the pointer to TFluka
+    TFluka* fluka = (TFluka*)gMC;
+    Int_t verbosityLevel = fluka->GetVerbosityLevel();
+    Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
+    if (debug) {
       cout << "==> source(" << nomore << ")" << endl;
-#endif
-
       cout << "\t* EPISOR.lsouit = " << (EPISOR.lsouit?'T':'F') << endl;
+    }  
 
-      static Bool_t lfirst = true;
-      static Bool_t particleIsPrimary = true;
-      static Bool_t lastParticleWasPrimary = true;
+    static Bool_t lfirst = true;
+    static Bool_t particleIsPrimary = true;
+    static Bool_t lastParticleWasPrimary = true;
       
       /*  +-------------------------------------------------------------------*
        *    First call initializations for FLUKA:                             */
       
 
     nomore = 0;
-    // Get the pointer to the VMC
-    TVirtualMC* fluka = TFluka::GetMC();
     // Get the stack 
     TVirtualMCStack* cppstack = fluka->GetStack();
     TParticle* particle;
@@ -100,7 +99,7 @@ extern "C" {
     Int_t  nprim  = cppstack->GetNprimary();
 //  Get the next particle from the stack
     particle  = cppstack->PopNextTrack(itrack);
-    ((TFluka*)fluka)->SetTrackIsNew(kTRUE);
+    fluka->SetTrackIsNew(kTRUE);
 
 //  Is this a secondary not handled by Fluka, i.e. a particle added by user action ?
     lastParticleWasPrimary = particleIsPrimary;
@@ -133,11 +132,11 @@ extern "C" {
     if (itrack<0) {
       nomore = 1;
       EPISOR.lsouit = false;
-      cout << "\t* EPISOR.lsouit = " << (EPISOR.lsouit?'T':'F') << endl;
-      cout << "\t* No more particles. Exiting..." << endl;
-#ifdef METHODDEBUG
-      cout << "<== source(" << nomore << ")" << endl;
-#endif
+      if (debug) {
+         cout << "\t* EPISOR.lsouit = " << (EPISOR.lsouit?'T':'F') << endl;
+         cout << "\t* No more particles. Exiting..." << endl;
+         cout << "<== source(" << nomore << ")" << endl;
+      }   
       return;
     }
     
@@ -148,15 +147,17 @@ extern "C" {
     
     TVector3 polarisation;
     particle->GetPolarisation(polarisation);
-    cout << "\t* Particle " << itrack << " retrieved..." << endl;
-    cout << "\t\t+ Name = " << particle->GetName() << endl;
-    cout << "\t\t+ PDG/Fluka code = " << pdg 
-	 << " / " << fluka->IdFromPDG(pdg) << endl;
-    cout << "\t\t+ P = (" 
-	 << particle->Px() << " , "
-	 << particle->Py() << " , "
-	 << particle->Pz() << " ) --> "
-	 << particle->P() << " GeV" << endl;
+    if (debug) {
+       cout << "\t* Particle " << itrack << " retrieved..." << endl;
+       cout << "\t\t+ Name = " << particle->GetName() << endl;
+       cout << "\t\t+ PDG/Fluka code = " << pdg 
+	    << " / " << fluka->IdFromPDG(pdg) << endl;
+       cout << "\t\t+ P = (" 
+	    << particle->Px() << " , "
+	    << particle->Py() << " , "
+	    << particle->Pz() << " ) --> "
+	    << particle->P() << " GeV" << endl;
+    }   
     /* Lstack is the stack counter: of course any time source is called it
      * must be =0
      */
@@ -295,9 +296,6 @@ extern "C" {
     }
     
 //
-
-#ifdef METHODDEBUG
-    cout << "<== source(" << nomore << ")" << endl;
-#endif
+    if (debug) cout << "<== source(" << nomore << ")" << endl;
   }
 }
