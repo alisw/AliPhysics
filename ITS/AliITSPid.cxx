@@ -35,7 +35,6 @@ Float_t AliITSPid::qtrm(Int_t track)
     return (q(6));
 }
 //-----------------------------------------------------------
-inline
 Int_t	AliITSPid::wpik(Int_t nc,Float_t q)
 {
        return pion();   
@@ -60,7 +59,6 @@ Int_t	AliITSPid::wpik(Int_t nc,Float_t q)
     return pion();    
 }
 //-----------------------------------------------------------
-inline
 Int_t	AliITSPid::wpikp(Int_t nc,Float_t q)
 {
        return pion();   
