@@ -21,7 +21,7 @@ class AliSTART : public AliDetector {
 public:
    AliSTART();
    AliSTART(const char *name, const char *title);
-   virtual       ~AliSTART() {}
+   virtual       ~AliSTART();
    virtual void   AddHit(Int_t track, Int_t *vol, Float_t *hits);
    virtual void   AddDigit(Int_t *tracks, Int_t *digits);
    virtual void   BuildGeometry();

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/01/01 13:10:42  hristov
+Local definition of digits removed
+
 Revision 1.14  2000/12/22 16:17:15  hristov
 Updated  START code from Alla
 
@@ -120,6 +123,14 @@ AliSTART::AliSTART(const char *name, const char *title)
   fIshunt     =  1;
   fIdSens   =  0;
   SetMarkerColor(kRed);
+}
+
+//_____________________________________________________________________________
+AliSTART::~AliSTART() {
+  if (fHits) {
+    fHits->Delete();
+    delete fHits;
+  }
 }
  
 //_____________________________________________________________________________
