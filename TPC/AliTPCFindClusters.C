@@ -68,8 +68,6 @@ Int_t AliTPCFindClusters(Int_t n=1) {
 
    out->Close();
 
-   delete dig; //Thanks to Mariana Bondila
-
    in->Close();
 
    return 0;
