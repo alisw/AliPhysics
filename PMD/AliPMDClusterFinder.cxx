@@ -50,25 +50,35 @@
 
 ClassImp(AliPMDClusterFinder)
 
-AliPMDClusterFinder::AliPMDClusterFinder()
+AliPMDClusterFinder::AliPMDClusterFinder():
+  fRunLoader(0),
+  fPMDLoader(0),
+  fTreeD(0),
+  fTreeR(0),
+  fDigits(0),
+  fRecpoints(new TClonesArray("AliPMDrecpoint1", 1000)),
+  fNpoint(0),
+  fDebug(0),
+  fEcut(0.)
 {
 //
 // Default Constructor
 //
-  if (!fRecpoints) fRecpoints = new TClonesArray("AliPMDrecpoint1", 1000);  
-  fNpoint = 0;
-
-  fDebug = 0;
-  fEcut  = 0.;
-
 }
+// ------------------------------------------------------------------------- //
 AliPMDClusterFinder::~AliPMDClusterFinder()
 {
   // Destructor
-  delete fRecpoints;
+  if (fRecpoints)
+    {
+      fRecpoints->Delete();
+      delete fRecpoints;
+      fRecpoints=0;
+    }
 }
+// ------------------------------------------------------------------------- //
 
-void AliPMDClusterFinder::OpengAliceFile(Char_t *file, Option_t *option)
+void AliPMDClusterFinder::OpengAliceFile(const Char_t *file, Option_t *option)
 {
   // Loads galice.root file and corresponding header, kinematics
   // hits and sdigits or digits depending on the option
@@ -108,6 +118,7 @@ void AliPMDClusterFinder::OpengAliceFile(Char_t *file, Option_t *option)
       fPMDLoader->LoadRecPoints("recreate");
     }
 }
+// ------------------------------------------------------------------------- //
 
 void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 {
@@ -117,9 +128,9 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   Int_t    det = 0,smn = 0;
   Int_t    xpos,ypos;
   Float_t  adc;
-  Int_t    isup;
+  Int_t    ismn;
   Int_t    idet;
-  Float_t  clusdata[7];
+  Float_t  clusdata[5];
 
   TObjArray *pmdcont = new TObjArray();
   AliPMDcluster  *pmdcl  = new AliPMDcluster;
@@ -171,25 +182,23 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	}
 
       idet = det;
-      isup = smn;
-      pmdclust->DoClust(fCellADC,pmdcont);
+      ismn = smn;
+      pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
       
       Int_t nentries1 = pmdcont->GetEntries();
       cout << " nentries1 = " << nentries1 << endl;
       for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
 	{
-	  clusdata[0] = (Float_t) idet;
-	  clusdata[1] = (Float_t) isup;
-	      
 	  pmdcl = (AliPMDcluster*)pmdcont->UncheckedAt(ient1);
-	      
-	  clusdata[2] = pmdcl->GetClusX();
-	  clusdata[3] = pmdcl->GetClusY();
-	  clusdata[4] = pmdcl->GetClusADC();
-	  clusdata[5] = pmdcl->GetClusCells();
-	  clusdata[6] = pmdcl->GetClusRadius();
+	  idet        = pmdcl->GetDetector();
+	  ismn        = pmdcl->GetSMN();
+	  clusdata[0] = pmdcl->GetClusX();
+	  clusdata[1] = pmdcl->GetClusY();
+	  clusdata[2] = pmdcl->GetClusADC();
+	  clusdata[3] = pmdcl->GetClusCells();
+	  clusdata[4] = pmdcl->GetClusRadius();
 	  
-	  AddRecPoint(clusdata);
+	  AddRecPoint(idet,ismn,clusdata);
 	}
       pmdcont->Clear();
       
@@ -208,26 +217,28 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
     
   //  cout << " ***** End::Digits2RecPoints *****" << endl;
 }
-
+// ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::SetCellEdepCut(Float_t ecut)
 {
   fEcut = ecut;
 }
+// ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::SetDebug(Int_t idebug)
 {
   fDebug = idebug;
 }
-
-void AliPMDClusterFinder::AddRecPoint(Float_t *clusdata)
+// ------------------------------------------------------------------------- //
+void AliPMDClusterFinder::AddRecPoint(Int_t idet,Int_t ismn,Float_t *clusdata)
 {
   // Add Reconstructed points
   //
   TClonesArray &lrecpoints = *fRecpoints;
   AliPMDrecpoint1 *newrecpoint;
-  newrecpoint = new AliPMDrecpoint1(clusdata);
+  newrecpoint = new AliPMDrecpoint1(idet, ismn, clusdata);
   new(lrecpoints[fNpoint++]) AliPMDrecpoint1(newrecpoint);
   delete newrecpoint;
 }
+// ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::ResetCellADC()
 {
   // Reset the individual cell ADC value to zero
@@ -240,6 +251,7 @@ void AliPMDClusterFinder::ResetCellADC()
 	}
     }
 }
+// ------------------------------------------------------------------------- //
 
 void AliPMDClusterFinder::ResetRecpoint()
 {
@@ -247,6 +259,7 @@ void AliPMDClusterFinder::ResetRecpoint()
   fNpoint = 0;
   if (fRecpoints) fRecpoints->Clear();
 }
+// ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::UnLoad(Option_t *option)
 {
   // Unload all the *.root files
@@ -261,3 +274,4 @@ void AliPMDClusterFinder::UnLoad(Option_t *option)
       fPMDLoader->UnloadRecPoints();
     }
 }
+// ------------------------------------------------------------------------- //

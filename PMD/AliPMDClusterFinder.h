@@ -37,12 +37,12 @@ class AliPMDClusterFinder
   AliPMDClusterFinder();
   virtual ~AliPMDClusterFinder();
 
-  void OpengAliceFile(char * file, Option_t * option);
+  void OpengAliceFile(const char * file, Option_t * option);
 
   void Digits2RecPoints(Int_t ievt);
   void SetCellEdepCut(Float_t ecut);
   void SetDebug(Int_t idebug);
-  void AddRecPoint(Float_t * clusdata);
+  void AddRecPoint(Int_t idet, Int_t ismn, Float_t * clusdata);
   void ResetCellADC();
   void ResetRecpoint();
   void UnLoad(Option_t * option);
