@@ -8,21 +8,14 @@ ClassImp(AliRICHParam)
 // RICH main parameters manipulator
 //__________________________________________________________________________________________________
 AliRICHParam::AliRICHParam():
-fNpadX(0),
-fNpadY(0),
+fNpadsX(0),fNpadsY(0),fNpadsXsector(0),fNpadsYsector(0),
 fDeadZone(0),
-fPadSizeX(0),
-fPadSizeY(0),
-fSectorSizeX(0),
-fSectorSizeY(0),
+fPadSizeX(0),fPadSizeY(0),
+fSectorSizeX(0),fSectorSizeY(0),
 fWirePitch(0),
-fCurrentPadX(0),
-fCurrentPadY(0),
-fCurrentWire(0),
+fCurrentPadX(0),fCurrentPadY(0),fCurrentWire(0),
 fSizeZ(0),
-fAngleRot(0),
-fAngleYZ(0),
-fAngleXY(0),
+fAngleRot(0),fAngleYZ(0),fAngleXY(0),
 fOffset(0),
 fGapThickness(0),
 fProximityGapThickness(0),
@@ -96,70 +89,48 @@ fVoltage(0)
 //__________________________________________________________________________________________________
 void AliRICHParam::Recalc()
 {//recalculate  
-  fPcSizeX=Nx()*fPadSizeX+2*fDeadZone;
-  fPcSizeY=Ny()*fPadSizeY+fDeadZone;
+  fNpadsXsector=NpadsX()/3;  fNpadsYsector=NpadsY()/2;
+  fPcSizeX=NpadsX()*fPadSizeX+2*fDeadZone;
+  fPcSizeY=NpadsY()*fPadSizeY+fDeadZone;
   fSectorSizeX=(fPcSizeX-2*fDeadZone)/3;
   fSectorSizeY=(fPcSizeY-fDeadZone)/2;  
 }//void AliRICHParam::Recalc()
 //__________________________________________________________________________________________________
-Int_t AliRICHParam::Sector(Float_t x, Float_t y)const
-{//Calculate in which sector is the hit    
-  if(TMath::Abs(x)>fPcSizeX/2 || TMath::Abs(y)>fPcSizeY/2){
-    Error("Sector","given position is out of active PC area");
-    return kBad;
-  }  
+Int_t AliRICHParam::Sector(Float_t &x, Float_t &y)const
+{//Determines sector for a given hit (x,y) and trasform this point to the local system of that sector.
+  
   Int_t sector=kBad;  
-  if(x<=-fSectorSizeX/2-fDeadZone)            sector=1;
-  if(x>=-fSectorSizeX/2 && x<=fSectorSizeX/2) sector=2;
-  if(x>= fSectorSizeX/2+fDeadZone)            sector=3;  
-  if(y>= fDeadZone/2)
-    return sector;
-  else if(y<=-fDeadZone/2)      
-    return -sector;
-  else
-    return kBad;
+  if(x<=-fSectorSizeX/2-fDeadZone&&x>=-fPcSizeX/2)     {sector=1;x+=fPcSizeX/2;}
+  else if(x>=-fSectorSizeX/2 && x<=fSectorSizeX/2)     {sector=2;x+=fSectorSizeX/2;}
+  else if(x>= fSectorSizeX/2+fDeadZone&&x<=fPcSizeX/2) {sector=3;x-=fSectorSizeX/2+fDeadZone;}
+  else if(x<-fPcSizeX/2||x>fPcSizeX/2)                 {Error("Sector","given x position is out of active PC area");return kBad;}
+  else                                                 {return kBad;} //in dead zone
+
+  if(y>=-fPcSizeY/2&&y<= -fDeadZone/2)                {y+=fPcSizeY/2;  return -sector;}
+  else if(y>-fDeadZone/2&&y<fDeadZone/2)              {return kBad;} //in dead zone
+  else if(y>=fDeadZone/2&&y<=fPcSizeY/2)              {y-=fDeadZone/2; return  sector;}
+  else                                                {Error("Sector","given y position is out of active PC area");return kBad;}
 }//Int_t AliRICHParam::Sector(Float_t x, Float_t y)
 //__________________________________________________________________________________________________
-Int_t AliRICHParam::L2P(Float_t x, Float_t y, Int_t &iPadX, Int_t &iPadY)const
-{//returns pad numbers (iPadX,iPadY) for given point in local coordinates (x,y)
-//
-// Please check origin of pad numbering !!!
-  iPadX=kBad;
-  iPadY=kBad;
+Int_t AliRICHParam::L2P(Float_t x, Float_t y, Int_t &padx, Int_t &pady)const
+{//returns pad numbers (iPadX,iPadY) for given point in local coordinates (x,y) 
+ //count starts in lower left corner from 1,1 to 144,180
+  
+  padx=pady=kBad;
   Int_t sector=Sector(x,y);
-  switch(sector){
-    case -3:
-      iPadX = Int_t ((x-fDeadZone)/fPadSizeX);
-      iPadY = Int_t ((y+fDeadZone/2)/fPadSizeY)-1;
-     break;
-    case 3:
-      iPadX = Int_t ((x-fDeadZone)/fPadSizeX);
-      iPadY = Int_t ((y-fDeadZone/2)/fPadSizeY);
-     break;
-    case -2:
-      iPadX = (x>=0)? iPadX = Int_t (x/fPadSizeX) : iPadX = Int_t (x/fPadSizeX)-1;
-      iPadY = Int_t ((y+fDeadZone/2)/fPadSizeY)-1;
-     break;
-    case 2:
-      iPadX = (x>=0)? iPadX = Int_t (x/fPadSizeX) : iPadX = Int_t (x/fPadSizeX)-1;
-      iPadY = Int_t ((y-fDeadZone/2)/fPadSizeY);
-     break;
-    case -1:
-      iPadX = Int_t ((x+fDeadZone)/fPadSizeX)-1;
-      iPadY = Int_t ((y+fDeadZone/2)/fPadSizeY)-1;
-     break;
-    case 1:
-      iPadX = Int_t ((x+fDeadZone)/fPadSizeX)-1;
-      iPadY = Int_t ((y-fDeadZone/2)/fPadSizeY);
-     break;
-  }//switch  
+  if(sector==kBad) return sector;
+  
+  padx=Int_t(x/fPadSizeX)+1; 
+  if(padx>fNpadsXsector)          padx=fNpadsXsector;
+  if(sector==2||sector==-2)       padx+=fNpadsXsector;
+  else if(sector==3||sector==-3)  padx+=fNpadsXsector*2;
+  
+  pady=Int_t(y/fPadSizeY)+1;
+  if(pady>fNpadsYsector)          padx=fNpadsYsector;
+  if(sector>0)                    pady+=fNpadsYsector;    
 
-  if(iPadY> Ny()) iPadY= Ny();
-  if(iPadY<-Ny()) iPadY=-Ny();
-  if(iPadX> Nx()) iPadX= Nx();
-  if(iPadX<-Nx()) iPadX=-Nx();
   return sector;
-}//void AliRICHParam::L2P(Float_t x, Float_t y, Int_t &iPadX, Int_t &iPadY)
+}//void AliRICHParam::L2P(Float_t x, Float_t y, Int_t &padx, Int_t &pady)
 //__________________________________________________________________________________________________
 Float_t AliRICHParam::Gain(Float_t y)
 {//Calculates the gain
@@ -174,14 +145,19 @@ Float_t AliRICHParam::Gain(Float_t y)
 Float_t AliRICHParam::TotalCharge(Int_t iPID,Float_t eloss,Float_t y)
 {//Get number of electrons and return charge
     
-  if(iPID==kCerenkov||iPID==kFeedback)
+  if(iPID>50000)//it's photon no more then 1 electron after photoelectron conversion
     return Gain(y);
   else{  
     Int_t iNelectrons=Int_t(eloss/fEIonisation);if(iNelectrons==0) iNelectrons=1;
     Float_t charge=0;
     for(Int_t i=1;i<=iNelectrons;i++)
-      charge-=Gain(y);
+      charge+=Gain(y);
     return charge;
   }
 }//Float_t AliRICHParam::TotalCharge(Int_t iPID,Float_t eloss, Float_t y)
 //__________________________________________________________________________________________________
+void AliRICHParam::FirstPad(Float_t x,Float_t y)
+{
+  Int_t padx,pady;
+  L2P(x,y,padx,pady);
+}//void AliRICHParam::FirstPad(Float_t x,Float_t y)

@@ -1,4 +1,74 @@
-void SDigits2Digits()
+void Spec2D()
+{
+  Info("Spec2D","Start.");    
+  
+  delete gAlice;
+  
+  AliRunDigitizer *pManager = new AliRunDigitizer(1,1);
+  pManager->SetInputStream(0,"galice.root");
+  new AliRICHDigitizer(pManager);
+  pManager->Exec("deb");
+  Info("Spec2D","Stop.");
+}
+
+void Spec2Sd()
+{
+  Info("Spec2Sd","Start.");
+  
+  rl->LoadHits(); rl->MakeTree("S");  r->MakeBranch("S");//from to
+  
+  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
+    al->GetEvent(iEventN);
+
+    
+    for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
+      rl->TreeH()->GetEntry(iPrimN);
+      for(Int_t i=0;i<r->Specials()->GetEntries();i++){//specials loop          
+        Int_t padx= ((AliRICHSDigit*)r->Specials()->At(i))->PadX();
+        Int_t pady= ((AliRICHSDigit*)r->Specials()->At(i))->PadY();
+        Int_t qdc=  ((AliRICHSDigit*)r->Specials()->At(i))->QPad();
+        Int_t track=((AliRICHSDigit*)r->Specials()->At(i))->HitNumber();
+        r->AddSdigit(1,padx+r->Param()->NpadsX()/2,pady+r->Param()->NpadsY()/2,qdc,track);
+      }//specials loop
+    }//prims loop
+    rl->TreeS()->Fill();
+    rl->WriteSDigits("OVERWRITE");
+    r->ResetSdigits();    r->ResetSpecials();
+  }//events loop  
+    rl->UnloadHits();     rl->UnloadSDigits();  
+  Info("Spec2Sd","Stop.");    
+}
+
+
+void H2Sd()
+{
+  Info("H2Sd","Start.");
+  
+  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
+    al->GetEvent(iEventN);
+  
+    if(!rl->TreeH()) rl->LoadHits();//from
+    if(!rl->TreeS()) rl->MakeTree("S");    r->MakeBranch("S");//to
+    
+
+    for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
+      rl->TreeH()->GetEntry(iPrimN);
+      for(Int_t iHitN=0;iHitN<r->Hits()->GetEntries();iHitN++){//hits loop  
+        AliRICHhit *pHit=r->Hits()->At(iHitN);
+        r->Param()->G2Px
+        r->AddSdigit(pHit->C(),padx+r->Param()->NpadsX()/2,pady+r->Param()->NpadsY()/2,qdc,track);
+      }
+    }
+    rl->TreeS()->Fill();
+    rl->WriteSDigits("OVERWRITE");
+  }//events loop
+  
+  rl->UnloadHits();
+  rl->UnloadSDigits();  
+  Info("H2Sd","Stop.");  
+}
+
+void Sd2D()
 {
   rl->LoadSDigits();
   rl->MakeTree("D");r->MakeBranch("D");
@@ -17,7 +87,7 @@ void SDigits2Digits()
     if(pSdig->Id()==id){//still the same pad
       end++;
     }else{//new pad, add the pevious one
-      if(id!=kBad) r->AddDigits(chamber,x,y,qdc,tr[0],tr[1],tr[2]);//cm-xpad-ypad-qdc-tr1-2-3
+      if(id!=kBad) r->AddDigit(chamber,x,y,qdc,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
       chamber=pSdig->C();x=pSdig->X();y=pSdig->Y();qdc=pSdig->Qdc();tr[0]=pSdig->T(0);id=pSdig->Id();
       start=i;
     }
@@ -35,34 +105,44 @@ void SDigits2Digits()
 void Show3()
 {  
   cout<<endl;
-  al->LoadHeader();
-  al->LoadKinematics();
-  rl->LoadHits();
+  al->LoadHeader();  al->LoadKinematics();
   
-  for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events loop
-    Int_t iNparticles=gAlice->GetEvent(iEventN);
+  rl->LoadHits();  Bool_t isSdigits=!rl->LoadSDigits();  Bool_t isDigits=!rl->LoadDigits();//loaders
+  
+  cout<<endl;  cout<<endl;  
+  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
+    Int_t iNparticles=a->GetEvent(iEventN);
     Int_t iNprims=rl->TreeH()->GetEntries();
-    Info("Show3","Event %i contains %i particles in total while %i are primary",
-                                     iEventN,    iNparticles,                iNprims);
+    
+    Int_t iTotalHits=0,iTotalCerenkovs=0,iTotalSpecials=0;
     for(Int_t iPrimN=0;iPrimN<iNprims;iPrimN++){//prims loop
-      rl->TreeH()->GetEntry(iPrimN);
+      rl->TreeH()->GetEntry(iPrimN);      
+      iTotalHits+=r->Hits()->GetEntries();
+      iTotalCerenkovs+=r->Cerenkovs()->GetEntries();
+      iTotalSpecials+=r->Specials()->GetEntries();
       TParticle *pPrim=al->Stack()->Particle(iPrimN);
-      Info("Show3","prim %i has %i hits and %i sdigits from %s (,%7.2f,%7.2f)",
-                                        iPrimN,
-                                        r->Hits()->GetEntries(),
-                                        r->Specials()->GetEntries(),
-                                                           pPrim->GetName(),
-                                                           pPrim->Theta()*r2d,pPrim->Phi()*r2d);
-//      for(AliRICHhit *pHit=r->FirstHit(-1);pHit;pHit=r->NextHit()){
-//        pRichHit->Dump();        
-//      }//loop on hits of given prim track
+      Info("Show","Event %4i prim %4i has %4i hits %5i cerenkovs and %5i specials from %s (,%7.2f,%7.2f)",
+                           iEventN,
+                                    iPrimN,
+                                             r->Hits()->GetEntries(),
+                                                      r->Cerenkovs()->GetEntries(),
+                                                                        r->Specials()->GetEntries(),
+                                                                                         pPrim->GetName(),
+                                                                                 pPrim->Theta()*r2d,pPrim->Phi()*r2d);
     }//prims loop
-    if(!rl->LoadDigits()){
-      Info("Show3","Event %i contains %i digits",iEventN,r->Digits(1)->GetEntries());
+    Info("Show","Event %i total:  %i particles %i primaries %i hits %i cerenkovs %i specials",
+                        iEventN,   iNparticles, iNprims,     iTotalHits,iTotalCerenkovs,iTotalSpecials);
+    if(isSdigits){
+      rl->TreeS()->GetEntry(0);
+      Info("Show","Event %i contains %5i sdigits",iEventN,r->Sdigits()->GetEntries());
     }
+    if(isDigits){
+      rl->TreeD()->GetEntry(0);
+      Info("Show","Event %i contains %5i digits",iEventN,r->Digits(1)->GetEntries());
+    }
+    cout<<endl;
   }//events loop
-  rl->UnloadHits();
-  rl->UnloadDigits();
+  rl->UnloadHits();  if(isSdigits) rl->UnloadSDigits(); if(isDigits) rl->UnloadDigits();
   al->UnloadHeader();
   al->UnloadKinematics();
   cout<<endl;
@@ -77,9 +157,15 @@ void menu()// How many events to generate.
   pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
   pMenu->AddButton("Debug OFF",    "DebugOFF();",   "Switch debug on-off");   
   if(CheckAlice()){//it's from file, reconstruct
-    pMenu->AddButton("Show3","Show3()","Shows the structure of events in files");
-    pMenu->AddButton("Hits2SDigits","r->Hits2SDigits()","Perform first phase converstion");
-    pMenu->AddButton("SDigits2Digits","SDigits2Digits()","Perform second phase converstion");
+    pMenu->AddButton("Show","Show3()","Shows the structure of events in files");
+    pMenu->AddButton("Hits->Sdigits",    "H2Sd()",       "Perform first phase converstion");
+    pMenu->AddButton("Specials->Sdigits","Spec2Sd()",    "Perform first phase converstion");
+    pMenu->AddButton("Sdigits->Digits",  "Sd2D()",       "Perform first phase converstion");
+    pMenu->AddButton("Digits->Clusters", "D2C()",        "Perform first phase converstion");
+
+    pMenu->AddButton("OLD: Specials->Digits",     "Spec2D()","Perform first phase converstion");
+    pMenu->AddButton("OLD: Digits->RawClusters",  "D2Rc()",  "Perform second phase converstion");
+    
     pMenu->AddButton("RingViewer","RingViewer()","Show rings with reconstructed info");
   }else{//it's aliroot, simulate
     pMenu->AddButton("Run",         "a->Run(1)",       "Process!");
@@ -121,6 +207,7 @@ Bool_t CheckAlice()
   if(gAlice){//it's aliroot
     if(gSystem->Exec("ls galice.root")){
       Info("CheckAlice","It's AliRoot, and no galice.root: SIMULATION");
+      gAlice->SetDebug(-1);
       gAlice->Init("AliceConfig.C");
       r=(AliRICH*)gAlice->GetDetector("RICH");
       return kFALSE;
@@ -310,7 +397,7 @@ void TestMenu()
   pMenu->AddButton("Test gain",          "TestGain()",        "Test AliRICHParam::Gain() method");
   pMenu->AddButton("Test MIP charge",    "TestMipCharge()",   "Test AliRICHParam::TotalCharge() method");
   pMenu->AddButton("Test Sdigits",       "TestSdigits()",     "Create test set of sdigits");
-  pMenu->AddButton("Test Digits",        "TestDigits()",      "Create test set of digits");
+  pMenu->AddButton("Test Digits Old",    "TestDigitsOld()",      "Create test set of digits");
   pMenu->Show();  
 }//void Draw()
 
@@ -377,15 +464,21 @@ void TestMipCharge()
   pLegend->Draw();
 }//void TestGain()
 //__________________________________________________________________________________________________
-void TestDigits()
+void TestDigitsOld()
 {
   rl->MakeTree("D");r->MakeBranch("D");
   
-  r->AddDigits(1,10,11,25,0);
   
-  r->AddDigits(1,25,30,25,10,12);
-  r->AddDigits(1,26,30,25,10,12);
+  Int_t t[10];
+  Int_t c[10];
+  Int_t d[5];
+  t[0]=100;t[1]=200;t[2]=300;
+  c[0]=10;c[1]=20;c[2]=30;
+  d[0]=0;d[1]=1;d[2]=2;d[3]=3;d[4]=4;
   
+  r->AddDigits(0,t,c,d);
+  r->AddDigits(6,t,c,d);
+    
   rl->TreeD()->Fill();
   rl->WriteDigits("OVERWRITE");
   rl->UnloadDigits();
@@ -408,42 +501,6 @@ void TestSdigits()
 
   r->AddSdigit(1,10,10,10,10);
   
-//N2
-//   r->AddSdigit(2,23,43,8,0);
-//   
-//   r->AddSdigit(2,22,42,8,0);
-//   r->AddSdigit(2,23,42,8,0);
-//   
-//   r->AddSdigit(2,18,41,8,0);
-//   r->AddSdigit(2,25,41,8,0);
-//   
-//   r->AddSdigit(2,17,40,8,0);
-//   
-//   r->AddSdigit(2,27,38,8,0);
-//   r->AddSdigit(2,28,38,8,0);
-//   
-//   r->AddSdigit(2,16,37,8,0);
-//   r->AddSdigit(2,21,37,8,0);
-//   r->AddSdigit(2,22,37,8,0);
-//   
-//   r->AddSdigit(2,16,36,8,0);
-//   r->AddSdigit(2,21,36,8,0);
-//   
-//   r->AddSdigit(2,22,35,8,0);
-//   r->AddSdigit(2,28,35,8,0);
-//   
-//   r->AddSdigit(2,16,34,8,0);
-//   
-//   r->AddSdigit(2,18,32,8,0);
-//   r->AddSdigit(2,25,32,8,0);
-//   r->AddSdigit(2,27,32,8,0);
-//   
-//   r->AddSdigit(2,19,31,8,0);
-//   r->AddSdigit(2,23,31,8,0);
-//   r->AddSdigit(2,24,31,8,0);
-//   
-//   r->AddSdigit(2,19,30,8,0);
-//   r->AddSdigit(2,20,30,8,0);
   
   rl->TreeS()->Fill();
   rl->WriteSDigits("OVERWRITE");

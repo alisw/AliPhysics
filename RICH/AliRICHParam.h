@@ -11,18 +11,21 @@ public:
   virtual ~AliRICHParam()                    {;}  
   
   void    Recalc();                                           //Recalculates dependent parameters after changes applied  
-  Int_t   Sector(Float_t x,Float_t y)const;                       //Returns sector number for given point (x,y)
-  Int_t   L2P(Float_t x,Float_t y,Int_t &iPadX,Int_t &iPadY)const;//Which pad contains point (x,y), returns sector code 
+  Int_t   Sector(Float_t &x,Float_t &y)const;                       //Returns sector number for given point (x,y)
+  Int_t   L2P(Float_t x,Float_t y,Int_t &padx,Int_t &pady)const;//Which pad contains point (x,y), returns sector code 
+  inline  Int_t L2Px(Float_t x,Float_t y)const;                         //Which pad contains point (x,y), returns padx
+  inline  Int_t L2Py(Float_t x,Float_t y)const;                         //Which pad contains point (x,y), returns padx
   inline  Int_t Wire(Float_t x)const;                             //Returns wire number for local point (x,y)
   inline  void   SigGenInit(Float_t x,Float_t y);
   inline  Bool_t SigGenCond(Float_t x,Float_t y);
   Float_t Gain(Float_t y);                                 //Returns total charge induced by single photon
   Float_t TotalCharge(Int_t iPID,Float_t eloss,Float_t y); //Returns total charge induced by particle lost eloss GeV
   Float_t PadCharge(Int_t /* iPadX */,Int_t /* iPadY */) {return 0;}   //Returns charge for a given pad
-        
-  void    Segmentation(Int_t Nx,Int_t Ny)    {fNpadX=Nx;fNpadY=Ny;Recalc();}
-  Int_t   Nx()                          const{return fNpadX;}
-  Int_t   Ny()                          const{return fNpadY;}   
+  void    FirstPad(Float_t x,Float_t y);
+          
+  void    Segmentation(Int_t Nx,Int_t Ny)    {fNpadsX=Nx;fNpadsY=Ny;Recalc();}
+  Int_t   NpadsX()                      const{return fNpadsX;}
+  Int_t   NpadsY()                      const{return fNpadsY;}   
   void    DeadZone(Float_t a)                {       fDeadZone=a;Recalc();}
   Float_t DeadZone()                    const{return fDeadZone;}
   void    PadSize(Float_t x,Float_t y)       {       fPadSizeX=x;fPadSizeY=y;Recalc();} 
@@ -72,12 +75,14 @@ public:
   Float_t SigmaIntegration()            const{return fSigmaIntegration;}    
   void    ChargeSpreadX(Float_t a)           {       fChargeSpreadX=a;}
   Float_t ChargeSpreadX()               const{return fChargeSpreadX;}    
-  void    ChargeSpreadY(Float_t a)           {       fChargeSpreadY=a;}
-  Float_t ChargeSpreadY()               const{return fChargeSpreadY;}   
+  void    ChargeSpreadY(Float_t a)           {       fChargeSpreadY=a;}  
+  Float_t ChargeSpreadY()               const{return fChargeSpreadY;}  
+  Float_t AreaX()                       const{return fSigmaIntegration*fChargeSpreadX;} 
+  Float_t AreaY()                       const{return fSigmaIntegration*fChargeSpreadY;} 
   void    ChargeSlope(Float_t a)             {       fChargeSlope=a;}
   Float_t ChargeSlope()                      {return fChargeSlope;}
-  void    MaxAdc(Float_t a)                  {       fMaxAdc=a;}
-  Float_t MaxAdc()                      const{return fMaxAdc;}
+  void    MaxAdc(Int_t a)                    {       fMaxAdc=a;}
+  Int_t   MaxAdc()                      const{return fMaxAdc;}
   void    Pitch(Float_t a)                   {       fPitch=a;}
   Float_t Pitch()                       const{return fPitch;}
   void    AlphaFeedback(Float_t a)           {       fAlphaFeedback=a;}
@@ -94,11 +99,12 @@ public:
   void    Voltage(Int_t a)                   {       fVoltage=a;}       
   Float_t Voltage()                     const{return fVoltage;}       
 protected:
-  Int_t   fNpadX;  Int_t   fNpadY;                      //number of pads along X-Y in whole chamber (6 sectors)
+  Int_t   fNpadsX;        Int_t fNpadsY;                      //number of pads along X-Y in whole chamber (6 sectors)
+  Int_t   fNpadsXsector;  Int_t fNpadsYsector;                //number of pads along X-Y in one sector
   Float_t fDeadZone;                              //space between PC sectors, cm     
   Float_t fPadSizeX,fPadSizeY;                    //pad size, cm
   Float_t fSectorSizeX,fSectorSizeY;              //photocathod sector size, cm
-  Float_t fWirePitch;                             //not yet known parameter ???
+  Float_t fWirePitch;                             //
   
   Int_t   fCurrentPadX,fCurrentPadY;              //???
   Int_t   fCurrentWire;                           //???
@@ -123,7 +129,7 @@ protected:
   Float_t fSigmaIntegration;         //Number of sigma's used for charge distribution
   Float_t fAlphaFeedback;            //Feedback photons coefficient
   Float_t fEIonisation;              //Mean ionisation energy
-  Float_t fMaxAdc;                   //Maximum ADC channel
+  Int_t   fMaxAdc;                   //Maximum ADC channel
   Float_t fSqrtKx3;                  //Mathieson parameters for x
   Float_t fKx2;                      //Mathieson parameters for x
   Float_t fKx4;                      //Mathieson parameters for x
@@ -158,6 +164,20 @@ Bool_t AliRICHParam::SigGenCond(Float_t x,Float_t y)
     return kTRUE;
   else
     return kFALSE;
-}
+}//Bool_t AliRICHParam::SigGenCond(Float_t x,Float_t y)
+//__________________________________________________________________________________________________
+Int_t AliRICHParam::L2Px(Float_t x,Float_t y)const
+{
+  Int_t padx,pady;
+  L2P(x,y,padx,pady);
+  return padx;
+}//Int_t AliRICHParam::L2Px(Float_t x,Float_t y)
+//__________________________________________________________________________________________________
+Int_t AliRICHParam::L2Py(Float_t x,Float_t y)const
+{
+  Int_t padx,pady;
+  L2P(x,y,padx,pady);
+  return pady;
+}//Int_t AliRICHParam::L2Px(Float_t x,Float_t y)
 //__________________________________________________________________________________________________
 #endif //AliRICHParam_h

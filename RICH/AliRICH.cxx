@@ -13,9 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-#include <strings.h>
-
 #include <TArrayF.h>
 #include <TBRIK.h>
 #include <TFile.h>
@@ -29,86 +26,88 @@
 #include <TTUBE.h>
 #include <TTree.h>
 #include <TVector.h>
-#include "AliMagF.h"
-#include "AliPoints.h"
+#include <AliMagF.h>
+#include <AliPoints.h>
 #include "AliRICH.h"
 #include "AliRICHParam.h"
 #include "AliRICHClusterFinder.h"
-#include "AliRICHDigitizer.h"
-#include "AliRICHHitMapA1.h"
-#include "AliRICHMerger.h"
 #include "AliRICHRawCluster.h"
 #include "AliRICHRecHit1D.h"
 #include "AliRICHRecHit3D.h"
-#include "AliRICHSDigit.h"
 #include "AliRICHSegmentationV0.h"
 #include "AliRICHTransientDigit.h"
-#include "AliRun.h"
-#include "AliRunDigitizer.h"
+#include <AliRun.h>
+#include <AliRunDigitizer.h>
 #include "AliRICHSegmentationV1.h"
 #include "AliRICHResponseV0.h"
  
 ClassImp(AliRICHhit)
+//__________________________________________________________________________________________________
+void AliRICHhit::Print(Option_t*)const
+{
+  Info("","chamber=%2i, PID=%9i, TID=%6i, eloss=%9.3f eV",fChamber,fPid,fTrack,fEloss*1e9);
+}//void AliRICHdigit::Print(Option_t *option)const
+//__________________________________________________________________________________________________
 ClassImp(AliRICHdigit)
-ClassImp(AliRICH)
-    
-//___________________________________________
+//__________________________________________________________________________________________________
+void AliRICHdigit::Print(Option_t*)const
+{
+  Info("","ID=%6i, chamber=%2i, PadX=%3i, PadY=%3i, Qdc=%4i, TID1=%5i, TID2=%5i, TID3=%5i",
+         Id(),fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]);
+}//void AliRICHdigit::Print(Option_t *option)const
+//__________________________________________________________________________________________________
+
+ClassImp(AliRICH)    
+//__________________________________________________________________________________________________
 // RICH manager class   
-//Begin_Html
+//BEGIN_HTML
 /*
   <img src="gif/alirich.gif">
 */
-//End_Html
-
+//END_HTML
+//__________________________________________________________________________________________________
 AliRICH::AliRICH()
+        :AliDetector() 
 {//Default ctor should not contain any new operators
-  fIshunt     = 0;
-  fHits       = 0;
-  fSDigits    = 0;
-  fNsdigits   = 0;
-  fNcerenkovs = 0;
-  fDchambers  = 0;
-  fRecHits1D = 0;
-  fRecHits3D = 0;
-  fRawClusters = 0;
-  fChambers = 0;
-  fCerenkovs  = 0;
-  for (Int_t i=0; i<kNCH; i++){
-      fNdch[i]       = 0;
-      fNrawch[i]     = 0;
-      fNrechits1D[i] = 0;
-      fNrechits3D[i] = 0;
-  }
-  fpParam=0;
+  fpParam     =0;
+  fChambers   =0;
+  
+  
+        //AliDetector ctor deals with Hits and Digits
+  
+  fSdigits    =0; fNsdigits   =0;
+  fDigitsNew  =0; for(int i=0;i<kNCH;i++) fNdigitsNew[i]  =0;
+  fClusters   =0; for(int i=0;i<kNCH;i++) fNclusters[i]=0;
+  
+  fCerenkovs  =0; fNcerenkovs =0;
+  fSpecials   =0; fNspecials  =0;  
+  fDchambers  =0; for(int i=0;i<kNCH;i++) fNdch[i]=0;
+  fRecHits1D  =0; for(int i=0;i<kNCH;i++) fNrechits1D[i]=0;
+  fRecHits3D  =0; for(int i=0;i<kNCH;i++) fNrechits3D[i]=0;
+  fRawClusters=0; for(int i=0;i<kNCH;i++) fNrawch[i]=0;  
 }//AliRICH::AliRICH()
 //__________________________________________________________________________________________________
 AliRICH::AliRICH(const char *name, const char *title)
         :AliDetector(name,title)
 {//Named ctor
   if(GetDebug())Info("named ctor","Start.");
-  fpParam     =new AliRICHParam;
-  fNcerenkovs =fNsdigits   =0;//fNhits and fNdigits reset in AliDetector ctor
-  fHits       =new TClonesArray("AliRICHhit",1000  ); gAlice->AddHitList(fHits);//hits
-  fCerenkovs  =new TClonesArray("AliRICHCerenkov",1000);gAlice->AddHitList(fCerenkovs);//cerenkovs ??? to be removed    
-  fSDigits    =new TClonesArray("AliRICHdigit",100000);//sdigits
-  fDigits     =new TClonesArray("AliRICHdigit",100000);//digits
+  fpParam     =   new AliRICHParam;
+  fChambers = 0;  CreateChambers();
   
-  fIshunt     =0;
-  fDchambers  =new TObjArray(kNCH);//digits             ??? to be removed
-  fRawClusters=new TObjArray(kNCH);//clusters
-  fRecHits1D  =new TObjArray(kNCH);//recos Bari
-  fRecHits3D  =new TObjArray(kNCH);//recos Lisbon
-  for(int i=0;i<kNCH;i++) {
-    fNdch[i]=fNrawch[i]=0;
-    fDchambers  ->AddAt(new TClonesArray("AliRICHDigit",10000), i); //??? to be removed
-    fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
-    fRecHits1D  ->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
-    fRecHits3D  ->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
-  }
-  SetMarkerColor(kRed);
-  fCkovNumber=fFreonProd=0;
-  fChambers = 0;
-  CreateChambers();
+        //AliDetector ctor deals with Hits and Digits (reset them to 0, does not create them)
+  fHits=       0;     CreateHits();          gAlice->AddHitList(fHits);
+  fSdigits=    0;
+  fDigitsNew=  0;
+  fClusters=   0;
+  
+  fCerenkovs=  0;     CreateCerenkovsOld();  gAlice->AddHitList(fCerenkovs);
+  fSpecials=   0;     CreateSpecialsOld();   
+  fDchambers=  0;   //CreateDigitsOld();
+  fRawClusters=0;   //CreateRawClustersOld();
+  fRecHits1D=  0;   //CreateRecos1Old();
+  fRecHits3D=  0;   //CreateRecos3Old();
+  
+  fCkovNumber=fFreonProd=0;  
   if(GetDebug())Info("named ctor","Stop.");
 }//AliRICH::AliRICH(const char *name, const char *title)
 //__________________________________________________________________________________________________
@@ -116,80 +115,28 @@ AliRICH::~AliRICH()
 {//dtor
   if(GetDebug()) Info("dtor","Start.");
 
-    fIshunt  = 0;
-    delete fHits;
-    delete fSDigits;
-    delete fCerenkovs;
-    
-    //PH Delete TObjArrays
-    if (fChambers) {
-      fChambers->Delete();
-      delete fChambers;
-    }
-    if (fDchambers) {
-      fDchambers->Delete();
-      delete fDchambers;
-    }
-    if (fRawClusters) {
-      fRawClusters->Delete();
-      delete fRawClusters;
-    }
-    if (fRecHits1D) {
-      fRecHits1D->Delete();
-      delete fRecHits1D;
-    }
-    if (fRecHits3D) {
-      fRecHits3D->Delete();
-      delete fRecHits3D;
-    }                     
+  if(fpParam)    delete fpParam;
+  if(fChambers)  delete fChambers;
+  
+  if(fHits)      delete fHits;
+  if(fSdigits)   delete fSdigits;
+  if(fDigits)    delete fDigits;
+  if(fDigitsNew) {fDigitsNew->Delete();   delete fDigitsNew;}
+  if(fClusters)  {fClusters->Delete();    delete fClusters;}
+  
+  if(fCerenkovs) delete fCerenkovs;
+  if(fSpecials)  delete fSpecials;
+  if(fDchambers)   {fDchambers->Delete();     delete fDchambers;}
+  if(fRawClusters) {fRawClusters->Delete();   delete fRawClusters;}          
+  if(fRecHits1D) {fRecHits1D->Delete();       delete fRecHits1D;}
+  if(fRecHits3D) {fRecHits3D->Delete();       delete fRecHits3D;}                     
   if(GetDebug()) Info("dtor","Stop.");    
 }//AliRICH::~AliRICH()
 //__________________________________________________________________________________________________
 void AliRICH::Hits2SDigits()
-{//Create a list of sdigits corresponding to list of hits. Every hit generates sdigit.
+{//Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
   if(GetDebug()) Info("Hit2SDigits","Start.");
   
-  for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events loop
-    fLoader->GetRunLoader()->GetEvent(iEventN);
-  
-    if(!fLoader->TreeH()) fLoader->LoadHits();
-    if(!fLoader->TreeS()) fLoader->MakeTree("S");
-    MakeBranch("S");
-    
-    AliRICHSegmentationV1 *pSeg=new AliRICHSegmentationV1;
-    AliRICHResponseV0     *pRes=new AliRICHResponseV0;
-    
-    Float_t dx=Param()->SigmaIntegration()*Param()->ChargeSpreadX();
-    Float_t dy=Param()->SigmaIntegration()*Param()->ChargeSpreadY();
-    Float_t charge;
-    
-    for(int iPrimN=0;iPrimN<TreeH()->GetEntries();iPrimN++){//prims loop
-      fLoader->TreeH()->GetEntry(iPrimN); 
-      for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop
-        AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);//get current hit
-        
-        if(pHit->Y()>0)
-          charge=Param()->TotalCharge(pHit->Particle(),pHit->Eloss(),pHit->Y()-Param()->SectorSizeY());
-        else
-          charge=Param()->TotalCharge(pHit->Particle(),pHit->Eloss(),pHit->Y()+Param()->SectorSizeY());
-                  
-        for(pSeg->FirstPad(pHit->X(),pHit->Y(),0,dx,dy);pSeg->MorePads();pSeg->NextPad()){//pads loop
-            
-          AddSDigit(pHit->Chamber(),pSeg->Ix(),pSeg->Iy(),
-                                    Int_t(charge*TMath::Abs(pRes->IntXY(pSeg))),
-                iPrimN);//chamber-xpad-ypad-qdc-track1-2-3
-        }//pads loop
-      }//hits loop
-    }//prims loop
-    
-    delete pSeg;
-    
-    fLoader->TreeS()->Fill();
-    fLoader->WriteSDigits("OVERWRITE");
-  }//events loop
-  
-  fLoader->UnloadHits();
-  fLoader->UnloadSDigits();  
   if(GetDebug()) Info("Hit2SDigits","Stop.");
 }//void AliRICH::Hits2SDigits()
 //__________________________________________________________________________________________________
@@ -197,33 +144,15 @@ void AliRICH::SDigits2Digits()
 {//Generate digits from sdigits.
   if(GetDebug()) Info("SDigits2Digits","Start.");
     
-  AliRunDigitizer *pManager = new AliRunDigitizer(1,1);
-  pManager->SetInputStream(0,"galice.root");
-  pManager->Exec("deb");
   if(GetDebug()) Info("SDigits2Digits","Stop.");
 }//void AliRICH::SDigits2Digits()
 //__________________________________________________________________________________________________
 void AliRICH::Digits2Reco()
-{
-// Generate clusters
-// Called from alirun, single event only.     
-  if(GetDebug()) Info("Digits2Reco","Start.");
-
-  int nparticles = gAlice->GetNtrack();
-  cout << "Particles (RICH):" <<nparticles<<endl;
-  if (nparticles > 0) FindClusters(0);
+{//Generate clusters from digits then generate recos from clusters or digits
+  if(GetDebug()) Info("Digits2reco","Start.");
 
 }//void AliRICH::Digits2Reco()  
 //__________________________________________________________________________________________________
-
-
-void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
-{// Add a RICH digit to the list   
-
-   TClonesArray &ldigits = *((TClonesArray*)fDchambers->At(id));
-   new(ldigits[fNdch[id]++]) AliRICHDigit(tracks,charges,digits);
-}
-
 void AliRICH::AddRawCluster(Int_t id, const AliRICHRawCluster& c)
 {// Add a RICH digit to the list
    
@@ -254,8 +183,8 @@ void AliRICH::BuildGeometry()
   
   new TBRIK("S_RICH","S_RICH","void",71.09999,11.5,73.15);
 
-  Float_t wid=fpParam->SectorSizeX();
-  Float_t len=fpParam->SectorSizeY();
+  Float_t wid=Param()->SectorSizeX();
+  Float_t len=Param()->SectorSizeY();
   new TBRIK("PHOTO","PHOTO","void",wid/2,0.1,len/2);
   
   for(int i=1;i<=kNCH;i++){
@@ -263,28 +192,31 @@ void AliRICH::BuildGeometry()
     node = new TNode(Form("RICH%i",i),Form("RICH%i",i),"S_RICH",C(i)->X(),C(i)->Y(),C(i)->Z(),C(i)->RotMatrixName());
     node->SetLineColor(kRed);
     node->cd();
-    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",wid+fpParam->DeadZone(),5,len/2+fpParam->DeadZone()/2,"");
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",wid+Param()->DeadZone(),5,len/2+Param()->DeadZone()/2,"");
     subnode->SetLineColor(kGreen);
     fNodes->Add(subnode);
-    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,5,len/2+fpParam->DeadZone()/2,"");
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,5,len/2+Param()->DeadZone()/2,"");
     subnode->SetLineColor(kGreen);
     fNodes->Add(subnode);
-    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-wid-fpParam->DeadZone(),5,len/2+fpParam->DeadZone()/2,"");
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-wid-Param()->DeadZone(),5,len/2+Param()->DeadZone()/2,"");
     subnode->SetLineColor(kGreen);
     fNodes->Add(subnode);
-    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",wid+fpParam->DeadZone(),5,-len/2-fpParam->DeadZone()/2,"");
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",wid+Param()->DeadZone(),5,-len/2-Param()->DeadZone()/2,"");
     subnode->SetLineColor(kGreen);
     fNodes->Add(subnode);
-    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,5,-len/2 -fpParam->DeadZone()/2,"");
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,5,-len/2 -Param()->DeadZone()/2,"");
     subnode->SetLineColor(kGreen);
     fNodes->Add(subnode);
-    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-wid-fpParam->DeadZone(),5,-len/2 - fpParam->DeadZone()/2,"");
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-wid-Param()->DeadZone(),5,-len/2 - Param()->DeadZone()/2,"");
     subnode->SetLineColor(kGreen);
     fNodes->Add(subnode);
     fNodes->Add(node);
   }  
   if(GetDebug())Info("BuildGeometry","Stop.");    
 }//void AliRICH::BuildGeometry()
+
+static Int_t kCSI=6;
+static Int_t kGAP=9;
 //______________________________________________________________________________
 void AliRICH::CreateMaterials()
 {
@@ -295,47 +227,8 @@ void AliRICH::CreateMaterials()
     //               R.A. Fini  (INFN - BARI, Rosanna.Fini@ba.infn.it) 
     //               R.A. Loconsole (Bari University, loco@riscom.ba.infn.it) 
     //
-    Int_t   isxfld = gAlice->Field()->Integ();
-    Float_t sxmgmx = gAlice->Field()->Max();
     Int_t i;
-
-    /************************************Antonnelo's Values (14-vectors)*****************************************/
-    /*
-    Float_t ppckov[14] = { 5.63e-9,5.77e-9,5.9e-9,6.05e-9,6.2e-9,6.36e-9,6.52e-9,
-			   6.7e-9,6.88e-9,7.08e-9,7.3e-9,7.51e-9,7.74e-9,8e-9 };
-    Float_t rIndexQuarz[14] = { 1.528309,1.533333,
-				 1.538243,1.544223,1.550568,1.55777,
-				 1.565463,1.574765,1.584831,1.597027,
-			       1.611858,1.6277,1.6472,1.6724 };
-    Float_t rIndexOpaqueQuarz[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-    Float_t rIndexMethane[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-    Float_t rIndexGrid[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-    Float_t abscoFreon[14] = { 179.0987,179.0987,
-				179.0987,179.0987,179.0987,142.92,56.65,13.95,10.43,7.07,2.03,.5773,.33496,0. };
-    //Float_t abscoFreon[14] = { 1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,
-	//			 1e-5,1e-5,1e-5,1e-5,1e-5 };
-    Float_t abscoQuarz[14] = { 64.035,39.98,35.665,31.262,27.527,22.815,21.04,17.52,
-				14.177,9.282,4.0925,1.149,.3627,.10857 };
-    Float_t abscoOpaqueQuarz[14] = { 1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,
-				 1e-5,1e-5,1e-5,1e-5,1e-5 };
-    Float_t abscoCsI[14] = { 1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,
-			      1e-4,1e-4,1e-4,1e-4 };
-    Float_t abscoMethane[14] = { 1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,
-				  1e6,1e6,1e6 };
-    Float_t abscoGrid[14] = { 1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,
-			      1e-4,1e-4,1e-4,1e-4 };
-    Float_t efficAll[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-    Float_t efficCsI[14] = { 6e-4,.005,.0075,.01125,.045,.117,.135,.16575,
-			      .17425,.1785,.1836,.1904,.1938,.221 };
-    Float_t efficGrid[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-    */
-   
     
-    /**********************************End of Antonnelo's Values**********************************/
-    
-    /**********************************Values from rich_media.f (31-vectors)**********************************/
-    
-
     //Photons energy intervals
     Float_t ppckov[26];
     for (i=0;i<26;i++) 
@@ -374,40 +267,6 @@ void AliRICH::CreateMaterials()
 	 		       179.0987, 142.9206, 56.64957, 25.58622, 13.95293, 12.03905, 10.42953, 8.804196, 
 			       7.069031, 4.461292, 2.028366, 1.293013, .577267,   .40746,  .334964, 0., 0., 0.};
     
-    //Absorption index for quarz
-    /*Float_t Qzt [21] = {.0,.0,.005,.04,.35,.647,.769,.808,.829,.844,.853,.858,.869,.887,.903,.902,.902,
-	 		.906,.907,.907,.907};
-    Float_t Wavl2[] = {150.,155.,160.0,165.0,170.0,175.0,180.0,185.0,190.0,195.0,200.0,205.0,210.0,
-	 	       215.0,220.0,225.0,230.0,235.0,240.0,245.0,250.0};		 		 
-    Float_t abscoQuarz[31];	     
-    for (Int_t i=0;i<31;i++)
-    {
-	Float_t Xlam = 1237.79 / (ppckov[i]*1e9);
-	if (Xlam <= 160) abscoQuarz[i] = 0;
-	if (Xlam > 250) abscoQuarz[i] = 1;
-	else 
-	{
-	    for (Int_t j=0;j<21;j++)
-	    {
-		if (Xlam > Wavl2[j] && Xlam < Wavl2[j+1])
-		{
-		    Float_t Dabs = (Qzt[j+1] - Qzt[j])/(Wavl2[j+1] - Wavl2[j]);
-		    Float_t Abso = Qzt[j] + Dabs*(Xlam - Wavl2[j]);
-		    abscoQuarz[i] = -5.0/(TMath::Log(Abso));
-		} 
-	    }
-	}
-    }*/
-
-    /*Float_t abscoQuarz[31] = {49.64211, 48.41296, 47.46989, 46.50492, 45.13682, 44.47883, 43.1929 , 41.30922, 40.5943 ,
-			       39.82956, 38.98623, 38.6247 , 38.43448, 37.41084, 36.22575, 33.74852, 30.73901, 24.25086, 
-			       17.94531, 11.88753, 5.99128,  3.83503,  2.36661,  1.53155, 1.30582, 1.08574, .8779708, 
-			       .675275, 0., 0., 0.};
-    
-    for (Int_t i=0;i<31;i++)
-    {
-	abscoQuarz[i] = abscoQuarz[i]/10;
-    }*/
 
     Float_t abscoQuarz [26] = {105.8, 65.52, 48.58, 42.85, 35.79, 31.262, 28.598, 27.527, 25.007, 22.815, 21.004,
 				19.266, 17.525, 15.878, 14.177, 11.719, 9.282, 6.62, 4.0925, 2.601, 1.149, .667, .3627,
@@ -453,24 +312,9 @@ void AliRICH::CreateMaterials()
     }
 	
     /*******************************************End of rich_media.f***************************************/
-
-  
-
     
+  Float_t rIndexFreon[26];
     
-    
-    Float_t afre[2], agri, amet[2], aqua[2], ahon, zfre[2], zgri, zhon, 
-    zmet[2], zqua[2];
-    Int_t nlmatfre;
-    Float_t densquao;
-    Int_t nlmatmet, nlmatqua;
-    Float_t wmatquao[2], rIndexFreon[26];
-    Float_t aquao[2], epsil, stmin, zquao[2];
-    Int_t nlmatquao;
-    Float_t radlal, densal, tmaxfd, deemax, stemax;
-    Float_t aal, zal, radlgri, densfre, radlhon, densgri, denshon,densqua, densmet, wmatfre[2], wmatmet[2], wmatqua[2];
-    
-    Int_t *idtmed = fIdtmed->GetArray()-999;
     
     // --- Photon energy (GeV) 
     // --- Refraction indexes 
@@ -479,126 +323,67 @@ void AliRICH::CreateMaterials()
       //rIndexFreon[i] = 1;
     }
             
-    // --- Detection efficiencies (quantum efficiency for CsI) 
-    // --- Define parameters for honeycomb. 
-    //     Used carbon of equivalent rad. lenght 
+      
+  Float_t a=0,z=0,den=0,radl=0,absl=0;
+  Float_t tmaxfd=-10.0, deemax=-0.2, stemax=-0.1,epsil=0.001, stmin=-0.001; 
+  Int_t   isxfld = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
     
-    ahon    = 12.01;
-    zhon    = 6.;
-    denshon = 0.1;
-    radlhon = 18.8;
-    
-    // --- Parameters to include in GSMIXT, relative to Quarz (SiO2) 
-    
-    aqua[0]    = 28.09;
-    aqua[1]    = 16.;
-    zqua[0]    = 14.;
-    zqua[1]    = 8.;
-    densqua    = 2.64;
-    nlmatqua   = -2;
-    wmatqua[0] = 1.;
-    wmatqua[1] = 2.;
-    
-    // --- Parameters to include in GSMIXT, relative to opaque Quarz (SiO2) 
-    
-    aquao[0]    = 28.09;
-    aquao[1]    = 16.;
-    zquao[0]    = 14.;
-    zquao[1]    = 8.;
-    densquao    = 2.64;
-    nlmatquao   = -2;
-    wmatquao[0] = 1.;
-    wmatquao[1] = 2.;
-    
-    // --- Parameters to include in GSMIXT, relative to Freon (C6F14) 
-    
-    afre[0]    = 12.;
-    afre[1]    = 19.;
-    zfre[0]    = 6.;
-    zfre[1]    = 9.;
-    densfre    = 1.7;
-    nlmatfre   = -2;
-    wmatfre[0] = 6.;
-    wmatfre[1] = 14.;
-    
-    // --- Parameters to include in GSMIXT, relative to methane (CH4) 
-    
-    amet[0]    = 12.01;
-    amet[1]    = 1.;
-    zmet[0]    = 6.;
-    zmet[1]    = 1.;
-    densmet    = 7.17e-4;
-    nlmatmet   = -2;
-    wmatmet[0] = 1.;
-    wmatmet[1] = 4.;
-    
-    // --- Parameters to include in GSMIXT, relative to anode grid (Cu) 
+  AliMaterial( 1, "Air     $",a=14.61,z=7.3, den=0.001205,radl=30420.0,absl=67500);//(Air)
+  AliMedium(1, "DEFAULT MEDIUM AIR$", 1, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
-    agri    = 63.54;
-    zgri    = 29.;
-    densgri = 8.96;
-    radlgri = 1.43;
-    
-    // --- Parameters to include in GSMATE related to aluminium sheet 
-    
-    aal    = 26.98;
-    zal    = 13.;
-    densal = 2.7;
-    radlal = 8.9;
-
-    // --- Glass parameters
-
-    Float_t aglass[5]={12.01, 28.09, 16.,   10.8,  23.};
-    Float_t zglass[5]={ 6.,   14.,    8.,    5.,   11.};
-    Float_t wglass[5]={ 0.5,  0.105, 0.355, 0.03,  0.01};
-    Float_t dglass=1.74;
-
-    
-    AliMaterial(1, "Air     $", 14.61, 7.3, .001205, 30420., 67500);
-    AliMaterial(6, "HON", ahon, zhon, denshon, radlhon, 0);
-    AliMaterial(16, "CSI", ahon, zhon, denshon, radlhon, 0);
-    AliMixture(20, "QUA", aqua, zqua, densqua, nlmatqua, wmatqua);
-    AliMixture(21, "QUAO", aquao, zquao, densquao, nlmatquao, wmatquao);
-    AliMixture(30, "FRE", afre, zfre, densfre, nlmatfre, wmatfre);
-    AliMixture(40, "MET", amet, zmet, densmet, nlmatmet, wmatmet);
-    AliMixture(41, "METG", amet, zmet, densmet, nlmatmet, wmatmet);
-    AliMaterial(11, "GRI", agri, zgri, densgri, radlgri, 0);
-    AliMaterial(50, "ALUM", aal, zal, densal, radlal, 0);
-    AliMixture(32, "GLASS",aglass, zglass, dglass, 5, wglass);
-    AliMaterial(31, "COPPER$",   63.54,    29.,   8.96,  1.4, 0.);
-    
-    tmaxfd = -10.;
-    stemax = -.1;
-    deemax = -.2;
-    epsil  = .001;
-    stmin  = -.001;
-    
-    AliMedium(1, "DEFAULT MEDIUM AIR$", 1, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(2, "HONEYCOMB$", 6, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(3, "QUARZO$", 20, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(4, "FREON$", 30, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(5, "METANO$", 40, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(6, "CSI$", 16, 1, isxfld, sxmgmx,tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(7, "GRIGLIA$", 11, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(8, "QUARZOO$", 21, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(9, "GAP$", 41, 1, isxfld, sxmgmx,tmaxfd, .1, -deemax, epsil, -stmin);
-    AliMedium(10, "ALUMINUM$", 50, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(11, "GLASS", 32, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(12, "PCB_COPPER", 31, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    
-
-    gMC->SetCerenkov(idtmed[1000], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
-    gMC->SetCerenkov(idtmed[1001], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
-    gMC->SetCerenkov(idtmed[1002], 26, ppckov, abscoQuarz, efficAll,rIndexQuarz);
-    gMC->SetCerenkov(idtmed[1003], 26, ppckov, abscoFreon, efficAll,rIndexFreon);
-    gMC->SetCerenkov(idtmed[1004], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
-    gMC->SetCerenkov(idtmed[1005], 26, ppckov, abscoCsI, efficCsI, rIndexMethane);
-    gMC->SetCerenkov(idtmed[1006], 26, ppckov, abscoGrid, efficGrid, rIndexGrid);
-    gMC->SetCerenkov(idtmed[1007], 26, ppckov, abscoOpaqueQuarz, efficAll, rIndexOpaqueQuarz);
-    gMC->SetCerenkov(idtmed[1008], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
-    gMC->SetCerenkov(idtmed[1009], 26, ppckov, abscoGrid, efficGrid, rIndexGrid);
-    gMC->SetCerenkov(idtmed[1010], 26, ppckov, abscoOpaqueQuarz, efficAll, rIndexOpaqueQuarz);
-}
+  AliMaterial( 6, "HON",      a=12.01,z=6.0, den=0.1,     radl=18.8,   absl=0);    //(C)-equivalent radl
+  AliMedium(2, "HONEYCOMB$", 6, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMaterial(16, "CSI",      a=12.01,z=6.0, den=0.1,     radl=18.8,   absl=0);    //CsI-radl equivalent
+  AliMedium(kCSI, "CSI$", 16, 1, isxfld, sxmgmx,tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMaterial(11, "GRI",      a=63.54,z=29.0,den=8.96,    radl=1.43,   absl=0);    //anode grid (Cu) 
+  AliMedium(7, "GRIGLIA$", 11, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMaterial(50, "ALUM",     a=26.98,z=13.0,den=2.7,     radl=8.9,    absl=0);    //aluminium sheet (Al)
+  AliMedium(10, "ALUMINUM$", 50, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMaterial(31, "COPPER$",  a=63.54,z=29.0,den=8.96,    radl=1.4,    absl=0);    //(Cu)
+  AliMedium(12, "PCB_COPPER", 31, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  Float_t  aQuartz[2]={28.09,16.0};  Float_t  zQuartz[2]={14.00, 8.0};  Float_t  wmatQuartz[2]={1,2};
+  AliMixture (20, "QUA",aQuartz,zQuartz,den=2.64,-2, wmatQuartz);//Quarz (SiO2) - trasnparent 
+  AliMedium(3, "QUARZO$", 20, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMixture (21, "QUAO",aQuartz, zQuartz, den=2.64, -2, wmatQuartz);//Quarz (SiO2) - opaque
+  AliMedium(8, "QUARZOO$", 21, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  Float_t  aFreon[2]={12,19};  Float_t  zFreon[2]={6,9};  Float_t wmatFreon[2]={6,14};
+  AliMixture (30, "FRE",aFreon,zFreon,den=1.7,-2,wmatFreon);//Freon (C6F14) 
+  AliMedium(4, "FREON$", 30, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  Float_t aMethane[2]={12.01,1}; Float_t zMethane[2]={6,1}; Float_t wmatMethane[2]={1,4};
+  AliMixture (40, "MET", aMethane, zMethane, den=7.17e-4,-2, wmatMethane);//methane (CH4)     
+  AliMedium(5, "METANO$", 40, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMixture (41, "METG", aMethane, zMethane, den=7.17e-4, -2, wmatMethane);
+  AliMedium(kGAP, "GAP$", 41, 1, isxfld, sxmgmx,tmaxfd, 0.1, -deemax, epsil, -stmin);
+  
+  Float_t aGlass[5]={12.01, 28.09, 16.,   10.8,  23.};
+  Float_t zGlass[5]={ 6.,   14.,    8.,    5.,   11.};
+  Float_t wGlass[5]={ 0.5,  0.105, 0.355, 0.03,  0.01};
+  AliMixture (32, "GLASS",aGlass, zGlass, den=1.74, 5, wGlass);//Glass 50%C+10.5%Si+35.5%O+3% + 1%
+  AliMedium(11, "GLASS", 32, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+            
+  Int_t *idtmed = fIdtmed->GetArray()-999;
+  gMC->SetCerenkov(idtmed[1000], 26, ppckov, abscoMethane,     efficAll,  rIndexMethane);
+  gMC->SetCerenkov(idtmed[1001], 26, ppckov, abscoMethane,     efficAll,  rIndexMethane);
+  gMC->SetCerenkov(idtmed[1002], 26, ppckov, abscoQuarz,       efficAll,  rIndexQuarz);
+  gMC->SetCerenkov(idtmed[1003], 26, ppckov, abscoFreon,       efficAll,  rIndexFreon);
+  gMC->SetCerenkov(idtmed[1004], 26, ppckov, abscoMethane,     efficAll,  rIndexMethane);
+  gMC->SetCerenkov(idtmed[1005], 26, ppckov, abscoCsI,         efficCsI,  rIndexMethane);
+  gMC->SetCerenkov(idtmed[1006], 26, ppckov, abscoGrid,        efficGrid, rIndexGrid);
+  gMC->SetCerenkov(idtmed[1007], 26, ppckov, abscoOpaqueQuarz, efficAll,  rIndexOpaqueQuarz);
+  gMC->SetCerenkov(idtmed[1008], 26, ppckov, abscoMethane,     efficAll,  rIndexMethane);
+  gMC->SetCerenkov(idtmed[1009], 26, ppckov, abscoGrid,        efficGrid, rIndexGrid);
+  gMC->SetCerenkov(idtmed[1010], 26, ppckov, abscoOpaqueQuarz, efficAll,  rIndexOpaqueQuarz);
+}//void AliRICH::CreateMaterials()
 //__________________________________________________________________________________________________
 Float_t AliRICH::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
 {
@@ -800,312 +585,106 @@ Float_t AliRICH::AbsoCH4(Float_t x)
     return (alength);
 }
 //__________________________________________________________________________________________________
-void AliRICH::ResetDigits()
-{//Reset number of digits and the digits array for this detector
-  for ( int i=0;i<kNCH;i++ ) {
-    if (fDchambers && fDchambers->At(i))   fDchambers->At(i)->Clear();
-    if (fNdch)  fNdch[i]=0;
-  }
-}
-//__________________________________________________________________________________________________
-void AliRICH::ResetRawClusters()
-{//Reset number of raw clusters and the raw clust array for this detector
-  for ( int i=0;i<kNCH;i++ ) {
-    if (fRawClusters->At(i))    ((TClonesArray*)fRawClusters->At(i))->Clear();
-    if (fNrawch)  fNrawch[i]=0;
-  }
-}
-//__________________________________________________________________________________________________
-void AliRICH::ResetRecHits1D()
-{//Reset number of raw clusters and the raw clust array for this detector
-  for ( int i=0;i<kNCH;i++ ) {
-    if (fRecHits1D->At(i))    ((TClonesArray*)fRecHits1D->At(i))->Clear();
-    if (fNrechits1D)  fNrechits1D[i]=0;
-  }
-}
-
-//__________________________________________________________________________________________________
-void AliRICH::ResetRecHits3D()
-{// Reset number of raw clusters and the raw clust array for this detector
-  for ( int i=0;i<kNCH;i++ ) {
-    if (fRecHits3D->At(i))    ((TClonesArray*)fRecHits3D->At(i))->Clear();
-    if (fNrechits3D)  fNrechits3D[i]=0;
-  }
-}
-//__________________________________________________________________________________________________
-void AliRICH::FindClusters(Int_t nev /*kir,Int_t lastEntry*/)
-{// Loop on chambers and on cathode planes
-    for (Int_t icat=1;icat<2;icat++) {
-	gAlice->ResetDigits();
-	gAlice->TreeD()->GetEvent(0);
-	for (Int_t ich=0;ich<kNCH;ich++) {
-	  AliRICHChamber* iChamber=(AliRICHChamber*)fChambers->At(ich);
-	  TClonesArray *pRICHdigits  = this->DigitsAddress(ich);
-	  if (pRICHdigits == 0)	      
-	      continue;
-	  //
-	  // Get ready the current chamber stuff
-	  //
-	  AliRICHResponse* response = iChamber->GetResponseModel();
-	  AliSegmentation*  seg = iChamber->GetSegmentationModel();
-	  AliRICHClusterFinder* rec = iChamber->GetReconstructionModel();
-	  if (seg) {	  
-	      rec->SetSegmentation(seg);
-	      rec->SetResponse(response);
-	      rec->SetDigits(pRICHdigits);
-	      rec->SetChamber(ich);
-	      if (nev==0) rec->CalibrateCOG(); 
-	      rec->FindRawClusters();
-	  }  
-	  TClonesArray *fRch;
-	  fRch=RawClustAddress(ich);
-	  fRch->Sort();
-	} // for ich
-
-	gAlice->TreeR()->Fill();
-	TClonesArray *fRch;
-	for (int i=0;i<kNCH;i++) {
-	    fRch=RawClustAddress(i);
-	    fRch->GetEntriesFast();
-	}
-	
-	ResetRawClusters();
-	
-    } // for icat
-    
-    char hname[30];
-    sprintf(hname,"TreeR%d",nev);
-    gAlice->TreeR()->Write(hname,kOverwrite,0);
-    gAlice->TreeR()->Reset();    
-}//void AliRICH::FindClusters(Int_t nev)
-//__________________________________________________________________________________________________
-void AliRICH::MakeBranchInTreeD(TTree *treeD, const char *file)
-{// Create TreeD branches for the RICH.
-  if(GetDebug())Info("MakeBranchInTreeD","Start.");
-
-  const Int_t kBufferSize = 4000;
-  char branchname[30];
-    
-  //
-  // one branch for digits per chamber
-  // 
-  for (Int_t i=0; i<kNCH ;i++) {
-    sprintf(branchname,"%sDigits%d",GetName(),i+1);	
-    if (fDchambers && treeD) {
-      MakeBranchInTree(treeD,branchname, &((*fDchambers)[i]), kBufferSize, file);
-//      printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
-    }
-  }
-}
-//__________________________________________________________________________________________________
 void AliRICH::MakeBranch(Option_t* option)
 {//Create Tree branches for the RICH.
   if(GetDebug())Info("MakeBranch","Start with option= %s.",option);
     
   const Int_t kBufferSize = 4000;
-  char branchname[20];
       
-   
   const char *cH = strstr(option,"H");
   const char *cD = strstr(option,"D");
   const char *cR = strstr(option,"R");
   const char *cS = strstr(option,"S");
 
-  if(cH&&TreeH()){
-    if(!fHits) fHits=new TClonesArray("AliRICHhit",1000  );
-    if(!fCerenkovs) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
-    MakeBranchInTree(TreeH(),"RICHCerenkov", &fCerenkovs, kBufferSize, 0) ;
-
-    //kir if(!fSDigits) fSDigits    = new TClonesArray("AliRICHdigit",100000);
-    //kir MakeBranchInTree(TreeH(),"RICHSDigits", &fSDigits, kBufferSize, 0) ;
-  }     
+  if(cH&&TreeH()){//H
+    CreateHits();      //branch will be created in AliDetector::MakeBranch
+    CreateCerenkovsOld(); MakeBranchInTree(TreeH(),"RICHCerenkov", &fCerenkovs, kBufferSize,0);
+    CreateSpecialsOld();  MakeBranchInTree(TreeH(),"RICHSpecials", &fSpecials,kBufferSize,0); 
+  }//H     
   AliDetector::MakeBranch(option);//this is after cH because we need to guarantee that fHits array is created
       
-  if(cS&&fLoader->TreeS()){  
-    if(!fSDigits) fSDigits=new TClonesArray("AliRICHdigit",100000);
-    MakeBranchInTree(fLoader->TreeS(),"RICH",&fSDigits,kBufferSize,0) ;
-  }
+  if(cS&&fLoader->TreeS()){//S  
+    CreateSdigits();   MakeBranchInTree(fLoader->TreeS(),"RICH",&fSdigits,kBufferSize,0) ;
+  }//S
    
-  int i;
-  if (cD&&fLoader->TreeD()){
-    if(!fDchambers){
-      fDchambers=new TObjArray(kNCH);    // one branch for digits per chamber
-      for(i=0;i<kNCH;i++){ 
-        fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
-      }       
-    }
-    for (i=0; i<kNCH ;i++) 
-      {
-        sprintf(branchname,"%sDigits%d",GetName(),i+1);	
-        MakeBranchInTree(fLoader->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, 0);
-      }
-   }
+  if(cD&&fLoader->TreeD()){//D
+    CreateDigitsOld();  
+    for(int i=0;i<kNCH;i++) 
+      MakeBranchInTree(fLoader->TreeD(),Form("%sDigits%d",GetName(),i+1),&((*fDchambers)[i]),kBufferSize,0);
+  }//D
+  
+  if(cR&&fLoader->TreeR()){//R
+    CreateRawClustersOld(); 
+    for(int i=0; i<kNCH ;i++)
+      MakeBranchInTree(fLoader->TreeR(),Form("%sRawClusters%d",GetName(),i+1), &((*fRawClusters)[i]), kBufferSize, 0);
 
-  if (cR&&gAlice->TreeR()){//one branch for raw clusters per chamber
-    Int_t i;
-    if (fRawClusters == 0x0 ) 
-     {
-       fRawClusters = new TObjArray(kNCH);
-       for (i=0; i<kNCH ;i++) 
-         {
-           fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
-         }
-     }
-     
-    if (fRecHits1D == 0x0) 
-     {
-        fRecHits1D = new TObjArray(kNCH);
-        for (i=0; i<kNCH ;i++) 
-         {
-          fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
-         }
-     }
-
-    if (fRecHits3D == 0x0) 
-     {
-        fRecHits3D = new TObjArray(kNCH);
-        for (i=0; i<kNCH ;i++) 
-         {
-          fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
-         }
-     }
-       
-    for (i=0; i<kNCH ;i++){
-       sprintf(branchname,"%sRawClusters%d",GetName(),i+1);      
-       MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, 0);
-       sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
-       MakeBranchInTree(fLoader->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, 0);
-       sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);  
-       MakeBranchInTree(fLoader->TreeR(),branchname, &((*fRecHits3D)[i]), kBufferSize, 0);
-     }
-   }//if (cR && gAlice->TreeR())
+    CreateRecos1Old();   
+    for(int i=0; i<kNCH ;i++) 
+      MakeBranchInTree(fLoader->TreeR(),Form("%sRecHits1D%d",GetName(),i+1),&((*fRecHits1D)[i]),kBufferSize,0);
+    
+    CreateRecos3Old();   
+    for(int i=0; i<kNCH ;i++)
+      MakeBranchInTree(fLoader->TreeR(),Form("%sRecHits3D%d",GetName(),i+1), &((*fRecHits3D)[i]), kBufferSize, 0);
+   }//R
   if(GetDebug())Info("MakeBranch","Stop.");   
 }//void AliRICH::MakeBranch(Option_t* option)
-//______________________________________________________________________________
+//__________________________________________________________________________________________________
 void AliRICH::SetTreeAddress()
 {//Set branch address for the Hits and Digits Tree.
   if(GetDebug())Info("SetTreeAddress","Start.");
-  
-  char branchname[20];
-  Int_t i;
-
-    
+      
   TBranch *branch;
-  TTree *treeH = fLoader->TreeH();
-  TTree *treeD = fLoader->TreeD();
-  TTree *treeR = fLoader->TreeR();
     
-  if(treeH){
+  if(fLoader->TreeH()){//H
     if(GetDebug())Info("SetTreeAddress","tree H is requested.");
-    if(fHits==0x0) fHits=new TClonesArray("AliRICHhit",1000); 
-    
-    branch = treeH->GetBranch("RICHCerenkov");
-    if(branch){
-      if (fCerenkovs == 0x0) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000); 
-        branch->SetAddress(&fCerenkovs);
-    }
-       
-//kir      branch = treeH->GetBranch("RICHSDigits");
-//kir      if (branch) 
-//kir       {
-//kir         if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHdigit",100000);
-//kir         branch->SetAddress(&fSDigits);
-//kir       }
-  }//if(treeH)
- 
+    CreateHits();//branch map will be in AliDetector::SetTreeAddress    
+    branch=fLoader->TreeH()->GetBranch("RICHCerenkov");   if(branch){CreateCerenkovsOld(); branch->SetAddress(&fCerenkovs);}       
+    branch=fLoader->TreeH()->GetBranch("RICHSpecials");   if(branch){CreateSpecialsOld();  branch->SetAddress(&fSpecials);}
+  }//H
   AliDetector::SetTreeAddress();//this is after TreeH because we need to guarantee that fHits array is created
 
-    
-  if(fLoader->TreeS()){
+  if(fLoader->TreeS()){//S
     if(GetDebug())Info("SetTreeAddress","tree S is requested.");
-    if(!fSDigits) fSDigits=new TClonesArray("AliRICHdigit",100000);
-    fLoader->TreeS()->GetBranch("RICH")->SetAddress(&fSDigits);
-  }
+    branch=fLoader->TreeS()->GetBranch(GetName());        if(branch){CreateSdigits();   branch->SetAddress(&fSdigits);}
+  }//S
     
-    
-  if(treeD){
+  if(fLoader->TreeD()){//D    
     if(GetDebug())Info("SetTreeAddress","tree D is requested.");
-
-      if (fDchambers == 0x0) 
-        {
-           fDchambers = new TObjArray(kNCH);
-           for (i=0; i<kNCH ;i++) 
-             {
-               fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
-             }
-        }
+    for(int i=0;i<kNCH;i++){      
+      branch=fLoader->TreeD()->GetBranch(Form("%s%d",GetName(),i+1)); 
+      if(branch){CreateDigits(); branch->SetAddress(&((*fDigitsNew)[i]));}
       
-      for (i=0; i<kNCH; i++) {
-        sprintf(branchname,"%sDigits%d",GetName(),i+1);
-        if (fDchambers) {
-           branch = treeD->GetBranch(branchname);
-           if (branch) branch->SetAddress(&((*fDchambers)[i]));
-        }
-      }
-    }
+      branch=fLoader->TreeD()->GetBranch(Form("%sDigits%d",GetName(),i+1)); 
+      if(branch){CreateDigitsOld(); branch->SetAddress(&((*fDchambers)[i]));}
+    }//for
+  }//D
     
-  if(treeR){
+  if(fLoader->TreeR()){//R
     if(GetDebug())Info("SetTreeAddress","tree R is requested.");
 
-    if (fRawClusters == 0x0 ) 
-     {
-       fRawClusters = new TObjArray(kNCH);
-       for (i=0; i<kNCH ;i++) 
-         {
-           fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
-         }
-     }
-     
-    if (fRecHits1D == 0x0) 
-     {
-        fRecHits1D = new TObjArray(kNCH);
-        for (i=0; i<kNCH ;i++) 
-         {
-          fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
-         }
-     }
-
-    if (fRecHits3D == 0x0) 
-     {
-        fRecHits3D = new TObjArray(kNCH);
-        for (i=0; i<kNCH ;i++) 
-         {
-          fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
-         }
-     }
-    
-    for (i=0; i<kNCH; i++) {
-	  sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
-	  if (fRawClusters) {
-	      branch = treeR->GetBranch(branchname);
-	      if (branch) branch->SetAddress(&((*fRawClusters)[i]));
-	  }
+    for(int i=0;i<kNCH;i++){         
+      branch=fLoader->TreeR()->GetBranch(Form("%sClusters%d" ,GetName(),i+1));
+      if(branch){CreateClusters(); branch->SetAddress(&((*fRawClusters)[i]));}
     }
+    
+    for(int i=0;i<kNCH;i++) {
+      branch=fLoader->TreeR()->GetBranch(Form("%sRawClusters%d" ,GetName(),i+1));
+      if(branch){CreateRawClustersOld(); branch->SetAddress(&((*fRawClusters)[i]));}
       
-    for (i=0; i<kNCH; i++) {
-	sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
-	if (fRecHits1D) {
-	  branch = treeR->GetBranch(branchname);
-	  if (branch) branch->SetAddress(&((*fRecHits1D)[i]));
-	  }
-     }
+      branch=fLoader->TreeR()->GetBranch(Form("%sRecHits1D%d",GetName(),i+1));
+      if(branch){CreateRecos1Old(); branch->SetAddress(&((*fRecHits1D)[i]));}
       
-     for (i=0; i<kNCH; i++) {
-	sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);
-	if (fRecHits3D) {
-	  branch = treeR->GetBranch(branchname);
-	  if (branch) branch->SetAddress(&((*fRecHits3D)[i]));
-	  }
-      } 
-      
-  }//if(treeR)
+      branch=fLoader->TreeR()->GetBranch(Form("%sRecHits3D%d",GetName(),i+1));
+      if(branch){CreateRecos3Old();branch->SetAddress(&((*fRecHits3D)[i]));}
+    }
+  }//R
   if(GetDebug())Info("SetTreeAddress","Stop.");
 }//void AliRICH::SetTreeAddress()
 //__________________________________________________________________________________________________
 void AliRICH::Print(Option_t *option)const
 {
   TObject::Print(option);
-  fpParam->Dump();
+  Param()->Dump();
   fChambers->Print(option);  
 }//void AliRICH::Print(Option_t *option)const
 //__________________________________________________________________________________________________
@@ -1113,13 +692,13 @@ void AliRICH::CreateGeometry()
 {//Creates detailed geometry simulation (currently GEANT volumes tree)         
   if(GetDebug())Info("CreateGeometry","Start.");
 //???????? to be removed to AliRICHParam?
-  fpParam->RadiatorToPads(fpParam->FreonThickness()/2+fpParam->QuartzThickness()+fpParam->GapThickness());
+  Param()->RadiatorToPads(Param()->FreonThickness()/2+Param()->QuartzThickness()+Param()->GapThickness());
     
 //Opaque quartz thickness
   Float_t oqua_thickness = .5;
 //CsI dimensions
-  Float_t csi_width =fpParam->Nx()*fpParam->PadSizeX()+fpParam->DeadZone();
-  Float_t csi_length=fpParam->Ny()*fpParam->PadSizeY()+2*fpParam->DeadZone();
+  Float_t pcX=Param()->PcSizeX();
+  Float_t pcY=Param()->PcSizeY();
   
   Int_t *idtmed = fIdtmed->GetArray()-999;
     
@@ -1129,105 +708,86 @@ void AliRICH::CreateGeometry()
   Float_t par[3];
     
 //External aluminium box 
-  par[0]=68.8*kcm;par[1]=13*kcm;par[2]=70.86*kcm;//Original Settings
-  gMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
+  par[0]=68.8*kcm;par[1]=13*kcm;par[2]=70.86*kcm;  gMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
 //Air 
-  par[0]=66.3;   par[1] = 13; par[2] = 68.35; //Original Settings
-  gMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3); 
+  par[0]=66.3;   par[1] = 13; par[2] = 68.35;      gMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3); 
 //Air 2 (cutting the lower part of the box)
-  par[0]=1.25;    par[1] = 3;    par[2] = 70.86; //Original Settings
-  gMC->Gsvolu("AIR2", "BOX ", idtmed[1000], par, 3);
+  par[0]=1.25;    par[1] = 3;    par[2] = 70.86;   gMC->Gsvolu("AIR2", "BOX ", idtmed[1000], par, 3);
 //Air 3 (cutting the lower part of the box)
-  par[0]=66.3;    par[1] = 3;  par[2] = 1.2505; //Original Settings
-  gMC->Gsvolu("AIR3", "BOX ", idtmed[1000], par, 3);
+  par[0]=66.3;    par[1] = 3;  par[2] = 1.2505;    gMC->Gsvolu("AIR3", "BOX ", idtmed[1000], par, 3);
 //Honeycomb 
-  par[0]=66.3;par[1]=0.188;  par[2] = 68.35;  //Original Settings
-  gMC->Gsvolu("HONE", "BOX ", idtmed[1001], par, 3);
+  par[0]=66.3;par[1]=0.188;  par[2] = 68.35;       gMC->Gsvolu("HONE", "BOX ", idtmed[1001], par, 3);
 //Aluminium sheet 
-  par[0]=66.3;par[1]=0.025;par[2]=68.35; //Original Settings
+  par[0]=66.3;par[1]=0.025;par[2]=68.35;           gMC->Gsvolu("ALUM", "BOX ", idtmed[1009], par, 3);
   //par[0] = 66.5; par[1] = .025; par[2] = 63.1;
-  gMC->Gsvolu("ALUM", "BOX ", idtmed[1009], par, 3);
 //Quartz 
-  par[0]=fpParam->QuartzWidth()/2;par[1]=fpParam->QuartzThickness()/2;par[2]=fpParam->QuartzLength()/2;
+  par[0]=Param()->QuartzWidth()/2;par[1]=Param()->QuartzThickness()/2;par[2]=Param()->QuartzLength()/2;
   gMC->Gsvolu("QUAR", "BOX ", idtmed[1002], par, 3);
 //Spacers (cylinders) 
-  par[0]=0.;par[1]=.5;par[2]=fpParam->FreonThickness()/2;
-  gMC->Gsvolu("SPAC", "TUBE", idtmed[1002], par, 3);    
+  par[0]=0.;par[1]=.5;par[2]=Param()->FreonThickness()/2;  gMC->Gsvolu("SPAC", "TUBE", idtmed[1002], par, 3);    
 //Feet (freon slabs supports)
-  par[0] = .7;  par[1] = .3;  par[2] = 1.9;
-  gMC->Gsvolu("FOOT", "BOX", idtmed[1009], par, 3);
+  par[0] = .7;  par[1] = .3;  par[2] = 1.9;        gMC->Gsvolu("FOOT", "BOX", idtmed[1009], par, 3);
 //Opaque quartz 
-  par[0]=fpParam->QuartzWidth()/2;par[1]= .2;par[2]=fpParam->QuartzLength()/2;
+  par[0]=Param()->QuartzWidth()/2;par[1]= .2;par[2]=Param()->QuartzLength()/2;
   gMC->Gsvolu("OQUA", "BOX ", idtmed[1007], par, 3);
 //Frame of opaque quartz
-  par[0]=fpParam->OuterFreonWidth()/2;par[1]=fpParam->FreonThickness()/2;par[2]=fpParam->OuterFreonLength()/2; 
+  par[0]=Param()->OuterFreonWidth()/2;par[1]=Param()->FreonThickness()/2;par[2]=Param()->OuterFreonLength()/2; 
   gMC->Gsvolu("OQF1", "BOX ", idtmed[1007], par, 3);
-  par[0]=fpParam->InnerFreonWidth()/2;par[1]=fpParam->FreonThickness()/2;par[2]=fpParam->InnerFreonLength()/2; 
+  par[0]=Param()->InnerFreonWidth()/2;par[1]=Param()->FreonThickness()/2;par[2]=Param()->InnerFreonLength()/2; 
   gMC->Gsvolu("OQF2", "BOX ", idtmed[1007], par, 3);
 //Freon 
-  par[0]=fpParam->OuterFreonWidth()/2 - oqua_thickness;
-  par[1]=fpParam->FreonThickness()/2;
-  par[2]=fpParam->OuterFreonLength()/2 - 2*oqua_thickness; 
+  par[0]=Param()->OuterFreonWidth()/2 - oqua_thickness;
+  par[1]=Param()->FreonThickness()/2;
+  par[2]=Param()->OuterFreonLength()/2 - 2*oqua_thickness; 
   gMC->Gsvolu("FRE1", "BOX ", idtmed[1003], par, 3);
 
-  par[0]=fpParam->InnerFreonWidth()/2 - oqua_thickness;
-  par[1]=fpParam->FreonThickness()/2;
-  par[2]=fpParam->InnerFreonLength()/2 - 2*oqua_thickness; 
+  par[0]=Param()->InnerFreonWidth()/2 - oqua_thickness;
+  par[1]=Param()->FreonThickness()/2;
+  par[2]=Param()->InnerFreonLength()/2 - 2*oqua_thickness; 
   gMC->Gsvolu("FRE2", "BOX ", idtmed[1003], par, 3);    
 //Methane 
-  par[0]=csi_width/2;par[1]=fpParam->GapThickness()/2;par[2]=csi_length/2;
-  gMC->Gsvolu("META", "BOX ", idtmed[1004], par, 3);
+  par[0]=pcX/2;par[1]=Param()->GapThickness()/2;par[2]=pcY/2;         gMC->Gsvolu("META","BOX ",idtmed[1004], par, 3);
 //Methane gap 
-  par[0]=csi_width/2;par[1]=fpParam->ProximityGapThickness()/2;par[2] = csi_length/2;
-  gMC->Gsvolu("GAP ", "BOX ", idtmed[1008], par, 3);
-//CsI photocathode 
-  par[0]=csi_width/2;par[1]=.25;par[2]=csi_length/2;
-  gMC->Gsvolu("CSI ", "BOX ", idtmed[1005], par, 3);
+  par[0]=pcX/2;par[1]=Param()->ProximityGapThickness()/2;par[2]=pcY/2;gMC->Gsvolu("GAP ","BOX ",(*fIdtmed)[kGAP],par,3);
+//CsI PC
+  par[0]=pcX/2;par[1]=.25;par[2]=pcY/2;  gMC->Gsvolu("CSI ", "BOX ", (*fIdtmed)[kCSI], par, 3);
 //Anode grid 
-  par[0] = 0.;par[1] = .001;par[2] = 20.;
-  gMC->Gsvolu("GRID", "TUBE", idtmed[1006], par, 3);
+  par[0] = 0.;par[1] = .001;par[2] = 20.;  gMC->Gsvolu("GRID", "TUBE", idtmed[1006], par, 3);
 
 //Wire supports
 //Bar of metal
-  par[0]=csi_width/2;par[1]=1.05;par[2]=1.05;
-  gMC->Gsvolu("WSMe", "BOX ", idtmed[1009], par, 3);
+  par[0]=pcX/2;par[1]=1.05;par[2]=1.05;  gMC->Gsvolu("WSMe", "BOX ", idtmed[1009], par, 3);
 //Ceramic pick up (base)
-  par[0]=csi_width/2;par[1]= .25;par[2]=1.05;
-  gMC->Gsvolu("WSG1", "BOX ", idtmed[1010], par, 3);
+  par[0]=pcX/2;par[1]= .25;par[2]=1.05;  gMC->Gsvolu("WSG1", "BOX ", idtmed[1010], par, 3);
 //Ceramic pick up (head)
-  par[0] = csi_width/2;par[1] = .1;par[2] = .1;
-  gMC->Gsvolu("WSG2", "BOX ", idtmed[1010], par, 3);
+  par[0] = pcX/2;par[1] = .1;par[2] = .1;  gMC->Gsvolu("WSG2", "BOX ", idtmed[1010], par, 3);
 
 //Aluminium supports for methane and CsI
 //Short bar
-  par[0]=csi_width/2;par[1]=fpParam->GapThickness()/2 + .25; par[2] = (68.35 - csi_length/2)/2;
+  par[0]=pcX/2;par[1]=Param()->GapThickness()/2 + .25; par[2] = (68.35 - pcY/2)/2;
   gMC->Gsvolu("SMSH", "BOX", idtmed[1009], par, 3);
 //Long bar
-  par[0]=(66.3 - csi_width/2)/2;par[1]=fpParam->GapThickness()/2+.25;par[2]=csi_length/2+68.35-csi_length/2;
+  par[0]=(66.3 - pcX/2)/2;par[1]=Param()->GapThickness()/2+.25;par[2]=pcY/2+68.35-pcY/2;
   gMC->Gsvolu("SMLG", "BOX", idtmed[1009], par, 3);
     
 //Aluminium supports for freon
 //Short bar
-  par[0] = fpParam->QuartzWidth()/2; par[1] = .3; par[2] = (68.35 - fpParam->QuartzLength()/2)/2;
+  par[0] = Param()->QuartzWidth()/2; par[1] = .3; par[2] = (68.35 - Param()->QuartzLength()/2)/2;
   gMC->Gsvolu("SFSH", "BOX", idtmed[1009], par, 3);    
 //Long bar
-  par[0] = (66.3 - fpParam->QuartzWidth()/2)/2; par[1] = .3;
-  par[2] = fpParam->QuartzLength()/2 + 68.35 - fpParam->QuartzLength()/2;
+  par[0] = (66.3 - Param()->QuartzWidth()/2)/2; par[1] = .3;
+  par[2] = Param()->QuartzLength()/2 + 68.35 - Param()->QuartzLength()/2;
   gMC->Gsvolu("SFLG", "BOX", idtmed[1009], par, 3);    
 //PCB backplane
-  par[0] = csi_width/2;par[1] = .25; par[2] = csi_length/4 -.5025;
-  gMC->Gsvolu("PCB ", "BOX", idtmed[1011], par, 3);
+  par[0] = pcX/2;par[1] = .25; par[2] = pcY/4 -.5025;  gMC->Gsvolu("PCB ", "BOX", idtmed[1011], par, 3);
 
 //Backplane supports
 //Aluminium slab
-  par[0] = 33.15;par[1] = 2;par[2] = 21.65;
-  gMC->Gsvolu("BACK", "BOX", idtmed[1009], par, 3);    
+  par[0] = 33.15;par[1] = 2;par[2] = 21.65;  gMC->Gsvolu("BACK", "BOX", idtmed[1009], par, 3);    
 //Big hole
-  par[0] = 9.05; par[1] = 2; par[2] = 4.4625;
-  gMC->Gsvolu("BKHL", "BOX", idtmed[1000], par, 3);
+  par[0] = 9.05; par[1] = 2; par[2] = 4.4625;  gMC->Gsvolu("BKHL", "BOX", idtmed[1000], par, 3);
 //Small hole
-  par[0] = 5.7;par[1] = 2;par[2] = 4.4625;
-  gMC->Gsvolu("BKHS", "BOX", idtmed[1000], par, 3);
+  par[0] = 5.7;par[1] = 2;par[2] = 4.4625;  gMC->Gsvolu("BKHS", "BOX", idtmed[1000], par, 3);
 //Place holes inside backplane support
   gMC->Gspos("BKHS", 1, "BACK", .8 + 5.7,0., .6 + 4.4625, 0, "ONLY");
   gMC->Gspos("BKHS", 2, "BACK", -.8 - 5.7,0., .6 + 4.4625, 0, "ONLY");
@@ -1247,33 +807,33 @@ void AliRICH::CreateGeometry()
   gMC->Gspos("BKHL", 8, "BACK", -.8 - 11.4 - 1.6 - 9.05, 0., -.6 - 8.925 - 1.2 - 4.4625, 0, "ONLY");
 //Place material inside RICH 
   gMC->Gspos("SRIC", 1, "RICH", 0.,0., 0., 0, "ONLY");
-  gMC->Gspos("AIR2", 1, "RICH", 66.3 + 1.2505, 1.276-fpParam->GapThickness()/2-fpParam->QuartzThickness()-fpParam->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, 0., 0, "ONLY");
-  gMC->Gspos("AIR2", 2, "RICH", -66.3 - 1.2505,1.276-fpParam->GapThickness()/2-fpParam->QuartzThickness()-fpParam->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, 0., 0, "ONLY");
-  gMC->Gspos("AIR3", 1, "RICH", 0., 1.276-fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, -68.35 - 1.25, 0, "ONLY");
-  gMC->Gspos("AIR3", 2, "RICH", 0., 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35,  68.35 + 1.25, 0, "ONLY");
-  gMC->Gspos("ALUM", 1, "SRIC", 0., 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .6 - .05 - .376 -.025, 0., 0, "ONLY");
-  gMC->Gspos("HONE", 1, "SRIC", 0., 1.276- fpParam->GapThickness()/2  - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .6 - .05 - .188, 0., 0, "ONLY");
-  gMC->Gspos("ALUM", 2, "SRIC", 0., 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .6 - .025, 0., 0, "ONLY");
-  gMC->Gspos("FOOT", 1, "SRIC", 64.95, 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .3, 36.9, 0, "ONLY");
-  gMC->Gspos("FOOT", 2, "SRIC", 21.65, 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .3 , 36.9, 0, "ONLY");
-  gMC->Gspos("FOOT", 3, "SRIC", -21.65, 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .3, 36.9, 0, "ONLY");
-  gMC->Gspos("FOOT", 4, "SRIC", -64.95, 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .3, 36.9, 0, "ONLY");
-  gMC->Gspos("FOOT", 5, "SRIC", 64.95, 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .3, -36.9, 0, "ONLY");
-  gMC->Gspos("FOOT", 6, "SRIC", 21.65, 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .3, -36.9, 0, "ONLY");
-  gMC->Gspos("FOOT", 7, "SRIC", -21.65, 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .3, -36.9, 0, "ONLY");
-  gMC->Gspos("FOOT", 8, "SRIC", -64.95, 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .4 - .3, -36.9, 0, "ONLY");
-  gMC->Gspos("OQUA", 1, "SRIC", 0., 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()- .2, 0., 0, "ONLY");
+  gMC->Gspos("AIR2", 1, "RICH", 66.3 + 1.2505, 1.276-Param()->GapThickness()/2-Param()->QuartzThickness()-Param()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, 0., 0, "ONLY");
+  gMC->Gspos("AIR2", 2, "RICH", -66.3 - 1.2505,1.276-Param()->GapThickness()/2-Param()->QuartzThickness()-Param()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, 0., 0, "ONLY");
+  gMC->Gspos("AIR3", 1, "RICH", 0., 1.276-Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, -68.35 - 1.25, 0, "ONLY");
+  gMC->Gspos("AIR3", 2, "RICH", 0., 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35,  68.35 + 1.25, 0, "ONLY");
+  gMC->Gspos("ALUM", 1, "SRIC", 0., 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .6 - .05 - .376 -.025, 0., 0, "ONLY");
+  gMC->Gspos("HONE", 1, "SRIC", 0., 1.276- Param()->GapThickness()/2  - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .6 - .05 - .188, 0., 0, "ONLY");
+  gMC->Gspos("ALUM", 2, "SRIC", 0., 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .6 - .025, 0., 0, "ONLY");
+  gMC->Gspos("FOOT", 1, "SRIC", 64.95, 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .3, 36.9, 0, "ONLY");
+  gMC->Gspos("FOOT", 2, "SRIC", 21.65, 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .3 , 36.9, 0, "ONLY");
+  gMC->Gspos("FOOT", 3, "SRIC", -21.65, 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .3, 36.9, 0, "ONLY");
+  gMC->Gspos("FOOT", 4, "SRIC", -64.95, 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .3, 36.9, 0, "ONLY");
+  gMC->Gspos("FOOT", 5, "SRIC", 64.95, 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .3, -36.9, 0, "ONLY");
+  gMC->Gspos("FOOT", 6, "SRIC", 21.65, 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .3, -36.9, 0, "ONLY");
+  gMC->Gspos("FOOT", 7, "SRIC", -21.65, 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .3, -36.9, 0, "ONLY");
+  gMC->Gspos("FOOT", 8, "SRIC", -64.95, 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .4 - .3, -36.9, 0, "ONLY");
+  gMC->Gspos("OQUA", 1, "SRIC", 0., 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()- .2, 0., 0, "ONLY");
 // Methane supports
-  gMC->Gspos("SMLG", 1, "SRIC", csi_width/2 + (66.3 - csi_width/2)/2, 1.276 + .25, 0., 0, "ONLY");
-  gMC->Gspos("SMLG", 2, "SRIC", - csi_width/2 - (66.3 - csi_width/2)/2, 1.276 + .25, 0., 0, "ONLY");
-  gMC->Gspos("SMSH", 1, "SRIC", 0., 1.276 + .25, csi_length/2 + (68.35 - csi_length/2)/2, 0, "ONLY");
-  gMC->Gspos("SMSH", 2, "SRIC", 0., 1.276 + .25, - csi_length/2 - (68.35 - csi_length/2)/2, 0, "ONLY");
+  gMC->Gspos("SMLG", 1, "SRIC", pcX/2 + (66.3 - pcX/2)/2, 1.276 + .25, 0., 0, "ONLY");
+  gMC->Gspos("SMLG", 2, "SRIC", - pcX/2 - (66.3 - pcX/2)/2, 1.276 + .25, 0., 0, "ONLY");
+  gMC->Gspos("SMSH", 1, "SRIC", 0., 1.276 + .25, pcY/2 + (68.35 - pcY/2)/2, 0, "ONLY");
+  gMC->Gspos("SMSH", 2, "SRIC", 0., 1.276 + .25, - pcY/2 - (68.35 - pcY/2)/2, 0, "ONLY");
 //Freon supports
-  Float_t supp_y = 1.276 - fpParam->GapThickness()/2- fpParam->QuartzThickness() -fpParam->FreonThickness() - .2 + .3; //y position of freon supports
-  gMC->Gspos("SFLG", 1, "SRIC", fpParam->QuartzWidth()/2 + (66.3 - fpParam->QuartzWidth()/2)/2, supp_y, 0., 0, "ONLY");
-  gMC->Gspos("SFLG", 2, "SRIC", - fpParam->QuartzWidth()/2 - (66.3 - fpParam->QuartzWidth()/2)/2, supp_y, 0., 0, "ONLY");
-  gMC->Gspos("SFSH", 1, "SRIC", 0., supp_y, fpParam->QuartzLength()/2 + (68.35 - fpParam->QuartzLength()/2)/2, 0, "ONLY");
-  gMC->Gspos("SFSH", 2, "SRIC", 0., supp_y, - fpParam->QuartzLength()/2 - (68.35 - fpParam->QuartzLength()/2)/2, 0, "ONLY");
+  Float_t supp_y = 1.276 - Param()->GapThickness()/2- Param()->QuartzThickness() -Param()->FreonThickness() - .2 + .3; //y position of freon supports
+  gMC->Gspos("SFLG", 1, "SRIC", Param()->QuartzWidth()/2 + (66.3 - Param()->QuartzWidth()/2)/2, supp_y, 0., 0, "ONLY");
+  gMC->Gspos("SFLG", 2, "SRIC", - Param()->QuartzWidth()/2 - (66.3 - Param()->QuartzWidth()/2)/2, supp_y, 0., 0, "ONLY");
+  gMC->Gspos("SFSH", 1, "SRIC", 0., supp_y, Param()->QuartzLength()/2 + (68.35 - Param()->QuartzLength()/2)/2, 0, "ONLY");
+  gMC->Gspos("SFSH", 2, "SRIC", 0., supp_y, - Param()->QuartzLength()/2 - (68.35 - Param()->QuartzLength()/2)/2, 0, "ONLY");
   AliMatrix(idrotm[1019], 0., 0., 90., 0., 90., 90.);
 //Place spacers
   Int_t nspacers = 30;
@@ -1303,27 +863,27 @@ void AliRICH::CreateGeometry()
   }
   gMC->Gspos("FRE1", 1, "OQF1", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("FRE2", 1, "OQF2", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("OQF1", 1, "SRIC", fpParam->OuterFreonWidth()/2 + fpParam->InnerFreonWidth()/2 + 2, 1.276 - fpParam->GapThickness()/2- fpParam->QuartzThickness() -fpParam->FreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
-  gMC->Gspos("OQF2", 2, "SRIC", 0., 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()/2, 0., 0, "ONLY");          //Original settings 
-  gMC->Gspos("OQF1", 3, "SRIC", - (fpParam->OuterFreonWidth()/2 + fpParam->InnerFreonWidth()/2) - 2, 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness() - fpParam->FreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
-  gMC->Gspos("QUAR", 1, "SRIC", 0., 1.276 - fpParam->GapThickness()/2 - fpParam->QuartzThickness()/2, 0., 0, "ONLY");
-  gMC->Gspos("GAP ", 1, "META", 0., fpParam->GapThickness()/2 - fpParam->ProximityGapThickness()/2 - 0.0001, 0., 0, "ONLY");
+  gMC->Gspos("OQF1", 1, "SRIC", Param()->OuterFreonWidth()/2 + Param()->InnerFreonWidth()/2 + 2, 1.276 - Param()->GapThickness()/2- Param()->QuartzThickness() -Param()->FreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
+  gMC->Gspos("OQF2", 2, "SRIC", 0., 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()/2, 0., 0, "ONLY");          //Original settings 
+  gMC->Gspos("OQF1", 3, "SRIC", - (Param()->OuterFreonWidth()/2 + Param()->InnerFreonWidth()/2) - 2, 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
+  gMC->Gspos("QUAR", 1, "SRIC", 0., 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness()/2, 0., 0, "ONLY");
+  gMC->Gspos("GAP ", 1, "META", 0., Param()->GapThickness()/2 - Param()->ProximityGapThickness()/2 - 0.0001, 0., 0, "ONLY");
   gMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
-  gMC->Gspos("CSI ", 1, "SRIC", 0., 1.276 + fpParam->GapThickness()/2 + .25, 0., 0, "ONLY");
+  gMC->Gspos("CSI ", 1, "SRIC", 0., 1.276 + Param()->GapThickness()/2 + .25, 0., 0, "ONLY");
 //Wire support placing
-  gMC->Gspos("WSG2", 1, "GAP ", 0., fpParam->ProximityGapThickness()/2 - .1, 0., 0, "ONLY");
+  gMC->Gspos("WSG2", 1, "GAP ", 0., Param()->ProximityGapThickness()/2 - .1, 0., 0, "ONLY");
   gMC->Gspos("WSG1", 1, "CSI ", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("WSMe", 1, "SRIC ", 0., 1.276 + fpParam->GapThickness()/2 + .5 + 1.05, 0., 0, "ONLY");
+  gMC->Gspos("WSMe", 1, "SRIC ", 0., 1.276 + Param()->GapThickness()/2 + .5 + 1.05, 0., 0, "ONLY");
 //Backplane placing
-  gMC->Gspos("BACK", 1, "SRIC ", -33.15, 1.276 + fpParam->GapThickness()/2 + .5 + 2.1 + 2, 43.3, 0, "ONLY");
-  gMC->Gspos("BACK", 2, "SRIC ", 33.15, 1.276 + fpParam->GapThickness()/2 + .5 + 2.1 + 2 , 43.3, 0, "ONLY");
-  gMC->Gspos("BACK", 3, "SRIC ", -33.15, 1.276 + fpParam->GapThickness()/2 + .5 + 2.1 + 2, 0., 0, "ONLY");
-  gMC->Gspos("BACK", 4, "SRIC ", 33.15, 1.276 + fpParam->GapThickness()/2 + .5 + 2.1 + 2, 0., 0, "ONLY");
-  gMC->Gspos("BACK", 5, "SRIC ", 33.15, 1.276 + fpParam->GapThickness()/2 + .5 + 2.1 + 2, -43.3, 0, "ONLY");
-  gMC->Gspos("BACK", 6, "SRIC ", -33.15, 1.276 + fpParam->GapThickness()/2 + .5 + 2.1 + 2, -43.3, 0, "ONLY");
+  gMC->Gspos("BACK", 1, "SRIC ", -33.15, 1.276 + Param()->GapThickness()/2 + .5 + 2.1 + 2, 43.3, 0, "ONLY");
+  gMC->Gspos("BACK", 2, "SRIC ", 33.15, 1.276 + Param()->GapThickness()/2 + .5 + 2.1 + 2 , 43.3, 0, "ONLY");
+  gMC->Gspos("BACK", 3, "SRIC ", -33.15, 1.276 + Param()->GapThickness()/2 + .5 + 2.1 + 2, 0., 0, "ONLY");
+  gMC->Gspos("BACK", 4, "SRIC ", 33.15, 1.276 + Param()->GapThickness()/2 + .5 + 2.1 + 2, 0., 0, "ONLY");
+  gMC->Gspos("BACK", 5, "SRIC ", 33.15, 1.276 + Param()->GapThickness()/2 + .5 + 2.1 + 2, -43.3, 0, "ONLY");
+  gMC->Gspos("BACK", 6, "SRIC ", -33.15, 1.276 + Param()->GapThickness()/2 + .5 + 2.1 + 2, -43.3, 0, "ONLY");
 //PCB placing
-  gMC->Gspos("PCB ", 1, "SRIC ", 0.,  1.276 + fpParam->GapThickness()/2 + .5 + 1.05, csi_width/4 + .5025 + 2.5, 0, "ONLY");
-  gMC->Gspos("PCB ", 2, "SRIC ", 0.,  1.276 + fpParam->GapThickness()/2 + .5 + 1.05, -csi_width/4 - .5025 - 2.5, 0, "ONLY");
+  gMC->Gspos("PCB ", 1, "SRIC ", 0.,  1.276 + Param()->GapThickness()/2 + .5 + 1.05, pcX/4 + .5025 + 2.5, 0, "ONLY");
+  gMC->Gspos("PCB ", 2, "SRIC ", 0.,  1.276 + Param()->GapThickness()/2 + .5 + 1.05, -pcX/4 - .5025 - 2.5, 0, "ONLY");
 
 //place chambers into mother volume ALIC
   for(int i=1;i<=kNCH;i++){
@@ -1335,22 +895,17 @@ void AliRICH::CreateGeometry()
 
   if(GetDebug())Info("CreateGeometry","Stop.");  
 }//void AliRICH::CreateGeometry()
-//______________________________________________________________________________
+//__________________________________________________________________________________________________
 void AliRICH::CreateChambers()
-{//(re)create all RICH Chambers
-  if(GetDebug())Info("CreateChambers","Start.");
-
-  if(fChambers) delete fChambers;//recreate chambers
+{//create all RICH Chambers, do nothing if already created.
+  if(fChambers) return;//
+  if(GetDebug())Info("CreateChambers","Creating RICH chambers.");
   fChambers=new TObjArray(kNCH);
   fChambers->SetOwner();
-  for(int i=0;i<kNCH;i++){
-    fChambers->AddAt(new AliRICHChamber(i+1,fpParam),i);
-  }
-
-  if(GetDebug())Info("CreateChambers","Stop.");
+  for(int i=0;i<kNCH;i++)  fChambers->AddAt(new AliRICHChamber(i+1,Param()),i);  
 }//void AliRICH::CreateChambers()
 //__________________________________________________________________________________________________
-void AliRICH::GenerateFeedbacks(Float_t eloss)
+void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
 {// Generate FeedBack photons
   Int_t j;
   Float_t cthf, phif, enfp = 0, sthf;
@@ -1360,8 +915,8 @@ void AliRICH::GenerateFeedbacks(Float_t eloss)
   Float_t pol[3], mom[4];
 //Determine number of feedback photons
   TLorentzVector x4;
-  gMC->TrackPosition(x4);//This sould return the current track position
-  Float_t charge=Param()->TotalCharge(gMC->TrackPid(),eloss,5*kcm);//??? Totsl Charge
+  gMC->TrackPosition(x4);  
+  Float_t charge=Param()->TotalCharge(gMC->TrackPid(),eloss,C(iChamber)->G2Ly(x4));//Total Charge
   Int_t iNphotons=gMC->GetRandom()->Poisson(Param()->AlphaFeedback()*charge);    
   Info("GenerateFeedbacks","N photons=%i",iNphotons);
 //Generate photons
@@ -1430,33 +985,4 @@ void AliRICH::GenerateFeedbacks(Float_t eloss)
     
   }
 }//Int_t AliRICH::FeedBackPhotons()
-//__________________________________________________________________________________________________
-static Int_t sMaxIterPad=0;    // Static variables for the pad-hit iterator routines
-static Int_t sCurIterPad=0;
-
-//__________________________________________________________________________________________________
-AliRICHSDigit* AliRICH::FirstPad(AliRICHhit*  hit,TClonesArray *clusters ) 
-{// Initialise the pad iterator Return the address of the first sdigit for hit
-    TClonesArray *theClusters = clusters;
-    Int_t nclust = theClusters->GetEntriesFast();
-    if (nclust && hit->PHlast() > 0) {
-	sMaxIterPad=Int_t(hit->PHlast());
-	sCurIterPad=Int_t(hit->PHfirst());
-	return (AliRICHSDigit*) clusters->UncheckedAt(sCurIterPad-1);
-    } else {
-	return 0;
-    }
-    
-}
-//__________________________________________________________________________________________________
-AliRICHSDigit* AliRICH::NextPad(TClonesArray *clusters) 
-{// Iterates over pads
-  
-    sCurIterPad++;
-    if (sCurIterPad <= sMaxIterPad) {
-	return (AliRICHSDigit*) clusters->UncheckedAt(sCurIterPad-1);
-    } else {
-	return 0;
-    }
-}
 //__________________________________________________________________________________________________

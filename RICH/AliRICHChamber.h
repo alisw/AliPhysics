@@ -8,6 +8,7 @@
 #include <TVector3.h>
 #include <TMath.h>
 #include <TRotation.h>
+#include <TLorentzVector.h>
 #include "AliRICHConst.h"
 
 #include "AliRICHTresholdMap.h"
@@ -38,13 +39,13 @@ public:
   const char* RotMatrixName()      const{return "rot"+fName;}
   TRotation   Rot()                     {return fRot;}
   Double_t    Rho()                const{return fCenterV3.Mag();} 
-  Double_t    ThetaD()             const{return fCenterV3.Theta()*kR2d;}    
-  Double_t    PhiD()               const{return fCenterV3.Phi()*kR2d;}    
-  Double_t    ThetaXd()            const{return fRot.ThetaX()*kR2d;}    
-  Double_t    PhiXd()              const{return fRot.PhiX()*kR2d;}    
-  Double_t    ThetaYd()            const{return fRot.ThetaY()*kR2d;}    
-  Double_t    PhiYd()              const{return fRot.PhiY()*kR2d;}    
-  Double_t    ThetaZd()            const{return fRot.ThetaZ()*kR2d;}    
+  Double_t    ThetaD()             const{return fCenterV3.Theta()*TMath::RadToDeg();}    
+  Double_t    PhiD()               const{return fCenterV3.Phi()*TMath::RadToDeg();}    
+  Double_t    ThetaXd()            const{return fRot.ThetaX()*TMath::RadToDeg();}    
+  Double_t    PhiXd()              const{return fRot.PhiX()*TMath::RadToDeg();}    
+  Double_t    ThetaYd()            const{return fRot.ThetaY()*TMath::RadToDeg();}    
+  Double_t    PhiYd()              const{return fRot.PhiY()*TMath::RadToDeg();}    
+  Double_t    ThetaZd()            const{return fRot.ThetaZ()*TMath::RadToDeg();}    
   Double_t    PhiZd()              const{return fRot.PhiZ()*kR2d;}    
   void        RotateX(Double_t a)       {fRot.RotateX(a);fCenterV3.RotateX(a);}
   void        RotateY(Double_t a)       {fRot.RotateY(a);fCenterV3.RotateY(a);}
@@ -52,10 +53,14 @@ public:
   Double_t    X()                  const{return fCenterV3.X();}  
   Double_t    Y()                  const{return fCenterV3.Y();}   
   Double_t    Z()                  const{return fCenterV3.Z();}
-  TVector3    L2G(TVector3 v3)                      const{v3.Transform(fRot.Inverse());v3+=fCenterV3;return v3;}
-  TVector3    L2G(Double_t x,Double_t y,Double_t z) const{TVector3 v3(x,y,z);return L2G(v3);}
-  TVector3    G2L(TVector3 v3)     const{v3-=fCenterV3;  v3.Transform(fRot);return v3;}
-  TVector3    G2L(Double_t x,Double_t y,Double_t z) const{TVector3 v3(x,y,z);return G2L(v3);}
+  TVector3    L2G(TVector3 x3)                       const{x3.Transform(fRot);x3+=fCenterV3;return x3;}
+  TVector3    G2L(TVector3 x3)                       const{x3-=fCenterV3;x3.Transform(fRot.Inverse()); return x3;}
+  TVector3    L2G(Double_t x,Double_t y,Double_t z)  const{return L2G(TVector3(x,y,z));}
+  TVector3    G2L(TLorentzVector x4)                 const{return G2L(x4.Vect());}
+  Float_t     G2Ly(TLorentzVector x4)                const{TVector3 x3=G2L(x4.Vect()); return x3.Z();}
+  TVector3    G2L(Double_t x,Double_t y,Double_t z)  const{return G2L(TVector3(x,y,z));}
+  Float_t     G2Lx(Double_t x,Double_t y,Double_t z) const{TVector3 x3=G2L(x,y,z); return x3.X();}
+  Float_t     G2Ly(Double_t x,Double_t y,Double_t z) const{TVector3 x3=G2L(x,y,z); return x3.Z();}
 //  TLorentzVector L2G(TLorentzVector v4)  const{v4.Transform(fRot.Inverse());v4+=fCenterV3;return v4;}???
   void        Print(Option_t *sOption)const;//virtual      
    
@@ -81,7 +86,7 @@ public:
   Double_t    GetZ()               const{return fZ;}    
   inline void SetCenter(Double_t x,Double_t y,Double_t z);
   TRotMatrix *GetRotMatrix()       const{return fpRotMatrix;}
-  void        SetChamberTransform(Float_t x,Float_t y,Float_t z,TRotMatrix *pRotMatrix) {fX=x; fY=y; fZ=z; fpRotMatrix=pRotMatrix;}
+  void        SetChamberTransform(Float_t x,Float_t y,Float_t z,TRotMatrix *pRotMatrix);
   
 protected:
   Float_t fX,fY,fZ;                                      // Position of the center of the chamber in MRS (cm)

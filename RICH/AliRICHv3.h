@@ -18,7 +18,6 @@ public:
   virtual Int_t  IsVersion()                                     const{return 3;}
   virtual void   StepManager();     
   virtual void   CreateGeometry();  
-  virtual void   BuildGeometry();   
   virtual void   Init();            // Makes nothing for a while          
           void   DiagnosticsFE(Int_t evNumber1,Int_t evNumber2);
           void   DiagnosticsSE(Int_t diaglevel,Int_t evNumber1,Int_t evNumber2);
@@ -30,8 +29,6 @@ public:
   AliRICHGeometry* GetGeometryModel(Int_t c=1)                               const{return C(c)->GetGeometryModel();}    
   AliSegmentation* GetSegmentationModel(Int_t c=1)                           const{return C(c)->GetSegmentationModel();}
   AliRICHResponse* GetResponseModel(Int_t c=1)                               const{return C(c)->GetResponseModel();}
-  void MakeBranch(Option_t* option);//virtual
-  void SetTreeAddress();//virtual
 private:
   Double_t* RotateXY(const Double_t* r, Double_t a);//Rotation in the X-Y plane in G3 notation
   ClassDef(AliRICHv3,1)  //RICH full version, configurable with azimuthal rotation	

@@ -7,7 +7,7 @@ void Opticals()
   const Int_t kNbins=26;
   Float_t aPckov[kNbins];
   for(i=0;i<kNbins;i++){    //Photons energy intervals
-    aPckov[i]=(Float_t(i)*0.1+5.5)*1e-9;
+    aPckov[i]=(0.1*i+5.5)*1e-9;
   }
   
   Float_t aIndexFreon[kNbins];  
@@ -16,13 +16,11 @@ void Opticals()
   Float_t aIndexCH4[kNbins];
   Float_t aIndexGrid[kNbins];
         
-  Float_t  e1= 10.666;Float_t  e2= 18.125;  Float_t  f1= 46.411; Float_t  f2= 228.71;
+  Float_t  e1= 10.666;Float_t  e2= 18.125;  Float_t  f1= 46.411; Float_t  f2= 228.71;//RICH TDR page 35 
   for (i=0;i<kNbins;i++){
     aIndexFreon[i]        = aPckov[i] * .0172 * 1e9 + 1.177;
     Float_t ene=aPckov[i]*1e9;
-    Float_t a=f1/(e1*e1 - ene*ene);
-    Float_t b=f2/(e2*e2 - ene*ene);
-    aIndexQuartz[i]        = TMath::Sqrt(1. + a + b );
+    aIndexQuartz[i]        = TMath::Sqrt(1. + f1/(e1*e1 - ene*ene) + f2/(e2*e2 - ene*ene) );
     aIndexOpaqueQuartz[i]  =1;
     aIndexCH4[i]      =1.000444;
     aIndexGrid[i]         =1;

@@ -83,6 +83,7 @@ AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
                                                       Rot().ThetaY()*kR2d, Rot().PhiY()*kR2d,
                                                       Rot().ThetaZ()*kR2d, Rot().PhiZ()*kR2d);
   fpParam=pParam;
+  fX=fCenterV3.X();fY=fCenterV3.Y();fZ=fCenterV3.Z();
 }
 //______________________________________________________________________________
 
@@ -194,3 +195,8 @@ void AliRICHChamber::Print(Option_t *) const
                      ThetaXd(),PhiXd(),ThetaYd(),PhiYd(),ThetaZd(),PhiZd());
 }//void AliRICHChamber::Print(Option_t *option)const
 //__________________________________________________________________________________________________
+void AliRICHChamber::SetChamberTransform(Float_t x,Float_t y,Float_t z,TRotMatrix *pRotMatrix) 
+{
+  SetCenter(x,y,z);
+  fpRotMatrix=pRotMatrix;
+}

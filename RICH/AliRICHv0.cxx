@@ -27,20 +27,22 @@ void AliRICHv0::StepManager()
   char *sParticle;
   switch(gMC->TrackPid()){
     case kProton:
-      sParticle="p";break;
+      sParticle="proton";break;
     case kNeutron:
-      sParticle="n";break;
+      sParticle="neutron";break;
     case kGamma:
       sParticle="gamma";break;
     case kCerenkov:
       sParticle="photon";break;
     case kPi0:
       sParticle="Pi0";break;  
+    case kElectron:
+      sParticle="electron";break;  
     default:
       sParticle="not known";break;
   }
 
-  Info("","event=%i hunt=%i tid=%i pid=%i(%s) m=%f q=%f",
+  Info("","event=%i hunt=%i tid=%i pid=%i(%s) m=%f q=%3.1f",
                             gMC->CurrentEvent(),
                             fIshunt,
                             gAlice->GetCurrentTrackNumber(),
@@ -81,9 +83,15 @@ void AliRICHv0::StepManager()
   Float_t glo[3],loc[3];
   glo[0]=x4.X();glo[1]=x4.Y();glo[2]=x4.Z();  
   gMC->Gmtod(glo,loc,1);
-  Info("","glo(%7.2f,%7.2f,%7.2f) r=%7.2f theta=%7.2f phi=%7.2f",
+  Info("","glo(%+8.3f,%+8.3f,%+8.3f) r=%7.2f theta=%7.2f phi=%7.2f",
                       glo[0],glo[1],glo[2],x4.Rho(),x4.Theta()*kR2d,x4.Phi()*kR2d);  
-  Info("","loc(%7.2f,%7.2f,%7.2f)\n",
-                      loc[0],loc[1],loc[2]);  
+  Info("","loc(%+8.3f,%+8.3f,%8.3f) by gMC->Gmtod()",         loc[0],loc[1],loc[2]);  
+  if(gMC->VolId("CSI ")==gMC->CurrentVolID(copy0)){
+    Int_t iChamber;
+    gMC->CurrentVolOffID(2,iChamber);
+    TVector3 x3=C(iChamber)->G2L(x4);
+    Info("","loc(%+8.3f,%+8.3f,%8.3f) by G2L",         x3.X(),x3.Y(),x3.Z());  
+  }
+  Info("","end of current step\n");
 }//AliRICHv0::StepManager()
 //__________________________________________________________________________________________________

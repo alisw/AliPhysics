@@ -1,0 +1,9 @@
+pointer to the stack:
+AliRunLoader::Stack()
+
+total amount of particles in stack for a given event:
+AliStack::GetNtrack() or AliRun::GetEvent()
+
+
+total amount of primiry particles in stack for a given event:
+AliStack::GetNprimary() or TreeH()::GetEntries()
