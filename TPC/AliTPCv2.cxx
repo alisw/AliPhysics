@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  1999/10/14 16:52:08  fca
+Only use PDG codes and not GEANT ones
+
 Revision 1.17  1999/10/08 06:27:23  fca
 Corrected bug in the HV degrader geometry, thanks to G.Tabary
 
@@ -899,7 +902,7 @@ void AliTPCv2::CreateGeometry()
 
   dm[0] = 50.;
   dm[1] = 50.5;
-  dm[2] = 32.25;
+  dm[2] = 64.5;
 
   gMC->Gsvolu("TIVB","TUBE",idtmed[9],dm,3);
 

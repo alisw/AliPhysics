@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/10/08 06:27:23  fca
+Corrected bug in the HV degrader geometry, thanks to G.Tabary
+
 Revision 1.13  1999/10/04 13:39:54  fca
 Correct array index problem
 
@@ -785,7 +788,7 @@ void AliTPCv1::CreateGeometry()
 
   dm[0] = 50.;
   dm[1] = 50.5;
-  dm[2] = 32.25;
+  dm[2] = 64.5;
 
   gMC->Gsvolu("TIVB","TUBE",idtmed[9],dm,3);
 
