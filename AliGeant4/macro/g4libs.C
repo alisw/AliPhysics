@@ -190,8 +190,8 @@ void steerlibs() {
   if (!isSteer) {
   
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libSTEER");
-    gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libdummypythia");
-    gSystem->Load("$(ROOTSYS)/lib/libEGPythia");
+    gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libdummypythia6");
+    gSystem->Load("$(ROOTSYS)/lib/libEGPythia6");
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libEVGEN");
 
     isSteer = true;
