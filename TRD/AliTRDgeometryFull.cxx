@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2004/02/27 15:40:18  cblume
+Fix definition of rotation matrices
+
 Revision 1.12  2003/09/18 09:06:07  cblume
 Geometry update, Removal of compiler warnings
 
@@ -1348,7 +1351,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
 	  }
         }
       }
-      if (fPHOShole) {
+      if (fRICHhole) {
         sprintf(cTagV,"UU%02d",iDet+2*kNdet);
         for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
           for (Int_t iMCMcol = 0; iMCMcol < nMCMcol; iMCMcol++) {
