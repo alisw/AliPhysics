@@ -194,7 +194,7 @@ AliHBTReaderTPC& AliHBTReaderTPC::operator=(const AliHBTReaderTPC& in)
  fC33Max = in.fC33Max;
  fC44Min = in.fC44Min;
  fC44Max = in.fC44Max;
- 
+ return *this; 
 } 
 /********************************************************************/
 
