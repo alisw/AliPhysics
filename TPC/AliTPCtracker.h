@@ -21,7 +21,9 @@ class AliTPCParam;
 
 class AliTPCtracker : public AliTracker {
 public:
-   AliTPCtracker():AliTracker(),fkNIS(0),fkNOS(0) {}
+   AliTPCtracker():AliTracker(),fkNIS(0),fkNOS(0) {
+      fInnerSec=fOuterSec=0; fSeeds=0; 
+   }
    AliTPCtracker(const AliTPCParam *par, Int_t eventn=0);
   ~AliTPCtracker();
 
