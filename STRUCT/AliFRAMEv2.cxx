@@ -26,6 +26,7 @@
 #include "AliFRAMEv2.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliConst.h"
  
 ClassImp(AliFRAMEv2)
  
@@ -948,30 +949,332 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gspos("BRS4", 3, "ALIC", -430.-3.,    -180.+55./2.+rbox[1],  224., 0, "ONLY");
   gMC->Gspos("BRS4", 4, "ALIC", -430.-3.,    -180.+55./2.+rbox[1], -224., 0, "ONLY");
 
+
+
+  //
+  // The Backframe
+  //
+  // Inner radius 
+  Float_t kBFMRin = 270.0;
+  // Outer Radius
+  Float_t kBFMRou = 417.5;
+  // Width
+  Float_t kBFMdz  = 118.0;
+  //
+  //
+  // Rings
+  Float_t kBFRdr   =  7.5;
+  Float_t kBFRdz   =  8.0;
+  //
+  //
+  // Bars and Spokes
+  //
+  Float_t kBFBd   =   8.0;
+  Float_t kBFBdd  =   0.6;
+  
+
+  // The Mother volume
+  Float_t tpar[3];
+  tpar[0] = kBFMRin;
+  tpar[1] = kBFMRou;
+  tpar[2] = kBFMdz / 2.;
+  gMC->Gsvolu("BFMO", "TUBE", kAir, tpar, 3);  
+  
+  // Rings
+  //
+  // Inner Ring
+  tpar[0] =  kBFMRin;
+  tpar[1] =  tpar[0] +  kBFRdr;
+  tpar[2] =  kBFRdz / 2.;
+  
+  gMC->Gsvolu("BFIR", "TUBE", kSteel, tpar, 3);  
+  
+  tpar[0] =  tpar[0] +  kBFBdd;
+  tpar[1] =  tpar[1] -  kBFBdd;
+  tpar[2] =  (kBFRdz - 2. * kBFBdd) / 2.;
+
+  gMC->Gsvolu("BFII", "TUBE", kAir, tpar, 3);  
+  gMC->Gspos("BFII", 1, "BFIR", 0., 0., 0., 0, "ONLY");  
+
+  dz = kBFMdz/2. -  kBFRdz / 2.;
+  gMC->Gspos("BFIR", 1, "BFMO", 0., 0., dz, 0, "ONLY");  
+
+  //
+  // Outer RING
+  tpar[0] =  kBFMRou - kBFRdr;
+  tpar[1] =  kBFMRou;
+  tpar[2] =  kBFRdz / 2.;
+  
+  gMC->Gsvolu("BFOR", "TUBE", kSteel, tpar, 3);  
+  
+  tpar[0] =  tpar[0] +  kBFBdd;
+  tpar[1] =  tpar[1] -  kBFBdd;
+  tpar[2] =  (kBFRdz - 2. * kBFBdd) / 2.;
+
+  gMC->Gsvolu("BFOO", "TUBE", kAir, tpar, 3);  
+  gMC->Gspos("BFOO", 1, "BFOR", 0., 0., 0., 0, "ONLY");  
+
+
+  dz = kBFMdz/2. -  kBFRdz / 2.;
+  gMC->Gspos("BFIR", 1, "BFMO", 0., 0.,  dz, 0, "ONLY");  
+  gMC->Gspos("BFIR", 2, "BFMO", 0., 0., -dz, 0, "ONLY");  
+  gMC->Gspos("BFOR", 1, "BFMO", 0., 0.,  dz, 0, "ONLY");  
+  gMC->Gspos("BFOR", 2, "BFMO", 0., 0., -dz, 0, "ONLY");  
+  
+  // 
+  // Longitudinal Bars
+  // 
+  Float_t bpar[3];
+  
+  bpar[0] =  kBFBd/2;
+  bpar[1] =  bpar[0];
+  bpar[2] =  kBFMdz/2.  - kBFBd;
+  gMC->Gsvolu("BFLB", "BOX ", kSteel, bpar, 3); 
+
+  bpar[0] = bpar[0] - kBFBdd;
+  bpar[1] = bpar[1] - kBFBdd;
+  bpar[2] = bpar[2] - kBFBdd;
+  gMC->Gsvolu("BFLL", "BOX ", kAir, bpar, 3); 
+  gMC->Gspos("BFLL", 1, "BFLB", 0., 0., 0., 0, "ONLY");  
+
+  for (i = 0; i < 18; i++)
+  {
+      Float_t ro   = kBFMRou - kBFBd / 2.;
+      Float_t ri   = kBFMRin + kBFBd / 2.;
+
+      Float_t phi = Float_t(i) * 20.;
+      
+      Float_t x = ri * TMath::Cos(phi * kDegrad);
+      Float_t y = ri * TMath::Sin(phi * kDegrad);
+      AliMatrix(idrotm[2090+i],  90.0, phi,  90.0, phi + 270., 0., 0.);
+      
+      gMC->Gspos("BFLB", i + 1, "BFMO", x, y, 0., idrotm[2090 + i], "ONLY");      
+
+      x = ro * TMath::Cos(phi * kDegrad);
+      y = ro * TMath::Sin(phi * kDegrad);
+
+      gMC->Gspos("BFLB", i + 19, "BFMO", x, y, 0., idrotm[2090 +i], "ONLY");       
+ }
+
+  // 
+  // Radial Bars
+  // 
+  bpar[0] =  (kBFMRou - kBFMRin - 2. * kBFRdr) / 2.;
+  bpar[1] =  kBFBd/2;
+  bpar[2] =  bpar[1];
+  //
+  // Avoid overlap with circle
+  Float_t rr    = kBFMRou - kBFRdr;
+  Float_t delta = rr - TMath::Sqrt(rr * rr - kBFBd * kBFBd / 4.) + 0.01;
+  bpar[0] -= delta /2.;
+  
+
+  gMC->Gsvolu("BFRB", "BOX ", kSteel, bpar, 3); 
+
+  bpar[0] = bpar[0] - kBFBdd;
+  bpar[1] = bpar[1] - kBFBdd;
+  bpar[2] = bpar[2] - kBFBdd;
+  gMC->Gsvolu("BFRR", "BOX ", kAir, bpar, 3); 
+  gMC->Gspos("BFRR", 1, "BFRB", 0., 0., 0., 0, "ONLY");  
+
+  Int_t iphi[10] = {0, 1, 3, 6, 8, 9, 10, 12, 15, 17};
+  
+  for (i = 0; i < 10; i++)
+  {
+      
+      Float_t r   = (kBFMRin + kBFMRou)/2.;
+      Float_t phi = Float_t(iphi[i]) * 20.;
+      
+      Float_t x = r * TMath::Cos(phi * kDegrad);
+      Float_t y = r * TMath::Sin(phi * kDegrad);
+      
+      gMC->Gspos("BFRB", i + 1,  "BFMO", x, y,  dz, idrotm[2034 + iphi[i]], "ONLY");      
+      gMC->Gspos("BFRB", i + 11, "BFMO", x, y, -dz, idrotm[2034 + iphi[i]], "ONLY");      
+
+ }
+
+  gMC->Gspos("BFMO", i + 19, "ALIC", 0, 0, 376. + kBFMdz/2. + 0.5 , 0, "ONLY");       
+
+
+
 //
-//  Rails for EMCAL
-//    
-/*
-  rbox[0] =  27.50;
-  rbox[1] =  32.50;
-  gMC->Gsvolu("BRE1", "BOX", kAir, rbox, 3);
+//
+//  The Baby Frame
+//
+//
+  //
+  // Inner radius 
+  Float_t kBBMRin = 278.0;
+  // Outer Radius
+  Float_t kBBMRou = 410.5;
+  // Width
+  Float_t kBBMdz  = 223.0;
+  Float_t kBBBdz  = 6.0;
+  Float_t kBBBdd  = 0.6;
+
   
-  rbox[0] =  27.50;
-  rbox[1] =   2.50;
-  gMC->Gsvolu("BRE2", "BOX", kSteel, rbox, 3);
+  // The Mother volume
+
+  ppgon[0] =   0.;
+  ppgon[1] = 360.;
+  ppgon[2] =  18.;
   
-  rbox[0] =   0.50;
-  rbox[1] =  27.50;
-  gMC->Gsvolu("BRE3", "BOX", kSteel, rbox, 3);
+  ppgon[3] =   2.;
+  ppgon[4] = -kBBMdz / 2. ;
+  ppgon[5] =  kBBMRin;
+  ppgon[6] =  kBBMRou;
   
-  gMC->Gspos("BRE2", 1, "BRE1", 0., -32.5+2.50, 0., 0, "ONLY");
-  gMC->Gspos("BRE2", 2, "BRE1", 0.,  32.5-2.50, 0., 0, "ONLY");
-  gMC->Gspos("BRE3", 1, "BRE1", -20.,         0., 0., 0, "ONLY");
-  gMC->Gspos("BRE3", 2, "BRE1", 20.,         0., 0., 0, "ONLY");
-  gMC->Gspos("BRE1", 1, "ALIC", -496.,    -190., 0., 0, "ONLY");
-  gMC->Gspos("BRE1", 2, "ALIC",  496.,    -190., 0., 0, "ONLY");
-*/
+  ppgon[7] =  -ppgon[4]; 
+  ppgon[8] =   ppgon[5];
+  ppgon[9] =   ppgon[6];
+
+  gMC->Gsvolu("BBMO", "PGON", kAir, ppgon, 10);
+  gMC->Gsdvn("BBCE", "BBMO", 18, 2);
+
+  // Longitudinal bars
+  bpar[0] =  kBBBdz/2.;
+  bpar[1] =  bpar[0];
+  bpar[2] =  kBBMdz/2.  - kBBBdz;
+  gMC->Gsvolu("BBLB", "BOX ", kSteel, bpar, 3); 
+  bpar[0] -= kBBBdd;
+  bpar[1] -= kBBBdd;
+  bpar[2] -= kBBBdd;
+  gMC->Gsvolu("BBLL", "BOX ", kAir, bpar, 3); 
+  gMC->Gspos("BBLL", 1, "BBLB", 0., 0., 0., 0, "ONLY"); 
+
+  dx = kBBMRin + kBBBdz/2.;
+  dy = dx * TMath::Tan(10. * kDegrad) - kBBBdz/2./TMath::Cos(10. * kDegrad);
+  gMC->Gspos("BBLB", 1, "BBCE", dx, dy, 0., idrotm[2052], "ONLY"); 
+
+  dx = kBBMRou - kBBBdz/2.;
+  dy = dx * TMath::Tan(10. * kDegrad) - kBBBdz/2./TMath::Cos(10. * kDegrad);
+ 
+  gMC->Gspos("BBLB", 2, "BBCE", dx, dy, 0., idrotm[2052], "ONLY");  
+
+  // 
+  // Radial Bars
+  // 
+  bpar[0] =  (kBBMRou - kBBMRin) / 2. - kBBBdz;
+  bpar[1] =  kBBBdz/2;
+  bpar[2] =  bpar[1];
+
+  gMC->Gsvolu("BBRB", "BOX ", kSteel, bpar, 3); 
+  bpar[0] -= kBBBdd;
+  bpar[1] -= kBBBdd;
+  bpar[2] -= kBBBdd;
+  gMC->Gsvolu("BBRR", "BOX ", kAir, bpar, 3); 
+  gMC->Gspos("BBRR", 1, "BBRB", 0., 0., 0., 0, "ONLY"); 
+
+
+  dx = (kBBMRou + kBBMRin) / 2.;
+  dy = ((kBBMRou + kBBMRin)/ 2) *  TMath::Tan(10 * kDegrad) - kBBBdz / 2./ TMath::Cos(10 * kDegrad);
+  dz = kBBMdz/2. -  kBBBdz / 2.;
+
+  gMC->Gspos("BBRB", 1, "BBCE", dx, dy,   dz, idrotm[2052], "ONLY");  
+  gMC->Gspos("BBRB", 2, "BBCE", dx, dy, - dz, idrotm[2052], "ONLY");  
+  gMC->Gspos("BBRB", 3, "BBCE", dx, dy,   0., idrotm[2052], "ONLY");  
+ 
+ //
+ // Circular bars 
+ //
+ //  Inner
+  
+  bpar[1] =  kBBMRin * TMath::Sin(10. * kDegrad);
+  bpar[0] =  kBBBdz/2;
+  bpar[2] =  bpar[0];
+  gMC->Gsvolu("BBC1", "BOX ", kSteel, bpar, 3); 
+  bpar[0] -= kBBBdd;
+  bpar[1] -= kBBBdd;
+  bpar[2] -= kBBBdd;
+  gMC->Gsvolu("BBC2", "BOX ", kAir, bpar, 3); 
+  gMC->Gspos("BBC2", 1, "BBC1", 0., 0., 0., 0, "ONLY"); 
+  dx = kBBMRin + kBBBdz/2;
+  dy = 0.;
+  gMC->Gspos("BBC1", 1, "BBCE", dx, dy,   dz, 0, "ONLY");  
+  gMC->Gspos("BBC1", 2, "BBCE", dx, dy,  -dz, 0, "ONLY");  
+  //
+  // Outer
+  bpar[1] =  (kBBMRou - kBBBdz) * TMath::Sin(10. * kDegrad);
+  bpar[0] =  kBBBdz/2;
+  bpar[2] =  bpar[0];
+  gMC->Gsvolu("BBC3", "BOX ", kSteel, bpar, 3); 
+  bpar[0] -= kBBBdd;
+  bpar[1] -= kBBBdd;
+  bpar[2] -= kBBBdd;
+  gMC->Gsvolu("BBC4", "BOX ", kAir, bpar, 3); 
+  gMC->Gspos("BBC4", 1, "BBC3", 0., 0., 0., 0, "ONLY"); 
+  dx = kBBMRou - kBBBdz/2;
+  dy = 0.;
+  gMC->Gspos("BBC3", 1, "BBCE", dx, dy,   dz, 0, "ONLY");  
+  gMC->Gspos("BBC3", 2, "BBCE", dx, dy, - dz, 0, "ONLY");
+  //
+  // Diagonal Bars
+  //
+  h  = (kBBMRou - kBBMRin - 2. * kBBBdz);;
+  d  = kBBBdz;
+  dz = kBBMdz/2. - 1.6 * kBBBdz;
+  dq = h*h+dz*dz;
+
+  x  =  TMath::Sqrt((dz*dz-d*d)/dq + d*d*h*h/dq/dq)+d*h/dq;
+  
+
+  theta = kRaddeg * TMath::ACos(x);
+  
+  ptrap[0]  = dz/2.;
+  ptrap[1]  = theta;
+  ptrap[2]  =  0.;
+  ptrap[3]  =  d/2;
+  ptrap[4]  =  d/x/2;
+  ptrap[5]  = ptrap[4];
+  ptrap[6]  = 0;
+  ptrap[7]  = ptrap[3];
+  ptrap[8]  = ptrap[4];
+  ptrap[9]  = ptrap[4];
+  ptrap[10] = 0;
+  gMC->Gsvolu("BBD1", "TRAP", kSteel, ptrap, 11);
+  ptrap[3]  =  d/2-kBBBdd;
+  ptrap[4]  = (d/2-kBBBdd)/x;
+  ptrap[5]  = ptrap[4];
+  ptrap[7]  = ptrap[3];
+  ptrap[8]  = ptrap[4];
+  ptrap[9]  = ptrap[4];
+  gMC->Gsvolu("BBD3", "TRAP", kAir, ptrap, 11);
+  gMC->Gspos("BBD3", 1, "BBD1", 0.0, 0.0, 0., 0, "ONLY");
+  dx = (kBBMRou + kBBMRin) / 2.;
+  dy = ((kBBMRou + kBBMRin)/ 2) *  TMath::Tan(10 * kDegrad) - kBBBdz / 2./ TMath::Cos(10 * kDegrad);
+  gMC->Gspos("BBD1", 1, "BBCE", dx, dy,   dz/2. + kBBBdz/2., idrotm[2052], "ONLY");  
+
+
+  ptrap[0]  = dz/2.;
+  ptrap[1]  = -theta;
+  ptrap[2]  =  0.;
+  ptrap[3]  =  d/2;
+  ptrap[4]  =  d/2/x;
+  ptrap[5]  = ptrap[4];
+  ptrap[6]  = 0;
+  ptrap[7]  = ptrap[3];
+  ptrap[8]  = ptrap[4];
+  ptrap[9]  = ptrap[4];
+  ptrap[10] = 0;
+  gMC->Gsvolu("BBD2", "TRAP", kSteel, ptrap, 11);
+  ptrap[3]  = d/2-kBBBdd;
+  ptrap[4]  = (d/2-kBBBdd)/x;
+  ptrap[5]  = ptrap[4];
+  ptrap[7]  = ptrap[3];
+  ptrap[8]  = ptrap[4];
+  ptrap[9]  = ptrap[4];
+  gMC->Gsvolu("BBD4", "TRAP", kAir, ptrap, 11);
+  gMC->Gspos("BBD4", 1, "BBD2", 0.0, 0.0, 0., 0, "ONLY");
+  dx = (kBBMRou + kBBMRin) / 2.;
+  dy = ((kBBMRou + kBBMRin)/ 2) *  TMath::Tan(10 * kDegrad) - kBBBdz / 2./ TMath::Cos(10 * kDegrad);
+  gMC->Gspos("BBD2", 1, "BBCE", dx, dy,   -dz/2. - kBBBdz/2., idrotm[2052], "ONLY");  
+
+
+  gMC->Gspos("BBMO", 1, "ALIC", 0., 0., - 376. - kBBMdz / 2. - 0.5, 0, "ONLY");  
+
+
 }
+
  
 
 //___________________________________________
