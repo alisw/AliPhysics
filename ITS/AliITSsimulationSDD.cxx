@@ -360,19 +360,40 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
 	Int_t hitDetector = hit->GetDetector();
 
         if(hit->StatusEntering()) idhit=ii;
-
+	
+	Int_t nOfSplits = 5;
+	if(fFlag) nOfSplits = 1;
 	// Deposited energy in keV
 	Float_t avpath = 0.;
 	Float_t avanod = 0.;
-	Float_t depEnergy = kconv*hit->GetIonization();
+	Float_t depEnergy = kconv*hit->GetIonization()/nOfSplits;
 	AliITShit *hit1 = 0;
-	if(depEnergy != 0.) continue;
-
-	ii++;
 	Float_t xL1[3];
-	hit1 = (AliITShit*) fHits->At(ii);
-	hit1->GetPositionL(xL1[0],xL1[1],xL1[2]);
-	avpath = xL1[0];
+	if(fFlag && depEnergy != 0.) continue;
+	if(depEnergy == 0.) {	
+	  ii++;
+	  hit1 = (AliITShit*) fHits->At(ii);
+	  hit1->GetPositionL(xL1[0],xL1[1],xL1[2]);
+	} else {
+	  xL1[0] = xL[0];
+	  xL1[1] = xL[1];
+	  xL1[2] = xL[2];
+	}
+
+	// scale path to simulate a perpendicular track
+
+	if(depEnergy == 0.) depEnergy = kconv*hit1->GetIonization()/nOfSplits;
+	if (fFlag) {
+	  Float_t pathInSDD = TMath::Sqrt((xL[0]-xL1[0])*(xL[0]-xL1[0])+(xL[1]-xL1[1])*(xL[1]-xL1[1])+(xL[2]-xL1[2])*(xL[2]-xL1[2]));
+	  depEnergy *= (0.03/pathInSDD); 
+	}
+	
+        for(Int_t kk=0;kk<nOfSplits;kk++) {
+         Float_t avDrft =  xL[0]+(xL1[0]-xL[0])*((kk+0.5)/((Float_t) nOfSplits));
+	 Float_t avAnode = xL[2]+(xL1[2]-xL[2])*((kk+0.5)/((Float_t) nOfSplits));
+	 Float_t driftPath = 10000.*avDrft;
+	  
+  	avpath = xL1[0];
 	avanod = xL1[2];
 	depEnergy = kconv*hit1->GetIonization();
 	
@@ -384,23 +405,6 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
 	}
 	// end add
 
-	// scale path to simulate a perpendicular track
-	if (fFlag) {
-	  Float_t lC[3];
-	  hit->GetPositionL(lC[0],lC[1],lC[2]);
-	  Float_t lC1[3];
-	  hit1->GetPositionL(lC1[0],lC1[1],lC1[2]);
-	  Float_t pathInSDD = TMath::Sqrt((lC[0]-lC1[0])*(lC[0]-lC1[0])+(lC[1]-lC1[1])*(lC[1]-lC1[1])+(lC[2]-lC1[2])*(lC[2]-lC1[2]));
-	  if(pathInSDD) depEnergy *= (0.03/pathInSDD);
-	}
-
-	Float_t avDrft = xL[0]+avpath;
-	Float_t avAnode = xL[2]+avanod;
-
-	if(avpath != 0.) avDrft /= 2.;
-	if(avanod != 0.) avAnode /= 2.;
-
-	Float_t driftPath = 10000.*avDrft;
 	Int_t iWing = 2;
 	if(driftPath < 0) {
 	  iWing = 1;
@@ -517,6 +521,7 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
 	} // loop over time in window 
       } // end if anodeAmplitude
     } // loop over anodes in window
+   } // end loop over "sub-hits"
   } // end loop over hits
 
   // introduce the electronics effects and do zero-suppression if required
