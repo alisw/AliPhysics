@@ -4,8 +4,8 @@
 PLATFORM      = alpha
 
 # The compilers
-CXX           = cxx
-F77	      = f77
+CXX           = echo $*.cxx ; cxx
+F77	      = echo $*.F ; f77
 
 # Global optimisation
 OPT	      = -O2
@@ -17,7 +17,7 @@ SL	      = so
 AWK	      = awk
 
 # The options
-CXXOPTS       = $(OPT) -nostdnew -nortti -I/usr/include
+CXXOPTS       = $(OPT) -nostdnew -nortti
 COPT          = $(OPT)
 FOPT          = $(OPT) -nofor_main -warn noinformational
 
@@ -35,9 +35,11 @@ DEPINC	      = -I/usr/include/cxx
 LD            = cxx
 LDFLAGS       =
 
-SHLD          = cxx
-SOFLAGS       = -shared -Wl,-expect_unresolved,*,-soname,$(notdir $@)
-SHLIB        = -lUfor -lfor -lFutil
+SHLD          = ld
+SOFLAGS       = -L/usr/lib/cmplrs/cxx -rpath /usr/lib/cmplrs/cxx \
+	        -expect_unresolved "*" -msym -shared \
+	        /usr/lib/cmplrs/cc/crt0.o /usr/lib/cmplrs/cxx/_main.o 
+SHLIB         = -lUfor -lfor -lFutil
 
 LIBS          = $(ROOTLIBS)
 GLIBS         = $(ROOTLIBS) -lXm -lXt -lX11 -lm -lPW -lUfor -lfor -lFutil -lots
