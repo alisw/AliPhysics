@@ -51,6 +51,8 @@ public:
   // Module composition
   virtual void  AliMaterial(Int_t, const char*, Float_t, Float_t, Float_t, Float_t,
 			    Float_t, Float_t* buf=0, Int_t nwbuf=0) const;
+  virtual void  AliGetMaterial(Int_t, char*, Float_t&, Float_t&, Float_t&,
+			       Float_t&, Float_t&);
   virtual void  AliMixture(Int_t, const char*, Float_t*, Float_t*, Float_t, Int_t, Float_t*) const;
   virtual void  AliMedium(Int_t, const char*, Int_t, Int_t, Int_t, Float_t, Float_t, 
 		   Float_t, Float_t, Float_t, Float_t, Float_t* ubuf=0, Int_t nbuf=0) const;

@@ -158,6 +158,31 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
   (*fIdmate)[imat]=kmat;
 }
   
+//_____________________________________________________________________________
+void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a, 
+			      Float_t &z, Float_t &dens, Float_t &radl,
+			      Float_t &absl)
+{
+  //
+  // Store the parameters for a material
+  //
+  // imat        the material index will be stored in (*fIdmate)[imat]
+  // name        material name
+  // a           atomic mass
+  // z           atomic number
+  // dens        density
+  // radl        radiation length
+  // absl        absorbtion length
+  // buf         adress of an array user words
+  // nwbuf       number of user words
+  //
+
+  Float_t buf[10];
+  Int_t nwbuf, kmat;
+  kmat=(*fIdmate)[imat];
+  gMC->Gfmate(kmat, name, a, z, dens, radl, absl, buf, nwbuf);
+}
+  
 
 //_____________________________________________________________________________
 void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
