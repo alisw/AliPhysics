@@ -381,10 +381,10 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
   Int_t nz   = AliEMCALGetter::GetInstance()->EMCALGeometry()->GetNZ() ;
   
   if(absId <= nphi*nz) //digitize as tower
-    channel = (Int_t) TMath::Ceil( (energy + fADCpedestalTower)/fADCchannelTower )  ;
+    channel = (Int_t) TMath::Ceil( (energy - fADCpedestalTower)/fADCchannelTower )  ;
   if(channel > fNADCTower ) channel =  fNADCTower ;
   else 
-    channel =  (Int_t) TMath::Ceil( (energy + fADCpedestalPreSho)/fADCchannelPreSho )  ;
+    channel =  (Int_t) TMath::Ceil( (energy - fADCpedestalPreSho)/fADCchannelPreSho )  ;
   if(channel > fNADCPreSho ) channel =  fNADCPreSho ;
   
   return channel ;
