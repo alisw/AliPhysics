@@ -32,6 +32,7 @@ public:
 
   AliPHOSPIDv1() ;          // ctor            
   AliPHOSPIDv1(const char* headerFile, const char * tsBranch = "Default", const char * from = 0) ;
+   
   virtual ~AliPHOSPIDv1() ; // dtor
 
   virtual void Exec(Option_t * option) ;
@@ -46,6 +47,9 @@ public:
   // EFFICIENCY" and 3 more options changing EFFICIENCY by PURITY)
   Double_t GetCpvtoEmcDistanceCut(const Float_t Cluster_En, const TString Eff_Pur)const  ;
   Double_t GetTimeGate(const Float_t Cluster_En, const TString Eff_Pur)const  ;
+  const TString GetPrincipalFile( )const {return fFileName ;}
+  const TString GetPrincipalFilePar( )const {return fFileNamePar ;}
+  void  SetPrincipalFileOptions(TString OptFileName) ;
 
   // Set all parameters necessary in the PID depending on the custer energy and 
   // Purity-Efficiency point (possible options "HIGH EFFICIENCY" "MEDIUM EFFICIENCY" "LOW  
@@ -80,6 +84,7 @@ public:
 
   TString                fFileName ;          // Name of the file which contains the Principal file
   TString                fFileNamePar ;       // Name of the file which contains the parameters
+  TString                fOptFileName ;       // choose de parameters and principal file
   TString                fFrom ;              // name of Recpoints and TrackSegments 
   TString                fHeaderFileName ;    // file name with event header
   TString                fTrackSegmentsTitle; // branch name with track segments

@@ -101,6 +101,7 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
   fFileNamePar        = "" ;      
   fFrom               = "" ;
   fHeaderFileName     = "" ; 
+  fOptFileName        = "Default" ;
   fTrackSegmentsTitle = "" ; 
   fRecPointsTitle     = "" ;   
   fRecParticlesTitle  = "" ; 
@@ -117,6 +118,8 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
 
 //____________________________________________________________________________
 AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name, const char * from) : AliPHOSPID(headerFile, name)
+
+			  
 { 
   //ctor with the indication on where to look for the track segments
  
@@ -133,6 +136,7 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name, const char
     fFrom = name ; 
   else
     fFrom = from ; 
+  fOptFileName        = "Default" ;
   Init() ;
 
 }
@@ -164,7 +168,7 @@ void AliPHOSPIDv1::Init()
     SetTitle("galice.root") ;
   
   SetParameters() ; // fill the parameters matrix from parameters file
-
+  
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), fFrom.Data()) ; 
 
   gime->SetRecParticlesTitle(BranchName()) ;
@@ -194,9 +198,9 @@ Double_t  AliPHOSPIDv1::GetCpvtoEmcDistanceCut(const Float_t Cluster_En, const T
   if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
   if( Cluster_En > 2.0) cluster = 2 ;
   
-  if(strstr( Eff_Pur,"HIGH EFFICIENCY" )||strstr( Eff_Pur,"LOW PURITY" ) ) eff_pur = 0 ;
-  if(strstr( Eff_Pur,"MEDIUM EFFICIENCY" )||strstr( Eff_Pur,"MEDIUM PURITY" ) ) eff_pur = 1 ;
-  if(strstr( Eff_Pur,"LOW EFFICIENCY" )||strstr( Eff_Pur,"HIGH PURITY" ) ) eff_pur = 2 ;
+  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") ) eff_pur = 0 ;
+  if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) eff_pur = 1 ;
+  if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) eff_pur = 2 ;
   
   if(cluster ==-1){
     cout<<"Invalid Cluster Energy option"<<endl;
@@ -223,9 +227,10 @@ Double_t  AliPHOSPIDv1::GetTimeGate(const Float_t Cluster_En, const TString Eff_
   if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
   if( Cluster_En > 2.0) cluster = 2 ;
   
-  if(strstr( Eff_Pur,"HIGH EFFICIENCY" )||strstr( Eff_Pur,"LOW PURITY" ) ) eff_pur = 0 ;
-  if(strstr( Eff_Pur,"MEDIUM EFFICIENCY" )||strstr( Eff_Pur,"MEDIUM PURITY" ) ) eff_pur = 1 ;
-  if(strstr( Eff_Pur,"LOW EFFICIENCY" )||strstr( Eff_Pur,"HIGH PURITY" ) ) eff_pur = 2 ;
+  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") ) eff_pur = 0 ;
+  if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) eff_pur = 1 ;
+  if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) eff_pur = 2 ;
+ 
    if(cluster ==-1){
     cout<<"Invalid Cluster Energy option"<<endl;
   }
@@ -323,7 +328,21 @@ Int_t  AliPHOSPIDv1::GetPrincipalSign(Double_t* P, Int_t cluster, Int_t eff_pur 
 }
 
 //____________________________________________________________________________
- void  AliPHOSPIDv1::SetEllipseParameters(Float_t Cluster_En, TString Eff_Pur, Float_t x, Float_t y,Float_t a, Float_t b,Float_t angle)
+void   AliPHOSPIDv1::SetPrincipalFileOptions(TString OptFileName) {
+
+  if(OptFileName.Contains("Small energy range")||OptFileName.Contains("Default")){
+    fFileName  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-5.root" ;
+    fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters_0.5_5.dat"); 
+  }
+  
+  if(OptFileName.Contains("Wide energy range")){
+    fFileName  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ;
+    fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters_0.5_100.dat"); 
+  }
+}
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::SetEllipseParameters(Float_t Cluster_En, TString Eff_Pur, Float_t x, Float_t y,Float_t a, Float_t b,Float_t angle)
 {
 
   // Set all ellipse parameters depending on the cluster energy and 
@@ -333,16 +352,16 @@ Int_t  AliPHOSPIDv1::GetPrincipalSign(Double_t* P, Int_t cluster, Int_t eff_pur 
 
   Int_t cluster = -1 ;
   Int_t eff_pur = -1 ;
-
- if((Cluster_En > 0.3)&&(Cluster_En <= 1.0)) cluster = 0 ;
- if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
- if( Cluster_En > 2.0) cluster= 2 ;
-
- if(strstr( Eff_Pur,"HIGH EFFICIENCY" )||strstr( Eff_Pur,"LOW PURITY" ) ) eff_pur = 0 ;
- if(strstr( Eff_Pur,"MEDIUM EFFICIENCY" )||strstr( Eff_Pur,"MEDIUM PURITY" ) ) eff_pur = 1 ;
- if(strstr( Eff_Pur,"LOW EFFICIENCY" )||strstr( Eff_Pur,"HIGH PURITY" ) ) eff_pur = 2 ;
-
- if(cluster ==-1){
+  
+  if((Cluster_En > 0.3)&&(Cluster_En <= 1.0)) cluster = 0 ;
+  if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
+  if( Cluster_En > 2.0) cluster= 2 ;
+  
+  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") ) eff_pur = 0 ;
+  if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) eff_pur = 1 ;
+  if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) eff_pur = 2 ;
+  
+  if(cluster ==-1){
     cout<<"Invalid Cluster Energy option"<<endl;
   }
   else if(eff_pur ==-1){
@@ -372,9 +391,9 @@ void  AliPHOSPIDv1::SetEllipseXCenter(Float_t Cluster_En, TString Eff_Pur, Float
   if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
   if( Cluster_En > 2.0) cluster = 2 ;
   
-  if(strstr( Eff_Pur,"HIGH EFFICIENCY" )||strstr( Eff_Pur,"LOW PURITY" ) ) eff_pur = 0 ;
-  if(strstr( Eff_Pur,"MEDIUM EFFICIENCY" )||strstr( Eff_Pur,"MEDIUM PURITY" ) ) eff_pur = 1 ;
-  if(strstr( Eff_Pur,"LOW EFFICIENCY" )||strstr( Eff_Pur,"HIGH PURITY" ) ) eff_pur = 2 ;
+  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") ) eff_pur = 0 ;
+  if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) eff_pur = 1 ;
+  if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) eff_pur = 2 ;
    
   if(cluster ==-1){
     cout<<"Invalid Cluster Energy option"<<endl;
@@ -402,9 +421,9 @@ void  AliPHOSPIDv1::SetEllipseYCenter(Float_t Cluster_En, TString Eff_Pur, Float
   if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
   if( Cluster_En > 2.0) cluster = 2 ;
   
-  if(strstr( Eff_Pur,"HIGH EFFICIENCY" )||strstr( Eff_Pur,"LOW PURITY" ) ) eff_pur = 0 ;
-  if(strstr( Eff_Pur,"MEDIUM EFFICIENCY" )||strstr( Eff_Pur,"MEDIUM PURITY" ) ) eff_pur = 1 ;
-  if(strstr( Eff_Pur,"LOW EFFICIENCY" )||strstr( Eff_Pur,"HIGH PURITY" ) ) eff_pur = 2 ;
+  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") ) eff_pur = 0 ;
+  if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) eff_pur = 1 ;
+  if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) eff_pur = 2 ;
 
   if(cluster ==-1){
     cout<<"Invalid Cluster Energy option"<<endl;
@@ -431,9 +450,9 @@ void  AliPHOSPIDv1::SetEllipseAParameter(Float_t Cluster_En, TString Eff_Pur, Fl
   if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
   if( Cluster_En > 2.0) cluster = 2 ;
   
-  if(strstr( Eff_Pur,"HIGH EFFICIENCY" )||strstr( Eff_Pur,"LOW PURITY" ) ) eff_pur = 0 ;
-  if(strstr( Eff_Pur,"MEDIUM EFFICIENCY" )||strstr( Eff_Pur,"MEDIUM PURITY" ) ) eff_pur = 1 ;
-  if(strstr( Eff_Pur,"LOW EFFICIENCY" )||strstr( Eff_Pur,"HIGH PURITY" ) ) eff_pur = 2 ;
+  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") ) eff_pur = 0 ;
+  if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) eff_pur = 1 ;
+  if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) eff_pur = 2 ;
   
   if(cluster ==-1){
     cout<<"Invalid Cluster Energy option"<<endl;
@@ -455,24 +474,24 @@ void  AliPHOSPIDv1::SetEllipseBParameter(Float_t Cluster_En, TString Eff_Pur, Fl
 
   Int_t cluster = -1 ;
   Int_t eff_pur = -1 ;
-
+  
   if((Cluster_En > 0.3)&&(Cluster_En <= 1.0)) cluster = 0 ;
   if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
   if( Cluster_En > 2.0) cluster = 2 ;
   
-  if(strstr( Eff_Pur,"HIGH EFFICIENCY" )||strstr( Eff_Pur,"LOW PURITY" ) ) eff_pur = 0 ;
-  if(strstr( Eff_Pur,"MEDIUM EFFICIENCY" )||strstr( Eff_Pur,"MEDIUM PURITY" ) ) eff_pur = 1 ;
- if(strstr( Eff_Pur,"LOW EFFICIENCY" )||strstr( Eff_Pur,"HIGH PURITY" ) ) eff_pur = 2 ;
-
- if(cluster ==-1){
-   cout<<"Invalid Cluster Energy option"<<endl;
- }
- else if(eff_pur ==-1){
+  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") ) eff_pur = 0 ;
+  if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) eff_pur = 1 ;
+  if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) eff_pur = 2 ;
+  
+  if(cluster ==-1){
+    cout<<"Invalid Cluster Energy option"<<endl;
+  }
+  else if(eff_pur ==-1){
    cout<<"Invalid Efficiency-Purity option"<<endl; 
- }
- else{
-   (*fParameters)(cluster+15,eff_pur) = b ;
- }
+  }
+  else{
+    (*fParameters)(cluster+15,eff_pur) = b ;
+  }
 }
 //________________________________________________________________________
 void  AliPHOSPIDv1::SetEllipseAngle(Float_t Cluster_En, TString Eff_Pur, Float_t angle) 
@@ -490,10 +509,10 @@ void  AliPHOSPIDv1::SetEllipseAngle(Float_t Cluster_En, TString Eff_Pur, Float_t
   if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
   if( Cluster_En > 2.0) cluster = 2 ;
   
-  if(strstr( Eff_Pur,"HIGH EFFICIENCY" )||strstr( Eff_Pur,"LOW PURITY" ) ) eff_pur = 0 ;
-  if(strstr( Eff_Pur,"MEDIUM EFFICIENCY" )||strstr( Eff_Pur,"MEDIUM PURITY" ) ) eff_pur = 1 ;
-  if(strstr( Eff_Pur,"LOW EFFICIENCY" )||strstr( Eff_Pur,"HIGH PURITY" ) ) eff_pur = 2 ;
- 
+  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") ) eff_pur = 0 ;
+  if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) eff_pur = 1 ;
+  if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) eff_pur = 2 ;
+
   if(cluster ==-1){
     cout<<"Invalid Cluster Energy option"<<endl;
   }
@@ -520,10 +539,10 @@ void  AliPHOSPIDv1::SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur, 
   if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
   if( Cluster_En > 2.0) cluster = 2 ;
   
-  if(strstr( Eff_Pur,"HIGH EFFICIENCY" )||strstr( Eff_Pur,"LOW PURITY" ) ) eff_pur = 0 ;
-  if(strstr( Eff_Pur,"MEDIUM EFFICIENCY" )||strstr( Eff_Pur,"MEDIUM PURITY" ) ) eff_pur = 1 ;
-  if(strstr( Eff_Pur,"LOW EFFICIENCY" )||strstr( Eff_Pur,"HIGH PURITY" ) ) eff_pur = 2 ;
-  
+  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") ) eff_pur = 0 ;
+  if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) eff_pur = 1 ;
+  if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) eff_pur = 2 ;
+
   if(cluster ==-1){
     cout<<"Invalid Cluster Energy option"<<endl;
   }
@@ -542,8 +561,8 @@ void  AliPHOSPIDv1::SetParameters()
   // the Principal file, which is opened here
   fX         = new double[7]; // Data for the PCA 
   fP         = new double[7]; // Eigenvalues of the PCA  
-  if (fFileName.IsNull()) 
-    fFileName  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ; 
+  
+  SetPrincipalFileOptions(fOptFileName);
   TFile f( fFileName.Data(), "read" ) ;
   fPrincipal = dynamic_cast<TPrincipal*> (f.Get("principal")) ; 
   f.Close() ; 
@@ -559,8 +578,6 @@ void  AliPHOSPIDv1::SetParameters()
  
   fParameters = new TMatrixD(21,3) ; 
 
-  if (fFileNamePar.IsNull())
-    fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat");
   ifstream paramFile(fFileNamePar, ios::in) ; 
   
   Int_t i,j ;
@@ -589,9 +606,9 @@ void  AliPHOSPIDv1::SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gat
   if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)) cluster = 1 ;
   if( Cluster_En > 2.0) cluster = 2 ;
   
-  if(strstr( Eff_Pur,"HIGH EFFICIENCY" )||strstr( Eff_Pur,"LOW PURITY" ) ) eff_pur = 0 ;
-  if(strstr( Eff_Pur,"MEDIUM EFFICIENCY" )||strstr( Eff_Pur,"MEDIUM PURITY" ) ) eff_pur = 1 ;
-  if(strstr( Eff_Pur,"LOW EFFICIENCY" )||strstr( Eff_Pur,"HIGH PURITY" ) ) eff_pur = 2 ;
+  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") ) eff_pur = 0 ;
+  if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) eff_pur = 1 ;
+  if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) eff_pur = 2 ;
 
   if(cluster ==-1){
     cout<<"Invalid Cluster Energy option"<<endl;
@@ -770,6 +787,8 @@ void  AliPHOSPIDv1::MakeRecParticles(){
       rp->SetPIDBit(eff_pur+6) ;
  
   }
+  
+    rp->Name(); //If photon sets the particle pdg name to gamma
     rp->SetProductionVertex(0,0,0,0);
     rp->SetFirstMother(-1);
     rp->SetLastMother(-1);
@@ -791,8 +810,10 @@ void  AliPHOSPIDv1:: Print()
     cout <<  "    RecPoints branch title:     " << fRecPointsTitle.Data() << endl ;
     cout <<  "    TrackSegments Branch title: " << fTrackSegmentsTitle.Data() << endl ;
     cout <<  "    RecParticles Branch title   " << fRecParticlesTitle.Data() << endl;
-    cout <<  "with parameters: " << endl ;
-    SetParameters() ; 
+    cout <<  "    Matrix of Parameters: "<<endl;
+    cout <<  "           3  Columns [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]"<<endl;
+    cout <<  "           21 Rows, each 3 [ RCPV, TOF, X_Center, Y_Center, A, B, Angle ]"<<endl;
+    SetParameters() ;
     fParameters->Print() ; 
     cout <<  "============================================" << endl ;
 }
@@ -895,44 +916,16 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
   
   if(strstr(option,"all")) {  // printing found TS
     
-    cout << "  PARTICLE "   
+    cout << "  PARTICLE       "   
 	 << "  Index    "  << endl ;
     
     Int_t index ;
     for (index = 0 ; index < recParticles->GetEntries() ; index++) {
        AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) recParticles->At(index) ;       
-       //cout<<" Type " <<rp->GetType()<<endl;
-       //Text_t particle[11];
-       // switch(rp->GetType()) {
-//        case  AliPHOSFastRecParticle::kCHARGEDHASLOW:
-// 	 strcpy(particle, "CHARGED HA SLOW") ;
-// 	 break ; 
-//        case  AliPHOSFastRecParticle::kNEUTRALHASLOW: 
-// 	 strcpy(particle, "NEUTRAL HA SLOW");
-// 	 break ;    
-//        case  AliPHOSFastRecParticle::kCHARGEDHAFAST:
-// 	 strcpy(particle, "CHARGED HA FAST") ;
-// 	 break ;	
-//        case  AliPHOSFastRecParticle::kNEUTRALHAFAST:
-// 	 strcpy(particle, "NEUTRAL HA FAST");
-// 	 break;
-//        case  AliPHOSFastRecParticle::kCHARGEDEMSLOW:
-// 	 strcpy(particle, "CHARGED EM SLOW") ;
-// 	 break ;
-//        case  AliPHOSFastRecParticle::kNEUTRALEMSLOW:
-// 	 strcpy(particle, "NEUTRAL EM SLOW");
-// 	 break ;
-//        case  AliPHOSFastRecParticle::kCHARGEDEMFAST:
-// 	 strcpy(particle, "CHARGED EM FAST") ;
-// 	 break ;
-//        case  AliPHOSFastRecParticle::kNEUTRALEMFAST:
-// 	 strcpy( particle, "NEUTRAL EM FAST");
-// 	 break;
-//       }
 
-      cout << setw(10) << rp->GetType() << "  "
-	   << setw(5) <<  rp->GetIndexInList() << " " <<endl;
-   
+       cout << setw(10) << rp->Name() << "  "
+	    << setw(5) <<  rp->GetIndexInList() << " " <<endl;
+       cout << "Type "<<  rp->GetType() << endl;
     }
     cout << "-------------------------------------------" << endl ;
   }
