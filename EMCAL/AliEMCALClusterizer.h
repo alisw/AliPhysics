@@ -50,9 +50,9 @@ public:
   virtual void SetHCLocalMaxCut(Float_t cut)            {Warning("SetHCLogWeight", "Not Defined") ; }
   virtual void SetHCLogWeight(Float_t w)                {Warning("SetHCLogWeight", "Not Defined") ; }
   virtual void SetTimeGate(Float_t gate) {Warning("SetTimeGate", "Not Defined") ; }
-  virtual void SetPREShoClusteringThreshold(Float_t cluth) {Warning("SetPREyShoClusteringThreshold", "Not Defined") ; }
-  virtual void SetPREShoLocalMaxCut(Float_t cut) {Warning("SetPREShoLocalMaxCut", "Not Defined") ; }
-  virtual void SetPREShoLogWeight(Float_t w) {Warning("SetPREShoLogWeight", "Not Defined") ; }
+  virtual void SetPREClusteringThreshold(Float_t cluth) {Warning("SetPREClusteringThreshold", "Not Defined") ; }
+  virtual void SetPRELocalMaxCut(Float_t cut) {Warning("SetPRELocalMaxCut", "Not Defined") ; }
+  virtual void SetPRELogWeight(Float_t w) {Warning("SetPRELogWeight", "Not Defined") ; }
   virtual void SetDigitsBranch(const char * title) {Warning("SetDigitsBranch", "Not Defined") ; }
   virtual void SetRecPointsBranch(const char *title) {Warning("SetRecPointsBranch", "Not Defined") ; } 
   virtual void SetUnfolding(Bool_t toUnfold ) {Warning("SetUnfolding", "Not Defined") ; }
