@@ -1,6 +1,12 @@
 #include <Riostream.h>
 #include "TVirtualMCApplication.h"
+#include "TVirtualMCStack.h"
 #include "TFluka.h"
+// Fluka include
+#include "Fdimpar.h"  //(DIMPAR) fluka include
+#include "Fdblprc.h"  //(DBLPRC) fluka common
+#include "Ftrackr.h"  //(TRACKR) fluka common
+
 #ifndef WIN32
 # define mgdraw mgdraw_
 #else
@@ -10,34 +16,47 @@
 extern "C" {
 void mgdraw(Int_t& icode, Int_t& mreg)
 {
+    TFluka* fluka =  (TFluka*) gMC;
+    Int_t verbosityLevel = fluka->GetVerbosityLevel();
+//
+//  Make sure that stack has currrent track Id
+    Int_t trackId = TRACKR.ispusr[mkbmx2-1];
+    TVirtualMCStack* cppstack = fluka->GetStack();
+    cppstack->SetCurrentTrack(trackId);
+//
+//    
     Int_t oldreg = ((TFluka*) gMC)->GetMreg();
     if (oldreg != mreg) {
 //
 //  Boundary Crossing
 //
-	((TFluka*) gMC)->SetNewreg(mreg);
-	if (oldreg == -1) 
-	    ((TFluka*) gMC)->SetMreg(mreg);
-	printf("Boundary Crossing %d %d \n", oldreg, mreg);
+	fluka->SetNewreg(mreg);
+	if (oldreg == -1) fluka->SetMreg(mreg);
+	if (verbosityLevel >= 3)
+	    printf("Boundary Crossing %d %d \n", oldreg, mreg);
     } else {
-	((TFluka*) gMC)->SetMreg(mreg);
-	((TFluka*) gMC)->SetNewreg(mreg);
-	printf("Normal step %d %d \n", oldreg, mreg);
+	fluka->SetMreg(mreg);
+	fluka->SetNewreg(mreg);
+	if (verbosityLevel >= 3)
+	    printf("Normal step %d %d \n", oldreg, mreg);
     }
-    ((TFluka*) gMC)->SetIcode(icode);
+    fluka->SetIcode(icode);
+
     cout << endl << " !!! I am in mgdraw - calling Stepping()" << endl;
-    ((TFluka*) gMC)->FutoTest();
+    cout << endl << " Track Id =" << trackId << endl;
+    
+    fluka->FutoTest();
 
     if (oldreg != mreg) {
 //
 //  Double step for boundary crossing
 //
-	((TFluka*) gMC)->SetTrackIsExiting();
+	fluka->SetTrackIsExiting();
 	(TVirtualMCApplication::Instance())->Stepping();
-	((TFluka*) gMC)->SetMreg(mreg);
-	((TFluka*) gMC)->SetTrackIsEntering();
+	fluka->SetMreg(mreg);
+	fluka->SetTrackIsEntering();
 	(TVirtualMCApplication::Instance())->Stepping();
-	((TFluka*) gMC)->SetTrackIsInside();
+	fluka->SetTrackIsInside();
     } else {
 	(TVirtualMCApplication::Instance())->Stepping();
     }
