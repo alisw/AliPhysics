@@ -269,27 +269,31 @@ if (!fInitialised) InitPlots();
   // (NB!!!!!!!)  Pointing into the EMCAL!!!!!!
   
 // =========================== All cases ===================================
-  
-if (fOutput->GetNJets()>=1)
-{
-	Float_t theta = 2.0*atan(exp(-fOutput->GetParton(0)->Eta()));
-	Float_t et    = fOutput->GetParton(0)->Energy() * TMath::Sin(theta);
+ 
+
 	// I will make a little array of jet indices for which jets are in 
 	// the EMCAL then my counter can loop from 0 below - but it will 
 	// be the index of the array of applicable jets
-	Int_t appjet[4];
-	Int_t numappjet=0;
-	for (Int_t appc=0;appc<fOutput->GetNJets();appc++)
-	{ // Check all jets for applicability
-		Float_t eta = fOutput->GetJet(appc)->Eta();
-		Float_t phi = fOutput->GetJet(appc)->Phi();
-		if (eta > -0.7 && eta < 0.7 && phi > 1./3.*TMath::Pi() && phi < TMath::Pi())
-		{ // Then jet is applicable
-			appjet[numappjet]=appc;
-			numappjet++;
-		}
-	}
+    
+  Int_t appjet[4];
+  Int_t numappjet=0;
+  
+  for (Int_t appc=0;appc<fOutput->GetNJets();appc++)
+  { // Check all jets for applicability
+	  Float_t eta = fOutput->GetJet(appc)->Eta();
+	  Float_t phi = fOutput->GetJet(appc)->Phi();
+	  if (eta > -0.7 && eta < 0.7 && phi > 1./3.*TMath::Pi() && phi < TMath::Pi())
+	  { // Then jet is applicable
+		  appjet[numappjet]=appc;				
+		  numappjet++;
+	  }
+  }
 	
+  
+if (numappjet >=1)
+{
+	Float_t theta = 2.0*atan(exp(-fOutput->GetParton(0)->Eta()));
+	Float_t et    = fOutput->GetParton(0)->Energy() * TMath::Sin(theta);
 	if (fOutput->GetNJets()>1)
 	{
 	      	for (Int_t counter = 0; counter<numappjet;counter++)  
@@ -339,7 +343,7 @@ if (fOutput->GetNJets()>=1)
 		
 }
 
-if (fOutput->GetNJets()>1)
+if (numappjet > 1)
 {	
 //========================= CASE 2 ===========================	
   Int_t nPartons = fOutput->GetNPartons();
@@ -465,7 +469,7 @@ if (fOutput->GetNJets()>1)
   }// loop over tracks
   }
 
-  if (fOutput->GetNJets()==1)
+  if (numappjet == 1)
   {
 
 //========================= CASE 1 ===========================	
@@ -473,7 +477,7 @@ if (fOutput->GetNJets()>1)
   if (fOutput->GetNJets()!=1) return;
   AliEMCALParton* parton;
   AliEMCALJet* jet; 
-  jet = fOutput->GetJet(0);
+  jet = jethighest;//fOutput->GetJet(0);
   fhJetEt->Fill(jet->Energy());
   fhJetEta->Fill(jet->Eta()  );
   fhJetPhi->Fill(jet->Phi() );
