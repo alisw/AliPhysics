@@ -10,7 +10,6 @@ CC	      = echo $*.c ; gcc
 
 # Global optimisation
 OPT           = -O2
-OPT           = -g
 
 # Shared library suffix
 SL	      = so
