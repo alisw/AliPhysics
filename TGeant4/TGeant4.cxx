@@ -7,6 +7,7 @@
 #include "TG4Messenger.h"
 #include "TG4VRunConfiguration.h"
 #include "TG4GeometryManager.h" 
+#include "TG4SDManager.h" 
 #include "TG4PhysicsManager.h" 
 #include "TG4StepManager.h" 
 #include "TG4VisManager.h"
@@ -30,6 +31,11 @@ TGeant4::TGeant4(const char* name, const char* title,
   fGeometryManager = new TG4GeometryManager();
   // add verbose level
   //G4cout << "TG4GeometryManager has been created." << endl;
+  
+  // create sensitive detectors manager
+  fSDManager = new TG4SDManager(configuration->GetSDConstruction());
+  // add verbose level
+  //G4cout << "TG4SDManager has been created." << endl;
   
   // create physics manager  
   fPhysicsManager = new TG4PhysicsManager(configuration->GetPhysicsList());
@@ -68,6 +74,11 @@ TGeant4::TGeant4(const char* name, const char* title,
   // add verbose level
   //G4cout << "TG4GeometryManager has been created." << endl;
   
+  // create sensitive detectors manager
+  fSDManager = new TG4SDManager(configuration->GetSDConstruction());
+  // add verbose level
+  //G4cout << "TG4SDManager has been created." << endl;
+  
   // create physics manager  
   fPhysicsManager = new TG4PhysicsManager(configuration->GetPhysicsList());
   // add verbose level
@@ -105,6 +116,7 @@ TGeant4::~TGeant4() {
 //
   delete fRunManager;
   delete fGeometryManager;
+  delete fSDManager;
   delete fPhysicsManager;
   delete fStepManager;
   // fVisManager is deleted with G4RunManager destructor
@@ -188,12 +200,6 @@ void TGeant4::Matrix(Int_t& krot, Float_t thetaX, Float_t phiX,
   fGeometryManager
     ->Matrix(krot, thetaX, phiX, thetaY, phiY, thetaZ, phiZ); 
 } 
-
-//_____________________________________________________________________________
-void TGeant4::Gstpar(Int_t itmed, const char *param, Float_t parval) {
-//
-  fGeometryManager->Gstpar(itmed, param, parval); 
-}    
 
 //_____________________________________________________________________________
 Int_t TGeant4::Gsvolu(const char *name, const char *shape, Int_t nmed,  
@@ -313,25 +319,25 @@ void TGeant4::WriteEuclid(const char* fileName, const char* topVol,
 //_____________________________________________________________________________
 Int_t TGeant4::VolId(const Text_t* volName) const {
 //
-  return fGeometryManager->VolId(volName); 
+  return fSDManager->VolId(volName); 
 } 
 
 //_____________________________________________________________________________
 const char* TGeant4::VolName(Int_t id) const {
 //
-  return fGeometryManager->VolName(id); 
+  return fSDManager->VolName(id); 
 }
  
 //_____________________________________________________________________________
 Int_t TGeant4::NofVolumes() const {
 //
-  return fGeometryManager->NofVolumes(); 
+  return fSDManager->NofVolumes(); 
 } 
 
 //_____________________________________________________________________________
 Int_t TGeant4::VolId2Mate(Int_t id) const {
 //
-  return fGeometryManager->VolId2Mate(id); 
+  return fSDManager->VolId2Mate(id); 
 } 
 
 
@@ -344,6 +350,13 @@ void TGeant4::BuildPhysics() {
 //
   fPhysicsManager->BuildPhysics();
 }  
+
+//_____________________________________________________________________________
+void TGeant4::Gstpar(Int_t itmed, const char *param, Float_t parval) {
+//
+  fGeometryManager->Gstpar(itmed, param, parval); 
+  fPhysicsManager->Gstpar(itmed, param, parval); 
+}    
 
 //_____________________________________________________________________________
 void TGeant4::SetCut(const char* cutName, Float_t cutValue) { 
