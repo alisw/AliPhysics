@@ -13,11 +13,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliSHIL.h"
-#include <TNode.h>
-#include <TTUBE.h>
-#include <TBRIK.h>
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
 
 ClassImp(AliSHIL)
@@ -32,7 +28,7 @@ AliSHIL::AliSHIL()
  
 //_____________________________________________________________________________
 AliSHIL::AliSHIL(const char *name, const char *title)
-  : AliDetector(name,title)
+  : AliModule(name,title)
 {
   //
   // Standard constructor for muon shield
@@ -40,14 +36,6 @@ AliSHIL::AliSHIL(const char *name, const char *title)
   SetMarkerColor(7);
   SetMarkerStyle(2);
   SetMarkerSize(0.4);
-}
- 
-//_____________________________________________________________________________
-void AliSHIL::BuildGeometry()
-{
-  //
-  // Root TNode geometry only for active detectors
-  //
 }
  
 //_____________________________________________________________________________
@@ -515,7 +503,7 @@ void AliSHIL::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliSHIL::DrawDetector () 
+void AliSHIL::DrawModule () 
 {
   //
   // Draw a shaded view of the muon shield
@@ -589,10 +577,3 @@ void AliSHIL::Init()
 }
 
  
-//_____________________________________________________________________________
-void AliSHIL::StepManager()
-{
-  //
-  // Called at every step in the muon shield
-  //
-}

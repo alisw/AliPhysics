@@ -20,7 +20,6 @@
 
 #include "AliFRAME.h"
 #include "AliRun.h"
-#include "AliMC.h"
  
 ClassImp(AliFRAME)
  
@@ -34,7 +33,7 @@ AliFRAME::AliFRAME()
  
 //_____________________________________________________________________________
 AliFRAME::AliFRAME(const char *name, const char *title)
-  : AliDetector(name,title)
+  : AliModule(name,title)
 {
   //
   // Standard constructor
@@ -45,20 +44,3 @@ AliFRAME::AliFRAME(const char *name, const char *title)
   SetMarkerSize(0.4);
 }
  
-//_____________________________________________________________________________
-void AliFRAME::BuildGeometry()
-{
-  //
-  // ROOT TNode geometry is built only for sensitive detectors
-  // and not for structural elements
-  //
-}
- 
-//_____________________________________________________________________________
-
-void AliFRAME::StepManager()
-{
-  //
-  // Called at every step in the space frame
-  //
-}

@@ -21,7 +21,6 @@
 
 #include "AliABSO.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
  
 ClassImp(AliABSO)
@@ -36,7 +35,7 @@ AliABSO::AliABSO()
  
 //_____________________________________________________________________________
 AliABSO::AliABSO(const char *name, const char *title)
-       : AliDetector(name,title)
+       : AliModule(name,title)
 {
   //
   // Standard constructor
@@ -44,15 +43,6 @@ AliABSO::AliABSO(const char *name, const char *title)
   SetMarkerColor(7);
   SetMarkerStyle(2);
   SetMarkerSize(0.4);
-}
- 
-//_____________________________________________________________________________
-void AliABSO::BuildGeometry()
-{
-  //
-  // ROOT TNode geometry is built only for sensitive detectors
-  // and not for structural elements
-  //
 }
  
 //_____________________________________________________________________________
@@ -400,7 +390,7 @@ void AliABSO::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliABSO::DrawDetector()
+void AliABSO::DrawModule()
 {
   //
   // Draw a shaded view of the muon absorber
@@ -608,10 +598,3 @@ void AliABSO::Init()
   printf("\n");
 }
  
-//_____________________________________________________________________________
-void AliABSO::StepManager()
-{
-  //
-  // Procedure called at every step in the muon absorber
-  //
-}

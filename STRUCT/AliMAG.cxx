@@ -19,7 +19,6 @@
  
 #include "AliMAG.h"
 #include "AliRun.h"
-#include "TGeant3.h"
  
 ClassImp(AliMAG)
  
@@ -33,7 +32,7 @@ AliMAG::AliMAG()
  
 //_____________________________________________________________________________
 AliMAG::AliMAG(const char *name, const char *title)
-  : AliDetector(name,title)
+  : AliModule(name,title)
 {
   //
   // Standard constructor for L3 magnet
@@ -49,15 +48,6 @@ AliMAG::AliMAG(const char *name, const char *title)
   SetMarkerSize(0.4);
 }
 
-//_____________________________________________________________________________
-void AliMAG::BuildGeometry()
-{
-  //
-  // Build ROOT TNode geometry for L3 magnet
-  // only for detectors
-  //
-}
- 
 //_____________________________________________________________________________
 void AliMAG::CreateGeometry()
 {
@@ -241,7 +231,7 @@ void AliMAG::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliMAG::DrawDetector()
+void AliMAG::DrawModule()
 {
   //
   // Draw a shaded view of the L3 magnet
@@ -266,10 +256,3 @@ void AliMAG::Init()
   printf("\n");
 }
 
-//_____________________________________________________________________________
-void AliMAG::StepManager()
-{
-  //
-  // Called at every step in the L3 magnet
-  //
-}

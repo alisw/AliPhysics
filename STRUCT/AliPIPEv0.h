@@ -15,7 +15,7 @@ public:
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual Int_t  IsVersion() const {return 0;}
-  virtual void  DrawDetector();
+  virtual void  DrawModule();
    
    ClassDef(AliPIPEv0,1)  //Class for PIPE version 0
 };

@@ -35,7 +35,7 @@ AliDIPO::AliDIPO()
  
 //_____________________________________________________________________________
 AliDIPO::AliDIPO(const char *name, const char *title)
-  : AliDetector(name,title)
+  : AliModule(name,title)
 {
   //
   // Standard constructor for the Magnetic Dipole
@@ -43,14 +43,6 @@ AliDIPO::AliDIPO(const char *name, const char *title)
   SetMarkerColor(7);
   SetMarkerStyle(2);
   SetMarkerSize(0.4);
-}
- 
-//_____________________________________________________________________________
-void AliDIPO::BuildGeometry()
-{
-  //
-  // Build ROOT TNode geometry only for detectors
-  //
 }
  
 //_____________________________________________________________________________

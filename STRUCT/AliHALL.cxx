@@ -21,13 +21,12 @@
 
 #include "AliHALL.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
  
 ClassImp(AliHALL)
  
 //_____________________________________________________________________________
-AliHALL::AliHALL() : AliDetector()
+AliHALL::AliHALL()
 {
   //
   // Default constructor for the experimental Hall
@@ -36,7 +35,7 @@ AliHALL::AliHALL() : AliDetector()
  
 //_____________________________________________________________________________
 AliHALL::AliHALL(const char *name, const char *title)
-       : AliDetector(name,title)
+       : AliModule(name,title)
 {
   //
   // Standard constructor for the experimental Hall
@@ -44,14 +43,6 @@ AliHALL::AliHALL(const char *name, const char *title)
   SetMarkerColor(7);
   SetMarkerStyle(2);
   SetMarkerSize(0.4);
-}
- 
-//_____________________________________________________________________________
-void AliHALL::BuildGeometry()
-{
-  //
-  // Build ROOT TNode geometry. Only for Detectors
-  //
 }
  
 //_____________________________________________________________________________
@@ -150,7 +141,7 @@ void AliHALL::CreateGeometry()
   dr  = 100.;
   dh  = dr * TMath::Cos(phi);
   dl  = dr * TMath::Sin(phi);
-  if (gAlice->GetDetector("ZDC") == 0) {
+  if (gAlice->GetModule("ZDC") == 0) {
     
     //     No ZDC 
     hullen = 250.;
@@ -403,7 +394,7 @@ void AliHALL::Init()
 }
 
 //_____________________________________________________________________________
-void AliHALL::DrawDetector()
+void AliHALL::DrawModule()
 {
   //
   // Draw a shaded view of Experimental Hall
@@ -440,7 +431,7 @@ void AliHALL::DrawDetector()
   pMC->Gdopt("shad", "on");
   pMC->Gsatt("*", "fill", 7);
   pMC->SetClipBox(".");
-  if (gAlice->GetDetector("ZDC") == 0) {
+  if (gAlice->GetModule("ZDC") == 0) {
     //
     // ZDC is not present
     //
@@ -459,10 +450,3 @@ void AliHALL::DrawDetector()
   pMC->Gdman(18, 2, "MAN");
 }
  
-//_____________________________________________________________________________
-void AliHALL::StepManager()
-{
-  //
-  // Called at every step in the HALL
-  //
-}

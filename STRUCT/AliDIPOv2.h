@@ -15,8 +15,7 @@ public:
   virtual void  CreateGeometry();
   virtual void  CreateMaterials();
   virtual Int_t IsVersion() const {return 2;}
-  virtual void  DrawDetector();
-  virtual void  StepManager();
+  virtual void  DrawModule();
   
   ClassDef(AliDIPOv2,1)  //Class manager for magnetic dipole version 2
 };

@@ -20,12 +20,11 @@
 
 #include "AliDIPOv1.h"
 #include "AliRun.h"
-#include "AliMC.h"
  
 ClassImp(AliDIPOv1)
  
 //_____________________________________________________________________________
-AliDIPOv1::AliDIPOv1() : AliDIPO()
+AliDIPOv1::AliDIPOv1()
 {
   //
   // Default constructor for the magnetic dipole version 1
@@ -148,7 +147,7 @@ void AliDIPOv1::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliDIPOv1::DrawDetector()
+void AliDIPOv1::DrawModule()
 {
   //
   // Draw a shaded view of the muon absorber
@@ -246,10 +245,3 @@ void AliDIPOv1::CreateMaterials()
   AliMedium(1875, "ST_L3_US          ", 1824, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
 }
 
-//_____________________________________________________________________________
-void AliDIPOv1::StepManager()
-{
-  //
-  // Called at each step in the Dipole Magnet
-  //
-}

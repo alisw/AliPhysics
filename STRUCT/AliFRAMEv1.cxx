@@ -12,12 +12,11 @@
 
 #include "AliFRAMEv1.h"
 #include "AliRun.h"
-#include "AliMC.h"
  
 ClassImp(AliFRAMEv1)
  
 //_____________________________________________________________________________
-AliFRAMEv1::AliFRAMEv1() : AliFRAME()
+AliFRAMEv1::AliFRAMEv1()
 {
   //
   // Default constructor for space frame
@@ -240,7 +239,7 @@ void AliFRAMEv1::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliFRAMEv1::DrawDetector()
+void AliFRAMEv1::DrawModule()
 {
   //
   // Draw a shaded view of the space frame

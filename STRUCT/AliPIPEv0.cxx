@@ -2,20 +2,14 @@
 //  Beam pipe class                            /
 ////////////////////////////////////////////////
 
-#include <stdio.h> 
-#include <TMath.h>
-#include <TRandom.h>
-#include <TVector.h>
 #include "AliPIPEv0.h"
 #include "AliRun.h"
-#include "stdlib.h"
-#include "AliMC.h"
 #include "TSystem.h"
  
 ClassImp(AliPIPEv0)
  
 //_____________________________________________________________________________
-AliPIPEv0::AliPIPEv0() : AliPIPE()
+AliPIPEv0::AliPIPEv0()
 {
 }
 
@@ -98,7 +92,7 @@ void AliPIPEv0::CreateGeometry()
 
  
 //___________________________________________
-void AliPIPEv0::DrawDetector()
+void AliPIPEv0::DrawModule()
 {
 }
 

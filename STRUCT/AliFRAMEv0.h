@@ -15,7 +15,6 @@ public:
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual Int_t  IsVersion() const {return 0;}
-  virtual void  DrawDetector();
    
    ClassDef(AliFRAMEv0,1)  //Class for FRAME version 0
 };

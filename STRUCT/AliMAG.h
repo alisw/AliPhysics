@@ -4,22 +4,20 @@
 //  Manager class for detector: MAG           //
 ////////////////////////////////////////////////
  
-#include "AliDetector.h"
+#include "AliModule.h"
  
  
-class AliMAG : public AliDetector {
+class AliMAG : public AliModule {
  
 public:
    AliMAG();
    AliMAG(const char *name, const char *title);
    virtual      ~AliMAG() {}
-   virtual void  BuildGeometry();
    virtual void  CreateGeometry();
    virtual void  CreateMaterials();
    virtual void  Init();
    virtual Int_t IsVersion() const {return 0;}
-   virtual void  DrawDetector();
-   virtual void  StepManager();
+   virtual void  DrawModule();
  
    ClassDef(AliMAG,1)  //Class manager for detector:MAG
 };

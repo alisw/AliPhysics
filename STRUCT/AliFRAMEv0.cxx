@@ -15,7 +15,7 @@
 ClassImp(AliFRAMEv0)
  
 //_____________________________________________________________________________
-AliFRAMEv0::AliFRAMEv0() : AliFRAME()
+AliFRAMEv0::AliFRAMEv0()
 {
 }
 
@@ -75,11 +75,6 @@ void AliFRAMEv0::CreateGeometry()
 }
 
  
-//___________________________________________
-void AliFRAMEv0::DrawDetector()
-{
-}
-
 //___________________________________________
 void AliFRAMEv0::CreateMaterials()
 {

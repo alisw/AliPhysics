@@ -5,22 +5,20 @@
 //   This is the envelop for Alice            //
 ////////////////////////////////////////////////
  
-#include "AliDetector.h"
+#include "AliModule.h"
  
  
-class AliBODY : public AliDetector {
+class AliBODY : public AliModule {
  
 public:
    AliBODY();
    AliBODY(const char *name, const char *title);
    virtual      ~AliBODY() {}
-   virtual void  BuildGeometry();
    virtual void  CreateGeometry();
    virtual void  CreateMaterials();
    virtual Int_t IsVersion() const {return 0;}
-   virtual void  DrawDetector();
-   virtual void  StepManager();
- 
+   virtual void  DrawModule();
+
    ClassDef(AliBODY,1)  //Class manager for the ALICE body
 };
 

@@ -4,22 +4,20 @@
 //  Manager class for detector: HALL          //
 ////////////////////////////////////////////////
  
-#include "AliDetector.h"
+#include "AliModule.h"
  
  
-class AliHALL : public AliDetector {
+class AliHALL : public AliModule {
  
 public:
    AliHALL();
    AliHALL(const char *name, const char *title);
    virtual      ~AliHALL() {}
-   virtual void  BuildGeometry();
    virtual void  CreateGeometry();
    virtual void  CreateMaterials();
    virtual void  Init();
    virtual Int_t IsVersion() const {return 0;}
-   virtual void  DrawDetector();
-   virtual void  StepManager();
+   virtual void  DrawModule();
  
    ClassDef(AliHALL,1)  //Class for ALICE experimental hall
 };
