@@ -3522,7 +3522,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     gMC->Gsvolu(nameLV, "BOX ", idtmed[280], dits, 3);
     yLV = iI018dits[1] - dits[0]*cos30 - dits[1]*sin30;
     xLV = xI050 -
-          fabs(yI050-yLV)*sin30/cos30 +
+          TMath::Abs(yI050-yLV)*sin30/cos30 +
           (iI050dits[1]+(2*iSDD+1)*dits[1])/cos30;
     zLV = iI047dits[2] - dits[2];
     gMC->Gspos(nameLV, 1,"I047",  xLV, yLV,  zLV, idrotm[346], "ONLY");
@@ -3575,7 +3575,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     gMC->Gsvolu(nameLV, "BOX ", idtmed[280], dits, 3);
     yLV = iI018dits[1] - dits[0]*cos30 - dits[1]*sin30;
     xLV = xI050 -
-          fabs(yI050-yLV)*sin30/cos30 +
+          TMath::Abs(yI050-yLV)*sin30/cos30 +
           (iI050dits[1]+(2*iSDD+1)*dits[1])/cos30;
     zLV = iI048dits[2] - dits[2];
     gMC->Gspos(nameLV, 1,"I048",  xLV, yLV,  zLV, idrotm[346], "ONLY");
