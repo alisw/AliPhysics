@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/07/11 18:24:56  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.3  2000/06/30 12:08:36  morsch
 In member data: char* replaced by TString, Init takes care of resizing the strings to
 8 characters required by Hijing.
@@ -85,12 +88,13 @@ void AliGenHijing::Init()
 		      fMinImpactParam, fMaxImpactParam));
 
     fHijing=(THijing*) fgMCEvGen;
-    fHijing->Initialize();
+
     fHijing->SetIHPR2(3,  fTrigger);
     fHijing->SetIHPR2(4,  fQuench);
     fHijing->SetIHPR2(6,  fShadowing);
     fHijing->SetIHPR2(12, fDecaysOff);    
     fHijing->SetIHPR2(21, fKeep);
+    fHijing->Initialize();
 //
     if (fEvaluate) EvaluateCrossSections();
 }
