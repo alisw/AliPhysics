@@ -39,7 +39,7 @@ class AliPHOSFastRecParticle : public TParticle {
     return fIndexInList ; 
   } 
   virtual const Int_t GetNPrimaries() const {return 0 ;}
-  virtual const TParticle * GetPrimary(Int_t index=0) const  {return 0 ;} 
+  virtual const TParticle * GetPrimary(Int_t) const  {return 0 ;} 
   const Int_t GetType() const { 
     // returns the type of the particle
     return fType ; 
@@ -71,7 +71,7 @@ class AliPHOSFastRecParticle : public TParticle {
 
   TString Name() const ; 
   virtual void Paint(Option_t * option="");
-  virtual void Print(Option_t * option="") const ; 
+  virtual void Print(Option_t *) const ; 
   
   void SetType(Int_t type) ;
   

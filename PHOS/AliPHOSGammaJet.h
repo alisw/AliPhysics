@@ -20,15 +20,15 @@ public:
 
   AliPHOSGammaJet() ; // default ctor
   AliPHOSGammaJet(const TString inputfilename) ; //ctor 
-  AliPHOSGammaJet(const AliPHOSGammaJet * gj) ; // cpy ctor
+  AliPHOSGammaJet(const AliPHOSGammaJet & gj) ; // cpy ctor
   ~AliPHOSGammaJet() ; // dtor
-  virtual void   Exec(Option_t *option); 
+  virtual void   Exec(Option_t *); 
   void GetGammaJet(TList & particleList, TLorentzVector & gamma, Int_t & id) ; 
   void GetLeadingCharge(TList & particleList, TLorentzVector & charge, Int_t & id) ;
-  void GetLeadingPi0(TList & particleList, TLorentzVector & pi0, Int_t & id) ;
-  void GetLeadingGammaPair(TList &particleList, TLorentzVector &gammapair, Int_t & id, 
-			   Double_t & thetacut,Double_t & ratiocut1, Double_t & ratiocut2,
-			   Double_t & invmasscut1,Double_t & invmasscut2);
+  void GetLeadingPi0(TList & particleList, TLorentzVector & pi0) ;
+//    void GetLeadingGammaPair(TList &particleList, TLorentzVector &gammapair, Int_t & id, 
+//  			   Double_t & thetacut,Double_t & ratiocut1, Double_t & ratiocut2,
+//  			   Double_t & invmasscut1,Double_t & invmasscut2);
   void Pi0Decay(Double_t mPi0, TLorentzVector &p0, 
 		TLorentzVector &p1, TLorentzVector &p2, Double_t &angle) ; 
 private: 

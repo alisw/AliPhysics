@@ -166,9 +166,9 @@ TTask("AliPHOSReconstructioner",evFoldName)
   fIsInitialized = kTRUE ;
 } 
 //____________________________________________________________________________
-void AliPHOSReconstructioner::Exec(Option_t *option)
+void AliPHOSReconstructioner::Exec(Option_t)
 {
-  //chesk, if the names of branches, which should be made conicide with already
+  //check, if the names of branches, which should be made conicide with already
   //existing
   if(!fIsInitialized)
     Init() ;
@@ -212,7 +212,7 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
   // Delete data members if any
 } 
 
-void AliPHOSReconstructioner::Print(Option_t * option)const {
+void AliPHOSReconstructioner::Print()const {
   // Print reconstructioner data  
 
   TString message ; 

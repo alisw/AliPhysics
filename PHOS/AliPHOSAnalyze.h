@@ -36,18 +36,16 @@ public:
   AliPHOSAnalyze(const AliPHOSAnalyze & ana) ; // cpy ctor                   
   virtual ~AliPHOSAnalyze() ;     // dtor
 
-  void DrawRecon(Int_t Nevent= 0,Int_t Nmod = 1,
-                 const char* branchName = "PHOSRP",
-                 const char* branchTitle = "Default") ; 
+  void DrawRecon(Int_t Nevent= 0,Int_t Nmod = 1) ; 
   // draws positions of entering of primaries and reconstructed objects in PHOS
 
-  void InvariantMass(const char* RecPartTitle = "Default") ;      // Photons invariant mass distributions
+  void InvariantMass() ;      // Photons invariant mass distributions
 
-  void EnergyResolution (const char* RecPartTitle = "Default") ;  // analyzes Energy resolution ;
+  void EnergyResolution () ;  // analyzes Energy resolution ;
 
-  void PositionResolution(const char* RecPartTitle = "Default") ; // analyzes Position resolution ;
+  void PositionResolution() ; // analyzes Position resolution ;
 
-  void Contamination(const char* RecPartTitle = "Default") ;      // Counts contamination of photon spectrum
+  void Contamination() ;      // Counts contamination of photon spectrum
 
   void Ls() ; //Prints PHOS-related contents of TreeS, TreeD and TreeR
 

@@ -63,7 +63,7 @@ AliPHOSRecCpvManager::~AliPHOSRecCpvManager(void)
   // Put a comment here
 }
 
-Float_t AliPHOSRecCpvManager::Dispersion(Float_t etot, Float_t ai, Float_t ei) const
+Float_t AliPHOSRecCpvManager::Dispersion(Float_t etot, Float_t ai) const
 {
   //"Dispresion" of energy deposition in the cell.
   // etot is the total shower energy, ai is the

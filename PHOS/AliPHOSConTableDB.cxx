@@ -190,7 +190,7 @@ Int_t AliPHOSConTableDB::Raw2AbsId(Int_t rawId)const{
     return 0 ;
 }
 //____________________________________________________________________________ 
-void AliPHOSConTableDB::Print(Option_t * option)const {
+void AliPHOSConTableDB::Print(Option_t *)const {
 //prints configuraion
 
   TString message ; 

@@ -40,7 +40,7 @@ public:
   Int_t   GetEmcIndex()    const {  return fEmcRecPoint ;   }
   Int_t   GetCpvIndex()    const {  return fPpsdUpRecPoint; }
 
-  virtual void  Print(Option_t * option) const;
+  virtual void  Print(Option_t *) const;
   void    SetIndexInList(Int_t val){ fIndexInList = val ;     } 
   void    SetCpvRecPoint(AliPHOSRecPoint * PpsdUpRecPoint ); //sets PPSD up Rec Point
 

@@ -778,7 +778,7 @@ void AliPHOSIhepAnalyze::CpvSingle(Int_t nevents)
   
 }
 
-void AliPHOSIhepAnalyze::HitsCPV(TClonesArray& hits, Int_t nev)
+void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
 {
   // Cumulative list of charged CPV impacts in event nev.
 

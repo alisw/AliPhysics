@@ -461,7 +461,7 @@ void AliPHOSFastRecParticle::Paint(Option_t *)
 }
 
 //____________________________________________________________________________
-void AliPHOSFastRecParticle::Print(Option_t * opt)const
+void AliPHOSFastRecParticle::Print(Option_t *)const
 {
   // Print the type, energy and momentum of the reconstructed particle
 

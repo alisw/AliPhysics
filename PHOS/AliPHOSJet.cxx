@@ -223,7 +223,7 @@ Bool_t AliPHOSJet::IsInCone(const TParticle * p)const
     return kFALSE ;
 }
 //____________________________________________________________________________ 
-Bool_t AliPHOSJet::IsInCone(const Double_t e,const Double_t eta,const Double_t phi)const
+Bool_t AliPHOSJet::IsInCone(const Double_t eta,const Double_t phi)const
 {
   //Says if particle is inside the defined cone
   Double_t dEta ;
@@ -282,7 +282,7 @@ void AliPHOSJet::CalculateAll(void){
   fSumPhi = 0. ;
 }
 //____________________________________________________________________________ 
-void AliPHOSJet::Print(Option_t * option){
+void AliPHOSJet::Print(){
   //Print jet parameters
   printf("-------------- AliPHOSJet ------------\n") ;
   printf(" Energy............. %f \n",fEnergy) ;

@@ -40,7 +40,7 @@ public:
    
   virtual ~AliPHOSReconstructioner() ;
 
-  virtual void Exec(Option_t * option) ;
+  virtual void Exec(Option_t) ;
 
   AliPHOSDigitizer         * GetDigitizer()  const { return fDigitizer   ; }
   AliPHOSClusterizer       * GetClusterizer()const { return fClusterizer ; }
@@ -48,7 +48,7 @@ public:
   AliPHOSTrackSegmentMaker * GetTSMaker()    const { return fTSMaker ;     }
   AliPHOSSDigitizer        * GetSDigitizer() const { return fSDigitizer  ; }
 
-  void Print(Option_t * option)const ;
+  void Print()const ;
   
   //  void SetBranchTitle(const char* branch,const char * title) ;
   //            // Sets the branch titles to separate different reconstruction flows 

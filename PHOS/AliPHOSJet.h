@@ -44,7 +44,7 @@ public:
   const Int_t * Indexs(Int_t & nIndexs)const{nIndexs = fNpart; return fList->GetArray() ;}
 
   Bool_t IsInCone(const TParticle * p)const ;
-  Bool_t IsInCone(const Double_t e,const Double_t eta,const Double_t phi)const ;
+  Bool_t IsInCone(const Double_t eta,const Double_t phi)const ;
   Bool_t AcceptConeDeviation(const TParticle *p)const ;
   Bool_t AcceptConeDeviation(const Double_t e,const Double_t eta,const Double_t phi)const ;
 
@@ -60,7 +60,7 @@ public:
                           else return fSumPhi/fSumEnergy ;}
   Int_t GetNJetParticles(void)const{return fNpart;}
 
-  void Print(Option_t * option="") ;
+  void Print() ;
   AliPHOSJet & operator = (const AliPHOSJet & rvalue)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ; return *this ; 

@@ -48,7 +48,7 @@ AliPHOSGammaJet::AliPHOSGammaJet(const TString inputfilename) {
 }
 
 //____________________________________________________________________________
-AliPHOSGammaJet::AliPHOSGammaJet(const AliPHOSGammaJet * gj) {
+AliPHOSGammaJet::AliPHOSGammaJet(const AliPHOSGammaJet & gj) : TTask(gj) {
 }
 
 //____________________________________________________________________________
@@ -56,7 +56,7 @@ AliPHOSGammaJet::~AliPHOSGammaJet() {
 }
 
 //____________________________________________________________________________
-void AliPHOSGammaJet::Exec(Option_t *option) 
+void AliPHOSGammaJet::Exec(Option_t *) 
 {
   // does the job
   
@@ -117,7 +117,7 @@ void AliPHOSGammaJet::Exec(Option_t *option)
     Int_t id_g = -1;
     GetGammaJet(particleList,gamma, id_g);
     GetLeadingCharge(particleList,charge, id_g);
-    GetLeadingPi0(particleList,pi0, id_g);
+    GetLeadingPi0(particleList,pi0);
     Info("Pi0Decay", "Gamma: %f %d", gamma.Energy(), id_g) ;
     Info("Pi0Decay", "Charge: %f", charge.Energy()) ;
     Info("Pi0Decay", "Pi0: %f", pi0.Energy()) ;
@@ -219,7 +219,7 @@ void AliPHOSGammaJet::GetLeadingCharge(TList &particleList, TLorentzVector &char
 }
 
 //____________________________________________________________________________
-void AliPHOSGammaJet::GetLeadingPi0(TList &particleList, TLorentzVector &pi0, Int_t & id) 
+void AliPHOSGammaJet::GetLeadingPi0(TList &particleList, TLorentzVector &pi0) 
 {
   TParticle *particle = 0x0;
   
@@ -231,7 +231,6 @@ void AliPHOSGammaJet::GetLeadingPi0(TList &particleList, TLorentzVector &pi0, In
     Int_t ksCode = particle->GetStatusCode();
     
     if((ksCode == 2))
-      //&&(id != iPrimary)&&(particle->GetPdgCode() == 111))
       {
 	pt_i = particle->Pt(); 
 	if(pt_i> pt_max){
@@ -243,10 +242,10 @@ void AliPHOSGammaJet::GetLeadingPi0(TList &particleList, TLorentzVector &pi0, In
 }
 
 //____________________________________________________________________________
-void AliPHOSGammaJet::GetLeadingGammaPair(TList &particleList, TLorentzVector &gammapair, Int_t & id, 
-			 Double_t & thetacut,Double_t & ratiocut1, Double_t & ratiocut2,
-			 Double_t & invmasscut1,Double_t & invmasscut2) 
-{
+//  void AliPHOSGammaJet::GetLeadingGammaPair(TList &particleList, TLorentzVector &gammapair, Int_t & id, 
+//  			 Double_t & thetacut,Double_t & ratiocut1, Double_t & ratiocut2,
+//  			 Double_t & invmasscut1,Double_t & invmasscut2) 
+//  {
 //   TParticle *particle = 0x0;
   
 //   Int_t  iPrimary=-1;
@@ -289,4 +288,4 @@ void AliPHOSGammaJet::GetLeadingGammaPair(TList &particleList, TLorentzVector &g
 //     }// if kscode 1
 //   }//while
 //   //	cout<<"iPrimary "<<iPrimary<<endl;
-}
+//  }

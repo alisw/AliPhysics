@@ -31,7 +31,7 @@ public:
   void FindJetsFromParticles(const TClonesArray * plist,TObjArray * jetslist) ; //Do the job
   void FindJetsFromDigits(const TClonesArray * digits,TObjArray * jetslist) ; //Do the job
 
-  void Print(Option_t * option = "") ;
+  void Print() ;
 
   void SetEtSeed(Double_t etseed){fEtSeed = etseed ;} ;
   void SetEtMin(Double_t etmin){fEtMin = etmin ;} ;

@@ -42,7 +42,7 @@ ClassImp(AliPHOSCalibrationDB)
   fctdb = 0 ;
 }
 //____________________________________________________________________________ 
-AliPHOSCalibrationDB::AliPHOSCalibrationDB(const char* filename ,const char * database):
+AliPHOSCalibrationDB::AliPHOSCalibrationDB(const char * database):
   TNamed("AliPHOSCalibrationDB",database){
   //Creates the containers: we prepare places for all channels in PHOS
 

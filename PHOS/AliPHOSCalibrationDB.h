@@ -24,7 +24,7 @@ class AliPHOSCalibrationDB:public TNamed {
 
 public:
   AliPHOSCalibrationDB() ;          // ctor
-  AliPHOSCalibrationDB(const char* filename ,const char * database = "Primordial") ;          
+  AliPHOSCalibrationDB(const char * database) ;
   virtual ~AliPHOSCalibrationDB() ; // dtor
 
   //Main method: calibrates if gains are known, otherwise - returns 0

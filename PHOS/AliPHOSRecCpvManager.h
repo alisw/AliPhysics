@@ -20,7 +20,7 @@ class AliPHOSRecCpvManager : public AliPHOSRecManager {
 
 
   void AG(Float_t e, Float_t dx, Float_t dy, Float_t& a, Float_t& gradx, Float_t& grady );
-  Float_t Dispersion(Float_t etot, Float_t ai, Float_t ei) const;
+  Float_t Dispersion(Float_t etot, Float_t ai) const;
 
   Float_t OneGamChi2(Float_t ai, Float_t ei, Float_t etot, Float_t& gi) const ;
   Float_t TwoGamChi2(Float_t ai, Float_t ei, Float_t etot, Float_t& gi) const ;

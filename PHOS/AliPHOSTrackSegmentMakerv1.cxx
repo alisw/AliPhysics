@@ -343,7 +343,7 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
       MakePairs() ;
     }
 
-    WriteTrackSegments(ievent) ;
+    WriteTrackSegments() ;
 
     if(strstr(option,"deb"))
       PrintTrackSegments(option);
@@ -389,7 +389,7 @@ void AliPHOSTrackSegmentMakerv1::Print()const
 }
 
 //____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
+void AliPHOSTrackSegmentMakerv1::WriteTrackSegments()
 {
   // Writes found TrackSegments to TreeR. Creates branches 
   // "PHOSTS" and "AliPHOSTrackSegmentMaker" with the same title.

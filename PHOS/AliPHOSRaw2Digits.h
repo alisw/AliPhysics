@@ -31,7 +31,7 @@ public:
   AliPHOSRaw2Digits(AliPHOSRaw2Digits & r2d) ;          // cpy ctor
   virtual ~AliPHOSRaw2Digits() ; // dtor
 
-  void Exec(Option_t *option) ;
+  void Exec() ;
 
   void SetBeamEnergy(Float_t energy){fBeamEnergy = energy ;}
   void SetInputFile(TString inname="Run_1234.fz"){fInName=inname ; }
@@ -46,7 +46,7 @@ public:
     {for(Int_t i=0;i<3;i++)fTarget[i]=pos[i] ;}
   void SetConTableDB(AliPHOSConTableDB * ctdb){fctdb = ctdb ;}
   void SetMaxEventsPerFile(Int_t nev=20000){fMaxPerFile = nev ;}
-  void Print(Option_t *option="")const ;
+  void Print()const ;
   AliPHOSRaw2Digits & operator = ( AliPHOSRaw2Digits & r2d ) { return *this ; } 
   
 private:

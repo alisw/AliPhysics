@@ -20,10 +20,10 @@ class AliPHOSRecEmcManager : public AliPHOSRecManager {
 
 
   void AG(Float_t e, Float_t dx, Float_t dy, Float_t& a, Float_t& gradx, Float_t& grady );
-  Float_t Dispersion(Float_t eTot, Float_t ai, Float_t ei) const;
+  Float_t Dispersion(Float_t ei) const;
 
-  Float_t OneGamChi2(Float_t ai, Float_t ei, Float_t eTot, Float_t& gi)const;
-  Float_t TwoGamChi2(Float_t ai, Float_t ei, Float_t eTot, Float_t& gi)const;
+  Float_t OneGamChi2(Float_t ai, Float_t ei, Float_t, Float_t& gi)const;
+  Float_t TwoGamChi2(Float_t ai, Float_t ei, Float_t, Float_t& gi)const;
 
   Float_t OneGamChisqCut() const{ return fOneGamChisqCut; }
   Float_t OneGamInitialStep() const{ return fOneGamInitialStep; }

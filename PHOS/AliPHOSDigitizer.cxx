@@ -419,7 +419,7 @@ void AliPHOSDigitizer::Exec(Option_t *option)
 
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
 
-    WriteDigits(ievent) ;
+    WriteDigits() ;
 
     if(strstr(option,"deb"))
       PrintDigits(option);
@@ -705,7 +705,7 @@ void AliPHOSDigitizer::Unload()
 }
 
 //____________________________________________________________________________
-void AliPHOSDigitizer::WriteDigits(Int_t event)
+void AliPHOSDigitizer::WriteDigits()
 {
 
   // Makes TreeD in the output file. 

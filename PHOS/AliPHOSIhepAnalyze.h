@@ -30,7 +30,7 @@ class AliPHOSIhepAnalyze : public TObject {
   void AnalyzeEMC1(Int_t Nevents); // resolutions, mult and cluster lengths for EMC
   void AnalyzeCPV2(Int_t Nevents); // delta(gen)/delta(rec) between hits 
   void CpvSingle(Int_t Nevents); // signle particle analysis
-  virtual void HitsCPV(TClonesArray& hits, Int_t event); 
+  virtual void HitsCPV(Int_t event); 
   TString GetFileName() { return fFileName; }
 
  private:

@@ -634,7 +634,7 @@ void AliPHOSCalibrator::WriteGains(const char * version,
   cmngr->WriteData(&gains) ;
 }	
 //_____________________________________________________________________________
-void AliPHOSCalibrator::Print(const Option_t * option)const 
+void AliPHOSCalibrator::Print(const Option_t *)const 
 {
   // prints everything
   printf("--------------AliPHOSCalibrator-----------------\n") ;

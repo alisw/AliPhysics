@@ -320,7 +320,7 @@ void AliPHOSv1::StepManager(void)
     moduleNumber--;
     
     TClonesArray *cpvDigits = new TClonesArray("AliPHOSCPVDigit",0);   // array of digits for current hit
-    CPVDigitize(pmom,xyd,moduleNumber,cpvDigits);
+    CPVDigitize(pmom,xyd,cpvDigits);
       
     Float_t xmean = 0;
     Float_t zmean = 0;
@@ -467,7 +467,7 @@ void AliPHOSv1::StepManager(void)
 }
 
 //____________________________________________________________________________
-void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumber, TClonesArray *cpvDigits)
+void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, TClonesArray *cpvDigits)
 {
   // ------------------------------------------------------------------------
   // Digitize one CPV hit:

@@ -227,7 +227,7 @@ void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray
 	  if(iDigit!= ind){ //first digit already in jet
 	    digit = static_cast<AliPHOSDigit *>(copyDigits->At(iDigit));
 	    CalculateEEtaPhi(digit,e,eta,phi) ;	    
-	    if(jet->IsInCone(e,eta,phi) && //is cell in cone
+	    if(jet->IsInCone(eta,phi) && //is cell in cone
 	       jet->AcceptConeDeviation(e,eta,phi)){//if cone does not move too much	      
 	      jet->AddDigit(e,eta,phi,-1) ;  //accept new direction
 	    }
@@ -238,7 +238,7 @@ void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray
 	//note, that digits might be returned as anused later
 	for(Int_t icell = 0 ; icell < copyDigits->GetEntries() ; icell++){
 	  digit = static_cast<AliPHOSDigit *>(copyDigits->At(icell));
-	  if(jet->IsInCone(e,eta,phi)){ //is cell in cone
+	  if(jet->IsInCone(eta,phi)){ //is cell in cone
 	    CalculateEEtaPhi(digit,e,eta,phi) ;
 	    jet->AddDigit(e,eta,phi,digit->GetIndexInList()) ; 
 	  }
@@ -326,7 +326,7 @@ void AliPHOSJetFinder::CalculateEEtaPhi(const AliPHOSDigit * d,Double_t &e, Doub
   phi = pos.Phi() ;
 }
 //____________________________________________________________________________ 
-void AliPHOSJetFinder::Print(Option_t * option){	
+void AliPHOSJetFinder::Print(){	
   //Print parameters of the found jet
   printf("\n --------------- AliPHOSJetFinder --------------- \n") ;
   printf(" Jets found .........%d \n",fNJets) ;

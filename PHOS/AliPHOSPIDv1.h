@@ -87,7 +87,7 @@ private:
   const Int_t   GetHardPi0Bit   (AliPHOSEmcRecPoint * emc) const;
   TVector3      GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const ;
   void          PrintRecParticles(Option_t * option) ;
-  virtual void  WriteRecParticles(Int_t event) ; 
+  virtual void  WriteRecParticles() ; 
   void          SetParameters() ; //Fills the matrix of parameters
   void Unload(); 
 

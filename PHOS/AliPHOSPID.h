@@ -36,14 +36,12 @@ class AliPHOSPID : public TTask {
   AliPHOSPID(const AliPHOSPID & pid) : TTask(pid) {;} 
   virtual ~AliPHOSPID() ; // dtor
 
-  virtual void Exec(Option_t * option) { Warning("Exec", "not defined" ) ; }
+  virtual void Exec(Option_t *) = 0;
   virtual const Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
   virtual void Print() const { Warning("Print", "not defined" ) ;}
-  virtual void SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur,Float_t cut ) { Warning("SetCpvtoEmcDistanceCut", "not defined" ) ;}
   void   SetEventFolderName(TString name) { fEventFolderName = name ; }
-  virtual void SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gate) { Warning("SetTimeGate", "not defined" ) ; }
   virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
-  virtual void WriteRecParticles(Int_t event) { Warning("WriteRecParticles", "not defined" ) ; }
+  virtual void WriteRecParticles() = 0;
 
 private: 
   virtual void Init() { Warning("Init", "not defined" ) ; } 

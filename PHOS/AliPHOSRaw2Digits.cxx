@@ -167,7 +167,7 @@ AliPHOSRaw2Digits::~AliPHOSRaw2Digits()
   
 }
 //____________________________________________________________________________ 
-void AliPHOSRaw2Digits::Exec(Option_t * option){
+void AliPHOSRaw2Digits::Exec(){
   //This is steering method performing all the conversion
 
   if(!fIsInitialized) //need initialization
@@ -634,7 +634,7 @@ void AliPHOSRaw2Digits::WriteDigits(void){
   gAlice->TreeE()->Fill();
 }
 //____________________________________________________________________________ 
-void AliPHOSRaw2Digits::Print(Option_t * option)const{
+void AliPHOSRaw2Digits::Print()const{
   //prints current configuration and status.
 
   printf("----------AliPHOSRaw2Digits---------- \n") ;

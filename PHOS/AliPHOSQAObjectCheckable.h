@@ -36,7 +36,7 @@ public:
   virtual void Print() const ; 
   virtual void Reset() { fChange=kFALSE ; }
   virtual void Set(TObject * obj) {fObject = obj ;} 
-  virtual void Update(TObject * value) {} ; 
+  virtual void Update() {} ; 
 
 private:
   

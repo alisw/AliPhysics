@@ -74,7 +74,7 @@ void AliPHOSTrackSegment::Copy(TObject & obj)
 }
 
 //____________________________________________________________________________
-void AliPHOSTrackSegment::Print(Option_t * opt) const
+void AliPHOSTrackSegment::Print(Option_t *) const
 {
   // Print all information on this track Segment
   

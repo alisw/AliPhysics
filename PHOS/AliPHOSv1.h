@@ -49,7 +49,7 @@ public:
     return *this ; 
   }
 
-  void       CPVDigitize (TLorentzVector p, Float_t *xy, Int_t moduleNumber, TClonesArray *digits) ;
+  void       CPVDigitize (TLorentzVector p, Float_t *xy, TClonesArray *digits) ;
   Float_t    CPVPadResponseFunction(Float_t qhit, Float_t zg, Float_t xg) ;
   Double_t   CPVCumulPadResponse(Double_t x, Double_t y) ;
 

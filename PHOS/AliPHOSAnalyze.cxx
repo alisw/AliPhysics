@@ -128,7 +128,7 @@ AliPHOSAnalyze::~AliPHOSAnalyze()
 
 }
 //____________________________________________________________________________
-void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,const char* branchTitle){
+void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
   //Draws pimary particles and reconstructed 
   //digits, RecPoints, RecPartices etc 
   //for event Nevent in the module Nmod.
@@ -469,7 +469,7 @@ void AliPHOSAnalyze::Ls(){
   Info("LS", message.Data()) ;  
 }
 //____________________________________________________________________________
- void AliPHOSAnalyze::InvariantMass(const char* branchTitle)    
+ void AliPHOSAnalyze::InvariantMass()
 {
   // Calculates Real and Mixed invariant mass distributions
   if (fRunLoader == 0x0)
@@ -632,7 +632,7 @@ void AliPHOSAnalyze::Ls(){
 }
 
 //____________________________________________________________________________
- void AliPHOSAnalyze::EnergyResolution(const char * branchTitle)    
+ void AliPHOSAnalyze::EnergyResolution()
 {
   //fills two dimentional histo: energy of primary vs. energy of reconstructed
 
@@ -771,7 +771,7 @@ void AliPHOSAnalyze::Ls(){
 
 }
 //____________________________________________________________________________
-void AliPHOSAnalyze::PositionResolution(const char * branchTitle)    
+void AliPHOSAnalyze::PositionResolution()
 {
   //fills two dimentional histo: energy vs. primary - reconstructed distance  
 
@@ -925,7 +925,7 @@ void AliPHOSAnalyze::PositionResolution(const char * branchTitle)
 
 }
 //____________________________________________________________________________
-void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
+void AliPHOSAnalyze::Contamination(){
 // fills spectra of primary photons and several kinds of 
 // reconstructed particles, so that analyzing them one can 
 // estimate conatmination, efficiency of registration etc.
