@@ -9,15 +9,19 @@
 
 
 #include "AliRICHResponse.h"
+#include <iostream.h>
+
 class AliSegmentation;
 
 
-class AliRICHResponseV0 : //Mathieson response
-public AliRICHResponse {
- public:
-    AliRICHResponseV0(){}
+class AliRICHResponseV0 : public AliRICHResponse 
+{
+public:
+    AliRICHResponseV0();                    // default ctor
     virtual ~AliRICHResponseV0(){}
-    //
+    
+   virtual inline void Print(Option_t* option)const;
+//
     // Configuration methods
     // 
     // Number of sigmas over which cluster didintegration is performed
@@ -77,7 +81,29 @@ public AliRICHResponse {
     Float_t fKy4;                      // Mathieson parameters for y
     Float_t fPitch;                    // Anode-cathode pitch
     Int_t   fWireSag;                  // Flag to turn on/off (0/1) wire sag
-    Int_t fVoltage;                  // Working voltage (2000, 2050, 2100, 2150)
-    ClassDef(AliRICHResponseV0,1)
+    Int_t   fVoltage;                  // Working voltage (2000, 2050, 2100, 2150)
+    ClassDef(AliRICHResponseV0,1)      // RICH Response model: Mathieson verion
 };
+    
+inline void AliRICHResponseV0::Print(Option_t* option) const
+{
+   TObject::Print();
+   cout<<"Slope of the charge distribution               "<<fChargeSlope		              <<endl;
+   cout<<"Width of the charge distribution in x          "<<fChargeSpreadX		      <<endl;
+   cout<<"Width of the charge distribution in y          "<<fChargeSpreadY		      <<endl;
+   cout<<"Number of sigma's used for charge distribution "<<fSigmaIntegration		      <<endl;
+   cout<<"Feedback photons coefficient                   "<<fAlphaFeedback		      <<endl;
+   cout<<"Mean ionisation energy                         "<<fEIonisation		              <<endl;
+   cout<<"Maximum ADC channel                            "<<fMaxAdc			      <<endl;
+   cout<<"Mathieson parameters for x                     "<<fSqrtKx3			      <<endl;
+   cout<<"Mathieson parameters for x                     "<<fKx2			              <<endl;
+   cout<<"Mathieson parameters for x                     "<<fKx4			              <<endl;
+   cout<<"Mathieson parameters for y                     "<<fSqrtKy3			      <<endl;
+   cout<<"Mathieson parameters for y                     "<<fKy2			              <<endl;
+   cout<<"Mathieson parameters for y                     "<<fKy4			              <<endl;
+   cout<<"Anode-cathode pitch                            "<<fPitch			      <<endl;
+   cout<<"Flag to turn on/off (0/1) wire sag             "<<fWireSag			      <<endl;
+   cout<<"Working voltage (2000, 2050, 2100, 2150)       "<<fVoltage                           <<endl; 
+}//void AliRICHResponseV0::Print()
+
 #endif
