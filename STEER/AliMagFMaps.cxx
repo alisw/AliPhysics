@@ -40,6 +40,8 @@ AliMagFMaps::AliMagFMaps():
   //
   // Default constructor
   //
+  //
+  // Don't replicate field information in gAlice
   fFieldMap[0] = fFieldMap[1] = fFieldMap[2] = 0;
 }
 
@@ -104,6 +106,8 @@ void AliMagFMaps::ReadField()
   //    
   char* fname;
   TFile* file = 0;
+  printf("Reading map for %d\n", fMap);
+  
   if (fMap == k2kG) {
       fSolenoid = 2.;
       fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B02.root");
@@ -250,6 +254,7 @@ void AliMagFMaps::Streamer(TBuffer &R__b)
   if (R__b.IsReading()) {
     AliMagFMaps::Class()->ReadBuffer(R__b, this);
     fFieldRead = 0;
+    ReadField();
   } else {
     AliMagFMaps::Class()->WriteBuffer(R__b, this);
   }
