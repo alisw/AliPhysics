@@ -24,8 +24,6 @@ class AliPHOSv0 : public AliPHOS {
   AliPHOSv0() {}
   AliPHOSv0(const char *name, const char *title="") ;
   AliPHOSv0(const AliPHOSv0 & phos) : AliPHOS(phos) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;
   } 
   virtual ~AliPHOSv0(void){
