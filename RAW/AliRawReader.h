@@ -53,8 +53,10 @@ class AliRawReader: public TObject {
       {if (GetEquipmentId() >= 0) return (GetEquipmentId() & 0xFF); else return -1;};
 
     Int_t            GetDataSize() const 
-      {if (fHeader) return fHeader->fSize - sizeof(AliRawDataHeader); 
-      else return GetEquipmentSize();};
+      {if (fHeader) {
+	if (fHeader->fSize != 0xFFFFFFFF) return fHeader->fSize - sizeof(AliRawDataHeader); 
+	else return GetEquipmentSize() - sizeof(AliRawDataHeader);
+      } else return GetEquipmentSize();};
 
     Int_t            GetVersion() const 
       {if (fHeader) return fHeader->fVersion; else return -1;};
