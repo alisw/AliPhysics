@@ -107,6 +107,12 @@ class TG4PhysicsManager
 inline TG4PhysicsManager* TG4PhysicsManager::Instance() 
 { return fgInstance; }
 
+inline void TG4PhysicsManager::SetExternalDecayer(AliDecayer* decayer) 
+{ fDecayer = decayer; }
+
+inline AliDecayer* TG4PhysicsManager::Decayer() const
+{ return fDecayer; }
+
 inline void TG4PhysicsManager::SetPhysicsList(G4VModularPhysicsList* physicsList)
 { fPhysicsList = physicsList; }
 
