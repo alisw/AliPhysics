@@ -59,6 +59,7 @@ class AliRICH : public  AliDetector {
     TClonesArray  *SDigits() {return fSDigits;}
     TClonesArray  *Cerenkovs() {return fCerenkovs;}
     virtual void   MakeBranch(Option_t *opt=" ", const char *file=0);
+    virtual void   MakeBranchInTreeD(TTree *treeD, const char *file=0);
     void           SetTreeAddress();
     virtual void   ResetHits();
     virtual void   ResetDigits();
@@ -158,18 +159,4 @@ class AliRICH : public  AliDetector {
     ClassDef(AliRICH,1)                        //Hits manager for set:RICH
 };
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -8,6 +8,9 @@
 /* $Id$ */
 
 #include "AliDigit.h"
+
+static const Int_t kMAXTRACKSPERRICHDIGIT = 10;
+
 class AliRICHDigit : public TObject {
  protected:
     Int_t     fPadX;        // Pad number along x
@@ -15,8 +18,8 @@ class AliRICHDigit : public TObject {
     Int_t     fSignal;      // Signal amplitude
     
     
-    Int_t     fTcharges[100];  // charge per track making this digit (up to 10)
-    Int_t     fTracks[100];    // tracks making this digit (up to 10)
+    Int_t     fTcharges[kMAXTRACKSPERRICHDIGIT];  // charge per track making this digit (up to 10)
+    Int_t     fTracks[kMAXTRACKSPERRICHDIGIT];    // tracks making this digit (up to 10)
     Int_t     fPhysics;        // physics contribution to signal 
     Int_t     fHit;            // hit number - temporary solution
     

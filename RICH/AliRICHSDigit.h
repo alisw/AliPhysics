@@ -10,7 +10,7 @@
 #include <TObject.h>
 
 class AliRICHSDigit : public TObject {
- public:
+ protected:
     
     Int_t     fHitNumber;    // Hit number
     Int_t     fQpad  ;          // Total charge      
@@ -23,11 +23,11 @@ class AliRICHSDigit : public TObject {
 	fHitNumber=fPadX=fPadY=fQpad=fRSec=0;   
     }
     AliRICHSDigit(Int_t *clhits);
-    Int_t   HitNumber()  {return fHitNumber;}
-    Int_t   PadX()       {return fPadX;}   
-    Int_t   PadY()       {return fPadY;}
-    Int_t   QPad()       {return fQpad;}
-    Int_t   RSec()       {return fRSec;}
+    Int_t   HitNumber() const {return fHitNumber;}
+    Int_t   PadX() const      {return fPadX;}   
+    Int_t   PadY() const      {return fPadY;}
+    Int_t   QPad() const      {return fQpad;}
+    Int_t   RSec() const      {return fRSec;}
     
     virtual ~AliRICHSDigit() {}
        

@@ -30,6 +30,7 @@
 #pragma link C++ class  AliRICHClusterFinder+;
 #pragma link C++ class  AliRICHPatRec+;
 #pragma link C++ class  AliRICHMerger+;
+#pragma link C++ class  AliRICHDigitizer+;
 #endif
 
 

@@ -32,18 +32,14 @@ Revision 1.1  2001/02/27 22:13:34  jbarbosa
 Implementing merger class.
 
 */
-#include <iostream.h> 
+#include <iostream> 
 
 #include <TTree.h> 
-#include <TVector.h>
 #include <TObjArray.h>
 #include <TFile.h>
 #include <TDirectory.h>
 #include <TParticle.h>
 
-
-// #include "AliMerger.h"
-// #include "AliMergable.h"
 #include "AliRICHMerger.h"
 #include "AliRICHChamber.h"
 #include "AliHitMap.h"
@@ -59,98 +55,87 @@ Implementing merger class.
 ClassImp(AliRICHMerger)
 
 //___________________________________________
-AliRICHMerger::AliRICHMerger()
+  AliRICHMerger::AliRICHMerger()
 {
 // Default constructor    
-    fEvNrSig = 0;
-    fEvNrBgr = 0;
-    fMerge   = kDigitize;
-    fFnBgr   = 0;
-    fHitMap  = 0;
-    fList    = 0;
-    fTrH1    = 0;
-    fHitsBgr = 0;
-    fSDigitsBgr = 0;
-    fHitMap     = 0;
-    fList=new TObjArray;
-    fAddress    = 0; 
-    fBgrFile    = 0;
+  fEvNrSig = 0;
+  fEvNrBgr = 0;
+  fMerge   = kDigitize;
+  fFnBgr   = 0;
+  fHitMap  = 0;
+  fList    = 0;
+  fTrH1    = 0;
+  fHitsBgr = 0;
+  fSDigitsBgr = 0;
+  fHitMap     = 0;
+  fList       = 0;
+  fBgrFile    = 0;
 }
 
 //------------------------------------------------------------------------
 AliRICHMerger::~AliRICHMerger()
 {
 // Destructor
-    if (fTrH1)       delete fTrH1;
-    if (fHitsBgr)    delete fHitsBgr;
-    if (fSDigitsBgr) delete fSDigitsBgr;
-    if (fHitMap)     delete fHitMap;
-    if (fList)       delete fList;
-    if (fAddress)    delete fAddress; 
+  if (fTrH1)       delete fTrH1;
+  if (fHitsBgr)    delete fHitsBgr;
+  if (fSDigitsBgr) delete fSDigitsBgr;
+  if (fHitMap)     delete fHitMap;
+  if (fList)       delete fList;
+  if (fBgrFile)    delete fBgrFile;
 }
 
 //------------------------------------------------------------------------
-Bool_t AliRICHMerger::Exists(const AliRICHSDigit *mergable)
+Bool_t AliRICHMerger::Exists(const AliRICHSDigit *padhit)
 {
-    AliRICHSDigit *padhit = (AliRICHSDigit*) mergable;
-    return (fHitMap[fNch]->TestHit(padhit->PadX(),padhit->PadY()));
+  return (fHitMap[fNch]->TestHit(padhit->PadX(),padhit->PadY()));
 }
 
 //------------------------------------------------------------------------
-void AliRICHMerger::Update(AliRICHSDigit *mergable)
+void AliRICHMerger::Update(AliRICHSDigit *padhit)
 {
-    AliRICHSDigit *padhit = (AliRICHSDigit*) mergable;    
-    AliRICHTransientDigit* pdigit;
-    Int_t ipx      = padhit->PadX();        // pad number on X
-    Int_t ipy      = padhit->PadY();        // pad number on Y
-    Int_t iqpad    = Int_t(padhit->QPad()); // charge per pad
+  AliRICHTransientDigit *pdigit = 
+    static_cast<AliRICHTransientDigit*>(
+      fHitMap[fNch]->GetHit(padhit->PadX(),padhit->PadY()));
 
-    pdigit = (AliRICHTransientDigit*) fHitMap[fNch]->GetHit(ipx, ipy);
-    // update charge
-    //
-    (*pdigit).AddSignal(iqpad);
-    (*pdigit).AddPhysicsSignal(iqpad);		
-    // update list of tracks
-    //
-    TObjArray* digitTrList = (TObjArray*)pdigit->TrackList();
-    Int_t lastEntry = digitTrList->GetLast();
-    TVector *pTrack = (TVector*)digitTrList->At(lastEntry);
-    TVector &ptrk   = *pTrack;
-    TVector &trinfo = *((TVector*) (*fAddress)[fCountadr-1]);
-    Int_t lastTrack = Int_t(ptrk(0));
+  // update charge
+  //
+  Int_t iqpad    = Int_t(padhit->QPad()); // charge per pad
+  pdigit->AddSignal(iqpad);
+  pdigit->AddPhysicsSignal(iqpad);		
 
-    if (trinfo(0) != kBgTag) {
-	if (lastTrack == fTrack) {
-	    Int_t lastCharge = Int_t(ptrk(1));
-	    lastCharge += iqpad;
-	    digitTrList->RemoveAt(lastEntry);
-	    trinfo(1) = lastCharge;
-	    digitTrList->AddAt(&trinfo,lastEntry);
-	} else {
-	    digitTrList->Add(&trinfo);
-	}
-    } else {
-	if (lastTrack != -1) digitTrList->Add(&trinfo);
-    }
+  // update list of tracks
+  //
+  Int_t track, charge;    
+  if (fSignal) {
+    track = fTrack;
+    charge = iqpad;
+  } else {
+    track = kBgTag;
+    charge = kBgTag;
+  }
+  pdigit->UpdateTrackList(track,charge);
 }
 
 //------------------------------------------------------------------------
-void AliRICHMerger::CreateNew(AliRICHSDigit *mergable)
+void AliRICHMerger::CreateNew(AliRICHSDigit *padhit)
 {
-    AliRICHSDigit *padhit = (AliRICHSDigit*) mergable;    
-    AliRICHTransientDigit* pdigit;
+  fList->AddAtAndExpand(
+    new AliRICHTransientDigit(fNch,fDigits),fCounter);
+  fHitMap[fNch]->SetHit(padhit->PadX(),padhit->PadY(),fCounter);
 
-    Int_t ipx      = padhit->PadX();       // pad number on X
-    Int_t ipy      = padhit->PadY();       // pad number on Y
-    fList->AddAtAndExpand(
-	new AliRICHTransientDigit(fNch,fDigits),fCounter);
-    fHitMap[fNch]->SetHit(ipx, ipy, fCounter);
-    fCounter++;
-    pdigit = (AliRICHTransientDigit*)fList->At(fList->GetLast());
-    // list of tracks
-    TObjArray *digitTrList = (TObjArray*)pdigit->TrackList();
-    TVector &trinfo    = *((TVector*) (*fAddress)[fCountadr-1]);
-    digitTrList->Add(&trinfo);
+  AliRICHTransientDigit* pdigit = 
+    static_cast<AliRICHTransientDigit*>(fList->Last());
+  // list of tracks
+  Int_t track, charge;
+  if (fSignal) {
+    track = fTrack;
+    charge = padhit->QPad();
+  } else {
+    track = kBgTag;
+    charge = kBgTag;
+  }
+  pdigit->AddToTrackList(track,charge);
+  fCounter++;
 }
 
 
@@ -159,7 +144,7 @@ void AliRICHMerger::Init()
 {
 // Initialisation
     
-    if (fMerge) fBgrFile = InitBgr();
+  if (fMerge && !fBgrFile) fBgrFile = InitBgr();
 }
 
 
@@ -168,388 +153,311 @@ void AliRICHMerger::Init()
 TFile* AliRICHMerger::InitBgr()
 {
 // Initialise background event
-    TFile *file = new TFile(fFnBgr);
+  TFile *file = new TFile(fFnBgr);
 // add error checking later
-    printf("\n AliRICHMerger has opened %s file with background event \n", fFnBgr);
-    fHitsBgr     = new TClonesArray("AliRICHHit",1000);
-    fSDigitsBgr  = new TClonesArray("AliRICHSDigit",1000);
-    return file;
+  printf("\n AliRICHMerger has opened %s file with background event \n", fFnBgr);
+  fHitsBgr     = new TClonesArray("AliRICHHit",1000);
+  fSDigitsBgr  = new TClonesArray("AliRICHSDigit",1000);
+  return file;
 }
 
 //------------------------------------------------------------------------
 void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
 {
 
- // keep galice.root for signal and name differently the file for 
-    // background when add! otherwise the track info for signal will be lost !
+  // keep galice.root for signal and name differently the file for 
+  // background when add! otherwise the track info for signal will be lost !
 
   Int_t particle;
 
-  //FILE* points; //these will be the digits...
-  
-  //points=fopen("points.dat","w");
-  
   AliRICHChamber*       iChamber;
   AliSegmentation*  segmentation;
   
-    Int_t digitise=0;
-    Int_t trk[50];
-    Int_t chtrk[50];  
-    Int_t digits[5]; 
+  fList = new TObjArray;
     
-    AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH");
-    AliHitMap* pHitMap[10];
-    Int_t i;
-    for (i=0; i<10; i++) {pHitMap[i]=0;}
+  AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH");
+  fHitMap= new AliHitMap* [kNCH];
     
-    if (fMerge ) {
-      fBgrFile->cd();
-      //fBgrFile->ls();
-      //
-      // Get Hits Tree header from file
-      if(fHitsBgr) fHitsBgr->Clear();
-      if(fSDigitsBgr) fSDigitsBgr->Clear();
-      if(fTrH1) delete fTrH1;
-      fTrH1 = 0;
+  if (fMerge ) {
+    fBgrFile->cd();
+    //
+    // Get Hits Tree header from file
+    if(fHitsBgr) fHitsBgr->Clear();
+    if(fSDigitsBgr) fSDigitsBgr->Clear();
+    if(fTrH1) delete fTrH1;
+    fTrH1 = 0;
       
-      char treeName[20];
-      sprintf(treeName,"TreeH%d",fEvNrBgr);
-      fTrH1 = (TTree*)gDirectory->Get(treeName);
-      if (!fTrH1) {
-	printf("ERROR: cannot find Hits Tree for event:%d\n",fEvNrBgr);
-      }
-      //
-      // Set branch addresses
-      TBranch *branch;
-      char branchname[20];
-      sprintf(branchname,"%s",pRICH->GetName());
-      if (fTrH1 && fHitsBgr) {
-	branch = fTrH1->GetBranch(branchname);
-	if (branch) branch->SetAddress(&fHitsBgr);
-      }
-      if (fTrH1 && fSDigitsBgr) {
-	branch = fTrH1->GetBranch("RICHSDigits");
-	if (branch) branch->SetAddress(&fSDigitsBgr);
-      }
+    char treeName[20];
+    sprintf(treeName,"TreeH%d",fEvNrBgr);
+    fTrH1 = (TTree*)gDirectory->Get(treeName);
+    if (!fTrH1) {
+      printf("ERROR: cannot find Hits Tree for event:%d\n",fEvNrBgr);
     }
+    //
+    // Set branch addresses
+    TBranch *branch;
+    char branchname[20];
+    sprintf(branchname,"%s",pRICH->GetName());
+    if (fTrH1 && fHitsBgr) {
+      branch = fTrH1->GetBranch(branchname);
+      if (branch) branch->SetAddress(&fHitsBgr);
+    }
+    if (fTrH1 && fSDigitsBgr) {
+      branch = fTrH1->GetBranch("RICHSDigits");
+      if (branch) branch->SetAddress(&fSDigitsBgr);
+    }
+  }
     
-    AliHitMap* hm;
-    Int_t counter=0;
-    for (i =0; i<kNCH; i++) {
-      iChamber= &(pRICH->Chamber(i));
-      segmentation=iChamber->GetSegmentationModel(1);
-      pHitMap[i] = new AliRICHHitMapA1(segmentation, fList);
-    }
+  for (Int_t i =0; i<kNCH; i++) {
+    iChamber= &(pRICH->Chamber(i));
+    segmentation=iChamber->GetSegmentationModel(1);
+    fHitMap[i] = new AliRICHHitMapA1(segmentation, fList);
+  }
+  //
+  //   Loop over tracks
+  //
+    
+  fSignal = kTRUE;
+  fCounter = 0;
+  TTree *treeH = gAlice->TreeH();
+  Int_t ntracks =(Int_t) treeH->GetEntries();
+  for (fTrack=0; fTrack<ntracks; fTrack++) {
+    gAlice->ResetHits();
+    treeH->GetEvent(fTrack);
+    //
+    //   Loop over hits
+    for(AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1); 
+	mHit;
+	mHit=(AliRICHHit*)pRICH->NextHit()) 
+    {
+	  
+      fNch = mHit->Chamber()-1;  // chamber number
+      Int_t trackIndex = mHit->Track();
+      if (fNch >= kNCH) {
+	cerr<<"AliRICHMerger: chamber nr. fNch out of range: "<<fNch<<endl;
+	cerr<<"               track: "<<fTrack<<endl;
+	continue;
+      }
+      iChamber = &(pRICH->Chamber(fNch));
+	  
+
+// 
+// If flag is set, create digits only for some particles
+//
+      TParticle *current = (TParticle*)gAlice->Particle(trackIndex);
+      if (current->GetPdgCode() >= 50000050)
+      {
+	TParticle *motherofcurrent = (TParticle*)gAlice->Particle(current->GetFirstMother());
+	particle = motherofcurrent->GetPdgCode();
+      }
+      else
+      {
+	particle = current->GetPdgCode();
+      }
+
+	  
+      //printf("Flag:%d\n",flag);
+      //printf("Track:%d\n",track);
+      //printf("Particle:%d\n",particle);
+	  
+      Int_t digitise=1;
+	  
+      if (flag == 1) 
+	if(TMath::Abs(particle)==211 || TMath::Abs(particle)==111)
+	  digitise=0;
+	  
+      if (flag == 2)
+	if(TMath::Abs(particle)==321 || TMath::Abs(particle)==130 || TMath::Abs(particle)==310 
+	   || TMath::Abs(particle)==311)
+	  digitise=0;
+	  
+      if (flag == 3 && TMath::Abs(particle)==2212)
+	digitise=0;
+	  
+      if (flag == 4 && TMath::Abs(particle)==13)
+	digitise=0;
+	  
+      if (flag == 5 && TMath::Abs(particle)==11)
+	digitise=0;
+	  
+      if (flag == 6 && TMath::Abs(particle)==2112)
+	digitise=0;
+	  
+	  
+      //printf ("Particle: %d, Flag: %d, Digitise: %d\n",particle,flag,digitise); 
+	  
+	  
+      if (digitise)
+      {
+	      
+	//
+	// Loop over pad hits
+	for (AliRICHSDigit* mPad=
+	       (AliRICHSDigit*)pRICH->FirstPad(mHit,pRICH->SDigits());
+	     mPad;
+	     mPad=(AliRICHSDigit*)pRICH->NextPad(pRICH->SDigits()))
+	{
+	  Int_t iqpad    = mPad->QPad();       // charge per pad
+	  fDigits[0]=mPad->PadX();
+	  fDigits[1]=mPad->PadY();
+	  fDigits[2]=iqpad;
+	  fDigits[3]=iqpad;
+	  fDigits[4]=mPad->HitNumber();
+		  
+	  // build the list of fired pads and update the info
+	  if (Exists(mPad)) {
+	    Update(mPad);
+	  } else {
+	    CreateNew(mPad);
+	  }
+	} //end loop over clusters
+      }// track type condition
+    } // hit loop
+  } // track loop
+    
+  // open the file with background
+    
+  if (fMerge) {
+    fSignal = kFALSE;
+    ntracks = (Int_t)fTrH1->GetEntries();
     //
     //   Loop over tracks
     //
-    
-    TTree *treeH = gAlice->TreeH();
-    Int_t ntracks =(Int_t) treeH->GetEntries();
-    for (Int_t track=0; track<ntracks; track++) {
-      gAlice->ResetHits();
-      treeH->GetEvent(track);
+    for (fTrack = 0; fTrack < ntracks; fTrack++) {
+	
+      if (fHitsBgr)       fHitsBgr->Clear();
+      if (fSDigitsBgr)    fSDigitsBgr->Clear();
+	
+      fTrH1->GetEvent(fTrack);
       //
       //   Loop over hits
-      for(AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1); 
-	  mHit;
-	  mHit=(AliRICHHit*)pRICH->NextHit()) 
-	{
-	  
-	  Int_t   nch   = mHit->Chamber()-1;  // chamber number
-	  Int_t   index = mHit->Track();
-	  if (nch >kNCH) continue;
-	  iChamber = &(pRICH->Chamber(nch));
-	  
-	  TParticle *current = (TParticle*)gAlice->Particle(index);
-	  
-	  if (current->GetPdgCode() >= 50000050)
-	    {
-	      TParticle *motherofcurrent = (TParticle*)gAlice->Particle(current->GetFirstMother());
-	      particle = motherofcurrent->GetPdgCode();
-	    }
-	  else
-	    {
-	      particle = current->GetPdgCode();
-	    }
+      AliRICHHit* mHit;
+      for(Int_t i = 0; i < fHitsBgr->GetEntriesFast(); ++i) 
+      {	
+	mHit   = (AliRICHHit*) (*fHitsBgr)[i];
+	fNch   = mHit->Chamber()-1;  // chamber number
+	iChamber = &(pRICH->Chamber(fNch));
 
-	  
-	  //printf("Flag:%d\n",flag);
-	  //printf("Track:%d\n",track);
-	  //printf("Particle:%d\n",particle);
-	  
-	  digitise=1;
-	  
-	  if (flag == 1) 
-	    if(TMath::Abs(particle)==211 || TMath::Abs(particle)==111)
-	      digitise=0;
-	  
-	  if (flag == 2)
-	    if(TMath::Abs(particle)==321 || TMath::Abs(particle)==130 || TMath::Abs(particle)==310 
-	       || TMath::Abs(particle)==311)
-	      digitise=0;
-	  
-	  if (flag == 3 && TMath::Abs(particle)==2212)
-	    digitise=0;
-	  
-	  if (flag == 4 && TMath::Abs(particle)==13)
-	    digitise=0;
-	  
-	  if (flag == 5 && TMath::Abs(particle)==11)
-	    digitise=0;
-	  
-	  if (flag == 6 && TMath::Abs(particle)==2112)
-	    digitise=0;
-	  
-	  
-	  //printf ("Particle: %d, Flag: %d, Digitise: %d\n",particle,flag,digitise); 
-	  
-	  
-	  if (digitise)
-	    {
-	      
-	      //
-	      // Loop over pad hits
-	      for (AliRICHSDigit* mPad=
-		     (AliRICHSDigit*)pRICH->FirstPad(mHit,pRICH->SDigits());
-		   mPad;
-		   mPad=(AliRICHSDigit*)pRICH->NextPad(pRICH->SDigits()))
-		{
-		  Int_t ipx      = mPad->fPadX;       // pad number on X
-		  Int_t ipy      = mPad->fPadY;       // pad number on Y
-		  Int_t iqpad    = mPad->fQpad;       // charge per pad
-		  //
-		  //
-		  //printf("X:%d, Y:%d, Q:%d\n",ipx,ipy,iqpad);
-		  
-		  segmentation=iChamber->GetSegmentationModel(0);
-		  TVector & trinfo = *(new TVector(2));
-		  trinfo(0)=(Float_t)track;
-		  trinfo(1)=(Float_t)iqpad;
-		  
-		  digits[0]=ipx;
-		  digits[1]=ipy;
-		  digits[2]=iqpad;
-		  
-		  AliRICHTransientDigit* pdigit;
-		  // build the list of fired pads and update the info
-		  if (!pHitMap[nch]->TestHit(ipx, ipy)) {
-		    fList->AddAtAndExpand(new AliRICHTransientDigit(nch,digits),counter);
-		    pHitMap[nch]->SetHit(ipx, ipy, counter);
-		    counter++;
-		    pdigit=(AliRICHTransientDigit*)fList->At(fList->GetLast());
-		    // list of tracks
-		    TObjArray *trlist=(TObjArray*)pdigit->TrackList();
-		    trlist->Add(&trinfo);
-		  } else {
-		    pdigit=(AliRICHTransientDigit*) pHitMap[nch]->GetHit(ipx, ipy);
-		    // update charge
-		    //		    (*pdigit).fSignal+=iqpad;
-		    pdigit->AddSignal(iqpad);
-		    // update list of tracks
-		    TObjArray* trlist=(TObjArray*)pdigit->TrackList();
-		    Int_t lastEntry=trlist->GetLast();
-		    TVector *ptrkP=(TVector*)trlist->At(lastEntry);
-		    TVector &ptrk=*ptrkP;
-		    Int_t lastTrack=Int_t(ptrk(0));
-		    Int_t lastCharge=Int_t(ptrk(1));
-		    if (lastTrack==track) {
-		      lastCharge+=iqpad;
-		      trlist->RemoveAt(lastEntry);
-		      trinfo(0)=lastTrack;
-		      trinfo(1)=lastCharge;
-		      trlist->AddAt(&trinfo,lastEntry);
-		    } else {
-		      trlist->Add(&trinfo);
-		    }
-		    // check the track list
-		    Int_t nptracks=trlist->GetEntriesFast();
-		    if (nptracks > 2) {
-		      printf("Attention - tracks:  %d (>2)\n",nptracks);
-		      //printf("cat,nch,ix,iy %d %d %d %d  \n",icat+1,nch,ipx,ipy);
-		      for (Int_t tr=0;tr<nptracks;tr++) {
-			TVector *pptrkP=(TVector*)trlist->At(tr);
-			TVector &pptrk=*pptrkP;
-			trk[tr]=Int_t(pptrk(0));
-			chtrk[tr]=Int_t(pptrk(1));
-		      }
-		    } // end if nptracks
-		  } //  end if pdigit
-		} //end loop over clusters
-	    }// track type condition
-	} // hit loop
-    } // track loop
-    
-    // open the file with background
-    
-    if (fMerge) {
-      ntracks = (Int_t)fTrH1->GetEntries();
-      //
-      //   Loop over tracks
-      //
-      for (fTrack = 0; fTrack < ntracks; fTrack++) {
-	
-	if (fHitsBgr)       fHitsBgr->Clear();
-	if (fSDigitsBgr)    fSDigitsBgr->Clear();
-	
-	fTrH1->GetEvent(fTrack);
 	//
-	//   Loop over hits
-	AliRICHHit* mHit;
-	for(int i = 0; i < fHitsBgr->GetEntriesFast(); ++i) 
-	  {	
-	    mHit   = (AliRICHHit*) (*fHitsBgr)[i];
-	    fNch   = mHit->Chamber()-1;  // chamber number
-	    iChamber = &(pRICH->Chamber(fNch));
-	    //Float_t xbgr = mHit->X();
-	    //Float_t ybgr = mHit->Y();
-	    Bool_t cond  = kFALSE;
-	    cond  = kTRUE;
-	    //
-	    // Loop over pad hits
-	    for (AliRICHSDigit* mPad =
-		   (AliRICHSDigit*)pRICH->FirstPad(mHit,fSDigitsBgr);
-		 mPad;
-		 mPad = (AliRICHSDigit*)pRICH->NextPad(fSDigitsBgr))
-	      {
-		Int_t ipx      = mPad->PadX();        // pad number on X
-		Int_t ipy      = mPad->PadY();        // pad number on Y
-		Int_t iqpad    = Int_t(mPad->QPad()); // charge per pad
-		
-		new((*fAddress)[fCountadr++]) TVector(2);
-		TVector &trinfo = *((TVector*) (*fAddress)[fCountadr-1]);
-		trinfo(0) = kBgTag;  // tag background
-		trinfo(1) = kBgTag;
-		
-		fDigits[0] = ipx;
-		fDigits[1] = ipy;
-		fDigits[3] = iqpad;
-		
-		// build the list of fired pads and update the info
-		if (!Exists(mPad)) {
-		  CreateNew(mPad);
-		} else {
-		  Update(mPad);
-		} //  end if !Exists
-	      } //end loop over clusters
-	  } // hit loop
-      } // track loop
-      
-      TTree *fAli = gAlice->TreeK();
-      TFile *file = NULL;
-      
-      if (fAli) file = fAli->GetCurrentFile();
-      file->cd();
-    } // if fMerge
-    
-    Int_t tracks[10];
-    Int_t charges[10];
-    //cout<<"Start filling digits \n "<<endl;
-    Int_t nentries=fList->GetEntriesFast();
-    printf(" \n \n nentries %d \n",nentries);
-    
-    // start filling the digits
-    
-    for (Int_t nent=0;nent<nentries;nent++) {
-      AliRICHTransientDigit *transDigit=(AliRICHTransientDigit*)fList->At(nent);
-      if (transDigit==0) continue; 
-      
-      Int_t ich=transDigit->GetChamber();
-      Int_t q=transDigit->Signal(); 
-      iChamber=&(pRICH->Chamber(ich));
-      AliRICHResponse * response=iChamber->GetResponseModel();
-      Int_t adcmax= (Int_t) response->MaxAdc();
-      
-      
-      // add white noise and do zero-suppression and signal truncation (new electronics,old electronics gaus 1.2,0.2)
-      //printf("Treshold: %d\n",iChamber->fTresh->GetHitIndex(transDigit->PadX(),transDigit->PadY()));
-      Int_t pedestal = iChamber->fTresh->GetHitIndex(transDigit->PadX(),transDigit->PadY());
-
-      //printf("Pedestal:%d\n",pedestal);
-      //Int_t pedestal=0;
-      Float_t treshold = (pedestal + 4*2.2);
-      
-      Float_t meanNoise = gRandom->Gaus(2.2, 0.3);
-      Float_t noise     = gRandom->Gaus(0, meanNoise);
-      q+=(Int_t)(noise + pedestal);
-      //q+=(Int_t)(noise);
-      //          magic number to be parametrised !!! 
-      if ( q <= treshold) 
+	// Loop over pad hits
+	for (AliRICHSDigit* mPad =
+	       (AliRICHSDigit*)pRICH->FirstPad(mHit,fSDigitsBgr);
+	     mPad;
+	     mPad = (AliRICHSDigit*)pRICH->NextPad(fSDigitsBgr))
 	{
-	  q = q - pedestal;
-	  continue;
-	}
-      q = q - pedestal;
-      if ( q >= adcmax) q=adcmax;
-      digits[0]=transDigit->PadX();
-      digits[1]=transDigit->PadY();
-      digits[2]=q;
+	  fDigits[0] = mPad->PadX(); 
+	  fDigits[1] = mPad->PadY();  
+	  fDigits[2] = mPad->QPad();
+	  fDigits[3] = 0;
+	  fDigits[4] = -1; // set hit number to -1 for bgr
+		
+	  // build the list of fired pads and update the info
+	  if (!Exists(mPad)) {
+	    CreateNew(mPad);
+	  } else {
+	    Update(mPad);
+	  } //  end if !Exists
+	} //end loop over clusters
+      } // hit loop
+    } // track loop
       
-      TObjArray* trlist=(TObjArray*)transDigit->TrackList();
-      Int_t nptracks=trlist->GetEntriesFast();
+    TTree *treeK = gAlice->TreeK();
+    TFile *file = NULL;
       
-      // this was changed to accomodate the real number of tracks
-      if (nptracks > 10) {
-	printf("Attention - tracks > 10 %d\n",nptracks);
-	nptracks=10;
-      }
-      if (nptracks > 2) {
-	printf("Attention - tracks > 2  %d \n",nptracks);
-	//printf("cat,ich,ix,iy,q %d %d %d %d %d \n",
-	//icat,ich,digits[0],digits[1],q);
-      }
-      for (Int_t tr=0;tr<nptracks;tr++) {
-	TVector *ppP=(TVector*)trlist->At(tr);
-	TVector &pp  =*ppP;
-	tracks[tr]=Int_t(pp(0));
-	charges[tr]=Int_t(pp(1));
-      }      //end loop over list of tracks for one pad
-      if (nptracks < 10 ) {
-	for (Int_t t=nptracks; t<10; t++) {
-	  tracks[t]=0;
-	  charges[t]=0;
-	}
-      }
-      //write file
-      //if (ich==2)
-	//fprintf(points,"%4d,      %4d,      %4d\n",digits[0],digits[1],digits[2]);
-      
-      // fill digits
-      pRICH->AddDigits(ich,tracks,charges,digits);
-    }	
-    gAlice->TreeD()->Fill();
-
-    fList->Delete();
-    for(Int_t ii=0;ii<kNCH;++ii) {
-      if (pHitMap[ii]) {
-	hm=pHitMap[ii];
-	delete hm;
-	pHitMap[ii]=0;
-      }
-    }
+    if (treeK) file = treeK->GetCurrentFile();
+    file->cd();
+  } // if fMerge
     
-    //TTree *TD=gAlice->TreeD();
-    //Stat_t ndig=TD->GetEntries();
-    //cout<<"number of digits  "<<ndig<<endl;
-    TClonesArray *fDch;
-    for (int k=0;k<kNCH;k++) {
-      fDch= pRICH->DigitsAddress(k);
-      int ndigit=fDch->GetEntriesFast();
-      printf ("Chamber %d digits %d \n",k,ndigit);
+  Int_t tracks[kMAXTRACKSPERRICHDIGIT];
+  Int_t charges[kMAXTRACKSPERRICHDIGIT];
+  Int_t nentries=fList->GetEntriesFast();
+    
+  for (Int_t nent=0;nent<nentries;nent++) {
+    AliRICHTransientDigit *transDigit=(AliRICHTransientDigit*)fList->At(nent);
+    if (transDigit==0) continue; 
+    Int_t ich=transDigit->GetChamber();
+    Int_t q=transDigit->Signal(); 
+    iChamber=&(pRICH->Chamber(ich));
+    AliRICHResponse * response=iChamber->GetResponseModel();
+    Int_t adcmax= (Int_t) response->MaxAdc();
+      
+      
+    // add white noise and do zero-suppression and signal truncation (new electronics,old electronics gaus 1.2,0.2)
+    //printf("Treshold: %d\n",iChamber->fTresh->GetHitIndex(transDigit->PadX(),transDigit->PadY()));
+    Int_t pedestal = iChamber->fTresh->GetHitIndex(transDigit->PadX(),transDigit->PadY());
+
+    //printf("Pedestal:%d\n",pedestal);
+    //Int_t pedestal=0;
+    Float_t treshold = (pedestal + 4*2.2);
+      
+    Float_t meanNoise = gRandom->Gaus(2.2, 0.3);
+    Float_t noise     = gRandom->Gaus(0, meanNoise);
+    q+=(Int_t)(noise + pedestal);
+    //q+=(Int_t)(noise);
+    //          magic number to be parametrised !!! 
+    if ( q <= treshold) 
+    {
+      q = q - pedestal;
+      continue;
     }
-    pRICH->ResetDigits();
-    // char hname[30];
-    // sprintf(hname,"TreeD%d",nev);
-    // gAlice->TreeD()->Write(hname);
-    gAlice->TreeD()->Write(0,TObject::kOverwrite);
-    // reset tree
-    //    gAlice->TreeD()->Reset();
-    //    delete fList; // deleted in dtor
-    // gObjectTable->Print();
+    q = q - pedestal;
+    if ( q >= adcmax) q=adcmax;
+    fDigits[0]=transDigit->PadX();
+    fDigits[1]=transDigit->PadY();
+    fDigits[2]=q;
+    fDigits[3]=transDigit->Physics();
+    fDigits[4]=transDigit->Hit();
+
+    Int_t nptracks = transDigit->GetNTracks();  
+
+    // this was changed to accomodate the real number of tracks
+    if (nptracks > kMAXTRACKSPERRICHDIGIT) {
+      printf("Attention - tracks > 10 %d\n",nptracks);
+      nptracks=kMAXTRACKSPERRICHDIGIT;
+    }
+    if (nptracks > 2) {
+      printf("Attention - tracks > 2  %d \n",nptracks);
+      //printf("cat,ich,ix,iy,q %d %d %d %d %d \n",
+      //icat,ich,digits[0],digits[1],q);
+    }
+    for (Int_t tr=0;tr<nptracks;tr++) {
+      tracks[tr]=transDigit->GetTrack(tr);
+      charges[tr]=transDigit->GetCharge(tr);
+    }      //end loop over list of tracks for one pad
+    if (nptracks < kMAXTRACKSPERRICHDIGIT ) {
+      for (Int_t t=nptracks; t<kMAXTRACKSPERRICHDIGIT; t++) {
+	tracks[t]=0;
+	charges[t]=0;
+      }
+    }
+    //write file
+    //if (ich==2)
+    //fprintf(points,"%4d,      %4d,      %4d\n",digits[0],digits[1],digits[2]);
+      
+    // fill digits
+    pRICH->AddDigits(ich,tracks,charges,fDigits);
+  }	
+  gAlice->TreeD()->Fill();
+
+  fList->Delete();
+  for(Int_t ii=0;ii<kNCH;++ii) {
+    if (fHitMap[ii]) {
+      delete fHitMap[ii];
+      fHitMap[ii]=0;
+    }
+  }
+    
+  TClonesArray *richDigits;
+  for (Int_t k=0;k<kNCH;k++) {
+    richDigits = pRICH->DigitsAddress(k);
+    Int_t ndigit=richDigits->GetEntriesFast();
+    printf ("Chamber %d digits %d \n",k,ndigit);
+  }
+  pRICH->ResetDigits(); /// ??? should it be here???
+  gAlice->TreeD()->Write(0,TObject::kOverwrite);
+  // reset tree
+  //    gAlice->TreeD()->Reset();
+  //    delete fList; // deleted in dtor
+  // gObjectTable->Print();
 
 }
-
-
-
-
-

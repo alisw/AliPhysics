@@ -18,7 +18,7 @@ SRCS   = AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHv2.cxx\
          AliRICHHit.cxx AliRICHCerenkov.cxx AliRICHSDigit.cxx \
 	 AliRICHDigit.cxx AliRICHTransientDigit.cxx \
 	 AliRICHRawCluster.cxx AliRICHRecHit1D.cxx AliRICHRecHit3D.cxx AliRICHEllipse.cxx \
-	 AliRICHMerger.cxx
+	 AliRICHMerger.cxx AliRICHDigitizer.cxx
 
 # C++ Headers
 

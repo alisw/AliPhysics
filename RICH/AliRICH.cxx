@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.55  2001/10/23 13:03:35  hristov
+  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
+
   Revision 1.54  2001/09/07 08:38:10  hristov
   Pointers initialised to 0 in the default constructors
 
@@ -289,6 +292,7 @@ AliRICH::AliRICH(const char *name, const char *title)
       (*fChambers)[i] = new AliRICHChamber();*/  
     
     fFileName = 0;
+    fMerger = 0;
 }
 
 AliRICH::AliRICH(const AliRICH& RICH)
@@ -4094,3 +4098,27 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    printf("\nEnd of analysis\n");
    printf("**********************************\n");
 }
+
+////////////////////////////////////////////////////////////////////////
+void AliRICH::MakeBranchInTreeD(TTree *treeD, const char *file)
+{
+    //
+    // Create TreeD branches for the RICH.
+    //
+
+  const Int_t kBufferSize = 4000;
+  char branchname[30];
+    
+  //
+  // one branch for digits per chamber
+  // 
+  for (Int_t i=0; i<kNCH ;i++) {
+    sprintf(branchname,"%sDigits%d",GetName(),i+1);	
+    if (fDchambers && treeD) {
+      MakeBranchInTree(treeD, 
+		       branchname, &((*fDchambers)[i]), kBufferSize, file);
+//      printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
+    }
+  }
+}
+////////////////////////////////////////////////////////////////////////

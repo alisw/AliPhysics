@@ -10,8 +10,6 @@ RICHdisplay (Int_t nevent=0) {
       gAlice = 0;
     }
     
-    galice=0;
-    
 // Connect the Root Galice file containing Geometry, Kine and Hits
     
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
