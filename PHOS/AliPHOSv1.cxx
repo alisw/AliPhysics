@@ -519,7 +519,7 @@ void AliPHOSv1::StepManager(void)
 
   Int_t          relid[4] ;      // (box, layer, row, column) indices
   Int_t          absid    ;      // absolute cell ID number
-  Float_t        xyze[4]  ;      // position wrt MRS and energy deposited
+  Float_t        xyze[4]={0,0,0,0}  ; // position wrt MRS and energy deposited
   TLorentzVector pos      ;      // Lorentz vector of the track current position
   Int_t          copy     ;
   Int_t          i        ;
@@ -578,7 +578,7 @@ void AliPHOSv1::StepManager(void)
       // Current position of the hit in the CPV module ref. system
 
       gMC -> TrackPosition(pos);
-      Float_t xyzm[3], xyzd[3], xyd[2];
+      Float_t xyzm[3], xyzd[3], xyd[3]={0,0,0};
       Int_t i;
       for (i=0; i<3; i++) xyzm[i] = pos[i];
       gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
@@ -688,7 +688,7 @@ void AliPHOSv1::StepManager(void)
       gMC -> Gmtod (xyze, posloc, 1);
       if (posloc[1] > fGeom->GetCrystalSize(1)/2-0.01) {
 	Int_t row,cel;
-	Float_t xyd[2];
+	Float_t xyd[2]={0,0,0};
 	AliPHOSv1 &phos = *(AliPHOSv1*)gAlice->GetModule("PHOS");
 
 	Int_t moduleNumber;
