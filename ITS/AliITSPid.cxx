@@ -14,7 +14,8 @@ Float_t AliITSPid::qcorr(Float_t xc)
 return qtot/fcorr;
 }
 //-----------------------------------------------------------
-#include "vector.h"
+//PH #include "vector.h"
+#include <vector>
 #include <algorithm>
 Float_t AliITSPid::qtrm(Int_t track)
 {
