@@ -37,7 +37,8 @@ public:
   //input output functions
   TTree * GetTree(){return fTree;}      //return pointer to connected tree
   
-  virtual void MakeTree(char *file=0);              //Make tree with the name
+  virtual void MakeTree(char *file=0);            //Make tree with the name
+  virtual TTree* MakeTree(TFile *file);           //Make tree in the file file
   virtual Bool_t ConnectTree(const char * treeName); //connect tree from current directory 
   virtual AliSegmentID * LoadSegment(Int_t index);//load segment with index to the memory
   virtual AliSegmentID * LoadEntry(Int_t index); //load segment entry from position index in tree

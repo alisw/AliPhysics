@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/10/21 18:22:54  hristov
+BranchOld replaced by Branch. It works correctly with Root 2.02.xx
+
 Revision 1.6  2001/08/30 09:25:24  hristov
 The operator[] is replaced by At() or AddAt() in case of TObjArray. A temporary replacement of Branch with BranchOld is introduced
 
@@ -62,6 +65,7 @@ New data structure handling
 #include "AliArrayI.h"
 #include "TError.h"
 #include "TClass.h"
+#include "TFile.h"
 
 #include "AliRun.h"
 #include "AliSegmentID.h"
@@ -271,6 +275,24 @@ void AliSegmentArray::MakeTree(char *file)
     }
   delete psegment;
 }              
+
+////////////////////////////////////////////////////////////////////////
+TTree* AliSegmentArray::MakeTree(TFile *file)
+{
+  // 
+  //  create the whole tree in the file file
+  //
+  AliSegmentID * psegment = NewSegment();  
+  if (fTree) delete fTree;
+  TDirectory *wd = gDirectory;
+  file->cd();
+  fTree = new TTree("Segment Tree","Tree with segments");
+  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000,99);
+  wd->cd(); 
+  delete psegment;
+  return fTree;
+}              
+////////////////////////////////////////////////////////////////////////
 
 Bool_t  AliSegmentArray::MakeDictionary(Int_t size)
 {
