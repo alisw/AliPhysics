@@ -39,7 +39,11 @@ AliL3TPCBeamTestMemHandler::AliL3TPCBeamTestMemHandler(Char_t *fPathToMappingFil
   Int_t oldPos=0;
   ifstream *in = new ifstream();
   in->open(fPathToMappingFile); 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!in.rdbuf()->is_open()){
+#else
   if(!in->is_open()){
+#endif
     LOG(AliL3Log::kFatal,"AliL3TPCBeamTestMemHandler","Mapping File")
 	<<"Can't open file " << fPathToMappingFile << " !!!" <<ENDLOG;
   }
