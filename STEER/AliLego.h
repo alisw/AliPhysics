@@ -35,6 +35,10 @@ public:
   virtual void  FinishRun();
   virtual AliLego &operator=(const AliLego &lego) 
   {lego.Copy(*this);return(*this);}
+ private:
+  void DumpVolumes();
+  
+  
 private:
    AliLegoGenerator *fGener;     //Lego generator
    Float_t    fTotRadl;          //!Total Radiation length
@@ -51,7 +55,6 @@ private:
    Int_t      fStepsForward;     //!Counts steps backward
    Int_t      fErrorCondition;   //!Error condition flag
    Int_t      fDebug;            // Debug Flag
-   
   ClassDef(AliLego,1) //Utility class to compute and draw Radiation Length Map
 
 };

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.22  2001/05/11 13:22:40  morsch
+If run with debug option (from gAlice) geantinos are sent back and volume sequence forward/backward is compared.
+Can be very verbous in some cases.
+
 Revision 1.21  2000/12/15 10:33:59  morsch
 Invert coordinates to make meaningful zylindrical plots.
 
@@ -97,15 +101,16 @@ Introduction of the Copyright and cvs Log
 #include "TMath.h"
 
 #include "AliLego.h"
+
 #include "AliDebugVolume.h"
 #include "AliRun.h"
 #include "AliLegoGenerator.h"
 #include "AliConst.h"
 #include "AliMC.h"
 #include "TH2.h"
+#include "../TGeant3/TGeant3.h"
 #include "TString.h"
 #include "TClonesArray.h"
-
 
 ClassImp(AliLego)
 
@@ -150,6 +155,7 @@ AliLego::AliLego(const char *title, Int_t ntheta, Float_t thetamin,
    fVolumesFwd     = new TClonesArray("AliDebugVolume",1000);
    fVolumesBwd     = new TClonesArray("AliDebugVolume",1000);
    fDebug = gAlice->GetDebug();
+   fErrorCondition =0;   
 }
 
 AliLego::AliLego(const char *title, AliLegoGenerator* generator)
@@ -181,6 +187,7 @@ AliLego::AliLego(const char *title, AliLegoGenerator* generator)
    fVolumesFwd     = new TClonesArray("AliDebugVolume",1000);
    fVolumesBwd     = new TClonesArray("AliDebugVolume",1000);
    fDebug = gAlice->GetDebug();
+   fErrorCondition =0;
 }
 
 //___________________________________________
@@ -206,7 +213,17 @@ void AliLego::BeginEvent()
   fTotRadl = 0;
   fTotAbso = 0;
   fTotGcm2 = 0;
-  fErrorCondition = 0;
+//  printf("\n Begin Event %d", fErrorCondition);
+  
+  if (fDebug) {
+      if (fErrorCondition) DumpVolumes();
+      fVolumesFwd->Delete();
+      fVolumesBwd->Delete();
+      fStepsForward    = 0;
+      fStepsBackward   = 0;		  
+      fErrorCondition  = 0;
+      if (gAlice->CurrentTrack() == 0) fStepBack = 0;
+  }
 }
 
 //___________________________________________
@@ -237,6 +254,8 @@ void AliLego::FinishRun()
   fHistRadl->Delete(); fHistRadl=0;
   fHistAbso->Delete(); fHistAbso=0;
   fHistGcm2->Delete(); fHistGcm2=0;
+  //
+  if (fErrorCondition) DumpVolumes();
 }
 
 //___________________________________________
@@ -252,6 +271,7 @@ void AliLego::Copy(AliLego &lego) const
 void AliLego::StepManager() {
 // called from AliRun::Stepmanager from gustep.
 // Accumulate the 3 parameters step by step
+
     static Float_t t;
     Float_t a,z,dens,radl,absl;
     Int_t i, id, copy;
@@ -263,7 +283,6 @@ void AliLego::StepManager() {
     id  = gMC->CurrentVolID(copy);
     vol = gMC->VolName(id);
     Float_t step  = gMC->TrackStep();
-//    strcpy(tmp,vol);
 
    TLorentzVector pos, mom; 
    gMC->TrackPosition(pos);  
@@ -271,30 +290,37 @@ void AliLego::StepManager() {
    
    Int_t status = 0;
    if (gMC->IsTrackEntering()) status = 1;
-   if (gMC->IsTrackExiting())  status = 2;	  
+   if (gMC->IsTrackExiting())  status = 2;
 
+   
+
+   
   if (! fStepBack) {
+//      printf("\n volume %s %d", vol, status);      
 //
 // Normal Forward stepping
 //
       if (fDebug) {
+//	  printf("\n steps fwd %d %s %d %f", fStepsForward, vol, fErrorCondition, step);	  
+
 //
 // store volume if different from previous
 //
 	  
+	  TClonesArray &lvols = *fVolumesFwd;
 	  if (fStepsForward > 0) {
 	      AliDebugVolume* tmp = (AliDebugVolume*) (*fVolumesFwd)[fStepsForward-1];	       
-//	      if (!tmp->IsEqual(vol, copy))
-//	      {
-		  TClonesArray &lvols = *fVolumesFwd;
-		  new(lvols[fStepsForward++]) 
-		      AliDebugVolume(vol,copy,step,pos[0], pos[1], pos[2], status);
-//	      } 
-	  } else {
-	      TClonesArray &lvols = *fVolumesFwd;
-	      new(lvols[fStepsForward++]) 
-		  AliDebugVolume(vol,copy,step,pos[0], pos[1], pos[2], status);
+	      if (tmp->IsEqual(vol, copy) && gMC->IsTrackEntering()) {
+		  step += ((AliDebugVolume*) lvols[fStepsForward])->Step();
+		  fStepsForward -= 2;
+		  delete ((AliDebugVolume*) lvols[fStepsForward]);
+		  delete ((AliDebugVolume*) lvols[fStepsForward+1]);
+	      }
 	  }
+
+	  new(lvols[fStepsForward++]) 
+	      AliDebugVolume(vol,copy,step,pos[0], pos[1], pos[2], status);
+
       } // Debug
 //
 // Get current material properties
@@ -360,51 +386,25 @@ void AliLego::StepManager() {
 // Geometry debugging
 // Fly back and compare volume sequence
 //
+	  TClonesArray &lvols = *fVolumesBwd;
 	  if (fStepsBackward < fStepsForward) {
 	      AliDebugVolume* tmp = (AliDebugVolume*) (*fVolumesBwd)[fStepsBackward];	       
-	      if (tmp->IsEqual(vol, copy)) {
-//		  return;
+	      if (tmp->IsEqual(vol, copy) && gMC->IsTrackEntering()) {
+		  fStepsBackward += 2;
+		  delete ((AliDebugVolume*) lvols[fStepsBackward-1]);
+		  delete ((AliDebugVolume*) lvols[fStepsBackward-2]);
+		  step += ((AliDebugVolume*) lvols[fStepsBackward])->Step();
 	      }
 	  } 
-	    
+
 	  fStepsBackward--;
-	  
+//	  printf("\n steps %d %s %d", fStepsBackward, vol, fErrorCondition);	  
 	  if (fStepsBackward < 0) {
 	      gMC->StopTrack();
-	      if (fErrorCondition) {
-		  //
-		  // Dump volume sequence in case of error
-		  //
-		  printf("\n Dumping Volume Sequence:");
-		  printf("\n ==============================================");
-		  
-		  for (i = fStepsForward-1; i>=0; i--)
-		  {
-		  AliDebugVolume* tmp1 = (AliDebugVolume*) (*fVolumesFwd)[i];
-		  AliDebugVolume* tmp2 = (AliDebugVolume*) (*fVolumesBwd)[i];		      
-		  
-		  printf("\n Volume Fwd: %3d: %5s (%3d) step: %12.5e (x,y,z) (%12.5e %12.5e %12.5e) status: %9s\n"
-			 , i, 
-			 tmp1->GetName(), tmp1->CopyNumber(), tmp1->Step(), tmp1->X(), tmp1->Y(), tmp1->Z(), tmp1->Status());
-		  
-		  printf("\n Volume Bwd: %3d: %5s (%3d) step: %12.5e (x,y,z) (%12.5e %12.5e %12.5e) status: %9s\n"
-			 , i, 
-			 tmp2->GetName(), tmp2->CopyNumber(), tmp2->Step(), tmp2->X(), tmp2->Y(), tmp2->Z(), tmp2->Status());
-		  
-		  printf("\n ............................................................................\n");
-		  }
-		  printf("\n ==============================================\n");
-	      }
-	      fVolumesFwd->Delete();
-	      fVolumesBwd->Delete();
-	      fStepBack        = 0;
-	      fStepsForward    = 0;
-	      fStepsBackward   = 0;		  
-	      fErrorCondition  = 0;
+	      fStepBack = 0;
 	      return;
 	  }
 	  
-	  TClonesArray &lvols = *fVolumesBwd;
 	  new(lvols[fStepsBackward]) AliDebugVolume(vol,copy,step,pos[0], pos[1], pos[2], status);
 	  
 	  AliDebugVolume* tmp = (AliDebugVolume*) (*fVolumesFwd)[fStepsBackward];
@@ -418,6 +418,32 @@ void AliLego::StepManager() {
   } // bwd/fwd
 }
 
+void AliLego::DumpVolumes()
+{
+//
+// Dump volume sequence in case of error
+//
+    printf("\n Dumping Volume Sequence:");
+    printf("\n ==============================================");
+    
+    for (Int_t i = fStepsForward-1; i>=0; i--)
+    {
+	AliDebugVolume* tmp1 = (AliDebugVolume*) (*fVolumesFwd)[i];
+	AliDebugVolume* tmp2 = (AliDebugVolume*) (*fVolumesBwd)[i];
+	printf("\n Volume Fwd: %3d: %5s (%3d) step: %12.5e (x,y,z) (%12.5e %12.5e %12.5e) status: %9s\n"
+	       , i, 
+	       tmp1->GetName(), tmp1->CopyNumber(), tmp1->Step(), 
+	       tmp1->X(), tmp1->Y(), tmp1->Z(), tmp1->Status());
+	
+	printf("\n Volume Bwd: %3d: %5s (%3d) step: %12.5e (x,y,z) (%12.5e %12.5e %12.5e) status: %9s\n"
+	       , i, 
+	       tmp2->GetName(), tmp2->CopyNumber(), tmp2->Step(), 
+	       tmp2->X(), tmp2->Y(), tmp2->Z(), tmp2->Status());
+	
+	printf("\n ............................................................................\n");
+    }
+    printf("\n ==============================================\n");
+}
 
 
 
