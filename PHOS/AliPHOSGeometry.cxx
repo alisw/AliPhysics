@@ -335,20 +335,25 @@ void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_
   // calculates the impact coordinates on PHOS of a neutral particle  
   // emitted in the direction theta and phi in the ALICE global coordinate system
 
+  //Convert phi to range 0-2pi if nesassary
+  Double_t phiin2pi = phi ;
+  while(phiin2pi<0)
+    phiin2pi+=6.2831853072 ;
+
   // searches for the PHOS EMC module
   ModuleNumber = 0 ; 
   Double_t tm, tM, pm, pM ; 
   Int_t index = 1 ; 
   while ( ModuleNumber == 0 && index <= GetNModules() ) { 
     EmcModuleCoverage(index, tm, tM, pm, pM) ; 
-    if ( (theta >= tm && theta <= tM) && (phi >= pm && phi <= pM ) ) 
+    if ( (theta >= tm && theta <= tM) && (phiin2pi >= pm && phiin2pi <= pM ) ) 
       ModuleNumber = index ; 
     index++ ;    
   }
   if ( ModuleNumber != 0 ) {
     Float_t phi0 =  GetPHOSAngle(ModuleNumber) *  (TMath::Pi() / 180.) + 1.5 * TMath::Pi()  ;  
     Float_t y0  =  GetIPtoCrystalSurface()  ;   
-    Double_t angle = phi - phi0; 
+    Double_t angle = phiin2pi - phi0; 
     x = y0 * TMath::Tan(angle) ; 
     angle = theta - TMath::Pi() / 2 ; 
     z = y0 * TMath::Tan(angle) ; 
