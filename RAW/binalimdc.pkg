@@ -22,8 +22,9 @@ EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp
 
 ELIBS:=ESD RAW MDC STEER TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp pythia6 pdf microcern
 
-ifneq (,$(findstring macosx,$(ALICE_TARGET)))
-# On MacOS X we need g2c
+#ifneq (,$(findstring macosx,$(ALICE_TARGET)))
+ifeq (macosx,$(ALICE_TARGET))
+# On Mac OS X gcc we need g2c
 ELIBS+=g2c
 endif
 
