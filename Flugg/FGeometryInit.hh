@@ -74,7 +74,8 @@ public:
   G4int GetMedium(int) const;
   int CurrentVolID(int ir, int& copyNo);
   int CurrentVolOffID(int ir, int off, int& copyNo);
-    
+  void Gmtod(double* xm, double* xd, int iflag);
+  void Gdtom(double* xd, double* xm, int iflag);    
 
 protected:
   void BuildRegionsMap();

@@ -829,3 +829,76 @@ int FGeometryInit::CurrentVolOffID(int ir, int off, int& copyNo)
     }
     return id;
 }
+
+void  FGeometryInit::Gmtod(double* xm, double* xd, int iflag)
+{
+// Transforms a position from the world reference frame
+// to the current volume reference frame.
+//
+//  Geant3 desription:
+//  ==================
+//       Computes coordinates XD (in DRS) 
+//       from known coordinates XM in MRS 
+//       The local reference system can be initialized by
+//         - the tracking routines and GMTOD used in GUSTEP
+//         - a call to GMEDIA(XM,NUMED)
+//         - a call to GLVOLU(NLEVEL,NAMES,NUMBER,IER) 
+//             (inverse routine is GDTOM) 
+//
+//        If IFLAG=1  convert coordinates 
+//           IFLAG=2  convert direction cosinus
+//
+// ---
+    FluggNavigator        * ptrNavig     = getNavigatorForTracking();
+    //setting variables (and dimension: Fluka uses cm.!)
+    G4ThreeVector pGlob(xm[0],xm[1],xm[2]);
+    pGlob *= 10.0; // in millimeters
+    G4ThreeVector pLoc;
+    
+    if (iflag == 1) {
+	pLoc = 
+	    ptrNavig->ComputeLocalPoint(pGlob);
+    } else if (iflag == 2) {
+	pLoc = 
+	    ptrNavig->ComputeLocalAxis(pGlob);	
+    } else {
+	G4cout << "Flugg FGeometryInit::Gmtod called with undefined flag" << G4endl;
+    }
+    
+    xd[0] = pLoc[0]; xd[1] = pLoc[1]; xd[2] = pLoc[2];
+}
+
+void  FGeometryInit::Gdtom(double* xd, double* xm, int iflag)
+{
+// Transforms a position from the current volume reference frame
+// to the world reference frame.
+//
+//  Geant3 desription:
+//  ==================
+//  Computes coordinates XM (Master Reference System
+//  knowing the coordinates XD (Detector Ref System)
+//  The local reference system can be initialized by
+//    - the tracking routines and GDTOM used in GUSTEP
+//    - a call to GSCMED(NLEVEL,NAMES,NUMBER)
+//        (inverse routine is GMTOD)
+// 
+//   If IFLAG=1  convert coordinates
+//      IFLAG=2  convert direction cosinus
+//
+// ---
+
+    FluggNavigator        * ptrNavig     = getNavigatorForTracking();
+    G4ThreeVector pLoc(xd[0],xd[1],xd[2]);
+    G4ThreeVector pGlob;
+     if (iflag == 1) {
+	 pGlob = ptrNavig->GetLocalToGlobalTransform().
+	     TransformPoint(pLoc);
+     } else if (iflag == 2) {
+	 pGlob = ptrNavig->GetLocalToGlobalTransform().
+	     TransformAxis(pLoc);
+     } else {
+	 G4cout << "Flugg FGeometryInit::Gdtom called with undefined flag" << G4endl;
+     }
+     
+     xm[0] = pGlob[0]; xm[1] = pGlob[1]; xm[2] = pGlob[2];
+}

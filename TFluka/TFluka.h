@@ -165,14 +165,14 @@ class TFluka : public TVirtualMC {
 				   Float_t &dens, Float_t &radl, Float_t &absl) const;
   virtual Int_t    CurrentEvent() const
       {printf("WARNING: CurrentEvent not yet implemented !\n"); return -1;} 
-  virtual void     Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
-    {printf("WARNING: Gmtod not yet implemented !\n");}
-  virtual void     Gmtod(Double_t* xm, Double_t* xd, Int_t iflag)
-    {printf("WARNING: Gmtod not yet implemented !\n");}
-  virtual void     Gdtom(Float_t* xd, Float_t* xm, Int_t iflag)
-    {printf("WARNING: Gdtom not yet implemented !\n");}
-  virtual void     Gdtom(Double_t* xd, Double_t* xm, Int_t iflag)
-    {printf("WARNING: Gdtom not yet implemented !\n");}
+  virtual void     Gmtod(Float_t* xm, Float_t* xd, Int_t iflag);
+  
+  virtual void     Gmtod(Double_t* xm, Double_t* xd, Int_t iflag);
+  
+  virtual void     Gdtom(Float_t* xd, Float_t* xm, Int_t iflag);
+  
+  virtual void     Gdtom(Double_t* xd, Double_t* xm, Int_t iflag);
+  
   virtual Double_t MaxStep() const
     {printf("WARNING: MaxStep not yet implemented !\n"); return -1.;}
   virtual Int_t    GetMaxNStep() const

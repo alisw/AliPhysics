@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.13  2003/01/31 14:01:51  morsch
+Major update on
+- Getters related to geometry.
+- Communication with run manager (event steering)
+
 Revision 1.12  2003/01/31 12:18:53  morsch
 Corrected indices. (E. Futo)
 
@@ -1036,6 +1041,99 @@ Int_t TFluka::CurrentMaterial(Float_t &a, Float_t &z,
     return med;
 }
 
+void TFluka::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
+    {
+// Transforms a position from the world reference frame
+// to the current volume reference frame.
+//
+//  Geant3 desription:
+//  ==================
+//       Computes coordinates XD (in DRS) 
+//       from known coordinates XM in MRS 
+//       The local reference system can be initialized by
+//         - the tracking routines and GMTOD used in GUSTEP
+//         - a call to GMEDIA(XM,NUMED)
+//         - a call to GLVOLU(NLEVEL,NAMES,NUMBER,IER) 
+//             (inverse routine is GDTOM) 
+//
+//        If IFLAG=1  convert coordinates 
+//           IFLAG=2  convert direction cosinus
+//
+// ---
+	Double_t xmD[3], xdD[3];	
+	xmD[0] = xm[0]; xmD[1] = xm[1]; xmD[2] = xm[2];	
+	(FGeometryInit::GetInstance())->Gmtod(xmD, xdD, iflag);
+	xd[0] = xdD[0]; xd[1] = xdD[1]; xd[2] = xdD[2];	
+    }
+
+  
+void TFluka::Gmtod(Double_t* xm, Double_t* xd, Int_t iflag)
+    {
+// Transforms a position from the world reference frame
+// to the current volume reference frame.
+//
+//  Geant3 desription:
+//  ==================
+//       Computes coordinates XD (in DRS) 
+//       from known coordinates XM in MRS 
+//       The local reference system can be initialized by
+//         - the tracking routines and GMTOD used in GUSTEP
+//         - a call to GMEDIA(XM,NUMED)
+//         - a call to GLVOLU(NLEVEL,NAMES,NUMBER,IER) 
+//             (inverse routine is GDTOM) 
+//
+//        If IFLAG=1  convert coordinates 
+//           IFLAG=2  convert direction cosinus
+//
+// ---
+	Double_t xmD[3], xdD[3];	
+	xdD[0] = xd[0]; xdD[1] = xd[1]; xdD[2] = xd[2];	
+	(FGeometryInit::GetInstance())->Gdtom(xmD, xdD, iflag);
+	xm[0] = xmD[0]; xm[1] = xmD[1]; xm[2] = xmD[2];	
+    }
+
+void TFluka::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag)
+    {
+// Transforms a position from the current volume reference frame
+// to the world reference frame.
+//
+//  Geant3 desription:
+//  ==================
+//  Computes coordinates XM (Master Reference System
+//  knowing the coordinates XD (Detector Ref System)
+//  The local reference system can be initialized by
+//    - the tracking routines and GDTOM used in GUSTEP
+//    - a call to GSCMED(NLEVEL,NAMES,NUMBER)
+//        (inverse routine is GMTOD)
+// 
+//   If IFLAG=1  convert coordinates
+//      IFLAG=2  convert direction cosinus
+//
+// ---
+
+
+    }
+void TFluka::Gdtom(Double_t* xd, Double_t* xm, Int_t iflag)
+    {
+// Transforms a position from the current volume reference frame
+// to the world reference frame.
+//
+//  Geant3 desription:
+//  ==================
+//  Computes coordinates XM (Master Reference System
+//  knowing the coordinates XD (Detector Ref System)
+//  The local reference system can be initialized by
+//    - the tracking routines and GDTOM used in GUSTEP
+//    - a call to GSCMED(NLEVEL,NAMES,NUMBER)
+//        (inverse routine is GMTOD)
+// 
+//   If IFLAG=1  convert coordinates
+//      IFLAG=2  convert direction cosinus
+//
+// ---
+
+	(FGeometryInit::GetInstance())->Gdtom(xm, xd, iflag);
+    }
 
 // ===============================================================
 void TFluka::FutoTest() 
