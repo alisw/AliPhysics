@@ -70,8 +70,8 @@ class AliESDVertex : public TNamed {
   void     Print(Option_t* option = "") const;
   void     PrintStatus() const {Print();}
   void SetTruePos(Double_t *tp){for(Int_t i=0;i<3;i++)fTruePos[i]=tp[i];}
-  void GetTruePos(Double_t &x,Double_t &y,Double_t &z) const 
-       {x=fTruePos[0]; y=fTruePos[1]; z=fTruePos[2];}
+  void GetTruePos(Double_t *tp) const 
+       {for(Int_t i=0;i<3;i++)tp[i]=fTruePos[i];}
 
   void Reset() { SetToZero(); SetName("Vertex"); }
 
