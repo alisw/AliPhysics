@@ -74,17 +74,20 @@ void Ana()
     AliESDtrack * cp ; 
     for (index = 0 ; index < esd->GetNumberOfTracks() ; index++) {
       cp = esd->GetTrack(index) ;
-      ULong_t status = cp->GetStatus() ; 
-
-      // check if the tracks comes out of TRD
-      if ((status & AliESDtrack::kTRDout)==0) 
-	continue;
-      if ((status & AliESDtrack::kTRDStop)!=0) 
-	continue;
-
-      // Gets the Global coordinate of the track at the entrance of PHOS 
       Double_t xyzAtPHOS[3] ; 
       cp->GetOuterXYZ(xyzAtPHOS) ; 
+      // check if the track reaches PHOS
+      if ( (xyzAtPHOS[0] +  xyzAtPHOS[1] + xyzAtPHOS[2]) == 0.)
+	continue;
+      // the next check are only if we want high quality tracks 
+      //       ULong_t status = cp->GetStatus() ;  
+      //       if ((status & AliESDtrack::kTRDput)==0) 
+      // 	continue;
+      //       if ((status & AliESDtrack::kTRDStop)!=0) 
+      // 	continue;
+
+      // Gets the Global coordinate of the track at the entrance of PHOS 
+     
       TVector3 poscp(xyzAtPHOS[0], xyzAtPHOS[1], xyzAtPHOS[2]) ; 
       cout << "Charged particle # " << index << " pos (" 
 	   << poscp.X() << ", " << poscp.Y() << ", " <<poscp.Z() << ") : (" << poscp.Eta() 
