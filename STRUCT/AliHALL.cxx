@@ -131,7 +131,7 @@ void AliHALL::CreateGeometry()
   AliMatrix(idrotm[1901], 270., 0., 90., 90., 0., 0.);
   gMC->Gsvolu("HUFL", "TRD1", idtmed[1956], trdpar, 4);
   r2 = hullen + 2020.;
-  gMC->Gspos("HUFL", 1, "ALIC", 70.,-100-trdpar[3] , r2, idrotm[1900], "ONLY");
+  gMC->Gspos("HUFL", 1, "ALIC", 70.,-100-trdpar[3] , -r2, idrotm[1900], "ONLY");
   
   //     RB24/26 wall 
   
@@ -142,20 +142,20 @@ void AliHALL::CreateGeometry()
   tspar[3] = phid - 90.;
   tspar[4] = 270. - phid;
   gMC->Gsvolu("HUWA", "TUBS", idtmed[1956], tspar, 5);
-  gMC->Gspos("HUWA", 1, "ALIC", 70., 40.,2020+hullen , 0, "ONLY");
+  gMC->Gspos("HUWA", 1, "ALIC", 70., 40., -2020 - hullen , 0, "ONLY");
   
   //     END WALL 
   gMC->Gsvolu("HEW1", "BOX ", idtmed[1956], pbox, 0);
   pbox[0] = 600.;
   pbox[1] = 418.;
   pbox[2] = 60.;
-  gMC->Gsposp("HEW1", 1, "ALIC", 0., -pbox[1]-60., 1960, 0, "ONLY", pbox, 3);
+  gMC->Gsposp("HEW1", 1, "ALIC", 0., -pbox[1]-60., -1960, 0, "ONLY", pbox, 3);
   pbox[1] = 822.;
-  gMC->Gsposp("HEW1", 2, "ALIC", 0.,  pbox[1]+60., 1960, 0, "ONLY", pbox, 3);
+  gMC->Gsposp("HEW1", 2, "ALIC", 0.,  pbox[1]+60., -1960, 0, "ONLY", pbox, 3);
   pbox[0] = 270.;
   pbox[1] =  60.;
-  gMC->Gsposp("HEW1", 3, "ALIC",  pbox[0]+60.,  0. , 1960, 0, "ONLY", pbox, 3);
-  gMC->Gsposp("HEW1", 4, "ALIC", -pbox[0]-60.,  0. , 1960, 0, "ONLY", pbox, 3);
+  gMC->Gsposp("HEW1", 3, "ALIC",  pbox[0]+60.,  0. , -1960, 0, "ONLY", pbox, 3);
+  gMC->Gsposp("HEW1", 4, "ALIC", -pbox[0]-60.,  0. , -1960, 0, "ONLY", pbox, 3);
 
   //     hall floor 
   
@@ -254,8 +254,8 @@ void AliHALL::CreateGeometry()
   pbox[1] = 96.;
   pbox[2] = 550.;
   gMC->Gsvolu("HPIL", "BOX ", idtmed[1956], pbox, 3);
-  gMC->Gspos("HPIL", 1, "ALIC", 165.,-706+pbox[1] , 1350., 0, "ONLY");
-  gMC->Gspos("HPIL", 2, "ALIC",-165.,-706+pbox[1] , 1350., 0, "ONLY");
+  gMC->Gspos("HPIL", 1, "ALIC", 165.,-706+pbox[1] , -1350., 0, "ONLY");
+  gMC->Gspos("HPIL", 2, "ALIC",-165.,-706+pbox[1] , -1350., 0, "ONLY");
   
   //     simple concrete beam shield 
   
@@ -264,12 +264,12 @@ void AliHALL::CreateGeometry()
   ppgon[1] =   360.;
   ppgon[2] =     4.;
   ppgon[3] =     2.;
-  ppgon[4] = -1800.;
-  ppgon[5] =   150.;
-  ppgon[6] =   250.;
-  ppgon[7] =  -720.;
+  ppgon[7] =  1800.;
   ppgon[8] =   150.;
   ppgon[9] =   250.;
+  ppgon[4] =   720.;
+  ppgon[5] =   150.;
+  ppgon[6] =   250.;
 
   gMC->Gsvolu("HMBS", "PGON", idtmed[1956], ppgon, 10);
   gMC->Gspos("HMBS", 1, "ALIC", 0., 70., 0., 0, "ONLY");
