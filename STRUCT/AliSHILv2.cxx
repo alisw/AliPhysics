@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/07/25 10:00:08  morsch
+par4 size increased.
+
 Revision 1.2  2002/07/15 08:16:35  morsch
 New shield geometry.
 
@@ -231,7 +234,11 @@ void AliSHILv2::CreateGeometry()
 
   gMC->Gsvolu("YMOT", "PCON", idtmed[kVacuum], par0, 87);
   dz=zstart+dl;
-  gMC->Gspos("YMOT", 1, "ALIC", 0., 0., dz, 0, "ONLY");  
+  gMC->Gspos("YMOT", 1, "ALIC", 0., 0., dz, 0, "ONLY"); 
+  gMC->Gsbool("YMOT","L3DO");
+  gMC->Gsbool("YMOT","L3O1");
+  gMC->Gsbool("YMOT","L3O2");
+ 
 //
 
   dZ=-dl;
