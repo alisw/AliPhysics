@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2001/10/18 03:09:21  barbera
+The method BuildGeometry() has been completely rewritten. Now display.C can display the detailed ITS geometry instead of the old six dummy cylunders.
+
 Revision 1.32  2001/10/17 04:35:32  barbera
 Checks for the det and chip thickness modified in order to set the dafault values to 200 um if the user chosen values are outside the range 100-300 um
 
@@ -330,49 +333,51 @@ void AliITSvPPRsymm::BuildGeometry(){
 //    Geometry builder for the ITS version 9.
 ////////////////////////////////////////////////////////////////////////
     TNode *node, *top;
-    TNode *sub1node, *sub2node, *sub3node, *sub4node, *sub5node;
     
-    const int kColorITS=kYellow;
+    const Int_t kColorITS=kYellow;
     //
     top = gAlice->GetGeometry()->GetNode("alice");
-/*
-    new TTUBE("S_layer1","Layer1 of ITS","void",3.95,3.95+0.05475,12.25);
+
+    new TTUBE("S_layer1","Layer1 of ITS","void",3.8095,3.8095+1.03*9.36/100.,14.35);
     top->cd();
     node = new TNode("Layer1","Layer1","S_layer1",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 
-    new TTUBE("S_layer2","Layer2 of ITS","void",7.,7.+0.05475,16.3);
+    new TTUBE("S_layer2","Layer2 of ITS","void",7.,7.+1.03*9.36/100.,14.35);
     top->cd();
     node = new TNode("Layer2","Layer2","S_layer2",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 
-    new TTUBE("S_layer3","Layer3 of ITS","void",15.,15.+0.05288,21.1);
+    new TTUBE("S_layer3","Layer3 of ITS","void",15.,15.+0.94*9.36/100.,25.1);
     top->cd();
     node = new TNode("Layer3","Layer3","S_layer3",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 
-    new TTUBE("S_layer4","Layer4 of ITS","void",24,24+0.05288,29.6);
+    new TTUBE("S_layer4","Layer4 of ITS","void",24.1,24.1+0.95*9.36/100.,32.1);
     top->cd();
     node = new TNode("Layer4","Layer4","S_layer4",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 
-    new TTUBE("S_layer5","Layer5 of ITS","void",40,40+0.05382,45.1);
+    new TTUBE("S_layer5","Layer5 of ITS","void",38.5,38.5+0.91*9.36/100.,49.405);
     top->cd();
     node = new TNode("Layer5","Layer5","S_layer5",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 
-    new TTUBE("S_layer6","Layer6 of ITS","void",45,45+0.05382,50.4);
+    new TTUBE("S_layer6","Layer6 of ITS","void",43.5765,43.5765+0.87*9.36/100.,55.27);
     top->cd();
     node = new TNode("Layer6","Layer6","S_layer6",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
-*/
 
+/*
+  // DETAILED GEOMETRY
+
+  TNode *sub1node, *sub2node, *sub3node, *sub4node, *sub5node;
 
   // Define some variables for SPD
 
@@ -24519,9 +24524,9 @@ void AliITSvPPRsymm::BuildGeometry(){
        fNodes->Add(sub1node);
        node->cd();
 
-
-
     fNodes->Add(node);
+*/    
+    
 }
 //_____________________________________________________________________________
 void AliITSvPPRsymm::CreateGeometry(){
