@@ -31,6 +31,7 @@ void  AliHBTLLWeightTheorQInvFctn::ProcessSameEventParticles(AliHBTPair* partpai
 {
   //Processes Particles and tracks Same different even
   partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
   Double_t weight = AliHBTLLWeights::Instance()->GetWeight(partpair);
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQInv(),weight);
 } 
@@ -62,6 +63,7 @@ void  AliHBTLLWeightTheorQOutFctn::ProcessSameEventParticles(AliHBTPair* partpai
 {
   //Processes Particles and tracks Same different even
   partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
   Double_t weight = AliHBTLLWeights::Instance()->GetWeight(partpair);
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQOutCMSLC(),weight);
 } 
@@ -93,6 +95,7 @@ void  AliHBTLLWeightTheorQSideFctn::ProcessSameEventParticles(AliHBTPair* partpa
 {
   //Processes Particles and tracks Same different even
   partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
   Double_t weight = AliHBTLLWeights::Instance()->GetWeight(partpair);
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQSideCMSLC(),weight);
 } 
@@ -124,6 +127,7 @@ void  AliHBTLLWeightTheorQLongFctn::ProcessSameEventParticles(AliHBTPair* partpa
 {
   //Processes Particles and tracks Same different even
   partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
   Double_t weight = AliHBTLLWeights::Instance()->GetWeight(partpair);
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQLongCMSLC(),weight);
 } 
