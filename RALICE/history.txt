@@ -285,3 +285,7 @@
                 AliTrack etc... storage in AliEvent & co.
                 Also (Ali4Vector&) casting stmt. in AliVertex::ResetVertices() changed
                 to make it ANSI compatible for all compilers/platforms.  
+09-jul-2001 NvE Support for impact points and user identifier introduced in AliTrack.
+                Also user identifier facility introduced for AliJet and AliVertex.
+12-jul-2001 NvE Memberfunction GetDistance() introduced for AliPosition and support for
+                point of closest approach introduced in AliTrack.

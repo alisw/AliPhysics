@@ -24,7 +24,7 @@ class AliPosition : public Ali3Vector
   virtual void GetPosition(Float_t*  r,TString f);       // Provide position r in frame f
   AliPosition& GetPosition();                            // Provide position
   virtual void SetPosition(Ali3Vector& r);               // Store position r
-
+  Double_t GetDistance(AliPosition& p);                  // Provide distance to position p
   virtual void SetPositionErrors(Double_t* r,TString f); // Store position r in frame f
   virtual void GetPositionErrors(Double_t* r,TString f); // Provide position r in frame f
   virtual void SetPositionErrors(Float_t*  r,TString f); // Store position r in frame f

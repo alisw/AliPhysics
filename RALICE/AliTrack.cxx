@@ -126,6 +126,7 @@ void AliTrack::Reset()
 {
 // Reset all variables to 0 and delete all auto-generated decay tracks.
  fQ=0;
+ fUserId=0;
  fNdec=0;
  fNsig=0;
  fNmasses=0;
@@ -146,6 +147,10 @@ void AliTrack::Reset()
  Double_t b[3]={0,0,0};
  fBegin.SetPosition(b,"sph");
  fEnd.SetPosition(b,"sph");
+ fImpactXY.SetPosition(b,"sph");
+ fImpactXZ.SetPosition(b,"sph");
+ fImpactYZ.SetPosition(b,"sph");
+ fClosest.SetPosition(b,"sph");
  if (fMasses)
  {
   delete fMasses;
@@ -199,7 +204,7 @@ void AliTrack::Info(TString f)
 // Provide track information within the coordinate frame f
  Double_t m=GetMass();
  Double_t dm=GetResultError();
- cout << " *AliTrack::Info* Mass : " << m
+ cout << " *AliTrack::Info* Id : " << fUserId << " Mass : " << m
       << " error : " << dm << " Charge : " << fQ
       << " Momentum : " << GetMomentum() << " Nmass hyp. : " << fNmasses
       << " Ntracks : " << fNdec << " Nsignals : " << fNsig << endl;
@@ -777,5 +782,91 @@ Double_t AliTrack::GetRapidity()
 
  fDresult=sqrt(dy2);
  return y;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetImpactPoint(AliPosition p,TString q)
+{
+// Store the position of the impact-point in the plane "q=0".
+// Here q denotes one of the axes X, Y or Z.
+// Note : The character to denote the axis may be entered in lower or
+//        in uppercase.
+ Int_t axis=0;
+ if (q=="x" || q=="X") axis=1;
+ if (q=="y" || q=="Y") axis=2;
+ if (q=="z" || q=="Z") axis=3;
+
+ switch (axis)
+ {
+  case 1: // Impact-point in the plane X=0
+   fImpactYZ=p;
+   break;
+
+  case 2: // Impact-point in the plane Y=0
+   fImpactXZ=p;
+   break;
+
+  case 3: // Impact-point in the plane Z=0
+   fImpactXY=p;
+   break;
+
+  default: // Unsupported axis
+   cout << "*AliTrack::SetImpactPoint* Unsupported axis : " << q << endl
+        << " Possible axes are 'X', 'Y' and 'Z'." << endl; 
+   break;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+AliPosition AliTrack::GetImpactPoint(TString q)
+{
+// Provide the position of the impact-point in the plane "q=0".
+// Here q denotes one of the axes X, Y or Z.
+// Note : The character to denote the axis may be entered in lower or
+//        in uppercase.
+ AliPosition dummy;
+ Int_t axis=0;
+ if (q=="x" || q=="X") axis=1;
+ if (q=="y" || q=="Y") axis=2;
+ if (q=="z" || q=="Z") axis=3;
+
+ switch (axis)
+ {
+  case 1: // Impact-point in the plane X=0
+   return fImpactYZ;
+
+  case 2: // Impact-point in the plane Y=0
+   return fImpactXZ;
+
+  case 3: // Impact-point in the plane Z=0
+   return fImpactXY;
+
+  default: // Unsupported axis
+   cout << "*AliTrack::GetImpactPoint* Unsupported axis : " << q << endl
+        << " Possible axes are 'X', 'Y' and 'Z'." << endl; 
+   return dummy;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetId(Int_t id)
+{
+// Set a user defined identifier for this track.
+ fUserId=id;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliTrack::GetId()
+{
+// Provide the user defined identifier of this track.
+ return fUserId;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetClosestPoint(AliPosition p)
+{
+// Set position p as the point of closest approach w.r.t. some reference
+ fClosest=p;
+}
+///////////////////////////////////////////////////////////////////////////
+AliPosition AliTrack::GetClosestPoint()
+{
+// Provide the point of closest approach w.r.t. some reference
+ return fClosest;
 }
 ///////////////////////////////////////////////////////////////////////////

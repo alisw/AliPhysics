@@ -400,7 +400,7 @@ void AliVertex::AddVertex(AliVertex& v,Int_t connect)
   Double_t v2=v.GetInvariant();
   Double_t dv2=v.Ali4Vector::GetResultError();
 
-  AliTrack* t=new AliTrack;
+  AliTrack* t=new AliTrack();
   t->SetBeginPoint(r1);
   t->SetEndPoint(r2);
   t->SetCharge(q);
@@ -417,7 +417,7 @@ void AliVertex::AddVertex(AliVertex& v,Int_t connect)
 void AliVertex::Info(TString f)
 {
 // Provide vertex information within the coordinate frame f
- cout << " *AliVertex::Info* Invmass : " << GetInvmass()
+ cout << " *AliVertex::Info* Id : " << fUserId << " Invmass : " << GetInvmass()
       << " Charge : " << GetCharge() << " Momentum : " << GetMomentum()
       << " Ntracks : " << GetNtracks() << " Nvertices : " << fNvtx 
       << " Njets : " << fNjets << endl;
@@ -564,6 +564,27 @@ AliVertex* AliVertex::GetVertex(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+AliVertex* AliVertex::GetIdVertex(Int_t id)
+{
+// Return the (sec.) vertex with user identifier "id"
+ AliVertex* vx=0;
+ AliVertex* v=0;
+ if (!fVertices)
+ {
+  cout << " *AliVertex*::GetIdVertex* No (secondary) vertices present." << endl;
+  return 0;
+ }
+ else
+ {
+  for (Int_t i=0; i<fNvtx; i++)
+  {
+   vx=(AliVertex*)fVertices->At(i);
+   if (id == vx->GetId()) v=vx;
+  }
+  return v;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
 void AliVertex::SetVertexCopy(Int_t j)
 {
 // (De)activate the creation of private copies of the added vertices.
@@ -626,6 +647,27 @@ AliJet* AliVertex::GetJet(Int_t i)
   {
    return (AliJet*)fJets->At(i-1);
   }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+AliJet* AliVertex::GetIdJet(Int_t id)
+{
+// Return the jet with user identifier "id"
+ AliJet* jx=0;
+ AliJet* j=0;
+ if (!fJets)
+ {
+  cout << " *AliVertex*::GetIdJet* No jets present." << endl;
+  return 0;
+ }
+ else
+ {
+  for (Int_t i=0; i<fNjets; i++)
+  {
+   jx=(AliJet*)fJets->At(i);
+   if (id == jx->GetId()) j=jx;
+  }
+  return j;
  }
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -156,6 +156,7 @@ void AliJet::Reset()
 // The max. number of tracks is set to the initial value again
  fNtrk=0;
  fQ=0;
+ fUserId=0;
  Double_t a[4]={0,0,0,0};
  SetVector(a,"sph");
  if (fNtinit > 0) SetNtinit(fNtinit);
@@ -195,7 +196,7 @@ void AliJet::AddTrack(AliTrack& t)
 void AliJet::Info(TString f)
 {
 // Provide jet information within the coordinate frame f
- cout << " *AliJet::Info* Invmass : " << GetInvmass() << " Charge : " << fQ
+ cout << " *AliJet::Info* Id : " << fUserId << " Invmass : " << GetInvmass() << " Charge : " << fQ
       << " Momentum : " << GetMomentum() << " Ntracks : " << fNtrk << endl;
  cout << " ";
  Ali4Vector::Info(f); 
@@ -318,6 +319,27 @@ AliTrack* AliJet::GetTrack(Int_t i)
   {
    return (AliTrack*)fTracks->At(i-1);
   }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+AliTrack* AliJet::GetIdTrack(Int_t id)
+{
+// Return the track with user identifier "id" of this jet
+ AliTrack* tx=0;
+ AliTrack* t=0;
+ if (!fTracks)
+ {
+  cout << " *AliJet*::GetIdTrack* No tracks present." << endl;
+  return 0;
+ }
+ else
+ {
+  for (Int_t i=0; i<fNtrk; i++)
+  {
+   tx=(AliTrack*)fTracks->At(i);
+   if (id == tx->GetId()) t=tx;
+  }
+  return t;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -449,5 +471,17 @@ Int_t AliJet::GetTrackCopy()
 // 0 ==> No private copies are made; pointers of original tracks are stored.
 // 1 ==> Private copies of the tracks are made and these pointers are stored.
  return fTrackCopy;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliJet::SetId(Int_t id)
+{
+// Set a user defined identifier for this jet.
+ fUserId=id;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliJet::GetId()
+{
+// Provide the user defined identifier of this jet.
+ return fUserId;
 }
 ///////////////////////////////////////////////////////////////////////////

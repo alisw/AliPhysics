@@ -31,11 +31,13 @@ class AliVertex : public AliJet,public AliPosition
   void ListAll(TString f="car");          // Print prim. + sec. vertex full track info for coord. frame f
   Int_t GetNvertices();                   // Return the number of (secondary) vertices
   AliVertex* GetVertex(Int_t i);          // Provide i-th (secondary) vertex
+  AliVertex* GetIdVertex(Int_t id);       // Provide the vertex with user identifier "id"
   void SetNvmax(Int_t n=2);               // Set the initial max. number of (secondary) vertices
   void SetVertexCopy(Int_t j);            // (De)activate creation of private copies in fVertices
   Int_t GetVertexCopy();                  // Provide VertexCopy flag value      
   Int_t GetNjets();                       // Return the number of jets
   AliJet* GetJet(Int_t i);                // Provide i-th jet
+  AliJet* GetIdJet(Int_t id);             // Provide the jet with user identifier "id"
   void SetNjmax(Int_t n=2);               // Set the initial max. number of jets
   void SetJetCopy(Int_t j);               // (De)activate creation of private copies in fJets
   Int_t GetJetCopy();                     // Provide JetCopy flag value      

@@ -131,3 +131,14 @@ void AliPosition::GetPositionErrors(Float_t* r,TString f)
  GetErrors(r,f);
 }
 ///////////////////////////////////////////////////////////////////////////
+Double_t AliPosition::GetDistance(AliPosition& p)
+{
+// Provide distance to position p.
+// The error on the result can be obtained as usual by invoking
+// GetResultError() afterwards. 
+ Ali3Vector d=(Ali3Vector)((*this)-p);
+ Double_t dist=d.GetNorm();
+ fDresult=d.GetResultError();
+ return dist;
+}
+///////////////////////////////////////////////////////////////////////////

@@ -57,19 +57,30 @@ class AliTrack : public TObject,public Ali4Vector
   Double_t GetMt();                 // Provide trans. mass w.r.t. z-axis
   Double_t GetMt(Int_t j);          // Provide trans. mass w.r.t. z-axis and jth mass hypothesis
   Double_t GetRapidity();           // Provide rapidity value w.r.t. z-axis
+  void SetImpactPoint(AliPosition p,TString q); // Set the impact-point in plane "q=0"
+  AliPosition GetImpactPoint(TString q);        // Provide the impact-point in plane "q=0"
+  void SetId(Int_t id);             // Set the user defined identifier
+  Int_t GetId();                    // Provide the user defined identifier
+  void SetClosestPoint(AliPosition p); // Set position p as point of closest approach w.r.t. some reference
+  AliPosition GetClosestPoint();       // Provide point of closest approach w.r.t. some reference
  
  protected:
-  Float_t fQ;          // The charge of the particle
-  Int_t fNdec;         // The number of decay products
-  TObjArray* fDecays;  // The array of decay produced tracks
-  Int_t fNsig;         // The number of related AliSignals
-  TObjArray* fSignals; // The array of related AliSignals
-  AliPosition fBegin;  // The begin-point of the track 
-  AliPosition fEnd;    // The end-point of the track 
-  Int_t fNmasses;      // The number of mass hypotheses
-  TArrayD* fMasses;    // The various mass hypotheses
-  TArrayD* fDmasses;   // The errors on the various masses
-  TArrayD* fPmasses;   // The probabilities of the various mass hypotheses
+  Float_t fQ;            // The charge of the particle
+  Int_t fNdec;           // The number of decay products
+  TObjArray* fDecays;    // The array of decay produced tracks
+  Int_t fNsig;           // The number of related AliSignals
+  TObjArray* fSignals;   // The array of related AliSignals
+  AliPosition fBegin;    // The begin-point of the track 
+  AliPosition fEnd;      // The end-point of the track 
+  Int_t fNmasses;        // The number of mass hypotheses
+  TArrayD* fMasses;      // The various mass hypotheses
+  TArrayD* fDmasses;     // The errors on the various masses
+  TArrayD* fPmasses;     // The probabilities of the various mass hypotheses
+  AliPosition fImpactXY; // The (extrapolated) impact-point in the plane z=0
+  AliPosition fImpactXZ; // The (extrapolated) impact-point in the plane y=0
+  AliPosition fImpactYZ; // The (extrapolated) impact-point in the plane x=0
+  Int_t fUserId;         // The user defined identifier
+  AliPosition fClosest;  // The (extrapolated) point of closest approach w.r.t some reference
 
  private:
   void Dump(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
