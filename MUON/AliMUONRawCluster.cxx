@@ -15,8 +15,12 @@
 
 /* $Id$ */
 
+// Class for the MUON RecPoint
+// It contains the propeorties of the physics cluters found in the tracking chambers
+// RawCluster contains also the information from the both cathode of the chambers.
+
+
 #include "AliMUONRawCluster.h"
-#include <TObjArray.h>
 #include <TArrayF.h>
 
 ClassImp(AliMUONRawCluster);
@@ -43,7 +47,7 @@ AliMUONRawCluster::AliMUONRawCluster() {
     fNcluster[0]=fNcluster[1]=-1;
     fGhost=0;
 }
-
+//____________________________________________________
 Int_t AliMUONRawCluster::Compare(const TObject *obj) const
 {
   /*
@@ -62,9 +66,8 @@ Int_t AliMUONRawCluster::Compare(const TObject *obj) const
          else return 0;
 
 }
-
-Int_t AliMUONRawCluster::
-BinarySearch(Float_t y, TArrayF coord, Int_t from, Int_t upto)
+//____________________________________________________
+Int_t AliMUONRawCluster::BinarySearch(Float_t y, TArrayF coord, Int_t from, Int_t upto)
 {
    // Find object using a binary search. Array must first have been sorted.
    // Search can be limited by setting upto to desired index.
@@ -77,7 +80,7 @@ BinarySearch(Float_t y, TArrayF coord, Int_t from, Int_t upto)
    }
    return low;
 }
-
+//____________________________________________________
 void AliMUONRawCluster::SortMin(Int_t *idx,Float_t *xdarray,Float_t *xarray,Float_t *yarray,Float_t *qarray, Int_t ntr)
 {
   //
@@ -138,8 +141,8 @@ void AliMUONRawCluster::SortMin(Int_t *idx,Float_t *xdarray,Float_t *xarray,Floa
 
 }
 
-
-Int_t AliMUONRawCluster::PhysicsContribution()
+//____________________________________________________
+Int_t AliMUONRawCluster::PhysicsContribution() const
 {
 // Evaluate physics contribution to cluster
   Int_t iPhys=0;
@@ -159,6 +162,8 @@ Int_t AliMUONRawCluster::PhysicsContribution()
   }
 }
 
+
+
 //____________________________________________________
 void AliMUONRawCluster::DumpIndex(void)
 {
@@ -170,4 +175,101 @@ void AliMUONRawCluster::DumpIndex(void)
 	}
 	printf("\n");
     }
+}
+
+//____________________________________________________
+Int_t AliMUONRawCluster::AddCharge(Int_t i, Int_t Q)
+{
+  if (i==0 || i==1) {
+    fQ[i]+=Q;
+    return 1;
+  }
+  else  return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::AddX(Int_t i, Float_t X)
+{
+  if (i==0 || i==1) {
+    fX[i]+=X;
+    return 1;
+  }
+  else  return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::AddY(Int_t i, Float_t Y)
+{
+  if (i==0 || i==1) {
+    fY[i]+=Y;
+    return 1;
+  }
+  else return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::AddZ(Int_t i, Float_t Z)
+{
+  if (i==0 || i==1) {
+    fZ[i]+=Z;
+    return 1;
+  }
+  else return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::GetCharge(Int_t i) const
+{
+  if (i==0 || i==1) return fQ[i];
+  else  return 99999;
+}
+//____________________________________________________
+Float_t AliMUONRawCluster::GetX(Int_t i)  const
+{
+  if (i==0 || i==1) return fX[i];
+  else  return 99999.;
+}
+//____________________________________________________
+Float_t AliMUONRawCluster::GetY(Int_t i) const 
+{
+  if (i==0 || i==1) return fY[i];
+  else  return 99999.;
+}
+//____________________________________________________
+Float_t AliMUONRawCluster::GetZ(Int_t i) const 
+{
+  if (i==0 || i==1) return fZ[i];
+  else  return 99999.;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::SetCharge(Int_t i, Int_t Q)
+{
+  if (i==0 || i==1) {
+    fQ[i]=Q;
+    return 1;
+  }
+  else  return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::SetX(Int_t i, Float_t X)
+{
+  if (i==0 || i==1) {
+    fX[i]=X;
+    return 1;
+  }
+  else  return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::SetY(Int_t i, Float_t Y)
+{
+  if (i==0 || i==1) {
+    fY[i]=Y;
+    return 1;
+  }
+  else return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::SetZ(Int_t i, Float_t Z)
+{
+  if (i==0 || i==1) {
+    fZ[i]=Z;
+    return 1;
+  }
+  else return 0;
 }

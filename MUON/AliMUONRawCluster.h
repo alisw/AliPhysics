@@ -6,19 +6,52 @@
 
 /* $Id$ */
 
+// Class for the MUON RecPoint
+// It contains the propeorties of the physics cluters found in the tracking chambers
+// RawCluster contains also the information from the both cathode of the chambers.
+
+
 class TArrayF;
 
 #include <TObject.h>
 #include <TMath.h> // because of inline funtion GetRadius
 
 class AliMUONRawCluster : public TObject {
-public:
 
-   Int_t       fTracks[3];        //labels of overlapped tracks
+public:
+   AliMUONRawCluster();
+   virtual ~AliMUONRawCluster() { }
+   Float_t      GetRadius(Int_t i) {return TMath::Sqrt(fX[i]*fX[i]+fY[i]*fY[i]);}
+   Bool_t       IsSortable() const {return kTRUE;}
+   Int_t        Compare(const TObject *obj) const;
+   Int_t        PhysicsContribution() const;
+   static Int_t BinarySearch(Float_t r, TArrayF ccord, Int_t from, Int_t upto);
+   static void  SortMin(Int_t *idx,Float_t *xdarray, Float_t *xarray, Float_t *yarray, Float_t *qarray,Int_t ntr);
+   void         DumpIndex();
+
+   Int_t        AddCharge(Int_t i, Int_t Q);
+   Int_t        AddX(Int_t i, Float_t X);
+   Int_t        AddY(Int_t i, Float_t Y);
+   Int_t        AddZ(Int_t i, Float_t Z);
+
+   Int_t        GetCharge(Int_t i) const;
+   Float_t      GetX(Int_t i) const;
+   Float_t      GetY(Int_t i) const;
+   Float_t      GetZ(Int_t i) const;
+
+   Int_t        SetCharge(Int_t i,Int_t Q);
+   Int_t        SetX(Int_t i, Float_t X);
+   Int_t        SetY(Int_t i, Float_t Y);
+   Int_t        SetZ(Int_t i, Float_t Z);
+
+private:
    Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
    Float_t     fX[2]  ;           // X of cluster
    Float_t     fY[2]  ;           // Y of cluster
    Float_t     fZ[2]  ;           // Z of cluster
+
+public:
+   Int_t       fTracks[3];        //labels of overlapped tracks
    Int_t       fPeakSignal[2];    // Peak signal 
    Int_t       fIndexMap[50][2];  // indeces of digits
    Int_t       fOffsetMap[50][2]; // Emmanuel special
@@ -33,17 +66,7 @@ public:
                                   // 1 both (true and ghost) satify 
                                   //   charge chi2 compatibility
                                   // 2 none give satisfactory chi2
- public:
-   AliMUONRawCluster();
-   virtual ~AliMUONRawCluster() {}
-   Float_t GetRadius(Int_t i) {return TMath::Sqrt(fX[i]*fX[i]+fY[i]*fY[i]);}
-   Bool_t IsSortable() const {return kTRUE;}
-   Int_t  Compare(const TObject *obj) const;
-   Int_t PhysicsContribution();
-   static Int_t BinarySearch(Float_t r, TArrayF ccord, Int_t from, Int_t upto);
-   static void  SortMin(Int_t *idx,Float_t *xdarray, Float_t *xarray,
-			Float_t *yarray, Float_t *qarray,Int_t ntr);
-   void DumpIndex();
+
 
    ClassDef(AliMUONRawCluster,1)  //Cluster class for MUON
 };
