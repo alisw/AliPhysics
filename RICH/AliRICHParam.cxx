@@ -32,7 +32,7 @@ void AliRICHParam::GenSigmaThMap()
     for(Int_t ipadX=0;ipadX<NpadsX();ipadX++)
       for(Int_t ipadY=0;ipadY<NpadsY();ipadY++) 
         fSigmaThMap[iChamber][ipadX][ipadY] = SigmaThMean()+(1.-2*gRandom->Rndm())*SigmaThSpread();
-  Info("GenSigmaThMap"," Threshold map generated for all RICH chambers");
+  //  Info("GenSigmaThMap"," Threshold map generated for all RICH chambers");
 }
 //__________________________________________________________________________________________________
 void AliRICHParam::Print()

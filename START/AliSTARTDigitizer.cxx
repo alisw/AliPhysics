@@ -57,7 +57,7 @@ ClassImp(AliSTARTDigitizer)
 AliSTARTDigitizer::AliSTARTDigitizer(AliRunDigitizer* manager) 
     :AliDigitizer(manager) 
 {
-	cout<<"AliSTARTDigitizer::AliSTARTDigitizer"<<endl;
+  //	cout<<"AliSTARTDigitizer::AliSTARTDigitizer"<<endl;
 // ctor which should be used
 //  fDebug =0;
  // if (GetDebug()>2)
@@ -78,7 +78,7 @@ AliSTARTDigitizer::~AliSTARTDigitizer()
 Bool_t AliSTARTDigitizer::Init()
 {
 // Initialization
- cout<<"AliSTARTDigitizer::Init"<<endl;
+// cout<<"AliSTARTDigitizer::Init"<<endl;
  return kTRUE;
 }
  

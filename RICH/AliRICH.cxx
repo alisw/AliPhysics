@@ -123,15 +123,20 @@ void AliRICH::Hits2SDigits()
 // Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
 //   
   if(GetDebug()) Info("Hit2SDigits","Start.");
+
+  AliLoader * richLoader = GetLoader();
+  AliRunLoader * runLoader = GetLoader()->GetRunLoader();
+
   for(Int_t iEventN=0;iEventN<GetLoader()->GetRunLoader()->GetAliRun()->GetEventsPerRun();iEventN++){//events loop
-    GetLoader()->GetRunLoader()->GetEvent(iEventN);
+    runLoader->GetEvent(iEventN);
   
-    if(!GetLoader()->TreeH()) GetLoader()->LoadHits();    GetLoader()->GetRunLoader()->LoadHeader(); 
-                                                          GetLoader()->GetRunLoader()->LoadKinematics();//from
-    if(!GetLoader()->TreeS()) GetLoader()->MakeTree("S"); MakeBranch("S");//to
+    if (!richLoader->TreeH()) richLoader->LoadHits();
+    if (!runLoader->TreeE()) runLoader->LoadHeader(); 
+    if (!runLoader->TreeK()) runLoader->LoadKinematics();//from
+    if (!richLoader->TreeS()) richLoader->MakeTree("S"); MakeBranch("S");//to
           
     for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
-      GetLoader()->TreeH()->GetEntry(iPrimN);
+      richLoader->TreeH()->GetEntry(iPrimN);
       for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop 
         AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);                
         TVector2 x2 = P()->ShiftToWirePos(C(pHit->C())->Glob2Loc(pHit->OutX3()));                
@@ -144,15 +149,17 @@ void AliRICH::Hits2SDigits()
           for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
             Double_t padQdc=iTotQdc*P()->FracQdc(x2,iPadX,iPadY);
             if(padQdc>0.1) AddSDigit(pHit->C(),iPadX,iPadY,padQdc,
-              GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
+              runLoader->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
           }//affected pads loop 
       }//hits loop
     }//prims loop
-    GetLoader()->TreeS()->Fill();
-    GetLoader()->WriteSDigits("OVERWRITE");
+    richLoader->TreeS()->Fill();
+    richLoader->WriteSDigits("OVERWRITE");
     ResetSDigits();
   }//events loop  
-  GetLoader()->UnloadHits(); GetLoader()->GetRunLoader()->UnloadHeader(); GetLoader()->GetRunLoader()->UnloadKinematics();
+  richLoader->UnloadHits();
+  runLoader->UnloadHeader();
+  runLoader->UnloadKinematics();
   GetLoader()->UnloadSDigits();  
   if(GetDebug()) Info("Hit2SDigits","Stop.");
 }//Hits2SDigits()

@@ -148,8 +148,8 @@ void AliEMCALSDigitizer::InitParameters()
   if (geom->GetSampling() == 0.) {
     Fatal("InitParameters", "Sampling factor not set !") ; 
   }
-  else
-    Info("InitParameters", "Sampling factor set to %f", geom->GetSampling()) ; 
+//   else
+//     Info("InitParameters", "Sampling factor set to %f", geom->GetSampling()) ; 
   
   // this threshold corresponds approximately to 100 MeV
   fECPrimThreshold     = 100E-3;

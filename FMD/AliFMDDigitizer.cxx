@@ -79,7 +79,7 @@ AliFMDDigitizer::~AliFMDDigitizer()
 Bool_t AliFMDDigitizer::Init()
 {
 // Initialization
- cout<<"AliFMDDigitizer::Init"<<endl;
+// cout<<"AliFMDDigitizer::Init"<<endl;
  return kTRUE;
 }
  
@@ -134,12 +134,12 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
       Error("Exec","Can not find Run Loader for input stream 0");
       return;
     }
-  Info("Exec","inRL->GetAliRun() %#x",inRL->GetAliRun());
+  //  Info("Exec","inRL->GetAliRun() %#x",inRL->GetAliRun());
 
-  inRL->LoadgAlice();
+  if (!inRL->GetAliRun()) inRL->LoadgAlice();
 
   AliFMD * fFMD = (AliFMD *) inRL->GetAliRun()->GetDetector("FMD");
-  Info("Exec","inRL->GetAliRun(): %#x, FMD: %#x, InRL %#x.",inRL->GetAliRun(),fFMD,inRL);
+  //  Info("Exec","inRL->GetAliRun(): %#x, FMD: %#x, InRL %#x.",inRL->GetAliRun(),fFMD,inRL);
   if (fFMD == 0x0)
    {
      Error("Exec","Can not get FMD from gAlice");

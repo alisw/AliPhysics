@@ -876,7 +876,7 @@ void    AliTPC::SetActiveSectors(Int_t flag)
   else branch = TreeH()->GetBranch("TPC");
   Stat_t ntracks = TreeH()->GetEntries();
   // loop over all hits
-  cout<<"\nAliTPC::SetActiveSectors():  Got "<<ntracks<<" tracks\n";
+  if (GetDebug()) cout<<"\nAliTPC::SetActiveSectors():  Got "<<ntracks<<" tracks\n";
   
   for(Int_t track=0;track<ntracks;track++)
    {
@@ -1110,7 +1110,7 @@ void AliTPC::Hits2Clusters(Int_t /*eventn*/)
 
   } // end of loop over sectors  
 
-  cerr<<"Number of made clusters : "<<nclusters<<"                        \n";
+  //  cerr<<"Number of made clusters : "<<nclusters<<"                        \n";
   fLoader->WriteRecPoints("OVERWRITE");
   
   
@@ -1434,7 +1434,7 @@ void AliTPC::SetDefaults(){
   // setting the defaults
   //
    
-   cerr<<"Setting default parameters...\n";
+  //   cerr<<"Setting default parameters...\n";
 
   // Set response functions
 
@@ -1567,7 +1567,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
 
   fDigitsSwitch=0; // standard digits
 
-  cerr<<"Digitizing TPC -- normal digits...\n";
+  //  cerr<<"Digitizing TPC -- normal digits...\n";
 
  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
   if (IsSectorActive(isec)) 
@@ -1638,7 +1638,7 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
 
   SetDigitsArray(arr);
 
-  cerr<<"Digitizing TPC -- summable digits...\n"; 
+  //  cerr<<"Digitizing TPC -- summable digits...\n"; 
 
   fDigitsSwitch=1; // summable digits
   

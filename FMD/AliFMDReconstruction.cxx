@@ -135,8 +135,8 @@ void AliFMDReconstruction::Exec()
      return;//never reached
    }
    
-  fRunLoader->LoadgAlice();
-  fRunLoader->LoadHeader();
+  if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
+  if (!fRunLoader->TreeE()) fRunLoader->LoadHeader();
   Int_t retval;
   TDirectory* cwd = gDirectory;
   gDirectory = 0x0;

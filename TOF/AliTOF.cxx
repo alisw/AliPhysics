@@ -729,11 +729,11 @@ void AliTOF::Hits2SDigits()
 // Use the TOF SDigitizer to make TOF SDigits
 //
 
-  cout<<"AliTOF::Hits2SDigits> start...\n";
+//  cout<<"AliTOF::Hits2SDigits> start...\n";
   
   AliRunLoader * rl = fLoader->GetRunLoader();
   AliTOFSDigitizer sd((rl->GetFileName()).Data());
-  sd.Print("");
+  if (GetDebug()) sd.Print("");
 
   sd.Exec("") ;
 
@@ -754,7 +754,7 @@ void AliTOF::Hits2SDigits(Int_t evNumber1, Int_t evNumber2)
  
   AliRunLoader * rl = fLoader->GetRunLoader();
   AliTOFSDigitizer sd((rl->GetFileName()).Data(),evNumber1,evNumber2) ;
-  sd.Print("");
+  if (GetDebug()) sd.Print("");
 
   sd.Exec("") ;
 

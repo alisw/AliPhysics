@@ -88,203 +88,206 @@ void AliRICHRecon::StartProcessEvent()
 //      Waiting();
     }
 
-    Rich()->GetLoader()->LoadHits();
-    Rich()->GetLoader()->LoadRecPoints();
-    Rich()->GetLoader()->LoadDigits();
-    gAlice->GetRunLoader()->LoadHeader();
-    gAlice->GetRunLoader()->LoadKinematics();    
-    
-    Rich()->GetLoader()->TreeR()->GetEntry(0);
+  AliLoader * richLoader = Rich()->GetLoader();
+  AliRunLoader * runLoader = richLoader->GetRunLoader();
 
-    Float_t clusX[7][500],clusY[7][500];
-    Int_t clusQ[7][500],clusMul[7][500];    
-    Int_t nClusters[7];
+  if (richLoader->TreeH() == 0x0) richLoader->LoadHits();
+  if (richLoader->TreeR() == 0x0) richLoader->LoadRecPoints();
+  if (richLoader->TreeD() == 0x0) richLoader->LoadDigits();
+  if (runLoader->TreeE() == 0x0)  runLoader->LoadHeader();
+  if (runLoader->TreeK() == 0x0)  runLoader->LoadKinematics();    
+  
+  richLoader->TreeR()->GetEntry(0);
+
+  Float_t clusX[7][500],clusY[7][500];
+  Int_t clusQ[7][500],clusMul[7][500];    
+  Int_t nClusters[7];
     
-    for (Int_t ich=0;ich<7;ich++) {
-      nClusters[ich] = Rich()->Clusters(ich+1)->GetEntries();    
-      for(Int_t k=0;k<nClusters[ich];k++) {
-        AliRICHcluster *pCluster = (AliRICHcluster *)Rich()->Clusters(ich+1)->At(k);
-        clusX[ich][k] = pCluster->X();
-        clusY[ich][k] = pCluster->Y();
-        clusQ[ich][k] = pCluster->Q();
-        clusMul[ich][k] = pCluster->Size();
-//        pCluster->Print();
-      }
+  for (Int_t ich=0;ich<7;ich++) {
+    nClusters[ich] = Rich()->Clusters(ich+1)->GetEntries();    
+    for(Int_t k=0;k<nClusters[ich];k++) {
+      AliRICHcluster *pCluster = (AliRICHcluster *)Rich()->Clusters(ich+1)->At(k);
+      clusX[ich][k] = pCluster->X();
+      clusY[ich][k] = pCluster->Y();
+      clusQ[ich][k] = pCluster->Q();
+      clusMul[ich][k] = pCluster->Size();
+      //        pCluster->Print();
     }
-        
-    Int_t nPrimaries = (Int_t)Rich()->GetLoader()->TreeH()->GetEntries();
-
-    cout << " N. primaries " << nPrimaries << endl;
-        
-    for(Int_t i=0;i<nPrimaries;i++){
+  }
+  
+  Int_t nPrimaries = (Int_t)richLoader->TreeH()->GetEntries();
+  
+  cout << " N. primaries " << nPrimaries << endl;
+  
+  for(Int_t i=0;i<nPrimaries;i++){
+    
+    richLoader->TreeH()->GetEntry(i);
+    
+    //      Rich()->Hits()->Print();
+    Int_t iPrim = 0;
+    
+    AliRICHhit* pHit=0;
+    
+    for(Int_t j=0;j<Rich()->Hits()->GetEntries();j++) {
       
-      Rich()->GetLoader()->TreeH()->GetEntry(i);
-
-//      Rich()->Hits()->Print();
-      Int_t iPrim = 0;
-
-      AliRICHhit* pHit=0;
-      
-      for(Int_t j=0;j<Rich()->Hits()->GetEntries();j++) {
-
-        pHit = (AliRICHhit*)Rich()->Hits()->At(j);
-        if(pHit->GetTrack() < nPrimaries) break;
-        iPrim++;
+      pHit = (AliRICHhit*)Rich()->Hits()->At(j);
+      if(pHit->GetTrack() < nPrimaries) break;
+      iPrim++;
+    }
+    
+    cout << " iPrim " << iPrim << " pHit " << pHit << endl;
+    
+    if (!pHit) return;
+    
+    //      pHit->Print();
+    
+    TParticle *pParticle = runLoader->Stack()->Particle(pHit->GetTrack());
+    Float_t pmod     = pParticle->P();
+    Float_t pt       = pParticle->Pt();
+    Float_t trackEta = pParticle->Eta();
+    Int_t q          = (Int_t)TMath::Sign(1.,pParticle->GetPDG()->Charge());        
+    
+    //      pParticle->Print();
+    
+    cout << " pmod " << pmod << " pt " << pt << " Eta " << trackEta << " charge " << q << endl;
+    
+    SetTrackMomentum(pmod); 
+    SetTrackPt(pt);
+    SetTrackEta(trackEta);
+    SetTrackCharge(q);
+    
+    TVector3 pLocal(0,0,0);//?????
+    
+    TVector2 primLocal =Rich()->C(pHit->C())->Glob2Loc(pHit->InX3());
+    
+    //      Float_t pmodFreo = pLocal.Mag();
+    Float_t trackTheta = pLocal.Theta();
+    Float_t trackPhi = pLocal.Phi();
+    
+    //      cout << " trackTheta " << trackTheta << " trackPhi " << trackPhi << endl;
+    
+    SetTrackTheta(trackTheta);
+    SetTrackPhi(trackPhi);
+    
+    Int_t maxInd = 0;
+    Float_t minDist =  999.;
+    
+    //      cout << " n Clusters " << nClusters[pHit->Chamber()-1] << " for chamber n. " << pHit->Chamber() << endl;
+    
+    for(Int_t j=0;j<nClusters[pHit->Chamber()-1];j++)
+      {
+	Float_t diffx = primLocal.X() - clusX[pHit->Chamber()-1][j];
+	Float_t diffy = primLocal.Y() - clusY[pHit->Chamber()-1][j];
+	
+	
+	Float_t diff = sqrt(diffx*diffx + diffy*diffy);
+	
+	if(diff < minDist)
+	  {
+	    minDist = diff;
+	    maxInd = j;
+	  }
+	
       }
-
-      cout << " iPrim " << iPrim << " pHit " << pHit << endl;
-      
-      if (!pHit) return;
-      
-//      pHit->Print();
-      
-      TParticle *pParticle = gAlice->GetRunLoader()->Stack()->Particle(pHit->GetTrack());
-      Float_t pmod     = pParticle->P();
-      Float_t pt       = pParticle->Pt();
-      Float_t trackEta = pParticle->Eta();
-      Int_t q          = (Int_t)TMath::Sign(1.,pParticle->GetPDG()->Charge());        
-
-//      pParticle->Print();
-      
-      cout << " pmod " << pmod << " pt " << pt << " Eta " << trackEta << " charge " << q << endl;
-      
-      SetTrackMomentum(pmod); 
-      SetTrackPt(pt);
-      SetTrackEta(trackEta);
-      SetTrackCharge(q);
-
-      TVector3 pLocal(0,0,0);//?????
-      
-      TVector2 primLocal =Rich()->C(pHit->C())->Glob2Loc(pHit->InX3());
-      
-//      Float_t pmodFreo = pLocal.Mag();
-      Float_t trackTheta = pLocal.Theta();
-      Float_t trackPhi = pLocal.Phi();
-
-//      cout << " trackTheta " << trackTheta << " trackPhi " << trackPhi << endl;
-      
-      SetTrackTheta(trackTheta);
-      SetTrackPhi(trackPhi);
- 
-      Int_t maxInd = 0;
-      Float_t minDist =  999.;
-
-//      cout << " n Clusters " << nClusters[pHit->Chamber()-1] << " for chamber n. " << pHit->Chamber() << endl;
-      
-      for(Int_t j=0;j<nClusters[pHit->Chamber()-1];j++)
-	{
-	  Float_t diffx = primLocal.X() - clusX[pHit->Chamber()-1][j];
-	  Float_t diffy = primLocal.Y() - clusY[pHit->Chamber()-1][j];
-
-          
-          Float_t diff = sqrt(diffx*diffx + diffy*diffy);
-
-	  if(diff < minDist)
-	    {
-	      minDist = diff;
-	      maxInd = j;
-	    }
-
-	}
-
-      Float_t diffx = primLocal.X() - clusX[pHit->Chamber()-1][maxInd];
-      Float_t diffy = primLocal.Y() - clusY[pHit->Chamber()-1][maxInd];
-
-      cout << " diffx " << diffx << " diffy " << diffy << endl;
-      
-
-      SetMipIndex(maxInd);
-      SetTrackIndex(i);
-
-      Float_t shiftX = 0;//primLocal.X()/primLocal.Z()*(fRadiatorWidth+fQuartzWidth+fGapWidth) + primLocal.X(); ????? 
-      Float_t shiftY = 0;//primLocal.Y()/primLocal.Z()*(fRadiatorWidth+fQuartzWidth+fGapWidth) + primLocal.Y(); ?????
-      
-      SetShiftX(shiftX);
-      SetShiftY(shiftY);
-
-      Float_t *pclusX = &clusX[pHit->Chamber()-1][0];
-      Float_t *pclusY = &clusY[pHit->Chamber()-1][0];
-      
-      SetCandidatePhotonX(pclusX);
-      SetCandidatePhotonY(pclusY);
-      SetCandidatePhotonsNumber(nClusters[pHit->Chamber()-1]);
-
-      Int_t qch = clusQ[pHit->Chamber()-1][maxInd];
-
-       
-      if(minDist < 3.0 && qch > 120 && maxInd !=0) 
-	{
-	  
-	  if(fIsBACKGROUND)
-	    {
-	      
-	      Float_t xrndm = fXmin + (fXmax-fXmin)*gRandom->Rndm(280964);
-	      Float_t yrndm = fYmin + (fYmax-fYmin)*gRandom->Rndm(280964);
-	      SetShiftX(xrndm);
-	      SetShiftY(yrndm);
-	      
-	    }
-
-	  PatRec();
-
-	  trackThetaStored = GetTrackTheta();
-	  trackPhiStored = GetTrackPhi();
-	  thetaCerenkovStored = GetThetaCerenkov();
-	  houghPhotonsStored = GetHoughPhotons();
-	  
-          Int_t diffNPhotons = 999;
-          Int_t nsteps = 0;
-          Float_t diffTrackTheta = 999.;
-          Float_t diffTrackPhi   = 999.;
-
-	  while(fIsMINIMIZER && GetHoughPhotons() > 2 
-                            && diffNPhotons !=0 
-                            && diffTrackTheta > 0.0001
-                            && nsteps < 10)
-	    {
-
-	      Int_t   houghPhotonsBefore  = GetHoughPhotons();
-
-	      Float_t trackThetaBefore = GetTrackTheta();
-	      Float_t trackPhiBefore   = GetTrackPhi();
-	  
-	      Minimization(); 
-
-              PatRec();
- 
-              diffNPhotons = TMath::Abs(houghPhotonsBefore - GetHoughPhotons()); 
-
-	      Float_t trackThetaAfter = GetTrackTheta();
-	      Float_t trackPhiAfter   = GetTrackPhi();
-
-              diffTrackTheta = TMath::Abs(trackThetaAfter - trackThetaBefore);
-              diffTrackPhi   = TMath::Abs(trackPhiAfter - trackPhiBefore);
-
-              if(fDebug)
+    
+    Float_t diffx = primLocal.X() - clusX[pHit->Chamber()-1][maxInd];
+    Float_t diffy = primLocal.Y() - clusY[pHit->Chamber()-1][maxInd];
+    
+    cout << " diffx " << diffx << " diffy " << diffy << endl;
+    
+    
+    SetMipIndex(maxInd);
+    SetTrackIndex(i);
+    
+    Float_t shiftX = 0;//primLocal.X()/primLocal.Z()*(fRadiatorWidth+fQuartzWidth+fGapWidth) + primLocal.X(); ????? 
+    Float_t shiftY = 0;//primLocal.Y()/primLocal.Z()*(fRadiatorWidth+fQuartzWidth+fGapWidth) + primLocal.Y(); ?????
+    
+    SetShiftX(shiftX);
+    SetShiftY(shiftY);
+    
+    Float_t *pclusX = &clusX[pHit->Chamber()-1][0];
+    Float_t *pclusY = &clusY[pHit->Chamber()-1][0];
+    
+    SetCandidatePhotonX(pclusX);
+    SetCandidatePhotonY(pclusY);
+    SetCandidatePhotonsNumber(nClusters[pHit->Chamber()-1]);
+    
+    Int_t qch = clusQ[pHit->Chamber()-1][maxInd];
+    
+    
+    if(minDist < 3.0 && qch > 120 && maxInd !=0) 
+      {
+	
+	if(fIsBACKGROUND)
+	  {
+	    
+	    Float_t xrndm = fXmin + (fXmax-fXmin)*gRandom->Rndm(280964);
+	    Float_t yrndm = fYmin + (fYmax-fYmin)*gRandom->Rndm(280964);
+	    SetShiftX(xrndm);
+	    SetShiftY(yrndm);
+	    
+	  }
+	
+	PatRec();
+	
+	trackThetaStored = GetTrackTheta();
+	trackPhiStored = GetTrackPhi();
+	thetaCerenkovStored = GetThetaCerenkov();
+	houghPhotonsStored = GetHoughPhotons();
+	
+	Int_t diffNPhotons = 999;
+	Int_t nsteps = 0;
+	Float_t diffTrackTheta = 999.;
+	Float_t diffTrackPhi   = 999.;
+	
+	while(fIsMINIMIZER && GetHoughPhotons() > 2 
+	      && diffNPhotons !=0 
+	      && diffTrackTheta > 0.0001
+	      && nsteps < 10)
+	  {
+	    
+	    Int_t   houghPhotonsBefore  = GetHoughPhotons();
+	    
+	    Float_t trackThetaBefore = GetTrackTheta();
+	    Float_t trackPhiBefore   = GetTrackPhi();
+	    
+	    Minimization(); 
+	    
+	    PatRec();
+	    
+	    diffNPhotons = TMath::Abs(houghPhotonsBefore - GetHoughPhotons()); 
+	    
+	    Float_t trackThetaAfter = GetTrackTheta();
+	    Float_t trackPhiAfter   = GetTrackPhi();
+	    
+	    diffTrackTheta = TMath::Abs(trackThetaAfter - trackThetaBefore);
+	    diffTrackPhi   = TMath::Abs(trackPhiAfter - trackPhiBefore);
+	    
+	    if(fDebug)
               cout << " houghPhotonsBefore " << houghPhotonsBefore
                    << " GetHoughPhotons()  " << GetHoughPhotons();
-
-              nsteps++;
-	    }
-
-	  SetFittedThetaCerenkov(GetThetaCerenkov());
-	  SetFittedHoughPhotons(GetHoughPhotons());
-
-	  SetTrackTheta(trackThetaStored);
-	  SetTrackPhi(trackPhiStored);
-	  SetThetaCerenkov(thetaCerenkovStored);
-	  SetHoughPhotons(houghPhotonsStored);
-
-          SetMinDist(minDist);
-
-	  FillHistograms();
-      
-	  if(fIsDISPLAY) DrawEvent(1);
-
-	  Waiting();
-
-	}
-    }
+	    
+	    nsteps++;
+	  }
+	
+	SetFittedThetaCerenkov(GetThetaCerenkov());
+	SetFittedHoughPhotons(GetHoughPhotons());
+	
+	SetTrackTheta(trackThetaStored);
+	SetTrackPhi(trackPhiStored);
+	SetThetaCerenkov(thetaCerenkovStored);
+	SetHoughPhotons(houghPhotonsStored);
+	
+	SetMinDist(minDist);
+	
+	FillHistograms();
+	
+	if(fIsDISPLAY) DrawEvent(1);
+	
+	Waiting();
+	
+      }
+  }
   if(fIsDISPLAY) fDisplay->Print("display.ps");
 }//StartProcessEvent()
 //__________________________________________________________________________________________________

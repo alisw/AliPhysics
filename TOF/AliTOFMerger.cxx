@@ -119,25 +119,33 @@ void AliTOFMerger::Digitise()
      Error("Exec","Event is not loaded. Exiting");
      return;
    }
-  retval = fRunLoader->LoadgAlice();
-  if (retval)
-   {
-     Error("Exec","Error occured while loading gAlice. Exiting");
-     return;
-   }
-  retval = fRunLoader->LoadHeader();
-  if (retval)
-   {
-     Error("Exec","Error occured while loading header. Exiting");
-     return;
-   }
 
-  retval = fRunLoader->LoadKinematics("READ");
-  if (retval)
-   {
-     Error("Exec","Error occured while loading kinematics. Exiting");
-     return;
-   }
+  if (fRunLoader->GetAliRun() == 0x0) {
+    retval = fRunLoader->LoadgAlice();
+    if (retval)
+      {
+	Error("Exec","Error occured while loading gAlice. Exiting");
+	return;
+      }
+  }
+
+  if (fRunLoader->TreeE() == 0x0) {
+    retval = fRunLoader->LoadHeader();
+    if (retval)
+      {
+	Error("Exec","Error occured while loading header. Exiting");
+	return;
+      }
+  }
+
+  if (fRunLoader->TreeK() == 0x0) {
+    retval = fRunLoader->LoadKinematics("READ");
+    if (retval)
+      {
+	Error("Exec","Error occured while loading kinematics. Exiting");
+	return;
+      }
+  }
 
   AliLoader* gime = fRunLoader->GetLoader("TOFLoader");
   if (gime == 0x0)

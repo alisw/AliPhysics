@@ -128,9 +128,9 @@ void AliFMDSDigitizer::Exec(Option_t *option)
      return;//never reached
    }
 
-  fRunLoader->LoadgAlice();
-  fRunLoader->LoadHeader();
-  fRunLoader->LoadKinematics("READ");
+  if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
+  if (!fRunLoader->TreeE()) fRunLoader->LoadHeader();
+  if (!fRunLoader->TreeK()) fRunLoader->LoadKinematics("READ");
   
   Int_t retval;
 

@@ -260,7 +260,7 @@ Float_t AliZDC::ZMax(void) const
     else fMergedHits = new TClonesArray ("AliZDCMergedHit",1000);
     MakeBranchInTree(fLoader->TreeS(), 
                      branchname, &fMergedHits, fBufferSize, file) ;
-    printf("* AliZDC::MakeBranch    * Making Branch %s for SDigits\n\n",branchname);
+    if (GetDebug()) printf("* AliZDC::MakeBranch    * Making Branch %s for SDigits\n\n",branchname);
   }
 
     
@@ -271,17 +271,17 @@ Float_t AliZDC::ZMax(void) const
     else fDigits = new TClonesArray ("AliZDCDigit",1000);
     MakeBranchInTree(fLoader->TreeD(), 
                      branchname, &fDigits, fBufferSize, file) ;
-    printf("* AliZDC::MakeBranch    * Making Branch %s for Digits\n\n",branchname);
+    if (GetDebug()) printf("* AliZDC::MakeBranch    * Making Branch %s for Digits\n\n",branchname);
   }
 
   
   const char *cR = strstr(opt,"R");
 
-  if (gAlice->TreeR() && cR) {
+  if (fLoader->TreeR() && cR) {
     if(fRecPoints==0) fRecPoints = new TClonesArray("AliZDCReco",1000);
-    MakeBranchInTree(gAlice->TreeR(), 
+    MakeBranchInTree(fLoader->TreeR(), 
 		     branchname, &fRecPoints, fBufferSize, file) ;
-    printf("* AliZDC::MakeBranch    * Making Branch %s for RecPoints\n\n",branchname);   }
+    if (GetDebug()) printf("* AliZDC::MakeBranch    * Making Branch %s for RecPoints\n\n",branchname);   }
           
 }
 
@@ -294,7 +294,7 @@ Float_t AliZDC::ZMax(void) const
   sprintf(branchname,"%s",GetName());
   if (fMergedHits==0x0) fMergedHits = new TClonesArray("AliZDCMergedHit",1000);
   MakeBranchInTree(treeS, branchname, &fMergedHits, kBufferSize, file) ;
-  printf("* AliZDC::MakeBranch    * Making Branch %s for SDigits\n\n",branchname);
+  if (GetDebug()) printf("* AliZDC::MakeBranch    * Making Branch %s for SDigits\n\n",branchname);
 
 }
 //_____________________________________________________________________________
@@ -306,7 +306,7 @@ Float_t AliZDC::ZMax(void) const
   sprintf(branchname,"%s",GetName());
   if (fDigits == 0x0) fDigits = new TClonesArray("AliZDCDigit",1000);
   MakeBranchInTree(treeD, branchname, &fDigits, kBufferSize, file) ;
-  printf("* AliZDC::MakeBranch    * Making Branch %s for Digits\n\n",branchname);
+  if (GetDebug()) printf("* AliZDC::MakeBranch    * Making Branch %s for Digits\n\n",branchname);
 
 }
 //_____________________________________________________________________________
@@ -317,13 +317,13 @@ Float_t AliZDC::ZMax(void) const
   char  branchname[20];
   sprintf(branchname,"%s",GetName());
   MakeBranchInTree(treeR, branchname, &fRecPoints, kBufferSize, file) ;
-  printf("* AliZDC::MakeBranch    * Making Branch %s for RecPoints\n\n",branchname);
+  if (GetDebug()) printf("* AliZDC::MakeBranch    * Making Branch %s for RecPoints\n\n",branchname);
 
 }
 //_____________________________________________________________________________
 void AliZDC::Hits2SDigits()
 {
-  printf("\n	Entering AliZDC::SDigits2Digits() ");
+  if (GetDebug()) printf("\n	Entering AliZDC::SDigits2Digits() ");
   
   fLoader->LoadHits("read");
   fLoader->LoadSDigits("recreate");
@@ -336,7 +336,7 @@ void AliZDC::Hits2SDigits()
 
   //----------------------------------------------------------------
   if(!fMerger){ 
-    printf("	ZDC digitization (without merging)\n");
+    if (GetDebug()) printf("	ZDC digitization (without merging)\n");
 
     AliZDCMergedHit *mHit;
     Int_t j, sector[2];
@@ -376,7 +376,7 @@ void AliZDC::Hits2SDigits()
   }
   //----------------------------------------------------------------
   else if(fMerger){
-    printf("	ZDC merging and digitization\n");
+    if (GetDebug()) printf("	ZDC merging and digitization\n");
     // ### Initialise merging
     fMerger -> InitMerging();
 
@@ -397,7 +397,7 @@ void AliZDC::Hits2SDigits()
      }
     
     if(!treeS){
-      printf("\n ERROR -> Can't find TreeS%d in background file\n",fMerger->EvNum());
+      if (GetDebug()) printf("\n ERROR -> Can't find TreeS%d in background file\n",fMerger->EvNum());
     }	 
 
     // ### Get TCA of MergedHits from AliZDCMerger
@@ -434,18 +434,19 @@ void AliZDC::Hits2SDigits()
 void AliZDC::SDigits2Digits()
 {
   if(!fMerger){ // Only digitization
-    printf("	ZDC digitization (no merging) \n");
+    if (GetDebug()) printf("	ZDC digitization (no merging) \n");
     fMerger = new AliZDCMerger();    
     fMerger->Digitize(fNMergedhits, fMergedHits);
 
     char hname[30];
-    sprintf(hname,"TreeD%d",gAlice->GetHeader()->GetEvent());
-    gAlice->TreeD()->Fill();
-    gAlice->TreeD()->AutoSave();
-    gAlice->TreeD()->Reset();  
+    AliRunLoader * rl = fLoader->GetRunLoader();
+    sprintf(hname,"TreeD%d",rl->GetHeader()->GetEvent());
+    fLoader->TreeD()->Fill();
+    fLoader->TreeD()->AutoSave();
+    fLoader->TreeD()->Reset();  
   }
   else if(fMerger){	// Merging and digitization
-    printf("	ZDC merging and digitization\n");
+    if (GetDebug()) printf("	ZDC merging and digitization\n");
     fMerger->Digitize(fNMergedhits, fMergedHits);
 
     // Digits tree
@@ -465,7 +466,7 @@ void AliZDC::SDigits2Digits()
 
 
     if(!treeD){
-      printf("\n ERROR -> Can't find TreeD%d in background file\n",fMerger->EvNum());
+      if (GetDebug()) printf("\n ERROR -> Can't find TreeD%d in background file\n",fMerger->EvNum());
     }	 
     // Branch address
     char branchDname[20];
@@ -491,7 +492,7 @@ void AliZDC::Hits2Digits()
 //_____________________________________________________________________________
 void AliZDC::Digits2Reco()
 {
-    printf("	Entering AliZDC::Digits2Reco\n");
+    if (GetDebug()) printf("	Entering AliZDC::Digits2Reco\n");
     AliDetector *zdcd  = gAlice->GetDetector("ZDC");
     TClonesArray *zdcdigits = zdcd->Digits();
     
@@ -536,7 +537,7 @@ void AliZDC::Digits2Reco()
          else if(dig->GetSector(0) == 3) zemraw += dig->GetADCValue();
       } // Digits loop
     } //  TreeD entries loop
-    printf("\n	---	znraw = %d, zpraw = %d, zemraw = %d\n",znraw, zpraw, zemraw);
+    if (GetDebug()) printf("\n	---	znraw = %d, zpraw = %d, zemraw = %d\n",znraw, zpraw, zemraw);
     
   //  ---      Pedestal subtraction
   Int_t zncorr, zpcorr, zemcorr, meanPed=50;
@@ -546,7 +547,7 @@ void AliZDC::Digits2Reco()
   if(zncorr<0)  zncorr=0;
   if(zpcorr<0)  zpcorr=0;
   if(zemcorr<0) zemcorr=0;
- printf("\n    zncorr = %d, zpcorr = %d, zemcorr = %d\n",zncorr,zpcorr,zemcorr);
+ if (GetDebug()) printf("\n    zncorr = %d, zpcorr = %d, zemcorr = %d\n",zncorr,zpcorr,zemcorr);
   
   //  ---      ADCchannel -> photoelectrons
   // NB-> PM gain = 10^(5), ADC resolution = 6.4*10^(-7)
@@ -554,7 +555,7 @@ void AliZDC::Digits2Reco()
   znphe  = zncorr/convFactor;
   zpphe  = zpcorr/convFactor;
   zemphe = zemcorr/convFactor;
-  printf("\n    znphe = %f, zpphe = %f, zemphe = %f\n",znphe, zpphe, zemphe);
+  if (GetDebug()) printf("\n    znphe = %f, zpphe = %f, zemphe = %f\n",znphe, zpphe, zemphe);
   
   //  ---      Energy calibration
   // Conversion factors for hadronic ZDCs goes from phe yield to TRUE incident 
@@ -570,19 +571,19 @@ void AliZDC::Digits2Reco()
   zdcenergy = znenergy+zpenergy;
   zemenergy = -4.81+0.3238*zemphe;
   if(zemenergy<0) zemenergy=0;
-  printf("    znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
+  if (GetDebug()) printf("    znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
          "\n		zemenergy = %f TeV\n", znenergy, zpenergy, 
 	 zdcenergy, zemenergy);
   
   if(zdcenergy==0)
-    printf("\n\n	###	ATTENZIONE!!! -> ev# %d: znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
+    if (GetDebug()) printf("\n\n	###	ATTENZIONE!!! -> ev# %d: znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
          " zemenergy = %f TeV\n\n", fMerger->EvNum(), znenergy, zpenergy, zdcenergy, zemenergy); 
   
   //  ---      Number of incident spectator nucleons
   Int_t nDetSpecN, nDetSpecP;
   nDetSpecN = (Int_t) (znenergy/2.760);
   nDetSpecP = (Int_t) (zpenergy/2.760);
-  printf("\n    nDetSpecN = %d, nDetSpecP = %d\n",nDetSpecN, nDetSpecP);
+  if (GetDebug()) printf("\n    nDetSpecN = %d, nDetSpecP = %d\n",nDetSpecN, nDetSpecP);
   
   //  ---      Number of generated spectator nucleons and impact parameter
   // --------------------------------------------------------------------------------------------------
@@ -700,7 +701,7 @@ void AliZDC::Digits2Reco()
   nPart = 207-nGenSpecN-nGenSpecP;
   nPartTot = 207-nGenSpec;
   //printf("	###	nPart(ZP+ZN) = %d, nPart(ZDC) = %d, b = %f fm\n",nPart,nPartTot,impPar);
-  printf("	###	nPart = %d, b = %f fm\n",nPartTot,impPar);
+  if (GetDebug()) printf("	###	nPart = %d, b = %f fm\n",nPartTot,impPar);
   
   //  ---     Writing RecPoints TCA
   // Allocate the RecPoints TCA 
@@ -713,7 +714,7 @@ void AliZDC::Digits2Reco()
   delete reco;
   
   // TreeR
-  TTree *treeR = gAlice->TreeR();
+  TTree *treeR = fLoader->TreeR();
   if(!treeR) printf("\n ERROR -> Can't find TreeR%d in background file\n",fMerger->EvNum());
   // Branch address
   char branchRname[20];
