@@ -4,11 +4,13 @@
 //*-- Copyright &copy ASV 
 
 #include <iostream.h>
+#include <math.h>
 #include "AliL3Logging.h"
 #include "AliL3ClustFinderNew.h"
 #include "AliL3DigitData.h"
 #include "AliL3Transform.h"
 #include "AliL3SpacePointData.h"
+#include "AliL3MemHandler.h"
 
 //_____________________________________________________________
 // AliL3ClustFinderNew
@@ -327,10 +329,50 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       fSpacePointData[counter].fZErr = fZErr;
       fSpacePointData[counter].fID = counter
 	+((fCurrentSlice&0x7f)<<25)+((fCurrentPatch&0x7)<<22);//uli
-      
+#ifdef do_mc
+      Int_t trackID[3];
+      GetTrackID((Int_t)rint(fpad),(Int_t)rint(ftime),trackID);
+      fSpacePointData[counter].fTrackID[0] = trackID[0];
+      fSpacePointData[counter].fTrackID[1] = trackID[1];
+      fSpacePointData[counter].fTrackID[2] = trackID[2];
+#endif
       fNClusters++;
       counter++;
 
     }
 
 }
+
+#ifdef do_mc
+void AliL3ClustFinderNew::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
+{
+  AliL3DigitRowData *rowPt = (AliL3DigitRowData*)fDigitRowData;
+  
+  trackID[0]=trackID[1]=trackID[2]=-1;
+  //cout<<"Looking for pad "<<pad<<" time "<<time<<endl;
+  for(Int_t i=fFirstRow; i<=fLastRow; i++)
+    {
+      if(rowPt->fRow < (UInt_t)fCurrentRow)
+	{
+	  AliL3MemHandler::UpdateRowPointer(rowPt);
+	  continue;
+	}
+      AliL3DigitData *digPt = (AliL3DigitData*)rowPt->fDigitData;
+      for(UInt_t j=0; j<rowPt->fNDigit; j++)
+	{
+	  Int_t cpad = digPt[j].fPad;
+	  Int_t ctime = digPt[j].fTime;
+	  if(cpad < pad) continue;
+	  if(ctime < time) continue;
+	  if(cpad != pad && ctime != ctime) break;
+	  //cout<<"Reading row "<<fCurrentRow<<" pad "<<cpad<<" time "<<ctime<<" trackID "<<digPt[j].fTrackID[0]<<endl;
+	  trackID[0] = digPt[j].fTrackID[0];
+	  trackID[1] = digPt[j].fTrackID[1];
+	  trackID[2] = digPt[j].fTrackID[2];
+	  //cout<<"Reading trackID "<<trackID[0]<<endl;
+	}
+      break;
+    }
+  
+}
+#endif

@@ -3,6 +3,9 @@
 
 #include "AliL3RootTypes.h"
 struct AliL3SpacePointData{
+#ifdef do_mc
+  Int_t fTrackID[3];
+#endif
     Float_t fX;
     Float_t fY;
     Float_t fZ;

@@ -40,7 +40,6 @@ AliL3FileHandler::AliL3FileHandler(){
   fDigitsTree=0;
 }
 
-
 AliL3FileHandler::~AliL3FileHandler(){
   //Destructor
   if(fTransformer) delete fTransformer;
@@ -278,6 +277,11 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
         tempPt->fDigitData[localcount].fCharge=dig;
         tempPt->fDigitData[localcount].fPad=pad;
         tempPt->fDigitData[localcount].fTime=time;
+#ifdef do_mc
+	tempPt->fDigitData[localcount].fTrackID[0] = fDigits->GetTrackID(time,pad,0);
+	tempPt->fDigitData[localcount].fTrackID[1] = fDigits->GetTrackID(time,pad,1);
+	tempPt->fDigitData[localcount].fTrackID[2] = fDigits->GetTrackID(time,pad,2);
+#endif
         localcount++;
       } while (fDigits->Next());
 

@@ -5,6 +5,9 @@
 
 struct AliL3DigitData
 {
+#ifdef do_mc
+  Int_t fTrackID[3];
+#endif
   UShort_t fCharge;
   UChar_t fPad;
   UShort_t fTime;

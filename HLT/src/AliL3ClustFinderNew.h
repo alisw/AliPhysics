@@ -42,6 +42,10 @@ class AliL3ClustFinderNew {
   Int_t fMaxNClusters;
   Float_t fXYErr;
   Float_t fZErr;
+
+#ifdef do_mc
+  void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
+#endif
   
  public:
   AliL3ClustFinderNew();
