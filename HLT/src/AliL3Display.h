@@ -26,7 +26,7 @@ class AliL3Display : public TObject {
   virtual ~AliL3Display();
 
   void Setup(Char_t *trackfile,Char_t *path);
-  void DisplayTracks(Int_t min_hits=10,Bool_t x3don=kTRUE);
+  void DisplayTracks(Int_t min_hits=10,Bool_t x3don=kTRUE,Float_t thr=0.);
   void DisplayAll(Int_t min_hits=10,Bool_t x3don=kTRUE);
   void DisplayClusters(Bool_t x3don=kTRUE);
 

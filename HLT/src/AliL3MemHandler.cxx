@@ -35,10 +35,10 @@
 //  AliL3MemHandler file;
 //  file.SetBinaryInput(filename);
 //  
-//  UInt_t ndigits;
-//  AliL3DigitRowData *data = file.CompBinary2Memory(ndigits);
+//  UInt_t nrowss;
+//  AliL3DigitRowData *data = file.CompBinary2Memory(nrowss);
 //  
-//  for(int i=0; i<NumberOfRowsInPatch; i++) 
+//  for(int i=0; i<nrows; i++) 
 //    {
 //    
 //    AliL3DigitData *dataPt = (AliL3DigitData*)data->fDigitData;
@@ -72,7 +72,8 @@
 // -----------------------
 //
 // The data is RLE encoded and currently using _10_ bit range for the ADC-values.
-</pre> */  
+//</pre> 
+*/  
   
 ClassImp(AliL3MemHandler)
   

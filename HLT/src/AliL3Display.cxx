@@ -109,7 +109,7 @@ void AliL3Display::Setup(Char_t *trackfile,Char_t *path)
 
 }
 
-void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don)
+void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don,Float_t thr)
 {
   //Display the found tracks.
 
@@ -120,7 +120,7 @@ void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don)
   v->SetRange(-430,-560,-430,430,560,1710);
   c1->Clear();
   c1->SetFillColor(1);
-  c1->SetTheta(90.);
+  c1->SetTheta(45.);
   c1->SetPhi(0.);
     
   Int_t ntracks = fTracks->GetNTracks();
@@ -132,7 +132,8 @@ void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don)
   for(Int_t j=0; j<ntracks; j++)
     {
       AliL3Track *gtrack = fTracks->GetCheckedTrack(j); 
-      if(!gtrack) continue;        
+      if(!gtrack) continue;
+      if(gtrack->GetPt()<thr) continue;        
       Int_t nHits = gtrack->GetNHits();
       UInt_t *hitnum = gtrack->GetHitNumbers();
       if(nHits < min_hits) continue;
@@ -176,7 +177,7 @@ void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don)
       current_line->Draw("same");
             
     }
-  /*
+  
   //Take this if you want black&white display for printing.
   Char_t fname[256];
   Int_t i;
@@ -196,7 +197,7 @@ void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don)
       sprintf(fname,"US%d",i);
       fGeom->GetNode(fname)->SetLineColor(color);
     }
-  */
+  
   fGeom->Draw("same");
   
   if(x3don) c1->x3d();

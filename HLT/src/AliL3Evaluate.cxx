@@ -12,14 +12,14 @@
 #include <TTree.h>
 #include <TClonesArray.h>
 
-#include "AliRun.h"
-#include "AliSimDigits.h"
-#include "AliTPC.h"
-#include "AliTPCClustersArray.h"
-#include "AliTPCClustersRow.h"
-#include "AliTPCcluster.h"
-#include "AliTPCParam.h"
-#include "AliComplexCluster.h"
+#include <AliRun.h>
+#include <AliSimDigits.h>
+#include <AliTPC.h>
+#include <AliTPCcluster.h>
+#include <AliTPCClustersArray.h>
+#include <AliTPCClustersRow.h>
+#include <AliTPCParam.h>
+#include <AliComplexCluster.h>
 
 #include "AliL3Transform.h"
 #include "AliL3SpacePointData.h"
@@ -1098,7 +1098,6 @@ Bool_t AliL3Evaluate::GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t
 {
   //Calcluate the crossing point between a generated particle and given padrow.
   
-  Double_t Pi = AliL3Transform::Pi();
   Double_t kappa = AliL3Transform::GetBField()*0.0029980/part->Pt();
   
   Double_t radius = 1/fabs(kappa);

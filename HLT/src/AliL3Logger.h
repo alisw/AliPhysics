@@ -1,3 +1,8 @@
+#ifndef ALIL3LOGGER_H
+#define ALIL3LOGGER_H
+
+#include "AliL3RootTypes.h"
+
 class MLUCLogServer;
 class ofstream;
 
@@ -10,7 +15,7 @@ class AliL3Logger{
   static int kError;
   static int kFatal;
   AliL3Logger();
-  ~AliL3Logger();
+  virtual ~AliL3Logger();
   void Set(int l);
   void UnSet(int l);
   void UseDevNull();
@@ -22,11 +27,14 @@ class AliL3Logger{
   void NotUseStderr();
   void NotUseStream();
   private:
-  MLUCLogServer *dn;
-  MLUCLogServer *so;
-  MLUCLogServer *se;
-  MLUCLogServer *sm;
-  ofstream *of;
+  MLUCLogServer *dn; //!
+  MLUCLogServer *so; //!
+  MLUCLogServer *se; //!
+  MLUCLogServer *sm; //!
+  ofstream *of;      //!
+
+  ClassDef(AliL3Logger,1)
 };
 
+#endif
 

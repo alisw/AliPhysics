@@ -88,7 +88,6 @@ void AliL3FileHandler::FreeDigitsTree()
   fDigitsTree=0;
 }
 
-
 Bool_t AliL3FileHandler::SetMCOutput(char *name)
 {
   fMC = fopen(name,"w");
@@ -212,7 +211,6 @@ Bool_t AliL3FileHandler::AliDigits2Binary(Int_t event)
   return out;
 }
 
-
 Bool_t AliL3FileHandler::AliDigits2CompBinary(Int_t event)
 {
   //Convert AliROOT TPC data, into HLT data format.
@@ -226,7 +224,6 @@ Bool_t AliL3FileHandler::AliDigits2CompBinary(Int_t event)
   return out;
 }
 
-
 AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event)
 {
   //Read data from AliROOT file into memory, and store it in the HLT data format.
@@ -234,6 +231,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
 
   AliL3DigitRowData *data = 0;
   nrow=0;
+  
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Memory","File")
     <<"No Input avalible: no object TFile"<<ENDLOG;
@@ -244,7 +242,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
     <<"No Input avalible: TFile not opend"<<ENDLOG;
     return 0;
   }
-  
+
   if(!fDigitsTree)
     GetDigitsTree(event);
   
@@ -255,6 +253,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   Int_t entries = (Int_t)fDigitsTree->GetEntries();
   Int_t ndigits[entries];
   Int_t lslice,lrow;
+  Float_t xyz[3];
   
   for(Int_t n=fLastIndex; n<fDigitsTree->GetEntries(); n++)
     {
@@ -266,8 +265,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
       if(lslice != fSlice) break;
       if(lrow < fRowMin) continue;
       if(lrow > fRowMax) break;
-      
-      Float_t xyz[3];
+
       ndigits[lrow] = 0;
       fDigits->First();
       do {
@@ -288,12 +286,13 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
           continue;
 
         ndigits[lrow]++; //for this row only
-        ndigitcount++;  //total number of digits to be published
+        ndigitcount++;   //total number of digits to be published
 
       } while (fDigits->Next());
-
+      //cout << lrow << " " << ndigits[lrow] << " - " << ndigitcount << endl;
       nrows++;
     }
+
   Int_t size = sizeof(AliL3DigitData)*ndigitcount
     + nrows*sizeof(AliL3DigitRowData);
 
@@ -306,7 +305,6 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   for(Int_t n=fLastIndex; n<fDigitsTree->GetEntries(); n++)
     {
       fDigitsTree->GetEvent(n);
-      Float_t xyz[3];
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
       AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
       //if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
@@ -365,7 +363,6 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   //fLastIndex++;
   return data;
 }
-
 
 Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
 {

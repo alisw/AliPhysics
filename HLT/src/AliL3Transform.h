@@ -27,7 +27,7 @@ class AliL3Transform {
   static Double_t fZOffset;
   static Int_t fNPads[176]; //fill this following Init
   static Double_t fX[176];  //fill this following Init
-  static Int_t fVersion; //flags which version one is using
+  static Int_t fVersion;    //flags the version
   static Int_t fRows[6][2];
   static Int_t fNRows[6];
   static Int_t fNPatches;
@@ -93,7 +93,7 @@ class AliL3Transform {
   static void Local2Raw(Float_t *xyz, Int_t sector, Int_t row);
   static void Global2Raw(Float_t *xyz, Int_t sector, Int_t row);
   
-  ClassDef(AliL3Transform,1) //Transformation class for ALICE TPC
+  ClassDef(AliL3Transform,1)
 };
 #endif
 

@@ -1,5 +1,5 @@
-#ifndef ALIL3MEMHANDLER_H
-#define ALIL3MEMHANDLER_H
+#ifndef ALIL3_MEMHANDLER_H
+#define ALIL3_MEMHANDLER_H
 
 #include "AliL3RootTypes.h"
 #include "AliL3Transform.h"
@@ -114,8 +114,7 @@ class AliL3MemHandler{
                                              AliL3TrackArray *array);
   Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,
 			   AliL3TrackArray *array,Int_t slice);
-  
-  
+    
   //Memory Allocation
   UInt_t GetAllocatedSize(){return fSize;}  
   UInt_t GetFileSize();
@@ -172,6 +171,5 @@ inline Int_t AliL3MemHandler::CompareDigits(AliL3RandomDigitData *a,AliL3RandomD
   
   return 1;
 }
-
 
 #endif

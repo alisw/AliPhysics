@@ -2,6 +2,8 @@
 #include "AliL3Logger.h"
 #include <fstream.h>
 
+ClassImp(AliL3Logger)
+
 #ifdef use_logging
 
 int AliL3Logger::kAll= AliL3Log::kAll;

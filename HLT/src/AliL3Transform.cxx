@@ -1,13 +1,18 @@
-// $Id$
-// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ASV
-// changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
-
+/* $Id$
+ Author: Anders Vestbo <mailto:vestbo@fi.uib.no>,          
+         Uli Frankenfeld <mailto:franken@fi.uib.no>
+ changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
+ -- Copyright&copy ASV
+*/
 
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
+/** \class AliL3Transform 
+//<pre>
 //_____________________________________________________________
 // AliL3Transform
 //
@@ -31,6 +36,8 @@
 //            where path is a char*, giving the path to where file containing
 //            the detector parameter is located. This file should be called
 //            "l3transform.config", and can be created with macro exa/Make_Init.C.
+//</pre>
+*/
 
 ClassImp(AliL3Transform)
 
