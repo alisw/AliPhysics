@@ -9,12 +9,13 @@
 class AliRICHv0 : public AliRICH 
 {    
 public:
-  AliRICHv0():AliRICH()                                              {;}
-  AliRICHv0(const char *name, const char *title):AliRICH(name,title) {;}
-  virtual       ~AliRICHv0()                                         {;}
-  virtual void   Init()                                              {;}
-  virtual Int_t  IsVersion()                                    const{return 0;}
-  virtual void   StepManager();
+  AliRICHv0():AliRICH()                                              {;}                      //default ctor
+  AliRICHv0(const char *name, const char *title):AliRICH(name,title) {;}                      //named ctor
+  virtual       ~AliRICHv0()                                         {;}                      //dtor
+  virtual void   Init()                                              {;}                      //interface from AliRICH
+  virtual Int_t  IsVersion()                                    const{return 0;}              //interface from AliRICH
+  virtual void   StepManager();                                                               //interface from AliRICH
+  virtual void   CreateGeometry();                                                            //interface from AliRICH
 protected:
   ClassDef(AliRICHv0,1)  //RICH coarse version for material budget study and debuging
 };

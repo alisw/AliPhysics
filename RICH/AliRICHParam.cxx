@@ -13,33 +13,30 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 #include "AliRICHParam.h"
-#include <Riostream.h>
+#include "AliRICHChamber.h"
 
 ClassImp(AliRICHParam)
 Bool_t   AliRICHParam::fgIsWireSag            =kTRUE;
 Bool_t   AliRICHParam::fgIsResolveClusters    =kTRUE;
+Bool_t   AliRICHParam::fgIsRadioSrc           =kFALSE;
 Double_t AliRICHParam::fgAngleRot             =-60;
-Int_t    AliRICHParam::fgHV[kNsectors]        ={2150,2100,2050,2000,2150,2150};
+Int_t    AliRICHParam::fgHV[kNsectors]        ={2050,2050,2050,2050,2050,2050};
 Int_t    AliRICHParam::fgNsigmaTh             =4;
-Float_t  AliRICHParam::fgSigmaThMean          =1.5;
-Float_t  AliRICHParam::fgSigmaThSpread        =0.5;      
-Float_t  AliRICHParam::fSigmaThMap[kNCH][kNpadsX][kNpadsY];
+Float_t  AliRICHParam::fgSigmaThMean          =1.132; //QDC 
+Float_t  AliRICHParam::fgSigmaThSpread        =0.035; //     
 
-void AliRICHParam::GenSigmaThMap()
+//__________________________________________________________________________________________________
+void AliRICHParam::Print(Option_t*)
 {
-// Generate the map of thresholds sigmas for all pads of all chambers 
-  for(Int_t iChamber=0;iChamber<kNCH;iChamber++)
-    for(Int_t ipadX=0;ipadX<NpadsX();ipadX++)
-      for(Int_t ipadY=0;ipadY<NpadsY();ipadY++) 
-        fSigmaThMap[iChamber][ipadX][ipadY] = SigmaThMean()+(1.-2*gRandom->Rndm())*SigmaThSpread();
-  //  Info("GenSigmaThMap"," Threshold map generated for all RICH chambers");
+  ::Info("","Pads in chamber (%3i,%3i) in sector (%2i,%2i)",NpadsX(),NpadsY(),NpadsXsec(),NpadsYsec());
+  fpChambers->Print();
 }
 //__________________________________________________________________________________________________
-void AliRICHParam::Print()
+void AliRICHParam::CreateChambers()
 {
-  cout<<"\nPads in chamber ("<<NpadsX()<<','<<NpadsY()<<") in sector ("<<NpadsXsec()<<','<<NpadsYsec()<<')'<<endl;
-  cout<<"PC size ("<<PcSizeX()<<','<<PcSizeY()<<") sector size ("<<SectorSizeX()<<','<<SectorSizeY()<<") pad size ("<<PadSizeX()<<','
-      <<PadSizeY()<<") Dead zone "<<DeadZone()<<endl;
-  cout<<"Anode wire pitch "<<WirePitch()<<" Anode-Cathode gap "<<AnodeCathodeGap()<<" Protection wires-cathode gap "<<ProximityGap()<<endl<<endl;
-}
-//__________________________________________________________________________________________________
+//Create all RICH Chambers on each call. Previous chambers deleted.
+  if(fpChambers) delete fpChambers;
+  fpChambers=new TObjArray(kNchambers);
+  fpChambers->SetOwner();
+  for(int iChamberN=0;iChamberN<kNchambers;iChamberN++)  fpChambers->AddAt(new AliRICHChamber(iChamberN+1),iChamberN);  
+}//void AliRICH::CreateChambers()

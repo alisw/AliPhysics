@@ -9,7 +9,6 @@
 #pragma link C++ class  AliRICHhit+;
 #pragma link C++ class  AliRICHdigit+;
 #pragma link C++ class  AliRICHcluster+;
-#pragma link C++ class  AliRICHreco+;
 #pragma link C++ class  AliRICHChamber+;
 #pragma link C++ class  AliRICHMap+;
 #pragma link C++ class  AliRICHClusterFinder+;

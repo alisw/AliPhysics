@@ -13,10 +13,10 @@ class AliRICH;
 class AliRICHDisplFast : public TTask 
 {
 public :
-              AliRICHDisplFast() {;}
-  virtual    ~AliRICHDisplFast() {;}      
-  static void DrawSectors();          //Draw sectors in plot 
-  void        Exec();                 //virtual do the main job
+               AliRICHDisplFast() {;}
+  virtual     ~AliRICHDisplFast() {;}      
+  static  void DrawSectors();          //Draw sectors in plot 
+  virtual void Exec(Option_t *opt=0); //virtual do the main job
 protected:  
   ClassDef(AliRICHDisplFast,0)        //Utility class to draw the current event topology
 };

@@ -28,7 +28,7 @@
 ClassImp(AliRICHDisplFast)
 
 //__________________________________________________________________________________________________
-void AliRICHDisplFast::Exec()
+void AliRICHDisplFast::Exec(Option_t *)
 {
   AliRICH *pRich = (AliRICH*)gAlice->GetDetector("RICH");
   Bool_t isHits    =!pRich->GetLoader()->LoadHits();
@@ -42,14 +42,14 @@ void AliRICHDisplFast::Exec()
   
   TH2F *pHitsH2=0,*pDigitsH2=0,*pClustersH2=0;
   
-  if(isHits)     pHitsH2     = new TH2F("pHitsH2"  ,  "Event Display",165,-AliRICHParam::PcSizeX()/2,AliRICHParam::PcSizeX()/2,
-                                                             144,-AliRICHParam::PcSizeY()/2,AliRICHParam::PcSizeY()/2);
+  if(isHits)     pHitsH2     = new TH2F("pHitsH2"  ,  "Event Display;x,cm;y,cm",165,0,AliRICHParam::PcSizeX(),
+                                                                      144,0,AliRICHParam::PcSizeY());
   if(pHitsH2)    pHitsH2->SetStats(kFALSE);
   
-  if(isDigits)   pDigitsH2   = new TH2F("pDigitsH2"  ,"Event Display",165,-AliRICHParam::PcSizeX()/2,AliRICHParam::PcSizeX()/2,
-                                                             144,-AliRICHParam::PcSizeY()/2,AliRICHParam::PcSizeY()/2);
-  if(isClusters) pClustersH2 = new TH2F("pClustersH2","Event Display",165,-AliRICHParam::PcSizeX()/2,AliRICHParam::PcSizeX()/2,
-                                                             144,-AliRICHParam::PcSizeY()/2,AliRICHParam::PcSizeY()/2);
+  if(isDigits)   pDigitsH2   = new TH2F("pDigitsH2"  ,"Event Display",165,0,AliRICHParam::PcSizeX(),
+                                                                      144,0,AliRICHParam::PcSizeY());
+  if(isClusters) pClustersH2 = new TH2F("pClustersH2","Event Display",165,0,AliRICHParam::PcSizeX(),
+                                                                      144,0,AliRICHParam::PcSizeY());
 
     
 
@@ -101,7 +101,7 @@ void AliRICHDisplFast::Exec()
         pRich->GetLoader()->TreeD()->GetEntry(0);
         for(Int_t j=0;j<pRich->Digits(iChamber)->GetEntries();j++){//digits loop
           AliRICHdigit *pDig = (AliRICHdigit*)pRich->Digits(iChamber)->At(j);
-	  TVector2 x2=AliRICHParam::Pad2Loc(pDig->X(),pDig->Y());
+	  TVector2 x2=AliRICHParam::Pad2Loc(pDig->Pad());
 	  pDigitsH2->Fill(x2.X(),x2.Y(),100);
         }//digits loop
         pDigitsH2->SetMarkerColor(kGreen); pDigitsH2->SetMarkerStyle(29); pDigitsH2->SetMarkerSize(0.4);
@@ -133,70 +133,19 @@ void AliRICHDisplFast::Exec()
 //__________________________________________________________________________________________________
 void AliRICHDisplFast::DrawSectors() 
 { 
-  Double_t x1[5] = {-AliRICHParam::PcSizeX()/2,
-                    -AliRICHParam::SectorSizeX()/2-AliRICHParam::DeadZone(),
-                    -AliRICHParam::SectorSizeX()/2-AliRICHParam::DeadZone(),
-                    -AliRICHParam::PcSizeX()/2,
-                    -AliRICHParam::PcSizeX()/2};
-  Double_t y1[5] = {AliRICHParam::DeadZone()/2,
-                    AliRICHParam::DeadZone()/2,
-                    AliRICHParam::PcSizeY()/2,
-                    AliRICHParam::PcSizeY()/2,
-                    AliRICHParam::DeadZone()/2};  
-  Double_t x2[5] = {-AliRICHParam::SectorSizeX()/2,
-                     AliRICHParam::SectorSizeX()/2,
-                     AliRICHParam::SectorSizeX()/2,
-                    -AliRICHParam::SectorSizeX()/2,
-                    -AliRICHParam::SectorSizeX()/2};
-  Double_t y2[5] = {AliRICHParam::DeadZone()/2,
-                    AliRICHParam::DeadZone()/2,
-                    AliRICHParam::PcSizeY()/2,
-                    AliRICHParam::PcSizeY()/2,
-                    AliRICHParam::DeadZone()/2};
-  Double_t x3[5] = { AliRICHParam::SectorSizeX()/2+AliRICHParam::DeadZone(),
-                     AliRICHParam::PcSizeX()/2,
-                     AliRICHParam::PcSizeX()/2,
-                     AliRICHParam::SectorSizeX()/2+AliRICHParam::DeadZone(),
-                     AliRICHParam::SectorSizeX()/2+AliRICHParam::DeadZone()};
-  Double_t y3[5] = {AliRICHParam::DeadZone()/2,
-                    AliRICHParam::DeadZone()/2,
-                    AliRICHParam::PcSizeY()/2,
-                    AliRICHParam::PcSizeY()/2,
-                    AliRICHParam::DeadZone()/2};
-  Double_t x4[5] = {-AliRICHParam::PcSizeX()/2,
-                    -AliRICHParam::SectorSizeX()/2-AliRICHParam::DeadZone(),
-                    -AliRICHParam::SectorSizeX()/2-AliRICHParam::DeadZone(),
-                    -AliRICHParam::PcSizeX()/2,
-                    -AliRICHParam::PcSizeX()/2};
-  Double_t y4[5] = {-AliRICHParam::PcSizeY()/2,
-                    -AliRICHParam::PcSizeY()/2,
-                    -AliRICHParam::DeadZone()/2,
-                    -AliRICHParam::DeadZone()/2,
-                    -AliRICHParam::PcSizeY()/2};
-   Double_t x5[5] = {-AliRICHParam::SectorSizeX()/2,
-                     AliRICHParam::SectorSizeX()/2,
-                     AliRICHParam::SectorSizeX()/2,
-                    -AliRICHParam::SectorSizeX()/2,
-                    -AliRICHParam::SectorSizeX()/2};
-  Double_t y5[5] = {-AliRICHParam::PcSizeY()/2,
-                    -AliRICHParam::PcSizeY()/2,
-                    -AliRICHParam::DeadZone()/2,
-                    -AliRICHParam::DeadZone()/2,
-                    -AliRICHParam::PcSizeY()/2};
-  Double_t x6[5] = { AliRICHParam::SectorSizeX()/2+AliRICHParam::DeadZone(),
-                     AliRICHParam::PcSizeX()/2,
-                     AliRICHParam::PcSizeX()/2,
-                     AliRICHParam::SectorSizeX()/2+AliRICHParam::DeadZone(),
-                     AliRICHParam::SectorSizeX()/2+AliRICHParam::DeadZone()};
-  Double_t y6[5] = {-AliRICHParam::PcSizeY()/2,
-                    -AliRICHParam::PcSizeY()/2,
-                    -AliRICHParam::DeadZone()/2,
-                    -AliRICHParam::DeadZone()/2,
-                    -AliRICHParam::PcSizeY()/2};
-  TPolyLine *sector1 = new TPolyLine(5,x1,y1);  sector1->SetLineColor(21);  sector1->Draw();
-  TPolyLine *sector2 = new TPolyLine(5,x2,y2);  sector2->SetLineColor(21);  sector2->Draw();
-  TPolyLine *sector3 = new TPolyLine(5,x3,y3);  sector3->SetLineColor(21);  sector3->Draw();
-  TPolyLine *sector4 = new TPolyLine(5,x4,y4);  sector4->SetLineColor(21);  sector4->Draw();
-  TPolyLine *sector5 = new TPolyLine(5,x5,y5);  sector5->SetLineColor(21);  sector5->Draw();
-  TPolyLine *sector6 = new TPolyLine(5,x6,y6);  sector6->SetLineColor(21);  sector6->Draw();
+  AliRICHParam p;
+  Double_t xLeft[5]  = {0,0,p.SectorSizeX(),p.SectorSizeX(),0};
+  Double_t xRight[5] = {p.SectorSizeX()+p.DeadZone(),p.SectorSizeX()+p.DeadZone(),p.PcSizeX(),p.PcSizeX(),p.SectorSizeX()+p.DeadZone()};
+  
+  Double_t yDown[5]   = {0,p.SectorSizeY(),p.SectorSizeY(),0,0};
+  Double_t yCenter[5] = {  p.SectorSizeY()+p.DeadZone(),2*p.SectorSizeY()+p.DeadZone(),2*p.SectorSizeY()+p.DeadZone(),
+                           p.SectorSizeY()+p.DeadZone(),p.SectorSizeY()+p.DeadZone()};  
+  Double_t yUp[5]     = {2*p.SectorSizeY()+2*p.DeadZone(),p.PcSizeY(),p.PcSizeY(),2*p.SectorSizeY()+2*p.DeadZone(),2*p.SectorSizeY()+2*p.DeadZone()};
+  
+  TPolyLine *sec1 = new TPolyLine(5,xLeft ,yDown);    sec1->SetLineColor(21);  sec1->Draw();
+  TPolyLine *sec2 = new TPolyLine(5,xRight,yDown);    sec2->SetLineColor(21);  sec2->Draw();
+  TPolyLine *sec3 = new TPolyLine(5,xLeft ,yCenter);  sec3->SetLineColor(21);  sec3->Draw();
+  TPolyLine *sec4 = new TPolyLine(5,xRight,yCenter);  sec4->SetLineColor(21);  sec4->Draw();
+  TPolyLine *sec5 = new TPolyLine(5,xLeft, yUp);      sec5->SetLineColor(21);  sec5->Draw();
+  TPolyLine *sec6 = new TPolyLine(5,xRight,yUp);      sec6->SetLineColor(21);  sec6->Draw();
 }//DrawSectors()

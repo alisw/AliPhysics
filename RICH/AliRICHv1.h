@@ -15,10 +15,11 @@ public:
   virtual void   Init()                                                              {;}
   virtual Int_t  IsVersion()                                                    const{return 1;}
   
-  virtual void   StepManager();
-          Bool_t IsLostByFresnel(); 
+  virtual void   StepManager();                                         //full slow step manager
+          Bool_t IsLostByFresnel();                                     //checks if the photon lost on Fresnel reflection  
+          void   GenerateFeedbacks(Int_t iChamber,Float_t eloss=0);     //generates feedback photons; eloss=0 for photon
 private:
-  ClassDef(AliRICHv1,1)//RICH full version for simulation
+  ClassDef(AliRICHv1,1)                                                 //RICH full version for simulation
 };
 		
 #endif

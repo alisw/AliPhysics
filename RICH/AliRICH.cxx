@@ -16,6 +16,7 @@
 #include "AliRICH.h"
 #include "AliRICHParam.h"
 #include "AliRICHChamber.h"
+#include "AliRICHClusterFinder.h"
 #include <TArrayF.h>
 #include <TGeometry.h>
 #include <TBRIK.h>
@@ -29,7 +30,11 @@
 #include <AliRun.h>
 #include <AliRunDigitizer.h>
 #include <AliMC.h>
+#include <AliESD.h>
 #include <TVirtualMC.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TStopwatch.h>
  
 ClassImp(AliRICHhit)
 //__________________________________________________________________________________________________
@@ -43,23 +48,27 @@ ClassImp(AliRICHdigit)
 //__________________________________________________________________________________________________
 void AliRICHdigit::Print(Option_t*)const
 {
-  ::Info("digit","csxy=%6i, cfm=%9i, c=%2i, x=%3i, y=%3i, q=%8.3f, TID1=%5i, TID2=%5i, TID3=%5i",
-                  Id(),fChFbMip,fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]);
+  ::Info("digit","cfm=%9i, cs=%2i, x=%3i, y=%3i, q=%8.3f, TID1=%5i, TID2=%5i, TID3=%5i",
+                  fCFM,fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]);
 }
 //__________________________________________________________________________________________________
 ClassImp(AliRICHcluster)
 //__________________________________________________________________________________________________
 void AliRICHcluster::Print(Option_t*)const
 {
-  ::Info("cluster","CombiPid=%10i, c=%2i, size=%6i, dim=%5i, x=%7.3f, y=%7.3f, Q=%6i, st=%i",
-           fCombiPid,fChamber,fSize,fDimXY,fX,fY,fQdc,fStatus);
-}
-//__________________________________________________________________________________________________
-ClassImp(AliRICHreco)
-//__________________________________________________________________________________________________
-void AliRICHreco::Print(Option_t*)const
-{
-  ::Info("reco","ThetaCherenkov=%9.6f, Nphotons=%4i, TID=%9i",fThetaCherenkov,fNphotons,fTid);
+  char *status=0;
+  switch(fStatus){
+    case      kRaw: status="raw"     ;break;
+    case kResolved: status="resolved";break;
+    case    kEmpty: status="empty"   ;break;
+  }
+  if(fDigits)    
+    ::Info("cluster","cfm=%10i, cs=%2i, SiMa=%6i, Shape=%5i, x=%7.3f, y=%7.3f, Q=%6i, %s with %i digits",
+                             fCFM,fChamber,fSize,fShape,fX,fY,fQdc,status,fDigits->GetEntriesFast());
+  else
+    ::Info("cluster","cfm=%10i, cs=%2i, SiMa=%6i, Shape=%5i, x=%7.3f, y=%7.3f, Q=%6i, %s with %i digits",
+                             fCFM,fChamber,fSize,fShape,fX,fY,fQdc,status,0);
+    
 }
 //__________________________________________________________________________________________________
 ClassImp(AliRICH)    
@@ -71,32 +80,23 @@ ClassImp(AliRICH)
 */
 //END_HTML
 //__________________________________________________________________________________________________
-AliRICH::AliRICH()
-        :AliDetector() 
+AliRICH::AliRICH():AliDetector(),fpParam(0),  fSdigits(0),fNsdigits(0),fDigitsNew(0),fClusters(0) 
 {
 //Default ctor should not contain any new operators
-  fpParam     =0;
-  fChambers   =0;   
 //AliDetector ctor deals with Hits and Digits  
-  fSdigits    =0; fNsdigits   =0;
-  fDigitsNew  =0; for(int i=0;i<kNCH;i++) fNdigitsNew[i]  =0;
-  fClusters   =0; for(int i=0;i<kNCH;i++) fNclusters[i]=0;
-  fRecos      =0; fNrecos     =0;
+  for(int i=0;i<kNchambers;i++) fNdigitsNew[i]  =0;
+  for(int i=0;i<kNchambers;i++) fNclusters[i]=0;
+//  fCounters.ResizeTo(20); fCounters.Zero();
 }//AliRICH::AliRICH()
 //__________________________________________________________________________________________________
 AliRICH::AliRICH(const char *name, const char *title)
-        :AliDetector(name,title)
+        :AliDetector(name,title),fpParam(new AliRICHParam),fSdigits(0),fNsdigits(0),fDigitsNew(0),fClusters(0)
 {
 //Named ctor
   if(GetDebug())Info("named ctor","Start.");
-  fpParam     =   new AliRICHParam;
-  fChambers = 0;  CreateChambers();
 //AliDetector ctor deals with Hits and Digits (reset them to 0, does not create them)
-  fHits=       0;     CreateHits();          gAlice->GetMCApp()->AddHitList(fHits);
-  fSdigits=    0;
-  fDigitsNew=  0;
-  fClusters=   0;
-  fRecos      =0;
+  CreateHits();          gAlice->GetMCApp()->AddHitList(fHits);
+  fCounters.ResizeTo(20); fCounters.Zero();
   if(GetDebug())Info("named ctor","Stop.");
 }//AliRICH::AliRICH(const char *name, const char *title)
 //__________________________________________________________________________________________________
@@ -106,59 +106,49 @@ AliRICH::~AliRICH()
   if(GetDebug()) Info("dtor","Start.");
 
   if(fpParam)    delete fpParam;
-  if(fChambers)  delete fChambers;
   
   if(fHits)      delete fHits;
   if(fSdigits)   delete fSdigits;
   if(fDigits)    delete fDigits;
   if(fDigitsNew) {fDigitsNew->Delete();   delete fDigitsNew;}
   if(fClusters)  {fClusters->Delete();    delete fClusters;}
-  if(fRecos)     delete fRecos;
   if(GetDebug()) Info("dtor","Stop.");    
 }//AliRICH::~AliRICH()
 //__________________________________________________________________________________________________
 void AliRICH::Hits2SDigits()
 {
 // Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
-//   
   if(GetDebug()) Info("Hit2SDigits","Start.");
-
-  AliLoader * richLoader = GetLoader();
-  AliRunLoader * runLoader = GetLoader()->GetRunLoader();
-
   for(Int_t iEventN=0;iEventN<GetLoader()->GetRunLoader()->GetAliRun()->GetEventsPerRun();iEventN++){//events loop
-    runLoader->GetEvent(iEventN);
+    GetLoader()->GetRunLoader()->GetEvent(iEventN);//get next event
   
-    if (!richLoader->TreeH()) richLoader->LoadHits();
-    if (!runLoader->TreeE()) runLoader->LoadHeader(); 
-    if (!runLoader->TreeK()) runLoader->LoadKinematics();//from
-    if (!richLoader->TreeS()) richLoader->MakeTree("S"); MakeBranch("S");//to
+    if(!GetLoader()->TreeH()) GetLoader()->LoadHits();    GetLoader()->GetRunLoader()->LoadHeader(); 
+                                                          GetLoader()->GetRunLoader()->LoadKinematics();//from
+    if(!GetLoader()->TreeS()) GetLoader()->MakeTree("S"); MakeBranch("S");//to
           
     for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
-      richLoader->TreeH()->GetEntry(iPrimN);
+      GetLoader()->TreeH()->GetEntry(iPrimN);
       for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop 
-        AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);                
-        TVector2 x2 = P()->ShiftToWirePos(C(pHit->C())->Glob2Loc(pHit->OutX3()));                
-        Int_t iTotQdc=P()->TotQdc(x2,pHit->Eloss());
+        AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);//get current hit                
+        TVector2 x2 = C(pHit->C())->Glob2Loc(pHit->OutX3());//hit position in the chamber local system
+        Int_t iTotQdc=P()->TotQdc(x2,pHit->Eloss());//total charge produced by hit, 0 if hit in dead zone
         if(iTotQdc==0) continue;
-        Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
-        P()->Loc2Area(x2,iPadXmin,iPadYmin,iPadXmax,iPadYmax);//determine affected pads
-        if(GetDebug()) Info("Hits2SDigits","left-down=(%i,%i) right-up=(%i,%i)",iPadXmin,iPadYmin,iPadXmax,iPadYmax);
-        for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)//affected pads loop
-          for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
-            Double_t padQdc=iTotQdc*P()->FracQdc(x2,iPadX,iPadY);
-            if(padQdc>0.1) AddSDigit(pHit->C(),iPadX,iPadY,padQdc,
-              runLoader->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
+        TVector area=P()->Loc2Area(x2);//determine affected pads, dead zones analysed inside
+        if(GetDebug()) Info("Hits2SDigits","hit(%6.2f,%6.2f)->area(%3.0f,%3.0f)-(%3.0f,%3.0f) QDC=%4i",x2.X(),x2.Y(),area[0],area[1],area[2],area[3],iTotQdc);
+        TVector pad(2);
+        for(pad[1]=area[1];pad[1]<=area[3];pad[1]++)//affected pads loop
+          for(pad[0]=area[0];pad[0]<=area[2];pad[0]++){                    
+            Double_t padQdc=iTotQdc*P()->FracQdc(x2,pad);
+            if(GetDebug()) Info("Hits2SDigits","current pad(%3.0f,%3.0f) with QDC  =%6.2f",pad[0],pad[1],padQdc);
+            if(padQdc>0.1) AddSDigit(pHit->C(),pad,padQdc,GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
           }//affected pads loop 
       }//hits loop
     }//prims loop
-    richLoader->TreeS()->Fill();
-    richLoader->WriteSDigits("OVERWRITE");
+    GetLoader()->TreeS()->Fill();
+    GetLoader()->WriteSDigits("OVERWRITE");
     ResetSDigits();
   }//events loop  
-  richLoader->UnloadHits();
-  runLoader->UnloadHeader();
-  runLoader->UnloadKinematics();
+  GetLoader()->UnloadHits(); GetLoader()->GetRunLoader()->UnloadHeader(); GetLoader()->GetRunLoader()->UnloadKinematics();
   GetLoader()->UnloadSDigits();  
   if(GetDebug()) Info("Hit2SDigits","Stop.");
 }//Hits2SDigits()
@@ -177,7 +167,7 @@ void AliRICH::BuildGeometry()
   Float_t len=P()->SectorSizeY();
   new TBRIK("PHOTO","PHOTO","void",wid/2,0.1,len/2);
   
-  for(int i=1;i<=kNCH;i++){
+  for(int i=1;i<=kNchambers;i++){
     top->cd();
     node = new TNode(Form("RICH%i",i),Form("RICH%i",i),"S_RICH",C(i)->X(),C(i)->Y(),C(i)->Z(),C(i)->RotMatrixName());
     node->SetLineColor(kRed);
@@ -208,18 +198,17 @@ void AliRICH::BuildGeometry()
 //______________________________________________________________________________
 void AliRICH::CreateMaterials()
 {
-    //
-    // *** DEFINITION OF AVAILABLE RICH MATERIALS *** 
-  
+// Definition of available RICH materials  
 #include "Opticals.h"
         
   Float_t a=0,z=0,den=0,radl=0,absl=0;
   Float_t tmaxfd=-10.0, deemax=-0.2, stemax=-0.1,epsil=0.001, stmin=-0.001; 
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
+  Int_t material;
     
-  AliMaterial( 1, "Air     $",a=14.61,z=7.3, den=0.001205,radl=30420.0,absl=67500);//(Air)
-  AliMedium(1, "DEFAULT MEDIUM AIR$", 1, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMaterial(material=1, "Air     $",a=14.61,z=7.3, den=0.001205,radl=30420.0,absl=67500);//(Air)
+  AliMedium(1, "DEFAULT MEDIUM AIR$",material, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   AliMaterial( 6, "HON",      a=12.01,z=6.0, den=0.1,     radl=18.8,   absl=0);    //(C)-equivalent radl
   AliMedium(2, "HONEYCOMB$", 6, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
@@ -230,11 +219,11 @@ void AliRICH::CreateMaterials()
   AliMaterial(11, "GRI",      a=63.54,z=29.0,den=8.96,    radl=1.43,   absl=0);    //anode grid (Cu) 
   AliMedium(7, "GRID$", 11, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
-  AliMaterial(50, "ALUM",     a=26.98,z=13.0,den=2.7,     radl=8.9,    absl=0);    //aluminium sheet (Al)
+  AliMaterial(50, "ALUM",     a=26.98,z=13.0,den=2.699,     radl=8.9,    absl=0);    //aluminium sheet (Al)
   AliMedium(10, "ALUMINUM$", 50, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
-  AliMaterial(31, "COPPER$",  a=63.54,z=29.0,den=8.96,    radl=1.4,    absl=0);    //(Cu)
-  AliMedium(12, "PCB_COPPER", 31, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMaterial(material=31, "COPPER$",  a=63.54,z=29.0,den=8.96,    radl=1.4,    absl=0);    //(Cu)
+  AliMedium(12, "PCB_COPPER", material, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   Float_t  aQuartz[2]={28.09,16.0};  Float_t  zQuartz[2]={14.00, 8.0};  Float_t  wmatQuartz[2]={1,2};
   AliMixture (20, "QUA",aQuartz,zQuartz,den=2.64,-2, wmatQuartz);//Quarz (SiO2) - trasnparent 
@@ -244,21 +233,30 @@ void AliRICH::CreateMaterials()
   AliMedium(8, "QUARTZO$", 21, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   Float_t  aFreon[2]={12,19};  Float_t  zFreon[2]={6,9};  Float_t wmatFreon[2]={6,14};
-  AliMixture (30, "FRE",aFreon,zFreon,den=1.7,-2,wmatFreon);//Freon (C6F14) 
-  AliMedium(4, "FREON$", 30, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMixture (material=30, "C6F14",aFreon,zFreon,den=1.68,-2,wmatFreon);//Freon (C6F14) 
+  AliMedium(4, "C6F14$",material, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   Float_t aMethane[2]={12.01,1}; Float_t zMethane[2]={6,1}; Float_t wmatMethane[2]={1,4};
-  AliMixture (40, "MET", aMethane, zMethane, den=7.17e-4,-2, wmatMethane);//methane (CH4)     
-  AliMedium(5, "METHANE$", 40, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMixture (material=40, "CH4", aMethane, zMethane, den=7.17e-4,-2, wmatMethane);//methane (CH4)     
+  AliMedium(kCH4, "CH4$"   , material, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);  
+  AliMedium(kGAP, "CH4GAP$", material, 1, isxfld, sxmgmx,tmaxfd, 0.1, -deemax, epsil, -stmin);
   
-  AliMixture (41, "METG", aMethane, zMethane, den=7.17e-4, -2, wmatMethane);
-  AliMedium(kGAP, "GAP$", 41, 1, isxfld, sxmgmx,tmaxfd, 0.1, -deemax, epsil, -stmin);
+  if(P()->IsRadioSrc()){
+    AliMaterial(material=45, "STEEL$",  a=63.54,z=29.0,den=8.96,    radl=1.4,    absl=0);    //Steel
+    AliMedium(kSteel, "STEEL", material, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  
+    AliMaterial(material=46, "PERPEX$",  a=63.54,z=29.0,den=8.96,    radl=1.4,    absl=0);    //Perpex
+    AliMedium(kPerpex, "PERPEX", material, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+    
+    AliMaterial(material=47, "STRONZIUM$",  a=87.62,z=38.0,den=2.54,    radl=4.24,    absl=0); //Sr90
+    AliMedium(kSr90, "STRONZIUM", material, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  }
   
   Float_t aGlass[5]={12.01, 28.09, 16.,   10.8,  23.};
   Float_t zGlass[5]={ 6.,   14.,    8.,    5.,   11.};
   Float_t wGlass[5]={ 0.5,  0.105, 0.355, 0.03,  0.01};
-  AliMixture (32, "GLASS",aGlass, zGlass, den=1.74, 5, wGlass);//Glass 50%C+10.5%Si+35.5%O+3% + 1%
-  AliMedium(11, "GLASS", 32, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMixture(material=32, "GLASS",aGlass, zGlass, den=1.74, 5, wGlass);//Glass 50%C+10.5%Si+35.5%O+3% + 1%
+  AliMedium(11, "GLASS", material, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
             
   Int_t *idtmed = fIdtmed->GetArray()-999;
   gMC->SetCerenkov(idtmed[1000], kNbins, aPckov, aAbsCH4,    aQeAll, aIdxCH4);
@@ -387,14 +385,14 @@ void AliRICH::MakeBranch(Option_t* option)
    
   if(cD&&fLoader->TreeD()){//D
     CreateDigits();
-    for(Int_t i=0;i<kNCH;i++){ 
+    for(Int_t i=0;i<kNchambers;i++){ 
       MakeBranchInTree(fLoader->TreeD(),Form("%s%d",GetName(),i+1),&((*fDigitsNew)[i]),kBufferSize,0);
     }
   }//D
   
   if(cR&&fLoader->TreeR()){//R
     CreateClusters();
-    for(Int_t i=0;i<kNCH;i++)
+    for(Int_t i=0;i<kNchambers;i++)
       MakeBranchInTree(fLoader->TreeR(),Form("%sClusters%d",GetName(),i+1), &((*fClusters)[i]), kBufferSize, 0);    
   }//R
   if(GetDebug())Info("MakeBranch","Stop.");   
@@ -420,7 +418,7 @@ void AliRICH::SetTreeAddress()
     
   if(fLoader->TreeD()){//D    
     if(GetDebug())Info("SetTreeAddress","tree D is requested.");
-    for(int i=0;i<kNCH;i++){      
+    for(int i=0;i<kNchambers;i++){      
       branch=fLoader->TreeD()->GetBranch(Form("%s%d",GetName(),i+1)); 
       if(branch){CreateDigits(); branch->SetAddress(&((*fDigitsNew)[i]));}
     }
@@ -428,7 +426,7 @@ void AliRICH::SetTreeAddress()
     
   if(fLoader->TreeR()){//R
     if(GetDebug())Info("SetTreeAddress","tree R is requested.");
-    for(int i=0;i<kNCH;i++){         
+    for(int i=0;i<kNchambers;i++){         
       branch=fLoader->TreeR()->GetBranch(Form("%sClusters%d" ,GetName(),i+1));
       if(branch){CreateClusters(); branch->SetAddress(&((*fClusters)[i]));}
     }
@@ -440,14 +438,14 @@ void AliRICH::Print(Option_t *option)const
 {
 //Debug printout
   TObject::Print(option);
-  P()->Dump();
-  fChambers->Print(option);  
+  P()->Print();
+  fCounters.Print();
 }//void AliRICH::Print(Option_t *option)const
 //__________________________________________________________________________________________________
 void AliRICH::CreateGeometry()
 {
 //Creates detailed geometry simulation (currently GEANT volumes tree)         
-  if(GetDebug())Info("CreateGeometry","Start.");
+  if(GetDebug())Info("CreateGeometry","Start main.");
 //Opaque quartz thickness
   Float_t oquaThickness = .5;
 //CsI dimensions
@@ -460,19 +458,16 @@ void AliRICH::CreateGeometry()
   Float_t zs;
   Int_t idrotm[1099];
   Float_t par[3];
-    
-//External aluminium box 
-  par[0]=68.8;par[1]=13;par[2]=70.86;  gMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
-//Air 
-  par[0]=66.3;   par[1] = 13; par[2] = 68.35;      gMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3); 
+  par[0]=68.8;par[1]=13   ;par[2]=70.86;  gMC->Gsvolu("RICH","BOX ",(*fIdtmed)[kAl], par,3);//External aluminium box 
+  par[0]=66.3;par[1]=13   ;par[2]=68.35;  gMC->Gsvolu("SRIC","BOX ",(*fIdtmed)[kAir],par,3);//Air 
+  par[0]=66.3;par[1]=0.025;par[2]=68.35;  gMC->Gsvolu("ALUM","BOX ",(*fIdtmed)[kAl], par,3);//Aluminium sheet 
 //Air 2 (cutting the lower part of the box)
-  par[0]=1.25;    par[1] = 3;    par[2] = 70.86;   gMC->Gsvolu("AIR2", "BOX ", idtmed[1000], par, 3);
+//  par[0]=1.25;    par[1] = 3;    par[2] = 70.86;   gMC->Gsvolu("AIR2", "BOX ", idtmed[1000], par, 3);
 //Air 3 (cutting the lower part of the box)
-  par[0]=66.3;    par[1] = 3;  par[2] = 1.2505;    gMC->Gsvolu("AIR3", "BOX ", idtmed[1000], par, 3);
+//  par[0]=66.3;    par[1] = 3;  par[2] = 1.2505;    gMC->Gsvolu("AIR3", "BOX ", idtmed[1000], par, 3);
 //Honeycomb 
   par[0]=66.3;par[1]=0.188;  par[2] = 68.35;       gMC->Gsvolu("HONE", "BOX ", idtmed[1001], par, 3);
-//Aluminium sheet 
-  par[0]=66.3;par[1]=0.025;par[2]=68.35;           gMC->Gsvolu("ALUM", "BOX ", idtmed[1009], par, 3);
+
   //par[0] = 66.5; par[1] = .025; par[2] = 63.1;
 //Quartz 
   par[0]=P()->QuartzWidth()/2;par[1]=P()->QuartzThickness()/2;par[2]=P()->QuartzLength()/2;
@@ -502,7 +497,7 @@ void AliRICH::CreateGeometry()
 //Methane 
   par[0]=pcX/2;par[1]=P()->GapThickness()/2;par[2]=pcY/2;         gMC->Gsvolu("META","BOX ",idtmed[1004], par, 3);
 //Methane gap 
-  par[0]=pcX/2;par[1]=P()->ProximityGap()/2;par[2]=pcY/2;gMC->Gsvolu("GAP ","BOX ",(*fIdtmed)[kGAP],par,3);
+  par[0]=pcX/2;par[1]=P()->GapAmp()/2;par[2]=pcY/2;gMC->Gsvolu("GAP ","BOX ",(*fIdtmed)[kGAP],par,3);
 //CsI PC
   par[0]=pcX/2;par[1]=.25;par[2]=pcY/2;  gMC->Gsvolu("CSI ", "BOX ", (*fIdtmed)[kCSI], par, 3);
 //Anode grid 
@@ -561,10 +556,10 @@ void AliRICH::CreateGeometry()
   gMC->Gspos("BKHL", 8, "BACK", -.8 - 11.4 - 1.6 - 9.05, 0., -.6 - 8.925 - 1.2 - 4.4625, 0, "ONLY");
 //Place material inside RICH 
   gMC->Gspos("SRIC", 1, "RICH", 0.,0., 0., 0, "ONLY");
-  gMC->Gspos("AIR2", 1, "RICH", 66.3 + 1.2505, 1.276-P()->GapThickness()/2-P()->QuartzThickness()-P()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, 0., 0, "ONLY");
-  gMC->Gspos("AIR2", 2, "RICH", -66.3 - 1.2505,1.276-P()->GapThickness()/2-P()->QuartzThickness()-P()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, 0., 0, "ONLY");
-  gMC->Gspos("AIR3", 1, "RICH", 0., 1.276-P()->GapThickness()/2 - P()->QuartzThickness() - P()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, -68.35 - 1.25, 0, "ONLY");
-  gMC->Gspos("AIR3", 2, "RICH", 0., 1.276 - P()->GapThickness()/2 - P()->QuartzThickness() - P()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35,  68.35 + 1.25, 0, "ONLY");
+//  gMC->Gspos("AIR2", 1, "RICH", 66.3 + 1.2505, 1.276-P()->GapThickness()/2-P()->QuartzThickness()-P()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, 0., 0, "ONLY");
+//  gMC->Gspos("AIR2", 2, "RICH", -66.3 - 1.2505,1.276-P()->GapThickness()/2-P()->QuartzThickness()-P()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, 0., 0, "ONLY");
+//  gMC->Gspos("AIR3", 1, "RICH", 0., 1.276-P()->GapThickness()/2 - P()->QuartzThickness() - P()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35, -68.35 - 1.25, 0, "ONLY");
+//  gMC->Gspos("AIR3", 2, "RICH", 0., 1.276 - P()->GapThickness()/2 - P()->QuartzThickness() - P()->FreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.35,  68.35 + 1.25, 0, "ONLY");
   gMC->Gspos("ALUM", 1, "SRIC", 0., 1.276 - P()->GapThickness()/2 - P()->QuartzThickness() - P()->FreonThickness()- .4 - .6 - .05 - .376 -.025, 0., 0, "ONLY");
   gMC->Gspos("HONE", 1, "SRIC", 0., 1.276- P()->GapThickness()/2  - P()->QuartzThickness() - P()->FreonThickness()- .4 - .6 - .05 - .188, 0., 0, "ONLY");
   gMC->Gspos("ALUM", 2, "SRIC", 0., 1.276 - P()->GapThickness()/2 - P()->QuartzThickness() - P()->FreonThickness()- .4 - .6 - .025, 0., 0, "ONLY");
@@ -621,11 +616,11 @@ void AliRICH::CreateGeometry()
   gMC->Gspos("OQF2", 2, "SRIC", 0., 1.276 - P()->GapThickness()/2 - P()->QuartzThickness() - P()->FreonThickness()/2, 0., 0, "ONLY");          //Original settings 
   gMC->Gspos("OQF1", 3, "SRIC", - (P()->OuterFreonWidth()/2 + P()->InnerFreonWidth()/2) - 2, 1.276 - P()->GapThickness()/2 - P()->QuartzThickness() - P()->FreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
   gMC->Gspos("QUAR", 1, "SRIC", 0., 1.276 - P()->GapThickness()/2 - P()->QuartzThickness()/2, 0., 0, "ONLY");
-  gMC->Gspos("GAP ", 1, "META", 0., P()->GapThickness()/2 - P()->ProximityGap()/2 - 0.0001, 0., 0, "ONLY");
+  gMC->Gspos("GAP ", 1, "META", 0., P()->GapThickness()/2 - P()->GapAmp()/2 - 0.0001, 0., 0, "ONLY");
   gMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
   gMC->Gspos("CSI ", 1, "SRIC", 0., 1.276 + P()->GapThickness()/2 + .25, 0., 0, "ONLY");
 //Wire support placing
-  gMC->Gspos("WSG2", 1, "GAP ", 0., P()->ProximityGap()/2 - .1, 0., 0, "ONLY");
+  gMC->Gspos("WSG2", 1, "GAP ", 0., P()->GapAmp()/2 - .1, 0., 0, "ONLY");
   gMC->Gspos("WSG1", 1, "CSI ", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("WSMe", 1, "SRIC ", 0., 1.276 + P()->GapThickness()/2 + .5 + 1.05, 0., 0, "ONLY");
 //Backplane placing
@@ -638,100 +633,244 @@ void AliRICH::CreateGeometry()
 //PCB placing
   gMC->Gspos("PCB ", 1, "SRIC ", 0.,  1.276 + P()->GapThickness()/2 + .5 + 1.05, pcX/4 + .5025 + 2.5, 0, "ONLY");
   gMC->Gspos("PCB ", 2, "SRIC ", 0.,  1.276 + P()->GapThickness()/2 + .5 + 1.05, -pcX/4 - .5025 - 2.5, 0, "ONLY");
-
+  
 //place chambers into mother volume ALIC
-  for(int i=1;i<=kNCH;i++){
+  for(int i=1;i<=kNchambers;i++){
     AliMatrix(idrotm[1000+i],C(i)->ThetaXd(),C(i)->PhiXd(),
                              C(i)->ThetaYd(),C(i)->PhiYd(),
                              C(i)->ThetaZd(),C(i)->PhiZd());
     gMC->Gspos("RICH",i,"ALIC",C(i)->X(),C(i)->Y(),C(i)->Z(),idrotm[1000+i], "ONLY");
   }
 
-  if(GetDebug())Info("CreateGeometry","Stop.");  
+         
+  if(GetDebug())Info("CreateGeometry","Stop main.");  
 }//void AliRICH::CreateGeometry()
 //__________________________________________________________________________________________________
-void AliRICH::CreateChambers()
+void AliRICH::Reconstruct()const
 {
-//create all RICH Chambers on each call. Previous chambers deleted
-  if(fChambers) delete fChambers;
-  if(GetDebug())Info("CreateChambers","Creating RICH chambers.");
-  fChambers=new TObjArray(kNCH);
-  fChambers->SetOwner();
-  for(int i=0;i<kNCH;i++)  fChambers->AddAt(new AliRICHChamber(i+1,P()),i);  
-}//void AliRICH::CreateChambers()
+  AliRICHClusterFinder finder(const_cast<AliRICH*>(this));
+  finder.Exec();
+}
 //__________________________________________________________________________________________________
-void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
-{
-// Generate FeedBack photons 
-// eloss=0 means photon so only pulse height distribution is to be analysed. This one is done in AliRICHParam::TotQdc()
+void AliRICH::ControlPlots()
+{ 
+//Creates a set of hists to control the results of simulation
+     
+  TH1F *pHxD=0,*pHyD=0,*pNumClusH1=0,
+                   *pQdcH1=0,       *pSizeH1=0,
+                   *pPureMipQdcH1=0,*pPureMipSizeH1=0,
+                   *pPureCerQdcH1=0,*pPureCerSizeH1=0,
+                   *pPureFeeQdcH1=0,*pPureFeeSizeH1=0,
+                   *pMipQdcH1=0,    *pPhotQdcH1=0;  
+  TH2F *pMapH2=0,*pPureMipMapH2=0,*pPureCerMapH2=0,*pPureFeeMapH2=0;
   
-  TLorentzVector x4;
-  gMC->TrackPosition(x4);  
-  TVector2 x2=C(iChamber)->Glob2Loc(x4);
-  Int_t sector=P()->Sector(x2);  if(sector==kBad) return; //hit in dead zone nothing to produce
-  Int_t iTotQdc=P()->TotQdc(x2,eloss);
-  Int_t iNphotons=gMC->GetRandom()->Poisson(P()->AlphaFeedback(sector)*iTotQdc);    
-  if(GetDebug())Info("GenerateFeedbacks","N photons=%i",iNphotons);
-  Int_t j;
-  Float_t cthf, phif, enfp = 0, sthf, e1[3], e2[3], e3[3], vmod, uswop,dir[3], phi,pol[3], mom[4];
-//Generate photons
-  for(Int_t i=0;i<iNphotons;i++){//feedbacks loop
-    Double_t ranf[2];
-    gMC->GetRandom()->RndmArray(2,ranf);    //Sample direction
-    cthf=ranf[0]*2-1.0;
-    if(cthf<0) continue;
-    sthf = TMath::Sqrt((1 - cthf) * (1 + cthf));
-    phif = ranf[1] * 2 * TMath::Pi();
-    
-    if(Double_t randomNumber=gMC->GetRandom()->Rndm()<=0.57)
-      enfp = 7.5e-9;
-    else if(randomNumber<=0.7)
-      enfp = 6.4e-9;
-    else
-      enfp = 7.9e-9;
-    
+  Bool_t isDig =!GetLoader()->LoadDigits();
+  Bool_t isClus=!GetLoader()->LoadRecPoints();
 
-    dir[0] = sthf * TMath::Sin(phif);    dir[1] = cthf;    dir[2] = sthf * TMath::Cos(phif);
-    gMC->Gdtom(dir, mom, 2);
-    mom[0]*=enfp;    mom[1]*=enfp;    mom[2]*=enfp;
-    mom[3] = TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]+mom[2]*mom[2]);
+  if(!isDig && !isClus){Error("ControlPlots","No digits and clusters! Nothing to do.");return;}
+  
+  TStopwatch sw;TDatime time;
     
-    // Polarisation
-    e1[0]=      0;    e1[1]=-dir[2];    e1[2]= dir[1];
-    e2[0]=-dir[1];    e2[1]= dir[0];    e2[2]=      0;
-    e3[0]= dir[1];    e3[1]=      0;    e3[2]=-dir[0];
+  TFile *pFile = new TFile("$(HOME)/RCP.root","RECREATE");   
+  
+  if(isDig){
+    cout<<"Digits available\n";
+    pHxD=new TH1F("HitDigitDiffX","Hit-Digits diff X all chambers;diff [cm]",100,-10,10); 
+    pHyD=new TH1F("HitDigitDiffY","Hit-Digits diff Y all chambers;diff [cm]",100,-10,10); 
+  }//isDig
+  
+  if(isClus){ 
+    cout<<"Clusters available\n";
+    pNumClusH1=new TH1F("NumClusPerEvent","Number of clusters per event;number",50,0,49);
     
-    vmod=0;
-    for(j=0;j<3;j++) vmod+=e1[j]*e1[j];
-    if (!vmod) for(j=0;j<3;j++) {
-      uswop=e1[j];
-      e1[j]=e3[j];
-      e3[j]=uswop;
-    }
-    vmod=0;
-    for(j=0;j<3;j++) vmod+=e2[j]*e2[j];
-    if (!vmod) for(j=0;j<3;j++) {
-      uswop=e2[j];
-      e2[j]=e3[j];
-      e3[j]=uswop;
+    pQdcH1        =new TH1F("ClusQdc",   "Cluster Charge all chambers;q [QDC]",R()->P()->MaxQdc(),0,R()->P()->MaxQdc());
+    pSizeH1       =new TH1F("ClusSize",  "Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+    pMapH2        =new TH2F("ClusMap",   "Cluster map;x [cm];y [cm]",1000,0,R()->P()->PcSizeX(),1000,0,R()->P()->PcSizeY());
+  
+    pMipQdcH1     =new TH1F("QdcMip"      ,"MIP Cluster Charge all chambers;q [QDC]",R()->P()->MaxQdc(),0,R()->P()->MaxQdc());
+    pPhotQdcH1    =new TH1F("QdcPhot"     ,"Cer+Fee Cluster Charge all chambers;q [QDC]",R()->P()->MaxQdc(),0,R()->P()->MaxQdc());
+        
+    pPureMipQdcH1 =new TH1F("QdcPureMip"  ,"MIP only Cluster Charge all chambers;q [QDC]",R()->P()->MaxQdc(),0,R()->P()->MaxQdc());
+    pPureMipSizeH1=new TH1F("SizePureMip" ,"MIP only Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+    pPureMipMapH2 =new TH2F("MapPureMip"  ,"MIP only Cluster map;x [cm];y [cm]",1000,0,R()->P()->PcSizeX(),1000,0,R()->P()->PcSizeY());
+  
+    pPureCerQdcH1 =new TH1F("QdcPureCer"  ,"Cerenkov only Cluster Charge all chambers;q [QDC]",R()->P()->MaxQdc(),0,R()->P()->MaxQdc());
+    pPureCerSizeH1=new TH1F("SizePureCer" ,"Cernekov only Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+    pPureCerMapH2 =new TH2F("MapPureCer"  ,"Cerenkov only Cluster map;x [cm];y [cm]",1000,0,R()->P()->PcSizeX(),1000,0,R()->P()->PcSizeY());
+    
+    pPureFeeQdcH1 =new TH1F("QdcPureFee"  ,"Feedback only Cluster Charge all chambers;q [QDC]",R()->P()->MaxQdc(),0,R()->P()->MaxQdc());
+    pPureFeeSizeH1=new TH1F("SizePureFee" ,"Feedback only Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+    pPureFeeMapH2 =new TH2F("MapPureFee"  ,"Feedback only Cluster map;x [cm];y [cm]",1000,0,R()->P()->PcSizeX(),1000,0,R()->P()->PcSizeY());
+  }//isClus
+  
+  for(Int_t iEvtN=0;iEvtN < GetLoader()->GetRunLoader()->GetAliRun()->GetEventsPerRun();iEvtN++){//events loop
+    GetLoader()->GetRunLoader()->GetEvent(iEvtN);    //gets current event
+    
+    if(!GetLoader()->TreeH()) GetLoader()->LoadHits();
+    for(Int_t iPrimN=0;iPrimN < GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
+       GetLoader()->TreeH()->GetEntry(iPrimN);      
     }
     
-    vmod=0;  for(j=0;j<3;j++) vmod+=e1[j]*e1[j];  vmod=TMath::Sqrt(1/vmod);  for(j=0;j<3;j++) e1[j]*=vmod;    
-    vmod=0;  for(j=0;j<3;j++) vmod+=e2[j]*e2[j];  vmod=TMath::Sqrt(1/vmod);  for(j=0;j<3;j++) e2[j]*=vmod;
+    if(isClus) GetLoader()->TreeR()->GetEntry(0);
+    if(isDig)  GetLoader()->TreeD()->GetEntry(0);  
     
-    phi = gMC->GetRandom()->Rndm()* 2 * TMath::Pi();
-    for(j=0;j<3;j++) pol[j]=e1[j]*TMath::Sin(phi)+e2[j]*TMath::Cos(phi);
-    gMC->Gdtom(pol, pol, 2);
-    Int_t outputNtracksStored;    
-    gAlice->GetMCApp()->PushTrack(1,                 //do not transport
-                     gAlice->GetMCApp()->GetCurrentTrackNumber(),//parent track 
-                     kFeedback,                      //PID
-		     mom[0],mom[1],mom[2],mom[3],    //track momentum  
-                     x4.X(),x4.Y(),x4.Z(),x4.T(),    //track origin 
-                     pol[0],pol[1],pol[2],           //polarization
-		     kPFeedBackPhoton,
-                     outputNtracksStored,
-                     1.0);    
-  }//feedbacks loop
-}//GenerateFeedbacks()
+    for(Int_t iChamN=1;iChamN<=7;iChamN++){//chambers loop
+      if(isClus){
+        Int_t iNclusCham=Clusters(iChamN)->GetEntries(); if(iNclusCham) pNumClusH1->Fill(iNclusCham);//number of clusters per event
+        for(Int_t iClusN=0;iClusN<iNclusCham;iClusN++){//clusters loop
+          AliRICHcluster *pClus=(AliRICHcluster*)Clusters(iChamN)->At(iClusN);
+                                       pQdcH1        ->Fill(pClus->Q());   
+                                       pSizeH1       ->Fill(pClus->Size());  
+                                       pMapH2        ->Fill(pClus->X(),pClus->Y()); //common
+                                       
+           if(pClus->IsSingleMip())     {pPureMipQdcH1 ->Fill(pClus->Q());
+                                       pPureMipSizeH1->Fill(pClus->Size());
+                                       pPureMipMapH2 ->Fill(pClus->X(),pClus->Y());}//Pure Mips
+                                       
+           if(pClus->IsSingleCerenkov()){pPureCerQdcH1 ->Fill(pClus->Q());
+                                       pPureCerSizeH1->Fill(pClus->Size());
+                                       pPureCerMapH2 ->Fill(pClus->X(),pClus->Y());}//Pure Cerenkovs
+                                       
+           if(pClus->IsSingleFeedback()){pPureFeeQdcH1 ->Fill(pClus->Q());
+                                       pPureFeeSizeH1->Fill(pClus->Size());
+                                       pPureFeeMapH2 ->Fill(pClus->X(),pClus->Y());}//Pure Feedbacks
+           
+           if(pClus->IsMip()) {pMipQdcH1 ->Fill(pClus->Q());} //MIP+ other contributions
+           if(!pClus->IsPureMip())     pPhotQdcH1->Fill(pClus->Q());  //not MIP
+        }//clusters loop
+      }//isClus
+      if(isDig){
+        for(Int_t iDigN=0;iDigN<R()->Digits(iChamN)->GetEntries();iDigN++){//digits loop
+          AliRICHdigit *pDig=(AliRICHdigit*)R()->Digits(iChamN)->At(iDigN);
+          AliRICHhit   *pHit=Hit(pDig->GetTrack(0));
+          TVector2 hitV2=R()->C(iChamN)->Glob2Loc(pHit->OutX3()); TVector2 digV2=R()->P()->Pad2Loc(pDig->Pad());
+          pHxD->Fill(hitV2.X()-digV2.X()); pHyD->Fill(hitV2.Y()-digV2.Y());
+        }//digits loop
+      }//isDig
+    }//chambers loop
+    Info("ControlPlots","Event %i processed.",iEvtN);
+  }//events loop 
+  
+  if(isDig)  GetLoader()->UnloadDigits();
+  if(isClus) GetLoader()->UnloadRecPoints();
+  
+  pFile->Write(); delete pFile;
+  sw.Print();time.Print();
+}//ControlPlots()
+//__________________________________________________________________________________________________
+AliRICHhit* AliRICH::Hit(Int_t tid)
+{
+//defines which hit provided by given tid for the currently loaded event
+  R()->GetLoader()->LoadHits();
+  for(Int_t iPrimN=0;iPrimN<R()->GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop      
+    R()->GetLoader()->TreeH()->GetEntry(iPrimN);
+    for(Int_t iHitN=0;iHitN<R()->Hits()->GetEntries();iHitN++){
+      AliRICHhit *pHit=(AliRICHhit*)R()->Hits()->At(iHitN);
+      if(tid==pHit->Track()) {R()->GetLoader()->UnloadHits();return pHit;}
+    }//hits
+  }//prims loop
+  R()->GetLoader()->UnloadHits();
+  return 0;
+}
+//__________________________________________________________________________________________________
+void AliRICH::PrintHits(Int_t iEvtN)
+{
+//Prints a list of RICH hits for a given event. Default is event number 0.
+  Info("PrintHits","List of RICH hits for event %i",iEvtN);
+  R()->GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
+  if(R()->GetLoader()->LoadHits()) return;
+  
+  Int_t iTotalHits=0;
+  for(Int_t iPrimN=0;iPrimN<R()->GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
+    R()->GetLoader()->TreeH()->GetEntry(iPrimN);      
+    R()->Hits()->Print();
+    iTotalHits+=R()->Hits()->GetEntries();
+  }
+  R()->GetLoader()->UnloadHits();
+  Info("PrintHits","totally %i hits",iTotalHits);
+}
+//__________________________________________________________________________________________________
+void AliRICH::PrintSDigits(Int_t iEvtN)
+{
+//prints a list of RICH sdigits  for a given event
+  Info("PrintSDigits","List of RICH sdigits for event %i",iEvtN);
+  R()->GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
+  if(R()->GetLoader()->LoadSDigits()) return;
+  
+  R()->GetLoader()->TreeS()->GetEntry(0);
+  R()->SDigits()->Print();
+  R()->GetLoader()->UnloadSDigits();
+  Info("PrintSDigits","totally %i sdigits",R()->SDigits()->GetEntries());
+}
+//__________________________________________________________________________________________________
+void AliRICH::PrintDigits(Int_t iEvtN)
+{
+//prints a list of RICH digits  for a given event
+  Info("PrintDigits","List of RICH digits for event %i",iEvtN);
+  R()->GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
+  if(R()->GetLoader()->LoadDigits()) return;
+  
+  Int_t iTotalDigits=0;
+  R()->GetLoader()->TreeD()->GetEntry(0);
+  for(Int_t iChamber=1;iChamber<=kNchambers;iChamber++){
+    R()->Digits(iChamber)->Print();
+    iTotalDigits+=R()->Digits(iChamber)->GetEntries();
+  }
+  R()->GetLoader()->UnloadDigits();
+  Info("PrintDigits","totally %i Digits",iTotalDigits);
+}
+//__________________________________________________________________________________________________
+void AliRICH::PrintClusters(Int_t iEvtN)
+{
+//prints a list of RICH clusters  for a given event
+  Info("PrintClusters","List of RICH clusters for event %i",iEvtN);
+  R()->GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
+  if(R()->GetLoader()->LoadRecPoints()) return;
+  
+  Int_t iTotalClusters=0;
+  R()->GetLoader()->TreeR()->GetEntry(0);
+  for(Int_t iChamber=1;iChamber<=kNchambers;iChamber++){
+    R()->Clusters(iChamber)->Print();
+    iTotalClusters+=R()->Clusters(iChamber)->GetEntries();
+  }
+  R()->GetLoader()->UnloadRecPoints();
+  Info("PrintClusters","totally %i clusters",iTotalClusters);
+}
+//__________________________________________________________________________________________________
+void AliRICH::FillESD(AliESD *pESD)const
+{
+//This methode fills AliESDtrack with information from RICH  
+  Info("FillESD","Start with %i tracks",pESD->GetNumberOfTracks());
+  const Double_t masses[5]={0.000511,0.105658,0.139567,0.493677,0.93828};//electron,muon,pion,kaon,proton
+  const Double_t refIndex = 1.29052;
 
+  Double_t thetaExp = 0.7;
+  Double_t thetaTh[5];
+  Double_t sinThetaThNorm;
+  Double_t sigmaThetaTh[5];
+  Double_t height[5];
+  Double_t totalHeight=0;
+  
+  for(Int_t iTrackN=0;iTrackN<pESD->GetNumberOfTracks();iTrackN++){//ESD tracks loop
+    AliESDtrack *pTrack = pESD->GetTrack(iTrackN);
+    
+    pTrack->Print("");
+//    TVector2 x2=P()->HelixCross(pTrack);//returns cross point of track with RICH PC in LRS
+    Double_t pmod = pTrack->GetP();
+    
+    for(Int_t iPart=4;iPart>=0;iPart--){
+      Double_t cosThetaTh = TMath::Sqrt(masses[iPart]*masses[iPart]+pmod*pmod)/(refIndex*pmod);
+      if(cosThetaTh>=1) {pTrack->ResetRICH(); break;}
+      thetaTh[iPart] = TMath::ACos(cosThetaTh);
+      sinThetaThNorm = TMath::Sin(thetaTh[iPart])/TMath::Sqrt(1-1/(refIndex*refIndex));
+      sigmaThetaTh[iPart] = (0.014*(1/sinThetaThNorm-1) + 0.0043)*1.25;
+      height[iPart] = TMath::Gaus(thetaExp,thetaTh[iPart],sigmaThetaTh[iPart]);
+      totalHeight +=height[iPart];
+    }
+    
+    pTrack->SetRICHsignal(thetaExp);
+    Double_t richPID[5];
+    for(Int_t iPart=0;iPart<5;iPart++) richPID[iPart] = height[iPart]/totalHeight;    
+    pTrack->SetRICHpid(richPID); 
+  }//ESD tracks loop
+}

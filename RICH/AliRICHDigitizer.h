@@ -13,7 +13,7 @@ class AliRICH;
 class AliRICHDigitizer : public AliDigitizer 
 {
 public:
-           AliRICHDigitizer()                                                {;}
+           AliRICHDigitizer():fRich(0)                                       {;}
            AliRICHDigitizer(AliRunDigitizer * manager):AliDigitizer(manager) {if(GetDebug())Info("main ctor","Start.");}
   virtual ~AliRICHDigitizer()                                                {if(GetDebug())Info("dtor","Start.");}
 
@@ -21,7 +21,7 @@ public:
   void     Exec(Option_t* option=0);                //virtual
   Bool_t   Init();                                  //virtual
   Bool_t   GetDebug() const {return ((gAlice) ? gAlice->GetDebug() : kFALSE);}
-  AliRICH* Rich()     const {return fRich;}
+  AliRICH* R()        const {return fRich;}         //returns pointer to RICH
 protected:
   AliRICH* fRich; //pointer to main RICH object
   ClassDef(AliRICHDigitizer,0)

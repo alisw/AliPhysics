@@ -31,19 +31,34 @@ ClassImp(AliRICHv1)
 //__________________________________________________________________________________________________
 void AliRICHv1::StepManager()
 {
-//Full Step Manager
-
+// Full Step Manager.
+// 3- Ckovs absorbed in Collection electrods
+// 5- Ckovs absorbed in Cathode wires
+// 6- Ckovs absorbed in Anod wires
+         
   Int_t          copy;
   static Int_t   iCurrentChamber;
-        
+//history of Cerenkovs
+  if(gMC->TrackPid()==kCerenkov){
+    if(gMC->IsNewTrack() && (gMC->CurrentVolID(copy)==gMC->VolId("FRE1")||gMC->CurrentVolID(copy)==gMC->VolId("FRE2"))) fCounters(0)++;// 0- Ckovs produced in Freon
+    if(!gMC->IsTrackAlive() && (gMC->CurrentVolID(copy)==gMC->VolId("FRE1")||gMC->CurrentVolID(copy)==gMC->VolId("FRE2"))) fCounters(1)++;// 1- Ckovs absorbed in Freon
+    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==gMC->VolId("QUAR")) fCounters(2)++;//2- Ckovs absorbed in Quartz
+    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==gMC->VolId("META")) fCounters(4)++;//4- Ckovs absorbed in CH4
+  }
+          
 //Treat photons    
   static TLorentzVector cerX4;
   if((gMC->TrackPid()==kCerenkov||gMC->TrackPid()==kFeedback)&&gMC->CurrentVolID(copy)==gMC->VolId("CSI ")){//photon in CSI
-    if(gMC->Edep()>0.){//CF+CSI+DE
-      if(IsLostByFresnel()){ gMC->StopTrack(); return;}        
+    if(gMC->Edep()>0){//CF+CSI+DE
+      if(IsLostByFresnel()){ 
+        if(gMC->TrackPid()==kCerenkov) fCounters(7)++;// 7- Ckovs reflected on CsI
+        gMC->StopTrack();
+        return;
+      }        
       gMC->TrackPosition(cerX4); gMC->CurrentVolOffID(2,iCurrentChamber);
 	
       AddHit(iCurrentChamber,gAlice->GetMCApp()->GetCurrentTrackNumber(),cerX4.Vect(),cerX4.Vect());//HIT for PHOTON in conditions CF+CSI+DE
+      fCounters(8)++;//4- Ckovs converted in CsI
       GenerateFeedbacks(iCurrentChamber);
     }//CF+CSI+DE
   }//CF in CSI
@@ -68,6 +83,7 @@ void AliRICHv1::StepManager()
 //__________________________________________________________________________________________________
 Bool_t AliRICHv1::IsLostByFresnel()
 {
+// Calculate probability for the photon to be lost by Fresnel reflection.
   TLorentzVector p4;
   Double_t mom[3],localMom[3];
   gMC->TrackMomentum(p4);   mom[0]=p4(1);   mom[1]=p4(2);   mom[2]=p4(3);
@@ -77,9 +93,84 @@ Bool_t AliRICHv1::IsLostByFresnel()
   Double_t localTheta = TMath::ATan2(TMath::Sqrt(localTc),localMom[1]);
   Double_t cotheta = TMath::Abs(TMath::Cos(localTheta));
   if(gMC->GetRandom()->Rndm() < Fresnel(p4.E()*1e9,cotheta,1)){
-    if(GetDebug()) Info("IsLostByFresnel","");
+    if(GetDebug()) Info("IsLostByFresnel","Photon lost");
     return kTRUE;
   }else
     return kFALSE;
 }//IsLostByFresnel()
 //__________________________________________________________________________________________________
+void AliRICHv1::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
+{
+// Generate FeedBack photons for the current particle. To be invoked from StepManager().
+// eloss=0 means photon so only pulse height distribution is to be analysed. This one is done in AliRICHParam::TotQdc()
+  
+  TLorentzVector x4;
+  gMC->TrackPosition(x4);  
+  TVector2 x2=C(iChamber)->Glob2Loc(x4);
+  Int_t sector=P()->Loc2Sec(x2);  if(sector==kBad) return; //hit in dead zone, nothing to produce
+  Int_t iTotQdc=P()->TotQdc(x2,eloss);
+  Int_t iNphotons=gMC->GetRandom()->Poisson(P()->AlphaFeedback(sector)*iTotQdc);    
+  if(GetDebug())Info("GenerateFeedbacks","N photons=%i",iNphotons);
+  Int_t j;
+  Float_t cthf, phif, enfp = 0, sthf, e1[3], e2[3], e3[3], vmod, uswop,dir[3], phi,pol[3], mom[4];
+//Generate photons
+  for(Int_t i=0;i<iNphotons;i++){//feedbacks loop
+    Double_t ranf[2];
+    gMC->GetRandom()->RndmArray(2,ranf);    //Sample direction
+    cthf=ranf[0]*2-1.0;
+    if(cthf<0) continue;
+    sthf = TMath::Sqrt((1 - cthf) * (1 + cthf));
+    phif = ranf[1] * 2 * TMath::Pi();
+    
+    if(Double_t randomNumber=gMC->GetRandom()->Rndm()<=0.57)
+      enfp = 7.5e-9;
+    else if(randomNumber<=0.7)
+      enfp = 6.4e-9;
+    else
+      enfp = 7.9e-9;
+    
+
+    dir[0] = sthf * TMath::Sin(phif);    dir[1] = cthf;    dir[2] = sthf * TMath::Cos(phif);
+    gMC->Gdtom(dir, mom, 2);
+    mom[0]*=enfp;    mom[1]*=enfp;    mom[2]*=enfp;
+    mom[3] = TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]+mom[2]*mom[2]);
+    
+    // Polarisation
+    e1[0]=      0;    e1[1]=-dir[2];    e1[2]= dir[1];
+    e2[0]=-dir[1];    e2[1]= dir[0];    e2[2]=      0;
+    e3[0]= dir[1];    e3[1]=      0;    e3[2]=-dir[0];
+    
+    vmod=0;
+    for(j=0;j<3;j++) vmod+=e1[j]*e1[j];
+    if (!vmod) for(j=0;j<3;j++) {
+      uswop=e1[j];
+      e1[j]=e3[j];
+      e3[j]=uswop;
+    }
+    vmod=0;
+    for(j=0;j<3;j++) vmod+=e2[j]*e2[j];
+    if (!vmod) for(j=0;j<3;j++) {
+      uswop=e2[j];
+      e2[j]=e3[j];
+      e3[j]=uswop;
+    }
+    
+    vmod=0;  for(j=0;j<3;j++) vmod+=e1[j]*e1[j];  vmod=TMath::Sqrt(1/vmod);  for(j=0;j<3;j++) e1[j]*=vmod;    
+    vmod=0;  for(j=0;j<3;j++) vmod+=e2[j]*e2[j];  vmod=TMath::Sqrt(1/vmod);  for(j=0;j<3;j++) e2[j]*=vmod;
+    
+    phi = gMC->GetRandom()->Rndm()* 2 * TMath::Pi();
+    for(j=0;j<3;j++) pol[j]=e1[j]*TMath::Sin(phi)+e2[j]*TMath::Cos(phi);
+    gMC->Gdtom(pol, pol, 2);
+    Int_t outputNtracksStored;    
+    gAlice->GetMCApp()->PushTrack(1,                 //do not transport
+                     gAlice->GetMCApp()->GetCurrentTrackNumber(),//parent track 
+                     kFeedback,                      //PID
+		     mom[0],mom[1],mom[2],mom[3],    //track momentum  
+                     x4.X(),x4.Y(),x4.Z(),x4.T(),    //track origin 
+                     pol[0],pol[1],pol[2],           //polarization
+		     kPFeedBackPhoton,
+                     outputNtracksStored,
+                     1.0);    
+  }//feedbacks loop
+  if(GetDebug()) Info("GenerateFeedbacks","Stop.");
+}//GenerateFeedbacks()

@@ -22,6 +22,8 @@
 #include <TLorentzVector.h>
 #include <TMath.h>
 
+#include <TGeoManager.h>
+
 ClassImp(AliRICHv0)
 
 void AliRICHv0::StepManager()
@@ -93,11 +95,59 @@ void AliRICHv0::StepManager()
   if(gMC->VolId("CSI ")==gMC->CurrentVolID(copy0)){
     Int_t iChamber;
     gMC->CurrentVolOffID(2,iChamber);
-    TVector3 x3=C(iChamber)->G2L(x4);
-    Info("","loc(%+8.3f,%+8.3f,%8.3f) by G2L",         x3.X(),x3.Y(),x3.Z());  
     TVector2 x2=C(iChamber)->Glob2Loc(x4);
-    Info("","loc(%+8.3f,%+8.3f) by Global2Local",      x2.X(),x2.Y());  
+    Info("","loc(%+8.3f,%+8.3f) by Glob2Loc",      x2.X(),x2.Y());  
   }
   Info("","end of current step\n");
 }//StepManager()
-//__________________________________________________________________________________________________
+
+void AliRICHv0::CreateGeometry()
+{
+  if(GetDebug())Info("CreateGeometry","Start v0.");  
+  
+  Double_t cm=1,mm=0.1;
+  //place radioactive source compartment if needed
+  Double_t containerLen=21.8*mm/2                        ,containerR=38*mm/2;  
+  Double_t screwLen=15*mm/2                              ,screwR=5*mm/2;  
+  Double_t srcLen=10*mm/2                                ,srcR=2*mm/2;  
+  Double_t perpexLen=20*mm/2                             ,perpexR=34*mm/2;  
+  Double_t perpexWholeLen=10*mm/2                        ,perpexWholeR=4*mm/2;  
+  Double_t alBottomLen=containerLen-perpexLen            ,alWholeR=5*mm/2;      
+//volumes    
+  Double_t par[3];
+
+//  Double_t anodWireD=20*mkm, cathWireD=100*mkm, collWireD=100*mkm;
+        
+  Double_t pcZ2=0.5*mm;
+  par[0]=68.8*cm;            par[1]=70.86*cm;                par[2]=13*cm;           gMC->Gsvolu("RICH","BOX ",(*fIdtmed)[kCH4],par,3); //RICH    
+  par[0]=P()->PcSizeX()/2;   par[1]=P()->PcSizeY()/2;        par[2]=pcZ2;            gMC->Gsvolu("CSI ","BOX ",(*fIdtmed)[kCSI],par,3); //CSI
+  par[0]=P()->PcSizeX()/2;   par[1]=P()->PcSizeY()/2;        par[2]=P()->GapAmp();   gMC->Gsvolu("GAP ","BOX ",(*fIdtmed)[kCH4],par,3); //GAP
+//  par[0]=0;                  par[1]=;                        par[2]=P()->PcSizeX()/2;gMC->Gsvolu("WIAN","TUBE",(*fIdtmed)[kW],par,3);//Anod wire
+//  par[0]=0;                  par[1]=srcR;                    par[2]=P()->PcSizeX()/2;gMC->Gsvolu("WICA","TUBE",(*fIdtmed)[kCu],par,3);//Cathod wire
+//  par[0]=0;                  par[1]=srcR;                    par[2]=P()->PcSizeX()/2;gMC->Gsvolu("WICO","TUBE",(*fIdtmed)[kCu],par,3);//Collect wire
+    
+  par[0]=0      ;par[1]=containerR  ;par[2]=containerLen;  gMC->Gsvolu("CONT","TUBE",(*fIdtmed)[kCH4]   ,par,3); //container 
+  par[0]=perpexR;par[1]=containerR  ;par[2]=containerLen;  gMC->Gsvolu("ALWA","TUBE",(*fIdtmed)[kAl]    ,par,3); //Al cylindric wall
+  par[0]=0      ;par[1]=perpexR     ;par[2]=alBottomLen;   gMC->Gsvolu("ALBO","TUBE",(*fIdtmed)[kAl]    ,par,3); //Al bottom 
+  par[0]=0      ;par[1]=alWholeR    ;par[2]=alBottomLen;   gMC->Gsvolu("ALWH","TUBE",(*fIdtmed)[kCH4]   ,par,3); //Whole in Al bottom
+  par[0]=0      ;par[1]=perpexR     ;par[2]=perpexLen;     gMC->Gsvolu("PEPL","TUBE",(*fIdtmed)[kPerpex],par,3); //Perpex plug
+  par[0]=0      ;par[1]=perpexWholeR;par[2]=perpexWholeLen;gMC->Gsvolu("PEWH","TUBE",(*fIdtmed)[kCH4]   ,par,3); //Whole in Perpex
+  par[0]=0      ;par[1]=screwR      ;par[2]=screwLen;      gMC->Gsvolu("SCRE","TUBE",(*fIdtmed)[kSteel] ,par,3); //Screw
+  par[0]=0      ;par[1]=srcR        ;par[2]=srcLen;        gMC->Gsvolu("SOUR","TUBE",(*fIdtmed)[kSteel] ,par,3); //Source itself
+//nodes    
+  gMC->Gspos("RICH",1,"ALIC",0,0,-9                                ,0,"ONLY");     //RICH in ALIC
+  gMC->Gspos("CSI ",1,"RICH",0,0,-(P()->GapProx()+pcZ2)           ,0,"ONLY");     //CsI  in ALIC
+  gMC->Gspos("GAP ",1,"RICH",0,0,-(P()->GapProx()-P()->GapAmp()/2),0,"ONLY");     //GAP in ALIC
+    
+  gMC->Gspos("CONT",1,"RICH",0,0,1*cm                             ,0,"ONLY");     //Sr90 container in RICH
+  gMC->Gspos("ALWA",1,"CONT",0,0,0                                ,0,"ONLY");     //Al wall
+  gMC->Gspos("ALBO",1,"CONT",0,0,-containerLen+alBottomLen        ,0,"ONLY");     //Al bottom
+  gMC->Gspos("PEPL",1,"CONT",0,0,containerLen-perpexLen           ,0,"ONLY");     //Perpex plug
+   
+  gMC->Gspos("ALWH",1,"ALBO",6*mm,0,0                             ,0,"ONLY");     //Whole in Al bottom
+    
+  gMC->Gspos("PEWH",1,"PEPL",6*mm,0,-perpexLen+perpexWholeLen     ,0,"ONLY");     //Whole in Perpex plug
+  gMC->Gspos("SOUR",1,"PEPL",6*mm,0, perpexLen-srcLen             ,0,"ONLY");     //Source in Perpex plug
+  gMC->Gspos("SCRE",1,"PEPL",0,0,perpexLen-screwLen               ,0,"ONLY");     //Screw in Perpex plug
+  if(GetDebug())Info("CreateGeometry","Stop v0.");  
+}//CreateGeometry()
