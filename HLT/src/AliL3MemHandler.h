@@ -13,7 +13,7 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, 
 //         Anders Vestbo <mailto:vestbo$fi.uib.no>, 
 //         Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
-//*-- Copyright &copy ALICE HLT Group 
+// *-- Copyright &copy ALICE HLT Group 
 
 class AliL3DigitData;
 class AliL3SpacePointData;
@@ -32,7 +32,10 @@ class AliL3MemHandler {
  public:
   AliL3MemHandler();
   virtual ~AliL3MemHandler();
-  
+  AliL3MemHandler(const AliL3MemHandler& /*m*/){};
+  AliL3MemHandler& operator=(const AliL3MemHandler& /*&m*/)
+    {return (*this);}
+   
   void Reset(){CloseBinaryInput();CloseBinaryOutput();Free();}  
   void Init(Int_t s,Int_t p, Int_t *r=0);
 
@@ -106,59 +109,59 @@ class AliL3MemHandler {
   Int_t GetPatch() const {return fPatch;}
   
   //virtual functions:
-  virtual void FreeDigitsTree() {return;}
-  virtual Bool_t SetAliInput(char */*name*/){return 0;}
+  virtual void FreeDigitsTree() {fDummy=0; return;}
+  virtual Bool_t SetAliInput(char */*name*/){fDummy=0; return 0;}
 #ifdef use_newio
-  virtual Bool_t SetAliInput(AliRunLoader */*runloader*/){return 0;}
+  virtual Bool_t SetAliInput(AliRunLoader */*runloader*/){fDummy=0; return 0;}
 #endif
-  virtual void CloseAliInput(){return;} 
-  virtual Bool_t IsDigit(Int_t /*i*/=0){return 0;}
-  virtual Bool_t SetMCOutput(char */*name*/){return 0;}
-  virtual Bool_t SetMCOutput(FILE */*file*/){return 0;}
-  virtual void CloseMCOutput(){return;}
-  virtual Bool_t AliDigits2Binary(Int_t /*event*/=0,Bool_t /*altro*/=kFALSE){return 0;}
-  virtual Bool_t AliDigits2CompBinary(Int_t /*event*/=0,Bool_t /*altro*/=kFALSE){return 0;}  
-  virtual AliL3DigitRowData *AliDigits2Memory(UInt_t & /*nrow*/,Int_t /*event*/=0){return 0;}
-  virtual AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & /*nrow*/,Int_t /*event*/=0,Bool_t /*eventmerge*/=kFALSE){return 0;}
-  virtual void AliDigits2RootFile(AliL3DigitRowData */*rowPt*/,Char_t */*new_digitsfile*/){return;}
-  virtual Bool_t AliPoints2Binary(Int_t /*eventn*/=0){return 0;}
-  virtual AliL3SpacePointData *AliPoints2Memory(UInt_t & /*npoint*/,Int_t /*eventn*/=0){return 0;}
+  virtual void CloseAliInput(){fDummy=0; return;} 
+  virtual Bool_t IsDigit(Int_t /*i*/=0){fDummy=0; return 0;}
+  virtual Bool_t SetMCOutput(char */*name*/){fDummy=0; return 0;}
+  virtual Bool_t SetMCOutput(FILE */*file*/){fDummy=0; return 0;}
+  virtual void CloseMCOutput(){fDummy=0; return;}
+  virtual Bool_t AliDigits2Binary(Int_t /*event*/=0,Bool_t /*altro*/=kFALSE){fDummy=0; return 0;}
+  virtual Bool_t AliDigits2CompBinary(Int_t /*event*/=0,Bool_t /*altro*/=kFALSE){fDummy=0; return 0;}  
+  virtual AliL3DigitRowData *AliDigits2Memory(UInt_t & /*nrow*/,Int_t /*event*/=0){fDummy=0; return 0;}
+  virtual AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & /*nrow*/,Int_t /*event*/=0,Bool_t /*eventmerge*/=kFALSE){fDummy=0; return 0;}
+  virtual void AliDigits2RootFile(AliL3DigitRowData */*rowPt*/,Char_t */*new_digitsfile*/){fDummy=0; return;}
+  virtual Bool_t AliPoints2Binary(Int_t /*eventn*/=0){fDummy=0; return 0;}
+  virtual AliL3SpacePointData *AliPoints2Memory(UInt_t & /*npoint*/,Int_t /*eventn*/=0){fDummy=0; return 0;}
 
   //AliL3RawDataFileHandler
-  virtual Bool_t SetRawInput(Char_t */*name*/){return 0;}
-  virtual Bool_t SetRawInput(ifstream */*file*/){return 0;}
+  virtual Bool_t SetRawInput(Char_t */*name*/){fDummy=0; return 0;}
+  virtual Bool_t SetRawInput(ifstream */*file*/){fDummy=0; return 0;}
   virtual void CloseRawInput(){} 
-  virtual Int_t ReadRawInput(){return 0;}
-  virtual Short_t** GetRawData(Int_t &/*channels*/, Int_t & /*timebins*/){return 0;}
+  virtual Int_t ReadRawInput(){fDummy=0; return 0;}
+  virtual Short_t** GetRawData(Int_t &/*channels*/, Int_t & /*timebins*/){fDummy=0; return 0;}
 
-  virtual Bool_t SetRawOutput(Char_t */*name*/){return 0;}
-  virtual Bool_t SetRawOutput(ofstream */*file*/){return 0;}
+  virtual Bool_t SetRawOutput(Char_t */*name*/){fDummy=0; return 0;}
+  virtual Bool_t SetRawOutput(ofstream */*file*/){fDummy=0; return 0;}
   virtual void CloseRawOutput(){} 
-  virtual Bool_t SaveRawOutput(){return 0;}
+  virtual Bool_t SaveRawOutput(){fDummy=0; return 0;}
 
-  virtual Bool_t SetMappingFile(Char_t */*name*/){return 0;}
-  virtual Bool_t SetMappingFile(FILE */*file*/){return 0;}
+  virtual Bool_t SetMappingFile(Char_t */*name*/){fDummy=0; return 0;}
+  virtual Bool_t SetMappingFile(FILE */*file*/){fDummy=0; return 0;}
   virtual void CloseMappingFile(){} 
-  virtual Int_t ReadMappingFile(){return 0;}
+  virtual Int_t ReadMappingFile(){fDummy=0; return 0;}
   
-  virtual Bool_t SetRawPedestalsInput(Char_t */*name*/){return 0;}
-  virtual Bool_t SetRawPedestalsInput(ifstream */*file*/){return 0;}
+  virtual Bool_t SetRawPedestalsInput(Char_t */*name*/){fDummy=0; return 0;}
+  virtual Bool_t SetRawPedestalsInput(ifstream */*file*/){fDummy=0; return 0;}
   virtual void CloseRawPedestalsInput(){} 
-  virtual Int_t ReadRawPedestalsInput(){return 0;}
+  virtual Int_t ReadRawPedestalsInput(){fDummy=0; return 0;}
 
-  virtual AliL3DigitRowData* RawData2Memory(UInt_t &/*nrow*/,Int_t /*event*/=-1){return 0;}
-  virtual Bool_t RawData2CompMemory(Int_t /*event*/=-1){return 0;}
+  virtual AliL3DigitRowData* RawData2Memory(UInt_t &/*nrow*/,Int_t /*event*/=-1){fDummy=0; return 0;}
+  virtual Bool_t RawData2CompMemory(Int_t /*event*/=-1){fDummy=0; return 0;}
 
   //AliL3DDLDataFileHandler
 #ifdef use_newio
-  virtual Bool_t SetReaderInput(Char_t */*name*/,Int_t /*event*/=0){return 0;}
+  virtual Bool_t SetReaderInput(Char_t */*name*/,Int_t /*event*/=0){fDummy=0; return 0;}
 #else
-  virtual Bool_t SetReaderInput(Char_t */*name*/,Bool_t /*add*/=kTRUE){return 0;}
+  virtual Bool_t SetReaderInput(Char_t */*name*/,Bool_t /*add*/=kTRUE){fDummy=0; return 0;}
 #endif
   virtual void CloseReaderInput(){};
 
-  virtual AliL3DigitRowData* DDLData2Memory(UInt_t &/*nrow*/,Int_t /*event*/=-1){return 0;}
-  virtual Bool_t DDLData2CompBinary(Int_t /*event*/=-1){return 0;}
+  virtual AliL3DigitRowData* DDLData2Memory(UInt_t &/*nrow*/,Int_t /*event*/=-1){fDummy=0; return 0;}
+  virtual Bool_t DDLData2CompBinary(Int_t /*event*/=-1){fDummy=0; return 0;}
 
  protected:
   Int_t fRowMin; //min row
@@ -177,13 +180,17 @@ class AliL3MemHandler {
   Byte_t *fPt;//!
   UInt_t fSize; //size of allocated data structure
 
-  AliL3RandomDigitData **fDPt;//!
-  AliL3RandomDigitData *fRandomDigits;//!
   Bool_t fIsRandom; //random data generated
   Int_t fNRandom;   //count random digits 
   Int_t fNGenerate; //count generated digits
   Int_t fNUsed;     //count used digits
   Int_t fNDigits;   //count digits from digitstree
+
+  AliL3RandomDigitData **fDPt;//!
+  AliL3RandomDigitData *fRandomDigits;//!
+
+  Int_t fDummy; // to fool the virtual const problem 
+                // of the coding conventions tool
 
   void Write(UInt_t *comp, UInt_t & index, UInt_t & subindex, UShort_t value) const;
   UShort_t Read(UInt_t *comp, UInt_t & index, UInt_t & subindex) const;
