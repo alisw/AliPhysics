@@ -128,7 +128,7 @@ public:
   // Functions from GEOCAD
   //_______________________________________________________________________
   
-   virtual void ReadEuclid(const char*, const AliModule*, const char*);
+   virtual void ReadEuclid(const char*, const AliModule*, char*);
    virtual void ReadEuclidMedia(const char*, const AliModule*);
 
    TTree         *TreeD() {return fTreeD;}

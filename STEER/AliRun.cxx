@@ -368,8 +368,8 @@ void AliRun::FinishPrimary()
   // Called  at the end of each primary track
   //
   
-  static Int_t count=0;
-  const Int_t times=10;
+  //  static Int_t count=0;
+  //  const Int_t times=10;
   // This primary is finished, purify stack
   gAlice->PurifyKine();
 
@@ -1407,7 +1407,7 @@ void AliRun::StepManager(Int_t id) const
 }
 
 //_____________________________________________________________________________
-void AliRun::ReadEuclid(const char* filnam, const AliModule *det, const char* topvol)
+void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
 {
   //                                                                     
   //       read in the geometry of the detector in euclid file format    
