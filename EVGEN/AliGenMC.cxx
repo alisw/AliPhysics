@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/07/13 10:56:00  morsch
+AliGenMC base class for AliGenParam and AliGenPythia commonalities.
+
 */
 
 #include "AliGenMC.h"
@@ -45,10 +48,12 @@ AliGenMC::AliGenMC(Int_t npart)
     SetChildPhiRange();
     SetChildThetaRange();
     SetChildYRange(); 
+    SetCutVertexZ();
 // 
     fParentSelect.Set(8);
     fChildSelect.Set(8);
     for (Int_t i=0; i<8; i++) fParentSelect[i]=fChildSelect[i]=0;
+    
 }
 
 AliGenMC::AliGenMC(const AliGenMC & mc)
