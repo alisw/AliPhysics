@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/06/12 23:43:16  nilsen
+New ITS code replacing the old structure and simulations code.
+
 Revision 1.9.2.8  2000/06/12 18:05:59  barbera
 fixed posible compilation errors on HP unix
 
@@ -836,10 +839,15 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t lastev,Int_t nmodules,Opti
 
     // store temporarily coordinates of signal particles - see where delete
     static Int_t *signal;
+    Int_t i;
     if(!signal) signal=new Int_t[nmodules];
     memset(signal,0,sizeof(int)*nmodules);
-    Float_t xhit[nmodules][4];
-    Float_t yhit[nmodules][4];
+//    Float_t xhit[nmodules][4];
+    Float_t **xhit = new Float_t*[nmodules];
+    for(i=0;i<nmodules;i++) xhit[i] = new Float_t[4];
+//    Float_t yhit[nmodules][4];
+    Float_t **yhit = new Float_t*[nmodules];
+    for(i=0;i<nmodules;i++) yhit[i] = new Float_t[4];
 
     Int_t npart = gAlice->GetEvent(evnt);
     if(npart<=0) return;
@@ -937,6 +945,11 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t lastev,Int_t nmodules,Opti
 
     } // end if add
 
+
+    for(i=0;i<nmodules;i++) delete[] xhit[i];
+    delete[] xhit;
+    for(i=0;i<nmodules;i++) delete[] yhit[i];
+    delete[] yhit;
     //if (evnt==lastev) {delete [] signal; delete signal;}
 
     //gObjectTable->Print();
