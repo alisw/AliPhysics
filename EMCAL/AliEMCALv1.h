@@ -45,16 +45,8 @@ public:
     
 private:
 
-  Float_t fLightYieldMean ;         // Mean lightyield in a plastic layer per GeV (Poisson distribution)
-  Float_t fIntrinsicAPDEfficiency ; // Photo efficiency of the APD diode   
-  Float_t fLightYieldAttenuation ;  // Attenuation of the light through the light fiber
-  Float_t fRecalibrationFactor ;    // Recalibration factor
-  Float_t fAPDGain ;                // APD Gain
-  Float_t fLightFactor ;            //! a calculated factor
-  Float_t fAPDFactor ;              //! a calculated factor
-
-  ClassDef(AliEMCALv1,4)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
-
+  ClassDef(AliEMCALv1,5)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
+    
 };
 
 #endif // AliEMCALV1_H

@@ -62,8 +62,7 @@ ClassImp(AliEMCALv1)
 //______________________________________________________________________
 AliEMCALv1::AliEMCALv1():AliEMCALv0(){
   // ctor
-    fLightYieldMean = 0 ; 
-    fIntrinsicAPDEfficiency = fLightFactor = fLightYieldAttenuation =   fAPDFactor = fAPDGain = fRecalibrationFactor = fAPDFactor = 0. ; 
+
 }
 
 //______________________________________________________________________
@@ -76,30 +75,6 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title):
 
     fNhits = 0;
     fIshunt     =  2; // All hits are associated with particles entering the calorimeter
-
-    //Photoelectron statistics:
-    // The light yield is a poissonian distribution of the number of
-    // photons created in a plastic layer, calculated using following formula
-    // NumberOfPhotons = EnergyLost * LightYieldMean* APDEfficiency *
-    //              exp (-LightYieldAttenuation * DistanceToPINdiodeFromTheHit)
-    // LightYieldMean is parameter calculated to be over 100000 photons per GeV (a guess)
-    // APDEfficiency is 0.02655
-    // fLightYieldAttenuation is 0.0045 a guess
-    // TO BE FIXED
-    //***** Need a method in geometry to retrieve the fiber length corresponding to each layer
-    //***** See the step manager for the light attenuation calculation 
-    // The number of electrons created in the APD is
-    // NumberOfElectrons = APDGain * LightYield
-    // The APD Gain is 300
-    
-    fLightYieldMean         = 10000000.;  // This is a guess
-    fIntrinsicAPDEfficiency = 0.02655 ;
-    fLightFactor            = fLightYieldMean * fIntrinsicAPDEfficiency ; 
-    fLightYieldAttenuation  = 0.0045 ; // an other guess 
-    fAPDGain                = 300. ;
-    fRecalibrationFactor    = 13.418/ fLightYieldMean ;
-    fAPDFactor              = (fRecalibrationFactor/100.) * fAPDGain ; 
-
 }
 
 //______________________________________________________________________
@@ -116,8 +91,8 @@ AliEMCALv1::~AliEMCALv1(){
 void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t iparent, Float_t ienergy, 
 			Int_t id, Float_t * hits,Float_t * p){
     // Add a hit to the hit list.
-    // An EMCAL hit is the sum of all hits in a single segment 
-    //   originating from the same enterring particle 
+    // An EMCAL hit is the sum of all hits in a tower section (PRE, ECAL, HCAL) 
+    //   originating from the same entering particle 
     Int_t hitCounter;
     
     AliEMCALHit *newHit;
@@ -129,7 +104,8 @@ void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
 	curHit = (AliEMCALHit*) (*fHits)[hitCounter];
 	// We add hits with the same tracknumber, while GEANT treats
 	// primaries succesively
-	if(curHit->GetPrimary() != primary) break;
+	if(curHit->GetPrimary() != primary) 
+	  break;
 	if( *curHit == *newHit ) {
 	    *curHit = *curHit + *newHit;
 	    deja = kTRUE;
@@ -149,7 +125,6 @@ void AliEMCALv1::StepManager(void){
   // crystal or PPSD gas Cell
 
   Int_t          id[2];           // (layer, phi, Eta) indices
-  Int_t          absid;
   // position wrt MRS and energy deposited
   Float_t        xyzte[5]={0.,0.,0.,0.,0.};// position wrt MRS, time and energy deposited
   Float_t        pmom[4]={0.,0.,0.,0.};
@@ -188,7 +163,7 @@ void AliEMCALv1::StepManager(void){
     Float_t depositedEnergy ; 
     
     if( (depositedEnergy = gMC->Edep()) > 0.){// Track is inside a scintillator and deposits some energy
-      
+     
       gMC->TrackPosition(pos);
       xyzte[0] = pos[0];
       xyzte[1] = pos[1];
@@ -203,19 +178,29 @@ void AliEMCALv1::StepManager(void){
       
       gMC->CurrentVolOffID(1, id[0]); // get the POLY copy number;
       gMC->CurrentVolID(id[1]); // get the phi number inside the layer
-      absid = (id[0]-1)*(geom->GetNPhi()) + id[1];
       
-      //Calculates the light yield, the number of photons produced in the
-      //plastic layer 
-      // Here we need to know the fiber lebgth to calculate the attenuation
-     
-      Float_t lengthOfFiber = 0. ;// should be retrieved from the geometry
-
-      Float_t lightYield = gRandom->Poisson(fLightFactor * depositedEnergy *
-					    exp(-fLightYieldAttenuation * lengthOfFiber)) ;
-      xyzte[4] = fAPDFactor * lightYield  ;
+      Int_t tower = (id[0]-1) % geom->GetNZ() + 1 + (id[1] - 1) * 96 ;  
+      Int_t layer = static_cast<Int_t>((id[0]-1)/(geom->GetNZ())) + 1 ; 
+      Int_t absid = tower ; 
+      if (layer <= geom->GetNPRLayers() )
+	absid += geom->GetNZ() * geom->GetNPhi() ;
+      else if (layer > geom->GetNECLayers() )
+	absid += 2 * geom->GetNZ() * geom->GetNPhi() ;
+      else {
+	Int_t nlayers = geom->GetNPRLayers()+ geom->GetNECLayers()+ geom->GetNHCLayers() ;
+	if (layer > nlayers) 
+	  Fatal("StepManager", "Wrong calculation of layer number: layer = %d > %d\n", layer, nlayers) ;
+      }
+	
+      Float_t lightYield =  depositedEnergy ;
+					     ;
+      xyzte[4] = lightYield  ;
    
       primary = gAlice->GetPrimary(tracknumber);
+
+      if (gDebug == 2) 
+	Info("StepManager", "id0 = %d, id1 = %d, absid = %d tower = %d layer = %d energy = %f\n", id[0], id[1], absid, tower, layer, xyzte[4]) ;
+
       AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid, xyzte, pmom);
     } // there is deposited energy
   }
