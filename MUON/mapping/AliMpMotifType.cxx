@@ -47,7 +47,7 @@ AliMpMotifType::AliMpMotifType()
 AliMpMotifType::~AliMpMotifType() {
 // Destructor
 
- for(ConnectionMap_t::const_iterator i = fConnections.begin();
+ for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
    delete i->second;
 
@@ -103,7 +103,7 @@ void AliMpMotifType::AddConnection(const AliMpIntPair &localIndices,
 AliMpConnection *AliMpMotifType::FindConnectionByPadNum(Int_t padNum) const
 {
   // Retrive the AliMpConnection pointer from its pad num
- for(ConnectionMap_t::const_iterator i = fConnections.begin();
+ for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
    if (i->second->GetPadNum()==padNum) return i->second;
  return 0;
@@ -111,12 +111,12 @@ AliMpConnection *AliMpMotifType::FindConnectionByPadNum(Int_t padNum) const
 
 //______________________________________________________________________________
 AliMpConnection *AliMpMotifType::FindConnectionByLocalIndices(
-                                       AliMpIntPair localIndices) const
+                                       const AliMpIntPair& localIndices) const
 {
   if (!localIndices.IsValid()) return 0;
 
   // Retrive the AliMpConnection pointer from its position (in pad unit)
-  ConnectionMap_t::const_iterator i = fConnections.find(localIndices);
+  ConnectionMapCIterator i = fConnections.find(localIndices);
  if (i != fConnections.end())
    return i->second;
  else return 0;
@@ -126,7 +126,7 @@ AliMpConnection *AliMpMotifType::FindConnectionByLocalIndices(
 AliMpConnection *AliMpMotifType::FindConnectionByGassiNum(Int_t gassiNum) const
 {
   // return the connection for the given gassiplex number
- for(ConnectionMap_t::const_iterator i = fConnections.begin();
+ for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
    if (i->second->GetGassiNum()==gassiNum) return i->second;
  return 0;
@@ -135,7 +135,7 @@ AliMpConnection *AliMpMotifType::FindConnectionByGassiNum(Int_t gassiNum) const
 AliMpConnection *AliMpMotifType::FindConnectionByKaptonNum(Int_t kaptonNum) const
 {
   // Gives the connection related to the given kapton number
- for(ConnectionMap_t::const_iterator i = fConnections.begin();
+ for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
    if (i->second->GetKaptonNum()==kaptonNum) return i->second;
  return 0;
@@ -144,7 +144,7 @@ AliMpConnection *AliMpMotifType::FindConnectionByKaptonNum(Int_t kaptonNum) cons
 AliMpConnection *AliMpMotifType::FindConnectionByBergNum(Int_t bergNum) const
 {
   // Retrieve the connection from a Berg connector number
- for(ConnectionMap_t::const_iterator i = fConnections.begin();
+ for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
    if (i->second->GetBergNum()==bergNum) return i->second;
  return 0;
@@ -159,7 +159,7 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByConnection(
   // Not to be used widely, since it use a search in the
   // connection list...
 
- for(ConnectionMap_t::const_iterator i = fConnections.begin();
+ for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
    if (i->second==connection) return i->first;
 
@@ -170,7 +170,7 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByConnection(
 AliMpIntPair AliMpMotifType::FindLocalIndicesByPadNum(Int_t padNum) const
 {
   // Retrive the AliMpConnection pointer from its pad num
- for(ConnectionMap_t::const_iterator i = fConnections.begin();
+ for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
    if (i->second->GetPadNum()==padNum) return i->first;
    
@@ -181,7 +181,7 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByPadNum(Int_t padNum) const
 AliMpIntPair AliMpMotifType::FindLocalIndicesByGassiNum(Int_t gassiNum) const
 {
   // return the connection for the given gassiplex number
- for(ConnectionMap_t::const_iterator i = fConnections.begin();
+ for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
    if (i->second->GetGassiNum()==gassiNum) return i->first;
    
@@ -192,7 +192,7 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByGassiNum(Int_t gassiNum) const
 AliMpIntPair AliMpMotifType::FindLocalIndicesByKaptonNum(Int_t kaptonNum) const
 {
   // Gives the connection related to the given kapton number
- for(ConnectionMap_t::const_iterator i = fConnections.begin();
+ for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
    if (i->second->GetKaptonNum()==kaptonNum) return i->first;
    
@@ -203,7 +203,7 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByKaptonNum(Int_t kaptonNum) const
 AliMpIntPair AliMpMotifType::FindLocalIndicesByBergNum(Int_t bergNum) const
 {
   // Retrieve the connection from a Berg connector number
- for(ConnectionMap_t::const_iterator i = fConnections.begin();
+ for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
    if (i->second->GetBergNum()==bergNum) return i->first;
    
