@@ -113,13 +113,13 @@ void Config(char directory[100]="", char option[6]="box")
     gener->SetPtRange(0,100.);
     gener->SetPhiRange(-180, 180);
     gener->SetCutOnChild(1);
+    gener->SetChildPhiRange(0.,360.);
     gener->SetChildThetaRange(171.0,178.0);
     gener->SetOrigin(0,0,0);          //vertex position    gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
     gener->SetForceDecay(kDiMuon);
     gener->SetTrackingFlag(1);
     gener->Init();
   }
-     
   //============================================================= 
   // Field (L3 0.4 T)
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
@@ -127,11 +127,19 @@ void Config(char directory[100]="", char option[6]="box")
 
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY","Alice envelop");
-
-
+  //=================== ABSO parameters ============================
+  AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
+  //=================== DIPO parameters ============================
+  AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
+  //================== HALL parameters ============================
+  AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
+  //=================== PIPE parameters ============================
+  AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
+  //=================== SHIL parameters ============================
+  AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
   //=================== MUON Subsystem ===========================
-   cout << ">>> Config_MUON_test.C: Creating AliMUONv1 ..."<<endl;
-   AliMUONv1 *MUON  = new AliMUONv1("MUON","default"); 
+  cout << ">>> Config_MUON_test.C: Creating AliMUONv1 ..."<<endl;
+  AliMUONv1 *MUON  = new AliMUONv1("MUON","default"); 
 }
 
 Float_t EtaToTheta(Float_t arg){
