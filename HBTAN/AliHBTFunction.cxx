@@ -32,8 +32,12 @@ ClassImp( AliHBTFunction )
 
 AliHBTFunction::AliHBTFunction()
 {
- 
- fPairCut = new AliHBTEmptyPairCut(); //dummy cut
+  fPairCut = new AliHBTEmptyPairCut(); //dummy cut
+}
+/******************************************************************/
+AliHBTFunction::AliHBTFunction(const char* name,const char* title):TNamed(name,title)
+{
+  fPairCut = new AliHBTEmptyPairCut(); //dummy cut
 }
 /******************************************************************/
 
@@ -164,6 +168,11 @@ ClassImp( AliHBTTwoPairFctn)
 /******************************************************************/
 
 ClassImp( AliHBTOnePairFctn1D )
+AliHBTOnePairFctn1D::AliHBTOnePairFctn1D():fNBinsToScale(30)
+ {
+   fNumerator = 0x0;
+   fDenominator = 0x0;
+ }
 
 AliHBTOnePairFctn1D::
 AliHBTOnePairFctn1D(Int_t nbins, Double_t maxXval, Double_t minXval)
@@ -187,6 +196,24 @@ AliHBTOnePairFctn1D(Int_t nbins, Double_t maxXval, Double_t minXval)
    fNBinsToScale = 30;
    
  }
+AliHBTOnePairFctn1D::
+AliHBTOnePairFctn1D(const Char_t *name, const Char_t *title,
+                    Int_t nbins, Double_t maxXval, Double_t minXval)
+	:AliHBTOnePairFctn(name,title)
+{
+   TString numstr = fName + " Numerator";  //title and name of the 
+                                           //numerator histogram
+   TString denstr = fName + " Denominator";//title and name of the 
+                                           //denominator histogram
+         
+   fNumerator   = new TH1D(numstr.Data(),numstr.Data(),nbins,minXval,maxXval);
+   fDenominator = new TH1D(denstr.Data(),denstr.Data(),nbins,minXval,maxXval);
+   
+   fNumerator->Sumw2();
+   fDenominator->Sumw2();
+   
+   fNBinsToScale = 30;
+}
 /******************************************************************/
 AliHBTOnePairFctn1D::~AliHBTOnePairFctn1D()
 {
@@ -350,14 +377,91 @@ AliHBTOnePairFctn3D(Int_t nXbins, Double_t maxXval, Double_t minXval,
    fDenominator->Sumw2();
 
 }	  
-
+/******************************************************************/
 
 AliHBTOnePairFctn3D::~AliHBTOnePairFctn3D()
 {
   delete fNumerator;
   delete fDenominator;
 }
+/******************************************************************/
 
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+ClassImp( AliHBTTwoPairFctn1D)
+
+AliHBTTwoPairFctn1D::
+AliHBTTwoPairFctn1D(Int_t nbins, Double_t maxval, Double_t minval)
+ {
+   TString numstr = fName + " Numerator";  //title and name of the 
+                                           //numerator histogram
+   TString denstr = fName + " Denominator";//title and name of the 
+                                           //denominator histogram
+         
+   fNumerator   = new TH1D(numstr.Data(),numstr.Data(),
+                           nbins,minval,maxval);
+	       
+   fDenominator = new TH1D(denstr.Data(),denstr.Data(),
+                           nbins,minval,maxval);
+   
+   fNumerator->Sumw2();
+   fDenominator->Sumw2();
+ }
+
+AliHBTTwoPairFctn1D::
+AliHBTTwoPairFctn1D(const Char_t* name, const Char_t* title,
+                    Int_t nbins, Double_t maxval, Double_t minval)
+	:AliHBTTwoPairFctn(name,title)
+ {
+   TString numstr = fName + " Numerator";  //title and name of the 
+                                           //numerator histogram
+   TString denstr = fName + " Denominator";//title and name of the 
+                                           //denominator histogram
+         
+   fNumerator   = new TH1D(numstr.Data(),numstr.Data(),
+                           nbins,minval,maxval);
+	       
+   fDenominator = new TH1D(denstr.Data(),denstr.Data(),
+                           nbins,minval,maxval);
+   
+   fNumerator->Sumw2();
+   fDenominator->Sumw2();
+ }
+
+
+/******************************************************************/
+AliHBTTwoPairFctn1D::~AliHBTTwoPairFctn1D()
+{
+  delete fNumerator;
+  delete fDenominator;
+}
+void AliHBTTwoPairFctn1D::
+ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+  partpair  = CheckPair(partpair);
+  trackpair = CheckPair(trackpair);
+  if( partpair && trackpair) 
+   { 
+     Double_t x = GetValue(trackpair,partpair);
+     fNumerator->Fill(x);
+   }
+}
+/******************************************************************/
+
+void AliHBTTwoPairFctn1D::
+ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+  partpair  = CheckPair(partpair);
+  trackpair = CheckPair(trackpair);
+  if( partpair && trackpair)
+   { 
+     Double_t x = GetValue(trackpair,partpair);
+     fDenominator->Fill(x);
+   }
+
+}
 
 /******************************************************************/
 /******************************************************************/
@@ -415,6 +519,38 @@ ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
      Double_t x,y;
      GetValues(trackpair,partpair,x,y);
      fDenominator->Fill(y,x);
+   }
+
+}
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+ClassImp(AliHBTTwoPairFctn3D)
+
+void AliHBTTwoPairFctn3D::
+ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+  partpair  = CheckPair(partpair);
+  trackpair = CheckPair(trackpair);
+  if( partpair && trackpair) 
+   { 
+     Double_t x,y,z;
+     GetValues(trackpair,partpair,x,y,z);
+     fNumerator->Fill(z,y,x);
+   }
+}
+
+void AliHBTTwoPairFctn3D::
+ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+  partpair  = CheckPair(partpair);
+  trackpair = CheckPair(trackpair);
+  if( partpair && trackpair)
+   { 
+     Double_t x,y,z;
+     GetValues(trackpair,partpair,x,y,z);
+     fDenominator->Fill(z,y,x);
    }
 
 }
