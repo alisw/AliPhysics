@@ -37,8 +37,6 @@ AliMagFC::AliMagFC(const char *name, const char *title, const Int_t integ,
   //
   fType = kConst;
   fMap  = 1;
-  printf("Constant Field %s created: map= %d, factor= %f\n",fName.Data(),fMap,
-	 factor);
 }
 
 //________________________________________
@@ -76,6 +74,7 @@ void AliMagFC::ZDCField(Float_t *x, Float_t *b)
 {
 //This is the ZDC part
     Float_t rad2=x[0]*x[0]+x[1]*x[1];
+
     if(x[2] < kCORBEG2 && x[2] > kCOREND2){
 	if(rad2<kCOR2RA2){
 	    b[0] = - kFCORN2;
