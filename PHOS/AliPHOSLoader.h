@@ -50,7 +50,7 @@ class AliPHOSDigitizer ;
 
 class AliPHOSLoader : public AliLoader {
   
- public:
+public:
 
   AliPHOSLoader();
   AliPHOSLoader(const AliPHOSLoader & obj) : AliLoader(obj) {}
@@ -159,21 +159,21 @@ class AliPHOSLoader : public AliLoader {
   //  AliPHOSSDigitizer*  PHOSSDigitizer(TString name = AliConfig::fgkDefaultEventFolderName);
   //AliPHOSDigitizer*   PHOSDigitizer()  { return  dynamic_cast<AliPHOSDigitizer*>(Digitizer()) ;}
 
-  AliPHOSClusterizer* Clusterizer ()  {return dynamic_cast<AliPHOSClusterizer*>(Reconstructioner()) ;}
-  Int_t PostClusterizer(TTask* clust){return PostReconstructioner(clust);}
-  Int_t LoadClusterizer(Option_t * opt="") {return LoadReconstructioner(opt);}
-  Int_t WriteClusterizer(Option_t * opt="") {return WriteReconstructioner(opt);}
+  AliPHOSClusterizer* Clusterizer () const {return dynamic_cast<AliPHOSClusterizer*>(Reconstructioner()) ;}
+  Int_t PostClusterizer(TTask* clust) const {return PostReconstructioner(clust);}
+  Int_t LoadClusterizer(Option_t * opt="") const {return LoadReconstructioner(opt);}
+  Int_t WriteClusterizer(Option_t * opt="") const {return WriteReconstructioner(opt);}
 
-  AliPHOSPID * PID (){return dynamic_cast<AliPHOSPID*>(PIDTask()) ;}
-  Int_t PostPID(TTask* pid){return PostPIDTask(pid);}
-  Int_t LoadPID(Option_t * opt="") {return LoadPIDTask(opt);}
-  Int_t WritePID(Option_t * opt="") {return WritePIDTask(opt);}
+  AliPHOSPID * PID () const {return dynamic_cast<AliPHOSPID*>(PIDTask()) ;}
+  Int_t PostPID(TTask* pid) const {return PostPIDTask(pid);}
+  Int_t LoadPID(Option_t * opt="") const {return LoadPIDTask(opt);}
+  Int_t WritePID(Option_t * opt="") const {return WritePIDTask(opt);}
 
 
-  AliPHOSTrackSegmentMaker * TrackSegmentMaker ()  { return dynamic_cast<AliPHOSTrackSegmentMaker *>(Tracker()) ;}
-  Int_t PostTrackSegmentMaker(TTask* segmaker){return PostTracker(segmaker);}
-  Int_t LoadTrackSegmentMaker(Option_t * opt="") {return LoadTracker(opt);}
-  Int_t WriteTrackSegmentMaker(Option_t * opt="") {return WriteTracker(opt);}
+  AliPHOSTrackSegmentMaker * TrackSegmentMaker () const { return dynamic_cast<AliPHOSTrackSegmentMaker *>(Tracker()) ;}
+  Int_t PostTrackSegmentMaker(TTask* segmaker) const {return PostTracker(segmaker);}
+  Int_t LoadTrackSegmentMaker(Option_t * opt="") const {return LoadTracker(opt);}
+  Int_t WriteTrackSegmentMaker(Option_t * opt="") const {return WriteTracker(opt);}
 
   
   void   SetDebug(Int_t level) {fDebug = level;} // Set debug level
@@ -181,21 +181,6 @@ class AliPHOSLoader : public AliLoader {
   
   AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
   void ReadCalibrationDB(const char * name, const char * filename);
-  
- public:
-
-  static const TString fgkHitsName;//Name for TClonesArray with hits from one event
-  static const TString fgkSDigitsName;//Name for TClonesArray 
-  static const TString fgkDigitsName;//Name for TClonesArray 
-  static const TString fgkEmcRecPointsName;//Name for TClonesArray 
-  static const TString fgkCpvRecPointsName;//Name for TClonesArray 
-  static const TString fgkTracksName;//Name for TClonesArray 
-  static const TString fgkRecParticlesName;//Name for TClonesArray
-
-  static const TString fgkEmcRecPointsBranchName;//Name for branch
-  static const TString fgkCpvRecPointsBranchName;//Name for branch
-  static const TString fgkTrackSegmentsBranchName;//Name for branch
-  static const TString fgkRecParticlesBranchName;//Name for branch
   
 protected:
   TString fBranchTitle;            //Title of the branch
@@ -212,6 +197,20 @@ private:
   
   void  ReadTreeQA() ;
   Int_t  fDebug ;             // Debug level
+
+  static const TString fgkHitsName;//Name for TClonesArray with hits from one event
+  static const TString fgkSDigitsName;//Name for TClonesArray 
+  static const TString fgkDigitsName;//Name for TClonesArray 
+  static const TString fgkEmcRecPointsName;//Name for TClonesArray 
+  static const TString fgkCpvRecPointsName;//Name for TClonesArray 
+  static const TString fgkTracksName;//Name for TClonesArray 
+  static const TString fgkRecParticlesName;//Name for TClonesArray
+
+  static const TString fgkEmcRecPointsBranchName;//Name for branch
+  static const TString fgkCpvRecPointsBranchName;//Name for branch
+  static const TString fgkTrackSegmentsBranchName;//Name for branch
+  static const TString fgkRecParticlesBranchName;//Name for branch
+  
  
   ClassDef(AliPHOSLoader,3)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 
