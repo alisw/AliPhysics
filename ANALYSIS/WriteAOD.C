@@ -2,6 +2,7 @@
   #include "$(ALICE_ROOT)/TPC/alles.h"
   #include "AliReader.h"
   #include "AliReaderKineTree.h"
+  #include "AliReaderESDTree.h"
   #include "AliAODParticleCut.h"
   #include "AliAOD.h"
   #include "AliAODPairCut.h"
@@ -76,6 +77,7 @@ void WriteAOD(Option_t* datatype, Int_t first = -1,Int_t last = -1,
   AliReader* reader;
   Int_t kine = strcmp(datatype,"Kine");
   Int_t ESD = strcmp(datatype,"ESD");
+  Int_t ESDMuon = strcmp(datatype,"ESDMuon");
   Int_t intern = strcmp(datatype,"AOD");
 
   if(!kine)
@@ -100,6 +102,21 @@ void WriteAOD(Option_t* datatype, Int_t first = -1,Int_t last = -1,
    {
     reader = new AliHBTReaderAOD("AOD.root");
     multcheck = kTRUE;
+   }
+
+  else if (!ESDMuon)
+   {
+     // set reader for ESD
+     AliReaderESDTree* muonreader = new AliReaderESDTree("AliESDs.root");
+     // active muon ESD reader
+     muonreader->SetReadMuon(kTRUE);
+     // disable central barrel (default = kTRUE)
+     muonreader->SetReadCentralBarrel(kFALSE);
+     // disable simulated data (not implemented yet)
+     muonreader->ReadSimulatedData(kFALSE);
+
+     reader = muonreader;
+     multcheck = kFALSE;
    }
   else
    {
