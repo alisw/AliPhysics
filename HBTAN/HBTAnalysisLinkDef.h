@@ -174,6 +174,10 @@
 
 #pragma link C++ class AliHBTMonPIDPurityVsPtFctn+;
 #pragma link C++ class AliHBTMonPIDContaminationVsPtFctn+;
+#pragma link C++ class AliHBTQInvCorrelFctnPerfectPID+;
+#pragma link C++ class AliHBTWeightQInvCorrelFctnPerfectPID+;
+#pragma link C++ class AliHBTWeightQOutSQideQLongFctnPerfectPID+;
+#pragma link C++ class AliHBTQOutSQideQLongFctnPerfectPID+;
 #pragma link C++ class AliHBTPairPIDProbVsQInvFctn+;
 #pragma link C++ class AliHBTPairPIDProbVsQOutSQideQLongFctn+;
 

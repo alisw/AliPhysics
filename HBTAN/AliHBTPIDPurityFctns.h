@@ -57,6 +57,86 @@ class AliHBTMonPIDContaminationVsPtFctn: public AliHBTMonTwoParticleFctn1D, publ
 };
 /*************************************************************************************/
 
+class AliHBTQInvCorrelFctnPerfectPID: public AliHBTTwoPairFctn1D, public AliHBTCorrelFunction
+{
+//Q Invaraint Correlation Function
+//1D two particle function
+//Fills the function only for correctly reconstructed PID
+//Together with 
+ public:
+   AliHBTQInvCorrelFctnPerfectPID(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+   virtual ~AliHBTQInvCorrelFctnPerfectPID(){};
+   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+   TH1* GetResult();
+ protected:
+   Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* /*partpair*/) const {return trackpair->GetQInv();}
+ private:
+   ClassDef(AliHBTQInvCorrelFctnPerfectPID,1)
+};
+
+/*************************************************************************************/
+
+class AliHBTWeightQInvCorrelFctnPerfectPID: public AliHBTTwoPairFctn1D, public AliHBTCorrelFunction
+{
+//Weight Q Invaraint Correlation Function
+//1D two particle function
+//Fills the function only for correctly reconstructed PID
+//Together with regular 
+ public:
+   AliHBTWeightQInvCorrelFctnPerfectPID(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+   virtual ~AliHBTWeightQInvCorrelFctnPerfectPID(){};
+   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+   TH1* GetResult();
+ protected:
+   Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* /*partpair*/) const {return trackpair->GetQInv();}
+ private:
+   ClassDef(AliHBTWeightQInvCorrelFctnPerfectPID,1)
+};
+/*************************************************************************************/
+class AliHBTWeightQOutSQideQLongFctnPerfectPID: public AliHBTTwoPairFctn3D, public AliHBTCorrelFunction
+{
+
+  public:
+    AliHBTWeightQOutSQideQLongFctnPerfectPID(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+                                            Int_t nYbins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0,
+                                            Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
+    virtual  ~AliHBTWeightQOutSQideQLongFctnPerfectPID(){}
+
+    TH1* GetResult();
+    void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+    void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+
+  protected:
+    void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) const {}
+
+    ClassDef(AliHBTWeightQOutSQideQLongFctnPerfectPID,1)
+};
+
+/*************************************************************************************/
+class AliHBTQOutSQideQLongFctnPerfectPID: public AliHBTTwoPairFctn3D, public AliHBTCorrelFunction
+{
+
+  public:
+    AliHBTQOutSQideQLongFctnPerfectPID(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+                                            Int_t nYbins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0,
+                                            Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
+    virtual  ~AliHBTQOutSQideQLongFctnPerfectPID(){}
+
+    TH1* GetResult();
+    void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+    void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+
+  protected:
+    void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) const {}
+
+    ClassDef(AliHBTQOutSQideQLongFctnPerfectPID,1)
+};
+
+
+/*************************************************************************************/
+
 class AliHBTPairPIDProbVsQInvFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
 {
 //Q Invaraint Correlation Function

@@ -19,6 +19,7 @@
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
+AliHBTQInvCorrelFctnPerfectPID f;
 
 ClassImp(AliHBTMonPIDPurityVsPtFctn)
 
@@ -102,6 +103,7 @@ void AliHBTMonPIDPurityVsPtFctn::Rename(const Char_t * name)
      fResult->SetName(numstr);
      fResult->SetTitle(numstr);
    }
+   
   if (fGood)
    {
      TString numstr = fName + " Good";
@@ -338,6 +340,242 @@ void AliHBTMonPIDContaminationVsPtFctn::Process(AliHBTParticle * track, AliHBTPa
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
+ClassImp(AliHBTQInvCorrelFctnPerfectPID)
+
+AliHBTQInvCorrelFctnPerfectPID::AliHBTQInvCorrelFctnPerfectPID(Int_t nbins, Double_t maxXval, Double_t minXval):
+ AliHBTTwoPairFctn1D(nbins,maxXval,minXval)
+{
+//ctor
+ fWriteNumAndDen = kTRUE;//change default behaviour
+ Rename("qinvcfprfctpid","Q_{inv} Correlation Function Perfect PID");
+}
+/*************************************************************/
+
+void AliHBTQInvCorrelFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
+  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+
+  trackpair  = CheckPair(trackpair);
+  if (trackpair == 0x0) return;
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+
+  fNumerator->Fill(trackpair->GetQInv());
+}
+
+/*************************************************************/
+void AliHBTQInvCorrelFctnPerfectPID::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
+  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+
+  trackpair  = CheckPair(trackpair);
+  if (trackpair == 0x0) return;
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+
+  fDenominator->Fill(trackpair->GetQInv());
+}
+/*************************************************************/
+
+TH1* AliHBTQInvCorrelFctnPerfectPID::GetResult()
+{
+ //returns the scaled ratio
+ 
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
+}
+/*************************************************************/
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+
+ClassImp(AliHBTWeightQInvCorrelFctnPerfectPID)
+
+AliHBTWeightQInvCorrelFctnPerfectPID::AliHBTWeightQInvCorrelFctnPerfectPID(Int_t nbins, Double_t maxXval, Double_t minXval):
+ AliHBTTwoPairFctn1D(nbins,maxXval,minXval)
+{
+//ctor
+ fWriteNumAndDen = kTRUE;//change default behaviour
+ Rename("wqinvcfprfctpid","Q_{inv} Weight Correlation Function Perfect PID");
+}
+/*************************************************************/
+
+void AliHBTWeightQInvCorrelFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
+  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+
+  trackpair  = CheckPair(trackpair);
+  if (trackpair == 0x0) return;
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+
+  fNumerator->Fill(trackpair->GetQInv(),partpair->GetWeight());
+}
+
+/*************************************************************/
+void AliHBTWeightQInvCorrelFctnPerfectPID::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
+  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+
+  trackpair  = CheckPair(trackpair);
+  if (trackpair == 0x0) return;
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+  
+  fDenominator->Fill(trackpair->GetQInv());
+}
+/*************************************************************/
+
+TH1* AliHBTWeightQInvCorrelFctnPerfectPID::GetResult()
+{
+ //returns the scaled ratio
+ 
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
+}
+
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+
+ClassImp(AliHBTWeightQOutSQideQLongFctnPerfectPID)
+
+AliHBTWeightQOutSQideQLongFctnPerfectPID::AliHBTWeightQOutSQideQLongFctnPerfectPID
+  (Int_t nXbins, Double_t maxXval, Double_t minXval,
+   Int_t nYbins, Double_t maxYval, Double_t minYval,
+   Int_t nZbins, Double_t maxZval, Double_t minZval):
+ AliHBTTwoPairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
+{
+  //ctor
+  fWriteNumAndDen = kTRUE;//change default behaviour
+  Rename("wqoslprfctpid","Q_{out}-Q_{side}-Q_{long} Weight Fctn with perfect PID");
+}
+/*************************************************************/
+
+void AliHBTWeightQOutSQideQLongFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
+  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+
+  trackpair  = CheckPair(trackpair);
+  if (trackpair == 0x0) return;
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+
+  Double_t weight = partpair->GetWeight();
+  Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
+  Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
+  Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+  fNumerator->Fill(out,side,lon,weight);
+}
+/*************************************************************/
+
+void AliHBTWeightQOutSQideQLongFctnPerfectPID::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
+  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+
+  trackpair  = CheckPair(trackpair);
+  if (trackpair == 0x0) return;
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+
+  Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
+  Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
+  Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+  fDenominator->Fill(out,side,lon);
+}
+/******************************************************************/
+
+TH1* AliHBTWeightQOutSQideQLongFctnPerfectPID::GetResult()
+{
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
+}
+
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+
+ClassImp(AliHBTQOutSQideQLongFctnPerfectPID)
+
+AliHBTQOutSQideQLongFctnPerfectPID::AliHBTQOutSQideQLongFctnPerfectPID
+   (Int_t nXbins, Double_t maxXval, Double_t minXval,
+    Int_t nYbins, Double_t maxYval, Double_t minYval,
+    Int_t nZbins, Double_t maxZval, Double_t minZval):
+ AliHBTTwoPairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
+{
+  //ctor
+  fWriteNumAndDen = kTRUE;//change default behaviour
+  Rename("qoslprfctpid","Q_{out}-Q_{side}-Q_{long} Fctn with perfect PID");
+}
+/*************************************************************/
+
+void AliHBTQOutSQideQLongFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
+  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+
+  trackpair  = CheckPair(trackpair);
+  if (trackpair == 0x0) return;
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+  
+  Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
+  Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
+  Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+  fNumerator->Fill(out,side,lon);
+}
+/*************************************************************/
+
+void AliHBTQOutSQideQLongFctnPerfectPID::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
+  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+
+  trackpair  = CheckPair(trackpair);
+  if (trackpair == 0x0) return;
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+  
+  Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
+  Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
+  Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+  fDenominator->Fill(out,side,lon);
+}
+/******************************************************************/
+
+TH1* AliHBTQOutSQideQLongFctnPerfectPID::GetResult()
+{
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
+}
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+
+
 
 ClassImp(AliHBTPairPIDProbVsQInvFctn)
 
@@ -388,7 +626,7 @@ AliHBTPairPIDProbVsQOutSQideQLongFctn::AliHBTPairPIDProbVsQOutSQideQLongFctn(Int
   fWriteNumAndDen = kTRUE;//change default behaviour
   Rename("qoslpidpur","Pair PID Probablilty .vs. Q_{out}-Q_{side}-Q_{long} Fctn");
 }
-/***************1**********************************************/
+/*************************************************************/
 
 void AliHBTPairPIDProbVsQOutSQideQLongFctn::ProcessSameEventParticles(AliHBTPair* pair)
 {
