@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.28  2000/07/22 16:43:15  morsch
+Same comment as before, but now done correctly I hope (sorry it's Saturday evening)
+
 Revision 1.27  2000/07/22 16:36:50  morsch
 Change order of indices in creation (new) of xhit and yhit
 
@@ -195,6 +198,9 @@ AliMUON::AliMUON()
    fNLocalTrigger   = 0;
    fLocalTrigger    = 0;
    fNLocalTrigger   = 0;
+   fAccMin          = 0.;
+   fAccMax          = 0.;   
+   fAccCut          = kFALSE;
 }
  
 //___________________________________________
@@ -232,18 +238,11 @@ AliMUON::AliMUON(const char *name, const char *title)
        (*fRawClusters)[i] = new TClonesArray("AliMUONRawCluster",10000); 
        fNrawch[i]=0;
    }
-   cout << " here " << "\n";
 
    fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1);    
    fNGlobalTrigger = 0;
    fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);    
    fNLocalTrigger = 0;
-
-//   
-// Transport angular cut
-   fAccCut=0;
-   fAccMin=2;
-   fAccMax=9;
 
    SetMarkerColor(kRed);
 //
@@ -279,6 +278,7 @@ AliMUON::AliMUON(const char *name, const char *title)
 	    chamber->SetZ(AliMUONConstants::DefaultChamberZ(ch));
 //
 	    chamber->InitGeo(AliMUONConstants::DefaultChamberZ(ch));
+//          Set chamber inner and outer radius to default
 	    chamber->SetRInner(AliMUONConstants::Dmin(st)/2);
 	    chamber->SetROuter(AliMUONConstants::Dmax(st)/2);
 //
@@ -291,6 +291,10 @@ AliMUON::AliMUON(const char *name, const char *title)
 //
    fMaxIterPad   = 0;
    fCurIterPad   = 0;
+//
+   fAccMin          = 0.;
+   fAccMax          = 0.;   
+   fAccCut          = kFALSE;
 
    // cp new design of AliMUONTriggerDecision
    fTriggerCircuits = new TObjArray(AliMUONConstants::NTriggerCircuit());
@@ -802,11 +806,23 @@ void AliMUON::SetMaxDestepAlu(Float_t p1)
     fMaxDestepAlu=p1;
 }
 //___________________________________________
-void AliMUON::SetMuonAcc(Bool_t acc, Float_t angmin, Float_t angmax)
+void AliMUON::SetAcceptance(Bool_t acc, Float_t angmin, Float_t angmax)
 {
    fAccCut=acc;
-   fAccMin=angmin;
-   fAccMax=angmax;
+   fAccMin=angmin*TMath::Pi()/180;
+   fAccMax=angmax*TMath::Pi()/180;
+   Int_t ch;
+   if (acc) {
+       for (Int_t st = 0; st < AliMUONConstants::NCh() / 2; st++) {
+	   // Loop over 2 chambers in the station
+	   for (Int_t stCH = 0; stCH < 2; stCH++) {
+	       ch = 2 * st + stCH;
+//         Set chamber inner and outer radius according to acceptance cuts
+	       Chamber(ch).SetRInner(AliMUONConstants::DefaultChamberZ(ch)*TMath::Tan(fAccMin));
+	       Chamber(ch).SetROuter(AliMUONConstants::DefaultChamberZ(ch)*TMath::Tan(fAccMax));
+	   } // chamber loop
+       } // station loop
+   }
 }
 //___________________________________________
 void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliSegmentation *segmentation)

@@ -87,7 +87,7 @@ class AliMUON : public  AliDetector {
     virtual void   SetMaxStepAlu(Float_t p1);
     virtual void   SetMaxDestepGas(Float_t p1);
     virtual void   SetMaxDestepAlu(Float_t p1);
-    virtual void   SetMuonAcc(Bool_t acc=0, Float_t angmin=2, Float_t angmax=9);
+    virtual void   SetAcceptance(Bool_t acc=0, Float_t angmin=2, Float_t angmax=9);
 // Response Simulation
     virtual void   MakePadHits(Float_t xhit,Float_t yhit, Float_t zhit,
 			       Float_t eloss, Float_t tof, Int_t id);
