@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.20.4.3  2002/10/10 15:07:49  hristov
 Updating VirtualMC to v3-09-02
 
@@ -1083,10 +1086,6 @@ void AliEMCALJetFinder::FillFromParticles()
 
 // see pyedit in Pythia's text
         geantPdg = mpart;
-//        Int_t kc = pycomp_(&mpart);
-//        TString name = GetPythiaParticleName(mpart);
-	//        printf(" mpart %6.6i;kc %6.6i -> gid %3.3i",mpart,kc,geantPdg);
-        //printf(" (%s)\n", name.Data());
 	if (IsThisPartonsOrDiQuark(mpart)) continue;
         printf("%5i: %5i(%2i) px %5.1f py %5.1f pz %6.1f e %6.1f childs %5i,%5i \n", 
         part, mpart, geantPdg, px, py, pz, e, child1, child2);
@@ -1672,17 +1671,3 @@ Bool_t AliEMCALJetFinder::IsThisPartonsOrDiQuark(Int_t pdg)
   return kFALSE;
 }
 
-TString &AliEMCALJetFinder::GetPythiaParticleName(Int_t kf)
-{// see subroutine PYNAME in PYTHIA
-  static TString sname;
-  char name[16];
-  pyname_(&kf, name, 16);
-  for(Int_t i=0; i<16; i++){
-    if(name[i] == ' ') {
-      name[i] = '\0';
-      break;
-    }
-  }
-  sname = name;
-  return sname; 
-}

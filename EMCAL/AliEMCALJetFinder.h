@@ -88,7 +88,6 @@ class AliEMCALJetFinder : public TTask {
     void    DrawLegoEMCAL(Char_t *opt="lego");    // *MENU*
     void    DrawLegos();                          // *MENU*
     Bool_t  IsThisPartonsOrDiQuark(Int_t pdg);
-    TString &GetPythiaParticleName(Int_t kf);     
     // I/O
     virtual void SetOutputFileName(char* name) {fOutFileName = name;}
     virtual void FillFromHits(Int_t flag = 0);
