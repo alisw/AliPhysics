@@ -72,7 +72,7 @@ public:
   TClonesArray *fSDigits      ; // List of summable digits
   TClonesArray *fReconParticles;
 
- ClassDef(AliFMD,3)  //Class for the FMD detector
+ ClassDef(AliFMD,4)  //Class for the FMD detector
 };
 #endif // AliFMD_H
 
