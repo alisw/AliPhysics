@@ -4,16 +4,18 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
   #include "Riostream.h"
-
+  #include "TKey.h"
   #include "TStopwatch.h"
 
   #include "AliRun.h"
+  #include "AliMagF.h"
   #include "AliRunLoader.h"
   #include "AliTPCLoader.h"
   #include "AliITSLoader.h"
   #include "AliITS.h"
   #include "AliITSgeom.h"
   #include "AliITStrackerV2.h"
+  #include "AliESD.h"
 #endif
 
 extern AliRun *gAlice;
@@ -33,33 +35,23 @@ Int_t AliITSFindTracksV2(Int_t nev=5) {  //number of events to process
       return 3;
    }
      
-   Int_t retval = rl->LoadgAlice();
-   if (retval) {
-      cerr<<"AliITSFindTracksV2.C : LoadgAlice returned error"<<endl;
-      delete rl;
-       return 3;
-   }
-   retval = rl->LoadHeader();
-   if (retval) {
-      cerr<<"AliITSFindTracksV2.C : LoadHeader returned error"<<endl;
-      delete rl;
-      return 3;
-   }
-   gAlice=rl->GetAliRun();
-       
    AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
    if (itsl == 0x0) {
       cerr<<"AliITSFindTracksV2.C : Can not get ITS loader"<<endl;
       return 4;
    }
 
-   AliTPCLoader* tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
-   if (tpcl == 0x0) {
-      cerr<<"AliITSFindTracksV2.C : can not get TPC loader"<<endl;
-      return 5;
+   if (rl->LoadgAlice()) {
+      cerr<<"AliITSFindTracksV2.C : LoadgAlice returned error"<<endl;
+      delete rl;
+      return 3;
    }
 
-   AliITS *dITS = (AliITS*)gAlice->GetDetector("ITS");
+   AliKalmanTrack::SetConvConst(
+      1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField()
+   );
+       
+   AliITS *dITS = (AliITS*)rl->GetAliRun()->GetDetector("ITS");
    if (!dITS) {
       cerr<<"AliITSFindClusters.C : Can not find the ITS detector !"<<endl;
       return 6;
@@ -68,15 +60,28 @@ Int_t AliITSFindTracksV2(Int_t nev=5) {  //number of events to process
 
    AliITStrackerV2 tracker(geom);
 
-   tpcl->LoadTracks("read"); 
-   itsl->LoadTracks("recreate");
    itsl->LoadRecPoints("read");
 
-   TStopwatch timer; 
    if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
    Int_t rc=0;
+
+   TFile *itsf=TFile::Open("AliESDits.root","RECREATE");
+   if ((!itsf)||(!itsf->IsOpen())) {
+      cerr<<"Can't AliESDits.root !\n"; return 1;
+   }
+   TFile *tpcf=TFile::Open("AliESDtpc.root");
+   if ((!tpcf)||(!tpcf->IsOpen())) {
+      cerr<<"Can't AliESDtpc.root !\n"; return 1;
+   }
+   TKey *key=0;
+   TIter next(tpcf->GetListOfKeys());
+   TStopwatch timer; 
    for (Int_t i=0; i<nev; i++) {
+       tpcf->cd();
+       if ((key=(TKey*)next())==0) break;
        cerr<<"Processing event number: "<<i<<endl;
+       AliESD *event=(AliESD*)key->ReadObj();
+
        rl->GetEvent(i);
 
        TTree *cTree=itsl->TreeR();
@@ -84,24 +89,26 @@ Int_t AliITSFindTracksV2(Int_t nev=5) {  //number of events to process
 	  cerr<<"AliITSFindTracksV2.C : Can't get the clusters tree !"<<endl;
           return 4;
        }
-       TTree *tpcTree=tpcl->TreeT();
-       if (!tpcTree) {
-	  cerr<<"AliITSFindTracksV2.C : Can't get the TPC track tree !"<<endl;
-          return 4;
-       }
-       TTree *itsTree=itsl->TreeT();
-       if (!itsTree) {
-          itsl->MakeTree("T");
-          itsTree=itsl->TreeT();
-       }
 
        tracker.LoadClusters(cTree);
-       rc=tracker.Clusters2Tracks(tpcTree,itsTree);
+       rc=tracker.Clusters2Tracks(event);
        tracker.UnloadClusters();
 
-       itsl->WriteTracks("OVERWRITE");
+       if (rc==0) {
+          Char_t ename[100]; 
+          sprintf(ename,"%d",i);
+          itsf->cd();
+          if (!event->Write(ename)) rc++;
+       } 
+       if (rc) {
+          cerr<<"Something bad happened...\n";
+       }
+       delete event;
    }
    timer.Stop(); timer.Print();
+
+   tpcf->Close();
+   itsf->Close();
 
    delete rl;
 

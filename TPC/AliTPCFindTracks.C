@@ -10,6 +10,7 @@
   #include "AliMagF.h"
   #include "AliRunLoader.h"
   #include "AliTPCLoader.h"
+  #include "AliESD.h"
 
   #include "TFile.h"
   #include "TStopwatch.h"
@@ -43,9 +44,11 @@ Int_t AliTPCFindTracks(Int_t nev=5) {
       cerr<<"Error occured while loading gAlice"<<endl;
       return 1;
    }
+
    AliKalmanTrack::SetConvConst(
-      1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField()
+     1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField()
    );
+
    rl->CdGAFile();
    AliTPCParam *dig=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
    if (!dig) { 
@@ -53,18 +56,22 @@ Int_t AliTPCFindTracks(Int_t nev=5) {
         return 1;
    }
 
-   rl->UnloadgAlice();   
+   //rl->UnloadgAlice();   
 
    tpcl->LoadRecPoints("read");
-   tpcl->LoadTracks("recreate");
 
    if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
     
+   TFile *ef=TFile::Open("AliESDtpc.root","RECREATE");
+   if ((!ef)||(!ef->IsOpen())) {
+      cerr<<"Can't AliESDtpc.root !\n"; return 1;
+   }
    TStopwatch timer;
    Int_t rc=0;
    AliTPCtracker tracker(dig);
    for (Int_t i=0;i<nev;i++){
      printf("Processing event %d\n",i);
+     AliESD *event=new AliESD(); 
      rl->GetEvent(i);
 
      TTree *in=tpcl->TreeR();
@@ -73,19 +80,26 @@ Int_t AliTPCFindTracks(Int_t nev=5) {
         return 4;
      }
 
-     TTree *out=tpcl->TreeT();
-     if (!out) {
-        tpcl->MakeTree("T");
-        out=tpcl->TreeT();
-     }
-         
-     rc=tracker.Clusters2Tracks(in,out);
+     tracker.LoadClusters(in);
+     rc=tracker.Clusters2Tracks(event);
+     tracker.UnloadClusters();
 
-     tpcl->WriteTracks("OVERWRITE");
+    if (rc==0) {
+        Char_t ename[100]; 
+        sprintf(ename,"%d",i);
+        ef->cd();
+        if (!event->Write(ename)) rc++;
+     } 
+     if (rc) {
+        cerr<<"Something bad happened...\n";
+     }
+     delete event;
    }
 
    timer.Stop(); timer.Print();
  
+   ef->Close();
+
    delete dig; //Thanks to Mariana Bondila
 
    delete rl;

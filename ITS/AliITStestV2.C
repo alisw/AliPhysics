@@ -36,7 +36,7 @@ Int_t AliITStestV2(Int_t nev=5, Char_t SlowOrFast='s') {
       AliITSSDigits2Digits();
    }
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSFindClustersV2.C");
-   if (rc=AliITSFindClustersV2(SlowOrFast)) return rc;
+   if (rc=AliITSFindClustersV2(nev,SlowOrFast)) return rc;
 
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSFindTracksV2.C");
    if (rc=AliITSFindTracksV2()) return rc;
