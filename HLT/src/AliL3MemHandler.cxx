@@ -197,6 +197,7 @@ Byte_t *AliL3MemHandler::Allocate(UInt_t size){
   } 
   fPt = new Byte_t[size];
   fSize = size;
+  for(UInt_t i=0;i<size;i++) fPt[i]=0; // clean Memory
   LOG(AliL3Log::kDebug,"AliL3MemHandler::Allocate","Memory")
   <<AliL3Log::kDec<<"Allocate "<<size<<" Bytes of Memory"<<ENDLOG;
   return fPt;
@@ -442,6 +443,7 @@ void AliL3MemHandler::AddDataRandom(AliL3DigitData *data, UInt_t & ndata,
 void AliL3MemHandler::Write(UInt_t *comp, UInt_t & index, 
                                     UInt_t & subindex, UShort_t value){
   UInt_t shift[3] = {0,10,20};
+  if(subindex==0) comp[index] =0; //clean up memory
   comp[index] |= (value&0x03ff)<<shift[subindex];
   if(subindex == 2){
     subindex = 0;
@@ -713,7 +715,7 @@ UInt_t AliL3MemHandler::GetNRow(UInt_t *comp,UInt_t size){
   UInt_t nrow=0;
   UInt_t index=0;
   UInt_t subindex=0;
-  while(index+1<size){
+  while(index<size-1){ //don't start with last word
     nrow++;
     UInt_t ndigit=0;
     Read(comp,index,subindex);
@@ -730,10 +732,11 @@ UInt_t AliL3MemHandler::GetNRow(UInt_t *comp,UInt_t size){
       }
     }
   }
-  if(index+1==size)
-  if(subindex<2)
-  if(Read(comp,index,subindex)!=0) nrow++;
-
+  if(index==size-1){  //last word
+    if(subindex<2){
+      if(Read(comp,index,subindex)!=0) nrow++;
+    }
+  }
   return nrow;
 }
 
