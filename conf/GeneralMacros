@@ -51,4 +51,15 @@ macroclean:
 
 check:		$(CHECKS)
 
-.SECONDARY: $(CHECKS:%.viol=%.ii)
+REVENGS       = $(patsubst %.viol,%.ii,$(CHECKS))
+
+.SECONDARY: $(REVENGS)
+
+reveng:		check/classDiagram.dot
+
+check/classDiagram.dot:	$(REVENGS)
+	@$(REV_ENG) $^
+	@-mv classDiagram.dot $@
+
+revdisp:	reveng
+	@$(IRST_INSTALLDIR)/scripts/revEngInterface.sh check/classDiagram.dot

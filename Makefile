@@ -57,7 +57,7 @@ FORCE:
 
 ############################### General Macros ################################
 
-include $(ALICE_ROOT)/conf/GeneralMacros
+# include $(ALICE_ROOT)/conf/GeneralMacros
 
 ############################### Specific Macros ###############################
 
@@ -147,6 +147,14 @@ check:
                     echo "Checking $$i" ; \
                     ${MAKE} -C $$i check ; \
 		done
+
+REVENG_DIRS = $(ALIROOT_DIRS)
+
+reveng:
+	@for i in $(REVENG_DIRS) ; do \
+		echo "Reverse engineering $$i" ; \
+		${MAKE} -C $$i reveng ; \
+	done
 
 
 

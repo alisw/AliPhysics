@@ -5,9 +5,11 @@
 .SUFFIXES: .cxx .h
 
 # IRST coding rule check
-STRIP=$(ALICE)/local/IRST/syntax/strip-cpp.prl
+export IRST_INSTALLDIR=$(ALICE)/local/IRST
+export CLASSPATH=$(IRST_INSTALLDIR)
+STRIP=$(IRST_INSTALLDIR)/syntax/strip-cpp.prl
 CODE_CHECK=java rules.RuleChecker
-export CLASSPATH=$(ALICE)/local/IRST
+REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 
 $(ALICE_ROOT)/include/%.h : %.h
 	@[ -d $(dir $@) ] || mkdir $(dir $@)
