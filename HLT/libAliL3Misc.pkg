@@ -1,0 +1,30 @@
+#-*- Mode: Makefile -*-
+# $Id:#
+
+HLTDEFS     := -Duse_aliroot -Duse_root -Ddo_mc -DROWHOUGH\
+               -Duse_newio -D${ALICE_TARGET} -DROOTVERSION=\"unchecked\" \
+               -DALIROOTVERSION=\"unchecked\"
+
+
+SRCS:= misc/AliL3AltroMemHandler.cxx \
+misc/AliL3DDLDataFileHandler.cxx \
+misc/AliL3DDLRawReader.cxx \
+misc/AliL3DDLRawReaderFile.cxx \
+misc/AliL3DDLTPCRawStream.cxx \
+misc/AliL3DataHandler.cxx \
+misc/AliL3FFloat.cxx \
+misc/AliL3Stopwatch.cxx \
+misc/AliL3TPCMapping.cxx \
+misc/AliL3TransBit.cxx \
+misc/AliL3VHDLClusterFinder.cxx
+
+HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
+
+DHDR:= misc/AliL3MiscLinkDef.h
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := $(CXXFLAGS) ${HLTDEFS}
+PACKCFLAGS   := $(CFLAGS)   ${HLTDEFS}
+PACKDCXXFLAGS:= $(CXXFLAGS) ${HLTDEFS}
+
+EINCLUDE:= HLT/src HLT/hough HLT/comp HLT/misc TPC STEER CONTAINERS 

@@ -1,0 +1,43 @@
+#-*- Mode: Makefile -*-
+# $Id:#
+
+HLTDEFS     := -Duse_aliroot -Duse_root -Ddo_mc -DROWHOUGH\
+               -Duse_newio -D${ALICE_TARGET} -DROOTVERSION=\"unchecked\" \
+               -DALIROOTVERSION=\"unchecked\"
+
+
+SRCS:= src/AliL3Benchmark.cxx \
+src/AliL3ClustFinderNew.cxx \
+src/AliL3ConfMapFit.cxx \
+src/AliL3ConfMapPoint.cxx \
+src/AliL3ConfMapTrack.cxx \
+src/AliL3ConfMapper.cxx \
+src/AliL3Display.cxx \
+src/AliL3Evaluate.cxx \
+src/AliL3FileHandler.cxx \
+src/AliL3Fitter.cxx \
+src/AliL3Merger.cxx \
+src/AliL3GlobalMerger.cxx \
+src/AliL3InterMerger.cxx \
+src/AliL3Logger.cxx \
+src/AliL3MemHandler.cxx \
+src/AliL3RawDataFileHandler.cxx \
+src/AliL3Track.cxx \
+src/AliL3TrackArray.cxx \
+src/AliL3TrackMerger.cxx \
+src/AliL3Transform.cxx \
+src/AliL3Vertex.cxx \
+src/AliL3VertexArray.cxx \
+src/AliL3VertexFinder.cxx \
+src/AliLevel3.cxx
+
+HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
+
+DHDR:= src/AliL3SrcLinkDef.h
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := $(CXXFLAGS) ${HLTDEFS}
+PACKCFLAGS   := $(CFLAGS)   ${HLTDEFS}
+PACKDCXXFLAGS:= $(CXXFLAGS) ${HLTDEFS}
+
+EINCLUDE:= HLT/src HLT/hough HLT/comp HLT/misc TPC STEER CONTAINERS 
