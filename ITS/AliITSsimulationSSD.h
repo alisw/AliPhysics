@@ -21,11 +21,17 @@ public:
   AliITSsimulationSSD(AliITSsegmentation *seg, AliITSresponse *resp);
   virtual ~AliITSsimulationSSD();
     
-  void DigitiseModule(AliITSmodule *mod, Int_t mod, Int_t dummy);  
+  void DigitiseModule(AliITSmodule *mod, Int_t module, Int_t dummy);  
   void HitToDigit(Int_t &hit,Int_t idtrack,Int_t nhits,TObjArray *hits);            
 
-  TArrayF* GetSignalP() {return fP;}
-  TArrayF* GetSignalN() {return fN;}
+  TArrayF* GetSignalP() {
+                         // return the signal of P strip
+                         return fP;
+								}
+  TArrayF* GetSignalN() {
+                         // return the signal of N strip
+                         return fN;
+								}
 
 protected:
   
