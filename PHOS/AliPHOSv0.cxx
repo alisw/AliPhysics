@@ -22,6 +22,7 @@
 
 #include "TBRIK.h"
 #include "TNode.h"
+#include "TRandom.h"
 
 // --- Standard library ---
 
@@ -63,6 +64,8 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   //   - fTmpHits, which retains all the hits of the current event. It 
   //     is used for the digitization part.
 
+  fPINElectronicNoise = 0.010 ;
+
   fHits   = new TClonesArray("AliPHOSHit",100) ;
   gAlice->AddHitList(fHits) ; 
 
@@ -97,7 +100,7 @@ AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *nam
   //
   //   - fTmpHits, which retains all the hits of the current event. It 
   //     is used for the digitization part.
-
+  fPINElectronicNoise = 0.010 ;
   fHits   = new TClonesArray("AliPHOSHit",100) ;
   fDigits = new TClonesArray("AliPHOSDigit",100) ;
   fTmpHits= new TClonesArray("AliPHOSHit",100) ;
@@ -1051,7 +1054,19 @@ void AliPHOSv0::FinishEvent()
     digit = new AliPHOSDigit(hit->GetId(),Digitize(hit->GetEnergy())) ;
     new(lDigits[fNdigits]) AliPHOSDigit(* digit) ;
     fNdigits++;  delete digit ;    
+  } 
+  Float_t energyandnoise ;
+  for ( i = 0 ; i < fNdigits ; i++ ) {
+    digit =  (AliPHOSDigit * ) fDigits->At(i) ;
+    //    printf("GetId is %d and GetAmp is %d \n",digit->GetId(), digit->GetAmp()) ;
+    energyandnoise = digit->GetAmp() + Digitize(gRandom->Gaus(0.,fPINElectronicNoise)) ;
+    if (energyandnoise < 0 ) energyandnoise = 0 ;
+    digit->SetAmp(energyandnoise);
+    //    printf("GetId is %d and GetAmp is %d \n",digit->GetId(), digit->GetAmp()) ;
+   
+
   }
+
 
   // Reset the array of all the "accumulated hits" of this event.
   fNTmpHits = 0 ;

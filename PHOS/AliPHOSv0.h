@@ -53,7 +53,7 @@ public:
   TrackSegmentsList *    TrackSegments(){return fTrackSegments ;}
   
 protected:
-
+  Float_t fPINElectronicNoise  ;         // Electronic Noise in the PIN
   RecPointsList * fEmcClusters ;        //!  (!=do not stream)
   AliPHOSGeometry * fGeom ;             // geometry definition
   Int_t fNTmpHits ;                     //!  used internally for digitalization
