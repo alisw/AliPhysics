@@ -96,10 +96,11 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-3, cut,  cut,  cut, cut,  cut, 1
      gener->SetMomentumRange(20,20);
      gener->SetPhiRange(90,90);
      gener->SetThetaRange(0,0);
+
      //vertex position
      gener->SetSigma(1,1,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kMuonMinus); 
-     gener->SetRange(60, -300, 300, 60, -300., 300., 1, 900, 900);
+     gener->SetRange(100, -300., 300., 100, -300., 300., 1, 900, 900);
      break;
  case doublescan:  
 //*********************************************
@@ -272,7 +273,7 @@ Int_t iFRAME  =0;
 Int_t iMAG    =0;
 Int_t iITS    =0;
 Int_t iABSO   =0;
-Int_t iDIPO   =0;
+Int_t iDIPO   =1;
 Int_t iHALL   =0;
 Int_t iSHIL   =0;
 Int_t iPIPE   =0;
@@ -511,7 +512,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 
  Float_t shift = 1.5/2.;
  // Float_t xpos5[8]    = {2., 2., 2., 42., 42., 2., 2., 2.};
- Float_t xpos5[9]    = {2., 2., 2., 2.,32., 2., 2., 2., 2.};
+ Float_t xpos5[9]    = {2., 2., 2., 2.,33., 2., 2., 2., 2.};
  Float_t ypos5       = -(20.+4.*(40.-2.*shift));
 
  chamber=5;
@@ -589,7 +590,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 		    0,0,3,2, 
 		    0,0,2,2, 
 		    0,0,0,3};
- Float_t xpos7[11]   = {2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2.};
+ Float_t xpos7[11]   = {2., 2., 2., 2., 2., 40.5, 2., 2., 2., 2., 2.};
  Float_t ypos7       = -(20.+5.*(40.-2.*shift));
  
  seg71->SetNSlats(11);  
@@ -674,7 +675,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 		      0,0,0,3};   
 
  // Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 39.5 , 2., 2., 2., 2., 2., 2.};
- Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2., 2.};
+ Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 40.5, 2., 2., 2., 2., 2., 2.};
  Float_t ypos9       = -(20.+6.*(40.-2.*shift));
 
  seg91->SetNSlats(13);  

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/03/14 17:22:15  pcrochet
+Geometry of the trigger chambers : a vertical gap of has been introduced around x=0 according fig.3.27 of the TDR (P.Dupieux)
+
 Revision 1.6  2001/01/30 12:19:39  morsch
 Update chamber positions (AdTDR version update 4/12/2000).
 
@@ -52,7 +55,6 @@ Float_t AliMUONConstants::fgDefaultChamberZ[14] =
 		   1610, 1625., 1710., 1725.}; 
 
 Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  66.0,   80.,   80., 100., 100.};    
-Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 316.6,  560.,  560., 850., 900.};  
-
+Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 395.,  560.,  563., 850., 900.};  
 Int_t   AliMUONConstants::fgMaxZoom = 20;
 
