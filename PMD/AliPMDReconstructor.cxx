@@ -39,7 +39,7 @@ void AliPMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   AliPMDClusterFinder *pmdClus = new AliPMDClusterFinder(runLoader);
   pmdClus->Load();
-  pmdClus->SetDebug(1);
+  //  pmdClus->SetDebug(1);
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
     {
       pmdClus->Digits2RecPoints(iEvent);
@@ -59,7 +59,7 @@ void AliPMDReconstructor::Reconstruct(AliRunLoader* runLoader,
 
   Int_t iEvent = 0;
   while (rawReader->NextEvent()) {
-    pmdClus.SetDebug(1);
+    //    pmdClus.SetDebug(1);
     pmdClus.Digits2RecPoints(iEvent,rawReader);
     
     iEvent++;
