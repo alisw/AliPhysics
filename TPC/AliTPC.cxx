@@ -1467,7 +1467,7 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, Int_t np, TMatrix *m1, TMatr
   //to make the code faster we put parameters  to the stack
 
   Float_t zwidth  = fTPCParam->GetZWidth();
-  Float_t zwidthm1  =1./fTPCParam->GetZWidth();
+  Float_t zwidthm1  =1./zwidth;
 
   tv = (TVector*)p1->At(ntr); // pointer to a track
   TVector &v = *tv;
@@ -2513,7 +2513,7 @@ int AliTPCtrack::GetLab() const
   //
   //
   //
-  int lab;
+  int lab=123456789;
   struct {
     int lab;
     int max;
