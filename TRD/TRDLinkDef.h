@@ -54,4 +54,6 @@
 #pragma link C++ class  AliTRDparameter+;
 #pragma link C++ class  AliTRDPartID+;
 
+#pragma link C++ class  AliTRDReconstructor+;
+
 #endif

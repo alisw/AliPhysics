@@ -99,9 +99,6 @@ class AliTRD : public AliDetector {
   virtual void       FinishPrimary();
   virtual void       RemapTrackHitIDs(Int_t *map);
 
-  virtual void       Reconstruct() const;
-  virtual AliTracker* CreateTracker() const;
-
  protected:
 
   Int_t                fGasMix;             //  Gas mixture. 0: Xe/Isobutane 1: Xe/CO2

@@ -11,8 +11,6 @@
 #include <TBranch.h>
 #include <AliLoader.h>
 
-#include "AliFMDReconstruction.h"
-
 class TClonesArray;
  class AliFMD : public AliDetector {
  
@@ -38,7 +36,6 @@ public:
    
   void SetEventNumber(Int_t i)     {fEvNrSig = i;}
   void  Eta2Radius(Float_t, Float_t, Float_t*);
-  virtual void Reconstruct() const{ AliFMDReconstruction reco(GetLoader()->GetRunLoader()); reco.Exec();}
 
  
    // Digitisation

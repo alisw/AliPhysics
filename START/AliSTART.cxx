@@ -270,11 +270,3 @@ AliDigitizer* AliSTART::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliSTARTDigitizer(manager);
 }
-
-//_____________________________________________________________________________
-void AliSTART::FillESD(AliESD* pESD)  const
-{
-  AliSTARTvertex reco;
-  reco.Reconstruct(fLoader->GetRunLoader(), pESD);
-}
-

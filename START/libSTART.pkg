@@ -1,4 +1,4 @@
-SRCS= AliSTART.cxx AliSTARTv0.cxx AliSTARTv1.cxx AliSTARThit.cxx AliSTARTdigit.cxx AliSTARTvertex.cxx AliSTARTDigitizer.cxx AliSTARThitPhoton.cxx AliSTARTLoader.cxx 
+SRCS= AliSTART.cxx AliSTARTv0.cxx AliSTARTv1.cxx AliSTARThit.cxx AliSTARTdigit.cxx AliSTARTReconstructor.cxx AliSTARTDigitizer.cxx AliSTARThitPhoton.cxx AliSTARTLoader.cxx 
 
 HDRS= $(SRCS:.cxx=.h)
 

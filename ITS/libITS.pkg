@@ -101,6 +101,7 @@ SRCS = 	AliITS.cxx \
 		AliITSBaseGeometry.cxx \
           AliITSv11Geometry.cxx \
           AliITSv11GeometrySupport.cxx \
+		AliITSReconstructor.cxx \
 
 #		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 # 		AliACORDEFunctions.cxx \

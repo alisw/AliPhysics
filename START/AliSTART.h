@@ -9,7 +9,6 @@
  
 #include <AliDetector.h>
 #include <TTree.h>
-#include "AliSTARTvertex.h"
 
 class TDirectory;
 class TFile;
@@ -47,8 +46,6 @@ public:
   TClonesArray   *Photons() {return fPhotons;}
 
    virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
-   //  virtual void   Reconstruct()    const{ AliSTARTvertex reco; reco.Reconstruct();}
-   virtual void          FillESD(AliESD* pESD)  const;
 
 protected:
    Int_t fIdSens;    // Sensetive Cherenkov radiator

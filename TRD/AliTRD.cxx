@@ -44,7 +44,6 @@
 #include "AliRun.h"
 #include "AliTRD.h"
 #include "AliTRDcluster.h"
-#include "AliTRDclusterizer.h"
 #include "AliTRDdigit.h"
 #include "AliTRDdigitizer.h"
 #include "AliTRDdigitsManager.h"
@@ -56,9 +55,6 @@
 #include "AliTRDtrackHits.h"  
 #include "AliTrackReference.h"
 #include "AliMC.h"
-#include "AliTRDclusterizerV1.h"
-#include "AliTRDparameter.h"
-#include "AliTRDtracker.h"
 
 ClassImp(AliTRD)
  
@@ -1297,41 +1293,6 @@ void AliTRD::AddHit2(Int_t track, Int_t det, Float_t *hits, Int_t q
     fTrackHits->AddHitTRD(det,rtrack,hits[0],hits[1],hits[2],q,inDrift);
   }
 
-}
-
-
-//_____________________________________________________________________________
-void AliTRD::Reconstruct() const
-{
-// reconstruct clusters
-
-  AliTRDclusterizerV1 clusterer("clusterer", "TRD clusterizer");
-  AliRunLoader* runLoader = GetLoader()->GetRunLoader();
-  runLoader->CdGAFile();
-  AliTRDparameter* trdParam = (AliTRDparameter*) gFile->Get("TRDparameter"); 
-  if (!trdParam) {
-    Error("Reconstruct", "no TRD parameters found");
-    return;
-  }
-  trdParam->ReInit();
-  clusterer.SetParameter(trdParam);
-  Int_t nEvents = runLoader->GetNumberOfEvents();
-
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    clusterer.Open(runLoader->GetFileName(), iEvent);
-    clusterer.ReadDigits();
-    clusterer.MakeClusters();
-    clusterer.WriteClusters(-1);
-  }
-}
-
-//_____________________________________________________________________________
-AliTracker* AliTRD::CreateTracker() const
-{
-// create a TRD tracker
-
-  GetLoader()->GetRunLoader()->CdGAFile();
-  return new AliTRDtracker(gFile);
 }
 
 

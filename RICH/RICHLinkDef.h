@@ -18,4 +18,5 @@
 #pragma link C++ class  AliRICHRecon+;
 #pragma link C++ class  AliRICHDigitizer+;
 #pragma link C++ class  AliRICHDisplFast+;
+#pragma link C++ class  AliRICHReconstructor+;
 #endif

@@ -1,5 +1,5 @@
-#ifndef ALITPCRECONSTRUCTOR_H
-#define ALITPCRECONSTRUCTOR_H
+#ifndef ALIITSRECONSTRUCTOR_H
+#define ALIITSRECONSTRUCTOR_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -7,22 +7,23 @@
 
 #include "AliReconstructor.h"
 
-class AliTPCParam;
+class AliITSgeom;
 
 
-class AliTPCReconstructor: public AliReconstructor {
+class AliITSReconstructor: public AliReconstructor {
 public:
-  AliTPCReconstructor(): AliReconstructor() {};
-  virtual ~AliTPCReconstructor() {};
+  AliITSReconstructor(): AliReconstructor() {};
+  virtual ~AliITSReconstructor() {};
 
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
   virtual AliTracker*  CreateTracker(AliRunLoader* runLoader) const;
+  virtual AliVertexer* CreateVertexer(AliRunLoader* runLoader) const;
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
 
 private:
-  AliTPCParam*         GetTPCParam(AliRunLoader* runLoader) const;
+  AliITSgeom*          GetITSgeom(AliRunLoader* runLoader) const;
 
-  ClassDef(AliTPCReconstructor, 0)   // class for the TPC reconstruction
+  ClassDef(AliITSReconstructor, 0)   // class for the ITS reconstruction
 };
 
 #endif

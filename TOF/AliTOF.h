@@ -91,8 +91,6 @@ public:
   void CreateSDigitsArray();
   AliTOFGeometry *GetGeometry() const { return fTOFGeometry; }; 
 
-  virtual AliTracker* CreateTracker() const;
-
   Int_t   fNevents ;        // Number of events to digitize
 
 protected:

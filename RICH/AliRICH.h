@@ -221,8 +221,6 @@ public:
   void AddReco(Int_t tid,Double_t thetaCherenkov,Int_t nPhotons) 
        {TClonesArray &tmp=*(TClonesArray*)fRecos;new(tmp[fNrecos++])AliRICHreco(tid,thetaCherenkov,nPhotons);}  
           
-  virtual void Reconstruct() const;
-
 protected:  
   enum                  {kCSI=6,kGAP=9};
   AliRICHParam         *fpParam;             //main RICH parametrization     

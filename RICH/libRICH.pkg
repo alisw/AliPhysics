@@ -3,7 +3,7 @@ SRCS   =  AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx\
 	 AliRICHClusterFinder.cxx AliRICHMap.cxx\
 	 AliRICHChamber.cxx AliRICHRecon.cxx\
          AliRICHDisplFast.cxx\
-	 AliRICHDigitizer.cxx
+	 AliRICHDigitizer.cxx AliRICHReconstructor.cxx
 
 HDRS =  $(SRCS:.cxx=.h)
 DHDR= RICHLinkDef.h

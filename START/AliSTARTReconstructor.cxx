@@ -16,23 +16,24 @@
 /* $Id$ */
 
 #include <Riostream.h>
-#include <stdlib.h>
 
 #include <TDirectory.h>
-#include <TVirtualMC.h>
 
-#include <AliRun.h>
 #include <AliRunLoader.h>
-#include "AliSTART.h"
 #include "AliSTARTLoader.h"
 #include "AliSTARTdigit.h"
-#include "AliSTARThit.h"
-#include "AliSTARTvertex.h"
+#include "AliSTARTReconstructor.h"
 #include <AliESD.h>
 
-ClassImp(AliSTARTvertex)
+ClassImp(AliSTARTReconstructor)
 
-void AliSTARTvertex::Reconstruct(AliRunLoader* rl, AliESD *pESD) 
+void AliSTARTReconstructor::Reconstruct(AliRunLoader* /*rl*/) const
+{
+// nothing to be done
+
+}
+
+void AliSTARTReconstructor::FillESD(AliRunLoader* rl, AliESD *pESD) const
 {
   /***************************************************
   Resonstruct digits to vertex position
@@ -72,7 +73,6 @@ void AliSTARTvertex::Reconstruct(AliRunLoader* rl, AliESD *pESD)
 	   <<" Zposit "<<Zposit<<endl;
     }
     
-    fZposition = Zposit;
     pESD->SetT0zVertex(Zposit);
     
     if (rl->GetDebug()>1) {

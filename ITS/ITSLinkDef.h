@@ -172,6 +172,8 @@
 #pragma link C++ class AliITStrackSA+;
 #pragma link C++ class AliITSVertexerFast+;
 
+#pragma link C++ class AliITSReconstructor+;
+
 //
 //#pragma link C++ class AliACORDEFunction+;
 //#pragma link C++ class AliACORDEMaterial+;

@@ -181,11 +181,6 @@ class AliITS : public AliDetector {
     // Return pointer to rec points 
     TClonesArray  *RecPoints()   {return fRecPoints;}
 
-    virtual void Reconstruct() const;
-    virtual AliTracker* CreateTracker() const;
-    virtual AliVertexer* CreateVertexer() const;
-    virtual void FillESD(AliESD* esd) const;
-     
  protected:
     //================== Data Members ==================================
     AliITSgeom   *fITSgeom;    // Pointer to ITS geometry

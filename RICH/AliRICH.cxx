@@ -16,7 +16,6 @@
 #include "AliRICH.h"
 #include "AliRICHParam.h"
 #include "AliRICHChamber.h"
-#include "AliRICHClusterFinder.h"
 #include <TArrayF.h>
 #include <TGeometry.h>
 #include <TBRIK.h>
@@ -735,13 +734,4 @@ void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
                      1.0);    
   }//feedbacks loop
 }//GenerateFeedbacks()
-//__________________________________________________________________________________________________
-
-void AliRICH::Reconstruct() const
-{
-// reconstruct clusters
-
-  AliRICHClusterFinder clusterer(const_cast<AliRICH*>(this));
-  clusterer.Exec();
-}
 

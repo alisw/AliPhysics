@@ -14,7 +14,7 @@
  **************************************************************************/
 
 //_________________________________________________________________________
-// This is a TTask that constructs ReconstParticles (reconstructed particles) 
+// This is a class that constructs ReconstParticles (reconstructed particles) 
 // out of Digits
 // 
 //-- Authors: Evgeny Karpechev(INR) and Alla Maevsksia
@@ -43,58 +43,18 @@
 #include "AliFMDReconstParticles.h"
 #include "AliFMD.h"
 #include "AliFMDv1.h"
-#include "AliFMDReconstruction.h"
+#include "AliFMDReconstructor.h"
 #include "AliRun.h"
 #include "AliConfig.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 
-ClassImp(AliFMDReconstruction)
+ClassImp(AliFMDReconstructor)
 
         
-//____________________________________________________________________________ 
-
-AliFMDReconstruction::AliFMDReconstruction():TTask("AliFMDReconstruction","") 
-{
-  fNevents = 0 ;  // Number of events to rreconnstraction, 0 means all events in current file
-  fRunLoader = 0x0;
-  
-}
-//____________________________________________________________________________ 
-
-AliFMDReconstruction::AliFMDReconstruction(AliRunLoader* rl):TTask("AliFMDReconstruction","")
-{
-
-  if (rl == 0x0)
-   {
-     Fatal("AliFMDReconstruction","Argument AliRunLoader* is null!");
-     return;
-   }
-   
-  fNevents = 0 ;    // Number of events to rreconnstraction, 0 means all events in current file
-
-  fRunLoader = rl;
-  AliLoader* plFMD = fRunLoader->GetLoader("FMDLoader");
-  if (plFMD == 0x0)
-   {
-     Fatal("AliFMDReconstruction","Can not find FMD (loader) in specified event");
-     return;//never reached
-   }
-  //add Task to //root/Tasks folder
-//  gime->PostReconstructioner(this);
-}
-
-//____________________________________________________________________________ 
-
-AliFMDReconstruction::~AliFMDReconstruction()
-{
-  AliLoader* plFMD = fRunLoader->GetLoader("FMDLoader");
-  plFMD->CleanReconstructioner();
-}
-
 //____________________________________________________________________________
 
-void AliFMDReconstruction::Exec() 
+void AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 { 
  //Collects all digits in the same active volume into number of particles
   /*
@@ -103,7 +63,7 @@ void AliFMDReconstruction::Exec()
     determine by numberOfVolume , 
     numberOfMinSector,numberOfMaxSector,
     numberOfMinRing, numberOgMaxRing
-    Reconstruction method choose dependence on number of empty pads  
+    Reconstructor method choose dependence on number of empty pads  
   */
 
 
@@ -124,21 +84,21 @@ void AliFMDReconstruction::Exec()
   // number of ring for boundary 0.1 eta
 
   
-  if (fRunLoader == 0x0)
+  if (runLoader == 0x0)
    {
     Error("Exec","Run Loader loader is NULL - Session not opened");
     return;
    }
 
-  AliLoader* plFMD = fRunLoader->GetLoader("FMDLoader");
+  AliLoader* plFMD = runLoader->GetLoader("FMDLoader");
   if (plFMD == 0x0)
    {
-     Fatal("AliFMDReconstruction","Can not find FMD (loader) in specified event");
+     Fatal("AliFMDReconstructor","Can not find FMD (loader) in specified event");
      return;//never reached
    }
    
-  if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
-  if (!fRunLoader->TreeE()) fRunLoader->LoadHeader();
+  if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
+  if (!runLoader->TreeE()) runLoader->LoadHeader();
 
   TDirectory* cwd = gDirectory;
   gDirectory = 0x0;
@@ -153,19 +113,20 @@ void AliFMDReconstruction::Exec()
   }   
   gDirectory = cwd;
  
+  plFMD->LoadRecPoints("RECREATE");
   Int_t retval=0;     
-  if(fNevents == 0) fNevents=Int_t (fRunLoader->TreeE()->GetEntries()); 
+  Int_t nevents=Int_t (runLoader->TreeE()->GetEntries()); 
 #ifdef DEBUG
-  cout<<" fNevents "<<fNevents<<endl;
+  cout<<" nevents "<<nevents<<endl;
 #endif
-   for(Int_t ievent=0;ievent<fNevents;ievent++)
+   for(Int_t ievent=0;ievent<nevents;ievent++)
     { 
 #ifdef DEBUG
       cout<<" *** event "<<ievent<<endl; 
 #endif
-      fRunLoader->GetEvent(ievent) ;
+      runLoader->GetEvent(ievent) ;
       //event z-vertex for correction eta-rad dependence      
-      AliHeader *header = fRunLoader->GetHeader();
+      AliHeader *header = runLoader->GetHeader();
       AliGenEventHeader* genHeader = header->GenEventHeader();
       TArrayF *o = new TArrayF(3); 
       genHeader->PrimaryVertex(*o);
@@ -298,10 +259,20 @@ void AliFMDReconstruction::Exec()
        plFMD->WriteRecPoints("OVERWRITE");
        plFMD->UnloadDigits();
     } //event loop
+  plFMD->UnloadRecPoints();
 #ifdef DEBUG
   Info(" Exec"," finished");
 #endif
   //  delete hTotal[10]; 
+
+}
+
+
+//_____________________________________________________________________________
+void AliFMDReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
+				  AliESD* /*esd*/) const
+{
+// nothing to be done
 
 }
 
