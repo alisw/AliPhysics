@@ -53,7 +53,7 @@ endif
 
 #Extra include,libs, defines etc.
 
-@PACKAGE@DEFINE:=$(EDEFINE)
+@PACKAGE@DEFINE:=$(EDEFINE) -D__MODULE__=\"@MODULE@\"
 
 @PACKAGE@INC:=$(patsubst %,-I%,$(EINCLUDE)) -I@MODULE@
 
@@ -222,7 +222,7 @@ endif
 	  $(MUTE)chmod a-w $@
 
 
-$(@PACKAGE@BIN):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk $(@PACKAGE@ELIBSDEP)
+$(@PACKAGE@BIN):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Making executable $@ *****"
 endif
@@ -329,7 +329,7 @@ endif
 check-@MODULE@: $(@PACKAGE@CHECKS)
 
 # IRST coding rule check 
-@MODULE@/check/%.i : @MODULE@/%.cxx
+@MODULE@/check/%.i : @MODULE@/%.cxx @MODULE@/%.h
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	$(MUTE)$(CXX) -E $(@PACKAGE@DEFINE) $(@PACKAGE@INC) $< > $@ $(@PACKAGE@CXXFLAGS)
 	@cd $(dir $@) ; $(IRST_INSTALLDIR)/patch/patch4alice.prl $(notdir $@)
