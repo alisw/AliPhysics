@@ -31,9 +31,57 @@ extern "C" {
 
 #include "AliRawEvent.h"
 
+//______________________________________________________________________________
+static void AliMDCErrorHandler(int level, Bool_t abort, const char *location,
+                               const char *msg)
+{
+   // The default error handler function. It prints the message on stderr and
+   // if abort is set it aborts the application. Comapared to the default
+   // ROOT error handler this one also prints the date and time in front
+   // of each message.
+
+   if (level < gErrorIgnoreLevel)
+      return;
+
+   const char *type = 0;
+
+   if (level >= kInfo)
+      type = "Info";
+   if (level >= kWarning)
+      type = "Warning";
+   if (level >= kError)
+      type = "Error";
+   if (level >= kBreak)
+      type = "\n *** Break ***";
+   if (level >= kSysError)
+      type = "SysError";
+   if (level >= kFatal)
+      type = "Fatal";
+
+   TDatime dt;
+
+   if (level >= kBreak && level < kSysError)
+      fprintf(stderr, "%s: %s %s\n", dt.AsSQLString(), type, msg);
+   else if (!location || strlen(location) == 0)
+      fprintf(stderr, "%s: %s: %s\n", dt.AsSQLString(), type, msg);
+   else
+      fprintf(stderr, "%s: %s in <%s>: %s\n", dt.AsSQLString(), type, location,
+              msg);
+
+   fflush(stderr);
+   if (abort) {
+      fprintf(stderr, "aborting\n");
+      fflush(stderr);
+      if (gSystem) {
+         gSystem->StackTrace();
+         gSystem->Abort();
+      } else
+         ::abort();
+   }
+}
 
 #ifdef USE_SMI
-void SMI_handle_command()
+static void SMI_handle_command()
 {
    // Handle SMI commands
 
@@ -87,6 +135,9 @@ int main(int argc, char **argv)
 
    // Set ROOT in batch mode
    gROOT->SetBatch();
+
+   // Set custom error handler
+   SetErrorHandler(AliMDCErrorHandler);
 
 #ifdef USE_SMI
     // Handle command line arguments
