@@ -226,7 +226,7 @@ void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
 	fMulTrack++ ;
       } // store it
     } // all primaries in digit
-    delete newprimaryarray ; 
+    delete [] newprimaryarray ; 
   } // all digits
 
   
@@ -234,7 +234,7 @@ void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
   for(index = 0; index < fMulTrack; index++)
    fTracksList[index] = tempo[index] ;
  
-  delete tempo ;
+  delete [] tempo ;
 
 }
 //____________________________________________________________________________

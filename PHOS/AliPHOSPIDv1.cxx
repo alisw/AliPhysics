@@ -425,6 +425,7 @@ void  AliPHOSPIDv1::WriteRecParticles(Int_t event)
   
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
+  delete [] filename ; 
 }
 
 //____________________________________________________________________________

@@ -549,7 +549,9 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
   cpvBranch        ->Fill() ;
   clusterizerBranch->Fill() ;
 
-  gAlice->TreeR()->Write(0,kOverwrite) ;  
+  gAlice->TreeR()->Write(0,kOverwrite) ;
+
+  delete [] filename ; 
   
 }
 

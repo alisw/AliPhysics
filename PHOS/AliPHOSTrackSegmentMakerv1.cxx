@@ -319,7 +319,8 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
       } 
     }
   }
-  
+  delete [] emcExist ; 
+  delete [] cpvExist ; 
 }
 
 //____________________________________________________________________________
@@ -492,6 +493,7 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
 
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
+  delete [] filename ; 
 }
 
 

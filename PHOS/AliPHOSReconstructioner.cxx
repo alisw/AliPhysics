@@ -529,7 +529,7 @@ void AliPHOSReconstructioner::StartFrom(char * module,char* title)
     }
   }
   
-  delete moduleName;
+  delete [] moduleName;
 }
 //____________________________________________________________________________
 

@@ -253,7 +253,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 	subbr->SetFile(file);
       }   
       cwd->cd();
-      delete file;
+      delete [] file;
     }
 
     sdigitsBranch->Fill() ; 

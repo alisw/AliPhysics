@@ -79,6 +79,7 @@ TString AliPHOSQAMeanChecker::CheckingOperation()
       sprintf(tempo, "-->Checkable : %s :: Checker : %s :: Message : %f outside bond %f +/- %f\n", 
 	      fCheckable->GetName(), GetName(), checked, fMean, fRms) ; 
       rv = tempo ;
+      delete [] tempo ; 
     } 
   }  
   return rv ; 
