@@ -1,5 +1,5 @@
-#ifndef ITSgeomSDD_H
-#define ITSgeomSDD_H
+#ifndef ALIITSGEOMSDD_H
+#define ALIITSGEOMSDD_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -29,6 +29,6 @@ class AliITSgeomSDD: public TObject {
     virtual ~AliITSgeomSDD(){};
     TBRIK *GetShape() const {return fShapeSDD;}
 
-    ClassDef(AliITSgeomSDD,1)	
+    ClassDef(AliITSgeomSDD,1) // ITS SDD detector geometry class
 };
 #endif
