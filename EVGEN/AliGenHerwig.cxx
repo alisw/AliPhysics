@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.2.2.3  2002/10/11 10:40:46  hristov
+Default case added
+
+Revision 1.2.2.2  2002/07/26 18:34:02  alibrary
+Updating VirtualMC
+
+Revision 1.3  2002/07/26 15:32:24  hristov
+stream.h doesn't exest on Sun, removed from includes
+
 Revision 1.2  2002/07/19 11:43:10  morsch
 - Write full stack.
 - Use SetTrack passing energy.
@@ -36,6 +45,7 @@ First commit.
 #include <TParticle.h>
 #include "THerwig6.h"
 
+#include "Riostream.h"
 
  ClassImp(AliGenHerwig)
 
@@ -135,6 +145,9 @@ void AliGenHerwig::InitPDF()
     case kCTEQ5L:
       fModPDF=46;
       fAutPDF="CTEQ";
+      break;
+    default:
+      cerr << "This structure function is not inplemented " << fStrucFunc << endl;
       break;
     }
   fAutPDF.Resize(20);      

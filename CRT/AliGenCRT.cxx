@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.2.1  2002/10/10 14:40:31  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.1  2002/10/07 11:25:28  gamez
+First version, generation of cosmic muons on the surface
+
 
 */
 

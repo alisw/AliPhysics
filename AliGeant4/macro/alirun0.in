@@ -7,19 +7,16 @@
 
 /aliDet/switchOn ALL
 /aliDet/switchOn ITS1
-/aliDet/fieldValue 0.2 tesla
 
 # switch off modules with errors
-/aliDet/switchOff CASTOR
-/aliDet/switchOff ZDC
-/aliDet/switchOff PMD
-
-# needed SHIL cvs version Log: AliSHILvF.cxx,v Revision 1.11
-#/aliDet/switchOff SHIL
+/aliDet/switchOff EMCAL
+/aliDet/switchOff CRT
+#/aliDet/switchOff ZDC
+#/aliDet/switchOff PMD
 
 # set physics
-/tg4Physics/setHadron true
-/tg4Physics/setSpecialCuts true
+/mcPhysics/setHadron true
+/mcPhysics/setSpecialCuts true
 #/tg4Physics/setSpecialControls true
 
 /aliDet/list
@@ -30,12 +27,12 @@
 
 #/aliDet/printMaterials
 
-/tg4Control/rootCmd TStopwatch timer;
-/tg4Control/rootCmd timer.Start();
+/mcControl/rootCmd TStopwatch timer;
+/mcControl/rootCmd timer.Start();
 
 /aliRun/beamOn 1
 
-/tg4Control/rootCmd timer.Stop();
-/tg4Control/rootCmd timer.Print();
+/mcControl/rootCmd timer.Stop();
+/mcControl/rootCmd timer.Print();
 
 exit

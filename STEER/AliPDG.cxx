@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.10.2  2002/10/14 09:45:57  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.4  2002/09/16 08:22:36  morsch
+Add Upsilon(3S) to particle data base.
+
 Revision 1.3  2001/03/16 09:48:35  morsch
 Exclude pdg particle definitions. Done by root now by default from Pythia6 table.
 

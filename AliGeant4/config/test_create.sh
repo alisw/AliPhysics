@@ -1,3 +1,4 @@
+#!/bin/sh
 # $Id$
 # ----------------------------------------------------------------
 # This script generates test macros for all versions of
@@ -14,13 +15,16 @@
 if [ $# -lt 1 ]; then
   echo "Usage: "
   echo "test_create.sh detName [-g genNumber] [-v visNumber]"
-  echo "                 for all detectors: detName = ALL"
+  echo "                 for all detectors:  detName = ALL"
+  echo "                     all structures: detName = STRUCT"
+  echo "                     all detectors of all versions:  detName = ALL_VERSIONS"
+  echo "                     all structures of all versions: detName = STRUCT_ALL_VERSIONS"
   exit
 fi
 
 # default parameters
 DIR=$1
-GEN="0"
+GEN="1"
 VIS="0"
 
 # get input parameters
@@ -41,13 +45,13 @@ MAX=10
 if [ ! -d $TO ] ; then    
   mkdir $TO
   cd $TO
-  mkdir CASTOR FMD ITS MUON PHOS PMD RICH START STRUCT TOF TPC TRD ZDC
+  mkdir CRT EMCAL FMD ITS MUON PHOS PMD RICH START STRUCT TOF TPC TRD ZDC
   cd STRUCT
-  mkdir ABSO BODY DIPO FRAME HALL MAG PIPE SHIL
+  mkdir ABSO DIPO FRAME HALL MAG PIPE SHIL
 fi  
 
 cd $SRC
-if [ "$DIR" = "ALL" ]; then
+if [ "$DIR" = "ALL_VERSIONS" ]; then
 # loop over all detectors if det is not specified
   for DIR in `ls`; do
     if [ -d $DIR ] ; then
@@ -66,7 +70,7 @@ if [ "$DIR" = "ALL" ]; then
 else
 
 # loop over all structures
-  if [ "$DIR" = "STRUCT" ]; then
+  if [ "$DIR" = "STRUCT_ALL_VERSIONS" ]; then
     cd $TO/$DIR
     for MODULE in `ls`; do
       VER=0
@@ -81,7 +85,7 @@ else
   else
   
 # all detectors with default versions only
-    if [ "$DIR" = "ALL_DEFAULT" ]; then
+    if [ "$DIR" = "ALL" ]; then
       cd $SRC
       for DIR in `ls`; do
         if [ -d $DIR ]; then
@@ -95,7 +99,7 @@ else
     else
 
 # loop over all structures with default versions only
-      if [ "$DIR" = "STRUCT_DEFAULT" ]; then
+      if [ "$DIR" = "STRUCT" ]; then
         DIR="STRUCT"
         cd $TO/$DIR
         for MODULE in `ls`; do

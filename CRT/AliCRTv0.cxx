@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4.2.4  2002/10/10 14:40:31  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.7  2002/10/07 11:13:25  gamez
+Access shafts added
+
 Revision 1.6  2002/07/26 06:21:12  gamez
 CRT3 volume taken as sensitive volume
 

@@ -509,12 +509,10 @@ inline Float_t  AliTPCParam::Transform2to2NearestWire(Float_t *xyz, Int_t *index
   Float_t xnew,dx;
   if (index[1]<fNInnerSector) {
      xnew = fRInnerFirstWire+TMath::Nint((xyz[0]-fRInnerFirstWire)/fInnerWWPitch)*fInnerWWPitch;
-       }
- 
+    }
     else {
      xnew = fROuterFirstWire+TMath::Nint((xyz[0]-fROuterFirstWire)/fOuterWWPitch)*fOuterWWPitch;
     }
-    
   dx = xnew-xyz[0];
   xyz[0]=xnew;
   return  dx;

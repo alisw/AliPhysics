@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.16.8.3  2002/10/14 09:45:57  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.19  2002/09/23 09:19:54  hristov
+FirsTrackReference updated (M.Ivanov)
+
 Revision 1.18  2002/08/26 13:51:17  hristov
 Remaping of track references at the end of each primary particle (M.Ivanov)
 

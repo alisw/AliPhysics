@@ -15,6 +15,12 @@
 
 /*
   $Log$
+  Revision 1.9.6.1  2002/06/10 15:12:46  hristov
+  Merged with v3-08-02
+
+  Revision 1.9  2001/11/08 20:10:45  dibari
+  ctor with initialising of parmeters added
+
   Revision 1.8  2001/09/05 09:09:38  hristov
   The energy of feedback photons calculated correctly
 
@@ -210,11 +216,13 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
   
   
   // Local variables 
-  Float_t cthf, ranf[2], phif, enfp = 0, sthf;
+  Double_t ranf[2];
+  Float_t cthf, phif, enfp = 0, sthf;
   Int_t i, ifeed;
   Float_t e1[3], e2[3], e3[3];
   Float_t vmod, uswop;
-  Float_t fp, random;
+  Float_t fp;
+  Double_t random;
   Float_t dir[3], phi;
   Int_t nfp;
   Float_t pol[3], mom[4];
@@ -239,13 +247,14 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
   for (i = 0; i <nfp; i++) {
 	
     // Direction
-    gMC->Rndm(ranf, 2);
+    gMC->GetRandom()->RndmArray(2,ranf);
     cthf = ranf[0] * 2 - 1.;
     if (cthf < 0)  continue;
     sthf = TMath::Sqrt((1 - cthf) * (1 + cthf));
     phif = ranf[1] * 2 * TMath::Pi();
     //
-    gMC->Rndm(&random, 1);
+    //gMC->Rndm(&random, 1);
+    gMC->GetRandom()->RndmArray(1, &random);
     if (random <= .57) {
       enfp = 7.5e-9;
     } else if (random <= .7) {
@@ -304,7 +313,8 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
     vmod=TMath::Sqrt(1/vmod);
     for(j=0;j<3;j++) e2[j]*=vmod;
     
-    gMC->Rndm(ranf, 1);
+    //gMC->Rndm(ranf, 1);
+    gMC->GetRandom()->RndmArray(1,ranf);
     phi = ranf[0] * 2 * TMath::Pi();
     for(j=0;j<3;j++) pol[j]=e1[j]*TMath::Sin(phi)+e2[j]*TMath::Cos(phi);
     gMC->Gdtom(pol, pol, 2);

@@ -31,7 +31,8 @@
 #include <stdlib.h>
 #include <iostream.h>
 #include <fstream.h>
-#include "../TGeant3/TGeant3.h"
+#include "TGeant3.h"
+#include "TVirtualMC.h"
 
 #include "AliDetector.h"
 #include "AliMC.h"
@@ -45,7 +46,7 @@
 #include "AliTOFReconstructionerV2.h"
 #include "AliTOFTrackV2.h"
 
-#include "../STEER/AliKalmanTrack.h"
+#include "AliKalmanTrack.h"
 #include "../TPC/AliTPCtrack.h"
 #include "../TRD/AliTRDtrack.h"
 
@@ -61,7 +62,6 @@ ClassImp(AliTOFReconstructionerV2)
   fdbg      =0;
   fDigitsMap=0x0;
   fField    =0;
-  fG3Geom   =0x0;
   fNDummyTracks=0;
   fScaleSigmaFactor=0.;
   fStep     =0; 
@@ -101,8 +101,6 @@ AliTOFReconstructionerV2::AliTOFReconstructionerV2(char* tpcBackTracks, char* to
   // initialize the G3 geometry 
   gAlice->Init();
   gAlice->Print(); 
-  // set the fg3 pointer to geometry used by IsInsideThePad method
-  fG3Geom = (TGeant3*) gMC;	
 
   // add Task to //root/Tasks folder
   TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
@@ -132,12 +130,6 @@ AliTOFReconstructionerV2::AliTOFReconstructionerV2(const AliTOFReconstructionerV
     {
       delete fDigitsMap;
       fDigitsMap = 0;
-    }
-
-  if (fG3Geom)
-    {
-      delete fG3Geom;
-      fG3Geom = 0;
     }
 
   if (fTOFDigits)
@@ -719,6 +711,8 @@ void AliTOFReconstructionerV2::IsInsideThePad(Float_t x, Float_t y, Float_t z, I
   xTOF[1]=y;
   xTOF[2]=z;
   
+  TGeant3 * fG3Geom = (TGeant3*) gMC;
+
   fG3Geom->Gmedia(xTOF, numed);
   gcvolu=fG3Geom->Gcvolu();
   nLevel=gcvolu->nlevel;

@@ -9,7 +9,7 @@ ntracks=1;
 void Config()
 {
 
-new AliGeant3("C++ Interface to Geant3");
+new TGeant3("C++ Interface to Geant3");
 
 //=======================================================================
 //  Create the output file

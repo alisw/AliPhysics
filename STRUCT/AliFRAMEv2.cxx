@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.9.6.2  2002/07/24 10:08:27  alibrary
+Updating VirtualMC
+
+Revision 1.11  2002/06/13 09:54:40  morsch
+Some additional outer cross-bars removed.
+
 Revision 1.10  2002/05/28 08:13:51  morsch
 Cross-bars in front of RICH at 60+/- 30deg. removed.
 

@@ -55,7 +55,7 @@ void Config()
   // END OF TEMPORARY
 */
 
-  new AliGeant3("C++ Interface to Geant3");
+  new TGeant3("C++ Interface to Geant3");
 
   if (!gSystem->Getenv("CONFIG_FILE"))
     {
@@ -152,7 +152,7 @@ void Config()
     
   //
   Int_t   iABSO   = 1;
-  Int_t   iCASTOR = 1;
+  Int_t   iCRT = 1;
   Int_t   iDIPO   = 1;
   Int_t   iFMD    = 1;
   Int_t   iFRAME  = 1;
@@ -354,11 +354,11 @@ void Config()
       AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
     }
 
-  if (iCASTOR)
+  if (iCRT)
     {
-      //=================== CASTOR parameters ============================
+      //=================== CRT parameters ============================
 
-      AliCASTOR *CASTOR = new AliCASTORv1("CASTOR", "normal CASTOR");
+      AliCRT *CRT = new AliCRTv1("CRT", "normal CRT");
     }
 
   if (iTRD)

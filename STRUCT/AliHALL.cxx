@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.14.6.2  2002/06/14 10:29:54  hristov
+Merged with v3-08-03
+
+Revision 1.16  2002/06/12 08:28:28  morsch
+HBMT positioning commented out.
+
 Revision 1.15  2002/05/28 08:47:38  morsch
 Reduces size of pillars to avoid overlap with DIPO.
 

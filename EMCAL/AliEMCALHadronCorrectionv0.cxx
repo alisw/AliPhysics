@@ -16,6 +16,13 @@
 
 /*
 $Log$
+Revision 1.2.6.2  2002/07/24 10:06:16  alibrary
+Updating VirtualMC
+
+Revision 1.3  2002/04/11 19:24:42  nilsen
+fixed a complation warning about not brace-enclosing the sub-elements of
+the static Double_t c[naxVariant][nPol].
+
 Revision 1.2  2002/02/04 15:11:44  hristov
 Use TMath::Abs instead of fabs (Alpha)
 

@@ -1,4 +1,0 @@
-      CHARACTER*4 CHTREE
-      INTEGER  MTRACK, MPRIMA
-      COMMON / SCKINE / MTRACK, MPRIMA
-     +,                 CHTREE(2)

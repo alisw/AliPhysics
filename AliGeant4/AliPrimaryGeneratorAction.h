@@ -10,7 +10,7 @@
 //  kGun,               // gun (can be set interactively) 
 //  kGeantino,          // geantino with random direction
 //  kChargedGeantino,   // chargedgeantino with random direction
-//  kAliGenerator       // AliGenerator from AliRoot
+//  kStack              // AliGenerator from the MC stack
 
 #ifndef ALI_PRIMARY_GENERATOR_ACTION_H
 #define ALI_PRIMARY_GENERATOR_ACTION_H

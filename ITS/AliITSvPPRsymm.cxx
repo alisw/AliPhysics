@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.38.6.3  2002/10/14 13:14:12  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.40  2002/10/02 17:56:35  barbera
+Bug in copy 37 of volume I570 corrected (thanks to J. Belikov)
+
 Revision 1.39  2002/04/13 22:35:52  nilsen
 Now symm is derived from asymm. This minimizes duplicated code because
 only the geometry is different between asymm and symm.
@@ -246,7 +252,6 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliConst.h"
-#include "AliGeant3.h"
 #include "AliITSGeant3Geometry.h"
 #include "AliITShit.h"
 #include "AliITS.h"

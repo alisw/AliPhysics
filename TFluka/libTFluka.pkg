@@ -1,6 +1,15 @@
-SRCS          =   \
-TFluka.cxx AliFluka.cxx
+# Sources
+SRCS:=  TFluka.cxx AliFluka.cxx \
+	source.cxx
+FSRCS:= FLUKA_input.f
 
-HDRS:= $(SRCS:.cxx=.h) 
+# Headers
+HDRS:=  $(filter-out source.h,$(SRCS:.cxx=.h) )
 
-DHDR= TFlukaLinkDef.h
+# ROOT Dictionary
+DHDR:=  TFlukaLinkDef.h
+
+# Extra includes and libraries
+#EINCLUDE:=
+ELIBSDIR:= $(FLUPRO)
+ELIBS   := flukahp

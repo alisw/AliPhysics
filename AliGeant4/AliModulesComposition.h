@@ -15,12 +15,14 @@
 #include "AliModuleType.h"
 #include "AliVerbose.h"
 
+#include <TG4MagneticFieldType.h>
+
 #include <G4VUserDetectorConstruction.hh>
 #include <globals.hh>
 #include <g4std/vector>
 
 class AliModuleConstruction;
-class AliMagneticField;
+class G4MagneticField;
 
 class G4VPhysicalVolume;
 
@@ -41,7 +43,8 @@ class AliModulesComposition : public G4VUserDetectorConstruction,
     virtual void PrintMaterials() const;
 
     // set methods
-    void SetMagField(G4double fieldValue);
+    void SetFieldType(TG4MagneticFieldType fieldType);
+    void SetUniformFieldValue(G4double fieldValue);
     void SetReadGeometry(G4bool readGeometry);
     void SetWriteGeometry(G4bool writeGeometry);
     
@@ -60,6 +63,7 @@ class AliModulesComposition : public G4VUserDetectorConstruction,
     
   private:    
     // methods
+    void CreateMagneticField();
     void Configure();
     void CreateG4Geometry();
     void SetReadGeometryToModules(G4bool readGeometry);
@@ -69,7 +73,8 @@ class AliModulesComposition : public G4VUserDetectorConstruction,
     AliModulesCompositionMessenger  fMessenger;      //messenger
     AliModuleConstructionVector     fModuleConstructionVector; //..
                                         //vector of AliModuleConstruction
-    AliMagneticField*  fMagneticField;  //magnetic field
+    TG4MagneticFieldType            fMagneticFieldType;//magnetic field type
+    G4MagneticField*   fMagneticField;  //magnetic field
     G4bool             fReadGeometry;   //option applied to all modules
     G4bool             fWriteGeometry;  //option applied to all modules     
 };

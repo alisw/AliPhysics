@@ -15,6 +15,13 @@
  
 /*
 $Log$
+Revision 1.7.6.1  2002/08/28 15:06:50  alibrary
+Updating to v3-09-01
+
+Revision 1.8  2002/08/21 22:04:27  nilsen
+Added data member to SPD cluters and made related modifications to the
+SPD Cluster finders. Generaly cleanded up some of the code.
+
 Revision 1.7  2001/10/19 21:32:35  nilsen
 Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
 cleanded up a little bit of code.

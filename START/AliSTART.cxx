@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.23.8.1  2002/07/24 09:50:10  alibrary
+Updating VirtualMC
+
+Revision 1.24  2002/07/23 11:48:05  alla
+new Digits structure
+
 Revision 1.23  2001/09/19 18:41:45  alla
 Asimmetric START geometry
 

@@ -195,7 +195,7 @@ G4String AliDetSwitchVector::GetSwitchedDetsList() const
     }
   }
 
-  if (nofSwitchedDets == fDetSwitchVector.size()) svList = "ALL: " + svList;
+  if (nofSwitchedDets == G4int(fDetSwitchVector.size())) svList = "ALL: " + svList;
   if (nofSwitchedDets == 0) svList = "NONE";   
 
   return svList;
@@ -236,8 +236,10 @@ G4String AliDetSwitchVector::GetAvailableDetsListWithCommas() const
       G4String moduleNameVer = (*it)->GetDetName();
       AliGlobals::AppendNumberToString(moduleNameVer, iv);
       svList += moduleNameVer;
-      if (iv < (*it)->GetNofVersions()-1)        svList += "/";
-      else if (id++ < fDetSwitchVector.size()-1) svList += ", ";
+      if (iv < (*it)->GetNofVersions()-1)        
+        svList += "/";
+      else if (id++ < G4int(fDetSwitchVector.size())-1) 
+        svList += ", ";
     }
 
   return svList;
@@ -272,7 +274,8 @@ G4String AliDetSwitchVector::GetDetNamesListWithCommas() const
 
   for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++) {
     svList += (*it)->GetDetName();
-    if (id++ < fDetSwitchVector.size()-1) svList += ", ";
+    if (id++ < G4int(fDetSwitchVector.size())-1)  
+      svList += ", ";
   }
 
   return svList;

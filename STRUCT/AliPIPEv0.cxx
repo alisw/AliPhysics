@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.19.4.2  2002/10/11 08:04:28  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.22  2002/09/02 15:29:20  morsch
+Gsbool calls to resolve MANY added (I.  Hrivnacova).
+
 Revision 1.19.4.1  2002/06/10 15:13:48  hristov
 Merged with v3-08-02
 

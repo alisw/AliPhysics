@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.10.1  2002/06/10 14:57:41  hristov
+Merged with v3-08-02
+
+Revision 1.4  2002/04/17 12:48:54  morsch
+const added.
+
 Revision 1.3  2001/03/09 13:01:41  morsch
 - enum constants for paramterisation type (particle family) moved to AliGen*lib.h
 - use AliGenGSIlib::kUpsilon, AliGenPHOSlib::kEtaPrime to access the constants

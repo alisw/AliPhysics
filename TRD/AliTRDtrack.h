@@ -78,8 +78,6 @@ public:
 
    Int_t    Update(const AliTRDcluster* c, Double_t chi2, UInt_t i);
 
-
-
 protected:
 
    Int_t    fSeedLab;     // track label taken from seeding  

@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.8.6.1  2002/07/30 15:00:39  alibrary
+Correction in initialization of dx (Enrique Gamez Flores).
+
+Revision 1.9  2002/07/30 13:48:03  morsch
+
+Correction in initialization of dx (Enrique Gamez Flores).
+
 Revision 1.8  2002/02/08 16:50:50  morsch
 Add name and title in constructor.
 

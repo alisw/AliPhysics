@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.2.1  2002/10/11 07:26:37  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.1  2002/09/13 14:33:52  cblume
+Add conversion class to produce fake raw data
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////

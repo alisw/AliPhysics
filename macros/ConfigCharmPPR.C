@@ -11,7 +11,7 @@ void Config()
   gRandom->SetSeed(seed);
   cerr<<"Seed for random number generation= "<<seed<<endl; 
 
-  new AliGeant3("C++ Interface to Geant3");
+  new TGeant3("C++ Interface to Geant3");
 
   //=======================================================================
   //  Create the output file
@@ -101,7 +101,7 @@ void Config()
   gAlice->SetField(field);    
 
   Int_t iABSO=0;
-  Int_t iCASTOR=0;
+  Int_t iCRT=0;
   Int_t iDIPO=0;
   Int_t iFMD=0;
   Int_t iFRAME=0;
@@ -284,10 +284,10 @@ void Config()
     AliZDC *ZDC  = new AliZDCv1("ZDC","normal ZDC");
   }
 
-  if(iCASTOR) {
-    //=================== CASTOR parameters ============================
+  if(iCRT) {
+    //=================== CRT parameters ============================
 
-    AliCASTOR *CASTOR  = new AliCASTORv1("CASTOR","normal CASTOR");
+    AliCRT *CRT  = new AliCRTv1("CRT","normal CRT");
   }
 
   if(iTRD) {
@@ -321,6 +321,13 @@ void Config()
 
   if(iPHOS) {
     AliPHOS *PHOS  = new AliPHOSv1("PHOS","GPS2");
+  }
+
+
+  //=================== CRT parameters ===========================
+
+  if(iCRT) {
+    AliCRT *CRT  = new AliCRTv1("CRT","Normal CRTGPS2");
   }
 
 

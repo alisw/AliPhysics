@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.3.12.2  2002/07/24 10:09:31  alibrary
+Updating VirtualMC
+
+Revision 1.3.12.1  2002/06/10 15:28:58  hristov
+Merged with v3-08-02
+
+Revision 1.4  2002/03/28 14:59:07  cblume
+Coding conventions
+
+Revision 1.4  2002/03/28 14:59:07  cblume
+Coding conventions
+
 Revision 1.3  2000/10/15 23:40:01  cblume
 Remove AliTRDconst
 

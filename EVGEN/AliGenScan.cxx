@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.10.6.1  2002/07/30 11:30:48  alibrary
+Updating VirtualMC
+
+Revision 1.11  2002/07/30 09:09:59  morsch
+Correction in initialization.
+
 Revision 1.10  2002/02/08 16:50:50  morsch
 Add name and title in constructor.
 

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.14  2002/10/11 10:05:18  morsch
+pdg code for psi' corrected.
+
+Revision 1.10.6.3  2002/10/10 16:40:08  hristov
+Updating VirtualMC to v3-09-02
+
 Revision 1.13  2002/09/16 10:40:48  morsch
 Use correct pdg codes for Upsilon(2S) = 100553 and Upsilon(3S) = 200553.
 

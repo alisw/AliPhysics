@@ -4,3 +4,5 @@ SRCS  = AliTOF.cxx  AliTOFv0.cxx  AliTOFv1.cxx  AliTOFv2.cxx  AliTOFv3.cxx  AliT
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR=TOFLinkDef.h
+
+EINCLUDE:=$(ALICE)/geant3/TGeant3

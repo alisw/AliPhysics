@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.52.4.4  2002/10/10 16:40:08  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.62  2002/09/24 10:00:01  morsch
+CheckTrigger() corrected.
+
 Revision 1.61  2002/07/30 09:52:38  morsch
 Call SetGammaPhiRange() and SetGammaEtaRange() in the constructor.
 

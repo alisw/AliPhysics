@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.6.1  2002/06/10 15:26:11  hristov
+Merged with v3-08-02
+
+Revision 1.6  2002/04/06 14:41:04  kowal2
+Added #include<stdlib.h> and log
+
 */
 
 

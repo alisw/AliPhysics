@@ -150,7 +150,7 @@ endif
 	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
       rm -f $(CURDIR)/$@ ;\
-	  $(SHLD) $(SOFLAGS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO)) $(SHLIB) ;\
+	  $(SHLD) $(SOFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
       cd $(CURDIR) ; rm -rf $$TMPDIR
 	  $(MUTE)chmod a-w $@
 
@@ -158,7 +158,7 @@ $(@PACKAGE@BIN):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Making executable $@ *****"
 endif
-	  $(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBS) $(LIBS) $(EXEFLAGS) -o $@ 
+	  $(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(LIBS) $(EXEFLAGS) -o $@ 
 
 $(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk
 ifndef ALIQUIET
@@ -180,7 +180,6 @@ all-@PACKAGE@: $(@PACKAGE@LIB)
 else
 all-@PACKAGE@: $(@PACKAGE@BIN)
 endif
-
 
 depend-@PACKAGE@: $(@PACKAGE@DEP)
 
@@ -251,3 +250,37 @@ ifndef ALIQUIET
 endif
 		@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
 		@share/alibtool depend "$(@PACKAGE@DEFINE) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC) $<" > $@
+
+@PACKAGE@CHECKS := $(patsubst %.cxx,@PACKAGE@/check/%.viol,$(SRCS))
+
+check-@PACKAGE@: $(@PACKAGE@CHECKS)
+
+# IRST coding rule check 
+@PACKAGE@/check/%.i : @PACKAGE@/%.cxx
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	$(MUTE)$(CXX) -E $(@PACKAGE@DEFINE) $(@PACKAGE@INC) $< > $@ $(@PACKAGE@CXXFLAGS)
+	@cd $(dir $@) ; $(IRST_INSTALLDIR)/patch/patch4alice.prl $(notdir $@)
+
+# IRST coding rule check
+@PACKAGE@/check/%.viol : @PACKAGE@/check/%.i
+	@cd @PACKAGE@ ; [ -r @PACKAGE@ ] || ln -s ../@PACKAGE@ @PACKAGE@
+	-@echo $@ ; $(CODE_CHECK) $< ./@PACKAGE@ > $@
+
+@PACKAGE@PREPROC       = $(patsubst %.viol,%.i,$(@PACKAGE@CHECKS))
+
+@PACKAGE@REVENGS       = $(patsubst %.viol,%.ii,$(@PACKAGE@CHECKS))
+
+.SECONDARY: $(@PACKAGE@REVENGS) $(@PACKAGE@PREPROC)
+
+reveng-@PACKAGE@:		@PACKAGE@/check/classDiagram.dot
+
+@PACKAGE@/check/classDiagram.dot:	$(@PACKAGE@PREPROC)
+	@$(REV_ENG) $^
+	@-mv classDiagram.dot $@
+
+revdisp-@PACKAGE@:	reveng-@PACKAGE@
+	@echo revdisp for @PACKAGE@
+	@cd @PACKAGE@/check ; \
+      $(IRST_INSTALLDIR)/webreveng/create-class-diagram-pages.sh
+	@sed -e "s/\@PACKAGE\@/@PACKAGE@/g" < $(ALICE_ROOT)/build/HomePage.html > @PACKAGE@/check/HomePage.html
+

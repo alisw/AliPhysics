@@ -2,12 +2,14 @@
 # Example of special lego run with calling
 # macro lego.C from g4 and switching to root UI
 
-/aliDet/switchOn FMD
+/aliDet/switchOn TPC
 /aliRun/initialize
 
+/mcVerbose/eventAction 0
+/mcVerbose/runAction 0
 /aliRun/lego 
 
-/tg4Control/rootMacro lego
-/tg4Control/root
+/mcControl/rootMacro lego
+/mcControl/root
 
 exit

@@ -15,6 +15,13 @@
  
 /*
 $Log$
+Revision 1.3.4.1  2002/06/10 17:51:14  hristov
+Merged with v3-08-02
+
+Revision 1.4  2002/04/24 22:08:12  nilsen
+New ITS Digitizer/merger with two macros. One to make SDigits (old way) and
+one to run the  merger (modified for Jiri).
+
 Revision 1.3  2002/03/25 10:48:55  nilsen
 New ITS SDigit merging with region of interest cut. Update for changes in
 AliDigitizer. Additional optimization should be done.

@@ -14,7 +14,6 @@
 class AliTOFDigitMap;
 class AliTOFHitMap;
 class TClonesArray;
-class TGeant3;
 class TString;
 class TTree;
 class TBranch;
@@ -53,7 +52,6 @@ private:
   AliTOFDigitMap* fDigitsMap;//! pointer to the map of TOF digits
   //AliTOFHitMap* fDigitsMap;  //! pointer to the map of TOF digits
   Float_t fField;            //! mag field value [Tesla]
-  TGeant3 *fG3Geom;          //! pointer to GEANT geometry
   Int_t   fNDummyTracks;     //  number of test tracks used to search
                              //  the signal on TOF
   Float_t fScaleSigmaFactor; //  scale factor for sigma (common value for sigmaY and sigmaZ)

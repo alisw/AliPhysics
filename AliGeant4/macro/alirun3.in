@@ -1,0 +1,22 @@
+# $Id$
+# Geometry test macro
+#
+
+/aliDet/switchOn ALL
+/aliDet/switchOn ITS1
+
+# switch off modules with errors
+/aliDet/switchOff EMCAL
+/aliDet/switchOff CRT
+
+# switch off modules with MANY
+/aliDet/switchOff MAG
+
+/aliDet/list
+/aliRun/initialize
+
+#/aliDet/generateXML
+
+/geometry/test/run
+
+exit

@@ -1,189 +1,303 @@
-############################### Main Makefile #################################
-
-# Include machine specific definitions
-
-include $(ALICE_ROOT)/conf/GeneralDef
-include $(ALICE_ROOT)/conf/MachineDef.$(ALICE_TARGET)
-
-MAKEFLAGS += -s
-
-##### MACROS #####
-
-PACKAGE = Main
-
-DOTS = " ................................................................................"
-
-PRETTY =  $(AWK) '{print $$0 substr($(DOTS),1,79-length($$0))}'
-
-##### Module libraries #####
-
-ALIROOT_DIRS		= STEER TGeant3 TRD PHOS TPC ZDC MUON PMD FMD TOF ITS \
-			  CRT RICH START STRUCT EVGEN RALICE ALIFAST \
-			  THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP \
-                          EMCAL HBTAN VZERO
-
-##### TARGETS #####
-
-default:      lib bin alilibs aliroot
-
-lib bin:
-	@mkdir $@
-
-alilibs:  lib
-	echo MAKEFLAGS = $(MAKEFLAGS)
-	for i in $(ALIROOT_DIRS) ; do \
-	   echo "Making headers in $$i" | $(PRETTY); \
-	   ${MAKE} -C $$i headers ; \
-        done
-	@for i in $(ALIROOT_DIRS) ; do \
-	   echo "Making dependencies in $$i" | $(PRETTY); \
-	   ${MAKE} -C $$i depend ; \
-	done
-	@for i in $(ALIROOT_DIRS) ; do \
-	   echo "Making in $$i" | $(PRETTY); \
-	   ${MAKE} -C $$i ; \
-	done
-
-aliroot geant321 minicern pdf pythia6 hijing: FORCE
-	@DIR=`echo $@ | $(AWK) '{print toupper($$0)}'` ; \
-	echo "Making dependencies in $$DIR" | $(PRETTY); \
-	${MAKE} -C $$DIR depend;\
-	echo "Making in $$DIR" | $(PRETTY); \
-	${MAKE} -C $$DIR
-
-TGeant4 AliGeant4 AliFluka : FORCE
-	@DIR=$@; \
-	echo "Making dependencies in $$DIR" | $(PRETTY); \
-	${MAKE} -C $$DIR depend;\
-	echo "Making in $$DIR" | $(PRETTY); \
-	${MAKE} -C $$DIR
-
-cernlibs: geant321 pythia6 minicern pdf hijing
-
-geant4: TGeant4 AliGeant4
-
-Flugg: FORCE
-	@DIR=$@; \
-	echo "Making in $$DIR" | $(PRETTY); \
-	${MAKE} -C $$DIR/source
-
-fluka:  Flugg TGeant4 AliGeant4 AliFluka
-
-all:	cernlibs default
-
-FORCE:
-
-############################### General Macros ################################
-
-# include $(ALICE_ROOT)/conf/GeneralMacros
-
-############################### Specific Macros ###############################
-
-STRUCT_DIRS	= html conf macros data share include Euclid picts \
-                  doc etc Makefile .rootrc
-
-LIBRARY_DIRS	= MINICERN GEANT321 PYTHIA6 PDF HIJING
-
-dist: AliRoot$(VERSION).tar.gz
-
-AliRoot$(VERSION).tar.gz: $(STRUCT_DIRS) $(ALIROOT_DIRS) ALIROOT
-
-distall: AliOffline$(VERSION).tar.gz
-
-AliOffline$(VERSION).tar.gz: $(STRUCT_DIRS) $(ALIROOT_DIRS) $(LIBRARY_DIRS) ALIROOT
-
-distlib: AliLibs$(VERSION).tar.gz
-
-AliLibs$(VERSION).tar.gz: $(LIBRARY_DIRS)
-
-AliRoot$(VERSION).tar.gz AliLibs$(VERSION).tar.gz AliOffline$(VERSION).tar.gz:
-		@rm -f $(ALICE)/$@ 
-		@rm -f `find . -name '*~' -print` \
-                       `find . -name '*.bak' -print` \
-                       `find . -name '.*~' -print` \
-		       `find . -name '*\#*' -print` 
-		@rm -f /tmp/saves
-		@ls -1d $^ | sed -e "s/^/$(ALICE_LEVEL)\//" > /tmp/saves
-	 	@cd $(ALICE) ; \
-                gtar cvfz $@ --exclude '*.o' --exclude '*Cint.*' \
-                --exclude 'roothtml' --exclude 'CVS' \
-		--exclude Make-depend --exclude '*html/gif' \
-		--exclude "*tgt_*" --exclude check \
-                `cat /tmp/saves` 
-
-htmldocnew:		FORCE
-		@for i in $(ALIROOT_DIRS) ; do \
-		    echo "Making HTML doc for $$i" ; \
-		    rm -rf $(ALICE_ROOT)/$$i/html ; \
-		    cd $(ALICE_ROOT)/$$i ; \
-		    aliroot -b -q mkhtml.C > /dev/null; \
-		    for j in `ls *.C` ; do \
-		       echo $$j ; \
-		       aliroot -b -q "mkhtml.C(\"$$j\")" > /dev/null; \
-		    done \
-                done
+# Top level Makefile for AliRoot System
+#
+# Author: Jan-Erik Revsbech (revsbech@fys.ku.dk)
+#         Developed on idea of Boris Polichtchouk (Boris.Polichtchouk@cern.ch), 15/4/2001
 
 
-htmldoc:		FORCE
-		@rm -rf html/roothtml
-		@rm -f  html/picts
-		@rm -f /tmp/macros
-		@cd html ;\
-		aliroot -q -b "mkhtml.C(0,1)" ;\
-		ls ../macros/*.C > /tmp/macros ;\
-		for i in $(ALIROOT_DIRS) ; do \
-			ls ../$$i/*.C 2>/dev/null >> /tmp/macros ;\
-		done ;\
-		for i in `cat /tmp/macros` ; do \
-			echo $$i ; \
-			aliroot -b -q "mkhtml.C(\"$$i\")" > /dev/null ;\
-                done ;\
-		./makeExampleList ;
-		@ln -s ../picts html/picts
-		@ln -s ../../picts html/roothtml/picts
-		@ln -s ../../../picts html/roothtml/src/picts
-		@ln -s ../../../picts html/roothtml/examples/picts
+##### include general path/location macros #####
+override ALICE_ROOT=$(shell pwd)
 
-clean:  FORCE
-		@rm -f *~ \#*
-		@rm -f include/*
-		@for i in $(ALIROOT_DIRS) ALIROOT; do \
-                    ${MAKE} -C $$i macroclean ; \
-                done
-                ifdef G4INSTALL
-	 	  @for i in TGeant4 AliGeant4; do \
-                    ${MAKE} -C $$i macroclean ; \
-                  done
-                endif  
-
-libclean:  FORCE
-		@rm -f *~ \#*
-		@for i in $(LIBRARY_DIRS) ; do \
-                    ${MAKE} -C $$i macroclean ; \
-                done
-
-allclean: libclean clean
+ifdef ALIVERBOSE
+MUTE:=
+else
+MUTE:=@
+endif
 
 # IRST coding rule check
-CHECK_DIRS = $(ALIROOT_DIRS) ALIROOT TGeant4 AliGeant4
-check:     
-		@for i in $(CHECK_DIRS) ; do \
-                    echo "Checking $$i" ; \
-                    ${MAKE} -C $$i check ; \
-		done
-
-REVENG_DIRS = $(ALIROOT_DIRS)
-
-reveng:
-	@for i in $(REVENG_DIRS) ; do \
-		echo "Reverse engineering $$i" ; \
-		${MAKE} -C $$i reveng ; \
-	done
+IRST_INSTALLDIR=$(ALICE)/local/IRST
+CLASSPATH=$(IRST_INSTALLDIR)
+export CLASSPATH IRST_INSTALLDIR
+CODE_CHECK=java rules.ALICE.ALICERuleChecker
+REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 
 
+include build/Makefile.config
+################################################################## 
+# 
+#            Where to install libraries and binaries 
+#                 and common header files
+
+LIBPATH=lib/tgt_$(ALICE_TARGET)
+BINPATH=bin/tgt_$(ALICE_TARGET)
+EXPORTDIR = $(ALICE_ROOT)/include
+##################################################################
+
+##################################################################
+# include machine dependent macros 
+
+-include build/Makefile.$(ALICE_TARGET)
+##################################################################
+
+##################################################################
+# 
+#               Check if called with debug
+
+ifeq ($(ALIDEBUG),YES)
+override ALICE_TARGET:=$(ALICE_TARGET)DEBUG
+FFLAGS := -g $(filter-out -O%,$(FFLAGS))
+CXXFLAGS := -g $(filter-out -O%,$(CXXLAGS))
+CFLAGS := -g $(filter-out -O%,$(CLAGS))
+SOFLAGS := -g $(filter-out -O%,$(SOFLAGS))
+LDFLAGS := -g $(filter-out -O%,$(LDFLAGS))
+endif
+##################################################################
+
+##################################################################
+#
+#                   Modules to build 
+
+# Uncomment to show some output
+#$(warning MAKECMDGOALS=$(MAKECMDGOALS))
+
+ALIROOTMODULES:= STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
+      CRT RICH START STRUCT EVGEN RALICE ALIFAST VZERO \
+	  THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP EMCAL HBTAN \
+        THerwig
+
+CERNMODULES:= PDF PYTHIA PYTHIA6 HIJING MICROCERN HERWIG
+
+MODULES:=$(ALIROOTMODULES) $(CERNMODULES) 
+
+ifeq ($(findstring TFluka,$(MAKECMDGOALS)),TFluka)
+MODULES += TFluka
+endif
 
 
+##################################################################
+
+MODULES += ALIROOT 
+
+MODDIRS := $(MODULES)
+
+#############################################################
+# 
+#               Default include dirs for 
+#          C++, Fortran, Cint, and dependencies 
+#      The module directory will be added by each module
+#
+
+CXXFLAGS += -I$(ALICE_ROOT)/include
+CXXFLAGS += $(patsubst %,-I%,$(ROOTSYS)/include)
+
+CINTFLAGS += -I$(ALICE_ROOT)/include
+CINTFLAGS += $(patsubst %,-I%,$(ROOTSYS)/include)
+
+DEPINC  += -I$(ALICE_ROOT)/include
+DEPINC += $(patsubst %,-I%,$(ROOTSYS)/include)
+#############################################################
 
 
+#############################################################
+#
+#             Libraries to link binaries against
+#            Libraries will be linked againstSHLIB
+LIBS := $(GLIBS) $(ROOTLIBS) $(SYSLIBS)
+#############################################################
 
 
+# default target
+default:     alilibs  aliroot
+
+
+#############################################################
+#
+#            Each module will add to this
+
+ALLLIBS      :=
+ALLEXECS     :=
+INCLUDEFILES :=
+BINLIBS      := 
+EXPORTFILES  := 
+#############################################################
+
+BINLIBDIRS   := -L$(ALICE_ROOT)/$(LIBPATH)
+
+
+#Dependencies of module.mk files
+
+include build/module.dep
+
+#############################################################
+# 
+#        Check if module.mk is present for the library
+%.mk: build/module.tpl
+ifndef ALIQUIET
+	@echo "***** Creating $@ file *****";
+endif
+	@share/alibtool mkmodule  $(patsubst %/module.mk,%,$@) > $@;
+#############################################################
+
+# **************************************************************************
+#
+#               If cleaning, do not include 
+#             dependencies or module.mk files.
+
+ifeq ($(findstring $(MAKECMDGOALS), clean clean-all clean-dicts clean-modules clean-depend clean-objects clean-libs clean-bins),)
+
+#            If making modules, not not include
+#                       anything
+
+ifneq ($(findstring modules,$(MAKECMDGOALS)),modules)
+
+#############################################################
+# 
+#                Include the modules
+-include $(patsubst %,%/module.mk,$(MODULES)) 
+
+#
+#
+#############################################################
+
+#############################################################
+#
+#          include dependencies if not making them!
+ifneq ($(MAKECMDGOALS),depend )
+#           Don't include if cleaning of any sort
+ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
+include $(INCLUDEFILES)
+endif
+endif
+#############################################################
+
+endif
+endif
+# **************************************************************************
+
+#############################################################
+#
+#              include dummy dependency file
+#               *MUST* be last includefile
+include build/dummy.d
+#############################################################
+
+
+# targets
+
+.PHONY:		alilibs aliroot makedistr clean
+
+modules: $(patsubst %,%/module.mk,$(MODULES)) 	
+
+
+aliroot: $(BINPATH) $(ALLEXECS) alilibs bin
+
+alilibs: $(LIBPATH) $(ALLLIBS) lib modules
+
+# Single Makefile "distribution": Makefile + modules + mkdepend scripts
+makedistr: $(MODULES)	 
+	 tar -cvf MakeDistr.tar $(patsubst %,%/*.pkg,$(MODULES)) \
+		Makefile create build/* 
+
+all: aliroot
+
+
+depend: $(INCLUDEFILES) 
+
+debug:
+ifndef ALIQUIET
+	@echo "***** Entering DEBUG mode. *****"
+endif
+	@(export ALIDEBUG=YES && $(MAKE))
+lib: 
+	@mkdir lib
+	@mkdir lib/tgt_$(ALICE_TARGET)
+
+bin: 
+	@mkdir bin
+	@mkdir bin/tgt_$(ALICE_TARGET)
+
+$(MODULES):
+ifndef ALIQUIET
+	@echo "***** Making $@ *****"
+endif
+	@mkdir -p $@
+
+$(BINPATH):
+ifndef ALIQUIET
+	@echo "***** Making $@ *****"
+endif
+	@mkdir -p $@
+
+$(LIBPATH):
+ifndef ALIQUIET
+	@echo "***** Making $@ *****"
+endif
+	@mkdir -p $@
+
+build/dummy.d: $(EXPORTFILES)
+	@(if [ ! -f $@ ] ; then \
+	   touch $@; \
+	fi)
+
+clean:
+	@echo "***** No targen clean, use one of these *****"
+	@echo "	clean-aliroot     : Clean up all aliroot libraries"
+	@echo "	clean-MODULENAME  : Clean everything from module MODULENAME"
+	@echo "	clean-all         : Cleans up everything, including cern libraires"
+	@echo "	clean-modules     : Clean all module.mk file in all modules"
+	@echo "	clean-libs        : Clean all libraries (not object files)"
+	@echo "********************************************"
+
+clean-all: clean-modules clean-libs clean-bins
+ifndef ALIQUIET
+	@echo "***** Cleaning up everything ****"
+endif
+	$(MUTE)rm -rf $(patsubst %,%/tgt_$(ALICE_TARGET),$(MODULES))
+	$(MUTE)rm -rf $(EXPORTDIR)
+
+#This cleans only libraries that are not CERN-libraries
+
+clean-aliroot:   $(patsubst %,%/module.mk,$(ALIROOTMODULES)) $(patsubst %,clean-%,$(ALIROOTMODULES))
+
+CHECKMODULES := $(filter-out HBTP,$(filter-out MEVSIM,$(ALIROOTMODULES)))
+
+check-all:			$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,check-%,$(CHECKMODULES))
+
+reveng-all:			$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,reveng-%,$(CHECKMODULES))
+
+revdisp-all:		$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,revdisp-%,$(CHECKMODULES))
+
+clean-dicts:
+ifndef ALIQUIET
+	@echo "***** Cleaning up G__ files *****"
+endif
+	$(MUTE)rm -rf */tgt_$(ALICE_TARGET)/G__*
+
+clean-modules:
+ifndef ALIQUIET
+	@echo "***** Cleaning up module.mk files *****"
+endif
+	$(MUTE)rm -rf $(patsubst %,%/module.mk,$(MODULES)) 
+
+clean-depend:
+ifndef ALIQUIET
+	@echo "***** Cleaning up dependencies *****"
+endif
+	$(MUTE)echo rm `find . -name "*.d"`
+
+clean-objects:
+ifndef ALIQUIET
+	@echo "***** Cleaning up .o files *****"
+endif
+	$(MUTE)echo rm `find . -name "*.o"`
+
+clean-libs:
+ifndef ALIQUIET
+	@echo "***** Cleaning up library files *****"
+endif
+	$(MUTE)rm -rf lib/tgt_$(ALICE_TARGET)/*
+
+clean-bins:
+ifndef ALIQUIET
+	@echo "***** Cleaning up binary files *****"
+endif
+	$(MUTE)rm -rf bin/tgt_$(ALICE_TARGET)

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.20.6.1  2002/06/10 14:57:41  hristov
+Merged with v3-08-02
+
+Revision 1.24  2002/05/22 13:22:53  morsch
+Process kPyMbNonDiffr added.
+
 Revision 1.23  2002/05/06 07:17:29  morsch
 Pyr gives random number r in interval 0 < r < 1.
 

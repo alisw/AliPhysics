@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.7.8.1  2002/06/10 15:29:36  hristov
+Merged with v3-08-02
+
+Revision 1.7  2001/10/04 14:33:43  coppedis
+Second EM ZDC added at 7.35 m from IP
+
 Revision 1.6  2001/09/26 16:07:40  coppedis
 Changes in StepManager suggested by J.Chudoba
 
@@ -64,7 +70,7 @@ A different geometry for the ZDCs
 #include "AliDetector.h"
 #include "AliMagF.h"
 #include "AliMC.h"
-#include "AliCallf77.h"
+//#include "AliCallf77.h"
 #include "AliConst.h"
 #include "AliPDG.h"
 #include "TLorentzVector.h"

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.42.4.1  2002/08/28 15:06:50  alibrary
+Updating to v3-09-01
+
+Revision 1.43  2002/08/09 12:09:52  morsch
+Direct gamma trigger correctly included.
+
 Revision 1.42  2002/03/12 11:07:08  morsch
 Add status code of particle to SetTrack call.
 

@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.3.12.1  2002/10/14 13:14:08  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.4  2002/09/09 17:28:02  nilsen
+Added class iostreamer funcionality and Print and Read functions. cleaned
+up files.
+
 */
 ////////////////////////////////////////////////
 //  Reconstructed point class for set:ITS     //

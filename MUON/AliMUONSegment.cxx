@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.8.10.1  2002/10/11 06:56:48  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.9  2002/09/20 13:32:26  cussonno
+Minor bugs in the definition of the bending impact parameter corrected (thanks to A. Zinchenko)
+
 Revision 1.8  2001/04/25 14:50:42  gosset
 Corrections to violations of coding conventions
 

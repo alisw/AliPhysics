@@ -14,6 +14,7 @@
 #include <G4UIdirectory.hh>
 #include <G4UIcmdWithoutParameter.hh>
 #include <G4UIcmdWithABool.hh>
+#include <G4UIcmdWithAString.hh>
 #include <G4UIcmdWithADoubleAndUnit.hh>
 
 //_____________________________________________________________________________
@@ -25,12 +26,27 @@ AliModulesCompositionMessenger::AliModulesCompositionMessenger(
   fDirectory = new G4UIdirectory("/aliDet/");
   fDirectory->SetGuidance("Detector construction control commands.");
 
-  fFieldValueCmd = new G4UIcmdWithADoubleAndUnit("/aliDet/fieldValue", this);
-  fFieldValueCmd->SetGuidance("Define magnetic field in Z direction.");
-  fFieldValueCmd->SetParameterName("fieldValue", false, false);
-  fFieldValueCmd->SetDefaultUnit("tesla");
-  fFieldValueCmd->SetUnitCategory("Magnetic flux density");
-  fFieldValueCmd->AvailableForStates(PreInit,Idle);  
+  fFieldTypeCmd = new G4UIcmdWithAString("/aliDet/fieldType", this);
+  G4String guidance =   "Select type of magnetic field:\n";
+  guidance = guidance + "  MCApplication:  field defined by MC application (default)\n";
+  guidance = guidance + "  Uniform:        uniform magnetic field\n";
+  guidance = guidance + "  None:           no magnetic field";
+  fFieldTypeCmd->SetGuidance(guidance);
+  fFieldTypeCmd->SetParameterName("FieldType", true);
+  fFieldTypeCmd->SetCandidates("MCApplication Uniform None");   
+  fFieldTypeCmd->SetDefaultValue("MCApplication");
+  fFieldTypeCmd->AvailableForStates(PreInit);
+
+  fUniformFieldValueCmd 
+    = new G4UIcmdWithADoubleAndUnit("/aliDet/uniformFieldValue", this);
+  fUniformFieldValueCmd
+    ->SetGuidance("Define uniform magnetic field in Z direction.");
+  fUniformFieldValueCmd
+    ->SetGuidance("(Uniform magnetic field type has to be selected first.)");
+  fUniformFieldValueCmd->SetParameterName("UniformFieldValue", false, false);
+  fUniformFieldValueCmd->SetDefaultUnit("tesla");
+  fUniformFieldValueCmd->SetUnitCategory("Magnetic flux density");
+  fUniformFieldValueCmd->AvailableForStates(Idle);  
   
   fSetReadGeometryCmd 
     = new G4UIcmdWithABool("/aliDet/readGeometry", this);
@@ -73,7 +89,8 @@ AliModulesCompositionMessenger::AliModulesCompositionMessenger(
 AliModulesCompositionMessenger::~AliModulesCompositionMessenger() {
 //
   delete fDirectory;
-  delete fFieldValueCmd;
+  delete fFieldTypeCmd;
+  delete fUniformFieldValueCmd;
   delete fSetReadGeometryCmd;
   delete fSetWriteGeometryCmd;
   delete fPrintMaterialsCmd;
@@ -104,9 +121,17 @@ void AliModulesCompositionMessenger::SetNewValue(G4UIcommand* command, G4String 
 // Applies command to the associated object.
 // ---
 
-  if (command == fFieldValueCmd) {  
+  if( command == fFieldTypeCmd ) { 
+    if (newValues == "MCApplication") 
+      fModulesComposition->SetFieldType(kMCApplicationField); 
+    if (newValues == "Uniform") 
+      fModulesComposition->SetFieldType(kUniformField); 
+    if (newValues == "None") 
+      fModulesComposition->SetFieldType(kNoField); 
+  }
+  if (command == fUniformFieldValueCmd) {  
     fModulesComposition
-      ->SetMagField(fFieldValueCmd->GetNewDoubleValue(newValues)); 
+      ->SetUniformFieldValue(fUniformFieldValueCmd->GetNewDoubleValue(newValues)); 
   }
   else if (command == fSetReadGeometryCmd) {
     fModulesComposition->SetReadGeometry(

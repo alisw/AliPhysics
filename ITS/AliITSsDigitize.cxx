@@ -15,6 +15,12 @@
  
 /*
 $Log$
+Revision 1.2.4.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.2  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.1  2002/03/28 16:25:26  nilsen
 New TTask method for creating SDigits from Hits.
 

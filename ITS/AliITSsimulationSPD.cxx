@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.15.4.3  2002/10/14 13:14:08  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.20  2002/09/11 10:32:41  hristov
+Use new for arrays with variable size
+
 Revision 1.19  2002/09/09 17:23:28  nilsen
 Minor changes in support of changes to AliITSdigitS?D class'.
 

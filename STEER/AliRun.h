@@ -18,12 +18,13 @@ class TFile;
 #include "TClonesArray.h"
 #include <TArrayF.h>
 #include <TStopwatch.h>
-#include "TNamed.h"
+#include <TVirtualMCApplication.h>
 
+#include "AliMC.h"
 class AliDetector;
 class AliModule;
 class AliMagF;
-class AliMC;
+//class AliMC;
 class AliLego;
 class AliDisplay;
 class AliLegoGenerator;
@@ -39,7 +40,7 @@ class AliGenEventHeader;
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
 
-class AliRun : public TNamed {
+class AliRun : public TVirtualMCApplication {
 public:
    // Creators - distructors
    AliRun();
@@ -61,11 +62,6 @@ public:
    virtual  void  DumpPart (Int_t i) const;
    virtual  void  DumpPStack () const;
    virtual AliMagF *Field() const {return fField;}
-   virtual  void  PreTrack();
-   virtual  void  PostTrack();
-   virtual  void  FinishPrimary();
-   virtual  void  BeginPrimary();
-   virtual  void  FinishEvent();
    virtual  void  FinishRun();
    virtual  void  FlagTrack(Int_t track);
    void           AddEnergyDeposit(Int_t id, Float_t edep) 
@@ -92,9 +88,6 @@ public:
    TGeometry     *GetGeometry();
    AliHeader*     GetHeader() {return fHeader;}
    virtual  void  SetGenEventHeader(AliGenEventHeader* header);
-   virtual  void  GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
-			       Float_t &e, Float_t *vpos, Float_t *polar, 
-			       Float_t &tof);
    Int_t          GetNtrack() const;
    virtual  Int_t GetPrimary(Int_t track) const;
    virtual  void  Hits2Digits(const char *detector=0); 
@@ -110,7 +103,6 @@ public:
 
    TObjArray     *Particles();
    TParticle     *Particle(Int_t i);
-   virtual  void  BeginEvent();
    virtual  void  ResetDigits();
    virtual  void  ResetSDigits();
    virtual  void  ResetHits();
@@ -130,7 +122,6 @@ public:
    virtual  void  SetCurrentTrack(Int_t track);                           
    virtual  void  SetDebug(const Int_t level=0) {fDebug = level;}
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}
-   virtual  void  StepManager(Int_t id);
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, char*filename="$(ALICE_ROOT)/data/field01.dat");
    virtual  void  SetField(AliMagF* magField);
    virtual  void  SetTrack(Int_t done, Int_t parent, Int_t pdg, 
@@ -147,8 +138,6 @@ public:
    
    virtual  void  KeepTrack(const Int_t itra);
    virtual  void  MediaTable();
-   virtual  Float_t TrackingZmax() const {return fTrZmax;}
-   virtual  Float_t TrackingRmax() const {return fTrRmax;}
    virtual  void    TrackingLimits( Float_t rmax=1.e10, Float_t zmax=1.e10) {fTrRmax=rmax; fTrZmax=zmax;}
    virtual  Int_t   DetFromMate(Int_t i) const { return (*fImedia)[i];}
    virtual  AliGenerator* Generator() const {return fGenerator;}
@@ -156,8 +145,28 @@ public:
    virtual  void ResetGenerator(AliGenerator *generator);
    virtual  void EnergySummary();
    virtual  TDatabasePDG* PDGDB() const {return fPDGDB;}
+   
+   // MC Application
+   //
+   virtual  void  ConstructGeometry();
+   virtual  void  InitGeometry();     
+   virtual  void  GeneratePrimaries();
+   virtual  void  BeginEvent();
+   virtual  void  BeginPrimary();
+   virtual  void  PreTrack();
+   virtual  void  Stepping();         
+   virtual  void  PostTrack();
+   virtual  void  FinishPrimary();
+   virtual  void  FinishEvent();
+   virtual  Double_t  TrackingZmax() const {return fTrZmax;}
+   virtual  Double_t  TrackingRmax() const {return fTrRmax;}
+   virtual  void Field(const Double_t* x, Double_t* b) const;
+   //
+   // End of MC Application
 
    TFile* InitTreeFile(Option_t *option, TString fileName);
+   void PrintTreeFile();
+   void CloseTreeFile(Option_t *option);
    TString GetTreeDFileName() const {return fTreeDFileName;}
    TString GetTreeSFileName() const {return fTreeSFileName;}
    TString GetTreeRFileName() const {return fTreeRFileName;}
@@ -167,7 +176,6 @@ public:
    TFile* GetTreeDFile() const {return fTreeDFile;}
    TFile* GetTreeSFile() const {return fTreeSFile;}
    TFile* GetTreeRFile() const {return fTreeRFile;}
-   void PrintTreeFile();
    
 
    TTree         *TreeD() {return fTreeD;}
@@ -181,7 +189,6 @@ public:
    AliStack      *Stack() {return fStack;}
 
 protected:
-  void CloseTreeFile(Option_t *option);
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
   TFile* InitFile(TString fileName="");
   Int_t          fRun;               //! Current run number
@@ -220,12 +227,14 @@ protected:
   TString        fTransParName;      //  Name of the transport parameters file
   TString        fBaseFileName;      //  Name of the base root file
   AliStack*      fStack;             //! Particle Stack
+
   TString        fTreeDFileName;     //!  name of the file with TreeD
   TFile*         fTreeDFile;         //!  file with TreeD
   TString        fTreeSFileName;     //!  name of the file with TreeS
   TFile*         fTreeSFile;         //!  file with TreeS
   TString        fTreeRFileName;     //!  name of the file with TreeR
   TFile*         fTreeRFile;         //!  file with TreeR
+
 private:
 
    AliRun(const AliRun &right) 

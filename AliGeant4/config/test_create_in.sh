@@ -1,3 +1,4 @@
+#!/bin/sh
 # $Id$
 # ----------------------------------------------------------------
 # This script generates test macro for a specified
@@ -22,7 +23,7 @@ fi
 # default parameters
 DIR=$1
 VER="0"
-GEN="0"
+GEN="1"
 VIS="0"
 
 # get input parameters
@@ -64,6 +65,15 @@ if [ "$IS_VERSION" = "NO" ]; then
   cd $CURDIR
   exit;
 fi       
+
+# create target directory if it does not exist
+if [ ! -d $TO ]; then
+  mkdir $TO
+fi  
+if [ ! -d $TO/$DIR ]; then
+  mkdir $TO/$DIR
+fi   
+
 cd $TO  
 
 # create basic test macro

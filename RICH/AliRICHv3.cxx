@@ -994,7 +994,7 @@ void AliRICHv3::StepManager()
     Float_t        localTheta,localPhi;
     Float_t        theta,phi;
     Float_t        destep, step;
-    Float_t        ranf[2];
+    Double_t       ranf[2];
     Int_t          nPads;
     Float_t        coscerenkov;
     static Float_t eloss, xhit, yhit, tlength;
@@ -1093,7 +1093,8 @@ void AliRICHv3::StepManager()
 			
 			Float_t cophi = TMath::Cos(TMath::ATan2(mom[0], mom[1]));
 			Float_t t = (1. - .025 / cophi) * (1. - .05 /  cophi);
-			gMC->Rndm(ranf, 1);
+			//gMC->Rndm(ranf, 1);
+			gMC->GetRandom()->RndmArray(1,ranf);
 			//printf("grid calculation:%f\n",t);
 			if (ranf[0] > t) {
 			  gMC->StopTrack();
@@ -1121,7 +1122,8 @@ void AliRICHv3::StepManager()
 			
 			Float_t cophi = TMath::Cos(TMath::ATan2(mom[0], mom[1]));
 			Float_t t = Fresnel(ckovEnergy*1e9,cophi,1);
-			gMC->Rndm(ranf, 1);
+			//gMC->Rndm(ranf, 1);
+			gMC->GetRandom()->RndmArray(1,ranf);
 			if (ranf[0] < t) {
 			  gMC->StopTrack();
 			  ckovData[13] = 6;

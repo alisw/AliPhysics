@@ -9,22 +9,24 @@
 
 #include "AliModulesComposition.h"
 #include "AliModuleConstruction.h"
-#include "AliMagneticField.h"
 #include "AliGlobals.h"
 #include "AliFiles.h"
 #include "AliModule.h"
 
 #include "TG4GeometryManager.h"
+#include "TG4MagneticField.h"
+#include "TG4UniformMagneticField.h"
 
 #include <G4Material.hh>
 
 //_____________________________________________________________________________
 AliModulesComposition::AliModulesComposition()
   : AliVerbose("modulesComposition"),
-    fReadGeometry(false),
-    fWriteGeometry(false),
+    fMessenger(this),
+    fMagneticFieldType(kMCApplicationField), 
     fMagneticField(0),
-    fMessenger(this) {
+    fReadGeometry(false),
+    fWriteGeometry(false) {
 //
 }
 
@@ -60,6 +62,30 @@ AliModulesComposition::operator=(const AliModulesComposition& right)
 //
 // private methods
 //
+
+//_____________________________________________________________________________
+void AliModulesComposition::CreateMagneticField()
+{
+// Creates standard magnetic field (defined by TVirtualMCApplication).
+// ---
+
+  switch (fMagneticFieldType) {
+  
+    case kMCApplicationField:
+      fMagneticField = new TG4MagneticField();
+      G4cout << "kMCApplicationField" << G4endl;
+      break;
+
+    case kUniformField:
+      fMagneticField = new TG4UniformMagneticField();
+      G4cout << "kUniformField" << G4endl;
+      break;
+      
+    case kNoField:
+      G4cout << "kNoField" << G4endl;
+      ;;
+  }  
+}
 
 //_____________________________________________________________________________
 void AliModulesComposition::Configure()
@@ -174,7 +200,7 @@ void AliModulesComposition::SetReadGeometryToModules(G4bool readGeometry)
 // Sets readGeometry control to all modules.
 // ---
 
-  for (G4int i=0; i<fModuleConstructionVector.size(); i++) 
+  for (G4int i=0; i<G4int(fModuleConstructionVector.size()); i++) 
     fModuleConstructionVector[i]->SetReadGeometry(readGeometry);
 }    
   
@@ -184,7 +210,7 @@ void AliModulesComposition::SetWriteGeometryToModules(G4bool writeGeometry)
 // Sets writeGeometry control to all modules.
 // ---
 
-  for (G4int i=0; i<fModuleConstructionVector.size(); i++) 
+  for (G4int i=0; i<G4int(fModuleConstructionVector.size()); i++) 
     fModuleConstructionVector[i]->SetWriteGeometry(writeGeometry);
 }    
 
@@ -212,6 +238,9 @@ void AliModulesComposition::ConstructModules()
 // Construct geometry of all modules (both standalone and dependent.)
 // ---
 
+  // create magnetic field
+  CreateMagneticField();  
+
   // set common options
   SetReadGeometryToModules(fReadGeometry);
   SetWriteGeometryToModules(fWriteGeometry);
@@ -229,7 +258,7 @@ void AliModulesComposition::SetProcessConfigToModules(G4bool processConfig)
 // Sets processConfig control to all modules.
 // ---
 
-  for (G4int i=0; i<fModuleConstructionVector.size(); i++) 
+  for (G4int i=0; i<G4int(fModuleConstructionVector.size()); i++) 
     fModuleConstructionVector[i]->SetProcessConfig(processConfig);
 }    
 
@@ -247,16 +276,48 @@ void AliModulesComposition::PrintMaterials() const
   G4cout << *matTable;
 }
 
+
 //_____________________________________________________________________________
-void AliModulesComposition::SetMagField(G4double fieldValue)
+void AliModulesComposition::SetFieldType(TG4MagneticFieldType fieldType)
+{
+// Selects from available magnetic field types:
+// field defined by TVirtualMCApplication, uniform magnetic field
+// or no magnetic field.
+// Applicable only when no field has been yet created (PreInit).
+// ---
+
+  if (fMagneticField) {
+     G4String text = "AliModulesComposition::SetFieldType :\n";
+     text = text + "    The magnetic field already exists.";
+     text = text + "    Selection was ignored.";
+     AliGlobals::Warning(text);
+  }   
+
+  fMagneticFieldType = fieldType;
+}  
+
+//_____________________________________________________________________________
+void AliModulesComposition::SetUniformFieldValue(G4double fieldValue)
 {
 // Sets uniform magnetic field to specified value.
 // ---
-
-  // create fields if it does not exist
-  if (!fMagneticField) fMagneticField = new AliMagneticField();
   
-  // set value
-  fMagneticField->SetFieldValue(fieldValue);
-}
+  if (!fMagneticField) {
+     G4String text = "AliModulesComposition::SetUniformMagField: \n";
+     text = text + "    Magnetic field is not defined.";
+     AliGlobals::Exception(text);
+  }   
 
+  // Check field type 
+  TG4UniformMagneticField* uniformField 
+    =dynamic_cast<TG4UniformMagneticField*>(fMagneticField);
+
+  if (!uniformField) {
+     G4String text = "AliModulesComposition::SetUniformMagField: \n";
+     text = text + "    Defined magnetic field is not uniform.";
+     AliGlobals::Exception(text);
+  }   
+
+  // Set value
+  uniformField->SetFieldValue(fieldValue);
+}

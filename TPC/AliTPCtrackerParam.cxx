@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.5.4.1  2002/06/10 15:26:12  hristov
+Merged with v3-08-02
+
+Revision 1.9  2002/05/13 09:53:08  hristov
+Some frequent problems corrected: arrays with variable size have to be defined via the operator new, default values for the arguments have to be  used only in the header files, etc.
+
 Revision 1.8  2002/05/08 18:21:40  kowal2
 Now the code is blind to the binning used for pulls, efficiencies etc.
 

@@ -12,7 +12,7 @@
 #define ALIGENHBTPROCESSOR_H
 
 #include "AliGenerator.h"
-#include <AliPDG.h>
+#include "AliPDG.h"
 
 class THBTprocessor;
 class TClonesArray;

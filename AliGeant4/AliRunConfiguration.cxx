@@ -10,16 +10,18 @@
 #include "AliRunConfiguration.h"
 #include "AliRunMessenger.h"
 #include "AliDetConstruction.h"
-#include "AliSDConstruction.h"
+#include "TG4SDConstruction.h"
 #include "AliPrimaryGeneratorAction.h"
-#include "AliRunAction.h"
-#include "AliEventAction.h"
-#include "AliTrackingAction.h"
-#include "AliSteppingAction.h"
-#include "AliStackingAction.h"
+#include "TG4RunAction.h"
+#include "TG4EventAction.h"
+#include "TG4TrackingAction.h"
+#include "TG4SteppingAction.h"
+#include "TG4SpecialStackingAction.h"
 #include "AliFiles.h"
 
 #include "TG4ModularPhysicsList.h"
+
+ClassImp(AliRunConfiguration)
 
 //_____________________________________________________________________________
 AliRunConfiguration::AliRunConfiguration()
@@ -74,18 +76,20 @@ void AliRunConfiguration::CreateUserConfiguration()
 // the other user action classes. 
 // ---
 
+  G4cout << "AliRunConfiguration::CreateUserConfiguration()" << G4endl;
+
   // create mandatory Geant4 classes
   fDetectorConstruction = new AliDetConstruction();
-  fSDConstruction = new AliSDConstruction();
+  fSDConstruction = new TG4SDConstruction();
   fPhysicsList = new TG4ModularPhysicsList();
   fPrimaryGenerator = new AliPrimaryGeneratorAction();
 
   // create the other user action classes
-  fRunAction = new AliRunAction();
-  fEventAction = new AliEventAction();
-  fTrackingAction = new AliTrackingAction();
-  fSteppingAction = new AliSteppingAction();
-  fStackingAction = new AliStackingAction();
+  fRunAction  = new TG4RunAction();
+  fEventAction  = new TG4EventAction();
+  fTrackingAction = new TG4TrackingAction();
+  fSteppingAction = new TG4SteppingAction();
+  fStackingAction = new TG4SpecialStackingAction();
 }
 
 // public methods

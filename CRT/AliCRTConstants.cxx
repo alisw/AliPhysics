@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.4.2  2002/10/10 14:40:31  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.2  2002/10/07 11:16:53  gamez
+Depth variable added
+
 Revision 1.1  2002/06/16 17:08:19  hristov
 First version of CRT
 

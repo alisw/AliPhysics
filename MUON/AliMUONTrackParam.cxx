@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.11.6.1  2002/10/11 06:56:48  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.12  2002/09/19 10:14:00  cussonno
+Modified absorber correction. Added function FieldCorrection() to account
+for the effect of magnetic field in absorber.
+
 Revision 1.11  2002/03/08 17:25:36  cussonno
 Update absorber energy loss and Branson corrections : simplified functions
 BransonCorrection and TotalMomentumEnergyLoss.

@@ -15,6 +15,13 @@
  
 /*
 $Log$
+Revision 1.3.6.2  2002/10/14 13:14:08  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.6  2002/09/09 17:30:02  nilsen
+Added new creator which passes a pointer to type AliRun. Can now use either
+gAlice or a local instance of AliRun.
+
 Revision 1.5  2002/05/13 14:27:57  hristov
 TreeC created once per event (M.Masera)
 

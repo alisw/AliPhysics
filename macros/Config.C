@@ -16,7 +16,11 @@ void Config()
     // Set Random Number seed
     // gRandom->SetSeed(12345);
 
-    new     AliGeant3("C++ Interface to Geant3");
+
+   // libraries required by geant321
+    gSystem->Load("libgeant321");
+
+    new     TGeant3("C++ Interface to Geant3");
 
     if (!gSystem->Getenv("CONFIG_FILE"))
     {
@@ -29,7 +33,7 @@ void Config()
 
     //
     // Set External decayer
-    AliDecayer *decayer = new AliDecayerPythia();
+    TVirtualMCDecayer *decayer = new AliDecayerPythia();
 
     decayer->SetForceDecay(kAll);
     decayer->Init();

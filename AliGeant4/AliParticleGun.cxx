@@ -19,15 +19,16 @@
 
 //_____________________________________________________________________________
 AliParticleGun::AliParticleGun() 
-  : AliVerbose("particleGun"),
+  : G4VPrimaryGenerator(),
+    AliVerbose("particleGun"),
     fMessenger(this) {
 //
 }
 
 //_____________________________________________________________________________
 AliParticleGun::AliParticleGun(const AliParticleGun& right)
-  : AliVerbose("particleGun"),
-    G4VPrimaryGenerator(right),
+  : G4VPrimaryGenerator(right),
+    AliVerbose("particleGun"),
     fMessenger(this)
 {
   // copy stuff

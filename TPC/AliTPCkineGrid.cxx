@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.1.6.1  2002/06/10 15:26:12  hristov
+Merged with v3-08-02
+
+Revision 1.1  2002/05/08 18:19:50  kowal2
+New class by Andrea Dainese. It deals with the parameters used by
+AliTPCtrackerParam (efficiences, pulls etc)
+
 */
 
 ////////////////////////////////////////////////////////////////////////

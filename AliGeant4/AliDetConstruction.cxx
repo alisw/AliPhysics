@@ -9,7 +9,6 @@
 
 #include "AliDetConstruction.h"
 #include "AliDetSwitch.h"
-#include "AliLVTree.h"
 #include "AliGlobals.h"
 #include "AliFiles.h"
 #include "AliRun.h"
@@ -17,6 +16,7 @@
 
 #include "TG4XMLGeometryGenerator.h"
 #include "TG4GeometryServices.h"
+#include "TG4LVTree.h"
 
 #include <G4VPhysicalVolume.hh>
 
@@ -34,8 +34,9 @@ AliDetConstruction::AliDetConstruction()
   fDetSwitchVector.Add(new AliDetSwitch("FRAME",  3, 2, kStructure));
   fDetSwitchVector.Add(new AliDetSwitch("HALL",   1, 0, kStructure));
   fDetSwitchVector.Add(new AliDetSwitch("PIPE",   5, 0, kStructure));
-  fDetSwitchVector.Add(new AliDetSwitch("SHIL",   2, 1, kStructure));
-  fDetSwitchVector.Add(new AliDetSwitch("CASTOR", 2, 1));
+  fDetSwitchVector.Add(new AliDetSwitch("SHIL",   2, 2, kStructure));
+  fDetSwitchVector.Add(new AliDetSwitch("CRT",    1, 0));
+  fDetSwitchVector.Add(new AliDetSwitch("EMCAL",  2, 1));
   fDetSwitchVector.Add(new AliDetSwitch("FMD",    2, 1));
   fDetSwitchVector.Add(new AliDetSwitch("ITS",    7, 5));
   fDetSwitchVector.Add(new AliDetSwitch("MUON",   2, 1));
@@ -52,7 +53,7 @@ AliDetConstruction::AliDetConstruction()
   fDetSwitchVector.UpdateMessenger();
 
   // instantiate LVtree browser
-  AliLVTree::Instance();
+  TG4LVTree::Instance();
 }
 
 //_____________________________________________________________________________
@@ -66,7 +67,7 @@ AliDetConstruction::AliDetConstruction(const AliDetConstruction& right)
 AliDetConstruction::~AliDetConstruction() 
 {
   // delete LVtree browser
-  delete AliLVTree::Instance();
+  delete TG4LVTree::Instance();
 }
 
 // operators
@@ -188,7 +189,6 @@ void AliDetConstruction::CheckDetDependencies()
 // Checks modules dependencies.
 // ---
 
-  CheckDependence("MUON", "DIPO");
   CheckDependence("TOF", "FRAME");
   CheckDependence("TRD", "FRAME");
   CheckDependence("ZDC", "PIPE");
@@ -263,7 +263,7 @@ void AliDetConstruction::GenerateXMLGeometry() const
   //                       "v4", world->GetLogicalVolume());
 
   // generate volumes tree
-  xml.GenerateSection(detName, detVersion, "today", "Generated from Geant4",
+  xml.GenerateSection("v6", detName, detVersion, "today", "Generated from Geant4",
                       topName, world->GetLogicalVolume());
   xml.CloseFile();
   

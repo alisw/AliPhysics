@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.7.6.1  2002/06/10 15:00:53  hristov
+Merged with v3-08-02
+
+Revision 1.8  2002/04/04 16:38:52  kowal2
+Digits and Sdigits go to separate files
+
 Revision 1.7  2001/10/21 18:22:54  hristov
 BranchOld replaced by Branch. It works correctly with Root 2.02.xx
 

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.20.4.3  2002/10/10 15:07:49  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.25  2002/09/13 10:24:57  morsch
+idem
+
 Revision 1.24  2002/09/13 10:21:13  morsch
 No cast to AliMagFCM.
 

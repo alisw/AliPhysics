@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.11.10.1  2002/10/11 06:56:48  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.12  2002/09/23 13:29:15  hristov
+nameNode enlarged (HP)
+
 Revision 1.11  2001/05/16 14:57:17  alibrary
 New files for folders and Stack
 

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.7.6.1  2002/06/10 15:26:12  hristov
+Merged with v3-08-02
+
+Revision 1.9  2002/05/09 06:57:09  kowal2
+Protection against nonexisting input tree
+
 Revision 1.8  2002/03/29 06:57:45  kowal2
 Restored backward compatibility to use the hits from Dec. 2000 production.
 

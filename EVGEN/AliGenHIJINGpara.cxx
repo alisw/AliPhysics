@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.11.4.1  2002/07/24 08:56:28  alibrary
+Updating EVGEN on TVirtulaMC
+
+Revision 1.12  2002/06/19 06:56:34  hristov
+Memory leak corrected
+
 Revision 1.11  2002/03/20 10:21:13  hristov
 Set fPtMax to 15 GeV in order to avoid some numerical problems
 

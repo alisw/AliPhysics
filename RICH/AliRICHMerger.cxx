@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7.6.1  2002/07/24 10:07:52  alibrary
+Updating VirtualMC
+
 Revision 1.7  2001/11/02 15:37:26  hristov
 Digitizer class created. Code cleaning and bug fixes (J.Chudoba)
 

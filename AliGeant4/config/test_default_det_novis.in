@@ -7,15 +7,25 @@
 # without visualization 
 
 /aliDet/switchOn XXXNNN
-/aliDet/fieldValue 0.2 tesla
+
+/mcPhysics/setHadron true
+/mcPhysics/setSpecialCuts true
+
 /aliRun/initialize
 /aliDet/generateXML
 
-/tg4Physics/setHadron true
 /control/execute gen_testGGG.in
+
+/process/eLoss/subsec true
+/process/eLoss/minsubsec 2 cm
+
+/mcControl/rootCmd TStopwatch timer;
+/mcControl/rootCmd timer.Start();
 
 #/tracking/verbose 1
 /aliRun/beamOn 1
 
-/control/exit
+/mcControl/rootCmd timer.Stop();
+/mcControl/rootCmd timer.Print();
+
 exit

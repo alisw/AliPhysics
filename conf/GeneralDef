@@ -7,11 +7,12 @@
 # IRST coding rule check
 export IRST_INSTALLDIR=$(ALICE)/local/IRST
 export CLASSPATH=$(IRST_INSTALLDIR)
-CODE_CHECK=java rules.RuleChecker
+CODE_CHECK=java rules.ALICE.ALICERuleChecker
 REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 # This is to avoid a problem with the declaration of .SECONDARY in the 
 # GeneralMacros
 CHECKS = none
+
 
 $(ALICE_ROOT)/include/%.h : %.h
 	@[ -d $(dir $@) ] || mkdir $(dir $@)
@@ -57,11 +58,7 @@ tgt_$(ALICE_TARGET)/%.o : %.f
 tgt_$(ALICE_TARGET)/%.o : %.F
 	@echo $*.F
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-ifeq ($(CXXVERBOSE),)
 	@$(F77) $(FFLAGS) -c $*.F -o tgt_$(ALICE_TARGET)/$*.o
-else
-	$(F77) $(FFLAGS) -c $*.F -o tgt_$(ALICE_TARGET)/$*.o
-endif
 
 # Needed binary directories
 LIBDIR = $(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)
@@ -81,12 +78,25 @@ ROOTLIBS      = $(shell $(ROOTSYS)/bin/root-config --glibs) -lMinuit -lHtml
 ROOTLIBS      := $(filter-out -lNew,$(ROOTLIBS))
 ROOTLIBS      := $(filter-out -lThread,$(ROOTLIBS))
 ROOTLIBS      := $(filter-out -lpthread,$(ROOTLIBS))
+ROOTLIBS      += -lMC 
 
 # Alice libraries
 
-ALILIBS	      = -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
-                -lITS -lPHOS -lCRT -lRICH -lEMCAL -lZDC -lSTRUCT \
-                -lTGeant3 -lTFluka -lSTART -lVZERO -lEVGEN -lSTEER -lCONTAINERS  
+#ALILIBS	      = -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
+#                -lITS -lPHOS -lCASTOR -lRICH -lEMCAL -lZDC -lSTRUCT \
+#                -lTGeant3 -lSTART -lEVGEN -lSTEER -lCONTAINERS
+
+# with geant3
+#ALILIBS	= -L$(LIBDIR) -L$(G3INSTALL)/lib/tgt_Linux \
+#		  -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
+#		  -lITS -lPHOS -lCASTOR -lRICH -lEMCAL -lZDC -lSTRUCT \
+#	          -lgeant321 -lEVGEN -lSTEER -lCONTAINERS  
+
+# without geant3
+ALILIBS	= -L$(LIBDIR) -L$(G3INSTALL)/lib/tgt_Linux \
+		  -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
+		  -lPHOS -lCASTOR -lRICH -lEMCAL -lZDC -lSTRUCT \
+	      -lSTART -lEVGEN -lSTEER -lCONTAINERS
 
 # CERN Libraries 
 

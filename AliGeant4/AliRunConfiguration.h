@@ -44,6 +44,8 @@ class AliRunConfiguration : public TG4VRunConfiguration
   private:
     AliRunMessenger*  fRunMessenger;  //messenger 
     AliFiles*         fFiles;         //file paths  
+    
+  ClassDef(AliRunConfiguration, 1) // Ali* specific action classes for Geant4  
 };
 
 #endif //ALI_RUN_CONFIGURATION_H

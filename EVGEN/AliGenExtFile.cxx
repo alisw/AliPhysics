@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.20.4.1  2002/06/10 14:57:41  hristov
+Merged with v3-08-02
+
+Revision 1.22  2002/05/15 11:59:49  morsch
+CdEventFile() method added.
+
 Revision 1.21  2002/04/26 10:39:31  morsch
 AliGenExtFile derives from AliGenMC. Generate() uses methods from AliGenMC (N. Carrer)
 

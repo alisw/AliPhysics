@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.5.6.2  2002/08/01 15:35:30  alibrary
+Updating VirtualMC
+
+Revision 1.7  2002/08/01 12:34:48  morsch
+Initialize maps in first call to Field() after streaming in.
+
 Revision 1.6  2002/04/11 11:17:48  morsch
 ReadField() used in Constructor.
 

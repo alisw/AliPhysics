@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.4.3  2002/10/10 14:40:31  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.5  2002/10/09 15:34:23  gamez
+Bad Copy implementation on gcc-3.2 (Yves SCHUTZ)
+
 Revision 1.4  2002/10/09 15:00:17  gamez
 Bad operator= implementation on gcc-3.2 (Yves SCHUTZ)
 

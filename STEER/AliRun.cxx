@@ -15,9 +15,18 @@
 
 /*
 $Log$
+Revision 1.82.4.3  2002/10/14 09:45:57  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.82.4.2  2002/06/10 17:54:06  hristov
+Only one SetGenEventHeader function kept
+
+Revision 1.82.4.1  2002/06/10 14:43:06  hristov
+Merged with v3-08-02
+
 Revision 1.86  2002/05/28 14:24:57  hristov
 Correct warning messages
-
+ 
 Revision 1.85  2002/05/24 13:29:58  hristov
 AliTrackReference added, AliDisplay modified
 
@@ -288,6 +297,7 @@ ClassImp(AliRun)
 
 //_____________________________________________________________________________
 AliRun::AliRun()
+  : TVirtualMCApplication()
 {
   //
   // Default constructor for AliRun
@@ -333,7 +343,7 @@ AliRun::AliRun()
 
 //_____________________________________________________________________________
 AliRun::AliRun(const char *name, const char *title)
-  : TNamed(name,title)
+  : TVirtualMCApplication(name,title)
 {
   //
   //  Constructor for the main processor.
@@ -465,6 +475,8 @@ AliRun::~AliRun()
   }
   if (gROOT->GetListOfBrowsables())
     gROOT->GetListOfBrowsables()->Remove(this);
+
+  gAlice=0;
 }
 
 //_____________________________________________________________________________
@@ -615,120 +627,6 @@ void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
 }
  
 //_____________________________________________________________________________
-void AliRun::PreTrack()
-{
-     TObjArray &dets = *fModules;
-     AliModule *module;
-
-     for(Int_t i=0; i<=fNdets; i++)
-       if((module = (AliModule*)dets[i]))
-	 module->PreTrack();
-
-     fMCQA->PreTrack();
-}
-
-//_____________________________________________________________________________
-void AliRun::PostTrack()
-{
-     TObjArray &dets = *fModules;
-     AliModule *module;
-
-     for(Int_t i=0; i<=fNdets; i++)
-       if((module = (AliModule*)dets[i]))
-	 module->PostTrack();
-}
-
-//_____________________________________________________________________________
-void AliRun::FinishPrimary()
-{
-  //
-  // Called  at the end of each primary track
-  //
-  
-  //  static Int_t count=0;
-  //  const Int_t times=10;
-  // This primary is finished, purify stack
-  fStack->PurifyKine();
-
-  TIter next(fModules);
-  AliModule *detector;
-  while((detector = (AliModule*)next())) {
-    detector->FinishPrimary();
-  }
-
-  // Write out hits if any
-  if (gAlice->TreeH()) {
-    gAlice->TreeH()->Fill();
-  }
-
-  // Write out hits if any
-  if (gAlice->TreeTR()) {
-    gAlice->TreeTR()->Fill();
-  }
-
-  
-  //
-  //  if(++count%times==1) gObjectTable->Print();
-}
-
-//_____________________________________________________________________________
-void AliRun::BeginPrimary()
-{
-  //
-  // Called  at the beginning of each primary track
-  //
-  
-  // Reset Hits info
-  gAlice->ResetHits();
-  gAlice->ResetTrackReferences();
-}
-
-//_____________________________________________________________________________
-void AliRun::FinishEvent()
-{
-  //
-  // Called at the end of the event.
-  //
-  
-  //
-  if(fLego) fLego->FinishEvent();
-
-  //Update the energy deposit tables
-  Int_t i;
-  for(i=0;i<fEventEnergy.GetSize();i++) {
-    fSummEnergy[i]+=fEventEnergy[i];
-    fSum2Energy[i]+=fEventEnergy[i]*fEventEnergy[i];
-  }
-
-
-  
-  // Update Header information 
-
-  fHeader->SetNprimary(fStack->GetNprimary());
-  fHeader->SetNtrack(fStack->GetNtrack());  
-
-  
-  // Write out the kinematics
-  fStack->FinishEvent();
-   
-  // Write out the event Header information
-  if (fTreeE) {
-      fHeader->SetStack(fStack);
-      fTreeE->Fill();
-  }
-  
-  
-  // Write Tree headers
-  TTree* pTreeK = fStack->TreeK();
-  if (pTreeK) pTreeK->Write(0,TObject::kOverwrite);
-  if (fTreeH) fTreeH->Write(0,TObject::kOverwrite);
-  if (fTreeTR) fTreeTR->Write(0,TObject::kOverwrite);
-  
-  ++fEvent;
-  ++fEventNrInRun;
-}
-
-//_____________________________________________________________________________
 void AliRun::FinishRun()
 {
   //
@@ -767,7 +665,6 @@ void AliRun::FinishRun()
   if (fTreeTR) {
     delete fTreeTR; fTreeTR = 0;
   }
-
   if (fTreeD) {
     delete fTreeD; fTreeD = 0;
   }
@@ -947,15 +844,13 @@ Int_t AliRun::GetEvent(Int_t event)
   sprintf(treeName,"TreeH%d",event);
   fTreeH = (TTree*)gDirectory->Get(treeName);
   if (!fTreeH) {
-    //Error("GetEvent","cannot find Hits Tree for event:%d\n",event);
-    Warning("GetEvent","cannot find Hits Tree for event:%d\n",event);
+      Warning("GetEvent","cannot find Hits Tree for event:%d\n",event);
   }
 
   // Get TracReferences Tree header from file
   sprintf(treeName,"TreeTR%d",event);
   fTreeTR = (TTree*)gDirectory->Get(treeName);
   if (!fTreeTR) {
-    //Error("GetEvent","cannot find TrackReferences Tree for event:%d\n",event);
     Warning("GetEvent","cannot find TrackReferences Tree for event:%d\n",event);
   }
 
@@ -964,9 +859,10 @@ Int_t AliRun::GetEvent(Int_t event)
   if(fTreeDFileName==curfilname)fTreeDFileName="";
   if(fTreeSFileName==curfilname)fTreeSFileName="";
   if(fTreeRFileName==curfilname)fTreeRFileName="";
+
   // Get Digits Tree header from file
   sprintf(treeName,"TreeD%d",event);
- 
+
   if (!fTreeDFile && fTreeDFileName != "") {
     InitTreeFile("D",fTreeDFileName);
   }    
@@ -1072,16 +968,6 @@ TGeometry *AliRun::GetGeometry()
 }
 
 //_____________________________________________________________________________
-void AliRun::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
-			  Float_t &e, Float_t *vpos, Float_t *polar,
-			  Float_t &tof)
-{
-  // Delegate to stack
-  //
-    fStack->GetNextTrack(mtrack, ipart, pmom, e, vpos, polar, tof);  
-}
-
-//_____________________________________________________________________________
 Int_t AliRun::GetPrimary(Int_t track) const
 {
   //
@@ -1090,76 +976,6 @@ Int_t AliRun::GetPrimary(Int_t track) const
     return fStack->GetPrimary(track);
 }
  
-//_____________________________________________________________________________
-void AliRun::InitMC(const char *setup)
-{
-  //
-  // Initialize the Alice setup
-  //
-
-  if(fInitDone) {
-    Warning("Init","Cannot initialise AliRun twice!\n");
-    return;
-  }
-    
-  gROOT->LoadMacro(setup);
-  gInterpreter->ProcessLine(fConfigFunction.Data());
-
-
-  gMC->DefineParticles();  //Create standard MC particles
-
-  TObject *objfirst, *objlast;
-
-  fNdets = fModules->GetLast()+1;
-
-  //
-  //=================Create Materials and geometry
-  gMC->Init();
-
-  // Added also after in case of interactive initialisation of modules
-  fNdets = fModules->GetLast()+1;
-
-   TIter next(fModules);
-   AliModule *detector;
-   while((detector = (AliModule*)next())) {
-      detector->SetTreeAddress();
-      objlast = gDirectory->GetList()->Last();
-      
-      // Add Detector histograms in Detector list of histograms
-      if (objlast) objfirst = gDirectory->GetList()->After(objlast);
-      else         objfirst = gDirectory->GetList()->First();
-      while (objfirst) {
-	detector->Histograms()->Add(objfirst);
-	objfirst = gDirectory->GetList()->After(objfirst);
-      }
-   }
-   ReadTransPar(); //Read the cuts for all materials
-   
-   MediaTable(); //Build the special IMEDIA table
-   
-   //Initialise geometry deposition table
-   fEventEnergy.Set(gMC->NofVolumes()+1);
-   fSummEnergy.Set(gMC->NofVolumes()+1);
-   fSum2Energy.Set(gMC->NofVolumes()+1);
-   
-   //Compute cross-sections
-   gMC->BuildPhysics();
-   
-   //Write Geometry object to current file.
-   fGeometry->Write();
-   
-   fInitDone = kTRUE;
-
-   fMCQA = new AliMCQA(fNdets);
-
-// JCH note: the following line is useless, AliConfig instance is already
-// created in AliMC ctor. But it does not hurt.
-   AliConfig::Instance();
-   //
-   // Save stuff at the beginning of the file to avoid file corruption
-   Write();
-}
-
 //_____________________________________________________________________________
 void AliRun::MediaTable()
 {
@@ -1455,11 +1271,9 @@ void AliRun::MakeTree(Option_t *option, const char *file)
   TIter next(fModules);
   AliModule *detector;
   while((detector = (AliModule*)next())) {
-     if (oH) detector->MakeBranch(option,file); 
+     if (oH) detector->MakeBranch(option,file);
      if (oTR) detector->MakeBranchTR(option,file);
   }
-
-
 }
 
 //_____________________________________________________________________________
@@ -1468,73 +1282,6 @@ TParticle* AliRun::Particle(Int_t i)
     return fStack->Particle(i);
 }
 
-//_____________________________________________________________________________
-void AliRun::BeginEvent()
-{
-    // Clean-up previous event
-    // Energy scores  
-    fEventEnergy.Reset();  
-    // Clean detector information
-    CleanDetectors();
-    // Reset stack info
-    fStack->Reset();
-
- 
-  //
-  //  Reset all Detectors & kinematics & trees
-  //
-  char hname[30];
-  //
-  // Initialise event header
-  fHeader->Reset(fRun,fEvent,fEventNrInRun);
-  //
-  fStack->BeginEvent(fEvent);
-
-  //
-  if(fLego) {
-    fLego->BeginEvent();
-    return;
-  }
-
-  //
-
-  ResetHits();
-  ResetTrackReferences();
-  ResetDigits();
-  ResetSDigits();
-
-
-  if(fTreeH) {
-    fTreeH->Reset();
-    sprintf(hname,"TreeH%d",fEvent);
-    fTreeH->SetName(hname);
-  }
-
-  if(fTreeTR) {
-    fTreeTR->Reset();
-    sprintf(hname,"TreeTR%d",fEvent);
-    fTreeTR->SetName(hname);
-  }
-
-  if(fTreeD) {
-    fTreeD->Reset();
-    sprintf(hname,"TreeD%d",fEvent);
-    fTreeD->SetName(hname);
-    fTreeD->Write(0,TObject::kOverwrite);
-  }
-  if(fTreeS) {
-    fTreeS->Reset();
-    sprintf(hname,"TreeS%d",fEvent);
-    fTreeS->SetName(hname);
-    fTreeS->Write(0,TObject::kOverwrite);
-  }
-  if(fTreeR) {
-    fTreeR->Reset();
-    sprintf(hname,"TreeR%d",fEvent);
-    fTreeR->SetName(hname);
-    fTreeR->Write(0,TObject::kOverwrite);
-  }
-}
 //_____________________________________________________________________________
 void AliRun::ResetDigits()
 {
@@ -1587,8 +1334,6 @@ void AliRun::ResetTrackReferences()
   }
 }
 
-
-
 //_____________________________________________________________________________
 void AliRun::ResetPoints()
 {
@@ -1600,6 +1345,77 @@ void AliRun::ResetPoints()
   while((detector = (AliModule*)next())) {
      detector->ResetPoints();
   }
+}
+
+//_____________________________________________________________________________
+void AliRun::InitMC(const char *setup)
+{
+  //
+  // Initialize the Alice setup
+  //
+
+  if(fInitDone) {
+    Warning("Init","Cannot initialise AliRun twice!\n");
+    return;
+  }
+    
+  gROOT->LoadMacro(setup);
+  gInterpreter->ProcessLine(fConfigFunction.Data());
+
+  // Register MC in configuration 
+  AliConfig::Instance()->Add(gMC);
+  gMC->SetStack(fStack);
+
+  gMC->DefineParticles();  //Create standard MC particles
+
+  TObject *objfirst, *objlast;
+
+  fNdets = fModules->GetLast()+1;
+
+  //
+  //=================Create Materials and geometry
+  gMC->Init();
+
+  // Added also after in case of interactive initialisation of modules
+  fNdets = fModules->GetLast()+1;
+
+   TIter next(fModules);
+   AliModule *detector;
+   while((detector = (AliModule*)next())) {
+      detector->SetTreeAddress();
+      objlast = gDirectory->GetList()->Last();
+      
+      // Add Detector histograms in Detector list of histograms
+      if (objlast) objfirst = gDirectory->GetList()->After(objlast);
+      else         objfirst = gDirectory->GetList()->First();
+      while (objfirst) {
+        detector->Histograms()->Add(objfirst);
+        objfirst = gDirectory->GetList()->After(objfirst);
+      }
+   }
+   ReadTransPar(); //Read the cuts for all materials
+   
+   MediaTable(); //Build the special IMEDIA table
+   
+   //Initialise geometry deposition table
+   fEventEnergy.Set(gMC->NofVolumes()+1);
+   fSummEnergy.Set(gMC->NofVolumes()+1);
+   fSum2Energy.Set(gMC->NofVolumes()+1);
+   
+   //Compute cross-sections
+   gMC->BuildPhysics();
+   
+   //Write Geometry object to current file.
+   fGeometry->Write();
+   
+   fInitDone = kTRUE;
+
+   fMCQA = new AliMCQA(fNdets);
+
+   AliConfig::Instance();
+   //
+   // Save stuff at the beginning of the file to avoid file corruption
+   Write();
 }
 
 //_____________________________________________________________________________
@@ -1618,7 +1434,7 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
   
   // Create the Root Tree with one branch per detector
 
-  MakeTree("ESDRT"); // MI change
+   MakeTree("ESDRT");
 
   if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {
      MakeTree("K","Kine.root");
@@ -1806,7 +1622,8 @@ void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   
   //Run Lego Object
 
-  gMC->ProcessRun(nc1*nc2+1);
+  //gMC->ProcessRun(nc1*nc2+1);
+  gMC->ProcessRun(nc1*nc2);
   
   // Create only the Root event Tree
   MakeTree("E");
@@ -1845,8 +1662,9 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 { 
 // Delegate to stack
 //
-    fStack->SetTrack(done, parent, pdg, pmom, vpos, polar, tof,
-		     mech, ntr, weight, is);
+
+     fStack->SetTrack(done, parent, pdg, pmom, vpos, polar, tof,
+ 		     mech, ntr, weight, is);
 }
 
 //_____________________________________________________________________________
@@ -1880,12 +1698,166 @@ void AliRun::KeepTrack(const Int_t track)
     fStack->KeepTrack(track);
 }
  
+// 
+// MC Application
+// 
+
 //_____________________________________________________________________________
-void AliRun::StepManager(Int_t id) 
+void  AliRun::ConstructGeometry() 
+{
+  //
+  // Create modules, materials, geometry
+  //
+
+    TStopwatch stw;
+    TIter next(fModules);
+    AliModule *detector;
+    printf("Geometry creation:\n");
+    while((detector = (AliModule*)next())) {
+      stw.Start();
+      // Initialise detector materials and geometry
+      detector->CreateMaterials();
+      detector->CreateGeometry();
+      printf("%10s R:%.2fs C:%.2fs\n",
+	     detector->GetName(),stw.RealTime(),stw.CpuTime());
+    }
+}
+
+//_____________________________________________________________________________
+void  AliRun::InitGeometry()
+{ 
+  //
+  // Initialize detectors and display geometry
+  //
+
+   printf("Initialisation:\n");
+    TStopwatch stw;
+    TIter next(fModules);
+    AliModule *detector;
+    while((detector = (AliModule*)next())) {
+      stw.Start();
+      // Initialise detector and display geometry
+      detector->Init();
+      detector->BuildGeometry();
+      printf("%10s R:%.2fs C:%.2fs\n",
+	     detector->GetName(),stw.RealTime(),stw.CpuTime());
+    }
+ 
+}
+
+//_____________________________________________________________________________
+void  AliRun::GeneratePrimaries()
+{ 
+  //
+  // Generate primary particles and fill them in the stack.
+  //
+
+  Generator()->Generate();
+}
+
+//_____________________________________________________________________________
+void AliRun::BeginEvent()
+{
+    // Clean-up previous event
+    // Energy scores  
+    fEventEnergy.Reset();  
+    // Clean detector information
+    CleanDetectors();
+    // Reset stack info
+    fStack->Reset();
+
+ 
+  //
+  //  Reset all Detectors & kinematics & trees
+  //
+  char hname[30];
+  //
+  // Initialise event header
+  fHeader->Reset(fRun,fEvent,fEventNrInRun);
+  //
+  fStack->BeginEvent(fEvent);
+
+  //
+  if(fLego) {
+    fLego->BeginEvent();
+    return;
+  }
+
+  //
+
+  ResetHits();
+  ResetTrackReferences();
+  ResetDigits();
+  ResetSDigits();
+
+
+  if(fTreeH) {
+    fTreeH->Reset();
+    sprintf(hname,"TreeH%d",fEvent);
+    fTreeH->SetName(hname);
+  }
+
+  if(fTreeTR) {
+    fTreeTR->Reset();
+    sprintf(hname,"TreeTR%d",fEvent);
+    fTreeTR->SetName(hname);
+  }
+
+  if(fTreeD) {
+    fTreeD->Reset();
+    sprintf(hname,"TreeD%d",fEvent);
+    fTreeD->SetName(hname);
+    fTreeD->Write(0,TObject::kOverwrite);
+  }
+  if(fTreeS) {
+    fTreeS->Reset();
+    sprintf(hname,"TreeS%d",fEvent);
+    fTreeS->SetName(hname);
+    fTreeS->Write(0,TObject::kOverwrite);
+  }
+  if(fTreeR) {
+    fTreeR->Reset();
+    sprintf(hname,"TreeR%d",fEvent);
+    fTreeR->SetName(hname);
+    fTreeR->Write(0,TObject::kOverwrite);
+  }
+}
+
+//_____________________________________________________________________________
+void AliRun::BeginPrimary()
+{
+  //
+  // Called  at the beginning of each primary track
+  //
+  
+  // Reset Hits info
+  gAlice->ResetHits();
+  gAlice->ResetTrackReferences();
+
+}
+
+//_____________________________________________________________________________
+void AliRun::PreTrack()
+{
+     TObjArray &dets = *fModules;
+     AliModule *module;
+
+     for(Int_t i=0; i<=fNdets; i++)
+       if((module = (AliModule*)dets[i]))
+	 module->PreTrack();
+
+     fMCQA->PreTrack();
+}
+
+//_____________________________________________________________________________
+void AliRun::Stepping() 
 {
   //
   // Called at every step during transport
   //
+
+  Int_t id = DetFromMate(gMC->GetMedium());
+  if (id < 0) return;
 
   //
   // --- If lego option, do it and leave 
@@ -1906,6 +1878,116 @@ void AliRun::StepManager(Int_t id)
 }
 
 //_____________________________________________________________________________
+void AliRun::PostTrack()
+{
+     TObjArray &dets = *fModules;
+     AliModule *module;
+
+     for(Int_t i=0; i<=fNdets; i++)
+       if((module = (AliModule*)dets[i]))
+	 module->PostTrack();
+}
+
+//_____________________________________________________________________________
+void AliRun::FinishPrimary()
+{
+  //
+  // Called  at the end of each primary track
+  //
+  
+  //  static Int_t count=0;
+  //  const Int_t times=10;
+  // This primary is finished, purify stack
+  fStack->PurifyKine();
+
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
+    detector->FinishPrimary();
+  }
+
+  // Write out hits if any
+  if (gAlice->TreeH()) {
+    gAlice->TreeH()->Fill();
+  }
+
+  // Write out hits if any
+  if (gAlice->TreeTR()) {
+    gAlice->TreeTR()->Fill();
+  }
+  
+  //
+  //  if(++count%times==1) gObjectTable->Print();
+}
+
+//_____________________________________________________________________________
+void AliRun::FinishEvent()
+{
+  //
+  // Called at the end of the event.
+  //
+  
+  //
+  if(fLego) fLego->FinishEvent();
+
+  //Update the energy deposit tables
+  Int_t i;
+  for(i=0;i<fEventEnergy.GetSize();i++) {
+    fSummEnergy[i]+=fEventEnergy[i];
+    fSum2Energy[i]+=fEventEnergy[i]*fEventEnergy[i];
+  }
+
+
+  
+  // Update Header information 
+
+  fHeader->SetNprimary(fStack->GetNprimary());
+  fHeader->SetNtrack(fStack->GetNtrack());  
+
+  
+  // Write out the kinematics
+  fStack->FinishEvent();
+   
+  // Write out the event Header information
+  if (fTreeE) {
+      fHeader->SetStack(fStack);
+      fTreeE->Fill();
+  }
+  
+  
+  // Write Tree headers
+  TTree* pTreeK = fStack->TreeK();
+  if (pTreeK) pTreeK->Write(0,TObject::kOverwrite);
+  if (fTreeH) fTreeH->Write(0,TObject::kOverwrite);
+  if (fTreeTR) fTreeTR->Write(0,TObject::kOverwrite);
+  
+  ++fEvent;
+  ++fEventNrInRun;
+}
+
+//_____________________________________________________________________________
+void AliRun::Field(const Double_t* x, Double_t *b) const
+{
+   Float_t xfloat[3];
+   for (Int_t i=0; i<3; i++) xfloat[i] = x[i]; 
+
+   if (Field()) {
+         Float_t bfloat[3];
+         Field()->Field(xfloat,bfloat);
+         for (Int_t j=0; j<3; j++) b[j] = bfloat[j]; 
+   } 
+   else {
+         printf("No mag field defined!\n");
+         b[0]=b[1]=b[2]=0.;
+   }
+
+}      
+
+// 
+// End of MC Application
+// 
+
+//_____________________________________________________________________________
 void AliRun::Streamer(TBuffer &R__b)
 {
   // Stream an object of class AliRun.
@@ -1920,11 +2002,10 @@ void AliRun::Streamer(TBuffer &R__b)
     fTreeE = (TTree*)gDirectory->Get("TE");
     if (fTreeE) {
 	  fTreeE->SetBranchAddress("Header", &fHeader);
-    }
-      
+    }      
     else    Error("Streamer","cannot find Header Tree\n");
+    
     fTreeE->GetEntry(0);
-
     gRandom = fRandom;
   } else {
     AliRun::Class()->WriteBuffer(R__b, this);
@@ -1964,12 +2045,14 @@ TTree* AliRun::TreeK() {
   return fStack->TreeK();
 }
 
-////////////////////////////////////////////////////////////////////////
+
+//___________________________________________________________________________
 void AliRun::SetGenEventHeader(AliGenEventHeader* header)
 {
     fHeader->SetGenEventHeader(header);
 }
-////////////////////////////////////////////////////////////////////////
+
+//___________________________________________________________________________
 TFile* AliRun::InitFile(TString fileName)
 {
 // 
@@ -1985,7 +2068,7 @@ TFile* AliRun::InitFile(TString fileName)
   return file;
 }
 
-////////////////////////////////////////////////////////////////////////
+//___________________________________________________________________________
 TFile* AliRun::InitTreeFile(Option_t *option, TString fileName)
 {
   //
@@ -2107,7 +2190,28 @@ TFile* AliRun::InitTreeFile(Option_t *option, TString fileName)
   }
 
 }
-////////////////////////////////////////////////////////////////////////
+
+//___________________________________________________________________________
+void AliRun::PrintTreeFile()
+{
+  //
+  // prints the file names and pointer associated to S,D,R trees
+  //
+  cout<<"===================================================\n";
+  TFile *file = fTreeE->GetCurrentFile();
+  TString curfilname="";
+  if(file)curfilname=(TString)file->GetName();
+  cout<<" Current tree file name: "<<curfilname<<endl;
+  cout<<"Pointer: "<<file<<endl;
+  cout<<" Tree S File name: "<<fTreeSFileName<<endl;
+  cout<<"Pointer: "<<fTreeSFile<<endl<<endl;
+  cout<<" Tree D File name: "<<fTreeDFileName<<endl;
+  cout<<"Pointer: "<<fTreeDFile<<endl<<endl;
+  cout<<" Tree R File name: "<<fTreeRFileName<<endl;
+  cout<<"Pointer: "<<fTreeRFile<<endl<<endl;
+  cout<<"===================================================\n";
+}
+//___________________________________________________________________________
 void AliRun::CloseTreeFile(Option_t *option)
 {
   // 
@@ -2154,27 +2258,7 @@ void AliRun::CloseTreeFile(Option_t *option)
   }
 }
 
-////////////////////////////////////////////////////////////////////////
-void AliRun::PrintTreeFile()
-{
-  //
-  // prints the file names and pointer associated to S,D,R trees
-  //
-  cout<<"===================================================\n";
-  TFile *file = fTreeE->GetCurrentFile();
-  TString curfilname="";
-  if(file)curfilname=(TString)file->GetName();
-  cout<<" Current tree file name: "<<curfilname<<endl;
-  cout<<"Pointer: "<<file<<endl;
-  cout<<" Tree S File name: "<<fTreeSFileName<<endl;
-  cout<<"Pointer: "<<fTreeSFile<<endl<<endl;
-  cout<<" Tree D File name: "<<fTreeDFileName<<endl;
-  cout<<"Pointer: "<<fTreeDFile<<endl<<endl;
-  cout<<" Tree R File name: "<<fTreeRFileName<<endl;
-  cout<<"Pointer: "<<fTreeRFile<<endl<<endl;
-  cout<<"===================================================\n";
-}
-////////////////////////////////////////////////////////////////////////
+//___________________________________________________________________________
 void AliRun::MakeTree(Option_t *option, TFile *file)
 {
   //
@@ -2222,12 +2306,3 @@ void AliRun::MakeTree(Option_t *option, TFile *file)
     cwd->cd();
   }
 }
-////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-

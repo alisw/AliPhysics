@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4.12.1  2002/07/24 09:50:10  alibrary
+Updating VirtualMC
+
+Revision 1.5  2002/07/23 11:48:05  alla
+new Digits structure
+
 Revision 1.4  2000/10/13 13:14:08  hristov
 Bug fixes and code cleaning
 

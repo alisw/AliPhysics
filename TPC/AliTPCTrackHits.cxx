@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4.10.1  2002/08/28 15:06:52  alibrary
+Updating to v3-09-01
+
+Revision 1.5  2002/08/25 15:54:29  kowal2
+Protection against overflows in TMath::Nint.
+
 Revision 1.4  2001/01/10 09:35:27  kowal2
 Changes to obey the coding rules.
 

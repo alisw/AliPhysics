@@ -6,6 +6,12 @@
 /* $Id$ */
 /* 
  * $Log$
+ * Revision 1.4.8.1  2002/06/10 14:43:06  hristov
+ * Merged with v3-08-02
+ *
+ * Revision 1.4  2001/10/05 12:11:40  hristov
+ * iostream.h used instead of iostream (HP)
+ *
  * Revision 1.3  2001/10/04 15:30:56  hristov
  * Changes to accommodate the set of PHOS folders and tasks (Y.Schutz)
  *
@@ -24,11 +30,11 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TDatabasePDG.h>
+#include "AliMC.h"
 class TString ; 
 class AliGenerator;
 class AliModule;
 class AliDetector;
-class AliMC;
 class AliConfig;
 class AliTasks;
 

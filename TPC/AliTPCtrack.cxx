@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.9.6.1  2002/10/11 08:34:48  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.11  2002/07/19 07:34:42  kowal2
+Logs added
+
 */
 
 

@@ -2,11 +2,10 @@
 #
 # special lego run
 
-/aliGenerator/set AliGenerator
-/aliEvent/verbose 0
+/mcVerbose/eventAction 0
+/mcVerbose/runAction 0
 /aliRun/lego
 
-/tg4Control/rootMacro legoSave
+/mcControl/rootMacro legoSave
 
-/control/exit
 exit

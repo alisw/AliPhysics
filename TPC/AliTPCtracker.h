@@ -86,7 +86,7 @@ public:
 	 if (x > r) return fN;
 	 r=fRow[0].GetX();
 	 if (x < r) return -1;
-	 return Int_t((x-r)/f1PadPitchLength + 0.5);}
+	 return Int_t((x-r)/fPadPitchLength + 0.5);}
        else{	
 	   r=fRow[fN-1].GetX();
 	   if (x > r) return fN;
@@ -100,6 +100,7 @@ public:
        }
      }
      Double_t GetPadPitchWidth()  const {return fPadPitchWidth;}
+     Double_t GetPadPitchLength() const {return fPadPitchLength;}
 
    private:
      Int_t fN;                        //number of pad rows 
@@ -107,8 +108,9 @@ public:
      Double_t fAlpha;                    //opening angle
      Double_t fAlphaShift;               //shift angle;
      Double_t fPadPitchWidth;            //pad pitch width
-     Double_t f1PadPitchLength;          //pad pitch length
-     Double_t f2PadPitchLength;          //pad pitch length
+     Double_t fPadPitchLength;           //pad pitch length 
+     Double_t f1PadPitchLength;           //pad pitch length
+     Double_t f2PadPitchLength;   
    private:
      AliTPCSector(const AliTPCSector &s);           //dummy copy contructor
      AliTPCSector& operator=(const AliTPCSector &s);//dummy assignment operator

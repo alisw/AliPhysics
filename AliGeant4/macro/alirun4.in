@@ -5,22 +5,22 @@
 
 /aliDet/switchOn FRAME
 
-/tg4Physics/setEM false
-/tg4Physics/setMuon false
+/mcPhysics/setEM false
+/mcPhysics/setMuon false
 /aliRun/initialize
 
-/aliTree/setVolume ALIC
-/aliTree/setLVTreeColour Green
+/mcTree/setVolume ALIC
+/mcTree/setLVTreeColour Green
 
-/vis/open OGLSX
-#/vis/open DAWNFILE
+#/vis/open OGLSX
+/vis/open DAWNFILE
 /vis/scene/create                                              
 /vis/sceneHandler/attach
 /vis/scene/add/axes  0 0 0 5 m
 /vis/viewer/viewpointThetaPhi  35 35
 /vis/viewer/zoom  1.2 
 
-/tg4Control/rootCmd new TG4GeometryGUI()
-/tg4Control/root
+/mcControl/rootCmd new TG4GeometryGUI()
+/mcControl/root
 
 exit

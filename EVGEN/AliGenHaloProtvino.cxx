@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.8.4.1  2002/07/24 08:56:28  alibrary
+Updating EVGEN on TVirtulaMC
+
+Revision 1.10  2002/05/28 14:28:12  morsch
+Correct LHC nominal current profile (1st year 20%, 2nd year 30%, 3rd year 100 %)
+
 Revision 1.9  2002/05/28 13:49:17  morsch
 - Udates for new pressure table
 - calculate time

@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.10.4.2  2002/07/24 09:27:50  alibrary
+Updating on VirtualMC
+
+Revision 1.13  2002/06/12 18:59:47  nilsen
+Added Starting track location to hit class and related changes to modules.
+This is at present still fully backwards compatible since starting hits
+are still written to the file. When aliroot v4.0 will be released, this
+backwards compatiblity will be broken by removing the enterence hit, and making
+the nessesary changes to module at that time.
+
 Revision 1.12  2002/06/10 17:31:03  nilsen
 Replaced TArrayI expansion with Root version.
 

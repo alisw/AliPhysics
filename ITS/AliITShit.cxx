@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.13.6.3  2002/08/28 15:06:50  alibrary
+Updating to v3-09-01
+
+Revision 1.18  2002/08/07 18:37:53  nilsen
+Removed endl from print function. should be supplied by user as wanted.
+
 Revision 1.17  2002/06/20 09:10:14  hristov
 Data member ft0 initialized
 

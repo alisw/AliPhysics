@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.20.6.2  2002/07/24 10:07:21  alibrary
+Updating VirtualMC
+
+Revision 1.21  2002/07/23 10:02:46  morsch
+All volume names start with "S".
+
 Revision 1.20  2001/10/30 12:18:45  morsch
 Place station 3 into DDIP only if DDIP is present.
 

@@ -29,11 +29,11 @@ AliPrimaryGeneratorMessenger::AliPrimaryGeneratorMessenger(
   guidance = guidance + "  Gun:               particle gun (default)\n";
   guidance = guidance + "  Geantino:          geantino with random momentum(default)\n";
   guidance = guidance + "  ChargedGeantino:   chargedgeantino with random momentum\n";
-  guidance = guidance + "  AliGenerator:      standard aliroot generator";
+  guidance = guidance + "  Stack:             standard generator from MC stack";
   fGeneratorCmd->SetGuidance(guidance);
   fGeneratorCmd->SetParameterName("Generator", true);
-  fGeneratorCmd->SetCandidates("Gun Geantino ChargedGeantino AliGenerator");   
-  fGeneratorCmd->SetDefaultValue("AliGenerator");
+  fGeneratorCmd->SetCandidates("Gun Geantino ChargedGeantino Stack");   
+  fGeneratorCmd->SetDefaultValue("Stack");
   fGeneratorCmd->AvailableForStates(PreInit,Idle);
 
   fNofParticlesCmd = new G4UIcmdWithAnInteger("/aliGenerator/nofParticles", this);
@@ -98,8 +98,8 @@ void AliPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,
       fPrimaryGenAction->SetGenerator(kGeantino); 
     else if (newValue == "ChargedGeantino")  
       fPrimaryGenAction->SetGenerator(kChargedGeantino); 
-    else if (newValue == "AliGenerator")  
-      fPrimaryGenAction->SetGenerator(kAliGenerator);       
+    else if (newValue == "Stack")  
+      fPrimaryGenAction->SetGenerator(kStack);       
   }
   else if( command == fNofParticlesCmd ) { 
     fPrimaryGenAction

@@ -15,6 +15,12 @@
 /*
   $Id$
   $Log$
+  Revision 1.32.4.4  2002/10/14 13:14:08  hristov
+  Updating VirtualMC to v3-09-02
+
+  Revision 1.36  2002/09/11 10:32:41  hristov
+  Use new for arrays with variable size
+
   Revision 1.35  2002/09/09 17:23:28  nilsen
   Minor changes in support of changes to AliITSdigitS?D class'.
 
@@ -277,7 +283,7 @@ void AliITSsimulationSDD::Init(AliITSsegmentationSDD *seg,
     } // end if
 
     const char *kopt=fResponse->ZeroSuppOption();
-    if (strstr(fParam,"file") ) {
+    if (strstr(fParam.Data(),"file") ) {
         fD.Set(fNofMaps);
         fT1.Set(fNofMaps);
         if (strstr(kopt,"2D")) {
@@ -1331,7 +1337,7 @@ void AliITSsimulationSDD::Init2D(){
     // Albert W.) :
     // Read 2D zero-suppression parameters for SDD
 
-    if (!strstr(fParam,"file")) return;
+    if (!strstr(fParam.Data(),"file")) return;
 
     Int_t na,pos,tempTh;
     Float_t mu,sigma;
@@ -1469,7 +1475,7 @@ void AliITSsimulationSDD::Init1D(){
     // Torino people should give input
     // Read 1D zero-suppression parameters for SDD
 
-    if (!strstr(fParam,"file")) return;
+    if (!strstr(fParam.Data(),"file")) return;
 
     Int_t na,pos,tempTh;
     Float_t mu,sigma;

@@ -15,6 +15,15 @@
 
 /*
   $Log$
+  Revision 1.23.8.2  2002/07/24 10:07:52  alibrary
+  Updating VirtualMC
+
+  Revision 1.23.8.1  2002/06/10 15:12:46  hristov
+  Merged with v3-08-02
+
+  Revision 1.23  2001/08/30 09:51:23  hristov
+  The operator[] is replaced by At() or AddAt() in case of TObjArray.
+
   Revision 1.22  2001/05/16 14:57:20  alibrary
   New files for folders and Stack
 
@@ -94,7 +103,6 @@
 #include "AliRun.h"
 #include "AliMC.h"
 #include "iostream.h"
-#include "AliCallf77.h"
 #include "AliConst.h" 
 #include "AliPDG.h" 
 

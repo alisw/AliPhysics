@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4.6.2  2002/07/24 10:08:13  alibrary
+Updating VirtualMC
+
+Revision 1.6  2002/07/16 13:48:39  jchudoba
+Add methods to get access to names of files used in merging. Correct memory leak in dtor (thanks to Yves Schutz.)
+
 Revision 1.5  2002/04/09 13:38:47  jchudoba
 Add const to the filename argument
 

@@ -1,3 +1,4 @@
+#!/bin/sh
 # $Id$
 # ----------------------------------------------------------------
 # This script runs the specified (or default) test macro 
@@ -19,7 +20,7 @@ fi
 # default parameters
 DIR=$1
 VER="0"
-GEN="0"
+GEN="1"
 VIS="0"
 
 # get input parameters

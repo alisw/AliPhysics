@@ -1,9 +1,0 @@
-SRCS          =   \
-AliFastDetector.cxx \
-AliFastResponse.cxx \
-AliFastParticle.cxx \
-AliFastEvent.cxx 
-
-HDRS:= $(SRCS:.cxx=.h) 
-
-DHDR= FASTSIMLinkDef.h

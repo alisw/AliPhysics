@@ -15,6 +15,8 @@
 
 /*
 $Log$
+Revision 1.3.6.1  2002/08/29 18:08:17  hristov
+Replace strcpy by assignment operator
 
 Revision 1.3  2001/10/31 15:56:54  morsch
 Correction in OnionCone.

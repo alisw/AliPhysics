@@ -15,6 +15,12 @@
  
 /*
 $Log$
+Revision 1.2.2.1  2002/10/14 13:14:08  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.2  2002/09/23 13:25:52  hristov
+Typo corrected (HP)
+
 Revision 1.1  2002/09/09 17:36:05  nilsen
 new TTask to replace non-working AliITSFindClusterV2.C macro.
 

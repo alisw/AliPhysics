@@ -9,14 +9,13 @@
 
 #include "AliPrimaryGeneratorAction.h"
 #include "AliPrimaryGeneratorMessenger.h"
-#include "AliTrackingAction.h"
 #include "AliParticleGun.h"
 #include "AliGunParticle.h"
 #include "AliGlobals.h"
-#include "AliRun.h"
-#include "AliGenerator.h"
 
 #include "TG4G3Units.h"
+#include "TG4PrimaryGeneratorAction.h"
+#include "TG4TrackingAction.h"
 
 #include <G4Event.hh>
 #include <G4ParticleTable.hh>
@@ -25,14 +24,15 @@
 #include <Randomize.hh>
 
 #include <TParticle.h>
+#include <TVirtualMCApplication.h>
 
 //_____________________________________________________________________________
 AliPrimaryGeneratorAction::AliPrimaryGeneratorAction()
   : AliVerbose("primaryGeneratorAction"),
-    fGenerator(kAliGenerator),
+    fGenerator(kStack),
     fNofGunParticles(1),
-    fMessenger(this),
-    fParticleGun() {
+    fParticleGun(),
+    fMessenger(this) {
 //
 }
 
@@ -59,8 +59,7 @@ void AliPrimaryGeneratorAction::ConstructGenerator()
     case kChargedGeantino:  
       ConstructGeantinoGenerator(true);
       return;
-    case kAliGenerator:
-      ConstructAliGenerator();
+    case kStack:
       return;
   }
 }   
@@ -115,113 +114,6 @@ void AliPrimaryGeneratorAction::ConstructGeantinoGenerator(G4bool isCharged)
   }
 } 
             
-//_____________________________________________________________________________
-void AliPrimaryGeneratorAction::ConstructAliGenerator()
-{
-// Generator from AliRoot
-// AliGenerator::Generate() fills the AliRun::fParticles array.
-// ---
-
-  // check if AliGenerator is set
-  AliGenerator* generator = gAlice->Generator();
-  if (!generator) {
-    G4String text = "AliPrimaryGeneratorAction::ConstructGenerator:\n";
-    text = text + "   No AliGenerator is defined in gAlice.";
-    AliGlobals::Exception(text);
-  }  
-  // fill AliRun::fParticleMap array 
-  generator->Generate();
-}
-
-//_____________________________________________________________________________
-void AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries(G4Event* event)
-{
-// Creates a new G4PrimaryVertex objects for each TParticle
-// in fParticles array.
-// ---
-
-  G4PrimaryVertex* previousVertex = 0;
-  G4ThreeVector previousPosition = G4ThreeVector(); 
-  G4double previousTime = 0.; 
-
-  G4int nofParticles = gAlice->GetNtrack();
-  // add verbose
-  //G4cout << " nofParticles: " <<  nofParticles << G4endl;
-  for( G4int i=0; i<nofParticles; i++ ) {    
-  
-    // get the particle from AliRun stack
-    TParticle* particle = gAlice->Particle(i);
-
-    
-    if (!particle->TestBit(kDoneBit)) {
-      // only particles that didn't die (decay) in primary generator
-      // will be transformed to G4 objects   
-
-      // get particle definition from G4ParticleTable
-      G4int pdgEncoding = particle->GetPdgCode();
-      G4ParticleTable* particleTable 
-        = G4ParticleTable::GetParticleTable();                        
-      G4ParticleDefinition* particleDefinition = 0;      
-      if (pdgEncoding != 0) 
-        particleDefinition = particleTable->FindParticle(pdgEncoding);
-      else {
-        G4String name = particle->GetName();
-        if (name == "Rootino")	
-            particleDefinition = particleTable->FindParticle("geantino");
-      }	
-  
-      if (particleDefinition==0) {
-        G4cout << "pdgEncoding: " << pdgEncoding << G4endl;
-        G4String text = 
-            "AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries:\n";
-        text = text + "   G4ParticleTable::FindParticle() failed.";
-        AliGlobals::Exception(text);
-      }	
-
-      // get/create vertex
-      G4ThreeVector position 
-        = G4ThreeVector(particle->Vx()*TG4G3Units::Length(),
-                        particle->Vy()*TG4G3Units::Length(),
-		        particle->Vz()*TG4G3Units::Length());
-      G4double time = particle->T()*TG4G3Units::Time(); 
-      G4PrimaryVertex* vertex;
-      if ( i==0 || position != previousPosition || time != previousTime ) {   
-        // create a new vertex 
-        // in case position and time of gun particle are different from 
-        // previous values
-        // (vertex objects are destroyed in G4EventManager::ProcessOneEvent()
-        // when event is deleted)  
-        vertex = new G4PrimaryVertex(position, time);
-        event->AddPrimaryVertex(vertex);
-
-        previousVertex = vertex;
-        previousPosition = position;
-        previousTime = time;
-      }
-      else 
-        vertex = previousVertex;
-
-      // create a primary particle and add it to the vertex
-      // (primaryParticle objects are destroyed in G4EventManager::ProcessOneEvent()
-      // when event and then vertex is deleted)
-      G4double px = particle->Px()*TG4G3Units::Energy();
-      G4double py = particle->Py()*TG4G3Units::Energy();
-      G4double pz = particle->Pz()*TG4G3Units::Energy();
-      G4PrimaryParticle* primaryParticle 
-        = new G4PrimaryParticle(particleDefinition, px, py, pz);
-        
-      // set polarization
-      TVector3 polarization;
-      particle->GetPolarisation(polarization);
-      primaryParticle
-        ->SetPolarization(polarization.X(), polarization.Y(), polarization.Z());    
-    
-      // add primary particle to the vertex
-      vertex->SetPrimary(primaryParticle);
-    }   
-  }
-}
-
 // public methods
 
 //_____________________________________________________________________________
@@ -230,30 +122,32 @@ void AliPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 // Generates primary particles by the selected generator.
 // ---
 
-  // reset AliRun
-  gAlice->BeginEvent();
+  if (fGenerator == kStack)  {
 
-  // fill particle gun/particle array
-  ConstructGenerator();
-  
-  // generate primary vertices
-  if (fGenerator == kAliGenerator)  {
-    // use AliGenerator if set
-    GenerateAliGeneratorPrimaries(event);
+    // Use MC stack
+    TG4PrimaryGeneratorAction action;
+    action.GeneratePrimaries(event);
 
-    // do not save primary particles
+    // Do not save primary particles
     // (they would be stored twice)
-    AliTrackingAction* trackingAction
-      =  AliTrackingAction::Instance();
+    TG4TrackingAction* trackingAction
+      =  TG4TrackingAction::Instance();
     if (trackingAction) trackingAction->SetSavePrimaries(false);
   }  
   else {
-    // use particle gun otherwise
+  
+    // Begin of Event
+    TVirtualMCApplication::Instance()->BeginEvent();
+
+    // Construct particle gun
+    ConstructGenerator();
+  
+    // Generate primary vertices
     fParticleGun.GeneratePrimaryVertex(event);
 
-    // primary particles have to be saved
-    AliTrackingAction* trackingAction
-      =  AliTrackingAction::Instance();
+    // Primary particles have to be saved in stack
+    TG4TrackingAction* trackingAction
+      =  TG4TrackingAction::Instance();
     if (trackingAction) trackingAction->SetSavePrimaries(true);
   }  
 }

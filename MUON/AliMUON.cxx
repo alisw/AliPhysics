@@ -14,6 +14,15 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.56.6.2  2002/07/24 10:07:20  alibrary
+Updating VirtualMC
+
+Revision 1.56.6.1  2002/06/10 15:10:14  hristov
+Merged with v3-08-02
+
+Revision 1.56  2001/11/22 11:26:28  jchudoba
+Proper deletion of arrays, deletion of unused variables (thanks to Rene Brun)
+
 Revision 1.55  2001/09/07 08:38:30  hristov
 Pointers initialised to 0 in the default constructors
 
@@ -258,7 +267,6 @@ Log message added
 #include "AliMUONClusterInput.h"
 #include "AliMUONMerger.h"	
 #include "iostream.h"
-#include "AliCallf77.h" 
 #include "AliConst.h" 
 
 // Defaults parameters for Z positions of chambers

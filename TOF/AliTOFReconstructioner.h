@@ -25,7 +25,7 @@
 class AliTOFPad;
 class AliTOFRecHit;
 class AliTOFTrack;
-class TGeant3;
+class TVirtualMC;
 
 class AliTOFReconstructioner: public TTask {
 
@@ -54,7 +54,7 @@ public:
   Int_t         GetNEvents() const {return fNevents;}
   const char*   GetRecFile() const {return fRecFile.Data();}
   Int_t         PDGtoGeantCode(Int_t pdgcode); 
-  virtual void  IsInsideThePad(TGeant3* g3, Float_t x, Float_t y, Float_t z, Int_t *nGeom, Float_t& zPad, Float_t& xPad);
+  virtual void  IsInsideThePad(TVirtualMC* vmc, Float_t x, Float_t y, Float_t z, Int_t *nGeom, Float_t& zPad, Float_t& xPad);
   virtual void  BorderEffect(Float_t z0, Float_t x0, Float_t geantTime, Int_t& nActivatedPads, Int_t& nFiredPads, Bool_t* isFired, Int_t* nPlace, Float_t* qInduced, Float_t* tofTime, Float_t& averageTime);
   virtual void  EpMulScatt(Float_t& px, Float_t& py, Float_t& pz, Float_t& p, Float_t& theta);
   void  SetDbg(Int_t dbgflag)                        {fdbg=dbgflag;}
@@ -169,7 +169,6 @@ public:
   Bool_t   operator == (const AliTOFReconstructioner & tofrec) const ;
 
 private:
-  TGeant3 *fg3;             //! pointer to GEANT geometry
   TFile   *foutputfile;     //! pointer to output file
   TNtuple *foutputntuple;   //! pointer to output ntuple
   TF1     *fZnoise;         // pointer to formula giving the noise along z direction

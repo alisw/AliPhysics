@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.40.6.2  2002/07/24 10:09:01  alibrary
+Updating VirtualMC
+
+Revision 1.42  2002/06/12 14:56:56  kowal2
+Added track length to the reference hits
+
 Revision 1.41  2002/05/27 14:33:15  hristov
 The new class AliTrackReference used (M.Ivanov)
 
@@ -2093,10 +2099,7 @@ void AliTPCv2::StepManager()
       if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
     }
   
-  Float_t random[1];
-  gMC->Rndm(random,1); // good, old GRNDM from Geant3
-  
-  Double_t rnd = (Double_t)random[0];
+  Double_t rnd = gMC->GetRandom()->Rndm();
   
   gMC->SetMaxStep(-TMath::Log(rnd)/pp);
   

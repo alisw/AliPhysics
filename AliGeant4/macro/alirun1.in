@@ -6,17 +6,18 @@
 #
 
 /aliDet/switchOn TPC0
-/aliDet/fieldValue 0.2 tesla
+#/aliDet/fieldType Uniform
 
 /aliRun/initialize
 
-/aliTree/setVolume ALIC
-/aliTree/setLVTreeVisibility true
-/aliTree/setLVTreeColour Green
+#/aliDet/uniformFieldValue 0.2 tesla
+/mcTree/setVolume ALIC
+/mcTree/setLVTreeVisibility true
+/mcTree/setLVTreeColour Green
 
 # visualization commands
-/vis/open OGLSXm
-#/vis/open DAWNFILE
+#/vis/open OGLSXm
+/vis/open DAWNFILE
 /vis/drawVolume
 /vis/viewer/zoom 10.
 
@@ -52,9 +53,8 @@ exit
 # /hits/verbose 1
 # /event/verbose 2
 # /run/verbose 2
-# /aliVerbose/trackingAction 3
-# /aliTracking/loopVerbose 5
-# /aliEvent/verbose 2
+# /mcVerbose/*
+# /aliVerbose/*
 # /particle/select pi-
 # /particle/process/verbose 1
 

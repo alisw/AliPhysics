@@ -1,7 +1,7 @@
 SRCS          =   \
 AliDetector.cxx	AliHeader.cxx	AliMagF.cxx \
 AliDigit.cxx	AliHit.cxx	AliPoints.cxx \
-AliDisplay.cxx	AliMC.cxx	AliRun.cxx AliGenerator.cxx \
+AliDisplay.cxx	AliRun.cxx AliGenerator.cxx \
 AliLego.cxx	AliModule.cxx	AliDigitNew.cxx \
 AliGeometry.cxx	AliRecPoint.cxx	AliSegmentation.cxx \
 AliHitMap.cxx	AliMagFC.cxx	AliMagFCM.cxx \
@@ -20,4 +20,4 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= STEERLinkDef.h
 
-EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h AliMCProcess.h 
+EXPORT:=$(SRCS:.cxx=.h) AliMC.h AliConst.h AliCallf77.h AliMCProcess.h 

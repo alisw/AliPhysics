@@ -15,6 +15,12 @@
 /*
   $Id$
   $Log$
+  Revision 1.23.4.2  2002/10/14 13:14:07  hristov
+  Updating VirtualMC to v3-09-02
+
+  Revision 1.26  2002/09/09 17:23:28  nilsen
+  Minor changes in support of changes to AliITSdigitS?D class'.
+
   Revision 1.25  2002/05/10 22:29:40  nilsen
   Change my Massimo Masera in the default constructor to bring things into
   compliance.

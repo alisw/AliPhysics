@@ -19,6 +19,7 @@ class G4UIcommand;
 class G4UIdirectory;
 class G4UIcmdWithoutParameter;
 class G4UIcmdWithABool;
+class G4UIcmdWithAString;
 class G4UIcmdWithADoubleAndUnit;
 
 class AliModulesCompositionMessenger: public G4UImessenger
@@ -48,7 +49,8 @@ class AliModulesCompositionMessenger: public G4UImessenger
     G4UIdirectory*          fDirectory;          //command directory
     
     // commands data members
-    G4UIcmdWithADoubleAndUnit*  fFieldValueCmd;       //command: fieldValue
+    G4UIcmdWithAString*         fFieldTypeCmd;        //command: fieldType
+    G4UIcmdWithADoubleAndUnit*  fUniformFieldValueCmd;//command: uniformFieldValue
     G4UIcmdWithABool*           fSetReadGeometryCmd;  //command: readGeometry   
     G4UIcmdWithABool*           fSetWriteGeometryCmd; //command: writeGeometry    
     G4UIcmdWithoutParameter*    fPrintMaterialsCmd;   //command: printMatrials     

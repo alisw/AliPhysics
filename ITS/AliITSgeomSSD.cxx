@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.14.6.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.15  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.14  2001/11/19 16:17:03  nilsen
 Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
 bugs found by Rene require more work to fix. Will be fixed soon.
@@ -297,6 +303,12 @@ istream &operator>>(istream &is,AliITSgeomSSD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.14.6.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.15  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.14  2001/11/19 16:17:03  nilsen
 Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
 bugs found by Rene require more work to fix. Will be fixed soon.
@@ -381,6 +393,12 @@ istream &operator>>(istream &is,AliITSgeomSSD175 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.14.6.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.15  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.14  2001/11/19 16:17:03  nilsen
 Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
 bugs found by Rene require more work to fix. Will be fixed soon.
@@ -474,6 +492,12 @@ istream &operator>>(istream &is,AliITSgeomSSD275and75 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.14.6.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.15  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.14  2001/11/19 16:17:03  nilsen
 Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
 bugs found by Rene require more work to fix. Will be fixed soon.

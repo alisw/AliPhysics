@@ -64,7 +64,8 @@
 #include "TFile.h"
 #include "TParticle.h"
 #include <TClonesArray.h>
-#include "../TGeant3/TGeant3.h"
+#include "TGeant3.h"
+#include "TVirtualMC.h"
 #include <TF1.h>
 #include <TF2.h>
 #include "TROOT.h"
@@ -81,7 +82,6 @@ ClassImp(AliTOFReconstructioner)
 {
   // default ctor
   fNevents = 0 ; 
-  fg3      = 0;
   foutputfile  = 0; 
   foutputntuple= 0;
   fZnoise  = 0;
@@ -95,7 +95,6 @@ ClassImp(AliTOFReconstructioner)
   // ctor
   //
   fNevents = 0 ;     // Number of events to reconstruct, 0 means all evens in current file
-  fg3      = 0;
   foutputfile  = 0; 
   foutputntuple= 0;
   fZnoise  = 0;
@@ -116,9 +115,6 @@ ClassImp(AliTOFReconstructioner)
   // initialize the ALIROOT geometry 
   gAlice->Init();
   gAlice->Print(); 
-
-  // set the fg3 pointer to geometry used by IsInsideThePad method
-  fg3 = (TGeant3*) gMC;	 
 
   CreateNTuple();  
 
@@ -216,11 +212,7 @@ void AliTOFReconstructioner::Init(Option_t* opt)
   //
   // dtor
   //
-  if (fg3)
-    {
-      delete fg3;
-      fg3 = 0;
-    }
+
   if (foutputfile)
     {
       delete foutputfile;
@@ -586,7 +578,7 @@ void AliTOFReconstructioner::PrintParameters()const
 }
 
 //__________________________________________________________________
-void AliTOFReconstructioner::IsInsideThePad(TGeant3 *g3, Float_t x, Float_t y, Float_t z, Int_t *nGeom, Float_t& zPad, Float_t& xPad) 
+void AliTOFReconstructioner::IsInsideThePad(TVirtualMC *vmc, Float_t x, Float_t y, Float_t z, Int_t *nGeom, Float_t& zPad, Float_t& xPad) 
 {
   //   input: x,y,z - coordinates of a hit
   //   output: array  nGeom[]
@@ -627,6 +619,8 @@ void AliTOFReconstructioner::IsInsideThePad(TGeant3 *g3, Float_t x, Float_t y, F
   xTOF[1]=y;
   xTOF[2]=z;
   
+  TGeant3 * g3 = (TGeant3*) vmc;
+
   g3->Gmedia(xTOF, numed);
   gcvolu=g3->Gcvolu();
   nLevel=gcvolu->nlevel;
@@ -1721,7 +1715,7 @@ void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits, TClones
 	  }
 	} //end if(ipart!=ipartLast)
 
-	IsInsideThePad(fg3,x,y,z,npixel,zPad,xPad);
+	IsInsideThePad(gMC,x,y,z,npixel,zPad,xPad);
 
 	Int_t sec  = tofHit->GetSector();
 	Int_t pla  = tofHit->GetPlate();
@@ -1739,7 +1733,7 @@ void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits, TClones
 	
 	
 	if (npixel[4]==0){
-	  IsInsideThePad(fg3,x,y,z,npixel,zPad,xPad);
+	  IsInsideThePad(gMC,x,y,z,npixel,zPad,xPad);
 	  if (npixel[4]==0){	      
 	    nHitOutofTofVolumes++;
 	  }
@@ -2586,7 +2580,7 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
 	gz=zHelixCenter+s*sinlam;
 	rho=TMath::Sqrt(gx*gx+gy*gy);
 	
-	IsInsideThePad(fg3,gx,gy,gz,npixel,zPad,xPad);
+	IsInsideThePad(gMC,gx,gy,gz,npixel,zPad,xPad);
 	
 	iplate += npixel[1];
 	iPadAlongX += npixel[4];

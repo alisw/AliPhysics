@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.3.2.1  2002/10/14 13:14:11  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.3  2002/10/05 00:12:39  nilsen
+Added material to simulate services in front of the SPD, SDD, and SSD support
+structures. Modified folumes I212, I200, and I099 so that they do not go
+beyond the volume they are creating holes for. This was nessesary so that
+the material added to these volumes would be correct.
+
 Revision 1.2  2002/10/02 17:56:37  barbera
 Bug in copy 37 of volume I570 corrected (thanks to J. Belikov)
 
@@ -61,7 +70,6 @@ Updated detailed geometry needed by FMD people for some studies
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliConst.h"
-#include "AliGeant3.h"
 #include "AliITSGeant3Geometry.h"
 #include "AliTrackReference.h"
 #include "AliITShit.h"
@@ -29046,7 +29054,8 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
 //     Based on the geometry tree defined in Geant 3.21, this
 // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
 // sturture.
-    if(gMC->IsA()!=AliGeant3::Class()) {
+//    if(gMC->IsA()!=AliGeant3::Class()) {
+    if(strcmp(gMC->GetName(),"TGeant3")) {
 	Error("InitAliITSgeom",
 		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;

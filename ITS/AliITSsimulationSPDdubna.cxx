@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.8.2  2002/10/14 13:14:08  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.7  2002/09/09 17:23:28  nilsen
+Minor changes in support of changes to AliITSdigitS?D class'.
+
 Revision 1.6  2002/08/21 22:09:58  nilsen
 Updated SPD simulation with difusion effects. ReWritten Hit to SDigits
 code.

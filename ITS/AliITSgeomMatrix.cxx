@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.13.6.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.14  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.13  2002/01/28 21:49:19  nilsen
 Fixed a logical bug in functions GtoLPositionError, LtoGPositionError,
 GtoLPositionErrorTracking, and LtoGPositionErrorTracking.

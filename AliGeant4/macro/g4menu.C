@@ -1,34 +1,47 @@
 // $Id$
+//
+// Root macro that opens a mini GUI for running aliroot with Geant4.
+//      
+//  To run aliroot with Geant4 using the g4menu.C:
+//  aliroot
+//  root [0] .x g4menu.C
+//  --> Select "Init" and then "Run" button
+//	    
+// The the bar enables to start Geant4 interactive session:
+//  --> Select "Geant4UI" button and use Geant4 interactive commands;
+//      In case TGeant4 has not yet been created you need first
+//      select "Geant4" button before selecting  "Geant4UI". 	    
+// To go back to Root UI, type exit.
 
-#include <iostream.h>
+
+#include <iostream>
 
 void g4menu()
 {
-  // load Geant4 libraries
-  if (!gInterpreter->IsLoaded("g4libs.C")) gROOT->LoadMacro("g4libs.C");
+
+  // Load Geant4 libraries 
+  if (!gInterpreter->IsLoaded("$ALICE/geant4_vmc/examples/macro/g4libs.C"))
+    gROOT->LoadMacro("$ALICE/geant4_vmc/examples/macro/g4libs.C");
   gInterpreter->ProcessLine("g4libs()");
 
-  // load AliRoot core libraries
-  gInterpreter->ProcessLine("steerlibs()");
-
-  // menu
+  // Menu
   TControlBar* menu = new TControlBar("vertical","Alice Geant4 menu");
   
-  menu->AddButton("Geant4",   "CreateGeant4()", "Create Geant4 Monte Carlo");
-  menu->AddButton("Geant4UI", "StartGeant4UI()","Go to Geant4 Interactive session");
-  menu->AddButton("Init",     "gAlice->Init()", "Initialize AliRun");
+  menu->AddButton("Init",     "gAlice->Init(\"g4Config.C\")", "Initialize \" AliRun \"");
   menu->AddButton("Run",      "gAlice->Run()",  "Process Alice run");
-  menu->AddButton("Run Lego", "gAlice->RunLego()", "Process special lego run");
+  menu->AddButton("Geant4",   "CreateGeant4()", "Create Geant4 only (without initializing AliRun)");
+  menu->AddButton("Geant4UI", "StartGeant4UI()","Go to Geant4 Interactive session");
   gROOT->SaveContext();
   menu->Show();
 }
 
 void CreateGeant4()
-{
+{  
   if (!gMC) {
-    // AliRunConfiguration for Geant4
-    AliRunConfiguration* runConfiguration 
-      = new AliRunConfiguration();
+  
+     // TG4RunConfiguration for Geant4
+     TG4RunConfiguration* runConfiguration 
+      = new TG4RunConfiguration(true);
   
     // TGeant4
     TGeant4* geant4
@@ -61,4 +74,3 @@ void StartGeant4UI()
     cout << "Monte Carlo has not been yet created." << endl;
   }       
 }  
-

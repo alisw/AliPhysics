@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.67.4.3  2002/10/14 13:14:07  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.73  2002/09/09 17:14:25  nilsen
+Update of documentation to reflect changes in AliITSdigitS?D classes.
+
 Revision 1.72  2002/06/10 17:28:55  nilsen
 Added new FillModules routine and cleaned up the old one.
 

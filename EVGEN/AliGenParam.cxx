@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.36.6.3  2002/10/10 16:40:08  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.39  2002/09/16 08:21:16  morsch
+Use TDatabasePDG::Instance();
+
 Revision 1.38  2002/05/30 14:59:12  morsch
 Check geometrical acceptance. (G. Martinez)
 

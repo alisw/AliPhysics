@@ -15,6 +15,12 @@
 
 /*
   $Log$
+  Revision 1.58.6.1  2002/06/10 15:12:46  hristov
+  Merged with v3-08-02
+
+  Revision 1.58  2001/11/14 09:49:37  dibari
+  Use debug methods
+
   Revision 1.57  2001/11/09 17:29:31  dibari
   Setters fro models moved to header
 
@@ -195,7 +201,7 @@
 #include "AliConst.h"
 #include "AliPDG.h"
 #include "AliPoints.h"
-#include "AliCallf77.h" 
+//#include "AliCallf77.h" 
 
 
 
@@ -2076,7 +2082,7 @@ void AliRICH::StepManager()
     Float_t        localTheta,localPhi;
     Float_t        theta,phi;
     Float_t        destep, step;
-    Float_t        ranf[2];
+    Double_t       ranf[2];
     Int_t          nPads;
     Float_t        coscerenkov;
     static Float_t eloss, xhit, yhit, tlength;
@@ -2175,7 +2181,8 @@ void AliRICH::StepManager()
 			
 			Float_t cophi = TMath::Cos(TMath::ATan2(mom[0], mom[1]));
 			Float_t t = (1. - .025 / cophi) * (1. - .05 /  cophi);
-			gMC->Rndm(ranf, 1);
+			//gMC->Rndm(ranf, 1);
+			gMC->GetRandom()->RndmArray(1,ranf);
 			//printf("grid calculation:%f\n",t);
 			if (ranf[0] > t) {
 			  gMC->StopTrack();
@@ -2203,7 +2210,8 @@ void AliRICH::StepManager()
 			
 			Float_t cophi = TMath::Cos(TMath::ATan2(mom[0], mom[1]));
 			Float_t t = Fresnel(ckovEnergy*1e9,cophi,1);
-			gMC->Rndm(ranf, 1);
+			//gMC->Rndm(ranf, 1);
+			gMC->GetRandom()->RndmArray(1,ranf);
 			if (ranf[0] < t) {
 			  gMC->StopTrack();
 			  ckovData[13] = 6;

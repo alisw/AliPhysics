@@ -6,7 +6,7 @@
 /* $Id: */
 
 #include "TObject.h"
-#include "../TGeant3/TGeant3.h"
+#include "TGeant3.h"
 
 class AliITSGeant3Geometry : public TObject {
  public:

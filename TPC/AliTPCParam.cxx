@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.13.4.1  2002/06/10 15:26:11  hristov
+Merged with v3-08-02
+
+Revision 1.15  2002/05/07 17:24:02  kowal2
+Updated wires positions
+
 Revision 1.14  2002/03/29 06:57:45  kowal2
 Restored backward compatibility to use the hits from Dec. 2000 production.
 

@@ -7,20 +7,14 @@
 # source structure.
   
 # main categories (packages)
-@DIRLIST = "TGeant4";
-@DIRLIST = (@DIRLIST,"AliGeant4");
-@NAMELIST = "g4mc";
-@NAMELIST = (@NAMELIST,"alice");
+@DIRLIST = "AliGeant4";
+@NAMELIST = "AliGeant4";
 
 # subcategories
 @CATLIST = "global";
 @CATLIST = (@CATLIST,"geometry");
-@CATLIST = (@CATLIST,"digits+hits");
-@CATLIST = (@CATLIST,"physics");
 @CATLIST = (@CATLIST,"event");
 @CATLIST = (@CATLIST,"run");
-@CATLIST = (@CATLIST,"visualization");
-@CATLIST = (@CATLIST,"interfaces");
 
 # create source dir structure
 for( $i = 0 ; $i < $#DIRLIST+1 ; $i++ ) {

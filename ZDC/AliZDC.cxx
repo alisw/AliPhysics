@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.28.6.2  2002/07/24 10:10:13  alibrary
+Updating VirtualMC
+
+Revision 1.28.6.1  2002/06/10 15:29:36  hristov
+Merged with v3-08-02
+
+Revision 1.30  2002/06/07 10:19:23  coppedis
+TreeS, TreeD and TreeR for ZDC can be written in a separate file
+
 Revision 1.29  2002/06/04 08:17:04  coppedis
 Reconstruction method improved
 
@@ -117,7 +126,7 @@ Introduction of the Copyright and cvs Log
 #include "AliZDCDigit.h"
 #include "AliZDCReco.h"
 #include "AliDetector.h"
-#include "AliCallf77.h"
+//#include "AliCallf77.h"
 #include "AliConst.h"
 #include "AliMC.h"
 #include "AliRun.h"

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.17.6.1  2002/07/24 13:33:35  alibrary
+Make geometry consistent with new current parameters.
+
+Revision 1.18  2002/07/24 13:28:49  morsch
+Make geometry consistent with new current parameters.
+
 Revision 1.17  2001/11/17 01:29:21  morsch
 Obsolete and wrong volume YXO5 removed.
 

@@ -47,7 +47,7 @@ void Config()
     // Set Random Number seed
     // gRandom->SetSeed(12345);
 
-    new AliGeant3("C++ Interface to Geant3");
+    new TGeant3("C++ Interface to Geant3");
 
     if (!gSystem->Getenv("CONFIG_FILE"))
     {

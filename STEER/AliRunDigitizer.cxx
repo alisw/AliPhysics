@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.13.6.2  2002/07/24 10:08:13  alibrary
+Updating VirtualMC
+
+Revision 1.19  2002/07/19 12:46:05  hristov
+Write file instead of closing it
+
 Revision 1.18  2002/07/17 08:59:39  jchudoba
 Do not delete subtasks when AliRunDigitizer is deleted. Owner should delete them itself.
 

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.10.6.1  2002/08/28 15:06:49  alibrary
+Updating to v3-09-01
+
+Revision 1.11  2002/08/18 20:20:48  hristov
+InitGui removed (J.Chudoba)
+
 Revision 1.10  2002/02/18 14:26:14  hristov
 #include <AliConfig.h> removed
 

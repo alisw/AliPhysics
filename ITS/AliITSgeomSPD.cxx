@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.14.6.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.15  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.14  2001/10/19 21:32:35  nilsen
 Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
 cleanded up a little bit of code.
@@ -257,6 +263,12 @@ istream &operator>>(istream &is,AliITSgeomSPD &r){
 
 /*
 $Log$
+Revision 1.14.6.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.15  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.14  2001/10/19 21:32:35  nilsen
 Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
 cleanded up a little bit of code.
@@ -370,6 +382,12 @@ istream &operator>>(istream &is,AliITSgeomSPD300 &r){
 //=====================================================================
 /*
 $Log$
+Revision 1.14.6.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.15  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.14  2001/10/19 21:32:35  nilsen
 Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
 cleanded up a little bit of code.
@@ -513,6 +531,12 @@ istream &operator>>(istream &is,AliITSgeomSPD425Short &r){
 
 /*
 $Log$
+Revision 1.14.6.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.15  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.14  2001/10/19 21:32:35  nilsen
 Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
 cleanded up a little bit of code.

@@ -1,14 +1,9 @@
 void Config()
 {
-    // 7-DEC-2000 09:00
-    // Switch on Transition Radiation simulation. 6/12/00 18:00
-    // iZDC=1  7/12/00 09:00
-    // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
-
     // Set Random Number seed
     // gRandom->SetSeed(12345);
 
-    new     AliGeant3("C++ Interface to Geant3");
+    new     TGeant3("C++ Interface to Geant3");
 
     if (!gSystem->Getenv("CONFIG_FILE"))
     {
@@ -174,7 +169,7 @@ void Config()
      //Last number indicates the scale factor 
 
     Int_t   iABSO = 1;
-    Int_t   iCASTOR = 0;
+    Int_t   iCRT = 0;
     Int_t   iDIPO = 1;
     Int_t   iFMD = 0;
     Int_t   iFRAME = 1;
@@ -369,11 +364,11 @@ void Config()
         AliZDC *ZDC = new AliZDCv1("ZDC", "normal ZDC");
     }
 
-    if (iCASTOR)
+    if (iCRT)
     {
-        //=================== CASTOR parameters ============================
+        //=================== CRT parameters ============================
 
-        AliCASTOR *CASTOR = new AliCASTORv1("CASTOR", "normal CASTOR");
+        AliCRT *CRT = new AliCRTv1("CRT", "normal CRT");
     }
 
     if (iTRD)

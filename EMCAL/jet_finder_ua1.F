@@ -105,8 +105,9 @@ c*-sum up total energy of all cells
 c*-Watch out!!! For mode=1, it can jump back to here for next iteration!!!
  999  continue
 c*-kill cells (flag=2) with Et below ET_MIN after background subtraction
-      call vzero(flag,ncell)
+cfca      call vzero(flag,ncell)
       do i=1, ncell
+         flag(i)=0
          if(etc(i)-et_ave .le. et_min) flag(i)=2
       enddo
       njet = 0

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.29.6.2  2002/07/24 10:09:01  alibrary
+Updating VirtualMC
+
+Revision 1.29  2002/01/21 17:12:00  kowal2
+New track hits structure using root containers
+
 Revision 1.28  2001/06/12 07:07:41  kowal2
 New files for folder and stack
 
@@ -1797,10 +1803,7 @@ void AliTPCv3::StepManager()
       if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
     }
   
-  Float_t random[1];
-  gMC->Rndm(random,1); // good, old GRNDM from Geant3
-  
-  Double_t rnd = (Double_t)random[0];
+  Double_t rnd = gMC->GetRandom()->Rndm();
   
   gMC->SetMaxStep(-TMath::Log(rnd)/pp);
   

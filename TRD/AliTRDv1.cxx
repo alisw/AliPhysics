@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.33.6.2  2002/07/24 10:09:31  alibrary
+Updating VirtualMC
+
+Revision 1.34  2002/06/13 08:11:56  cblume
+Add the track references
+
 Revision 1.33  2002/02/20 14:01:40  hristov
 Compare a TString with a string, otherwise the conversion cannot be done on Sun
 
@@ -515,7 +521,7 @@ void AliTRDv1::StepManager()
   Int_t    qTot;
 
   Float_t  hits[3];
-  Float_t  random[1];
+  Double_t  random[1];
   Float_t  charge;
   Float_t  aMass;
 
@@ -680,7 +686,7 @@ void AliTRDv1::StepManager()
       
           if (pp > 0) {
             do 
-              gMC->Rndm(random,1);
+            gMC->GetRandom()->RndmArray(1, random);
             while ((random[0] == 1.) || (random[0] == 0.));
             stepSize = - TMath::Log(random[0]) / pp; 
             gMC->SetMaxStep(stepSize);

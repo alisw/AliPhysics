@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.7.4.1  2002/07/24 10:09:01  alibrary
+Updating VirtualMC
+
+Revision 1.9  2002/06/07 06:13:07  kowal2
+Corrected calculation of the cross talk in the outer sectors
+
 Revision 1.8  2002/06/05 15:37:31  kowal2
 Added cross-talk from the wires beyond the first and the last rows
 

@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.2.8.1  2002/08/28 15:06:50  alibrary
+Updating to v3-09-01
+
+Revision 1.4  2002/08/22 13:18:46  nilsen
+Added = operator and copy constructor in an attempt to fix complilation
+problems found by Yves Schutz.
+
 Revision 1.3  2002/08/21 22:04:27  nilsen
 Added data member to SPD cluters and made related modifications to the
 SPD Cluster finders. Generaly cleanded up some of the code.

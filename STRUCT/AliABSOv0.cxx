@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.11.6.1  2002/07/24 10:08:27  alibrary
+Updating VirtualMC
+
+Revision 1.12  2002/07/15 07:56:41  morsch
+Steel rear and  Al ring.
+
 Revision 1.11  2001/11/29 14:16:51  morsch
 - truncated inner W-cone
 - new support structure

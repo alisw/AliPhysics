@@ -4,6 +4,13 @@
  * See cxx source for full Copyright notice                               */
 /*
 $Log$
+Revision 1.5.10.1  2002/06/10 17:51:15  hristov
+Merged with v3-08-02
+
+Revision 1.6  2002/04/24 22:02:31  nilsen
+New SDigits and Digits routines, and related changes,  (including new
+noise values).
+
 */
 #include <TObject.h>
 

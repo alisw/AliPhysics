@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.33.6.3  2002/10/11 07:26:37  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.39  2002/10/08 20:46:12  cblume
+Do coupling factors before noise is applied
+
 Revision 1.38  2002/04/30 08:30:40  cblume
 gAlice now only read by AliRunDigitizer. Therefore it is just deleted in AliTRDmerge.C
 

@@ -119,11 +119,11 @@ G4String AliFiles::GetMacroPath(const G4String& macroName,
 G4String AliFiles::GetRootMacroPath() const
 {
 // Returns the filepath:
-// $ALICE_ROOT/macros/Config.C
+// $AG4_INSTALL/macro/ag4Config.C
 // ---
     
   G4String name 
-    = fgkTop + "/../macros/" + fMacroName + fgkRootMacroExtension;
+     = fgkTop + "/macro/ag4" + fMacroName + fgkRootMacroExtension;
 			      
   return name;
 }  			      

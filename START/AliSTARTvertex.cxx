@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.6.6.2  2002/07/24 09:50:10  alibrary
+Updating VirtualMC
+
+Revision 1.9  2002/07/23 11:48:05  alla
+new Digits structure
+
 Revision 1.8  2002/04/16 10:52:41  hristov
 Wrong usage of exit() corrected (Sun)
 

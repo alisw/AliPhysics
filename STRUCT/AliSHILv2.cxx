@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.2.2  2002/10/11 08:04:28  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.4  2002/09/02 15:32:15  morsch
+Gsbool calls to resolve MANY added (I. Hrivnacova)
+
 Revision 1.3  2002/07/25 10:00:08  morsch
 par4 size increased.
 

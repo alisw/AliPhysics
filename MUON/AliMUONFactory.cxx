@@ -19,6 +19,12 @@
 
 /*
 $Log$
+Revision 1.2.10.1  2002/10/11 06:56:47  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.3  2002/09/02 14:35:14  morsch
+New segmentation radii for Station 2.
+
 Revision 1.2  2001/05/16 14:57:17  alibrary
 New files for folders and Stack
 

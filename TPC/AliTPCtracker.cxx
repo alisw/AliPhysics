@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.17.4.3  2002/10/11 08:34:48  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.19  2002/07/19 07:31:40  kowal2
+Improvement in tracking by J. Belikov
+
 Revision 1.18  2002/05/13 07:33:52  kowal2
 Added protection in Int_t AliTPCtracker::AliTPCRow::Find(Double_t y) const
 in the case of defined region of interests.

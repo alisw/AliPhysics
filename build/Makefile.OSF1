@@ -54,7 +54,7 @@ SYSLIBS = -lbsd
 AFLAGS = $(filter-out -rpath /usr/lib/cmplrs/cxx -msym -shared /usr/lib/cmplrs/cc/crt0.o,$(SOFLAGS))
 
 # Additional flags and libraries for building aliroot executable
-EXEFLAGS += -lXm -lXt -lX11 -lPW -lUfor -lfor -lFutil -lots
+EXEFLAGS += -lXm -lXt -lX11 -lPW -lUfor -lfor -lFutil -lots 
 EXEFLAGS += -taso
 
 # Cure funny problem 

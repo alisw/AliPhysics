@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.9.8.1  2002/07/24 09:27:50  alibrary
+Updating on VirtualMC
+
+Revision 1.11  2002/07/11 10:24:21  barbera
+Fixes to make tracking V2 working with the HEAD and with fast points. Waiting for a fix in slow reconstruction of SPD, fast points are temporarily made the default for tracking V2.
+
 Revision 1.10  2002/06/10 17:30:24  nilsen
 A new CreateFastRecPoints has been made and the old one made compatible.
 

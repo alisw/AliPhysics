@@ -1,49 +1,42 @@
-SRCS:=AliColourStore.cxx \
-	AliDetConstruction.cxx \
-	AliDetSwitch.cxx \
-	AliDetSwitchVector.cxx \
-	AliDetSwitchVectorMessenger.cxx \
-	AliEventAction.cxx \
-	AliEventActionMessenger.cxx \
-	AliFiles.cxx \
-	AliGlobals.cxx \
-	AliGunParticle.cxx \
-	AliLVStructure.cxx \
-	AliLVTree.cxx \
-	AliLVTreeMessenger.cxx \
-	AliLegoSensitiveDetector.cxx \
-	AliMagneticField.cxx \
-	AliModuleConstruction.cxx \
-	AliModulesComposition.cxx \
-	AliModulesCompositionMessenger.cxx \
-	AliParticleGun.cxx \
-	AliParticleGunMessenger.cxx \
-	AliPrimaryGeneratorAction.cxx \
-	AliPrimaryGeneratorMessenger.cxx \
-	AliRunAction.cxx \
-	AliRunConfiguration.cxx \
-	AliRunMessenger.cxx \
-	AliSDConstruction.cxx \
-	AliSensitiveDetector.cxx \
-	AliStackingAction.cxx \
-	AliSteppingAction.cxx \
-	AliSteppingActionMessenger.cxx \
-	AliTrackInformation.cxx \
-	AliTrackingAction.cxx \
-	AliTrackingActionMessenger.cxx \
-	AliVerbose.cxx
+SRCS:= AliDetConstruction.cxx \
+ AliDetSwitch.cxx \
+ AliDetSwitchVector.cxx \
+ AliDetSwitchVectorMessenger.cxx \
+ AliFiles.cxx \
+ aligeant4.cxx \
+ AliGlobals.cxx \
+ AliGunParticle.cxx \
+ AliModuleConstruction.cxx \
+ AliModulesComposition.cxx \
+ AliModulesCompositionMessenger.cxx \
+ AliParticleGun.cxx \
+ AliParticleGunMessenger.cxx \
+ AliPrimaryGeneratorAction.cxx \
+ AliPrimaryGeneratorMessenger.cxx \
+ AliRunConfiguration.cxx \
+ AliRunMessenger.cxx \
+ AliStackingAction.cxx \
+ AliVerbose.cxx
 
 HDRS:=$(SRCS:.cxx=.h)
 
 DHDR:= AliGeant4LinkDef.h
 
-EINCLUDE:=$(G4INSTALL)/include $(CLHEP_BASE_DIR)/include TGeant4
+EINCLUDE:=$(G4INSTALL)/include $(CLHEP_BASE_DIR)/include $(ALICE)/geant4_mc/include 
 
-include $(G4INSTALL)/config/G4UI_USE.gmk
-include $(G4INSTALL)/config/G4VIS_USE.gmk
-include $(G4INSTALL)/config/interactivity.gmk
+CSAVE:=$(CXXFLAGS)
+
+include $(G4INSTALL)/config/sys/$(G4SYSTEM).gmk
+include $(G4INSTALL)/config/architecture.gmk
+#include $(G4INSTALL)/config/G4UI_USE.gmk
+#include $(G4INSTALL)/config/G4VIS_USE.gmk
+#include $(G4INSTALL)/config/interactivity.gmk
 
 EDEFINE:=$(CPPFLAGS)
+
+CXXFLAGS+=$(CSAVE) 
+
+#CXXFLAGS+=-ansi -DGNU_GCC -DG4DEBUG -DG4USE_STL -DG4USE_STD_NAMESPACE -DG4VERBOSE -DG4_STORE_TRAJECTORY
 
 #ELIBSDIR:= $(G4INSTALL)/include/$(G4SYSTEM) $(CLHEP_BASE_DIR)/lib 
 #ELIBS:= CLHEP 

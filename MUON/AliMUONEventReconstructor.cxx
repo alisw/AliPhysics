@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.28.8.1  2002/10/11 06:56:47  hristov
+Updating VirtualMC to v3-09-02
+
+Revision 1.29  2002/09/20 13:32:26  cussonno
+Minor bugs in the definition of the bending impact parameter corrected (thanks to A. Zinchenko)
+
 Revision 1.28  2001/08/31 06:50:11  gosset
 Different handling of TreeR for track reconstruction from raw clusters
 

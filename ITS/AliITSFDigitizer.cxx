@@ -15,6 +15,12 @@
  
 /*
 $Log$
+Revision 1.1.2.1  2002/07/24 09:27:50  alibrary
+Updating on VirtualMC
+
+Revision 1.1  2002/06/10 17:32:17  nilsen
+New Fastpoint merger added.
+
 */
 
 #include <stdlib.h>
