@@ -52,7 +52,7 @@ void AliD0toKpiReco() {
   analysis->PrintStatus();
 
   Int_t evFirst = 0;
-  Int_t evLast  = 0;
+  Int_t evLast  = 1000000;
   //analysis->SetDebug();
   //analysis->FindCandidates(evFirst,evLast,"AliD0toKpi.root");
   analysis->FindCandidatesESD(evFirst,evLast,"AliD0toKpi.root");
