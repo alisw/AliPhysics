@@ -15,6 +15,9 @@
 
 /* 
    $Log$
+   Revision 1.2  2001/11/07 14:50:31  hristov
+   Minor correction of the Log part
+
    Revision 1.1  2001/11/02 15:37:26  hristov
    Digitizer class created. Code cleaning and bug fixes (J.Chudoba)
 */
@@ -70,10 +73,21 @@ AliRICHDigitizer::AliRICHDigitizer(AliRunDigitizer* manager)
 AliRICHDigitizer::~AliRICHDigitizer()
 {
 // Destructor
-  if (fHits)       delete fHits;
-  if (fSDigits)    delete fSDigits;
-  if (fHitMap)     delete fHitMap;
-  if (fTDList)     delete fTDList;
+  if (fHits) {
+    fHits->Delete();
+    delete fHits;
+  }
+  if (fSDigits) {
+    fSDigits->Delete();
+    delete fSDigits;
+  }
+  for (Int_t i=0; i++; i<kNCH )
+    delete fHitMap[i];
+  delete [] fHitMap;
+  if (fTDList) {
+    fTDList->Delete();
+    delete fTDList;
+  }
 }
 
 //------------------------------------------------------------------------
