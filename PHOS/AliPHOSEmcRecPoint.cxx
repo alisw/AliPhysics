@@ -833,9 +833,11 @@ void AliPHOSEmcRecPoint::Purify(Float_t threshold){
   fDigitsList = new (Int_t[fMulDigit]) ;
   fEnergyList = new ( Float_t[fMulDigit]) ;
 
+  fAmp = 0.; //Recalculate total energy
   for(Int_t iDigit=0;iDigit< fMulDigit ;iDigit++){
-      fDigitsList[iDigit] = tempo[iDigit];
-      fEnergyList[iDigit] = tempoE[iDigit] ;
+     fDigitsList[iDigit] = tempo[iDigit];
+     fEnergyList[iDigit] = tempoE[iDigit] ;
+     fAmp+=tempoE[iDigit];
   }
       
   delete [] tempo ;
