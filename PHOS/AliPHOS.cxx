@@ -283,16 +283,16 @@ void AliPHOS::CreateMaterials()
   gMC->Gstpar(idtmed[712], "LOSS",3) ;
   gMC->Gstpar(idtmed[712], "DRAY",1) ;
   // Tracking threshold for photons and electrons in the gas ArC02 
-  gMC->Gstpar(idtmed[715], "CUTGAM",5.E-7) ; 
-  gMC->Gstpar(idtmed[715], "CUTELE",5.E-7) ;
-  gMC->Gstpar(idtmed[715], "CUTNEU",5.E-7) ;
-  gMC->Gstpar(idtmed[715], "CUTHAD",5.E-7) ;
-  gMC->Gstpar(idtmed[715], "CUTMUO",5.E-7) ;
-  gMC->Gstpar(idtmed[715], "BCUTE",5.E-7) ;
-  gMC->Gstpar(idtmed[715], "BCUTM",5.E-7) ;
-  gMC->Gstpar(idtmed[715], "DCUTE",5.E-7) ;
-  gMC->Gstpar(idtmed[715], "DCUTM",5.E-7) ;
-  gMC->Gstpar(idtmed[715], "PPCUTM",5.E-7) ;
+  gMC->Gstpar(idtmed[715], "CUTGAM",1.E-5) ; 
+  gMC->Gstpar(idtmed[715], "CUTELE",1.E-5) ;
+  gMC->Gstpar(idtmed[715], "CUTNEU",1.E-5) ;
+  gMC->Gstpar(idtmed[715], "CUTHAD",1.E-5) ;
+  gMC->Gstpar(idtmed[715], "CUTMUO",1.E-5) ;
+  gMC->Gstpar(idtmed[715], "BCUTE",1.E-5) ;
+  gMC->Gstpar(idtmed[715], "BCUTM",1.E-5) ;
+  gMC->Gstpar(idtmed[715], "DCUTE",1.E-5) ;
+  gMC->Gstpar(idtmed[715], "DCUTM",1.E-5) ;
+  gMC->Gstpar(idtmed[715], "PPCUTM",1.E-5) ;
   gMC->Gstpar(idtmed[715], "LOSS",2.) ;
   gMC->Gstpar(idtmed[715], "DRAY",0.) ;
   gMC->Gstpar(idtmed[715], "STRA",2.) ;
