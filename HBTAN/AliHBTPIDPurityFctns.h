@@ -8,11 +8,14 @@
 //
 // file: AliHBTPIDPurityFctns.cxx AliHBTPIDPurityFctns.h
 //
-// Caution: On 2D plots on X axis in simulated values
-// That is contrary to two-particle resolutions where it is reconstructed one
+// Classes for calculating PID purity, efficiency and other things connected with PID
+// xxxxxxxxxx
+// xxxxxxxxxx
+// xxxxxxxxxx
+// xxxxxxxxxx
+// xxxxxxxxxx
 //
 // added by Piotr.Skowronski@cern.ch
-// 
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +26,11 @@ class AliHBTMonPIDPurityVsPtFctn: public AliHBTMonTwoParticleFctn1D, public AliH
 {
   public: 
     AliHBTMonPIDPurityVsPtFctn(Int_t nbins = 20, Double_t maxXval = 2.0, Double_t minXval = 0.0);
+    AliHBTMonPIDPurityVsPtFctn(const AliHBTMonPIDPurityVsPtFctn& /*in*/);
     virtual ~AliHBTMonPIDPurityVsPtFctn();
+    
+    AliHBTMonPIDPurityVsPtFctn& operator=(const AliHBTMonPIDPurityVsPtFctn& /*in*/);
+    
     void Init();
     void Write();
     void Rename(const Char_t * name);
@@ -32,8 +39,8 @@ class AliHBTMonPIDPurityVsPtFctn: public AliHBTMonTwoParticleFctn1D, public AliH
     Double_t GetValue(AliVAODParticle * /*track*/,AliVAODParticle * /*part*/) const { return 0.0; }
     void Process(AliVAODParticle * track,AliVAODParticle * part);
   protected:
-    TH1D* fGood;
-    TH1D* fAll;
+    TH1D* fGood;//histogram filled with correctly identified particles
+    TH1D* fAll;//histogram filled with all particles
     ClassDef(AliHBTMonPIDPurityVsPtFctn,1)
 };
 /***********************************************************************/
@@ -42,7 +49,11 @@ class AliHBTMonPIDContaminationVsPtFctn: public AliHBTMonTwoParticleFctn1D, publ
 {
   public: 
     AliHBTMonPIDContaminationVsPtFctn(Int_t nbins = 20, Double_t maxXval = 2.0, Double_t minXval = 0.0);
-    virtual ~AliHBTMonPIDContaminationVsPtFctn();
+    AliHBTMonPIDContaminationVsPtFctn(const AliHBTMonPIDContaminationVsPtFctn& /*in*/);
+    virtual ~AliHBTMonPIDContaminationVsPtFctn();    
+
+    AliHBTMonPIDContaminationVsPtFctn& operator=(const AliHBTMonPIDContaminationVsPtFctn& /*in*/);
+
     void Init();
     void Write();
     void Rename(const Char_t * name);
@@ -51,8 +62,8 @@ class AliHBTMonPIDContaminationVsPtFctn: public AliHBTMonTwoParticleFctn1D, publ
     Double_t GetValue(AliVAODParticle * /*track*/,AliVAODParticle * /*part*/) const { return 0.0; }
     void Process(AliVAODParticle * track,AliVAODParticle * part);
   protected:
-    TH1D* fWrong;  
-    TH1D* fAll;
+    TH1D* fWrong;//histogram filled with wrongly identified particles
+    TH1D* fAll;//histogram filled with all particles
     ClassDef(AliHBTMonPIDContaminationVsPtFctn,1)
 };
 /*************************************************************************************/

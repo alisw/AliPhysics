@@ -7,11 +7,11 @@
 //
 // file: AliHBTPIDPurityFctns.cxx AliHBTPIDPurityFctns.h
 //
-// Caution: On 2D plots on X axis in simulated values
-// That is contrary to two-particle resolutions where it is reconstructed one
+// Classes for calculating PID purity, efficiency and other things connected with PID
+// xxx
+// xxx
 //
 // added by Piotr.Skowronski@cern.ch
-// 
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -19,7 +19,6 @@
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
-AliHBTQInvCorrelFctnPerfectPID f;
 
 ClassImp(AliHBTMonPIDPurityVsPtFctn)
 
@@ -34,6 +33,19 @@ AliHBTMonPIDPurityVsPtFctn::AliHBTMonPIDPurityVsPtFctn(Int_t nbins, Double_t max
 }
 /******************************************************************/
 
+AliHBTMonPIDPurityVsPtFctn::AliHBTMonPIDPurityVsPtFctn(const AliHBTMonPIDPurityVsPtFctn& /*in*/):
+ AliHBTMonTwoParticleFctn1D(),
+ AliHBTCorrelFunction(),
+ fGood(0x0),
+ fAll(0x0)
+{
+  //cpy constructor
+  Error("AliHBTMonPIDPurityVsPtFctn(const AliHBTMonPIDPurityVsPtFctn&",
+        "Functions can not be copied because of histogram names clashes");
+}
+
+/******************************************************************/
+
 AliHBTMonPIDPurityVsPtFctn::~AliHBTMonPIDPurityVsPtFctn()
 {
  //dtor
@@ -41,8 +53,19 @@ AliHBTMonPIDPurityVsPtFctn::~AliHBTMonPIDPurityVsPtFctn()
   delete fAll;
 }
 /******************************************************************/
+
+AliHBTMonPIDPurityVsPtFctn& AliHBTMonPIDPurityVsPtFctn::operator=
+                                   (const AliHBTMonPIDPurityVsPtFctn& /*in*/)
+{
+//assigment operator
+  Error("operator=","Functions can not be copied because of histogram names clashes");
+  return *this;
+}
+/******************************************************************/
+
 void AliHBTMonPIDPurityVsPtFctn::Write()
 {
+//Writes a fucntion results
  AliHBTMonitorFunction::Write();
  fGood->Write();
  fAll->Write();
@@ -194,11 +217,34 @@ AliHBTMonPIDContaminationVsPtFctn::AliHBTMonPIDContaminationVsPtFctn(Int_t nbins
 }
 /******************************************************************/
 
+AliHBTMonPIDContaminationVsPtFctn::AliHBTMonPIDContaminationVsPtFctn
+                                          (const AliHBTMonPIDContaminationVsPtFctn& /*in*/):
+ AliHBTMonTwoParticleFctn1D(),
+ AliHBTCorrelFunction(),
+ fWrong(0x0),
+ fAll(0x0)
+{
+  //cpy constructor
+  Error("AliHBTMonPIDContaminationVsPtFctn(const AliHBTMonPIDContaminationVsPtFctn&",
+        "Functions can not be copied because of histogram names clashes");
+}
+
+/******************************************************************/
+
 AliHBTMonPIDContaminationVsPtFctn::~AliHBTMonPIDContaminationVsPtFctn()
 {
  //dtor
   delete fWrong;
   delete fAll;
+}
+/******************************************************************/
+
+AliHBTMonPIDContaminationVsPtFctn& AliHBTMonPIDContaminationVsPtFctn::operator=
+                                           (const AliHBTMonPIDContaminationVsPtFctn& /*in*/)
+{
+//assigment operator
+  Error("operator=","Functions can not be copied because of histogram names clashes");
+  return *this;
 }
 /******************************************************************/
 
