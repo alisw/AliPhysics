@@ -112,6 +112,7 @@ class TG4GeometryManager
     void ClearG3Tables();       
     void ClearG3TablesFinal();
     void OpenOutFile(G4String filePath);
+    void CloseOutFile();
     void PrintNameMap();
     
     // set methods
