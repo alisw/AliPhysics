@@ -18,7 +18,9 @@ public AliDecayer
     virtual void    Decay(Int_t idpart, TLorentzVector *p);
     virtual Int_t   ImportParticles(TClonesArray *particles)
 	{return fPythia->ImportParticles(particles, "All");}
-    virtual void    ForceDecay(Decay_t type);
+    virtual void    SetForceDecay(Decay_t decay) {fDecay=decay;}
+    virtual void    ForceDecay();
+    
     virtual Float_t GetPartialBranchingRatio(Int_t ipart);
  private:
     void     DefineParticles();

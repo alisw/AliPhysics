@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/09/06 14:23:43  morsch
+Realisation of AliDecayer using Pythia6
+
 */
 
 #include "AliDecayerPythia.h"
@@ -56,7 +59,7 @@ void AliDecayerPythia::Init()
 	    fPythia->SetMDME(i,1,1);
 	}
     }
-
+    ForceDecay();
 }
 
 void AliDecayerPythia::Decay(Int_t idpart, TLorentzVector* p)
@@ -69,10 +72,11 @@ void AliDecayerPythia::Decay(Int_t idpart, TLorentzVector* p)
     fPythia->GetPrimaries();
 }
 
-void AliDecayerPythia::ForceDecay(Decay_t decay)
+void AliDecayerPythia::ForceDecay()
 {
 // Force a particle decay mode
-    fDecay=decay;
+    Decay_t decay=fDecay;
+    
 //
 // Make clean
 // AllowAllDecays();
