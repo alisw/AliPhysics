@@ -21,6 +21,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONTransientDigit.cxx AliMUONRawCluster.cxx \
 	       AliMUONReconstHit.cxx \
                AliMUONEventReconstructor.cxx \
+               AliMUONClusterReconstructor.cxx \
 	       AliMUONTriggerDecision.cxx \
                AliMUONHitForRec.cxx AliMUONSegment.cxx \
                AliMUONTrack.cxx AliMUONTriggerTrack.cxx \
