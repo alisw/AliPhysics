@@ -125,7 +125,7 @@ class AliMUONVGeometryBuilder : public TObject
     TObjArray*  fChambers; // the chambers which geometry will be built
                            // by this builder
     
-  ClassDef(AliMUONVGeometryBuilder,1) // MUON chamber geometry base class
+  ClassDef(AliMUONVGeometryBuilder,2) // MUON chamber geometry base class
 };
 
 #endif //ALI_MUON_V_GEOMETRY_BUILDER_H

@@ -58,7 +58,7 @@ class AliMUONGeometryBuilder : public TObject
                                           // applied to the whole geometry 
     TObjArray*      fGeometryBuilders;    // list of Geometry Builders
 
-  ClassDef(AliMUONGeometryBuilder,2)  // MUON Detector class Version 1
+  ClassDef(AliMUONGeometryBuilder,3)  // MUON Detector class Version 1
 };
 
 // inline functions

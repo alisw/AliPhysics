@@ -76,7 +76,7 @@ class AliMUONChamberGeometry : public TObject
     AliMUONGeometryEnvelopeStore*  fEnvelopes;    // envelopes                                 
     AliMUONGeometrySVMap*          fSVMap;        // sensitive volumes map
  
-  ClassDef(AliMUONChamberGeometry,1) // MUON chamber geometry base class
+  ClassDef(AliMUONChamberGeometry,2) // MUON chamber geometry base class
 };
 
 // inline functions

@@ -48,7 +48,7 @@ protected:
    Int_t fIdSens;    // Sensetive Cherenkov radiator
  
 private:
-  ClassDef(AliSTART,3)  //Base class for the T0 aka START detector
+  ClassDef(AliSTART,4)  //Base class for the T0 aka START detector
 };
 
 //_____________________________________________________________________________
