@@ -1,14 +1,36 @@
+//__________________________________________________________________________
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// class AliHBTParticleCut                                                //
+//                                                                        //
+// Classes for single particle cuts                                       //
+// User should use only AliHBTParticleCut, eventually                     //
+// EmptyCut which passes all particles                                    //
+// There is all interface for setting cuts on all particle properties     //
+// The main method is Pass - which returns                                //
+//         True to reject particle                                        //
+//         False in case it meets all the criteria of the given cut       //
+//                                                                        //
+// User should create (and also destroy) cuts himself                     // 
+// and then pass them to the Analysis And Function by a proper method     //
+//                                                                        //
+//                                                                        //
+// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html   //
+// resonsible: Piotr Skowronski@cern.ch                                   //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 #include "AliHBTParticleCut.h"
 
 #include <Riostream.h>
 
 ClassImp(AliHBTParticleCut)
-const Int_t AliHBTParticleCut::fkgMaxCuts = 50;
+const Int_t AliHBTParticleCut::fgkMaxCuts = 50;
 /******************************************************************/
 
 AliHBTParticleCut::AliHBTParticleCut()
  {
-   fCuts = new AliHbtBaseCut* [fkgMaxCuts];//last property in the property
+   //default ctor
+   fCuts = new AliHbtBaseCut* [fgkMaxCuts];//last property in the property
                                          //property enum => defines number of properties
    fNCuts = 0;
    fPID  = 0;
@@ -16,9 +38,10 @@ AliHBTParticleCut::AliHBTParticleCut()
 /******************************************************************/
 
 AliHBTParticleCut::AliHBTParticleCut(const AliHBTParticleCut& in):
- TObject()
+ TObject(in)
 {
-  fCuts = new AliHbtBaseCut* [fkgMaxCuts];//last property in the property
+  //cpy ctor
+  fCuts = new AliHbtBaseCut* [fgkMaxCuts];//last property in the property
                                          //property enum => defines number of properties
   fNCuts = in.fNCuts;
   fPID  = in.fPID;
@@ -28,9 +51,27 @@ AliHBTParticleCut::AliHBTParticleCut(const AliHBTParticleCut& in):
    }
 }
 /******************************************************************/
+const AliHBTParticleCut& AliHBTParticleCut::operator = (const AliHBTParticleCut& in)
+{
+  //assigment operator
+  for (Int_t i = 0;i<fNCuts;i++)
+   {
+     delete fCuts[i];
+   }
 
+  fNCuts = in.fNCuts;
+  fPID  = in.fPID;
+  for (Int_t i = 0;i<fNCuts;i++)
+   {
+     fCuts[i] = (AliHbtBaseCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
+   }
+  return *this;
+}    
+
+/******************************************************************/
 AliHBTParticleCut::~AliHBTParticleCut()
 {
+  //dtor
   for (Int_t i = 0;i<fNCuts;i++)
    {
      delete fCuts[i];
@@ -63,7 +104,7 @@ void AliHBTParticleCut::AddBasePartCut(AliHbtBaseCut* basecut)
   //adds the base pair cut (cut on one value)
  
    if (!basecut) return;
-   if( fNCuts == (fkgMaxCuts-1) )
+   if( fNCuts == (fgkMaxCuts-1) )
     {
       Warning("AddBasePartCut","Not enough place for another cut");
       return;
@@ -75,7 +116,7 @@ void AliHBTParticleCut::AddBasePartCut(AliHbtBaseCut* basecut)
 /******************************************************************/
 AliHbtBaseCut* AliHBTParticleCut::FindCut(AliHBTCutProperty property)
 {
- 
+ //returns pointer to the cut checking the given property
  for (Int_t i = 0;i<fNCuts;i++)
   {
     if (fCuts[i]->GetProperty() == property) 
@@ -89,6 +130,7 @@ AliHbtBaseCut* AliHBTParticleCut::FindCut(AliHBTCutProperty property)
 
 void AliHBTParticleCut::SetMomentumRange(Double_t min, Double_t max)
 {
+  //Sets momentum range
   AliHBTMomentumCut* cut= (AliHBTMomentumCut*)FindCut(kHbtP);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTMomentumCut(min,max);
@@ -98,6 +140,7 @@ void AliHBTParticleCut::SetMomentumRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetPtRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHBTPtCut* cut= (AliHBTPtCut*)FindCut(kHbtPt);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTPtCut(min,max);
@@ -107,6 +150,7 @@ void AliHBTParticleCut::SetPtRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetEnergyRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHBTEnergyCut* cut= (AliHBTEnergyCut*)FindCut(kHbtE);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTEnergyCut(min,max);
@@ -116,6 +160,7 @@ void AliHBTParticleCut::SetEnergyRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetRapidityRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHbtBaseCut* cut = FindCut(kHbtRapidity);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTRapidityCut(min,max);
@@ -125,6 +170,7 @@ void AliHBTParticleCut::SetRapidityRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetPseudoRapidityRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHbtBaseCut* cut = FindCut(kHbtPseudoRapidity);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTPseudoRapidityCut(min,max);
@@ -134,6 +180,7 @@ void AliHBTParticleCut::SetPseudoRapidityRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetPxRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHbtBaseCut* cut = FindCut(kHbtPx);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTPxCut(min,max);
@@ -142,6 +189,7 @@ void AliHBTParticleCut::SetPxRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetPyRange(Double_t min, Double_t max)
 {  
+  //name self descriptive
   AliHbtBaseCut* cut = FindCut(kHbtPy);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTPyCut(min,max);
@@ -150,6 +198,7 @@ void AliHBTParticleCut::SetPyRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetPzRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHbtBaseCut* cut = FindCut(kHbtPz);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTPzCut(min,max);
@@ -158,6 +207,7 @@ void AliHBTParticleCut::SetPzRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetPhiRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHbtBaseCut* cut = FindCut(kHbtPhi);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTPhiCut(min,max);
@@ -166,6 +216,7 @@ void AliHBTParticleCut::SetPhiRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetThetaRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHbtBaseCut* cut = FindCut(kHbtTheta);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTThetaCut(min,max);
@@ -174,6 +225,7 @@ void AliHBTParticleCut::SetThetaRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetVxRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHbtBaseCut* cut = FindCut(kHbtVx);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTVxCut(min,max);
@@ -182,6 +234,7 @@ void AliHBTParticleCut::SetVxRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetVyRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHbtBaseCut* cut = FindCut(kHbtVy);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTVyCut(min,max);
@@ -190,6 +243,7 @@ void AliHBTParticleCut::SetVyRange(Double_t min, Double_t max)
 
 void AliHBTParticleCut::SetVzRange(Double_t min, Double_t max)
 {
+  //name self descriptive
   AliHbtBaseCut* cut = FindCut(kHbtVz);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTVzCut(min,max);
@@ -198,7 +252,7 @@ void AliHBTParticleCut::SetVzRange(Double_t min, Double_t max)
 /******************************************************************/
 void AliHBTParticleCut::Streamer(TBuffer &b)
 {
-     // Stream all objects in the array to or from the I/O buffer.
+  // Stream all objects in the array to or from the I/O buffer.
 
    UInt_t R__s, R__c;
    if (b.IsReading()) 
@@ -228,9 +282,11 @@ void AliHBTParticleCut::Streamer(TBuffer &b)
      b.SetByteCount(R__c, kTRUE);
    }
 }
+/******************************************************************/
 
-void AliHBTParticleCut::Print(void)
+void AliHBTParticleCut::Print(void) const
 {
+  //prints all information about the cut to stdout
   cout<<"Printing AliHBTParticleCut, this = "<<this<<endl;
   cout<<"fPID  "<<fPID<<endl;
   cout<<"fNCuts  "<<fNCuts <<endl;
@@ -247,6 +303,7 @@ void AliHBTParticleCut::Print(void)
 ClassImp(AliHBTEmptyParticleCut)
 void AliHBTEmptyParticleCut::Streamer(TBuffer &b)
  {
+  //stramer
   AliHBTParticleCut::Streamer(b);
  }
 /******************************************************************/
@@ -258,13 +315,17 @@ void AliHBTEmptyParticleCut::Streamer(TBuffer &b)
 /******************************************************************/
 
 ClassImp(AliHbtBaseCut)
-void AliHbtBaseCut::Print(void)
+void AliHbtBaseCut::Print(void) const
 {
+  // prints the information anout the base cut to stdout
   cout<<"fMin="<<fMin <<", fMax=" <<fMax<<"    ";
   PrintProperty();
 }
-void AliHbtBaseCut::PrintProperty(void)
+/******************************************************************/
+
+void AliHbtBaseCut::PrintProperty(void) const
 {
+ //prints the property name 
  switch (fProperty)
   {
    case  kHbtP: 
@@ -324,7 +385,7 @@ AliHBTLogicalOperCut::AliHBTLogicalOperCut():
  fFirst(new AliHBTDummyBaseCut),
  fSecond(new AliHBTDummyBaseCut)
 {
-
+ //ctor
 }
 /******************************************************************/
 
@@ -333,6 +394,7 @@ AliHBTLogicalOperCut::AliHBTLogicalOperCut(AliHbtBaseCut* first, AliHbtBaseCut* 
  fFirst((first)?(AliHbtBaseCut*)first->Clone():0x0),
  fSecond((second)?(AliHbtBaseCut*)second->Clone():0x0)
 {
+  //ctor
   if ( (fFirst && fSecond) == kFALSE) 
    {
      Fatal("AliHBTLogicalOperCut","One of parameters is NULL!");
@@ -342,7 +404,7 @@ AliHBTLogicalOperCut::AliHBTLogicalOperCut(AliHbtBaseCut* first, AliHbtBaseCut* 
 
 AliHBTLogicalOperCut::~AliHBTLogicalOperCut()
 {
-//destructor
+  //destructor
   delete fFirst;
   delete fSecond;
 }
@@ -350,6 +412,7 @@ AliHBTLogicalOperCut::~AliHBTLogicalOperCut()
 
 Bool_t AliHBTLogicalOperCut::AliHBTDummyBaseCut::Pass(AliHBTParticle* /*part*/)
 {
+  //checks if particles passes properties defined by this cut
   Warning("Pass","You are using dummy base cut! Probobly some logical cut is not set up properly");
   return kFALSE;//accept
 }

@@ -1,15 +1,24 @@
-//Piotr Skowronski@cern.ch
-//Classes fAnd single particle cuts
-//User should use only AliHBTParticleCut, eventually EmptyCut which passes all particles
-//There is all interface fAnd setting cuts on all particle properties
-//The main method is Pass - which returns 
-//        True in Andder to reject particle
-//        False in case it meets all the criteria of the given cut
-//
-//User should create (and also destroy) cuts himself 
-//and then pass them to the Analysis And Function by a proper method
-//
-//mAnde info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
+//__________________________________________________________________________
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// class AliHBTParticleCut                                                //
+//                                                                        //
+// Classes for single particle cuts                                       //
+// User should use only AliHBTParticleCut, eventually                     //
+// EmptyCut which passes all particles                                    //
+// There is all interface for setting cuts on all particle properties     //
+// The main method is Pass - which returns                                //
+//         True to reject particle                                        //
+//         False in case it meets all the criteria of the given cut       //
+//                                                                        //
+// User should create (and also destroy) cuts himself                     // 
+// and then pass them to the Analysis And Function by a proper method     //
+//                                                                        //
+//                                                                        //
+// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html   //
+// resonsible: Piotr Skowronski@cern.ch                                   //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 
 #ifndef ALIHBTPARTICLECUT_H
@@ -60,13 +69,14 @@ class AliHBTParticleCut: public TObject
 //Class describing cut on pairs of particles
   public:
     AliHBTParticleCut();
-    AliHBTParticleCut(const AliHBTParticleCut&);
+    AliHBTParticleCut(const AliHBTParticleCut& in);
     virtual ~AliHBTParticleCut();
-
-    virtual Bool_t Pass(AliHBTParticle*);
-    Bool_t IsEmpty() {return kFALSE;}
+    const AliHBTParticleCut& operator = (const AliHBTParticleCut& in);
     
-    void AddBasePartCut(AliHbtBaseCut*);
+    virtual Bool_t Pass(AliHBTParticle* p);
+    Bool_t IsEmpty() const {return kFALSE;}
+    
+    void AddBasePartCut(AliHbtBaseCut* basecut);
     
     Int_t GetPID() const { return fPID;}
     void SetPID(Int_t pid){fPID=pid;}
@@ -86,21 +96,20 @@ class AliHBTParticleCut: public TObject
     void SetVyRange(Double_t min, Double_t max);
     void SetVzRange(Double_t min, Double_t max);
     
-    void Print(void);
+    void Print(void) const;
   protected:
      
-     AliHbtBaseCut* FindCut(AliHBTCutProperty);
-     
-     AliHbtBaseCut ** fCuts;//! Array with cuts
-     Int_t fNCuts;
+    AliHbtBaseCut* FindCut(AliHBTCutProperty property);
 
-     Int_t fPID; //particle PID  - if=0 (rootino) all pids are accepted
+    AliHbtBaseCut ** fCuts;//! Array with cuts
+    Int_t fNCuts; //number of base cuts stored in fCuts
+
+    Int_t fPID; //particle PID  - if=0 (rootino) all pids are accepted
           
   private:
-     static const Int_t fkgMaxCuts;
-  public:
+    static const Int_t fgkMaxCuts; //Size of the fCuts array
+
     ClassDef(AliHBTParticleCut,1)
- 
 };
 /******************************************************************/
 /******************************************************************/
@@ -114,8 +123,8 @@ class AliHBTEmptyParticleCut:  public AliHBTParticleCut
     AliHBTEmptyParticleCut(){};
     virtual ~AliHBTEmptyParticleCut(){};
     
-    Bool_t Pass(AliHBTParticle*){return kFALSE;} //accpept everything
-    Bool_t IsEmpty() {return kTRUE;}
+    Bool_t Pass(AliHBTParticle*){return kFALSE;} //accept everything <<CAN NOT BE const!!!!>>
+    Bool_t IsEmpty() const {return kTRUE;}
 
     ClassDef(AliHBTEmptyParticleCut,1)
  
@@ -148,27 +157,28 @@ class AliHbtBaseCut: public TObject
      Double_t          GetMaximum() const {return fMax;}
      
      AliHBTCutProperty GetProperty() const {return fProperty;}
-     virtual void Print(void);
+     virtual void Print(void) const;
      
    protected:
-     virtual Double_t  GetValue(AliHBTParticle *) = 0;
+     virtual Double_t  GetValue(AliHBTParticle *) const = 0;
 
-     AliHBTCutProperty fProperty;
-     Double_t fMin;
-     Double_t fMax;
+     AliHBTCutProperty fProperty; //property that this cut describes
+     Double_t fMin;//minimum value
+     Double_t fMax;//maximum value
      
    private:
-     void PrintProperty(void);
+     void PrintProperty(void) const;
      ClassDef(AliHbtBaseCut,1)
    
  };
 
 inline Bool_t
 AliHbtBaseCut::Pass(AliHBTParticle *p)
- {
-   if ( (GetValue(p) < fMin) || (GetValue(p) > fMax ) ) return kTRUE; //rejected
-   else return kFALSE; //accepted
- }
+{
+  //cjecks if particle property fits in range
+  if ( (GetValue(p) < fMin) || (GetValue(p) > fMax ) ) return kTRUE; //rejected
+  else return kFALSE; //accepted
+}
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
@@ -180,7 +190,7 @@ class AliHBTMomentumCut: public AliHbtBaseCut
     AliHBTMomentumCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtP){}
     virtual ~AliHBTMomentumCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->P();}
+    Double_t  GetValue(AliHBTParticle * p)const{return p->P();}
     ClassDef(AliHBTMomentumCut,1)
  };
 
@@ -190,7 +200,7 @@ class AliHBTPtCut: public AliHbtBaseCut
     AliHBTPtCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtPt){}
     virtual ~AliHBTPtCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Pt();}
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Pt();}
     ClassDef(AliHBTPtCut,1)
  };
 
@@ -201,7 +211,7 @@ class AliHBTEnergyCut: public AliHbtBaseCut
     AliHBTEnergyCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtE){}
     virtual ~AliHBTEnergyCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Energy();}
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Energy();}
     ClassDef(AliHBTEnergyCut,1)
  };
 
@@ -211,7 +221,7 @@ class AliHBTRapidityCut: public AliHbtBaseCut
     AliHBTRapidityCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtRapidity){}
     virtual ~AliHBTRapidityCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Y();}
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Y();}
     ClassDef(AliHBTRapidityCut,1)
  };
 
@@ -221,7 +231,7 @@ class AliHBTPseudoRapidityCut: public AliHbtBaseCut
     AliHBTPseudoRapidityCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtPseudoRapidity){}
     virtual ~AliHBTPseudoRapidityCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Eta();}
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Eta();}
     ClassDef(AliHBTPseudoRapidityCut,1)
  };
 
@@ -231,7 +241,7 @@ class AliHBTPxCut: public AliHbtBaseCut
     AliHBTPxCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtPx){}
     virtual ~AliHBTPxCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Px();}
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Px();}
     ClassDef(AliHBTPxCut,1)
  };
 
@@ -241,7 +251,7 @@ class AliHBTPyCut: public AliHbtBaseCut
     AliHBTPyCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtPy){}
     virtual ~AliHBTPyCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Py();}
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Py();}
     ClassDef(AliHBTPyCut,1)
  };
 
@@ -252,7 +262,7 @@ class AliHBTPzCut: public AliHbtBaseCut
     AliHBTPzCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtPz){}
     virtual ~AliHBTPzCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Pz();}
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Pz();}
     ClassDef(AliHBTPzCut,1)
  };
 
@@ -262,7 +272,7 @@ class AliHBTPhiCut: public AliHbtBaseCut
     AliHBTPhiCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtPhi){}
     virtual ~AliHBTPhiCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Phi();}
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Phi();}
     ClassDef(AliHBTPhiCut,1)
   
  };
@@ -273,7 +283,7 @@ class AliHBTThetaCut: public AliHbtBaseCut
     AliHBTThetaCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtTheta){}
     virtual ~AliHBTThetaCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Theta();}
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Theta();}
     ClassDef(AliHBTThetaCut,1)
   
  };
@@ -285,7 +295,7 @@ class AliHBTVxCut: public AliHbtBaseCut
     AliHBTVxCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtVx){}
     virtual ~AliHBTVxCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Vx();} //retruns value of the vertex
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Vx();} //retruns value of the vertex
     ClassDef(AliHBTVxCut,1)
   
  };
@@ -298,7 +308,7 @@ class AliHBTVyCut: public AliHbtBaseCut
     AliHBTVyCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtVy){}
     virtual ~AliHBTVyCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Vy();} //retruns value of the vertex
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Vy();} //retruns value of the vertex
     ClassDef(AliHBTVyCut,1)
   
  };
@@ -310,7 +320,7 @@ class AliHBTVzCut: public AliHbtBaseCut
     AliHBTVzCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtVz){}
     virtual ~AliHBTVzCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p){return p->Vz();} //retruns value of the vertex
+    Double_t  GetValue(AliHBTParticle * p)const{return p->Vz();} //retruns value of the vertex
     
     ClassDef(AliHBTVzCut,1)
   
@@ -323,7 +333,7 @@ class AliHBTPIDCut:  public AliHbtBaseCut
      AliHBTPIDCut(Int_t pid, Double_t min = 0.0, Double_t max = 1.0):AliHbtBaseCut(min,max,kHbtPid),fPID(pid){}
      virtual ~AliHBTPIDCut(){}
    protected:
-     Double_t  GetValue(AliHBTParticle * p){return p->GetPIDprobability(fPID);}
+     Double_t  GetValue(AliHBTParticle * p)const{return p->GetPIDprobability(fPID);}
      Int_t     fPID; //pid of particle that the pid is set 
      ClassDef(AliHBTPIDCut,1)
  };
@@ -343,14 +353,14 @@ class AliHBTLogicalOperCut:  public AliHbtBaseCut
      AliHBTLogicalOperCut(AliHbtBaseCut* first, AliHbtBaseCut* second);
      virtual   ~AliHBTLogicalOperCut();
    protected:
-     Double_t  GetValue(AliHBTParticle * /*part*/){MayNotUse("GetValue");return 0.0;}
+     Double_t  GetValue(AliHBTParticle * /*part*/) const {MayNotUse("GetValue");return 0.0;}
      
      AliHbtBaseCut* fFirst;   //second cut
      AliHbtBaseCut* fSecond;  //first cut
    private:  
     class  AliHBTDummyBaseCut: public AliHbtBaseCut 
      {
-       Double_t  GetValue(AliHBTParticle * /*part*/){return 0.0;}
+       Double_t  GetValue(AliHBTParticle * /*part*/) const {return 0.0;}
        Bool_t    Pass(AliHBTParticle* /*part*/);
      };
      
