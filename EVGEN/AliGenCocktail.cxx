@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/09/07 17:04:31  morsch
+In Streamer: TIter() after R__b << fEntries (Dmitri Yurevitch Peressounko)
+
 Revision 1.5  2000/06/09 20:28:51  morsch
 All coding rule violations except RS3 corrected (AM)
 
@@ -26,7 +29,6 @@ Introduction of the Copyright and cvs Log
 #include "AliGenCocktail.h"
 #include "AliGenCocktailEntry.h"
 #include "AliRun.h"
-#include <stdlib.h>
 
 ClassImp(AliGenCocktail)
 
@@ -50,7 +52,7 @@ AliGenCocktail::~AliGenCocktail()
 }
 
 void AliGenCocktail::
-AddGenerator(AliGenerator *Generator, TString Name, Float_t RateExp)
+AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 {
 //
 //  Forward parameters to the new generator
@@ -69,6 +71,7 @@ AddGenerator(AliGenerator *Generator, TString Name, Float_t RateExp)
     Generator->SetTrackingFlag(fTrackIt);    
 //
 //  Add generator to list   
+    
     AliGenCocktailEntry *entry = 
 	new AliGenCocktailEntry(Generator, Name, RateExp);
      fEntries->Add(entry);
@@ -183,7 +186,7 @@ NextGeneratorPair(AliGenCocktailEntry*& e1, AliGenCocktailEntry*& e2)
     }
 }
 
-
+/*
 void AliGenCocktail::Streamer(TBuffer &R__b)
 {
     // Stream an object of class AliGenCocktail.
@@ -212,6 +215,7 @@ void AliGenCocktail::Streamer(TBuffer &R__b)
 	}  
     }
 }
+*/
 
 AliGenCocktail& AliGenCocktail::operator=(const  AliGenCocktail& rhs)
 {

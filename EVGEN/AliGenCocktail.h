@@ -6,6 +6,7 @@
 /* $Id$ */
 
 #include "AliGenerator.h"
+#include <TList.h>
 
 class AliGenCocktailEntry;
 
@@ -22,7 +23,7 @@ class AliGenCocktail : public AliGenerator
     //
     // Add a new generator to the list
     virtual void AddGenerator
-	(AliGenerator *Generator, TString Name, Float_t RateExp );
+	(AliGenerator *Generator, char* Name, Float_t RateExp );
     virtual TList* Entries() {return fEntries;}
     // Iterators
     AliGenCocktailEntry*  FirstGenerator();
@@ -34,8 +35,8 @@ class AliGenCocktail : public AliGenerator
  protected:
     Int_t fNGenerators;   // Number of generators booked
     TList  *fEntries;     // List of Generators
-    TObjLink *flnk1;      // Iterator for first generator
-    TObjLink *flnk2;      // Iterator for second generator
+    TObjLink *flnk1;      // ! Iterator for first generator
+    TObjLink *flnk2;      // ! Iterator for second generator
 //
     ClassDef(AliGenCocktail,1) // Particle cocktail generator a la SHAKER
 };
