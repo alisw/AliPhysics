@@ -1,29 +1,25 @@
-#include "AliL3StandardIncludes.h"
-#include <sys/time.h>
+// $Id$
 
+#include "AliL3StandardIncludes.h"
+#include "AliL3RootTypes.h"
+#include <sys/time.h>
+#include <TNtuple.h>
+#include <TTimer.h>
+#include "AliL3Track.h"
+#include "AliL3KalmanTrack.h"
 #include "AliL3Benchmark.h"
-#ifdef use_aliroot
-#include "AliL3FileHandler.h"
-#else
 #include "AliL3MemHandler.h"
-#endif
+#include "AliL3FileHandler.h"
 #include "AliL3DataHandler.h"
 #include "AliL3Transform.h"
 #include "AliL3SpacePointData.h"
 #include "AliL3DigitData.h"
-#include "AliL3Kalman.h"
 #include "AliL3Logging.h"
 #include "AliL3TrackArray.h"
-#include "AliL3Track.h"
-#include "AliL3KalmanTrack.h"
 #include "AliL3TrackSegmentData.h"
 #include "AliL3InterMerger.h"
 #include "AliL3TrackMerger.h"
-
-#include "TNtuple.h"
-#include "TTimer.h"
-
-#include "Riostream.h"
+#include "AliL3Kalman.h"
 
 /*
   AliL3Kalman

@@ -3,14 +3,13 @@
 #ifndef ALIL3_KALMAN
 #define ALIL3_KALMAN
 
-#include "AliL3RootTypes.h"
-#include "AliL3KalmanTrack.h"
-#include "AliL3Track.h"
 
 class AliL3SpacePointData;
 class AliL3TrackArray;
 class AliL3Benchmark;
 class AliL3TrackSegmentData;
+class AliL3KalmanTrack;
+class AliL3Track;
 
 class AliL3Kalman {
 
