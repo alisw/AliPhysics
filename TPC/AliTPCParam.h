@@ -297,25 +297,25 @@ protected :
   Float_t fOuterFrameSpace;   //space for outer frame in the phi direction 
   Float_t fInnerWireMount;    //space for wire mount, inner sector
   Float_t fOuterWireMount;    //space for wire mount, outer sector
-  Int_t   fNInnerSector;      //!number of inner sectors             -calculated
-  Int_t   fNOuterSector;      //!number of outer sectors             -calculated
-  Int_t   fNSector;           //! total number of sectors            -calculated
+  Int_t   fNInnerSector;      //number of inner sectors             -calculated
+  Int_t   fNOuterSector;      //number of outer sectors             -calculated
+  Int_t   fNSector;           // total number of sectors            -calculated
   Float_t fZLength;           //length of the drift region of the TPC
-  Float_t *fRotAngle;         //  sin and cos of rotation angles for 
+  Float_t *fRotAngle;         //[fNSector]  sin and cos of rotation angles for 
                               //  diferent sectors -calculated
   Int_t   fGeometryType;      //type of geometry -0 straight rows
   //1-cylindrical
   //---------------------------------------------------------------------
   //   ALICE TPC wires  geometry - for GEM we can consider that it is gating  
   //--------------------------------------------------------------------
-  Int_t   fNInnerWiresPerPad; //  Number of wires per pad
-  Float_t fInnerWWPitch;      // pitch between wires  in inner sector     - calculated
+  Int_t   fNInnerWiresPerPad; //Number of wires per pad
+  Float_t fInnerWWPitch;      //pitch between wires  in inner sector     - calculated
   Int_t   fInnerDummyWire;    //number of wires without pad readout
   Float_t fInnerOffWire;      //oofset of first wire to the begining of the sector
   Float_t fRInnerFirstWire;   //position of the first wire                -calculated
   Float_t fRInnerLastWire;    //position of the last wire                 -calculated
-  Int_t   fNOuterWiresPerPad; //  Number of wires per pad
-  Float_t fOuterWWPitch;      // pitch between wires in outer sector      -calculated
+  Int_t   fNOuterWiresPerPad; //Number of wires per pad
+  Float_t fOuterWWPitch;      //pitch between wires in outer sector      -calculated
   Int_t   fOuterDummyWire;    //number of wires without pad readout
   Float_t fOuterOffWire;      //oofset of first wire to the begining of the sector
   Float_t fROuterFirstWire;   //position of the first wire                -calulated
@@ -376,9 +376,9 @@ protected:
   //---------------------------------------------------------------------
   Int_t   fNResponseMax;   //maximal dimension of response        
   Float_t fResponseThreshold; //threshold for accepted response   
-  Int_t   fCurrentMax;     //current maximal dimension            -calulated 
-  Int_t   *fResponseBin;    //array with bins                     -calulated
-  Float_t *fResponseWeight; //array with response                 -calulated
+  Int_t   fCurrentMax;     //!current maximal dimension            -calulated 
+  Int_t   *fResponseBin;    //!array with bins                     -calulated
+  Float_t *fResponseWeight; //!array with response                 -calulated
 
   ClassDef(AliTPCParam,2)  //parameter  object for set:TPC
 };
