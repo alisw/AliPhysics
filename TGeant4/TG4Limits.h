@@ -48,6 +48,9 @@ class TG4Limits: public G4UserLimits
     G4int GetControl(G4VProcess* process) const; 
 
   private:
+    // static data members
+    static const G4double  fgkDefaultMaxStep;
+
     // data members
     G4bool              fIsCut;    //true if any cut value is set
     G4bool              fIsControl;//true if any flag value is set

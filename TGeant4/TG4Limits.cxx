@@ -7,6 +7,10 @@
 #include "TG4G3CutVector.h"
 #include "TG4G3ControlVector.h"
 
+#include <globals.hh>
+
+const G4double TG4Limits::fgkDefaultMaxStep = 10*cm;
+
 TG4Limits::TG4Limits()
   : G4UserLimits(),              
     // default values of G4UserLimits data members are set: 
@@ -16,6 +20,7 @@ TG4Limits::TG4Limits()
     fIsControl(false) 
 {
 //
+  fMaxStep = fgkDefaultMaxStep;
   fCutVector = new TG4G3CutVector();
   fControlVector = new TG4G3ControlVector();
 }
