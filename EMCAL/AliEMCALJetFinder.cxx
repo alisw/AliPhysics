@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/02/01 08:55:30  morsch
+Fill map with Et and pT.
+
 Revision 1.13  2002/01/31 09:37:36  morsch
 Geometry parameters in constructor and call of SetCellSize()
 
@@ -1070,7 +1073,10 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
 //
 //
 // bending radies
-    Float_t rB = 333.56 * pt / b;  // [cm]
+// pt [Gev]
+// B  [kG]
+//
+    Float_t rB = 3335.6 * pt / b;  // [cm]
 //
 // check if particle is curling below EMCAL
     if (2.*rB < rEMCAL) {
