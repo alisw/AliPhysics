@@ -81,55 +81,6 @@ const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
 }
 
 //_____________________________________________________________________________
-AliTPCtrack::AliTPCtrack(const AliKalmanTrack& t,Double_t alpha) :
-AliKalmanTrack(t) {
-  //-----------------------------------------------------------------
-  // Conversion AliKalmanTrack -> AliTPCtrack.
-  //-----------------------------------------------------------------
-  SetChi2(0.);
-  SetNumberOfClusters(0);
-
-  fdEdx  = 0.;
-  fAlpha = alpha;
-  if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
-  else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
-
-  //Conversion of the track parameters
-  Double_t x,p[5]; t.GetExternalParameters(x,p);
-  fX=x;    x=GetConvConst();
-  fP0=p[0]; 
-  fP1=p[1]; 
-  fP3=p[3];
-  fP4=p[4]/x; 
-  fP2=fP4*fX - p[2];
-
-  //Conversion of the covariance matrix
-  Double_t c[15]; t.GetExternalCovariance(c);
-  c[10]/=x; c[11]/=x; c[12]/=x; c[13]/=x; c[14]/=x*x;
-
-  Double_t c22=fX*fX*c[14] - 2*fX*c[12] + c[5];
-  Double_t c32=fX*c[13] - c[8];
-  Double_t c20=fX*c[10] - c[3], c21=fX*c[11] - c[4], c42=fX*c[14] - c[12];
-  
-  fC00=c[0 ];
-  fC10=c[1 ];   fC11=c[2 ];
-  fC20=c20;     fC21=c21;     fC22=c22;
-  fC30=c[6 ];   fC31=c[7 ];   fC32=c32;   fC33=c[9 ];
-  fC40=c[10];   fC41=c[11];   fC42=c42;   fC43=c[13]; fC44=c[14];
-  //
-  //MI
-  fSdEdx      = 0;
-  fNFoundable = 0;
-  fBConstrain = 0;
-  fLastPoint  = 0;
-  fFirstPoint = 0;
-  fRemoval    = 0;
-  fTrackType  = 0;
-  fLab2       = 0;
-  for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
-}
-
-//_____________________________________________________________________________
 AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
   //-----------------------------------------------------------------
   // Conversion AliESDtrack -> AliTPCtrack.

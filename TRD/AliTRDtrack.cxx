@@ -140,7 +140,7 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
   SetMass(t.GetMass());
   SetNumberOfClusters(0);
 
-  fdEdx=t.GetdEdx();
+  fdEdx=t.GetPIDsignal();
   for (Int_t i=0;i<kNPlane;i++){
     fdEdxPlane[i] = 0.0;
     fTimBinPlane[i] = -1;

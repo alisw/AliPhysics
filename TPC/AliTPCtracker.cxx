@@ -634,7 +634,7 @@ Int_t AliTPCtracker::ReadSeeds(const TFile *inp) {
   Int_t n=(Int_t)seedTree->GetEntries();
   for (Int_t i=0; i<n; i++) {
      seedTree->GetEvent(i);
-     fSeeds->AddLast(new AliTPCseed(*seed,seed->GetAlpha()));
+     fSeeds->AddLast(new AliTPCseed(*seed));
   }
   
   delete seed;
@@ -734,7 +734,7 @@ Int_t AliTPCtracker::RefitInward(AliESD* event) {
       if ( (status & AliESDtrack::kTRDrefit ) == 0 ) continue;
 
     AliTPCtrack* tpcTrack = new AliTPCtrack(*track);
-    AliTPCseed* seed = new AliTPCseed(*tpcTrack, tpcTrack->GetAlpha());
+    AliTPCseed* seed = new AliTPCseed(*tpcTrack);
 
     if ( (status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance();
 
@@ -785,7 +785,7 @@ Int_t AliTPCtracker::PropagateBack(AliESD *event) {
        if ( (status & AliESDtrack::kITSout) == 0 ) continue;
 
     const AliTPCtrack t(*esd);
-    AliTPCseed s(t,t.GetAlpha());
+    AliTPCseed s(t);
 
     if ( (status & AliESDtrack::kITSout) == 0 ) s.ResetCovariance();
 

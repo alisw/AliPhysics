@@ -201,6 +201,7 @@ Int_t   AliTPCPid::GetPcode(AliTPCtrack *track)
     cout<<"TPCtrack dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
     return pcode?pcode:211;
     }
+
 //-----------------------------------------------------------
 Int_t   AliTPCPid::GetPcode(AliKalmanTrack *track)
 {
@@ -216,12 +217,13 @@ Int_t   AliTPCPid::GetPcode(AliKalmanTrack *track)
     Float_t pt1=TMath::Abs(par[4]);
     Float_t mom=0.;
     if( (pt1*TMath::Cos(lam))!=0. ){ mom=1./(pt1*TMath::Cos(lam)); }else{mom=0.;};
-    Float_t dedx=track->GetdEdx();
+    Float_t dedx=track->GetPIDsignal();
     cout<<"lam,pt1,mom,dedx="<<lam<<","<<pt1<<","<<mom<<","<<dedx<<endl;
     Int_t pcode=GetPcode(dedx,mom);
     cout<<"ITS V2 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
 return pcode?pcode:211;
 }
+
 //-----------------------------------------------------------
 Int_t	AliTPCPid::GetPcode(Float_t q,Float_t pm)
 {

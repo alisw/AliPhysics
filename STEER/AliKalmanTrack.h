@@ -62,27 +62,6 @@ public:
   virtual void GetExternalParameters(Double_t &/*xr*/, Double_t /*x*/[5]) const {}
   virtual void GetExternalCovariance(Double_t /*cov*/[15]) const {}
 
-  virtual Double_t GetX() const;
-  virtual Double_t GetdEdx() const;
-
-  virtual Double_t GetY() const;
-  virtual Double_t GetZ() const;
-  virtual Double_t GetSnp() const;
-  virtual Double_t GetTgl() const;
-  virtual Double_t Get1Pt() const;
-
-  virtual Double_t Phi() const;
-  virtual Double_t SigmaPhi() const;
-  virtual Double_t Theta() const;
-  virtual Double_t SigmaTheta() const;
-  virtual Double_t Eta() const;
-  virtual Double_t Px() const;
-  virtual Double_t Py() const;
-  virtual Double_t Pz() const;
-  virtual Double_t Pt() const;
-  virtual Double_t SigmaPt() const;
-  virtual Double_t P() const;
-
   virtual Double_t GetPredictedChi2(const AliCluster *) const {return 0.;}
   virtual Int_t 
   PropagateTo(Double_t /*xr*/, Double_t /*x0*/, Double_t /*rho*/) {return 0;}

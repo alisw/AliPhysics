@@ -34,7 +34,7 @@ class AliTPCseed : public AliTPCtrack {
      virtual ~AliTPCseed();
      AliTPCseed(const AliTPCtrack &t);
      AliTPCseed(const AliTPCseed &s);
-     AliTPCseed(const AliKalmanTrack &t, Double_t a);
+  //AliTPCseed(const AliKalmanTrack &t, Double_t a);
      AliTPCseed(UInt_t index, const Double_t xx[5], 
                 const Double_t cc[15], Double_t xr, Double_t alpha);     
      Int_t Compare(const TObject *o) const;

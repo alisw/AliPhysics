@@ -2761,7 +2761,7 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
     ULong_t status=esd->GetStatus();
     if (!(status&AliESDtrack::kTPCin)) continue;
     AliTPCtrack t(*esd);
-    AliTPCseed *seed = new AliTPCseed(t,t.GetAlpha());
+    AliTPCseed *seed = new AliTPCseed(t/*,t.GetAlpha()*/);
     for (Int_t ikink=0;ikink<3;ikink++) seed->GetKinkIndexes()[ikink] = esd->GetKinkIndex(ikink);
     if ((status==AliESDtrack::kTPCin)&&(direction==1)) seed->ResetCovariance(); 
     if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance();
@@ -4551,7 +4551,7 @@ Int_t AliTPCtrackerMI::ReadSeeds(const TFile *inp) {
   Int_t n=(Int_t)seedTree->GetEntries();
   for (Int_t i=0; i<n; i++) {
      seedTree->GetEvent(i);
-     fSeeds->AddLast(new AliTPCseed(*seed,seed->GetAlpha()));
+     fSeeds->AddLast(new AliTPCseed(*seed/*,seed->GetAlpha()*/));
   }
   
   delete seed;
@@ -5654,7 +5654,7 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){
   fCurrentSigmaY2=0;
   fCurrentSigmaZ2=0;
 }
-
+/*
 AliTPCseed::AliTPCseed(const AliKalmanTrack &t, Double_t a):AliTPCtrack(t,a){
   //
   //copy constructor
@@ -5682,7 +5682,7 @@ AliTPCseed::AliTPCseed(const AliKalmanTrack &t, Double_t a):AliTPCtrack(t,a){
   fCurrentSigmaZ2=0;
 
 }
-
+*/
 
 AliTPCseed::AliTPCseed(UInt_t index,  const Double_t xx[5], const Double_t cc[15], 
                                         Double_t xr, Double_t alpha):      

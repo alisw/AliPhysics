@@ -184,7 +184,7 @@ Int_t   AliITSPid::GetPcode(AliKalmanTrack *track)
       Float_t lam=TMath::ATan(par[3]); 
       Float_t pt1=TMath::Abs(par[4]);
       Float_t mom=1./(pt1*TMath::Cos(lam));
-      Float_t dedx=track->GetdEdx();
+      Float_t dedx=track->GetPIDsignal();
     Int_t pcode=GetPcode(dedx/40.,mom);
 //    cout<<"TPCtrack dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
     return pcode?pcode:211;

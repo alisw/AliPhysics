@@ -136,7 +136,6 @@ public:
    public:
      AliTPCseed():AliTPCtrack(){}
      AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){}
-     AliTPCseed(const AliKalmanTrack &t, Double_t a):AliTPCtrack(t,a){}
      AliTPCseed(UInt_t index, const Double_t xx[5], 
                 const Double_t cc[15], Double_t xr, Double_t alpha): 
                 AliTPCtrack(index, xx, cc, xr, alpha) {}
