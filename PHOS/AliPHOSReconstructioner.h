@@ -59,7 +59,7 @@ public:
 
   AliPHOSReconstructioner & operator = (const AliPHOSReconstructioner & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ;
+    Fatal("operator =", "not implementeyd") ;
     return *this ; 
   }
   

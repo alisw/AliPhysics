@@ -721,10 +721,12 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
   fRecPointsInRun +=  towerRecPoints->GetEntriesFast() ; 
   fRecPointsInRun +=  preshoRecPoints->GetEntriesFast() ; 
 
+  char * tempo = new char[8192]; 
+  
   if(strstr(option,"all")) {
 
     message += "Tower clusters\n" ;
-    message += "Index  Ene(MeV)   Multi  Module     phi     r  theta    Lambda 1   Lambda 2  # of prim  Primaries list\n" ;      
+    message += "Index    Ene(MeV) Multi Module     phi     r   theta  Lambda 1 Lambda 2  # of prim  Primaries list\n" ;      
     
     Int_t index ;
     for (index = 0 ; index < towerRecPoints->GetEntries() ; index++) {
@@ -736,30 +738,14 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
       Int_t * primaries; 
       Int_t nprimaries;
       primaries = rp->GetPrimaries(nprimaries);
-
-      message += rp->GetIndexInList() ; 
-      message += "   " ; 
-      message += rp->GetEnergy() ;
-      message += "      " ; 
-      message += rp->GetMultiplicity() ;
-      message += "      " ; 
-      message += rp->GetEMCALArm() ;
-      message += "     " ;
-      message += globalpos.X() ; 
-      message += "  " ;
-      message += globalpos.Y() ;  
-      message += globalpos.Z() ; 
-      message += "     " ;
-      message += lambda[0] ; 
-      message += "  " ;
-      message += lambda[1] ; 
-      message += "  " ;
-      message += nprimaries ; 
-      message += " :  " ;
+      sprintf(tempo, "\n%6d  %8.2f  %3d     %2d     %4.1f    %4.1f %4.1f %4f  %4f    %2d     : ", 
+	      rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(), rp->GetEMCALArm(), 
+	      globalpos.X(), globalpos.Y(), globalpos.Z(), lambda[0], lambda[1], nprimaries) ; 
+      message += tempo ; 
      
       for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-	message += primaries[iprimary] ; 
-	message += " "  ;
+	sprintf(tempo, "%d ", primaries[iprimary] ) ; 
+	message += tempo ;
       } 
     }
 
@@ -768,7 +754,7 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
     message += "\n-----------------------------------------------------------------------\n" ;
 
     message += "PreShower clusters\n" ;
-    message += " Index  Ene(MeV)   Multi  Module     phi     r  theta    Lambda 1   Lambda 2  # of prim  Primaries list\n" ;      
+    message += "Index    Ene(MeV) Multi Module     phi     r   theta  Lambda 1 Lambda 2  # of prim  Primaries list\n" ;      
     
     for (index = 0 ; index < preshoRecPoints->GetEntries() ; index++) {
       AliEMCALTowerRecPoint * rp = dynamic_cast<AliEMCALTowerRecPoint *>(preshoRecPoints->At(index)) ; 
@@ -779,37 +765,20 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
       Int_t * primaries;
       Int_t nprimaries;
       primaries = rp->GetPrimaries(nprimaries);
-
-      message += rp->GetIndexInList() ; 
-      message += "   " ; 
-      message += rp->GetEnergy() ; 
-      message += "   " ; 
-      message += rp->GetMultiplicity() ;
-      message += "   " ; 
-      message += rp->GetEMCALArm() ;
-      message += "   " ; 
-      message += globalpos.X() ;
-      message += "   " ; 
-      message += globalpos.Y() ;
-      message += "   " ; 
-      message += globalpos.Z() ;
-      message += "   " ; 
-      message += lambda[0] ;
-      message += "   " ; 
-      message += lambda[1] ;
-      message += "   " ; 
-      message += nprimaries ;
-      message += " : " ; 
-    
+      sprintf(tempo, "\n%6d  %8.2f  %3d     %2d     %4.1f    %4.1f %4.1f %4f  %4f    %2d     : ", 
+	      rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(), rp->GetEMCALArm(), 
+	      globalpos.X(), globalpos.Y(), globalpos.Z(), lambda[0], lambda[1], nprimaries) ; 
+      message += tempo ; 
+  
       for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-	message += primaries[iprimary] ; 
-	message += "  " ;
+	sprintf(tempo, "%d ", primaries[iprimary] ) ; 
+	message += tempo ;
       }  	 
     }
 
     message += "\n-----------------------------------------------------------------------" ;
   }
-
+  delete tempo ; 
   Info("PrintRecPoints", message.Data() ) ; 
   
 }

@@ -430,27 +430,22 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option){
     
     //loop over digits
     AliEMCALDigit * digit;
-    message += "\nSDigit Id  Amplitude      Time      Index  Nprim  Primaries list \n" ;    
+    message += "\n   Id  Amplitude    Time          Index Nprim: Primaries list \n" ;    
     Int_t index ;
+    char * tempo = new char[8192]; 
     for (index = 0 ; index < sdigits->GetEntries() ; index++) {
       digit = dynamic_cast<AliEMCALDigit *>( sdigits->At(index) ) ;
-       message += digit->GetId() ; 
-       message += "   " ; 
-       message += digit->GetAmp() ; 
-       message += "    "  ; 
-       message += digit->GetTime() ; 
-       message += "    ";
-       message += digit->GetIndexInList() ; 
-       message += "    " ;  
-       message += digit->GetNprimary() ; 
-       message += " : ";
+      sprintf(tempo, "\n%6d  %8d    %6.5e %4d      %2d :",
+	      digit->GetId(), digit->GetAmp(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
+      message += tempo ; 
       
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
-	message += digit->GetPrimary(iprimary+1) ; 
-	message += "  ";
+	sprintf(tempo, "%d ",digit->GetPrimary(iprimary+1) ) ; 
+	message += tempo ; 
       }  	 
     }
+    delete tempo ;
   }
   Info("PrintSDigits", message.Data() ) ; 
 }

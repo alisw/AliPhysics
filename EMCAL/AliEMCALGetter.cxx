@@ -287,32 +287,32 @@ const Bool_t AliEMCALGetter::BranchExists(const TString recName) const
   if(recName == "SDigits"){
     filename=fSDigitsFileName ;
     name = "TreeS0" ;
-    dataname = "PHOS" ;
-    zername = "AliPHOSSDigitizer" ;
+    dataname = "EMCAL" ;
+    zername = "AliEMCALSDigitizer" ;
   }
   else if(recName == "Digits"){
     filename=fDigitsFileName ;
     name = "TreeD0" ;
-    dataname = "PHOS" ;
-    zername = "AliPHOSDigitizer" ;
+    dataname = "EMCAL" ;
+    zername = "AliEMCALDigitizer" ;
   }
   else if(recName =="RecPoints"){
 	filename=fRecPointsFileName ;
 	name = "TreeR0" ;
-	dataname = "PHOSEmcRP" ;
-	zername = "AliPHOSClusterizer" ;
+	dataname = "EMCALEmcRP" ;
+	zername = "AliEMCALClusterizer" ;
   }
   else if(recName == "TrackSegments"){
     filename=fTrackSegmentsFileName ;
     name = "TreeR0" ;
-    dataname = "PHOSTS" ;
-    zername = "AliPHOSTrackSegmentMaker" ;
+    dataname = "EMCALTS" ;
+    zername = "AliEMCALTrackSegmentMaker" ;
   }	 
   else if(recName == "RecParticles"){
     filename= fRecParticlesFileName ;
     name = "TreeR0" ;
-    dataname = "PHOSRP" ;
-    zername = "AliPHOSPID" ;
+    dataname = "EMCALRP" ;
+    zername = "AliEMCALPID" ;
   }
   else
     return kFALSE ;
@@ -1485,7 +1485,7 @@ Int_t AliEMCALGetter::ReadTreeR(const Int_t event)
   // Read the reconstrunction tree gAlice->TreeR()
   // A particularity has been introduced here :
   //  if gime->Event(ievent,"R") is called branches with the current title are read, the current title
-  //   being for example give in AliPHOSPID(fileName, title)
+  //   being for example give in AliEMCALPID(fileName, title)
   //  if gime(Event(ievent, "RA") is called the title of the branches is not checked anymore, "A" stands for any
   // This is a feature needed by PID to be able to reconstruct several times particles (each time a ther title is given)
   // from a given set of TrackSegments (with a given name)

@@ -1026,9 +1026,11 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
   fRecPointsInRun +=  emcRecPoints->GetEntriesFast() ; 
   fRecPointsInRun +=  cpvRecPoints->GetEntriesFast() ; 
   
+  char * tempo = new char[8192]; 
+  
   if(strstr(option,"all")) {
-    message += "EMC clusters " ;
-    message += " Index  Ene(MeV) Multi Module X  Y  Z Lambda 1 Lambda 2  # of prim  Primaries list " ; 
+    message += "\nEMC clusters\n" ;
+    message += "Index    Ene(MeV) Multi Module     X     Y   Z  Lambda 1 Lambda 2  # of prim  Primaries list\n" ;      
     Int_t index ;
     for (index = 0 ; index < emcRecPoints->GetEntries() ; index++) {
       AliPHOSEmcRecPoint * rp = (AliPHOSEmcRecPoint * )emcRecPoints->At(index) ; 
@@ -1038,68 +1040,41 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
       rp->GetElipsAxis(lambda);
       Int_t * primaries; 
       Int_t nprimaries;
-      message += " " ; 
       primaries = rp->GetPrimaries(nprimaries);
-      message += "\n" ; 
-      message += rp->GetIndexInList() ;   
-      message += " " ; 
-      message += rp->GetEnergy();
-      message += " " ; 
-      message += rp->GetMultiplicity() ;  
-      message += " " ; 
-      message += rp->GetPHOSMod() ;
-      message += " " ; 
-      message += locpos.X() ;
-      message += " " ; 
-      message += locpos.Y() ;
-      message += " " ; 
-      message += locpos.Z() ;
-      message += " " ; 
-      message += lambda[0] ;
-      message += " " ; 
-      message += lambda[1] ;
-      message += " " ; 
-      message += nprimaries ;
-      message += " : " ; 
+      sprintf(tempo, "\n%6d  %8.2f  %3d     %2d     %4.1f    %4.1f %4.1f %4f  %4f    %2d     : ", 
+	      rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(), rp->GetPHOSMod(), 
+	      locpos.X(), locpos.Y(), locpos.Z(), lambda[0], lambda[1], nprimaries) ; 
+      message += tempo ; 
       
       for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-	message += primaries[iprimary]  ;
-	message += " " ; 
+	sprintf(tempo, "%d ", primaries[iprimary] ) ; 
+	message += tempo ;
       }
-    }
-    
-    //Now plot CPV recPoints
-    message += "\nCPV clusters Index Multi Module X   Y   Z # of prim  Primaries list \n" ;      
-    for (index = 0 ; index < cpvRecPoints->GetEntries() ; index++) {
-      AliPHOSRecPoint * rp = (AliPHOSRecPoint * )cpvRecPoints->At(index) ; 
- 
-      TVector3  locpos;  
-      rp->GetLocalPosition(locpos);
-  
-      Int_t * primaries; 
-      Int_t nprimaries ; 
-      primaries = rp->GetPrimaries(nprimaries);
-      message += "\n" ; 
-      message += rp->GetIndexInList() ;
-      message += " " ;  
-      message += rp->GetPHOSMod();  
-      message += " " ; 
-      message += locpos.X() ;
-      message += " " ; 
-      message += locpos.Y() ;  
-      message += " " ; 
-      message += locpos.Z() ; 
-      message += " " ; 
-      message +=  nprimaries ; 
-      message += " : " ; 
       
-      primaries = rp->GetPrimaries(nprimaries);
-      for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-	message += primaries[iprimary]  ;
-	message += " " ; 
+      //Now plot CPV recPoints
+      message += "Index    Ene(MeV) Module     X     Y   Z  # of prim  Primaries list\n" ;      
+      for (index = 0 ; index < cpvRecPoints->GetEntries() ; index++) {
+	AliPHOSRecPoint * rp = (AliPHOSRecPoint * )cpvRecPoints->At(index) ; 
+	
+	TVector3  locpos;  
+	rp->GetLocalPosition(locpos);
+	
+	Int_t * primaries; 
+	Int_t nprimaries ; 
+	primaries = rp->GetPrimaries(nprimaries);
+	sprintf(tempo, "\n%6d  %8.2f  %2d     %4.1f    %4.1f %4.1f %2d     : ", 
+		rp->GetIndexInList(), rp->GetEnergy(), rp->GetPHOSMod(), 
+		locpos.X(), locpos.Y(), locpos.Z(), nprimaries) ; 
+	message += tempo ; 
+	primaries = rp->GetPrimaries(nprimaries);
+	for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
+	  sprintf(tempo, "%d ", primaries[iprimary] ) ; 
+	  message += tempo ;
+	}
       }
     }
   }
+  delete tempo ; 
   Info("Print", message.Data() ) ; 
 }
 
