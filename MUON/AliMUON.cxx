@@ -324,23 +324,28 @@ void AliMUON::BuildGeometry()
 	    sprintf(NameNode,"MUON%d",200+id);
 	    Node = new TNode(NameNode,"Sens. Region Node",NameSense,0,0,0,"");
 	    Node->SetLineColor(kColorMUON);
+	    fNodes->Add(Node);
 	    Node->cd();
 	    dr=dx+rmin;
 	    sprintf(NameNode,"MUON%d",300+id);
 	    NodeF = new TNode(NameNode,"Frame0",FMUON,dr, 0, 0,rot000,"");
 	    NodeF->SetLineColor(kColorMUON);
+	    fNodes->Add(NodeF);
 	    Node->cd();
 	    sprintf(NameNode,"MUON%d",400+id);
 	    NodeF = new TNode(NameNode,"Frame1",FMUON,0 ,dr,0,rot090,"");
 	    NodeF->SetLineColor(kColorMUON);
+	    fNodes->Add(NodeF);
 	    Node->cd();
 	    sprintf(NameNode,"MUON%d",500+id);
 	    NodeF = new TNode(NameNode,"Frame2",FMUON,-dr,0,0,rot180,"");
 	    NodeF->SetLineColor(kColorMUON);
+	    fNodes->Add(NodeF);
 	    Node  ->cd();
 	    sprintf(NameNode,"MUON%d",600+id);   
 	    NodeF = new TNode(NameNode,"Frame3",FMUON,0,-dr,0,rot270,"");
 	    NodeF->SetLineColor(kColorMUON);
+	    fNodes->Add(NodeF);
 	}
     }
 }
