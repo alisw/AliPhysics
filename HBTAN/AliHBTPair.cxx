@@ -1,4 +1,15 @@
 #include "AliHBTPair.h"
+//_________________________________________________________________________
+///////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTPair
+//
+// class implements pair of particles and taking care of caluclation (almost)
+// all of pair properties (Qinv, InvMass,...)
+// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
+//
+////////////////////////////////////////////////////////////////////////////
+
 #include "AliHBTParticle.h"
 #include "AliHBTWeights.h"
 
@@ -140,6 +151,7 @@ Double_t AliHBTPair::GetQSideCMSLC()
 /************************************************************************/
 Double_t AliHBTPair::GetQOutCMSLC()
 {
+ //caculates Qout in Center Of Mass Longitudionally Co-Moving
  if(fQOutCMSLCNotCalc)
   {
    CalculateSums();
@@ -212,6 +224,7 @@ Double_t AliHBTPair::GetQOutCMSLC()
 /************************************************************************/
 Double_t AliHBTPair::GetQLongCMSLC()
 {
+ //return Q Long in Central Of Mass System in Longitudialy Comoving Frame
  if (fQLongCMSLCNotCalc)
   {
     CalculateSums();
@@ -225,6 +238,7 @@ Double_t AliHBTPair::GetQLongCMSLC()
 /************************************************************************/
 Double_t AliHBTPair::GetKt()
 {
+ //calculates the evarage momentum of the pair
   if(fKtNotCalc)
    { 
      CalculateSums();
@@ -237,6 +251,7 @@ Double_t AliHBTPair::GetKt()
 
 Double_t AliHBTPair::GetKStar()
 {
+  //calculates invariant velocity difference
   if (fKStarNotCalc)
    { 
     CalculateSums();
@@ -282,6 +297,7 @@ Double_t AliHBTPair::GetQInv()
 
 Double_t AliHBTPair::GetGammaToCMSLC()
 {
+  //calculates gamma factor of the boost to CMSLC
   if(fGammaCMSLCNotCalc)
    {
      CalculateSums();
@@ -295,6 +311,7 @@ Double_t AliHBTPair::GetGammaToCMSLC()
 
 Double_t AliHBTPair::GetMt()
 {
+  //Calculates transverse mass of the pair
   if (fMtNotCalc)
    {
      CalculateSums();
@@ -307,6 +324,7 @@ Double_t AliHBTPair::GetMt()
 
 Double_t AliHBTPair::GetWeight()
 {
+  //returns and buffers weight for this pair
   if (fWeightNotCalc)
    {
       fWeight = AliHBTWeights::Weight(this);

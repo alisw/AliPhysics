@@ -1,13 +1,21 @@
 #ifndef ALIHBTPAIR_H
 #define ALIHBTPAIR_H
+//_________________________________________________________________________
+///////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTPair
+//
+// class implements pair of particles and taking care of caluclation (almost)
+// all of pair properties (Qinv, InvMass,...)
+// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
+//
+////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 
 
 #include "AliHBTParticle.h"
-//class implements pair of particles and taking care of caluclation (almost)
-//all of pair properties (Qinv, InvMass,...)
-//more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
+
 
 class AliHBTPair: public TObject
 {
@@ -82,42 +90,41 @@ class AliHBTPair: public TObject
    Double_t fQLong;//Q Long
 
    Double_t fMt;//Transverse coordinate of Inv. Mass
-   Bool_t   fMtNotCalc;//flag indicating if Mt is calculated
+   Bool_t   fMtNotCalc;//flag indicating if Mt is calculated for current pair
       
    Double_t fInvMassSqr;//squre of invariant mass
    Bool_t   fMassSqrNotCalc; //
    void     CalculateInvMassSqr();
    
-   Double_t fQInvL;
-   Bool_t   fQInvLNotCalc;
+   Double_t fQInvL; //Qinv in longitudional direction
+   Bool_t   fQInvLNotCalc;//flag indicating if fQInvL is calculated for current pair
    void     CalculateQInvL();
 
-   Double_t fWeight;
-   Bool_t   fWeightNotCalc;
+   Double_t fWeight;//Value of the weight
+   Bool_t   fWeightNotCalc;//flag indicating if fWeight is calculated for current pair
    
-   Double_t fPxSum;
-   Double_t fPySum;
-   Double_t fPzSum;
-   Double_t fESum;
-   Bool_t   fSumsNotCalc;
+   Double_t fPxSum;// Sum of Px momenta
+   Double_t fPySum;// Sum of Py momenta
+   Double_t fPzSum;// Sum of Pz momenta
+   Double_t fESum;// Sum of energies
+   Bool_t   fSumsNotCalc;//flag indicating if fPxSum,fPxSum,fPxSum and fESum is calculated for current pair
    void     CalculateSums();
    
-   Double_t fPxDiff;
-   Double_t fPyDiff;
-   Double_t fPzDiff;
-   Double_t fEDiff;
-   Bool_t   fDiffsNotCalc;
+   Double_t fPxDiff;// Difference of Px momenta
+   Double_t fPyDiff;// Difference of Px momenta
+   Double_t fPzDiff;// Difference of Px momenta
+   Double_t fEDiff;// Difference of Px momenta
+   Bool_t   fDiffsNotCalc;//flag indicating if fPxDiff,fPxDiff,fPxDiff and fEDiff is calculated for current pair
    void     CalculateDiffs();
    
-   Double_t fGammaCMSLC;
-   Bool_t   fGammaCMSLCNotCalc;   
+   Double_t fGammaCMSLC;//gamma of boost in CMSLC
+   Bool_t   fGammaCMSLCNotCalc;//flag indicating if fGammaCMSLC is calculated for current pair
    /***************************************************/
    void CalculateBase();
-   Bool_t fChanged;
+   Bool_t fChanged;//flag indicating if object has been changed
    
    
  private:
- public:
   ClassDef(AliHBTPair,1)
 };
 /****************************************************************/
@@ -159,6 +166,7 @@ void AliHBTPair::Changed()
 inline 
 void AliHBTPair::CalculateInvMassSqr()
  {
+  //calculates square of qinv
   if (fMassSqrNotCalc)
    {
      CalculateSums();
@@ -186,6 +194,7 @@ void AliHBTPair::CalculateQInvL()
 inline 
 void AliHBTPair::CalculateSums()
  {
+   //calculates momenta and energy sums
    if(fSumsNotCalc)
     {
      fPxSum = fPart1->Px()+fPart2->Px();
@@ -199,6 +208,7 @@ void AliHBTPair::CalculateSums()
 inline 
 void AliHBTPair::CalculateDiffs()
  {
+   //calculates momenta and energy differences 
    if(fDiffsNotCalc)
     {
      fPxDiff = fPart1->Px()-fPart2->Px();
@@ -213,6 +223,7 @@ void AliHBTPair::CalculateDiffs()
 inline 
 Double_t AliHBTPair::GetDeltaP() //return difference of momenta
 {
+ //returns difference of momenta
  CalculateDiffs();
  return TMath::Sqrt(fPxDiff*fPxDiff + fPyDiff*fPyDiff + fPzDiff*fPzDiff);
 }
@@ -220,6 +231,7 @@ Double_t AliHBTPair::GetDeltaP() //return difference of momenta
 inline 
 Double_t AliHBTPair::GetDeltaPx()
  {
+   //returns difference of Pz
    CalculateDiffs();
    return fPxDiff;
  }
@@ -227,6 +239,7 @@ Double_t AliHBTPair::GetDeltaPx()
 inline 
 Double_t AliHBTPair::GetDeltaPy()
  {
+   //returns difference of Py
    CalculateDiffs();
    return fPyDiff;
  }
@@ -235,6 +248,7 @@ Double_t AliHBTPair::GetDeltaPy()
 inline 
 Double_t AliHBTPair::GetDeltaPz()
  {
+   //returns difference of Pz
    CalculateDiffs();
    return fPzDiff;
  }

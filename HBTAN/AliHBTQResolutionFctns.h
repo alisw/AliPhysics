@@ -60,9 +60,7 @@ class AliHBTKtResolVsQInvFctn: public AliHBTTwoPairFctn2D
      y = partpair->GetKt() - trackpair->GetKt();
      x = partpair->GetQInv();
     }
-  protected:
-  private: 
-    ClassDef(AliHBTKtResolVsQInvFctn,1)
+   ClassDef(AliHBTKtResolVsQInvFctn,1)
  };
 
 
@@ -82,9 +80,7 @@ class AliHBTQInvResolVsQInvFctn: public AliHBTTwoPairFctn2D
      y = partpair->GetQInv() - trackpair->GetQInv();
      x = partpair->GetQInv();
     }
-  protected:
-  private: 
-    ClassDef(AliHBTQInvResolVsQInvFctn,1)
+   ClassDef(AliHBTQInvResolVsQInvFctn,1)
  };
 
 
@@ -106,9 +102,7 @@ class AliHBTQOutResolVsQInvFctn: public AliHBTTwoPairFctn2D
      if (tqout < 0.0) y = -y;
     x = partpair->GetQInv();
     }
-  protected:
-  private: 
-    ClassDef(AliHBTQOutResolVsQInvFctn,1)
+   ClassDef(AliHBTQOutResolVsQInvFctn,1)
  };
 
 /***********************************************************************/
@@ -127,9 +121,7 @@ class AliHBTQSideResolVsQInvFctn: public AliHBTTwoPairFctn2D
      x = partpair->GetQInv();
     }
    TH1* GetResult(){return fNumerator;} 
-  protected:
-  private:
-    ClassDef(AliHBTQSideResolVsQInvFctn,1)
+   ClassDef(AliHBTQSideResolVsQInvFctn,1)
  };
 
 /***********************************************************************/
@@ -148,9 +140,7 @@ class AliHBTQLongResolVsQInvFctn: public AliHBTTwoPairFctn2D
      x = partpair->GetQInv();
     }
    TH1* GetResult(){return fNumerator;} 
-  protected:
-  private:
-    ClassDef(AliHBTQLongResolVsQInvFctn,1)
+   ClassDef(AliHBTQLongResolVsQInvFctn,1)
  };
 
 /***********************************************************************/
@@ -168,9 +158,7 @@ class AliHBTQInvResolVsKtFctn: public AliHBTTwoPairFctn2D
      x = partpair->GetKt();
     }
    TH1* GetResult(){return fNumerator;} 
-  protected:
-  private:
-    ClassDef(AliHBTQInvResolVsKtFctn,1)
+   ClassDef(AliHBTQInvResolVsKtFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
@@ -187,9 +175,7 @@ class AliHBTQOutResolVsKtFctn: public AliHBTTwoPairFctn2D
      if (trackpair->GetQOutCMSLC() < 0.0) y = -y;
      x = partpair->GetKt();
     }
-  protected:
-  private:
-    ClassDef(AliHBTQOutResolVsKtFctn,1)
+   ClassDef(AliHBTQOutResolVsKtFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
@@ -206,9 +192,7 @@ class AliHBTQSideResolVsKtFctn: public AliHBTTwoPairFctn2D
      if (trackpair->GetQSideCMSLC() < 0.0) y = -y;
      x = partpair->GetKt();
     }
-  protected:
-  private:
-    ClassDef(AliHBTQSideResolVsKtFctn,1)
+   ClassDef(AliHBTQSideResolVsKtFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
@@ -226,9 +210,7 @@ class AliHBTQLongResolVsKtFctn: public AliHBTTwoPairFctn2D
      x = partpair->GetKt();
     }
    TH1* GetResult(){return fNumerator;}
-  protected:
-  private:
-    ClassDef(AliHBTQLongResolVsKtFctn,1)
+   ClassDef(AliHBTQLongResolVsKtFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
@@ -245,9 +227,7 @@ class AliHBTQOutResolVsQOutFctn: public AliHBTTwoPairFctn2D
      y = x - trackpair->GetQOutCMSLC();
     }
    TH1* GetResult(){return fNumerator;}  
-  protected:
-  private:
-    ClassDef(AliHBTQOutResolVsQOutFctn,1)
+   ClassDef(AliHBTQOutResolVsQOutFctn,1)
  };
 
 /***********************************************************************/
@@ -266,9 +246,7 @@ class AliHBTQSideResolVsQSideFctn: public AliHBTTwoPairFctn2D
      y = x - trackpair->GetQSideCMSLC();
     }
    TH1* GetResult(){return fNumerator;}  
-  protected:
-  private:
-    ClassDef(AliHBTQSideResolVsQSideFctn,1)
+   ClassDef(AliHBTQSideResolVsQSideFctn,1)
  };
 
 
@@ -288,9 +266,7 @@ class AliHBTQLongResolVsQLongFctn: public AliHBTTwoPairFctn2D
      y = x - trackpair->GetQLongCMSLC();
     }
    TH1* GetResult(){return fNumerator;}  
-  protected:
-  private:
-    ClassDef(AliHBTQLongResolVsQLongFctn,1)
+   ClassDef(AliHBTQLongResolVsQLongFctn,1)
  };
 
 
@@ -312,9 +288,7 @@ class AliHBTPairThetaResolVsQInvFctn: public AliHBTTwoPairFctn2D
      y = partTheta - trackTheta;
      x = partpair->GetQInv();
     }
-  protected:
-  private: 
-    ClassDef(AliHBTPairThetaResolVsQInvFctn,1)
+   ClassDef(AliHBTPairThetaResolVsQInvFctn,1)
  };
 
 /***********************************************************************/
@@ -336,9 +310,7 @@ class AliHBTPairThetaResolVsPairThetaFctn: public AliHBTTwoPairFctn2D
      if (trackTheta < 0.0) y = -y;
      x = trackTheta;
     }
-  protected:
-  private: 
-    ClassDef(AliHBTPairThetaResolVsPairThetaFctn,1)
+   ClassDef(AliHBTPairThetaResolVsPairThetaFctn,1)
  };
 
 
@@ -360,9 +332,7 @@ class AliHBTPairPhiResolVsQInvFctn: public AliHBTTwoPairFctn2D
      y = partPhi - trackPhi;
      x = partpair->GetQInv();
     }
-  protected:
-  private: 
-    ClassDef(AliHBTPairPhiResolVsQInvFctn,1)
+   ClassDef(AliHBTPairPhiResolVsQInvFctn,1)
  };
 
 /***********************************************************************/
@@ -383,9 +353,7 @@ class AliHBTPairThetaResolVsKtFctn: public AliHBTTwoPairFctn2D
      y = partTheta - trackTheta;
      x = partpair->GetKt();
     }
-  protected:
-  private: 
-    ClassDef(AliHBTPairThetaResolVsKtFctn,1)
+   ClassDef(AliHBTPairThetaResolVsKtFctn,1)
  };
 
 /***********************************************************************/
@@ -406,9 +374,7 @@ class AliHBTPairPhiResolVsKtFctn: public AliHBTTwoPairFctn2D
      y = partPhi - trackPhi;
      x = partpair->GetKt();
     }
-  protected:
-  private: 
-    ClassDef(AliHBTPairPhiResolVsKtFctn,1)
+   ClassDef(AliHBTPairPhiResolVsKtFctn,1)
  };
 
 #endif
@@ -430,9 +396,6 @@ class AliHBTPairPhiResolVsPairPhiFctn: public AliHBTTwoPairFctn2D
      y = partPhi - trackPhi;
      x = trackPhi;
     }
-  protected:
-  private: 
-    ClassDef(AliHBTPairPhiResolVsPairPhiFctn,1)
+   ClassDef(AliHBTPairPhiResolVsPairPhiFctn,1)
  };
-
 

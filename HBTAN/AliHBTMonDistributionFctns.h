@@ -1,8 +1,28 @@
-#ifndef ALIHBTMONPXDISTRIBUTIONVSPTFCTN_H
-#define ALIHBTMONPXDISTRIBUTIONVSPTFCTN_H
-
+#ifndef ALIHBTMONDISTRIBUTIONFCTNS_H
+#define ALIHBTMONDISTRIBUTIONFCTNS_H
+//______________________________________________________________
+////////////////////////////////////////////////////////////////
+//
+// class AliHBTMonPxDistributionFctn;
+// class AliHBTMonPxDistributionVsPtFctn;
+// class AliHBTMonPyDistributionFctn;
+// class AliHBTMonPyDistributionVsPtFctn;
+// class AliHBTMonPzDistributionFctn;
+// class AliHBTMonPzDistributionVsPtFctn;
+// class AliHBTMonPDistributionFctn;
+// class AliHBTMonPDistributionVsPtFctn;
+// class AliHBTMonPtDistributionFctn;
+// class AliHBTMonVxDistributionFctn;
+// class AliHBTMonVyDistributionFctn;
+// class AliHBTMonVzDistributionFctn;
+// class AliHBTMonRDistributionFctn;
+// class AliHBTMonVyDistributionVsVxFctn;
+// class AliHBTMonRtDistributionVsVzFctn;
+//
 // added by Zbigniew.Chajecki@cern.ch
-// this classes create distribution functions of particle momentum 
+// this classes create distribution functions of particle momentum
+//
+/////////////////////////////////////////////////////////////////
 
 class AliHBTMonPxDistributionFctn;
 class AliHBTMonPxDistributionVsPtFctn;
@@ -35,9 +55,7 @@ class AliHBTMonPxDistributionFctn: public AliHBTMonOneParticleFctn1D
    TH1* GetResult(){return fResult;}
  protected:
    Double_t GetValue(AliHBTParticle * particle) { return particle->Px();}
-  public:
-    ClassDef(AliHBTMonPxDistributionFctn,1)
- 
+   ClassDef(AliHBTMonPxDistributionFctn,1)
 };
 /*************************************************************************************/ 
 
@@ -49,9 +67,7 @@ class AliHBTMonPyDistributionFctn: public AliHBTMonOneParticleFctn1D
    TH1* GetResult(){return fResult;} 
  protected:
    Double_t GetValue(AliHBTParticle * particle) { return particle->Py();}
-  public:
-    ClassDef(AliHBTMonPyDistributionFctn,1)
- 
+   ClassDef(AliHBTMonPyDistributionFctn,1)
 };
 /*************************************************************************************/ 
 
@@ -63,8 +79,7 @@ class AliHBTMonPzDistributionFctn: public AliHBTMonOneParticleFctn1D
    TH1* GetResult(){return fResult;} 
  protected:
    Double_t GetValue(AliHBTParticle * particle) { return particle->Pz();}
-  public:
-    ClassDef(AliHBTMonPzDistributionFctn,1)
+   ClassDef(AliHBTMonPzDistributionFctn,1)
  
 };
 /*************************************************************************************/ 
@@ -77,8 +92,7 @@ class AliHBTMonPDistributionFctn: public AliHBTMonOneParticleFctn1D
    TH1* GetResult(){return fResult;} 
  protected:
    Double_t GetValue(AliHBTParticle * particle) { return particle->P();}
-  public:
-    ClassDef(AliHBTMonPDistributionFctn,1)
+   ClassDef(AliHBTMonPDistributionFctn,1)
  
 };
 /*************************************************************************************/ 
@@ -91,9 +105,7 @@ class AliHBTMonPtDistributionFctn: public AliHBTMonOneParticleFctn1D
    TH1* GetResult(){return fResult;} 
  protected:
    Double_t GetValue(AliHBTParticle * particle) { return particle->Pt();}
-  public:
-    ClassDef(AliHBTMonPtDistributionFctn,1)
- 
+   ClassDef(AliHBTMonPtDistributionFctn,1)
 };
 
 /***********************************************************************/
@@ -106,14 +118,11 @@ class AliHBTMonPxDistributionVsPtFctn: public AliHBTMonOneParticleFctn2D
 
    void GetValues(AliHBTParticle* partparticle,  Double_t& x, Double_t& y)
     {
-     x = partparticle->Pt();
-     y = partparticle->Px();
+      x = partparticle->Pt();
+      y = partparticle->Px();
     }
    TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPxDistributionVsPtFctn,1)
+   ClassDef(AliHBTMonPxDistributionVsPtFctn,1)
  };
 
 /***********************************************************************/
@@ -129,11 +138,8 @@ class AliHBTMonPyDistributionVsPtFctn: public AliHBTMonOneParticleFctn2D
      x = partparticle->Pt();
      y = partparticle->Py();
     }
-   TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPyDistributionVsPtFctn,1)
+  TH1* GetResult(){return fResult;} 
+  ClassDef(AliHBTMonPyDistributionVsPtFctn,1)
  };
 /***********************************************************************/
 class AliHBTMonPzDistributionVsPtFctn: public AliHBTMonOneParticleFctn2D
@@ -149,10 +155,7 @@ class AliHBTMonPzDistributionVsPtFctn: public AliHBTMonOneParticleFctn2D
      y = partparticle->Pz();
     }
    TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPzDistributionVsPtFctn,1)
+   ClassDef(AliHBTMonPzDistributionVsPtFctn,1)
  };
 
 /***********************************************************************/
@@ -169,10 +172,7 @@ class AliHBTMonPDistributionVsPtFctn: public AliHBTMonOneParticleFctn2D
      y = partparticle->P();
     }
    TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPDistributionVsPtFctn,1)
+   ClassDef(AliHBTMonPDistributionVsPtFctn,1)
  };
 
 /***********************************************************************/
@@ -188,9 +188,7 @@ class AliHBTMonPhiDistributionFctn: public AliHBTMonOneParticleFctn1D
    TH1* GetResult(){return fResult;} 
  protected:
    Double_t GetValue(AliHBTParticle * particle) { return particle->Phi();}
-  public:
-    ClassDef(AliHBTMonPhiDistributionFctn,1)
- 
+   ClassDef(AliHBTMonPhiDistributionFctn,1)
 };
 
 /***********************************************************************/
@@ -202,8 +200,7 @@ class AliHBTMonThetaDistributionFctn: public AliHBTMonOneParticleFctn1D
    TH1* GetResult(){return fResult;} 
  protected:
    Double_t GetValue(AliHBTParticle * particle) { return particle->Theta();}
-  public:
-    ClassDef(AliHBTMonThetaDistributionFctn,1)
+   ClassDef(AliHBTMonThetaDistributionFctn,1)
  
 };
 /***********************************************************************/
@@ -220,11 +217,8 @@ class AliHBTMonPhiDistributionVsPtFctn: public AliHBTMonOneParticleFctn2D
      x = partparticle->Pt();
      y = partparticle->Phi();
     }
-   TH1* GetResult(){return fResult;} 
-  protected:
-  private:
-  public:
-    ClassDef(AliHBTMonPhiDistributionVsPtFctn,1)
+  TH1* GetResult(){return fResult;}
+  ClassDef(AliHBTMonPhiDistributionVsPtFctn,1)
  };
 
 /***********************************************************************/
@@ -241,8 +235,6 @@ class AliHBTMonThetaDistributionVsPtFctn: public AliHBTMonOneParticleFctn2D
       y = partparticle->Theta();
     }
    TH1* GetResult(){return fResult;} 
- protected:
- private:
    ClassDef(AliHBTMonThetaDistributionVsPtFctn,1)
  };
 
@@ -305,8 +297,6 @@ class AliHBTMonVyDistributionVsVxFctn: public AliHBTMonOneParticleFctn2D
       y = partparticle->Vy();
     }
    TH1* GetResult(){return fResult;} 
- protected:
- private:
    ClassDef(AliHBTMonVyDistributionVsVxFctn,1)
  };
 
@@ -324,8 +314,6 @@ class AliHBTMonRtDistributionVsVzFctn: public AliHBTMonOneParticleFctn2D
       y = TMath::Hypot(partparticle->Vx(),partparticle->Vy());
     }
    TH1* GetResult(){return fResult;}
- protected:
- private:
    ClassDef(AliHBTMonRtDistributionVsVzFctn,1)
  };
 

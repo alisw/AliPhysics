@@ -1,7 +1,27 @@
 #include "AliHBTMonDistributionFctns.h"
-
-/******************************************************************/
-/******************************************************************/
+//______________________________________________________________
+////////////////////////////////////////////////////////////////
+//
+// class AliHBTMonPxDistributionFctn;
+// class AliHBTMonPxDistributionVsPtFctn;
+// class AliHBTMonPyDistributionFctn;
+// class AliHBTMonPyDistributionVsPtFctn;
+// class AliHBTMonPzDistributionFctn;
+// class AliHBTMonPzDistributionVsPtFctn;
+// class AliHBTMonPDistributionFctn;
+// class AliHBTMonPDistributionVsPtFctn;
+// class AliHBTMonPtDistributionFctn;
+// class AliHBTMonVxDistributionFctn;
+// class AliHBTMonVyDistributionFctn;
+// class AliHBTMonVzDistributionFctn;
+// class AliHBTMonRDistributionFctn;
+// class AliHBTMonVyDistributionVsVxFctn;
+// class AliHBTMonRtDistributionVsVzFctn;
+//
+// added by Zbigniew.Chajecki@cern.ch
+// this classes create distribution functions of particle momentum
+//
+/////////////////////////////////////////////////////////////////
 /******************************************************************/
 
 ClassImp(AliHBTMonPxDistributionFctn)
@@ -9,6 +29,7 @@ ClassImp(AliHBTMonPxDistributionFctn)
 AliHBTMonPxDistributionFctn::AliHBTMonPxDistributionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("Px","Px");
 }
 
@@ -20,6 +41,7 @@ AliHBTMonPyDistributionFctn::
 AliHBTMonPyDistributionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
                         AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("Py","Py");
 }
 
@@ -30,6 +52,7 @@ ClassImp(AliHBTMonPzDistributionFctn)
 AliHBTMonPzDistributionFctn::AliHBTMonPzDistributionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor  
   Rename("Pz","Pz");
 }
 
@@ -41,6 +64,7 @@ AliHBTMonPDistributionFctn::AliHBTMonPDistributionFctn
   (Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("P","P");
 }
 
@@ -53,6 +77,7 @@ AliHBTMonPtDistributionFctn::AliHBTMonPtDistributionFctn
        (Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor
   Rename("Pt","Pt");
 }
 
@@ -66,6 +91,7 @@ AliHBTMonPxDistributionVsPtFctn::AliHBTMonPxDistributionVsPtFctn
         Int_t nYbins, Double_t maxYval, Double_t minYval):
  AliHBTMonOneParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+  //constructor
  Rename("PxDistVsPt","Px vs. Pt");
 }
 /******************************************************************/
@@ -76,7 +102,8 @@ AliHBTMonPyDistributionVsPtFctn::AliHBTMonPyDistributionVsPtFctn
         Int_t nYbins, Double_t maxYval, Double_t minYval):
  AliHBTMonOneParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
- Rename("PyDistVsPt","Py vs. Pt");
+  //constructor
+  Rename("PyDistVsPt","Py vs. Pt");
 }
 /******************************************************************/
 ClassImp( AliHBTMonPzDistributionVsPtFctn )
@@ -86,6 +113,7 @@ AliHBTMonPzDistributionVsPtFctn::AliHBTMonPzDistributionVsPtFctn
          Int_t nYbins, Double_t maxYval, Double_t minYval):
  AliHBTMonOneParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+ //constructor  
  Rename("PzDistVsPt","Pz vs. Pt");
 }
 /******************************************************************/
@@ -96,7 +124,8 @@ AliHBTMonPDistributionVsPtFctn::AliHBTMonPDistributionVsPtFctn
       Int_t nYbins, Double_t maxYval, Double_t minYval):
  AliHBTMonOneParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
- Rename("PDistVsPt","P vs. Pt");
+  //constructor
+  Rename("PDistVsPt","P vs. Pt");
 }
 
 /******************************************************************/
@@ -107,6 +136,7 @@ ClassImp(AliHBTMonPhiDistributionFctn)
 AliHBTMonPhiDistributionFctn::AliHBTMonPhiDistributionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
   AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor  
   Rename("Phi","Phi");
 }
 /******************************************************************/
@@ -115,6 +145,7 @@ ClassImp(AliHBTMonThetaDistributionFctn)
 AliHBTMonThetaDistributionFctn::AliHBTMonThetaDistributionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
   AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor  
   Rename("Theta","Theta");
 }
 /******************************************************************/
@@ -125,6 +156,7 @@ AliHBTMonPhiDistributionVsPtFctn::AliHBTMonPhiDistributionVsPtFctn
       Int_t nYbins, Double_t maxYval, Double_t minYval):
  AliHBTMonOneParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+  //constructor  
  Rename("PhiDistVsPt","Phi vs. Pt");
 }
 /******************************************************************/
@@ -135,7 +167,8 @@ AliHBTMonThetaDistributionVsPtFctn::AliHBTMonThetaDistributionVsPtFctn
       Int_t nYbins, Double_t maxYval, Double_t minYval):
  AliHBTMonOneParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
- Rename("ThetaDistVsPt","Theta vs. Pt");
+  //constructor
+   Rename("ThetaDistVsPt","Theta vs. Pt");
 }
 /******************************************************************/
 
@@ -145,6 +178,7 @@ AliHBTMonVxDistributionFctn::
 AliHBTMonVxDistributionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor  
   Rename("Vx","X of Vertex");
 }
 /******************************************************************/
@@ -165,6 +199,7 @@ AliHBTMonVzDistributionFctn::
 AliHBTMonVzDistributionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
+  //constructor  
   Rename("Vz","Z of Vertex");
 }
 /******************************************************************/
@@ -174,7 +209,8 @@ AliHBTMonRDistributionFctn::
 AliHBTMonRDistributionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
-  Rename("VertexDistanceFromCenter","Distance of Particle Vertex From Center");
+  //constructor
+    Rename("VertexDistanceFromCenter","Distance of Particle Vertex From Center");
 }
 /******************************************************************/
 
@@ -184,7 +220,8 @@ AliHBTMonVyDistributionVsVxFctn::AliHBTMonVyDistributionVsVxFctn
       Int_t nYbins, Double_t maxYval, Double_t minYval):
  AliHBTMonOneParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
- Rename("VyDistVsVx","Vrtex Y position versus X vertex position");
+  //constructor
+  Rename("VyDistVsVx","Vrtex Y position versus X vertex position");
 }
 /******************************************************************/
 
@@ -194,7 +231,8 @@ AliHBTMonRtDistributionVsVzFctn::AliHBTMonRtDistributionVsVzFctn
       Int_t nYbins, Double_t maxYval, Double_t minYval):
  AliHBTMonOneParticleFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
- Rename("RDistVsVz","Distance of vertex position from center in trensverse plane versus Z vertex position");
+  //constructor
+  Rename("RDistVsVz","Distance of vertex position from center in trensverse plane versus Z vertex position");
 }
 
 /******************************************************************/
