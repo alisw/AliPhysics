@@ -20,8 +20,8 @@
 
 class AliVertexGenerator;
 class AliCollisionGeometry;
+class AliGenEventHeader;
 class AliStack;
-
 class TGenerator;
 
 
@@ -70,6 +70,8 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void VertexInternal();
     virtual void FinishRun();
     virtual void SetMC(TGenerator *theMC) {fMCEvGen =theMC;}
+    virtual void AddHeader(AliGenEventHeader* /*header*/) {;}
+    virtual void SetContainer(AliGenerator* container) {fContainer = container;}
     AliGenerator & operator=(const AliGenerator &gen);
 
   // Getters
@@ -125,9 +127,11 @@ class AliGenerator : public TNamed, public AliRndm
     AliVertexGenerator* fVertexGenerator;  //! Generator for the vertex
     TArrayF     fOrigin;     // Origin of event
     TArrayF     fOsigma;     // Sigma of the Origin of event
-    TArrayF     fVertex;     //! Vertex of current event
+    TArrayF     fVertex;        //! Vertex of current event
 
-    AliStack*   fStack;      //! Local pointer to stack
+    AliStack*   fStack;         //! Local pointer to stack
+    AliGenerator* fContainer;   //! Local pointer to container
+    
     AliCollisionGeometry* fCollisionGeometry; //!Collision geometry
     /*************************************************************************/
     enum {kThetaRange    = BIT(14),

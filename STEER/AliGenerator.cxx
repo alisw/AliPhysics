@@ -76,6 +76,7 @@ AliGenerator::AliGenerator():
   fOsigma(3),
   fVertex(3),
   fStack(0),
+  fContainer(0),
   fCollisionGeometry(0)
 {
   //
@@ -132,6 +133,7 @@ AliGenerator::AliGenerator(Int_t npart):
   fOsigma(3),
   fVertex(3),
   fStack(0),
+  fContainer(0),
   fCollisionGeometry(0)
 {
   //
@@ -191,7 +193,8 @@ AliGenerator::AliGenerator(const AliGenerator &gen):
   fOrigin(3),
   fOsigma(3),
   fVertex(3),
-  fStack(0)
+  fStack(0),
+  fContainer(0)
 {
   //
   // Copy constructor
