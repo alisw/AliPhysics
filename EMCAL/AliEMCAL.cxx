@@ -107,12 +107,13 @@ void AliEMCAL::CreateMaterials()
   Int_t * idtmed = fIdtmed->GetArray() - 1599 ; 
   Int_t   isxfld = gAlice->Field()->Integ() ;
   Float_t sxmgmx = gAlice->Field()->Max() ;
- 
 
-
-   // Air                                                                           -> idtmed[1599] 
-  AliMedium(0, "Air          $", 0, 0,
-	     isxfld, sxmgmx, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
+   // Air                                            -> idtmed[1599]
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+  AliMixture(0, "Air$", aAir, zAir, dAir, 4, wAir) ;
 
   // The Lead                                                                      -> idtmed[1600]
  
