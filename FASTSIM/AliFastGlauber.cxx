@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2003/06/03 13:13:20  morsch
+GetRandom returning impact parameter bin and flag for hard process added.
+
 Revision 1.3  2003/04/21 09:35:53  morsch
 Protection against division by 0 in Binaries().
 
@@ -420,8 +423,10 @@ void AliFastGlauber::GetRandom(Int_t& bin, Bool_t& hard)
 	    bin = 3;
 	} else if (b < 13.2) {
 	    bin = 4;
-	} else {
+	} else if (b < 15.0) {
 	    bin = 5;
+	} else {
+	    bin = 6;
 	}
 	
 	hard = kFALSE;
