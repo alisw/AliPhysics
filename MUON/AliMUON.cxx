@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2000/04/26 10:17:31  fca
+Changes in Lego for G4 compatibility
+
 Revision 1.15  2000/01/19 17:16:56  fca
 Introducing a list of lists of hits -- more hits allowed for detector now
 
@@ -347,7 +350,7 @@ void AliMUON::BuildGeometry()
 
     float rmin, rmax, dx, dy, dz, dr, zpos;
     float dzc=4.;
-    char NameChamber[9], NameSense[9], NameFrame[9], NameNode[7];
+    char NameChamber[9], NameSense[9], NameFrame[9], NameNode[8];
     for (Int_t i=0; i<5; i++) {
 	for (Int_t j=0; j<2; j++) {
 	    Int_t id=2*i+j+1;
