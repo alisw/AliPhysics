@@ -13,8 +13,6 @@
 #include <TTree.h>
 #include <TClonesArray.h>
 
-#define MAXTPCTBK 500
-
 class AliTPCcluster;
 class AliTPCtrack;
 class AliTPCParam;
@@ -119,9 +117,10 @@ public:
   Int_t     fTracks[3];//labels of overlapped tracks
   Int_t     fSector;   //sector number
   Int_t     fPadRow;   //PadRow number
-  Float_t   fY ;       //Y of cluster
-  Float_t   fZ ;       //Z of cluster
-  Float_t   fQ ;       //Q of cluster (in ADC counts)
+  Float_t   fY;        //Y of cluster
+  Float_t   fZ;        //Z of cluster
+  Float_t   fQ;        //Q of cluster (in ADC counts)
+  Float_t   fdEdX;     //dE/dX inside this cluster
   Float_t   fSigmaY2;  //Sigma Y square of cluster
   Float_t   fSigmaZ2;  //Sigma Z square of cluster
   
@@ -129,14 +128,14 @@ public:
   AliTPCcluster() {
     fTracks[0]=fTracks[1]=fTracks[2]=0; 
     fSector=fPadRow=0;
-    fY=fZ=fQ=fSigmaY2=fSigmaZ2=0.;
+    fY=fZ=fQ=fdEdX=fSigmaY2=fSigmaZ2=0.;
   }
   AliTPCcluster(Float_t *hits, Int_t*);
   virtual ~AliTPCcluster() {;}
-  void Use() {fTracks[0]=-fTracks[0];}
-  int IsUsed() const {return (fTracks[0]<0) ? 1 : 0;}
+  void Use() {fQ=-fQ;} //if fQ<0 cluster is already associated with a track
+  int IsUsed() const {return (fQ<0) ? 1 : 0;}
   void GetXYZ(Float_t *x, const AliTPCParam *) const; //Get global x,y,z
-  Bool_t    IsSortable() const;
+  Bool_t IsSortable() const;
   Int_t Compare(TObject *o) ;
   ClassDef(AliTPCcluster,1)  // Time Projection Chamber clusters
 };
@@ -179,73 +178,68 @@ public:
  
  
 //_____________________________________________________________________________
- 
-const unsigned MAX_CLUSTER_PER_ROW=1500;
-const Double_t FIELD=0.2;
-
 class AliTPCtrack : public TObject {
+//-----------------------------------------------------------------
+// Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//-----------------------------------------------------------------
    Double_t fAlpha;          // rotation angle
-   Double_t ref;             // track reference plane (X-coordinate)
+   Double_t fX;              // X-coordinate of this track (reference plane)
    TVector x;                // vector of track parameters
    TMatrix C;                // covariance matrix of track parameters
-   TObjArray clusters;       // pointers to clusters belonging to this track
-   Double_t chi2;            // total chi2 value for this track
+   TObjArray fClusters;      // clusters belonging to this track
+   Double_t fChi2;           // total chi2 value for this track
 public:
    AliTPCtrack(Float_t *hits);
-   AliTPCtrack(const AliTPCcluster& c, const TVector& xx, const TMatrix& CC,
-               const AliTPCParam *); 
+   AliTPCtrack(const AliTPCcluster *c, const TVector& xx, const TMatrix& CC,
+               Double_t xr, Double_t alpha); 
    AliTPCtrack(const AliTPCtrack& t);
-   int PropagateTo(Double_t x,
-                    Double_t x0=28.94,Double_t rho=0.9e-3,Double_t pm=0.139);
+   Int_t Compare(TObject *o);
+   int PropagateTo(Double_t xr,
+                   Double_t x0=28.94,Double_t rho=0.9e-3,Double_t pm=0.139);
    void PropagateToVertex(
-                    Double_t x0=36.66,Double_t rho=1.2e-3,Double_t pm=0.139);
+                   Double_t x0=36.66,Double_t rho=1.2e-3,Double_t pm=0.139);
    void Update(const AliTPCcluster* c, Double_t chi2);
    int Rotate(Double_t angle);
 
+   Bool_t IsSortable() const {return kTRUE;}
    void UseClusters() const ;
    Double_t GetPredictedChi2(const AliTPCcluster*) const ;
-   Double_t GetX() const {return ref;}
+   int GetLabel(int nrows) const ;
+   void GetPxPyPz(Double_t&, Double_t&, Double_t&) const ;
+   Double_t GetdEdX(Double_t low, Double_t up) const ;
+
+   Double_t GetX() const {return fX;}
    Double_t GetY() const {return x(0);}
-   Double_t GetC() const {return x(2);}
-   Double_t GetY(Double_t x) const;
    Double_t GetZ() const {return x(1);}
+   Double_t GetC() const {return x(2);}
+   Double_t GetEta() const {return x(3);}
    Double_t GetTgl() const {return x(4);}
-   Double_t GetPt() const {return 0.3*FIELD/x(2)/100;}
-   int GetLab() const ;
+   Double_t GetPt() const {return 0.3*0.2/GetC()/100;}
+   Double_t GetP() const {
+     return TMath::Abs(GetPt())*sqrt(1.+GetTgl()*GetTgl());
+   }
    Double_t GetSigmaY2() const {return C(0,0);}
    Double_t GetSigmaZ2() const {return C(1,1);}
    Double_t GetSigmaC2() const {return C(2,2);}
    Double_t GetSigmaTgl2() const {return C(4,4);}
    Double_t GetAlpha() const {return fAlpha;}
-   Double_t GetChi2() const {return chi2;}
-   operator int() const {return clusters.GetEntriesFast();}
-   AliTPCcluster& operator[](int i) {
-      return *((AliTPCcluster*)clusters.UncheckedAt(i));
-   } 
-   void GetPxPyPz(Double_t&, Double_t&, Double_t&) const ;
-   void GetXYZ(Double_t& X,Double_t& Y,Double_t& Z) const {X=ref;Y=x(0);Z=x(1);}
+   Double_t GetChi2() const {return fChi2;}
+   operator int() const {return fClusters.GetEntriesFast();}
  
    ClassDef(AliTPCtrack,1)  // Time Projection Chamber reconstructed tracks
 };
 
-//_____Classes for internal tracking use ______________________________________
 
-class TrackSeed : public AliTPCtrack {
-public:
-   TrackSeed(const AliTPCcluster& c, const TVector& x, const TMatrix& C,
-   const AliTPCParam *p) : AliTPCtrack(c,x,C,p) {}
-   Bool_t IsSortable() const {return kTRUE;}
-   Int_t Compare(TObject *o) {
-      AliTPCtrack *t=(AliTPCtrack*)o;
-      Double_t c =GetSigmaY2();
-      Double_t co=t->GetSigmaY2();
-      if (c>co) return 1;
-      else if (c<co) return -1;
-      return 0;
-   }
-};
+
+//-----------------------------------------------------------------
+// Classes for internal tracking use.
+//-----------------------------------------------------------------
+const unsigned MAX_CLUSTER_PER_ROW=3500;
 
 class AliTPCRow {
+//-----------------------------------------------------------------
+// Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//-----------------------------------------------------------------
    unsigned num_of_clusters;
    const AliTPCcluster *clusters[MAX_CLUSTER_PER_ROW];
 public:
@@ -257,55 +251,80 @@ public:
    int Find(Double_t y) const; 
 };
 
-
 class AliTPCSector {
+//-----------------------------------------------------------------
+// Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//-----------------------------------------------------------------
 protected:
    unsigned num_of_rows; 
    AliTPCRow *row;
-   const AliTPCParam *param; 
+   static AliTPCParam *param; 
 public:
-   AliTPCSector() { 
-      row = 0; num_of_rows=0;
-      param=0;
-   }
-   virtual void SetUp(AliTPCParam *p) {param=p;}
+   AliTPCSector() { row = 0; num_of_rows=0; }
    virtual ~AliTPCSector() { delete[] row; }
+   static void SetParam(AliTPCParam *p) { param=p; }
    AliTPCRow& operator[](int i) const { return *(row+i); }
+   int GetNRows() const { return num_of_rows; }
    virtual Double_t GetX(int l) const = 0;
    virtual Double_t GetMaxY(int l) const = 0;
    virtual Double_t GetAlpha() const = 0;
+   virtual Double_t GetAlphaShift() const = 0;
+   virtual Int_t GetRowNumber(Double_t x) const = 0;
 };
 
 class AliTPCSSector : public AliTPCSector {
+//-----------------------------------------------------------------
+// Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//-----------------------------------------------------------------
 public:
-   AliTPCSSector(){}
-   virtual ~AliTPCSSector() {}
-   virtual void SetUp(AliTPCParam *p) {
-      param=p;
-      num_of_rows=p->GetNRowLow();
-      row=new AliTPCRow[num_of_rows];
+   AliTPCSSector(){
+     if (!param) {
+        fprintf(stderr,"AliTPCSSector: parameters are not set !\n");
+        return;
+     }
+     num_of_rows=param->GetNRowLow();
+     row=new AliTPCRow[num_of_rows];
    }
+   virtual ~AliTPCSSector() {}
    Double_t GetX(int l) const { return param->GetPadRowRadiiLow(l); }
-   Double_t GetAlpha() const {return alpha_low;}
    Double_t GetMaxY(int l) const { return GetX(l)*tan(0.5*GetAlpha()); }
+   Double_t GetAlpha() const {return param->GetInnerAngle();}
+   Double_t GetAlphaShift() const {return param->GetInnerAngleShift();}
+   Int_t GetRowNumber(Double_t x) const {
+      Double_t r=param->GetInnerRadiusUp();
+      if (x > r) return param->GetNRowLow();
+      r=param->GetInnerRadiusLow();
+      if (x < r) return -1;
+      return int((x-r)/param->GetPadPitchLength() + 0.5);
+   }
 };
 
 class AliTPCLSector : public AliTPCSector {
+//-----------------------------------------------------------------
+// Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//-----------------------------------------------------------------
 public:
-   AliTPCLSector(){}
-   virtual ~AliTPCLSector() {}
-   virtual void SetUp(AliTPCParam *p) {
-      param=p;
-      num_of_rows=p->GetNRowUp();
-      row=new AliTPCRow[num_of_rows];
+   AliTPCLSector(){
+     if (!param) {
+        fprintf(stderr,"AliTPCLSector: parameters are not set !\n");
+        return;
+     }
+     num_of_rows=param->GetNRowUp();
+     row=new AliTPCRow[num_of_rows];
    }
+   virtual ~AliTPCLSector() {}
    Double_t GetX(int l) const { return param->GetPadRowRadiiUp(l); }
-   Double_t GetAlpha() const {return alpha_up;}
    Double_t GetMaxY(int l) const { return GetX(l)*tan(0.5*GetAlpha()); }
+   Double_t GetAlpha() const {return param->GetOuterAngle();}
+   Double_t GetAlphaShift() const {return param->GetOuterAngleShift();}
+   Int_t GetRowNumber(Double_t x) const {
+      Double_t r=param->GetOuterRadiusUp();
+      if (x > r) return param->GetNRowUp();
+      r=param->GetOuterRadiusLow();
+      if (x < r) return -1;
+      return int((x-r)/param->GetPadPitchLength() + 0.5);
+   }
 };
-
-
-
 
 #endif
 

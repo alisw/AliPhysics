@@ -108,11 +108,12 @@ void AliTPCParam::CRXYZtoXYZ(Float_t *xyz,
     }  
 
   xyz[2]=z_end-xyz[2];
-  if (sector<fNInnerSector)
+  if (sector<fNInnerSector) {
     if ( sector>=(fNInnerSector>>1))	xyz[2]*=-1.;
-  else 
-    if ( (sector-fNInnerSector) > (fNOuterSector>>1) )    xyz[2]*=-1;       
-  
+  } else {
+    if ( (sector-fNInnerSector) >= (fNOuterSector>>1) )    xyz[2]*=-1;
+  }
+
   Float_t x1=xyz[0];
   Float_t y1=xyz[1];
   Float_t cos,sin;

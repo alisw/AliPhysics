@@ -26,6 +26,8 @@ void AliTPCTestTracking() {
 
    TClonesArray *particles=gAlice->Particles(); 
    int np=particles->GetEntriesFast();
+   int *good=new int[np];
+   for (int ii=0; ii<np; ii++) good[ii]=0;
 
    AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");
    int ver=TPC->IsVersion();
@@ -35,7 +37,12 @@ void AliTPCTestTracking() {
    if (digp!=0) TPC->SetDigParam(digp);
    else cerr<<"Warning: default TPC parameters will be used !\n";
 
-   int nrows=TPC->GetDigParam()->GetParam().GetNRowUp()-1;
+   int nrow_up=TPC->GetDigParam()->GetParam().GetNRowUp();
+   int nrows=TPC->GetDigParam()->GetParam().GetNRowLow()+nrow_up;
+   int zero=TPC->GetDigParam()->GetParam().GetZeroSup();
+   int gap=int(0.125*nrows);
+   int good_number=int(0.4*nrows);
+
    switch (ver) {
    case 1:
       cerr<<"Making clusters...\n";
@@ -51,12 +58,10 @@ void AliTPCTestTracking() {
           int lab=c->fTracks[0];
           if (lab<0) continue; //noise cluster
           lab=TMath::Abs(lab);
-          int sector=c->fSector-1, row=c->fPadRow-1;
-          GParticle *p=(GParticle*)particles->UncheckedAt(lab);
-          int ks;
-          if (row==nrows)   {ks=p->GetKS()|0x1000; p->SetKS(ks);}
-          if (row==nrows-8) {ks=p->GetKS()|0x800; p->SetKS(ks);}
-          ks=p->GetKS()+1; p->SetKS(ks);
+          int row=c->fPadRow;
+          if (row==nrow_up-1    ) good[lab]|=0x1000;
+          if (row==nrow_up-1-gap) good[lab]|=0x800;
+          good[lab]++;
       }
       
       break;
@@ -67,7 +72,7 @@ void AliTPCTestTracking() {
       if (!clusters) {cerr<<"No clusters found !\n"; return;}
       int n=clusters->GetEntriesFast();
       cerr<<"Number of clusters "<<n<<"                                  \n";
-      
+                
       cerr<<"Marking \"good\" tracks...                                  \n";
       TTree *TD=gDirectory->Get(tname);
       TClonesArray *digits=TPC->Digits();
@@ -79,7 +84,7 @@ void AliTPCTestTracking() {
       int sectors_by_rows=(int)TD->GetEntries();
       for (i=0; i<sectors_by_rows; i++) {
           if (!TD->GetEvent(i)) continue;
-          int sec, row;
+          int row;
           int ndigits=digits->GetEntriesFast();
           int j;
           for (j=0; j<ndigits; j++) {
@@ -87,18 +92,17 @@ void AliTPCTestTracking() {
               int idx0=dig->fTracks[0];
               int idx1=dig->fTracks[1];
               int idx2=dig->fTracks[2];
-              sec=dig->fSector-1; row=dig->fPadRow-1;
-              if (idx0>=0 && dig->fSignal>0) count[idx0]+=1;
-              if (idx1>=0 && dig->fSignal>0) count[idx1]+=1;
-              if (idx2>=0 && dig->fSignal>0) count[idx2]+=1;
+              row=dig->fPadRow;
+              if (idx0>=0 && dig->fSignal>=zero) count[idx0]+=1;
+              if (idx1>=0 && dig->fSignal>=zero) count[idx1]+=1;
+              if (idx2>=0 && dig->fSignal>=zero) count[idx2]+=1;
           }
           for (j=0; j<np; j++) {
-              GParticle *p=(GParticle*)particles->UncheckedAt(j);
               if (count[j]>1) {
                  int ks;
-                 if (row==nrows   ) {ks=p->GetKS()|0x1000; p->SetKS(ks);}
-                 if (row==nrows-8 ) {ks=p->GetKS()|0x800;  p->SetKS(ks);}
-                 ks=p->GetKS()+1; p->SetKS(ks);
+                 if (row==nrow_up-1    ) good[j]|=0x1000;
+                 if (row==nrow_up-1-gap) good[j]|=0x800;
+                 good[j]++;
               }
               count[j]=0;
           }
@@ -127,19 +131,22 @@ void AliTPCTestTracking() {
    TH1F *hd=new TH1F("hd","Impact parameter distribution ",30,0,25); 
    hd->SetFillColor(6);
 
-   TH1F *hgood=new TH1F("hgood","Good tracks",20,0,2);    
-   TH1F *hfound=new TH1F("hfound","Found tracks",20,0,2);
-   TH1F *hfake=new TH1F("hfake","Fake tracks",20,0,2);
-   TH1F *hg=new TH1F("hg","",20,0,2); //efficiency for good tracks
+   TH1F *hgood=new TH1F("hgood","Good tracks",20,0,10);    
+   TH1F *hfound=new TH1F("hfound","Found tracks",20,0,10);
+   TH1F *hfake=new TH1F("hfake","Fake tracks",20,0,10);
+   TH1F *hg=new TH1F("hg","",20,0,10); //efficiency for good tracks
    hg->SetLineColor(4); hg->SetLineWidth(2);
-   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",20,0,2);
+   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",20,0,10);
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
 
+   TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,500.);
+   TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,500.);
+
    for (int i=0; i<np; i++) {
-      GParticle *p = (GParticle*)particles->UncheckedAt(i);
-      if (p->GetParent()>=0) continue;  //secondary particle
-      if (p->GetKS()<0x1000+0x800+2+30) continue;
-      Double_t ptg=p->GetPT(),pxg=p->GetPx(),pyg=p->GetPy(),pzg=p->GetPz();
+      TParticle *p = (TParticle*)particles->UncheckedAt(i);
+      if (p->GetFirstMother()>=0) continue;  //secondary particle
+      if (good[i] < 0x1000+0x800+2+good_number) continue;
+      Double_t ptg=p->Pt(),pxg=p->Px(),pyg=p->Py(),pzg=p->Pz();
       if (ptg<0.100) continue;
       if (fabs(pzg/ptg)>0.999) continue;
 
@@ -149,22 +156,23 @@ void AliTPCTestTracking() {
       int found=0;
       for (int j=0; j<nt; j++) {
           AliTPCtrack *track=(AliTPCtrack*)tracks->UncheckedAt(j);
-          int lab=track->GetLab();
+          int lab=track->GetLabel(nrows);
 	  if (fabs(lab)!=i) continue;
-	  //if (lab!=i) continue;
-          found=1;
-          Double_t xk=76.;
 
+          found=1;
+
+          Double_t xk=76.;
           track->PropagateTo(xk);
           xk-=0.11;
           track->PropagateTo(xk,42.7,2.27); //C
-          xk-=2.6;
+          xk-=26.;
           track->PropagateTo(xk,36.2,1.98e-3); //C02
           xk-=0.051;
           track->PropagateTo(xk,42.7,2.27); //C
-
-          xk-=0.4;
-          track->PropagateTo(xk,21.82,2.33); //ITS+beam_pipe+etc (approximately)
+          xk-=25.;
+          track->PropagateTo(xk,36.7,1.29e-3);//Air
+          xk-=0.4;                           //  +
+          track->PropagateTo(xk,21.82,2.33);//ITS+beam_pipe+etc (approximately)
 
           track->PropagateToVertex(); //comparison should be done at the vertex
 
@@ -178,12 +186,25 @@ void AliTPCTestTracking() {
           Double_t lam =TMath::ATan(pz /pt );
           hl->Fill((lam - lamg)*1000.);
           hpt->Fill((pt - ptg)/ptg*100.);
-          Double_t x,y,z; track->GetXYZ(x,y,z);
+          Double_t x=track->GetX(), y=track->GetY(), z=track->GetZ();
           hd->Fill(sqrt(x*x + y*y + z*z)*10.);
+
+          Double_t mom=track->GetP();
+          Double_t dedx=track->GetdEdX(0.05,0.80)/
+                        digp->GetParam().GetPadPitchLength();
+
+          hep->Fill(mom,dedx,1.);
+          if (p->GetPdgCode()==211 || p->GetPdgCode()==-211)
+	    if (mom>0.4 && mom<0.5) 
+                   he->Fill(dedx,1.);
+
           break;
       }
       if (!found) cerr<<"Track number "<<i<<" was not found !\n";
    }
+
+   delete[] good;
+
    Stat_t ngood =hgood->GetEntries(); cerr<<"Good tracks "<<ngood<<endl;
    Stat_t nfound=hfound->GetEntries();
    if (ngood!=0) 
@@ -211,7 +232,7 @@ void AliTPCTestTracking() {
    hd->SetXTitle("(mm)"); hd->Draw(); c1->cd();
 
    TPad *p5=new TPad("p5","",0,0.6,1,1); p5->Draw(); p5->cd(); 
-   /*p5->SetTopMargin(0.25);*/ p5->SetFillColor(41); p5->SetFrameFillColor(10);
+   p5->SetFillColor(41); p5->SetFrameFillColor(10);
    hfound->Sumw2(); hgood->Sumw2(); hfake->Sumw2();
    hg->Divide(hfound,hgood,1,1.,"b");
    hf->Divide(hfake,hgood,1,1.,"b");
@@ -236,5 +257,22 @@ void AliTPCTestTracking() {
    text = new TText(0.453919,1.11408,"Good tracks");
    text->SetTextSize(0.05);
    text->Draw();
+
+
+
+   TCanvas *c2=new TCanvas("c2","",320,32,530,590);
+
+   TPad *p6=new TPad("p6","",0.,0.,1.,.5); p6->Draw();
+   p6->cd(); p6->SetFillColor(42); p6->SetFrameFillColor(10); 
+   he->SetFillColor(2); he->SetFillStyle(3005);  
+   he->SetXTitle("Arbitrary Units"); 
+   he->Fit("gaus"); c2->cd();
+
+   TPad *p7=new TPad("p7","",0.,0.5,1.,1.); p7->Draw(); 
+   p7->cd(); p7->SetFillColor(42); p7->SetFrameFillColor(10);
+   hep->SetXTitle("p (Gev/c)"); hep->SetYTitle("dE/dX (Arb. Units)"); 
+   hep->Draw(); c1->cd();
+
+
 }
 

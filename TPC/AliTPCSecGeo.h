@@ -4,11 +4,6 @@
 //Some things from the old AliTPCSecGeo
 
 const Float_t z_end = 250.; 
-const Float_t alpha_low=0.523598775; // 30 degrees
-const Float_t alpha_up=0.261799387; //  15 degrees
-
-
-
 
 const Float_t q_el = 1.602e-19; // elementary charge
 const Float_t adc_sat = 1023; // dynamic range (10 bits)

@@ -59,7 +59,7 @@ void AliTPCTestClustering() {
        pm->SetPoint(i,xx,yy,zz);
    }
 
-   c1=new TCanvas("c1", "Cluster display",0,0,660,740);
+   c1=new TCanvas("c1", "Cluster display",0,0,700,730);
    TView *v=new TView(1);
    v->SetRange(-430,-560,-430,430,560,1710);
 
