@@ -50,27 +50,24 @@
 //     "PROPER WEIGHTS":  (1+R^2)^2/(\sigma_x^2 + \sigma_y^2 + \sigma_MS^2)
 //
 #include <Riostream.h>
+#include "AliITS.h"
 #include "AliITSRiemannFit.h"
 #include "AliRun.h"
 #include "TClonesArray.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "Riostream.h"
-#include "TH2.h"
 #include "TMath.h"
 #include "TF1.h"
 #include "TGraphErrors.h"
-#include "TMinuit.h"
-#include "TCanvas.h"
 #include "TStyle.h"
-#include "TRandom.h"
 #include "TParticle.h"
-#include "TFile.h"
+#include "TTree.h"
+#include "TVector3.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeom.h"
 #include "AliITSmodule.h"
 #include "AliMC.h"
-
 ClassImp(AliITSRiemannFit)
 
 
@@ -129,24 +126,50 @@ AliITSRiemannFit::AliITSRiemannFit(Int_t size,Int_t ntracks) {
   // test erase
 //    fspdi          = 0;
 //    fspdo          = 0;
-  Point_tl *first = new Point_tl[fSizeEvent];
-  Point_tl **PointRecs = new Point_tl*[fSizeEvent];
+  AliPointtl *first = new AliPointtl[fSizeEvent];
+  AliPointtl **pointRecs = new AliPointtl*[fSizeEvent];
   for(Int_t i=0;i<6;i++)fPLay[i] = 0;
   for(Int_t j=0;j<fSizeEvent;j++)  // create an array of struct
-    PointRecs[j] = &(first[j]);   
+    pointRecs[j] = &(first[j]);   
 }
+
+// ---------------------------------------------------------------------
+AliITSRiemannFit::AliPointtl::AliPointtl(){
+  // default constructor
+  SetLay();
+  SetLad();
+  SetDet();
+  SetTrack();
+  SetX();
+  SetY();
+  SetZ();
+  SetR();
+  SetdE();
+  SetdX();
+  SetdY();
+  SetdZ();
+  SetOrigin();
+  SetMomentum();
+  SetCode();
+  SetName();
+  SetPt();
+  SetPhi();
+  SetEta();
+  SetVertexPhi();
+}
+
 // ---------------------------------------------------------------------
 
-void FillPoints(Point_tl **Points,Int_t &index,Float_t *xpoint,
+void FillPoints(AliITSRiemannFit::AliPointtl **Points,Int_t &index,Float_t *xpoint,
 		Float_t *error,
-		TLorentzVector PE,TLorentzVector OT,Int_t *id,
-		Int_t track,const Char_t *name,Int_t code,
+		TLorentzVector pE,TLorentzVector oT,Int_t *id,
+		Int_t track, Char_t *name,Int_t code,
 		Float_t phiorigin){
   ///////////////////////////////////////////////////////////////////////
-  // Fill the structure Point_tl with the proper data
+  // Fill the structure AliPointtl with the proper data
   //
   //////////////////////////////////////////////////////////////////////
-  Float_t PI2 = 2.0*TMath::Pi();
+  Float_t pPI2 = 2.0*TMath::Pi();
   Float_t phi,r,x,y,z;
   Int_t i;
   i = index;
@@ -155,26 +178,26 @@ void FillPoints(Point_tl **Points,Int_t &index,Float_t *xpoint,
   z = xpoint[2];
   r = sqrt(x*x+y*y);
   phi = TMath::ATan2(y,x);
-  if(phi<0.0) phi += PI2;
-  Points[i]->phi = phi;
-  Points[i]->eta  = -0.5*tan(0.5*TMath::ATan2(r,z));
-  Points[i]->fx = x;
-  Points[i]->fy = y;
-  Points[i]->fz = z;
-  Points[i]->fdx = error[0];
-  Points[i]->fdy = error[1];
-  Points[i]->fdz = error[2];
-  Points[i]->fr = r;
-  Points[i]->track  = track;
-  Points[i]->lay    = id[0],
-  Points[i]->lad    = id[1];
-  Points[i]->det    = id[2];
-  Points[i]->fMomentum = PE;
-  Points[i]->fOrigin   = OT;
-  Points[i]->fPt   = sqrt(PE.X()*PE.X()+PE.Y()*PE.Y());
-  Points[i]->fCode = code;
-  Points[i]->fName = name;
-  Points[i]->vertexPhi = phiorigin;
+  if(phi<0.0) phi += pPI2;
+  Points[i]->SetPhi(phi);
+  Points[i]->SetEta(-0.5*tan(0.5*TMath::ATan2(r,z)));
+  Points[i]->SetX(x);
+  Points[i]->SetY(y);
+  Points[i]->SetZ(z);
+  Points[i]->SetdX(error[0]);
+  Points[i]->SetdY(error[1]);
+  Points[i]->SetdZ(error[2]);
+  Points[i]->SetR(r);
+  Points[i]->SetTrack(track);
+  Points[i]->SetLay(id[0]);
+  Points[i]->SetLad(id[1]);
+  Points[i]->SetDet(id[2]);
+  Points[i]->SetMomentum(&pE);
+  Points[i]->SetOrigin(&oT);
+  Points[i]->SetPt(sqrt(pE.X()*pE.X()+pE.Y()*pE.Y()));
+  Points[i]->SetCode(code);
+  Points[i]->SetName(name);
+  Points[i]->SetVertexPhi(phiorigin);
   index++;
   return;
   
@@ -192,8 +215,8 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
   TParticle *part;
   AliITSgeom *gm = (AliITSgeom*)ITS->GetITSgeom();
   //get pointer to modules array
-  TObjArray *ITSmodules = ITS->GetModules();
-  Int_t nmodules=ITSmodules->GetEntriesFast();
+  TObjArray *iTSmodules = ITS->GetModules();
+  Int_t nmodules=iTSmodules->GetEntriesFast();
   printf("nmodules = %d \n",nmodules);
   // Get the points from points file
   AliITSmodule *itsModule;
@@ -201,44 +224,35 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
   Stat_t nent;
   AliITSRecPoint  *recp;
   nent=TR->GetEntries();
-  TClonesArray *ITSrec  = ITS->RecPoints();
+  TClonesArray *iTSrec  = ITS->RecPoints();
 
-  Int_t TotRP=0;
+  Int_t totRP=0;
   for (mod=0; mod<nmodules; mod++) {
-    itsModule=(AliITSmodule*)ITSmodules->At(mod);
+    itsModule=(AliITSmodule*)iTSmodules->At(mod);
     ITS->ResetRecPoints();
     TR->GetEvent(mod);
-    Int_t nrecp = ITSrec->GetEntries();
+    Int_t nrecp = iTSrec->GetEntries();
     if(!nrecp) continue;
-    TotRP += nrecp;
+    totRP += nrecp;
   }
 
-  Int_t iMAX = TotRP;
+  Int_t iMAX = totRP;
   fPrimaryTracks = ntracks;
   fParticles     = nparticles;
-  Point_tl *global = new Point_tl[iMAX];
-  fPointRecs = new Point_tl*[iMAX];
+  AliITSRiemannFit::AliPointtl *global = new AliPointtl[iMAX];
+  fPointRecs = new AliITSRiemannFit::AliPointtl*[iMAX];
   //
-  // test erase
-//    Point_tl *first = new Point_tl[iMAX];
-//    Point_tl *second = new Point_tl[iMAX];
-//    fspdi = new Point_tl*[iMAX];
-//    fspdo = new Point_tl*[iMAX];
   for(Int_t j=0;j<iMAX;j++) {
     fPointRecs[j] = &(global[j]);
-    //
-    // test erase
-//      fspdi[j]      = &(first[j]);
-//      fspdo[j]      = &(second[j]);
   }
   
   Int_t ieta=0,ieta2=0;
   Int_t i,id[4],idold[4];
   Int_t track=0;//         // track  of hit
-  Float_t xpoint[3],error_plus[3],error_minus[3],global_error[3];       // position and error of the point
-  TLorentzVector OT,PE;
-  Float_t locals[3],locals_error[3],locals_plus[3],locals_minus[3]; // local position and local errors
-  Float_t Phi;
+  Float_t xpoint[3],errorPlus[3],errorMinus[3],globalError[3];       // position and error of the point
+  TLorentzVector oT,pE;
+  Float_t locals[3],localserror[3],localsplus[3],localsminus[3]; // local position and local errors
+  Float_t pPhi;
   Int_t code;
   const char *name;
   Int_t layer,ladder,detector;
@@ -246,25 +260,27 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
   Int_t num=0,nspdi=0,nspdo=0,nsddi=0,nsddo=0,nssdi=0,nssdo=0;
  
   for (mod=0; mod<nmodules; mod++) {
-    itsModule=(AliITSmodule*)ITSmodules->At(mod);
+    itsModule=(AliITSmodule*)iTSmodules->At(mod);
     ITS->ResetRecPoints();
     TR->GetEvent(mod);
-    Int_t nrecp = ITSrec->GetEntries();
+    Int_t nrecp = iTSrec->GetEntries();
     if (!nrecp) continue;
     itsModule->GetID(layer,ladder,detector);
 
     for (irec=0;irec<nrecp;irec++) {
-      recp   = (AliITSRecPoint*)ITSrec->UncheckedAt(irec);
+      recp   = (AliITSRecPoint*)iTSrec->UncheckedAt(irec);
       track=recp->fTracks[0];
       if(track <0 ) continue;
       xcluster=recp->GetX();     // x on cluster
       zcluster=recp->GetZ();     // z on cluster
       part   = (TParticle*) gAlice->GetMCApp()->Particle(track);    
-      part->ProductionVertex(OT);  // set the vertex 
-      part->Momentum(PE);          // set the vertex momentum
+      part->ProductionVertex(oT);  // set the vertex 
+      part->Momentum(pE);          // set the vertex momentum
       name      = part->GetName();
+      Char_t nam2[50];
+      sprintf(nam2,"%s",name); 
       code      = part->GetPdgCode();
-      Phi       = part->Phi();
+      pPhi       = part->Phi();
       id[0]=layer;
       id[1]=ladder;
       id[2]=detector;
@@ -272,31 +288,31 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
       locals[0]=xcluster;     // x on cluster
       locals[1]=0.0;          // y on cluster
       locals[2]=zcluster;     // z on cluster
-      locals_error[0]=sqrt(recp->GetSigmaX2());
-      locals_error[1]=0.0;
-      locals_error[2]=sqrt(recp->GetSigmaZ2());
-      locals_plus[0]=xcluster+sqrt(recp->GetSigmaX2());       // x on cluster
-      if(layer==1||layer==2) locals_plus[1]=0.0150/2;         // y on cluster
-      else if(layer==3||layer==4) locals_plus[1]=0.0280/2;    // y on cluster
-      else if(layer==5||layer==6) locals_plus[1]=0.0300/2;    // y on cluster
-      locals_plus[2]=zcluster+sqrt(recp->GetSigmaZ2());       // z on cluster
-      locals_minus[0]=xcluster-sqrt(recp->GetSigmaX2());      // x on cluster
-      locals_minus[1]=0.0;                                    // y on cluster
-      locals_minus[2]=zcluster-sqrt(recp->GetSigmaZ2());      // z on cluster
+      localserror[0]=sqrt(recp->GetSigmaX2());
+      localserror[1]=0.0;
+      localserror[2]=sqrt(recp->GetSigmaZ2());
+      localsplus[0]=xcluster+sqrt(recp->GetSigmaX2());       // x on cluster
+      if(layer==1||layer==2) localsplus[1]=0.0150/2;         // y on cluster
+      else if(layer==3||layer==4) localsplus[1]=0.0280/2;    // y on cluster
+      else if(layer==5||layer==6) localsplus[1]=0.0300/2;    // y on cluster
+      localsplus[2]=zcluster+sqrt(recp->GetSigmaZ2());       // z on cluster
+      localsminus[0]=xcluster-sqrt(recp->GetSigmaX2());      // x on cluster
+      localsminus[1]=0.0;                                    // y on cluster
+      localsminus[2]=zcluster-sqrt(recp->GetSigmaZ2());      // z on cluster
 
       gm->LtoG(layer,ladder,detector,locals,xpoint);
-      gm->LtoG(layer,ladder,detector,locals_plus,error_plus);
-      gm->LtoG(layer,ladder,detector,locals_minus,error_minus);
-      global_error[0]=0.5*TMath::Abs(error_plus[0]-error_minus[0]);
-      global_error[1]=0.5*TMath::Abs(error_plus[1]-error_minus[1]);
-      global_error[2]=0.5*TMath::Abs(error_plus[2]-error_minus[2]);
+      gm->LtoG(layer,ladder,detector,localsplus,errorPlus);
+      gm->LtoG(layer,ladder,detector,localsminus,errorMinus);
+      globalError[0]=0.5*TMath::Abs(errorPlus[0]-errorMinus[0]);
+      globalError[1]=0.5*TMath::Abs(errorPlus[1]-errorMinus[1]);
+      globalError[2]=0.5*TMath::Abs(errorPlus[2]-errorMinus[2]);
       if(track<ntracks) {
 	if(TMath::Abs(part->Eta())<=1.0) ieta++;
 	if(TMath::Abs(part->Eta())<=0.5) ieta2++;
       }
       if(!(id[0]==idold[0]&&id[1]==idold[1]&&
 	   id[2]==idold[2]&&id[3]==idold[3])) {
-	FillPoints(fPointRecs,num,xpoint,global_error,PE,OT,id,track,name,code,Phi);
+	FillPoints(fPointRecs,num,xpoint,globalError,pE,oT,id,track,nam2,code,pPhi);
 	//
 	// test erase	
 	switch (idold[0]) {
@@ -320,11 +336,11 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
 	  break;
 	}
 //  	if(idold[0]==1){
-//  	  FillPoints(fspdi,nspdi,xpoint,global_error,PE,OT,id,track,name,code,Phi);  
+//  	  FillPoints(fspdi,nspdi,xpoint,globalError,pE,oT,id,track,name,code,pPhi);  
 //  	}
 //  	if(idold[0]==2){
 	 
-//  	  FillPoints(fspdo,nspdo,xpoint,global_error,PE,OT,id,track,name,code,Phi);
+//  	  FillPoints(fspdo,nspdo,xpoint,globalError,pE,oT,id,track,name,code,pPhi);
 //  	}
 //  	if(idold[0]==3){
 //  	  nsddi++;
@@ -365,27 +381,27 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
 ///////////////////////////////////////////////////////////
 // Functions for sorting the fPointRecs array
 ///////////////////////////////////////////////////////////
-Bool_t SortZ(const Point_tl *s1,const Point_tl *s2){
+Bool_t SortZ(const AliITSRiemannFit::AliPointtl *s1,const AliITSRiemannFit::AliPointtl *s2){
   // Z sorting function for qsort.
    Float_t a;
 
-   a = s1->fz - s2->fz;
+   a = s1->GetZ() - s2->GetZ();
    if(a<0.0) return kTRUE;
    if(a>0.0) return kFALSE;
    return kFALSE;
 }
-Bool_t SortTrack(const Point_tl *s1,const Point_tl *s2){
+Bool_t SortTrack(const AliITSRiemannFit::AliPointtl *s1,const AliITSRiemannFit::AliPointtl *s2){
   // track sorting function for qsort.
    Float_t a;
 
-   a = s1->track - s2->track;
+   a = s1->GetTrack() - s2->GetTrack();
    if(a<0.0) return kTRUE;
    if(a>0.0) return kFALSE;
    return kFALSE;
 }
-void hpsortTrack(Point_tl **ra,Int_t n){
+void hpsortTrack(AliITSRiemannFit::AliPointtl **ra,Int_t n){
    Int_t i,ir,j,l;
-   Point_tl *rra;
+   AliITSRiemannFit::AliPointtl *rra;
 
    if(n<2) return;
 
@@ -417,9 +433,9 @@ void hpsortTrack(Point_tl **ra,Int_t n){
      ra[i] = rra;
    } // end for ever 
 }
-void hpsortZ(Point_tl **ra,Int_t n){
+void hpsortZ(AliITSRiemannFit::AliPointtl **ra,Int_t n){
    Int_t i,ir,j,l;
-   Point_tl *rra;
+   AliITSRiemannFit::AliPointtl *rra;
 
    if(n<2) return;
 
@@ -488,9 +504,9 @@ void AliITSRiemannFit::WritePoints(void) {
   /////////////////////////////////////////////////////////////////////
   FILE *ascii= fopen("AsciiPoints.dat","w");
   for(Int_t i=0;i<fPoints;i++) {
-    fprintf(ascii,"%d\t%d\t%f\t%f\t%f\n",fPointRecs[i]->lay,
-	    fPointRecs[i]->track,fPointRecs[i]->fx,fPointRecs[i]->fy,
-	    fPointRecs[i]->fz);
+    fprintf(ascii,"%d\t%d\t%f\t%f\t%f\n",fPointRecs[i]->GetLay(),
+	    fPointRecs[i]->GetTrack(),fPointRecs[i]->GetX(),
+            fPointRecs[i]->GetY(),fPointRecs[i]->GetZ());
   }
   fclose(ascii);
   return;
@@ -504,10 +520,11 @@ void AliITSRiemannFit::ReadPoints(void) {
   hpsortTrack(fPointRecs,fPoints);
   for(Int_t i=0;i<fPoints;i++) 
     printf("%d\t%d\t%d\t%f\t%f\t%f\t(%.0f,%.0f,%.0f)\t%.3f\t%s\n",
-	   i,fPointRecs[i]->lay,fPointRecs[i]->track,fPointRecs[i]->fx,
-	   fPointRecs[i]->fy,fPointRecs[i]->fz,fPointRecs[i]->fOrigin.X(),
-	   fPointRecs[i]->fOrigin.Y(),fPointRecs[i]->fOrigin.Z(),
-	   fPointRecs[i]->fPt,fPointRecs[i]->fName);
+	   i,fPointRecs[i]->GetLay(),fPointRecs[i]->GetTrack(),
+           fPointRecs[i]->GetX(),fPointRecs[i]->GetY(),
+           fPointRecs[i]->GetZ(),fPointRecs[i]->GetOrigin()->X(),
+	   fPointRecs[i]->GetOrigin()->Y(),fPointRecs[i]->GetOrigin()->Z(),
+	   fPointRecs[i]->GetPt(),fPointRecs[i]->GetName());
   return; 
 }
 //-----------------------------------------------------------------------
@@ -521,14 +538,14 @@ Int_t AliITSRiemannFit::SolveCubic(Double_t a,Double_t b,Double_t c,
    ///  returns  x1 , x2 , x3
    ////////////////////////////////////////
    
-   Double_t Q = ((a*a - 3*b)/9);
-   Double_t R = ((2*a*a*a - 9*a*b +27*c)/54);
+   Double_t qQ = ((a*a - 3*b)/9);
+   Double_t rR = ((2*a*a*a - 9*a*b +27*c)/54);
    Double_t theta;
-   Double_t F = -2*sqrt(Q);
+   Double_t aF = -2*sqrt(qQ);
    Double_t g = a/3;
-   Double_t PI2 = TMath::Pi()*2;
+   Double_t pPI2 = TMath::Pi()*2;
 
-  if( R*R>Q*Q*Q ) {
+  if( rR*rR>qQ*qQ*qQ ) {
     cout<<"\nTrack "<<"Determinant :\n\t\t No Real Solutions !!!\n"<<endl;
     x1 = 9999999;
     x2 = 9999999;
@@ -536,11 +553,11 @@ Int_t AliITSRiemannFit::SolveCubic(Double_t a,Double_t b,Double_t c,
     return 0;
   }
 
-  theta = TMath::ACos( R/sqrt(Q*Q*Q));
+  theta = TMath::ACos(rR/sqrt(qQ*qQ*qQ));
 
-  x1 = (F*TMath::Cos(theta/3))-g;
-  x2 = (F*TMath::Cos((theta+PI2)/3))-g;
-  x3 = (F*TMath::Cos((theta-PI2)/3))-g;
+  x1 = (aF*TMath::Cos(theta/3))-g;
+  x2 = (aF*TMath::Cos((theta+pPI2)/3))-g;
+  x3 = (aF*TMath::Cos((theta-pPI2)/3))-g;
   
   return 1;
 }
@@ -551,22 +568,22 @@ void RiemannTransf(Int_t npoints,TVector3 **From,TVector3 **To) {
   //   This function apllies the transformation in the Riemann sphere
   //   for xy plane
   ///////////////////////////////////////////////////////////////////////
-  Float_t *R = new Float_t[npoints];
-  Float_t *Theta = new Float_t[npoints];
-  Float_t PI2 = 2*TMath::Pi();
+  Float_t *rR = new Float_t[npoints];
+  Float_t *theta = new Float_t[npoints];
+  Float_t pPI2 = 2*TMath::Pi();
   Float_t x=0,y=0,z=0;
   
   for(Int_t i=0;i<npoints;i++) {
-    R[i]     = sqrt(From[i]->X()*From[i]->X()+From[i]->Y()*From[i]->Y());
-    Theta[i] = TMath::ATan2(From[i]->Y(),From[i]->X());
-    if(Theta[i]<0) Theta[i]+=PI2;
-    x     = R[i]*cos(Theta[i])/(1+R[i]*R[i]);
-    y     = R[i]*sin(Theta[i])/(1+R[i]*R[i]);
-    z     = R[i]*R[i]/(1+R[i]*R[i]);
+    rR[i]     = sqrt(From[i]->X()*From[i]->X()+From[i]->Y()*From[i]->Y());
+    theta[i] = TMath::ATan2(From[i]->Y(),From[i]->X());
+    if(theta[i]<0) theta[i]+=pPI2;
+    x     = rR[i]*cos(theta[i])/(1+rR[i]*rR[i]);
+    y     = rR[i]*sin(theta[i])/(1+rR[i]*rR[i]);
+    z     = rR[i]*rR[i]/(1+rR[i]*rR[i]);
     To[i]->SetXYZ(x,y,z);
   }
-  delete[] R;
-  delete[] Theta;
+  delete[] rR;
+  delete[] theta;
   return;
 }
 
@@ -575,7 +592,7 @@ void RiemannTransf(Int_t npoints,TVector3 **From,TVector3 **To) {
 
 Int_t FitLinear(Int_t npoints, TVector3 **input, TVector3 **errors, Double_t omega,
 		Double_t &thu0, Double_t &thv0, Double_t &phi, TVector2 &zData, TVector3 &zError, 
-		Double_t &CorrLin){
+		Double_t &corrLin){
   ///////////////////////////////////////////////////////////////////////
   //   Fit the points in the (z,s) plane - helix 3rd equation
   //
@@ -628,7 +645,7 @@ Int_t FitLinear(Int_t npoints, TVector3 **input, TVector3 **errors, Double_t ome
   if ( TMath::Abs(direction) != (npoints-1) ) {return 11;} 
 
   TGraphErrors *fitHist = new TGraphErrors(npoints,s,z,es,ez);
-  fitHist->Fit("pol1","Q");
+  fitHist->Fit("pol1","qQ");
   z0  = fitHist->GetFunction("pol1")->GetParameter(0);
   vpar  = fitHist->GetFunction("pol1")->GetParameter(1);
   ez0 = fitHist->GetFunction("pol1")->GetParError(0);
@@ -637,32 +654,32 @@ Int_t FitLinear(Int_t npoints, TVector3 **input, TVector3 **errors, Double_t ome
   zData.Set(z0,vpar);
   zError.SetXYZ(ez0,evpar,chisquare);
 
-  Double_t Sigmas=0.; 
-  Double_t Sigmaz=0.;
-  Double_t Avs=0.;
-  Double_t Avz=0.;
-  Double_t Avsz=0.;
+  Double_t sigmas=0.; 
+  Double_t sigmaz=0.;
+  Double_t avs=0.;
+  Double_t avz=0.;
+  Double_t avsz=0.;
 
   for(Int_t j = 0; j < npoints; j++) {
-    Avs  += s[j];
-    Avz  += z[j]; 
-    Avsz += s[j]*z[j];
+    avs  += s[j];
+    avz  += z[j]; 
+    avsz += s[j]*z[j];
   }
-    Avs  /= (Double_t)npoints;
-    Avz  /= (Double_t)npoints; 
-    Avsz /= (Double_t)npoints;
+    avs  /= (Double_t)npoints;
+    avz  /= (Double_t)npoints; 
+    avsz /= (Double_t)npoints;
 
   for(Int_t l = 0; l < npoints; l++) {
-    Sigmas += (s[l]-Avs)*(s[l]-Avs);
-    Sigmaz += (z[l]-Avz)*(z[l]-Avz);
+    sigmas += (s[l]-avs)*(s[l]-avs);
+    sigmaz += (z[l]-avz)*(z[l]-avz);
   }
-  Sigmas /=(Double_t)npoints;
-  Sigmaz /=(Double_t)npoints;
+  sigmas /=(Double_t)npoints;
+  sigmaz /=(Double_t)npoints;
 
-  Sigmas = sqrt(Sigmas);
-  Sigmaz = sqrt(Sigmaz);
+  sigmas = sqrt(sigmas);
+  sigmaz = sqrt(sigmaz);
 
-  CorrLin = (Avsz-Avs*Avz)/(Sigmas*Sigmaz);
+  corrLin = (avsz-avs*avz)/(sigmas*sigmaz);
 
   delete [] z;
   delete [] x;
@@ -707,37 +724,37 @@ Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Double_t Px,Double_t Py,Doubl
   u0 = -9999.9999; // parameters of helix - strange value...
   v0 = -9999.9999; // parameters of helix - strange value...
   rho = -9999.9999; // parameters of helix -unphysical strange value...
-  Int_t Layer = 0;
+  Int_t pLayer = 0;
   const Char_t* name = 0;
   Int_t i=0,k=0;
   Int_t iMAX = 50;
-  Int_t N = 0;
+  Int_t nN = 0;
   Int_t npl[6]={0,0,0,0,0,0};
-  Double_t P = sqrt(Px*Px+Py*Py+Pz*Pz);
-  Double_t Pt = sqrt(Px*Px+Py*Py);
+  Double_t pP = sqrt(Px*Px+Py*Py+Pz*Pz);
+  Double_t pt = sqrt(Px*Px+Py*Py);
   TVector3 zError;
   TVector2 zData;
-  Double_t CorrLin;
+  Double_t corrLin;
   TVector3 *ori        = new TVector3[iMAX];
   TVector3 **original  = new TVector3*[iMAX];
   TVector3 *rie       = new TVector3[iMAX];
-  TVector3 **Riemann  = new TVector3*[iMAX];
+  TVector3 **riemann  = new TVector3*[iMAX];
   TVector3 *err        = new TVector3[iMAX];
   TVector3 **errors    = new TVector3*[iMAX];
   TVector3 *linerr        = new TVector3[iMAX];
   TVector3 **linerrors    = new TVector3*[iMAX];
-  //PH  Double_t Weight[iMAX];
-  Double_t * Weight = new Double_t[iMAX];
+  //PH  Double_t weight[iMAX];
+  Double_t * weight = new Double_t[iMAX];
 
   for(i=0;i<iMAX;i++){
     original[i]   = &(ori[i]);
-    Riemann[i]   = &(rie[i]);
+    riemann[i]   = &(rie[i]);
     errors[i]     = &(err[i]);
     linerrors[i]  = &(linerr[i]);
   }
   for(k =0;k<iMAX;k++) original[k]->SetXYZ(9999,9999,9999);
-  Double_t A11,A12,A13,A21,A22,A23,A31,A32,A33;
-  A11=0;A12=0;A13=0;A21=0;A22=0;A23=0;A31=0;A32=0;A33=0;
+  Double_t a11,a12,a13,a21,a22,a23,a31,a32,a33;
+  a11=0;a12=0;a13=0;a21=0;a22=0;a23=0;a31=0;a32=0;a33=0;
   Double_t xbar = 0;
   Double_t ybar = 0;
   Double_t zbar = 0;
@@ -746,29 +763,29 @@ Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Double_t Px,Double_t Py,Doubl
   Double_t value = 0.0;   // minimum eigenvalue
   Double_t x1,x2,x3;      // eigenvector component
   Double_t n1,n2,n3,nr= 0;// unit eigenvector 
-  Double_t Radiusdm[7] = {0.3,0.4,0.7,1.49,2.38,3.91,4.36}; // beam pipe and layers radii [dm]
-  Double_t sigma_MS = 0;
-  TVector3 Vec,VecNor;
+  Double_t radiusdm[7] = {0.3,0.4,0.7,1.49,2.38,3.91,4.36}; // beam pipe and layers radii [dm]
+  Double_t sigmaMS = 0;
+  TVector3 vVec,vVecNor;
 
 // Select RecPoints belonging to the track
   for(k =0;k<fPoints;k++){
-    if(fPointRecs[k]->track==tracknumber) {
-      name = fPointRecs[k]->fName;
-      Pt = fPointRecs[k]->fPt;
-      Layer = fPointRecs[k]->lay;
-      Int_t ilay = Layer-1;
+    if(fPointRecs[k]->GetTrack()==tracknumber) {
+      name = fPointRecs[k]->GetName();
+      pt = fPointRecs[k]->GetPt();
+      pLayer = fPointRecs[k]->GetLay();
+      Int_t ilay = pLayer-1;
       if(npl[ilay]!=0) continue;
       if(bitlay[ilay] == 1) {
-	original[N]->SetXYZ(0.1*fPointRecs[k]->fx,0.1*fPointRecs[k]->fy,0.1*fPointRecs[k]->fz);
-	errors[N]->SetXYZ(0.1*fPointRecs[k]->fdx,0.1*fPointRecs[k]->fdy,0.1*fPointRecs[k]->fdz);
-        sigma_MS = (Radiusdm[Layer]-Radiusdm[0])*0.000724/P;// beam pipe contribution
-	for(Int_t j=1;j<Layer;j++) {
-	  sigma_MS += (Radiusdm[Layer]-Radiusdm[j])*0.00136/P;
+	original[nN]->SetXYZ(0.1*fPointRecs[k]->GetX(),0.1*fPointRecs[k]->GetY(),0.1*fPointRecs[k]->GetZ());
+	errors[nN]->SetXYZ(0.1*fPointRecs[k]->GetdX(),0.1*fPointRecs[k]->GetdY(),0.1*fPointRecs[k]->GetdZ());
+        sigmaMS = (radiusdm[pLayer]-radiusdm[0])*0.000724/pP;// beam pipe contribution
+	for(Int_t j=1;j<pLayer;j++) {
+	  sigmaMS += (radiusdm[pLayer]-radiusdm[j])*0.00136/pP;
 	}
-	Weight[N] = ( 1 + original[N]->Perp2() )*( 1+ original[N]->Perp2() )/
-	  ( errors[N]->Perp2() + sigma_MS*sigma_MS );
-	linerrors[N]->SetXYZ(errors[N]->X(),errors[N]->Y(),sqrt(errors[N]->Z()*errors[N]->Z()+sigma_MS*sigma_MS));
-	N++;
+	weight[nN] = ( 1 + original[nN]->Perp2() )*( 1+ original[nN]->Perp2() )/
+	  ( errors[nN]->Perp2() + sigmaMS*sigmaMS );
+	linerrors[nN]->SetXYZ(errors[nN]->X(),errors[nN]->Y(),sqrt(errors[nN]->Z()*errors[nN]->Z()+sigmaMS*sigmaMS));
+	nN++;
 	npl[ilay]++;
       }  // end if on layer 
     }    //end if track==tracknumber
@@ -778,7 +795,7 @@ Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Double_t Px,Double_t Py,Doubl
   //
   if(original[5]->X() == 9999 || original[6]->X() != 9999)  
     {
-      delete [] Weight;
+      delete [] weight;
       return 1;   // not enough points
     }
   
@@ -788,54 +805,54 @@ Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Double_t Px,Double_t Py,Doubl
   //  FIT ON THE RIEMANN SPHERE FOR (x,y) PLANE
   //  
   
-  RiemannTransf(N,original,Riemann);  
+  RiemannTransf(nN,original,riemann);  
 
-  Double_t Sum_Weights = 0.0; // sum of weights factor
+  Double_t sumWeights = 0.0; // sum of weights factor
 
-  for(Int_t j=0;j<N;j++){ // mean values for x[i],y[i],z[i]
-    xbar+=Weight[j]*Riemann[j]->X();
-    ybar+=Weight[j]*Riemann[j]->Y();
-    zbar+=Weight[j]*Riemann[j]->Z();
-    Sum_Weights+=Weight[j];
+  for(Int_t j=0;j<nN;j++){ // mean values for x[i],y[i],z[i]
+    xbar+=weight[j]*riemann[j]->X();
+    ybar+=weight[j]*riemann[j]->Y();
+    zbar+=weight[j]*riemann[j]->Z();
+    sumWeights+=weight[j];
   }
   
-  xbar /= Sum_Weights;
-  ybar /= Sum_Weights;
-  zbar /= Sum_Weights;
+  xbar /= sumWeights;
+  ybar /= sumWeights;
+  zbar /= sumWeights;
   
-  for(Int_t j=0;j<N;j++) {  // Calculate the matrix elements
-    A11 += Weight[j]*(Riemann[j]->X() - xbar)*(Riemann[j]->X() - xbar);
-    A12 += Weight[j]*(Riemann[j]->X() - xbar)*(Riemann[j]->Y() - ybar);
-    A22 += Weight[j]*(Riemann[j]->Y() - ybar)*(Riemann[j]->Y() - ybar);
-    A23 += Weight[j]*(Riemann[j]->Y() - ybar)*(Riemann[j]->Z() - zbar);
-    A13 += Weight[j]*(Riemann[j]->X() - xbar)*(Riemann[j]->Z() - zbar);
-    A33 += Weight[j]*(Riemann[j]->Z() - zbar)*(Riemann[j]->Z() - zbar);
+  for(Int_t j=0;j<nN;j++) {  // Calculate the matrix elements
+    a11 += weight[j]*(riemann[j]->X() - xbar)*(riemann[j]->X() - xbar);
+    a12 += weight[j]*(riemann[j]->X() - xbar)*(riemann[j]->Y() - ybar);
+    a22 += weight[j]*(riemann[j]->Y() - ybar)*(riemann[j]->Y() - ybar);
+    a23 += weight[j]*(riemann[j]->Y() - ybar)*(riemann[j]->Z() - zbar);
+    a13 += weight[j]*(riemann[j]->X() - xbar)*(riemann[j]->Z() - zbar);
+    a33 += weight[j]*(riemann[j]->Z() - zbar)*(riemann[j]->Z() - zbar);
   }
   
-  A11 /= N;
-  A12 /= N;
-  A22 /= N;
-  A23 /= N;
-  A13 /= N;
-  A33 /= N;
-  A21 = A12;
-  A32 = A23;
-  A31 = A13;
+  a11 /= nN;
+  a12 /= nN;
+  a22 /= nN;
+  a23 /= nN;
+  a13 /= nN;
+  a33 /= nN;
+  a21 = a12;
+  a32 = a23;
+  a31 = a13;
   
 // **************  Determinant  parameters ********************
 //   n.b. simplifications done keeping in mind symmetry of A
 //
   a = 1;
-  b = (-A11-A33-A22);
-  c = (A11*(A22+A33)+A33*A22-A12*A21-A13*A31-A23*A32);
-  d = (A31*A22*A13+(A12*A21-A11*A22)*A33-2.0*A23*A13*A12+A11*A23*A32);
+  b = (-a11-a33-a22);
+  c = (a11*(a22+a33)+a33*a22-a12*a21-a13*a31-a23*a32);
+  d = (a31*a22*a13+(a12*a21-a11*a22)*a33-2.0*a23*a13*a12+a11*a23*a32);
 
 // **************  Find the 3 eigenvalues *************************
-  Int_t Check_Cubic = SolveCubic(b,c,d,roots[0],roots[1],roots[2]);
+  Int_t checkCubic = SolveCubic(b,c,d,roots[0],roots[1],roots[2]);
  
-  if(Check_Cubic !=1 ){
+  if(checkCubic !=1 ){
     printf("Track %d Has no real solution continuing ...\n",tracknumber);
-    delete [] Weight;
+    delete [] weight;
     return 2;
   }
   
@@ -846,13 +863,13 @@ Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Double_t Px,Double_t Py,Doubl
 
   // ************ Eigenvector relative to value **************
   x3 = 1;
-  x2 = (A33*A21-A23*A31-value*A21)/(A22*A31-A32*A21-value*A31);
-  x1 = (value-A33-A32*x2)/A31;
-  Vec.SetXYZ(x1,x2,x3);
-  VecNor = Vec.Unit();
-  n1 = VecNor.X();
-  n2 = VecNor.Y();
-  n3 = VecNor.Z();
+  x2 = (a33*a21-a23*a31-value*a21)/(a22*a31-a32*a21-value*a31);
+  x1 = (value-a33-a32*x2)/a31;
+  vVec.SetXYZ(x1,x2,x3);
+  vVecNor = vVec.Unit();
+  n1 = vVecNor.X();
+  n2 = vVecNor.Y();
+  n3 = vVecNor.Z();
   nr = -n1*xbar-n2*ybar-n3*zbar; 
 
   u0  = -0.5*n1/(nr+n3);
@@ -885,212 +902,379 @@ Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Double_t Px,Double_t Py,Doubl
   rho    *=  10.0;
   u0     *=  10.0;
   v0     *=  10.0;
-  ierrl=FitLinear(N,original,linerrors,omega,u0,v0,fphi,zData,zError,CorrLin);
+  ierrl=FitLinear(nN,original,linerrors,omega,u0,v0,fphi,zData,zError,corrLin);
   chisql=zError.Z();
 //   fprintf(pout,"%f \n",chisql); 
   z0=zData.X();
   vpar=zData.Y();
-  fCorrLin = CorrLin;
+  fCorrLin = corrLin;
   ierr = (ierrl > ierr ? ierrl : ierr);
 //   fclose(pout);
-  delete [] Weight;
+  delete [] weight;
   return ierr;
 }
+Int_t AliITSRiemannFit::FitHelix(Int_t NPoints, TVector3** fPointRecs,TVector3** fPointRecErrors,Float_t& f1, Float_t& f2, Float_t& f3) {
 
-//-----------------------------------------------------------------------------
-void AliITSRiemannFit::Streamer(TBuffer &lRb){
-////////////////////////////////////////////////////////////////////////
-//     The default Streamer function "written by ROOT" doesn't write out
-// the arrays referenced by pointers. Therefore, a specific Streamer function
-// has to be written. This function should not be modified but instead added
-// on to so that older versions can still be read. 
-////////////////////////////////////////////////////////////////////////
-   // Stream an object of class AliITSRiemannFit.
-  Int_t i,j,n;
-  Int_t ii,jj;
-  n=20;
+  ///////////////////////////////////////////////////////////////////////
+  //  This function finds the helix parameters 
+  //  d0  = impact parameter
+  //  rho = radius of circle
+  //  phi = atan(y0/x0)
+  //  for the xy plane
+  //  starting from the momentum and the outcome of
+  //  the fit on the Riemann sphere (i.e. u0,v0,rho)
+  //
+  //   MIND !!!!   Here we assume both angular velocities be 1.0e-2  (yes, 0.01 !)
+  //
+  //
+  //   Also linear fit in (z,s) is performed, so it's 3-D !
+  //   z0 and vpar are calculated (intercept and z-component of velocity, but 
+  //   in units... you guess.
+  //
+  //
+  //   Values calculated in addition:
+  //
+  //              - transverse impact parameter        fd0
+  //              - sum of residuals in (x,y) plane    fFit
+  //              - chisquare of linear fit            chisql
+  //              - correlation coefficient            fCorrLin
+  //
+  //
+  //
+  //
+  //
+  ///////////////////////////////////////////////////////////////////////
+  //
+  //  All this stuff relies on this hypothesis !!!
+  //
+  Int_t ierr = 0, ierrl=0;
+  const Double_t omega = 1.0e-2;
 
-  if (lRb.IsReading()) {
-    Version_t lRv = lRb.ReadVersion(); if (lRv) { }
-    TObject::Streamer(lRb);
-    lRb >> fSizeEvent;
-    lRb >> fPrimaryTracks;
-    lRb >> fPoints;
-    for(i=0;i<6;i++) lRb >> fPLay[i];    
-    if(fPointRecs!=0){
-      for(i=0;i<fSizeEvent;i++) delete[] fPointRecs[i];
-      delete[] fPointRecs;
-    } // end if fPointRecs!=0
-    fPointRecs = new Point_tl*[fSizeEvent];
-    for(i=0;i<fSizeEvent;i++){
-      fPointRecs[i] = new Point_tl[n];
-      for(j=0;j<n;j++){
-	lRb >> fPointRecs[i][j].lay;
-	lRb >> fPointRecs[i][j].lad;
-	lRb >> fPointRecs[i][j].det;
-	lRb >> fPointRecs[i][j].track;
-	lRb >> fPointRecs[i][j].fx;
-	lRb >> fPointRecs[i][j].fy;
-	lRb >> fPointRecs[i][j].fz;
-	lRb >> fPointRecs[i][j].fr;
-	lRb >> fPointRecs[i][j].fdE;
-	lRb >> fPointRecs[i][j].fdx;
-	lRb >> fPointRecs[i][j].fdy;
-	lRb >> fPointRecs[i][j].fdz;
-	lRb >> fPointRecs[i][j].fPt;
-	lRb >> (Char_t*)fPointRecs[i][j].fName;
-	for (ii=0;ii<4;ii++)              
-	  lRb << fPointRecs[i][j].fOrigin[ii];
-	for (jj=0;jj<4;jj++)              
-	  lRb << fPointRecs[i][j].fMomentum[jj];
-	lRb >> fPointRecs[i][j].fCode;
-	lRb >> fPointRecs[i][j].phi;
-	lRb >> fPointRecs[i][j].eta;
-	lRb >> fPointRecs[i][j].vertexPhi;
-      } //end for j
-    } //end for i
-//      if(fspdi!=0){
-//        for(i=0;i<fSizeEvent/6;i++) delete[] fspdi[i];
-//        delete[] fspdi;
-//      } // end if fspdi!=0
-//      fspdi = new Point_tl*[fSizeEvent/6];
-//      for(i=0;i<fSizeEvent/6;i++){
-//        fspdi[i] = new Point_tl[n];
-//        for(j=0;j<n;j++){
-//  	lRb >> fspdi[i][j].lay;
-//  	lRb >> fspdi[i][j].lad;
-//  	lRb >> fspdi[i][j].det;
-//  	lRb >> fspdi[i][j].track;
-//  	lRb >> fspdi[i][j].fx;
-//  	lRb >> fspdi[i][j].fy;
-//  	lRb >> fspdi[i][j].fz;
-//  	lRb >> fspdi[i][j].fr;
-//  	lRb >> fspdi[i][j].fdE;
-//  	lRb >> fspdi[i][j].fdx;
-//  	lRb >> fspdi[i][j].fdy;
-//  	lRb >> fspdi[i][j].fdz;
-//  	lRb >> fspdi[i][j].fPt;
-//  	for (ii=0;ii<4;ii++)              
-//  	  lRb << fspdi[i][j].fOrigin[ii];
-//  	for (jj=0;jj<4;jj++)              
-//  	  lRb << fspdi[i][j].fMomentum[jj];
-//  	lRb >> fspdi[i][j].fCode;
-//  	lRb >> (Char_t*)fspdi[i][j].fName;
-//  	lRb >> fspdi[i][j].phi;
-//  	lRb >> fspdi[i][j].eta;
-//  	lRb >> fspdi[i][j].vertexPhi;
-//        } //end for j
-//      } //end for i
-//      if(fspdo!=0){
-//        for(i=0;i<fSizeEvent/6;i++) delete[] fspdo[i];
-//        delete[] fspdo;
-//      } // end if fspdo!=0
-//      fspdo = new Point_tl*[fSizeEvent/6];
-//      for(i=0;i<fSizeEvent/6;i++){
-//        fspdo[i] = new Point_tl[n];
-//        for(j=0;j<n;j++){
-//  	lRb >> fspdo[i][j].lay;
-//  	lRb >> fspdo[i][j].lad;
-//  	lRb >> fspdo[i][j].det;
-//  	lRb >> fspdo[i][j].track;
-//  	lRb >> fspdo[i][j].fx;
-//  	lRb >> fspdo[i][j].fy;
-//  	lRb >> fspdo[i][j].fz;
-//  	lRb >> fspdo[i][j].fr;
-//  	lRb >> fspdo[i][j].fdE;
-//  	lRb >> fspdo[i][j].fdx;
-//  	lRb >> fspdo[i][j].fdy;
-//  	lRb >> fspdo[i][j].fdz;
-//  	lRb >> fspdo[i][j].fPt;
-//  	for (ii=0;ii<4;ii++)              
-//  	  lRb << fspdo[i][j].fOrigin[ii];
-//  	for (jj=0;jj<4;jj++)              
-//  	  lRb << fspdo[i][j].fMomentum[jj];
-//  	lRb >> fspdo[i][j].fCode;
-//  	lRb >> (Char_t*)fspdo[i][j].fName;
-//  	lRb >> fspdo[i][j].phi;
-//  	lRb >> fspdo[i][j].eta;
-//  	lRb >> fspdo[i][j].vertexPhi;
-//        } //end for j
-//      } //end for i
-  } else {
-    lRb.WriteVersion(AliITSRiemannFit::IsA());
-    TObject::Streamer(lRb);
-    lRb << fSizeEvent;
-    lRb << fPrimaryTracks;
-    lRb << fPoints;
-    for(i=0;i<6;i++) lRb >> fPLay[i];
-    for(i=0;i<fSizeEvent;i++) for(j=0;j<n;j++){
-      lRb << fPointRecs[i][j].lay;
-      lRb << fPointRecs[i][j].lad;
-      lRb << fPointRecs[i][j].det;
-      lRb << fPointRecs[i][j].track;
-      lRb << fPointRecs[i][j].fx;
-      lRb << fPointRecs[i][j].fy;
-      lRb << fPointRecs[i][j].fz;
-      lRb << fPointRecs[i][j].fr;
-      lRb << fPointRecs[i][j].fdE;
-      lRb << fPointRecs[i][j].fdx;
-      lRb << fPointRecs[i][j].fdy;
-      lRb << fPointRecs[i][j].fdz;
-      lRb << fPointRecs[i][j].fPt;
-      for (ii=0;ii<4;ii++)              
-	lRb << fPointRecs[i][j].fOrigin[ii];
-      for (jj=0;jj<4;jj++)              
-	lRb << fPointRecs[i][j].fMomentum[jj];
-      lRb << fPointRecs[i][j].fCode;
-      lRb << fPointRecs[i][j].fName;
-      lRb << fPointRecs[i][j].phi;
-      lRb << fPointRecs[i][j].eta;
-      lRb << fPointRecs[i][j].vertexPhi;
-    }
-//      for(i=0;i<fSizeEvent/6;i++) for(j=0;j<n;j++){
-//        lRb << fspdi[i][j].lay;
-//        lRb << fspdi[i][j].lad;
-//        lRb << fspdi[i][j].det;
-//        lRb << fspdi[i][j].track;
-//        lRb << fspdi[i][j].fx;
-//        lRb << fspdi[i][j].fy;
-//        lRb << fspdi[i][j].fz;
-//        lRb << fspdi[i][j].fr;
-//        lRb << fspdi[i][j].fdE;
-//        lRb << fspdi[i][j].fdx;
-//        lRb << fspdi[i][j].fdy;
-//        lRb << fspdi[i][j].fdz;
-//        lRb << fspdi[i][j].fPt;
-//        for (ii=0;ii<4;ii++)              
-//  	lRb << fspdi[i][j].fOrigin[ii];
-//        for (jj=0;jj<4;jj++)              
-//  	lRb << fspdi[i][j].fMomentum[jj];
-//        lRb << fspdi[i][j].fCode;
-//        lRb << fspdi[i][j].fName;
-//        lRb << fspdi[i][j].phi;
-//        lRb << fspdi[i][j].eta;
-//        lRb << fspdi[i][j].vertexPhi;
-//      }
-//      for(i=0;i<fSizeEvent/6;i++) for(j=0;j<n;j++){
-//        lRb << fspdo[i][j].lay;
-//        lRb << fspdo[i][j].lad;
-//        lRb << fspdo[i][j].det;
-//        lRb << fspdo[i][j].track;
-//        lRb << fspdo[i][j].fx;
-//        lRb << fspdo[i][j].fy;
-//        lRb << fspdo[i][j].fz;
-//        lRb << fspdo[i][j].fr;
-//        lRb << fspdo[i][j].fdE;
-//        lRb << fspdo[i][j].fdx;
-//        lRb << fspdo[i][j].fdy;
-//        lRb << fspdo[i][j].fdz;
-//        lRb << fspdo[i][j].fPt;
-//        for (ii=0;ii<4;ii++)              
-//  	lRb << fspdo[i][j].fOrigin[ii];
-//        for (jj=0;jj<4;jj++)              
-//  	lRb << fspdo[i][j].fMomentum[jj];
-//        lRb << fspdo[i][j].fCode;
-//        lRb << fspdo[i][j].fName;
-//        lRb << fspdo[i][j].phi;
-//        lRb << fspdo[i][j].eta;
-//        lRb << fspdo[i][j].vertexPhi;
-//    }
-  } // end if reading
+  
+
+
+  Double_t  fd0 = -9999;      //  fake values
+  Double_t  u0 = -9999.9999;  //  for eventual 
+  Double_t  v0 = -9999.9999;  //  debugging
+  Double_t  rho = -9999.9999; //
+  Double_t fphi, fFit, chisql, z0, vpar, fCorrLin;
+
+  //
+  //  This info is no more there... to be re-considered... maybe
+  //
+  //   Double_t pP = sqrt(Px*Px+Py*Py+Pz*Pz);
+  //   Double_t pt = sqrt(Px*Px+Py*Py);
+  
+  TVector3 zError;
+  TVector2 zData;
+  Double_t corrLin;
+  TVector3 *ori        = new TVector3[NPoints];
+  TVector3 **original  = new TVector3*[NPoints];
+  TVector3 *rie        = new TVector3[NPoints];
+  TVector3 **riemann   = new TVector3*[NPoints];
+  TVector3 *err        = new TVector3[NPoints];
+  TVector3 **errors    = new TVector3*[NPoints];
+  TVector3 *linerr     = new TVector3[NPoints];
+  TVector3 **linerrors = new TVector3*[NPoints];
+  Double_t * weight = new Double_t[NPoints];
+  
+  for(Int_t i=0; i<NPoints; i++){
+
+    original[i]   = &(ori[i]);
+    riemann[i]   = &(rie[i]);
+    errors[i]     = &(err[i]);
+    linerrors[i]  = &(linerr[i]);
+
+    original[i]->SetXYZ(9999,9999,9999);
+  }
+
+  //
+  //  Riemann fit parameters
+  //
+  Double_t a11,a12,a13,a21,a22,a23,a31,a32,a33;
+  a11=0;a12=0;a13=0;a21=0;a22=0;a23=0;a31=0;a32=0;a33=0;
+  Double_t xbar = 0;
+  Double_t ybar = 0;
+  Double_t zbar = 0;
+  //
+  Double_t a,b,c,d;                  // cubic parameters 
+  Double_t roots[3]= {0.0,0.0,0.0};  // cubic solutions
+  Double_t value = 0.0;              // minimum eigenvalue
+  Double_t x1,x2,x3;                 // eigenvector component
+  Double_t n1,n2,n3,nr= 0;           // unit eigenvector 
+  TVector3 vVec,vVecNor;
+  
+  for (Int_t ip=0; ip<NPoints; ip++) {
+original[ip]->SetXYZ(0.1*fPointRecs[ip]->X(),0.1*fPointRecs[ip]->Y(),0.1*fPointRecs[ip]->Z());
+   
+errors[ip]->SetXYZ(0.1*fPointRecErrors[ip]->X(),0.1*fPointRecErrors[ip]->Y(),0.1*fPointRecErrors[ip]->Z());
+    weight[ip] = (1+original[ip]->Perp2())*(1+original[ip]->Perp2())/(errors[ip]->Perp2());
+    linerrors[ip]->SetXYZ(errors[ip]->X(),errors[ip]->Y(),errors[ip]->Z());
+  }
+
+
+  //
+  //
+  //  FIT ON THE RIEMANN SPHERE FOR (x,y) PLANE
+  //  
+  
+  RiemannTransf(NPoints,original,riemann);  
+
+  Double_t sumWeights = 0.0; // sum of weights factor
+
+  for(Int_t j=0;j<NPoints;j++){ // mean values for x[i],y[i],z[i]
+    xbar+=weight[j]*riemann[j]->X();
+    ybar+=weight[j]*riemann[j]->Y();
+    zbar+=weight[j]*riemann[j]->Z();
+    sumWeights+=weight[j];
+  }
+  
+  xbar /= sumWeights;
+  ybar /= sumWeights;
+  zbar /= sumWeights;
+  
+  for(Int_t j=0;j<NPoints;j++) {  // Calculate the matrix elements
+    a11 += weight[j]*(riemann[j]->X() - xbar)*(riemann[j]->X() - xbar);
+    a12 += weight[j]*(riemann[j]->X() - xbar)*(riemann[j]->Y() - ybar);
+    a22 += weight[j]*(riemann[j]->Y() - ybar)*(riemann[j]->Y() - ybar);
+    a23 += weight[j]*(riemann[j]->Y() - ybar)*(riemann[j]->Z() - zbar);
+    a13 += weight[j]*(riemann[j]->X() - xbar)*(riemann[j]->Z() - zbar);
+    a33 += weight[j]*(riemann[j]->Z() - zbar)*(riemann[j]->Z() - zbar);
+  }
+  //
+  // this doesn't seem to work...
+  //
+  //   a11 /= sumWeights;
+  //   a12 /= sumWeights;
+  //   a22 /= sumWeights;
+  //   a23 /= sumWeights;
+  //   a13 /= sumWeights;
+  //   a33 /= sumWeights;
+
+  a11 /= NPoints;
+  a12 /= NPoints;
+  a22 /= NPoints;
+  a23 /= NPoints;
+  a13 /= NPoints;
+  a33 /= NPoints;
+  a21 = a12;
+  a32 = a23;
+  a31 = a13;
+  
+// **************  Determinant  parameters ********************
+//   n.b. simplifications done keeping in mind symmetry of A
+//
+  a = 1;
+  b = (-a11-a33-a22);
+  c = (a11*(a22+a33)+a33*a22-a12*a21-a13*a31-a23*a32);
+  d = (a31*a22*a13+(a12*a21-a11*a22)*a33-2.0*a23*a13*a12+a11*a23*a32);
+
+// **************  Find the 3 eigenvalues *************************
+  Int_t checkCubic = SolveCubic(b,c,d,roots[0],roots[1],roots[2]);
+ 
+  if(checkCubic !=1 ){
+    printf("No real solution. Check data.\n");
+    delete [] weight;
+    return 999;
+  }
+  
+// **************** Find the lowest eigenvalue *****************
+  if(roots[0]<=roots[1] && roots[0]<=roots[2]) value = roots[0];
+  if(roots[1]<=roots[0] && roots[1]<=roots[2]) value = roots[1];
+  if(roots[2]<=roots[0] && roots[2]<=roots[1]) value = roots[2];
+
+  // ************ Eigenvector relative to value **************
+  x3 = 1;
+  x2 = (a33*a21-a23*a31-value*a21)/(a22*a31-a32*a21-value*a31);
+  x1 = (value-a33-a32*x2)/a31;
+  vVec.SetXYZ(x1,x2,x3);
+  vVecNor = vVec.Unit();
+  n1 = vVecNor.X();
+  n2 = vVecNor.Y();
+  n3 = vVecNor.Z();
+  nr = -n1*xbar-n2*ybar-n3*zbar; 
+
+  u0  = -0.5*n1/(nr+n3);
+  v0  = -0.5*n2/(nr+n3);
+  rho = sqrt((n1*n1 + n2*n2 -4*nr*(nr+n3))/(4*(nr+n3)*(nr+n3)));
+  
+
+  fFit = 0.0;
+  for (Int_t i=0; i<NPoints; i++) {
+  fFit += 10.*TMath::Abs(sqrt((original[i]->X()-u0)*(original[i]->X()-u0)+(original[i]->Y()-v0)*(original[i]->Y()-v0))-rho);
+  }
+  fd0      =   100000.*(TMath::Sqrt(u0*u0+v0*v0)-rho); // transverse impact parameter in microns 
+  fphi     =   TMath::ATan2(v0,u0);
+  
+//**************************************************************************
+//  LINEAR FIT IN (z,s) PLANE:    z = zData.X() + zData.Y()*s
+//  strictly linear (no approximation)
+//**************************************************************************
+
+       ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      //                                                                                                        //
+     //      REMEMBER, HERE STILL LENGHTS IN DM'S FOR ___INPUT___ BUT zDATA PARAMETERS ARE RETURNED IN CM'S    //
+    //       rho, u0, v0 parameters converted right now to cm's... it's a mess, I'll take care, sometimes...  //
+   //                                                                                                        //
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  rho    *=  10.0;
+  u0     *=  10.0;
+  v0     *=  10.0;
+  
+  ierrl=LinearFit(NPoints,original,linerrors,omega,u0,v0,fphi,zData,zError,corrLin);
+  if(ierrl==33) return 0;
+  chisql=zError.Z();
+//   fprintf(pout,"%f \n",chisql); 
+  z0=zData.X();
+  vpar=zData.Y();
+  fCorrLin = corrLin;
+  ierr = (ierrl > ierr ? ierrl : ierr);
+//   fclose(pout);
+  delete [] weight;
+  
+  f1=fphi;
+  f2=vpar/(omega*TMath::Abs(rho));
+  f3=1/rho;
+  delete[] ori;
+  delete[] rie;
+  delete[] err;
+  delete[] linerr;
+  delete[] original;
+  delete[] riemann;
+  delete[] errors;
+  delete[] linerrors;
+  
+  return 1;
+  
+
 }
+
+//____________________________________________________________
+
+Int_t AliITSRiemannFit::LinearFit(Int_t npoints, TVector3 **input, 
+                                 TVector3 **errors, Double_t omega,
+                                 Double_t &thu0, Double_t &thv0, Double_t &phi,TVector2 &zData, TVector3 &zError, 
+                                 Double_t &corrLin){
+  ///////////////////////////////////////////////////////////////////////
+  //   Fit the points in the (z,s) plane - helix 3rd equation
+  //
+  /////////////////////////////////////////////////////////////////////// 
+  //By R.Turrisi
+
+  Int_t direction=0;
+  //PH  Double_t z[npoints],x[npoints],y[npoints],s[npoints];
+  //PH  Double_t ez[npoints],ex[npoints],ey[npoints],es[npoints];
+  Double_t * z = new Double_t[npoints];
+  Double_t * x = new Double_t[npoints];
+  Double_t * y = new Double_t[npoints];
+  Double_t * s = new Double_t[npoints];
+  Double_t * ez = new Double_t[npoints];
+  Double_t * ex = new Double_t[npoints];
+  Double_t * ey = new Double_t[npoints];
+  Double_t * es = new Double_t[npoints];
+  Double_t z0=0.0,vpar=0.0,ez0=0.0,evpar=0.0, chisquare;
+
+
+  //  Double_t chi=TMath::Pi()/2.0+phi;
+  Double_t chi=-TMath::Pi()-phi;
+  Double_t angold=0.0, tpang=0.0;
+  for(Int_t k = 0; k<npoints; k++) {
+    x[k] = 10.0*input[k]->X();   ex[k] = 10.0*errors[k]->X();
+    y[k] = 10.0*input[k]->Y();   ey[k] = 10.0*errors[k]->Y();
+    z[k] = 10.0*input[k]->Z();   ez[k] = 10.0*errors[k]->Z();
+    if(TMath::Abs(x[k]-thu0)<1.0e-5) {  // should never happen, nor give troubles...
+      chisquare=9999.99; 
+      cerr<<"limit for  x-x_0 "<<x[k]<<" "<<thu0<<endl; 
+      delete [] z;
+      delete [] x;
+      delete [] y;
+      delete [] s;
+      delete [] ez;
+      delete [] ex;
+      delete [] ey;
+      delete [] es;
+      return 12;
+    }
+    Double_t ang1=TMath::ATan2((y[k]-thv0),(x[k]-thu0));
+    if( (x[k]-thu0)<0 ) {
+      if (ang1*angold<0) {
+	tpang=ang1-TMath::Sign(TMath::Pi()*2.0,ang1);
+	ang1=tpang;
+      }
+    }
+    angold=ang1;
+    if (k>0) direction+=(z[k]>z[k-1] ? 1 : -1);
+    s[k] = (ang1+chi)/omega;
+    es[k]=TMath::Sqrt(ey[k]*ey[k]+ex[k]*ex[k]/TMath::Power((x[k]-thu0),4))*TMath::Abs(s[k]);
+  }
+  if ( TMath::Abs(direction) != (npoints-1) ) {return 11;} 
+  
+  //  if(s[0]>-636 && s[0]<-625) return 33;
+
+  TGraph* fitHist = new TGraph(npoints,s,z);
+  TF1* f1 = new TF1("f1",Fitfunction,-100,100,2);
+
+  f1->SetParameter(0,1);
+  f1->SetParameter(1,1);
+  f1->SetLineColor(2);
+  fitHist->Fit(f1,"qQ"); 
+  
+  z0   = f1->GetParameter(0);
+  vpar = f1->GetParameter(1);
+  ez0  = f1->GetParError(0);
+  evpar= f1->GetParError(1);
+  chisquare=f1->GetChisquare();
+  zData.Set(z0,vpar);
+  zError.SetXYZ(ez0,evpar,chisquare);
+  
+  Double_t Sigmas=0.; 
+  Double_t Sigmaz=0.;
+  Double_t Avs=0.;
+  Double_t Avz=0.;
+  Double_t Avsz=0.;
+
+  for(Int_t j = 0; j < npoints; j++) {
+    Avs  += s[j];
+    Avz  += z[j]; 
+    Avsz += s[j]*z[j];
+  }
+    Avs  /= (Double_t)npoints;
+    Avz  /= (Double_t)npoints; 
+    Avsz /= (Double_t)npoints;
+
+  for(Int_t l = 0; l < npoints; l++) {
+    Sigmas += (s[l]-Avs)*(s[l]-Avs);
+    Sigmaz += (z[l]-Avz)*(z[l]-Avz);
+  }
+  Sigmas /=(Double_t)npoints;
+  Sigmaz /=(Double_t)npoints;
+
+  Sigmas = sqrt(Sigmas);
+  Sigmaz = sqrt(Sigmaz);
+  
+  corrLin = (Avsz-Avs*Avz)/(Sigmas*Sigmaz);
+  
+
+
+  delete [] z;
+  delete [] x;
+  delete [] y;
+  delete [] s;
+  delete [] ez;
+  delete [] ex;
+  delete [] ey;
+  delete [] es;
+  delete f1; delete fitHist;
+  return 0;
+}
+
+
+//_______________________________________________________
+
+Double_t AliITSRiemannFit::Fitfunction(Double_t *x, Double_t* par){
+
+  return par[0]+(*x)*par[1];
+
+}
+

@@ -108,7 +108,7 @@
 #pragma link C++ class  AliITSIOTrack+;
 #pragma link C++ class  AliITSTrackerV1+;
 #pragma link C++ class  AliITSgeoinfo+;
-#pragma link C++ class  AliITSRiemannFit-;
+#pragma link C++ class  AliITSRiemannFit+;
 // New used for Alignment studdies
 //#pragma link C++ class  AliITSAlignmentTrack-;
 //#pragma link C++ class  AliITSAlignmentModule-;
