@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/04/19 13:16:47  morsch
+  Minor changes on class names.
+
 */
 
 
@@ -127,6 +130,17 @@ Int_t AliRICHPoints::GetTrackIndex()
   this->Inspect();
   return fTrackIndex;
 }
+//_____________________________________________________________________________
+TParticle *AliRICHPoints::GetParticle() const
+{
+  //
+  //   Returns pointer to particle index in AliRun::fParticles
+  //
+  TClonesArray *particles = gAlice->Particles();
+  Int_t nparticles = particles->GetEntriesFast();
+  if (fIndex < 0 || fIndex >= nparticles) return 0;
+  return (TParticle*)particles->UncheckedAt(fIndex);
+}
 
 //_____________________________________________________________________________
 AliRICHHit *AliRICHPoints::GetHit() const
@@ -159,6 +173,88 @@ AliRICHDigit *AliRICHPoints::GetDigit() const
   Int_t ndigits = RICHdigits->GetEntriesFast();
   if (fDigitIndex < 0 || fDigitIndex >= ndigits) return 0;
   return (AliRICHDigit*)RICHdigits->UncheckedAt(fDigitIndex);
+}
+//----------------------------------------------------------------------------
+void AliRICHPoints::ShowRing(Int_t highlight) {
+   
+  AliRICH *RICH  = (AliRICH*)gAlice->GetDetector("RICH");
+  AliRICHChamber*       iChamber;
+  AliRICHSegmentation*  segmentation;
+
+      
+  AliRICHPoints *points = 0;
+  TMarker3DBox  *marker = 0;
+    
+  AliRICHHit *mHit = GetHit();
+
+  printf("Hit %d on chamber: %d\n",fHitIndex, mHit->fChamber);
+
+  TClonesArray *digits  = RICH->DigitsAddress(mHit->fChamber - 1);
+  iChamber = &(RICH->Chamber(mHit->fChamber - 1));
+  segmentation=iChamber->GetSegmentationModel();
+
+  Float_t dpx  = segmentation->Dpx();
+  Float_t dpy  = segmentation->Dpy();
+
+  int ndigits=digits->GetEntriesFast();
+  
+  printf("Show Ring called with %d digits\n",ndigits);
+  
+  for (int digit=0;digit<ndigits;digit++) {
+    AliRICHDigit *mdig = (AliRICHDigit*)digits->UncheckedAt(digit);
+    points = new AliRICHPoints(1);
+    
+     //printf("Particle %d belongs to ring %d \n", fTrackIndex, mdig->fTracks[1]);
+
+    if (!points) continue;
+    if (fTrackIndex == mdig->fTracks[0]) {
+
+      printf("Digit %d from particle %d belongs to ring %d \n", digit, fTrackIndex, mdig->fTracks[0]);
+
+      Int_t charge=mdig->fSignal;
+      Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(adc_satm)/22));
+      Int_t color=701+index;
+      if (color>722) color=722;
+      points->SetMarkerColor(color);
+      points->SetMarkerStyle(21);
+      points->SetMarkerSize(.5);
+      Float_t xpad, ypad;
+      segmentation->GetPadCxy(mdig->fPadX, mdig->fPadY,xpad, ypad);
+      Float_t VecLoc[3]={xpad,6.276,ypad};
+      Float_t  VecGlob[3];
+      points->SetParticle(-1);
+      points->SetHitIndex(-1);
+      points->SetTrackIndex(-1);
+      points->SetDigitIndex(digit);
+      iChamber->LocaltoGlobal(VecLoc,VecGlob);
+      points->SetPoint(0,VecGlob[0],VecGlob[1],VecGlob[2]);
+      
+      segmentation->GetPadCxy(mdig->fPadX, mdig->fPadY, xpad, ypad);
+      Float_t theta = iChamber->GetRotMatrix()->GetTheta();
+      Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
+      marker=new TMarker3DBox(VecGlob[0],VecGlob[1],VecGlob[2],
+			      dpy/2,0,dpx/2,theta,phi);
+      marker->SetLineColor(highlight);
+      marker->SetFillStyle(1001);
+      marker->SetFillColor(color);
+      marker->SetRefObject((TObject*)points);
+      points->Set3DMarker(0, marker);
+      
+      points->Draw("same");
+      for (Int_t im=0;im<3;im++) {
+	TMarker3DBox *marker=points->GetMarker(im);
+	if (marker)
+	  marker->Draw();
+      }
+      TClonesArray *particles=gAlice->Particles();
+      TParticle *p = (TParticle*)particles->UncheckedAt(fIndex);
+      printf("\nTrack index %d\n",fTrackIndex);
+      printf("Particle ID %d\n",p->GetPdgCode());
+      printf("Parent %d\n",p->GetFirstMother());
+      printf("First child %d\n",p->GetFirstDaughter());
+      printf("Px,Py,Pz %f %f %f\n",p->Px(),p->Py(),p->Pz());
+    }
+  }
 }
 //_____________________________________________________________________________
 struct Bin {
