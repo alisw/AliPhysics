@@ -1,6 +1,6 @@
 //$Id$
 
-// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>
 //*-- Copyright &copy Uli 
 
 #include <math.h>
