@@ -29,106 +29,106 @@ class TFluka : public TVirtualMC {
   virtual ~TFluka();
   
   //
-  // methods for building/management of geometry
+  // Methods for building/management of geometry
   // ------------------------------------------------
   //
   
-  // functions from GCONS 
-  virtual void  Gfmate(Int_t imat, char *name, Float_t &a, Float_t &z,  
-		       Float_t &dens, Float_t &radl, Float_t &absl,
-		       Float_t* ubuf, Int_t& nbuf);
-  virtual void  Gfmate(Int_t imat, char *name, Double_t &a, Double_t &z,  
-		       Double_t &dens, Double_t &radl, Double_t &absl,
-		       Double_t* ubuf, Int_t& nbuf);
+  // Functions from GCONS 
+  virtual void   Gfmate(Int_t imat, char *name, Float_t &a, Float_t &z,  
+			Float_t &dens, Float_t &radl, Float_t &absl,
+			Float_t* ubuf, Int_t& nbuf);
+  virtual void   Gfmate(Int_t imat, char *name, Double_t &a, Double_t &z,
+			Double_t &dens, Double_t &radl, Double_t &absl,
+			Double_t* ubuf, Int_t& nbuf);
   
-  // detector composition
-  virtual void  Material(Int_t& kmat, const char* name, Double_t a, 
-			 Double_t z, Double_t dens, Double_t radl, Double_t absl,
-			 Float_t* buf, Int_t nwbuf);
-  virtual void  Material(Int_t& kmat, const char* name, Double_t a, 
-			 Double_t z, Double_t dens, Double_t radl, Double_t absl,
-			 Double_t* buf, Int_t nwbuf);
-  virtual void  Mixture(Int_t& kmat, const char *name, Float_t *a, 
-			Float_t *z, Double_t dens, Int_t nlmat, Float_t *wmat);
-  virtual void  Mixture(Int_t& kmat, const char *name, Double_t *a, 
-			Double_t *z, Double_t dens, Int_t nlmat, Double_t *wmat);
-  virtual void  Medium(Int_t& kmed, const char *name, Int_t nmat, 
-		       Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
-		       Double_t stemax, Double_t deemax, Double_t epsil, 
-		       Double_t stmin, Float_t* ubuf, Int_t nbuf);
-  virtual void  Medium(Int_t& kmed, const char *name, Int_t nmat, 
-		       Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
-		       Double_t stemax, Double_t deemax, Double_t epsil, 
-		       Double_t stmin, Double_t* ubuf, Int_t nbuf);
-  virtual void  Matrix(Int_t& krot, Double_t thetaX, Double_t phiX, 
-		       Double_t thetaY, Double_t phiY, Double_t thetaZ, 
-		       Double_t phiZ);
-  virtual void  Gstpar(Int_t itmed, const char *param, Double_t parval);
+  // Detector composition
+  virtual void   Material(Int_t& kmat, const char* name, Double_t a, 
+			  Double_t z, Double_t dens, Double_t radl, Double_t absl,
+			  Float_t* buf, Int_t nwbuf);
+  virtual void   Material(Int_t& kmat, const char* name, Double_t a, 
+			  Double_t z, Double_t dens, Double_t radl, Double_t absl,
+			  Double_t* buf, Int_t nwbuf);
+  virtual void   Mixture(Int_t& kmat, const char *name, Float_t *a, 
+			 Float_t *z, Double_t dens, Int_t nlmat, Float_t *wmat);
+  virtual void   Mixture(Int_t& kmat, const char *name, Double_t *a, 
+			 Double_t *z, Double_t dens, Int_t nlmat, Double_t *wmat);
+  virtual void   Medium(Int_t& kmed, const char *name, Int_t nmat, 
+			Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
+			Double_t stemax, Double_t deemax, Double_t epsil, 
+			Double_t stmin, Float_t* ubuf, Int_t nbuf);
+  virtual void   Medium(Int_t& kmed, const char *name, Int_t nmat, 
+			Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
+			Double_t stemax, Double_t deemax, Double_t epsil, 
+			Double_t stmin, Double_t* ubuf, Int_t nbuf);
+  virtual void   Matrix(Int_t& krot, Double_t thetaX, Double_t phiX, 
+			Double_t thetaY, Double_t phiY, Double_t thetaZ, 
+			Double_t phiZ);
+  virtual void   Gstpar(Int_t itmed, const char *param, Double_t parval);
   
-  // functions from GGEOM 
+  // Functions from GGEOM 
   virtual Int_t  Gsvolu(const char *name, const char *shape, Int_t nmed,  
 			Float_t *upar, Int_t np);
   virtual Int_t  Gsvolu(const char *name, const char *shape, Int_t nmed,  
 			Double_t *upar, Int_t np);
-  virtual void  Gsdvn(const char *name, const char *mother, Int_t ndiv, 
-		      Int_t iaxis);
-  virtual void  Gsdvn2(const char *name, const char *mother, Int_t ndiv, 
-		       Int_t iaxis, Double_t c0i, Int_t numed);
-  virtual void  Gsdvt(const char *name, const char *mother, Double_t step, 
-		      Int_t iaxis, Int_t numed, Int_t ndvmx);
-  virtual void  Gsdvt2(const char *name, const char *mother, Double_t step, 
+  virtual void   Gsdvn(const char *name, const char *mother, Int_t ndiv, 
+		       Int_t iaxis);
+  virtual void   Gsdvn2(const char *name, const char *mother, Int_t ndiv, 
+			Int_t iaxis, Double_t c0i, Int_t numed);
+  virtual void   Gsdvt(const char *name, const char *mother, Double_t step, 
+		       Int_t iaxis, Int_t numed, Int_t ndvmx);
+  virtual void   Gsdvt2(const char *name, const char *mother, Double_t step, 
 		       Int_t iaxis, Double_t c0, Int_t numed, Int_t ndvmx);
-  virtual void  Gsord(const char *name, Int_t iax);
-  virtual void  Gspos(const char *name, Int_t nr, const char *mother,  
-		      Double_t x, Double_t y, Double_t z, Int_t irot, 
+  virtual void   Gsord(const char *name, Int_t iax);
+  virtual void   Gspos(const char *name, Int_t nr, const char *mother,  
+		       Double_t x, Double_t y, Double_t z, Int_t irot, 
 		      const char *konly="ONLY");
-  virtual void  Gsposp(const char *name, Int_t nr, const char *mother,  
-		       Double_t x, Double_t y, Double_t z, Int_t irot,
-		       const char *konly, Float_t *upar, Int_t np);
-  virtual void  Gsposp(const char *name, Int_t nr, const char *mother,  
-		       Double_t x, Double_t y, Double_t z, Int_t irot,
-		       const char *konly, Double_t *upar, Int_t np);
-  virtual void  Gsbool(const char* onlyVolName, const char* manyVolName);
+  virtual void   Gsposp(const char *name, Int_t nr, const char *mother,  
+			Double_t x, Double_t y, Double_t z, Int_t irot,
+			const char *konly, Float_t *upar, Int_t np);
+  virtual void   Gsposp(const char *name, Int_t nr, const char *mother,  
+			Double_t x, Double_t y, Double_t z, Int_t irot,
+			const char *konly, Double_t *upar, Int_t np);
+  virtual void   Gsbool(const char* onlyVolName, const char* manyVolName);
   
-  virtual void  SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
-			    Float_t *absco, Float_t *effic, Float_t *rindex);
-  virtual void  SetCerenkov(Int_t itmed, Int_t npckov, Double_t *ppckov,
-			    Double_t *absco, Double_t *effic, Double_t *rindex);
+  virtual void   SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
+			     Float_t *absco, Float_t *effic, Float_t *rindex);
+  virtual void   SetCerenkov(Int_t itmed, Int_t npckov, Double_t *ppckov,
+			     Double_t *absco, Double_t *effic, Double_t *rindex);
   
   
-  // functions for drawing
-  virtual void  DrawOneSpec(const char* /*name*/)
-    {printf("WARNING: DrawOneSpec not yet implemented !\n");}
-  virtual void  Gsatt(const char* name, const char* att, Int_t val);
-  virtual void  Gdraw(const char*,Double_t /*theta = 30*/, Double_t /*phi = 30*/,
-		      Double_t /*psi = 0*/, Double_t /*u0 = 10*/, Double_t /*v0 = 10*/,
-		      Double_t /*ul = 0.01*/, Double_t /*vl = 0.01*/)
-    {printf("WARNING: Gdraw not yet implemented !\n");}
+  // Functions for drawing
+  virtual void   DrawOneSpec(const char* /*name*/)
+      {printf("WARNING: DrawOneSpec not yet implemented !\n");}
+  virtual void   Gsatt(const char* name, const char* att, Int_t val);
+  virtual void   Gdraw(const char*,Double_t /*theta = 30*/, Double_t /*phi = 30*/,
+		       Double_t /*psi = 0*/, Double_t /*u0 = 10*/, Double_t /*v0 = 10*/,
+		       Double_t /*ul = 0.01*/, Double_t /*vl = 0.01*/)
+      {printf("WARNING: Gdraw not yet implemented !\n");}
   
   // Euclid
-  virtual void  WriteEuclid(const char*, const char*, Int_t, Int_t);
+  virtual void   WriteEuclid(const char*, const char*, Int_t, Int_t);
   
-  // get methods
-  virtual Int_t VolId(const Text_t* volName) const;
-  virtual const char* VolName(Int_t id) const;
-  virtual Int_t NofVolumes() const {return fNVolumes;}
-  virtual Int_t VolId2Mate(Int_t id) const;
+  // Getters
+  virtual Int_t  VolId(const Text_t* volName) const;
+  virtual const  char* VolName(Int_t id) const;
+  virtual Int_t  NofVolumes() const {return fNVolumes;}
+  virtual Int_t  VolId2Mate(Int_t id) const;
   //
-  // methods for physics management
+  // Methods for physics management
   // ------------------------------------------------
   //
   
-  // set methods
+  // User configuration
   virtual Bool_t   SetProcess(const char* flagName, Int_t flagValue);
   virtual void     SetProcess(const char* flagName, Int_t flagValue, Int_t imed);
   virtual Bool_t   SetCut(const char* cutName, Double_t cutValue);
   virtual void     SetCut(const char* cutName, Double_t cutValue, Int_t imed);
   virtual Double_t Xsec(char*, Double_t, Int_t, Int_t);
   
-  // particle table usage         
-  virtual Int_t   IdFromPDG(Int_t id) const;
-  virtual Int_t   PDGFromId(Int_t pdg) const;
-  virtual void    DefineParticles()
+  // Particle table usage         
+  virtual Int_t    IdFromPDG(Int_t id) const;
+  virtual Int_t    PDGFromId(Int_t pdg) const;
+  virtual void     DefineParticles()
   {printf("WARNING: DefineParticles not yet implemented !\n");}     
   
   //
@@ -136,31 +136,31 @@ class TFluka : public TVirtualMC {
   // ------------------------------------------------
   //
   
-  // action methods
+  // Action methods
   virtual void   StopTrack();
   virtual void   ResetStoppingCondition() {fStopped = kFALSE;}
   virtual Bool_t GetStoppingCondition()   {return fStopped;}
 
-  virtual void StopEvent()
-    {printf("WARNING: StopEvent not yet implemented !\n");}   
-  virtual void StopRun()
-    {printf("WARNING: StopRun not yet implemented !\n");}
+  virtual void   StopEvent() {fStopEvent = kTRUE;}   
+  virtual void   StopRun()   {fStopEvent = kTRUE; fStopRun   = kTRUE;}
+  virtual Bool_t EventIsStopped() {return fStopEvent;}
+  virtual void   SetStopEvent(Bool_t flag) {fStopEvent = flag;}
   
-  // set methods
+  // Set methods
   virtual void SetMaxStep(Double_t);
   virtual void SetMaxNStep(Int_t);
   virtual void SetUserDecay(Int_t);
   
-  // get methods
-  // tracking volume(s) 
+  // Get methods
+  // Tracking volume(s) 
   virtual Int_t    CurrentVolID(Int_t& copyNo) const;
   virtual Int_t    CurrentVolOffID(Int_t off, Int_t& copyNo) const;
   virtual const char* CurrentVolName() const;
   virtual const char* CurrentVolOffName(Int_t off) const;
   virtual Int_t    CurrentMaterial(Float_t &a, Float_t &z, 
 				   Float_t &dens, Float_t &radl, Float_t &absl) const;
-  virtual Int_t    CurrentEvent() const
-      {printf("WARNING: CurrentEvent not yet implemented !\n"); return -1;} 
+  virtual Int_t    CurrentEvent() const {return fNEvent;}
+
   virtual void     Gmtod(Float_t* xm, Float_t* xd, Int_t iflag);
   
   virtual void     Gmtod(Double_t* xm, Double_t* xd, Int_t iflag);
@@ -175,7 +175,7 @@ class TFluka : public TVirtualMC {
     {printf("WARNING: GetMaxNStep not yet implemented !\n"); return -1;}
   virtual Int_t    GetMedium() const;
   
-  // tracking particle 
+  // Tracking particle 
   // dynamic properties
   virtual void     TrackPosition(TLorentzVector& position) const;
   virtual void     TrackPosition(Double_t& x, Double_t& y, Double_t& z) const;
@@ -185,12 +185,12 @@ class TFluka : public TVirtualMC {
   virtual Double_t TrackLength() const;
   virtual Double_t TrackTime() const;
   virtual Double_t Edep() const;
-  // static properties
+  // Static properties
   virtual Int_t    TrackPid() const;
   virtual Double_t TrackCharge() const;
   virtual Double_t TrackMass() const;
   virtual Double_t Etot() const;
-  // track status
+  // Track status
   virtual Bool_t   IsNewTrack() const;
   virtual Bool_t   IsTrackInside() const;
   virtual Bool_t   IsTrackEntering() const;
@@ -200,16 +200,13 @@ class TFluka : public TVirtualMC {
   virtual Bool_t   IsTrackStop() const;
   virtual Bool_t   IsTrackAlive() const;
  
-  // secondaries
+  // Secondaries
   virtual Int_t    NSecondaries() const ;
   virtual void     GetSecondary(Int_t isec, Int_t& particleId, 
 			TLorentzVector& position, TLorentzVector& momentum);
   virtual Bool_t   SecondariesAreOrdered() const {return kFALSE;}
   virtual TMCProcess ProdProcess(Int_t iproc) const ;
-  virtual Int_t    StepProcesses(TArrayI &/*proc*/) const
-    {printf("WARNING: StepProcesses not yet implemented !\n"); return -1;}
-  
-  
+  virtual Int_t    StepProcesses(TArrayI & proc) const;
   //
   // Geant3 specific methods
   // !!! need to be transformed to common interface
@@ -235,21 +232,30 @@ class TFluka : public TVirtualMC {
     {printf("WARNING: Gckmat not yet implemented !\n");}
   virtual void InitLego()
     {printf("WARNING: InitLego not yet implemented !\n");}
-  virtual void Gfpart(Int_t, char*, Int_t&, Float_t&, Float_t&, Float_t&)
-    {printf("WARNING: Gfpart not yet implemented !\n");}
+//
+  virtual void Gfpart(Int_t pdg, char* name, Int_t& type, Float_t& mass, Float_t& charge, Float_t& tlife);
   virtual void Gspart(Int_t, const char*, Int_t, Double_t, Double_t, Double_t)
-    {printf("WARNING: Gspart not yet implemented !\n");}
-  
-    // Dummy methods 
-    virtual Bool_t DefineParticle(int, const char*, TMCParticleType, double, double, double) {return kTRUE;}
-    virtual Bool_t DefineIon(const char*, int, int, int, double, double) {return kTRUE;}
-    virtual TString  ParticleName(int) const {return "";}
-    virtual Double_t ParticleMass(int) const {return 0.;}
-    virtual Double_t ParticleCharge(int) const {return 0.;}
-    virtual Double_t ParticleLifeTime(int) const {return 0.;}
-    virtual TMCParticleType ParticleMCType(int) const {return (TMCParticleType) 0;}
+      {printf("WARNING: Gspart not yet implemented !\n");}
+
+
   //
-  // control methods
+  // FLUKA Scoring specific methods
+  // ------------------------------
+  //
+  virtual void SetUserScoring(const char* option, Int_t npar, Float_t* what);
+  //
+  // Particle Properties
+  // -------------------
+  //
+  virtual Bool_t DefineParticle(int, const char*, TMCParticleType, double, double, double) {return kFALSE;}
+  virtual Bool_t DefineIon(const char*, int, int, int, double, double) {return kFALSE;}
+  virtual TString  ParticleName(int pdg)      const;
+  virtual Double_t ParticleMass(int pdg)      const;
+  virtual Double_t ParticleCharge(int pdg)    const;
+  virtual Double_t ParticleLifeTime(int pdg)  const;
+  virtual TMCParticleType ParticleMCType(int) const {return (TMCParticleType) 9;}
+  //
+  // Control methods
   // ------------------------------------------------
   //
   
@@ -261,7 +267,7 @@ class TFluka : public TVirtualMC {
   virtual Bool_t ProcessRun(Int_t nevent);
 
   //
-  //New Getter and Setters
+  // New Getter and Setters
   // ------------------------------------------------
   //
   // - Core input file name
@@ -336,13 +342,13 @@ class TFluka : public TVirtualMC {
 
   Bool_t  SetFlukaScoringOption(Float_t what[12], const char* sdum) {return kTRUE;}
       
- private:
+  private:
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &) {return (*this);}
 
   
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
-
+  Int_t   fNEvent;         //Current event number
   TString fInputFileName;     //Name of the real input file 
   TString fCoreInputFileName; //Name of the input file 
 
@@ -360,10 +366,13 @@ class TFluka : public TVirtualMC {
   Bool_t   fGeneratePemf;     // Flag for automatic .pemf generation
   Int_t    fDummyBoundary;    // Flag for crossing dummy boundaries
   Bool_t   fStopped;          // Flag for stopping 
+  Bool_t   fStopEvent;        // Flag for stopped event
+  Bool_t   fStopRun;          // Flag for stopped run 
   
-
+  //
   //Geometry through TGeo
-  Int_t*               fMaterials;         //!Array of indices
+  //
+  Int_t*               fMaterials;          //!Array of indices
   Int_t                fNVolumes;           //!Current number of volumes
   Int_t                fCurrentFlukaRegion; //Index of fluka region at each step
   TFlukaMCGeometry    *fGeom;               // TGeo-FLUKA interface

@@ -66,8 +66,9 @@ extern "C" {
    *----------------------------------------------------------------------*/
 
   void source(Int_t& nomore) {
-    // Get the pointer to TFluka
+// Get the pointer to TFluka
     TFluka* fluka = (TFluka*)gMC;
+
     Int_t verbosityLevel = fluka->GetVerbosityLevel();
     Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
     if (debug) {
@@ -78,14 +79,12 @@ extern "C" {
     static Bool_t lfirst = true;
     static Bool_t particleIsPrimary = true;
     static Bool_t lastParticleWasPrimary = true;
-      
-      /*  +-------------------------------------------------------------------*
-       *    First call initializations for FLUKA:                             */
-      
 
     nomore = 0;
-    // Get the stack 
+    
+//  Get the stack 
     TVirtualMCStack* cppstack = fluka->GetStack();
+
     TParticle* particle;
     Int_t itrack = -1;
     Int_t  nprim  = cppstack->GetNprimary();
@@ -102,8 +101,6 @@ extern "C" {
 	particleIsPrimary = kTRUE;
     }
 
-//    printf("--->Got Particle %d %d %d\n", itrack, particleIsPrimary, lastParticleWasPrimary);    
-
     if (lfirst) {
 	EPISOR.tkesum = zerzer;
 	lfirst = false;
@@ -115,12 +112,11 @@ extern "C" {
 	if (particleIsPrimary) {
 	    TVirtualMCApplication::Instance()->PostTrack();
 	    TVirtualMCApplication::Instance()->FinishPrimary();
-       if ((itrack%10)==0) printf("=== TRACKING PRIMARY %d ===\n", itrack);
+	    if ((itrack%10)==0) printf("=== TRACKING PRIMARY %d ===\n", itrack);
 	}
     }
 
-    //Exit if itrack is negative (-1). Set lsouit to false to mark last track for
-    //this event
+    // Exit if itrack is negative (-1). Set lsouit to false to mark last track for this event
 
     if (itrack<0) {
       nomore = 1;
@@ -133,11 +129,20 @@ extern "C" {
       return;
     }
     
+    //
+    // Handle user event abortion
+    if (fluka->EventIsStopped()) {
+	printf("Event has been stopped by user !");
+	fluka->SetStopEvent(kFALSE);
+	nomore = 1;
+	EPISOR.lsouit = false;
+	return;
+    }
+
     //Get some info about the particle and print it
     //
     //pdg code
     Int_t pdg = particle->GetPdgCode();
-    
     TVector3 polarisation;
     particle->GetPolarisation(polarisation);
     if (debug) {
@@ -163,7 +168,6 @@ extern "C" {
     //STACK.ilo[STACK.lstack] = BEAM.ijbeam;
     if (pdg != 50000050 &&  pdg !=  50000051) {
 	STACK.lstack++;
-
 	STACK.ilo[STACK.lstack] = fluka-> IdFromPDG(pdg);
 	
 	/* Wt is the weight of the particle*/
@@ -262,7 +266,9 @@ extern "C" {
 	STACK.nlattc[STACK.lstack] = LTCLCM.mlattc;
 	soevsv();
     } else {
+        //
 	// Next particle is optical photon
+	//
 	OPPHST.lstopp++;
 	OPPHST.donear [OPPHST.lstopp - 1] = 0.;
 
@@ -306,23 +312,7 @@ extern "C" {
 	OPPHST.agopph [OPPHST.lstopp - 1] = particle->T();	
 	OPPHST.cmpopp [OPPHST.lstopp - 1] = +zerzer;
 	OPPHST.loopph [OPPHST.lstopp - 1] = 0;
-//	Int_t mother = particle->GetFirstMother();
 	OPPHST.louopp [OPPHST.lstopp - 1] = itrack;
-/*
-	if (mother > -1) {
-	    TParticle* mparticle = cppstack->Particle(mother);
-	    OPPHST.apropp [OPPHST.lstopp - 1] = mparticle->T();
-	    Int_t mpdg = mparticle->GetPdgCode();
-	    if (mpdg == 50000050 || mpdg 50000051) {
-		OPPHST.ipropp [OPPHST.lstopp - 1] = -1;	    
-		OPPHST.tpropp [OPPHST.lstopp - 1] = mparticle->Energy();
-	    } else {
-		OPPHST.ipropp [OPPHST.lstopp - 1] = mpdg;
-		OPPHST.tpropp [OPPHST.lstopp - 1] = mparticle->Energy() - mparticle->GetMass();
-	    }
-
-	}
-*/
     }
     
 //

@@ -54,7 +54,9 @@
 #include "TGeoMCGeometry.h"
 #include "TFlukaCerenkov.h"
 #include "TFlukaConfigOption.h"
+#include "TFlukaScoringOption.h"
 #include "TLorentzVector.h"
+#include "TArrayI.h"
 
 // Fluka methods that may be needed.
 #ifndef WIN32 
@@ -112,6 +114,9 @@ TFluka::TFluka()
    fDummyBoundary = 0;
    fFieldFlag = 1;
    fStopped   = 0;
+   fStopEvent = 0;
+   fStopRun   = 0;
+   fNEvent    = 0;
 } 
  
 //______________________________________________________________________________ 
@@ -142,6 +147,9 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    if (verbosity > 2) fGeom->SetDebugMode(kTRUE);
    fMaterials = 0;
    fStopped   = 0;
+   fStopEvent = 0;
+   fStopRun   = 0;
+   fNEvent    = 0;
 }
 
 //______________________________________________________________________________ 
@@ -250,13 +258,23 @@ void TFluka::ProcessEvent() {
 //
 // Process one event
 //
-  if (fVerbosityLevel >=3)
-    cout << "==> TFluka::ProcessEvent() called." << endl;
-  fApplication->GeneratePrimaries();
-  EPISOR.lsouit = true;
-  flukam(1);
-  if (fVerbosityLevel >=3)
-    cout << "<== TFluka::ProcessEvent() called." << endl;
+    if (fStopRun) {
+	printf("User Run Abortion: No more events handled !\n");
+	fNEvent += 1;
+	return;
+    }
+
+    if (fVerbosityLevel >=3)
+	cout << "==> TFluka::ProcessEvent() called." << endl;
+    fApplication->GeneratePrimaries();
+    EPISOR.lsouit = true;
+    flukam(1);
+    if (fVerbosityLevel >=3)
+	cout << "<== TFluka::ProcessEvent() called." << endl;
+    //
+    // Increase event number
+    //
+    fNEvent += 1;
 }
 
 //______________________________________________________________________________ 
@@ -853,6 +871,16 @@ Bool_t TFluka::SetCut(const char* cutName, Double_t cutValue)
     
     return kTRUE;  
 }
+
+void TFluka::SetUserScoring(const char* option, Int_t npar, Float_t what[12])
+{
+//
+// Ads a user scoring option to th list
+//
+    TFlukaScoringOption* opt = new TFlukaScoringOption(option, "User Scoring", npar, what);
+    fUserScore->Add(opt);
+}
+
 
 //______________________________________________________________________________ 
 Double_t TFluka::Xsec(char*, Double_t, Int_t, Int_t)
@@ -2455,26 +2483,63 @@ TMCProcess TFluka::ProdProcess(Int_t) const
 
     Int_t mugamma = (TRACKR.jtrack == 7 || TRACKR.jtrack == 10 || TRACKR.jtrack == 11);
 
-    if (fIcode == 102) return kPDecay;
+    if      (fIcode == 102)                  return kPDecay;
     else if (fIcode == 104 || fIcode == 217) return kPPair;
-    else if (fIcode == 219) return kPCompton;
-    else if (fIcode == 221) return kPPhotoelectric;
+    else if (fIcode == 219)                  return kPCompton;
+    else if (fIcode == 221)                  return kPPhotoelectric;
     else if (fIcode == 105 || fIcode == 208) return kPBrem;
     else if (fIcode == 103 || fIcode == 400) return kPDeltaRay;
     else if (fIcode == 210 || fIcode == 212) return kPDeltaRay;
     else if (fIcode == 214 || fIcode == 215) return kPAnnihilation;
-    else if (fIcode == 101) return kPHadronic;
+    else if (fIcode == 101)                  return kPHadronic;
     else if (fIcode == 101) {
-      if (!mugamma) return kPHadronic;
-      else if (TRACKR.jtrack == 7) return kPPhotoFission;
-      else return kPMuonNuclear;
+	if (!mugamma)                        return kPHadronic;
+	else if (TRACKR.jtrack == 7)         return kPPhotoFission;
+	else return kPMuonNuclear;
     }
-    else if (fIcode == 225) return kPRayleigh;
+    else if (fIcode == 225)                  return kPRayleigh;
 // Fluka codes 100, 300 and 400 still to be investigasted
-    else return kPNoProcess;
+    else                                     return kPNoProcess;
 }
 
 
+Int_t TFluka::StepProcesses(TArrayI &proc) const
+{
+  //
+  // Return processes active in the current step
+  //
+    proc.Set(1);
+    TMCProcess iproc;
+    switch (fIcode) {
+    case 15:
+    case 24:
+    case 33:
+    case 41:
+    case 52:
+	iproc =  kPTOFlimit;
+	break;
+    case 12:
+    case 14:
+    case 21:
+    case 22:
+    case 23:
+    case 31:
+    case 32:
+    case 40:
+    case 51:
+	iproc =  kPStop;
+	break;
+    case 50:
+	iproc = kPLightAbsorption;
+	break;
+    case 20: 
+	iproc = kPPhotoelectric;
+	break;
+    default:
+	iproc = ProdProcess(0);
+    }
+    return 1;
+}
 //______________________________________________________________________________ 
 Int_t TFluka::VolId2Mate(Int_t id) const
 {
@@ -2652,6 +2717,50 @@ void TFluka::SetMreg(Int_t l)
 }
 
 
+
+
+TString TFluka::ParticleName(Int_t pdg) const
+{
+    // Return particle name for particle with pdg code pdg.
+    Int_t ifluka = IdFromPDG(pdg);
+    return TString((CHPPRP.btype[ifluka+6]), 8);
+}
+ 
+
+Double_t TFluka::ParticleMass(Int_t pdg) const
+{
+    // Return particle mass for particle with pdg code pdg.
+    Int_t ifluka = IdFromPDG(pdg);
+    return (PAPROP.am[ifluka+6]);
+}
+
+Double_t TFluka::ParticleCharge(Int_t pdg) const
+{
+    // Return particle charge for particle with pdg code pdg.
+    Int_t ifluka = IdFromPDG(pdg);
+    return Double_t(PAPROP.ichrge[ifluka+6]);
+}
+
+Double_t TFluka::ParticleLifeTime(Int_t pdg) const
+{
+    // Return particle lifetime for particle with pdg code pdg.
+    Int_t ifluka = IdFromPDG(pdg);
+    return (PAPROP.thalf[ifluka+6]);
+}
+
+void TFluka::Gfpart(Int_t pdg, char* name, Int_t& type, Float_t& mass, Float_t& charge, Float_t& tlife)
+{
+    // Retrieve particle properties for particle with pdg code pdg.
+    
+    strcpy(name, ParticleName(pdg).Data());
+    type   = ParticleMCType(pdg);
+    mass   = ParticleMass(pdg);
+    charge = ParticleCharge(pdg);
+    tlife  = ParticleLifeTime(pdg);
+}
+
+
+
 #define pushcerenkovphoton pushcerenkovphoton_
 
 
@@ -2674,5 +2783,4 @@ extern "C" {
 			    kPCerenkov, ntr, wgt, 0); 
     }
 }
-
 
