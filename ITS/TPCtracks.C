@@ -270,7 +270,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
 
    printf("before delete gAlice\n");
 
-   delete gAlice; gAlice=0;
+   //delete gAlice; gAlice=0;
 
    printf("after delete gAlice\n");
    file->Close();
