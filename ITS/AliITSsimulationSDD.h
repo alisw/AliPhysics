@@ -40,7 +40,7 @@ class AliITSsimulationSDD : public AliITSsimulation {
     void Init(AliITSsegmentationSDD *seg,AliITSresponseSDD *resp);
 
     // get the address of the array mapping the signal or pointers to arrays
-    virtual AliITSMap*  HitMap(Int_t i);
+//    virtual AliITSMap*  HitMap(Int_t i);
 
     // set the scale size factor for the smples in FFT
     virtual void SetScaleFourier(Int_t scale=4) {fScaleSize=scale;}
@@ -49,6 +49,10 @@ class AliITSsimulationSDD : public AliITSsimulation {
     virtual void SetPerpendTracksFlag(Bool_t flag=kFALSE) {fFlag=flag;}
     // returns perpendicular track flag.
     Bool_t PerpendTracksFlag() const {return fFlag;} 
+    // set crosstalk flag
+    virtual void SetCrosstalkFlag(Bool_t flag=kFALSE) {fCrosstalkFlag=flag;}
+    // return crosstalk flag
+    Bool_t CrosstalkFlag() const {return fCrosstalkFlag;}
     // set compression parameters for 2D or 1D via response functions
     void SetCompressParam();
     // retrieve compression parameters for 2D or 1D
@@ -82,24 +86,34 @@ class AliITSsimulationSDD : public AliITSsimulation {
 
     // add baseline, noise, electronics and ADC saturation effects
     void ChargeToSignal();
+    // add dead channels
+    void ApplyDeadChannels();
+    // add crosstalk effect
+    void ApplyCrosstalk();
+    
+    // create maps to build the lists of tracks for each summable digit
+    void InitSimulationModule( Int_t module, Int_t event );
+    // clear maps
+    void ClearMaps();
     // Summable Digitses a SDD module
     void SDigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev);
+//    // Add Summable digits to module maps.
+//    void AddSDigitsToModule( TClonesArray *pItemArray, Int_t mask );
+    // digitize module from the sum of summable digits.
+    void FinishSDigitiseModule();
     // Writes summable digits
-    void WriteSDigits(AliITSpList *pList);
+    void WriteSDigits();
     // Introduces electronics effects and does zero-suppresion if required
-    void FinishDigits(TObjArray *alist);
-    // Take the summable digits and create digits.
-    void SDigitsToDigits(AliITSpList *pList);
+    void FinishDigits();
     // Digitses a SDD module
     void DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev);
     // Spread charge in a SDD module
-    void HitsToAnalogDigits(AliITSmodule *mod,TObjArray *alist,
-			    TClonesArray *padr,AliITSpList *pList);
+    void HitsToAnalogDigits(AliITSmodule *mod);
     // Sorts tracks for the 3 most highly contributed one to be added to digit.
-    void SortTracks(Int_t *tracks,Float_t *charges,Int_t *hits,Int_t ntracks);
+    //void SortTracks(Int_t *tracks,Float_t *charges,Int_t *hits,Int_t ntracks);
     // collects and returns the fired SDD cells (uses AliITSMapA2...).
-    void ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,TObjArray *list,
-			  TClonesArray *padr);
+    //void ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,TObjArray *list,
+	//		  TClonesArray *padr);
 
     // Creates histograms of maps for debugging
     void CreateHistograms(Int_t scale);
@@ -133,8 +147,11 @@ class AliITSsimulationSDD : public AliITSsimulation {
  private:
     // Variables and pointers for local use only. Not Streamed out.
     AliITS         *fITS;          //! local pointer to ITS
-    AliITSMapA1    *fHitMap1;      //! local pointer to map of digits
+//    AliITSMapA1    *fHitMap1;      //! local pointer to map of digits
     AliITSMapA2    *fHitMap2;      //! local pointer to map of signals
+//    AliITSpList    *fpList;        //! 
+//    TObjArray      *falist;        //
+//    TClonesArray   *fpadr;         //
     AliITSInStream *fStream;       //! input file stream
     AliITSetfSDD   *fElectronics;  //! local pointer to electronics simulation
     Double_t       *fInZR;         //! [fScaleSize*fMaxNofSamples] input of the
@@ -158,12 +175,13 @@ class AliITSsimulationSDD : public AliITSsimulation {
     TString    fFileName;     // File name for possible options above
     Bool_t     fFlag;         // Flag used to simulate perpendicular tracks
     Bool_t     fCheckNoise;   // Flag used to check the simulated noise
+    Bool_t     fCrosstalkFlag; // Flag used to apply the crosstalk effect
     Int_t      fDoFFT;        // Flag used to switch off electronics when 0
     Int_t      fNofMaps;      // Number of anodes used ( 1-2*nanodes per wing )
     Int_t      fMaxNofSamples;// Number of time samples
     Int_t      fScaleSize;    // scale size factor for the samples in FFT
-    Int_t      fModule;       // in case bgr,noise,param,change module-by-mod.
-    Int_t      fEvent;        // solely for output from bgr monitoring of 2D
+//    Int_t      fModule;       //! in case bgr,noise,param,change module-by-mod.
+//    Int_t      fEvent;        //! solely for output from bgr monitoring of 2D
 
   ClassDef(AliITSsimulationSDD,1)  // Simulation of SDD clusters
 

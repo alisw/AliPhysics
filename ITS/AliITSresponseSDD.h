@@ -8,20 +8,22 @@
 
 // response for SDD
 
-class AliITSresponseSDD : public AliITSresponse {
- public:
-    //
-    // Configuration methods
-    //
+class AliITSresponseSDD :
+  public AliITSresponse {
+public:
+  //
+  // Configuration methods
+  //
   
-    AliITSresponseSDD();
-    AliITSresponseSDD(const char *dataType);
-    virtual ~AliITSresponseSDD();
+  AliITSresponseSDD();
+  AliITSresponseSDD(const char *dataType);
+  
+  virtual ~AliITSresponseSDD();
 
-    void SetElectronics(Int_t p1=1) {
-	// Electronics: Pascal (1) or OLA (2)
-	fElectronics=p1;
-    }
+  void SetElectronics(Int_t p1=1) {
+    // Electronics: Pascal (1) or OLA (2)
+    fElectronics=p1;
+  }
   
   Int_t Electronics() {
     // Electronics: 1 = Pascal; 2 = OLA
@@ -206,6 +208,19 @@ class AliITSresponseSDD : public AliITSresponse {
     return fGaus->At(i);
   }
   void SetDeadChannels(Int_t nmodules=0, Int_t nchips=0, Int_t nchannels=0);
+
+  Int_t GetDeadModules() { return fDeadModules; }
+  Int_t GetDeadChips() { return fDeadChips; }
+  Int_t GetDeadChannels() { return fDeadChannels; }
+  Float_t Gain( Int_t mod, Int_t chip, Int_t ch) 
+    { return fGain[mod][chip][ch]; }
+
+  // these functions should be move to AliITSsegmentationSDD
+  const Int_t Modules() const { return fModules; }     // Total number of SDD modules
+  const Int_t Chips() const { return fChips; }         // Number of chips/module
+  const Int_t Channels() const { return fChannels; }    // Number of channels/chip
+  //********
+  
   void    PrintGains();
   void    Print();
 
@@ -216,10 +231,15 @@ private:
   AliITSresponseSDD& operator=(const AliITSresponseSDD &source); // ass. op.
     
 protected:
-  
+  // these statis const should be move to AliITSsegmentationSDD
   static const Int_t fModules = 520;     // Total number of SDD modules
   static const Int_t fChips = 4;        // Number of chips/module
   static const Int_t fChannels = 64;    // Number of channels/chip
+  //*******
+  
+  Int_t fDeadModules;     				// Total number of dead SDD modules
+  Int_t fDeadChips;  	  				// Number of dead chips
+  Int_t fDeadChannels;    				// Number of dead channels
   Float_t   fGain[fModules][fChips][fChannels];   // Array for channel gains
 
   Int_t     fCPar[8];        // Hardware compression parameters
@@ -254,7 +274,14 @@ protected:
   TString         fFileName2;        // baseline & noise val or output coded                                                 // signal or monitored bgr.
   TString         fFileName3;        // param values or output coded signal 
   
-  ClassDef(AliITSresponseSDD,2) // SDD response
-};
+  ClassDef(AliITSresponseSDD,2) // SDD response 
+    
+    };
 #endif
+
+
+
+
+
+
 
