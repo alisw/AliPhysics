@@ -19,7 +19,7 @@ void multi()
     const Float_t drift = 90;
     
 //  open file and get graph objects
-    TFile*  file = new TFile("graph.root", "read");
+    TFile*  file = new TFile("DsigmaDb.root", "read");
     TGraph* gs1 =  gAlice = (TGraph*)(file->Get("Graph;1"));
     TGraph* gs2 =  gAlice = (TGraph*)(file->Get("Graph;2"));
 // initialize arrays
