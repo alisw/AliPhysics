@@ -1160,14 +1160,14 @@ void AliVZEROv2::MakeBranch(Option_t *option)
   sprintf(branchname,"%s",GetName());
   printf(" fBufferSize = %d \n",fBufferSize);
   
-  char *H = strstr(option,"H");
+  const char *H = strstr(option,"H");
   
   if (fHits   && gAlice->TreeH() && H) {
     gAlice->TreeH()->Branch(branchname,&fHits, fBufferSize);
     printf("* AliDetector::MakeBranch * Making Branch %s for hits\n",branchname);
   }     
 
-  char *D = strstr(option,"D");
+  const char *D = strstr(option,"D");
   //
   if (fDigits   && gAlice->TreeD() && D) {
     gAlice->TreeD()->Branch(branchname,&fDigits, fBufferSize);
