@@ -360,7 +360,7 @@ void TGeant4::StartGeantUI() {
 
 void TGeant4::StartRootUI() {
 //
-  fRunManager->StartGeantUI();
+  fRunManager->StartRootUI();
 }  
 
 void TGeant4::ProcessGeantMacro(const char* macroName) {
