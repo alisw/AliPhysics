@@ -135,6 +135,10 @@
 #pragma link C++ class  AliCascadeVertexer+;
 
 #pragma link C++ class  AliITSVertex+;
+#pragma link C++ class  AliITSVertexer+;
+#pragma link C++ class  AliITSVertexerIons+;
+#pragma link C++ class  AliITSVertexerPPZ+;
+
 // Classes for neural tracking
 #pragma link C++ class AliITSglobalRecPoint+;
 #pragma link C++ class AliITSneuron+;
