@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/05/22 11:39:48  buncic
+Restored proper name for top level AliRoot folder.
+
 Revision 1.6  2001/05/21 17:22:50  buncic
 Fixed problem with missing AliConfig while reading galice.root
 
@@ -89,7 +92,6 @@ int main(int argc, char **argv)
   // in the event.
   
   // Create new configuration 
-  new AliConfig ("Folders","Alice data exchange");
   
   new AliRun("gAlice","The ALICE Off-line Simulation Framework");
     
