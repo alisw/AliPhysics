@@ -118,7 +118,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	for (i=0; i<fMul[cath]; i++)
 	{
 	    // pointer to digit
-	    fDig[i][cath]=fInput->Digit(cath, c->fIndexMap[i][cath]);
+	    fDig[i][cath]=fInput->Digit(cath, c->GetIndex(i, cath));
 	    // pad coordinates
 	    fIx[i][cath]= fDig[i][cath]->PadX();
 	    fIy[i][cath]= fDig[i][cath]->PadY();
@@ -457,7 +457,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 				
 				cnew.SetMultiplicity(cath,c->GetMultiplicity(cath));
 			      	for (i=0; i<fMul[cath]; i++) {
-				    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
+				    cnew.SetIndex(i, cath, c->GetIndex(i,cath));
 				    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 				}
 				fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
@@ -741,7 +741,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			cnew.SetZ(cath, fZPlane);
 			cnew.SetMultiplicity(cath, c->GetMultiplicity(cath));
 			for (i=0; i<fMul[cath]; i++) {
-			    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
+			    cnew.SetIndex(i, cath, c->GetIndex(i, cath));
 			    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 			}
 			fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
@@ -879,7 +879,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			cnew.SetZ(cath, fZPlane);
 			cnew.SetMultiplicity(cath, c->GetMultiplicity(cath));
 			for (i=0; i<fMul[cath]; i++) {
-			    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
+			    cnew.SetIndex(i, cath, c->GetIndex(i, cath));
 			    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 			}
 			fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
@@ -955,7 +955,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		    cnew.SetZ(cath, fZPlane);
 		    cnew.SetMultiplicity(cath, c->GetMultiplicity(cath));
 		    for (i=0; i<fMul[cath]; i++) {
-			cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
+			cnew.SetIndex(i, cath, c->GetIndex(i, cath));
 			fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 		    }
 		    FillCluster(&cnew,cath);
@@ -1204,17 +1204,17 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
 	fprintf(stderr,"\n fPeakSignal %d\n",c->GetPeakSignal(cath));
     for (Int_t i=0; i<c->GetMultiplicity(cath); i++)
     {
-	dig= fInput->Digit(cath,c->fIndexMap[i][cath]);
-	ix=dig->PadX()+c->fOffsetMap[i][cath];
+	dig= fInput->Digit(cath,c->GetIndex(i,cath));
+	ix=dig->PadX()+c->GetOffset(i,cath);
 	iy=dig->PadY();
 	Int_t q=dig->Signal();
-	if (!flag) q=Int_t(q*c->fContMap[i][cath]);
+	if (!flag) q=Int_t(q*c->GetContrib(i,cath));
 //	fprintf(stderr,"q %d c->fPeakSignal[ %d ] %d\n",q,cath,c->fPeakSignal[cath]);
 	if (dig->Physics() >= dig->Signal()) {
-	    c->fPhysicsMap[i]=2;
+	    c->SetPhysics(i,2);
 	} else if (dig->Physics() == 0) {
-	    c->fPhysicsMap[i]=0;
-	} else  c->fPhysicsMap[i]=1;
+	    c->SetPhysics(i,0);
+	} else  c->SetPhysics(i,1);
 //
 // 
 	if (fDebugLevel>1)
@@ -1279,7 +1279,7 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
 
     for (Int_t i=0; i<c->GetMultiplicity(cath); i++)
     {
-	dig = fInput->Digit(cath,c->fIndexMap[i][cath]);
+	dig = fInput->Digit(cath,c->GetIndex(i,cath));
 	fSeg[cath]->
 	GetPadC(dig->PadX(),dig->PadY(),xpad,ypad, zpad);
 	if (fDebugLevel)
@@ -1294,10 +1294,10 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
 		fprintf(stderr," dr %f\n",dr);
 	    Int_t q=dig->Signal();
 	    if (dig->Physics() >= dig->Signal()) {
-		c->fPhysicsMap[i]=2;
+		c->SetPhysics(i,2);
 	    } else if (dig->Physics() == 0) {
-		c->fPhysicsMap[i]=0;
-	    } else  c->fPhysicsMap[i]=1;
+		c->SetPhysics(i,0);
+	    } else  c->SetPhysics(i,1);
 	    c->SetPeakSignal(cath,q);
 	    c->SetTrack(0,dig->Hit());
 	    c->SetTrack(1,dig->Track(0));
@@ -1341,25 +1341,25 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
 //  Make sure that list of digits is ordered 
 // 
     Int_t mu=c.GetMultiplicity(cath);
-    c.fIndexMap[mu][cath]=idx;
+    c.SetIndex(mu, cath, idx);
     
     if (dig->Physics() >= dig->Signal()) {
-        c.fPhysicsMap[mu]=2;
+        c.SetPhysics(mu,2);
     } else if (dig->Physics() == 0) {
-        c.fPhysicsMap[mu]=0;
-    } else  c.fPhysicsMap[mu]=1;
+        c.SetPhysics(mu,0);
+    } else  c.SetPhysics(mu,1);
 
     
     if (mu > 0) {
 	for (Int_t ind = mu-1; ind >= 0; ind--) {
-	    Int_t ist=(c.fIndexMap)[ind][cath];
+	    Int_t ist=c.GetIndex(ind,cath);
 	    Int_t ql=fInput->Digit(cath, ist)->Signal();
 	    Int_t ix=fInput->Digit(cath, ist)->PadX();
 	    Int_t iy=fInput->Digit(cath, ist)->PadY();
 	    
 	    if (q>ql || (q==ql && theX > ix && theY < iy)) {
-		c.fIndexMap[ind][cath]=idx;
-		c.fIndexMap[ind+1][cath]=ist;
+		c.SetIndex(ind, cath, idx);
+		c.SetIndex(ind+1, cath, ist);
 	    } else {
 		
 		break;
@@ -1539,11 +1539,11 @@ void AliMUONClusterFinderVS::FindRawClusters()
 //
 //      reset Cluster object
 	{ // begin local scope
-	    for (int k=0;k<c.GetMultiplicity(0);k++) c.fIndexMap[k][0]=0;
+	    for (int k=0;k<c.GetMultiplicity(0);k++) c.SetIndex(k, 0, 0);
 	} // end local scope
 
 	{ // begin local scope
-	    for (int k=0;k<c.GetMultiplicity(1);k++) c.fIndexMap[k][1]=0;
+	    for (int k=0;k<c.GetMultiplicity(1);k++) c.SetIndex(k, 1, 0);
 	} // end local scope
 	
 	c.SetMultiplicity(0,0);
@@ -1972,12 +1972,10 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 	    }
 	    fSeg[cath]->SetHit(fXFit[j],fYFit[j],fZPlane);
 	    for (i=0; i<fMul[cath]; i++) {
-		cnew.fIndexMap[cnew.GetMultiplicity(cath)][cath]=
-		    c->fIndexMap[i][cath];
+		cnew.SetIndex(cnew.GetMultiplicity(cath), cath, c->GetIndex(i,cath));
 		fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 		Float_t q1=fInput->Response()->IntXY(fSeg[cath]);
-		cnew.fContMap[i][cath]
-		    =(q1*Float_t(cnew.GetCharge(cath)))/Float_t(fQ[i][cath]);
+		cnew.SetContrib(i, cath, q1*Float_t(cnew.GetCharge(cath))/Float_t(fQ[i][cath]));
 		cnew.SetMultiplicity(cath, cnew.GetMultiplicity(cath)+1 );
 	    }
 	    FillCluster(&cnew,0,cath);

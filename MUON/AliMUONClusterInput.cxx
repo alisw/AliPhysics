@@ -117,7 +117,7 @@ void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
 	for (i=0; i<fNmul[cath]; i++) {
 	    // pointer to digit
 	    digit =(AliMUONDigit*)
-		(fDigits[cath]->UncheckedAt(cluster->fIndexMap[i][cath]));
+		(fDigits[cath]->UncheckedAt(cluster->GetIndex(i,cath)));
 	    // pad coordinates
 	    ix = digit->PadX();
 	    iy = digit->PadY();

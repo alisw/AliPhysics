@@ -45,6 +45,10 @@ public:
    Int_t        GetGhost() const;
    Int_t        GetNcluster(Int_t i) const;
    Float_t      GetChi2(Int_t i) const;
+   Int_t        GetIndex(Int_t i, Int_t j) const;
+   Int_t        GetOffset(Int_t i, Int_t j) const;
+   Float_t      GetContrib(Int_t i, Int_t j) const;
+   Int_t        GetPhysics(Int_t i) const;
 
    Int_t        SetCharge(Int_t i,Int_t Q);
    Int_t        SetX(Int_t i, Float_t X);
@@ -57,13 +61,17 @@ public:
    Int_t        SetGhost(Int_t ghost);
    Int_t        SetNcluster(Int_t i, Int_t ncluster);
    Int_t        SetChi2(Int_t i, Float_t chi2);
+   void         SetIndex(Int_t i, Int_t j, Int_t index);
+   void         SetOffset(Int_t i, Int_t j, Int_t offset);
+   void         SetContrib(Int_t i, Int_t j, Float_t contrib);
+   void         SetPhysics(Int_t i, Int_t physics);
 
+private:
    Int_t       fIndexMap[50][2];  // indeces of digits
    Int_t       fOffsetMap[50][2]; // Emmanuel special
    Float_t     fContMap[50][2];   // Contribution from digit
    Int_t       fPhysicsMap[50];   // Distinguish signal and background contr.
   
-private:
    Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
    Float_t     fX[2]  ;           // X of cluster
    Float_t     fY[2]  ;           // Y of cluster
@@ -82,6 +90,33 @@ private:
 
    ClassDef(AliMUONRawCluster,1)  //Cluster class for MUON
 };
+
+// inline functions
+
+inline  Int_t  AliMUONRawCluster::GetIndex(Int_t i, Int_t j) const
+{ return fIndexMap[i][j]; }
+
+inline  Int_t  AliMUONRawCluster::GetOffset(Int_t i, Int_t j) const
+{ return fOffsetMap[i][j]; }
+
+inline  Float_t  AliMUONRawCluster::GetContrib(Int_t i, Int_t j) const
+{ return fContMap[i][j]; }
+
+inline  Int_t  AliMUONRawCluster::GetPhysics(Int_t i) const
+{ return fPhysicsMap[i]; }
+
+inline  void  AliMUONRawCluster::SetIndex(Int_t i, Int_t j, Int_t index)
+{ fIndexMap[i][j] = index; }
+
+inline  void  AliMUONRawCluster::SetOffset(Int_t i, Int_t j, Int_t offset)
+{ fOffsetMap[i][j] = offset; }
+
+inline  void  AliMUONRawCluster::SetContrib(Int_t i, Int_t j, Float_t contrib)
+{ fContMap[i][j] = contrib; }
+
+inline  void  AliMUONRawCluster::SetPhysics(Int_t i, Int_t physics)
+{ fPhysicsMap[i] = physics; }
+
 #endif
 
 
