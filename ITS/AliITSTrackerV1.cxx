@@ -478,7 +478,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	
 	
 	///////////////////////////////////////////////
-
+   /*
 	//////   propagation to the end of TPC //////////////
 	Double_t xk=77.415;
 	track->PropagateTo(xk, 28.94, 1.204e-3,mass);	 //Ne    
@@ -499,7 +499,43 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	xk -=0.5;
 	track->PropagateTo(xk, 41.28, 0.029,mass);	 //Nomex
     ////////////////////////////////////////////////////////////////////
+    */
+	 //   new propagation to the end of TPC
+    //Double_t xk=80.;
+    //track->PropagateTo(xk,0.,0.); //Ne if it's still there
+	 Double_t xk=77.415;	 
+	 track->PropagateTo(xk, 28.94, 1.204e-3);
+    xk-=0.005;
+    track->PropagateTo(xk, 44.77,1.71); //Tedlar	 
+    xk-=0.02;
+    track->PropagateTo(xk, 44.86, 1.45);   //Kevlar
+    xk-=2.0;
+    track->PropagateTo(xk, 41.28, 0.029);//Nomex
+    xk-=0.02;
+    track->PropagateTo(xk, 44.86, 1.45);   //Kevlar
+    xk-=0.005;
+    track->PropagateTo(xk, 44.77, 1.71); //Tedlar
 
+    xk=61.;
+    //track->PropagateTo(xk,0.,0.); //C02
+	 track->PropagateTo(xk,36.2,1.98e-3); //C02	 
+
+    xk -=0.005;
+    track->PropagateTo(xk, 24.01, 2.7);    //Al    
+    xk -=0.005;
+    track->PropagateTo(xk, 44.77, 1.71);  //Tedlar
+    xk -=0.02;
+    track->PropagateTo(xk, 44.86, 1.45);    //Kevlar
+    xk -=0.5;
+    track->PropagateTo(xk, 41.28, 0.029);  //Nomex    
+    xk -=0.02;
+    track->PropagateTo(xk, 44.86, 1.45);    //Kevlar
+    xk -=0.005;
+    track->PropagateTo(xk, 44.77, 1.71);  //Tedlar
+    xk -=0.005;
+    track->PropagateTo(xk, 24.01, 2.7);    //Al    
+	 
+	 
 	AliITSTrackV1 trackITS(*track);     
 	trackITS.PutMass(mass);	  //new to add mass to track
 	if(fresult){ delete fresult; fresult=0;}   	 
