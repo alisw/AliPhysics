@@ -1,4 +1,4 @@
-      SUBROUTINE READCA3
+      SUBROUTINE ELOSS_READCA3
       REAL*8           xx(400), da(30), ca(30,260), rrr(30)
       COMMON /data/    xx, da, ca, rrr
 *
