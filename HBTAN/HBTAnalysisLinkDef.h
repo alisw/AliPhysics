@@ -52,6 +52,9 @@
 #pragma link C++ class AliHBTQLongCMSLCCut+;
 #pragma link C++ class AliHBTAvSeparationCut+;
 #pragma link C++ class AliHBTCluterOverlapCut+;
+#pragma link C++ class AliHBTLogicalOperPairCut-;
+#pragma link C++ class AliHBTOrPairCut+;
+#pragma link C++ class AliHBTAndPairCut+;
     
 #pragma link C++ class AliHBTMomentumCut+;
 #pragma link C++ class AliHBTPtCut+;
@@ -165,7 +168,8 @@
 #pragma link C++ class AliHBTMonThetaResolutionVsThetaFctn+;
 
 #pragma link C++ class AliHBTTwoTrackEffFctn+;
-#pragma link C++ class AliHBTTwoTrackEffFctn3D+;
+#pragma link C++ class AliHBTTwoTrackEffFctnPtThetaPhi+;
+#pragma link C++ class AliHBTTwoTrackEffFctnPxPyPz+;
 
 #pragma link C++ class AliHBTWeights+;
 #pragma link C++ class AliHBTCrab+;

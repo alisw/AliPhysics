@@ -311,6 +311,7 @@ void AliHBTPairCut::Streamer(TBuffer &b)
       b.SetByteCount(R__c, kTRUE);
     }
 }
+/******************************************************************/
 
 ClassImp(AliHBTEmptyPairCut)
   
@@ -319,6 +320,7 @@ void AliHBTEmptyPairCut::Streamer(TBuffer &b)
 //streamer for empty pair cut
   AliHBTPairCut::Streamer(b);
 }
+/******************************************************************/
 
 ClassImp(AliHbtBasePairCut)
 ClassImp(AliHBTQInvCut)
@@ -326,8 +328,9 @@ ClassImp(AliHBTKtCut)
 ClassImp(AliHBTQSideCMSLCCut)
 ClassImp(AliHBTQOutCMSLCCut)
 ClassImp(AliHBTQLongCMSLCCut)
-ClassImp(AliHBTAvSeparationCut)
 
+/******************************************************************/
+ClassImp(AliHBTAvSeparationCut)
     
 Double_t AliHBTAvSeparationCut::GetValue(AliHBTPair* pair) const 
 {
@@ -336,18 +339,19 @@ Double_t AliHBTAvSeparationCut::GetValue(AliHBTPair* pair) const
   if ( tpts1 == 0x0)
    {//it could be simulated pair
 //     Warning("GetValue","Track 1 does not have Track Points. Pair NOT Passed.");
-     return 10e5;
+     return -1.0;
    }
 
   AliHBTTrackPoints* tpts2 = pair->Particle2()->GetTrackPoints();
   if ( tpts2 == 0x0)
    {
 //     Warning("GetValue","Track 2 does not have Track Points. Pair NOT Passed.");
-     return 10e5;
+     return -1.0;
    }
    
   return tpts1->AvarageDistance(*tpts2);
 }
+/******************************************************************/
 
 ClassImp(AliHBTCluterOverlapCut)
 
@@ -374,3 +378,99 @@ Double_t  AliHBTCluterOverlapCut::GetValue(AliHBTPair* pair) const
    }
   return cm1->GetOverlapFactor(*cm2);
 }
+/******************************************************************/
+
+ClassImp( AliHBTLogicalOperPairCut )
+
+AliHBTLogicalOperPairCut::AliHBTLogicalOperPairCut():
+ AliHbtBasePairCut(-10e10,10e10,kHbtPairCutPropNone),
+ fFirst(new AliHBTDummyBasePairCut),
+ fSecond(new AliHBTDummyBasePairCut)
+{
+ //ctor
+}
+/******************************************************************/
+
+AliHBTLogicalOperPairCut::AliHBTLogicalOperPairCut(AliHbtBasePairCut* first, AliHbtBasePairCut* second):
+ AliHbtBasePairCut(-10e10,10e10,kHbtPairCutPropNone),
+ fFirst((first)?(AliHbtBasePairCut*)first->Clone():0x0),
+ fSecond((second)?(AliHbtBasePairCut*)second->Clone():0x0)
+{
+  //ctor
+  //note that base cuts are copied, not just pointers assigned
+  if ( (fFirst && fSecond) == kFALSE) 
+   {
+     Fatal("AliHBTLogicalOperPairCut","One of parameters is NULL!");
+   }
+}
+/******************************************************************/
+
+AliHBTLogicalOperPairCut::~AliHBTLogicalOperPairCut()
+{
+  //destructor
+  delete fFirst;
+  delete fSecond;
+}
+/******************************************************************/
+
+Bool_t AliHBTLogicalOperPairCut::AliHBTDummyBasePairCut::Pass(AliHBTPair* /*pair*/)  const
+{
+  //checks if particles passes properties defined by this cut
+  Warning("Pass","You are using dummy base cut! Probobly some logical cut is not set up properly");
+  return kFALSE;//accept
+}
+/******************************************************************/
+
+void AliHBTLogicalOperPairCut::Streamer(TBuffer &b)
+{
+  // Stream all objects in the array to or from the I/O buffer.
+  UInt_t R__s, R__c;
+  if (b.IsReading()) 
+   {
+     delete fFirst;
+     delete fSecond;
+     fFirst  = 0x0;
+     fSecond = 0x0;
+
+     b.ReadVersion(&R__s, &R__c);
+     TObject::Streamer(b);
+     b >> fFirst;
+     b >> fSecond;
+     b.CheckByteCount(R__s, R__c,AliHBTLogicalOperPairCut::IsA());
+   } 
+  else 
+   {
+     R__c = b.WriteVersion(AliHBTLogicalOperPairCut::IsA(), kTRUE);
+     TObject::Streamer(b);
+     b << fFirst;
+     b << fSecond;
+     b.SetByteCount(R__c, kTRUE);
+  }
+}
+
+/******************************************************************/
+ClassImp(AliHBTOrPairCut)
+
+Bool_t AliHBTOrPairCut::Pass(AliHBTPair * p) const
+{
+  //returns true when rejected 
+  //AND operation is a little bit misleading but is correct
+  //User wants to build logical cuts with natural (positive) logic
+  //while HBTAN use inernally reverse (returns true when rejected)
+  if (fFirst->Pass(p) && fSecond->Pass(p) ) return kTRUE;//rejected (both rejected, returned kTRUE)
+  return kFALSE;//accepted, at least one accepted (returned kFALSE)
+}
+/******************************************************************/
+
+ClassImp(AliHBTAndPairCut)
+
+Bool_t AliHBTAndPairCut::Pass(AliHBTPair * p)  const
+{
+  //returns true when rejected 
+  //OR operation is a little bit misleading but is correct
+  //User wants to build logical cuts with natural (positive) logic
+  //while HBTAN use inernally reverse (returns true when rejected)
+  if (fFirst->Pass(p) || fSecond->Pass(p)) return kTRUE;//rejected (any of two rejected(returned kTRUE) )
+  return kFALSE;//accepted (both accepted (returned kFALSE))
+}
+/******************************************************************/

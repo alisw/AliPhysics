@@ -25,6 +25,7 @@ enum AliHBTPairCutProperty
   kHbtPairCutPropClOverlap,
   kHbtPairCutPropNone
 };
+/******************************************************************/
 
 class AliHBTPairCut: public TNamed
 {
@@ -107,7 +108,7 @@ class AliHbtBasePairCut: public TObject
   
   virtual   ~AliHbtBasePairCut(){}
      
-  Bool_t    Pass(AliHBTPair* pair) const;
+  virtual Bool_t    Pass(AliHBTPair* pair) const;
   
   void      SetRange(Double_t min, Double_t max){fMin = min; fMax = max;}
   
@@ -130,6 +131,7 @@ class AliHbtBasePairCut: public TObject
   ClassDef(AliHbtBasePairCut,1)
  
  };
+/******************************************************************/
 
 inline Bool_t AliHbtBasePairCut::Pass(AliHBTPair* pair) const
 {
@@ -143,6 +145,7 @@ inline Bool_t AliHbtBasePairCut::Pass(AliHBTPair* pair) const
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
+
 class AliHBTQInvCut: public AliHbtBasePairCut
 {
  public:
@@ -153,7 +156,7 @@ class AliHBTQInvCut: public AliHbtBasePairCut
   
   ClassDef(AliHBTQInvCut,1)
  };
-
+/******************************************************************/
 
 class AliHBTKtCut: public AliHbtBasePairCut {
  public:
@@ -164,6 +167,7 @@ class AliHBTKtCut: public AliHbtBasePairCut {
 
   ClassDef(AliHBTKtCut,1)
  };
+/******************************************************************/
 
 class AliHBTKStarCut: public AliHbtBasePairCut
 {
@@ -175,6 +179,7 @@ class AliHBTKStarCut: public AliHbtBasePairCut
 
   ClassDef(AliHBTKStarCut,1)
 };
+/******************************************************************/
 
 class AliHBTQSideCMSLCCut: public AliHbtBasePairCut
 {
@@ -188,6 +193,7 @@ class AliHBTQSideCMSLCCut: public AliHbtBasePairCut
 
   ClassDef(AliHBTQSideCMSLCCut,1)
 };
+/******************************************************************/
 
 
 class AliHBTQOutCMSLCCut: public AliHbtBasePairCut
@@ -202,6 +208,7 @@ class AliHBTQOutCMSLCCut: public AliHbtBasePairCut
   
   ClassDef(AliHBTQOutCMSLCCut,1)
 };
+/******************************************************************/
 
 class AliHBTQLongCMSLCCut: public AliHbtBasePairCut
 {
@@ -215,7 +222,7 @@ class AliHBTQLongCMSLCCut: public AliHbtBasePairCut
 
   ClassDef(AliHBTQLongCMSLCCut,1)
 };
-
+/******************************************************************/
   
 class AliHBTAvSeparationCut: public AliHbtBasePairCut
 {
@@ -228,6 +235,7 @@ class AliHBTAvSeparationCut: public AliHbtBasePairCut
   virtual Double_t  GetValue(AliHBTPair* pair) const;
   ClassDef(AliHBTAvSeparationCut,1)
 };
+/******************************************************************/
 
 class AliHBTCluterOverlapCut: public AliHbtBasePairCut
 {
@@ -240,5 +248,49 @@ class AliHBTCluterOverlapCut: public AliHbtBasePairCut
   virtual Double_t  GetValue(AliHBTPair* pair) const;
   ClassDef(AliHBTCluterOverlapCut,1)
 };
-  
+/******************************************************************/
+
+class AliHBTLogicalOperPairCut:  public AliHbtBasePairCut
+ {
+   public:
+     AliHBTLogicalOperPairCut();
+     AliHBTLogicalOperPairCut(AliHbtBasePairCut* first, AliHbtBasePairCut* second);
+     virtual   ~AliHBTLogicalOperPairCut();
+   protected:
+     Double_t  GetValue(AliHBTPair * /*pair*/) const {MayNotUse("GetValue");return 0.0;}
+
+     AliHbtBasePairCut* fFirst;   //second cut
+     AliHbtBasePairCut* fSecond;  //first cut
+   private:
+    class  AliHBTDummyBasePairCut: public AliHbtBasePairCut
+     {
+       Double_t  GetValue(AliHBTPair* /*pair*/) const {return 0.0;}
+       Bool_t    Pass(AliHBTPair* /*pair*/) const;
+     };
+
+    ClassDef(AliHBTLogicalOperPairCut,1)
+ };
+/******************************************************************/
+
+class AliHBTOrPairCut: public AliHBTLogicalOperPairCut
+{
+   public:
+     AliHBTOrPairCut(){}
+     AliHBTOrPairCut(AliHbtBasePairCut* first, AliHbtBasePairCut* second):AliHBTLogicalOperPairCut(first,second){}
+     virtual   ~AliHBTOrPairCut(){}
+     Bool_t    Pass(AliHBTPair *p) const;
+     ClassDef(AliHBTOrPairCut,1)
+};
+/******************************************************************/
+
+class AliHBTAndPairCut: public AliHBTLogicalOperPairCut
+{
+   public:
+     AliHBTAndPairCut(){}
+     AliHBTAndPairCut(AliHbtBasePairCut* first, AliHbtBasePairCut* second):AliHBTLogicalOperPairCut(first,second){}
+     virtual   ~AliHBTAndPairCut(){}
+     Bool_t    Pass(AliHBTPair *p) const;
+     ClassDef(AliHBTAndPairCut,1)
+};
+
 #endif
