@@ -57,7 +57,7 @@ class AliPHOSFastRecParticle : public TParticle {
      return kFALSE ;
    }
 
-  Bool_t GetPhotonHiPu_LoEf()  {
+  Bool_t IsPhotonHiPu_LoEf()  {
     Bool_t pid=kFALSE ;
     if(TestPIDBit(8)&&TestPIDBit(7)&&TestPIDBit(6)&& //PCA
        TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)&& //TOF
@@ -65,7 +65,7 @@ class AliPHOSFastRecParticle : public TParticle {
       pid = kTRUE;
     return pid ;
   }
-  Bool_t GetPhotonMed_Pu_Ef(){
+  Bool_t IsPhotonMed_Pu_Ef(){
     Bool_t pid=kFALSE ;
     if(TestPIDBit(7)&&TestPIDBit(6)&& //PCA
        TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)&& //TOF
@@ -73,12 +73,18 @@ class AliPHOSFastRecParticle : public TParticle {
       pid = kTRUE ;
     return pid ;
   } 
-  Bool_t GetPhotonHiEf_LoPu()  {
+  Bool_t IsPhotonHiEf_LoPu()  {
     Bool_t pid=kFALSE ;
     if(TestPIDBit(6)&& //PCA
        TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)&& //TOF
        TestPIDBit(2)&&TestPIDBit(1)&&TestPIDBit(0))  //RCPV
       pid = kTRUE ;
+    return pid ;
+  }
+
+ Bool_t IsPhoton()  {
+    Bool_t pid=kFALSE ;
+    if(IsPhotonHiEf_LoPu()) pid = kTRUE ;
     return pid ;
   }
 
@@ -98,10 +104,10 @@ class AliPHOSFastRecParticle : public TParticle {
     // sets the value of the index in the list 
     fIndexInList = val ; 
   } 
-
-  enum EParticleType { kUNDEFINED=-1,  
-		       kCHARGEDHASLOW, kNEUTRALHASLOW, kCHARGEDHAFAST, kNEUTRALHAFAST,
-		       kCHARGEDEMSLOW, kNEUTRALEMSLOW, kCHARGEDEMFAST, kNEUTRALEMFAST} ; 
+  enum EParticleType { kUNDEFINED=-1, 
+		       kNEUTRALEMFAST, kNEUTRALHAFAST,  kNEUTRALEMSLOW, kNEUTRALHASLOW, 
+		       kCHARGEDEMFAST, kCHARGEDHAFAST,  kCHARGEDEMSLOW, kCHARGEDHASLOW } ; 
+  
 
   typedef TClonesArray  FastRecParticlesList ; 
 
