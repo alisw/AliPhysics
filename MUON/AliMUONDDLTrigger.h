@@ -19,16 +19,20 @@ public:
    Int_t   GetGlobalOuput()        const {return fGlobalOutput;}
    Int_t   GetEoD()                const {return fEndOfDDL;}  
 
-   //DarcId:2,Version:8,SerialNb:4,EventType:4,MBZ:14;
-   Char_t   GetDarcId()    {return (Char_t)(fddlWord >> 30) &  0x10;}
-   Char_t   GetVersion()   {return (Char_t)(fddlWord >> 22) &  0xFF;}
-   Char_t   GetSerialNb()  {return (Char_t)(fddlWord >> 18) &  0xF;}
-   Char_t   GetEventType() {return (Char_t)(fddlWord >> 14) &  0xF;}
+   //DarcId:4,SerialNb:4,Version:8,EventType:4,GlobalFlag:4,MBZ:8;
+   Char_t   GetDarcId()     {return (Char_t)(fddlWord >> 28) &  0xF;}
+   Char_t   GetSerialNb()   {return (Char_t)(fddlWord >> 24) &  0xF;}
+   Char_t   GetVersion()    {return (Char_t)(fddlWord >> 16) &  0xFF;}
+   Char_t   GetEventType()  {return (Char_t)(fddlWord >> 12) &  0xF;}
+   Char_t   GetGlobalFlag() {return (Char_t)(fddlWord >>  8) &  0xF;}
 
    void    SetDDLWord(UInt_t w) {fddlWord = w;}
    void    SetGlobalInput(Int_t in, Int_t n) {fGlobalInput[n] = in;}
    void    SetGlobalOutput(Int_t out) {fGlobalOutput = out;}
    void    SetEoD(Int_t e) {fEndOfDDL = e;}  
+
+   const Int_t GetHeaderLength() const {return fgkHeaderLength;}
+
 
    UInt_t* GetEnhancedHeader() {return &fddlWord;}
 
@@ -40,6 +44,9 @@ public:
    UInt_t    fddlWord;           // first word
    Int_t     fGlobalInput[4];    // global input
    Int_t     fGlobalOutput;      // global ouput
+
+   static const Int_t fgkHeaderLength; // header length
+
    Int_t     fEndOfDDL;          // end of DDL
 
    AliRawDataHeader fHeader;   // header of DDL

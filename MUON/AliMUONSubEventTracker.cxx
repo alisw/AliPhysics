@@ -17,6 +17,8 @@
 
 ClassImp(AliMUONSubEventTracker)
 
+ const Int_t AliMUONSubEventTracker::fgkHeaderLength = 4;
+
 //___________________________________________
 AliMUONSubEventTracker::AliMUONSubEventTracker()
   :  TObject(),
@@ -49,7 +51,7 @@ void AliMUONSubEventTracker::AddData(UInt_t data)
 {
   // could have used class from ROOT
   // but the structure must be as simple as possible
-  // to be written on disc blockwise
+  // to be written on disc blockwise, not so sure ?
   if (fLength == fBufSize) 
     ResizeData();
   fData[fLength++] = data;

@@ -20,6 +20,7 @@ public:
    Int_t   GetDspId()          const {return fDSPId;}
    Int_t   GetBlkTriggerWord(Int_t n) const {return fBlkTriggerWord[n];}
    const Int_t   GetPadding()  const {return fPadding;}
+   const Int_t   GetBlkHeaderLength() const {return fgkBlkHeaderLength;}
 
    void    SetTotalBlkLength(Int_t l) {fTotalBlkLength = l;}
    void    SetBlkLength(Int_t l)      {fBlkLength = l;}
@@ -38,6 +39,7 @@ public:
    void    SetDSPId1(Int_t d)         {fDSPId1 = d;}  
    void    SetDspTriggerWord(Int_t w, Int_t n) {fDspTriggerWord[n] = w;}
    void    SetEventWord(Int_t w)      {fEventWord = w;}
+   const Int_t   GetDspHeaderLength() const {return fgkDspHeaderLength;}
 
    Int_t* GetBlkHeader() {return &fTotalBlkLength;}
    Int_t* GetDspHeader() {return &fTotalDspLength;}
@@ -45,7 +47,7 @@ public:
    AliRawDataHeader GetHeader(){return fHeader;}
    Int_t GetHeaderSize() {return sizeof(AliRawDataHeader)/4;} // in words
 
-   const Int_t   GetEoD()      const {return fEndOfDDL;}  
+   const Int_t   GetEoD()      const {return fgkEndOfDDL;}  
 
  private:
 
@@ -55,6 +57,7 @@ public:
    Int_t     fDSPId;             // Dsp id
    Int_t     fBlkTriggerWord[4]; // counter trigger word
    Int_t     fPadding;           // padding dummy word for 64 bits transfer
+   static const Int_t fgkBlkHeaderLength; // header length in word
 
    // Dsp header
    Int_t     fTotalDspLength;     // total length of block structure
@@ -62,8 +65,9 @@ public:
    Int_t     fDSPId1;             // Dsp id ??
    Int_t     fDspTriggerWord[4];  // counter trigger word ?
    Int_t     fEventWord;          // nb word odd = 1, even = 0
+   static const Int_t fgkDspHeaderLength; // header length
 
-   static const Int_t fEndOfDDL;  // end of DDL
+   static const Int_t fgkEndOfDDL;  // end of DDL
 
 
    AliRawDataHeader fHeader;   // header of DDL

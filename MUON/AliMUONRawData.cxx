@@ -63,21 +63,17 @@ AliMUONRawData::AliMUONRawData(AliLoader* loader)
   // initialize container
   fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
 
-  // trigger decision, temp solution, local & global has to move to Digits Tree
-//   fTrigDec = new AliMUONTriggerDecision(fLoader);
-//   fTrigData = fTrigDec->GetMUONData();
-
   // initialize array
   fSubEventArray[0] = new TClonesArray("AliMUONSubEventTracker",1000);
   fSubEventArray[1] = new TClonesArray("AliMUONSubEventTracker",1000);
 
-  // initialize array
+  // initialize array not used for the moment
   fSubEventTrigArray[0] = new TClonesArray("AliMUONSubEventTrigger",1000);
   fSubEventTrigArray[1] = new TClonesArray("AliMUONSubEventTrigger",1000);
 
   // ddl pointer
   fDDLTracker = new AliMUONDDLTracker();
-  fDDLTrigger= new  AliMUONDDLTrigger();
+  fDDLTrigger = new  AliMUONDDLTrigger();
 }
 
 //__________________________________________________________________________
@@ -313,6 +309,7 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
   
   Int_t iBusPatch;
   Int_t iEntries;
+  Int_t length;
 
   for (Int_t iDDL = 0; iDDL < 2; iDDL++) {
  
@@ -330,18 +327,20 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
     for (Int_t iBlock = 0; iBlock < 2; iBlock++) {
 
       // block header
-      fDDLTracker->SetTotalBlkLength(0xFFFFFFFF);
-      memcpy(&buffer[index],fDDLTracker->GetBlkHeader(),32);
+      //    fDDLTracker->SetTotalBlkLength(0xFFFFFFFF);
+      length = fDDLTracker->GetBlkHeaderLength();
+      memcpy(&buffer[index],fDDLTracker->GetBlkHeader(),length*4);
       indexBlk = index;
-      index += 8; 
+      index += length; 
 
       for (Int_t iDsp = 0; iDsp < 5; iDsp++) {
 
 	// DSP header
-	fDDLTracker->SetTotalDspLength(0xEEEEEEEE);
-	memcpy(&buffer[index],fDDLTracker->GetDspHeader(),32);
+	//	fDDLTracker->SetTotalDspLength(0xEEEEEEEE);
+	length = fDDLTracker->GetDspHeaderLength();
+	memcpy(&buffer[index],fDDLTracker->GetDspHeader(),length*4);
 	indexDsp = index;
-	index += 8; 
+	index += length; 
 
 	for (Int_t i = 0; i < 5; i++) {
 
@@ -355,8 +354,9 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
 
 	  if (busPatchId == iBusPatch) {
 	    // add bus patch structure
-	    memcpy(&buffer[index],temp->GetAddress(),16);
-	    index+= 4;
+	    length = temp->GetHeaderLength();
+	    memcpy(&buffer[index],temp->GetAddress(),length*4);
+	    index += length;
 	    for (Int_t j = 0; j < temp->GetLength(); j++) 
 	      buffer[index++] =  temp->GetData(j);
 	    if (iEntries < nEntries-1)
@@ -368,15 +368,15 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
 	    buffer[index++] = 0xdeadbeef; // trigger word
 	  }
 	} // bus patch
-	buffer[indexDsp] = index - indexDsp;
-	buffer[indexDsp+1] = index - indexDsp -8;
+	buffer[indexDsp] = index - indexDsp; // dsp length
+	buffer[indexDsp+1] = index - indexDsp - fDDLTracker->GetDspHeaderLength();
 	if ((index - indexDsp) % 2 == 0)
 	  buffer[indexDsp+7] = 0;
 	else
 	  buffer[indexDsp+7] = 1;
       } // dsp
-      buffer[indexBlk] = index - indexBlk;
-      buffer[indexBlk+1] = index - indexBlk -8;
+      buffer[indexBlk] = index - indexBlk; // block length
+      buffer[indexBlk+1] = index - indexBlk - fDDLTracker->GetBlkHeaderLength();
     }
     if (iDDL == 0) {
       // write DDL 1
@@ -411,7 +411,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
  // DDL header
   AliRawDataHeader header = fDDLTrigger->GetHeader();
   Int_t headerSize = fDDLTrigger->GetHeaderSize();
-
+  Int_t length;
   TClonesArray* localTrigger;
   TClonesArray* globalTrigger;
   AliMUONGlobalTrigger* gloTrg;
@@ -434,8 +434,9 @@ Int_t AliMUONRawData::WriteTriggerDDL()
   Int_t iLocCard, locCard;
   Char_t locDec, trigY, posY, devX, posX,regOut;
   Int_t version = 1; // software version
-  Int_t eventType =1; // trigger type: 1 for physics ?
+  Int_t eventType = 1; // trigger type: 1 for physics ?
   Int_t serialNb = 0xF; // serial nb of card: all bits on for the moment
+  Int_t globalFlag = 1; // set to 2 if global info present in DDL else set to 1
 
   Int_t nEntries = (Int_t) (localTrigger->GetEntries());// 234 local cards
   // stored the local card id that's fired
@@ -447,23 +448,33 @@ Int_t AliMUONRawData::WriteTriggerDDL()
   if (!nEntries)
     AliError("No Trigger information available");
 
-  buffer = new Int_t [680]; // [16(local)*5 words + 4 words]*8(reg) + 8 words = 680
+  buffer = new Int_t [672]; // [16(local)*5 words + 3 words]*8(reg) + 8 words = 672
 
   for (Int_t iDDL = 0; iDDL < 2; iDDL++) {
     
     index = 0; 
 
     // DDL enhanced header
-    word =0;
-    AliBitPacking::PackWord((UInt_t)iDDL+1,word,30,31); //see AliMUONDDLTrigger.h for details
-    AliBitPacking::PackWord((UInt_t)version,word,22,29);
-    AliBitPacking::PackWord((UInt_t)serialNb,word,18,21);
-    AliBitPacking::PackWord((UInt_t)eventType,word,14,17);
+    word = 0;
+    AliBitPacking::PackWord((UInt_t)iDDL+1,word,28,31); //see AliMUONDDLTrigger.h for details
+    AliBitPacking::PackWord((UInt_t)serialNb,word,24,27);
+    AliBitPacking::PackWord((UInt_t)version,word,16,23);
+    AliBitPacking::PackWord((UInt_t)eventType,word,12,15);
 
+    if (iDDL == 0) // suppose global info in DDL one
+      globalFlag = 2;
+    else 
+      globalFlag = 1;
+    AliBitPacking::PackWord((UInt_t)globalFlag,word,8,11);
     fDDLTrigger->SetDDLWord(word);
-    fDDLTrigger->SetGlobalOutput(gloTrigPat);
-    memcpy(&buffer[index],fDDLTrigger->GetEnhancedHeader(),24);
-    index += 6; 
+
+    if (iDDL == 0)
+      fDDLTrigger->SetGlobalOutput(gloTrigPat);// no global input for the moment....
+    else 
+      fDDLTrigger->SetGlobalOutput(0);
+    length = fDDLTrigger->GetHeaderLength(); 
+    memcpy(&buffer[index],fDDLTrigger->GetEnhancedHeader(),length*4);
+    index += length; 
 
     for (Int_t iReg = 0; iReg < 8; iReg++) {
 
@@ -612,21 +623,6 @@ void AliMUONRawData::GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit*
       // channel id
       channelId = (id % chPerBus) % 64; //start at zero 
       channelId &= 0x3F; // 6 bits
-
-//       id =  (TMath::Abs(digit->PadX()) * offsetX + digit->PadY() + offsetY +
-// 	     offsetCath * iCath);
-//       busPatchId = id/50;
-
-//       Int_t inBusId = id - (maxChannel/50 * busPatchId);// id channel in buspatch
-//       Int_t manuPerBus = (maxChannel/(50*64)); // number of manus per buspatch
-
-//       // 64 manu cards for one buspatch
-//       manuId = inBusId/manuPerBus;
-//       manuId &= 0x7FF; // 11 bits 
-
-//       // channel id
-//       channelId = (inBusId % manuPerBus);
-//       channelId &= 0x3F; // 6 bits
 
       if (fPrintLevel == 2)
 	printf("id: %d, busPatchId %d, manuId: %d, channelId: %d, maxchannel: %d, chPerBus %d\n",

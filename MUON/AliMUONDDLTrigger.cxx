@@ -17,6 +17,8 @@
 
 ClassImp(AliMUONDDLTrigger)
  
+ const Int_t AliMUONDDLTrigger::fgkHeaderLength = 6;
+
 //___________________________________________
 AliMUONDDLTrigger::AliMUONDDLTrigger()
   :  TObject(),

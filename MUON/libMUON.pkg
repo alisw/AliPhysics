@@ -42,7 +42,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONTrackK.cxx AliMUONClusterFinderAZ.cxx AliMUONPixel.cxx \
                AliMUONLoader.cxx AliMUONData.cxx  AliMUONDataInterface.cxx \
                AliMUONDDLTrigger.cxx AliMUONSubEventTrigger.cxx AliMUONDDLTracker.cxx \
-               AliMUONRawData.cxx AliMUONSubEventTracker.cxx AliMUONRawStream.cxx \
+               AliMUONScalerEventTrigger.cxx AliMUONRawData.cxx AliMUONSubEventTracker.cxx AliMUONRawStream.cxx \
                AliMUONRecoCheck.cxx 
 
 

@@ -17,7 +17,9 @@
 #include "AliRawDataHeader.h"
 
 ClassImp(AliMUONDDLTracker)
- const Int_t AliMUONDDLTracker::fEndOfDDL = 0x0FFFFFFFF;
+ const Int_t AliMUONDDLTracker::fgkBlkHeaderLength = 8;
+ const Int_t AliMUONDDLTracker::fgkDspHeaderLength = 8;
+ const Int_t AliMUONDDLTracker::fgkEndOfDDL = 0x0FFFFFFFF;
 
 //___________________________________________
 AliMUONDDLTracker::AliMUONDDLTracker()

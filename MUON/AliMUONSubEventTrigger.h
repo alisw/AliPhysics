@@ -13,9 +13,9 @@ public:
    virtual ~AliMUONSubEventTrigger(){;}
 
 
-   UInt_t  GetRegWord() const {return fRegWord;}
-   Int_t   GetRegInput(Int_t n)  const {return fRegInput[n];}
-   Int_t   GetLocalData(Int_t n)  const {return fLocalData[n];}
+   UInt_t  GetRegWord()          const {return fRegWord;}
+   UInt_t  GetRegInput(Int_t n)  const {return fRegInput[n];}
+   UInt_t  GetLocalData(Int_t n) const {return fLocalData[n];}
 
    //MBZ:3,serialNb:5,Version:8,RegId:4,MBZ:4,RegOut:8
    Char_t   GetSerialNb()  {return (Char_t)(fRegWord >> 24) &  0x1F;}
@@ -41,17 +41,21 @@ public:
    Char_t   GetXPos(Int_t n)     {return fLocalData[16*n + 4]       &  0x1F;}
 
    void    SetRegWord(UInt_t w) {fRegWord = w;}
-   void    SetRegInput(Int_t in, Int_t n) {fRegInput[n] = in;}
-   void    SetLocalData(Int_t d, Int_t n) {fLocalData[n] = d;}
+   void    SetRegInput(UInt_t in, Int_t n) {fRegInput[n] = in;}
+   void    SetLocalData(UInt_t d, Int_t n) {fLocalData[n] = d;}
    
+   const Int_t GetRegHeaderLength() const {return fgkRegHeaderLength;}
    UInt_t* GetAddress() {return &fRegWord;}
 
  private:
    
    UInt_t    fRegWord;          // first word
-   Int_t     fRegInput[2];      // regional input
-   Int_t     fLocalData[16*5];  // local data
+   UInt_t    fRegInput[2];      // regional input
+
+   static const Int_t fgkRegHeaderLength; // header length in word
+
+   UInt_t    fLocalData[16*5];  // local data
     
-   ClassDef(AliMUONSubEventTrigger,2)  // MUON Pad Hit
+   ClassDef(AliMUONSubEventTrigger,3)
 };
 #endif

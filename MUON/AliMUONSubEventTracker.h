@@ -40,6 +40,8 @@ public:
    Bool_t  IsSortable() const {return kTRUE;}
    Int_t   Compare(const TObject *obj) const;
 
+   const Int_t GetHeaderLength() const {return fgkHeaderLength;}
+
    Int_t* GetAddress() {return &fTotalLength;}
 
  private:
@@ -47,6 +49,9 @@ public:
    Int_t     fLength;        // length of raw data
    Int_t     fBusPatchId;    // bus patch id
    Int_t     fTriggerWord ;  // counter trigger word
+
+   static const Int_t fgkHeaderLength;   // header length in word
+
    UInt_t*   fData;          // data 
 
    Int_t     fBufSize;      // initial size for data array
