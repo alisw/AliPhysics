@@ -30,7 +30,7 @@ CLIBFOPT      = -I.
 DEPINC	      = -I/usr/include/cxx
 
 LD            = cxx
-LDFLAGS       = $(OPT)
+LDFLAGS       =
 
 SHLD          = ld
 SOFLAGS       = -L/usr/lib/cmplrs/cxx -rpath /usr/lib/cmplrs/cxx -expect_unresolved \
