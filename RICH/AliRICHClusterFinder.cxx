@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/06/12 15:18:19  jbarbosa
+  Cleaned up version.
+
   Revision 1.1  2000/04/19 13:01:48  morsch
   A cluster finder and hit reconstruction class for RICH (adapted from MUON).
   Cluster Finders for MUON and RICH should derive from the same class in the
@@ -200,7 +203,7 @@ Bool_t AliRICHClusterFinder::Centered(AliRICHRawCluster *cluster)
 	    yN[nd]=y[i];
 	    nd++;
 	    
-	    printf("Getting: %d %d %d\n",i,x[i],y[i]);
+	    //printf("Getting: %d %d %d\n",i,x[i],y[i]);
 	}
     }
     if (nd==2) {
@@ -220,7 +223,7 @@ Bool_t AliRICHClusterFinder::Centered(AliRICHRawCluster *cluster)
 //
 // who is the neighbour ?
       
-      printf("Calling GetIndex with x:%d y:%d\n",xN[0], yN[0]);
+      //printf("Calling GetIndex with x:%d y:%d\n",xN[0], yN[0]);
       
 	Int_t nind=fHitMap->GetHitIndex(xN[0], yN[0]);
 	Int_t i1= (nind==cluster->fIndexMap[1]) ? 1:2;

@@ -122,7 +122,7 @@ Int_t AliRICHHitMapA1::GetHitIndex(Int_t ix, Int_t iy)
 
 // Return hit coordinates from index
 
-  printf("ix:%d, iy:%d, index:%d\n",ix,iy,CheckedIndex(ix, iy));
+  //printf("ix:%d, iy:%d, index:%d\n",ix,iy,CheckedIndex(ix, iy));
    
   return TMath::Abs(fHitMap[CheckedIndex(ix, iy)])-1;
     
