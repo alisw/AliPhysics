@@ -19,7 +19,7 @@ Int_t AliTPCFindClusters(Int_t n=1) {
    TFile *in=TFile::Open("rfio:galice.root");
    if (!in->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 2;}
 
-   TFile *ind=TFile::Open("digits.root");
+   TFile *ind=TFile::Open("galice.root");
    if (!ind->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 2;}
 
    if (!(gAlice=(AliRun*)in->Get("gAlice"))) {
