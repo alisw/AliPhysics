@@ -31,7 +31,7 @@
 #include "AliCollisionGeometry.h"
 #include "AliRun.h"
 #include "AliMC.h"
-#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 
 ClassImp(AliGenCocktail)
 
@@ -46,6 +46,7 @@ AliGenCocktail::AliGenCocktail()
     fNGenerators=0;
     fEntries = 0;
     fRandom  = kFALSE;
+    fHeader  = 0;
 }
 
 AliGenCocktail::AliGenCocktail(const AliGenCocktail & cocktail):
@@ -59,6 +60,7 @@ AliGenCocktail::~AliGenCocktail()
 {
 // Destructor
     delete fEntries;
+    delete fHeader;
 }
 
 void AliGenCocktail::
@@ -89,6 +91,8 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     Generator->SetVertexSmear(fVertexSmear);
     Generator->SetVertexSource(kContainer);
     Generator->SetTrackingFlag(fTrackIt);
+    Generator->SetContainer(this);
+    
         
 //
 //  Add generator to list   
@@ -156,6 +160,8 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     AliGenCocktailEntry *entry = 0;
     AliGenCocktailEntry *preventry = 0;
     AliGenerator* gen = 0;
+    if (fHeader) delete fHeader;
+    fHeader = new AliGenCocktailEventHeader("Cocktail Header");
 
     TObjArray *partArray = gAlice->GetMCApp()->Particles();
 
@@ -219,11 +225,10 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     
     
     next.Reset();
-// Header
-    AliGenEventHeader* header = new AliGenEventHeader("AliGenCocktail");
+
 // Event Vertex
-    header->SetPrimaryVertex(eventVertex);
-    gAlice->SetGenEventHeader(header); 
+    fHeader->SetPrimaryVertex(eventVertex);
+    gAlice->SetGenEventHeader(fHeader); 
 }
 
 void AliGenCocktail::SetVertexSmear(VertexSmear_t smear)
@@ -291,6 +296,12 @@ NextGeneratorPair(AliGenCocktailEntry*& e1, AliGenCocktailEntry*& e2)
     }
 }
 
+void AliGenCocktail::AddHeader(AliGenEventHeader* header)
+{
+// Add a header to the list 
+    if (fHeader) fHeader->AddHeader(header);
+}
+			      
 AliGenCocktail& AliGenCocktail::operator=(const  AliGenCocktail& rhs)
 {
 // Assignment operator

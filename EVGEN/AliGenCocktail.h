@@ -14,6 +14,7 @@
 #include <TArrayF.h>
 
 class AliGenCocktailEntry;
+class AliGenCocktailEventHeader;
 class TArrayF;
 
 
@@ -41,15 +42,17 @@ class AliGenCocktail : public AliGenerator
     void FirstGeneratorPair(AliGenCocktailEntry*&e1, AliGenCocktailEntry*&e2);
     void NextGeneratorPair (AliGenCocktailEntry*&e1, AliGenCocktailEntry*&e2);
     AliGenCocktail & operator=(const AliGenCocktail & rhs);
-
+    virtual void AddHeader(AliGenEventHeader* header);
+	    
  protected:
-    Int_t fNGenerators;   // Number of generators booked
-    Bool_t fRandom;       // Flag to select random generator from list
-    TArrayF  fProb;       // Probability of an event (if fRandom == kTRUE)
-    TList  *fEntries;     // List of Generators
-    TObjLink *flnk1;      // ! Iterator for first generator
-    TObjLink *flnk2;      // ! Iterator for second generator
-    
+    Int_t fNGenerators;                 // Number of generators booked
+    Bool_t fRandom;                     // Flag to select random generator from list
+    TArrayF  fProb;                     // Probability of an event (if fRandom == kTRUE)
+    TList  *fEntries;                   // List of Generators
+    TObjLink *flnk1;                    // ! Iterator for first generator
+    TObjLink *flnk2;                    // ! Iterator for second generator
+    AliGenCocktailEventHeader* fHeader; // !Header container  
+			   
 //
  private:
     void Copy(TObject &arun) const;
