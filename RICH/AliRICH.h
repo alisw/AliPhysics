@@ -13,8 +13,6 @@
 #include "AliRICHDigitizer.h"
 #include "AliRICHParam.h"
 
-#include "AliRICHSDigit.h"
-
 //__________________AliRICHhit______________________________________________________________________
 class AliRICHhit : public AliHit
 {
@@ -67,58 +65,6 @@ AliRICHhit::AliRICHhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hit)
   fMomX=hit[14];fMomY=hit[15];fMomZ=hit[16];
   fCerenkovAngle=hit[18];
   fMomFreoX=hit[19];fMomFreoY=hit[20];fMomFreoZ=hit[21];
-}
-
-//__________________AliRICHCerenkov_________________________________________________________________
-class AliRICHCerenkov: public AliHit 
-{
-public:
-  inline   AliRICHCerenkov();
-  inline   AliRICHCerenkov(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *Cerenkovs);
-  virtual ~AliRICHCerenkov() {;}
-protected:
-  Int_t     fChamber;          //chamber number
-  Float_t   fTheta,fPhi;       //incident theta phi angles in degrees      
-  Float_t   fTlength;          //track length inside the chamber
-  Float_t   fEloss;            //ionisation energy loss in gas
-  Int_t     fPHfirst;          //first padhit
-  Int_t     fPHlast;           //last padhit
-  Int_t     fCMother;          //index of mother particle
-  Float_t   fLoss;             //nature of particle loss
-  Float_t   fIndex;            //index of photon
-  Float_t   fProduction;       //point of production
-  Float_t   fMomX,fMomY,fMomZ; //local Momentum
-  Float_t   fNPads;           // Pads hit
-  Float_t   fCerenkovAngle;   // Cerenkov Angle
-    
-  ClassDef(AliRICHCerenkov,1)  //RICH cerenkov class
-};//class AliRICHCerenkov
-
-//__________________________________________________________________________________________________
-AliRICHCerenkov::AliRICHCerenkov()
-{//ctor
-    fChamber=kBad;
-    fX=fY=fZ=fTheta=fPhi=fTlength=fEloss=kBad;
-    fPHfirst=fPHlast=fCMother=kBad;
-    fLoss=fIndex=fProduction=fMomX=fMomY=fMomZ=fNPads=fCerenkovAngle=kBad;
-}
-//__________________________________________________________________________________________________
-AliRICHCerenkov::AliRICHCerenkov(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
-                :AliHit(shunt, track)
-{//ctor
-    fChamber=vol[0];
-    fX=hits[1];fY=hits[2];fZ=hits[3];
-    fTheta=hits[4];fPhi=hits[5];
-    fTlength=hits[6];
-    fEloss=hits[7];
-    fPHfirst=(Int_t)hits[8];fPHlast=(Int_t)hits[9];
-    fCMother=Int_t(hits[10]);
-    fIndex = hits[11];
-    fProduction = hits[12];  
-    fLoss=hits[13];
-    fMomX=hits[14];fMomY=hits[15];fMomZ=hits[16];
-    fNPads=hits[17];
-    fCerenkovAngle=hits[18];
 }
 
 //__________________AliRICHdigit____________________________________________________________________
@@ -250,7 +196,6 @@ protected:
 //__________________AliRICH_________________________________________________________________________
 class AliRICHParam;
 class AliRICHChamber;
-class AliRICHSDigit;
 
 class AliRICH : public AliDetector 
 {
@@ -270,14 +215,13 @@ public:
   inline  void    CreateDigits();  
   inline  void    CreateClusters();  
   inline  void    CreateRecos();  
-  void AddHit(Int_t track, Int_t *vol, Float_t *hits)    {TClonesArray &tmp=*fHits; new(tmp[fNhits++])AliRICHhit(fIshunt,track,vol,hits);}//virtual
   void AddHit(Int_t chamber,Int_t tid,TVector3 iX3,TVector3 oX3,Double_t eloss=0)
              {TClonesArray &tmp=*fHits;new(tmp[fNhits++])AliRICHhit(chamber,tid,iX3,oX3,eloss);} 
   inline void AddSDigit(Int_t c,Int_t x,Int_t y,Double_t q,Int_t pid,Int_t tid); 
   void AddDigit(int c,int x,int y,int q,int cpid,int *tid){TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(c-1));new(tmp[fNdigitsNew[c-1]++])AliRICHdigit(c,x,y,q,cpid,tid[0],tid[1],tid[2]);}  
   void AddCluster(AliRICHcluster &cl)                     {TClonesArray &tmp=*((TClonesArray*)fClusters->At(cl.C()-1));new(tmp[fNclusters[cl.C()-1]++])AliRICHcluster(cl);}
   void AddReco(Int_t tid,Double_t thetaCherenkov,Int_t nPhotons) {TClonesArray &tmp=*(TClonesArray*)fRecos;new(tmp[fNrecos++])AliRICHreco(tid,thetaCherenkov,nPhotons);}  
-  void ResetHits()     {AliDetector::ResetHits();fNcerenkovs=0;if(fCerenkovs)fCerenkovs->Clear();fNspecials=0;if(fSpecials)fSpecials->Clear();}  //virtual  
+//  void ResetHits()     {AliDetector::ResetHits();}  //virtual  
   void ResetSDigits()  {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 
   void ResetDigits()   {if(fDigitsNew)for(int i=0;i<kNCH;i++){fDigitsNew->At(i)->Clear();fNdigitsNew[i]=0;}}
   void ResetClusters() {if(fClusters) for(int i=0;i<kNCH;i++){fClusters ->At(i)->Clear();fNclusters[i]=0;}}
@@ -303,44 +247,27 @@ public:
           void    Print(Option_t *option)const;//virtual
           void    MakeBranch(Option_t *opt=" ");
           void    SetTreeAddress();//virtual
-// OLD staff OLD staff    
-  inline  void    AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs);
-  inline  void    AddSpecialOld(Int_t *array);      
-          
-  inline  void    CreateCerenkovsOld();  
-  inline  void    CreateSpecialsOld();   
-          void    ResetSpecialsOld(){fNspecials=0; if(fSpecials) fSpecials->Clear();}   
-  TClonesArray*   Specials()            const{return fSpecials;}
-  TClonesArray*   Cerenkovs()           const{return fCerenkovs;}
-  
-  
             
-  AliRICHChamber& Chamber(Int_t id)      {return *((AliRICHChamber *) (*fChambers)[id]);}  
 //          Int_t DistancetoPrimitive(Int_t /*px*/, Int_t /*py*/)      {return 9999;}
     
 protected:  
   enum       {kCSI=6,kGAP=9};
   AliRICHParam         *fpParam;             //main RICH parametrization     
   TObjArray            *fChambers;           //list of RICH chambers
-                //fHits and fDigits belong to AliDetector
+  //fHits and fDigits belong to AliDetector
   TClonesArray         *fSdigits;            //! List of sdigits  
   Int_t                 fNsdigits;           //! Current number of sdigits
+  
   TObjArray            *fDigitsNew;          //! Each chamber holds it's one lists of digits
   Int_t                 fNdigitsNew[kNCH];   //! Array of current numbers of digits
+  
   TObjArray            *fClusters;           //! Each chamber holds it's one lists of clusters 
   Int_t                 fNclusters[kNCH];    //! Array of current numbers of raw clusters
+  
   TClonesArray         *fRecos;              //! pointer to the list of recos
   Int_t                 fNrecos;             //! number of recos
 
-  TClonesArray         *fCerenkovs;          //! ??? List of cerenkovs
-  Int_t                 fNcerenkovs;         //! ??? Current number of cerenkovs
-  TClonesArray         *fSpecials;           //! ??? List of specials
-  Int_t                 fNspecials;          //! ??? Current number of specials  
-  Int_t fCkovNumber;                         // Number of Cerenkov photons
-  Int_t fFreonProd;                          // Cerenkovs produced in freon
-  Int_t fFeedbacks;                          // Number of feedback photons
-    
-  ClassDef(AliRICH,4)                        //Main RICH class 
+  ClassDef(AliRICH,5)                        //Main RICH class 
 };//class AliRICH  
 
 //__________________________________________________________________________________________________
@@ -392,31 +319,4 @@ void AliRICH::AddSDigit(Int_t c,Int_t x,Int_t y,Double_t q,Int_t pid,Int_t tid)
   new(tmp[fNsdigits++])AliRICHdigit(c,x,y,q,pid,tid,kBad,kBad);
 }//AddSDigit()   
 
-
-//______OLD OLD OLD OLD_____________________________________________________________________________
-void AliRICH::CreateCerenkovsOld()
-{
-  if(fCerenkovs) return;
-  if(GetDebug())Info("CreateCerenkovs","creating cerenkovs container.");
-  fCerenkovs=new TClonesArray("AliRICHCerenkov",10000);   fNcerenkovs=0;
-}
-//__________________________________________________________________________________________________
-void AliRICH::CreateSpecialsOld()
-{
-  if(fSpecials) return;
-  if(GetDebug())Info("CreateSpecialsOld","creating SDigits special container.");
-  fSpecials=new TClonesArray("AliRICHSDigit",100000); fNspecials=0;
-}
-//__________________________________________________________________________________________________
-void AliRICH::AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs)
-{//Adds the current RICH cerenkov hit to the Cerenkovs list   
-  TClonesArray &tmp=*fCerenkovs;
-  new(tmp[fNcerenkovs++]) AliRICHCerenkov(fIshunt,track,vol,cerenkovs);
-}
-//__________________________________________________________________________________________________
-void AliRICH::AddSpecialOld(Int_t *aiSDigit)
-{// Adds the current Sdigit to the RICH list of Specials
-  TClonesArray &lSDigits = *fSpecials;
-  new(lSDigits[fNspecials++]) AliRICHSDigit(aiSDigit);
-}
 #endif//#ifndef AliRICH_h

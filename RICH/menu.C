@@ -135,20 +135,6 @@ void sh()
   rl->UnloadHits();
 }
 //__________________________________________________________________________________________________
-void ssp()
-{
-  if(rl->LoadHits()) return;
-  
-  Int_t iTotalSpecials=0;
-  for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
-    rl->TreeH()->GetEntry(iPrimN);      
-    r->Specials()->Print();
-    iTotalSpecials+=r->Specials()->GetEntries();
-  }
-  Info("ssp","totally %i specials",iTotalSpecials);
-  rl->UnloadHits();
-}
-//__________________________________________________________________________________________________
 void ss()
 {
   if(rl->LoadSDigits()) return;
@@ -310,24 +296,20 @@ void Show()
     Int_t iNparticles=a->GetEvent(iEventN);
     Int_t iNprims=rl->TreeH()->GetEntries();
     
-    Int_t iTotalHits=0,iTotalCerenkovs=0,iTotalSpecials=0;
+    Int_t iTotalHits=0;
     for(Int_t iPrimN=0;iPrimN<iNprims;iPrimN++){//prims loop
       rl->TreeH()->GetEntry(iPrimN);      
       iTotalHits+=r->Hits()->GetEntries();
-      iTotalCerenkovs+=r->Cerenkovs()->GetEntries();
-      iTotalSpecials+=r->Specials()->GetEntries();
       TParticle *pPrim=al->Stack()->Particle(iPrimN);
-      Info("Show","Evt %4i prim %4i has %4i hits %5i cerenkovs and %5i specials from %s (,%7.2f,%7.2f)",
+      Info("Show","Evt %4i prim %4i has %4i hits from %s (,%7.2f,%7.2f)",
                            iEventN,
                                     iPrimN,
                                              r->Hits()->GetEntries(),
-                                                      r->Cerenkovs()->GetEntries(),
-                                                                        r->Specials()->GetEntries(),
                                                                                          pPrim->GetName(),
                                                                                  pPrim->Theta()*r2d,pPrim->Phi()*r2d);
     }//prims loop
-    Info("Show-HITS","Evt %i total:  %i particles %i primaries %i hits %i cerenkovs %i specials",
-                        iEventN,   iNparticles, iNprims,     iTotalHits,iTotalCerenkovs,iTotalSpecials);
+    Info("Show-HITS","Evt %i total:  %i particles %i primaries %i hits",
+                        iEventN,   iNparticles, iNprims,     iTotalHits);
     if(isSdigits){
       rl->TreeS()->GetEntry(0);
       Info("Show-SDIGITS","Evt %i contains %5i sdigits",iEventN,r->SDigits()->GetEntries());

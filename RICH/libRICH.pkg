@@ -1,10 +1,8 @@
-SRCS   =  AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHv3.cxx\
-	 AliRICHParam.cxx AliRICHDisplay.cxx AliRICHPoints.cxx AliRICHGeometry.cxx\
-	 AliRICHSegmentationV0.cxx \
-	 AliRICHSegmentationV1.cxx AliRICHResponse.cxx \
-	 AliRICHClusterFinder.cxx AliRICHMap.cxx \
-	 AliRICHChamber.cxx AliRICHRecon.cxx \
-         AliRICHSDigit.cxx AliRICHDisplFast.cxx \
+SRCS   =  AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx\
+	 AliRICHParam.cxx AliRICHDisplay.cxx AliRICHPoints.cxx\
+	 AliRICHClusterFinder.cxx AliRICHMap.cxx\
+	 AliRICHChamber.cxx AliRICHRecon.cxx\
+         AliRICHDisplFast.cxx\
 	 AliRICHDigitizer.cxx
 
 HDRS =  $(SRCS:.cxx=.h)

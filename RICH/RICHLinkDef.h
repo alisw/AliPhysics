@@ -7,16 +7,9 @@
 #pragma link C++ class  AliRICHv1+;
 #pragma link C++ class  AliRICHParam+;
 #pragma link C++ class  AliRICHhit+;
-#pragma link C++ class  AliRICHCerenkov+;
 #pragma link C++ class  AliRICHdigit+;
 #pragma link C++ class  AliRICHcluster+;
 #pragma link C++ class  AliRICHreco+;
-#pragma link C++ class  AliRICHv3+;
-#pragma link C++ class  AliRICHSDigit+;
-#pragma link C++ class  AliRICHSegmentationV0+;
-#pragma link C++ class  AliRICHSegmentationV1+;
-#pragma link C++ class  AliRICHResponse+;
-#pragma link C++ class  AliRICHGeometry+;
 #pragma link C++ class  AliRICHChamber+;
 #pragma link C++ class  AliRICHPoints+;
 #pragma link C++ class  AliRICHDisplay+;

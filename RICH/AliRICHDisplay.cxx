@@ -58,7 +58,6 @@
 #include "AliRICHPoints.h"
 #include "AliHeader.h"
 
-#include "AliRICHSDigit.h"
 #include "AliMC.h"
 
 ClassImp(AliRICHDisplay)
@@ -705,7 +704,7 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
    if (nrawcl == 0) return;
    if (fRpoints == 0) fRpoints = new TObjArray(nrawcl);
    
-   iChamber = &(pRICH->Chamber(chamber));
+   iChamber = pRICH->C(chamber);
    AliRICHcluster  *mRaw;
    AliRICHPoints *points = 0;
    //
@@ -768,12 +767,10 @@ void AliRICHDisplay::LoadDigits()
 	 gAlice->TreeD()->GetEvent(0);
 	 Int_t ndigits = pRICHdigits->GetEntriesFast();
 	 if (ndigits == 0) continue;
-	 iChamber = &(pRICH->Chamber(ich));
-	 segmentation=iChamber->GetSegmentationModel();
-	 Float_t dpx  = segmentation->Dpx();
-	 Float_t dpy  = segmentation->Dpy();
+	 iChamber = pRICH->C(ich);
+	 Float_t dpx  = AliRICHParam::PadSizeX();
+	 Float_t dpy  = AliRICHParam::PadSizeY();
 	 
-	 //printf("Dpx:%d, Dpy:%d\n",dpx,dpy);
 	 
 	 AliRICHdigit  *mdig;
 	 AliRICHPoints *points = 0;
@@ -833,7 +830,7 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
     AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
     AliRICHChamber*  iChamber;
     
-    iChamber = &(pRICH->Chamber(chamber-1));
+    iChamber = pRICH->C(chamber-1);
     Int_t ntracks = (Int_t)pRICH->TreeH()->GetEntries();
     Int_t track;
     
@@ -893,65 +890,7 @@ void AliRICHDisplay::LoadCerenkovs(Int_t chamber)
 {
 // Read cerenkov hits info and store x,y,z info in array fPCerenkovs
 // Loop on all detectors
-    
-    fChamber=chamber; 
-    ResetPCerenkovs();
-    
-    AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
-    AliRICHChamber*  iChamber;
-    
-    iChamber = &(pRICH->Chamber(chamber-1));
-    
-    pRICH->SetTreeAddress();
-    Int_t ntracks = (Int_t)pRICH->TreeH()->GetEntries();
-    
-    if (fPCerenkovs == 0) fPCerenkovs = new TObjArray(ntracks);
-    TVector *xp = new TVector(1000);
-    TVector *yp = new TVector(1000);
-    TVector *zp = new TVector(1000);
-    TVector *ptrk = new TVector(1000);
-    TVector *phit = new TVector(1000);
-    for (Int_t track=0; track<ntracks;track++) {
-	gAlice->ResetHits();
-	pRICH->TreeH()->GetEvent(track);
-	TClonesArray *pRICHCerenkovs  = pRICH->Cerenkovs();
-	if (pRICHCerenkovs == 0) return;
-	Int_t nhits = pRICHCerenkovs->GetEntriesFast();
-	if (nhits == 0) continue;
-	AliRICHCerenkov *mCerenkov;
-	AliRICHPoints *cpoints = 0;
-	Int_t npoints=0;
-	
-	
-//Display Cerenkov hits in blue
-	
-	for (Int_t hit=0;hit<nhits;hit++) {
-            mCerenkov = (AliRICHCerenkov*)pRICHCerenkovs->UncheckedAt(hit);
-	    (*xp)(npoints)=mCerenkov->X();
-            (*yp)(npoints)=mCerenkov->Y();
-            (*zp)(npoints)=mCerenkov->Z();
-            (*ptrk)(npoints)=Float_t(mCerenkov->GetTrack());
-            (*phit)(npoints)=Float_t(hit);
-            npoints++;
-	}
-	if (npoints == 0) continue;
-	cpoints = new AliRICHPoints(npoints);
-	for (Int_t p=0;p<npoints;p++) {
-	    cpoints->SetMarkerColor(kBlue);
-	    cpoints->SetMarkerStyle(5);
-	    cpoints->SetMarkerSize(1.);
-	    cpoints->SetParticle(Int_t((*ptrk)(p)));
-	    cpoints->SetHitIndex(Int_t((*phit)(p)));
-	    cpoints->SetTrackIndex(track);
-	    cpoints->SetDigitIndex(-1);
-	    cpoints->SetPoint(p,(*xp)(p),(*yp)(p),(*zp)(p));
-	}
-	xp->Zero();
-	yp->Zero();
-	ptrk->Zero();
-	phit->Zero();
-	fPCerenkovs->AddAt(cpoints,track);
-    }
+  chamber++;    
 }
 
 //_____________________________________________________________________________

@@ -82,9 +82,6 @@ AliRICH::AliRICH()
   fDigitsNew  =0; for(int i=0;i<kNCH;i++) fNdigitsNew[i]  =0;
   fClusters   =0; for(int i=0;i<kNCH;i++) fNclusters[i]=0;
   fRecos      =0; fNrecos     =0;
-  fCerenkovs  =0; fNcerenkovs =0;
-  fSpecials   =0; fNspecials  =0;  
-  fCkovNumber=fFreonProd=0;  
 }//AliRICH::AliRICH()
 //__________________________________________________________________________________________________
 AliRICH::AliRICH(const char *name, const char *title)
@@ -100,11 +97,6 @@ AliRICH::AliRICH(const char *name, const char *title)
   fDigitsNew=  0;
   fClusters=   0;
   fRecos      =0;
-
-  fCerenkovs=  0;     CreateCerenkovsOld();  gAlice->GetMCApp()->AddHitList(fCerenkovs);
-  fSpecials=   0;     CreateSpecialsOld();   
-  
-  fCkovNumber=fFreonProd=0;  
   if(GetDebug())Info("named ctor","Stop.");
 }//AliRICH::AliRICH(const char *name, const char *title)
 //__________________________________________________________________________________________________
@@ -122,8 +114,6 @@ AliRICH::~AliRICH()
   if(fDigitsNew) {fDigitsNew->Delete();   delete fDigitsNew;}
   if(fClusters)  {fClusters->Delete();    delete fClusters;}
   if(fRecos)     delete fRecos;
-  if(fCerenkovs) delete fCerenkovs;
-  if(fSpecials)  delete fSpecials;
   if(GetDebug()) Info("dtor","Stop.");    
 }//AliRICH::~AliRICH()
 //__________________________________________________________________________________________________
@@ -381,8 +371,6 @@ void AliRICH::MakeBranch(Option_t* option)
 
   if(cH&&TreeH()){//H
     CreateHits();      //branch will be created in AliDetector::MakeBranch
-    CreateCerenkovsOld(); MakeBranchInTree(TreeH(),"RICHCerenkov", &fCerenkovs, kBufferSize,0);
-    CreateSpecialsOld();  MakeBranchInTree(TreeH(),"RICHSpecials", &fSpecials,kBufferSize,0); 
   }//H     
   AliDetector::MakeBranch(option);//this is after cH because we need to guarantee that fHits array is created
       
@@ -415,8 +403,6 @@ void AliRICH::SetTreeAddress()
   if(fLoader->TreeH()){//H
     if(GetDebug())Info("SetTreeAddress","tree H is requested.");
     CreateHits();//branch map will be in AliDetector::SetTreeAddress    
-    branch=fLoader->TreeH()->GetBranch("RICHCerenkov");   if(branch){CreateCerenkovsOld(); branch->SetAddress(&fCerenkovs);}       
-    branch=fLoader->TreeH()->GetBranch("RICHSpecials");   if(branch){CreateSpecialsOld();  branch->SetAddress(&fSpecials);}
   }//H
   AliDetector::SetTreeAddress();//this is after TreeH because we need to guarantee that fHits array is created
 
@@ -675,7 +661,7 @@ void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
   TLorentzVector x4;
   gMC->TrackPosition(x4);  
   TVector2 x2=C(iChamber)->Glob2Loc(x4);
-  Int_t sector=Param()->Sector(x2);
+  Int_t sector=Param()->Sector(x2);  if(sector==kBad) return; //hit in dead zone nothing to produce
   Int_t iTotQdc=Param()->TotQdc(x2,eloss);
   Int_t iNphotons=gMC->GetRandom()->Poisson(P()->AlphaFeedback(sector)*iTotQdc);    
   if(GetDebug())Info("GenerateFeedbacks","N photons=%i",iNphotons);

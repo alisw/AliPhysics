@@ -15,10 +15,6 @@
 
 #include "AliRICHChamber.h"
 #include "AliRICHParam.h"
-#include "AliSegmentation.h"
-#include "AliRICHSegmentationV0.h"
-#include "AliRICHGeometry.h"
-#include "AliRICHResponse.h"
 #include <TRotMatrix.h>
 
 ClassImp(AliRICHChamber)	
@@ -28,10 +24,6 @@ AliRICHChamber::AliRICHChamber()
 //default ctor
   fpParam=0;    
   fpRotMatrix=0;
-  
-    fSegmentation = 0;
-    fResponse = 0;
-    fGeometry = 0;
 }
 //______________________________________________________________________________
 AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
@@ -76,99 +68,7 @@ AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
                                                       Rot().ThetaY()*TMath::RadToDeg(), Rot().PhiY()*TMath::RadToDeg(),
                                                       Rot().ThetaZ()*TMath::RadToDeg(), Rot().PhiZ()*TMath::RadToDeg());
   fpParam=pParam;
-  fX=fCenterV3.X();fY=fCenterV3.Y();fZ=fCenterV3.Z();
-  
-  fSegmentation = 0;  fResponse = 0;    fGeometry = 0;
-}
-//______________________________________________________________________________
-
-void AliRICHChamber::LocaltoGlobal(Float_t local[3],Float_t global[3])
-{
-//Local coordinates to global coordinates transformation
-
-    Double_t *pMatrix;
-    pMatrix =  fpRotMatrix->GetMatrix();
-    global[0]=local[0]*pMatrix[0]+local[1]*pMatrix[3]+local[2]*pMatrix[6];
-    global[1]=local[0]*pMatrix[1]+local[1]*pMatrix[4]+local[2]*pMatrix[7];
-    global[2]=local[0]*pMatrix[2]+local[1]*pMatrix[5]+local[2]*pMatrix[8];
-    global[0]+=fX;
-    global[1]+=fY;
-    global[2]+=fZ;
-}
-
-void AliRICHChamber::GlobaltoLocal(Float_t global[3],Float_t local[3])
-{
-// Global coordinates to local coordinates transformation
-    TMatrix matrixCopy(3,3);
-    Double_t *pMatrixOrig = fpRotMatrix->GetMatrix();
-    for(Int_t i=0;i<3;i++)
-      {
-	for(Int_t j=0;j<3;j++)
-	  matrixCopy(j,i)=pMatrixOrig[j+3*i];
-      }
-    matrixCopy.Invert();
-    local[0] = global[0] - fX;
-    local[1] = global[1] - fY;
-    local[2] = global[2] - fZ;
-    local[0]=local[0]*matrixCopy(0,0)+local[1]*matrixCopy(0,1)+local[2]*matrixCopy(0,2);
-    local[1]=local[0]*matrixCopy(1,0)+local[1]*matrixCopy(1,1)+local[2]*matrixCopy(1,2);
-    local[2]=local[0]*matrixCopy(2,0)+local[1]*matrixCopy(2,1)+local[2]*matrixCopy(2,2);
-} 
-
-void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
-				    Int_t& iNpads,Float_t cluster[5][500],ResponseType res) 
-{
-//Generates pad hits (simulated cluster) using the segmentation and the response model
-
-  Float_t local[3],global[3];
-// Width of the integration area
-  Float_t dx=(fResponse->SigmaIntegration())*(fResponse->ChargeSpreadX());
-  Float_t dy=(fResponse->SigmaIntegration())*(fResponse->ChargeSpreadY());
-// Get pulse height from energy loss and generate feedback photons
-  Float_t qtot=0;
-  local[0]=xhit;
-//z-position of the wires relative to the RICH mother volume (2 mm before CsI) old value: 6.076 ???????
-  local[1]=1.276 + fGeometry->GetGapThickness()/2  - .2;
-  local[2]=yhit;
-
-  LocaltoGlobal(local,global);
-
-
-
-//To calculate wire sag, the origin of y-position must be the middle of the photcathode
-  AliRICHSegmentationV0* segmentation = (AliRICHSegmentationV0*) GetSegmentationModel();
-  Float_t newy;
-  if (yhit>0)
-    newy = yhit - segmentation->GetPadPlaneLength()/2;
-  else
-    newy = yhit + segmentation->GetPadPlaneLength()/2;
-
-  if(res==kMip){
-    qtot = fResponse->IntPH(eloss, newy);
-    fResponse->FeedBackPhotons(global,qtot);
-  }else if(res==kPhoton){
-    qtot = fResponse->IntPH(newy);
-    fResponse->FeedBackPhotons(global,qtot);
-  }
-
-    // Loop Over Pads
-
-  Float_t qcheck=0, qp=0;
-
-  iNpads=0;
-  for(fSegmentation->FirstPad(xhit, yhit, 0, dx, dy); fSegmentation->MorePads(); fSegmentation->NextPad()) {
-    qp= fResponse->IntXY(fSegmentation);
-    qp= TMath::Abs(qp);
-    if(qp >1.e-4){
-      qcheck+=qp;
-      cluster[0][iNpads]=qp*qtot;// --- store signal information
-      cluster[1][iNpads]=fSegmentation->Ix();
-      cluster[2][iNpads]=fSegmentation->Iy();
-      cluster[3][iNpads]=fSegmentation->ISector();
-      iNpads++;
-    }
-  }//pad loop
-}//DisIntegration(...
+}//main ctor
 //__________________________________________________________________________________________________
 void AliRICHChamber::Print(Option_t *) const
 {

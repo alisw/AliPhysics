@@ -58,41 +58,20 @@ public:
    
   void LocaltoGlobal(Float_t pos[3],Float_t Localpos[3]);//Transformation from local to global coordinates, chamber-dependant
   void GlobaltoLocal(Float_t pos[3],Float_t localpos[3]);//Transformation from Global to local coordinates, chamber-dependant 
-  void DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit, Int_t&x, Float_t newclust[6][500], ResponseType res);// Cluster formation method
-  void    Init(Int_t id)           {fSegmentation->Init(id);} // Recalculates all the values after some of them have been changed
-  void              SetGeometryModel(AliRICHGeometry* pRICHGeometry)            {fGeometry=pRICHGeometry;}        
-  AliRICHGeometry*  GetGeometryModel()                                     const{return fGeometry;}
-  void              SetResponseModel(AliRICHResponse* pRICHResponse)            {fResponse=pRICHResponse;}
-  AliRICHResponse*  GetResponseModel()                                     const{return fResponse;}
-  void              SetSegmentationModel(AliSegmentation* pRICHSegmentation)    {fSegmentation=pRICHSegmentation;}
-  AliSegmentation*  GetSegmentationModel()                                 const{return fSegmentation;}
-  void   SigGenInit(Float_t x, Float_t y, Float_t z)   {fSegmentation->SigGenInit(x, y, z) ;}
-  Int_t  SigGenCond(Float_t x, Float_t y, Float_t z)   {return fSegmentation->SigGenCond(x, y, z);}
-  Int_t  Sector(Float_t x, Float_t y)                  {return fSegmentation->Sector((Int_t)x, (Int_t)y);} // Returns number of sector containing (x,y) position    
-  void   SetPadSize(Float_t p1, Float_t p2)            {fSegmentation->SetPadSize(p1,p2);}
-  Double_t    GetX()               const{return fX;}
-  Double_t    GetY()               const{return fY;}
-  Double_t    GetZ()               const{return fZ;}    
   inline void SetToZenith();
   TRotMatrix *GetRotMatrix()       const{return fpRotMatrix;}  
 protected:
-  Float_t fX,fY,fZ;                                      // Position of the center of the chamber in MRS (cm)
-
-  AliSegmentation               *fSegmentation;          //???Segmentation model for each chamber
-  AliRICHResponse               *fResponse;              //???Response model for each chamber
-  AliRICHGeometry               *fGeometry;              //???Geometry model for each chamber
-   
   TVector3      fCenterV3;        //chamber center position in MRS (cm)
   TVector3      fPcX3;            //PC center position in MRS (cm)
   TRotation     fRot;             //chamber rotation in MRS
   TRotMatrix   *fpRotMatrix;      //rotation matrix of the chamber with respect to MRS 
   AliRICHParam *fpParam;          //main RICH parameters description  
-  ClassDef(AliRICHChamber,3)      //single RICH chamber description
+  ClassDef(AliRICHChamber,5)      //single RICH chamber description
 };//class AliRICHChamber
 //__________________________________________________________________________________________________
 void AliRICHChamber::SetToZenith()
 {
-  fCenterV3.SetXYZ(fX=0,fY=AliRICHParam::Offset()-AliRICHParam::GapThickness()/2,fZ=0); 
+  fCenterV3.SetXYZ(0,AliRICHParam::Offset()-AliRICHParam::GapThickness()/2,0); 
   fPcX3.SetXYZ(0,AliRICHParam::Offset()-AliRICHParam::GapThickness()/2+5.276+0.25,0);   
 }
 //__________________________________________________________________________________________________
