@@ -3,7 +3,9 @@
 # Makefile for HLT code.  #
 #                         #
 # Author: Anders Vestbo   #                    
+# changes by C. Loizides  #
 ###########################
+
 
 ifndef TOPDIR
 TOPDIR = `pwd`/..
@@ -12,6 +14,8 @@ endif
 include $(TOPDIR)/Makefile.conf
 
 DEFSTR = -Dno_root
+OBJDIR = lib_alone
+INCLUDES = -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(TOPDIR)/misc
 
 ifeq ($(USEPACKAGE),ROOT) 
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(TOPDIR)/misc
@@ -22,18 +26,20 @@ endif
 ifeq ($(USEPACKAGE),ALIROOT)
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(TOPDIR)/misc -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
 DEFSTR = -Duse_aliroot -Duse_root
+OBJDIR = lib
 endif
 
 #Save the particle id's
 ifdef DO_MC
 DEFSTR += -Ddo_mc
 endif
-DEFSTR += $(EXTRADEF)
 
 #Use logging classes
 ifndef NOLOGGING
 DEFSTR += -Duse_logging
 endif
+
+DEFSTR += $(EXTRADEF)
 
 ifdef MLUCDIR
 INCLUDES += -I$(MLUCDIR)/include
@@ -47,12 +53,18 @@ SRCS	= AliL3HoughTransformer.cxx AliL3Hough.cxx AliL3HoughTrack.cxx\
 	  AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx \
 	  AliL3HoughTransformerVhdl.cxx AliL3HoughDisplay.cxx
 
-DICT = AliL3HoughCint.cxx
-DICTH = AliL3HoughCint.h
-DICTO = $(OBJDIR)/AliL3HoughCint.o
+DICT  = AliL3HoughCint-$(USEPACKAGE).cxx
+DICTH = AliL3HoughCint-$(USEPACKAGE).h
+DICTO = $(OBJDIR)/AliL3HoughCint-$(USEPACKAGE).o
 
 HDRS = $(SRCS:.cxx=.h) AliL3HoughLinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
+
+ifeq ($(OBJDIR),lib_alone)
+HDRS = $(SRCS:.cxx=.h) 
+OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS))
+endif
+
 
 LEVELSO = $(LIBDIR)/libAliL3Hough.so
 
