@@ -50,6 +50,7 @@ void MUONrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
 	RecModel = new AliMUONClusterFinderVS();
 //	RecModel->SetTracks(16,17);    
 //	RecModel->SetTracks(266,267);    
+	RecModel->SetGhostChi2Cut(10);
 	MUON->SetReconstructionModel(i,RecModel);
     }
 //

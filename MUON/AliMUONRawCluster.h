@@ -28,7 +28,11 @@ public:
    Int_t       fNcluster[2];      // Number of clusters
    Int_t       fClusterType;      // Cluster type
    Float_t     fChi2[2];          // Chi**2 of fit
-   
+   Int_t       fGhost;            // 0 if not a ghost or ghost problem solved
+                                  // >0 if ghost problem remains because
+                                  // 1 both (true and ghost) satify 
+                                  //   charge chi2 compatibility
+                                  // 2 none give satisfactory chi2
  public:
    AliMUONRawCluster();
    virtual ~AliMUONRawCluster() {}
@@ -39,6 +43,8 @@ public:
    static Int_t BinarySearch(Float_t r, TArrayF ccord, Int_t from, Int_t upto);
    static void  SortMin(Int_t *idx,Float_t *xdarray, Float_t *xarray,
 			Float_t *yarray, Float_t *qarray,Int_t ntr);
+   void DumpIndex();
+
    ClassDef(AliMUONRawCluster,1)  //Cluster class for MUON
 };
 #endif

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/02/05 14:49:29  hristov
+Compare() declared const (R.Brun)
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -49,6 +52,7 @@ AliMUONRawCluster::AliMUONRawCluster() {
 	}
     }
     fNcluster[0]=fNcluster[1]=-1;
+    fGhost=0;
 }
 
 Int_t AliMUONRawCluster::Compare(const TObject *obj) const
@@ -164,4 +168,17 @@ Int_t AliMUONRawCluster::PhysicsContribution()
   } else {
     return 0;
   }
+}
+
+//____________________________________________________
+void AliMUONRawCluster::DumpIndex(void)
+{
+    printf ("-----\n");
+    for (Int_t icat=0;icat<2;icat++) {
+	printf ("Mult %d\n",fMultiplicity[icat]);
+	for (Int_t idig=0;idig<fMultiplicity[icat];idig++){
+	    printf("Index %d",fIndexMap[idig][icat]);
+	}
+	printf("\n");
+    }
 }

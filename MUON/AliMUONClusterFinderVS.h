@@ -58,6 +58,9 @@ class AliMUONClusterFinderVS : public TObject
     virtual Bool_t TestTrack(Int_t t);
 //  Assignment operator
     AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
+//  debug level
+    void SetDebugLevel(Int_t level) {fDebugLevel = level;}
+    void SetGhostChi2Cut(Float_t cut) {fGhostChi2Cut = cut;}
 
  protected:
     AliMUONClusterInput*    fInput;              // ! AliMUONClusterInput instance
@@ -68,6 +71,9 @@ class AliMUONClusterFinderVS : public TObject
     Int_t                   fDeclusterFlag;      // flag for declusterin
     Int_t                   fClusterSize;        // cluster size 
     Int_t                   fNperMax;            // Maximum number of pads per peak
+    Float_t                 fGhostChi2Cut;       // Cut in charge matching chi2
+	                                         // (2 degrees of freedom)
+                                                 // Used by ghost removal
 // Current decluster result    
     Int_t                   fMul[2];             // current multiplicity
     Int_t                   fNPeaks;             // number of local maxima
@@ -98,6 +104,8 @@ class AliMUONClusterFinderVS : public TObject
 // Selected track for debugging
     Int_t                    fTrack[2];        // Only digits with main contributions from these tracks are
                                                // considered 
+    Int_t                    fDebugLevel;      // prinout control
+
 //  Return pointer to raw clusters    
     ClassDef(AliMUONClusterFinderVS,1) //Class for clustering and reconstruction of space points
 };
