@@ -13,12 +13,17 @@
 # define queffc QUEFFC
 #endif
 extern "C" {
-Double_t queffc(Double_t& wvlngt, Double_t& omgpho, Int_t& mmat)
-{
-    printf("queffc called  %e %e %d \n", wvlngt, omgpho, mmat);
-    TFluka* fluka =  (TFluka*) gMC;
-    TGeoMaterial*    material =  (TGeoMaterial*) (gGeoManager->GetListOfMaterials())->At(fluka->GetMaterialIndex(mmat));
-    TFlukaCerenkov*  cerenkov = dynamic_cast<TFlukaCerenkov*> (material->GetCerenkovProperties());
-    return (cerenkov->GetQuantumEfficiencyByWaveLength(wvlngt));
+    Double_t queffc(Double_t& wvlngt, Double_t& /*omgpho*/)
+    {
+	TGeoMaterial* material = (gGeoManager->GetCurrentVolume())->GetMaterial();
+	Int_t nmat = material->GetIndex();
+	TFlukaCerenkov*  cerenkov = dynamic_cast<TFlukaCerenkov*> (material->GetCerenkovProperties());
+	Double_t y = 1.;
+	if (cerenkov->IsSensitive()) 
+	    y = (cerenkov->GetQuantumEfficiencyByWaveLength(wvlngt));
+	
+//	printf("queff: %e %d %e\n", wvlngt, nmat, y);
+	return (y);
+    }
 }
-}
+
