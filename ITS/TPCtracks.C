@@ -46,12 +46,18 @@ Int_t TPCtracks() {
        tarray.AddLast(iotrack);
    }   
 
+   tf->Close();
+   delete ca;
+   cf->Close();
+   //printf("after cf close\n");
+   
    cerr<<"Number of found tracks "<<nentr<<endl;
    tarray.Sort();
 
    TFile *pfile = new TFile("tpctracks.root","RECREATE"); 
 
    TTree tracktree1("TreeT","Tree with TPC tracks");
+   AliTPCtrack *iotrack=0;   
    tracktree1.Branch("tracks","AliTPCtrack",&iotrack,32000,0);
 
    for (i=0; i<nentr; i++) {
@@ -60,17 +66,8 @@ Int_t TPCtracks() {
    }   
 
    tracktree1.Write();
-
    pfile->Close();
-
    tarray.Clear();
-
-   tf->Close();
-
-   delete ca;
-   cf->Close();
-
-   printf("after cf close\n");
 
 
 /////////////////////////////////////////////////////////////////////////
@@ -93,7 +90,6 @@ Int_t TPCtracks() {
    cerr<<"Number of good tracks : "<<ngood<<endl;
 
    printf("before return in tpctracks\n");
-
    return 0;
 }
 
@@ -262,7 +258,8 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
       gt[nt].ptg = p->Pt();		
       gt[nt].flag = 0;		
       nt++;
-
+        
+	if(hit0) delete hit0;
       cerr<<i<<"                \r";
       if (nt==max) {cerr<<"Too many good tracks !\n"; break;}
    }
