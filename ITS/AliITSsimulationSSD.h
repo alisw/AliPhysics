@@ -36,7 +36,7 @@ class AliITSsimulationSSD: public AliITSsimulation {
     //Computes the signal from one hit
     void HitToDigit(Int_t module,Double_t x0,Double_t y0,Double_t z0, 
 		    Double_t x,Double_t y,Double_t z,Double_t de,
-		    Int_t *indexRange,Bool_t first);
+		    AliITSTableSSD *tav);
     //returns a pointer to the SSD segmentation.
     AliITSsegmentationSSD *GetSegmentation() {
 	return (AliITSsegmentationSSD*) fSegmentation;}
@@ -78,7 +78,7 @@ class AliITSsimulationSSD: public AliITSsimulation {
     // Diffuses the charge onto neighboring strips.
     void    IntegrateGaussian(Int_t k,Double_t par,Double_t av,Double_t sigma, 
 			      Double_t inf, Double_t sup,
-			      Int_t *indexRange, Bool_t first);
+			      AliITSTableSSD *tav);
      // Applies noise to strips randomly
     void    ApplyNoise(AliITSpList *pList,Int_t mod);
      // Applies posible signal coupling between strips
