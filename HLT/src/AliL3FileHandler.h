@@ -29,12 +29,6 @@ class AliL3FileHandler:public AliL3MemHandler{
  public:
   AliL3FileHandler();
   virtual ~AliL3FileHandler();
-//  void Init(Int_t s,Int_t p,Int_t* row){fSlice=s;fPatch=p;fRowMin=row[0];fRowMax=row[1];}
-
-  Int_t GetRowMin(){return fRowMin;}
-  Int_t GetRowMax(){return fRowMax;}
-  Int_t GetSlice(){return fSlice;}
-  Int_t GetPatch(){return fPatch;}
 
   Bool_t SetAliInput(char *name);
   Bool_t SetAliInput(TFile *file);
