@@ -31,13 +31,11 @@ class AliTRDhit : public AliHit {
 
           Bool_t FromDrift() const           { return TestBit(kDrift);         };
           Bool_t FromAmplification() const   { return TestBit(kAmplification); };
-          Bool_t FromTRphoton() const        { return TestBit(kTRphoton);      };
-          Bool_t FromTest() const            { return TestBit(kTest);          };
+          Bool_t FromTRphoton() const        { return (fQ < 0);                };
 
           void   SetDrift()                  { SetBit(kDrift);         };
           void   SetAmplification()          { SetBit(kAmplification); };
           void   SetTRphoton()               { SetBit(kTRphoton);      };
-          void   SetTest()                   { SetBit(kTest);          }; 
 
  protected:
 
