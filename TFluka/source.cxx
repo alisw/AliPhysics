@@ -154,7 +154,9 @@ extern "C" {
 	    << particle->Px() << " , "
 	    << particle->Py() << " , "
 	    << particle->Pz() << " ) --> "
-	    << particle->P() << " GeV" << endl;
+	    << particle->P() << " GeV " 
+	    << particle->Energy() << " GeV "  
+	    << particle->GetMass() << " GeV " << endl;
     }   
     /* Lstack is the stack counter: of course any time source is called it
      * must be =0
@@ -168,8 +170,8 @@ extern "C" {
     //STACK.ilo[STACK.lstack] = BEAM.ijbeam;
     if (pdg != 50000050 &&  pdg !=  50000051) {
 	STACK.lstack++;
-	STACK.ilo[STACK.lstack] = fluka-> IdFromPDG(pdg);
-	
+	Int_t ifl =  fluka-> IdFromPDG(pdg);
+	STACK.ilo[STACK.lstack] = ifl;
 	/* Wt is the weight of the particle*/
 	STACK.wt[STACK.lstack] = oneone;
 	STARS.weipri += STACK.wt[STACK.lstack];
@@ -204,10 +206,11 @@ extern "C" {
 	STACK.igroup[STACK.lstack] = 0;
 	
 	/* Kinetic energy */
-	STACK.tke[STACK.lstack] = particle->Energy() - particle->GetMass();
+	Double_t p    = particle->P();
+	Double_t mass = PAPROP.am[ifl + 6];
+	STACK.tke[STACK.lstack] =  TMath::Sqrt( p * p + mass * mass) - mass;
 	/* Particle momentum*/
-	STACK.pmom [STACK.lstack] = particle->P();
-    
+	STACK.pmom [STACK.lstack] = p;
 
 	STACK.tx [STACK.lstack] = cosx;
 	STACK.ty [STACK.lstack] = cosy;
