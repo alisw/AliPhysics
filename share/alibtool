@@ -5,6 +5,9 @@
 #
 # modification history
 # $Log$
+# Revision 1.2  2001/11/14 17:52:48  hristov
+# Updated version of the flat makefiles (J.-E.Revsbech)
+#
 # Revision 1.1  2001/10/09 13:45:57  hristov
 # alibtool is added
 #
@@ -107,11 +110,6 @@ MkModuleLib()
     echo;
     cat build/module.tpl | sed -e "sQ\@MODULE@Q${module}Qg"  -e "sQ@PACKAGE@Q${package}Qg" -e "sQ\@TYPE@Q${type}Qg"
 
-}
-
-TestExport()
-{
-    echo "Test"
 }
 
 case $1 in
