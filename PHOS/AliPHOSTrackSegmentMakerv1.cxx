@@ -145,6 +145,11 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
   toofar = kTRUE ;
   if(emcClu->GetPHOSMod() == cpvClu->GetPHOSMod()){ 
 
+    Info("GetDistanceInPHOSPlane",
+	 "\n   EMC rp = (%f,%f,%f), \n   CPV rp = (%f,%f,%f) in module %d",
+	 vecEmc.X(),vecEmc.Y(),vecEmc.Z(),
+	 vecCpv.X(),vecCpv.Y(),vecCpv.Z(),
+	 cpvClu->GetPHOSMod());
     if (fESD != 0x0) {
       // Extrapolate the global track direction if any to CPV and find the closest track
       Int_t nTracks = fESD->GetNumberOfTracks();
@@ -160,6 +165,8 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	  continue;
 	track->GetOuterPxPyPz(pxyz); // track momentum ibid.
 	vecDist = PropagateToCPV(xyz,pxyz,cpvClu->GetPHOSMod());
+	Info("GetDistanceInPHOSPlane","YVK: Track %d propagation = (%f,%f,%f)",
+	     iTrack,vecDist.X(),vecDist.Y(),vecDist.Z());
 	vecDist -= vecCpv;
 	distance = TMath::Sqrt(vecDist.X()*vecDist.X() + vecDist.Z()*vecDist.Z());
 	// Find the closest track to the EMC recpoint
@@ -183,7 +190,7 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	distance = TMath::Sqrt(vecDist.X()*vecDist.X() + vecDist.Z()*vecDist.Z());
       }
     } else {
-      // If no ESD, than simply find EMC-CPV distance
+      // If no ESD exists, than simply find EMC-CPV distance
       distance = (vecCpv - vecEmc).Mag() ;
     }
     if(distance < fRcpv + 2*delta )
@@ -206,6 +213,9 @@ TVector3  AliPHOSTrackSegmentMakerv1::PropagateToCPV(Double_t *x, Double_t *p,
   TVector3 moduleCenter = geom->GetCpvModuleCenter(moduleNumber);
   TVector3 vertex(x);
   TVector3 direction(p);
+
+  Info("PropagateToCPV","YVK: center of the module %d is (%f,%f,%f)",
+       moduleNumber,moduleCenter[0],moduleCenter[1],moduleCenter[2]);
 
   Double_t time = (moduleCenter.Mag2() - vertex.Dot(moduleCenter)) /
     (direction.Dot(moduleCenter));

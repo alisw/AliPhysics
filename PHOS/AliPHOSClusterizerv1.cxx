@@ -439,7 +439,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   
   //Now the same for CPV
   for(index = 0; index < cpvRecPoints->GetEntries(); index++)
-    dynamic_cast<AliPHOSRecPoint *>( cpvRecPoints->At(index) )->EvalAll(digits)  ;
+    dynamic_cast<AliPHOSCpvRecPoint *>( cpvRecPoints->At(index) )->EvalAll(fW0CPV,digits) ;
   
   cpvRecPoints->Sort() ;
   

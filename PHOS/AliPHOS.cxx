@@ -394,12 +394,14 @@ void AliPHOS::FillESD(AliESD* esd) const
     if ( name.Contains(AliConfig::Instance()->GetTrackerTaskName()))
       (dynamic_cast<AliPHOSTrackSegmentMaker *> (task))->SetESD(esd) ; 
   }
-  rec->SetEventRange(0, -1) ; // do all the events
+
+  AliPHOSGetter *gime = AliPHOSGetter::Instance( (fLoader->GetRunLoader()->GetFileName()).Data() ) ;
+  Int_t eventNumber = gime->EventNumber();
+  rec->SetEventRange(eventNumber, eventNumber) ; // do all the events
   rec->ExecuteTask("deb") ; 
 
   // Creates AliESDtrack from AliPHOSRecParticles 
-  AliPHOSGetter *gime = AliPHOSGetter::Instance( (fLoader->GetRunLoader()->GetFileName()).Data() ) ;
-  gime->Event(gime->EventNumber(), "P") ; 
+  gime->Event(eventNumber, "P") ; 
   TClonesArray *recParticles = gime->RecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
@@ -481,7 +483,7 @@ void AliPHOS::Reconstruct() const
       task->SetActive(kFALSE) ; 
   }
   rec->SetEventRange(0, -1) ; // do all the events
-  rec->ExecuteTask("deb") ; 
+  rec->ExecuteTask("deb all") ; 
 }
 
 //____________________________________________________________________________
