@@ -1,5 +1,11 @@
 #include "AliHBTReader.h"
 
+#include <TString.h>
+#include <TObjString.h>
+#include <TObjArray.h>
+#include <TClass.h>
+#include <iostream.h>
+
 #include "AliHBTParticleCut.h"
 
 
@@ -12,9 +18,15 @@ AliHBTReader::AliHBTReader()
 {
 //constructor
  fCuts = new TObjArray();
+ fDirs = 0x0;
 }
 
 /*************************************************************************************/
+AliHBTReader::AliHBTReader(TObjArray* dirs)
+ {
+  fCuts = new TObjArray();
+  fDirs = dirs;
+ }
 
 AliHBTReader::~AliHBTReader()
 {
@@ -83,3 +95,41 @@ Bool_t  AliHBTReader::Pass(Int_t pid)
  return kTRUE;
 }
 /*************************************************************************************/
+
+TString& AliHBTReader::GetDirName(Int_t entry)
+ {
+   TString* retval;//return value
+   if (fDirs ==  0x0)
+    {
+      retval = new TString(".");
+      return *retval;
+    }
+   
+   if ( (entry>fDirs->GetEntries()) || (entry<0))//if out of bounds return empty string
+    {                                            //note that entry==0 is accepted even if array is empty (size=0)
+      Error("GetDirName","Name out of bounds");
+      retval = new TString();
+      return *retval;
+    }
+   
+   if (fDirs->GetEntries() == 0)
+    { 
+      retval = new TString(".");
+      return *retval;
+    }
+   
+   TClass *objclass = fDirs->At(entry)->IsA();
+   TClass *stringclass = TObjString::Class();
+   
+   TObjString *dir = (TObjString*)objclass->DynamicCast(stringclass,fDirs->At(entry));
+   
+   if(dir == 0x0)
+    {
+      Error("GetDirName","Object in TObjArray is not a TObjString or its descendant");
+      retval = new TString();
+      return *retval;
+    }
+   if (gDebug > 0) cout<<"Returned ok "<<dir->String().Data()<<endl;
+   return dir->String();
+ }
+
