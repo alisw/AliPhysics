@@ -110,6 +110,7 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
    }
 
   fEventParticles->SetVertex(vertexpos[0],vertexpos[1],vertexpos[2]);
+  //cout << vertexpos[0] << " " << vertexpos[1] << " " << vertexpos[2] << endl;
 
   AliL3Track l3;
   AliL3Vertex v;
@@ -145,6 +146,7 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
 
     if(fTrackerType){
       //if(!kesdtrack->ComesFromMainVertex()) continue;
+      //cout << kesdtrack->GetPx() << " " << kesdtrack->GetPy() << " " << kesdtrack->GetPz() << endl;
       l3.SetFirstPoint(kesdtrack->GetFirstPointX(),kesdtrack->GetFirstPointY(),kesdtrack->GetFirstPointZ());
       l3.SetLastPoint(kesdtrack->GetLastPointX(),kesdtrack->GetLastPointY(),kesdtrack->GetLastPointZ());
       l3.SetCharge(kesdtrack->GetCharge());
@@ -155,10 +157,12 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
       l3.GetClosestPoint(&v,xc,yc,zc);
       if(TMath::Abs(zc)>10.) continue;
       l3.SetFirstPoint(vertexpos[0],vertexpos[1],vertexpos[2]);
+      //l3.CalculateHelix();
       l3.UpdateToFirstPoint();
       px=l3.GetPx();
       py=l3.GetPy();
       pz=l3.GetPz();
+      //cout << px << " " << py << " " << pz << endl;
     }
 
     const Float_t kpt=TMath::Sqrt(px*px+py*py);
