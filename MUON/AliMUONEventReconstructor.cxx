@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/10/04 18:21:26  morsch
+Include stdlib.h
+
 Revision 1.13  2000/10/02 21:28:09  fca
 Removal of useless dependecies via forward declarations
 
@@ -166,11 +169,11 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
   fRecTrackHitsPtr = new TClonesArray("AliMUONTrack", 100);
   fNRecTrackHits = 0; // really needed or GetEntriesFast sufficient ????
 
-  // Sign of fSimpleBValue according to sign of value at (50,50,950).
+  // Sign of fSimpleBValue according to sign of Bx value at (50,50,950).
   Float_t b[3], x[3];
   x[0] = 50.; x[1] = 50.; x[2] = 950.;
   gAlice->Field()->Field(x, b);
-  fSimpleBValue = TMath::Sign(fSimpleBValue,(Double_t) b[2]);
+  fSimpleBValue = TMath::Sign(fSimpleBValue,(Double_t) b[0]);
   // See how to get fSimple(BValue, BLength, BPosition)
   // automatically calculated from the actual magnetic field ????
 
@@ -265,7 +268,7 @@ Double_t AliMUONEventReconstructor::GetImpactParamFromBendingMomentum(Double_t B
   // Returns impact parameter at vertex in bending plane (cm),
   // from the signed bending momentum "BendingMomentum" in bending plane (GeV/c),
   // using simple values for dipole magnetic field.
-  // The sign is the sign of the charge.
+  // The sign of "BendingMomentum" is the sign of the charge.
   return (-0.0003 * fSimpleBValue * fSimpleBLength * fSimpleBPosition /
 	  BendingMomentum);
 }
@@ -274,9 +277,9 @@ Double_t AliMUONEventReconstructor::GetImpactParamFromBendingMomentum(Double_t B
 Double_t AliMUONEventReconstructor::GetBendingMomentumFromImpactParam(Double_t ImpactParam)
 {
   // Returns signed bending momentum in bending plane (GeV/c),
+  // the sign being the sign of the charge for particles moving forward in Z,
   // from the impact parameter "ImpactParam" at vertex in bending plane (cm),
   // using simple values for dipole magnetic field.
-  // The sign is the sign of the charge.
   return (-0.0003 * fSimpleBValue * fSimpleBLength * fSimpleBPosition /
 	  ImpactParam);
 }
