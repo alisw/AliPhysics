@@ -9,15 +9,11 @@ PACKAGE = ZDC
 
 # FORTRAN sources
 
-FSRCS	      = AliZDCf.F
+FSRCS	      =
 
 # C++ sources
 
-SRCS          = AliZDC.cxx
-
-# Fortran sources
-
-FSRCS	       = AliZDCf.F 
+SRCS          = AliZDC.cxx AliZDCv1.cxx AliGenZDC.cxx
 
 # C++ Headers
 
@@ -47,7 +43,8 @@ ALLOBJS       = $(OBJS) $(FOBJS)
 
 # C++ compilation flags
 
-CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include
+CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include \
+		-I$(ALICE_ROOT)/RALICE
  
 # FORTRAN compilation flags
 

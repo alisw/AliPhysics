@@ -11,5 +11,6 @@
 #pragma link C++ class  AliZDC;
 #pragma link C++ class  AliZDCv1;
 #pragma link C++ class  AliZDChit;
+#pragma link C++ class  AliGenZDC;
 
 #endif
