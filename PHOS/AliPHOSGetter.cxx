@@ -524,13 +524,13 @@ Int_t AliPHOSGetter::ReadTreeD()
 {
   // Read the Digits
   
-  
-  // gets TreeD from the root file (PHOS.SDigits.root)
-  if ( !IsLoaded("D") ) {
+  PhosLoader()->CleanDigits() ;    
+  // gets TreeD from the root file (PHOS.Digits.root)
+  // if ( !IsLoaded("D") ) {
     PhosLoader()->LoadDigits("UPDATE") ;
     PhosLoader()->LoadDigitizer("UPDATE") ;
-    SetLoaded("D") ; 
-  } 
+    //  SetLoaded("D") ; 
+    //} 
   return Digits()->GetEntries() ; 
 }
 
@@ -538,12 +538,12 @@ Int_t AliPHOSGetter::ReadTreeD()
 Int_t AliPHOSGetter::ReadTreeH()
 {
   // Read the Hits
-    
+  PhosLoader()->CleanHits() ;
   // gets TreeH from the root file (PHOS.Hit.root)
-  if ( !IsLoaded("H") ) {
+  //if ( !IsLoaded("H") ) {
     PhosLoader()->LoadHits("UPDATE") ;
-    SetLoaded("H") ; 
-  }  
+  //  SetLoaded("H") ; 
+  //}  
   return Hits()->GetEntries() ; 
 }
 
@@ -552,13 +552,13 @@ Int_t AliPHOSGetter::ReadTreeR()
 {
   // Read the RecPoints
   
-  
+  PhosLoader()->CleanRecPoints() ;
   // gets TreeR from the root file (PHOS.RecPoints.root)
-  if ( !IsLoaded("R") ) {
+  //if ( !IsLoaded("R") ) {
     PhosLoader()->LoadRecPoints("UPDATE") ;
     PhosLoader()->LoadClusterizer("UPDATE") ;
-    SetLoaded("R") ; 
-  }
+    //  SetLoaded("R") ; 
+    //}
 
   return EmcRecPoints()->GetEntries() ; 
 }
@@ -568,28 +568,29 @@ Int_t AliPHOSGetter::ReadTreeT()
 {
   // Read the TrackSegments
   
-  
+  PhosLoader()->CleanTracks() ; 
   // gets TreeT from the root file (PHOS.TrackSegments.root)
-  if ( !IsLoaded("T") ) {
+  //if ( !IsLoaded("T") ) {
     PhosLoader()->LoadTracks("UPDATE") ;
     PhosLoader()->LoadTrackSegmentMaker("UPDATE") ;
-    SetLoaded("T") ; 
-  }
+    //    SetLoaded("T") ; 
+    //}
 
   return TrackSegments()->GetEntries() ; 
 }
 //____________________________________________________________________________ 
 Int_t AliPHOSGetter::ReadTreeP()
 {
-  // Read the TrackSegments
+  // Read the RecParticles
   
-  
+  PhosLoader()->CleanRecParticles() ; 
+
   // gets TreeT from the root file (PHOS.TrackSegments.root)
-  if ( !IsLoaded("P") ) {
+  //  if ( !IsLoaded("P") ) {
     PhosLoader()->LoadRecParticles("UPDATE") ;
     PhosLoader()->LoadPID("UPDATE") ;
-    SetLoaded("P") ; 
-  }
+    //  SetLoaded("P") ; 
+    //}
 
   return RecParticles()->GetEntries() ; 
 }
@@ -598,13 +599,13 @@ Int_t AliPHOSGetter::ReadTreeS()
 {
   // Read the SDigits
   
-  
+  PhosLoader()->CleanSDigits() ; 
   // gets TreeS from the root file (PHOS.SDigits.root)
-  if ( !IsLoaded("S") ) {
+  //if ( !IsLoaded("S") ) {
     PhosLoader()->LoadSDigits("READ") ;
     PhosLoader()->LoadSDigitizer("READ") ;
-    SetLoaded("S") ; 
-  }
+    //  SetLoaded("S") ; 
+    //}
 
   return SDigits()->GetEntries() ; 
 }
