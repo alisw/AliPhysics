@@ -356,6 +356,10 @@ void AliMUONDigitizerv1::Exec(Option_t* option)
     } // end file loop
     if (GetDebug()>2) cerr<<"AliMUONDigitizer::Exec End of hits, track and file loops"<<endl;
 
+    runloader    = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+    gime        = runloader->GetLoader("MUONLoader");
+    muondata->SetLoader(gime);
+
     // Loop on cathodes
     Int_t icat;
     for(icat=0; icat<2; icat++) {
