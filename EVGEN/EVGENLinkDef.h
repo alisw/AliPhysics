@@ -54,6 +54,7 @@
 #pragma link C++ class  AliSlowNucleonModelExp+;
 #pragma link C++ class  AliGenHBTosl+;
 #pragma link C++ class  AliGenCocktailEventHeader+;
+#pragma link C++ class  AliGenReaderEMD+;
 #endif
 
 
