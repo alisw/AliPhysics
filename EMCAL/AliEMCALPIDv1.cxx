@@ -155,8 +155,8 @@ void  AliEMCALPIDv1::Exec(Option_t * option)
     Print("") ; 
     return ; 
   }
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ; 
-
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+  
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
   else 
@@ -165,7 +165,6 @@ void  AliEMCALPIDv1::Exec(Option_t * option)
 
   Int_t ievent ;
 
-
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent,"R") ;
     MakeRecParticles() ;
@@ -173,8 +172,7 @@ void  AliEMCALPIDv1::Exec(Option_t * option)
     if(strstr(option,"deb"))
       PrintRecParticles(option) ;
     //increment the total number of rec particles per run 
-    fRecParticlesInRun += gime->RecParticles()->GetEntriesFast() ; 
-    
+    fRecParticlesInRun += gime->RecParticles()->GetEntriesFast() ;  
   }
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALPID");
