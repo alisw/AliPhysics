@@ -8,8 +8,8 @@
 
 //-------------------------------------------------------------------------
 //                          Class AliKalmanTrack
-//
-//         Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
+//      fixed the interface for the derived reconstructed track classes 
+//            Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
@@ -81,15 +81,12 @@ public:
   virtual Double_t P() const;
 
   virtual Double_t GetPredictedChi2(const AliCluster *) const {return 0.;}
-  virtual 
-    Int_t PropagateTo(Double_t /*xr*/, Double_t /*x0*/, Double_t /*rho*/) {return 0;}
-  virtual
-    Int_t PropagateToPrimVertex(Double_t /*x0*/,Double_t /*rho*/){return 0;}
-    
-  virtual Int_t Update(const AliCluster*, Double_t /*chi2*/, UInt_t) {return 0;}
+  virtual Int_t 
+  PropagateTo(Double_t /*xr*/, Double_t /*x0*/, Double_t /*rho*/) {return 0;}
+  virtual Int_t 
+  Update(const AliCluster*, Double_t /*chi2*/, UInt_t) {return 0;}
 
   static void SetConvConst(Double_t cc) {fgConvConst=cc;}
-  static void SetConvConst();
   static Double_t GetConvConst() {return fgConvConst;}
 
   static void SetMagneticField(Double_t f) {// f - Magnetic field in T
@@ -108,12 +105,6 @@ public:
   Double_t GetIntegratedTime(Int_t pdg) const;
   Double_t GetIntegratedLength() const {return fIntegratedLength;}
   void PrintTime() const;
-
-
-  //__________________
-  virtual Int_t PropagateToVertex(Double_t =0., Double_t =0.) {
-Fatal("PropagateToVertex","Not implemented!\n");return -99;}
-  
 
 protected:
   void SetChi2(Double_t chi2) {fChi2=chi2;} 

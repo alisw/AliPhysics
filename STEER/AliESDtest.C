@@ -109,6 +109,8 @@ Int_t AliESDtest(Int_t nev=1) {
 
    //An instance of the ITS tracker
    AliITStrackerV2 itsTracker(geom);
+   {Double_t xyz[]={0.,0.,0.}, ers[]={0.005, 0.005, 0.010};
+   itsTracker.SetVertex(xyz,ers);}
    
    //An instance of the ITS PID maker
    Double_t parITS[]={34.,0.15,10.};

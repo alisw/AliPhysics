@@ -39,13 +39,6 @@ fRx(0),
 fITSchi2(0),
 fITSncls(0),
 fITSsignal(0),
-fVertexX(0),
-fVertexY(0),
-fVertexZ(0),
-fVertexPx(0),
-fVertexPy(0),
-fVertexPz(0),
-fVertex(kFALSE),
 fTPCchi2(0),
 fTPCncls(0),
 fTPCsignal(0),
@@ -96,38 +89,6 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
   //
   // This function updates track's running parameters 
   //
-  switch (flags) {
-    
-  case kITSin:
-  case kITSout: 
-  case kITSrefit:
-    fITSncls=t->GetNumberOfClusters();
-    fITSchi2=t->GetChi2();
-    for (Int_t i=0;i<fITSncls;i++) fITSindex[i]=t->GetClusterIndex(i);
-    fITSsignal=t->GetPIDsignal();
-    break;
-    
-  case kTPCin: case kTPCout: case kTPCrefit:
-    fTPCncls=t->GetNumberOfClusters();
-    fTPCchi2=t->GetChi2();
-    for (Int_t i=0;i<fTPCncls;i++) fTPCindex[i]=t->GetClusterIndex(i);
-    fTPCsignal=t->GetPIDsignal();
-    {Double_t mass=t->GetMass();    // preliminary mass setting 
-    if (mass>0.5) fR[4]=1.;         //        used by
-    else if (mass<0.4) fR[2]=1.;    // the ITS reconstruction
-    else fR[3]=1.;}                 //
-    break;
-  case kTRDin: case kTRDout: case kTRDrefit:
-    fTRDncls=t->GetNumberOfClusters();
-    fTRDchi2=t->GetChi2();
-    for (Int_t i=0;i<fTRDncls;i++) fTRDindex[i]=t->GetClusterIndex(i);
-    fTRDsignal=t->GetPIDsignal();
-    break;
-  default: 
-    Error("UpdateTrackParams()","Wrong flag !\n");
-    return kFALSE;
-  }
-
   SetStatus(flags);
   fLabel=t->GetLabel();
 
@@ -140,35 +101,47 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
   fRalpha=t->GetAlpha();
   t->GetExternalParameters(fRx,fRp);
   t->GetExternalCovariance(fRc);
-  
-  if (flags == kITSin)
-   {
-     AliKalmanTrack *itstrack = t;
-     if (itstrack)
-      {
-        itstrack->PropagateTo(3.,0.0028,65.19);
-        itstrack->PropagateToVertex();
-        
-        Double_t ralpha=t->GetAlpha();
-        Double_t rx;      // X-coordinate of the track reference plane 
-        Double_t rp[5];   // external track parameters  
-        t->GetExternalParameters(rx,rp);
-   
-        Double_t phi=TMath::ASin(rp[2]) + ralpha;
-        Double_t pt=1./TMath::Abs(rp[4]);
-        Double_t r=TMath::Sqrt(rx*rx + rp[0]*rp[0]);
-        
-        fVertexX=r*TMath::Cos(phi); 
-        fVertexY=r*TMath::Sin(phi); 
-        fVertexZ=rp[1]; 
-        
-        fVertexPx = pt*TMath::Cos(phi); 
-        fVertexPy = pt*TMath::Sin(phi); 
-        fVertexPz = pt*rp[3]; 
-        fVertex = kTRUE;
-      }
-   }
-  
+
+  switch (flags) {
+    
+  case kITSin: case kITSout: case kITSrefit:
+    fITSncls=t->GetNumberOfClusters();
+    fITSchi2=t->GetChi2();
+    for (Int_t i=0;i<fITSncls;i++) fITSindex[i]=t->GetClusterIndex(i);
+    fITSsignal=t->GetPIDsignal();
+    break;
+    
+  case kTPCin: case kTPCrefit:
+    fIalpha=fRalpha;
+    fIx=fRx;
+    {
+      Int_t i;
+      for (i=0; i<5; i++) fIp[i]=fRp[i];
+      for (i=0; i<15;i++) fIc[i]=fRc[i];
+    }
+  case kTPCout:
+    fTPCncls=t->GetNumberOfClusters();
+    fTPCchi2=t->GetChi2();
+    for (Int_t i=0;i<fTPCncls;i++) fTPCindex[i]=t->GetClusterIndex(i);
+    fTPCsignal=t->GetPIDsignal();
+    {Double_t mass=t->GetMass();    // preliminary mass setting 
+    if (mass>0.5) fR[4]=1.;         //        used by
+    else if (mass<0.4) fR[2]=1.;    // the ITS reconstruction
+    else fR[3]=1.;}                 //
+    break;
+
+  case kTRDin: case kTRDout: case kTRDrefit:
+    fTRDncls=t->GetNumberOfClusters();
+    fTRDchi2=t->GetChi2();
+    for (Int_t i=0;i<fTRDncls;i++) fTRDindex[i]=t->GetClusterIndex(i);
+    fTRDsignal=t->GetPIDsignal();
+    break;
+
+  default: 
+    Error("UpdateTrackParams()","Wrong flag !\n");
+    return kFALSE;
+  }
+
   return kTRUE;
 }
 
@@ -206,6 +179,26 @@ void AliESDtrack::GetXYZ(Double_t *xyz) const {
   Double_t phi=TMath::ATan2(fRp[0],fRx) + fRalpha;
   Double_t r=TMath::Sqrt(fRx*fRx + fRp[0]*fRp[0]);
   xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fRp[1]; 
+}
+
+void AliESDtrack::GetInnerPxPyPz(Double_t *p) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track momentum components
+  // af the entrance of the TPC
+  //---------------------------------------------------------------------
+  Double_t phi=TMath::ASin(fIp[2]) + fIalpha;
+  Double_t pt=1./TMath::Abs(fIp[4]);
+  p[0]=pt*TMath::Cos(phi); p[1]=pt*TMath::Sin(phi); p[2]=pt*fIp[3]; 
+}
+
+void AliESDtrack::GetInnerXYZ(Double_t *xyz) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track position
+  // af the entrance of the TPC
+  //---------------------------------------------------------------------
+  Double_t phi=TMath::ATan2(fIp[0],fIx) + fIalpha;
+  Double_t r=TMath::Sqrt(fIx*fIx + fIp[0]*fIp[0]);
+  xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fIp[1]; 
 }
 
 //_______________________________________________________________________
@@ -333,17 +326,3 @@ void AliESDtrack::GetESDpid(Double_t *p) const {
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fR[i];
 }
 
-void AliESDtrack::GetVertexXYZ(Double_t& x,Double_t& y, Double_t&z) const
-{
-//returns track position in DCA to vertex  
-  x = fVertexX;
-  y = fVertexY;
-  z = fVertexZ;
-}
-void AliESDtrack::GetVertexPxPyPz(Double_t& px,Double_t& py, Double_t& pz) const
-{
-//returns track momentum in DCA to vertex  
-  px = fVertexPx;
-  py = fVertexPy;
-  pz = fVertexPz;
-}

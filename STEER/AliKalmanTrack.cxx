@@ -25,9 +25,6 @@
 #include "AliPDG.h"
 #include "TPDGCode.h"
 #include "TDatabasePDG.h"
-#include "AliRunLoader.h"
-#include "AliRun.h"
-#include "AliMagF.h"
 
 ClassImp(AliKalmanTrack)
 
@@ -44,8 +41,7 @@ AliKalmanTrack::AliKalmanTrack():
   // Default constructor
   //
     if (fgConvConst==0) {
-      Warning("AliKalmanTrack()", "The magnetic field has not been set!");
-      SetConvConst();
+      Fatal("AliKalmanTrack()", "The magnetic field has not been set!");
     }
     
     fStartTimeIntegral = kFALSE;
@@ -65,9 +61,8 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   // Copy constructor
   //
   if (fgConvConst==0) {
-    Warning("AliKalmanTrack(const AliKalmanTrack&)", 
+    Fatal("AliKalmanTrack(const AliKalmanTrack&)", 
 	    "The magnetic field has not been set!");
-    SetConvConst();
   }
 
   fStartTimeIntegral = t.fStartTimeIntegral;
@@ -75,24 +70,6 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   
   for (Int_t i=0; i<5; i++) 
     fIntegratedTime[i] = t.fIntegratedTime[i];
-}
-
-
-//_______________________________________________________________________
-void AliKalmanTrack::SetConvConst()
-{
-  // Sets the conversion constants for the magnetic field 
-  // (Momentum in GeV/c -> curvature in mm)
-  ::Info("SetConvConst()", "tryinig to get the magnetic field from the AliRun object..."); 
-  AliRunLoader* loader = AliRunLoader::GetRunLoader();
-  if (!loader) ::Fatal("SetConvConst()", "No run loader found"); 
-  if (!loader->GetAliRun()) loader->LoadgAlice();
-  AliRun* alirun = loader->GetAliRun();
-  if (!alirun) ::Fatal("SetConvConst()", "No AliRun object found");
-
-  Double_t field = alirun->Field()->SolenoidField();
-  SetConvConst(1000/0.299792458/field);
-  ::Info("SetConvConst()", "Magnetic field set to %f kGauss\n", field);
 }
 
 //_______________________________________________________________________
@@ -343,9 +320,6 @@ void AliKalmanTrack:: AddTimeStep(Double_t length)
     Double_t mass = db->GetParticle(pdgCode[i])->Mass();
     Double_t correction = TMath::Sqrt( pt*pt * (1 + tgl*tgl) + mass * mass ) / p;
     Double_t time = length * correction / kcc;
-
-    //cout << mass << "\t" << pt << "\t" << p << "\t" 
-    //     << correction << endl;
 
     fIntegratedTime[i] += time;
   }

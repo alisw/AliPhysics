@@ -37,6 +37,9 @@ public:
   void GetPxPyPz(Double_t *p) const;
   void GetXYZ(Double_t *r) const;
 
+  void GetInnerPxPyPz(Double_t *p) const;
+  void GetInnerXYZ(Double_t *r) const;
+
   void SetTPCpid(const Double_t *p);
   void GetTPCpid(Double_t *p) const;
   Float_t GetTPCsignal() const {return fTPCsignal;}
@@ -61,10 +64,6 @@ public:
   UInt_t  GetTOFcluster() const {return fTOFindex;}
   void  SetTOFcluster(UInt_t index) {fTOFindex=index;}
   
-  void  GetVertexXYZ(Double_t& x,Double_t& y, Double_t&z) const;
-  void  GetVertexPxPyPz(Double_t& px,Double_t& py, Double_t& pz) const;
-  Bool_t  HasVertexParameters() const {return fVertex;}
-
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
     kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
@@ -91,8 +90,8 @@ protected:
   Double_t fRp[5];   // external track parameters  
   Double_t fRc[15];  // external cov. matrix of the track parameters
 
-//Track parameters at the innermost measured point
-  //Double_t fIalpha,fIx,fIp[5],fIc[15];
+//Track parameters at the innermost measured point in the TPC
+  Double_t fIalpha,fIx,fIp[5],fIc[15];
 
 //Track parameters at the outermost measured point
   //Double_t fOalpha,fOx,fOp[5],fOc[15];
@@ -103,17 +102,7 @@ protected:
   UInt_t  fITSindex[6];    //! indices of the assigned ITS clusters
   Float_t fITSsignal;      // detector's PID signal
   Float_t fITSr[kSPECIES]; //! "detector response probabilities" (for the PID)
-  
-  Double_t fVertexX; // X coordinate of point of closest approach to the vertex
-  Double_t fVertexY; // Y coordinate of point of closest approach to the vertex
-  Double_t fVertexZ; // Z coordinate of point of closest approach to the vertex
-  
-  Double_t fVertexPx; // Px at point of closest approach to the vertex
-  Double_t fVertexPy; // Py at point of closest approach to the vertex
-  Double_t fVertexPz; // Pz at point of closest approach to the vertex
-  
-  Bool_t   fVertex; // TRUE if the track was prolongated to the vertex
-  
+
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
