@@ -43,7 +43,7 @@ ClassImp(AliITSv11Geometry)
 //______________________________________________________________________
 Double_t AliITSv11Geometry::Yfrom2Points(Double_t x0,Double_t y0,
                                          Double_t x1,Double_t y1,
-                                         Double_t x){
+                                         Double_t x)const{
     // Given the two points (x0,y0) and (x1,y1) and the location x, returns
     // the value y corresponding to that point x on the line defined by the
     // two points.
@@ -75,7 +75,7 @@ Double_t AliITSv11Geometry::Yfrom2Points(Double_t x0,Double_t y0,
 //______________________________________________________________________
 Double_t AliITSv11Geometry::Xfrom2Points(Double_t x0,Double_t y0,
                                          Double_t x1,Double_t y1,
-                                         Double_t y){
+                                         Double_t y)const{
     // Given the two points (x0,y0) and (x1,y1) and the location y, returns
     // the value x corresponding to that point y on the line defined by the
     // two points.
@@ -106,7 +106,7 @@ Double_t AliITSv11Geometry::Xfrom2Points(Double_t x0,Double_t y0,
 }
 //______________________________________________________________________
 Double_t AliITSv11Geometry::RmaxFrom2Points(const TGeoPcon *p,Int_t i1,
-                                            Int_t i2,Double_t z){
+                                            Int_t i2,Double_t z)const{
     // functions Require at parts of Volume A to be already defined.
     // Retruns the value of Rmax corresponding to point z alone the line
     // defined by the two points p.Rmax(i1),p-GetZ(i1) and p->GetRmax(i2),
@@ -130,7 +130,7 @@ Double_t AliITSv11Geometry::RmaxFrom2Points(const TGeoPcon *p,Int_t i1,
 }
 //______________________________________________________________________
 Double_t AliITSv11Geometry::RminFrom2Points(const TGeoPcon *p,Int_t i1,
-                                            Int_t i2,Double_t z){
+                                            Int_t i2,Double_t z)const{
     // Retruns the value of Rmin corresponding to point z alone the line
     // defined by the two points p->GetRmin(i1),p->GetZ(i1) and 
     // p->GetRmin(i2),  p->GetZ(i2).
@@ -149,7 +149,7 @@ Double_t AliITSv11Geometry::RminFrom2Points(const TGeoPcon *p,Int_t i1,
 }
 //______________________________________________________________________
 Double_t AliITSv11Geometry::RFrom2Points(const Double_t *p,const Double_t *az,
-                                         Int_t i1,Int_t i2,Double_t z){
+                                         Int_t i1,Int_t i2,Double_t z)const{
     // Retruns the value of Rmin corresponding to point z alone the line
     // defined by the two points p->GetRmin(i1),p->GetZ(i1) and 
     // p->GetRmin(i2), p->GetZ(i2).
@@ -168,7 +168,7 @@ Double_t AliITSv11Geometry::RFrom2Points(const Double_t *p,const Double_t *az,
 }
 //______________________________________________________________________
 Double_t AliITSv11Geometry::Zfrom2MinPoints(const TGeoPcon *p,Int_t i1,
-                                            Int_t i2,Double_t r){
+                                            Int_t i2,Double_t r)const{
     // Retruns the value of Z corresponding to point R alone the line
     // defined by the two points p->GetRmin(i1),p->GetZ(i1) and 
     // p->GetRmin(i2),p->GetZ(i2)
@@ -188,7 +188,7 @@ Double_t AliITSv11Geometry::Zfrom2MinPoints(const TGeoPcon *p,Int_t i1,
 }
 //______________________________________________________________________
 Double_t AliITSv11Geometry::Zfrom2MaxPoints(const TGeoPcon *p,Int_t i1,
-                                            Int_t i2,Double_t r){
+                                            Int_t i2,Double_t r)const{
     // Retruns the value of Z corresponding to point R alone the line
     // defined by the two points p->GetRmax(i1),p->GetZ(i1) and 
     // p->GetRmax(i2),p->GetZ(i2)
@@ -208,7 +208,7 @@ Double_t AliITSv11Geometry::Zfrom2MaxPoints(const TGeoPcon *p,Int_t i1,
 }
 //______________________________________________________________________
 Double_t AliITSv11Geometry::Zfrom2Points(const Double_t *z,const Double_t *ar,
-                                         Int_t i1,Int_t i2,Double_t r){
+                                         Int_t i1,Int_t i2,Double_t r)const{
     // Retruns the value of z corresponding to point R alone the line
     // defined by the two points p->GetRmax(i1),p->GetZ(i1) and 
     // p->GetRmax(i2),p->GetZ(i2)
@@ -228,7 +228,7 @@ Double_t AliITSv11Geometry::Zfrom2Points(const Double_t *z,const Double_t *ar,
 //______________________________________________________________________
 Double_t AliITSv11Geometry::RmaxFromZpCone(const TGeoPcon *p,int ip,
                                            Double_t tc,Double_t z,
-                                           Double_t th){
+                                           Double_t th)const{
     // General Outer Cone surface equation Rmax.
     // Intputs:
     //     TGeoPcon  *p   The poly cone where the initial point comes from
@@ -242,8 +242,8 @@ Double_t AliITSv11Geometry::RmaxFromZpCone(const TGeoPcon *p,int ip,
     // Return:
     //     The value Rmax correstponding to the line at angle th, offeset by
     //     th, and the point p->GetZ/Rmin[ip] at the location z.
-    Double_t tantc = TanD(tc);
-    Double_t costc = CosD(tc);
+    Double_t tantc = TMath::Tan(tc*TMath::DegToRad());
+    Double_t costc = TMath::Cos(tc*TMath::DegToRad());
 
     return -tantc*(z-p->GetZ(ip))+p->GetRmax(ip)+th/costc;
 }
@@ -251,7 +251,7 @@ Double_t AliITSv11Geometry::RmaxFromZpCone(const TGeoPcon *p,int ip,
 Double_t AliITSv11Geometry::RFromZpCone(const Double_t *ar,
                                         const Double_t *az,int ip,
                                         Double_t tc,Double_t z,
-                                        Double_t th){
+                                        Double_t th)const{
     // General Cone surface equation R(z).
     // Intputs:
     //     Double_t  ar   The array of R values
@@ -266,15 +266,15 @@ Double_t AliITSv11Geometry::RFromZpCone(const Double_t *ar,
     // Return:
     //     The value R correstponding to the line at angle th, offeset by
     //     th, and the point p->GetZ/Rmax[ip] at the locatin z.
-    Double_t tantc = TanD(tc);
-    Double_t costc = CosD(tc);
+    Double_t tantc = TMath::Tan(tc*TMath::DegToRad());
+    Double_t costc = TMath::Cos(tc*TMath::DegToRad());
 
     return -tantc*(z-az[ip])+ar[ip]+th/costc;
 }
 //______________________________________________________________________
 Double_t AliITSv11Geometry::RminFromZpCone(const TGeoPcon *p,Int_t ip,
                                            Double_t tc,Double_t z,
-                                           Double_t th){
+                                           Double_t th)const{
     // General Inner Cone surface equation Rmin.
     // Intputs:
     //     TGeoPcon  *p   The poly cone where the initial point comes from
@@ -288,15 +288,15 @@ Double_t AliITSv11Geometry::RminFromZpCone(const TGeoPcon *p,Int_t ip,
     // Return:
     //     The value Rmin correstponding to the line at angle th, offeset by
     //     th, and the point p->GetZ/Rmin[ip] at the location z.
-    Double_t tantc = TanD(tc);
-    Double_t costc = CosD(tc);
+    Double_t tantc = TMath::Tan(tc*TMath::DegToRad());
+    Double_t costc = TMath::Cos(tc*TMath::DegToRad());
 
     return -tantc*(z-p->GetZ(ip))+p->GetRmin(ip)+th/costc;
 }
 //______________________________________________________________________
 Double_t AliITSv11Geometry::ZFromRmaxpCone(const TGeoPcon *p,int ip,
                                            Double_t tc,Double_t r,
-                                           Double_t th){
+                                           Double_t th)const{
     // General Outer cone Surface equation for z.
     // Intputs:
     //     TGeoPcon  *p   The poly cone where the initial point comes from
@@ -310,8 +310,8 @@ Double_t AliITSv11Geometry::ZFromRmaxpCone(const TGeoPcon *p,int ip,
     // Return:
     //     The value Z correstponding to the line at angle th, offeset by
     //     th, and the point p->GetZ/Rmax[ip] at the location r.
-    Double_t tantc = TanD(tc);
-    Double_t costc = CosD(tc);
+    Double_t tantc = TMath::Tan(tc*TMath::DegToRad());
+    Double_t costc = TMath::Cos(tc*TMath::DegToRad());
 
     return p->GetZ(ip)+(p->GetRmax(ip)+th/costc-r)/tantc;
 }
@@ -319,7 +319,7 @@ Double_t AliITSv11Geometry::ZFromRmaxpCone(const TGeoPcon *p,int ip,
 Double_t AliITSv11Geometry::ZFromRmaxpCone(const Double_t *ar,
                                            const Double_t *az,int ip,
                                            Double_t tc,Double_t r,
-                                           Double_t th){
+                                           Double_t th)const{
     // General Outer cone Surface equation for z.
     // Intputs:
     //     Double_t  ar   The array of R values
@@ -334,15 +334,15 @@ Double_t AliITSv11Geometry::ZFromRmaxpCone(const Double_t *ar,
     // Return:
     //     The value Z correstponding to the line at angle th, offeset by
     //     th, and the point p->GetZ/Rmax[ip] at the locatin r.
-    Double_t tantc = TanD(tc);
-    Double_t costc = CosD(tc);
+    Double_t tantc = TMath::Tan(tc*TMath::DegToRad());
+    Double_t costc = TMath::Cos(tc*TMath::DegToRad());
 
     return az[ip]+(ar[ip]+th/costc-r)/tantc;
 }
 //______________________________________________________________________
 Double_t AliITSv11Geometry::ZFromRminpCone(const TGeoPcon *p,int ip,
                                            Double_t tc,Double_t r,
-                                           Double_t th){
+                                           Double_t th)const{
     // General Inner cone Surface equation for z.
     // Intputs:
     //     TGeoPcon  *p   The poly cone where the initial point comes from
@@ -356,8 +356,8 @@ Double_t AliITSv11Geometry::ZFromRminpCone(const TGeoPcon *p,int ip,
     // Return:
     //     The value Z correstponding to the line at angle th, offeset by
     //     th, and the point p->GetZ/Rmin[ip] at the location r.
-    Double_t tantc = TanD(tc);
-    Double_t costc = CosD(tc);
+    Double_t tantc = TMath::Tan(tc*TMath::DegToRad());
+    Double_t costc = TMath::Cos(tc*TMath::DegToRad());
 
     return p->GetZ(ip)+(p->GetRmin(ip)+th/costc-r)/tantc;
 }
@@ -365,7 +365,7 @@ Double_t AliITSv11Geometry::ZFromRminpCone(const TGeoPcon *p,int ip,
 void AliITSv11Geometry::RadiusOfCurvature(Double_t rc,Double_t theta0,
                                           Double_t z0,Double_t r0,
                                           Double_t theta1,Double_t &z1,
-                                          Double_t &r1){
+                                          Double_t &r1)const{
     // Given a initial point z0,r0, the initial angle theta0, and the radius
     // of curvature, returns the point z1, r1 at the angle theta1. Theta
     // measured from the r axis in the clock wise direction [degrees].
@@ -381,14 +381,14 @@ void AliITSv11Geometry::RadiusOfCurvature(Double_t rc,Double_t theta0,
     // Return:
     //    none.
 
-    z1 = rc*(SinD(theta1)-SinD(theta0))+z0;
-    r1 = rc*(CosD(theta1)-CosD(theta0))+r0;
+    z1 = rc*(TMath::Sin(theta1*TMath::DegToRad())-TMath::Sin(theta0*TMath::DegToRad()))+z0;
+    r1 = rc*(TMath::Cos(theta1*TMath::DegToRad())-TMath::Cos(theta0*TMath::DegToRad()))+r0;
     return;
 }
 //______________________________________________________________________
 void AliITSv11Geometry::InsidePoint(const TGeoPcon *p,Int_t i1,Int_t i2,
                                     Int_t i3,Double_t c,TGeoPcon *q,Int_t j1,
-                                    Bool_t max){
+                                    Bool_t max)const{
     // Given two lines defined by the points i1, i2,i3 in the TGeoPcon 
     // class p that intersect at point p->GetZ(i2) return the point z,r 
     // that is Cthick away in the TGeoPcon class q. If points i1=i2
@@ -440,7 +440,7 @@ void AliITSv11Geometry::InsidePoint(const TGeoPcon *p,Int_t i1,Int_t i2,
 void AliITSv11Geometry::InsidePoint(Double_t x0,Double_t y0,
                                     Double_t x1,Double_t y1,
                                     Double_t x2,Double_t y2,Double_t c,
-                                    Double_t &x,Double_t &y){
+                                    Double_t &x,Double_t &y)const{
     // Given two intersecting lines defined by the points (x0,y0), (x1,y1) and
     // (x1,y1), (x1,y2) {intersecting at (x1,y1)} the point (x,y) a distance
     // c away is returned such that two lines a distance c away from the
@@ -481,8 +481,8 @@ void AliITSv11Geometry::InsidePoint(Double_t x0,Double_t y0,
         } // end if
         return;
     } //
-    x = x1-c*(dx12*r01-dx01*r12)/m; //cout <<"L442 x="<<x<<endl;
-    y = y1-c*(dy12*r01-dy01*r12)/m; //cout <<"L443 y="<<y<<endl;
+    x = x1+c*(dx12*r01-dx01*r12)/m; //cout <<"L442 x="<<x<<endl;
+    y = y1+c*(dy12*r01-dy01*r12)/m; //cout <<"L443 y="<<y<<endl;
     //cout <<"=============================================="<<endl;
     return;
 }
@@ -496,10 +496,9 @@ void AliITSv11Geometry:: PrintArb8(const TGeoArb8 *a)const{
     // Return:
     //   none.
 
-    if(GetDebug()){
-        printf("%s",a->GetName());
-        a->InspectShape();
-    } // end if
+    if(!GetDebug()) return;
+    printf("%s",a->GetName());
+    a->InspectShape();
     return;
 }
 //----------------------------------------------------------------------
@@ -512,7 +511,7 @@ void AliITSv11Geometry:: PrintPcon(const TGeoPcon *a)const{
     // Return:
     //   none.
   
-    if(GetDebug()) return;
+    if(!GetDebug()) return;
     cout << a->GetName() << ": N=" << a->GetNz() << " Phi1=" << a->GetPhi1()
          << ", Dphi=" << a->GetDphi() << endl;
     cout << "i\t   Z   \t  Rmin \t  Rmax" << endl;
@@ -532,7 +531,7 @@ void AliITSv11Geometry::PrintTube(const TGeoTube *a)const{
     // Return:
     //   none.
 
-    if(GetDebug()) return;
+    if(!GetDebug()) return;
     cout << a->GetName() <<": Rmin="<<a->GetRmin()
          <<" Rmax=" <<a->GetRmax()<<" Dz="<<a->GetDz()<<endl;
     return;
@@ -547,7 +546,7 @@ void AliITSv11Geometry::PrintTubeSeg(const TGeoTubeSeg *a)const{
     // Return:
     //   none.
 
-    if(GetDebug()) return;
+    if(!GetDebug()) return;
     cout << a->GetName() <<": Phi1="<<a->GetPhi1()<<
         " Phi2="<<a->GetPhi2()<<" Rmin="<<a->GetRmin()
          <<" Rmax=" <<a->GetRmax()<<" Dz="<<a->GetDz()<<endl;
@@ -563,7 +562,7 @@ void AliITSv11Geometry::PrintConeSeg(const TGeoConeSeg *a)const{
     // Return:
     //   none.
 
-    if(GetDebug()) return;
+    if(!GetDebug()) return;
     cout << a->GetName() <<": Phi1="<<a->GetPhi1()<<
         " Phi2="<<a->GetPhi2()<<" Rmin1="<<a->GetRmin1()
          <<" Rmax1=" <<a->GetRmax1()<<" Rmin2="<<a->GetRmin2()
@@ -580,7 +579,7 @@ void AliITSv11Geometry::PrintBBox(const TGeoBBox *a)const{
     // Return:
     //   none.
 
-    if(GetDebug()) return;
+    if(!GetDebug()) return;
     cout << a->GetName() <<": Dx="<<a->GetDX()<<
         " Dy="<<a->GetDY()<<" Dz="<<a->GetDZ() <<endl;
     return;
