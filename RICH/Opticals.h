@@ -54,7 +54,43 @@ void Opticals()
       aAbsGrid[i]       =1e-4; 
     }
     
-  Float_t aQeCsI[kNbins] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983,
+  Float_t aQeCsI1[kNbins] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983,
+                            0.010125,	    0.0242999997,   0.0405000001,   0.0688500032,  0.105299994, 
+                            0.121500008,    0.141749993,    0.157949999,    0.162,         0.166050002, 
+                            0.167669997,    0.174299985,    0.176789999,    0.179279998,   0.182599992, 
+                            0.18592,        0.187579989,    0.189239994,    0.190899998,   0.207499996, 
+                            0.215799987};
+  Float_t aQeCsI2[kNbins] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983,
+                            0.010125,	    0.0242999997,   0.0405000001,   0.0688500032,  0.105299994, 
+                            0.121500008,    0.141749993,    0.157949999,    0.162,         0.166050002, 
+                            0.167669997,    0.174299985,    0.176789999,    0.179279998,   0.182599992, 
+                            0.18592,        0.187579989,    0.189239994,    0.190899998,   0.207499996, 
+                            0.215799987};
+  Float_t aQeCsI3[kNbins] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983,
+                            0.010125,	    0.0242999997,   0.0405000001,   0.0688500032,  0.105299994, 
+                            0.121500008,    0.141749993,    0.157949999,    0.162,         0.166050002, 
+                            0.167669997,    0.174299985,    0.176789999,    0.179279998,   0.182599992, 
+                            0.18592,        0.187579989,    0.189239994,    0.190899998,   0.207499996, 
+                            0.215799987};
+  Float_t aQeCsI4[kNbins] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983,
+                            0.010125,	    0.0242999997,   0.0405000001,   0.0688500032,  0.105299994, 
+                            0.121500008,    0.141749993,    0.157949999,    0.162,         0.166050002, 
+                            0.167669997,    0.174299985,    0.176789999,    0.179279998,   0.182599992, 
+                            0.18592,        0.187579989,    0.189239994,    0.190899998,   0.207499996, 
+                            0.215799987};
+  Float_t aQeCsI5[kNbins] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983,
+                            0.010125,	    0.0242999997,   0.0405000001,   0.0688500032,  0.105299994, 
+                            0.121500008,    0.141749993,    0.157949999,    0.162,         0.166050002, 
+                            0.167669997,    0.174299985,    0.176789999,    0.179279998,   0.182599992, 
+                            0.18592,        0.187579989,    0.189239994,    0.190899998,   0.207499996, 
+                            0.215799987};
+  Float_t aQeCsI6[kNbins] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983,
+                            0.010125,	    0.0242999997,   0.0405000001,   0.0688500032,  0.105299994, 
+                            0.121500008,    0.141749993,    0.157949999,    0.162,         0.166050002, 
+                            0.167669997,    0.174299985,    0.176789999,    0.179279998,   0.182599992, 
+                            0.18592,        0.187579989,    0.189239994,    0.190899998,   0.207499996, 
+                            0.215799987};
+  Float_t aQeCsI7[kNbins] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983,
                             0.010125,	    0.0242999997,   0.0405000001,   0.0688500032,  0.105299994, 
                             0.121500008,    0.141749993,    0.157949999,    0.162,         0.166050002, 
                             0.167669997,    0.174299985,    0.176789999,    0.179279998,   0.182599992, 
@@ -62,7 +98,13 @@ void Opticals()
                             0.215799987};
   Float_t aQeAll[kNbins];
   for(i=0;i<kNbins;i++){
-    aQeCsI[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
+    aQeCsI1[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
+    aQeCsI2[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
+    aQeCsI3[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
+    aQeCsI4[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
+    aQeCsI5[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
+    aQeCsI6[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
+    aQeCsI7[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
     aQeAll[i]=1; //QE for all other materials except for PC must be 1.
   }
        
@@ -122,14 +164,24 @@ void Opticals()
   pAbsCH4Gr->SetTitle("CH4 absorption length, cm");
   pAbsCH4Gr->Draw("APL");
 
-  
-  pC->cd(4);  
-  TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI);
-  pQeCsIGr->SetMarkerStyle(kCsIMarker); pQeCsIGr->SetMarkerColor(kCsIColor);  
-  pQeCsIGr->Draw("APL");
-  pQeCsIGr->GetXaxis()->SetTitle("energy, GeV");
-  pQeCsIGr->SetTitle("CsI QE, all others are 1");
-  pQeCsIGr->Draw("APL");
+  TCanvas *pQeC=new TCanvas("pQeC","CsI QE currently all the same",800,900); 
+  pQeC->Divide(2,4);
+  for(int i=1;i<=7;i++){
+    pQeC->cd(i);  
+    switch(i){
+      case 1: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI1);pQeCsIGr->SetTitle("Module 1");break;
+      case 2: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI2);pQeCsIGr->SetTitle("Module 2");break;
+      case 3: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI3);pQeCsIGr->SetTitle("Module 3");break;
+      case 4: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI4);pQeCsIGr->SetTitle("Module 4");break;
+      case 5: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI5);pQeCsIGr->SetTitle("Module 5");break;
+      case 6: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI6);pQeCsIGr->SetTitle("Module 6");break;
+      case 7: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI7);pQeCsIGr->SetTitle("Module 7");break;
+    }
+    pQeCsIGr->SetMarkerStyle(kCsIMarker); pQeCsIGr->SetMarkerColor(kCsIColor);  
+    pQeCsIGr->Draw("APL");
+    pQeCsIGr->GetXaxis()->SetTitle("energy, GeV");
+    pQeCsIGr->Draw("APL");
+  }
 }//main
 
 Float_t AbsoCH4(Float_t x)
@@ -140,7 +192,7 @@ Float_t AbsoCH4(Float_t x)
     //Float_t wl[9] = {153.,152.,151.,150.,149.,148.,147.,146.,145};
     Float_t em[9] = {8.1,8.158,8.212,8.267,8.322,8.378,8.435,8.493,8.55};
     const Float_t kLosch=2.686763E19;                                      // LOSCHMIDT NUMBER IN CM-3
-    const Float_t kIgas1=100, kIgas2=0, kOxy=10., kWater=5., kPressure=750.,kTemperature=283.;                                      
+    const Float_t kIgas1=100, kIgas2=0, kOxy=10., kWater=5., kPressure=750.,kTemperature=283.;  
     Float_t pn=kPressure/760.;
     Float_t tn=kTemperature/273.16;
     
