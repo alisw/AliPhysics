@@ -16,6 +16,9 @@
 /*
 
 $Log$
+Revision 1.3  2001/11/24 16:08:09  kowal2
+Fatsre algorithms
+
 Revision 1.2  2000/12/20 09:36:46  kowal2
 Improvements in algorithms to make the code faster
 
@@ -486,7 +489,7 @@ Bool_t AliDigits::First1()
     if (fElements->At(i)>fThreshold) break;
   }
   fCurrentIndex = i;
-  if (fCurrentIndex>=0) return kTRUE;
+  if (fCurrentIndex>=0&&i<fNelems) return kTRUE;
   fCurrentRow =-1;
   fCurrentCol =-1;
   return kFALSE;	
