@@ -23,6 +23,16 @@ class AliAltroRawStream: public TObject {
 
     virtual Bool_t   Next();
 
+    Int_t GetSector()     const { return fSector; }     // Provide index of current sector
+    Int_t GetPrevSector() const { return fPrevSector; } // Provide index of previous sector
+    Int_t GetRow()        const { return fRow; }        // Provide index of current row
+    Int_t GetPrevRow()    const { return fPrevRow; }    // Provide index of previous row
+    Int_t GetPad()        const { return fPad; }        // Provide index of current pad
+    Int_t GetPrevPad()    const { return fPrevPad; }    // Provide index of previous pad
+    Int_t GetTimeBin()    const { return fTime; }       // Provide index of current time bin
+    Int_t GetADC()        const { return fSignal; }     // Provide signal in ADC counts
+    Int_t GetTimeLength() const { return fTimeBunch; }  // Provide total length of current time bunch
+
   protected:
     Int_t            fSector;       // index of current sector
     Int_t            fPrevSector;   // index of previous sector
