@@ -972,7 +972,7 @@ Double_t AliFastGlauber::HardCrossSection(Double_t b1, Double_t b2) const
 Double_t AliFastGlauber::FractionOfHardCrossSection(Double_t b1, Double_t b2) const
 {
   //
-  // Return raction of hard cross-section integrated from b1 to b2 
+  // Return fraction of hard cross-section integrated from b1 to b2 
   //
   return fgWSbinary->Integral(b1, b2)/fgWSbinary->Integral(0., 100.);
 }
@@ -1020,6 +1020,20 @@ Double_t AliFastGlauber::GetNumberOfCollisions(Double_t  b) const
   //
   if(b==0) b=1e-4;
   return (fgWStaa->Eval(b)*fSigmaNN);
+}
+
+Double_t AliFastGlauber::GetNumberOfCollisionsPerEvent(Double_t  b) const
+{
+  //
+  // Return the number of collisions per event (at least one collision)
+  // for impact parameter b
+  //
+    Double_t n = GetNumberOfCollisions(b);
+    if (n > 0.) {
+	return (n / (1. - TMath::Exp(- n)));
+    } else {
+	return (0.);
+    }
 }
 
 void AliFastGlauber::SimulateTrigger(Int_t n)

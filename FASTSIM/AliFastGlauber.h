@@ -106,7 +106,7 @@ class AliFastGlauber : public TObject {
     Double_t Participants(Double_t b)             const;
     Double_t GetNumberOfParticipants(Double_t  b) const;
     Double_t GetNumberOfCollisions(Double_t  b)   const;
-
+    Double_t GetNumberOfCollisionsPerEvent(Double_t  b) const;
     void SimulateTrigger(Int_t n);
     void GetRandom(Float_t& b, Float_t& p, Float_t& mult);
     void GetRandom(Int_t& bin, Bool_t& hard);
