@@ -539,7 +539,7 @@ AliITSgeom::AliITSgeom(const char *filename){
     fclose(pf);
 }
 //______________________________________________________________________
-AliITSgeom::AliITSgeom(AliITSgeom &source) : TObject(source){
+AliITSgeom::AliITSgeom(const AliITSgeom &source) : TObject(source){
     //     The copy constructor for the AliITSgeom class. It calls the
     // = operator function. See the = operator function for more details.
     // Inputs are:
@@ -552,7 +552,7 @@ AliITSgeom::AliITSgeom(AliITSgeom &source) : TObject(source){
     return;
 }
 //______________________________________________________________________
-AliITSgeom& AliITSgeom::operator=(AliITSgeom &source){
+AliITSgeom& AliITSgeom::operator=(const AliITSgeom &source){
     //     The = operator function for the AliITSgeom class. It makes an
     // independent copy of the class in such a way that any changes made
     // to the copied class will not affect the source class in any way.

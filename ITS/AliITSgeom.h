@@ -35,8 +35,8 @@ class AliITSgeom : public TObject {
     AliITSgeom(const char *filename);  // Constructor
     AliITSgeom(Int_t itype,Int_t nlayers,Int_t *nlads,Int_t *ndets,
 	       Int_t nmods); // Constructor
-    AliITSgeom(AliITSgeom &source);    // Copy constructor
-    AliITSgeom& operator=(AliITSgeom &source);// = operator
+    AliITSgeom(const AliITSgeom &source);    // Copy constructor
+    AliITSgeom& operator=(const AliITSgeom &source);// = operator
     virtual ~AliITSgeom();             // Default destructor
     // this function allocates a AliITSgeomMatrix for a particular module.
     void CreatMatrix(Int_t mod,Int_t lay,Int_t lad,Int_t det,
@@ -76,7 +76,7 @@ class AliITSgeom : public TObject {
     Int_t GetNdetectors(Int_t lay) const {return fNdet[lay-1];}
     //     This function returns the number of ladders for a give layer. In
     // particular it returns fNlad[layer-1].
-    Int_t GetNladders(Int_t lay)   const {return fNdet[lay-1];};
+    Int_t GetNladders(Int_t lay)   const {return fNlad[lay-1];};
     //     This function returns the number of layers defined in the ITS
     // geometry. In particular it returns fNlayers.
     Int_t GetNlayers()                   const {return fNlayers;}
