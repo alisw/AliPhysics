@@ -28,7 +28,7 @@ public:
   AliEMCALv1(const char *name, const char *title="") ;
   // cpy ctor: no implementation yet
   // requested by the Coding Convention
-  AliEMCALv1(const AliEMCALv0 & emcal) {
+  AliEMCALv1(const AliEMCALv0 & emcal):AliEMCALv0(emcal) {
     Fatal("cpy ctor", "not implemented") ;  }
   virtual ~AliEMCALv1(void) ;
   virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t iparent, Float_t ienergy,
@@ -45,7 +45,7 @@ public:
     
 private:
 
-  ClassDef(AliEMCALv1,5)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
+  ClassDef(AliEMCALv1,6)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
     
 };
 
