@@ -11,21 +11,10 @@
 
 class AliHLTReconstructor: public AliReconstructor {
 public:
-  AliHLTReconstructor(): AliReconstructor() {
-    AliL3Log::fgLevel=AliL3Log::kWarning;
-    fDoTracker=1;
-    fDoHough=1;
-    fDoBench=0;
-    fDoCleanUp=1;
-  };
-  AliHLTReconstructor(Bool_t doTracker, Bool_t doHough): AliReconstructor() {
-    AliL3Log::fgLevel=AliL3Log::kWarning;
-    fDoTracker=doTracker;
-    fDoHough=doHough;
-    fDoBench=0;
-    fDoCleanUp=1;
-  };
-  virtual ~AliHLTReconstructor() {};
+  AliHLTReconstructor();
+  AliHLTReconstructor(Bool_t doTracker, Bool_t doHough);
+  virtual ~AliHLTReconstructor();
+
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
   void SetDoBench(Bool_t b){fDoBench=b;}

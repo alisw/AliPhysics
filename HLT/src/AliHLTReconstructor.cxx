@@ -38,6 +38,37 @@ using namespace std;
 
 ClassImp(AliHLTReconstructor)
 
+AliHLTReconstructor::AliHLTReconstructor(): AliReconstructor() 
+{
+  AliL3Log::fgLevel=AliL3Log::kWarning;
+  fDoTracker=1;
+  fDoHough=1;
+  fDoBench=0;
+  fDoCleanUp=1;
+}
+
+AliHLTReconstructor::AliHLTReconstructor(Bool_t doTracker, Bool_t doHough): AliReconstructor() 
+{
+  AliL3Log::fgLevel=AliL3Log::kWarning;
+  fDoTracker=doTracker;
+  fDoHough=doHough;
+  fDoBench=0;
+  fDoCleanUp=1;
+}
+
+AliHLTReconstructor::~AliHLTReconstructor()
+{
+  if(fDoCleanUp){
+    char name[256];
+    gSystem->Exec("rm -rf hlt");
+    sprintf(name, "rm -f confmap_*.root confmap_*.dat");
+    gSystem->Exec(name);
+    gSystem->Exec("rm -rf hough");
+    sprintf(name, "rm -f hough_*.root hough_*.dat");
+    gSystem->Exec(name);
+  }
+}
+
 void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
   if(!runLoader) {
@@ -162,16 +193,6 @@ void AliHLTReconstructor::FillESD(AliRunLoader* runLoader,
 
   if(fDoTracker) FillESDforConformalMapping(esd,iEvent);
   if(fDoHough) FillESDforHoughTransform(esd,iEvent);
-
-  if(fDoCleanUp){
-    char name[256];
-    gSystem->Exec("rm -rf hlt");
-    sprintf(name, "rm -f confmap_%d.root confmap_%d.dat",iEvent,iEvent);
-    gSystem->Exec(name);
-    gSystem->Exec("rm -rf hough");
-    sprintf(name, "rm -f hough_%d.root hough_%d.dat",iEvent,iEvent);
-    gSystem->Exec(name);
-  }
 }
 
 void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) const
