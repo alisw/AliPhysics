@@ -2,7 +2,14 @@ SRCS          =   \
 AliFastDetector.cxx \
 AliFastResponse.cxx \
 AliFastParticle.cxx \
-AliFastEvent.cxx 
+AliFastEvent.cxx \
+AliFastMuonTrackingAcc.cxx \
+AliFastMuonTrackingEff.cxx \
+AliFastMuonTrackingRes.cxx \
+AliFastMuonTriggerEff.cxx \
+AliMUONFastTracking.cxx \
+AliMUONFastTrackingEntry.cxx
+
 
 HDRS:= $(SRCS:.cxx=.h) 
 

@@ -12,6 +12,13 @@
 #pragma link C++ class  AliFastResponse+;
 #pragma link C++ class  AliFastParticle+;
 #pragma link C++ class  AliFastEvent+;
+#pragma link C++ class  AliFastMuonTrackingAcc+;
+#pragma link C++ class  AliFastMuonTrackingEff+;
+#pragma link C++ class  AliFastMuonTrackingRes+;
+#pragma link C++ class  AliFastMuonTriggerEff+;
+#pragma link C++ class  AliMUONFastTracking+;
+#pragma link C++ class  AliMUONFastTrackingEntry+;
+
 #endif
 
 
