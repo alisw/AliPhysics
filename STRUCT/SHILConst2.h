@@ -128,19 +128,15 @@
 // const Float_t kZch1 =   530.0 ;
 // const Float_t kZch2 =   672.5 ;
 
-const Float_t kZch11 =  526.2 ;
-const Float_t kZch12 =  553.8 ;
-const Float_t kZch21 =  670.25;
-const Float_t kZch22 =  701.75;
-const Float_t kZch31 =  946.  ;
-const Float_t kZch32 = 1046.  ;
-//const Float_t kZch41 = 1238.16;
-//const Float_t kZch42 = 1296.16;
-//const Float_t kZch51 = 1399.0 ;
-//const Float_t kZch52 = 1457.0 ;
-const Float_t kZch41 = 1256.0;
-const Float_t kZch42 = 1324.5;
-const Float_t kZch51 = 1389.0 ;
-const Float_t kZch52 = 1453.0 ;
+const Float_t kZch11 =  517.70;
+const Float_t kZch12 =  553.70;
+const Float_t kZch21 =  667.75;
+const Float_t kZch22 =  704.05;
+const Float_t kZch31 =  951.25;
+const Float_t kZch32 = 1014.75;
+const Float_t kZch41 = 1259.90;
+const Float_t kZch42 = 1324.10;
+const Float_t kZch51 = 1390.00;
+const Float_t kZch52 = 1454.20;
 #endif
 
