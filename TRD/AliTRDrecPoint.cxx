@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/02/14 18:22:26  cblume
+Change in the geometry of the padplane
+
 Revision 1.5  2000/11/14 14:40:27  cblume
 Correction for the Sun compiler (kTRUE and kFALSE)
 
@@ -54,6 +57,26 @@ ClassImp(AliTRDrecPoint)
 
 //_____________________________________________________________________________
 AliTRDrecPoint::AliTRDrecPoint():AliRecPoint()
+{
+  //
+  // Standard constructor
+  //
+
+  fDetector = 0;
+
+  AliTRD *trd;
+  if ((gAlice) &&
+      (trd = ((AliTRD*) gAlice->GetDetector("TRD")))) {
+    fGeom = trd->GetGeometry();
+  }
+  else {
+    fGeom = NULL;
+  }
+
+}
+
+//_____________________________________________________________________________
+AliTRDrecPoint::AliTRDrecPoint(const char * opt):AliRecPoint(opt)
 {
   //
   // Standard constructor

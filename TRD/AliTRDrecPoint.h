@@ -12,6 +12,7 @@ class AliTRDrecPoint : public AliRecPoint {
  public:
 
   AliTRDrecPoint();
+  AliTRDrecPoint(const char * opt);
   virtual ~AliTRDrecPoint();
 
   virtual void    Print(Option_t* opt) {};

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/05/28 17:07:58  hristov
+Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
+
 Revision 1.8  2001/05/07 08:06:44  cblume
 Speedup of the code. Create only AliTRDcluster
 
@@ -225,7 +228,7 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
             geo->Rotate(detector,pos,rot);
 
             // Add this recPoint to the temporary array for this chamber
-            AliTRDrecPoint *recPoint = new AliTRDrecPoint();
+            AliTRDrecPoint *recPoint = new AliTRDrecPoint("");
             recPoint->SetLocalRow(rot[2]);
             recPoint->SetLocalCol(rot[1]);
             recPoint->SetLocalTime(rot[0]);
