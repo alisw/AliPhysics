@@ -30,14 +30,12 @@
 #include "AliITSrecoV2.h"
 
 class AliESDtrack;
-class AliTPCtrack;
 
 //_____________________________________________________________________________
 class AliITStrackV2 : public AliKalmanTrack {
   friend class AliITStrackerV2;
 public:
   AliITStrackV2();
-  AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *);
   AliITStrackV2(AliESDtrack& t,Bool_t c=kFALSE) throw (const Char_t *);
   AliITStrackV2(const AliITStrackV2& t);
   Int_t PropagateToVertex(Double_t d=0., Double_t x0=0.);

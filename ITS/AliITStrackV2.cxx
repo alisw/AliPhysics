@@ -25,7 +25,6 @@
 #include <TMath.h>
 
 #include "AliCluster.h"
-#include "AliTPCtrack.h"
 #include "AliESDtrack.h"
 #include "AliITStrackV2.h"
 
@@ -66,46 +65,6 @@ AliITStrackV2::AliITStrackV2():AliKalmanTrack(),
   for(Int_t i=0; i<kMaxLayer; i++) fIndex[i]=0;
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
   for(Int_t i=0; i<6; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fChi2MIP[i]=0;}
-}
-
-//____________________________________________________________________________
-AliITStrackV2::AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *) :
-AliKalmanTrack(t) {
-  //------------------------------------------------------------------
-  //Conversion TPC track -> ITS track
-  //------------------------------------------------------------------
-  SetChi2(0.);
-  SetNumberOfClusters(0);
-
-  fdEdx  = t.GetdEdx();
-  SetMass(t.GetMass());
-
-  fAlpha = t.GetAlpha();
-  if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
-  else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
-
-  //Conversion of the track parameters
-  Double_t x,p[5]; t.GetExternalParameters(x,p);
-  fX=x;    x=GetConvConst();
-  fP0=p[0];
-  fP1=p[1];
-  fP2=p[2];
-  fP3=p[3];
-  fP4=p[4]/x;
-
-  //Conversion of the covariance matrix
-  Double_t c[15]; t.GetExternalCovariance(c);
-
-  fC00=c[0 ];
-  fC10=c[1 ];   fC11=c[2 ];
-  fC20=c[3 ];   fC21=c[4 ];   fC22=c[5 ];
-  fC30=c[6 ];   fC31=c[7 ];   fC32=c[8 ];   fC33=c[9 ];
-  fC40=c[10]/x; fC41=c[11]/x; fC42=c[12]/x; fC43=c[13]/x; fC44=c[14]/x/x;
-
-  for(Int_t i=0; i<6; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0;}
-  //
-  if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
-
 }
 
 //____________________________________________________________________________
@@ -530,7 +489,7 @@ Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   Double_t ca=TMath::Cos(alp-fAlpha), sa=TMath::Sin(alp-fAlpha);
   Double_t sf=fP2, cf=TMath::Sqrt(1.- fP2*fP2);
 
-  TMatrixD *T=0;
+  TMatrixD *tT=0;
   // **** rotation **********************
   {
   fAlpha = alp;
@@ -538,25 +497,25 @@ Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   fP0= -x*sa + p0*ca;
   fP2=  sf*ca - cf*sa;
 
-  TMatrixD C(5,5); 
-  C(0,0)=c00;
-  C(1,0)=c10; C(1,1)=c11;
-  C(2,0)=c20; C(2,1)=c21; C(2,2)=c22;
-  C(3,0)=c30; C(3,1)=c31; C(3,2)=c32; C(3,3)=c33;
-  C(4,0)=c40; C(4,1)=c41; C(4,2)=c42; C(4,3)=c43; C(4,4)=c44;
-  C(0,1)=C(1,0);
-  C(0,2)=C(2,0); C(1,2)=C(2,1);
-  C(0,3)=C(3,0); C(1,3)=C(3,1); C(2,3)=C(3,2);
-  C(0,4)=C(4,0); C(1,4)=C(4,1); C(2,4)=C(4,2); C(3,4)=C(4,3);
+  TMatrixD cC(5,5); 
+  cC(0,0)=c00;
+  cC(1,0)=c10; cC(1,1)=c11;
+  cC(2,0)=c20; cC(2,1)=c21; cC(2,2)=c22;
+  cC(3,0)=c30; cC(3,1)=c31; cC(3,2)=c32; cC(3,3)=c33;
+  cC(4,0)=c40; cC(4,1)=c41; cC(4,2)=c42; cC(4,3)=c43; cC(4,4)=c44;
+  cC(0,1)=cC(1,0);
+  cC(0,2)=cC(2,0); cC(1,2)=cC(2,1);
+  cC(0,3)=cC(3,0); cC(1,3)=cC(3,1); cC(2,3)=cC(3,2);
+  cC(0,4)=cC(4,0); cC(1,4)=cC(4,1); cC(2,4)=cC(4,2); cC(3,4)=cC(4,3);
 
-  TMatrixD F(6,5);
-  F(0,0)=sa; 
-  F(1,0)=ca;
-  F(2,1)=F(4,3)=F(5,4)=1; 
-  F(3,2)=ca + sf/cf*sa;
+  TMatrixD mF(6,5);
+  mF(0,0)=sa; 
+  mF(1,0)=ca;
+  mF(2,1)=mF(4,3)=mF(5,4)=1; 
+  mF(3,2)=ca + sf/cf*sa;
 
-  TMatrixD tmp(C,TMatrixD::kMult,TMatrixD(TMatrixD::kTransposed, F)); 
-  T=new TMatrixD(F,TMatrixD::kMult,tmp);
+  TMatrixD tmp(cC,TMatrixD::kMult,TMatrixD(TMatrixD::kTransposed, mF)); 
+  tT=new TMatrixD(mF,TMatrixD::kMult,tmp);
   }
 
   // **** translation ******************
@@ -576,27 +535,27 @@ Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   fP1 += dx*(f1+f2)/(f1*r2 + f2*r1)*fP3;
   fP2 += dx*fP4;
 
-  TMatrixD F(5,6);
-  F(0,1)=F(1,2)=F(2,3)=F(3,4)=F(4,5)=1; 
-  F(0,3)=dx/(r1+r2)*(2+(f1+f2)*(f2/r2+f1/r1)/(r1+r2)); 
-  F(0,5)=dx*dx/(r1+r2)*(1+(f1+f2)*f2/(r1+r2));
-  F(1,3)=dx*fP3/(f1*r2 + f2*r1)*(2-(f1+f2)*(r2-f1*f2/r2+r1-f2*f1/r1)/(f1*r2 + f2*r1));
-  F(1,4)=dx*(f1+f2)/(f1*r2 + f2*r1);
-  F(1,5)=dx*dx*fP3/(f1*r2 + f2*r1)*(1-(f1+f2)*(-f1*f2/r2+r1)/(f1*r2 + f2*r1));
-  F(2,5)=dx;
-  F(0,0)=-1/(r1+r2)*((f1+f2)+dx*fP4*(1+(f1+f2)/(r1+r2)*f2/r2));
-  F(1,0)=-fP3/(f1*r2 + f2*r1)*((f1+f2)+dx*fP4*(1+(f1+f2)/(f1*r2 + f2*r1)*(f1*f2/r2-r1)));
-  F(2,0)=-fP4;
+  TMatrixD mF(5,6);
+  mF(0,1)=mF(1,2)=mF(2,3)=mF(3,4)=mF(4,5)=1; 
+  mF(0,3)=dx/(r1+r2)*(2+(f1+f2)*(f2/r2+f1/r1)/(r1+r2)); 
+  mF(0,5)=dx*dx/(r1+r2)*(1+(f1+f2)*f2/(r1+r2));
+  mF(1,3)=dx*fP3/(f1*r2 + f2*r1)*(2-(f1+f2)*(r2-f1*f2/r2+r1-f2*f1/r1)/(f1*r2 + f2*r1));
+  mF(1,4)=dx*(f1+f2)/(f1*r2 + f2*r1);
+  mF(1,5)=dx*dx*fP3/(f1*r2 + f2*r1)*(1-(f1+f2)*(-f1*f2/r2+r1)/(f1*r2 + f2*r1));
+  mF(2,5)=dx;
+  mF(0,0)=-1/(r1+r2)*((f1+f2)+dx*fP4*(1+(f1+f2)/(r1+r2)*f2/r2));
+  mF(1,0)=-fP3/(f1*r2 + f2*r1)*((f1+f2)+dx*fP4*(1+(f1+f2)/(f1*r2 + f2*r1)*(f1*f2/r2-r1)));
+  mF(2,0)=-fP4;
 
-  TMatrixD tmp(*T,TMatrixD::kMult,TMatrixD(TMatrixD::kTransposed, F)); 
-  delete T;
-  TMatrixD C(F,TMatrixD::kMult,tmp);
+  TMatrixD tmp(*tT,TMatrixD::kMult,TMatrixD(TMatrixD::kTransposed, mF)); 
+  delete tT;
+  TMatrixD cC(mF,TMatrixD::kMult,tmp);
 
-  fC00=C(0,0); 
-  fC10=C(1,0); fC11=C(1,1); 
-  fC20=C(2,0); fC21=C(2,1); fC22=C(2,2);
-  fC30=C(3,0); fC31=C(3,1); fC32=C(3,2); fC33=C(3,3);
-  fC40=C(4,0); fC41=C(4,1); fC42=C(4,2); fC43=C(4,3); fC44=C(4,4);
+  fC00=cC(0,0); 
+  fC10=cC(1,0); fC11=cC(1,1); 
+  fC20=cC(2,0); fC21=cC(2,1); fC22=cC(2,2);
+  fC30=cC(3,0); fC31=cC(3,1); fC32=cC(3,2); fC33=cC(3,3);
+  fC40=cC(4,0); fC41=cC(4,1); fC42=cC(4,2); fC43=cC(4,3); fC44=cC(4,4);
 
   if (!Invariant()) {
      fAlpha=alpha; 

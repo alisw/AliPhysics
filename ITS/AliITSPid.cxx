@@ -9,7 +9,7 @@
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TVector.h>
-#include "AliTPCtrack.h"
+#include "AliKalmanTrack.h"
 #include "AliITSIOTrack.h"
 #include "AliITStrackV2.h"
 #include <TF1.h>
@@ -174,7 +174,7 @@ Int_t	AliITSPid::GetPcode(TClonesArray* rps,Float_t pm)
     return 0;    
 }
 //-----------------------------------------------------------
-Int_t   AliITSPid::GetPcode(AliTPCtrack *track)
+Int_t   AliITSPid::GetPcode(AliKalmanTrack *track)
 {
   //Returns particle code for given track.
       Double_t xk,par[5]; track->GetExternalParameters(xk,par);

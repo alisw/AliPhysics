@@ -6,7 +6,7 @@
 class TClonesArray;
 class TVector;
 class AliITSIOTrack;
-class AliTPCtrack;
+class AliKalmanTrack;
 class AliITStrackV2;
 class TF1;
 
@@ -27,7 +27,7 @@ public:
 	TVector* GetVec(Int_t track) const;
 	Int_t	GetPcode(TClonesArray* rps,Float_t pm);
 	Int_t	GetPcode(Float_t p,Float_t pm);
-	Int_t   GetPcode(AliTPCtrack* track);
+	Int_t   GetPcode(AliKalmanTrack* track);
         Int_t   GetPcode(AliITSIOTrack* track); 
         Int_t   GetPcode(AliITStrackV2* track);
 	void	SetCut(Int_t n,Float_t pm,Float_t pilo,Float_t pihi,
