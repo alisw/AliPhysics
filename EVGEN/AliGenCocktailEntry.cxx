@@ -29,7 +29,8 @@
 ClassImp(AliGenCocktailEntry)
 
 
-    AliGenCocktailEntry::AliGenCocktailEntry()
+
+AliGenCocktailEntry::AliGenCocktailEntry()
 {
 // Default constructor
     fGenerator =0;
@@ -55,9 +56,11 @@ AliGenCocktailEntry:: AliGenCocktailEntry
     fBias=1;
 }
 
-AliGenCocktailEntry::AliGenCocktailEntry(const AliGenCocktailEntry &entry)
+AliGenCocktailEntry::AliGenCocktailEntry(const AliGenCocktailEntry &entry):
+    TNamed(entry)
 {
 // Dummy copy constructor
+    entry.Copy(*this);
 }
 
 
@@ -72,5 +75,14 @@ AliGenCocktailEntry& AliGenCocktailEntry::operator
 =(const  AliGenCocktailEntry& rhs)
 {
 // Assignment operator
-    return *this;
+    rhs.Copy(*this);
+    return (*this);
+}
+
+void AliGenCocktailEntry::Copy(AliGenCocktailEntry&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
 }

@@ -108,7 +108,16 @@ TParticle* AliGenReaderEcalHijing::NextParticle()
 AliGenReaderEcalHijing& AliGenReaderEcalHijing::operator=(const  AliGenReaderEcalHijing& rhs)
 {
 // Assignment operator
-    return *this;
+    rhs.Copy(*this);
+    return (*this);
+}
+
+void AliGenReaderEcalHijing::Copy(AliGenReaderEcalHijing&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
 }
 
 

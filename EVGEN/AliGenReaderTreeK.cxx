@@ -31,32 +31,33 @@ ClassImp(AliGenReaderTreeK);
 const TString AliGenReaderTreeK::fgkEventFolderName("GenReaderTreeK");
 
 AliGenReaderTreeK::AliGenReaderTreeK():
- AliGenReader(),
- fNcurrent(0),
- fNparticle(0),
- fNp(0),
- fInRunLoader(0),
- fBaseFile(0),
- fStack(0),
- fOnlyPrimaries(kFALSE),
- fDirs(0x0),
- fCurrentDir(0)
+    AliGenReader(),
+    fNcurrent(0),
+    fNparticle(0),
+    fNp(0),
+    fInRunLoader(0),
+    fBaseFile(0),
+    fStack(0),
+    fOnlyPrimaries(kFALSE),
+    fDirs(0x0),
+    fCurrentDir(0)
 {
 //  Default constructor
 }
 
 AliGenReaderTreeK::AliGenReaderTreeK(const AliGenReaderTreeK &reader):
- fNcurrent(0),
- fNparticle(0),
- fNp(0),
- fInRunLoader(0),
- fBaseFile(0),
- fStack(0),
- fOnlyPrimaries(kFALSE),
- fDirs(0x0),
- fCurrentDir(0)
+    AliGenReader(reader),
+    fNcurrent(0),
+    fNparticle(0),
+    fNp(0),
+    fInRunLoader(0),
+    fBaseFile(0),
+    fStack(0),
+    fOnlyPrimaries(kFALSE),
+    fDirs(0x0),
+    fCurrentDir(0)
 {
-    ;
+    reader.Copy(*this);
 }
 
 
@@ -148,7 +149,16 @@ void AliGenReaderTreeK::RewindEvent()
 AliGenReaderTreeK& AliGenReaderTreeK::operator=(const  AliGenReaderTreeK& rhs)
 {
 // Assignment operator
+    rhs.Copy(*this);
     return *this;
+}
+
+void AliGenReaderTreeK::Copy(AliGenReaderTreeK&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
 }
 
 

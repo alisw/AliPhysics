@@ -46,6 +46,8 @@ public:
     // generate event
     virtual void Generate();
     AliGenFLUKAsource & operator=(const AliGenFLUKAsource & rhs);
+ private:
+    void Copy(AliGenFLUKAsource &arun) const;
  protected:
 
     Int_t       fIkine;         // Flag to choose type of particles to be read

@@ -126,7 +126,7 @@ ClassImp(AliGenPHOSlib)
 //    Particle distribution IdPi0Flat  111 (pi0)
 //
 
-Double_t AliGenPHOSlib::PtPi0Flat(Double_t *px, Double_t *)
+Double_t AliGenPHOSlib::PtPi0Flat(Double_t */*px*/, Double_t *)
 {
 //     Pion transverse momentum flat distribution 
 
@@ -134,7 +134,7 @@ return 1;
 
 }
 
-Double_t AliGenPHOSlib::YPi0Flat( Double_t *py, Double_t *)
+Double_t AliGenPHOSlib::YPi0Flat( Double_t */*py*/, Double_t *)
 {
 
 // pion y-distribution
@@ -274,7 +274,7 @@ Double_t AliGenPHOSlib::YPi0Flat( Double_t *py, Double_t *)
 //    Particle distribution IdEtaFlat  111 (pi0)
 //
 
-Double_t AliGenPHOSlib::PtEtaFlat(Double_t *px, Double_t *)
+Double_t AliGenPHOSlib::PtEtaFlat(Double_t */*px*/, Double_t *)
 {
 //     Eta transverse momentum flat distribution 
 
@@ -282,7 +282,7 @@ Double_t AliGenPHOSlib::PtEtaFlat(Double_t *px, Double_t *)
 
 }
 
-Double_t AliGenPHOSlib::YEtaFlat( Double_t *py, Double_t *)
+Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
 {
 //
 // pion y-distribution
@@ -459,7 +459,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t *py, Double_t *)
 
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
- GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* tname) const
+GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* /*tname*/) const
 {
 // Return pinter to pT parameterisation
     GenFunc func;
@@ -497,7 +497,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 
- GenFunc AliGenPHOSlib::GetY(Int_t param, const char* tname) const
+GenFunc AliGenPHOSlib::GetY(Int_t param, const char* /*tname*/) const
 {
 // Return pointer to Y parameterisation
     GenFunc func;
@@ -537,7 +537,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 typedef Int_t (*GenFuncIp) (TRandom *);
- GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* tname) const
+GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* /*tname*/) const
 {
 // Return pointer to particle composition
     GenFuncIp func;

@@ -13,7 +13,8 @@ class AliGenReaderCwn : public AliGenReader
  public:
     AliGenReaderCwn();
     
-    AliGenReaderCwn(const AliGenReaderCwn &reader){;}
+    AliGenReaderCwn(const AliGenReaderCwn &reader):AliGenReader(reader)
+	{reader.Copy(*this);}
     virtual ~AliGenReaderCwn();
         // Initialise 
     virtual void Init();
@@ -21,6 +22,9 @@ class AliGenReaderCwn : public AliGenReader
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
     AliGenReaderCwn & operator=(const AliGenReaderCwn & rhs);
+ private:
+    void Copy(AliGenReaderCwn&) const;
+    
  protected:
     Int_t             fNcurrent;      // points to the next entry
     Int_t             fNparticle;     // particle number in event

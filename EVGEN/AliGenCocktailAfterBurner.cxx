@@ -65,9 +65,12 @@ AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()
     fNBgEvents = 0;
 }
 /*********************************************************************/ 
-AliGenCocktailAfterBurner::AliGenCocktailAfterBurner(const AliGenCocktailAfterBurner& in)
+AliGenCocktailAfterBurner::AliGenCocktailAfterBurner(const AliGenCocktailAfterBurner& cocktail):
+    AliGenCocktail(cocktail)
+
 {
- //cpy ctor
+ //Copy constructor
+    cocktail.Copy(*this);
 }
 
 /*********************************************************************/ 
@@ -267,7 +270,8 @@ void AliGenCocktailAfterBurner::Generate()
 AliGenCocktailAfterBurner& AliGenCocktailAfterBurner::operator=(const  AliGenCocktailAfterBurner& rhs)
 {
 // Assignment operator
-    return *this;
+    rhs.Copy(*this);
+    return (*this);
 }
 /*********************************************************************/
 /*********************************************************************/ 
@@ -368,4 +372,9 @@ TMCProcess AliGenCocktailAfterBurner::IntToMCProcess(Int_t no)
         }
     } 
     return kPNoProcess;
+}
+
+void AliGenCocktailAfterBurner::Copy(AliGenCocktailAfterBurner &) const
+{
+    Fatal("Copy","Not implemented!\n");
 }

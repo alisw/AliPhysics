@@ -68,7 +68,8 @@ class AliGenMC : public AliGenerator
     // all kinematic selection cuts go here 
     Bool_t KinematicSelection(TParticle *particle, Int_t flag) const;
     Int_t  CheckPDGCode(Int_t pdgcode) const;
-
+ private:
+    void Copy(AliGenMC&) const;
  protected:
     TClonesArray* fParticles;   //!Particle  List
     TArrayI     fParentSelect;  //!Parent particles to be selected 

@@ -31,8 +31,9 @@
 #include <TTree.h>
 #include <TChain.h>
 #include <stdlib.h>
- ClassImp(AliGenFLUKAsource)
-     AliGenFLUKAsource::AliGenFLUKAsource()
+ClassImp(AliGenFLUKAsource)
+
+AliGenFLUKAsource::AliGenFLUKAsource()
 	 :AliGenerator(-1)
 {
     // Constructor
@@ -86,9 +87,11 @@ AliGenFLUKAsource::AliGenFLUKAsource(Int_t npart)
     fSourceId=-1;
 }
 
-AliGenFLUKAsource::AliGenFLUKAsource(const AliGenFLUKAsource & FLUKAsource)
+AliGenFLUKAsource::AliGenFLUKAsource(const AliGenFLUKAsource & FLUKAsource):
+    AliGenerator(FLUKAsource)
 {
-// copy constructor
+// Copy constructor
+    FLUKAsource.Copy(*this);
 }
 
 
@@ -278,9 +281,15 @@ void AliGenFLUKAsource::Generate()
 AliGenFLUKAsource& AliGenFLUKAsource::operator=(const  AliGenFLUKAsource& rhs)
 {
 // Assignment operator
-    return *this;
+    rhs.Copy(*this);
+    return (*this);
 }
 
+
+void AliGenFLUKAsource::Copy(AliGenFLUKAsource &) const
+{
+    Fatal("Copy","Not implemented!\n");
+}
 
 
 

@@ -84,7 +84,7 @@ void AliGenFixed::Generate()
 }
   
 //_____________________________________________________________________________
-void AliGenFixed::SetSigma(Float_t sx, Float_t sy, Float_t sz)
+void AliGenFixed::SetSigma(Float_t /*sx*/, Float_t /*sy*/, Float_t /*sz*/)
 {
   //
   // Set the interaction point sigma

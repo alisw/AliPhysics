@@ -27,10 +27,10 @@
 
 #include "AliGenMC.h"
 
- ClassImp(AliGenMC)
+ClassImp(AliGenMC)
 
 AliGenMC::AliGenMC()
-                 :AliGenerator()
+    :AliGenerator()
 {
 // Default Constructor
     SetCutOnChild();
@@ -48,7 +48,7 @@ AliGenMC::AliGenMC()
 }
 
 AliGenMC::AliGenMC(Int_t npart)
-                 :AliGenerator(npart)
+    :AliGenerator(npart)
 {
 //  Constructor
     SetCutOnChild();
@@ -69,9 +69,11 @@ AliGenMC::AliGenMC(Int_t npart)
     SetProjectile();
 }
 
-AliGenMC::AliGenMC(const AliGenMC & mc)
+AliGenMC::AliGenMC(const AliGenMC & mc):
+    AliGenerator(mc)
 {
-// copy constructor
+// Copy constructor
+    mc.Copy(*this);
 }
 
 AliGenMC::~AliGenMC()
@@ -332,6 +334,16 @@ void AliGenMC::Boost()
 AliGenMC& AliGenMC::operator=(const  AliGenMC& rhs)
 {
 // Assignment operator
+    rhs.Copy(*this);
     return *this;
 }
+
+void AliGenMC::Copy(AliGenMC&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
+}
+
 

@@ -52,9 +52,12 @@
 
 ClassImp(AliGenHIJINGpara)
 
-AliGenHIJINGpara::AliGenHIJINGpara(const AliGenHIJINGpara & para)
+
+AliGenHIJINGpara::AliGenHIJINGpara(const AliGenHIJINGpara & para):
+    AliGenerator(para)
 {
-// copy constructor
+// Copy constructor
+    para.Copy(*this);
 }
 
 //_____________________________________________________________________________
@@ -353,12 +356,6 @@ void AliGenHIJINGpara::Generate()
     gAlice->SetGenEventHeader(header); 
 }
 
-AliGenHIJINGpara& AliGenHIJINGpara::operator=(const  AliGenHIJINGpara& rhs)
-{
-// Assignment operator
-    return *this;
-}
-
 void AliGenHIJINGpara::SetPtRange(Float_t ptmin, Float_t ptmax) {
     AliGenerator::SetPtRange(ptmin, ptmax);
 }
@@ -397,4 +394,9 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
 	KeepTrack(nt);
     }
     fNt = nt;
+}
+
+void AliGenHIJINGpara::Copy(AliGenHIJINGpara &) const
+{
+  Fatal("Copy","Not implemented!\n");
 }

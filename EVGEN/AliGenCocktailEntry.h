@@ -31,6 +31,8 @@ class AliGenCocktailEntry : public TNamed
     Float_t Rate(){return fRate;}
     void  PrintInfo();
     AliGenCocktailEntry & operator =(const AliGenCocktailEntry & rhs);
+ private:
+    void Copy(AliGenCocktailEntry&) const;
  protected:
     AliGenerator *fGenerator;   // Pointer to generator
     Int_t fNGenerated;          // Number of primaries generated

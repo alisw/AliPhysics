@@ -45,9 +45,11 @@ AliGenCocktail::AliGenCocktail()
     fNGenerators=0;
 }
 
-AliGenCocktail::AliGenCocktail(const AliGenCocktail & cocktail)
+AliGenCocktail::AliGenCocktail(const AliGenCocktail & cocktail):
+    AliGenerator(cocktail)
 {
-// copy constructor
+// Copy constructor
+    cocktail.Copy(*this);
 }
 
 AliGenCocktail::~AliGenCocktail()
@@ -218,7 +220,14 @@ NextGeneratorPair(AliGenCocktailEntry*& e1, AliGenCocktailEntry*& e2)
 AliGenCocktail& AliGenCocktail::operator=(const  AliGenCocktail& rhs)
 {
 // Assignment operator
-    return *this;
+    rhs.Copy(*this); 
+    return (*this);
 }
+
+void AliGenCocktail::Copy(AliGenCocktail &) const
+{
+    Fatal("Copy","Not implemented!\n");
+}
+
 
 

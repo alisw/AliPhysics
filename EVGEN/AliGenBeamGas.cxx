@@ -29,10 +29,10 @@
 #include <TTree.h>
 
 
- ClassImp(AliGenBeamGas)
+ClassImp(AliGenBeamGas)
 
 AliGenBeamGas::AliGenBeamGas()
-  :AliGenExtFile()
+    :AliGenExtFile()
 {
 //  Constructor
 //
@@ -42,9 +42,11 @@ AliGenBeamGas::AliGenBeamGas()
     fOsigma[2] = 2000.;
 }
 
-AliGenBeamGas::AliGenBeamGas(const AliGenBeamGas & ExtFile)
+AliGenBeamGas::AliGenBeamGas(const AliGenBeamGas & beamgas):
+    AliGenExtFile(beamgas)
 {
-// copy constructor
+// Copy constructor
+    beamgas.Copy(*this);
 }
 //____________________________________________________________
 
@@ -120,13 +122,14 @@ void AliGenBeamGas::Generate()
 }
 
 
-//AliGenBeamGas& AliGenBeamGas::operator=(const  AliGenBeamGas& rhs)
-//{
-// Assignment operator
-//    return *this;
-//}
 
-
+void AliGenBeamGas::Copy(AliGenBeamGas&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
+}
 
 
 

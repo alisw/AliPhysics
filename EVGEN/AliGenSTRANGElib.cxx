@@ -307,7 +307,7 @@ ClassImp(AliGenSTRANGElib)
 
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
- GenFunc AliGenSTRANGElib::GetPt(Int_t param, const char* tname) const
+ GenFunc AliGenSTRANGElib::GetPt(Int_t param, const char* /*tname*/) const
 {
 // Return pinter to pT parameterisation
     GenFunc func;
@@ -336,7 +336,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 
- GenFunc AliGenSTRANGElib::GetY(Int_t param, const char* tname) const
+ GenFunc AliGenSTRANGElib::GetY(Int_t param, const char* /*tname*/) const
 {
 // Return pointer to Y parameterisation
     GenFunc func;
@@ -364,7 +364,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 typedef Int_t (*GenFuncIp) (TRandom *);
- GenFuncIp AliGenSTRANGElib::GetIp(Int_t param,  const char* tname) const
+ GenFuncIp AliGenSTRANGElib::GetIp(Int_t param,  const char* /*tname*/) const
 {
 // Return pointer to particle composition
     GenFuncIp func;

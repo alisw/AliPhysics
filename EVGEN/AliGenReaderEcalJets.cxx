@@ -121,8 +121,18 @@ TParticle* AliGenReaderEcalJets::NextParticle()
 AliGenReaderEcalJets& AliGenReaderEcalJets::operator=(const  AliGenReaderEcalJets& rhs)
 {
 // Assignment operator
-    return *this;
+    rhs.Copy(*this);
+    return (*this);
 }
+
+void AliGenReaderEcalJets::Copy(AliGenReaderEcalJets&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
+}
+
 
 
 

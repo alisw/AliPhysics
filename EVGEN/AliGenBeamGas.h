@@ -15,7 +15,7 @@ class AliGenBeamGas : public AliGenExtFile
 {
  public:
     AliGenBeamGas();
-    AliGenBeamGas(const AliGenBeamGas &ext);
+    AliGenBeamGas(const AliGenBeamGas &beamgas);
     virtual ~AliGenBeamGas();
     //
     virtual void SetNumberOfInteractions(Int_t n) 
@@ -24,6 +24,8 @@ class AliGenBeamGas : public AliGenExtFile
     virtual void Init();
     // generate event
     virtual void Generate();
+ private:
+    void Copy(AliGenBeamGas&) const;
  protected:
     Int_t fInteractions;
     

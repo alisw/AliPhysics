@@ -36,7 +36,8 @@ class AliGenCocktail : public AliGenerator
     void FirstGeneratorPair(AliGenCocktailEntry*&e1, AliGenCocktailEntry*&e2);
     void NextGeneratorPair (AliGenCocktailEntry*&e1, AliGenCocktailEntry*&e2);
     AliGenCocktail & operator=(const AliGenCocktail & rhs);
-    
+ private:
+    void Copy(AliGenCocktail &arun) const;
  protected:
     Int_t fNGenerators;   // Number of generators booked
     TList  *fEntries;     // List of Generators

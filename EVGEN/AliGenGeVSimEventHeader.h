@@ -26,7 +26,7 @@ class AliGenGeVSimEventHeader: public AliGenEventHeader {
 
   //Getters
   Float_t GetEventPlane() const {return fEventPlane;}
-  Float_t GetEllipticFlow(Int_t pdg) const {return fEllipticFlow;}
+  Float_t GetEllipticFlow() const {return fEllipticFlow;}
 
   //Setters
   void SetEventPlane(Float_t psi);

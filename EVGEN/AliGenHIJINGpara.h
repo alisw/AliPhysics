@@ -20,16 +20,17 @@ class AliGenHIJINGpara : public AliGenerator
   AliGenHIJINGpara();
   AliGenHIJINGpara(Int_t npart);
   AliGenHIJINGpara(const AliGenHIJINGpara &HIJINGpara);
-     
+  AliGenHIJINGpara& operator = (const AliGenHIJINGpara &para) 
+  {para.Copy(*this); return (*this);}
   virtual ~AliGenHIJINGpara();
   virtual void SetCutVertexZ(Float_t cut=999999.) {fCutVertexZ = cut;}
   virtual void Generate();
   virtual void Init();
-  AliGenHIJINGpara & operator=(const AliGenHIJINGpara & rhs);
   virtual void SetPtRange(Float_t ptmin = 0., Float_t ptmax=15.);
   virtual void SetPi0Decays(Bool_t flag = kFALSE) {fPi0Decays = flag;}
  private:
   void DecayPi0(Float_t* orig, Float_t * p);
+  void Copy(AliGenHIJINGpara &para) const;
  protected:
   Int_t   fNt;          // CurrentTrack;
   Float_t fCutVertexZ;  // Vertex truncation

@@ -45,6 +45,8 @@ class AliGenParam : public AliGenMC
     virtual void SetDecayer(AliDecayer* decayer) {fDecayer = decayer;}
     virtual void Draw();
     AliGenParam & operator=(const AliGenParam & rhs);
+ private:
+    void Copy(AliGenParam&) const;
  protected:
     Double_t (*fPtParaFunc)(Double_t*, Double_t*); //! Pointer to Pt parametrisation function
     Double_t (*fYParaFunc )(Double_t*, Double_t*); //! Pointer to Y parametrisation function

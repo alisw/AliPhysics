@@ -30,6 +30,8 @@ class AliGenReaderTreeK : public AliGenReader
     AliGenReaderTreeK & operator=(const AliGenReaderTreeK & rhs);
     void SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
     void AddDir(const char* dirname);
+ private:
+    void Copy(AliGenReaderTreeK&) const;
  protected:
     Int_t             fNcurrent;          // points to the next entry
     Int_t             fNparticle;         // Next particle in list

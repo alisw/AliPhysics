@@ -30,9 +30,10 @@
 #include "AliGenHaloProtvino.h"
 #include "AliRun.h"
 
- ClassImp(AliGenHaloProtvino)
-     AliGenHaloProtvino::AliGenHaloProtvino()
-	 :AliGenerator(-1)
+ClassImp(AliGenHaloProtvino)
+
+AliGenHaloProtvino::AliGenHaloProtvino()
+    :AliGenerator(-1)
 {
 // Constructor
     
@@ -65,9 +66,11 @@ AliGenHaloProtvino::AliGenHaloProtvino(Int_t npart)
     SetAnalog(0);
 }
 
-AliGenHaloProtvino::AliGenHaloProtvino(const AliGenHaloProtvino & HaloProtvino)
+AliGenHaloProtvino::AliGenHaloProtvino(const AliGenHaloProtvino & HaloProtvino):
+    AliGenerator(HaloProtvino)
 {
-// copy constructor
+// Copy constructor
+    HaloProtvino.Copy(*this);
 }
 
 
@@ -312,6 +315,7 @@ void AliGenHaloProtvino::Generate()
 AliGenHaloProtvino& AliGenHaloProtvino::operator=(const  AliGenHaloProtvino& rhs)
 {
 // Assignment operator
+    rhs.Copy(*this);
     return *this;
 }
 
@@ -351,6 +355,15 @@ Float_t AliGenHaloProtvino::GassPressureWeight(Float_t zPrimary)
     }
     return weight;
 }
+
+void AliGenHaloProtvino::Copy(AliGenHaloProtvino&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
+}
+
 
 /*
 # Title:    README file for the sources of IR8 machine induced background

@@ -13,7 +13,8 @@ class AliGenReaderEcalHijing : public AliGenReader
  public:
     AliGenReaderEcalHijing();
     
-    AliGenReaderEcalHijing(const AliGenReaderEcalHijing &reader){;}
+    AliGenReaderEcalHijing(const AliGenReaderEcalHijing &reader):AliGenReader(reader)
+	{reader.Copy(*this);}
     virtual ~AliGenReaderEcalHijing(){;}
     // Initialise 
     virtual void Init();
@@ -21,6 +22,8 @@ class AliGenReaderEcalHijing : public AliGenReader
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
     AliGenReaderEcalHijing & operator=(const AliGenReaderEcalHijing & rhs);
+ private:
+    void Copy(AliGenReaderEcalHijing&) const;
  protected:
     Int_t             fNcurrent;      // points to the next entry
     Int_t             fNparticle;     // 

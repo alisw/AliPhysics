@@ -29,9 +29,10 @@
 #include "AliGenHalo.h"
 #include "AliRun.h"
 
- ClassImp(AliGenHalo)
-     AliGenHalo::AliGenHalo()
-	 :AliGenerator(-1)
+ClassImp(AliGenHalo)
+
+AliGenHalo::AliGenHalo()
+    :AliGenerator(-1)
 {
 // Constructor
     fName="Halo";
@@ -55,8 +56,10 @@ AliGenHalo::AliGenHalo(Int_t npart)
 }
 
 AliGenHalo::AliGenHalo(const AliGenHalo & Halo)
+    :AliGenerator(Halo)
 {
-// copy constructor
+// Copy constructor
+    Halo.Copy(*this);
 }
 
 
@@ -135,7 +138,17 @@ void AliGenHalo::Generate()
 AliGenHalo& AliGenHalo::operator=(const  AliGenHalo& rhs)
 {
 // Assignment operator
+    rhs.Copy(*this);
     return *this;
+}
+
+
+void AliGenHalo::Copy(AliGenHalo&) const
+{
+    //
+    // Copy 
+  //
+    Fatal("Copy","Not implemented!\n");
 }
 
 

@@ -39,7 +39,7 @@
 #include <TTree.h>
 
 
- ClassImp(AliGenExtFile)
+ClassImp(AliGenExtFile)
 
 AliGenExtFile::AliGenExtFile()
   :AliGenMC()
@@ -60,9 +60,11 @@ AliGenExtFile::AliGenExtFile(Int_t npart)
     fReader = 0;
 }
 
-AliGenExtFile::AliGenExtFile(const AliGenExtFile & ExtFile)
+AliGenExtFile::AliGenExtFile(const AliGenExtFile & ExtFile):
+    AliGenMC(ExtFile)
 {
-// copy constructor
+// Copy constructor
+    ExtFile.Copy(*this);
 }
 //____________________________________________________________
 AliGenExtFile::~AliGenExtFile()
@@ -214,9 +216,18 @@ void AliGenExtFile::CdEventFile()
 AliGenExtFile& AliGenExtFile::operator=(const  AliGenExtFile& rhs)
 {
 // Assignment operator
+    rhs.Copy(*this);
     return *this;
 }
+ 
 
+void AliGenExtFile::Copy(AliGenExtFile&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
+}
 
 
 

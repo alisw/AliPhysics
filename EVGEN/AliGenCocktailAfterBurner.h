@@ -48,7 +48,8 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
     void          SetNBgEvents(Int_t nbg=0){fNBgEvents = nbg;}
 
     static TMCProcess IntToMCProcess(Int_t no);
-
+ private:
+    void Copy(AliGenCocktailAfterBurner &arun) const;
  protected:
     Int_t fNAfterBurners;       // Number of afterburners  
     TList  *fAfterBurnerEntries;// List of afterburners
@@ -71,7 +72,8 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
                                           //(events that are generated only temporarly)
                                           //needed by some afterburners that works better with higher statistics 
                                           //this generates such a artificial one
- private:   
+ private:
+    
     ClassDef(AliGenCocktailAfterBurner,2) // Particle cocktail generator a la SHAKER
                                           //background events added
 };

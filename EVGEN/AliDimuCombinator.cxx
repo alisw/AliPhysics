@@ -54,8 +54,10 @@ ClassImp(AliDimuCombinator)
 }
 
 AliDimuCombinator::AliDimuCombinator(const AliDimuCombinator & combinator)
+    :TObject(combinator)
 {
 // Dummy copy constructor
+    combinator.Copy(*this);
 }
 
 
@@ -488,14 +490,15 @@ return part->GetPdgCode();
 AliDimuCombinator& AliDimuCombinator::operator=(const  AliDimuCombinator& rhs)
 {
 // Assignment operator
+    rhs.Copy(*this);
     return *this;
 }
 
 
-void AliDimuCombinator::Copy(AliDimuCombinator &combi) const
+void AliDimuCombinator::Copy(AliDimuCombinator&) const
 {
   //
-  // Copy *this onto lego -- not implemented
+  // Copy 
   //
   Fatal("Copy","Not implemented!\n");
 }

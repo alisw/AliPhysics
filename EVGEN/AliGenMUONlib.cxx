@@ -32,7 +32,7 @@
 ClassImp(AliGenMUONlib)
 //
 //  Pions
-Double_t AliGenMUONlib::PtPion(Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtPion(Double_t *px, Double_t* /*dummy*/)
 {
 //
 //     PT-PARAMETERIZATION CDF, PRL 61(88) 1819
@@ -61,7 +61,7 @@ Double_t AliGenMUONlib::PtPion(Double_t *px, Double_t *dummy)
 //
 // y-distribution
 //
-Double_t AliGenMUONlib::YPion( Double_t *py, Double_t *dummy)
+Double_t AliGenMUONlib::YPion( Double_t *py, Double_t */*dummy*/)
 {
 // Pion y
   Double_t y=TMath::Abs(*py);
@@ -111,7 +111,7 @@ Double_t AliGenMUONlib::PtScal(Double_t pt, Int_t np)
 //
 //                pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtKaon( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtKaon( Double_t *px, Double_t */*dummy*/)
 {
 // Kaon pT
   return PtScal(*px,2);
@@ -119,7 +119,7 @@ Double_t AliGenMUONlib::PtKaon( Double_t *px, Double_t *dummy)
 
 // y-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::YKaon( Double_t *py, Double_t *dummy)
+Double_t AliGenMUONlib::YKaon( Double_t *py, Double_t */*dummy*/)
 {
 // Kaon y
   Double_t y=TMath::Abs(*py);
@@ -151,7 +151,7 @@ Int_t AliGenMUONlib::IpKaon(TRandom *ran)
 //
 //                pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtJpsi( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtJpsi( Double_t *px, Double_t */*dummy*/)
 {
 // J/Psi pT
   const Double_t kpt0 = 4.;
@@ -162,7 +162,7 @@ Double_t AliGenMUONlib::PtJpsi( Double_t *px, Double_t *dummy)
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtJpsiPbPb( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtJpsiPbPb( Double_t *px, Double_t */*dummy*/)
 {
 // J/Psi pT spectrum
 //
@@ -188,7 +188,7 @@ Double_t AliGenMUONlib::PtJpsiPbPb( Double_t *px, Double_t *dummy)
     }
     return y;
 }
-Double_t AliGenMUONlib::PtJpsiPP( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtJpsiPP( Double_t *px, Double_t */*dummy*/)
 {
 // J/Psi pT spectrum
 //
@@ -215,7 +215,7 @@ Double_t AliGenMUONlib::PtJpsiPP( Double_t *px, Double_t *dummy)
 //
 //               y-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::YJpsi(Double_t *py, Double_t *dummy)
+Double_t AliGenMUONlib::YJpsi(Double_t *py, Double_t */*dummy*/)
 {
 // J/psi y
   const Double_t ky0 = 4.;
@@ -231,7 +231,7 @@ Double_t AliGenMUONlib::YJpsi(Double_t *py, Double_t *dummy)
 }
 
 
-Double_t AliGenMUONlib::YJpsiPbPb( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YJpsiPbPb( Double_t *px, Double_t */*dummy*/)
 {
 
 //
@@ -260,7 +260,7 @@ Double_t AliGenMUONlib::YJpsiPbPb( Double_t *px, Double_t *dummy)
     return y;
 }
 
-Double_t AliGenMUONlib::YJpsiPP( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YJpsiPP( Double_t *px, Double_t */*dummy*/)
 {
 
 //
@@ -303,7 +303,7 @@ Int_t AliGenMUONlib::IpJpsi(TRandom *)
 //
 //                  pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtUpsilon( Double_t *px, Double_t *dummy )
+Double_t AliGenMUONlib::PtUpsilon( Double_t *px, Double_t */*dummy*/ )
 {
 // Upsilon pT
   const Double_t kpt0 = 5.3;
@@ -314,7 +314,7 @@ Double_t AliGenMUONlib::PtUpsilon( Double_t *px, Double_t *dummy )
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtUpsilonPbPb( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtUpsilonPbPb( Double_t *px, Double_t */*dummy*/)
 {
 
 //
@@ -343,7 +343,7 @@ Double_t AliGenMUONlib::PtUpsilonPbPb( Double_t *px, Double_t *dummy)
     return y;
 }
 
-Double_t AliGenMUONlib::PtUpsilonPP( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtUpsilonPP( Double_t *px, Double_t */*dummy*/)
 {
 
 //
@@ -375,7 +375,7 @@ Double_t AliGenMUONlib::PtUpsilonPP( Double_t *px, Double_t *dummy)
 //                    y-distribution
 //
 //____________________________________________________________
-Double_t AliGenMUONlib::YUpsilon(Double_t *py, Double_t *dummy)
+Double_t AliGenMUONlib::YUpsilon(Double_t *py, Double_t */*dummy*/)
 {
 // Upsilon y
   const Double_t ky0 = 3.;
@@ -391,7 +391,7 @@ Double_t AliGenMUONlib::YUpsilon(Double_t *py, Double_t *dummy)
 }
 
 
-Double_t AliGenMUONlib::YUpsilonPbPb( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YUpsilonPbPb( Double_t *px, Double_t */*dummy*/)
 {
 
 //
@@ -415,7 +415,7 @@ Double_t AliGenMUONlib::YUpsilonPbPb( Double_t *px, Double_t *dummy)
     return y;
 }
 
-Double_t AliGenMUONlib::YUpsilonPP( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YUpsilonPP( Double_t *px, Double_t */*dummy*/)
 {
 
 //
@@ -452,13 +452,13 @@ Int_t AliGenMUONlib::IpUpsilon(TRandom *)
 //
 //    pt-distribution (by scaling of pion distribution)
 //____________________________________________________________
-Double_t AliGenMUONlib::PtPhi( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtPhi( Double_t *px, Double_t */*dummy*/)
 {
 // Phi pT
   return PtScal(*px,7);
 }
 //    y-distribution
-Double_t AliGenMUONlib::YPhi( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YPhi( Double_t *px, Double_t */*dummy*/)
 {
 // Phi y
     Double_t *dum=0;
@@ -478,13 +478,13 @@ Int_t AliGenMUONlib::IpPhi(TRandom *)
 //
 //    pt-distribution (by scaling of pion distribution)
 //____________________________________________________________
-Double_t AliGenMUONlib::PtOmega( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtOmega( Double_t *px, Double_t */*dummy*/)
 {
 // Omega pT
   return PtScal(*px,5);
 }
 //    y-distribution
-Double_t AliGenMUONlib::YOmega( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YOmega( Double_t *px, Double_t */*dummy*/)
 {
 // Omega y
     Double_t *dum=0;
@@ -505,13 +505,13 @@ Int_t AliGenMUONlib::IpOmega(TRandom *)
 //
 //    pt-distribution (by scaling of pion distribution)
 //____________________________________________________________
-Double_t AliGenMUONlib::PtEta( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtEta( Double_t *px, Double_t */*dummy*/)
 {
 // Eta pT
   return PtScal(*px,3);
 }
 //    y-distribution
-Double_t AliGenMUONlib::YEta( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YEta( Double_t *px, Double_t */*dummy*/)
 {
 // Eta y
     Double_t *dum=0;
@@ -531,7 +531,7 @@ Int_t AliGenMUONlib::IpEta(TRandom *)
 //
 //                    pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtCharm( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtCharm( Double_t *px, Double_t */*dummy*/)
 {
 // Charm pT
   const Double_t kpt0 = 4.08;
@@ -543,7 +543,7 @@ Double_t AliGenMUONlib::PtCharm( Double_t *px, Double_t *dummy)
   return x/TMath::Power(pass1,kxn);
 }
 //                  y-distribution
-Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t */*dummy*/)
 {
 // Charm y
     Double_t *dum=0;
@@ -578,7 +578,7 @@ Int_t AliGenMUONlib::IpCharm(TRandom *ran)
 //
 //                    pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtBeauty( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::PtBeauty( Double_t *px, Double_t */*dummy*/)
 {
 // Beauty pT
   const Double_t kpt0 = 4.;
@@ -589,7 +589,7 @@ Double_t AliGenMUONlib::PtBeauty( Double_t *px, Double_t *dummy)
   return x/TMath::Power(pass1,kxn);
 }
 //                     y-distribution
-Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t */*dummy*/)
 {
 // Beauty y
     Double_t *dum=0;
@@ -725,7 +725,7 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
     return func;
 }
 typedef Int_t (*GenFuncIp) (TRandom *);
-GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* tname) const
+GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* /*tname*/) const
 {
 // Return pointer to particle type parameterisation
     GenFuncIp func;

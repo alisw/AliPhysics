@@ -134,8 +134,18 @@ TParticle* AliGenReaderCwn::NextParticle()
 AliGenReaderCwn& AliGenReaderCwn::operator=(const  AliGenReaderCwn& rhs)
 {
 // Assignment operator
+    rhs.Copy(*this);
     return *this;
 }
+
+void AliGenReaderCwn::Copy(AliGenReaderCwn&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
+}
+
 
 
 

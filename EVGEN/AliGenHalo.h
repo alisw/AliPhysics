@@ -15,7 +15,7 @@
 
 class AliGenHalo : public AliGenerator
 {
-public:
+ public:
     AliGenHalo();
     AliGenHalo(Int_t npart);
     AliGenHalo(const AliGenHalo &Halo);
@@ -24,10 +24,12 @@ public:
     virtual void SetFileName(TString filename) {fFileName=TString(filename);}
     virtual void Generate();
     AliGenHalo & operator=(const AliGenHalo & rhs);
-protected:
-  FILE *fp;                             // ! Pointer to file
-  TString  fFileName;                   //   Choose the file
-  ClassDef(AliGenHalo,1) // LHC background boundary source (MARS input)
+ private:
+    void Copy(AliGenHalo &Halo) const;
+ protected:
+    FILE *fp;                             // ! Pointer to file
+    TString  fFileName;                   //   Choose the file
+    ClassDef(AliGenHalo,1) // LHC background boundary source (MARS input)
 };
 #endif
 

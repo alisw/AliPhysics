@@ -13,8 +13,8 @@ class AliGenReader : public TObject
 {
  public:
     AliGenReader():fFileName(NULL),fCode(kPDG){;}
-    AliGenReader(const AliGenReader &reader):fFileName(NULL),fCode(kPDG){;}
-    
+    AliGenReader(const AliGenReader &reader)
+	:TObject(reader), fFileName(NULL), fCode(kPDG){reader.Copy(*this);}
     virtual ~AliGenReader(){;}
     // Initialise 
     virtual void Init() {}
@@ -26,8 +26,9 @@ class AliGenReader : public TObject
     void SetParticleCode(Code_t code) {fCode = code;}
     virtual TParticle* NextParticle(){return NULL;}
     virtual void RewindEvent();
-        
     AliGenReader & operator=(const AliGenReader & rhs);
+ private:
+    void Copy(AliGenReader&) const;
  protected:
     const Text_t *fFileName;      // Name of file to read from
     Code_t        fCode;          // Particle code type

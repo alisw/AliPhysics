@@ -139,8 +139,9 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
 
 
 AliGenParam::AliGenParam(const AliGenParam & Param)
+    :AliGenMC(Param)
 {
-// copy constructor
+// Copy constructor
     Param.Copy(*this);
 }
 
@@ -469,6 +470,7 @@ void AliGenParam::Draw()
 AliGenParam& AliGenParam::operator=(const  AliGenParam& rhs)
 {
 // Assignment operator
+    rhs.Copy(*this);
     return *this;
 }
 

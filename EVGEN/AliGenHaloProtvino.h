@@ -32,7 +32,8 @@ public:
     
 
     AliGenHaloProtvino & operator=(const AliGenHaloProtvino & rhs);
-
+ private:
+    void Copy(AliGenHaloProtvino&) const;
 protected:
   FILE*    fFile;                       // ! Pointer to file
   TString  fFileName;                   //   Choose the file
