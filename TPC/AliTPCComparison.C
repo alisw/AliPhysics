@@ -1,3 +1,4 @@
+//#include "alles.h"
 struct GoodTrack {
   Int_t lab;
   Int_t code;
@@ -7,6 +8,8 @@ struct GoodTrack {
 Int_t good_tracks(GoodTrack *gt, Int_t max);
 
 Int_t AliTPCComparison() {
+  Int_t i;
+   gBenchmark->Start("AliTPCComparison");
    cerr<<"Doing comparison...\n";
 
    TFile *cf=TFile::Open("AliTPCclusters.root");
@@ -20,8 +23,9 @@ Int_t AliTPCComparison() {
    ca->SetClusterType("AliTPCcluster");
    ca->ConnectTree("Segment Tree");
    Int_t nentr=Int_t(ca->GetTree()->GetEntries());
-   for (Int_t i=0; i<nentr; i++) {
-       AliSegmentID *s=ca->LoadEntry(i);
+   for (i=0; i<nentr; i++) {
+     //AliSegmentID *s=;
+       ca->LoadEntry(i);
    }
 
 // Load tracks
@@ -30,7 +34,8 @@ Int_t AliTPCComparison() {
    TObjArray tarray(2000);
    TTree *tracktree=(TTree*)tf->Get("TreeT");
    TBranch *tbranch=tracktree->GetBranch("tracks");
-   Int_t nentr=tracktree->GetEntries();
+   nentr=(Int_t)tracktree->GetEntries();
+   
    for (i=0; i<nentr; i++) {
        AliTPCtrack *iotrack=new AliTPCtrack;
        tbranch->SetAddress(&iotrack);
@@ -93,29 +98,60 @@ Int_t AliTPCComparison() {
    TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
    TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,200.);
 
+   Int_t mingood = ngood;  //MI change
+   Int_t * track_notfound = new Int_t[ngood];
+   Int_t   itrack_notfound =0;
+   Int_t * track_fake  = new Int_t[ngood];
+   Int_t   itrack_fake = 0;
+   Int_t * track_multifound = new Int_t[ngood];
+   Int_t * track_multifound_n = new Int_t[ngood];
+   Int_t   itrack_multifound =0;
+
    while (ngood--) {
-      Int_t lab=gt[ngood].lab,tlab;
+      Int_t lab=gt[ngood].lab,tlab=-1;
       Float_t ptg=
       TMath::Sqrt(gt[ngood].px*gt[ngood].px + gt[ngood].py*gt[ngood].py);
 
       hgood->Fill(ptg);
 
-      AliTPCtrack *track;
-      Int_t i;
+      AliTPCtrack *track=0;
       for (i=0; i<nentr; i++) {
-          track=(AliTPCtrack*)tarray->UncheckedAt(i);
+          track=(AliTPCtrack*)tarray.UncheckedAt(i);
           tlab=track->GetLabel();
           if (lab==TMath::Abs(tlab)) break;
       }
       if (i==nentr) {
-	cerr<<"Track "<<lab<<" was not found !\n";
+	//	cerr<<"Track "<<lab<<" was not found !\n";
+	track_notfound[itrack_notfound++]=lab;
         continue;
       }
+      
+      //MI change  - addition
+      Int_t micount=0;
+      Int_t mi;
+      AliTPCtrack * mitrack;
+      for (mi=0; mi<nentr; mi++) {
+	mitrack=(AliTPCtrack*)tarray.UncheckedAt(mi);          
+	if (lab==TMath::Abs(mitrack->GetLabel())) micount++;
+      }
+      if (micount>1) {
+	//cout<<"Track no. "<<lab<<" found "<<micount<<"  times\n";
+	track_multifound[itrack_multifound]=lab;
+	track_multifound_n[itrack_multifound]=micount;
+	itrack_multifound++;
+      }
+      
+
+      //
       Double_t xk=gt[ngood].x;//digp->GetPadRowRadii(0,0);
       track->PropagateTo(xk);
 
       if (lab==tlab) hfound->Fill(ptg);
-      else { hfake->Fill(ptg); cerr<<lab<<" fake\n";}
+      else { 
+	track_fake[itrack_fake++]=lab;
+	hfake->Fill(ptg); 
+	//cerr<<lab<<" fake\n";
+      }
 
       Double_t px,py,pz,pt=fabs(track->GetPt());track->GetPxPyPz(px,py,pz);
 
@@ -143,11 +179,35 @@ Int_t AliTPCComparison() {
 
    }
 
+   
    Stat_t ng=hgood->GetEntries(); cerr<<"Good tracks "<<ng<<endl;
    Stat_t nf=hfound->GetEntries();
    if (ng!=0) 
-      cerr<<"Integral efficiency is about "<<nf/ng*100.<<" %\n";
+      cerr<<"\n\n\nIntegral efficiency is about "<<nf/ng*100.<<" %\n";
+   
+   //MI change  - addition
+   cout<<"Total number of found tracks ="<<nentr<<"\n";
+   cout<<"Total number of \"good\" tracks ="<<mingood<<"\n";
 
+
+   cout<<"\nList of Not found tracks :\n";
+   //   Int_t i;
+   for ( i = 0; i< itrack_notfound; i++){
+     cout<<track_notfound[i]<<"\t";
+     if ((i%5)==4) cout<<"\n";
+   }
+   cout<<"\nList of fake  tracks :\n";
+   for ( i = 0; i< itrack_fake; i++){
+     cout<<track_fake[i]<<"\t";
+     if ((i%5)==4) cout<<"\n";
+   }
+    cout<<"\nList of multiple found tracks :\n";
+   for ( i=0; i<itrack_multifound; i++) {
+       cout<<"id.   "<<track_multifound[i]<<"     found - "<<track_multifound_n[i]<<"times\n";
+   }
+   cout<<"\n\n\n";
+
+   
    gStyle->SetOptStat(111110);
    gStyle->SetOptFit(1);
 
@@ -211,6 +271,10 @@ Int_t AliTPCComparison() {
    hep->SetXTitle("p (Gev/c)"); hep->SetYTitle("dE/dX (Arb. Units)"); 
    hep->Draw(); c1->cd();
 
+   gBenchmark->Stop("AliTPCComparison");
+   gBenchmark->Show("AliTPCComparison");
+
+
    return 0;
 }
 
@@ -218,7 +282,7 @@ Int_t AliTPCComparison() {
 Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t nt=0;
 
-   TFile *file=TFile::Open("rfio:galice.root");
+   TFile *file=TFile::Open("galice.root");
    if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}
 
    if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
@@ -247,6 +311,13 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t *good=new Int_t[np];
    for (Int_t ii=0; ii<np; ii++) good[ii]=0;
 
+
+   //MI change to be possible compile macro
+   //definition out of the swith statemnet
+    Int_t sectors_by_rows=0;
+    TTree *TD=0;
+    AliSimDigits da, *digits=&da;
+    Int_t *count=0;
    switch (ver) {
    case 1:
      {
@@ -280,13 +351,12 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
      }
       break;
    case 2:
-      TTree *TD=(TTree*)gDirectory->Get("TreeD_75x40_100x60");
-      AliSimDigits da, *digits=&da;
+      TD=(TTree*)gDirectory->Get("TreeD_75x40_100x60");
       TD->GetBranch("Segment")->SetAddress(&digits);
-      Int_t *count = new Int_t[np];
+      count = new Int_t[np];
       Int_t i;
       for (i=0; i<np; i++) count[i]=0;
-      Int_t sectors_by_rows=(Int_t)TD->GetEntries();
+      sectors_by_rows=(Int_t)TD->GetEntries();
       for (i=0; i<sectors_by_rows; i++) {
           if (!TD->GetEvent(i)) continue;
           Int_t sec,row;
@@ -306,9 +376,9 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
           for (Int_t j=0; j<np; j++) {
               if (count[j]>1) {
                  if (sec>=digp->GetNInnerSector())
-                 if (row==nrow_up-1    ) good[j]|=0x1000;
+		   if (row==nrow_up-1    ) good[j]|=0x1000;
                  if (sec>=digp->GetNInnerSector())
-                 if (row==nrow_up-1-gap) good[j]|=0x800;
+		   if (row==nrow_up-1-gap) good[j]|=0x800;
                  good[j]++;
               }
               count[j]=0;
@@ -323,13 +393,27 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    }
 
    TTree *TH=gAlice->TreeH();
-   TClonesArray *hits=TPC->Hits();
-   Int_t npart=TH->GetEntries();
+   //   TClonesArray *hits=TPC->Hits();
+   Int_t npart=(Int_t)TH->GetEntries();
 
    while (npart--) {
+      AliTPChit *hit0=0;
+
       TPC->ResetHits();
       TH->GetEvent(npart);
-      Int_t nhits=hits->GetEntriesFast();
+      AliTPChit * hit = (AliTPChit*) TPC->FirstHit(-1);
+      while (hit){
+	if (hit->fQ==0.) break;
+	hit =  (AliTPChit*) TPC->NextHit();
+      }
+      if (hit) {
+	hit0 = new AliTPChit(*hit); //Make copy of hit
+	hit = hit0;
+      }
+      else continue;
+      AliTPChit *hit1=(AliTPChit*)TPC->NextHit();	
+      if (hit1==0) continue;
+      /*      Int_t nhits=hits->GetEntriesFast();
       if (nhits==0) continue;
       AliTPChit *hit;
       Int_t j;
@@ -339,6 +423,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
       }
       if (j==nhits-1) continue;
       AliTPChit *hit1=(AliTPChit*)hits->UncheckedAt(j+1);
+      */
       if (hit1->fQ != 0.) continue;
       Int_t i=hit->Track();
       TParticle *p = (TParticle*)particles->UncheckedAt(i);
@@ -355,8 +440,8 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
       gt[nt].x = hit1->X()*cs + hit1->Y()*sn;
       gt[nt].y =-hit1->X()*sn + hit1->Y()*cs;
       gt[nt].z = hit1->Z();
-      nt++;
-
+      nt++;	
+	if (hit0) delete hit0;
       cerr<<i<<"                \r";
       if (nt==max) {cerr<<"Too many good tracks !\n"; break;}
    }
@@ -365,6 +450,8 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    delete gAlice; gAlice=0;
 
    file->Close();
+   gBenchmark->Stop("AliTPCComparison");
+   gBenchmark->Show("AliTPCComparison");   
    return nt;
 }
 

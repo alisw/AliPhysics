@@ -9,17 +9,17 @@ PACKAGE = TPC
 
 # C++ sources
 
-SRCS          = AliDigits.cxx   AliSegmentArray.cxx AliTPCClusterFinder.cxx  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
+SRCS          = AliTPCClusterFinder.cxx  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
 		AliTPCv3.cxx AliDetectorParam.cxx AliTPCParam.cxx \
 		AliTPCParamSR.cxx AliTPCParamCR.cxx  AliTPCPRF2D.cxx \
-		AliTPCRF1D.cxx AliArrayI.cxx AliArrayS.cxx \
-		AliSegmentID.cxx  \
+		AliTPCRF1D.cxx \
 		AliSimDigits.cxx AliDigitsArray.cxx  AliTPCDigitsArray.cxx \
 		AliComplexCluster.cxx AliClusters.cxx AliClustersArray.cxx \
 		 AliTPCClustersRow.cxx \
 		AliTPCClustersArray.cxx AliH2F.cxx \
                 AliTPCcluster.cxx AliTPCclusterer.cxx \
-                AliTPCtrack.cxx AliTPCtracker.cxx
+                AliTPCtrack.cxx AliTPCtracker.cxx \
+		AliTPCTrackHits.cxx
 
 
 # C++ Headers
@@ -46,8 +46,8 @@ OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
-CXXFLAGS      = $(CXXOPTS) -g -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include
-#CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/
+CXXFLAGS      = $(CXXOPTS) -g -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include \
+		-I$(ALICE_ROOT)/CONTAINERS
  
 # FORTRAN compilation flags
 
@@ -58,10 +58,12 @@ FFLAGS      = $(FOPT)
 # Target
 
 SLIBRARY	= $(LIBDIR)/libTPC.$(SL)
+ALIBRARY      = $(LIBDIR)/static/libTPC.a
 
-default:	$(SLIBRARY)
+default:	$(SLIBRARY) 
 
 $(LIBDIR)/libTPC.$(SL):  $(OBJS)
+$(LIBDIR)/static/libTPC.a:  $(OBJS)
 
 $(DICT):		$(HDRS)
 
