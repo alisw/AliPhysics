@@ -15,15 +15,15 @@ class AliGenReaderTreeK : public AliGenReader
 {
  public:
     AliGenReaderTreeK();
-    
     AliGenReaderTreeK(const AliGenReaderTreeK &reader){;}
-    virtual ~AliGenReaderTreeK(){;}
+    virtual ~AliGenReaderTreeK();
     // Initialise 
     virtual void Init();
     // Read
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
-    AliGenReaderTreeK & operator=(const AliGenReader & rhs){return *this;}
+    AliGenReaderTreeK & operator=(const AliGenReader & rhs);
+    
  protected:
     Int_t             fNcurrent;          // points to the next entry
     Int_t             fNparticle;         // Next particle in list
@@ -32,6 +32,7 @@ class AliGenReaderTreeK : public AliGenReader
     TFile            *fBaseFile;          //! pointer to base file
     AliStack         *fStack;             //! Particle stack
     AliHeader        *fHeader;            //! Pointer to event header
+    TTree            *fTreeE;             //! Pointer to header tree
     ClassDef(AliGenReaderTreeK,1) // Read particles from TreeK
 };
 #endif

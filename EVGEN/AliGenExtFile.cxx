@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/11/09 09:12:58  morsch
+Generalization by using AliGenReader object to read particles from file.
+
 Revision 1.16  2001/07/27 17:09:35  morsch
 Use local SetTrack, KeepTrack and SetHighWaterMark methods
 to delegate either to local stack or to stack owned by AliRun.
@@ -163,6 +166,7 @@ void AliGenExtFile::Generate()
 	 y     < fYMin     || y     > fYMax        )
       {
 	  printf("\n Not selected %d %f %f %f %f %f", i, theta, phi, pmom, pt, y);
+	  delete iparticle;
 	  continue;
       }
       p[0] = iparticle->Px();
@@ -178,7 +182,8 @@ void AliGenExtFile::Generate()
 	  }
       }
       SetTrack(fTrackIt,-1,idpart,p,origin,polar,0,kPPrimary,nt);
-  }
+      delete iparticle;
+   }
   TFile *pFile=0;
 // Get AliRun object or create it 
   if (!gAlice) {

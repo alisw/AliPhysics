@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/11/09 09:11:24  morsch
+Realisation of AliGenReader that reads the kine tree (TreeK).
+
 */
 #include <TFile.h>
 #include <TTree.h>
@@ -38,6 +41,13 @@ AliGenReaderTreeK::AliGenReaderTreeK():AliGenReader()
     fNparticle      = 0;
     fFile           = 0;
     fBaseFile       = 0;
+    fTreeE          = 0;
+}
+
+AliGenReaderTreeK::~AliGenReaderTreeK() 
+{
+// Destructor
+    delete fTreeE;
 }
 
 void AliGenReaderTreeK::Init() 
@@ -63,13 +73,17 @@ Int_t AliGenReaderTreeK::NextEvent()
     fStack = new AliStack(1000);
     fFile->cd();
 //  Connect treeE
-    TTree* treeE = (TTree*)gDirectory->Get("TE");
-    treeE->ls();
+    if (fTreeE) {
+	delete fTreeE;
+    } else {
+	fTreeE = (TTree*)gDirectory->Get("TE");
+    }
+
     if (fHeader) delete fHeader;
     fHeader = 0;
-    treeE->SetBranchAddress("Header", &fHeader);
+    fTreeE->SetBranchAddress("Header", &fHeader);
 //  Get next event
-    treeE->GetEntry(fNcurrent);
+    fTreeE->GetEntry(fNcurrent);
     fStack = fHeader->Stack();
     fStack->GetEvent(fNcurrent);
     
@@ -94,6 +108,11 @@ TParticle* AliGenReaderTreeK::NextParticle()
 
 
 
+AliGenReaderTreeK& AliGenReaderTreeK::operator=(const  AliGenReaderTreeK& rhs)
+{
+// Assignment operator
+    return *this;
+}
 
 
 

@@ -16,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/11/09 09:10:46  morsch
+Realisation of AliGenReader that reads the old cwn event format.
+
 */
 
 // Read the old ALICE event format based on CW-ntuples
@@ -38,6 +41,11 @@ AliGenReaderCwn::AliGenReaderCwn()
 // Default constructor
     fNcurrent   = 0;
     fTreeNtuple = 0;
+}
+
+AliGenReaderCwn::~AliGenReaderCwn()
+{
+    delete fTreeNtuple;
 }
 
 void AliGenReaderCwn::Init() 
@@ -131,6 +139,11 @@ TParticle* AliGenReaderCwn::NextParticle()
 
 
 
+AliGenReaderCwn& AliGenReaderCwn::operator=(const  AliGenReaderCwn& rhs)
+{
+// Assignment operator
+    return *this;
+}
 
 
 

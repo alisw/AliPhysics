@@ -14,13 +14,13 @@ class AliGenReaderCwn : public AliGenReader
     AliGenReaderCwn();
     
     AliGenReaderCwn(const AliGenReaderCwn &reader){;}
-    virtual ~AliGenReaderCwn(){;}
-    // Initialise 
+    virtual ~AliGenReaderCwn();
+        // Initialise 
     virtual void Init();
     // Read
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
-    AliGenReaderCwn & operator=(const AliGenReader & rhs){return *this;}
+    AliGenReaderCwn & operator=(const AliGenReaderCwn & rhs);
  protected:
     Int_t             fNcurrent;      // points to the next entry
     Int_t             fNparticle;     // particle number in event
