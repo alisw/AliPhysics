@@ -18,10 +18,14 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     Int_t            GetAnode() const {return fCoord1;};
     Int_t            GetTime() const {return fCoord2;};
 
+    enum {kDDLsNumber = 12};      // number of DDLs in SDD
+    enum {kModulesPerDDL = 22};   // number of modules in each DDL 
+
+    static Int_t     GetModuleNumber(UInt_t iDDL, UInt_t iModule)
+      {return fgkDDLModuleMap[iDDL][iModule];}
+
   private :
-    static const Int_t fgkDDLsNumber = 12;      // number of DDLs in SDD
-    static const Int_t fgkModulesPerDDL = 22;   // number of modules in each DDL 
-    static const Int_t fgkDDLModuleMap[fgkDDLsNumber][fgkModulesPerDDL];  // mapping DDL/module -> module number
+    static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number
 
     UInt_t           fData;         // data read for file
 

@@ -16,7 +16,15 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     Int_t            GetRow() const {return fCoord1;};
     Int_t            GetColumn() const {return fCoord2;};
 
+    enum {kDDLsNumber = 20};      // number of DDLs in SPD
+    enum {kModulesPerDDL = 12};   // number of modules in each DDL
+
+    static Int_t     GetModuleNumber(UInt_t iDDL, UInt_t iModule)
+      {return fgkDDLModuleMap[iDDL][iModule];}
+
   private :
+    static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number
+
     UShort_t         fData;         // data read for file
     UInt_t           fOffset;       // offset for cell column
     UInt_t           fHitCount;     // counter of hits

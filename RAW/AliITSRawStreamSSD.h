@@ -18,10 +18,14 @@ class AliITSRawStreamSSD: public AliITSRawStream {
     Int_t            GetSideFlag() const {return fCoord1;};
     Int_t            GetStrip() const {return fCoord2;};
 
+    enum {kDDLsNumber = 16};      // number of DDLs in SSD
+    enum {kModulesPerDDL = 109};  // number of modules in each DDL
+
+    static Int_t     GetModuleNumber(UInt_t iDDL, UInt_t iModule)
+      {return fgkDDLModuleMap[iDDL][iModule];}
+
   private :
-    static const Int_t fgkDDLsNumber = 16;      // number of DDLs in SSD
-    static const Int_t fgkModulesPerDDL = 109;  // number of modules in each DDL 
-    static const Int_t fgkDDLModuleMap[fgkDDLsNumber][fgkModulesPerDDL];  // mapping DDL/module -> module number
+    static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number
 
     UInt_t           fData;         // data read for file
 

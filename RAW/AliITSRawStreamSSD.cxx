@@ -26,9 +26,7 @@
 ClassImp(AliITSRawStreamSSD)
 
 
-const Int_t AliITSRawStreamSSD::fgkDDLsNumber;
-const Int_t AliITSRawStreamSSD::fgkModulesPerDDL;
-const Int_t AliITSRawStreamSSD::fgkDDLModuleMap[fgkDDLsNumber][fgkModulesPerDDL] = {
+const Int_t AliITSRawStreamSSD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
     //104
     //DDL[32][]=
     { 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510,
