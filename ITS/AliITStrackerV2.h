@@ -1,12 +1,12 @@
-#ifndef ALIITSTRACKER_H
-#define ALIITSTRACKER_H
+#ifndef ALIITSTRACKERV2_H
+#define ALIITSTRACKERV2_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 //-------------------------------------------------------------------------
 //                          ITS tracker
-//
-//       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
+//     reads AliITSclusterV2 clusters and creates AliITStrackV2 tracks
+//           Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include "AliTracker.h"
 #include "AliITSrecoV2.h"
@@ -105,7 +105,7 @@ private:
      new(&fTrackToFollow) AliITStrackV2(t);
   }
   Int_t fI;                              // index of the current layer
-  static AliITSlayer fLayers[kMaxLayer]; // ITS layers
+  static AliITSlayer fgLayers[kMaxLayer];// ITS layers
   AliITStrackV2 fTracks[kMaxLayer];      // track estimations at the ITS layers
   AliITStrackV2 fBestTrack;              // "best" track 
   AliITStrackV2 fTrackToFollow;          // followed track

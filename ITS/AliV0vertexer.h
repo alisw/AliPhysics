@@ -5,7 +5,7 @@
 
 //------------------------------------------------------------------
 //                    V0 Vertexer Class
-//
+//            reads tracks writes out V0 vertices
 //   Origin: Iouri Belikov, IReS, Strasbourg, Jouri.Belikov@cern.ch 
 //------------------------------------------------------------------
 
@@ -26,10 +26,10 @@ public:
   Int_t Tracks2V0vertices(AliESD *event);
 
   Int_t Tracks2V0vertices(TTree *in, TTree *out);
-  Double_t PropagateToDCA(AliITStrackV2 *nt, AliITStrackV2 *pt);
+  Double_t PropagateToDCA(AliITStrackV2 *nt, AliITStrackV2 *pt) const;
 
   void GetCuts(Double_t cuts[7]) const;
-  void GetVertex(Double_t *vtx) { vtx[0]=fX; vtx[1]=fY; vtx[2]=fZ; }
+  void GetVertex(Double_t *vtx) const { vtx[0]=fX; vtx[1]=fY; vtx[2]=fZ; }
 
 private:
 

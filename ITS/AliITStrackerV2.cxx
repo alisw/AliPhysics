@@ -15,7 +15,8 @@
 
 //-------------------------------------------------------------------------
 //               Implementation of the ITS tracker class
-//
+//    It reads AliITSclusterV2 clusters and creates AliITStrackV2 tracks
+//                   and fills with them the ESD
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //-------------------------------------------------------------------------
@@ -33,7 +34,7 @@
 
 ClassImp(AliITStrackerV2)
 
-AliITStrackerV2::AliITSlayer AliITStrackerV2::fLayers[kMaxLayer]; // ITS layers
+AliITStrackerV2::AliITSlayer AliITStrackerV2::fgLayers[kMaxLayer]; // ITS layers
 
 AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
   //--------------------------------------------------------------------
@@ -60,7 +61,7 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
     r += TMath::Sqrt(x*x + y*y);
     r*=0.25;
 
-    new (fLayers+i-1) AliITSlayer(r,poff,zoff,nlad,ndet);
+    new (fgLayers+i-1) AliITSlayer(r,poff,zoff,nlad,ndet);
 
     for (Int_t j=1; j<nlad+1; j++) {
       for (Int_t k=1; k<ndet+1; k++) { //Fill this layer with detectors
@@ -73,7 +74,7 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
         Double_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
         Double_t r=x*cp+y*sp;
 
-        AliITSdetector &det=fLayers[i-1].GetDetector((j-1)*ndet + k-1); 
+        AliITSdetector &det=fgLayers[i-1].GetDetector((j-1)*ndet + k-1); 
         new(&det) AliITSdetector(r,phi); 
       } 
     }  
@@ -115,18 +116,18 @@ Int_t AliITStrackerV2::LoadClusters(TTree *cTree) {
 
   Int_t j=0;
   for (Int_t i=0; i<kMaxLayer; i++) {
-    Int_t ndet=fLayers[i].GetNdetectors();
-    Int_t jmax = j + fLayers[i].GetNladders()*ndet;
+    Int_t ndet=fgLayers[i].GetNdetectors();
+    Int_t jmax = j + fgLayers[i].GetNladders()*ndet;
     for (; j<jmax; j++) {           
       if (!cTree->GetEvent(j)) continue;
       Int_t ncl=clusters->GetEntriesFast();
       while (ncl--) {
         AliITSclusterV2 *c=(AliITSclusterV2*)clusters->UncheckedAt(ncl);
-        fLayers[i].InsertCluster(new AliITSclusterV2(*c));
+        fgLayers[i].InsertCluster(new AliITSclusterV2(*c));
       }
       clusters->Delete();
     }
-    fLayers[i].ResetRoad(); //road defined by the cluster density
+    fgLayers[i].ResetRoad(); //road defined by the cluster density
   }
 
   return 0;
@@ -136,7 +137,7 @@ void AliITStrackerV2::UnloadClusters() {
   //--------------------------------------------------------------------
   //This function unloads ITS clusters
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<kMaxLayer; i++) fLayers[i].ResetClusters();
+  for (Int_t i=0; i<kMaxLayer; i++) fgLayers[i].ResetClusters();
 }
 
 static Int_t CorrectForDeadZoneMaterial(AliITStrackV2 *t) {
@@ -526,6 +527,10 @@ Int_t AliITStrackerV2::RefitInward(AliESD *event) {
        fTrackToFollow.SetLabel(t->GetLabel());
        fTrackToFollow.CookdEdx();
        CookLabel(&fTrackToFollow,0.); //For comparison only
+
+       fTrackToFollow.PropagateTo(3.,0.0028,65.19); //The beam pipe
+       fTrackToFollow.PropagateToVertex();
+
        fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSrefit);
        UseClusters(&fTrackToFollow);
        ntrk++;
@@ -682,7 +687,7 @@ AliCluster *AliITStrackerV2::GetCluster(Int_t index) const {
   //--------------------------------------------------------------------
   Int_t l=(index & 0xf0000000) >> 28;
   Int_t c=(index & 0x0fffffff) >> 00;
-  return fLayers[l].GetCluster(c);
+  return fgLayers[l].GetCluster(c);
 }
 
 
@@ -693,13 +698,13 @@ void AliITStrackerV2::FollowProlongation() {
   while (fI>fLastLayerToTrackTo) {
     Int_t i=fI-1;
 
-    AliITSlayer &layer=fLayers[i];
+    AliITSlayer &layer=fgLayers[i];
     AliITStrackV2 &track=fTracks[i];
 
     Double_t r=layer.GetR();
 
     if (i==3 || i==1) {
-       Double_t rs=0.5*(fLayers[i+1].GetR() + r);
+       Double_t rs=0.5*(fgLayers[i+1].GetR() + r);
        Double_t d=0.0034, x0=38.6;
        if (i==1) {rs=9.; d=0.0097; x0=42;}
        if (!fTrackToFollow.PropagateTo(rs,d,x0)) {
@@ -791,7 +796,7 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
   //
   //  dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch 
   //--------------------------------------------------------------------
-  AliITSlayer &layer=fLayers[fI];
+  AliITSlayer &layer=fgLayers[fI];
   ResetTrackToFollow(fTracks[fI]);
 
   Double_t dz=7*TMath::Sqrt(fTrackToFollow.GetSigmaZ2() + kSigmaZ2[fI]);
@@ -1104,10 +1109,10 @@ Double_t AliITStrackerV2::GetEffectiveThickness(Double_t y,Double_t z) const
   Double_t d=0.0028*3*3; //beam pipe
   Double_t x0=0;
 
-  Double_t xn=fLayers[fI].GetR();
+  Double_t xn=fgLayers[fI].GetR();
   for (Int_t i=0; i<fI; i++) {
-    Double_t xi=fLayers[i].GetR();
-    d+=fLayers[i].GetThickness(y,z,x0)*xi*xi;
+    Double_t xi=fgLayers[i].GetR();
+    d+=fgLayers[i].GetThickness(y,z,x0)*xi*xi;
   }
 
   if (fI>1) {
@@ -1116,7 +1121,7 @@ Double_t AliITStrackerV2::GetEffectiveThickness(Double_t y,Double_t z) const
   }
 
   if (fI>3) {
-    Double_t xi=0.5*(fLayers[3].GetR()+fLayers[4].GetR());
+    Double_t xi=0.5*(fgLayers[3].GetR()+fgLayers[4].GetR());
     d+=0.0034*xi*xi;
   }
 
@@ -1170,13 +1175,13 @@ AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,const AliITStrackV2 *c) {
   }
 
   for (Int_t i=from; i != to; i += step) {
-     AliITSlayer &layer=fLayers[i];
+     AliITSlayer &layer=fgLayers[i];
      Double_t r=layer.GetR();
  
      {
      Double_t hI=i-0.5*step; 
      if (TMath::Abs(hI-1.5)<0.01 || TMath::Abs(hI-3.5)<0.01) {             
-        Double_t rs=0.5*(fLayers[i-step].GetR() + r);
+        Double_t rs=0.5*(fgLayers[i-step].GetR() + r);
         Double_t d=0.0034, x0=38.6; 
         if (TMath::Abs(hI-1.5)<0.01) {rs=9.; d=0.0097; x0=42;}
         if (!t->PropagateTo(rs,-step*d,x0)) {

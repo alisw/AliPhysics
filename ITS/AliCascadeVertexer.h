@@ -5,7 +5,7 @@
 
 //------------------------------------------------------------------
 //                    Cascade Vertexer Class
-//
+//          Reads V0s and tracks, writes out cascade vertices
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
 //------------------------------------------------------------------
 

@@ -15,7 +15,8 @@
 
 //-------------------------------------------------------------------------
 //               Implementation of the cascade vertexer class
-//
+//          Reads V0s and tracks, writes out cascade vertices
+//                     Fills the ESD with the cascades 
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
 //-------------------------------------------------------------------------
 #include <TObjArray.h>
@@ -23,7 +24,6 @@
 
 #include "AliESD.h"
 #include "AliESDv0.h"
-#include "AliESDcascade.h"
 #include "AliCascadeVertex.h"
 #include "AliCascadeVertexer.h"
 #include "AliITStrackV2.h"
@@ -50,8 +50,16 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
    TObjArray trks(ntr);
    for (i=0; i<ntr; i++) {
        AliESDtrack *esdtr=event->GetTrack(i);
+       Int_t status=esdtr->GetStatus();
+
+       if ((status&AliESDtrack::kITSrefit)==0)
+       if ((status&AliESDtrack::kITSout)!=0 || (status&AliESDtrack::kITSin)==0)
+           continue;
+
        AliITStrackV2 *iotrack=new AliITStrackV2(*esdtr);
-       iotrack->PropagateTo(3.,0.0023,65.19); iotrack->PropagateTo(2.5,0.,0.);
+       if ((status&AliESDtrack::kITSrefit)==0)   //correction for the beam pipe
+          iotrack->PropagateTo(3.,0.0023,65.19); //material 
+       iotrack->PropagateTo(2.5,0.,0.);
        trks.AddLast(iotrack);
    }   
 

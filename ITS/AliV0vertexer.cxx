@@ -15,7 +15,8 @@
 
 //-------------------------------------------------------------------------
 //               Implementation of the V0 vertexer class
-//
+//                  reads tracks writes out V0 vertices
+//                      fills the ESD with the V0s       
 //     Origin: Iouri Belikov, IReS, Strasbourg, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
 #include <TObjArray.h>
@@ -52,7 +53,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
 
      AliITStrackV2 *iotrack=new AliITStrackV2(*esd);
      iotrack->SetLabel(i);  // now it is the index in array of ESD tracks
-     iotrack->PropagateTo(3.,0.0023,65.19); 
+     if ((status&AliESDtrack::kITSrefit)==0)   //correction for the beam pipe
+        iotrack->PropagateTo(3.,0.0023,65.19); //material
      iotrack->PropagateTo(2.5,0.,0.);
 
      if (iotrack->Get1Pt() > 0.) {nneg++; negtrks.AddLast(iotrack);}
@@ -213,7 +215,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(TTree *tTree, TTree *vTree) {
    return 0;
 }
 
-Double_t AliV0vertexer::PropagateToDCA(AliITStrackV2 *n, AliITStrackV2 *p) {
+Double_t 
+AliV0vertexer::PropagateToDCA(AliITStrackV2 *n, AliITStrackV2 *p) const {
   //--------------------------------------------------------------------
   // This function returns the DCA between two tracks
   // The tracks will be moved to the point of DCA ! 

@@ -54,18 +54,18 @@ Int_t AliITSComparisonV2() {
        return 1;
    }
    rl->LoadgAlice();
-   if (rl->GetAliRun()) 
+   if (rl->GetAliRun())
    AliKalmanTrack::
    SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
    else {
       cerr<<"AliITSComparisonV2.C :Can't get AliRun !\n";
       return 1;
    }
-   rl->UnloadgAlice();
+   //rl->UnloadgAlice();
     
    AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
    if (itsl == 0x0) {
-       cerr<<"AliITSComparisonV2.C : Can not find TPCLoader\n";
+       cerr<<"AliITSComparisonV2.C : Can not find ITSLoader\n";
        delete rl;
        return 3;
    }
@@ -75,23 +75,6 @@ Int_t AliITSComparisonV2() {
      GoodTrackITS *gt, const Int_t max, 
      const char* evfoldname = AliConfig::fgkDefaultEventFolderName
    );//declaration only
-
-   Int_t nentr=0; TObjArray tarray(2000);
-   {/* Load tracks */ 
-     itsl->LoadTracks();
-     TTree *tracktree=itsl->TreeT();
-     if (!tracktree) {cerr<<"Can't get a tree with ITS tracks !\n"; return 4;}
-     TBranch *tbranch=tracktree->GetBranch("tracks");
-     nentr=(Int_t)tracktree->GetEntries();
-
-     for (Int_t i=0; i<nentr; i++) {
-        AliITStrackV2 *iotrack=new AliITStrackV2;
-        tbranch->SetAddress(&iotrack);
-        tracktree->GetEvent(i);
-        tarray.AddLast(iotrack);
-     }
-     itsl->UnloadTracks();
-   }
 
    /* Generate a list of "good" tracks */
    GoodTrackITS gt[MAX];
@@ -121,6 +104,23 @@ Int_t AliITSComparisonV2() {
              <<gt[ngd].x <<' '<<gt[ngd].y <<' '<<gt[ngd].z <<endl;
       } else cerr<<"Can not open file (good_tracks_its) !\n";
       out.close();
+   }
+
+   Int_t nentr=0; TObjArray tarray(2000);
+   {/* Load tracks */ 
+     itsl->LoadTracks();
+     TTree *tracktree=itsl->TreeT();
+     if (!tracktree) {cerr<<"Can't get a tree with ITS tracks !\n"; return 4;}
+     TBranch *tbranch=tracktree->GetBranch("tracks");
+     nentr=(Int_t)tracktree->GetEntries();
+
+     for (Int_t i=0; i<nentr; i++) {
+        AliITStrackV2 *iotrack=new AliITStrackV2;
+        tbranch->SetAddress(&iotrack);
+        tracktree->GetEvent(i);
+        tarray.AddLast(iotrack);
+     }
+     itsl->UnloadTracks();
    }
 
    TH1F *hp=new TH1F("hp","PHI resolution",50,-20.,20.); hp->SetFillColor(4);
@@ -325,14 +325,14 @@ Int_t AliITSComparisonV2() {
 Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, const char* evfoldname) {
    AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
    if (rl == 0x0) {
-      ::Fatal("AliTPCComparison.C::good_tracks_its",
+      ::Fatal("AliITSComparisonV2.C::good_tracks_its",
               "Can not find Run Loader in Folder Named %s",
               evfoldname);
    }
 
    AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
    if (itsl == 0x0) {
-       cerr<<"AliITSComparisonV2.C : Can not find TPCLoader\n";
+       cerr<<"AliITSComparisonV2.C : Can not find ITSLoader\n";
        delete rl;
        return 3;
    }
