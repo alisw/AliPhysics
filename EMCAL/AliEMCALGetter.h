@@ -46,7 +46,8 @@ class AliEMCALBeamTestEvent ;
 class AliEMCALGetter : public TObject {
   
  public:  
-  AliEMCALGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
+  AliEMCALGetter() {    
+    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
     Fatal("ctor", "AliEMCALGetter is a singleton default ctor not callable") ;
   } 
   AliEMCALGetter(const AliEMCALGetter & obj):TObject(obj) {
@@ -66,6 +67,9 @@ class AliEMCALGetter : public TObject {
 				  const char* version = AliConfig::GetDefaultEventFolderName(),
 				  Option_t * openingOption = "READ" ) ; 
   static AliEMCALGetter * Instance() ; 
+  void   OpenFile(const char* headerFile,
+		  const char* version = AliConfig::GetDefaultEventFolderName(),
+		  Option_t * openingOption = "READ" );
 
   static void Print() ; 
   
@@ -93,9 +97,8 @@ class AliEMCALGetter : public TObject {
 
   //=========== Primaries ============
 //   TTree *           TreeK(TString filename="") ; 
-  TClonesArray *    Primaries(void)  ;
   TParticle * Primary(Int_t index) const ;
-  Int_t       NPrimaries()const { return fNPrimaries; }
+  Int_t       NPrimaries() const;
   TParticle * Secondary(const TParticle * p, Int_t index=1) const ;  
   
 //   //=========== Hits =================
@@ -183,14 +186,15 @@ class AliEMCALGetter : public TObject {
     const {EmcalLoader()->PostDigitizer(dynamic_cast<AliDigitizer *>(digitizer));}
 
   TString Version() const  { return EmcalLoader()->GetTitle() ; } 
-  AliEMCALLoader * EmcalLoader() const { return  fgEmcalLoader ; }
+  AliEMCALLoader * EmcalLoader() const { return fgEmcalLoader; }
   void Reset() ;  
 
 private:
   
   AliEMCALGetter(const char* headerFile,
-		const char* version = AliConfig::GetDefaultEventFolderName(),
-		Option_t * openingOption = "READ") ;
+		 const char* version = AliConfig::GetDefaultEventFolderName(),
+		 Option_t * openingOption = "READ") ;
+
 
   Int_t ReadTreeD(void) ;
   Int_t ReadTreeH(void) ;
@@ -211,8 +215,6 @@ private:
   static Int_t          fgDebug ;             //! Debug level
 
   TString           fLoadingStatus ;     //! tells which trees are loaded
-  Int_t             fNPrimaries ;        //! # of primaries  
-  TClonesArray *    fPrimaries ;         //! list of lists of primaries
 
 //  AliEMCALCalibrationDB * fcdb ;       //!
    
@@ -222,7 +224,7 @@ private:
   enum EDataTypes{kHits,kSDigits,kDigits,kRecPoints,kTracks,kNDataTypes};
 
 
-  ClassDef(AliEMCALGetter,3)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliEMCALGetter,4)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 
 };
 

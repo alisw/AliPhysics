@@ -66,10 +66,33 @@ Int_t AliEMCALGetter::fgDebug = 0;
 //  TFile * AliEMCALGetter::fgFile = 0 ; 
 
 //____________________________________________________________________________ 
-AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* version, Option_t * openingOption)
+AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* version, Option_t * openingOption) 
 {
   // ctor only called by Instance()
 
+  // initialize data members
+  SetDebug(0) ; 
+  //fBTE = 0 ; 
+  
+  fLoadingStatus = "" ; 
+
+  fgObjGetter=this;
+  
+  OpenFile(headerFile,version,openingOption);
+}
+
+
+//____________________________________________________________________________ 
+AliEMCALGetter::~AliEMCALGetter()
+{
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
+  delete rl;
+  fgEmcalLoader = 0 ;
+  fgObjGetter = 0; 
+}
+
+//____________________________________________________________________________ 
+void AliEMCALGetter::OpenFile(const char* headerFile, const char* version, Option_t * openingOption) {
   AliRunLoader* rl = AliRunLoader::GetRunLoader(version) ; 
   if (!rl) {
     rl = AliRunLoader::Open(headerFile, version, openingOption);
@@ -87,26 +110,6 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* version, Opti
     Error("AliEMCALGetter", "Could not find EMCALLoader") ; 
   else 
     fgEmcalLoader->SetTitle(version);
-  
-  
-  // initialize data members
-  SetDebug(0) ; 
-  //fBTE = 0 ; 
-  fPrimaries = 0 ; 
-  fLoadingStatus = "" ; 
-}
-
-//____________________________________________________________________________ 
-AliEMCALGetter::~AliEMCALGetter()
-{
-  // dtor
-  delete fgEmcalLoader ;
-  fgEmcalLoader = 0 ;
-  //delete fBTE ; 
-  // fBTE = 0 ; 
-  fPrimaries->Delete() ; 
-  delete fPrimaries ; 
-  fgObjGetter = 0; 
 }
 
 //____________________________________________________________________________ 
@@ -115,12 +118,6 @@ void AliEMCALGetter::Reset()
   // resets things in case the getter is called consecutively with different files
   // the EMCAL Loader is already deleted by the Run Loader
 
-  if (fPrimaries) { 
-    fPrimaries->Delete() ; 
-    delete fPrimaries ;
-  } 
-  fgEmcalLoader = 0; 
-  fgObjGetter = 0; 
 }
 
 //____________________________________________________________________________ 
@@ -315,7 +312,7 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
       TFile * galiceFile = dynamic_cast<TFile *>(gROOT->FindObject(rl->GetFileName()) ) ; 
       
       if ( !galiceFile ) 
-	fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;
+	fgObjGetter->OpenFile(alirunFileName, version, openingOption);
       
       else {  // the file is already open check the version name
 	TString currentVersionName = rl->GetEventFolder()->GetName() ; 
@@ -323,8 +320,8 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
 	if (currentVersionName == newVersionName) 
 	  if(fgDebug)
 	    ::Warning( "Instance", "Files with version %s already open", currentVersionName.Data() ) ;  
-	else {
-	  fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;      
+	else {    
+	  fgEmcalLoader->SetTitle(version);
 	}
       }
     }
@@ -332,7 +329,7 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
       AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
       if ( strstr(version, AliConfig::GetDefaultEventFolderName()) ) // false in case of merging
 	delete rl ; 
-      fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;      
+      fgObjGetter->OpenFile(alirunFileName, version, openingOption) ;      
     }
   }
   if (!fgObjGetter) 
@@ -340,7 +337,7 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
   else 
     if (fgDebug)
       Print() ;
-  
+
   return fgObjGetter ;
 }
 
@@ -370,6 +367,13 @@ TParticle * AliEMCALGetter::Primary(Int_t index) const
 {
   AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
   return rl->Stack()->Particle(index) ; 
+} 
+
+//____________________________________________________________________________ 
+Int_t AliEMCALGetter::NPrimaries() const
+{
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
+  return (rl->GetHeader())->GetNtrack(); 
 } 
 
 //____________________________________________________________________________ 
@@ -410,18 +414,6 @@ AliEMCALGeometry * AliEMCALGetter::EMCALGeometry() const
 } 
 
 //____________________________________________________________________________ 
-TClonesArray * AliEMCALGetter::Primaries()  
-{
-  // creates the Primaries container if needed
-  if ( !fPrimaries ) {
-    if (fgDebug) 
-      Info("Primaries", "Creating a new TClonesArray for primaries") ; 
-    fPrimaries = new TClonesArray("TParticle", 1000) ;
-  } 
-  return fPrimaries ; 
-}
-
-//____________________________________________________________________________ 
 void  AliEMCALGetter::Print() 
 {
   // Print usefull information about the getter
@@ -441,18 +433,8 @@ void AliEMCALGetter::ReadPrimaries()
   if ( ! rl->TreeK() )  // load treeK the first time
     rl->LoadKinematics() ;
   
-  fNPrimaries = (rl->GetHeader())->GetNtrack(); 
   if (fgDebug) 
-    Info("ReadTreeK", "Found %d particles in event # %d", fNPrimaries, EventNumber() ) ; 
-
-  // first time creates the container
-  if ( Primaries() ) 
-    fPrimaries->Clear() ; 
-  
-  Int_t index = 0 ; 
-  for (index = 0 ; index < fNPrimaries; index++) { 
-    new ((*fPrimaries)[index]) TParticle(*(Primary(index)));
-  }
+    Info("ReadTreeK", "Found %d particles in event # %d", NPrimaries(), EventNumber() ) ; 
 }
 
 //____________________________________________________________________________ 
