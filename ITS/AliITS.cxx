@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2000/12/08 13:49:27  barbera
+Hidden declaration in a for loop removed to be compliant with HP-UX compiler
+
 Revision 1.26  2000/11/27 13:12:13  barbera
 New version containing the files for tracking
 
@@ -1260,16 +1263,15 @@ AliITStrack  AliITS::Tracking(AliITStrack &track, AliITStrack *reference,TObjArr
 										
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it 
 
- 										    
+  										    
   TList *list= new TList();   
 
   AliITStrack tr(track);
-
+  
   list->AddLast(&tr);
   
   Double_t Pt=(tr).GetPt();
   //cout << "\n Pt = " << Pt <<"\n";
-
 
   AliITStracking obj(list, reference, this, fastpoints,TMath::Abs(Pt),vettid, flagvert);
   list->Delete();
@@ -1277,10 +1279,11 @@ AliITStrack  AliITS::Tracking(AliITStrack &track, AliITStrack *reference,TObjArr
 
   Int_t itot=-1;
   TVector VecTotLabref(18);
-  for(Int_t lay=5; lay>=0; lay--) {
+  Int_t lay, k;
+  for(lay=5; lay>=0; lay--) {
     TVector VecLabref(3); 
     VecLabref=(*reference).GetLabTrack(lay);
-    for(Int_t k=0; k<3; k++) {itot++; VecTotLabref(itot)=VecLabref(k);}    
+    for(k=0; k<3; k++) {itot++; VecTotLabref(itot)=VecLabref(k);}    
   }
   Long_t labref;
   Int_t freq;  
@@ -1347,10 +1350,11 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
   TTree *tracktree=(TTree*)tf->Get("TreeT");
   TBranch *tbranch=tracktree->GetBranch("tracks");
   Int_t nentr=(Int_t)tracktree->GetEntries();
-  for (Int_t k=0; k<nentr; k++) {
+  Int_t kk;
+  for (kk=0; kk<nentr; kk++) {
     AliTPCtrack *iotrack=new AliTPCtrack;
     tbranch->SetAddress(&iotrack);
-    tracktree->GetEvent(k);
+    tracktree->GetEvent(kk);
     tracks.AddLast(iotrack);
   }   
   tf->Close();
@@ -1367,7 +1371,8 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
   //////////////////////////////  good tracks definition in TPC  ////////////////////////////////
       
   ofstream out1 ("AliITSTrag.out");
-  for (Int_t i=0; i<ngood; i++) out1 << gt[i].ptg << "\n";
+  Int_t i;
+  for (i=0; i<ngood; i++) out1 << gt[i].ptg << "\n";
   out1.close();
 
 
@@ -1379,7 +1384,8 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
   Int_t totalpoints=0;
   Int_t *np = new Int_t[nent];
   Int_t **vettid = new Int_t* [nent];
-  for (Int_t mod=0; mod<nent; mod++) {
+  Int_t mod;
+  for (mod=0; mod<nent; mod++) {
     vettid[mod]=0;
     this->ResetRecPoints();
     gAlice->TreeR()->GetEvent(mod+1); //first entry in TreeR is empty
@@ -1388,7 +1394,8 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
     np[mod] = numbpoints;
   //cout<<" mod = "<<mod<<"   numbpoints = "<<numbpoints<<"\n"; getchar();
     vettid[mod] = new Int_t[numbpoints];
-    for (Int_t i=0;i<numbpoints; i++) *(vettid[mod]+i)=0;
+    Int_t ii;
+    for (ii=0;ii<numbpoints; ii++) *(vettid[mod]+ii)=0;
   }
 
   AliTPCtrack *track;
@@ -1421,22 +1428,23 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
   tracktree1.Branch("ITStracks","AliITSiotrack",&iotrack,32000,0);
 
   ofstream out ("AliITSTra.out");
-         
-  for (int j=min_t; j<=max_t; j++) {  
+  
+  Int_t j;       
+  for (j=min_t; j<=max_t; j++) {     
     track=(AliTPCtrack*)tracks.UncheckedAt(j);
     Int_t flaglab=0;
     if (!track) continue;
     ////// elimination of not good tracks ////////////	 
     Int_t ilab=TMath::Abs(track->GetLabel());
-    
-    for (Int_t i=0;i<ngood;i++) {
-	 //cout<<" ilab, gt[i].lab = "<<ilab<<" "<<gt[i].lab<<"\n"; getchar();
-      if (ilab==gt[i].lab) { 
+    Int_t iii;
+    for (iii=0;iii<ngood;iii++) {
+	 //cout<<" ilab, gt[iii].lab = "<<ilab<<" "<<gt[iii].lab<<"\n"; getchar();
+      if (ilab==gt[iii].lab) { 
 	flaglab=1;
-	ptg=gt[i].ptg; 
-	pxg=gt[i].pxg;
-	pyg=gt[i].pyg;
-	pzg=gt[i].pzg;	
+	ptg=gt[iii].ptg; 
+	pxg=gt[iii].pxg;
+	pyg=gt[iii].pyg;
+	pzg=gt[iii].pzg;	
 	break;
       }
     }
@@ -1488,8 +1496,8 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
 	 Vgeant=result.GetVertex(); 
 			  
   // Definition of Dv and Zv for vertex constraint	
-   // Double_t sigmaDv=0.0050;  Double_t sigmaZv=0.010;	
-    Double_t sigmaDv=0.0015;  Double_t sigmaZv=0.0015;				  
+     Double_t sigmaDv=0.0050;  Double_t sigmaZv=0.010;	
+    //Double_t sigmaDv=0.0015;  Double_t sigmaZv=0.0015;				  
 	Double_t uniform= gRandom->Uniform();
 	Double_t signdv;
 	if(uniform<=0.5) signdv=-1.;
@@ -1522,18 +1530,21 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
     */                         
     Tracking(trackITS,&result,recPoints,vettid, flagvert);  
 	     
-    cout<<" progressive track number = "<<j<<"\r";
-	// cout<<" progressive track number = "<<j<<"\n";
+     cout<<" progressive track number = "<<j<<"\r";
+   // cout<<j<<"\r";
+    //cout<<" progressive track number = "<<j<<"\n";
     Long_t labITS=result.GetLabel();
-   // cout << " ITS track label = " << labITS << "\n"; 		    
+    //cout << " ITS track label = " << labITS << "\n"; 		    
     int lab=track->GetLabel();		    
-    //cout << " TPC track label = " << lab <<"\n";
+  //  cout << " TPC track label = " << lab <<"\n";
     //result.GetClusters(); getchar();  //to print the cluster matrix
 	 
 //propagation to vertex
 	
     Double_t rbeam=3.;
-    result.Propagation(rbeam);   
+     
+    result.Propagation(rbeam);
+       
     TMatrix *cov;
 	 cov=&result.GetCMatrix();	 
     Double_t pt=TMath::Abs(result.GetPt());
@@ -1544,13 +1555,15 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
     Double_t Cy=C/2.;
     Double_t Dz=Z-(tgl/Cy)*TMath::ASin(result.arga(rbeam));
 	  Dz-=Vgeant(2);
+	  
 	 // cout<<" Dr e dz alla fine = "<<Dr<<" "<<Dz<<"\n"; getchar();
     Double_t phi=result.Getphi();
     Double_t phivertex = phi - TMath::ASin(result.argA(rbeam));
     Double_t duepi=2.*TMath::Pi();	 
     if(phivertex>duepi) phivertex-=duepi;
     if(phivertex<0.) phivertex+=duepi;
-    Double_t Dtot=TMath::Sqrt(Dr*Dr+Dz*Dz);	 
+    Double_t Dtot=TMath::Sqrt(Dr*Dr+Dz*Dz);
+	 
 //////////////////////////////////////////////////////////////////////////////////////////    	
     Int_t NumofCluster, idmodule,idpoint;
     NumofCluster=result.GetNumClust();
@@ -1612,7 +1625,8 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
 	iotrack->SetIdPoint(il,idpoint);
         iotrack->SetIdModule(il,idmodule);
       }
-
+      
+    //  cout<<"  +++++++++++++  pt e ptg = "<<pt<<" "<<ptg<<"  ++++++++++\n";
       Double_t difpt= (pt-ptg)/ptg*100.;	            	                
       DataOut(kkk)=difpt; kkk++;                                             
       Double_t lambdag=TMath::ATan(pzg/ptg);
@@ -1626,7 +1640,8 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
       DataOut(kkk)=Dtot*1.e4; kkk++;
       DataOut(kkk)=Dr*1.e4; kkk++;
       DataOut(kkk)=Dz*1.e4; kkk++;
-      for (int r=0; r<9; r++) { out<<DataOut(r)<<" ";}
+      Int_t r;
+      for (r=0; r<9; r++) { out<<DataOut(r)<<" ";}
       out<<"\n";
       kkk=0;  
 		
@@ -1637,7 +1652,7 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
   
   out.close();  
   
-  
+ 
   static Bool_t first=kTRUE;
   static TFile *tfile;
 

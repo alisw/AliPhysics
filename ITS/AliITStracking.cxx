@@ -22,17 +22,19 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 // The authors  thank   Mariana Bondila to have help them to resolve some problems.  July-2000                                                      
 
-  
   Rlayer[0]=4.; Rlayer[1]=7.;  Rlayer[2]=14.9;  Rlayer[3]=23.8;  Rlayer[4]=39.1;  Rlayer[5]=43.6;
-     
-  for(Int_t index =0; index<trackITSlist->GetSize(); index++) {
+  
+  Int_t index;   
+  for(index =0; index<trackITSlist->GetSize(); index++) {
     AliITStrack *trackITS = (AliITStrack *) trackITSlist->At(index);
+
     if((*trackITS).GetLayer()==7) reference->SetChi2(10.223e140);
-    //cout <<" Layer inizio = "<<(*trackITS).GetLayer()<<"\n";
-    // cout<<"fvtrack =" <<"\n";
-    // cout << (*trackITS)(0) << " "<<(*trackITS)(1)<<" "<<(*trackITS)(2)<<" "<<(*trackITS)(3)<<" "<<(*trackITS)(4)<<"\n";
-    // cout<< " rtrack = "<<(*trackITS).Getrtrack()<<"\n";
-    // getchar();    
+   // cout <<" Layer inizio = "<<(*trackITS).GetLayer()<<"\n";
+   //  cout<<"fvtrack =" <<"\n";
+   //  cout << (*trackITS)(0) << " "<<(*trackITS)(1)<<" "<<(*trackITS)(2)<<" "<<(*trackITS)(3)<<" "<<(*trackITS)(4)<<"\n";
+   //  cout<< " rtrack = "<<(*trackITS).Getrtrack()<<"\n";
+   //  cout<< " Pt = "<<(*trackITS).GetPt()<<"\n";
+   //  getchar();    
     Double_t Chi2Now, Chi2Ref;
     if((*trackITS).GetLayer()==1 ) {
       Chi2Now = trackITS->GetChi2();
@@ -46,7 +48,6 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
       if((NumClustNow == NumClustRef )&& (Chi2Now < Chi2Ref))  {*reference = *trackITS;}
       continue;	
     }
-
     Float_t NumClustNow = trackITS->GetNumClust();
     if(NumClustNow) { 
       Chi2Now = trackITS->GetChi2();
@@ -73,6 +74,7 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
     Int_t layerfin=layerInit-1;
     Double_t Rfin=Rlayer[layerfin-1];
     // cout<<"Prima di intersection \n";
+
     Int_t  outinters=NewIntersection(*trackITS, Rfin, layerfin, ladinters, detinters);
 	 	 
    // cout<<" outinters = "<<outinters<<"\n";
@@ -81,8 +83,7 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
 			 
     if(outinters==-1) continue;
 	 
-    Int_t flaghit=0;   
- 	 	        
+    Int_t flaghit=0;   	 	        
     if(outinters==0){   
       TVector Touclad(9), Toucdet(9);	 
       Int_t lycur=layerfin;                                            
@@ -111,9 +112,9 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
       if(detm <= 0 && detp <= NDetector[layerfin-1]) {
         idetot=6;
         Toucdet(3)=detp; Toucdet(4)=detp; Toucdet(5)=detp;
-      } 
-	
-      for (Int_t iriv=0; iriv<idetot; iriv++) {  //for on detectors
+      }
+      Int_t iriv; 	
+      for (iriv=0; iriv<idetot; iriv++) {  //for on detectors
         AliITSgeom *g1 = aliITS->GetITSgeom();  
         TVector CTF(9);
         g1->GetCenterThetaPhi(layerInit-1,(Int_t)Touclad(iriv),(Int_t)Toucdet(iriv),CTF);
@@ -148,6 +149,7 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
         }
 
         ind=-1;
+	
         for(;;) { 
           ind++;
           if(indlist[ind] < 0) recp=0;
@@ -177,15 +179,16 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
           vecclust(6) = (float)recp->fTracks[0];
           vecclust(7) = (float)recp->fTracks[1];
           vecclust(8) = (float)recp->fTracks[2];
-        
-          sigma[0] = (Double_t)  recp->GetSigmaX2();  
-			 sigma[1] = (Double_t) recp->GetSigmaZ2(); 
-			 
+     
+          sigma[0] = (Double_t)  recp->GetSigmaX2();	   
+			 sigma[1] = (Double_t) recp->GetSigmaZ2(); 		 
          //now we are in r,phi,z in global
           cluster(0) = TMath::Sqrt(vecclust(0)*vecclust(0)+vecclust(1)*vecclust(1));//r hit
           cluster(1) = PhiDef(vecclust(0),vecclust(1));    // phi hit
           cluster(2) = vecclust(2);                   // z hit	
-			// cout<<" cluster(1) prima = "<<cluster(1)<<"\n";    
+	 // cout<<" layer = "<<play<<"\n";
+	 // cout<<" cluster prima = "<<vecclust(0)<<" "<<vecclust(1)<<" "
+	 // <<vecclust(2)<<"\n"; getchar();    
           //cluster(1)= cluster(1)-trackITS->Getalphaprov();  //provvisorio;
 			 //if(cluster(1)<0.) cluster(1)+=2.*TMath::Pi(); //provvisorio
 			 //cout<<" cluster(1) dopo = "<<cluster(1)<< " alphaprov = "<<trackITS->Getalphaprov()<<"\n"; 			 
@@ -197,10 +200,11 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
 		  		  
           Double_t Rtrack=(*trackITS).Getrtrack();
           Double_t sigmaphi=sigma[0]/(Rtrack*Rtrack);
-          sigmatotphi=epsphi*TMath::Sqrt(sigmaphi + (*trackITS).GetSigmaphi());		 
+          sigmatotphi=epsphi*TMath::Sqrt(sigmaphi + (*trackITS).GetSigmaphi());
+	  	 
           sigmatotz=epsz*TMath::Sqrt(sigma[1] + (*trackITS).GetSigmaZ());
   //cout<<"cluster e sigmatotphi e track = "<<cluster(0)<<" "<<cluster(1)<<" "<<sigmatotphi<<" "<<vecclust(3)<<"\n";
-  //if(vecclust(3)==481) getchar();	
+  //if(vecclust(3)==481) getchar();
 	       if(cluster(1)<6. && (*trackITS).Getphi()>6.) cluster(1)=cluster(1)+(2.*TMath::Pi());
 	       if(cluster(1)>6. && (*trackITS).Getphi()<6.) cluster(1)=cluster(1)-(2.*TMath::Pi());			 	  
           if(TMath::Abs(cluster(1)-(*trackITS).Getphi()) > sigmatotphi) continue;
@@ -216,19 +220,21 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
              continue;}
        
           if(iriv == 0) flaghit=1;
-	
-     (*newTrack).AddMS();  // add the multiple scattering matrix to the covariance matrix  
+ 
+          (*newTrack).AddMS();  // add the multiple scattering matrix to the covariance matrix 
 	  (*newTrack).AddEL(1.,0);
+	   	 
 	  Double_t sigmanew[2];
 	  sigmanew[0]= sigmaphi;
 	  sigmanew[1]=sigma[1];
 	  //cout<<" Chiamo Kalman \n"; getchar();
+	  
 	  if(flagvert) 	 
 	    KalmanFilterVert(newTrack,cluster,sigmanew);  
 	  else		    	  		 		  
 	    KalmanFilter(newTrack,cluster,sigmanew);
+	       
       		  
-         
           (*newTrack).PutCluster(layernew, vecclust);
            newTrack->AddClustInTrack();            
  		 		          		  		
@@ -239,8 +245,9 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
         delete [] indlist;
   
       }  // end of for on detectors
+     
     }//end if(outinters==0) 
-    
+  
     if(flaghit==0 || outinters==-2) {
       AliITStrack *newTrack = new AliITStrack(*trackITS);	 
       (*newTrack).SetLayer((*trackITS).GetLayer()-1); 
@@ -252,11 +259,11 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
  	        
 
     //gObjectTable->Print();   // stampa memoria
-    
+
     AliITStracking(&listoftrack, reference, aliITS, rpoints,Ptref,vettid,flagvert);          
     listoftrack.Delete();
   } // end of for on tracks
-  
+
   //gObjectTable->Print();   // stampa memoria
 
 }   
@@ -291,7 +298,8 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
   Double_t epsz=1.2;
   Double_t epszpixel=0.05;
 
-  for(Int_t iD = 1; iD<= NDetector[layer-1]; iD++) {
+  Int_t iD;
+  for(iD = 1; iD<= NDetector[layer-1]; iD++) {
     g1->GetCenterThetaPhi(layer,1,iD,det);
     Double_t zmin=det(2)-Detz[layer-1];
     if(iD==1) zmin=det(2)-(Detz[layer-1])*epsz;		
@@ -318,15 +326,16 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
   TVector DistphiCenter(2);
   Int_t ip=0;
   Double_t pigre=TMath::Pi();
-     
-  for(Int_t iLd = 1; iLd<= NLadder[layer-1]; iLd++) {
+  
+  Int_t iLd;   
+  for(iLd = 1; iLd<= NLadder[layer-1]; iLd++) {
           g1->GetCenterThetaPhi(layer,iLd,detector,det);
   Double_t phidet=PhiDef(Double_t(det(0)),Double_t(det(1)));
 
   
   // cout<<" layer phidet e det(6) = "<< layer<<" "<<phidet<<" "<<det(6)<<"\n"; getchar();
   Double_t xmin,ymin,xmax,ymax;	
-  Double_t phiconfr=0.0;
+  Double_t phiconfr;  
   local[1]=local[2]=0.;  
   local[0]= -(Detx[layer-1]);
   if(layer==1)    local[0]= (Detx[layer-1]);  //take into account different reference system
@@ -367,7 +376,7 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
 
 Double_t AliITStracking::PhiDef(Double_t x, Double_t y){
   Double_t pigre= TMath::Pi();
-  Double_t phi=0.0;
+  Double_t phi;
   if(y == 0. || x == 0.) {
     if(y == 0. && x == 0.) {
       cout << "  Error in AliITStracking::PhiDef x=0 and y=0 \n"; getchar();
@@ -494,17 +503,21 @@ void AliITStracking::KalmanFilterVert(AliITStrack *newTrack,TVector &cluster,Dou
   // V.Print();  getchar();
   
   TMatrix C=newTrack->GetCMatrix();
+  
+
+  
   TMatrix tmp(H,TMatrix::kMult,C);
   TMatrix R(tmp,TMatrix::kMult,Ht); R+=V;
   
   R.Invert();  
   TMatrix K(C,TMatrix::kMult,Ht); K*=R;  
-  TVector  x=newTrack->GetVector();  
+  TVector  x=newTrack->GetVector();
   TVector savex=x;
   x*=H; x-=m;
   x*=-1; x*=K; x+=savex;  
   TMatrix saveC=C;
-  C.Mult(K,tmp); C-=saveC; C*=-1;  
+  C.Mult(K,tmp); C-=saveC; C*=-1;
+    
   newTrack->GetVector()=x;
   newTrack->GetCMatrix()=C;     
   TVector res= newTrack->GetVector(); 

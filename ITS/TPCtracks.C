@@ -10,16 +10,10 @@ Int_t good_tracks(GoodTrack *gt, Int_t max);
 
 
 Int_t TPCtracks() {
+   Int_t i;
    cerr<<"Doing comparison...\n";
 
   // Connect the Root Galice file containing Geometry, Kine and Hits
-
-
-
-   if (gClassTable->GetID("AliRun") < 0) {
-      gROOT->LoadMacro("loadlibs.C");
-      loadlibs();
-   }
 
 
    TFile *cf=TFile::Open("AliTPCclusters.root");
@@ -34,7 +28,7 @@ Int_t TPCtracks() {
    ca->ConnectTree("Segment Tree");
    Int_t nentr=Int_t(ca->GetTree()->GetEntries());
    for (Int_t i=0; i<nentr; i++) {
-       AliSegmentID *s=ca->LoadEntry(i);
+       ca->LoadEntry(i);
    }
 
 // Load tracks
@@ -43,7 +37,7 @@ Int_t TPCtracks() {
    TObjArray tarray(2000);
    TTree *tracktree=(TTree*)tf->Get("TreeT");
    TBranch *tbranch=tracktree->GetBranch("tracks");
-   Int_t nentr=tracktree->GetEntries();
+   nentr=(Int_t)tracktree->GetEntries();
    for (i=0; i<nentr; i++) {
        AliTPCtrack *iotrack=new AliTPCtrack;
        tbranch->SetAddress(&iotrack);
@@ -137,6 +131,13 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t np=particles->GetEntriesFast();
    Int_t *good=new Int_t[np];
    for (Int_t ii=0; ii<np; ii++) good[ii]=0;
+   
+   //MI change to be possible compile macro
+   //definition out of the switch statement
+   Int_t sectors_by_rows=0;
+   TTree *TD=0;
+   AliSimDigits da, *digits=&da;
+   Int_t *count=0;
 
    switch (ver) {
    case 1:
@@ -171,10 +172,9 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
      }
       break;
    case 2:
-      TTree *TD=(TTree*)gDirectory->Get("TreeD_75x40_100x60");
-      AliSimDigits da, *digits=&da;
+      TD=(TTree*)gDirectory->Get("TreeD_75x40_100x60");
       TD->GetBranch("Segment")->SetAddress(&digits);
-      Int_t *count = new Int_t[np];
+      count = new Int_t[np];
       Int_t i;
       for (i=0; i<np; i++) count[i]=0;
       Int_t sectors_by_rows=(Int_t)TD->GetEntries();
@@ -214,22 +214,27 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    }
 
    TTree *TH=gAlice->TreeH();
-   TClonesArray *hits=TPC->Hits();
+   //TClonesArray *hits=TPC->Hits();
    Int_t npart=TH->GetEntries();
 
    while (npart--) {
+      AliTPChit *hit0=0;
       TPC->ResetHits();
       TH->GetEvent(npart);
-      Int_t nhits=hits->GetEntriesFast();
-      if (nhits==0) continue;
-      AliTPChit *hit;
-      Int_t j;
-      for (j=0; j<nhits-1; j++) {
-         hit=(AliTPChit*)hits->UncheckedAt(j);
-         if (hit->fQ==0.) break;
+      AliTPChit *hit = (AliTPChit*) TPC->FirstHit(-1);
+      
+      while(hit) {
+         if(hit->fQ==0.) break;
+	 hit = (AliTPChit*) TPC->NextHit();
       }
-      if (j==nhits-1) continue;
-      AliTPChit *hit1=(AliTPChit*)hits->UncheckedAt(j+1);
+      if(hit) {
+         hit0 = new AliTPChit(*hit); // Make copy of hit
+	 hit=hit0;
+      }
+      else continue;
+      AliTPChit *hit1=(AliTPChit*) TPC->NextHit();
+      if(hit1==0) continue;
+      
       if (hit1->fQ != 0.) continue;
      // Int_t i=hit->fTrack;
 	   Int_t i=hit->Track();  //modificata in accordo a nuovo AliTPCComparison
