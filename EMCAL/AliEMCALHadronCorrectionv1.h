@@ -30,7 +30,7 @@ class AliEMCALHadronCorrectionv1: public AliEMCALHadronCorrection {
     void SetGeometry(AliEMCALGeometry *geometry);
     
  private:
-    void SetParameters(TString name = "") {;}
+    void SetParameters(TString name = "") {Warning("SetParameter","Dummy method with argument %s",name.Data());}
     
     static AliEMCALHadronCorrectionv1* fHadrCorr;
     Double_t fPar[6];
