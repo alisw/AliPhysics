@@ -94,6 +94,8 @@
 #pragma link C++ class  AliITSdcsSSD+;
 #pragma link C++ class  AliITSclusterSSD+;
 #pragma link C++ class  AliITSpackageSSD+;
+#pragma link C++ class  AliITSPid+;
+#pragma link C++ class  AliITStrackV2Pid+;
 // Classes used for Tracking
 #pragma link C++ class  AliITSTrackV1+;
 #pragma link C++ class  AliITSRad+;
@@ -129,7 +131,4 @@
 #pragma link C++ class  AliV0vertexer+;
 
 #pragma link C++ class  AliITSVertex+;
-
-#pragma link C++ class  AliITSDigitizer+;
-
 #endif

@@ -13,12 +13,20 @@
   #include "TParticle.h"
 #endif
 
-Int_t AliITSFindClustersV2() {
+//Int_t AliITSFindClustersV2() {
+Int_t AliITSFindClustersV2(char SlowOrFast='s') {
+
 /****************************************************************
  *  Just something to start with                                *
  ****************************************************************/
    cerr<<"Looking for clusters...\n";
+   cout<<"!!!! SlowOrFast =  "<<SlowOrFast<<endl;
+///////////////// Conversion AliITSRecPoint -> AliITSclusterV2 //////////////
 
+   //    for the fast recpoints
+  if(SlowOrFast=='f') {
+   cout<<"22 !!!! SlowOrFast =  "<<SlowOrFast<<endl; 
+   /* 
    if (gAlice) {delete gAlice; gAlice=0;}
 
    TFile *in=TFile::Open("galice.root","update");
@@ -54,8 +62,12 @@ Int_t AliITSFindClustersV2() {
 
    delete gAlice; gAlice=0;
    in->Close();
+   */
+  }    // end of fast recpoints
 
-///////////////// Conversion AliITSRecPoint -> AliITSclusterV2 //////////////
+
+   // for the slow points
+
    /*TFile */in=TFile::Open("galice.root");
 
    if (gAlice) {delete gAlice; gAlice=0;}
@@ -82,6 +94,7 @@ Int_t AliITSFindClustersV2() {
    geom->Write();
 
    TClonesArray *clusters=new TClonesArray("AliITSclusterV2",10000);
+   //TTree *cTree=new TTree("cTree","ITS clusters");
    TTree *cTree=new TTree("TreeC_ITS_0","ITS clusters");
    cTree->Branch("Clusters",&clusters);
 
@@ -104,7 +117,7 @@ Int_t AliITSFindClustersV2() {
 
    cerr<<"Number of entries: "<<nentr<<endl;
 
-   Float_t lp[5]; Int_t lab[6]; //Why can't it be inside a loop ?
+   Float_t kmip; // ADC->mip normalization factor for the SDD and SSD 
 
    for (Int_t i=0; i<nentr; i++) {
        points->Clear();
@@ -116,19 +129,28 @@ Int_t AliITSFindClustersV2() {
        Double_t yshift = x*rot[0] + y*rot[1];
        Int_t ndet=(lad-1)*geom->GetNdetectors(lay) + (det-1);
        nclusters+=ncl;
+
+       kmip=1.;
+       if(lay<5&&lay>2){kmip=280.;}; // b.b.
+       if(lay<7&&lay>4){kmip=38.;};
+       //cout<<"i,ncl ="<<i<<","<<ncl<<endl;
+
        for (Int_t j=0; j<ncl; j++) {
           AliITSRecPoint *p=(AliITSRecPoint*)points->UncheckedAt(j);
-          //Float_t lp[5];
+          Float_t lp[5];
           lp[0]=-p->GetX()-yshift; if (lay==1) lp[0]=-lp[0];
           lp[1]=p->GetZ()+zshift;
           lp[2]=p->GetSigmaX2();
           lp[3]=p->GetSigmaZ2();
-          lp[4]=p->GetQ();
-          //Int_t lab[6]; 
+          lp[4]=p->GetQ(); lp[4]/=kmip;
+          Int_t lab[6]; 
           lab[0]=p->GetLabel(0);lab[1]=p->GetLabel(1);lab[2]=p->GetLabel(2);
           lab[3]=ndet;
-
           Int_t label=lab[0];
+
+	  //if(label<=0) cout<<" !!!!!!!lab="<<lab[0]<<" "<<endl;   
+
+  if(label>=0) {  // b.b.
           TParticle *part=(TParticle*)gAlice->Particle(label);
           label=-3;
           while (part->P() < 0.005) {
@@ -137,6 +159,7 @@ Int_t AliITSFindClustersV2() {
              label=m;
              part=(TParticle*)gAlice->Particle(label);
           }
+  }
           if      (lab[1]<0) lab[1]=label;
           else if (lab[2]<0) lab[2]=label;
           else cerr<<"No empty labels !\n";
@@ -144,6 +167,7 @@ Int_t AliITSFindClustersV2() {
           new(cl[j]) AliITSclusterV2(lab,lp);
        }
        cTree->Fill(); clusters->Delete();
+       points->Delete();
    }
    cTree->Write();
 
