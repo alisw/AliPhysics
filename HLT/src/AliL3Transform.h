@@ -45,6 +45,7 @@ class AliL3Transform {
   Int_t GetNTimeBins(){return fNTimeBins;}
 
   Double_t GetEta(Float_t *xyz);
+  Double_t GetEta(Int_t row,Int_t pad,Int_t time);
   Double_t GetPhi(Float_t *xyz);
   Double_t GetMaxY(Int_t slicerow);
   void Local2Global(Float_t *xyz,Int_t slice);

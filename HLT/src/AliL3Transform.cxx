@@ -413,6 +413,15 @@ Double_t AliL3Transform::GetEta(Float_t *xyz)
   return eta;
 }
 
+Double_t AliL3Transform::GetEta(Int_t row,Int_t pad,Int_t time)
+{
+  Float_t xyz[3];
+  Raw2Local(xyz,0,row,pad,time);
+  
+  return GetEta(xyz);
+}
+
+
 Double_t AliL3Transform::GetPhi(Float_t *xyz)
 {
   
