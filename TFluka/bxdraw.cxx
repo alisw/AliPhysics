@@ -28,7 +28,7 @@ void bxdraw(Int_t& icode, Int_t& mreg, Int_t& newreg,
     (TVirtualMCApplication::Instance())->Stepping(); 
     fluka->SetCaller(11);
     fluka->SetTrackIsEntering();
-    printf("bxdraw (en) \n");
+    printf("bxdraw (en) mreg=%d newreg=%d \n",mreg,newreg);
     fluka->SetMreg(newreg);
     (TVirtualMCApplication::Instance())->Stepping();
 //    fluka->SetCaller(1);

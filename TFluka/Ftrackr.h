@@ -34,6 +34,7 @@ extern "C" {
 //*          ttrack = length of the ith track segment                    *
 //*   1 < j < mtrack                                                     *
 //*          dtrack = energy deposition of the jth deposition event      *
+//*          dptrck = momentum loss of the jth deposition event          *
 //*                                                                      *
 //*          jtrack = identity number of the particle                    *
 //*          etrack = total energy of the particle                       *
@@ -46,6 +47,7 @@ extern "C" {
 //*                   biasing techniques are used (for example inelastic *
 //*                   interaction length biasing)                        *
 //*          ctrack = total curved path                                  *
+//*          cmtrck = cumulative curved path since particle birth        *
 //*          zfftrk = <z_eff> of the particle                            *
 //*          zfrttk = actual z_eff of the particle                       *
 //*          atrack = age of the particle                                *
@@ -90,6 +92,7 @@ typedef struct {
    Double_t ztrack[mxtrck+1];
    Double_t ttrack[mxtrck];
    Double_t dtrack[mxtrck];
+   Double_t dptrck[mxtrck][3];
    Double_t etrack;
    Double_t ptrack;
    Double_t cxtrck;
@@ -103,6 +106,7 @@ typedef struct {
    Double_t zfrttk;
    Double_t atrack;
    Double_t ctrack;
+   Double_t cmtrck;
    Double_t akshrt;
    Double_t aklong;
    Double_t wscrng;

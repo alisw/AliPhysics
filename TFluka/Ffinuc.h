@@ -1,3 +1,10 @@
+#ifndef FFINUC
+#define FFINUC_H 1
+                                                                                
+#include "Rtypes.h"
+#include "cfortran.h"
+                                                                                
+#include "Fdimpar.h"
 extern "C" {
 //*$ create finuc.add
 //*copy finuc
@@ -52,7 +59,7 @@ extern "C" {
 //*                                                                      *
 //*----------------------------------------------------------------------*
 //*
-const Int_t mxp = 999;
+const Int_t mxp = mxpscs;
 //*
 
 typedef struct {
@@ -78,3 +85,4 @@ typedef struct {
 #define FINUC COMMON_BLOCK(FINUC,finuc)
 COMMON_BLOCK_DEF(finucCommon,FINUC);
 }
+#endif

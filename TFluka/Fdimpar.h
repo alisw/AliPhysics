@@ -1,5 +1,5 @@
 #ifndef FDIMPAR_H
-#define FDIMPAR_H 1
+#define FDIMPAR_H
 
 #include "cfortran.h"
 #include "Rtypes.h"
@@ -21,6 +21,7 @@ extern "C" {
 //*          mostck = stack dimension for optical photons                *
 //*          mxprsn = secondary stack dimension for resonance generator  *
 //*          mxpdpm = secondary stack dimension for dpm generators       *
+//*          Mxpscs = secondary stack dimension overall                  *
 //*          mxoutu = maximum number of output units                     *
 //*          nallwp = number of allowed particles                        *
 //*          nelemx = number of maximum allowed elements of a compound   *
@@ -48,13 +49,14 @@ extern "C" {
 //*----------------------------------------------------------------------*
 //*                                                                      *
 const Int_t mxxrgn = 10000;
-const Int_t mxxmdf = 210;
-const Int_t mxxmde = 202;
+const Int_t mxxmdf = 510;
+const Int_t mxxmde = 502;
 const Int_t mfstck = 2500;
 const Int_t mestck = 100;
 const Int_t mostck = 2000;
 const Int_t mxprsn = 100;
 const Int_t mxpdpm = 800;
+const Int_t mxpscs = 1999;
 const Int_t mxoutu = 50;
 const Int_t nallwp = 64;
 const Int_t nelemx = 80;

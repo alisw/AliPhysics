@@ -147,7 +147,7 @@ void TFluka::Init() {
 
     cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
     InitPhysics(); // prepare input file
-    cout << "\t* InitPhysics() - Prepare input file called" << endl; 
+    cout << "\t* InitPhysics() - Prepare input file was called" << endl; 
 
   if (fVerbosityLevel >=2)
     cout << "\t* Changing lfdrtr = (" << (GLOBAL.lfdrtr?'T':'F')
@@ -470,11 +470,10 @@ Int_t TFluka::IdFromPDG(Int_t pdg) const
 
 Int_t TFluka::PDGFromId(Int_t id) const 
 {
-
   //
   // Return PDG code and pseudo ENDF code from Fluka code
 
-  //IPTOKP array goes from official to internal
+  // IPTOKP array goes from official to internal
 
     if (id == -1) {
 // Cerenkov photon
@@ -482,13 +481,13 @@ Int_t TFluka::PDGFromId(Int_t id) const
 	    printf("\n PDGFromId: Cerenkov Photon \n");
 	return  50000050;
     }
-    
+// Error id    
     if (id == 0) {
 	if (fVerbosityLevel >= 1)
 	    printf("PDGFromId: Error id = 0\n");
 	return -1;
     }
-    
+// Good id    
     Int_t intfluka = GetFlukaIPTOKP(id);
     if (intfluka == 0) {
 	if (fVerbosityLevel >= 1)
@@ -501,6 +500,7 @@ Int_t TFluka::PDGFromId(Int_t id) const
     }
     if (fVerbosityLevel >= 3)
 	printf("mpdgha called with %d %d \n", id, intfluka);
+    // MPDGHA() goes from fluka internal to pdg.
     return mpdgha(intfluka);
 }
 
@@ -1483,6 +1483,7 @@ NOBREM:
       }
     } // else if (strncmp(&sProcessFlag[i][0],"PHOT",4) == 0)
 
+
     // Rayleigh scattering
     // G3 default value: 0
     // G4 process: G4OpRayleigh
@@ -1526,15 +1527,83 @@ NOBREM:
         AliceInp << endl;
       }
     } // end of else if (strncmp(&sProcessFlag[i][0],"RAYL",4) == 0)
-	
 
-    else { // processes not yet treated
+
+    // synchrotron radiation in magnetic field
+    // G3 default value: 0
+    // G4 process: G4SynchrotronRadiation
+    // 
+    // Particles: ??
+    // Physics:   Not set
+    // flag = 0 no synchrotron radiation
+    // flag = 1 synchrotron radiation
+    //xx gMC ->SetProcess("SYNC",1); // synchrotron radiation generation
+    else if (strncmp(&sProcessFlag[i][0],"SYNC",4) == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Synchrotron radiation generation is NOT implemented in FLUKA"; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+    }
+	
 
     // Automatic calculation of tracking medium parameters
     // flag = 0 no automatic calculation
     // flag = 1 automatic calculation
     //xx gMC ->SetProcess("AUTO",1); // ??? automatic computation of the tracking medium parameters
-	    
+    else if (strncmp(&sProcessFlag[i][0],"AUTO",4) == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Automatic calculation of tracking medium parameters is always ON in FLUKA"; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+    }
+	
+
+    // To control energy loss fluctuation model
+    // flag = 0 Urban model
+    // flag = 1 PAI model
+    // flag = 2 PAI+ASHO model (not active at the moment)
+    //xx gMC ->SetProcess("STRA",1); // ??? energy fluctuation model
+    else if (strncmp(&sProcessFlag[i][0],"STRA",4) == 0) {
+      if (iProcessValue[i] == 0 || iProcessValue[i] == 2 || iProcessValue[i] == 3) {
+        AliceInp << "*";
+        AliceInp << endl;
+        AliceInp << "*Ionization energy losses calculation is activated";
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('STRA',n);, n=0,1,2";
+        AliceInp << endl;
+        AliceInp << setw(10) << "IONFLUCT  ";
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 1.0;  // restricted energy loss fluctuations
+                                      // (for hadrons and muons) switched on
+        AliceInp << setw(10) << 1.0;  // restricted energy loss fluctuations
+                                      // (for e+ and e-) switched on
+        AliceInp << setw(10) << 1.0;  // minimal accuracy
+        AliceInp << setw(10) << 3.0;  // upper bound of the material indices in
+                                      // which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0;  // step length in assigning indices
+        AliceInp << endl;
+      }
+      else {
+        AliceInp << "*";
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('STRA',?) call.";
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated";
+        AliceInp << endl;
+      }
+    } // else if (strncmp(&sProcessFlag[i][0],"STRA",4) == 0)
+
+
+
+
+    else { // processes not yet treated
 
     // light photon absorption (Cerenkov photons)
     // it is turned on when Cerenkov process is turned on
@@ -1548,21 +1617,6 @@ NOBREM:
     // gMC ->SetProcess("LABS",2); // ??? Cerenkov light absorption
 
 
-    // To control energy loss fluctuation model
-    // flag = 0 Urban model
-    // flag = 1 PAI model
-    // flag = 2 PAI+ASHO model (not active at the moment)
-    //xx gMC ->SetProcess("STRA",1); // ??? energy fluctuation model
-
-    // synchrotron radiation in magnetic field
-    // G3 default value: 0
-    // G4 process: G4SynchrotronRadiation
-    // 
-    // Particles: ??
-    // Physics:   Not set
-    // flag = 0 no synchrotron radiation
-    // flag = 1 synchrotron radiation
-    //xx gMC ->SetProcess("SYNC",1); // ??? synchrotron radiation generation
 
       cout << "SetProcess for flag=" << &sProcessFlag[i][0] << " value=" << iProcessValue[i] << " not yet implemented!" << endl;
     }
@@ -2039,20 +2093,10 @@ Double_t TFluka::TrackStep() const
 
 Double_t TFluka::TrackLength() const
 {
-// Still wrong !!!
-// This is the sum of substeps !!!
-// TRACKR.ctrack = total curved path of the current step
-// Sum of the substeps is identical to TRACKR.ctrack if the is no mag. field
-// The sum of all step length starting from the beginning of the track
-// for the time being returns only the length in centimeters of the current step
-  Double_t sum = 0;
+// TRACKR.cmtrck = cumulative curved path since particle birth
   Int_t caller = GetCaller();
-  if (caller == 1 || caller == 3 || caller == 4 || caller == 6) { //bxdraw,endraw,mgdraw,usdraw
-    for ( Int_t j=0;j<TRACKR.ntrack;j++) {
-      sum +=TRACKR.ttrack[j];
-    }
-    return sum;
-  }
+  if (caller == 1 || caller == 3 || caller == 4 || caller == 6) //bxdraw,endraw,mgdraw,usdraw
+    return TRACKR.cmtrck;
   else 
     return -1.0;
 }
@@ -2139,14 +2183,16 @@ Double_t TFluka::Etot() const
 //
 Bool_t   TFluka::IsNewTrack() const
 {
-// ???????????????,
-// True if the track is not at the boundary of the current volume
-// Not true in some cases in bxdraw - to be solved
+// True if the track has positive cummulative length
   Int_t caller = GetCaller();
-  if (caller == 1)
-    return 1; // how to handle double step ?????????????
+  if (caller != 2) { // not eedraw
+    if (TRACKR.cmtrck > 0.0)
+      return 1; 
+    else
+      return 0; 
+  }
   else
-    return 0; // ??????????????
+    return 0;
 }
 
 Bool_t   TFluka::IsTrackInside() const

@@ -97,6 +97,8 @@ extern "C" {
 // projectile
 	  gener->SetProjectile("P",  1,  1);
 	  gener->SetTarget    ("A", 16,  8);
+	  gener->SetBoostLHC(0);
+	  
 // tell hijing to keep the full parent child chain
 	  gener->KeepFullEvent();
 // enable jet quenching
@@ -119,10 +121,10 @@ extern "C" {
 	  gener->Generate();
 	  Int_t npart = stack->GetNprimary();
 	  // Vertex
-	  Float_t za   =  4000. * gRandom->Rndm() - 2000.;
+	  Float_t za   =  4000. * gRandom->Rndm() -2000.;
 	  // Direction
-	  Float_t dir  = (gRandom->Rndm() < 0.5) ? 1. : -1.;
-	  
+//	  Float_t dir  = (za < 0.) ? 1. : -1.;
+	  Float_t dir  = (gRandom->Rndm() < 0.5)? 1. : -1;
 	  
 	  for (Int_t part=0; part<npart; part++) {
 	      particle = stack->Particle(part);

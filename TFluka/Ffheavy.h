@@ -57,7 +57,7 @@ extern "C" {
 //*----------------------------------------------------------------------*
 //*
 const Int_t mxheav = 100;
-const Int_t kxheav = 12;
+const Int_t kxheav = 30;
 
 typedef struct {
    Double_t cxheav[mxheav];

@@ -55,6 +55,7 @@ extern "C" {
 //*----------------------------------------------------------------------*
 //*
 
+const Int_t mxgnpr =  33;
 typedef struct {
    Double_t am[nallwp+7];         //(-6:NALLWP)
    Double_t amdisc[nallwp+7];     //(-6:NALLWP)
@@ -80,7 +81,7 @@ COMMON_BLOCK_DEF(papropCommon,PAPROP);
 
 typedef struct {
    Char_t   btype[nallwp+7][8];     //(-6:NALLWP)
-   Char_t   genpar[30][8];          //(30)
+   Char_t   genpar[mxgnpr][8];          //(30)
 } chpprpCommon;
 #define CHPPRP COMMON_BLOCK(CHPPRP,chpprp)
 COMMON_BLOCK_DEF(chpprpCommon,CHPPRP);

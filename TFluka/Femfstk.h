@@ -38,6 +38,7 @@ typedef struct {
    Double_t wsnrml[mestck];
    Double_t wtemf[mestck]; // weight
    Double_t agemf[mestck]; // age
+   Double_t cmpemf[mestck];
    Double_t espark[mestck][mkbmx1];
    Int_t    iespak[mestck][mkbmx2];
    Int_t    ichemf[mestck]; // charge

@@ -72,6 +72,8 @@ extern "C" {
 //*        raddly = delay (s) in production wrt the nominal primary "0"  *
 //*                 time for particle produced in radioactive decays     *
 //*                (i.e. those coming from decays of daughter isotopes)  *
+//*        cmpath = cumulative path travelled by the particle since it   *
+//*                 was produced (cm)
 //*        sparek = spare real variables available for k.w.burn          *
 //*        ispark = spare integer variables available for k.w.burn       *
 //*        ilo    = type of the particle (see btype in /paprop/)         *
@@ -116,6 +118,7 @@ typedef struct {
    Double_t agestk[mfstck+1];         //(0:MFSTCK)
    Double_t aknshr[mfstck+1];         //(0:MFSTCK)
    Double_t raddly[mfstck+1];         //(0:MFSTCK)
+   Double_t cmpath[mfstck+1];         //(0:MFSTCK)
    Double_t sparek[mfstck+1][mkbmx1]; //(MKBMX1,0:MFSTCK)
    Int_t    ispark[mfstck+1][mkbmx2]; //(MKBMX2,0:MFSTCK)
    Int_t    ilo[mfstck+1];            //(0:MFSTCK)

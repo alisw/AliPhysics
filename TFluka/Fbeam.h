@@ -41,33 +41,29 @@ extern "C" {
 //*        tinpz  = direction cosine of the beam polariz. with respect to*
 //*                 z-axis                                               *
 //*        polfra = polarization fraction                                *
-//*        nforce = number of the region of forced interaction           *
-//*        xfor   = x-coord. of the starting point of the region nforce  *
-//*        yfor   = y-coord. of the starting point of the region nforce  *
-//*        zfor   = z-coord. of the starting point of the region nforce  *
-//*        disfor = thickness of the region nforce in cm                 *
-//*        wfor   = relative weight of the particle due to forcing       *
+//*        beawei = weight of the beam particles                         *
+//*      bmaxis(j,i) = j_th component of the i_th axis used to define the*
+//*                 conventional x,y,z beam reference frame              *
+//*!!!!! ATTENTION: in C++ it is the component bmaxis(i,j) !!!!!         *
 //*        ijbeam = beam particle type (see btype in /paprop/)           *
 //*        ijhion = heavy ion type if ijbeam = -2                        *
-//*        ipbite = flag describing the shape of the momentum            *
-//*                 distribution of the beam                             *
-//*                 0=rectangular, 1=gaussian                            *
-//*        idiv   = flag describing the shape of the angular             *
-//*                 divergence distribution of the beam                  *
-//*                 0=rectangular, 1=gaussian                            *
-//*        ixspot = flag describing the shape of the spatial             *
-//*                 distribution of the beam spot in x-direction         *
-//*                 0=rectangular, 1=gaussian                            *
-//*        iyspot = flag describing the shape of the spatial             *
-//*                 distribution of the beam spot in y-direction         *
-//*                 0=rectangular, 1=gaussian                            *
-//*        beawei = weight of the beam particles                         *
+//*        ldpgss = true for a gaussian momentum distribution of the     *
+//*                 beam particles, false for a rectangular one          *
+//*        ldvgss = true for a gaussian angular divergence distribution  *
+//*                 of the beam particles, false for a rectangular one   *
+//*        ldxgss = true for a gaussian spatial distribution of the beam *
+//*                 spot in the x-direction, false for a rectangular one *
+//*        ldygss = true for a gaussian spatial distribution of the beam *
+//*                 spot in the y-direction, false for a rectangular one *
 //*        lbeamc = flag for an annular beam                             *
 //*        lpperp = flag for polar. perp. to the beam direction          *
-//*        lpfrac = flag for interpreting the polar. fraction            *
+//*        lpfrac = flag for interpreting the polar. fraction
+//*        lbaxis = logical flag for using a beam axis frame different   *
+//*                 from the standard one                                *
 //*                                                                      *
 //*----------------------------------------------------------------------*
-//      LOGICAL LBEAMC, LPPERP, LPFRAC
+//      LBEAMC, LPPERP, LPFRAC, LDPGSS, LDVGSS, LDXGSS, LDYGSS,
+//     &        LBAXIS
 
 typedef struct {
    Double_t pbeam;
@@ -86,21 +82,17 @@ typedef struct {
    Double_t tinpz;
    Double_t polfra;
    Double_t beawei;
-   Double_t xfor;
-   Double_t yfor;
-   Double_t zfor;
-   Double_t disfor;
-   Double_t wfor;
+   Double_t bmaxis[3][3];
    Int_t    ijbeam;
    Int_t    ijhion;
-   Int_t    ipbite;
-   Int_t    idiv;
-   Int_t    ixspot;
-   Int_t    iyspot;
-   Int_t    nforce;
+   Int_t    ldpgss;
+   Int_t    ldvgss;
+   Int_t    ldxgss;
+   Int_t    ldygss;
    Int_t    lbeamc;
    Int_t    lpperp;
    Int_t    lpfrac;
+   Int_t    lbaxis;
 } beamCommon;
 #define BEAM COMMON_BLOCK(BEAM,beam)
 COMMON_BLOCK_DEF(beamCommon,BEAM);
