@@ -16,7 +16,8 @@
 
 /* $Id$ */
 #include "AliESDCaloTrack.h"
-#include "../PHOS/AliPHOSRecParticle.h"
+#include "AliPHOSRecParticle.h"
+#include "AliEMCALRecParticle.h"
 
 //-------------------------------------------------------------------------
 //   Class AliESDCaloTrack
@@ -34,3 +35,12 @@ AliESDCaloTrack::AliESDCaloTrack(AliPHOSRecParticle* recpart)
   fPy = recpart->Py();
   fPz = recpart->Pz();
 }
+
+AliESDCaloTrack::AliESDCaloTrack(AliEMCALRecParticle* recpart)
+{
+  // Convert AliEMCALRecParticle to AliESDCaloTrack
+  fPx = recpart->Px();
+  fPy = recpart->Py();
+  fPz = recpart->Pz();
+}
+

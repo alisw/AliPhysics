@@ -50,3 +50,5 @@ HDRS= $(SRCS:.cxx=.h)
 DHDR:=EMCALLinkDef.h
 
 EINCLUDE:=PYTHIA6
+
+EXPORT:=AliEMCALRecParticle.h AliEMCALFastRecParticle.h

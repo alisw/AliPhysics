@@ -14,6 +14,7 @@
 
 #include "TObject.h"
 class AliPHOSRecParticle;
+class AliEMCALRecParticle;
 
 class AliESDCaloTrack : public TObject {
 
@@ -21,14 +22,15 @@ public:
   AliESDCaloTrack() {}
   virtual ~AliESDCaloTrack() {}
   AliESDCaloTrack(AliPHOSRecParticle* recpart);
+  AliESDCaloTrack(AliEMCALRecParticle* recpart);
   Float_t Px() { return fPx; }
   Float_t Py() { return fPy; }
   Float_t Pz() { return fPz; }
 
 private:
-  Float_t fPx; // x-component of PHOS rec.particle
-  Float_t fPy; // y-component of PHOS rec.particle
-  Float_t fPz; // z-component of PHOS rec.particle
+  Float_t fPx; // x-component of PHOS/EMCAL rec.particle
+  Float_t fPy; // y-component of PHOS/EMCAL rec.particle
+  Float_t fPz; // z-component of PHOS/EMCAL rec.particle
 
   ClassDef(AliESDCaloTrack,1)  //ESD calorimeter track class 
 };
