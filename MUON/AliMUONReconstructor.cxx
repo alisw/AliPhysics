@@ -17,12 +17,15 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// class for MUON reconstruction                                              //
+// class for MUON reconstruction                                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
+#include <TParticle.h>
+#include "TArrayF.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
 #include "AliESD.h"
 #include "AliMUONData.h"
 #include "AliMUONEventReconstructor.h"
@@ -141,27 +144,51 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
   loader->LoadTracks("READ");
-
   AliMUONData* muonData = new AliMUONData(loader,"MUON","MUON");
 
    // declaration  
-  Int_t iEvent;
-  Int_t nTrackHits;
+  Int_t iEvent, nPart;
+  Int_t nTrackHits, nPrimary;
   Double_t fitFmin;
- 
+  TArrayF vertex(3);
 
   Double_t bendingSlope, nonBendingSlope, inverseBendingMomentum;
   Double_t xRec, yRec, zRec, chi2MatchTrigger;
   Bool_t matchTrigger;
 
-  // setting pointer for tracks, triggertracks& trackparam at vertex
+  // setting pointer for tracks, triggertracks & trackparam at vertex
   AliMUONTrack* recTrack = 0;
   AliMUONTrackParam* trackParam = 0;
   AliMUONTriggerTrack* recTriggerTrack = 0;
-
+  TParticle* particle = new TParticle();
+  AliGenEventHeader* header = 0;
   iEvent = runLoader->GetEventNumber(); 
   runLoader->GetEvent(iEvent);
 
+  // vertex calculation (maybe it exists already somewhere else)
+  vertex[0] = vertex[1] = vertex[2] = 0.;
+  nPrimary = 0;
+  if ( (header = runLoader->GetHeader()->GenEventHeader()) ) {
+    header->PrimaryVertex(vertex);
+  } else {
+    runLoader->LoadKinematics("READ");
+    runLoader->TreeK()->GetBranch("Particles")->SetAddress(&particle);
+    nPart = (Int_t)runLoader->TreeK()->GetEntries();
+    for(Int_t iPart = 0; iPart < nPart; iPart++) {
+      runLoader->TreeK()->GetEvent(iPart);
+      if (particle->GetFirstMother() == -1) {
+	vertex[0] += particle->Vx();
+	vertex[1] += particle->Vy();
+	vertex[2] += particle->Vz();
+	nPrimary++;
+      }
+      if (nPrimary) {
+	vertex[0] /= (double)nPrimary;
+	vertex[1] /= (double)nPrimary;
+	vertex[2] /= (double)nPrimary;
+      }
+    }
+  }
   // setting ESD MUON class
   AliESDMuonTrack* ESDTrack = new  AliESDMuonTrack() ;
 
@@ -211,9 +238,9 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     ESDTrack->SetInverseBendingMomentum(inverseBendingMomentum);
     ESDTrack->SetThetaX(TMath::ATan(nonBendingSlope));
     ESDTrack->SetThetaY(TMath::ATan(bendingSlope));
-    ESDTrack->SetZ(zRec);
-    ESDTrack->SetBendingCoor(yRec);
-    ESDTrack->SetNonBendingCoor(xRec);
+    ESDTrack->SetZ(vertex[2]);
+    ESDTrack->SetBendingCoor(vertex[1]); // calculate vertex at ESD or Tracking level ?
+    ESDTrack->SetNonBendingCoor(vertex[0]);
     ESDTrack->SetChi2(fitFmin);
     ESDTrack->SetNHit(nTrackHits);
     ESDTrack->SetMatchTrigger(matchTrigger);
@@ -234,6 +261,9 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 
   //} // end loop on event  
   loader->UnloadTracks(); 
+  if (!header)
+    runLoader->UnloadKinematics();
   delete ESDTrack;
   delete muonData;
+  // delete particle;
 }
