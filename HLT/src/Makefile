@@ -76,9 +76,12 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 include tgt_$(ALICE_TARGET)/Make-depend 
 
 ###########
-so:
-	rm -fr $(ALICE)/mylibs/libAliL3.so
+mrproper:
+	rm -fr tgt_Linux
+	rm -fr $(DICT) $(DICTH) $(DICTO)
 clean:
 	rm -fr tgt_Linux/*.o
 	rm -fr $(ALICE)/mylibs/libAliL3.so
 	rm -fr $(DICT) $(DICTH) $(DICTO)
+
+wipe: clean mrproper

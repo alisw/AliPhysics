@@ -428,6 +428,11 @@ clean:
 distclean:      clean
 		@rm -f $(PROGRAMS) $(EVENTSO) $(EVENTLIB) *Dict.* *.def *.exp \
 		   *.root *.ps .def so_locations
+mrproper: 
+		@rm -f $(OBJS) $(DICT) $(DICTH) core
+
+wipe: clean mrproper
+
 
 .SUFFIXES: .$(SrcSuf)
 
