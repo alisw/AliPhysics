@@ -15,13 +15,16 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.1  2000/06/09 21:48:28  morsch
 Code from AliMUONSegResTrigger.cxx
 
 */
 
 #include "AliMUONResponseTrigger.h"
-#include "AliMUONSegmentation.h"
+#include "AliSegmentation.h"
 #include <TMath.h>
 #include <TRandom.h>
 #include <iostream.h> 
@@ -30,7 +33,7 @@ Code from AliMUONSegResTrigger.cxx
 ClassImp(AliMUONResponseTrigger)
 
 //------------------------------------------------------------------   
-Float_t AliMUONResponseTrigger::IntXY(AliMUONSegmentation * segmentation){    
+Float_t AliMUONResponseTrigger::IntXY(AliSegmentation * segmentation){    
 // Returns 1 or 0 if the current strip is fired or not according 
 // to the cluster size and the width of the main strip.
 // For the time being the probability to fire a neighbour depends

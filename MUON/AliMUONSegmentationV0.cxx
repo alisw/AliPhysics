@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.3  2000/06/29 12:34:09  morsch
+AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
+it usable with any other geometry class. The link to the object to which it belongs is
+established via an index. This assumes that there exists a global geometry manager
+from which the pointer to the parent object can be obtained (in our case gAlice).
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -72,7 +78,7 @@ void AliMUONSegmentationV0::SetPadSize(Float_t p1, Float_t p2)
     fDpy=p2;
 }
 void AliMUONSegmentationV0::
-    GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+    GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
@@ -84,7 +90,7 @@ void AliMUONSegmentationV0::
     if (ix < -fNpx) ix=-fNpx;
 }
 void AliMUONSegmentationV0::
-GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 {
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
@@ -117,7 +123,7 @@ SetPad(Int_t ix, Int_t iy)
     //
     // Sets virtual pad coordinates, needed for evaluating pad response 
     // outside the tracking program 
-    GetPadCxy(ix,iy,fx,fy);
+    GetPadC(ix,iy,fx,fy);
 }
 
 void AliMUONSegmentationV0::
@@ -138,13 +144,13 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     Float_t y02=yhit + dy;
     //
     // find the pads over which the charge distributes
-    GetPadIxy(x01,y01,fixmin,fiymin);
-    GetPadIxy(x02,y02,fixmax,fiymax);    
+    GetPadI(x01,y01,fixmin,fiymin);
+    GetPadI(x02,y02,fixmax,fiymax);    
     // 
     // Set current pad to lower left corner
     fix=fixmin;
     fiy=fiymin;
-    GetPadCxy(fix,fiy,fx,fy);
+    GetPadC(fix,fiy,fx,fy);
 }
 
 void AliMUONSegmentationV0::NextPad()
@@ -164,7 +170,7 @@ void AliMUONSegmentationV0::NextPad()
     } else {
 	printf("\n Error: Stepping outside integration region\n ");
     }
-    GetPadCxy(fix,fiy,fx,fy);
+    GetPadC(fix,fiy,fx,fy);
 }
 
 Int_t AliMUONSegmentationV0::MorePads()
@@ -186,7 +192,7 @@ void AliMUONSegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t z)
 //  Initialises pad and wire position during stepping
     fxt =x;
     fyt =y;
-    GetPadIxy(x,y,fixt,fiyt);
+    GetPadI(x,y,fixt,fiyt);
     fiwt= (x>0) ? Int_t(x/fWireD)+1 : Int_t(x/fWireD)-1 ;
 }
 
@@ -206,7 +212,7 @@ Int_t AliMUONSegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t z)
 //  Signal will be generated if particle crosses pad boundary or
 //  boundary between two wires. 
     Int_t ixt, iyt;
-    GetPadIxy(x,y,ixt,iyt);
+    GetPadI(x,y,ixt,iyt);
     Int_t iwt=(x>0) ? Int_t(x/fWireD)+1 : Int_t(x/fWireD)-1;
     if ((ixt != fixt) || (iyt !=fiyt) || (iwt != fiwt)) {
 	return 1;
@@ -249,7 +255,7 @@ Float_t AliMUONSegmentationV0::Distance2AndOffset(Int_t iX, Int_t iY, Float_t X,
 // labelled by its Channel numbers and a coordinate
 {
   Float_t x,y;
-  GetPadCxy(iX,iY,x,y);
+  GetPadC(iX,iY,x,y);
   return (x-X)*(x-X) + (y-Y)*(y-Y);
 }
 

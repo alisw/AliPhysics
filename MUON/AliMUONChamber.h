@@ -6,12 +6,12 @@
 /* $Id$ */
 
 #include "TObjArray.h"
-#include "AliMUONSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliMUONResponse.h"
 
 class AliMUONClusterFinderVS;
 //class AliMUONResponse ;
-//class AliMUONSegmentation ;
+//class AliSegmentation ;
 
 class AliMUONChamber:
 public TObject
@@ -48,7 +48,7 @@ public TObject
   virtual void    SetResponseModel(AliMUONResponse* thisResponse) {fResponse=thisResponse;}
 //  
 // Set segmentation model
-  virtual void    SetSegmentationModel(Int_t i, AliMUONSegmentation* thisSegmentation) {
+  virtual void    SetSegmentationModel(Int_t i, AliSegmentation* thisSegmentation) {
       (*fSegmentation)[i-1] = thisSegmentation;
   }
 // Set Cluster reconstruction model  
@@ -60,8 +60,8 @@ public TObject
   virtual AliMUONResponse* &ResponseModel(){return fResponse;}
 //  
 //  Get reference to segmentation model
-  virtual AliMUONSegmentation*  SegmentationModel(Int_t isec) {
-      return (AliMUONSegmentation *) (*fSegmentation)[isec-1];
+  virtual AliSegmentation*  SegmentationModel(Int_t isec) {
+      return (AliSegmentation *) (*fSegmentation)[isec-1];
   }
   virtual TObjArray* ChamberSegmentation() {return fSegmentation;}
 //  Get pointer to cluster reconstruction model
@@ -95,7 +95,7 @@ public TObject
   virtual void   SetMaxAdc(Int_t p1)                   {fResponse->SetMaxAdc(p1);}
 // Set Pad size
   virtual void   SetPadSize(Int_t isec, Float_t p1, Float_t p2) {
-      ((AliMUONSegmentation*) (*fSegmentation)[isec-1])->SetPadSize(p1,p2);
+      ((AliSegmentation*) (*fSegmentation)[isec-1])->SetPadSize(p1,p2);
   }
 //  
 // Cluster formation method (charge disintegration)

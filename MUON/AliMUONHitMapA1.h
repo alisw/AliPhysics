@@ -6,17 +6,17 @@
 
 /* $Id$ */
 
-#include "AliMUONHitMap.h"
-class AliMUONSegmentation;
+#include "AliHitMap.h"
+class AliSegmentation;
 class TObjArray;
 
 
 
 class AliMUONHitMapA1 :
-public AliMUONHitMap 
+public AliHitMap 
 {
  public:
-    AliMUONHitMapA1(AliMUONSegmentation *seg, TObjArray *dig);
+    AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig);
     AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap);
     
     virtual ~AliMUONHitMapA1();
@@ -43,7 +43,7 @@ public AliMUONHitMap
     // Check index
     Int_t CheckedIndex(Int_t ix, Int_t iy);
  private:
-    AliMUONSegmentation *fSegmentation;   // Chamber segmentation
+    AliSegmentation *fSegmentation;       // Chamber segmentation
     Int_t fNpx;                           // Maximum number of pads in x
     Int_t fNpy;                           // Maximum number of pads in y
     TObjArray *fDigits;                   // Pointer to digits

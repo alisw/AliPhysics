@@ -14,7 +14,7 @@
 #include "TF1.h"
 
 class AliMUONResponse;
-class AliMUONSegmentation;
+class AliSegmentation;
 class TClonesArray;
 class AliMUONRawCluster;
 class AliMUONDigit;

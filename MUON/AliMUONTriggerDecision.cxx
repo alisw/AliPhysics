@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.3  2000/06/25 17:02:19  pcrochet
+scope problem on HP, i declared once, pow replaced by TMath::Power (PH)
+
 Revision 1.2  2000/06/15 07:58:49  morsch
 Code from MUON-dev joined
 
@@ -45,7 +48,7 @@ Author and responsible for the code: Philippe Crochet
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONPoints.h"
-#include "AliMUONSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONChamber.h"
 #include "AliMUONDigit.h"
@@ -221,8 +224,8 @@ void AliMUONTriggerDecision::SetBit(){
   for (Int_t chamber=11; chamber<15; chamber++){
     for (Int_t cathode=1; cathode<3; cathode++){
       
-      AliMUONChamber*  iChamber;
-      AliMUONSegmentation*  segmentation;
+      AliMUONChamber*   iChamber;
+      AliSegmentation*  segmentation;
       
       TClonesArray *muonDigits  = pMUON->DigitsAddress(chamber-1);
       if (muonDigits == 0) return;

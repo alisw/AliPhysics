@@ -8,9 +8,7 @@
 #include "TObject.h"
 
 class TF1;
-class AliMUONChamber;
-class AliMUONRecCluster;
-class AliMUONSegmentation;
+class AliSegmentation;
 
 
 class AliMUONResponse :
@@ -50,7 +48,7 @@ public TObject {
     // Pulse height from scored quantity (eloss)
     virtual Float_t IntPH(Float_t eloss)                      =0;
     // Charge disintegration 
-    virtual Float_t IntXY(AliMUONSegmentation *)              =0;
+    virtual Float_t IntXY(AliSegmentation *)                  =0;
     // Noise, zero-suppression, adc saturation
     virtual Int_t DigitResponse(Int_t digit)                  =0;
     // 

@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4  2000/06/29 12:34:09  morsch
+AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
+it usable with any other geometry class. The link to the object to which it belongs is
+established via an index. This assumes that there exists a global geometry manager
+from which the pointer to the parent object can be obtained (in our case gAlice).
+
 Revision 1.3  2000/06/28 15:16:35  morsch
 (1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
 to allow development of slat-muon chamber simulation and reconstruction code in the MUON
@@ -35,7 +41,6 @@ Log messages included
 */
 
 #include "AliMUONChamber.h"
-#include "AliMUONSegmentation.h"
 #include "AliMUONResponse.h"
 
 #include "TMath.h"
@@ -84,11 +89,11 @@ void AliMUONChamber::Init()
 //
 // ... for chamber segmentation
     if ((*fSegmentation)[0]) 
-    ((AliMUONSegmentation *) (*fSegmentation)[0])->Init(fId);
+    ((AliSegmentation *) (*fSegmentation)[0])->Init(fId);
 
     if (fnsec==2) {
 	if ((*fSegmentation)[1])
-	((AliMUONSegmentation *) (*fSegmentation)[1])->Init(fId);
+	((AliSegmentation *) (*fSegmentation)[1])->Init(fId);
     }
 }
 
@@ -96,12 +101,12 @@ Int_t   AliMUONChamber::SigGenCond(Float_t x, Float_t y, Float_t z)
 {
 // Ask segmentation if signal should be generated 
     if (fnsec==1) {
-	return ((AliMUONSegmentation*) (*fSegmentation)[0])
+	return ((AliSegmentation*) (*fSegmentation)[0])
 	    ->SigGenCond(x, y, z) ;
     } else {
-	return (((AliMUONSegmentation*) (*fSegmentation)[0])
+	return (((AliSegmentation*) (*fSegmentation)[0])
 		->SigGenCond(x, y, z)) ||
-	    (((AliMUONSegmentation*) (*fSegmentation)[1])
+	    (((AliSegmentation*) (*fSegmentation)[1])
 	     ->SigGenCond(x, y, z)) ;
     }
 }
@@ -113,10 +118,10 @@ void    AliMUONChamber::SigGenInit(Float_t x, Float_t y, Float_t z)
 // Initialisation of segmentation for hit
 //  
     if (fnsec==1) {
-	((AliMUONSegmentation*) (*fSegmentation)[0])->SigGenInit(x, y, z) ;
+	((AliSegmentation*) (*fSegmentation)[0])->SigGenInit(x, y, z) ;
     } else {
-	((AliMUONSegmentation*) (*fSegmentation)[0])->SigGenInit(x, y, z) ;
-	((AliMUONSegmentation*) (*fSegmentation)[1])->SigGenInit(x, y, z) ;
+	((AliSegmentation*) (*fSegmentation)[0])->SigGenInit(x, y, z) ;
+	((AliSegmentation*) (*fSegmentation)[1])->SigGenInit(x, y, z) ;
     }
 }
 
@@ -143,8 +148,8 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof,
     nnew=0;
     for (Int_t i=1; i<=fnsec; i++) {
 	qcheck=0;
-	AliMUONSegmentation * segmentation=
-	    (AliMUONSegmentation *) (*fSegmentation)[i-1];
+	AliSegmentation * segmentation=
+	    (AliSegmentation *) (*fSegmentation)[i-1];
 	for (segmentation->FirstPad(xhit, yhit, zhit, dx, dy); 
 	     segmentation->MorePads(); 
 	     segmentation->NextPad()) 

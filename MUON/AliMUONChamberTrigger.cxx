@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/29 12:34:09  morsch
+AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
+it usable with any other geometry class. The link to the object to which it belongs is
+established via an index. This assumes that there exists a global geometry manager
+from which the pointer to the parent object can be obtained (in our case gAlice).
+
 Revision 1.4  2000/06/29 06:52:02  pcrochet
 pow changed to TMath::Power
 
@@ -84,13 +90,13 @@ void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof,
   Float_t qp;
   nnew=0;
   for (Int_t i=1; i<=fnsec; i++) {
-    AliMUONSegmentation * segmentation=
-      (AliMUONSegmentation*) (*fSegmentation)[i-1];
+    AliSegmentation * segmentation=
+      (AliSegmentation*) (*fSegmentation)[i-1];
     
 // Find the module & strip Id. which has fired
     Int_t ix,iy;
     
-    segmentation->GetPadIxy(xhit,yhit,0,ix,iy);
+    segmentation->GetPadI(xhit,yhit,0,ix,iy);
     segmentation->SetPad(ix,iy);
 
 // treatment of GEANT hits w/o corresponding strip (due to the fact that
@@ -116,7 +122,7 @@ void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof,
 	
 	// neighbour real coordinates (just for checks here)
 	Float_t x,y,z;
-	segmentation->GetPadCxy(xList[j],yList[j],x,y,z);
+	segmentation->GetPadC(xList[j],yList[j],x,y,z);
 	// set pad (fx fy & fix fiy are the current pad coord. & Id.)
 	segmentation->SetPad(xList[j],yList[j]);
 	// get the chamber (i.e. current strip) response

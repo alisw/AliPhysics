@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.2  2000/06/12 07:58:06  morsch
 include TMath.h
 
@@ -25,7 +28,7 @@ Most coding rule violations corrected.
 */
 
 #include "AliMUONHitMapA1.h"
-#include "AliMUONSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONDigit.h"
 
@@ -35,7 +38,7 @@ Most coding rule violations corrected.
 ClassImp(AliMUONHitMapA1)
 
 
-AliMUONHitMapA1::AliMUONHitMapA1(AliMUONSegmentation *seg, TObjArray *dig)
+AliMUONHitMapA1::AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig)
 {
 // Constructor
     fSegmentation = seg;

@@ -13,7 +13,7 @@ public AliMUONResponseV0 {
   AliMUONResponseTrigger(){};
   virtual ~AliMUONResponseTrigger(){} 
   // Charge disintegration
-  virtual Float_t  IntXY(AliMUONSegmentation * segmentation);
+  virtual Float_t  IntXY(AliSegmentation * segmentation);
   virtual Int_t    DigitResponse(Int_t digit);    
   ClassDef(AliMUONResponseTrigger,1) // Implementation of RPC response
     

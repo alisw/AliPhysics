@@ -16,7 +16,7 @@ class AliMUONLocalTrigger;
 class AliMUONGlobalTrigger;
 class AliMUONTriggerCircuit;
 class AliMUONTriggerDecision;
-class AliMUONSegmentation;
+class AliSegmentation;
 class AliMUONResponse;
 class AliMUONHit;
 class AliMUONPadHit;
@@ -77,7 +77,7 @@ class AliMUON : public  AliDetector {
     virtual void   SetMaxAdc(Int_t id, Int_t p1);
 // Set Segmentation and Response Model
     virtual void   SetSegmentationModel(Int_t id, Int_t isec,
-					AliMUONSegmentation *segmentation);
+					AliSegmentation *segmentation);
     virtual void   SetResponseModel(Int_t id, AliMUONResponse *response);
     virtual void   SetNsec(Int_t id, Int_t nsec);
 // Set Reconstruction Model

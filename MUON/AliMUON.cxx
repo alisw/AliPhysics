@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.25  2000/06/29 12:34:09  morsch
+AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
+it usable with any other geometry class. The link to the object to which it belongs is
+established via an index. This assumes that there exists a global geometry manager
+from which the pointer to the parent object can be obtained (in our case gAlice).
+
 Revision 1.24  2000/06/28 15:16:35  morsch
 (1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
 to allow development of slat-muon chamber simulation and reconstruction code in the MUON
@@ -138,7 +144,7 @@ Log message added
 #include "AliMUONRawCluster.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
-#include "AliMUONHitMap.h"
+#include "AliHitMap.h"
 #include "AliMUONHitMapA1.h"
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONConstants.h"
@@ -796,7 +802,7 @@ void AliMUON::SetMuonAcc(Bool_t acc, Float_t angmin, Float_t angmax)
    fAccMax=angmax;
 }
 //___________________________________________
-void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliMUONSegmentation *segmentation)
+void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliSegmentation *segmentation)
 {
     ((AliMUONChamber*) (*fChambers)[id])->SetSegmentationModel(isec, segmentation);
 
@@ -880,8 +886,8 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
     char *addBackground = strstr(option,"Add");
 
 
-    AliMUONChamber*  iChamber;
-    AliMUONSegmentation*  segmentation;
+    AliMUONChamber*   iChamber;
+    AliSegmentation*  segmentation;
 
     
     Int_t trk[50];
@@ -892,7 +898,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
     Int_t digits[5]; 
 
     AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
-    AliMUONHitMap** hitMap= new AliMUONHitMap* [AliMUONConstants::NCh()];
+    AliHitMap** hitMap= new AliHitMap* [AliMUONConstants::NCh()];
     for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {hitMap[i]=0;}
     if (addBackground ) {
 	if(first) {
@@ -939,7 +945,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
     //
     // loop over cathodes
     //
-    AliMUONHitMap* hm;
+    AliHitMap* hm;
     Int_t countadr=0;
     for (int icat=0; icat<2; icat++) { 
 	Int_t counter=0;
@@ -1013,7 +1019,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 		    // fill the info array
 		    Float_t thex, they, thez;
 		    segmentation=iChamber->SegmentationModel(cathode);
-		    segmentation->GetPadCxy(ipx,ipy,thex,they,thez);
+		    segmentation->GetPadC(ipx,ipy,thex,they,thez);
 //		    Float_t rpad=TMath::Sqrt(thex*thex+they*they);
 //		    if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
 
@@ -1131,7 +1137,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 			if (cathode != (icat+1)) continue;
 			Float_t thex, they, thez;
 			segmentation=iChamber->SegmentationModel(cathode);
-			segmentation->GetPadCxy(ipx,ipy,thex,they,thez);
+			segmentation->GetPadC(ipx,ipy,thex,they,thez);
 			Float_t rpad=TMath::Sqrt(thex*thex+they*they);
 			if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
 			new((*pAddress)[countadr++]) TVector(2);
@@ -1457,12 +1463,12 @@ void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
 void AliMUON::Streamer(TBuffer &R__b)
 {
    // Stream an object of class AliMUON.
-      AliMUONChamber       *iChamber;
+      AliMUONChamber        *iChamber;
       AliMUONTriggerCircuit *iTriggerCircuit;
-      AliMUONSegmentation  *segmentation;
-      AliMUONResponse      *response;
-      TClonesArray         *digitsaddress;
-      TClonesArray         *rawcladdress;
+      AliSegmentation       *segmentation;
+      AliMUONResponse       *response;
+      TClonesArray          *digitsaddress;
+      TClonesArray          *rawcladdress;
       Int_t i;
       if (R__b.IsReading()) {
 	  Version_t R__v = R__b.ReadVersion(); if (R__v) { }

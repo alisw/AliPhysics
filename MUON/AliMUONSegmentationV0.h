@@ -5,14 +5,14 @@
 
 /* $Id$ */
 
-#include "AliMUONSegmentation.h"
+#include "AliSegmentation.h"
 
 //----------------------------------------------
 //
 // Chamber segmentation for homogeneously segmented circular chamber
 //
 class AliMUONSegmentationV0 :
-public AliMUONSegmentation {
+public AliSegmentation {
  public:
     AliMUONSegmentationV0(){}
     AliMUONSegmentationV0(const AliMUONSegmentationV0 & segmentation);
@@ -29,13 +29,13 @@ public AliMUONSegmentation {
     // Anod wire coordinate closest to xhit
     virtual Float_t GetAnod(Float_t xhit);
     // Transform from pad to real coordinates
-    virtual void    GetPadIxy(Float_t x, Float_t y , Int_t &ix, Int_t &iy);
-    virtual void    GetPadIxy(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)
-	{GetPadIxy(x, y, ix, iy);}
+    virtual void    GetPadI(Float_t x, Float_t y , Int_t &ix, Int_t &iy);
+    virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)
+	{GetPadI(x, y, ix, iy);}
     // Transform from real to pad coordinates
-    virtual void    GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
-    virtual void    GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
-	{z=0; GetPadCxy(ix, iy, x , y);}
+    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
+    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
+	{z=0; GetPadC(ix, iy, x , y);}
     //
     // Initialisation
     virtual void Init(Int_t chamber);

@@ -14,6 +14,13 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4  2000/06/28 15:16:35  morsch
+(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
+to allow development of slat-muon chamber simulation and reconstruction code in the MUON
+framework. The changes should have no side effects (mostly dummy arguments).
+(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
+of chambers with overlapping modules (MakePadHits, Disintegration).
+
 Revision 1.3  2000/06/26 10:04:49  pcrochet
 problem with HP compiler solved (PH), static variables removed : now defined in AliMUONTriggerConstants
 
@@ -24,7 +31,7 @@ problem with HP compiler solved (PH), static variables removed : now defined in 
 #include "AliMUONPoints.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerConstants.h"
-#include "AliMUONSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONChamber.h"
 #include "TMath.h"
@@ -283,7 +290,7 @@ void AliMUONTriggerCircuit::LoadYPos(){
 
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
   AliMUONChamber*  iChamber;
-  AliMUONSegmentation*  segmentation;    
+  AliSegmentation*  segmentation;    
 
 // first plane (11)
   chamber=11;
@@ -297,7 +304,7 @@ void AliMUONTriggerCircuit::LoadYPos(){
     idStrip=TMath::Abs(code-idModule*100); // corresp. strip number in module
     idSector=segmentation->Sector(idModule,idStrip); // corresponding sector
     width=segmentation->Dpy(idSector);      // corresponding strip width
-    segmentation->GetPadCxy(idModule,idStrip,x,y,z); // get strip real position
+    segmentation->GetPadC(idModule,idStrip,x,y,z); // get strip real position
     
     fYpos11[2*istrip]=y;
     if (istrip!=15) fYpos11[2*istrip+1]=y+width/2.;
@@ -315,7 +322,7 @@ void AliMUONTriggerCircuit::LoadYPos(){
     idStrip=TMath::Abs(code-idModule*100); // corresp. strip number in module
     idSector=segmentation->Sector(idModule,idStrip); // corresponding sector
     width=segmentation->Dpy(idSector);      // corresponding strip width
-    segmentation->GetPadCxy(idModule,idStrip,x,y,z); // get strip real position
+    segmentation->GetPadC(idModule,idStrip,x,y,z); // get strip real position
     
 // using idModule!=0 prevents to fill garbage in case of circuits 
 // in the first and last rows 
@@ -340,7 +347,7 @@ void AliMUONTriggerCircuit::LoadXPos(){
   Int_t cathode=2;
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
   AliMUONChamber*  iChamber;
-  AliMUONSegmentation*  segmentation; 
+  AliSegmentation*  segmentation; 
   iChamber = &(pMUON->Chamber(chamber-1));
   segmentation=iChamber->SegmentationModel(cathode);
   
@@ -353,14 +360,14 @@ void AliMUONTriggerCircuit::LoadXPos(){
 // first case : up middle and down parts have all 8 or 16 strip 
   if ((nStrY==16)||(nStrY==8&&fx2m==0&&fx2ud==0)) { 
     for (istrip=0; istrip<nStrY; istrip++) {
-      segmentation->GetPadCxy(idModule,istrip,x,y,z); 
+      segmentation->GetPadC(idModule,istrip,x,y,z); 
       fXpos11[istrip]=x;
     }
 // second case : mixing 8 and 16 strips within same circuit      
   } else {
     for (istrip=0; istrip<nStrY; istrip++) {
       if (nStrY!=8) { cout << " bug in LoadXpos " << "\n";}
-      segmentation->GetPadCxy(idModule,istrip,x,y,z); 
+      segmentation->GetPadC(idModule,istrip,x,y,z); 
       fXpos11[2*istrip]=x-width/4.;
       fXpos11[2*istrip+1]=fXpos11[2*istrip]+width/2.;
     }

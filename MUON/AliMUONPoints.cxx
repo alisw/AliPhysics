@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.3  2000/06/27 10:13:01  morsch
+Obsolete global variables removed from file.
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -45,7 +48,6 @@ Log messages included
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliMUONSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONHit.h"
 #include "AliMUONPadHit.h"

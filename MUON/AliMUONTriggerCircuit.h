@@ -43,8 +43,8 @@ public TObject {
   Float_t GetX11Pos(Int_t istrip);
  
   //  Get reference to segmentation model
-  virtual AliMUONSegmentation*  SegmentationModel(Int_t isec) {
-      return (AliMUONSegmentation *) (*fSegmentation)[isec-1];
+  virtual AliSegmentation*  SegmentationModel(Int_t isec) {
+      return (AliSegmentation *) (*fSegmentation)[isec-1];
   }
 
  protected:

@@ -11,7 +11,7 @@
 class TMinuit;
 class AliMUONDigit;
 class AliMUONRawCluster;
-class AliMUONSegmentation;
+class AliSegmentation;
 class AliMUONResponse;
 
 
@@ -28,7 +28,7 @@ class AliMUONClusterInput : public TObject {
     AliMUONDigit* Digit(Int_t cath, Int_t i) {return (AliMUONDigit*) (fDigits[cath]->UncheckedAt(i));}
     TClonesArray* Digits(Int_t cath) {return fDigits[cath];}
     Int_t NDigits(Int_t cath) {return fNDigits[cath];}
-    AliMUONSegmentation* Segmentation(Int_t cath)  {return fSegmentation[cath];}
+    AliSegmentation* Segmentation(Int_t cath)  {return fSegmentation[cath];}
     AliMUONResponse* Response()  {return fResponse;}    
 // Fitting    
     TMinuit*      Fitter() {return fgMinuit;}
@@ -51,7 +51,7 @@ class AliMUONClusterInput : public TObject {
     // Digits
     TClonesArray*        fDigits[2];       // ! Array of pointers to digits
     Int_t                fNDigits[2];      // ! Number of digits
-    AliMUONSegmentation* fSegmentation[2]; // ! Segmentation per cathode
+    AliSegmentation*     fSegmentation[2]; // ! Segmentation per cathode
     AliMUONResponse*     fResponse;        // ! Response
     Int_t                fNseg;            // ! number of cathode planes
     Int_t                fChamber;         // ! Current chamber number

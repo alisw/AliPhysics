@@ -15,13 +15,16 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.1  2000/06/09 21:33:35  morsch
 AliMUONResponse code  from  AliMUONSegResV0.cxx
 
 */
 
 #include "AliMUONResponseV0.h"
-#include "AliMUONSegmentation.h"
+#include "AliSegmentation.h"
 #include <TMath.h>
 #include <TRandom.h>
 
@@ -41,7 +44,7 @@ Float_t AliMUONResponseV0::IntPH(Float_t eloss)
 }
 // -------------------------------------------
 
-Float_t AliMUONResponseV0::IntXY(AliMUONSegmentation * segmentation)
+Float_t AliMUONResponseV0::IntXY(AliSegmentation * segmentation)
 {
 // Calculate charge on current pad according to Mathieson distribution
 // 

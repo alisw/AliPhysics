@@ -60,7 +60,7 @@ public AliMUONResponse {
     // Pulse height from scored quantity (eloss)
     virtual Float_t  IntPH(Float_t eloss);
     // Charge disintegration
-    virtual Float_t  IntXY(AliMUONSegmentation * segmentation);
+    virtual Float_t  IntXY(AliSegmentation * segmentation);
     // Noise, zero-suppression, adc saturation
     virtual Int_t DigitResponse(Int_t digit);
 

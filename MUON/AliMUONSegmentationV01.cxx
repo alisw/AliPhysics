@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/29 12:34:09  morsch
+AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
+it usable with any other geometry class. The link to the object to which it belongs is
+established via an index. This assumes that there exists a global geometry manager
+from which the pointer to the parent object can be obtained (in our case gAlice).
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -180,7 +186,7 @@ Int_t AliMUONSegmentationV01::Sector(Int_t ix, Int_t iy)
 }
 
 void AliMUONSegmentationV01::
-GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
@@ -210,7 +216,7 @@ GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 }
 
 void AliMUONSegmentationV01::
-GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 {
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
@@ -235,7 +241,7 @@ SetPad(Int_t ix, Int_t iy)
     //
     // Sets virtual pad coordinates, needed for evaluating pad response 
     // outside the tracking program 
-    GetPadCxy(ix,iy,fx,fy);
+    GetPadC(ix,iy,fx,fy);
     fSector=Sector(ix,iy);
 }
 
@@ -259,8 +265,8 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     Float_t y02=yhit + dy;
     //
     // find the pads over which the charge distributes
-    GetPadIxy(x01,y01,fixmin,fiymin);
-    GetPadIxy(x02,y02,fixmax,fiymax);
+    GetPadI(x01,y01,fixmin,fiymin);
+    GetPadI(x02,y02,fixmax,fiymax);
     fxmin=x01;
     fxmax=x02;
     fymin=y01;
@@ -272,7 +278,7 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     if (fiymax < fiymin) fiymax=fiymin;    
     fix=fixmin;
     fiy=fiymin;
-    GetPadCxy(fix,fiy,fx,fy);
+    GetPadC(fix,fiy,fx,fy);
 }
 
 
@@ -295,13 +301,13 @@ void AliMUONSegmentationV01::NextPad()
 	if (fiy==-1) fiy++;
 	fiy++;
 //      get y-position of next row (yc), xc not used here 	
-	GetPadCxy(fix,fiy,xc,yc);
+	GetPadC(fix,fiy,xc,yc);
 //      get x-pad coordiante for first pad in row (fix)
-	GetPadIxy(fxmin,yc,fix,iyc);
+	GetPadI(fxmin,yc,fix,iyc);
     } else {
 	printf("\n Error: Stepping outside integration region\n ");
     }
-    GetPadCxy(fix,fiy,fx,fy);
+    GetPadC(fix,fiy,fx,fy);
     fSector=Sector(fix,fiy);
     if (MorePads() && 
 	(fSector ==-1 || fSector==0)) 
@@ -355,8 +361,8 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
     Ylist[i++]=iY;
 //
 //  step up 
-    AliMUONSegmentationV01::GetPadCxy(iX,iY,x,y);
-    AliMUONSegmentationV01::GetPadIxy(x+kEpsilon,y+fDpy,ixx,iyy);
+    AliMUONSegmentationV01::GetPadC(iX,iY,x,y);
+    AliMUONSegmentationV01::GetPadI(x+kEpsilon,y+fDpy,ixx,iyy);
     Xlist[i]=ixx;
     Ylist[i++]=iyy;
     isec1=AliMUONSegmentationV01::Sector(ixx,iyy);
@@ -393,8 +399,8 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 
 //
 // step down 
-    AliMUONSegmentationV01::GetPadCxy(iX,iY,x,y);
-    AliMUONSegmentationV01::GetPadIxy(x+kEpsilon,y-fDpy,ixx,iyy);
+    AliMUONSegmentationV01::GetPadC(iX,iY,x,y);
+    AliMUONSegmentationV01::GetPadI(x+kEpsilon,y-fDpy,ixx,iyy);
     Xlist[i]=ixx;
     Ylist[i++]=iyy;
     isec1=AliMUONSegmentationV01::Sector(ixx,iyy);

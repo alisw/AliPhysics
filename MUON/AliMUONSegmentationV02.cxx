@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.1  2000/06/09 21:37:56  morsch
 AliMUONSegmentationV02 code  from  AliMUONSegResV02.cxx
 
@@ -64,27 +67,27 @@ Int_t AliMUONSegmentationV02::Sector(Int_t ix, Int_t iy)
 
 void AliMUONSegmentationV02::
 
-GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
 {
-AliMUONSegmentationV01::GetPadIxy(y, x, iy, ix);
+AliMUONSegmentationV01::GetPadI(y, x, iy, ix);
 // printf("\n x,y,ix,iy %f %f %d %d", x,y,ix,iy);
 }
 
 void AliMUONSegmentationV02::
-GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
 {
-    AliMUONSegmentationV01::GetPadCxy(iy, ix, y, x);
+    AliMUONSegmentationV01::GetPadC(iy, ix, y, x);
 }
 void AliMUONSegmentationV02::SetPad(Int_t ix,Int_t iy)
 {
     //
     // Sets virtual pad coordinates, needed for evaluating pad response 
     // outside the tracking program 
-    GetPadCxy(ix,iy,fx,fy);
+    GetPadC(ix,iy,fx,fy);
     fSector=Sector(ix,iy);    
 }
 
@@ -108,13 +111,13 @@ void AliMUONSegmentationV02::NextPad()
 	if (fix==-1) fix++;
 	fix++;
 //      get y-position of next row (yc), xc not used here 	
-	GetPadCxy(fix,fiy,xc,yc);
+	GetPadC(fix,fiy,xc,yc);
 //      get x-pad coordiante for 1 pad in row (fix)
-	GetPadIxy(xc,fymin,ixc,fiy);
+	GetPadI(xc,fymin,ixc,fiy);
     } else {
 	printf("\n Error: Stepping outside integration region\n ");
     }
-    GetPadCxy(fix,fiy,fx,fy);
+    GetPadC(fix,fiy,fx,fy);
     fSector=Sector(fix,fiy);
     if (MorePads() && 
 	(fSector ==-1 || fSector==0 )) 

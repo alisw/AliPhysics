@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/28 15:16:35  morsch
+(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
+to allow development of slat-muon chamber simulation and reconstruction code in the MUON
+framework. The changes should have no side effects (mostly dummy arguments).
+(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
+of chambers with overlapping modules (MakePadHits, Disintegration).
+
 Revision 1.4  2000/06/27 09:46:57  morsch
 kMAXZOOM global constant now in AliMUONConstants
 
@@ -128,7 +135,7 @@ it is now really the Z position of the chambers.
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
 
-#include "AliMUONSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
@@ -559,8 +566,8 @@ void AliMUONDisplay::DrawSegmentation()
     Int_t icat=1;
     
     AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
-    AliMUONChamber*  iChamber;
-    AliMUONSegmentation*  seg;
+    AliMUONChamber*   iChamber;
+    AliSegmentation*  seg;
     iChamber = &(pMUON->Chamber(fChamber));
     seg=iChamber->SegmentationModel(icat);
     Float_t zpos=iChamber->Z();
@@ -577,7 +584,7 @@ void AliMUONDisplay::DrawSegmentation()
 	    {
 		if (seg->ISector()==0) continue;
 		Float_t x,y,z;
-		seg->GetPadCxy(seg->Ix(), seg->Iy(), x, y, z);
+		seg->GetPadC(seg->Ix(), seg->Iy(), x, y, z);
 		Float_t dpx=seg->Dpx(seg->ISector())/2;
 		Float_t dpy=seg->Dpy(seg->ISector())/2;
 		marker=new TMarker3DBox(x,y,zpos,dpx,dpy,0,0,0);
@@ -599,7 +606,7 @@ void AliMUONDisplay::DrawSegmentation()
 		if (seg->ISector()==0) continue;
 		
 		Float_t x,y,z;
-		seg->GetPadCxy(seg->Ix(), seg->Iy(), x, y, z);
+		seg->GetPadC(seg->Ix(), seg->Iy(), x, y, z);
 		Float_t dpx=seg->Dpx(seg->ISector())/2;
 		Float_t dpy=seg->Dpy(seg->ISector())/2;
 		marker=new TMarker3DBox(x,y,zpos,dpx,dpy,0,0,0);
@@ -883,7 +890,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     
     AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
     AliMUONChamber*       iChamber;
-    AliMUONSegmentation*  segmentation;
+    AliSegmentation*      segmentation;
     AliMUONResponse*      response;
 
     TClonesArray *muonDigits  = pMUON->DigitsAddress(chamber-1);
@@ -938,7 +945,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 
 	// get the center of the pad - add on x and y half of pad size
 	Float_t xpad, ypad, zpad;
-	segmentation->GetPadCxy(mdig->fPadX, mdig->fPadY,xpad, ypad, zpad);
+	segmentation->GetPadC(mdig->fPadX, mdig->fPadY,xpad, ypad, zpad);
 	
         Int_t isec=segmentation->Sector(mdig->fPadX, mdig->fPadY);
         Float_t dpx=segmentation->Dpx(isec)/2;
@@ -965,7 +972,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
         points->SetPoint(0,xpad,ypad,zpos);	
 	for (Int_t imark=0;imark<nPara; imark++)
 	{
-	    segmentation->GetPadCxy(mdig->fPadX + imark*offset, mdig->fPadY,xpad, ypad, zpad);
+	    segmentation->GetPadC(mdig->fPadX + imark*offset, mdig->fPadY,xpad, ypad, zpad);
 	    marker=new TMarker3DBox(xpad,ypad,zpos,dpx,dpy,0,0,0);
 	    marker->SetLineColor(2);
 	    marker->SetFillStyle(1001);

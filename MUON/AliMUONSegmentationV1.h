@@ -5,14 +5,14 @@
 
 /* $Id$ */
 
-#include "AliMUONSegmentation.h"
+#include "AliSegmentation.h"
 
 const Int_t kNzone = 3;                // Specific for chamber with equal pads
 const Int_t kNzonem1 = 2;              // kNzone - 1
 const Int_t kNzoneCUT = 30;            
 
 class AliMUONSegmentationV1 :
-public AliMUONSegmentation {
+public AliSegmentation {
  public:
     AliMUONSegmentationV1();
     AliMUONSegmentationV1(const AliMUONSegmentationV1 & segmentation);
@@ -60,13 +60,13 @@ public AliMUONSegmentation {
     // Anod wire coordinate closest to xhit
     virtual Float_t GetAnod(Float_t xhit);
     // Transform from pad to real coordinates
-    virtual void    GetPadIxy(Float_t x ,Float_t y , Int_t &ix, Int_t &iy);
-    virtual void    GetPadIxy(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)
-	{GetPadIxy(x, y, ix, iy);}
+    virtual void    GetPadI(Float_t x ,Float_t y , Int_t &ix, Int_t &iy);
+    virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)
+	{GetPadI(x, y, ix, iy);}
     // Transform from real to pad coordinates
-    virtual void    GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
-    virtual void    GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
-	{z=0; GetPadCxy(ix, iy, x , y);}
+    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
+    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
+	{z=0; GetPadC(ix, iy, x , y);}
     // Set pad position
     virtual void     SetPad(Int_t ix, Int_t iy);
     // Set hit position

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/29 12:34:09  morsch
+AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
+it usable with any other geometry class. The link to the object to which it belongs is
+established via an index. This assumes that there exists a global geometry manager
+from which the pointer to the parent object can be obtained (in our case gAlice).
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -116,7 +122,7 @@ void AliMUONSegmentationV1::SetPadSize(Float_t p1, Float_t p2)
 }
 
 void AliMUONSegmentationV1::
-GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
 //  returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
@@ -125,7 +131,7 @@ GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 }
 
 void AliMUONSegmentationV1::
-GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 {
 //  returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
@@ -148,7 +154,7 @@ Int_t AliMUONSegmentationV1::GetZone(Float_t X, Float_t Y)
 {
 // Get segmentation zone
     Int_t iX, iY;
-    GetPadIxy(X,Y,iX,iY);
+    GetPadI(X,Y,iX,iY);
     return GetZone( iX , iY );
 }
 
@@ -182,14 +188,14 @@ void AliMUONSegmentationV1::
 SetPad(Int_t ix, Int_t iy)
 {
 // Set current pad position
-    GetPadCxy(ix,iy,fx,fy);
+    GetPadC(ix,iy,fx,fy);
 }
 
 
 void AliMUONSegmentationV1::SetPadCoord(Int_t iX, Int_t iY)
 {    
 // Set current pad coordinates
-GetPadCxy(iX,iY,fx,fy);
+GetPadC(iX,iY,fx,fy);
  Float_t radius2;
  if ( ( (radius2=fx*fx+fy*fy) > frSensMax2 || radius2 < frSensMin2 ) 
       && MorePads() )
@@ -221,8 +227,8 @@ void AliMUONSegmentationV1::FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Flo
       y02 = TMath::Sign(fSensOffset, yhit);
     //
     // find the pads over which the charge distributes
-    GetPadIxy(x01,y01,fixmin,fiymin);
-    GetPadIxy(x02,y02,fixmax,fiymax);
+    GetPadI(x01,y01,fixmin,fiymin);
+    GetPadI(x02,y02,fixmax,fiymax);
     // 
     // Set current pad to lower left corner
     fix=fixmin;
@@ -368,7 +374,7 @@ void AliMUONSegmentationV1::SigGenInit(Float_t x,Float_t y,Float_t z)
 //  Initialises pad and wire position during stepping
     fxt =x;
     fyt =y;
-    GetPadIxy(x,y,fixt,fiyt);
+    GetPadI(x,y,fixt,fiyt);
     fiwt= GetiAnod(x);
 
 }
@@ -380,7 +386,7 @@ Int_t AliMUONSegmentationV1::SigGenCond(Float_t x,Float_t y,Float_t z)
 //  boundary between two wires. 
     Int_t ixt;
     Int_t iyt;
-    GetPadIxy(x,y,ixt,iyt);
+    GetPadI(x,y,ixt,iyt);
     Int_t iwt= GetiAnod(x);
     
     if ((ixt != fixt) || (iyt !=fiyt) || (iwt != fiwt)) {
@@ -440,7 +446,7 @@ Float_t AliMUONSegmentationV1::Distance2AndOffset(Int_t iX, Int_t iY, Float_t X,
     for (Int_t i=0;i<nPara; i++)
     {
 	Float_t x,y;
-	GetPadCxy(iX+i*offset,iY,x,y);
+	GetPadC(iX+i*offset,iY,x,y);
 	Float_t d2=(x-X)*(x-X) + (y-Y)*(y-Y);
 	if ( d2min > d2)
 	{

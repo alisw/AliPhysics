@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/28 15:16:35  morsch
+(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
+to allow development of slat-muon chamber simulation and reconstruction code in the MUON
+framework. The changes should have no side effects (mostly dummy arguments).
+(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
+of chambers with overlapping modules (MakePadHits, Disintegration).
+
 Revision 1.2  2000/06/28 12:19:18  morsch
 More consequent seperation of global input data services (AliMUONClusterInput singleton) and the
 cluster and hit reconstruction algorithms in AliMUONClusterFinderVS.
@@ -33,7 +40,7 @@ It also naturally takes care of the TMinuit instance.
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliMUONClusterInput.h"
-#include "AliMUONSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONDigit.h"

@@ -37,13 +37,13 @@ public AliMUONSegmentationV0 {
     // Transform from pad (wire) to real coordinates and vice versa
     //
     // Transform from pad to real coordinates
-    virtual void    GetPadIxy(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);
-    virtual void    GetPadIxy(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)
-	{GetPadIxy(x, y, ix, iy);}
+    virtual void    GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);
+    virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)
+	{GetPadI(x, y, ix, iy);}
     // Transform from real to pad coordinates
-    virtual void    GetPadCxy(Int_t   ix,Int_t   iy,Float_t &x ,Float_t &y );
-    virtual void    GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
-	{z=0; GetPadCxy(ix, iy, x , y);}
+    virtual void    GetPadC(Int_t   ix,Int_t   iy,Float_t &x ,Float_t &y );
+    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
+	{z=0; GetPadC(ix, iy, x , y);}
     //
     // Initialisation
     virtual void Init(Int_t chamber);

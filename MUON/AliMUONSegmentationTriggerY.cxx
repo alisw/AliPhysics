@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/29 12:34:09  morsch
+AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
+it usable with any other geometry class. The link to the object to which it belongs is
+established via an index. This assumes that there exists a global geometry manager
+from which the pointer to the parent object can be obtained (in our case gAlice).
+
 Revision 1.3  2000/06/26 10:01:26  pcrochet
 global variables removed
 
@@ -82,7 +88,7 @@ void AliMUONSegmentationTriggerY::Init(Int_t chamber)
 }
 
 //------------------------------------------------------------------
-void AliMUONSegmentationTriggerY::GetPadIxy(Float_t x,Float_t y,Int_t &ix,Int_t &iy){
+void AliMUONSegmentationTriggerY::GetPadI(Float_t x,Float_t y,Int_t &ix,Int_t &iy){
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //  x,y = real coordinates; ix = module number , iy = strip number
 
@@ -102,7 +108,7 @@ void AliMUONSegmentationTriggerY::GetPadIxy(Float_t x,Float_t y,Int_t &ix,Int_t 
 }
 
 //------------------------------------------------------------------
-void AliMUONSegmentationTriggerY::GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y){
+void AliMUONSegmentationTriggerY::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y){
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //  ix = module number , iy = strip number;  x,y = center of strip
   x = 0.;    
@@ -170,8 +176,8 @@ void AliMUONSegmentationTriggerY::SetPad(Int_t ix, Int_t iy)
 {
   // Sets virtual pad coordinates, needed for evaluating pad response 
   // outside the tracking program 
-  GetPadCxy(ix,iy,fx,fy);
-  GetPadIxy(fx,fy,fix,fiy);
+  GetPadC(ix,iy,fx,fy);
+  GetPadI(fx,fy,fix,fiy);
   fSector=Sector(ix,iy);    
 }
 
@@ -259,8 +265,8 @@ IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& width)
 // returns quantities needed to evaluate neighbour strip response
   Int_t ix,iy;
   Float_t xstrip,ystrip;
-  GetPadIxy(fxhit,fyhit,ix,iy);  
-  GetPadCxy(ix,iy,xstrip,ystrip);  
+  GetPadI(fxhit,fyhit,ix,iy);  
+  GetPadC(ix,iy,xstrip,ystrip);  
   x1=fxhit;        // hit x position
   x2=xstrip;       // x coordinate of the main strip
   x3=fx;           // current strip real x coordinate  
