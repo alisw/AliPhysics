@@ -13,1137 +13,277 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10  1999/12/09 14:57:51  fca
-Removal of obsolete PHOS code
+//_________________________________________________________________________
+// Base Class of PHOS.
+// Only creates the materials
+//*-- Author : Laurent Aphecetche  SUBATECH 
+//////////////////////////////////////////////////////////////////////////////
 
-Revision 1.9  1999/11/08 07:12:31  fca
-Minor corrections thanks to I.Hrivnacova
-
-Revision 1.8  1999/09/29 09:24:23  fca
-Introduction of the Copyright and cvs Log
-
-*/
-
-////////////////////////////////////////////////
-//  Manager and hits classes for set:PHOS     //
-////////////////////////////////////////////////
- 
 // --- ROOT system ---
-#include "TH1.h"
-#include "TRandom.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TBRIK.h"
-#include "TNode.h"
-#include "TMath.h"
 
 // --- Standard library ---
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <iostream.h>
 
-// --- galice header files ---
+// --- AliRoot header files ---
+
 #include "AliPHOS.h"
+#include "AliMC.h"
 #include "AliRun.h"
-
-//______________________________________________________________________________
-
 
 ClassImp(AliPHOS)
 
-//______________________________________________________________________________
-
-AliPHOS::~AliPHOS(void)
+//____________________________________________________________________________
+AliPHOS::AliPHOS(const char* name, const char* title) 
+  : AliDetector(name,title) 
 {
-  delete fHits;			// 28.12.1998
-  delete fTreePHOS;		// 28.12.1998
-  fCradles->Delete();
-  delete fCradles;
 }
 
-//______________________________________________________________________________
-
-AliPHOS::AliPHOS() :
-         fDebugLevel            (0),
-         fTreePHOS              (NULL),
-         fBranchNameOfCradles   ("AliPHOSCradles"),
-         fTreeName              ("PHOS")
+//____________________________________________________________________________
+AliPHOS::AliPHOS() : AliDetector()
 {
-   fIshunt   = 0;
-
-  if( NULL==(fCradles=new TObjArray) )
-  {
-    Error("AliPHOS","Can not create fCradles");
-    exit(1);
-  }
-  DefPars();
 }
- 
-//______________________________________________________________________________
 
-AliPHOS::AliPHOS(const char *name, const char *title)
-       : AliDetector            (name,title),
-         fDebugLevel            (0),
-         fTreePHOS              (NULL),
-         fBranchNameOfCradles   ("AliPHOSCradles"),
-         fTreeName              ("PHOS")
+//____________________________________________________________________________
+AliPHOS::~AliPHOS()
 {
-//Begin_Html
-/*
-<img src="picts/aliphos.gif">
-*/
-//End_Html
- 
-   fHits   = new TClonesArray("AliPHOShit",  405);
- 
-   fIshunt     =  0;
-
-   SetMarkerColor(kGreen);
-   SetMarkerStyle(2);
-   SetMarkerSize(0.4);
-
-  if( NULL==(fCradles=new TObjArray) ) {
-     Error("AliPHOS","Can not create fCradles");
-     exit(1);
-  }
-  DefPars();
+  delete fHits ;
+  delete fDigits ;
 }
 
-//______________________________________________________________________________
-
-void AliPHOS::DefPars()
-{ 
-      PHOSflags[0]=0;
-      PHOSflags[1]=1;
-      PHOSflags[2]=0;
-      PHOSflags[3]=0;
-      PHOSflags[4]=0;
-      PHOSflags[5]=0;
-      PHOSflags[6]=0;
-      PHOSflags[7]=0;
-      PHOSflags[8]=0;
-      PHOScell[0]=2.2;
-      PHOScell[1]=18.;
-      PHOScell[2]=0.01;
-      PHOScell[3]=0.01;
-      PHOScell[4]=1.0;
-      PHOScell[5]=0.1;
-      PHOScell[6]=0.;
-      PHOScell[7]=0.;
-      PHOScell[8]=0.;
-      PHOSradius=460.;
-      PHOSsize[0]=104;
-      PHOSsize[1]=88;
-      PHOSsize[2]=4;
-      PHOScradlesA=0.;
-      PHOSextra[0]=0.001;
-      PHOSextra[1]=6.95;
-      PHOSextra[2]=4.;
-      PHOSextra[3]=5.;
-      PHOSextra[4]=2.;
-      PHOSextra[5]=0.06;
-      PHOSextra[6]=10.;
-      PHOSextra[7]=3.;
-      PHOSextra[8]=1.;
-      PHOSTXW[0]=209.;
-      PHOSTXW[1]=71.;
-      PHOSTXW[2]=250.;
-      PHOSAIR[0]=206.;
-      PHOSAIR[1]=66.;
-      PHOSAIR[2]=244.;
-      PHOSFTI[0]=214.6;
-      PHOSFTI[1]=80.;
-      PHOSFTI[2]=260.;
-      PHOSFTI[3]=467.;
-}
-//______________________________________________________________________________
-
-void AliPHOS::AddHit(Int_t track, Int_t *vol, Float_t *hits)
-{
-  TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliPHOShit(fIshunt,track,vol,hits);
-}
- 
-//___________________________________________
-void AliPHOS::BuildGeometry()
-{
-
-  TNode *Node, *Top;
-
-  const int kColorPHOS = kRed;
-  //
-  Top=gAlice->GetGeometry()->GetNode("alice");
-
-
-  // PHOS
-  Float_t pphi=12.9399462;
-  new TRotMatrix("rot988","rot988",90,-3*pphi,90,90-3*pphi,0,0);
-  new TRotMatrix("rot989","rot989",90,-  pphi,90,90-  pphi,0,0);
-  new TRotMatrix("rot990","rot990",90,   pphi,90,90+  pphi,0,0);
-  new TRotMatrix("rot991","rot991",90, 3*pphi,90,90+3*pphi,0,0);
-  new TBRIK("S_PHOS","PHOS box","void",107.3,40,130);
-  Top->cd();
-  Node = new TNode("PHOS1","PHOS1","S_PHOS",-317.824921,-395.014343,0,"rot988");
-  Node->SetLineColor(kColorPHOS);
-  fNodes->Add(Node);
-  Top->cd();
-  Node = new TNode("PHOS2","PHOS2","S_PHOS",-113.532333,-494.124908,0,"rot989");
-  fNodes->Add(Node);
-  Node->SetLineColor(kColorPHOS);
-  Top->cd();
-  Node = new TNode("PHOS3","PHOS3","S_PHOS", 113.532333,-494.124908,0,"rot990");
-  Node->SetLineColor(kColorPHOS);
-  fNodes->Add(Node);
-  Top->cd();
-  Node = new TNode("PHOS4","PHOS4","S_PHOS", 317.824921,-395.014343,0,"rot991");
-  Node->SetLineColor(kColorPHOS);
-  fNodes->Add(Node);
-}
- 
-//___________________________________________
+//____________________________________________________________________________
 void AliPHOS::CreateMaterials()
 {
-// *** DEFINITION OF AVAILABLE PHOS MATERIALS *** 
+  // DEFINITION OF PHOS MATERIALS
 
-// CALLED BY : PHOS_MEDIA 
-// ORIGIN    : NICK VAN EIJNDHOVEN 
+  // --- The PbWO4 crystals ---
+  Float_t AX[3] = {207.19, 183.85, 16.0} ;
+  Float_t ZX[3] = {82.0, 74.0, 8.0} ;
+  Float_t WX[3] = {1.0, 1.0, 4.0} ;
+  Float_t DX = 8.28 ;
+
+  AliMixture(0, "PbWO4$", AX, ZX, DX, -3, WX) ;
+
+
+  // --- The polysterene scintillator (CH) ---
+  Float_t AP[2] = {12.011, 1.00794} ;
+  Float_t ZP[2] = {6.0, 1.0} ;
+  Float_t WP[2] = {1.0, 1.0} ;
+  Float_t DP = 1.032 ;
+
+  AliMixture(1, "Polystyrene$", AP, ZP, DP, -2, WP) ;
+
+  // --- Aluminium ---
+  AliMaterial(2, "Al$", 26.98, 13., 2.7, 8.9, 999., 0, 0) ;
+  // ---         Absorption length is ignored ^
+
+ // --- Tyvek (CnH2n) ---
+  Float_t AT[2] = {12.011, 1.00794} ;
+  Float_t ZT[2] = {6.0, 1.0} ;
+  Float_t WT[2] = {1.0, 2.0} ;
+  Float_t DT = 0.331 ;
+
+  AliMixture(3, "Tyvek$", AT, ZT, DT, -2, WT) ;
+
+  // --- Polystyrene foam ---
+  Float_t AF[2] = {12.011, 1.00794} ;
+  Float_t ZF[2] = {6.0, 1.0} ;
+  Float_t WF[2] = {1.0, 1.0} ;
+  Float_t DF = 0.12 ;
+
+  AliMixture(4, "Foam$", AF, ZF, DF, -2, WF) ;
+
+ // --- Titanium ---
+  Float_t ATIT[3] = {47.88, 26.98, 54.94} ;
+  Float_t ZTIT[3] = {22.0, 13.0, 25.0} ;
+  Float_t WTIT[3] = {69.0, 6.0, 1.0} ;
+  Float_t DTIT = 4.5 ;
+
+  AliMixture(5, "Titanium$", ATIT, ZTIT, DTIT, -3, WTIT);
+
+ // --- Silicon ---
+  AliMaterial(6, "Si$", 28.0855, 14., 2.33, 9.36, 42.3, 0, 0) ;
 
 
 
-    Int_t   ISXFLD = gAlice->Field()->Integ();
-    Float_t SXMGMX = gAlice->Field()->Max();
-    
-// --- The PbWO4 crystals --- 
-    Float_t ax[3] = { 207.19,183.85,16. };
-    Float_t zx[3] = { 82.,74.,8. };
-    Float_t wx[3] = { 1.,1.,4. };
-    Float_t dx    = 8.28;
-// --- Stainless Steel --- 
-    Float_t as[5] = { 55.847,12.011,51.9961,58.69,28.0855 };
-    Float_t zs[5] = { 26.,6.,24.,28.,14. };
-    Float_t ws[5] = { .6392,8e-4,.2,.14,.02 };
-    Float_t ds    = 8.;
-// --- The polysterene scintillator (CH) --- 
-    Float_t ap[2] = { 12.011,1.00794 };
-    Float_t zp[2] = { 6.,1. };
-    Float_t wp[2] = { 1.,1. };
-    Float_t dp    = 1.032;
-// --- Tyvek (CnH2n) 
-    Float_t at[2] = { 12.011,1.00794 };
-    Float_t zt[2] = { 6.,1. };
-    Float_t wt[2] = { 1.,2. };
-    Float_t dt    = .331;
-// --- Polystyrene foam --- 
-    Float_t af[2] = { 12.011,1.00794 };
-    Float_t zf[2] = { 6.,1. };
-    Float_t wf[2] = { 1.,1. };
-    Float_t df    = .12;
-//--- Foam thermo insulation (actual chemical composition unknown yet!) ---
-    Float_t ati[2] = { 12.011,1.00794 };
-    Float_t zti[2] = { 6.,1. };
-    Float_t wti[2] = { 1.,1. };
-    Float_t dti    = .1;
-// --- Textolit (actual chemical composition unknown yet!) --- 
-    Float_t atx[2] = { 12.011,1.00794 };
-    Float_t ztx[2] = { 6.,1. };
-    Float_t wtx[2] = { 1.,1. };
-    Float_t dtx    = 1.83;
+  // --- Foam thermo insulation ---
+  Float_t ATI[2] = {12.011, 1.00794} ;
+  Float_t ZTI[2] = {6.0, 1.0} ;
+  Float_t WTI[2] = {1.0, 1.0} ;
+  Float_t DTI = 0.1 ;
 
-    Int_t *idtmed = fIdtmed->GetArray()-699;
+  AliMixture(7, "Thermo Insul.$", ATI, ZTI, DTI, -2, WTI) ;
 
-    AliMixture(  0, "PbWO4$",          ax, zx, dx, -3, wx);
-    AliMixture(  1, "Polystyrene$",    ap, zp, dp, -2, wp);
-    AliMaterial( 2, "Al$",             26.98, 13., 2.7, 8.9, 999);
-// ---                                Absorption length^ is ignored --- 
-    AliMixture(  3, "Tyvek$",           at, zt, dt, -2, wt);
-    AliMixture(  4, "Foam$",            af, zf, df, -2, wf);
-    AliMixture(  5, "Stainless Steel$", as, zs, ds, 5, ws);
-    AliMaterial( 6, "Si$",              28.09, 14., 2.33, 9.36, 42.3);
-    AliMixture(  7, "Thermo Insul.$",   ati, zti, dti, -2, wti);
-    AliMixture(  8, "Textolit$",        atx, ztx, dtx, -2, wtx);
-    AliMaterial(99, "Air$",             14.61, 7.3, .001205, 30420., 67500);
+  // --- Textolitn ---
+  Float_t ATX[4] = {16.0, 28.09, 12.011, 1.00794} ;
+  Float_t ZTX[4] = {8.0, 14.0, 6.0, 1.0} ;
+  Float_t WTX[4] = {292.0, 68.0, 462.0, 736.0} ;
+  Float_t DTX    = 1.75 ;
 
-    AliMedium(0, "PHOS Xtal    $", 0, 1, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
-    AliMedium(2, "Al parts     $", 2, 0, ISXFLD, SXMGMX, 10., .1, .1, .001, .001);
-    AliMedium(3, "Tyvek wrapper$", 3, 0, ISXFLD, SXMGMX, 10., .1, .1, .001, .001);
-    AliMedium(4, "Polyst. foam $", 4, 0, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
-    AliMedium(5, "Steel cover  $", 5, 0, ISXFLD, SXMGMX, 10., .1, .1, 1e-4, 1e-4);
-    AliMedium(6, "Si PIN       $", 6, 0, ISXFLD, SXMGMX, 10., .1, .1, .01, .01);
-    AliMedium(7, "Thermo Insul.$", 7, 0, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
-    AliMedium(8, "Textolit     $", 8, 0, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
-    AliMedium(99, "Air          $",99, 0, ISXFLD, SXMGMX, 10., 1., .1, .1, 10);
+  AliMixture(8, "Textolit$", ATX, ZTX, DTX, -4, WTX) ;
 
-// --- Generate explicitly delta rays in the steel cover --- 
-    gMC->Gstpar(idtmed[704], "LOSS", 3.);
-    gMC->Gstpar(idtmed[704], "DRAY", 1.);
-// --- and in aluminium parts --- 
-    gMC->Gstpar(idtmed[701], "LOSS", 3.);
-    gMC->Gstpar(idtmed[701], "DRAY", 1.);
-}
+  //--- FR4  ---
+  Float_t AFR[3] = {28.0855, 15.9994, 17.749} ; 
+  Float_t ZFR[3] = {14., 8., 8.875} ; 
+  Float_t WFR[3] = {.28, .32, .4} ;
+  Float_t DFR = 1.8 ; 
+
+  AliMixture(9, "FR4$", AFR, ZFR, DFR, -3, WFR) ;
+
+  // --- The Composite Material for  micromegas (so far polyetylene) ---                                       
+  Float_t ACM[2] = {12.01, 1.} ; 
+  Float_t ZCM[2] = {6., 1.} ; 
+  Float_t WCM[2] = {1., 2.} ; 
+  Float_t DCM = 0.935 ; 
+
+  AliMixture(10, "Compo Mat$", ACM, ZCM, DCM, -2, WCM) ;
+
+  // --- Copper ---                                                                    
+  AliMaterial(11, "Cu$", 63.546, 29, 8.96, 1.43, 14.8, 0, 0) ;
  
-//______________________________________________________________________________
+  // --- G10 : Printed Circuit material ---                                                  
+  Float_t AG10[4] = { 12., 1., 16., 28.} ;
+  Float_t ZG10[4] = { 6., 1., 8., 14.} ;
+  Float_t WG10[4] = { .259, .288, .248, .205} ;
+  Float_t DG10  = 1.7 ;
+  
+  AliMixture(12, "G10$", AG10, ZG10, DG10, -4, WG10);
 
-void AliPHOS::AddPHOSCradles()
-{
-  Int_t i;
-  for(i=0;i<GetCradlesAmount();i++) {
-    
-    int n = fCradles->GetEntries();
-    fCradles->Add(new AliPHOSCradle( IsVersion(),            // geometry.
-				     GetCrystalSideSize    (),
-				     GetCrystalLength      (),
-				     GetWrapThickness      (),
-				     GetAirThickness       (),
-				     GetPIN_SideSize       (),
-				     GetPIN_Length         (),
-				     GetRadius             (),
-				     GetNz                 (),
-				     GetNphi               (),
-				     GetCradleAngle        (i)));
-    
-    if( n+1 != fCradles->GetEntries() || NULL == fCradles->At(n) )
-      {
-	cout << "  Can not create or add AliPHOSCradle.\n";
-	exit(1);
-      }
-  }
-}
+  // --- Lead ---                                                                     
+  AliMaterial(13, "Pb$", 207.2, 82, 11.35, 0.56, 0., 0, 0) ;
 
-//______________________________________________________________________________
+ // --- The gas mixture ---                                                                
+ // Co2
+  Float_t ACO[2] = {12.0, 16.0} ; 
+  Float_t ZCO[2] = {6.0, 8.0} ; 
+  Float_t WCO[2] = {1.0, 2.0} ; 
+  Float_t DCO = 0.001977 ; 
 
-Int_t AliPHOS::DistancetoPrimitive(Int_t , Int_t )
-{
-   return 9999;
-}
+  AliMixture(14, "CO2$", ACO, ZCO, DCO, -2, WCO);
+
+ // Ar
+  Float_t DAr = 0.001782 ; 
+  AliMaterial(15, "Ar$", 39.948, 18.0, DAr, 14.0, 0., 0, 0) ;   
  
-//___________________________________________
-void AliPHOS::Init()
-{
-  Int_t i;
-  //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" PHOS_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  //
-  // Here the ABSO initialisation code (if any!)
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
-}
+ // ArCo2
+  Char_t namate[21];
+  Float_t AGM[2] ; 
+  Float_t ZGM[2] ; 
+  Float_t WGM[2] ; 
+  Float_t DGM ; 
 
-//______________________________________________________________________________
+  Float_t AbsL, RadL, Density ;
+  Float_t buf[1] ;
+  Int_t nbuf ;
 
-void AliPHOS::MakeBranch(Option_t *)
-{
-// ROOT output initialization to ROOT file.
-// 
-// AliDetector::MakeBranch()  is always called.
-//
-// There will be also special tree "PHOS" with one branch "AliPHOSCradles"
-// if it was set next flag in the galice card file:
-//  * PHOSflags:    YES: X<>0   NO: X=0
-//  * PHOSflags(1) : -----X.  Create branch for TObjArray of AliPHOSCradle
-//     Examples:
-//     PHOSflags      1.
-//     PHOSflags 636301.
-// In that case special bit CradlesBranch_Bit will be set for AliPHOS
+  gMC->Gfmate((*fIdmate)[15], namate, AGM[0], ZGM[0], Density, RadL, AbsL, buf, nbuf) ; // Get properties of Ar 
+  gMC->Gfmate((*fIdmate)[14], namate, AGM[1], ZGM[1], Density, RadL, AbsL, buf, nbuf) ; // Get properties of CO2 
 
-  AliDetector::MakeBranch();
-  
-  int i;
-  float t = GetPHOS_flag(0)/10;
-  i = (int) t;
-  i = (int) ((t-i)*10);
-  if( !i )
-    return;
 
-  SetBit(CradlesBranch_Bit);
+  // Create gas mixture 
 
-  if( NULL==(fTreePHOS=new TTree(fTreeName.Data(),"PHOS events tree")) )
-  {
-    Error("MakeBranch","Can not create TTree");
-    exit(1);
-  }
-
-  if( NULL==fTreePHOS->GetCurrentFile() )
-  {
-    Error("MakeBranch","There is no opened ROOT file");
-    exit(1);
-  }
-
-  // Create a new branch in the current Root Tree.
-
-  if( NULL==fTreePHOS->Branch(fBranchNameOfCradles.Data(),"TObjArray",&fCradles,4000,0) )
-  {
-    Error("MakeBranch","Can not create branch");
-    exit(1);
-  }
-
-  printf("The branch %s has been created\n",fBranchNameOfCradles.Data());
-}
-
-//______________________________________________________________________________
-
-void AliPHOS::SetTreeAddress(void)
-{
-// ROOT input initialization.
-//
-// AliDetector::SetTreeAddress()  is always called.
-//
-// If CradlesBranch_Bit is set (see AliPHOS::MakeBranch) than fTreePHOS is
-// initilized.
-
-  AliDetector::SetTreeAddress();
-
-  if( !TestBit(CradlesBranch_Bit) )
-    return;
-
-  if( NULL==(fTreePHOS=(TTree*)gDirectory->Get((char*)(fTreeName.Data()))  ) )
-  {
-    Error("SetTreeAddress","Can not find Tree \"%s\"\n",fTreeName.Data());
-    exit(1);
-  }
-
-  TBranch *branch = fTreePHOS->GetBranch(fBranchNameOfCradles.Data());
-  if( NULL==branch )
-  {
-    Error("SetTreeAddress","Can not find branch %s in TTree:%s",fBranchNameOfCradles.Data(),fTreeName.Data());
-    exit(1);
-  }
-
-  branch->SetAddress(&fCradles);
-}
-
-//______________________________________________________________________________
-
-AliPHOSCradle *AliPHOS::GetCradleOfTheParticle(const TVector3 &p,const TVector3 &v) const
-{
-// For a given direction 'p' and source point 'v' returns pointer to AliPHOSCradle
-// in that direction or NULL if AliPHOSCradle was not found.
-
-  for( int m=0; m<fCradles->GetEntries(); m++ )
-  {
-    AliPHOS *PHOS = (AliPHOS *)this;     // Removing 'const'...
-    AliPHOSCradle *cradle = (AliPHOSCradle *)PHOS->fCradles->operator[](m);
-
-    float x,y,l;
-    const float d = cradle->GetRadius();
-    cradle->GetXY(p,v,d,x,y,l);
-
-    if( l>0 && TMath::Abs(x)<cradle->GetNz  ()*cradle->GetCellSideSize()/2 
-            && TMath::Abs(y)<cradle->GetNphi()*cradle->GetCellSideSize()/2 )
-      return cradle;
-  }
-
-  return NULL;
-}
-
-//______________________________________________________________________________
-
-void AliPHOS::Reconstruction(Float_t signal_step, UInt_t min_signal_reject)
-{
-// Call AliPHOSCradle::Reconstruction(Float_t signal_step, UInt_t min_signal_reject)
-// for all AliPHOSCradles.
-
-  for( int i=0; i<fCradles->GetEntries(); i++ )
-    GetCradle(i).Reconstruction(signal_step,min_signal_reject);
-}
-
-//______________________________________________________________________________
-
-void AliPHOS::ResetDigits(void)
-{
-  AliDetector::ResetDigits();
-
-  for( int i=0; i<fCradles->GetEntries(); i++ )
-    ((AliPHOSCradle*)(*fCradles)[i]) -> Clear();
-}
-
-//______________________________________________________________________________
-
-void AliPHOS::FinishEvent(void)
-{
-// Called at the end of each 'galice' event.
-
-  if( NULL!=fTreePHOS )
-    fTreePHOS->Fill();
-}
-
-//______________________________________________________________________________
-
-void AliPHOS::FinishRun(void)
-{
-}
-
-//______________________________________________________________________________
-
-void AliPHOS::Print(Option_t *opt)
-{
-// Print PHOS information.
-// For each AliPHOSCradle the function AliPHOSCradle::Print(opt) is called.
-
-  AliPHOS &PHOS = *(AliPHOS *)this;     // Removing 'const'...
-
-  for( int i=0; i<fCradles->GetEntries(); i++ )
-  {
-    printf("PHOS cradle %d from %d\n",i+1, fCradles->GetEntries());
-    PHOS.GetCradle(i).Print(opt);
-    printf( "---------------------------------------------------\n");
-  }
-}
-
-//______________________________________________________________________________
-void AliPHOS::SetFlags(Float_t p1,Float_t p2,Float_t p3,Float_t p4,
-                       Float_t p5,Float_t p6,Float_t p7,Float_t p8,Float_t p9)
-{
-  PHOSflags[0]=p1;
-  PHOSflags[1]=p2;
-  PHOSflags[2]=p3;
-  PHOSflags[3]=p4;
-  PHOSflags[4]=p5;
-  PHOSflags[5]=p6;
-  PHOSflags[6]=p7;
-  PHOSflags[7]=p8;
-  PHOSflags[8]=p9;
-}
-
-//______________________________________________________________________________
-void AliPHOS::SetCell(Float_t p1,Float_t p2,Float_t p3,Float_t p4,
-                       Float_t p5,Float_t p6,Float_t p7,Float_t p8,Float_t p9)
-{
-  PHOScell[0]=p1;
-  PHOScell[1]=p2;
-  PHOScell[2]=p3;
-  PHOScell[3]=p4;
-  PHOScell[4]=p5;
-  PHOScell[5]=p6;
-  PHOScell[6]=p7;
-  PHOScell[7]=p8;
-  PHOScell[8]=p9;
-}
-
-//______________________________________________________________________________
-void AliPHOS::SetRadius(Float_t radius)
-{
-   PHOSradius=radius;
-}
-
-//______________________________________________________________________________
-void AliPHOS::SetCradleSize(Int_t nz, Int_t nphi, Int_t ncradles)
-{
-   PHOSsize[0]=nz;
-   PHOSsize[1]=nphi;
-   PHOSsize[2]=ncradles;
-}
-
-//______________________________________________________________________________
-void AliPHOS::SetCradleA(Float_t angle)
-{
-   PHOScradlesA=angle;
-}
-
-//______________________________________________________________________________
-void AliPHOS::SetExtra(Float_t p1,Float_t p2,Float_t p3,Float_t p4,
-                       Float_t p5,Float_t p6,Float_t p7,Float_t p8,Float_t p9)
-{
-   PHOSextra[0] = p1;
-   PHOSextra[1] = p2;
-   PHOSextra[2] = p3;
-   PHOSextra[3] = p4;
-   PHOSextra[4] = p5;
-   PHOSextra[5] = p6;
-   PHOSextra[6] = p7;
-   PHOSextra[7] = p8;
-   PHOSextra[8] = p9;
-}
-
-//______________________________________________________________________________
-void AliPHOS::SetTextolitWall(Float_t dx, Float_t dy, Float_t dz)
-{
-   PHOSTXW[0] = dx;
-   PHOSTXW[1] = dy;
-   PHOSTXW[2] = dz;
-}
-
-//______________________________________________________________________________
-void AliPHOS::SetInnerAir(Float_t dx, Float_t dy, Float_t dz)
-{
-   PHOSAIR[0] = dx;
-   PHOSAIR[1] = dy;
-   PHOSAIR[2] = dz;
-}
-
-//______________________________________________________________________________
-void AliPHOS::SetFoam(Float_t dx, Float_t dy, Float_t dz, Float_t dr)
-{
-   PHOSFTI[0] = dx;
-   PHOSFTI[1] = dy;
-   PHOSFTI[2] = dz;
-   PHOSFTI[3] = dr;
-}
-
-ClassImp(AliPHOSCradle)
-
-//______________________________________________________________________________
-
-AliPHOSCradle::AliPHOSCradle(void) {}
-
-//______________________________________________________________________________
-
-AliPHOSCradle::AliPHOSCradle( int   Geometry           ,
-                              float CrystalSideSize    ,
-                              float CrystalLength      ,
-                              float WrapThickness      ,
-                              float AirThickness       ,
-                              float PIN_SideSize       ,
-                              float PIN_Length         ,
-                              float Radius             ,
-                              int   Nz                 ,
-                              int   Nphi               ,
-                              float Angle              ) :
-    fGeometry                   (Geometry),
-//  fCellEnergy                 (),
-//  fChargedTracksInPIN         (),
-    fCrystalSideSize            (CrystalSideSize),
-    fCrystalLength              (CrystalLength),
-    fWrapThickness              (WrapThickness),
-    fAirThickness               (AirThickness),
-    fPIN_SideSize               (PIN_SideSize),
-    fPIN_Length                 (PIN_Length),
-    fRadius                     (Radius),
-    fNz                         (Nz),
-    fNphi                       (Nphi),
-    fPhi                        (Angle)
-{
-        fCellEnergy         = TH2F("CellE","Energy deposition in a cells",fNz,0,fNz,fNphi,0,fNphi);
-        fCellEnergy           .SetDirectory(0);
-        fChargedTracksInPIN = TH2S("PINCtracks","Amount of charged tracks in PIN",fNz,0,fNz,fNphi,0,fNphi);
-        fChargedTracksInPIN   .SetDirectory(0);
-}
-
-//______________________________________________________________________________
-
-AliPHOSCradle::~AliPHOSCradle(void)        // 28.12.1998
-{
-  fGammasReconstructed.Delete();
-  fParticles          .Delete();
-}
-
-//______________________________________________________________________________
-
-void AliPHOSCradle::Clear(Option_t *)
-{
-// Clear digit. information.
-
-  fCellEnergy              .Reset();
-  fChargedTracksInPIN      .Reset();
-  GetParticles()           .Delete();
-  GetParticles()           .Compress();
-  GetGammasReconstructed() .Delete();
-  GetGammasReconstructed() .Compress();
-
-}
-
-//______________________________________________________________________________
-
-void AliPHOSCradle::GetXY(const TVector3 &p,const TVector3 &v,float R,float &x,float &y,float &l) const
-{
-// This function calculates hit position (x,y) in the CRADLE cells plain from particle in
-// the direction given by 'p' (not required to be normalized) and start point
-// given by 3-vector 'v'. So the particle trajectory is   t(l) = v + p*l
-// were 'l' is a number (distance from 'v' to CRADLE cells plain) and 't' is resulting
-// three-vector of trajectory point.
-// 
-// After the call to this function user should test that l>=0 (the particle HITED the
-// plain) and (x,y) are in the region of CRADLE:
-// 
-// Example:
-//   AliPHOSCradle cradle(......);
-//   TVector3 p(....), v(....);
-//   Float_t x,y,l;
-//   cradle.GetXY(p,v,x,y,l);
-//   if( l<0 || TMath::Abs(x)>cradle.GetNz()  *cradle.GetCellSideSize()/2
-//           || TMath::Abs(y)>cradle.GetNphi()*cradle.GetCellSideSize()/2 )
-//     cout << "Outside the CRADLE.\n";
-
-  // We have to create three vectors:
-  //    s  - central point on the PHOS surface
-  //    n1 - first vector in CRADLE plain
-  //    n2 - second vector in CRADLE plain
-  // This three vectors are orthonormalized.
-
-  double phi = fPhi/180*TMath::Pi();
-  TVector3        n1(   0.0      ,   0.0      , 1.0 ),   // Z direction (X)
-                  n2(  -sin(phi) ,   cos(phi) , 0 ),   // around beam (Y)
-                  s ( R*cos(phi) , R*sin(phi) , 0 );   // central point
-
-  const double l1_min = 1e-2;
-  double l1,
-         p_n1 = p*n1,        // * - scalar product.
-         p_n2 = p*n2,
-         v_n1 = v*n1,
-         v_n2 = v*n2,
-         s_n1 = s*n1, // 0
-         s_n2 = s*n2; // 0
-  
-  if      ( TMath::Abs(l1=p.X()-n1.X()*p_n1-n2.X()*p_n2)>l1_min )
-    { l = (-v.X()+s.X()+n1.X()*(v_n1-s_n1)+n2.X()*(v_n2-s_n2))/l1; }
-  else if ( TMath::Abs(l1=p.Y()-n1.Y()*p_n1-n2.Y()*p_n2)>l1_min )
-    { l = (-v.Y()+s.Y()+n1.Y()*(v_n1-s_n1)+n2.Y()*(v_n2-s_n2))/l1; }
-  else if ( TMath::Abs(l1=p.Z()-n1.Z()*p_n1-n2.Z()*p_n2)>l1_min )
-    { l = (-v.Z()+s.Z()+n1.Z()*(v_n1-s_n1)+n2.Z()*(v_n2-s_n2))/l1; }
-
-//         double lx = (-v.X()+s.X()+n1.X()*(v.dot(n1)-s.dot(n1))+n2.X()*(v.dot(n2)-s.dot(n2)))/
-//                     (p.X()-n1.X()*p.dot(n1)-n2.X()*p.dot(n2)),
-//                ly = (-v.Y()+s.Y()+n1.Y()*(v.dot(n1)-s.dot(n1))+n2.Y()*(v.dot(n2)-s.dot(n2)))/
-//                     (p.Y()-n1.Y()*p.dot(n1)-n2.Y()*p.dot(n2)),
-//                lz = (-v.Z()+s.Z()+n1.Z()*(v.dot(n1)-s.dot(n1))+n2.Z()*(v.dot(n2)-s.dot(n2)))/
-//                     (p.Z()-n1.Z()*p.dot(n1)-n2.Z()*p.dot(n2));
-//         cout.form("x: %g %g %g %g\n",lx,-v.X()+s.X()+n1.X()*(v.dot(n1)-s.dot(n1))+n2.X()*(v.dot(n2)-s.dot(n2)),p.X()-n1.X()*p.dot(n1)-n2.X()*p.dot(n2));
-//         cout.form("y: %g %g %g %g\n",lx,-v.Y()+s.Y()+n1.Y()*(v.dot(n1)-s.dot(n1))+n2.Y()*(v.dot(n2)-s.dot(n2)),p.Y()-n1.Y()*p.dot(n1)-n2.Y()*p.dot(n2));
-//         cout.form("z: %g %g %g %g\n",lx,-v.Z()+s.Z()+n1.Z()*(v.dot(n1)-s.dot(n1))+n2.Z()*(v.dot(n2)-s.dot(n2)),p.Z()-n1.Z()*p.dot(n1)-n2.Z()*p.dot(n2));
-//         cout.form("lx,ly,lz =   %g,%g,%g\n",lx,ly,lz);
-
-  x = p_n1*l + v_n1 - s_n1;
-  y = p_n2*l + v_n2 - s_n2;
-}
-
-//______________________________________________________________________________
-
-void AliPHOSCradle::Print(Option_t *opt)
-{
-// Print AliPHOSCradle information.
-// 
-// options:  'd' - print energy deposition for EVERY cell
-//           'p' - print particles list that hit the cradle
-//           'r' - print list of reconstructed particles
-
-  AliPHOSCradle *cr = (AliPHOSCradle *)this;     // Removing 'const'...
-
-  printf("AliPHOSCradle:  Nz=%d  Nphi=%d, fPhi=%f, E=%g\n",fNz,fNphi,fPhi,
-       cr->fCellEnergy.GetSumOfWeights());
-
-  if( NULL!=strchr(opt,'d') )
-  {
-    printf("\n\nCells Energy (in MeV):\n\n   |");
-    for( int x=0; x<fNz; x++ )
-      printf(" %4d|",x+1);
-    printf("\n");
-
-    for( int y=fNphi-1; y>=0; y-- )
-    {
-      printf("%3d|",y+1);
-      for( int x=0; x<fNz; x++ )
-        printf("%6d",(int)(cr->fCellEnergy.GetBinContent(cr->fCellEnergy.GetBin(x,y))*1000));
-      printf("\n");
-    }
-    printf("\n");
-  }
-
-  if( NULL!=strchr(opt,'p') )
-  {
-    printf("This cradle was hit by %d particles\n",
-         ((AliPHOSCradle*)this)->GetParticles().GetEntries());
-    TObjArray &p=((AliPHOSCradle*)this)->GetParticles();
-    for( int i=0; i<p.GetEntries(); i++ )
-      ((AliPHOSgamma*)(p[i]))->Print();
-  }
-
-  if( NULL!=strchr(opt,'p') )
-  {
-    printf("Amount of reconstructed gammas is %d\n",
-         ((AliPHOSCradle*)this)->GetGammasReconstructed().GetEntries());
-
-    TObjArray &p=((AliPHOSCradle*)this)->GetGammasReconstructed();
-    for( int i=0; i<p.GetEntries(); i++ )
-      ((AliPHOSgamma*)(p[i]))->Print();
-  }
-}
-
-//______________________________________________________________________________
-
-void AliPHOSCradle::Distortion(const TH2F *Noise, const TH2F *Stochastic, const TH2F *Calibration)
-{
-// This function changes histogram of cell energies fCellEnergy on the base of input
-// histograms Noise, Stochastic, Calibration. The histograms must have
-// size Nz x Nphi. 
-
-  //////////////////////////////////
-  // Testing the histograms size. //
-  //////////////////////////////////
-  
-  if( fNz!=fCellEnergy.GetNbinsX() || fNphi!=fCellEnergy.GetNbinsY() )
-  {
-    printf      ("Bad size of CellEnergy!   Must be:   Nz x Nphi = %d x %d\n"
-                 "but size of CellEnergy is:  %d x %d\n",
-                 fNz,fNphi,fCellEnergy.GetNbinsX(),fCellEnergy.GetNbinsY());
-    exit(1);
-  }
-
-  if( fNz!=fChargedTracksInPIN.GetNbinsX() || fNphi!=fChargedTracksInPIN.GetNbinsY() )
-  {
-    printf      ("Bad size of ChargedTracksInPIN!   Must be:   Nz x Nphi = %d x %d\n"
-                 "but size of ChargedTracksInPIN is:  %d x %d\n",
-                 fNz,fNphi,fChargedTracksInPIN.GetNbinsX(),fChargedTracksInPIN.GetNbinsY());
-    exit(1);
-  }
-
-  if( NULL!=Noise && (fNz!=Noise->GetNbinsX() || fNphi!=Noise->GetNbinsX()) )
-  {
-    printf      ("Bad size of Noise!   Must be:   Nz x Nphi = %d x %d\n"
-                 "but size of Noise is:  %d x %d\n",
-                 fNz,fNphi,fChargedTracksInPIN.GetNbinsX(),fChargedTracksInPIN.GetNbinsY());
-    exit(1);
-  }
-
-  if( NULL!=Stochastic && (fNz!=Stochastic->GetNbinsX() || fNphi!=Stochastic->GetNbinsX()) )
-  {
-    printf      ("Bad size of Stochastic!   Must be:   Nz x Nphi = %d x %d\n"
-                 "but size of Stochastic is:  %d x %d\n",
-                 fNz,fNphi,fChargedTracksInPIN.GetNbinsX(),fChargedTracksInPIN.GetNbinsY());
-    exit(1);
-  }
-
-  if( NULL!=Calibration && (fNz!=Calibration->GetNbinsX() || fNphi!=Calibration->GetNbinsX()) )
-  {
-    printf      ("Bad size of Calibration!   Must be:   Nz x Nphi = %d x %d\n"
-                 "but size of Calibration is:  %d x %d\n",
-                 fNz,fNphi,fChargedTracksInPIN.GetNbinsX(),fChargedTracksInPIN.GetNbinsY());
-    exit(1);
-  }
-
-  ////////////////////
-  // Do distortion! //
-  ////////////////////
-
-  for( int y=0; y<fNphi; y++ )
-    for( int x=0; x<fNz; x++ )
-    {
-      const int n = fCellEnergy.GetBin(x,y);   // Bin number
-      static TRandom r;
-    
-      Float_t   E_old=fCellEnergy.GetBinContent(n),   E_new=E_old;
-
-      if( NULL!=Stochastic )
-        E_new   = r.Gaus(E_old,sqrt(E_old)*GetDistortedValue(Stochastic,n));
-
-      if( NULL!=Calibration )
-        E_new  *=  GetDistortedValue(Calibration,n);
-
-      if( NULL!=Noise )
-        E_new  +=  GetDistortedValue(Noise,n);
-
-      fCellEnergy.SetBinContent(n,E_new);
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-TH2F* AliPHOSCradle::CreateHistForDistortion(const char *name, const char *title,
-                                             Int_t Nx, Int_t Ny,
-                                             Float_t MU_mu,    Float_t MU_sigma,
-                                             Float_t SIGMA_mu, Float_t SIGMA_sigma)
-{
-// Create (new TH2F(...)) histogram with information (for every bin) that will
-// be used for VALUE creation.
-// Two values will be created for each bin:
-// MU    = TRandom::Gaus(MU_mu,MU_sigma)
-// and
-// SIGMA = TRandom::Gaus(SIGMA_mu,SIGMA_sigma)
-// The VALUE in a particluar bin will be equal
-// VALUE = TRandom::Gaus(MU,SIGMA)
-// 
-// Do not forget to delete the histogram at the end of the work.
-
-  TH2F *h = new TH2F( name,title, Nx,1,Nx, Ny,1,Ny );
-  if( h==NULL )
-  {
-    Error("CreateHistForDistortion","Can not create the histogram");
-    exit(1);
-  }
-  h->SetDirectory(0);
-
-  for( int y=0; y<Ny; y++ )
-    for( int x=0; x<Nx; x++ )
-    {
-      const int n = h->GetBin(x,y);
-      h->SetBinContent(n,r.Gaus(   MU_mu,   MU_sigma));
-      h->SetBinError  (n,r.Gaus(SIGMA_mu,SIGMA_sigma));
-    }
-
-  return h;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-Float_t AliPHOSCradle::GetDistortedValue(const TH2F *h, UInt_t n)
-{
-  return r.Gaus(((TH2F*)h)->GetBinContent(n),n);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//______________________________________________________________________________
-
-#ifdef WIN32
-  #define common_for_event_storing COMMON_FOR_EVENT_STORING
-#else
-  #define common_for_event_storing common_for_event_storing_
-#endif
-
-/* extern "C" */ struct
-{
-  enum { crystals_matrix_amount_max=4, crystals_in_matrix_amount_max=40000 };
-
-  // Event-independent information
-  UShort_t      crystals_matrix_amount_PHOS,
-                crystal_matrix_type,
-                amount_of_crystals_on_Z,
-                amount_of_crystals_on_PHI;
-  Float_t       radius,
-                crystal_size,
-                crystal_length,
-                matrix_coordinate_Z             [crystals_matrix_amount_max],
-                matrix_coordinate_PHI           [crystals_matrix_amount_max];
-  UInt_t        event_number;
-  UShort_t      crystals_amount_with_amplitudes [crystals_matrix_amount_max],
-                crystals_amplitudes_Iad         [crystals_matrix_amount_max]
-                                                [crystals_in_matrix_amount_max][2];
-} common_for_event_storing;
-
-//       integer*4 crystals_amount_max,crystals_in_matrix_amount_max,
-//      +          crystals_matrix_amount_max
-//       parameter (crystals_matrix_amount_max=4)
-//       parameter (crystals_in_matrix_amount_max=40000)
-//       parameter (crystals_amount_max =crystals_matrix_amount_max*
-//      +                                crystals_in_matrix_amount_max)
-// 
-// * All units are in GeV, cm, radian
-//       real       crystal_amplitudes_unit, radius_unit,
-//      +           crystal_size_unit, crystal_length_unit,
-//      +           matrix_coordinate_Z_unit, matrix_coordinate_PHI_unit
-//       integer    crystal_amplitudes_in_units_min
-//       parameter (crystal_amplitudes_in_units_min        = 1)
-//       parameter (crystal_amplitudes_unit                = 0.001 ) ! 1.0  MeV
-//       parameter (radius_unit                            = 0.1   ) ! 0.1  cm
-//       parameter (crystal_size_unit                      = 0.01  ) ! 0.01 cm
-//       parameter (crystal_length_unit                    = 0.01  ) ! 0.01 cm
-//       parameter (matrix_coordinate_Z_unit               = 0.1   ) ! 0.1  cm
-//       parameter (matrix_coordinate_PHI_unit             = 1e-4  ) ! 1e-4 radian
-// 
-//       integer*2 crystals_matrix_amount_PHOS, crystal_matrix_type,
-//      +          amount_of_crystals_on_Z, amount_of_crystals_on_PHI,
-//      +          crystals_amount_with_amplitudes, crystals_amplitudes_Iad
-//       integer*4 event_number
-// 
-//       real      radius, crystal_size, crystal_length,
-//      +          matrix_coordinate_Z, matrix_coordinate_PHI
-// 
-//       real      crystals_amplitudes, crystals_energy_total
-//       integer   event_file_unit_number
-// 
-//       common /common_for_event_storing/
-//      + ! Event-independent information
-//      +        crystals_matrix_amount_PHOS,
-//      +        crystal_matrix_type,
-//      +        amount_of_crystals_on_Z,
-//      +        amount_of_crystals_on_PHI,
-//      +        radius,
-//      +        crystal_size,
-//      +        crystal_length,
-//      +        matrix_coordinate_Z     (crystals_matrix_amount_max),
-//      +        matrix_coordinate_PHI   (crystals_matrix_amount_max),
-//      +
-//      + ! Event-dependent information
-//      +        event_number,
-//      +        crystals_amount_with_amplitudes
-//      +                                (crystals_matrix_amount_max),
-//      +        crystals_amplitudes_Iad (2,crystals_in_matrix_amount_max,
-//      +                                 crystals_matrix_amount_max),
-//      +        
-//      + ! These information don't store in data file
-//      +        crystals_amplitudes     (crystals_amount_max),
-//      +        crystals_energy_total,
-//      +        event_file_unit_number
-
-
-// 	parameter (NGp=1000,nsps=10,nvertmax=1000)
-//         COMMON /GAMMA/KG,MW(ngp),ID(ngp),JD(ngp),E(ngp),E4(ngp),
-//      ,  XW(ngp),YW(ngp),ES(nsps,ngp),ET(nsps,ngp),ISsd(ngp),
-//      ,  IGDEV(ngp),ZGDEV(ngp),sigexy(3,ngp),Emimx(2,nsps,ngp),
-//      ,  kgfix,igfix(ngp),cgfix(3,ngp),sgfix(3,ngp),hiw(ngp),
-//      ,  wsw(nsps,ngp),h1w(ngp),h0w(ngp),raxay(5,ngp),
-//      ,  sigmaes0(nsps,ngp),dispeces(nsps,ngp),
-//      ,  igamvert(ngp)
-
-
-#ifdef WIN32
-#define rcgamma RCGAMMA
-#else
-#define rcgamma rcgamma_
-#endif
-
-/* extern "C" */ struct
-{
-  enum {NGP=1000, nsps=10, nvertmax=1000};
-  int   recons_gammas_amount, mw[NGP],ID[NGP],JD[NGP];
-  float E[NGP], E4[NGP], XW[NGP], YW[NGP], ES[NGP][nsps],ET[NGP][nsps],ISsd[NGP],
-        igdev[NGP],Zgdev[NGP];
-//      sigexy(3,ngp),Emimx(2,nsps,ngp),
-//   ,  kgfix,igfix(ngp),cgfix(3,ngp),sgfix(3,ngp),hiw(ngp),
-//   ,  wsw(nsps,ngp),h1w(ngp),h0w(ngp),raxay(5,ngp),
-//   ,  sigmaes0(nsps,ngp),dispeces(nsps,ngp),
-//   ,  igamvert(ngp)
-} rcgamma;
-
-/*
-#ifdef WIN32
-#define reconsfirst RECONSFIRST
-#define type_of_call _stdcall
-#else
-#define reconsfirst reconsfirst_
-#define type_of_call
-#endif
-
-extern "C" void type_of_call reconsfirst(const float &,const float &);
-*/
-
-void AliPHOSCradle::Reconstruction(Float_t signal_step, UInt_t min_signal_reject)
-{
-// Call of PHOS reconstruction program.
-// signal_step=0.001  GeV (1MeV)
-// min_signal_reject = 15 or 30 MeV
-
-
-  common_for_event_storing.event_number                       = 0;  // We do not know event number?
-  common_for_event_storing.crystals_matrix_amount_PHOS        = 1;
-  common_for_event_storing.crystal_matrix_type                = 1; // 1 - rectangular
-  common_for_event_storing.amount_of_crystals_on_Z            = fNz;
-  common_for_event_storing.amount_of_crystals_on_PHI          = fNphi;
-
-  common_for_event_storing.radius                             = fRadius;
-  common_for_event_storing.crystal_size                       = GetCellSideSize();
-  common_for_event_storing.crystal_length                     = fCrystalLength;
-
-  common_for_event_storing.matrix_coordinate_Z            [0] = 0;
-  common_for_event_storing.matrix_coordinate_PHI          [0] = fPhi;
-
-  #define  k    common_for_event_storing.crystals_amount_with_amplitudes[0] 
-  k=0;
-
-  for( int y=0; y<fNphi; y++ )
-    for( int x=0; x<fNz; x++ )
-    {
-      UInt_t    n       = fCellEnergy.GetBin(x,y);
-      UInt_t    signal  = (int) (fCellEnergy.GetBinContent(n)/signal_step);
-      if( signal>=min_signal_reject )
-      {
-        common_for_event_storing.crystals_amplitudes_Iad[0][k][0] = signal;
-        common_for_event_storing.crystals_amplitudes_Iad[0][k][1] = x + y*fNz;
-        k++;
-      }
-    }
-  #undef  k
-
-  GetGammasReconstructed().Delete();
-  GetGammasReconstructed().Compress();
-
-  const float   stochastic_term   = 0.03,        // per cents over sqrt(E);  E in GeV
-                electronic_noise  = 0.01;        // GeV
-//  reconsfirst(stochastic_term,electronic_noise); // Call of reconstruction program.
-
-  for( int i=0; i<rcgamma.recons_gammas_amount; i++ )
-  {
-//     new (GetGammasReconstructed().UncheckedAt(i) ) AliPHOSgamma;
-//     AliPHOSgamma &g = *(AliPHOSgamma*)(GetGammasReconstructed().UncheckedAt(i));
-
-    AliPHOSgamma *gggg = new AliPHOSgamma;
-    if( NULL==gggg )
-    {
-      Error("Reconstruction","Can not create AliPHOSgamma");
-      exit(1);
-    }
-
-    GetGammasReconstructed().Add(gggg);
-    AliPHOSgamma &g=*gggg;
-    
-    Float_t thetta, alpha, betta, R=fRadius+rcgamma.Zgdev[i]/10;
-
-    g.fX      = rcgamma.YW[i]/10;
-    g.fY      = rcgamma.XW[i]/10;
-    g.fE      = rcgamma.E [i];
-
-    thetta      = atan(g.fX/R);
-
-    alpha = atan(g.fY/R);
-    betta = fPhi/180*TMath::Pi() + alpha;
-
-    g.fPx = g.fE * cos(thetta) * cos(betta);
-    g.fPy = g.fE * cos(thetta) * sin(betta);
-    g.fPz = g.fE * sin(thetta);
-  }
-}
-
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-
-ClassImp(AliPHOSgamma)
-
-//______________________________________________________________________________
-
-void AliPHOSgamma::Print(Option_t *)
-{
-  float mass = fE*fE - fPx*fPx - fPy*fPy - fPz*fPz;
-
-  if( mass>=0 )
-    mass =  sqrt( mass);
-  else
-    mass = -sqrt(-mass);
-
-  printf("XY=(%+7.2f,%+7.2f)  (%+7.2f,%+7.2f,%+7.2f;%7.2f)  mass=%8.4f  Ipart=%2d\n",
-          fX,fY,fPx,fPy,fPz,fE,mass,fIpart);
-}
-
-//______________________________________________________________________________
-
-AliPHOSgamma &AliPHOSgamma::operator=(const AliPHOSgamma &g)
-{
-  fX           = g.fX;
-  fY           = g.fY;
-  fE           = g.fE;
-  fPx          = g.fPx;
-  fPy          = g.fPy;
-  fPz          = g.fPz;
-  fIpart       = g.fIpart;
-
-  return *this;
-}
-
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-
-ClassImp(AliPHOShit)
-
-//______________________________________________________________________________
-
-AliPHOShit::AliPHOShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
-AliHit(shunt, track)
-{
-   Int_t i;
-   for (i=0;i<5;i++) fVolume[i] = vol[i];
-   fX       = hits[0];
-   fY       = hits[1];
-   fZ       = hits[2];
-   fELOS    = hits[3];
-}
+  Float_t ArContent    = 0.80 ;  // Ar-content of the Ar/CO2-mixture (80% / 20%) 
  
-//______________________________________________________________________________
+  WGM[0] = ArContent;
+  WGM[1] = 1. - ArContent ;
+  DGM    = WGM[0] * DAr + WGM[1] * DCO;
+
+  AliMixture(16, "ArCO2$", AGM, ZGM, DGM,  2, WGM) ;
+
+ 
+  // --- Air ---
+  AliMaterial(99, "Air$", 14.61, 7.3, 0.001205, 30420., 67500., 0, 0) ;
+  
+ 
+  // DEFINITION OF THE TRACKING MEDIA
+
+  // for PHOS: idtmed[699->798] equivalent to fIdtmed[0->100]
+  Int_t * idtmed = fIdtmed->GetArray() - 699 ; 
+  Int_t   ISXFLD = gAlice->Field()->Integ() ;
+  Float_t SXMGMX = gAlice->Field()->Max() ;
+
+  // The scintillator of the calorimeter made of PBW04                              -> idtmed[699]
+  AliMedium(0, "PHOS Xtal    $", 0, 1,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+  // The scintillator of the CPV made of Polystyrene scintillator                   -> idtmed[700]
+  AliMedium(1, "CPV scint.   $", 1, 1,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+  // Various Aluminium parts made of Al                                             -> idtmed[701]
+  AliMedium(2, "Al parts     $", 2, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
+
+  // The Tywek which wraps the calorimeter crystals                                 -> idtmed[702]
+  AliMedium(3, "Tyvek wrapper$", 3, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
+
+  // The Polystyrene foam around the calorimeter module                             -> idtmed[703]
+  AliMedium(4, "Polyst. foam $", 4, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+  // The Titanium around the calorimeter crystal                                    -> idtmed[704]
+  AliMedium(5, "Titan. cover $", 5, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.0001, 0.0001, 0, 0) ;
+
+  // The Silicon of the pin diode to read out the calorimeter crystal               -> idtmed[705] 
+ AliMedium(6, "Si PIN       $", 6, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.01, 0.01, 0, 0) ;
+
+ // The thermo insulating material of the box which contains the calorimeter module -> idtmed[706]
+  AliMedium(7, "Thermo Insul.$", 7, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+  // The Textolit which makes up the box which contains the calorimeter module      -> idtmed[707]
+  AliMedium(8, "Textolit     $", 8, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+  // FR4: The Plastic which makes up the frame of micromegas                        -> idtmed[708]
+  AliMedium(9, "FR4 $", 9, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.0001, 0, 0) ; 
+
+
+  // The Composite Material for  micromegas                                         -> idtmed[709]
+  AliMedium(10, "CompoMat   $", 10, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+  // Copper                                                                         -> idtmed[710]
+  AliMedium(11, "Copper     $", 11, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.0001, 0, 0) ;
+
+  // G10: Printed Circuit material                                                  -> idtmed[711]
+ 
+  AliMedium(12, "G10        $", 12, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.01, 0, 0) ;
+
+  // The Lead                                                                       -> idtmed[712]
+ 
+  AliMedium(13, "Lead      $", 13, 0,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+  // The gas mixture: ArCo2                                                         -> idtmed[715]
+ 
+  AliMedium(16, "ArCo2      $", 16, 1,
+	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.01, 0, 0) ;
+ 
+  // Air                                                                            -> idtmed[798] 
+  AliMedium(99, "Air          $", 99, 0,
+	    ISXFLD, SXMGMX, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
+
+  // --- Set decent energy thresholds for gamma and electron tracking
+
+  // Tracking threshold for photons and electrons in the scintillator crystal 
+  gMC->Gstpar(idtmed[699], "CUTGAM",0.5E-4) ; 
+  gMC->Gstpar(idtmed[699], "CUTELE",1.0E-4) ;
+
+ // Tracking threshold for photons and electrons in the gas 
+  gMC->Gstpar(idtmed[715], "CUTGAM",0.5E-4) ; 
+  gMC->Gstpar(idtmed[715], "CUTELE",1.0E-4) ;
+
+  // --- Generate explicitly delta rays in the titan cover ---
+  gMC->Gstpar(idtmed[704], "LOSS",3.) ;
+  gMC->Gstpar(idtmed[704], "DRAY",1.) ;
+
+  // --- and in aluminium parts ---
+  gMC->Gstpar(idtmed[701], "LOSS",3.) ;
+  gMC->Gstpar(idtmed[701], "DRAY",1.) ;
+
+}

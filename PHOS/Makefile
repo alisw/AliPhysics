@@ -9,7 +9,14 @@ PACKAGE = PHOS
 
 # C++ sources
 
-SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx
+SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSHit.cxx \
+                   AliPHOSGeometry.cxx \
+                   AliPHOSDigit.cxx \
+                   AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx AliPHOSPpsdRecPoint.cxx \
+		   AliPHOSClusterizer.cxx AliPHOSClusterizerv1.cxx  AliPHOSLink.cxx \
+		   AliPHOSReconstructioner.cxx  AliPHOSTrackSegment.cxx \
+                   AliPHOSTrackSegmentMaker.cxx AliPHOSTrackSegmentMakerv1.cxx
+
 
 # C++ Headers
 
@@ -21,12 +28,6 @@ DICT          = PHOSCint.cxx
 DICTH         = $(DICT:.cxx=.h)
 DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
-# FORTRAN sources
-
-# FORTRAN Objects
-
-# C Objects
-
 # C++ Objects
 
 OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
@@ -34,12 +35,10 @@ OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 # C++ compilation flags
 
 CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/
- 
-# FORTRAN compilation flags
 
-ALSRCS  = $(SRCS)
+ALSRCS  = $(SRCS) $(SHSRCS) $(RCSRCS) $(DUSRCS) dummies.c
 
-ALOBJS  = $(OBJS)
+ALOBJS  = $(SHOBJS) $(RCOBJS) $(DUOBJS)
 
 ##### COMMANDS ##### 
 
@@ -53,7 +52,7 @@ $(DICT):					$(HDRS)
 
 depend:				$(SRCS) 
 
-TOCLEAN		=	$(OBJS) *Cint.cxx *Cint.h
+TOCLEAN		=	 $(OBJS) *Cint.cxx *Cint.h
 
 ############################### General Macros ################################
 
