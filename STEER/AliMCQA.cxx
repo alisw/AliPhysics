@@ -273,7 +273,7 @@ void AliMCQA::StepManager(Int_t id)
     static  Double_t mpim=0;
     static  Double_t mep=0;
     static  Double_t mem=0;
-    Double_t mass=0;
+    Double_t mass = 0;
     Int_t num = gMC->TrackPid();
 
     switch (num) {
@@ -298,7 +298,8 @@ void AliMCQA::StepManager(Int_t id)
       mass=mem;
       break;
     default:
-      mass =gAlice->PDGDB()->GetParticle(num)->Mass();
+	if (gAlice->PDGDB()->GetParticle(num))
+	    mass = gAlice->PDGDB()->GetParticle(num)->Mass();
       break; 
     }
 
