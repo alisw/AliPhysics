@@ -54,6 +54,8 @@ ClassImp(AliEMCALDigit)
   fPrimary = 0 ;
   fIparent = 0 ;
   fMaxIter = 0;
+  fTime = 0. ; 
+  fTimeR = 0. ; 
 }
 
 //____________________________________________________________________________
@@ -67,6 +69,7 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
   fIparent = new Int_t[fNMaxiparent] ; 
   fAmp         = DigEnergy ;
   fTime        = time ;
+  fTimeR       = fTime ;
   fId          = id ;
   fIndexInList = index ; 
   fMaxIter     = 5;
@@ -109,6 +112,7 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit) : AliDigitNew(digit)
   fIparent[j]  = digit.fIparent[j] ;
   fAmp         = digit.fAmp ;
   fTime        = digit.fTime ;
+  fTimeR       = digit.fTimeR ;
   fId          = digit.fId;
   fMaxIter     = digit.fMaxIter;
   fIndexInList = digit.fIndexInList ; 
@@ -222,6 +226,7 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
   fAmp += digit.fAmp ;
   if(fTime > digit.fTime)
     fTime = digit.fTime ;
+  fTimeR = fTime ; 
 
   Int_t max1 = fNprimary ; 
   Int_t max2 = fNiparent ;  

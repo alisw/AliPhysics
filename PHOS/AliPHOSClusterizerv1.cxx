@@ -140,7 +140,7 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
   Int_t ievent ;
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent, "D");
-
+    
     GetCalibrationParameters() ;
 
     fNumberOfEmcClusters  = fNumberOfCpvClusters  = 0 ;

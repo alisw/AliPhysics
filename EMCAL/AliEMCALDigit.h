@@ -47,10 +47,12 @@ class AliEMCALDigit : public AliDigitNew {
   Int_t   GetIparent(Int_t index) const ;
   Float_t GetPhi() const;
   Float_t GetTime(void) const {return fTime ;}
+  Float_t GetTimeR(void) const {return fTimeR ;}
   Bool_t  IsSortable() const { return kTRUE ; }
   void    SetAmp(Int_t amp) { fAmp= amp ; } 
   void    SetId(Int_t id) {fId = id ;}
   void    SetTime(Float_t time) {fTime = time ;}
+  void    SetTimeR(Float_t time) {fTimeR = time ;}
   void    ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
  
  private: 
@@ -64,8 +66,9 @@ class AliEMCALDigit : public AliDigitNew {
   Int_t *fIparent ;     //[fNMaxiparent] Array of parents       
   Int_t fMaxIter  ;     // Number to Increment Maxiparent, and MaxPrimary if default is not sufficient
   Float_t fTime ;       // Calculated time  
-
-  ClassDef(AliEMCALDigit,1)   // Digit in EMCAL 
+  Float_t fTimeR ;      // Earliest time: to be used by Digits2Raw
+ 
+  ClassDef(AliEMCALDigit,2)   // Digit in EMCAL 
 
 } ;
 

@@ -47,6 +47,8 @@ ClassImp(AliPHOSDigit)
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
   fPrimary = 0;
+  fTime = 0. ; 
+  fTimeR = 0. ; 
 }
 
 //____________________________________________________________________________
@@ -56,6 +58,7 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t tim
 
   fAmp         = digEnergy ;
   fTime        = time ;
+  fTimeR       = fTime ;
   fId          = id ;
   fIndexInList = index ; 
   if( primary != -1){
@@ -84,6 +87,7 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) : AliDigitNew(digit)
     fPrimary = 0 ;
   fAmp         = digit.fAmp ;
   fTime        = digit.fTime ;
+  fTimeR       = digit.fTimeR ;
   fId          = digit.fId;
   fIndexInList = digit.fIndexInList ; 
 }
@@ -135,7 +139,7 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
 void AliPHOSDigit::Print() const
 {
   // Print the digit together with list of primaries
-  printf("PHOS digit: Amp=%d, Id=%d, Time=%f, NPrim=%d ",fAmp,fId,fTime,fNprimary);
+  printf("PHOS digit: Amp=%d, Id=%d, Time=%e, TimeR=%e, NPrim=%d ",fAmp,fId,fTime,fTimeR,fNprimary);
   for(Int_t index = 0; index <fNprimary; index ++ )
     printf(" %d ",fPrimary[index]); 
   printf("\n") ;
@@ -186,6 +190,7 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
    fAmp += digit.fAmp ;
    if(fTime > digit.fTime)
       fTime = digit.fTime ;
+   fTimeR = fTime ; 
    return *this ;
 }
 //____________________________________________________________________________

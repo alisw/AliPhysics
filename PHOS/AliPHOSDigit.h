@@ -45,10 +45,12 @@ class AliPHOSDigit : public AliDigitNew {
   Int_t   GetNprimary() const { return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 
   Float_t GetTime(void) const {return fTime ;}
+  Float_t GetTimeR(void) const {return fTimeR ;}
   Bool_t  IsSortable() const { return kTRUE ; }
   void    Print() const;
   void    SetAmp(Int_t Amp) { fAmp=Amp ; } 
-  void    SetTime(Float_t Time) {fTime = Time ;}
+  void    SetTime(Float_t time) {fTime = time ;}
+  void    SetTimeR(Float_t time) {fTimeR = time ;}
   void    ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
 
  private:
@@ -56,8 +58,9 @@ class AliPHOSDigit : public AliDigitNew {
   Int_t fNprimary ;        // Number of primaries
   Int_t * fPrimary ;       //[fNprimary] Array of primaries      
   Float_t fTime ;          // Calculcated time 
+  Float_t fTimeR ;         // Earliest time: to be used by Digits2Raw
     
-  ClassDef(AliPHOSDigit,2)   // Digit in PHOS 
+  ClassDef(AliPHOSDigit,3)   // Digit in PHOS 
 
 } ;
 
