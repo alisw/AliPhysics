@@ -56,7 +56,6 @@
 
 #include "AliDetector.h"
 #include "AliFMDReconstParticles.h"
-#include "AliFMDReconstruction.h"
 #include "AliFMDdigit.h"
 #include "AliFMDhit.h"
 #include "AliFMDv1.h"

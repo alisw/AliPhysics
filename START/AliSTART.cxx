@@ -56,7 +56,6 @@
 #include "AliSTARTdigit.h"
 #include "AliSTARThit.h"
 #include "AliSTARThitPhoton.h"
-#include "AliSTARTvertex.h"
 #include "AliMC.h"
 #include "AliSTARTDigitizer.h"
 
