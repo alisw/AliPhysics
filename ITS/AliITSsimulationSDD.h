@@ -44,7 +44,7 @@ public:
   virtual void SetScaleFourier(Int_t scale=4) {fScaleSize=scale;}
   Int_t ScaleFourier() {return fScaleSize;}
   // set perpendicular tracks flag
-  virtual void SetPerpendTracksFlag(Bool_t flag=1) {fFlag=1;}
+  virtual void SetPerpendTracksFlag(Bool_t flag=1) {fFlag=flag;}
   Bool_t PerpendTracksFlag() {return fFlag;} 
   // set compression parameters for 2D or 1D via response functions
   void SetCompressParam();
