@@ -481,7 +481,7 @@ void AliFRAMEv2::CreateGeometry()
   }
 // Position of Holes for PHOS (P) and RICH (R) starting at 6h
 //                 P  P  P  -  -  R  R  R  -  -  -  -  -  -  -  -  P  P
-  Int_t mod[18] = {1, 1, 1, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
+  Int_t mod[18] = {0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
   
   
   Float_t r      = 341.8;
