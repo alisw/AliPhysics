@@ -41,7 +41,7 @@ AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
    if (rc=AliTPCFindTracks()) return rc;
 
    gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS");
-   gROOT->ProcessLine(".L $(ALICE_ROOT)/TPC/AliTPCComparison.C+");
+   gROOT->ProcessLine(".L $(ALICE_ROOT)/TPC/AliTPCComparison.C++");
    if (rc=AliTPCComparison()) return rc;
 
    return rc;
