@@ -89,6 +89,10 @@ gSystem->Load("$ALICE_ROOT/MUON/MUONTracker_C.so")
 Output in MUON.Tracks.root using the new IO 
 as a TClonesArray of AliMUONTrack
 
+Note1.In the actual version (dec-03) the following data 
+members  of ALiMUONTrack:  fgFitter, fEventReconstructor, 
+and fTrackHitsPtr are not saved in the MUON.Track.root file
+
 ============================================================
  How to run MUONCheck macro
 ============================================================

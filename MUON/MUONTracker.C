@@ -53,7 +53,7 @@ void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t 
   // Loading MUON subsystem
   AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
-  MUONLoader->LoadHits("READ");
+  //  MUONLoader->LoadHits("READ");
   MUONLoader->LoadRecPoints("READ");
   AliMUONData * muondata = MUON->GetMUONData();
   muondata->SetLoader(MUONLoader);
@@ -93,11 +93,11 @@ void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t 
     for(Int_t i=0; i<Reco->GetNRecTracks(); i++) {
       AliMUONTrack * track = (AliMUONTrack*) Reco->GetRecTracksPtr()->At(i);
       muondata->AddRecTrack(*track);
-      //printf(">>> TEST TEST Number of hits in the track %d is %d \n",i,track->GetNTrackHits());
+      //printf(">>> TEST TEST event %d Number of hits in the track %d is %d \n",event,i,track->GetNTrackHits());
     }
-
+    
     muondata->Fill("RT");
-    MUONLoader->WriteTracks("OVERWRITE");
+    MUONLoader->WriteTracks("OVERWRITE");  
     muondata->ResetRecTracks();
     //MUONLoader->UnloadHits();
     MUONLoader->UnloadRecPoints();

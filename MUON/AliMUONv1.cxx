@@ -46,6 +46,7 @@ AliMUONv1::AliMUONv1() : AliMUON()
     fChambers   = 0;
     fStations   = 0;
     fStepManagerVersionOld  = kFALSE;
+    fAngleEffect = kTRUE;
     fStepMaxInActiveGas     = 0.6;
     fStepSum    =  0x0;
     fDestepSum  =  0x0;
@@ -66,7 +67,7 @@ AliMUONv1::AliMUONv1(const char *name, const char *title)
     factory.Build(this, title);
 
     fStepManagerVersionOld = kFALSE;
-
+    fAngleEffect = kTRUE;
     fStepMaxInActiveGas = 0.6;
 
     fStepSum   = new Float_t [AliMUONConstants::NCh()];
@@ -1730,6 +1731,8 @@ void AliMUONv1::StepManager()
     Float_t yAngleEffect=0.;
     Float_t thetawires      =  TMath::Abs( TMath::ASin( TMath::Sin(TMath::Pi()-theta) * TMath::Sin(phi) ) );// We use Pi-theta because z is negative
 
+
+    if (fAngleEffect){
     if ( (BetaxGamma >3.2)   &&  (thetawires*kRaddeg<=15.) ) {
       BetaxGamma=TMath::Log(BetaxGamma);
       eLossParticleELossMip = fElossRatio->Eval(BetaxGamma);
@@ -1741,7 +1744,7 @@ void AliMUONv1::StepManager()
 	sigmaEffectThetadegrees/=(1.09833e+00+1.70000e-02*(thetawires*kRaddeg)); // The gap is different (4mm)
       yAngleEffect=1.e-04*gRandom->Gaus(0,sigmaEffectThetadegrees); // Error due to the angle effect in cm
     }
-    
+    }
     
     // One hit per chamber
     GetMUONData()->AddHit(fIshunt, gAlice->GetMCApp()->GetCurrentTrackNumber(), iChamber, ipart, 

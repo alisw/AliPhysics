@@ -64,7 +64,7 @@ class AliMUONTrack : public TObject {
   static TVirtualFitter* fgFitter; //!                  Pointer to track fitter
   AliMUONEventReconstructor* fEventReconstructor; //!   Pointer to EventReconstructor
   AliMUONTrackParam fTrackParamAtVertex; // Track parameters at vertex
-  TObjArray *fTrackHitsPtr; // Pointer to array of pointers to TrackHit's
+  TObjArray *fTrackHitsPtr; //!  Pointer to array of pointers to TrackHit's
   Int_t fNTrackHits; // Number of TrackHit's
   Int_t fFitMCS; // 0(1) for fit without(with) multiple Coulomb scattering
   Int_t fFitNParam; // 3(5) for fit with 3(5) parameters

@@ -17,7 +17,7 @@
 
 //Root includes
 #include "TNamed.h"
-//AliRoot includes
+//AliRoot include
 #include "AliLoader.h" 
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
@@ -79,7 +79,7 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
 //   fNglobaltrigger =0;
 //   fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);   
 //   fNlocaltrigger = 0;
-//   fRecTracks     = new TClonesArray("AliMUONTrack", 10);
+//   fRecTracks     = new TClonesArray("AliMUONTrack", 100);
 //   fNrectracks    = 0; // really needed or GetEntriesFast sufficient ????
 
 
@@ -287,7 +287,6 @@ void AliMUONData::Fill(Option_t* option)
   // filling tracks
   if ( TreeT() && cRT ) {
     sprintf(branchname,"%sTrack",GetName());  
-    branch = TreeT()->GetBranch(branchname);
     TreeT()->Fill();
   }
 }
@@ -422,7 +421,7 @@ void AliMUONData::MakeBranch(Option_t* option)
   }
   
   if (TreeT() && cRT ) {
-    if (fRecTracks == 0x0)  fRecTracks = new TClonesArray("AliMUONTrack",10);
+    if (fRecTracks == 0x0)  fRecTracks = new TClonesArray("AliMUONTrack",100);
     fNrectracks = 0;
     sprintf(branchname,"%sTrack",GetName());  
     branch = TreeT()->GetBranch(branchname);
