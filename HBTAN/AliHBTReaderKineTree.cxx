@@ -153,7 +153,7 @@ Int_t AliHBTReaderKineTree::OpenNextFile()
 //opens file with kine tree
  Info("OpenNextFile","________________________________________________________");
  
- const TString& dirname = GetDirName(fCurrentEvent);
+ const TString& dirname = GetDirName(fCurrentDir);
  if (dirname == "")
   {
    Error("OpenNextFile","Can not get directory name");
