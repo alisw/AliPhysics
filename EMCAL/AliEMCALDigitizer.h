@@ -39,17 +39,19 @@ public:
   void    Digitize(const Int_t event);          // Make Digits from SDigits stored in fSDigits
   void    Exec(Option_t *option);               // Supervising method
 
-  const Float_t GetTowerThreshold() const { return fTowerDigitThreshold;}
-  const Float_t GetPedestal()     const { return fPedestal; }
-  const Float_t GetPinNoise()     const { return fPinNoise;}
-  const Float_t GetSlope()        const { return fSlope; }
+  const Float_t GetDigitThreshold() const { return fDigitThreshold;}
+  const Float_t GetPedestal()       const { return fPedestal; }
+  const Float_t GetPinNoise()       const { return fPinNoise;}
+  const Float_t GetSlope()          const { return fSlope; }
   const Float_t GetTimeResolution() const { return fTimeResolution ; }
-  const Float_t GetTowerchannel() const { return fADCchannelTower ; }
-  const Float_t GetTowerpedestal() const { return fADCpedestalTower ; }
-  const Float_t GetPreShochannel() const { return fADCchannelPreSho ; }
-  const Float_t GetPreShopedestal() const { return fADCpedestalPreSho ; }
+  const Float_t GetECchannel()      const { return fADCchannelEC ; }
+  const Float_t GetECpedestal()     const { return fADCpedestalEC ; }
+  const Float_t GetHCchannel()      const { return fADCchannelHC ; }
+  const Float_t GetHCpedestal()     const { return fADCpedestalHC ; }
+  const Float_t GetPREchannel()     const { return fADCchannelPRE ; }
+  const Float_t GetPREpedestal()    const { return fADCpedestalPRE ; }
 
-  void    SetTowerThreshold(Float_t EMCThreshold)  {fTowerDigitThreshold = EMCThreshold;}
+  void    SetDigitThreshold(Float_t EMCThreshold)  {fDigitThreshold = EMCThreshold;}
   void    SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
 
   //General
@@ -76,32 +78,29 @@ private:
 
 private:
   
-  Bool_t fDefaultInit;               //! Says if the task was created by defaut ctor (only parameters are initialized)
-  Int_t fDigitsInRun ;               //! Total number of digits in one run
- 
-  Float_t fPedestal ;                // Calibration parameters 
-  Float_t fSlope ;                   // read from SDigitizer
+  Bool_t fDefaultInit;            //! Says if the task was created by defaut ctor (only parameters are initialized)
+  Int_t fDigitsInRun ;            //! Total number of digits in one run
+  Float_t fDigitThreshold  ;      // Threshold for storing digits in EMC
+  Int_t   fMeanPhotonElectron ;   // number of photon electrons per GeV deposited energy 
+  Float_t fPedestal ;             // Calibration parameters 
+  Float_t fSlope ;                // read from SDigitizer
+  Float_t fPinNoise ;             // Electronics noise in EMC
+  Float_t fTimeResolution ;       // Time resolution of FEE electronics
+  Float_t fTimeThreshold ;        // Threshold to start timing for given crystall
+  Float_t fTimeSignalLength ;     // Length of the timing signal 
+  Float_t fADCchannelEC ;         // width of one ADC channel in EC section (GeV)
+  Float_t fADCpedestalEC ;        //
+  Int_t   fNADCEC ;               // number of channels in EC section ADC
+  Float_t fADCchannelHC ;         // width of one ADC channel in HC section (GeV)
+  Float_t fADCpedestalHC ;        //
+  Int_t   fNADCHC ;               // number of channels in HC section ADC
+  Float_t fADCchannelPRE ;        // width of one ADC channel in PRE section (GeV)
+  Float_t fADCpedestalPRE ;       // 
+  Int_t fNADCPRE ;                // number of channels in PRE section ADC
+  Bool_t  fToSplit ;              //! Do we work in the split mode
+  TFile * fSplitFile ;            //! file in which Digits will eventually be stored
 
-  Float_t fPinNoise ;                // Electronics noise in EMC
-  Float_t fTowerDigitThreshold  ;    // Threshold for storing digits in EMC
-  Float_t fPreShowerDigitThreshold ; // Threshold for Preshower digits
-
-  Float_t fTimeResolution ;          // Time resolution of FEE electronics
-  Float_t fTimeThreshold ;           // Threshold to start timing for given crystall
-  Float_t fTimeSignalLength ;        // Length of the timing signal 
-
-  Float_t fADCchannelTower ;         // width of one ADC channel in Tower (GeV)
-  Float_t fADCpedestalTower ;        //
-  Int_t fNADCTower ;                 // number of channels in Tower ADC
-
-  Float_t fADCchannelPreSho ;        // width of one ADC channel in Pre Shower (GeV)
-  Float_t fADCpedestalPreSho ;       // 
-  Int_t fNADCPreSho ;                // number of channels in Pre Shower ADC
-
-  Bool_t  fToSplit ;                 //! Do we work in the split mode
-  TFile * fSplitFile ;               //! file in which Digits will eventually be stored
-
-  ClassDef(AliEMCALDigitizer,2)  // description 
+  ClassDef(AliEMCALDigitizer,3)  // description 
 
 };
 
