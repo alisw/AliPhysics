@@ -81,7 +81,7 @@ AliMUONPoints::AliMUONPoints(Int_t npoints)
   fMatrix = 0;
 }
 
-AliMUONPoints::AliMUONPoints(const AliMUONPoints& points)
+AliMUONPoints::AliMUONPoints(const AliMUONPoints& points):AliPoints(points)
 {
 // Copy constructor
 }
@@ -246,7 +246,7 @@ AliMUONDigit *AliMUONPoints::GetDigit() const
 }
 //_____________________________________________________________________________
 
-AliMUONPoints& AliMUONPoints::operator= (const AliMUONPoints& rhs)
+AliMUONPoints& AliMUONPoints::operator= (const AliMUONPoints& /*rhs*/)
 {
     return *this;
 }

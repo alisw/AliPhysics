@@ -226,7 +226,7 @@ AliMUONDisplay::AliMUONDisplay(Int_t size)
     fNextCathode = kFALSE; 
 }
 
-AliMUONDisplay::AliMUONDisplay(const AliMUONDisplay & display)
+AliMUONDisplay::AliMUONDisplay(const AliMUONDisplay & display):AliDisplay(display)
 {
 // Dummy copy constructor    
     ;
@@ -877,7 +877,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     }
 }
 //___________________________________________
-void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t cathode)
+void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
 {
 // Read raw clusters info and store x,y,z info in arrays fRpoints
 // Loop on all detectors
