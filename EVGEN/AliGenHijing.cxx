@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.13  2000/11/09 17:40:27  morsch
 Possibility to select/unselect spectator protons and neutrons.
 Method SetSpectators(Int_t spect) added. (FCA, Ch. Oppedisano)
@@ -69,6 +72,7 @@ AliGenerator interface class to HIJING using THijing (test version)
 #include <TParticle.h>
 #include <THijing.h>
 
+
  ClassImp(AliGenHijing)
 
 AliGenHijing::AliGenHijing()
@@ -78,7 +82,7 @@ AliGenHijing::AliGenHijing()
 }
 
 AliGenHijing::AliGenHijing(Int_t npart)
-                 :AliGenerator(npart)
+    :AliGenerator(npart)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
@@ -95,6 +99,8 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fSelectAll=0;
     fFlavor=0;
     fSpectators=1;
+//
+    sRandom=fRandom;
 }
 
 AliGenHijing::AliGenHijing(const AliGenHijing & Hijing)
@@ -132,6 +138,9 @@ void AliGenHijing::Init()
     
 //
     if (fEvaluate) EvaluateCrossSections();
+//
+//
+//  Initialize random generator
 }
 
 void AliGenHijing::Generate()

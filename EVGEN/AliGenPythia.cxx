@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.25  2000/10/18 19:11:27  hristov
 Division by zero fixed
 
@@ -103,6 +106,8 @@ AliGenPythia::AliGenPythia(Int_t npart)
     SetPtHard();
     SetEnergyCMS();
     fDecayer = new AliDecayerPythia();
+    //
+    sRandom=fRandom;
 }
 
 AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
