@@ -1,5 +1,13 @@
 // @(#) $Id$
 
+/** \class AliL3Display
+<pre>
+//_____________________________________________________________
+// AliL3Display
+//
+// Simple display class for the HLT tracks.
+</pre>
+*/
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group 
 
@@ -34,14 +42,6 @@
 using namespace std;
 #endif
 
-/** \class AliL3Display
-<pre>
-//_____________________________________________________________
-// AliL3Display
-//
-// Simple display class for the HLT tracks.
-</pre>
-*/
 
 ClassImp(AliL3Display)
 
@@ -54,8 +54,7 @@ AliL3Display::AliL3Display()
 
 AliL3Display::AliL3Display(Int_t *slice,Char_t *gfile)
 {
-  //Ctor. Specify which slices you want to look at.
-
+  //ctor. Specify which slices you want to look at.
   TFile *file = TFile::Open(gfile);
   if(!file)
     {
@@ -131,7 +130,7 @@ void AliL3Display::Setup(Char_t *trackfile,Char_t *path,Int_t event,Bool_t sp)
 
 }
 
-void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don,Float_t thr)
+void AliL3Display::DisplayTracks(Int_t minhits,Bool_t x3don,Float_t thr)
 {
   //Display the found tracks.
 
@@ -158,7 +157,7 @@ void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don,Float_t thr)
       if((thr>=0)&&(gtrack->GetPt()<thr)) continue;        
       Int_t nHits = gtrack->GetNHits();
       UInt_t *hitnum = gtrack->GetHitNumbers();
-      if(nHits < min_hits) continue;
+      if(nHits < minhits) continue;
       TPolyMarker3D *pm = new TPolyMarker3D(nHits);
       Int_t hitcount=0;
       for(Int_t h=0; h<nHits; h++)
@@ -184,14 +183,14 @@ void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don,Float_t thr)
 	    continue;
 	  }
 
-	  Float_t xyz_tmp[3];
-	  xyz_tmp[0] = points[pos].fX;
-	  xyz_tmp[1] = points[pos].fY;
-	  xyz_tmp[2] = points[pos].fZ;
+	  Float_t xyztmp[3];
+	  xyztmp[0] = points[pos].fX;
+	  xyztmp[1] = points[pos].fY;
+	  xyztmp[2] = points[pos].fZ;
 	  	  
-	  xcl[h] = xyz_tmp[0];
-	  ycl[h] = xyz_tmp[1];
-	  zcl[h] = xyz_tmp[2];
+	  xcl[h] = xyztmp[0];
+	  ycl[h] = xyztmp[1];
+	  zcl[h] = xyztmp[2];
 	  
 	  pm->SetPoint(h,xcl[h],ycl[h],zcl[h]);
 	  hitcount++;
@@ -199,11 +198,11 @@ void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don,Float_t thr)
       if(hitcount==0) continue;
       pm->SetMarkerColor(2);
       pm->Draw();
-      TPolyLine3D *current_line = &(line[j]);
-      current_line = new TPolyLine3D(nHits,xcl,ycl,zcl,"");
+      TPolyLine3D *currentline = &(line[j]);
+      currentline = new TPolyLine3D(nHits,xcl,ycl,zcl,"");
       
-      current_line->SetLineColor(4);
-      current_line->Draw("same");
+      currentline->SetLineColor(4);
+      currentline->Draw("same");
             
     }
   
@@ -275,7 +274,7 @@ void AliL3Display::DisplayClusters(Bool_t x3don)
 }
 
 
-void AliL3Display::DisplayAll(Int_t min_hits,Bool_t x3don)
+void AliL3Display::DisplayAll(Int_t minhits,Bool_t x3don)
 {
   //Display tracks & all hits.
 
@@ -323,7 +322,7 @@ void AliL3Display::DisplayAll(Int_t min_hits,Bool_t x3don)
       if(!gtrack) continue;        
       Int_t nHits = gtrack->GetNHits();
       UInt_t *hitnum = gtrack->GetHitNumbers();
-      if(nHits < min_hits) continue;
+      if(nHits < minhits) continue;
       TPolyMarker3D *pm = new TPolyMarker3D(nHits);
       Int_t hitcount=0;
       for(Int_t h=0; h<nHits; h++)
@@ -355,11 +354,11 @@ void AliL3Display::DisplayAll(Int_t min_hits,Bool_t x3don)
       if(hitcount==0) continue;
       pm->SetMarkerColor(3);
       pm->Draw();
-      TPolyLine3D *current_line = &(line[j]);
-      current_line = new TPolyLine3D(nHits,xcl,ycl,zcl,"");
-      current_line->SetLineColor(4);
-      current_line->SetLineWidth(2);
-      current_line->Draw("same");
+      TPolyLine3D *currentline = &(line[j]);
+      currentline = new TPolyLine3D(nHits,xcl,ycl,zcl,"");
+      currentline->SetLineColor(4);
+      currentline->SetLineWidth(2);
+      currentline->Draw("same");
     }
   
   Char_t fname[256];
@@ -396,9 +395,9 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
 
   Char_t dname[100];
   sprintf(dname,"TreeD_%s_0",AliL3Transform::GetParamName());
-  TTree *TD=(TTree*)file->Get(dname);
+  TTree *td=(TTree*)file->Get(dname);
   AliSimDigits da, *digits=&da;
-  TD->GetBranch("Segment")->SetAddress(&digits); //Return pointer to branch segment.
+  td->GetBranch("Segment")->SetAddress(&digits); //Return pointer to branch segment.
   
   Int_t sector,row;
   AliL3Transform::Slice2Sector(slice,padrow,sector,row);
@@ -409,10 +408,10 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
   TH2F *histpart = new TH2F("histpart","",npads,0,npads-1,ntimes,0,ntimes-1);
 
   
-  Int_t sectors_by_rows=(Int_t)TD->GetEntries();
+  Int_t sectorsbyrows=(Int_t)td->GetEntries();
   Int_t i;
-  for (i=0; i<sectors_by_rows; i++) {
-    if (!TD->GetEvent(i)) continue;
+  for (i=0; i<sectorsbyrows; i++) {
+    if (!td->GetEvent(i)) continue;
     Int_t sec,ro;
     param->AdjustSectorRow(digits->GetID(),sec,ro);
     
@@ -441,7 +440,7 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
   TClonesArray *fParticles=gAlice->Particles(); 
   TParticle *part = (TParticle*)fParticles->UncheckedAt(0);
   AliL3Evaluate *eval = new AliL3Evaluate();
-  Float_t xyz_cross[3];
+  Float_t xyzcross[3];
   */
   
   for(Int_t p=0;p<6;p++)
@@ -483,4 +482,3 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
 #endif
   return;
 }
-

@@ -1,5 +1,12 @@
 // @(#) $Id$
 
+//_____________________________________________________________
+//
+//  AliL3OfflineDataCompression
+//
+// Class to compress data with offline tracks
+// as seeds.
+//
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
@@ -30,36 +37,29 @@
 #include "AliL3Compress.h"
 #include "AliL3TrackArray.h"
 #include "bitio.h"
-
 #include "AliL3OfflineDataCompressor.h"
 
 #if __GNUC__ == 3
 using namespace std;
 #endif
 
-//_____________________________________________________________
-//
-//  AliL3OfflineDataCompression
-//
-
-
 ClassImp(AliL3OfflineDataCompressor)
 
 AliL3OfflineDataCompressor::AliL3OfflineDataCompressor()
-{
+{ //constructor
   fMarian = kFALSE;
   fTracker=0;
 }
 
 AliL3OfflineDataCompressor::AliL3OfflineDataCompressor(Char_t *path,Bool_t keep,Bool_t writeshape,Bool_t MI) 
   : AliL3DataCompressor(path,keep,writeshape)
-{
+{ //constructor
   fMarian = MI;
   fTracker=0;
 }
 
 AliL3OfflineDataCompressor::~AliL3OfflineDataCompressor()
-{
+{ //deconstructor
   if(fTracker)
     {
       fTracker->UnloadClusters();
@@ -115,8 +115,8 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
 #endif
     }
   
-  const Int_t MAX=20000;
-  Int_t nentr=0,i=0; TObjArray tarray(MAX);
+  const Int_t kMAX=20000;
+  Int_t nentr=0,i=0; TObjArray tarray(kMAX);
   if(fMarian==kFALSE)
     sprintf(filename,"%s/offline/AliTPCtracks.root",fPath);
   else
@@ -175,7 +175,7 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
       Double_t psi = TMath::ASin(par[2]) + track->GetAlpha();
       if (psi<-TMath::Pi()) psi+=2*TMath::Pi();
       if (psi>=TMath::Pi()) psi-=2*TMath::Pi();
-      Float_t pt_1=TMath::Abs(par[4]);
+      Float_t pt1=TMath::Abs(par[4]);
       Int_t charge = 1;
       if(par[4] > 0)
 	charge=-1;
@@ -198,7 +198,7 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
       AliL3ModelTrack *outtrack = (AliL3ModelTrack*)comptracks->NextTrack();
       outtrack->SetNHits(nhits);
       outtrack->SetFirstPoint(first[0],first[1],first[2]);
-      outtrack->SetPt(1/pt_1);
+      outtrack->SetPt(1./pt1);
       outtrack->SetPsi(psi);
       outtrack->SetTgl(par[3]);
       outtrack->SetCharge(charge);
@@ -282,21 +282,21 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
 	      exit(5);
 	    }
 
-	  Float_t xyz_cross[3] = {outtrack->GetPointX(),outtrack->GetPointY(),outtrack->GetPointZ()};
-	  AliL3Transform::Global2Raw(xyz_cross,sec,row);
+	  Float_t xyzcross[3] = {outtrack->GetPointX(),outtrack->GetPointY(),outtrack->GetPointZ()};
+	  AliL3Transform::Global2Raw(xyzcross,sec,row);
 	  /*
-	    if(fabs(xyz_cross[1] - xyz[1]) > 10 ||
-	    fabs(xyz_cross[2] - xyz[2]) > 10)
+	    if(fabs(xyzcross[1] - xyz[1]) > 10 ||
+	    fabs(xyzcross[2] - xyz[2]) > 10)
 	    {
 	    cout<<"AliL3DataCompressor::FillOfflineData : Wrong crossing slice "<<slice<<" padrow "
-	    <<padrow<<" pad "<<xyz[1]<<" padhit "<<xyz_cross[1]<<" time "<<xyz[2]<<" timehit "<<xyz_cross[2]<<endl;
+	    <<padrow<<" pad "<<xyz[1]<<" padhit "<<xyzcross[1]<<" time "<<xyz[2]<<" timehit "<<xyzcross[2]<<endl;
 	    outtrack->Print();
 	    exit(5);
 	    }
 	  */
-	  //cout<<" crossing "<<xyz_cross[0]<<" "<<xyz_cross[1]<<" "<<xyz_cross[2]<<endl;
-	  outtrack->SetPadHit(padrow,xyz_cross[1]);
-	  outtrack->SetTimeHit(padrow,xyz_cross[2]);
+	  //cout<<" crossing "<<xyzcross[0]<<" "<<xyzcross[1]<<" "<<xyzcross[2]<<endl;
+	  outtrack->SetPadHit(padrow,xyzcross[1]);
+	  outtrack->SetTimeHit(padrow,xyzcross[2]);
 	  
 	  if(fWriteClusterShape)
 	    {
@@ -322,7 +322,6 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
   comp->WriteFile(comptracks);
   delete comp;
   delete comptracks;
-  
 }
 
 void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
@@ -471,7 +470,8 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
 
 void AliL3OfflineDataCompressor::SelectRemainingClusters()
 {
-  
+  //select the remaining clusters 
+  //which were not compressed  
   cout<<"Cleaning up clusters"<<endl;
   Int_t nrows = AliL3Transform::GetNRows();
   Int_t gap=(Int_t)(0.125*nrows), shift=(Int_t)(0.5*gap);

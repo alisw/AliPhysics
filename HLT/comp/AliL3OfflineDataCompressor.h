@@ -1,7 +1,7 @@
 // @(#) $Id$
 
-#ifndef AliL3_OfflineDataCompressor
-#define AliL3_OfflineDataCompressor
+#ifndef ALIL3OFFLINEDATACOMPRESSOR_H
+#define ALIL3OFFLINEDATACOMPRESSOR_H
 
 #include "AliL3RootTypes.h"
 #include "AliL3DataCompressor.h"
@@ -9,12 +9,6 @@
 class AliTracker;
 
 class AliL3OfflineDataCompressor : public AliL3DataCompressor {
-  
- private:
-  Bool_t fMarian;
-  AliTracker *fTracker;  //!
-  
-  void SelectRemainingClusters();
   
  public:
   AliL3OfflineDataCompressor();
@@ -24,6 +18,15 @@ class AliL3OfflineDataCompressor : public AliL3DataCompressor {
   void LoadData(Int_t event,Bool_t sp=kTRUE);
   void FillData(Int_t /*minhits*/,Bool_t /*expand*/) {return;};
   void WriteRemaining(Bool_t select);
+
+ private:
+  AliL3OfflineDataCompressor(const AliL3OfflineDataCompressor& /*ac*/) : AliL3DataCompressor() {;}
+  AliL3OfflineDataCompressor& operator=(const AliL3OfflineDataCompressor& /*ac*/){return *this;}
+
+  Bool_t fMarian;        // is Marian TPC tracking used
+  AliTracker *fTracker;  //!
+  
+  void SelectRemainingClusters();
 
   ClassDef(AliL3OfflineDataCompressor,1) 
 
