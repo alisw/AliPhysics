@@ -66,13 +66,13 @@ class AliPHOSGetter : public TObject {
     return *this ; 
   }
   virtual ~AliPHOSGetter() ; 
-
+  
   //=========== Instantiators ================
   static AliPHOSGetter * GetInstance(const char* headerFile,
 				     const char* branchTitle = "Default",
                                      const Bool_t toSplit = kFALSE ) ; 
   static AliPHOSGetter * GetInstance() ; 
-
+  
   //=========== General information about run ==============
   const Int_t  MaxEvent() const    { return static_cast<Int_t>(gAlice->TreeE()->GetEntries()) ; }
   const Int_t  EventNumber() const { return static_cast<Int_t>(gAlice->GetEvNumber()) ; }
@@ -81,7 +81,7 @@ class AliPHOSGetter : public TObject {
   //========== PHOSGeometry and PHOS ============= 
   const AliPHOS *         PHOS() ;  
   const AliPHOSGeometry * PHOSGeometry() ; 
-
+  
   //========== Methods to read something from file ==========
   void   Event(const Int_t event, const char * opt = "HSDRP") ;    
   void   Track(const Int_t itrack) ;
@@ -92,16 +92,16 @@ class AliPHOSGetter : public TObject {
   TFolder * Alarms() const { return dynamic_cast<TFolder*>(ReturnO("Alarms", 0)) ; }
   const TObjArray *  Alarms(const char * name ) const { return dynamic_cast<const TObjArray*>(ReturnO("Alarms", name)) ; }
   const TTask * QATasks(const char * name = 0) const { return ReturnT("QATasks", name) ; }
-
+  
   //-----------------now getter's data--------------------------------------
-
+  
   //=========== Primaries ============
   TTree *           TreeK(TString filename="") ; 
   TClonesArray *    Primaries(void) const { return dynamic_cast<TClonesArray*>(ReturnO("Primaries")) ; }
   const TParticle * Primary(Int_t index) const ;
   const Int_t       NPrimaries()const { return fNPrimaries; }
   const TParticle * Secondary(TParticle * p, Int_t index=1) const ;  
- 
+  
   //=========== Hits =================
   TTree *               TreeH(TString filename="") ; 
   const TClonesArray *  Hits(void) { return dynamic_cast<const TClonesArray*>(ReturnO("Hits")) ; }
@@ -115,26 +115,24 @@ class AliPHOSGetter : public TObject {
   const AliPHOSSDigitizer *  SDigitizer(const char * name =0) const { 
     return (const AliPHOSSDigitizer *) ReturnT("SDigitizer", name) ;   // here static or dynamic cast does not work ! why ?
   }
-
+  
   //========== Digits ================
   TTree *                   TreeD(TString filename="") ; 
   TClonesArray *            Digits(const char * name = 0)const  { 
     return dynamic_cast<TClonesArray*>(ReturnO("Digits", name)) ;   }
-//const AliPHOSDigit *  Digit(Int_t index) { return static_cast<const AliPHOSDigit *>(Digits()->At(index)) ;} !!! why no such method ?
+  //const AliPHOSDigit *  Digit(Int_t index) { return static_cast<const AliPHOSDigit *>(Digits()->At(index)) ;} !!! why no such method ?
   const AliPHOSDigitizer *  Digitizer(const char * name = 0) const { 
     return (const AliPHOSDigitizer*)(ReturnT("Digitizer", name)) ;   }
   
   //========== RecPoints =============
-  //TTree *                    TreeR(TString filename="") ; !!! why no such method ? 
   TObjArray *                EmcRecPoints(const char * name = 0) {
     return dynamic_cast<TObjArray*>(ReturnO("EmcRecPoints", name)) ;   }
-//const AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) { return static_cast<const AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;} !!! why no such method ?
+  //const AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) { return static_cast<const AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;} !!! why no such method ?
   TObjArray *                CpvRecPoints(const char * name = 0) { 
     return dynamic_cast<TObjArray*>(ReturnO("CpvRecPoints", name)) ;   }    
-//const AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) { return static_cast<const AliPHOSCpvRecPoint *>(EmcCpvPoints()->At(index)) ;} !!! why no such method ?
   const AliPHOSClusterizer * Clusterizer (const char * name =0) const { 
     return (const AliPHOSClusterizer*)(ReturnT("Clusterizer", name)) ;   // here static or dynamic cast does not work ! why ?
-}
+  }
   
   //========== TrackSegments ==========
   TClonesArray * TrackSegments(const char * name = 0) { 
@@ -146,9 +144,8 @@ class AliPHOSGetter : public TObject {
   TClonesArray * RecParticles(const char * name = 0) { 
     return static_cast<TClonesArray*>(ReturnO("RecParticles", name)) ;   }
   const AliPHOSPID * PID(const char * name =0) const { 
-    return (const AliPHOSPID*)(ReturnT("PID", name)) ;  // here static or dynamic cast does not work ! why ?
- }
-
+    return (const AliPHOSPID*)(ReturnT("PID", name)) ; } // here static or dynamic cast does not work ! why ? 
+    
   //-----------------Auxiliary methods: cleaners-----------------
   void  RemoveTask(TString opt, TString name) const ;
   void  RemoveObjects(TString opt, TString name) const ;
@@ -254,5 +251,3 @@ private:
 };
 
 #endif // AliPHOSGETTER_H
-
-

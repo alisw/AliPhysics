@@ -100,7 +100,6 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
   InitParameters() ;
-  
   Init() ;
   fDefaultInit = kFALSE ; 
 
@@ -110,26 +109,8 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
   AliPHOSClusterizerv1::~AliPHOSClusterizerv1()
 {
   // dtor
+  fSplitFile = 0 ; 
 
- 
-//   if (!fDefaultInit) {
-//     AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-    
-//   // remove the task from the folder list
-//     gime->RemoveTask("C",GetName()) ;
-    
-//     // remove the data from the folder list
-//     TString name(GetName()) ; 
-//     name.Remove(name.Index(":")) ; 
-//     gime->RemoveObjects("D", name) ;  //  Digits
-//     gime->RemoveObjects("RE", name) ; // EMCARecPoints
-//     gime->RemoveObjects("RC", name) ; // CPVRecPoints
-    
-//     // Delete gAlice
-//     gime->CloseFile() ; 
-    
-    fSplitFile = 0 ; 
-//  }
 }
 
 //____________________________________________________________________________
@@ -143,11 +124,14 @@ const TString AliPHOSClusterizerv1::BranchName() const
 //____________________________________________________________________________
 Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId) const
 { //To be replased later by the method, reading individual parameters from the database
+
   if(absId <= fEmcCrystals) //calibrate as EMC 
-    return fADCpedestalEmc + amp*fADCchanelEmc ;       
+    return fADCpedestalEmc + amp*fADCchanelEmc ;    
+   
   else //Digitize as CPV
     return fADCpedestalCpv+ amp*fADCchanelCpv ;       
 }
+
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::Exec(Option_t * option)
 {
@@ -162,36 +146,6 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
   if(strstr(option,"print"))
     Print("") ; 
 
-//    gAlice->GetEvent(0) ;
-  
-//  //check, if the branch with name of this" already exits?
-//   if(gAlice->TreeR()) { 
-//     TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
-//     TIter next(lob) ; 
-//     TBranch * branch = 0 ;  
-//     Bool_t phosemcfound = kFALSE, phoscpvfound = kFALSE, clusterizerfound = kFALSE ; 
-    
-//     TString branchname = GetName() ;
-//     branchname.Remove(branchname.Index(Version())-1) ;
-    
-//     while ( (branch = (TBranch*)next()) && (!phosemcfound || !phoscpvfound || !clusterizerfound) ) {
-//       if ( (strcmp(branch->GetName(), "PHOSEmcRP")==0) && (strcmp(branch->GetTitle(), branchname.Data())==0) ) 
-// 	phosemcfound = kTRUE ;
-      
-//       else if ( (strcmp(branch->GetName(), "PHOSCpvRP")==0) && (strcmp(branch->GetTitle(), branchname.Data())==0) ) 
-// 	phoscpvfound = kTRUE ;
-      
-//       else if ((strcmp(branch->GetName(), "AliPHOSClusterizer")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
-// 	clusterizerfound = kTRUE ; 
-//     }
-    
-//     if ( phoscpvfound || phosemcfound || clusterizerfound ) {
-//       cerr << "WARNING: AliPHOSClusterizer::Exec -> Emc(Cpv)RecPoints and/or Clusterizer branch with name " 
-// 	   << branchname.Data() << " already exits" << endl ;
-//       return ; 
-//     }       
-//   }
-  
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
   if(gime->BranchExists("RecPoints"))
     return ;
@@ -205,12 +159,8 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
     if(ievent == 0)
       GetCalibrationParameters() ;
     
-    fNumberOfEmcClusters  = 0 ;
-    fNumberOfCpvClusters  = 0 ;
-    
-    
-    //    if(!ReadDigits(ievent))   continue;  //reads digits for event ievent
-    
+    fNumberOfEmcClusters  = fNumberOfCpvClusters  = 0 ;
+            
     MakeClusters() ;
     
     if(fToUnfold)             
@@ -342,6 +292,7 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
   fADCpedestalCpv = dig->GetCPVpedestal() ; 
   
 }
+
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::Init()
 {
@@ -393,9 +344,6 @@ void AliPHOSClusterizerv1::Init()
 
   gime->PostClusterizer(this) ;
   gime->PostRecPoints(branchname) ;
-
-  //  gime->PostDigits() ;
-  //  gime->PostDigitizer() ;
   
 }
 
@@ -418,10 +366,7 @@ void AliPHOSClusterizerv1::InitParameters()
   fEmcTimeGate             = 1.e-8 ; 
   
   fToUnfold                = kTRUE ;
-  
-  //  fHeaderFileName          = GetTitle() ; 
-  //  fDigitsBranchTitle       = GetName() ;
-   
+    
   TString clusterizerName( GetName()) ;
   if (clusterizerName.IsNull() ) 
     clusterizerName = "Default" ; 
@@ -581,7 +526,7 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
   cpvBranch        ->Fill() ;
   clusterizerBranch->Fill() ;
 
-  treeR->AutoSave() ; //Write(0,kOverwrite) ;  
+  treeR->AutoSave() ; 
   if(gAlice->TreeR()!=treeR)
     treeR->Delete();
 }

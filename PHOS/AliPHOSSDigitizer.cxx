@@ -76,7 +76,8 @@ ClassImp(AliPHOSSDigitizer)
 
            
 //____________________________________________________________________________ 
-  AliPHOSSDigitizer::AliPHOSSDigitizer():TTask("","") {
+  AliPHOSSDigitizer::AliPHOSSDigitizer():TTask("","") 
+{
   // ctor
   InitParameters() ;
   fDefaultInit = kTRUE ; 
@@ -168,6 +169,7 @@ void AliPHOSSDigitizer::InitParameters()
 void AliPHOSSDigitizer::Exec(Option_t *option) 
 { 
   // Collects all hits in the same active volume into digit
+
   if( strcmp(GetName(), "") == 0 )
     Init() ;
   
@@ -299,49 +301,6 @@ void AliPHOSSDigitizer::SetSDigitsBranch(const char * title )
   gime->PostSDigits( title, GetTitle()) ; 
 }
 
-// //__________________________________________________________________
-// void AliPHOSSDigitizer::SetSplitFile(const TString splitFileName) 
-// {
-//   // Diverts the SDigits in a file separate from the hits file
-  
-//   TDirectory * cwd = gDirectory ;
-  
-//   if ( !(gAlice->GetTreeSFileName() == splitFileName) ) {
-//     if (gAlice->GetTreeSFile() ) 
-//       gAlice->GetTreeSFile()->Close() ; 
-//   }
-  
-//   fSplitFile = gAlice->InitTreeFile("S",splitFileName.Data());
-//   fSplitFile->cd() ; 
-//   gAlice->Write(0, TObject::kOverwrite);
-  
-//   TTree *treeE  = gAlice->TreeE();
-//   if (!treeE) {
-//     cerr << "ERROR: AliPHOSSDigitizer::SetSPlitFile -> No TreeE found "<<endl;
-//     abort() ;
-//   }      
-  
-//   // copy TreeE
-//     AliHeader *header = new AliHeader();
-//     treeE->SetBranchAddress("Header", &header);
-//     treeE->SetBranchStatus("*",1);
-//     TTree *treeENew =  treeE->CloneTree();
-//     treeENew->Write(0, TObject::kOverwrite);
-  
-
-//   // copy AliceGeom
-//     TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-//     if (!AliceGeom) {
-//       cerr << "ERROR: AliPHOSSDigitizer::SetSPlitFile -> AliceGeom was not found in the input file "<<endl;
-//       abort() ;
-//     }
-//     AliceGeom->Write(0, TObject::kOverwrite);
-
-//   gAlice->MakeTree("S",fSplitFile);
-//   cwd->cd() ; 
-//   cout << "INFO: AliPHOSSDigitizer::SetSPlitMode -> SDigits will be stored in " << splitFileName.Data() << endl ; 
-
-// }
 
 //__________________________________________________________________
 void AliPHOSSDigitizer::Print(Option_t* option)const
@@ -355,6 +314,7 @@ void AliPHOSSDigitizer::Print(Option_t* option)const
   cout << "---------------------------------------------------"<<endl ;
   
 }
+
 //__________________________________________________________________
 Bool_t AliPHOSSDigitizer::operator==( AliPHOSSDigitizer const &sd )const
 {
@@ -366,7 +326,7 @@ Bool_t AliPHOSSDigitizer::operator==( AliPHOSSDigitizer const &sd )const
   else
     return kFALSE ;
 }
-//__________________________________________________________________
+
 //__________________________________________________________________
 void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
 {

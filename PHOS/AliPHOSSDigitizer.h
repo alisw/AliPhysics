@@ -16,8 +16,6 @@
 // --- ROOT system ---
 #include "TTask.h"
 #include "TString.h"
-class TFile ; 
-
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -36,7 +34,6 @@ public:
   const Int_t    GetSDigitsInRun() const {return fSDigitsInRun ;}  
   virtual void Print(Option_t* option) const ;
   void SetSDigitsBranch(const char * title ) ;
-  //  void SetSplitFile(const TString splitFileName = "PHOS.SDigits.root") ;
   void UseHitsFrom(const char * filename) ;      
   Bool_t operator == (const AliPHOSSDigitizer & sd) const ;
 

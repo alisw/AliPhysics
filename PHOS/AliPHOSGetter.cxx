@@ -48,7 +48,6 @@
 //*--         systematic usage of TFolders without changing the interface        
 //////////////////////////////////////////////////////////////////////////////
 
-
 // --- ROOT system ---
 #include "TFile.h"
 #include "TTree.h"
@@ -61,7 +60,6 @@
 #include <iostream.h>
 
 // --- AliRoot header files ---
-
 #include "AliRun.h"
 #include "AliConfig.h"
 #include "AliPHOSGetter.h"
@@ -204,8 +202,6 @@ AliPHOSGetter * AliPHOSGetter::GetInstance()
   // Returns the pointer of the unique instance already defined
   
   if ( fgObjGetter ) {
-//     if (fFile)   // not the case if fManager
-//       fFile->cd() ; 
     return fgObjGetter ;
   }
   else {
@@ -221,6 +217,7 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
 {
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed
+
   if(!fgObjGetter){
     fgObjGetter = new AliPHOSGetter(headerFile,branchTitle,toSplit) ;
     if(fgObjGetter->fFailed)
@@ -716,6 +713,7 @@ const Bool_t AliPHOSGetter::PostSDigitizer(const char * name, const char * file)
   return kTRUE; 
   
 }
+
 //____________________________________________________________________________ 
 const Bool_t AliPHOSGetter::PostDigits(const char * name) const 
 {  //---------- Digits -------------------------
@@ -1170,7 +1168,6 @@ const Bool_t AliPHOSGetter::PostTrackSegmentMaker(const char * name) const
   
   // the hierarchy is //Folders/Tasks/Reconstructioner/PHOS/sdigitsname
   
-  
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
   
   if ( !tasks ) {
@@ -1283,7 +1280,7 @@ const Bool_t AliPHOSGetter::PostRecParticles(const char * name) const
 
 //____________________________________________________________________________ 
 TObject** AliPHOSGetter::RecParticlesRef(const char * name) const 
-{ // ---------------TrackSegments -----------------------------------
+{ // ---------------RecParticles -----------------------------------
   
   // the hierarchy is //Folders/Run/Event/RecData/PHOS/TrackSegments/name
 
@@ -1571,27 +1568,9 @@ const TParticle * AliPHOSGetter::Primary(Int_t index) const
     p = fAlice->Particle(index) ; 
   else 
     p = gAlice->Particle(index) ; 
-  //   if (p->GetFirstMother() != -1 ) {
-  //     cout << "AliPHOSGetter::Primary : Not a primary " << endl ; 
-  //   }
   
   return p ; 
     
-  
-  
-  //   Int_t primaryIndex = index % 10000000 ; 
-//   Int_t primaryList = (Int_t ) ((index-primaryIndex)/10000000.)  ;
-  
-//   if ( primaryList > 0  ) {
-//     if (fDebug) {
-//       cout << " Getter does not support currently Mixing of primary " << endl ;
-//       cout << "   can not return primary: " << index<< " (list "<< primaryList<< " primary # " << primaryIndex << " )"<<endl ;
-//     }
-//     return 0;
-//   }
-  
-//   return gAlice->Particle(primaryIndex) ;
-  
 }
 
 //____________________________________________________________________________ 
@@ -1634,30 +1613,6 @@ Int_t AliPHOSGetter::ReadTreeD(const Int_t event)
   }
   else
     treeD = gAlice->TreeD() ;
-  
-//   if(!treeD) { // TreeD not found in header file
-    
-//     if (fDebug) 
-//       cout <<   "WARNING: AliPHOSGetter::ReadTreeD -> Cannot find TreeD in " << fHeaderFile << endl ;
-    
-//     TString searchFileName("") ; 
-    
-//     if (Digitizer())  // Digitizer found in header file
-//       searchFileName = Digitizer()->GetTitle() ; 
-    
-//     else if (Clusterizer())  // Clusterizer found in header file
-//       searchFileName = Clusterizer()->GetDigitsFileName() ; 
-    
-//     if ( (treeD = TreeD(searchFileName)) ) { //found TreeD in the file which contains the hits
-//       if (fDebug) 
-// 	cout << "INFO: AliPHOSGetter::ReadTreeD -> TreeD found in " << searchFileName.Data() << endl ; 
-      
-//     } else {
-//       cerr << "ERROR: AliPHOSGetter::ReadTreeD -> TreeD not found " << endl ; 
-//       return 1;
-//     }   
-//   }
-
   
   TObjArray * lob = static_cast<TObjArray*>(treeD->GetListOfBranches()) ;
   TIter next(lob) ; 
@@ -1791,8 +1746,8 @@ void AliPHOSGetter::Track(Int_t itrack)
   hitsbranch->SetAddress(HitsRef()) ;
   hitsbranch->GetEntry(itrack) ;
 
-
 }
+
 //____________________________________________________________________________ 
 void AliPHOSGetter::ReadTreeQA()
 {
@@ -1979,9 +1934,8 @@ Int_t AliPHOSGetter::ReadTreeR(const Int_t event)
     pidbranch->GetEntry(0) ;
   }
 
-  if(gAlice->TreeR()!=treeR){
+  if(gAlice->TreeR()!=treeR)
     treeR->Delete();
-  }
   return 0 ; 
 }
 
@@ -2063,23 +2017,12 @@ Int_t AliPHOSGetter::ReadTreeS(const Int_t event)
       PostSDigitizer(fSDigitsTitle,folder->GetName()) ;
     sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
     sdigitizerBranch->GetEntry(0) ; 
-    //    lob  ->Delete();
     if(gAlice->TreeS()!=treeS)
       treeS->Delete();
   }    
-  
-  // After SDigits have been read from all files, return to the first one
-  
-//   next.Reset();
-//   folder = static_cast<TFolder*>(next());
-//   if(folder){
-//     TString fileName(folder->GetName()) ; 
-//     fileName.ReplaceAll("_","/") ; 
-//     file   = static_cast<TFile*>(gROOT->GetFile(fileName)); 
-//     file   ->cd() ;
-//   }
   return 0 ; 
 }
+
 //____________________________________________________________________________ 
 void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
 
@@ -2133,7 +2076,6 @@ void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
     PostSDigitizer(sdigitsBranch->GetTitle(),filename) ;
   sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
   sdigitizerBranch->GetEntry(0) ;
-  //  lob  ->Delete();
   if(gAlice->TreeS()!=treeS)
     treeS->Delete();
 }    
@@ -2173,6 +2115,7 @@ void AliPHOSGetter::ReadPrimaries()
 void AliPHOSGetter::Event(const Int_t event, const char* opt)  
 {
   // Reads the content of all Tree's S, D and R
+
   if (event >= gAlice->TreeE()->GetEntries() ) {
     cerr << "ERROR: AliPHOSGetter::Event -> " << event << " not found in TreeE!" << endl ; 
     return ; 
@@ -2216,7 +2159,6 @@ TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const
   TFolder * folder = 0 ;
   TObject * phosO  = 0 ; 
 
-  //  if ( name.IsNull() ) {
   if ( what.CompareTo("Primaries") == 0 ) {
     folder = dynamic_cast<TFolder *>(fPrimariesFolder->FindObject("Primaries")) ; 
     if (folder) 
@@ -2591,7 +2533,7 @@ void AliPHOSGetter::CleanWhiteBoard(void){
   }
 
 
-  //---- Now Tascks ----------- 
+  //---- Now Tasks ----------- 
 
   TObject * obj ;
   TString sdname(fSDigitsTitle);

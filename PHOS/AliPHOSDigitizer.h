@@ -68,15 +68,9 @@ public:
 
   //General
   const Int_t   GetDigitsInRun()  const { return fDigitsInRun ;}  
-  //  const TString GetHitsFileName() const { return fHitsFileName ; }
-  //  const TString GetSDigitsFileName() const { return fSDigitsFileName ; }
-
   void    MixWith(const char* HeaderFile) ; // Add another one file to mix
   void    Print(Option_t* option)const ;
-  // void    Reset() ;   //restarts starts event processing from 0 event(s)
-  //  void    SetSplitFile(const TString splitFileName = "PHOS.Digits.root") ;
-  // void    SetSDigitsBranch(const char* file) ;
-
+ 
   AliPHOSDigitizer & operator = (const AliPHOSDigitizer & rvalue)  {
     // assignement operator requested by coding convention but not needed
     abort() ;
@@ -97,9 +91,9 @@ private:
 
 private:
 
-  //  TString fHitsFileName ;           // file name that contains the original hits
-  //  TString fSDigitsFileName ;        // file name that contains the original SDigits
   Bool_t  fDefaultInit;             //! Says if the task was created by defaut ctor (only parameters are initialized)
+  Int_t fDigitsInRun ;              //! Total number of digits in one run
+
   Int_t   fEmcCrystals ;            // Number of EMC crystalls in the given geometry
 
   Float_t fPinNoise ;               // Electronics noise in EMC
@@ -108,7 +102,6 @@ private:
   Float_t fCPVNoise ;               // Noise in CPV
   Float_t fCPVDigitThreshold  ;     // Threshold for storing digits in CPV
 
-  Int_t fDigitsInRun ;              //! Total number of digits in one run
 
   Float_t fTimeResolution ;         // Time resolution of FEE electronics
   Float_t fTimeThreshold ;          // Threshold to start timing for given crystall

@@ -68,7 +68,6 @@
 #include <iomanip.h>
 
 // --- AliRoot header files ---
-
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "AliStream.h"
@@ -91,9 +90,7 @@ ClassImp(AliPHOSDigitizer)
   InitParameters() ; 
   fDefaultInit = kTRUE ;
   fManager = 0 ;                     // We work in the standalong mode
- 
-  // fHitsFileName    = "" ;
-  // fSDigitsFileName = "" ; 
+
  }
 
 //____________________________________________________________________________ 
@@ -109,10 +106,6 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile, const char * name, co
   fToSplit = toSplit ;
   Init() ;
   fDefaultInit = kFALSE ; 
-  //  fSDigitsFileName = headerFile ; 
-  //  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  //  gime->Event(0, "S") ; 
-  //  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
 }
 
 //____________________________________________________________________________ 
@@ -131,38 +124,14 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
     SetName("Default") ;
     fToSplit = kFALSE ;
   }
-
-//   fSDigitsFileName = fManager->GetInputFileName(0, 0) ;
-//   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(fSDigitsFileName, GetName()) ; 
-//   gime->Event(0,"S") ; 
-//  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
-  
 }
 
 //____________________________________________________________________________ 
   AliPHOSDigitizer::~AliPHOSDigitizer()
 {
   // dtor
-  // fDefaultInit = kTRUE if Digitizer created by default ctor (to get just the parameters)
-  
-//   if (!fDefaultInit) {
-//     AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
- 
-//    // remove the task from the folder list
-//    gime->RemoveTask("S",GetName()) ;
-//    gime->RemoveTask("D",GetName()) ;
-   
-//    // remove the Digits from the folder list
-//    gime->RemoveObjects("D", GetName()) ;
-   
-//    // remove the SDigits from the folder list
-//    gime->RemoveSDigits() ;
-   
-//    // Delete gAlice
-//    gime->CloseFile() ; 
-   
+     
    fSplitFile = 0 ; 
-   // }
 }
 
 //____________________________________________________________________________
@@ -362,7 +331,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   
   //remove digits below thresholds
   for(i = 0; i < nEMC ; i++){
-    digit = (AliPHOSDigit*) digits->At(i) ;
+    digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
     if(sDigitizer->Calibrate( digit->GetAmp() ) < fEMCDigitThreshold)
       digits->RemoveAt(i) ;
     else
@@ -381,13 +350,14 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 
   //Set indexes in list of digits and make true digitization of the energy
   for (i = 0 ; i < ndigits ; i++) { 
-    AliPHOSDigit * digit = (AliPHOSDigit *) digits->At(i) ; 
+    digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ; 
     digit->SetIndexInList(i) ;     
     Float_t energy = sDigitizer->Calibrate(digit->GetAmp()) ;
     digit->SetAmp(DigitizeEnergy(energy,digit->GetId()) ) ;
   }
 
 }
+
 //____________________________________________________________________________
 Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
 {
@@ -402,6 +372,7 @@ Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
   }
   return chanel ;
 }
+
 //____________________________________________________________________________
 void AliPHOSDigitizer::Exec(Option_t *option) 
 { 
@@ -626,7 +597,10 @@ void AliPHOSDigitizer::MixWith(const char* headerFile)
   // check if the specified SDigits do not already exist on the White Board:
   // //Folders/RunMC/Event/Data/PHOS/SDigits/headerFile/sdigitsname
 
-  TString path = "Folders/RunMC/Event/Data/PHOS/SDigits" ; 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  TString path = gime->SDigitsFolder()->GetName() ; 
+
+  // before it was ???? "Folders/RunMC/Event/Data/PHOS/SDigits" ; 
   path += headerFile ; 
   path += "/" ; 
   path += GetName() ;
@@ -635,7 +609,6 @@ void AliPHOSDigitizer::MixWith(const char* headerFile)
     return;
   }
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
   gime->PostSDigits(GetName(),headerFile) ;
   
   // check if the requested file is already open or exist and if SDigits Branch exist
@@ -649,59 +622,6 @@ void AliPHOSDigitizer::MixWith(const char* headerFile)
   }
   
 }
-
-// //__________________________________________________________________
-// void AliPHOSDigitizer::SetSplitFile(const TString splitFileName)
-// {
-//   // Diverts the Digits in a file separate from the hits file
-  
-//   // I guess it is not going to work if we do merging
-// //   if (fManager) {
-// //     cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> Not yet available in case of merging activated " << endl ;  
-// //     return ; 
-// //   }
-
-//   cout << "AliPHOSDigitizer::SetSplitFile " << gDirectory->GetName() << endl ;  
-//   cout << "AliPHOSDigitizer::SetSplitFile " << gAlice->GetTreeDFileName() << endl ;  
-//   cout << "AliPHOSDigitizer::SetSplitFile " <<  splitFileName.Data() << endl ;
-  
-//   SetTitle(splitFileName) ; 
-
-//   TDirectory * cwd = gDirectory ;
-//   if ( !(gAlice->GetTreeDFileName() == splitFileName) ) {
-//     if (gAlice->GetTreeDFile() )  
-//       gAlice->GetTreeDFile()->Close() ; 
-//   }
-
-//   fSplitFile = gAlice->InitTreeFile("D",splitFileName.Data());
-//   fSplitFile->cd() ; 
-//   gAlice->Write(0, TObject::kOverwrite);
-
-//   TTree *treeE  = gAlice->TreeE();
-//   if (!treeE) {
-//     cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> No TreeE found "<<endl;
-//     abort() ;
-//   }      
-  
-//   // copy TreeE
-//   AliHeader *header = new AliHeader();
-//   treeE->SetBranchAddress("Header", &header);
-//   treeE->SetBranchStatus("*",1);
-//   TTree *treeENew =  treeE->CloneTree();
-//   treeENew->Write(0, TObject::kOverwrite);
-  
-//   // copy AliceGeom
-//   TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-//   if (!AliceGeom) {
-//     cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
-//     abort() ;
-//     }
-//   AliceGeom->Write(0, TObject::kOverwrite);
-  
-//   gAlice->MakeTree("D",fSplitFile);
-//   cwd->cd() ; 
-//   cout << "INFO: AliPHOSDigitizer::SetSPlitMode -> Digits will be stored in " << splitFileName.Data() << endl ; 
-// }
 
 //__________________________________________________________________
 void AliPHOSDigitizer::Print(Option_t* option)const {
@@ -806,16 +726,6 @@ void AliPHOSDigitizer::PrintDigits(Option_t * option){
 
 }
 
-// //__________________________________________________________________
-// void AliPHOSDigitizer::SetSDigitsBranch(const char* title)
-// {
-//   // we set title (comment) of the SDigits branch in the first! header file
-//   if( strcmp(GetName(), "") == 0 )
-//     Init() ;
-
-//   AliPHOSGetter::GetInstance()->SDigits()->SetName(title) ; 
- 
-// }
 //__________________________________________________________________
 Float_t AliPHOSDigitizer::TimeOfNoise(void)
 {  // Calculates the time signal generated by noise
@@ -823,19 +733,6 @@ Float_t AliPHOSDigitizer::TimeOfNoise(void)
   return 1. ;
 
 }
-// //____________________________________________________________________________
-// void AliPHOSDigitizer::Reset() 
-// { 
-//   // sets current event number to the first simulated event
-
-//   if( strcmp(GetName(), "") == 0 )
-//     Init() ;
-
-//  //  Int_t inputs ;
-// //   for(inputs = 0; inputs < fNinputs ;inputs++)
-// //       fIevent->AddAt(-1, inputs ) ;
-  
-// }
 
 //____________________________________________________________________________
 void AliPHOSDigitizer::WriteDigits(Int_t event)

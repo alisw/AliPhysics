@@ -32,10 +32,9 @@ class TFile;
 #include "TFolder.h" 
 
 // --- Standard library ---
-
 #include <strstream.h>
-// --- AliRoot header files ---
 
+// --- AliRoot header files ---
 #include "AliPHOS.h"
 #include "AliMC.h"
 #include "AliRun.h"
@@ -61,7 +60,6 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
   fQATask = 0;
   fTreeQA = 0;
 }
-
 
 //____________________________________________________________________________
 AliPHOS::~AliPHOS() 
@@ -372,10 +370,6 @@ AliPHOSGeometry * AliPHOS::GetGeometry() const
 //____________________________________________________________________________
 void AliPHOS::SetTreeAddress()
 { 
-
-
-  // TBranch *branch;
-  //  AliDetector::SetTreeAddress();
 
   TBranch *branch;
   char branchname[20];

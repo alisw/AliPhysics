@@ -52,7 +52,6 @@ public:
   virtual Float_t GetCpvLogWeight()const          { return fW0CPV;}  
   virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
   virtual const Int_t GetRecPointsInRun() const   {return fRecPointsInRun ;} 
-  //  virtual const char *  GetDigitsBranch() const         { return (char*) fDigitsBranchTitle.Data() ;}
 
   void    Exec(Option_t *option);                // Does the job
 
@@ -65,9 +64,7 @@ public:
   virtual void SetCpvClusteringThreshold(Float_t cluth)  { fCpvClusteringThreshold = cluth ; }
   virtual void SetCpvLocalMaxCut(Float_t cut)            { fCpvLocMaxCut = cut ; }
   virtual void SetCpvLogWeight(Float_t w)                { fW0CPV = w ; }
-  //  virtual void SetDigitsBranch(const char * title) { fDigitsBranchTitle = title  ;}
-  //  virtual void SetRecPointsBranch(const char *title){fRecPointsBranchTitle = title; }
-  virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    { fToUnfold = toUnfold ;}  
+   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    { fToUnfold = toUnfold ;}  
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
@@ -100,10 +97,6 @@ private:
 private:
 
   Bool_t  fDefaultInit;              //! Says if the task was created by defaut ctor (only parameters are initialized)
-  //  TString fFrom ;                    // name of Digits 
-  //  TString fHeaderFileName ;          // name of the file which contains gAlice, Tree headers etc.
-  //  TString fDigitsBranchTitle ;       // name of the file, where digits branch is stored
-  //  TString fRecPointsBranchTitle ;    // name of the file, where RecPoints branchs are stored
 
   Int_t   fEmcCrystals ;             // number of EMC cristalls in PHOS
 
