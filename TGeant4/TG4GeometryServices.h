@@ -24,6 +24,7 @@ class TG4G3ControlVector;
 
 class G4Material;
 class G4LogicalVolume;
+class G4VPhysicalVolume;
 class G4UserLimits;
 
 class TG4GeometryServices
@@ -56,12 +57,16 @@ class TG4GeometryServices
     void PrintVolumeLimits(const G4String& volumeName) const;
     void PrintStatistics(G4bool open, G4bool close) const;
 
+    // set methods
+    void SetWorld(G4VPhysicalVolume* world);
+
     // get methods
            // volumes
     Int_t NofG3Volumes() const; 
     Int_t NofG4LogicalVolumes() const; 
     Int_t NofG4PhysicalVolumes() const; 
     G4bool IsSpecialControls() const;
+    G4VPhysicalVolume* GetWorld() const;
 
     TG4Limits* GetLimits(G4UserLimits* limits) const;
     const G4String& GetMapSecond(const G4String& name);
@@ -100,13 +105,20 @@ class TG4GeometryServices
     static const G4double  fgkDensityTolerance;//density tolerance (percentual)
  
     // data members
-    TG4IntMap*     fMediumMap; //map of volumes names to medias IDs
-    TG4NameMap*    fNameMap;   //map of volumes names to modules names
+    TG4IntMap*         fMediumMap; //map of volumes names to medias IDs
+    TG4NameMap*        fNameMap;   //map of volumes names to modules names
+    G4VPhysicalVolume* fWorld;     //top pgysical volume (world)
 };
 
 // inline methods
 inline TG4GeometryServices* TG4GeometryServices::Instance()
 { return fgInstance; }
+
+inline void TG4GeometryServices::SetWorld(G4VPhysicalVolume* world)
+{ fWorld = world; }
+
+inline G4VPhysicalVolume* TG4GeometryServices::GetWorld() const
+{ return fWorld; }
 
 #endif //TG4_GEOMETRY_SERVICES_H
 
