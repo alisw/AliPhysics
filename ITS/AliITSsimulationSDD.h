@@ -111,6 +111,11 @@ private:
 
   TObjArray *fHis;             // just in case for histogramming
 
+  Double_t            *fInZR; // input of the real part of FFT
+  Double_t            *fInZI; // input of the imaginary part of FFT
+  Double_t            *fOutZR; // output of the real part of FFT
+  Double_t            *fOutZI; // output of the imaginary part of FFT
+
   ClassDef(AliITSsimulationSDD,1)  // Simulation of SDD clusters
     
 };
