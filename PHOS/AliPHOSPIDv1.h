@@ -34,12 +34,13 @@ public:
   AliPHOSPIDv1(const char* headerFile, const char * tsBranch = "Default", const char * from = 0) ;
   virtual ~AliPHOSPIDv1() ; // dtor
 
-  virtual void Exec(Option_t * option);
+  virtual void Exec(Option_t * option) ;
   virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      
   virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
   virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
  
-  virtual void Print(Option_t * option)const ;
+  virtual void Print(Option_t * option) const {}
+  void Print() ; 
   // Get CpvtoEmcDistanceCut and TimeGate parameters depending on the custer energy and 
   // Purity-Efficiency point (possible options "HIGH EFFICIENCY" "MEDIUM EFFICIENCY" "LOW  
   // EFFICIENCY" and 3 more options changing EFFICIENCY by PURITY)
@@ -65,41 +66,35 @@ public:
   
  private:
 
+  const TString AliPHOSPIDv1::BranchName() const ; 
   virtual void Init() ;
   void     MakeRecParticles(void ) ;
   Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; // Relative Distance CPV-EMC
   Int_t    GetPrincipalSign(Double_t* P, Int_t ell, Int_t eff_pur)const ; //Principal cut
   TVector3 GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const ;
   void     PrintRecParticles(Option_t * option) ;
+  void     SetParameters() ;
   virtual void WriteRecParticles(Int_t event) ; 
 
  private:
 
+  TString                fFileName ;          // Name of the file which contains the Principal file
+  TString                fFileNamePar ;       // Name of the file which contains the parameters
   TString                fFrom ;              // name of Recpoints and TrackSegments 
   TString                fHeaderFileName ;    // file name with event header
   TString                fTrackSegmentsTitle; // branch name with track segments
   TString                fRecPointsTitle ;    // branch name with rec points
   TString                fRecParticlesTitle ; // branch name with rec particles
  
-  Int_t                  fNEvent ;            // current event number
+  Int_t                      fNEvent ;            //! current event number
+  AliPHOSClusterizer *       fClusterizer ;       //! clusterizer
+  AliPHOSTrackSegmentMaker * fTSMaker ;           //! track segment maker
+  TPrincipal *               fPrincipal ;         //! TPrincipal from fFileName 
+  Int_t                      fRecParticlesInRun ; //! Total number of recparticles in one run
+  Double_t *                 fX ;                 //! Principal data 
+  Double_t *                 fP ;                 //! Principal eigenvalues
+  TMatrixD *                 fParameters ;        //! Matrix of all identification Parameters
 
-  AliPHOSClusterizer   * fClusterizer ;       //!
-  AliPHOSTrackSegmentMaker * fTSMaker ;       //!
-  TPrincipal           * fPrincipal ;         //
-  
-
-
-
-
-  Int_t                  fRecParticlesInRun ; //! Total number of recparticles in one run
-
-  Double_t*              fX ; //! Principal data 
-  Double_t*              fP ; //! Principal eigenvalues
-
-  TMatrixD*              fParameters ;//! Matrix of all identification Parameters
-  TString                fFileName ; // Name of the file which contains the Principal file
-  TString                fFileNamePar ; //Name of the file which contains the parameters
- 
   ClassDef( AliPHOSPIDv1,2)  // Particle identifier implementation version 1
 
 };

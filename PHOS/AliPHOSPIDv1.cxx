@@ -97,15 +97,22 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
 { 
   // default ctor
  
-  fHeaderFileName    = "" ; 
-  fTrackSegmentsTitle= "" ; 
-  fRecPointsTitle    = "" ; 
-  fRecParticlesTitle = "" ; 
-  fRecParticlesInRun = 0 ;
-  fClusterizer       = 0 ; 
-  fTSMaker           = 0 ;
-  fFrom              = "" ;  
+  fFileName           = "" ; 
+  fFileNamePar        = "" ;      
+  fFrom               = "" ;
+  fHeaderFileName     = "" ; 
+  fTrackSegmentsTitle = "" ; 
+  fRecPointsTitle     = "" ;   
+  fRecParticlesTitle  = "" ; 
   
+  fNEvent            = 0 ;            
+  fClusterizer       = 0 ;      
+  fTSMaker           = 0 ;        
+  fRecParticlesInRun = 0 ;
+  fX                 = 0 ;
+  fP                 = 0 ; 
+  fParameters        = 0 ;     
+
 }
 
 //____________________________________________________________________________
@@ -133,66 +140,42 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name, const char
 //____________________________________________________________________________
 AliPHOSPIDv1::~AliPHOSPIDv1()
 { 
-  delete [] fX ; // Principal input
+
+  delete [] fX ; // Principal input 
   delete [] fP ; // Principal components
   delete fParameters ; // Matrix of Parameters 
 }
 
 //____________________________________________________________________________
+const TString AliPHOSPIDv1::BranchName() const 
+{  
+  TString branchName(GetName() ) ;
+  branchName.Remove(branchName.Index(Version())-1) ;
+  return branchName ;
+}
+ 
+//____________________________________________________________________________
 void AliPHOSPIDv1::Init()
 {
   // Make all memory allocations that are not possible in default constructor
   // Add the PID task to the list of PHOS tasks
-  
+
   if ( strcmp(GetTitle(), "") == 0 )
     SetTitle("galice.root") ;
   
-  TString taskName(GetName()) ; 
-  taskName.Remove(taskName.Index(Version())-1) ;
-
-  // PCA : To do the Principal Components Analysis it is necessary 
-  // the Principal file, which is opened here
-  fX         = new double[7]; // Data for the PCA 
-  fP         = new double[7]; // Eigenvalues of the PCA  
-  fFileName  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ; 
-  TFile f( fFileName.Data(), "read" ) ;
-  fPrincipal = dynamic_cast<TPrincipal*> (f.Get("principal")) ; 
-  f.Close() ; 
-  
-  // Initialization of the Parameters matrix. In the File Parameters.dat
-  // are all the parameters. These are introduced in a matrix of 21x3 elements.
-  // All the parameters defined in this file are, in order of row (there are
-  // 3 rows per parameter): CpvtoEmcDistanceCut, TimeGate (and the ellipse 
-  // parameters), X_center, Y_center, a, b, angle. Each row of a given parameter
-  // depends on the cluster energy range (0.3-1,1-2, >2 )
-  // Each column designes the parameters for a point in the Efficiency-Purity
-  // of the photon identification P1(0.959,0.625), P2(0.919,0.835), P3(0.833,0.901).
- 
-  fParameters = new TMatrixD(21,3) ; 
-
-  fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat");
-  ifstream paramFile(fFileNamePar, ios::in) ; 
- 
-  Int_t i,j ;
-
-  for(i = 0; i< 21; i++){
-    for(j = 0; j< 3; j++){
-      paramFile >> (*fParameters)(i,j) ;
-    }
-  }
-  paramFile.close();
+  SetParameters() ; // fill the parameters matrix from parameters file
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), fFrom.Data()) ; 
 
-  gime->SetRecParticlesTitle(taskName) ;
+  gime->SetRecParticlesTitle(BranchName()) ;
   if ( gime == 0 ) {
     cerr << "ERROR: AliPHOSPIDv1::Init -> Could not obtain the Getter object !" << endl ; 
     return ;
   } 
-   
+  
   gime->PostPID(this) ;
   // create a folder on the white board //YSAlice/WhiteBoard/RecParticles/PHOS/recparticlesName
-  gime->PostRecParticles(taskName.Data() ) ; 
+  gime->PostRecParticles(BranchName()) ; 
   
 }
 //____________________________________________________________________________
@@ -551,6 +534,45 @@ void  AliPHOSPIDv1::SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur, 
     (*fParameters)(cluster,eff_pur) = cut ;
   }
 }  
+
+//_____________________________________________________________________________
+void  AliPHOSPIDv1::SetParameters() 
+{
+  // PCA : To do the Principal Components Analysis it is necessary 
+  // the Principal file, which is opened here
+  fX         = new double[7]; // Data for the PCA 
+  fP         = new double[7]; // Eigenvalues of the PCA  
+  if (fFileName.IsNull()) 
+    fFileName  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ; 
+  TFile f( fFileName.Data(), "read" ) ;
+  fPrincipal = dynamic_cast<TPrincipal*> (f.Get("principal")) ; 
+  f.Close() ; 
+
+  // Initialization of the Parameters matrix. In the File Parameters.dat
+  // are all the parameters. These are introduced in a matrix of 21x3 elements.
+  // All the parameters defined in this file are, in order of row (there are
+  // 3 rows per parameter): CpvtoEmcDistanceCut, TimeGate (and the ellipse 
+  // parameters), X_center, Y_center, a, b, angle. Each row of a given parameter
+  // depends on the cluster energy range (0.3-1,1-2, >2 )
+  // Each column designes the parameters for a point in the Efficiency-Purity
+  // of the photon identification P1(0.959,0.625), P2(0.919,0.835), P3(0.833,0.901).
+ 
+  fParameters = new TMatrixD(21,3) ; 
+
+  if (fFileNamePar.IsNull())
+    fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat");
+  ifstream paramFile(fFileNamePar, ios::in) ; 
+  
+  Int_t i,j ;
+  
+  for(i = 0; i< 21; i++){
+    for(j = 0; j< 3; j++){
+      paramFile >> (*fParameters)(i,j) ;
+    }
+  }
+  paramFile.close();  
+}
+
 //_____________________________________________________________________________
 void  AliPHOSPIDv1::SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gate) 
 {
@@ -629,7 +651,7 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
   Int_t ievent ;
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;  
   for(ievent = 0; ievent < nevents; ievent++){
-    gime->Event(ievent,"RA") ;
+    gime->Event(ievent,"R") ;
  
     MakeRecParticles() ;
     
@@ -639,7 +661,7 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
       PrintRecParticles(option) ;
 
     //increment the total number of rec particles per run 
-    fRecParticlesInRun += gime->RecParticles(taskName)->GetEntriesFast() ; 
+    fRecParticlesInRun += gime->RecParticles(BranchName())->GetEntriesFast() ; 
 
   }
   
@@ -657,9 +679,6 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
 void  AliPHOSPIDv1::MakeRecParticles(){
 
   // Makes a RecParticle out of a TrackSegment
-
-  TString taskName(GetName()) ; 
-  taskName.Remove(taskName.Index(Version())-1) ;
   
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   TObjArray * emcRecPoints = gime->EmcRecPoints(fFrom) ; 
@@ -670,7 +689,7 @@ void  AliPHOSPIDv1::MakeRecParticles(){
 	 << fFrom << " not found ! " << endl ; 
     abort() ; 
   }
-  TClonesArray * recParticles  = gime->RecParticles(taskName) ; 
+  TClonesArray * recParticles  = gime->RecParticles(BranchName()) ; 
   recParticles->Clear();
  
 
@@ -763,7 +782,7 @@ void  AliPHOSPIDv1::MakeRecParticles(){
 }
 
 //____________________________________________________________________________
-void  AliPHOSPIDv1:: Print(Option_t * option) const
+void  AliPHOSPIDv1:: Print()
 {
   // Print the parameters used for the particle type identification
     cout <<  "=============== AliPHOSPID1 ================" << endl ;
@@ -773,12 +792,8 @@ void  AliPHOSPIDv1:: Print(Option_t * option) const
     cout <<  "    TrackSegments Branch title: " << fTrackSegmentsTitle.Data() << endl ;
     cout <<  "    RecParticles Branch title   " << fRecParticlesTitle.Data() << endl;
     cout <<  "with parameters: " << endl ;
-    //    cout <<  "    Maximal EMC - CPV  distance (cm) " << fCpvEmcDistance << endl ;
-    //cout <<  "    Time Gate used:                  " << fTimeGate <<  endl ;
-    //cout <<  "    Principal Ellipse Parameters     " << endl ;
-    //cout <<  "       Ellipse center   (x,y)           (" << fX_center<<","<<fY_center<<")"<< endl;
-    //cout <<  "       Ellipse focus    (a,b)           (" << fA<<","<<fB<<")"<< endl;
-    //cout <<  "       Ellipse angle                     " << fAngle<< endl;        
+    SetParameters() ; 
+    fParameters->Print() ; 
     cout <<  "============================================" << endl ;
 }
 
@@ -787,9 +802,8 @@ void  AliPHOSPIDv1::WriteRecParticles(Int_t event)
 {
  
   AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
-  TString taskName(GetName()) ; 
-  taskName.Remove(taskName.Index(Version())-1) ;
-  TClonesArray * recParticles = gime->RecParticles(taskName) ; 
+
+  TClonesArray * recParticles = gime->RecParticles(BranchName()) ; 
   recParticles->Expand(recParticles->GetEntriesFast() ) ;
 
   //Make branch in TreeR for RecParticles 
@@ -831,10 +845,9 @@ void  AliPHOSPIDv1::WriteRecParticles(Int_t event)
   }    
   
   rpBranch->Fill() ;
-  pidBranch->Fill() ;
+  pidBranch->Fill() ; 
   
   gAlice->TreeR()->Write(0,kOverwrite) ;  
-  //pidBranch->Write(0,kOverwrite) ;  
 
   delete [] filename ; 
 }
@@ -875,9 +888,7 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
 
   AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
 
-  TString taskName(GetName()) ; 
-  taskName.Remove(taskName.Index(Version())-1) ;
-  TClonesArray * recParticles = gime->RecParticles(taskName) ; 
+  TClonesArray * recParticles = gime->RecParticles(BranchName()) ; 
   
   cout << "AliPHOSPIDv1: event "<<gAlice->GetEvNumber()  << endl ;
   cout << "       found " << recParticles->GetEntriesFast() << " RecParticles " << endl ;
