@@ -25,6 +25,8 @@
 #pragma link C++ class  AliTRDclusterizer+;
 #pragma link C++ class  AliTRDclusterizerV0+;
 #pragma link C++ class  AliTRDclusterizerV1+;
+#pragma link C++ class  AliTRDclusterizerMI+;
+
 #pragma link C++ class  AliTRDrecPoint+;
 #pragma link C++ class  AliTRDsegmentArray+;
 #pragma link C++ class  AliTRDdataArray+;
@@ -36,6 +38,8 @@
 #pragma link C++ class  AliTRDtracker+;
 #pragma link C++ class  AliTRDtrackHits+;
 #pragma link C++ class  AliTRDcluster+;
+#pragma link C++ class  AliTRDclusterMI+;
+
 #pragma link C++ class  AliTRDpid+;
 #pragma link C++ class  AliTRDpidLQ+;
 #pragma link C++ class  AliTRDmcTrack+;
