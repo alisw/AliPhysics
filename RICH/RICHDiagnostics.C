@@ -11,6 +11,7 @@ RICHDiagnostics(Int_t nev=1)
    menu->AddButton("Single Ring Spectra",".x RICHpadtest.C(2,0,events-1","Photon spectra");
    menu->AddButton("Single Ring Statistics",".x RICHpadtest.C(3,0,events-1","Production and clusters");
    menu->AddButton("Single Ring Reconstruction",".x RICHpadtest.C(4,0,events-1","Generated and reconstructed values");
+   menu->AddButton("Single Ring Gain Variation",".x RICHgainvar.C(0,events-1","Gain variation along wires");
    menu->AddButton("Full Event Hits",".x RICHpadtest.C(5,0,events-1","Hits in seven modules");
    menu->AddButton("Full Event Spectra",".x RICHpadtestC.C","Individual particles' spectra and fluxes");
    menu->AddButton("Full Event Occupancy",".x RICHoccupancy.C","Mean and per chamber occupancy");
