@@ -22,7 +22,7 @@ class AliTRDgeometry : public AliGeometry {
   AliTRDgeometry();
   virtual ~AliTRDgeometry();
 
-  virtual void     CreateGeometry(Int_t *idtmed) const;
+  virtual void     CreateGeometry(Int_t *idtmed);
   virtual Int_t    IsVersion() const = 0;
   virtual void     Init();
   virtual Bool_t   Local2Global(Int_t d, Float_t *local, Float_t *global) const;

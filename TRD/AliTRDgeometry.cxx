@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2002/03/28 14:59:07  cblume
+Coding conventions
+
 Revision 1.15  2002/02/11 14:21:16  cblume
 Update of the geometry. Get rid of MANY
 
@@ -411,7 +414,7 @@ void AliTRDgeometry::SetNTimeBin(const Int_t nbin)
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::CreateGeometry(Int_t *idtmed) const
+void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
 {
   //
   // Create TRD geometry
