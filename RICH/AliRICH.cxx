@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.37  2000/12/20 14:07:25  jbarbosa
+  Removed dependencies on TGeant3 (thanks to F. Carminati and I. Hrivnacova)
+
   Revision 1.36  2000/12/18 17:45:54  jbarbosa
   Cleaned up PadHits object.
 
@@ -244,6 +247,29 @@ AliRICH::~AliRICH()
     delete fHits;
     delete fPadHits;
     delete fCerenkovs;
+    
+    //PH Delete TObjArrays
+    if (fChambers) {
+      fChambers->Delete();
+      delete fChambers;
+    }
+    if (fDchambers) {
+      fDchambers->Delete();
+      delete fDchambers;
+    }
+    if (fRawClusters) {
+      fRawClusters->Delete();
+      delete fRawClusters;
+    }
+    if (fRecHits1D) {
+      fRecHits1D->Delete();
+      delete fRecHits1D;
+    }
+    if (fRecHits3D) {
+      fRecHits3D->Delete();
+      delete fRecHits3D;
+    }                     
+    
 }
 
 //___________________________________________
