@@ -1,0 +1,15 @@
+SRCS = AliESD.cxx \
+       AliESDtrack.cxx \
+       AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDHLTtrack.cxx \
+       AliESDv0.cxx AliESDcascade.cxx AliESDVertex.cxx \
+       AliESDpid.cxx \
+       AliKalmanTrack.cxx \
+       AliLog.cxx
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+EINCLUDE:=RAW
+
+DHDR= ESDLinkDef.h
+
+

@@ -7,7 +7,7 @@ ELIBS:= MUONmapping MUON TPCbase TPCsim TPCrec TPCfast \
 	ITS PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec TRDfast \
 	FMDbase FMDsim FMDrec TOF PHOS CRT RICH \
         ZDC VZERObase VZEROsim VZEROrec EMCAL \
-        STRUCT STARTbase STARTsim STARTrec EVGEN STEER CONTAINERS \
+        STRUCT STARTbase STARTsim STARTrec EVGEN ESD STEER CONTAINERS \
         pythia6 AliPythia6 pdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN \
         TPHIC FASTSIM microcern RAW AliL3Src AliL3Comp AliL3Misc AliL3Hough
