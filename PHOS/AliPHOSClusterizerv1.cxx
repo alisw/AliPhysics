@@ -267,7 +267,6 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
 {
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance();
-
   if(gime->IsRawDigits()){
     fCalibrationDB = gime->CalibrationDB();    
   }
@@ -331,6 +330,8 @@ void AliPHOSClusterizerv1::InitParameters()
   fRecPointsInRun          = 0 ;
 
   fWrite                   = kTRUE ;
+
+  fCalibrationDB           = 0 ;
 
   SetEventRange(0,-1) ;
 }
