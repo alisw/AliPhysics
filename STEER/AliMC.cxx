@@ -21,6 +21,7 @@
 // Author: F.Carminati
 //         Federico.Carminati@cern.ch
 
+#include <RVersion.h>
 #include <TBrowser.h>
 #include <TStopwatch.h>
 #include <TSystem.h>
@@ -481,8 +482,10 @@ void AliMC::FinishPrimary()
   //  static Int_t count=0;
   //  const Int_t times=10;
   // This primary is finished, purify stack
+#if ROOT_VERSION_CODE > 262152
   if (!(gMC->SecondariesAreOrdered()))
        runloader->Stack()->ReorderKine();
+#endif
   runloader->Stack()->PurifyKine();
   
   TIter next(gAlice->Modules());
