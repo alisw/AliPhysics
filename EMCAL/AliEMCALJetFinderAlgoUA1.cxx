@@ -14,15 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- 
-$Log$
-Revision 1.1.1.1  2003/05/29 18:55:31  horner
-Initial import - Mark
-
-
-*/
-
+/* $Id$ */
 
 //*--Author: Sarah Blyth (LBL)
 //*--Based on UA1 jet algorithm from LUND JETSET called from EMC-erj

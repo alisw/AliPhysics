@@ -14,26 +14,7 @@
  **************************************************************************/
 
 
-/*
-$Log$
-Revision 1.4  2002/10/14 14:55:35  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.2.6.2  2002/07/24 10:06:16  alibrary
-Updating VirtualMC
-
-Revision 1.3  2002/04/11 19:24:42  nilsen
-fixed a complation warning about not brace-enclosing the sub-elements of
-the static Double_t c[naxVariant][nPol].
-
-Revision 1.2  2002/02/04 15:11:44  hristov
-Use TMath::Abs instead of fabs (Alpha)
-
-Revision 1.1  2002/01/17 23:52:43  morsch
-First commit.
-
-*/
-
+/* $Id$ */
 
 #include "AliEMCALHadronCorrectionv0.h"
 

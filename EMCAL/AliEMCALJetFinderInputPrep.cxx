@@ -13,14 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- 
-$Log$
-Revision 1.1.1.1  2003/05/29 18:56:38  horner
-Initial import - Mark
-
- 
-*/
+/* $Id$ */
 
 //_________________________________________________________________________
 //  Base Class for JetFinder Input Preparation

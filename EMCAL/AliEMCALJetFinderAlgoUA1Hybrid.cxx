@@ -19,18 +19,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- 
-$Log$
-Revision 1.3  2003/06/18 17:00:25  horner
-Cleaned up more cout statements - Mark
-
-Revision 1.2  2003/06/18 00:20:07  horner
-Removed cout statement - Mark
-
-
-*/
-
+/* $Id$ */
 
 //*--Author: Sarah Blyth (LBL)
 //*--Based on UA1 jet algorithm from LUND JETSET called from EMC-erj

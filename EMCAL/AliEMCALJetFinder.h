@@ -20,6 +20,7 @@ class TList;
 class AliEMCALHadronCorrection;
 
 class AliEMCALJetFinder : public TTask {
+  friend class AliEMCALJetMicroDst; //PH Temporary solution
  public:
     AliEMCALJetFinder();
     AliEMCALJetFinder(const char* name, const char *title);

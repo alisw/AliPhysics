@@ -41,8 +41,11 @@ AliEMCALLink.cxx \
 AliEMCALRecParticle.cxx \
 AliEMCALFastRecParticle.cxx \
 AliEMCALPID.cxx \
-AliEMCALPIDv1.cxx 
+AliEMCALPIDv1.cxx \
+AliEMCALLoader.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
 DHDR:=EMCALLinkDef.h
+
+EINCLUDE:=PYTHIA6
