@@ -41,6 +41,7 @@ AliMUONData::AliMUONData():TNamed()
   fGlobalTrigger = 0x0; //! List of Global Trigger 1st event in TreeR/GlobalTriggerBranch
   fLocalTrigger  = 0x0;  //! List of Local Trigger, 1st event in TreeR/LocalTriggerBranch
   fRecTracks     = 0x0;       
+  fSplitLevel    = 0;
 //default constructor
 }
 //_____________________________________________________________________________
@@ -58,7 +59,8 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
   fNhits         = 0;
   fNglobaltrigger =0;
   fNlocaltrigger = 0;
-  fNrectracks    = 0; 
+  fNrectracks    = 0;  
+  fSplitLevel    = 0;
 //   fHits          = new TClonesArray("AliMUONHit",1000);
 //   fNhits         = 0;
 //   fDigits        = new TObjArray(AliMUONConstants::NCh());
@@ -309,7 +311,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       Info("MakeBranch","Branch %s is already in tree.",GetName());
       return ;
     }
-    branch = TreeH()->Branch(branchname,&fHits,kBufferSize);
+    branch = TreeH()->Branch(branchname,&fHits,kBufferSize,fSplitLevel);
     Info("MakeBranch","Making Branch %s for hits \n",branchname);
   }  
   
@@ -337,7 +339,7 @@ void AliMUONData::MakeBranch(Option_t* option)
 	return;
       }
       TClonesArray * digits = Digits(iDetectionPlane); 
-      branch = TreeD()->Branch(branchname, &digits, kBufferSize);
+      branch = TreeD()->Branch(branchname, &digits, kBufferSize,1);
       Info("MakeBranch","Making Branch %s for digits in detection plane %d\n",branchname,iDetectionPlane+1);
       }
   }
@@ -349,7 +351,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     if (fRawClusters == 0x0) {
       fRawClusters = new TObjArray(AliMUONConstants::NTrackingCh());
       for (Int_t i=0; i<AliMUONConstants::NTrackingCh();i++) {
-	fRawClusters->AddAt(new TClonesArray("AliMUONRawCluster",10000),i); 
+	fRawClusters->AddAt(new TClonesArray("AliMUONRawCluster",1000),i); 
       }
     }
 
@@ -368,7 +370,7 @@ void AliMUONData::MakeBranch(Option_t* option)
 	Info("MakeBranch","Branch %s is already in tree.",GetName());
 	return;
       }
-      branch = TreeR()->Branch(branchname, &((*fRawClusters)[i]),kBufferSize);
+      branch = TreeR()->Branch(branchname, &((*fRawClusters)[i]),kBufferSize,fSplitLevel);
       Info("MakeBranch","Making Branch %s for rawcluster in detection plane %d\n",branchname,i+1);
     }
   }
@@ -381,7 +383,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     branch = 0x0;
     
     if (fGlobalTrigger == 0x0) {
-      fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1); 
+      fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",fSplitLevel); 
       fNglobaltrigger = 0;
     }
     branch = TreeR()->GetBranch(branchname);
@@ -389,7 +391,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       Info("MakeBranch","Branch %s is already in tree.",GetName());
       return ;
     }
-    branch = TreeR()->Branch(branchname, &fGlobalTrigger, kBufferSize);
+    branch = TreeR()->Branch(branchname, &fGlobalTrigger, kBufferSize,fSplitLevel);
     Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);
     
     //
@@ -407,7 +409,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       Info("MakeBranch","Branch %s is already in tree.",GetName());
       return;
     }
-    branch = TreeR()->Branch(branchname, &fLocalTrigger, kBufferSize);
+    branch = TreeR()->Branch(branchname, &fLocalTrigger, kBufferSize,fSplitLevel);
     Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);  
   }
   
@@ -498,7 +500,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     sprintf(branchname,"%sHits",GetName());  
     branch = TreeH()->GetBranch(branchname);
     if (branch) {
-      Info("SetTreeAddress","(%s) Setting for Hits",GetName());
+      //      Info("SetTreeAddress","(%s) Setting for Hits",GetName());
       branch->SetAddress(&fHits);
     }
     else { //can be invoked before branch creation
@@ -522,10 +524,12 @@ void AliMUONData::SetTreeAddress(Option_t* option)
   if (TreeD() && fDigits && cD) {
     for (int i=0; i<AliMUONConstants::NCh(); i++) {
       sprintf(branchname,"%sDigits%d",GetName(),i+1);
-      branch = TreeD()->GetBranch(branchname);
-      TClonesArray * digits = Digits(i);
-      if (branch) branch->SetAddress( &digits );
-      else Warning("SetTreeAddress","(%s) Failed for Digits Detection plane %d. Can not find branch in tree.",GetName(),i);
+      if (fDigits) {
+	branch = TreeD()->GetBranch(branchname);
+	TClonesArray * digits = Digits(i);
+	if (branch) branch->SetAddress( &digits );
+	else Warning("SetTreeAddress","(%s) Failed for Digits Detection plane %d. Can not find branch in tree.",GetName(),i);
+      }
     }
   }
   
@@ -553,7 +557,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
       sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
       if (fRawClusters) {
 	branch = TreeR()->GetBranch(branchname);
-	if (branch) branch->SetAddress(&((*fRawClusters)[i]));
+	if (branch) branch->SetAddress( &((*fRawClusters)[i]) );
 	else Warning("SetTreeAddress","(%s) Failed for RawClusters Detection plane %d. Can not find branch in tree.",GetName(),i);
       }
     }

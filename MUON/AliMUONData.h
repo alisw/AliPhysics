@@ -68,6 +68,7 @@ class AliMUONData : public TNamed {
     void           GetCathode(Int_t ic) {fLoader->TreeD()->GetEvent(ic);}
     void           GetRawClusters() {fLoader->TreeR()->GetEvent(0);}
     void           GetTrigger() {fLoader->TreeR()->GetEvent(0);}
+    Int_t          GetSplitLevel() {return fSplitLevel;}
 
     Bool_t        IsRawClusterBranchesInTree();
     Bool_t        IsTriggerBranchesInTree();
@@ -79,6 +80,9 @@ class AliMUONData : public TNamed {
     virtual void   MakeBranch(Option_t *opt=" ");
     virtual void   SetTreeAddress(Option_t *opt=" ");
     
+    void           SetSplitLevel(Int_t SplitLevel) {fSplitLevel=SplitLevel;}
+    
+
     virtual void   ResetHits();
     virtual void   ResetDigits();
     virtual void   ResetTrigger();
@@ -118,6 +122,7 @@ class AliMUONData : public TNamed {
     Int_t           fNglobaltrigger;//!
     Int_t           fNlocaltrigger;//!
     Int_t           fNrectracks; //!
+    Int_t           fSplitLevel; // Splitting of branches 0 no spitting (root files are smaller) 1 splitting (larger output files)
 
     ClassDef(AliMUONData,1)
  };

@@ -51,11 +51,12 @@ class AliMUON : public  AliDetector {
     virtual AliLoader* MakeLoader(const char* topfoldername); //builds standard getter (AliLoader type)
     // Interface with AliMUONData
     virtual void       MakeBranch(Option_t *opt=" ") {GetMUONData()->MakeBranch(opt);}
-    void               SetTreeAddress();
+    virtual void       SetTreeAddress();
     virtual void       ResetHits()                   {GetMUONData()->ResetHits();}
     virtual void       ResetDigits()                 {GetMUONData()->ResetDigits();}
-    virtual void       ResetTrigger()                {GetMUONData()->ResetTrigger();};
-    virtual void       ResetRawClusters()            {GetMUONData()->ResetRawClusters();};
+    virtual void       ResetTrigger()                {GetMUONData()->ResetTrigger();}
+    virtual void       ResetRawClusters()            {GetMUONData()->ResetRawClusters();}
+    virtual void       SetSplitLevel(Int_t SplitLevel)     {fSplitLevel=SplitLevel;}
     // Cluster Finding
     virtual void   Digits2Reco();
     virtual void   FindClusters();
@@ -114,6 +115,7 @@ class AliMUON : public  AliDetector {
     Int_t                 fNCh;                // Number of chambers   
     Int_t                 fNTrackingCh;        // Number of tracking chambers*
     AliMUONData*          fMUONData;           // Data container for MUON subsystem  
+    Int_t                 fSplitLevel;         // Splitlevel when making branches in outfiles.
     TObjArray*            fChambers;           // List of Tracking Chambers
     TObjArray*            fTriggerCircuits;    // List of Trigger Circuits
    

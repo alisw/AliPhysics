@@ -100,6 +100,7 @@ AliMUON::AliMUON()
     fMerger          = 0;
     fFileName        = 0;
     fMUONData        = 0;
+    fSplitLevel      = 0;
 }
 //__________________________________________________________________
 AliMUON::AliMUON(const char *name, const char *title)
@@ -111,6 +112,7 @@ AliMUON::AliMUON(const char *name, const char *title)
 */
 //End_Html
   fMUONData  = 0x0;
+  fSplitLevel= 0;
   fIshunt     =  0;
 
   fNCh             = AliMUONConstants::NCh(); 
@@ -203,6 +205,7 @@ void  AliMUON::SetTreeAddress()
 {
   GetMUONData()->SetLoader(fLoader); 
   GetMUONData()->SetTreeAddress("H,D,RC");
+  fHits = GetMUONData()->Hits(); // Added by Ivana to use the methods FisrtHit, NextHit of AliDetector
 }
 
 //____________________________________________________________________
@@ -368,6 +371,7 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
      
  fLoader   = new AliLoader(GetName(),topfoldername);
  fMUONData = new AliMUONData(fLoader,GetName(),GetName()); 
+ fMUONData->SetSplitLevel(fSplitLevel);
  return fLoader;
 }
 
