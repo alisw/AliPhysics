@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/11/21 16:28:39  alibrary
+Removing AliMCProcess and AliMC
+
 Revision 1.7  2002/11/12 17:06:13  morsch
 Update on recess between stations 4 and 5.
 
@@ -1556,7 +1559,7 @@ void AliSHILv2::CreateGeometry()
 //  
   tpar[0] = 50.;
   tpar[1] = 310.;
-  tpar[2] = (kZFilterOut - kZFilterIn) / 4.;
+  tpar[2] = (kZFilterOut - kZFilterIn) / 2.;
   gMC->Gsvolu("YFIM", "TUBE", idtmed[kFe+40], tpar, 3);
   dz = (kZFilterIn + kZFilterOut) / 2.;
   tpar[2] -= 10.;
