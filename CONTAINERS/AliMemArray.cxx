@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/11/01 16:01:26  kowal2
+Classes for handling the new hits structures
+
 */
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -244,7 +247,8 @@ void AliMemArray::Clear(Option_t *)
     return;
   }
   if (fCont){
-    memset(fCont, 0, fSize*fObjectSize);
+    //    memset(fCont, 0, fSize*fObjectSize);
+    //MI change - to have the same as in TClonesArray
     fSize = 0;
   }
 }
@@ -297,7 +301,8 @@ void AliMemArray::Resize(UInt_t  n)
   if (n>fCapacity) Reserve(n);   //reserve automaticaly space if sie >capacity
   if (fSize>n){ 
     DTORBuffer(Unchecked1DAt(n),fSize-n);
-    memset(&((char*)fCont)[n*fObjectSize], 0, (fSize-n)*fObjectSize);
+    //memset(&((char*)fCont)[n*fObjectSize], 0, (fSize-n)*fObjectSize);
+    //MI change - to have the same as in TClonesArray
   }
   if (fSize<n)    CTORBuffer(Unchecked1DAt(fSize),n-fSize);     
   fSize = n;
@@ -330,7 +335,8 @@ void AliMemArray::Clear2D()
   //clear memory space occupied by the array  - doesn't call DTOR
   Int_t  nbuff = (fCapacity/fBufferSize);
   if ( (fCapacity%fBufferSize)!=0) nbuff++;
-  for (Int_t  i=0;i<nbuff;i++) memset(GetRow(i), 0, fSize*fObjectSize);
+  // for (Int_t  i=0;i<nbuff;i++) memset(GetRow(i), 0, fSize*fObjectSize);
+  //MI change - to have the same as in TClonesArray
   fSize = 0;  
 }
 
