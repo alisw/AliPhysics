@@ -148,7 +148,9 @@ Int_t AliEMCALDigit::Compare(const TObject * obj) const
 const Float_t AliEMCALDigit::GetEta() const
 {
   Float_t eta=-10., phi=-10.;
-  AliEMCALGeometry::GetInstance()->EtaPhiFromIndex(fId,eta,phi);
+  Int_t id = GetId();
+  AliEMCALGeometry *g = AliEMCALGetter::GetInstance()->EMCALGeometry();
+  g->EtaPhiFromIndex(id,eta,phi);
   return eta ;
 }
 
@@ -156,7 +158,9 @@ const Float_t AliEMCALDigit::GetEta() const
 const Float_t AliEMCALDigit::GetPhi() const
 {
   Float_t eta=-10., phi=-10.;
-  AliEMCALGeometry::GetInstance()->EtaPhiFromIndex(fId,eta,phi);
+  Int_t id = GetId();
+  AliEMCALGeometry *g = AliEMCALGetter::GetInstance()->EMCALGeometry();
+  g->EtaPhiFromIndex(id,eta,phi);
   return phi ;
 }
 
@@ -273,6 +277,17 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
     }
   }
   
+  return *this ;
+}
+
+//____________________________________________________________________________
+AliEMCALDigit& AliEMCALDigit::operator*(Float_t factor) 
+{
+  // Multiplies the amplitude by a factor
+  
+  Float_t tempo = static_cast<Float_t>(fAmp) ; 
+  tempo *= factor ; 
+  fAmp = static_cast<Int_t>(TMath::Ceil(tempo)) ; 
   return *this ;
 }
 

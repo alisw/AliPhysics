@@ -37,7 +37,8 @@ class AliEMCALDigit : public AliDigitNew {
 
   Bool_t operator==(const AliEMCALDigit &rValue) const;
   AliEMCALDigit& operator+(AliEMCALDigit const &rValue) ;
-    
+  AliEMCALDigit& AliEMCALDigit::operator*(Float_t factor) ; 
+ 
   Int_t   Compare(const TObject * obj) const ;  
   const Float_t GetEta() const ; 
   Int_t   GetNprimary() const { 
