@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/02/28 21:03:57  fca
+Some additions to improve the compatibility with G4
+
 Revision 1.17  2000/02/23 16:25:25  fca
 AliVMC and AliGeant3 classes introduced
 ReadEuclid moved from AliRun to AliModule
@@ -112,7 +115,6 @@ Bool_t  TGeant3::IsTrackAlive() const {return 0;}
 void    TGeant3::StopTrack() {}
 void    TGeant3::StopEvent() {}
 void    TGeant3::SetMaxNStep(Int_t) {}
-void    TGeant3::SetColors() {}
 Int_t   TGeant3::GetMaxNStep() const {return 0;}
 void    TGeant3::Material(Int_t&, const char*, Float_t, Float_t, Float_t, Float_t,
 			  Float_t, Float_t*, Int_t){}
@@ -222,6 +224,7 @@ void  TGeant3::Gsatt(const char*, const char*, Int_t) {}
 void  TGeant3::Gfpara(const char*, Int_t, Int_t, Int_t&, Int_t&, Float_t*, Float_t*) {}
 void  TGeant3::Gckpar(Int_t, Int_t, Float_t*) {}
 void  TGeant3::Gckmat(Int_t, char*) {}
+void  TGeant3::BuildPhysics() {}
 
 //______________________________________________________________________________
 void TGeant3::Streamer(TBuffer &R__b)
