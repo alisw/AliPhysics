@@ -243,9 +243,9 @@ void  AliMUON::SetTreeAddress()
   //  GetMUONData()->MakeBranch("D,S,RC");
   //  GetMUONData()->SetTreeAddress("H,D,S,RC");
   GetMUONData()->SetTreeAddress("H");
-
   if (fHits !=  GetMUONData()->Hits())  {
-    if (gAlice->GetMCApp())
+    if ( gAlice->GetMCApp() )
+      if ( gAlice->GetMCApp()->GetHitLists() )
       gAlice->GetMCApp()->AddHitList (fHits); // For purifyKine, only necessary when Hit list is created in AliMUONData
   }
   fHits = GetMUONData()->Hits(); // Added by Ivana to use the methods FisrtHit, NextHit of AliDetector
@@ -443,9 +443,8 @@ void AliMUON::SDigits2Digits()
 //_____________________________________________________________________
 void AliMUON::Hits2SDigits()
 {
-  // make SDigits from hits
-  AliMUONSDigitizerv1 SDigitizer = AliMUONSDigitizerv1();
-  SDigitizer.Exec(); // make SDigits for current event
+  // Empty for the moment which means that AliSimulation is 
+  // using AliMUONDigitalisationv1 and SDigits are not created. MErging is done at the Hit level
 }
 //_______________________________________________________________________
 AliLoader* AliMUON::MakeLoader(const char* topfoldername)
