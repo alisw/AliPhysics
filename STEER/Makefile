@@ -20,8 +20,8 @@ SRCS          = AliDetector.cxx	AliHeader.cxx	AliMagF.cxx \
                 AliRndm.cxx \
 		AliKalmanTrack.cxx AliCluster.cxx AliTracker.cxx\
 		AliMCQA.cxx AliPDG.cxx AliDebugVolume.cxx \
-		AliGenEventHeader.cxx AliStack.cxx AliConfig.cxx
-
+		AliGenEventHeader.cxx AliStack.cxx AliConfig.cxx \
+		AliRunDigitizer.cxx AliDigitizer.cxx	
 # C++ Headers
 
 HDRS          = $(SRCS:.cxx=.h) AliPDG.h $(ROOTSYS)/include/TH2.h \
