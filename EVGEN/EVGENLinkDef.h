@@ -58,6 +58,7 @@
 #pragma link C++ class  AliGenAfterBurnerFlow+;
 #pragma link C++ class  AliPartonicEnergyLoss+;
 #pragma link C++ class  AliStructFuncType+;
+#pragma link C++ class  AliGenGrayParticles+;
 #endif
 
 
