@@ -35,6 +35,7 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliBitPacking.h" 
+#include "AliRawDataHeader.h"
 
 const Int_t AliMUONRawData::fgkDefaultPrintLevel = 0;
 
@@ -120,11 +121,11 @@ Int_t AliMUONRawData::WriteRawData()
   for (Int_t ich = 0; ich < AliMUONConstants::NTrackingCh(); ich++) {
 
     // open files
-    DDLId = ich * 2  + 1;
+    DDLId = ich * 2  + 0x900;
     sprintf(name, "MUON_%d.ddl",DDLId);
     fFile1 = fopen(name,"w");
 
-    DDLId = (ich * 2 + 1) + 1;
+    DDLId = (ich * 2) + 1 + 0x900 ;
     sprintf(name, "MUON_%d.ddl",DDLId);
     fFile2 = fopen(name,"w");
 
@@ -168,6 +169,7 @@ Int_t AliMUONRawData::WriteDDL(Int_t iCh)
   Int_t nDigits;
   AliMUONDigit* digit;
 
+  AliRawDataHeader header;
 
   eventDDL1 = new AliMUONDDLTracker();
   eventDDL2 = new AliMUONDDLTracker();
@@ -217,7 +219,7 @@ Int_t AliMUONRawData::WriteDDL(Int_t iCh)
       // manu Id directly from a matrix 8*8, same segmentation for B and NB
       // 50 buspatches for 1/2 chamber
  
-      id =  (digit->PadX() * offsetX + digit->PadY() + offsetY +
+      id =  (TMath::Abs(digit->PadX()) * offsetX + digit->PadY() + offsetY +
 	     offsetCath*iCath);
       busPatchId = id/50;
 
@@ -264,12 +266,16 @@ Int_t AliMUONRawData::WriteDDL(Int_t iCh)
   // write DDL event
   nWord = eventDDL1->GetLength();
   if (nWord > 0) { // not empty event
+    header.fSize = nWord*4 + sizeof(AliRawDataHeader) + 12; // include EoD & length
+    fwrite((char*)(&header),sizeof(header),1,fFile1);
     fwrite(eventDDL1->GetAddress(),sizeof(int),nWord+2,fFile1);
     dummy = eventDDL1->GetEoD(); 
     fwrite(&dummy,sizeof(int),1,fFile1);// could be nicer !
   }
   nWord = eventDDL2->GetLength();
   if (nWord > 0) {
+    header.fSize = nWord*4 + sizeof(AliRawDataHeader) + 12;
+    fwrite((char*)(&header),sizeof(header),1,fFile2);
     fwrite(eventDDL2->GetAddress(),sizeof(int),nWord+2,fFile2);
     dummy = eventDDL2->GetEoD();
     fwrite(&dummy,sizeof(int),1,fFile2);
