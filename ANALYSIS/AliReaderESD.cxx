@@ -423,14 +423,14 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
       if (fNTrackPoints > 0) 
        {
          tpts = new AliTrackPoints(fNTrackPoints,esdtrack,mf,fdR);
-         tpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
+//         tpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
        }
 
       AliTrackPoints* itstpts = 0x0;
       if (fITSTrackPoints) 
        {
          itstpts = new AliTrackPoints(AliTrackPoints::kITS,esdtrack);
-         itstpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
+//         itstpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
        }
 
       AliClusterMap* cmap = 0x0; 
@@ -562,6 +562,15 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
          fEventRec->GetNumberOfParticles(), fEventSim->GetNumberOfParticles(),
          fNEventsRead,fCurrentEvent,fCurrentDir);
   fTrackCounter->Fill(fEventRec->GetNumberOfParticles());
+  
+  /******************************************************/
+  /******     Setting glevet properties     *************/
+  /******************************************************/
+    
+  if (fEventRec->GetNumberOfParticles() > 0)
+   {
+     fEventRec->SetPrimaryVertex(vertexpos[0],vertexpos[1],vertexpos[2]);
+   }
   return 0;
 }
 

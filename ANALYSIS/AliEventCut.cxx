@@ -14,18 +14,28 @@
 
 #include "AliBaseEventCut.h"
 
+ClassImp(AliEventCut)
+
+
 AliEventCut::AliEventCut():
- fBaseCuts(0x0)
+ fBaseCuts(10)
 {
 //costructor
 
+}
+/*********************************************************/
+AliEventCut::AliEventCut(const AliEventCut& in):
+ TObject(in),
+ fBaseCuts(in.fBaseCuts)
+{
+  //cpy ctor
+  fBaseCuts.SetOwner(kTRUE);
 }
 /*********************************************************/
 
 AliEventCut::~AliEventCut()
 {
 //costructor
- delete fBaseCuts;
 }
 
 /*********************************************************/
@@ -39,7 +49,7 @@ Bool_t AliEventCut::Pass(AliAOD* aod) const
      return kFALSE;
    }
    
-  TIter iter(fBaseCuts);
+  TIter iter(&fBaseCuts);
   AliBaseEventCut* becut;
   while (( becut = (AliBaseEventCut*)iter() ))
    {
@@ -47,3 +57,9 @@ Bool_t AliEventCut::Pass(AliAOD* aod) const
    }
   return kFALSE;
 }
+
+/*********************************************************/
+/*********************************************************/
+/*********************************************************/
+
+ClassImp(AliEmptyEventCut)

@@ -84,7 +84,8 @@ inline Bool_t AliAnalysis::PassPartAndTrack1(AliVAODParticle* part,AliVAODPartic
   AliAODParticleCut* pc = fPairCut->GetFirstPartCut();
   return (pc->Pass(part))?kTRUE:pc->Pass(track);
 }
-/*************************************************************************************/ 
+/*************************************************************************************/
+
 inline Bool_t AliAnalysis::PassPartAndTrack2(AliVAODParticle* part,AliVAODParticle* track) const
 {
 //Checks second particle from both, particle and track pairs

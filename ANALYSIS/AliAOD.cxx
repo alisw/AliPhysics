@@ -23,10 +23,21 @@
 
 #include <TParticle.h>
 #include "AliAOD.h"
-
 #include "AliAODParticle.h"
+#include "AliTrackPoints.h"
 
 ClassImp(AliAOD)
+
+AliAOD::AliAOD():
+ fParticles(10),
+ fIsRandomized(kFALSE),
+ fPrimaryVertexX(0.0),
+ fPrimaryVertexY(0.0),
+ fPrimaryVertexZ(0.0)
+{
+ //ctor
+ SetOwner(kTRUE);
+}
 
 /**************************************************************************/
 
@@ -73,4 +84,61 @@ void  AliAOD::Reset()
       delete fParticles.RemoveAt(i);
     }
 //   fRandomized = kFALSE;
+}
+/**************************************************************************/
+
+void AliAOD::GetPrimaryVertex(Double_t&x, Double_t&y, Double_t&z)
+{
+//returns positions of the primary vertex
+  x = fPrimaryVertexX;
+  y = fPrimaryVertexY;
+  z = fPrimaryVertexZ;
+}
+/**************************************************************************/
+
+void AliAOD::SetPrimaryVertex(Double_t x, Double_t y, Double_t z)
+{
+//Sets positions of the primary vertex 
+  fPrimaryVertexX = x;
+  fPrimaryVertexY = y;
+  fPrimaryVertexZ = z;
+}
+/**************************************************************************/
+
+Int_t AliAOD::GetNumberOfCharged(Double_t etamin, Double_t etamax) const
+{
+  //reurns number of charged particles within given pseudorapidity range
+  Int_t n;
+  Int_t npart = fParticles.GetEntries();
+  for (Int_t i = 0; i < npart; i++)
+   {
+     AliVAODParticle* p = (AliVAODParticle*)fParticles.At(i);
+     Double_t eta = p->Eta();
+     if ( (eta < etamin) || (eta > etamax) ) continue;
+     if (p->Charge() != 0.0) n++;
+   }
+  return 0;  
+}
+/**************************************************************************/
+
+void AliAOD::Move(Double_t x, Double_t y, Double_t z)
+{
+ //moves all spacial coordinates about this vector
+ // vertex
+ // track points
+ // and whatever will be added to AOD and AOD particles that is a space coordinate
+
+  fPrimaryVertexX += x;
+  fPrimaryVertexY += y;
+  fPrimaryVertexZ += z;
+
+  Int_t npart = fParticles.GetEntries();
+  for (Int_t i = 0; i < npart; i++)
+   {
+     AliVAODParticle* p = (AliVAODParticle*)fParticles.At(i);
+     AliTrackPoints* tp  = p->GetTPCTrackPoints();
+     if (tp) tp->Move(x,y,z);
+     tp  = p->GetITSTrackPoints();
+     if (tp) tp->Move(x,y,z);
+   }
 }

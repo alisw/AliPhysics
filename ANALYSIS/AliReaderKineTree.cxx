@@ -90,7 +90,10 @@ Int_t AliReaderKineTree::ReadNext()
  //Reads Kinematics Tree
   
  Info("Read","");
- if (fEventSim == 0x0)  fEventSim = new AliAOD();
+ if (fEventSim == 0x0)  
+  {
+    fEventSim = new AliAOD();
+  } 
  fEventSim->Reset();
 
  do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
