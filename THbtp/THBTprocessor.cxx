@@ -1,5 +1,24 @@
-#include <TGenerator.h>
 #include "THBTprocessor.h"
+//_____________________________________________________________________________
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// class THBTprocessor                                                       //
+//                                                                           //
+// Wrapper class to HBT processor fortran code.                              //
+// For more information see AliGenHBTprocessor class                         //
+// HBT processor is written by Lanny Ray                                     //
+//                                                                           //
+// Comunication is done via COMMON BLOCKS declared in HBTprocCOMMON.h        //
+// using cfortran.h routines                                                 //
+// User should use class AliGenHBTprocessor and all their interface          //
+// see there for more description                                            //
+//                                                                           //
+// Wrapper class written by                                                  //
+// Piotr Krzysztof Skowronski (Piotr.Skowronski@cern.ch)                     //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+
 #include <TParticle.h>
 #include <TMath.h>
 
@@ -20,11 +39,6 @@ ClassImp(THBTprocessor)
 extern "C" void  type_of_call hbtprocessor();   
 extern "C" void  type_of_call ctest();
 
-//Wrapper class to HBT processor fortran code.
-//For more information see AliGenHBTprocessor class
-//HBT processor is written by Lanny Ray
-//Wrapper class written by Piotr Krzysztof Skowronski (Piotr.Skowronski@cern.ch)
-//
 
 /*************************************************/
 THBTprocessor::THBTprocessor()// it is better not to intialize it:TGenerator("THBTprocessor","THBTprocessor")
@@ -40,33 +54,38 @@ THBTprocessor::THBTprocessor()// it is better not to intialize it:TGenerator("TH
   fParticles = 0;
   Initialize(); //Enforce initialization (cleaning all commons)
  }
+/*****************************************************************************************/
 
-void THBTprocessor::GenerateEvent()
+void THBTprocessor::GenerateEvent() const
 {
 //Starts processing
 
-  cout<<endl<<"Entering Fortran"<<endl;
+  Info("GenerateEvent","Entering Fortran");
   ctest();
   hbtprocessor();
-  cout<<endl<<"Exited Fortran"<<endl;
+  Info("GenerateEvent","Exited Fortran");
   if(PARAMETERS.errorcode)
     {
-      Fatal("THBTprocessor::GenerateEvent()","HBT Processor (fortran part) finished with errors\n \
-             See hbt_simulation.out file for more detailed information");
+      TString message("HBT Processor (fortran part) finished with errors\n");
+      message+="Error code is ";
+      message+=PARAMETERS.errorcode;
+      message+="\n";
+      message+="See hbt_simulation.out file for more detailed information.";
+      Fatal("GenerateEvent","%s",message.Data());
     }
   else
-      cout<<endl<<"GOOD ! HBT Processor finished without errors"<<endl;
-  cout<<"PARAMETERS.errorcode= "<<PARAMETERS.errorcode<<endl;
-  
+    Info("GenerateEvent","GOOD ! HBT Processor finished without errors");
 }
 /*****************************************************************************************/
-void THBTprocessor::Initialize()
+
+void THBTprocessor::Initialize() const
 { 
   //IT RESETS ALL THE PREVIOUS SETTINGS
   //Call this method to set default values in PARAMETERS & MESH
   //and zero other common block
   
-  if(gDebug) cout<<"\nHBT PROCESSOR::Initialize() Setting Default valuses in all COMMON BLOCKS"<<endl;
+  if(gDebug) 
+   Info("Initialize","Setting Default valuses in all COMMON BLOCKS");
   
   PARAMETERS.ref_control      = 2;
   PARAMETERS.switch_1d        = 3;
@@ -401,8 +420,8 @@ Int_t THBTprocessor::ImportParticles(TClonesArray *particles, Option_t */*option
  {
   //Copy particle data into TClonesArray
   if (particles == 0) return 0;
-  TClonesArray &Particles = *particles;
-  Particles.Clear();
+  TClonesArray &rparticles = *particles;
+  rparticles.Clear();
  
   Int_t nrpart = 0;
   for (Int_t i=0; i < TRK_MAXLEN; i++) 
@@ -417,7 +436,7 @@ Int_t THBTprocessor::ImportParticles(TClonesArray *particles, Option_t */*option
 //    Float_t pE   = TRACK.trk_E[i];
       Float_t mass = PARTICLE.part_mass[TRACK1.trk_ge_pid[i]];
     
-      new(Particles[nrpart++]) TParticle(0,0,0,0,0,0,px,py,pz,
+      new(rparticles[nrpart++]) TParticle(0,0,0,0,0,0,px,py,pz,
                                          TMath::Sqrt(mass*mass+px*px+py*py+pz*pz),
                                          0,0,0,0);
    }
@@ -426,7 +445,7 @@ Int_t THBTprocessor::ImportParticles(TClonesArray *particles, Option_t */*option
 
 /*****************************************************************************************/
 
-void THBTprocessor::PrintEvent()
+void THBTprocessor::PrintEvent() const
  {
  //Prints all particles (common block data)  
    cout<<"Print Event"<<endl;
@@ -441,7 +460,7 @@ void THBTprocessor::PrintEvent()
 
 
 /*****************************************************************************************/
-void THBTprocessor::DumpSettings()
+void THBTprocessor::DumpSettings() const
 {
  //prints values set in common blocks
   ctest();
