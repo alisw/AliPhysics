@@ -57,7 +57,7 @@ AliPHOSv4::AliPHOSv4(const char *name, const char *title):
      
     
     SetBigBox(0, fGeom->GetOuterBoxSize(0) ) ;
-    SetBigBox(1, fGeom->GetOuterBoxSize(1) + fGeom->GetPPSDBoxSize(1) ) ; 
+    SetBigBox(1, fGeom->GetOuterBoxSize(1) + fGeom->GetCPVBoxSize(1) ) ; 
     SetBigBox(2, fGeom->GetOuterBoxSize(0) ); 
     
     fNRecParticles = 0 ; 
