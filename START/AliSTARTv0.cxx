@@ -487,11 +487,17 @@ void AliSTARTv0::CreateMaterials()
    Float_t zsupport[2] = {6.,1.};
    Float_t wsupport[2] = {1.,1.};
    Float_t densupport=0.1;
-    
+// AIR
+   Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+   Float_t zAir[4]={6.,7.,8.,18.};
+   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+   Float_t dAir = 1.20479E-3;
+     
 //*** Definition Of avaible START materials ***
    AliMaterial(0, "START Steel$", 55.850,26.,7.87,1.76,999);
    AliMaterial(1, "START Vacuum$", 1.e-16,1.e-16,1.e-16,1.e16,999);
-   AliMaterial(2, "START Air$", 14.61, 7.3, .001205, 30423.,999); 
+   AliMixture(2, "START Air$", aAir, zAir, dAir,4,wAir);
+
    AliMaterial(10, "CarbonPlastic$", 12.01, 6.0, 2.26, 18.8,999); 
    AliMaterial(11, "Aliminium$", 26.98, 13.0, 2.7, 8.9,999); 
 

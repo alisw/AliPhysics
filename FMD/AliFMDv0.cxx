@@ -283,8 +283,13 @@ void AliFMDv0::CreateMaterials()
  Float_t wpcb[3]  = { .28,.32,.4 };
  Float_t denspcb  = 1.8;
    //
- //*** Definition Of avaible FMD materials ***
- AliMaterial(0, "FMD Air$", 14.61, 7.3, .001205, 30423.,999); 
+// AIR
+                                                                                           Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+Float_t zAir[4]={6.,7.,8.,18.};
+Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+Float_t dAir = 1.20479E-3;
+                                                                                            //*** Definition Of avaible FMD materials ***
+ AliMixture(0, "FMD Air$", aAir, zAir, dAir, 4,wAir);
  AliMixture(1, "Plastic$",aPlastic,zPlastic,denPlastic,-2,wPlastic);
  AliMixture(2, "SSD PCB$",   apcb, zpcb, denspcb, 3, wpcb);
  AliMaterial(3, "SSD Copper$", 63.546, 29., 8.96, 1.43, 999.);
