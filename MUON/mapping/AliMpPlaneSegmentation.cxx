@@ -209,8 +209,8 @@ AliMpPad AliMpPlaneSegmentation::PadByLocation(const AliMpIntPair& location,
   AliMpPad pad
      = segmentation
        ->PadByLocation(
-           AliMpIntPair(TMath::Abs(location.GetFirst()),location.GetSecond()));
-
+           AliMpIntPair(TMath::Abs(location.GetFirst()),location.GetSecond()), 
+	                warning);
 
   // Get transformation
   AliMpIntPair scale  = GetLocationScale(location);
