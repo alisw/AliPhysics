@@ -83,7 +83,7 @@ If the library (or binary) uses include files in other directories
 than its own it should be specified in the variable EHDRS (for
 External headers). By default the Makefile.flat will look in
 $ALICE_ROOT, $ALICE_ROOT/MODULE (in this case $ALICE_ROOT/STEER),
-$ROOTSYS/inlude and in $ALICE_ROOT/include. If more include
+$ROOTSYS/include and in $ALICE_ROOT/include. If more include
 directories is needed it can be specified with the variable
 EINCLUDE. *DO NOT* put the -I flag it will be put automatically, just
 write the name of the directory. To have extra parameters passed to
