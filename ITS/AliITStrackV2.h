@@ -61,7 +61,8 @@ public:
   Double_t GetZ()    const {return fP1;}
   Double_t GetSnp()  const {return fP2;}
   Double_t GetTgl()  const {return fP3;}
-  Double_t Get1Pt()  const {return fP4*GetConvConst();}
+  Double_t
+    Get1Pt() const { return (1e-9*TMath::Abs(fP4)/fP4 + fP4)*GetConvConst(); }
   Double_t GetD(Double_t x=0, Double_t y=0) const;
   Double_t GetSigmaY2() const {return fC00;}
   Double_t GetSigmaZ2() const {return fC11;}
