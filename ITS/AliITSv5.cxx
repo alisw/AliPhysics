@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2000/03/05 00:11:03  nilsen
+Fixed merge error.
+
 Revision 1.15  2000/02/23 16:25:21  fca
 AliVMC and AliGeant3 classes introduced
 ReadEuclid moved from AliRun to AliModule
@@ -61,6 +64,9 @@ Introduction of the Copyright and cvs Log
 #include <stdio.h>
 #include <stdlib.h>
 #include <TMath.h>
+#include <TGeometry.h>
+#include <TNode.h>
+#include <TTUBE.h>
 
 #include "AliRun.h"
 #include "TSystem.h"
@@ -111,7 +117,193 @@ AliITSv5::AliITSv5(const char *name, const char *title) : AliITS(name, title){
 
     fEuclidMaterial = "$ALICE_ROOT/Euclid/ITSgeometry_5.tme";
     fEuclidGeometry = "$ALICE_ROOT/Euclid/ITSgeometry_5.euc";
-} 
+}
+//_____________________________________________________________________________
+void AliITSv5::BuildGeometry(){
+  //
+  // Build ITS TNODE geometry for event display using detailed geometry.
+  // This function builds a simple ITS geometry used by the ROOT macro
+  // ITSdisplay.C.
+
+  TNode *Top;
+  TNode *nd;
+  //const int kColorITS_SPD=kRed;
+  //const int kColorITS_SDD=kGreen;
+  const int kColorITS_SSD=kBlue;
+  //
+  Top=gAlice->GetGeometry()->GetNode("alice");
+  AliITSgeom  *gm = this->GetITSgeom();
+
+  Text_t      name[10];
+  Float_t     xg[3];
+  Float_t     rt[9];
+  Double_t    rtd[9];
+  TBRIK       *box;
+  TRotMatrix  *rm;
+  //TCanvas     *c1 = new TCanvas("c1","ITS");
+
+  for(Int_t lay=1;lay<=2;lay++)
+   for(Int_t lad=1;lad<=gm->GetNladders(lay);lad++)
+    for(Int_t det=1;det<=gm->GetNdetectors(lay);det++){
+          try {
+              box  = new TBRIK ("ActiveSPD","Active volume of SPD","SPD SI DET",
+		        	    0.64,0.0075,4.19); 
+          } catch (...) {
+	      cout << "EXCEPTION in box = new TBRIK" << endl;
+	      return;
+	  }
+          gm->GetTrans(lay,lad,det,xg[0],xg[1],xg[2]);
+          gm->GetRotMatrix(lay,lad,det,rt);
+          //sprintf(name,"ROT%1.1d2.2d2.2d",lay,lad,det);
+          for(Int_t i=0;i<9;i++) rtd[i] = rt[i];
+          try {
+	        rm  = new TRotMatrix(name,name,rtd);
+          } catch (...) {
+	        cout << "EXCEPTION in   new TRotMatrix" << endl;
+                return;
+          }
+         Top->cd();
+	  //sprintf(name,"ND%1.1d2.2d2.2d",lay,lad,det); 
+         try {
+              nd  = new TNode("SPD"," ",box,xg[0],xg[1],xg[2],rm);
+         } catch (...) {
+              cout << "EXCEPTION in new TNode" << endl;
+              return;
+         }
+         nd->SetLineColor(kColorITS_SSD);
+         fNodes->Add(nd);
+    }
+
+  for(Int_t lay=3;lay<=3;lay++)
+   for(Int_t lad=1;lad<=gm->GetNladders(lay);lad++)
+    for(Int_t det=1;det<=gm->GetNdetectors(lay);det++){
+          try {
+              box  = new TBRIK ("ActiveSDD","Active volume of SDD","SDD SI DET",
+		        	    3.5,0.014,3.763); 
+          } catch (...) {
+	      cout << "EXCEPTION in box = new TBRIK" << endl;
+	      return;
+	  }
+          gm->GetTrans(lay,lad,det,xg[0],xg[1],xg[2]);
+          gm->GetRotMatrix(lay,lad,det,rt);
+          //sprintf(name,"ROT%1.1d2.2d2.2d",lay,lad,det);
+          for(Int_t i=0;i<9;i++) rtd[i] = rt[i];
+          try {
+	        rm  = new TRotMatrix(name,name,rtd);
+          } catch (...) {
+	        cout << "EXCEPTION in   new TRotMatrix" << endl;
+                return;
+          }
+         Top->cd();
+	  //sprintf(name,"ND%1.1d2.2d2.2d",lay,lad,det); 
+         try {
+              nd  = new TNode("SDD"," ",box,xg[0],xg[1],xg[2],rm);
+         } catch (...) {
+              cout << "EXCEPTION in new TNode" << endl;
+              return;
+         }
+         nd->SetLineColor(kColorITS_SSD);
+         fNodes->Add(nd);
+    }
+
+  for(Int_t lay=4;lay<=4;lay++)
+   for(Int_t lad=1;lad<=gm->GetNladders(lay);lad++)
+    for(Int_t det=1;det<=gm->GetNdetectors(lay);det++){
+          try {
+              box  = new TBRIK ("ActiveSDD","Active volume of SDD","SDD SI DET",
+		        	    3.5,0.014,3.763); 
+          } catch (...) {
+	      cout << "EXCEPTION in box = new TBRIK" << endl;
+	      return;
+	  }
+          gm->GetTrans(lay,lad,det,xg[0],xg[1],xg[2]);
+          gm->GetRotMatrix(lay,lad,det,rt);
+          //sprintf(name,"ROT%1.1d2.2d2.2d",lay,lad,det);
+          for(Int_t i=0;i<9;i++) rtd[i] = rt[i];
+          try {
+	        rm  = new TRotMatrix(name,name,rtd);
+          } catch (...) {
+	        cout << "EXCEPTION in   new TRotMatrix" << endl;
+                return;
+          }
+         Top->cd();
+	  //sprintf(name,"ND%1.1d2.2d2.2d",lay,lad,det); 
+         try {
+              nd  = new TNode("SDD"," ",box,xg[0],xg[1],xg[2],rm);
+         } catch (...) {
+              cout << "EXCEPTION in new TNode" << endl;
+              return;
+         }
+         nd->SetLineColor(kColorITS_SSD);
+         fNodes->Add(nd);
+    }
+ for(Int_t lay=5;lay<=5;lay++)
+   for(Int_t lad=1;lad<=gm->GetNladders(lay);lad++)
+    for(Int_t det=1;det<=gm->GetNdetectors(lay);det++){
+          try {
+              box  = new TBRIK ("ActiveSSD","Active volume of SSD","SSD SI DET",
+		        	    3.65,0.015,2.0); 
+          } catch (...) {
+	      cout << "EXCEPTION in box = new TBRIK" << endl;
+	      return;
+	  }
+          gm->GetTrans(lay,lad,det,xg[0],xg[1],xg[2]);
+          gm->GetRotMatrix(lay,lad,det,rt);
+          //sprintf(name,"ROT%1.1d2.2d2.2d",lay,lad,det);
+          for(Int_t i=0;i<9;i++) rtd[i] = rt[i];
+          try {
+	        rm  = new TRotMatrix(name,name,rtd);
+          } catch (...) {
+	        cout << "EXCEPTION in   new TRotMatrix" << endl;
+                return;
+          }
+         Top->cd();
+	  //sprintf(name,"ND%1.1d2.2d2.2d",lay,lad,det); 
+         try {
+              nd  = new TNode("SSD"," ",box,xg[0],xg[1],xg[2],rm);
+         } catch (...) {
+              cout << "EXCEPTION in new TNode" << endl;
+              return;
+         }
+         nd->SetLineColor(kColorITS_SSD);
+         fNodes->Add(nd);
+    }
+
+ for(Int_t lay=6;lay<=6;lay++)
+   for(Int_t lad=1;lad<=gm->GetNladders(lay);lad++)
+    for(Int_t det=1;det<=gm->GetNdetectors(lay);det++){
+          try {
+              box  = new TBRIK ("ActiveSSD","Active volume of SSD","SSD SI DET",
+		        	    3.65,0.015,2.0); 
+          } catch (...) {
+	      cout << "EXCEPTION in box = new TBRIK" << endl;
+	      return;
+	  }
+
+          gm->GetTrans(lay,lad,det,xg[0],xg[1],xg[2]); 
+          gm->GetRotMatrix(lay,lad,det,rt);
+          //sprintf(name,"ROT%1.1d2.2d2.2d",lay,lad,det);
+          for(Int_t i=0;i<9;i++) rtd[i] = rt[i];
+          try {
+	        rm  = new TRotMatrix(name,name,rtd);
+          } catch (...) {
+	        cout << "EXCEPTION in   new TRotMatrix" << endl;
+                return;
+          }
+         Top->cd();
+          //sprintf(name,"ND%1.1d2.2d2.2d",lay,lad,det); 
+         try {
+              nd  = new TNode("SSD"," ",box,xg[0],xg[1],xg[2],rm);
+         } catch (...) {
+              cout << "EXCEPTION in new TNode" << endl;
+              return;
+         }
+         nd->SetLineColor(kColorITS_SSD);
+         fNodes->Add(nd);
+    }
+
+
+}
 //_____________________________________________________________________________
 void AliITSv5::CreateMaterials(){
 ////////////////////////////////////////////////////////////////////////
@@ -361,6 +553,8 @@ void AliITSv5::Init(){
     } // end for i
 
     AliITS::Init();
+    fMajorVersion = 5;
+    fMinorVersion = 0;
 } 
 //_____________________________________________________________________________
 void AliITSv5::StepManager(){

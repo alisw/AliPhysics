@@ -10,27 +10,27 @@
 /////////////////////////////////////////////////////////
  
 #include "AliITS.h"
-#include "AliITSgeom.h"
  
 class AliITSv1 : public AliITS {
 
-private:
+ private:
     Int_t fId1N; // The number of layers for geometry version 5
     // The name of the layers as defined in the Geant tree.
     char  **fId1Name;
  
-public:
-  AliITSv1();
-  AliITSv1(const char *name, const char *title);
-  virtual       ~AliITSv1() ;
-  virtual void   CreateGeometry();
-  virtual void   CreateMaterials();
-  virtual void   Init(); 
-  virtual Int_t  IsVersion() const {return 1;}
-  virtual void   DrawModule();
-  virtual void   StepManager();
+ public:
+    AliITSv1();
+    AliITSv1(const char *name, const char *title);
+    virtual       ~AliITSv1() ;
+    virtual void   BuildGeometry();   // for event display
+    virtual void   CreateGeometry();  // for Geant simulation
+    virtual void   CreateMaterials(); // for Geant simulation
+    virtual void   Init(); 
+    virtual Int_t  IsVersion() const {return 1;}
+    virtual void   DrawModule();
+    virtual void   StepManager();
   
-   ClassDef(AliITSv1,1)  //Hits manager for set:ITS version 1 cource Geometry
+    ClassDef(AliITSv1,1)  //Hits manager for set:ITS version 1 cource Geometry
 };
  
 #endif
