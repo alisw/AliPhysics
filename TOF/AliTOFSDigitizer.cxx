@@ -136,8 +136,8 @@ void AliTOFSDigitizer::InitParameters()
 {
   // set parameters for detector simulation
   
-  fTimeResolution =0.120;
-  fpadefficiency  =0.99 ;
+  fTimeResolution = 0.080; //0.120; OLD
+  fpadefficiency  = 0.99 ;
   fEdgeEffect     = 2   ;
   fEdgeTails      = 0   ;
   fHparameter     = 0.4 ;
@@ -148,9 +148,12 @@ void AliTOFSDigitizer::InitParameters()
   fEffBoundary    = 0.65;
   fEff2Boundary   = 0.90;
   fEff3Boundary   = 0.08;
-  fResCenter      = 50. ;
+  fAddTRes        = 68. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 50^2} (Pb-Pb)
+  //fAddTRes      = 48. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 15^2} (p-p)
+  // 30^2+20^2+40^2+50^2+50^2+50^2 = 10400 ps^2 (very old value)
+  fResCenter      = 35. ; //50. ; // OLD
   fResBoundary    = 70. ;
-  fResSlope       = 40. ;
+  fResSlope       = 37. ; //40. ; // OLD
   fTimeWalkCenter = 0.  ;
   fTimeWalkBoundary=0.  ;
   fTimeWalkSlope  = 0.  ;
@@ -212,9 +215,9 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 
   fRunLoader->LoadKinematics();
   
-  AliTOF *TOF = (AliTOF *) gAlice->GetDetector("TOF");
+  AliTOF *tof = (AliTOF *) gAlice->GetDetector("TOF");
   
-  if (!TOF) {
+  if (!tof) {
     Error("AliTOFSDigitizer","TOF not found");
     return;
   }
@@ -228,24 +231,24 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 
     fRunLoader->GetEvent(iEvent);
 
-    TTree *TH = fTOFLoader->TreeH ();
-    if (!TH) return;
+    TTree *hitTree = fTOFLoader->TreeH ();
+    if (!hitTree) return;
 
     if (fTOFLoader->TreeS () == 0) fTOFLoader->MakeTree ("S");
     
     //Make branch for digits
-    TOF->MakeBranch("S");
+    tof->MakeBranch("S");
     
     // recreate TClonesArray fSDigits - for backward compatibility
-    if (TOF->SDigits() == 0) {
-      TOF->CreateSDigitsArray();
+    if (tof->SDigits() == 0) {
+      tof->CreateSDigitsArray();
     } else {
-      TOF->RecreateSDigitsArray();
+      tof->RecreateSDigitsArray();
     }
 
-    TOF->SetTreeAddress();
+    tof->SetTreeAddress();
 
-    Int_t version=TOF->IsVersion();
+    Int_t version=tof->IsVersion();
 
     Int_t nselectedHitsinEv=0;
     Int_t ntotalsdigitsinEv=0;
@@ -255,20 +258,20 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 
     TParticle *particle;
     //AliTOFhit *tofHit;
-    TClonesArray *TOFhits = TOF->Hits();
+    TClonesArray *tofHitArray = tof->Hits();
 
     // create hit map
-    AliTOFHitMap *hitMap = new AliTOFHitMap(TOF->SDigits());
+    AliTOFHitMap *hitMap = new AliTOFHitMap(tof->SDigits());
 
-    TBranch * tofHitsBranch = TH->GetBranch("TOF");
+    TBranch * tofHitsBranch = hitTree->GetBranch("TOF");
 
-    Int_t ntracks = static_cast<Int_t>(TH->GetEntries());
+    Int_t ntracks = static_cast<Int_t>(hitTree->GetEntries());
     for (Int_t track = 0; track < ntracks; track++)
     {
       gAlice->ResetHits();
       tofHitsBranch->GetEvent(track);
       particle = gAlice->GetMCApp()->Particle(track);
-      Int_t nhits = TOFhits->GetEntriesFast();
+      Int_t nhits = tofHitArray->GetEntriesFast();
       // cleaning all hits of the same track in the same pad volume
       // it is a rare event, however it happens
 
@@ -283,33 +286,33 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 	Int_t    vol[5];       // location for a digit
 	Float_t  digit[2];     // TOF digit variables
 	Int_t tracknum;
-	Float_t Xpad;
-	Float_t Zpad;
+	Float_t dxPad;
+	Float_t dzPad;
 	Float_t geantTime;
 
 	// fp: really sorry for this, it is a temporary trick to have
 	// track length too
 	if(version!=6){
-	  AliTOFhit *tofHit = (AliTOFhit *) TOFhits->UncheckedAt(hit);
+	  AliTOFhit *tofHit = (AliTOFhit *) tofHitArray->UncheckedAt(hit);
 	  tracknum = tofHit->GetTrack();
 	  vol[0] = tofHit->GetSector();
 	  vol[1] = tofHit->GetPlate();
 	  vol[2] = tofHit->GetStrip();
 	  vol[3] = tofHit->GetPadx();
 	  vol[4] = tofHit->GetPadz();
-	  Xpad = tofHit->GetDx();
-	  Zpad = tofHit->GetDz();
+	  dxPad = tofHit->GetDx();
+	  dzPad = tofHit->GetDz();
 	  geantTime = tofHit->GetTof(); // unit [s]
 	} else {
-	  AliTOFhitT0 *tofHit = (AliTOFhitT0 *) TOFhits->UncheckedAt(hit);
+	  AliTOFhitT0 *tofHit = (AliTOFhitT0 *) tofHitArray->UncheckedAt(hit);
 	  tracknum = tofHit->GetTrack();
 	  vol[0] = tofHit->GetSector();
 	  vol[1] = tofHit->GetPlate();
 	  vol[2] = tofHit->GetStrip();
 	  vol[3] = tofHit->GetPadx();
 	  vol[4] = tofHit->GetPadz();
-	  Xpad = tofHit->GetDx();
-	  Zpad = tofHit->GetDz();
+	  dxPad = tofHit->GetDx();
+	  dzPad = tofHit->GetDz();
 	  geantTime = tofHit->GetTof(); // unit [s]
 	}
 	
@@ -338,8 +341,8 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 	    nselectedHitsinEv++;
 	    if (particle->GetFirstMother() < 0) nHitsFromPrim++; // counts hits due to primary particles
 	    
-	    Float_t xStrip=AliTOFGeometry::XPad()*(vol[3]+0.5-0.5*AliTOFGeometry::NpadX())+Xpad;
-	    Float_t zStrip=AliTOFGeometry::ZPad()*(vol[4]+0.5-0.5*AliTOFGeometry::NpadZ())+Zpad;
+	    Float_t xStrip=AliTOFGeometry::XPad()*(vol[3]+0.5-0.5*AliTOFGeometry::NpadX())+dxPad;
+	    Float_t zStrip=AliTOFGeometry::ZPad()*(vol[4]+0.5-0.5*AliTOFGeometry::NpadZ())+dzPad;
 
 	    Int_t nActivatedPads = 0, nFiredPads = 0;
 	    Bool_t isFired[4] = {kFALSE, kFALSE, kFALSE, kFALSE};
@@ -376,7 +379,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 		    ntotalupdates++;
 		  } else {
 		    
-		    TOF->AddSDigit(tracknum, vol, digit);
+		    tof->AddSDigit(tracknum, vol, digit);
 		    
 		    if(indexOfPad){
 		      nnoisesdigits++;
@@ -403,7 +406,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
     fTOFLoader->TreeS()->Fill();
     fTOFLoader->WriteSDigits("OVERWRITE");
     
-    if (TOF->SDigits()) TOF->ResetSDigits();
+    if (tof->SDigits()) tof->ResetSDigits();
     
     if (strstr(verboseOption,"all")) {
       cout << "---------------------------------------- \n";
@@ -548,7 +551,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
     eff[nActivatedPads-1] = fEffCenter;
     if (gRandom->Rndm() < eff[nActivatedPads-1]) {
       nFiredPads = 1;
-      res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + fResCenter * fResCenter); // 10400=30^2+20^2+40^2+50^2+50^2+50^2  ns;
+      res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + fResCenter * fResCenter); // ns
       isFired[nActivatedPads-1] = kTRUE;
       tofTime[nActivatedPads-1] = gRandom->Gaus(geantTime + fTimeWalkCenter, res[0]);
       averageTime = tofTime[nActivatedPads-1];
@@ -586,7 +589,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
     }
     
     (effZ<effX) ? eff[nActivatedPads-1] = effZ : eff[nActivatedPads-1] = effX;
-    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2  ns
+    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resZ * resZ); // ns
     (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 *  timeWalkZ : timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
 
 
@@ -604,7 +607,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	nActivatedPads++;
 	nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX();
 	eff[nActivatedPads-1] = effZ;
-	res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns 
+	res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resZ * resZ); // ns 
 	timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ; // ns
 	nTail[nActivatedPads-1] = 2;
 	if (fTimeDelayFlag) {
@@ -636,7 +639,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	nActivatedPads++;
 	nPlace[nActivatedPads-1] = nPlace[0] - 1;
 	eff[nActivatedPads-1] = effX;
-	res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resX * resX); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns 
+	res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resX * resX); // ns 
 	timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
 	nTail[nActivatedPads-1] = 2;
 	if (fTimeDelayFlag) {
@@ -656,7 +659,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	    nActivatedPads++;
 	    nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX() - 1;
 	    eff[nActivatedPads-1] = effX * effZ;
-	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns
+	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resZ * resZ); // ns
 	    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ : timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
 	    
 	    nTail[nActivatedPads-1] = 2;
@@ -686,7 +689,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	nActivatedPads++;
 	nPlace[nActivatedPads-1] = nPlace[0] + 1;
 	eff[nActivatedPads-1] = effX;
-	res[nActivatedPads-1] = 0.001 * (TMath::Sqrt(10400 + resX * resX)); // ns
+	res[nActivatedPads-1] = 0.001 * (TMath::Sqrt(fAddTRes*fAddTRes + resX * resX)); // ns
 	timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
 	nTail[nActivatedPads-1] = 2;
 	if (fTimeDelayFlag) {
@@ -707,7 +710,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	    nActivatedPads++;
 	    nPlace[nActivatedPads - 1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX() + 1;
 	    eff[nActivatedPads - 1] = effX * effZ;
-	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns
+	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resZ * resZ); // ns
 	    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ : timeWalk[nActivatedPads-1] = 0.001*timeWalkX; // ns
 	    nTail[nActivatedPads-1] = 2;
 	    if (fTimeDelayFlag) {

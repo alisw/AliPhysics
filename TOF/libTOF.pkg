@@ -1,12 +1,18 @@
-SRCS  = AliTOF.cxx  AliTOFGeometry.cxx  AliTOFv4T0.cxx  AliTOFhit.cxx  AliTOFhitT0.cxx  \
-        AliTOFPID.cxx  AliTOFT0.cxx  AliTOFdigit.cxx  AliTOFRawSector.cxx  AliTOFRoc.cxx  \
-        AliTOFRawDigit.cxx  AliTOFDigitizer.cxx  AliTOFSDigitizer.cxx  AliTOFMerger.cxx  \
-        AliTOFSDigit.cxx  AliTOFHitMap.cxx  AliTOFtrack.cxx  AliTOFProb.cxx  AliTOFDigitMap.cxx  \
-        AliTOFpidESD.cxx  AliTOFtracker.cxx  AliTOFReconstructor.cxx
+SRCS  = AliTOF.cxx  AliTOFGeometry.cxx  AliTOFv4T0.cxx  \
+	AliTOFhit.cxx  AliTOFhitT0.cxx  \
+	AliTOFT0.cxx  \
+	AliTOFHitMap.cxx  \
+	AliTOFSDigit.cxx  AliTOFSDigitizer.cxx  \
+	AliTOFMerger.cxx  AliTOFDigitMap.cxx  \
+	AliTOFdigit.cxx  AliTOFDigitizer.cxx  \
+	AliTOFDDLRawData.cxx  \
+        AliTOFtrack.cxx  AliTOFtracker.cxx  AliTOFReconstructor.cxx  \
+	AliTOFpidESD.cxx  \
+	AliTOFPID.cxx  AliTOFProb.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR=TOFLinkDef.h
 
-EINCLUDE:=$(ALICE)/geant3/TGeant3
+EINCLUDE:=$(ALICE)/geant3/TGeant3 RAW

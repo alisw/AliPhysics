@@ -51,6 +51,7 @@
 #include "AliConst.h"
 #include "AliRun.h"
 #include "AliTOFv4T0.h"
+#include "AliTOFGeometry.h"
 #include "AliMC.h"
  
 ClassImp(AliTOFv4T0)
@@ -109,16 +110,16 @@ void AliTOFv4T0::BuildGeometry()
   top = gAlice->GetGeometry()->GetNode("alice");
   
   // Position the different copies
-  const Float_t krTof  =(fRmax+fRmin)/2;
-  const Float_t khTof  = fRmax-fRmin;
-  const Int_t   kNTof = fNTof;
-  const Float_t kPi   = TMath::Pi();
+  const Float_t krTof  =(AliTOFGeometry::Rmax()+AliTOFGeometry::Rmin())/2;
+  const Float_t khTof  = AliTOFGeometry::Rmax()-AliTOFGeometry::Rmin();
+  const Int_t   kNTof  = AliTOFGeometry::NSectors();
+  const Float_t kPi    = TMath::Pi();
   const Float_t kangle = 2*kPi/kNTof;
   Float_t ang;
   
   // define offset for nodes
-  Float_t zOffsetC = fZtof - fZlenC*0.5;
-  Float_t zOffsetB = fZtof - fZlenC - fZlenB*0.5;
+  Float_t zOffsetC = AliTOFGeometry::MaxhZtof() - AliTOFGeometry::ZlenC()*0.5;
+  Float_t zOffsetB = AliTOFGeometry::MaxhZtof() - AliTOFGeometry::ZlenC() - AliTOFGeometry::ZlenB()*0.5;
   Float_t zOffsetA = 0.;
   // Define TOF basic volume
   
@@ -126,11 +127,11 @@ void AliTOFv4T0::BuildGeometry()
   char nodeName3[7], nodeName4[7], rotMatNum[7];
   
   new TBRIK("S_TOF_C","TOF box","void",
-            fStripLn*0.5,khTof*0.5,fZlenC*0.5);
+            AliTOFGeometry::StripLength()*0.5,khTof*0.5,AliTOFGeometry::ZlenC()*0.5);
   new TBRIK("S_TOF_B","TOF box","void",
-            fStripLn*0.5,khTof*0.5,fZlenB*0.5);
+            AliTOFGeometry::StripLength()*0.5,khTof*0.5,AliTOFGeometry::ZlenB()*0.5);
   new TBRIK("S_TOF_A","TOF box","void",
-            fStripLn*0.5,khTof*0.5,fZlenA*0.5);
+            AliTOFGeometry::StripLength()*0.5,khTof*0.5,AliTOFGeometry::ZlenA()*0.5);
   
   for (Int_t nodeNum=1;nodeNum<19;nodeNum++){
     
@@ -215,7 +216,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   Int_t    idrotm[100];
   Int_t    nrot = 0;
 
-  Float_t radius = fRmin+2.;//cm
+  Float_t radius = AliTOFGeometry::Rmin()+2.;//cm
 
   
   par[0] =  xtof * 0.5;
@@ -256,20 +257,20 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   gMC->Gspos("FTOA", 0, "BTO3", 0, zcor3,  0, idrotm[0], "ONLY");
   
 
-  Float_t db = 0.5;//cm
+  Float_t db = 0.5; // cm
   Float_t xFLT, xFST, yFLT, zFLTA, zFLTB, zFLTC;
   
-  xFLT = fStripLn;
+  xFLT = AliTOFGeometry::StripLength();
   yFLT = ytof;
   zFLTA = zlenA;
   zFLTB = zlenB;
   zFLTC = zlenC;
   
-  xFST = xFLT-fDeadBndX*2;//cm
+  xFST = xFLT - AliTOFGeometry::DeadBndX()*2; // cm
   
   // Sizes of MRPC pads
   
-  Float_t yPad = 0.505;//cm 
+  Float_t yPad = 0.505; //cm
   
   // Large not sensitive volumes with Insensitive Freon
   par[0] = xFLT*0.5;
@@ -297,7 +298,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   // fp to be checked
   const Float_t khAlWall = 0.11;
   par[0] = xFLT*0.5;
-  par[1] = khAlWall/2.;//cm
+  par[1] = khAlWall/2.; // cm
   ycoor = -yFLT/2 + par[1];
   par[2] = (zFLTA *0.5);
   gMC->Gsvolu("FALA", "BOX ", idtmed[508], par, 3); // Alluminium
@@ -314,12 +315,12 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   ///////////////// Detector itself //////////////////////
   
-  const Float_t  kdeadBound  =  fDeadBndZ; //cm non-sensitive between the pad edge 
+  const Float_t  kdeadBound  =  AliTOFGeometry::DeadBndZ(); //cm non-sensitive between the pad edge 
   //and the boundary of the strip
-  const Int_t    knx    = fNpadX;          // number of pads along x
-  const Int_t    knz    = fNpadZ;          // number of pads along z
+  const Int_t    knx    = AliTOFGeometry::NpadX();  // number of pads along x
+  const Int_t    knz    = AliTOFGeometry::NpadZ();  // number of pads along z
   
-  Float_t zSenStrip  = fZpad*fNpadZ;//cm
+  Float_t zSenStrip  = AliTOFGeometry::ZPad() * AliTOFGeometry::NpadZ(); // cm
   Float_t stripWidth = zSenStrip + 2*kdeadBound;
   
   par[0] = xFLT*0.5;
@@ -333,7 +334,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   const Float_t khpcby = 0.08    ;   // heigth of PCB   Layer
   const Float_t khmyly = 0.035   ;   // heigth of MYLAR Layer
   const Float_t khgraphy = 0.02  ;   // heigth of GRAPHITE Layer
-  const Float_t khglasseiy = 0.135;   // 0.6 Ext. Glass + 1.1 i.e. (Int. Glass/2) (mm)
+  const Float_t khglasseiy = 0.135;  // 0.6 Ext. Glass + 1.1 i.e. (Int. Glass/2) (mm)
   const Float_t khsensmy = 0.11  ;   // heigth of Sensitive Freon Mixture
   const Float_t kwsensmz = 2*3.5 ;   // cm
   const Float_t klsensmx = 48*2.5;   // cm
@@ -348,7 +349,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   const Float_t klstripx = 122.;
   
   Float_t parfp[3]={klstripx*0.5,khstripy*0.5,kwstripz*0.5};
-  // Coordinates of the strip center in the strip reference frame; 
+  // Coordinates of the strip center in the strip reference frame;
   // used for positioninG internal strip volumes
   Float_t posfp[3]={0.,0.,0.};  
   
@@ -460,7 +461,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
     ang /= kRaddeg;
     Float_t zpos = tan(ang)*radius;
     Float_t ypos= fTOFGeometry->GetHeights(2,istrip);
-    gMC->Gspos("FSTR",fNStripA-istrip,"FLTA",0.,ypos, zpos,idrotm[0],  "ONLY");
+    gMC->Gspos("FSTR",AliTOFGeometry::NStripA()-istrip,"FLTA",0.,ypos, zpos,idrotm[0],  "ONLY");
     if(fDebug>=1) {
       printf("y = %f,  z = %f, , z coord = %f, Rot ang = %f, St. %2i \n",ypos,zpos,tan(ang)*radius ,ang*kRaddeg,istrip);
     }
@@ -501,7 +502,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   ////////// Layers after strips /////////////////
   // Al Layer thickness (2.3mm) factor 0.7
   
-  Float_t overSpace = fOverSpc;//cm
+  Float_t overSpace = AliTOFGeometry::OverSpc();//cm
   
   par[0] = xFLT*0.5;
   par[1] = 0.115*0.7; // factor 0.7
@@ -999,37 +1000,37 @@ void AliTOFv4T0::StepManager()
 
     plate = -1;  
 
-    if (TMath::Abs(z) <=  fZlenA*0.5)  plate = 2; //3; // AdC
-    if (z < (fZlenA*0.5+fZlenB) && 
-        z >  fZlenA*0.5)               plate = 1; //4; // AdC
-    if (z >-(fZlenA*0.5+fZlenB) &&
-        z < -fZlenA*0.5)               plate = 3; //2; // AdC
-    if (z > (fZlenA*0.5+fZlenB))       plate = 0; //5; // AdC
-    if (z <-(fZlenA*0.5+fZlenB))       plate = 4; //1; // AdC
+    if (TMath::Abs(z) <=  AliTOFGeometry::ZlenA()*0.5)  plate = 2;
+    if (z < (AliTOFGeometry::ZlenA()*0.5+AliTOFGeometry::ZlenB()) && 
+        z >  AliTOFGeometry::ZlenA()*0.5)               plate = 1;
+    if (z >-(AliTOFGeometry::ZlenA()*0.5+AliTOFGeometry::ZlenB()) &&
+        z < -AliTOFGeometry::ZlenA()*0.5)               plate = 3;
+    if (z > (AliTOFGeometry::ZlenA()*0.5+AliTOFGeometry::ZlenB()))     plate = 0;
+    if (z <-(AliTOFGeometry::ZlenA()*0.5+AliTOFGeometry::ZlenB()))     plate = 4;
 
 
-    if (plate==0) strip=fTOFGeometry->NStripC()-strip; // AdC
-    else if (plate==1) strip=fTOFGeometry->NStripB()-strip; // AdC
-    else strip--; // AdC
+    if (plate==0) strip=fTOFGeometry->NStripC()-strip;
+    else if (plate==1) strip=fTOFGeometry->NStripB()-strip;
+    else strip--;
  
-    //Apply ALICE conventions for volume numbering increasing with theta, phi 
+    //Apply ALICE conventions for volume numbering increasing with theta, phi
 
     if (plate==3 || plate==4){
-      padx=fTOFGeometry->NpadX()-padx; // SA
-      padz=fTOFGeometry->NpadZ()-padz; // AdC
+      padx=fTOFGeometry->NpadX()-padx;
+      padz=fTOFGeometry->NpadZ()-padz;
       xpad[0]=-xpad[0];      
       xpad[2]=-xpad[2];      
     }
     else {
-     padx--; // AdC
-     padz--; // AdC
+     padx--;
+     padz--;
     }
 
 
 
     phi = pos.Phi();
-    if (phi>=0.) phid = phi*kRaddeg; //+180.; // AdC
-    else phid = phi*kRaddeg + 360.; // AdC
+    if (phi>=0.) phid = phi*kRaddeg;
+    else phid = phi*kRaddeg + 360.;
 
     sector = Int_t (phid/20.);
 

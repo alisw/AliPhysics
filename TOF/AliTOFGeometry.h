@@ -24,6 +24,7 @@ class AliTOFGeometry{
   static  Int_t NStripC()     { return kNStripC;};
   static  Int_t NpadX()       { return kNpadX;};
   static  Int_t NpadZ()       { return kNpadZ;};
+  static  Int_t NpadXStrip()  { return kNpadX*kNpadZ;};
   static  Int_t NSectors()    { return kNSectors;};
   static  Int_t NPlates()     { return kNPlates;};
   static  Int_t NPadXSector() { return (kNStripA + 2*kNStripB +
@@ -32,16 +33,19 @@ class AliTOFGeometry{
   static  Int_t MaxTOFTree()  { return kMaxTOFTree;};
 
 
-  static  Float_t RinTOF()   { return fgkxTOF;};
-  static  Float_t Rmin()     { return fgkRmin;};
-  static  Float_t Rmax()     { return fgkRmax;};
-  static  Float_t ZlenA()    { return fgkZlenA;};
-  static  Float_t ZlenB()    { return fgkZlenB;};
-  static  Float_t ZlenC()    { return fgkZlenC;};
-  static  Float_t XPad()     { return fgkXPad;};
-  static  Float_t ZPad()     { return fgkZPad;};
-  static  Float_t MaxhZtof() { return fgkMaxhZtof;};
-
+  static  Float_t RinTOF()      { return fgkxTOF;};
+  static  Float_t Rmin()        { return fgkRmin;};
+  static  Float_t Rmax()        { return fgkRmax;};
+  static  Float_t ZlenA()       { return fgkZlenA;};
+  static  Float_t ZlenB()       { return fgkZlenB;};
+  static  Float_t ZlenC()       { return fgkZlenC;};
+  static  Float_t XPad()        { return fgkXPad;};
+  static  Float_t ZPad()        { return fgkZPad;};
+  static  Float_t MaxhZtof()    { return fgkMaxhZtof;};
+  static  Float_t StripLength() { return fgkStripLength;};
+  static  Float_t DeadBndX()    { return fgkDeadBndX;};
+  static  Float_t DeadBndZ()    { return fgkDeadBndZ;};
+  static  Float_t OverSpc()     { return fgkOverSpc;};
 
   static  Float_t SigmaForTail1() { return fgkSigmaForTail1;};
   static  Float_t SigmaForTail2() { return fgkSigmaForTail2;};
@@ -92,16 +96,20 @@ class AliTOFGeometry{
     kMaxTOFTree = 5   // numer of geom. levels: 
   };
 
-  static const Int_t fgkTimeDiff;  // Min signal separation (ps)
+  static const Int_t fgkTimeDiff;      // Min signal separation (ps)
 
-  static const Float_t fgkRmin;    // Inner radius of the TOF (cm)
-  static const Float_t fgkRmax;    // Outer radius of the TOF (cm)
-  static const Float_t fgkZlenA;   // length (cm) of the A module
-  static const Float_t fgkZlenB;   // length (cm) of the B module
-  static const Float_t fgkZlenC;   // length (cm) of the C module
-  static const Float_t fgkXPad;    // Pad size in the x direction (cm)
-  static const Float_t fgkZPad;    // Pad size in the z direction (cm)
-  static const Float_t fgkMaxhZtof;// Max half z-size of TOF (cm)
+  static const Float_t fgkRmin;        // Inner radius of the TOF (cm)
+  static const Float_t fgkRmax;        // Outer radius of the TOF (cm)
+  static const Float_t fgkZlenA;       // length (cm) of the A module
+  static const Float_t fgkZlenB;       // length (cm) of the B module
+  static const Float_t fgkZlenC;       // length (cm) of the C module
+  static const Float_t fgkXPad;        // Pad size in the x direction (cm)
+  static const Float_t fgkZPad;        // Pad size in the z direction (cm)
+  static const Float_t fgkMaxhZtof;    // Max half z-size of TOF (cm)
+  static const Float_t fgkStripLength; // Strip Length (rho X phi direction) (cm)
+  static const Float_t fgkDeadBndX;    // Dead Boundaries of a Strip along Z direction (width)
+  static const Float_t fgkDeadBndZ;    // Dead Boundaries of a Strip along X direction (length)
+  static const Float_t fgkOverSpc;     // Space available for sensitive layers in radial direction (cm)
 
   static const Float_t fgkxTOF;// Inner TOF Radius used in Reconstruction (cm)
 

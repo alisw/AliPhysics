@@ -53,6 +53,7 @@ public:
   void  SetEffBoundary(Float_t effBoundary)          {fEffBoundary=effBoundary;}
   void  SetEff2Boundary(Float_t eff2Boundary)        {fEff2Boundary=eff2Boundary;}
   void  SetEff3Boundary(Float_t eff3Boundary)        {fEff3Boundary=eff3Boundary;}
+  void  SetAddTRes(Float_t addTRes)                  {fAddTRes=addTRes;}
   void  SetResCenter (Float_t resCenter)             {fResCenter=resCenter;}
   void  SetResBoundary(Float_t resBoundary)          {fResBoundary=resBoundary;}
   void  SetResSlope(Float_t resSlope)                {fResSlope=resSlope;}
@@ -84,6 +85,7 @@ public:
   Float_t  GetEffBoundary()      const {return fEffBoundary;}
   Float_t  GetEff2Boundary()     const {return fEff2Boundary;}
   Float_t  GetEff3Boundary()     const {return fEff3Boundary;}
+  Float_t  GetAddTRes ()         const {return fAddTRes;}
   Float_t  GetResCenter ()       const {return fResCenter;}
   Float_t  GetResBoundary()      const {return fResBoundary;}
   Float_t  GetResSlope()         const {return fResSlope;}
@@ -103,6 +105,9 @@ public:
   Float_t  GetAdcMean()          const {return fAdcMean;}
   Float_t  GetAdcRms()           const {return fAdcRms;}
   
+
+protected:
+
 
 private:
   Int_t   fEvent1;          // lower bound for events to sdigitize
@@ -133,6 +138,8 @@ private:
   Float_t fEffBoundary;     // efficiency at the boundary of the pad
   Float_t fEff2Boundary;    // efficiency value at H2parameter
   Float_t fEff3Boundary;    // efficiency value at K2parameter
+  Float_t fAddTRes;         // additional contribution to 
+                            // the intrinsic MRPC time resolution (ps)
   Float_t fResCenter;       // resolution (ps) in the central region of the pad
   Float_t fResBoundary;     // resolution (ps)  at the boundary of the pad
   Float_t fResSlope;        // slope (ps/K) for neighbouring pad
@@ -156,9 +163,6 @@ private:
   Float_t fAdcBin;      // charge-window for the ADC bins [pC]
   Float_t fAdcMean;     // mean value for the ADC spectrum [bins]
   Float_t fAdcRms;      // rms value for the ADC spectrum [bins]
-
- protected:
-
 
   ClassDef(AliTOFSDigitizer,2)  // creates TOF SDigits
 

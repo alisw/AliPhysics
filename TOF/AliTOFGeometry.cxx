@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2004/04/20 14:37:22  hristov
+Using TMath::Abs instead of fabs, arrays of variable size created/deleted correctly (HP,Sun)
+
 Revision 1.4  2004/04/13 09:42:51  decaro
 Track reconstruction code for TOF: updating
 
@@ -27,14 +30,17 @@ Using enum to initaialize static ints in the header file, the initialization of 
 Revision 1.1  2003/12/29 15:18:03  decaro
 TOF geometry updating (addition of AliTOFGeometry)
 
-Revision 0.01  2003/12/04 S.Arcelli
-Revision 0.02  2003/12/10 S.Arcelli:
-        Implement Global methods GetPos & GetDetID 
-Revision 0.03  2003/12/14 S.Arcelli
-        Set Phi range [-180,180]->[0,360] 
-Revision 0.03  2004/4/05 S.Arcelli
+Revision 0.05  2004/6/11 A.De Caro
+        Implement Global method NpadXStrip
+        Insert four float constants (originally  in AliTOF class)
+Revision 0.04  2004/4/05 S.Arcelli
         Implement Global methods IsInsideThePad 
                                   DistanceToPad 
+Revision 0.03  2003/12/14 S.Arcelli
+        Set Phi range [-180,180]->[0,360] 
+Revision 0.02  2003/12/10 S.Arcelli:
+        Implement Global methods GetPos & GetDetID 
+Revision 0.01  2003/12/04 S.Arcelli
 */
 
 #include <stdlib.h>
@@ -50,17 +56,21 @@ Revision 0.03  2004/4/05 S.Arcelli
 
 ClassImp(AliTOFGeometry)
 
-const Int_t AliTOFGeometry::fgkTimeDiff   = 25000;// Min signal separation (ps)
+const Int_t AliTOFGeometry::fgkTimeDiff   = 25000;  // Min signal separation (ps)
 
-const Float_t AliTOFGeometry::fgkxTOF     = 371.; // Inner radius of the TOF for Reconstruction (cm)
-const Float_t AliTOFGeometry::fgkRmin     = 370.; // Inner radius of the TOF (cm)
-const Float_t AliTOFGeometry::fgkRmax     = 399;  // Outer radius of the TOF (cm)
-const Float_t AliTOFGeometry::fgkZlenA    = 106.0;// length (cm) of the A module
-const Float_t AliTOFGeometry::fgkZlenB    = 141.0;// length (cm) of the B module
-const Float_t AliTOFGeometry::fgkZlenC    = 177.5;// length (cm) of the C module
-const Float_t AliTOFGeometry::fgkXPad     = 2.5;  // Pad size in the x direction (cm)
-const Float_t AliTOFGeometry::fgkZPad     = 3.5;  // Pad size in the z direction (cm)
-const Float_t AliTOFGeometry::fgkMaxhZtof = 371.5;// Max half z-size of TOF (cm)
+const Float_t AliTOFGeometry::fgkxTOF     = 371.;   // Inner radius of the TOF for Reconstruction (cm)
+const Float_t AliTOFGeometry::fgkRmin     = 370.;   // Inner radius of the TOF (cm)
+const Float_t AliTOFGeometry::fgkRmax     = 399;    // Outer radius of the TOF (cm)
+const Float_t AliTOFGeometry::fgkZlenA    = 106.0;  // length (cm) of the A module
+const Float_t AliTOFGeometry::fgkZlenB    = 141.0;  // length (cm) of the B module
+const Float_t AliTOFGeometry::fgkZlenC    = 177.5;  // length (cm) of the C module
+const Float_t AliTOFGeometry::fgkXPad     = 2.5;    // Pad size in the x direction (cm)
+const Float_t AliTOFGeometry::fgkZPad     = 3.5;    // Pad size in the z direction (cm)
+const Float_t AliTOFGeometry::fgkMaxhZtof = 371.5;  // Max half z-size of TOF (cm)
+const Float_t AliTOFGeometry::fgkStripLength = 122.;// Strip Length (rho X phi direction) (cm)
+const Float_t AliTOFGeometry::fgkDeadBndX = 1.0;    // Dead Boundaries of a Strip along X direction (length) (cm)
+const Float_t AliTOFGeometry::fgkDeadBndZ = 1.5;    // Dead Boundaries of a Strip along Z direction (width) (cm)
+const Float_t AliTOFGeometry::fgkOverSpc = 15.3;    // Space available for sensitive layers in radial direction (cm)
 
 
 const Float_t AliTOFGeometry::fgkSigmaForTail1= 2.;//Sig1 for simulation of TDC tails 

@@ -262,24 +262,30 @@ Int_t AliTOFSDigit::GetTotPad() const
   // starting from the digits data.
   //
   
-  Int_t pad = fPadx+AliTOFGeometry::NpadX()*(fPadz-1);
+  Int_t pad = 2*fPadx + fPadz;
+  //Int_t pad = fPadx+AliTOFGeometry::NpadX()*fPadz;
   Int_t before=0;
   
   switch(fPlate){ 
-  case 1: before = 0;
+  case 0:
+    //before = 0;
     break;
-  case 2: before = AliTOFGeometry::NStripC();
+  case 1:
+    before = AliTOFGeometry::NStripC();
     break;
-  case 3: before = AliTOFGeometry::NStripB() + AliTOFGeometry::NStripC();
+  case 2:
+    before = AliTOFGeometry::NStripB() +   AliTOFGeometry::NStripC();
     break;
-  case 4: before = AliTOFGeometry::NStripA() + AliTOFGeometry::NStripB() + AliTOFGeometry::NStripC();
+  case 3:
+    before = AliTOFGeometry::NStripA() +   AliTOFGeometry::NStripB() + AliTOFGeometry::NStripC();
     break;
-  case 5: before = AliTOFGeometry::NStripA() + 2*AliTOFGeometry::NStripB() + AliTOFGeometry::NStripC();
+  case 4:
+    before = AliTOFGeometry::NStripA() + 2*AliTOFGeometry::NStripB() + AliTOFGeometry::NStripC();
     break;
   }
   
-  Int_t strip = fStrip+before;
-  Int_t padTot = AliTOFGeometry::NpadX()*AliTOFGeometry::NpadZ()*(strip-1)+pad;
+  Int_t strip = fStrip + before;
+  Int_t padTot = AliTOFGeometry::NpadXStrip()*strip + pad;
   return padTot;
 }
 

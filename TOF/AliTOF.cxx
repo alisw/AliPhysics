@@ -57,20 +57,21 @@
 #include <TTree.h>
 #include <TVirtualMC.h>
 
+#include "AliConfig.h"
+#include "AliHeader.h"
 #include "AliConst.h"
 #include "AliLoader.h"
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliTOF.h"
-#include "AliTOFRawDigit.h"
-#include "AliTOFRawSector.h"
-#include "AliTOFRoc.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFSDigit.h"
 #include "AliTOFdigit.h"
 #include "AliTOFhit.h"
 #include "AliTOFhitT0.h"
 #include "AliMC.h"
 #include "AliTOFDigitizer.h"
+#include "AliTOFDDLRawData.h"
  
 ClassImp(AliTOF)
  
@@ -80,17 +81,17 @@ AliTOF::AliTOF()
   //
   // Default constructor
   //
-  fFGeom = 0x0;
-  fDTask = 0x0;
+  fFGeom  = 0x0;
+  fDTask  = 0x0;
   fReTask = 0x0;
   fIshunt   = 0;
-  fSDigits       = 0 ;
+  fSDigits  = 0 ;
   fNSDigits = 0;
-  fDigits        = 0 ;
+  fDigits   = 0 ;
   fReconParticles = 0x0;
   fName="TOF";
   fMerger = 0x0;
-  fTZero = kFALSE;
+  fTZero  = kFALSE;
   fTOFGeometry = 0;
 }
  
@@ -106,9 +107,9 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
 
   // Initialization of hits, sdigits and digits array
   // added option for time zero analysis
-  fFGeom = 0x0; //skowron
-  fDTask = 0x0;
-  fReTask= 0x0;
+  fFGeom  = 0x0; //skowron
+  fDTask  = 0x0;
+  fReTask = 0x0;
   fReconParticles= 0x0;
   fMerger = 0x0;
   fTOFGeometry = 0;
@@ -129,8 +130,8 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   else Error("AliTOF","gAlice->GetHitLists()==0");
 
   fIshunt  = 0;
-  fSDigits       = new TClonesArray("AliTOFSDigit",  1000);
-  fDigits        = new TClonesArray("AliTOFdigit",  1000);
+  fSDigits = new TClonesArray("AliTOFSDigit", 1000);
+  fDigits  = new TClonesArray("AliTOFdigit",  1000);
   fNSDigits = 0;
 
   fFGeom = 0x0;
@@ -148,47 +149,14 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   SetMarkerStyle(2);
   SetMarkerSize(0.4);
 
-// General Geometrical Parameters
-  fNTof    =  18;  // number of sectors
-  fRmax    = 399.0;//cm 
-  fRmin    = 370.0;//cm
-  fZlenC   = 177.5;//cm length of module C
-  fZlenB   = 141.0;//cm length of module B
-  fZlenA   = 106.0;//cm length of module A
-  fZtof    = 371.5;//cm total semi-length of TOF detector
-
 // Strip Parameters
-  fStripLn = 122.0;//cm  Strip Length
-  fSpace   =   5.5;//cm  Space Beetween the strip and the bottom of the plate 
-  fDeadBndZ=   1.5;//cm  Dead Boundaries of a Strip along Z direction (width)
-  fDeadBndX=   1.0;//cm  Dead Boundaries of a Strip along X direction (length)
-  fXpad    =   2.5;//cm  X size of a pad
-  fZpad    =   3.5;//cm  Z size of a pad
-  fGapA    =   4.; //cm  Gap beetween tilted strip in A-type plate
-  fGapB    =   6.; //cm  Gap beetween tilted strip in B-type plate
-  fOverSpc =  15.3;//cm Space available for sensitive layers in radial direction
-  fNpadX   =  48;  // Number of pads in a strip along the X direction
-  fNpadZ   =   2;  // Number of pads in a strip along the Z direction
-  fPadXStr = fNpadX*fNpadZ; //Number of pads per strip
-  fNStripA = 15; // number of strips in A type module 
-  fNStripB = 19; // number of strips in B type module
-  fNStripC = 20; // number of strips in C type module
- 
-// Physical performances
-  fTimeRes = 100.;//ps
-  fChrgRes = 100.;//pC
+  //fGapA    =   4.; //cm  Gap beetween tilted strip in A-type plate
+  //fGapB    =   6.; //cm  Gap beetween tilted strip in B-type plate
 
-// DAQ characteristics
-// cfr. TOF-TDR pag. 105 for Glossary
-// TARODA : TOF-ALICE Read Out and Data Acquisition system
-  fPadXSector = 8928; // number of pad per sector -with no holes-
-                      // ((15+2*19+2*20)*(48*2))
-  fNRoc       = 14;   // number of Roc (Read Out Controller) (TARODA)
-  fNFec       = 32;   // number of Fec (Front-End electronic Card)
-                      // (TARODA)
-  fNTdc       = 32;   // number of Tdc (Time to Digital Converter)
-  fNPadXRoc   = (Int_t)fPadXSector/fNRoc; // number of pads for each ROC
-  
+  // Physical performances
+  //fTimeRes = 100.;//ps
+  //fChrgRes = 100.;//pC
+
 }
 
 //_____________________________________________________________________________
@@ -388,11 +356,12 @@ void AliTOF::CreateGeometry()
   wall = 4.;//cm
 
   // Sizes of TOF module with its support etc..
-  xTof = 2.*(fRmin*TMath::Tan(10*kDegrad)-wall/2-.5);
-  yTof = fRmax-fRmin;
+  xTof = 2.*(AliTOFGeometry::Rmin()*TMath::Tan(10*kDegrad)-wall/2-.5);
+  yTof = AliTOFGeometry::Rmax()-AliTOFGeometry::Rmin();
 
 //  TOF module internal definitions 
-  TOFpc(xTof, yTof, fZlenC, fZlenB, fZlenA, fZtof);
+  //TOFpc(xTof, yTof, fZlenC, fZlenB, fZlenA, AliTOFGeometry::MaxhZtof());
+  TOFpc(xTof, yTof, AliTOFGeometry::ZlenC(), AliTOFGeometry::ZlenB(), AliTOFGeometry::ZlenA(), AliTOFGeometry::MaxhZtof());
 }
 
 //_____________________________________________________________________________
@@ -822,150 +791,30 @@ Bool_t AliTOF::CheckOverlap(Int_t* vol, Float_t* digit,Int_t Track)
 
 
 //____________________________________________________________________________
-void AliTOF::Digits2Raw(Int_t evNumber)
+void AliTOF::Digits2Raw()
 {
 //
-// Starting from digits, writes the 
-// Raw Data objects, i.e. a 
-// TClonesArray of 18 AliTOFRawSector objects
+// Starting from the TOF digits, writes the Raw Data objects
 //
 
-  TTree* tD;
+  fLoader->LoadDigits();
 
-  // do nothing if no particles
-  Int_t nparticles = gAlice->GetEvent(evNumber); 
-  if (nparticles <= 0) return;
-
-  tD = gAlice->TreeD();
-  
-  TClonesArray* tofdigits = this->Digits();
-  Int_t ndigits = tofdigits->GetEntriesFast();
-
-  TClonesArray* rawsectors = new TClonesArray("AliTOFRawSector",fNTof+2); 
-
-  for (Int_t isect=1;isect<=fNTof;isect++){
-     AliTOFRawSector* currentSector = (AliTOFRawSector*)rawsectors->UncheckedAt(isect);
-     TClonesArray* rocData = (TClonesArray*)currentSector->GetRocData();
-
-     for (Int_t digit=0; digit<ndigits; digit++){
-        AliTOFdigit* currentDigit = (AliTOFdigit*)tofdigits->UncheckedAt(digit);
-        Int_t sector = currentDigit->GetSector();
-        if (sector==isect){
-	    Int_t   pad    = currentDigit -> GetTotPad();
-	    Int_t   roc    = (Int_t)(pad/fNPadXRoc)-1;
-	    if (roc>=fNRoc) printf("Wrong n. of ROC ! Roc = %i",roc);
-            Int_t   padRoc = (Int_t) pad%fNPadXRoc;
-	    Int_t   fec    = (Int_t)(padRoc/fNFec)-1;
-            Int_t   tdc    = (Int_t)(padRoc%fNFec)-1;
-            Float_t time   = currentDigit->GetTdc();
-            Float_t charge = currentDigit->GetAdc();
-	    AliTOFRoc* currentROC = (AliTOFRoc*)rocData->UncheckedAt(roc);
-	    Int_t error    = 0;
-            currentROC->AddItem(fec, tdc, error, charge, time);
-	} // close if (sector==isect) i.e. end loop on digits for the current sector
-     } // end loop on TOF digits
-     
-     UInt_t totSize=16,rocSize=0;
-     UInt_t rocHead[14],rocChek[14];
-     UInt_t globalCheckSum=0;
-
-     for (UInt_t iRoc = 1; iRoc<(UInt_t)fNRoc; iRoc++){
-        AliTOFRoc* currentRoc = (AliTOFRoc*)rocData->UncheckedAt(iRoc); 
-	rocSize  = currentRoc->GetItems()*2+1;
-	totSize += rocSize*4;
-	if (rocSize>=TMath::Power(2,16)) rocSize=0;
-	rocHead[iRoc]   = iRoc<<28;
-	rocHead[iRoc]  += rocSize;
-	rocChek[iRoc]   = currentRoc->GetCheckSum();
-        Int_t headCheck = currentRoc->BitCount(rocHead[iRoc]);
-	globalCheckSum += headCheck;
-	globalCheckSum += rocChek[iRoc];
-     }
-     
-     AliTOFRoc* dummyRoc = new AliTOFRoc();
-     totSize *= 4;
-     if (totSize>=TMath::Power(2,24)) totSize=0;
-     UInt_t header = totSize;
-     UInt_t sectId = ((UInt_t)isect)<<24;
-     header += sectId;
-     globalCheckSum += dummyRoc->BitCount(header);
-     currentSector->SetGlobalCS(globalCheckSum);
-     currentSector->SetHeader(header);
-  }  
-}
- 
-//____________________________________________________________________________
-void AliTOF::Raw2Digits(Int_t evNumber)
-{
-//
-//  Converts Raw Data objects into digits objects.
-//  We schematize the raw data with a 
-//  TClonesArray of 18 AliTOFRawSector objects
-//
-
-  TTree    *tD;
-  Int_t    vol[5];
-  Int_t    tracks[3];
-  Float_t  digit[2];
- 
-  tracks[0]=0;
-  tracks[1]=0;
-  tracks[2]=0;
- 
-  Int_t nparticles = gAlice->GetEvent(evNumber); 
-  if (nparticles <= 0) return;
-
-  tD = gAlice->TreeD();
-  
-  TClonesArray* rawsectors = new TClonesArray("AliTOFRawSector",fNTof+2);
-  
-  for(Int_t nSec=1; nSec<=fNTof; nSec++){
-     AliTOFRawSector* currentSector = (AliTOFRawSector*)rawsectors->UncheckedAt(nSec);
-     TClonesArray* rocData = (TClonesArray*)currentSector->GetRocData();
-     for(Int_t nRoc=1; nRoc<=14; nRoc++){
-        AliTOFRoc* currentRoc = (AliTOFRoc*)rocData->UncheckedAt(nRoc);
-        Int_t currentItems = currentRoc->GetItems();
-        for(Int_t item=1; item<currentItems; item++){ 
-           Int_t nPad = currentRoc->GetTotPad(item);        
-	   vol[0] = nSec;
-	   Int_t nStrip = (Int_t)(nPad/fPadXStr)+1;
-	   Int_t nPlate = 5;
-	   if (nStrip<=fNStripC+2*fNStripB+fNStripA) nPlate = 4;
-	   if (nStrip<=fNStripC+fNStripB+fNStripA)   nPlate = 3;
-	   if (nStrip<=fNStripC+fNStripB)            nPlate = 2;
-	   if (nStrip<=fNStripC)                     nPlate = 1;
-	   vol[1] = nPlate;
-	   switch (nPlate){
-	   case 1: break;
-	   case 2: nStrip -= (fNStripC);
-	           break;
-	   case 3: nStrip -= (fNStripC+fNStripB);
-	           break;
-	   case 4: nStrip -= (fNStripC+fNStripB+fNStripA);
-	           break;
-	   case 5: nStrip -= (fNStripC+2*fNStripB+fNStripA);
-	           break;
-	   }
-           vol[2] = nStrip;
-           Int_t pad = nPad%fPadXStr;
-	   if (pad==0) pad=fPadXStr;
-	   Int_t nPadX=0, nPadZ=0;
-	   (pad>fNpadX)? nPadX -= fNpadX : nPadX = pad ;
-	   vol[3] = nPadX;
-	   (pad>fNpadX)? nPadZ = 2 : nPadZ = 1 ;
-	   vol[4] = nPadZ;
-	   UInt_t error=0;
-	   Float_t tdc = currentRoc->GetTime(item,error);
-	   if (!error) digit[0]=tdc;
-	   digit[1] = currentRoc->GetCharge(item);
-	   AddDigit(tracks,vol,digit);
-        }
-     }
+  TTree* digits = fLoader->TreeD();
+  if (!digits) {
+    Error("Digits2Raw", "no digits tree");
+    return;
   }
-  tD->Fill();
-  tD->Write(0,TObject::kOverwrite);
-} 
+  
+  AliTOFDDLRawData rawWriter;
+  rawWriter.SetVerbose(0);
+  
+  Info("Digits2Raw", "Formatting raw data for TOF");
+  digits->GetEvent(0);
+  rawWriter.RawDataTOF(digits->GetBranch("TOF"));  
 
+  fLoader->UnloadDigits();
+  
+}
 ////////////////////////////////////////////////////////////////////////
 void AliTOF::RecreateSDigitsArray() {
 //

@@ -34,6 +34,7 @@
 
 #include "AliRun.h"
 #include "AliTOF.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFdigit.h"
 
 ClassImp(AliTOFdigit)
@@ -48,8 +49,8 @@ AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol,Float_t *digit)
   fSector = vol[0];
   fPlate  = vol[1];
   fStrip  = vol[2];
-  fPadx  = vol[3];
-  fPadz  = vol[4];
+  fPadx   = vol[3];
+  fPadz   = vol[4];
   fTdc    = digit[0];
   fAdc    = digit[1];
 }
@@ -114,33 +115,31 @@ Int_t AliTOFdigit::GetTotPad() const
 // starting from the digits data.
 //
 
-  AliTOF* tof;
-  
-  if(gAlice){
-     tof =(AliTOF*) gAlice->GetDetector("TOF");
-  }else{
-     printf("AliTOFdigit::GetTotPad - No AliRun object present, exiting");
-     return 0;
-  }
-  
-  Int_t pad = fPadx+tof->GetNpadX()*(fPadz-1);
   Int_t before=0;
 
   switch(fPlate){ 
-  case 1: before = 0;
-          break;
-  case 2: before = tof->GetNStripC();
-          break;
-  case 3: before = tof->GetNStripB() + tof->GetNStripC();
-          break;
-  case 4: before = tof->GetNStripA() + tof->GetNStripB() + tof->GetNStripC();
-          break;
-  case 5: before = tof->GetNStripA() + 2*tof->GetNStripB() + tof->GetNStripC();
-          break;
+  case 0:
+    //before = 0;
+    break;
+  case 1:
+    before = AliTOFGeometry::NStripC();
+    break;
+  case 2:
+    before = AliTOFGeometry::NStripC() +   AliTOFGeometry::NStripB();
+    break;
+  case 3:
+    before = AliTOFGeometry::NStripC() +   AliTOFGeometry::NStripB() + AliTOFGeometry::NStripA();
+    break;
+  case 4:
+    before = AliTOFGeometry::NStripC() + 2*AliTOFGeometry::NStripB() + AliTOFGeometry::NStripA();
+    break;
   }
   
-  Int_t strip = fStrip+before;
-  Int_t padTot = tof->GetPadXStr()*(strip-1)+pad;
+  Int_t pad = 2*fPadx + fPadz;
+  //Int_t pad = fPadx+AliTOFGeometry::NpadX()*fPadz;
+  Int_t strip  = fStrip + before;
+  Int_t padTot = AliTOFGeometry::NpadXStrip()*strip + pad;
+
   return padTot;
 }
 
@@ -210,4 +209,3 @@ out << "Padx" << digit.fPadx << ", Padz " << digit.fPadz << endl;
 out << "TDC " << digit.fTdc << ", ADC "<< digit.fAdc << endl;
 return out;
 }
-

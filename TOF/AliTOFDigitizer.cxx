@@ -169,7 +169,7 @@ void AliTOFDigitizer::CreateDigits()
   for (Int_t k = 0; k < ndig; k++) {
     
     Int_t  vol[5];  // location for a digit
-    for (Int_t i=0; i<5; i++) vol[i] = -1; // AdC
+    for (Int_t i=0; i<5; i++) vol[i] = -1;
     
     // Get the information for this digit
     AliTOFSDigit *tofsdigit = (AliTOFSDigit *) fSDigitsArray->UncheckedAt(k);
@@ -192,8 +192,7 @@ void AliTOFDigitizer::CreateDigits()
     
     //--------------------- QA section ----------------------
     // in the while, I perform QA
-    //Bool_t isSDigitBad = (sector<1 || sector>18 || plate<1 || plate >5 || padz<1 || padz>2 || padx<1 || padx>48);
-    Bool_t isSDigitBad = (sector<0 || sector>17 || plate<0 || plate >4 || padz<0 || padz>1 || padx<0 || padx>47); // AdC
+    Bool_t isSDigitBad = (sector<0 || sector>17 || plate<0 || plate >4 || padz<0 || padz>1 || padx<0 || padx>47);
     
     if (isSDigitBad) {
       cout << "<AliTOFSDigits2Digits>  strange sdigit found" << endl;
@@ -303,7 +302,7 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
       AliTOFSDigit *tofSdigit= (AliTOFSDigit*) sdigitsDummyContainer->UncheckedAt(k);
       
       Int_t  vol[5]; // location for a sdigit
-      for (Int_t i=0; i<5; i++) vol[i] = -1; // AdC
+      for (Int_t i=0; i<5; i++) vol[i] = -1;
 
       // check the sdigit volume
       vol[0] = tofSdigit->GetSector();
