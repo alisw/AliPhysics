@@ -462,7 +462,7 @@ TMevSim::~TMevSim()
   }
 }
 //______________________________________________________________________________
-TMevSim::TMevSim(TMevSim& mevsim) {
+TMevSim::TMevSim(TMevSim& mevsim) : TGenerator(mevsim) {
 // The copy constructor
    
    *this = mevsim;
@@ -573,7 +573,7 @@ void        TMevSim::GenerateEvent() {
 }
 
 //______________________________________________________________________________
-Int_t TMevSim::ImportParticles(TClonesArray *particles, Option_t *option)
+Int_t TMevSim::ImportParticles(TClonesArray *particles, Option_t */*option*/)
 {
 // Read in particles created by MevSim into the TClonesArray(). The Initialize()
 // and GenrateEvent() functions must be called prior to calling this funtion.

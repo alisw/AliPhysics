@@ -62,7 +62,7 @@ TMevSimPartTypeParams::TMevSimPartTypeParams(Int_t agpid, Int_t amultmean, Int_t
 TMevSimPartTypeParams::~TMevSimPartTypeParams() {}
 
 //______________________________________________________________________________
-TMevSimPartTypeParams::TMevSimPartTypeParams (const TMevSimPartTypeParams& pars) {
+TMevSimPartTypeParams::TMevSimPartTypeParams (const TMevSimPartTypeParams& pars) : TObject(pars) {
 // The copy constructor
   
    this->fGPid = pars.GetGPid();
