@@ -97,8 +97,6 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option
   else 
     fgPhosLoader->SetTitle(version);
   
-  printf("Got PHOSLoader \n") ;
-  
   // initialize data members
   SetDebug(0) ; 
   fBTE = 0 ; 
@@ -106,7 +104,6 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option
   fLoadingStatus = "" ; 
  
   fESDFileName = rl->GetFileName()  ; // this should be the galice.root file
-  printf("File Name \n") ;
   fESDFileName.ReplaceAll("galice.root", "AliESDs.root") ;  
   fESDFile = 0 ; 
   fESD = 0 ; 
