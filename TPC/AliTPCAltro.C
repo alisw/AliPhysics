@@ -1,7 +1,11 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <fstream.h>
+#if !defined(__CINT__)
+#include <Riostream.h>
+#include <TFile.h>
+#include <TTree.h>
+#include "AliTPCParamSR.h"
+#include "AliTPCDigitsArray.h"
+#include "AliSimDigits.h"
 #include "AliTPCBuffer160.h"
-#include <alles.h>
 #endif
 
 int AliTPCAltro(char* FileName,Int_t eth=0){

@@ -20,8 +20,8 @@
 // This class is used by AliTPCDDL.C macro
 // Author: D.Favretto
 
-#include "Riostream.h"
-#include "TObjArray.h"
+#include <Riostream.h>
+#include <TObjArray.h>
 #include "AliTPCBuffer.h"
 #include "AliSimDigits.h"
 

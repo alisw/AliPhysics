@@ -21,9 +21,8 @@
 //For compression we use the optimized table wich needs 
 //to be provided.
 
-
-#include "TObjArray.h"
-#include "Riostream.h"
+#include <TObjArray.h>
+#include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "AliTPCCompression.h"

@@ -1,6 +1,6 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riotream.h>
-#include <alles.h>
+#if !defined(__CINT__)
+#include <Riostream.h>
+#include <TStopwatch.h>
 #include "AliTPCCompression.h"
 #endif
 

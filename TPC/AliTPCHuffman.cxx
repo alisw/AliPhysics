@@ -22,12 +22,11 @@
 //The class AliTPCHNode represents a node of the Huffman tree, while
 //the class AliTPCHTable represents a compression table
 
-
 #include <TObjArray.h>
-#include "Riostream.h"
-#include "TMath.h"
-#include "AliTPCHuffman.h"
+#include <Riostream.h>
+#include <TMath.h>
 #include "AliTPCBuffer160.h"
+#include "AliTPCHuffman.h"
 
 ClassImp(AliTPCHNode)
 

@@ -21,11 +21,12 @@
 // and in the compression of the RAW data
 // Author: D.Favretto
 
-#include "TObjArray.h"
-#include "Riostream.h"
+#include <TObjArray.h>
+#include <Riostream.h>
+#include <TMath.h>
 #include <stdlib.h>
 #include "AliTPCBuffer160.h"
-#include "TMath.h"
+
 
 ClassImp(AliTPCBuffer160)
 

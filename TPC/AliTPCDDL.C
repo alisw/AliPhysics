@@ -1,5 +1,9 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include "TFile.h"
+#if !defined(__CINT__)
+#include <TFile.h>
+#include <TTree.h>
+#include "AliTPCParamSR.h"
+#include "AliTPCDigitsArray.h"
+#include "AliSimDigits.h"
 #include "AliTPCBuffer.h"
 #endif
 

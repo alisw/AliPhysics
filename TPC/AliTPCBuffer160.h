@@ -16,8 +16,12 @@
 
 #ifndef AliTPCBUFFER160_H
 #define AliTPCBUFFER160_H
-
+#ifdef __CINT__
+class fstream;
+#else
 #include "Riostream.h"
+#endif
+
 
 class AliTPCBuffer160:public TObject{
 public:
