@@ -183,8 +183,8 @@ void AliEMCALGeometry::Init(void){
   // geometry
   fNZ             = 96;    // granularity along Z (eta) 
   fNPhi           = 144;   // granularity in phi (azimuth)
-  fArm1PhiMin     =  60.0; // degrees, Starting EMCAL Phi position
-  fArm1PhiMax     = 180.0; // degrees, Ending EMCAL Phi position
+  fArm1PhiMin     =  0.0; // degrees, Starting EMCAL Phi position
+  fArm1PhiMax     = 120.0; // degrees, Ending EMCAL Phi position
   fArm1EtaMin     = -0.7;  // pseudorapidity, Starting EMCAL Eta position
   fArm1EtaMax     = +0.7;  // pseudorapidity, Ending EMCAL Eta position
   
