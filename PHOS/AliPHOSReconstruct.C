@@ -1,7 +1,7 @@
 // YS Subatech Mai 2002
 // YK Subatech 6 Aug 2002
 
-// Reconstruction chain:
+// PHOS Reconstruction chain:
 // Hits -> SDigits -> Digits -> RecPoints -> TrackSegments -> RecParticles
 
 //Root
@@ -18,7 +18,7 @@
 #include "EMCAL/AliEMCALDigitizer.h"
 #include "EMCAL/AliEMCALClusterizerv1.h"
 
-void Hits2SDigits( Bool_t split=kFALSE, TString fileName = "galice.root") {
+void PHOSHits2SDigits( Bool_t split=kFALSE, TString fileName = "galice.root") {
 
   // usage : 
   // 1. write SDigits in the same file as Hits --------------- (OK)
@@ -37,18 +37,10 @@ void Hits2SDigits( Bool_t split=kFALSE, TString fileName = "galice.root") {
   sdp->ExecuteTask("deb") ; 
 
   delete sdp ;
-
- //  AliEMCALSDigitizer * sde = new AliEMCALSDigitizer(fileName) ; 
-//   if (split) 
-//     sde->SetSplitFile() ;
-//   sde->ExecuteTask("deb") ; 
- 
-//   delete sde ; 
-
 }
 
 //________________________________________________________________________
-void SDigits2Digits( Bool_t split=kFALSE, TString fileName = "galice.root") {
+void PHOSSDigits2Digits( Bool_t split=kFALSE, TString fileName = "galice.root") {
   
  // usage : 
   // 1. write SDigits in the same file as SDigits --------------- (OK)
@@ -73,23 +65,10 @@ void SDigits2Digits( Bool_t split=kFALSE, TString fileName = "galice.root") {
   dp->ExecuteTask("deb") ; 
   
   delete dp ;
-
-  //EMCAL
-//   AliEMCALDigitizer * de = 0 ; 
-
-//   if (split) {
-//     de = new AliEMCALDigitizer("EMCAL.SDigits.root") ;
-//     de->SetSplitFile() ;
-//   } else 
-//     de = new AliEMCALDigitizer(fileName) ; 
-  
-//   de->ExecuteTask("deb") ; 
-  
-//   delete de ; 
 }
 
 //________________________________________________________________________
-void Digits2RecPoints( Bool_t split=kFALSE, TString fileName = "galice.root") {
+void PHOSDigits2RecPoints( Bool_t split=kFALSE, TString fileName = "galice.root") {
   
  // usage : 
   // 1. write RecPoints in the same file as Digits --------------- OK 
@@ -102,7 +81,6 @@ void Digits2RecPoints( Bool_t split=kFALSE, TString fileName = "galice.root") {
   delete gAlice ; 
   gAlice = 0 ; 
  
-// PHOS
   AliPHOSClusterizer * cp = 0 ; 
  
   if (split) {
@@ -114,23 +92,10 @@ void Digits2RecPoints( Bool_t split=kFALSE, TString fileName = "galice.root") {
   cp->ExecuteTask("deb") ; 
   
   delete cp ;
-
-//   //EMCAL
-//   AliEMCALClusterizerv1 * ce = 0 ;  
-
-//   if (split) {
-//     ce = new AliEMCALClusterizerv1("EMCAL.Digits.root") ;
-//     ce->SetSplitFile() ;
-//   } else 
-//     ce = new AliEMCALClusterizerv1(fileName) ; 
-  
-//   ce->ExecuteTask("deb") ; 
-  
-//   delete ce ; 
 }
 
 //________________________________________________________________________
-void RecPoints2TrackSegments( Bool_t split=kFALSE, TString fileName = "galice.root") {
+void PHOSRecPoints2TrackSegments( Bool_t split=kFALSE, TString fileName = "galice.root") {
   
  // usage : 
   // 1. write TrackSegments in the same file as RecPoints --------------- (OK) 
@@ -156,7 +121,7 @@ void RecPoints2TrackSegments( Bool_t split=kFALSE, TString fileName = "galice.ro
 }
 
 //________________________________________________________________________
-void TrackSegments2RecParticles( Bool_t split=kFALSE, TString fileName = "galice.root") {
+void PHOSTrackSegments2RecParticles( Bool_t split=kFALSE, TString fileName = "galice.root") {
   
  // usage : 
   // 1. write RecParticles in the same file as TrackSegments ---------------  (OK)
@@ -182,7 +147,7 @@ void TrackSegments2RecParticles( Bool_t split=kFALSE, TString fileName = "galice
 }
 
 //________________________________________________________________________
-void Digits2RecParticles( Bool_t split=kFALSE, TString fileName = "galice.root") {
+void PHOSDigits2RecParticles( Bool_t split=kFALSE, TString fileName = "galice.root") {
   
  // usage : 
   // 1. write RecPoints, TrackSegments and RecParticles in the same file as Digits --------------- (OK)
@@ -233,7 +198,7 @@ void Digits2RecParticles( Bool_t split=kFALSE, TString fileName = "galice.root")
 }
 
 //________________________________________________________________________
-void Hits2Digits (Bool_t split=kFALSE, TString fileName = "galice.root") {
+void PHOSHits2Digits (Bool_t split=kFALSE, TString fileName = "galice.root") {
   // usage : 
   // 1. write (S)Digits in the same file as Hits --------------- (OK)
   //root [0] .L Reconstruct.C++
@@ -272,26 +237,6 @@ void Hits2Digits (Bool_t split=kFALSE, TString fileName = "galice.root") {
     delete sdp ; 
     delete dp ; 
   }
-  
-//   //EMCAL
-//   AliEMCALSDigitizer * sde = new AliEMCALSDigitizer(fileName) ; 
-//   if (split) 
-//     sde->SetSplitFile() ;
-//   sde->ExecuteTask("deb") ; 
-  
-//   delete sde ; 
-  
-//   AliEMCALDigitizer * de = 0 ; 
-//   if (split) {
-//     de = new AliEMCALDigitizer("EMCAL.SDigits.root") ;
-//     de->SetSplitFile() ;
-//   } else 
-//     de = new AliEMCALDigitizer(fileName) ; 
-  
-//   de->ExecuteTask("deb") ; 
-  
-//   delete de ; 
-
 }
 
 
