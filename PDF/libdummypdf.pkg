@@ -1,3 +1,0 @@
-FSRCS= \
-dummypdf.F
-PACKFFLAGS := $(FFLAGS) -IPDF/pdf

@@ -1,21 +1,21 @@
  
 ALIFAST/module.mk:	 ALIFAST/libALIFAST.pkg
 ALIROOT/module.mk:	 ALIROOT/binaliroot.pkg 
-CRT/module.mk:       CRT/libCRT.pkg
-CONTAINERS/module.mk:	CONTAINERS/libCONTAINERS.pkg
+CRT/module.mk:           CRT/libCRT.pkg
+CONTAINERS/module.mk: 	 CONTAINERS/libCONTAINERS.pkg
 EMCAL/module.mk:	 EMCAL/libEMCAL.pkg
 EVGEN/module.mk:	 EVGEN/libEVGEN.pkg
 FMD/module.mk:		 FMD/libFMD.pkg
 FASTSIM/module.mk:	 FASTSIM/libFASTSIM.pkg
-HIJING/module.mk:	 HIJING/libhijing.pkg HIJING/libdummyhijing.pkg
+HIJING/module.mk:	 HIJING/libhijing.pkg
 ITS/module.mk:		 ITS/libITS.pkg
-MEVSIM/module.mk:	 MEVSIM/libmevsim.pkg MEVSIM/libdummymevsim.pkg
+MEVSIM/module.mk:	 MEVSIM/libmevsim.pkg
 MUON/module.mk:		 MUON/libMUON.pkg
 PDF/module.mk:		 PDF/libpdf.pkg
 PHOS/module.mk:		 PHOS/libPHOS.pkg
 PMD/module.mk:		 PMD/libPMD.pkg
 PYTHIA/module.mk:	 PYTHIA/libpythia.pkg
-PYTHIA6/module.mk:	 PYTHIA6/libpythia6.pkg PYTHIA6/libdummypythia6.pkg
+PYTHIA6/module.mk:	 PYTHIA6/libpythia6.pkg
 RALICE/module.mk:	 RALICE/libRALICE.pkg
 RICH/module.mk:		 RICH/libRICH.pkg
 START/module.mk:	 START/libSTART.pkg
@@ -29,14 +29,14 @@ TRD/module.mk:		 TRD/libTRD.pkg
 ZDC/module.mk:		 ZDC/libZDC.pkg
 LHC/module.mk:		 LHC/libLHC.pkg
 THbtp/module.mk:	 THbtp/libTHbtp.pkg
-HBTP/module.mk:		 HBTP/libHBTP.pkg HBTP/libdummyHBTP.pkg
+HBTP/module.mk:		 HBTP/libHBTP.pkg
 HBTAN/module.mk:	 HBTAN/libHBTAN.pkg
 MICROCERN/module.mk:	 MICROCERN/libmicrocern.pkg
-HERWIG/module.mk:        HERWIG/libherwig.pkg HERWIG/libdummyherwig.pkg
+HERWIG/module.mk:        HERWIG/libherwig.pkg
 TFluka/module.mk:        TFluka/libTFluka.pkg
 Flugg/module.mk:         Flugg/libFlugg.pkg
 VZERO/module.mk:         VZERO/libVZERO.pkg
-EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg EPEMGEN/libdummyepemgen.pkg
+EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg
 TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg
 
 
