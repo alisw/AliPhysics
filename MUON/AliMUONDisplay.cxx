@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/03/05 23:50:08  morsch
+Correct access to digit and recpoint data.
+
 Revision 1.11  2001/01/26 21:41:55  morsch
 Use access functions to AliMUONDigit member data.
 
@@ -1078,7 +1081,8 @@ void AliMUONDisplay::LoadCoG2(Int_t chamber, Int_t cathode)
     Int_t nent = 0;
     if (gAlice->TreeR()) {
 	nent=(Int_t)gAlice->TreeR()->GetEntries();
-	gAlice->TreeR()->GetEvent(nent-2+cathode-1);
+// 	gAlice->TreeR()->GetEvent(nent-2+cathode-1);
+	gAlice->TreeR()->GetEvent(cathode-1);
     }
     
     Int_t nrawcl = muonRawClusters->GetEntriesFast();
