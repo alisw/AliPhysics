@@ -3,7 +3,7 @@
 void g4menu()
 {
   // load Geant4 libraries
-  gROOT->LoadMacro("g4libs.C");
+  if (!gInterpreter->IsLoaded("g4libs.C")) gROOT->LoadMacro("g4libs.C");
   gInterpreter->ProcessLine("g4libs()");
 
   // load AliRoot core libraries

@@ -13,12 +13,12 @@ void Config()
   // ============================= 
 
   // load Geant4 and AliRoot steer libraries
-  gROOT->LoadMacro("g4libs.C");
+  if (!gInterpreter->IsLoaded("g4libs.C")) gROOT->LoadMacro("g4libs.C");
   gInterpreter->ProcessLine("g4libs()");
   gInterpreter->ProcessLine("steerlibs()");
 
   // Create Geant4   
-  gROOT->LoadMacro("g4menu.C");
+  if (!gInterpreter->IsLoaded("g4menu.C")) gROOT->LoadMacro("g4menu.C");
   gInterpreter->ProcessLine("CreateGeant4()");
 
   // Physics process control
@@ -114,7 +114,6 @@ Int_t iSTART=0;
 
     // Exclude detectors that do not work with Geant4
       iRICH=0; 
-      iZDC=0; 
       iCASTOR=0;
     // Detectors with temporary problem
       iMUON=0;
