@@ -24,8 +24,8 @@ class AliMUONTrackParam : public TObject {
   } // Constructor
   virtual ~AliMUONTrackParam(){} // Destructor
   
-  AliMUONTrackParam(const AliMUONTrackParam& );// copy constructor (should be added per default !)
-  AliMUONTrackParam& operator=(const  AliMUONTrackParam& );// (should be added per default !)
+  AliMUONTrackParam(const AliMUONTrackParam& rhs);// copy constructor (should be added per default !)
+  AliMUONTrackParam& operator=(const  AliMUONTrackParam& rhs);// (should be added per default !)
   // Get and Set methods for data
   Double_t GetInverseBendingMomentum(void) const {return fInverseBendingMomentum;}
   void SetInverseBendingMomentum(Double_t InverseBendingMomentum) {fInverseBendingMomentum = InverseBendingMomentum;}

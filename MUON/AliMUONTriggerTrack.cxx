@@ -49,14 +49,14 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
     fGTPattern = 0;
 }
 //__________________________________________________________________________
-AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Long_t GTPattern,  AliMUONEventReconstructor* EventReconstructor)
+AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Long_t theGTPattern,  AliMUONEventReconstructor* EventReconstructor)
 {
     fEventReconstructor = EventReconstructor; // link back to EventReconstructor
     fx11 = x11;
     fy11 = y11;
     fthetax = thetax;
     fthetay = thetay;
-    fGTPattern = GTPattern;
+    fGTPattern = theGTPattern;
 
 }
 

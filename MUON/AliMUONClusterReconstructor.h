@@ -22,10 +22,10 @@ class AliMUONData;
 class AliMUONClusterReconstructor : public TObject {
 
  public:
-  AliMUONClusterReconstructor(AliLoader* ); // Constructor
+  AliMUONClusterReconstructor(AliLoader* loader); // Constructor
   virtual ~AliMUONClusterReconstructor(void); // Destructor
-  AliMUONClusterReconstructor (const AliMUONClusterReconstructor& ); // copy constructor
-  AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& ); // assignment operator
+  AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs); // copy constructor
+  AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& rhs); // assignment operator
 
   // Interface with AliMUONData
   virtual void       SetTreeAddress(){};
@@ -37,12 +37,12 @@ class AliMUONClusterReconstructor : public TObject {
   // void EventDump(void);  // dump reconstructed event
   
   // Set Reconstruction Model
-  virtual void   SetReconstructionModel(Int_t id, AliMUONClusterFinderVS* );
+  virtual void   SetReconstructionModel(Int_t id, AliMUONClusterFinderVS* reconst);
  
   AliMUONData*   GetMUONData() {return fMUONData;}
 
   Int_t GetPrintLevel(void) const {return fPrintLevel;}
-  void SetPrintLevel(Int_t PrintLevel) {fPrintLevel = PrintLevel;}
+  void SetPrintLevel(Int_t printLevel) {fPrintLevel = printLevel;}
 
  protected:
 

@@ -19,8 +19,9 @@ class AliMUONTriggerTrack : public TObject {
     virtual ~AliMUONTriggerTrack(); // Destructor
     AliMUONTriggerTrack (const AliMUONTriggerTrack& AliMUONTriggerTrack); // copy constructor
     AliMUONTriggerTrack& operator=(const AliMUONTriggerTrack& AliMUONTriggerTrack); // assignment operator
-    AliMUONTriggerTrack(Float_t, Float_t, Float_t, Float_t, Long_t, 
-			AliMUONEventReconstructor* ); // Constructor
+    AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay,
+                        Long_t theGTPattern,  AliMUONEventReconstructor* eventReconstructor); 
+			// Constructor
     Float_t GetX11() const {return fx11;}
     Float_t GetY11() const {return fy11;}
     Float_t GetThetax() const {return fthetax;}

@@ -11,11 +11,11 @@
 class AliMUONGlobalTrigger : public TObject {
  public:
   AliMUONGlobalTrigger();
-  AliMUONGlobalTrigger(const AliMUONGlobalTrigger& ); // copy constructor
+  AliMUONGlobalTrigger(const AliMUONGlobalTrigger& rhs); // copy constructor
   AliMUONGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
 		       Int_t *singleUndef, Int_t *pairUnlike, Int_t *pairLike);
   virtual ~AliMUONGlobalTrigger(){;}
-  AliMUONGlobalTrigger& operator=(const  AliMUONGlobalTrigger& );
+  AliMUONGlobalTrigger& operator=(const  AliMUONGlobalTrigger& rhs);
   
   Int_t SinglePlusLpt()  const {return fSinglePlusLpt;} 
   Int_t SinglePlusHpt()  const {return fSinglePlusHpt ;}    

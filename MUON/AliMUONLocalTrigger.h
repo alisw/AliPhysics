@@ -11,10 +11,10 @@
 class AliMUONLocalTrigger : public TObject {
  public:
   AliMUONLocalTrigger();
-  AliMUONLocalTrigger(const AliMUONLocalTrigger& ); // copy constructor !
+  AliMUONLocalTrigger(const AliMUONLocalTrigger& rhs); // copy constructor !
   AliMUONLocalTrigger(Int_t *localtr);
   virtual ~AliMUONLocalTrigger(){;}
-  AliMUONLocalTrigger& operator=(const AliMUONLocalTrigger& ); 
+  AliMUONLocalTrigger& operator=(const AliMUONLocalTrigger& rhs); 
 
   Int_t LoCircuit() const {return fLoCircuit;}; 
   Int_t LoStripX() const {return fLoStripX;};    

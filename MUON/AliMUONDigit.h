@@ -13,12 +13,12 @@ class AliMUONDigit : public TObject {
 
  public:
     AliMUONDigit() {}
-    AliMUONDigit(const AliMUONDigit& );
+    AliMUONDigit(const AliMUONDigit& rhs);
     AliMUONDigit(Int_t *digits);
     AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits);
     virtual ~AliMUONDigit();
 
-    AliMUONDigit& operator=(const AliMUONDigit& );
+    AliMUONDigit& operator=(const AliMUONDigit& rhs);
     
     virtual Int_t    PadX() const         {return fPadX;}
     virtual Int_t    PadY() const         {return fPadY;}
