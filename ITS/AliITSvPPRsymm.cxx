@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/03/28 06:40:20  barbera
+Central and services mother volumes made consistenf for detailed and coarse geometry. Switch for rails added to the coarse geometries
+
 Revision 1.11  2001/03/23 00:12:23  nilsen
 Set Reading of AliITSgeom data from Geant3 common blocks as the default and
 not a .det file. Removed redundent calls to BuildGeometry.
@@ -4342,13 +4345,13 @@ void AliITSvPPRsymm::CreateGeometry(){
      dgh[0] = 2.;          
      dgh[1] = 8.;           
      dgh[2] = 190.;         
-     gMC->Gsvolu("IRA1", "BOX ", idtmed[210], dgh, 3);
+     gMC->Gsvolu("IRA1", "BOX ", idtmed[268], dgh, 3);
      gMC->Gspos("IRA1", 1, "ITSV", 53.5, 0., -69.5, 0, "ONLY");   
-     gMC->Gsvolu("IRA2", "BOX ", idtmed[210], dgh, 3);    
+     gMC->Gsvolu("IRA2", "BOX ", idtmed[268], dgh, 3);    
      gMC->Gspos("IRA2", 1, "ITSV", -53.5, 0., -69.5, 0, "ONLY");    
 
-     dgh[0] = 2.-0.5531;    // 0.5531 was determined in such a way that the aluminum area is 20.9 cm^2      
-     dgh[1] = 8.-0.5531;    // 0.5531 was determined in such a way that the aluminum area is 20.9 cm^2       
+     dgh[0] = 2.-0.5;    // 0.5 was determined in such a way that the aluminum area is 20.9 cm^2      
+     dgh[1] = 8.-0.5;    // 0.5 was determined in such a way that the aluminum area is 20.9 cm^2       
      dgh[2] = 190.;         
      gMC->Gsvolu("IRA3", "BOX ", idtmed[205], dgh, 3);   
      gMC->Gspos("IRA3", 1, "IRA1", 0., 0., 0., 0, "ONLY");   

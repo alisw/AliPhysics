@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/03/28 06:40:21  barbera
+Central and services mother volumes made consistenf for detailed and coarse geometry. Switch for rails added to the coarse geometries
+
 Revision 1.19  2001/03/13 18:13:30  barbera
 Some mother volumes sligthly modified to eliminate an overlap with the absorber
 
@@ -778,13 +781,13 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
      dgh[0] = 2.;          
      dgh[1] = 8.;           
      dgh[2] = 190.;         
-     gMC->Gsvolu("IRA1", "BOX ", idtmed[285], dgh, 3);
+     gMC->Gsvolu("IRA1", "BOX ", idtmed[239], dgh, 3);
      gMC->Gspos("IRA1", 1, "ITSV", 53.5, 0., -69.5, 0, "ONLY");   
-     gMC->Gsvolu("IRA2", "BOX ", idtmed[285], dgh, 3);    
+     gMC->Gsvolu("IRA2", "BOX ", idtmed[239], dgh, 3);    
      gMC->Gspos("IRA2", 1, "ITSV", -53.5, 0., -69.5, 0, "ONLY");    
 
-     dgh[0] = 2.-0.5531;    // 0.5531 was determined in such a way that the aluminum area is 20.9 cm^2      
-     dgh[1] = 8.-0.5531;    // 0.5531 was determined in such a way that the aluminum area is 20.9 cm^2       
+     dgh[0] = 2.-0.5;    // 0.5 was determined in such a way that the aluminum area is 20.9 cm^2      
+     dgh[1] = 8.-0.5;    // 0.5 was determined in such a way that the aluminum area is 20.9 cm^2       
      dgh[2] = 190.;         
      gMC->Gsvolu("IRA3", "BOX ", idtmed[275], dgh, 3);   
      gMC->Gspos("IRA3", 1, "IRA1", 0., 0., 0., 0, "ONLY");   
@@ -962,7 +965,8 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   AliMixture( 36, "SDD Ceramics$", acer, zcer, denscer, -5, wcer);
   AliMaterial(37, "SDD Kapton$", 12.011, 6., 1.3, 31.27, 999.);
   AliMaterial(38, "SDD End ladder$", 69.9298, 29.8246, 0.3824, 36.5103, 999.); 
-  AliMaterial(39, "SDD cone$",63.546, 29., 1.15, 1.265, 999.);       
+  AliMaterial(39, "SDD cone$",63.546, 29., 1.15, 1.265, 999.);   
+  AliMaterial(40, "SDD M55J$",12.3565, 6.4561, 1.8097, 22.9570, 999.);         
   //AliMaterial(38, "SDD End ladder$", 69.9298, 29.8246, -0.3824, -36.5103, 999.); 
   //AliMaterial(39, "SDD cone$",63.546, 29., -1.15, -1.265, 999.);       
 
@@ -983,7 +987,7 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   AliMedium(37, "SDD Kapton$",    37, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(38, "SDD End ladder$",38, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(39, "SDD cone$",      39, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  
+  AliMedium(40, "SDD M55J$",      40, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);  
   //  250-274 --> Silicon Strip Detectors (detectors, chips, buses, cooling,..)
   
   AliMaterial(50, "SSD Si$",      28.0855, 14., 2.33, 9.36, 999.);
