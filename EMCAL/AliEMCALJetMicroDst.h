@@ -64,7 +64,7 @@ class AliEMCALJetMicroDst: public TNamed {
   // 13-apr-2003
   Double_t GetSumInCone(TVector3 &jet, Int_t nc, Float_t *et,Float_t *eta,Float_t *phi, Double_t cellEtCut, Double_t rJet) const ;
   Double_t GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5) ;
-  Double_t GetTpcPtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5)  ;
+  Double_t GetTpcPtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5) ;
   Double_t GetSum(Int_t n, Float_t *ar, Double_t cut=0.0) const ;
   Double_t GetSumEmcal(Double_t cut=0.0) {return GetSum(fncell, fetcell, cut);}
   Double_t GetSumTpc(Double_t cut=0.0) {return GetSum(fnchp, fppt, cut);}
@@ -138,7 +138,7 @@ class AliEMCALJetMicroDst: public TNamed {
   TH1F*  fhSumEtGrForJF;	//hist
 
 
-  ClassDef(AliEMCALJetMicroDst,2) // Micro Dst for jet analysis
+  ClassDef(AliEMCALJetMicroDst,3) // Micro Dst for jet analysis
 };
 
 #endif // AliEMCALJETMICRODST_H
