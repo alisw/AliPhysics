@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2001/08/28 08:45:59  vicinanz
+TTask and TFolder structures implemented
+
 Revision 1.9  2001/05/04 10:09:48  vicinanz
 Major upgrades to the strip structure
 
@@ -372,14 +375,14 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   par[1] = yPad*0.5; 
   par[2] = stripWidth*0.5;
   
-// new description for strip volume
+// new description for strip volume -double stack strip-
 // -- all constants are expressed in cm
 // heigth of different layers
   const Float_t khhony = 1.      ;   // heigth of HONY  Layer
   const Float_t khpcby = 0.15    ;   // heigth of PCB   Layer
   const Float_t khmyly = 0.035   ;   // heigth of MYLAR Layer
   const Float_t khgraphy = 0.02  ;   // heigth of GRAPHITE Layer
-  const Float_t khglasseiy = 0.32;   // 2.2 Ext. Glass + 1. Semi Int. Glass (mm)
+  const Float_t khglasseiy = 0.17;   // 0.6 Ext. Glass + 1.1 i.e. (Int. Glass/2) (mm)
   const Float_t khsensmy = 0.11  ;   // heigth of Sensitive Freon Mixture
   const Float_t kwsensmz = 2*3.5 ;   // cm
   const Float_t klsensmx = 48*2.5;   // cm
@@ -387,7 +390,7 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   const Float_t klpadx = 2.5;   // cm x dimension of the FPAD volume
   
   // heigth of the FSTR Volume (the strip volume)
-  const Float_t khstripy = 2*(khhony+khpcby+khmyly+khgraphy+khglasseiy)+khsensmy;
+  const Float_t khstripy = 2*khhony+3*khpcby+4*(khmyly+khgraphy+khglasseiy)+2*khsensmy;
   // width  of the FSTR Volume (the strip volume)
   const Float_t kwstripz = 10.;
   // length of the FSTR Volume (the strip volume)
@@ -397,6 +400,7 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 // coordinates of the strip center in the strip reference frame; used for positioning
 // internal strip volumes
   Float_t posfp[3]={0.,0.,0.};   
+
   
   // FSTR volume definition and filling this volume with non sensitive Gas Mixture
   gMC->Gsvolu("FSTR","BOX",idtmed[512],parfp,3);
@@ -406,10 +410,11 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 //  parfp[2] = -1;
   gMC->Gsvolu("FHON","BOX",idtmed[503],parfp,3);
   // positioning 2 HONY Layers on FSTR volume
+
   posfp[1]=-khstripy*0.5+parfp[1];
   gMC->Gspos("FHON",1,"FSTR",0., posfp[1],0.,0,"ONLY");
   gMC->Gspos("FHON",2,"FSTR",0.,-posfp[1],0.,0,"ONLY");
-  
+
   //-- PCB Layer definition 
   parfp[1] = khpcby*0.5;
   gMC->Gsvolu("FPCB","BOX",idtmed[504],parfp,3);
@@ -417,7 +422,11 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   posfp[1]=-khstripy*0.5+khhony+parfp[1];
   gMC->Gspos("FPCB",1,"FSTR",0., posfp[1],0.,0,"ONLY");
   gMC->Gspos("FPCB",2,"FSTR",0.,-posfp[1],0.,0,"ONLY");
-  
+  // positioning the central PCB layer
+  gMC->Gspos("FPCB",3,"FSTR",0.,0.,0.,0,"ONLY");
+
+
+
   //-- MYLAR Layer definition
   parfp[1] = khmyly*0.5;
   gMC->Gsvolu("FMYL","BOX",idtmed[511],parfp,3);
@@ -425,6 +434,11 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   posfp[1] = -khstripy*0.5+khhony+khpcby+parfp[1]; 
   gMC->Gspos("FMYL",1,"FSTR",0., posfp[1],0.,0,"ONLY");
   gMC->Gspos("FMYL",2,"FSTR",0.,-posfp[1],0.,0,"ONLY");
+  // adding further 2 MYLAR Layers on FSTR volume
+  posfp[1] = khpcby*0.5+parfp[1];
+  gMC->Gspos("FMYL",3,"FSTR",0., posfp[1],0.,0,"ONLY");
+  gMC->Gspos("FMYL",4,"FSTR",0.,-posfp[1],0.,0,"ONLY");
+
 
   //-- Graphite Layer definition
   parfp[1] = khgraphy*0.5;
@@ -433,6 +447,11 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   posfp[1] = -khstripy*0.5+khhony+khpcby+khmyly+parfp[1];
   gMC->Gspos("FGRP",1,"FSTR",0., posfp[1],0.,0,"ONLY");
   gMC->Gspos("FGRP",2,"FSTR",0.,-posfp[1],0.,0,"ONLY");
+  // adding further 2 Graphite Layers on FSTR volume
+  posfp[1] = khpcby*0.5+khmyly+parfp[1];
+  gMC->Gspos("FGRP",3,"FSTR",0., posfp[1],0.,0,"ONLY");
+  gMC->Gspos("FGRP",4,"FSTR",0.,-posfp[1],0.,0,"ONLY");
+ 
 
   //-- Glass (EXT. +Semi INT.) Layer definition
   parfp[1] = khglasseiy*0.5;
@@ -441,14 +460,24 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   posfp[1] = -khstripy*0.5+khhony+khpcby+khmyly+khgraphy+parfp[1];
   gMC->Gspos("FGLA",1,"FSTR",0., posfp[1],0.,0,"ONLY");
   gMC->Gspos("FGLA",2,"FSTR",0.,-posfp[1],0.,0,"ONLY");
+  // adding further 2 Glass Layers on FSTR volume
+  posfp[1] = khpcby*0.5+khmyly+khgraphy+parfp[1];
+  gMC->Gspos("FGLA",3,"FSTR",0., posfp[1],0.,0,"ONLY");
+  gMC->Gspos("FGLA",4,"FSTR",0.,-posfp[1],0.,0,"ONLY");
+
   
   //-- Sensitive Mixture Layer definition
   parfp[0] = klsensmx*0.5;
   parfp[1] = khsensmy*0.5;
-  parfp[2] = kwsensmz*0.5;  
+  parfp[2] = kwsensmz*0.5;
   gMC->Gsvolu("FSEN","BOX",idtmed[513],parfp,3);
-  // positioning the sensitive gas Layer on FSTR volume
-  gMC->Gspos("FSEN",0,"FSTR",0.,0.,0.,0,"ONLY");
+  gMC->Gsvolu("FNSE","BOX",idtmed[512],parfp,3);
+  // positioning 2 gas Layers on FSTR volume
+  // the upper is insensitive freon
+  // while the remaining is sensitive
+  posfp[1] = khpcby*0.5+khmyly+khgraphy+khglasseiy+parfp[1];
+  gMC->Gspos("FNSE",0,"FSTR", 0., posfp[1],0.,0,"ONLY");
+  gMC->Gspos("FSEN",0,"FSTR", 0.,-posfp[1],0.,0,"ONLY");
 
   // dividing FSEN along z in knz=2 and along x in knx=48
   gMC->Gsdvn("FSEZ","FSEN",knz,3);
