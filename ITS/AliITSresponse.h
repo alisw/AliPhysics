@@ -84,6 +84,7 @@ public TObject {
 
     virtual Float_t DriftSpeed() {return 0.;}
     virtual Bool_t  OutputOption() {return kFALSE;}
+    virtual Bool_t  Do10to8() {return kTRUE;}
     virtual void    GiveCompressParam(Int_t *x) {}
 
     //  
