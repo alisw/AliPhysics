@@ -63,7 +63,11 @@ public:
                                          // single crystal in a EMC module
   void ImpactOnEmc(Double_t theta, Double_t phi, Int_t & ModuleNumber, 
 		         Double_t & z, Double_t & x) const ; 
-                                         // calculates the impact coordinates of a neutral particle  
+  void ImpactOnEmc(TVector3 vec, Int_t & ModuleNumber, 
+		         Double_t & z, Double_t & x) const ; 
+  void ImpactOnEmc(TParticle p, Int_t & ModuleNumber, 
+		         Double_t & z, Double_t & x) const ; 
+                                        // calculates the impact coordinates of a neutral particle  
                                          // emitted in direction theta and phi in ALICE
   Bool_t IsInEMC(Int_t id) const { if (id > GetNModules() *  GetNCristalsInModule() ) return kFALSE; return kTRUE; } 
   void RelPosInModule(const Int_t * RelId, Float_t & y, Float_t & z) const ; 
