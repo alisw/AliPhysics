@@ -1,5 +1,7 @@
-SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDhit.cxx AliPMDRecPoint.cxx AliPMDLoader.cxx AliPMDUtility.cxx AliPMDcell.cxx AliPMDsdigit.cxx AliPMDdigit.cxx AliPMDrecpoint1.cxx AliPMDcluster.cxx AliPMDClustering.cxx AliPMDDigitizer.cxx AliPMDDDLRawData.cxx AliPMDclupid.cxx AliPMDDiscriminator.cxx AliPMDClusterFinder.cxx AliPMDtracker.cxx AliPMDReconstructor.cxx
+SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDhit.cxx AliPMDRecPoint.cxx AliPMDLoader.cxx AliPMDUtility.cxx AliPMDcell.cxx AliPMDsdigit.cxx AliPMDdigit.cxx AliPMDrecpoint1.cxx AliPMDcluster.cxx AliPMDClustering.cxx AliPMDDigitizer.cxx AliPMDDDLRawData.cxx AliPMDclupid.cxx AliPMDDiscriminator.cxx AliPMDClusterFinder.cxx AliPMDtracker.cxx AliPMDReconstructor.cxx AliPMDRawStream.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR:=PMDLinkDef.h
+
+EINCLUDE:=RAW
