@@ -9,8 +9,6 @@
 #include <G4Geantino.hh>
 #include <G4ChargedGeantino.hh>
 
-#include <iomanip.h>                
-
 AliEmptyPhysicsList::AliEmptyPhysicsList() {
 //
   defaultCutValue = AliGlobals::DefaultCut();

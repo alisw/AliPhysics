@@ -16,8 +16,6 @@
 #include <G4LogicalVolumeStore.hh>
 #include <G4LogicalVolume.hh>
 
-#include <fstream.h>
-
 AliModuleConstruction::AliModuleConstruction(G4String moduleName) 
   : fModuleName(moduleName), 
     fModuleFrameName(moduleName),
