@@ -94,6 +94,7 @@
 #pragma link C++ class  AliITSpackageSSD+;
 // Classes used for Tracking
 #pragma link C++ class  AliITStrack+;
+#pragma link C++ class  AliITSRad+;
 #pragma link C++ class  AliITStracking+;
 #pragma link C++ class  AliITSiotrack+;
 // New used for Alignment studdies
