@@ -73,7 +73,7 @@ FORCE:
 STRUCT_DIRS	= html conf macros data share include Euclid picts \
                   doc etc Makefile .rootrc
 
-LIBRARY_DIRS	= MINICERN GEANT321 PYTHIA PDF
+LIBRARY_DIRS	= MINICERN GEANT321 PYTHIA6 PDF
 
 dist: AliRoot$(VERSION).tar.gz
 
