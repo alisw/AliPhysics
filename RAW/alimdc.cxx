@@ -47,7 +47,7 @@ void SMI_handle_command()
       strcpy(param, "");
    }
    if (strcmp(action, "STOP") == 0) {
-      gAliMDC->StopLoop();
+      if (gAliMDC) gAliMDC->SetStopLoop();
    }
    smi_set_state("RUNNING");
 }
