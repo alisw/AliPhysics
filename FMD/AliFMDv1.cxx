@@ -103,6 +103,7 @@ AliFMDv1::StepManager()
   // DebugGuard guard("AliFMDv1::StepManager");
   AliDebug(10, "AliFMDv1::StepManager");
   // return;
+  AliDebug(10, Form("Is inside %s", gMC->CurrentVolName()));
 
   // If the track is gone, return
   if (!gMC->IsTrackAlive()) return;
@@ -110,8 +111,6 @@ AliFMDv1::StepManager()
   // Only process charged particles 
   if(TMath::Abs(gMC->TrackCharge()) <= 0) return; 
 
-  // TString vol(gMC->CurrentVolName());
-  // std::cout << "Is inside " << vol << " ... " << std::endl;
   // Only do stuff is the track is in one of the strips. 
   // TString vol(gMC->CurrentVolName());
   // if (!vol.Contains("STR")) return;
