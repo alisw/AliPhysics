@@ -411,11 +411,9 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   fRecParticles->Expand(size) ;
 
   gAlice->TreeR()->Fill() ;
-  cout << "filled" << endl ;
   // 5.
 
   gAlice->TreeR()->Write(0,TObject::kOverwrite) ;
-  cout << "writen" << endl ;
  
   // Deleting reconstructed objects
   ResetReconstruction();
