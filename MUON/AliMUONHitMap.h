@@ -34,8 +34,8 @@ public AliMUONHitMap
     Int_t fNpy;
     TObjArray *fDigits;
     Int_t fNdigits;
-    Int_t *fHitMap;
     Int_t fMaxIndex;
+    Int_t *fHitMap; //[fMaxIndex]
     
  public:
     AliMUONHitMapA1(AliMUONsegmentation *seg, TObjArray *dig);

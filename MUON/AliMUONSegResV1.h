@@ -154,7 +154,7 @@ public AliMUONsegmentation {
     
     //
     // Version Identifier
-    char    *fName;       
+    char    *fName;   //[8]    
 
 
 
