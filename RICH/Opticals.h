@@ -122,6 +122,7 @@ void Opticals()
   
 //transmission  
   pC->cd(5);
+  Float_t mm =0.1;Float_t cm=1.; 
   Float_t aTrC6F14[kNbins],aTrSiO2[kNbins],aTrCH4[kNbins];
   Float_t aTotTr[kNbins];
   for(Int_t i=0;i<kNbins;i++){
