@@ -156,14 +156,14 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	  //========== Create the Clusterizer
 	  fClu = new AliPHOSClusterizerv1() ; 
 	  fClu->SetEmcEnergyThreshold(0.025) ; 
-	  fClu->SetEmcClusteringThreshold(0.75) ; 
+	  fClu->SetEmcClusteringThreshold(0.50) ; 
 	  fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
 	  fClu->SetPpsdClusteringThreshold(0.0000001) ; 
 	  fClu->SetLocalMaxCut(0.03) ;
 	  fClu->SetCalibrationParameters(0., 0.00000001) ;  
 	  //========== Creates the track segment maker
 	  fTrs = new AliPHOSTrackSegmentMakerv1()  ;
-	  fTrs->SetUnfoldFlag() ; 
+	  fTrs->UnsetUnfoldFlag() ; 
 	  //========== Creates the particle identifier
 	  fPID = new AliPHOSPIDv1() ;
 	  fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ; 
@@ -321,6 +321,7 @@ void  AliPHOSAnalyze::BookingHistograms()
   fhChargedHadronPositionY  = new TH1F("hChargedHadronPositionY","hChargedHadronPositionY",500,-80. , 80.);
   fhPhotonHadronPositionY   = new TH1F("hPhotonHadronPositionY","hPhotonHadronPositionY",500,-80. , 80.);
 
+
 }
 //____________________________________________________________________________
 Bool_t AliPHOSAnalyze::Init(Int_t evt)
@@ -355,7 +356,7 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
 
     fClu = new AliPHOSClusterizerv1() ; 
     fClu->SetEmcEnergyThreshold(0.025) ; 
-    fClu->SetEmcClusteringThreshold(0.75) ; 
+    fClu->SetEmcClusteringThreshold(0.50) ; 
     fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
     fClu->SetPpsdClusteringThreshold(0.0000001) ; 
     fClu->SetLocalMaxCut(0.03) ;
@@ -609,13 +610,14 @@ void AliPHOSAnalyze::DisplayRecPoints()
 	{  
 	  fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
 	  if (relid[0] == module)  
-	    {  
+	    { 
+	      if (energy > 0.025 ){
 	      nDigits++ ;
 	      energy = fClu->Calibrate(digit->GetAmp()) ;
 	      etot += energy ; 
-	      fGeom->RelPosInModule(relid,y,z) ; 
-	      if (energy > 0.01 )  
-		hModule->Fill(y, z, energy) ;
+	      fGeom->RelPosInModule(relid,y,z) ;   
+	      hModule->Fill(y, z, energy) ;
+	      }
 	    } 
 	}
       cout <<"DrawRecPoints >  Found in module " 
@@ -632,9 +634,9 @@ void AliPHOSAnalyze::DisplayRecPoints()
       AliPHOSEmcRecPoint * emc ;
       while((emc = (AliPHOSEmcRecPoint *)nextemc())) 
 	{
-	  Int_t numberofprimaries ;
-	  Int_t * primariesarray = new Int_t[10] ;
-	  emc->GetPrimaries(numberofprimaries, primariesarray) ;
+	  //	  Int_t numberofprimaries ;
+	  //	  Int_t * primariesarray = new Int_t[10] ;
+	  //	  emc->GetPrimaries(numberofprimaries, primariesarray) ;
 	  totalnClusters++ ;
 	  if ( emc->GetPHOSMod() == module )
 	    { 
