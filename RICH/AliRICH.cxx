@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.56  2001/11/02 15:37:25  hristov
+  Digitizer class created. Code cleaning and bug fixes (J.Chudoba)
+
   Revision 1.55  2001/10/23 13:03:35  hristov
   The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
 
@@ -2064,53 +2067,6 @@ void AliRICH::ResetRecHits3D()
     }
 }
 
-//___________________________________________
-void   AliRICH::SetGeometryModel(Int_t id, AliRICHGeometry *geometry)
-{
-
-//
-// Setter for the RICH geometry model
-//
-
-
-  //PH    ((AliRICHChamber*) (*fChambers)[id])->GeometryModel(geometry);
-    ((AliRICHChamber*)fChambers->At(id))->GeometryModel(geometry);
-}
-
-//___________________________________________
-void   AliRICH::SetSegmentationModel(Int_t id, AliSegmentation *segmentation)
-{
-
-//
-// Setter for the RICH segmentation model
-//
-
-  //PH    ((AliRICHChamber*) (*fChambers)[id])->SetSegmentationModel(segmentation);
-    ((AliRICHChamber*)fChambers->At(id))->SetSegmentationModel(segmentation);
-}
-
-//___________________________________________
-void   AliRICH::SetResponseModel(Int_t id, AliRICHResponse *response)
-{
-
-//
-// Setter for the RICH response model
-//
-
-  //PH    ((AliRICHChamber*) (*fChambers)[id])->ResponseModel(response);
-    ((AliRICHChamber*)fChambers->At(id))->ResponseModel(response);
-}
-
-void   AliRICH::SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconst)
-{
-
-//
-// Setter for the RICH reconstruction model (clusters)
-//
-
-  //PH    ((AliRICHChamber*) (*fChambers)[id])->SetReconstructionModel(reconst);
-    ((AliRICHChamber*)fChambers->At(id))->SetReconstructionModel(reconst);
-}
 
 //___________________________________________
 void AliRICH::StepManager()
