@@ -55,10 +55,6 @@
 #include "AliMC.h"
 #include "AliPMDDigitizer.h"
 #include "AliPMDhit.h"
-#include "AliPMDClusterFinder.h"
-#include "AliPMDtracker.h"
-#include "AliESDPmdTrack.h"
-#include "AliESD.h"
   
 ClassImp(AliPMD)
  
@@ -367,34 +363,6 @@ void AliPMD::Hits2Digits()
   delete pmdDigitizer;
 
 }
-//____________________________________________________________________________
-void  AliPMD::Reconstruct() const
-{ 
-// create reconstructed points
-  
-  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
-  AliPMDClusterFinder *pmdClus = new AliPMDClusterFinder(runLoader);
-  pmdClus->Load();
-  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
-    {
-      pmdClus->Digits2RecPoints(iEvent);
-    }
-  pmdClus->UnLoad();
-  delete pmdClus;
-
-}
-// ---------------------------------------------------------------------------
-void  AliPMD::FillESD(AliESD* esd) const
-{
-
-  fLoader->LoadRecPoints("READ");
-  TTree *treeR = fLoader->TreeR();
-  AliPMDtracker pmdtracker;
-  pmdtracker.LoadClusters(treeR);
-  pmdtracker.Clusters2Tracks(esd);
-  fLoader->UnloadRecPoints();
-}
-
 // ---------------------------------------------------------------------------
 AliDigitizer* AliPMD::CreateDigitizer(AliRunDigitizer* manager) const
 { 

@@ -17,9 +17,6 @@ class TFile;
 class AliPMDRecPoint;
 class AliPMDLoader;
 class AliPMDhit;
-class AliPMDtracker;
-class AliESDPmdTrack;
-class AliESD;
 
 class AliPMD : public AliDetector {
 
@@ -49,8 +46,6 @@ public:
   virtual void  Hits2SDigits();
   virtual void  SDigits2Digits();
   virtual void  Hits2Digits();
-  virtual void  Reconstruct() const;
-  virtual void  FillESD(AliESD* esd) const;
 
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
