@@ -6,10 +6,12 @@
 #
 
 /aliDet/switchOn ALL
+/aliDet/forceAllSensitive true
 
 # switch off detectors with errors
 /aliDet/switchOff CASTOR
 /aliDet/switchOff RICH
+/aliDet/switchOff ZDC
 
 #/g4mc/setHadron true
 
