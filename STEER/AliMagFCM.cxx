@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/11/30 07:12:49  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.3  2000/11/10 18:09:55  fca
 New field map for the ZDC
 
@@ -133,12 +136,7 @@ void AliMagFCM::Field(Float_t *x, Float_t *b)
     } else {
 //This is the ZDC part
     Float_t rad2=x[0]*x[0]+x[1]*x[1];
-    if(x[2]>kCORBEG1 && x[2]<kCOREND1){
-      if(rad2<kCOR1RA2){
-        b[0] = kFCORN1;
-      }
-    }
-    else if(x[2]>kCORBEG2 && x[2]<kCOREND2){
+    if(x[2]>kCORBEG2 && x[2]<kCOREND2){
       if(rad2<kCOR2RA2){
         b[0] = kFCORN2;
       }

@@ -39,7 +39,6 @@ protected:
   static const Float_t kG1=20.03;
   static const Float_t kFDIP=-37.34;
   static const Float_t kFDIMU=6.;
-  static const Float_t kFCORN1=9.4;
   static const Float_t kFCORN2=-9.4;
 //
 // ZBEG       Beginning of the inner triplet
@@ -47,7 +46,6 @@ protected:
 // D2BEG      Beginning of separator dipole 2
 // CORBEG     Corrector dipole beginning (because of dimuon arm)
 //
-  static const Float_t kCORBEG1=805,kCOREND1=kCORBEG1+340, kCOR1RA2=4.5*4.5;
   static const Float_t kCORBEG2=19216,kCOREND2=kCORBEG2+170, kCOR2RA2=4.5*4.5;
 //
   static const Float_t kZBEG=2300;

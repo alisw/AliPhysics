@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/10 18:09:55  fca
+New field map for the ZDC
+
 Revision 1.5  2000/10/27 14:17:04  morsch
 - Bug causing segmentation violation during muon reconstruction corrected
 - Coding rule violations corrected.
@@ -274,12 +277,7 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
 
 //This is the ZDC part
     Float_t rad2=x[0]*x[0]+x[1]*x[1];
-    if(x[2]>kCORBEG1 && x[2]<kCOREND1){
-      if(rad2<kCOR1RA2){
-        b[0] = kFCORN1;
-      }
-    }
-    else if(x[2]>kCORBEG2 && x[2]<kCOREND2){
+    if(x[2]>kCORBEG2 && x[2]<kCOREND2){
       if(rad2<kCOR2RA2){
         b[0] = kFCORN2;
       }
