@@ -315,6 +315,7 @@ Bool_t AliPHOSGetter::PostSDigits(const char * name, const char * headerFile) co
     phosFolder = fSDigitsFolder->AddFolder("PHOS", "SDigits from PHOS") ; 
   }    
   TString subdir(headerFile) ;
+  subdir.ReplaceAll("/","_") ; 
   TFolder * phosSubFolder = dynamic_cast<TFolder*>(phosFolder->FindObject(subdir)) ; 
   if ( !phosSubFolder ) 
     phosSubFolder = phosFolder->AddFolder(subdir, ""); 
