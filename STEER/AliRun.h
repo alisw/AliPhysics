@@ -132,7 +132,7 @@ public:
   		      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
 		      Double_t polx, Double_t poly, Double_t polz,
 		      AliMCProcess mech, Int_t &ntr, Float_t weight=1);
-   virtual  void  SetHighWaterMark(Int_t nt);
+   virtual  void  SetHighWaterMark(const Int_t nt);
    
    virtual  void  KeepTrack(const Int_t itra);
    virtual  void  MediaTable();
