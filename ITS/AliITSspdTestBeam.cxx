@@ -16,10 +16,12 @@
 /*
   $Id$
 */
+#include <stdlib.h>
 #include <stddef.h>
 #include <iomanip>
 #include <Riostream.h>
 #include <fstream>
+#include <TArrayI.h>
 
 #include "AliITSspdTestBeam.h"
 
@@ -158,8 +160,9 @@ Int_t AliITSspdTestBeam::OpenInputFile(const Char_t *filename,Int_t start,Int_t 
         fNeventsEnd   = new Int_t[fMaxFiles];
     } // end if
     if(fNfiles==fMaxFiles){// Need to expand array of open files.
-        ifstream *tmp[fMaxFiles];
-        Int_t st[fMaxFiles],en[fMaxFiles];
+        ifstream **tmp = new ifstream*[fMaxFiles];
+        TArrayI st(fMaxFiles);
+	TArrayI  en(fMaxFiles);
         for(i=0;i<fMaxFiles;i++) { // copy pointers into tmp
             tmp[i]    = fFiles[i];
             fFiles[i] = 0;
@@ -183,6 +186,7 @@ Int_t AliITSspdTestBeam::OpenInputFile(const Char_t *filename,Int_t start,Int_t 
             } // end if i<fNfiles
         } // end for i
         // the array of pointers tmp is deleted automatically.
+	delete [] tmp;
     } // end if
     // Open file
     fFiles[fNfiles] = new ifstream(filename,ios::in|ios::binary);
