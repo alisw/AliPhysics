@@ -17,7 +17,7 @@ class G4Step;
 class TG4SteppingAction : public G4UserSteppingAction 
 {
   enum { 
-    kMaxNofSteps = 10000,
+    kMaxNofSteps = 30000,
     kMaxNofLoopSteps = 5
   };
 
