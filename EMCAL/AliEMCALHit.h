@@ -46,7 +46,6 @@ public:
   Float_t GetPy(void) const{return fPy;}
   Float_t GetPz(void) const{return fPz;}
   Float_t GetPe(void) const{return fPe;}
-  const Bool_t  IsInPreShower() const ; 
   Bool_t operator == (AliEMCALHit const &rValue) const;
   AliEMCALHit operator + (const AliEMCALHit& rValue);
   

@@ -101,17 +101,6 @@ AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, 
 }
 
 //______________________________________________________________________
-const Bool_t AliEMCALHit::IsInPreShower() const 
-{
-  Bool_t rv = kFALSE ;
-  
-  const AliEMCALGeometry * geom = AliEMCALGetter::GetInstance()->EMCALGeometry() ;
-  if((GetId()/geom->GetNPhi()) < (2*geom->GetNZ())) 
-    rv = kTRUE; 
-  return rv; 
-} 
-
-//______________________________________________________________________
 Bool_t AliEMCALHit::operator==(AliEMCALHit const &rValue) const{ 
     // Two hits are identical if they have the same Id and originat
     // from the same enterring Particle 
