@@ -95,7 +95,7 @@ void Show()
       }//hits loop
       
       if(iEntryN<7) Info("Show","Evt %i-> prim %4i has %4i hits from %s (,%7.2f,%7.2f)",
-                  iEventN,iEntryN, r->Hits()->GetEntries(), pPart->GetName(), pPart->Theta()*r2d,pPart->Phi()*r2d);
+                  iEventN,iEntryN, r->Hits()->GetEntries(), pPart->GetName(), pPart->Theta()*TMath::RadToDeg(),pPart->Phi()*TMath::RadToDeg());
     }//TreeH loop
     Info("Show-HIT","Evt %i->   %i particles %i primaries  %i entries in TreeH %i hits",
                      iEventN,   iNparticles,    iNprims,      iNentries,         iHitsCounter);
