@@ -97,13 +97,13 @@ void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl)
   // copies the digits with energy above thershold and sorts the list
   // according to increasing Id number
 
-  cout << "HOLA 1" << endl;
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
   Int_t relid[4] ;  
   
   TIter next(dl) ; 
   AliPHOSDigit * digit ;
   
+ 
  
 
   while ( (digit = (AliPHOSDigit *)next()) ) { 
@@ -128,16 +128,6 @@ void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl)
     }
 
   }
-  cout << tl << endl;
-
-  TIter next2(tl) ; Int_t iii=0;
-  cout << "Entries is " << tl->GetEntries() << tl->GetLast() << endl;
-  while ( (digit = (AliPHOSDigit *)next2()) ) { 
-    cout << iii++ << "   "  << digit << " Amplitud is  " << digit->GetAmp() << endl;
-  }
-  cout << "HOLA de nuevo " << tl << endl;
-  tl->Print();
-  cout << "sort" << endl ;
   tl->Sort() ; 
 }
 
@@ -167,6 +157,8 @@ Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit)
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * emcl, RecPointsList * ppsdl)
 {
+
+  
   // Fill and sort the working digits list
   TObjArray tempodigitslist( dl->GetEntries() ) ;
   FillandSort(dl, &tempodigitslist) ; 
@@ -175,6 +167,7 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * e
   TIter nextdigit(&tempodigitslist) ; 
   AliPHOSDigit * digit ; 
   Bool_t notremoved = kTRUE ;
+
 
   while ( (digit = (AliPHOSDigit *)nextdigit()) ) { // scan over the list of digits
     AliPHOSRecPoint * clu ; 
@@ -195,6 +188,8 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * e
 	clusterdigitslist[iDigitInCluster] = (int* ) digit ;	
 	iDigitInCluster++ ; 
 	tempodigitslist.Remove(digit) ; 
+
+
       }
 
       else { 
