@@ -26,13 +26,21 @@ $(PROGRAM):
 		@echo "Generating $@"
 		@[ -d $(dir $@) ] || mkdir $(dir $@)
 		@rm -f $@
+ifeq ($(CXXVERBOSE),)
 		@$(LD) $(LDFLAGS) $^ $(LIBS) -o $@
+else
+		$(LD) $(LDFLAGS) $^ $(LIBS) -o $@
+endif
  
 headers:	$(patsubst %,$(ALICE_ROOT)/include/%,$(HEADERS))
 
 $(DICT):
 		@echo "Generating $@"
+ifeq ($(CXXVERBOSE),)
 		@rootcint -f $@ -c $(filter -I%,$(CXXFLAGS)) $^
+else
+		rootcint -f $@ -c $(filter -I%,$(CXXFLAGS)) $^
+endif
  
 depend:
 		@$(MAKEDEPEND) -ftgt_$(ALICE_TARGET)/Make-depend -ptgt_$(ALICE_TARGET)/ -- $(CXXFLAGS) $(DEPINC) -- $^
