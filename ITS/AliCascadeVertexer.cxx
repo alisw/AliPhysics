@@ -51,10 +51,11 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
    for (i=0; i<ntr; i++) {
        AliESDtrack *esdtr=event->GetTrack(i);
        UInt_t status=esdtr->GetStatus();
-       UInt_t flags=AliESDtrack::kITSin|AliESDtrack::kTPCin;
+       UInt_t flags=AliESDtrack::kITSin|AliESDtrack::kTPCin|
+                    AliESDtrack::kTPCpid|AliESDtrack::kESDpid;
 
        if ((status&AliESDtrack::kITSrefit)==0)
-          if ((status&flags)!=status) continue;
+          if (flags!=status) continue;
 
        AliITStrackV2 *iotrack=new AliITStrackV2(*esdtr);
        iotrack->SetLabel(i);  // now it is the index in array of ESD tracks
@@ -73,12 +74,12 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
       AliV0vertex *v=(AliV0vertex*)vtcs.UncheckedAt(i);
       v->ChangeMassHypothesis(kLambda0); // the v0 must be Lambda 
       if (TMath::Abs(v->GetEffMass()-massLambda)>fMassWin) continue; 
-      if (v->GetD(0,0,0)<fDV0min) continue;
+      if (v->GetD(fX,fY,fZ)<fDV0min) continue;
       for (Int_t j=0; j<ntr; j++) {
 	 AliITStrackV2 *b=(AliITStrackV2*)trks.UncheckedAt(j);
 
-         if (TMath::Abs(b->GetD())<fDBachMin) continue;
          if (b->Get1Pt()>0.) continue;  // bachelor's charge 
+         if (TMath::Abs(b->GetD(fX,fY))<fDBachMin) continue;
           
 	 AliV0vertex v0(*v), *pv0=&v0;
          AliITStrackV2 bt(*b), *pbt=&bt;
@@ -97,14 +98,14 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
          {
          Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
          if (r2 > (x1*x1+y1*y1)) continue;
-         if (z*z > z1*z1) continue;
+         //if ((z-fZ)*(z-fZ) > (z1-fZ)*(z1-fZ)) continue;
          }
 
 	 Double_t px,py,pz; cascade.GetPxPyPz(px,py,pz);
          Double_t p2=px*px+py*py+pz*pz;
-         Double_t cost=(x*px+y*py+z*pz)/TMath::Sqrt(p2*(r2+z*z));
-
-         if (cost<fCPAmax) continue; //condition on the cascade pointing angle 
+         Double_t cost=((x-fX)*px + (y-fY)*py + (z-fZ)*pz)/
+               TMath::Sqrt(p2*((x-fX)*(x-fX) + (y-fY)*(y-fY) + (z-fZ)*(z-fZ)));
+        if (cost<fCPAmax) continue; //condition on the cascade pointing angle 
          //cascade.ChangeMassHypothesis(); //default is Xi
 
          event->AddCascade(&cascade);
@@ -119,11 +120,11 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
       AliV0vertex *v=(AliV0vertex*)vtcs.UncheckedAt(i);
       v->ChangeMassHypothesis(kLambda0Bar); //the v0 must be anti-Lambda 
       if (TMath::Abs(v->GetEffMass()-massLambda)>fMassWin) continue; 
-      if (v->GetD(0,0,0)<fDV0min) continue;
+      if (v->GetD(fX,fY,fZ)<fDV0min) continue;
       for (Int_t j=0; j<ntr; j++) {
 	 AliITStrackV2 *b=(AliITStrackV2*)trks.UncheckedAt(j);
 
-         if (TMath::Abs(b->GetD())<fDBachMin) continue;
+         if (TMath::Abs(b->GetD(fX,fY))<fDBachMin) continue;
          if (b->Get1Pt()<0.) continue;  // bachelor's charge 
           
 	 AliV0vertex v0(*v), *pv0=&v0;
@@ -148,7 +149,8 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
 
 	 Double_t px,py,pz; cascade.GetPxPyPz(px,py,pz);
          Double_t p2=px*px+py*py+pz*pz;
-         Double_t cost=(x*px+y*py+z*pz)/TMath::Sqrt(p2*(r2+z*z));
+         Double_t cost=((x-fX)*px + (y-fY)*py + (z-fZ)*pz)/
+               TMath::Sqrt(p2*((x-fX)*(x-fX) + (y-fY)*(y-fY) + (z-fZ)*(z-fZ)));
 
          if (cost<fCPAmax) continue; //condition on the cascade pointing angle 
          //cascade.ChangeMassHypothesis(); //default is Xi

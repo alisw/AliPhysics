@@ -1858,8 +1858,8 @@ void AliITS::FillESD(AliESD* esd) const
   Double_t cuts[]={33,  // max. allowed chi2
 		   0.16,// min. allowed negative daughter's impact parameter 
 		   0.05,// min. allowed positive daughter's impact parameter 
-		   0.080,// max. allowed DCA between the daughter tracks
-		   0.998,// max. allowed cosine of V0's pointing angle
+		   0.08,// max. allowed DCA between the daughter tracks
+		   0.99,// max. allowed cosine of V0's pointing angle
 		   0.9,  // min. radius of the fiducial volume
 		   2.9   // max. radius of the fiducial volume
   };
@@ -1881,6 +1881,7 @@ void AliITS::FillESD(AliESD* esd) const
 		  2.9     // max. radius of the fiducial volume
   };
   AliCascadeVertexer cvtxer=AliCascadeVertexer(cts);
+  cvtxer.SetVertex(vtx);
   cvtxer.V0sTracks2CascadeVertices(esd);
 }
 
