@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.15  2002/06/12 18:59:47  nilsen
+Added Starting track location to hit class and related changes to modules.
+This is at present still fully backwards compatible since starting hits
+are still written to the file. When aliroot v4.0 will be released, this
+backwards compatiblity will be broken by removing the enterence hit, and making
+the nessesary changes to module at that time.
+
 Revision 1.14  2002/05/19 18:17:03  hristov
 Changes needed by ICC/IFC compiler (Intel)
 
@@ -252,6 +259,7 @@ AliITShit::AliITShit():AliHit(){
     fPz     = 0.0;     // PZ of particle at the point of the hit
     fDestep = 0.0; // Energy deposited in the current step
     fTof    = 0.0;    // Time of flight at the point of the hit
+    fStatus0 = 0; // zero status bit by default.
     fx0     = 0.0;     // Starting point of this step
     fy0     = 0.0;     // Starting point of this step
     fz0     = 0.0;     // Starting point of this step
@@ -343,6 +351,11 @@ AliITShit::AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
   fPz         = hits[5];  // Track Z Momentum
   fDestep     = hits[6];  // Track dE/dx for this step
   fTof        = hits[7];  // Track Time of Flight for this step
+  fStatus0 = 0;// Track Status of Starting point
+  fx0 = 0.0;     // Starting point of this step
+  fy0 = 0.0;     // Starting point of this step
+  fz0 = 0.0;     // Starting point of this step
+  ft0 = 0.0;     // Starting point of this step
 }
 //______________________________________________________________________
 void AliITShit::GetPositionL(Float_t &x,Float_t &y,Float_t &z){
