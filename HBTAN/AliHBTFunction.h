@@ -18,7 +18,7 @@ class AliHBTFunction: public TNamed
 {
   public:
     AliHBTFunction();
-    virtual ~AliHBTFunction(){delete fPairCut;}
+    virtual ~AliHBTFunction();
     
     virtual TH1* GetNumerator() =0;
     virtual TH1* GetDenominator() =0;
