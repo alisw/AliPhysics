@@ -200,6 +200,10 @@ Int_t AliHBTAnalysisStavinskyMixing::ProcessSim(AliAOD* /*aodrec*/, AliAOD* aods
   AliAOD* partEvent = aodsim;
   AliAOD* partEvent1 = new AliAOD();
 
+  
+  AliHBTPair ppair;
+
+  AliHBTPair* partpair = &ppair;
  
   AliHBTPair * tmppartpair;
   
