@@ -6,4 +6,6 @@ void __attribute__ ((constructor))
 				      _FPU_MASK_OM);
   _FPU_SETCW(cw);
 }
+#else
+void trapfpe () {}
 #endif
