@@ -3,87 +3,61 @@
 
 #include "AliL3RootTypes.h"
 
-struct AliL3Digits
-{
-  UShort_t fCharge;
-  UChar_t fPad;
-  UShort_t fTime;
-  Int_t fIndex;
-  AliL3Digits *fNextVolumePixel;
-  //AliL3Digits *nextPhiRowPixel;
-  AliL3Digits *nextRowPixel;
-};
-
-struct AliL3HoughContainer
-{
-  void *first;
-  void *last;
-};
-
-
-
-class AliL3Histogram;
 class AliL3Transform;
-class AliL3HoughEvaluate;
-class AliL3TrackArray;
+class AliL3Histogram;
 class AliL3DigitRowData;
 
 class AliL3HoughTransformer : public TObject {
   
  private:
 
-  friend class AliL3HoughEval;
-  
-  AliL3Transform *fTransform; //!
-
-  Int_t fNPhiSegments; //Number of patches in phi.
-  Float_t fEtaMin;
-  Float_t fEtaMax;
-  Int_t fNumEtaSegments;
-  Int_t fNumOfPadRows;
-  Int_t fNRowsInPatch;
-  Int_t fBinTableBounds;
-
-  UInt_t fNDigitRowData; //!
-  AliL3DigitRowData *fDigitRowData; //!
-  
-  AliL3HoughContainer *fRowContainer; //!
-  AliL3HoughContainer *fPhiRowContainer; //!
-  AliL3HoughContainer *fVolume; //!
-  
-  Int_t fContainerBounds;
-  Int_t fNDigits;
-  Int_t **fBinTable; //!
-  Int_t *fEtaIndex; //!
-  Char_t **fTrackTable; //!
-  AliL3Histogram *fHistoPt;
-  
   Int_t fSlice;
   Int_t fPatch;
+  Int_t fNEtaSegments;
+  Double_t fEtaMin;
+  Double_t fEtaMax;
+  Int_t fThreshold;
+  AliL3Transform *fTransform; //!
+  
+  //Pointer to histograms
+  AliL3Histogram **fParamSpace; //!
+
+  //Data pointers
+  UInt_t fNDigitRowData;
+  AliL3DigitRowData *fDigitRowData; //!
+  
+  void DeleteHistograms();
 
  public:
   AliL3HoughTransformer(); 
-  AliL3HoughTransformer(Int_t slice,Int_t patch,Float_t *etarange);
-  AliL3HoughTransformer(Int_t slice,Int_t patch,Double_t *etarange=0,Int_t n_eta_segments=90);
+  AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments);
   virtual ~AliL3HoughTransformer();
-
-  void InitTables();
-  void TransformTables(AliL3Histogram **histos,AliL3Histogram **images=0);
+  
   void SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr);
-  void WriteTables();
-  void SetHistogram(AliL3Histogram *hist) {fHistoPt = hist;}
-  Double_t CpuTime();
-  Int_t GetNumEtaSegments() {return fNumEtaSegments;}
-  /*
-    void Transform2Circle(TH2F *hist,Int_t eta_index);
-    void Transform2Circle(TH2F **histos,Int_t n_eta_segments,UInt_t ndigits,AliL3DigitRowData *ptr);
-    void Transform2Line(TH2F *hist,Int_t ref_row,Int_t *rowrange,Double_t *phirange,TH2F *raw=0);
-    void TransformLines2Circle(TH2F *hist,AliL3TrackArray *tracks);
-    void GetPixels(Char_t *rootfile,TH2F *hist=0);
-    void InitTemplates(TH2F *hist);
-  */
+  AliL3DigitRowData *UpdateDataPointer(AliL3DigitRowData *tempPt);
+  void CreateHistograms(Int_t nxbin=70,Double_t xmin=-0.006,Double_t xmax=0.006,
+			Int_t nybin=70,Double_t ymin=-0.26,Double_t ymax=0.26);
+  void Transform();
+  
+  Int_t GetSlice() {return fSlice;}
+  Int_t GetPatch() {return fPatch;}
+  Int_t GetNEtaSegments() {return fNEtaSegments;}
+  Double_t GetEtaMin() {return fEtaMin;}
+  Double_t GetEtaMax() {return fEtaMax;}
+  void *GetDataPointer() {return (void*)fDigitRowData;}
+  AliL3Histogram *GetHistogram(Int_t eta_index);
+
   ClassDef(AliL3HoughTransformer,1)
 
 };
+
+inline AliL3Histogram *AliL3HoughTransformer::GetHistogram(Int_t eta_index)
+{
+  if(!fParamSpace || eta_index >= fNEtaSegments)
+    return 0;
+  if(!fParamSpace[eta_index])
+    return 0;
+  return fParamSpace[eta_index];
+}
 
 #endif
