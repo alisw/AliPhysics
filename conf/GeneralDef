@@ -79,7 +79,7 @@ ROOTLIBS      := $(filter-out -lNew,$(ROOTLIBS))
 # Alice libraries
 
 ALILIBS	      = -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
-                -lITS -lPHOS -lCASTOR -lRICH -lZDC -lSTRUCT \
+                -lITS -lPHOS -lCASTOR -lRICH -lEMCAL -lZDC -lSTRUCT \
                 -lTGeant3 -lSTART -lEVGEN -lSTEER -lCONTAINERS
 
 # CERN Libraries 
