@@ -23,7 +23,7 @@ DICTO		= $(DICT:.cxx=.o)
 
 # FORTRAN Sources
 
-FSRCS		= loadmod.F pydata.F ludata.F
+FSRCS		= loadmod.F
 
 # FORTRAN Objectrs
 
@@ -70,7 +70,7 @@ depend:		$(ALLSRCS)
 
 $(BINDIR)/aliroot:	$(OBJS) $(COBJS) $(FOBJS)
 
-LIBS = $(ALILIBS) $(G3LIBS) $(CLIBS) $(GLIBS) -lEG -lEGPythia -lpythia -lpdf \
+LIBS = $(ALILIBS) $(G3LIBS) $(CLIBS) $(GLIBS) -lEG -lEGPythia6 -lpythia6 -lpdf \
 					-lTHijing -lhijing
 
 TOCLEAN		= $(PROGRAM) $(OBJS) $(COBJS) $(FOBJS)
