@@ -22,8 +22,8 @@ class AliPHOS : public AliDetector {
 
  public:
 
-  AliPHOS() {}
-  AliPHOS(const char* name, const char* title="") {}
+  AliPHOS() : AliDetector() {}
+  AliPHOS(const char* name, const char* title="") : AliDetector(name, title) {}
   AliPHOS(const AliPHOS & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
