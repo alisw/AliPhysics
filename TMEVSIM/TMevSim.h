@@ -1,5 +1,5 @@
-#ifndef ROOT_TMevSim
-#define ROOT_TMevSim
+#ifndef TMEVSIM_H
+#define TMEVSIM_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -15,34 +15,10 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TGenerator.h"
-#include "MevSimCommon.h"
-#include "TMevSimPartTypeParams.h"
-#include "TObjArray.h"
+
+class TMevSimPartTypeParams;
 
 class TMevSim : public TGenerator {
-
-protected:
-
-  Int_t fNEvents;
-  Int_t fModelType;
-  Int_t fReacPlaneCntrl;
-  Float_t fPsiRMean, fPsiRStDev;
-  Float_t fMultFacMean, fMultFacStDev;
-  Float_t fPtCutMin, fPtCutMax;
-  Float_t fEtaCutMin, fEtaCutMax;
-  Float_t fPhiCutMin, fPhiCutMax;
-  Float_t fNStDevMult, fNStDevTemp, fNStDevSigma, fNStDevExpVel, fNStdDevPSIr, fNStDevVn, fNStDevMultFac;
-  Int_t fNIntegPts;
-  Int_t fNScanPts;
-  Int_t firand;  
-  TClonesArray *fParticleTypeParameters;
-   
-// Copied from AliGeant
-  enum {kMaxParticles = 35};
-
-  Int_t fNPDGCodes;               // Number of PDG codes known by G3
-
-  Int_t fPDGCode[kMaxParticles];  // Translation table of PDG codes
 
  public:   
    // Constructors and destructors
@@ -53,13 +29,9 @@ protected:
 	   Float_t phiCutMin=0.0, Float_t phiCutMax=360.0, Int_t irand=87266);
 
    TMevSim(TMevSim& mevsim);                    // copy constructor
-
+   TMevSim& operator=(const TMevSim& mevsim);
    virtual            ~TMevSim();
    
-   // Assignment operator
-  
-   virtual TMevSim& operator=(TMevSim& mevsim);
-
    // Mandatory TGenerator functions
    
    virtual void        Initialize();
@@ -138,14 +110,47 @@ protected:
 
    virtual void        AddPartTypeParams(TMevSimPartTypeParams *params);
    virtual void        SetPartTypeParams(Int_t index, TMevSimPartTypeParams *params);
-   virtual void        GetPartTypeParamsByIndex(Int_t index, TMevSimPartTypeParams *params);
-   virtual void        GetPartTypeParamsByGPid(Int_t gpid, TMevSimPartTypeParams *params);
+   virtual void        GetPartTypeParamsByIndex(Int_t index, TMevSimPartTypeParams *params) const;
+   virtual void        GetPartTypeParamsByGPid(Int_t gpid, TMevSimPartTypeParams *params) const;
 
    // conversion   
 
    virtual Int_t       PDGFromId(Int_t gpid) const;
    virtual void        DefineParticles();
-   
+
+protected:
+
+   Int_t fNEvents; // number of events to generate
+   Int_t fModelType;// type of the model  (see class descr at .cxx)
+   Int_t fReacPlaneCntrl;//reaction plane constrol switch (see class descr at .cxx)
+   Float_t fPsiRMean; //Reaction plane angle mean (degrees) (see class descr at .cxx)
+   Float_t fPsiRStDev;//Reaction plane angle variance (degrees) (see class descr at .cxx)
+   Float_t fMultFacMean;// Mean of Overall multiplicity scaling factor  (see class descr at .cxx)
+   Float_t fMultFacStDev;//Variance of Overall multiplicity scaling factor (see class descr at .cxx)
+   Float_t fPtCutMin; //Min Range of transverse momentum in GeV/c  (see class descr at .cxx)
+   Float_t fPtCutMax;//Max Range of transverse momentum in GeV/c (see class descr at .cxx)
+   Float_t fEtaCutMin; //Min Pseudorapidity range(see class descr at .cxx)
+   Float_t fEtaCutMax;//Max Pseudorapidity range(see class descr at .cxx)
+   Float_t fPhiCutMin; //Min of Azimuthal angular range in degrees.(see class descr at .cxx)
+   Float_t fPhiCutMax;//Max  of Azimuthal angular range in degrees. (see class descr at .cxx)
+   Float_t fNStDevMult; //Number of standard deviations  the mean value of multiplicity(see class descr at .cxx)
+   Float_t fNStDevTemp; //Number of standard deviations  the mean value of temperature
+   Float_t fNStDevSigma; //Number of standard deviations  the mean value of rapidity
+   Float_t fNStDevExpVel; //Number of standard deviations  the mean value of expansion velocity 
+   Float_t fNStdDevPSIr; //Number of standard deviations  the mean value of reaction plane angle
+   Float_t fNStDevVn; ////Number of standard deviations  the mean value of 
+   Float_t fNStDevMultFac;////Number of standard deviations  the mean value of multiplicity scaling factor
+   Int_t fNIntegPts;//Number of mesh points to use in the random model
+   Int_t fNScanPts;//Number of mesh points to use to scan the (pt,y)
+   Int_t firand; //seed of RNG
+   TClonesArray *fParticleTypeParameters;//pointer to particle parameters
+
+ // Copied from AliGeant
+   enum {kMaxParticles = 35};
+
+   Int_t fNPDGCodes;               // Number of PDG codes known by G3
+
+   Int_t fPDGCode[kMaxParticles];  // Translation table of PDG codes
 
    ClassDef(TMevSim,1)  //Interface to MevSim Event Generator
      

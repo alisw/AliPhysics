@@ -391,14 +391,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-
-
 #include <Riostream.h>
-#include "TMevSim.h"
 
-#include "MevSimCommon.h"
+#include "TMevSim.h"
+#include"TMevSimPartTypeParams.h"
 #include "TParticle.h"
-#include "TFile.h"
 
 #ifndef WIN32
 # define multgen multgen_
@@ -468,7 +465,8 @@ TMevSim::TMevSim(TMevSim& mevsim) : TGenerator(mevsim) {
    *this = mevsim;
 }
 //______________________________________________________________________________
-TMevSim& TMevSim::operator=(TMevSim& mevsim) {
+
+TMevSim& TMevSim::operator=(const TMevSim& mevsim) {
 // An assignment operator: initializes all the event-wide variables of MevSim with
 // the ones from a copied object. It also copies the parameters specific to
 // each particle species.
@@ -564,11 +562,11 @@ void        TMevSim::Initialize() {
 
 }
 //______________________________________________________________________________
-void        TMevSim::GenerateEvent() {
+void TMevSim::GenerateEvent() {
 // Generates one MevSim event. TMevSim::Initialize() must be called prior
 // to calling this function.
    
-   cout << "Calling FORTRAN multgen()" << endl;
+   Info("GenerateEvent","Calling FORTRAN multgen()");
    multgen();
 }
 
@@ -581,8 +579,8 @@ Int_t TMevSim::ImportParticles(TClonesArray *particles, Option_t */*option*/)
 // information is Geant PID, 3 momentum components and the energy of the particle.
    
    if (particles == 0) return 0;
-   TClonesArray &Particles = *particles;
-   Particles.Clear();
+   TClonesArray &aParticles = *particles;
+   aParticles.Clear();
    
    Int_t totpart = 0;
    for (Int_t nrpidtype=0; nrpidtype < (fParticleTypeParameters->GetLast() + 1); nrpidtype++) {
@@ -597,7 +595,7 @@ Int_t TMevSim::ImportParticles(TClonesArray *particles, Option_t */*option*/)
 	 Float_t pz = TRACK.pout[poffset];
 	 poffset += NPID;
 	 Float_t mass = TRACK.pout[poffset];
-	 new(Particles[totpart+nrpart]) TParticle(
+	 new(aParticles[totpart+nrpart]) TParticle(
 					  PDGFromId(pidcode),  // Get the PDG ID from GEANT ID
 					  0,
 					  0,
@@ -809,7 +807,7 @@ void        TMevSim::SetPartTypeParams(Int_t index, TMevSimPartTypeParams *param
    *((TMevSimPartTypeParams *) ((*fParticleTypeParameters)[index])) = *params;
 }
 //______________________________________________________________________________
-void        TMevSim::GetPartTypeParamsByIndex(Int_t index, TMevSimPartTypeParams *params) 
+void TMevSim::GetPartTypeParamsByIndex(Int_t index, TMevSimPartTypeParams *params) const
 {
 // Return the particle parameters stored in the list at the postion index.   
 // Returns NULL if index is out of bounds.
@@ -820,7 +818,7 @@ void        TMevSim::GetPartTypeParamsByIndex(Int_t index, TMevSimPartTypeParams
      params = NULL;
 }
 //______________________________________________________________________________
-void        TMevSim::GetPartTypeParamsByGPid(Int_t gpid, TMevSimPartTypeParams *params) 
+void TMevSim::GetPartTypeParamsByGPid(Int_t gpid, TMevSimPartTypeParams *params) const
 {
 // Return the particle parameters for the particle with Geant PID gpid.
 // Returns NULL if the parameters for such particle do not exist in the list.   
