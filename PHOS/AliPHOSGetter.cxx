@@ -588,7 +588,7 @@ void AliPHOSGetter::ReadTreeD()
   }
 
   if ( !phosfound || !digitizerfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeD -> Cannot find Digits and/or Digitizer with name " << fDigitsTitle << endl ;
+    cout << "WARNING: AliPHOSGetter::ReadTreeD -> Cannot find Digits and/or Digitizer with name " << fDigitsTitle << endl ;
     return ; 
   }   
  
@@ -625,7 +625,7 @@ void AliPHOSGetter::ReadTreeH()
   
   TBranch * hitsbranch = (TBranch*)gAlice->TreeH()->GetListOfBranches()->FindObject("PHOS") ;
   if ( !hitsbranch ) {
-    cerr << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
+    cout << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
   } else {
     TClonesArray * hits = Hits() ; 
     hits->Clear() ; 
@@ -647,7 +647,7 @@ void AliPHOSGetter::ReadTreeQA()
   
   TBranch * qabranch = PHOS()->TreeQA()->GetBranch("PHOS") ; 
   if (!qabranch) { 
-    cerr << "WARNING: AliPHOSGetter::ReadTreeQA -> Cannot find QA Alarms for PHOS" << endl ;
+    cout << "WARNING: AliPHOSGetter::ReadTreeQA -> Cannot find QA Alarms for PHOS" << endl ;
     return ; 
   }   
 
@@ -694,7 +694,7 @@ void AliPHOSGetter::ReadTreeR()
   }
 
   if ( !phosemcrpfound || !phoscpvrpfound || !clusterizerfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find RecPoints and/or Clusterizer with name " << fRecPointsTitle << endl ;
+    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find RecPoints and/or Clusterizer with name " << fRecPointsTitle << endl ;
     return ; 
   }   
  
@@ -746,7 +746,7 @@ void AliPHOSGetter::ReadTreeR()
   }
 
   if ( !phostsfound || !tsmakerfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find TrackSegments and/or TrackSegmentMaker with name " << fTrackSegmentsTitle << endl ;
+    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find TrackSegments and/or TrackSegmentMaker with name " << fTrackSegmentsTitle << endl ;
     return ; 
   } 
 
@@ -793,7 +793,7 @@ void AliPHOSGetter::ReadTreeR()
   }
 
   if ( !phosrpafound || !pidfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find RecParticles and/or PID with name " << fRecParticlesTitle << endl ;
+    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find RecParticles and/or PID with name " << fRecParticlesTitle << endl ;
     return ; 
   } 
 
@@ -853,7 +853,7 @@ void AliPHOSGetter::ReadTreeS()
   }
 
   if ( !phosfound || !sdigitizerfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeS -> Cannot find SDigits and/or SDigitizer with name " << fSDigitsTitle << endl ;
+    cout << "WARNING: AliPHOSGetter::ReadTreeS -> Cannot find SDigits and/or SDigitizer with name " << fSDigitsTitle << endl ;
     return ; 
   }   
 
@@ -970,7 +970,7 @@ void AliPHOSGetter::Event(Int_t event)
   ReadTreeS() ;
   ReadTreeD() ;
   ReadTreeR() ;
-//    ReadTreeQA() ;
+  ReadTreeQA() ;
   ReadPrimaries() ;
 }
 
