@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.3  2000/06/22 14:02:45  morsch
+Parameterised size of xm[], ym[], ixm[], iym[] correctly implemented (PH)
+Some HP scope problems corrected (PH)
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -789,14 +793,14 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	Int_t param = fNLocal[0]*fNLocal[1];
 	Int_t ii;
 	
-	Float_t ** xm = new Float_t * [2];
-	for (ii=0; ii<2; ii++) xm[ii]=new Float_t [param];
-	Float_t ** ym = new Float_t * [2];
-	for (ii=0; ii<2; ii++) ym[ii]=new Float_t [param];
-	Int_t ** ixm = new Int_t * [2];
-	for (ii=0; ii<2; ii++) ixm[ii]=new Int_t [param];
-	Int_t ** iym = new Int_t * [2];
-	for (ii=0; ii<2; ii++) iym[ii]=new Int_t [param];
+	Float_t ** xm = new Float_t * [param];
+	for (ii=0; ii<param; ii++) xm[ii]=new Float_t [2];
+	Float_t ** ym = new Float_t * [param];
+	for (ii=0; ii<param; ii++) ym[ii]=new Float_t [2];
+	Int_t ** ixm = new Int_t * [param];
+	for (ii=0; ii<param; ii++) ixm[ii]=new Int_t [2];
+	Int_t ** iym = new Int_t * [param];
+	for (ii=0; ii<param; ii++) iym[ii]=new Int_t [2];
 	
 	Int_t isec, ico;
 	Float_t dpx, dpy, dx, dy;
