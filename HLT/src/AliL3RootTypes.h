@@ -13,7 +13,7 @@
 //#define no_root //switch on the root
 #define use_aliroot //use AliL3FileHandler
 
-#define do_mc //Save the particle id's.
+//#define do_mc //Save the particle id's.
 
 #ifndef no_root
 #define use_root
