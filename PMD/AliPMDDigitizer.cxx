@@ -775,7 +775,7 @@ void AliPMDDigitizer::Exec(Option_t *option)
     {
       cerr<<"AliPMDDigitizer::Exec : Can not find PMD or PMDLoader\n";
     }
-  fPMDLoader->LoadDigits("recreate");
+  fPMDLoader->LoadDigits("update");
   TTree* treeD = fPMDLoader->TreeD();
   if (treeD == 0x0)
     {
@@ -822,9 +822,9 @@ void AliPMDDigitizer::Exec(Option_t *option)
 	  ResetDigit();
 	} // supermodule loop
     } // detector loop
-  ResetCellADC();
-
   fPMDLoader->WriteDigits("OVERWRITE");  
+  fPMDLoader->UnloadDigits();
+  ResetCellADC();
 }
 //____________________________________________________________________________
 
