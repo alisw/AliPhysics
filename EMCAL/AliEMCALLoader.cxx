@@ -92,7 +92,8 @@ AliEMCALLoader::~AliEMCALLoader()
   Clean(fgkRecParticlesName);
   // set to 0x0 the objgetter in AliGetter ... weird isn it !
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
-  gime->Reset() ;
+  if (gime) 
+    gime->Reset() ;
 }
 
 //____________________________________________________________________________ 

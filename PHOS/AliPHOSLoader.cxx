@@ -94,7 +94,8 @@ AliPHOSLoader::~AliPHOSLoader()
   Clean(fgkRecParticlesName);
   // set to 0x0 the objgetter in AliGetter ... weird isn it !
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  gime->Reset() ;
+  if (gime) 
+    gime->Reset() ;
 }
 
 //____________________________________________________________________________ 
