@@ -32,7 +32,7 @@
 
 Int_t AliTPCFindClustersMI(Int_t n=1) {
    
-   AliRunLoader* rl = AliRunLoader::Open("rfio:./galice.root");
+   AliRunLoader* rl = AliRunLoader::Open("galice.root");
    if (rl == 0x0) {
       cerr<<"Can not open session"<<endl;
       return 1;

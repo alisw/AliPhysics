@@ -2,14 +2,22 @@
  *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
  ****************************************************************************/
 
-#ifndef __CINT__
-  #include <iostream.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+  #include <Riostream.h>
   #include "AliTPCParam.h"
   #include "AliTPCtracker.h"
-
+  #include "AliTPCtrackerMI.h"
+  #include "AliRun.h"
+  #include "AliMagF.h"
+  #include "AliRunLoader.h"
+  #include "AliTPCLoader.h"
+  #include "AliESD.h"
   #include "TFile.h"
   #include "TStopwatch.h"
 #endif
+
+extern AliRun *gAlice;
+
 
 Int_t AliTPCFindTracksMI(Int_t N=-1) {
 
@@ -22,13 +30,13 @@ Int_t AliTPCFindTracksMI(Int_t N=-1) {
      gAlice = 0x0;
     }
     
-   rl = AliRunLoader::Open("galice.root");
+   AliRunLoader *rl = AliRunLoader::Open("galice.root");
    if (rl == 0x0)
     {
       cerr<<"Can not open session"<<endl;
       return 1;
     }
-   tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
+   AliTPCLoader *tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
    if (tpcl == 0x0)
     {
       cerr<<"Can not get TPC Loader"<<endl;
@@ -41,14 +49,13 @@ Int_t AliTPCFindTracksMI(Int_t N=-1) {
       return 1;
     }
    AliKalmanTrack::SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
-   rl->UnloadgAlice();
    
    rl->CdGAFile();
    
-   AliTPCParam *dig=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
-   if (!dig) 
+   AliTPCParam *param=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
+   if (!param) 
     {
-     dig=(AliTPCParam *)gDirectory->Get("75x40_100x60");
+     param=(AliTPCParam *)gDirectory->Get("75x40_100x60");
      if (!param) 
       {
         cerr<<"TPC parameters have not been found !\n";
@@ -104,13 +111,20 @@ Int_t AliTPCFindTracksMI(Int_t N=-1) {
        }
 
       printf("Processing event %d\n",i);
-      AliTPCtrackerMI *tracker = new AliTPCtrackerMI(dig);
+      AliTPCtrackerMI *tracker = new AliTPCtrackerMI(param);
+      tracker->SetIO();
+      tracker->LoadClusters();
       rc=tracker->Clusters2Tracks();
+      tracker->WriteTracks();
+      tracker->UnloadClusters();
+      //output->GetDirectory()->cd();
+      //output->Write();
       delete tracker;
     }
    timer.Stop(); timer.Print();
- 
-   delete dig; //Thanks to Mariana Bondila
+   rl->UnloadgAlice();
+   
+   delete param; 
    delete rl;
    return rc;
 }

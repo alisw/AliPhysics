@@ -277,7 +277,7 @@ private:
   static const Int_t seedRow12 = 139;  // nRowUp - 1 - (Int_t) 0.125*nRowUp
   static const Int_t seedRow21 = 149;  // seedRow11 - shift
   static const Int_t seedRow22 = 130;  // seedRow12 - shift
-  static const Double_t kRaddeg = 180./kPI;
+  static const Double_t kRaddeg = 180./3.14159265358979312;
 
   static const Int_t fgMaxIndexTR = 50000; // maximum number of tracks with a track ref
   static const Int_t fgMaxTR = 1000000; // maximum number of  track refs

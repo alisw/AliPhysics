@@ -95,6 +95,7 @@
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
 #include "AliTPC.h"
+#include "AliTPCLoader.h"
 #include "AliDetector.h"
 #include "AliTrackReference.h"
 #include "AliRun.h"
@@ -102,6 +103,7 @@
 #include "AliTracker.h"
 #include "AliComplexCluster.h"
 #include "AliTPCComparisonMI.h"
+#include "AliMagF.h"
 #endif
 
 
@@ -294,6 +296,7 @@ TPCFindGenTracks::TPCFindGenTracks()
 {
   fMCInfo = new AliTPCGenInfo;
   fMCInfo->fReferences = new TClonesArray("AliTrackReference");
+
   Reset();
 }
 
@@ -333,6 +336,8 @@ TPCFindGenTracks::TPCFindGenTracks(const char * fnGalice, const char* fnRes,
     fEventNr = nall-firstEvent;
     cerr<<"restricted number of events availaible"<<endl;
   }
+  AliMagF * magf = gAlice->Field();
+  AliTracker::SetFieldMap(magf);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -373,7 +378,8 @@ Int_t  TPCFindGenTracks::SetIO()
   // 
   CreateTreeGenTracks();
   if (!fTreeGenTracks) return 1;
-  AliTracker::SetFieldFactor(); 
+  //  AliTracker::SetFieldFactor(); 
+ 
   fParamTPC = GetTPCParam();
   //
   return 0;
@@ -866,6 +872,9 @@ TPCCmpTr::TPCCmpTr(const char* fnGenTracks,
     fEventNr = nall-firstEvent;
     cerr<<"restricted number of events availaible"<<endl;
   }
+  AliMagF * magf = gAlice->Field();
+  AliTracker::SetFieldMap(magf);
+
 }
 
 
@@ -884,7 +893,6 @@ Int_t TPCCmpTr::SetIO()
   // 
   CreateTreeCmp();
   if (!fTreeCmp) return 1;
-  AliTracker::SetFieldFactor(); 
   fParamTPC = GetTPCParam();
   //
   if (!ConnectGenTree()) {
@@ -1238,8 +1246,8 @@ Int_t TPCCmpTr::TreeGenLoop(Int_t eventNr)
 	Double_t localX = local.X();
 	fTPCTrack->GetExternalParameters(localX,par);
 	fRecInfo->fRecPhi=TMath::ASin(par[2]) + fTPCTrack->GetAlpha();
-	if (fRecInfo->fRecPhi<0) fRecInfo->fRecPhi+=2*kPI;
-	if (fRecInfo->fRecPhi>=2*kPI) fRecInfo->fRecPhi-=2*kPI;
+	if (fRecInfo->fRecPhi<0) fRecInfo->fRecPhi+=2*TMath::Pi();
+	if (fRecInfo->fRecPhi>=2*TMath::Pi()) fRecInfo->fRecPhi-=2*TMath::Pi();
 //	  fRecInfo->fRecPhi = (fRecInfo->fRecPhi)*kRaddeg;
 	fRecInfo->fLambda = TMath::ATan(par[3]);
 	fRecInfo->fRecPt_1 = TMath::Abs(par[4]);
