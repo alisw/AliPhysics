@@ -98,6 +98,11 @@ class AliLog: public TObject {
   ClassDef(AliLog, 1)   // class for logging debug, info and error messages
 };
 
+#ifndef __GNUC__
+#ifndef __APPLE__
+#define __FUNCTION__ "???"
+#endif
+#endif
 
 #ifdef LOG_NO_DEBUG
 #define AliDebugLevel() -1
