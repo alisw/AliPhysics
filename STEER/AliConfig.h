@@ -11,6 +11,12 @@
 // the names of the top level folders
 // 
 
+//
+// Class to name the folders
+// This class contains 
+// the names of the top level folders
+// 
+
 #include <TNamed.h>
 class TDatabasePDG;
 class TFolder;
