@@ -28,15 +28,6 @@ AliL3ClustFinderNew::AliL3ClustFinderNew()
   fDeconvTime = kTRUE;
 }
 
-AliL3ClustFinderNew::AliL3ClustFinderNew(AliL3Transform *transform)
-{
-  fTransform = transform;
-  fMatch = 4;
-  fThreshold =10;
-  fDeconvTime = kTRUE;
-  fDeconvPad = kTRUE;
-}
-
 AliL3ClustFinderNew::~AliL3ClustFinderNew()
 {
 
@@ -170,7 +161,7 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 
       while(1) //Loop over current sequence
 	{
-	  if(data[bin].fTime >= fTransform->GetNTimeBins())
+	  if(data[bin].fTime >= AliL3Transform::GetNTimeBins())
 	    {
 	      LOG(AliL3Log::kFatal,"AliL3ClustFinderNew::ProcessRow","Digits")
 		<<"Timebin out of range "<<(Int_t)data[bin].fTime<<ENDLOG;
@@ -315,8 +306,8 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       Float_t fpad=(Float_t)list[j].fPad/(Float_t)list[j].fTotalCharge;
       Float_t ftime=(Float_t)list[j].fTime/(Float_t)list[j].fTotalCharge;
       //printf("padrow %d number of pads %d totalcharge %d\n",fCurrentRow,list[j].fFlags,list[j].fTotalCharge);
-      fTransform->Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
-      fTransform->Raw2Local(xyz,thissector,thisrow,fpad,ftime);
+      AliL3Transform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
+      AliL3Transform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
       if(xyz[0]==0) LOG(AliL3Log::kError,"AliL3ClustFinder","Cluster Finder")
 	<<AliL3Log::kDec<<"Zero cluster"<<ENDLOG;
       if(fNClusters >= fMaxNClusters)

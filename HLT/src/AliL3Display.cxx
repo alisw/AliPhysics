@@ -46,7 +46,7 @@ AliL3Display::AliL3Display(Int_t *slice)
 {
   //Ctor. Specify which slices you want to look at.
 
-  TFile *file = new TFile("/prog/alice/data/GEO/alice.geom");
+  TFile *file = new TFile("$(LEVEL3)/GEO/alice.geom");
   if(!file) printf("NO FILE\n");
   if(!file->IsOpen())
     LOG(AliL3Log::kError,"AliL3Display::AliL3Display","File Open")
@@ -56,7 +56,6 @@ AliL3Display::AliL3Display(Int_t *slice)
   fMinSlice = slice[0];
   fMaxSlice = slice[1];
 
-  fTransform = new AliL3Transform();
   file->Close();
   delete file;
 }
@@ -66,8 +65,6 @@ AliL3Display::~AliL3Display()
 
   if(fTracks)
     delete fTracks;
-  if(fTransform)
-    delete fTransform;
 }
 
 void AliL3Display::Setup(Char_t *trackfile,Char_t *path)
@@ -260,7 +257,7 @@ void AliL3Display::DisplayAll(Int_t min_hits)
   v->SetRange(-430,-560,-430,430,560,1710);
   c1->Clear();
   c1->SetFillColor(1);
-  c1->SetTheta(180.);
+  c1->SetTheta(90.);
   c1->SetPhi(0.);
   
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
@@ -371,10 +368,9 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
   TTree *TD=(TTree*)file->Get("TreeD_75x40_100x60_0");
   AliSimDigits da, *digits=&da;
   TD->GetBranch("Segment")->SetAddress(&digits); //Return pointer to branch segment.
-  AliL3Transform *transform = new AliL3Transform();
   
   Int_t sector,row;
-  transform->Slice2Sector(slice,padrow,sector,row);
+  AliL3Transform::Slice2Sector(slice,padrow,sector,row);
   Int_t npads = param->GetNPads(sector,row);
   Int_t ntimes = param->GetMaxTBin();
   TH2F *histdig = new TH2F("histdig","",npads,0,npads-1,ntimes,0,ntimes-1);
@@ -430,7 +426,7 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
 	  xyz[0] = points[i].fX;
 	  xyz[1] = points[i].fY;
 	  xyz[2] = points[i].fZ;
-	  transform->Global2Raw(xyz,sector,row);
+	  AliL3Transform::Global2Raw(xyz,sector,row);
 	  histfast->Fill(xyz[1],xyz[2],1);
 	  
 	  

@@ -99,9 +99,10 @@ void AliLevel3::Init(Char_t *path,Bool_t binary=kTRUE,Int_t npatches=6)
 	<<"You have not supplied the input rootfile; use the appropriate ctor!"<<ENDLOG;
       return;
     }
+  
+  AliL3Transform::Init(path);//Initialize the detector parameters.
   fWriteOut = kFALSE;
   fGlobalMerger=0;
-  fTransformer = new AliL3Transform(path);
   fDoRoi = kFALSE;
   fDoNonVertex = kFALSE;
   fClusterDeconv = kTRUE;
@@ -184,7 +185,6 @@ AliLevel3::~AliLevel3(){
   if(fVertexFinder)  delete fVertexFinder;
   if(fVertex)  delete fVertex;
   if(fTracker) delete fTracker;
-  if(fTransformer) delete fTransformer;
   if(fTrackMerger) delete fTrackMerger;
   if(fInterMerger) delete fInterMerger;
   if(fFileHandler) delete fFileHandler;
@@ -224,7 +224,6 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
   for(Int_t i=first; i<=last; i++){
     ProcessSlice(i);
     fGlobalMerger->SetVertex(fVertex);
-    fGlobalMerger->SetTransformer(fTransformer);
     fGlobalMerger->InitSlice(i);
     fGlobalMerger->FillTracks(fNTrackData,fTrackData);
     fFileHandler->Free();   //free the memory
@@ -233,8 +232,8 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
   }
   fBenchmark->Start("Global Merger");
   //fGlobalMerger->AddAllTracks();
-  //fGlobalMerger->Merge();
-  fGlobalMerger->SlowMerge();
+  fGlobalMerger->Merge();
+  //fGlobalMerger->SlowMerge();
   fBenchmark->Stop("Global Merger");
 
   if(fWriteOut) WriteResults(); 
@@ -255,11 +254,9 @@ void AliLevel3::ProcessSlice(Int_t slice){
   AliL3MemHandler *memory = new AliL3MemHandler();
   
   fTrackMerger->Reset();
-  fTrackMerger->SetTransformer(fTransformer);
   fTrackMerger->SetRows(fRow[0]);
   for(Int_t patch=fNPatch-1;patch>=0;patch--){
     fFileHandler->Init(slice,patch,fRow[patch]);
-    fFileHandler->SetTransformer(fTransformer);
     UInt_t npoints=0;
     AliL3SpacePointData *points =0;
     UInt_t ndigits=0;
@@ -355,7 +352,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
 
       points = (AliL3SpacePointData *) memory->Allocate(pointsize);
   
-      fClusterFinder = new AliL3ClustFinderNew(fTransformer);
+      fClusterFinder = new AliL3ClustFinderNew();
       fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1]
 				,maxpoints);
       fClusterFinder->SetDeconv(fClusterDeconv);
@@ -460,7 +457,6 @@ void AliLevel3::ProcessSlice(Int_t slice){
     }
     */
     fInterMerger->Reset();
-    fInterMerger->SetTransformer(fTransformer);
     fInterMerger->Init(fRow[patch],patch);
 
     fInterMerger->FillTracks(ntracks0,trackdata0);
@@ -514,7 +510,6 @@ void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
   char name[256];
   sprintf(name,"%spoints_%d_%d.raw",fWriteOutPath,slice,patch);
   AliL3MemHandler * memory = new AliL3MemHandler();
-  memory->SetTransformer(fTransformer);
   memory->SetBinaryOutput(name);
   memory->Transform(npoints,points,slice);
   memory->Memory2Binary(npoints,points);

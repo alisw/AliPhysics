@@ -5,7 +5,6 @@
 class AliL3ConfMapTrack;
 class AliL3Track;
 class AliL3TrackSegmentData;
-class AliL3Transform;
 
 class AliL3TrackArray{
  private:
@@ -47,8 +46,7 @@ class AliL3TrackArray{
   Int_t TrackCompare(AliL3Track *a, AliL3Track *b);
 
 
-  void FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t slice, 
-                           AliL3Transform* trans); //Fill tracks and transform
+  void FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t slice); //Fill tracks and transform
   void FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr); //Fill tracks
   UInt_t WriteTracks(AliL3TrackSegmentData* tr); //Write tracks
   UInt_t WriteTracks(UInt_t & ntracks,AliL3TrackSegmentData* tr); //Write tracks

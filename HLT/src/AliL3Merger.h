@@ -7,7 +7,6 @@
 class AliL3Track;
 class AliL3TrackSegmentData;
 class AliL3Vertex;
-class AliL3Transform;
 class AliL3TrackArray;
 
 class AliL3Merger {
@@ -30,7 +29,6 @@ class AliL3Merger {
   Int_t fCurrentTracks;
   Int_t fSlice;
   AliL3Vertex *fVertex;//!
-  AliL3Transform *fTransformer;//!  
   Bool_t f2Global;
   Bool_t Is2Global(Bool_t is){f2Global=is;return f2Global;}
 
@@ -44,7 +42,6 @@ class AliL3Merger {
   AliL3TrackArray *GetOutTracks(){return fOutTrack;}
 
   Bool_t Is2Global(){return f2Global;}
-  void SetTransformer(AliL3Transform *trans){fTransformer = trans;}
   void SetVertex(AliL3Vertex *vertex){fVertex=vertex;}
   void Reset();
   void SetParameter(Double_t maxy=1., Double_t maxz=1., Double_t maxkappa=0.001, Double_t maxpsi=0.05, Double_t maxtgl=0.1);

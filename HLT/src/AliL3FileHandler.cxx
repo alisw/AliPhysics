@@ -230,12 +230,6 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
     <<"No Input avalible: TFile not opend"<<ENDLOG;
     return 0;
   }
-  if(!fTransformer)
-    {
-      LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Memory","Transformer")
-	<<"No transformer object"<<ENDLOG;
-      return 0;
-    }
   
   if(!fDigitsTree)
     GetDigitsTree(event);
@@ -252,7 +246,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
     {
       fDigitsTree->GetEvent(n);
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      fTransformer->Sector2Slice(lslice,lrow,sector,row);
+      AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
       //if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
       if(lslice < fSlice) continue;
       if(lslice != fSlice) break;
@@ -272,7 +266,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
              && fDigits->GetDigit(time-1,pad) <= fParam->GetZeroSup())
             continue;
 
-        fTransformer->Raw2Local(xyz,sector,row,pad,time);
+        AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
         if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
           continue;
 
@@ -297,7 +291,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
       fDigitsTree->GetEvent(n);
       Float_t xyz[3];
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      fTransformer->Sector2Slice(lslice,lrow,sector,row);
+      AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
       //if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
       if(lslice < fSlice) continue;
       if(lslice != fSlice) break;
@@ -321,7 +315,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
              fDigits->GetDigit(time+1,pad) <= fParam->GetZeroSup()) continue;
 
         //Exclude data outside cone:
-        fTransformer->Raw2Local(xyz,sector,row,pad,time);
+        AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
         if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
           continue;
 
@@ -390,11 +384,6 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
       printf("AliL3FileHandler::AliDigits2RootFile : No parameter object. Run on rootfile\n");
       return;
     }
-  if(!fTransformer)
-    {
-      printf("AliL3FileHandler::AliDigits2RootFile : No transform object\n");
-      return;
-    }
   
   //Get the original digitstree:
   fInAli->cd();
@@ -456,7 +445,7 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
       if((Int_t)rowPt->fRow != i) printf("AliL3FileHandler::AliDigits2RootFile : Mismatching row numbering!!!\n");
             
       Int_t sector,row;
-      fTransformer->Slice2Sector(fSlice,i,sector,row);
+      AliL3Transform::Slice2Sector(fSlice,i,sector,row);
       AliSimDigits * dig = (AliSimDigits*)arr->CreateRow(sector,row);
       AliSimDigits *old_dig = (AliSimDigits*)old_array->LoadRow(sector,row);
       if(!old_dig)
@@ -480,7 +469,7 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 	  Int_t s_time = time - 1;
 	  while(trackID[0] < 0)
 	    {
-	      if(s_time >= 0 && s_time < fTransformer->GetNTimeBins() && s_pad >= 0 && s_pad < fTransformer->GetNPads(i))
+	      if(s_time >= 0 && s_time < AliL3Transform::GetNTimeBins() && s_pad >= 0 && s_pad < AliL3Transform::GetNPads(i))
 		{
 		  if(old_dig->GetTrackID(s_time,s_pad,0) > 0)
 		    {
@@ -552,12 +541,7 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
     <<"No Input avalible: TFile not opend"<<ENDLOG;
     return 0;
   }
-  if(!fTransformer)
-    {
-      LOG(AliL3Log::kWarning,"AliL3FileHandler::AliPoints2Memory","Transformer")
-	<<"No transformer object"<<ENDLOG;
-      return 0;
-    }
+
   TDirectory *savedir = gDirectory;
   fInAli->cd();
   
@@ -584,7 +568,7 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
     rows[i] = row;
     sects[i] = sector;
     clusterrow[i] = 0;
-    fTransformer->Sector2Slice(lslice,lrow,sector,row);
+    AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
     if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
     clusterrow[i] = carray.GetRow(sector,row);
     if(clusterrow[i])
@@ -602,7 +586,7 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
     if(!clusterrow[i]) continue;
     Int_t row = rows[i];
     Int_t sector = sects[i];
-    fTransformer->Sector2Slice(lslice,lrow,sector,row);
+    AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
     Int_t entries_in_row = clusterrow[i]->GetArray()->GetEntriesFast();
     for(Int_t j = 0;j<entries_in_row;j++){
       AliTPCcluster *c = (AliTPCcluster*)(*clusterrow[i])[j];

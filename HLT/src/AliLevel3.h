@@ -11,14 +11,12 @@ class AliL3SpacePointData;
 class AliL3DigitRowData;
 class AliL3TrackSegmentData;
 class AliL3DigitData;
-class AliL3Transform;
 class AliL3ConfMapper;
 class AliL3Vertex;
 class AliL3VertexFinder;
 class AliL3TrackMerger;
 class AliL3GlobalMerger;
 class TDirectory;
-class AliL3Transform;
 class AliL3ClustFinderNew;
 class AliL3Merger;
 class AliL3InterMerger;
@@ -51,7 +49,6 @@ class AliLevel3 : public TObject {
   Int_t fRow[6][2];
   Char_t fPath[256];
   Char_t fWriteOutPath[256];
-  AliL3Transform *fTransformer; //!
   TDirectory *savedir;
   TFile *fInputFile;
   Bool_t fFindVertex;

@@ -56,7 +56,7 @@ Double_t AliL3GlobalMerger::CheckTracks(AliL3Track *innertrack,AliL3Track *outer
   
   
   Float_t angle = PI/36;//5 degrees = perpendicular to padrowplane (in local system)
-  fTransformer->Local2GlobalAngle(&angle,slice);
+  AliL3Transform::Local2GlobalAngle(&angle,slice);
   Double_t dx[2],dy[2],dz[2];
   Double_t diff =-1;
   AliL3Track *tracks[2];
@@ -71,7 +71,7 @@ Double_t AliL3GlobalMerger::CheckTracks(AliL3Track *innertrack,AliL3Track *outer
   point[0]=innertrack->GetLastPointX();
   point[1]=innertrack->GetLastPointY();
   point[2]=innertrack->GetLastPointZ();
-  fTransformer->Global2Local(point,slice,kTRUE);
+  AliL3Transform::Global2Local(point,slice,kTRUE);
   
   outertrack->CalculateReferencePoint(angle,point[0]);//local x = global distance to padrowplane
   if(!outertrack->IsPoint()) return diff;
@@ -82,7 +82,7 @@ Double_t AliL3GlobalMerger::CheckTracks(AliL3Track *innertrack,AliL3Track *outer
   point[0]=innertrack->GetFirstPointX();
   point[1]=innertrack->GetFirstPointY();
   point[2]=innertrack->GetFirstPointZ();
-  fTransformer->Global2Local(point,slice,kTRUE);
+  AliL3Transform::Global2Local(point,slice,kTRUE);
   
   outertrack->CalculateReferencePoint(angle,point[0]);//local x = global distance to padrowplane
   if(!outertrack->IsPoint()) return diff;
@@ -112,7 +112,7 @@ void AliL3GlobalMerger::SlowMerge(){
     if(slice2==fNSlices) slice2 =0; 
     AliL3TrackArray *ttt1=GetInTracks(slice2);
     Float_t angle = PI/18.; //10 degrees -> the border of the slices
-    fTransformer->Local2GlobalAngle(&angle,slice);
+    AliL3Transform::Local2GlobalAngle(&angle,slice);
     if(i==0)
       ttt0->QSort();
     ttt1->QSort();
@@ -199,7 +199,7 @@ void AliL3GlobalMerger::Merge(){
     if(slice2==fNSlices) slice2 =0;
     AliL3TrackArray *ttt1=GetInTracks(slice2);
     Float_t angle = PI/18.; //10 degrees -> the border of the slices
-    fTransformer->Local2GlobalAngle(&angle,slice);
+    AliL3Transform::Local2GlobalAngle(&angle,slice);
     if(i==0)
       ttt0->QSort();
     ttt1->QSort();

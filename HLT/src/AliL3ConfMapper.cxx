@@ -11,7 +11,6 @@
 
 #include "AliL3Defs.h"
 #include "AliL3Logging.h" 
-#include "AliL3Transform.h"
 #include "AliL3Vertex.h"
 #include "AliL3ConfMapTrack.h"
 #include "AliL3ConfMapPoint.h"
@@ -90,8 +89,8 @@ void AliL3ConfMapper::InitVolumes()
   memset(fVolume,0,fBounds*sizeof(AliL3ConfMapContainer));
   memset(fRow,0,fNumRowSegmentPlusOne*sizeof(AliL3ConfMapContainer));
   
-  Int_t max_num_of_tracks = 150;
-  Int_t max_num_of_hits = 3000;
+  Int_t max_num_of_tracks = 1000;
+  Int_t max_num_of_hits = 50000;
   
   if(fHit)
     delete [] fHit;
@@ -130,8 +129,8 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   else
     {
       fEtaMin = 0;
-      fEtaMax = sector < 18 ? 1 : -1;
-      //fEtaMax = sector < 18 ? 0.9 : -0.9;
+      //fEtaMax = sector < 18 ? 1 : -1;
+      fEtaMax = sector < 18 ? 0.9 : -0.9;
     }
   
   //Set the angles to sector 2:

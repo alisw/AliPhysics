@@ -120,7 +120,7 @@ void AliL3TrackMerger::InterMerge(){
 
   for(Int_t patch=0;patch< GetNIn();patch++){
     AliL3TrackArray * tracks = GetInTracks(patch);
-    Double_t xval = fTransformer->Row2X((fRowMax[patch]+fRowMin[patch])/2);
+    Double_t xval = AliL3Transform::Row2X((fRowMax[patch]+fRowMin[patch])/2);
     Int_t nrow= fRowMax[patch]-fRowMin[patch]+1;
     const Int_t  kNIn =tracks->GetNTracks();
     AliL3Track *tr[2];
@@ -176,8 +176,8 @@ void AliL3TrackMerger::Merge(){
     AliL3TrackArray *tout = GetOutTracks();
     if(i==subsec) tout = GetInTracks(subsec+1);
     AliL3TrackArray *tin = GetInTracks(i);
-    Double_t xval = fTransformer->Row2X(fRowMax[i]);
-    Double_t xmax = fTransformer->Row2X(fRowMax[i+1]);
+    Double_t xval = AliL3Transform::Row2X(fRowMax[i]);
+    Double_t xmax = AliL3Transform::Row2X(fRowMax[i+1]);
     Double_t ymax = xval*tan(edge0);
     for(Int_t out=0;out<tout->GetNTracks();out++){
       AliL3Track *outtrack=tout->GetCheckedTrack(out);

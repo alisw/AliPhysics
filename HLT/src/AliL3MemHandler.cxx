@@ -94,7 +94,6 @@ AliL3MemHandler::AliL3MemHandler()
   fNGenerate = 0;
   fNUsed = 0;
   fNDigits = 0;
-  fTransformer = 0;
   Int_t row[2] = {0,175};
   Init(0,0,row);
   ResetROI();
@@ -151,11 +150,11 @@ void AliL3MemHandler::SetROI(Float_t *eta,Int_t *slice)
       
       Float_t thetamax = 2*atan(exp(-1.*eta[1]));
       
-      xyz[0] = fTransformer->Row2X(i);
+      xyz[0] = AliL3Transform::Row2X(i);
       xyz[1]=0;
       xyz[2] = xyz[0]/tan(thetamax);
-      fTransformer->Slice2Sector(fSlice,i,sector,row);
-      fTransformer->Local2Raw(xyz,sector,row);
+      AliL3Transform::Slice2Sector(fSlice,i,sector,row);
+      AliL3Transform::Local2Raw(xyz,sector,row);
       
       fEtaMinTimeBin[i] = (Int_t)xyz[2];
       
@@ -164,11 +163,11 @@ void AliL3MemHandler::SetROI(Float_t *eta,Int_t *slice)
       else
 	{
 	  Float_t thetamin = 2*atan(exp(-1.*eta[0]));
-	  xyz[0] = fTransformer->Row2X(i);
-	  xyz[1] = fTransformer->GetMaxY(i);
+	  xyz[0] = AliL3Transform::Row2X(i);
+	  xyz[1] = AliL3Transform::GetMaxY(i);
 	  Float_t radii = sqrt(pow(xyz[0],2) + pow(xyz[1],2));
 	  xyz[2] = radii/tan(thetamin);
-	  fTransformer->Local2Raw(xyz,sector,row);
+	  AliL3Transform::Local2Raw(xyz,sector,row);
 	  fEtaMaxTimeBin[i] = (Int_t)xyz[2];
 	}
     }
@@ -381,7 +380,7 @@ UInt_t AliL3MemHandler::GetRandomSize()
 {
   Int_t nrandom = 0;
   for(Int_t r=fRowMin;r<=fRowMax;r++){
-    Int_t npad=fTransformer->GetNPads(r);
+    Int_t npad=AliL3Transform::GetNPads(r);
     nrandom  += Int_t (fNGenerate * ((Double_t) npad/141.));
   }
   return 9 * nrandom * sizeof(AliL3DigitData);
@@ -394,10 +393,10 @@ void AliL3MemHandler::Generate(Int_t row)
   if(!IsRandom) return;
   ResetRandom();
   fNDigits = 0;
-  Int_t npad=fTransformer->GetNPads(row);
+  Int_t npad=AliL3Transform::GetNPads(row);
   Int_t ntime = fEtaMaxTimeBin[row] - fEtaMinTimeBin[row];
   Int_t nrandom  = Int_t (fNGenerate * ((Double_t) npad/141.) * 
-			  (Double_t) ntime/(Double_t) fTransformer->GetNTimeBins() );
+			  (Double_t) ntime/(Double_t) AliL3Transform::GetNTimeBins() );
   
   for(Int_t n=0;n<nrandom;n++){
     Int_t pad = (int)((float)rand()/RAND_MAX*npad);
@@ -425,8 +424,8 @@ void AliL3MemHandler::DigitizePoint(Int_t row, Int_t pad,
       Int_t dpad  = j + pad;
       Int_t dtime = k + time;
       
-      if(dpad<0||dpad>=fTransformer->GetNPads(row))  continue;
-      if(dtime<0||dtime>=fTransformer->GetNTimeBins()) continue;
+      if(dpad<0||dpad>=AliL3Transform::GetNPads(row))  continue;
+      if(dtime<0||dtime>=AliL3Transform::GetNTimeBins()) continue;
       
       fDigits[fNDigits].fCharge = dcharge;
       fDigits[fNDigits].fRow = row;
@@ -986,17 +985,13 @@ Bool_t AliL3MemHandler::Transform(UInt_t npoint,AliL3SpacePointData *data,Int_t 
     <<"Pointer to AliL3SpacePointData = 0x0 "<<ENDLOG;
     return kFALSE;
   }
-  if(!fTransformer){
-    LOG(AliL3Log::kError,"AliL3MemHandler::Transform","Object")
-    <<"Pointer to AliL3Transform = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
+  
   for(UInt_t i=0;i<npoint;i++){
     Float_t xyz[3];
     xyz[0] = data[i].fX;
     xyz[1] = data[i].fY;
     xyz[2] = data[i].fZ;
-    fTransformer->Local2Global(xyz,slice);
+    AliL3Transform::Local2Global(xyz,slice);
     data[i].fX = xyz[0];
     data[i].fY = xyz[1];
     data[i].fZ = xyz[2];
@@ -1257,12 +1252,7 @@ Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *d
     <<"Pointer to AliL3TrackArray = 0x0 "<<ENDLOG;
     return kFALSE;
   }
-  if(!fTransformer){
-    LOG(AliL3Log::kError,"AliL3MemHandler::Memory2TrackArray","Object")
-    <<"Pointer to AliL3Transform = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  array->FillTracks(ntrack,data,slice,fTransformer);
+  array->FillTracks(ntrack,data,slice);
   return kTRUE;
 }
 

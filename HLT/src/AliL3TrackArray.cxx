@@ -203,7 +203,7 @@ void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr){
   }
 }
 
-void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t slice, AliL3Transform* trans){
+void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t slice){
   //Read tracks from shared memory (or memory)
   AliL3TrackSegmentData *trs = tr;
   for(Int_t i=0; i<ntracks; i++){
@@ -211,18 +211,18 @@ void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t 
     track->SetPt(trs->fPt);
     Float_t psi[1];
     psi[0]=trs->fPsi;
-    trans->Local2GlobalAngle(psi,slice);
+    AliL3Transform::Local2GlobalAngle(psi,slice);
     track->SetPsi(psi[0]);
     track->SetTgl(trs->fTgl);
     track->SetNHits(trs->fNPoints);
     track->SetCharge(trs->fCharge);
     Float_t first[3];
     first[0]=trs->fX;first[1]=trs->fY;first[2]=trs->fZ;
-    trans->Local2Global(first,slice);
+    AliL3Transform::Local2Global(first,slice);
     track->SetFirstPoint(first[0],first[1],first[2]);
     Float_t last[3];
     last[0]=trs->fLastX;last[1]=trs->fLastY;last[2]=trs->fLastZ;
-    trans->Local2Global(last,slice);
+    AliL3Transform::Local2Global(last,slice);
     track->SetLastPoint(last[0],last[1],last[2]);
     track->SetHits( trs->fNPoints, trs->fPointIDs );
     UChar_t *tmpP = (UChar_t*)trs;

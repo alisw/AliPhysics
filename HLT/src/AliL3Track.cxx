@@ -110,22 +110,21 @@ void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
   //If flag tolocal is set, the track is rotated
   //to local coordinates.
 
-  AliL3Transform *transform = new AliL3Transform();
   
   Float_t psi[1] = {GetPsi()};
   if(!tolocal)
-    transform->Local2GlobalAngle(psi,slice);
+    AliL3Transform::Local2GlobalAngle(psi,slice);
   else
-    transform->Global2LocalAngle(psi,slice);
+    AliL3Transform::Global2LocalAngle(psi,slice);
   SetPsi(psi[0]);
   Float_t first[3];
   first[0] = GetFirstPointX();
   first[1] = GetFirstPointY();
   first[2] = GetFirstPointZ();
   if(!tolocal)
-    transform->Local2Global(first,slice);
+    AliL3Transform::Local2Global(first,slice);
   else
-    transform->Global2Local(first,slice,kTRUE);
+    AliL3Transform::Global2Local(first,slice,kTRUE);
   
   SetFirstPoint(first[0],first[1],first[2]);
   Float_t last[3];
@@ -133,16 +132,16 @@ void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
   last[1] = GetLastPointY();
   last[2] = GetLastPointZ();
   if(!tolocal)
-    transform->Local2Global(last,slice);
+    AliL3Transform::Local2Global(last,slice);
   else
-    transform->Global2Local(last,slice,kTRUE);
+    AliL3Transform::Global2Local(last,slice,kTRUE);
   SetLastPoint(last[0],last[1],last[2]);
   
   Float_t center[3] = {GetCenterX(),GetCenterY(),0};
   if(!tolocal)
-    transform->Local2Global(center,slice);
+    AliL3Transform::Local2Global(center,slice);
   else
-    transform->Global2Local(center,slice,kTRUE);
+    AliL3Transform::Global2Local(center,slice,kTRUE);
   SetCenterX(center[0]);
   SetCenterY(center[1]);
   
@@ -150,7 +149,6 @@ void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
     fIsLocal=kFALSE;
   else
     fIsLocal=kTRUE;
-  delete transform;
 }
 
 void AliL3Track::CalculateHelix(){
@@ -198,15 +196,13 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
 {
   //Assumes the track is given in local coordinates
 
-  AliL3Transform *transform = new AliL3Transform();
-  
   if(!IsLocal())
     {
       printf("GetCrossingPoint: Track is given on global coordinates\n");
       return false;
     }
   
-  Double_t xHit = transform->Row2X(padrow);
+  Double_t xHit = AliL3Transform::Row2X(padrow);
 
   xyz[0] = xHit;
   Double_t aa = (xHit - GetCenterX())*(xHit - GetCenterX());
@@ -232,7 +228,6 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
   Double_t zHit = GetFirstPointZ() + s_tot*GetTgl();
   xyz[2] = zHit;
   
-  delete transform;
   return true;
 }
 

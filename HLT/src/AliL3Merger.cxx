@@ -28,7 +28,6 @@ ClassImp(AliL3Merger)
 
 AliL3Merger::AliL3Merger(){
   //Default constructor
-  fTransformer= 0;
   SetArray(0);
 }
 
@@ -86,7 +85,8 @@ void AliL3Merger::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr){
   //Read tracks from shared memory (or memory)
   AliL3TrackArray *destination = GetInTracks(fCurrentTracks);
   if(Is2Global())
-    destination->FillTracks(ntracks, tr, fSlice, fTransformer);
+    destination->FillTracks(ntracks, tr, fSlice);
+    //destination->FillTracks(ntracks, tr, fSlice, fTransformer);
   else
     destination->FillTracks(ntracks, tr);
 }

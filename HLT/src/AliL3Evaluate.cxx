@@ -45,7 +45,6 @@ AliL3Evaluate::AliL3Evaluate()
   fMcId = 0;
   fMinSlice=0;
   fMaxSlice=0;
-  fTransform = new AliL3Transform();
 }
 
 AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
@@ -56,7 +55,6 @@ AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
   fEventFile = new TFile(mcfile,"READ");
     
   fParam = (AliTPCParam*)fEventFile->Get("75x40_100x60");
-  fTransform = new AliL3Transform();
   
   fMinSlice = slice[0];
   fMaxSlice = slice[1];
@@ -71,7 +69,6 @@ AliL3Evaluate::AliL3Evaluate(Int_t *slice)
 
   fMinSlice = slice[0];
   fMaxSlice = slice[1];
-  fTransform = new AliL3Transform();
 
 }
 
@@ -82,7 +79,6 @@ AliL3Evaluate::~AliL3Evaluate()
     fDigitsFile->Close();
     delete fDigitsFile;
   }
-  if(fTransform) delete fTransform;
   if(fTracks) delete fTracks;
   if(fPtRes) delete fPtRes;
   if(fNGoodTracksPt) delete fNGoodTracksPt;
@@ -196,7 +192,7 @@ Bool_t AliL3Evaluate::InitMC()
 	  if(!fDigitsTree->GetEvent(i)) continue;
 	  Int_t se,ro,slice,slicerow;
 	  fParam->AdjustSectorRow(fDigits->GetID(),se,ro);
-	  fTransform->Sector2Slice(slice,slicerow,se,ro);
+	  AliL3Transform::Sector2Slice(slice,slicerow,se,ro);
 	  fRowid[slice][slicerow] = i;
 	}
     }
@@ -283,7 +279,7 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
 	  Int_t sec,row,sl,lr;
 	  AliSegmentID *s = carray.LoadEntry(i);
 	  fParam->AdjustSectorRow(s->GetID(),sec,row);
-	  fTransform->Sector2Slice(sl,lr,sec,row);
+	  AliL3Transform::Sector2Slice(sl,lr,sec,row);
 	  
 	  if(sl != slice[0]) {carray.ClearRow(sec,row); continue;}
 	  if(lr < padrow[0]) {carray.ClearRow(sec,row); continue;}
@@ -328,7 +324,7 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
 		   && fDigits->GetDigit(it-1,ip) <= fParam->GetZeroSup())
 		  continue;
 	      
-	      fTransform->Raw2Local(xyz,sec,row,ip,it);
+	      AliL3Transform::Raw2Local(xyz,sec,row,ip,it);
 	      if(fParam->GetPadRowRadii(sec,row)<230./250.*fabs(xyz[2]))
 		continue;
 	      
@@ -501,7 +497,8 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
   //Returns the MCtrackID of the belonging clusters.
   //If MCLabel < 0, means that track is fake.
   //Fake track means that more than 10 percent of clusters are assigned incorrectly.
-
+  
+#ifdef do_mc
   Int_t num_of_clusters = track->GetNumberOfPoints();
   S *s=new S[num_of_clusters];
   Int_t i;
@@ -572,6 +569,10 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
     }
   
   return lab;
+#else //If we are running with mc_ids or not
+  return 0;
+#endif
+
 }
 
 
@@ -615,8 +616,8 @@ Int_t **AliL3Evaluate::GetClusterIDs(AliL3Track *track)
       //sector = points[pos].fSector;
       padrow = points[pos].fPadRow;
       Int_t se,ro;
-      fTransform->Slice2Sector(slice,padrow,se,ro);
-      fTransform->Global2Raw(xyz,se,ro);
+      AliL3Transform::Slice2Sector(slice,padrow,se,ro);
+      AliL3Transform::Global2Raw(xyz,se,ro);
       
       if(fIsSlow)
 	{
@@ -904,7 +905,7 @@ TNtuple *AliL3Evaluate::CalculateResiduals()
 	      xyz[1] = points[pos].fY;
 	      xyz[2] = points[pos].fZ;
 	      padrow = points[pos].fPadRow;
-	      //fTransform->Global2Local(xyz,slice);
+	      //AliL3Transform::Global2Local(xyz,slice);
 	      
 	      Float_t xyz_cross[3];
 	      track->GetCrossingPoint(padrow,xyz_cross);
@@ -965,7 +966,7 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
       
       //Get the found clusters:
       Int_t slice,padrow;
-      fTransform->Sector2Slice(slice,padrow,cursec,currow);
+      AliL3Transform::Sector2Slice(slice,padrow,cursec,currow);
       if(slice<fMinSlice || slice>fMaxSlice) continue;
       AliL3SpacePointData *points = fClusters[slice][0];
       
@@ -987,13 +988,13 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
 	      
 	      Float_t xyz_cl[3] = {points[c].fX,points[c].fY,points[c].fZ};
 	      Float_t xyz_ex[3];
-	      fTransform->Global2Raw(xyz_cl,cursec,currow);
+	      AliL3Transform::Global2Raw(xyz_cl,cursec,currow);
 	      if(fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),0)!=mcId &&
 		 fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),1)!=mcId &&
 		 fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),2)!=mcId)
 		continue;
-	      fTransform->Raw2Local(xyz_ex,cursec,currow,cluster->fY,cluster->fX);
-	      fTransform->Raw2Local(xyz_cl,cursec,currow,xyz_cl[1],xyz_cl[2]);
+	      AliL3Transform::Raw2Local(xyz_ex,cursec,currow,cluster->fY,cluster->fX);
+	      AliL3Transform::Raw2Local(xyz_cl,cursec,currow,xyz_cl[1],xyz_cl[2]);
 	      Float_t resy = xyz_cl[1] - xyz_ex[1];//cluster->GetY()
 	      Float_t resz = xyz_cl[2] - xyz_ex[2];//cluster->GetZ()
 	      
@@ -1016,7 +1017,7 @@ void AliL3Evaluate::GetCFeff(Char_t *outfile)
   TPC->SetParam(fParam);
   
   Int_t ver = TPC->IsVersion();
-  LOG(AliL3Log::kInformational,"AliL3Evaluate::DefineGoodTracks","TPC version")
+  LOG(AliL3Log::kInformational,"AliL3Evaluate::GetCFeff","TPC version")
     <<"TPC version "<<ver<<" found on file"<<ENDLOG;
   
   Int_t zero=TPC->GetParam()->GetZeroSup();
@@ -1049,7 +1050,7 @@ void AliL3Evaluate::GetCFeff(Char_t *outfile)
 		 && fDigits->GetDigit(it-1,ip) <= fParam->GetZeroSup())
 		continue;
 	    
-	    fTransform->Raw2Local(xyz,sec,row,ip,it);
+	    AliL3Transform::Raw2Local(xyz,sec,row,ip,it);
 	    if(fParam->GetPadRowRadii(sec,row)<230./250.*fabs(xyz[2]))
 	      continue;
 	    
@@ -1066,17 +1067,20 @@ void AliL3Evaluate::GetCFeff(Char_t *outfile)
 	  for (Int_t j=0; j<np; j++) 
 	    {
 	      if (count[j]>1) //at least two digits at this padrow 
-		crossed++;
-	      count[j]=0;
+		{
+		  crossed++;
+		  count[j]=0;
+		}
 	    }
 	  AliL3SpacePointData *points = fClusters[sl][0];
-	  for(Int_t l=0; l<fNcl[sl][0]; l++)
+	  for(UInt_t k=0; k<fNcl[sl][0]; k++)
 	    {
-	      if(points[l].fPadRow != i) continue;
+	      if(points[k].fPadRow!=i) continue;
 	      recs++;
 	    }
 	  ntuppel->Fill(i,crossed,recs);
 	}
+      
     }
   delete[] count;
   
@@ -1104,7 +1108,7 @@ Bool_t AliL3Evaluate::GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t
   
   Float_t angl[1] = {part->Phi()};
   
-  fTransform->Global2LocalAngle(angl,slice);
+  AliL3Transform::Global2LocalAngle(angl,slice);
   
   Double_t charge = -1.*kappa;
   Double_t trackPhi0 = angl[0] + charge*0.5*Pi/fabs(charge);
@@ -1116,7 +1120,7 @@ Bool_t AliL3Evaluate::GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t
   
   //printf("radius %f xc %f yc %f\n",radius,xc,yc);
 
-  Double_t xHit = fTransform->Row2X(padrow);
+  Double_t xHit = AliL3Transform::Row2X(padrow);
   xyz[0] = xHit;
   Double_t aa = (xHit - xc)*(xHit - xc);
   Double_t r2 = radius*radius;

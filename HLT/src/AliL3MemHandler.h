@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "AliL3DigitData.h"
-#include "AliL3Transform.h"
+
 class AliL3SpacePointData;
 class AliL3DigitRowData;
 class AliL3TrackSegmentData;
@@ -52,14 +52,12 @@ class AliL3MemHandler{
 
   Int_t fEtaMinTimeBin[176];
   Int_t fEtaMaxTimeBin[176];
-  AliL3Transform *fTransformer;//!
 
  public:
   AliL3MemHandler();
   virtual ~AliL3MemHandler();
   
   void Reset(){CloseBinaryInput();CloseBinaryOutput();Free();}  
-  void SetTransformer(AliL3Transform *t){fTransformer = t;}
   void Init(Int_t s,Int_t p,const Int_t* row){fSlice=s;fPatch=p;fRowMin=row[0];fRowMax=row[1]; ResetROI();}
 
   Bool_t SetBinaryInput(char *name);

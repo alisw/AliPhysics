@@ -25,7 +25,6 @@ class TFile;
 class AliL3TrackArray;
 class AliL3SpacePointData;
 class TH1F;
-class AliL3Transform;
 class AliTPCParam;
 class TTree;
 class AliSimDigits;
@@ -44,7 +43,6 @@ class AliL3Evaluate : public TObject {
   AliL3TrackArray *fTracks; //!
   AliTPCParam *fParam;
   AliL3SpacePointData *fClusters[36][6]; //!
-  AliL3Transform *fTransform; //!
   AliSimDigits *fDigits;
   TTree *fDigitsTree;
   Int_t fMinSlice;

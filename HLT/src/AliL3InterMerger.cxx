@@ -93,7 +93,7 @@ void AliL3InterMerger::MMerge(){
 
 Int_t AliL3InterMerger::Merge(){
   Int_t nrow= fRowMax-fRowMin+1;
-  Double_t xval =fTransformer->Row2X((fRowMax+fRowMin)/2);
+  Double_t xval =AliL3Transform::Row2X((fRowMax+fRowMin)/2);
   AliL3TrackArray * tracks = GetInTracks(0);
   const Int_t  kNIn =tracks->GetNTracks();
   AliL3Track *tr[2];

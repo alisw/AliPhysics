@@ -18,7 +18,6 @@ struct ClusterData
 typedef struct ClusterData ClusterData;
 
 class AliL3DigitRowData;
-class AliL3Transform;
 class AliL3SpacePointData;
 
 class AliL3ClustFinderNew {
@@ -26,7 +25,6 @@ class AliL3ClustFinderNew {
  private:
   
   AliL3DigitRowData *fDigitRowData; //!
-  AliL3Transform *fTransform; //!
   AliL3SpacePointData *fSpacePointData; //!
   Bool_t fDeconvTime;
   Bool_t fDeconvPad;
@@ -49,7 +47,6 @@ class AliL3ClustFinderNew {
   
  public:
   AliL3ClustFinderNew();
-  AliL3ClustFinderNew(AliL3Transform *transform);
   virtual ~AliL3ClustFinderNew();
   
   void Read(UInt_t ndigits,AliL3DigitRowData *ptr);
@@ -62,7 +59,6 @@ class AliL3ClustFinderNew {
 
   void SetXYError(Float_t f) {fXYErr = f;}
   void SetZError(Float_t f) {fZErr = f;}
-  void SetTransformer(AliL3Transform *transform) {fTransform = transform;}
   void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
   
   Int_t GetNumberOfClusters() {return fNClusters;}

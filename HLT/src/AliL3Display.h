@@ -8,7 +8,6 @@
 
 class AliL3SpacePointData;
 class AliL3TrackArray;
-class AliL3Transform;
 
 class AliL3Display : public TObject {
 
@@ -17,7 +16,6 @@ class AliL3Display : public TObject {
   AliL3SpacePointData *fClusters[36][6]; //!
   AliL3TrackArray *fTracks; //!
   UInt_t fNcl[36][6];
-  AliL3Transform *fTransform; //!
 
   Int_t fMinSlice;
   Int_t fMaxSlice;
