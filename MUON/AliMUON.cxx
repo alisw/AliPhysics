@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.26  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.25  2000/06/29 12:34:09  morsch
 AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
 it usable with any other geometry class. The link to the object to which it belongs is
@@ -968,15 +972,15 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	TTree *treeH = gAlice->TreeH();
 	Int_t ntracks =(Int_t) treeH->GetEntries();
 	Int_t jj;
-	Float_t ** xhit = new Float_t * [2];
-	for (jj=0; jj<2; jj++) xhit[jj] = new Float_t  [AliMUONConstants::NCh()];
+
+	Float_t ** xhit = new Float_t * [AliMUONConstants::NCh()];
+	for (jj=0; jj<AliMUONConstants::NCh(); jj++) xhit[jj] = new Float_t[2];
 	Float_t ** yhit = new Float_t * [2];
-	for (jj=0; jj<2; jj++) yhit[jj] = new Float_t  [AliMUONConstants::NCh()];
-	
+	for (jj=0; jj<AliMUONConstants::NCh(); jj++) yhit[jj] = new Float_t[2];
+
 	for (Int_t track=0; track<ntracks; track++) {
 	    gAlice->ResetHits();
 	    treeH->GetEvent(track);
-	    
 //
 //   Loop over hits
 	    for(AliMUONHit* mHit=(AliMUONHit*)pMUON->FirstHit(-1); 
