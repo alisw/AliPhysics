@@ -55,11 +55,11 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(LIBDIR)/libAliL3.$(SL)
+SLIBRARY	= $(ALICE)/mylibs/libAliL3.$(SL)
 
 default:	$(SLIBRARY)
 
-$(LIBDIR)/libAliL3.$(SL):  $(OBJS)
+$(ALICE)/mylibs/libAliL3.$(SL):  $(OBJS)
 
 $(DICT):		$(HDRS)
 
@@ -77,8 +77,8 @@ include tgt_$(ALICE_TARGET)/Make-depend
 
 ###########
 so:
-	rm -fr $(ALICE_ROOT)/lib/tgt_Linux/libAliL3.so
+	rm -fr $(ALICE)/mylibs/libAliL3.so
 clean:
 	rm -fr tgt_Linux/*.o
-	rm -fr $(ALICE_ROOT)/lib/tgt_Linux/libAliL3.so
+	rm -fr $(ALICE)/mylibs/libAliL3.so
 	rm -fr $(DICT) $(DICTH) $(DICTO)
