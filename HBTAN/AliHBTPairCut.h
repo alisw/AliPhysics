@@ -26,6 +26,7 @@ enum AliHBTPairCutProperty
   kHbtPairCutPropDeltaP,
   kHbtPairCutPropDeltaPt,
   kHbtPairCutPropAvSepar,
+  kHbtPairCutPropSepar,
   kHbtPairCutPropClOverlap,
   kHbtPairCutPropPixelSepar,
   kHbtPairCutPropNone
@@ -283,6 +284,20 @@ class AliHBTAvSeparationCut: public AliHbtBasePairCut
  protected:
   virtual Double_t  GetValue(AliHBTPair* pair) const;
   ClassDef(AliHBTAvSeparationCut,1)
+};
+/******************************************************************/
+  
+class AliHBTSeparationCut: public AliHbtBasePairCut
+{
+ public:
+  AliHBTSeparationCut(Double_t min = 0.0, Double_t max = 1e5, Int_t point = 0):
+    AliHbtBasePairCut(min,max,kHbtPairCutPropSepar),fPoint(point){}
+  virtual ~AliHBTSeparationCut(){}
+  
+ protected:
+  Int_t fPoint;//index of the point that distance should be measured
+  virtual Double_t  GetValue(AliHBTPair* pair) const;
+  ClassDef(AliHBTSeparationCut,1)
 };
 /******************************************************************/
   

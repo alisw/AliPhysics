@@ -373,6 +373,36 @@ Double_t AliHBTAvSeparationCut::GetValue(AliHBTPair* pair) const
   return tpts1->AvarageDistance(*tpts2);
 }
 /******************************************************************/
+ClassImp(AliHBTSeparationCut)
+    
+Double_t AliHBTSeparationCut::GetValue(AliHBTPair* pair) const 
+{
+  //chacks if avarage distance of two tracks is in given range
+  AliHBTTrackPoints* tpts1 = pair->Particle1()->GetTrackPoints();
+  if ( tpts1 == 0x0)
+   {//it could be simulated pair
+//     Warning("GetValue","Track 1 does not have Track Points. Pair NOT Passed.");
+     return -1.0;
+   }
+
+  AliHBTTrackPoints* tpts2 = pair->Particle2()->GetTrackPoints();
+  if ( tpts2 == 0x0)
+   {
+//     Warning("GetValue","Track 2 does not have Track Points. Pair NOT Passed.");
+     return -1.0;
+   }
+  Float_t x1=0,y1=0,z1=0; 
+  Float_t x2=0,y2=0,z2=0;
+  
+  tpts1->PositionAt(fPoint,x1,y1,z1);
+  tpts2->PositionAt(fPoint,x2,y2,z2);
+  Double_t dx1 = x1 - x2;
+  Double_t dy1 = y1 - y2;
+  Double_t dz1 = z1 - z2;
+  Double_t d = TMath::Sqrt(dx1*dx1 + dy1*dy1 + dz1*dz1);
+  return d;
+}
+/******************************************************************/
 
 ClassImp(AliHBTPixelSeparationCut)
 
