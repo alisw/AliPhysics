@@ -71,8 +71,7 @@ AliFMD::AliFMD ():AliDetector ()
   fHits     = 0;
   fDigits   = 0;
   fSDigits  = 0;
-  fReconParticles=0;
-  fMerger = 0;
+  fReconParticles=0; 
 }
 
 //_____________________________________________________________________________
@@ -357,16 +356,18 @@ void AliFMD::SetSectorsSi2(Int_t sectorsSi2)
 void AliFMD::SDigits2Digits() 
 {
   cout<<"AliFMD::SDigits2Digits"<<endl; 
-    if (fMerger) {
-      fMerger ->SetRingsSi1(fRingsSi1);
-      fMerger->SetRingsSi2(fRingsSi2);
-      fMerger ->SetSectorsSi1(fSectorsSi1);
-      fMerger ->SetSectorsSi2(fSectorsSi2);
-      fMerger->Init();
-      cout<<"AliFMD::SDigits2Digits Init"<<endl; 
-      fMerger->Digitise();
-      cout<<"AliFMD::SDigits2Digits Digitise() "<<endl; 
-     }
+    if (!fMerger) {
+      fMerger = new AliFMDMerger();
+    }
+    fMerger ->SetRingsSi1(fRingsSi1);
+    fMerger->SetRingsSi2(fRingsSi2);
+    fMerger ->SetSectorsSi1(fSectorsSi1);
+    fMerger ->SetSectorsSi2(fSectorsSi2);
+    fMerger->Init();
+    cout<<"AliFMD::SDigits2Digits Init"<<endl; 
+    fMerger->Digitise();
+    cout<<"AliFMD::SDigits2Digits Digitise() "<<endl; 
+
 
 }
 //---------------------------------------------------------------------
