@@ -18,6 +18,7 @@
 #include <AliESDtrack.h>
 #include <AliESDHLTtrack.h>
 #include <AliL3Track.h>
+#include <AliL3Vertex.h>
 #include <AliKalmanTrack.h>
 #include <AliJetEventParticles.h>
 #include "AliJetParticlesReaderHLT.h"
@@ -111,6 +112,11 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
   fEventParticles->SetVertex(vertexpos[0],vertexpos[1],vertexpos[2]);
 
   AliL3Track l3;
+  AliL3Vertex v;
+  v.SetX(vertexpos[0]);
+  v.SetY(vertexpos[0]);
+  v.SetZ(vertexpos[0]);
+  Double_t xc=0.,yc=0.,zc=0.;
   for (Int_t i = 0;i<ntr; i++) {
     AliESDHLTtrack *kesdtrack;
     if(fTrackerType){
@@ -125,6 +131,18 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
         continue;
       }
 
+    //const Float_t kpid=kesdtrack->GetPID();
+    const Int_t knhits=kesdtrack->GetNHits();
+    const Int_t kweight=kesdtrack->GetWeight();
+    //cout << i << " " << kweight << " " << knhits << endl;
+    if((fMinHits>0) && (knhits<fMinHits)) continue;    
+    if(kweight>1000) continue; //avoid ghosts 
+    if((fMinWeight>0) && (kweight<fMinWeight)) continue;
+
+    Float_t px=kesdtrack->GetPx();
+    Float_t py=kesdtrack->GetPy();
+    Float_t pz=kesdtrack->GetPz();
+
     if(fTrackerType){
       //if(!kesdtrack->ComesFromMainVertex()) continue;
       l3.SetFirstPoint(kesdtrack->GetFirstPointX(),kesdtrack->GetFirstPointY(),kesdtrack->GetFirstPointZ());
@@ -134,28 +152,22 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
       l3.SetTgl(kesdtrack->GetTgl());
       l3.SetPsi(kesdtrack->GetPsi());
       l3.CalculateHelix();
-      l3.SetFirstPoint(0,0,0);
+      l3.GetClosestPoint(&v,xc,yc,zc);
+      if(TMath::Abs(zc)>10.) continue;
+      l3.SetFirstPoint(vertexpos[0],vertexpos[1],vertexpos[2]);
       l3.UpdateToFirstPoint();
+      px=l3.GetPx();
+      py=l3.GetPy();
+      pz=l3.GetPz();
     }
 
-    //const Float_t kpid=kesdtrack->GetPID();
-    const Int_t knhits=kesdtrack->GetNHits();
-    const Int_t kweight=kesdtrack->GetWeight();
-    //cout << i << " " << kweight << " " << knhits << endl;
-    if((fMinHits>0) && (knhits<fMinHits)) continue;    
-    if(kweight>1000) continue; //avoid ghosts 
-    if((fMinWeight>0) && (kweight<fMinWeight)) continue;
-
-    const Float_t kpx=kesdtrack->GetPx();
-    const Float_t kpy=kesdtrack->GetPy();
-    const Float_t kpz=kesdtrack->GetPz();
-    const Float_t kpt=kesdtrack->GetPt();
-    const Float_t kp=TMath::Sqrt(kpz*kpz+kpt*kpt);
-    const Float_t keta=0.5*TMath::Log((kp+kpz+1e-30)/(kp-kpz+1e-30)); 
-    const Float_t kphi=TMath::Pi()+TMath::ATan2(-kpy,-kpx);
+    const Float_t kpt=TMath::Sqrt(px*px+py*py);
+    const Float_t kp=TMath::Sqrt(pz*pz+kpt*kpt);
+    const Float_t keta=0.5*TMath::Log((kp+pz+1e-30)/(kp-pz+1e-30)); 
+    const Float_t kphi=TMath::Pi()+TMath::ATan2(-py,-px);
 
     if(IsAcceptedParticle(kpt,kphi,keta))
-      fEventParticles->AddParticle(kpx,kpy,kpz,kp,i,kesdtrack->GetMCid(),knhits,kpt,kphi,keta);
+      fEventParticles->AddParticle(px,py,pz,kp,i,kesdtrack->GetMCid(),knhits,kpt,kphi,keta);
   } //loop over tracks
 
   return kTRUE;
