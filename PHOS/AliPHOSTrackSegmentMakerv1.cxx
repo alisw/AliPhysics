@@ -347,7 +347,6 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
 	 
        (dynamic_cast<AliPHOSTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
        fNTrackSegments++ ;
-       
        emcExist[linkUp->GetEmc()-fEmcFirst] = -1 ; //Mark emc  that Cpv was found 
        //mark CPV recpoint as already used 
        cpvExist[linkUp->GetCpv()-fCpvFirst] = kFALSE ;
@@ -392,14 +391,16 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
  
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
 
-  if (fLastEvent == -1) fLastEvent = gime->MaxEvent() - 1 ;
-  else fLastEvent = TMath::Min(fFirstEvent,gime->MaxEvent());
+  if (fLastEvent == -1) 
+    fLastEvent = gime->MaxEvent() - 1 ;
+  else 
+    fLastEvent = TMath::Min(fFirstEvent,gime->MaxEvent());
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
 
   Int_t ievent ; 
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent,"R") ;
-    //Make some initializations 
+   //Make some initializations 
     fNTrackSegments = 0 ;
     fEmcFirst = 0 ;    
     fEmcLast  = 0 ;   
@@ -423,7 +424,6 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
     
     //increment the total number of track segments per run 
     fTrackSegmentsInRun += gime->TrackSegments()->GetEntriesFast() ; 
-
   }
   
   if(strstr(option,"tim")){
