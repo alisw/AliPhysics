@@ -60,11 +60,11 @@ AliMUONChamber::~AliMUONChamber()
   }
 }
 
-// AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber):TObject(const AliMUONChamber& rChamber)
-//  {
-//  // Dummy copy constructor
-//      ;
-// // }
+AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber):TObject(rChamber)
+{
+ // Dummy copy constructor
+     ;
+}
 
 
 void AliMUONChamber::Init()
