@@ -111,7 +111,6 @@ AliMUON::AliMUON()
     fAccMax          = 0.;   
     fAccCut          = kFALSE;
     fMerger          = 0;
-    fFileName        = 0;
     fMUONData        = 0;
     fSplitLevel      = 0;
 }
@@ -870,8 +869,8 @@ void AliMUON::Reconstruct() const
 void AliMUON::FillESD(AliESD* event) const
 {
 
-  TClonesArray* recTracksArray;
-  TClonesArray* recTrigTracksArray;
+  TClonesArray* recTracksArray = 0;
+  TClonesArray* recTrigTracksArray = 0;
   
   //YS AliLoader* loader = GetLoader();
   AliRunLoader* runLoader = fLoader->GetRunLoader(); 
@@ -891,9 +890,9 @@ void AliMUON::FillESD(AliESD* event) const
   //YS Int_t nEvents = runLoader->GetNumberOfEvents();
 
   // setting pointer for tracks, triggertracks& trackparam at vertex
-  AliMUONTrack* recTrack;
-  AliMUONTrackParam* trackParam;
-  AliMUONTriggerTrack* recTriggerTrack;
+  AliMUONTrack* recTrack = 0;
+  AliMUONTrackParam* trackParam = 0;
+  AliMUONTriggerTrack* recTriggerTrack = 0;
 
   iEvent = runLoader->GetEventNumber() ; //YS, seems not to be implemented yet (Ch. F)
   runLoader->GetEvent(iEvent);
@@ -908,8 +907,9 @@ void AliMUON::FillESD(AliESD* event) const
   recTrigTracksArray = fMUONData->RecTriggerTracks();
 
   // ready global trigger pattern from first track
-  recTriggerTrack = (AliMUONTriggerTrack*) recTrigTracksArray->First();
-  trigPat = recTriggerTrack->GetGTPattern();
+  if (recTrigTracksArray) 
+    recTriggerTrack = (AliMUONTriggerTrack*) recTrigTracksArray->First();
+  if (recTriggerTrack) trigPat = recTriggerTrack->GetGTPattern();
 
   //printf(">>> Event %d Number of Recconstructed tracks %d \n",iEvent, nrectracks);
  
@@ -918,7 +918,9 @@ void AliMUON::FillESD(AliESD* event) const
   fMUONData->GetRecTracks();
   recTracksArray = fMUONData->RecTracks();
         
-  Int_t nRecTracks = (Int_t) recTracksArray->GetEntriesFast(); //
+  Int_t nRecTracks = 0;
+  if (recTracksArray)
+    nRecTracks = (Int_t) recTracksArray->GetEntriesFast(); //
   
   // loop over tracks
   for (Int_t iRecTracks = 0; iRecTracks <  nRecTracks;  iRecTracks++) {

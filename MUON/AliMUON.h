@@ -152,10 +152,9 @@ class AliMUON : public  AliDetector {
     Int_t fMaxIterPad;        // Maximum pad index
     Int_t fCurIterPad;        // Current pad index
     // Background eent for event mixing
-    Text_t *fFileName;           // ! File with background hits
     AliMUONMerger *fMerger;   // ! pointer to merger
     
-    ClassDef(AliMUON,3)  // MUON Detector base class
+    ClassDef(AliMUON,4)  // MUON Detector base class
 };
 #endif
 
