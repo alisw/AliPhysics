@@ -38,35 +38,41 @@ public:
    Float_t      GetX(Int_t i) const;
    Float_t      GetY(Int_t i) const;
    Float_t      GetZ(Int_t i) const;
+   Int_t        GetTrack(Int_t i) const;
+   Int_t        GetPeakSignal(Int_t i) const;
+   Int_t        GetMultiplicity(Int_t i) const;
+   Int_t        GetClusterType() const;
 
    Int_t        SetCharge(Int_t i,Int_t Q);
    Int_t        SetX(Int_t i, Float_t X);
    Int_t        SetY(Int_t i, Float_t Y);
    Int_t        SetZ(Int_t i, Float_t Z);
+   Int_t        SetTrack(Int_t i, Int_t track);
+   Int_t        SetPeakSignal(Int_t i, Int_t peaksignal);
+   Int_t        SetMultiplicity(Int_t i, Int_t mul);
+   Int_t        SetClusterType(Int_t type);
 
-private:
-   Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
-   Float_t     fX[2]  ;           // X of cluster
-   Float_t     fY[2]  ;           // Y of cluster
-   Float_t     fZ[2]  ;           // Z of cluster
-
-public:
-   Int_t       fTracks[3];        //labels of overlapped tracks
-   Int_t       fPeakSignal[2];    // Peak signal 
    Int_t       fIndexMap[50][2];  // indeces of digits
    Int_t       fOffsetMap[50][2]; // Emmanuel special
    Float_t     fContMap[50][2];   // Contribution from digit
    Int_t       fPhysicsMap[50];   // Distinguish signal and background contr.
-   Int_t       fMultiplicity[2];  // Cluster multiplicity
    Int_t       fNcluster[2];      // Number of clusters
-   Int_t       fClusterType;      // Cluster type
+ 
    Float_t     fChi2[2];          // Chi**2 of fit
    Int_t       fGhost;            // 0 if not a ghost or ghost problem solved
                                   // >0 if ghost problem remains because
                                   // 1 both (true and ghost) satify 
                                   //   charge chi2 compatibility
                                   // 2 none give satisfactory chi2
-
+private:
+   Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
+   Float_t     fX[2]  ;           // X of cluster
+   Float_t     fY[2]  ;           // Y of cluster
+   Float_t     fZ[2]  ;           // Z of cluster
+   Int_t       fTracks[3];        //labels of overlapped tracks
+   Int_t       fPeakSignal[2];    // Peak signal 
+   Int_t       fMultiplicity[2];  // Cluster multiplicity
+   Int_t       fClusterType;      // Cluster type
 
    ClassDef(AliMUONRawCluster,1)  //Cluster class for MUON
 };

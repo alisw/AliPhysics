@@ -29,13 +29,10 @@
 //
 //
 //
-// This function is used for fitting
-void fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
+
 
 ClassImp(AliMUONClusterFinderAZ)
 
-AliMUONClusterFinderAZ* AliMUONClusterFinderAZ::fgClusterFinder = NULL;
-TMinuit* AliMUONClusterFinderAZ::fgMinuit = NULL; 
 
 //_____________________________________________________________________________
 AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw=0, Int_t iReco=0)
@@ -57,6 +54,8 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw=0, Int_t iReco=0)
   fNextCathode = kFALSE; 
   fColPad = 0;
   */
+  fgClusterFinder = NULL;
+  fgMinuit = NULL;
 }
 
 //_____________________________________________________________________________
@@ -2206,7 +2205,7 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t nfit, Int_t *clustFit, TObjArray **clust
 }  
 
 //_____________________________________________________________________________
-void fcn1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
+void AliMUONClusterFinderAZ::fcn1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
   // Fit for one track
   AliMUONClusterFinderAZ& c = *(AliMUONClusterFinderAZ::fgClusterFinder);    
@@ -2304,8 +2303,8 @@ void AliMUONClusterFinderAZ::AddRawCluster(Double_t x, Double_t y, Double_t fmin
     cnew.SetY(cath, y);
     cnew.SetZ(cath, fZpad);
     cnew.SetCharge(cath, 100);
-    cnew.fPeakSignal[cath] = 20;
-    cnew.fMultiplicity[cath] = 5;
+    cnew.SetPeakSignal(cath,20);
+    cnew.SetMultiplicity(cath, 5);
     cnew.fNcluster[cath] = 1;
     cnew.fChi2[cath] = fmin; //0.1;
     /*

@@ -108,8 +108,8 @@ void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
     Float_t qtot;
     Int_t   i, cath, ix, iy;
     AliMUONDigit* digit;
-    fNmul[0]=cluster->fMultiplicity[0];
-    fNmul[1]=cluster->fMultiplicity[1];
+    fNmul[0]=cluster->GetMultiplicity(0);
+    fNmul[1]=cluster->GetMultiplicity(1);
     //PH printf("\n %p %p ", fDigits[0], fDigits[1]);
     
     for (cath=0; cath<2; cath++) {

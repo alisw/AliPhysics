@@ -238,6 +238,30 @@ Float_t AliMUONRawCluster::GetZ(Int_t i) const
   else  return 99999.;
 }
 //____________________________________________________
+Int_t AliMUONRawCluster::GetTrack(Int_t i) const 
+{
+  if (i==0 || i==1 || i==2) return fTracks[i];
+  else  return 99999;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::GetPeakSignal(Int_t i) const 
+{
+  if (i==0 || i==1 ) return fPeakSignal[i];
+  else  return 99999;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::GetMultiplicity(Int_t i) const 
+{
+  if (i==0 || i==1 ) return fMultiplicity[i];
+  else  return 99999;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::GetClusterType() const 
+{
+  return fClusterType;
+}
+
+//____________________________________________________
 Int_t AliMUONRawCluster::SetCharge(Int_t i, Int_t Q)
 {
   if (i==0 || i==1) {
@@ -272,4 +296,37 @@ Int_t AliMUONRawCluster::SetZ(Int_t i, Float_t Z)
     return 1;
   }
   else return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::SetTrack(Int_t i, Int_t track)
+{
+  if (i==0 || i==1 || i==2) {
+    fTracks[i]=track;
+    return 1;
+  }
+  else return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::SetPeakSignal(Int_t i, Int_t peaksignal)
+{
+  if (i==0 || i==1 ) {
+    fPeakSignal[i]=peaksignal;
+    return 1;
+  }
+  else return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::SetMultiplicity(Int_t i, Int_t mul)
+{
+  if (i==0 || i==1 ) {
+    fMultiplicity[i]=mul;
+    return 1;
+  }
+  else return 0;
+}
+//____________________________________________________
+Int_t AliMUONRawCluster::SetClusterType(Int_t type)
+{
+  fClusterType=type;
+  return 1;
 }

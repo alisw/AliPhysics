@@ -104,8 +104,8 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 
     fInput->SetCluster(c);
 
-    fMul[0]=c->fMultiplicity[0];
-    fMul[1]=c->fMultiplicity[1];
+    fMul[0]=c->GetMultiplicity(0);
+    fMul[1]=c->GetMultiplicity(1);
 
 //
 //  dump digit information into arrays
@@ -455,16 +455,16 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 				cnew.SetY(cath, Float_t(ym[ico][0]));
 				cnew.SetZ(cath, fZPlane);
 				
-				cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
+				cnew.SetMultiplicity(cath,c->GetMultiplicity(cath));
 			      	for (i=0; i<fMul[cath]; i++) {
 				    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
 				    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 				}
 				fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
-				fprintf(stderr,"mult_av %d\n",c->fMultiplicity[cath]);
+				fprintf(stderr,"mult_av %d\n",c->GetMultiplicity(cath));
 				FillCluster(&cnew,cath);
 			    } 
-			    cnew.fClusterType=cnew.PhysicsContribution();
+			    cnew.SetClusterType(cnew.PhysicsContribution());
 			    AddRawCluster(cnew);
 			    fNPeaks++;
 			}
@@ -739,16 +739,16 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			cnew.SetX(cath, Float_t(xm[ico][1]));
 			cnew.SetY(cath, Float_t(ym[ico][0]));
 			cnew.SetZ(cath, fZPlane);
-			cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
+			cnew.SetMultiplicity(cath, c->GetMultiplicity(cath));
 			for (i=0; i<fMul[cath]; i++) {
 			    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
 			    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 			}
 			fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
-			fprintf(stderr,"mult_av %d\n",c->fMultiplicity[cath]);
+			fprintf(stderr,"mult_av %d\n",c->GetMultiplicity(cath));
 			FillCluster(&cnew,cath);
 		    } 
-		    cnew.fClusterType=cnew.PhysicsContribution();
+		    cnew.SetClusterType(cnew.PhysicsContribution());
 		    AddRawCluster(cnew);
 		    fNPeaks++;
 		}
@@ -877,16 +877,16 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			cnew.SetX(cath, Float_t(xm[ico][1]));
 			cnew.SetY(cath, Float_t(ym[ico][0]));
 			cnew.SetZ(cath, fZPlane);
-			cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
+			cnew.SetMultiplicity(cath, c->GetMultiplicity(cath));
 			for (i=0; i<fMul[cath]; i++) {
 			    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
 			    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 			}
 			fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
-			fprintf(stderr,"mult_av %d\n",c->fMultiplicity[cath]);
+			fprintf(stderr,"mult_av %d\n",c->GetMultiplicity(cath));
 			FillCluster(&cnew,cath);
 		    } 
-		    cnew.fClusterType=cnew.PhysicsContribution();
+		    cnew.SetClusterType(cnew.PhysicsContribution());
 		    AddRawCluster(cnew);
 		    fNPeaks++;
 		}
@@ -953,14 +953,14 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		    cnew.SetX(cath, Float_t(xm[ico][1]));
 		    cnew.SetY(cath, Float_t(ym[ico][0]));
 		    cnew.SetZ(cath, fZPlane);
-		    cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
+		    cnew.SetMultiplicity(cath, c->GetMultiplicity(cath));
 		    for (i=0; i<fMul[cath]; i++) {
 			cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
 			fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 		    }
 		    FillCluster(&cnew,cath);
 		} 
-		cnew.fClusterType=cnew.PhysicsContribution();
+		cnew.SetClusterType(cnew.PhysicsContribution());
 		AddRawCluster(cnew);
 		fNPeaks++;
 	    }
@@ -1188,9 +1188,9 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
     Int_t  ix, iy;
     
     if (cath==1) {
-	c->fPeakSignal[cath]=c->fPeakSignal[0];	
+	c->SetPeakSignal(cath,c->GetPeakSignal(0));	
     } else {
-	c->fPeakSignal[cath]=0;
+	c->SetPeakSignal(cath,0);
     }
     
     
@@ -1201,8 +1201,8 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
     }
 
     if (fDebugLevel)
-	fprintf(stderr,"\n fPeakSignal %d\n",c->fPeakSignal[cath]);
-    for (Int_t i=0; i<c->fMultiplicity[cath]; i++)
+	fprintf(stderr,"\n fPeakSignal %d\n",c->GetPeakSignal(cath));
+    for (Int_t i=0; i<c->GetMultiplicity(cath); i++)
     {
 	dig= fInput->Digit(cath,c->fIndexMap[i][cath]);
 	ix=dig->PadX()+c->fOffsetMap[i][cath];
@@ -1218,13 +1218,13 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
 //
 // 
 	if (fDebugLevel>1)
-	    fprintf(stderr,"q %d c->fPeakSignal[cath] %d\n",q,c->fPeakSignal[cath]);
+	    fprintf(stderr,"q %d c->fPeakSignal[cath] %d\n",q,c->GetPeakSignal(cath));
 // peak signal and track list
-	if (q>c->fPeakSignal[cath]) {
-	    c->fPeakSignal[cath]=q;
-	    c->fTracks[0]=dig->Hit();
-	    c->fTracks[1]=dig->Track(0);
-	    c->fTracks[2]=dig->Track(1);
+	if (q>c->GetPeakSignal(cath)) {
+	    c->SetPeakSignal(cath, q);
+	    c->SetTrack(0,dig->Hit());
+	    c->SetTrack(1,dig->Track(0));
+	    c->SetTrack(2,dig->Track(1));
 //	    fprintf(stderr," c->fTracks[0] %d c->fTracks[1] %d\n",dig->fHit,dig->fTracks[0]);
 	}
 //
@@ -1277,7 +1277,7 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
     Float_t xpad, ypad, zpad;
     Float_t dx, dy, dr;
 
-    for (Int_t i=0; i<c->fMultiplicity[cath]; i++)
+    for (Int_t i=0; i<c->GetMultiplicity(cath); i++)
     {
 	dig = fInput->Digit(cath,c->fIndexMap[i][cath]);
 	fSeg[cath]->
@@ -1298,10 +1298,10 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
 	    } else if (dig->Physics() == 0) {
 		c->fPhysicsMap[i]=0;
 	    } else  c->fPhysicsMap[i]=1;
-	    c->fPeakSignal[cath]=q;
-	    c->fTracks[0]=dig->Hit();
-	    c->fTracks[1]=dig->Track(0);
-	    c->fTracks[2]=dig->Track(1);
+	    c->SetPeakSignal(cath,q);
+	    c->SetTrack(0,dig->Hit());
+	    c->SetTrack(1,dig->Track(0));
+	    c->SetTrack(2,dig->Track(1));
 	    if (fDebugLevel)
 		fprintf(stderr," c->fTracks[0] %d c->fTracks[1] %d\n",dig->Hit(),
 		    dig->Track(0));
@@ -1330,17 +1330,17 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     Int_t theX=dig->PadX();
     Int_t theY=dig->PadY(); 
    
-    if (q > TMath::Abs(c.fPeakSignal[0]) && q > TMath::Abs(c.fPeakSignal[1])) {
-	c.fPeakSignal[cath]=q;
-	c.fTracks[0]=dig->Hit();
-	c.fTracks[1]=dig->Track(0);
-	c.fTracks[2]=dig->Track(1);
+    if (q > TMath::Abs(c.GetPeakSignal(0)) && q > TMath::Abs(c.GetPeakSignal(1))) {
+	c.SetPeakSignal(cath,q);
+	c.SetTrack(0,dig->Hit());
+	c.SetTrack(1,dig->Track(0));
+	c.SetTrack(2,dig->Track(1));
     }
 
 //
 //  Make sure that list of digits is ordered 
 // 
-    Int_t mu=c.fMultiplicity[cath];
+    Int_t mu=c.GetMultiplicity(cath);
     c.fIndexMap[mu][cath]=idx;
     
     if (dig->Physics() >= dig->Signal()) {
@@ -1367,10 +1367,10 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
 	}
     }
 
-    c.fMultiplicity[cath]++;
-    if (c.fMultiplicity[cath] >= 50 ) {
-	printf("FindCluster - multiplicity >50  %d \n",c.fMultiplicity[0]);
-	c.fMultiplicity[cath]=49;
+    c.SetMultiplicity(cath, c.GetMultiplicity(cath)+1);
+    if (c.GetMultiplicity(cath) >= 50 ) {
+	printf("FindCluster - multiplicity >50  %d \n",c.GetMultiplicity(0));
+	c.SetMultiplicity(cath, 49);
     }
 
 // Prepare center of gravity calculation
@@ -1488,12 +1488,12 @@ void AliMUONClusterFinderVS::FindRawClusters()
 	    if (fDebugLevel)
 		fprintf(stderr,"\n CATHODE %d CLUSTER %d\n",cath,ncls);
 	    AliMUONRawCluster c;
-	    c.fMultiplicity[0]=0;
-	    c.fMultiplicity[1]=0;
-	    c.fPeakSignal[cath]=dig->Signal();
-	    c.fTracks[0]=dig->Hit();
-	    c.fTracks[1]=dig->Track(0);
-	    c.fTracks[2]=dig->Track(1);
+	    c.SetMultiplicity(0, 0);
+	    c.SetMultiplicity(1, 0);
+	    c.SetPeakSignal(cath,dig->Signal());
+	    c.SetTrack(0, dig->Hit());
+	    c.SetTrack(1, dig->Track(0));
+	    c.SetTrack(2, dig->Track(1));
 	    // tag the beginning of cluster list in a raw cluster
 	    c.fNcluster[0]=-1;
 	    Float_t xcu, ycu;
@@ -1522,15 +1522,15 @@ void AliMUONClusterFinderVS::FindRawClusters()
 
 	    if (fDebugLevel) {
 		fprintf(stderr,"\n Cathode 1 multiplicite %d X(CG) %f Y(CG) %f\n",
-			c.fMultiplicity[0],c.GetX(0),c.GetY(0));
+			c.GetMultiplicity(0),c.GetX(0),c.GetY(0));
 		fprintf(stderr," Cathode 2 multiplicite %d X(CG) %f Y(CG) %f\n",
-			c.fMultiplicity[1],c.GetX(1),c.GetY(1));
+			c.GetMultiplicity(1),c.GetX(1),c.GetY(1));
 	    }
 //      Analyse cluster and decluster if necessary
 //	
 	ncls++;
 	c.fNcluster[1]=fNRawClusters;
-	c.fClusterType=c.PhysicsContribution();
+	c.SetClusterType(c.PhysicsContribution());
 
 	fNPeaks=0;
 //
@@ -1539,14 +1539,15 @@ void AliMUONClusterFinderVS::FindRawClusters()
 //
 //      reset Cluster object
 	{ // begin local scope
-	    for (int k=0;k<c.fMultiplicity[0];k++) c.fIndexMap[k][0]=0;
+	    for (int k=0;k<c.GetMultiplicity(0);k++) c.fIndexMap[k][0]=0;
 	} // end local scope
 
 	{ // begin local scope
-	    for (int k=0;k<c.fMultiplicity[1];k++) c.fIndexMap[k][1]=0;
+	    for (int k=0;k<c.GetMultiplicity(1);k++) c.fIndexMap[k][1]=0;
 	} // end local scope
 	
-	c.fMultiplicity[0]=c.fMultiplicity[0]=0;
+	c.SetMultiplicity(0,0);
+	c.SetMultiplicity(1,0);
 
 	
 	} // end loop ndig
@@ -1960,7 +1961,7 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 		cnew.fNcluster[0]=fNPeaks;
 		cnew.fNcluster[1]=0;
 	    }
-	    cnew.fMultiplicity[cath]=0;
+	    cnew.SetMultiplicity(cath,0);
 	    cnew.SetX(cath, Float_t(fXFit[j]));
 	    cnew.SetY(cath, Float_t(fYFit[j]));
 	    cnew.SetZ(cath, fZPlane);
@@ -1971,18 +1972,18 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 	    }
 	    fSeg[cath]->SetHit(fXFit[j],fYFit[j],fZPlane);
 	    for (i=0; i<fMul[cath]; i++) {
-		cnew.fIndexMap[cnew.fMultiplicity[cath]][cath]=
+		cnew.fIndexMap[cnew.GetMultiplicity(cath)][cath]=
 		    c->fIndexMap[i][cath];
 		fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 		Float_t q1=fInput->Response()->IntXY(fSeg[cath]);
 		cnew.fContMap[i][cath]
 		    =(q1*Float_t(cnew.GetCharge(cath)))/Float_t(fQ[i][cath]);
-		cnew.fMultiplicity[cath]++;
+		cnew.SetMultiplicity(cath, cnew.GetMultiplicity(cath)+1 );
 	    }
 	    FillCluster(&cnew,0,cath);
 	} // cathode loop
 	
-	cnew.fClusterType=cnew.PhysicsContribution();
+	cnew.SetClusterType(cnew.PhysicsContribution());
 	if (cnew.GetCharge(0)>0 && cnew.GetCharge(1)>0) AddRawCluster(cnew);
 	fNPeaks++;
     }
