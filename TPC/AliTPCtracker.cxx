@@ -846,6 +846,71 @@ Int_t AliTPCtracker::ReadSeeds(const TFile *inp) {
 }
 
 //_____________________________________________________________________________
+Int_t AliTPCtracker::Clusters2Tracks(AliESD *event) {
+  //-----------------------------------------------------------------
+  // This is a track finder.
+  // The clusters must be already loaded ! 
+  //-----------------------------------------------------------------
+
+  //find track seeds
+  Int_t nup=fOuterSec->GetNRows(), nlow=fInnerSec->GetNRows();
+  Int_t nrows=nlow+nup;
+  if (fSeeds==0) {
+     Int_t gap=Int_t(0.125*nrows), shift=Int_t(0.5*gap);
+     fSectors=fOuterSec; fN=fkNOS;
+     fSeeds=new TObjArray(15000);
+     MakeSeeds(nup-1, nup-1-gap);
+     MakeSeeds(nup-1-shift, nup-1-shift-gap);
+  }
+  fSeeds->Sort();
+
+  Int_t nseed=fSeeds->GetEntriesFast();
+  for (Int_t i=0; i<nseed; i++) {
+    //tracking in the outer sectors
+    fSectors=fOuterSec; fN=fkNOS;
+
+    AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t=*pt;
+    if (!FollowProlongation(t)) {
+       delete fSeeds->RemoveAt(i);
+       continue;
+    }
+
+    //tracking in the inner sectors
+    fSectors=fInnerSec; fN=fkNIS;
+
+    Double_t alpha=t.GetAlpha() - fInnerSec->GetAlphaShift();
+    if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();
+    if (alpha < 0.            ) alpha += 2.*TMath::Pi();
+    Int_t ns=Int_t(alpha/fInnerSec->GetAlpha())%fkNIS;
+
+    alpha=ns*fInnerSec->GetAlpha()+fInnerSec->GetAlphaShift()-t.GetAlpha();
+
+    if (t.Rotate(alpha)) {
+      if (FollowProlongation(t)) {
+        if (t.GetNumberOfClusters() >= Int_t(0.4*nrows)) {
+          t.CookdEdx();
+          CookLabel(pt,0.1); //For comparison only
+          pt->PropagateTo(fParam->GetInnerRadiusLow());
+          AliESDtrack iotrack;
+          iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
+
+          event->AddTrack(&iotrack);
+
+          UseClusters(&t);
+        }
+      }
+    }
+    delete fSeeds->RemoveAt(i);
+  }
+
+  cerr<<"Number of found tracks : "<<event->GetNumberOfTracks()<<endl;
+
+  fSeeds->Clear(); delete fSeeds; fSeeds=0;
+
+  return 0;
+}
+
+//_____________________________________________________________________________
 Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
   //-----------------------------------------------------------------
   // This is a track finder.
@@ -1067,6 +1132,74 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   // This function propagates tracks back through the TPC.
   //-----------------------------------------------------------------
   return PropagateBack(inp, NULL, out);
+}
+
+Int_t AliTPCtracker::PropagateBack(AliESD *event) {
+  //-----------------------------------------------------------------
+  // This function propagates tracks back through the TPC.
+  // The clusters must be already loaded !
+  //-----------------------------------------------------------------
+  Int_t nentr=event->GetNumberOfTracks();
+  Info("PropagateBack", "Number of ESD tracks: %d\n", nentr);
+
+  Int_t ntrk=0;
+  for (Int_t i=0; i<nentr; i++) {
+    AliESDtrack *esd=event->GetTrack(i);
+    ULong_t status=esd->GetStatus();
+
+    if ( (status & AliESDtrack::kTPCin ) == 0 ) continue;
+    if ( (status & AliESDtrack::kTPCout) != 0 ) continue;
+
+    const AliTPCtrack t(*esd);
+    AliTPCseed s(t,t.GetAlpha());
+
+    if (status==AliESDtrack::kTPCin) s.ResetCovariance();
+    else if ( (status & AliESDtrack::kITSout) == 0 ) continue;
+
+    Int_t nc=t.GetNumberOfClusters();
+    s.SetLabel(nc-1); //set number of the cluster to start with
+
+    //inner sectors
+    fSectors=fInnerSec; fN=fkNIS;
+
+    Double_t alpha=s.GetAlpha() - fSectors->GetAlphaShift();
+    if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();
+    if (alpha < 0.            ) alpha += 2.*TMath::Pi();
+    Int_t ns=Int_t(alpha/fSectors->GetAlpha())%fN;
+    alpha =ns*fSectors->GetAlpha() + fSectors->GetAlphaShift();
+    alpha-=s.GetAlpha();
+
+    if (!s.Rotate(alpha)) continue;
+    if (!FollowBackProlongation(s,t)) continue;
+
+
+    //outer sectors
+    fSectors=fOuterSec; fN=fkNOS;
+
+    alpha=s.GetAlpha() - fSectors->GetAlphaShift();
+    if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();
+    if (alpha < 0.            ) alpha += 2.*TMath::Pi();
+    ns=Int_t(alpha/fSectors->GetAlpha())%fN;
+
+    alpha =ns*fSectors->GetAlpha() + fSectors->GetAlphaShift();
+    alpha-=s.GetAlpha();
+
+    if (!s.Rotate(alpha)) continue;
+    if (!FollowBackProlongation(s,t)) continue;
+    {
+    Int_t nrows=fOuterSec->GetNRows()+fInnerSec->GetNRows();
+    if (s.GetNumberOfClusters() < Int_t(0.4*nrows)) continue;
+    }
+    s.PropagateTo(fParam->GetOuterRadiusUp());
+    s.CookdEdx();
+    CookLabel(&s,0.1); //For comparison only
+    UseClusters(&s);
+    esd->UpdateTrackParams(&s,AliESDtrack::kTPCout);
+    ntrk++;
+  }
+  cerr<<"Number of back propagated tracks: "<<ntrk<<endl;
+
+  return 0;
 }
 
 //_____________________________________________________________________________
