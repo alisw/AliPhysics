@@ -31,6 +31,7 @@ AliLhcBeam::AliLhcBeam(AliLHC* lhc)
 }
 
 AliLhcBeam::AliLhcBeam(const AliLhcBeam& beam)
+    : TNamed(beam), AliLhcMonitor(beam)
 {
 // copy constructor
 }
@@ -72,7 +73,7 @@ void AliLhcBeam::IncreaseEmittance(Float_t de, Float_t del)
   fEnergySpread *= (1.+del);
 }
 
-AliLhcBeam& AliLhcBeam::operator=(const  AliLhcBeam & rhs)
+AliLhcBeam& AliLhcBeam::operator=(const  AliLhcBeam & /*rhs*/)
 {
 // Assignment operator
     return *this;

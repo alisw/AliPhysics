@@ -167,7 +167,7 @@ void AliLhcProcessIBS::DrawPlots()
 
 
 
-AliLhcProcessIBS& AliLhcProcessIBS::operator=(const  AliLhcProcessIBS & rhs)
+AliLhcProcessIBS& AliLhcProcessIBS::operator=(const  AliLhcProcessIBS & /*rhs*/)
 {
 // Assignment operator
     return *this;

@@ -39,6 +39,7 @@ AliLhcIRegion::AliLhcIRegion(AliLHC* lhc, const char* name, const char* title)
 }
 
 AliLhcIRegion::AliLhcIRegion(const AliLhcIRegion& region)
+    : TNamed(region), AliLhcMonitor(region) 
 {
 // copy constructor
 }
@@ -53,7 +54,7 @@ AliLhcIRegion::~AliLhcIRegion()
 }
 
 
-AliLhcIRegion& AliLhcIRegion::operator=(const  AliLhcIRegion & rhs)
+AliLhcIRegion& AliLhcIRegion::operator=(const  AliLhcIRegion & /*rhs*/)
 {
 // Assignment operator
     return *this;
@@ -207,7 +208,7 @@ void AliLhcIRegion::DrawPlots()
   mg->Draw("AC");
 
   TCanvas *c2 = new TCanvas(name2,title, 200, 10, 700, 500);
-  c1->SetGrid();
+  c2->SetGrid();
   grLumiB->Draw("AC");
 
 }

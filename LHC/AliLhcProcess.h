@@ -18,7 +18,7 @@ class AliLhcProcess : public TNamed, public AliLhcMonitor
   virtual ~AliLhcProcess();
   virtual void Init(){;}
   virtual void Evolve(Float_t dt);
-  virtual void  SetMonitor(Int_t n){;}
+  virtual void  SetMonitor(Int_t /*n*/) {;}
   virtual void  Record(){;}
   virtual void  DrawPlots(){;}
   AliLhcProcess & operator=(const AliLhcProcess & rhs);

@@ -61,7 +61,7 @@ void AliLhcProcessBB::Evolve(Float_t dt)
 }
 
 
-AliLhcProcessBB& AliLhcProcessBB::operator=(const  AliLhcProcessBB & rhs)
+AliLhcProcessBB& AliLhcProcessBB::operator=(const  AliLhcProcessBB & /*rhs*/)
 {
 // Assignment operator
     return *this;

@@ -28,6 +28,7 @@ AliLhcProcess::AliLhcProcess(AliLHC *lhc, const char* name, const char* title)
 }
 
 AliLhcProcess::AliLhcProcess(const AliLhcProcess& process)
+    : TNamed(process), AliLhcMonitor(process)
 {
 // copy constructor
 }
@@ -43,7 +44,7 @@ void AliLhcProcess::Evolve(Float_t dt)
     printf("\n Here process %s %f:", GetName(), dt);
 }
 
-AliLhcProcess& AliLhcProcess::operator=(const  AliLhcProcess & rhs)
+AliLhcProcess& AliLhcProcess::operator=(const  AliLhcProcess & /*rhs*/)
 {
 // Assignment operator
     return *this;

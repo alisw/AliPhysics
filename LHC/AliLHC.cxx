@@ -40,6 +40,7 @@ AliLHC::AliLHC()
 }
 
 AliLHC::AliLHC(const AliLHC& lhc)
+    : TObject(lhc)
 {
 // copy constructor
 }
@@ -169,7 +170,7 @@ void AliLHC::Evaluate()
   Beam(0)->DrawPlots();
 }
    
-AliLHC& AliLHC::operator=(const  AliLHC & rhs)
+AliLHC& AliLHC::operator=(const  AliLHC & /*rhs*/)
 {
 // Assignment operator
     return *this;
