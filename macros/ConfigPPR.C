@@ -22,6 +22,7 @@
 #include "EVGEN/AliSlowNucleonModelExp.h"
 #include "EVGEN/AliGenParam.h"
 #include "EVGEN/AliGenGSIlib.h"
+#include "EVGEN/AliGenMUONCocktail.h"
 #include "PYTHIA6/AliGenPythia.h"
 #include "STEER/AliMagFMaps.h"
 #include "STRUCT/AliBODY.h"
@@ -40,7 +41,7 @@
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"
 #include "MUON/AliMUONv1.h"
-#include "MUON/AliMUONSt1GeometryBuilder.h"
+#include "MUON/AliMUONSt1GeometryBuilderV2.h"
 #include "MUON/AliMUONSt2GeometryBuilder.h"
 #include "MUON/AliMUONSlatGeometryBuilder.h"
 #include "MUON/AliMUONTriggerGeometryBuilder.h"
@@ -67,7 +68,11 @@ enum PprRun_t
     kPythia6Jets104_125, kPythia6Jets125_150, kPythia6Jets150_180,
     kD0PbPb5500, kCharmSemiElPbPb5500, kBeautySemiElPbPb5500,
     kD_TRD, kB_TRD, kJpsi_TRD,
-    kU_TRD, kPyJJ, kPyGJ, kRunMax
+    kU_TRD, kPyJJ, kPyGJ, 
+    kMuonCocktailCent1, kMuonCocktailPer1, kMuonCocktailPer4, 
+    kMuonCocktailCent1HighPt, kMuonCocktailPer1HighPt, kMuonCocktailPer4HighPt,
+    kMuonCocktailCent1Single, kMuonCocktailPer1Single, kMuonCocktailPer4Single,
+    kRunMax
 };
 
 const char* pprRunName[kRunMax] = {
@@ -86,7 +91,10 @@ const char* pprRunName[kRunMax] = {
     "kPythia6Jets104_125", "kPythia6Jets125_150", "kPythia6Jets150_180",
     "kD0PbPb5500", "kCharmSemiElPbPb5500", "kBeautySemiElPbPb5500",
     "kD_TRD", "kB_TRD", "kJpsi_TRD",
-    "kU_TRD", "kPyJJ", "kPyGJ"
+    "kU_TRD", "kPyJJ", "kPyGJ", 
+    "kMuonCocktailCent1", "kMuonCocktailPer1", "kMuonCocktailPer4",  
+    "kMuonCocktailCent1HighPt", "kMuonCocktailPer1HighPt", "kMuonCocktailPer4HighPt",
+    "kMuonCocktailCent1Single", "kMuonCocktailPer1Single", "kMuonCocktailPer4Single"
 };
 
 enum PprGeo_t 
@@ -107,7 +115,7 @@ enum PprMag_t
 
 // This part for configuration    
 //static PprRun_t srun = test50;
-static PprRun_t srun = kPythia6;
+static PprRun_t srun = kMuonCocktailCent1HighPt;
 static PprGeo_t sgeo = kHoles;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k5kG;
@@ -146,7 +154,7 @@ void Config()
 
     cout<<"Config.C: Creating Run Loader ..."<<endl;
     rl = AliRunLoader::Open("galice.root",
-			    AliConfig::GetDefaultEventFolderName(),
+			    AliConfig::fgkDefaultEventFolderName,
 			    "recreate");
     if (rl == 0x0)
       {
@@ -480,7 +488,7 @@ void Config()
         //=================== MUON parameters ===========================
 
         AliMUON *MUON = new AliMUONv1("MUON", "default");
-	MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
+	MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
 	MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
 	MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
 	MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
@@ -1239,6 +1247,141 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetGammaEtaRange(-0.13,0.13);
 	gener->SetGammaPhiRange(210.,330.);
 	gener->SetEventListRange(0,1);
+	gGener=gener;
+      }
+      break;
+    case kMuonCocktailCent1:
+      {
+	comment = comment.Append(" Muon Cocktail Cent1");
+	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
+	gener->SetYRange(-4.0,-2.4);
+	gener->SetMuonPtCut(0.8);
+	gener->SetMuonThetaCut(171.,178.);
+	gener->SetMuonMultiplicity(2);
+	gener->SetNumberOfCollisions(1626.);  //Centrality class Cent1 for PDC04
+	gener->SetNumberOfParticipants(359.4);//Centrality class Cent1 for PDC04
+	gGener=gener;
+      }
+      break;
+    case kMuonCocktailPer1:
+      {
+	comment = comment.Append(" Muon Cocktail Per1");
+	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
+	gener->SetYRange(-4.0,-2.4);
+	gener->SetMuonPtCut(0.8);
+	gener->SetMuonThetaCut(171.,178.);
+	gener->SetMuonMultiplicity(2);
+	gener->SetNumberOfCollisions(820.0);//Centrality class Per1 for PDC04
+	gener->SetNumberOfParticipants(229.3);//Centrality class Per1 for PDC04
+	gGener=gener;
+      }
+      break;
+    case kMuonCocktailPer4:
+      {
+	comment = comment.Append(" Muon Cocktail Per4");
+	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
+	gener->SetYRange(-4.0,-2.4);
+	gener->SetMuonPtCut(0.8);
+	gener->SetMuonThetaCut(171.,178.);
+	gener->SetMuonMultiplicity(2);
+	gener->SetNumberOfCollisions(13.6);//Centrality class Per4 for PDC04
+	gener->SetNumberOfParticipants(13.3);//Centrality class Per4 for PDC04
+	gGener=gener;
+      }
+      break;
+    case kMuonCocktailCent1HighPt:
+      {
+	comment = comment.Append(" Muon Cocktail HighPt Cent1");
+	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
+	gener->SetYRange(-4.0,-2.4);
+	gener->SetMuonPtCut(2.5);
+	gener->SetMuonThetaCut(171.,178.);
+	gener->SetMuonMultiplicity(2);
+	gener->SetNumberOfCollisions(1626.);  //Centrality class Cent1 for PDC04
+	gener->SetNumberOfParticipants(359.4);//Centrality class Cent1 for PDC04
+	gGener=gener;
+      }
+      break;
+    case kMuonCocktailPer1HighPt :
+      {
+	comment = comment.Append(" Muon Cocktail HighPt Per1");
+	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
+	gener->SetYRange(-4.0,-2.4);
+	gener->SetMuonPtCut(2.5);
+	gener->SetMuonThetaCut(171.,178.);
+	gener->SetMuonMultiplicity(2);
+	gener->SetNumberOfCollisions(820.0);//Centrality class Per1 for PDC04
+	gener->SetNumberOfParticipants(229.3);//Centrality class Per1 for PDC04
+	gGener=gener;
+      }
+      break;
+    case kMuonCocktailPer4HighPt:
+      {
+	comment = comment.Append(" Muon Cocktail HighPt Per4");
+	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
+	gener->SetYRange(-4.0,-2.4);
+	gener->SetMuonPtCut(2.5);
+	gener->SetMuonThetaCut(171.,178.);
+	gener->SetMuonMultiplicity(2);
+	gener->SetNumberOfCollisions(13.6);//Centrality class Per4 for PDC04
+	gener->SetNumberOfParticipants(13.3);//Centrality class Per4 for PDC04
+	gGener=gener;
+      }
+      break;
+    case kMuonCocktailCent1Single:
+      {
+	comment = comment.Append(" Muon Cocktail Single Cent1");
+	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
+	gener->SetYRange(-4.0,-2.4);
+	gener->SetMuonPtCut(0.8);
+	gener->SetMuonThetaCut(171.,178.);
+	gener->SetMuonMultiplicity(1);
+	gener->SetNumberOfCollisions(1626.);  //Centrality class Cent1 for PDC04
+	gener->SetNumberOfParticipants(359.4);//Centrality class Cent1 for PDC04
+	gGener=gener;
+      }
+      break;
+    case kMuonCocktailPer1Single :
+      {
+	comment = comment.Append(" Muon Cocktail Single Per1");
+	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
+	gener->SetYRange(-4.0,-2.4);
+	gener->SetMuonPtCut(0.8);
+	gener->SetMuonThetaCut(171.,178.);
+	gener->SetMuonMultiplicity(1);
+	gener->SetNumberOfCollisions(820.0);//Centrality class Per1 for PDC04
+	gener->SetNumberOfParticipants(229.3);//Centrality class Per1 for PDC04
+	gGener=gener;
+      }
+      break;
+    case kMuonCocktailPer4Single:
+      {
+	comment = comment.Append(" Muon Cocktail Single Per4");
+	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
+	gener->SetYRange(-4.0,-2.4);
+	gener->SetMuonPtCut(0.8);
+	gener->SetMuonThetaCut(171.,178.);
+	gener->SetMuonMultiplicity(1);
+	gener->SetNumberOfCollisions(13.6);//Centrality class Per4 for PDC04
+	gener->SetNumberOfParticipants(13.3);//Centrality class Per4 for PDC04
 	gGener=gener;
       }
       break;
