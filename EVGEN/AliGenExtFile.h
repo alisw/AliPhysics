@@ -28,7 +28,9 @@ class AliGenExtFile : public AliGenMC
     virtual void Generate();
     AliGenExtFile & operator=(const AliGenExtFile & rhs);
     void SetReader(AliGenReader* reader) {fReader = reader;}
-protected:
+ protected:
+    void CdEventFile();
+ protected:    
     const Text_t     *fFileName;      //! File to read from
     AliGenReader     *fReader;        //! Reader to read the file
     

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2002/04/26 10:39:31  morsch
+AliGenExtFile derives from AliGenMC. Generate() uses methods from AliGenMC (N. Carrer)
+
 Revision 1.20  2002/03/22 09:43:28  morsch
 Don't delete the TParticle.
 
@@ -231,9 +234,13 @@ void AliGenExtFile::Generate()
   } // event loop
 
   SetHighWaterMark(nt);
+  CdEventFile();
+}
 
+void AliGenExtFile::CdEventFile()
+{
+// CD back to the event file
   TFile *pFile=0;
-// Get AliRun object or create it 
   if (!gAlice) {
       gAlice = (AliRun*)pFile->Get("gAlice");
       if (gAlice) printf("AliRun object found on file\n");
@@ -241,7 +248,7 @@ void AliGenExtFile::Generate()
   }
   TTree *fAli=gAlice->TreeK();
   if (fAli) pFile =fAli->GetCurrentFile();
-  pFile->cd();
+  pFile->cd();    
 }
 
 
