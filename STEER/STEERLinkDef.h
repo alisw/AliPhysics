@@ -44,6 +44,7 @@
 #pragma link C++ class  AliRndm+;
 #pragma link C++ class  AliMCQA+;
 #pragma link C++ class  AliPDG+;
+#pragma link C++ class  AliDebugVolume+;
 #endif
 
 

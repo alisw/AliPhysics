@@ -19,7 +19,7 @@ SRCS          = AliDetector.cxx	AliHeader.cxx	AliMagF.cxx \
                 AliLegoGeneratorPhiZ.cxx AliLegoGeneratorEta.cxx \
                 AliRndm.cxx \
 		AliKalmanTrack.cxx AliCluster.cxx AliTracker.cxx\
-		AliMCQA.cxx AliPDG.cxx
+		AliMCQA.cxx AliPDG.cxx AliDebugVolume.cxx
 
 # C++ Headers
 
