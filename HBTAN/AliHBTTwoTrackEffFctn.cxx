@@ -133,8 +133,6 @@ void AliHBTTwoTrackEffFctnPtThetaPhi::GetValues(AliHBTPair* pair, Double_t& x, D
  x = TMath::Abs(pair->GetDeltaPt());
  y = TMath::Abs(pair->GetDeltaTheta());
  z = TMath::Abs(pair->GetDeltaPhi());
- 
- Info("","Pt %f, Theta %f, Phi %f",x,y,z);
 }
 /******************************************************************/
 
