@@ -7,7 +7,6 @@
 #include "AliSteppingAction.h"
 #include "AliGlobals.h"
 
-#include <G4UIdirectory.hh>
 #include <G4UIcmdWithAnInteger.hh>
 
 AliSteppingActionMessenger::AliSteppingActionMessenger(

@@ -11,18 +11,13 @@
 #include "AliEventActionMessenger.h"
 #include "AliRun.h"
 #include "AliTrackingAction.h"
-#include "AliSensitiveDetector.h"
 #include "AliGlobals.h"
-
-#include "TG4GeometryManager.h"
 
 #include <G4Event.hh>
 #include <G4TrajectoryContainer.hh>
 #include <G4Trajectory.hh>
 #include <G4VVisManager.hh>
 #include <G4UImanager.hh>
-#include <G4LogicalVolumeStore.hh>
-#include <G4VSensitiveDetector.hh>
 
 AliEventAction::AliEventAction()
   : fVerboseLevel(1), 

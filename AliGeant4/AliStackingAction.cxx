@@ -9,9 +9,9 @@
 #include "AliGlobals.h"
 
 #include <G4Track.hh>
+#include <G4TrackStack.hh>
 #include <G4StackedTrack.hh>
 #include <G4StackManager.hh>
-#include <G4ios.hh>
 #include <G4NeutrinoE.hh>
 #include <G4NeutrinoMu.hh>
 #include <G4NeutrinoTau.hh>

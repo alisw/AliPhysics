@@ -21,6 +21,7 @@
 #include <Randomize.hh>
 
 #include <TParticle.h>
+#include <TClonesArray.h>
 
 AliPrimaryGeneratorAction::AliPrimaryGeneratorAction()
   : fGenerator(kAliGenerator),

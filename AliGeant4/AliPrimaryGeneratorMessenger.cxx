@@ -5,7 +5,6 @@
 
 #include "AliPrimaryGeneratorMessenger.h"
 #include "AliPrimaryGeneratorAction.h"
-#include "AliPrimaryGenerator.h"
 #include "AliGlobals.h"
 
 #include <G4UIdirectory.hh>

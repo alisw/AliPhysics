@@ -7,7 +7,6 @@
 #define ALI_EVENT_ACTION_MESSENGER_H 
 
 #include <G4UImessenger.hh>
-#include <globals.hh>
 
 class AliEventAction;
 

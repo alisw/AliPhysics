@@ -10,11 +10,11 @@
 
 #include <globals.hh>
 
-#include <TClonesArray.h>
-
 class AliTrackingActionMessenger;
 
 class G4Track;
+
+class TClonesArray;
 
 class AliTrackingAction : public TG4TrackingAction 
 {

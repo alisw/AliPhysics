@@ -5,7 +5,7 @@
 
 #include "AliGunParticle.h"
 
-#include <G4ios.hh>
+#include <G4ParticleDefinition.hh>
 
 AliGunParticle::AliGunParticle()
   : fParticleDefinition(0),

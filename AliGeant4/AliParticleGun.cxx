@@ -5,12 +5,13 @@
 
 #include "AliParticleGun.h"
 #include "AliParticleGunMessenger.h"
+#include "AliGunParticle.h"
 #include "AliGlobals.h"
 
+#include <G4ParticleDefinition.hh>
 #include <G4PrimaryParticle.hh>
+#include <G4PrimaryVertex.hh>
 #include <G4Event.hh>
-#include <G4ios.hh>
-
 
 AliParticleGun::AliParticleGun() {
 //

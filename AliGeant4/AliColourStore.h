@@ -6,7 +6,9 @@
 #ifndef ALI_COLOUR_STORE_H
 #define ALI_COLOUR_STORE_H
 
-#include "AliColour.h"
+#include <G4Colour.hh>
+ 
+class AliColour;
 
 #include <g4rw/tvordvec.h>
 

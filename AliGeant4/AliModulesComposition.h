@@ -8,8 +8,6 @@
 #ifndef ALI_MODULES_COMPOSITION_H
 #define ALI_MODULES_COMPOSITION_H
 
-#include "AliSingleModuleConstruction.h"
-#include "AliDetSwitch.h"
 #include "AliModuleType.h"
 
 #include <G4VUserDetectorConstruction.hh>
@@ -17,6 +15,8 @@
 
 #include <g4rw/tpordvec.h>
 
+class AliSingleModuleConstruction;
+class AliDetSwitch;
 class AliModulesCompositionMessenger;
 class AliMoreModulesConstruction;
 class AliMagneticField;

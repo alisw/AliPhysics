@@ -7,8 +7,6 @@
 #define ALI_STACKING_ACTION_H
 
 #include <G4UserStackingAction.hh>
-#include <G4TrackStack.hh>
-
 #include <globals.hh>
 
 class AliStackingActionMessenger;

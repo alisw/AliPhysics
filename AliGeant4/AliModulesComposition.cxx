@@ -7,15 +7,14 @@
 #include "AliModulesCompositionMessenger.h"
 #include "AliSingleModuleConstruction.h"
 #include "AliMoreModulesConstruction.h"
+#include "AliDetSwitch.h"
 #include "AliMagneticField.h"
 #include "AliGlobals.h"
 
 #include "TG4XMLGeometryGenerator.h"
 
-#include <G4UniformMagField.hh>
-#include <G4FieldManager.hh>
-#include <G4TransportationManager.hh>
 #include <G4Material.hh>
+#include <G4VPhysicalVolume.hh>
 
 AliModulesComposition::AliModulesComposition()
   : fAllLVSensitive(false),

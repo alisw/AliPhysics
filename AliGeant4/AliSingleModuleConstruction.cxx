@@ -6,15 +6,14 @@
 #include "AliSingleModuleConstruction.h"
 #include "AliSingleModuleConstructionMessenger.h"
 #include "AliSDManager.h"
-#include "AliSensitiveDetector.h"
 #include "AliGlobals.h"
 #include "AliFiles.h"
 #include "AliRun.h"
+#include "AliModule.h"
 
 #include "TG4GeometryManager.h"
 
 #include <G3SensVolVector.hh>
-#include <G4SDManager.hh>
 #include <G4UImanager.hh>
 //#include <G4Element.hh>
 #include <G4LogicalVolume.hh>

@@ -5,6 +5,7 @@
 
 #include "AliDetConstruction.h"
 #include "AliSingleModuleConstruction.h"
+#include "AliDetSwitch.h"
 #include "AliGlobals.h"
 #include "AliRun.h"
 #include "AliModule.h"

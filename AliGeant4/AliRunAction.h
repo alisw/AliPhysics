@@ -6,8 +6,8 @@
 #ifndef ALI_RUN_ACTION_H
 #define ALI_RUN_ACTION_H
 
-#include <globals.hh>
 #include <G4UserRunAction.hh>
+#include <globals.hh>
 
 class G4Timer;
     // in order to avoid the odd dependency for the

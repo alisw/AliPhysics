@@ -16,12 +16,11 @@
 #include <G4VUserPrimaryGeneratorAction.hh>
 #include <globals.hh>
 
-#include <TClonesArray.h>
-
 class AliParticleGun;
 class AliPrimaryGeneratorMessenger;
 class G4ParticleGun;
 class G4Event;
+class TClonesArray;
 
 class AliPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {

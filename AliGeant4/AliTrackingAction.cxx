@@ -5,20 +5,16 @@
 
 #include "AliTrackingAction.h"
 #include "AliTrackingActionMessenger.h"
-#include "AliSensitiveDetector.h"
 #include "AliRun.h"
 #include "AliGlobals.h"  
 #include "TG4StepManager.h"
 
 #include <G4TrackingManager.hh>
 #include <G4Track.hh>
-#include <G4Event.hh>
-#include <G4SDManager.hh>
-#include <G4VSensitiveDetector.hh>
-#include <G4VHitsCollection.hh>
 
 #include <TTree.h>
 #include <TParticle.h>
+#include <TClonesArray.h>
 
 // static data members
 AliTrackingAction* AliTrackingAction::fgInstance = 0;

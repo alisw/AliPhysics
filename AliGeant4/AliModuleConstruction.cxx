@@ -4,8 +4,10 @@
 // See the class description in the header file.
 
 #include "AliModuleConstruction.h"
+#include "AliModuleConstructionMessenger.h"
 #include "AliGlobals.h"
 #include "AliLVStructure.h"
+#include "AliModule.h"
 
 #ifdef ALICE_VISUALIZE
 #include "AliColourStore.h"

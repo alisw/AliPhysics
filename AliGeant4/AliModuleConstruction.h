@@ -8,15 +8,11 @@
 #ifndef ALI_MODULE_CONSTRUCTION_H
 #define ALI_MODULE_CONSTRUCTION_H
 
-#include "AliModuleConstructionMessenger.h"
-#include "AliModule.h"
-
 #include <globals.hh>
-#ifdef ALICE_VISUALIZE
-#include <G4VisAttributes.hh>
-#endif
 
 class AliLVStructure;
+class AliModuleConstructionMessenger;
+class AliModule;
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;

@@ -4,7 +4,8 @@
 // See the class description in the header file.
 
 #include "AliColour.h"
-   
+#include <G4Colour.hh>
+  
 AliColour::AliColour()
   : fName (""),
     fRed(0.),

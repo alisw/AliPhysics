@@ -7,10 +7,10 @@
 #ifndef ALI_LV_STRUCTURE_H
 #define ALI_LV_STRUCTURE_H
 
-#include <G4LogicalVolume.hh>
 #include <globals.hh>
-
 #include <g4rw/tpordvec.h>
+
+class G4LogicalVolume;
 
 class AliLVStructure 
 {
