@@ -221,6 +221,8 @@ void AliPHOS::CreateMaterials()
 
   AliMixture(16, "ArCO2$", aGM, zGM, dGM,  2, wGM) ;
 
+  // --- Stainless steel (let it be pure iron) ---
+  AliMaterial(17, "Steel$", 55.845, 26, 7.87, 1.76, 0., 0, 0) ;
  
   // --- Air ---
   AliMaterial(99, "Air$", 14.61, 7.3, 0.001205, 30420., 67500., 0, 0) ;
@@ -297,6 +299,10 @@ void AliPHOS::CreateMaterials()
   AliMedium(16, "ArCo2      $", 16, 1,
 	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.01, 0, 0) ;
  
+  // Stainless steel                                                                -> idtmed[716]
+  AliMedium(17, "Steel     $", 17, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.0001, 0, 0) ;
+
   // Air                                                                            -> idtmed[798] 
   AliMedium(99, "Air          $", 99, 0,
 	     isxfld, sxmgmx, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
