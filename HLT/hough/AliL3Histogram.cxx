@@ -223,6 +223,7 @@ void AliL3Histogram::Add(AliL3Histogram *h1,Double_t weight)
   for(Int_t bin=0; bin<fNcells; bin++)
     fContent[bin] += h1->GetBinContent(bin);
   
+  fEntries += h1->GetNEntries();
 }
 
 Double_t AliL3Histogram::GetBinCenterX(Int_t xbin)
