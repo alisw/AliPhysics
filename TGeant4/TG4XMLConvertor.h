@@ -18,10 +18,14 @@
 class G4Material;
 class G4VSolid;
 class G4LogicalVolume;
+class G4PVReplica;
 class G4Box;
 class G4Tubs;
+class G4Cons;
 class G4Trd;
 class G4Trap;
+class G4Polycone;
+class G4Polyhedra;
 
 class TG4XMLConvertor : public TG4VXMLConvertor
 {
@@ -47,7 +51,8 @@ class TG4XMLConvertor : public TG4VXMLConvertor
     virtual void WritePosition(G4String lvName, G4ThreeVector position); 
     virtual void WritePositionWithRotation(
                                G4String lvName, G4ThreeVector position,
-			       const G4RotationMatrix* rotation); 
+   			       const G4RotationMatrix* rotation); 
+    virtual void WriteReplica(G4String lvName, G4PVReplica* pvr);			       
     virtual void WriteEmptyLine();
     virtual void IncreaseIndention();
     virtual void DecreaseIndention();
@@ -57,10 +62,17 @@ class TG4XMLConvertor : public TG4VXMLConvertor
     void CutName(G4String& name) const;
     void CutName(G4String& name, G4int size) const;
     void PutName(G4String& element, G4String name, G4String templ) const;
+    
+         // writing solids
     void WriteBox (G4String lvName, const G4Box*  box,  G4String materialName); 
     void WriteTubs(G4String lvName, const G4Tubs* tubs, G4String materialName); 
+    void WriteCons(G4String lvName, const G4Cons* cons, G4String materialName); 
     void WriteTrd (G4String lvName, const G4Trd*  trd,  G4String materialName); 
     void WriteTrap(G4String lvName, const G4Trap* trap, G4String materialName); 
+    void WritePolycone(G4String lvName, const G4Polycone* polycone, 
+                   G4String materialName); 
+    void WritePolyhedra(G4String lvName, const G4Polyhedra* polyhedra, 
+                   G4String materialName); 
   
     // static data members
     static const G4int fgkMaxVolumeNameLength;
