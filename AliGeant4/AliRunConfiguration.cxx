@@ -11,10 +11,10 @@
 #include "AliEventAction.h"
 #include "AliTrackingAction.h"
 #include "AliStackingAction.h"
-#include "AliSteppingAction.h"
 #include "AliFiles.h"
 
 #include "TG4ModularPhysicsList.h"
+#include "TG4SteppingAction.h"
 
 AliRunConfiguration::AliRunConfiguration(){
 //
@@ -71,7 +71,7 @@ void AliRunConfiguration::CreateUserConfiguration()
   fRunAction = new AliRunAction();
   fEventAction = new AliEventAction();
   fTrackingAction = new AliTrackingAction();
-  fSteppingAction = new AliSteppingAction();
+  fSteppingAction = new TG4SteppingAction();
   fStackingAction = new AliStackingAction();
 }
 
