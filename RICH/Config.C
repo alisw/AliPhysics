@@ -1,11 +1,12 @@
-enum gentype_t {hijing, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan, doublescan};
+enum EGeneratorTypes {kHijing, kGun, kBox, kPythia, kParam, kCcocktail, kFluka, kHalo, kNtuple, kScan,
+                      kDoubleScan};
 
-gentype_t gentype=gun;
-ntracks=1;
+EGeneratorTypes gentype=kBox;
+Int_t ntracks=50;
 
 void Config()
 {
-
+   cout<<"RICH private Config.C> Start\n";
 new AliGeant3("C++ Interface to Geant3");
 
 //=======================================================================
@@ -53,37 +54,27 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 // --- Specify event type to be tracked through the ALICE setup
 // --- All positions are in cm, angles in degrees, and P and E in GeV
 
- switch(gentype)
- {
- case gun:
-//*********************************************
-// Example for Fixed Particle Gun             *
-//*********************************************
+   switch(gentype){
+   case kGun:
      AliGenFixed *gener = new AliGenFixed(ntracks);
      gener->SetMomentum(3);
      gener->SetPhiRange(90);
      gener->SetThetaRange(101);
      gener->SetOrigin(0,480,-20);                 //vertex position
      gener->SetPart(kPiPlus);                 //GEANT particle type
-     break;
- case box:  
-//*********************************************
-// Example for Moving Particle Gun            *
-//*********************************************
+   break;
+   case kBox:  
      AliGenBox *gener = new AliGenBox(ntracks);
-     gener->SetMomentumRange(3,3);
-     gener->SetPhiRange(82,98);
-     gener->SetThetaRange(85,98);
+     gener->SetMomentumRange(2,2);
+     gener->SetPhiRange(90,120);
+     gener->SetThetaRange(85,95);
      gener->SetOrigin(0,0,0);   
      gener->SetVertexSmear(kPerTrack); 
      //vertex position
      gener->SetSigma(1.8, 1.8,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kPiPlus);                    //GEANT particle type
-     break;
- case scan:  
-//*********************************************
-// Scanning on a grid                         *
-//*********************************************
+   break;
+   case kScan:  
      AliGenScan *gener = new AliGenScan(-1);
      gener->SetMomentumRange(3,3);
      gener->SetPhiRange(90,90);
@@ -92,11 +83,8 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kPiPlus); 
      gener->SetRange(1, 430, 430, 1, 430, 430, 1, 430, 430);
-     break;
- case doublescan:  
-//*********************************************
-// Scanning on a grid                         *
-//*********************************************
+   break;
+   case kSoubleScan:  
      AliGenDoubleScan *gener = new AliGenDoubleScan(-1);
      gener->SetMomentumRange(3,3);
      gener->SetPhiRange(0,360);
@@ -105,24 +93,17 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kPiPlus); 
      gener->SetRange(20, -60, 60, 1, 480, 480, 20, -60, 60);
-     gener->SetDistance(1);
-     
-     break;
-     
- case hijing:
+     gener->SetDistance(1);     
+   break;    
+   case kHijing:
      AliGenHIJINGpara *gener = new AliGenHIJINGpara(ntracks);
      gener->SetMomentumRange(0,999);
      gener->SetPhiRange(0,360);
      gener->SetThetaRange(.77,179.23);
      gener->SetOrigin(0,0,0);          //vertex position
      gener->SetSigma(0,0,5.6);         //Sigma in (X,Y,Z) (cm) on IP position
-     break;
-
- case pythia:
-//********************************************
-// Example for Charm  Production with Pythia *
-//********************************************
-
+   break;
+   case kPythia:
      AliGenPythia *gener = new AliGenPythia(ntracks);
      gener->SetMomentumRange(0,999);
      gener->SetPhiRange(0,360);
@@ -135,12 +116,8 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //     gener->SetStrucFunc(DO_Set_1);
      gener->SetProcess(mb); 
      gener->SetEnergyCMS(5500.);
-     break;
-     
- case param:
-//*******************************************************
-// Example for J/psi  Production from  Parameterisation *
-//*******************************************************
+   break;     
+   case kParam:
      AliGenParam *gener = new AliGenParam(178,Eta,
 					     AliGenPHOSlib::GetPt(Eta),
 					     AliGenPHOSlib::GetY(Eta),
@@ -154,12 +131,8 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      gener->SetOrigin(0,0,0);      //vertex position
      gener->SetSigma(0,0,0);       //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetCutOnChild(1);
-     break;
-     
- case fluka:
-//*******************************************************
-// Example for a FLUKA Boundary Source                  *
-//*******************************************************
+   break;
+   case kFluka:
      AliGenFLUKAsource *gener = new AliGenFLUKAsource(-1);
      gener->AddFile("$(ALICE_ROOT)/data/all32.root"); 
      rootfile->cd();
@@ -171,30 +144,18 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      
 //  31.7 events     
      gener->SetFraction(0.0315);     
-     break;
-
- case ntuple:
-//*******************************************************
-// Example for reading from a external file                  *
-//*******************************************************
+   break;
+   case kNtuple:
      AliGenExtFile *gener = new AliGenExtFile(-1); 
      gener->SetFileName("$(ALICE_ROOT)/data/dtujet93.root");
      gener->SetVertexSmear(perEvent); 
      gener->SetTrackingFlag(1);
-     break;
-
- case halo:
-//*******************************************************
-// Example for Tunnel Halo Source                       *
-//*******************************************************
+   break;
+   case kHalo:
      AliGenHalo *gener = new AliGenHalo(ntracks); 
      gener->SetFileName("/h1/morsch/marsip/marsip5.mu");
-     break;
-     
- case cocktail:
-//*******************************************************
-// Example for a Cocktail                               *
-//*******************************************************
+   break;     
+   case kCocktail:
      AliGenCocktail *gener = new AliGenCocktail();
      gener->SetMomentumRange(0,10);
      gener->SetPhiRange(0,360);
@@ -230,18 +191,19 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      
 	 
      break;
- }
+   }//switch
  
 // Activate this line if you want the vertex smearing to happen
 // track by track
 //
-gener->SetVertexSmear(kPerTrack); 
-gener->Init();
-gAlice->SetField(0,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
+   gener->SetVertexSmear(kPerTrack); 
+   gener->Init();
+   
+   gAlice->SetField(0,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
 Int_t iMAG=0;
 Int_t iITS=0;
-Int_t iTPC=0;
+Int_t iTPC=1;
 Int_t iTOF=0;
 Int_t iRICH=1;
 Int_t iZDC=0;
@@ -257,7 +219,7 @@ Int_t iFMD=0;
 Int_t iMUON=0;
 Int_t iPHOS=0;
 Int_t iPMD=0;
-Int_t iSTART=0; 
+Int_t iSTART=1; 
 
 //=================== Alice BODY parameters =============================
 AliBODY *BODY = new AliBODY("BODY","Alice envelop");
@@ -402,59 +364,12 @@ if(iTOF) {
 //=================== TOF parameters ============================
 AliTOF *TOF  = new AliTOFv2("TOF","normal TOF");
 }
+   
+   gAlice->SetDebug(1);
 
-if(iRICH) {
-//=================== RICH parameters ===========================
-    AliRICH *RICH  = new AliRICHv2("RICH","normal RICH");
-    
-//
-// Version 0
-// Default Segmentation
-    AliRICHSegmentationV1* Segmentation = new AliRICHSegmentationV1;
-//
-//  Segmentation parameters
-    Segmentation->SetPadSize(0.84,0.8);
-    Segmentation->SetDAnod(0.84/2);
-
-//  Geometry parameters
-    AliRICHGeometry* Geometry = new AliRICHGeometry;
-    Geometry->SetGapThickness(8);
-    Geometry->SetProximityGapThickness(.4);
-    Geometry->SetQuartzLength(133);
-    Geometry->SetQuartzWidth(127.9);
-    Geometry->SetQuartzThickness(.5);
-    Geometry->SetOuterFreonLength(133);
-    Geometry->SetOuterFreonWidth(41.3);
-    Geometry->SetInnerFreonLength(133);
-    Geometry->SetInnerFreonWidth(41.3);
-    Geometry->SetFreonThickness(1.5);
-
-//  Response parameters
-    AliRICHResponseV0*  Response   = new AliRICHResponseV0;
-    Response->SetSigmaIntegration(5.);
-    Response->SetChargeSlope(27.);
-    Response->SetChargeSpread(0.18, 0.18);
-    Response->SetMaxAdc(4096);
-    Response->SetAlphaFeedback(0.036);
-    Response->SetEIonisation(26.e-9);
-    Response->SetSqrtKx3(0.77459667);
-    Response->SetKx2(0.962);
-    Response->SetKx4(0.379);
-    Response->SetSqrtKy3(0.77459667);
-    Response->SetKy2(0.962);
-    Response->SetKy4(0.379);
-    Response->SetPitch(0.25);
-    Response->SetWireSag(1);                     // 1->On, 0->Off
-    Response->SetVoltage(2150);                  // Should only be 2000, 2050, 2100 or 2150
-
-      
-  for (Int_t i=0; i<7; i++) {
-    RICH->SetGeometryModel(i,Geometry);
-    RICH->SetSegmentationModel(i, Segmentation);
-    RICH->SetResponseModel(i, Response);
-  }  
-  RICH->SetDebugLevel(0);
-}
+   if(iRICH){
+      AliRICH *RICH  = new AliRICHv3("RICH","normal RICH");
+   }//if(iRICH)
 
 
 if(iZDC) {
@@ -518,5 +433,5 @@ if(iSTART) {
 AliSTART *START  = new AliSTARTv0("START","START Detector");
 }
 
-         
-}
+   cout<<"RICH private Config.C> End\n";         
+}//void Config()
