@@ -147,7 +147,7 @@ Int_t AliHBTAnalysis::ProcessEvent(AliAOD* aodrec, AliAOD* aodsim)
   //Processes one event
   if (fProcEvent == 0x0)
    {
-     Error("ProcessEvent","Analysis option not specified");
+     Error("ProcessEvent","Analysis <<%s>> option not specified.",GetName());
      return 1;
    }
   if ( Pass(aodrec,aodsim) ) return 0;
@@ -269,11 +269,13 @@ Int_t AliHBTAnalysis::Init()
     case kReconstructed:
       if (nonid) fProcEvent = &AliHBTAnalysis::ProcessRecNonId;
       else fProcEvent = &AliHBTAnalysis::ProcessRec;
+      SetCutsOnRec();
       break;
 
     case kSimulated:
       if (nonid) fProcEvent = &AliHBTAnalysis::ProcessSimNonId;
       else fProcEvent = &AliHBTAnalysis::ProcessSim;
+      SetCutsOnSim();
       break;
 
     case kSimulatedAndReconstructed:
@@ -368,7 +370,7 @@ Int_t AliHBTAnalysis::ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim)
 
   if ( !partEvent || !trackEvent ) 
    {
-     Error("ProcessRecAndSim","Can not get event");
+     Error("ProcessRecAndSim","<<%s>> Can not get event",GetName());
      return 1;
    }
 
