@@ -681,6 +681,45 @@ Bool_t AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
 #endif
 }
 
+Int_t AliL3Transform::GetFirstRow(Int_t patch)
+{
+  if(patch==-1)
+    return 0;
+  else if(patch < -1 || patch >= 6)
+    {
+      cerr<<"AliL3Transform::GetFirstRow() : Wrong patch "<<patch<<endl;
+      return 0;
+    }
+  else
+    return fRows[patch][0];
+}
+
+Int_t AliL3Transform::GetLastRow(Int_t patch)
+{
+  if(patch==-1)
+    return fRows[5][1];
+  else if(patch < -1 || patch >= 6)
+    {
+      cerr<<"AliL3Transform::GetLastRow() : Wrong patch "<<patch<<endl;
+      return 0;
+    }
+  else
+    return fRows[patch][1];
+}
+
+Int_t AliL3Transform::GetNRows(Int_t patch)
+{
+  if(patch==-1)
+    return fNRow;
+  else if(patch < -1 || patch >= 6)
+    {
+      cerr<<"AliL3Transform::GetNRows() : Wrong patch "<<patch<<endl;
+      return 0;
+    }
+  else
+    return fNRows[patch];
+}
+
 Double_t AliL3Transform::GetPadLength(Int_t padrow)
 {
   if(padrow >= fNRow)

@@ -56,9 +56,9 @@ class AliL3Transform {
 
   static const Char_t* GetParamName() {return "75x40_100x60_150x60";}
 
-  static Int_t GetFirstRow(Int_t patch) {return fRows[patch][0];}
-  static Int_t GetLastRow(Int_t patch) {return fRows[patch][1];}
-  static Int_t GetNRows(Int_t patch) {return fNRows[patch];}
+  static Int_t GetFirstRow(Int_t patch);
+  static Int_t GetLastRow(Int_t patch);
+  static Int_t GetNRows(Int_t patch);
   static Int_t GetNRows() {return fNRow;}
   static Int_t GetNPatches() {return fNPatches;}
   static Double_t GetBField() {return fBField;}
