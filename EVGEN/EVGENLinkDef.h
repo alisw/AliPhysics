@@ -9,7 +9,6 @@
 #pragma link C++ enum   Param_t;
 
 #pragma link C++ class  AliGenHIJINGpara;
-#pragma link C++ class  AliGenSingle;
 #pragma link C++ class  AliGenFixed;
 #pragma link C++ class  AliGenBox;
 #pragma link C++ class  AliGenParam;

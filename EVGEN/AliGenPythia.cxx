@@ -157,7 +157,7 @@ void AliGenPythia::Generate()
 	if (fProcess != mb) {
 	    for (Int_t i = 0; i<np; i++) {
 		TParticle *  iparticle = (TParticle *) particles->At(i);
-		kf = iparticle->GetPdgCode();
+		kf = CheckPDGCode(iparticle->GetPdgCode());
 		fChildWeight=(fPythia->GetBraPart(kf))*fParentWeight;	  
 //
 // Parent
@@ -206,7 +206,7 @@ void AliGenPythia::Generate()
 			    {
 				TParticle *  ichild = 
 				    (TParticle *) particles->At(j-1);
-				kf = ichild->GetPdgCode();
+				kf = CheckPDGCode(ichild->GetPdgCode());
 //
 // 
 				if (ChildSelected(TMath::Abs(kf))) {
@@ -230,7 +230,7 @@ void AliGenPythia::Generate()
 	} else {
 	    for (Int_t i = 0; i<np; i++) {
 		TParticle *  iparticle = (TParticle *) particles->At(i);
-		kf = iparticle->GetPdgCode();
+		kf = CheckPDGCode(iparticle->GetPdgCode());
 		Int_t ks = iparticle->GetStatusCode();
 		if (ks==1 && kf!=0 && KinematicSelection(iparticle)) {
 			nc++;
@@ -347,6 +347,37 @@ void AliGenPythia::AdjustWeights()
     }
 }
 
+Int_t AliGenPythia::CheckPDGCode(Int_t pdgcode)
+{
+//
+//  If the particle is in a diffractive state, then take action accordigly
+  switch (pdgcode) {
+  case 110:
+    //rho_diff0 -- difficult to translate, return rho0
+    return 113;
+  case 210:
+    //pi_diffr+ -- change to pi+
+    return 211;
+  case 220:
+    //omega_di0 -- change to omega0
+    return 223;
+  case 330:
+    //phi_diff0 -- return phi0
+    return 333;
+  case 440:
+    //J/psi_di0 -- return J/psi
+    return 443;
+  case 2110:
+    //n_diffr -- return neutron
+    return 2112;
+  case 2210:
+    //p_diffr+ -- return proton
+    return 2212;
+  }
+  //non diffractive state -- return code unchanged
+  return pdgcode;
+}
+		  
 
 
 

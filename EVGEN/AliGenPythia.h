@@ -56,6 +56,9 @@ class AliGenPythia : public AliGenerator
     virtual void    ForceDecay(Decay_t decay=semimuonic) {fForceDecay=decay;}
     // get cross section of process
     virtual Float_t GetXsection() {return fXsection;}
+    // Check PDG code
+    virtual Int_t CheckPDGCode(Int_t pdgcode);
+
     ClassDef(AliGenPythia,1)
 };
 #endif
