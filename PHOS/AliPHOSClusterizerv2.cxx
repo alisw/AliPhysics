@@ -77,7 +77,9 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     AliPHOSRecCpvManager* recCpv = new AliPHOSRecCpvManager();
     wPoolF->Add(recCpv);
 
-    for(Int_t iPoint=0; iPoint<gime->CpvRecPoints()->GetEntriesFast(); iPoint++) {
+    Int_t iPoint; //loop variable
+
+    for(iPoint=0; iPoint<gime->CpvRecPoints()->GetEntriesFast(); iPoint++) {
       rp = new AliPHOSEvalRecPoint(iPoint,AliPHOSEvalRecPoint::cpv);
       rp->MakeJob();
     }
@@ -90,7 +92,9 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     cpvRecPoints->Delete();
     cpvRecPoints->Compress();
 
-    for(Int_t i=0; i<wPool->GetEntries(); i++)
+    Int_t i; //loop variable
+
+    for(i=0; i<wPool->GetEntries(); i++)
       cpvRecPoints->Add(wPool->At(i));
 
     wPool->Clear();
@@ -108,7 +112,7 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     AliPHOSRecEmcManager* recEmc = new AliPHOSRecEmcManager();
     wPoolF->Add(recEmc);
 
-    for(Int_t iPoint=0; iPoint<gime->EmcRecPoints()->GetEntriesFast(); iPoint++) {
+    for(iPoint=0; iPoint<gime->EmcRecPoints()->GetEntriesFast(); iPoint++) {
       rp = new AliPHOSEvalRecPoint(iPoint,AliPHOSEvalRecPoint::emc);
       rp->MakeJob();
     }
@@ -120,7 +124,7 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     emcRecPoints->Delete();
     emcRecPoints->Compress();
 
-    for(Int_t i=0; i<wPool->GetEntries(); i++)
+    for(i=0; i<wPool->GetEntries(); i++)
       emcRecPoints->Add(wPool->At(i));
 
     wPool->Clear();

@@ -139,8 +139,10 @@ void AliPHOSEvalRecPoint::DeleteParent()
 
 void AliPHOSEvalRecPoint::UpdateWorkingPool()
 {
+
+  Int_t i; //loop variable
   
-  for(Int_t i=0; i<this->InWorkingPool(); i++) {
+  for(i=0; i<this->InWorkingPool(); i++) {
      AliPHOSEvalRecPoint* parent = (AliPHOSEvalRecPoint*)GetFromWorkingPool(i);
      TObjArray children;
      Int_t nChild = parent->HasChild(children);
@@ -156,17 +158,17 @@ void AliPHOSEvalRecPoint::UpdateWorkingPool()
 
   }
 
-  for(Int_t i=0; i<this->InWorkingPool(); i++) {
+  for(i=0; i<this->InWorkingPool(); i++) {
     AliPHOSEvalRecPoint* weak = (AliPHOSEvalRecPoint*)GetFromWorkingPool(i);
     if (weak->KillWeakPoint()) delete weak;
   }
 
-  for(Int_t i=0; i<this->InWorkingPool(); i++) {
+  for(i=0; i<this->InWorkingPool(); i++) {
     AliPHOSEvalRecPoint* close = (AliPHOSEvalRecPoint*)GetFromWorkingPool(i);
     close->MergeClosePoint();
   }
 
-  for(Int_t i=0; i<this->InWorkingPool(); i++)
+  for(i=0; i<this->InWorkingPool(); i++)
     ((AliPHOSEvalRecPoint*)AliPHOSEvalRecPoint::GetFromWorkingPool(i))->SetIndexInList(i);
 
 }
@@ -272,7 +274,9 @@ void AliPHOSEvalRecPoint::InitTwoGam(Float_t* gamma1, Float_t* gamma2)
   AliPHOSGetter* fGetter = AliPHOSGetter::GetInstance();
   const AliPHOSGeometry* fGeom = fGetter->PHOSGeometry();
 
-  for(Int_t iDigit = 0 ; iDigit < nDigits ; iDigit ++)
+  Int_t iDigit; //loop variable
+
+  for(iDigit = 0 ; iDigit < nDigits ; iDigit ++)
     {
       digit = (AliPHOSDigit*)fGetter->Digits()->At( Digits[iDigit] ); 
       eDigit = Energies[iDigit];
@@ -295,7 +299,7 @@ void AliPHOSEvalRecPoint::InitTwoGam(Float_t* gamma1, Float_t* gamma2)
   if(exy<0) sinfi = -sinfi;
 
   Float_t eu3 = 0;
-  for(Int_t iDigit = 0 ; iDigit < nDigits ; iDigit ++)
+  for(iDigit = 0 ; iDigit < nDigits ; iDigit ++)
     {
       digit = (AliPHOSDigit*)fGetter->Digits()->At( Digits[iDigit] ); 
       eDigit = Energies[iDigit];
@@ -919,12 +923,14 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
   Float_t* Energies = GetEnergiesList();
   Float_t* eFit = new Float_t[nDigits];
 
-  for(Int_t iDigit=0; iDigit<nDigits; iDigit++)
+  Int_t iDigit; //loop variable
+
+  for(iDigit=0; iDigit<nDigits; iDigit++)
     {
       eFit[iDigit] = 0.;
     }
 
-  for(Int_t iDigit=0; iDigit<nDigits; iDigit++)
+  for(iDigit=0; iDigit<nDigits; iDigit++)
     {
       
       AliPHOSDigit* digit = (AliPHOSDigit*)fGetter->Digits()->At( Digits[iDigit] );
