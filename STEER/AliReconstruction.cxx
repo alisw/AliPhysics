@@ -543,9 +543,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     }
     if (fCheckPointLevel > 1) WriteESD(esd, "ITS.tracking");
 
-    if (!fTRDTracker) {
-      AliWarning("no TRD tracker");
-    } else {
+    if (fTRDTracker || fTOFTracker) {
       // ITS back propagation
       AliDebug(1, "ITS back propagation");
       if (fITSTracker->PropagateBack(esd) != 0) {
@@ -562,20 +560,24 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
       }
       if (fCheckPointLevel > 1) WriteESD(esd, "TPC.back");
 
-      // TRD back propagation
-      AliDebug(1, "TRD back propagation");
-      fTRDLoader->LoadRecPoints("read");
-      TTree* trdTree = fTRDLoader->TreeR();
-      if (!trdTree) {
-	AliError("Can't get the TRD cluster tree");
-	return kFALSE;
+      if (!fTRDTracker) {
+        AliWarning("no TRD tracker");
+      } else {
+        // TRD back propagation
+        AliDebug(1, "TRD back propagation");
+        fTRDLoader->LoadRecPoints("read");
+        TTree* trdTree = fTRDLoader->TreeR();
+        if (!trdTree) {
+          AliError("Can't get the TRD cluster tree");
+          return kFALSE;
+        }
+        fTRDTracker->LoadClusters(trdTree);
+        if (fTRDTracker->PropagateBack(esd) != 0) {
+          AliError("TRD backward propagation failed");
+          return kFALSE;
+        }
+        if (fCheckPointLevel > 1) WriteESD(esd, "TRD.back");
       }
-      fTRDTracker->LoadClusters(trdTree);
-      if (fTRDTracker->PropagateBack(esd) != 0) {
-	AliError("TRD backward propagation failed");
-	return kFALSE;
-      }
-      if (fCheckPointLevel > 1) WriteESD(esd, "TRD.back");
 
       if (!fTOFTracker) {
 	AliWarning("no TOF tracker");
@@ -619,15 +621,17 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
 	}
       }
 
-      // TRD inward refit
-      AliDebug(1, "TRD inward refit");
-      if (fTRDTracker->RefitInward(esd) != 0) {
-	AliError("TRD inward refit failed");
-	return kFALSE;
+      if (fTRDTracker) {
+        // TRD inward refit
+        AliDebug(1, "TRD inward refit");
+        if (fTRDTracker->RefitInward(esd) != 0) {
+          AliError("TRD inward refit failed");
+          return kFALSE;
+        }
+        if (fCheckPointLevel > 1) WriteESD(esd, "TRD.refit");
+        fTRDTracker->UnloadClusters();
+        fTRDLoader->UnloadRecPoints();
       }
-      if (fCheckPointLevel > 1) WriteESD(esd, "TRD.refit");
-      fTRDTracker->UnloadClusters();
-      fTRDLoader->UnloadRecPoints();
     
       // TPC inward refit
       AliInfo("TPC inward refit");
