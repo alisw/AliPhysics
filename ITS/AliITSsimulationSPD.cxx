@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.12  2001/10/04 22:44:31  nilsen
+Major changes in supppor of PreDigits (SDigits). Changes made with will make
+it easier to suppor expected changes in AliITSHit class. Added use of new
+class AliITSpList. Both SPD and SDD have added effects of Dead Channels. Both
+of these will require addtional work as data bases of detectors and the like
+are developed.
+
 */
 #include <iostream.h>
 #include <TRandom.h>
@@ -285,8 +292,8 @@ void AliITSsimulationSPD::HitToDigit(AliITSmodule *mod,Int_t hitpos,
 
     // to account for unexpected equal entrance and 
     // exit coordinates
-    if (x1l==x2l) x2l=x2l+x2l*0.000001;
-    if (z1l==z2l) z2l=z2l+z2l*0.000001;
+    if (x1l==x2l) x2l=x2l+x2l*0.0001;
+    if (z1l==z2l) z2l=z2l+z2l*0.0001;
 
     if ((r1==r2) && (c1==c2)){
 	// no charge sharing
