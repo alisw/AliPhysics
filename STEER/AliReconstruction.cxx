@@ -748,7 +748,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
       }
       if (!fLoader[iDet]) {
 	AliWarning(Form("couldn't get loader for %s", detName.Data()));
-	if (fStopOnError) return kFALSE;
+	if (fStopOnError) return NULL;
       } else {
 	fRunLoader->AddLoader(fLoader[iDet]);
 	fRunLoader->CdGAFile();
