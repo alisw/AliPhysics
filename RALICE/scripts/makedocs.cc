@@ -7,7 +7,7 @@
  gSystem->Load("ralice");
 
  THtml q;
- q.SetOutputDir("./html");
- q.SetSourceDir(".");
+ q.SetOutputDir("./htmldoc");
+ q.SetSourceDir("..");
  q.MakeAll();
 }
