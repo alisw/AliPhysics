@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/02/09 13:53:38  barbera
+Int_t redefinition avoided
+
 Revision 1.11  2001/02/09 06:55:38  barbera
 SPD option re-set to B. It was A by mistake
 
@@ -164,9 +167,6 @@ AliITSvPPRasymm::~AliITSvPPRasymm() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard destructor for the ITS version 8.
 ////////////////////////////////////////////////////////////////////////
-    if(fRead!=0) delete fRead;
-    if(fWrite!=0) delete fWrite;
-    if(fEuclidGeomDet!=0) delete fEuclidGeomDet;
 }
 //__________________________________________________________________________
 void AliITSvPPRasymm::BuildGeometry(){

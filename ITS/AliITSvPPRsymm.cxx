@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.4  2001/02/09 00:05:31  nilsen
+Added fMajor/MinorVersion variables and made other changes to better make
+use of the new code changes in AliITSgeom related classes.
+
 Revision 1.3  2001/01/30 09:23:13  hristov
 Streamers removed (R.Brun)
 
@@ -212,9 +216,6 @@ AliITSvPPRsymm::~AliITSvPPRsymm() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard destructor for the ITS version 7.
 ////////////////////////////////////////////////////////////////////////
-    if(fRead!=0) delete fRead;
-    if(fWrite!=0) delete fWrite;
-    if(fEuclidGeomDet!=0) delete fEuclidGeomDet;
 }
 //__________________________________________________________________________
 void AliITSvPPRsymm::BuildGeometry(){

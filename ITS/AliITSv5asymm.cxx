@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.5  2001/02/09 00:05:31  nilsen
+Added fMajor/MinorVersion variables and made other changes to better make
+use of the new code changes in AliITSgeom related classes.
+
 Revision 1.4  2001/02/02 23:57:29  nilsen
 Added include file that are no londer included in AliITSgeom.h
 
@@ -181,9 +185,6 @@ AliITSv5asymm::~AliITSv5asymm() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard destructor for the ITS version 5.
 ////////////////////////////////////////////////////////////////////////
-    if(fRead!=0) delete fRead;
-    if(fWrite!=0) delete fWrite;
-    if(fEuclidGeomDet!=0) delete fEuclidGeomDet;
 }
 //_____________________________________________________________________________
 void AliITSv5asymm::BuildGeometry(){
