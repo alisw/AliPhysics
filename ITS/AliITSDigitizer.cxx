@@ -15,6 +15,17 @@
  
 /*
 $Log$
+Revision 1.1  2001/11/27 16:27:28  nilsen
+Adding AliITSDigitizer class to do merging and digitization . Based on the
+TTask method. AliITSDigitizer class added to the Makefile and ITSLinkDef.h
+file. The following files required minor changes. AliITS, added functions
+SetHitsAddressBranch, MakeBranchInTreeD and modified MakeBranchD.
+AliITSsimulationSDD.cxx needed a Tree indepenent way of returning back to
+the original Root Directory in function Compress1D. Now it uses gDirectory.
+
+Revision 1.2  2002/03/01  E. Lopez
+Diditization changed to start from SDigits instead of Hits.
+The SDigits are reading as TClonesArray of AliITSpListItem
 */
 
 #include <stdlib.h>
@@ -46,7 +57,8 @@ AliITSDigitizer::AliITSDigitizer() : AliDigitizer(){
     // Return:
     //      A blank AliITSDigitizer class.
 
-    fITS = 0;
+    fITS    = 0;
+    fActive = 0;
 }
 //______________________________________________________________________
 AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
@@ -59,7 +71,23 @@ AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
     // Return:
     //      An AliItSDigitizer class.
 
-    fITS = 0;
+    if(!gAlice) {
+	fITS = 0;
+	fActive = 0;
+	return;
+    } // end if
+    fITS = (AliITS *)(gAlice->GetDetector("ITS"));
+    if(!fITS){
+	fActive = 0;
+	return;
+    } else if(fITS->GetITSgeom()){
+	fActive = new Bool_t[fITS->GetITSgeom()->GetIndexMax()];
+    } else{
+	fActive = 0;
+	return;
+    } // end if
+    // fActive needs to be set to a default all kTRUE value
+    for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fActive[i] = kTRUE;
 }
 //______________________________________________________________________
 AliITSDigitizer::~AliITSDigitizer(){
@@ -72,8 +100,8 @@ AliITSDigitizer::~AliITSDigitizer(){
     //      none.
 
     fITS = 0; // don't delete fITS. Done else where.
+    if(fActive) delete[] fActive;
 }
-
 //______________________________________________________________________
 Bool_t AliITSDigitizer::Init(){
     // Iniliztion 
@@ -83,8 +111,6 @@ Bool_t AliITSDigitizer::Init(){
     //      none.
     // Return:
     //      none.
-
-//    if(GetHits()) fITS->fHits = new TClonesArray("AliITSHit",1000);
     return kTRUE;
 }
 //______________________________________________________________________
@@ -96,84 +122,86 @@ void AliITSDigitizer::Exec(Option_t* opt){
     //      none.
     // Return:
     //      none.
-    Int_t size=0,ifls=0,trk=0,ntracks=0,h=0,nhit=0;
-    TTree *treeH=0;
-    TBranch *brchHits=0;
-    AliITShit *itsHit=0;
+
     char name[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     char *all;
     const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
                           strstr(opt,"SSD")};
-    if(!det[0] && !det[1] && !det[2]) all = "All";
+    if( !det[0] && !det[1] && !det[2] ) all = "All";
     else all = 0;
     AliITSsimulation *sim      = 0;
     AliITSDetType    *iDetType = 0;
-    AliITSmodule     *mod      = 0;
-    Int_t id=0,module=0,nfls=0,mask=0;
-    static Bool_t setDef=kTRUE;
+    static Bool_t    setDef    = kTRUE;
 
-    if(!fITS) fITS = (AliITS*)(gAlice->GetDetector("ITS"));
-    if(!(fITS->GetITSgeom())){
-	Warning("Exec","Need ITS geometry to be properly defined first.");
-	return; // need transformations to do digitization.
-    } // end if !GetITSgeom()
-    if (setDef) fITS->SetDefaultSimulation();
-    setDef=kFALSE;
-    sprintf(name,"%s",fITS->GetName());
-    if(!GetModules()) {
-	fITS->InitModules(0,size);
+    if( !fITS ) fITS = (AliITS*)(gAlice->GetDetector("ITS"));
+    if(!fITS){
+	Error("Exec","The ITS not found. aborting.");
+	return;
     } // end if
+    if( !(fITS->GetITSgeom()) ) {
+        Warning( "Exec", "Need ITS geometry to be properly defined first." );
+        return; // need transformations to do digitization.
+    } // end if !GetITSgeom()
 
-    nfls = GetManager()->GetNinputs();
-    for(ifls=0;ifls<nfls;ifls++){
-	treeH = GetManager()->GetInputTreeH(ifls);
-	if(!(treeH && GetHits())) continue;
-	brchHits = treeH->GetBranch(name);
-	if(brchHits){
-	    GetHits()->Clear();
-	    fITS->SetHitsAddressBranch(brchHits);
-	} else{
-	    Error("Exec","branch ITS not found");
-	} // end if brchHits
+    if( setDef ) fITS->SetDefaultSimulation();
+    setDef = kFALSE;
+    sprintf( name, "%s", fITS->GetName() );
 
-	ntracks = (Int_t) treeH->GetEntries();
-	for(trk=0;trk<ntracks;trk++){
-	    GetHits()->Clear();
-	    brchHits->GetEntry(trk);
-	    nhit = GetHits()->GetEntries();
-	    mask = GetManager()->GetMask(ifls);
-	    for(h=0;h<nhit;h++){
-		itsHit = GetHit(h);
-		mod = GetModule(itsHit->GetModule());
-		id       = fITS->GetITSgeom()->GetModuleType(module);
-		if (!all && !det[id]) continue;
-		mod->AddHit(itsHit,trk+mask,h);
-	    } // end for h
-	} // end for trk
-    } // end for ifls
-
+    Int_t nfiles = GetManager()->GetNinputs();
+    Int_t event  = GetManager()->GetOutputEventNr();
+    Int_t size   = fITS->GetITSgeom()->GetIndexMax();
+    TClonesArray * sdig = new TClonesArray( "AliITSpListItem",1000 );
+    
     // Digitize 
-    fITS->MakeBranchInTreeD(GetManager()->GetTreeD());
-    for(module=0;module<size;module++){
-        id       = fITS->GetITSgeom()->GetModuleType(module);
-        if (!all && !det[id]) continue;
-        iDetType = fITS->DetType(id);
+    fITS->MakeBranchInTreeD( GetManager()->GetTreeD() );
+
+    for( Int_t module=0; module<size; module++ ){
+	if(fActive) if(!fActive[module]) continue;
+        Int_t id = fITS->GetITSgeom()->GetModuleType( module );
+        if( !all && !det[id] ) continue;
+        iDetType = fITS->DetType( id );
         sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
-        if (!sim) {
-            Error("Exec","The simulation class was not instanciated!");
+        if( !sim ) {
+            Error( "Exec", "The simulation class was not instanciated!" );
             exit(1);
         } // end if !sim
-        mod      = GetModule(module);
-        sim->DigitiseModule(mod,module,0);
+        
+        // Fill the module with the sum of SDigits
+        sim->InitSimulationModule( module, event );
+	cout << "Module=" << module;
+        for( Int_t ifiles=0; ifiles<nfiles; ifiles++ ){
+	    cout <<" ifiles=" << ifiles;
+            TTree *treeS = GetManager()->GetInputTreeS( ifiles );
+            if( !(treeS && fITS->GetSDigits()) ) continue;   
+            TBranch *brchSDigits = treeS->GetBranch( name );
+            if( brchSDigits ) {
+                brchSDigits->SetAddress( &sdig ); 
+            } else {
+                Error( "Exec", "branch ITS not found in TreeS, input file %d ",
+                       ifiles );
+            } // end if brchSDigits
+            sdig->Clear();
+            Int_t mask = GetManager()->GetMask( ifiles );
+            
+            // add summable digits to module
+            brchSDigits->GetEvent( module );
+            sim->AddSDigitsToModule( sdig, mask );    
+        } // end for ifiles
+	cout << " end ifiles loop" << endl;
+        // Digitise current module sum(SDigits)->Digits
+        sim->FinishSDigitiseModule();
+
         // fills all branches - wasted disk space
         GetManager()->GetTreeD()->Fill();
         fITS->ResetDigits();
     } // end for module
- 
-    fITS->ClearModules();
+    cout << "end modules loop"<<endl;
  
     GetManager()->GetTreeD()->GetEntries();
-    GetManager()->GetTreeD()->Write(0,TObject::kOverwrite);
+    GetManager()->GetTreeD()->Write( 0, TObject::kOverwrite );
     // reset tree
     GetManager()->GetTreeD()->Reset();
+    
+    sdig->Clear();
+    delete sdig;
 }

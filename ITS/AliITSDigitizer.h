@@ -18,8 +18,6 @@ class AliRunDigitizer;
 class AliITShit;
 class AliITSmodule;
 
-
-
 class AliITSDigitizer : public AliDigitizer{
  public:
     AliITSDigitizer();
@@ -28,6 +26,10 @@ class AliITSDigitizer : public AliDigitizer{
     // Standard routines.
     virtual Bool_t Init();
     virtual void Exec(Option_t* opt=0);
+    // Sets a particular module active
+    virtual void SetModuleActive(Int_t i){if(fActive) fActive[i] = kTRUE;}
+    // Sets a particular module inactive
+    virtual void SetModuleInActive(Int_t i){if(fActive) fActive[i] = kFALSE;}
  private:
     // Routines used internaly
     TClonesArray* GetHits(){return fITS->Hits();}
@@ -37,6 +39,7 @@ class AliITSDigitizer : public AliDigitizer{
     AliRunDigitizer* GetManager(){return fManager;}
  private:
     AliITS *fITS;  //! local pointer to ITS
+    Bool_t *fActive; //! flag to indicate which module to digitize.
 
     ClassDef(AliITSDigitizer,1) // Task to Digitize ITS from summable hits.
 };
