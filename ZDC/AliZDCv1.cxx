@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/02/07 18:07:41  coppedis
+Modif for splitting
+
 Revision 1.12  2001/01/26 19:56:27  hristov
 Major upgrade of AliRoot code
 
@@ -1101,28 +1104,29 @@ Int_t AliZDCv1::Digitize(Int_t Det, Int_t Quad, Int_t Light)
   Int_t j,i;
   for(i=0; i<3; i++){
      for(j=0; j<5; j++){
-        fPedMean[i][j]  = 50.;
-        fPedSigma[i][j] = 10.;
-        fPMGain[i][j]   = 10000000.;
+//        fPedMean[i][j]  = 50.;
+//        fPedSigma[i][j] = 10.;
+        fPMGain[i][j]   = 100000.;
      }
   }
   fADCRes   = 0.00000064; // ADC Resolution: 250 fC/ADCch
   
-  Float_t Ped = gRandom->Gaus(fPedMean[Det-1][Quad],fPedSigma[Det-1][Quad]);
-  Int_t ADCch = Int_t(Light*fPMGain[Det-1][Quad]*fADCRes+Ped);
+//  Float_t Ped = gRandom->Gaus(fPedMean[Det-1][Quad],fPedSigma[Det-1][Quad]);
+//  Int_t ADCch = Int_t(Light*fPMGain[Det-1][Quad]*fADCRes+Ped);
+  Int_t ADCch = Int_t(Light*fPMGain[Det-1][Quad]*fADCRes);
   
-  if(fDebug == 1){
-    printf("	Ped = %f, ADCch = %d\n", Ped, ADCch);
-  }  
+//  if(fDebug == 1){
+//    printf("	Ped = %f, ADCch = %d\n", Ped, ADCch);
+//  }  
    
   return ADCch;
 }
 
 //____________________________________________________________________________
-void AliZDCv1::FinishEvent()
-{
+//void AliZDCv1::FinishEvent()
+//{
 //  Code moved to Hits2SDigits();
-}
+//}
 
 //_____________________________________________________________________________
 void AliZDCv1::SDigits2Digits()
@@ -1173,6 +1177,8 @@ void AliZDCv1::Hits2Digits(Int_t ntracks)
         }
      } // Hits loop
   
+  } // Tracks loop
+  
      if(fDebug == 1){
        printf("\n	 PMCZN = %d, PMQZN[0] = %d, PMQZN[1] = %d, PMQZN[2] = %d, PMQZN[3] = %d\n"
 	    , PMCZN, PMQZN[0], PMQZN[1], PMQZN[2], PMQZN[3]);
@@ -1215,8 +1221,6 @@ void AliZDCv1::Hits2Digits(Int_t ntracks)
      new((*fDigits)[fNdigits]) AliZDCDigit(*newdigit);
      fNdigits++;
      delete newdigit;
-  
-  } // Tracks loop
       
   
   gAlice->TreeD()->Fill();
@@ -1305,9 +1309,9 @@ void AliZDCv1::StepManager()
       xdet[0] = x[0]-fPosZN[0];
       xdet[1] = x[1]-fPosZN[1];
       if((xdet[0]<=0.) && (xdet[1]>=0.)) vol[1]=1;
-      if((xdet[0]>0.) && (xdet[1]>0.)) vol[1]=2;
-      if((xdet[0]<0.) && (xdet[1]<0.)) vol[1]=3;
-      if((xdet[0]>0.) && (xdet[1]<0.)) vol[1]=4;
+      if((xdet[0]>0.) && (xdet[1]>0.))   vol[1]=2;
+      if((xdet[0]<0.) && (xdet[1]<0.))   vol[1]=3;
+      if((xdet[0]>0.) && (xdet[1]<0.))   vol[1]=4;
     }
     
     //Quadrant in ZP
@@ -1489,8 +1493,8 @@ void AliZDCv1::StepManager()
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
 	 nphe = gRandom->Poisson(out);
-	 hits[7] = nphe;  	//fLightPMQ
-	 hits[8] = 0;
+	 hits[7] = 0;  	
+	 hits[8] = nphe;	//fLightPMC
 	 hits[9] = 0;
 	 AddHit(gAlice->CurrentTrack(), vol, hits);
        } 
