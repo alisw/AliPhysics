@@ -15,6 +15,14 @@
 
 /*
 $Log$
+Revision 1.10  2000/11/24 13:00:37  morsch
+- Geometry and materials imported from euclid output
+- include comments
+- better struturing of volume tree
+- improved version of flange close to front absorber
+- more realistic pump materials
+- undulated beam pipe imported from v3.
+
 Revision 1.9  2000/10/02 21:28:15  fca
 Removal of useless dependecies via forward declarations
 
@@ -80,7 +88,7 @@ void AliPIPEv0::CreateGeometry()
     Float_t ppcon[36], ptube[3], pbox[3];
     Int_t i=0;
     
-    enum {kC=6, kAlu=9, kInox=19, kGetter=20, kBe=5, kVac=16, kAir=15};
+    enum {kC=6, kAlu=9, kInox=19, kGetter=20, kBe=5, kVac=16, kAir=15, kAlBe=21};
     
     Int_t   idrotm[2099];  
     AliMatrix(idrotm[2001],90.,240.,  0.,  0., 90.,150.);
@@ -357,6 +365,7 @@ void AliPIPEv0::CreateGeometry()
 //
 //  Undulated beam pipe
 // 
+/*
     Float_t pitch=0.25;
     Float_t thick=0.015;
     Float_t zundul=171;
@@ -365,6 +374,17 @@ void AliPIPEv0::CreateGeometry()
 
     Undulation("QUND",pitch,thick,zundul,rundul,cn48);
     gMC->Gspos("QUND", 1, "QBPM", 0., 0., 335.+zundul, 0, "ONLY");
+*/
+
+//  Al-Be (40-60 wgt%, rho=2.7 g/cm**3) beam pipe
+//
+    ptube[0] =   2.90;
+    ptube[1] =   3.05;
+    ptube[2] =  171.0;    
+
+    gMC->Gsvolu("QBAB","TUBE", idtmed[kAlBe], ptube, 3);
+    gMC->Gspos("QBAB", 1, "QBPM", 0.0, 0.0, 335.+ptube[2], 0, "ONLY");
+
     
 //
 //  missing pieces of inox pipe 
@@ -657,10 +677,15 @@ void AliPIPEv0::CreateMaterials()
   //
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
-  
+  // Steel (Inox)  
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
   Float_t zsteel[4] = { 26.,24.,28.,14. };
   Float_t wsteel[4] = { .715,.18,.1,.005 };
+  // AlBe - alloy 
+  Float_t aAlBe[2] = { 26.98, 9.01};
+  Float_t zAlBe[2] = { 13.00, 4.00};
+  Float_t wAlBe[2] = { 0.4, 0.6};
+
   //
   //     Berillium 
   AliMaterial(5, "BERILLIUM$", 9.01, 4., 1.848, 35.3, 36.7);
@@ -682,6 +707,9 @@ void AliPIPEv0::CreateMaterials()
   //
   //     reduced density steel to approximate pump getter material
   AliMixture(20, "GETTER$", asteel, zsteel, 1.00, 4, wsteel);
+  //     Al-Be alloy
+  //     
+  AliMixture(21, "AlBe$", aAlBe, zAlBe, 2.07, 2, wAlBe);
   //
   // **************** 
   //     Defines tracking media parameters. 
@@ -714,6 +742,10 @@ void AliPIPEv0::CreateMaterials()
   //
   //    Getter 
   AliMedium(20, "GETTER", 20, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //
+  //   AlBe - Aloy 
+  AliMedium(21, "AlBe"  , 21, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+
 }
 
 
