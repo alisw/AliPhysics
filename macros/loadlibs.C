@@ -28,7 +28,9 @@ void loadlibs ()
   gSystem->Load("libFMDbase");
   gSystem->Load("libFMDsim");
   gSystem->Load("libFMDrec");
-  gSystem->Load("libPMD");
+  gSystem->Load("libPMDbase");
+  gSystem->Load("libPMDsim");
+  gSystem->Load("libPMDrec");
   gSystem->Load("libRICH");
   gSystem->Load("libSTARTbase");
   gSystem->Load("libSTARTsim");
