@@ -96,8 +96,8 @@ void AliSTARTv1::CreateGeometry()
   Float_t psupport2[3] = {9.4,9.5,4.0};// snaruzhi  C
   Float_t psupport3[3] = {4.5,9.5,0.05};//kryshki  C
   Float_t psupport4[3] = {0,1.6,0.05};// dyrki dlia feu v zadnej kryshke Air
-  Float_t psupport5[3] = {1.54,1.6,6.5}; // stakanchik dlai feu  C
-  Float_t psupport6[3] = {0,1.6,0.05}; //kryshechka stakanchika  Al
+  Float_t psupport5[3] = {1.44,1.5,6.5}; // stakanchik dlai feu  C
+  Float_t psupport6[3] = {0,1.5,0.05}; //kryshechka stakanchika  Al
   Float_t psupport7[3] = {1.5,1.6,0.6}; //kolechko snaruzhu stakanchika Al
   // Mother Volume katushka dlia krepezha vokrug truby k Absorbru
     AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
@@ -351,11 +351,11 @@ void AliSTARTv1::CreateGeometry()
       }	
 
     gMC->Gspos("0SU6",1,"0INS",0,0,0,0,"ONLY");//C stakanchik dlia feu 
-    z=-psupport5[2]+psupport6[2];
-    gMC->Gspos("0SU7",1,"0SU6",0,0,z,0,"ONLY"); //Al kryshechka 
+    z=-pinstart[2]+psupport6[2];
+    gMC->Gspos("0SU7",1,"0INS",0,0,z,0,"ONLY"); //Al kryshechka 
     
     z=pinstart[2]-psupport7[2];
-    gMC->Gspos("0SU8",1,"0SU6",0,0,z,0,"ONLY"); //Al kolechko
+    gMC->Gspos("0SU8",1,"0INS",0,0,z,0,"ONLY"); //Al kolechko
     
 
     Float_t par[3];
