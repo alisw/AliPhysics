@@ -8,7 +8,6 @@
 #include "TG4Polyhedra.h"
 #include "TG3Units.h"
 
-#include <G4LogicalVolume.hh>
 #include <G4PVReplica.hh>
 #include <G4Material.hh>
 #include <G4VSolid.hh>
@@ -19,7 +18,6 @@
 #include <G4Trap.hh>
 #include <G4Polycone.hh>
 #include <G4Polyhedra.hh>
-#include <globals.hh>
 
 #include <g4std/iostream>
 #include <g4std/iomanip>
@@ -29,8 +27,8 @@ const G4int TG4XMLConvertor::fgkMaxMaterialNameLength = 20;
 
 TG4XMLConvertor::TG4XMLConvertor(G4std::ofstream& outFile) 
   : fOutFile(outFile),
-    fBasicIndention("   "),
-    fIndention(fBasicIndention),
+    fkBasicIndention("   "),
+    fIndention(fkBasicIndention),
     fRotationCounter(0)
 {
 //
@@ -94,12 +92,12 @@ void TG4XMLConvertor::WriteBox(G4String lvName, const G4Box* box,
   G4String element2 = "material=\"" + materialName + quota;
   G4String element3 = "X_Y_Z=\"";
   G4String element4 = "\" />";
-  G4String indention = fBasicIndention + fBasicIndention;
+  G4String indention = fkBasicIndention + fkBasicIndention;
   
   // write element
-  fOutFile << fBasicIndention << element1 << G4endl  
-           << indention       << element2 << G4endl
-	   << indention       << element3
+  fOutFile << fkBasicIndention << element1 << G4endl  
+           << indention        << element2 << G4endl
+	   << indention        << element3
            << G4std::setw(7) << G4std::setprecision(2) << x << "  "
            << G4std::setw(7) << G4std::setprecision(2) << y << "  "
            << G4std::setw(7) << G4std::setprecision(2) << z 
@@ -126,16 +124,16 @@ void TG4XMLConvertor::WriteTubs(G4String lvName, const G4Tubs* tubs,
   G4String element3 = "profile=\"";
   G4String element4 = "Rio_Z  =\"";
   G4String element5 = "\" />";
-  G4String indention = fBasicIndention + fBasicIndention;
+  G4String indention = fkBasicIndention + fkBasicIndention;
   
   // write element
-  fOutFile << fBasicIndention << element1 << G4endl
-	   << indention       << element2 << G4endl
-	   << indention       << element3
-           << G4std::setw(7)  << G4std::setprecision(2) << sphi << "  "
-           << G4std::setw(7)  << G4std::setprecision(2) << sphi+dphi
+  fOutFile << fkBasicIndention << element1 << G4endl
+	   << indention        << element2 << G4endl
+	   << indention        << element3
+           << G4std::setw(7)   << G4std::setprecision(2) << sphi << "  "
+           << G4std::setw(7)   << G4std::setprecision(2) << sphi+dphi
 	   << quota << G4endl 	   	   
-	   << indention       << element4
+	   << indention        << element4
            << G4std::setw(7) << G4std::setprecision(2) << rmin << "  "
            << G4std::setw(7) << G4std::setprecision(2) << rmax << "  "
            << G4std::setw(7) << G4std::setprecision(2) << hz 
@@ -165,16 +163,16 @@ void TG4XMLConvertor::WriteCons(G4String lvName, const G4Cons* cons,
   G4String element3 = "profile=\"";
   G4String element4 = "Rio1_Rio2_Z  =\"";
   G4String element5 = "\" />";
-  G4String indention = fBasicIndention + fBasicIndention;
+  G4String indention = fkBasicIndention + fkBasicIndention;
   
   // write element
-  fOutFile << fBasicIndention << element1 << G4endl
-	   << indention       << element2 << G4endl
-	   << indention       << element3
-           << G4std::setw(7)  << G4std::setprecision(2) << sphi << "  "
-           << G4std::setw(7)  << G4std::setprecision(2) << sphi+dphi
+  fOutFile << fkBasicIndention << element1 << G4endl
+	   << indention        << element2 << G4endl
+	   << indention        << element3
+           << G4std::setw(7)   << G4std::setprecision(2) << sphi << "  "
+           << G4std::setw(7)   << G4std::setprecision(2) << sphi+dphi
 	   << quota << G4endl 	   	   
-	   << indention       << element4
+	   << indention        << element4
            << G4std::setw(7) << G4std::setprecision(2) << rmin1 << "  "
            << G4std::setw(7) << G4std::setprecision(2) << rmax1 << "  "
            << G4std::setw(7) << G4std::setprecision(2) << rmin2 << "  "
@@ -203,12 +201,12 @@ void TG4XMLConvertor::WriteTrd(G4String lvName, const G4Trd* trd,
   G4String element2 = "material=\"" + materialName + quota;
   G4String element3 = "Xmp_Ymp_Z=\"";
   G4String element4 = "\" />";
-  G4String indention = fBasicIndention + fBasicIndention;
+  G4String indention = fkBasicIndention + fkBasicIndention;
   
   // write element
-  fOutFile << fBasicIndention << element1 << G4endl
-	   << indention       << element2 << G4endl
-	   << indention       << element3
+  fOutFile << fkBasicIndention << element1 << G4endl
+	   << indention        << element2 << G4endl
+	   << indention        << element3
            << G4std::setw(7) << G4std::setprecision(2) << x1 << "  "
            << G4std::setw(7) << G4std::setprecision(2) << x2 << "  "
            << G4std::setw(7) << G4std::setprecision(2) << y1 << "  "
@@ -255,12 +253,12 @@ void TG4XMLConvertor::WriteTrap(G4String lvName, const G4Trap* trap,
   G4String element4 = "inclination=\""; 
   G4String element5 = "declination=\""; 
   G4String element6 = "\" />";
-  G4String indention = fBasicIndention + fBasicIndention;
+  G4String indention = fkBasicIndention + fkBasicIndention;
 
   // write element
-  fOutFile << fBasicIndention << element1 << G4endl
-	   << indention       << element2 << G4endl
-	   << indention       << element3
+  fOutFile << fkBasicIndention << element1 << G4endl
+	   << indention        << element2 << G4endl
+	   << indention        << element3
            << G4std::setw(7) << G4std::setprecision(2) << x2 << "  "
            << G4std::setw(7) << G4std::setprecision(2) << x1 << "  "
            << G4std::setw(7) << G4std::setprecision(2) << x4 << "  "
@@ -306,12 +304,12 @@ void TG4XMLConvertor::WritePolycone(G4String lvName, const G4Polycone* polycone,
   G4String element5 = "<polyplane Rio_Z=\"";
   G4String element6 = "\" />";
   G4String element7 = "</pcon>";
-  G4String indention = fBasicIndention + fBasicIndention;
+  G4String indention = fkBasicIndention + fkBasicIndention;
   
   // write pcon element
-  fOutFile << fBasicIndention << element1 << G4endl
-	   << indention       << element2 << G4endl
-	   << indention       << element3
+  fOutFile << fkBasicIndention << element1 << G4endl
+	   << indention        << element2 << G4endl
+	   << indention        << element3
            << G4std::setw(7) << G4std::setprecision(2) << sphi << "  "
            << G4std::setw(7) << G4std::setprecision(2) << ephi
 	   << element4 << G4endl;
@@ -333,7 +331,7 @@ void TG4XMLConvertor::WritePolycone(G4String lvName, const G4Polycone* polycone,
   }
   
   // close pcon element
-  fOutFile << fBasicIndention
+  fOutFile << fkBasicIndention
            << element7 << G4endl << G4endl;  	     
 }  
 
@@ -367,12 +365,12 @@ void TG4XMLConvertor::WritePolyhedra(G4String lvName, const G4Polyhedra* polyhed
   G4String element6 = "Ros=\"";
   G4String element7 = "Zs =\"";
   G4String element8 = "\" />";
-  G4String indention = fBasicIndention + fBasicIndention;
+  G4String indention = fkBasicIndention + fkBasicIndention;
   
   // write element
-  fOutFile << fBasicIndention << element1 << G4endl
-	   << indention       << element2 << G4endl
-	   << indention       << element3
+  fOutFile << fkBasicIndention << element1 << G4endl
+	   << indention        << element2 << G4endl
+	   << indention        << element3
            << G4std::setw(7) << G4std::setprecision(2) << sphi << "  "
            << G4std::setw(7) << G4std::setprecision(2) << ephi
 	   << quota << G4endl
@@ -533,7 +531,7 @@ void TG4XMLConvertor::WriteMaterial(const G4Material* material)
   G4String element2 = "\" -->";
   
   // write element
-  fOutFile << fBasicIndention
+  fOutFile << fkBasicIndention
            << element1 << name
 	   << element2
            << G4endl;
@@ -599,7 +597,7 @@ void TG4XMLConvertor::WriteSolid(G4String lvName, const G4VSolid* solid,
   G4String element2 = "\" -->";
   
   // write element
-  fOutFile << fBasicIndention
+  fOutFile << fkBasicIndention
            << element1 << lvName
 	   << element2
            << G4endl;
@@ -644,17 +642,17 @@ void TG4XMLConvertor::WriteRotation(const G4RotationMatrix* rotation)
   PutName(element1, id, "#");
 
   // write element
-  fOutFile << fBasicIndention
+  fOutFile << fkBasicIndention
            << element1
 	   << G4std::setw(8) << G4std::setprecision(5) << xx << "  "  
 	   << G4std::setw(8) << G4std::setprecision(5) << xy << "  "  
 	   << G4std::setw(8) << G4std::setprecision(5) << xz << quota
-           << fBasicIndention
+           << fkBasicIndention
            << element2
 	   << G4std::setw(8) << G4std::setprecision(5) << yx << "  "  
 	   << G4std::setw(8) << G4std::setprecision(5) << yy << "  "  
 	   << G4std::setw(8) << G4std::setprecision(5) << yz << quota
-	   << fBasicIndention
+	   << fkBasicIndention
            << element3
 	   << G4std::setw(8) << G4std::setprecision(5) << zx << "  "  
 	   << G4std::setw(8) << G4std::setprecision(5) << zy << "  "  
@@ -831,11 +829,11 @@ void TG4XMLConvertor::WriteEmptyLine()
 void TG4XMLConvertor::IncreaseIndention()
 {
   // increase indention
-  fIndention.append(fBasicIndention);	   
+  fIndention.append(fkBasicIndention);	   
 }
 
 void TG4XMLConvertor::DecreaseIndention()
 {
   // decrease indention
-  fIndention.replace(fIndention.find(fBasicIndention), 3 , "");
+  fIndention.replace(fIndention.find(fkBasicIndention), 3 , "");
 }

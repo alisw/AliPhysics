@@ -75,12 +75,12 @@ class TG4XMLConvertor : public TG4VXMLConvertor
                    G4String materialName); 
   
     // static data members
-    static const G4int fgkMaxVolumeNameLength;
-    static const G4int fgkMaxMaterialNameLength;
+    static const G4int fgkMaxVolumeNameLength;  //maximal volume name length
+    static const G4int fgkMaxMaterialNameLength;//maximal material name length
 
     // data members
     G4std::ofstream&  fOutFile;          //output file
-    const G4String    fBasicIndention;   //basic indention 
+    const G4String    fkBasicIndention;  //basic indention 
     G4String          fIndention;        //indention string
     G4int             fRotationCounter;  //counter of rotations
     TG4RotationMatrixVector  fRotations; // vector of rot matrices
