@@ -906,6 +906,7 @@ void AliITS::Hits2SDigits(){
     } // end for iEvent
     
     fLoader->UnloadHits();
+    fLoader->UnloadSDigits();
 }
 //______________________________________________________________________
 void AliITS::SDigitsToDigits(Option_t *opt){
