@@ -309,7 +309,7 @@ Int_t AliMUONTrack::HitsInCommon(AliMUONTrack* Track) const
 void AliMUONTrack::MatchTriggerTrack(TClonesArray *triggerTrackArray)
 {
   // Match this track with one trigger track if possible
-  AliMUONTrackParam *trackParam; 
+  AliMUONTrackParam trackParam; 
   AliMUONTriggerTrack *triggerTrack;
   Double_t xTrack, yTrack, ySlopeTrack, dTrigTrackMin2, dTrigTrack2;
   Double_t nSigmaCut2;
@@ -320,13 +320,13 @@ void AliMUONTrack::MatchTriggerTrack(TClonesArray *triggerTrackArray)
   fMatchTrigger = kFALSE;
   fChi2MatchTrigger = 0;
 
-  trackParam = (AliMUONTrackParam*) fTrackParamAtHit->Last(); 
-  trackParam->ExtrapToZ(AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
+  trackParam = *((AliMUONTrackParam*) fTrackParamAtHit->Last()); 
+  trackParam.ExtrapToZ(AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
 
   nSigmaCut2 =  fEventReconstructor->GetMaxSigma2Distance(); // nb of sigma**2 for cut
-  xTrack = trackParam->GetNonBendingCoor();
-  yTrack = trackParam->GetBendingCoor();
-  ySlopeTrack = trackParam->GetBendingSlope();
+  xTrack = trackParam.GetNonBendingCoor();
+  yTrack = trackParam.GetBendingCoor();
+  ySlopeTrack = trackParam.GetBendingSlope();
   dTrigTrackMin2 = 999;
   
   triggerTrack = (AliMUONTriggerTrack*) triggerTrackArray->First();
