@@ -1,52 +1,23 @@
-
 #ifndef AliBarrelTrack_H
 #define AliBarrelTrack_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+//
+// General class for barrel tracks
+// This class contains all the information
+// to describe the tracks detected by the barre detectors (ITS, TPC, TRD, TOF)
+//
 
 #include "TObject.h"
 #include "TMath.h"
 
 class AliBarrelTrack : public TObject {
-  
- protected:
 
-  Int_t fLabel;          // kine tree index
-
-  Int_t fRefPlane;       // id of the reference plane
-  Int_t fIsIn;           // direction
-
-  Double_t fX;           // Kalman Time
-  Double_t fAlpha;       // sector angle
-
-  // state vector
-  Double_t fZ;          // Z in global cs
-  Double_t fY;          // Y in local cs corresponds to r-phi
-  Double_t fTgLambda;   // Tangent of the dip angle
-  Double_t fSnPhi;      // Sin 
-  Double_t f1Pt;        // inverse of momentum
-
-
-  // covariance matrix
-  Double_t fCz;
-  Double_t fCy;
-  Double_t fCtg;
-  Double_t fCphi;
-  Double_t fCpt;
-
-    
-  // track time/length  
-  Double_t fTimeHypothesis[5];    // time for all hypoptheses
-  Double_t fLength;               // track length
-
-  // performance info
-  Int_t fNClusters;         // Number of clusters 
-  Int_t fNWrong;            // Number of wrong clusters
-  Double_t fChi2;           // Chi 2
-  Int_t fNRotate;           // number of rotations / sector crossing
- 
-  Double_t fMass;           // mass hypothesis
-  Double_t fdEdX;           // dE/dX
-
- public:
+public:
   
   AliBarrelTrack();
   ~AliBarrelTrack() {}
@@ -105,6 +76,45 @@ class AliBarrelTrack : public TObject {
   Double_t P()  const {return Pt()*(fTgLambda+1);}
 
   Double_t Lambda() const {return TMath::ATan(fTgLambda);}
+  
+protected:
+
+  Int_t fLabel;          // kine tree index
+
+  Int_t fRefPlane;       // id of the reference plane
+  Int_t fIsIn;           // direction
+
+  Double_t fX;           // Kalman Time
+  Double_t fAlpha;       // sector angle
+
+  // state vector
+  Double_t fZ;          // Z in global cs
+  Double_t fY;          // Y in local cs corresponds to r-phi
+  Double_t fTgLambda;   // Tangent of the dip angle
+  Double_t fSnPhi;      // Sin 
+  Double_t f1Pt;        // inverse of momentum
+
+
+  // covariance matrix
+  Double_t fCz;   // z element of covariance matrix
+  Double_t fCy;   // y element of covariance matrix
+  Double_t fCtg;  // tangent element of covariance matrix
+  Double_t fCphi; // phi element of covariance matrix
+  Double_t fCpt;  // pt element of covariance matrix
+
+    
+  // track time/length  
+  Double_t fTimeHypothesis[5];    // time for all hypoptheses
+  Double_t fLength;               // track length
+
+  // performance info
+  Int_t fNClusters;         // Number of clusters 
+  Int_t fNWrong;            // Number of wrong clusters
+  Double_t fChi2;           // Chi 2
+  Int_t fNRotate;           // number of rotations / sector crossing
+ 
+  Double_t fMass;           // mass hypothesis
+  Double_t fdEdX;           // dE/dX
 
   ClassDef(AliBarrelTrack,1)
 };

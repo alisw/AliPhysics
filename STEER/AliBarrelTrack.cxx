@@ -1,3 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -67,24 +84,33 @@ void AliBarrelTrack::SetX(Double_t x, Double_t alpha) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void AliBarrelTrack::SetRefPlane(Int_t nRefPlane, Int_t isIn) {
-  
+void AliBarrelTrack::SetRefPlane(Int_t nRefPlane, Int_t isIn) 
+{
+  //
+  // Define the reference plane
+  //
   fRefPlane = nRefPlane;
   fIsIn = isIn;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void AliBarrelTrack::SetNClusters(Int_t nClusters, Double_t chi2) {
-
+void AliBarrelTrack::SetNClusters(Int_t nClusters, Double_t chi2) 
+{
+  //
+  // Set number of cluster
+  //
   fNClusters = nClusters;
   fChi2 = chi2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void AliBarrelTrack::SetTime(Double_t time[5], Double_t length) {
-
+void AliBarrelTrack::SetTime(Double_t time[5], Double_t length) 
+{
+  //
+  // Set time for a track
+  //
   for(Int_t i=0; i<5; i++)
     fTimeHypothesis[i] = time[i];
 
