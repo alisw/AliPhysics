@@ -263,7 +263,6 @@ public:
   inline  void    CreateDigitsOld();    
   inline  void    CreateRawClustersOld();  
   inline  void    CreateRecos1Old();  
-  inline  void    CreateRecos3Old();  
           void    ResetDigitsOld()  {if(fDchambers)  for(int i=0;i<kNCH;i++){fDchambers->At(i)->Clear();fNdch[i]=0;}}   //virtual
           void    ResetSpecialsOld(){fNspecials=0; if(fSpecials) fSpecials->Clear();}   
           void    ResetRawClusters(){if(fRawClusters)for(int i=0;i<kNCH;i++){fRawClusters->At(i)->Clear();fNrawch[i]=0;}}
