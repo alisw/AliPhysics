@@ -31,13 +31,13 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
 public:
 
   AliPHOSPIDv1() ;          // ctor            
-  AliPHOSPIDv1(const char* headerFile, const char * tsBranch = "Default", const char * from = 0) ;
+  AliPHOSPIDv1(const char* headerFile, const char * tsBranch = "Default", const Bool_t toSplit=kFALSE) ;
    
   virtual ~AliPHOSPIDv1() ; // dtor
 
   virtual void Exec(Option_t * option) ;
-  virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      
-  virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
+  //  virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      
+  //  virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
   virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
  
   virtual void Print(Option_t * option) const {}
@@ -78,8 +78,8 @@ public:
   Float_t GetEnergyAnalysisCut() {return  fEnergyAnalysisCut ;}
   void SetEnergyAnalysisCut(Float_t e) {  fEnergyAnalysisCut = e ;}
 
-  virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
-  virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
+  //  virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
+  //  virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
   virtual const char * Version() const { return "pid-v1" ; }  
   
  private:
@@ -113,15 +113,15 @@ public:
   TString    fFileNamePar100 ;// File that contains the parameters for analysis from 0.5 to 100 GeV
   
  
-  TString    fFrom ;              // name of Recpoints and TrackSegments 
-  TString    fHeaderFileName ;    // file name with event header
-  TString    fTrackSegmentsTitle; // branch name with track segments
-  TString    fRecPointsTitle ;    // branch name with rec points
-  TString    fRecParticlesTitle ; // branch name with rec particles
+  //  TString    fFrom ;              // name of Recpoints and TrackSegments 
+  //  TString    fHeaderFileName ;    // file name with event header
+  //  TString    fTrackSegmentsTitle; // branch name with track segments
+  //  TString    fRecPointsTitle ;    // branch name with rec points
+  //  TString    fRecParticlesTitle ; // branch name with rec particles
  
   Int_t                      fNEvent ;            //! current event number
-  AliPHOSClusterizer *       fClusterizer ;       //! clusterizer
-  AliPHOSTrackSegmentMaker * fTSMaker ;           //! track segment maker
+  //  AliPHOSClusterizer *       fClusterizer ;       //! clusterizer
+  //  AliPHOSTrackSegmentMaker * fTSMaker ;           //! track segment maker
 
   TPrincipal *               fPrincipal5 ;        //! TPrincipal from fFileName5  
   TPrincipal *               fPrincipal100 ;      //! TPrincipal from fFileName100 

@@ -31,7 +31,7 @@ class AliPHOSReconstructioner : public TTask {
 public:
 
   AliPHOSReconstructioner() ; //ctor            
-  AliPHOSReconstructioner(const char * headreFile, const char * branchName = "Default") ;
+  AliPHOSReconstructioner(const char * headreFile, const char * branchName = "Default",Bool_t toSplit = kFALSE) ;
   AliPHOSReconstructioner(const AliPHOSReconstructioner & rec) {
     // cpy ctor: 
     // requested by the Coding Convention
@@ -50,12 +50,12 @@ public:
 
   void Print(Option_t * option)const ;
   
-  void SetBranchTitle(const char* branch,const char * title) ;
-            // Sets the branch titles to separate different reconstruction flows 
-
-  void StartFrom(char * module = "SDigitizer",char * title = "Default") ;
-            // From wich step reconstruction begins, 
-            // title to be set to all reconstructed branches
+  //  void SetBranchTitle(const char* branch,const char * title) ;
+  //            // Sets the branch titles to separate different reconstruction flows 
+  //
+  //  void StartFrom(char * module = "SDigitizer",char * title = "Default") ;
+  //            // From wich step reconstruction begins, 
+  //            // title to be set to all reconstructed branches
 
   AliPHOSReconstructioner & operator = (const AliPHOSReconstructioner & rvalue)  {
     // assignement operator requested by coding convention but not needed
@@ -69,6 +69,7 @@ private:
 
 private:
   
+  Bool_t   fToSplit ; 
   TString  fHeaderFileName ;    // File with headers and gAlice
   TString  fDigitsBranch ;      // Title of digits branch
   TString  fRecPointBranch ;    // Title of RecPoints branch   

@@ -26,17 +26,17 @@ class AliPHOSSDigitizer: public TTask {
 
 public:
   AliPHOSSDigitizer() ;          // ctor
-  AliPHOSSDigitizer(const char* HeaderFile,const char *SdigitsTitle = "Default") ; 
+  AliPHOSSDigitizer(const char* headerFile, const char *sdigitsTitle = "Default", const Bool_t toSplit = kFALSE) ; 
   virtual ~AliPHOSSDigitizer() ; // dtor
 
   Float_t  Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
   Int_t    Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
-  virtual void  Exec(Option_t *option); 
+  virtual void   Exec(Option_t *option); 
   const char *   GetSDigitsBranch()const{return GetName();}  
   const Int_t    GetSDigitsInRun() const {return fSDigitsInRun ;}  
   virtual void Print(Option_t* option) const ;
   void SetSDigitsBranch(const char * title ) ;
-  void SetSplitFile(const TString splitFileName = "PHOS.SDigits.root") ;
+  //  void SetSplitFile(const TString splitFileName = "PHOS.SDigits.root") ;
   void UseHitsFrom(const char * filename) ;      
   Bool_t operator == (const AliPHOSSDigitizer & sd) const ;
 
@@ -46,13 +46,13 @@ private:
   void     PrintSDigits(Option_t * option) ;
 
 private:
-
   Float_t fA ;              // Pedestal parameter
   Float_t fB ;              // Slope Digitizition parameters
-  Bool_t fDefaultInit;      //! Says if the task was created by defaut ctor (only parameters are initialized)
   Float_t fPrimThreshold ;  // To store primari if Elos > threshold
-  Int_t fSDigitsInRun ;     //! Total number of sdigits in one run
+  Bool_t  fDefaultInit;     //! Says if the task was created by defaut ctor (only parameters are initialized)
+  Int_t   fSDigitsInRun ;   //! Total number of sdigits in one run
   TFile * fSplitFile ;      //! file in which SDigits will eventually be stored
+  Bool_t  fToSplit ;        //! Says that sigits should be written into splip file
 
   ClassDef(AliPHOSSDigitizer,1)  // description 
 

@@ -88,16 +88,16 @@ ClassImp(AliPHOSDigitizer)
   AliPHOSDigitizer::AliPHOSDigitizer() 
 {
   // ctor
-
   InitParameters() ; 
   fDefaultInit = kTRUE ;
+  fManager = 0 ;                     // We work in the standalong mode
  
-  fHitsFileName    = "" ;
-  fSDigitsFileName = "" ; 
+  // fHitsFileName    = "" ;
+  // fSDigitsFileName = "" ; 
  }
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
+AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile, const char * name, const Bool_t toSplit)
 {
   // ctor
 
@@ -106,27 +106,36 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
   fManager = 0 ;                     // We work in the standalong mode
   fSplitFile= 0 ; 
   InitParameters() ; 
+  fToSplit = toSplit ;
   Init() ;
   fDefaultInit = kFALSE ; 
-  fSDigitsFileName = headerFile ; 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  gime->Event(0, "S") ; 
-  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
+  //  fSDigitsFileName = headerFile ; 
+  //  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  //  gime->Event(0, "S") ; 
+  //  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
 }
 
 //____________________________________________________________________________ 
 AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
 {
   // ctor
-  SetTitle("aliroot") ;
-  SetName("Default") ;
+  SetTitle(ard->GetInputFileName(0,0)) ;
   InitParameters() ; 
-  fDefaultInit = kTRUE ; 
-  
-  fSDigitsFileName = fManager->GetInputFileName(0, 0) ;
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(fSDigitsFileName, GetName()) ; 
-  gime->Event(0,"S") ; 
-  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
+  fDefaultInit = kFALSE ; 
+  fSplitFile   = 0 ; 
+
+  if (ard->GetOutputFile()) {
+    SetName(ard->GetOutputFile().Data());
+    fToSplit = kTRUE ;
+  } else {
+    SetName("Default") ;
+    fToSplit = kFALSE ;
+  }
+
+//   fSDigitsFileName = fManager->GetInputFileName(0, 0) ;
+//   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(fSDigitsFileName, GetName()) ; 
+//   gime->Event(0,"S") ; 
+//  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
   
 }
 
@@ -136,24 +145,24 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   // dtor
   // fDefaultInit = kTRUE if Digitizer created by default ctor (to get just the parameters)
   
-  if (!fDefaultInit) {
-    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+//   if (!fDefaultInit) {
+//     AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
  
-   // remove the task from the folder list
-   gime->RemoveTask("S",GetName()) ;
-   gime->RemoveTask("D",GetName()) ;
+//    // remove the task from the folder list
+//    gime->RemoveTask("S",GetName()) ;
+//    gime->RemoveTask("D",GetName()) ;
    
-   // remove the Digits from the folder list
-   gime->RemoveObjects("D", GetName()) ;
+//    // remove the Digits from the folder list
+//    gime->RemoveObjects("D", GetName()) ;
    
-   // remove the SDigits from the folder list
-   gime->RemoveSDigits() ;
+//    // remove the SDigits from the folder list
+//    gime->RemoveSDigits() ;
    
-   // Delete gAlice
-   gime->CloseFile() ; 
+//    // Delete gAlice
+//    gime->CloseFile() ; 
    
    fSplitFile = 0 ; 
- }
+   // }
 }
 
 //____________________________________________________________________________
@@ -203,8 +212,8 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
     if ( (sdigits = (TClonesArray*)folder->FindObject(GetName()) ) ) {
       TString fileName(folder->GetName()) ;
       fileName.ReplaceAll("_","/") ;
-      cout << "INFO: AliPHOSDigitizer::Digitize -> Adding SDigits " 
-	   << GetName() << " from " << fileName << endl ; 
+//       cout << "INFO: AliPHOSDigitizer::Digitize -> Adding SDigits " 
+// 	   << GetName() << " from " << fileName << endl ; 
       sdigArray->AddAt(sdigits, input) ;
       input++ ;
     }
@@ -417,43 +426,42 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   if(fManager){
     treeD = fManager->GetTreeD() ;
     nevents = 1 ;    // Will process only one event
-  }
-  else {
-    gAlice->GetEvent(0) ;
-    nevents = (Int_t) gAlice->TreeE()->GetEntries() ;
-    treeD=gAlice->TreeD() ;
-  }
-
-
-  //Check, if this branch already exits
-  if (treeD) { 
-    TObjArray * lob = (TObjArray*)treeD->GetListOfBranches() ;
-    TIter next(lob) ; 
-    TBranch * branch = 0 ;  
-    Bool_t phosfound = kFALSE, digitizerfound = kFALSE ; 
     
-    while ( (branch = (TBranch*)next()) && (!phosfound || !digitizerfound) ) {
-      if ( (strcmp(branch->GetName(), "PHOS")==0) && 
-	   (strcmp(branch->GetTitle(), GetName())==0) ) 
-	phosfound = kTRUE ;
+    //Check, if this branch already exits
+    if (treeD) { 
+      TObjArray * lob = (TObjArray*)treeD->GetListOfBranches() ;
+      TIter next(lob) ; 
+      TBranch * branch = 0 ;  
+      Bool_t phosfound = kFALSE, digitizerfound = kFALSE ; 
       
-      else if ( (strcmp(branch->GetName(), "AliPHOSDigitizer")==0) && 
-		(strcmp(branch->GetTitle(), GetName())==0) ) 
-	digitizerfound = kTRUE ; 
-    }
-    
-    if ( phosfound ) {
-      cerr << "WARNING: AliPHOSDigitizer -> Digits branch with name " << GetName() 
-	   << " already exits" << endl ;
-      return ; 
-    }   
-    if ( digitizerfound ) {
-      cerr << "WARNING: AliPHOSDigitizer -> Digitizer branch with name " << GetName() 
-	   << " already exits" << endl ;
-      return ; 
+      while ( (branch = (TBranch*)next()) && (!phosfound || !digitizerfound) ) {
+	if ( (strcmp(branch->GetName(), "PHOS")==0) && 
+	     (strcmp(branch->GetTitle(), GetName())==0) ) 
+	  phosfound = kTRUE ;
+	
+	else if ( (strcmp(branch->GetName(), "AliPHOSDigitizer")==0) && 
+		  (strcmp(branch->GetTitle(), GetName())==0) ) 
+	  digitizerfound = kTRUE ; 
+      }
+      
+      if ( phosfound ) {
+	cerr << "WARNING: AliPHOSDigitizer -> Digits branch with name " << GetName() 
+	     << " already exits" << endl ;
+	return ; 
+      }   
+      if ( digitizerfound ) {
+	cerr << "WARNING: AliPHOSDigitizer -> Digitizer branch with name " << GetName() 
+	     << " already exits" << endl ;
+	return ; 
+      }
     }   
   }
-
+  else { //PHOS standalone
+    if(gime->BranchExists("Digits") ) 
+      return ;
+    nevents=gime->MaxEvent() ;
+  }
+  
   Int_t ievent ;
   
   for(ievent = 0; ievent < nevents; ievent++){
@@ -518,8 +526,12 @@ Float_t AliPHOSDigitizer::FrontEdgeTime(TClonesArray * ticks)
 //____________________________________________________________________________ 
 Bool_t AliPHOSDigitizer::Init()
 {
+  // Makes all memory allocations
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), GetName()) ; 
+  if( strcmp(GetTitle(), "") == 0 )
+    SetTitle("galice.root") ;
+
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), GetName(), fToSplit) ; 
   if ( gime == 0 ) {
     cerr << "ERROR: AliPHOSDigitizer::Init -> Could not obtain the Getter object !" << endl ; 
     return kFALSE;
@@ -534,6 +546,29 @@ Bool_t AliPHOSDigitizer::Init()
   
   // Post Digitizer to the white board
   gime->PostDigitizer(this) ;
+
+  fSplitFile = 0 ;
+  if(fToSplit){
+    // construct the name of the file as /path/PHOS.SDigits.root
+    //First - extract full path if necessary
+    TString digitsFileName(GetTitle()) ;
+    Ssiz_t islash = digitsFileName.Last('/') ;
+    if(islash<digitsFileName.Length())
+      digitsFileName.Remove(islash+1,digitsFileName.Length()) ;
+    else
+      digitsFileName="" ;
+    // Next - append the file name 
+    digitsFileName+="PHOS.Digits." ;
+    if((strcmp(GetName(),"Default")!=0)&&(strcmp(GetName(),"")!=0)){
+      digitsFileName+=GetName() ;
+      digitsFileName+="." ;
+    }
+    digitsFileName+="root" ;
+    // Finally - check if the file already opened or open the file
+    fSplitFile = static_cast<TFile*>(gROOT->GetFile(digitsFileName.Data()));   
+    if(!fSplitFile)
+      fSplitFile =  TFile::Open(digitsFileName.Data(),"update") ;
+  }
   
   //Mark that we will use current header file
   if(!fManager){
@@ -615,64 +650,65 @@ void AliPHOSDigitizer::MixWith(const char* headerFile)
   
 }
 
-//__________________________________________________________________
-void AliPHOSDigitizer::SetSplitFile(const TString splitFileName)
-{
-  // Diverts the Digits in a file separate from the hits file
+// //__________________________________________________________________
+// void AliPHOSDigitizer::SetSplitFile(const TString splitFileName)
+// {
+//   // Diverts the Digits in a file separate from the hits file
   
-  // I guess it is not going to work if we do merging
-//   if (fManager) {
-//     cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> Not yet available in case of merging activated " << endl ;  
-//     return ; 
+//   // I guess it is not going to work if we do merging
+// //   if (fManager) {
+// //     cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> Not yet available in case of merging activated " << endl ;  
+// //     return ; 
+// //   }
+
+//   cout << "AliPHOSDigitizer::SetSplitFile " << gDirectory->GetName() << endl ;  
+//   cout << "AliPHOSDigitizer::SetSplitFile " << gAlice->GetTreeDFileName() << endl ;  
+//   cout << "AliPHOSDigitizer::SetSplitFile " <<  splitFileName.Data() << endl ;
+  
+//   SetTitle(splitFileName) ; 
+
+//   TDirectory * cwd = gDirectory ;
+//   if ( !(gAlice->GetTreeDFileName() == splitFileName) ) {
+//     if (gAlice->GetTreeDFile() )  
+//       gAlice->GetTreeDFile()->Close() ; 
 //   }
 
-  cout << "AliPHOSDigitizer::SetSplitFile " << gDirectory->GetName() << endl ;  
-  cout << "AliPHOSDigitizer::SetSplitFile " << gAlice->GetTreeDFileName() << endl ;  
-  cout << "AliPHOSDigitizer::SetSplitFile " <<  splitFileName.Data() << endl ;
-  
-  SetTitle(splitFileName) ; 
+//   fSplitFile = gAlice->InitTreeFile("D",splitFileName.Data());
+//   fSplitFile->cd() ; 
+//   gAlice->Write(0, TObject::kOverwrite);
 
-  TDirectory * cwd = gDirectory ;
-  if ( !(gAlice->GetTreeDFileName() == splitFileName) ) {
-    if (gAlice->GetTreeDFile() )  
-      gAlice->GetTreeDFile()->Close() ; 
-  }
-
-  fSplitFile = gAlice->InitTreeFile("D",splitFileName.Data());
-  fSplitFile->cd() ; 
-  gAlice->Write(0, TObject::kOverwrite);
-
-  TTree *treeE  = gAlice->TreeE();
-  if (!treeE) {
-    cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> No TreeE found "<<endl;
-    abort() ;
-  }      
+//   TTree *treeE  = gAlice->TreeE();
+//   if (!treeE) {
+//     cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> No TreeE found "<<endl;
+//     abort() ;
+//   }      
   
-  // copy TreeE
-  AliHeader *header = new AliHeader();
-  treeE->SetBranchAddress("Header", &header);
-  treeE->SetBranchStatus("*",1);
-  TTree *treeENew =  treeE->CloneTree();
-  treeENew->Write(0, TObject::kOverwrite);
+//   // copy TreeE
+//   AliHeader *header = new AliHeader();
+//   treeE->SetBranchAddress("Header", &header);
+//   treeE->SetBranchStatus("*",1);
+//   TTree *treeENew =  treeE->CloneTree();
+//   treeENew->Write(0, TObject::kOverwrite);
   
-  // copy AliceGeom
-  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-  if (!AliceGeom) {
-    cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
-    abort() ;
-    }
-  AliceGeom->Write(0, TObject::kOverwrite);
+//   // copy AliceGeom
+//   TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+//   if (!AliceGeom) {
+//     cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
+//     abort() ;
+//     }
+//   AliceGeom->Write(0, TObject::kOverwrite);
   
-  gAlice->MakeTree("D",fSplitFile);
-  cwd->cd() ; 
-  cout << "INFO: AliPHOSDigitizer::SetSPlitMode -> Digits will be stored in " << splitFileName.Data() << endl ; 
-}
+//   gAlice->MakeTree("D",fSplitFile);
+//   cwd->cd() ; 
+//   cout << "INFO: AliPHOSDigitizer::SetSPlitMode -> Digits will be stored in " << splitFileName.Data() << endl ; 
+// }
 
 //__________________________________________________________________
 void AliPHOSDigitizer::Print(Option_t* option)const {
   // Print Digitizer's parameters
   if( strcmp(GetName(), "") != 0 ){
-    
+
+
     cout << "------------------- "<< GetName() << " -------------" << endl ;
 
     const Int_t nStreams = GetNInputStreams() ; 
@@ -693,7 +729,7 @@ void AliPHOSDigitizer::Print(Option_t* option)const {
       
 //       while ( (folder = (TFolder*)next()) ) {
 // 	if ( folder->FindObject(GetName())  ) 
-      cout << "Adding SDigits " << GetName() << " from " << GetSDigitsFileName() << endl ; 
+      //    cout << "Adding SDigits " << GetName() << " from " << GetSDigitsFileName() << endl ; 
 //      }
       cout << endl ;
       cout << "Writing digits to " << GetTitle() << endl ;
@@ -770,16 +806,16 @@ void AliPHOSDigitizer::PrintDigits(Option_t * option){
 
 }
 
-//__________________________________________________________________
-void AliPHOSDigitizer::SetSDigitsBranch(const char* title)
-{
-  // we set title (comment) of the SDigits branch in the first! header file
-  if( strcmp(GetName(), "") == 0 )
-    Init() ;
+// //__________________________________________________________________
+// void AliPHOSDigitizer::SetSDigitsBranch(const char* title)
+// {
+//   // we set title (comment) of the SDigits branch in the first! header file
+//   if( strcmp(GetName(), "") == 0 )
+//     Init() ;
 
-  AliPHOSGetter::GetInstance()->SDigits()->SetName(title) ; 
+//   AliPHOSGetter::GetInstance()->SDigits()->SetName(title) ; 
  
-}
+// }
 //__________________________________________________________________
 Float_t AliPHOSDigitizer::TimeOfNoise(void)
 {  // Calculates the time signal generated by noise
@@ -787,19 +823,19 @@ Float_t AliPHOSDigitizer::TimeOfNoise(void)
   return 1. ;
 
 }
-//____________________________________________________________________________
-void AliPHOSDigitizer::Reset() 
-{ 
-  // sets current event number to the first simulated event
+// //____________________________________________________________________________
+// void AliPHOSDigitizer::Reset() 
+// { 
+//   // sets current event number to the first simulated event
 
-  if( strcmp(GetName(), "") == 0 )
-    Init() ;
+//   if( strcmp(GetName(), "") == 0 )
+//     Init() ;
 
- //  Int_t inputs ;
-//   for(inputs = 0; inputs < fNinputs ;inputs++)
-//       fIevent->AddAt(-1, inputs ) ;
+//  //  Int_t inputs ;
+// //   for(inputs = 0; inputs < fNinputs ;inputs++)
+// //       fIevent->AddAt(-1, inputs ) ;
   
-}
+// }
 
 //____________________________________________________________________________
 void AliPHOSDigitizer::WriteDigits(Int_t event)
@@ -816,30 +852,29 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   const TClonesArray * digits = gime->Digits(GetName()) ; 
   TTree * treeD ;
-
- 
- if(fManager) 
-   treeD = fManager->GetTreeD() ;
- else {
-   if (!gAlice->TreeD() ) 
-     gAlice->MakeTree("D", fSplitFile);
-   treeD = gAlice->TreeD();
- }
-
-
+  
+  if(fManager) 
+    treeD = fManager->GetTreeD() ;
+  else {
+    if((gAlice->TreeD() == 0) || (fSplitFile))  // we should not create TreeD if it is already here
+      gAlice->MakeTree("D", fSplitFile);       // We overwrite TreeD in split file in the case of second reconstruction
+    if(fSplitFile)
+      fSplitFile->cd() ;
+    treeD = gAlice->TreeD();
+  }
+  
   // -- create Digits branch
   Int_t bufferSize = 32000 ;    
   TBranch * digitsBranch = treeD->Branch("PHOS",&digits,bufferSize);
   digitsBranch->SetTitle(GetName());
-    
+  
   // -- Create Digitizer branch
   Int_t splitlevel = 0 ;
-  AliPHOSDigitizer * d = gime->Digitizer(GetName()) ;
+  const AliPHOSDigitizer * d = gime->Digitizer(GetName()) ;
   TBranch * digitizerBranch = treeD->Branch("AliPHOSDigitizer", "AliPHOSDigitizer", &d,bufferSize,splitlevel); 
   digitizerBranch->SetTitle(GetName());
 
   digitsBranch->Fill() ;
   digitizerBranch->Fill() ; 
   treeD->AutoSave() ; 
- 
 }

@@ -47,25 +47,27 @@ ClassImp(AliPHOSClusterizer)
 {
   // ctor
   fSplitFile= 0 ; 
-  fHitsFileName = "" ; 
-  fSDigitsFileName = "" ; 
-  fDigitsFileName = "" ; 
+  fToSplit  = kFALSE ;
+//   fHitsFileName = "" ; 
+//   fSDigitsFileName = "" ; 
+//   fDigitsFileName = "" ; 
 
 }
 
 //____________________________________________________________________________
-AliPHOSClusterizer::AliPHOSClusterizer(const char* headerFile, const char* name):
+AliPHOSClusterizer::AliPHOSClusterizer(const char* headerFile, const char* name, const Bool_t toSplit):
 TTask(name, headerFile)
 {
   // ctor
+  fToSplit  = toSplit ;
   fSplitFile= 0 ; 
-  fDigitsFileName = headerFile ; 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(headerFile, name) ; 
-  gime->Event(0,"D") ; 
-  fSDigitsFileName = gime->Digitizer()->GetTitle() ; 
-  gime = AliPHOSGetter::GetInstance(fSDigitsFileName, name) ; 
-  gime->Event(0,"S") ; 
-  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
+  //  fDigitsFileName = headerFile ; 
+  //  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(headerFile, name,toSplit) ; 
+//   gime->Event(0,"D") ; 
+//   fSDigitsFileName = gime->Digitizer()->GetTitle() ; 
+//   gime = AliPHOSGetter::GetInstance(fSDigitsFileName, name) ; 
+//   gime->Event(0,"S") ; 
+//   fHitsFileName = gime->SDigitizer()->GetTitle() ; 
 }
 
 //____________________________________________________________________________
@@ -73,42 +75,42 @@ AliPHOSClusterizer::~AliPHOSClusterizer()
 {
   // dtor
          
-  fSplitFile = 0 ; ;
+  fSplitFile = 0 ; 
 }
 
-//____________________________________________________________________________
-void AliPHOSClusterizer::SetSplitFile(const TString splitFileName) 
-{
-  // Diverts the RecPoints in a file separate from the Digits file
+// //____________________________________________________________________________
+// void AliPHOSClusterizer::SetSplitFile(const TString splitFileName) 
+// {
+//   // Diverts the RecPoints in a file separate from the Digits file
   
 
-  TDirectory * cwd = gDirectory ;
-  fSplitFile = gAlice->InitTreeFile("R",splitFileName.Data());
-  fSplitFile->cd() ; 
-  gAlice->Write(0, TObject::kOverwrite);
+//   TDirectory * cwd = gDirectory ;
+//   fSplitFile = gAlice->InitTreeFile("R",splitFileName.Data());
+//   fSplitFile->cd() ; 
+//   gAlice->Write(0, TObject::kOverwrite);
 
-  TTree *treeE  = gAlice->TreeE();
-  if (!treeE) {
-    cerr << "ERROR: AliPHOSClusterizer::SetSplitFile -> No TreeE found "<<endl;
-    abort() ;
-  }      
+//   TTree *treeE  = gAlice->TreeE();
+//   if (!treeE) {
+//     cerr << "ERROR: AliPHOSClusterizer::SetSplitFile -> No TreeE found "<<endl;
+//     abort() ;
+//   }      
   
-  // copy TreeE
-  AliHeader *header = new AliHeader();
-  treeE->SetBranchAddress("Header", &header);
-  treeE->SetBranchStatus("*",1);
-  TTree *treeENew =  treeE->CloneTree();
-  treeENew->Write(0, TObject::kOverwrite);
+//   // copy TreeE
+//   AliHeader *header = new AliHeader();
+//   treeE->SetBranchAddress("Header", &header);
+//   treeE->SetBranchStatus("*",1);
+//   TTree *treeENew =  treeE->CloneTree();
+//   treeENew->Write(0, TObject::kOverwrite);
     
-  // copy AliceGeom
-  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-  if (!AliceGeom) {
-    cerr << "ERROR: AliPHOSClusterizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
-    abort() ;
-  }
-  AliceGeom->Write(0, TObject::kOverwrite);
+//   // copy AliceGeom
+//   TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+//   if (!AliceGeom) {
+//     cerr << "ERROR: AliPHOSClusterizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
+//     abort() ;
+//   }
+//   AliceGeom->Write(0, TObject::kOverwrite);
   
-  gAlice->MakeTree("R", fSplitFile);
-  cwd->cd() ; 
-  cout << "INFO: AliPHOSClusterizer::SetSPlitMode -> RecPoints will be stored in " << splitFileName.Data() << endl ;   
-}
+//   gAlice->MakeTree("R", fSplitFile);
+//   cwd->cd() ; 
+//   cout << "INFO: AliPHOSClusterizer::SetSPlitMode -> RecPoints will be stored in " << splitFileName.Data() << endl ;   
+// }

@@ -105,7 +105,7 @@ AliPHOSPIDv0::AliPHOSPIDv0():AliPHOSPID()
 }
 
 //____________________________________________________________________________
-AliPHOSPIDv0::AliPHOSPIDv0(const char * headerFile,const char * name) : AliPHOSPID(headerFile, name)
+AliPHOSPIDv0::AliPHOSPIDv0(const char * headerFile,const char * name, const Bool_t toSplit) : AliPHOSPID(headerFile, name,toSplit)
 { 
   //ctor with the indication on where to look for the track segments
 
@@ -134,7 +134,6 @@ AliPHOSPIDv0::AliPHOSPIDv0(const char * headerFile,const char * name) : AliPHOSP
 AliPHOSPIDv0::~AliPHOSPIDv0()
 { 
 }
-
 
 //____________________________________________________________________________
 Float_t  AliPHOSPIDv0::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Option_t *  Axis)const
@@ -180,37 +179,40 @@ void  AliPHOSPIDv0::Exec(Option_t * option)
     return ; 
   }
 
-  gAlice->GetEvent(0) ;
-  //check, if the branch with name of this" already exits?
-  TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ;  
-  Bool_t phospidfound = kFALSE, pidfound = kFALSE ; 
-  
-  TString taskName(GetName()) ; 
-  taskName.Remove(taskName.Index(Version())-1) ;
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  if(gime->BranchExists("RecParticles") )
+    return ;
 
-  while ( (branch = (TBranch*)next()) && (!phospidfound || !pidfound) ) {
-    if ( (strcmp(branch->GetName(), "PHOSPID")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
-      phospidfound = kTRUE ;
+//   gAlice->GetEvent(0) ;
+//   //check, if the branch with name of this" already exits?
+//   TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
+//   TIter next(lob) ; 
+//   TBranch * branch = 0 ;  
+//   Bool_t phospidfound = kFALSE, pidfound = kFALSE ; 
+  
+//   TString taskName(GetName()) ; 
+//   taskName.Remove(taskName.Index(Version())-1) ;
+
+//   while ( (branch = (TBranch*)next()) && (!phospidfound || !pidfound) ) {
+//     if ( (strcmp(branch->GetName(), "PHOSPID")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
+//       phospidfound = kTRUE ;
     
-    else if ( (strcmp(branch->GetName(), "AliPHOSPID")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
-      pidfound = kTRUE ; 
-  }
+//     else if ( (strcmp(branch->GetName(), "AliPHOSPID")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
+//       pidfound = kTRUE ; 
+//   }
 
-  if ( phospidfound || pidfound ) {
-    cerr << "WARNING: AliPHOSPIDv0::Exec -> RecParticles and/or PIDtMaker branch with name " 
-	 << taskName.Data() << " already exits" << endl ;
-    return ; 
-  }       
+//   if ( phospidfound || pidfound ) {
+//     cerr << "WARNING: AliPHOSPIDv0::Exec -> RecParticles and/or PIDtMaker branch with name " 
+// 	 << taskName.Data() << " already exits" << endl ;
+//     return ; 
+//   }       
   
-  Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ;
+  Int_t nevents = gime->MaxEvent() ;       //(Int_t) gAlice->TreeE()->GetEntries() ;
   Int_t ievent ;
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
   
   for(ievent = 0; ievent < nevents; ievent++){
     gime->Event(ievent,"R") ;
-    
+    cout << "event " << ievent << " " << gime->EmcRecPoints() << " " << gime->TrackSegments() << endl ;
     MakeRecParticles() ;
     
     WriteRecParticles(ievent);
@@ -244,12 +246,33 @@ void AliPHOSPIDv0::Init()
   TString taskName(GetName()) ; 
   taskName.Remove(taskName.Index(Version())-1) ;
   
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), taskName.Data()) ; 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), taskName.Data(),fToSplit) ; 
   if ( gime == 0 ) {
     cerr << "ERROR: AliPHOSPIDv0::Init -> Could not obtain the Getter object !" << endl ; 
     return ;
   } 
    
+  fSplitFile = 0 ;
+  if(fToSplit){
+    //First - extract full path if necessary
+    TString fileName(GetTitle()) ;
+    Ssiz_t islash = fileName.Last('/') ;
+    if(islash<fileName.Length())
+      fileName.Remove(islash+1,fileName.Length()) ;
+    else
+      fileName="" ;
+    fileName+="PHOS.RecData." ;
+    if((strcmp(taskName.Data(),"Default")!=0)&&(strcmp(taskName.Data(),"")!=0)){
+      fileName+=taskName ;
+      fileName+="." ;
+    }
+    fileName+="root" ;
+    fSplitFile = static_cast<TFile*>(gROOT->GetFile(fileName.Data()));   
+    if(!fSplitFile)
+      fSplitFile =  TFile::Open(fileName.Data(),"update") ;
+  }
+
+
   gime->PostPID(this) ;
   // create a folder on the white board //YSAlice/WhiteBoard/RecParticles/PHOS/recparticlesName
   gime->PostRecParticles(taskName.Data() ) ; 
@@ -382,50 +405,68 @@ void  AliPHOSPIDv0::WriteRecParticles(Int_t event)
   TClonesArray * recParticles = gime->RecParticles(taskName) ; 
   recParticles->Expand(recParticles->GetEntriesFast() ) ;
 
-  //Make branch in TreeR for RecParticles 
-  char * filename = 0;
-  if(gSystem->Getenv("CONFIG_SPLIT_FILE")!=0){   //generating file name
-    filename = new char[strlen(gAlice->GetBaseFile())+20] ;
-    sprintf(filename,"%s/PHOS.Reco.root",gAlice->GetBaseFile()) ; 
+  TTree * treeR ;
+  
+  if(fToSplit){
+    if(!fSplitFile)
+      return ;
+    fSplitFile->cd() ;
+    char name[10] ;
+    sprintf(name,"%s%d", "TreeR",event) ;
+    treeR = dynamic_cast<TTree*>(fSplitFile->Get(name)); 
+  }
+  else{
+    treeR = gAlice->TreeR();
   }
   
-  TDirectory *cwd = gDirectory;
+  if(!treeR){
+    gAlice->MakeTree("R", fSplitFile);
+    treeR = gAlice->TreeR() ;
+  }
+
+//  //Make branch in TreeR for RecParticles 
+//   char * filename = 0;
+//   if(gSystem->Getenv("CONFIG_SPLIT_FILE")!=0){   //generating file name
+//     filename = new char[strlen(gAlice->GetBaseFile())+20] ;
+//     sprintf(filename,"%s/PHOS.Reco.root",gAlice->GetBaseFile()) ; 
+//   }
+  
+//   TDirectory *cwd = gDirectory;
   
   //First rp
   Int_t bufferSize = 32000 ;    
-  TBranch * rpBranch = gAlice->TreeR()->Branch("PHOSRP",&recParticles,bufferSize);
+  TBranch * rpBranch = treeR->Branch("PHOSRP",&recParticles,bufferSize);
   rpBranch->SetTitle(fRecParticlesTitle);
-  if (filename) {
-    rpBranch->SetFile(filename);
-    TIter next( rpBranch->GetListOfBranches());
-    TBranch * sb ;
-    while ((sb=(TBranch*)next())) {
-      sb->SetFile(filename);
-    }   
-    cwd->cd();
-  }
+//   if (filename) {
+//     rpBranch->SetFile(filename);
+//     TIter next( rpBranch->GetListOfBranches());
+//     TBranch * sb ;
+//     while ((sb=(TBranch*)next())) {
+//       sb->SetFile(filename);
+//     }   
+//     cwd->cd();
+//   }
   
   //second, pid
   Int_t splitlevel = 0 ; 
   AliPHOSPIDv0 * pid = this ;
-  TBranch * pidBranch = gAlice->TreeR()->Branch("AliPHOSPID","AliPHOSPIDv0",&pid,bufferSize,splitlevel);
+  TBranch * pidBranch = treeR->Branch("AliPHOSPID","AliPHOSPIDv0",&pid,bufferSize,splitlevel);
   pidBranch->SetTitle(fRecParticlesTitle.Data());
-  if (filename) {
-    pidBranch->SetFile(filename);
-    TIter next( pidBranch->GetListOfBranches());
-    TBranch * sb ;
-    while ((sb=(TBranch*)next())) {
-      sb->SetFile(filename);
-    }   
-    cwd->cd();
-  }    
+//   if (filename) {
+//     pidBranch->SetFile(filename);
+//     TIter next( pidBranch->GetListOfBranches());
+//     TBranch * sb ;
+//     while ((sb=(TBranch*)next())) {
+//       sb->SetFile(filename);
+//     }   
+//     cwd->cd();
+//   }    
   
   rpBranch->Fill() ;
   pidBranch->Fill() ;
   
-  gAlice->TreeR()->Write(0,kOverwrite) ;  
+  treeR->AutoSave() ; //Write(0,kOverwrite) ;  
   
-  delete [] filename ; 
 }
 
 //____________________________________________________________________________

@@ -51,7 +51,7 @@ class AliPHOSGetter : public TObject {
  public:
   
   AliPHOSGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
-    cerr << "ERROR: AliPHOGetter is a singleton default ctor not callable" << endl ;
+    cerr << "ERROR: AliPHOSGetter is a singleton default ctor not callable" << endl ;
     abort() ; 
   } 
   AliPHOSGetter(const AliPHOSGetter & obj) {
@@ -60,158 +60,146 @@ class AliPHOSGetter : public TObject {
     abort() ; 
   } 
   
-  virtual ~AliPHOSGetter() ; 
-  
-  void CloseFile() ;  
-  const TFolder * Folder(const TString what) const ;
-  void ListBranches(Int_t event=0) const ;
-  void NewBranch(TString name, Int_t event = 0) ; 
-  Bool_t NewFile(TString name) ;
-  const Bool_t HasFailed() const { return fFailed ; }
-  Bool_t PostPrimaries(void ) const ;  
-  Bool_t PostHits(void ) const ;  
-  Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  
-  Bool_t PostDigits(       const char * name ) const ;  
-  Bool_t PostRecPoints(    const char * name ) const ;  
-  Bool_t PostTrackSegments(const char * name) const ;  
-  Bool_t PostRecParticles( const char * name) const ;  
-
-  Bool_t PostClusterizer( const char * name) const ;  
-  Bool_t PostClusterizer(AliPHOSClusterizer * clu) const ;  
-  Bool_t PostSDigitizer (AliPHOSSDigitizer * sdigitizer) const ;  
-  Bool_t PostSDigitizer ( const char * name, const char * file ) const ;  
-  Bool_t PostDigitizer (AliPHOSDigitizer * digitizer) const ;  
-  Bool_t PostDigitizer  ( const char * name) const ;  
-  Bool_t PostTrackSegmentMaker(AliPHOSTrackSegmentMaker * tsm) const ;  
-  Bool_t PostTrackSegmentMaker(const char * name ) const ;  
-  Bool_t PostPID  (AliPHOSPID * pid) const ;  
-  Bool_t PostPID  (const char * name ) const ;  
-  Bool_t PostQA   (void) const ;
-  
-
-  void   Event(const Int_t event, const char * opt = "HSDRP") ;    
-  void   Track(Int_t itrack) ;
-
-  //Method to be used when digitizing under AliRunDigitizer, who opens all files etc.
-  void   ReadTreeS(TTree * treeS,Int_t input) ;
-  
-  Int_t  EventNumber()       { return (Int_t) gAlice->GetEvNumber() ; }
-  Int_t  MaxEvent()          { return (Int_t) gAlice->TreeE()->GetEntries() ; }
-  static AliPHOSGetter * GetInstance(const char* headerFile,
-				     const char* branchTitle = "Default" ) ; 
-  static AliPHOSGetter *   GetInstance() ; 
-
-  const AliPHOS *         PHOS()  ;  
-  const  AliPHOSGeometry * PHOSGeometry() ; 
-   // Alarms
-  TFolder * Alarms() const { return (TFolder*)(ReturnO("Alarms", 0)) ; }
-  TObjArray *  Alarms(const char * name ) const { return (TObjArray*)(ReturnO("Alarms", name)) ; }
-
-  // QA Tasks
-  TTask * QATasks(const char * name = 0) const { return (TTask*)(ReturnT("QATasks", name)) ; }
-
-  // Primaries
-  TClonesArray *  Primaries(void) const { return (TClonesArray*)(ReturnO("Primaries")) ; }
- 
-  // Hits
-  TTree *               TreeH(TString filename="") ; 
-  const TClonesArray *  Hits(void) { return static_cast<const TClonesArray*>(ReturnO("Hits")) ; }
-  const AliPHOSHit *    Hit(Int_t index)  { return static_cast<const AliPHOSHit*>(Hits()->At(index) );}
-  
-  // SDigits
-  TTree *         TreeS(TString filename="") ; 
-  TClonesArray *  SDigits(const char * name = 0, const char * file=0) { 
-    return static_cast<TClonesArray*>(ReturnO("SDigits", name, file)) ; 
-  }
-  const AliPHOSDigit *  SDigit(Int_t index) { return static_cast<const AliPHOSDigit*>(SDigits()->At(index)) ;}
-  
-  AliPHOSSDigitizer *  SDigitizer(const char * name =0) const { 
-    return ((AliPHOSSDigitizer*)(ReturnT("SDigitizer", name))) ; 
-  }
-  
-  // Digits
-  TTree *         TreeD(TString filename="") ; 
-  TClonesArray *  Digits(const char * name = 0)const  { 
-    return static_cast<TClonesArray*>(ReturnO("Digits", name)) ; 
-  }
-  const AliPHOSDigit *  Digit(Int_t index) { return static_cast<const AliPHOSDigit *>(Digits()->At(index)) ;}
-  AliPHOSDigitizer *  Digitizer(const char * name =0) const { 
-    return (AliPHOSDigitizer*)(ReturnT("Digitizer", name)) ; 
-  }
-  
-  // RecPoints
-  TObjArray * EmcRecPoints(const char * name = 0) {
-    return static_cast<TObjArray*>(ReturnO("EmcRecPoints", name)) ; 
-  }
-  TObjArray * CpvRecPoints(const char * name = 0) { 
-    return static_cast<TObjArray*>(ReturnO("CpvRecPoints", name)) ; 
-  }
-  const AliPHOSEmcRecPoint * EmcRecPoint(Int_t index) { 
-    return static_cast<const AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;
-  }
-  const AliPHOSCpvRecPoint * CpvRecPoint(Int_t index) { 
-    return static_cast<const AliPHOSCpvRecPoint *>(CpvRecPoints()->At(index)) ;  
-  }
-    
-  AliPHOSClusterizer * Clusterizer (const char * name =0) const { 
-    return (AliPHOSClusterizer*)(ReturnT("Clusterizer", name)) ; 
-  }
-  
-  // TrackSegments
-  TClonesArray * TrackSegments(const char * name = 0) { 
-    return static_cast<TClonesArray*>(ReturnO("TrackSegments", name)) ; 
-  }
-  const AliPHOSTrackSegment * TrackSegment(Int_t index) { 
-    return static_cast<const AliPHOSTrackSegment*>(TrackSegments()->At(index)) ; 
-  }
-  AliPHOSTrackSegmentMaker * TrackSegmentMaker (const char * name =0) const { 
-    return (AliPHOSTrackSegmentMaker*)(ReturnT("TrackSegmentMaker", name)) ; 
-  }
-  
-  // RecParticles
-  TClonesArray * RecParticles(const char * name = 0) { 
-    return static_cast<TClonesArray*>(ReturnO("RecParticles", name)) ; 
-  }
-  const AliPHOSRecParticle * RecParticle(Int_t index) { 
-    return static_cast<const AliPHOSRecParticle*>(RecParticles()->At(index)) ; 
-  }
-  AliPHOSPID * PID(const char * name =0) const { 
-    return (AliPHOSPID*)(ReturnT("PID", name)) ; 
-  }
-  
-  // Primaries
-  TTree *                     TreeK(TString filename="") ; 
-  const TParticle *           Primary(Int_t index) ;
-  const Int_t                 NPrimaries()const { return fNPrimaries; }
-  const TParticle *           Secondary(TParticle * p, Int_t index=1) const ;
-  
-  void  RemoveTask(TString opt, TString name) const ;
-  void  RemoveObjects(TString opt, TString name) const ;
-  void  RemoveSDigits() const ;
-  void  SetDebug(Int_t level) {fDebug = level;} // Set debug level
-  
   AliPHOSGetter & operator = (const AliPHOSGetter & ) {
     // assignement operator requested by coding convention, but not needed
     abort() ;
     return *this ; 
   }
-  
-  TFolder * SDigitsFolder() { return dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("PHOS")) ; }
+  virtual ~AliPHOSGetter() ; 
 
+  //=========== Instantiators ================
+  static AliPHOSGetter * GetInstance(const char* headerFile,
+				     const char* branchTitle = "Default",
+                                     const Bool_t toSplit = kFALSE ) ; 
+  static AliPHOSGetter * GetInstance() ; 
+
+  //=========== General information about run ==============
+  const Int_t  MaxEvent() const    { return static_cast<Int_t>(gAlice->TreeE()->GetEntries()) ; }
+  const Int_t  EventNumber() const { return static_cast<Int_t>(gAlice->GetEvNumber()) ; }
+  const Bool_t BranchExists(const TString tree) const ; 
+  
+  //========== PHOSGeometry and PHOS ============= 
+  const AliPHOS *         PHOS() ;  
+  const AliPHOSGeometry * PHOSGeometry() ; 
+
+  //========== Methods to read something from file ==========
+  void   Event(const Int_t event, const char * opt = "HSDRP") ;    
+  void   Track(const Int_t itrack) ;
+  void   ReadTreeS(TTree * treeS,Int_t input) ; //Method to be used when 
+                                                //digitizing is under the control ofAliRunDigitizer, 
+                                                //which opens all files etc.
+  //========== Alarms ======================
+  TFolder * Alarms() const { return dynamic_cast<TFolder*>(ReturnO("Alarms", 0)) ; }
+  const TObjArray *  Alarms(const char * name ) const { return dynamic_cast<const TObjArray*>(ReturnO("Alarms", name)) ; }
+  const TTask * QATasks(const char * name = 0) const { return ReturnT("QATasks", name) ; }
+
+  //-----------------now getter's data--------------------------------------
+
+  //=========== Primaries ============
+  TTree *           TreeK(TString filename="") ; 
+  TClonesArray *    Primaries(void) const { return dynamic_cast<TClonesArray*>(ReturnO("Primaries")) ; }
+  const TParticle * Primary(Int_t index) const ;
+  const Int_t       NPrimaries()const { return fNPrimaries; }
+  const TParticle * Secondary(TParticle * p, Int_t index=1) const ;  
+ 
+  //=========== Hits =================
+  TTree *               TreeH(TString filename="") ; 
+  const TClonesArray *  Hits(void) { return dynamic_cast<const TClonesArray*>(ReturnO("Hits")) ; }
+  const AliPHOSHit *    Hit(Int_t index)  { return dynamic_cast<const AliPHOSHit*>(Hits()->At(index) );}
+  
+  //=========== SDigits ==============
+  TTree *                    TreeS(TString filename="") ; 
+  TClonesArray *             SDigits(const char * name = 0, const char * file=0) { 
+    return dynamic_cast<TClonesArray*>(ReturnO("SDigits", name, file)) ;   }
+  //const AliPHOSDigit *  SDigit(Int_t index) { return static_cast<const AliPHOSDigit *>(SDigits()->At(index)) ;} !!! why no such method ?
+  const AliPHOSSDigitizer *  SDigitizer(const char * name =0) const { 
+    return (const AliPHOSSDigitizer *) ReturnT("SDigitizer", name) ;   // here static or dynamic cast does not work ! why ?
+  }
+
+  //========== Digits ================
+  TTree *                   TreeD(TString filename="") ; 
+  TClonesArray *            Digits(const char * name = 0)const  { 
+    return dynamic_cast<TClonesArray*>(ReturnO("Digits", name)) ;   }
+//const AliPHOSDigit *  Digit(Int_t index) { return static_cast<const AliPHOSDigit *>(Digits()->At(index)) ;} !!! why no such method ?
+  const AliPHOSDigitizer *  Digitizer(const char * name = 0) const { 
+    return (const AliPHOSDigitizer*)(ReturnT("Digitizer", name)) ;   }
+  
+  //========== RecPoints =============
+  //TTree *                    TreeR(TString filename="") ; !!! why no such method ? 
+  TObjArray *                EmcRecPoints(const char * name = 0) {
+    return dynamic_cast<TObjArray*>(ReturnO("EmcRecPoints", name)) ;   }
+//const AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) { return static_cast<const AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;} !!! why no such method ?
+  TObjArray *                CpvRecPoints(const char * name = 0) { 
+    return dynamic_cast<TObjArray*>(ReturnO("CpvRecPoints", name)) ;   }    
+//const AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) { return static_cast<const AliPHOSCpvRecPoint *>(EmcCpvPoints()->At(index)) ;} !!! why no such method ?
+  const AliPHOSClusterizer * Clusterizer (const char * name =0) const { 
+    return (const AliPHOSClusterizer*)(ReturnT("Clusterizer", name)) ;   // here static or dynamic cast does not work ! why ?
+}
+  
+  //========== TrackSegments ==========
+  TClonesArray * TrackSegments(const char * name = 0) { 
+    return static_cast<TClonesArray*>(ReturnO("TrackSegments", name)) ;   }
+  const AliPHOSTrackSegmentMaker * TrackSegmentMaker (const char * name =0) const { 
+    return (const AliPHOSTrackSegmentMaker*)(ReturnT("TrackSegmentMaker", name)) ;   }
+  
+  //========== RecParticles ===========
+  TClonesArray * RecParticles(const char * name = 0) { 
+    return static_cast<TClonesArray*>(ReturnO("RecParticles", name)) ;   }
+  const AliPHOSPID * PID(const char * name =0) const { 
+    return (const AliPHOSPID*)(ReturnT("PID", name)) ;  // here static or dynamic cast does not work ! why ?
+ }
+
+  //-----------------Auxiliary methods: cleaners-----------------
+  void  RemoveTask(TString opt, TString name) const ;
+  void  RemoveObjects(TString opt, TString name) const ;
+  void  RemoveSDigits() const ;  
+
+  //----------------Auxiliary methods: miscellana----------------
+  void CloseFile() ;  
+  const TFolder * Folder(const TString what) const ;
+  const Bool_t HasFailed() const { return fFailed ; }
+  void ListBranches(Int_t event=0) const ;
+  void NewBranch(TString name, Int_t event = 0) ; 
+  Bool_t NewFile(TString name) ;
+  TFolder * SDigitsFolder() { return dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("PHOS")) ; }  
+  void SetDebug(Int_t level) {fDebug = level;} // Set debug level
   void SetRecParticlesTitle(const TString title) { fRecParticlesTitle = title ; }
   
+  //------------Auxiliary methods: Posters--------------------
+  const Bool_t PostPrimaries(void ) const ;  
+  const Bool_t PostHits(void ) const ;  
+  const Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  
+  const Bool_t PostDigits(       const char * name ) const ;  
+  const Bool_t PostRecPoints(    const char * name ) const ;  
+  const Bool_t PostTrackSegments(const char * name) const ;  
+  const Bool_t PostRecParticles( const char * name) const ;  
+  const Bool_t PostClusterizer( const char * name) const ;  
+  const Bool_t PostClusterizer(AliPHOSClusterizer * clu) const ;  
+  const Bool_t PostSDigitizer (AliPHOSSDigitizer * sdigitizer) const ;  
+  const Bool_t PostSDigitizer ( const char * name, const char * file ) const ;  
+  const Bool_t PostDigitizer (AliPHOSDigitizer * digitizer) const ;  
+  const Bool_t PostDigitizer  ( const char * name) const ;  
+  const Bool_t PostTrackSegmentMaker(AliPHOSTrackSegmentMaker * tsm) const ;  
+  const Bool_t PostTrackSegmentMaker(const char * name ) const ;  
+  const Bool_t PostPID  (AliPHOSPID * pid) const ;  
+  const Bool_t PostPID  (const char * name ) const ;  
+  const Bool_t PostQA   (void) const ;
+
 private:
   
-  AliPHOSGetter(const char* headerFile, const char* branchTitle ="Default") ; 
+  AliPHOSGetter(const char* headerFile, const char* branchTitle ="Default", const Bool_t toSplit = kFALSE) ; 
   TObject * ReturnO(TString what, TString name=0, TString file=0) const ; 
   const TTask * ReturnT(TString what,TString name=0) const ; 
   void DefineBranchTitles(char* branch, char* branchTitle) ;
-  Int_t ReadTreeD() ;
-  Int_t ReadTreeH() ;
-  Int_t ReadTreeR(Bool_t any=kFALSE) ;
-  Int_t ReadTreeS(Int_t event) ;
-  void ReadTreeQA() ;
-  void ReadPrimaries() ;
+  Int_t ReadTreeD(const Int_t event) ;
+  Int_t ReadTreeH(void) ;
+  Int_t ReadTreeR(const Int_t event) ;
+  Int_t ReadTreeS(const Int_t event) ;
+  void ReadTreeQA(void) ;
+  void ReadPrimaries(void) ;
+  void CleanWhiteBoard(void) ;
+  void CloseSplitFiles(void) ;
+  void SetTitle(const char * title) ;
 
   TObject** PrimariesRef(void) const ;
   TObject** HitsRef(void) const ;
@@ -231,24 +219,25 @@ private:
 
  private:
 
-  static TFile *        fFile;               //! 
-  TString        fHeaderFile ;        //! File in which gAlice lives
-  TString        fBranchTitle ;       //!
-  TString        fTrackSegmentsTitle ;//! 
-  TString        fRecPointsTitle ;    //!
-  TString        fRecParticlesTitle ; //!
-  TString        fDigitsTitle ;       //! TDirectory tempo(gDirectory) ; 
-
-  TString        fSDigitsTitle ;      //!
-
+  static TFile * fFile;           //! 
+  Bool_t         fToSplit ;              //! Do we work in the split mode
+  TString        fHeaderFile ;           //! File in which gAlice lives
+  TString        fBranchTitle ;          //!
+  TString        fTrackSegmentsTitle ;   //! 
+  TString        fTrackSegmentsFileName ;//! 
+  TString        fRecPointsTitle ;       //!
+  TString        fRecPointsFileName ;    //!
+  TString        fRecParticlesTitle ;    //!
+  TString        fRecParticlesFileName ; //!
+  TString        fDigitsTitle ;          //! TDirectory tempo(gDirectory) 
+  TString        fDigitsFileName ;       //! TDirectory tempo(gDirectory) 
+  TString        fSDigitsTitle ;         //!
+  TString        fSDigitsFileName ;      //!
   Bool_t         fFailed ;            //! set if file not opend or galice not found
-  Int_t          fDebug ;             // Debug level
-
+  Int_t          fDebug ;             //! Debug level
   AliRun *       fAlice ;             //! needed to read TreeK if in an other file than fHeaderFile
-  Int_t          fNPrimaries ;        //! # of primaries
-  
+  Int_t          fNPrimaries ;        //! # of primaries  
   TObjArray *    fPrimaries ;         //! list of lists of primaries-for the case of mixing
-
   TFolder *      fModuleFolder ;      //!Folder that contains the modules 
   TFolder *      fPrimariesFolder ;   //!Folder that contains the Primary Particles 
   TFolder *      fHitsFolder ;        //!Folder that contains the Hits 
@@ -265,3 +254,5 @@ private:
 };
 
 #endif // AliPHOSGETTER_H
+
+

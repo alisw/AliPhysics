@@ -29,12 +29,12 @@ class  AliPHOSPIDv0 : public AliPHOSPID {
 public:
 
   AliPHOSPIDv0() ;          // ctor            
-  AliPHOSPIDv0(const char* headerFile, const char * tsBranch = "Default") ;
+  AliPHOSPIDv0(const char* headerFile, const char * tsBranch = "Default", const Bool_t toSplit=kFALSE) ;
   virtual ~AliPHOSPIDv0() ; // dtor
 
   virtual void Exec(Option_t * option);
-  virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      
-  virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
+  //  virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      
+  //  virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
   virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
 
   virtual void PlotDispersionCuts()const ;
@@ -44,8 +44,8 @@ public:
   virtual void SetDispersionCut(Float_t cut){fDispersion = cut ; } 
   virtual void SetCpvtoEmcDistanceCut(Float_t cut )      {fCpvEmcDistance = cut ;}
   virtual void SetTimeGate(Float_t gate)                 {fTimeGate = gate ;}
-  virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
-  virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
+  //  virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
+  //  virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
   virtual const char * Version() const { return "pid-v0" ; }  
                      
  private:
@@ -69,7 +69,7 @@ public:
   AliPHOSClusterizer   * fClusterizer ;       // !
   AliPHOSTrackSegmentMaker * fTSMaker ;       // !
 
-  TFormula             * fFormula ;           // formula to define cut on the shouer elips axis
+  TFormula             * fFormula ;           // formula to define cut on the shower elips axis
   Float_t                fDispersion ;        // dispersion cut
   Float_t                fCpvEmcDistance ;    // Max EMC-CPV distance
   Float_t                fTimeGate ;          // Time of the latest EmcRecPoint accepted as EM
