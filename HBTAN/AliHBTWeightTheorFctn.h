@@ -88,6 +88,25 @@ class AliHBTWeightTheorQLongFctn: public AliHBTOnePairFctn1D, public AliHBTCorre
 
     ClassDef(AliHBTWeightTheorQLongFctn,2)
 };
+
+/*************************************************************/
+
+class AliHBTWeightTheorQtFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
+{
+  public:
+    AliHBTWeightTheorQtFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+    virtual  ~AliHBTWeightTheorQtFctn(){}
+
+    TH1* GetResult(); 
+    void   ProcessSameEventParticles(AliHBTPair* partpair);
+  
+  protected:
+    Double_t GetValue(AliHBTPair* partpair) const
+      { return partpair->GetQt();} 
+
+    ClassDef(AliHBTWeightTheorQtFctn,2)
+};
+
 /*************************************************************/
 
 class AliHBTWeightTheorOSLFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelFunction

@@ -40,7 +40,7 @@
 #pragma link C++ class AliHBTQLongLCMSCorrelFctn+;
 #pragma link C++ class AliHBTQSideLCMSCorrelFctn+;
 #pragma link C++ class AliHBTQtLCMSCorrelFctn+;
-#pragma link C++ class AliHBTQtCorrelFctn+;
+
 #pragma link C++ class AliHBTAvSeparCorrelFctn+;
 
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
@@ -153,6 +153,7 @@
 #pragma link C++ class AliHBTWeightTheorQOutFctn+;
 #pragma link C++ class AliHBTWeightTheorQSideFctn+;
 #pragma link C++ class AliHBTWeightTheorQLongFctn+;
+#pragma link C++ class AliHBTWeightTheorQtFctn+;
 #pragma link C++ class AliHBTWeightTheorOSLFctn+;
 #pragma link C++ class AliHBTWeightsPID+;
 
