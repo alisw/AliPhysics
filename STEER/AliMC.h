@@ -53,6 +53,7 @@ public:
   virtual void    SetMaxStep(Float_t ) =0;
   virtual void    SetMaxNStep(Int_t) =0;
   virtual Int_t   GetMaxNStep() const =0;
+  virtual void    SetUserDecay(Int_t) =0;
   virtual void    GetParticle(const Int_t, char*, Float_t&) const =0;
   virtual Int_t   GetMedium() const =0;
   virtual void    DrawOneSpec(const char*)=0;
