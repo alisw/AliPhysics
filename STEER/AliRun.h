@@ -32,6 +32,7 @@ class AliLegoGenerator;
 #include "AliMCProcess.h"
 class AliMCQA;
 class AliStack;
+class AliGenEventHeader;
 
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
@@ -86,6 +87,7 @@ public:
     {return fConfigFunction.Data();}
    TGeometry     *GetGeometry();
    AliHeader*     GetHeader() {return fHeader;}
+   virtual  void  SetGenEventHeader(AliGenEventHeader* header);
    virtual  void  GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
 			       Float_t &e, Float_t *vpos, Float_t *polar, 
 			       Float_t &tof);

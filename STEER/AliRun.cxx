@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.67  2001/06/07 18:24:50  buncic
+Removed compilation warning in AliConfig initialisation.
+
 Revision 1.66  2001/05/22 14:32:40  hristov
 Weird inline removed
 
@@ -1740,4 +1743,10 @@ TTree* AliRun::TreeK() {
   // Returns pointer to the TreeK array
   //
   return fStack->TreeK();
+}
+
+
+void AliRun::SetGenEventHeader(AliGenEventHeader* header)
+{
+    fHeader->SetGenEventHeader(header);
 }
