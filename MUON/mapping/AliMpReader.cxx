@@ -7,7 +7,6 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <string>
 #if !defined(__HP_aCC) && !defined(__alpha)
   #include <sstream>
 #endif
@@ -87,7 +86,7 @@ AliMpReader::~AliMpReader() {
 
 #ifdef WITH_ROOT
 //_____________________________________________________________________________
-Int_t  AliMpReader::GetIndex(const std::string& s) const 
+Int_t  AliMpReader::GetIndex(const string& s) const 
 {
 // Converts the TString to integer.
 // ---
@@ -116,7 +115,7 @@ Int_t  AliMpReader::GetIndex(const AliMpIntPair& pair) const
 }  
 
 //_____________________________________________________________________________
-std::string  AliMpReader::GetString(Int_t index) const
+string  AliMpReader::GetString(Int_t index) const
 {
 // Converts the integer index to the string.
 // ---

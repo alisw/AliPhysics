@@ -167,7 +167,6 @@ public:
 
 ////////////////////////////////////////////////
 
-inline double sqr(double a)  {	return a*a; }
 
 inline Complex Complex::operator + () const
 {
@@ -504,8 +503,8 @@ double abs (const Complex &a)
 	if (a.Re == 0) return TMath::Abs(a.Im);
     double R = TMath::Abs(a.Re), I = TMath::Abs(a.Im);
 	return (R >= I) ?
-           (R * sqrt (1 + sqr(a.Im/a.Re))) :
-           (I * sqrt (1 + sqr(a.Re/a.Im))) ;
+           (R * sqrt (1 + a.Im*a.Im/a.Re/a.Re)) :
+           (I * sqrt (1 + a.Re*a.Re/a.Im/a.Im)) ;
 }
 
 double  Arg (const Complex &a)
@@ -533,8 +532,8 @@ Complex sqrt (const Complex &a, int flag)
        return flag ? -sqrt(a.Re) : sqrt(a.Re);
     double R = TMath::Abs(a.Re), I = TMath::Abs(a.Im);
 	double w = (R >= I) ?
-           sqrt (R/2 * (  1 + sqrt (1 + sqr(a.Im/a.Re)))):
-           sqrt (I/2 * (R/I + sqrt (1 + sqr(a.Re/a.Im))));
+           sqrt (R/2 * (  1 + sqrt (1 + a.Im*a.Im/a.Re/a.Re))):
+           sqrt (I/2 * (R/I + sqrt (1 + a.Re*a.Re/a.Im/a.Im)));
     Complex c;
     if (a.Re >= 0)
     {

@@ -10,6 +10,7 @@
 #ifndef ALI_MP_READER_H
 #define ALI_MP_READER_H
 
+#include <string>
 #include <fstream>
 
 #include <TObject.h>
@@ -52,9 +53,9 @@ class AliMpReader : public TObject
                                         // of string to Int_t
     
     // methods
-    Int_t  GetIndex(const std::string& s) const;
+    Int_t  GetIndex(const string& s) const;
     Int_t  GetIndex(const AliMpIntPair& pair) const;
-    std::string  GetString(Int_t index) const;
+    string  GetString(Int_t index) const;
     AliMpIntPair  GetPair(Int_t index) const;
 #endif
   

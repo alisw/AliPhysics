@@ -7,6 +7,7 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
+#include <stdlib.h>
 #include <Riostream.h>
 
 #include "AliMpMotifType.h"
