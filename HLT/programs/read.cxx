@@ -1,15 +1,18 @@
-/* $id$
+/* $Id$
 Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de
 */
 
 #include <stream.h>
+#include <libgen.h>
 #include "AliL3MemHandler.h"
 #include "AliL3AltroMemHandler.h"
 #include "AliL3DigitData.h"
+#include "AliL3Transform.h"
 
 /**
 Example program how to open and read a raw datafile.
-And to store results in an Altro like data format. 
+In addition it shows, how to store results in an Altro like 
+data format. 
 */
 
 int main(int argc,char **argv)
@@ -17,9 +20,10 @@ int main(int argc,char **argv)
   UInt_t nrows=175;
   Bool_t altroout=kFALSE;
   FILE *afile=0;
+
   if(argc<2)
     {
-      cout<<"Usage: read datafile [padrows]"<<endl;
+      cout<<"Usage: read datafile [padrows] [altrodatfile]"<<endl;
       return -1;
     }
   if (argc>2) {
@@ -32,7 +36,7 @@ int main(int argc,char **argv)
 
   //Filehandler object:
   AliL3MemHandler file;
-  
+
   //Open the data file:
   if(!file.SetBinaryInput(argv[1]))
     {
@@ -40,12 +44,16 @@ int main(int argc,char **argv)
       return -1;
     }
   
+  //Storing all detector-spesific quantities, needed.
+  AliL3Transform::Init(dirname(argv[1])); 
+
   //Create an RowData object to access the data
   AliL3DigitRowData *digits=0;
   UInt_t ndigits=0;
   
   //Read the file, and store the data in memory. Return value is a pointer to the data.
   digits = file.CompBinary2Memory(ndigits);
+  if(ndigits<nrows) nrows=ndigits;
 
   //Create an ALtroMemHandler object
   AliL3AltroMemHandler altromem;
@@ -59,7 +67,7 @@ int main(int argc,char **argv)
       AliL3DigitData *dataPt = (AliL3DigitData*)digits->fDigitData;
       
       //Loop over all digits on this padrow:
-      for(UInt_t ndig=0; ndig<=digits->fNDigit; ndig++)
+      for(UInt_t ndig=0; ndig<digits->fNDigit; ndig++)
 	{
 	  pad = dataPt[ndig].fPad;
 	  time = dataPt[ndig].fTime;
