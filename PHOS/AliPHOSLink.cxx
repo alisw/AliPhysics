@@ -31,19 +31,26 @@
 
 ClassImp(AliPHOSLink)
 //____________________________________________________________________________
-  AliPHOSLink::AliPHOSLink(Float_t r, Int_t Emc, Int_t Ppsd)
+  AliPHOSLink::AliPHOSLink() : 
+    fEmcN(-1), fCpvN(-1), fR(-1.), fTrack(-1)
+{
+}
+
+//____________________________________________________________________________
+  AliPHOSLink::AliPHOSLink(Float_t r, Int_t emc, Int_t cpv, Int_t track)
 {
   // ctor
 
   fR     = r ;  
-  fEmcN  = Emc ;
-  fPpsdN = Ppsd ;   
+  fEmcN  = emc ;
+  fCpvN  = cpv ;   
+  fTrack = track ; 
 }
 
 //____________________________________________________________________________
 Int_t AliPHOSLink::Compare(const TObject * obj) const
 {
-  // Compare according to the distance between EMC and PPSD RecPoints in a track segment 
+  // Compare according to the distance between EMC and CPV RecPoints in a track segment 
 
   Int_t rv ;
 
