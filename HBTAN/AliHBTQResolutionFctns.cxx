@@ -4,6 +4,17 @@
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
+ClassImp( AliHBTKtResolVsQInvFctn )
+AliHBTKtResolVsQInvFctn::
+AliHBTKtResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval, 
+                        Int_t nYbins, Double_t maxYval, Double_t minYval):
+ AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
+{
+ Rename("KtResolVsQInv","K_{t} Resolution vs. Q_{Inv}");
+}
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
 ClassImp( AliHBTQInvResolVsQInvFctn )
 AliHBTQInvResolVsQInvFctn::
 AliHBTQInvResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval, 

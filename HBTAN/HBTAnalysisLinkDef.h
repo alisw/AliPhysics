@@ -79,6 +79,7 @@
 
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
 
+#pragma link C++ class AliHBTKtResolVsQInvFctn+;
 
 #pragma link C++ class AliHBTQInvResolVsQInvFctn+;
 #pragma link C++ class AliHBTQOutResolVsQInvFctn+;

@@ -12,6 +12,8 @@
 //  it needs two pairs to compare
 //  and is two dimentional: numerator and denominator are TH2D
 
+class AliHBTKtResolVsQInvFctn;  //Kt Res   Vs   QInvCMSLC 
+
 class AliHBTQOutResolVsQInvFctn;  //QOutCMSLC  Res   Vs   QInvCMSLC 
 class AliHBTQSideResolVsQInvFctn; //QSideCMSLC Res   Vs   QInvCMSLC 
 class AliHBTQLongResolVsQInvFctn; //QLongCMSLC Res   Vs   QInvCMSLC 
@@ -36,6 +38,29 @@ class AliHBTQLongResolVsQLongFctn;//QLongCMSLC Res   Vs   QLong
 
  
 #include "AliHBTFunction.h"
+/***********************************************************************/
+/***********************************************************************/
+class AliHBTKtResolVsQInvFctn: public AliHBTTwoPairFctn2D
+ {
+  public: 
+   AliHBTKtResolVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
+                           Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
+   
+   virtual ~AliHBTKtResolVsQInvFctn(){}
+   
+   TH1* GetResult(){return fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+    {
+     y = partpair->GetKt() - trackpair->GetKt();
+     x = partpair->GetQInv();
+    }
+  protected:
+  private: 
+  public:
+    ClassDef(AliHBTKtResolVsQInvFctn,1)
+ };
+
+
 /***********************************************************************/
 /***********************************************************************/
 class AliHBTQInvResolVsQInvFctn: public AliHBTTwoPairFctn2D
