@@ -1464,7 +1464,7 @@ void AliITSClusterFinderSDD::GetRecPoints()
 
 //_____________________________________________________________________________
 
-void AliITSClusterFinderSDD::FindRawClusters()
+void AliITSClusterFinderSDD::FindRawClusters(Int_t mod)
 {
   // find raw clusters
     Find1DClustersE();

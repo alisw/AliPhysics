@@ -90,7 +90,7 @@ public:
   }
   
   // Search for clusters
-  virtual void FindRawClusters();
+  virtual void FindRawClusters(Int_t mod=0);
   void  Find1DClusters();
   void  Find1DClustersE();
   void  GroupClusters();

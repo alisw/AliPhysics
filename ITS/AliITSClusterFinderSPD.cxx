@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/03/05 14:48:46  nilsen
+Fixed a reoccuring bug. Array sizes must be declare const.
+
 */
 
 #include <iostream.h>
@@ -418,7 +421,7 @@ void AliITSClusterFinderSPD::GetRecPoints()
 }
 //_____________________________________________________________________________
 
-void AliITSClusterFinderSPD::FindRawClusters()
+void AliITSClusterFinderSPD::FindRawClusters(Int_t mod)
 {
   // find raw clusters
   Find1DClusters();

@@ -62,7 +62,7 @@ public:
   virtual void AddCluster(Int_t branch, AliITSRawCluster *c);
   virtual void AddCluster(Int_t branch, AliITSRawCluster *c, AliITSRecPoint &rp);
   
-  virtual void FindRawClusters() {
+  virtual void FindRawClusters(Int_t mod=0) {
     // Search for raw clusters
   }
   virtual void FindCluster(Int_t i, Int_t j, AliITSRawCluster *c) {
