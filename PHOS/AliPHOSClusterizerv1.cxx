@@ -153,6 +153,8 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* di
   fDigitizer = new AliPHOSDigitizer() ;
   fEmcRecPoints = new TObjArray(200) ;
   fCpvRecPoints = new TObjArray(200) ;
+  fEmcRecPoints->SetOwner();          // This lets Clear() really detete rec.points in array
+  fCpvRecPoints->SetOwner();
   
   if(!gMinuit) gMinuit = new TMinuit(100) ;
   
@@ -307,6 +309,8 @@ void AliPHOSClusterizerv1::Init(){
     fDigitizer = new AliPHOSDigitizer() ;
     fEmcRecPoints = new TObjArray(200) ;
     fCpvRecPoints = new TObjArray(200) ;
+    fEmcRecPoints->SetOwner();          // This lets Clear() really detete rec.points in array
+    fCpvRecPoints->SetOwner();
      
     if(!gMinuit) gMinuit = new TMinuit(100) ;
 
@@ -647,9 +651,9 @@ void AliPHOSClusterizerv1::MakeClusters()
       if  ( IsInEmc(digit) ) {   
 	// start a new EMC RecPoint
 	if(fNumberOfEmcClusters >= fEmcRecPoints->GetSize()) fEmcRecPoints->Expand(2*fNumberOfEmcClusters+1) ;
-	fEmcRecPoints->AddAt(new  AliPHOSEmcRecPoint(), fNumberOfEmcClusters) ;
+  	fEmcRecPoints->AddAt(new  AliPHOSEmcRecPoint(), fNumberOfEmcClusters) ;
 	clu = (AliPHOSEmcRecPoint *) fEmcRecPoints->At(fNumberOfEmcClusters) ; 
-	fNumberOfEmcClusters++ ; 
+  	fNumberOfEmcClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp())) ; 
 	clusterdigitslist[iDigitInCluster] = digit->GetIndexInList() ;	
 	iDigitInCluster++ ; 
