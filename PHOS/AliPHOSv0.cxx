@@ -65,7 +65,7 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
  
   // create the geometry parameters object  
   // and post it to a folder (Post retrieves the correct geometry)
-  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0)->Post(gDirectory->GetName(), "G") ; 
+  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0)->PostGeometry() ; 
 
 }
 

@@ -78,7 +78,7 @@ AliPHOSv4::AliPHOSv4(const char *name, const char *title):
   
   // create the geometry parameters object  
   // and post it to a folder (Post retrieves the correct geometry)
-  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0)->Post(gDirectory->GetName(), "G") ;    
+  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0)->PostGeometry() ;    
     
     SetBigBox(0, GetGeometry()->GetOuterBoxSize(0) ) ;
     SetBigBox(1, GetGeometry()->GetOuterBoxSize(1) + GetGeometry()->GetCPVBoxSize(1) ) ; 
