@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2000/07/11 18:24:56  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.18  2000/06/30 12:40:34  morsch
 Pythia takes care of vertex smearing. Correct conversion from Pythia units (mm) to
 Geant units (cm).
@@ -45,16 +48,20 @@ Introduction of the Copyright and cvs Log
 */
 
 #include "AliGenPythia.h"
+#include "AliDecayerPythia.h"
 #include "AliRun.h"
 #include "AliPythia.h"
+#include "AliPDG.h"
 #include <TParticle.h>
+#include <TSystem.h>
 
  ClassImp(AliGenPythia)
 
 AliGenPythia::AliGenPythia()
                  :AliGenerator()
 {
-// Constructor
+// Default Constructor
+  fDecayer = new AliDecayerPythia();
 }
 
 AliGenPythia::AliGenPythia(Int_t npart)
@@ -73,6 +80,7 @@ AliGenPythia::AliGenPythia(Int_t npart)
     SetForceDecay();
     SetPtHard();
     SetEnergyCMS();
+    fDecayer = new AliDecayerPythia();
 }
 
 AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
@@ -88,19 +96,25 @@ AliGenPythia::~AliGenPythia()
 void AliGenPythia::Init()
 {
 // Initialisation
-    SetMC(new AliPythia());
+  SetMC(AliPythia::Instance());
     fPythia=(AliPythia*) fgMCEvGen;
 //
     fParentWeight=1./Float_t(fNpart);
 //
 //  Forward Paramters to the AliPythia object
-    fPythia->DefineParticles();
+    //    gSystem->Exec("ln -s $ALICE_ROOT/data/Decay.table fort.1");
+    //    fPythia->Pyupda(2,1);    
+    //    gSystem->Exec("rm fort.1");
+    
+    fDecayer->Init();
+    fDecayer->ForceDecay(fForceDecay);
+
     fPythia->SetCKIN(3,fPtHardMin);
     fPythia->SetCKIN(4,fPtHardMax);    
     fPythia->ProcInit(fProcess,fEnergyCMS,fStrucFunc);
-    fPythia->ForceDecay(fForceDecay);
-    fPythia->Lulist(0);
-    fPythia->Pystat(2);
+
+    //    fPythia->Pylist(0);
+    //    fPythia->Pystat(2);
 //  Parent and Children Selection
     switch (fProcess) 
     {
@@ -144,7 +158,7 @@ void AliGenPythia::Init()
     case dielectron:
     case b_jpsi_dielectron:
     case b_psip_dielectron:
-	fChildSelect[0]=11;	
+	fChildSelect[0]=kElectron;	
 	break;
     case semimuonic:
     case dimuon:
@@ -152,17 +166,22 @@ void AliGenPythia::Init()
     case b_psip_dimuon:
     case pitomu:
     case katomu:
-	fChildSelect[0]=13;
+	fChildSelect[0]=kMuonMinus;
 	break;
+    case hadronicD:
+      fChildSelect[0]=kPiPlus;
+      fChildSelect[1]=kKPlus;
+      break;
     case all:
     case nodecay:
-	break;
+      break;
     }
 }
 
 void AliGenPythia::Generate()
 {
 // Generate one event
+  fDecayer->ForceDecay(fForceDecay);
 
     Float_t polar[3] =   {0,0,0};
     Float_t origin[3]=   {0,0,0};
@@ -197,7 +216,7 @@ void AliGenPythia::Generate()
     while(1)
     {
 	fPythia->Pyevnt();
-//	fPythia->Lulist(1);
+//	fPythia->Pylist(1);
 	fTrials++;
 	fPythia->ImportParticles(particles,"All");
 	Int_t np = particles->GetEntriesFast();
@@ -211,7 +230,7 @@ void AliGenPythia::Generate()
 		kf = CheckPDGCode(iparticle->GetPdgCode());
 		if (ks==21) continue;
 
-		fChildWeight=(fPythia->GetBraPart(kf))*fParentWeight;	  
+		fChildWeight=(fDecayer->GetPartialBranchingRatio(kf))*fParentWeight;	  
 //
 // Parent
 		if (ParentSelected(TMath::Abs(kf))) {
@@ -246,23 +265,26 @@ void AliGenPythia::Generate()
 
 			Int_t ifch=iparticle->GetFirstDaughter();
 			Int_t ilch=iparticle->GetLastDaughter();	
-			if (ifch !=0 && ilch !=0) {
-			    gAlice->SetTrack(0,ntP,kf,
+
+			if ((ifch !=0 && ilch !=0) || fForceDecay == nodecay) {
+			  Int_t trackit=0;
+			  if (fForceDecay == nodecay) trackit = 1;
+			    gAlice->SetTrack(trackit,ntP,kf,
 					     p,origin,polar,
 					     0,"Primary",nt,fParentWeight);
 			    gAlice->KeepTrack(nt);
 			    Int_t iparent = nt;
 //
 // Children	    
-
-			    for (j=ifch; j<=ilch; j++)
-			    {
-				TParticle *  ichild = 
+			    if (fForceDecay != nodecay) {
+			      for (j=ifch; j<=ilch; j++)
+				{
+				  TParticle *  ichild = 
 				    (TParticle *) particles->At(j-1);
-				kf = CheckPDGCode(ichild->GetPdgCode());
+				  kf = CheckPDGCode(ichild->GetPdgCode());
 //
 // 
-				if (ChildSelected(TMath::Abs(kf))) {
+				  if (ChildSelected(TMath::Abs(kf))) {
 				    origin[0]=origin0[0]+ichild->Vx()*10.;
 				    origin[1]=origin0[1]+ichild->Vy()*10.;
 				    origin[2]=origin0[2]+ichild->Vz()*10.;		
@@ -274,8 +296,9 @@ void AliGenPythia::Generate()
 						     p,origin,polar,
 						     tof,"Decay",nt,fChildWeight);
 				    gAlice->KeepTrack(nt);
-				} // select child
-			    } // child loop
+				  } // select child
+				} // child loop
+			    } 
 			}
 		    } // kinematic selection
 		} // select particle
@@ -411,6 +434,8 @@ Int_t AliGenPythia::CheckPDGCode(Int_t pdgcode)
 //
 //  If the particle is in a diffractive state, then take action accordingly
   switch (pdgcode) {
+  case 91:
+    return 92;
   case 110:
     //rho_diff0 -- difficult to translate, return rho0
     return 113;
@@ -442,6 +467,47 @@ AliGenPythia& AliGenPythia::operator=(const  AliGenPythia& rhs)
 // Assignment operator
     return *this;
 }
+
+
+void AliGenPythia::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliGenPythia.
+
+   if (R__b.IsReading()) {
+      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
+      AliGenerator::Streamer(R__b);
+      R__b >> (Int_t&)fProcess;
+      R__b >> (Int_t&)fStrucFunc;
+      R__b >> (Int_t&)fForceDecay;
+      R__b >> fEnergyCMS;
+      R__b >> fKineBias;
+      R__b >> fTrials;
+      fParentSelect.Streamer(R__b);
+      fChildSelect.Streamer(R__b);
+      R__b >> fXsection;
+//      (AliPythia::Instance())->Streamer(R__b);
+      R__b >> fPtHardMin;
+      R__b >> fPtHardMax;
+//      if (fDecayer) fDecayer->Streamer(R__b);
+   } else {
+      R__b.WriteVersion(AliGenPythia::IsA());
+      AliGenerator::Streamer(R__b);
+      R__b << (Int_t)fProcess;
+      R__b << (Int_t)fStrucFunc;
+      R__b << (Int_t)fForceDecay;
+      R__b << fEnergyCMS;
+      R__b << fKineBias;
+      R__b << fTrials;
+      fParentSelect.Streamer(R__b);
+      fChildSelect.Streamer(R__b);
+      R__b << fXsection;
+//      R__b << fPythia;
+      R__b << fPtHardMin;
+      R__b << fPtHardMax;
+      //     fDecayer->Streamer(R__b);
+   }
+}
+
 
 
 

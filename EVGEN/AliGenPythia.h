@@ -7,6 +7,7 @@
 
 
 #include "AliGenerator.h"
+#include "AliDecayer.h"
 #include "GenTypeDefs.h"
 #include <TArrayI.h>    
 
@@ -52,7 +53,7 @@ class AliGenPythia : public AliGenerator
     AliPythia   *fPythia;       // Pythia 
     Float_t     fPtHardMin;     // lower pT-hard cut 
     Float_t     fPtHardMax;     // higher pT-hard cut
-
+    AliDecayer  *fDecayer;
  private:
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip);
