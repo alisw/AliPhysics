@@ -108,7 +108,6 @@ void TG4GeometryGUI::RegisterLogicalVolume(G4LogicalVolume* lv,
 {
 //--->Filling  up gui volumes objArray  
 
-typedef G4std::set <G4String, G4std::less<G4String> > TG4StringSet;
 TG4StringSet     lVolumeNames;     //set of names of solids  
 
 //  Icons for folders
