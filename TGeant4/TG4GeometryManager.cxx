@@ -121,7 +121,11 @@ void TG4GeometryManager::FillMediumMap()
 
   for (G4int i=done; i<lvStore->size(); i++) {
     G4String name  = ((*lvStore)[i])->GetName();
-    G4int mediumID = G3Vol.GetVTE(name)->GetNmed();
+    
+    G4String g3Name(name);
+    if (name.find("_refl")) g3Name = g3Name.substr(0, g3Name.find("_refl"));
+
+    G4int mediumID = G3Vol.GetVTE(g3Name)->GetNmed();
     fMediumMap.Add(name, mediumID);     
   }
   
@@ -838,14 +842,13 @@ void TG4GeometryManager::WriteEuclid(const char* fileName,
 G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
 {
 // Creates G4 geometry objects according to the G3VolTable 
-// and returns the top physical volume in case it was created
-// (return zero otherwise).
+// and returns the world physical volume.
 // ---
 
   // set the first entry in the G3Vol table
   Ggclos();
   G3VolTableEntry* first = G3Vol.GetFirstVTE();
-
+  
   // create G4 geometry
   G3toG4BuildTree(first,0);  
   
@@ -866,12 +869,13 @@ G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
   // position the first entry 
   // (in Geant3 the top volume cannot be positioned)
   // 
-  G4VPhysicalVolume* top = 0;
-  if (first->GetLV()->GetNoDaughters() == 0) {
-    top = new G4PVPlacement(0, G4ThreeVector(), first->GetName(), 
-                            first->GetLV(), 0, false, 0);
+  if (!fGeometryServices->GetWorld()) {
+    G4VPhysicalVolume* world
+       = new G4PVPlacement(0, G4ThreeVector(), first->GetName(), 
+                           first->GetLV(), 0, false, 0);
+    fGeometryServices->SetWorld(world);			    
   }
-  return top;		      
+  return fGeometryServices->GetWorld();		      
 }
 
  
