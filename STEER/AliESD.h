@@ -106,7 +106,7 @@ public:
   }
 
 
-  void SetVertex(AliESDVertex* vertex) {
+  void SetVertex(const AliESDVertex* vertex) {
     new(&fPrimaryVertex) AliESDVertex(*vertex);
   }
   const AliESDVertex* GetVertex() const {return &fPrimaryVertex;};

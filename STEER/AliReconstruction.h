@@ -73,6 +73,7 @@ private:
   Bool_t         RunLocalReconstruction(const TString& detectors);
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESD*& esd);
+  Bool_t         RunHLTTracking(AliESD*& esd);
   Bool_t         RunTracking(AliESD*& esd);
   Bool_t         FillESD(AliESD*& esd, const TString& detectors);
 
@@ -88,6 +89,7 @@ private:
 
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   Bool_t         fRunVertexFinder;    // run the vertex finder
+  Bool_t         fRunHLTTracking;     // run the HLT tracking
   TString        fRunTracking;        // run the tracking for these detectors
   TString        fFillESD;            // fill ESD for these detectors
   TString        fGAliceFileName;     // name of the galice file

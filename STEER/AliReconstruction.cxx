@@ -139,6 +139,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
 
   fRunLocalReconstruction("ALL"),
   fRunVertexFinder(kTRUE),
+  fRunHLTTracking(kFALSE),
   fRunTracking("ALL"),
   fFillESD("ALL"),
   fGAliceFileName(gAliceFilename),
@@ -170,6 +171,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   fRunLocalReconstruction(rec.fRunLocalReconstruction),
   fRunVertexFinder(rec.fRunVertexFinder),
+  fRunHLTTracking(rec.fRunHLTTracking),
   fRunTracking(rec.fRunTracking),
   fFillESD(rec.fFillESD),
   fGAliceFileName(rec.fGAliceFileName),
@@ -283,15 +285,17 @@ Bool_t AliReconstruction::Run(const char* input,
   }
 
   // get the possibly already existing ESD file and tree
-  AliESD* esd = new AliESD;
+  AliESD* esd = new AliESD; AliESD* hltesd = new AliESD;
   TFile* fileOld = NULL;
-  TTree* treeOld = NULL;
+  TTree* treeOld = NULL; TTree *hlttreeOld = NULL;
   if (!gSystem->AccessPathName("AliESDs.root")){
     gSystem->CopyFile("AliESDs.root", "AliESDs.old.root", kTRUE);
     fileOld = TFile::Open("AliESDs.old.root");
     if (fileOld && fileOld->IsOpen()) {
       treeOld = (TTree*) fileOld->Get("esdTree");
       if (treeOld) treeOld->SetBranchAddress("ESD", &esd);
+      hlttreeOld = (TTree*) fileOld->Get("HLTesdTree");
+      if (hlttreeOld) hlttreeOld->SetBranchAddress("ESD", &hltesd);
     }
   }
 
@@ -303,8 +307,10 @@ Bool_t AliReconstruction::Run(const char* input,
   }
   TTree* tree = new TTree("esdTree", "Tree with ESD objects");
   tree->Branch("ESD", "AliESD", &esd);
-  delete esd;
-  esd = NULL;
+  TTree* hlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
+  hlttree->Branch("ESD", "AliESD", &hltesd);
+  delete esd; delete hltesd;
+  esd = NULL; hltesd = NULL;
   gROOT->cd();
 
   // loop over events
@@ -319,6 +325,11 @@ Bool_t AliReconstruction::Run(const char* input,
 	treeOld->GetEntry(iEvent);
       }
       tree->Fill();
+      if (hlttreeOld) {
+	hlttreeOld->SetBranchAddress("ESD", &hltesd);
+	hlttreeOld->GetEntry(iEvent);
+      }
+      hlttree->Fill();
       continue;
     }
 
@@ -338,11 +349,14 @@ Bool_t AliReconstruction::Run(const char* input,
       }
     }
 
-    esd = new AliESD;
+    esd = new AliESD; hltesd = new AliESD;
     esd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
+    hltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     esd->SetEventNumber(fRunLoader->GetHeader()->GetEventNrInRun());
+    hltesd->SetEventNumber(fRunLoader->GetHeader()->GetEventNrInRun());
     if (gAlice) {
       esd->SetMagneticField(gAlice->Field()->SolenoidField());
+      hltesd->SetMagneticField(gAlice->Field()->SolenoidField());
     } else {
       // ???
     }
@@ -354,6 +368,16 @@ Bool_t AliReconstruction::Run(const char* input,
 	  if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
 	}
 	if (fCheckPointLevel > 0) WriteESD(esd, "vertex");
+      }
+    }
+
+    // HLT tracking
+    if (!fRunTracking.IsNull()) {
+      if (fRunHLTTracking) {
+	hltesd->SetVertex(esd->GetVertex());
+	if (!RunHLTTracking(hltesd)) {
+	  if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
+	}
       }
     }
 
@@ -380,14 +404,17 @@ Bool_t AliReconstruction::Run(const char* input,
 
     // write ESD
     tree->Fill();
+    // write HLT ESD
+    hlttree->Fill();
 
     if (fCheckPointLevel > 0) WriteESD(esd, "final");
-    delete esd;
-    esd = NULL;
+    delete esd; delete hltesd;
+    esd = NULL; hltesd = NULL;
   }
 
   file->cd();
   tree->Write();
+  hlttree->Write();
   CleanUp(file, fileOld);
 
   return kTRUE;
@@ -553,6 +580,65 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
     if (fTracker[iDet]) fTracker[iDet]->SetVertex(vtxPos, vtxErr);
   }  
   delete vertex;
+
+  AliInfo("execution time:");
+  ToAliInfo(stopwatch.Print());
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::RunHLTTracking(AliESD*& esd)
+{
+// run the HLT barrel tracking
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
+  if (!fRunLoader) {
+    AliError("Missing runLoader!");
+    return kFALSE;
+  }
+
+  AliInfo("running HLT tracking");
+
+  // Get a pointer to the HLT reconstructor
+  AliReconstructor *reconstructor = GetReconstructor(fgkNDetectors-1);
+  if (!reconstructor) return kFALSE;
+
+  // TPC + ITS
+  for (Int_t iDet = 1; iDet >= 0; iDet--) {
+    TString detName = fgkDetectorName[iDet];
+    AliDebug(1, Form("%s HLT tracking", detName.Data()));
+    reconstructor->SetOption(detName.Data());
+    AliTracker *tracker = reconstructor->CreateTracker(fRunLoader);
+    if (!tracker) {
+      AliWarning(Form("couldn't create a HLT tracker for %s", detName.Data()));
+      if (fStopOnError) return kFALSE;
+    }
+    Double_t vtxPos[3];
+    Double_t vtxErr[3]={0.005,0.005,0.010};
+    const AliESDVertex *vertex = esd->GetVertex();
+    vertex->GetXYZ(vtxPos);
+    tracker->SetVertex(vtxPos,vtxErr);
+    if(iDet != 1) {
+      fLoader[iDet]->LoadRecPoints("read");
+      TTree* tree = fLoader[iDet]->TreeR();
+      if (!tree) {
+	AliError(Form("Can't get the %s cluster tree", detName.Data()));
+	return kFALSE;
+      }
+      tracker->LoadClusters(tree);
+    }
+    if (tracker->Clusters2Tracks(esd) != 0) {
+      AliError(Form("HLT %s Clusters2Tracks failed", fgkDetectorName[iDet]));
+      return kFALSE;
+    }
+    if(iDet != 1) {
+      tracker->UnloadClusters();
+    }
+    delete tracker;
+  }
 
   AliInfo("execution time:");
   ToAliInfo(stopwatch.Print());
@@ -962,7 +1048,10 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
     TString detName = fgkDetectorName[iDet];
-    if (detName == "HLT") continue;
+    if (detName == "HLT") {
+      fRunHLTTracking = kTRUE;
+      continue;
+    }
 
     fTracker[iDet] = reconstructor->CreateTracker(fRunLoader);
     if (!fTracker[iDet] && (iDet < 7)) {
