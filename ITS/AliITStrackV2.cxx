@@ -107,7 +107,6 @@ AliKalmanTrack() {
   }
   fESDtrack=&t;
 
-  for(Int_t i=0; i<kMaxLayer; i++) fIndex[i]=0;
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 
   if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
