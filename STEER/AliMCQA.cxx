@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/12/18 11:33:48  alibrary
+New call frequence histograms per module and volume
+
 Revision 1.1  2000/11/30 07:12:48  alibrary
 Introducing new Rndm and QA classes
 
@@ -67,6 +70,7 @@ AliMCQA::AliMCQA(Int_t ndets) : fMPaveLabel(0),fVPaveLabel(0)
   //
   TList *list;
   TH1F* h;
+  Int_t i;
   
   fNdets=ndets;
 
@@ -78,7 +82,7 @@ AliMCQA::AliMCQA(Int_t ndets) : fMPaveLabel(0),fVPaveLabel(0)
   TObjArray &mods = *(gAlice->Modules());
   AliModule *mod;
   TList *dir = gDirectory->GetList();
-  for (Int_t i=0; i<ndets; i++) {
+  for (i=0; i<ndets; i++) {
     hist[i] = list = new TList();
     mod = (AliModule *) mods[i];
 
@@ -121,7 +125,6 @@ AliMCQA::AliMCQA(Int_t ndets) : fMPaveLabel(0),fVPaveLabel(0)
   //
   // Build list of volume names
   //
-  Int_t i;
   fVolNames=new TObjArray(fNvolumes);
   for(i=0;i<fNvolumes;++i) {
     AliModule *mod = (AliModule*)
