@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.10  2001/03/27 11:14:54  morsch
+Weight calculation for correlated particles updated:
+- Decay probability is counted once if muons are decay products
+of the same mother particle. Otherwise,  it's counted twice.
+
 Revision 1.9  2001/03/08 13:30:43  morsch
 Make it work with particle stack of V3.05.
 
@@ -340,6 +345,7 @@ Float_t AliDimuCombinator::DecayProbability(TParticle* part)
 {
 // Calculate decay probability for muons from pion and kaon decays
 // 
+
     Float_t d, h, theta, cTau;
     TParticle* parent = Parent(part);
     Int_t ipar = Type(parent);
@@ -356,6 +362,8 @@ Float_t AliDimuCombinator::DecayProbability(TParticle* part)
 //
 // this part is still very ALICE muon-arm specific
 //
+
+
     theta = parent->Theta();
     h = 90*TMath::Tan(theta);
     
@@ -371,6 +379,16 @@ Float_t AliDimuCombinator::DecayProbability(TParticle* part)
 	return 1;
     }
 }
+
+//Begin_Html
+/*
+<p> In the the code above :
+<P>If h is less than 4 cm, pions or kaons go in the beam pipe and can have a long way
+<BR>If h is greater than 4 cm, pions or kaons crash into the front absorber
+<P><IMG SRC="absorbeur.jpg" HEIGHT=292 WIDTH=819>
+*/
+//End_Html
+
 
 Float_t AliDimuCombinator::Weight(TParticle* part1, TParticle* part2)
 {
@@ -388,6 +406,55 @@ Float_t AliDimuCombinator::Weight(TParticle* part1, TParticle* part2)
 	return wgt*fRate1*fRate2;
     }
 } 
+
+//Begin_Html
+/*
+<p>Some clarifications on the calculation of the dimuons weight :
+<P>We must keep in mind that if we force the meson decay in muons and we put
+lot of mesons (J/psi, upsilon, ...) to have a good statistic we are
+obliged to calculate different weights to correct the number
+of muons
+<BR>&nbsp;
+<P>First -->
+<BR>The particle weight is given by w=R*M*Br
+<BR>&nbsp;with&nbsp; :
+<UL>R&nbsp;&nbsp; =&nbsp; the rate by event. This number gives the number
+of produced J/psi, upsilon, pion ... in a collision.
+<BR>It corresponds of the weight 0.06 given for example in&nbsp; gener->AddGenerator(jpsi,"J/Psi",
+0.06); from the config.C macro.
+<BR>In this example R=0.06
+
+<P>M&nbsp; = the rate of the mother production. This number depend on :
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - the number of generated events --> fParentWeight=1./Float_t(fNpart) in AliGenPythia.cxx . This
+is a normalization to 1 of the number of generated particles.
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - the kinematic bias coming
+from the y and Pt cuts.&nbsp; Method&nbsp; AliGenPythia::AdjustWeights() in AliGenPythia.cxx
+<BR>(in AliGenParam.cxx this 2 things are taken into account in fParentWeight
+= fYWgt*fPtWgt*phiWgt/fNpart )
+
+<P>Br = the branching ratio in muon from the mother decay</UL>
+
+<P><BR>In this method, part->GetWeight() = M*Br
+<UL>&nbsp;</UL>
+Next -->
+<BR>The weight of the dimuon depends on the correlation between muons
+<BR>&nbsp;
+<UL>If the muons are correlated and come from a resonance (for example
+J/psi -> mu+ mu-) , the weight of the dimuon is the weight of one muon then
+<BR>w12= R*M*Br = w1* R1 (in this method this gives part1->GetWeight()*fRate1)
+
+<P>If the muons are correlated and come from a charm or a bottom pair then
+w12 = M*R*Br1*Br2 = w1*w2*R1/M1
+<BR>(in this method this gives wgt/(Parent(part1)->GetWeight())*fRate1).
+Indeed the 2 muons come from the same mother so the
+<BR>weight of a DD~ or BB~ is M*Br and they are no correlation in the decay
+(Br1*Br2)
+
+<P>If the muons are not correlated w12 = M1*M2*R1*R2*Br1*Br2 = w1*w2*R1*R2
+(in this method this gives wgt*fRate1*fRate2)
+<BR>&nbsp;</UL>
+*/
+//End_Html
 
 
 Float_t AliDimuCombinator::Weight(TParticle* part)
