@@ -43,7 +43,7 @@ else
 endif
  
 depend:
-		@$(MAKEDEPEND) -ftgt_$(ALICE_TARGET)/Make-depend -ptgt_$(ALICE_TARGET)/ -- $(CXXFLAGS) $(DEPINC) -- $^ 2>/dev/null
+		-@$(MAKEDEPEND) -ftgt_$(ALICE_TARGET)/Make-depend -ptgt_$(ALICE_TARGET)/ -- $(CXXFLAGS) $(DEPINC) -- $^ 2>/dev/null
 
 tgt_$(ALICE_TARGET)/Make-depend:
 		@[ -d $(dir $@) ] || mkdir $(dir $@)
