@@ -38,6 +38,7 @@ public :
   //return  pad width 
   Float_t  GetSigma(){return fSigma;}
   //return estimated sigma of RF
+  void Draw(Option_t*) {}
   void Draw(Float_t x1=-3 ,Float_t x2 =3.,Int_t N = 200);
   //draw RF it don't delete histograms after drawing
   /// it's on user !!!!

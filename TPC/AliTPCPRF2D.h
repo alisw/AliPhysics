@@ -30,6 +30,7 @@ public :
   //fixed y
   // void DrawY(Float_t y1, Float_t y2,Float_t x);
   //draw one dimensional response for fixed x
+  void Draw(Option_t *) {}
   void Draw(Float_t x1, Float_t x2, Float_t y1, Float_t y2,
 	    Bool_t inter=kFALSE, Int_t Nx=20, Int_t Ny=20);
   //draw two dimensional PRF
