@@ -17,8 +17,8 @@
 
 //-------------------------------------------------------------------------
 //               Implementation of the AliTracker class
-//                             Origin
-//               Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//  that is the base for AliTPCtracker, AliITStrackerV2 and AliTRDtracker    
+//        Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
 
 #include <TMath.h>
