@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.7  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -223,7 +226,7 @@ void AliGenerator::SetPhiRange(Float_t phimin, Float_t phimax)
 }
 
 //_______________________________________________________________________
-void AliGenerator::SetYRange(Float_t ymin=-100, Float_t ymax=100)
+void AliGenerator::SetYRange(Float_t ymin, Float_t ymax)
 {
   //
   // Set the Rapidity range for the generated particles

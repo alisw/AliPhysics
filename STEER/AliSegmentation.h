@@ -79,7 +79,7 @@ public TObject {
     // y-coordinate
     virtual Int_t  Iy()                                                           = 0;
     // current sector
-    virtual Int_t  ISector()                                                      = 0;
+    virtual Int_t  ISector() const                                                     = 0;
     // calculate sector from pad coordinates
     virtual Int_t  Sector(Int_t ix, Int_t iy)                                     = 0;
     //
@@ -93,10 +93,10 @@ public TObject {
     // Test points for auto calibration
     virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const                 = 0;
     // Draw the segmentation zones
-    virtual void Draw(const char *opt = "") const                                       = 0;
+    virtual void Draw(const char *opt = "")                                        = 0;
     // Function for systematic corrections
     // Set the correction function
-    virtual void SetCorrFunc(Int_t  TF1*)                                               = 0;
+    virtual void SetCorrFunc(Int_t,  TF1*)                                               = 0;
     // Get the correction Function
     virtual TF1* CorrFunc(Int_t)  const                                                 = 0;
 	    
