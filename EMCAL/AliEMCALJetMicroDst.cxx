@@ -17,11 +17,10 @@
 /* $Id$ */
 
 //*-- Authors: Aleksei Pavlinov (WSU) 
+
 //*
 
 #include "AliEMCALJetMicroDst.h"
-#include <assert.h>
-#include <Riostream.h>
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
@@ -84,7 +83,7 @@ AliEMCALJetMicroDst::~AliEMCALJetMicroDst()
 Bool_t AliEMCALJetMicroDst::Create(TFile *file)
 {
   if(!file) {
-    printf("<E> AliEMCALJetMicroDst::create -> define TFile for output\n");
+    Error("Create", "define TFile for output\n");
     return kFALSE;
   }
   fFile     = file;
@@ -143,10 +142,10 @@ Bool_t AliEMCALJetMicroDst::Open(const char *fname)
   TFile *file = new TFile(fName.Data(), "READ");
   if(file) {
     Bool_t ini =  Initialize(file);
-    printf("<I> open file %s : initialize TTree %i \n",fName.Data(), Int_t(ini)); 
+    Info("Open", "open file %s : initialize TTree %i",fName.Data(), Int_t(ini)); 
     return ini;
   } else {
-    printf("<E> can not open file %s \n",fName.Data()); 
+    Error("Open", "can not open file %s",fName.Data()); 
     return kFALSE;
   }
 }
@@ -214,10 +213,9 @@ const Char_t* AliEMCALJetMicroDst::DefineName(const Int_t mode)
     //    name = "microDst4th.root"; // 102 + MinCell= 1.0
     break;
   default:
-    printf("AliEMCALJetMicroDst::DefineName : NO  D E F A U L T : mode %i\n", mode);
-    assert(0);
+    Fatal("DefineName", "NO  D E F A U L T : mode %i\n", mode);
   }
-  printf("mode %5i file : %s : Title %s\n", mode, name.Data(), GetTitle());
+  Info("DefineName", "mode %5i file : %s : Title %s\n", mode, name.Data(), GetTitle());
   return name.Data();
 }
 
@@ -266,13 +264,12 @@ void AliEMCALJetMicroDst::Print(Option_t* option) const
   if(fFile) {
     fFile->Print();
     if(fTree) fTree->Print();
-    else printf("<I> TRee is zero\n");
+    else Info("Print", "TRee is zero\n");
   } else {
-     printf("<I> File with TRee is closed \n");
-     printf(" Name of file %s(from fFileName \n", fFileName.Data());
+     Info("Print", "File with TRee is closed \n Name of file %s(from fFileName", fFileName.Data());
   }
 
-  printf("******* Current(last) event ***** \n");
+  Info("Print", "******* Current(last) event *****");
   printf("#partons %2i \n", npart);
   for(Int_t i=0; i<npart; i++){
     printf("     %1i Pt %7.1f eta  %7.4f phi  %7.4f \n",
@@ -297,8 +294,7 @@ void AliEMCALJetMicroDst::Fill(AliRun *run, AliEMCALJetFinder* jetFinder, Int_t 
   } else if(tmp.Contains("Pythia")) {
      FillPartons();     
   } else {
-    printf("<E> Wrong type of generator -> %s \n",tmp.Data()); 
-    printf("     Info about partons will be absent \n"); 
+    Error("Fill", "Wrong type of generator -> %s \n Info about partons will be absent",tmp.Data()); 
   }
 
   FillJets(jetFinder);
@@ -352,18 +348,18 @@ void AliEMCALJetMicroDst::FillPartons()
 void AliEMCALJetMicroDst::FillJets(AliEMCALJetFinder* jetFinder)
 {
   njet = 0;
-  if(fDebug>1) printf("\n<I> AliEMCALJetMicroDst::FillJets"); 
+  if(fDebug>1) Info("FillJets", "Debug"); 
   if(!jetFinder) {
-    if(fDebug>1) printf("\n : jetFinder is zero"); 
+    if(fDebug>1) Info("FillJets", "jetFinder is zero"); 
     return;
   }
   njet = jetFinder->Njets();
   if(njet>10) {
-    if(fDebug>1) printf("\n <W> wrong value of jetFinder->Njets() %i ", njet); 
+    if(fDebug>1) Warning("FillJets", "wrong value of jetFinder->Njets() %i ", njet); 
     njet = 10;
   }
   //  hNJet->Fill(njet);
-  if(fDebug>1) printf("\n <I> njet %i", njet); 
+  if(fDebug>1) Info("FillJets", "njet %i", njet); 
   if(njet){
     for(Int_t i=0; i<njet; i++){
       jet[i]   = jetFinder->JetEnergy(i);
@@ -391,7 +387,7 @@ void AliEMCALJetMicroDst::FillEtForEMCAL(AliEMCALJetFinder* jetFinder)
            idcell[ncell] = nphi*(ieta-1) + iphi;
 	   ncell++;
            if(ncell >= 13824) break; 
-	   //           printf(" ncell %i6 id %i6 de %f \n", ncell, idcell[ncell], etcell[ncell]); 
+	   // Info("FillEtForEMCAL", " ncell %i6 id %i6 de %f \n", ncell, idcell[ncell], etcell[ncell]); 
          }
       }
    }
@@ -399,14 +395,14 @@ void AliEMCALJetMicroDst::FillEtForEMCAL(AliEMCALJetFinder* jetFinder)
      // jet energy calculate around LP direction !!! - 10-mar-2003 
       decone = jetFinder->EMCALConeEnergy(jetal[0],jphil[0]); 
       ptcone = jetFinder->TrackConeEnergy(jetal[0],jphil[0]); // get from lego plot fo ch.part
-      printf(" njet %i Emcal in cone %f pt ch.part in cone %f\n", njet, decone, ptcone); 
-      printf(" jet - decone - ptcone : %9.2f\n", jet[0]-decone-ptcone);
+      Info("FillEtForEMCAL", " njet %i Emcal in cone %f pt ch.part in cone %f\n", njet, decone, ptcone); 
+      Info("FillEtForEMCAL", " jet - decone - ptcone : %9.2f\n", jet[0]-decone-ptcone);
    } else {
       decone = -1.;
       ptcone = -1.;
    }
 
-   printf(" FillEtForEMCAL : neta %3i nphi %3i # array size %i Sum.Et %f\n", 
+   Info("FillEtForEMCAL", "neta %3i nphi %3i # array size %i Sum.Et %f\n", 
    neta,nphi, ncell, hid->Integral());
 }
 
@@ -434,7 +430,7 @@ void AliEMCALJetMicroDst::FillArrays(TH2* hid, Int_t &n, Int_t *id, Float_t *et)
          }
       }
    }
-   printf(" AliEMCALJetMicroDst::FillArrays : neta %3i nphi %3i # array size %i Sum.Et %f\n", 
+   Info("FillArrays", "neta %3i nphi %3i # array size %i Sum.Et %f\n", 
    neta, nphi, n, hid->Integral());
 }
 
@@ -453,7 +449,7 @@ void AliEMCALJetMicroDst::FillChargeParticles(AliEMCALJetFinder* jetFinder)
         nchp++;
      }
   }
-  printf(" fNtS %i : nchp %i -> %i\n", jetFinder->fNtS, nchp, jetFinder->fNtS - nchp);
+  Info("FillChargedParticles", "fNtS %i : nchp %i -> %i\n", jetFinder->fNtS, nchp, jetFinder->fNtS - nchp);
 }
 
 void AliEMCALJetMicroDst::FillJetsControl()
@@ -491,7 +487,7 @@ void AliEMCALJetMicroDst::FillJetsControl()
 Int_t AliEMCALJetMicroDst::GetEntry(Int_t entry)
 { // Read contents of entry.
    if (!fTree) {
-      printf("\n<E> AliEMCALJetMicroDst::GetEntry() -> define TTree \n");
+      Error("GetEntry", "define TTree");
       return -1;
    }
    return fTree->GetEntry(entry);
@@ -544,7 +540,7 @@ Bool_t AliEMCALJetMicroDst::GetJet(Int_t i, Int_t mode, TVector3& vec)
 void AliEMCALJetMicroDst::Test()
 {
   if(!fFile || !fTree ) {
-    printf("\n<I> AliEMCALJetMicroDst::Test() -> define file with proper TTree !");
+    Info("Test", "define file with proper TTree !");
     return;
   }
   Int_t nbytes=0, nb=0, nentries=Int_t(fTree->GetEntries());
@@ -564,7 +560,7 @@ void AliEMCALJetMicroDst::Test()
       }
     }
   }
-  printf("\n<I> AliEMCALJetMicroDst::Test() -> Entries %5i Bytes %10i\n", nentries, nbytes);
+  Info("Test", "Entries %5i Bytes %10i\n", nentries, nbytes);
 }
 
 void AliEMCALJetMicroDst::FillVector(Float_t pt, Float_t eta, Float_t phi, TVector3& vec)
@@ -589,9 +585,8 @@ void AliEMCALJetMicroDst::GetEtaPhi(Int_t id, Double_t &eta, Double_t &phi)
   ieta = (id-1)/nphi + 1; // id = nphi*(ieta-1) + iphi
   iphi = id - nphi*(ieta-1);
   if(ieta<=0 || ieta>neta) {
-    printf("<E> wrong id %i(ieta %i,iphi %i) : nphi %i neta %i\n", 
-    id,iphi,ieta, nphi,neta);
-    assert(0);
+    Fatal("GetEtaPhi", "wrong id %i(ieta %i,iphi %i) : nphi %i neta %i", id,iphi,ieta, nphi,neta);
+
   }
 
   eta  = etaBeg + etaStep*(ieta-1);
@@ -627,22 +622,20 @@ Double_t AliEMCALJetMicroDst::GetSumInCone(TVector3 &jet,Int_t nc, Float_t *et,F
   static Double_t sum=0.;
   static TVector3 cell(0., 0., 0.);
   if(nc<=0 || et==0 || eta==0 || phi==0) {
-    cout<<"<E> AliEMCALJetMicroDst::GetSumInCone : nc "
-        <<nc<<" ar "<<et<<eta<<phi<<endl;
+    Error("GetSumInCone", "nc %d %f %f %f ", nc, et, eta, phi);
     return -1.;
   }
 
   sum=0.;
   //  jet.SetPtEtaPhi(jet[0],jetaw[0],jphiw[0]); // must be one jet !!
-  printf(" jet.Mag() %f : njet %i\n", jet.Mag(), njet);
+  Info("GetSumInCone", "jet.Mag() %f : njet %i\n", jet.Mag(), njet);
   for(Int_t i=0; i<nc; i++){
     if(et[i] < cellEtCut)    continue;
     cell.SetPtEtaPhi(et[i], eta[i], phi[i]);
     if(jet.DeltaR(cell) > rJet) continue;
     sum += et[i];
   }
-  printf(" Sum %f \n", sum);
-  //  assert(0);
+  Info("GetSumCone", "Sum %f \n", sum);
   return sum;
 }
 
