@@ -29,7 +29,8 @@ class AliEMCALHadronCorrectionv1: public AliEMCALHadronCorrection {
     
 //    AliEMCALHadronCorrectionv1(const char *name="HadronCorrectionv1", const char *title="Hadron Correction",AliEMCALGeometry *geometry = NULL);
  private:
-    void SetParameters(TString name = "");
+    void SetParameters(TString name = "") {;}
+    
     static AliEMCALHadronCorrectionv1* fHadrCorr;
     Double_t fPar[6];
     
