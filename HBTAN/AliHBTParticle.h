@@ -1,5 +1,5 @@
-#ifndef ALIHBTPARTICLE
-#define ALIHBTPARTICLE
+#ifndef ALIHBTPARTICLE_H
+#define ALIHBTPARTICLE_H
 //___________________________________________________________
 /////////////////////////////////////////////////////////////
 //
@@ -9,6 +9,10 @@
 // Simplified in order to minimize the size of object
 //  - we want to keep a lot of such a objects in memory
 // Additionaly adjusted for HBT Analysies purposes
+// + pointer to Track Points
+// + pointer to Cluster Map(s)
+//
+// Piotr.Skowronski@cern.ch
 //
 /////////////////////////////////////////////////////////////
 
@@ -17,7 +21,6 @@
 #include <TMath.h>
 #include <TDatabasePDG.h>
 
-#include "AliConst.h"
 
 class TParticle;
 class AliHBTTrackPoints;
@@ -25,7 +28,6 @@ class AliHBTClusterMap;
 
 class AliHBTParticle : public TObject
 {
-
 public:
                                 // ****** constructors and destructor
   AliHBTParticle();
@@ -44,7 +46,7 @@ public:
   AliHBTParticle& operator=(const AliHBTParticle& in); 
   
   void           SetPIDprobability(Int_t pdg, Float_t prob = 1.0);
-  Float_t        GetPIDprobability(Int_t pdg);
+  Float_t        GetPIDprobability(Int_t pdg) const;
   
   Int_t          GetPdgCode      () const { return (fPids)?fPids[fPdgIdx]:0;}
   Int_t          GetPid          () const { return GetPdgCode();}
@@ -64,7 +66,7 @@ public:
   Int_t          Beauty          ()  { return GetPDG()->Beauty(); }
   Int_t          Charm           ()  { return GetPDG()->Charm(); }
   Int_t          Strangeness     ()  { return GetPDG()->Strangeness();}
-  void ProductionVertex(TLorentzVector &v) { v.SetXYZT(fVx,fVy,fVz,fVt);}
+  void ProductionVertex(TLorentzVector &v) const { v.SetXYZT(fVx,fVy,fVz,fVt);}
 
 
   Double_t         Vx    () const { return fVx;}
@@ -78,7 +80,7 @@ public:
   Double_t         P     () const                 //momentum
     { return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz); }
   
-  void Momentum(TLorentzVector &v) { v.SetPxPyPzE(fPx,fPy,fPz,fE);}
+  void Momentum(TLorentzVector &v) const { v.SetPxPyPzE(fPx,fPy,fPz,fE);}
     
   Double_t         Pt    () const  //transverse momentum
     { return TMath::Sqrt(fPx*fPx+fPy*fPy); }
@@ -121,7 +123,6 @@ public:
   
   static void    SetDebug(Int_t dbg=1){fgDebug=dbg;}
   static Int_t   GetDebug(){return fgDebug;}
-  static Int_t   fgDebug; //debug printout level
   
 protected:
   Int_t          GetPidSlot(Int_t pdg) const;//returns position of the given PID in fPids (and fPidProb) array.
@@ -148,6 +149,7 @@ private:
   AliHBTTrackPoints* fTrackPoints;      // track positions along trajectory - used by anti-merging cut
   AliHBTClusterMap*  fClusterMap;       // bit map of cluters occupation; 1 if has cluter on given layer/padrow/...
     
+  static Int_t   fgDebug; //debug printout level
   ClassDef(AliHBTParticle,3)  // TParticle vertex particle information
 };
 

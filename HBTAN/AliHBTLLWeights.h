@@ -40,8 +40,8 @@ class AliHBTLLWeights: public AliHBTWeights
      
      Bool_t fTest;           //flag indicating if parameters listed below are to be calculated automatically (0)
                              //or 
-     Bool_t fColoumbSwitch; 
-     Bool_t fQuantStatSwitch; 
+     Bool_t fColoumbSwitch;   //switches on/off Coulumb effect
+     Bool_t fQuantStatSwitch; //switches on/off Quantum Statistics effect
      Bool_t fStrongInterSwitch;//Switches strong interactions TRUE=ON
      Bool_t fColWithResidNuclSwitch;//Switches couloumb interaction 
                                     //with residual nucleus TRUE=ON          
@@ -55,8 +55,8 @@ class AliHBTLLWeights: public AliHBTWeights
      
      Int_t fApproximationModel; //approximation used to calculate Bethe-Salpeter amplitude see SetApproxModel for more comments
 
-     Int_t fPID1;
-     Int_t fPID2;
+     Int_t fPID1;  //Pdg Code of the first particle in the pair
+     Int_t fPID2;  //Pdg Code of the second particle in the pair
      Double_t fSigma; //constants for spherical source model in cm
      static const Double_t fgkWcons; //constant for fm->GeV conversion 1/0.1973
 

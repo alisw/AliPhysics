@@ -8,10 +8,13 @@
 // Simplified in order to minimize the size of object
 //  - we want to keep a lot of such a objects in memory
 // Additionaly adjusted for HBT Analysies purposes
+// + pointer to Track Points
+// + pointer to Cluster Map(s)
+//
+// Piotr.Skowronski@cern.ch
 //
 /////////////////////////////////////////////////////////////
 #include <TParticle.h>
-#include <TClass.h>
 #include "AliHBTTrackPoints.h"
 #include "AliHBTClusterMap.h"
 
@@ -232,8 +235,9 @@ void AliHBTParticle::SetPIDprobability(Int_t pdg, Float_t prob)
 }
 //______________________________________________________________________________
 
-Float_t AliHBTParticle::GetPIDprobability(Int_t pdg)
+Float_t AliHBTParticle::GetPIDprobability(Int_t pdg) const
 {
+//Returns probability that this particle is the type of pdg
   Int_t idx = GetPidSlot(pdg);
   if (idx < 0) return 0.0;//such pid was not specified for this particle
   return fPidProb[idx];
@@ -242,14 +246,14 @@ Float_t AliHBTParticle::GetPIDprobability(Int_t pdg)
 
 const Char_t* AliHBTParticle::GetName() const 
 {
+  //returns name of this particle 
    static char def[4] = "XXX";
    const TParticlePDG *ap = TDatabasePDG::Instance()->GetParticle(GetPdgCode());
    if (ap) return ap->GetName();
    else    return def;
 }
-
-
 //______________________________________________________________________________
+
 Int_t AliHBTParticle::GetPidSlot(Int_t pdg) const
 {
  //returns position of the given PID in fPids (and fPidProb) array.

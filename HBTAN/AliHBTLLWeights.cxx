@@ -166,7 +166,6 @@ extern "C" void type_of_call setpdist(Double_t& r);
 #include "AliHBTPair.h"
 #include "AliHBTParticle.h"
 #include "WLedCOMMONS.h"
-#include <TList.h>
 #include <TRandom.h>   
 #include <TMath.h>     
 #include <TPDGCode.h>
@@ -259,8 +258,8 @@ void AliHBTLLWeights::Set()
 Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
 {
 // calculates weight for a pair
-  static const Double_t cmtofm = 1.e13;
-  static const Double_t cmtoOneOverGeV = cmtofm*fgkWcons;  
+  static const Double_t kcmtofm = 1.e13;
+  static const Double_t kcmtoOneOverGeV = kcmtofm*fgkWcons;  
   
   AliHBTParticle *part1 = partpair->Particle1();
   AliHBTParticle *part2 = partpair->Particle2();
@@ -301,14 +300,14 @@ Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
   FSI_MOM.P2Y = part2->Py();
   FSI_MOM.P2Z = part2->Pz();
 
-  FSI_COOR.X1 = part1->Vx()*cmtoOneOverGeV;
-  FSI_COOR.Y1 = part1->Vy()*cmtoOneOverGeV;
-  FSI_COOR.Z1 = part1->Vz()*cmtoOneOverGeV;
+  FSI_COOR.X1 = part1->Vx()*kcmtoOneOverGeV;
+  FSI_COOR.Y1 = part1->Vy()*kcmtoOneOverGeV;
+  FSI_COOR.Z1 = part1->Vz()*kcmtoOneOverGeV;
   FSI_COOR.T1 = part1->T();
 
-  FSI_COOR.X2 = part2->Vx()*cmtoOneOverGeV;
-  FSI_COOR.Y2 = part2->Vy()*cmtoOneOverGeV;
-  FSI_COOR.Z2 = part2->Vz()*cmtoOneOverGeV;
+  FSI_COOR.X2 = part2->Vx()*kcmtoOneOverGeV;
+  FSI_COOR.Y2 = part2->Vy()*kcmtoOneOverGeV;
+  FSI_COOR.Z2 = part2->Vz()*kcmtoOneOverGeV;
   FSI_COOR.T2 = part2->T();
   
   ltran12();
