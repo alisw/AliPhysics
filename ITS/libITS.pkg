@@ -13,7 +13,7 @@ SRCS          = AliITS.cxx AliITSvSPD02.cxx \
 		AliITSetfSDD.cxx AliITSsimulationSSD.cxx AliITSdcsSSD.cxx \
 		AliITSdigit.cxx AliITSRawCluster.cxx AliITSRecPoint.cxx \
 		AliITSMap.cxx AliITSMapA1.cxx AliITSMapA2.cxx \
-		AliITSpList.cxx \
+		AliITSpList.cxx AliITSpListItem.cxx \
 		AliITSsegmentation.cxx AliITSsegmentationSPD.cxx \
 		AliITSsegmentationSDD.cxx AliITSsegmentationSSD.cxx\
 		AliITSresponse.cxx AliITSresponseSPD.cxx \
@@ -32,6 +32,7 @@ SRCS          = AliITS.cxx AliITSvSPD02.cxx \
                 AliITSclusterV2.cxx AliITStrackV2.cxx AliITStrackerV2.cxx \
 		AliITSVertex.cxx AliITSVertexer.cxx AliITSVertexerIons.cxx \
                 AliITSVertexerPPZ.cxx AliITSVertexerTracks.cxx\
+                AliITSVertexerZ.cxx \
                 AliV0vertex.cxx AliV0vertexer.cxx \
                 AliITSPid.cxx AliITStrackV2Pid.cxx AliCascadeVertex.cxx \
                 AliCascadeVertexer.cxx  AliITSneuralTrack.cxx \
