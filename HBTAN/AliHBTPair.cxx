@@ -120,19 +120,19 @@ Double_t AliHBTPair::GetQInv()
 Double_t  AliHBTPair::GetQSide()
 {
  //returns Q side
-
+  return -1;
 }
 
 Double_t  AliHBTPair::GetQLong()
 {
- //returns Q long 
-
+ //returns Q long
+  return -1;
 }
 
 Double_t  AliHBTPair::GetQOut()
 {
  //returns Q out
-   
+  return -1;
 }
 /************************************************************************/
 
