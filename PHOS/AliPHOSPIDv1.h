@@ -65,10 +65,6 @@ public:
   TString                fRecParticlesTitle ; // branch name with rec particles
   TString                fIDOptions ;         // PID option
   Int_t                  fNEvent ;            // current event number
-  TObjArray            * fEmcRecPoints ;      // ! initial EMC RecPoints
-  TObjArray            * fCpvRecPoints ;      // ! initial CPV RecPoints
-  TClonesArray         * fTrackSegments;      // ! initial list of TrackSegments
-  TClonesArray         * fRecParticles ;      // ! output
 
   AliPHOSClusterizer   * fClusterizer ;       // !
   AliPHOSTrackSegmentMaker * fTSMaker ;       // !

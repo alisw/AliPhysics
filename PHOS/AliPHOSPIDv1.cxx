@@ -100,10 +100,6 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
   fRecParticlesTitle = "" ; 
   fIDOptions         = "dis time" ; 
   fRecParticlesInRun = 0 ;
-  fEmcRecPoints = 0;
-  fCpvRecPoints = 0;
-  fTrackSegments = 0;
-  fRecParticles = 0;
   fClusterizer = 0;
   fTSMaker = 0;
 }
@@ -137,10 +133,6 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name) : AliPHOSP
 //____________________________________________________________________________
 AliPHOSPIDv1::~AliPHOSPIDv1()
 { 
-  if(fTrackSegments) fTrackSegments->Delete() ; 
-  if(fEmcRecPoints) fEmcRecPoints->Delete() ; 
-  if(fCpvRecPoints) fCpvRecPoints->Delete() ;
-  if(fRecParticles) fRecParticles->Delete() ;
 }
 
 
