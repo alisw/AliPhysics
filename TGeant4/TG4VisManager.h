@@ -92,7 +92,8 @@ class TG4VisManager: public G4VisManager
 
     //data members
     //------------
-    G4bool fColourFlag; //colour flag
+    G4bool fColourFlag;  //colour flag
+    G4int  fVerboseLevel;//verbose level
 };
 
 // inline methods

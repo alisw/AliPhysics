@@ -140,7 +140,7 @@ void TG4MaterialsFrames::SetMaterialsComboEntries()
 
    const G4MaterialTable* lComboEntries = G4Material::GetMaterialTable();
 
-    G4int ig = lComboEntries->entries();
+    G4int ig = lComboEntries->size();
     G4String name;
     
     for (int ii=0; ii < ig; ii++)
@@ -171,7 +171,7 @@ void TG4MaterialsFrames::DisplayMaterialCharacteristics( int qmat)
 //---> qmat gt 0 means clicking in the VolumesFrames ComboBox
 
    const G4MaterialTable* lComboEntries = G4Material::GetMaterialTable();
-   G4int ientr = lComboEntries->entries();
+   G4int ientr = lComboEntries->size();
    G4int index = qmat ;
    
    if ( !(qmat < 1) )

@@ -100,9 +100,10 @@
 #endif
 
 //_____________________________________________________________________________
-TG4VisManager::TG4VisManager(G4int verboseLevel) {
+TG4VisManager::TG4VisManager(G4int verboseLevel)
+  : fVerboseLevel(0) {
 //  
-  fVerbose = verboseLevel; 
+  fVerboseLevel = verboseLevel; 
   fColourFlag = true;
 }
 
@@ -192,7 +193,7 @@ void TG4VisManager::RegisterGraphicsSystems()
   RegisterGraphicsSystem(new G4VRML2File);
 #endif
 
-  if (fVerbose > 0) {
+  if (fVerboseLevel > 0) {
     G4cout <<
       "\nYou have successfully chosen to use the following graphics systems."
 	 << G4endl;
@@ -467,7 +468,7 @@ void TG4VisManager::SetG4Attribute(G4LogicalVolume* const lv,
     case 3:
      lineStyle = G4VisAttributes::dotted; break;
     default:
-     if (fVerbose > 0)
+     if (fVerboseLevel > 0)
       G4cout << "TG4VisManager::Gsatt() Usage of LSTY :" << G4endl
     	     << "ATT = 1,2,3 means line unbroken, dashed or dotted" << G4endl
 	     << "any other value resets to the default : unbroken" << G4endl;
@@ -477,7 +478,7 @@ void TG4VisManager::SetG4Attribute(G4LogicalVolume* const lv,
   case kLWID:
    lineWidth = kAbsVal;
    if (lineWidth > 7) lineWidth = 7;
-   if (fVerbose > 0) 
+   if (fVerboseLevel > 0) 
        G4cout << "TG4VisManager::Gsatt() Usage for LWID :" << G4endl
               << "  The VAL you supply means the width of lines in pixels "
 	      << "for the screen and in 0.1*mm for paper." << G4endl
@@ -562,7 +563,7 @@ void TG4VisManager::SetG4Attribute(G4LogicalVolume* const lv,
      drawingStyle = G4VisAttributes::solid;
      break;
     default:
-     if (fVerbose > 0)
+     if (fVerboseLevel > 0)
          G4cout << "TG4VisManager::Gsatt() FILL usage :" << G4endl
 	        << "  The FILL values you can supply are only :" << G4endl
 		<< "+/- 1 : forces wireframe drawing (default)" << G4endl
@@ -878,16 +879,17 @@ void TG4VisManager::Gdraw(const char *name,Float_t theta, Float_t phi, Float_t p
 
   // set and register view parameters to the viewer
   
-  fVP.SetLightsMoveWithCamera(true);
-  fVP.SetViewGeom();
-  fVP.UnsetViewHits();
-  fVP.UnsetViewDigis();
-  fVP.SetNoOfSides(48);
-  fVP.SetCurrentTargetPoint(kTargetPoint);
-  fVP.SetViewpointDirection(viewpointDirection);
-  fVP.SetUpVector(upVector);
-  fVP.SetDensityCulling(true);
-  fpViewer->SetViewParameters(fVP);
+  G4ViewParameters vp;;
+  vp.SetLightsMoveWithCamera(true);
+  vp.SetViewGeom();
+  vp.UnsetViewHits();
+  vp.UnsetViewDigis();
+  vp.SetNoOfSides(48);
+  vp.SetCurrentTargetPoint(kTargetPoint);
+  vp.SetViewpointDirection(viewpointDirection);
+  vp.SetUpVector(upVector);
+  vp.SetDensityCulling(true);
+  fpViewer->SetViewParameters(vp);
 
   if (IsValidView())
   {
