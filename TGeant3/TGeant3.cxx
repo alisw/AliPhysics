@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.34  2000/09/07 12:12:01  morsch
+Comment inside comment removed.
+
 Revision 1.33  2000/09/06 16:03:42  morsch
 Set ExternalDecayer, Decayer  and SetForceDecay methods added.
 Gspart calls for charmed and bottom hadrons added.
@@ -101,9 +104,8 @@ Introduction of the Copyright and cvs Log
 #include "THIGZ.h" 
 #include "ctype.h" 
 #include <TDatabasePDG.h>
-#include "AliDecayer.h"
-#include "AliDecayerPythia.h"
 #include "AliCallf77.h" 
+#include "AliDecayer.h" 
  
 #ifndef WIN32 
 # define gzebra  gzebra_ 
@@ -560,8 +562,7 @@ TGeant3::TGeant3(const char *title, Int_t nwgeant)
   //
   // Zero number of particles
   fNPDGCodes=0;
-  fDecayer=new AliDecayerPythia();
-  fForceDecay = all;
+  fDecayer=0;
 } 
 
 //____________________________________________________________________________ 
@@ -1891,8 +1892,6 @@ void  TGeant3::Gtrig()
   //
   // Steering function to process one event
   //  
-
-  fDecayer->ForceDecay(fForceDecay);
   gtrig(); 
 } 
  

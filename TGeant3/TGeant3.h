@@ -588,8 +588,11 @@ public:
   void SetCut(const char* cutName, Float_t cutValue);
   void SetProcess(const char* flagName, Int_t flagValue);
   //  void GetParticle(const Int_t pdg, char *name, Float_t &mass) const;
+  // Set the external decayer
   void SetExternalDecayer(AliDecayer* decayer) {fDecayer=decayer;}
-  void SetForceDecay(Decay_t decay) {fForceDecay=decay;}
+  // Get the external decayer
+  AliDecayer* Decayer() const {return fDecayer;}
+
   virtual Int_t GetMedium() const;
   virtual Float_t Edep() const;
   virtual Float_t Etot() const;
@@ -828,10 +831,7 @@ public:
   virtual void FinishGeometry();
   virtual void BuildPhysics();
 
-  // Get pointer to external decayer
-  virtual AliDecayer* Decayer() {return fDecayer;}
-
-protected:
+ protected:
   Int_t fNextVol;    // Iterator for GeomIter
 
 //--------------Declarations for ZEBRA--------------------- 
@@ -883,8 +883,6 @@ protected:
 
 protected:
     AliDecayer* fDecayer;      // Pointer to decayer
-    Decay_t     fForceDecay;   // Forced decay modes
-
 private:
   TGeant3(const TGeant3 &) {}
   TGeant3 & operator=(const TGeant3&) {return *this;}
