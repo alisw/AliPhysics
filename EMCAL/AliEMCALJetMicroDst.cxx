@@ -16,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.1  2002/02/14 09:15:15  morsch
+ALiEMCALJetMicroDst first commit.
+
 */
 
 //*-- Authors: Aleksei Pavlinov (WSU) 
@@ -330,7 +333,7 @@ void AliEMCALJetMicroDst::FillVector(Float_t pt, Float_t eta, Float_t phi, TVect
   vec.SetXYZ(px, py, pz);
 }
 
-void AliJetMicroDst::Close()
+void AliEMCALJetMicroDst::Close()
 {
   fFile->Write(); 
   fTree->Print(); 
@@ -339,20 +342,20 @@ void AliJetMicroDst::Close()
   fTree = 0;
 }
 
-void AliJetMicroDst::Browse(TBrowser* b)
+void AliEMCALJetMicroDst::Browse(TBrowser* b)
 {
    if(fTree)      b->Add((TObject*)fTree);
    if(fListHist)  b->Add((TObject*)fListHist);
    //   TObject::Browse(b);
 }
 
-Bool_t  AliJetMicroDst::IsFolder() const
+Bool_t  AliEMCALJetMicroDst::IsFolder() const
 {
   if(fTree || fListHist) return kTRUE;
   else                   return kFALSE;
 }
 
-TList* AliJetMicroDst::MoveHistsToList(char* name, Bool_t putToBrowser)
+TList* AliEMCALJetMicroDst::MoveHistsToList(char* name, Bool_t putToBrowser)
 {
   gROOT->cd();
   TIter nextHist(gDirectory->GetList());
