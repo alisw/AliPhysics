@@ -24,12 +24,13 @@ void Hits2SDigits( Bool_t split=kFALSE, TString fileName = "galice.root") {
     sdp->SetSplitFile() ;
   sdp->ExecuteTask("deb") ; 
 
+  delete sdp ;
+
   AliEMCALSDigitizer * sde = new AliEMCALSDigitizer(fileName) ; 
   if (split) 
     sde->SetSplitFile() ;
   sde->ExecuteTask("deb") ; 
  
-  delete sdp ;
   delete sde ; 
 
 }
@@ -45,8 +46,9 @@ void SDigits2Digits( Bool_t split=kFALSE, TString fileName = "galice.root") {
   //root [0] .L Reconstruct.C++
   //root [1] Hits2Digits(kTRUE) // Digits saved in [DET}.Digits.root (DET=PHOS, EMCAL)
 
+  // PHOS
   AliPHOSDigitizer * dp ; 
-  AliEMCALDigitizer * de ; 
+ 
   if (split) {
     dp = new AliPHOSDigitizer("PHOS.SDigits.root") ; 
     dp->SetSplitFile() ; } 
@@ -55,16 +57,20 @@ void SDigits2Digits( Bool_t split=kFALSE, TString fileName = "galice.root") {
   
   dp->ExecuteTask("deb") ; 
   
+  delete dp ;
+
+  //EMCAL
+  AliEMCALDigitizer * de ; 
+
   if (split) {
     de = new AliEMCALDigitizer("EMCAL.SDigits.root") ;
     de->SetSplitFile() ;
   } else 
     de = new AliEMCALDigitizer(fileName) ; 
-
+  
   de->ExecuteTask("deb") ; 
-
- delete dp ;
- delete de ; 
+  
+  delete de ; 
 }
 
 //________________________________________________________________________
@@ -78,6 +84,44 @@ void Hits2Digits (Bool_t split=kFALSE, TString fileName = "galice.root") {
   //root [1] Hits2Digits(kTRUE) // SDigits saved in [DET}.SDigits.root (DET=PHOS, EMCAL)
                                 // Digits  saved in [DET}.Digits.root  (DET=PHOS, EMCAL)
 
-  Hits2SDigits(split, fileName) ; 
-  SDigits2Digits(split, fileName) ;
+  //PHOS
+  AliPHOSSDigitizer * sdp = new AliPHOSSDigitizer(fileName) ; 
+  if (split) 
+    sdp->SetSplitFile() ;
+  sdp->ExecuteTask("deb") ; 
+
+  delete sdp ;
+
+  AliPHOSDigitizer * dp ; 
+ 
+  if (split) {
+    dp = new AliPHOSDigitizer("PHOS.SDigits.root") ; 
+    dp->SetSplitFile() ; } 
+  else 
+    dp = new AliPHOSDigitizer(fileName) ; 
+  
+  dp->ExecuteTask("deb") ; 
+  
+  delete dp ;
+
+  //EMCAL
+  AliEMCALSDigitizer * sde = new AliEMCALSDigitizer(fileName) ; 
+  if (split) 
+    sde->SetSplitFile() ;
+  sde->ExecuteTask("deb") ; 
+  
+  delete sde ; 
+  
+  AliEMCALDigitizer * de ; 
+  if (split) {
+    de = new AliEMCALDigitizer("EMCAL.SDigits.root") ;
+    de->SetSplitFile() ;
+  } else 
+    de = new AliEMCALDigitizer(fileName) ; 
+  
+  de->ExecuteTask("deb") ; 
+  
+  delete de ; 
 }
+
+ 
