@@ -72,7 +72,7 @@ void AliMUONchamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 
 
 
-    void AliMUONchamber::InitGeo(Float_t zpos)
+    void AliMUONchamber::InitGeo(Float_t)
 {
 //    sensitive gas gap
       fdGas= 0.5;

@@ -19,7 +19,6 @@ typedef enum {simple, medium, big} Cluster_t;
 static const int NCH=14;
 
 class AliMUONcluster;
-class AliMUONRecCluster;
 class AliMUONRawCluster;
 class AliMUONClusterFinder;
 class AliMUONcorrelation;
@@ -61,7 +60,7 @@ public:
 
 public:
    AliMUONreccluster() {
-       fTracks[0]=fTracks[1]=fTracks[2]=0; 
+       fTracks[0]=fTracks[1]=fTracks[2]=-1; 
        fQ=0; fX=fY=0; 
    }
    virtual ~AliMUONreccluster() {;}
@@ -143,8 +142,6 @@ class AliMUON : public  AliDetector {
     virtual void   AddCluster(Int_t*);
     virtual void   AddDigits(Int_t, Int_t*, Int_t*, Int_t*);
     virtual void   AddRawCluster(Int_t, const AliMUONRawCluster&);
-    virtual void   AddRecCluster(Int_t iCh, Int_t iCat,
-				 AliMUONRecCluster* Cluster);
     virtual void   AddCathCorrel(Int_t, Int_t*, Float_t*, Float_t*);
     virtual void   BuildGeometry();
     virtual void   CreateGeometry() {}
@@ -161,7 +158,6 @@ class AliMUON : public  AliDetector {
     virtual void   ResetHits();
     virtual void   ResetDigits();
     virtual void   ResetRawClusters();
-    virtual void   ResetRecClusters();
     virtual void   ResetCorrelation();
     virtual void   FindClusters(Int_t,Int_t);
     virtual void   Digitise(Int_t,Int_t,Option_t *opt1=" ",Option_t *opt2=" ",Text_t *name=" ");
@@ -170,10 +166,10 @@ class AliMUON : public  AliDetector {
 //
 // modifs perso
 
-    void     Init(Double_t &, Double_t &, Double_t &);
+    void     InitTracking(Double_t &, Double_t &, Double_t &);
     void     Reconst(Int_t &,Int_t &,Int_t,Int_t &,Int_t&,Int_t&, Option_t *option,Text_t *filename);
     void     FinishEvent();
-    void     Close();
+    void     CloseTracking();
     void     SetCutPxz(Double_t p) {fSPxzCut=p;}
     void     SetSigmaCut(Double_t p) {fSSigmaCut=p;}
     void     SetXPrec(Double_t p) {fSXPrec=p;}
@@ -219,9 +215,6 @@ class AliMUON : public  AliDetector {
     Int_t                *Ndch() {return fNdch;}
     virtual TClonesArray *DigitsAddress(Int_t id) {return ((TClonesArray *) (*fDchambers)[id]);}
 // Return pointers to reconstructed clusters
-  //    virtual TObjArray *RecClusters(Int_t iCh, Int_t iCat) 
-  //	{return ( (TObjArray*) (*fRecClusters)[iCh+iCat*10]);}
-
     TObjArray            *RawClusters() {return fRawClusters;}
     Int_t                *Nrawch() {return fNrawch;}
     virtual TClonesArray *RawClustAddress(Int_t id) {return ((TClonesArray *) (*fRawClusters)[id]);}
@@ -236,10 +229,6 @@ class AliMUON : public  AliDetector {
     virtual TClonesArray *CathCorrelAddress(Int_t id)
 	{return ((TClonesArray *) (*fCathCorrel)[id]);}
 
-// modifs perso
-//  virtual TClonesArray *CathCorrelAddress2(Int_t id)
-//	{return ((TClonesArray *) (*fCathCorrel2)[id]);}    
-    
 // Return pointer to TreeC
     TTree      *TreeC() {return fTreeC;} 
  protected:
@@ -249,7 +238,6 @@ class AliMUON : public  AliDetector {
     TObjArray            *fDchambers;          // List of digits
     Int_t                *fNdch;               // Number of digits
 
-  //    TObjArray            *fRecClusters;        // List of clusters
 
     TObjArray            *fRawClusters;            // List of raw clusters
     Int_t                *fNrawch;                 // Number of raw clusters
@@ -281,35 +269,6 @@ class AliMUON : public  AliDetector {
  protected:
 
    ClassDef(AliMUON,1)  //Hits manager for set:MUON
-};
-//___________________________________________
-class AliMUONRecCluster : public TObject {
-public:
-   AliMUONRecCluster() ;
-   AliMUONRecCluster(Int_t FirstDigit,Int_t Ichamber, Int_t Icathod) ;
-   virtual ~AliMUONRecCluster();
-   virtual void  AddDigit(Int_t Digit);
-   virtual Int_t FirstDigitIndex();
-   virtual Int_t NextDigitIndex();
-   virtual Int_t InvalidDigitIndex() {return -1;}
-
-   virtual Int_t NDigits();
-   virtual void  Finish();    // Nothing yet ...
-   virtual Int_t GetCathod()  {return fCathod;}
-   virtual Int_t GetChamber() {return fChamber;}
-
-public:
-   Float_t fX; // reconstructed x
-   Float_t fY; // reconstructed y
-
-protected:
-   TArrayI *fDigits;    // List of digits indexes for that cluster
-   Int_t fNdigit;       // Number of digits indexes stored;
-   Int_t fCathod;       // Number of the cathod to be used;
-   Int_t fChamber;      // Number of the chamber to be used;
-   Int_t fCurrentDigit; // Current Digit inside an iteration
-
-   ClassDef(AliMUONRecCluster,1)  //Cluster object for set:MUON
 };
 //___________________________________________
 

@@ -122,7 +122,7 @@ Int_t AliMUONsegmentationV0::MorePads()
     }
 }
 
-void AliMUONsegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t z)
+void AliMUONsegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t)
 {
 //
 //  Initialises pad and wire position during stepping
@@ -132,7 +132,7 @@ void AliMUONsegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t z)
     fiwt= (x>0) ? Int_t(x/fWireD)+1 : Int_t(x/fWireD)-1 ;
 }
 
-Int_t AliMUONsegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t z)
+Int_t AliMUONsegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t)
 {
 //
 //  Signal will be generated if particle crosses pad boundary or
@@ -186,21 +186,13 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[7], Int_t Ylist[7])
 }
 
 Float_t AliMUONsegmentationV0::Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y
-, Int_t *dummy)
+, Int_t *)
 // Returns the square of the distance between 1 pad
 // labelled by its Channel numbers and a coordinate
 {
   Float_t x,y;
   GetPadCxy(iX,iY,x,y);
   return (x-X)*(x-X) + (y-Y)*(y-Y);
-}
-
-
-void AliMUONsegmentationV0::
-FitXY(AliMUONRecCluster* Cluster,TClonesArray* MUONdigits)
-    // Default : Centre of gravity method
-{
-    ;
 }
 
 void  AliMUONsegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
@@ -210,7 +202,7 @@ void  AliMUONsegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
     y[0]=x[0];
 }
 
-void AliMUONsegmentationV0::Draw()
+void AliMUONsegmentationV0::Draw(Option_t *)
 {
     TArc *circle;
     Float_t scale=0.95/fRmax/2.;

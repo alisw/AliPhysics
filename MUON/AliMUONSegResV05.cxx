@@ -15,9 +15,9 @@
 ClassImp(AliMUONsegmentationV05)
 
 
-void AliMUONsegmentationV05::Init(AliMUONchamber* Chamber)
+void AliMUONsegmentationV05::Init(AliMUONchamber* )
 {
-    printf("\n Initialise segmentation v05 \n");
+  //printf("\n Initialise segmentation v05 \n");
 //
 //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
 //  These arrays help in converting from real to pad co-ordinates and
@@ -65,7 +65,7 @@ void AliMUONsegmentationV05::Init(AliMUONchamber* Chamber)
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
 	    fDpxD[i]=fDpxD[fNsec-1]/fNDiv[i];
-	    printf("\n test ---dx %d %f \n",i,fDpxD[i]);
+	    //printf("\n test ---dx %d %f \n",i,fDpxD[i]);
 	}
     }
 //

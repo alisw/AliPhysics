@@ -841,7 +841,7 @@
   
       DIMENSION DIST(2),NMUON(2),NHITMUON(2,5),NMUONGOOD(2)
 
-      REAL*4 RNDM,RN,RN1,RN2,R1,R2
+*      REAL*4 RNDM,RN,RN1,RN2,R1,R2
 
 * Chambre 10 deg.      
       DATA RMAX1/91.5,91.5,122.5,122.5,158.3,158.3,260.,260.,260.,260./
@@ -2372,7 +2372,7 @@
 *
       COMMON/DEBEVT/IDEBUG
 *
-      CHARACTER*50 FILEBKG,FILERES,FILEOUT,FILEMIN
+*      CHARACTER*50 FILEBKG,FILERES,FILEOUT,FILEMIN
 *
       IF (IDEBUG.GE.1) THEN
          PRINT *,'    '
@@ -2823,7 +2823,7 @@
       END
 
 ********************************************************************************
-       SUBROUTINE OLDFOLLOW(ZSTR,PEST,IFLAG,XPL,YPL,PHPL,ALPL)
+       SUBROUTINE FOLLOW(ZSTR,PEST,IFLAG,XPL,YPL,PHPL,ALPL)
 ********************************************************************************
 *   Calculate the particle trajectory in the spectrometer and
 *   (XPL,YPL,PHPL,ALPL)
@@ -2949,7 +2949,7 @@
        RETURN
        END
 ********************************************************************************
-       SUBROUTINE FOLLOW(ZSTR,PEST,IFLAG,XPL,YPL,PHPL,ALPL)
+       SUBROUTINE NEWFOLLOW(ZSTR,PEST,IFLAG,XPL,YPL,PHPL,ALPL)
 ********************************************************************************
 *   Calculate the particle trajectory in the spectrometer 
 *   (XPL,YPL,PHPL,ALPL)
@@ -3597,6 +3597,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1  1999/07/30 10:53:20  fca
+* New version of MUON from M.Bondila & A.Morsch
+*
 * Revision 1.1.1.1  1996/02/15 17:48:35  mclareni
 * Kernlib
 *

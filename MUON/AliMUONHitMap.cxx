@@ -12,7 +12,7 @@ AliMUONHitMapA1::AliMUONHitMapA1(AliMUONsegmentation *seg, TObjArray *dig)
     fHitMap = new Int_t[fMaxIndex];
     fDigits =  dig;
     fNdigits = fDigits->GetEntriesFast();
-    Clear();
+    ClearMap();
 }
 
 
@@ -22,7 +22,7 @@ AliMUONHitMapA1::~AliMUONHitMapA1()
     if (fHitMap) delete[] fHitMap;
 }
 
-void AliMUONHitMapA1::Clear()
+void AliMUONHitMapA1::ClearMap()
 {
     memset(fHitMap,0,sizeof(int)*fMaxIndex);
 }

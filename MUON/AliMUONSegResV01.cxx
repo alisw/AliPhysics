@@ -20,7 +20,7 @@ Float_t AliMUONsegmentationV01::Dpx(Int_t isec)
    return fDpxD[isec];
 }
 
-Float_t AliMUONsegmentationV01::Dpy(Int_t isec)
+Float_t AliMUONsegmentationV01::Dpy(Int_t )
 {
    return fDpy;
 }
@@ -44,7 +44,7 @@ void   AliMUONsegmentationV01::SetSegRadii(Float_t  r[4])
 {
     for (Int_t i=0; i<4; i++) {
 	fRSec[i]=r[i];
-	printf("\n R %d %f \n",i,fRSec[i]);
+	//printf("\n R %d %f \n",i,fRSec[i]);
 	
     }
 }
@@ -57,13 +57,13 @@ void AliMUONsegmentationV01::SetPadDivision(Int_t ndiv[4])
 //
     for (Int_t i=0; i<4; i++) {
 	fNDiv[i]=ndiv[i];
-	printf("\n Ndiv %d %d \n",i,fNDiv[i]);
+	//printf("\n Ndiv %d %d \n",i,fNDiv[i]);
     }
     ndiv[0]=ndiv[1];
 }
 
 
-void AliMUONsegmentationV01::Init(AliMUONchamber* Chamber)
+void AliMUONsegmentationV01::Init(AliMUONchamber* )
 {
 //
 //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
@@ -71,14 +71,14 @@ void AliMUONsegmentationV01::Init(AliMUONchamber* Chamber)
 //  vice versa
 //
     Int_t isec;
-    printf("\n Initialise segmentation v01 -- test !!!!!!!!!!!!!! \n");
+    //printf("\n Initialise segmentation v01 -- test !!!!!!!!!!!!!! \n");
     fNpy=Int_t(fRSec[fNsec-1]/fDpy)+1;
 
     fDpxD[fNsec-1]=fDpx;
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
 	    fDpxD[i]=fDpxD[fNsec-1]/fNDiv[i];
-	    printf("\n test ---dx %d %f \n",i,fDpxD[i]);
+	    //printf("\n test ---dx %d %f \n",i,fDpxD[i]);
 	}
     }
 //
@@ -124,7 +124,7 @@ void AliMUONsegmentationV01::Init(AliMUONchamber* Chamber)
     //   
     // for debugging only 
    
-    printf("segmentationv01 - I was here ! \n");
+    //printf("segmentationv01 - I was here ! \n");
 }
 
 Int_t AliMUONsegmentationV01::Sector(Int_t ix, Int_t iy)
@@ -382,33 +382,6 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
     *Nlist=i;
 }
 
-//___________________________________________
-void AliMUONsegmentationV01::
-FitXY(AliMUONRecCluster* Cluster,TClonesArray* MUONdigits)
-    // Default : Centre of gravity method
-{
-    Float_t x=0;
-    Float_t y=0;
-    Float_t q=0;
-    Float_t xToAdd;
-    Float_t yToAdd;
-    
-    if (gAlice->TreeD()->GetReadEvent() != Cluster->GetCathod()+1)
-	// next line warns if in the future cathod 1 is not event 2 !
-	printf("ClusterFillXY : not reading the right cathod !\n");
-    for(Int_t clusDigit=Cluster->FirstDigitIndex();
-	clusDigit!=Cluster->InvalidDigitIndex();
-	clusDigit=Cluster->NextDigitIndex()) {
-	AliMUONdigit* pDigit=(AliMUONdigit*)MUONdigits->UncheckedAt(clusDigit);
-	GetPadCxy(pDigit->fPadX,pDigit->fPadY,xToAdd,yToAdd);
-	x+= xToAdd*pDigit->fSignal;
-	y+= yToAdd*pDigit->fSignal;
-	q+= (Float_t) pDigit->fSignal;
-    }
-    Cluster->fX=x/q;
-    Cluster->fY=y/q;
-}
-
 void AliMUONsegmentationV01::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
 {
     n=3;
@@ -420,7 +393,7 @@ void AliMUONsegmentationV01::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
     y[2]=x[2];
 }
 
-void AliMUONsegmentationV01::Draw()
+void AliMUONsegmentationV01::Draw(Option_t *)
 {
     TBox *box;
     

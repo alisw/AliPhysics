@@ -246,7 +246,7 @@ if (iY%3==1) return 0;
 return (iX%9)/3+1 - (iY%3==2 && iX%3==0);
 }
 
-Int_t AliMUONsegmentationV1::NParallel2(Int_t iX, Int_t iY)
+Int_t AliMUONsegmentationV1::NParallel2(Int_t , Int_t iY)
 // returns the number of pads connected in parallel for zone 2
 // iX and iY are assumed to be positive and starting at 0 numbering (cF. iX)
 //
@@ -313,7 +313,7 @@ Int_t AliMUONsegmentationV1::ISector()
 return GetZone(fix,fiy);
 }
 
-void AliMUONsegmentationV1::SigGenInit(Float_t x,Float_t y,Float_t z)
+void AliMUONsegmentationV1::SigGenInit(Float_t x,Float_t y,Float_t )
 {
 //
 //  Initialises pad and wire position during stepping
@@ -324,7 +324,7 @@ void AliMUONsegmentationV1::SigGenInit(Float_t x,Float_t y,Float_t z)
 
 }
 
-Int_t AliMUONsegmentationV1::SigGenCond(Float_t x,Float_t y,Float_t z)
+Int_t AliMUONsegmentationV1::SigGenCond(Float_t x,Float_t y,Float_t )
 {
 //
 //  Signal will be generated if particle crosses pad boundary or
@@ -480,13 +480,6 @@ void AliMUONsegmentationV1::Neighbours(Int_t iX, Int_t iY, Int_t* Nlist,
 {NeighboursDiag(iX,iY,Nlist,Xlist,Ylist);}
 
 
-void AliMUONsegmentationV1::
-FitXY(AliMUONRecCluster* Cluster,TClonesArray* MUONdigits)
-    // Default : Centre of gravity method
-{
-printf (" AliMUONsegmentationV1::FitXY called!\n");
-    ;
-}
 
 void AliMUONsegmentationV1::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
 {

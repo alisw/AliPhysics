@@ -59,14 +59,11 @@ public AliMUONsegmentation {
 dummy);
     // Number of pads read in parallel and offset to add to x 
     // (specific to LYON, but mandatory for display)
-    virtual void GetNParallelAndOffset(Int_t iX, Int_t iY,
+    virtual void GetNParallelAndOffset(Int_t, Int_t ,
         Int_t *Nparallel, Int_t *Offset) {*Nparallel=1;*Offset=0;}
     // Get next neighbours 
     virtual void Neighbours
 	(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]);
-    // Provisory RecCluster coordinates reconstructor
-    virtual void FitXY(AliMUONRecCluster* Cluster,TClonesArray* MUONdigits);
-    //
     // Current Pad during Integration
     // x-coordinaten
     virtual Int_t  Ix(){return fix;}
@@ -75,7 +72,7 @@ dummy);
     // current sector
     virtual Int_t  ISector(){return 1;}
     // calculate sector from pad coordinates
-    virtual Int_t  Sector(Int_t ix, Int_t iy) {return 1;}
+    virtual Int_t  Sector(Int_t , Int_t ) {return 1;}
     //
     // Signal Generation Condition during Stepping
     virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z);
@@ -87,9 +84,9 @@ dummy);
     // Test points for auto calibration
     virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y);
     // Debugging utilities
-    virtual void Draw();
+    virtual void Draw(Option_t *);
     // Function for systematic corrections
-    virtual void SetCorrFunc(Int_t dum, TF1* func) {fCorr=func;}
+    virtual void SetCorrFunc(Int_t, TF1* func) {fCorr=func;}
     
     virtual TF1* CorrFunc(Int_t) {return fCorr;} 
 

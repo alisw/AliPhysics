@@ -33,11 +33,11 @@ public AliMUONsegmentation {
     // Get member data
     virtual Float_t Dpx(){return fDpx;}
     virtual Float_t Dpy(){return fDpy;}
-    virtual Float_t Dpx(Int_t i){return fDpx;}
-    virtual Float_t Dpy(Int_t i){return fDpy;}
+    virtual Float_t Dpx(Int_t ){return fDpx;}
+    virtual Float_t Dpy(Int_t ){return fDpy;}
     virtual Int_t   Npx(){return fNpx;}
     virtual Int_t   Npy(){return fNpy;}
-    virtual Float_t GetRealDpx(Int_t isec) {return fDpx;}
+    virtual Float_t GetRealDpx(Int_t ) {return fDpx;}
     //
     // know the zone of segmentation
     virtual Int_t GetZone(Float_t X, Float_t Y);
@@ -66,16 +66,13 @@ public AliMUONsegmentation {
     virtual void NeighboursNonDiag // without diagonal elements
 	(Int_t iX, Int_t iY, Int_t* Nlist, Int_t *Xlist, Int_t *Ylist);
     void CleanNeighbours(Int_t* Nlist, Int_t *Xlist, Int_t *Ylist);
-    // Provisory RecCluster coordinates reconstructor
-    virtual void FitXY(AliMUONRecCluster* Cluster,TClonesArray* MUONdigits);
-    //
     // Channel number expressed in pad coordinates (stored in Cluster)
     virtual Int_t Ix(Int_t trueX, Int_t trueY);
     virtual Int_t Ix();
     virtual Int_t Iy(){return fiy;}
     // Actual number of pad in the chain
     virtual Int_t ISector();
-    virtual Int_t Sector(Int_t ix, Int_t iy) {return 1;}
+    virtual Int_t Sector(Int_t , Int_t ) {return 1;}
     // Position of pad in perellel read-out
     virtual Int_t IsParallel2(Int_t iX, Int_t iY);
     virtual Int_t IsParallel3(Int_t iX, Int_t iY);
@@ -96,9 +93,9 @@ public AliMUONsegmentation {
     virtual void IntegrationLimits
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
     //
-    virtual void Draw(){;}
+    virtual void Draw(Option_t *){;}
     // Function for systematic corrections
-    virtual void SetCorrFunc(Int_t dum, TF1* func) {fCorr=func;}
+    virtual void SetCorrFunc(Int_t , TF1* func) {fCorr=func;}
     virtual TF1* CorrFunc(Int_t) {return fCorr;} 
 
     //

@@ -62,7 +62,7 @@ public AliMUONClusterFinder {
     virtual Bool_t Centered(AliMUONRawCluster *cluster);
     virtual void   SplitByLocalMaxima(AliMUONRawCluster *cluster);
 //    virtual void   FillCluster(AliMUONRawCluster *cluster);
-    void AliMUONClusterFinderv0::DumpCluster(class AliMUONRawCluster *);
+    void DumpCluster(AliMUONRawCluster *cluster);
     
     
     TClonesArray* RawClusters(){return fRawClusters;}

@@ -53,9 +53,6 @@ public AliMUONsegmentationV0 {
     // Get next neighbours 
     virtual void Neighbours
 	(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]);
-    // Provisory RecCluster coordinates reconstructor
-    virtual void FitXY(AliMUONRecCluster* Cluster,TClonesArray* MUONdigits);
-    //
     // Current Pad during Integration
     // current sector
     virtual Int_t ISector()  {return fSector;}
@@ -70,7 +67,7 @@ public AliMUONsegmentationV0 {
     void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y);
     //
     // Debugging utilities
-    virtual void Draw();
+    virtual void Draw(Option_t *);
     // Function for systematic corrections
     virtual void SetCorrFunc(Int_t dum, TF1* func);
     virtual TF1* CorrFunc(Int_t);

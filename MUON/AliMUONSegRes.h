@@ -4,7 +4,6 @@
 #include "TClonesArray.h"
 #include "TF1.h"
 class AliMUONchamber;
-class AliMUONRecCluster;
 
 //----------------------------------------------
 //
@@ -68,9 +67,6 @@ public TObject {
     // Get next neighbours 
     virtual void Neighbours
 	(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])     =0;
-    // Provisory RecCluster coordinates reconstructor
-    virtual void FitXY(AliMUONRecCluster* Cluster,TClonesArray* MUONdigits)    =0;
-    //
     // Current pad cursor during disintegration
     // x-coordinate
     virtual Int_t  Ix()                                =0;
@@ -91,7 +87,7 @@ public TObject {
     // Test points for auto calibration
     virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) = 0;
     // Debug utilities
-    virtual void Draw()                                           = 0;
+    virtual void Draw(Option_t *)                             = 0;
     // Function for systematic corrections
     virtual void SetCorrFunc(Int_t, TF1*)                         = 0;
     virtual TF1* CorrFunc(Int_t)                                  = 0;

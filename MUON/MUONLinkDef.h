@@ -10,7 +10,6 @@
 #pragma link C++ class  AliMUONlist;
 #pragma link C++ class  AliMUONcluster;
 #pragma link C++ class  AliMUONreccluster;
-#pragma link C++ class  AliMUONRecCluster;
 #pragma link C++ class  AliMUONsegmentation;
 #pragma link C++ class  AliMUONresponse;
 #pragma link C++ class  AliMUONsegmentationV0;

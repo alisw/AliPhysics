@@ -8,8 +8,7 @@
 #include <TPostScript.h> 
 #include <TMinuit.h> 
 
-ClassImp(AliMUONRecCluster)
-//_____________________________________________________________________
+//----------------------------------------------------------
 static AliMUONsegmentation* gSegmentation;
 static AliMUONresponse*     gResponse;
 static Int_t                gix[500];
@@ -21,76 +20,8 @@ static TMinuit *gMyMinuit ;
 void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 static Int_t                gChargeTot;
 
-
-AliMUONRecCluster::AliMUONRecCluster()
-
-{
-    fDigits=0;
-    fNdigit=-1;
-}
-
-AliMUONRecCluster::
-AliMUONRecCluster(Int_t FirstDigit,Int_t Ichamber, Int_t Icathod)
-{
-    fX = 0.;
-    fY = 0.;
-    fDigits = new TArrayI(10);
-    fNdigit=0;
-    AddDigit(FirstDigit);
-    fChamber=Ichamber;
-    fCathod=Icathod;
-}
-
-void AliMUONRecCluster::AddDigit(Int_t Digit)
-{
-    if (fNdigit==fDigits->GetSize()) {
-	//enlarge the list by hand!
-	Int_t *array= new Int_t[fNdigit*2];
-	for(Int_t i=0;i<fNdigit;i++)
-	    array[i] = fDigits->At(i);
-	fDigits->Adopt(fNdigit*2,array);
-    }
-    fDigits->AddAt(Digit,fNdigit);
-    fNdigit++;
-}
-
-
-AliMUONRecCluster::~AliMUONRecCluster()
-{
-    if (fDigits)
-	delete fDigits;
-}
-
-Int_t AliMUONRecCluster::FirstDigitIndex()
-{
-    fCurrentDigit=0;
-    return fDigits->At(fCurrentDigit);
-}
-
-Int_t AliMUONRecCluster::NextDigitIndex()
-{
-    fCurrentDigit++;
-    if (fCurrentDigit<fNdigit)
-	return fDigits->At(fCurrentDigit);
-    else 
-	return InvalidDigitIndex();
-}
-
-Int_t AliMUONRecCluster::NDigits()
-{
-    return fNdigit;
-}
-void AliMUONRecCluster::Finish()
-{
-    // In order to reconstruct coordinates, one has to
-    // get back to the digits which is not trivial here,
-    // because we don't know where digits are stored!
-    // Center Of Gravity, or other method should be
-    // a property of AliMUON class!
-}
-
-
 //----------------------------------------------------------
+
 ClassImp(AliMUONClusterFinder)
 
     AliMUONClusterFinder::AliMUONClusterFinder
@@ -315,7 +246,7 @@ void AliMUONClusterFinder::SplitByLocalMaxima(AliMUONRawCluster *c)
 	fSegmentation->Neighbours(ix[i], iy[i], &nn, X, Y);
 	IsLocal[i]=kTRUE;
 	for (j=0; j<nn; j++) {
-	    if (fHitMap->TestHit(X[j], Y[j])==empty) continue;
+	    if (fHitMap->TestHit(X[j],Y[j])==empty) continue;
 	    digt=(AliMUONdigit*) fHitMap->GetHit(X[j], Y[j]);
 	    if (digt->fSignal > q[i]) {
 		IsLocal[i]=kFALSE;
@@ -755,9 +686,11 @@ void AliMUONClusterFinder::FindRawClusters()
   // simple MUON cluster finder from digits -- finds neighbours and 
   // fill the tree with raw clusters
   //
+
     if (!fNdigits) return;
 
     fHitMap = new AliMUONHitMapA1(fSegmentation, fDigits);
+
 
     AliMUONdigit *dig;
 
@@ -1078,7 +1011,7 @@ Float_t DiscrCharge(Int_t i,Double_t *par)
 
 //
 // Minimisation function
-void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+void fcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t )
 {
     Int_t i;
     Float_t delta;

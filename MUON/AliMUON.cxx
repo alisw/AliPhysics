@@ -117,7 +117,6 @@ AliMUON::AliMUON()
    fClusters   = 0;
    fNclusters  = 0;
    fDchambers  = 0;
-   //   fRecClusters= 0;
    fNdch       = 0;
    fRawClusters= 0;
    fNrawch     = 0;
@@ -130,11 +129,6 @@ AliMUON::AliMUON()
    fSSigmaCut  = 0;
    fSXPrec     = 0; 
    fSYPrec     = 0;
-   /*
-   fSSigmaCut = 4.0;
-   fSXPrec    = 0.006; 
-   fSYPrec    = 0.12;
-   */
 }
  
 //___________________________________________
@@ -192,11 +186,7 @@ AliMUON::AliMUON(const char *name, const char *title)
    fSSigmaCut = 1.0;
    fSXPrec    = 0.01; 
    fSYPrec    = 0.144;
-   /*
-   fSSigmaCut = 4.0;
-   fSXPrec    = 0.006; 
-   fSYPrec    = 0.12;
-   */
+
    SetMarkerColor(kRed);
 }
  
@@ -273,19 +263,6 @@ void AliMUON::AddCathCorrel(Int_t id, Int_t *idx, Float_t *x, Float_t *y)
 
     TClonesArray &lcorrel = *((TClonesArray*)(*fCathCorrel)[id]);
     new(lcorrel[fNcorch[id]++]) AliMUONcorrelation(idx,x,y);
-}
-
-
-//_____________________________________________________________________________
-void AliMUON::AddRecCluster(Int_t iCh, Int_t iCat, AliMUONRecCluster* Cluster)
-{
-    //
-    // Add a MUON reconstructed cluster to the list
-    //
-  /*
-    TObjArray* ClusterList = RecClusters(iCh,iCat);
-    ClusterList->Add(Cluster);
-  */
 }
 
 //___________________________________________
@@ -403,7 +380,7 @@ void AliMUON::MakeBranch(Option_t* option)
       }	
   }
 
-  printf("Make Branch - TreeR address %p\n",gAlice->TreeR());
+  //printf("Make Branch - TreeR address %p\n",gAlice->TreeR());
 
 // one branch for raw clusters per chamber
   for (i=0; i<10 ;i++) {
@@ -414,20 +391,6 @@ void AliMUON::MakeBranch(Option_t* option)
 	 printf("Making Branch %s for raw clusters in chamber %d\n",branchname,i+1);
       }	
   }
-
-// Emmanuel's stuff - one branch for rec clusters
-  /*
-  for (i=0; i<20; i++) {
-      sprintf(branchname,"%sRecClus%d",GetName(),i+1);
-      if (fRecClusters   && gAlice->TreeD()) {
-	  gAlice->TreeR()
-	      ->Branch(branchname,"TObjArray", 
-		       &((*fRecClusters)[i]), buffersize,0);
-	  printf("Making Branch %s for clusters in chamber %d\n",
-		 branchname,i+1);
-      }
-  }
-  */
 
 }
 
@@ -472,18 +435,6 @@ void AliMUON::SetTreeAddress()
       }
   }
 
-  // Emmanuel's stuff
-  /*
-  if (treeR) {
-      for (int i=0; i<20; i++) {
-	  sprintf(branchname,"%sRecClus%d",GetName(),i+1);
-	  if (fRecClusters) {
-	      branch = treeR->GetBranch(branchname);
-	      if (branch) branch->SetAddress(&((*fRecClusters)[i]));
-	  }
-      }
-  }
-  */
 }
 //___________________________________________
 void AliMUON::ResetHits()
@@ -529,18 +480,6 @@ void AliMUON::ResetCorrelation()
     }
 }
 
-//____________________________________________
-void AliMUON::ResetRecClusters()
-{
-    //
-    // Reset the rec clusters
-    //
-  /*
-    for ( int i=0;i<20;i++ ) {
-	if ((*fRecClusters)[i])   (*fRecClusters)[i]->Clear();
-    }
-  */
-}
 //___________________________________________
 
 void AliMUON::SetPADSIZ(Int_t id, Int_t isec, Float_t p1, Float_t p2)
@@ -640,6 +579,7 @@ void   AliMUON::SetNsec(Int_t id, Int_t nsec)
 void AliMUON::StepManager()
 {
     printf("Dummy version of muon step -- it should never happen!!\n");
+    /*
     const Float_t kRaddeg = 180/TMath::Pi();
     AliMC* pMC = AliMC::GetMC();
     Int_t nsec, ipart;
@@ -652,7 +592,7 @@ void AliMUON::StepManager()
 	    if((pMC->TrackPid()==443 || pMC->TrackPid()==553) && !strcmp(proc,"DCAY")) {
 		//
 		// Check angular acceptance
-		//* --- and have muons from resonance decays in the wanted window --- 
+		// --- and have muons from resonance decays in the wanted window --- 
 		if(nsec != 2) {
 		    printf(" AliMUON::StepManager: Strange resonance Decay into %d particles\n",nsec);
 		    pMC->StopEvent();
@@ -660,7 +600,7 @@ void AliMUON::StepManager()
 		    pMC->GetSecondary(0,ipart,x,p);
 		    pt  = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
 		    th0 = TMath::ATan2(pt,p[2])*kRaddeg;
-		    pMC->GetSecondary(1,ipart,x,p);
+	 	    pMC->GetSecondary(1,ipart,x,p);
 		    pt  = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
 		    th2 = TMath::ATan2(pt,p[2])*kRaddeg;
 		    if(!(fAccMin < th0 && th0 < fAccMax) ||
@@ -670,6 +610,7 @@ void AliMUON::StepManager()
 	    }
 	}
     }
+    */
 }
 
 void AliMUON::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol)
@@ -718,7 +659,7 @@ void AliMUON::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol)
 //    printf("\n %d new clusters added", ic);
 }
 
-void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Text_t *filename)
+void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option, Option_t *,Text_t *filename)
 {
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
@@ -791,16 +732,6 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
     AliMUONHitMap* hm;
     Int_t countadr=0;
     for (int icat=0; icat<2; icat++) { 
-/*
-	for (Int_t i=0; i<10; i++) {
-	    if (HitMap[i]) {
-		hm=HitMap[i];
-		delete hm;
-		HitMap[i]=0;
-	    }
-	}
-*/
-
 	Int_t counter=0;
 	for (Int_t i =0; i<10; i++) {
 	    iChamber=(AliMUONchamber*) (*fChambers)[i];
@@ -980,13 +911,12 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
 		    
 //
 // Loop over pad hits
-		    //for(int j=0;j<fClusters2->GetEntriesFast();++j)
 		    for (AliMUONcluster* mPad=
 			     (AliMUONcluster*)MUON->FirstPad(mHit,fClusters2);
 			 mPad;
 			 mPad=(AliMUONcluster*)MUON->NextPad(fClusters2))
 		    {
-			//		    mPad = (AliMUONcluster*) (*fClusters2)[j];
+
 			Int_t cathode  = mPad->fCathode;    // cathode number
 			Int_t ipx      = mPad->fPadX;       // pad number on X
 			Int_t ipy      = mPad->fPadY;       // pad number on Y
@@ -994,7 +924,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
 //			Int_t iqpad    = mPad->fQpad;       // charge per pad
 
 			if (cathode != (icat+1)) continue;
-//		    if (!HitMap[nch]->CheckBoundary()) continue;
+			//if (!HitMap[nch]->CheckBoundary()) continue;
 			// fill the info array
 			Float_t thex, they;
 			segmentation=iChamber->GetSegmentationModel(cathode);
@@ -1131,26 +1061,22 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
 
 	    // fill digits
 	    MUON->AddDigits(ich,tracks,charges,digits);
-	    // delete trlist;
-//	    delete address;
 	}
 	//cout<<"I'm out of the loops for digitisation"<<endl;
-	//	gAlice->GetEvent(nev);
 	gAlice->TreeD()->Fill();
-	//TTree *TD=gAlice->TreeD();
-	/*
+	TTree *TD=gAlice->TreeD();
+
 	Stat_t ndig=TD->GetEntries();
 	cout<<"number of digits  "<<ndig<<endl;
 	TClonesArray *fDch;
-	for (int i=0;i<10;i++) {
-	    fDch= MUON->DigitsAddress(i);
+	for (int k=0;k<10;k++) {
+	    fDch= MUON->DigitsAddress(k);
 	    int ndig=fDch->GetEntriesFast();
-	    printf (" i, ndig %d %d \n",i,ndig);
+	    printf (" i, ndig %d %d \n",k,ndig);
 	}
-	*/
+
 	MUON->ResetDigits();
 	list->Delete();
-	//printf("Here\n");
 	for(Int_t ii=0;ii<10;++ii) {
 	    if (HitMap[ii]) {
 		hm=HitMap[ii];
@@ -1170,14 +1096,6 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
        //Int_t nadr=p_adr->GetEntriesFast();
        // printf(" \n \n nadr %d \n",nadr);
 
-	// start filling the digits
-       /*
-	for (Int_t nent=0;nent<nadr;nent++) {
-	    TVector *pv=(TVector*)p_adr->At(nent);
-            pv->Delete();
-	    //delete pv;
-	}
-       */
        p_adr->Clear();
        // gObjectTable->Print();
        
@@ -1260,15 +1178,13 @@ void AliMUON::FindClusters(Int_t nev,Int_t last_entry)
 	  AliMUONresponse* response = iChamber->GetResponseModel();
 	  AliMUONsegmentation*  seg = iChamber->GetSegmentationModel(icat+1);
 	  AliMUONClusterFinder* rec = iChamber->GetReconstructionModel();
-//	  if (icat==1 && (ich==4 || ich==5)) continue;
-//	  printf("icat, ich, seg - %d %d %p\n",icat,ich,seg);
+	  //printf("icat, ich, seg - %d %d %p\n",icat,ich,seg);
 	  if (seg) {	  
 	      rec->SetSegmentation(seg);
 	      rec->SetResponse(response);
 	      rec->SetDigits(MUONdigits);
 	      rec->SetChamber(ich);
 	      if (nev==0) rec->CalibrateCOG(); 
-//	      rec->CalibrateCOG(); 
 	      rec->FindRawClusters();
 	  }  
           //printf("Finish FindRawClusters for cathode %d in chamber %d\n",icat,ich);
@@ -1281,10 +1197,10 @@ void AliMUON::FindClusters(Int_t nev,Int_t last_entry)
 
       } // for ich
       // fill the tree
-      //TTree *TR=gAlice->TreeR();
+      TTree *TR=gAlice->TreeR();
 
       gAlice->TreeR()->Fill();
-      /*
+
       Stat_t nent=TR->GetEntries();
       cout<<"number of entries  "<<nent<<endl;
       TClonesArray *fRch;
@@ -1293,7 +1209,6 @@ void AliMUON::FindClusters(Int_t nev,Int_t last_entry)
 	  int nraw=fRch->GetEntriesFast();
 	  printf (" i, nraw %d %d \n",i,nraw);
       }
-      */
       ResetRawClusters();
 
   } // for icat
@@ -1647,7 +1562,6 @@ void AliMUON::Streamer(TBuffer &R__b)
       R__b.ReadArray(fNdch);
       R__b.ReadArray(fNrawch);
       R__b.ReadArray(fNcorch);
-      //      R__b >> fRecClusters;
       //
       R__b >> fAccCut;
       R__b >> fAccMin;
@@ -1694,7 +1608,6 @@ void AliMUON::Streamer(TBuffer &R__b)
       R__b.WriteArray(fNdch, 10);
       R__b.WriteArray(fNrawch, 10);
       R__b.WriteArray(fNcorch, 10);
-      //      R__b << fRecClusters;
       //
       R__b << fAccCut;
       R__b << fAccMin;
@@ -1708,12 +1621,6 @@ void AliMUON::Streamer(TBuffer &R__b)
       //
       R__b << fChambers;
 //  Stream chamber related information
-      /*
-      for (Int_t i =0; i<20; i++) {
-	  clustaddress=(TObjArray*) (*fRecClusters)[i];
-	  clustaddress->Streamer(R__b);
-      }
-      */
       for (Int_t i =0; i<10; i++) {
 	  iChamber=(AliMUONchamber*) (*fChambers)[i];
 	  iChamber->Streamer(R__b);
@@ -1866,7 +1773,7 @@ void AliMUON::Reconst(Int_t &ifit, Int_t &idebug, Int_t bgd_ev, Int_t &nev, Int_
 }
 
 
-void AliMUON::Init(Double_t &seff, Double_t &sb0, Double_t &sbl3)
+void AliMUON::InitTracking(Double_t &seff, Double_t &sb0, Double_t &sbl3)
 {
   //
   // introduce in fortran program somme parameters and cuts for tracking 
@@ -1886,14 +1793,14 @@ void AliMUON::FinishEvent()
     file1->cd();
 }
 
-void AliMUON::Close()
+void AliMUON::CloseTracking()
 {
   //
   // write histos and ntuple to "reconst.root" file
     reco_term();
 }
 
-void chfill(Int_t &id, Float_t &x, Float_t &y, Float_t &w)
+void chfill(Int_t &id, Float_t &x, Float_t &, Float_t &)
 {
   //
   // fill histo like hfill in fortran
@@ -2358,17 +2265,11 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
                     if (id==kMuonPlus) itypg[maxidg]  = 5;
 		    else  itypg[maxidg]  = 6;
 
-
-
-                    //printf("ich, itypg[maxidg] %d %d\n",izch[maxidg],itypg[maxidg]);
-
 		    ptotg[maxidg]  = mHit->fPTot;          // P of hit 
 		    
 		    Part = (TParticle*) fPartArray->UncheckedAt(ftrack);
 		    Float_t thet = Part->Theta();
 		    thet = thet*180./3.1416;
-		    
-		    //cout<<"chambre "<<izch[maxidg]<<"  ptot="<<ptotg[maxidg]<<"   theta="<<thet<<"   phi="<<mHit->fPhi<<" z="<<zz<<endl;	    
 		    
 		    Int_t iparent = Part->GetFirstMother();
 		    if (iparent >= 0) {
@@ -2400,11 +2301,6 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 		    pvert2g[maxidg] = Part->Px();      // Py vertex  
 		    pvert3g[maxidg] = Part->Pz();      // Pz vertex
 		    zvertg[maxidg]  = Part->Vz();      // z vertex 
-	    
-		    //	    cout<<"x="<<xgeant[maxidg]<<endl;
-		    //cout<<"y="<<ygeant[maxidg]<<endl;
-		    //cout<<"typ="<<itypg[maxidg]<<endl;
-
 		    maxidg ++;
 
 		}
@@ -2451,6 +2347,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	    
 	    TClonesArray *fPartArray = fParticles2;
 	    TParticle *Part;
+	    Part = (TParticle*) fPartArray->UncheckedAt(ftrack);
 	    Int_t id = ((TParticle*) fPartArray->UncheckedAt(ftrack))->GetPdgCode();
 	    if (id==kMuonPlus||id==kMuonMinus) {
 	        if (id==kMuonPlus) itypg[maxidg]  = 5;

@@ -26,7 +26,7 @@ Int_t AliMUONsegmentationV02::Npy()
 {return AliMUONsegmentationV01::Npx();}
 
 
-Float_t AliMUONsegmentationV02::Dpx(Int_t isec)
+Float_t AliMUONsegmentationV02::Dpx(Int_t)
 {return fDpy;}
 
 Float_t AliMUONsegmentationV02::Dpy(Int_t isec)
