@@ -7,3 +7,7 @@
 #define CERNLIB_DOUBLE
 #endif
 #endif
+#ifdef __APPLE__
+#define stop CALL EXIT !
+#define STOP CALL EXIT !
+#endif

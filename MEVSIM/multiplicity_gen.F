@@ -1,3 +1,10 @@
+#ifdef __APPLE__
+#define STOP CALL EXIT !
+#define stop CALL EXIT !
+#endif
+      subroutine ah
+      STOP
+      end
 C      Program Mult_Gen
        SUBROUTINE multgen
       implicit none

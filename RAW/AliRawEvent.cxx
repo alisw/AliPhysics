@@ -7,7 +7,12 @@
 #if defined(__DECCXX)
 #include <sys/statvfs.h>
 #else
+#if defined(__APPLE__)
+#include <sys/param.h>
+#include <sys/mount.h>
+#else
 #include <sys/vfs.h>
+#endif
 #endif
 #include <unistd.h>
 #include <stdlib.h>
@@ -22,6 +27,9 @@
 #include <TSQLServer.h>
 #include <TSQLResult.h>
 
+#if defined(__APPLE__)
+#undef Free
+#endif
 #include "AliRawEvent.h"
 
 // Good for Linux
