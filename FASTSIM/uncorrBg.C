@@ -226,7 +226,7 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 	acc->SetCharge(-1);
 	Float_t eff2  = eff->Evaluate(pT2, theta2, phid2);
 	Float_t acc2  = acc->Evaluate(pT2, theta2, phid2);
-	Float_t tri2  = trigeff->Evaluate(1, pT2, theta2, phid2);
+	Float_t tri2  = trigeff->Evaluate(-1, pT2, theta2, phid2);
 
 	Float_t effA   = eff1 * eff2 * acc1 * acc2 * tri1 * tri2;
 
