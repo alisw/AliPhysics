@@ -85,12 +85,15 @@
 #pragma link C++ class  AliMUONChamberGeometry+;
 #pragma link C++ class  AliMUONGeometryConstituent+;
 #pragma link C++ class  AliMUONGeometryEnvelope+;
+#pragma link C++ class  AliMUONGeometryEnvelopeStore+;
+#pragma link C++ class  AliMUONStringIntMap+;
+#pragma link C++ class  AliMUONGeometryTransformStore+;
+#pragma link C++ class  AliMUONGeometrySVMap+;
 #pragma link C++ class  AliMUONSt1GeometryBuilder+;
 #pragma link C++ class  AliMUONSt1GeometryBuilderV2+;
 #pragma link C++ class  AliMUONSt2GeometryBuilder+;
 #pragma link C++ class  AliMUONSlatGeometryBuilder+;
 #pragma link C++ class  AliMUONTriggerGeometryBuilder+;
-#include "MUONLinkDefMapping.h"
 
 #endif
 

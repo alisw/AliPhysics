@@ -11,8 +11,10 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONSegmentationDetectionElement.cxx AliMUONSegmentIndex.cxx \
                AliMUONSegmentManuIndex.cxx AliMUONSegmentPosition.cxx\
                AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx AliMUONv3.cxx \
-	       AliMUONGeometryBuilder.cxx \
-               AliMUONChamberGeometry.cxx AliMUONGeometryConstituent.cxx AliMUONGeometryEnvelope.cxx \
+	       AliMUONGeometryBuilder.cxx AliMUONGeometryTransformStore.cxx \
+               AliMUONChamberGeometry.cxx AliMUONGeometryConstituent.cxx \
+	       AliMUONGeometryEnvelope.cxx AliMUONGeometryEnvelopeStore.cxx \
+	       AliMUONGeometrySVMap.cxx \
                AliMUONVGeometryBuilder.cxx AliMUONSt1GeometryBuilder.cxx AliMUONSt1GeometryBuilderV2.cxx \
                AliMUONSt2GeometryBuilder.cxx AliMUONSlatGeometryBuilder.cxx \
 	       AliMUONTriggerGeometryBuilder.cxx \
@@ -52,8 +54,4 @@ HDRS         =  $(SRCS:.cxx=.h)
 
 DHDR:= MUONLinkDef.h
 
-include MUON/libMUON.pkg.mapping
-
-SUBDIR := mapping
-
-EINCLUDE+= RAW
+EINCLUDE:= RAW MUON/mapping
