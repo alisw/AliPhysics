@@ -1,7 +1,7 @@
 /** $Id$ 
 
 Important macro to get certain Aliroot parameters. They are stored
-in a file "Init.cxx". New init of AliL3Transform uses ouput to read certain 
+in a file "Init.cxx". New init of AliL3Transform uses output to read certain 
 TPC parameters.
 */
 
@@ -14,13 +14,18 @@ void Make_Init(char *file, char *tofile="Init.cxx"){
     return;
   }
 
-  AliTPCParam* par = (AliTPCParam*)rootf->Get("75x40_100x60");
+  AliRun *gAlice = (AliRun*)rootf->Get("gAlice");
+  if(!gAlice){
+    cerr<<"no gAlice in file: "<<file<<endl;
+    return;
+  }  
 
+  AliTPCParam* par = (AliTPCParam*)rootf->Get("75x40_100x60");
   if(!par){
     cerr<<"no AliTPCParam 75x40_100x60 in file: "<<file<<endl;
     return;
   }
-  
+
   AliTPCParamSR *param=(AliTPCParamSR*)par;
   AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
   AliTPCPRF2D    * prfouter   = new AliTPCPRF2D;
@@ -56,6 +61,7 @@ void Make_Init(char *file, char *tofile="Init.cxx"){
   FILE *f = fopen(tofile,"w");
   fprintf(f,"void AliL3Transform::Init(){\n");
 
+  fprintf(f,"  fBFieldFactor = %d ;\n",gAlice->Field()->Factor());
   fprintf(f,"  //sector:\n");
   fprintf(f,"  fNTimeBins = %d ;\n",fNTimeBins);
   fprintf(f,"  fNRowLow = %d ;\n",fNRowLow);
