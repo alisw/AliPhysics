@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.36  2000/10/25 19:51:18  morsch
+Correct x-position of chambers.
+
 Revision 1.35  2000/10/24 19:46:21  morsch
 BuildGeometry updated for slats in station 3-4.
 
@@ -516,7 +519,7 @@ void AliMUON::BuildGeometry()
 		sprintf(nameNode,"MUON%d",600+id);   
 		nodeF = new TNode(nameNode,"Frame3",frMUON,0,-dr,0,rot270,"");
 		nodeF->SetLineColor(kColorMUON);
-	    } else if (i >= 2 || i <= 4) {
+	    } else if (i >= 2 && i <= 4) {
 		Int_t nslats;
 		Int_t npcb[7]={0, 0, 0, 0, 0, 0, 0};
 		if (i==2) {
