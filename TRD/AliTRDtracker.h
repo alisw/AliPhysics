@@ -6,6 +6,7 @@
 
 #include "AliTracker.h" 
 #include "TObjArray.h" 
+#include "AliBarrelTrack.h"
 
 class TFile;
 class TParticle;
@@ -33,6 +34,8 @@ class AliTRDtracker : public AliTracker {
 
   Int_t         Clusters2Tracks(const TFile *in, TFile *out);
   Int_t         PropagateBack(const TFile *in, TFile *out);
+  //Int_t         Refit(const TFile *in, TFile *out);
+
   Int_t         LoadClusters() {LoadEvent(); return 0;};
   void          UnloadClusters() {UnloadEvent();};
   AliCluster   *GetCluster(Int_t index) const { return (AliCluster*) fClusters->UncheckedAt(index); };
@@ -111,6 +114,8 @@ class AliTRDtracker : public AliTracker {
                             Double_t rho = 1.29e-3, Double_t x0 = 36.66,
                             Double_t Yc = 0, Double_t Zc = 0);
                             
+     Bool_t         IsSensitive() {return (fTimeBinIndex>=0)? kTRUE: kFALSE;}
+                       
      void    Clear() {for(Int_t i=0; i<fN; i++) fClusters[i] = NULL; fN = 0;}
                    
    private:     
@@ -174,6 +179,7 @@ class AliTRDtracker : public AliTracker {
 
   Int_t         FollowProlongation(AliTRDtrack& t, Int_t rf);
   Int_t         FollowBackProlongation(AliTRDtrack& t);
+  //Int_t         FolowRefitInward(AliTRDtrack *seed, AliTPCtrack *track);
 
   Int_t         PropagateToTPC(AliTRDtrack& t);
   Int_t         PropagateToOuterPlane(AliTRDtrack& t, Double_t x);
@@ -247,6 +253,24 @@ class AliTRDtracker : public AliTracker {
 
   Bool_t                fNoTilt;
  
+  
+  Bool_t AdjustSector(AliTRDtrack *track); 
+ 
+  
+  // Barrel tracks [SR, 03.04.2003]
+
+  static const Int_t kFirstPlane;   // Id of the first (innermost) reference plane 
+  static const Int_t kLastPlane;    // Id of the last (outermost) reference plane
+  
+  void SetBarrelTree(const char *mode);
+  void StoreBarrelTrack(AliTRDtrack *ps, Int_t refPlane, Int_t isIn);
+  
+  TFile *fBarrelFile;
+  TTree *fBarrelTree;
+  TClonesArray *fBarrelArray;
+  AliBarrelTrack *fBarrelTrack;
+
+
   ClassDef(AliTRDtracker,1)           // manager base class  
 
 };

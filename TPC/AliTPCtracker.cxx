@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2003/03/19 17:14:11  hristov
+Load/UnloadClusters added to the base class and the derived classes changed correspondingly. Possibility to give 2 input files for ITS and TPC tracks in PropagateBack. TRD tracker uses fEventN from the base class (T.Kuhr)
+
 Revision 1.30  2003/02/28 16:13:32  hristov
 Typos corrected
 
@@ -125,6 +128,14 @@ AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
 
   fParam = (AliTPCParam*) par;
   fSeeds=0;
+
+  // [SR 17.03.2003]
+  
+  fBarrelFile = 0;
+  fBarrelTree = 0;
+  fBarrelArray = 0;
+  fBarrelTrack = 0;
+  
 }
 
 //_____________________________________________________________________________
@@ -138,6 +149,96 @@ AliTPCtracker::~AliTPCtracker() {
     fSeeds->Delete(); 
     delete fSeeds;
   }
+
+  // [SR, 01.04.2003]
+  if (fBarrelFile) {
+    fBarrelFile->Close();
+    delete fBarrelFile;
+  }
+}
+
+//_____________________________________________________________________________
+ 
+void AliTPCtracker::SetBarrelTree(const char *mode) {
+  //
+  // Creates a tree for BarrelTracks
+  // mode = "back" or "refit"
+  //
+  // [SR, 01.04.2003]
+  //
+  
+  if (!IsStoringBarrel()) return;
+  
+  TDirectory *sav = gDirectory;
+  if (!fBarrelFile) fBarrelFile = new TFile("AliBarrelTracks.root", "UPDATE");
+
+  char buff[40];
+  sprintf(buff, "BarrelTPC_%d_%s", GetEventNumber(), mode);
+
+  fBarrelFile->cd();
+  fBarrelTree = new TTree(buff, "Barrel TPC tracks");
+  
+  if (!fBarrelArray) fBarrelArray = new TClonesArray("AliBarrelTrack", 4);
+  for(Int_t i=0; i<4; i++) new((*fBarrelArray)[i]) AliBarrelTrack();
+  
+  fBarrelTree->Branch("tracks", &fBarrelArray);
+  
+  sav->cd();
+}
+//_____________________________________________________________________________
+
+void AliTPCtracker::StoreBarrelTrack(AliTPCtrack *ps, Int_t refPlane, Int_t isIn) {
+  //
+  // Stores Track at a given reference plane
+  // 
+  // refPlane: 1-4
+  // isIn: 1 - backward, 2 - refit
+  //
+  
+  if (!IsStoringBarrel()) return;
+  if (refPlane < 0 || refPlane > 4) return;
+  if (isIn > 2) return;
+
+  static Int_t nClusters;
+  static Int_t nWrong;
+  static Double_t chi2;
+  static Int_t index;
+
+  Int_t newClusters, newWrong;
+  Double_t newChi2;
+
+  if ( (refPlane == 1 && isIn == kTrackBack) || 
+       (refPlane == 4 && isIn == kTrackRefit) ) {
+    
+    fBarrelArray->Clear();
+    nClusters = nWrong = 0;
+    chi2 = 0.0;
+    index = 0;
+  }
+
+  // propagate
+  Double_t refX = 0;
+  if (refPlane == 1) refX = fParam->GetInnerRadiusLow();
+  if (refPlane == 2) refX = fParam->GetInnerRadiusUp();
+  if (refPlane == 3) refX = fParam->GetOuterRadiusLow();
+  if (refPlane == 4) refX = fParam->GetOuterRadiusUp();
+
+  ps->PropagateTo(refX);
+
+  fBarrelTrack = (AliBarrelTrack*)(*fBarrelArray)[index++];
+  ps->GetBarrelTrack(fBarrelTrack);
+  
+  newClusters = ps->GetNumberOfClusters() - nClusters; 
+  newWrong = ps->GetNWrong() - nWrong;
+  newChi2 = ps->GetChi2() - chi2;
+
+  nClusters =  ps->GetNumberOfClusters();
+  nWrong = ps->GetNWrong();
+  chi2 = ps->GetChi2();
+
+  fBarrelTrack->SetNClusters(newClusters, newChi2);
+  fBarrelTrack->SetNWrongClusters(newWrong);
+  fBarrelTrack->SetRefPlane(refPlane, isIn);
 }
 
 //_____________________________________________________________________________
@@ -358,6 +459,10 @@ Int_t AliTPCtracker::FollowProlongation(AliTPCseed& t, Int_t rf) {
       return 0;
     }
 
+    //if (fSectors == fInnerSec && (nr == 63 || nr == 0)) {
+    //  cout << nr << "\t" << krow << endl;
+    //}
+    
     if (krow) {
       for (Int_t i=krow.Find(y-road); i<krow; i++) {
 	AliTPCcluster *c=(AliTPCcluster*)(krow[i]);
@@ -398,7 +503,7 @@ Int_t AliTPCtracker::FollowProlongation(AliTPCseed& t, Int_t rf) {
 Int_t AliTPCtracker::FollowRefitInward(AliTPCseed *seed, AliTPCtrack *track) {
   //
   // This function propagates seed inward TPC using old clusters
-  // from track.
+  // from the track.
   // 
   // Sylwester Radomski, GSI
   // 26.02.2003
@@ -409,7 +514,7 @@ Int_t AliTPCtracker::FollowRefitInward(AliTPCseed *seed, AliTPCtrack *track) {
   Int_t s=Int_t(alpha/fSectors->GetAlpha())%fN;
 
   Int_t idx=-1, sec=-1, row=-1;
-  Int_t nc = seed->GetLabel(); // index to start with
+  Int_t nc = seed->GetNumber();
 
   idx=track->GetClusterIndex(nc);
   sec=(idx&0xff000000)>>24; 
@@ -419,7 +524,10 @@ Int_t AliTPCtracker::FollowRefitInward(AliTPCseed *seed, AliTPCtrack *track) {
   else { if (sec <  fkNIS) row=-1; }   
 
   Int_t nr=fSectors->GetNRows();
-  for (Int_t i=0; i<nr; i++) {
+  for (Int_t i=nr-1; i>=0; i--) {
+
+    //cout << endl;
+    //cout << i << "\t" << nc << "\t"<< row << "\t" << seed->Pt() << "\t" << track->Pt() << "\t\t";
 
     Double_t x=fSectors->GetX(i); 
     if (!seed->PropagateTo(x)) return 0;
@@ -443,10 +551,9 @@ Int_t AliTPCtracker::FollowRefitInward(AliTPCseed *seed, AliTPCtrack *track) {
     Int_t index = 0;
     Double_t maxchi2 = kMaxCHI2;
     
-    //cout << i << " " << row << " " << nc << endl;
-
     if (row==i) {
 
+      //cout << row << endl;
       // accept already found cluster
       AliTPCcluster *c=(AliTPCcluster*)GetCluster(idx);
       Double_t chi2 = seed->GetPredictedChi2(c);
@@ -455,7 +562,9 @@ Int_t AliTPCtracker::FollowRefitInward(AliTPCseed *seed, AliTPCtrack *track) {
       cl=c; 
       maxchi2=chi2;
       
-      if (++nc < track->GetNumberOfClusters() ) {
+      //cout << c->GetY() << "\t" << seed->GetY() << "\t" << track->GetY();
+      
+      if (--nc >= 0 /* track->GetNumberOfClusters()*/ ) {
         idx=track->GetClusterIndex(nc); 
         sec=(idx&0xff000000)>>24; 
         row=(idx&0x00ff0000)>>16;
@@ -467,8 +576,6 @@ Int_t AliTPCtracker::FollowRefitInward(AliTPCseed *seed, AliTPCtrack *track) {
     }
     
     if (cl) {
-      
-      //cout << "Assigned" << endl;
       Float_t l=fSectors->GetPadPitchWidth();
       Float_t corr=1.; if (i>63) corr=0.67; // new (third) pad response !
       seed->SetSampledEdx(cl->GetQ()/l*corr,seed->GetNumberOfClusters());
@@ -476,7 +583,7 @@ Int_t AliTPCtracker::FollowRefitInward(AliTPCseed *seed, AliTPCtrack *track) {
     }
   }
 
-  seed->SetLabel(nc);
+  seed->SetNumber(nc);
   return 1;
 }
 
@@ -492,7 +599,9 @@ Int_t AliTPCtracker::FollowBackProlongation
   Int_t s=Int_t(alpha/fSectors->GetAlpha())%fN;
 
   Int_t idx=-1, sec=-1, row=-1;
-  Int_t nc=seed.GetLabel(); //index of the cluster to start with
+  //Int_t nc=seed.GetLabel(); //index of the cluster to start with
+  Int_t nc=seed.GetNumber();
+
   if (nc--) {
      idx=track.GetClusterIndex(nc);
      sec=(idx&0xff000000)>>24; row=(idx&0x00ff0000)>>16;
@@ -503,6 +612,8 @@ Int_t AliTPCtracker::FollowBackProlongation
   Int_t nr=fSectors->GetNRows();
   for (Int_t i=0; i<nr; i++) {
     Double_t x=fSectors->GetX(i), ymax=fSectors->GetMaxY(i);
+
+    //cout << i << "\t" << nc << "\t" << row << "\t" << track.GetNumberOfClusters() << endl;
 
     if (!seed.PropagateTo(x)) return 0;
 
@@ -528,9 +639,12 @@ Int_t AliTPCtracker::FollowBackProlongation
       return 0;
     }
 
-
     Int_t accepted=seed.GetNumberOfClusters();
     if (row==i) {
+      
+      //if (fSectors == fInnerSec && row == 0)
+      //cout << "row == " << row << endl;
+
        //try to accept already found cluster
        AliTPCcluster *c=(AliTPCcluster*)GetCluster(idx);
        Double_t chi2;
@@ -574,7 +688,8 @@ Int_t AliTPCtracker::FollowBackProlongation
 
   }
 
-  seed.SetLabel(nc);
+  //seed.SetLabel(nc);
+  seed.SetNumber(nc);
 
   return 1;
 }
@@ -763,6 +878,9 @@ Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
 
   Int_t found=0;
   Int_t nseed=fSeeds->GetEntriesFast();
+
+  cout << fInnerSec->GetNRows() << " " << fOuterSec->GetNRows() << endl;
+
   for (Int_t i=0; i<nseed; i++) {
     //tracking in the outer sectors
     fSectors=fOuterSec; fN=fkNOS;
@@ -825,7 +943,6 @@ Int_t AliTPCtracker::RefitInward(TFile *in, TFile *out) {
   // 26.02.2003
   //
 
-
   if (!in->IsOpen()) {
     cout << "Input File not open !\n" << endl;
     return 1;
@@ -854,6 +971,9 @@ Int_t AliTPCtracker::RefitInward(TFile *in, TFile *out) {
   TTree *outputTree = new TTree("tracksTPC_0","Refited TPC tracks");
   outputTree->Branch("tracks", "AliTPCtrack", &outTrack, 32000, 3);
 
+  // [SR, 01.04.2003] - Barrel tracks
+  if (IsStoringBarrel()) SetBarrelTree("refit");
+
   Int_t nRefited = 0;
 
   for(Int_t t=0; t < nTracks; t++) {
@@ -861,19 +981,38 @@ Int_t AliTPCtracker::RefitInward(TFile *in, TFile *out) {
     cout << t << "\r";
 
     inputTree->GetEvent(t);
+    inTrack->ResetCovariance();
     AliTPCseed *seed = new AliTPCseed(*inTrack, inTrack->GetAlpha());
 
-    seed->ResetCovariance();
+    /*
+    //cout << inTrack->GetNumberOfClusters() << endl;
+    if (inTrack->GetNumberOfClusters() == 158) {
+      cout << inTrack->GetNumberOfClusters() << endl;
+      cout << endl;
+      for(Int_t c=0; c<inTrack->GetNumberOfClusters(); c++) {
+        Int_t idx = inTrack->GetClusterIndex(c);
+        Int_t row=(idx&0x00ff0000)>>16;
+        cout << c << " " << row << endl;
+      }
+    }
+    */
 
-    seed->SetLabel(0);    
-    fSectors = fInnerSec;
+    if (IsStoringBarrel()) StoreBarrelTrack(seed, 4, 2);
+
+    seed->SetNumber(inTrack->GetNumberOfClusters()-1);    
+    fSectors = fOuterSec;
     Int_t res = FollowRefitInward(seed, inTrack);
     UseClusters(seed);
     Int_t nc = seed->GetNumberOfClusters();
 
-    fSectors = fOuterSec;
+    if (IsStoringBarrel()) StoreBarrelTrack(seed, 3, 2);
+    if (IsStoringBarrel()) StoreBarrelTrack(seed, 2, 2);
+
+    fSectors = fInnerSec;
     res = FollowRefitInward(seed, inTrack);
     UseClusters(seed, nc);
+
+    if (IsStoringBarrel()) StoreBarrelTrack(seed, 1, 2);
 
     if (res) {
       seed->PropagateTo(fParam->GetInnerRadiusLow());
@@ -883,12 +1022,24 @@ Int_t AliTPCtracker::RefitInward(TFile *in, TFile *out) {
       nRefited++;
     }
 
+    if (IsStoringBarrel()) fBarrelTree->Fill();
     delete seed;
   }
 
   cout << "Refitted " << nRefited << " tracks." << endl;
 
+  out->cd();
   outputTree->Write();
+  
+  // [SR, 01.04.2003]
+  if (IsStoringBarrel()) {
+    fBarrelFile->cd();
+    fBarrelTree->Write();
+    fBarrelFile->Flush();  
+    
+    delete fBarrelArray;
+    delete fBarrelTree;
+  }
   
   if (inputTree) delete inputTree;
   if (outputTree) delete outputTree;
@@ -955,6 +1106,9 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, const TFile *inp2, TFile *o
   AliTPCtrack *tpcTrack=new AliTPCtrack; 
   tpcTree->SetBranchAddress("tracks",&tpcTrack);
 
+  // [SR, 01.04.2003] - Barrel tracks
+  if (IsStoringBarrel()) SetBarrelTree("back");
+  
   //*** Prepare an array of tracks to be back propagated
   Int_t nup=fOuterSec->GetNRows(), nlow=fInnerSec->GetNRows();
   Int_t nrows=nlow+nup;
@@ -996,8 +1150,9 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, const TFile *inp2, TFile *o
 
       // No ITS - use TPC track only
       
+      tpcTrack->ResetCovariance();
       AliTPCseed * seed = new AliTPCseed(*tpcTrack, tpcTrack->GetAlpha());
-      seed->ResetCovariance();
+
       fSeeds->AddLast(seed);
       tracks.AddLast(new AliTPCtrack(*tpcTrack));
     
@@ -1053,31 +1208,48 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, const TFile *inp2, TFile *o
   AliTPCtrack *otrack=0;
   backTree.Branch("tracks","AliTPCtrack",&otrack,32000,0);
 
-  //*** Back propagation through inner sectors
-  fSectors=fInnerSec; fN=fkNIS;
+  //
+  Int_t nRefPlane;
+  Int_t found=0;
   Int_t nseed=fSeeds->GetEntriesFast();
+      
+  // loop changed [SR, 01.04.2003]
+
   for (i=0; i<nseed; i++) {
+
+    nRefPlane = 1;
+    if (IsStoringBarrel()) fBarrelArray->Clear();
+
      AliTPCseed *ps=(AliTPCseed*)fSeeds->UncheckedAt(i), &s=*ps;
      const AliTPCtrack *pt=(AliTPCtrack*)tracks.UncheckedAt(i), &t=*pt;
 
-     Int_t nc=t.GetNumberOfClusters();
-     s.SetLabel(nc-1); //set number of the cluster to start with
+    ps->ResetNWrong();
+    ps->ResetNRotation();
+    
+    if (IsStoringBarrel()) StoreBarrelTrack(ps, 1, 1);
 
-     if (FollowBackProlongation(s,t)) {
-	UseClusters(&s);
+    // Load outer sectors
+    fSectors=fInnerSec;
+    fN=fkNIS;
+       
+     Int_t nc=t.GetNumberOfClusters();
+    //s.SetLabel(nc-1); //set number of the cluster to start with
+    s.SetNumber(nc);
+
+    if (FollowBackProlongation(s,t)) UseClusters(&s);    
+    else {
+      fSeeds->RemoveAt(i);
         continue;
      }
-     delete fSeeds->RemoveAt(i);
-  }  
 
-//*** Back propagation through outer sectors
-  fSectors=fOuterSec; fN=fkNOS;
-  Int_t found=0;
-  for (i=0; i<nseed; i++) {
-     AliTPCseed *ps=(AliTPCseed*)fSeeds->UncheckedAt(i), &s=*ps;
-     if (!ps) continue;
-     Int_t nc=s.GetNumberOfClusters();
-     const AliTPCtrack *pt=(AliTPCtrack*)tracks.UncheckedAt(i), &t=*pt;
+    if (IsStoringBarrel()) StoreBarrelTrack(ps, 2, 1);
+    if (IsStoringBarrel()) StoreBarrelTrack(ps, 3, 1);
+
+    // Load outer sectors
+    fSectors=fOuterSec; 
+    fN=fkNOS;
+    
+    nc=s.GetNumberOfClusters();
 
      Double_t alpha=s.GetAlpha() - fSectors->GetAlphaShift();
      if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();
@@ -1100,16 +1272,31 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, const TFile *inp2, TFile *o
            ps->PropagateTo(fParam->GetOuterRadiusUp()); 
            otrack=ps;
            backTree.Fill();
-	   found++;
-//           cerr<<found<<'\r';
-           continue;
+
+          if (IsStoringBarrel()) StoreBarrelTrack(ps, 4, 1);
+          cerr<<found++<<'\r';
          }
        }
      }
+    
+    if (IsStoringBarrel()) fBarrelTree->Fill();
      delete fSeeds->RemoveAt(i);
   }  
 
+
+  out->cd();
   backTree.Write();
+
+  // [SR, 01.04.2003]
+  if (IsStoringBarrel()) {
+    fBarrelFile->cd();
+    fBarrelTree->Write();
+    fBarrelFile->Flush();  
+
+    delete fBarrelArray;
+    delete fBarrelTree;
+  }
+
   savedir->cd();
   cerr<<"Number of seeds: "<<nseed<<endl;
   cerr<<"Number of back propagated ITS tracks: "<<bckN<<endl;

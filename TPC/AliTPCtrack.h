@@ -32,6 +32,8 @@
 
 #include "AliTPCreco.h"
 
+class AliBarrelTrack;
+
 //_____________________________________________________________________________
 class AliTPCtrack : public AliKalmanTrack {
 public:
@@ -74,6 +76,20 @@ public:
   void GetExternalParameters(Double_t& xr, Double_t x[5]) const ;
   void GetExternalCovariance(Double_t cov[15]) const ;
 
+  // [SR, 01.04.2003]
+
+  void GetBarrelTrack(AliBarrelTrack *track);
+
+  void ResetNWrong() {fNWrong = 0;}
+  void ResetNRotation() {fNRotation = 0;}
+  
+  Int_t GetNWrong() const {return fNWrong;}
+  Int_t GetNRotation() const {return fNRotation;}
+
+  Int_t GetNumber() const {return fNumber;}
+  void  SetNumber(Int_t n) {fNumber = n;} 
+  //
+
   Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
 
 //******** To be removed next release !!! **************
@@ -113,6 +129,11 @@ protected:
   Double_t fC40, fC41, fC42, fC43, fC44; // parameters
  
   UInt_t fIndex[kMaxRow];       // indices of associated clusters 
+
+  //[SR, 01.04.2003]
+  Int_t fNWrong;         // number of wrong clusters
+  Int_t fNRotation;      // number of rotations
+  Int_t fNumber;         // magic number used for number of clusters
 
   ClassDef(AliTPCtrack,1)   // Time Projection Chamber reconstructed tracks
 };

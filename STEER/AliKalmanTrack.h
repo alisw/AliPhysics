@@ -100,11 +100,11 @@ public:
   
 
 protected:
+
   void SetChi2(Double_t chi2) {fChi2=chi2;} 
   void SetMass(Double_t mass) {fMass=mass;}
   void SetNumberOfClusters(Int_t n) {fN=n;} 
 
-private: 
   Int_t fLab;             // track label
   Double_t fChi2;         // total chi2 value for this track
   Double_t fMass;         // mass hypothesis
@@ -117,6 +117,8 @@ private:
   Bool_t  fStartTimeIntegral;       // indicator wether integrate time
   Float_t fIntegratedTime[5];       // intgrated time
   Float_t fIntegratedLength;        // integrated length
+
+ public:
   
   ClassDef(AliKalmanTrack,2)    // Reconstructed track
 };
