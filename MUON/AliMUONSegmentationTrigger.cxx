@@ -37,15 +37,17 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
   if(pMUON->GetDebug()>1) printf("%s: Initialize Trigger Chamber Module Geometry\n",ClassName());
 
   Float_t zPos=iChamber->Z();
-  Float_t z1Pos=1603.5;
+  Float_t z1Pos=-1603.5;
   fZscale = zPos/z1Pos;
 
   Float_t y1Cmin[126];
   Float_t y1Cmax[126];
 
   Float_t dz=7.2;
-  Float_t z1PosPlus=z1Pos+dz/2.;
-  Float_t z1PosMinus=z1Pos-dz/2.;
+//  Float_t z1PosPlus=z1Pos+dz/2.;
+// Float_t z1PosMinus=z1Pos-dz/2.;
+  Float_t z1PosPlus=z1Pos-dz/2.;
+  Float_t z1PosMinus=z1Pos+dz/2.;
 
   Float_t z1pm=z1PosPlus/z1PosMinus;
   Float_t z1mp=z1PosMinus/z1PosPlus;
