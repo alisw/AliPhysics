@@ -23,7 +23,7 @@ SRCS	= AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx \
           AliL3MemHandler.cxx AliLevel3.cxx AliL3Benchmark.cxx  \
           AliL3Fitter.cxx AliL3RawDataFileHandler.cxx AliL3Log.cxx
 
-ifeq ($(ARCH),Darwin)
+ifeq ($(ARCH),macosx)
 EXTRA_SRCS = AliL3HoughTrack.cxx AliL3ModelTrack.cxx \
              AliL3DataCompressorHelper.cxx AliL3DataHandler.cxx \
              AliL3TransBit.cxx  AliL3DDLDataFileHandler.cxx

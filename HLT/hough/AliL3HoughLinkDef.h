@@ -13,7 +13,7 @@
 #pragma link C++ class AliL3HoughTransformerVhdl;
 #pragma link C++ class AliL3HoughTransformerNew;
 #pragma link C++ class AliL3HoughTransformerRow;
-#ifndef Darwin
+#ifndef macosx
 #pragma link C++ class AliL3HoughTrack;
 #endif
 #pragma link C++ class AliL3HoughMaxFinder;
@@ -26,7 +26,7 @@
 #pragma link C++ class AliL3HoughDisplay;
 #pragma link C++ class AliL3HoughClusterTransformer;
 #pragma link C++ class AliL3HistogramAdaptive;
-#ifndef Darwin
+#ifndef macosx
 #pragma link C++ class AliL3HoughTest;
 #endif
 

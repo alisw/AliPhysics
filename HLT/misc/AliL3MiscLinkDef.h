@@ -6,7 +6,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#ifndef Darwin
+#ifndef macosx
 #pragma link C++ class AliL3TransBit; 
 #pragma link C++ class AliL3TransBit_v1; 
 #pragma link C++ class AliL3TransBit_v2; 
@@ -18,7 +18,7 @@
 #pragma link C++ class AliL3DDLRawReader;
 #pragma link C++ class AliL3DDLRawReaderFile;
 #pragma link C++ class AliL3DDLTPCRawStream;
-#ifndef Darwin
+#ifndef macosx
 #pragma link C++ class AliL3DDLDataFileHandler;
 #endif
 

@@ -93,7 +93,7 @@ so: $(OBJDIR) $(ALIHLT_LIBDIR) $(ALIHLT_LIBSO)
 static: $(OBJDIR) $(ALIHLT_LIBDIR) $(ALIHLT_STATIC)
 
 $(ALIHLT_LIBSO): $(OBJS)
-ifeq ($(ARCH),Darwin)
+ifeq ($(ARCH),macosx)
 	$(LD) $(DYFLAGS) $^ $(LDFLAGS) -o $(ALIHLT_DYLIB)
 endif
 	$(LD) $(SOFLAGS) $^ $(LDFLAGS) -o $@

@@ -19,7 +19,7 @@ SRCS	= AliL3TransBit.cxx AliL3AltroMemHandler.cxx \
           AliL3FFloat.cxx AliL3Stopwatch.cxx AliL3DDLRawReader.cxx \
           AliL3DDLRawReaderFile.cxx AliL3DDLTPCRawStream.cxx 
 
-ifneq ($(ARCH),Darwin)
+ifneq ($(ARCH),macosx)
 SRCS   += AliL3DDLDataFileHandler.cxx AliL3DataHandler.cxx 
 endif
 
