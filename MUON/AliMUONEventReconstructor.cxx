@@ -1069,7 +1069,8 @@ void AliMUONEventReconstructor::MakeTriggerTracks(void)
       locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
       circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
       Float_t y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-      Float_t y21 = circuit->GetY21Pos(locTrg->LoStripX());
+      Int_t stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
+      Float_t y21 = circuit->GetY21Pos(stripX21);	
       Float_t x11 = circuit->GetX11Pos(locTrg->LoStripY());
       Float_t thetax = TMath::ATan2( x11 , z11 );
       Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
