@@ -1010,8 +1010,9 @@ extern "C" void type_of_call
    
    
    
-   Float_t m =track->GetMass();
-   track->SetMomentum(px,py,pz,m*m+px*px+py*py+pz*pz);
+   Float_t m = track->GetMass();
+   Float_t E = TMath::Sqrt(m*m+px*px+py*py+pz*pz);
+   track->SetMomentum(px,py,pz,E);
    
    g->SetHbtPStatusCode(flag,n-1);
    
