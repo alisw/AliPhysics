@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
  
@@ -6,6 +8,7 @@
 #include <math.h>
 #include "AliL3ConfMapper.h"
 
+#include "AliL3Defs.h"
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 #include "AliL3Vertex.h"
@@ -35,6 +38,7 @@ AliL3ConfMapper::AliL3ConfMapper()
   fBench = (Bool_t)true;
   fParamSet = (Bool_t)false;
   fVertexConstraint = (Bool_t)true;
+  
 }
 
 
@@ -112,10 +116,12 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   fTrack = new AliL3TrackArray("AliL3ConfMapTrack",max_num_of_tracks);
   
   nTracks=0;
+  fMainVertexTracks = 0;
   fClustersUnused = 0;
   
   fNumRowSegment = fRowMax - fRowMin; //number of rows to be considered by tracker
- 
+  LOG(AliL3Log::kInformational,"AliL3ConfMapper::InitSector","B-field")
+    <<"Tracker initializing assuming magnetic field of "<<BField<<ENDLOG;
 }
 
 
@@ -290,8 +296,7 @@ void AliL3ConfMapper::NonVertexTracking()
   SetVertexConstraint(false);
   ClusterLoop();
   LOG(AliL3Log::kInformational,"AliL3ConfMapper::NonVertexTracking","ntracks")<<AliL3Log::kDec<<
-    "Number of nonvertex tracks found: "<<nTracks-fMainVertexTracks<<ENDLOG;
-
+    "Number of nonvertex tracks found: "<<(nTracks-fMainVertexTracks)<<ENDLOG;
   return;
 }
 
@@ -323,18 +328,19 @@ void AliL3ConfMapper::NonVertexSettings(Int_t trackletlength, Int_t tracklength,
   SetMinPoints(tracklength,(Bool_t)false);
 }
 
-void AliL3ConfMapper::SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Int_t trackChi2Cut,Int_t maxdist)
+void AliL3ConfMapper::SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Double_t trackChi2Cut,Int_t maxdist,
+				   Bool_t vertexconstraint)
 {
   //Settings for tracks. The cuts are:
   //HitChi2Cut:     Maximum hit chi2
   //goodHitChi2:    Chi2 to stop look for next hit
   //trackChi2Cut:   Maximum track chi2
   //maxdist:        Maximum distance between two clusters when forming segments
-
-  fHitChi2Cut = hitChi2Cut;
-  fGoodHitChi2 = goodHitChi2;
-  fTrackChi2Cut = trackChi2Cut;
-  fMaxDist = maxdist;
+  
+  SetHitChi2Cut(hitChi2Cut,vertexconstraint);
+  SetGoodHitChi2(goodHitChi2,vertexconstraint);
+  SetTrackChi2Cut(trackChi2Cut,vertexconstraint);
+  SetMaxDist(maxdist,vertexconstraint);
 }
 
 void AliL3ConfMapper::SetTrackletCuts(Double_t maxangle,Double_t goodDist, Bool_t vertex_constraint)
@@ -460,7 +466,7 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
 	  
 	  for(point = fTrackletLength[fVertexConstraint]; point <= fNumRowSegment; point++)
 	    {
-	      track->fChiSq[0] = fHitChi2Cut;
+	      track->fChiSq[0] = fHitChi2Cut[fVertexConstraint];
 	      closest_hit = GetNextNeighbor((AliL3ConfMapPoint*)track->lastHit,track);
 	      
 	      if(closest_hit)
@@ -500,7 +506,7 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
 	  Double_t normalized_chi2 = (track->fChiSq[0]+track->fChiSq[1])/track->GetNumberOfPoints();
 	  
 	  //remove tracks with not enough points already now
-	  if(track->GetNumberOfPoints() < fMinPoints[fVertexConstraint] || normalized_chi2 > fTrackChi2Cut)
+	  if(track->GetNumberOfPoints() < fMinPoints[fVertexConstraint] || normalized_chi2 > fTrackChi2Cut[fVertexConstraint])
 	    {
 	      track->SetProperties(false);
 	      nTracks--;
@@ -534,7 +540,7 @@ AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *start_hit
   //When forming segments: Finds closest hit to input hit
   //When forming tracks: Find closest hit to track fit.
   
-  Double_t dist,closest_dist = fMaxDist;
+  Double_t dist,closest_dist = fMaxDist[fVertexConstraint];
   
   AliL3ConfMapPoint *hit = NULL;
   AliL3ConfMapPoint *closest_hit = NULL;
@@ -703,7 +709,7 @@ Int_t AliL3ConfMapper::EvaluateHit(AliL3ConfMapPoint *start_hit,AliL3ConfMapPoin
       hit->SetS(slocal);
   
       //if chi2 good enough, stop here:
-      if(lchi2 < fGoodHitChi2) 
+      if(lchi2 < fGoodHitChi2[fVertexConstraint]) 
         return 2;
       
       return 1;

@@ -67,10 +67,10 @@ class AliL3ConfMapper {
   
   // Cuts
   Double_t fMaxAngleTracklet[2];  //limit of angle between to pieces of a tracklet
-  Int_t fMaxDist;                 //maximum distance between two hits 
-  Double_t fHitChi2Cut;           //Maximum hit chi2
-  Double_t fGoodHitChi2;          //Chi2 to stop looking for next hit
-  Double_t fTrackChi2Cut;         //Maximum track chi2
+  Int_t fMaxDist[2];                 //maximum distance between two hits 
+  Double_t fHitChi2Cut[2];           //Maximum hit chi2
+  Double_t fGoodHitChi2[2];          //Chi2 to stop looking for next hit
+  Double_t fTrackChi2Cut[2];         //Maximum track chi2
   Double_t fGoodDist;             //In segment building, distance consider good enough
   Double_t fMaxPhi;
   Double_t fMaxEta;
@@ -87,6 +87,10 @@ class AliL3ConfMapper {
   void SetMinPoints(Int_t f,Bool_t vertex_constraint) {fMinPoints[(Int_t)vertex_constraint] = f; }  
   void SetVertexConstraint(Bool_t f) {fVertexConstraint =f;}
   
+  void SetHitChi2Cut(Double_t f,Bool_t vert) {fHitChi2Cut[(Int_t)vert]=f;}
+  void SetGoodHitChi2(Double_t f,Bool_t vert) {fGoodHitChi2[(Int_t)vert]=f;}
+  void SetTrackChi2Cut(Double_t f,Bool_t vert) {fTrackChi2Cut[(Int_t)vert]=f;}
+  void SetMaxDist(Int_t f,Bool_t vert) {fMaxDist[(Int_t)vert]=f;}
   void SetTrackletLength(Int_t f,Bool_t vert) {fTrackletLength[(Int_t)vert]=f;}
   void SetRowScopeTrack(Int_t f, Bool_t vertex_constraint)         { fRowScopeTrack[(Int_t)vertex_constraint] = f; }     // sets one row scope for tracks
   void SetRowScopeTracklet(Int_t f, Bool_t vertex_constraint)      { fRowScopeTracklet[(Int_t)vertex_constraint] = f; }  // sets one row scope for tracklets
@@ -132,7 +136,7 @@ class AliL3ConfMapper {
 	  }
 
   //setters
-  void SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Int_t trackChi2Cut, Int_t maxdist); 
+  void SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Double_t trackChi2Cut, Int_t maxdist,Bool_t vertexconstraint); 
   void SetTrackletCuts(Double_t maxangle,Double_t goodDist,Bool_t vertex_constraint);   //Set cut of tracklet for the given vertex_constraint
   void SetNSegments(Int_t f,Int_t g) {fNumPhiSegment=f,fNumEtaSegment=g;} //Set number of subvolumes (#segments in (phi,eta)
   void SetParamDone(Bool_t f) {fParamSet = (Bool_t)f;}
