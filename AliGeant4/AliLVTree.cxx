@@ -10,7 +10,6 @@
 #include "AliLVTree.h"
 #include "AliGlobals.h"
 #include "AliLVStructure.h"
-#include "AliModule.h"
 #ifdef G4VIS_USE
 #include "AliColourStore.h"
 #endif
