@@ -46,6 +46,6 @@ SHLD	      = $(LD)
 SOFLAGS       = -Wl,-soname,$(notdir $@) -shared 
 SHLIB         = -lg2c
 
-LIBS          = $(ROOTLIBS) -lm -ldl -rdynamic
-GLIBS         = $(ROOTLIBS) $(ROOTGLIBS) -L/usr/X11R6/lib -lX11 -lg2c -ldl -lcrypt -rdynamic
+LIBS          = $(ROOTLIBS) 
+GLIBS         = $(ROOTLIBS) -L/usr/X11R6/lib -lX11 -lg2c -lcrypt
 

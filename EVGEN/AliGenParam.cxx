@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  1999/11/04 11:30:31  fca
+Correct the logics for SetForceDecay
+
 Revision 1.12  1999/11/03 17:43:20  fca
 New version from G.Martinez & A.Morsch
 
@@ -224,7 +227,7 @@ void AliGenParam::Generate()
 // particle type
 	  Int_t Ipart = fIpParaFunc();
 	  fChildWeight=(fPythia->GetBraPart(Ipart))*fParentWeight;	  
-	  Float_t am=fPythia->GetPMAS(fPythia->LuComp(Ipart),1);
+	  Float_t am=fPythia->GetPMAS(fPythia->Lucomp(Ipart),1);
 	  gMC->Rndm(random,2);
 //
 // phi

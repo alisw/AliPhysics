@@ -15,7 +15,12 @@
 
 /*
 $Log$
+Revision 1.5  1999/09/29 09:24:12  fca
+Introduction of the Copyright and cvs Log
+
 */
+
+#include <iostream.h>
 
 #include "AliGenExtFile.h"
 #include "AliGenMUONlib.h"

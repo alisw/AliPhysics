@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  1999/11/03 17:43:20  fca
+New version from G.Martinez & A.Morsch
+
 Revision 1.4  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 
@@ -70,7 +73,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
     fEcms = energy;
     fStrucFunc = strucfunc;
 //  don't decay p0
-    SetMDCY(LuComp(111),1,0);
+    SetMDCY(Lucomp(111),1,0);
 //  select structure function 
     SetMSTP(52,2);
     SetMSTP(51,strucfunc);
@@ -189,7 +192,7 @@ void AliPythia::ForceParticleDecay(Int_t particle, Int_t product, Int_t mult)
 //
 //  force decay of particle into products with multiplicity mult
 
-    Int_t kc=LuComp(particle);
+    Int_t kc=Lucomp(particle);
     SetMDCY(kc,1,1);
     Int_t ifirst=GetMDCY(kc,2);
     Int_t ilast=ifirst+GetMDCY(kc,3)-1;
@@ -313,7 +316,7 @@ void AliPythia::ForceDecay(Decay_t decay)
 //
 //  phi-> mu+mu- and phi -> e+e-
 //  clone the original phi
-    kc  = LuComp(333);
+    kc  = Lucomp(333);
     nkc = 41;
     
     for (i=1;i<=3;i++) {
@@ -354,42 +357,42 @@ void AliPythia::ForceDecay(Decay_t decay)
 //          Vector mesons
 //
 // phi clone for dilepton decay-channel
-    kc=LuComp(41);	    
+    kc=Lucomp(41);	    
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(113,"Phi",3,mass,0,tlife);
     fGPCode[kc][0]=113;
     fGPCode[kc][1]=113;
     // J/Psi  
-    kc=LuComp(443);
+    kc=Lucomp(443);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(114,"J/Psi",3,mass,0,tlife);
     fGPCode[kc][0]=114;
     fGPCode[kc][1]=114;
     // psi prime
-    kc=LuComp(30443);
+    kc=Lucomp(30443);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(115,"Psi'",3,mass,0,tlife);
     fGPCode[kc][0]=115;
     fGPCode[kc][1]=115;
     // upsilon(1s) 
-    kc=LuComp(553); 	
+    kc=Lucomp(553); 	
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(116,"Upsilon",3,mass,0,tlife);
     fGPCode[kc][0]=116;
     fGPCode[kc][1]=116;
     // upsilon(2s)	
-    kc=LuComp(30553);
+    kc=Lucomp(30553);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(117,"Upsilon'",3,mass,0,tlife);
     fGPCode[kc][0]=117;
     fGPCode[kc][1]=117;
     // upsilon(3s)	
-    kc=LuComp(30553);
+    kc=Lucomp(30553);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(118,"Upsilon''",3,mass,0,tlife);
@@ -399,7 +402,7 @@ void AliPythia::ForceDecay(Decay_t decay)
 // charmed mesons
 //
     //  D^+/-
-    kc=LuComp(411);
+    kc=Lucomp(411);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(119,"D^+",3,mass, 1,tlife);
@@ -407,7 +410,7 @@ void AliPythia::ForceDecay(Decay_t decay)
     fGPCode[kc][0]=119;
     fGPCode[kc][1]=120;
     // D^0
-    kc=LuComp(421);
+    kc=Lucomp(421);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(121,"D^0",3,mass,0,tlife);
@@ -415,7 +418,7 @@ void AliPythia::ForceDecay(Decay_t decay)
     fGPCode[kc][0]=121;
     fGPCode[kc][1]=122;
     // D_s
-    kc=LuComp(431);
+    kc=Lucomp(431);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(123,"D_s^+",3,mass, 1,tlife);
@@ -423,7 +426,7 @@ void AliPythia::ForceDecay(Decay_t decay)
     fGPCode[kc][0]=123;
     fGPCode[kc][1]=124;
     // Lambda_c
-    kc=LuComp(4122);
+    kc=Lucomp(4122);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(125,"Lambda_c+",3,mass, 1,tlife);
@@ -433,7 +436,7 @@ void AliPythia::ForceDecay(Decay_t decay)
     //
     //  beauty mesons
     // B_0
-    kc=LuComp(511);
+    kc=Lucomp(511);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(127,"B^0",3,mass, 0,tlife);
@@ -441,7 +444,7 @@ void AliPythia::ForceDecay(Decay_t decay)
     fGPCode[kc][0]=127;
     fGPCode[kc][1]=128;
     // B^+-
-    kc=LuComp(521);
+    kc=Lucomp(521);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(129,"B^+",3,mass, 1,tlife);
@@ -449,7 +452,7 @@ void AliPythia::ForceDecay(Decay_t decay)
     fGPCode[kc][0]=129;
     fGPCode[kc][1]=130;
     // B_s
-    kc=LuComp(531);
+    kc=Lucomp(531);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(131,"B_s",3,mass, 0,tlife);
@@ -457,7 +460,7 @@ void AliPythia::ForceDecay(Decay_t decay)
     fGPCode[kc][0]=131;
     fGPCode[kc][1]=132;
     // Lambda_b
-    kc=LuComp(5122);
+    kc=Lucomp(5122);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
     gMC->Gspart(133,"Lambda_b",3,mass, 0,tlife);
@@ -468,79 +471,79 @@ void AliPythia::ForceDecay(Decay_t decay)
 //          set up correspondance between standard GEANT particle codes
 //          and PYTHIA kf
 
-    kc=LuComp(22);  // gamma
+    kc=Lucomp(22);  // gamma
     fGPCode[kc][0]=1;
     fGPCode[kc][1]=1;
     
-    kc=LuComp(11);  // positron
+    kc=Lucomp(11);  // positron
     fGPCode[kc][0]=2;
     fGPCode[kc][1]=3;
     
-    kc=LuComp(12);  // neutrino
+    kc=Lucomp(12);  // neutrino
     fGPCode[kc][0]=4;
     fGPCode[kc][1]=4;
 
-    kc=LuComp(13);  // muon
+    kc=Lucomp(13);  // muon
     fGPCode[kc][0]=5;
     fGPCode[kc][1]=6;
     
-    kc=LuComp(111); // pi0
+    kc=Lucomp(111); // pi0
     fGPCode[kc][0]=7;
     fGPCode[kc][1]=7;
 
-    kc=LuComp(211); // pi+
+    kc=Lucomp(211); // pi+
     fGPCode[kc][0]=8;
     fGPCode[kc][1]=9;
 
-    kc=LuComp(130); // K0 short
+    kc=Lucomp(130); // K0 short
     fGPCode[kc][0]=10;
     fGPCode[kc][1]=10;
 
-    kc=LuComp(321); // K+/-
+    kc=Lucomp(321); // K+/-
     fGPCode[kc][0]=11;
     fGPCode[kc][1]=12;
 
-    kc=LuComp(2112); // neutron/anti-neutron
+    kc=Lucomp(2112); // neutron/anti-neutron
     fGPCode[kc][0]=13;
     fGPCode[kc][1]=25;
     
-    kc=LuComp(2212); // proton/anti-proton
+    kc=Lucomp(2212); // proton/anti-proton
     fGPCode[kc][0]=14;
     fGPCode[kc][1]=15;
     
-    kc=LuComp(310);  // K0 short
+    kc=Lucomp(310);  // K0 short
     fGPCode[kc][0]=16; 
     fGPCode[kc][1]=16;
 
-    kc=LuComp(221);  // eta
+    kc=Lucomp(221);  // eta
     fGPCode[kc][0]=17;
     fGPCode[kc][1]=17;
 
-    kc=LuComp(3122); // lambda
+    kc=Lucomp(3122); // lambda
     fGPCode[kc][0]=18;
     fGPCode[kc][1]=18;
 
-    kc=LuComp(3222); // sigma+/antisigma+
+    kc=Lucomp(3222); // sigma+/antisigma+
     fGPCode[kc][0]=19;
     fGPCode[kc][1]=29;
 
-    kc=LuComp(3212); // sigma0/antisigma0
+    kc=Lucomp(3212); // sigma0/antisigma0
     fGPCode[kc][0]=20;
     fGPCode[kc][1]=28;
 
-    kc=LuComp(3112); // sigma-/antisigma-
+    kc=Lucomp(3112); // sigma-/antisigma-
     fGPCode[kc][0]=21;
     fGPCode[kc][1]=27;
 
-    kc=LuComp(3322); // xsi0-/antixsi0
+    kc=Lucomp(3322); // xsi0-/antixsi0
     fGPCode[kc][0]=22;
     fGPCode[kc][1]=30;
 
-    kc=LuComp(3312); // xsi-/antixsi+
+    kc=Lucomp(3312); // xsi-/antixsi+
     fGPCode[kc][0]=23;
     fGPCode[kc][1]=31;
 
-    kc=LuComp(3334); // omega/antiomega
+    kc=Lucomp(3334); // omega/antiomega
     fGPCode[kc][0]=24;
     fGPCode[kc][1]=32;
 }
@@ -549,13 +552,13 @@ void AliPythia::ForceDecay(Decay_t decay)
     
 Int_t  AliPythia::GetGeantCode(Int_t kf)
 {
-    Int_t kc=LuComp(TMath::Abs(kf));
+    Int_t kc=Lucomp(TMath::Abs(kf));
     return (kf > 0) ? fGPCode[kc][0] : fGPCode[kc][1];
 }
     
 Float_t  AliPythia::GetBraPart(Int_t kf)
 {
-    Int_t kc=LuComp(TMath::Abs(kf));
+    Int_t kc=Lucomp(TMath::Abs(kf));
     return fBraPart[kc];
 }
 

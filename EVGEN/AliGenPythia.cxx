@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/11/03 17:43:20  fca
+New version from G.Martinez & A.Morsch
+
 Revision 1.11  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 */
@@ -72,8 +75,8 @@ void AliGenPythia::Init()
     fPythia->SetCKIN(4,fPtHardMax);    
     fPythia->ProcInit(fProcess,fEnergyCMS,fStrucFunc);
     fPythia->ForceDecay(fForceDecay);
-    fPythia->LuList(0);
-    fPythia->PyStat(2);
+    fPythia->Lulist(0);
+    fPythia->Pystat(2);
 //  Parent and Children Selection
     switch (fProcess) 
     {
@@ -171,7 +174,7 @@ void AliGenPythia::Generate()
     }
     while(1)
     {
-	fPythia->PyEvnt();
+	fPythia->Pyevnt();
 	fTrials++;
 	fPythia->ImportParticles(particles,"All");
 	Int_t np = particles->GetEntriesFast();

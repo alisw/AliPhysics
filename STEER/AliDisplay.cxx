@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 
@@ -43,7 +46,7 @@ $Log$
 #include <TSlider.h>
 #include <TSliderBox.h>
 #include <TGaxis.h>
-#include <TGXW.h>
+#include <TVirtualX.h>
 #include <TMath.h>
 #include <X3DBuffer.h>
 
@@ -161,7 +164,7 @@ AliDisplay::AliDisplay(Int_t size)
    if (ysize < 100) ysize = 750;
    Int_t xsize = Int_t(size*830./ysize);
    fCanvas = new TCanvas("Canvas", "ALICE Event Display",14,47,xsize,ysize);
-   fCanvas->SetEditable(kIsNotEditable);
+   fCanvas->SetEditable(kFALSE);
    fCanvas->ToggleEventStatus();
    
    // Create main display pad
@@ -657,7 +660,7 @@ void AliDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
    switch (event) {
 
    case kButton1Down:
-      gGXW->SetLineColor(-1);
+      gVirtualX->SetLineColor(-1);
       gPad->TAttLine::Modify();  //Change line attributes only if necessary
       x0 = gPad->AbsPixeltoX(px);
       y0 = gPad->AbsPixeltoY(py);
@@ -667,11 +670,11 @@ void AliDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
       return;
 
    case kButton1Motion:
-      if (linedrawn) gGXW->DrawBox(px0, py0, pxold, pyold, TGXW::kHollow);
+      if (linedrawn) gVirtualX->DrawBox(px0, py0, pxold, pyold, TVirtualX::kHollow);
       pxold = px;
       pyold = py;
       linedrawn = 1;
-      gGXW->DrawBox(px0, py0, pxold, pyold, TGXW::kHollow);
+      gVirtualX->DrawBox(px0, py0, pxold, pyold, TVirtualX::kHollow);
       return;
 
    case kButton1Up:

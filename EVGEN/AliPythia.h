@@ -25,7 +25,7 @@ class AliPythia:public TPythia
     // convert to compressed code and print result (for debugging only)
     virtual Int_t CheckedLuComp(Int_t kf)
 	{
-	    Int_t kc=LuComp(kf);
+	    Int_t kc=Lucomp(kf);
 	    printf("\n Lucomp kf,kc %d %d",kf,kc);
 	    return kc;
 	}

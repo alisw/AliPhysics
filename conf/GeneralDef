@@ -49,17 +49,14 @@ BINDIR = $(ALICE_ROOT)/bin/tgt_$(ALICE_TARGET)
 
 # Current Version
 
-VERSION		= 3.02pre
+VERSION		= 3.02
  
 # Which makedepend
 MAKEDEPEND    = $(ROOTSYS)/bin/rmkdepend
 
 # Root libraries
  
-ROOTLIBS      = -L$(ROOTSYS)/lib -lNew -lBase -lCint -lClib -lCont -lFunc \
-		-lGraf -lGraf3d -lHist -lHtml -lMeta -lMinuit -lNet \
-		-lPostscript -lProof -lRint -lTree -lUnix -lZip -lMatrix \
-		-lMeta -lPhysics
+ROOTLIBS      = $(shell $(ROOTSYS)/bin/root-config --glibs) -lMinuit -lHtml
 
 # Alice libraries
 
@@ -67,12 +64,9 @@ ALILIBS	      = -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
                 -lITS -lPHOSdummy -lPHOS -lCASTOR -lRICH -lZDC -lSTRUCT \
                 -lTGeant3 -lSTART -lCPV -lEVGEN -lSTEER
 
-# Graphic libraries
-
-ROOTGLIBS     = -lGpad -lGui -lGX11 -lX3d  -lXpm
- 
 # CERN Libraries 
 
 CLIBS         = -lminicern
 
 G3LIBS        = -lgeant321
+
