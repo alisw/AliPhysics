@@ -69,7 +69,7 @@ public:
 
   void Print() const ; 
 
-  virtual const char * Version() const { return "pid-v1" ; }  
+  virtual char * Version() const { return "pid-v1" ; }  
 
   AliPHOSPIDv1 & operator = (const AliPHOSPIDv1 & /*pid*/) { return *this ;} 
   

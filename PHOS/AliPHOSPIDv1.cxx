@@ -195,11 +195,14 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
  
-  if (fLastEvent == -1) fLastEvent = gime->MaxEvent() - 1 ;
-  else fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+  if (fLastEvent == -1) 
+    fLastEvent = gime->MaxEvent() - 1 ;
+  else 
+    fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
 
-  for (Int_t ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
+  Int_t ievent ; 
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent,"TR") ;
     if(gime->TrackSegments() && //Skip events, where no track segments made
        gime->TrackSegments()->GetEntriesFast()) {

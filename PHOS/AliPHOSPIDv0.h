@@ -46,7 +46,7 @@ public:
   virtual void SetTimeGate(Float_t gate)                 {fTimeGate = gate ;}
   //  virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
   //  virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
-  virtual const char * Version() const { return "pid-v0" ; }  
+  virtual char * Version() const { return "pid-v0" ; }  
                      
  private:
   
