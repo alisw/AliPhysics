@@ -13,7 +13,6 @@ root [0] gAlice->Run(10,"$ALICE_ROOT/MUON/Config_MUON_test.C");
 acceptance will be simulated using geant3. 
 Hit information will be store in the root file in the
 execution directory.
-
 If you want to change the option or to define a new directory
 for hits, you have to do the following before:
 root [0] gAlice->SetConfigFunction("Config( \"/home/martinez/aliroot/work_NewIO/test/\" , \"box\" );"); 
@@ -54,7 +53,7 @@ MUONtrigger("galice.root",0,10);
 First event and last event are given by hand, but this will change.
 
 ============================================================
- How to run MUON Tracking reconstruction
+ How to run MUON Tracking reconstruction (old output)
 ===========================================================
 .includepath $ALICE_ROOT/STEER
 .includepath $ALICE_ROOT/MUON
@@ -62,6 +61,17 @@ First event and last event are given by hand, but this will change.
 MUONrecoNtuple(0,10,0,"galice.root")    
 
 First event and last event are given by hand, but this will change.
+
+===========================================================
+ How to run MUON Tracking reconstruction (new output)
+===========================================================
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONTracker.C++
+MUONTracker(0,10,"galice.root")    
+
+Output in MUON.Tracks.root using the new IO 
+as a TClonesArray of AliMUONTrack
 
 ============================================================
  How to run MUONCheck macro

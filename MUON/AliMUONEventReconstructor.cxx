@@ -715,9 +715,6 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
   // Loading MUON subsystem
   AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
 
-  //  AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
-  // Security on MUON ????
-  //pMUON->ResetRawClusters();
   nTRentries = Int_t(TR->GetEntries());
   if (nTRentries != 1) {
     cout << "Error in AliMUONEventReconstructor::AddHitsForRecFromRawClusters"

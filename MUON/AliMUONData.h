@@ -16,6 +16,7 @@ class TObjArray;
 class TTree;
 
 class AliMUONRawCluster;
+class AliMUONTrack;
 
 //__________________________________________________________________
 /////////////////////////////////////////////////////////////////////
@@ -41,6 +42,8 @@ class AliMUONData : public TNamed {
 				    Int_t *pairLike);
     virtual void   AddLocalTrigger(Int_t* ltrigger);
     virtual void   AddRawCluster(Int_t id, const AliMUONRawCluster& clust);
+    virtual void   AddRecTrack(const AliMUONTrack& track);
+
     TClonesArray*  Hits() {return fHits;}
     TClonesArray*  Digits(Int_t DetectionPlane, Int_t /*Cathode*/) 
       {return ( (TClonesArray*) fDigits->At(DetectionPlane) );}
@@ -48,17 +51,19 @@ class AliMUONData : public TNamed {
     TClonesArray*  GlobalTrigger() {return fGlobalTrigger;}
     TClonesArray*  RawClusters(Int_t DetectionPlane)
       {return ( (TClonesArray*) fRawClusters->At(DetectionPlane) );}
-
+    TClonesArray*  RecTracks() {return fRecTracks;}
+    
     virtual AliLoader* GetLoader() {return fLoader;}
     virtual void       SetLoader(AliLoader * loader) {fLoader=loader;}    
-
+    
     virtual void   MakeBranch(Option_t *opt=" ");
     virtual void   SetTreeAddress(Option_t *opt=" ");
-
+    
     virtual void   ResetHits();
     virtual void   ResetDigits();
     virtual void   ResetTrigger();
     virtual void   ResetRawClusters();
+    virtual void   ResetRecTracks();
   
     TTree*         TreeH() {return fLoader->TreeH(); }
     TTree*         TreeD() {return fLoader->TreeD(); }
@@ -74,16 +79,25 @@ class AliMUONData : public TNamed {
  protected: 
     AliLoader*  fLoader;
 
-    TClonesArray*   fHits;    // One event in treeH per primary track
-    TObjArray*      fDigits;  // One event in treeD and one branch per detection plane
-    TObjArray*      fRawClusters; //One event in TreeR/Rawcluster and one branch per tracking detection plane
-    TClonesArray*   fGlobalTrigger; //! List of Global Trigger One event in TreeR/GlobalTriggerBranch
-    TClonesArray*   fLocalTrigger;  //! List of Local Trigger, ONe event in TreeR/LocalTriggerBranch       
+    // One event in treeH per primary track
+    TClonesArray*   fHits;    
+    // One event in treeD and one branch per detection plane
+    TObjArray*      fDigits; 
+    //One event in TreeR/Rawcluster and one branch per tracking detection plane
+    TObjArray*      fRawClusters; 
+    //! List of Global Trigger One event in TreeR/GlobalTriggerBranch
+    TClonesArray*   fGlobalTrigger; 
+    //! List of Local Trigger, One event in TreeR/LocalTriggerBranch
+    TClonesArray*   fLocalTrigger;  
+    // pointer to array of reconstructed tracks
+    TClonesArray*   fRecTracks; 
+
     Int_t           fNhits;
     Int_t*          fNdigits;
     Int_t*          fNrawclusters;
     Int_t           fNglobaltrigger;
     Int_t           fNlocaltrigger;
+    Int_t           fNrectracks; 
 
     ClassDef(AliMUONData,1)
  };
