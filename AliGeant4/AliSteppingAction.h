@@ -2,6 +2,7 @@
 // Category: event
 //
 // Class for detecting and stopping looping particles
+// or particles that reached maximal number of steps.
 
 #ifndef ALI_STEPPING_ACTION_H
 #define ALI_STEPPING_ACTION_H
@@ -18,7 +19,8 @@ class AliSteppingAction : public G4UserSteppingAction
 {
   enum { 
     kCheckNofSteps = 100,
-    kMaxNofLoopSteps = 5
+    kMaxNofLoopSteps = 5,
+    kMaxNofSteps = 5000
   };
 
   public:
