@@ -155,21 +155,21 @@ class AliEMCALLoader : public AliLoader {
   //  AliEMCALSDigitizer*  EMCALSDigitizer(TString name = AliConfig::GetDefaultEventFolderName());
   //AliEMCALDigitizer*   EMCALDigitizer()  { return  dynamic_cast<AliEMCALDigitizer*>(Digitizer()) ;}
 
-  AliEMCALClusterizer* Clusterizer ()  {return dynamic_cast<AliEMCALClusterizer*>(Reconstructioner()) ;}
-  Int_t PostClusterizer(TTask* clust){return PostReconstructioner(clust);}
-  Int_t LoadClusterizer(Option_t * opt="") {return LoadReconstructioner(opt);}
-  Int_t WriteClusterizer(Option_t * opt="") {return WriteReconstructioner(opt);}
+  AliEMCALClusterizer* Clusterizer () const {return dynamic_cast<AliEMCALClusterizer*>(Reconstructioner()) ;}
+  Int_t PostClusterizer(TTask* clust) const {return PostReconstructioner(clust);}
+  Int_t LoadClusterizer(Option_t * opt="") const {return LoadReconstructioner(opt);}
+  Int_t WriteClusterizer(Option_t * opt="") const {return WriteReconstructioner(opt);}
 
-  AliEMCALPID * PID (){return dynamic_cast<AliEMCALPID*>(PIDTask()) ;}
-  Int_t PostPID(TTask* pid){return PostPIDTask(pid);}
-  Int_t LoadPID(Option_t * opt="") {return LoadPIDTask(opt);}
-  Int_t WritePID(Option_t * opt="") {return WritePIDTask(opt);}
+  AliEMCALPID * PID() const {return dynamic_cast<AliEMCALPID*>(PIDTask()) ;}
+  Int_t PostPID(TTask* pid) const {return PostPIDTask(pid);}
+  Int_t LoadPID(Option_t * opt="") const {return LoadPIDTask(opt);}
+  Int_t WritePID(Option_t * opt="") const {return WritePIDTask(opt);}
 
 
-  AliEMCALTrackSegmentMaker * TrackSegmentMaker ()  { return dynamic_cast<AliEMCALTrackSegmentMaker *>(Tracker()) ;}
-  Int_t PostTrackSegmentMaker(TTask* segmaker){return PostTracker(segmaker);}
-  Int_t LoadTrackSegmentMaker(Option_t * opt="") {return LoadTracker(opt);}
-  Int_t WriteTrackSegmentMaker(Option_t * opt="") {return WriteTracker(opt);}
+  AliEMCALTrackSegmentMaker * TrackSegmentMaker () const  { return dynamic_cast<AliEMCALTrackSegmentMaker *>(Tracker()) ;}
+  Int_t PostTrackSegmentMaker(TTask* segmaker) const {return PostTracker(segmaker);}
+  Int_t LoadTrackSegmentMaker(Option_t * opt="") const {return LoadTracker(opt);}
+  Int_t WriteTrackSegmentMaker(Option_t * opt="") const  {return WriteTracker(opt);}
 
   
   void   SetDebug(Int_t level) {fDebug = level;} // Set debug level
