@@ -69,7 +69,6 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliPHOSCalibrationDB.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSDigit.h"
@@ -78,6 +77,8 @@
 #include "AliPHOS.h"
 #include "AliPHOSGetter.h"
 #include "AliRun.h"
+#include "AliPHOSCalibrManager.h"
+#include "AliPHOSCalibrationData.h"
 
 ClassImp(AliPHOSClusterizerv1)
   
@@ -105,7 +106,9 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
 //____________________________________________________________________________
   AliPHOSClusterizerv1::~AliPHOSClusterizerv1()
 {
-  // dtor
+  delete fPedestals ;
+  delete fGains ;
+
   fSplitFile = 0 ; 
 
 }
@@ -120,9 +123,18 @@ const TString AliPHOSClusterizerv1::BranchName() const
  
 //____________________________________________________________________________
 Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId) const
-{ //To be replased later by the method, reading individual parameters from the database
-  if(fCalibrationDB)
-    return fCalibrationDB->Calibrate(amp,absId) ;
+{ 
+  if(fPedestals || fGains ){  //use calibration data
+    if(!fPedestals || !fGains ){
+      Error("Calibrate","Either Pedestals of Gains not set!") ;
+      return 0 ;
+    }
+    Float_t en=(amp - fPedestals->Data(absId))*fGains->Data(absId) ;
+    if(en>0)
+      return en ;
+    else
+      return 0. ;
+  }
   else{ //simulation
     if(absId <= fEmcCrystals) //calibrate as EMC 
       return fADCpedestalEmc + amp*fADCchanelEmc ;        
@@ -135,7 +147,6 @@ Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId) const
 void AliPHOSClusterizerv1::Exec(Option_t * option)
 {
   // Steering method
-
   if( strcmp(GetName(), "")== 0 ) 
     Init() ;
 
@@ -148,13 +159,47 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
   if(gime->BranchExists("RecPoints"))
     return ;
+
+  //test, if this is real data:
+  TBranch * eh = gAlice->TreeE()->GetBranch("AliPHOSBeamTestEvent") ;
+  if(eh){ //Read CalibrationData
+    AliPHOSCalibrManager * cmngr=AliPHOSCalibrManager::GetInstance() ;
+    if(!cmngr){ //not defined yet
+      cmngr=AliPHOSCalibrManager::GetInstance("PHOSBTCalibration.root") ;
+    } 
+    if(fPedestals)
+      delete fPedestals ;
+    fPedestals = new AliPHOSCalibrationData("Pedestals",fCalibrVersion) ;
+    cmngr->ReadFromRoot(*fPedestals,fCalibrRun) ;
+    if(fGains)
+      delete fGains ;
+    fGains = new AliPHOSCalibrationData("Gains",fCalibrVersion) ;
+    cmngr->ReadFromRoot(*fGains,fCalibrRun) ;
+  }
+
   Int_t nevents = gime->MaxEvent() ;
   Int_t ievent ;
   
   for(ievent = 0; ievent < nevents; ievent++){
-    
     gime->Event(ievent,"D") ;
-    
+    Int_t pattern = gime->EventPattern() ;
+    if(pattern){
+	    printf("pattern %d \n",pattern) ;
+      if(!fPatterns){
+	Error("Exec","Patterns for reconstruction of events are not set, use SetPatterns() ") ;
+	return ;
+      }
+      Bool_t skip = kTRUE ;
+      Int_t npat = fPatterns->GetSize() ;
+      for(Int_t i = 0; i<npat;i++)
+	if(pattern==fPatterns->At(i)){
+	  skip = kFALSE ;
+	  break ;
+	}
+      if(skip)
+	continue ;
+    }
+
     if(ievent == 0)
       GetCalibrationParameters() ;
     
@@ -292,7 +337,8 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
     fADCpedestalCpv = dig->GetCPVpedestal() ; 
   }
   else{
-    fCalibrationDB = gime->CalibrationDB();
+ ;
+//    fCalibrationDB = gime->CalibrationDB();
   }
 }
 
@@ -372,6 +418,12 @@ void AliPHOSClusterizerv1::InitParameters()
 
   fPurifyThreshold         = 0.012 ;
   
+  fPedestals = 0 ;
+  fGains     = 0 ;
+  fCalibrVersion= "v1" ;
+  fCalibrRun = 1 ;
+  fPatterns  = 0 ;
+
   TString clusterizerName( GetName()) ;
   if (clusterizerName.IsNull() ) 
     clusterizerName = "Default" ; 
@@ -379,7 +431,6 @@ void AliPHOSClusterizerv1::InitParameters()
   clusterizerName.Append(Version()) ; 
   SetName(clusterizerName) ;
   fRecPointsInRun          = 0 ;
-  fCalibrationDB = 0 ;
 
 
 }
@@ -579,6 +630,7 @@ void AliPHOSClusterizerv1::MakeClusters()
 
     TArrayI clusterdigitslist(1500) ;   
     Int_t index ;
+   // cout << "digit " << digit << " " << Calibrate(digit->GetAmp(),digit->GetId()) << endl ;
 
     if (( IsInEmc (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fEmcClusteringThreshold  ) || 
         ( IsInCpv (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fCpvClusteringThreshold  ) ) {
@@ -699,12 +751,16 @@ void AliPHOSClusterizerv1::MakeUnfolding()
       
       if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0       
 	UnfoldCluster(emcRecPoint, nMax, maxAt, maxAtEnergy) ;
-	emcRecPoints->Remove(emcRecPoint); 
-	emcRecPoints->Compress() ;
-	index-- ;
-	fNumberOfEmcClusters -- ;
-	numberofNotUnfolded-- ;
+	if(emcRecPoint->GetNExMax()!=-1){ //Do not remove clusters which failed to unfold
+	  emcRecPoints->Remove(emcRecPoint); 
+	  emcRecPoints->Compress() ;
+	  index-- ;
+	  fNumberOfEmcClusters -- ;
+	  numberofNotUnfolded-- ;
+	}
       }
+      else
+	emcRecPoint->SetNExMax(1) ; //Only one local maximum
       
       delete[] maxAt ; 
       delete[] maxAtEnergy ; 
@@ -783,7 +839,8 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
 
   Bool_t rv = FindFit(iniEmc, maxAt, maxAtEnergy, nPar, fitparameters) ;
   if( !rv ) {
-    // Fit failed, return and remove cluster
+    // Fit failed, return 
+    iniEmc->SetNExMax(-1) ;
     delete[] fitparameters ; 
     return ;
   }
@@ -845,6 +902,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
       (*emcRecPoints)[fNumberOfEmcClusters] = new AliPHOSEmcRecPoint("") ;
       emcRP = (AliPHOSEmcRecPoint *) emcRecPoints->At(fNumberOfEmcClusters);
       fNumberOfEmcClusters++ ;
+      emcRP->SetNExMax((Int_t)nPar/3) ;
     }
     else{//create new entries in fCpvRecPoints
       if(fNumberOfCpvClusters >= cpvRecPoints->GetSize())
@@ -931,7 +989,10 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
 	 efit += x[iParam] * ShowerShape(distance) ;
 	 iParam++ ;
        }
-       Double_t sum = 2. * (efit - emcEnergies[iDigit]) / emcEnergies[iDigit] ; // Here we assume, that sigma = sqrt(E) 
+       Double_t sum=0 ;	
+       if(emcEnergies[iDigit] > 0)
+        sum = 2. * (efit - emcEnergies[iDigit]) / emcEnergies[iDigit] ; 
+       // Here we assume, that sigma = sqrt(E) 
        iParam = 0 ;
        while(iParam < nPar ){
 	 Double_t xpar = x[iParam] ;
@@ -965,7 +1026,9 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
        efit += epar * ShowerShape(distance) ;
      }
 
-     fret += (efit-emcEnergies[iDigit])*(efit-emcEnergies[iDigit])/emcEnergies[iDigit] ; 
+     if(emcEnergies[iDigit] > 0) //for the case if rounding error
+       fret += (efit-emcEnergies[iDigit])*(efit-emcEnergies[iDigit])/
+               emcEnergies[iDigit] ; 
      // Here we assume, that sigma = sqrt(E)
   }
 
@@ -1023,23 +1086,17 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
   TObjArray * emcRecPoints = AliPHOSGetter::GetInstance()->EmcRecPoints(BranchName()) ; 
   TObjArray * cpvRecPoints = AliPHOSGetter::GetInstance()->CpvRecPoints(BranchName()) ; 
 
-  TString message ; 
-  message  = "\nevent " ;
-  message += gAlice->GetEvNumber() ; 
-  message += "\n       Found " ; 
-  message += emcRecPoints->GetEntriesFast() ; 
-  message += "EMC RecPoints and " ;
-  message += cpvRecPoints->GetEntriesFast() ; 
-  message += " CPV RecPoints \n" ; 
- 
-  fRecPointsInRun +=  emcRecPoints->GetEntriesFast() ; 
-  fRecPointsInRun +=  cpvRecPoints->GetEntriesFast() ; 
-  
-  char * tempo = new char[8192]; 
+  if(strstr(option,"deb")){
+    printf("event %d, found %d EmcRecPoints and %d CPV RecPoints \n",
+           gAlice->GetEvNumber(), 
+	   emcRecPoints->GetEntriesFast(),
+	   cpvRecPoints->GetEntriesFast()) ; 
+  }
+    
   
   if(strstr(option,"all")) {
-    message += "\nEMC clusters\n" ;
-    message += "Index    Ene(MeV) Multi Module     X     Y   Z  Lambda 1 Lambda 2  # of prim  Primaries list\n" ;      
+    printf("\nEMC clusters\n" );
+    printf("Index    Ene(MeV) Multi Module     X     Y   Z  Lambda 1 Lambda 2  # of prim  Primaries list\n" );      
     Int_t index ;
     for (index = 0 ; index < emcRecPoints->GetEntries() ; index++) {
       AliPHOSEmcRecPoint * rp = (AliPHOSEmcRecPoint * )emcRecPoints->At(index) ; 
@@ -1050,20 +1107,19 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
       Int_t * primaries; 
       Int_t nprimaries;
       primaries = rp->GetPrimaries(nprimaries);
-      sprintf(tempo, "\n%6d  %8.2f  %3d     %2d     %4.1f    %4.1f %4.1f %4f  %4f    %2d     : ", 
+      printf("\n%6d  %8.2f  %3d     %2d     %4.1f    %4.1f %4.1f %4f  %4f    %2d     : ", 
 	      rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(), rp->GetPHOSMod(), 
 	      locpos.X(), locpos.Y(), locpos.Z(), lambda[0], lambda[1], nprimaries) ; 
-      message += tempo ; 
       
       for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-	sprintf(tempo, "%d ", primaries[iprimary] ) ; 
-	message += tempo ;
+	printf("%d ", primaries[iprimary] ) ; 
       }
-      
-      //Now plot CPV recPoints
-      message += "Index    Ene(MeV) Module     X     Y   Z  # of prim  Primaries list\n" ;      
-      for (index = 0 ; index < cpvRecPoints->GetEntries() ; index++) {
-	AliPHOSRecPoint * rp = (AliPHOSRecPoint * )cpvRecPoints->At(index) ; 
+    }      
+    //Now plot CPV recPoints
+    printf("\n CPV RecPoints \n") ;
+    printf("Index    Ene(MeV) Module     X     Y   Z  # of prim  Primaries list\n") ;      
+    for (index = 0 ; index < cpvRecPoints->GetEntries() ; index++) {
+        AliPHOSRecPoint * rp = (AliPHOSRecPoint * )cpvRecPoints->At(index) ; 
 	
 	TVector3  locpos;  
 	rp->GetLocalPosition(locpos);
@@ -1071,19 +1127,14 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
 	Int_t * primaries; 
 	Int_t nprimaries ; 
 	primaries = rp->GetPrimaries(nprimaries);
-	sprintf(tempo, "\n%6d  %8.2f  %2d     %4.1f    %4.1f %4.1f %2d     : ", 
+	printf("\n%6d  %8.2f  %2d     %4.1f    %4.1f %4.1f %2d     : ", 
 		rp->GetIndexInList(), rp->GetEnergy(), rp->GetPHOSMod(), 
 		locpos.X(), locpos.Y(), locpos.Z(), nprimaries) ; 
-	message += tempo ; 
 	primaries = rp->GetPrimaries(nprimaries);
 	for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-	  sprintf(tempo, "%d ", primaries[iprimary] ) ; 
-	  message += tempo ;
+	  printf("%d ", primaries[iprimary] ) ; 
 	}
       }
-    }
   }
-  delete tempo ; 
-  Info("Print", message.Data() ) ; 
 }
 

@@ -12,10 +12,10 @@
 //  results are stored in TreeR#, branches PHOSEmcRP (EMC recPoints),
 //  PHOSCpvRP (CPV RecPoints) and AliPHOSClusterizer
 //
-//*-- Author: Yves Schutz (SUBATECH)
+//*-- Author: Dmitri Peressounko (SUBATECH)
 
 // --- ROOT system ---
-
+#include "TArrayS.h"
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -25,7 +25,7 @@ class AliPHOSEmcRecPoint ;
 class AliPHOSDigit ;
 class AliPHOSDigitizer ;
 class AliPHOSGeometry ;
-class AliPHOSCalibrationDB ;
+class AliPHOSCalibrationData ;
 
 class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
   
@@ -67,6 +67,10 @@ public:
   virtual void SetCpvLogWeight(Float_t w)                { fW0CPV = w ; }
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    { fToUnfold = toUnfold ;}
   virtual void SetPirifyThreshold(Float_t threshold)     {fPurifyThreshold = threshold ;}
+  void SetCalibrVersion(const char* version = "v1",Int_t run=1)  //Provides specification of calibrationData
+    {fCalibrVersion = version ; fCalibrRun = run ;} 
+  void SetPatterns(TArrayS * pats){if(fPatterns) delete fPatterns ; 
+                                  fPatterns = new TArrayS(*pats) ;} 
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
@@ -108,7 +112,11 @@ private:
   Int_t   fNumberOfCpvClusters ;     // number of CPV clusters found
  
   //Calibration parameters
-  AliPHOSCalibrationDB * fCalibrationDB ; //! Calibration database if aval
+  AliPHOSCalibrationData * fPedestals ; //!
+  AliPHOSCalibrationData * fGains ;    //!
+  TArrayS                * fPatterns ;// Array of trigger patterns of events to handle
+  TString fCalibrVersion ;          //Version of calibration Data  
+  Int_t   fCalibrRun ;              //Specification of Calibration data
   Float_t fADCchanelEmc ;           // width of one ADC channel in GeV
   Float_t fADCpedestalEmc ;         //
   Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'
