@@ -21,6 +21,7 @@
 #include "AliMpReader.h"
 #include "AliMpSector.h"
 #include "AliMpSectorPosition.h"
+#include "AliMpIntPair.h"
 
 ClassImp(AliMpPlane)
 
@@ -30,7 +31,7 @@ ClassImp(AliMpPlane)
 
 //______________________________________________________________________________
 AliMpPlane* 
-AliMpPlane::Create(AliMpPlaneType type, 
+AliMpPlane::Create(AliMpStationType station, AliMpPlaneType type, 
                    const TVector2& q1Position, const TVector2& q2Position,
 	           const TVector2& q3Position, const TVector2& q4Position)
 {
@@ -38,12 +39,12 @@ AliMpPlane::Create(AliMpPlaneType type,
 // ---
 
   // Build sectors
-  AliMpReader bReader(kBendingPlane);
+  AliMpReader bReader(station, kBendingPlane);
   // bReader.SetVerboseLevel(1);
   AliMpSector* bSector = bReader.BuildSector();
   cout << "bending sector is built" << endl;
 
-  AliMpReader nbReader(kNonBendingPlane);
+  AliMpReader nbReader(station, kNonBendingPlane);
   // nbReader.SetVerboseLevel(1);
   AliMpSector* nbSector = nbReader.BuildSector();
   cout << "non-bending sector is built" << endl;
@@ -57,13 +58,13 @@ AliMpPlane::Create(AliMpPlaneType type,
 }
 
 //______________________________________________________________________________
-AliMpPlane* AliMpPlane::Create(AliMpPlaneType type) 
+AliMpPlane* AliMpPlane::Create(AliMpStationType station, AliMpPlaneType type) 
 {
 // Factory method for creating planes with 
 // not shifted qudrants.
 // ---
 
-  return Create(type, TVector2(), TVector2(), TVector2(), TVector2());
+  return Create(station, type, TVector2(), TVector2(), TVector2(), TVector2());
 }
 
 //

@@ -19,14 +19,16 @@
 #define ALI_MP_PLANE_H
 
 #include <TObject.h>
-#include <TVector2.h>
 
 #include "AliMpPlaneTypes.h"
+#include "AliMpStationType.h"
 #include "AliMpPlaneType.h"
-#include "AliMpIntPair.h"
+
+class TVector2;
 
 class AliMpSector;
 class AliMpSectorPosition;
+class AliMpIntPair;
 
 class AliMpPlane : public TObject
 {
@@ -38,10 +40,10 @@ class AliMpPlane : public TObject
     virtual ~AliMpPlane();
     
     // factory methods
-    static AliMpPlane* Create(AliMpPlaneType type,
+    static AliMpPlane* Create(AliMpStationType station, AliMpPlaneType type,
                const TVector2& q1Position, const TVector2& q2Position,
                const TVector2& q3Position, const TVector2& q4Position);
-    static AliMpPlane* Create(AliMpPlaneType type);
+    static AliMpPlane* Create(AliMpStationType station, AliMpPlaneType type);
     
     // methods
     const AliMpSectorPosition* SectorPosition(const AliMpIntPair& scale) const;
