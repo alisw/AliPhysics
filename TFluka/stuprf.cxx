@@ -73,12 +73,17 @@ extern "C" {
     Int_t done = 0;
 
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
+    Int_t kpart  = FINUC.kpart[numsec-1];
+    if (kpart < -6) return;
 
-    Int_t pdg = fluka->PDGFromId(FINUC.kpart[numsec-1]);
+    Int_t pdg = fluka->PDGFromId(kpart);
+
+    
     Double_t px = FINUC.plr[numsec-1] * FINUC.cxr[numsec-1];
     Double_t pz = FINUC.plr[numsec-1] * FINUC.cyr[numsec-1];
     Double_t py = FINUC.plr[numsec-1] * FINUC.czr[numsec-1];
     Double_t e  = FINUC.tki[numsec-1] + PAPROP.am[FINUC.kpart[numsec-1]+6];
+
     Double_t vx = xx;
     Double_t vy = yy;
     Double_t vz = zz;
