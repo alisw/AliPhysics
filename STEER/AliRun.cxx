@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.49  2001/01/26 19:58:48  hristov
+Major upgrade of AliRoot code
+
 Revision 1.48  2001/01/17 10:50:50  hristov
 Corrections to destructors
 
@@ -578,7 +581,8 @@ void AliRun::FinishEvent()
       fParticleFileMap[i]= (Int_t) fTreeK->GetEntries();
       fTreeK->Fill();
       (*fParticleMap)[i]=0;
-    } else printf("Why = 0 part # %d?\n",i);
+    } else //printf("Why = 0 part # %d?\n",i);
+      break;
   }
   
   // Write out the digits
