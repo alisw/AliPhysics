@@ -10,8 +10,6 @@
 #ifndef ALI_MP_SECTOR_H
 #define ALI_MP_SECTOR_H
 
-#include <vector>
-
 #include <TObject.h>
 #include <TString.h>
 #include <TVector2.h>
@@ -29,7 +27,7 @@ class AliMpMotifMap;
 class AliMpSector : public TObject
 {
   public:
-    AliMpSector(TString id, Int_t nofZones, Int_t nofRows,
+    AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
                 AliMpDirection direction);
     AliMpSector();
     virtual ~AliMpSector();

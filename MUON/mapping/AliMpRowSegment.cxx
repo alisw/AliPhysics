@@ -299,7 +299,8 @@ void AliMpRowSegment::SetGlobalIndices()
 }  
 
 //_____________________________________________________________________________
-Int_t AliMpRowSegment::SetIndicesToMotifPosition(Int_t i, AliMpIntPair indices)
+Int_t AliMpRowSegment::SetIndicesToMotifPosition(Int_t i, 
+                                 const AliMpIntPair& indices)
 {
 // Sets global indices to i-th motif position and returns next index
 // in x.
@@ -354,7 +355,7 @@ Int_t  AliMpRowSegment::GetMotifPositionId(Int_t i) const
 }  
 
 //_____________________________________________________________________________
-AliMpVMotif*  AliMpRowSegment::GetMotif(Int_t i) const
+AliMpVMotif*  AliMpRowSegment::GetMotif(Int_t /*i*/) const
 {
 // Returns the motif of this row segment.
 // ---

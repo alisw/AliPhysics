@@ -14,15 +14,16 @@
 #include <map>
 
 #include <TObject.h>
-#include <TString.h>
-#include <TVector2.h>
 
 #include "AliMpMotifTypes.h"
-#include "AliMpIntPair.h"
+
+class TString;
+class TVector2;
 
 class AliMpVMotif;
 class AliMpMotifType;
 class AliMpMotifPosition;
+class AliMpMotifMap;
 
 class AliMpMotifMap : public TObject
 {
@@ -35,17 +36,17 @@ class AliMpMotifMap : public TObject
     Bool_t  AddMotifType(AliMpMotifType* motifType, Bool_t warn = true);
     Bool_t  AddMotifPosition(AliMpMotifPosition* motifType, Bool_t warn = true);
     void   FillMotifPositionMap2();
-    void   Print() const;
+    virtual void Print(const char* /*option*/ = "") const;
     void   PrintGlobalIndices(const char* fileName) const;
     void   UpdateGlobalIndices(const char* fileName);
    
     // find methods
     AliMpVMotif*  FindMotif(const TString& motifID) const;
     AliMpVMotif*  FindMotif(const TString& motifID, const TString& motifTypeID, 
-                            TVector2 padDimensions) const;
+                            const TVector2& padDimensions) const;
     AliMpMotifType*      FindMotifType(const TString& motifTypeID) const;
     AliMpMotifPosition*  FindMotifPosition(Int_t motifPositionID) const;
-    AliMpMotifPosition*  FindMotifPosition(AliMpIntPair indices) const;
+    AliMpMotifPosition*  FindMotifPosition(const AliMpIntPair& indices) const;
 
   private:
     // methods
@@ -53,9 +54,6 @@ class AliMpMotifMap : public TObject
     void  PrintMotifTypes() const;
     void  PrintMotifPositions() const;
     void  PrintMotifPositions2() const;
-
-    // unused derrived functions
-    virtual void Print(const char* option) const {}
  
 #ifdef __HP_aCC
     // data members

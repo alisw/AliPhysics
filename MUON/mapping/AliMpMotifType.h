@@ -12,8 +12,6 @@
 
 #include <TObject.h>
 #include <TString.h>
-#include <TVector2.h>
-#include <TObjArray.h>
 
 #include "AliMpMotifTypes.h"
 #include "AliMpIntPair.h"
@@ -32,7 +30,8 @@ class AliMpMotifType : public TObject
 
     // find methods
     AliMpConnection *FindConnectionByPadNum(Int_t padNum) const;
-    AliMpConnection *FindConnectionByLocalIndices(AliMpIntPair localIndices) const;
+    AliMpConnection *FindConnectionByLocalIndices(
+                               const AliMpIntPair& localIndices) const;
     AliMpConnection *FindConnectionByGassiNum(Int_t gassiNum) const;
     AliMpConnection *FindConnectionByKaptonNum(Int_t kaptonNum) const;
     AliMpConnection *FindConnectionByBergNum(Int_t bergNum) const;
@@ -64,7 +63,7 @@ class AliMpMotifType : public TObject
 
   private:
     // static data members
-    static const Int_t   fgkPadNumForA;
+    static const Int_t   fgkPadNumForA; // the pad number for the pad "A"
 
     // data members
     TString   fID;        // unique motif ID

@@ -17,6 +17,7 @@
 
 class AliMpRow;
 class AliMpVMotif;
+class AliMpIntPair;
 
 class AliMpRowSegment : public AliMpVRowSegment
 {
@@ -44,12 +45,13 @@ class AliMpRowSegment : public AliMpVRowSegment
     // set methods
     virtual void      SetOffset(const TVector2& offset);
     virtual void      SetGlobalIndices();
-    virtual Int_t     SetIndicesToMotifPosition(Int_t i, AliMpIntPair indices);
+    virtual Int_t     SetIndicesToMotifPosition(Int_t i, 
+                                const AliMpIntPair& indices);
 
     // get methods
     virtual AliMpRow*     GetRow() const;
     virtual Int_t         GetNofMotifs() const;
-    virtual AliMpVMotif*  GetMotif(Int_t i) const;
+    virtual AliMpVMotif*  GetMotif(Int_t /*i*/) const;
     virtual Int_t         GetMotifPositionId(Int_t i) const;
 
   private:
