@@ -21,10 +21,15 @@ class AliRICHHit : public AliHit {
     Float_t   fPHfirst;       // first padhit
     Float_t   fPHlast;        // last padhit
     Float_t   fLoss;          // did it hit the freon?
-    Float_t   fMomX;            // Local Momentum
-    Float_t   fMomY;            // Local Momentum
-    Float_t   fMomZ;            // Local Momentum
-    Float_t   fNPads;           // Pads hit
+    Float_t   fMomX;          // x Momentum at photochatode entry point
+    Float_t   fMomY;          // y Momentum at photochatode entry point
+    Float_t   fMomZ;          // z Momentum at photochatode entry point
+    Float_t   fNPads;         // Pads hit
+    Float_t   fCerenkovAngle; // Dummy cerenkov angle
+    Float_t   fMomFreoX;      // x Momentum at freon entry point
+    Float_t   fMomFreoY;      // y Momentum at freon entry point
+    Float_t   fMomFreoZ;      // z Momentum at freon entry point		   
+
  public:
     AliRICHHit() {}
     AliRICHHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/12 15:23:26  jbarbosa
+  Cleaned up version.
+
 */
 
 
@@ -41,4 +44,8 @@ AliRICHHit::AliRICHHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
     fMomY=hits[15];
     fMomZ=hits[16];
     fNPads=hits[17];
+    fCerenkovAngle=hits[18];
+    fMomFreoX=hits[19];
+    fMomFreoY=hits[20];
+    fMomFreoZ=hits[21];
 }
