@@ -30,6 +30,7 @@ OBJDIR = lib
 ifeq ($(USEPACKAGE),ROOT) 
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp
 DEFSTR = -Duse_root
+OBJDIR = lib_ROOT
 endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
@@ -96,13 +97,10 @@ $(LIBDIR) :
 clean :
 	rm -f $(OBJDIR)/*.o
 	rm -f $(LIBDIR)/libAliL3.so
-	rm $(DICT) $(DICTH) 
+	rm -f $(DICT) $(DICTH) 
 
 so :
 	rm -f $(LIBDIR)/libAliL3.so
-
-
-
 
 
 
