@@ -91,7 +91,7 @@ class AliL3Transform {
   static Double_t Row2X(Int_t slicerow);
   static Double_t GetMaxY(Int_t slicerow);
   static Double_t GetEta(Float_t *xyz);
-  static Double_t GetEta(Int_t row, Int_t pad, Int_t time);
+  static Double_t GetEta(Int_t slice,Int_t padrow, Int_t pad, Int_t time);
   static Double_t GetPhi(Float_t *xyz);
 
   static void XYZtoRPhiEta(Float_t *rpe, Float_t *xyz);

@@ -762,11 +762,11 @@ void AliL3Transform::XYZtoRPhiEta(Float_t *rpe, Float_t *xyz)
   rpe[2] = 0.5 * log((rpe[0]+xyz[2])/(rpe[0]-xyz[2]));
 }
 
-Double_t AliL3Transform::GetEta(Int_t padrow,Int_t pad,Int_t time)
+Double_t AliL3Transform::GetEta(Int_t slice,Int_t padrow,Int_t pad,Int_t time)
 {
   Float_t xyz[3];
   Int_t sector,row;
-  Slice2Sector(0,padrow,sector,row);
+  Slice2Sector(slice,padrow,sector,row);
   Raw2Local(xyz,sector,row,pad,time);
   
   return GetEta(xyz);
