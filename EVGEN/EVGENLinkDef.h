@@ -55,6 +55,7 @@
 #pragma link C++ class  AliGeVSimParticle+;
 #pragma link C++ class  AliGenBeamGas+;
 #pragma link C++ class  AliGenAfterBurnerFlow+;
+#pragma link C++ class  AliPartonicEnergyLoss+;
 #endif
 
 
