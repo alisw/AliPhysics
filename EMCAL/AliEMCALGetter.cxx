@@ -41,7 +41,6 @@
 // --- ROOT system ---
 
 #include "TSystem.h"
-#include "TFile.h"
 #include "TROOT.h"
 
 
@@ -396,7 +395,7 @@ TClonesArray * AliEMCALGetter::Primaries()
   // creates the Primaries container if needed
   if ( !fPrimaries ) {
     if (fgDebug) 
-      printf("Primaries: Creating a new TClonesArray for primaries") ; 
+      Info("Primaries", "Creating a new TClonesArray for primaries") ; 
     fPrimaries = new TClonesArray("TParticle", 1000) ;
   } 
   return fPrimaries ; 
@@ -408,7 +407,7 @@ void  AliEMCALGetter::Print()
   // Print usefull information about the getter
     
   AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
-  printf("Print: gAlice file is %s -- version name is %s", (rl->GetFileName()).Data(), rl->GetEventFolder()->GetName() ) ; 
+  ::Info("Print", "gAlice file is %s -- version name is %s", (rl->GetFileName()).Data(), rl->GetEventFolder()->GetName() ) ; 
 }
 
 //____________________________________________________________________________ 
@@ -425,7 +424,7 @@ void AliEMCALGetter::ReadPrimaries()
   fNPrimaries = rl->Stack()->GetNtrack() ; 
 
   if (fgDebug) 
-    printf("ReadTreeK: Found %d particles in event # %d", fNPrimaries, EventNumber() ) ; 
+    Info("ReadTreeK", "Found %d particles in event # %d", fNPrimaries, EventNumber() ) ; 
 
 
   // first time creates the container
@@ -546,7 +545,7 @@ TClonesArray * AliEMCALGetter::SDigits() const
 //____________________________________________________________________________ 
 AliEMCALSDigitizer * AliEMCALGetter::SDigitizer() 
 { 
-  // return pointer to SDigitizer Tree
+  // Return pointer to SDigitizer task
   AliEMCALSDigitizer * rv ; 
   rv =  dynamic_cast<AliEMCALSDigitizer *>(EmcalLoader()->SDigitizer()) ;
   if (!rv) {

@@ -58,21 +58,13 @@
 ///_________________________________________________________________________________
 
 // --- ROOT system ---
-#include "TFile.h"
 #include "TTree.h"
 #include "TSystem.h"
-#include "TROOT.h"
-#include "TFolder.h"
-#include "TObjString.h"
-#include "TGeometry.h"
 #include "TBenchmark.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliRun.h"
-#include "AliHeader.h"
-#include "AliStream.h"
 #include "AliRunDigitizer.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCAL.h"
@@ -178,8 +170,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 
   const AliEMCALGeometry *geom = gime->EMCALGeometry() ; 
 
-  Int_t nEMC = 0 ;
-  nEMC = geom->GetNPhi()*geom->GetNZ(); //max number of digits possible
+  Int_t nEMC = geom->GetNPhi()*geom->GetNZ(); //max number of digits possible
   
   Int_t absID ;
 
