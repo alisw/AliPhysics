@@ -326,20 +326,20 @@ endif
 		@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
 		@share/alibtool depend "$(@PACKAGE@DEFINE) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC) $<" > $@
 
-@PACKAGE@CHECKS := $(patsubst %.cxx,@PACKAGE@/check/%.viol,$(SRCS))
+@PACKAGE@CHECKS := $(patsubst %.cxx,@MODULE@/check/%.viol,$(SRCS))
 
-check-@PACKAGE@: $(@PACKAGE@CHECKS)
+check-@MODULE@: $(@PACKAGE@CHECKS)
 
 # IRST coding rule check 
-@PACKAGE@/check/%.i : @PACKAGE@/%.cxx
+@MODULE@/check/%.i : @MODULE@/%.cxx
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	$(MUTE)$(CXX) -E $(@PACKAGE@DEFINE) $(@PACKAGE@INC) $< > $@ $(@PACKAGE@CXXFLAGS)
 	@cd $(dir $@) ; $(IRST_INSTALLDIR)/patch/patch4alice.prl $(notdir $@)
 
 # IRST coding rule check
-@PACKAGE@/check/%.viol : @PACKAGE@/check/%.i
-	@cd @PACKAGE@ ; [ -r @PACKAGE@ ] || ln -s ../@PACKAGE@ @PACKAGE@
-	-@echo $@ ; $(CODE_CHECK) $< ./@PACKAGE@ > $@
+@MODULE@/check/%.viol : @MODULE@/check/%.i
+	@cd @MODULE@ ; [ -r @MODULE@ ] || ln -s ../@MODULE@ @MODULE@
+	-@echo $@ ; $(CODE_CHECK) $< ./@MODULE@ > $@
 
 @PACKAGE@PREPROC       = $(patsubst %.viol,%.i,$(@PACKAGE@CHECKS))
 

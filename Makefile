@@ -301,11 +301,13 @@ endif
 
 clean-aliroot:   $(patsubst %,%/module.mk,$(ALIROOTMODULES)) $(patsubst %,clean-%,$(ALIROOTMODULES))
 
-CHECKMODULES := $(ALIROOTMODULES)
+CHECKMODULES := $(MODULES)
 CHECKMODULES := $(filter-out HBTP,$(CHECKMODULES))
 CHECKMODULES := $(filter-out MEVSIM,$(CHECKMODULES))
 CHECKMODULES := $(filter-out EPEMGEN,$(CHECKMODULES))
 CHECKMODULES := $(filter-out TPHIC,$(CHECKMODULES))
+CHECKMODULES := $(filter-out PDF,$(CHECKMODULES))
+CHECKMODULES := $(filter-out MICROCERN,$(CHECKMODULES))
 
 check-all:			$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,check-%,$(CHECKMODULES))
 
