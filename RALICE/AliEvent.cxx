@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.24 2004/07/06 13:34:16 nick Exp $
+// $Id: AliEvent.cxx,v 1.25 2004/10/20 10:49:44 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -244,7 +244,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2004/07/06 13:34:16 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2004/10/20 10:49:44 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -731,6 +731,24 @@ TObject* AliEvent::GetDevice(TString name) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+TObject* AliEvent::GetIdDevice(Int_t id) const
+{
+// Return the device with unique identifier "id".
+ if (!fDevices || id<0) return 0;
+
+ Int_t idx=0;
+ for (Int_t i=0; i<GetNdevices(); i++)
+ {
+  TObject* dev=fDevices->At(i);
+  if (dev)
+  {
+   idx=dev->GetUniqueID();
+   if (idx==id) return dev;
+  }
+ }
+ return 0; // No matching id found
+}
+///////////////////////////////////////////////////////////////////////////
 void AliEvent::ShowDevices() const
 {
 // Provide an overview of the available devices.
@@ -745,7 +763,7 @@ void AliEvent::ShowDevices() const
    {
     const char* name=dev->GetName();
     cout << " Device number : " << i;
-    cout << " Class : " << dev->ClassName();
+    cout << " Class : " << dev->ClassName() << " Id : " << dev->GetUniqueID();
     if (strlen(name)) cout << " Name : " << name;
     if (dev->InheritsFrom("AliDevice")) cout << " Nhits : " << ((AliDevice*)dev)->GetNhits();
     cout << endl;
@@ -781,6 +799,28 @@ TObjArray* AliEvent::GetHits(const char* classname)
 // it is more efficient to use the GetDevice() memberfunction directly.
  LoadHits(classname);
  return fHits;
+}
+///////////////////////////////////////////////////////////////////////////
+AliSignal* AliEvent::GetIdHit(Int_t id,const char* classname)
+{
+// Return the hit with unique identifier "id" for the specified device class.
+ if (id<0) return 0;
+
+ Int_t nhits=GetNhits(classname);
+ if (!nhits) return 0;
+
+ AliSignal* sx=0;
+ Int_t sid=0;
+ for (Int_t i=0; i<nhits; i++)
+ {
+  sx=(AliSignal*)fHits->At(i);
+  if (sx)
+  {
+   sid=sx->GetUniqueID();
+   if (id==sid) return sx;
+  }
+ }
+ return 0; // No matching id found
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::LoadHits(const char* classname)

@@ -25,6 +25,7 @@ class AliDevice : public AliSignal
   void RemoveHits();                                 // Remove all AliSignals as hits from this module
   Int_t GetNhits() const;                            // Provide number of registered hits
   AliSignal* GetHit(Int_t j) const;                  // Access to the AliSignal registered as hit number j
+  AliSignal* GetIdHit(Int_t id) const;               // Provide the hit with unique identifier "id"
   TObjArray* GetHits();                              // Provide the references to all the registered hits
   virtual void Reset(Int_t mode=0);                  // Reset registered hits and AliSignal attributes
   void ShowHit(Int_t j=0) const;                     // Show data of the j-th hit (j=0 means all hits)
@@ -42,6 +43,6 @@ class AliDevice : public AliSignal
   TObjArray* fOrdered; //! Temp. array to hold the ordered hits
   TObjArray* fMarkers; //! Temp. array to hold the 3D markers for the hit display
 
- ClassDef(AliDevice,4) // Signal (Hit) handling of a generic device.
+ ClassDef(AliDevice,5) // Signal (Hit) handling of a generic device.
 };
 #endif

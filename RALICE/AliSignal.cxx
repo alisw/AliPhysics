@@ -195,6 +195,9 @@ void AliSignal::Reset(Int_t mode)
 // The default when invoking Reset() corresponds to mode=0.
 //
 // Note : In all cases the storage of the various links will be reset.
+//        The UniqueID, name and title will NOT be reset.
+//        In case the user wants to reset these attributes, this has to
+//        be done explicitly via the SET facilities. 
 //
 // The usage of mode=0 allows to re-use the allocated memory for new
 // signal (and error) values. This behaviour is preferable (i.e. faster)
@@ -546,7 +549,7 @@ void AliSignal::Data(TString f) const
  const char* name=GetName();
  const char* title=GetTitle();
 
- cout << " *" << ClassName() << "::Data*";
+ cout << " *" << ClassName() << "::Data* Id :" << GetUniqueID();
  if (strlen(name))  cout << " Name : " << name;
  if (strlen(title)) cout << " Title : " << title;
  cout << endl;

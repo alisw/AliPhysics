@@ -312,6 +312,25 @@ AliSignal* AliDevice::GetHit(Int_t j) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+AliSignal* AliDevice::GetIdHit(Int_t id) const
+{
+// Return the hit with unique identifier "id".
+ if (!fHits || id<0) return 0;
+
+ AliSignal* sx=0;
+ Int_t sid=0;
+ for (Int_t i=0; i<GetNhits(); i++)
+ {
+  sx=(AliSignal*)fHits->At(i);
+  if (sx)
+  {
+   sid=sx->GetUniqueID();
+   if (id==sid) return sx;
+  }
+ }
+ return 0; // No matching id found
+}
+///////////////////////////////////////////////////////////////////////////
 TObjArray* AliDevice::GetHits()
 {
 // Provide the references to all the registered hits.

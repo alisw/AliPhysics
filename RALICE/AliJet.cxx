@@ -426,22 +426,15 @@ AliTrack* AliJet::GetTrack(Int_t i) const
 AliTrack* AliJet::GetIdTrack(Int_t id) const
 {
 // Return the track with user identifier "id" of this jet
+ if (!fTracks) return 0;
+
  AliTrack* tx=0;
- AliTrack* t=0;
- if (!fTracks)
+ for (Int_t i=0; i<fNtrk; i++)
  {
-  cout << " *AliJet*::GetIdTrack* No tracks present." << endl;
-  return 0;
+  tx=(AliTrack*)fTracks->At(i);
+  if (id == tx->GetId()) return tx;
  }
- else
- {
-  for (Int_t i=0; i<fNtrk; i++)
-  {
-   tx=(AliTrack*)fTracks->At(i);
-   if (id == tx->GetId()) t=tx;
-  }
-  return t;
- }
+ return 0; // No matching id found
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliJet::GetPt()

@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.18 2004/07/06 13:34:17 nick Exp $
+// $Id: AliEvent.h,v 1.19 2004/10/20 10:49:44 nick Exp $
 
 #include <math.h>
  
@@ -51,9 +51,11 @@ class AliEvent : public AliVertex
   Int_t GetNdevices() const;              // Provide the number of devices
   void ShowDevices() const;               // Provide on overview of the available devices
   TObject* GetDevice(Int_t i) const;      // Provide i-th device of the event
-  TObject* GetDevice(TString name) const; // Provide device with name "name"
+  TObject* GetDevice(TString name) const; // Provide the device with name "name"
+  TObject* GetIdDevice(Int_t id) const;   // Provide the device with unique identifier "id"
   Int_t GetNhits(const char* classname);  // Provide number of hits for the specified device class
   TObjArray* GetHits(const char* classname); // Provide refs to all hits of the specified device class 
+  AliSignal* GetIdHit(Int_t id,const char* classname); // Provide hit with unique "id" for the specified device class
   TObjArray* SortHits(const char* classname,TString name,Int_t mode=-1); // Sort hits by named signal value
   TObjArray* SortHits(const char* classname,Int_t idx=1,Int_t mode=-1);  // Sort hits by indexed signal value
   void GetExtremes(const char* classname,Float_t& vmin,Float_t& vmax,Int_t idx=1); // Get min. and max. signal value
@@ -84,6 +86,6 @@ class AliEvent : public AliVertex
   TObjArray* fOrdered;                  //! Temp. array to hold references to various ordered objects
   TObject* fDisplay;                    //! Temp. pointer to hold objects which serve event displays
 
- ClassDef(AliEvent,16) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,17) // Creation and investigation of an Alice physics event.
 };
 #endif

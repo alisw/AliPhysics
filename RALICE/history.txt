@@ -538,3 +538,8 @@
 13-oct-2004 NvE Hit investigation facilities extended in AliDevice and AliEvent.
 15-oct-2004 NvE Optimisation of MC parameters for nucleus-nucleus and astrophysics processes introduced
                 in AliCollider. Also facilities added to provide full user control.
+26-nov-2004 NvE Printout of UniqueID added in AliSignal::Data() and AliEvent::ShowDevices() in view of
+                addressing specific signals or devices during data analysis.
+                Memberfunction GetIdHit introduced in AliDevice and AliEvent and AliJet::GetIdTrack
+                optimised for speed.
+                Memberfunction GetIdDevice introduced in AliEvent.
