@@ -47,44 +47,55 @@ void MUONQuarkoniaPtDistri(char * MUONmassPlotFile="MUONmassPlot.root", Int_t NR
   Float_t *Sigma = new Float_t[NumberOfPoints];
   Float_t *e_Sigma = new Float_t[NumberOfPoints];
 
-  TH1D * hInvMassAll[NumberOfPoints];
-  TH1D * hInvMassBgk[NumberOfPoints];
-  TH1D * hInvMassSub[NumberOfPoints];
+  TH1D * hInvMassAll[NumberOfPoints+1];
+  TH1D * hInvMassBgk[NumberOfPoints+1];
+  TH1D * hInvMassSub[NumberOfPoints+1];
 
   char histoname[60];
 
   Int_t ibin, ibin1,ibin2,  ipoint;
   Int_t integral1, integral2;
-  for(ipoint=0; ipoint<NumberOfPoints; ipoint++) {
-    ibin1 = ipoint * NRes;
-    ibin2 = ibin1+  NRes;
-    pT[ipoint]=0.;
-    e_pT[ipoint]=0.;
-    dNdpT[ipoint]=0.;
-    e_dNdpT[ipoint]=0.;
-    for(ibin=ibin1; ibin<ibin2; ibin++) {
-      pT[ipoint]+=hInvMassAll_vs_Pt->GetYaxis()->GetBinCenter(ibin);
+  for(ipoint=0; ipoint<=NumberOfPoints; ipoint++) {
+
+    if (ipoint!=NumberOfPoints) {
+      ibin1 = ipoint * NRes;
+      ibin2 = ibin1+  NRes;
+      pT[ipoint]=0.;
+      e_pT[ipoint]=0.;
+      dNdpT[ipoint]=0.;
+      e_dNdpT[ipoint]=0.;
+      for(ibin=ibin1; ibin<ibin2; ibin++) {
+	pT[ipoint]+=hInvMassAll_vs_Pt->GetYaxis()->GetBinCenter(ibin);
+      }
+      pT[ipoint]/=NRes;
+      pT1[ipoint]=pT[ipoint];
+      pT2[ipoint]=pT[ipoint];
+      
+      e_pT[ipoint] = (hInvMassAll_vs_Pt->GetYaxis()->GetBinCenter(ibin2)-hInvMassAll_vs_Pt->GetYaxis()->GetBinCenter(ibin1))/2.;
+      e_pT1[ipoint]=e_pT[ipoint];
+      e_pT2[ipoint]=e_pT[ipoint];
+    } 
+    else {
+      ibin1 = 0;
+      ibin2 = Nbins;
     }
-    pT[ipoint]/=NRes;
-    pT1[ipoint]=pT[ipoint];
-    pT2[ipoint]=pT[ipoint];
 
-    e_pT[ipoint] = (hInvMassAll_vs_Pt->GetYaxis()->GetBinCenter(ibin2)-hInvMassAll_vs_Pt->GetYaxis()->GetBinCenter(ibin1))/2.;
-    e_pT1[ipoint]=e_pT[ipoint];
-    e_pT2[ipoint]=e_pT[ipoint];
 
-    sprintf(histoname,"hInvMassAll_%2.0f",100*pT[ipoint]);
+    if (ipoint!=NumberOfPoints) sprintf(histoname,"hInvMassAll_%2.0f",100*pT[ipoint]);
+    else sprintf(histoname,"hInvMassAll_full");
     TH1D * nume = hInvMassAll_vs_Pt->ProjectionX("nume",ibin1,ibin2-1);
     hInvMassAll[ipoint] =  new TH1D(*nume);
     hInvMassAll[ipoint]->SetName(histoname); hInvMassAll[ipoint]->SetTitle(histoname);
     hInvMassAll[ipoint]->Sumw2();
 
-    sprintf(histoname,"hInvMassSub_%2.0f",100*pT[ipoint]);
+    if (ipoint!=NumberOfPoints)  sprintf(histoname,"hInvMassSub_%2.0f",100*pT[ipoint]);
+    else sprintf(histoname,"hInvMassSub_full");
     hInvMassSub[ipoint] =  new TH1D(*nume);
     hInvMassSub[ipoint]->SetName(histoname); hInvMassSub[ipoint]->SetTitle(histoname);
     hInvMassSub[ipoint]->Sumw2();
 
-    sprintf(histoname,"hInvMassBgk_%2.0f",100*pT[ipoint]);
+    if (ipoint!=NumberOfPoints)  sprintf(histoname,"hInvMassBgk_%2.0f",100*pT[ipoint]);
+    else sprintf(histoname,"hInvMassBgk_full");
     TH1D * deno = hInvMassBgk_vs_Pt->ProjectionX("deno",ibin1,ibin2-1);
     hInvMassBgk[ipoint]=  new TH1D(*deno);
     hInvMassBgk[ipoint]->SetName(histoname);hInvMassBgk[ipoint]->SetTitle(histoname);
@@ -92,17 +103,29 @@ void MUONQuarkoniaPtDistri(char * MUONmassPlotFile="MUONmassPlot.root", Int_t NR
 
     hInvMassSub[ipoint]->Add(hInvMassBgk[ipoint],-1.);
     hInvMassSub[ipoint]->Fit("gaus","","",InvMass1,InvMass2);
-    Cent[ipoint] = hInvMassSub[ipoint]->GetFunction("gaus")->GetParameter(1);
-    e_Cent[ipoint] = hInvMassSub[ipoint]->GetFunction("gaus")->GetParError(1);
-    Sigma[ipoint] = hInvMassSub[ipoint]->GetFunction("gaus")->GetParameter(2);
-    e_Sigma[ipoint] = hInvMassSub[ipoint]->GetFunction("gaus")->GetParError(2);
+
     integral1 = hInvMassSub[ipoint]->FindBin( (hInvMassSub[ipoint]->GetFunction("gaus")->GetParameter(1)-2.*hInvMassSub[ipoint]->GetFunction("gaus")->GetParameter(2) ) );
     integral2 = hInvMassSub[ipoint]->FindBin( (hInvMassSub[ipoint]->GetFunction("gaus")->GetParameter(1)+2.*hInvMassSub[ipoint]->GetFunction("gaus")->GetParameter(2) ) );
-    dNdpT[ipoint] = hInvMassSub[ipoint]->Integral(integral1,integral2);
-    for(ibin=integral1; ibin<=integral2; ibin++) {
-      e_dNdpT[ipoint]+=hInvMassSub[ipoint]->GetBinContent(ibin)*hInvMassSub[ipoint]->GetBinContent(ibin);
+
+    // Renormalisation to take into account the resonance statistics
+    if ( hInvMassBgk[ipoint]->Integral()>0.) {
+      Float_t renormalisation = (hInvMassBgk[ipoint]->Integral() - hInvMassSub[ipoint]->Integral(integral1,integral2))/hInvMassBgk[ipoint]->Integral();
+      hInvMassBgk[ipoint]->Scale(renormalisation);
+      hInvMassSub[ipoint]->Reset("ICE");
+      hInvMassSub[ipoint]->Add(hInvMassAll[ipoint],+1.);
+      hInvMassSub[ipoint]->Add(hInvMassBgk[ipoint],-1.);
     }
-    e_dNdpT[ipoint] = TMath::Sqrt( e_dNdpT[ipoint]);
+    if (ipoint!=NumberOfPoints) { 
+      Cent[ipoint] = hInvMassSub[ipoint]->GetFunction("gaus")->GetParameter(1);
+      e_Cent[ipoint] = hInvMassSub[ipoint]->GetFunction("gaus")->GetParError(1);
+      Sigma[ipoint] = hInvMassSub[ipoint]->GetFunction("gaus")->GetParameter(2);
+      e_Sigma[ipoint] = hInvMassSub[ipoint]->GetFunction("gaus")->GetParError(2);
+      dNdpT[ipoint] = hInvMassSub[ipoint]->Integral(integral1,integral2);
+      for(ibin=integral1; ibin<=integral2; ibin++) {
+	e_dNdpT[ipoint]+=hInvMassSub[ipoint]->GetBinContent(ibin)*hInvMassSub[ipoint]->GetBinContent(ibin);
+      }
+      e_dNdpT[ipoint] = TMath::Sqrt( e_dNdpT[ipoint]);
+    }
   }
 
   MUONmassPlot.Close();
@@ -178,5 +201,43 @@ void MUONQuarkoniaPtDistri(char * MUONmassPlotFile="MUONmassPlot.root", Int_t NR
     hInvMassSub[i]->SetYTitle("Counts (1/25 MeV)");
     hInvMassSub[i]->Draw();
   }
+
+  TCanvas *c6 =new TCanvas("c6","c6"); 
+  c6->Divide(2,1);
+  c6->cd(1);
+  izoom1 = hInvMassSub[NumberOfPoints]->FindBin( (hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(1)-15.*hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(2) ) );
+  izoom2 = hInvMassSub[NumberOfPoints]->FindBin( (hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(1)+15.*hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(2) ) );
+  c4->cd(i);
+  hInvMassAll[NumberOfPoints]->SetXTitle("Invariant Mass (GeV/C^{2})");
+  hInvMassAll[NumberOfPoints]->SetYTitle("Counts (1/25 MeV)");
+  hInvMassAll[NumberOfPoints]->GetXaxis()->SetRange(izoom1,izoom2);
+  hInvMassAll[NumberOfPoints]->Draw();
+  hInvMassBgk[NumberOfPoints]->SetLineColor(4);
+  hInvMassBgk[NumberOfPoints]->Draw("histo,same");
+  c6->cd(2);
+  izoom1 = hInvMassSub[NumberOfPoints]->FindBin( (hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(1)-15.*hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(2) ) );
+  izoom2 = hInvMassSub[NumberOfPoints]->FindBin( (hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(1)+15.*hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(2) ) );
+  hInvMassSub[NumberOfPoints]->GetXaxis()->SetRange(izoom1,izoom2);
+  hInvMassSub[NumberOfPoints]->SetXTitle("Invariant Mass (GeV/C^{2})");
+  hInvMassSub[NumberOfPoints]->SetYTitle("Counts (1/25 MeV)");
+  hInvMassSub[NumberOfPoints]->Draw(); 
+
+  //Number of resonances
+  
+    integral1 = hInvMassSub[NumberOfPoints]->FindBin( (hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(1)-2.*hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(2) ) );
+    integral2 = hInvMassSub[NumberOfPoints]->FindBin( (hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(1)+2.*hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(2) ) );
+    
+    Int_t   NumberOfResonances = hInvMassSub[NumberOfPoints]->Integral(integral1,integral2);
+    Int_t e_NumberOfResonances = 0;
+    for(ibin=integral1; ibin<=integral2; ibin++) {
+      e_NumberOfResonances+=hInvMassSub[NumberOfPoints]->GetBinContent(ibin)*hInvMassSub[NumberOfPoints]->GetBinContent(ibin);
+    }
+    e_NumberOfResonances= TMath::Sqrt( e_NumberOfResonances);
+    printf(">>> Number of resonances is %d+-%d in the inv mass range (2sigma) %f, %f \n",NumberOfResonances,e_NumberOfResonances,
+	   hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(1)-2.*hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(2) ,
+	   hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(1)+2.*hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(2) );;
+
+    printf(">>> Centroide is %f +-%f GeV\n", hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(1), hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParError(1));
+    printf(">>> Sigma is %f +-%f MeV \n", 1000.*hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParameter(2), 1000.*hInvMassSub[NumberOfPoints]->GetFunction("gaus")->GetParError(2));
 
 }
