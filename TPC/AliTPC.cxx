@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.32  2001/03/12 17:47:36  hristov
+Changes needed on Sun with CC 5.0
+
 Revision 1.31  2001/03/12 08:21:50  kowal2
 Corrected C++ bug in the material definitions
 
@@ -682,7 +685,24 @@ void AliTPC::CreateMaterials()
 
   AliMixture(44,"Plexiglas",amat,zmat,density,-3,wmat);
 
+  // Lexan - I use it for epoxy - similar X0 C16H14O3
 
+  
+  amat[0]=12.011;
+  amat[1]=1.;
+  amat[2]=15.9994;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+  zmat[2]=8.;
+
+  wmat[0]=16.;
+  wmat[1]=1.;
+  wmat[2]=3.;
+
+  density=1.2;
+
+  AliMixture(45,"Epoxy",amat,zmat,density,-3,wmat);
 
   //----------------------------------------------------------
   // tracking media for gases
@@ -707,6 +727,7 @@ void AliTPC::CreateMaterials()
   AliMedium(11,"Si",41,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
   AliMedium(12,"G10",39,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
   AliMedium(13,"Plexiglas",44,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(14,"Epoxy",45,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
     
 }
 
@@ -1184,7 +1205,7 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
     TObjArray **row;
     
-      printf("*** Processing sector number %d ***\n",isec);
+    //printf("*** Processing sector number %d ***\n",isec);
 
       Int_t nrows =fTPCParam->GetNRow(isec);
 
@@ -1205,15 +1226,16 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
       for (i=0;i<nrows;i++){
 
-	AliDigits * dig = fDigitsArray->CreateRow(isec,i); 
+       	AliDigits * dig = fDigitsArray->CreateRow(isec,i); 
 
 	DigitizeRow(i,isec,row);
 
 	fDigitsArray->StoreRow(isec,i);
 
 	Int_t ndig = dig->GetDigitSize(); 
+        
  
-	printf("*** Sector, row, compressed digits %d %d %d ***\n",isec,i,ndig);
+	//printf("*** Sector, row, compressed digits %d %d %d ***\n",isec,i,ndig);
 	
         fDigitsArray->ClearRow(isec,i);  
 
