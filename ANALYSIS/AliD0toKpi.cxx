@@ -15,13 +15,12 @@
 
 //----------------------------------------------------------------------------
 //               Implementation of the D0toKpi class
-//
+//      for pp and PbPb interactions
 // Note: the two decay tracks are labelled: 0 (positive track)
 //                                          1 (negative track)
-//
 //            Origin: A. Dainese    andrea.dainese@pd.infn.it            
 //----------------------------------------------------------------------------
-#include <Riostream.h>
+
 #include <TH1.h>
 #include <TH2.h>
 #include <TCanvas.h>
@@ -129,9 +128,9 @@ AliD0toKpi::AliD0toKpi( const AliD0toKpi& d0toKpi):TObject(d0toKpi) {
 }
 //----------------------------------------------------------------------------
 void AliD0toKpi::ApplyPID(TString pidScheme) {
-
-  const char *tofparampbpb = strstr(pidScheme.Data(),"TOFparam_PbPb");
-  const char *tofparampp   = strstr(pidScheme.Data(),"TOFparam_pp");
+  // Applies particle identification
+  const char *tofparampbpb = strstr(pidScheme.Data(),"TOFparamPbPb");
+  const char *tofparampp   = strstr(pidScheme.Data(),"TOFparamPP");
 
   if((tofparampbpb || tofparampp) && fPdg[0]==0) {
     printf("AliD0toKpi::ApplyPID :\n Warning: TOF parameterized PID can be used only for simulation!\n"); 
@@ -142,21 +141,21 @@ void AliD0toKpi::ApplyPID(TString pidScheme) {
     // tagging of the positive track
     if(TMath::Abs(fPdg[0])==211 || TMath::Abs(fPdg[0])==13 
        || TMath::Abs(fPdg[0])==11) { // pion,muon,electron
-      fTagPi[0]  = LinearInterpolation(PChild(0),kPiBins_PbPb,kPiBinWidth_PbPb,kPiTagPi_PbPb);
+      fTagPi[0]  = LinearInterpolation(PChild(0),kPiBinsPbPb,kPiBinWidthPbPb,kPiTagPiPbPb);
       fTagNid[0] = 1.-fTagPi[0];
       fTagKa[0]   = 0.;
       fTagPr[0]   = 0.;
     } 
     if(TMath::Abs(fPdg[0])==321) { // kaon
-      fTagKa[0]   = LinearInterpolation(PChild(0),kKBins_PbPb,kKBinWidth_PbPb,kKTagK_PbPb);
-      fTagNid[0] = LinearInterpolation(PChild(0),kKBins_PbPb,kKBinWidth_PbPb,kKTagNid_PbPb);
+      fTagKa[0]   = LinearInterpolation(PChild(0),kKBinsPbPb,kKBinWidthPbPb,kKTagKPbPb);
+      fTagNid[0] = LinearInterpolation(PChild(0),kKBinsPbPb,kKBinWidthPbPb,kKTagNidPbPb);
       if((fTagNid[0]+fTagKa[0])>1.) fTagNid[0] = 1.-fTagKa[0];
       fTagPi[0] = 1.-fTagNid[0]-fTagKa[0];
       fTagPr[0] = 0.;
     } 
     if(TMath::Abs(fPdg[0])==2212) { // proton
-      fTagPr[0]  = LinearInterpolation(PChild(0),kPBins_PbPb,kPBinWidth_PbPb,kPTagP_PbPb);
-      fTagNid[0] = LinearInterpolation(PChild(0),kPBins_PbPb,kPBinWidth_PbPb,kPTagNid_PbPb);
+      fTagPr[0]  = LinearInterpolation(PChild(0),kPBinsPbPb,kPBinWidthPbPb,kPTagPPbPb);
+      fTagNid[0] = LinearInterpolation(PChild(0),kPBinsPbPb,kPBinWidthPbPb,kPTagNidPbPb);
       if((fTagNid[0]+fTagPr[0])>1.) fTagNid[0] = 1.-fTagPr[0];
       fTagPi[0] = 1.-fTagNid[0]-fTagPr[0];
       fTagKa[0]   = 0.;
@@ -164,21 +163,21 @@ void AliD0toKpi::ApplyPID(TString pidScheme) {
     // tagging of the negative track
     if(TMath::Abs(fPdg[1])==211 || TMath::Abs(fPdg[1])==13 
        || TMath::Abs(fPdg[1])==11) { // pion,muon,electron
-      fTagPi[1]  = LinearInterpolation(PChild(1),kPiBins_PbPb,kPiBinWidth_PbPb,kPiTagPi_PbPb);
+      fTagPi[1]  = LinearInterpolation(PChild(1),kPiBinsPbPb,kPiBinWidthPbPb,kPiTagPiPbPb);
       fTagNid[1] = 1.-fTagPi[1];
       fTagKa[1]   = 0.;
       fTagPr[1]   = 0.;
     } 
     if(TMath::Abs(fPdg[1])==321) { // kaon
-      fTagKa[1]   = LinearInterpolation(PChild(1),kKBins_PbPb,kKBinWidth_PbPb,kKTagK_PbPb);
-      fTagNid[1] = LinearInterpolation(PChild(1),kKBins_PbPb,kKBinWidth_PbPb,kKTagNid_PbPb);
+      fTagKa[1]   = LinearInterpolation(PChild(1),kKBinsPbPb,kKBinWidthPbPb,kKTagKPbPb);
+      fTagNid[1] = LinearInterpolation(PChild(1),kKBinsPbPb,kKBinWidthPbPb,kKTagNidPbPb);
       if((fTagNid[1]+fTagKa[1])>1.) fTagNid[1] = 1.-fTagKa[1];
       fTagPi[1] = 1.-fTagNid[1]-fTagKa[1];
       fTagPr[1] = 0.;
     } 
     if(TMath::Abs(fPdg[1])==2212) { // proton
-      fTagPr[1]  = LinearInterpolation(PChild(1),kPBins_PbPb,kPBinWidth_PbPb,kPTagP_PbPb);
-      fTagNid[1] = LinearInterpolation(PChild(1),kPBins_PbPb,kPBinWidth_PbPb,kPTagNid_PbPb);
+      fTagPr[1]  = LinearInterpolation(PChild(1),kPBinsPbPb,kPBinWidthPbPb,kPTagPPbPb);
+      fTagNid[1] = LinearInterpolation(PChild(1),kPBinsPbPb,kPBinWidthPbPb,kPTagNidPbPb);
       if((fTagNid[1]+fTagPr[1])>1.) fTagNid[1] = 1.-fTagPr[1];
       fTagPi[1] = 1.-fTagNid[1]-fTagPr[1];
       fTagKa[1]   = 0.;
@@ -190,21 +189,21 @@ void AliD0toKpi::ApplyPID(TString pidScheme) {
     // tagging of the positive track
     if(TMath::Abs(fPdg[0])==211 || TMath::Abs(fPdg[0])==13 
        || TMath::Abs(fPdg[0])==11) { // pion,muon,electron
-      fTagPi[0]  = LinearInterpolation(PChild(0),kPiBins_pp,kPiBinWidth_pp,kPiTagPi_pp);
+      fTagPi[0]  = LinearInterpolation(PChild(0),kPiBinsPP,kPiBinWidthPP,kPiTagPiPP);
       fTagNid[0] = 1.-fTagPi[0];
       fTagKa[0]   = 0.;
       fTagPr[0]   = 0.;
     } 
     if(TMath::Abs(fPdg[0])==321) { // kaon
-      fTagKa[0]   = LinearInterpolation(PChild(0),kKBins_pp,kKBinWidth_pp,kKTagK_pp);
-      fTagNid[0] = LinearInterpolation(PChild(0),kKBins_pp,kKBinWidth_pp,kKTagNid_pp);
+      fTagKa[0]   = LinearInterpolation(PChild(0),kKBinsPP,kKBinWidthPP,kKTagKPP);
+      fTagNid[0] = LinearInterpolation(PChild(0),kKBinsPP,kKBinWidthPP,kKTagNidPP);
       if((fTagNid[0]+fTagKa[0])>1.) fTagNid[0] = 1.-fTagKa[0];
       fTagPi[0] = 1.-fTagNid[0]-fTagKa[0];
       fTagPr[0] = 0.;
     } 
     if(TMath::Abs(fPdg[0])==2212) { // proton
-      fTagPr[0]  = LinearInterpolation(PChild(0),kPBins_pp,kPBinWidth_pp,kPTagP_pp);
-      fTagNid[0] = LinearInterpolation(PChild(0),kPBins_pp,kPBinWidth_pp,kPTagNid_pp);
+      fTagPr[0]  = LinearInterpolation(PChild(0),kPBinsPP,kPBinWidthPP,kPTagPPP);
+      fTagNid[0] = LinearInterpolation(PChild(0),kPBinsPP,kPBinWidthPP,kPTagNidPP);
       if((fTagNid[0]+fTagPr[0])>1.) fTagNid[0] = 1.-fTagPr[0];
       fTagPi[0] = 1.-fTagNid[0]-fTagPr[0];
       fTagKa[0]   = 0.;
@@ -212,21 +211,21 @@ void AliD0toKpi::ApplyPID(TString pidScheme) {
     // tagging of the negative track
     if(TMath::Abs(fPdg[1])==211 || TMath::Abs(fPdg[1])==13 
        || TMath::Abs(fPdg[1])==11) { // pion,muon,electron
-      fTagPi[1]  = LinearInterpolation(PChild(1),kPiBins_pp,kPiBinWidth_pp,kPiTagPi_pp);
+      fTagPi[1]  = LinearInterpolation(PChild(1),kPiBinsPP,kPiBinWidthPP,kPiTagPiPP);
       fTagNid[1] = 1.-fTagPi[1];
       fTagKa[1]   = 0.;
       fTagPr[1]   = 0.;
     } 
     if(TMath::Abs(fPdg[1])==321) { // kaon
-      fTagKa[1]   = LinearInterpolation(PChild(1),kKBins_pp,kKBinWidth_pp,kKTagK_pp);
-      fTagNid[1] = LinearInterpolation(PChild(1),kKBins_pp,kKBinWidth_pp,kKTagNid_pp);
+      fTagKa[1]   = LinearInterpolation(PChild(1),kKBinsPP,kKBinWidthPP,kKTagKPP);
+      fTagNid[1] = LinearInterpolation(PChild(1),kKBinsPP,kKBinWidthPP,kKTagNidPP);
       if((fTagNid[1]+fTagKa[1])>1.) fTagNid[1] = 1.-fTagKa[1];
       fTagPi[1] = 1.-fTagNid[1]-fTagKa[1];
       fTagPr[1] = 0.;
     } 
     if(TMath::Abs(fPdg[1])==2212) { // proton
-      fTagPr[1]  = LinearInterpolation(PChild(1),kPBins_pp,kPBinWidth_pp,kPTagP_pp);
-      fTagNid[1] = LinearInterpolation(PChild(1),kPBins_pp,kPBinWidth_pp,kPTagNid_pp);
+      fTagPr[1]  = LinearInterpolation(PChild(1),kPBinsPP,kPBinWidthPP,kPTagPPP);
+      fTagNid[1] = LinearInterpolation(PChild(1),kPBinsPP,kPBinWidthPP,kPTagNidPP);
       if((fTagNid[1]+fTagPr[1])>1.) fTagNid[1] = 1.-fTagPr[1];
       fTagPi[1] = 1.-fTagNid[1]-fTagPr[1];
       fTagKa[1]   = 0.;
@@ -500,8 +499,8 @@ void AliD0toKpi::SetPIDresponse(Double_t resp0[5],Double_t resp1[5]) {
 void AliD0toKpi::DrawPIDinTOF(TString pidScheme) const {
   // Draw parameterized PID probabilities in TOF
 
-  const char *tofparampbpb = strstr(pidScheme.Data(),"TOFparam_PbPb");
-  const char *tofparampp = strstr(pidScheme.Data(),"TOFparam_pp");
+  const char *tofparampbpb = strstr(pidScheme.Data(),"TOFparamPbPb");
+  const char *tofparampp = strstr(pidScheme.Data(),"TOFparamPP");
 
   TH2F* framePi = new TH2F("framePi","Tag probabilities for PIONS",2,0,2.5,2,0,1);
   framePi->SetXTitle("p [GeV/c]"); 
@@ -513,48 +512,48 @@ void AliD0toKpi::DrawPIDinTOF(TString pidScheme) const {
   frameP->SetXTitle("p [GeV/c]");
   frameP->SetStats(0);
 
-  TH1F* hPiPi = new TH1F("hPiPi","Tag probabilities for PIONS",kPiBins_PbPb,0,2.5);
-  TH1F* hPiNid = new TH1F("hPiNid","Tag probabilities for PIONS",kPiBins_PbPb,0,2.5);
+  TH1F* hPiPi = new TH1F("hPiPi","Tag probabilities for PIONS",kPiBinsPbPb,0,2.5);
+  TH1F* hPiNid = new TH1F("hPiNid","Tag probabilities for PIONS",kPiBinsPbPb,0,2.5);
 
-  TH1F* hKK = new TH1F("hKK","Tag probabilities for KAONS",kKBins_PbPb,0,2.5);
-  TH1F* hKNid = new TH1F("hKNid","Tag probabilities for KAONS",kKBins_PbPb,0,2.5);
-  TH1F* hKPi = new TH1F("hKPi","Tag probabilities for KAONS",kKBins_PbPb,0,2.5);
+  TH1F* hKK = new TH1F("hKK","Tag probabilities for KAONS",kKBinsPbPb,0,2.5);
+  TH1F* hKNid = new TH1F("hKNid","Tag probabilities for KAONS",kKBinsPbPb,0,2.5);
+  TH1F* hKPi = new TH1F("hKPi","Tag probabilities for KAONS",kKBinsPbPb,0,2.5);
 
-  TH1F* hPP = new TH1F("hPP","Tag probabilities for PROTONS",kPBins_PbPb,0,4.5);
-  TH1F* hPNid = new TH1F("hPNid","Tag probabilities for PROTONS",kPBins_PbPb,0,4.5);
-  TH1F* hPPi = new TH1F("hPPi","Tag probabilities for PROTONS",kPBins_PbPb,0,4.5);
+  TH1F* hPP = new TH1F("hPP","Tag probabilities for PROTONS",kPBinsPbPb,0,4.5);
+  TH1F* hPNid = new TH1F("hPNid","Tag probabilities for PROTONS",kPBinsPbPb,0,4.5);
+  TH1F* hPPi = new TH1F("hPPi","Tag probabilities for PROTONS",kPBinsPbPb,0,4.5);
 
 
   if(tofparampbpb) {
 
-    for(Int_t i=1; i<=kPiBins_PbPb; i++) {
-      hPiPi->SetBinContent(i,kPiTagPi_PbPb[i-1]);
-      hPiNid->SetBinContent(i,kPiTagPi_PbPb[i-1]+kPiTagNid_PbPb[i-1]);
+    for(Int_t i=1; i<=kPiBinsPbPb; i++) {
+      hPiPi->SetBinContent(i,kPiTagPiPbPb[i-1]);
+      hPiNid->SetBinContent(i,kPiTagPiPbPb[i-1]+kPiTagNidPbPb[i-1]);
       
-      hKK->SetBinContent(i,kKTagK_PbPb[i-1]);
-      hKPi->SetBinContent(i,kKTagK_PbPb[i-1]+kKTagPi_PbPb[i-1]);
-      hKNid->SetBinContent(i,kKTagK_PbPb[i-1]+kKTagPi_PbPb[i-1]+kKTagNid_PbPb[i-1]);
+      hKK->SetBinContent(i,kKTagKPbPb[i-1]);
+      hKPi->SetBinContent(i,kKTagKPbPb[i-1]+kKTagPiPbPb[i-1]);
+      hKNid->SetBinContent(i,kKTagKPbPb[i-1]+kKTagPiPbPb[i-1]+kKTagNidPbPb[i-1]);
     }
-    for(Int_t i=1; i<=kPBins_PbPb; i++) {    
-      hPP->SetBinContent(i,kPTagP_PbPb[i-1]);
-      hPPi->SetBinContent(i,kPTagP_PbPb[i-1]+kPTagPi_PbPb[i-1]);
-      hPNid->SetBinContent(i,kPTagP_PbPb[i-1]+kPTagPi_PbPb[i-1]+kPTagNid_PbPb[i-1]);
+    for(Int_t i=1; i<=kPBinsPbPb; i++) {    
+      hPP->SetBinContent(i,kPTagPPbPb[i-1]);
+      hPPi->SetBinContent(i,kPTagPPbPb[i-1]+kPTagPiPbPb[i-1]);
+      hPNid->SetBinContent(i,kPTagPPbPb[i-1]+kPTagPiPbPb[i-1]+kPTagNidPbPb[i-1]);
     }
 
   } else if(tofparampp) {
 
-    for(Int_t i=1; i<=kPiBins_pp; i++) {
-      hPiPi->SetBinContent(i,kPiTagPi_pp[i-1]);
-      hPiNid->SetBinContent(i,kPiTagPi_pp[i-1]+kPiTagNid_pp[i-1]);
+    for(Int_t i=1; i<=kPiBinsPP; i++) {
+      hPiPi->SetBinContent(i,kPiTagPiPP[i-1]);
+      hPiNid->SetBinContent(i,kPiTagPiPP[i-1]+kPiTagNidPP[i-1]);
       
-      hKK->SetBinContent(i,kKTagK_pp[i-1]);
-      hKPi->SetBinContent(i,kKTagK_pp[i-1]+kKTagPi_pp[i-1]);
-      hKNid->SetBinContent(i,kKTagK_pp[i-1]+kKTagPi_pp[i-1]+kKTagNid_pp[i-1]);
+      hKK->SetBinContent(i,kKTagKPP[i-1]);
+      hKPi->SetBinContent(i,kKTagKPP[i-1]+kKTagPiPP[i-1]);
+      hKNid->SetBinContent(i,kKTagKPP[i-1]+kKTagPiPP[i-1]+kKTagNidPP[i-1]);
     }
-    for(Int_t i=1; i<=kPBins_pp; i++) {    
-      hPP->SetBinContent(i,kPTagP_pp[i-1]);
-      hPPi->SetBinContent(i,kPTagP_pp[i-1]+kPTagPi_pp[i-1]);
-      hPNid->SetBinContent(i,kPTagP_pp[i-1]+kPTagPi_pp[i-1]+kPTagNid_pp[i-1]);
+    for(Int_t i=1; i<=kPBinsPP; i++) {    
+      hPP->SetBinContent(i,kPTagPPP[i-1]);
+      hPPi->SetBinContent(i,kPTagPPP[i-1]+kPTagPiPP[i-1]);
+      hPNid->SetBinContent(i,kPTagPPP[i-1]+kPTagPiPP[i-1]+kPTagNidPP[i-1]);
     }
 
   } 
