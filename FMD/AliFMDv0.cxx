@@ -29,6 +29,7 @@
 #include <TGeometry.h>
 #include <TTUBE.h>
 #include <TNode.h>
+#include <TBranch.h>
 #include <TLorentzVector.h>
 #include "AliFMDv0.h"
 #include "AliRun.h"
@@ -118,7 +119,6 @@ void AliFMDv0::CreateGeometry()
     printf(name,nameSi);
     
     zfmd=TMath::Abs(z[ifmd]);
-    printf("zfmd %f z[ifmd] %f",zfmd,z[ifmd]);
     AliFMD::Eta2Radius(etain[ifmd],zfmd,&rin[ifmd]);
     AliFMD::Eta2Radius(etaout[ifmd],zfmd,&rout[ifmd]);
     
@@ -126,11 +126,9 @@ void AliFMDv0::CreateGeometry()
     par[1]=rout[ifmd];
     par[2]=zFMD/2;
     gMC->Gsvolu(name,"TUBE", idtmed[3], par, 3);
-    //    par[2]=zDet/2;
     gMC->Gsvolu(nameSi,"TUBE", idtmed[1], par, 0);
     
-    printf ("rin %f rout %f ZFMD %f\n",par[0],par[1],z[ifmd]);
-    if (z[ifmd] < 0){  
+     if (z[ifmd] < 0){  
       gMC->Gspos(name,1,"ALIC",0,0,z[ifmd],0, "ONLY");}
     else { 
       gMC->Gspos(name,1,"ALIC",0,0,z[ifmd],idrotm[901], "ONLY");}
@@ -138,14 +136,8 @@ void AliFMDv0::CreateGeometry()
     par[2]=zDet/2;
     zpos=zFMD/2 -par[2];
     gMC->Gsposp(nameSi,ifmd+1,name,0,0,zpos,0, "ONLY",par,3);
-    cout<<" Si "<<nameSi<<" ifmd "<<ifmd<<" rin "<<par[0]<<" rout "<<par[1]<<
-      " zDet "<<par[2]<<endl;
-    //Granularity
-    cout<<"fSectorsSi1 "<<fSectorsSi1<<
-      " fRingsSi1 "<<fRingsSi1<<
-      " fSectorsSi2 "<<fSectorsSi2<<
-      " fRingsSi2 "<<fRingsSi2<<endl;
-   if(ifmd==1||ifmd==3)
+     //Granularity
+    if(ifmd==1||ifmd==3)
       { 
 	gMC->Gsdvn(nameSector, nameSi , fSectorsSi2, 2);
 	gMC->Gsdvn(nameRing, nameSector, fRingsSi2, 1);

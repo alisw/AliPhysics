@@ -16,8 +16,6 @@
 #pragma link C++ class  AliFMDdigit+;
 #pragma link C++ class  AliFMDReconstruction+;
 #pragma link C++ class  AliFMDReconstParticles+;
-#pragma link C++ class  AliFMDMerger+;
 #pragma link C++ class  AliFMDDigitizer+;
-#pragma link C++ class  AliFMDSDigitizer+;
 
 #endif
