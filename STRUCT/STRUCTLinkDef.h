@@ -18,6 +18,7 @@
 #pragma link C++ class  AliFRAME+;
 #pragma link C++ class  AliFRAMEv0+;
 #pragma link C++ class  AliFRAMEv1+;
+#pragma link C++ class  AliFRAMEv2+;
 #pragma link C++ class  AliHALL+;
 #pragma link C++ class  AliPIPE+;
 #pragma link C++ class  AliPIPEv0+;
