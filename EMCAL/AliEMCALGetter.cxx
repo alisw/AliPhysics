@@ -115,12 +115,8 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
 
     //open headers file
     fFile = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
-    
     if(!fFile){    //if file was not opened yet, read gAlice
-      //      if(fHeaderFile.Contains("rfio")) // if we read file using HPSS
-	fFile =	TFile::Open(fHeaderFile.Data(),rw) ;
-	//else
-	//fFile = new TFile(fHeaderFile.Data(),rw) ;
+      fFile =	TFile::Open(fHeaderFile.Data(),rw) ;   
       
       if (!fFile->IsOpen()) {
 	cerr << "ERROR : AliEMCALGetter::AliEMCALGetter -> Cannot open " << fHeaderFile.Data() << endl ; 
@@ -140,22 +136,27 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
   if (!EMCAL()) {
     if (fDebug)
       cout << "INFO: AliEMCALGetter -> Posting EMCAL to Folders" << endl ; 
-    AliConfig * conf = AliConfig::Instance() ;
-    conf->Add(static_cast<AliDetector*>(gAlice->GetDetector("EMCAL"))) ; 
-    conf->Add(static_cast<AliModule*>(gAlice->GetDetector("EMCAL"))) ; 
+    if (gAlice->GetDetector("EMCAL")) {
+      AliConfig * conf = AliConfig::Instance() ;
+      conf->Add(static_cast<AliDetector*>(gAlice->GetDetector("EMCAL"))) ; 
+      conf->Add(static_cast<AliModule*>(gAlice->GetDetector("EMCAL"))) ;
+    }
+    else 
+      cerr << "ERROR: AliEMCALGetter -> detector EMCAL not found" << endl ;
   }
   
   fDebug=0;
 }
 //____________________________________________________________________________ 
-AliEMCALGetter::~AliEMCALGetter(){
-
+AliEMCALGetter::~AliEMCALGetter()
+{
   if (fPrimaries) {
     fPrimaries->Delete() ; 
     delete fPrimaries ; 
   }
-
+  fFile->Close() ;  
   delete fFile ; 
+  fFile = 0 ;
 }
 
 //____________________________________________________________________________ 
