@@ -45,6 +45,10 @@ class AliPHOSMemoryWatcher : public TObject
 public:
   AliPHOSMemoryWatcher(UInt_t maxsize=10000);
   AliPHOSMemoryWatcher(AliPHOSMemoryWatcher& mw);
+  AliPHOSMemoryWatcher(const AliPHOSMemoryWatcher & watcher) {
+    // copy ctor: no implementation yet
+    Fatal("cpy ctor", "not implemented") ;
+  }
   ~AliPHOSMemoryWatcher() ;
   void Watch(Int_t x);
   

@@ -87,6 +87,7 @@ AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(AliPHOSMemoryWatcher& mw)
 //_____________________________________________________________________________
 AliPHOSMemoryWatcher::~AliPHOSMemoryWatcher()
 {
+  // dtor
   delete[] fVSIZE;
   delete[] fRSSIZE;
   delete[] fX;
