@@ -32,16 +32,16 @@ public:
   virtual void SetDebug(Int_t level=0) {fDebug=level;}
   virtual Float_t SolenoidField() const {return 2.;}
   virtual Int_t GetDebug() const {return fDebug;}
-  
-protected:
-  Int_t     fMap;    // Field Map identifier
-  Int_t     fType;   // Mag Field type
-  Int_t     fInteg;  // Integration method as indicated in Geant
-  Float_t   fFactor; // Multiplicative factor
-  Float_t   fMax;    // Max Field as indicated in Geant
-  Int_t     fDebug;  // Debug flag
-
-  ClassDef(AliMagF,1)  //Base class for all Alice MagField
+  static void  SetReadField(Bool_t flag = kTRUE) {fgReadField = flag;}
+ protected:
+  Int_t     fMap;       // Field Map identifier
+  Int_t     fType;      // Mag Field type
+  Int_t     fInteg;     // Integration method as indicated in Geant
+  Float_t   fFactor;    // Multiplicative factor
+  Float_t   fMax;       // Max Field as indicated in Geant
+  Int_t     fDebug;     // Debug flag
+  static  Bool_t    fgReadField;  // Flag for reading the field from file (if available) 
+  ClassDef(AliMagF,2)  //Base class for all Alice MagField
 };
 
 #endif

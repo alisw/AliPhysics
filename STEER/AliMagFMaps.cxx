@@ -29,13 +29,13 @@
 #include "AliMagFMaps.h"
 
 ClassImp(AliMagFMaps)
+    
 
 //_______________________________________________________________________
 AliMagFMaps::AliMagFMaps():
   fSolenoid(0),
   fSolenoidUser(0.),
-  fL3Option(0),
-  fFieldRead(0)
+  fL3Option(0)
 {
   //
   // Default constructor
@@ -52,8 +52,7 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, Int_t integ,
   AliMagFC(name,title,integ,factor,fmax),
   fSolenoid(0),
   fSolenoidUser(0),
-  fL3Option(l3),
-  fFieldRead(0)
+  fL3Option(l3)
 {
   //
   // Standard constructor
@@ -63,7 +62,6 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, Int_t integ,
   fMap          = map;
   fL3Option     = l3;
   ReadField();
-  fFieldRead = 1;
   //
   // Don't replicate field information in gAlice
   for (Int_t i = 0; i < 3; i++)  fFieldMap[i]->SetWriteEnable(0);
@@ -74,8 +72,7 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, Int_t integ,
 AliMagFMaps::AliMagFMaps(const AliMagFMaps &magf):
   AliMagFC(magf),
   fSolenoid(0),
-  fL3Option(0),
-  fFieldRead(0)
+  fL3Option(0)
 {
   //
   // Copy constructor
@@ -101,13 +98,11 @@ void AliMagFMaps::ReadField()
   //
   //  don't read twice
   //
-  if (fFieldRead) return;
-  fFieldRead = 1;
+    if (!fgReadField) return;
+    fgReadField = 0;
   //    
   char* fname;
   TFile* file = 0;
-  printf("Reading map for %d\n", fMap);
-  
   if (fMap == k2kG) {
       fSolenoid = 2.;
       fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B02.root");
@@ -253,7 +248,6 @@ void AliMagFMaps::Streamer(TBuffer &R__b)
   // Stream an object of class AliMagFMaps.
   if (R__b.IsReading()) {
     AliMagFMaps::Class()->ReadBuffer(R__b, this);
-    fFieldRead = 0;
     ReadField();
   } else {
     AliMagFMaps::Class()->WriteBuffer(R__b, this);
