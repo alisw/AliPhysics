@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2003/01/06 10:13:33  morsch
+First commit.
+
 */
 
 #include "AliMUONFastTracking.h"
@@ -108,7 +111,7 @@ void AliMUONFastTracking::Init(Float_t bkg)
   }
   
   char filename [100]; 
-  sprintf (filename,"$(ALICE_ROOT)/data/MUONtrackLUT.root"); 
+  sprintf (filename,"$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT.root"); 
   TFile *file = new TFile(filename); 
   ReadLUT(file);
   SetBackground(bkg);
