@@ -16,8 +16,8 @@
 #include <assert.h> 
 
 // --- ROOT system ---
-
-#include "TObjArray.h"
+#include "TObject.h"
+class TObjArray ;
 
 // --- AliRoot header files ---
 

@@ -38,6 +38,7 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSGeometry.h"
+#include "AliPHOSEMCAGeometry.h" 
 #include "AliPHOSPpsdRecPoint.h"
 #include "AliConst.h"
 

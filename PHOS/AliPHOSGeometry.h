@@ -20,7 +20,6 @@
 
 // --- ROOT system ---
 
-#include "TNamed.h"
 #include "TString.h"
 #include "TObjArray.h"
 #include "TVector3.h" 
@@ -28,11 +27,11 @@
 // --- AliRoot header files ---
 
 #include "AliGeometry.h"
+
 #include "AliPHOSEMCAGeometry.h"
 #include "AliPHOSCPVGeometry.h"
 #include "AliPHOSPPSDGeometry.h"
 #include "AliPHOSSupportGeometry.h"
-#include "AliPHOSRecPoint.h"
 
 
 class AliPHOSGeometry : public AliGeometry {
