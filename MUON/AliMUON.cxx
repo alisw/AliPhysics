@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.45  2001/01/26 20:00:49  hristov
+Major upgrade of AliRoot code
+
 Revision 1.44  2001/01/25 17:39:09  morsch
 Pass size of fNdch and fNrawch to CINT.
 
@@ -245,14 +248,15 @@ AliMUON::AliMUON()
 {
 // Default Constructor
 //
-    fNCh             = AliMUONConstants::NCh();
-    fNTrackingCh     = AliMUONConstants::NTrackingCh();
+    fNCh             = 0;
+    fNTrackingCh     = 0;
     fIshunt          = 0;
     fHits            = 0;
     fPadHits         = 0;
     fNPadHits        = 0;
+    fChambers        = 0;
     fDchambers       = 0;
-    fTriggerCircuits = 0; 
+    fTriggerCircuits = 0;  
     fNdch            = 0;
     fRawClusters     = 0;
     fNrawch          = 0;
@@ -263,11 +267,6 @@ AliMUON::AliMUON()
     fAccMin          = 0.;
     fAccMax          = 0.;   
     fAccCut          = kFALSE;
-    fChambers        = 0;
-    fHits2           = 0;
-    fPadHits2        = 0;
-    fFileName        = 0;
-    fTrH1            = 0;
 }
  
 //___________________________________________
@@ -286,10 +285,9 @@ AliMUON::AliMUON(const char *name, const char *title)
    fNPadHits  =  0;
    fIshunt     =  0;
 
-   fNCh             = AliMUONConstants::NCh();
+   fNCh             = AliMUONConstants::NCh(); 
    fNTrackingCh     = AliMUONConstants::NTrackingCh();
-
-   fNdch      = new Int_t[AliMUONConstants::NCh()];
+   fNdch            = new Int_t[fNCh];
 
    fDchambers = new TObjArray(AliMUONConstants::NCh());
 
@@ -300,7 +298,7 @@ AliMUON::AliMUON(const char *name, const char *title)
        fNdch[i]=0;
    }
 
-   fNrawch      = new Int_t[AliMUONConstants::NTrackingCh()];
+   fNrawch      = new Int_t[fNTrackingCh];
 
    fRawClusters = new TObjArray(AliMUONConstants::NTrackingCh());
 
@@ -952,8 +950,6 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	char treeName[20];
 	sprintf(treeName,"TreeH%d",bgrEvent);
 	fTrH1 = (TTree*)gDirectory->Get(treeName);
-        //printf("fTrH1 %p of treename %s for event %d \n",fTrH1,treeName,bgrEvent);
-	
 	if (!fTrH1) {
 	    printf("ERROR: cannot find Hits Tree for event:%d\n",bgrEvent);
 	}
@@ -969,67 +965,64 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	    branch = fTrH1->GetBranch("MUONCluster");
 	    if (branch) branch->SetAddress(&fPadHits2);
 	}
-// test
-	//Int_t ntracks1 =(Int_t)fTrH1->GetEntries();
-	//printf("background - ntracks1 - %d\n",ntracks1);
     }
     //
     // loop over cathodes
     //
     AliHitMap* hm;
-    Int_t countadr=0;
-    for (int icat=0; icat<2; icat++) { 
-	Int_t counter=0;
+    Int_t countadr = 0;
+    for (int icat = 0; icat < 2; icat++) { 
+	Int_t counter = 0;
 	Int_t * nmuon = new Int_t [AliMUONConstants::NCh()];
-	for (Int_t i =0; i<AliMUONConstants::NCh(); i++) {
-	    iChamber=(AliMUONChamber*) (*fChambers)[i];
-	    if (iChamber->Nsec()==1 && icat==1) {
+	for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
+	    iChamber = (AliMUONChamber*) (*fChambers)[i];
+	    if (iChamber->Nsec() == 1 && icat == 1) {
 		continue;
 	    } else {
-		segmentation=iChamber->SegmentationModel(icat+1);
+		segmentation = iChamber->SegmentationModel(icat+1);
 	    }
 	    hitMap[i] = new AliMUONHitMapA1(segmentation, list);
-	    nmuon[i]=0;
+	    nmuon[i]  = 0;
 	}
 	//printf("Start loop over tracks \n");     
 //
 //   Loop over tracks
 //
 
-	TTree *treeH = gAlice->TreeH();
-	Int_t ntracks =(Int_t) treeH->GetEntries();
+	TTree *treeH  = gAlice->TreeH();
+	Int_t ntracks = (Int_t) treeH->GetEntries();
 	Int_t jj;
 	Int_t nmaxmuon = 5;
 
 	Float_t ** xhit = new Float_t * [AliMUONConstants::NCh()];
-	for (jj=0; jj<AliMUONConstants::NCh(); jj++)
+	for (jj = 0; jj < AliMUONConstants::NCh(); jj++)
 	  xhit[jj] = new Float_t[nmaxmuon];
 	Float_t ** yhit = new Float_t * [AliMUONConstants::NCh()];
 	for (jj=0; jj<AliMUONConstants::NCh(); jj++)
 	  yhit[jj] = new Float_t[nmaxmuon];
 
-	for (Int_t track=0; track<ntracks; track++) {
+	for (Int_t track = 0; track < ntracks; track++) {
 	    gAlice->ResetHits();
 	    treeH->GetEvent(track);
 //
 //   Loop over hits
-	    for(AliMUONHit* mHit=(AliMUONHit*)pMUON->FirstHit(-1); 
+	    for(AliMUONHit* mHit = (AliMUONHit*)pMUON->FirstHit(-1); 
 		mHit;
-		mHit=(AliMUONHit*)pMUON->NextHit()) 
+		mHit = (AliMUONHit*)pMUON->NextHit()) 
 	    {
-		Int_t   nch   = mHit->fChamber-1;  // chamber number
+		Int_t   nch   = mHit->Chamber()-1;  // chamber number
 		if (nch > AliMUONConstants::NCh()-1) continue;
 //		if (nch > 9) continue;
 		iChamber = &(pMUON->Chamber(nch));
                 // new 17.07.99
 		if (addBackground) {
 
-		    if (mHit->fParticle == kMuonPlus 
-			|| mHit->fParticle == kMuonMinus) {
+		    if (mHit->Particle()    == kMuonPlus 
+			|| mHit->Particle() == kMuonMinus) {
 		      // mark muon hits
 		      if (nmuon[nch] < nmaxmuon) {
-			xhit[nch][nmuon[nch]]=mHit->X();
-			yhit[nch][nmuon[nch]]=mHit->Y();
+			xhit[nch][nmuon[nch]] = mHit->X();
+			yhit[nch][nmuon[nch]] = mHit->Y();
 			nmuon[nch]++;
 		      }
 		      // ignore muon if too many compared to nmaxmuon
@@ -1042,40 +1035,37 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 		
 //
 // Loop over pad hits
-		for (AliMUONPadHit* mPad=
+		for (AliMUONPadHit* mPad =
 			 (AliMUONPadHit*)pMUON->FirstPad(mHit,fPadHits);
 		     mPad;
-		     mPad=(AliMUONPadHit*)pMUON->NextPad(fPadHits))
+		     mPad = (AliMUONPadHit*)pMUON->NextPad(fPadHits))
 		{
-		    Int_t cathode  = mPad->fCathode;    // cathode number
-		    Int_t ipx      = mPad->fPadX;       // pad number on X
-		    Int_t ipy      = mPad->fPadY;       // pad number on Y
-		    Int_t iqpad    = Int_t(mPad->fQpad);// charge per pad
+		    Int_t cathode  = mPad->Cathode();     // cathode number
+		    Int_t ipx      = mPad->PadX();        // pad number on X
+		    Int_t ipy      = mPad->PadY();        // pad number on Y
+		    Int_t iqpad    = mPad->QPad();        // charge per pad
 //		    printf("\n Pad: %d %d %d %d", ipx, ipy, cathode,nch);
 //
 //
 		    
 		    if (cathode != (icat+1)) continue;
 		    // fill the info array
-//		    Float_t thex, they, thez;
-		    segmentation=iChamber->SegmentationModel(cathode);
-//		    segmentation->GetPadC(ipx,ipy,thex,they,thez);
-//		    Float_t rpad=TMath::Sqrt(thex*thex+they*they);
-//		    if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
-
+		    segmentation = iChamber->SegmentationModel(cathode);
 		    new((*pAddress)[countadr++]) TVector(2);
-		    TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
-		    trinfo(0)=(Float_t)track;
-		    trinfo(1)=(Float_t)iqpad;
+		    TVector &trinfo = *((TVector*) (*pAddress)[countadr-1]);
+		    trinfo(0) = (Float_t)track;
+		    trinfo(1) = (Float_t)iqpad;
 
-		    digits[0]=ipx;
-		    digits[1]=ipy;
-		    digits[2]=iqpad;
-		    digits[3]=iqpad;
-		    if (mHit->fParticle == kMuonPlus ||
-			mHit->fParticle == kMuonMinus) {
-			digits[4]=mPad->fHitNumber;
-		    } else digits[4]=-1;
+		    digits[0] = ipx;
+		    digits[1] = ipy;
+		    digits[2] = icat;
+		    digits[3] = iqpad;
+		    digits[4] = iqpad;
+
+		    if (mHit->Particle() == kMuonPlus ||
+			mHit->Particle() == kMuonMinus) {
+			digits[5] = mPad->HitNumber();
+		    } else digits[5] = -1;
 
 		    AliMUONTransientDigit* pdigit;
 		    // build the list of fired pads and update the info
@@ -1088,35 +1078,35 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 			counter++;
 			pdigit=(AliMUONTransientDigit*)list->At(list->GetLast());
 			// list of tracks
-			TObjArray *trlist=(TObjArray*)pdigit->TrackList();
+			TObjArray *trlist = (TObjArray*)pdigit->TrackList();
 			trlist->Add(&trinfo);
 		    } else {
 			pdigit=(AliMUONTransientDigit*) hitMap[nch]->GetHit(ipx, ipy);
 			// update charge
-			(*pdigit).fSignal+=iqpad;
-			(*pdigit).fPhysics+=iqpad;			
+			(*pdigit).AddSignal(iqpad);
+			(*pdigit).AddPhysicsSignal(iqpad);			
 			// update list of tracks
-			TObjArray* trlist=(TObjArray*)pdigit->TrackList();
-			Int_t lastEntry=trlist->GetLast();
-			TVector *pTrack=(TVector*)trlist->At(lastEntry);
-			TVector &ptrk=*pTrack;
-			Int_t lastTrack  = Int_t(ptrk(0));
-			Int_t lastCharge = Int_t(ptrk(1));
-			if (lastTrack==track) {
-			    lastCharge+=iqpad;
+			TObjArray* trlist = (TObjArray*)pdigit->TrackList();
+			Int_t lastEntry   = trlist->GetLast();
+			TVector *pTrack   = (TVector*)trlist->At(lastEntry);
+			TVector &ptrk     = *pTrack;
+			Int_t lastTrack   = Int_t(ptrk(0));
+			Int_t lastCharge  = Int_t(ptrk(1));
+			if (lastTrack == track) {
+			    lastCharge += iqpad;
 			    trlist->RemoveAt(lastEntry);
-			    trinfo(0)=lastTrack;
-			    trinfo(1)=lastCharge;
+			    trinfo(0) = lastTrack;
+			    trinfo(1) = lastCharge;
 			    trlist->AddAt(&trinfo,lastEntry);
 			} else {
 			    trlist->Add(&trinfo);
 			}
 			// check the track list
-			Int_t nptracks=trlist->GetEntriesFast();
+			Int_t nptracks = trlist->GetEntriesFast();
 			if (nptracks > 2) {
-			    for (Int_t tr=0;tr<nptracks;tr++) {
-				TVector *ppTrack=(TVector*)trlist->At(tr);
-				TVector &pptrk=*ppTrack;
+			    for (Int_t tr = 0; tr < nptracks; tr++) {
+				TVector *ppTrack = (TVector*)trlist->At(tr);
+				TVector &pptrk   = *ppTrack;
 				trk[tr]   = Int_t(pptrk(0));
 				chtrk[tr] = Int_t(pptrk(1));
 			    }
@@ -1129,35 +1119,35 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	// open the file with background
        
 	if (addBackground) {
-	    ntracks =(Int_t)fTrH1->GetEntries();
+	    ntracks = (Int_t)fTrH1->GetEntries();
 //
 //   Loop over tracks
 //
-	    for (Int_t track=0; track<ntracks; track++) {
+	    for (Int_t track = 0; track < ntracks; track++) {
 
 		if (fHits2)       fHits2->Clear();
-		if (fPadHits2)   fPadHits2->Clear();
+		if (fPadHits2)    fPadHits2->Clear();
 
 		fTrH1->GetEvent(track);
 //
 //   Loop over hits
 		AliMUONHit* mHit;
-		for(int i=0;i<fHits2->GetEntriesFast();++i) 
+		for(int i = 0; i < fHits2->GetEntriesFast(); ++i) 
 		{	
 		    mHit=(AliMUONHit*) (*fHits2)[i];
-		    Int_t   nch   = mHit->fChamber-1;  // chamber number
-		    if (nch >9) continue;
+		    Int_t   nch   = mHit->Chamber()-1;  // chamber number
+		    if (nch > 9) continue;
 		    iChamber = &(pMUON->Chamber(nch));
 //		    Int_t rmin = (Int_t)iChamber->RInner();
 //		    Int_t rmax = (Int_t)iChamber->ROuter();
-                    Float_t xbgr=mHit->X();
-		    Float_t ybgr=mHit->Y();
-		    Bool_t cond=kFALSE;
+                    Float_t xbgr = mHit->X();
+		    Float_t ybgr = mHit->Y();
+		    Bool_t cond  = kFALSE;
 		    
-		    for (Int_t imuon =0; imuon < nmuon[nch]; imuon++) {
-			Float_t dist= (xbgr-xhit[nch][imuon])*(xbgr-xhit[nch][imuon])
+		    for (Int_t imuon = 0; imuon < nmuon[nch]; imuon++) {
+			Float_t dist = (xbgr-xhit[nch][imuon])*(xbgr-xhit[nch][imuon])
 			    +(ybgr-yhit[nch][imuon])*(ybgr-yhit[nch][imuon]);
-			if (dist<100) cond=kTRUE;
+			if (dist<100) cond = kTRUE;
 		    }
 		    if (!cond) continue;
 		    
@@ -1169,29 +1159,23 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 			 mPad=(AliMUONPadHit*)pMUON->NextPad(fPadHits2))
 		    {
 			//		    mPad = (AliMUONPadHit*) (*fPadHits2)[j];
-			Int_t cathode  = mPad->fCathode;    // cathode number
-			Int_t ipx      = mPad->fPadX;       // pad number on X
-			Int_t ipy      = mPad->fPadY;       // pad number on Y
-			Int_t iqpad    = Int_t(mPad->fQpad);// charge per pad
+			Int_t cathode  = mPad->Cathode();    // cathode number
+			Int_t ipx      = mPad->PadX();       // pad number on X
+			Int_t ipy      = mPad->PadY();       // pad number on Y
+			Int_t iqpad    = mPad->QPad();       // charge per pad
 
 			if (cathode != (icat+1)) continue;
-// 			printf("\n Pad: %d %d %d", ipx, ipy, cathode);
-			
-//			Float_t thex, they, thez;
-//			segmentation=iChamber->SegmentationModel(cathode);
-//			segmentation->GetPadC(ipx,ipy,thex,they,thez);
-//			Float_t rpad=TMath::Sqrt(thex*thex+they*they);
-//			if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
 			new((*pAddress)[countadr++]) TVector(2);
 			TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
-			trinfo(0)=-1;  // tag background
-			trinfo(1)=-1;
+			trinfo(0) = -1;  // tag background
+			trinfo(1) = -1;
 			
-			digits[0]=ipx;
-			digits[1]=ipy;
-			digits[2]=iqpad;
-			digits[3]=0;
-			digits[4]=-1;
+			digits[0] = ipx;
+			digits[1] = ipy;
+			digits[2] = icat;
+			digits[3] = iqpad;
+			digits[4] =  0;
+			digits[5] = -1;
 			
 			AliMUONTransientDigit* pdigit;
 			// build the list of fired pads and update the info
@@ -1207,45 +1191,45 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 				TrackList();
 			    trlist->Add(&trinfo);
 			} else {
-			    pdigit=(AliMUONTransientDigit*) hitMap[nch]->GetHit(ipx, ipy);
+			    pdigit = (AliMUONTransientDigit*) hitMap[nch]->GetHit(ipx, ipy);
 			    // update charge
-			    (*pdigit).fSignal+=iqpad;
+			    (*pdigit).AddSignal(iqpad);
 			    
 			    // update list of tracks
-			    TObjArray* trlist=(TObjArray*)pdigit->
+			    TObjArray* trlist = (TObjArray*)pdigit->
 				TrackList();
-			    Int_t lastEntry=trlist->GetLast();
-			    TVector *pTrack=(TVector*)trlist->
+			    Int_t lastEntry = trlist->GetLast();
+			    TVector *pTrack = (TVector*)trlist->
 				At(lastEntry);
-			    TVector &ptrk=*pTrack;
-			    Int_t lastTrack=Int_t(ptrk(0));
-			    if (lastTrack==-1) {
+			    TVector &ptrk = *pTrack;
+			    Int_t lastTrack = Int_t(ptrk(0));
+			    if (lastTrack == -1) {
 				continue;
 			    } else {
 				trlist->Add(&trinfo);
 			    }
 				// check the track list
-			    Int_t nptracks=trlist->GetEntriesFast();
+			    Int_t nptracks = trlist->GetEntriesFast();
 			    if (nptracks > 0) {
 				for (Int_t tr=0;tr<nptracks;tr++) {
-				    TVector *ppTrack=(TVector*)trlist->At(tr);
-				    TVector &pptrk=*ppTrack;
-				    trk[tr]=Int_t(pptrk(0));
-				    chtrk[tr]=Int_t(pptrk(1));
+				    TVector *ppTrack = (TVector*)trlist->At(tr);
+				    TVector &pptrk = *ppTrack;
+				    trk[tr] = Int_t(pptrk(0));
+				    chtrk[tr] = Int_t(pptrk(1));
 				}
 			    } // end if nptracks
 			} //  end if pdigit
 		    } //end loop over clusters
 		} // hit loop
 	    } // track loop
-	    //Int_t nentr2=list->GetEntriesFast();
-	    //printf(" \n counter2, nentr2 %d %d \n",counter,nentr2);
+
 	    TTree *fAli=gAlice->TreeK();
             TFile *file=NULL;
 	    
 	    if (fAli) file =fAli->GetCurrentFile();
 	    file->cd();
 	} // if addBackground
+
 	delete [] xhit;
 	delete [] yhit;
 
@@ -1253,29 +1237,29 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	Int_t charges[10];
 	Int_t nentries=list->GetEntriesFast();
 	
-	for (Int_t nent=0;nent<nentries;nent++) {
-	    AliMUONTransientDigit *address=(AliMUONTransientDigit*)list->At(nent);
-	    if (address==0) continue; 
-	    Int_t ich=address->fChamber;
-	    Int_t q=address->fSignal; 
-	    iChamber=(AliMUONChamber*) (*fChambers)[ich];
+	for (Int_t nent = 0; nent < nentries; nent++) {
+	    AliMUONTransientDigit *address = (AliMUONTransientDigit*)list->At(nent);
+	    if (address == 0) continue;
+	    Int_t ich = address->Chamber();
+	    Int_t   q = address->Signal(); 
+	    iChamber = (AliMUONChamber*) (*fChambers)[ich];
 //
 //  Digit Response (noise, threshold, saturation, ...)
-//		if (address->fPhysics !=0 ) address->fPhysics+=(Int_t)Noise; 
-	    AliMUONResponse * response=iChamber->ResponseModel();
+
+	    AliMUONResponse * response = iChamber->ResponseModel();
 	    q=response->DigitResponse(q);
 	    
 	    if (!q) continue;
 	    
-	    digits[0]=address->fPadX;
-	    digits[1]=address->fPadY;
-	    digits[2]=q;
-	    digits[3]=address->fPhysics;
-	    digits[4]=address->fHit;
+	    digits[0] = address->PadX();
+	    digits[1] = address->PadY();
+	    digits[2] = address->Cathode();
+	    digits[3] = q;
+	    digits[4] = address->Physics();
+	    digits[5] = address->Hit();
 	    
-	    TObjArray* trlist=(TObjArray*)address->TrackList();
-	    Int_t nptracks=trlist->GetEntriesFast();
-	    //printf("nptracks, trlist   %d  %p\n",nptracks,trlist);
+	    TObjArray* trlist = (TObjArray*)address->TrackList();
+	    Int_t nptracks = trlist->GetEntriesFast();
 
 	    // this was changed to accomodate the real number of tracks
 	    if (nptracks > 10) {
@@ -1287,11 +1271,11 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 		printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,digits[0],digits[1],q);
 	    }
 	    for (Int_t tr=0;tr<nptracks;tr++) {
-		TVector *ppP=(TVector*)trlist->At(tr);
+		TVector *ppP = (TVector*)trlist->At(tr);
 		if(!ppP ) printf("ppP - %p\n",ppP);
-		TVector &pp  =*ppP;
-		tracks[tr]=Int_t(pp(0));
-		charges[tr]=Int_t(pp(1));
+		TVector &pp  = *ppP;
+		tracks[tr]   = Int_t(pp(0));
+		charges[tr]  = Int_t(pp(1));
                 //printf("tracks, charges - %d %d\n",tracks[tr],charges[tr]);
 	    }      //end loop over list of tracks for one pad
             // Sort list of tracks according to charge
@@ -1300,8 +1284,8 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	    }
 	    if (nptracks < 10 ) {
 		for (Int_t i=nptracks; i<10; i++) {
-		    tracks[i]=0;
-		    charges[i]=0;
+		    tracks[i]  = 0;
+		    charges[i] = 0;
 		}
 	    }
 	    
@@ -1316,11 +1300,11 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	list->Delete();
 
 	
-	for(Int_t ii=0;ii<AliMUONConstants::NCh();++ii) {
+	for(Int_t ii=0; ii<AliMUONConstants::NCh(); ++ii) {
 	    if (hitMap[ii]) {
-		hm=hitMap[ii];
+		hm = hitMap[ii];
 		delete hm;
-		hitMap[ii]=0;
+		hitMap[ii] = 0;
 	    }
 	}
 	delete [] nmuon;    
@@ -1455,19 +1439,19 @@ void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
 // Loop on chambers and on cathode planes
 //
     
-    for (Int_t ich=0;ich<10;ich++) {
-	AliMUONChamber* iChamber=(AliMUONChamber*) (*fChambers)[ich];
+    for (Int_t ich = 0; ich < 10; ich++) {
+	AliMUONChamber* iChamber = (AliMUONChamber*) (*fChambers)[ich];
 	AliMUONClusterFinderVS* rec = iChamber->ReconstructionModel();    
 	gAlice->ResetDigits();
 	gAlice->TreeD()->GetEvent(lastEntry);
-	TClonesArray *muonDigits  = this->DigitsAddress(ich);
+	TClonesArray *muonDigits = this->DigitsAddress(ich);
 	ndig=muonDigits->GetEntriesFast();
 	printf("\n 1 Found %d digits in %p %d", ndig, muonDigits,ich);
 	TClonesArray &lhits1 = *dig1;
-	Int_t n=0;
-	for (k=0; k<ndig; k++) {
-	    digit=(AliMUONDigit*) muonDigits->UncheckedAt(k);
-	    if (rec->TestTrack(digit->fTracks[0]))
+	Int_t n = 0;
+	for (k = 0; k < ndig; k++) {
+	    digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
+	    if (rec->TestTrack(digit->Track(0)))
 		new(lhits1[n++]) AliMUONDigit(*digit);
 	}
 	gAlice->ResetDigits();
@@ -1480,7 +1464,7 @@ void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
 	
 	for (k=0; k<ndig; k++) {
 	    digit= (AliMUONDigit*) muonDigits->UncheckedAt(k);
-	    if (rec->TestTrack(digit->fTracks[0]))
+	    if (rec->TestTrack(digit->Track(0)))
 	    new(lhits2[n++]) AliMUONDigit(*digit);
 	}
 
@@ -1624,9 +1608,9 @@ AliMUONPadHit* AliMUON::FirstPad(AliMUONHit*  hit, TClonesArray *clusters)
     // Return the address of the first padhit for hit
     TClonesArray *theClusters = clusters;
     Int_t nclust = theClusters->GetEntriesFast();
-    if (nclust && hit->fPHlast > 0) {
-	AliMUON::fMaxIterPad=hit->fPHlast;
-	AliMUON::fCurIterPad=hit->fPHfirst;
+    if (nclust && hit->PHlast() > 0) {
+	AliMUON::fMaxIterPad=hit->PHlast();
+	AliMUON::fCurIterPad=hit->PHfirst();
 	return (AliMUONPadHit*) clusters->UncheckedAt(AliMUON::fCurIterPad-1);
     } else {
 	return 0;
