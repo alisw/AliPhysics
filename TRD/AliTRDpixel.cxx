@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.2.4.1  2000/02/28 17:59:27  cblume
+Initialize fTrack with -1
+
+Revision 1.2  1999/09/29 09:24:35  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,9 +40,9 @@ AliTRDpixel::AliTRDpixel():TObject()
   // Create a TRD pixel
   // 
 
-  fSignal   = 0;
-  fTrack[0] = 0;
-  fTrack[1] = 0;
-  fTrack[2] = 0;
+  fSignal   =  0;
+  fTrack[0] = -1;
+  fTrack[1] = -1;
+  fTrack[2] = -1;
 
 }

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.4.1  2000/02/28 17:57:47  cblume
+GetTrack returns now -1 if no track is found
+
+Revision 1.3  1999/10/04 14:48:07  fca
+Avoid warnings on non-ansi compiler HP-UX CC
+
 Revision 1.2  1999/09/29 09:24:35  fca
 Introduction of the Copyright and cvs Log
 
@@ -140,6 +146,7 @@ void AliTRDmatrix::DrawRow(Int_t iRow)
   //
 
   if ((iRow < 0) || (iRow >= fRow)) {
+    printf("AliTRDmatrix::DrawRow -- ");
     printf("Index out of bounds (%d/%d)\n",iRow,fRow);
     return;
   }
@@ -175,6 +182,7 @@ void AliTRDmatrix::DrawCol(Int_t iCol)
   //
 
   if ((iCol < 0) || (iCol >= fCol)) {
+    printf("AliTRDmatrix::DrawCol -- ");
     printf("Index out of bounds (%d/%d)\n",iCol,fCol);
     return;
   }
@@ -210,6 +218,7 @@ void AliTRDmatrix::DrawTime(Int_t iTime)
   //
 
   if ((iTime < 0) || (iTime >= fTime)) {
+    printf("AliTRDmatrix::DrawTime -- ");
     printf("Index out of bounds (%d/%d)\n",iTime,fTime);
     return;
   }
@@ -268,7 +277,7 @@ Bool_t AliTRDmatrix::AddTrack(Int_t iRow, Int_t iCol, Int_t iTime, Int_t track)
       trackSet = kTRUE;
       break;
     }
-    if (pixel->GetTrack(i) ==     0) {
+    if (pixel->GetTrack(i) ==    -1) {
       pixel->SetTrack(i,track);
       trackSet = kTRUE;
       break;
@@ -319,8 +328,9 @@ Int_t AliTRDmatrix::GetTrack(Int_t iRow, Int_t iCol, Int_t iTime, Int_t iTrack)
   //
 
   if ((iTrack < 0) || (iTrack >= kTrackPixel)) {
-    printf("GetTrack: Index out of bounds (%d)\n",iTrack);
-    return 0;
+    printf("AliTRDmatrix::GetTrack -- ");
+    printf("Index out of bounds (%d)\n",iTrack);
+    return -1;
   }
 
   AliTRDpixel *pixel = GetPixel(iRow,iCol,iTime);
@@ -328,7 +338,7 @@ Int_t AliTRDmatrix::GetTrack(Int_t iRow, Int_t iCol, Int_t iTime, Int_t iTrack)
     return (pixel->GetTrack(iTrack));
   }
   else {
-    return 0;
+    return -1;
   }
 
 }

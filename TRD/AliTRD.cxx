@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.16.2.2  2000/02/28 17:53:24  cblume
+Introduce TRD geometry classes
+
+Revision 1.16.2.1  2000/02/28 17:04:19  cblume
+Include functions and data members for AliTRDrecPoint
+
+Revision 1.16  2000/01/19 17:17:35  fca
+Introducing a list of lists of hits -- more hits allowed for detector now
+
 Revision 1.15  1999/11/02 17:04:25  fca
 Small syntax change for HP compiler
 
@@ -58,6 +67,11 @@ Introduction of the Copyright and cvs Log
 #include "AliTRD.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliTRDdigitizer.h"
+#include "AliTRDclusterizer.h"
+#include "AliTRDgeometryHole.h"
+#include "AliTRDgeometryFull.h"
+#include "AliTRDrecPoint.h"
  
 ClassImp(AliTRD)
  
@@ -68,41 +82,15 @@ AliTRD::AliTRD()
   // Default constructor
   //
 
-  Int_t iplan;
-
   fIshunt      = 0;
   fGasMix      = 0;
   fHits        = 0;
   fDigits      = 0;
-  fHole        = 0;
 
-  fClusters    = 0;
-  fNclusters   = 0;
+  fRecPoints   = 0;
+  fNRecPoints  = 0;
 
-  // The chamber dimensions
-  for (iplan = 0; iplan < kNplan; iplan++) {
-    fClengthI[iplan]  = 0.;
-    fClengthM1[iplan] = 0.;
-    fClengthM2[iplan] = 0.;
-    fClengthO1[iplan] = 0.;
-    fClengthO2[iplan] = 0.;
-    fClengthO3[iplan] = 0.;
-    fCwidth[iplan]    = 0.;
-  }
-
-  for (iplan = 0; iplan < kNplan; iplan++) {
-    for (Int_t icham = 0; icham < kNcham; icham++) {
-      for (Int_t isect = 0; isect < kNsect; isect++) {
-        fRowMax[iplan][icham][isect] = 0;
-      }
-    }
-    fColMax[iplan] = 0;
-  }
-  fTimeMax       = 0;
-
-  fRowPadSize    = 0;
-  fColPadSize    = 0;
-  fTimeBinSize   = 0;
+  fGeometry    = 0;
 
 }
  
@@ -114,8 +102,6 @@ AliTRD::AliTRD(const char *name, const char *title)
   // Standard constructor for the TRD
   //
 
-  Int_t iplan;
-
   // Check that FRAME is there otherwise we have no place where to
   // put TRD
   AliModule* FRAME=gAlice->GetModule("FRAME");
@@ -125,51 +111,32 @@ AliTRD::AliTRD(const char *name, const char *title)
   } 
 
   // Define the TRD geometry according to the FRAME geometry
-  if (FRAME->IsVersion() == 0) 
-    // With hole
-    fHole = 1;
-  else 
-    // Without hole
-    fHole = 0; 
+  if      (FRAME->IsVersion() == 0) {
+    // Geometry with hole
+    fGeometry = new AliTRDgeometryHole();
+  }
+  else if (FRAME->IsVersion() == 1) {
+    // Geometry without hole
+    fGeometry = new AliTRDgeometryFull();
+  }
+  else {
+    Error("Ctor","Could not find valid FRAME version\n");
+    exit(1);
+  }
 
   // Allocate the hit array
-  fHits      = new TClonesArray("AliTRDhit"    ,  405);
+  fHits       = new TClonesArray("AliTRDhit"    ,  405);
   gAlice->AddHitList(fHits);
 
   // Allocate the digits array
-  fDigits    = new TClonesArray("AliTRDdigit"  ,10000);
+  fDigits     = 0;
 
-  // Allocate the cluster array
-  fClusters  = new TClonesArray("AliTRDcluster",  400);
-  fNclusters = 0;
+  // Allocate the rec point array
+  fRecPoints  = new TClonesArray("AliTRDrecPoint",  400);
+  fNRecPoints = 0;
    
   fIshunt = 0;
   fGasMix = 0;
-
-  // The chamber dimensions
-  for (iplan = 0; iplan < kNplan; iplan++) {
-    fClengthI[iplan]  = 0.;
-    fClengthM1[iplan] = 0.;
-    fClengthM2[iplan] = 0.;
-    fClengthO1[iplan] = 0.;
-    fClengthO2[iplan] = 0.;
-    fClengthO3[iplan] = 0.;
-    fCwidth[iplan]    = 0.;
-  }
-  
-  for (iplan = 0; iplan < kNplan; iplan++) {
-    for (Int_t icham = 0; icham < kNcham; icham++) {
-      for (Int_t isect = 0; isect < kNsect; isect++) {
-        fRowMax[iplan][icham][isect] = 0;
-      }
-    }
-    fColMax[iplan] = 0;
-  }
-  fTimeMax       = 0;
-
-  fRowPadSize    = 0;
-  fColPadSize    = 0;
-  fTimeBinSize   = 0;
 
   SetMarkerColor(kWhite);   
 
@@ -184,45 +151,52 @@ AliTRD::~AliTRD()
 
   fIshunt = 0;
 
+  delete fGeometry;
   delete fHits;
-  delete fDigits;
-  delete fClusters;
+  delete fRecPoints;
 
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddCluster(Int_t *tracks, Int_t *clusters, Float_t *position)
+void AliTRD::AddRecPoint(Float_t *pos, Int_t *digits, Int_t det, Float_t amp)
 {
   //
-  // Add a cluster for the TRD
-  // 
+  // Add a reconstructed point for the TRD
+  //
 
-  TClonesArray &lclusters = *fClusters;
-  new(lclusters[fNclusters++]) AliTRDcluster(tracks,clusters,position);
+  TClonesArray   &lRecPoints = *fRecPoints;
+  AliTRDrecPoint *RecPoint   = new(lRecPoints[fNRecPoints++]) AliTRDrecPoint();
+  TVector3        posVec(pos[0],pos[1],pos[2]);
+  RecPoint->SetLocalPosition(posVec);
+  RecPoint->SetDetector(det);
+  RecPoint->SetAmplitude(amp);
+  for (Int_t iDigit = 0; iDigit < 3; iDigit++) {
+    RecPoint->AddDigit(digits[iDigit]);
+  }
 
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddDigit(Int_t *tracks, Int_t *digits)
+void AliTRD::AddDigit(Int_t *digits)
 {
   //
   // Add a digit for the TRD
   //
 
   TClonesArray &ldigits = *fDigits;
-  new(ldigits[fNdigits++]) AliTRDdigit(tracks,digits);
+  new(ldigits[fNdigits++]) AliTRDdigit(digits);
 
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
+void AliTRD::AddHit(Int_t track, Int_t det, Float_t *hits)
 {
   //
   // Add a hit for the TRD
   //
 
   TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliTRDhit(fIshunt,track,vol,hits);
+  new(lhits[fNhits++]) AliTRDhit(fIshunt,track,det,hits);
 
 }
 
@@ -261,514 +235,15 @@ void AliTRD::CreateGeometry()
   //
   // Creates the volumes for the TRD chambers
   //
-  // Author: Christoph Blume (C.Blume@gsi.de) 20/07/99
-  //
-  // The volumes:
-  //    TRD1-3     (Air)   --- The TRD mother volumes for one sector. 
-  //                           To be placed into the spaceframe.
-  //
-  //    UAFI(/M/O) (Al)    --- The aluminum frame of the inner(/middle/outer) chambers (readout)
-  //    UCFI(/M/O) (C)     --- The carbon frame of the inner(/middle/outer) chambers 
-  //                           (driftchamber + radiator)
-  //    UAII(/M/O) (Air)   --- The inner part of the readout of the inner(/middle/outer) chambers
-  //    UFII(/M/O) (Air)   --- The inner part of the chamner and radiator of the 
-  //                           inner(/middle/outer) chambers
-  //
-  // The material layers in one chamber:
-  //    UL01       (G10)   --- The gas seal of the radiator
-  //    UL02       (CO2)   --- The gas in the radiator
-  //    UL03       (PE)    --- The foil stack
-  //    UL04       (Mylar) --- Entrance window to the driftvolume and HV-cathode
-  //    UL05       (Xe)    --- The driftvolume
-  //    UL06       (Xe)    --- The amplification region
-  //    
-  //    UL07       (Cu)    --- The pad plane
-  //    UL08       (G10)   --- The Nomex honeycomb support structure
-  //    UL09       (Cu)    --- FEE and signal lines
-  //    UL10       (PE)    --- The cooling devices
-  //    UL11       (Water) --- The cooling water
 
   // Check that FRAME is there otherwise we have no place where to put the TRD
   AliModule* FRAME = gAlice->GetModule("FRAME");
-  if (!FRAME) return;
-
-  Int_t iplan;
-
-  const Int_t npar_trd = 4;
-  const Int_t npar_cha = 3;
-
-  Float_t par_dum[3];
-  Float_t par_trd[npar_trd];
-  Float_t par_cha[npar_cha];
-
-  Float_t xpos, ypos, zpos;
-
-  Int_t *idtmed = fIdtmed->GetArray() - 1299;
-
-  // The length of the inner chambers
-  for (iplan = 0; iplan < kNplan; iplan++) 
-    fClengthI[iplan] = 110.0;
-
-  // The length of the middle chambers
-  fClengthM1[0] = 123.5;
-  fClengthM1[1] = 131.0;
-  fClengthM1[2] = 138.5;
-  fClengthM1[3] = 146.0;
-  fClengthM1[4] = 153.0;
-  fClengthM1[5] = 160.5;
-
-  fClengthM2[0] = 123.5 - 7.0;
-  fClengthM2[1] = 131.0 - 7.0;
-  fClengthM2[2] = 138.5 - 7.0;
-  fClengthM2[3] = 146.0 - 7.0;
-  fClengthM2[4] = 153.0 - 7.0;
-  fClengthM2[5] = 160.4 - 7.0;
-
-  // The length of the outer chambers
-  fClengthO1[0] = 123.5;
-  fClengthO1[1] = 131.0;
-  fClengthO1[2] = 134.5;
-  fClengthO1[3] = 142.0;
-  fClengthO1[4] = 142.0;
-  fClengthO1[5] = 134.5;
-
-  fClengthO2[0] = 123.5;
-  fClengthO2[1] = 131.0;
-  fClengthO2[2] = 134.5;
-  fClengthO2[3] = 142.0;
-  fClengthO2[4] = 142.0;
-  fClengthO2[5] = 134.5;
-
-  fClengthO3[0] =  86.5;
-  fClengthO3[1] = 101.5;
-  fClengthO3[2] = 112.5;
-  fClengthO3[3] = 127.5;
-  fClengthO3[4] = 134.5;
-  fClengthO3[5] = 134.5;
-
-  // The width of the chambers
-  fCwidth[0]    =  99.6;
-  fCwidth[1]    = 104.1;
-  fCwidth[2]    = 108.5;
-  fCwidth[3]    = 112.9;
-  fCwidth[4]    = 117.4;
-  fCwidth[5]    = 121.8;
-
-  // The TRD mother volume for one sector (Air) (dimensions identical to BTR1)
-  par_trd[0] = kSwidth1/2.;
-  par_trd[1] = kSwidth2/2.;
-  par_trd[2] = kSlenTR1/2.;
-  par_trd[3] = kSheight/2.;
-  gMC->Gsvolu("TRD1","TRD1",idtmed[1302-1],par_trd,npar_trd);
-  
-  // The TRD mother volume for one sector (Air) (dimensions identical to BTR2 + BTR3).
-  // Only used for the geometry with holes.
-  if (fHole) {
-
-    par_trd[0] = kSwidth1/2.;
-    par_trd[1] = kSwidth2/2.;
-    par_trd[2] = kSlenTR2/2.;
-    par_trd[3] = kSheight/2.;
-    gMC->Gsvolu("TRD2","TRD1",idtmed[1302-1],par_trd,npar_trd);
-
-    par_trd[0] = kSwidth1/2.;
-    par_trd[1] = kSwidth2/2.;
-    par_trd[2] = kSlenTR3/2.;
-    par_trd[3] = kSheight/2.;
-    gMC->Gsvolu("TRD3","TRD1",idtmed[1302-1],par_trd,npar_trd);
-
+  if (!FRAME) {
+    printf(" The TRD needs the FRAME to be defined first\n");
+    return;
   }
 
-  // The aluminum frames - readout + electronics (Al)
-  // The inner chambers
-  gMC->Gsvolu("UAFI","BOX ",idtmed[1301-1],par_dum,0);
-  // The middle chambers
-  gMC->Gsvolu("UAFM","BOX ",idtmed[1301-1],par_dum,0);
-  // The outer chambers
-  gMC->Gsvolu("UAFO","BOX ",idtmed[1301-1],par_dum,0);
-
-  // The inner part of the aluminum frames (Air)
-  // The inner chambers
-  gMC->Gsvolu("UAII","BOX ",idtmed[1302-1],par_dum,0);
-  // The middle chambers
-  gMC->Gsvolu("UAIM","BOX ",idtmed[1302-1],par_dum,0);
-  // The outer chambers
-  gMC->Gsvolu("UAIO","BOX ",idtmed[1302-1],par_dum,0);
-
-  // The carbon frames - radiator + driftchamber (C)
-  // The inner chambers
-  gMC->Gsvolu("UCFI","BOX ",idtmed[1307-1],par_dum,0);
-  // The middle chambers
-  gMC->Gsvolu("UCFM","BOX ",idtmed[1307-1],par_dum,0);
-  // The outer chambers
-  gMC->Gsvolu("UCFO","BOX ",idtmed[1307-1],par_dum,0);
-
-  // The inner part of the carbon frames (Air)
-  // The inner chambers
-  gMC->Gsvolu("UCII","BOX ",idtmed[1302-1],par_dum,0);
-  // The middle chambers
-  gMC->Gsvolu("UCIM","BOX ",idtmed[1302-1],par_dum,0);
-  // The outer chambers
-  gMC->Gsvolu("UCIO","BOX ",idtmed[1302-1],par_dum,0);
-
-  // The material layers inside the chambers
-  par_cha[0] = -1.;
-  par_cha[1] = -1.;
-  // G10 layer (radiator seal)
-  par_cha[2] = kSeThick/2;
-  gMC->Gsvolu("UL01","BOX ",idtmed[1313-1],par_cha,npar_cha);
-  // CO2 layer (radiator)
-  par_cha[2] = kRaThick/2;
-  gMC->Gsvolu("UL02","BOX ",idtmed[1312-1],par_cha,npar_cha);
-  // PE layer (radiator)
-  par_cha[2] = kPeThick/2;
-  gMC->Gsvolu("UL03","BOX ",idtmed[1303-1],par_cha,npar_cha);
-  // Mylar layer (entrance window + HV cathode) 
-  par_cha[2] = kMyThick/2;
-  gMC->Gsvolu("UL04","BOX ",idtmed[1308-1],par_cha,npar_cha);
-  // Xe/Isobutane layer (drift volume, sensitive) 
-  par_cha[2] = kDrThick/2.;
-  gMC->Gsvolu("UL05","BOX ",idtmed[1309-1],par_cha,npar_cha);
-  // Xe/Isobutane layer (amplification volume, not sensitive)
-  par_cha[2] = kAmThick/2.;
-  gMC->Gsvolu("UL06","BOX ",idtmed[1309-1],par_cha,npar_cha);
-  
-  // Cu layer (pad plane)
-  par_cha[2] = kCuThick/2;
-  gMC->Gsvolu("UL07","BOX ",idtmed[1305-1],par_cha,npar_cha);
-  // G10 layer (support structure)
-  par_cha[2] = kSuThick/2;
-  gMC->Gsvolu("UL08","BOX ",idtmed[1313-1],par_cha,npar_cha);
-  // Cu layer (FEE + signal lines)
-  par_cha[2] = kFeThick/2;
-  gMC->Gsvolu("UL09","BOX ",idtmed[1305-1],par_cha,npar_cha);
-  // PE layer (cooling devices)
-  par_cha[2] = kCoThick/2;
-  gMC->Gsvolu("UL10","BOX ",idtmed[1303-1],par_cha,npar_cha);
-  // Water layer (cooling)
-  par_cha[2] = kWaThick/2;
-  gMC->Gsvolu("UL11","BOX ",idtmed[1314-1],par_cha,npar_cha);
-
-  // Position the layers in the chambers
-  xpos = 0;
-  ypos = 0;
-
-  // G10 layer (radiator seal)
-  zpos = kSeZpos;
-  gMC->Gspos("UL01",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL01",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL01",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-  // CO2 layer (radiator)
-  zpos = kRaZpos;
-  gMC->Gspos("UL02",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL02",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL02",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-  // PE layer (radiator)
-  zpos = 0;
-  gMC->Gspos("UL03",1,"UL02",xpos,ypos,zpos,0,"ONLY");
-  // Mylar layer (entrance window + HV cathode)   
-  zpos = kMyZpos;
-  gMC->Gspos("UL04",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL04",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL04",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-  // Xe/Isobutane layer (drift volume) 
-  zpos = kDrZpos;
-  gMC->Gspos("UL05",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL05",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL05",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-  // Xe/Isobutane layer (amplification volume)
-  zpos = kAmZpos;
-  gMC->Gspos("UL06",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL06",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL06",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-
-  // Cu layer (pad plane)
-  zpos = kCuZpos;
-  gMC->Gspos("UL07",1,"UAII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL07",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL07",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
-  // G10 layer (support structure)
-  zpos = kSuZpos;
-  gMC->Gspos("UL08",1,"UAII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL08",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL08",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
-  // Cu layer (FEE + signal lines)
-  zpos = kFeZpos; 
-  gMC->Gspos("UL09",1,"UAII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL09",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL09",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
-  // PE layer (cooling devices)
-  zpos = kCoZpos;
-  gMC->Gspos("UL10",1,"UAII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL10",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL10",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
-  // Water layer (cooling)
-  zpos = kWaZpos;
-  gMC->Gspos("UL11",1,"UAII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL11",1,"UAIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL11",1,"UAIO",xpos,ypos,zpos,0,"ONLY");
-
-  // Position the chambers in the TRD mother volume
-  for (iplan = 1; iplan <= kNplan; iplan++) {
-
-    // The inner chambers ---------------------------------------------------------------
-
-    // the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthI[iplan-1]/2.;
-    par_cha[2] = kCaframe/2.;
-    xpos       = 0.;
-    ypos       = 0.;
-    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAFI",iplan       ,"TRD1",xpos,ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-    // the inner part of the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.   - kCathick;
-    par_cha[1] = fClengthI[iplan-1]/2. - kCathick;
-    par_cha[2] = kCaframe/2.;
-    xpos       = 0.;
-    ypos       = 0.;
-    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAII",iplan       ,"TRD1",xpos,ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-    // the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthI[iplan-1]/2.;
-    par_cha[2] = kCcframe/2.;
-    xpos       = 0.;
-    ypos       = 0.;
-    zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCFI",iplan       ,"TRD1",xpos,ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-    // the inner part of the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.   - kCcthick;
-    par_cha[1] = fClengthI[iplan-1]/2. - kCcthick;
-    par_cha[2] = kCcframe/2.;
-    xpos       = 0.;
-    ypos       = 0.;
-    zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCII",iplan       ,"TRD1",xpos,ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-    // The middle chambers --------------------------------------------------------------
-
-    // the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthM1[iplan-1]/2.;
-    par_cha[2] = kCaframe/2.;
-    xpos       = 0.;
-    ypos       = fClengthI[iplan-1]/2.  + fClengthM1[iplan-1]/2.;
-    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAFM",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-    gMC->Gsposp("UAFM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-    // the inner part of the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCathick;
-    par_cha[1] = fClengthM1[iplan-1]/2. - kCathick;
-    par_cha[2] = kCaframe/2.;
-    xpos       = 0.;
-    ypos       = fClengthI[iplan-1]/2.  + fClengthM1[iplan-1]/2.;
-    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAIM",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    gMC->Gsposp("UAIM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-    // the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthM1[iplan-1]/2.;
-    par_cha[2] = kCcframe/2.;
-    xpos       = 0.;
-    ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]/2.;
-    zpos       = kCcframe/2.           - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCFM",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-    gMC->Gsposp("UCFM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-    // the inner part of the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCcthick;
-    par_cha[1] = fClengthM1[iplan-1]/2. - kCcthick;
-    par_cha[2] = kCcframe/2.;
-    xpos       = 0.;
-    ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]/2.;
-    zpos       = kCcframe/2.           - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCIM",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    gMC->Gsposp("UCIM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-    // Only for the geometry with holes
-    if (fHole) {
-
-      // the aluminum frame
-      par_cha[0] = fCwidth[iplan-1]/2.;
-      par_cha[1] = fClengthM2[iplan-1]/2.;
-      par_cha[2] = kCaframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthM2[iplan-1]/2. - kSlenTR2/2.;
-      zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UAFM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-      // the inner part of the aluminum frame
-      par_cha[0] = fCwidth[iplan-1]/2.    - kCathick;
-      par_cha[1] = fClengthM2[iplan-1]/2. - kCathick;
-      par_cha[2] = kCaframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthM2[iplan-1]/2. - kSlenTR2/2.;
-      zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UAIM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-      // the carbon frame
-      par_cha[0] = fCwidth[iplan-1]/2.;
-      par_cha[1] = fClengthM2[iplan-1]/2.;
-      par_cha[2] = kCcframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthM2[iplan-1]/2. - kSlenTR2/2.;
-      zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UCFM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-      // the inner part of the carbon frame
-      par_cha[0] = fCwidth[iplan-1]/2.    - kCcthick;
-      par_cha[1] = fClengthM2[iplan-1]/2. - kCcthick;
-      par_cha[2] = kCcframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthM2[iplan-1]/2. - kSlenTR2/2.;
-      zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UCIM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-      
-    }
-
-    // The outer chambers ---------------------------------------------------------------
-
-    // the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthO1[iplan-1]/2.;
-    par_cha[2] = kCaframe/2.;
-    xpos       = 0.;
-    ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]    + fClengthO1[iplan-1]/2.;
-    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAFO",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-    gMC->Gsposp("UAFO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-    // the inner part of the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCathick;
-    par_cha[1] = fClengthO1[iplan-1]/2. - kCathick;
-    par_cha[2] = kCaframe/2.;
-    xpos       = 0.;
-    ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]    + fClengthO1[iplan-1]/2.;
-    zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAIO",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    gMC->Gsposp("UAIO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-    // the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthO1[iplan-1]/2.;
-    par_cha[2] = kCcframe/2.;
-    xpos       = 0.;
-    ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]    + fClengthO1[iplan-1]/2.;
-    zpos       = kCcframe/2.           - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCFO",iplan,         "TRD1",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-    gMC->Gsposp("UCFO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-    // the inner part of the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCcthick;
-    par_cha[1] = fClengthO1[iplan-1]/2. - kCcthick;
-    par_cha[2] = kCcframe/2.;
-    xpos       = 0.;
-    ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]    + fClengthO1[iplan-1]/2.;
-    zpos       = kCcframe/2.           - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCIO",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    gMC->Gsposp("UCIO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-    // Only for the geometry with holes
-    if (fHole) {
-
-      // the aluminum frame
-      par_cha[0] = fCwidth[iplan-1]/2.;
-      par_cha[1] = fClengthO2[iplan-1]/2.;
-      par_cha[2] = kCaframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthM2[iplan-1]    + fClengthO2[iplan-1]/2. - kSlenTR2/2.;
-      zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UAFO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-      // the inner part of the aluminum frame
-      par_cha[0] = fCwidth[iplan-1]/2.    - kCathick;
-      par_cha[1] = fClengthO2[iplan-1]/2. - kCathick;
-      par_cha[2] = kCaframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthM2[iplan-1]    + fClengthO2[iplan-1]/2. - kSlenTR2/2.;
-      zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UAIO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-      // the carbon frame
-      par_cha[0] = fCwidth[iplan-1]/2.;
-      par_cha[1] = fClengthO2[iplan-1]/2.;
-      par_cha[2] = kCcframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthM2[iplan-1]    + fClengthO2[iplan-1]/2. - kSlenTR2/2.;
-      zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UCFO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-      // the inner part of the carbon frame
-      par_cha[0] = fCwidth[iplan-1]/2.    - kCcthick;
-      par_cha[1] = fClengthO2[iplan-1]/2. - kCcthick;
-      par_cha[2] = kCcframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthM2[iplan-1]    + fClengthO2[iplan-1]/2. - kSlenTR2/2.;
-      zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UCIO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-      // the aluminum frame
-      par_cha[0] = fCwidth[iplan-1]/2.;
-      par_cha[1] = fClengthO3[iplan-1]/2.;
-      par_cha[2] = kCaframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthO3[iplan-1]/2. - kSlenTR3/2.;
-      zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UAFO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-      // the inner part of the aluminum frame
-      par_cha[0] = fCwidth[iplan-1]/2.    - kCathick;
-      par_cha[1] = fClengthO3[iplan-1]/2. - kCathick;
-      par_cha[2] = kCaframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthO3[iplan-1]/2. - kSlenTR3/2.;
-      zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UAIO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-      // the carbon frame
-      par_cha[0] = fCwidth[iplan-1]/2.;
-      par_cha[1] = fClengthO3[iplan-1]/2.;
-      par_cha[2] = kCcframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthO3[iplan-1]/2. - kSlenTR3/2.;
-      zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UCFO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-
-      // the inner part of the carbon frame
-      par_cha[0] = fCwidth[iplan-1]/2.    - kCcthick;
-      par_cha[1] = fClengthO3[iplan-1]/2. - kCcthick;
-      par_cha[2] = kCcframe/2.;
-      xpos       = 0.;
-      ypos       = fClengthO3[iplan-1]/2. - kSlenTR3/2.;
-      zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-      gMC->Gsposp("UCIO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-
-    }
-
-  }
-
-  if (fHole) {
-    xpos     = 0.;
-    ypos     = 0.;
-    zpos     = 0.;
-    gMC->Gspos("TRD1",1,"BTR1",xpos,ypos,zpos,0,"ONLY");
-    gMC->Gspos("TRD2",1,"BTR2",xpos,ypos,zpos,0,"ONLY");
-    gMC->Gspos("TRD3",1,"BTR3",xpos,ypos,zpos,0,"ONLY");
-  }
-  else {
-    xpos     = 0.;
-    ypos     = 0.;
-    zpos     = 0.;
-    gMC->Gspos("TRD1",1,"BTR1",xpos,ypos,zpos,0,"ONLY");
-    gMC->Gspos("TRD1",2,"BTR2",xpos,ypos,zpos,0,"ONLY");
-    gMC->Gspos("TRD1",3,"BTR3",xpos,ypos,zpos,0,"ONLY");
-  }
+  fGeometry->CreateGeometry(fIdtmed->GetArray() - 1299);
 
 }
  
@@ -942,7 +417,7 @@ void AliTRD::DrawModule()
   gMC->Gsatt("ALIC","SEEN", 0);
   
   // Set the volumes visible
-  if (fHole) {
+  if (fGeometry->IsVersion() == 0) {
     gMC->Gsatt("B071","SEEN", 0);
     gMC->Gsatt("B074","SEEN", 0);
     gMC->Gsatt("B075","SEEN", 0);
@@ -998,107 +473,29 @@ Int_t AliTRD::DistancetoPrimitive(Int_t , Int_t )
 void AliTRD::Init()
 {
   //
-  // Initialise the TRD detector after the geometry has been created
+  // Initialize the TRD detector after the geometry has been created
   //
 
   Int_t i;
-  Int_t iplan;
-  
+
   printf("\n");
-  for(i=0;i<35;i++) printf("*");
+  for (i = 0; i < 35; i++) printf("*");
   printf(" TRD_INIT ");
-  for(i=0;i<35;i++) printf("*");
+  for (i = 0; i < 35; i++) printf("*");
   printf("\n");
-  
-  // Here the TRD initialisation code (if any!)
-  if (fGasMix == 1) 
-    printf("          Gas Mixture: 90%% Xe + 10%% CO2\n");
-  else
-    printf("          Gas Mixture: 97%% Xe + 3%% Isobutane\n");
+  printf("\n");
 
-  if (fHole)
-    printf("          Geometry with holes\n");
-  else
-    printf("          Full geometry\n");
-
-  // The default pad dimensions
-  if (!(fRowPadSize))  fRowPadSize  = 4.5;
-  if (!(fColPadSize))  fColPadSize  = 1.0;
-  if (!(fTimeBinSize)) fTimeBinSize = 0.1;
-
-  // The maximum number of pads
-  // and the position of pad 0,0,0 
-  // 
-  // chambers seen from the top:
-  //     +----------------------------+
-  //     |                            |
-  //     |                            |     ^
-  //     |                            | rphi|
-  //     |                            |     |
-  //     |0                           |     | 
-  //     +----------------------------+     +------>
-  //                                             z 
-  // chambers seen from the side:           ^
-  //     +----------------------------+ time|
-  //     |                            |     |
-  //     |0                           |     |
-  //     +----------------------------+     +------>
-  //                                             z
-  //                                             
-  for (iplan = 0; iplan < kNplan; iplan++) {
-
-    // The pad row (z-direction)
-    for (Int_t isect = 0; isect < kNsect; isect++) {
-      Float_t clengthI = fClengthI[iplan];
-      Float_t clengthM = fClengthM1[iplan];
-      Float_t clengthO = fClengthO1[iplan];
-      if (fHole) {
-        switch (isect) {
-        case 12:
-	case 13:
-	case 14:
-	case 15:
-	case 16:
-          clengthM = fClengthM2[iplan];
-          clengthO = fClengthO2[iplan];
-          break;
-        case 4:
-	case 5:
-	case 6:
-          clengthO = fClengthO3[iplan];
-          break;
-        };
-      }
-      fRowMax[iplan][0][isect] = 1 + TMath::Nint((clengthO - 2. * kCcthick) 
-                                                           / fRowPadSize - 0.5);
-      fRowMax[iplan][1][isect] = 1 + TMath::Nint((clengthM - 2. * kCcthick) 
-                                                           / fRowPadSize - 0.5);
-      fRowMax[iplan][2][isect] = 1 + TMath::Nint((clengthI - 2. * kCcthick) 
-                                                           / fRowPadSize - 0.5);
-      fRowMax[iplan][3][isect] = 1 + TMath::Nint((clengthM - 2. * kCcthick) 
-                                                           / fRowPadSize - 0.5);
-      fRowMax[iplan][4][isect] = 1 + TMath::Nint((clengthO - 2. * kCcthick) 
-                                                           / fRowPadSize - 0.5);
-      fRow0[iplan][0][isect]   = -clengthI/2. - clengthM - clengthO + kCcthick; 
-      fRow0[iplan][1][isect]   = -clengthI/2. - clengthM            + kCcthick;
-      fRow0[iplan][2][isect]   = -clengthI/2.                       + kCcthick;
-      fRow0[iplan][3][isect]   =  clengthI/2.                       + kCcthick; 
-      fRow0[iplan][4][isect]   =  clengthI/2. + clengthM            + kCcthick; 
-    }
-
-    // The pad column (rphi-direction)  
-    fColMax[iplan]    = 1 + TMath::Nint((fCwidth[iplan] - 2. * kCcthick) 
-                                                        / fColPadSize - 0.5);
-    fCol0[iplan]      = -fCwidth[iplan]/2. + kCcthick;
-
+  if      (fGeometry->IsVersion() == 0) {
+    printf("          Geometry with holes initialized.\n\n");
+  }
+  else if (fGeometry->IsVersion() == 1) {
+    printf("          Geometry without holes initialized.\n\n");
   }
 
-  // The time bucket
-  fTimeMax = 1 + TMath::Nint(kDrThick / fTimeBinSize - 0.5);
-  for (iplan = 0; iplan < kNplan; iplan++) {
-    fTime0[iplan]   = kRmin + kCcframe/2. + kDrZpos - 0.5 * kDrThick
-                            + iplan * (kCheight + kCspace);
-  } 
+  if (fGasMix == 1)
+    printf("          Gas Mixture: 90%% Xe + 10%% CO2\n\n");
+  else
+    printf("          Gas Mixture: 97%% Xe + 3%% Isobutane\n\n");
 
 }
 
@@ -1114,18 +511,31 @@ void AliTRD::MakeBranch(Option_t* option)
 
   AliDetector::MakeBranch(option);
 
-  Char_t *D = strstr(option,"D");
-  sprintf(branchname,"%s",GetName());
-  if (fDigits   && gAlice->TreeD() && D) {
-    gAlice->TreeD()->Branch(branchname,&fDigits,  buffersize);
-    printf("* AliTRD::MakeBranch * Making Branch %s for digits in TreeD\n",branchname);
+  //Char_t *D = strstr(option,"D");
+  //sprintf(branchname,"%s",GetName());
+  //if (fDigits    && gAlice->TreeD() && D) {
+  //  gAlice->TreeD()->Branch(branchname,&fDigits,   buffersize);
+  //  printf("* AliTRD::MakeBranch * Making Branch %s for digits in TreeD\n",branchname);
+  //}
+
+  Char_t *R = strstr(option,"R");
+  sprintf(branchname,"%srecPoints",GetName());
+  if (fRecPoints && gAlice->TreeR() && R) {
+    gAlice->TreeR()->Branch(branchname,&fRecPoints,buffersize);
+    printf("* AliTRD::MakeBranch * Making Branch %s for points in TreeR\n",branchname);
   }
 
-  sprintf(branchname,"%scluster",GetName());
-  if (fClusters && gAlice->TreeD() && D) {
-    gAlice->TreeD()->Branch(branchname,&fClusters,buffersize);
-    printf("* AliTRD::MakeBranch * Making Branch %s for cluster in TreeD\n",branchname);
-  }
+}
+
+//_____________________________________________________________________________
+void AliTRD::ResetRecPoints()
+{
+  //
+  // Reset number of reconstructed points and the point array
+  //
+
+  fNRecPoints = 0;
+  if (fRecPoints) fRecPoints->Clear();
 
 }
 
@@ -1141,13 +551,15 @@ void AliTRD::SetTreeAddress()
   AliDetector::SetTreeAddress();
 
   TBranch *branch;
-  TTree   *treeD = gAlice->TreeD();
+  TTree   *treeR = gAlice->TreeR();
 
-  if (treeD) {
-    sprintf(branchname,"%scluster",GetName());    
-    if (fClusters) {
-      branch = treeD->GetBranch(branchname);
-      if (branch) branch->SetAddress(&fClusters);
+  if (treeR) {
+    sprintf(branchname,"%srecPoints",GetName());
+    if (fRecPoints) {
+      branch = treeR->GetBranch(branchname);
+      if (branch) {
+        branch->SetAddress(&fRecPoints);
+      }
     }
   }
 
@@ -1174,64 +586,33 @@ void AliTRD::SetGasMix(Int_t imix)
 //______________________________________________________________________________
 void AliTRD::Streamer(TBuffer &R__b)
 {
-   // Stream an object of class AliTRD.
+  //
+  // Stream an object of class AliTRD.
+  //
 
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliDetector::Streamer(R__b);
-      R__b >> fGasMix;
-      R__b.ReadStaticArray(fClengthI);
-      R__b.ReadStaticArray(fClengthM1);
-      R__b.ReadStaticArray(fClengthM2);
-      R__b.ReadStaticArray(fClengthO1);
-      R__b.ReadStaticArray(fClengthO2);
-      R__b.ReadStaticArray(fClengthO3);
-      R__b.ReadStaticArray(fCwidth);
-      R__b.ReadStaticArray((int*)fRowMax);
-      R__b.ReadStaticArray(fColMax);
-      R__b >> fTimeMax;
-      R__b.ReadStaticArray((float*)fRow0);
-      R__b.ReadStaticArray(fCol0);
-      R__b.ReadStaticArray(fTime0);
-      R__b >> fRowPadSize;
-      R__b >> fColPadSize;
-      R__b >> fTimeBinSize;
-      R__b >> fHole;
-      // Stream the pointers but not the TClonesArray
-      R__b >> fClusters;     // diff
-      //R__b >> fNclusters;
-   } else {
-      R__b.WriteVersion(AliTRD::IsA());
-      AliDetector::Streamer(R__b);
-      R__b << fGasMix;
-      R__b.WriteArray(fClengthI, 6);
-      R__b.WriteArray(fClengthM1, 6);
-      R__b.WriteArray(fClengthM2, 6);
-      R__b.WriteArray(fClengthO1, 6);
-      R__b.WriteArray(fClengthO2, 6);
-      R__b.WriteArray(fClengthO3, 6);
-      R__b.WriteArray(fCwidth, 6);
-      R__b.WriteArray((int*)fRowMax, 540);
-      R__b.WriteArray(fColMax, 6);
-      R__b << fTimeMax;
-      R__b.WriteArray((float*)fRow0, 540);
-      R__b.WriteArray(fCol0, 6);
-      R__b.WriteArray(fTime0, 6);
-      R__b << fRowPadSize;
-      R__b << fColPadSize;
-      R__b << fTimeBinSize;
-      R__b << fHole;
-      // Stream the pointers but not the TClonesArrays
-      R__b << fClusters;     // diff
-      //R__b << fNclusters;
-   }
+  if (R__b.IsReading()) {
+    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
+    AliDetector::Streamer(R__b);
+    R__b >> fGasMix;
+    R__b >> fGeometry;
+    // Stream the pointers but not the TClonesArray
+    R__b >> fRecPoints;     // diff
+  }
+  else {
+    R__b.WriteVersion(AliTRD::IsA());
+    AliDetector::Streamer(R__b);
+    R__b << fGasMix;
+    R__b << fGeometry;
+    // Stream the pointers but not the TClonesArrays
+    R__b << fRecPoints;     // diff
+  }
 
 }
 
 ClassImp(AliTRDhit)
  
 //_____________________________________________________________________________
-AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
+AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t det, Float_t *hits)
           :AliHit(shunt, track)
 {
   //
@@ -1239,67 +620,13 @@ AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
   //
 
   // Store volume hierarchy
-  fSector  = vol[0]; 
-  fChamber = vol[1];
-  fPlane   = vol[2];
-  
+  fDetector = det;
+
   // Store position and charge
-  fX       = hits[0];
-  fY       = hits[1];
-  fZ       = hits[2];
-  fQ       = hits[3];
-
-}
-
-ClassImp(AliTRDdigit)
-
-//_____________________________________________________________________________
-AliTRDdigit::AliTRDdigit(Int_t *tracks, Int_t *digits)
-            :AliDigit(tracks)
-{
-  //
-  // Create a TRD digit
-  //
-
-  // Store the volume hierarchy
-  fSector  = digits[0];
-  fChamber = digits[1];
-  fPlane   = digits[2];
-
-  // Store the row, pad, and time bucket number
-  fRow     = digits[3];
-  fCol     = digits[4];
-  fTime    = digits[5];
-
-  // Store the signal amplitude
-  fSignal  = digits[6];
-
-}
-
-ClassImp(AliTRDcluster)
-
-//_____________________________________________________________________________
-AliTRDcluster::AliTRDcluster(Int_t *tracks, Int_t *cluster, Float_t* position)
-              :TObject()
-{
-  //
-  // Create a TRD cluster
-  //
-
-  fSector    = cluster[0];
-  fChamber   = cluster[1];
-  fPlane     = cluster[2];
-
-  fTimeSlice = cluster[3];
-  fEnergy    = cluster[4];
-
-  fX         = position[0];
-  fY         = position[1];
-  fZ         = position[2];
-
-  fTracks[0] = tracks[0];
-  fTracks[1] = tracks[1];
-  fTracks[2] = tracks[2];
+  fX        = hits[0];
+  fY        = hits[1];
+  fZ        = hits[2];
+  fQ        = hits[3];
 
 }
 

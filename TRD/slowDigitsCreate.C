@@ -2,8 +2,7 @@ void slowDigitsCreate() {
 
 /////////////////////////////////////////////////////////////////////////
 //
-// Creates the digits from the hit information. An additional hit-tree
-// is added to the input file.
+// Creates the digits from the hit information. 
 //
 /////////////////////////////////////////////////////////////////////////
 
@@ -11,47 +10,31 @@ void slowDigitsCreate() {
   if (gClassTable->GetID("AliRun") < 0) {
     gROOT->LoadMacro("loadlibs.C");
     loadlibs();
+    cout << "Loaded shared libraries" << endl;
   }
 
   // Input (and output) file name
   Char_t *alifile = "galice_d_v1.root"; 
 
-  // Event number
-  Int_t   nEvent  = 0;
+  // Create the TRD digitzer 
+  AliTRDdigitizer *Digitizer = new AliTRDdigitizer("digitizer","Digitizer class");
 
-  // Connect the AliRoot file containing Geometry, Kine, and Hits
-  TFile *gafl = (TFile*) gROOT->GetListOfFiles()->FindObject(alifile);
-  if (!gafl) {
-    cout << "Open the ALIROOT-file " << alifile << endl;
-    gafl = new TFile(alifile,"UPDATE");
-  }
-  else {
-    cout << alifile << " is already open" << endl;
-  }
+  // Set the parameter
+  Digitizer->SetDiffusion();
+  Digitizer->SetExB();
+  //Digitizer->SetElAttach();
+  //Digitizer->SetAttachProb();
 
-  // Get AliRun object from file or create it if not on file
-  if (!gAlice) {
-    gAlice = (AliRun*) gafl->Get("gAlice");
-    if (gAlice)  
-      cout << "AliRun object found on file" << endl;
-    else
-      gAlice = new AliRun("gAlice","Alice test program");
-  }
+  // Open the AliRoot file
+  Digitizer->Open(alifile);
 
-  // Import the Trees for the event nEvent in the file
-  Int_t nparticles = gAlice->GetEvent(nEvent);
-  if (nparticles <= 0) break;
+  // Create the digits
+  Digitizer->MakeDigits();
 
-  // Get the pointer to the detector class
-  AliTRDv1 *TRD = (AliTRDv1*) gAlice->GetDetector("TRD");
+  // Write the digits into the input file
+  Digitizer->WriteDigits();
 
-  // Create the digits and fill the digits-tree
-  TRD->Hits2Digits();
-
-  // Write the new tree into the input file
-  cout << "Entries in digits tree = " << gAlice->TreeD()->GetEntries() << endl;
-  Char_t treeName[7];
-  sprintf(treeName,"TreeD%d",nEvent);
-  gAlice->TreeD()->Write(treeName);
+  // Save the digitizer class in the AliROOT file
+  Digitizer->Write();
 
 }

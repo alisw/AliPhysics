@@ -2,8 +2,7 @@ void slowClusterCreate() {
 
 ///////////////////////////////////////////////////////////////////////// 
 //
-// Creates cluster from the digit information. An additional hit-tree
-// is added to the input file.
+// Creates cluster from the digit information. 
 //
 ///////////////////////////////////////////////////////////////////////// 
 
@@ -11,47 +10,29 @@ void slowClusterCreate() {
   if (gClassTable->GetID("AliRun") < 0) {
     gROOT->LoadMacro("loadlibs.C");
     loadlibs();
+    cout << "Loaded shared libraries" << endl;
   }
 
   // Input (and output) file name
   Char_t *alifile = "galice_c_v1.root";
 
-  // Event number
-  Int_t   nEvent  = 0;
+  // Create the clusterizer
+  AliTRDclusterizerV1 *Clusterizer = 
+    new AliTRDclusterizerV1("clusterizer","slow clusterizer class"); 
 
-  // Connect the AliRoot file containing Geometry, Kine, Hits, and Digits
-  TFile *gafl = (TFile*) gROOT->GetListOfFiles()->FindObject(alifile);
-  if (!gafl) {
-    cout << "Open the ALIROOT-file " << alifile << endl;
-    gafl = new TFile(alifile,"UPDATE");
-  }
-  else {
-    cout << alifile << " is already open" << endl;
-  }
+  // Open the AliRoot file 
+  Clusterizer->Open(alifile);
 
-  // Get AliRun object from file or create it if not on file
-  if (!gAlice) {
-    gAlice = (AliRun*) gafl->Get("gAlice");
-    if (gAlice)  
-      cout << "AliRun object found on file" << endl;
-    else
-      gAlice = new AliRun("gAlice","Alice test program");
-  }
+  // Load the digits
+  Clusterizer->ReadDigits();
 
-  // Import the Trees for the event nEvent in the file
-  Int_t nparticles = gAlice->GetEvent(nEvent);
-  if (nparticles <= 0) break;
+  // Find the cluster
+  Clusterizer->MakeCluster();
 
-  // Get the pointer to the detector classes
-  AliTRDv1 *TRD = (AliTRDv1*) gAlice->GetDetector("TRD");
+  // Write the cluster into the input file
+  Clusterizer->WriteCluster();
 
-  // Create the clusters
-  TRD->Digits2Clusters();
-
-  // Write the new tree into the input file
-  cout << "Entries in digits tree = " << gAlice->TreeD()->GetEntries() << endl;
-  Char_t treeName[7];
-  sprintf(treeName,"TreeD%d",nEvent);
-  gAlice->TreeD()->Write(treeName);
+  // Save the clusterizer class in the AliROOT file
+  Clusterizer->Write();
 
 }
