@@ -31,8 +31,8 @@ TG4VSensitiveDetector::TG4VSensitiveDetector(
   : G4VSensitiveDetector(right)
 {  				    
 //
-  fID = right.fID;
-  fStepManager = right.fStepManager;
+  // copy stuff
+  *this = right;
 
   ++fgSDCounter;;
 }
