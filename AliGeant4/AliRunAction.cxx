@@ -12,6 +12,7 @@
 #include "AliSDManager.h"
 #include "AliGlobals.h"
 #include "AliRun.h"
+#include "AliHeader.h"
 #include "AliLego.h"
 
 #include "TG4GeometryManager.h"
