@@ -55,18 +55,12 @@ AliFMDDigitizer::AliFMDDigitizer(AliRunDigitizer* manager)
  // if (GetDebug()>2)
   //  cerr<<"AliFMDDigitizer::AliFMDDigitizer"
    //     <<"(AliRunDigitizer* manager) was processed"<<endl;
-
 }
 
 //------------------------------------------------------------------------
 AliFMDDigitizer::~AliFMDDigitizer()
 {
 // Destructor
-  if(fSDigits)  {
-    fSDigits->Delete();
-    delete fSDigits ;
-    fSDigits = 0;
-  }
 }
 
  //------------------------------------------------------------------------
@@ -89,89 +83,100 @@ void AliFMDDigitizer::Exec(Option_t* option)
   cout<<"AliFMDDigitizer::>SDigits2Digits start...\n";
 #endif
 
-  AliFMD * FMD = (AliFMD *) gAlice->GetDetector("FMD") ;
-  cout<<" FMD "<<FMD<<endl;
-  if (gAlice->TreeD () == 0)
-    gAlice->MakeTree ("D");
-  fDigits   = FMD->Digits();
-  
+  //  cout<<" FMD "<<FMD<<endl;
 
-  Int_t chargeSum[10][50][300];
+   Int_t volume, sector, ring, charge;
+  Float_t e;
+  Float_t de[10][50][300];
+  Int_t hit;
   Int_t digit[5];
   Int_t ivol, iSector, iRing;
   for (Int_t i=0; i<10; i++)
     for(Int_t j=0; j<50; j++)
       for(Int_t ij=0; ij<300; ij++)
-	chargeSum[i][j][ij]=0;
+	de[i][j][ij]=0;
   Int_t NumberOfRings[5]=
   {256,128,256,128,256};
   Int_t NumberOfSectors[5]=
   {20,40,20,40,20}; 
   
+  AliFMDhit *fmdHit=0;
+  TTree *TH=0;
+  TBranch *brHits=0;
+  // fHits = new TClonesArray ("AliFMDhit", 1000);
+
+  AliFMD * fFMD = (AliFMD *) gAlice->GetDetector("FMD") ;
 
 // Loop over files to digitize
 
-  for (Int_t inputFile=0; inputFile<fManager->GetNinputs();
+  Int_t nFiles=GetManager()->GetNinputs();
+  for (Int_t inputFile=0; inputFile<nFiles;
        inputFile++) {
 
-    ReadDigit( chargeSum, inputFile);
+    cout<<" event "<<fManager->GetOutputEventNr()<<endl;
+    if (fFMD)
+    {
+      TClonesArray *FMDhits = fFMD->Hits ();
+      TH = fManager->GetInputTreeH(inputFile);
+      brHits = TH->GetBranch("FMD");
+      if (brHits) {
+	fFMD->SetHitsAddressBranch(brHits);
+      }else{
+	cerr<<"EXEC Branch FMD hit not found"<<endl;
+	exit(111);
+      } 
+      Int_t ntracks    = (Int_t) TH->GetEntries();
 
-  }
+        for (Int_t track = 0; track < ntracks; track++)
+	{
+	  brHits->GetEntry(track);
+	  Int_t nhits = FMDhits->GetEntries ();
+
+	  for (hit = 0; hit < nhits; hit++)
+	    {
+	      fmdHit = (AliFMDhit *) FMDhits->UncheckedAt (hit);
+	      
+	      volume = fmdHit->Volume ();
+	      sector = fmdHit->NumberOfSector ();
+	      ring = fmdHit->NumberOfRing ();
+	      e = fmdHit->Edep ();
+	      de[volume][sector][ring] += e;
+	      
+	    }		//hit loop
+	}			//track loop
+    }			//if FMD
+
+ 
   // Put noise and make ADC signal
-  for ( ivol=1; ivol<=5; ivol++){
+   Float_t I = 1.664 * 0.04 * 2.33 / 22400;	// = 0.69e-6;
+ for ( ivol=1; ivol<=5; ivol++){
     for ( iSector=1; iSector<=NumberOfSectors[ivol-1]; iSector++){
       for ( iRing=1; iRing<=NumberOfRings[ivol-1]; iRing++){
 	digit[0]=ivol;
 	digit[1]=iSector;
 	digit[2]=iRing;
-	digit[3]=PutNoise(chargeSum[ivol][iSector][iRing]);
-	if(chargeSum[ivol][iSector][iRing] <= 500) digit[3]=500; 
+	charge = Int_t (de[ivol][iSector][iRing] / I);
+	digit[3]=PutNoise(charge);
+	if(digit[3]<= 500) digit[3]=500; 
     //dynamic range from MIP(0.155MeV) to 30MIP(4.65MeV)
     //1024 ADC channels 
 	Float_t channelWidth=(22400*50)/1024;
 	digit[4]=Int_t(digit[3]/channelWidth);
 	if (digit[4]>1024) digit[4]=1024; 
-	FMD->AddDigit(digit);
-
+	fFMD->AddDigit(digit);
       } //ivol
     } //iSector
   } //iRing
+
   TTree* treeD = fManager->GetTreeD();
+  treeD->Clear();
   treeD->Reset();
-  FMD->MakeBranch("D");
+  fFMD->MakeBranchInTreeD(treeD);
   treeD->Fill();
  
   fManager->GetTreeD()->Write(0,TObject::kOverwrite);
   
   gAlice->ResetDigits();
-
-}
-
-//---------------------------------------------------------------------
-
-void AliFMDDigitizer::ReadDigit(Int_t chargeSum[][50][300], Int_t inputFile )
-{
-  cout<<" AliFMDDigitizer::ReadDigit "<<endl;
-  AliFMDdigit *fmddigit;
-  gAlice->GetEvent(0) ;
-   AliFMD * FMD = (AliFMD *) gAlice->GetDetector("FMD") ;
-  Int_t ndig, k;
-  gAlice->ResetDigits();
-  treeS->GetEvent(0);
-
-  treeS->GetEvent(0);
-  TClonesArray * FMDSdigits   = FMD->SDigits();
-  
-  ndig=FMDSdigits->GetEntries();
-
-
-  for (k=0; k<ndig; k++) {
-    fmddigit= (AliFMDdigit*) FMDSdigits->UncheckedAt(k);
-    Int_t iVolume=fmddigit->Volume();
-    Int_t iNumberOfSector =fmddigit->NumberOfSector();
-    Int_t iNumberOfRing=fmddigit->NumberOfRing();
-    chargeSum[iVolume][iNumberOfSector][iNumberOfRing]+=fmddigit->Charge();
   }
 }
-
 

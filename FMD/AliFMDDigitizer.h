@@ -6,7 +6,9 @@
 #include "AliDigitizer.h"
 
 class AliRunDigitizer;
-
+//class AliFMD;
+class AliFMDdigit;
+class AliFMDhit;
 class AliFMDDigitizer : public AliDigitizer {
  public:
   
@@ -14,24 +16,28 @@ class AliFMDDigitizer : public AliDigitizer {
   AliFMDDigitizer(AliRunDigitizer * manager);
   virtual ~AliFMDDigitizer();
   virtual Bool_t Init();
-    
+   
   
   // Do the main work
   void Exec(Option_t* option=0) ;
   Int_t PutNoise(Int_t charge){return (Int_t)(gRandom->Gaus(charge,500));}
-  TClonesArray *SDigits() const {return fSDigits;}
+  TClonesArray *Digits() const {return fDigits;}
+  TClonesArray *Hits() const {return fHits;}
  
 
-  void ReadDigit(Int_t a[][50][300], Int_t);
   
   enum {kBgTag = -1};
       
    
  private:
-    TClonesArray *fDigits;               // ! array with digits
-    TClonesArray *fSDigits      ; // List of summable digits
-     
+  TClonesArray *fDigits;               // ! array with digits
+  TClonesArray *fHits;                 // List of hits
+  AliRunDigitizer* GetManager(){return fManager;}
+         
     ClassDef(AliFMDDigitizer,0)
 };    
 #endif
+
+
+
 

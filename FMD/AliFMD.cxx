@@ -97,7 +97,7 @@ AliDetector (name, title)
   fIdSens3 = 0;
   fIdSens4 = 0;
   fIdSens5 = 0;
-  fMerger = 0;
+  //  fMerger = 0;
   SetMarkerColor (kRed);
 }
 
@@ -174,34 +174,34 @@ void AliFMD::BuildGeometry ()
   // FMD define the different volumes
   new TRotMatrix ("rot901", "rot901", 90, 0, 90, 90, 180, 0);
 
-  new TTUBE ("S_FMD0", "FMD  volume 0", "void", 3.5, 16.8, 1.5);
+  new TTUBE ("S_FMD0", "FMD  volume 0", "void", 4.2, 17.2, 1.5);
   top->cd ();
   node = new TNode ("FMD0", "FMD0", "S_FMD0", 0, 0, 62.8, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
-  new TTUBE ("S_FMD1", "FMD  volume 1", "void", 22., 34.9, 1.5);
+  new TTUBE ("S_FMD1", "FMD  volume 1", "void", 15.4, 28.4, 1.5);
   top->cd ();
-  node = new TNode ("FMD1", "FMD1", "S_FMD1", 0, 0, 75.1, "");
+  node = new TNode ("FMD1", "FMD1", "S_FMD1", 0, 0, 75.2, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
-  new TTUBE ("S_FMD2", "FMD  volume 2", "void", 3.5, 16.8, 1.5);
+  new TTUBE ("S_FMD2", "FMD  volume 2", "void", 4.2, 17.2, 1.5);
   top->cd ();
-  node = new TNode ("FMD2", "FMD2", "S_FMD2", 0, 0, -62.8, "");
+  node = new TNode ("FMD2", "FMD2", "S_FMD2", 0, 0, -83.2, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
-  new TTUBE ("S_FMD3", "FMD  volume 3", "void", 22., 34.9, 1.5);
+  new TTUBE ("S_FMD3", "FMD  volume 3", "void", 15.4, 28.4, 1.5);
   top->cd ();
-  node = new TNode ("FMD3", "FMD3", "S_FMD3", 0, 0, -75.1, "");
+  node = new TNode ("FMD3", "FMD3", "S_FMD3", 0, 0, -75.2, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
-  new TTUBE ("S_FMD4", "FMD  volume 4", "void", 3.5, 16.8, 1.5);
+  new TTUBE ("S_FMD4", "FMD  volume 4", "void", 4.2, 17.2, 1.5);
   top->cd ();
   //  node = new TNode("FMD4","FMD4","S_FMD4",0,0,-270,"");
-  node = new TNode ("FMD4", "FMD4", "S_FMD4", 0, 0, -345, "");
+  node = new TNode ("FMD4", "FMD4", "S_FMD4", 0, 0, -340, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 }
@@ -287,6 +287,7 @@ void AliFMD::MakeBranch (Option_t * option, const char *file)
     MakeBranchInTree(gAlice->TreeD(), 
 		     branchname,&fDigits, 
     		     kBufferSize, file);
+    cout<<" tree "<<gAlice->TreeD()<<" "<<branchname<<" "<<&fDigits<<endl;
   }
   if (cR){
     MakeBranchInTree(gAlice->TreeR(), 
@@ -336,44 +337,47 @@ void AliFMD::SetTreeAddress ()
 
 //---------------------------------------------------------------------
 
-void AliFMD::SetRingsSi1(Int_t ringsSi1)
+void AliFMD::SetRingsSi1(Int_t ringsSi1=256)
 {
   //  fRingsSi1=ringsSi1;
   fRingsSi1=256;
 }
-void AliFMD::SetSectorsSi1(Int_t sectorsSi1)
+void AliFMD::SetSectorsSi1(Int_t sectorsSi1=20)
 {
   fSectorsSi1=20;
 }
-void AliFMD::SetRingsSi2(Int_t ringsSi2)
+void AliFMD::SetRingsSi2(Int_t ringsSi2=128)
 {
   fRingsSi2=128;
 }
-void AliFMD::SetSectorsSi2(Int_t sectorsSi2)
+void AliFMD::SetSectorsSi2(Int_t sectorsSi2=40)
 {
   fSectorsSi2=40;
 }
 
 //---------------------------------------------------------------------
-
+/*
 void AliFMD::SDigits2Digits() 
 {
   cout<<"AliFMD::SDigits2Digits"<<endl; 
     if (!fMerger) {
       fMerger = new AliFMDMerger();
     }
+    
     fMerger ->SetRingsSi1(fRingsSi1);
     fMerger->SetRingsSi2(fRingsSi2);
     fMerger ->SetSectorsSi1(fSectorsSi1);
     fMerger ->SetSectorsSi2(fSectorsSi2);
+     
     fMerger->Init();
     cout<<"AliFMD::SDigits2Digits Init"<<endl; 
     fMerger->Digitise();
     cout<<"AliFMD::SDigits2Digits Digitise() "<<endl; 
  
 
-}
-//---------------------------------------------------------------------
+    }
+
+    //---------------------------------------------------------------------
 void   AliFMD::SetMerger(AliFMDMerger* merger)
 {
 // Set pointer to merger
@@ -385,7 +389,7 @@ AliFMDMerger*  AliFMD::Merger()
 // Return pointer to merger
     return fMerger;
 }
-
+*/
 //---------------------------------------------------------------------
 
 
@@ -412,18 +416,16 @@ void AliFMD::Hits2SDigits ()
   cout<<"ALiFMD::Hits2SDigits> start...\n";
   //#endif
   
-  char * fileSDigits = 0 ;
+  char * fileSDigits = "FMD.SDigits.root";
   char * fileHeader = 0;
   AliFMDSDigitizer * sd = new AliFMDSDigitizer(fileHeader,fileSDigits) ;
   sd->SetRingsSi1(fRingsSi1);
   sd->SetRingsSi2(fRingsSi2);
   sd->SetSectorsSi1(fSectorsSi1);
   sd->SetSectorsSi2(fSectorsSi2);
-
-
+  //  sd->SetEventNumber(fEvNrSig);
   sd->Exec("") ;
-  sd->Print("");
-
+  
   delete sd ;
   
 }
@@ -439,5 +441,23 @@ void AliFMD::Digits2Reco()
   reconstruction->Exec("");
   delete  reconstruction;
 }
+//-----------------------------------------------------------------------
 
+void AliFMD::MakeBranchInTreeD(TTree *treeD, const char *file)
+{
+    //
+    // Create TreeD branches for the MUON.
+    //
+
+    const Int_t kBufferSize = 4000;
+    char branchname[20];
+    
+
+    sprintf(branchname,"%s",GetName());	
+    if(treeD){
+    MakeBranchInTree(treeD, 
+		     branchname,&fDigits, 
+    		     kBufferSize, file);
+    }
+}
 

@@ -9,7 +9,7 @@ PACKAGE = FMD
 
 # C++ sources
 
-SRCS          = AliFMD.cxx AliFMDv0.cxx AliFMDv1.cxx AliFMDhit.cxx AliFMDdigit.cxx AliFMDMerger.cxx AliFMDReconstruction.cxx AliFMDReconstParticles.cxx AliFMDSDigitizer.cxx
+SRCS          = AliFMD.cxx AliFMDv0.cxx AliFMDv1.cxx AliFMDhit.cxx AliFMDdigit.cxx AliFMDMerger.cxx AliFMDReconstruction.cxx AliFMDReconstParticles.cxx  AliFMDDigitizer.cxx
 
 # C++ Headers
 
