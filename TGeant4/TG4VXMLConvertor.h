@@ -33,11 +33,12 @@ class TG4VXMLConvertor
     virtual void CloseComposition() = 0;
 
     virtual void WriteMaterial(const G4Material* material) = 0; 
-    virtual void WriteSolid(const G4VSolid* solid, G4String materialName) = 0; 
+    virtual void WriteSolid(G4String lvName, const G4VSolid* solid, 
+                            G4String materialName) = 0; 
     virtual void WriteRotation(const G4RotationMatrix* rotation) = 0; 
-    virtual void WritePosition(G4String solidName, G4ThreeVector position) = 0; 
+    virtual void WritePosition(G4String lvName, G4ThreeVector position) = 0; 
     virtual void WritePositionWithRotation(
-                               G4String solidName, G4ThreeVector position,
+                               G4String lvName, G4ThreeVector position,
                                const G4RotationMatrix* rotation) = 0; 
     virtual void WriteEmptyLine() = 0;
     virtual void IncreaseIndention() = 0;

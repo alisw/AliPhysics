@@ -9,6 +9,8 @@
 #ifndef TG4_XML_GEOMETRY_GENERATOR_H
 #define TG4_XML_GEOMETRY_GENERATOR_H
 
+#include "TG4Globals.h"
+
 #include <globals.hh>
 #include <g4std/fstream>
 
@@ -45,10 +47,13 @@ class TG4XMLGeometryGenerator
 
   private:
     // methods
+    void CutName(G4String& name) const;
     void ProcessLogicalVolume(G4LogicalVolume* lv); 
     void ProcessMaterials(G4LogicalVolume* lv); 
     void ProcessSolids(G4LogicalVolume* lv); 
     void ProcessRotations(G4LogicalVolume* lv); 
+    void ClearMaterialNames();
+    void ClearVolumeNames();
 
     // static data members
     static TG4XMLGeometryGenerator*  fgInstance;     //this instance
@@ -56,6 +61,8 @@ class TG4XMLGeometryGenerator
     // data members
     TG4VXMLConvertor*  fConvertor; //interface to XML convertor 
     G4std::ofstream    fOutFile;   //output file
+    TG4StringSet       fMaterialNames;   //set of names of materials 
+    TG4StringSet       fVolumeNames;     //set of names of solids
 };
 
 

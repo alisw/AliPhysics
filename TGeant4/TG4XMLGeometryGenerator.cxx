@@ -61,20 +61,41 @@ TG4XMLGeometryGenerator::operator=(const TG4XMLGeometryGenerator& right)
 
 // private methods
 
+void TG4XMLGeometryGenerator::CutName(G4String& name) const
+{
+// Removes spaces after the name if present.
+// ---
+
+  G4int i = name.length();
+  while (name(--i) == ' ') name = name(0,i);
+}  
+
 void TG4XMLGeometryGenerator::ProcessSolids(G4LogicalVolume* lv) 
 {
 // Writes all solids of given logical volume.
 // ---
 
   G4VSolid* solid = lv->GetSolid();
+  G4String lvName = lv->GetName();
   G4String material = lv->GetMaterial()->GetName();
-  fConvertor->WriteSolid(solid, material);
+  fConvertor->WriteSolid(lvName, solid, material);
   
+  // store the name of logical volume in the set
+  fVolumeNames.insert(fVolumeNames.begin(), lvName); 
+
+  // process daughters
   G4int nofDaughters = lv->GetNoDaughters();
   if (nofDaughters>0) 
     for (G4int i=0; i<nofDaughters; i++) {
+      //G4cout << "processing " << i << "th daughter of " 
+      //       << lv->GetName() << G4endl;
       G4LogicalVolume* lvd = lv->GetDaughter(i)->GetLogicalVolume();
-      ProcessSolids(lvd);
+      G4String lvdName = lvd->GetName();
+
+      if (fVolumeNames.find(lvdName) == fVolumeNames.end()) {
+        // process lvd only if it was not yet processed
+        ProcessSolids(lvd);
+      }	
     }
 }  
 
@@ -84,13 +105,32 @@ void TG4XMLGeometryGenerator::ProcessMaterials(G4LogicalVolume* lv)
 // ---
 
   G4Material* material = lv->GetMaterial();
-  fConvertor->WriteMaterial(material);
   
+  // check if this material was already written
+  G4bool written = false;
+  G4String name = material->GetName();
+  CutName(name);
+  if (fMaterialNames.find(name) != fMaterialNames.end()) written = true;
+  
+  if (!written) {
+    fConvertor->WriteMaterial(material);
+    fMaterialNames.insert(fMaterialNames.begin(), name); 
+  }  
+  
+  // store the name of logical volume in the set
+  G4String lvName = lv->GetName();
+  fVolumeNames.insert(fVolumeNames.begin(), lvName); 
+
   G4int nofDaughters = lv->GetNoDaughters();
   if (nofDaughters>0) 
     for (G4int i=0; i<nofDaughters; i++) {
       G4LogicalVolume* lvd = lv->GetDaughter(i)->GetLogicalVolume();
-      ProcessMaterials(lvd);
+      G4String lvdName = lvd->GetName();
+
+      if (fVolumeNames.find(lvdName) == fVolumeNames.end()) {
+        // process lvd only if it was not yet processed
+        ProcessMaterials(lvd);
+      }	
     }
 }  
 
@@ -99,15 +139,31 @@ void TG4XMLGeometryGenerator::ProcessRotations(G4LogicalVolume* lv)
 // Writes all rotation matrices of given logical volume.
 // ---
 
+  G4String lvName = lv->GetName();
+
+  // store the name of logical volume in the set
+  fVolumeNames.insert(fVolumeNames.begin(), lvName); 
+  
   G4int nofDaughters = lv->GetNoDaughters();
-  if (nofDaughters>0) 
-    for (G4int i=0; i<nofDaughters; i++) {
+
+  if (nofDaughters>0) {
+    G4int i; 
+    for (i=0; i<nofDaughters; i++) {
+      
       G4VPhysicalVolume* pvd = lv->GetDaughter(i);
       const G4RotationMatrix* kRotation = pvd->GetRotation();
-      if (kRotation) fConvertor->WriteRotation(kRotation);
+      if (kRotation) 
+        fConvertor->WriteRotation(kRotation);
+
       G4LogicalVolume* lvd = pvd->GetLogicalVolume();
-      ProcessRotations(lvd);
+      G4String lvdName = lvd->GetName();
+
+      if (fVolumeNames.find(lvdName) == fVolumeNames.end()) {
+        // process lvd only if it was not yet processed
+        ProcessRotations(lvd);
+      }	
     }
+  }  
 }  
 
 void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv) 
@@ -119,34 +175,45 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
   if (nofDaughters == 0) return;
   
   // open composition
-  G4String name = lv->GetName();
+  G4String lvName = lv->GetName();
+  G4String name = lvName;
   name.append("_comp");
   fConvertor->OpenComposition(name);
-      
+  
+  if (lvName == "FTOC" ) 
+    G4cout << "FTOC daughters: " << nofDaughters;
+     
   // write positions  
   G4int i;
   for (i=0; i<nofDaughters; i++) {
+   // G4cout << "processing " << i << "th daughter of " 
+   //        << lv->GetName() << G4endl;
+   
     G4VPhysicalVolume* vpvd = lv->GetDaughter(i);
     G4LogicalVolume* lvd = vpvd->GetLogicalVolume();
       
+    if (lvName == "FTOC" ) 
+      G4cout << vpvd << " " << lvd << "; ";
+
+
     // only placements are processed
     G4PVPlacement* pvd = dynamic_cast<G4PVPlacement*>(vpvd);
     if (pvd) {
-      G4String solidName = lvd->GetSolid()->GetName();
+      G4String lvName = lvd->GetName();
       G4String compName = lvd->GetName();
       compName.append("_comp");      
       G4int nd = lvd->GetNoDaughters(); 
-      G4ThreeVector  position = vpvd->GetFrameTranslation();
-      const G4RotationMatrix* kMatrix = vpvd->GetFrameRotation();      
+      G4ThreeVector  position = vpvd->GetTranslation();
+      const G4RotationMatrix* kMatrix = vpvd->GetRotation();      
 
       if (!kMatrix) {
-  	fConvertor->WritePosition(solidName, position);
+  	fConvertor->WritePosition(lvName, position);
         // if volume is not leaf node place its logical volume
         if (nd>0) 
     	  fConvertor->WritePosition(compName, position);
       }	  
       else {  
-  	fConvertor->WritePositionWithRotation(solidName, position, kMatrix);
+  	fConvertor->WritePositionWithRotation(lvName, position, kMatrix);
         if (nd>0) 
       	   fConvertor->WritePositionWithRotation(compName, position, kMatrix);
       }   
@@ -161,96 +228,46 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
     }
   }  
 
+  if (lvName == "FTOC" ) 
+    G4cout << G4endl;
+     
   // close composition
   fConvertor->CloseComposition();	
   fConvertor->WriteEmptyLine();
 
-  // make a vector of contained logical volumes
-  // with daughters
-  // -> change to a global map of names of written compositions 
-  //    and test against this map 
-  G4std::vector<G4LogicalVolume*> vect;
+  // store the name of logical volume in the set
+  fVolumeNames.insert(fVolumeNames.begin(), lvName); 
+
+  // process daughters
   for (i=0; i<nofDaughters; i++) {
     G4LogicalVolume* lvd = lv->GetDaughter(i)->GetLogicalVolume();
-    G4bool store = true;
-    for (G4int j=0; j<vect.size(); j++) 
-      if (vect[j] == lvd || lvd->GetNoDaughters()==0) store = false;
-    if (store) vect.push_back(lvd);
-  }   
+    G4String lvdName = lvd->GetName();
 
-  // process contained logical volumes with daughters  
-  fConvertor->IncreaseIndention();
-  for (G4int j=0; j<vect.size(); j++) 
-    ProcessLogicalVolume(vect[j]);
-  fConvertor->DecreaseIndention();
-}  
+    if (lvdName == "FTOC" ) 
+      G4cout << "*****************Daughter FTOC:" << lvd << " in " << lvName << G4endl;
 
-/*
-void TG4XMLGeometryGenerator::ProcessLogicalVolumeOld(G4LogicalVolume* lv) 
-{
-// Writes logical volume tree.
-// ---
-  
-  G4int nofDaughters = lv->GetNoDaughters();
-  if (nofDaughters == 0) return;
-  
-  // make a vector of contained logical volumes
-  G4std::vector<G4LogicalVolume*> vect;
-  for (G4int i=0; i<nofDaughters; i++) {
-    G4LogicalVolume* lvd = lv->GetDaughter(i)->GetLogicalVolume();
-    G4bool store = true;
-    for (G4int j=0; j<vect.size(); j++) 
-      if (vect[j] == lvd) store = false;
-    if (store) vect.push_back(lvd);
-  }   
-
-  // loop over contained logical volumes
-  for (G4int j=0; j<vect.size(); j++) {
-    G4LogicalVolume* lvd = vect[j];
- 
-    // open composition
-    if(lvd->GetNoDaughters()>0) {
-      G4String name = lvd->GetName();
-      name.append("_lv");
-      fConvertor->OpenComposition(name);
-    }	
-      
-    // write positions  
-    for (G4int i=0; i<nofDaughters; i++) {
-      G4VPhysicalVolume* vpvd = lv->GetDaughter(i);
-      G4LogicalVolume* lvdi = vpvd->GetLogicalVolume();
-      
-      if (lvdi == lvd) {
-        // only placements are processed
-        G4PVPlacement* pvd = dynamic_cast<G4PVPlacement*>(vpvd);
-        if (pvd) {
-          G4String solidName = lvd->GetSolid()->GetName();
-          G4ThreeVector  position = vpvd->GetFrameTranslation();
-          const G4RotationMatrix* kMatrix = vpvd->GetFrameRotation();      
-	  if (!kMatrix)
-  	    fConvertor->WritePosition(solidName, position);
-	  else  
-  	    fConvertor->WritePositionWithRotation(solidName, position, kMatrix);
-        }
-        else {
-          G4String text = "TG4XMLGeometryGenerator::ProcessLogicalVolume: \n";
-          text = text + "    Limitation: \n";
-	  text = text + "    Other physical volumes than PVPlacement";
-	  text = text + " are not implemented.";
-          TG4Globals::Warning(text);
-        }
-      } 
-    }
-
-    if(lvd->GetNoDaughters()>0) {
-      // process daughters recursively
+    if (fVolumeNames.find(lvdName) == fVolumeNames.end()) {
+      // process lvd only if it was not yet processed
       ProcessLogicalVolume(lvd);
-      fConvertor->CloseComposition();	
-      fConvertor->WriteEmptyLine();
     }
-  }
+  }    
 }  
-*/
+
+void TG4XMLGeometryGenerator::ClearMaterialNames() 
+{
+// Clears the set of material names.
+// ---
+
+  fMaterialNames.erase(fMaterialNames.begin(), fMaterialNames.end());
+}  
+
+void TG4XMLGeometryGenerator::ClearVolumeNames() 
+{
+// Clears the set of volume names.
+// ---
+
+  fVolumeNames.erase(fVolumeNames.begin(), fVolumeNames.end());
+}  
 
 // public methods
 
@@ -270,6 +287,8 @@ void TG4XMLGeometryGenerator::GenerateMaterials(
   // process materials
   ProcessMaterials(lv);
   fConvertor->WriteEmptyLine();
+  ClearMaterialNames();
+  ClearVolumeNames();
 
   // close section
   fConvertor->CloseMaterials();
@@ -291,16 +310,20 @@ void TG4XMLGeometryGenerator::GenerateSection(const G4String& name,
   fConvertor->WriteEmptyLine();
   
   // process rotations
-  ProcessRotations(lv);
-  fConvertor->WriteEmptyLine();
+  //ProcessRotations(lv);
+  //fConvertor->WriteEmptyLine();
+  //ClearRotations();
+  //ClearVolumeNames();
     
   // process solids
   ProcessSolids(lv);
   fConvertor->WriteEmptyLine();
+  ClearVolumeNames();
     
   // process geometry tree
   ProcessLogicalVolume(lv);
   fConvertor->WriteEmptyLine();
+  ClearVolumeNames();
   
   // close section
   fConvertor->CloseSection();
