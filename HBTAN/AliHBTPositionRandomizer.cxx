@@ -180,6 +180,14 @@ void AliHBTPositionRandomizer::SetEventVertex(Double_t x, Double_t y,Double_t z)
   fVY = y;
   fVZ = z;
 }
+
+
+void AliHBTPositionRandomizer::SetEllipse(Double_t rx, Double_t ryz)
+{
+   delete fRandomizer;
+   fRandomizer = new AliHBTRndmEllipse(rx,ryz);
+}
+
 /*********************************************************************/
 //_____________________________________________________________________
 ///////////////////////////////////////////////////////////////////////
@@ -215,6 +223,16 @@ AliHBTRndmGaussBall::AliHBTRndmGaussBall(Float_t rx, Float_t ry, Float_t rz):
 }
 /*********************************************************************/
 
+
+AliHBTRndmEllipse::AliHBTRndmEllipse(Float_t rmin, Float_t rmax):
+ fRmin(rmin),
+ fRmax(rmax)
+{
+     //constructor
+}
+
+/*********************************************************************/
+
 void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle*/*particle*/) const
 {
 //randomizez gauss for each coordinate separately
@@ -239,4 +257,19 @@ void AliHBTRndmCyllSurf::Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODPa
    x = sf*particle->Px();
    y = sf*particle->Py();
    z = gRandom->Uniform(-fL,fL);
+}
+
+/*********************************************************************/
+/*********************************************************************/
+
+void AliHBTRndmEllipse::Randomize(Double_t& x, Double_t& y, Double_t& z,AliVAODParticle*p) const
+{
+    // p=0; //workaround - fix this damn little thingy
+   double R;
+     double phi=p->Phi();
+     
+     R=fRmin+(fRmax-fRmin)*TMath::Sin(phi);
+     x=R*TMath::Sin(phi);
+     y=R*TMath::Cos(phi);
+     z=z;
 }

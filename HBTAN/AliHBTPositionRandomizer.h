@@ -17,7 +17,7 @@ class TH1I;
 class AliHBTPositionRandomizer: public AliReader
 {
  public:
-   enum EModelTypes{kGausBall,kCylinder,kCylinderSurf};
+   enum EModelTypes{kGausBall,kCylinder,kCylinderSurf,kEllipse};
    AliHBTPositionRandomizer();
    AliHBTPositionRandomizer(AliReader* reader);
    AliHBTPositionRandomizer(const AliHBTPositionRandomizer& in);
@@ -49,13 +49,14 @@ class AliHBTPositionRandomizer: public AliReader
    void SetGaussianBall(Double_t r);
    void SetGaussianBall(Double_t rx, Double_t ry, Double_t rz);
    void SetCyllinderSurface(Double_t r, Double_t l);
+   void SetEllipse(Double_t rmin, Double_t rmax);
    
    void AddToPosition(Bool_t flag){fAddToExistingPos = flag;}
    void RandomizeTracks(Bool_t flag){fRandomizeTracks = flag;}
    
    
  protected:
-   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle*p);
+   void Randomize(Double_t& x,Double_t& y,Double_t&z,AliVAODParticle*p);
    Int_t ReadNext(){return (fReader)?fReader->Next():1;}
    
  private:
@@ -82,7 +83,7 @@ class AliHBTRndm: public TObject
    AliHBTRndm(){}
    virtual ~AliHBTRndm(){}
    virtual void Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle*p) const = 0;
-   ClassDef(AliHBTRndm,1)
+     ClassDef(AliHBTRndm,1)
 };
 
 class AliHBTRndmGaussBall: public AliHBTRndm
@@ -114,6 +115,23 @@ class AliHBTRndmCyllSurf: public AliHBTRndm
  
    ClassDef(AliHBTRndmCyllSurf,1)
 };
+
+class AliHBTRndmEllipse: public AliHBTRndm
+{
+  public:
+   AliHBTRndmEllipse():fRmin(0.),fRmax(0.){};
+   AliHBTRndmEllipse(Float_t rmin, Float_t rmax);
+   virtual ~AliHBTRndmEllipse(){}
+   
+   void Randomize(Double_t& x,Double_t& y, Double_t& z, AliVAODParticle* particle) const;
+  private:
+   Float_t fRmin; //Radius in x direction
+   Float_t fRmax; //Radius in y direction
+ 
+   ClassDef(AliHBTRndmEllipse,1)
+};
+
+
 
 #endif
 

@@ -44,8 +44,15 @@
 
 #pragma link C++ class AliHBTAvSeparCorrelFctn+;
 
-#pragma link C++ class AliHBTashbtCorrFctn+; //gg
-#pragma link C++ class AliHBTWeightashbtCorrFctn+; //gg
+#pragma link C++ class AliHBTasCorrFctn+; //gg
+#pragma link C++ class AliHBTQOutasCorrFctn+;
+#pragma link C++ class AliHBTQSideasCorrFctn+;
+#pragma link C++ class AliHBTQLongasCorrFctn+;
+#pragma link C++ class AliHBTWeightasCorrFctn+; //gg
+#pragma link C++ class AliHBTQOutWeightasCorrFctn+;
+#pragma link C++ class AliHBTQSideWeightasCorrFctn+;
+#pragma link C++ class AliHBTQLongWeightasCorrFctn+;
+
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
 #pragma link C++ class AliHBTCorrFitFctn+;
 
@@ -166,6 +173,7 @@
 #pragma link C++ class AliHBTRndm+;
 #pragma link C++ class AliHBTRndmGaussBall+;
 #pragma link C++ class AliHBTRndmCyllSurf+;
+#pragma link C++ class AliHBTRndmEllipse+;
 #pragma link C++ class AliHBTMonVyDistributionVsVxFctn+;
 #pragma link C++ class AliHBTMonRtDistributionVsVzFctn+;
 
