@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:30  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -271,6 +274,7 @@ void AliDIPOv2::CreateGeometry()
   gMC->Gsvolu("DY1 ", "TRD1", idtmed[1809], ypar, 4);
   // iron - 
   dy = 283.5;
+  dy = 279;
   gMC->Gspos("DY1 ", 1, "DDIP", 0.,  dy, 0., 0, "ONLY");
   gMC->Gspos("DY1 ", 2, "DDIP", 0., -dy, 0., 0, "ONLY");
   ypar[2] = 60.;
