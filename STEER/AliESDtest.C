@@ -241,13 +241,9 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
      TArrayF v(3);     
      rl->GetHeader()->GenEventHeader()->PrimaryVertex(v);
      Double_t vtx[3]={v[0],v[1],v[2]};
-     Double_t cvtx[6]={
-       0.005,
-       0.000, 0.005,
-       0.000, 0.000, 0.010
-     };
-     event->SetVertex(vtx,cvtx);
-     cvtx[1]=cvtx[0]; cvtx[2]=cvtx[5]; //trackers use only the diag.elements
+     Double_t cvtx[3]={0.005,0.005,0.010};
+     AliESDVertex vertex(vtx,cvtx);
+     event->SetVertex(&vertex);
 
 //***** Initial path towards the primary vertex
      tpcTracker.SetVertex(vtx,cvtx);
