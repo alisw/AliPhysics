@@ -6,12 +6,14 @@
 ### The option strings for HP-CC shared lib compilation and linking ***
 ### For the HP-CC ROOT loadable shared lib the strict requirements are ***
 ### dropped to avoid many warnings from the rootcint generated code ***
-
-hpcomp="-c -s -z +z +a1 +w +DAportable -I$ROOTSYS/include"
-hproot="-c -s -z +z +a1 +DAportable -I$ROOTSYS/include"
+hpcomp="-c -s -z +z +a1 +w +DAportable -I$ROOTSYS/include -I$ALIROOT/RALICE"
+hproot="-c -s -z +z +a1 +DAportable -I$ROOTSYS/include -I$ALIROOT/RALICE"
 hplink="-L$ROOTSYS/lib/ -l*.sl -lm"
 
-rootcint zzzrwa98dict.cxx -c RWA98Headers.h RWA98LinkDef.h
+### Go to the directory with the source files
+cd $ALIROOT/RALICE/wa98
+
+rootcint zzzrwa98dict.cxx -c -I$ALIROOT/RALICE RWA98Headers.h RWA98LinkDef.h
 
 CC $hproot *.cxx   
 
@@ -20,4 +22,8 @@ CC -b -o rwa98.sl *.o
 rm zzzrwa98dict.*
 rm *.o
 
-echo '*** hpcclib done. Result in rwa98.sl'
+### Move the created lib to the scripts directory and go there
+mv rwa98.sl scripts
+cd scripts
+
+echo '*** hpcclib.sh done. Result in rwa98.sl'

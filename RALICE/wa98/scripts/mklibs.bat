@@ -29,12 +29,12 @@ rem ****************************************************************************
 echo .
 echo === Automatic ROOT library production of files rwa98.lib and rwa98.dll ===
 echo .
-
-set alice=c:\nick\cxx\source\alice\AliRoot\RALICE
+rem --- Set the Wa98 source directory as working directory
+cd %ALIROOT%\RALICE\wa98
 
 rem --- The option strings for MSVC++ DLL compilation and linking ---
-set mscomp=/nologo /c /TP /Ze /MD /GR /GX /I%ROOTSYS%\include /I%alice%
-set msdll=/nologo /TP /Ze /MD /LD /GD /GR /GX /I%ROOTSYS%\include /I%alice%
+set mscomp=/nologo /c /TP /Ze /MD /GR /GX /I%ROOTSYS%\include /I%ALIROOT%\RALICE
+set msdll=/nologo /TP /Ze /MD /LD /GD /GR /GX /I%ROOTSYS%\include /I%ALIROOT%\RALICE
 set mslink=/ENTRY:_DllMainCRTStartup@12 %ROOTSYS%\lib\*.lib %MYLIBS%\*.lib
 
 if "%1" == "" goto export
@@ -71,7 +71,7 @@ goto end
 echo *** Creation of ROOT loadable export libraries
 echo.
 rem --- Creation of ROOT dictionary ---
-rootcint zzzrwa98dict.cxx -c -Ic:/nick/cxx/source/alice/AliRoot/RALICE RWA98Headers.h RWA98LinkDef.h
+rootcint zzzrwa98dict.cxx -c -I%ALIROOT%\RALICE RWA98Headers.h RWA98LinkDef.h
 rem --- Compilation step ---
 cl %mscomp% *.cxx
 rem --- Creation of the export LIB ---
@@ -79,6 +79,10 @@ bindexplib rwa98 *.obj > rwa98.def
 lib /nologo /machine:IX86 *.obj /def:rwa98.def /out:rwa98.lib
 rem --- Creation of the DLL ---
 link /nologo /machine:IX86 /DLL *.obj rwa98.exp %mslink% /OUT:rwa98.dll
+rem --- Move the created libs to the SCRIPTS subdirectory
+move rwa98.lib .\scripts
+move rwa98.dll .\scripts
+rem --- Delete intermediate files
 del rwa98.def
 del rwa98.exp
 goto root_clean
@@ -87,11 +91,15 @@ goto root_clean
 echo *** Creation of ROOT loadable full version libraries
 echo.
 rem --- Creation of ROOT dictionary ---
-rootcint zzzrwa98dict.cxx -c -Ic:/nick/cxx/source/alice/AliRoot/RALICE RWA98Headers.h RWA98LinkDef.h
+rootcint zzzrwa98dict.cxx -c -I%ALIROOT%\RALICE RWA98Headers.h RWA98LinkDef.h
 rem --- Creation of the DLL ---
 cl %msdll% *.cxx /link %mslink% /OUT:rwa98.dll
 rem --- Creation of the full version LIB ---
 lib /nologo /machine:IX86 *.obj /out:rwa98.lib
+rem --- Move the created libs to the SCRIPTS subdirectory
+move rwa98.lib .\scripts
+move rwa98.dll .\scripts
+rem --- Delete intermediate files
 goto root_clean
 
 :root_clean
@@ -105,4 +113,6 @@ echo *** mklibs done.
 goto end
 
 :end
+rem --- Go back to original directory
+cd scripts
 rem --- End of script ---
