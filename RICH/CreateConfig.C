@@ -1,4 +1,4 @@
-class KirConfig
+class RichConfig
 {
 RQ_OBJECT()
 public:
@@ -8,8 +8,8 @@ public:
                    kRAYL=8192};
   enum EGenTypes  {kGun1=100,kGun7,kPythia7,kHijing,kHijingPara};
   
-          KirConfig(const char*sFileName);
-         ~KirConfig()                    {Info("ctor","");fMain->Cleanup(); delete fMain;}
+          RichConfig(const char*sFileName);
+         ~RichConfig()                    {Info("ctor","");fMain->Cleanup(); delete fMain;}
   void    AddDetector(Int_t id)          {fDetectors+=id; if(id==kTRD || id==kTOF) fDetButGrp->SetButton(kFRAME);}
   void    RemoveDetector(Int_t id)       {fDetectors-=id; if(id==kFRAME) {fDetButGrp->SetButton(kTRD,kFALSE);fDetButGrp->SetButton(kTOF,kFALSE);}}
   void    AddProcess(Int_t id)           {fProcesses+=id;}
@@ -22,19 +22,19 @@ protected:
   TGMainFrame  *fMain;//main window poiter
   TGComboBox   *fRichVersionCombo;  TGButton *fRichTopChkBtn,*fRichDeclusterChkBtn,*fRichSagChkBtn,*fRichRadioSrcChkBtn;//RICH
   TGButton     *fMagFldChkBtn;                               //MAG
-  TGComboBox   *fGenTypeCombo,*fGenPartIdCombo,*fGenMomCombo,*fGenChamberCombo; TGNumberEntry *fGenNprimEntry;//GEN
+  TGComboBox   *fGenTypeCombo,*fGenPartIdCombo,*fGenMinMomCombo,*fGenMaxMomCombo,*fGenChamberCombo; TGNumberEntry *fGenNprimEntry;//GEN
   Int_t         fDetectors; TGButtonGroup *fDetButGrp;       //DETECTORS
   Int_t         fProcesses;
   char         *fFileName;
-};//class KirConfig
+};//class RichConfig
 	 
-KirConfig::KirConfig(const char *sFileName)
+RichConfig::RichConfig(const char *sFileName)
 {   
   fFileName=sFileName;
   fDetectors=0;
 // Create main frame       
   fMain=new TGMainFrame(gClient->GetRoot(),500,400);
-//  fMain->Connect("CloseWindow()","KirConfig",this,"CloseWindow()");   
+//  fMain->Connect("CloseWindow()","RichConfig",this,"CloseWindow()");   
   fMain->AddFrame(pHorFrame=new TGHorizontalFrame(fMain,100,200));
 //RICH
   pHorFrame->AddFrame(pVerFrame=new TGVerticalFrame(pHorFrame,100,200));  
@@ -69,15 +69,25 @@ KirConfig::KirConfig(const char *sFileName)
   fGenPartIdCombo->AddEntry("AntiProton",kProtonBar);
   fGenPartIdCombo->Select(kPiPlus);  fGenPartIdCombo->Resize(160,20);
 
-  pGenGrpFrm->AddFrame(fGenMomCombo=new TGComboBox(pGenGrpFrm,100)); //particle energy for guns
-  fGenMomCombo->AddEntry("1.5 GeV",15);
-  fGenMomCombo->AddEntry("2.0 Gev",20);
-  fGenMomCombo->AddEntry("2.5 GeV",25);
-  fGenMomCombo->AddEntry("3.0 GeV",30);
-  fGenMomCombo->AddEntry("3.5 GeV",35);
-  fGenMomCombo->AddEntry("4.0 GeV",40);
-  fGenMomCombo->AddEntry("4.5 GeV",45);
-  fGenMomCombo->Select(40);  fGenMomCombo->Resize(160,20);
+  pGenGrpFrm->AddFrame(fGenMinMomCombo=new TGComboBox(pGenGrpFrm,100)); //particle energy for guns
+  fGenMinMomCombo->AddEntry("1.5 GeV",15);
+  fGenMinMomCombo->AddEntry("2.0 Gev",20);
+  fGenMinMomCombo->AddEntry("2.5 GeV",25);
+  fGenMinMomCombo->AddEntry("3.0 GeV",30);
+  fGenMinMomCombo->AddEntry("3.5 GeV",35);
+  fGenMinMomCombo->AddEntry("4.0 GeV",40);
+  fGenMinMomCombo->AddEntry("4.5 GeV",45);
+  fGenMinMomCombo->Select(15);  fGenMinMomCombo->Resize(160,20);
+  
+  pGenGrpFrm->AddFrame(fGenMaxMomCombo=new TGComboBox(pGenGrpFrm,100)); //particle energy for guns
+  fGenMaxMomCombo->AddEntry("1.5 GeV",15);
+  fGenMaxMomCombo->AddEntry("2.0 Gev",20);
+  fGenMaxMomCombo->AddEntry("2.5 GeV",25);
+  fGenMaxMomCombo->AddEntry("3.0 GeV",30);
+  fGenMaxMomCombo->AddEntry("3.5 GeV",35);
+  fGenMaxMomCombo->AddEntry("4.0 GeV",40);
+  fGenMaxMomCombo->AddEntry("4.5 GeV",45);
+  fGenMaxMomCombo->Select(40);  fGenMaxMomCombo->Resize(160,20);
   
   pGenGrpFrm->AddFrame(fGenChamberCombo=new TGComboBox(pGenGrpFrm,100)); //chamber number in case of gun1
   for(int i=1;i<=7;i++) fGenChamberCombo->AddEntry(Form("Chamber %i",i),i);
@@ -92,8 +102,8 @@ KirConfig::KirConfig(const char *sFileName)
   fMagFldChkBtn->SetState(kButtonDown);
 //Detectors
   pHorFrame->AddFrame(fDetButGrp=new TGButtonGroup(pHorFrame,"Detectors"));
-  fDetButGrp->Connect("Pressed(Int_t)","KirConfig",this,"AddDetector(Int_t)");
-  fDetButGrp->Connect("Released(Int_t)","KirConfig",this,"RemoveDetector(Int_t)");
+  fDetButGrp->Connect("Pressed(Int_t)","RichConfig",this,"AddDetector(Int_t)");
+  fDetButGrp->Connect("Released(Int_t)","RichConfig",this,"RemoveDetector(Int_t)");
   new TGCheckButton(fDetButGrp,"PIPE"  ,kPIPE));         
   new TGCheckButton(fDetButGrp,"ITS"   ,kITS));         
   new TGCheckButton(fDetButGrp,"TPC"   ,kTPC));
@@ -116,8 +126,8 @@ KirConfig::KirConfig(const char *sFileName)
   new TGCheckButton(fDetButGrp,"SHILD" ,kSHILD));         
 //Processes  
   pHorFrame->AddFrame(pProcButGrp=new TGButtonGroup(pHorFrame,"Processes"));
-  pProcButGrp->Connect("Pressed(Int_t)","KirConfig",this,"AddProcess(Int_t)");
-  pProcButGrp->Connect("Released(Int_t)","KirConfig",this,"RemoveProcess(Int_t)");
+  pProcButGrp->Connect("Pressed(Int_t)","RichConfig",this,"AddProcess(Int_t)");
+  pProcButGrp->Connect("Released(Int_t)","RichConfig",this,"RemoveProcess(Int_t)");
   new TGCheckButton(pProcButGrp,"DCAY decay",kDCAY));  pProcButGrp->SetButton(kDCAY);       
   new TGCheckButton(pProcButGrp,"PAIR pair production",kPAIR));  pProcButGrp->SetButton(kPAIR);       
   new TGCheckButton(pProcButGrp,"COMP Compton",kCOMP));  pProcButGrp->SetButton(kCOMP);
@@ -135,7 +145,7 @@ KirConfig::KirConfig(const char *sFileName)
 //File    
   fMain->AddFrame(pFileHorFrm=new TGHorizontalFrame(fMain,100,200));
   pFileHorFrm->AddFrame(pCreateBtn=new TGTextButton(pFileHorFrm,"Create"));
-  pCreateBtn->Connect("Clicked()","KirConfig",this,"CreateConfigFile()");                                 
+  pCreateBtn->Connect("Clicked()","RichConfig",this,"CreateConfigFile()");                                 
   pFileHorFrm->AddFrame(new TGLabel(pFileHorFrm,Form(" config file as %s",fFileName)));  
   
   fMain->MapSubwindows();   
@@ -144,7 +154,7 @@ KirConfig::KirConfig(const char *sFileName)
   fMain->MapWindow();      
 }//KirCondig::ctor
           
-void KirConfig::CreateConfigFile()
+void RichConfig::CreateConfigFile()
 {   
   FILE *fp=fopen(fFileName,"w"); if(!fp){Info("CreateConfigFile","Cannot open output file:%sn",fFileName);return;}
   
@@ -216,8 +226,9 @@ void KirConfig::CreateConfigFile()
     case kGun1:     
       fprintf(fp,"  AliGenFixed *pGen=new AliGenFixed(1);\n");  
       fprintf(fp,"  pGen->SetPart(%i); pGen->SetOrigin(0,0,0);\n",fGenPartIdCombo->GetSelected());  
-      fprintf(fp,"  pGen->SetMomentum(%3.1f); pGen->SetTheta(pRICH->C(%i)->ThetaD()-2); pGen->SetPhi(pRICH->C(%i)->PhiD()); \n",
-                    float(fGenMomCombo->GetSelected())/10,fGenChamberCombo->GetSelected(),fGenChamberCombo->GetSelected());            
+      fprintf(fp,"  pGen->SetMomentumRange(%3.1f,%3.1f); pGen->SetTheta(pRICH->C(%i)->ThetaD()-2); pGen->SetPhi(pRICH->C(%i)->PhiD()); \n",
+                    float(fGenMinMomCombo->GetSelected())/10,   float(fGenMaxMomCombo->GetSelected())/10,
+                    fGenChamberCombo->GetSelected(),fGenChamberCombo->GetSelected());            
       fprintf(fp,"  pGen->Init();\n");
     break;    
     case kGun7:   
@@ -294,13 +305,44 @@ void KirConfig::CreateConfigFile()
   fprintf(fp,"\n  ::Info(\"RICH private config\",\"Stop\");\n"); 
   fprintf(fp,"}\n");
   fclose(fp);  
-  
+  CreateRichBatch();  
 //  fMain->CloseWindow();
 }//CreateConfigFile
-
-KirConfig *p;
+//__________________________________________________________________________________________________
+void RichConfig::CreateRichBatch()
+{
+  FILE *fp=fopen("RichBatch.C","w"); if(!fp){Info("CreateRichBatch","Cannot open output file: RichBatch.C");return;}
+  
+  fprintf(fp,"void RichBatch(const Int_t iNevents,const Bool_t isDebug,const char *sConfigFileName)\n");
+  fprintf(fp,"{\n");
+  fprintf(fp,"  gSystem->Exec(\"rm -rf *.root hlt hough ZZZ*\");\n");
+  fprintf(fp,"  if(isDebug)   AliLog::SetGlobalDebugLevel(AliLog::kDebug);\n");
+  fprintf(fp,"  TStopwatch sw;TDatime time;\n\n");
+  
+  fprintf(fp,"  AliSimulation     *pSim=new AliSimulation;\n");
+  if(fGenTypeCombo->GetSelected()==kGun1)
+    fprintf(fp,"  pSim->SetRegionOfInterest(kTRUE); pSim->SetMakeDigitsFromHits(\"ITS TPC TRD TOF\");\n");
+  fprintf(fp,"  pSim->Run(iNevents); delete pSim;\n\n");
+  
+  fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
+  fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\");\n");
+  fprintf(fp,"  pRec->SetFillESD(\"ITS TPC TRD TOF RICH\");\n");
+  fprintf(fp,"  pRec->Run();         delete pRec;\n\n");
+  
+  fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/RichBatch.C>: Start time: \";time.Print();\n");
+  fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/RichBatch.C>: Stop  time: \";time.Set();  time.Print();\n");
+  fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/RichBatch.C>: Time  used: \";sw.Print();\n\n");
+  
+  fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______ZZZ\");\n");
+  fprintf(fp,"  gSystem->Exec(\"playwave ~/bin/end.wav\");\n");
+  fprintf(fp,"}\n");
+  
+  fclose(fp);  
+}//CreateRichBatch()
+//__________________________________________________________________________________________________
+RichConfig *p;
 void CreateConfig()
 {
-   p=new KirConfig("Config.C");
+   p=new RichConfig("Config.C");
 }   
 
