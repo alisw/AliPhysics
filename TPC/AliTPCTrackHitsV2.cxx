@@ -507,7 +507,11 @@ Bool_t AliTPCTrackHitsV2::FlushHitStack(Bool_t force)
       ratio = TMath::Sqrt(1.+ dfi2+ ddz2);  
     }
 
-    Double_t dl = fStep*(Short_t)TMath::Nint(dr*ratio/fStep);  
+    //    Double_t dl = fStep*(Short_t)TMath::Nint(dr*ratio/fStep);   //MI change 
+    Double_t dl = dr*ratio/fStep;
+    if (TMath::Abs(dl)>32765) dl =0;
+    dl = fStep * Short_t(TMath::Nint(dl));
+
     dr = dl/ratio; 
     oldr+=dr;
     //calculate precission
