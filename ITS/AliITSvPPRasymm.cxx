@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.63  2003/02/12 10:39:05  hristov
+Updated AliTrackReference class (S.Radomski)
+
 Revision 1.62  2003/01/16 08:10:13  hristov
 Correcting usage of string arrays (valgrind)
 
@@ -29378,7 +29381,7 @@ void AliITSvPPRasymm::StepManager(){
 	copy = fTrackReferences->GetEntriesFast();
 	TClonesArray &lTR = *fTrackReferences;
 	// Fill TrackReference structure with this new TrackReference.
-	new(lTR[copy]) AliTrackReference(gAlice->CurrentTrack(),gMC);
+	new(lTR[copy]) AliTrackReference(gAlice->CurrentTrack());
     } // if Outer ITS mother Volume
     if(!(this->IsActive())){
 	return;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2003/02/12 10:39:08  hristov
+Updated AliTrackReference class (S.Radomski)
+
 Revision 1.9  2002/11/21 23:05:28  alibrary
 Removing AliMC and AliMCProcess
 
@@ -5225,7 +5228,7 @@ void AliITSvPPRasymmFMD::StepManager(){
 	copy = fTrackReferences->GetEntriesFast();
 	TClonesArray &lTR = *fTrackReferences;
 	// Fill TrackReference structure with this new TrackReference.
-	new(lTR[copy]) AliTrackReference(gAlice->CurrentTrack(),gMC);
+	new(lTR[copy]) AliTrackReference(gAlice->CurrentTrack());
     } // if Outer ITS mother Volume
     if(!(this->IsActive())){
 	return;
