@@ -68,6 +68,7 @@ class AliEMCALDigit : public AliDigitNew {
   Int_t fNiparent ;     // Number of initial parents 
   Int_t fNMaxiparent ;  // Max Number of parents 
   Int_t *fIparent ;     //[fNMaxiparent] Array of parents       
+  Int_t fMaxIter  ;     // Number to Increment Maxiparent, and MaxPrimary if default is not sufficient
   Float_t fTime ;       // Calculated time  
 
   ClassDef(AliEMCALDigit,1)   // Digit in EMCAL 
