@@ -265,6 +265,11 @@ void AliMC::Stepping()
     Int_t copy;
     //Update energy deposition tables
     AddEnergyDeposit(gMC->CurrentVolID(copy),gMC->Edep());
+    //
+    // write tracke reference for track which is dissapearing - MI
+    if (gMC->IsTrackDisappeared()) {      
+      if (gMC->Etot()>0.05) AddTrackReference(GetCurrentTrackNumber());
+    }
   
     //Call the appropriate stepping routine;
     AliModule *det = dynamic_cast<AliModule*>(gAlice->Modules()->At(id));
@@ -427,6 +432,16 @@ void AliMC::BeginEvent()
     if (GetDebug()) Info("BeginEvent","  %s->SetTreeAddress()",detector->GetName());
     detector->SetTreeAddress();
    }
+  // make branch for AliRun track References
+  TTree * treeTR = runloader->TreeTR();
+  if (treeTR){
+    // make branch for central track references
+    if (!fTrackReferences) fTrackReferences = new TClonesArray("AliTrackReference",0);
+    TBranch *branch;
+    branch = treeTR->Branch("AliRun",&fTrackReferences);
+    branch->SetAddress(&fTrackReferences);
+  }
+  //
 }
 
 //_______________________________________________________________________
