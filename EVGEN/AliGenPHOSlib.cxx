@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -124,25 +125,57 @@ ClassImp(AliGenPHOSlib)
 //                 particle composition pi+, pi0, pi-
 //
 
-    Float_t random = ran->Rndm();
+     Float_t random = ran->Rndm();
 
-    if ( (3.*random)  < 1. ) 
-    {
-          return 211 ;
-    } 
-    else
-    {  
-      if ( (3.*random) >= 2.)
-      {
-         return -211 ;
-      }
-      else 
-      {
+     if ( (3.*random)  < 1. ) 
+     {
+           return 211 ;
+     } 
+     else
+     {  
+       if ( (3.*random) >= 2.)
+       {
+          return -211 ;
+       }
+       else 
+       {
         return 111  ;
       }
     }
 }
-// End Pions
+
+//End Pions
+//======================================================================
+//    Pi 0 Flat Distribution
+//    Transverse momentum distribution PtPi0Flat
+//    Rapidity distribution YPi0Flat
+//    Particle distribution IdPi0Flat  111 (pi0)
+//
+
+Double_t AliGenPHOSlib::PtPi0Flat(Double_t *px, Double_t *)
+{
+//     Pion transverse momentum flat distribution 
+
+return 1;
+
+}
+
+Double_t AliGenPHOSlib::YPi0Flat( Double_t *py, Double_t *)
+{
+
+// pion y-distribution
+//
+  return 1.;
+}
+
+ Int_t AliGenPHOSlib::IpPi0Flat(TRandom *)
+{
+
+//                 particle composition pi0
+//
+        return 111 ;
+}
+// End Pi0Flat
 //============================================================= 
 //
  Double_t AliGenPHOSlib::PtScal(Double_t pt, Int_t np)
@@ -170,6 +203,7 @@ ClassImp(AliGenPHOSlib)
   Double_t fmtscal=TMath::Power(((sqrt(pt*pt+0.018215)+2.)/
                                  (sqrt(pt*pt+khm[np]*khm[np])+2.0)),12.3)/ kfmax2;
   return fmtscal*ptpion;
+
 }
 // End Scaling
 //============================================================================
@@ -258,6 +292,38 @@ ClassImp(AliGenPHOSlib)
         return  221;   //   eta
 }
 // End Etas
+
+//======================================================================
+//    Eta Flat Distribution
+//    Transverse momentum distribution PtEtaFlat
+//    Rapidity distribution YEtaFlat
+//    Particle distribution IdEtaFlat  111 (pi0)
+//
+
+Double_t AliGenPHOSlib::PtEtaFlat(Double_t *px, Double_t *)
+{
+//     Eta transverse momentum flat distribution 
+
+  return 1;
+
+}
+
+Double_t AliGenPHOSlib::YEtaFlat( Double_t *py, Double_t *)
+{
+//
+// pion y-distribution
+//
+  return 1.;
+}
+
+ Int_t AliGenPHOSlib::IpEtaFlat(TRandom *)
+{
+//
+//                 particle composition eta
+//
+        return 221 ;
+}
+// End Pi0Flat
 //============================================================================
 //============================================================================
 //    O  M  E  G  A  S
@@ -418,8 +484,8 @@ ClassImp(AliGenPHOSlib)
 //===================================================================
 
 
-typedef Double_t (*GenFunc) (Double_t*,  Double_t*); 
- GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* tname) const
+typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
+ GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* tname)
 {
 // Return pinter to pT parameterisation
     GenFunc func;
@@ -429,11 +495,17 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     case kPion:     
         func=PtPion;
         break;
+    case kPi0Flat:     
+        func=PtPi0Flat;
+        break;
     case kKaon:
         func=PtKaon;
         break;
     case kEta:
         func=PtEta;
+        break;
+    case kEtaFlat:
+        func=PtEtaFlat;
         break;
     case kOmega:
         func=PtOmega;
@@ -451,7 +523,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 
- GenFunc AliGenPHOSlib::GetY(Int_t param, const char* tname) const
+ GenFunc AliGenPHOSlib::GetY(Int_t param, const char* tname)
 {
 // Return pointer to Y parameterisation
     GenFunc func;
@@ -460,11 +532,17 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     case kPion:
         func=YPion;
         break;
+    case kPi0Flat:
+        func=YPi0Flat;
+        break;
     case kKaon:
         func=YKaon;
         break;
     case kEta:
         func=YEta;
+        break;
+   case kEtaFlat:
+        func=YEtaFlat;
         break;
     case kOmega:
         func=YOmega;
@@ -485,15 +563,17 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 typedef Int_t (*GenFuncIp) (TRandom *);
- GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* tname) const
+ GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* tname)
 {
 // Return pointer to particle composition
     GenFuncIp func;
     switch (param)
     {
-    case kPion:
-        
+    case kPion:       
         func=IpPion;
+        break;
+    case kPi0Flat:       
+        func=IpPi0Flat;
         break;
     case kKaon:
         func=IpKaon;
@@ -501,6 +581,10 @@ typedef Int_t (*GenFuncIp) (TRandom *);
     case kEta:
         func=IpEta;
         break;
+    case kEtaFlat:
+        func=IpEtaFlat;
+        break;
+	
     case kOmega:
         func=IpOmega;
         break;
