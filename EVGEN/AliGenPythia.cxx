@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2000/12/18 08:55:35  morsch
+Make AliPythia dependent generartors work with new scheme of random number generation
+
 Revision 1.29  2000/12/04 11:22:03  morsch
 Init of sRandom as in 1.15
 
@@ -441,7 +444,7 @@ Bool_t AliGenPythia::KinematicSelection(TParticle *particle)
 
 //
 // rapidity cut
-    if (e==pz) {
+    if ( (e-pz)<=0 || (e+pz)<=0 ) {
       return kFALSE;
     }
     else {
