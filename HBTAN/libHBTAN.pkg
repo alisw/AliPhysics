@@ -15,7 +15,7 @@ AliHBTWeightsPID.cxx            AliHBTWeightTheorFctn.cxx \
 AliHBTPositionRandomizer.cxx    AliHBTEventBuffer.cxx \
 AliHBTCorrFitFctn.cxx \
 AliHBTCorrectQInvCorrelFctn.cxx AliHBTCorrectOSLCorrelFctn.cxx \
-AliHBTTrackPoints.cxx AliHBTClusterMap.cxx AliHBTFits.cxx \
+AliHBTTrackPoints.cxx AliHBTClusterMap.cxx \
 AliHBTPIDPurityFctns.cxx
 
 FSRCS   = fsiini.F  fsiw.F  led_bldata.F  ltran12.F

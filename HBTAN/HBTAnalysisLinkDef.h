@@ -219,6 +219,5 @@
 #pragma link C++ class AliHBTRndmCyllSurf+;
 #pragma link C++ class AliHBTMonVyDistributionVsVxFctn+;
 #pragma link C++ class AliHBTMonRtDistributionVsVzFctn+;
-#pragma link C++ class AliHBTFits+;
 //#pragma link C++ class AliHBTGoComPair+;
 #endif
