@@ -74,6 +74,11 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
     Double_t      GetOffsetX() const;
 
   private:
+#ifdef WITH_ROOT
+    // static data members
+    static const Int_t  fgkMaxNofMotifPositionIds; // dimension of fMotifPositionIds
+#endif    
+
     // data members
     AliMpRow*     fRow;     //the row containing this segment 
     Double_t      fOffsetX; //the x position of the border that touches a standard
@@ -81,6 +86,9 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
     PadRowVector  fPadRows; //pad rows vector
     MotifVector   fMotifs;  //motifs vector
     MotifPositionIdVector  fMotifPositionIds; //motifs position Ids vector
+#ifdef WITH_ROOT
+    Int_t                  fNofMotifPositionIds; // number of motif positions Ids
+#endif    
     
   ClassDef(AliMpVRowSegmentSpecial,1)  //Row segment
 };

@@ -82,6 +82,7 @@ AliMpPlane::AliMpPlane(AliMpSector* frontSector, AliMpSector* backSector,
 {
 //
   
+#ifdef WITH_STL
   // Create sector positions
   fSectorPositions.push_back(
     new AliMpSectorPosition(fkFrontSector, q1Position, AliMpIntPair( 1, 1)));
@@ -91,6 +92,19 @@ AliMpPlane::AliMpPlane(AliMpSector* frontSector, AliMpSector* backSector,
     new AliMpSectorPosition(fkFrontSector, q3Position, AliMpIntPair(-1,-1)));
   fSectorPositions.push_back(
     new AliMpSectorPosition(fkBackSector,  q4Position, AliMpIntPair( 1,-1)));
+#endif
+
+#ifdef WITH_ROOT
+  // Create sector positions
+  fSectorPositions.Add(
+    new AliMpSectorPosition(fkFrontSector, q1Position, AliMpIntPair( 1, 1)));
+  fSectorPositions.Add(
+    new AliMpSectorPosition(fkBackSector,  q2Position, AliMpIntPair(-1, 1)));
+  fSectorPositions.Add(
+    new AliMpSectorPosition(fkFrontSector, q3Position, AliMpIntPair(-1,-1)));
+  fSectorPositions.Add(
+    new AliMpSectorPosition(fkBackSector,  q4Position, AliMpIntPair( 1,-1)));
+#endif
 }
 
 
@@ -126,8 +140,8 @@ AliMpPlane::SectorPosition(const AliMpIntPair& scale) const
 // Returns the sector position specified by scale.
 // ---
 
-  for (UInt_t i=0; i<fSectorPositions.size(); i++) 
-    if (fSectorPositions[i]->GetScale() == scale) return GetSectorPosition(i);
+  for (Int_t i=0; i<GetNofSectorPositions(); i++) 
+    if (GetSectorPosition(i)->GetScale() == scale) return GetSectorPosition(i);
 
   Fatal("SectorPosition", "Wrong scale");
   return 0; 
@@ -139,7 +153,13 @@ Int_t AliMpPlane::GetNofSectorPositions() const
 // Returns number of sector positions.
 // ---
 
+#ifdef WITH_STL
   return fSectorPositions.size();
+#endif
+
+#ifdef WITH_ROOT
+  return fSectorPositions.GetEntriesFast();
+#endif
 }  
 
 
@@ -149,7 +169,13 @@ AliMpSectorPosition* AliMpPlane::GetSectorPosition(Int_t i) const
 // Returns i-th sector position.
 // ---
  
+#ifdef WITH_STL
   return  fSectorPositions[i];
+#endif
+
+#ifdef WITH_ROOT
+  return  (AliMpSectorPosition*)fSectorPositions[i];
+#endif
 }     
 
 

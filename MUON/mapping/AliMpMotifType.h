@@ -40,7 +40,8 @@ class AliMpMotifType : public TObject
     AliMpIntPair FindLocalIndicesByGassiNum(Int_t gassiNum) const;
     AliMpIntPair FindLocalIndicesByKaptonNum(Int_t kaptonNum) const;
     AliMpIntPair FindLocalIndicesByBergNum(Int_t bergNum) const;
-    AliMpIntPair FindLocalIndicesByConnection(const AliMpConnection* connection);
+    AliMpIntPair FindLocalIndicesByConnection(
+                               const AliMpConnection* connection) const;
 
     // set methods
     void SetNofPads(Int_t nofPadsX, Int_t nofPadY);
@@ -50,7 +51,7 @@ class AliMpMotifType : public TObject
     TString  GetID() const        {return fID;}
     Int_t    GetNofPadsX() const  {return fNofPadsX;}
     Int_t    GetNofPadsY() const  {return fNofPadsY;}
-    Int_t    GetNofPads() const   {return fConnections.size();}
+    Int_t    GetNofPads() const;
     
     // Other methods
     void AddConnection(const AliMpIntPair &localIndices, 
@@ -65,15 +66,28 @@ class AliMpMotifType : public TObject
     // static data members
     static const Int_t   fgkPadNumForA; // the pad number for the pad "A"
 
+#ifdef WITH_ROOT
+    static const Int_t   fgkSeparator;  // the separator used for conversion
+                                        // of AliMpIntPair to Int_t
+    
+    // methods
+    Int_t  GetIndex(const AliMpIntPair& pair) const;
+    AliMpIntPair  GetPair(Int_t index) const;
+#endif
+  
     // data members
     TString   fID;        // unique motif ID
     Int_t     fNofPadsX;  // number of pads in x direction
     Int_t     fNofPadsY;  // number of pads in y direction
     Int_t     fVerboseLevel;  // verbose level
 
+#ifdef WITH_STL
     ConnectionMap_t fConnections; //! Map (ix,iy) of connections
-                          // EXCLUDED FOR CINT (does not compile on HP)
-
+#endif    
+#ifdef WITH_ROOT
+    mutable ConnectionMap_t fConnections; // Map (ix,iy) of connections
+#endif    
+    
   ClassDef(AliMpMotifType,1)  //Motif type
 };
 

@@ -20,6 +20,10 @@
 
 ClassImp(AliMpMotifMap)
 
+#ifdef WITH_ROOT
+const Int_t AliMpMotifMap::fgkSeparator = 100;
+#endif
+
 //_____________________________________________________________________________
 AliMpMotifMap::AliMpMotifMap() 
   : TObject()
@@ -33,24 +37,144 @@ AliMpMotifMap::~AliMpMotifMap() {
 
   // Delete all registered motifs, motif types, motif positions
   
+#ifdef WITH_STL
   for (MotifMapIterator im=fMotifs.begin(); im != fMotifs.end(); im++) {
     delete im->second;
   }  
-  
+
   for (MotifTypeMapIterator it=fMotifTypes.begin(); 
        it != fMotifTypes.end(); it++) {
     delete it->second;
   }
-  
+
   for (MotifPositionMapIterator ip=fMotifPositions.begin(); 
        ip != fMotifPositions.end(); ip++) {
     delete ip->second;
   }  
+#endif  
+  
+#ifdef WITH_ROOT
+  MotifMapIterator im(&fMotifs);
+  Long_t mkey, mvalue;
+  while ( im.Next(mkey, mvalue) ) delete (AliMpMotif*)mvalue;
+
+  MotifMapIterator it(&fMotifTypes);
+  Long_t tkey, tvalue;
+  while ( it.Next(tkey, tvalue) ) delete (AliMpMotifType*)tvalue;
+
+  MotifMapIterator ip(&fMotifPositions);
+  Long_t pkey, pvalue;
+  while ( it.Next(pkey, pvalue) ) delete (AliMpMotifPosition*)pvalue;
+#endif  
 }
 
 // 
 // private methods
 //
+
+#ifdef WITH_ROOT
+//_____________________________________________________________________________
+Int_t  AliMpMotifMap::GetIndex(const TString& s) const 
+{
+// Converts the TString to integer.
+// ---
+
+  if (s.Length() > 5) {
+    Fatal("GetIndex", "String too long.");
+    return 0;
+  }  
+
+  Int_t index = 0;
+  for (Int_t i=s.Length(); i>=0; --i)  index = index*100 + int(s(i));
+  return index;
+}
+
+//______________________________________________________________________________
+Int_t  AliMpMotifMap::GetIndex(const AliMpIntPair& pair) const
+{
+// Converts the pair of integers to integer.
+// ---
+
+  if (pair.GetFirst() >= fgkSeparator || pair.GetSecond() >= fgkSeparator)
+    Fatal("GetIndex", "Index out of limit.");
+      
+  return pair.GetFirst()*fgkSeparator + pair.GetSecond() + 1;
+}  
+
+//_____________________________________________________________________________
+TString  AliMpMotifMap::GetString(Int_t index) const
+{
+// Converts the integer index to the string.
+// ---
+
+  TString s;
+  while (index >0) {
+    Char_t c = index%100;
+    s += c;
+    index = index/100;
+  }
+  return s;
+}
+
+//______________________________________________________________________________
+AliMpIntPair  AliMpMotifMap::GetPair(Int_t index) const
+{
+// Converts the integer index to the pair of integers.
+// ---
+
+  return AliMpIntPair((index-1)/fgkSeparator, (index-1)%fgkSeparator);
+}  
+#endif
+
+//_____________________________________________________________________________
+void  AliMpMotifMap::PrintMotif(const AliMpVMotif* motif) const
+{
+// Prints the motif.
+// ---
+
+  cout << motif->GetID().Data() << "  "
+       << motif->GetMotifType()->GetID() << "    "
+       << motif->Dimensions().X() << " "
+       << motif->Dimensions().Y();
+}
+
+//_____________________________________________________________________________
+void  AliMpMotifMap::PrintMotifType(const AliMpMotifType* motifType) const
+{
+// Prints the motif type.
+// ---
+
+  cout << motifType->GetID().Data() << "  "
+       << motifType->GetNofPadsX() << "  " 
+       << motifType->GetNofPadsY() << "  ";
+}
+
+//_____________________________________________________________________________
+void  AliMpMotifMap::PrintMotifPosition(
+                          const AliMpMotifPosition* motifPosition) const
+{
+// Prints the motif position.
+// ---
+
+  cout << motifPosition->GetID() << "  "
+       << motifPosition->GetMotif()->GetID() << "  " 
+       << motifPosition->Position().X() << "  "
+       << motifPosition->Position().Y() << "    ";
+}
+
+//_____________________________________________________________________________
+void  AliMpMotifMap::PrintMotifPosition2(
+                          const AliMpMotifPosition* motifPosition) const
+{
+// Prints the motif position.
+// ---
+
+  cout << setw(3) << motifPosition->GetLowIndicesLimit().GetFirst() << "  "
+       << setw(3) << motifPosition->GetLowIndicesLimit().GetSecond() << "  "
+       << setw(3) << motifPosition->GetHighIndicesLimit().GetFirst()  << " " 
+       << setw(3) << motifPosition->GetHighIndicesLimit().GetSecond()  << " "
+       << motifPosition->GetID() << "  ";
+}
 
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintMotifs() const
@@ -59,23 +183,40 @@ void  AliMpMotifMap::PrintMotifs() const
 // for all motifs in the motifs map.
 // ---
 
+#ifdef WITH_STL
   if (fMotifs.size()) {
     cout << "Dump of Motif Map - " << fMotifs.size() << " entries:" << endl;
     Int_t counter = 0;        
     for (MotifMapIterator i=fMotifs.begin(); i != fMotifs.end(); i++) {
       const TString& id  = (*i).first;
-      AliMpVMotif* motif = (*i).second;
       cout << "Map element " 
            << setw(3) << counter++ << "   " 
-           << id.Data() << "   " 
-	   << motif->GetID().Data() << "  "
-	   << motif->GetMotifType()->GetID() << "    "
-	   << motif->Dimensions().X() << " "
-	   << motif->Dimensions().Y()
-	   << endl;
+           << id.Data() << "   " ;
+      PrintMotif((*i).second);	   
+      cout << endl;
     }
     cout << endl;
   }
+#endif
+
+#ifdef WITH_ROOT
+  if (fMotifs.GetSize()) {
+    cout << "Dump of Motif Map - " << fMotifs.GetSize() << " entries:" << endl;
+    Int_t counter = 0;        
+    MotifMapIterator i(&fMotifs);
+    Long_t key, value;
+    while ( i.Next(key, value) ) {
+      TString id  = GetString(key);
+      AliMpVMotif* motif = (AliMpVMotif*)value;
+      cout << "Map element " 
+           << setw(3) << counter++ << "   " 
+           << id.Data() << "   " ;
+      PrintMotif(motif);	   
+      cout << endl;
+    }
+    cout << endl;
+  }
+#endif  
 }
 
 //_____________________________________________________________________________
@@ -85,22 +226,40 @@ void  AliMpMotifMap::PrintMotifTypes() const
 // for all motif types in the motif types map.
 // ---
 
+#ifdef WITH_STL
   if (fMotifTypes.size()) {
     cout << "Dump of Motif Type Map - " << fMotifTypes.size() << " entries:" << endl;
     Int_t counter = 0;        
     for (MotifTypeMapIterator i=fMotifTypes.begin(); i != fMotifTypes.end(); i++) {
       const TString& id  = (*i).first;
-      AliMpMotifType* motifType = (*i).second;
       cout << "Map element " 
            << setw(3) << counter++ << "   " 
-           << id.Data() << "   " 
-	   << motifType->GetID().Data() << "  "
-	   << motifType->GetNofPadsX() << "  " 
-	   << motifType->GetNofPadsY() << "  "
-	   << endl;
+           << id.Data() << "   ";
+      PrintMotifType((*i).second);	   
+      cout << endl;
     }
     cout << endl;
   }
+#endif  
+
+#ifdef WITH_ROOT
+  if (fMotifTypes.GetSize()) {
+    cout << "Dump of Motif Type Map - " << fMotifTypes.GetSize() << " entries:" << endl;
+    Int_t counter = 0;        
+    MotifTypeMapIterator i(&fMotifTypes);
+    Long_t key, value;
+    while ( i.Next(key, value) ) {
+      TString id  = GetString(key);
+      AliMpMotifType* motifType = (AliMpMotifType*)value;
+      cout << "Map element " 
+           << setw(3) << counter++ << "   " 
+           << id.Data() << "   " ;
+      PrintMotifType(motifType);	   
+      cout << endl;
+    }
+    cout << endl;
+  }
+#endif  
 }
 
 //_____________________________________________________________________________
@@ -109,23 +268,38 @@ void  AliMpMotifMap::PrintMotifPositions() const
 // Prints all the the motifs positions.
 // ---
 
+#ifdef WITH_STL
   if (fMotifPositions.size()) {
     cout << "Dump of Motif Position Map - " << fMotifPositions.size() << " entries:" << endl;
     Int_t counter = 0;        
     for (MotifPositionMapIterator i=fMotifPositions.begin(); 
                                   i != fMotifPositions.end(); i++) {
 
-      AliMpMotifPosition* motifPosition = (*i).second;
       cout << "Map element " 
-           << setw(3) << counter++ << "   " 
-	   << motifPosition->GetID() << "  "
-	   << motifPosition->GetMotif()->GetID() << "  " 
-	   << motifPosition->Position().X() << "  "
-	   << motifPosition->Position().Y() << "    "
-	   << endl;
+           << setw(3) << counter++ << "   "; 
+      PrintMotifPosition((*i).second);	   
+      cout << endl;
     }
     cout << endl;
   }
+#endif  
+
+#ifdef WITH_ROOT
+  if (fMotifPositions.GetSize()) {
+    cout << "Dump of Motif Type Map - " << fMotifPositions.GetSize() << " entries:" << endl;
+    Int_t counter = 0;        
+    MotifPositionMapIterator i(&fMotifPositions);
+    Long_t key, value;
+    while ( i.Next(key, value) ) {
+      AliMpMotifPosition* motifPosition = (AliMpMotifPosition*)value;
+      cout << "Map element " 
+           << setw(3) << counter++ << "   "; 
+      PrintMotifPosition(motifPosition);	   
+      cout << endl;
+    }
+    cout << endl;
+  }
+#endif  
 }
 
 //_____________________________________________________________________________
@@ -135,24 +309,38 @@ void  AliMpMotifMap::PrintMotifPositions2() const
 // (by global indices)
 // ---
 
+#ifdef WITH_STL
   if (fMotifPositions2.size()) {
     cout << "Dump of Motif Position Map 2 - " << fMotifPositions2.size() << " entries:" << endl;
     Int_t counter = 0;        
     for (MotifPositionMap2Iterator i=fMotifPositions2.begin(); 
                                    i != fMotifPositions2.end(); i++) {
 
-      AliMpMotifPosition* motifPosition = (*i).second;
       cout << "Map element " 
-           << setw(3) << counter++ << "   " 
-	   << setw(3) << motifPosition->GetLowIndicesLimit().GetFirst() << "  "
-	   << setw(3) << motifPosition->GetLowIndicesLimit().GetSecond() << "  "
- 	   << setw(3) << motifPosition->GetHighIndicesLimit().GetFirst()  << " " 
-	   << setw(3) << motifPosition->GetHighIndicesLimit().GetSecond()  << " "
-	   << motifPosition->GetID() << "  "
-	   << endl;
+           << setw(3) << counter++ << "   "; 
+      PrintMotifPosition2((*i).second);  
+      cout << endl;
     }
     cout << endl;
   }
+#endif  
+
+#ifdef WITH_ROOT
+  if (fMotifPositions2.GetSize()) {
+    cout << "Dump of Motif Position Map 2 - " << fMotifPositions2.GetSize() << " entries:" << endl;
+    Int_t counter = 0;        
+    MotifPositionMapIterator i(&fMotifPositions2);
+    Long_t key, value;
+    while ( i.Next(key, value) ) {
+      AliMpMotifPosition* motifPosition = (AliMpMotifPosition*)value;
+      cout << "Map element " 
+           << setw(3) << counter++ << "   "; 
+      PrintMotifPosition2(motifPosition);	   
+      cout << endl;
+    }
+    cout << endl;
+  }
+#endif  
 }
 
 //
@@ -175,7 +363,14 @@ Bool_t AliMpMotifMap::AddMotif(AliMpVMotif* motif, Bool_t warn)
     return false;
   }  
 
+#ifdef WITH_STL
   fMotifs[motif->GetID()] = motif;
+#endif
+
+#ifdef WITH_ROOT
+  fMotifs.Add(GetIndex(motif->GetID()), (Long_t)motif);
+#endif
+
   return true;
 }
 
@@ -196,7 +391,14 @@ Bool_t AliMpMotifMap::AddMotifType(AliMpMotifType* motifType, Bool_t warn)
     return false;
   }  
 
+#ifdef WITH_STL
   fMotifTypes[motifType->GetID()] = motifType;
+#endif
+
+#ifdef WITH_ROOT
+  fMotifTypes.Add(GetIndex(motifType->GetID()), (Long_t)motifType);
+#endif
+
   return true;
 }
 
@@ -225,7 +427,14 @@ Bool_t AliMpMotifMap::AddMotifPosition(AliMpMotifPosition* motifPosition, Bool_t
     return false;
   }  
 
+#ifdef WITH_STL
   fMotifPositions[motifPosition->GetID()] = motifPosition;
+#endif
+
+#ifdef WITH_ROOT
+  fMotifPositions.Add(motifPosition->GetID(), (Long_t)motifPosition);
+#endif
+
   return true;
 }
 
@@ -235,6 +444,7 @@ void AliMpMotifMap::FillMotifPositionMap2()
 // Fills the second map (by global indices) of motif positions.
 // ---
 
+#ifdef WITH_STL
   if (fMotifPositions2.size() > 0 ) {
     Warning("FillMotifPositionMap2", "Map has been already filled.");
     return;
@@ -245,6 +455,22 @@ void AliMpMotifMap::FillMotifPositionMap2()
 
     fMotifPositions2[(*ip).second->GetLowIndicesLimit()] = (*ip).second;
   }  
+#endif
+
+#ifdef WITH_ROOT
+  if (fMotifPositions2.GetSize() > 0 ) {
+    Warning("FillMotifPositionMap2", "Map has been already filled.");
+    return;
+  }  
+
+  MotifPositionMapIterator i(&fMotifPositions);
+  Long_t key, value;
+  while ( i.Next(key, value) ) {
+    AliMpMotifPosition* motifPosition = (AliMpMotifPosition*)value;
+    fMotifPositions2.Add(GetIndex(motifPosition->GetLowIndicesLimit()),
+                         (Long_t)motifPosition);
+  }
+#endif
 
 }
 
@@ -268,6 +494,7 @@ void  AliMpMotifMap::PrintGlobalIndices(const char* fileName) const
 
   ofstream out(fileName, ios::out);
 
+#ifdef WITH_STL
   if (fMotifPositions.size()) {
     for (MotifPositionMapIterator i=fMotifPositions.begin(); 
                                    i != fMotifPositions.end(); i++) {
@@ -280,6 +507,22 @@ void  AliMpMotifMap::PrintGlobalIndices(const char* fileName) const
     }
     out << endl;
   }
+#endif
+
+#ifdef WITH_ROOT
+  if (fMotifPositions.GetSize()) {
+    MotifPositionMapIterator i(&fMotifPositions);
+    Long_t key, value;
+    while ( i.Next(key, value) ) {
+      AliMpMotifPosition* motifPosition = (AliMpMotifPosition*)value;
+      out << setw(5) << motifPosition->GetID() << "     "
+	  << setw(3) << motifPosition->GetLowIndicesLimit().GetFirst()  << " " 
+	  << setw(3) << motifPosition->GetLowIndicesLimit().GetSecond() 
+         << endl;
+    }
+    out << endl;
+  }
+#endif
 }
 
 //_____________________________________________________________________________
@@ -332,12 +575,21 @@ AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID) const
 // Finds the motif with the specified ID.
 // ---
   
+#ifdef WITH_STL
   MotifMapIterator i = fMotifs.find(motifID);
-  
   if (i != fMotifs.end()) 
     return (*i).second;
   else                 
     return 0;
+#endif
+
+#ifdef WITH_ROOT
+  Long_t value = fMotifs.GetValue(GetIndex(motifID));
+  if (value) 
+    return (AliMpVMotif*)value;
+  else
+    return 0;  
+#endif
 }
 
 //_____________________________________________________________________________
@@ -391,12 +643,21 @@ AliMpMotifType* AliMpMotifMap::FindMotifType(const TString& motifTypeID) const
 // Finds the motif type with the specified motif type ID.
 // ---
   
+#ifdef WITH_STL
   MotifTypeMapIterator i = fMotifTypes.find(motifTypeID);
-  
   if (i != fMotifTypes.end()) 
     return (*i).second;
   else                 
     return 0;
+#endif
+
+#ifdef WITH_ROOT
+  Long_t value = fMotifTypes.GetValue(GetIndex(motifTypeID));
+  if (value) 
+    return (AliMpMotifType*)value;
+  else
+    return 0;  
+#endif
 }
 
 //_____________________________________________________________________________
@@ -406,14 +667,24 @@ AliMpMotifMap::FindMotifPosition(Int_t motifPositionID) const
 // Finds the motif position with the specified motif position ID.
 // ---
   
+#ifdef WITH_STL
   MotifPositionMapIterator i = fMotifPositions.find(motifPositionID);
-  
   if (i != fMotifPositions.end()) 
     return (*i).second;
   else                 
     return 0;
+#endif
+
+#ifdef WITH_ROOT
+  Long_t value = fMotifPositions.GetValue(motifPositionID);
+  if (value) 
+    return (AliMpMotifPosition*)value;
+  else
+    return 0;  
+#endif
 }
 
+/*
 //_____________________________________________________________________________
 AliMpMotifPosition* 
 AliMpMotifMap::FindMotifPosition(const AliMpIntPair& indices) const
@@ -422,6 +693,7 @@ AliMpMotifMap::FindMotifPosition(const AliMpIntPair& indices) const
 // less then the indices specified.
 // ---
 
+#ifdef WITH_STL
   MotifPositionMap2Iterator found 
     = fMotifPositions2.lower_bound(indices);
   
@@ -442,4 +714,13 @@ AliMpMotifMap::FindMotifPosition(const AliMpIntPair& indices) const
   while ( i-- != fMotifPositions2.begin());
   
   return 0;
+#endif
+
+#ifdef WITH_ROOT
+  // HOW TO DO THIS WITH ROOT ????
+  // Fortunately it seems not to be used anywhere
+  Fatal("FindMotifPosition", "Difficult in Root to do this.");
+  return 0;
+#endif
 }
+*/

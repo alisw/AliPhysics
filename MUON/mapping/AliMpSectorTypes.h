@@ -7,14 +7,24 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-
 #ifndef ALI_MP_SECTOR_TYPES_H
 #define ALI_MP_SECTOR_TYPES_H
 
-#include <vector>
-#include <map>
-#include <set>
-#include <string>
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+  #include <vector>
+  #include <map>
+  #include <set>
+  #include <string>
+#endif
+
+#ifdef WITH_ROOT
+  #include <TArrayI.h>
+  #include <TObjArray.h>
+  #include <TList.h>
+  #include <TExMap.h>
+#endif
 
 #include <TVector2.h>
 
@@ -28,6 +38,7 @@ class AliMpSubZone;
 class AliMpZone;
 class AliMpRow;
 
+#ifdef WITH_STL
 #ifdef __HP_aCC
   typedef vector<Int_t> MotifPositionIdVector;
   typedef vector<AliMpPad> PadVector;
@@ -60,6 +71,24 @@ class AliMpRow;
   typedef PadMapType::iterator PadMapTypeIterator;
   typedef std::set<AliMpPad> PadSet;
   typedef PadSet::const_iterator PadSetIterator;
+#endif
+#endif
+
+#ifdef WITH_ROOT
+  typedef TArrayI    MotifPositionIdVector;
+  typedef TObjArray  PadVector;
+  typedef TObjArray  PadRowVector;
+  typedef TObjArray  MotifVector;
+  typedef TList      RowSegmentVector;
+  typedef TObjArray  PadRowSegmentVector;
+  typedef TObjArray  SubZoneVector;
+  typedef TObjArray  RowVector;
+  typedef TObjArray  ZoneVector;
+  typedef TExMap     PadDimensionsMap;
+  typedef TExMapIter PadDimensionsMapCIterator;
+  typedef TExMap     PadMapType;
+  typedef TExMapIter PadMapTypeIterator;
+  typedef TObjArray  PadSet;
 #endif
 
 #endif //ALI_MP_SECTOR_TYPES_H

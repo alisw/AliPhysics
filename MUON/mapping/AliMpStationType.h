@@ -13,7 +13,7 @@
 enum AliMpStationType
 {
   kStation1, // station 1
-  kStation2 // station 2
+  kStation2, // station 2
 };
 
 #endif //ALI_MP_STATION_TYPE_H

@@ -16,21 +16,24 @@ ClassImp(AliMpPadPair)
 //_____________________________________________________________________________
 AliMpPadPair::AliMpPadPair(const AliMpPad& pad1, const AliMpPad& pad2)
   : TObject(),
-    fPair(pad1, pad2) {
+    fPadFirst(pad1),
+    fPadSecond(pad2) {
 //
 }
 
 //_____________________________________________________________________________
 AliMpPadPair::AliMpPadPair(const AliMpPadPair& right)
   : TObject(),
-    fPair(right.GetFirst(), right.GetSecond()) {
+    fPadFirst(right.GetFirst()),
+    fPadSecond(right.GetSecond()) {
 //
 }
 
 //_____________________________________________________________________________
 AliMpPadPair::AliMpPadPair()
   : TObject(),
-    fPair(AliMpPad::Invalid(), AliMpPad::Invalid()) {
+    fPadFirst(AliMpPad::Invalid()),
+    fPadSecond(AliMpPad::Invalid()) {
 //
 }
 
@@ -42,7 +45,7 @@ AliMpPadPair::~AliMpPadPair() {
 //_____________________________________________________________________________
 Bool_t AliMpPadPair::operator == (const AliMpPadPair& right) const
 {
-  return fPair == right.fPair;
+  return (fPadFirst == right.fPadFirst && fPadSecond == right.fPadSecond);
 }
 
 //_____________________________________________________________________________
@@ -61,7 +64,8 @@ AliMpPadPair& AliMpPadPair::operator = (const AliMpPadPair& right)
   TObject::operator=(right);
 
   // assignement operator
-  fPair = right.fPair;
+  fPadFirst = right.fPadFirst;
+  fPadSecond = right.fPadSecond;
   
   return *this;
 }

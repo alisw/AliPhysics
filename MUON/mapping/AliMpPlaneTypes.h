@@ -10,12 +10,21 @@
 #ifndef ALI_MP_PLANE_TYPES_H
 #define ALI_MP_PLANE_TYPES_H
 
-#include <vector>
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+  #include <vector>
+#endif
+
+#ifdef WITH_ROOT
+  #include <TObjArray.h>
+#endif
 
 class AliMpSectorPosition;
 class AliMpTransformPadIterator;
 class AliMpTransformer;
 
+#ifdef WITH_STL
 #ifdef __HP_aCC
   typedef vector<AliMpSectorPosition*>  SectorPositionVector;
   typedef vector<AliMpTransformPadIterator*>  PadIteratorVector;
@@ -27,5 +36,14 @@ class AliMpTransformer;
   typedef PadIteratorVector::iterator PadIteratorVectorIterator;
   typedef std::vector<AliMpTransformer*>  TransformerVector;
 #endif
+#endif
+
+#ifdef WITH_ROOT
+  typedef  TObjArray  SectorPositionVector;
+  typedef  TObjArray  PadIteratorVector;
+  typedef  Int_t      PadIteratorVectorIterator;
+  typedef  TObjArray  TransformerVector;
+#endif
+
 
 #endif //ALI_MP_PLANE_TYPES_H

@@ -7,8 +7,6 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <set>
-
 #include <TVector2.h>
 
 #include "AliMpNeighboursPadIterator.h"
@@ -62,6 +60,10 @@ AliMpNeighboursPadIterator::AliMpNeighboursPadIterator(
 AliMpNeighboursPadIterator::~AliMpNeighboursPadIterator()
 {
 // destructor
+
+#ifdef WITH_ROOT
+  fPads.Delete();
+#endif
 }
 
 // operators
@@ -80,11 +82,15 @@ AliMpNeighboursPadIterator::operator = (const AliMpNeighboursPadIterator& right)
   // base class assignement
   AliMpVPadIterator::operator=(right);
 
+#ifdef WITH_STL
   fkSegmentation = right.fkSegmentation;
   fCenterPad     = right.fCenterPad;
   fPads          = right.fPads;
   fIndex         = right.fIndex;
-    
+#endif
+#ifdef WITH_ROOT
+  Fatal("operator=", "Not allowed assignment for TObjArray");
+#endif
 
   return *this;
 } 
@@ -105,6 +111,7 @@ Bool_t AliMpNeighboursPadIterator::IsNeighbours(const AliMpPad& pad) const
 
 }
 
+#ifdef WITH_STL
 //______________________________________________________________________________
 PadVector AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
                                            const AliMpIntPair& direction) const
@@ -130,6 +137,71 @@ PadVector AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
 }
 
 //______________________________________________________________________________
+void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal, 
+                                                 const PadVector& from) const
+{
+// Add pads from pad vector to the total set 
+// only if they are not yet included
+
+    setTotal.insert(from.begin(),from.end());
+}    
+
+#endif
+#ifdef WITH_ROOT
+//______________________________________________________________________________
+PadVector* AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
+                                           const AliMpIntPair& direction) const
+{
+// Fill  a new vector with all pads which have common
+// parts with the pad located at <fCenterPad>, in a given line
+// starting from <from> and moving by <direction>
+
+    AliMpPad current = from;
+    PadVector* ans = new PadVector();
+    Bool_t cont=kTRUE;
+    do {
+        if (IsNeighbours(current))
+            ans->Add(new AliMpPad(current));
+        else
+            cont=kFALSE;
+        TVector2 nextPos = current.Position() + TVector2(
+          current.Dimensions().X()*(AliMpConstants::LengthStep()+1.)*direction.GetFirst(),
+          current.Dimensions().Y()*(AliMpConstants::LengthStep()+1.)*direction.GetSecond());
+        current = fkSegmentation->PadByPosition(nextPos);
+    } while (cont);
+    return ans;
+}
+
+//______________________________________________________________________________
+void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal, 
+                                                 PadVector* from) const
+{
+// Add pads from pad vector to the total set 
+// only if they are not yet included and deletes the pad vector
+
+    for (Int_t i=0; i<from->GetEntriesFast(); i++) {
+      AliMpPad* candidate = (AliMpPad*)from->At(i);
+      
+      Bool_t isInSetTotal = false;
+      for (Int_t j=0; j<setTotal.GetEntriesFast(); j++) {
+         AliMpPad* pad = (AliMpPad*)setTotal.At(j);
+	 
+	 if (pad->GetIndices() == candidate->GetIndices()) {
+	   isInSetTotal = true;
+	   break;
+	 }       
+      }
+      if (!isInSetTotal) 
+        setTotal.Add(candidate);
+      else
+        delete candidate;	
+    }
+    delete from;
+} 
+
+#endif
+
+//______________________________________________________________________________
 void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
 {
 // Fill the indices vector with all indices of pads which have common
@@ -140,7 +212,12 @@ void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
     
     AliMpPad from;
     AliMpIntPair direction;
+#ifdef WITH_STL
     PadVector found;
+#endif
+#ifdef WITH_ROOT
+    PadVector* found;
+#endif
     
     // repare a unique simple associative container
     // --> no doublons, rapid insersion
@@ -153,15 +230,14 @@ void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
     from = fkSegmentation->PadsLeft(fCenterPad).GetFirst();
     direction = AliMpIntPair(0,1);
     found = PadVectorLine(from,direction);
-    setTotal.insert(found.begin(),found.end());
-
+    UpdateTotalSet(setTotal, found);
 
   ////////////////// down direction
 
     from = fkSegmentation->PadsDown(from).GetFirst(); // the Pad down is already added
     direction = AliMpIntPair(0,-1);
     found = PadVectorLine(from,direction);
-    setTotal.insert(found.begin(),found.end());
+    UpdateTotalSet(setTotal, found);
     
   /////////////  Up side
   
@@ -170,14 +246,14 @@ void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
     from = fkSegmentation->PadsUp(fCenterPad).GetFirst();
     direction = AliMpIntPair(1,0);
     found = PadVectorLine(from,direction);
-    setTotal.insert(found.begin(),found.end());
+    UpdateTotalSet(setTotal, found);
     
   ////////////////// left direction
 
     from = fkSegmentation->PadsLeft(from).GetFirst(); // the pad up is already added
     direction = AliMpIntPair(-1,0);
     found = PadVectorLine(from,direction);
-    setTotal.insert(found.begin(),found.end());
+    UpdateTotalSet(setTotal, found);
     
   /////////////  Right side
   
@@ -186,14 +262,14 @@ void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
     from = fkSegmentation->PadsRight(fCenterPad).GetFirst();
     direction = AliMpIntPair(0,1);
     found = PadVectorLine(from,direction);
-    setTotal.insert(found.begin(),found.end());
+    UpdateTotalSet(setTotal, found);
     
   ////////////////// down direction
 
     from = fkSegmentation->PadsDown(from).GetFirst(); // the pad right is already added
     direction = AliMpIntPair(0,-1);
     found = PadVectorLine(from,direction);
-    setTotal.insert(found.begin(),found.end());
+    UpdateTotalSet(setTotal, found);
     
   /////////////  Down side
   
@@ -202,19 +278,19 @@ void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
     from = fkSegmentation->PadsDown(fCenterPad).GetFirst();
     direction = AliMpIntPair(1,0);
     found = PadVectorLine(from,direction);
-    setTotal.insert(found.begin(),found.end());
+    UpdateTotalSet(setTotal, found);
     
   ////////////////// left direction
     
     from = fkSegmentation->PadsLeft(from).GetFirst(); // the pad down is already added
     direction = AliMpIntPair(-1,0);
     found = PadVectorLine(from,direction);
-    setTotal.insert(found.begin(),found.end());
-    
+    UpdateTotalSet(setTotal, found);
 
     // fill the fIndices vector with the set (-->pass from a rapid insertion,
     // to rapid and indexed access, for the rest of the job)
 
+#ifdef WITH_STL
     fPads.clear();
     // include the center pad if requiered
     if (includeCenter) fPads.push_back(fCenterPad);
@@ -223,6 +299,16 @@ void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
     PadSetIterator it;
     for (it = setTotal.begin(); it != setTotal.end(); it++)
       fPads.push_back((*it));
+#endif
+
+#ifdef WITH_ROOT
+    fPads.Delete();
+    // include the center pad if requiered
+    if (includeCenter) fPads.Add(new AliMpPad(fCenterPad));
+
+    for (Int_t i = 0; i<setTotal.GetEntriesFast(); i++)
+      fPads.Add(setTotal.At(i));
+#endif
 }
 
 //______________________________________________________________________________
@@ -240,7 +326,12 @@ void AliMpNeighboursPadIterator::First()
 // Reset the iterator, so that it points to the first available
 // pad in the sector
 
+#ifdef WITH_STL
     if ((fkSegmentation != 0) && (fPads.size() != 0)) 
+#endif
+#ifdef WITH_ROOT
+    if ((fkSegmentation != 0) && (fPads.GetEntriesFast() != 0)) 
+#endif
       fIndex=0; 
     else 
       fIndex=fgkInvalidIndex;
@@ -256,7 +347,12 @@ void AliMpNeighboursPadIterator::Next()
 
   if (!IsValid()) return;
   
+#ifdef WITH_STL
   if (fIndex < fPads.size()-1) 
+#endif
+#ifdef WITH_ROOT
+  if (Int_t(fIndex) < fPads.GetEntriesFast()-1) 
+#endif
     fIndex++; 
   else 
     Invalidate();
@@ -276,7 +372,12 @@ AliMpPad AliMpNeighboursPadIterator::CurrentItem() const
   if (!IsValid())
     return AliMpPad::Invalid();
   else
+#ifdef WITH_STL
     return fPads[fIndex];
+#endif
+#ifdef WITH_ROOT
+    return *((AliMpPad*)fPads[fIndex]);
+#endif
 }
 
 //______________________________________________________________________________

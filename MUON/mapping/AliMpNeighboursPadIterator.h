@@ -44,8 +44,16 @@ class AliMpNeighboursPadIterator : public AliMpVPadIterator
 
     // private methods
     Bool_t    IsNeighbours(const AliMpPad& pad) const;
+#ifdef WITH_STL
     PadVector PadVectorLine(const AliMpPad& from,
                             const AliMpIntPair& direction) const;
+    void      UpdateTotalSet(PadSet& setTotal, const PadVector& from) const;
+#endif
+#ifdef WITH_ROOT
+    PadVector* PadVectorLine(const AliMpPad& from,
+                            const AliMpIntPair& direction) const;
+    void      UpdateTotalSet(PadSet& setTotal, PadVector* from) const;
+#endif
     void      FillPadsVector(Bool_t includeCenter);
     Bool_t    IsValid() const;
 

@@ -40,10 +40,19 @@ AliMpPlaneSegmentation::AliMpPlaneSegmentation(const AliMpPlane* plane)
   fBackSectorSegmentation = new AliMpSectorSegmentation(plane->GetBackSector());
   
   for (Int_t i=0; i<fkPlane->GetNofSectorPositions(); i++) {
+
+#ifdef WITH_STL
     fTransformers.push_back(
       new AliMpTransformer(fkPlane->GetSectorPosition(i)->GetOffset(),
                            fkPlane->GetSectorPosition(i)->GetScale()));
-  }		       
+#endif
+
+#ifdef WITH_ROOT
+    fTransformers.Add(
+      new AliMpTransformer(fkPlane->GetSectorPosition(i)->GetOffset(),
+                           fkPlane->GetSectorPosition(i)->GetScale()));
+#endif
+ }		       
 }
 
 ///_____________________________________________________________________________
@@ -77,8 +86,8 @@ AliMpPlaneSegmentation::GetTransformer(const AliMpIntPair& scale) const
 // Returns the sector position specified by scale.
 // ---
 
-  for (UInt_t i=0; i<fTransformers.size(); i++) 
-    if (fTransformers[i]->GetScale() == scale) return fTransformers[i];
+  for (Int_t i=0; i<GetNofTransformers(); i++) 
+    if (GetTransformer(i)->GetScale() == scale) return GetTransformer(i);
 
   Fatal("GetTransformer", "Wrong scale");
   return 0; 
@@ -359,7 +368,13 @@ Int_t AliMpPlaneSegmentation::GetNofTransformers() const
 // Returns number of transformers.
 // ---
 
+#ifdef WITH_STL
   return fTransformers.size();
+#endif
+
+#ifdef WITH_ROOT
+  return fTransformers.GetEntriesFast();
+#endif
 }  
 
 
@@ -369,7 +384,13 @@ AliMpTransformer* AliMpPlaneSegmentation::GetTransformer(Int_t i) const
 // Returns i-th transformer.
 // ---
  
+#ifdef WITH_STL
   return  fTransformers[i];
+#endif
+
+#ifdef WITH_ROOT
+  return  (AliMpTransformer*)fTransformers[i];
+#endif
 }     
 
 

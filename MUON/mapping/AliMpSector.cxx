@@ -35,11 +35,21 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
 //
   fMotifMap = new AliMpMotifMap();
 
+#ifdef WITH_STL
   for (Int_t izone = 0; izone<nofZones; izone++) 
     fZones.push_back(new AliMpZone(izone+1));
     
   for (Int_t irow = 0; irow<nofRows; irow++) 
     fRows.push_back(new AliMpRow(irow, fMotifMap));
+#endif
+
+#ifdef WITH_ROOT
+  for (Int_t izone = 0; izone<nofZones; izone++) 
+    fZones.Add(new AliMpZone(izone+1));
+    
+  for (Int_t irow = 0; irow<nofRows; irow++) 
+    fRows.Add(new AliMpRow(irow, fMotifMap));
+#endif
     
 }
 
@@ -108,7 +118,7 @@ void  AliMpSector::SetRowOffsets()
 
   Double_t offset = fOffset.Y();
   
-  for (UInt_t irow=0; irow<fRows.size(); irow++)
+  for (Int_t irow=0; irow<GetNofRows(); irow++)
     offset = GetRow(irow)->SetOffsetY(offset);    
 }
 
@@ -118,7 +128,7 @@ void  AliMpSector::SetMotifPositions()
 // Creates motif positions objects and fills them in the motif map.
 // ---
 
-  for (UInt_t i=0; i<fRows.size(); i++)
+  for (Int_t i=0; i<GetNofRows(); i++)
     GetRow(i)->SetMotifPositions();
 }
 
@@ -131,7 +141,7 @@ void  AliMpSector::SetGlobalIndices()
 
   AliMpIntPair indices(0,0); 
   AliMpRow* rowBefore=0;
-  for (UInt_t i=0; i<fRows.size(); i++) {
+  for (Int_t i=0; i<GetNofRows(); i++) {
     GetRow(i)->SetGlobalIndices(fDirection, rowBefore);
     rowBefore = GetRow(i);
   }
@@ -165,7 +175,7 @@ void  AliMpSector::SetRowSegmentOffsets()
 // For all rows sets offset to all row segments.
 // ---
 
-  for (UInt_t irow=0; irow<fRows.size(); irow++)
+  for (Int_t irow=0; irow<GetNofRows(); irow++)
     GetRow(irow)->SetRowSegmentOffsets(fOffset);    
 }
 
@@ -218,10 +228,20 @@ AliMpRow* AliMpSector::FindRow(const TVector2& position) const
   
   Double_t y = position.Y();
   
-  for (UInt_t i=0; i<fRows.size(); i++) {
+#ifdef WITH_STL
+  for (Int_t i=0; i<GetNofRows(); i++) {
     if ( y >= fRows[i]->LowBorderY() && y <= fRows[i]->UpperBorderY())
       return fRows[i];
   }    
+#endif
+
+#ifdef WITH_ROOT
+  for (Int_t i=0; i<GetNofRows(); i++) {
+    if ( y >= ((AliMpRow*)fRows[i])->LowBorderY() && 
+         y <= ((AliMpRow*)fRows[i])->UpperBorderY())
+      return (AliMpRow*)fRows[i];
+  }    
+#endif
   
   return 0;
 }
@@ -279,8 +299,14 @@ AliMpVRowSegment* AliMpSector::FindRowSegment(Int_t motifPositionId) const
 // Returns 0 if no row segment is found.
 // ---
 
-  for (UInt_t irow=0; irow<fRows.size(); irow++) {
+  for (Int_t irow=0; irow<GetNofRows(); irow++) {
+
+#ifdef WITH_STL
     AliMpRow* row = fRows[irow];
+#endif
+#ifdef WITH_ROOT
+    AliMpRow* row = (AliMpRow*)fRows[irow];
+#endif
    
     for (Int_t iseg=0; iseg<row->GetNofRowSegments(); iseg++) {
       AliMpVRowSegment* segment = row->GetRowSegment(iseg); 
@@ -344,12 +370,23 @@ TVector2 AliMpSector::Dimensions() const
   Double_t y = 0.;
   for (Int_t i=0; i<GetNofRows(); i++) {
 
+#ifdef WITH_STL
     // take the largest x row dimension
     if (fRows[i]->Dimensions().X() > x) 
       x = fRows[i]->Dimensions().X();
       
     // add all rows y dimensions  
     y += fRows[i]->Dimensions().Y();
+#endif
+
+#ifdef WITH_ROOT
+    // take the largest x row dimension
+    if ( ((AliMpRow*)fRows[i])->Dimensions().X() > x) 
+      x = ((AliMpRow*)fRows[i])->Dimensions().X();
+      
+    // add all rows y dimensions  
+    y += ((AliMpRow*)fRows[i])->Dimensions().Y();
+#endif
   }
   
   return TVector2(x, y);  
@@ -361,7 +398,13 @@ Int_t AliMpSector::GetNofZones() const
 // Returns the number of zones.
 // ---
 
+#ifdef WITH_STL
   return fZones.size();
+#endif
+
+#ifdef WITH_ROOT
+  return fZones.GetEntriesFast();
+#endif
 }  
 
 //_____________________________________________________________________________
@@ -375,7 +418,13 @@ AliMpZone* AliMpSector::GetZone(Int_t zoneID) const
     return 0;
   }
   
+#ifdef WITH_STL
   return fZones[zoneID-1];
+#endif
+
+#ifdef WITH_ROOT
+  return (AliMpZone*)fZones[zoneID-1];
+#endif
 }  
 
 //_____________________________________________________________________________
@@ -384,7 +433,13 @@ Int_t AliMpSector::GetNofRows() const
 // Returns the number of rows.
 // ---
 
+#ifdef WITH_STL
   return fRows.size();
+#endif
+
+#ifdef WITH_ROOT
+  return fRows.GetEntriesFast();
+#endif
 }  
 
 //_____________________________________________________________________________
@@ -398,5 +453,11 @@ AliMpRow* AliMpSector::GetRow(Int_t rowID) const
     return 0;
   }
   
+#ifdef WITH_STL
   return fRows[rowID];
+#endif
+
+#ifdef WITH_ROOT
+  return (AliMpRow*)fRows[rowID];
+#endif
 }

@@ -49,13 +49,23 @@ AliMpMotifSpecial::AliMpMotifSpecial(const TString &id,
 {
   // Normal constructor.
 
+#ifdef WITH_STL
   fPadDimensionsVector.resize(motifType->GetNofPadsX()*motifType->GetNofPadsY());
+#endif  
+
+#ifdef WITH_ROOT
+  fPadDimensionsVector.Expand(motifType->GetNofPadsX()*motifType->GetNofPadsY());
+#endif  
 }
 
 //______________________________________________________________________________
 AliMpMotifSpecial::~AliMpMotifSpecial()
 {
   //destructor
+
+#ifdef WITH_ROOT
+  fPadDimensionsVector.Delete();
+#endif  
 }
 
 
@@ -65,7 +75,12 @@ AliMpMotifSpecial::GetPadDimensions(const AliMpIntPair& localIndices) const
 {
 // returns the dimensions of pad located at the given indices
   if (GetMotifType()->HasPad(localIndices))
+#ifdef WITH_STL
     return fPadDimensionsVector[VectorIndex(localIndices)];
+#endif  
+#ifdef WITH_ROOT
+    return  *((TVector2*)fPadDimensionsVector[VectorIndex(localIndices)]);
+#endif  
   else {
     Warning("GetPadDimensions","Indices outside limits");
     return TVector2(0.,0.);
@@ -77,7 +92,13 @@ Int_t AliMpMotifSpecial::GetNofPadDimensions() const
 {
 // returns number of different pad dimensions in this motif
 
+#ifdef WITH_STL
   return fPadDimensionsVector2.size();
+#endif  
+
+#ifdef WITH_ROOT
+  return fPadDimensionsVector2.GetEntriesFast();
+#endif  
 }  
 
 //______________________________________________________________________________
@@ -90,7 +111,13 @@ TVector2 AliMpMotifSpecial::GetPadDimensions(Int_t i) const
     return TVector2();
   }  
 
+#ifdef WITH_STL
   return fPadDimensionsVector2[i];
+#endif  
+
+#ifdef WITH_ROOT
+  return *((TVector2*) fPadDimensionsVector2[i]);
+#endif  
 }  
 
 //______________________________________________________________________________
@@ -212,6 +239,7 @@ void AliMpMotifSpecial::SetPadDimensions(const AliMpIntPair& localIndices,
   }  
 
   // fill the dimensions map vector
+#ifdef WITH_STL
   fPadDimensionsVector[VectorIndex(localIndices)]=dimensions;
   
   // fill the vector of different pad dimensions
@@ -223,4 +251,21 @@ void AliMpMotifSpecial::SetPadDimensions(const AliMpIntPair& localIndices,
   }    
   
   if (!isPresent) fPadDimensionsVector2.push_back(dimensions);
+#endif  
+
+#ifdef WITH_ROOT
+  TVector2* dimensionsObj = new TVector2(dimensions);
+  fPadDimensionsVector[VectorIndex(localIndices)]= dimensionsObj;
+
+  // fill the vector of different pad dimensions
+  // only if these dimensions are not yet present
+  Bool_t isPresent = false;
+  for (Int_t i=0; i<GetNofPadDimensions(); i++) {
+    if (AliMpConstants::IsEqual(*((TVector2*) fPadDimensionsVector2[i]), dimensions)) 
+      isPresent = true;    
+  }    
+  
+  if (!isPresent) fPadDimensionsVector2.Add(dimensionsObj);
+#endif  
+  
 }

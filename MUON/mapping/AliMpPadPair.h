@@ -11,7 +11,6 @@
 #ifndef ALI_MP_PAD_PAIR_H
 #define ALI_MP_PAD_PAIR_H
 
-#include "AliMpBasicTypes.h"
 #include "AliMpPad.h"
 
 class AliMpPadPair : public TObject
@@ -33,15 +32,17 @@ class AliMpPadPair : public TObject
 
   private:
     // data members
-    PadPair  fPair;  // pad pair
+    AliMpPad  fPadFirst;  // first pad
+    AliMpPad  fPadSecond; // second pad
+    
     
   ClassDef(AliMpPadPair,1) //utility class for the motif type
 };
 
 // inline functions
 
-inline AliMpPad AliMpPadPair::GetFirst() const  { return fPair.first; } 
-inline AliMpPad AliMpPadPair::GetSecond() const { return fPair.second; } 
+inline AliMpPad AliMpPadPair::GetFirst() const  { return fPadFirst; } 
+inline AliMpPad AliMpPadPair::GetSecond() const { return fPadSecond; } 
 
 
 #endif //ALI_MP_PAD_PAIR_H

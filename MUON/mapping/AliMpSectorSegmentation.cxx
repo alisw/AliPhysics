@@ -32,6 +32,10 @@
 
 ClassImp(AliMpSectorSegmentation)
 
+#ifdef WITH_ROOT
+const Double_t AliMpSectorSegmentation::fgkSeparator = 10000.;
+#endif
+
 //______________________________________________________________________________
 AliMpSectorSegmentation::AliMpSectorSegmentation(const AliMpSector* sector) 
   : AliMpVSegmentation(),
@@ -63,6 +67,30 @@ AliMpSectorSegmentation::~AliMpSectorSegmentation() {
 // private methods
 //
 
+#ifdef WITH_ROOT
+//______________________________________________________________________________
+Long_t AliMpSectorSegmentation::GetIndex(const TVector2& vector2) const
+{
+// Converts the twovector to long.
+// ---
+
+  if (vector2.X() >= fgkSeparator || vector2.Y() >= fgkSeparator)
+    Fatal("GetIndex", "Index out of limit.");
+      
+  return Long_t(vector2.X()*fgkSeparator + vector2.Y() + 1.);
+}  
+
+//______________________________________________________________________________
+TVector2  AliMpSectorSegmentation::GetVector(Long_t index) const
+{
+// Converts the long index to twovector.
+// ---
+
+  return TVector2(floor((index-1.)/fgkSeparator), 
+                  (index-1.) - floor((index-1.)/fgkSeparator)*fgkSeparator);
+}  
+#endif
+
 //______________________________________________________________________________
 void AliMpSectorSegmentation::FillPadDimensionsMap()
 {
@@ -74,8 +102,15 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
     Int_t  zoneID = zone->GetID();
     
     if (!AliMpConstants::IsEqual(zone->GetPadDimensions(), TVector2())) {
+
       // regular zone
+#ifdef WITH_STL
       fPadDimensionsMap[zoneID*10] = zone->GetPadDimensions();
+#endif
+#ifdef WITH_ROOT
+      fPadDimensionsMap.Add((Long_t)(zoneID*10), 
+                            GetIndex(zone->GetPadDimensions()));
+#endif
     }
     else {
       // special zone
@@ -86,7 +121,13 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
 	
 	for (Int_t k=0; k<motif->GetNofPadDimensions(); k++) {
 	  Int_t index = zoneID*10 +  subIndex++;
+#ifdef WITH_STL
           fPadDimensionsMap[index] = motif->GetPadDimensions(k);
+#endif
+#ifdef WITH_ROOT
+          fPadDimensionsMap.Add((Long_t)(index), 
+                            GetIndex(motif->GetPadDimensions(k)));
+#endif
 	}
       }	  
     }	  
@@ -443,11 +484,25 @@ Int_t AliMpSectorSegmentation::Zone(const AliMpPad& pad, Bool_t warning) const
     return 0;
   }  
 
+#ifdef WITH_STL
   PadDimensionsMapCIterator it;
   for (it = fPadDimensionsMap.begin(); it != fPadDimensionsMap.end(); ++it) {
     if (AliMpConstants::IsEqual(it->second, pad.Dimensions()))
       return it->first;
   }
+#endif
+
+#ifdef WITH_ROOT
+  PadDimensionsMapCIterator it(&fPadDimensionsMap);
+  Long_t key, value;
+  while ( it.Next(key, value) ) {
+    TVector2 dimensions =  GetVector(value);
+    if (AliMpConstants::IsEqual(dimensions, pad.Dimensions()))
+      return (Int_t)key;
+  }  
+ return 0;
+
+#endif
 
   // Should never happen
   Fatal("Zone(AliMpPad)", "not found");
@@ -461,8 +516,15 @@ AliMpSectorSegmentation::PadDimensions(Int_t zone, Bool_t warning) const
 // Returns the pad dimensions for the zone with the specified zone index.
 // ---
 
+#ifdef WITH_STL
   PadDimensionsMapCIterator it = fPadDimensionsMap.find(zone);
   if (it != fPadDimensionsMap.end()) return it->second;
+#endif
+
+#ifdef WITH_ROOT
+  Long_t value = fPadDimensionsMap.GetValue(zone);
+  if (value) return GetVector(value);
+#endif
 
   if (warning) Warning("PadDimensions(zone)", "not found");
   return TVector2();

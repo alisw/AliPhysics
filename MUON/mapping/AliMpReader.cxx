@@ -39,6 +39,10 @@
 
 ClassImp(AliMpReader)
 
+#ifdef WITH_ROOT
+const Int_t    AliMpReader::fgkSeparator = 100;
+#endif
+
 const TString  AliMpReader::fgkSectorKeyword  = "SECTOR_DATA";
 const TString  AliMpReader::fgkZoneKeyword    = "ZONE";
 const TString  AliMpReader::fgkSubZoneKeyword = "SUBZONE";
@@ -80,6 +84,63 @@ AliMpReader::~AliMpReader() {
 //
 // private methods
 //
+
+#ifdef WITH_ROOT
+//_____________________________________________________________________________
+Int_t  AliMpReader::GetIndex(const std::string& s) const 
+{
+// Converts the TString to integer.
+// ---
+
+  if (s.length() > 5) {
+    Fatal("GetIndex", "String too long.");
+    return 0;
+  }  
+
+  Int_t index = 0;
+  for (Int_t i=s.length(); i>=0; --i)  index = index*100 + int(s[i]);
+  
+  return index;
+}
+
+//______________________________________________________________________________
+Int_t  AliMpReader::GetIndex(const AliMpIntPair& pair) const
+{
+// Converts the pair of integers to integer.
+// ---
+
+  if (pair.GetFirst() >= fgkSeparator || pair.GetSecond() >= fgkSeparator)
+    Fatal("GetIndex", "Index out of limit.");
+      
+  return pair.GetFirst()*fgkSeparator + pair.GetSecond() + 1;
+}  
+
+//_____________________________________________________________________________
+std::string  AliMpReader::GetString(Int_t index) const
+{
+// Converts the integer index to the string.
+// ---
+
+  string s;
+  while (index >0) {
+    Char_t c = index%100;
+    s += c;
+    index = index/100;
+  }
+  
+  return s;
+  
+}
+
+//______________________________________________________________________________
+AliMpIntPair  AliMpReader::GetPair(Int_t index) const
+{
+// Converts the integer index to the pair of integers.
+// ---
+
+  return AliMpIntPair((index-1)/fgkSeparator, (index-1)%fgkSeparator);
+}  
+#endif
 
 //_____________________________________________________________________________
 void  AliMpReader::ReadSectorData(ifstream& in)
@@ -434,7 +495,12 @@ void AliMpReader::ReadRowSegmentSpecialData(ifstream& in,
      segment->AddPadRow(padRow);
      
      // Keep the new rows in a temporary vector
+#ifdef WITH_STL
      newPadRows.push_back(padRow);
+#endif
+#ifdef WITH_ROOT
+     newPadRows.Add(padRow);
+#endif
   }   
       
   TString nextKeyword;
@@ -462,7 +528,12 @@ void AliMpReader::ReadRowSegmentSpecialData(ifstream& in,
     for (Int_t i=0; i<nofPadRows; i++) {
     
       // Get pad row from the temporary vector
+#ifdef WITH_STL
       AliMpPadRow* padRow = newPadRows[i];
+#endif
+#ifdef WITH_ROOT
+      AliMpPadRow* padRow = (AliMpPadRow*)newPadRows[i];
+#endif
       
       // Find motif
       AliMpVMotif* motif = fSector->GetMotifMap()->FindMotif(motifId);
@@ -589,8 +660,13 @@ AliMpMotifType* AliMpReader::BuildMotifType(const TString& motifTypeId)
 
     int i,j;
     strline>>i>>j;
+#ifdef WITH_STL
     positions[key].first=i;
     positions[key].second=j;
+#endif
+#ifdef WITH_ROOT
+    positions.Add(GetIndex(key), GetIndex(AliMpIntPair(i,j))); 
+#endif
   } while (!padPos.eof());
 
   padPos.close();
@@ -677,6 +753,7 @@ AliMpMotifType* AliMpReader::BuildMotifType(const TString& motifTypeId)
     
     gassiNum  = gassiChannel[numBerg-1];
 
+#ifdef WITH_STL
     PadMapTypeIterator iter = positions.find(padName);
     if (iter==positions.end()) {
       cerr<<"Problem: Pad number "<<padNum<<" found in the file "<<strMotif
@@ -686,6 +763,19 @@ AliMpMotifType* AliMpReader::BuildMotifType(const TString& motifTypeId)
 
     ix= iter->second.first;
     iy= iter->second.second;
+#endif
+
+#ifdef WITH_ROOT
+    Long_t value = positions.GetValue(GetIndex(padName));
+    if (!value) {
+      cerr<<"Problem: Pad number "<<padNum<<" found in the file "<<strMotif
+	  <<" but not in the file"<<strPadPos<<endl;
+      continue;
+    }
+
+    ix = GetPair(value).GetFirst();
+    iy = GetPair(value).GetSecond();
+#endif
 
     motifType->AddConnection(AliMpIntPair(ix,iy),
                   new AliMpConnection(padNum,numBerg,numKapton,gassiNum));

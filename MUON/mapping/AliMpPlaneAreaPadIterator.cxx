@@ -31,7 +31,13 @@ AliMpPlaneAreaPadIterator::AliMpPlaneAreaPadIterator(
  
   DecomposeArea();
 
+#ifdef WITH_STL
   fCurrentIterator = fPadIterators.end();
+#endif
+
+#ifdef WITH_ROOT
+  fCurrentIterator = fPadIterators.GetEntriesFast();
+#endif
 }
 
 //______________________________________________________________________________
@@ -103,8 +109,15 @@ void AliMpPlaneAreaPadIterator::DecomposeArea()
       AliMpVPadIterator* sectorIt 
 	= segmentation->CreateIterator(area);
 	    
+#ifdef WITH_STL
       fPadIterators.push_back(
         new AliMpTransformPadIterator(sectorIt, transformer));
+#endif
+
+#ifdef WITH_ROOT
+      fPadIterators.Add(
+        new AliMpTransformPadIterator(sectorIt, transformer));
+#endif
     }	
   }
 }
@@ -119,6 +132,8 @@ void AliMpPlaneAreaPadIterator::First()
 // Reset the iterator, so that it points to the first available
 // pad in the area
 // ---
+
+#ifdef WITH_STL
   if (fPadIterators.size()==0) return;
 
   fCurrentIterator = fPadIterators.begin();
@@ -132,6 +147,24 @@ void AliMpPlaneAreaPadIterator::First()
       (*fCurrentIterator)->First();
     }  	 
   }
+#endif
+
+#ifdef WITH_ROOT
+  if (fPadIterators.GetEntriesFast()==0) return;
+
+  fCurrentIterator = 0;
+  ((AliMpTransformPadIterator*)fPadIterators.At(fCurrentIterator))->First();
+
+  while ( fCurrentIterator != fPadIterators.GetEntriesFast() &&
+          ((AliMpTransformPadIterator*)fPadIterators.At(fCurrentIterator))
+	    ->IsDone()) {
+
+    fCurrentIterator++;
+    if (fCurrentIterator != fPadIterators.GetEntriesFast()) {
+      ((AliMpTransformPadIterator*)fPadIterators.At(fCurrentIterator))->First();
+    }  	 
+  }
+#endif
 }
 
 //______________________________________________________________________________
@@ -140,6 +173,7 @@ void AliMpPlaneAreaPadIterator::Next()
 // Move the iterator to the next valid pad.
 // ---
 
+#ifdef WITH_STL
   (*fCurrentIterator)->Next();
   
   while ( fCurrentIterator != fPadIterators.end() &&
@@ -150,13 +184,34 @@ void AliMpPlaneAreaPadIterator::Next()
       (*fCurrentIterator)->First();
     }  	 
   }
+#endif
+
+#ifdef WITH_ROOT
+  ((AliMpTransformPadIterator*)fPadIterators.At(fCurrentIterator))->Next();
+
+  while ( fCurrentIterator != fPadIterators.GetEntriesFast() &&
+          ((AliMpTransformPadIterator*)fPadIterators.At(fCurrentIterator))
+	    ->IsDone()) {
+	 
+    fCurrentIterator++;
+    if (fCurrentIterator != fPadIterators.GetEntriesFast()) {
+      ((AliMpTransformPadIterator*)fPadIterators.At(fCurrentIterator))->First();
+    }  	 
+  }
+#endif
 }
 
 //______________________________________________________________________________
 Bool_t AliMpPlaneAreaPadIterator::IsDone() const
 {
 // 
+#ifdef WITH_STL
   return  fCurrentIterator == fPadIterators.end();
+#endif
+
+#ifdef WITH_ROOT
+  return  fCurrentIterator == fPadIterators.GetEntriesFast();
+#endif
 }
 
 //______________________________________________________________________________
@@ -165,10 +220,20 @@ AliMpPad AliMpPlaneAreaPadIterator::CurrentItem() const
 // Returns the current pad.
 // ---
 
+#ifdef WITH_STL
   if (fCurrentIterator != fPadIterators.end())
     return (*fCurrentIterator)->CurrentItem();
   else
     return AliMpPad::Invalid();  
+#endif
+
+#ifdef WITH_ROOT
+  if (fCurrentIterator != fPadIterators.GetEntriesFast())
+    return ((AliMpTransformPadIterator*)fPadIterators.At(fCurrentIterator))
+             ->CurrentItem();
+  else
+    return AliMpPad::Invalid();  
+#endif
 }
 
 //______________________________________________________________________________
@@ -178,11 +243,21 @@ void AliMpPlaneAreaPadIterator::Invalidate()
 // iterator to invalid position.
 // ---
  
+#ifdef WITH_STL
   PadIteratorVectorIterator it;
   for (it=fPadIterators.begin(); it !=fPadIterators.end(); it++) {
     (*it)->Invalidate(); 
   }
   
   fCurrentIterator = fPadIterators.end();
+#endif
+
+#ifdef WITH_ROOT
+  for (Int_t i=0; i<fPadIterators.GetEntriesFast(); i++) {
+    ((AliMpTransformPadIterator*)fPadIterators.At(i))->Invalidate();
+  }  
+
+  fCurrentIterator = fPadIterators.GetEntriesFast();
+#endif
 }
 

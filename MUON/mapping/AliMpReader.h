@@ -15,9 +15,11 @@
 #include <TObject.h>
 #include <TString.h>
 
+#include "AliMpSectorTypes.h"
 #include "AliMpStationType.h"
 #include "AliMpPlaneType.h"
 #include "AliMpXDirection.h"
+#include "AliMpIntPair.h"
 
 class AliMpSector;
 class AliMpZone;
@@ -45,6 +47,17 @@ class AliMpReader : public TObject
     void SetVerboseLevel(Int_t verboseLevel); 
     
   private:
+#ifdef WITH_ROOT
+    static const Int_t   fgkSeparator;  // the separator used for conversion
+                                        // of string to Int_t
+    
+    // methods
+    Int_t  GetIndex(const std::string& s) const;
+    Int_t  GetIndex(const AliMpIntPair& pair) const;
+    std::string  GetString(Int_t index) const;
+    AliMpIntPair  GetPair(Int_t index) const;
+#endif
+  
     // methods
     void  ReadSectorData(ifstream& in);
     void  ReadZoneData(ifstream& in);
@@ -81,4 +94,3 @@ class AliMpReader : public TObject
 };
 
 #endif //ALI_MP_READER_H
-

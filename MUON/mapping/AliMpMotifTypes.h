@@ -10,8 +10,17 @@
 #ifndef ALI_MP_MOTIF_TYPES_H
 #define ALI_MP_MOTIF_TYPES_H
 
-#include <map>
-#include <vector>
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+  #include <map>
+  #include <vector>
+#endif
+
+#ifdef WITH_ROOT
+  #include <TExMap.h>
+  #include <TObjArray.h>
+#endif
 
 #include <TVector2.h>
 #include <TString.h>
@@ -23,6 +32,7 @@ class AliMpVMotif;
 class AliMpMotifType;
 class AliMpMotifPosition;
 
+#ifdef WITH_STL
 #ifdef __HP_aCC
   typedef map<AliMpIntPair, AliMpConnection*> ConnectionMap_t;
   typedef ConnectionMap_t::const_iterator     ConnectionMapCIterator;
@@ -47,6 +57,21 @@ class AliMpMotifPosition;
   typedef std::map<AliMpIntPair, AliMpMotifPosition*> MotifPositionMap2;
   typedef MotifPositionMap2::const_iterator           MotifPositionMap2Iterator;
   typedef std::vector< TVector2 > DimensionsMap;
+#endif
+#endif
+
+#ifdef WITH_ROOT
+  typedef TExMap     ConnectionMap_t;
+  typedef TExMapIter ConnectionMapCIterator;
+  typedef TExMap     MotifMap;
+  typedef TExMapIter MotifMapIterator;
+  typedef TExMap     MotifTypeMap;
+  typedef TExMapIter MotifTypeMapIterator;
+  typedef TExMap     MotifPositionMap;
+  typedef TExMapIter MotifPositionMapIterator;
+  typedef TExMap     MotifPositionMap2;
+  typedef TExMapIter MotifPositionMap2Iterator;
+  typedef TObjArray  DimensionsMap;
 #endif
 
 #endif //ALI_MP_MOTIF_TYPES_H

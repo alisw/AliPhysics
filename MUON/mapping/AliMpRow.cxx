@@ -49,8 +49,14 @@ AliMpRow::AliMpRow()
 AliMpRow::~AliMpRow() {
 // 
 
+#ifdef WITH_STL
   for (Int_t i=0; i<GetNofRowSegments(); i++)
     delete fSegments[i]; 
+#endif
+
+#ifdef WITH_ROOT
+  fSegments.Delete();
+#endif
 }
 
 //
@@ -150,7 +156,13 @@ void AliMpRow::AddRowSegment(AliMpVRowSegment* rowSegment)
 // Adds row segment at the end.
 // ---
 
+#ifdef WITH_STL
   fSegments.push_back(rowSegment);
+#endif
+
+#ifdef WITH_ROOT
+  fSegments.Add(rowSegment);
+#endif
 }  
   
 //_____________________________________________________________________________
@@ -159,7 +171,13 @@ void AliMpRow::AddRowSegmentInFront(AliMpVRowSegment* rowSegment)
 // Inserts row segment in the first vector position.
 // ---
 
+#ifdef WITH_STL
   fSegments.insert(fSegments.begin(), rowSegment);
+#endif
+
+#ifdef WITH_ROOT
+  fSegments.AddFirst(rowSegment);
+#endif
 }  
   
 //_____________________________________________________________________________
@@ -170,7 +188,14 @@ AliMpVRowSegment* AliMpRow::FindRowSegment(Double_t x) const
 // ---
 
   for (Int_t i=0; i<GetNofRowSegments(); i++) {
+
+#ifdef WITH_STL
     AliMpVRowSegment* rs = fSegments[i];
+#endif
+#ifdef WITH_ROOT
+    AliMpVRowSegment* rs = (AliMpVRowSegment*)fSegments.At(i);
+#endif
+
     if (x >= rs->LeftBorderX() && x <= rs->RightBorderX())
       return rs;
   }
@@ -387,7 +412,13 @@ Int_t AliMpRow::GetNofRowSegments() const
 {
 // Returns number of row segments.
 
+#ifdef WITH_STL
   return fSegments.size();
+#endif
+
+#ifdef WITH_ROOT
+  return fSegments.GetSize();
+#endif
 }  
 
 //_____________________________________________________________________________
@@ -398,6 +429,12 @@ AliMpVRowSegment* AliMpRow::GetRowSegment(Int_t i) const
     return 0;
   }
   
+#ifdef WITH_STL
   return fSegments[i];  
+#endif
+
+#ifdef WITH_ROOT
+  return (AliMpVRowSegment*)fSegments.At(i);  
+#endif
 }
  

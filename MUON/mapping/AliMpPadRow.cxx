@@ -89,7 +89,13 @@ AliMpPadRow::AddPadRowSegment(AliMpMotif* motif, Int_t motifPositionId,
   padRowSegment->SetOffsetX(CurrentBorderX());
 
   // Adds the pad row segment
+#ifdef WITH_STL
   fSegments.push_back(padRowSegment);
+#endif
+
+#ifdef WITH_ROOT
+  fSegments.Add(padRowSegment);
+#endif
   
   return padRowSegment;
 }  
@@ -149,7 +155,13 @@ Int_t AliMpPadRow::GetNofPadRowSegments() const
 // Returns number of row segments.
 // ---
 
+#ifdef WITH_STL
   return fSegments.size();
+#endif
+
+#ifdef WITH_ROOT
+  return fSegments.GetEntriesFast();
+#endif
 }  
 
 //_____________________________________________________________________________
@@ -160,7 +172,13 @@ AliMpVPadRowSegment* AliMpPadRow::GetPadRowSegment(Int_t i) const
     return 0;
   }
   
+#ifdef WITH_STL
   return fSegments[i];  
+#endif
+
+#ifdef WITH_ROOT
+  return (AliMpVPadRowSegment*)fSegments[i];  
+#endif
 }
 
 //_____________________________________________________________________________

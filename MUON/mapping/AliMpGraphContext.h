@@ -54,7 +54,10 @@ class AliMpGraphContext : public TObject
 
   // static data members
   static AliMpGraphContext *fgInstance;   // the global instance
-  static GraphContextVector fgStack;  // the object statck
+  static GraphContextVector fgStack;  // the object stack
+#ifdef WITH_ROOT
+  static Int_t fgStackSize;  // the object stack size
+#endif
 
   //data members
   Int_t    fColor;          // color to use

@@ -56,6 +56,15 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     Bool_t CircleTest(const AliMpIntPair& indices) const;
 
   private:
+#ifdef WITH_ROOT
+    static const Double_t   fgkSeparator;  // the separator used for conversion
+                                           // of TVector2 to Long_t
+    
+    // methods
+    Long_t    GetIndex(const TVector2& vector2) const;
+    TVector2  GetVector(Long_t index) const;
+#endif
+
     // methods
     void  FillPadDimensionsMap();
     AliMpMotifPosition*  FindMotifPosition(const AliMpIntPair& indices) const;
@@ -68,8 +77,13 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     // data members        
     const AliMpSector*  fkSector;   // Sector
     AliMpPad*           fPadBuffer; // The pad buffer
+#ifdef WITH_STL
     PadDimensionsMap    fPadDimensionsMap; //! Map between zone IDs and pad dimensions
                               // EXCLUDED FOR CINT (does not compile on HP)    
+#endif    
+#ifdef WITH_ROOT
+    mutable PadDimensionsMap  fPadDimensionsMap; //  Map between zone IDs and pad dimensions
+#endif    
 
   ClassDef(AliMpSectorSegmentation,1)  // Segmentation
 };
