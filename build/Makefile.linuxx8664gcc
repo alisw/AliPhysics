@@ -1,0 +1,59 @@
+# Makefile for AliRoot for Itanium/Linux with gcc
+
+# The compilers
+CXX           = g++ 
+F77	      = g77
+CC	      = gcc
+
+# Global optimisation
+OPT           = -g #-O
+NOOPT         = -g
+
+CXXOPT        = $(OPT)
+CXXNOOPT      = $(NOOPT)
+COPT	      = $(OPT)
+FOPT	      = $(OPT)
+
+# CERNLIB defines
+CLIBDEFS      = -DCERNLIB_LXIA64 -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      = $(CLIBDEFS)
+
+# Compiler flags
+CXXFLAGS      = $(CXXOPT)  -Wall -fPIC -pipe
+CXXFLAGSNO    = $(CXXNOOPT)  -Wall -fPIC -pipe
+CFLAGS	      = -Wall -fPIC -pipe
+FFLAGS        = $(CLIBFOPT) $(FOPT) -fno-second-underscore -fPIC
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS = $(FFLAGS)
+
+# rootcint flags
+CINTFLAGS     = 
+
+LD            = g++
+LDFLAGS       = $(OPT) -Wl,-Map -Wl,$@.map
+
+SHLD	      = $(LD)
+SOFLAGS       = -shared -Wl #-O2
+SOEXT 	      = so
+
+ALLD	      = ar
+ALFLAGS       = cr
+ALLIB         = 
+AEXT 	      = a
+
+# additional ROOT libraries
+ROOTLIBS  += -lcrypt 
+
+LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
+GLIBS         = -L/usr/X11R6/lib64 -lX11  $(LIBNOVER)
+
+#System libraries
+SYSLIBS = -ldl
+
+EXEFLAGS+= -lg2c
+
+
+
+
