@@ -1698,94 +1698,90 @@ void AliMUONv1::StepManagerTest()
 void AliMUONv1::StepManagerNew()
 {
 
+//   // Volume id
+//   Int_t   copy, id;
+//   Int_t   idvol;
+//   Int_t   iChamber=0;
+//   // Particule id, pos and mom vectors, 
+//   // theta, phi angles with respect the normal of the chamber, 
+//   // spatial step, delta_energy and time of flight
+//   Int_t          ipart;
+//   TLorentzVector pos, mom;
+//   Float_t        theta, phi, tof;
+//   Float_t        destep, step;
+//   const  Float_t kBig = 1.e10;
 
+//   // Only charged tracks
+//   if( !(gMC->TrackCharge()) ) return; 
 
+//   // Only gas gap inside chamber
+//   // Tag chambers and record hits when track enters 
+//   idvol=-1;
+//   id=gMC->CurrentVolID(copy);
+//   for (Int_t i = 1; i <= AliMUONConstants::NCh(); i++) {
+//     if(id==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()) {
+//       iChamber = i;
+//       idvol  = i-1;
+//     }
+//   }
+//   static Float_t Sstep[20]; // Sum of steps per chamber
+//   // static Float_t Sdestep[20]; // Sum of eloss per chamber
+//   Float_t GAP;
+//   Float_t TEST; 
 
+//   if (idvol == -1) return;
 
-  // Volume id
-  Int_t   copy, id;
-  Int_t   idvol;
-  Int_t   iChamber=0;
-  // Particule id, pos and mom vectors, 
-  // theta, phi angles with respect the normal of the chamber, 
-  // spatial step, delta_energy and time of flight
-  Int_t          ipart;
-  TLorentzVector pos, mom;
-  Float_t        theta, phi, tof;
-  Float_t        destep, step;
-  const  Float_t kBig = 1.e10;
+//   //  printf(">>>> This Chamber %d\n",iChamber);
 
-  // Only charged tracks
-  if( !(gMC->TrackCharge()) ) return; 
+//   // record hits when track enters ...
+//   //if( gMC->IsTrackEntering()) gMC->SetMaxStep(fStepMaxInActiveGas);  
 
-  // Only gas gap inside chamber
-  // Tag chambers and record hits when track enters 
-  idvol=-1;
-  id=gMC->CurrentVolID(copy);
-  for (Int_t i = 1; i <= AliMUONConstants::NCh(); i++) {
-    if(id==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()) {
-      iChamber = i;
-      idvol  = i-1;
-    }
-  }
-  static Float_t Sstep[20]; // Sum of steps per chamber
-  // static Float_t Sdestep[20]; // Sum of eloss per chamber
-  Float_t GAP;
-  Float_t TEST; 
+//   if (gMC->TrackStep() > 0.) {
+//     // Get current particle id (ipart), track position (pos)  and momentum (mom)
+//     gMC->TrackPosition(pos);
+//     gMC->TrackMomentum(mom);
+//     ipart    = gMC->TrackPid();         // Particle
+//     theta    = mom.Theta()*kRaddeg;     // theta of track
+//     phi      = mom.Phi()  *kRaddeg;     // phi of the track
+//     tof      = gMC->TrackTime();        // Time of flight
+//     //
+//     // momentum loss and steplength in last step
+//     destep = gMC->Edep();
+//     step   = gMC->TrackStep();
 
-  if (idvol == -1) return;
+//     Sstep[iChamber]+=step;
+//     // Sdestep[iChamber]+=destep;
 
-  //  printf(">>>> This Chamber %d\n",iChamber);
-
-  // record hits when track enters ...
-  //if( gMC->IsTrackEntering()) gMC->SetMaxStep(fStepMaxInActiveGas);  
-
-  if (gMC->TrackStep() > 0.) {
-    // Get current particle id (ipart), track position (pos)  and momentum (mom)
-    gMC->TrackPosition(pos);
-    gMC->TrackMomentum(mom);
-    ipart    = gMC->TrackPid();         // Particle
-    theta    = mom.Theta()*kRaddeg;     // theta of track
-    phi      = mom.Phi()  *kRaddeg;     // phi of the track
-    tof      = gMC->TrackTime();        // Time of flight
-    //
-    // momentum loss and steplength in last step
-    destep = gMC->Edep();
-    step   = gMC->TrackStep();
-
-    Sstep[iChamber]+=step;
-    // Sdestep[iChamber]+=destep;
-
-  }
+//   }
   
-  step   =  Sstep[iChamber]; // Total step >= gap
-  //  destep   =  Sdestep[iChamber]; // Total eloss
+//   step   =  Sstep[iChamber]; // Total step >= gap
+//   //  destep   =  Sdestep[iChamber]; // Total eloss
 
 
-  // Track left chamber ...
-  if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()){
-    gMC->SetMaxStep(kBig);
+//   // Track left chamber ...
+//   if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()){
+//     gMC->SetMaxStep(kBig);
 
-    Sstep[iChamber]=0; // Reset for the next event
-    //Sdestep[iChamber]=0; // Reset for the next event
+//     Sstep[iChamber]=0; // Reset for the next event
+//     //Sdestep[iChamber]=0; // Reset for the next event
 
-    if (iChamber>=1 && iChamber<=2) GAP=0.4;
-    if (iChamber>=11 && iChamber<=14) GAP=0.2;
-    if (iChamber>=3 && iChamber<=10) GAP=0.5;
+//     if (iChamber>=1 && iChamber<=2) GAP=0.4;
+//     if (iChamber>=11 && iChamber<=14) GAP=0.2;
+//     if (iChamber>=3 && iChamber<=10) GAP=0.5;
    
-    TF1 *ELOSS1 = new TF1("Gauss1","exp(-((x-4.13727e+01)**2)/(2*1.42223e+01**2))",0,75);
-    TF1 *ELOSS2 = new TF1("Gauss2","exp(-((x+6.83795e+02)**2)/(2*4.48415e+02**2))",75,350);
-    TEST=gRandom->Rndm();
-    if (TEST <=0.89) destep=ELOSS1->GetRandom();
-    else destep=ELOSS2->GetRandom();
-    destep*=pow(10,-6)*0.0274;
-    destep*=GAP/0.5;
+//     TF1 *ELOSS1 = new TF1("Gauss1","exp(-((x-4.13727e+01)**2)/(2*1.42223e+01**2))",0,75);
+//     TF1 *ELOSS2 = new TF1("Gauss2","exp(-((x+6.83795e+02)**2)/(2*4.48415e+02**2))",75,350);
+//     TEST=gRandom->Rndm();
+//     if (TEST <=0.89) destep=ELOSS1->GetRandom();
+//     else destep=ELOSS2->GetRandom();
+//     destep*=pow(10,-6)*0.0274;
+//     destep*=GAP/0.5;
 
-    // One hit per chamber
-    GetMUONData()->AddHit(fIshunt, gAlice->GetCurrentTrackNumber(), iChamber, ipart, 
- 	   pos.X()-(step/2*sin(theta*kDegrad)*cos(phi*kDegrad)), pos.Y()-(step/2*sin(theta*kDegrad)*sin(phi*kDegrad)), pos.Z()-GAP/2, tof, mom.P(),theta, phi, step, destep);
+//     // One hit per chamber
+//     GetMUONData()->AddHit(fIshunt, gAlice->GetCurrentTrackNumber(), iChamber, ipart, 
+//  	   pos.X()-(step/2*sin(theta*kDegrad)*cos(phi*kDegrad)), pos.Y()-(step/2*sin(theta*kDegrad)*sin(phi*kDegrad)), pos.Z()-GAP/2, tof, mom.P(),theta, phi, step, destep);
 
-  }
+//   }
 }
 
 //___________________________________________
