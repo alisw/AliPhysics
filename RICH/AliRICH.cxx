@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.33  2000/11/02 10:09:01  jbarbosa
+  Minor bug correction (some pointers were not initialised in the default constructor)
+
   Revision 1.32  2000/11/01 15:32:55  jbarbosa
   Updated to handle both reconstruction algorithms.
 
@@ -209,9 +212,9 @@ AliRICH::AliRICH(const char *name, const char *title)
         
     SetMarkerColor(kRed);
     
-    fChambers = new TObjArray(kNCH);
+    /*fChambers = new TObjArray(kNCH);
     for (i=0; i<kNCH; i++) 
-      (*fChambers)[i] = new AliRICHChamber();  
+      (*fChambers)[i] = new AliRICHChamber();*/  
     
     fFileName = 0;
 
@@ -1577,6 +1580,7 @@ void AliRICH::StepManager()
     ckovData[1] = pos[0];                 // X-position for hit
     ckovData[2] = pos[1];                 // Y-position for hit
     ckovData[3] = pos[2];                 // Z-position for hit
+    ckovData[6] = 0;                      // dummy track length
     //ckovData[11] = gAlice->CurrentTrack();
     
     //printf("\n+++++++++++\nTrack: %d\n++++++++++++\n",gAlice->CurrentTrack());
