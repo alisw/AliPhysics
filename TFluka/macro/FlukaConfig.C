@@ -102,27 +102,28 @@ void Config()
 
   cout << "\t* Defining which detectors to load..." << endl;
   
-  Int_t   iABSO = 1;
-  Int_t   iCRT = 0; //Not good ?
-  Int_t   iDIPO = 1;
-  Int_t   iFMD = 1;
-  Int_t   iFRAME = 1;
-  Int_t   iHALL = 1;
-  Int_t   iITS = 1;
-  Int_t   iMAG = 1;
-  Int_t   iMUON = 1; //Not good (newFlagLttc=10000 is outside array bounds)
-  Int_t   iPHOS = 1;
-  Int_t   iPIPE = 1;
-  Int_t   iPMD = 0;   //Not good (too many regions)
-  Int_t   iRICH = 1;  //Not good (no tracking with FRAME)
-  Int_t   iSHIL = 1;  //Not good (no tracking) (it works alone)
-  Int_t   iSTART = 1; //Not good (no tracking) (it works alone)
-  Int_t   iTOF = 1;   //Not good (no tracking) (newFlagLttc=10000 is outside array bounds if alone)
-  Int_t   iTPC = 1;
-  Int_t   iTRD = 1;   //Not good (no tracking) (Crash alone with FRAME)
-  Int_t   iZDC = 1;   //Needs SHIL and others
+  Int_t   iABSO  = 1; //1
+  Int_t   iCRT   = 0; //Not good ?
+  Int_t   iDIPO  = 1; //1
+  Int_t   iFMD   = 1; //1
+  Int_t   iFRAME = 1; //1
+  Int_t   iHALL  = 1; //1
+  Int_t   iITS   = 1; //1
+  Int_t   iMAG   = 1; //1
+  Int_t   iMUON  = 1; //1. Not good (newFlagLttc=10000 is outside array bounds)
+  Int_t   iPHOS  = 1; //1
+  Int_t   iPIPE  = 1; //1
+  Int_t   iPMD   = 0; //Not good (too many regions)
+  Int_t   iRICH  = 1; //1. Not good (no tracking with FRAME)
+  Int_t   iSHIL  = 1; //1. Not good (no tracking) (it works alone)
+  Int_t   iSTART = 1; //1. Not good (no tracking) (it works alone)
+  Int_t   iTOF   = 1; //1. Not good (no tracking) (newFlagLttc=10000 is outside array bounds if alone)
+  Int_t   iTPC   = 1;
+  Int_t   iTRD   = 1; //1. Not good (no tracking) (Crash alone with FRAME)
+  Int_t   iZDC   = 1; //1. Needs SHIL and others
   Int_t   iEMCAL = 0; //Not good (Crash)
-  
+  Int_t   iVZERO = 1;
+ 
   cout << "\t* Creating the detectors ..." << endl;
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -391,7 +392,13 @@ void Config()
       //=================== START parameters ============================
       AliSTART *START = new AliSTARTv1("START", "START Detector");
     }
-  
+  if (iVZERO)
+    {
+      cout << "\t\t+ VZERO..." << endl;
+      //=================== CRT parameters ============================
+      AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
+    }
+ 
   
   cout << "<== Config.C..." << endl;
 }
