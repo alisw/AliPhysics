@@ -104,13 +104,7 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
   fTasksFolder   = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
 
   fFailed = kFALSE ; 
- 
-  if (!fFile) 
-    fFile = new TFile() ; 
-
-  if (fFile->IsOpen() )
-    fFile->Close() ; 
-		   
+ 		   
   if ( fHeaderFile != "aliroot"  ) { // to call the getter without a file
 
     //open headers file
