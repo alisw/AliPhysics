@@ -291,6 +291,7 @@ void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight,TClonesArray * digi
   fLocPos.SetX(x)  ;
   fLocPos.SetY(0.) ;
   fLocPos.SetZ(z)  ;
+  fLocPosM = 0 ;
 
 }
 
