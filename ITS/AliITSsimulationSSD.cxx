@@ -211,9 +211,8 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
 	y = y0 + (j+0.5)*dey;
 	if ( y > (GetSegmentation()->Dy()/2+10)*1.0E-4 ) {
 	    // check if particle is within the detector
-	    cout<<"AliITSsimulationSSD::HitToDigit: Warning: hit "
-		"out of detector y0,y,dey,j ="
-		<<y0<<","<<y<<","<<dey<<","<<j<<endl;
+	    Warning("HitToDigit","hit out of detector y0=%e,y=%e,dey=%e,j =%e",
+		    y0,y,dey,j);
 	    return;
 	} // end if
 	z = z0 + (j+0.5)*dez;
@@ -254,8 +253,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
 	    sigma[k] = TMath::Sqrt(2*GetDiffConst(k)*tdrift[k]);
 	    sigma[k] /= (GetStripPitch()*1.0E-4);  //units of Pitch
 	    if(sigma[k]==0.0) { 	
-		cout<<"AliITSsimulationSSD::DigitiseModule: Error: sigma=0"
-		    <<endl; 
+		Error("HitToDigit"," sigma[%d]=0",k);
 		exit(0);
 	    } // end if
 
