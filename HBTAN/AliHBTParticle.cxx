@@ -17,7 +17,7 @@ AliHBTParticle::AliHBTParticle():
 AliHBTParticle::AliHBTParticle(Int_t pdg, Int_t idx,
                Double_t px, Double_t py, Double_t pz, Double_t etot,
                Double_t vx, Double_t vy, Double_t vz, Double_t time):  
-  fPdgIdx(0), fIdxInEvent(0),fNPids(0),fPids(0x0),fPidProb(0x0),
+  fPdgIdx(0), fIdxInEvent(idx),fNPids(0),fPids(0x0),fPidProb(0x0),
   fCalcMass(0), 
   fPx(px), fPy(py),fPz(pz),fE(etot), 
   fVx(vx), fVy(vy),fVz(vz),fVt(time)
@@ -37,7 +37,7 @@ AliHBTParticle::AliHBTParticle(Int_t pdg, Int_t idx,
 AliHBTParticle::AliHBTParticle(Int_t pdg, Float_t prob, Int_t idx, 
                                Double_t px, Double_t py, Double_t pz, Double_t etot,
                                Double_t vx, Double_t vy, Double_t vz, Double_t time):
-  fPdgIdx(0), fIdxInEvent(0),fNPids(0),fPids(0x0),fPidProb(0x0),
+  fPdgIdx(0), fIdxInEvent(idx),fNPids(0),fPids(0x0),fPidProb(0x0),
   fCalcMass(0), 
   fPx(px), fPy(py),fPz(pz),fE(etot), 
   fVx(vx), fVy(vy),fVz(vz),fVt(time)
@@ -94,7 +94,7 @@ void AliHBTParticle::SetPIDprobability(Int_t pdg, Float_t prob)
 //Ids are set in decreasing order
 //Check if total prbaility is not ivercoming unity is performed
 //in case, warning is printed
-  if (fgDebug) Info("SetPIDprobability","Setting PID %d prob %f",pdg,prob);
+  if (fgDebug > 9) Info("SetPIDprobability","Setting PID %d prob %f",pdg,prob);
 
   Float_t totprob = 0.0;//sums up probabilities
   Int_t idx = GetPidSlot(pdg);
@@ -103,11 +103,11 @@ void AliHBTParticle::SetPIDprobability(Int_t pdg, Float_t prob)
    {
      fPidProb[idx] = prob;
      for (i = 0; i < fNPids;i++) totprob+=fPidProb[i];
-     if (totprob > 1.0)
+     if (totprob > (1.0+0.000001))
        {
-         Warning("SetPIDprobability","Total probability greater than UNITY: %f",totprob);
+         Warning("SetPIDprobability","Total probability greater than unity (%f)",totprob);
        }
-     if (fgDebug) 
+     if (fgDebug > 9) 
       {
         Info("SetPIDprobability","Current Total probability: %f",totprob);
       }
@@ -123,7 +123,7 @@ void AliHBTParticle::SetPIDprobability(Int_t pdg, Float_t prob)
    {
      if ( fPidProb[i] > prob)
       {
-        if (fgDebug>4) Info("SetPID","Copying entry %d",i);
+        if (fgDebug>9) Info("SetPID","Copying entry %d",i);
         aPidProbNew[i] = fPidProb[i];
         aPidsNew[i] = fPids[i];
         totprob+=fPidProb[i];
@@ -131,25 +131,20 @@ void AliHBTParticle::SetPIDprobability(Int_t pdg, Float_t prob)
      else break;
    }
 
-  if (fgDebug>4) Info("SetPID","Setting new PID on entry %d",i);
+  if (fgDebug > 9) Info("SetPID","Setting new PID on entry %d",i);
   aPidProbNew[i] = prob;
   aPidsNew[i] = pdg;
   totprob+=prob;
   
 
-  for (Int_t j = fNPids-1; j > i ;i--)//copy rest of old araays 
+  for (Int_t j = fNPids-1; j > i ;j--)//copy rest of old araays 
    {
-     if (fgDebug>4) Info("SetPID","Copying from old entry %d to new entry %d",j-1,j);
+     if (fgDebug > 9) Info("SetPID","Copying from old entry %d to new entry %d",j-1,j);
      aPidProbNew[j] = fPidProb[j-1];
      aPidsNew[j] = fPids[j-1];
      totprob+=fPidProb[j-1];
    }
 
-  if (totprob > 1.0)
-   {
-     Warning("SetId","Total probability is greater than 1 !!!");
-     Print();
-   }
   delete [] fPidProb;
   delete [] fPids;
   
@@ -158,6 +153,12 @@ void AliHBTParticle::SetPIDprobability(Int_t pdg, Float_t prob)
   
   fPdgIdx = GetPidSlot(currentpid);
   if (fPdgIdx == -1) fPdgIdx = 0;
+  
+  if (totprob > (1.0+0.000001))//place for numerical error
+   {
+     Warning("SetId","Total probability is greater than unity (%f)!!!",totprob);
+     Print();
+   }
 }
 //______________________________________________________________________________
 
@@ -189,17 +190,41 @@ Int_t AliHBTParticle::GetPidSlot(Int_t pdg) const
   }
  return -1;
 }
-
 //______________________________________________________________________________
+
+Int_t AliHBTParticle::GetNthPid(Int_t idx) const
+{
+  //returns PID sitting on slot idx in fPids
+  if ( (idx < 0) || (idx >= fNPids) )
+   {
+     Error("GetNthPid","Out Of Bounds");
+     return 0;
+   }
+  return fPids[idx];
+}
+//______________________________________________________________________________
+
+Float_t AliHBTParticle::GetNthPidProb(Int_t idx) const
+{
+  //returns PID sitting on slot idx in fPidProb
+  if ( (idx < 0) || (idx >= fNPids) )
+   {
+     Error("GetNthPid","Out Of Bounds");
+     return 0;
+   }
+  return fPidProb[idx];
+}
+//______________________________________________________________________________
+
 void AliHBTParticle::Print() const
 {
 //prints information about particle
   printf("____________________________________________________\n");
-  printf("Idx: %d  PID: %d  Name",fIdxInEvent,GetPdgCode());
+  printf("Idx: %d  PID: %d  Name: ",fIdxInEvent,GetPdgCode());
   TParticlePDG *pdgp = TDatabasePDG::Instance()->GetParticle(GetPdgCode());
   if (pdgp)
    {
-     printf("%s Mass %f\n",pdgp->GetName(),pdgp->Mass());
+     printf("%s Mass: %f\n",pdgp->GetName(),pdgp->Mass());
    }
   else
    {

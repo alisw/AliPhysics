@@ -38,7 +38,10 @@ public:
   Float_t        GetPidProb      () const { return (fPidProb)?fPidProb[fPdgIdx]:0;}
   
   Int_t          GetUID          () const { return fIdxInEvent;}
-    
+  Int_t          GetNumberOfPids () const { return fNPids;}
+  Int_t          GetNthPid         (Int_t idx) const;
+  Float_t        GetNthPidProb     (Int_t idx) const;
+      
   void           SetPdgCode(Int_t pdg, Float_t prob = 1.0);
   Double_t       GetCalcMass     () const { return fCalcMass; }
   Double_t       GetMass         ()       { return (GetPDG())?GetPDG()->Mass():-1.;}
