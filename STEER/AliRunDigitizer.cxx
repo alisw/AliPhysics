@@ -112,7 +112,7 @@ const TString AliRunDigitizer::fgkBaseInFolderName("Input");
 
 
 //_______________________________________________________________________
-AliRunDigitizer::AliRunDigitizer():
+AliRunDigitizer::AliRunDigitizer(): TTask("AliRunDigitizer","The manager for Merging"),
  fkMASKSTEP(0),
  fOutputFileName(0),
  fOutputDirName(0),
