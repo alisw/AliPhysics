@@ -13,8 +13,6 @@
 
 class AliTOFGeometry;
 class AliESD;
-class TFile;
-class TTree;
 
 class AliTOFpidESD : public TObject {
 enum {kMaxCluster=77777}; //maximal number of the TOF clusters
@@ -38,5 +36,3 @@ private:
 };
 
 #endif
-
-

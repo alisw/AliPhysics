@@ -12,12 +12,17 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+////////////////////////////////////////////////////////////////////////
+//
+// AliTOFtrack class
+//
+// Authors: Bologna-CERN-ITEP-Salerno Group
+//
+// Description: class for handling ESD extracted tracks for TOF matching.
 /* $Id$ */
 
 #include <Riostream.h>
 #include <TObject.h>   
-#include "AliTOFGeometry.h" 
 #include "AliTOFtrack.h" 
 #include "AliESDtrack.h" 
 
@@ -131,6 +136,9 @@ void AliTOFtrack::GetExternalCovariance(Double_t cc[15]) const {
 
 //_____________________________________________________________________________
 void AliTOFtrack::GetCovariance(Double_t cc[15]) const {
+  //
+  // Returns the covariance matrix.
+  //
 
   cc[0]=fCyy;
   cc[1]=fCzy;  cc[2]=fCzz;
@@ -260,32 +268,32 @@ Int_t AliTOFtrack::PropagateToInnerTOF( Bool_t holes)
 
   Double_t ymax=AliTOFGeometry::RinTOF()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
   Bool_t skip = kFALSE;
-  Double_t y=this->GetYat(AliTOFGeometry::RinTOF(),skip);
+  Double_t y=GetYat(AliTOFGeometry::RinTOF(),skip);
   if(skip){
     return 0;
   }
   if (y > ymax) {
-    if (!this->Rotate(AliTOFGeometry::GetAlpha())) {
+    if (!Rotate(AliTOFGeometry::GetAlpha())) {
       return 0;
     }
   } else if (y <-ymax) {
-    if (!this->Rotate(-AliTOFGeometry::GetAlpha())) {
+    if (!Rotate(-AliTOFGeometry::GetAlpha())) {
       return 0;
     }
   }
   
   
-  Double_t x = this->GetX();
+  Double_t x = GetX();
   Int_t nsteps=Int_t((370.-x)/0.5); // 0.5 cm Steps
   for (Int_t istep=0;istep<nsteps;istep++){
     Float_t xp = x+istep*0.5; 
     Double_t param[2];  
-    this->GetPropagationParameters(holes,param);  
-    this->PropagateTo(xp,param[0],param[1]);
+    GetPropagationParameters(holes,param);  
+    PropagateTo(xp,param[0],param[1]);
     
   }
   
-  if(!this->PropagateTo(AliTOFGeometry::RinTOF()))return 0;
+  if(!PropagateTo(AliTOFGeometry::RinTOF()))return 0;
   
   return 1;
   
@@ -351,8 +359,18 @@ Int_t AliTOFtrack::Rotate(Double_t alpha)
   return 1;                            
 }                         
 
-
-
+//_________________________________________________________________________
+Double_t AliTOFtrack::GetYat(Double_t xk, Bool_t skip) const {     
+//-----------------------------------------------------------------
+// This function calculates the Y-coordinate of a track at the plane x=xk.
+// Needed for matching with the TOF (I.Belikov)
+//-----------------------------------------------------------------
+     skip=kFALSE;
+     Double_t c1=fC*fX - fE, r1=TMath::Sqrt(TMath::Abs(1.- c1*c1));
+     Double_t c2=fC*xk - fE, r2=TMath::Sqrt(TMath::Abs(1.- c2*c2));
+      if( ((1.- c2*c2)<0) || ((1.- c1*c1)<0) ) skip=kTRUE;
+      return fY + (xk-fX)*(c1+c2)/(r1+r2);
+}
 //_________________________________________________________________________
 void AliTOFtrack::GetPxPyPz(Double_t& px, Double_t& py, Double_t& pz) const
 {
@@ -431,6 +449,9 @@ Int_t AliTOFtrack::Compare(const TObject *o) const {
 //_____________________________________________________________________________
 void AliTOFtrack::GetPropagationParameters(Bool_t holes, Double_t *param) {
 
+ //Get average medium density, x0 while propagating the track
+
+  //For TRD holes description
 
   Double_t thetamin = (90.-31.1) * TMath::Pi()/180.;
   Double_t thetamax = (90.+31.1) * TMath::Pi()/180.;
@@ -438,10 +459,12 @@ void AliTOFtrack::GetPropagationParameters(Bool_t holes, Double_t *param) {
   Double_t zmin = -55.;
   Double_t zmax =  55.;
 
+  // Detector inner/outer radii
   Double_t rTPC    = 261.53;
   Double_t rTPCTRD = 294.5;
   Double_t rTRD    = 369.1;
 
+  // Medium parameters
   Double_t x0TPC = 40.;
   Double_t rhoTPC =0.06124;
 
@@ -451,9 +474,9 @@ void AliTOFtrack::GetPropagationParameters(Bool_t holes, Double_t *param) {
   Double_t x0TRD = 171.7;
   Double_t rhoTRD =0.33;
 
-  Int_t isec = this->GetSector();
+  Int_t isec = GetSector();
   Double_t xtr,ytr,ztr;
-  this->GetGlobalXYZ(xtr,ytr,ztr);
+  GetGlobalXYZ(xtr,ytr,ztr);
   Float_t thetatr = TMath::ATan2(TMath::Sqrt(xtr*xtr+ytr*ytr),ztr);
 
   if(holes){
@@ -471,13 +494,12 @@ void AliTOFtrack::GetPropagationParameters(Bool_t holes, Double_t *param) {
     }
   }
 
-  if(this->GetX() <= rTPC)
+  if(GetX() <= rTPC)
     {param[0]=x0TPC;param[1]=rhoTPC;}
-  else if(this->GetX() > rTPC &&  this->GetX() < rTPCTRD)
+  else if(GetX() > rTPC &&  GetX() < rTPCTRD)
     {param[0]=x0Air;param[1]=rhoAir;}
-  else if(this->GetX() >= rTPCTRD &&  this->GetX() < rTRD)
+  else if(GetX() >= rTPCTRD &&  GetX() < rTRD)
     {param[0]=x0TRD;param[1]=rhoTRD;}
-  else if(this->GetX() >= rTRD )
+  else if(GetX() >= rTRD )
     {param[0]=x0Air;param[1]=rhoAir;}
-
 }

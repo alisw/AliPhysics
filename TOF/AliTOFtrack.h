@@ -1,6 +1,6 @@
 #ifndef ALITOFTRACK_H
 #define ALITOFTRACK_H
-
+// Description: class for handling ESD extracted tracks for TOF matching.
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -11,8 +11,6 @@
 
 class AliESDtrack;
 class AliTOFtrack : public AliKalmanTrack {
-
-// Represents reconstructed TOF track
 
 public:
 
@@ -26,15 +24,15 @@ public:
      return Int_t(TVector2::Phi_0_2pi(fAlpha)/AliTOFGeometry::GetAlpha())%AliTOFGeometry::NSectors();}
 
    Double_t GetC()     const {return fC;}
-   void     GetCovariance(Double_t cov[15]) const;  
+   void     GetCovariance(Double_t cov[15]) const; // track covariance
    Double_t GetEta()   const {return fE;}
 
-   void     GetExternalCovariance(Double_t cov[15]) const ;   
-   void     GetExternalParameters(Double_t& xr, Double_t x[5]) const ;
+   void     GetExternalCovariance(Double_t cov[15]) const ;// track covariance
+   void     GetExternalParameters(Double_t& xr, Double_t x[5]) const ;//track parameters
    Double_t GetSigmaY2() const {return fCyy;}
    Double_t GetSigmaZ2() const {return fCzz;}
 
-   Double_t Get1Pt()   const {return (1e-9*TMath::Abs(fC)/fC + fC)*GetConvConst();}
+   Double_t Get1Pt()   const {return (1e-9*TMath::Abs(fC)/fC + fC)*GetConvConst();} 
    Double_t GetP()     const {  
      return TMath::Abs(GetPt())*sqrt(1.+GetTgl()*GetTgl());
    }
@@ -54,19 +52,7 @@ public:
    Int_t Compare(const TObject *o) const;
 
 
-   Double_t GetYat(Double_t xk, Bool_t skip) const {     
-//-----------------------------------------------------------------
-// This function calculates the Y-coordinate of a track at the plane x=xk.
-// Needed for matching with the TOF (I.Belikov)
-//-----------------------------------------------------------------
-     skip=kFALSE;
-     Double_t c1=fC*fX - fE, r1=TMath::Sqrt(TMath::Abs(1.- c1*c1));
-     Double_t c2=fC*xk - fE, r2=TMath::Sqrt(TMath::Abs(1.- c2*c2));
-      if( ((1.- c2*c2)<0) || ((1.- c1*c1)<0) ) skip=kTRUE;
-      return fY + (xk-fX)*(c1+c2)/(r1+r2);
-   }
-
-
+   Double_t GetYat(Double_t xk, Bool_t skip) const;      
    Int_t    PropagateTo(Double_t xr, Double_t x0=8.72, Double_t rho=5.86e-3);
    Int_t    PropagateToInnerTOF(Bool_t holes);
    void     ResetCovariance();   
@@ -103,4 +89,4 @@ protected:
 
 };                     
 
-#endif   
+#endif

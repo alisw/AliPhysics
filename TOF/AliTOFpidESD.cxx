@@ -15,23 +15,12 @@
 
 //-----------------------------------------------------------------
 //           Implementation of the TOF PID class
-// Very naive one... Should be made better by the detector experts...
 //      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
-#include "TFile.h"
-#include "TTree.h"
-#include "TClonesArray.h"
 #include "TError.h"
-
 #include "AliTOFpidESD.h"
-#include "AliESD.h"
 #include "AliESDtrack.h"
-#include "AliTOFdigit.h"
-#include "AliTOFGeometry.h"
-#include <Riostream.h>
-
-#include <stdlib.h>
-
+#include "AliESD.h"
 
 ClassImp(AliTOFpidESD)
 
@@ -58,7 +47,6 @@ Int_t AliTOFpidESD::MakePID(AliESD *event)
     0.000511, 0.105658, 0.139570, 0.493677, 0.938272, 1.875613
   };
 
-  Int_t nPID=0;
   Int_t ntrk=event->GetNumberOfTracks();
   AliESDtrack **tracks=new AliESDtrack*[ntrk];
 
@@ -76,7 +64,6 @@ Int_t AliTOFpidESD::MakePID(AliESD *event)
     Double_t time[10]; t->GetIntegratedTimes(time);
     Double_t p[10];
     Double_t mom=t->GetP();
-    nPID++;
     for (Int_t j=0; j<AliESDtrack::kSPECIES; j++) {
       Double_t mass=kMasses[j];
       Double_t dpp=0.01;      //mean relative pt resolution;
