@@ -96,6 +96,7 @@ AliMUONDigitizer::AliMUONDigitizer(const AliMUONDigitizer& rhs)
 AliMUONDigitizer::~AliMUONDigitizer() 
 {
 // Destructor
+  delete fMUONData;
 }
 
 //-------------------------------------------------------------------
@@ -396,7 +397,7 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 // AliMUONData fetched from the MUON module. 
 // kTRUE is returned if no error occurred otherwise kFALSE is returned. 
 
-	if (GetDebug() > 2)
+        if (GetDebug() > 2)
 		Info("FetchGlobalPointers", "Fetching gAlice, MUON module and AliMUONData from runloader 0x%X.",
 			(void*)runloader
 		    );
@@ -414,7 +415,16 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 		Error("FetchGlobalPointers", "Could not find the MUON module in runloader 0x%X.", (void*)runloader);
 		return kFALSE;
 	};
-	fMUONData = fMUON->GetMUONData();
+
+	AliMUONLoader *muonloader = (AliMUONLoader*) runloader->GetLoader("MUONLoader");
+	if (muonloader == NULL) 
+	{
+		Error("FetchGlobalPointers", "MUONLoader not found ");
+		return kFALSE; 
+	}
+
+
+	fMUONData = new AliMUONData(muonloader,"MUON","MUON");
 	if (fMUONData == NULL)
 	{
 		Error("FetchGlobalPointers", "Could not find AliMUONData object in runloader 0x%X.", (void*)runloader);
