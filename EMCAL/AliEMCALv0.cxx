@@ -21,10 +21,10 @@
 // It is the one to use if you do not want to produce outputs in TREEH or TREED
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
-
+//*-- and   : Sahal Yacoob (LBL / UCT)
 
 // --- ROOT system ---
-
+#include "TPGON.h"
 #include "TTUBS.h"
 #include "TNode.h"
 #include "TRandom.h"
@@ -33,213 +33,159 @@
 
 // --- Standard library ---
 
-#include <iostream.h> 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <strstream.h>
+#include <iostream.h>
 
 // --- AliRoot header files ---
 
 #include "AliEMCALv0.h"
 #include "AliEMCALGeometry.h"
+#include "AliConst.h"
 #include "AliRun.h"
 #include "AliMC.h"
 
 ClassImp(AliEMCALv0)
 
-//____________________________________________________________________________
+//______________________________________________________________________
 AliEMCALv0::AliEMCALv0(const char *name, const char *title):
-  AliEMCAL(name,title)
-{
-  // ctor/* $Id$ */
+    AliEMCAL(name,title){
+    // Standard Constructor
 
-  cout << " $Id$ " << endl ; 
-
+    if (strcmp(GetTitle(),"") != 0 )
+	fGeom =  AliEMCALGeometry::GetInstance(GetTitle(), "") ;
 }
+//______________________________________________________________________
+void AliEMCALv0::BuildGeometry(){
+    // Display Geometry for display.C
 
-//____________________________________________________________________________
-void AliEMCALv0::BuildGeometry()
-{
+    const Int_t kColorArm1   = kBlue ;
 
-  const Int_t kColorEmcal   = kGreen ;
-  const Int_t kColorArm1    = kBlue ;
-  const Int_t kColorArm2    = kBlue ;
-  const Int_t kColorArm1Active   = kRed ;
-  const Int_t kColorArm2Active   = kRed ;
-
-  // make the container of entire calorimeter
-
-  new TTUBS("EMCAL", "Tubs that contains the calorimeter", "void", 
-	    fGeom->GetEnvelop(0),     // rmin 
-	    fGeom->GetEnvelop(1),     // rmax
-	    fGeom->GetEnvelop(2)/2.0, // half length in Z
-	    0., 
-	    360.
-	    ) ; 
-
-  // make the container of  Arm1
+    // make the container of  Arm1
   
-  new TTUBS("Envelop1", "Tubs that contains arm 1", "void", 
-	    fGeom->GetEnvelop(0),     // rmin 
-	    fGeom->GetEnvelop(1),     // rmax
-	    fGeom->GetEnvelop(2)/2.0, // half length in Z
-	    fGeom->GetArm1PhiMin(),   // minimun phi angle
-	    fGeom->GetArm1PhiMax()    // maximun phi angle
-	    ) ; 
-   // Active material of  Arm1
- 
-  new TTUBS("Arm1", "Active material of  arm 1", "void", 
-	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active(),                   // rmin 
-	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active() + fGeom->GetLmat(),// rmax 
-	    fGeom->GetEnvelop(2)/2.0, // half length in Z
-	    fGeom->GetArm1PhiMin(),   // minimun phi angle
-	    fGeom->GetArm1PhiMax()    // maximun phi angle
-	    ) ; 
-  // make the container of  Arm2
- 
-  new TTUBS("Envelop2", "Tubs that contains arm 2", "void", 
-	    fGeom->GetEnvelop(0),     // rmin 
-	    fGeom->GetEnvelop(1),     // rmax
-	    fGeom->GetEnvelop(2)/2.0, // half length in Z
-	    fGeom->GetArm2PhiMin(),   // minimun phi angle
-	    fGeom->GetArm2PhiMax()    // maximun phi angle
-	    ) ;
-	   
-  // Active material of  Arm2
- 
-  new TTUBS("Arm2", "Active material of  arm 2", "void", 
-	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active(),                   // rmin 
-	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active() + fGeom->GetLmat(),// rmax 
-	    fGeom->GetEnvelop(2)/2.0, // half length in Z
-	    fGeom->GetArm2PhiMin(),   // minimun phi angle
-	    fGeom->GetArm2PhiMax()    // maximun phi angle
-	    ) ;
-
-  TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
-  top->cd();
-  
-  // Calorimeter inside alice 
-  TNode * emcanode = new TNode("EMCAL", "EMCAL Envelop", "EMCAL") ;
-  emcanode->SetLineColor(kColorEmcal) ;
-  fNodes->Add(emcanode) ;
-
-  // Arm 1 inside Calorimeter
-  emcanode->cd(); 
-  TNode * envelop1node = new TNode("Envelop1", "Arm1 Envelop", "Envelop1") ;
-  envelop1node->SetLineColor(kColorArm1) ;
-  fNodes->Add(envelop1node) ;
-
-  // Arm 2 inside alice
-  TNode * envelop2node = new TNode("Envelop2", "Arm2 Envelop", "Envelop2") ;
-  envelop2node->SetLineColor(kColorArm2) ;
-  fNodes->Add(envelop2node) ;
-
-  // active material inside Arm 1
-  envelop1node->cd() ; 
-  TNode * arm1node = new TNode("Arm1", "Arm1 with Mat", "Arm1") ;
-  arm1node->SetLineColor(kColorArm1Active) ;
-  fNodes->Add(arm1node) ; 
-
-  // active material inside Arm 2
-  envelop2node->cd() ; 
-  TNode * arm2node = new TNode("Arm2", "Arm2 with Mat", "Arm2") ;
-  arm2node->SetLineColor(kColorArm2Active) ;
-  fNodes->Add(arm2node) ; 
-  
+    new TTUBS("Envelop1", "Tubs that contains arm 1", "void", 
+	      fGeom->GetEnvelop(0),     // rmin 
+	      fGeom->GetEnvelop(1) +30 ,     // rmax
+	      fGeom->GetEnvelop(2)/2.0, // half length in Z
+	      fGeom->GetArm1PhiMin(),   // minimun phi angle
+	      fGeom->GetArm1PhiMax()    // maximun phi angle
+	);
+    // Arm 1 inside alice
+    TNode * envelop1node = new TNode("Envelop1", "Arm1 Envelop", "Envelop1") ;
+    envelop1node->SetLineColor(kColorArm1) ;
+    fNodes->Add(envelop1node) ;
 }
+//______________________________________________________________________
+void AliEMCALv0::CreateGeometry(){
+    // Create the EMCAL geometry for Geant
 
-//____________________________________________________________________________
-void AliEMCALv0::CreateGeometry()
-{
-  // Create the EMCAL geometry for Geant
+    AliEMCALv0 *emcaltmp = (AliEMCALv0*)gAlice->GetModule("EMCAL") ;
 
-  AliEMCALv0 *emcaltmp = (AliEMCALv0*)gAlice->GetModule("EMCAL") ;
+    if ( emcaltmp == NULL ) {
+	Warning("CreateGeometry","detector not found!");
+	return;
+    } // end if
+    // Get pointer to the array containing media indices
+    Int_t *idtmed = fIdtmed->GetArray() - 1599 ;
 
-  if ( emcaltmp == NULL ) {
-    
-    fprintf(stderr, "EMCAL detector not found!\n") ;
-    return;
-    
-  }
-  // Get pointer to the array containing media indices
-  Int_t *idtmed = fIdtmed->GetArray() - 1599 ;
-
-  // Create the EMCA volume that contains entirely EMCAL
-
-  Float_t envelopA[5] ; 
-  envelopA[0] = fGeom->GetEnvelop(0) ;         // rmin
-  envelopA[1] = fGeom->GetEnvelop(1) ;         // rmax
-  envelopA[2] = fGeom->GetEnvelop(2) / 2.0 ;   // dz
-  envelopA[3] = 0. ;      
-  envelopA[4] = 360.;      
-
-  gMC->Gsvolu("EMCA", "TUBS ", idtmed[1599], envelopA, 5) ; // filled with air
-
-  // Create tube sectors that contains Arm 1 & 2 
+    // Create tube sectors that contains Arm 1 & 2 
  
-  envelopA[3] = fGeom->GetArm1PhiMin() ;       // minimun phi angle
-  envelopA[4] = fGeom->GetArm1PhiMax() ;       // maximun phi angle
+    Float_t envelopA[5] ; 
+    envelopA[0] = fGeom->GetEnvelop(0) ;         // rmin
+    envelopA[1] = fGeom->GetEnvelop(1) + 30 ;    // rmax
+    envelopA[2] = fGeom->GetEnvelop(2) / 2.0 ;   // dz
+    envelopA[3] = fGeom->GetArm1PhiMin() ;       // minimun phi angle
+    envelopA[4] = fGeom->GetArm1PhiMax() ;       // maximun phi angle
 
-  gMC->Gsvolu("XEN1", "TUBS ", idtmed[1599], envelopA, 5) ; // filled with air
+    gMC->Gsvolu("XEN1", "TUBS ", idtmed[1599], envelopA, 5) ; //filled with air
 
-  envelopA[3] = fGeom->GetArm2PhiMin() ;       // minimun phi angle
-  envelopA[4] = fGeom->GetArm2PhiMax() ;       // maximun phi angle
-  
-  gMC->Gsvolu("XEN2", "TUBS ", idtmed[1599], envelopA, 5) ; // filled with air
+    // Create a tube sector that contains active material Arm 1 & 2
 
-  // Create a tube sector that contains active material Arm 1 & 2 
+    Float_t envelopB[10];
+    Float_t envelopC[10];
+    Float_t envelopD[10];
+    envelopC[0] = envelopD[0] =  envelopB[0] = fGeom->GetArm1PhiMin();
+    envelopC[1] = envelopD[1] =  envelopB[1] = fGeom->GetArm1PhiMax() -
+	                                       fGeom->GetArm1PhiMin();
+    envelopC[2] = envelopD[2] =  envelopB[2] = fGeom->GetNPhi() ;       
+    envelopD[3] = 2;
+    envelopC[3] = 2;
+    envelopB[3] = 2;
 
-  envelopA[0] = fGeom->GetEnvelop(0) +  fGeom->GetGap2Active() ;
-  envelopA[1] = envelopA[0] + fGeom->GetLmat() ;
-  envelopA[3] = fGeom->GetArm1PhiMin() ;       // minimun phi angle
-  envelopA[4] = fGeom->GetArm1PhiMax() ;       // maximun phi angle
+    envelopB[4] = (fGeom->GetEnvelop(0) + fGeom->GetGap2Active() + 1.59) /
+                  (tan(2*atan(exp(-0.7)))) ;
+    envelopB[5] = fGeom->GetEnvelop(0) + fGeom->GetGap2Active(); //rmin
+    envelopD[6] = envelopB[6] = envelopB[5] + 3.18;  //rmax
+    envelopB[7] = (fGeom->GetEnvelop(0) + fGeom->GetGap2Active()+ 1.59) /
+	          (tan(2*atan(exp(0.7)))) ;
+    envelopB[8] = envelopB[5] ;
+    envelopB[9] = envelopB[6] ;
 
-  gMC->Gsvolu("XAR1", "TUBS ", idtmed[1601], envelopA, 5) ; // filled with active material (average)
+    // filled with active material (average)
+    gMC->Gsvolu("XALU", "PGON", idtmed[1602], envelopB, 10);
+    // filled with active material (Polystyrene)
+    gMC->Gsvolu("XPST", "PGON", idtmed[1601], 0, 0) ;
+    gMC->Gsvolu("XPBX", "PGON", idtmed[1600], 0, 0) ; // filled with Lead
+    gMC->Gsdvn("XPHI", "XPST", fGeom->GetNPhi(), 2) ; // Naming Phi divisions
 
-  envelopA[3] = fGeom->GetArm2PhiMin() ;       // minimun phi angle
-  envelopA[4] = fGeom->GetArm2PhiMax() ;       // maximun phi angle
- 
-  gMC->Gsvolu("XAR2", "TUBS ", idtmed[1601], envelopA, 5) ; // filled with active material (average)
-  
-  Int_t idrotm = 1;
-  AliMatrix(idrotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ;
+    Int_t idrotm = 1;
+    AliMatrix(idrotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ;
 
-  // Position Calorimeter in ALICE
-  gMC->Gspos("EMCA", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+    // Position  ENV1 container in ALIC
+    gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+    // Position  ARM1  into ENV1
+    gMC->Gspos("XALU", 1, "XEN1", 0.0, 0.0, 0.0 , idrotm, "MANY") ;
 
-  // Position  ENV1 container in EMCA
-  gMC->Gspos("XEN1", 1, "EMCA", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
-  
-  // Position  ARM1  into ENV1
-  gMC->Gspos("XAR1", 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
-
-  // Position  ENV2 container in ALIC  
-  gMC->Gspos("XEN2", 1, "EMCA", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
-
-  // Position  ARM2  into ENV2
-  gMC->Gspos("XAR2", 1, "XEN2", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
-  
+    for (int i = 0; i < (fGeom->GetNLayers()); i++ ){
+	envelopC[5] = envelopD[6] ; //rmin
+	envelopC[6] = envelopD[6] + ((i > +2)  ? 0.5 : 0.6)  ;  //rmax
+	envelopC[8] = envelopD[6] ; //rmin
+	envelopC[9] = envelopD[6] + ((i > 2 ) ? 0.5 : 0.6)  ;  //rmax
+	for (int j =0; j < (fGeom->GetNZ()) ; j++){
+	    envelopC[4] = envelopD[6]/tan(2*atan(exp(0.7-(j*1.4/
+                                                      (fGeom->GetNZ())))));  
+	    envelopC[7] = envelopD[6]/tan(2*atan(exp(0.7-((j+1)*1.4/
+                                                      (fGeom->GetNZ())))));  
+	    gMC->Gsposp("XPST",1+j+i*(fGeom->GetNZ()), "XEN1",
+			0.0, 0.0, 0.0 , idrotm, "ONLY", envelopC, 10);
+	} // end for j
+	if (i < (fGeom->GetNLayers()-1)){
+	    envelopD[5] = envelopC[6] ; //rmin
+	    envelopD[6] = envelopC[6] + 0.5;  //rmax
+	    envelopD[8] = envelopC[6] ; //rmin
+	    envelopD[9] = envelopC[6] + 0.5;  //rmax
+	    for (int j =0; j < (fGeom->GetNZ()) ; j++){
+		envelopD[4] = envelopC[6]/tan(2*atan(exp(0.7-(j*1.4/
+                                                       (fGeom->GetNZ())))));  
+		envelopD[7] = envelopC[6]/tan(2*atan(exp(0.7-((j+1)*1.4/
+                                                        (fGeom->GetNZ())))));
+		gMC->Gsposp("XPBX",1+ j+i*(fGeom->GetNZ()), "XEN1", 
+			    0.0, 0.0, 0.0 , idrotm, "MANY", envelopD, 10) ;
+	    } // end for j
+	} // end if i
+    } // for i
 }
+//______________________________________________________________________
+void AliEMCALv0::Init(void){
+    // Just prints an information message
+    Int_t i;
 
-//____________________________________________________________________________
-void AliEMCALv0::Init(void)
-{
-  // Just prints an information message
-  
-  Int_t i;
+    cout << endl;
+    for(i=0;i<35;i++) cout <<"*";
+    cout << " EMCAL_INIT ";
+    for(i=0;i<35;i++) cout << "*";
+    cout << endl;
 
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" EMCAL_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
+    // Here the EMCAL initialisation code (if any!)
 
-  // Here the EMCAL initialisation code (if any!)
-
-  if (fGeom!=0)  
-    cout << "AliEMCAL" << Version() << " : EMCAL geometry intialized for " << fGeom->GetName() << endl ;
-  else
-    cout << "AliEMCAL" << Version() << " : EMCAL geometry initialization failed !" << endl ;   
-  
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
-  
+    if (fGeom!=0)  
+	cout << "AliEMCAL" << Version() << " : EMCAL geometry intialized for "
+	     << fGeom->GetName() << endl ;
+    else
+	cout << "AliEMCAL" << Version() << 
+	    " : EMCAL geometry initialization failed !" << endl ;
+    for(i=0;i<80;i++) printf("*");
+    cout << endl;
 }
-

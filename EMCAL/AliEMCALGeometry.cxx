@@ -17,9 +17,11 @@
 
 //_________________________________________________________________________
 // Geometry class  for EMCAL : singleton  
-// EMCAL consists of a shell of Pb 
+// EMCAL consists of layers of scintillator and lead
 //                  
-//*-- Author: Yves Schutz (SUBATECH)
+//*-- Author: Sahal Yacoob (LBL / UCT)
+//     and  : Yves Schutz (SUBATECH)
+//     and  : Jennifer Klay (LBL)
 
 // --- ROOT system ---
 
@@ -32,82 +34,92 @@
 #include "AliEMCALGeometry.h"
 #include "AliConst.h"
 
-ClassImp(AliEMCALGeometry) ;
+ClassImp(AliEMCALGeometry);
 
-AliEMCALGeometry * AliEMCALGeometry::fgGeom = 0 ;
-Bool_t            AliEMCALGeometry::fgInit = kFALSE ;
+AliEMCALGeometry *AliEMCALGeometry::fgGeom = 0;
+Bool_t            AliEMCALGeometry::fgInit = kFALSE;
 
-//____________________________________________________________________________
-AliEMCALGeometry::~AliEMCALGeometry(void)
-{
-  // dtor
-
+//______________________________________________________________________
+AliEMCALGeometry::~AliEMCALGeometry(void){
+    // dtor
 }
+//______________________________________________________________________
+void AliEMCALGeometry::Init(void){
+    // Initializes the EMCAL parameters
 
-//____________________________________________________________________________
+    if(!(  (strcmp( fName, "EMCALArch1a" ) == 0) |
+	   (strcmp( fName, "EMCALArch1b" ) == 0) | 
+	   (strcmp( fName, "EMCALArch2a" ) == 0) | 
+	   (strcmp( fName, "EMCALArch2b" ) == 0) )){
+	fgInit = kFALSE;
+	cout <<"Instance " << fName << " undefined" << endl;
+    } // end if
+    fgInit = kTRUE; 
 
-void AliEMCALGeometry::Init(void)
-{
-  // Initializes the EMCAL parameters
+    // geometry 
+    fAirGap     = 5.0; 
+    fArm1PhiMin = 0.0; 
+    fArm1PhiMax = 120.0; 
 
-  fgInit = kTRUE ; 
+    fIPDistance = 454.0; 
+    fZLength = 817.0; 
+    fEnvelop[0] = fIPDistance; 
+    fEnvelop[2] = fZLength; 
+    fGap2Active = 1.0; 
+    fShellThickness = 3.18 + 1.2 + (double)((2*fNLayers -3)/2);   
+    fEnvelop[1] = fIPDistance + fShellThickness;
 
-  // geometry 
-  fAirGap     = 5.0 ; 
-  fArm1PhiMin = 130.0 ; 
-  fArm1PhiMax = 210.0 ; 
-  fArm2PhiMin = 330.0 ; 
-  fArm2PhiMax = 410.0 ; 
-  fIPDistance = 423.0 ; 
-  fShellThickness = 50.0 ; 
-  fZLength = 817.0 ; 
-  fEnvelop[0] = fIPDistance ; 
-  fEnvelop[1] = fIPDistance + fShellThickness ;
-  fEnvelop[2] = fZLength ; 
-  fGap2Active = 1.0 ; 
-  // material
-  fAmat = 207.2;  
-  fZmat = 82.;   
-  fDmat = 5.798167 ;  
-  fRmat = 1.261061;  
-  fEmat = 23 ;  
- 
+    if (((strcmp( fName, "EMCALArch1a" ))    == 0) |
+	((strcmp( fName, "EMCALArch1b" ))    == 0)){
+	fNZ         = 96;
+	fNPhi       = 144;
+    } // end if
+    if (((strcmp( fName, "EMCALArch2a" ))    == 0) |
+	((strcmp( fName, "EMCALArch2b" ))    == 0)){
+	fNZ         = 112;
+	fNPhi       = 168;
+    } // end if
+    if (((strcmp( fName, "EMCALArch1a" ))    == 0) |
+	((strcmp( fName, "EMCALArch2a" ))    == 0)){
+	fNLayers    = 21;
+    } // end if
+    if (((strcmp( fName, "EMCALArch1b" ))    == 0) |
+	((strcmp( fName, "EMCALArch2b" ))    == 0)){
+	fNLayers    = 25;
+    } // end if
 }
+//______________________________________________________________________
+AliEMCALGeometry *  AliEMCALGeometry::GetInstance(){ 
+    // Returns the pointer of the unique instance
 
-//____________________________________________________________________________
-AliEMCALGeometry *  AliEMCALGeometry::GetInstance() 
-{ 
-  // Returns the pointer of the unique instance
-  return (AliEMCALGeometry *) fgGeom ; 
+    return (AliEMCALGeometry *) fgGeom; 
 }
+//______________________________________________________________________
+AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
+						const Text_t* title){
+    // Returns the pointer of the unique instance
 
-//____________________________________________________________________________
-AliEMCALGeometry *  AliEMCALGeometry::GetInstance(const Text_t* name, const Text_t* title) 
-{
-  // Returns the pointer of the unique instance
-  AliEMCALGeometry * rv = 0  ; 
-  if ( fgGeom == 0 ) {
-    if ( strcmp(name,"") == 0 ) 
-      rv = 0 ;
-    else {    
-      fgGeom = new AliEMCALGeometry(name, title) ;
-      if ( fgInit )
-	rv = (AliEMCALGeometry * ) fgGeom ;
-      else {
-	rv = 0 ; 
-	delete fgGeom ; 
-	fgGeom = 0 ; 
-      }
-    }
-  }
-  else {
-    if ( strcmp(fgGeom->GetName(), name) != 0 ) {
-      cout << "AliEMCALGeometry <E> : current geometry is " << fgGeom->GetName() << endl
-	   << "                      you cannot call     " << name << endl ; 
-    }
-    else
-      rv = (AliEMCALGeometry *) fgGeom ; 
-  } 
-  return rv ; 
+    AliEMCALGeometry * rv = 0; 
+    if ( fgGeom == 0 ) {
+	if ( strcmp(name,"") == 0 ) rv = 0;
+	else {    
+	    fgGeom = new AliEMCALGeometry(name, title);
+	    if ( fgInit ) rv = (AliEMCALGeometry * ) fgGeom;
+	    else {
+		rv = 0; 
+		delete fgGeom; 
+		fgGeom = 0; 
+	    } // end if fgInit
+	} // end if strcmp(name,"")
+    }else{
+	if ( strcmp(fgGeom->GetName(), name) != 0 ) {
+	    cout << "AliEMCALGeometry <E> : current geometry is " 
+		 << fgGeom->GetName() << endl
+		 << "                      you cannot call     " << name 
+		 << endl; 
+	}else{
+	    rv = (AliEMCALGeometry *) fgGeom; 
+	} // end if
+    }  // end if fgGeom
+    return rv; 
 }
-

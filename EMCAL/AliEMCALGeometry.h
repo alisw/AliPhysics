@@ -7,17 +7,21 @@
 
 //_________________________________________________________________________
 // Geometry class  for EMCAL : singleton
-// EMCAL consists of a shell of Pb
+// EMCAL consists of a layers of scintillator, and lead.
 //                  
-//*-- Author: Yves Schutz (SUBATECH)
-
+//*-- Author: Sahal Yacoob (LBL / UCT)
+//*--   and : Yves Schutz (Subatech)
+        
 #include <assert.h> 
 
 // --- ROOT system ---
+#include "TString.h"
+#include "TObjArray.h"
+#include "TVector3.h"
 
-class TObjArray ;  
-class TVector3; 
-class TMatrix ; 
+//class TObjArray ;  
+//class TVector3; 
+//class TMatrix ; 
 
 // --- AliRoot header files ---
 
@@ -59,21 +63,16 @@ public:
   const Float_t GetAirGap() const { return fAirGap ; }
   const Float_t GetArm1PhiMin() const { return fArm1PhiMin ; }
   const Float_t GetArm1PhiMax() const { return fArm1PhiMax ; }
-  const Float_t GetArm2PhiMin() const { return fArm2PhiMin ; }
-  const Float_t GetArm2PhiMax() const { return fArm2PhiMax ; }
+  const Float_t GetArm1ZOffset() const {return fArm1ZOffset ;}
   const Float_t GetIPDistance()   const { return  fIPDistance  ; } 
   const Float_t GetEnvelop(Int_t index) const { return fEnvelop[index] ; }  
   const Float_t GetShellThickness() const { return fShellThickness ; }
   const Float_t GetZLength() const { return fZLength ; } 
   const Float_t GetGap2Active() const {return  fGap2Active ; }
-  // material 
-  const Float_t GetAmat()   const { return  fAmat ; }  
-  const Float_t GetZmat()   const { return  fZmat ; }   
-  const Float_t GetDmat()   const { return  fDmat ; }  
-  const Float_t GetRmat()   const { return  fRmat ; }  
-  const Float_t GetEmat()   const { return  fEmat ; }  
-  const Float_t GetLmat()   const { return  fEmat * fRmat ; }  
-
+  const Int_t   GetNLayers() const {return fNLayers ;}
+  const Int_t   GetNZ() const {return fNZ ;}
+  const Int_t   GetNPhi() const {return fNPhi ;}
+  
 protected:
 
   AliEMCALGeometry(const Text_t* name, const Text_t* title="") : AliGeometry(name, title) { 
@@ -91,21 +90,17 @@ private:
   Float_t fAirGap ;                  // Distance between envelop and active material 
   Float_t fArm1PhiMin ;              // Minimum phi angle covered by Arm 1 
   Float_t fArm1PhiMax ;              // Maximum phi angle covered by Arm 1       
-  Float_t fArm2PhiMin ;              // Minimum phi angle covered by Arm 2        
-  Float_t fArm2PhiMax ;              // Maximum phi angle covered by Arm 2
-  // It is assumed that Arm1 and Arm2 have the same following parameters
+  Float_t fArm1ZOffset ;             // Distance from z = 0 of Arm 1
+
+// It is assumed that Arm1 and Arm2 have the same following parameters
   Float_t fEnvelop[3] ;              // the GEANT TUB that contains the 2 arms
   Float_t fIPDistance ;              // Distance of the inner surface to the interaction point
   Float_t fShellThickness ;          // Total thickness in (x,y) direction
   Float_t fZLength ;                 // Total length in z direction
   Float_t fGap2Active ;              // Gap between the envelop and the active material
-
-  //material
-  Float_t fAmat ;  // average atomic weight of the active material
-  Float_t fZmat ;  // average atomic number of the active material 
-  Float_t fDmat ;  // average density of the active material
-  Float_t fRmat ;  // average radiation length of the active material
-  Float_t fEmat ;  // thickness of the active material in radiation length units
+  Int_t fNLayers ;                  // Number of layers of material in the R direction
+  Int_t fNZ ;                      // Number of Towers in the Z direction
+  Int_t fNPhi ;                    //Number of Towers in the Phi Direction
  
   ClassDef(AliEMCALGeometry,1)       // EMCAL geometry class 
 

@@ -17,42 +17,48 @@ class TString ;
 class TClonesArray ;
 
 // --- AliRoot header files ---
-
+#include <stdlib.h>
 #include "AliDetector.h"
+#include "AliEMCALGeometry.h"
 class AliEMCALGeometry ; 
 
 class AliEMCAL : public AliDetector {
 
  public:
 
-  AliEMCAL() ;
+  AliEMCAL(); 
   AliEMCAL(const char* name, const char* title="");
   AliEMCAL(const AliEMCAL & emcal) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    assert(0==1) ; 
+    abort() ; 
   }
   virtual ~AliEMCAL() ; 
+  virtual void   AddHit(Int_t, Int_t*, Float_t *) {
+    // do not use this definition but the one below
+    abort() ;
+  }
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, 
+			 Int_t id, Float_t *hits ) = 0 ;
+
+
   virtual void   CreateMaterials() ;                     
-  virtual AliEMCALGeometry * GetGeometry() { return fGeom ; }  
+  virtual AliEMCALGeometry * GetGeometry()  = 0 ;   
   Int_t   IsVersion(void) const { return -1 ; } 
   virtual void  SetTreeAddress() ;               
-  TClonesArray *SDigits() const {return fSDigits;}
   virtual TString Version() {return TString(" ") ; }  
   AliEMCAL & operator = (const AliEMCAL & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
-    assert(0==1) ;
+    abort() ;
     return *this ; 
   }
  
 protected:
 
   AliEMCALGeometry * fGeom ;                       // Geometry definition
-  TClonesArray   *fSDigits      ; // List of summable digits
-  TClonesArray   *fDigits      ;  // List of digits
 
-  ClassDef(AliEMCAL,2) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,1) // Electromagnetic calorimeter (base class)
 
 } ;
 

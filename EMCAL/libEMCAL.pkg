@@ -1,11 +1,15 @@
 SRCS= \
 AliEMCAL.cxx  \
 AliEMCALGeometry.cxx \
-AliEMCALv0.cxx 
+AliEMCALHit.cxx \
+AliEMCALv0.cxx \
+AliEMCALv1.cxx
 
 HDRS= \
 AliEMCAL.h  \
 AliEMCALGeometry.h \
-AliEMCALv0.h 
+AliEMCALHit.h \
+AliEMCALv0.h \
+AliEMCALv1.h 
 
 DHDR:=EMCALLinkDef.h
