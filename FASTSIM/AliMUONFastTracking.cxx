@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2003/08/12 15:16:25  morsch
+Saver initialisation of fFitp  array. (Lenaic COUEDEL)
+
 Revision 1.5  2003/08/05 16:14:20  morsch
 Some problems with too big fluctuations corrected. (A. de Falco)
 
@@ -26,12 +29,21 @@ First commit.
 
 */
 
+//-------------------------------------------------------------------------
+//        Class AliMUONFastTracking 
+//
+//  Manager for the fast simulation of tracking in the muon spectrometer
+//  This class reads the lookup tables containing the parameterization 
+//  of the deltap, deltatheta, deltaphi for different background levels
+//  and provides the related smeared parameters. 
+//  Used by AliFastMuonTrackingEff, AliFastMuonTrackingAcc, 
+//  AliFastMuonTrackingRes. 
+//-------------------------------------------------------------------------
+
 #include "AliMUONFastTracking.h"
 #include "AliMUONFastTrackingEntry.h"
-#include <TMatrixD.h>
 #include <TSpline.h>
 #include <TFile.h>
-#include <TH1.h>
 #include <TH3.h>
 #include <TF1.h>
 #include <TRandom.h>
@@ -41,6 +53,7 @@ First commit.
 #include <Riostream.h>
 
 ClassImp(AliMUONFastTracking)
+
 
 AliMUONFastTracking* AliMUONFastTracking::fgMUONFastTracking=NULL;
 
@@ -59,6 +72,13 @@ static Double_t FitP(Double_t *x, Double_t *par){
     return value;
 } 
 
+AliMUONFastTracking::AliMUONFastTracking(const AliMUONFastTracking & ft):TObject()
+{
+// Copy constructor
+    ft.Copy(*this);
+}
+
+
 AliMUONFastTracking* AliMUONFastTracking::Instance()
 { 
 // Set random number generator 
@@ -72,6 +92,9 @@ AliMUONFastTracking* AliMUONFastTracking::Instance()
 
 AliMUONFastTracking::AliMUONFastTracking() 
 {
+//
+// constructor
+//
   for (Int_t i = 0; i<20;i++) {
     for (Int_t j = 0; j<20; j++) {
       for (Int_t k = 0; k<20; k++) {
@@ -126,7 +149,7 @@ void AliMUONFastTracking::Init(Float_t bkg)
   
   char filename [100]; 
   if (fClusterFinder==kOld) sprintf (filename,"$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT.root"); 
-  else sprintf (filename,"$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT.root"); 
+  else sprintf (filename,"$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT-AZ.root"); 
 
   TFile *file = new TFile(filename); 
   ReadLUT(file);
@@ -137,6 +160,9 @@ void AliMUONFastTracking::Init(Float_t bkg)
 
 void AliMUONFastTracking::ReadLUT(TFile* file)
 {
+  //
+  // read the lookup tables from file
+  //
   TH3F *heff[5][3], *hacc[5][3], *hmeanp, *hsigmap, *hsigma1p, *hchi2p;
   TH3F *hnormg2, *hmeang2, *hsigmag2, *hmeantheta, *hsigmatheta, *hchi2theta;
   TH3F *hmeanphi, *hsigmaphi, *hchi2phi;
@@ -144,9 +170,9 @@ void AliMUONFastTracking::ReadLUT(TFile* file)
   
   printf ("Reading parameters from LUT file %s...\n",file->GetName());
 
-  const Float_t bkg[4] = {0, 0.5, 1, 2};
+  const Float_t kBkg[4] = {0, 0.5, 1, 2};
   for (Int_t ibkg=0; ibkg<4; ibkg++) {
-    sprintf (tag,"BKG%g",bkg[ibkg]); 
+    sprintf (tag,"BKG%g",kBkg[ibkg]); 
     file->cd(tag);
     for (Int_t isplp = 0; isplp<kSplitP; isplp++) { 
       for (Int_t ispltheta = 0; ispltheta<kSplitTheta; ispltheta++) { 
@@ -242,8 +268,11 @@ void AliMUONFastTracking::ReadLUT(TFile* file)
 void AliMUONFastTracking::GetBinning(Int_t &nbinp, Float_t &pmin, Float_t &pmax,
 				     Int_t &nbintheta, Float_t &thetamin, 
 				     Float_t &thetamax,
-				     Int_t &nbinphi, Float_t &phimin, Float_t &phimax)
+				     Int_t &nbinphi, Float_t &phimin, Float_t &phimax) const 
 {
+  //
+  // gets the binning for the discrete parametrizations in the lookup table
+  //
     nbinp = fNbinp;
     pmin  = fPmin;
     pmax  = fPmax;
@@ -258,8 +287,11 @@ void AliMUONFastTracking::GetBinning(Int_t &nbinp, Float_t &pmin, Float_t &pmax,
 
 void AliMUONFastTracking::GetIpIthetaIphi(Float_t p, Float_t theta, Float_t phi, 
 					  Int_t charge, Int_t &ip, Int_t &itheta, 
-					  Int_t &iphi)
+					  Int_t &iphi) const
 {
+  //
+  // gets the id of the cells in the LUT for a given (p,theta,phi, charge)
+  //
     if (charge < 0) phi = -phi;
     ip           = Int_t (( p - fPmin ) / fDeltaP);
     itheta       = Int_t (( theta - fThetamin ) / fDeltaTheta);
@@ -276,7 +308,12 @@ void AliMUONFastTracking::GetIpIthetaIphi(Float_t p, Float_t theta, Float_t phi,
 }
 
 void AliMUONFastTracking::GetSplit(Int_t ip, Int_t itheta, 
-				   Int_t &nSplitP, Int_t &nSplitTheta) { 
+				   Int_t &nSplitP, Int_t &nSplitTheta) const 
+{ 
+  //
+  // the first cell is splitted in more bins for theta and momentum
+  // parameterizations. Get the number of divisions for the splitted bins
+  //
   if (ip==0) nSplitP = 5; 
   else nSplitP = 2; 
   if (itheta==0) nSplitTheta = 3; 
@@ -285,6 +322,9 @@ void AliMUONFastTracking::GetSplit(Int_t ip, Int_t itheta,
 
 Float_t AliMUONFastTracking::Efficiency(Float_t p,   Float_t theta, 
 					Float_t phi, Int_t charge){
+  //
+  // gets the tracking efficiency
+  //
   Int_t ip=0, itheta=0, iphi=0;
   GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
   Int_t nSplitP, nSplitTheta; 
@@ -300,6 +340,9 @@ Float_t AliMUONFastTracking::Efficiency(Float_t p,   Float_t theta,
 
 Float_t AliMUONFastTracking::Acceptance(Float_t p,   Float_t theta, 
 					Float_t phi, Int_t charge){
+  //
+  // gets the geometrical acceptance
+  //
   if (theta<fThetamin || theta>fThetamax) return 0; 
   
   Int_t ip=0, itheta=0, iphi=0;
@@ -317,16 +360,22 @@ Float_t AliMUONFastTracking::Acceptance(Float_t p,   Float_t theta,
 }
 
 Float_t AliMUONFastTracking::MeanP(Float_t p,   Float_t theta, 
-			    Float_t phi, Int_t charge)
+			    Float_t phi, Int_t charge) const
 {
+  //
+  // gets the mean value of the prec-pgen distribution
+  //
     Int_t ip=0, itheta=0, iphi=0;
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     return fCurrentEntry[ip][itheta][iphi]->fMeanp;
 }
 
 Float_t AliMUONFastTracking::SigmaP(Float_t p,   Float_t theta, 
-				    Float_t phi, Int_t charge)
+				    Float_t phi, Int_t charge) const
 {
+  //
+  // gets the width of the prec-pgen distribution
+  //
     Int_t ip=0, itheta=0, iphi=0;
     Int_t index;
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
@@ -370,8 +419,11 @@ Float_t AliMUONFastTracking::SigmaP(Float_t p,   Float_t theta,
 }
 
 Float_t AliMUONFastTracking::Sigma1P(Float_t p,   Float_t theta, 
-			    Float_t phi, Int_t charge)
+			    Float_t phi, Int_t charge) const
 {
+  //
+  // gets the width correction of the prec-pgen distribution (see FitP)
+  //
     Int_t ip=0, itheta=0, iphi=0;
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     if (p>fPmax) {
@@ -387,8 +439,12 @@ Float_t AliMUONFastTracking::Sigma1P(Float_t p,   Float_t theta,
 }
 
 Float_t AliMUONFastTracking::NormG2(Float_t p,   Float_t theta, 
-				    Float_t phi, Int_t charge)
+				    Float_t phi, Int_t charge) const
 {
+  //
+  // gets the relative normalization of the background
+  // (gaussian) component in the prec-pgen distribution
+  //
     Int_t ip=0, itheta=0, iphi=0;
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     if (p>fPmax) {
@@ -404,8 +460,12 @@ Float_t AliMUONFastTracking::NormG2(Float_t p,   Float_t theta,
 }
 
 Float_t AliMUONFastTracking::MeanG2(Float_t p,   Float_t theta, 
-				    Float_t phi, Int_t charge)
+				    Float_t phi, Int_t charge) const
 {
+  //
+  // gets the mean value of the background
+  // (gaussian) component in the prec-pgen distribution
+  //
     Int_t ip=0, itheta=0, iphi=0;
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     if (p>fPmax) {
@@ -421,8 +481,12 @@ Float_t AliMUONFastTracking::MeanG2(Float_t p,   Float_t theta,
 }
 
 Float_t AliMUONFastTracking::SigmaG2(Float_t p,   Float_t theta, 
-				     Float_t phi, Int_t charge)
+				     Float_t phi, Int_t charge) const
 {
+  //
+  // gets the width of the background
+  // (gaussian) component in the prec-pgen distribution
+  //
     Int_t ip=0, itheta=0, iphi=0;
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     if (p>fPmax) {
@@ -439,15 +503,22 @@ Float_t AliMUONFastTracking::SigmaG2(Float_t p,   Float_t theta,
 
 
 Float_t AliMUONFastTracking::MeanTheta(Float_t p,   Float_t theta, 
-				       Float_t phi, Int_t charge)
+				       Float_t phi, Int_t charge) const
 {
+  //
+  // gets the mean value of the thetarec-thetagen distribution
+  //
     Int_t ip=0, itheta=0, iphi=0;
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     return fCurrentEntry[ip][itheta][iphi]->fMeantheta;
 }
 
-Float_t AliMUONFastTracking::SigmaTheta(Float_t p,   Float_t theta, 
-			    Float_t phi, Int_t charge){
+Float_t AliMUONFastTracking::SigmaTheta(Float_t p,   Float_t theta,  
+			    Float_t phi, Int_t charge) const
+{
+  //
+  // gets the width of the thetarec-thetagen distribution
+  //
   Int_t ip=0, itheta=0, iphi=0;
   Int_t index;
   GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
@@ -482,7 +553,11 @@ Float_t AliMUONFastTracking::SigmaTheta(Float_t p,   Float_t theta,
 
 
 Float_t AliMUONFastTracking::MeanPhi(Float_t p,   Float_t theta, 
-			    Float_t phi, Int_t charge){
+			    Float_t phi, Int_t charge) const
+{
+  //
+  // gets the mean value of the phirec-phigen distribution
+  //
   Int_t ip=0, itheta=0, iphi=0;
   GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
   return fCurrentEntry[ip][itheta][iphi]->fMeanphi;
@@ -490,6 +565,9 @@ Float_t AliMUONFastTracking::MeanPhi(Float_t p,   Float_t theta,
 
 Float_t AliMUONFastTracking::SigmaPhi(Float_t p,   Float_t theta, 
 			    Float_t phi, Int_t charge){
+  //
+  // gets the width of the phirec-phigen distribution
+  //
   Int_t ip=0, itheta=0, iphi=0;
   Int_t index;
   GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
@@ -523,6 +601,10 @@ Float_t AliMUONFastTracking::SigmaPhi(Float_t p,   Float_t theta,
 }
 
 void AliMUONFastTracking::SetSpline(){
+  //
+  // sets the spline functions for a smooth behaviour of the parameters
+  // when going from one cell to another
+  //
   printf ("Setting spline functions...");
   char splname[40];
   Double_t x[20][3];
@@ -641,20 +723,21 @@ void AliMUONFastTracking::SetSpline(){
 }
   
 void AliMUONFastTracking::SetBackground(Float_t bkg){
+  //
   // linear interpolation of the parameters in the LUT between 2 values where
   // the background has been actually calculated
-
+  //
   if (bkg>2) printf ("WARNING: unsafe extrapolation!\n");
   fBkg = bkg;
 
-  Float_t BKG[4] = {0, 0.5, 1, 2}; // bkg values for which LUT is calculated
+  Float_t bkgLevel[4] = {0, 0.5, 1, 2}; // bkg values for which LUT is calculated
   Int_t ibkg;
-  for (ibkg=0; ibkg<4; ibkg++) if ( bkg < BKG[ibkg]) break;
+  for (ibkg=0; ibkg<4; ibkg++) if ( bkg < bkgLevel[ibkg]) break;
   if (ibkg == 4) ibkg--;
   if (ibkg == 0) ibkg++;
   
-  Float_t x0 = BKG[ibkg-1];
-  Float_t x1 = BKG[ibkg];
+  Float_t x0 = bkgLevel[ibkg-1];
+  Float_t x1 = bkgLevel[ibkg];
   Float_t x = (bkg - x0) / (x1 - x0); 
   
   Float_t y0, y1;
@@ -715,6 +798,7 @@ void AliMUONFastTracking::SetBackground(Float_t bkg){
 }
 
 TF1* AliMUONFastTracking::GetFitP(Int_t ip,Int_t itheta,Int_t iphi) { 
+  // gets the correct prec-pgen distribution for a given LUT cell 
   if (!fFitp[ip][itheta][iphi]) { 
     fFitp[ip][itheta][iphi] = new TF1("fit1",FitP,-20.,20.,6);
     fFitp[ip][itheta][iphi]->SetNpx(500);    
@@ -723,9 +807,20 @@ TF1* AliMUONFastTracking::GetFitP(Int_t ip,Int_t itheta,Int_t iphi) {
   return fFitp[ip][itheta][iphi]; 
 }
 
-  // to guarantee a safe extrapolation for sigmag2 to 0<bkg<0.5, let's fit 
-  // with a straight line sigmag2 vs bkg for bkg=0.5, 1 and 2, and put the 
-  // sigma2(BKG=0) as the extrapolation of this fit 
+AliMUONFastTracking& AliMUONFastTracking::operator=(const  AliMUONFastTracking& rhs)
+{
+// Assignment operator
+    rhs.Copy(*this);
+    return *this;
+}
+
+void AliMUONFastTracking::Copy(AliMUONFastTracking&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
+}
 
 
 

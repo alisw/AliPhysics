@@ -1,17 +1,20 @@
-#ifndef ALIFASTMUONTRACKINGRES
-#define ALIFASTMUONTRACKINGRES
+#ifndef ALIFASTMUONTRACKINGRES_H
+#define ALIFASTMUONTRACKINGRES_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
+// Implementation of AliFastResponse for the Muon Spectrometer resolution.
+// Author: andreas.morsch@cern.ch
+//
 #include "AliFastResponse.h"
 class AliMUONFastTracking;
 
 class AliFastMuonTrackingRes :  public AliFastResponse {
  public:
     AliFastMuonTrackingRes();
-    ~AliFastMuonTrackingRes(){;}
+    virtual ~AliFastMuonTrackingRes(){;}
     void SetBackground(Float_t bg = 1.) {fBackground = bg;}
     void SetCharge(Float_t charge = 1.) {fCharge     = charge;}
     virtual void Init();

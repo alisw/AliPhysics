@@ -4,6 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+//
+// Utility class to make simple Glauber type calculations for collision geometries:
+// Impact parameter, production points, reaction plane dependence
+//
+// Author: andreas.morsch@cern.ch
 
 #include <TObject.h>
 class TF1;
@@ -15,7 +20,7 @@ class AliFastGlauber : public TObject {
     virtual ~AliFastGlauber(){;}
     void SetWoodSaxonParameters(Double_t r0, Double_t d, Double_t w, Double_t n)
 	{fWSr0 = r0; fWSd = d; fWSw = w; fWSn = n;}
-    void SetMaxImpact(Float_t bmax = 20.) {fbMax = bmax;};
+    void SetMaxImpact(Float_t bmax = 20.) {fgBMax = bmax;};
     void SetHardCrossSection(Float_t xs = 6.6) {fSigmaHard = xs;}
     
     static Double_t WSb            (Double_t *xx, Double_t *par);
@@ -50,34 +55,34 @@ class AliFastGlauber : public TObject {
     Double_t CrossSection(Double_t b1, Double_t b2);
     Double_t FractionOfHardCrossSection(Double_t b1, Double_t b2);
     Double_t Binaries(Double_t b);
-    TF2* Kernel()  {return fWStarfi;}
-    TF1* Overlap() {return fWStaa;}
+    TF2* Kernel()  {return fgWStarfi;}
+    TF1* Overlap() {return fgWStaa;}
     void SimulateTrigger(Int_t n);
     void GetRandom(Float_t& b, Float_t& p, Float_t& mult);
     void GetRandom(Int_t& bin, Bool_t& hard);
     Float_t GetRandomImpactParameter(Float_t bmin, Float_t bmax);
  protected:
-    static TF1*    fWSb;            // Wood-Saxon Function (b)
-    static TF2*    fWSbz;           // Wood-Saxon Function (b, z)
-    static TF1*    fWSz;            // Wood-Saxon Function (b = b0, z)
-    static TF1*    fWSta;           // Thickness Function
-    static TF2*    fWStarfi;        // Kernel for Overlap Function
-    static TF1*    fWStaa;          // Overlap Function
-    static TF2*    fWAlmond;        // Interaction Almond
-    static TF1*    fWPathLength0;   // Path Length as a function of phi
-    static TF1*    fWPathLength;    // Path Length as a function of phi
-    static TF1*    fWIntRadius;     // Interaction Radius
-    static TF1*    fWSgeo;          // dSigma/db geometric
-    static TF1*    fWSbinary;       // dSigma/db binary
-    static TF1*    fWSN;            // dN/db binary
-    static TF1*    fWEnergyDensity; // Energy density as a function of impact parameter
+    static TF1*    fgWSb;            // Wood-Saxon Function (b)
+    static TF2*    fgWSbz;           // Wood-Saxon Function (b, z)
+    static TF1*    fgWSz;            // Wood-Saxon Function (b = b0, z)
+    static TF1*    fgWSta;           // Thickness Function
+    static TF2*    fgWStarfi;        // Kernel for Overlap Function
+    static TF1*    fgWStaa;          // Overlap Function
+    static TF2*    fgWAlmond;        // Interaction Almond
+    static TF1*    fgWPathLength0;   // Path Length as a function of phi
+    static TF1*    fgWPathLength;    // Path Length as a function of phi
+    static TF1*    fgWIntRadius;     // Interaction Radius
+    static TF1*    fgWSgeo;          // dSigma/db geometric
+    static TF1*    fgWSbinary;       // dSigma/db binary
+    static TF1*    fgWSN;            // dN/db binary
+    static TF1*    fgWEnergyDensity; // Energy density as a function of impact parameter
     
     Float_t fWSr0;           // Wood-Saxon Parameter r0
     Float_t fWSd;            // Wood-Saxon Parameter d
     Float_t fWSw;            // Wood-Saxon Parameter w
     Float_t fWSn;            // Wood-Saxon Parameter n
     Float_t fSigmaHard;      // Hard Cross Section
-    static Float_t fbMax;    // Maximum Impact Parameter
+    static Float_t fgBMax;   // Maximum Impact Parameter
     
     ClassDef(AliFastGlauber,1) // Event geometry simulation in the Glauber Model
 };

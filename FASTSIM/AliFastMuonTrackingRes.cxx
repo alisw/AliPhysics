@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2003/08/13 17:37:29  hristov
+Bug fix (Alpha)
+
 Revision 1.4  2003/08/05 16:14:20  morsch
 Some problems with too big fluctuations corrected. (A. de Falco)
 
@@ -22,6 +25,13 @@ Revision 1.1  2003/01/06 10:13:09  morsch
 First commit.
 
 */
+
+// Implementation of AliFastResponse for the Muon Spectrometer resolution.
+// The response depends on the charge of the muon and
+// the background level.
+// The class uses the instance of an object of type AliMUONFastTracking to 
+// obtain the smearing parameters.
+// Author: andreas.morsch@cern.ch
 
 #include "AliFastMuonTrackingRes.h"
 #include "AliMUONFastTracking.h"
@@ -34,11 +44,13 @@ ClassImp(AliFastMuonTrackingRes)
 AliFastMuonTrackingRes::AliFastMuonTrackingRes() :
     AliFastResponse("Resolution", "Muon Tracking Resolution")
 {
+// Deafault constructor
     SetBackground();
 }
 
 void AliFastMuonTrackingRes::Init()
 {
+// Initialisation
     fFastTracking = AliMUONFastTracking::Instance();
     fFastTracking->Init(fBackground);
 }
@@ -48,6 +60,9 @@ void AliFastMuonTrackingRes::Init()
 void AliFastMuonTrackingRes::Evaluate(Float_t   p,  Float_t  theta , Float_t   phi,
 					 Float_t& pS,  Float_t& thetaS, Float_t&  phiS)
 {
+//
+// Evaluate Gaussian smearing from given kinematics 
+//
 
     Double_t meanp    = fFastTracking->MeanP  (p, theta, phi, Int_t(fCharge));
     Double_t sigmap   = fFastTracking->SigmaP (p, theta, phi, Int_t(fCharge));
