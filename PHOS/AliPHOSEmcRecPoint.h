@@ -50,8 +50,8 @@ public:
   Float_t     GetTotalEnergy(void) const { return fAmp ; }    // in EMC RecPoint Amp = Energy
   void        GetLocalPosition(TVector3 &Lpos) ;              // computes the position in the PHOS module 
   Bool_t      IsEmc(void) {return kTRUE ; } 
-  Bool_t IsSortable() const { return kTRUE ; } 
-  void Print(Option_t * opt = "void") ; 
+  Bool_t      IsSortable() const { return kTRUE ; } 
+  void        Print(Option_t * opt = "void") ; 
 
 private:
 
@@ -60,7 +60,7 @@ private:
   Float_t  fDelta ;        // parameter used to sort the clusters   
   Float_t  fLocMaxCut ;    // parameter used for local maximum searc
   Float_t * fEnergyList ;  // energy of digits
-  Float_t fW0 ;            // logarithmic weight factor for center of gravity calculation
+  Float_t  fW0 ;           // logarithmic weight factor for center of gravity calculation
 
   ClassDef(AliPHOSEmcRecPoint,1)  // EMC RecPoint, version 1
 

@@ -153,7 +153,6 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
    }
 }
 
-
 //____________________________________________________________________________
 Int_t AliPHOSRecPoint::GetPHOSMod()
 { 
@@ -169,6 +168,51 @@ Int_t AliPHOSRecPoint::GetPHOSMod()
   phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fPHOSMod = relid[0];
   return fPHOSMod ;
+}
+
+//______________________________________________________________________________
+void AliPHOSRecPoint::GetPrimaries(Int_t & number, Int_t * list)
+{
+  AliPHOSDigit * digit ;
+  Int_t index ;
+  Int_t maxcounter = 10 ;
+  Int_t counter    = 0 ;
+  Int_t * tempo    = new Int_t[maxcounter] ;
+  
+  for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
+    digit = (AliPHOSDigit *) fDigitsList[index] ; 
+    Int_t * newprimaryarray = digit->GetPrimary() ;
+    Int_t nprimaries = digit->GetNprimary() ;
+    //  cout << " nprimaries = " << nprimaries << endl ;
+    Int_t jndex ;
+    for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
+      if ( counter >= maxcounter ) {
+	number = - 1 ;
+	cout << "AliPHOSRecPoint::GetNprimaries ERROR > increase maxcounter " << endl ;
+	break ;
+      }
+      Int_t newprimary = newprimaryarray[jndex] ;
+      //     cout << "GetPrimaries " << newprimary << endl ;
+      Int_t kndex ;
+      Bool_t already = kFALSE ;
+      for ( kndex = 0 ; kndex < counter ; kndex++ ) { //check if not already stored
+	if ( newprimary == tempo[kndex] ){
+	  already = kTRUE ;
+	  break ;
+	}
+      } // end of check
+      if ( !already) { // store it 
+	  tempo[counter] = newprimary ; 
+	  counter++ ;
+      } // store it
+    } // all primaries in digit
+  } // all digits
+
+  counter-- ;
+  number = counter ; 
+  for ( index = 0 ; index < number ; index ++ )
+    list[index] = tempo[index] ;
+
 }
 
 //______________________________________________________________________________

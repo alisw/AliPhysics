@@ -23,6 +23,7 @@
 // --- Standard library ---
 
 #include <iostream>
+#include <cassert> 
 
 // --- AliRoot header files ---
 
@@ -32,70 +33,37 @@
 ClassImp(AliPHOSDigit)
 
 //____________________________________________________________________________
+  AliPHOSDigit::AliPHOSDigit() : fPrimary(0)
+{
+}
+
+//____________________________________________________________________________
 AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy) 
 {  
-  fId = id;
-  fAmp = DigEnergy ;
-  fPrimary = new Int_t[1] ; 
+  fId         = id ;
+  fAmp        = DigEnergy ;
+  fPrimary    = new Int_t[1] ; 
   fPrimary[0] = primary ;
-  fNprimary = 1 ; 
+  fNprimary   = 1 ; 
+}
+
+//____________________________________________________________________________
+AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) 
+{  
+  fId       = digit.fId;
+  fAmp      = digit.fAmp ;
+  fNprimary = digit.GetNprimary() ;
+  fPrimary  = new Int_t[fNprimary] ;
+  Int_t * primary = digit.GetPrimary() ;
+  Int_t  index ;
+  for ( index = 0 ; index < fNprimary ; index++ )
+    fPrimary[index] = primary[index] ;
 }
 
 //____________________________________________________________________________
 AliPHOSDigit::~AliPHOSDigit()
 {
   delete fPrimary ; 
-}
-
-//____________________________________________________________________________
-Bool_t AliPHOSDigit::operator==(AliPHOSDigit const &Digit) const 
-{
-  if ( fId == Digit.fId ) 
-    return kTRUE ;
-  else 
-    return kFALSE ;
-}
-
-//____________________________________________________________________________
-AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const &Digit) 
-{
-  fAmp += Digit.fAmp ;
-  
-  Int_t * tempo = new Int_t[fNprimary] ; 
-  Int_t index ; 
-  
-  Int_t oldfNprimary = fNprimary ; 
-
-  for ( index = 0 ; index < oldfNprimary ; index++ ){
-    cout << " 1 " << index << endl ; 
-    tempo[index] = fPrimary[index] ; 
-  }  
- 
-  delete fPrimary ; 
-  fNprimary += Digit.GetNprimary() ; 
-  fPrimary = new Int_t[fNprimary] ; 
-  
-  for ( index = 0 ; index < oldfNprimary  ; index++ ) { 
-    cout << " 2 " << index << endl ; 
-    fPrimary[index] = tempo[index] ; 
-  }
-
-  Int_t jndex = 0 ; 
-  for ( index = oldfNprimary ; index < fNprimary ; index++ ) { 
-    cout << " 1 " << index << " " << jndex << endl ; 
-    fPrimary[index] = Digit.fPrimary[jndex] ; 
-    jndex++ ; 
-  }
-      
-  return *this ;
-}
-
-//____________________________________________________________________________
-ostream& operator << ( ostream& out , const AliPHOSDigit& Digit)
-{
-  out << "ID " << Digit.fId << " Energy = " << Digit.fAmp ;
-
-  return out ;
 }
 
 //____________________________________________________________________________
@@ -117,3 +85,71 @@ Int_t AliPHOSDigit::Compare(TObject * obj)
   return rv ; 
 
 }
+//____________________________________________________________________________
+Bool_t AliPHOSDigit::operator==(AliPHOSDigit const & digit) const 
+{
+  if ( fId == digit.fId ) 
+    return kTRUE ;
+  else 
+    return kFALSE ;
+}
+ 
+//____________________________________________________________________________
+AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit) 
+{
+  fAmp += digit.fAmp ;
+  
+  Int_t * tempo = new Int_t[fNprimary] ; 
+  Int_t index ; 
+  
+  Int_t oldfNprimary = fNprimary ; 
+
+  for ( index = 0 ; index < oldfNprimary ; index++ ){
+    tempo[index] = fPrimary[index] ; 
+  }  
+ 
+  delete fPrimary ; 
+  fNprimary += digit.GetNprimary() ; 
+  fPrimary = new Int_t[fNprimary] ; 
+  
+  for ( index = 0 ; index < oldfNprimary  ; index++ ) { 
+    fPrimary[index] = tempo[index] ; 
+  }
+
+  Int_t jndex = 0 ; 
+  for ( index = oldfNprimary ; index < fNprimary ; index++ ) { 
+    fPrimary[index] = digit.fPrimary[jndex] ; 
+    jndex++ ; 
+  }
+      
+  return *this ;
+}
+
+//____________________________________________________________________________
+ostream& operator << ( ostream& out , const AliPHOSDigit & digit)
+{
+  out << "ID " << digit.fId << " Energy = " << digit.fAmp ;
+
+  return out ;
+}
+
+//______________________________________________________________________________
+void AliPHOSDigit::Streamer(TBuffer &R__b)
+{
+  assert(0==1) ; 
+   // Stream an object of class AliPHOSDigit.
+   if (R__b.IsReading()) {
+      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
+      AliDigitNew::Streamer(R__b);
+      R__b.ReadArray(fPrimary);
+      R__b >> fNprimary;
+   } else {
+      R__b.WriteVersion(AliPHOSDigit::IsA());
+      AliDigitNew::Streamer(R__b);
+      R__b.WriteArray(fPrimary, fNprimary);
+      R__b << fNprimary;
+
+   }
+}
+
+   

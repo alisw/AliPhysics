@@ -104,7 +104,13 @@ void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl)
   AliPHOSDigit * digit ;
   
   while ( (digit = (AliPHOSDigit *)next()) ) { 
-    
+
+//     cout << " clusterizerv1 " << endl ;
+//     int nprim = digit->GetNprimary() ;
+//     int * aprim = digit->GetPrimary() ;
+//     for ( int ii = 0 ; ii < nprim ; ii++)
+//       cout << ii << " prim = " << aprim[ii] << endl ;
+
     Int_t id    = digit->GetId() ; 
     Float_t ene = Calibrate(digit->GetAmp()) ; 
     geom->AbsToRelNumbering(id, relid) ;

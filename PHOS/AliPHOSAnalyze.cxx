@@ -572,6 +572,14 @@ void AliPHOSAnalyze::DisplayRecPoints()
 	  fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
 	  if (relid[0] == module)  
 	    {  
+
+Int_t nprim = digit->GetNprimary() ;
+ cout << " digit nprim = " << nprim << endl ;
+Int_t ii ;
+Int_t * aprim = digit->GetPrimary() ; 
+for ( ii = 0 ; ii < nprim ; ii++)
+  cout << ii << " prim = " << aprim[ii] << endl ;
+
 	      nDigits++ ;
 	      energy = fClu->Calibrate(digit->GetAmp()) ;
 	      etot += energy ; 
@@ -594,6 +602,15 @@ void AliPHOSAnalyze::DisplayRecPoints()
       AliPHOSEmcRecPoint * emc ;
       while((emc = (AliPHOSEmcRecPoint *)nextemc())) 
 	{
+
+	  Int_t numberofprimaries ;
+	  Int_t * primariesarray = new Int_t[10] ;
+	  emc->GetPrimaries(numberofprimaries, primariesarray) ;
+	  //	  cout << " HELLO " << numberofprimaries << endl ;
+	  //	  Int_t index ;
+	  //for ( index = 0 ; index < numberofprimaries ; index++) 
+	  // cout << index << " " << primariesarray[index] << endl;
+
 	  totalnClusters++ ;
 	  if ( emc->GetPHOSMod() == module )
 	    { 

@@ -1042,9 +1042,10 @@ Int_t AliPHOSv0::Digitize(Float_t Energy){
 //___________________________________________________________________________
 void AliPHOSv0::FinishEvent()
 {
-  //  cout << "//_____________________________________________________" << endl ;
-  //  cout << "<I> AliPHOSv0::FinishEvent() -- Starting digitalization" << endl ;
+   cout << "//_____________________________________________________" << endl ;
+   cout << "<I> AliPHOSv0::FinishEvent() -- Starting digitalization" << endl ;
   Int_t i ;
+  Int_t relid[4];
   Int_t j ; 
   TClonesArray &lDigits = *fDigits ;
   AliPHOSHit  * hit ;
@@ -1054,12 +1055,11 @@ void AliPHOSv0::FinishEvent()
 
   for ( i = 0 ; i < fNTmpHits ; i++ ) {
     hit = (AliPHOSHit*)fTmpHits->At(i) ;
-    cout << "FinishEvent hit" << hit->GetPrimary() << " " << hit->GetId() << endl ; 
     newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
     for ( j = 0 ; j < fNdigits ;  j++) { 
-      curdigit = (AliPHOSDigit*) lDigits[j] ; 
+      curdigit = (AliPHOSDigit*) lDigits[j] ;
       if ( *curdigit == *newdigit) {
-	*curdigit = *newdigit + *curdigit  ; 
+	*curdigit = *curdigit + *newdigit ; 
 	deja = kTRUE ; 
       }
     }
@@ -1071,20 +1071,24 @@ void AliPHOSv0::FinishEvent()
     delete newdigit ;    
   } 
   
-  for ( i = 0 ; i < fNdigits ; i++ ) {
-    newdigit = (AliPHOSDigit*)lDigits[i] ; 
-    Int_t * prim = newdigit->GetPrimary() ;
-    for ( j = 0 ; j < newdigit->GetNprimary() ; j++) 
-      cout << "FinishEvent digit " << prim[j] << " " << newdigit->GetId() << endl ; 
-  }
-
+  // Noise induced by the PIN diode of the PbWO crystals
   Float_t energyandnoise ;
   for ( i = 0 ; i < fNdigits ; i++ ) {
     newdigit =  (AliPHOSDigit * ) fDigits->At(i) ;
-    energyandnoise = newdigit->GetAmp() + Digitize(gRandom->Gaus(0., fPINElectronicNoise)) ;
-    if (energyandnoise < 0 ) energyandnoise = 0 ;
-    newdigit->SetAmp(energyandnoise) ;
-   
+
+//     int nprim = newdigit->GetNprimary() ; 
+//     cout << " finishevent " << nprim << endl ; 
+//     int * prim = newdigit->GetPrimary() ; 
+//     for (int ii = 0 ; ii < nprim ; ii++)
+//       cout << ii << " prim = " << prim[ii] << endl ;
+
+    fGeom->AbsToRelNumbering(newdigit->GetId(), relid) ;
+    if (relid[1]==0){   // Digits belong to EMC (PbW0_4 crystals)
+      energyandnoise = newdigit->GetAmp() + Digitize(gRandom->Gaus(0., fPINElectronicNoise)) ;
+      if (energyandnoise < 0 ) 
+	energyandnoise = 0 ;
+      newdigit->SetAmp(energyandnoise) ;
+    }
   }
 
 
