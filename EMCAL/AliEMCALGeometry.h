@@ -96,7 +96,7 @@ class AliEMCALGeometry : public AliGeometry {
     // for a given eta and phi in the EMCAL it returns the pretower index.
     Int_t PreTowerIndexFromEtaPhi(Float_t eta,Float_t phi);
     // Returns theta and phi (degree) for a given EMCAL cell indecated by relid
-    void RelPosInModule(const Int_t *relid,Float_t &theta,Float_t &phi);
+    void PosInAlice(const Int_t *relid,Float_t &theta,Float_t &phi);
     // Returns an array indicating the Tower/preshower, iz, and iphi for a
     // specific EMCAL indes.
     Bool_t AbsToRelNumbering(Int_t AbsId, Int_t *relid);

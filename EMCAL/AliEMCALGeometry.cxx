@@ -268,7 +268,7 @@ Int_t AliEMCALGeometry::PreTowerIndexFromEtaPhi(Float_t eta,Float_t phi){
 //______________________________________________________________________
 Bool_t AliEMCALGeometry::AbsToRelNumbering(Int_t AbsId, Int_t *relid){
     // Converts the absolute numbering into the following array/
-    //  relid[0] = EMCAL Module number 1:1 (EMCAL arm number)
+    //  relid[0] = EMCAL Arm number 1:1 
     //  relid[1] = 0  Not in Pre Shower layers
     //           = -1 In Pre Shower
     //  relid[2] = Row number inside EMCAL
@@ -283,20 +283,21 @@ Bool_t AliEMCALGeometry::AbsToRelNumbering(Int_t AbsId, Int_t *relid){
     TowerIndexes(index,ieta,iphi,ipre);
     relid[0] = 1;
     relid[1] = 0;
-    if(ipre==1) relid[1] = -1;
+    if(ipre==1) 
+      relid[1] = -1;
     relid[2] = ieta;
     relid[3] = iphi;
 
     return rv;
 }
 //______________________________________________________________________
-void AliEMCALGeometry::RelPosInModule(const Int_t *relid,Float_t &theta,
+void AliEMCALGeometry::PosInAlice(const Int_t *relid,Float_t &theta,
 				     Float_t &phi){
-    // Converts the relative numbering into the local PHOS-module (x, z)
+    // Converts the relative numbering into the local EMCAL-module (x, z)
     // coordinates
     Int_t ieta   = relid[2]; // offset along x axis
     Int_t iphi = relid[3]; // offset along z axis
-    Int_t ipre = relid[1]; // indecates -1 preshower, or 0 full tower.
+    Int_t ipre = relid[1]; // indicates -1 preshower, or 0 full tower.
     Int_t index;
     Float_t eta;
 
