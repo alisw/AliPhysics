@@ -18,6 +18,7 @@
 #endif //G4VIS_USE
 #include <G4LogicalVolume.hh>
 #include <G4BooleanSolid.hh>
+#include <g4std/set>
 
 //_____________________________________________________________________________
 AliLVStructure::AliLVStructure(G4String path)
@@ -50,8 +51,12 @@ AliLVStructure::AliLVStructure() {
 //_____________________________________________________________________________
 AliLVStructure::~AliLVStructure() {
 //
-  fStructures.clearAndDestroy();
-  fLogicalVolumes.clear();
+
+
+  ClearAndDestroy(&fStructures);
+  
+  
+  fLogicalVolumes.resize(0);
 }
 
 // operators
@@ -63,19 +68,19 @@ AliLVStructure& AliLVStructure::operator=(const AliLVStructure &right)
   if (this == &right) return *this;
 
   // copy vector of structures
-  fStructures.clearAndDestroy();
+  ClearAndDestroy(&fStructures);
   G4int i;
-  for (i=0; i<right.fStructures.entries(); i++) {
+  for (i=0; i<right.fStructures.size(); i++) {
     // new full structure tree has to be created
     AliLVStructure* rhsStructure = right.fStructures[i];
-    fStructures.insert(new AliLVStructure(*rhsStructure)); 
+    fStructures.push_back(new AliLVStructure(*rhsStructure)); 
   }  
   
   // copy vector of logical volumes
-  fLogicalVolumes.clear();
-  for (i=0; i<right.fLogicalVolumes.entries(); i++) {
+  fLogicalVolumes.resize(0);
+  for (i=0; i<right.fLogicalVolumes.size(); i++) {
     G4LogicalVolume* rhsLV = right.fLogicalVolumes[i];
-    fLogicalVolumes.insert(rhsLV); 
+    fLogicalVolumes.push_back(rhsLV); 
   }  
   
   fPathName = right.fPathName;
@@ -102,8 +107,8 @@ AliLVStructure* AliLVStructure::FindSubDirectory(const G4String& subDir) const
 // Finds the subdirectory.
 // ---
 
-  for( G4int i=0; i<fStructures.entries(); i++ ) {
-    if (subDir == fStructures(i)->fDirName) return fStructures(i);
+  for( G4int i=0; i<fStructures.size(); i++ ) {
+    if (subDir == fStructures[i]->fDirName) return fStructures[i];
   } 
   return 0;
 }
@@ -118,6 +123,31 @@ G4String AliLVStructure::ExtractDirName(const G4String& name) const
   G4int i = name.first('/');
   if (i != G4std::string::npos) subDir.remove(i+1);
   return subDir;
+}
+
+void AliLVStructure::ClearAndDestroy(LVStructuresVector* structures) 
+{
+// Clears the structures vectors and deletes all contained 
+// elements.
+// (According to geant4.3.2/source/global/STLInterface/g4rw/tpordvec.icc.)
+// ---
+
+  G4std::set<AliLVStructure*,G4std::greater<AliLVStructure*> > tmp;
+  for (size_t sz=0; sz<structures->size(); sz++)
+    {
+      AliLVStructure* current;
+      current=(*structures)[sz];
+      if (current)
+         tmp.insert(current);
+    }
+    
+  typename G4std::set<AliLVStructure*, G4std::greater<AliLVStructure*> >::iterator it;
+  for (it=tmp.begin(); it!=tmp.end(); it++)
+    {
+      delete *it;
+    }
+  // std_pvector::erase(std_pvector::begin(), std_pvector::end());
+  structures->resize(0);
 }
 
 // public methods
@@ -140,7 +170,7 @@ void AliLVStructure::AddNewVolume(G4LogicalVolume* lv,
       // Subdirectory not found. Create a new directory.
       subDir.prepend(fPathName);
       targetLVS = new AliLVStructure(subDir);
-      fStructures.insert( targetLVS );
+      fStructures.push_back( targetLVS );
     }
     targetLVS->AddNewVolume(lv, treeStructure);
   }
@@ -152,7 +182,7 @@ void AliLVStructure::AddNewVolume(G4LogicalVolume* lv,
       //        << fPathName << G4endl;
     }
     else {
-      fLogicalVolumes.insert(lv);
+      fLogicalVolumes.push_back(lv);
     }
   }
 }
@@ -164,8 +194,8 @@ G4LogicalVolume* AliLVStructure::GetVolume(const G4String& lvName) const
 // returns 0 otherwise.
 // ---
 
-  for (G4int i=0; i<fLogicalVolumes.entries(); i++) {
-    G4LogicalVolume* targetLV = fLogicalVolumes(i);
+  for (G4int i=0; i<fLogicalVolumes.size(); i++) {
+    G4LogicalVolume* targetLV = fLogicalVolumes[i];
     if (lvName == targetLV->GetName()) return targetLV;
   }
   return 0;
@@ -211,12 +241,12 @@ void AliLVStructure::ListTree() const
 // Prints LV tree structure.
 // ---
 
-  for (G4int i=0; i<fLogicalVolumes.entries(); i++) {
-    G4LogicalVolume* lv = fLogicalVolumes(i);
+  for (G4int i=0; i<fLogicalVolumes.size(); i++) {
+    G4LogicalVolume* lv = fLogicalVolumes[i];
     G4cout << fPathName << lv->GetName() << G4endl;
   }
-  for (G4int j=0; j<fStructures.entries(); j++) { 
-    fStructures(j)->ListTree(); 
+  for (G4int j=0; j<fStructures.size(); j++) { 
+    fStructures[j]->ListTree(); 
   }
 }
         
@@ -227,8 +257,8 @@ void AliLVStructure::ListTreeLong() const
 // daughters (physical volume), indicates Boolean solid.
 // ---
 
-  for (G4int i=0; i<fLogicalVolumes.entries(); i++) {
-    G4LogicalVolume* lv = fLogicalVolumes(i);
+  for (G4int i=0; i<fLogicalVolumes.size(); i++) {
+    G4LogicalVolume* lv = fLogicalVolumes[i];
 
     G4cout << fPathName << lv->GetName() << " (" << lv->GetNoDaughters();
 	    
@@ -237,8 +267,8 @@ void AliLVStructure::ListTreeLong() const
 
     G4cout << ")" << G4endl;
   }
-  for (G4int j=0; j<fStructures.entries(); j++) { 
-    fStructures(j)->ListTreeLong(); 
+  for (G4int j=0; j<fStructures.size(); j++) { 
+    fStructures[j]->ListTreeLong(); 
   }
 }
         
@@ -249,8 +279,8 @@ void AliLVStructure::SetVerboseLevel(G4int verbose)
 // ---
 
   fVerboseLevel = verbose;  
-  for (G4int i=0; i<fStructures.entries(); i++) { 
-    fStructures(i)->SetVerboseLevel(verbose); 
+  for (G4int i=0; i<fStructures.size(); i++) { 
+    fStructures[i]->SetVerboseLevel(verbose); 
   }
 }
 
@@ -262,8 +292,8 @@ void AliLVStructure::SetTreeVisibility(G4bool visibility)
 // tree.
 // ---
 
-  for (G4int i=0; i<fLogicalVolumes.entries(); i++) {
-    G4LogicalVolume* lv = fLogicalVolumes(i);
+  for (G4int i=0; i<fLogicalVolumes.size(); i++) {
+    G4LogicalVolume* lv = fLogicalVolumes[i];
 
     const G4VisAttributes* kpVisAttributes = lv->GetVisAttributes();
     G4VisAttributes* newVisAttributes; 
@@ -279,8 +309,8 @@ void AliLVStructure::SetTreeVisibility(G4bool visibility)
 
     lv->SetVisAttributes(newVisAttributes);
   }
-  for (G4int j=0; j<fStructures.entries(); j++) { 
-    fStructures(j)->SetTreeVisibility(visibility); 
+  for (G4int j=0; j<fStructures.size(); j++) { 
+    fStructures[j]->SetTreeVisibility(visibility); 
   }
 }
 
@@ -291,8 +321,8 @@ void AliLVStructure::SetTreeColour(const G4String& colName)
 // in the structure tree.
 // ---
 
-  for (G4int i=0; i<fLogicalVolumes.entries(); i++) {
-    G4LogicalVolume* lv = fLogicalVolumes(i);
+  for (G4int i=0; i<fLogicalVolumes.size(); i++) {
+    G4LogicalVolume* lv = fLogicalVolumes[i];
 
     const G4VisAttributes* kpVisAttributes = lv->GetVisAttributes ();
     G4VisAttributes* newVisAttributes; 
@@ -310,8 +340,8 @@ void AliLVStructure::SetTreeColour(const G4String& colName)
 
     lv->SetVisAttributes(newVisAttributes);
   }
-  for (G4int j=0; j<fStructures.entries(); j++) { 
-    fStructures(j)->SetTreeColour(colName); 
+  for (G4int j=0; j<fStructures.size(); j++) { 
+    fStructures[j]->SetTreeColour(colName); 
   }
 }
 #endif             

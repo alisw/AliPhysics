@@ -204,9 +204,39 @@ void TG4VisManager::RegisterGraphicsSystems()
 // private methods
 //---------------------------------------------------------------
 
+ 
+//_____________________________________________________________________________
+G4bool TG4VisManager::Contains(const LogicalVolumesVector& lvVector,
+                               const G4LogicalVolume* lv) const
+{
+// Returns true if the vector contains specified logical volume.
+// ---
+
+  LogicalVolumesVector::const_iterator i;
+
+  for (i = lvVector.begin(); i != lvVector.end(); i++) 
+    if (*i == lv) return true;
+
+  return false;
+}
 
 //_____________________________________________________________________________
-G4RWTPtrOrderedVector<G4LogicalVolume> TG4VisManager::GetLVList(G4String name)
+G4bool TG4VisManager::Contains(const PhysicalVolumesVector& pvVector,
+                               const G4VPhysicalVolume* pv) const
+{
+// Returns true if the vector contains specified physical volume.
+// ---
+
+  PhysicalVolumesVector::const_iterator i;
+
+  for (i = pvVector.begin(); i != pvVector.end(); i++) 
+    if (*i == pv) return true;
+
+  return false;
+}
+
+//_____________________________________________________________________________
+LogicalVolumesVector TG4VisManager::GetLVList(G4String name)
 {
 // Get function returning the list of logical volumes
 // associated to NAME; G4 built clones of a G3 volume (identified 
@@ -214,7 +244,7 @@ G4RWTPtrOrderedVector<G4LogicalVolume> TG4VisManager::GetLVList(G4String name)
 //  NAME can be the name of a logical or physical volume
 // ---
 
- G4RWTPtrOrderedVector <G4LogicalVolume> lvList;
+ LogicalVolumesVector lvList;
  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
  G4LogicalVolume* pLV = 0; 
  if (pLVStore)
@@ -224,11 +254,12 @@ G4RWTPtrOrderedVector<G4LogicalVolume> TG4VisManager::GetLVList(G4String name)
      pLV = (*pLVStore)[i];  
      if (CaseInsensitiveEqual(name,pLV->GetName())) 
      {
-       if (!lvList.contains(pLV)) lvList.append(pLV);
+       if (!Contains(lvList, pLV)) lvList.push_back(pLV);
      }
    }
  }  
- if (!lvList.isEmpty()) return lvList;
+ if (lvList.size()>0) return lvList;
+
  G4PhysicalVolumeStore* pPVStore = G4PhysicalVolumeStore::GetInstance();
  G4VPhysicalVolume* pPV = 0;
  if (pPVStore) 
@@ -239,7 +270,7 @@ G4RWTPtrOrderedVector<G4LogicalVolume> TG4VisManager::GetLVList(G4String name)
      if (CaseInsensitiveEqual(name,pPV->GetName())) 
      {
        pLV = pPV->GetLogicalVolume();
-       if (!lvList.contains(pLV)) lvList.append(pLV);
+       if (!Contains(lvList, pLV)) lvList.push_back(pLV);
      }     
    }
  }  
@@ -248,12 +279,12 @@ G4RWTPtrOrderedVector<G4LogicalVolume> TG4VisManager::GetLVList(G4String name)
 
 
 //_____________________________________________________________________________
-G4RWTPtrOrderedVector<G4VPhysicalVolume> TG4VisManager::GetPVList(G4String name)
+PhysicalVolumesVector TG4VisManager::GetPVList(G4String name)
 {
 // Get function returning the physical volume pointer for NAME
 // ---
 
-  G4RWTPtrOrderedVector <G4VPhysicalVolume> pvList;
+  PhysicalVolumesVector pvList;
   G4PhysicalVolumeStore* pPVStore = G4PhysicalVolumeStore::GetInstance();
   if (!pPVStore)
   {
@@ -266,7 +297,7 @@ G4RWTPtrOrderedVector<G4VPhysicalVolume> TG4VisManager::GetPVList(G4String name)
     pPV = (*pPVStore)[i];
     if (CaseInsensitiveEqual(name,pPV->GetName()))
     {
-      if (!pvList.contains(pPV)) pvList.append(pPV);
+      if (!Contains(pvList, pPV)) pvList.push_back(pPV);
     }  
   }
   return pvList;
@@ -667,7 +698,7 @@ void TG4VisManager::Gsatt(const char* name, const char* att, Int_t val)
 
  G4int ival = val;
  G4LogicalVolume* lv = 0; 
- G4RWTPtrOrderedVector<G4LogicalVolume> lvList;
+ LogicalVolumesVector lvList;
  G4String sname(name),
           satt(att);		
 
@@ -734,7 +765,7 @@ void TG4VisManager::Gsatt(const char* name, const char* att, Int_t val)
 
  // get the logical volume pointer corresponding to NAME
  lvList = GetLVList(name);
- if (lvList.isEmpty())
+ if (lvList.size()==0)
  {
      G4String message = "TG4VisManager::Gsatt(): Ignored\n";
      message += "    Logical volume " + sname + " has not been found.\n";
@@ -744,7 +775,7 @@ void TG4VisManager::Gsatt(const char* name, const char* att, Int_t val)
 // set attribute for all descendents
  if (doForDaughters)
  {
-   for (G4int i=0; i<lvList.entries(); i++)
+   for (G4int i=0; i<lvList.size(); i++)
    {
      lv = lvList[i];
      SetAtt4Daughters(lv,attribute,ival);
@@ -752,7 +783,7 @@ void TG4VisManager::Gsatt(const char* name, const char* att, Int_t val)
  }
  else
  {
-   for (G4int i=0; i<lvList.entries(); i++)
+   for (G4int i=0; i<lvList.size(); i++)
    {
      lv = lvList[i];
      SetG4Attribute(lv,attribute,ival);
@@ -760,7 +791,7 @@ void TG4VisManager::Gsatt(const char* name, const char* att, Int_t val)
  }
  if (topVisible) 
  {
-   for (G4int i=0; i<lvList.entries(); i++)
+   for (G4int i=0; i<lvList.size(); i++)
    {
      lv = lvList[i];
      SetG4Attribute(lv,attribute,1); 
@@ -801,12 +832,12 @@ void TG4VisManager::Gdraw(const char *name,Float_t theta, Float_t phi, Float_t p
   }
   
   const G4double kRad = M_PI/180.;
-  G4RWTPtrOrderedVector<G4VPhysicalVolume> pvList;
+  PhysicalVolumesVector pvList;
   G4String sname(name);
   G4bool  successful 		= false;
 
   pvList = GetPVList(name);
-  if (pvList.isEmpty())
+  if (pvList.size()==0)
   {
     G4String message = "TG4VisManager::Gdraw() :\n";
     message += "Volume " + sname + " not found. Bailing out";
@@ -822,8 +853,8 @@ void TG4VisManager::Gdraw(const char *name,Float_t theta, Float_t phi, Float_t p
   // create and add object's model list to the runtime-duration model 
   // list and draw it
   // (it is deleted in the VisManager destructor within 
-  // all the RWTPtrOrderedVectors of the scene)
-  for (G4int i=0; i<pvList.entries(); i++)
+  // all the vectors of the scene)
+  for (G4int i=0; i<pvList.size(); i++)
   { 
     pPV = pvList[i];
     G4LogicalVolume* pLV = pPV->GetLogicalVolume();

@@ -12,9 +12,14 @@
 #define ALI_LV_STRUCTURE_H
 
 #include <globals.hh>
-#include <g4rw/tpordvec.h>
+//#include <g4rw/tpordvec.h>
+#include <g4std/vector>
 
 class G4LogicalVolume;
+class AliLVStructure;
+
+typedef G4std::vector<AliLVStructure*>  LVStructuresVector;
+typedef G4std::vector<G4LogicalVolume*> LogicalVolumesVector;
 
 class AliLVStructure 
 {
@@ -52,15 +57,12 @@ class AliLVStructure
     // methods
     AliLVStructure* FindSubDirectory(const G4String& subDir) const;
     G4String ExtractDirName(const G4String& path) const;
+    void ClearAndDestroy(LVStructuresVector* structures); 
 
     // data members
-    G4RWTPtrOrderedVector<AliLVStructure>   fStructures;                     //.
-                                                //vector of
-                                                //contained structures
-    G4RWTPtrOrderedVector<G4LogicalVolume>  fLogicalVolumes;                 //.
-                                                //vector of
-                                                //contained logical volumes
-						//(parallel to fStructures)
+    LVStructuresVector    fStructures;     //vector of contained structures
+    LogicalVolumesVector  fLogicalVolumes; //vector of contained logical volumes
+				           //(parallel to fStructures)
     G4String  fPathName;     //full path name
     G4String  fDirName;      //directory name
     G4int     fVerboseLevel; //verbose level

@@ -16,9 +16,12 @@
 #include "TG4G3Attribute.h"
 
 #include <G4VisManager.hh>
-#include <g4rw/tpordvec.h>
+#include <g4std/vector>
 
 #include <Rtypes.h>
+
+typedef G4std::vector<G4LogicalVolume*>    LogicalVolumesVector;
+typedef G4std::vector<G4VPhysicalVolume*>  PhysicalVolumesVector;
 
 class TG4VisManager: public G4VisManager 
 {
@@ -58,13 +61,18 @@ class TG4VisManager: public G4VisManager
     // methods used by Gsatt(), Gdraw()
     //---------------------------------
     
+    G4bool Contains(const LogicalVolumesVector& lvVector,
+                    const G4LogicalVolume* lv) const;
+    G4bool Contains(const PhysicalVolumesVector& pvVector,
+                    const G4VPhysicalVolume* pv) const;
+
     // Get the logical volume list corresponding to NAME
     // 	Either a logical or physical volume name can be supplied
     // Clones of G3VOLUME_NUMBER will be atached to the list	
-    G4RWTPtrOrderedVector<G4LogicalVolume> GetLVList(G4String name);
+    LogicalVolumesVector GetLVList(G4String name);
 
     // Get the physical volume list corresponding to NAME
-    G4RWTPtrOrderedVector<G4VPhysicalVolume> GetPVList(G4String name);
+    PhysicalVolumesVector GetPVList(G4String name);
     
     // Case insensitive string comparison
     G4bool CaseInsensitiveEqual(const G4String string1,
