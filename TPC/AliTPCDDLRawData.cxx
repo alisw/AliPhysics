@@ -184,7 +184,11 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Bool_t compress){
 #else
     f.open(filename,ios::in);
 #endif
+#if defined(__HP_aCC) || defined(__DECCXX)
+    if(!f.rdbuf()->is_open()){f.clear(); continue;}
+#else
     if(!f.is_open()){f.clear(); continue;}
+#endif
     if (fVerbose)
       Info("RawDataCompDecompress", "&s -> dest.ddl", filename);
     ofstream fdest;

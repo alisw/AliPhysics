@@ -198,7 +198,11 @@ Int_t AliITSspdTestBeam::OpenInputFile(const Char_t *filename,Int_t start,Int_t 
 	delete [] tmp;
     } // end if
     // Open file
+#ifndef __DECCXX
     fFiles[fNfiles] = new ifstream(filename,ios::in|ios::binary);
+#else
+    fFiles[fNfiles] = new ifstream(filename,ios::in);
+#endif
     if(fFiles[fNfiles]==0){// file open error
         cout << "Error opening input file " << filename << endl;
         stat = -1;
