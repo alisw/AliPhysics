@@ -44,6 +44,9 @@ public:
   Float_t GetPz(void) const{return fPz;}
   Float_t GetPe(void) const{return fPe;}
 
+  void   SetIparent(Int_t i_parent) {fIparent=i_parent;}
+  void   SetPrimary(Int_t primary)  {fPrimary=primary;}
+
   Bool_t operator == (AliEMCALHit const &rValue) const;
   AliEMCALHit operator + (const AliEMCALHit& rValue);
   

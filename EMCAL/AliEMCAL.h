@@ -53,8 +53,11 @@ class AliEMCAL : public AliDetector {
 
 protected:
   AliEMCALGeometry * fGeom ;   // the geometry object
+  Int_t fBirkC0;         // constants for Birk's Law implementation
+  Double_t fBirkC1;
+  Double_t fBirkC2;
 
-  ClassDef(AliEMCAL,5) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,6) // Electromagnetic calorimeter (base class)
 
 } ;
 

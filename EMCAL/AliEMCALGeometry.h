@@ -48,6 +48,8 @@ public:
   virtual void GetGlobal(const AliRecPoint *, TVector3 &, TMatrix &) const {}
   virtual void GetGlobal(const AliRecPoint *, TVector3 &) const {}
   virtual Bool_t Impact(const TParticle *) const {return kTRUE;}
+
+  Bool_t IsInEMCAL(Double_t x, Double_t y, Double_t z) const;
   // General
   Bool_t  IsInitialized(void) const { return fgInit ; }
   	// Return EMCA geometrical parameters

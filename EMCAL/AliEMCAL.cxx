@@ -152,6 +152,12 @@ void AliEMCAL::CreateMaterials()
   gMC->Gstpar(idtmed[1601],"CUTELE",0.001) ;
   gMC->Gstpar(idtmed[1601],"BCUTE",0.0001) ;
 
+  //set constants for Birk's Law implentation
+  fBirkC0 =  1;
+  fBirkC1 =  0.013/dP;
+  fBirkC2 =  9.6e-6/(dP * dP);
+
+
 }
       
 //____________________________________________________________________________

@@ -46,14 +46,14 @@ ClassImp(AliEMCALv1)
 
 
 //______________________________________________________________________
-AliEMCALv1::AliEMCALv1():AliEMCALv0(){
+AliEMCALv1::AliEMCALv1():AliEMCALv0(), fCurPrimary(-1), fCurParent(-1), fCurTrack(-1){
   // ctor
 
 }
 
 //______________________________________________________________________
 AliEMCALv1::AliEMCALv1(const char *name, const char *title):
-    AliEMCALv0(name,title){
+    AliEMCALv0(name,title), fCurPrimary(-1), fCurParent(-1), fCurTrack(-1) {
     // Standard Creator.
 
     fHits= new TClonesArray("AliEMCALHit",1000);
@@ -73,6 +73,7 @@ AliEMCALv1::~AliEMCALv1(){
 	fHits = 0;
     }
 }
+
 //______________________________________________________________________
 void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t iparent, Float_t ienergy, 
 			Int_t id, Float_t * hits,Float_t * p){
@@ -116,42 +117,50 @@ void AliEMCALv1::StepManager(void){
   TLorentzVector pos; // Lorentz vector of the track current position.
   TLorentzVector mom; // Lorentz vector of the track current momentum.
   Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber();
-  Int_t primary = 0;
-  static Int_t iparent = 0;
   static Float_t ienergy = 0;
   Int_t copy = 0;
   
   AliEMCALGeometry * geom = GetGeometry() ; 
 
-  if(gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"XALU") == 0)){ // This Particle in enterring the Calorimeter
-    gMC->TrackPosition(pos) ;
-    xyzte[0] = pos[0] ;
-    xyzte[1] = pos[1] ;
-    xyzte[2] = pos[2] ;
-    if ( (xyzte[0]*xyzte[0] + xyzte[1]*xyzte[1])  
-	 <  (geom->GetEnvelop(0)+geom->GetGap2Active()+1.5 )*(geom->GetEnvelop(0)+geom->GetGap2Active()+1.5 ) ) {
-      iparent = tracknumber;
-      gMC->TrackMomentum(mom);
-      ienergy = mom[3]; 
-      TParticle * part = 0 ;
-      Int_t parent = iparent ;
-      while ( parent != -1 ) { // <------------- flags this particle to be kept and
-	//all the ancestors of this particle
-	part = gAlice->GetMCApp()->Particle(parent) ;
-	part->SetBit(kKeepBit);
-	parent = part->GetFirstMother() ;
-      }
-    }
-  }
   if(gMC->CurrentVolID(copy) == gMC->VolId("XPHI") ) { // We are in a Scintillator Layer 
-    
     Float_t depositedEnergy ; 
     
     if( (depositedEnergy = gMC->Edep()) > 0.){// Track is inside a scintillator and deposits some energy
-     
-      // use sampling fraction to get original energy --HG
-      depositedEnergy = depositedEnergy * geom->GetSampling();
+       if (fCurPrimary==-1) 
+	fCurPrimary=gAlice->GetMCApp()->GetPrimary(tracknumber);
 
+      if (fCurParent==-1 || tracknumber != fCurTrack) {
+	// Check parentage
+	Int_t parent=tracknumber;
+	if (fCurParent != -1) {
+	  while (parent != fCurParent && parent != -1) {
+	    TParticle *part=gAlice->GetMCApp()->Particle(parent);
+	    parent=part->GetFirstMother();
+	  }
+	}
+	if (fCurParent==-1 || parent==-1) {
+	  Int_t parent=tracknumber;
+	  TParticle *part=gAlice->GetMCApp()->Particle(parent);
+	  while (parent != -1 && geom->IsInEMCAL(part->Vx(),part->Vy(),part->Vz())) {
+	    parent=part->GetFirstMother();
+	    if (parent!=-1) 
+	      part=gAlice->GetMCApp()->Particle(parent);
+	  } 
+	  fCurParent=parent;
+	  if (fCurParent==-1)
+	    Error("StepManager","Cannot find parent");
+	  else {
+	    TParticle *part=gAlice->GetMCApp()->Particle(fCurParent);
+	    ienergy = part->Energy(); 
+	  }
+	  while (parent != -1) {
+	    part=gAlice->GetMCApp()->Particle(parent);
+	    part->SetBit(kKeepBit);
+	    parent=part->GetFirstMother();
+	  }
+	}
+	fCurTrack=tracknumber;
+      }    
       gMC->TrackPosition(pos);
       xyzte[0] = pos[0];
       xyzte[1] = pos[1];
@@ -174,16 +183,56 @@ void AliEMCALv1::StepManager(void){
       if ((layer > nlayers)||(layer<1)) 
         Fatal("StepManager", "Wrong calculation of layer number: layer = %d > %d\n", layer, nlayers) ;
 
-	
       Float_t lightYield =  depositedEnergy ;
-      xyzte[4] = lightYield  ;
-   
-      primary = gAlice->GetMCApp()->GetPrimary(tracknumber);
+      // Apply Birk's law (copied from G3BIRK)
 
+      if (gMC->TrackCharge()!=0) { // Check
+	  Float_t BirkC1_mod = 0;
+	if (fBirkC0==1){ // Apply correction for higher charge states
+	  if (abs(gMC->TrackCharge())>=2)
+	    BirkC1_mod=fBirkC1*7.2/12.6;
+	  else
+	    BirkC1_mod=fBirkC1;
+	}
+	Float_t dedxcm;
+	if (gMC->TrackStep()>0) 
+	  dedxcm=1000.*gMC->Edep()/gMC->TrackStep();
+	else
+	  dedxcm=0;
+	lightYield=lightYield/(1.+BirkC1_mod*dedxcm+fBirkC2*dedxcm*dedxcm);
+      } 
+
+      // use sampling fraction to get original energy --HG
+      xyzte[4] = lightYield * geom->GetSampling();
+        
       if (gDebug == 2) 
 	printf("StepManager: id0 = %d, id1 = %d, absid = %d tower = %d layer = %d energy = %f\n", id[0], id[1], absid, tower, layer, xyzte[4]) ;
 
-      AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid,  xyzte, pmom);
+      AddHit(fIshunt, fCurPrimary,tracknumber, fCurParent, ienergy, absid,  xyzte, pmom);
     } // there is deposited energy
   }
+}
+
+void AliEMCALv1::RemapTrackHitIDs(Int_t *map) {
+  // remap track index numbers for primary and parent indices
+  // (Called by AliStack::PurifyKine)
+  if (Hits()==0)
+    return;
+  TIter hit_it(Hits());
+  Int_t i_hit=0;
+  while (AliEMCALHit *hit=dynamic_cast<AliEMCALHit*>(hit_it()) ) {
+    if (map[hit->GetIparent()]==-99)
+      cout << "Remapping, found -99 for parent id " << hit->GetIparent() << ", " << map[hit->GetIparent()] << ", i_hit " << i_hit << endl;
+    hit->SetIparent(map[hit->GetIparent()]);
+    if (map[hit->GetPrimary()]==-99)
+      cout << "Remapping, found -99 for primary id " << hit->GetPrimary() << ", " << map[hit->GetPrimary()] << ", i_hit " << i_hit << endl;
+    hit->SetPrimary(map[hit->GetPrimary()]);
+    i_hit++;
+  }
+}
+
+void AliEMCALv1::FinishPrimary() {
+  fCurPrimary=-1;
+  fCurParent=-1;
+  fCurTrack=-1;
 }

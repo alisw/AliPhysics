@@ -403,3 +403,31 @@ void AliEMCALGeometry::XYZFromIndex(Int_t absid,  TVector3 &v) const {
  
  return;
 } 
+
+Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
+  // Checks whether point is inside the EMCal volume
+  //
+  // Code uses cylindrical approximation made of inner radius (for speed)
+  //
+  // Points behind EMCAl, i.e. R > outer radius, but eta, phi in acceptance 
+  // are considered to inside
+
+  Double_t r=sqrt(x*x+y*y);
+
+  if ( r > fEnvelop[0] ) {
+     Double_t theta;
+     theta  =    TMath::ATan2(r,z);
+     Double_t eta;
+     if(theta == 0) 
+       eta = 9999;
+     else 
+       eta    =   -TMath::Log(TMath::Tan(theta/2.));
+     if (eta < fArm1EtaMin || eta > fArm1EtaMax)
+       return 0;
+ 
+     Double_t phi = TMath::ATan2(y,x) * 180./TMath::Pi();
+     if (phi > fArm1PhiMin && phi < fArm1PhiMax)
+       return 1;
+  }
+  return 0;
+}

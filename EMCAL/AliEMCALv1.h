@@ -36,6 +36,8 @@ public:
   // Gives the version number 
   virtual Int_t  IsVersion(void) const {return 1;}
   virtual void StepManager(void) ;
+  virtual void RemapTrackHitIDs(Int_t *map);
+  virtual void FinishPrimary();
   virtual const TString Version(void)const {return TString("v0");}
   // assignement operator requested by coding convention but not needed  
   AliEMCALv1 & operator = (const AliEMCALv0 & /*rvalue*/){
@@ -44,8 +46,11 @@ public:
  
     
 private:
+  Int_t fCurPrimary;
+  Int_t fCurParent;
+  Int_t fCurTrack;
 
-  ClassDef(AliEMCALv1,6)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
+  ClassDef(AliEMCALv1,7)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
     
 };
 
