@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/05/19 09:45:40  nilsen
+Fix for HP Unix and Sun systems.
+
 Revision 1.17  2000/05/10 19:57:26  nilsen
 Fixed problem with display.C and ITS versions v1 and v3.
 
@@ -159,7 +162,7 @@ void AliITSv5::BuildGeometry(){
           gm->GetTrans(lay,lad,det,xg[0],xg[1],xg[2]);
           gm->GetRotMatrix(lay,lad,det,rt);
           //sprintf(name,"ROT%1.1d2.2d2.2d",lay,lad,det);
-          for(Int_t i=0;i<9;i++) rtd[i] = rt[i];
+          for(i=0;i<9;i++) rtd[i] = rt[i];
           try {
 	        rm  = new TRotMatrix(name,name,rtd);
           } catch (...) {
@@ -191,7 +194,7 @@ void AliITSv5::BuildGeometry(){
           gm->GetTrans(lay,lad,det,xg[0],xg[1],xg[2]);
           gm->GetRotMatrix(lay,lad,det,rt);
           //sprintf(name,"ROT%1.1d2.2d2.2d",lay,lad,det);
-          for(Int_t i=0;i<9;i++) rtd[i] = rt[i];
+          for(i=0;i<9;i++) rtd[i] = rt[i];
           try {
 	        rm  = new TRotMatrix(name,name,rtd);
           } catch (...) {
@@ -223,7 +226,7 @@ void AliITSv5::BuildGeometry(){
           gm->GetTrans(lay,lad,det,xg[0],xg[1],xg[2]);
           gm->GetRotMatrix(lay,lad,det,rt);
           //sprintf(name,"ROT%1.1d2.2d2.2d",lay,lad,det);
-          for(Int_t i=0;i<9;i++) rtd[i] = rt[i];
+          for(i=0;i<9;i++) rtd[i] = rt[i];
           try {
 	        rm  = new TRotMatrix(name,name,rtd);
           } catch (...) {
@@ -254,7 +257,7 @@ void AliITSv5::BuildGeometry(){
           gm->GetTrans(lay,lad,det,xg[0],xg[1],xg[2]);
           gm->GetRotMatrix(lay,lad,det,rt);
           //sprintf(name,"ROT%1.1d2.2d2.2d",lay,lad,det);
-          for(Int_t i=0;i<9;i++) rtd[i] = rt[i];
+          for(i=0;i<9;i++) rtd[i] = rt[i];
           try {
 	        rm  = new TRotMatrix(name,name,rtd);
           } catch (...) {
