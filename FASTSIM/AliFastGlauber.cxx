@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2003/04/14 14:23:44  morsch
+Correction in Binaries().
+
 Revision 1.1  2003/04/10 08:48:13  morsch
 First commit.
 
@@ -332,7 +335,12 @@ Double_t AliFastGlauber::WSN(Double_t* x, Double_t* par)
 //  Geometrical Cross-Section
 //
     Double_t b     = x[0];
-    Double_t y     = fWSbinary->Eval(b)/fWSgeo->Eval(b);
+    Double_t y;
+    if (b != 0.) {
+	y = fWSbinary->Eval(b)/fWSgeo->Eval(b);
+    } else {
+	y = fWSbinary->Eval(1.e-4)/fWSgeo->Eval(1.e-4);
+    }
     return y;
 }
 
@@ -390,7 +398,7 @@ void AliFastGlauber::GetRandom(Float_t& b, Float_t& p, Float_t& mult)
 	b = fWSgeo->GetRandom();
 	Float_t mu = fWSN->Eval(b);
 	p = 1.-TMath::Exp(-mu);
-	mult = 6000./fWSN->Eval(1.) * mu;
+	mult = 6000./fWSN->Eval(0.) * mu;
 }
 
 Float_t  AliFastGlauber::GetRandomImpactParameter(Float_t bmin, Float_t bmax)
