@@ -2,7 +2,7 @@
 // Author: Andrei Gheata 10/07/2003
 
 #include "TObjString.h"
-#include "TFluka.h"
+#include "TFlukaGeo.h"
 //#include "TVirtualMCApplication.h"
 #include "TFlukaMCGeometry.h"
 #include "TGeoManager.h" 
@@ -90,6 +90,7 @@ extern "C"
 // TFluka global pointer
 TFluka *fluka = 0;
 TFlukaMCGeometry *mcgeom = 0;
+Int_t kNstep = 0;
 
 ClassImp(TFlukaMCGeometry)
 
@@ -109,6 +110,7 @@ TFlukaMCGeometry::TFlukaMCGeometry(const char *name, const char *title)
   fRegionList   = 0;
   fluka = (TFluka*)gMC;
   mcgeom = this;
+  kNstep = 0;
 }
 
 //_____________________________________________________________________________
@@ -125,6 +127,7 @@ TFlukaMCGeometry::TFlukaMCGeometry()
   fRegionList   = 0;
   fluka = (TFluka*)gMC;
   mcgeom = this;
+  kNstep = 0;
 }
 
 //_____________________________________________________________________________
@@ -1078,6 +1081,18 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       out << setw(10) << " ";
       out << setw(10) << " ";
       out << setw(8) << matname.Data() << endl;
+      // add LOW-MAT crd
+      if (!mat->IsMixture()) {
+         out << setw(10) << "LOW-MAT   ";
+         out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
+         out << setw(10) << setiosflags(ios::fixed) << setprecision(1) << Double_t(i+3);
+         out << setw(10) << " ";
+         out << setw(10) << " ";
+         out << setw(10) << " ";
+         out << setw(10) << " ";
+         out << setw(10) << " ";
+         out << setw(8) << matname.Data() << endl;
+      }   
    } 
    // write mixture header           
    PrintHeader(out, "COMPOUNDS");   
@@ -1156,14 +1171,19 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    }   
 */   
    // Now print the material assignments
-   Double_t flagfield;
+   Double_t flagfield = 0.;
+   printf("#############################################################\n");
+   if (fluka->IsFieldEnabled()) {
+      flagfield = 1.;
+      printf("Magnetic field enabled\n");
+   } else printf("Magnetic field disabled\n");   
+   printf("#############################################################\n");
+   
    PrintHeader(out, "TGEO MATERIAL ASSIGNMENTS");   
    for (i=1; i<=nvols; i++) {
       vol = gGeoManager->GetVolume(i);
       mat = vol->GetMedium()->GetMaterial();
       idmat = mat->GetIndex();
-//      flagfield = (vol->GetField())?1.:0.;
-      flagfield = 1.;
       out << setw(10) << "ASSIGNMAT ";
       out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
       out << setw(10) << setiosflags(ios::fixed) << Double_t(idmat);
@@ -1204,14 +1224,31 @@ Int_t TFlukaMCGeometry::RegionId() const
 void TFlukaMCGeometry::SetMreg(Int_t mreg)
 {
 // Update if needed next history;
+   if (fluka->GetDummyBoundary()==2) {
+      gGeoManager->CdNode(fNextLattice-1);
+      return;
+   }   
    Int_t curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
    if (mreg==curreg) return;
    if (mreg==fNextRegion) {
       if (fNextLattice!=999999999) gGeoManager->CdNode(fNextLattice-1);
       return;
-   }   
+   } else {
+      if (mreg == fCurrentRegion) {
+         if (fCurrentLattice!=999999999) gGeoManager->CdNode(fCurrentLattice-1);
+         return;
+      }   
+   }     
    if (fDebug) printf("ERROR: mreg=%i neither current nor next region\n", mreg);
 }
+
+//_____________________________________________________________________________
+void TFlukaMCGeometry::SetCurrentRegion(Int_t mreg, Int_t latt)
+{
+// Set index/history for next entered region
+   fCurrentRegion = mreg;
+   fCurrentLattice = latt;
+}   
 
 //_____________________________________________________________________________
 void TFlukaMCGeometry::SetNextRegion(Int_t mreg, Int_t latt)
@@ -1272,167 +1309,189 @@ Int_t idnrwr(const Int_t & /*nreg*/, const Int_t & /*mlat*/)
 
 //_____________________________________________________________________________
 void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz, 
-          Double_t *pV,  Int_t &oldReg , const Int_t &oldLttc, Double_t & propStep,
-          Int_t & /*nascFlag*/, Double_t &retStep, Int_t &newReg,
+          Double_t *pV,  Int_t &oldReg , const Int_t &oldLttc, Double_t &propStep,
+          Int_t &nascFlag, Double_t &retStep, Int_t &newReg,
 	       Double_t &saf, Int_t &newLttc, Int_t &lttcFlag,
           Double_t *sLt, Int_t *jrLt)
-{
-//   from FLUGG:
-// Wrapper for geometry tracking: returns approved step of 
-// particle and all variables that fluka G1 computes.
 
-   // Initialize current point/direction
+{
+   // Initialize FLUKa point and direction;
+   kNstep++;
+/*
+   if (kNstep>0) {
+      mcgeom->SetDebugMode(kTRUE);
+      fluka->SetVerbosityLevel(3);
+   }   
+   if (kNstep>6520) {
+      mcgeom->SetDebugMode(kFALSE);
+      fluka->SetVerbosityLevel(0);
+   }   
+   if ((kNstep%10)==0) printf("step %i\n", kNstep);
+*/
+
    if (mcgeom->IsDebugging()) {
       printf("========== Inside G1WR\n");
       printf("   point/dir:(%14.9f, %14.9f, %14.9f, %g, %g, %g)\n", pSx,pSy,pSz,pV[0],pV[1],pV[2]);
+      printf("   oldReg=%i  oldLttc=%i  pstep=%f\n",oldReg, oldLttc, propStep);
    }   
    gGeoManager->SetCurrentPoint(pSx, pSy, pSz);
    gGeoManager->SetCurrentDirection(pV);
-   if (mcgeom->IsDebugging()) printf("   oldReg=%i  oldLttc=%i  pstep=%f\n",oldReg, oldLttc, propStep);
-   if (oldLttc==999999999) printf("WOOPS - wrong old lattice\n");
+   mcgeom->SetCurrentRegion(oldReg, oldLttc);
+   // Initialize default return values
+   lttcFlag = 0;
+   jrLt[lttcFlag] = oldLttc;
+   sLt[lttcFlag] = propStep;
+   jrLt[lttcFlag+1] = -1;
+   sLt[lttcFlag+1] = 0.;
+   newReg = oldReg;
+   newLttc = oldLttc;
+   // check if dummy boundary flag is set
+   Int_t curLttc, curReg;
+   if (fluka->IsDummyBoundary()) {
+      // printf("Dummy boundary intercepted. Point is: %f, %f, %f\n", pSx, pSy, pSz);
+      Bool_t crossedDummy = (oldLttc == TFlukaMCGeometry::kLttcVirtual)?kTRUE:kFALSE;
+      if (crossedDummy) {
+      // FLUKA crossed the dummy boundary - update new region/history
+         retStep = 0.;
+         saf = 0.;
+         mcgeom->GetNextRegion(newReg, newLttc);
+         mcgeom->SetMreg(newReg);
+         if (mcgeom->IsDebugging()) printf("   virtual newReg=%i newLttc=%i\n", newReg, newLttc);
+         sLt[lttcFlag] = 0.; // null step in current region
+         lttcFlag++;
+         jrLt[lttcFlag] = newLttc;
+         sLt[lttcFlag] = 0.; // null step in next region
+         jrLt[lttcFlag+1] = -1;
+         sLt[lttcFlag+1] = 0.;
+         fluka->SetDummyBoundary(0);
+         return;
+      }   
+   }   
+      
+   // Reset outside flag
    if (gGeoManager->IsOutside()) {
       gGeoManager->SetOutside(kFALSE);
       gGeoManager->CdTop();
-   }   
-   Int_t curLttc = gGeoManager->GetCurrentNodeId()+1;
-   Int_t curreg = gGeoManager->GetCurrentVolume()->GetNumber();
-   if (mcgeom->IsDebugging()) printf("   curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
-   Bool_t regsame = (curreg==oldReg)?kTRUE:kFALSE;
-   if (!regsame && mcgeom->IsDebugging()) printf("   REGIONS DOES NOT MATCH\n");
+   } 
+   
+   // Reset dummy boundary flag
+   fluka->SetDummyBoundary(0); 
+    
+   curLttc = gGeoManager->GetCurrentNodeId()+1;
+   curReg = gGeoManager->GetCurrentVolume()->GetNumber();
    if (oldLttc != curLttc) {
-      if (mcgeom->IsDebugging()) printf("   HISTORIES DOES NOT MATCH\n");
+      // FLUKA crossed the boundary : we trust that the given point is really there,
+      // so we just update TGeo state
       gGeoManager->CdNode(oldLttc-1);
       curLttc = gGeoManager->GetCurrentNodeId()+1;
-      curreg  = gGeoManager->GetCurrentVolume()->GetNumber();
-      if (mcgeom->IsDebugging()) printf("   re-initialized point: curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
-   }         
-   lttcFlag = 0;
-   sLt[lttcFlag] = 0.;   
-   jrLt[lttcFlag] = curLttc;
-   // now 'oldregion' contains the real region, matching or not the old history
-   
-   // Compute geometry step/safety within physical step limit
-//   newReg = oldregion;
+      curReg  = gGeoManager->GetCurrentVolume()->GetNumber();
+      if (mcgeom->IsDebugging()) printf("   re-initialized point: curReg=%i  curLttc=%i\n", curReg, curLttc);
+   }  
+   // Now the current TGeo state reflects the FLUKA state       
+   if (mcgeom->IsDebugging()) printf("   current path: %s\n", gGeoManager->GetPath());
+   Double_t extra = 1E-6;
+   Double_t tmpStep = propStep + extra;
+   gGeoManager->FindNextBoundary(-tmpStep);
+   Double_t snext = gGeoManager->GetStep();
+   // !!!!!
+   if (snext<=0) {
+      // FLUKA is in the wrong region, notify it
+      if (mcgeom->IsDebugging()) printf("ERROR: snext=%f\n", snext);
+//      newReg = -3;
+//      return;
+      snext = extra;
+   }   
+   saf = gGeoManager->GetSafeDistance();
+   Bool_t cross = kFALSE;
+   Bool_t onBound = kFALSE;
+   if (snext<tmpStep) {
+      // We have some boundary in the way
+      Double_t dd = snext-propStep;
+      if (dd < 0) {
+         cross = kTRUE;
+         dd = -dd;
+      }   
+      if (dd < 1E-8) onBound = kTRUE;
+   }
+   snext += 1.E-8;
+   if (mcgeom->IsDebugging()) {
+      if (!cross) printf("   physical step approved: %f\n", propStep);
+      else printf("   boundary crossing at: %f\n", snext);
+      if (onBound) printf("   step on boundary limit ! NASC=%i\n", nascFlag);
+   }   
+   if (!cross) {
+   // Next boundary further than proposed step, which is approved
+      retStep = propStep;
+      sLt[lttcFlag] = propStep;
+      return;
+   }
+   // The next boundary is closer. We try to cross it.
    Double_t *point = gGeoManager->GetCurrentPoint();
    Double_t *dir = gGeoManager->GetCurrentDirection();
-   Double_t steptot = 0.;
-   Double_t snext = 0.;
-   Int_t istep = 0;
-   Bool_t done = kFALSE;
-   Double_t pst;
+   Double_t pt[3];
+   memcpy(pt, point, 3*sizeof(Double_t));
+   
    Int_t i;
-   while (!done) {
-      gGeoManager->FindNextBoundary(-propStep);
-      snext = gGeoManager->GetStep();
-      if (mcgeom->IsDebugging()) printf("   FindNextBoundary(%g) snext=%g\n", propStep, snext);
-      if (steptot == 0) {
-         saf = gGeoManager->GetSafeDistance();
-         if (mcgeom->IsDebugging()) printf("   Safety: %g\n", saf);
-      }   
-      sLt[lttcFlag] = propStep;
-      jrLt[lttcFlag] = gGeoManager->GetCurrentNodeId()+1;     
-      lttcFlag++; //1
-      sLt[lttcFlag] = 0.;
-      jrLt[lttcFlag] = -1;     
-      newReg = curreg;
-      newLttc = oldLttc;
-      if (snext<propStep) {
-         // There is a boundary on the way.
-         // Make a step=snext+1E-6 to force boundary crossing
-         lttcFlag--; // 0
-         steptot += snext;
-         sLt[lttcFlag] = snext;
-         retStep = snext;
-//         lttcFlag++;
-         // make the step to get into the next region
-         for (i=0;i<3;i++) point[i]+=(snext+1E-6)*dir[i];
+   for (i=0;i<3;i++) point[i] += snext*dir[i];
+   gGeoManager->FindNode();
+   newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
+   if (newLttc == oldLttc) {
+      // brute force ...
+      // Just try a fast extra small step
+      snext += 1E-6;
+      for (i=0;i<3;i++) point[i] = pt[i]+snext*dir[i];
+      gGeoManager->FindNode();
+      newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
+      if (newLttc == oldLttc) {
+         // check if state changes at the end of the proposed step
+         for (i=0;i<3;i++) point[i] = pt[i]+propStep*dir[i];
          gGeoManager->FindNode();
-         istep = 0;
-         if (mcgeom->IsDebugging()) printf("   boundary: step made %g\n", snext);
-         while (gGeoManager->IsSameLocation() && steptot<propStep) {
-            if (istep>1E3) {
-               printf("Geometry error: could not cross boundary after extra 10 microns\n");
-               return;
-            }   
-            for (i=0;i<3;i++) point[i]+=1E-6*dir[i];
-            gGeoManager->FindNode();
-            sLt[lttcFlag] += 1E-6;
-            retStep = sLt[lttcFlag];
-            steptot += 1E-6;
-            istep++;
-         }            
-         if (steptot>propStep) {printf("Error\n");return;}
-         // we managed to cross the boundary -> in which region
-         newReg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
-         lttcFlag++; //1                
-         newLttc = (gGeoManager->IsOutside())?999999999:gGeoManager->GetCurrentNodeId()+1;
-         sLt[lttcFlag] = snext; // at 1
-         jrLt[lttcFlag] = newLttc;
-         sLt[lttcFlag+1] = 0.;
-         jrLt[lttcFlag+1] = -1;
-         // !!!!!!!!!!
-
-         while (newReg==oldReg && steptot<propStep) {
-            if (mcgeom->IsDebugging()) printf("   Entered SAME region... continue\n");
-            pst = propStep-steptot;
-            gGeoManager->FindNextBoundary(-pst);
-            snext = gGeoManager->GetStep();
-            steptot += snext;
-            if (snext<pst) {
-               printf("Found new boundary\n");
-               sLt[lttcFlag] = snext;
-               retStep = steptot; // ???
-               for (i=0;i<3;i++) point[i]+=(snext+1E-6)*dir[i];
-               steptot += 1E-6;
-               gGeoManager->FindNode();
-               if (gGeoManager->IsSameLocation()) {
-                  printf("Cannot cross boundary\n");
-                  break;
-               }
-               newReg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();  
-               newLttc = (gGeoManager->IsOutside())?999999999:gGeoManager->GetCurrentNodeId()+1;  
-               if (mcgeom->IsDebugging()) printf("Found newreg=%i, newLttc=%i, lttFlag is: %i\n", newReg, newLttc, lttcFlag);
-               sLt[lttcFlag-1] += snext; // correct step in old region
-               sLt[lttcFlag] = propStep-snext;
-               jrLt[lttcFlag] = newLttc;
-               sLt[lttcFlag+1] = 0.;
-               jrLt[lttcFlag+1] = -1;
-               if (newReg != oldReg) break; // lttcFlag=1
-               lttcFlag++;
-            } else {
-                if (mcgeom->IsDebugging()) printf("Not crossing next\n");
-                lttcFlag--; //0
-                retStep=steptot;
-                sLt[lttcFlag] = retStep;
-                sLt[lttcFlag+1] = 0.;
-                jrLt[lttcFlag+1] = -1;
-                done = kTRUE;  
-            }  
+         newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
+         if (newLttc==oldLttc) {
+            // approve step
+            retStep = propStep;
+            sLt[lttcFlag] = propStep;
+            return;
          }
-            
-         lttcFlag++; //2
-         if (mcgeom->IsDebugging()) {
-            if (!gGeoManager->IsOutside()) {
-               printf("   ENTERED region %i, newLttc=%i in: %s\n", newReg,newLttc,gGeoManager->GetPath());
-            } else printf("   EXIT GEOMETRY: BLKHOLE reg=%i\n", newReg);
-         }   
-      } 
-      // no boundary within proposed step
-      lttcFlag--;
-      done = kTRUE;
-   }   
-   if (mcgeom->IsDebugging()) printf("=> newReg=%i newLttc=%i lttcFlag=%i\n", newReg, newLttc, lttcFlag);
+         // snext is underestimated - we will create a virtual one to overcome the error
+//         printf("some boundary in the way...\n");
+      }    
+   }
+   gGeoManager->SetCurrentPoint(pt);
+//   newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
+   newReg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
+   if (mcgeom->IsDebugging()) printf("   newReg=%i newLttc=%i\n", newReg, newLttc);
+
+   // We really crossed the boundary, but is it the same region ?
    mcgeom->SetNextRegion(newReg, newLttc);
-   if (mcgeom->IsDebugging()) {
-      printf("=> snext=%g safe=%g\n", snext, saf);
-      for (Int_t i=0; i<lttcFlag+1; i++) printf("   jrLt[%i]=%i  sLt[%i]=%g\n", i,jrLt[i],i,sLt[i]);
-   }   
+   if (newReg == oldReg) {
+      // Virtual boundary between replicants
+      if (mcgeom->IsDebugging()) printf("   DUMMY boundary\n");
+      newReg = 1;  // cheat FLUKA telling it it crossed the TOP region
+      newLttc = TFlukaMCGeometry::kLttcVirtual;
+      // mark that next boundary is virtual
+      fluka->SetDummyBoundary(1);
+   } 
+   retStep = snext;
+   sLt[lttcFlag] = snext;
+   lttcFlag++;
+   jrLt[lttcFlag] = newLttc;
+   sLt[lttcFlag] = snext;
+   jrLt[lttcFlag+1] = -1;
+   sLt[lttcFlag+1] = 0.;      
+
    if (newLttc!=oldLttc) {
       if (gGeoManager->IsOutside()) {
          gGeoManager->SetOutside(kFALSE);
          gGeoManager->CdTop();
-      }   
+      } 
+      gGeoManager->CdTop();
+      if (!gGeoManager->GetCurrentMatrix()->IsIdentity()) printf("ERROR  at step %i\n", kNstep);
       gGeoManager->CdNode(oldLttc-1);
+   }   
+   if (mcgeom->IsDebugging()) {
+      printf("=> snext=%g safe=%g\n", snext, saf);
+      for (Int_t i=0; i<lttcFlag+1; i++) printf("   jrLt[%i]=%i  sLt[%i]=%g\n", i,jrLt[i],i,sLt[i]);
    }   
    if (mcgeom->IsDebugging()) printf("<= G1WR (in: %s)\n", gGeoManager->GetPath());
 }
@@ -1503,6 +1562,7 @@ void lkdbwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
+   mcgeom->SetNextRegion(newReg, newLttc);
    flagErr = newReg;
    if (mcgeom->IsDebugging()) {
       printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
@@ -1535,6 +1595,7 @@ void lkfxwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
+   mcgeom->SetNextRegion(newReg, newLttc);
    flagErr = newReg;
    if (mcgeom->IsDebugging()) {
       printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
@@ -1567,6 +1628,7 @@ void lkmgwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
+   mcgeom->SetNextRegion(newReg, newLttc);
    flagErr = newReg;
    if (mcgeom->IsDebugging()) {
       printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
@@ -1598,7 +1660,8 @@ void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       return;
    } 
    newReg = node->GetVolume()->GetNumber();
-   newLttc = gGeoManager->GetCurrentNodeId()+1; 
+   newLttc = gGeoManager->GetCurrentNodeId()+1;
+   mcgeom->SetNextRegion(newReg, newLttc);
    flagErr = newReg;
    if (mcgeom->IsDebugging()) {
       printf("  out: newReg=%i newLttc=%i in %s\n", newReg, newLttc, gGeoManager->GetPath());
@@ -1616,12 +1679,13 @@ void nrmlwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       printf("========== Inside NRMLWR (%g, %g, %g, %g, %g, %g)\n", pSx,pSy,pSz,pVx,pVy,pVz);
       printf("   oldReg=%i, newReg=%i\n", oldReg,newReg);
    }   
-   Int_t curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
-   Int_t curLttc = gGeoManager->GetCurrentNodeId()+1;
-   if (mcgeom->IsDebugging()) printf("   curReg=%i, curLttc=%i in: %s\n", curreg, curLttc, gGeoManager->GetPath());
-   Bool_t regsame = (curreg==oldReg)?kTRUE:kFALSE;
+//   Int_t curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
+//   Int_t curLttc = gGeoManager->GetCurrentNodeId()+1;
+//   if (mcgeom->IsDebugging()) printf("   curReg=%i, curLttc=%i in: %s\n", curreg, curLttc, gGeoManager->GetPath());
+//   Bool_t regsame = (curreg==oldReg)?kTRUE:kFALSE;
    gGeoManager->SetCurrentPoint(pSx, pSy, pSz);
    gGeoManager->SetCurrentDirection(pVx,pVy,pVz);
+/*
    if (!regsame) {
       if (mcgeom->IsDebugging()) printf("   REGIONS DOEN NOT MATCH\n");
       gGeoManager->FindNode();
@@ -1629,6 +1693,7 @@ void nrmlwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       curLttc = gGeoManager->GetCurrentNodeId()+1;
       if (mcgeom->IsDebugging()) printf("   re-initialized point: curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
    }
+*/
    Double_t *dnorm = gGeoManager->FindNormalFast();
    flagErr = 0;
    if (!dnorm) {
@@ -1642,10 +1707,10 @@ void nrmlwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    norml[1] = -dnorm[1];   
    norml[2] = -dnorm[2]; 
    if (mcgeom->IsDebugging()) printf("   normal to boundary: (%g, %g, %g)\n", norml[0], norml[1], norml[2]);  
-   curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
-   curLttc = gGeoManager->GetCurrentNodeId()+1;
+//   curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
+//   curLttc = gGeoManager->GetCurrentNodeId()+1;
    if (mcgeom->IsDebugging()) {
-      printf("   final location: curReg=%i, curLttc=%i in %s\n", curreg,curLttc,gGeoManager->GetPath());
+//      printf("   final location: curReg=%i, curLttc=%i in %s\n", curreg,curLttc,gGeoManager->GetPath());
       printf("<= NRMLWR\n");
    }   
 }

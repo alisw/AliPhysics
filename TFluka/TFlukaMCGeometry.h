@@ -26,6 +26,11 @@
 class TFlukaMCGeometry : public TVirtualMCGeometry {
 
   public:
+    enum EFlukaLatticeTypes {
+       kLttcOutside = 999999999,
+       kLttcVirtual = 1000000000
+    };   
+  
     TFlukaMCGeometry();
     TFlukaMCGeometry(const char* name, const char* title);
     virtual ~TFlukaMCGeometry();
@@ -124,7 +129,10 @@ class TFlukaMCGeometry : public TVirtualMCGeometry {
     Bool_t        IsDebugging() const {return fDebug;}
     void          SetDebugMode(Bool_t flag=kTRUE) {fDebug = flag;}
     void          SetMreg(Int_t mreg);
+    void          SetCurrentRegion(Int_t mreg, Int_t latt);
+    void          GetCurrentRegion(Int_t &mreg, Int_t &latt) const {mreg=fCurrentRegion; latt=fCurrentLattice;}
     void          SetNextRegion(Int_t mreg, Int_t latt);
+    void          GetNextRegion(Int_t &mreg, Int_t &latt) const {mreg=fNextRegion; latt=fNextLattice;}
     Int_t         RegionId() const; 
     void          ToFlukaString(TString &str) const;
 
@@ -138,6 +146,8 @@ class TFlukaMCGeometry : public TVirtualMCGeometry {
     static TFlukaMCGeometry*  fgInstance; // singleton instance
     Bool_t       fDebug;                  // debug flag
     Int_t        fLastMaterial;           // last FLUKA material index
+    Int_t        fCurrentRegion;          // current region number
+    Int_t        fCurrentLattice;         // current lattice history
     Int_t        fNextRegion;             // next region number
     Int_t        fNextLattice;            // next lattice history
     Int_t       *fRegionList;             //! region list matching a given medium number
