@@ -3,11 +3,15 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-#include <math.h>
+#include "AliL3StandardIncludes.h"
 
 #include "AliL3Logging.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3Transform.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // AliL3HoughTrack
@@ -114,7 +118,7 @@ void AliL3HoughTrack::UpdateToFirstRow()
     Double_t y0    = GetR0() * sin(GetPhi0()) ;
   */
   Double_t rc    = GetRadius();//fabs(GetPt()) / ( BFACT * AliL3Transform::GetBField() )  ;
-  Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / fabs(GetCharge()) ;
+  Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / abs(GetCharge()) ;
   Double_t xc    = GetCenterX();//x0 - rc * cos(tPhi0) ;
   Double_t yc    = GetCenterY();//y0 - rc * sin(tPhi0) ;
   
@@ -148,7 +152,7 @@ void AliL3HoughTrack::UpdateToFirstRow()
   
   //if ( tPhi < 0 ) tPhi += 2. * M_PI ;
   
-  Double_t tPsi = tPhi - GetCharge() * 0.5 * pi / fabs(GetCharge()) ;
+  Double_t tPsi = tPhi - GetCharge() * 0.5 * pi / abs(GetCharge()) ;
   if ( tPsi > 2. * pi ) tPsi -= 2. * pi ;
   if ( tPsi < 0.        ) tPsi += 2. * pi ;
   

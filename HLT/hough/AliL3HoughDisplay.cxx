@@ -3,7 +3,8 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-#include <iostream.h>
+#include "AliL3StandardIncludes.h"
+
 #include <TCanvas.h>
 #include <TView.h>
 #include <TPolyMarker3D.h>
@@ -13,11 +14,12 @@
 #include <TShape.h>
 #include <TFile.h>
 
+#include "AliL3Logging.h"
 #include "AliL3Transform.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3TrackArray.h"
-#include "AliL3HoughDisplay.h"
 #include "AliL3MemHandler.h"
+#include "AliL3HoughDisplay.h"
 
 //_____________________________________________________________
 // Display class for Hough transform code

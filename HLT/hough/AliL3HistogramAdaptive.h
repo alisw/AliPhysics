@@ -1,7 +1,6 @@
 #ifndef ALIL3_HISTOGRAMADAPTIVE
 #define ALIL3_HISTOGRAMADAPTIVE
 
-#include <stream.h>
 #include "AliL3RootTypes.h"
 #include "AliL3Histogram.h"
 

@@ -3,9 +3,14 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV
 
-#include <string.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3Histogram1D.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // AliL3Histogram1D
@@ -28,7 +33,6 @@ AliL3Histogram1D::AliL3Histogram1D()
   fContent = 0;
   
 }
-
   
 AliL3Histogram1D::AliL3Histogram1D(Char_t *name,Char_t *id,Int_t nxbin,Double_t xmin,Double_t xmax)
 

@@ -1,9 +1,8 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-#include <stdlib.h>
-#include <math.h>
-#include <iostream.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3HoughGlobalMerger.h"

@@ -1,15 +1,18 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-#include <stdlib.h>
-#include <math.h>
-#include <iostream.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3HoughIntMerger.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3TrackSegmentData.h"
 #include "AliL3Transform.h"
 #include "AliL3TrackArray.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // Hough Inter merger

@@ -30,6 +30,7 @@ class AliL3HoughBaseTransformer {
   AliL3DigitRowData *fDigitRowData; //!
   
  public:
+
   AliL3HoughBaseTransformer(); 
   AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments);
   virtual ~AliL3HoughBaseTransformer();

@@ -1,7 +1,6 @@
 #ifndef ALIL3_HISTOGRAM
 #define ALIL3_HISTOGRAM
 
-#include <stream.h>
 #include "AliL3RootTypes.h"
 
 #ifdef use_root
@@ -14,6 +13,7 @@ class AliL3Histogram {
   
   Int_t *fContent; //!
   Char_t fName[100];
+  //Char_t fID[100]; //not used 
   Int_t fNxbins;
   Int_t fNybins;
   Int_t fNcells;
@@ -28,12 +28,15 @@ class AliL3Histogram {
   Double_t fYmin;
   Double_t fXmax;
   Double_t fYmax;
-  
+  Double_t fBinwidthX;
+  Double_t fBinwidthY;
+
 #ifdef use_root
   TH2F *fRootHisto;
 #endif  
   
  public:
+
   AliL3Histogram();
   AliL3Histogram(Char_t *name,Char_t *id,Int_t nxbin,Double_t xmin,Double_t xmax,Int_t nybin,Double_t ymin,Double_t ymax);
   virtual ~AliL3Histogram();
@@ -75,7 +78,6 @@ class AliL3Histogram {
   Int_t GetNbinsY() {return fNybins;}
   Int_t GetNEntries() {return fEntries;}
   
-  
   ClassDef(AliL3Histogram,1) //2D histogram class
     
 };
@@ -85,7 +87,7 @@ inline TH2F *AliL3Histogram::GetRootHisto()
 {
   if(!fRootHisto)
     {
-      cerr<<"AliL3Histogram::GetRootHisto() : You must first Draw histogram before accessing it"<<endl;
+      STDCERR<<"AliL3Histogram::GetRootHisto() : You must first Draw histogram before accessing it"<<STDENDL;
       return 0;
     }
   else
@@ -94,7 +96,7 @@ inline TH2F *AliL3Histogram::GetRootHisto()
 #else
 inline void *AliL3Histogram::GetRootHisto()
 {
-  cerr<<"AliL3Histogram::GetRootHisto() : You must compile with ROOT in order to interface the ROOT histogram"<<endl;
+  STDCERR<<"AliL3Histogram::GetRootHisto() : You must compile with ROOT in order to interface the ROOT histogram"<<STDENDL;
   return 0;
 }
 #endif

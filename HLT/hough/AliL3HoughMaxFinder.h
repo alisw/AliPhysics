@@ -2,7 +2,6 @@
 #define ALIL3_HOUGH_MaxFinder
 
 #include "AliL3RootTypes.h"
-#include <stream.h>
 
 class AliL3Histogram;
 class AliL3TrackArray;
@@ -77,7 +76,7 @@ inline Float_t AliL3HoughMaxFinder::GetXPeak(Int_t i)
 {
   if(i<0 || i>fNMax)
     {
-      cerr<<"AliL3HoughMaxFinder::GetXPeak : Invalid index "<<i<<endl;
+      STDCERR<<"AliL3HoughMaxFinder::GetXPeak : Invalid index "<<i<<STDENDL;
       return 0;
     }
   return fXPeaks[i];
@@ -87,7 +86,7 @@ inline Float_t AliL3HoughMaxFinder::GetYPeak(Int_t i)
 {
   if(i<0 || i>fNMax)
     {
-      cerr<<"AliL3HoughMaxFinder::GetYPeak : Invalid index "<<i<<endl;
+      STDCERR<<"AliL3HoughMaxFinder::GetYPeak : Invalid index "<<i<<STDENDL;
       return 0;
     }
   return fYPeaks[i];
@@ -98,7 +97,7 @@ inline Int_t AliL3HoughMaxFinder::GetWeight(Int_t i)
 {
   if(i<0 || i>fNMax)
     {
-      cerr<<"AliL3HoughMaxFinder::GetWeight : Invalid index "<<i<<endl;
+      STDCERR<<"AliL3HoughMaxFinder::GetWeight : Invalid index "<<i<<STDENDL;
       return 0;
     }
   return fWeight[i];

@@ -3,22 +3,27 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-#include <math.h>
-#include <iostream.h>
+#include "AliL3StandardIncludes.h"
+
 #ifdef use_root
 #include <TH1.h>
 #include <TFile.h>
 #endif
-#include "AliL3MemHandler.h"
-#include "AliL3TrackArray.h"
+
 #include "AliL3Logging.h"
 #include "AliL3HoughEval.h"
+#include "AliL3MemHandler.h"
+#include "AliL3TrackArray.h"
 #include "AliL3HoughBaseTransformer.h"
 #include "AliL3DigitData.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3Transform.h"
 #include "AliL3Histogram.h"
 #include "AliL3Histogram1D.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // AliL3HoughEval

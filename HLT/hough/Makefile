@@ -47,10 +47,11 @@ else
 INCLUDES += -I/prog/alice/level3/kip/MLUC/include
 endif
 
-SRCS = AliL3HoughTransformer.cxx AliL3HoughTrack.cxx \
+SRCS = AliL3HoughTransformer.cxx AliL3HoughTrack.cxx AliL3HoughClusterTransformer.cxx \
        AliL3HoughEval.cxx AliL3HoughMerger.cxx AliL3HoughBaseTransformer.cxx \
        AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx AliL3HoughTransformerVhdl.cxx \
-       AliL3Histogram.cxx AliL3Histogram1D.cxx AliL3HoughMaxFinder.cxx AliL3Hough.cxx
+       AliL3Histogram.cxx AliL3Histogram1D.cxx AliL3HoughMaxFinder.cxx AliL3Hough.cxx \
+       AliL3HoughTransformerLUT.cxx 
 
 DICT  = AliL3HoughCint-$(USEPACKAGE).cxx
 DICTH = AliL3HoughCint-$(USEPACKAGE).h
@@ -73,7 +74,6 @@ HDRS = $(SRCS:.cxx=.h)
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS))
 endif
 
-
 LEVELSO = $(LIBDIR)/libAliL3Hough.so
 
 all : $(OBJDIR) $(LIBDIR) $(LEVELSO)
@@ -83,7 +83,7 @@ $(LEVELSO) : $(OBJS)
 
 $(DICT) : $(HDRS)
 	@echo "Generating dictionary..."
-	@rootcint -f $(DICT) -c $(INCLUDES) $(HDRS)
+	@rootcint -f $(DICT) -c $(INCLUDES) -DGCCVERSION=$(GCCVERSION) -include AliL3StandardIncludes.h $(HDRS)
 
 $(OBJDIR)/%.o : %.cxx 
 	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<

@@ -3,9 +3,11 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-#include "AliL3MemHandler.h"
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3HoughBaseTransformer.h"
+#include "AliL3MemHandler.h"
 #include "AliL3DigitData.h"
 #include "AliL3Histogram.h"
 
@@ -23,7 +25,7 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer()
 {
   //Default constructor
   fDigitRowData = 0;
-
+  /*
   fSlice = 0;
   fPatch = 0;
   fNEtaSegments =0;
@@ -31,11 +33,13 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer()
   fEtaMax = 0;
   fLowerThreshold = 0;
   fUpperThreshold = 0;
+  */
 }
 
 AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments)
 {
   fDigitRowData = 0;
+
   Init(slice,patch,n_eta_segments);
 }
 
@@ -43,7 +47,7 @@ AliL3HoughBaseTransformer::~AliL3HoughBaseTransformer()
 {
 }
 
-void AliL3HoughBaseTransformer::Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100)
+void AliL3HoughBaseTransformer::Init(Int_t slice,Int_t patch,Int_t n_eta_segments)
 {
   fSlice = slice;
   fPatch = patch;

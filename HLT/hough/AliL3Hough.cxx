@@ -3,14 +3,13 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-
-#include <string.h>
+#include "AliL3StandardIncludes.h"
 #include <sys/time.h>
 
+#include "AliL3Logging.h"
 #include "AliL3HoughMerger.h"
 #include "AliL3HoughIntMerger.h"
 #include "AliL3HoughGlobalMerger.h"
-#include "AliL3Logging.h"
 #include "AliL3Histogram.h"
 #include "AliL3Hough.h"
 #include "AliL3HoughTransformer.h"
@@ -29,6 +28,9 @@
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"
 
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 /** /class AliL3Hough
 //<pre>
@@ -78,7 +80,7 @@ AliL3Hough::AliL3Hough()
   SetThreshold();
 }
 
-AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0)
+AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv)
 {
   //Default ctor.
 
@@ -127,7 +129,7 @@ void AliL3Hough::CleanUp()
   */
 }
 
-void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0)
+void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv)
 {
   fBinary = binary;
   strcpy(fPath,path);
@@ -139,7 +141,7 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t
   Init(); //do the rest
 }
 
-void AliL3Hough::Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE)
+void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 {
   fDoIterative   = doit; 
   fAddHistograms = addhists;
@@ -222,7 +224,7 @@ void AliL3Hough::Process(Int_t minslice,Int_t maxslice)
     }
 }
 
-void AliL3Hough::ReadData(Int_t slice,Int_t eventnr=0)
+void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
 {
   //Read data from files, binary or root.
   
@@ -261,7 +263,7 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr=0)
     }
 }
 
-void AliL3Hough::Transform(Int_t row_range=-1)
+void AliL3Hough::Transform(Int_t row_range)
 {
   //Transform all data given to the transformer within the given slice
   //(after ReadData(slice))

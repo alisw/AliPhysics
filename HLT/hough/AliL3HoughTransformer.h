@@ -15,6 +15,7 @@ class AliL3HoughTransformer : public AliL3HoughBaseTransformer {
   TrackIndex **fTrackID; //!
 #endif
   Bool_t fDoMC;
+
   void DeleteHistograms();
 
  public:

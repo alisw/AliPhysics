@@ -3,9 +3,14 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV
 
-#include <string.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3Histogram.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // AliL3Histogram
@@ -23,6 +28,8 @@ AliL3Histogram::AliL3Histogram()
   fYmin = 0;
   fXmax = 0;
   fYmax = 0;
+  fBinwidthX = 0;
+  fBinwidthY = 0;  
   fFirstXbin = 0;
   fLastXbin = 0;
   fFirstYbin = 0;
@@ -35,21 +42,22 @@ AliL3Histogram::AliL3Histogram()
 #endif
 }
 
-  
 AliL3Histogram::AliL3Histogram(Char_t *name,Char_t *id,
 			       Int_t nxbin,Double_t xmin,Double_t xmax,
 			       Int_t nybin,Double_t ymin,Double_t ymax) 
 {
-  
   strcpy(fName,name);
+
   fNxbins = nxbin;
   fNybins = nybin;
   fNcells = (nxbin+2)*(nybin+2);
-  
   fXmin = xmin;
   fYmin = ymin;
   fXmax = xmax;
   fYmax = ymax;
+  fBinwidthX = (fXmax - fXmin) / fNxbins;
+  fBinwidthY = (fYmax - fYmin) / fNybins;
+  
   fEntries = 0;
   fFirstXbin = 1;
   fFirstYbin = 1;
@@ -73,15 +81,13 @@ AliL3Histogram::~AliL3Histogram()
   if(fRootHisto)
     delete fRootHisto;
 #endif
-  
 }
-
 
 void AliL3Histogram::Reset()
 {
-  
-  for(Int_t i=0; i<fNcells; i++)
-    fContent[i] = 0;
+  if(fContent)
+    for(Int_t i=0; i<fNcells; i++) fContent[i] = 0;
+
   fEntries=0;
 }
 
@@ -89,12 +95,10 @@ void AliL3Histogram::Fill(Double_t x,Double_t y,Int_t weight)
 {
   Int_t bin = FindBin(x,y);
   AddBinContent(bin,weight);
-
 }
 
 Int_t AliL3Histogram::FindBin(Double_t x,Double_t y)
 {
-  
   Int_t xbin = FindXbin(x);
   Int_t ybin = FindYbin(y);
   
@@ -107,7 +111,6 @@ Int_t AliL3Histogram::FindXbin(Double_t x)
     return 0;
   
   return 1 + (Int_t)(fNxbins*(x-fXmin)/(fXmax-fXmin));
-
 }
 
 Int_t AliL3Histogram::FindYbin(Double_t y)
@@ -116,7 +119,6 @@ Int_t AliL3Histogram::FindYbin(Double_t y)
     return 0;
   
   return 1 + (Int_t)(fNybins*(y-fYmin)/(fYmax-fYmin));
-
 }
 
 Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin)
@@ -127,6 +129,7 @@ Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin)
 	"xbin out of range "<<xbin<<ENDLOG;
       return 0;
     }
+
   if(ybin < 0 || ybin > GetLastYbin())
     {
       LOG(AliL3Log::kError,"AliL3Histogram::Getbin","array")<<AliL3Log::kDec<<
@@ -168,10 +171,10 @@ void AliL3Histogram::SetBinContent(Int_t bin,Int_t value)
 	"bin out of range "<<bin<<ENDLOG;
       return;
     }
+
   if(bin == 0)
     return;
   fContent[bin]=value;
-  
 }
 
 void AliL3Histogram::AddBinContent(Int_t xbin,Int_t ybin,Int_t weight)
@@ -180,7 +183,6 @@ void AliL3Histogram::AddBinContent(Int_t xbin,Int_t ybin,Int_t weight)
   if(bin == 0)
     return;
   AddBinContent(bin,weight);
-
 }
 
 void AliL3Histogram::AddBinContent(Int_t bin,Int_t weight)
@@ -230,20 +232,15 @@ void AliL3Histogram::Add(AliL3Histogram *h1,Double_t weight)
 
 Double_t AliL3Histogram::GetBinCenterX(Int_t xbin)
 {
-  
-  Double_t binwidth = (fXmax - fXmin) / fNxbins;
-  return fXmin + (xbin-1) * binwidth + 0.5*binwidth;
-  
+  //  return fXmin + (xbin-1) * fBinwidthX + 0.5*fBinwidthX;
+  return fXmin + (xbin-0.5) * fBinwidthX;
 }
 
 Double_t AliL3Histogram::GetBinCenterY(Int_t ybin)
 {
-  
-  Double_t binwidth = (fYmax - fYmin) / fNybins;
-  return fYmin + (ybin-1) * binwidth + 0.5*binwidth;
-  
+  //  return fYmin + (ybin-1) * fBinwidthY + 0.5*fBinwidthY;
+  return fYmin + (ybin-0.5) * fBinwidthY;
 }
-
 
 void AliL3Histogram::Draw(Char_t *option)
 {

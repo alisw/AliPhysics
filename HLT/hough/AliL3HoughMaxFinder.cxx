@@ -3,18 +3,22 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
+#include "AliL3StandardIncludes.h"
+
 #ifndef no_root
 #include <TNtuple.h>
 #include <TFile.h>
 #endif
 
+#include "AliL3Logging.h"
+#include "AliL3HoughMaxFinder.h"
 #include "AliL3Histogram.h"
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"
-#include "AliL3HoughMaxFinder.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // AliL3HoughMaxFinder
@@ -852,7 +856,7 @@ void AliL3HoughMaxFinder::FindPeak(Int_t t1,Double_t t2,Int_t t3)
       m_up[i]=0;
     }
 
-  Int_t max_x=0,sum=0,max_xbin=0,bin;
+  Int_t max_x=0,sum=0,max_xbin=0,bin=0;
 
   for(Int_t xbin=xmin; xbin<=xmax; xbin++)
     {
