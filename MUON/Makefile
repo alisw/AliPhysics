@@ -54,6 +54,10 @@ DICT          = MUONCint.cxx
 DICTH         = $(DICT:.cxx=.h)
 DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
+# Fortran sources
+
+FSRCS	      = extrap.F
+
 # FORTRAN Objectrs
 
 FOBJS         = $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(FSRCS))
