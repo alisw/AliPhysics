@@ -48,7 +48,6 @@
 //                                                         //
 ////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
 #include <TCanvas.h>
 
 
@@ -67,6 +66,7 @@
 #include "AliGenGeVSim.h"
 #include "AliGenHIJINGpara.h"
 
+
 /***********************************************************/
 ClassImp(AliGenHBTosl)
 
@@ -78,13 +78,13 @@ AliGenHBTosl::AliGenHBTosl():
  fQBackground(0x0),
  fQSecondSignal(0x0),
  fQSecondBackground(0x0),
- fQRange(0.15),
+ fQRange(0.06),
  fQNBins(60),
  fGenerator(0x0),
  fBufferSize(5),
- fNBinsToScale(Int_t(fQNBins*0.2)),
- fDebug(0),
- fMaxIterations(300),
+ fNBinsToScale(Int_t(fQNBins*0.1)),
+ fDebug(kFALSE),
+ fMaxIterations(1000),
  fMaxChiSquereChange(0.01),
  fMaxChiSquerePerNDF(1.5), 
  fQRadius(8.0),
@@ -92,7 +92,8 @@ AliGenHBTosl::AliGenHBTosl():
  fSamplePhiMin(-0.01),
  fSamplePhiMax(TMath::TwoPi()+0.01),
  fSignalRegion(0.0),
- fMinFill(300)
+ fMinFill(1000),
+ fLogFile(0x0)
 {
 //default constructor
 }
@@ -106,14 +107,14 @@ AliGenHBTosl::AliGenHBTosl(Int_t n, Int_t pid):
  fQBackground(0x0),
  fQSecondSignal(0x0),
  fQSecondBackground(0x0),
- fQRange(0.15),
+ fQRange(0.06),
  fQNBins(60),
  fGenerator(0x0),
  fBufferSize(5),
- fNBinsToScale(Int_t(fQNBins*0.2)),
- fDebug(0),
+ fNBinsToScale(Int_t(fQNBins*0.1)),
+ fDebug(kFALSE),
  fSignalShapeCreated(kFALSE),
- fMaxIterations(300),
+ fMaxIterations(1000),
  fMaxChiSquereChange(0.01),
  fMaxChiSquerePerNDF(1.5),
  fQRadius(8.0),
@@ -121,7 +122,8 @@ AliGenHBTosl::AliGenHBTosl(Int_t n, Int_t pid):
  fSamplePhiMin(-0.01),
  fSamplePhiMax(TMath::TwoPi()+0.01),
  fSignalRegion(0.0),
- fMinFill(300)
+ fMinFill(1000),
+ fLogFile(0x0)
 {
 //default constructor
 }
@@ -137,8 +139,9 @@ AliGenHBTosl::~AliGenHBTosl()
  delete fGenerator; 
  delete fQSecondSignal;
  delete fQSecondBackground;
-
+ delete fLogFile;
 }
+/***********************************************************/
 
 void AliGenHBTosl::Init()
 {
@@ -175,36 +178,44 @@ void AliGenHBTosl::Init()
 */
     
     fGenerator->SetOrigin(fOrigin[0],fOrigin[1],fOrigin[2]);
-    static const Double_t degtoradcf = 180./TMath::Pi();
+    static const Double_t kDegToRadCF = 180./TMath::Pi();
     fGenerator->SetMomentumRange(fPtMin,fPtMax);
-    fGenerator->SetPhiRange(degtoradcf*fPhiMin,degtoradcf*fPhiMax);
+    fGenerator->SetPhiRange(kDegToRadCF*fPhiMin,kDegToRadCF*fPhiMax);
     fGenerator->SetYRange(fYMin,fYMax);
-    fGenerator->SetThetaRange(degtoradcf*fThetaMin,degtoradcf*fThetaMax);
+    fGenerator->SetThetaRange(kDegToRadCF*fThetaMin,kDegToRadCF*fThetaMax);
     fGenerator->Init();
     
    }
 
-  fQCoarseBackground =  new TH3D("fQCoarseBackground","",fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange);
-  fQCoarseSignal =  new TH3D("fQCoarseSignal","fQCoarseSignal",fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange);
+//  fQCoarseBackground =  new TH3D("fQCoarseBackground","",fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange);
+//  fQCoarseSignal =  new TH3D("fQCoarseSignal","fQCoarseSignal",fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange);
+//  fQCoarseBackground->Sumw2();
+//  fQCoarseSignal->Sumw2();
+   
   fQSignal =  new TH3D("fQSignal1","fQSignal",fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange);
   fQBackground =  new TH3D("fQBackground1","fQBackground",fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange);
 
   fQSecondSignal =  new TH3D("fQSignal2","fQSignal",fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange);
   fQSecondBackground =  new TH3D("fQBackground2","fQBackground",fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange);
 
-  fQCoarseBackground->Sumw2();
-  fQCoarseSignal->Sumw2();
   fQSignal->Sumw2();
   fQBackground->Sumw2();
   fQSecondSignal->Sumw2();
   fQSecondBackground->Sumw2();
+  
+  fLogFile = new ofstream("BadEvent",ios::out);
+  
 }
 /***********************************************************/
 
 void AliGenHBTosl::Generate()
 {
  //the main method
- Info("Generate","Attempts to generate %d particles.",fNpart);
+  
+ ofstream& logfile = *fLogFile;
+ logfile<<"Generate"<<"Attempts to generate "<<fNpart<<" particles.";
+ 
+ 
  if (fStackBuffer == 0x0) fStackBuffer = new TList();
  //Here is initialization level
  if (fSignalShapeCreated == kFALSE)
@@ -275,9 +286,15 @@ void AliGenHBTosl::Generate()
              fQCoarseBackground = cb;
            }
          else
-           {  
+           {
+             fQCoarseBackground =  new TH3D("fQCoarseBackground","",fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange);
+             fQCoarseBackground->Sumw2();
+
              FillCoarse();      //create coarse background - just to know the spectrum
            }
+
+         fQCoarseSignal =  new TH3D("fQCoarseSignal","fQCoarseSignal",fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange, fQNBins,-fQRange,fQRange);
+         fQCoarseSignal->Sumw2();
          FillCoarseSignal();//create first coarse signal by brutal multplication coarse background and required function shape
        }
        
@@ -310,7 +327,8 @@ void AliGenHBTosl::Generate()
   }
 
  TH3D* work = new TH3D("work","work",fQNBins,-fQRange,fQRange,fQNBins,-fQRange,fQRange,fQNBins,-fQRange,fQRange);
- 
+ work->SetDirectory(0x0);
+ work->Sumw2();
  
  Double_t*** chiarray = new Double_t** [fQNBins+1];
  Double_t*** sigarray = new Double_t** [fQNBins+1];
@@ -349,20 +367,35 @@ void AliGenHBTosl::Generate()
          }
        }
     }
-    
- printf("\n");
+ 
+ char msg[1000];
+ logfile<<endl;
+ sprintf(msg,"\n");
  Int_t middlebin = fQNBins/2;
+ 
+ for (Int_t k = middlebin-5; k < middlebin+5; k++)
+   {
+     Double_t tx = work->GetXaxis()->GetBinCenter(30);
+     Double_t ty = work->GetYaxis()->GetBinCenter(30);
+     Double_t tz = work->GetZaxis()->GetBinCenter(k);
+     sprintf(msg,"% 6.5f ",GetQOutQSideQLongCorrTheorValue(tx,ty,tz));
+     logfile<<msg;
+   }
+ logfile<<endl;
+  
  for (Int_t k = middlebin-5; k < middlebin+5; k++)
   {
-    printf("% 6.5f ",work->GetBinContent(1,1,k));
+    sprintf(msg,"% 6.5f ",work->GetBinContent(30,30,k));
+    logfile<<msg;
   }
- printf("\n");
+ logfile<<endl;
 
  for (Int_t k = middlebin-5; k < middlebin+5; k++)
   {
-    printf("% 6.5f ",chiarray[1][1][k]);
+    sprintf(msg,"% 6.5f ",chiarray[30][30][k]);
+    logfile<<msg;
   }
- printf("\n");
+ logfile<<endl;
  
  TParticle particle(fPID,0,-1,-1,-1,-1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
  TParticle* second = &particle;
@@ -426,15 +459,17 @@ void AliGenHBTosl::Generate()
             }
          }
       }
-     qlong = work->GetZaxis()->GetBinCenter(zmax);
-     qside = work->GetYaxis()->GetBinCenter(ymax);
-     qout  = work->GetXaxis()->GetBinCenter(xmax);
+     Double_t qlongc = work->GetZaxis()->GetBinCenter(zmax);
+     Double_t qsidec = work->GetYaxis()->GetBinCenter(ymax);
+     Double_t qoutc  = work->GetXaxis()->GetBinCenter(xmax);
      
-     Info("Generate","Fill bin (%d,%d,%d)",xmax,ymax,zmax);
+
+     sprintf(msg,"Generate Fill bin chi2(%d,%d,%d)=%f",xmax,ymax,zmax,chiarray[xmax][ymax][zmax]);
+     logfile<<msg;
      
-     qout  = gRandom->Uniform(qout-binwdh,qout+binwdh);
-     qside = gRandom->Uniform(qside-binwdh,qside+binwdh);
-     qlong = gRandom->Uniform(qlong-binwdh,qlong+binwdh);
+     qout  = gRandom->Uniform(qoutc -binwdh, qoutc +binwdh);
+     qside = gRandom->Uniform(qsidec-binwdh, qsidec+binwdh);
+     qlong = gRandom->Uniform(qlongc-binwdh, qlongc+binwdh);
 
      TParticle* first = 0;
      while (j < genstack->GetNtrack())
@@ -484,7 +519,7 @@ void AliGenHBTosl::Generate()
      SetTrack(first,etmp,stack);
      SetTrack(second,etmp,stack);
      
-     Double_t y = GetQOutQSideQLongCorrTheorValue(qout,qside,qlong);
+     Double_t y = GetQOutQSideQLongCorrTheorValue(qoutc,qsidec,qlongc);
       
      sigarray[xmax][ymax][zmax] ++; 
      chiarray[xmax][ymax][zmax] = scale*sigarray[xmax][ymax][zmax]/fQBackground->GetBinContent(xmax,ymax,zmax);
@@ -494,7 +529,9 @@ void AliGenHBTosl::Generate()
   
  Mix(fStackBuffer,fQBackground,fQSecondSignal); //upgrate background
  Mix(stack,fQSignal,fQSecondBackground); //upgrate signal
-  
+ 
+ delete work;
+ 
  for (Int_t i = 1; i<=fQNBins; i++)
    {
      for (Int_t k = 1; k<=fQNBins; k++)
@@ -706,6 +743,14 @@ Int_t AliGenHBTosl::GetThreeD(TParticle* first,TParticle* second, Double_t qout,
 void AliGenHBTosl::StartSignal()
 { 
 //Starts the signal histograms  
+ ofstream& logfile = *fLogFile;
+ logfile<<"\n\n\n\n";
+ logfile<<"************************************************"<<endl;
+ logfile<<"************************************************"<<endl;
+ logfile<<"               StartSignal                      "<<endl;
+ logfile<<"************************************************"<<endl;
+ logfile<<"************************************************"<<endl;
+ 
  AliStack* stack;
  
  fSwapped = kFALSE;
@@ -730,7 +775,15 @@ void AliGenHBTosl::StartSignal()
    genstack->Reset();
   }
  
- const Double_t ndf = fQNBins*fQNBins*fQNBins;
+ StartSignalPass1();
+ //We alread have detailed histograms and we do not need Coarse anymore
+ delete fQCoarseSignal;
+ delete fQCoarseBackground;
+ fQCoarseSignal = 0x0;
+ fQCoarseBackground = 0x0;
+
+  
+ const Double_t kNDF = fQNBins*fQNBins*fQNBins;
  
  TH3D* work = new TH3D("work","work",fQNBins,-fQRange,fQRange,fQNBins,-fQRange,fQRange,fQNBins,-fQRange,fQRange);
  work->Sumw2();
@@ -767,7 +820,6 @@ void AliGenHBTosl::StartSignal()
  Bool_t shortloop = kTRUE;
  TCanvas* c1 = new TCanvas();
 
- StartSignalPass1();
 
  printf("\n");
  Info("StartSignal","\n\n\n\nSecond Pass\n\n\n\n");
@@ -775,8 +827,8 @@ void AliGenHBTosl::StartSignal()
  while ( ( (chisqrPerDF > fMaxChiSquereChange) || flag) && (niterations++ < fMaxIterations)  )
   {
    
-   printf("StartSignal\n");
-   printf(" Row 1 Theory, 2 current value, 3 Chi2 \n");
+   logfile<<"StartSignal\n";
+   logfile<<" Row 1 Theory, 2 current value, 3 Chi2 \n";
 
    Double_t chisqrnew = 0.0;
    flag = kFALSE;
@@ -841,36 +893,41 @@ void AliGenHBTosl::StartSignal()
      }
     
 
-   printf("\n");
+   char msg[1000];
 
-   for (Int_t k = 1; k < 11; k++)
+   printf("\n");
+  
+   for (Int_t k = 25; k < 36; k++)
     {
-      Double_t tx = work->GetXaxis()->GetBinCenter(1);
-      Double_t ty = work->GetYaxis()->GetBinCenter(1);
+      Double_t tx = work->GetXaxis()->GetBinCenter(30);
+      Double_t ty = work->GetYaxis()->GetBinCenter(30);
       Double_t tz = work->GetZaxis()->GetBinCenter(k);
-      printf("% 6.5f ",GetQOutQSideQLongCorrTheorValue(tx,ty,tz));
+      sprintf(msg,"% 6.5f ",GetQOutQSideQLongCorrTheorValue(tx,ty,tz));
+      logfile<<msg;
     }
-   printf("\n");
+   logfile<<endl;
 
-   for (Int_t k = 1; k < 11; k++)
+   for (Int_t k = 25; k < 36; k++)
     {
-    printf("% 6.5f ",work->GetBinContent(1,1,k));
+      sprintf(msg,"%6.5f ",work->GetBinContent(30,30,k));
+      logfile<<msg;
     }
-   printf("\n");
+   logfile<<endl;
 
-   for (Int_t k = 1; k < 11; k++)
+   for (Int_t k = 25; k < 36; k++)
     {
-      printf("% 6.5f ",chiarray[1][1][k]);
+      sprintf(msg,"% 6.5f ",chiarray[30][30][k]);
+      logfile<<msg;
     }
-   printf("\n");
+   logfile<<endl;
     
    chisqrchange = TMath::Abs(chisqrnew - chisqrold)/chisqrnew;
    chisqrold = chisqrnew;
 
-   chisqrPerDF = chisqrnew/ndf;
+   chisqrPerDF = chisqrnew/kNDF;
    
    Info("StartSignal","Iteration %d Chi-sq change %f%%",niterations,chisqrchange*100.0);
-   Info("StartSignal","ChiSq = %f, NDF = %f, ChiSq/NDF = %f",chisqrnew, ndf, chisqrPerDF );
+   Info("StartSignal","ChiSq = %f, NDF = %f, ChiSq/NDF = %f",chisqrnew, kNDF, chisqrPerDF );
    Info("StartSignal","novertresh = %d",novertresh);
    
    
@@ -1040,11 +1097,12 @@ void AliGenHBTosl::StartSignal()
    Mix(fStackBuffer,fQBackground,fQSecondBackground); //upgrate background
    Info("StartSignal","Mixing signal...");
    Mix(stack,fQSignal,fQSecondSignal); //upgrate background
-   
-   if ( (chisqrPerDF < 2.0) && (fSwapped == kFALSE) )
-     {
-         SwapGeneratingHistograms();
-     }
+
+      
+//   if ( (chisqrPerDF < 2.0) && (fSwapped == kFALSE) )
+//     {
+//         SwapGeneratingHistograms();
+//     }
    
  }
  TFile* filef = TFile::Open("QTBackground.root","recreate");
@@ -1244,11 +1302,11 @@ void AliGenHBTosl::FillCoarse()
    { 
 //     if (niter > 20) break;
      
-     cout<<niter++<<"  bincont "<<fQCoarseBackground->GetBinContent(1,1,1)
-                  <<" "<<fQCoarseBackground->GetBinContent(1,1,2)
-                  <<" "<<fQCoarseBackground->GetBinContent(1,1,3)
-                  <<" "<<fQCoarseBackground->GetBinContent(1,1,4)
-                  <<" "<<fQCoarseBackground->GetBinContent(1,1,5)
+     cout<<niter++<<"  bincont "<<fQCoarseBackground->GetBinContent(30,30,28)
+                  <<" "<<fQCoarseBackground->GetBinContent(30,30,29)
+                  <<" "<<fQCoarseBackground->GetBinContent(30,30,30)
+                  <<" "<<fQCoarseBackground->GetBinContent(30,30,31)
+                  <<" "<<fQCoarseBackground->GetBinContent(30,30,32)
                   <<"\n";
      fflush(0);
 
@@ -1595,7 +1653,7 @@ void AliGenHBTosl::TestCoarseSignal()
 }
 /***********************************************************/
 
-void AliGenHBTosl::SetTrack(TParticle* p, Int_t& ntr)
+void AliGenHBTosl::SetTrack(TParticle* p, Int_t& ntr) 
 {
 //Shortcut to PushTrack(bla,bla,bla,bla.............)
    if (p->P() == 0.0)
@@ -1628,7 +1686,7 @@ void AliGenHBTosl::SetTrack(TParticle* p, Int_t& ntr)
 }
 /***********************************************************/
 
-void AliGenHBTosl::SetTrack(TParticle* p, Int_t& ntr, AliStack* stack)
+void AliGenHBTosl::SetTrack(TParticle* p, Int_t& ntr, AliStack* stack) const 
 {
 //Shortcut to SetTrack(bla,bla,bla,bla.............)
    if (p->P() == 0.0)
@@ -1697,11 +1755,13 @@ Double_t AliGenHBTosl::Rotate(Double_t x,Double_t y,Double_t z)
   TVector3 v(x,y,z);
   Double_t a1 = -TMath::ATan2(v.Y(),v.X());
   
-  ::Info("Rotate","Xpr = %f  Ypr = %f",xprime,yprime);
-  ::Info("Rotate","Calc sin = %f, and %f",sinphi,TMath::Sin(a1));
-  ::Info("Rotate","Calc cos = %f, and %f",cosphi,TMath::Cos(a1));
-  
-  
+  if (GetDebug()>5)
+   {
+     ::Info("Rotate","Xpr = %f  Ypr = %f",xprime,yprime);
+     ::Info("Rotate","Calc sin = %f, and %f",sinphi,TMath::Sin(a1));
+     ::Info("Rotate","Calc cos = %f, and %f",cosphi,TMath::Cos(a1));
+   }
+
   Double_t xprimezlength = TMath::Hypot(xprime,z);
   
   Double_t sintheta = z/xprimezlength;
@@ -1738,17 +1798,17 @@ AliStack* AliGenHBTosl::RotateStack()
 Double_t AliGenHBTosl::GetQInvCorrTheorValue(Double_t qinv) const
 {
 //Function (deprecated)
- static const Double_t factorsqrd = 0.197*0.197;//squared conversion factor SI<->eV
+ static const Double_t kFactorsqrd = 0.197*0.197;//squared conversion factor SI<->eV
  
- return 1.0 + 0.5*TMath::Exp(-qinv*qinv*fQRadius*fQRadius/factorsqrd);
+ return 1.0 + 0.5*TMath::Exp(-qinv*qinv*fQRadius*fQRadius/kFactorsqrd);
 }
 /***********************************************************/
 
 Double_t AliGenHBTosl::GetQOutQSideQLongCorrTheorValue(Double_t& out, Double_t& side, Double_t& lon) const
 {
  //Theoretical function. Wa want to get correlation of the shape of this function
- static const Double_t factorsqrd = 0.197*0.197;//squared conversion factor SI<->eV
- return 1.0 + 0.7*TMath::Exp(-fQRadius*fQRadius*(out*out+side*side+lon*lon)/factorsqrd);
+ static const Double_t kFactorsqrd = 0.197*0.197;//squared conversion factor SI<->eV
+ return 1.0 + 0.7*TMath::Exp(-fQRadius*fQRadius*(out*out+side*side+lon*lon)/kFactorsqrd);
 }
 /***********************************************************/
 

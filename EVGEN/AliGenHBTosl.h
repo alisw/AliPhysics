@@ -56,6 +56,8 @@ class AliStack;
 class TParticle;
 class TVector;
 
+#include <Riostream.h>
+
 class AliGenHBTosl: public AliGenerator
 {
  public:
@@ -93,8 +95,8 @@ class AliGenHBTosl: public AliGenerator
    Double_t GetQOutQSideQLongCorrTheorValue(Double_t& out, Double_t& side, Double_t& lon) const;
    
    Double_t Scale(TH3D* num,TH3D* den);
-   void SetTrack(TParticle* p, Int_t& ntr);
-   void SetTrack(TParticle* p, Int_t& ntr, AliStack* stack);
+   void SetTrack(TParticle* p, Int_t& ntr) ;
+   void SetTrack(TParticle* p, Int_t& ntr, AliStack* stack) const ;
    
    AliStack* RotateStack();
    void SwapGeneratingHistograms();
@@ -103,40 +105,42 @@ class AliGenHBTosl: public AliGenerator
    Bool_t CheckParticle(TParticle* p, TParticle* aupair,AliStack* stack);
  private:
   TH3D*    fQCoarseBackground;//Initial Background
-  TH3D*    fQCoarseSignal;//
-  TH3D*    fQSignal;
-  TH3D*    fQBackground;
+  TH3D*    fQCoarseSignal;//signal calculated by multiplying coarse background and model function
+  TH3D*    fQSignal;//generating signal histogram
+  TH3D*    fQBackground;//generating background histogram
 
-  TH3D*    fQSecondSignal;
-  TH3D*    fQSecondBackground;
+  TH3D*    fQSecondSignal;//second signal histogram
+  TH3D*    fQSecondBackground;//seconf background histogram
   
-  Float_t  fQRange;
-  Int_t    fQNBins;
-  AliGenerator* fGenerator;
+  Float_t  fQRange;//range of generating histograms
+  Int_t    fQNBins;//number of bins of generating histograms
+  AliGenerator* fGenerator;//input generator
   
-  TList*   fStackBuffer;
-  Int_t    fBufferSize;
-  Int_t    fNBinsToScale;
-  Int_t    fDebug;
-  Bool_t   fSignalShapeCreated;
+  TList*   fStackBuffer;//List with stacks
+  Int_t    fBufferSize;//defines number of events used for background mixing
+  Int_t    fNBinsToScale;//defines how many bins are used to calculate scaling factor
+  Bool_t   fDebug;//debug flag
+  Bool_t   fSignalShapeCreated;//flag indicating that generating histograms are ready
   
   Int_t    fMaxIterations;  //maximal nuber of iterations on startup
   Float_t  fMaxChiSquereChange;//value of ChiSqr change in %, when sturtup process in stable
   Float_t  fMaxChiSquerePerNDF;//value of the chi2 where generating histograms are considered as good
   
   
-  Double_t fQRadius;
+  Double_t fQRadius;//simulated radius
   
-  Int_t    fPID;
+  Int_t    fPID;//pid of particle
   //we limit mixing to some finit phi range to make it faster
-  Float_t  fSamplePhiMin;//
-  Float_t  fSamplePhiMax;//
+  Float_t  fSamplePhiMin;//min phi
+  Float_t  fSamplePhiMax;//max phi
   
-  Float_t  fSignalRegion;
+  Float_t  fSignalRegion;//Defines signal region
   
-  Int_t    fMinFill;
+  Int_t    fMinFill;//Minimal allowed fill in background histograms - fill is continued until all bins have more than this
   
-  Bool_t   fSwapped;
+  Bool_t   fSwapped;//indicates if generating histograms were already swapped
+
+  ofstream* fLogFile;//! File where logs are stored
   
   ClassDef(AliGenHBTosl,1)
 };
