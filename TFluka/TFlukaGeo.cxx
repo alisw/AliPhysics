@@ -32,8 +32,10 @@
 
 #include "TVirtualMC.h"
 #include "TGeoManager.h"
+#include "TGeoMaterial.h"
+#include "TGeoMedium.h"
 #include "TFlukaMCGeometry.h"
-
+#include "TFlukaCerenkov.h"
 #include "TLorentzVector.h"
 
 // Fluka methods that may be needed.
@@ -83,6 +85,7 @@ TFluka::TFluka()
    fNVolumes = 0;
    fCurrentFlukaRegion = -1;
    fGeom = 0;
+   fMaterials = 0;
 } 
  
 //______________________________________________________________________________ 
@@ -101,6 +104,7 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fNVolumes      = 0;
    fCurrentFlukaRegion = -1;
    fGeom = new TFlukaMCGeometry("geom", "ALICE geometry");
+   fMaterials = 0;
 }
 
 //______________________________________________________________________________ 
@@ -120,46 +124,46 @@ TFluka::~TFluka() {
 //______________________________________________________________________________ 
 void TFluka::Init() {
 
-  if (fVerbosityLevel >=3)
-    cout << "==> TFluka::Init() called." << endl;
-
-   if (!gGeoManager) new TGeoManager("geom", "FLUKA geometry");
-   fApplication->ConstructGeometry();
-   TGeoVolume *top = (TGeoVolume*)gGeoManager->GetListOfVolumes()->First();
-   gGeoManager->SetTopVolume(top);
-   gGeoManager->CloseGeometry("di");
-   gGeoManager->DefaultColors();  // to be removed
-   fNVolumes = fGeom->NofVolumes();
-   printf("== Number of volumes: %i\n ==", fNVolumes);
-   fGeom->CreateFlukaMatFile("flukaMat.inp");   
-  cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
-  // now we have TGeo geometry created and we have to patch alice.inp
-  // with the material mapping file FlukaMat.inp
-  InitPhysics(); // prepare input file with the current physics settings
+    if (fVerbosityLevel >=3)
+	cout << "==> TFluka::Init() called." << endl;
+    
+    if (!gGeoManager) new TGeoManager("geom", "FLUKA geometry");
+    fApplication->ConstructGeometry();
+    TGeoVolume *top = (TGeoVolume*)gGeoManager->GetListOfVolumes()->First();
+    gGeoManager->SetTopVolume(top);
+    gGeoManager->CloseGeometry("di");
+    gGeoManager->DefaultColors();  // to be removed
+    fNVolumes = fGeom->NofVolumes();
+    printf("== Number of volumes: %i\n ==", fNVolumes);
+    fGeom->CreateFlukaMatFile("flukaMat.inp");   
+    cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
+    // now we have TGeo geometry created and we have to patch alice.inp
+    // with the material mapping file FlukaMat.inp
+    InitPhysics(); // prepare input file with the current physics settings
     cout << "\t* InitPhysics() - Prepare input file was called" << endl; 
-
-  if (fVerbosityLevel >=2)
-    cout << "\t* Changing lfdrtr = (" << (GLOBAL.lfdrtr?'T':'F')
-	 << ") in fluka..." << endl;
-  GLOBAL.lfdrtr = true;
-
-  if (fVerbosityLevel >=2)
-    cout << "\t* Opening file " << sInputFileName << endl;
-  const char* fname = sInputFileName;
-  fluka_openinp(lunin, PASSCHARA(fname));
-
-  if (fVerbosityLevel >=2)
-    cout << "\t* Calling flukam..." << endl;
-  flukam(1);
-
-  if (fVerbosityLevel >=2)
-    cout << "\t* Closing file " << sInputFileName << endl;
-  fluka_closeinp(lunin);
-
-  FinishGeometry();
-
-  if (fVerbosityLevel >=3)
-    cout << "<== TFluka::Init() called." << endl;
+    
+    if (fVerbosityLevel >=2)
+	cout << "\t* Changing lfdrtr = (" << (GLOBAL.lfdrtr?'T':'F')
+	     << ") in fluka..." << endl;
+    GLOBAL.lfdrtr = true;
+    
+    if (fVerbosityLevel >=2)
+	cout << "\t* Opening file " << sInputFileName << endl;
+    const char* fname = sInputFileName;
+    fluka_openinp(lunin, PASSCHARA(fname));
+    
+    if (fVerbosityLevel >=2)
+	cout << "\t* Calling flukam..." << endl;
+    flukam(1);
+    
+    if (fVerbosityLevel >=2)
+	cout << "\t* Closing file " << sInputFileName << endl;
+    fluka_closeinp(lunin);
+    
+    FinishGeometry();
+    
+    if (fVerbosityLevel >=3)
+	cout << "<== TFluka::Init() called." << endl;
 }
 
 //______________________________________________________________________________ 
@@ -390,11 +394,26 @@ void TFluka::Gsbool(const char* /*onlyVolName*/, const char* /*manyVolName*/) {
 }
 
 //______________________________________________________________________________ 
-void TFluka::SetCerenkov(Int_t /*itmed*/, Int_t /*npckov*/, Float_t */*ppckov*/,
-			 Float_t * /*absco*/, Float_t * /*effic*/, Float_t * /*rindex*/) {
+void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t* ppckov,
+			 Float_t* absco, Float_t* effic, Float_t* rindex) {
 //
-// Not implemented with TGeo - what G4 did ? Any FLUKA card generated?
-   Warning("SetCerenkov", "Not implemented with TGeo");
+// Set Cerenkov properties for medium itmed
+//
+// npckov: number of sampling points
+// ppckov: energy values
+// absco:  absorption length
+// effic:  quantum efficiency
+// rindex: refraction index
+//
+//
+//  
+//  Create object holding Cerenkov properties
+//  
+    TFlukaCerenkov* cerenkovProperties = new TFlukaCerenkov(npckov, ppckov, absco, effic, rindex);
+//
+//  Pass object to medium
+    TGeoMedium* medium = gGeoManager->GetMedium(itmed);
+    medium->SetCerenkovProperties(cerenkovProperties);
 }  
 
 //______________________________________________________________________________ 
@@ -538,69 +557,72 @@ Double_t TFluka::Xsec(char*, Double_t, Int_t, Int_t)
 
 
 //______________________________________________________________________________ 
-
 void TFluka::InitPhysics()
 {
   Int_t i, j, k;
   Double_t fCut;
-  Double_t zero, one, two, three;
+
   FILE *pAliceCoreInp, *pAliceFlukaMat, *pAliceInp;
 
-  zero  = 0.0;
-  one   = 1.0;
-  two   = 2.0;
-  three = 3.0;
+  Double_t zero  = 0.0;
+  Double_t one   = 1.0;
+  Double_t two   = 2.0;
+  Double_t three = 3.0;
 
   Float_t fLastMaterial = fGeom->GetLastMaterialIndex();
   printf("   last FLUKA material is %g\n", fLastMaterial);
- 
+
 // construct file names
+
   TString sAliceCoreInp = getenv("ALICE_ROOT");
   sAliceCoreInp +="/TFluka/input/";
   TString sAliceTmp = "flukaMat.inp";
   TString sAliceInp = GetInputFileName();
   sAliceCoreInp += GetCoreInputFileName();
-/* open files */
+
+// open files 
+
   if ((pAliceCoreInp = fopen(sAliceCoreInp.Data(),"r")) == NULL) {
-    printf("\nCannot open file %s\n",sAliceCoreInp.Data());
-    exit(1);
+      printf("\nCannot open file %s\n",sAliceCoreInp.Data());
+      exit(1);
   }
   if ((pAliceFlukaMat = fopen(sAliceTmp.Data(),"r")) == NULL) {
-    printf("\nCannot open file %s\n",sAliceTmp.Data());
-    exit(1);
+      printf("\nCannot open file %s\n",sAliceTmp.Data());
+      exit(1);
   }
   if ((pAliceInp = fopen(sAliceInp.Data(),"w")) == NULL) {
-    printf("\nCannot open file %s\n",sAliceInp.Data());
-    exit(1);
+      printf("\nCannot open file %s\n",sAliceInp.Data());
+      exit(1);
   }
 
 // copy core input file 
   Char_t sLine[255];
   Float_t fEventsPerRun;
-
+  
   while ((fgets(sLine,255,pAliceCoreInp)) != NULL) {
-    if (strncmp(sLine,"GEOEND",6) != 0)
-      fprintf(pAliceInp,"%s",sLine); // copy until GEOEND card
-    else {
-      fprintf(pAliceInp,"GEOEND\n");   // add GEOEND card
-      goto flukamat;
-    }
+      if (strncmp(sLine,"GEOEND",6) != 0)
+	  fprintf(pAliceInp,"%s",sLine); // copy until GEOEND card
+      else {
+	  fprintf(pAliceInp,"GEOEND\n");   // add GEOEND card
+	  goto flukamat;
+      }
   } // end of while until GEOEND card
+  
 
-flukamat:
+ flukamat:
   while ((fgets(sLine,255,pAliceFlukaMat)) != NULL) { // copy flukaMat.inp file
-    fprintf(pAliceInp,"%s\n",sLine);
-  }
-
-  while ((fgets(sLine,255,pAliceCoreInp)) != NULL) { 
-    if (strncmp(sLine,"START",5) != 0)
       fprintf(pAliceInp,"%s\n",sLine);
-    else {
-      sscanf(sLine+10,"%10f",&fEventsPerRun);
+  }
+  
+  while ((fgets(sLine,255,pAliceCoreInp)) != NULL) { 
+      if (strncmp(sLine,"START",5) != 0)
+	  fprintf(pAliceInp,"%s\n",sLine);
+      else {
+	  sscanf(sLine+10,"%10f",&fEventsPerRun);
       goto fin;
-    }
+      }
   } //end of while until START card
-
+  
 fin:
 // in G3 the process control values meaning can be different for
 // different processes, but for most of them is:
@@ -616,7 +638,7 @@ fin:
 //   HADR:  may be > 2
 //
  
-// Loop over number of SetProcess calls  
+// Loop over number of SetProcess calls 
   fprintf(pAliceInp,"*----------------------------------------------------------------------------- \n");
   fprintf(pAliceInp,"*----- The following data are generated from SetProcess and SetCut calls ----- \n");
   fprintf(pAliceInp,"*----------------------------------------------------------------------------- \n");
@@ -631,28 +653,28 @@ fin:
     // flag = 1 annihilation, decays processed
     // flag = 2 annihilation, no decay product stored
     // gMC ->SetProcess("ANNI",1); // EMFCUT   -1.   0.  0. 3. lastmat 0. ANNH-THR
-    if (strncmp(&sProcessFlag[i][0],"ANNI",4) == 0) {
-      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) {
-        fprintf(pAliceInp,"*\n*Kinetic energy threshold (GeV) for e+ annihilation - resets to default=0.\n");
-        fprintf(pAliceInp,"*Generated from call: SetProcess('ANNI',1) or SetProcess('ANNI',2)\n");
-        // -one = kinetic energy threshold (GeV) for e+ annihilation (resets to default=0)
-        // zero = not used
-        // zero = not used
-        // three = lower bound of the material indices in which the respective thresholds apply
-        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        // one = step length in assigning indices
-        // "ANNH-THR"; 
-        fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fANNH-THR\n",-one,zero,zero,three,fLastMaterial,one);
-      }
-      else if (iProcessValue[i] == 0) {
-        fprintf(pAliceInp,"*\n*No annihilation - no FLUKA card generated\n");
+      if (strncmp(&sProcessFlag[i][0],"ANNI",4) == 0) {
+	  if (iProcessValue[i] == 1 || iProcessValue[i] == 2) {
+	      fprintf(pAliceInp,"*\n*Kinetic energy threshold (GeV) for e+ annihilation - resets to default=0.\n");
+	      fprintf(pAliceInp,"*Generated from call: SetProcess('ANNI',1) or SetProcess('ANNI',2)\n");
+	      // -one = kinetic energy threshold (GeV) for e+ annihilation (resets to default=0)
+	      // zero = not used
+	      // zero = not used
+	      // three = lower bound of the material indices in which the respective thresholds apply
+	      // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+	      // one = step length in assigning indices
+	      // "ANNH-THR"; 
+	      fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fANNH-THR\n",-one,zero,zero,three,fLastMaterial,one);
+	  }
+	  else if (iProcessValue[i] == 0) {
+	      fprintf(pAliceInp,"*\n*No annihilation - no FLUKA card generated\n");
         fprintf(pAliceInp,"*Generated from call: SetProcess('ANNI',0)\n");
+	  }
+	  else  {
+	      fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('ANNI',?) call.\n");
+	      fprintf(pAliceInp,"*No FLUKA card generated\n");
+	  }
       }
-      else  {
-        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('ANNI',?) call.\n");
-        fprintf(pAliceInp,"*No FLUKA card generated\n");
-      }
-    }
     
     // bremsstrahlung and pair production are both activated
     // G3 default value: 1
@@ -665,7 +687,7 @@ fin:
     // flag = 1 bremsstrahlung, photon processed
     // flag = 2 bremsstrahlung, no photon stored
     // gMC ->SetProcess("BREM",1); // PAIRBREM  2.   0.  0. 3. lastmat
-                                   // EMFCUT   -1.   0.  0. 3. lastmat 0. ELPO-THR
+                                 // EMFCUT   -1.   0.  0. 3. lastmat 0. ELPO-THR
     // G3 default value: 1
     // G4 processes: G4GammaConversion,
     //               G4MuPairProduction/G4IMuPairProduction
@@ -676,7 +698,7 @@ fin:
     // flag = 1 delta rays, secondaries processed
     // flag = 2 delta rays, no secondaries stored
     // gMC ->SetProcess("PAIR",1); // PAIRBREM  1.   0.  0. 3. lastmat
-                                   // EMFCUT    0.   0. -1. 3. lastmat 0. PHOT-THR
+                                 // EMFCUT    0.   0. -1. 3. lastmat 0. PHOT-THR
     else if ((strncmp(&sProcessFlag[i][0],"PAIR",4) == 0) && (iProcessValue[i] == 1 || iProcessValue[i] == 2)) {
       for (j=0; j<iNbOfProc; j++) {
         if ((strncmp(&sProcessFlag[j][0],"BREM",4) == 0) && (iProcessValue[j] == 1 || iProcessValue[j] == 2)) {
@@ -836,7 +858,6 @@ NOBREM:
       j = 0;
     } // end of else if (strncmp(&sProcessFlag[i][0],"BREM",4) == 0)
 
-    
     // Cerenkov photon generation
     // G3 default value: 0
     // G4 process: G4Cerenkov
@@ -847,33 +868,82 @@ NOBREM:
     // flag = 1 Cerenkov photon generation
     // flag = 2 Cerenkov photon generation with primary stopped at each step
     //xx gMC ->SetProcess("CKOV",1); // ??? Cerenkov photon generation
+      
     else if (strncmp(&sProcessFlag[i][0],"CKOV",4) == 0) {
-      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) { 
-        fprintf(pAliceInp,"*\n*Cerenkov photon generation\n");
-        fprintf(pAliceInp,"*Generated from call: SetProcess('CKOV',1) or SetProcess('CKOV',2)\n");
-        Double_t emin = 2.07e-9; // minimum Cerenkov photon emission energy (in GeV!). Default: 2.07E-9 GeV (corresponding to 600 nm)
-        Double_t emax = 4.96e-9; // maximum Cerenkov photon emission energy (in GeV!). Default: 4.96E-9 GeV (corresponding to 250 nm)
-        fprintf(pAliceInp,"OPT-PROD  %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fCERENKOV\n",emin,emax,zero,three,fLastMaterial,one);
-      }
-      else if (iProcessValue[i] == 0) {
-        fprintf(pAliceInp,"*\n*No Cerenkov photon generation\n");
-        fprintf(pAliceInp,"*Generated from call: SetProcess('CKOV',0)\n");
-        // zero = not used
-        // zero = not used
-        // zero = not used
-        // three = lower bound of the material indices in which the respective thresholds apply
-        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        // one = step length in assigning indices
-        //"CERE-OFF"; 
-        fprintf(pAliceInp,"OPT-PROD  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fCERE-OFF\n",zero,zero,zero,three,fLastMaterial,one);
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) {
+    // Write comments
+	  fprintf(pAliceInp, "* \n"); 
+	  fprintf(pAliceInp, "*Cerenkov photon generation\n"); 
+	  fprintf(pAliceInp, "*Generated from call: SetProcess('CKOV',1) or SetProcess('CKOV',2)\n"); 
+	  // Get List of media
+	  TList *matList = gGeoManager->GetListOfMaterials();
+	  Int_t nmaterial =  matList->GetSize();
+
+	  fMaterials = new Int_t[nmaterial];
+
+	  // Loop over media 
+	  for (Int_t i = 0; i < nmaterial; i++)
+	  {
+	      
+	      TGeoMaterial* material = dynamic_cast<TGeoMaterial*> (matList->At(i));
+	      Int_t idmat = material->GetIndex();
+	      fMaterials[idmat] = i;
+	      // Skip media with no Cerenkov properties
+	      TFlukaCerenkov* cerenkovProp;
+	      if (!(cerenkovProp = dynamic_cast<TFlukaCerenkov*>(material->GetCerenkovProperties()))) continue;
+	      //
+	      // This medium has Cerenkov properties 
+              //
+	      //
+	      // Write OPT-PROD card for each medium 
+	      Float_t  emin  = cerenkovProp->GetMinimumEnergy();
+	      Float_t  emax  = cerenkovProp->GetMaximumEnergy();	      
+	      fprintf(pAliceInp, "OPT-PROD  %10.4g%10.4g%10.4g%10.4g%10.4g%10.4gCERENKOV\n", emin, emax, 0., 
+		      Float_t(idmat), Float_t(idmat), 0.); 
+	      //
+	      // Write OPT-PROP card for each medium 
+	      // Forcing FLUKA to call user routines (queffc.cxx, rflctv.cxx, rfrndx.cxx)
+              //
+	      fprintf(pAliceInp, "OPT-PROP  %10.4g%10.4g%10.4g%10.1f%10.1f%10.1fWV-LIMIT\n",  
+		      cerenkovProp->GetMinimumWavelength(),
+		      cerenkovProp->GetMaximumWavelength(), 
+		      cerenkovProp->GetMaximumWavelength(), 
+	      	      Float_t(idmat), Float_t(idmat), 0.0);
+	      if (cerenkovProp->IsMetal()) {
+		  fprintf(pAliceInp, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",  
+			  -100., -100., -100., 
+			  Float_t(idmat), Float_t(idmat), 0.0);
+	      } else {
+		  fprintf(pAliceInp, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",  
+			  -100., -100., -100., 
+			  Float_t(idmat), Float_t(idmat), 0.0);
+	      }
+	      
+	      
+	      for (Int_t j = 0; j < 3; j++) {
+		  fprintf(pAliceInp, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f&\n",  
+			  -100., -100., -100., 
+			  Float_t(idmat), Float_t(idmat), 0.0);
+	      }
+	  } // materials
+      } else if (iProcessValue[i] == 0) {
+	  fprintf(pAliceInp,"*\n*No Cerenkov photon generation\n");
+	  fprintf(pAliceInp,"*Generated from call: SetProcess('CKOV',0)\n");
+	  // zero = not used
+	  // zero = not used
+	  // zero = not used
+	  // three = lower bound of the material indices in which the respective thresholds apply
+	  // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+	  // one = step length in assigning indices
+	  //"CERE-OFF"; 
+	  fprintf(pAliceInp,"OPT-PROD  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fCERE-OFF\n",zero,zero,zero,three,fLastMaterial,one);
       }
       else  {
-        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('CKOV',?) call.\n");
-        fprintf(pAliceInp,"*No FLUKA card generated\n");
+	  fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('CKOV',?) call.\n");
+	  fprintf(pAliceInp,"*No FLUKA card generated\n");
       }
     } // end of else if (strncmp(&sProcessFlag[i][0],"CKOV",4) == 0)
-	    
-
+      
     // Compton scattering
     // G3 default value: 1
     // G4 processes: G4ComptonScattering,
@@ -1467,6 +1537,9 @@ NOBREM:
       // three = lower bound of the material indices in which the respective thresholds apply
       // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
       fprintf(pAliceInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f\n",-fCutValue[i],zero,zero,three,fLastMaterial);
+      fprintf(pAliceInp,"DELTARAY  %10.4g%10.3f%10.3f%10.1f%10.1f%10.1f\n",fCutValue[i], 100., 1.03, 3.0, fLastMaterial, 1.0);
+      fprintf(pAliceInp,"STEPSIZE  %10.4g%10.3f%10.3f%10.1f%10.1f\n",fCutValue[i], 0.1 , 1.00, 
+	      Float_t(gGeoManager->GetListOfUVolumes()->GetEntriesFast()-1), 1.0);
     }
     
     //
@@ -1492,7 +1565,6 @@ NOBREM:
 // Add START and STOP card
    fprintf(pAliceInp,"START     %10.1f\n",fEventsPerRun);
    fprintf(pAliceInp,"STOP      \n");
-
 } // end of InitPhysics
 
 
@@ -2162,4 +2234,7 @@ void TFluka::SetMreg(Int_t l)
    fCurrentFlukaRegion = l;
    fGeom->SetMreg(l);
 }
+
+
+
 

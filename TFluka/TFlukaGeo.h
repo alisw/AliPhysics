@@ -15,10 +15,11 @@
 
 
 #include "TVirtualMC.h"
-#include "TMCProcess.h" 
+#include "TMCProcess.h"
 
 //Forward declaration
 class TFlukaMCGeometry;
+class TGeoMaterial;
 
 class TFluka : public TVirtualMC {
   
@@ -317,13 +318,14 @@ class TFluka : public TVirtualMC {
   void SetTrackIsExiting() {fTrackIsExiting  = kTRUE; fTrackIsEntering = kFALSE;}
   void SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
   void SetTrackIsNew(Bool_t flag=kTRUE) {fTrackIsNew = flag;}
+  Int_t GetMaterialIndex(Int_t idmat) {return fMaterials[idmat];}
   
-
  private:
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &) {return (*this);}
 
  protected:
+  
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
 
   TString sInputFileName;     //Name of the real input file (e.g. alice.inp)
@@ -339,7 +341,6 @@ class TFluka : public TVirtualMC {
   Bool_t   fTrackIsEntering;  // Flag for track entering
   Bool_t   fTrackIsExiting;   // Flag for track exiting  
   Bool_t   fTrackIsNew;       // Flag for new track
-
   //variables for SetProcess and SetCut
   Int_t    iNbOfProc;
   Int_t    iProcessValue[100];
@@ -348,8 +349,9 @@ class TFluka : public TVirtualMC {
   Double_t fCutValue[100];
   Char_t   sCutFlag[100][7];
 
-  //Geometry through Geant4 for the time being!!!
-  Int_t                fNVolumes;        //!Current number of volumes
+  //Geometry through TGeo
+  Int_t*               fMaterials;         //!Array of indices
+  Int_t                fNVolumes;           //!Current number of volumes
   Int_t                fCurrentFlukaRegion; //Index of fluka region at each step
   TFlukaMCGeometry    *fGeom;               // TGeo-FLUKA interface
 
