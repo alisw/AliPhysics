@@ -55,7 +55,7 @@ class AliPHOSDigit : public AliDigitNew {
 
   Int_t fNprimary ;     // Number of primaries
   Int_t fNMaxPrimary ;  //! Max Number of primaries
-  Int_t * fPrimary ;    //[fNprimary]  Array of primaries       
+  Int_t fPrimary[5] ;   // Array of primaries       
     
   ClassDef(AliPHOSDigit,1)   // Digit in PHOS 
 

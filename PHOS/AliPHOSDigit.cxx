@@ -47,7 +47,6 @@ ClassImp(AliPHOSDigit)
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
   fNMaxPrimary = 5 ; 
-  fPrimary     = new Int_t[fNMaxPrimary] ;
 }
 
 //____________________________________________________________________________
@@ -56,7 +55,6 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index
   // ctor with all data 
 
   fNMaxPrimary = 5 ; 
-  fPrimary     = new Int_t[fNMaxPrimary] ;
   fAmp         = DigEnergy ;
   fId          = id ;
   fIndexInList = index ; 
@@ -78,24 +76,22 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
 {
   // copy ctor
   
-  fNMaxPrimary = 5 ; 
-  fPrimary     = new Int_t[fNMaxPrimary] ;
+
+  fNMaxPrimary = digit.fNMaxPrimary ;  
+  Int_t i ;
+  for ( i = 0; i < fNMaxPrimary ; i++)
+    fPrimary[i]  = digit.fPrimary[i] ;
   fAmp         = digit.fAmp ;
   fId          = digit.fId;
   fIndexInList = digit.fIndexInList ; 
   fNprimary    = digit.fNprimary ;
-  fNMaxPrimary = digit.fNMaxPrimary ;
-  Int_t i ;
-  for ( i = 0; i < fNMaxPrimary ; i++)
-    fPrimary[i]  = digit.fPrimary[i] ;
 }
 
 //____________________________________________________________________________
-  AliPHOSDigit::~AliPHOSDigit() 
+AliPHOSDigit::~AliPHOSDigit() 
 {
   // Delete array of primiries if any
-
-  delete fPrimary;
+  
 }
 
 //____________________________________________________________________________
@@ -124,13 +120,11 @@ Int_t AliPHOSDigit::Compare(TObject * obj)
 //____________________________________________________________________________
 Int_t AliPHOSDigit::GetPrimary(Int_t index) const
 {
-  // Returns the primary particle id index =1,2,3
  
-  Int_t rv = -1 ; 
-  if ( index > fNMaxPrimary )
-    cout << "AliPHOSDigit  ERROR > only " << fNMaxPrimary << " primaries allowed" << endl ; 
-  else 
-    rv = fPrimary[index-1] ; 
+  Int_t rv = -1 ;
+  if ( index <= fNprimary ){
+    rv = fPrimary[index-1] ;
+  } 
 
   return rv ; 
   
@@ -152,25 +146,26 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
 {
   // Adds the amplitude of digits and completes the list of primary particles
   // if amplitude is larger than 
-
+  
   fAmp += digit.fAmp ;
-
+  
   Int_t max1 = fNprimary ; 
   Int_t max2 = digit.fNprimary ; 
- 
-  if ( fNprimary >= fNMaxPrimary ) 
-    cout << "AliPHOSDigit + operator  ERROR > too many primaries, modify AliPHOSDigit" << endl ;
-  else {
+  
+  if ( fNprimary + digit.fNprimary < fNMaxPrimary ) {
     fNprimary += digit.fNprimary ; 
-    if ( fNprimary > fNMaxPrimary ) {
-      cout << "AliPHOSDigit + operator  ERROR > too many primaries, modify AliPHOSDigit" << endl ; 
-      fNprimary = fNMaxPrimary ;
-    }
+  
     Int_t index ; 
     for (index = 0 ; index < max2 ; index++)
       fPrimary[index+max1] = (digit.fPrimary)[index] ; 
   }
-
+  else{
+    cout << "AliPHOSDigit >> Increase NMaxPrimary"<< endl ;
+    Int_t index ; 
+    for (index = max1; index < fNMaxPrimary ; index++)
+      fPrimary[index] = (digit.fPrimary)[index-max1] ; 
+    fNprimary = fNMaxPrimary ;
+  }  
   return *this ;
 }
 
@@ -179,13 +174,11 @@ ostream& operator << ( ostream& out , const AliPHOSDigit & digit)
 {
   // Prints the data of the digit
   
-  out << "ID " << digit.fId << " Energy = " << digit.fAmp << endl 
-      << "Primary 1 = " << digit.fPrimary[0] << endl 
-      << "Primary 2 = " << digit.fPrimary[1] << endl 
-      << "Primary 3 = " << digit.fPrimary[2] << endl 
-      << "Primary 4 = " << digit.fPrimary[3] << endl 
-      << "Primary 5 = " << digit.fPrimary[4] << endl 
-       << "Position in list = " << digit.fIndexInList << endl ; 
+  out << "ID " << digit.fId << " Energy = " << digit.fAmp << endl ; 
+  Int_t i ;
+  for(i=0;i<digit.fNprimary;i++)
+    out << "Primary " << i+1 << " = " << digit.fPrimary[i] << endl ;
+  out << "Position in list = " << digit.fIndexInList << endl ; 
   return out ;
 }
 
