@@ -61,6 +61,7 @@ private:
   // should be calculated independently for each layer as : 
   // LightYield*LightCollectionEfficiency*LightAttenuation*APDPhotoElectronEfficiency*APDGain
 
+  Bool_t fDefaultInit;      //! Says if the task was created by defaut ctor (only parameters are initialized)
   Int_t   fNevents ;        // Number of events to digitize
   Float_t fTowerPrimThreshold ;  // To store primary in Tower if Elos > threshold
   Float_t fPreShowerPrimThreshold ;  // To store primary if Pre Shower Elos > threshold

@@ -80,6 +80,8 @@ private:
 
 private:
   
+  Bool_t fDefaultInit;      //! Says if the task was created by defaut ctor (only parameters are initialized)
+  // !!! the following is not necessary, it is in the folder !!!!!!!
   AliEMCALSDigitizer * fSDigitizer ; // ! SDigitizer to extract some sdigitizing parameters
   Int_t   fNinputs ;                // Number of input files
   Bool_t  fInitialized ;            // 

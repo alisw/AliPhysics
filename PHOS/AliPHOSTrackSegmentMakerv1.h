@@ -70,6 +70,7 @@ private:
 
 private:  
 
+  Bool_t  fDefaultInit;               //! Says if the task was created by defaut ctor (only parameters are initialized)
   TString fFrom ;                     // name of Recpoints 
   TString fHeaderFileName ;           // name of the file which contains gAlice, Tree headers etc.
   TString fRecPointsBranchTitle ;     // name of the file, where RecPoints branchs are stored

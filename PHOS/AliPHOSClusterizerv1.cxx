@@ -90,6 +90,7 @@ ClassImp(AliPHOSClusterizerv1)
   // default ctor (to be used mainly by Streamer)
   
   InitParameters() ; 
+  fDefaultInit = kTRUE ; 
 }
 
 //____________________________________________________________________________
@@ -105,6 +106,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
   else
     fFrom = from ; 
   Init() ;
+  fDefaultInit = kFALSE ; 
 
 }
 
@@ -112,13 +114,13 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
   AliPHOSClusterizerv1::~AliPHOSClusterizerv1()
 {
   // dtor
-  // gime=0 if Clusterizer created by default ctor (to get just the parameters)
+  // fDefaultInit = kTRUE if Clusterizer created by default ctor (to get just the parameters)
 
  
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  
-  if (gime) {
-    // remove the task from the folder list
+  if (!fDefaultInit) {
+    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+    
+  // remove the task from the folder list
     gime->RemoveTask("C",GetName()) ;
     
     // remove the data from the folder list

@@ -94,6 +94,7 @@ private:
 
 private:
 
+  Bool_t  fDefaultInit;             //! Says if the task was created by defaut ctor (only parameters are initialized)
   Int_t   fEmcCrystals ;            // Number of EMC crystalls in the given geometry
 
   Float_t fPinNoise ;               // Electronics noise in EMC

@@ -102,6 +102,7 @@ public:
 
  private:
 
+  Bool_t                 fDefaultInit;        //! Says if the task was created by defaut ctor (only parameters are initialized)
   TString    fFileName5 ;     // File that contains the Principal file for analysis from 0.5 to 5 GeV
   TString    fFileName100 ;   // File that contains the Principal file for analysis from 0.5 to 100 GeV
   TString    fFileNamePar5 ;  // File that contains the parameters for analysis from 0.5 to 5 GeV

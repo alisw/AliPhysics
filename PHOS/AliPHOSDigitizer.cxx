@@ -89,6 +89,7 @@ ClassImp(AliPHOSDigitizer)
   // ctor
 
   InitParameters() ; 
+  fDefaultInit = kTRUE ; 
 }
 
 //____________________________________________________________________________ 
@@ -101,6 +102,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
   fSplitFile= 0 ; 
   InitParameters() ; 
   Init() ;
+  fDefaultInit = kFALSE ; 
   
 }
 
@@ -111,18 +113,18 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   SetTitle("aliroot") ;
   SetName("Default") ;
   InitParameters() ; 
-  
+  fDefaultInit = kTRUE ; 
 }
 
 //____________________________________________________________________________ 
   AliPHOSDigitizer::~AliPHOSDigitizer()
 {
   // dtor
-  // gime=0 if Digitizer created by default ctor (to get just the parameters)
+  // fDefaultInit = kTRUE if Digitizer created by default ctor (to get just the parameters)
   
- AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
- 
- if (gime) {
+  if (!fDefaultInit) {
+    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+    
    // remove the task from the folder list
    gime->RemoveTask("S",GetName()) ;
    gime->RemoveTask("D",GetName()) ;
@@ -170,7 +172,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   digits->Expand(nCPV) ;
 
   // get first the sdigitizer from the tasks list (must have same name as the digitizer)
-  const AliPHOSSDigitizer * sDigitizer = new AliPHOSSDigitizer() ; //gime->SDigitizer(GetName()); 
+  const AliPHOSSDigitizer * sDigitizer = gime->SDigitizer(GetName()); 
   if ( !sDigitizer) {
     cerr << "ERROR: AliPHOSDigitizer::Digitize -> SDigitizer with name " << GetName() << " not found " << endl ; 
     abort() ; 
@@ -654,7 +656,7 @@ void AliPHOSDigitizer::Print(Option_t* option)const {
     cout << "------------------- "<< GetName() << " -------------" << endl ;
     cout << "Digitizing sDigits from file(s): " <<endl ;
     
-     TCollection * folderslist = ((TFolder*)gROOT->FindObjectAny("Folders/RunMC/Event/Data/PHOS/SDigits"))->GetListOfFolders() ; 
+    TCollection * folderslist = ((TFolder*)gROOT->FindObjectAny("Folders/RunMC/Event/Data/SDigits/PHOS"))->GetListOfFolders() ; 
     TIter next(folderslist) ; 
     TFolder * folder = 0 ; 
     

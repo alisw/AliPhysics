@@ -570,13 +570,13 @@ TObject ** AliEMCALGetter::DigitizerRef(const char * name) const
 {  
   TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ; 
   if ( !sd ) {
-    cerr << "ERROR: AliEMCALGetter::Post DerRef -> Task //" << fTasksFolder << "/Digitizer not found!" << endl;
+    cerr << "ERROR: AliEMCALGetter::Post DerRef -> Task //" << fTasksFolder->GetName() << "/Digitizer not found!" << endl;
     abort();
   }        
 
   TTask * emcal = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("EMCAL")) ; 
   if ( !emcal )  {
-    cerr <<"ERROR: AliEMCALGetter::Post DerRef ->  //" << fTasksFolder << "/Digitizer/EMCAL" << endl;
+    cerr <<"ERROR: AliEMCALGetter::Post DerRef ->  //" << fTasksFolder->GetName() << "/Digitizer/EMCAL" << endl;
     abort();
   }        
 
@@ -733,13 +733,13 @@ TObject ** AliEMCALGetter::ClusterizerRef(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliEMCALGetter::Post RerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    cerr << "ERROR: AliEMCALGetter::Post RerRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl;
     abort() ;
   }        
         
   TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
   if ( !emcal )  {
-    cerr <<"WARNING: AliEMCALGetter::Post RerRef -> //" << fTasksFolder << "/Reconstructioner/EMCAL" << endl; 
+    cerr <<"WARNING: AliEMCALGetter::Post RerRef -> //" << fTasksFolder->GetName() << "/Reconstructioner/EMCAL" << endl; 
     abort() ; 
   }   
 
@@ -774,7 +774,7 @@ Bool_t AliEMCALGetter::PostClusterizer(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliEMCALGetter::Post Rer -> Task//" << fTasksFolder << "/Reconstructioner not found!" << endl; 
+    cerr << "ERROR: AliEMCALGetter::Post Rer -> Task//" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl; 
     return kFALSE ;
   }        
   
@@ -915,7 +915,7 @@ Bool_t AliEMCALGetter::PostTrackSegmentMaker(const char * name) const
   if ( !emcal )  {
     if (fDebug) {
       cout <<"WARNING: AliEMCALGetter::Post Rer -> //" << fTasksFolder << "/Reconstructioner/EMCAL not found!" << endl; 
-      cout <<"INFO: AliEMCALGetter::Post Rer -> Adding //" << fTasksFolder << "/Reconstructioner/EMCAL" << endl;
+      cout <<"INFO: AliEMCALGetter::Post Rer -> Adding //" << fTasksFolder->GetName() << "/Reconstructioner/EMCAL" << endl;
     }
     emcal = new TTask("EMCAL", "") ; 
     tasks->Add(emcal) ; 
@@ -941,13 +941,13 @@ TObject ** AliEMCALGetter::TSMakerRef(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliEMCALGetter::TSLakerRef TerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    cerr << "ERROR: AliEMCALGetter::TSLakerRef TerRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl;
     abort() ;
   }        
         
   TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
   if ( !emcal )  {
-    cerr <<"WARNING: AliEMCALGetter::TSMakerRef TerRef -> //" << fTasksFolder << "/Reconstructioner/EMCAL not found!" << endl; 
+    cerr <<"WARNING: AliEMCALGetter::TSMakerRef TerRef -> //" << fTasksFolder->GetName() << "/Reconstructioner/EMCAL not found!" << endl; 
     abort() ; 
   }   
 
@@ -1039,15 +1039,15 @@ Bool_t AliEMCALGetter::PostPID(AliEMCALPID * pid) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliEMCALGetter::Post Per -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    cerr << "ERROR: AliEMCALGetter::Post Per -> Task //" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl;
     return kFALSE ;
   }        
   
   TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
   if ( !emcal )  {
     if (fDebug) {
-      cout <<"WARNING: AliEMCALGetter::Post Per -> //" << fTasksFolder << "/Reconstructioner/EMCAL not found!" << endl; 
-      cout <<"INFO: AliEMCALGetter::Post Per -> Adding //" << fTasksFolder << "/Reconstructioner/EMCAL" << endl;
+      cout <<"WARNING: AliEMCALGetter::Post Per -> //" << fTasksFolder->GetName() << "/Reconstructioner/EMCAL not found!" << endl; 
+      cout <<"INFO: AliEMCALGetter::Post Per -> Adding //" << fTasksFolder->GetName() << "/Reconstructioner/EMCAL" << endl;
     }
     emcal = new TTask("EMCAL", "") ; 
     tasks->Add(emcal) ; 
@@ -1073,15 +1073,15 @@ Bool_t AliEMCALGetter::PostPID(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliEMCALGetter::Post Per -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    cerr << "ERROR: AliEMCALGetter::Post Per -> Task //" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl;
     return kFALSE ;
   }        
   
   TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
   if ( !emcal )  {
     if (fDebug) {
-      cout <<"WARNING: AliEMCALGetter::Post Per -> //" << fTasksFolder << "/Reconstructioner/EMCAL not found!" << endl; 
-      cout <<"INFO: AliEMCALGetter::Post Per -> Adding //" << fTasksFolder << "/Reconstructioner/EMCAL" << endl;
+      cout <<"WARNING: AliEMCALGetter::Post Per -> //" << fTasksFolder->GetName() << "/Reconstructioner/EMCAL not found!" << endl; 
+      cout <<"INFO: AliEMCALGetter::Post Per -> Adding //" << fTasksFolder->GetName() << "/Reconstructioner/EMCAL" << endl;
     }
     emcal = new TTask("EMCAL", "") ; 
     tasks->Add(emcal) ; 
@@ -1113,13 +1113,13 @@ TObject ** AliEMCALGetter::PIDRef(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliEMCALGetter::PIDRef PerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    cerr << "ERROR: AliEMCALGetter::PIDRef PerRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl;
     abort() ;
   }        
         
   TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
   if ( !emcal )  {
-    cerr <<"WARNING: AliEMCALGetter::PIDRef PerRef -> //" << fTasksFolder << "/ReconstructionerEMCAL not found!" << endl; 
+    cerr <<"WARNING: AliEMCALGetter::PIDRef PerRef -> //" << fTasksFolder->GetName() << "/ReconstructionerEMCAL not found!" << endl; 
     abort() ; 
   }   
   
@@ -1251,9 +1251,8 @@ void AliEMCALGetter::ReadTreeD()
   if(!Digitizer(fDigitsTitle))
     PostDigitizer(fDigitsTitle) ;
 
-  //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-  // digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
-  // digitizerbranch->GetEntry(0) ;
+  digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
+  digitizerbranch->GetEntry(0) ;
  
   
 }
@@ -1421,9 +1420,9 @@ void AliEMCALGetter::ReadTreeR()
   
   if(!Clusterizer(fRecPointsTitle) )
     PostClusterizer(fRecPointsTitle) ;
-  //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-  //clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
-  //clusterizerbranch->GetEntry(0) ;
+  
+  clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
+  clusterizerbranch->GetEntry(0) ;
  
   
   //------------------- TrackSegments ---------------------
@@ -1460,9 +1459,8 @@ void AliEMCALGetter::ReadTreeR()
 //   // Read and Post the TrackSegment Maker
 //   if(!TrackSegmentMaker(fTrackSegmentsTitle))
 //     PostTrackSegmentMaker(fTrackSegmentsTitle) ;
-     //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-//   //tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
-//   //tsmakerbranch->GetEntry(0) ;
+//   tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
+//   tsmakerbranch->GetEntry(0) ;
   
   
 //   //------------ RecParticles ----------------------------
@@ -1499,9 +1497,8 @@ void AliEMCALGetter::ReadTreeR()
 //   // Read and Post the PID
 //   if(!PID(fRecParticlesTitle))
 //     PostPID(fRecParticlesTitle) ;
-      //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-//   //pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
-//   //pidbranch->GetEntry(0) ;
+//   pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
+//   pidbranch->GetEntry(0) ;
   
   
 }
@@ -1586,9 +1583,8 @@ void AliEMCALGetter::ReadTreeS(Int_t event)
     if(!SDigitizer(sdname) ) 
       PostSDigitizer(fSDigitsTitle,folder->GetName()) ;
 
-    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-    // sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
-    // sdigitizerBranch->GetEntry(0) ;
+    sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
+    sdigitizerBranch->GetEntry(0) ;
     
   }    
   

@@ -326,8 +326,8 @@ Bool_t AliPHOSGetter::PostPrimaries(void) const
   TFolder * primariesFolder = dynamic_cast<TFolder*>(fPrimariesFolder->FindObject("Primaries")) ; 
   if ( !primariesFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliPHOSGetter::Post Primaries -> Folder //" << fPrimariesFolder << "/Primaries/ not found!" << endl;
-      cout << "INFO:    AliPHOSGetter::Post Primaries -> Adding Folder //" << fPrimariesFolder << "/Primaries/"  << endl;
+      cout << "WARNING: AliPHOSGetter::Post Primaries -> Folder //" << fPrimariesFolder->GetName() << "/Primaries/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Primaries -> Adding Folder //" << fPrimariesFolder->GetName() << "/Primaries/"  << endl;
     }
     primariesFolder = fPrimariesFolder->AddFolder("Primaries", "Primaries particles from TreeK") ; 
   }    
@@ -707,12 +707,6 @@ TObject** AliPHOSGetter::DigitizerRef(const char * name) const
 
   TTask * task = dynamic_cast<TTask*>(phos->GetListOfTasks()->FindObject(name)) ; 
 
-  cout << "AliPHOSGetter::DigitizerRef " << task->GetName() << endl ; 
-  cout << "AliPHOSGetter::DigitizerRef " << phos->GetName() << endl ; 
-  cout << "AliPHOSGetter::DigitizerRef " << task->GetListOfTasks() << endl ; 
-  cout << "AliPHOSGetter::DigitizerRef " << task->GetListOfTasks()->GetObjectRef(task) << endl ; 
-
-
   return phos->GetListOfTasks()->GetObjectRef(task) ;
 
 }
@@ -946,7 +940,7 @@ Bool_t AliPHOSGetter::PostTrackSegments(const char * name) const
   
   if ( !phosFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliPHOSGetter::Post TS -> Folder //" << fRecoFolder << "/PHOS/ not found!" << endl;
+      cout << "WARNING: AliPHOSGetter::Post TS -> Folder //" << fRecoFolder->GetName() << "/PHOS/ not found!" << endl;
       cout << "INFO:    AliPHOSGetter::Post TS -> Adding Folder //" << fRecoFolder->GetName() << "/PHOS" << endl;
     }
     phosFolder = fRecoFolder->AddFolder("PHOS", "Reconstructed data from PHOS") ;  
@@ -955,7 +949,7 @@ Bool_t AliPHOSGetter::PostTrackSegments(const char * name) const
   TFolder * phosTSFolder  = dynamic_cast<TFolder*>(phosFolder->FindObject("TrackSegments")) ;
   if ( !phosTSFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliPHOSGetter::Post TS -> Folder//" << fRecoFolder->GetName() << "/PHOS/TrackSegments/ not found!" << endl; 
+      cout << "WARNING: AliPHOSGetter::Post TS -> Folder //" << fRecoFolder->GetName() << "/PHOS/TrackSegments/ not found!" << endl; 
       cout << "INFO:    AliPHOSGetter::Post TS -> Adding Folder //" << fRecoFolder->GetName() << "/PHOS/TrackSegments/" << endl; 
     }
     phosTSFolder = phosFolder->AddFolder("TrackSegments", "TrackSegments from PHOS") ;  
@@ -1038,15 +1032,15 @@ Bool_t AliPHOSGetter::PostTrackSegmentMaker(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
   
   if ( !tasks ) {
-    cerr << "ERROR: AliPHOSGetter::Post Ter -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::Post Ter -> Task //" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl;
     return kFALSE ;
   }        
   
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
     if (fDebug) {
-      cout <<"WARNING: AliPHOSGetter::Post Rer -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
-      cout <<"INFO: AliPHOSGetter::Post Rer -> Adding //" << fTasksFolder << "/Reconstructioner/PHOS" << endl;
+      cout <<"WARNING: AliPHOSGetter::Post Ter -> //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS not found!" << endl; 
+      cout <<"INFO: AliPHOSGetter::Post Ter -> Adding //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS" << endl;
     }
     phos = new TTask("PHOS", "") ; 
     tasks->Add(phos) ; 
@@ -1055,6 +1049,7 @@ Bool_t AliPHOSGetter::PostTrackSegmentMaker(const char * name) const
   TList * l = phos->GetListOfTasks() ;   
   TIter it(l) ;
   TString tsn(name);
+  tsn+=":tsm" ; 
   TTask * task ;
   while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
@@ -1077,13 +1072,13 @@ TObject** AliPHOSGetter::TSMakerRef(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliPHOSGetter::TSMakerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::TSMakerRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl;
     abort() ;
   }        
         
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"WARNING: AliPHOSGetter::TSMakerRef -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
+    cerr <<"WARNING: AliPHOSGetter::TSMakerRef -> //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS not found!" << endl; 
     abort()  ; 
   }   
 
@@ -1104,8 +1099,8 @@ TObject** AliPHOSGetter::TSMakerRef(const char * name) const
   if(tsm) 
     return l->GetObjectRef(tsm) ;
   else {
-    cerr << "ERROR: AliPHOSGetter::TSMakerRef -> Task //" << fTasksFolder << "/Reconstructioner/TrackSegmentMarker name not found!" << endl;
-    abort() ;
+    cerr << "ERROR: AliPHOSGetter::TSMakerRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS/TrackSegmentMarker/" << name << " not found!" << endl;
+    //abort() ;
   } 
 } 
 
@@ -1209,15 +1204,15 @@ Bool_t AliPHOSGetter::PostPID(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliPHOSGetter::Post Per -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::Post Per -> Task //" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl;
     return kFALSE ;
   }        
   
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
     if (fDebug) {
-      cout <<"WARNING: AliPHOSGetter::Post Per -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
-      cout <<"INFO: AliPHOSGetter::Post Per -> Adding //" << fTasksFolder << "/Reconstructioner/PHOS" << endl;
+      cout <<"WARNING: AliPHOSGetter::Post Per -> //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS not found!" << endl; 
+      cout <<"INFO: AliPHOSGetter::Post Per -> Adding //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS" << endl;
     }
     phos = new TTask("PHOS", "") ; 
     tasks->Add(phos) ; 
@@ -1226,6 +1221,7 @@ Bool_t AliPHOSGetter::PostPID(const char * name) const
   TList * l = phos->GetListOfTasks() ;   
   TIter it(l) ;
   TString pidname(name) ;
+  pidname+=":pid" ;
   TTask * task ;
   while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
@@ -1247,13 +1243,13 @@ TObject** AliPHOSGetter::PIDRef(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliPHOSGetter::PIDRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::PIDRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl;
     abort() ;
   }        
         
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr << "ERROR: AliPHOSGetter::PIDRef -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
+    cerr << "ERROR: AliPHOSGetter::PIDRef -> //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS not found!" << endl; 
     abort()  ; 
   }   
   
@@ -1274,8 +1270,8 @@ TObject** AliPHOSGetter::PIDRef(const char * name) const
   if(pid) 
     return l->GetObjectRef(pid) ;
   else {
-    cerr << "ERROR: AliPHOSGetter::PIDRef -> Task //" << fTasksFolder << "/Reconstructioner/PID name not found!" << endl;
-    abort() ;
+    cerr << "ERROR: AliPHOSGetter::PIDRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS/PID/" <<  name << " not found!" << endl;
+    //abort() ;
   }
   
 } 
@@ -1409,9 +1405,8 @@ Int_t AliPHOSGetter::ReadTreeD()
   // read  the Digitizer
   if(!Digitizer(fDigitsTitle))
     PostDigitizer(fDigitsTitle) ;
-    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-  // digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
-  // digitizerbranch->GetEntry(0) ;
+  digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
+  digitizerbranch->GetEntry(0) ;
  
   return 0 ; 
 }
@@ -1569,17 +1564,18 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
   } else { 
     if(!EmcRecPoints(fRecPointsTitle) ) 
       PostRecPoints(fRecPointsTitle) ;
+    
     emcbranch->SetAddress(EmcRecPointsRef(fRecPointsTitle)) ;
     emcbranch->GetEntry(0) ;
 
     cpvbranch->SetAddress(CpvRecPointsRef(fRecPointsTitle)) ; 
     cpvbranch->GetEntry(0) ;  
     
-    if(!Clusterizer(fRecPointsTitle) )
+    if(!Clusterizer(fRecPointsTitle) ) 
       PostClusterizer(fRecPointsTitle) ;
-    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-    //clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
-    //clusterizerbranch->GetEntry(0) ;
+    
+    clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
+    clusterizerbranch->GetEntry(0) ;
   }
   
   //------------------- TrackSegments ---------------------
@@ -1613,9 +1609,8 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
     // Read and Post the TrackSegment Maker
     if(!TrackSegmentMaker(fTrackSegmentsTitle))
       PostTrackSegmentMaker(fTrackSegmentsTitle) ;
-    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-    //tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
-    //tsmakerbranch->GetEntry(0) ;
+    tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
+    tsmakerbranch->GetEntry(0) ;
  }
   
   
@@ -1650,9 +1645,8 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
     // Read and Post the PID
     if(!PID(fRecParticlesTitle))
       PostPID(fRecParticlesTitle) ;
-    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-    //pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
-    //pidbranch->GetEntry(0) ;
+    pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
+    pidbranch->GetEntry(0) ;
   }
   return 0 ; 
 }
@@ -1737,13 +1731,12 @@ Int_t AliPHOSGetter::ReadTreeS(Int_t event)
     sdname+=folder->GetName() ;
     if(!SDigitizer(sdname) ) 
       PostSDigitizer(fSDigitsTitle,folder->GetName()) ;
-    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-    //  sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
-    // sdigitizerBranch->GetEntry(0) ;  
+    sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
+    sdigitizerBranch->GetEntry(0) ; 
   }    
   
-  // After SDigits have been read from all files, return to the first one
-  
+// After SDigits have been read from all files, return to the first one
+
   next.Reset();
   folder = static_cast<TFolder*>(next());
   if(folder){
@@ -1804,9 +1797,8 @@ void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
   
   if(!SDigitizer(sdigitsBranch->GetTitle()) )
     PostSDigitizer(sdigitsBranch->GetTitle(),filename) ;
-  //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
-  //   sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
-  //   sdigitizerBranch->GetEntry(0) ;
+  sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
+  sdigitizerBranch->GetEntry(0) ;
 }    
 
 
@@ -2003,12 +1995,12 @@ const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const
   } else  if (what.CompareTo("Clusterizer") == 0){ 
     if ( name.IsNull() )
       name =  fRecPointsTitle ;
-    name.Append(":clusterizer") ;
+    name.Append(":clu") ;
   }
   else  if (what.CompareTo("TrackSegmentMaker") == 0){ 
     if ( name.IsNull() )
       name =  fTrackSegmentsTitle ;
-    name.Append(":tracksegmentmaker") ;
+    name.Append(":tsm") ;
   }
   else  if (what.CompareTo("PID") == 0){ 
     if ( name.IsNull() )
@@ -2029,7 +2021,7 @@ const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const
   }
   
   if(fDebug)
-    cout << "WARNING: AliPHOSGetter::ReturnT -> Task " << search << "/" << name << " not found!" << endl ; 
+    cout << "WARNING: AliPHOSGetter::ReturnT -> Task " << search << "/PHOS" << name << " not found!" << endl ; 
   return 0 ;
 }
 

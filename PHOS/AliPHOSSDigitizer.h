@@ -49,6 +49,7 @@ private:
 
   Float_t fA ;              // Pedestal parameter
   Float_t fB ;              // Slope Digitizition parameters
+  Bool_t fDefaultInit;      //! Says if the task was created by defaut ctor (only parameters are initialized)
   Float_t fPrimThreshold ;  // To store primari if Elos > threshold
   Int_t fSDigitsInRun ;     //! Total number of sdigits in one run
   TFile * fSplitFile ;      //! file in which SDigits will eventually be stored

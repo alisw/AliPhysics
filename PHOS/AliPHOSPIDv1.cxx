@@ -105,6 +105,8 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
   // default ctor
  
   InitParameters() ; 
+  fDefaultInit = kTRUE ; 
+
 }
 
 //____________________________________________________________________________
@@ -122,6 +124,7 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name, const char
     fFrom = from ; 
 
   Init() ;
+  fDefaultInit = kFALSE ; 
 
 }
 
@@ -129,8 +132,7 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name, const char
 AliPHOSPIDv1::~AliPHOSPIDv1()
 { 
   // dtor
-  // gime=0 if PID created by default ctor (to get just the parameters)
-  
+  // fDefaultInit = kTRUE if PID created by default ctor (to get just the parameters)
 
   delete [] fX ; // Principal input 
   delete [] fP ; // Principal components
@@ -139,26 +141,26 @@ AliPHOSPIDv1::~AliPHOSPIDv1()
   delete fParameters100 ; // Matrix of Parameters 
  
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-
-  if(gime){  
-  // remove the task from the folder list
-  gime->RemoveTask("P",GetName()) ;
-  TString name(GetName()) ; 
-  name.ReplaceAll("pid", "clu") ; 
-  gime->RemoveTask("C",name) ;
-  
-  // remove the data from the folder list
-  name = GetName() ; 
-  name.Remove(name.Index(":")) ; 
-  gime->RemoveObjects("RE", name) ; // EMCARecPoints
-  gime->RemoveObjects("RC", name) ; // CPVRecPoints
-  gime->RemoveObjects("T", name) ;  // TrackSegments
-  gime->RemoveObjects("P", name) ;  // RecParticles
-  
-  // Delete gAlice
-  gime->CloseFile() ; 
-  fSplitFile = 0 ; 
+  if (!fDefaultInit) {  
+    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+    // remove the task from the folder list
+    gime->RemoveTask("P",GetName()) ;
+    TString name(GetName()) ; 
+    name.ReplaceAll("pid", "clu") ; 
+    gime->RemoveTask("C",name) ;
+    
+    // remove the data from the folder list
+    name = GetName() ; 
+    name.Remove(name.Index(":")) ; 
+    gime->RemoveObjects("RE", name) ; // EMCARecPoints
+    gime->RemoveObjects("RC", name) ; // CPVRecPoints
+    gime->RemoveObjects("T", name) ;  // TrackSegments
+    gime->RemoveObjects("P", name) ;  // RecParticles
+    
+    // Delete gAlice
+    gime->CloseFile() ; 
+    
+    fSplitFile = 0 ; 
   }
 }
 
@@ -441,7 +443,7 @@ void  AliPHOSPIDv1::SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur, 
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
 
-  
+
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
   GetAnalysisParameters(Cluster_En) ;
   if((fClusterrcpv!= -1)&&(eff_pur != -1))

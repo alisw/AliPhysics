@@ -82,6 +82,8 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   fFrom                     = "" ; 
 
   fTrackSegmentsInRun       = 0 ; 
+
+  fDefaultInit = kTRUE ; 
 }
 
 //____________________________________________________________________________
@@ -100,20 +102,22 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   else
     fFrom = from ; 
   Init() ;
-  
+
+  fDefaultInit = kFALSE ; 
+
 }
 
 //____________________________________________________________________________
  AliPHOSTrackSegmentMakerv1::~AliPHOSTrackSegmentMakerv1()
 { 
   // dtor
-  // gime=0 if TrackSegmentMaker created by default ctor (to get just the parameters)
-
-  delete fLinkUpArray  ;
+  // fDefaultInit = kTRUE if TrackSegmentMaker created by default ctor (to get just the parameters)
   
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-
-  if (gime) {
+  if (!fDefaultInit) {
+    delete fLinkUpArray  ;
+    
+    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+    
     // remove the task from the folder list
     gime->RemoveTask("T",GetName()) ;
     TString name(GetName()) ; 

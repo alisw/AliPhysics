@@ -99,6 +99,7 @@ private:
 
 private:
 
+  Bool_t  fDefaultInit;              //! Says if the task was created by defaut ctor (only parameters are initialized)
   TString fFrom ;                    // name of Digits 
   TString fHeaderFileName ;          // name of the file which contains gAlice, Tree headers etc.
   TString fDigitsBranchTitle ;       // name of the file, where digits branch is stored

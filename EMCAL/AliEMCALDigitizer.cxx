@@ -88,6 +88,7 @@ ClassImp(AliEMCALDigitizer)
   // ctor
 
   InitParameters() ; 
+  fDefaultInit = kTRUE ; 
 
 }
 
@@ -100,6 +101,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const char *headerFile,const char *name)
   fSplitFile= 0 ; 
   InitParameters() ; 
   Init() ;
+  fDefaultInit = kFALSE ; 
 
 }
 
@@ -115,11 +117,11 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   AliEMCALDigitizer::~AliEMCALDigitizer()
 {
   // dtor
-  // gime=0 if Digitizer created by default ctor (to get just the parameters)
- 
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-
-  if (gime) {
+  // fDefaultInit = kTRUE if Digitizer created by default ctor (to get just the parameters)
+  
+  if (!fDefaultInit) {
+    AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
+    
     // remove the task from the folder list
     gime->RemoveTask("S",GetName()) ;
     gime->RemoveTask("D",GetName()) ;
