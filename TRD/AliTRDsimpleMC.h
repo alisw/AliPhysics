@@ -2,26 +2,26 @@
 #define ALITRDSIMPLEMC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- 
+
 /* $Id$ */
- 
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Simple TRD Monte Carlo class                                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <RVersion.h> 
+#include <RVersion.h>
 #include <TMCProcess.h>
 #include <TVirtualMC.h>
 #include "AliDecayer.h"
 
 class AliTRDv1;
 class AliTRDparameter;
- 
+
 class AliTRDsimpleMC : public TVirtualMC {
- 
- public:     
+
+ public:
 
   enum {
       kPdgElectron = 11
@@ -30,10 +30,10 @@ class AliTRDsimpleMC : public TVirtualMC {
 
   AliTRDsimpleMC();
   AliTRDsimpleMC(const char *name, const char *title);
-  AliTRDsimpleMC(const AliTRDsimpleMC &m); 
-                                                                                
+  AliTRDsimpleMC(const AliTRDsimpleMC &m);
+
   virtual ~AliTRDsimpleMC();
-  AliTRDsimpleMC &operator=(const AliTRDsimpleMC &m);    
+  AliTRDsimpleMC &operator=(const AliTRDsimpleMC &m);
 
   virtual void          Copy(TObject &m);
 
@@ -41,59 +41,59 @@ class AliTRDsimpleMC : public TVirtualMC {
   // Methods for building / management of geometry
   //
 
-  // Functions from GCONS 
-    virtual void  Gfmate(Int_t , char* , Float_t& , Float_t& ,  
+  // Functions from GCONS
+    virtual void  Gfmate(Int_t , char* , Float_t& , Float_t& ,
   		         Float_t& , Float_t& , Float_t& ,
 		         Float_t* , Int_t& )  {}
-    virtual void  Gfmate(Int_t , char* , Double_t& , Double_t& ,  
+    virtual void  Gfmate(Int_t , char* , Double_t& , Double_t& ,
   		         Double_t& , Double_t& , Double_t& ,
 		         Double_t* , Int_t& ) {}
 
   // Detector composition
-    virtual void  Material(Int_t& , const char* , Double_t , 
+    virtual void  Material(Int_t& , const char* , Double_t ,
                      Double_t , Double_t , Double_t , Double_t ,
                      Float_t* , Int_t ) {}
-    virtual void  Material(Int_t& , const char* , Double_t , 
+    virtual void  Material(Int_t& , const char* , Double_t ,
                      Double_t , Double_t , Double_t , Double_t ,
                      Double_t* , Int_t ) {}
-    virtual void  Mixture(Int_t& , const char* , Float_t* , 
+    virtual void  Mixture(Int_t& , const char* , Float_t* ,
                      Float_t *, Double_t , Int_t , Float_t* ) {}
-    virtual void  Mixture(Int_t& , const char* , Double_t *, 
+    virtual void  Mixture(Int_t& , const char* , Double_t *,
                      Double_t *, Double_t , Int_t , Double_t* ) {}
-    virtual void  Medium(Int_t& , const char* , Int_t , 
-                     Int_t , Int_t , Double_t , Double_t , 
-                     Double_t , Double_t , Double_t , 
+    virtual void  Medium(Int_t& , const char* , Int_t ,
+                     Int_t , Int_t , Double_t , Double_t ,
+                     Double_t , Double_t , Double_t ,
 		     Double_t , Float_t* , Int_t ) {}
-    virtual void  Medium(Int_t& , const char* , Int_t , 
-                     Int_t , Int_t , Double_t , Double_t , 
-                     Double_t , Double_t , Double_t , 
+    virtual void  Medium(Int_t& , const char* , Int_t ,
+                     Int_t , Int_t , Double_t , Double_t ,
+                     Double_t , Double_t , Double_t ,
 		     Double_t , Double_t* , Int_t ) {}
-    virtual void  Matrix(Int_t& , Double_t , Double_t , 
-                     Double_t , Double_t , Double_t , 
+    virtual void  Matrix(Int_t& , Double_t , Double_t ,
+                     Double_t , Double_t , Double_t ,
 		     Double_t ) {}
-    virtual void  Gstpar(Int_t , const char* , Double_t ) {} 
+    virtual void  Gstpar(Int_t , const char* , Double_t ) {}
 
-  // Functions from GGEOM 
-    virtual Int_t  Gsvolu(const char* , const char* , Int_t ,  
+  // Functions from GGEOM
+    virtual Int_t  Gsvolu(const char* , const char* , Int_t ,
                           Float_t* , Int_t )  { return 0; }
-    virtual Int_t  Gsvolu(const char* , const char* , Int_t ,  
-                          Double_t* , Int_t) { return 0; } 
-    virtual void  Gsdvn(const char* , const char* , Int_t , 
-                         Int_t ) {} 
-    virtual void  Gsdvn2(const char* , const char* , Int_t , 
-                         Int_t , Double_t , Int_t ) {} 
-    virtual void  Gsdvt(const char* , const char* , Double_t , 
-                         Int_t , Int_t , Int_t ) {} 
-    virtual void  Gsdvt2(const char* , const char* , Double_t , 
-                         Int_t , Double_t , Int_t , Int_t ) {} 
-    virtual void  Gsord(const char* , Int_t ) {} 
-    virtual void  Gspos(const char* , Int_t , const char* ,  
-                         Double_t , Double_t , Double_t , Int_t , 
-                         const char* ) {} 
-    virtual void  Gsposp(const char* , Int_t , const char* ,  
+    virtual Int_t  Gsvolu(const char* , const char* , Int_t ,
+                          Double_t* , Int_t) { return 0; }
+    virtual void  Gsdvn(const char* , const char* , Int_t ,
+                         Int_t ) {}
+    virtual void  Gsdvn2(const char* , const char* , Int_t ,
+                         Int_t , Double_t , Int_t ) {}
+    virtual void  Gsdvt(const char* , const char* , Double_t ,
+                         Int_t , Int_t , Int_t ) {}
+    virtual void  Gsdvt2(const char* , const char* , Double_t ,
+                         Int_t , Double_t , Int_t , Int_t ) {}
+    virtual void  Gsord(const char* , Int_t ) {}
+    virtual void  Gspos(const char* , Int_t , const char* ,
+                         Double_t , Double_t , Double_t , Int_t ,
+                         const char* ) {}
+    virtual void  Gsposp(const char* , Int_t , const char* ,
                          Double_t, Double_t, Double_t, Int_t ,
                          const char* , Float_t* , Int_t ) {}
-    virtual void  Gsposp(const char* , Int_t , const char* ,  
+    virtual void  Gsposp(const char* , Int_t , const char* ,
                          Double_t , Double_t , Double_t , Int_t ,
                          const char* , Double_t* , Int_t ) {}
     virtual void  Gsbool(const char* , const char* ) {}
@@ -112,7 +112,7 @@ class AliTRDsimpleMC : public TVirtualMC {
 
   // Euclid
   virtual void          WriteEuclid(const char* , const char* , Int_t , Int_t ) {}
-		               
+
   // Get methods
     virtual Int_t VolId(const Text_t* volName) const;
     virtual const char* VolName(Int_t ) const { return ""; }
@@ -122,45 +122,44 @@ class AliTRDsimpleMC : public TVirtualMC {
   //
   // Methods for physics management
   //
- 
+
   // Set methods
     virtual void     SetCut(const char* , Double_t ) {}
     virtual void     SetProcess(const char* , Int_t ) {}
-    virtual Double_t Xsec(char*, Double_t, Int_t, Int_t) { return 0.; } 
- 
-  // Particle table usage         
-    virtual Int_t   IdFromPDG(Int_t ) const { return 0; }  
-    virtual Int_t   PDGFromId(Int_t ) const { return 0; }  
-    virtual void    DefineParticles() {}      
-  
+    virtual Double_t Xsec(char*, Double_t, Int_t, Int_t) { return 0.; }
+
+  // Particle table usage
+    virtual Int_t   IdFromPDG(Int_t ) const { return 0; }
+    virtual Int_t   PDGFromId(Int_t ) const { return 0; }
+    virtual void    DefineParticles() {}
+
   //
   // Methods for step management
   //
 
   // Action methods
   virtual void          StopTrack() { };
-  virtual void          StopEvent() { };   
-//change is in 4.0.5 (which is not yet tagged) (rdm)
-#if ROOT_VERSION_CODE >= 262148
+  virtual void          StopEvent() { };
+#if ROOT_VERSION_CODE >= 262150
   virtual void          StopRun()   { }
 #endif
 
   // Set methods
   virtual void          SetMaxStep(Double_t step)                                         { fMaxStep = step; };
   virtual void          SetMaxNStep(Int_t )                                              { };
-  virtual void          SetUserDecay(Int_t )                                             { };  
+  virtual void          SetUserDecay(Int_t )                                             { };
 
   virtual void          NewTrack(Int_t iTrack, Int_t pdg, Double_t px, Double_t py, Double_t pz);
 
-  // Tracking volume(s) 
+  // Tracking volume(s)
   virtual Int_t         CurrentVolID(Int_t& copyNo) const;
   virtual Int_t         CurrentVolOffID(Int_t off, Int_t& copyNo) const;
   virtual const char*   CurrentVolName() const;
   virtual const char*   CurrentVolOffName(Int_t ) const                                { return ""; };
-  virtual Int_t         CurrentMaterial(Float_t& , Float_t& , 
-                                        Float_t& , Float_t& , 
-			  	        Float_t& ) const                               { return 0;  };  
-  virtual Int_t         CurrentEvent() const                                              { return 0;  }; 
+  virtual Int_t         CurrentMaterial(Float_t& , Float_t& ,
+                                        Float_t& , Float_t& ,
+			  	        Float_t& ) const                               { return 0;  };
+  virtual Int_t         CurrentEvent() const                                              { return 0;  };
   virtual void          Gmtod(Float_t* , Float_t* , Int_t )   {}
   virtual void          Gmtod(Double_t* , Double_t* , Int_t ) {}
   virtual void          Gdtom(Float_t* , Float_t* , Int_t )   {}
@@ -179,7 +178,7 @@ class AliTRDsimpleMC : public TVirtualMC {
   virtual Double_t      TrackLength() const                                               { return 0.0; };
   virtual Double_t      TrackTime() const                                                 { return 0.0; };
   virtual Double_t      Edep() const                                                      { return 0.0; };
-  
+
   // Static properties
   virtual Int_t         TrackPid() const                                                  { return fTrackPid;    };
   virtual Double_t      TrackCharge() const                                               { return fTrackCharge; };
@@ -198,31 +197,31 @@ class AliTRDsimpleMC : public TVirtualMC {
 
   // Secondaries
   virtual Int_t         NSecondaries() const                                              { return 0; };
-  virtual void          GetSecondary(Int_t , Int_t& , 
-                                     TLorentzVector& , 
+  virtual void          GetSecondary(Int_t , Int_t& ,
+                                     TLorentzVector& ,
                                      TLorentzVector& )                                    { };
-  virtual TMCProcess  ProdProcess(Int_t ) const                                           { return kPNoProcess; }; 
+  virtual TMCProcess  ProdProcess(Int_t ) const                                           { return kPNoProcess; };
   virtual Int_t         StepProcesses(TArrayI& ) const                                    { return 0; };
 
   //
   // Other (then geometry/step/run management) methods
   //
-    
+
   // Geant3 specific methods
     virtual void Gdopt(const char*,const char*) {}
     virtual void SetClipBox(const char*,Double_t=-9999,Double_t=0, Double_t=-9999,
                              Double_t=0,Double_t=-9999,Double_t=0) {}
     virtual void DefaultRange() {}
-    virtual void Gdhead(Int_t, const char*, Double_t=0) {}   
+    virtual void Gdhead(Int_t, const char*, Double_t=0) {}
     virtual void Gdman(Double_t, Double_t, const char*) {}
     virtual void SetColors() {}
     virtual void Gtreve() {}
     virtual void GtreveRoot() {}
     virtual void Gckmat(Int_t, char*) {}
     virtual void InitLego() {}
-    virtual void Gfpart(Int_t, char*, Int_t&, Float_t&, Float_t&, Float_t&) {} 
-    virtual void Gspart(Int_t, const char*, Int_t, Double_t, Double_t, Double_t) {} 
-    // Dummy methods 
+    virtual void Gfpart(Int_t, char*, Int_t&, Float_t&, Float_t&, Float_t&) {}
+    virtual void Gspart(Int_t, const char*, Int_t, Double_t, Double_t, Double_t) {}
+    // Dummy methods
 #if ROOT_VERSION_CODE > 197895
     virtual void DefineParticle(int, const char*, TMCParticleType, double, double, double){;}
     virtual void DefineIon(const char*, int, int, int, double, double){;}
@@ -238,8 +237,7 @@ class AliTRDsimpleMC : public TVirtualMC {
   virtual void          FinishGeometry()                                                  { };
   virtual void          BuildPhysics()                                                    { };
   virtual void          ProcessEvent();
-//change is in 4.0.5 (which is not yet tagged) (rdm)
-#if ROOT_VERSION_CODE >= 262148
+#if ROOT_VERSION_CODE >= 262150
   virtual Bool_t        ProcessRun(Int_t )                                                { return kTRUE; }
 #else
   virtual void          ProcessRun(Int_t )                                                { };
@@ -280,7 +278,7 @@ class AliTRDsimpleMC : public TVirtualMC {
   AliTRDparameter *fPar;                //! TRD parameter object
 
   ClassDef(AliTRDsimpleMC,2)            //  Simple TRD Monte Carlo class
- 
+
 };
-#endif                                                                          
+#endif
 
