@@ -48,6 +48,7 @@
 #include "AliPHOSDigit.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
+#include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSv0.h" 
 #include "AliRun.h" 
 
@@ -231,8 +232,8 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	  clu =  (AliPHOSPpsdRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
 	}
 	else if (strcmp(fGeom->GetName(),"IHEP") == 0) {
-	  (*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSEmcRecPoint(fW0CPV, fLocMaxCutCPV) ;
-	  clu =  (AliPHOSEmcRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
+	  (*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSCpvRecPoint(fW0CPV, fLocMaxCutCPV) ;
+	  clu =  (AliPHOSCpvRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
 	}
 	fNumberOfPpsdClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp()) ) ;	

@@ -36,6 +36,7 @@
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSClusterizer.h"
 #include "AliPHOSFastRecParticle.h"
+#include "AliPHOSCpvRecPoint.h"
 
 ClassImp(AliPHOSReconstructioner)
 
@@ -397,11 +398,12 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
     TVector3  locpos;  emcrp->GetLocalPosition(locpos);
     currentPHOSModule = emcrp->GetPHOSMod();
   }
-  AliPHOSEmcRecPoint * cpvrp ; 
+  AliPHOSCpvRecPoint * cpvrp ; 
   for (index = 0 ; index < cpvcl->GetEntries() ; index++) {
-    cpvrp = (AliPHOSEmcRecPoint * )cpvcl->At(index) ; 
+    cpvrp = (AliPHOSCpvRecPoint * )cpvcl->At(index) ; 
     cpvrp ->SetIndexInList(index) ; 
-    TVector3  locpos;  cpvrp->GetLocalPosition(locpos);
+    TVector3  locpos;   cpvrp->GetLocalPosition(locpos);
+    Int_t lengX,lengZ;  cpvrp->GetClusterLengths(lengX,lengZ);
     currentPHOSModule = cpvrp->GetPHOSMod();
   }
     
