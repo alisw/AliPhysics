@@ -54,11 +54,14 @@ class AliEMCALRecPoint : public AliRecPoint {
   virtual Int_t   GetEMCALArm(void) const {return fEMCALArm ; }
   virtual void    GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const {;} // return global position in ALICE
   virtual void    GetGlobalPosition(TVector3 & gpos) const ; // return global position (r, theta, phi) in ALICE
+  virtual void    GetLocalPosition(TVector3 & lpos) const ; // return loca position (x, y, z) in EMCAL
   //  virtual Int_t   GetEMCALMod(void) const {return fEMCALMod ; }
   virtual Int_t * GetPrimaries(Int_t & number) const {number = fMulTrack ; 
                                                       return fTracksList ; }
   virtual Bool_t  IsEmc(void)const { return kTRUE ;  }
-  const Bool_t IsTower(void) const { return fTower ; } 
+  const Bool_t IsInECAL(void) const { return fECALSection ; } 
+  const Bool_t IsInHCAL(void) const { return fHCALSection ; } 
+  const Bool_t IsInPRE(void) const { return fPRESection ; } 
   virtual Bool_t  IsSortable() const { 
     // tells that this is a sortable object
     return kTRUE ; 
@@ -68,7 +71,9 @@ class AliEMCALRecPoint : public AliRecPoint {
     // Print prototype
   } 
   
-  void SetTower() { fTower = kTRUE ; } 
+  void SetECAL() { fECALSection = kTRUE ; } 
+  void SetHCAL() { fHCALSection = kTRUE ; } 
+  void SetPRE()  { fPRESection  = kTRUE ; } 
   AliEMCALRecPoint & operator = (const AliEMCALRecPoint & )  {
     // assignement operator requested by coding convention but not needed
     assert(0==1) ;
@@ -80,7 +85,9 @@ protected:
   Int_t fEMCALArm ; // EMCAM Arm number
   Float_t fTheta ; // theta angle in Alice
   Float_t fPhi ;   // phi angle in Alice
-  Bool_t  fTower ; // tells if the recpoint is a tower or not 
+  Bool_t  fECALSection ; // tells if the recpoint is in ECAL section 
+  Bool_t  fHCALSection ; // tells if the recpoint is in HCAL section 
+  Bool_t  fPRESection ;  // tells if the recpoint is in PRE section 
 
   ClassDef(AliEMCALRecPoint,2) // RecPoint for EMCAL (Base Class)
  

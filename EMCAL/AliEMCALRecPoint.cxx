@@ -46,7 +46,7 @@ AliEMCALRecPoint::AliEMCALRecPoint()
   fMaxTrack = 0 ;
   fTheta = fPhi = 0. ; 
   fEMCALArm = 0;
-  fTower = kFALSE ; 
+  fPRESection = fECALSection = fHCALSection = kFALSE ; 
 }
 
 //____________________________________________________________________________
@@ -249,13 +249,26 @@ void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos) const
   
   AliEMCALGeometry * emcalgeom = AliEMCALGetter::GetInstance()->EMCALGeometry();  
   gpos.SetX(fPhi) ;
-  if (IsTower() ) 
-    gpos.SetY(emcalgeom->GetIP2Tower()) ;
+  if ( IsInECAL() ) 
+    gpos.SetY(emcalgeom->GetIP2ECALSection()) ;
+  else if ( IsInPRE() )
+    gpos.SetY(emcalgeom->GetIP2PRESection()) ;
+  else if ( IsInHCAL() )
+    gpos.SetY(emcalgeom->GetIP2HCALSection()) ;
   else 
-    gpos.SetY(emcalgeom->GetIP2PreShower()) ;
+    Fatal("GetGlobalPosition", "Unexpected tower section") ; 
   gpos.SetZ(fTheta) ; 
 }
 
+//____________________________________________________________________________
+void AliEMCALRecPoint::GetLocalPosition(TVector3 & lpos) const
+{
+  // returns the position of the cluster in the global reference system of ALICE
+  
+  lpos.SetX(fLocPos.X()) ;
+  lpos.SetY(fLocPos.Y()) ;
+  lpos.SetZ(fLocPos.Z()) ;
+}
 
 //______________________________________________________________________________
 void AliEMCALRecPoint::Paint(Option_t *)
