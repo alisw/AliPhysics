@@ -288,6 +288,11 @@ class TFluka : public TVirtualMC {
 
   void SetCurrentFlukaRegion(Int_t reg) {fCurrentFlukaRegion=reg;}
   Int_t GetCurrentFlukaRegion() const {return fCurrentFlukaRegion;}
+
+  void SetTrackIsEntering(){fTrackIsEntering = kTRUE; fTrackIsExiting = kFALSE;}
+  void SetTrackIsExiting() {fTrackIsExiting  = kTRUE;}
+  void SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
+  
   //
   // test
   // ------------------------------------------------
@@ -309,7 +314,8 @@ class TFluka : public TVirtualMC {
   Double_t fXsco;   //Fluka Draw procedures formal parameter
   Double_t fYsco;   //Fluka Draw procedures formal parameter
   Double_t fZsco;   //Fluka Draw procedures formal parameter
-
+  Bool_t   fTrackIsEntering;  // Flag for track entering
+  Bool_t   fTrackIsExiting;   // Flag for track exiting  
 
 
   //Geometry through Geant4 for the time being!!!

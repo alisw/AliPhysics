@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2003/02/18 16:12:17  morsch
+Protect  mpdgha against negative argument.
+
 Revision 1.14  2003/02/18 12:47:59  morsch
 Gmtod and Gdtom added.
 
@@ -156,6 +159,8 @@ TFluka::TFluka(const char *title, Int_t verbosity)
   :TVirtualMC("TFluka",title),
    fVerbosityLevel(verbosity),
    fInputFileName(""),
+   fTrackIsEntering(0),
+   fTrackIsExiting(0),
    fDetector(0),
    fCurrentFlukaRegion(-1)
 {
@@ -584,6 +589,10 @@ void TFluka::TrackPosition(TLorentzVector& position) const
   position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
   position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
   position.SetT(TRACKR.atrack);
+//
+//
+//
+
 }
 
 void TFluka::TrackMomentum(TLorentzVector& momentum) const
@@ -727,7 +736,8 @@ Bool_t   TFluka::IsTrackEntering() const
       fIcode == 29 ||
       fIcode == 39 ||
       fIcode == 49 ||
-      fIcode == 59) return 1;
+      fIcode == 59 ||
+      fTrackIsEntering) return 1;
   else return 0;
 }
 
@@ -744,7 +754,8 @@ Bool_t   TFluka::IsTrackExiting() const
       fIcode == 29 ||
       fIcode == 39 ||
       fIcode == 49 ||
-      fIcode == 59) return 1;
+      fIcode == 59 ||
+      fTrackIsExiting) return 1;
   else return 0;
 }
 
@@ -1196,6 +1207,18 @@ void TFluka::FutoTest()
   cout << "IsTrackOut=" << IsTrackOut() << endl;
   cout << "IsTrackDisappeared=" << IsTrackDisappeared() << endl;
   cout << "IsTrackAlive=" << IsTrackAlive() << endl;
+
+  Float_t x = position.X();
+  Float_t y = position.Y();
+  Float_t z = position.Z();
+  Float_t xm[3];
+  Float_t xd[3];
+  xm[0] = x; xm[1] = y; xm[2] = z;
+  printf("Global trackPosition: %f %f %f \n", x, y, z);
+  Gmtod(xm, xd, 1);
+  printf("Local trackPosition: %f %f %f \n", xd[0], xd[1], xd[2]);
+  Gdtom(xd, xm, 1);
+  printf("New trackPosition: %f %f %f \n", xm[0], xm[1], xm[2]);
   }
 
   else if((icode >= 10 && icode <= 15) ||
