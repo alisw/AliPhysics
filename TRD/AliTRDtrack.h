@@ -45,6 +45,8 @@ public:
    void     GetCovariance(Double_t cov[15]) const;  
    Double_t GetdEdx()  const {return fdEdx;}
    Double_t GetPIDsignal()  const {return GetdEdx();}
+   Float_t GetPIDsignals(Int_t i) const {return fdEdxPlane[i];}
+   Int_t  GetPIDTimBin(Int_t i) const {return fTimBinPlane[i];}
    Double_t GetEta()   const {return fE;}
 
    void     GetExternalCovariance(Double_t cov[15]) const ;   
@@ -93,6 +95,8 @@ public:
    Int_t    Rotate(Double_t angle);
 
    void     SetdEdx(Float_t dedx) {fdEdx=dedx;}  
+   void SetPIDsignals(Float_t dedx, Int_t i) {fdEdxPlane[i]=dedx;}
+   void  SetPIDTimBin(Int_t timbin, Int_t i) {fTimBinPlane[i]=timbin;}
    void     SetLikelihoodElectron(Float_t l) { fLhElectron = l; };  
 
    void     SetSampledEdx(Float_t q, Int_t i) {
@@ -125,6 +129,8 @@ protected:
 
    Int_t    fSeedLab;     // track label taken from seeding  
    Float_t  fdEdx;        // dE/dx 
+   Float_t  fdEdxPlane[kNPlane];  // dE/dx from all 6 planes
+   Int_t  fTimBinPlane[kNPlane];  // time bin of Max cluster from all 6 planes
 
    Double_t fAlpha;       // rotation angle
    Double_t fX;           // running local X-coordinate of the track (time bin)

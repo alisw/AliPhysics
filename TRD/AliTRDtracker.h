@@ -261,6 +261,7 @@ class AliTRDtracker : public AliTracker {
   Int_t         FollowProlongation(AliTRDtrack& t, Int_t rf);
   Int_t         FollowBackProlongation(AliTRDtrack& t);
   Int_t         Refit(AliTRDtrack& t, Int_t rf);
+  void          CookdEdxTimBin(AliTRDtrack& t);  
 
   Int_t         PropagateToTPC(AliTRDtrack& t);
   Int_t         PropagateToOuterPlane(AliTRDtrack& t, Double_t x);

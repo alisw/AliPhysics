@@ -36,17 +36,47 @@ AliTRDpidESD::AliTRDpidESD(Double_t *param)
   fRange=param[2]; // PID "range" (in sigmas)
 }
 
-Double_t AliTRDpidESD::Bethe(Double_t bg) {
+Double_t AliTRDpidESD::Bethe(Double_t bg) 
+{
   //
-  // This is the Bethe-Bloch function normalised to 1 at the minimum
+  // Parametrization of the Bethe-Bloch-curve
+  // The parametrization is the same as for the TPC and is taken from Lehrhaus.
   //
-  Double_t bg2=bg*bg;
-  Double_t bethe;
-  if (bg<3.5e1) 
-      bethe=(1.+ bg2)/bg2*(log(5940*bg2) - bg2/(1.+ bg2));
-  else // Density effect ( approximately :) 
-      bethe=(1.+ bg2)/bg2*(log(3.5*5940*bg) - bg2/(1.+ bg2));
-  return bethe/11.091;
+
+  // This parameters have been adjusted to averaged values from GEANT
+  const Double_t kP1 = 7.17960e-02;
+  const Double_t kP2 = 8.54196;
+  const Double_t kP3 = 1.38065e-06;
+  const Double_t kP4 = 5.30972;
+  const Double_t kP5 = 2.83798;
+
+  // This parameters have been adjusted to Xe-data found in:
+  // Allison & Cobb, Ann. Rev. Nucl. Sci. (1980), 30, 253
+  //const Double_t kP1 = 0.76176E-1;
+  //const Double_t kP2 = 10.632;
+  //const Double_t kP3 = 3.17983E-6;
+  //const Double_t kP4 = 1.8631;
+  //const Double_t kP5 = 1.9479;
+
+  // Lower cutoff of the Bethe-Bloch-curve to limit step sizes
+  const Double_t kBgMin = 0.8;
+  const Double_t kBBMax = 6.83298;
+  //const Double_t kBgMin = 0.6;
+  //const Double_t kBBMax = 17.2809;
+  //const Double_t kBgMin = 0.4;
+  //const Double_t kBBMax = 82.0;
+
+  if (bg > kBgMin) {
+    Double_t yy = bg / TMath::Sqrt(1. + bg*bg);
+    Double_t aa = TMath::Power(yy,kP4);
+    Double_t bb = TMath::Power((1./bg),kP5);
+             bb = TMath::Log(kP3 + bb);
+    return ((kP2 - aa - bb)*kP1 / aa);
+  }
+  else {
+    return kBBMax;
+  }
+
 }
 
 //_________________________________________________________________________

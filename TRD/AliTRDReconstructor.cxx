@@ -79,7 +79,7 @@ void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/,
 // make PID
 
   Double_t parTRD[] = {
-    187., // Min. Ionizing Particle signal.  Check it !!!
+    280., // Min. Ionizing Particle signal.  Check it !!!
     0.23, // relative resolution             Check it !!!
     10.   // PID range (in sigmas)
   };

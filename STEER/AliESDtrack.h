@@ -26,6 +26,8 @@
 #include <TObject.h>
 class AliKalmanTrack;
 
+const Int_t kNPlane = 6;
+
 class AliESDtrack : public TObject {
 public:
   AliESDtrack();
@@ -102,8 +104,12 @@ public:
   
   void SetTRDpid(const Double_t *p);
   void SetTRDtrack(AliKalmanTrack * track){fTRDtrack=track;}
+  void SetTRDsignals(Float_t dedx, Int_t i) {fTRDsignals[i]=dedx;}
+  void SetTRDTimBin(Int_t timbin, Int_t i) {fTRDTimBin[i]=timbin;}
   void GetTRDpid(Double_t *p) const;
   Float_t GetTRDsignal() const {return fTRDsignal;}
+  Float_t GetTRDsignals(Int_t i) const {return fTRDsignals[i];}
+  Int_t GetTRDTimBin(Int_t i) const {return fTRDTimBin[i];}
   Float_t GetTRDchi2() const {return fTRDchi2;}
   Int_t GetTRDclusters(UInt_t *idx) const;
   Int_t GetTRDncls() const {return fTRDncls;}
@@ -240,6 +246,8 @@ protected:
   Int_t   fTRDncls0;       // number of clusters assigned in the TRD before first material cross
   UInt_t  fTRDindex[130];   //! indices of the assigned TRD clusters
   Float_t fTRDsignal;      // detector's PID signal
+  Float_t fTRDsignals[kNPlane];  // TRD signals from all six planes
+  Int_t fTRDTimBin[kNPlane];     // Time bin of Max cluster from all six planes
   Float_t fTRDr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTRDLabel;       // label according TRD
   AliKalmanTrack * fTRDtrack; //! OWNER: pointer to the TRD track -- currently for debug purpose
@@ -266,7 +274,7 @@ protected:
   Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
   Float_t fRICHr[kSPECIES];// "detector response probabilities" (for the PID)
   	
-  ClassDef(AliESDtrack,9)  //ESDtrack 
+  ClassDef(AliESDtrack,10)  //ESDtrack 
 };
 
 #endif 

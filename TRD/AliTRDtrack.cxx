@@ -21,7 +21,6 @@
 #include "AliTRDgeometry.h" 
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
-#include "AliESDtrack.h" 
 #include "AliTRDclusterCorrection.h"
 
 ClassImp(AliTRDtrack)
@@ -55,6 +54,10 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   SetNumberOfClusters(1);
 
   fdEdx=0.;
+  for (Int_t i=0;i<kNPlane;i++){
+      fdEdxPlane[i] = 0.;
+      fTimBinPlane[i] = -1;
+  }
 
   fLhElectron = 0.0;
   fNWrong = 0;
@@ -87,6 +90,10 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
 
   SetChi2(t.GetChi2());
   fdEdx=t.fdEdx;
+  for (Int_t i=0;i<kNPlane;i++){
+      fdEdxPlane[i] = t.fdEdxPlane[i];
+      fTimBinPlane[i] = t.fTimBinPlane[i];
+  }
 
   fLhElectron = 0.0;
   fNWrong = t.fNWrong;
@@ -134,6 +141,10 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
   SetNumberOfClusters(0);
 
   fdEdx=t.GetdEdx();
+  for (Int_t i=0;i<kNPlane;i++){
+    fdEdxPlane[i] = 0.0;
+    fTimBinPlane[i] = -1;
+  }
 
   fLhElectron = 0.0;
   fNWrong = 0;
@@ -197,6 +208,10 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
     fIndex[i] = 0; //MI store indexes
   }
   fdEdx=t.GetTRDsignal();
+  for (Int_t i=0;i<kNPlane;i++){
+    fdEdxPlane[i] = t.GetTRDsignals(i);
+    fTimBinPlane[i] = t.GetTRDTimBin(i);
+  }
 
   fLhElectron = 0.0;
   fNWrong = 0;
@@ -258,8 +273,10 @@ AliTRDtrack::~AliTRDtrack()
 {
   //
   //
+
   if (fBackupTrack) delete fBackupTrack;
   fBackupTrack=0;
+
 }
             
 //_____________________________________________________________________________
@@ -364,7 +381,7 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
   for (i=0; i < nc; i++) {
     sorted[i]=fdQdl[i];
   }
-
+  /*
   Int_t swap; 
 
   do {
@@ -376,11 +393,13 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
       swap++;
     }
   } while (swap);
-
+  */
   Int_t nl=Int_t(low*nc), nu=Int_t(up*nc);
   Float_t dedx=0;
-  for (i=nl; i<=nu; i++) dedx += sorted[i];
-  dedx /= (nu-nl+1);
+  //for (i=nl; i<=nu; i++) dedx += sorted[i];
+  //dedx /= (nu-nl+1);
+  for (i=0; i<nc; i++) dedx += sorted[i];       // ADDED by PS
+  if((nu-nl)) dedx /= (nu-nl);                  // ADDED by PS
 
   SetdEdx(dedx);
 }                     

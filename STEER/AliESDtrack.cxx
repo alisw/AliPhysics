@@ -95,6 +95,7 @@ fRICHsignal(-1)
   for (i=0; i<3;i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3;i++)   { fV0Indexes[i]=-1;}
   for (i=0; i<130; i++) { fTRDindex[i]=0; }
+  for (i=0;i<kNPlane;i++) {fTRDsignals[i]=0.; fTRDTimBin[i]=-1;}
   for (Int_t i=0;i<4;i++) {fTPCPoints[i]=-1;}
   for (Int_t i=0;i<3;i++) {fTOFLabel[i]=-1;}
   for (Int_t i=0;i<10;i++) {fTOFInfo[i]=-1;}
@@ -166,6 +167,10 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   fTRDncls0=track.fTRDncls0;       
   for (Int_t i=0;i<130;i++) fTRDindex[i]=track.fTRDindex[i];   
   fTRDsignal=track.fTRDsignal;      
+  for (Int_t i=0;i<kNPlane;i++) {
+      fTRDsignals[i]=track.fTRDsignals[i]; 
+      fTRDTimBin[i]=track.fTRDTimBin[i];
+  }
   for (Int_t i=0;i<kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
   fTRDLabel=track.fTRDLabel;       
   fTRDtrack=0; 
