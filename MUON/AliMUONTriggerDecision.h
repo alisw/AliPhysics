@@ -18,6 +18,7 @@
 class AliLoader;
 class AliMUONData;
 class AliMUON;
+class AliRawReader;
 
 
 class AliMUONTriggerDecision : public TObject 
@@ -46,9 +47,11 @@ class AliMUONTriggerDecision : public TObject
 		    Int_t &iTrigger);    
   void GlobalTrigger();
 
-  void Digits2Trigger(); // main function
+  void Digits2Trigger(); // main function for digitizer
 
-  void Trigger2Trigger();
+  void Trigger2Trigger();// main function for reconstructor
+
+  void Trigger2Trigger(AliRawReader* rawReader); // for raw data reader purpose
 
   void ClearDigits();
   TClonesArray* Digits(Int_t DetectionPlane);
@@ -71,10 +74,7 @@ class AliMUONTriggerDecision : public TObject
 			Int_t pairLike[3]) const;  
   
 
-// Add a new Local Trigger
-  // virtual void AddLocalTrigger(const AliMUONLocalTrigger);
-//  Return pointer to Local Triggers
-  //  TClonesArray* LocalTriggers(){return fLocalTriggers;}
+
 
   ClassDef(AliMUONTriggerDecision,1) // Trigger Decision class
 

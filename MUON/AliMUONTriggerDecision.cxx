@@ -28,6 +28,7 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
+#include "AliRawReader.h" // for raw data
 
 
 //----------------------------------------------------------------------
@@ -1322,6 +1323,7 @@ void AliMUONTriggerDecision::PrintBitPatYInput(Int_t icirc){
   printf("\n");
   printf("===============================================================\n");
 }
+
 //----------------------------------------------------------------------
 void AliMUONTriggerDecision::PrintLocalOutput(Int_t minDevStrip[5], 
 					      Int_t minDev[5], 
@@ -1389,6 +1391,7 @@ void AliMUONTriggerDecision::GetGlobalTrigger(Int_t singlePlus[3],
     pairLike[i]    = fGlobalPairLike[i];    
   }
 }
+
 //_______________________________________________________________________
 void AliMUONTriggerDecision::Digits2Trigger(){
 // call the Trigger Algorithm and fill TreeD
@@ -1436,10 +1439,21 @@ void AliMUONTriggerDecision::Digits2Trigger(){
     }
   }
 }
+
 //_______________________________________________________________________
-void AliMUONTriggerDecision::Trigger2Trigger() {
+void AliMUONTriggerDecision::Trigger2Trigger() 
+{
 // copy trigger from TreeD to TreeR
 
   fMUONData->SetTreeAddress("GLT");
   fMUONData->GetTriggerD();
+}
+
+//_______________________________________________________________________
+void AliMUONTriggerDecision::Trigger2Trigger(AliRawReader* /*rawReader*/) 
+{
+// call the Trigger Algorithm from raw data and fill TreeR 
+
+   Fatal("Trigger2Trigger","Trigger not implemented for raw data input");
+
 }

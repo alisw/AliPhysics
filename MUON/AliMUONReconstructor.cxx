@@ -84,7 +84,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     printf("Event %d\n",ievent);
     runLoader->GetEvent(ievent);
 
-    //----------------------- digit2cluster & Digits2Trigger -------------------
+    //----------------------- digit2cluster & Trigger2Trigger -------------------
     if (!loader->TreeR()) loader->MakeRecPointsContainer();
      
     // tracking branch
@@ -153,27 +153,24 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   AliMUONData* dataCluster = recoCluster->GetMUONData();
 
   AliMUONTriggerDecision* trigDec = new AliMUONTriggerDecision(loader,0,dataCluster);
-  //  AliMUONData* dataTrig = trigDec->GetMUONData();
-
-
+ 
   for (Int_t i = 0; i < 10; i++) {
     AliMUONClusterFinderVS *recModel = new AliMUONClusterFinderVS();
     recModel->SetGhostChi2Cut(10);
     recoCluster->SetReconstructionModel(i,recModel);
   } 
 
-  loader->LoadDigits("READ");
   loader->LoadRecPoints("RECREATE");
   loader->LoadTracks("RECREATE");
   
   //   Loop over events  
- Int_t iEvent = 0;
+  Int_t iEvent = 0;
             
- while (rawReader->NextEvent()) {
+  while (rawReader->NextEvent()) {
     printf("Event %d\n",iEvent);
     runLoader->GetEvent(iEvent++);
 
-    //----------------------- digit2cluster & Digits2Trigger -------------------
+    //----------------------- digit2cluster & Trigger2Trigger -------------------
     if (!loader->TreeR()) loader->MakeRecPointsContainer();
      
     // tracking branch
@@ -185,7 +182,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     // trigger branch
     dataCluster->MakeBranch("TC");
     dataCluster->SetTreeAddress("TC");
-    trigDec->Trigger2Trigger(); 
+    trigDec->Trigger2Trigger(rawReader); 
     dataCluster->Fill("TC");
 
     loader->WriteRecPoints("OVERWRITE");
@@ -218,7 +215,6 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     dataEvent->ResetRecTriggerTracks();
   
   }
-  loader->UnloadDigits();
   loader->UnloadRecPoints();
   loader->UnloadTracks();
 
