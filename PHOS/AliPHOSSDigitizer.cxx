@@ -256,8 +256,8 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
       delete file;
     }
 
-    gAlice->TreeS()->Fill() ; 
-    gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
+    sdigitsBranch->Fill() ; 
+    gAlice->TreeS()->AutoSave() ;
     
     if(strstr(option,"deb"))
       PrintSDigits(option) ;

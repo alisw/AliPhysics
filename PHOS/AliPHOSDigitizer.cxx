@@ -773,6 +773,6 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
   }
   
   digitsBranch->Fill() ;
-  treeD->Write(0,kOverwrite) ;  
+  treeD->AutoSave() ; // Write(0,kOverwrite) ;  
  
 }
