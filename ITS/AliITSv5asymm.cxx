@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/02/14 14:22:58  nilsen
+Now looking in the right director for the old .det.
+
 Revision 1.9  2001/02/14 14:12:43  nilsen
 Forgot about the nonexisting v in ITSgeometry_5.det.
 
@@ -137,8 +140,8 @@ AliITSv5asymm::AliITSv5asymm() {
     fIdSens = 0;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
-    fGeomOldDetIn = kTRUE;  // Read old formatted .det file
+    fGeomDetIn    = kFALSE; // Don't Read .det file
+    fGeomOldDetIn = kFALSE; // Don't Read old formatted .det file
     fMajorVersion = IsVersion();
     fMinorVersion = 3;
     for(i=0;i<60;i++) fRead[i] = '\0';
@@ -164,8 +167,8 @@ AliITSv5asymm::AliITSv5asymm(const char *name, const char *title) : AliITS(name,
     for (i=0;i<fIdN;i++) fIdSens[i] = 0;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
-    fGeomOldDetIn = kTRUE;  // Read old formatted .det file
+    fGeomDetIn    = kFALSE; // Don't Read .det file
+    fGeomOldDetIn = kFALSE; // Don't Read old formatted .det file
     fMajorVersion = IsVersion();
     fMinorVersion = 3;
     for(i=0;i<60;i++) fRead[i] = '\0';
@@ -236,7 +239,7 @@ void AliITSv5asymm::BuildGeometry(){
    for(lad=1;lad<=gm->GetNladders(lay);lad++)
     for(det=1;det<=gm->GetNdetectors(lay);det++){
           try {
-              box  = new TBRIK ("ActiveSPD","Active volume of SPD","SPD SI DET",
+              box  = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",
 		        	    0.64,0.0075,4.19); 
           } catch (...) {
 	      cout << "EXCEPTION in box = new TBRIK" << endl;
@@ -751,13 +754,11 @@ void AliITSv5asymm::Init(){
 //     Initialise the ITS after it has been created.
 ////////////////////////////////////////////////////////////////////////
     Int_t i;
-    Bool_t bg = kFALSE;
 
     cout << endl;
     for(i=0;i<30;i++) cout << "*";cout << " ITSv5_Init ";
     for(i=0;i<30;i++) cout << "*";cout << endl;
 //
-    if(fITSgeom==0) bg = kTRUE;
     if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
     if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
     if(fITSgeom!=0) delete fITSgeom;
@@ -767,8 +768,6 @@ void AliITSv5asymm::Init(){
 
     if(!fGeomDetIn) this->InitAliITSgeom();
     if(fGeomDetOut) fITSgeom->WriteNewFile(fWrite);
-    if(bg) BuildGeometry(); // call BuildGeometry here if fITSgeom was not
-                            // defined ealier.
     AliITS::Init();
 //
     for(i=0;i<72;i++) cout << "*";

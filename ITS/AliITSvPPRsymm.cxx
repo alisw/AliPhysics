@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/03/15 13:47:55  barbera
+Some service mother volumes modified
+
 Revision 1.9  2001/03/13 18:13:30  barbera
 Some mother volumes sligthly modified to eliminate an overlap with the absorber
 
@@ -181,7 +184,7 @@ AliITSvPPRsymm::AliITSvPPRsymm() {
     fIdSens    = 0;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
+    fGeomDetIn    = kFALSE; // Don't Read .det file
     fMajorVersion = IsVersion();
     fMinorVersion = -1;
     for(i=0;i<60;i++) fRead[i] = '\0';
@@ -209,7 +212,7 @@ AliITSvPPRsymm::AliITSvPPRsymm(const char *name, const char *title) : AliITS(nam
     fMinorVersion = 2;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
+    fGeomDetIn    = kFALSE; // Don't Read .det file
     SetThicknessDet1();
     SetThicknessDet2();
     SetThicknessChip1();

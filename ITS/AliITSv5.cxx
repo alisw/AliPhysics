@@ -15,6 +15,14 @@
 
 /*
 $Log$
+Revision 1.31  2001/02/13 16:53:35  nilsen
+Fixed a but when trying to use GEANT4. Needed to replace
+if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
+because just casting gMC to be TGeant3* even when it realy is a TGeant3 pointer
+did not result in a zero value. For AliITSv5asymm and AliITSv5symm, needed
+to fix a bug in the initilizers and a bug in BuildGeometry. This is now done
+in the same way as in AliITSv5.cxx.
+
 Revision 1.30  2001/02/09 20:06:26  nilsen
 Fixed bug in distructor. Can't distroy fixxed length arrays. Thanks Peter.
 
@@ -120,8 +128,8 @@ AliITSv5::AliITSv5() {
     fIdSens = 0;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
-    fGeomOldDetIn = kTRUE;  // Read old formatted .det file
+    fGeomDetIn    = kFALSE; // Don't Read .det file
+    fGeomOldDetIn = kFALSE; // Don't Read old formatted .det file
     fMajorVersion = IsVersion();
     fMinorVersion = 1;
     for(i=0;i<60;i++) fRead[i] = '\0';
@@ -147,8 +155,8 @@ AliITSv5::AliITSv5(const char *name, const char *title) : AliITS(name, title){
     for (i=0;i<fIdN;i++) fIdSens[i] = 0;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
-    fGeomOldDetIn = kTRUE;  // Read old formatted .det file
+    fGeomDetIn    = kFALSE; // Don't Read .det file
+    fGeomOldDetIn = kFALSE; // Don't Read old formatted .det file
     fMajorVersion = IsVersion();
     fMinorVersion = 1;
     for(i=0;i<60;i++) fRead[i] = '\0';
@@ -731,13 +739,11 @@ void AliITSv5::Init(){
 //     Initialise the ITS after it has been created.
 ////////////////////////////////////////////////////////////////////////
     Int_t i;
-    Bool_t bg = kFALSE;
 
     cout << endl;
     for(i=0;i<30;i++) cout << "*";cout << " ITSv5_Init ";
     for(i=0;i<30;i++) cout << "*";cout << endl;
 //
-    if(fITSgeom==0) bg = kTRUE;
     if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
     if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
     if(fGeomDetIn && !fGeomOldDetIn){
@@ -749,8 +755,6 @@ void AliITSv5::Init(){
 
     if(!fGeomDetIn) this->InitAliITSgeom();
     if(fGeomDetOut) fITSgeom->WriteNewFile(fWrite);
-    if(bg) BuildGeometry(); // call BuildGeometry here if fITSgeom was not
-                            // defined ealier
     AliITS::Init();
 //
     for(i=0;i<72;i++) cout << "*";

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2001/03/20 19:22:51  barbera
+Flags for the rails and the cooling fluid added. Some changes in the volumes of the SSD cones after the meeting with the engineers in Torino.
+
 Revision 1.23  2001/03/13 21:18:44  barbera
 Some misleading comments removed
 
@@ -147,7 +150,7 @@ AliITSvPPRasymm::AliITSvPPRasymm() {
     fIdSens       = 0;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
+    fGeomDetIn    = kFALSE; // Don't Read .det file
     fMajorVersion = IsVersion();
     fMinorVersion = -1;
     for(i=0;i<60;i++) fRead[i] = '\0';
@@ -175,7 +178,7 @@ AliITSvPPRasymm::AliITSvPPRasymm(const char *name, const char *title) : AliITS(n
     fMinorVersion = 2;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
+    fGeomDetIn    = kFALSE; // Don't Read .det file
     SetThicknessDet1();
     SetThicknessDet2();
     SetThicknessChip1();
