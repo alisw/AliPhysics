@@ -29,7 +29,7 @@ AliSteppingActionMessenger::AliSteppingActionMessenger(
 
   fMaxNofStepsCmd = new G4UIcmdWithAnInteger("/aliTracking/maxNofSteps", this);
   fMaxNofStepsCmd
-    ->SetGuidance("Set tracking verbose level for detected looping tracks.");
+    ->SetGuidance("Set maximum number of steps allowed.");
   fMaxNofStepsCmd->SetParameterName("MaxNofSteps", false);
   fMaxNofStepsCmd->SetRange("MaxNofSteps >= 0");
   fMaxNofStepsCmd->AvailableForStates(Idle);
