@@ -510,14 +510,15 @@ void AliL3Transform::Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Float_t pad,F
   else
     xyz[1]=(pad-0.5*(npads-1))*fPadPitchWidthUp;
   xyz[2]=fZWidth*time-3.*fZSigma;
-  Int_t sign=-1;
-    
+  Int_t sign=1;
+  
+  
   if(slice < 18)
     sign = 1;
   else
     sign = -1;
-  xyz[2]=sign*(250.-xyz[2]);
   
+  xyz[2]=sign*(250.-xyz[2]);
   
   //Int_t nis=fNSectorLow;
   //Int_t nos=fNSectorUp;
