@@ -292,7 +292,7 @@ void AliLog::SetFileOutput(const char* fileName)
 
   if (!fgInstance) new AliLog;
   for (Int_t iType = kFatal; iType < kMaxType; iType++) {
-    if ((fgInstance->fOutputTypes[iType] = 2) && 
+    if ((fgInstance->fOutputTypes[iType] == 2) && 
 	(fgInstance->fFileNames[iType].CompareTo(fileName) != 0)) {
       fgInstance->CloseFile(iType);
     }
@@ -309,7 +309,7 @@ void AliLog::SetFileOutput(EType type, const char* fileName)
 
   if ((type < kFatal) || (type >= kMaxType)) return;
   if (!fgInstance) new AliLog;
-  if ((fgInstance->fOutputTypes[type] = 2) && 
+  if ((fgInstance->fOutputTypes[type] == 2) && 
       (fgInstance->fFileNames[type].CompareTo(fileName) != 0)) {
     fgInstance->CloseFile(type);
   }
