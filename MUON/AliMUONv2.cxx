@@ -626,42 +626,42 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //  
       // ___________________Volume thicknesses________________________
 
-  const Float_t hzFrameThickness = 1.59/2.;     //equivalent thickness
-  const Float_t hzOuterFrameEpoxy = 1.19/2.;    //equivalent thickness
-  const Float_t hzOuterFrameInox = 0.1/2.;      //equivalent thickness
-  const Float_t hzFoam = 2.083/2.;              //evaluated elsewhere
+  Float_t hzFrameThickness = 1.59/2.;     //equivalent thickness
+  Float_t hzOuterFrameEpoxy = 1.19/2.;    //equivalent thickness
+  Float_t hzOuterFrameInox = 0.1/2.;      //equivalent thickness
+  Float_t hzFoam = 2.083/2.;              //evaluated elsewhere
   
 // Pertaining to the top outer area 
-  const Float_t hzTopAnodeSteel1 = 0.185/2.;    //equivalent thickness
-  const Float_t hzTopAnodeSteel2 = 0.51/2.;     //equivalent thickness  
-  const Float_t hzAnodeFR4 = 0.08/2.;           //equivalent thickness
-  const Float_t hzTopEarthFaceCu = 0.364/2.;    //equivalent thickness
-  const Float_t hzTopEarthProfileCu = 1.1/2.;   //equivalent thickness
-  const Float_t hzTopPositionerSteel = 1.45/2.; //should really be 2.125/2.; 
-  const Float_t hzTopGasSupportAl = 0.85/2.;    //equivalent thickness
+  Float_t hzTopAnodeSteel1 = 0.185/2.;    //equivalent thickness
+  Float_t hzTopAnodeSteel2 = 0.51/2.;     //equivalent thickness  
+  Float_t hzAnodeFR4 = 0.08/2.;           //equivalent thickness
+  Float_t hzTopEarthFaceCu = 0.364/2.;    //equivalent thickness
+  Float_t hzTopEarthProfileCu = 1.1/2.;   //equivalent thickness
+  Float_t hzTopPositionerSteel = 1.45/2.; //should really be 2.125/2.; 
+  Float_t hzTopGasSupportAl = 0.85/2.;    //equivalent thickness
   
 // Pertaining to the vertical outer area  
-  const Float_t hzVerticalCradleAl = 0.8/2.;     //equivalent thickness
-  const Float_t hzLateralSightAl = 0.975/2.;     //equivalent thickness
-  const Float_t hzLateralPosnInoxFace = 2.125/2.;//equivalent thickness
-  const Float_t hzLatPosInoxProfM = 6.4/2.;      //equivalent thickness
-  const Float_t hzLatPosInoxProfNF = 1.45/2.;    //equivalent thickness
-  const Float_t hzLateralPosnAl = 0.5/2.;        //equivalent thickness
-  const Float_t hzVertEarthFaceCu = 0.367/2.;    //equivalent thickness
-  const Float_t hzVertBarSteel = 0.198/2.;       //equivalent thickness
-  const Float_t hzVertEarthProfCu = 1.1/2.;      //equivalent thickness
+  Float_t hzVerticalCradleAl = 0.8/2.;     //equivalent thickness
+  Float_t hzLateralSightAl = 0.975/2.;     //equivalent thickness
+  Float_t hzLateralPosnInoxFace = 2.125/2.;//equivalent thickness
+  Float_t hzLatPosInoxProfM = 6.4/2.;      //equivalent thickness
+  Float_t hzLatPosInoxProfNF = 1.45/2.;    //equivalent thickness
+  Float_t hzLateralPosnAl = 0.5/2.;        //equivalent thickness
+  Float_t hzVertEarthFaceCu = 0.367/2.;    //equivalent thickness
+  Float_t hzVertBarSteel = 0.198/2.;       //equivalent thickness
+  Float_t hzVertEarthProfCu = 1.1/2.;      //equivalent thickness
 
       //_______________Parameter definitions in sequence _________
 
 // InVFrame parameters
-  const Float_t hxInVFrame  = 1.85/2.;
-  const Float_t hyInVFrame  = 73.95/2.;
-  const Float_t hzInVFrame  = hzFrameThickness;
+  Float_t hxInVFrame  = 1.85/2.;
+  Float_t hyInVFrame  = 73.95/2.;
+  Float_t hzInVFrame  = hzFrameThickness;
 
 //Flat 7.5mm vertical section
-  const Float_t hxV1mm  = 0.75/2.;
-  const Float_t hyV1mm  = 1.85/2.;
-  const Float_t hzV1mm  = hzFrameThickness;
+  Float_t hxV1mm  = 0.75/2.;
+  Float_t hyV1mm  = 1.85/2.;
+  Float_t hzV1mm  = hzFrameThickness;
 
 // OuterTopFrame Structure 
 //
@@ -689,164 +689,164 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //---
   
 //TopFrameAnode parameters - cuboid, 2 layers
-  const Float_t hxTFA = 34.1433/2.;
-  const Float_t hyTFA = 7.75/2.;
-  const Float_t hzTFAE = hzOuterFrameEpoxy;     // layer 1 thickness
-  const Float_t hzTFAI = hzOuterFrameInox;      // layer 3 thickness
+  Float_t hxTFA = 34.1433/2.;
+  Float_t hyTFA = 7.75/2.;
+  Float_t hzTFAE = hzOuterFrameEpoxy;     // layer 1 thickness
+  Float_t hzTFAI = hzOuterFrameInox;      // layer 3 thickness
   
 // TopFrameAnodeA parameters - trapezoid, 2 layers
-  const Float_t hzFAAE = hzOuterFrameEpoxy;     // layer 1 thickness
-  const Float_t hzFAAI = hzOuterFrameInox;      // layer 3 thickness
-  const Float_t tetFAA = 0.;
-  const Float_t phiFAA = 0.;
-  const Float_t h1FAA = 8.7/2.;
-  const Float_t bl1FAA = 4.35/2.;
-  const Float_t tl1FAA =  7.75/2.;
-  const Float_t alp1FAA = 11.06; 
-  const Float_t h2FAA = 8.7/2.;
-  const Float_t bl2FAA = 4.35/2.;
-  const Float_t tl2FAA = 7.75/2.;
-  const Float_t alp2FAA = 11.06;  
+  Float_t hzFAAE = hzOuterFrameEpoxy;     // layer 1 thickness
+  Float_t hzFAAI = hzOuterFrameInox;      // layer 3 thickness
+  Float_t tetFAA = 0.;
+  Float_t phiFAA = 0.;
+  Float_t h1FAA = 8.7/2.;
+  Float_t bl1FAA = 4.35/2.;
+  Float_t tl1FAA =  7.75/2.;
+  Float_t alp1FAA = 11.06; 
+  Float_t h2FAA = 8.7/2.;
+  Float_t bl2FAA = 4.35/2.;
+  Float_t tl2FAA = 7.75/2.;
+  Float_t alp2FAA = 11.06;  
   
 // TopFrameAnodeB parameters - trapezoid, 2 layers
-  const Float_t hzFABE = hzOuterFrameEpoxy;     // layer 1 thickness
-  const Float_t hzFABI = hzOuterFrameInox;      // layer 3 thickness
-  const Float_t tetFAB = 0.;
-  const Float_t phiFAB = 0.;
-  const Float_t h1FAB = 8.70/2.;
-  const Float_t bl1FAB = 0.;
-  const Float_t tl1FAB = 4.35/2.;
-  const Float_t alp1FAB = 14.03; 
-  const Float_t h2FAB = 8.70/2.;
-  const Float_t bl2FAB = 0.;
-  const Float_t tl2FAB = 4.35/2.;
-  const Float_t alp2FAB = 14.03;  
+  Float_t hzFABE = hzOuterFrameEpoxy;     // layer 1 thickness
+  Float_t hzFABI = hzOuterFrameInox;      // layer 3 thickness
+  Float_t tetFAB = 0.;
+  Float_t phiFAB = 0.;
+  Float_t h1FAB = 8.70/2.;
+  Float_t bl1FAB = 0.;
+  Float_t tl1FAB = 4.35/2.;
+  Float_t alp1FAB = 14.03; 
+  Float_t h2FAB = 8.70/2.;
+  Float_t bl2FAB = 0.;
+  Float_t tl2FAB = 4.35/2.;
+  Float_t alp2FAB = 14.03;  
   
 // TopAnode parameters - cuboid (part 1 of 3 parts)
-  const Float_t hxTA1 = 16.2/2.;
-  const Float_t hyTA1 = 3.5/2.;
-  const Float_t hzTA11 = hzTopAnodeSteel1;   // layer 1
-  const Float_t hzTA12 = hzAnodeFR4;         // layer 2 
+  Float_t hxTA1 = 16.2/2.;
+  Float_t hyTA1 = 3.5/2.;
+  Float_t hzTA11 = hzTopAnodeSteel1;   // layer 1
+  Float_t hzTA12 = hzAnodeFR4;         // layer 2 
 
 // TopAnode parameters - trapezoid 1 (part 2 of 3 parts)
-  const Float_t hzTA21 = hzTopAnodeSteel2;   // layer 1 
-  const Float_t hzTA22 = hzAnodeFR4;         // layer 2 
-  const Float_t tetTA2 = 0.;
-  const Float_t phiTA2= 0.;
-  const Float_t h1TA2 = 7.268/2.;
-  const Float_t bl1TA2 = 2.03/2.;
-  const Float_t tl1TA2 = 3.5/2.;
-  const Float_t alp1TA2 = 5.78; 
-  const Float_t h2TA2 = 7.268/2.;
-  const Float_t bl2TA2 = 2.03/2.;
-  const Float_t tl2TA2 = 3.5/2.;
-  const Float_t alp2TA2 = 5.78;  
+  Float_t hzTA21 = hzTopAnodeSteel2;   // layer 1 
+  Float_t hzTA22 = hzAnodeFR4;         // layer 2 
+  Float_t tetTA2 = 0.;
+  Float_t phiTA2= 0.;
+  Float_t h1TA2 = 7.268/2.;
+  Float_t bl1TA2 = 2.03/2.;
+  Float_t tl1TA2 = 3.5/2.;
+  Float_t alp1TA2 = 5.78; 
+  Float_t h2TA2 = 7.268/2.;
+  Float_t bl2TA2 = 2.03/2.;
+  Float_t tl2TA2 = 3.5/2.;
+  Float_t alp2TA2 = 5.78;  
 
 // TopAnode parameters - trapezoid 2 (part 3 of 3 parts)
-  const Float_t hzTA3 = hzAnodeFR4;       // layer 1 
-  const Float_t tetTA3 = 0.;
-  const Float_t phiTA3 = 0.;
-  const Float_t h1TA3 = 7.268/2.;
-  const Float_t bl1TA3 = 0.;
-  const Float_t tl1TA3 = 2.03/2.;
-  const Float_t alp1TA3 = 7.95; 
-  const Float_t h2TA3 = 7.268/2.;
-  const Float_t bl2TA3 = 0.;
-  const Float_t tl2TA3 = 2.03/2.;
-  const Float_t alp2TA3 = 7.95;  
+  Float_t hzTA3 = hzAnodeFR4;       // layer 1 
+  Float_t tetTA3 = 0.;
+  Float_t phiTA3 = 0.;
+  Float_t h1TA3 = 7.268/2.;
+  Float_t bl1TA3 = 0.;
+  Float_t tl1TA3 = 2.03/2.;
+  Float_t alp1TA3 = 7.95; 
+  Float_t h2TA3 = 7.268/2.;
+  Float_t bl2TA3 = 0.;
+  Float_t tl2TA3 = 2.03/2.;
+  Float_t alp2TA3 = 7.95;  
   
 // TopEarthFace parameters - single trapezoid
-  const Float_t hzTEF = hzTopEarthFaceCu;
-  const Float_t tetTEF = 0.;
-  const Float_t phiTEF = 0.;
-  const Float_t h1TEF = 1.200/2.;
-  const Float_t bl1TEF = 21.323/2.;
-  const Float_t tl1TEF = 17.963/2.;
-  const Float_t alp1TEF = -54.46; 
-  const Float_t h2TEF = 1.200/2.;
-  const Float_t bl2TEF = 21.323/2.;
-  const Float_t tl2TEF = 17.963/2.;
-  const Float_t alp2TEF = -54.46;
+  Float_t hzTEF = hzTopEarthFaceCu;
+  Float_t tetTEF = 0.;
+  Float_t phiTEF = 0.;
+  Float_t h1TEF = 1.200/2.;
+  Float_t bl1TEF = 21.323/2.;
+  Float_t tl1TEF = 17.963/2.;
+  Float_t alp1TEF = -54.46; 
+  Float_t h2TEF = 1.200/2.;
+  Float_t bl2TEF = 21.323/2.;
+  Float_t tl2TEF = 17.963/2.;
+  Float_t alp2TEF = -54.46;
 
 // TopEarthProfile parameters - single trapezoid
-  const Float_t hzTEP = hzTopEarthProfileCu;
-  const Float_t tetTEP = 0.;
-  const Float_t phiTEP = 0.;
-  const Float_t h1TEP = 0.40/2.;
-  const Float_t bl1TEP = 31.766/2.;
-  const Float_t tl1TEP = 30.535/2.;
-  const Float_t alp1TEP = -56.98; 
-  const Float_t h2TEP = 0.40/2.;
-  const Float_t bl2TEP = 31.766/2.;
-  const Float_t tl2TEP = 30.535/2.;
-  const Float_t alp2TEP = -56.98;
+  Float_t hzTEP = hzTopEarthProfileCu;
+  Float_t tetTEP = 0.;
+  Float_t phiTEP = 0.;
+  Float_t h1TEP = 0.40/2.;
+  Float_t bl1TEP = 31.766/2.;
+  Float_t tl1TEP = 30.535/2.;
+  Float_t alp1TEP = -56.98; 
+  Float_t h2TEP = 0.40/2.;
+  Float_t bl2TEP = 31.766/2.;
+  Float_t tl2TEP = 30.535/2.;
+  Float_t alp2TEP = -56.98;
 
 // TopPositioner parameters - single Stainless Steel trapezoid 
-  const Float_t hzTP = hzTopPositionerSteel;
-  const Float_t tetTP = 0.;
-  const Float_t phiTP = 0.;
-  const Float_t h1TP = 3.00/2.;
-  const Float_t bl1TP = 7.023/2.;
-  const Float_t tl1TP = 7.314/2.;
-  const Float_t alp1TP = 2.78; 
-  const Float_t h2TP = 3.00/2.;
-  const Float_t bl2TP = 7.023/2.;
-  const Float_t tl2TP = 7.314/2.;
-  const Float_t alp2TP = 2.78;
+  Float_t hzTP = hzTopPositionerSteel;
+  Float_t tetTP = 0.;
+  Float_t phiTP = 0.;
+  Float_t h1TP = 3.00/2.;
+  Float_t bl1TP = 7.023/2.;
+  Float_t tl1TP = 7.314/2.;
+  Float_t alp1TP = 2.78; 
+  Float_t h2TP = 3.00/2.;
+  Float_t bl2TP = 7.023/2.;
+  Float_t tl2TP = 7.314/2.;
+  Float_t alp2TP = 2.78;
 
 // TopGasSupport parameters - single cuboid 
-  const Float_t hxTGS  = 8.50/2.;
-  const Float_t hyTGS  = 3.00/2.;
-  const Float_t hzTGS  = hzTopGasSupportAl;
+  Float_t hxTGS  = 8.50/2.;
+  Float_t hyTGS  = 3.00/2.;
+  Float_t hzTGS  = hzTopGasSupportAl;
     
 // OutEdgeFrame parameters - 4 trapezoidal sections, 2 layers of material
 //
 //---
 
 // Trapezoid 1
-  const Float_t hzOETFE = hzOuterFrameEpoxy;    // layer 1 
-  const Float_t hzOETFI = hzOuterFrameInox;     // layer 3
+  Float_t hzOETFE = hzOuterFrameEpoxy;    // layer 1 
+  Float_t hzOETFI = hzOuterFrameInox;     // layer 3
    
-  const Float_t tetOETF = 0.;            // common to all 4 trapezoids
-  const Float_t phiOETF = 0.;            // common to all 4 trapezoids
+  Float_t tetOETF = 0.;            // common to all 4 trapezoids
+  Float_t phiOETF = 0.;            // common to all 4 trapezoids
 
-  const Float_t h1OETF = 7.196/2.;       // common to all 4 trapezoids
-  const Float_t h2OETF = 7.196/2.;       // common to all 4 trapezoids   
+  Float_t h1OETF = 7.196/2.;       // common to all 4 trapezoids
+  Float_t h2OETF = 7.196/2.;       // common to all 4 trapezoids   
   
-  const Float_t bl1OETF1 = 3.75/2; 
-  const Float_t tl1OETF1 = 3.996/2.;
-  const Float_t alp1OETF1 = 0.98;
+  Float_t bl1OETF1 = 3.75/2; 
+  Float_t tl1OETF1 = 3.996/2.;
+  Float_t alp1OETF1 = 0.98;
 
-  const Float_t bl2OETF1 = 3.75/2;
-  const Float_t tl2OETF1 = 3.996/2.;
-  const Float_t alp2OETF1 = 0.98;
+  Float_t bl2OETF1 = 3.75/2;
+  Float_t tl2OETF1 = 3.996/2.;
+  Float_t alp2OETF1 = 0.98;
   
 // Trapezoid 2
-  const Float_t bl1OETF2 = 3.01/2.;
-  const Float_t tl1OETF2 = 3.75/2;
-  const Float_t alp1OETF2 = 2.94;
+  Float_t bl1OETF2 = 3.01/2.;
+  Float_t tl1OETF2 = 3.75/2;
+  Float_t alp1OETF2 = 2.94;
       
-  const Float_t bl2OETF2 = 3.01/2.;
-  const Float_t tl2OETF2 = 3.75/2;
-  const Float_t alp2OETF2 = 2.94; 
+  Float_t bl2OETF2 = 3.01/2.;
+  Float_t tl2OETF2 = 3.75/2;
+  Float_t alp2OETF2 = 2.94; 
  
 // Trapezoid 3
-  const Float_t bl1OETF3 = 1.767/2.;
-  const Float_t tl1OETF3 = 3.01/2.;
-  const Float_t alp1OETF3 = 4.94;
+  Float_t bl1OETF3 = 1.767/2.;
+  Float_t tl1OETF3 = 3.01/2.;
+  Float_t alp1OETF3 = 4.94;
       
-  const Float_t bl2OETF3 = 1.767/2.;
-  const Float_t tl2OETF3 = 3.01/2.; 
-  const Float_t alp2OETF3 = 4.94; 
+  Float_t bl2OETF3 = 1.767/2.;
+  Float_t tl2OETF3 = 3.01/2.; 
+  Float_t alp2OETF3 = 4.94; 
   
 // Trapezoid 4
-  const Float_t bl1OETF4 = 0.;
-  const Float_t tl1OETF4 = 1.77/2.;
-  const Float_t alp1OETF4 = 7.01;
+  Float_t bl1OETF4 = 0.;
+  Float_t tl1OETF4 = 1.77/2.;
+  Float_t alp1OETF4 = 7.01;
       
-  const Float_t bl2OETF4 = 0.;
-  const Float_t tl2OETF4 = 1.77/2.;
-  const Float_t alp2OETF4 =  7.01;   
+  Float_t bl2OETF4 = 0.;
+  Float_t tl2OETF4 = 1.77/2.;
+  Float_t alp2OETF4 =  7.01;   
   
 // Frame Structure (OutVFrame):
 //
@@ -859,184 +859,184 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //---
 
 // OutVFrame parameters - cuboid
-  const Float_t hxOutVFrame = 1.85/2.;
-  const Float_t hyOutVFrame = 46.23/2.;
-  const Float_t hzOutVFrame = hzFrameThickness;
+  Float_t hxOutVFrame = 1.85/2.;
+  Float_t hyOutVFrame = 46.23/2.;
+  Float_t hzOutVFrame = hzFrameThickness;
 
 // OutVFrame corner parameters - trapezoid
-  const Float_t hzOCTF = hzFrameThickness;
-  const Float_t tetOCTF = 0.;
-  const Float_t phiOCTF = 0.;
-  const Float_t h1OCTF = 1.85/2.;
-  const Float_t bl1OCTF = 0.;
-  const Float_t tl1OCTF = 3.66/2.;
-  const Float_t alp1OCTF = 44.67; 
-  const Float_t h2OCTF = 1.85/2.;
-  const Float_t bl2OCTF = 0.;
-  const Float_t tl2OCTF = 3.66/2.;
-  const Float_t alp2OCTF = 44.67;  
+  Float_t hzOCTF = hzFrameThickness;
+  Float_t tetOCTF = 0.;
+  Float_t phiOCTF = 0.;
+  Float_t h1OCTF = 1.85/2.;
+  Float_t bl1OCTF = 0.;
+  Float_t tl1OCTF = 3.66/2.;
+  Float_t alp1OCTF = 44.67; 
+  Float_t h2OCTF = 1.85/2.;
+  Float_t bl2OCTF = 0.;
+  Float_t tl2OCTF = 3.66/2.;
+  Float_t alp2OCTF = 44.67;  
   
 // VertEarthFaceCu parameters - single trapezoid
-  const Float_t hzVFC = hzVertEarthFaceCu;
-  const Float_t tetVFC = 0.;
-  const Float_t phiVFC = 0.;
-  const Float_t h1VFC = 1.200/2.;
-  const Float_t bl1VFC = 46.11/2.;
-  const Float_t tl1VFC = 48.236/2.;
-  const Float_t alp1VFC = 41.54; 
-  const Float_t h2VFC = 1.200/2.;
-  const Float_t bl2VFC = 46.11/2.;
-  const Float_t tl2VFC = 48.236/2.;
-  const Float_t alp2VFC = 41.54;
+  Float_t hzVFC = hzVertEarthFaceCu;
+  Float_t tetVFC = 0.;
+  Float_t phiVFC = 0.;
+  Float_t h1VFC = 1.200/2.;
+  Float_t bl1VFC = 46.11/2.;
+  Float_t tl1VFC = 48.236/2.;
+  Float_t alp1VFC = 41.54; 
+  Float_t h2VFC = 1.200/2.;
+  Float_t bl2VFC = 46.11/2.;
+  Float_t tl2VFC = 48.236/2.;
+  Float_t alp2VFC = 41.54;
     
 // VertEarthSteel parameters - single trapezoid
-  const Float_t hzVES = hzVertBarSteel;
-  const Float_t tetVES = 0.;
-  const Float_t phiVES = 0.;
-  const Float_t h1VES = 1.200/2.;
-  const Float_t bl1VES = 30.486/2.;
-  const Float_t tl1VES = 32.777/2.;
-  const Float_t alp1VES = 43.67; 
-  const Float_t h2VES = 1.200/2.;
-  const Float_t bl2VES = 30.486/2.;
-  const Float_t tl2VES = 32.777/2.;
-  const Float_t alp2VES = 43.67;
+  Float_t hzVES = hzVertBarSteel;
+  Float_t tetVES = 0.;
+  Float_t phiVES = 0.;
+  Float_t h1VES = 1.200/2.;
+  Float_t bl1VES = 30.486/2.;
+  Float_t tl1VES = 32.777/2.;
+  Float_t alp1VES = 43.67; 
+  Float_t h2VES = 1.200/2.;
+  Float_t bl2VES = 30.486/2.;
+  Float_t tl2VES = 32.777/2.;
+  Float_t alp2VES = 43.67;
 
 // VertEarthProfCu parameters - single trapezoid
-  const Float_t hzVPC = hzVertEarthProfCu;
-  const Float_t tetVPC = 0.;
-  const Float_t phiVPC = 0.;
-  const Float_t h1VPC = 0.400/2.;
-  const Float_t bl1VPC = 29.287/2.;
-  const Float_t tl1VPC = 30.091/2.;
-  const Float_t alp1VPC = 45.14; 
-  const Float_t h2VPC = 0.400/2.;
-  const Float_t bl2VPC = 29.287/2.;
-  const Float_t tl2VPC = 30.091/2.;
-  const Float_t alp2VPC = 45.14;
+  Float_t hzVPC = hzVertEarthProfCu;
+  Float_t tetVPC = 0.;
+  Float_t phiVPC = 0.;
+  Float_t h1VPC = 0.400/2.;
+  Float_t bl1VPC = 29.287/2.;
+  Float_t tl1VPC = 30.091/2.;
+  Float_t alp1VPC = 45.14; 
+  Float_t h2VPC = 0.400/2.;
+  Float_t bl2VPC = 29.287/2.;
+  Float_t tl2VPC = 30.091/2.;
+  Float_t alp2VPC = 45.14;
 
 // SuppLateralPositionner - single cuboid
-  const Float_t hxSLP  = 2.80/2.;
-  const Float_t hySLP  = 5.00/2.;
-  const Float_t hzSLP  = hzLateralPosnAl;
+  Float_t hxSLP  = 2.80/2.;
+  Float_t hySLP  = 5.00/2.;
+  Float_t hzSLP  = hzLateralPosnAl;
   
 // LateralPositionner - squared off U bend, face view
-  const Float_t hxLPF  = 5.2/2.;
-  const Float_t hyLPF  = 3.0/2.;
-  const Float_t hzLPF  = hzLateralPosnInoxFace;
+  Float_t hxLPF  = 5.2/2.;
+  Float_t hyLPF  = 3.0/2.;
+  Float_t hzLPF  = hzLateralPosnInoxFace;
   
 // LateralPositionner - squared off U bend, profile view
-  const Float_t hxLPP  = 0.425/2.;
-  const Float_t hyLPP  = 3.0/2.;
-  const Float_t hzLPP  = hzLatPosInoxProfM;  // middle layer
-  const Float_t hzLPNF  = hzLatPosInoxProfNF; // near and far layers
+  Float_t hxLPP  = 0.425/2.;
+  Float_t hyLPP  = 3.0/2.;
+  Float_t hzLPP  = hzLatPosInoxProfM;  // middle layer
+  Float_t hzLPNF  = hzLatPosInoxProfNF; // near and far layers
            
 // VertCradle, 3 layers (copies), each composed of 4 trapezoids
 // VertCradleA
-  const Float_t hzVC1 = hzVerticalCradleAl;
-  const Float_t tetVC1 = 0.;
-  const Float_t phiVC1 = 0.;
-  const Float_t h1VC1 = 10.25/2.;
-  const Float_t bl1VC1 = 3.70/2.;
-  const Float_t tl1VC1 = 0.;
-  const Float_t alp1VC1 = -10.23; 
-  const Float_t h2VC1 = 10.25/2.;
-  const Float_t bl2VC1 = 3.70/2.;
-  const Float_t tl2VC1 = 0.;
-  const Float_t alp2VC1 = -10.23;
+  Float_t hzVC1 = hzVerticalCradleAl;
+  Float_t tetVC1 = 0.;
+  Float_t phiVC1 = 0.;
+  Float_t h1VC1 = 10.25/2.;
+  Float_t bl1VC1 = 3.70/2.;
+  Float_t tl1VC1 = 0.;
+  Float_t alp1VC1 = -10.23; 
+  Float_t h2VC1 = 10.25/2.;
+  Float_t bl2VC1 = 3.70/2.;
+  Float_t tl2VC1 = 0.;
+  Float_t alp2VC1 = -10.23;
         
 // VertCradleB
-  const Float_t hzVC2 = hzVerticalCradleAl;
-  const Float_t tetVC2 = 0.;
-  const Float_t phiVC2 = 0.;
-  const Float_t h1VC2 = 10.25/2.;
-  const Float_t bl1VC2 = 6.266/2.;
-  const Float_t tl1VC2 = 3.70/2.;
-  const Float_t alp1VC2 = -7.13; 
-  const Float_t h2VC2 = 10.25/2.;
-  const Float_t bl2VC2 = 6.266/2.;
-  const Float_t tl2VC2 = 3.70/2.;
-  const Float_t alp2VC2 = -7.13;
+  Float_t hzVC2 = hzVerticalCradleAl;
+  Float_t tetVC2 = 0.;
+  Float_t phiVC2 = 0.;
+  Float_t h1VC2 = 10.25/2.;
+  Float_t bl1VC2 = 6.266/2.;
+  Float_t tl1VC2 = 3.70/2.;
+  Float_t alp1VC2 = -7.13; 
+  Float_t h2VC2 = 10.25/2.;
+  Float_t bl2VC2 = 6.266/2.;
+  Float_t tl2VC2 = 3.70/2.;
+  Float_t alp2VC2 = -7.13;
   
 // VertCradleC
-  const Float_t hzVC3 = hzVerticalCradleAl;
-  const Float_t tetVC3 = 0.;
-  const Float_t phiVC3 = 0.;
-  const Float_t h1VC3 = 10.25/2.;
-  const Float_t bl1VC3 = 7.75/2.;
-  const Float_t tl1VC3 = 6.266/2.;
-  const Float_t alp1VC3 = -4.14; 
-  const Float_t h2VC3 = 10.25/2.;
-  const Float_t bl2VC3 = 7.75/2.;
-  const Float_t tl2VC3 = 6.266/2.;
-  const Float_t alp2VC3 = -4.14;
+  Float_t hzVC3 = hzVerticalCradleAl;
+  Float_t tetVC3 = 0.;
+  Float_t phiVC3 = 0.;
+  Float_t h1VC3 = 10.25/2.;
+  Float_t bl1VC3 = 7.75/2.;
+  Float_t tl1VC3 = 6.266/2.;
+  Float_t alp1VC3 = -4.14; 
+  Float_t h2VC3 = 10.25/2.;
+  Float_t bl2VC3 = 7.75/2.;
+  Float_t tl2VC3 = 6.266/2.;
+  Float_t alp2VC3 = -4.14;
 
 // VertCradleD
-  const Float_t hzVC4 = hzVerticalCradleAl;
-  const Float_t tetVC4 = 0.;
-  const Float_t phiVC4 = 0.;
-  const Float_t h1VC4 = 10.27/2.;
-  const Float_t bl1VC4 = 8.273/2.;
-  const Float_t tl1VC4 = 7.75/2.;
-  const Float_t alp1VC4 = -1.46; 
-  const Float_t h2VC4 = 10.27/2.;
-  const Float_t bl2VC4 = 8.273/2.;
-  const Float_t tl2VC4 = 7.75/2.;
-  const Float_t alp2VC4 = -1.46;
+  Float_t hzVC4 = hzVerticalCradleAl;
+  Float_t tetVC4 = 0.;
+  Float_t phiVC4 = 0.;
+  Float_t h1VC4 = 10.27/2.;
+  Float_t bl1VC4 = 8.273/2.;
+  Float_t tl1VC4 = 7.75/2.;
+  Float_t alp1VC4 = -1.46; 
+  Float_t h2VC4 = 10.27/2.;
+  Float_t bl2VC4 = 8.273/2.;
+  Float_t tl2VC4 = 7.75/2.;
+  Float_t alp2VC4 = -1.46;
   
 // LateralSightSupport - single trapezoid
-  const Float_t hzVSS = hzLateralSightAl;
-  const Float_t tetVSS = 0.;
-  const Float_t phiVSS = 0.;
-  const Float_t h1VSS = 5.00/2.;
-  const Float_t bl1VSS = 7.747/2;
-  const Float_t tl1VSS = 7.188/2.;
-  const Float_t alp1VSS = -3.20; 
-  const Float_t h2VSS = 5.00/2.;
-  const Float_t bl2VSS = 7.747/2.;
-  const Float_t tl2VSS = 7.188/2.;
-  const Float_t alp2VSS = -3.20;  
+  Float_t hzVSS = hzLateralSightAl;
+  Float_t tetVSS = 0.;
+  Float_t phiVSS = 0.;
+  Float_t h1VSS = 5.00/2.;
+  Float_t bl1VSS = 7.747/2;
+  Float_t tl1VSS = 7.188/2.;
+  Float_t alp1VSS = -3.20; 
+  Float_t h2VSS = 5.00/2.;
+  Float_t bl2VSS = 7.747/2.;
+  Float_t tl2VSS = 7.188/2.;
+  Float_t alp2VSS = -3.20;  
   
 // LateralSight (reference point) - 3 per quadrant, only 1 programmed for now
-  const Float_t VSInRad  = 0.6;
-  const Float_t VSOutRad  = 1.3;
-  const Float_t VSLen  = hzFrameThickness; 
+  Float_t VSInRad  = 0.6;
+  Float_t VSOutRad  = 1.3;
+  Float_t VSLen  = hzFrameThickness; 
   
 //---
 
 // InHFrame parameters
-  const Float_t hxInHFrame  = 75.8/2.;
-  const Float_t hyInHFrame  = 1.85/2.;
-  const Float_t hzInHFrame  = hzFrameThickness;
+  Float_t hxInHFrame  = 75.8/2.;
+  Float_t hyInHFrame  = 1.85/2.;
+  Float_t hzInHFrame  = hzFrameThickness;
  
 //Flat 7.5mm horizontal section
-  const Float_t hxH1mm  = 1.85/2.;
-  const Float_t hyH1mm  = 0.75/2.;
-  const Float_t hzH1mm  = hzFrameThickness;
+  Float_t hxH1mm  = 1.85/2.;
+  Float_t hyH1mm  = 0.75/2.;
+  Float_t hzH1mm  = hzFrameThickness;
 
 //---
 
 // InArcFrame parameters
-  const Float_t IAF  = 15.70;
-  const Float_t OAF  = 17.55;
-  const Float_t hzAF  = hzFrameThickness;
-  const Float_t AFphi1  = 0.0;
-  const Float_t AFphi2  = 90.0;
+  Float_t IAF  = 15.70;
+  Float_t OAF  = 17.55;
+  Float_t hzAF  = hzFrameThickness;
+  Float_t AFphi1  = 0.0;
+  Float_t AFphi2  = 90.0;
 
 //---
 
 // ScrewsInFrame parameters HEAD
-  const Float_t SCRUHMI  = 0.;
-  const Float_t SCRUHMA  = 0.690/2.;
-  const Float_t SCRUHLE  = 0.4/2.;
+  Float_t SCRUHMI  = 0.;
+  Float_t SCRUHMA  = 0.690/2.;
+  Float_t SCRUHLE  = 0.4/2.;
 // ScrewsInFrame parameters MIDDLE
-  const Float_t SCRUMMI  = 0.;
-  const Float_t SCRUMMA  = 0.39/2.;
-  const Float_t SCRUMLE  = hzFrameThickness;
+  Float_t SCRUMMI  = 0.;
+  Float_t SCRUMMA  = 0.39/2.;
+  Float_t SCRUMLE  = hzFrameThickness;
 // ScrewsInFrame parameters NUT
-  const Float_t SCRUNMI  = 0.;
-  const Float_t SCRUNMA  = 0.78/2.;
-  const Float_t SCRUNLE  = 0.8/2.;   
+  Float_t SCRUNMI  = 0.;
+  Float_t SCRUNMA  = 0.78/2.;
+  Float_t SCRUNLE  = 0.8/2.;   
   
        // ___________________Make volumes________________________
 
@@ -1637,8 +1637,8 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posZ = 0.;              
     gMC->Gspos("SQ25",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
 
-    const Float_t TOPY = posY+hyOutVFrame;
-    const Float_t OUTX = posX;
+    Float_t TOPY = posY+hyOutVFrame;
+    Float_t OUTX = posX;
 
 // OutVFrame corner
     posX = OUTX;
