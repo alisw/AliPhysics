@@ -18,22 +18,38 @@
 //                                                         |
 //                                             this is just ONE substring.
 
-
-#include <vector>
-#include <utility>
 #include <string>
+#include <utility>
+#include <vector>
 
-#include "AliMUONSt1Types.h"
+#ifndef __HP_aCC
+  using std::string;
+  using std::pair;
+  using std::vector;
+#endif  
+
+#include <Rtypes.h>
+
+typedef vector<string>  StringVector; 
+typedef vector<Int_t>   IntVector; 
+typedef pair<Int_t, Int_t> IntPair;
+typedef vector<IntPair>    IntPairVector;
+typedef pair<Double_t, Double_t>  DoublePair;
+typedef vector<DoublePair>        DoublePairVector;
 
 namespace decoder
 {
-  vector<string> SplitNtuples(const string& s,
-                              const string& leftSep ="({[\"'/",
-                              const string& rightSep=")}]\"'/");
-  vector<string> SplitList(const string& s,const string& sep=";,");
-  vector<int> DecodeListRanges(const string& s,const string& sep=";,",const string& rangeSep="/");
-  vector< pair<int,int> > DecodeListOfIntRanges(const string& s,const string& sep=";,",const string& rangeSep="/");
-  vector< pair<double,double> > DecodeListOfFloatRanges(const string& s,const string& sep=";,",const string& rangeSep="/");
+  StringVector     SplitNtuples(const string& s,
+                                const string& leftSep ="({[\"'/",
+                                const string& rightSep=")}]\"'/");
+  StringVector     SplitList(const string& s, const string& sep=";,");
+
+  IntVector        DecodeListRanges(const string& s, const string& sep=";,",
+                                    const string& rangeSep="/");
+  IntPairVector    DecodeListOfIntRanges(const string& s, const string& sep=";,",
+                                    const string& rangeSep="/");
+  DoublePairVector DecodeListOfFloatRanges(const string& s, const string& sep=";,",
+                                    const string& rangeSep="/");
 }
 
 #endif //ALI_MUON_ST1_DECODER_H 

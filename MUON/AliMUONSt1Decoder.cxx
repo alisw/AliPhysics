@@ -32,9 +32,9 @@
 #include "AliMUONSt1Decoder.h"
 
 //_____________________________________________________________________
-vector<string> decoder::SplitNtuples(const string& s,
-                                     const string& leftSep,
-                                     const string& rightSep)
+StringVector decoder::SplitNtuples(const string& s,
+                                   const string& leftSep,
+                                   const string& rightSep)
 
 {
 // separate substrings in <s>, by using the first level of delimiters
@@ -48,7 +48,7 @@ vector<string> decoder::SplitNtuples(const string& s,
 // "string 4" and
 // " (string5.1) (string5.2) "
 // --
-  vector<string> ans;
+  StringVector ans;
   string::size_type idx = 0;
   do {
     idx = s.find_first_of(leftSep,idx);
@@ -58,7 +58,7 @@ vector<string> decoder::SplitNtuples(const string& s,
       	idx++;
 	continue;
       }
-      int count=1;
+      Int_t count=1;
       string::size_type idx2 = idx+1;
       while ((count>0) && (idx2<s.length())){
       	if (s[idx2] == leftSep[sepNum])  count++;
@@ -74,7 +74,7 @@ vector<string> decoder::SplitNtuples(const string& s,
 }
 
 //_____________________________________________________________________
-vector<string> decoder::SplitList(const string& s,const string& sep)
+StringVector decoder::SplitList(const string& s,const string& sep)
 {
 // split <s> into several substrings, by using any of the delimters in <sep> 
 // Example : str1 ; str2 , str3
@@ -83,7 +83,7 @@ vector<string> decoder::SplitList(const string& s,const string& sep)
 // and a list of 2 substrings ("str1","str2,str3") if
 // the delimiter parameter is ";"
 // --
-  vector<string> ans;
+  StringVector ans;
   string::size_type i=0,j;
   while ((j=s.find_first_of(sep,i))!=string::npos){
     ans.push_back(s.substr(i,j-i));
@@ -94,18 +94,19 @@ vector<string> decoder::SplitList(const string& s,const string& sep)
 }
 
 //_____________________________________________________________________
-vector<int> 
-decoder::DecodeListRanges(const string& s,const string& sep,const string& rangeSep)
+IntVector 
+decoder::DecodeListRanges(const string& s, const string& sep,
+                          const string& rangeSep)
 {
 // decode <s> as a list of integers
 // Example: 192/199 ; -10/-7
 // gives a list of 12 integers:
 // 192, 193, 194, 195, 196, 197, 198, 199, -10, -9, -8, -7
 // --
-  vector<int> ans;
-  vector< pair <int,int> > rangeList = DecodeListOfIntRanges(s,sep,rangeSep);
-  for (unsigned int i = 0 ;i<rangeList.size();i++){
-    for (int j=rangeList[i].first;j<=rangeList[i].second;j++){
+  IntVector ans;
+  IntPairVector rangeList = DecodeListOfIntRanges(s,sep,rangeSep);
+  for (UInt_t i = 0 ;i<rangeList.size();i++){
+    for (Int_t j=rangeList[i].first;j<=rangeList[i].second;j++){
       ans.push_back(j);
     }
   }
@@ -113,8 +114,9 @@ decoder::DecodeListRanges(const string& s,const string& sep,const string& rangeS
 }
 
 //_____________________________________________________________________
-vector< pair <int,int> > 
-decoder::DecodeListOfIntRanges(const string& s,const string& sep,const string& rangeSep)
+IntPairVector
+decoder::DecodeListOfIntRanges(const string& s, const string& sep,
+                               const string& rangeSep)
 {
 // decodes <s> as a list of int ranges
 // Example: 192/303 ; -10/-1
@@ -122,14 +124,14 @@ decoder::DecodeListOfIntRanges(const string& s,const string& sep,const string& r
 // pair(192,303) and another pair (-10,-1)
 // --
   string::size_type i=0;
-  vector< pair <int,int> > ans;
+  IntPairVector ans;
   if (s.empty()) return ans;
 
-  vector<string> parts = decoder::SplitList(s,sep);
+  StringVector parts = decoder::SplitList(s,sep);
 
-  for (unsigned int k=0;k<parts.size();k++){
+  for (UInt_t k=0;k<parts.size();k++){
     i=parts[k].find_first_of(rangeSep);
-    int from,to;
+    Int_t from,to;
     if (i == string::npos) {
       from = atoi(parts[k].c_str());
       to = from;
@@ -137,14 +139,15 @@ decoder::DecodeListOfIntRanges(const string& s,const string& sep,const string& r
       from=atoi(parts[k].substr(0,i).c_str());
       to  =atoi(parts[k].substr(i+1,parts[k].length()-i-1).c_str());
     }
-    ans.push_back(pair<int,int>(from,to));
+    ans.push_back(IntPair(from,to));
   }
   return ans;
 }
 
 //_____________________________________________________________________
-vector< pair <double,double> > 
-decoder::DecodeListOfFloatRanges(const string& s,const string& sep,const string& rangeSep)
+DoublePairVector 
+decoder::DecodeListOfFloatRanges(const string& s, const string& sep,
+                                 const string& rangeSep)
 {
 // decodes <s> as a list of double (floating point) ranges
 // Example : 192.33/303.26 ; -10.2/-1.41
@@ -152,14 +155,14 @@ decoder::DecodeListOfFloatRanges(const string& s,const string& sep,const string&
 // pair (192.33,303.26) and another pair (-10.2,-1.41)
 // --
   string::size_type i=0;
-  vector< pair <double,double> > ans;
+  DoublePairVector ans;
   if (s.empty()) return ans;
 
-  vector<string> parts = decoder::SplitList(s,sep);
+  StringVector parts = decoder::SplitList(s,sep);
 
-  for (unsigned int k=0;k<parts.size();k++){
+  for (UInt_t k=0;k<parts.size();k++){
     i=parts[k].find_first_of(rangeSep);
-    double from,to;
+    Double_t from,to;
     if (i == string::npos) {
       from = atof(parts[k].c_str());
       to = from;
@@ -167,7 +170,7 @@ decoder::DecodeListOfFloatRanges(const string& s,const string& sep,const string&
       from=atof(parts[k].substr(0,i).c_str());
       to  =atof(parts[k].substr(i+1,parts[k].length()-i-1).c_str());
     }
-    ans.push_back(pair<double,double>(from,to));
+    ans.push_back(DoublePair(from,to));
   }
   return ans;
 }
