@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  1999/09/29 09:24:35  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,7 +68,9 @@ AliTRDv2::AliTRDv2(const char *name, const char *title)
   fSensChamber  = 0;
   fSensSector   = 0;
 
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+  Int_t iplan;
+
+  for (iplan = 0; iplan < kNplan; iplan++) {
     for (Int_t icham = 0; icham < kNcham; icham++) {
       fRowMax[iplan][icham] = 0;
     }
@@ -199,6 +204,9 @@ void AliTRDv2::Hits2Digits()
 
   AliTRDhit *TRDhit;
 
+  Int_t iplan;
+  Int_t iRow;
+
   // Position of pad 0,0,0 
   // 
   // chambers seen from the top:
@@ -219,7 +227,7 @@ void AliTRDv2::Hits2Digits()
   //                                             
   // The pad row (z-direction)
   Float_t row0[kNplan][kNcham];
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+  for (iplan = 0; iplan < kNplan; iplan++) {
     row0[iplan][0] = -fClengthI[iplan]/2. - fClengthM[iplan] - fClengthO[iplan] 
                    + kCcthick; 
     row0[iplan][1] = -fClengthI[iplan]/2. - fClengthM[iplan]                    
@@ -233,12 +241,12 @@ void AliTRDv2::Hits2Digits()
   }
   // The pad column (rphi-direction)  
   Float_t col0[kNplan];
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+  for (iplan = 0; iplan < kNplan; iplan++) {
     col0[iplan]    = -fCwidth[iplan]/2. + kCcthick;
   }
   // The time bucket
   Float_t time0[kNplan];
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+  for (iplan = 0; iplan < kNplan; iplan++) {
     time0[iplan]   = kRmin + kCcframe/2. + kDrZpos - 0.5 * kDrThick
                            + iplan * (kCheight + kCspace);
   } 
@@ -264,7 +272,7 @@ void AliTRDv2::Hits2Digits()
 
   // Loop through all the chambers
   for (Int_t icham = chamBeg; icham < chamEnd; icham++) {
-    for (Int_t iplan = planBeg; iplan < planEnd; iplan++) {
+    for (iplan = planBeg; iplan < planEnd; iplan++) {
       for (Int_t isect = sectBeg; isect < sectEnd; isect++) {
 
         printf(" Digitizing chamber %d, plane %d, sector %d\n"
@@ -326,7 +334,7 @@ void AliTRDv2::Hits2Digits()
             const Int_t  colBox = 7;
             const Int_t  rowBox = 5;
             Float_t signalSum[rowBox][colBox][timeBox];
-            for (Int_t iRow  = 0;  iRow <  rowBox; iRow++ ) {
+            for (iRow  = 0;  iRow <  rowBox; iRow++ ) {
               for (Int_t iCol  = 0;  iCol <  colBox; iCol++ ) {
                 for (Int_t iTime = 0; iTime < timeBox; iTime++) {
                   signalSum[iRow][iCol][iTime] = 0;
@@ -381,7 +389,7 @@ void AliTRDv2::Hits2Digits()
             }
             
             // Add the padcluster to the detector matrix
-            for (Int_t iRow  = 0;  iRow <  rowBox; iRow++ ) {
+            for (iRow  = 0;  iRow <  rowBox; iRow++ ) {
               for (Int_t iCol  = 0;  iCol <  colBox; iCol++ ) {
                 for (Int_t iTime = 0; iTime < timeBox; iTime++) {
 
@@ -412,7 +420,7 @@ void AliTRDv2::Hits2Digits()
               Float_t signalAmp = matrix->GetSignal(iRow,iCol,iTime);
 
               // Add the noise
-              signalAmp  = TMath::Max(gRandom->Gaus(signalAmp,fNoise),0.0);
+              signalAmp  = TMath::Max(gRandom->Gaus(signalAmp,fNoise),(Float_t) 0.0);
 	      // Convert to fC
               signalAmp *= el2fC;
               // Convert to mV

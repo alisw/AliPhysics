@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:35  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,7 +99,7 @@ void AliTRDmatrix::AddSignal(Int_t iRow, Int_t iCol, Int_t iTime, Float_t signal
 }
 
 //_____________________________________________________________________________
-void AliTRDmatrix::Draw()
+void AliTRDmatrix::Draw(Option_t *)
 {
   //
   // Draws a 3D view of the detector matrix
