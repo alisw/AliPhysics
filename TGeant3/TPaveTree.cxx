@@ -26,8 +26,6 @@
 #include "TPaveTree.h"
 #include "TGeant3.h"
 
-static TGeant3 *geant3=(TGeant3*)gMC;
-
 
 ClassImp(TPaveTree)
 
@@ -91,7 +89,7 @@ void TPaveTree::DrawTree(Int_t levmax, Int_t isel)
   //
   //  Draw tree of the volume in this TPaveTree
   //
-  geant3->Gdtree(GetLabel(),levmax,isel);
+  ((TGeant3*)gMC)->Gdtree(GetLabel(),levmax,isel);
 }
 
 //_____________________________________________________________________________
@@ -100,7 +98,7 @@ void TPaveTree::DrawTreeParent(Int_t levmax, Int_t isel)
   //
   //  Draw parent tree of the volume in this TPaveTree
   //
-  geant3->GdtreeParent(GetLabel(),levmax,isel);
+  ((TGeant3*)gMC)->GdtreeParent(GetLabel(),levmax,isel);
 }
 
 //_____________________________________________________________________________
