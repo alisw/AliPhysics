@@ -303,17 +303,6 @@ void AliTOF::SetTreeAddress ()
   AliDetector::SetTreeAddress ();
 
   TBranch *branch;
-  TTree *treeD = fLoader->TreeD();
-
-  if (treeD)
-    {
-      branch = treeD->GetBranch ("TOF");
-      if (branch)
-       {
-         if (fDigits == 0x0) fDigits = new TClonesArray("AliTOFdigit",  1000); 
-         branch->SetAddress (&fDigits);
-       }
-    }
 
   if (fLoader->TreeS () )
     {
