@@ -5,6 +5,7 @@
 #include <time.h>
 #include <iostream.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "AliL3MemHandler.h"
 #include "AliL3Transform.h"
@@ -197,7 +198,7 @@ Byte_t *AliL3MemHandler::Allocate(UInt_t size){
   } 
   fPt = new Byte_t[size];
   fSize = size;
-  for(UInt_t i=0;i<size;i++) fPt[i]=0; // clean Memory
+  memset(fPt,0,fSize);
   LOG(AliL3Log::kDebug,"AliL3MemHandler::Allocate","Memory")
   <<AliL3Log::kDec<<"Allocate "<<size<<" Bytes of Memory"<<ENDLOG;
   return fPt;
