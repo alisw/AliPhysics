@@ -86,6 +86,8 @@ fhJetPT2 =0;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
 fhPartonPT2 =0;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
 fhRecoBinFragmFcn =0;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
 fhRecoBinPartonFragmFcn =0;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
+fhJetInvE=0;// = new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
+fhJetInvE2=0;// = new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
 }
 
 void AliEMCALJetFinderPlots::InitPlots()
@@ -221,7 +223,16 @@ fhRecoBinJetEt = new TH1F("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 fhRecoBinJetEt->Sumw2();
 fhRecoBinInputJetEt = new TH1F("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
 fhRecoBinInputJetEt->Sumw2();
-                                
+        
+
+fhJetInvE = new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
+fhJetInvE->Sumw2();
+fhJetInvE2 = new TH1F("fhJetInvE2","#frac{1}{E_{R}}",100,0,1);
+fhJetInvE2->Sumw2();
+		                                                                                                                                                         
+		
+
+
   fInitialised = kTRUE;	
   
 }
@@ -276,6 +287,8 @@ delete 	  fhEtaPhiSpread;
 	delete fhPartonPT2 ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
 	delete fhRecoBinFragmFcn;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
 	delete fhRecoBinPartonFragmFcn;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
+        delete fhJetInvE;// = new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
+        delete fhJetInvE2;// = new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
 
 }	
 
@@ -376,6 +389,7 @@ if (numappjet > 1)
 
   // End finding highest and second highest and continue
   fhJetEt2->Fill(jethighest->Energy());
+  fhJetInvE2->Fill(1.0/jethighest->Energy());
   fhJetEta2->Fill(jethighest->Eta()  );
   fhJetPhi2->Fill(jethighest->Phi() );
   if (nPartons ==0) return;
@@ -481,7 +495,7 @@ if (numappjet > 1)
 			  (jethighest->Phi()-phi[iT])*(jethighest->Phi()-phi[iT]) < 0.2*0.2 )   
 		  fhJetJT2->Fill( correctp*sin(alpha));
 	  if (fNominalEnergy==0.0){
-		  fhFragmFcn2->Fill(  correctp*sin(tt)/parton->Energy()  );
+		  fhFragmFcn2->Fill(  correctp*sin(tt)/jethighest->Energy()  );
 	  } else
 	  {
                   fhFragmFcn2->Fill(  correctp*sin(tt)/fNominalEnergy );
@@ -503,6 +517,7 @@ if (numappjet > 1)
   AliEMCALJet* jet; 
   jet = jethighest;//fOutput->GetJet(0);
   fhJetEt->Fill(jet->Energy());
+  fhJetInvE->Fill(1.0/jethighest->Energy());
   fhJetEta->Fill(jet->Eta()  );
   fhJetPhi->Fill(jet->Phi() );
   if (nPartons ==0) return;
@@ -604,7 +619,7 @@ if (numappjet > 1)
 			  (jet->Phi()-phi[iT])*(jet->Phi()-phi[iT]) < 0.2*0.2 )   
 		  fhJetJT->Fill( correctp*sin(alpha));
 	  if (fNominalEnergy==0.0){
-		  fhFragmFcn->Fill(  correctp*sin(tt)/parton->Energy()  );
+		  fhFragmFcn->Fill(  correctp*sin(tt)/jet->Energy()  ); // This is the jet fragmentation function
 	  } else
 	  {
                   fhFragmFcn->Fill(  correctp*sin(tt)/fNominalEnergy );

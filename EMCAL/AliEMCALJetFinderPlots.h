@@ -151,6 +151,9 @@ class AliEMCALJetFinderPlots : public TObject
         TH1F* 				fhPartonPT2 ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
         TH1F* 				fhRecoBinFragmFcn;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
         TH1F* 				fhRecoBinPartonFragmFcn;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
+        
+	TH1F* 				fhJetInvE;// new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
+	TH1F* 				fhJetInvE2;// new TH1F("fhJetInvE2","#frac{1}{E_{R}}",100,0,1);
 	
 	
 	Bool_t				fInitialised; // have histograms been initialised
