@@ -33,14 +33,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <assert.h>
-
 #include <TBrowser.h>
-#include <TFile.h>
-#include <TFolder.h>
-#include <TROOT.h>
 #include <TTree.h>
-#include <Riostream.h>
 
 #include "AliConfig.h"
 #include "AliDetector.h"
@@ -49,11 +43,6 @@
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliMC.h"
-
-
-// Static variables for the hit iterator routines
-static Int_t sMaxIterHit=0;
-static Int_t sCurIterHit=0;
 
 
 ClassImp(AliDetector)
@@ -143,12 +132,11 @@ AliDetector::~AliDetector()
 }
 
 //_______________________________________________________________________
-void AliDetector::Publish(const char */*dir*/, void */*address*/, const char */*name*/)
+void AliDetector::Publish(const char */*dir*/, void */*address*/, const char */*name*/) const
 {
 //
 // Register pointer to detector objects. 
 // 
-//  TFolder *topFolder = (TFolder *)gROOT->FindObjectAny("/Folders");
   MayNotUse("Publish");
 }
 
@@ -248,9 +236,9 @@ AliHit* AliDetector::FirstHit(Int_t track)
     TreeH()->GetEvent(track); //skowron
   }
   //
-  sMaxIterHit=fHits->GetEntriesFast();
-  sCurIterHit=0;
-  if(sMaxIterHit) return dynamic_cast<AliHit*>(fHits->UncheckedAt(0));
+  fMaxIterHit=fHits->GetEntriesFast();
+  fCurIterHit=0;
+  if(fMaxIterHit) return dynamic_cast<AliHit*>(fHits->UncheckedAt(0));
   else            return 0;
 }
 
@@ -260,9 +248,9 @@ AliHit* AliDetector::NextHit()
   //
   // Return the next hit for the current track
   //
-  if(sMaxIterHit) {
-    if(++sCurIterHit<sMaxIterHit) 
-      return dynamic_cast<AliHit*>(fHits->UncheckedAt(sCurIterHit));
+  if(fMaxIterHit) {
+    if(++fCurIterHit<fMaxIterHit) 
+      return dynamic_cast<AliHit*>(fHits->UncheckedAt(fCurIterHit));
     else        
       return 0;
   } else {
@@ -311,7 +299,7 @@ void AliDetector::LoadPoints(Int_t)
   for (Int_t hit=0;hit<nhits;hit++) {
     ahit = dynamic_cast<AliHit*>(fHits->UncheckedAt(hit));
     trk=ahit->GetTrack();
-    assert(trk<=tracks);
+    if(trk>tracks) Fatal("LoadPoints","Found track number %d, max track %d\n",trk, tracks);
     if(ntrk[trk]==limi[trk])
      {
       //
@@ -471,7 +459,7 @@ AliLoader* AliDetector::MakeLoader(const char* topfoldername)
 }
 
 //_______________________________________________________________________
-TTree* AliDetector::TreeH()
+TTree* AliDetector::TreeH() const
 {
 //Get the hits container from the folder
   if (GetLoader() == 0x0) 

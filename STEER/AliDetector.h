@@ -5,6 +5,13 @@
 
 /* $Id$ */
 
+// 
+// This is the basic detector class from which
+// all ALICE detector derive.
+// This class is the base for the implementation of all detectors
+// in ALICE
+//
+
 #include "AliModule.h"
 
 class AliHit;
@@ -36,7 +43,7 @@ public:
   {det.Copy(*this); return (*this);}
   
   // Other methods
-  virtual void        Publish(const char *dir, void *c, const char *name=0);
+  virtual void        Publish(const char *dir, void *c, const char *name=0) const;
   virtual void        Browse(TBrowser *b);
   virtual void        FinishRun();
   virtual void        LoadPoints(Int_t track);
@@ -61,7 +68,7 @@ public:
   virtual AliLoader* MakeLoader(const char* topfoldername); //builds standard getter (AliLoader type)
   void    SetLoader(AliLoader* loader){fLoader = loader;}
   AliLoader* GetLoader() const {return fLoader;} //skowron
-  TTree* TreeH();  //shorcut method for accessing treeH from folder
+  TTree* TreeH() const;  //shorcut method for accessing treeH from folder
     // Data members
 protected:      
   
@@ -71,6 +78,8 @@ protected:
   Int_t         fNhits;       //!Number of hits
   Int_t         fNdigits;     //!Number of digits
   Int_t         fBufferSize;  //!buffer size for Tree detector branches
+  Int_t         fMaxIterHit;  //!Limit for the hit iterator
+  Int_t         fCurIterHit;  //!Counter for the hit iterator
   TClonesArray *fHits;        //!List of hits for one track only
   TClonesArray *fDigits;      //!List of digits for this detector
   TObjArray    *fPoints;      //!Array of points for each track (all tracks in memory)

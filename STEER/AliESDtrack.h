@@ -75,7 +75,7 @@ public:
   Float_t GetTPCchi2() const {return fTPCchi2;}
   Int_t GetTPCclusters(Int_t *idx) const;
   Int_t GetTPCLabel() const {return fTPCLabel;}
-  const TBits& GetTPCClusterMap(){return fTPCClusterMap;}
+  const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   
   void SetTRDpid(const Double_t *p);
   void GetTRDpid(Double_t *p) const;
@@ -111,9 +111,9 @@ public:
   Float_t GetPHOSsignal() const {return fPHOSsignal;}
   void GetPHOSpid(Double_t *p) const;  
 
-  Bool_t IsOn(Int_t mask){ return (fFlags&mask)>0;}
-  Bool_t IsRICH(){ return fFlags&kRICHpid;}
-  Bool_t IsPHOS(){ return fFlags&kPHOSpid;}
+  Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
+  Bool_t IsRICH() const {return fFlags&kRICHpid;}
+  Bool_t IsPHOS() const {return fFlags&kPHOSpid;}
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
     kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
@@ -146,14 +146,23 @@ protected:
   Double_t fRc[15];  // external cov. matrix of the track parameters
 
 //Track parameters constrained to the primary vertex
-  Double_t fCalpha,fCx,fCp[5],fCc[15];
+  Double_t fCalpha;   // Track rotation angle
+  Double_t fCx;       // x-coordinate of the track reference plane
+  Double_t fCp[5];    // external track parameters
+  Double_t fCc[15];   // external cov. matrix of the track parameters
   Double_t fCchi2; //chi2 at the primary vertex
 
 //Track parameters at the inner wall of the TPC
-  Double_t fIalpha,fIx,fIp[5],fIc[15];
+  Double_t fIalpha;   // Track rotation angle
+  Double_t fIx;       // x-coordinate of the track reference plane
+  Double_t fIp[5];    // external track parameters
+  Double_t fIc[15];   // external cov. matrix of the track parameters
 
 //Track parameters at the radius of the PHOS
-  Double_t fOalpha,fOx,fOp[5],fOc[15];
+  Double_t fOalpha;   // Track rotation angle
+  Double_t fOx;       // x-coordinate of the track reference plane
+  Double_t fOp[5];    // external track parameters
+  Double_t fOc[15];   // external cov. matrix of the track parameters
 
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
