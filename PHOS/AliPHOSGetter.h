@@ -44,7 +44,9 @@ class AliPHOSSDigitizer ;
 class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;
 class AliPHOSPID ;
-class AliPHOSCalibrationDB ;
+//class AliPHOSCalibrationDB ;
+class AliPHOSConTableDB ;
+class AliPHOSBeamTestEvent ;
 
 class AliPHOSGetter : public TObject {
   
@@ -76,6 +78,8 @@ class AliPHOSGetter : public TObject {
   const Int_t  MaxEvent() const    { return static_cast<Int_t>(gAlice->TreeE()->GetEntries()) ; }
   const Int_t  EventNumber() const { return static_cast<Int_t>(gAlice->GetEvNumber()) ; }
   const Bool_t BranchExists(const TString tree) const ; 
+  const UShort_t EventPattern(void) ;
+  const Float_t BeamEnergy(void) ;
   
   //========== PHOSGeometry and PHOS ============= 
   const AliPHOS *         PHOS() ;  
@@ -93,7 +97,9 @@ class AliPHOSGetter : public TObject {
   const TTask * QATasks(const char * name = 0) const { return ReturnT("QATasks", name) ; }
   
   //-----------------now getter's data--------------------------------------
-  
+//  AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
+//  void ReadCalibrationDB(const char * name, const char * filename) ;
+
   //=========== Primaries ============
   TTree *           TreeK(TString filename="") ; 
   TClonesArray *    Primaries(void) const { return dynamic_cast<TClonesArray*>(ReturnO("Primaries")) ; }
@@ -122,8 +128,6 @@ class AliPHOSGetter : public TObject {
   //const AliPHOSDigit *  Digit(Int_t index) { return static_cast<const AliPHOSDigit *>(Digits()->At(index)) ;} !!! why no such method ?
   const TTask *           Digitizer(const char * name = 0) const { 
     return ReturnT("Digitizer", name) ;   }
-  AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
-  void ReadCalibrationDB(const char * name, const char * filename) ;
   
   //========== RecPoints =============
   TObjArray *                EmcRecPoints(const char * name = 0) {
@@ -219,6 +223,7 @@ private:
 
   static TFile * fFile;           //! 
   Bool_t         fToSplit ;              //! Do we work in the split mode
+  AliPHOSBeamTestEvent * fBTE ;           //! Header if BeamTest Event
   TString        fHeaderFile ;           //! File in which gAlice lives
   TString        fBranchTitle ;          //!
   TString        fTrackSegmentsTitle ;   //! 
@@ -245,7 +250,7 @@ private:
   TFolder *      fQAFolder ;          //!Folder that contains the QA objects  
   TFolder *      fTasksFolder ;       //!Folder that contains the Tasks (sdigitizer, digitizer, reconstructioner)
 
-  AliPHOSCalibrationDB * fcdb ;       //!
+//  AliPHOSCalibrationDB * fcdb ;       //!
    
   static AliPHOSGetter * fgObjGetter; // pointer to the unique instance of the singleton 
 

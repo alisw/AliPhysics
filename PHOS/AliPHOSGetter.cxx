@@ -71,7 +71,8 @@
 #include "AliPHOSPIDv1.h" 
 #include "AliPHOSGeometry.h"
 #include "AliPHOSRaw2Digits.h"
-#include "AliPHOSCalibrationDB.h"
+//#include "AliPHOSCalibrationDB.h"
+#include "AliPHOSBeamTestEvent.h"
 ClassImp(AliPHOSGetter)
   
   AliPHOSGetter * AliPHOSGetter::fgObjGetter = 0 ; 
@@ -91,6 +92,7 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle, co
   fFailed = kFALSE ;   
   fDebug  = 0 ; 
   fAlice  = 0 ; 
+  fBTE    = 0 ;
 
   fToSplit    = toSplit ;
   fHeaderFile = headerFile ; 
@@ -108,20 +110,20 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle, co
 
   //Set titles to branches and create PHOS specific folders
   SetTitle(branchTitle) ;
-  
+
   if ( fHeaderFile != "aliroot"  ) { // to call the getter without a file
     //open headers file
     fFile = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
-    
+
     if(!fFile) {    //if file was not opened yet, read gAlice
-      fFile = TFile::Open(fHeaderFile.Data(),"update") ; 
+      fFile = TFile::Open(fHeaderFile.Data(),"update") ;
       if (!fFile->IsOpen()) {
 	Error("AliPHOSGetter", "Cannot open %s", fHeaderFile.Data() ) ; 
 	fFailed = kTRUE ;
         return ;  
       }
-      gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
-    }       
+    }
+    gAlice = dynamic_cast<AliRun *>(fFile->Get("gAlice")) ;
   }
   
   if (!gAlice) {
@@ -171,9 +173,11 @@ AliPHOSGetter::~AliPHOSGetter(){
 //____________________________________________________________________________ 
 void AliPHOSGetter::CloseFile()
 {
-  delete gAlice ;  
+  if(gAlice)
+    delete gAlice ;  
   gAlice = 0 ; 
-  delete fAlice ; 
+  if(fAlice)
+    delete fAlice ; 
   fAlice = 0 ; 
 }
 
@@ -247,9 +251,11 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
     }
   }
   else{  //Close already opened files, clean memory and open new header file
-    if(gAlice)
-      delete gAlice ;
-    gAlice= 0;
+    if(gAlice){ //should first delete gAlice, then close file
+      //Should be in dtor of PHOS, but if one changes path ...
+      fgObjGetter->fModuleFolder->Remove(fgObjGetter->fModuleFolder->FindObject("PHOS")) ; 
+      delete gAlice ;      
+    }
     if(fgObjGetter->fFile){
       fgObjGetter->fFile->Close() ;
       fgObjGetter->fFile=0;
@@ -258,6 +264,7 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
       fgObjGetter->CloseSplitFiles() ;
     fgObjGetter->CleanWhiteBoard() ;    
     fgObjGetter = new AliPHOSGetter(headerFile,branchTitle,toSplit) ;
+
   }
   return fgObjGetter ; 
   
@@ -1290,7 +1297,20 @@ TObject** AliPHOSGetter::RecParticlesRef(const char * name) const
   }
   return phosFolder->GetListOfFolders()->GetObjectRef(tss) ;
 }
-
+//____________________________________________________________________________ 
+const UShort_t AliPHOSGetter::EventPattern(void){
+  if(fBTE)
+    return fBTE->GetPattern() ;
+  else
+    return 0 ;
+}
+//____________________________________________________________________________ 
+const Float_t AliPHOSGetter::BeamEnergy(void){
+  if(fBTE)
+    return fBTE->GetBeamEnergy() ;
+  else
+    return 0 ;
+}
 //____________________________________________________________________________ 
 const Bool_t AliPHOSGetter::PostPID(AliPHOSPID * pid) const 
 {      // ------------AliPHOS PID -----------------------------
@@ -1450,15 +1470,18 @@ TTree * AliPHOSGetter::TreeK(TString filename)
 
   TFile * file = 0 ; 
   file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
-  if (file && (filename != fHeaderFile) ) {  // file already open 
-    file->Close() ; 
-    delete fAlice ; 
-  }    
-  file = TFile::Open(filename.Data(), "read") ; 
-  fAlice = static_cast<AliRun *>(file->Get("gAlice")) ; 
+//   if (file && (filename != fHeaderFile) ) {  // file already open 
+//     file->Close() ; 
+//     //delete fAlice ; 
+//   }
+  if(!file || !file->IsOpen())    
+    file = TFile::Open(filename.Data(), "read") ;
+  if(filename != fHeaderFile ){
+    fAlice = dynamic_cast<AliRun *>(file->Get("gAlice")) ;
+  } 
   TString treeName("TreeK") ; 
   treeName += EventNumber()  ; 
-  TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
+  TTree * tree = dynamic_cast<TTree *>(file->Get(treeName.Data())) ;
   if (!tree && fDebug)  
     Warning("TreeK", "-> %s not found in %s", treeName.Data(), filename.Data()) ; 
   
@@ -1627,7 +1650,6 @@ Int_t AliPHOSGetter::ReadTreeD(const Int_t event)
   digitsbranch->SetAddress(DigitsRef(fDigitsTitle)) ;
   digitsbranch->GetEntry(0) ;
   
-  
   // read  the Digitizer
   if(Digitizer()){
     if(strcmp(Digitizer()->IsA()->GetName(),digitizerbranch->GetName())!=0){
@@ -1650,33 +1672,34 @@ Int_t AliPHOSGetter::ReadTreeD(const Int_t event)
   digitizerbranch->GetEntry(0) ;
   
 
-  if((!fcdb)&&(strcmp(digitizerbranch->GetName(), "AliPHOSRaw2Digits")==0))
-    ReadCalibrationDB("Primordial","beamtest.root") ;
-  
+//   if((!fcdb)&&(strcmp(digitizerbranch->GetName(), "AliPHOSRaw2Digits")==0))
+//     ReadCalibrationDB("Primordial","beamtest.root") ;
+
+
   if(gAlice->TreeD()!=treeD)
     treeD->Delete();
 
   return 0 ; 
 }
 //____________________________________________________________________________ 
-void AliPHOSGetter::ReadCalibrationDB(const char * database,const char * filename){
-
-  if(fcdb && (strcmp(database,fcdb->GetTitle())==0))
-    return ;
-
-  TFile * file = gROOT->GetFile(filename) ;
-  if(!file)
-    file = TFile::Open(filename);
-  if(!file){
-    Error ("ReadCalibrationDB", "Cannot open file %s", filename) ;
-    return ;
-  }
-  if(fcdb)
-    fcdb->Delete() ;
-  fcdb = dynamic_cast<AliPHOSCalibrationDB *>(file->Get("AliPHOSCalibrationDB")) ;
-  if(!fcdb)
-    Error ("ReadCalibrationDB", "No database %s in file %s", database, filename) ;
-}
+//void AliPHOSGetter::ReadCalibrationDB(const char * database,const char * filename){
+//
+//  if(fcdb && (strcmp(database,fcdb->GetTitle())==0))
+//    return ;
+//
+//  TFile * file = gROOT->GetFile(filename) ;
+//  if(!file)
+//    file = TFile::Open(filename);
+//  if(!file){
+//    Error ("ReadCalibrationDB", "Cannot open file %s", filename) ;
+//    return ;
+//  }
+//  if(fcdb)
+//    fcdb->Delete() ;
+//  fcdb = dynamic_cast<AliPHOSCalibrationDB *>(file->Get("AliPHOSCalibrationDB")) ;
+//  if(!fcdb)
+//    Error ("ReadCalibrationDB", "No database %s in file %s", database, filename) ;
+//}
 
 //____________________________________________________________________________ 
 Int_t AliPHOSGetter::ReadTreeH()
@@ -2115,11 +2138,10 @@ void AliPHOSGetter::ReadPrimaries()
     fAlice = 0 ; 
   
   } else { // treeK not found in header file
-    
     Error("ReadPrimaries", "TreeK not found") ; 
-    return ;
-    
+    return ;  
   }
+
   Int_t index = 0 ; 
   for (index = 0 ; index < fNPrimaries; index++) { 
     new ((*ar)[index]) TParticle(*(Primary(index)));
@@ -2134,6 +2156,20 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
   if (event >= gAlice->TreeE()->GetEntries() ) {
     Error("Event", "%d not found in TreeE !", event) ; 
     return ; 
+  }
+
+  TBranch * btb = gAlice->TreeE()->GetBranch("AliPHOSBeamTestEvent") ;
+  if(btb){
+    if(!fBTE)
+      fBTE = new AliPHOSBeamTestEvent() ;
+    btb->SetAddress(&fBTE) ;
+    btb->GetEntry(event) ;
+  }
+  else{
+    if(fBTE){
+      delete fBTE ;
+      fBTE = 0 ;
+    }
   }
 
   Bool_t any = kFALSE ; 
@@ -2156,10 +2192,11 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
    
   if( strstr(opt,"Q") )
     ReadTreeQA() ;
- 
+
   if( strstr(opt,"P") || (strcmp(opt,"")==0) )
     ReadPrimaries() ;
-  
+
+ 
 }
 
 //____________________________________________________________________________ 
