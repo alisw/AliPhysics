@@ -328,7 +328,7 @@ Bool_t AliMonitorProcess::CheckForNewFile()
   while (Grid_Result_t* resultEntry = result->Next()) {
     const char* entry = resultEntry->name.c_str();
 #endif
-    if (rindex(entry, '/')) entry = rindex(entry, '/')+1;
+    if (strrchr(entry, '/')) entry = strrchr(entry, '/')+1;
     // entry = host_date_time.root
     TString entryCopy(entry);
     char* p = const_cast<char*>(entryCopy.Data());
