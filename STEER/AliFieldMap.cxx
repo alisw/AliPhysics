@@ -13,28 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.5  2002/10/14 14:57:32  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.3.6.1  2002/07/24 10:08:13  alibrary
-Updating VirtualMC
-
-Revision 1.4  2002/07/10 15:06:22  morsch
-Initialize TVector* save.
-
-Revision 1.3  2002/02/26 16:13:07  morsch
-Correction in streamer.
-
-Revision 1.2  2002/02/22 14:00:20  morsch
-Protection against replication of fieldmap data in gAlice.
-
-Revision 1.1  2002/02/14 11:41:28  morsch
-Magnetic field map for ALICE for L3+muon spectrometer stored in 3 seperate
-root files.
-
-*/
+/* $Header$ */
 
 //
 // Author: Andreas Morsch <andreas.morsch@cern.ch>

@@ -13,56 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.5  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.4  2000/11/30 07:12:49  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.3  2000/10/26 14:15:54  morsch
-- Base class now
-- Change from theta, phi to general coordinates Coor1, Coor2
-- PropagateCylinder: bug in calculation of distance to limiting radius corrected.
-
-Revision 1.2  2000/07/13 16:19:09  fca
-Mainly coding conventions + some small bug fixes
-
-Revision 1.1  2000/07/12 08:56:25  fca
-Coding convention correction and warning removal
-
-Revision 1.16  2000/05/26 08:35:03  fca
-Move the check on z after z has been retrieved
-
-Revision 1.15  2000/05/16 13:10:40  fca
-New method IsNewTrack and fix for a problem in Father-Daughter relations
-
-Revision 1.14  2000/04/27 10:38:21  fca
-Correct termination of Lego Run and introduce Lego getter in AliRun
-
-Revision 1.13  2000/04/26 10:17:31  fca
-Changes in Lego for G4 compatibility
-
-Revision 1.12  2000/04/07 11:12:33  fca
-G4 compatibility changes
-
-Revision 1.11  2000/03/22 13:42:26  fca
-SetGenerator does not replace an existing generator, ResetGenerator does
-
-Revision 1.10  2000/02/23 16:25:22  fca
-AliVMC and AliGeant3 classes introduced
-ReadEuclid moved from AliRun to AliModule
-
-Revision 1.9  1999/12/03 10:54:01  fca
-Fix lego summary
-
-Revision 1.8  1999/10/01 09:54:33  fca
-Correct logics for Lego StepManager
-
-Revision 1.7  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-*/
+/* $Header$ */
 
 #include "AliLegoGenerator.h"
 #include "AliRun.h"

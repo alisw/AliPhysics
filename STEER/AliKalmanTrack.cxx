@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Header$ */
+
 //-------------------------------------------------------------------------
 //                Implementation of the AliKalmanTrack class
 //

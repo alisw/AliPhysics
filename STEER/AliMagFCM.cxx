@@ -13,43 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.9  2001/09/04 15:05:13  hristov
-Pointer fB is initialised to 0 in the default constructor
+/* $Header$ */
 
-Revision 1.8  2001/05/28 14:10:35  morsch
-SetSolenoidField method to set the L3 field strength. 2 kG is default.
-
-Revision 1.7  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.6  2000/12/18 10:44:01  morsch
-Possibility to set field map by passing pointer to objet of type AliMagF via
-SetField().
-Example:
-gAlice->SetField(new AliMagFCM("Map2", "$(ALICE_ROOT)/data/field01.dat",2,1.,10.));
-
-Revision 1.5  2000/12/01 11:20:27  alibrary
-Corrector dipole removed from ZDC
-
-Revision 1.4  2000/11/30 07:12:49  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.3  2000/11/10 18:09:55  fca
-New field map for the ZDC
-
-Revision 1.2  2000/07/12 08:56:25  fca
-Coding convention correction and warning removal
-
-Revision 1.1  2000/07/11 18:24:59  fca
-Coding convention corrections + few minor bug fixes
-
-*/
+#include "TSystem.h"
 #include "TVector.h"
 
 #include "AliMagFCM.h"
-#include "TSystem.h"
 
 ClassImp(AliMagFCM)
 

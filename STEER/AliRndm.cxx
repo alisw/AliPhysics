@@ -13,18 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2000/12/21 15:30:18  fca
-Correcting coding convention violations
-
-Revision 1.2  2000/12/01 08:40:48  alibrary
-Correction of a small bug - sRandom can be used now
-
-Revision 1.1  2000/11/30 07:12:48  alibrary
-Introducing new Rndm and QA classes
-
-*/
+/* $Header$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

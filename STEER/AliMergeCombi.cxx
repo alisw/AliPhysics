@@ -13,15 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  2001/10/04 15:50:23  jchudoba
-Implement non default combination
-
-Revision 1.1  2001/09/19 06:22:13  jchudoba
-Class to generate combinations for merging
-
-*/
+/* $Header$ */
 
 ////////////////////////////////////////////////////////////////////////
 //

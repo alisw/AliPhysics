@@ -13,38 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.9  2001/12/05 14:36:47  hristov
-The default constructor now creates no objects; destructor corrected (thanks to R.Brun).
-
-Revision 1.8  2001/10/21 18:38:43  hristov
-Several pointers were set to zero in the default constructors to avoid memory management problems
-
-Revision 1.7  2000/11/30 07:12:49  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.6  2000/10/02 21:28:14  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.5  2000/07/11 18:24:59  fca
-Coding convention corrections + few minor bug fixes
-
-Revision 1.4  2000/05/16 08:30:02  fca
-Using automatic streamer for c arrays
-
-Revision 1.3  2000/03/20 14:22:25  fca
-New version to support new PHOS code
-
-Revision 1.2  2000/02/15 09:43:54  fca
-Corrections
-- a bug in the streamer (wrong size of the arrays)
-- replace Read/WriteArray by Read/WriteFastArray (suggestion R.Brun)
-
-Revision 1.1  1999/12/17 09:01:14  fca
-Y.Schutz new classes for reconstruction
-
-*/
+/* $Header$ */
 
 //-*-C++-*-
 //_________________________________________________________________________

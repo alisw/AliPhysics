@@ -13,24 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2.14.1  2002/07/24 10:08:13  alibrary
-Updating VirtualMC
-
-Revision 1.4  2002/05/31 08:04:10  morsch
-Impact methode purely virtual.
-
-Revision 1.3  2002/05/30 15:02:31  morsch
-Impact method added. (G. Martinez)
-
-Revision 1.2  2000/07/12 08:56:25  fca
-Coding convention correction and warning removal
-
-Revision 1.1  1999/12/17 09:01:14  fca
-Y.Schutz new classes for reconstruction
-
-*/
+/* $Header$ */
 
 //-*-C++-*-
 //_________________________________________________________________________

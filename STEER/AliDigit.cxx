@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Header$ */
 
 #include "AliDigit.h"
  

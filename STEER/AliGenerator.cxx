@@ -13,65 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.21  2002/11/21 16:13:03  alibrary
-Removing AliMCProcess and AliMC
-
-Revision 1.20  2002/10/29 14:26:49  hristov
-Code clean-up (F.Carminati)
-
-Revision 1.19  2002/03/12 11:06:03  morsch
-Add particle status code to argument list of SetTrack(..).
-
-Revision 1.18  2002/02/18 19:23:00  hristov
-Put protection in the destructor
-
-Revision 1.17  2001/11/26 15:46:35  morsch
-Set default value for vertex truncation in constructor.
-
-Revision 1.16  2001/10/16 08:45:37  morsch
-All vertex truncation and event vertex moved here.
-
-Revision 1.15  2001/07/28 10:43:41  hristov
-Default argument initialised once
-
-Revision 1.14  2001/07/27 17:13:12  morsch
-- SetTrack, KeepTrack and SetHighWaterMark methods added to delegate to local
-stack or stack owned by AliRun. (Piotr Skowronski, A.M.)
-- Changes needed for afterburners (Piotr Skowronski)
-
-Revision 1.13  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.12  2001/02/02 11:12:50  morsch
-Add Vertex() method that allows to get vertex from merging manager, if needed.
-
-Revision 1.11  2001/01/26 19:58:48  hristov
-Major upgrade of AliRoot code
-
-Revision 1.10  2000/12/21 15:30:18  fca
-Correcting coding convention violations
-
-Revision 1.9  2000/10/04 10:08:01  fca
-Correction of minor typing mistakes
-
-Revision 1.8  2000/10/02 21:28:14  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.7  2000/07/12 08:56:25  fca
-Coding convention correction and warning removal
-
-Revision 1.6  2000/07/11 18:24:59  fca
-Coding convention corrections + few minor bug fixes
-
-Revision 1.5  2000/06/08 13:34:50  fca
-Better control of momentum range in GenBox
-
-Revision 1.4  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Header$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //

@@ -2,6 +2,9 @@
 #define ALIGAUSCORR_H
 /* Copyright(c) 2001-2002, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 #include <TMatrixD.h>
 class TArrayD;
 

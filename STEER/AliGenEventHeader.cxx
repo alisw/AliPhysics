@@ -13,27 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  2002/10/29 14:26:49  hristov
-Code clean-up (F.Carminati)
-
-Revision 1.3  2001/10/16 07:44:38  morsch
-Initialize  fVertex in all constructors.
-
-Revision 1.2  2001/09/25 11:28:48  morsch
-Possibility to store and retrieve primary vertex position added.
-
-Revision 1.1  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.2  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.1  2000/06/15 15:47:48  morsch
-Proposal for an event header class for generated events.
-
-*/
+/* $Header$ */
 
 // Event header base class for generator. 
 // Stores as a minimum the date, run number, event number,

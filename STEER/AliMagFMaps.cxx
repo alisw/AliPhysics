@@ -13,37 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2002/10/14 14:57:32  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.5.6.2  2002/08/01 15:35:30  alibrary
-Updating VirtualMC
-
-Revision 1.7  2002/08/01 12:34:48  morsch
-Initialize maps in first call to Field() after streaming in.
-
-Revision 1.6  2002/04/11 11:17:48  morsch
-ReadField() used in Constructor.
-
-Revision 1.5  2002/02/26 09:48:14  morsch
-Extra argument in constructor for l3 map choice.
-
-Revision 1.4  2002/02/22 14:00:20  morsch
-Protection against replication of fieldmap data in gAlice.
-
-Revision 1.3  2002/02/21 09:23:41  morsch
-Create dummy field map for L3 in case no detailed map is needed.
-
-Revision 1.2  2002/02/19 16:14:35  morsch
-Reading of 0.2 T solenoid field map enabled.
-
-Revision 1.1  2002/02/14 11:41:28  morsch
-Magnetic field map for ALICE for L3+muon spectrometer stored in 3 seperate
-root files.
-
-*/
+/* $Header$ */
 
 //
 // Author: Andreas Morsch <andreas.morsch@cern.ch>

@@ -13,21 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.7  2001/01/26 19:58:48  hristov
-Major upgrade of AliRoot code
-
-Revision 1.6  2000/10/02 21:28:14  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.5  2000/07/11 18:24:59  fca
-Coding convention corrections + few minor bug fixes
-
-Revision 1.4  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Header$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

@@ -13,33 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10  2001/10/09 18:00:35  hristov
-Temporary fix to provide unique event number in the simulation (J.Chudoba)
+/* $Header$ */
 
-Revision 1.9  2001/05/23 08:54:53  hristov
-Typo corrected
-
-Revision 1.8  2001/05/23 08:50:01  hristov
-Weird inline removed
-
-Revision 1.7  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.4  2000/10/02 21:28:14  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.3  2000/07/12 08:56:25  fca
-Coding convention correction and warning removal
-
-Revision 1.2  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-
-*/
+#include <stdio.h>
 
 #include "AliHeader.h"
-#include <stdio.h>
  
 ClassImp(AliHeader)
 

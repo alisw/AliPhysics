@@ -13,36 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2002/10/22 15:02:15  alibrary
-Introducing Riostream.h
-
-Revision 1.7  2002/10/14 14:57:33  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.4.6.2  2002/07/24 10:08:13  alibrary
-Updating VirtualMC
-
-Revision 1.6  2002/07/16 13:48:39  jchudoba
-Add methods to get access to names of files used in merging. Correct memory leak in dtor (thanks to Yves Schutz.)
-
-Revision 1.5  2002/04/09 13:38:47  jchudoba
-Add const to the filename argument
-
-Revision 1.4  2001/12/03 07:10:13  jchudoba
-Default ctor cannot create new objects, create dummy default ctor which leaves object in not well defined state - to be used only by root for I/O
-
-Revision 1.3  2001/10/15 17:31:56  jchudoba
-Bug correction
-
-Revision 1.2  2001/10/04 15:58:52  jchudoba
-Option to open the stream in READ or UPDATE mode
-
-Revision 1.1  2001/09/19 06:20:50  jchudoba
-Class to manage input filenames, used by AliRunDigitizer
-
-*/
+/* $Header$ */
 
 ////////////////////////////////////////////////////////////////////////
 //

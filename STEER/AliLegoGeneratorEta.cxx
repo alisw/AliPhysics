@@ -13,20 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2000/12/15 10:33:59  morsch
-Invert coordinates to make meaningful zylindrical plots.
-
-Revision 1.2  2000/11/30 07:12:49  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.1  2000/10/26 14:18:05  morsch
-Add new AliLegoGenerator classes:
-AliLegoGeneratorXYZ: carthesian binning
-AliLegoGeneratorEta: eta-phi binning
-
-*/
+/* $Header$ */
 
 #include "AliLegoGeneratorEta.h"
 #include "AliRun.h"

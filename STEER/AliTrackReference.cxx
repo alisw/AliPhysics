@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Header$ */
 
 #include "AliTrackReference.h"
 #include "TParticle.h"

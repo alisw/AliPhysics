@@ -13,27 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.5  2002/10/14 14:57:32  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.3.10.2  2002/10/14 09:45:57  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.4  2002/09/16 08:22:36  morsch
-Add Upsilon(3S) to particle data base.
-
-Revision 1.3  2001/03/16 09:48:35  morsch
-Exclude pdg particle definitions. Done by root now by default from Pythia6 table.
-
-Revision 1.2  2001/01/31 14:32:42  morsch
-Some B mesons added
-
-Revision 1.1  2000/12/21 16:48:39  morsch
-AliPDG class, first commit.
-
-*/
+/* $Header$ */
 
 // Class to encapsulate the ALICE updates to TDatabasePDG.h
 // Can be used by TGeant3 and TGeant4

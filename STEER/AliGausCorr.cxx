@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Header$ */
+
 ////////////////////////////////////////////////////////////////////////
 // Class used to generate correlated gaussian numbers with mean
 // zero and known covariance matrix.

@@ -13,35 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.9  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.8  2000/12/18 10:44:01  morsch
-Possibility to set field map by passing pointer to objet of type AliMagF via
-SetField().
-Example:
-gAlice->SetField(new AliMagFCM("Map2", "$(ALICE_ROOT)/data/field01.dat",2,1.,10.));
-
-Revision 1.7  2000/10/02 21:28:14  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.6  2000/07/11 18:24:59  fca
-Coding convention corrections + few minor bug fixes
-
-Revision 1.5  2000/06/09 19:55:18  morsch
-Introduce new class AliMagFDM - Galina Chabratova
-
-
-Revision 1.4  2000/03/28 12:40:24  fca
-Introduce factor for magnetic field
-
-
-Revision 1.3  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Header$ */
 
 
 #include "AliMagF.h"

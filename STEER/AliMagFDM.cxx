@@ -13,53 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.12  2001/05/28 14:10:35  morsch
-SetSolenoidField method to set the L3 field strength. 2 kG is default.
-
-Revision 1.11  2001/02/08 13:18:00  hristov
-Print removed (J.Gosset)
-
-Revision 1.10  2001/01/18 13:21:30  morsch
-Take pi from TMath.
-
-Revision 1.9  2001/01/17 20:02:20  morsch
-In the AliMagFDM tree  call-by-reference functions were changed to
-call-by-value, what is more adequate for our task. There were added
-a few comments and put protection to values of cos > 1.000 in
-AliMagFDM.cxx. (Galina Chabratova)
-
-Revision 1.8  2000/12/18 10:44:01  morsch
-Possibility to set field map by passing pointer to objet of type AliMagF via
-SetField().
-Example:
-gAlice->SetField(new AliMagFCM("Map2", "$(ALICE_ROOT)/data/field01.dat",2,1.,10.));
-
-Revision 1.7  2000/12/01 11:20:27  alibrary
-Corrector dipole removed from ZDC
-
-Revision 1.6  2000/11/10 18:09:55  fca
-New field map for the ZDC
-
-Revision 1.5  2000/10/27 14:17:04  morsch
-- Bug causing segmentation violation during muon reconstruction corrected
-- Coding rule violations corrected.
-(Galina Chabratova)
-
-Revision 1.4  2000/10/02 21:28:14  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.3  2000/07/13 16:19:09  fca
-Mainly coding conventions + some small bug fixes
-
-Revision 1.2  2000/07/12 08:56:25  fca
-Coding convention correction and warning removal
-
-Revision 1.1  2000/07/11 18:24:59  fca
-Coding convention corrections + few minor bug fixes
-
-*/
+/* $Header$ */
 
 #include <stdlib.h>
 

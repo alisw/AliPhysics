@@ -13,24 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.7  2002/01/10 09:32:06  hristov
-New fIshunt=2 option that allows to associate to a hit the particle that first entered in the cell where the hit occurred (Y.Schutz)
-
-Revision 1.6  2001/01/26 19:58:48  hristov
-Major upgrade of AliRoot code
-
-Revision 1.5  2000/07/12 08:56:25  fca
-Coding convention correction and warning removal
-
-Revision 1.4  2000/07/11 18:24:59  fca
-Coding convention corrections + few minor bug fixes
-
-Revision 1.3  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Header$ */
 
 #include "TParticle.h"
 

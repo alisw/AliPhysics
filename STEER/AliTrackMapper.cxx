@@ -13,24 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  2002/10/22 15:02:15  alibrary
-Introducing Riostream.h
-
-Revision 1.3  2002/10/14 14:57:33  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.2.2.1  2002/10/14 09:45:57  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.2  2002/10/01 08:47:04  jchudoba
-Change loop order to run faster.
-
-Revision 1.1  2002/09/17 08:37:12  jchudoba
-Classes to create and store tracks maps - correcpondence between track label and entry number in the TreeH
-
-*/
+/* $Header$ */
 
 ////////////////////////////////////////////////////////////////////////
 //

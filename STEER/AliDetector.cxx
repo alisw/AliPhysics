@@ -13,66 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.22  2002/10/23 07:43:00  alibrary
-Introducing some effective C++ suggestions
-
-Revision 1.21  2002/10/22 15:02:15  alibrary
-Introducing Riostream.h
-
-Revision 1.20  2002/10/14 14:57:32  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.16.8.3  2002/10/14 09:45:57  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.19  2002/09/23 09:19:54  hristov
-FirsTrackReference updated (M.Ivanov)
-
-Revision 1.18  2002/08/26 13:51:17  hristov
-Remaping of track references at the end of each primary particle (M.Ivanov)
-
-Revision 1.17  2002/05/24 13:29:58  hristov
-AliTrackReference added, AliDisplay modified
-
-Revision 1.16  2001/10/04 15:30:56  hristov
-Changes to accommodate the set of PHOS folders and tasks (Y.Schutz)
-
-Revision 1.15  2001/07/27 13:03:13  hristov
-Default Branch split level set to 99
-
-Revision 1.14  2001/05/21 17:22:51  buncic
-Fixed problem with missing AliConfig while reading galice.root
-
-Revision 1.13  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.12  2001/03/12 17:47:03  hristov
-Changes needed on Sun with CC 5.0
-
-Revision 1.11  2001/01/26 19:58:46  hristov
-Major upgrade of AliRoot code
-
-Revision 1.10  2001/01/17 10:50:50  hristov
-Corrections to destructors
-
-Revision 1.9  2000/12/12 18:19:06  alibrary
-Introduce consistency check when loading points
-
-Revision 1.8  2000/11/30 07:12:48  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.7  2000/10/02 21:28:14  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.6  2000/07/12 08:56:25  fca
-Coding convention correction and warning removal
-
-Revision 1.5  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Header$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

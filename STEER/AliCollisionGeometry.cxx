@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1  2003/01/06 10:09:08  morsch
-First commit.
-
-*/
+/* $Header$ */
 
 
 #include "AliCollisionGeometry.h"

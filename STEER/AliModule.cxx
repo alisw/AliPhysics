@@ -13,49 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.19  2002/10/29 14:26:49  hristov
-Code clean-up (F.Carminati)
-
-Revision 1.18  2001/12/19 14:46:26  morsch
-Add possibility to disable StepManager() for each module separately.
-
-Revision 1.17  2001/08/29 14:28:33  morsch
-Use visibility flags -1 and 3 instead of 0 and 1.
-
-Revision 1.16  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.15  2001/03/20 06:36:28  alibrary
-100 parameters now allowed for geant shapes
-
-Revision 1.14  2001/01/26 19:58:48  hristov
-Major upgrade of AliRoot code
-
-Revision 1.13  2000/11/30 07:12:49  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.12  2000/10/02 21:28:14  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.11  2000/07/12 08:56:25  fca
-Coding convention correction and warning removal
-
-Revision 1.10  2000/07/11 18:24:59  fca
-Coding convention corrections + few minor bug fixes
-
-Revision 1.9  2000/05/16 08:45:08  fca
-Correct dtor, thanks to J.Belikov
-
-Revision 1.8  2000/02/23 16:25:22  fca
-AliVMC and AliGeant3 classes introduced
-ReadEuclid moved from AliRun to AliModule
-
-Revision 1.7  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Header$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
