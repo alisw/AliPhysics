@@ -29,6 +29,8 @@ class AliJetParticlesReaderESD: public AliJetParticlesReader
 
   void SetCompareFlag(ULong_t f){fPassFlag=f;}
   void SetCompareFlagTPC() {fPassFlag=AliESDtrack::kTPCrefit;}
+  void SetCompareFlagBarrel() {fPassFlag=AliESDtrack::kITSrefit
+                                        +AliESDtrack::kTPCrefit+AliESDtrack::kTRDrefit;}
 
   virtual ~AliJetParticlesReaderESD();
 
@@ -36,6 +38,7 @@ class AliJetParticlesReaderESD: public AliJetParticlesReader
   void Rewind();
 
   const AliESD* GetCurrentESD() const {return fESD;}
+  void PrintESDtrack(const AliESDtrack *kesdtrack) const;
 
   protected:
   virtual Int_t ReadESD(AliESD* esd); //read esd file/objects

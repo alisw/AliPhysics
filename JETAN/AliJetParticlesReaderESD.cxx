@@ -138,10 +138,12 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
         Error("ReadESD","Can't get track %d", i);
         continue;
       }
-
-     if ((kesdtrack->GetStatus() & fPassFlag)!=fPassFlag)
+     
+     ULong_t cmptest=(kesdtrack->GetStatus() & fPassFlag);
+     if (cmptest!=fPassFlag)
       {
-	Info("ReadNext","Particle skipped: %u.",kesdtrack->GetStatus());
+	cout << i << " "; PrintESDtrack(kesdtrack); cout << endl;
+	Info("ReadNext","Particle %d skipped: %u.",i,kesdtrack->GetStatus());
         continue;
       }
 
@@ -298,4 +300,46 @@ TFile* AliJetParticlesReaderESD::OpenFile(Int_t n)
   }
    
  return ret;
+}
+
+/**********************************************************/
+
+void AliJetParticlesReaderESD::PrintESDtrack(const AliESDtrack *kesdtrack) const
+{
+  ULong_t status=kesdtrack->GetStatus();
+  cout << hex << status << dec << ": ";
+  if((status & AliESDtrack::kITSin) == AliESDtrack::kITSin) cout << "ITSin ";
+  if((status & AliESDtrack::kITSout) == AliESDtrack::kITSout) cout << "ITSout ";
+  if((status & AliESDtrack::kITSrefit) == AliESDtrack::kITSrefit) cout << "ITSrefit ";
+  if((status & AliESDtrack::kITSpid) == AliESDtrack::kITSpid) cout << "ITSpid ";
+
+  if((status & AliESDtrack::kTPCin)  == AliESDtrack::kTPCin) cout << "TPCin ";
+  if((status & AliESDtrack::kTPCout) == AliESDtrack::kTPCout) cout << "TPCout ";
+  if((status & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit) cout << "TPCrefit ";
+  if((status & AliESDtrack::kTPCpid) == AliESDtrack::kTPCpid) cout << "TPCpid ";
+
+  if((status & AliESDtrack::kTRDin) == AliESDtrack::kTRDin) cout << "TRDin ";
+  if((status & AliESDtrack::kTRDout) == AliESDtrack::kTRDout) cout << "TRDout ";
+  if((status & AliESDtrack::kTRDrefit) == AliESDtrack::kTRDrefit) cout << "TRDrefit ";
+  if((status & AliESDtrack::kTRDpid) == AliESDtrack::kTRDpid) cout << "TRDpid ";
+  if((status & AliESDtrack::kTRDbackup) == AliESDtrack::kTRDbackup) cout << "TRDbackup ";
+  if((status & AliESDtrack::kTRDStop) == AliESDtrack::kTRDStop) cout << "TRDstop ";
+
+  if((status & AliESDtrack::kTOFin) == AliESDtrack::kTOFin) cout << "TOFin ";
+  if((status & AliESDtrack::kTOFout) == AliESDtrack::kTOFout) cout << "TOFout ";
+  if((status & AliESDtrack::kTOFrefit) == AliESDtrack::kTOFrefit) cout << "TOFrefit ";
+  if((status & AliESDtrack::kTOFpid) == AliESDtrack::kTOFpid) cout << "TOFpid ";
+
+  if((status & AliESDtrack::kPHOSpid) == AliESDtrack::kPHOSpid) cout << "PHOSpid ";
+  if((status & AliESDtrack::kRICHpid) == AliESDtrack::kRICHpid) cout << "RICHpid ";
+  if((status & AliESDtrack::kEMCALpid) == AliESDtrack::kEMCALpid) cout << "EMCALpid ";
+  if((status & AliESDtrack::kESDpid) == AliESDtrack::kESDpid) cout << "ESDpid ";
+  if((status & AliESDtrack::kTIME) == AliESDtrack::kTIME) cout << "TIME ";
+  cout << endl; 
+  /*
+  cout << kesdtrack->GetConstrainedChi2() 
+       << " " << kesdtrack->GetITSchi2()
+       << " " << kesdtrack->GetTPCchi2() 
+       << " " << kesdtrack->GetTRDchi2()<< endl;
+  */
 }
