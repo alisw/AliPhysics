@@ -28,6 +28,7 @@
 
 // --- AliRoot header files ---
 #include "AliEMCALTrackSegmentMaker.h"
+#include "AliEMCALGetter.h"
 
 ClassImp( AliEMCALTrackSegmentMaker) 
 
@@ -53,5 +54,7 @@ AliEMCALTrackSegmentMaker::AliEMCALTrackSegmentMaker(const TString alirunFileNam
 //____________________________________________________________________________
 AliEMCALTrackSegmentMaker::~AliEMCALTrackSegmentMaker()
 {
+ //Remove this from the parental task before destroying
+  AliEMCALGetter::Instance()->EmcalLoader()->CleanTracker();
 }
 

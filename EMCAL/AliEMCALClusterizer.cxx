@@ -30,8 +30,8 @@
 
 
 // --- AliRoot header files ---
-#include "AliRun.h" 
 #include "AliEMCALClusterizer.h"
+#include "AliEMCALGetter.h"
 
 ClassImp(AliEMCALClusterizer)
 
@@ -59,5 +59,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(const TString alirunFileName,
 AliEMCALClusterizer::~AliEMCALClusterizer()
 {
   // dtor
+ //Remove this from the parental task before destroying
+  AliEMCALGetter::Instance()->EmcalLoader()->CleanReconstructioner();
 }
 
