@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:21  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:43  cernlib
 * Geant
 *
@@ -67,6 +70,8 @@ C
             IF(Q(IPOINT).NE.0.) THEN
                Q(JX+2)=Q(JX+2)+3.*Q(IPOINT)+2.
                Q(JX+1)=Q(JX+1)-2.
+               IPOINT=JX+Q(JX+2)
+               Q(IPOINT)=0
             ENDIF
          ENDIF
       ENDIF
