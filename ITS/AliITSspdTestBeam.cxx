@@ -484,6 +484,34 @@ Int_t AliITSspdTestBeam::DecodeModule(Int_t pilot,Int_t chip){
     return -1;
 }
 //----------------------------------------------------------------------
+Int_t AliITSspdTestBeam::DecodeColumn(Int_t pilot,Int_t chip,Int_t colm){
+    // Determines the Column number based on the pilot, chip, and column 
+    // valules and the fVersion of the simulation.
+    // Inputs:
+    //    Int_t   pilot   Pilot number
+    //    Int_t   chip    chip number
+    //    Int_t   colm    Column number
+    // Outputs:
+    //    none.
+    // Return:
+    //    The Column number (see simulations geometry).
+    const Int_t colmperchip = 160/5; // Should be gotten from AliITSsegmentationSPD
+
+    switch (fVersion) {
+    case 2002:
+        if(pilot==0) return colm;
+        if(pilot==1) return colm+chip*colmperchip;
+        if(pilot==2) return colm;
+        break;
+    default:
+        if(pilot==0) return colm;
+        if(pilot==1) return colm+chip*colmperchip;
+        if(pilot==2) return colm;
+        break;
+    } // end switch
+    return -1;
+}
+//----------------------------------------------------------------------
 void AliITSspdTestBeam::Digitize(Int_t evnt){
     // Write out ITS SPD Digits.
     // Inputs:
@@ -511,7 +539,7 @@ void AliITSspdTestBeam::Digitize(Int_t evnt){
             chip = fData[p][evnt]->Chip(i);
             module = DecodeModule(p,chip);
             row  = fData[p][evnt]->Row(i);
-            colm = fData[p][evnt]->Colm(i);
+            colm = DecodeColumn(p,chip,fData[p][evnt]->Colm(i));
             digit[0] = row; digit[1] = colm, digit[2] = 1;
             fITS->AddRealDigit(0,digit);
             if(module!=oldmodule) { // New Module

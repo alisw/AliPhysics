@@ -246,6 +246,7 @@ class AliITSspdTestBeam : public TTask{
     virtual Int_t Read(Int_t i=0);
     virtual Int_t Decode();
     virtual Int_t DecodeModule(Int_t pilot,Int_t Chip);
+    virtual Int_t DecodeColumn(Int_t pilot,Int_t Chip,Int_t Colm);
     virtual void Digitize(Int_t evnt);
     virtual void SetLoader(AliLoader *loader) {fLoader = loader;}
     virtual void SetITS(AliITS *its) {fITS = its;}
