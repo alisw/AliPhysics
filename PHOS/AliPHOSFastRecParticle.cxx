@@ -220,8 +220,8 @@ Bool_t AliPHOSFastRecParticle::IsElectron(TString purity) const
   else if (purity == "high"  ) photonLike = TestPIDBit(8);
   else Error("IsElectron","Wrong purity type: %s",purity.Data());
   if (photonLike                                   && //  photon by PCA
-      (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  fast by TOF
-     !(TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0)))  //  charged by CPV
+      (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
+     (!TestPIDBit(2)||!TestPIDBit(1)||!TestPIDBit(0)))  //  charged by CPV
     return kTRUE ;
   else
     return kFALSE;
@@ -358,41 +358,41 @@ TString AliPHOSFastRecParticle::Name() const
   name = "Undefined particle" ;
   
   if      (IsPhoton("low"))
-    name = "Photon low purity ";
+    name = "Photon low purity, ";
   else if (IsPhoton("medium"))
-    name = "Photon medium purity";
+    name = "Photon medium purity, ";
   else if (IsPhoton("high"))
-    name = "Photon high purity ";
+    name = "Photon high purity, ";
 
   if      (IsPi0("low"))
-    name += "Pi0 low purity ";
+    name += "Pi0 low purity, ";
   else if (IsPi0("medium"))
-    name += "Pi0 medium purity ";
+    name += "Pi0 medium purity, ";
   else if (IsPi0("high"))
-    name += "Pi0 high purity ";
+    name += "Pi0 high purity, ";
 
   if      (IsElectron("low"))
-    name += "Electron low purity ";
+    name += "Electron low purity, ";
   else if (IsElectron("medium"))
-    name += "Electron medium purity ";
+    name += "Electron medium purity, ";
   else if (IsElectron("high"))
-    name += "Electron high purity ";
+    name += "Electron high purity, ";
 
   if     (IsHadron()) {
     name = "hadron";
     if      (IsChargedHadron()) {
-      name.Prepend("charged ");
+      name.Prepend("charged, ");
       if      (IsFastChargedHadron())
-	name.Prepend("fast ");
+	name.Prepend("fast, ");
       else if (IsSlowChargedHadron())
-	name.Prepend("slow ");
+	name.Prepend("slow, ");
     }
     else if (IsNeutralHadron()) {
-      name.Prepend("neutral ");
+      name.Prepend("neutral, ");
       if      (IsFastNeutralHadron())
-	name.Prepend("fast ");
+	name.Prepend("fast, ");
       else if (IsSlowNeutralHadron())
-	name.Prepend("slow ");
+	name.Prepend("slow, ");
     }
   }
 
