@@ -16,9 +16,6 @@ SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSRecParticle.cxx AliPHOSPID.cxx AliPHOSPIDv0.cxx \
                  AliPHOSAnalyze.cxx AliPHOSFastRecParticle.cxx \
                  AliPHOSTick.cxx \
-                 AliPHOSQAVirtualCheckable.cxx AliPHOSQAIntCheckable.cxx \
-                 AliPHOSQAFloatCheckable.cxx\
-                 AliPHOSQAObjectCheckable.cxx AliPHOSQAChecker.cxx AliPHOSQAMeanChecker.cxx AliPHOSQAAlarm.cxx \
                  AliPHOSIhepAnalyze.cxx AliPHOSEvalRecPoint.cxx \
                  AliPHOSRecManager.cxx AliPHOSRecCpvManager.cxx AliPHOSRecEmcManager.cxx \
                  AliPHOSClusterizerv2.cxx AliPHOSPIDv1.cxx AliPHOSJet.cxx AliPHOSJetFinder.cxx\
