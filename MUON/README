@@ -93,6 +93,19 @@ Note1.In the actual version (dec-03) the following data
 members  of ALiMUONTrack:  fgFitter, fEventReconstructor, 
 and fTrackHitsPtr are not saved in the MUON.Track.root file
 
+===========================================================
+ How to run MUON Trigger Track reconstruction (new output)
+===========================================================
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONTriggerTracker.C++
+MUONTriggerTracker("galice.root",0,10);    
+To Load
+gSystem->Load("$ALICE_ROOT/MUON/MUONTriggerTracker_C.so")
+Output in MUON.Tracks.root using the new IO 
+as a TClonesArray of AliMUONTriggerTrack
+
+
 ============================================================
  How to run MUONCheck macro
 ============================================================
