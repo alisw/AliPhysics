@@ -15,20 +15,23 @@
 
 /* $Id$ */
 
+
 #include <Riostream.h>
 #include <TMath.h>
-#include <TString.h>
 #include "AliITSetfSDD.h"
 
 ////////////////////////////////////////////////////////////////////////
 // Version: 0
 // Written by Piergiorgio Cerello
 // November 23 1999
-//
+// Revised to comply with coding conventions: Nov, 21 2003 m.m.
 //_____________________________________________________________________________
 
 
 ClassImp(AliITSetfSDD)
+
+const Int_t AliITSetfSDD::AliITSetfSDDparam::fgkMaxNofPoles = 5;
+const Int_t AliITSetfSDD::AliITSetfSDDparam::fgkMaxNofSamples = 1024;
 
 Int_t ppower(Int_t b, Int_t e) {
   Int_t power = 1;
@@ -36,19 +39,52 @@ Int_t ppower(Int_t b, Int_t e) {
   return power;
 }
 
+AliITSetfSDD::AliITSetfSDD() {
+  // Default constructor
+  fTimeDelay = 0.;
+  fSamplingTime = 0.;
+  fT0 = 0.;
+  fDf = 0.;
+  fA0 = 0.;
+  fZeroM = 0;
+  fZeroR = 0;
+  fPoleM = 0;
+  fPoleR = 0;
+  fPoleI = 0;
+  fTfR = 0;
+  fTfI = 0;
+  fWR = 0;
+  fWI = 0;
+}
+
 AliITSetfSDD::AliITSetfSDD(Double_t timestep, Int_t amplif)
 {
-  // sampling time in ns
+  // Standard constructor. sampling time in ns
 
+  /*
+  cout<<"Number of poles: "<<AliITSetfSDDparam::NumberOfPoles()<<endl;
+  cout<<"Number of samples: "<<AliITSetfSDDparam::NumberOfSamples()<<endl;
+  */
   fTimeDelay = 53.5;
   if(amplif == 2) fTimeDelay = 35.5;
   fSamplingTime = timestep;
 
   fT0 = 0.;
-  fDf = ppower(10,9)/(kMaxNofSamples*fSamplingTime);
+  fDf = ppower(10,9)/(AliITSetfSDDparam::NumberOfSamples()*fSamplingTime);
 
   Int_t i,j;
-  for(i=0; i<kMaxNofPoles; i++) {
+  fZeroM = new Double_t[AliITSetfSDDparam::NumberOfPoles()];
+  fZeroR = new Double_t [AliITSetfSDDparam::NumberOfPoles()];
+  fZeroI = new Double_t [AliITSetfSDDparam::NumberOfPoles()];
+  fPoleM = new Double_t [AliITSetfSDDparam::NumberOfPoles()];
+  fPoleR = new Double_t [AliITSetfSDDparam::NumberOfPoles()];
+  fPoleI = new Double_t [AliITSetfSDDparam::NumberOfPoles()];
+  fTfR = new Double_t [AliITSetfSDDparam::NumberOfSamples()];
+  fTfI = new Double_t [AliITSetfSDDparam::NumberOfSamples()];
+  fWR = new Double_t [AliITSetfSDDparam::NumberOfSamples()];
+  fWI = new Double_t [AliITSetfSDDparam::NumberOfSamples()];
+
+  for(i=0; i<AliITSetfSDDparam::NumberOfPoles(); i++) {
     fZeroM[i] = 0.;
     fZeroR[i] = 0.;
     fZeroI[i] = 0.;
@@ -89,76 +125,106 @@ AliITSetfSDD::AliITSetfSDD(Double_t timestep, Int_t amplif)
   
   // Compute Transfer Function
 
-  Double_t PI = acos(-1.);
-  for(i=0; i<=kMaxNofSamples/2; i++) {
+  Double_t pigr = acos(-1.);
+  for(i=0; i<=AliITSetfSDDparam::NumberOfSamples()/2; i++) {
     Double_t frequency = fDf*i;
-    Double_t VM = fA0;
-    Double_t VA = 0.;
-    for(Int_t k=0; k<kMaxNofPoles; k++) {
+    Double_t vVM = fA0;
+    Double_t vVA = 0.;
+    for(Int_t k=0; k<AliITSetfSDDparam::NumberOfPoles(); k++) {
       if(fZeroM[k]) {
-        Double_t VZR = -fZeroR[k];
-        Double_t VZI = frequency - fZeroI[k];
-        Double_t VZM = TMath::Sqrt(VZR*VZR+VZI*VZI);
-        Double_t VZA = TMath::ATan2(VZI,VZR);
-	//	cout << "VZM: " << VZM << ", VZA: " << VZA << endl;
-	//	cout << "VZR: " << VZR << ", VZI: " << VZI << endl;
+        Double_t vVZR = -fZeroR[k];
+        Double_t vVZI = frequency - fZeroI[k];
+        Double_t vVZM = TMath::Sqrt(vVZR*vVZR+vVZI*vVZI);
+        Double_t vVZA = TMath::ATan2(vVZI,vVZR);
+	//	cout << "VZM: " << vVZM << ", VZA: " << vVZA << endl;
+	//	cout << "VZR: " << vVZR << ", VZI: " << vVZI << endl;
         for(j=1; j<= (Int_t) fZeroM[k]; j++) {
-          VM *= VZM;
-          VA += VZA;
-          if(VA >= PI) VA -= (2.*PI);
-          if(VA <= -PI) VA += (2.*PI);
-	  //cout << "VM: " << VM << ", VA: " << VA << endl;
+          vVM *= vVZM;
+          vVA += vVZA;
+          if(vVA >= pigr) vVA -= (2.*pigr);
+          if(vVA <= -pigr) vVA += (2.*pigr);
+	  //cout << "vVM: " << vVM << ", VA: " << vVA << endl;
         }
       }
 
       if(fPoleM[k]) {
-        Double_t VPR = -fPoleR[k];
-        Double_t VPI = frequency - fPoleI[k];
-	Double_t VPM = TMath::Sqrt(VPR*VPR+VPI*VPI);
-	Double_t VPA = TMath::ATan2(VPI,VPR);
-	//cout << "VPM: " << VPM << ", VPA: " << VPA << endl;
-	//cout << "VPR: " << VPR << ", VPI: " << VPI << endl;
+        Double_t vVPR = -fPoleR[k];
+        Double_t vVPI = frequency - fPoleI[k];
+	Double_t vVPM = TMath::Sqrt(vVPR*vVPR+vVPI*vVPI);
+	Double_t vVPA = TMath::ATan2(vVPI,vVPR);
+	//cout << "VPM: " << vVPM << ", VPA: " << vVPA << endl;
+	//cout << "VPR: " << vVPR << ", VPI: " << vVPI << endl;
         for(j=1; j<= (Int_t) fPoleM[k]; j++) {
-          VM /= VPM;
-          VA -= VPA;
-          if(VA >= PI) VA -= (2.*PI);
-          if(VA <= -PI) VA += (2.*PI);
-	  //cout << "VM: " << VM << ", VA: " << VA << endl;
+          vVM /= vVPM;
+          vVA -= vVPA;
+          if(vVA >= pigr) vVA -= (2.*pigr);
+          if(vVA <= -pigr) vVA += (2.*pigr);
+	  //cout << "VM: " << vVM << ", vVA: " << vVA << endl;
         }
       }
-      Double_t VR = VM*cos(VA);
-      Double_t VI = VM*sin(VA);
-      //cout << "VM: " << VM << ", VA: " << VA << endl;
-      //cout << "VR: " << VR << ", VI: " << VI << endl;
-      fTfR[i] = VR*ppower(10,9);
-      fTfI[i] = VI*ppower(10,9);
+      Double_t vVR = vVM*cos(vVA);
+      Double_t vVI = vVM*sin(vVA);
+      //cout << "VM: " << vVM << ", VA: " << vVA << endl;
+      //cout << "VR: " << vVR << ", VI: " << vVI << endl;
+      fTfR[i] = vVR*ppower(10,9);
+      fTfI[i] = vVI*ppower(10,9);
       //cout << "fTfR[" << i << "] = " << fTfR[i] << endl;
       //cout << "fTfI[" << i << "] = " << fTfI[i] << endl;
       if(i) {
-        fTfR[kMaxNofSamples-i] = fTfR[i];
-        fTfI[kMaxNofSamples-i] = -fTfI[i];
+        fTfR[AliITSetfSDDparam::NumberOfSamples()-i] = fTfR[i];
+        fTfI[AliITSetfSDDparam::NumberOfSamples()-i] = -fTfI[i];
       }
     }
   }
   
   // Compute Fourier Weights
 
-  for(i=0; i<=kMaxNofSamples/2; i++) {
-    fWR[i] = cos(-2.*PI*i/kMaxNofSamples);
-    fWI[i] = sin(-2.*PI*i/kMaxNofSamples);
+  for(i=0; i<=AliITSetfSDDparam::NumberOfSamples()/2; i++) {
+    fWR[i] = cos(-2.*pigr*i/AliITSetfSDDparam::NumberOfSamples());
+    fWI[i] = sin(-2.*pigr*i/AliITSetfSDDparam::NumberOfSamples());
     if(i) {
-      fWR[kMaxNofSamples-i] = fWR[i];
-      fWI[kMaxNofSamples-i] = -fWI[i];
+      fWR[AliITSetfSDDparam::NumberOfSamples()-i] = fWR[i];
+      fWI[AliITSetfSDDparam::NumberOfSamples()-i] = -fWI[i];
     }
   }
 
 }
 
-void AliITSetfSDD::PrintElectronics()
-{
+//______________________________________________________________________
+AliITSetfSDD::AliITSetfSDD(const AliITSetfSDD &obj) : TObject(obj) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Error("AliITSetfSDD","Copy constructor not allowed\n");
+}
+
+//______________________________________________________________________
+AliITSetfSDD& AliITSetfSDD::operator=(const AliITSetfSDD& /* obj */){
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Error("= operator","Assignment operator not allowed\n");
+  return *this;
+}
+
+AliITSetfSDD::~AliITSetfSDD(){
+  // Destructor
+  if(fZeroM) delete []fZeroM;
+  if(fZeroR) delete []fZeroR;
+  if(fZeroI) delete []fZeroI;
+  if(fPoleM) delete []fPoleM;
+  if(fPoleR) delete []fPoleR;
+  if(fPoleI) delete []fPoleI;
+  if(fTfR) delete []fTfR;
+  if(fTfI) delete []fTfI;
+  if(fWR) delete []fWR;
+  if(fWI) delete []fWI;
+}
+
+void AliITSetfSDD::PrintElectronics() const {
+  // Printout of the parameters defining the f.e. electronics
+
   cout << "Time Delay " << fTimeDelay << endl;
   cout << "Sampling Time " << fSamplingTime << endl;
-  cout << "Number of Time Samples " << kMaxNofSamples << endl;
+  cout << "Number of Time Samples " << AliITSetfSDDparam::NumberOfSamples() << endl;
   cout << "fT0 " << fT0 << endl;
   cout << "fDf " << fDf << endl;
   cout << "fA0 " << fA0 << endl;
@@ -166,29 +232,29 @@ void AliITSetfSDD::PrintElectronics()
   cout << "Zero's and Pole's" << endl;
   cout << "fZeroM " << endl;
   Int_t i;
-  for(i=0; i<kMaxNofPoles; i++) cout << fZeroM[i] << endl;
+  for(i=0; i<AliITSetfSDDparam::NumberOfPoles(); i++) cout << fZeroM[i] << endl;
   cout << "fZero_R " << endl;
-  for(i=0; i<kMaxNofPoles; i++) cout << fZeroR[i] << endl;
+  for(i=0; i<AliITSetfSDDparam::NumberOfPoles(); i++) cout << fZeroR[i] << endl;
   cout << "fZeroI " << endl;
-  for(i=0; i<kMaxNofPoles; i++) cout << fZeroI[i] << endl;
+  for(i=0; i<AliITSetfSDDparam::NumberOfPoles(); i++) cout << fZeroI[i] << endl;
   cout << "fPoleM " << endl;
-  for(i=0; i<kMaxNofPoles; i++) cout << fPoleM[i] << endl;
+  for(i=0; i<AliITSetfSDDparam::NumberOfPoles(); i++) cout << fPoleM[i] << endl;
   cout << "fPoleR " << endl;
-  for(i=0; i<kMaxNofPoles; i++) cout << fPoleR[i] << endl;
+  for(i=0; i<AliITSetfSDDparam::NumberOfPoles(); i++) cout << fPoleR[i] << endl;
   cout << "fPoleI " << endl;
-  for(i=0; i<kMaxNofPoles; i++) cout << fPoleI[i] << endl;
+  for(i=0; i<AliITSetfSDDparam::NumberOfPoles(); i++) cout << fPoleI[i] << endl;
 
   cout << "Transfer function" << endl;
   cout << "Real Part" << endl;
-  for(i=0; i<kMaxNofSamples; i++) cout << fTfR[i] << endl;
+  for(i=0; i<AliITSetfSDDparam::NumberOfSamples(); i++) cout << fTfR[i] << endl;
   cout << "Imaginary Part " << endl;
-  for(i=0; i<kMaxNofSamples; i++) cout << fTfI[i] << endl;
+  for(i=0; i<AliITSetfSDDparam::NumberOfSamples(); i++) cout << fTfI[i] << endl;
 
   cout << "Fourier Weights" << endl;
   cout << "Real Part" << endl;
-  for(i=0; i<kMaxNofSamples; i++) cout << fWR[i] << endl;
+  for(i=0; i<AliITSetfSDDparam::NumberOfSamples(); i++) cout << fWR[i] << endl;
   cout << "Imaginary Part " << endl;
-  for(i=0; i<kMaxNofSamples; i++) cout << fWI[i] << endl;
+  for(i=0; i<AliITSetfSDDparam::NumberOfSamples(); i++) cout << fWI[i] << endl;
 }
 
 
