@@ -164,7 +164,7 @@ class AliMUON : public  AliDetector {
     virtual void   ResetRecClusters();
     virtual void   ResetCorrelation();
     virtual void   FindClusters(Int_t,Int_t);
-    virtual void   Digitise(Int_t,Int_t,Option_t *opt=" ",Option_t *opt=" ",Text_t *name=" ");
+    virtual void   Digitise(Int_t,Int_t,Option_t *opt1=" ",Option_t *opt2=" ",Text_t *name=" ");
     virtual void   CathodeCorrelation(Int_t);
     virtual void   SortTracks(Int_t *,Int_t *,Int_t);
 //
