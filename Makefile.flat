@@ -116,7 +116,7 @@ include build/module.dep
 #############################################################
 # 
 #        Check if module.mk is present for the library
-%.mk:
+%.mk: build/module.tpl
 ifndef ALIQUIET
 	@echo "***** Creating $@ file *****";
 endif

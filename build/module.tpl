@@ -124,10 +124,10 @@ ifdef @PACKAGE@EXPORT
 
 $(@PACKAGE@EXPORTDEST): $(EXPORTDIR)/%.h: @MODULE@/%.h
 ifndef ALIQUIET
-	  @echo "***** Copying file @MODULE@/$(notdir $@) to $@ *****"
+	  @echo "***** Copying file $^ to $@ *****"
 endif
 	  @[ -d $(dir $@) ] || mkdir $(dir $@)
-	  @cp @MODULE@/$(notdir $@) $@	
+	  @cp $^ $@	
 endif
 
 $(@PACKAGE@LIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
@@ -147,7 +147,7 @@ ifndef ALIQUIET
 	 @echo "***** Creating $@ *****";	
 endif
 	 @(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-	 $(MUTE)rootcint -f $@ -c $(CINTFLAGS) $(@PACKAGE@INC) $(shell echo $^ | sed -e 's/@MODULE@\/module\.mk//')
+	 $(MUTE)rootcint -f $@ -c $(CINTFLAGS) $(@PACKAGE@INC) $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) 
 
 $(@PACKAGE@DO): $(@PACKAGE@DS)
 ifndef ALIQUIET
