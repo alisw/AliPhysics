@@ -139,7 +139,7 @@ AliHBTReader& AliHBTReader::operator=(const AliHBTReader& in)
  fFirst = in.fFirst;
  fLast = in.fLast;
  fTrackCounter = 0x0;
-   
+ return *this;  
 }
 /*************************************************************************************/
 
