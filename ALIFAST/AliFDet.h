@@ -23,6 +23,34 @@ enum { kNMaxDet2 = 200 };
 
 
 class AliFDet : public TNamed {
+
+public:
+                  AliFDet() {}
+                  AliFDet(const char *name, const char *title);
+   virtual       ~AliFDet() {}
+
+   // Initialise parameters for detector geometry
+   void           InitDetParam();
+   void           PrintDetInfo();
+
+
+   // Getters
+   Double_t        RDet(Int_t idDet) const {return fRDet[idDet];}         
+   Double_t        RDetSQ(Int_t idDet) const {return fRDetSQ[idDet];}     
+   Double_t        ThickDet(Int_t idDet) const {return fThickDet[idDet];}    
+   Double_t        ErrorRPhi(Int_t idDet) const {return fErrorRPhi[idDet];}  
+   Double_t        ErrorZ(Int_t idDet) const {return fErrorZ[idDet];}     
+   Double_t        ErrorR(Int_t idDet) const {return fErrorR[idDet];} 
+   Int_t           IFlagDet(Int_t idDet) const {return fIFlagDet[idDet];}   
+   Int_t           IFlagGas(Int_t idDet) const {return fIFlagGas[idDet];}   
+   Double_t        ErrorVertexX() const {return fErrorVertexX;} 
+   Double_t        ErrorVertexY() const {return fErrorVertexY;} 
+   Double_t        ErrorVertexZ() const {return fErrorVertexZ;} 
+   Double_t        BMag() const {return fBMag;}                  
+   Double_t        ConstMag() const {return fConstMag;}         
+   Int_t           NDetActive() const {return fNDetActive;}      
+   Int_t           NDet() const {return fNDet;}                 
+
   
 private:
    //geometry parameters
@@ -43,36 +71,9 @@ private:
    Double_t        fErrorVertexY;           // vertex precision in y
    Double_t        fErrorVertexZ;           // vertex precision in z
    Double_t        fBMag;                   // magnetic field in KGauss
-   Double_t        fConstMag;               //
+   Double_t        fConstMag;               // Constant Magnetic Field flag
    Int_t           fNDetActive;             // n. of active detector layers
    Int_t           fNDet;                   // n. of detectors layers
-
-public:
-                  AliFDet() {}
-                  AliFDet(const char *name, const char *title);
-   virtual       ~AliFDet() {}
-
-   // Initialise parameters for detector geometry
-   void           InitDetParam();
-   void           PrintDetInfo();
-
-
-   // Getters
-   Double_t        RDet(Int_t idDet) {return fRDet[idDet];}         
-   Double_t        RDetSQ(Int_t idDet) {return fRDetSQ[idDet];}     
-   Double_t        ThickDet(Int_t idDet) {return fThickDet[idDet];}    
-   Double_t        ErrorRPhi(Int_t idDet) {return fErrorRPhi[idDet];}  
-   Double_t        ErrorZ(Int_t idDet) {return fErrorZ[idDet];}     
-   Double_t        ErrorR(Int_t idDet) {return fErrorR[idDet];} 
-   Int_t           IFlagDet(Int_t idDet) {return fIFlagDet[idDet];}   
-   Int_t           IFlagGas(Int_t idDet) {return fIFlagGas[idDet];}   
-   Double_t        ErrorVertexX() {return fErrorVertexX;} 
-   Double_t        ErrorVertexY() {return fErrorVertexY;} 
-   Double_t        ErrorVertexZ() {return fErrorVertexZ;} 
-   Double_t        BMag() {return fBMag;}                  
-   Double_t        ConstMag() {return fConstMag;}         
-   Int_t           NDetActive() {return fNDetActive;}      
-   Int_t           NDet() {return fNDet;}                 
 
 
    ClassDef(AliFDet,1)   //AliFast Detector intialisation for AliFTrackMaker

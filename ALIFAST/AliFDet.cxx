@@ -28,6 +28,9 @@ ClassImp(AliFDet)
 //_____________________________________________________________________________
 AliFDet::AliFDet(const char *name, const char *title) : TNamed(name,title)
 {
+  //
+  // Standard constructor
+  //
    for(Int_t idDet=0; idDet<kNMaxDet; idDet++){
       fRDet[idDet]       = 0;
       fRDetSQ[idDet]     = 0;
