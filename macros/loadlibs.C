@@ -8,6 +8,7 @@ void loadlibs ()
   gSystem->Load("libmicrocern");
   gSystem->Load("libEG"); 
   gSystem->Load("libSTEER");
+  gSystem->Load("libEVGEN");
   gSystem->Load("libEGPythia6");
   gSystem->Load("libdummypythia6");
   gSystem->Load("libdummyhijing");
@@ -18,7 +19,7 @@ void loadlibs ()
   gSystem->Load("libTMEVSIM");
   gSystem->Load("libdummyepemgen");
   gSystem->Load("libTEPEMGEN");
-  gSystem->Load("libEVGEN");
+
 
   gSystem->Load("libPhysics");
 
