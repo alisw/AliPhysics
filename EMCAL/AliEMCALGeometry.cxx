@@ -91,8 +91,8 @@ void AliEMCALGeometry::Init(void){
                                // preshower part of the calorimeter
     fFullShowerSintThick = 0.5; // cm, Thickness of the sintilator for the
                                 // full shower part of the calorimeter
-    fArm1PhiMin     =   0.0; // degrees, Starting EMCAL Phi position
-    fArm1PhiMax     = 120.0; // degrees, Ending EMCAL Phi position
+    fArm1PhiMin     =  60.0; // degrees, Starting EMCAL Phi position
+    fArm1PhiMax     = 180.0; // degrees, Ending EMCAL Phi position
     fArm1EtaMin     = -0.7; // pseudorapidity, Starting EMCAL Eta position
     fArm1EtaMax     = +0.7; // pseudorapidity, Ending EMCAL Eta position
     fIPDistance     = 454.0; // cm, Radial distance to inner surface of EMCAL
