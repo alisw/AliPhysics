@@ -53,7 +53,8 @@ class AliTRDv1 : public AliTRD {
 
  protected:
 
-  Int_t        fIdSens;                 // Sensitive volume identifier
+  Int_t        fIdSensDr;               // Sensitive volume identifier (drift region)
+  Int_t        fIdSensAm;               // Sensitive volume identifier (amplification region)
 
   Int_t        fIdChamber1;             // Driftchamber volume identifier
   Int_t        fIdChamber2;             // Driftchamber volume identifier 

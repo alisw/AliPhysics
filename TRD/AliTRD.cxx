@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2001/03/13 09:30:35  cblume
+Update of digitization. Moved digit branch definition to AliTRD
+
 Revision 1.24  2001/01/26 19:56:49  hristov
 Major upgrade of AliRoot code
 
@@ -128,6 +131,7 @@ Introduction of the Copyright and cvs Log
 #include "AliTRDgeometryHole.h"
 #include "AliTRDgeometryFull.h"
 #include "AliTRDrecPoint.h"
+#include "AliTRDcluster.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDsegmentArray.h"
@@ -195,11 +199,11 @@ AliTRD::AliTRD(const char *name, const char *title)
   }
 
   // Allocate the hit array
-  fHits        = new TClonesArray("AliTRDhit"     ,405);
+  fHits           = new TClonesArray("AliTRDhit"     ,405);
   gAlice->AddHitList(fHits);
 
   // Allocate the digits array
-  fDigits      = 0;
+  fDigits         = 0;
 
   // Allocate the rec point array
   fRecPoints     = new TObjArray(400);
@@ -254,26 +258,43 @@ AliTRD::~AliTRD()
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddRecPoint(Float_t *pos, Int_t *digits, Int_t det, Float_t amp
-                       , Int_t *tracks)
+void AliTRD::AddCluster(Float_t *pos, Int_t *digits, Int_t det, Float_t amp
+                       , Int_t *tracks, Int_t iType)
 {
   //
-  // Add a reconstructed point for the TRD
+  // Add a cluster for the TRD
   //
 
-  AliTRDrecPoint *recPoint = new AliTRDrecPoint();
-  TVector3        posVec(pos[0],pos[1],pos[2]);
-  recPoint->SetLocalPosition(posVec);
-  recPoint->SetDetector(det);
-  recPoint->SetEnergy(amp);
-  for (Int_t iDigit = 0; iDigit < 3; iDigit++) {
-    recPoint->AddDigit(digits[iDigit]);
+  Int_t   pla = fGeometry->GetPlane(det);
+  Int_t   cha = fGeometry->GetChamber(det);
+  Int_t   sec = fGeometry->GetSector(det);
+
+  Float_t padRow  = pos[0]; 
+  Float_t padCol  = pos[1]; 
+  Float_t row0    = fGeometry->GetRow0(pla,cha,sec);
+  Float_t col0    = fGeometry->GetCol0(pla);
+  Float_t rowSize = fGeometry->GetRowPadSize(pla,cha,sec);
+  Float_t colSize = fGeometry->GetColPadSize(pla);
+
+  AliTRDcluster *c = new AliTRDcluster();
+
+  c->SetDetector(det);
+  c->AddTrackIndex(tracks);
+
+  c->SetQ(amp);
+
+  c->SetLocalTimeBin(((Int_t) pos[2]));
+  c->SetY(- (col0 + padCol * colSize));
+  c->SetZ(   row0 + padRow * rowSize);
+  
+  c->SetSigmaY2(0.05 * 0.05);
+  c->SetSigmaZ2(rowSize * rowSize / 12.);
+
+  if (iType == 1) {
+    c->SetUnfolding();
   }
 
-  recPoint->AddTrackIndex(tracks);
-
-  recPoint->SetTrackingYZ(0.,0.);  // variance values set inside
-  fRecPoints->Add(recPoint);
+  fRecPoints->Add(c);
 
 }
 
@@ -415,18 +436,50 @@ void AliTRD::BuildGeometry()
 
   case 1:
 
+    Char_t name[7];
+
     Float_t slope = (AliTRDgeometry::Zmax1() - AliTRDgeometry::Zmax2())
                   / (AliTRDgeometry::Rmax()  - AliTRDgeometry::Rmin());
 
-    rmin  = AliTRDgeometry::Rmin() + AliTRDgeometry::RaThick();
+    rmin  = AliTRDgeometry::Rmin() + AliTRDgeometry::Ccframe()/2.
+                                   + AliTRDgeometry::DrZpos()
+                                   - AliTRDgeometry::DrThick()/2.;
     rmax  = rmin + AliTRDgeometry::DrThick();
-    zmax2 = AliTRDgeometry::Zmax2() + slope * AliTRDgeometry::RaThick();
+
+    Float_t thickness = rmin - AliTRDgeometry::Rmin();
+    zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
     zmax1 = zmax2 + slope * AliTRDgeometry::DrThick();
-    Char_t name[7];
 
     for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
 
-      sprintf(name,"S_TRD%d",iPlan);
+      sprintf(name,"S_TR1%d",iPlan);
+      pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
+      pgon->DefineSection(0,-zmax1,rmax,rmax);
+      pgon->DefineSection(1,-zmax2,rmin,rmax);
+      pgon->DefineSection(2, zmax2,rmin,rmax);
+      pgon->DefineSection(3, zmax1,rmax,rmax);
+      top->cd();
+      node = new TNode("TRD","TRD",name,0,0,0,"");
+      node->SetLineColor(kColorTRD);
+      fNodes->Add(node);
+
+      Float_t height = AliTRDgeometry::Cheight() + AliTRDgeometry::Cspace(); 
+      rmin  = rmin  + height;
+      rmax  = rmax  + height;
+      zmax1 = zmax1 + slope * height;
+      zmax2 = zmax2 + slope * height;
+
+    }
+
+    thickness += AliTRDgeometry::DrThick();
+    rmin  = AliTRDgeometry::Rmin() + thickness;
+    rmax  = rmin + AliTRDgeometry::AmThick();
+    zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
+    zmax1 = zmax2 + slope * AliTRDgeometry::AmThick();
+
+    for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+
+      sprintf(name,"S_TR2%d",iPlan);
       pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
       pgon->DefineSection(0,-zmax1,rmax,rmax);
       pgon->DefineSection(1,-zmax2,rmin,rmax);
@@ -807,7 +860,7 @@ void AliTRD::LoadPoints(Int_t track)
     ahit = (AliTRDhit *) fHits->UncheckedAt(hit);
 
     // dEdx hits
-    if (ahit->GetCharge() >= 0) {
+    if (ahit->FromDrift() || ahit->FromAmplification()) {
 
       trk = ahit->GetTrack();
       if (ntrkE[trk] == limiE[trk]) {
@@ -830,7 +883,7 @@ void AliTRD::LoadPoints(Int_t track)
 
     }
     // TR photon hits
-    else {
+    else if (ahit->FromTRphoton()) {
 
       trk = ahit->GetTrack();
       if (ntrkT[trk] == limiT[trk]) {
@@ -922,13 +975,6 @@ void AliTRD::MakeBranch(Option_t* option, char *file)
                             ,&fDictionaryArray[iDict],buffersize,1,file) ;
   }
 
-  //Char_t *r = strstr(option,"R");
-  //sprintf(branchname,"%srecPoints",GetName());
-  //if (fRecPoints && gAlice->TreeR() && r) {
-  //  MakeBranchInTree(gAlice->TreeR(), 
-  //                  branchname, &fRecPoints,buffersize, file) ;
-  //}
-
 }
 
 //_____________________________________________________________________________
@@ -961,10 +1007,10 @@ void AliTRD::ResetRecPoints()
   // Reset number of reconstructed points and the point array
   //
 
-  if(fRecPoints) {
+  if (fRecPoints) {
     fNRecPoints = 0;
     Int_t nentr = fRecPoints->GetEntriesFast();
-    for(Int_t i = 0; i < nentr; i++) delete fRecPoints->RemoveAt(i);
+    for (Int_t i = 0; i < nentr; i++) delete fRecPoints->RemoveAt(i);
   }
 
 }
@@ -984,7 +1030,7 @@ void AliTRD::SetTreeAddress()
   TTree   *treeR = gAlice->TreeR();
 
   if (treeR) {
-    sprintf(branchname,"%srecPoints",GetName());
+    sprintf(branchname,"%scluster",GetName());
     if (fRecPoints) {
       branch = treeR->GetBranch(branchname);
       if (branch) {
@@ -1045,4 +1091,4 @@ AliTRD &AliTRD::operator=(const AliTRD &trd)
   if (this != &trd) ((AliTRD &) trd).Copy(*this);
   return *this;
 
-}
+} 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2001/03/30 14:40:15  cblume
+Update of the digitization parameter
+
 Revision 1.26  2000/11/30 17:38:08  cblume
 Changes to get in line with new STEER and EVGEN
 
@@ -126,7 +129,8 @@ AliTRDv1::AliTRDv1():AliTRD()
   // Default constructor
   //
 
-  fIdSens          =  0;
+  fIdSensDr        =  0;
+  fIdSensAm        =  0;
 
   fIdChamber1      =  0;
   fIdChamber2      =  0;
@@ -151,7 +155,8 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   // Standard constructor for Transition Radiation Detector version 1
   //
 
-  fIdSens          =  0;
+  fIdSensDr        =  0;
+  fIdSensAm        =  0;
 
   fIdChamber1      =  0;
   fIdChamber2      =  0;
@@ -212,7 +217,8 @@ void AliTRDv1::Copy(TObject &trd)
   // Copy function
   //
 
-  ((AliTRDv1 &) trd).fIdSens          = fIdSens;
+  ((AliTRDv1 &) trd).fIdSensDr        = fIdSensDr;
+  ((AliTRDv1 &) trd).fIdSensAm        = fIdSensAm;
 
   ((AliTRDv1 &) trd).fIdChamber1      = fIdChamber1;
   ((AliTRDv1 &) trd).fIdChamber2      = fIdChamber2;
@@ -280,12 +286,12 @@ void AliTRDv1::CreateTRhit(Int_t det)
   TLorentzVector mom, pos;
   TClonesArray  &lhits = *fHits;
 
-  // Create TR only for electrons 
-  Int_t iPdg = gMC->TrackPid();
-  if (TMath::Abs(iPdg) != kPdgElectron) return;
-
   // Create TR at the entrance of the chamber
   if (gMC->IsTrackEntering()) {
+
+    // Create TR only for electrons 
+    Int_t iPdg = gMC->TrackPid();
+    if (TMath::Abs(iPdg) != kPdgElectron) return;
 
     Float_t eTR[kNTR];
     Int_t   nTR;
@@ -345,8 +351,10 @@ void AliTRDv1::CreateTRhit(Int_t det)
 
       // Add the hit to the array. TR photon hits are marked 
       // by negative charge
-      new(lhits[fNhits++]) AliTRDhit(fIshunt,gAlice->CurrentTrack()
-                                    ,det,posHit,-q);
+      AliTRDhit *hit = new(lhits[fNhits++]) AliTRDhit(fIshunt
+                                                     ,gAlice->CurrentTrack()
+                                                     ,det,posHit,-q);
+      hit->SetTRphoton();
 
     }
 
@@ -393,7 +401,9 @@ void AliTRDv1::Init()
   fDeltaE = new TF1("deltae",Ermilova,poti,eEnd,0);
 
   // Identifier of the sensitive volume (drift region)
-  fIdSens     = gMC->VolId("UL05");
+  fIdSensDr   = gMC->VolId("UL05");
+  // Identifier of the sensitive volume (amplification region)
+  fIdSensAm   = gMC->VolId("UL06");
 
   // Identifier of the TRD-driftchambers
   fIdChamber1 = gMC->VolId("UCIO");
@@ -512,7 +522,6 @@ void AliTRDv1::StepManager()
   //
 
   Int_t    iIdSens, icSens;
-  Int_t    iIdSpace, icSpace;
   Int_t    iIdChamber, icChamber;
   Int_t    pla = 0;
   Int_t    cha = 0;
@@ -527,9 +536,10 @@ void AliTRDv1::StepManager()
   Float_t  charge;
   Float_t  aMass;
 
-  Double_t pTot;
+  Double_t pTot = 0;
   Double_t eDelta;
   Double_t betaGamma, pp;
+  Double_t stepSize;
 
   TLorentzVector pos, mom;
   TClonesArray  &lhits = *fHits;
@@ -540,8 +550,8 @@ void AliTRDv1::StepManager()
   const Float_t  kWion        = 22.04;
   // Maximum momentum for e+ e- g 
   const Float_t  kPTotMaxEl   = 0.002;
-  // Minimum momentum for the step size adjustment
-  const Float_t  kPTotMinStep = 1.0e-5;
+  // Minimum energy for the step size adjustment
+  const Float_t  kEkinMinStep = 1.0e-5;
   // Plateau value of the energy-loss for electron in xenon
   // taken from: Allison + Comb, Ann. Rev. Nucl. Sci. (1980), 30, 253
   //const Double_t kPlateau = 1.70;
@@ -559,89 +569,6 @@ void AliTRDv1::StepManager()
   // neutral particles and those outside the driftvolume
   gMC->SetMaxStep(kBig); 
 
-  // Create some special hits with amplitude 0 at the entrance and
-  // exit of each chamber that contain the momentum components of the particle
-  if (gMC->TrackCharge() &&
-     (gMC->IsTrackEntering() || gMC->IsTrackExiting())) {
-
-    // Inside a sensitive volume?
-    iIdSens = gMC->CurrentVolID(icSens);
-    if (iIdSens == fIdSens) { 
-
-      iIdSpace   = gMC->CurrentVolOffID(4,icSpace  );
-      iIdChamber = gMC->CurrentVolOffID(1,icChamber);
-
-      // The hit coordinates
-      gMC->TrackPosition(pos);
-      hits[0] = pos[0];
-      hits[1] = pos[1];
-      hits[2] = pos[2];
-
-      // The track momentum
-      gMC->TrackMomentum(mom);
-      moms[0] = mom[0];
-      moms[1] = mom[1];
-      moms[2] = mom[2];
-
-      // The sector number (0 - 17)
-      // The numbering goes clockwise and starts at y = 0
-      Float_t phi = kRaddeg*TMath::ATan2(pos[0],pos[1]);
-      if (phi < 90.) 
-        phi = phi + 270.;
-      else
-        phi = phi -  90.;
-      sec = ((Int_t) (phi / 20));
-
-      // The chamber number 
-      //   0: outer left
-      //   1: middle left
-      //   2: inner
-      //   3: middle right
-      //   4: outer right
-      if      (iIdChamber == fIdChamber1)
-        cha = (hits[2] < 0 ? 0 : 4);
-      else if (iIdChamber == fIdChamber2)       
-        cha = (hits[2] < 0 ? 1 : 3);
-      else if (iIdChamber == fIdChamber3)       
-        cha = 2;
-
-      // The plane number
-      // The numbering starts at the innermost plane
-      pla = icChamber - TMath::Nint((Float_t) (icChamber / 7)) * 6 - 1;
-
-      // Check on selected volumes
-      Int_t addthishit = 1;
-      if (fSensSelect) {
-        if ((fSensPlane   >= 0) && (pla != fSensPlane  )) addthishit = 0;
-        if ((fSensChamber >= 0) && (cha != fSensChamber)) addthishit = 0;
-        if (fSensSector  >= 0) {
-          Int_t sens1  = fSensSector;
-          Int_t sens2  = fSensSector + fSensSectorRange;
-                sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) 
-                       * AliTRDgeometry::Nsect();
-          if (sens1 < sens2) {
-            if ((sec < sens1) || (sec >= sens2)) addthishit = 0;
-	  }
-          else {
-            if ((sec < sens1) && (sec >= sens2)) addthishit = 0;
-	  }
-	}
-      }
-
-      // Add this hit
-      if (addthishit) {
-        det = fGeometry->GetDetector(pla,cha,sec);
-        new(lhits[fNhits++]) AliTRDhit(fIshunt
-                                      ,gAlice->CurrentTrack()
-                                      ,det
-                                      ,moms
-                                      ,0);
-      }
-
-    }
-
-  }
-
   // Use only charged tracks 
   if (( gMC->TrackCharge()       ) &&
       (!gMC->IsTrackStop()       ) && 
@@ -649,17 +576,10 @@ void AliTRDv1::StepManager()
 
     // Inside a sensitive volume?
     iIdSens = gMC->CurrentVolID(icSens);
-    if (iIdSens == fIdSens) { 
+    if  ((iIdSens == fIdSensDr) ||
+         (iIdSens == fIdSensAm)) {
 
-      iIdSpace   = gMC->CurrentVolOffID(4,icSpace  );
       iIdChamber = gMC->CurrentVolOffID(1,icChamber);
-
-      // Calculate the energy of the delta-electrons
-      eDelta = TMath::Exp(fDeltaE->GetRandom()) - kPoti;
-      eDelta = TMath::Max(eDelta,0.0);
-
-      // The number of secondary electrons created
-      qTot = ((Int_t) (eDelta / kWion) + 1);
 
       // The hit coordinates and charge
       gMC->TrackPosition(pos);
@@ -715,49 +635,80 @@ void AliTRDv1::StepManager()
       // Add this hit
       if (addthishit) {
 
+	// The detector number
         det = fGeometry->GetDetector(pla,cha,sec);
 
-        // Create the electron cluster from TR photons
-        if (fTR) CreateTRhit(det);
+	// Special hits and TR photons only in the drift region
+        if (iIdSens == fIdSensDr) {
 
-        new(lhits[fNhits++]) AliTRDhit(fIshunt
-                                      ,gAlice->CurrentTrack()
-                                      ,det
-                                      ,hits
-                                      ,qTot);
+          // Create some special hits with amplitude 0 at the entrance and
+          // exit of each chamber that contain the momentum components of the particle
+          if (gMC->IsTrackEntering() || gMC->IsTrackExiting()) {
+            gMC->TrackMomentum(mom);
+            moms[0] = mom[0];
+            moms[1] = mom[1];
+            moms[2] = mom[2];
+            AliTRDhit *hitTest = new(lhits[fNhits++]) AliTRDhit(fIshunt
+                                                               ,gAlice->CurrentTrack()
+                                                               ,det,moms,0);
+            hitTest->SetTest();
+          }
 
-        // The energy loss according to Bethe Bloch
-        gMC->TrackMomentum(mom);
-        pTot = mom.Rho();
-        iPdg = TMath::Abs(gMC->TrackPid());
-        if ( (iPdg != kPdgElectron) ||
-	    ((iPdg == kPdgElectron) && (pTot < kPTotMaxEl))) {
-          aMass     = gMC->TrackMass();
-          betaGamma = pTot / aMass;
-          pp        = kPrim * BetheBloch(betaGamma);
-	  // Take charge > 1 into account
-          charge = gMC->TrackCharge();
-          if (TMath::Abs(charge) > 1) pp = pp * charge*charge;
-        }
-        // Electrons above 20 Mev/c are at the plateau
-        else {
-          pp = kPrim * kPlateau;
-        }
-      
-        // Calculate the maximum step size for the next tracking step
-        // introduce a lower momentum cut
-        //if ((pp > 0) && (pTot > kPTotMinStep)) {
-        if (pp > 0) {
-          do 
-            gMC->Rndm(random,1);
-          while ((random[0] == 1.) || (random[0] == 0.));
-          gMC->SetMaxStep( - TMath::Log(random[0]) / pp);
+          // Create the hits from TR photons
+          if (fTR) CreateTRhit(det);
+
 	}
 
-      }
-      else {
-        // set step size to maximal value
-        gMC->SetMaxStep(kBig); 
+        // Calculate the energy of the delta-electrons
+        eDelta = TMath::Exp(fDeltaE->GetRandom()) - kPoti;
+        eDelta = TMath::Max(eDelta,0.0);
+
+        // The number of secondary electrons created
+        qTot = ((Int_t) (eDelta / kWion) + 1);
+
+	// Create a new dEdx hit
+        AliTRDhit *hit = new(lhits[fNhits++]) AliTRDhit(fIshunt
+                                                       ,gAlice->CurrentTrack()
+                                                       ,det,hits,qTot);
+        if (iIdSens == fIdSensDr) {
+          hit->SetDrift();
+	}
+        else {
+          hit->SetAmplification();
+	}
+
+        // Calculate the maximum step size for the next tracking step
+	// Produce only one hit if Ekin is below cutoff 
+        aMass = gMC->TrackMass();
+        if ((gMC->Etot() - aMass) > kEkinMinStep) {
+
+          // The energy loss according to Bethe Bloch
+          iPdg  = TMath::Abs(gMC->TrackPid());
+          if ( (iPdg != kPdgElectron) ||
+	      ((iPdg == kPdgElectron) && (pTot < kPTotMaxEl))) {
+            gMC->TrackMomentum(mom);
+            pTot      = mom.Rho();
+            betaGamma = pTot / aMass;
+            pp        = kPrim * BetheBloch(betaGamma);
+	    // Take charge > 1 into account
+            charge = gMC->TrackCharge();
+            if (TMath::Abs(charge) > 1) pp = pp * charge*charge;
+          }
+          // Electrons above 20 Mev/c are at the plateau
+          else {
+            pp = kPrim * kPlateau;
+          }
+      
+          if (pp > 0) {
+            do 
+              gMC->Rndm(random,1);
+            while ((random[0] == 1.) || (random[0] == 0.));
+            stepSize = - TMath::Log(random[0]) / pp; 
+            gMC->SetMaxStep(stepSize);
+	  }
+
+	}
+
       }
 
     }
@@ -789,15 +740,24 @@ Double_t AliTRDv1::BetheBloch(Double_t bg)
   //const Double_t kP4 = 1.8631;
   //const Double_t kP5 = 1.9479;
 
-  if (bg > 0) {
+  // Lower cutoff of the Bethe-Bloch-curve to limit step sizes
+  const Double_t kBgMin = 0.8;
+  const Double_t kBBMax = 6.83298;
+  //const Double_t kBgMin = 0.6;
+  //const Double_t kBBMax = 17.2809;
+  //const Double_t kBgMin = 0.4;
+  //const Double_t kBBMax = 82.0;
+
+  if (bg > kBgMin) {
     Double_t yy = bg / TMath::Sqrt(1. + bg*bg);
     Double_t aa = TMath::Power(yy,kP4);
     Double_t bb = TMath::Power((1./bg),kP5);
              bb = TMath::Log(kP3 + bb);
     return ((kP2 - aa - bb)*kP1 / aa);
   }
-  else
-    return 0;
+  else {
+    return kBBMax;
+  }
 
 }
 
@@ -843,7 +803,7 @@ Double_t Ermilova(Double_t *x, Double_t *)
   } 
   while (dpos > 0);
   pos2--; 
-  if (pos2 > kNv) pos2 = kNv;
+  if (pos2 > kNv) pos2 = kNv - 1;
   pos1 = pos2 - 1;
 
   // Differentiate between the sampling points

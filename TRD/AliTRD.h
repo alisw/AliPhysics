@@ -35,8 +35,8 @@ class AliTRD : public AliDetector {
 
   virtual void       AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q);
   virtual void       AddDigit(Int_t *digits, Int_t *amp);    
-  virtual void       AddRecPoint(Float_t *pos, Int_t *digits
-                               , Int_t det, Float_t amp, Int_t *tracks);
+  virtual void       AddCluster(Float_t *pos, Int_t *digits
+                              , Int_t det, Float_t amp, Int_t *tracks, Int_t iType);
   virtual void       BuildGeometry();
   virtual void       Copy(TObject &trd);
   virtual void       CreateGeometry();
@@ -71,7 +71,7 @@ class AliTRD : public AliDetector {
   virtual Int_t      GetSensPlane() const       = 0;
   virtual Int_t      GetSensSector() const      = 0;
   virtual Int_t      GetSensSectorRange() const = 0; 
-
+ 
   virtual void       Hits2Digits();
   virtual void       Hits2SDigits();
   virtual void       SDigits2Digits();
@@ -85,8 +85,8 @@ class AliTRD : public AliDetector {
 
   AliTRDgeometry      *fGeometry;           //  The TRD geometry
 
-  TObjArray           *fRecPoints;          //  Array of reconstructed points
-  Int_t                fNRecPoints;         //! Number of reconstructed points
+  TObjArray           *fRecPoints;          //  Array of reconstructed points / cluster
+  Int_t                fNRecPoints;         //! Number of reconstructed points / cluster
 
   Float_t              fGasDensity;         //  The density of the drift gas
   Float_t              fFoilDensity;        //  The density of the entrance window foil
@@ -97,7 +97,7 @@ class AliTRD : public AliDetector {
   AliTRDdataArrayI    *fDigitsArray;        //! Digits array
   AliTRDdataArrayI    *fDictionaryArray[3]; //! Dictionary array 
 
-  ClassDef(AliTRD,2)                        //  Transition Radiation Detector base class
+  ClassDef(AliTRD,3)                        //  Transition Radiation Detector base class
 
 };
 
