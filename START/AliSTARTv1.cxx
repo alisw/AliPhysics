@@ -95,18 +95,20 @@ void AliSTARTv1::CreateGeometry()
   Float_t pribber[3] = {0.,1.2,2.413/2.};
   Float_t presist[3] = {0.,1.2,0.087/2.};
 
-  Float_t zdet=75.;
+  Float_t zdetRight=69.7,zdetLeft=355.;
  //-------------------------------------------------------------------
  //  START volume 
  //-------------------------------------------------------------------
   
   //  Float_t theta=TMath::ATan(6.5/zdet);
-  Float_t theta=(180./3.1415)*TMath::ATan(6.5/zdet);
+  Float_t thetaRight=(180./3.1415)*TMath::ATan(6.5/zdetRight);
+  Float_t thetaLeft=(180./3.1415)*TMath::ATan(6.5/zdetLeft);
     AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
     
-    gMC->Gsvolu("0STA","TUBE",idtmed[1],pstart,3);
-    gMC->Gspos("0STA",1,"ALIC",0.,0.,zdet,0,"ONLY");
-    gMC->Gspos("0STA",2,"ALIC",0.,0.,-zdet,idrotm[901],"ONLY");
+    gMC->Gsvolu("0STR","TUBE",idtmed[1],pstart,3);
+    gMC->Gsvolu("0STL","TUBE",idtmed[1],pstart,3);
+    gMC->Gspos("0STR",1,"ALIC",0.,0.,zdetRight+pstart[2],0,"ONLY");
+    gMC->Gspos("0STL",1,"ALIC",0.,0.,-zdetLeft-pstart[2],idrotm[901],"ONLY");
 
 //START interior
     gMC->Gsvolu("0INS","TUBE",idtmed[1],pinstart,3);
@@ -118,16 +120,29 @@ void AliSTARTv1::CreateGeometry()
     for (is=1; is<=12; is++)
       {  
 	AliMatrix(idrotm[901+is], 
-		  90.-theta, 30.*is, 
+		  90.-thetaRight, 30.*is, 
 		  90.,       90.+30.*is,
-		  theta,    180.+30.*is); 
+		  thetaRight,    180.+30.*is); 
 	x=6.5*TMath::Sin(is*dang1);
 	y=6.5*TMath::Cos(is*dang1);
 	z=-pstart[2]+pinstart[2];
-	gMC->Gspos("0INS",is,"0STA",x,y,z,idrotm[901+is],"ONLY");
+	gMC->Gspos("0INS",is,"0STR",x,y,z,idrotm[901+is],"ONLY");
 
       }	
-    x=0;
+    for (is=1; is<=12; is++)
+      {
+        AliMatrix(idrotm[901+is],
+                  90.-thetaLeft, 30.*is,
+                  90.,       90.+30.*is,
+                  thetaLeft,    180.+30.*is);
+
+        x=6.5*TMath::Sin(is*dang1);
+        y=6.5*TMath::Cos(is*dang1);
+        z=-pstart[2]+pinstart[2];
+        gMC->Gspos("0INS",is,"0STL",x,y,z,idrotm[901+is],"ONLY");
+
+      }
+     x=0;
     y=0;
     z=-pinstart[2]+ppmt[2];
     if(fDebug) printf("%s: is %d, z Divider %f\n",ClassName(),is,z);
@@ -362,8 +377,7 @@ void AliSTARTv1::StepManager()
   id=gMC->CurrentVolID(copy);
   
   
-  //  printf("gMC->ckine->ipart %d",gMC->ckine->ipart);
-  // Check the sensetive volume
+   // Check the sensetive volume
   if(id==fIdSens1 ) {
     if(gMC->IsTrackEntering()) {
       gMC->CurrentVolOffID(2,copy);
@@ -387,12 +401,13 @@ void AliSTARTv1::StepManager()
       Float_t de=gMC->Edep(); 
       edep=edep+de;
     } 
-  }
-  if(gMC->IsTrackExiting())	{
-    Float_t de=gMC->Edep(); 
-    edep=edep+de;
-    hits[3]=edep*1e3;
-    new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->CurrentTrack(),vol,hits);      
+  
+    if(gMC->IsTrackExiting())	{
+      Float_t de=gMC->Edep(); 
+      edep=edep+de;
+      hits[3]=edep*1e3;
+      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->CurrentTrack(),vol,hits);      
+    }
   }
 //---------------------------------------------------------------------
 }
