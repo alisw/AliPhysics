@@ -940,10 +940,10 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
     
     if (track->GetStop()==kFALSE){
       
-      Double_t xtof=378.;
+      Double_t xtof=371.;
       Double_t c2=track->GetC()*xtof - track->GetEta();
       if (TMath::Abs(c2)>=0.85) continue;
-      Double_t xTOF0 = 375.5;          
+      Double_t xTOF0 = 371. ;          
       PropagateToOuterPlane(*track,xTOF0); 
       //      
       Double_t ymax=xtof*TMath::Tan(0.5*AliTRDgeometry::GetAlpha());
@@ -967,7 +967,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
     }else{
       if (track->GetNumberOfClusters()>15&&track->GetNumberOfClusters()>0.5*expectedClr){
 	seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
-	seed->UpdateTrackParams(track, AliESDtrack::kTRDStop);    
+	seed->SetStatus(AliESDtrack::kTRDStop);    
 	found++;
       }
     }
