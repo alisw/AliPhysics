@@ -9,20 +9,19 @@ aliroot -q -b "$ALICE_ROOT/TPC/AliTPCtest.C"
 # create summable digits for the ITS
 aliroot -q -b "$ALICE_ROOT/ITS/AliITSHits2SDigits.C"
 
-# go from summable digits to digits
+# go from summable digits to digits for the ITS
 aliroot -q -b "$ALICE_ROOT/ITS/AliITSSDigits2Digits.C"
 
 # create reconstructed points for the ITS
 aliroot -q -b "$ALICE_ROOT/ITS/AliITSDigits2RecPoints.C"
 
-# do the tracking
+# do the tracking V1
 aliroot -q -b "$ALICE_ROOT/ITS/AliITSTrackingV1.C"
 
-# prepare for comparison
-# aliroot -q -b "$ALICE_ROOT/ITS/AliITSTracksV1.C"
+# prepare results of tracking V1 for comparison
 aliroot -q -b "$ALICE_ROOT/ITS/AliITSStoreFindableTracks.C"
 
-# do ITS tracking comparison
+# do ITS tracking V1 comparison
 aliroot -q -b "$ALICE_ROOT/ITS/AliITSComparisonV1.C"
 
 #
