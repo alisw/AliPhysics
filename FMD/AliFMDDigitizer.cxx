@@ -197,6 +197,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
        }               //track loop
     }               
 //if FMD
+   }
 
  
   // Put noise and make ADC signal
@@ -222,6 +223,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
      } //iSector
    } //iRing
 
+   pOutFMD->LoadDigits("update");
    TTree* treeD = pOutFMD->TreeD();
 
    if (treeD == 0x0) {
@@ -235,12 +237,12 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
    brD = treeD->GetBranch("FMD");
 
 
-   treeD->Fill();  //this operator does not work for events >1
+   treeD->Fill();
 
    pOutFMD->WriteDigits("OVERWRITE");
    pOutFMD->UnloadHits();
-   inRL->GetAliRun() ->ResetDigits();
-   }
+   pOutFMD->UnloadDigits();
+   fFMD->ResetDigits();
 }
  
 
