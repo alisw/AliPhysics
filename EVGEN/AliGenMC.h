@@ -14,7 +14,9 @@
 
 #include "AliGenerator.h"
 #include "AliDecayer.h"
+#include "AliGeometry.h"
 #include <TArrayI.h>    
+#include <TClonesArray.h>
 
 class TParticle;
 
@@ -42,7 +44,16 @@ class AliGenMC : public AliGenerator
     virtual void SetChildYRange(Float_t ymin = -12, Float_t ymax = 12)
 	{fChildYMin = ymin;
 	fChildYMax  = ymax;}
-  virtual void SetMaximumLifetime(Float_t time = 1.e-15) {fMaxLifeTime = time;}
+    virtual void SetMaximumLifetime(Float_t time = 1.e-15) {fMaxLifeTime = time;}
+   
+    virtual void SetGeometryAcceptance(AliGeometry * GeometryAcceptance=0) {fGeometryAcceptance = GeometryAcceptance;}
+
+    virtual void SetPdgCodeParticleforAcceptanceCut(Int_t PdgCodeParticleforAcceptanceCut=0) {fPdgCodeParticleforAcceptanceCut = PdgCodeParticleforAcceptanceCut;}
+
+    virtual void SetNumberOfAcceptedParticles(Int_t NumberOfAcceptedParticles=2) {fNumberOfAcceptedParticles = NumberOfAcceptedParticles;}
+
+    virtual Bool_t CheckAcceptanceGeometry(Int_t np, TClonesArray* particles);
+
  protected:
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip) const;
@@ -68,6 +79,9 @@ class AliGenMC : public AliGenerator
     Float_t     fChildYMax;     // Children maximum y
     Decay_t     fForceDecay;    // Decay channel forced
     Float_t     fMaxLifeTime;   // Maximum lifetime for unstable particles
+    AliGeometry * fGeometryAcceptance; // Geometry to which particles must be simulated
+    Int_t       fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
+    Int_t       fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
     
     ClassDef(AliGenMC,4)       // AliGenerator implementation for generators using MC methods
 };
