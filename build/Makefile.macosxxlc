@@ -64,7 +64,7 @@ GLIBS         = -L/usr/X11R6/lib -lX11
 #System libraries
 SYSLIBS = -ldl
 
-EXEFLAGS+= -Wl,-bind_at_load  #-lg2c
+EXEFLAGS+= -Wl,-bind_at_load
 
 
 
