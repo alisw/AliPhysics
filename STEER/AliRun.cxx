@@ -48,7 +48,6 @@
 #include <TROOT.h>
 #include <TRandom3.h>
 #include <TSystem.h>
-#include <TVector.h>
 #include <TVirtualMC.h>
 // 
 #include "AliDetector.h"
@@ -269,9 +268,11 @@ AliGenerator* AliRun::Generator() const
 //_______________________________________________________________________
 void  AliRun::SetField(AliMagF* magField)
 {
-    // Set Magnetic Field Map
-    fField = magField;
-    fField->ReadField();
+  //
+  // Set Magnetic Field Map
+  //
+  fField = magField;
+  fField->ReadField();
 }
 
 //_______________________________________________________________________
@@ -821,19 +822,21 @@ void AliRun::SetConfigFunction(const char * config)
 //_______________________________________________________________________
 void AliRun::Field(const Double_t* x, Double_t *b) const
 {
-   Float_t xfloat[3];
-   for (Int_t i=0; i<3; i++) xfloat[i] = x[i]; 
-
-   if (Field()) {
-         Float_t bfloat[3];
-         Field()->Field(xfloat,bfloat);
-         for (Int_t j=0; j<3; j++) b[j] = bfloat[j]; 
-   } 
-   else {
-         printf("No mag field defined!\n");
-         b[0]=b[1]=b[2]=0.;
-   }
-
+  //
+  // Return the value of the magnetic field
+  //
+  Float_t xfloat[3];
+  for (Int_t i=0; i<3; i++) xfloat[i] = x[i]; 
+  
+  if (Field()) {
+    Float_t bfloat[3];
+    Field()->Field(xfloat,bfloat);
+    for (Int_t j=0; j<3; j++) b[j] = bfloat[j]; 
+  } 
+  else {
+    printf("No mag field defined!\n");
+    b[0]=b[1]=b[2]=0.;
+  }
 }      
 
 // 
@@ -878,6 +881,9 @@ Int_t AliRun::GetEvNumber() const
 
 void AliRun::SetRunLoader(AliRunLoader* rloader)
 {
+  //
+  // Set the loader of the run
+  //
   fRunLoader = rloader;
   if (fRunLoader == 0x0) return;
   
@@ -924,6 +930,9 @@ void AliRun::SetRunLoader(AliRunLoader* rloader)
 
 void AliRun::AddModule(AliModule* mod)
 {
+  //
+  // Add a module to the module list
+  //
   if (mod == 0x0) return;
   if (strlen(mod->GetName()) == 0) return;
   if (GetModuleID(mod->GetName()) >= 0) return;

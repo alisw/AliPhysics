@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+//
+// This is the ALICE implementation of TVirtualMCApplication
+// for simulation with different implementations
+// of the Virtual MonteCarlo
+//
+
 #include <TArrayF.h>
 #include <TArrayI.h>
 #include <TMCProcess.h>
@@ -63,7 +69,7 @@ public:
    virtual  void  SetDebug(Int_t level=0) {fDebug = level;}
    virtual  void  Init();
    virtual  void  SetTransPar(const char *filename="$(ALICE_ROOT)/data/galice.cuts");
-   virtual  void  Browse(TBrowser *b);
+   virtual  void  Browse(TBrowser *b) const;
    AliMCQA       *GetMCQA() const {return fMCQA;}
    //PH
    virtual  void  AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const;
@@ -80,18 +86,18 @@ public:
    virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg, 
 			   Float_t *pmom, Float_t *vpos, Float_t *polar, 
 			   Float_t tof, TMCProcess mech, Int_t &ntr,
-			   Float_t weight = 1, Int_t is = 0);
+			   Float_t weight = 1, Int_t is = 0) const;
    virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg,
 			   Double_t px, Double_t py, Double_t pz, Double_t e,
 			   Double_t vx, Double_t vy, Double_t vz, Double_t tof,
 			   Double_t polx, Double_t poly, Double_t polz,
 			   TMCProcess mech, Int_t &ntr, Float_t weight=1,
-			   Int_t is = 0);
-   virtual  void  SetHighWaterMark(Int_t nt);
+			   Int_t is = 0) const;
+   virtual  void  SetHighWaterMark(Int_t nt) const;
    
-   virtual  void  KeepTrack(Int_t itra);
-   virtual  void  FlagTrack(Int_t track);
-   virtual  void  SetCurrentTrack(Int_t track);                           
+   virtual  void  KeepTrack(Int_t itra) const;
+   virtual  void  FlagTrack(Int_t track) const;
+   virtual  void  SetCurrentTrack(Int_t track) const;                           
 // Track reference related 
    virtual void   AddTrackReference(Int_t label);
    TClonesArray   *TrackReferences()   const {return fTrackReferences;}

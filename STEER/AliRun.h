@@ -6,12 +6,13 @@
 /* $Id$ */
 
 //
-// General configuration class for folders
+// General configuration class for Simulation and Reconstruction
+// Basic driver for AliRoot runs
+// Containing pointers to data elements for AliRoot
 //
 
-#include <TMCProcess.h>
-#include <TStopwatch.h>
 #include <TError.h>
+#include <TStopwatch.h>
 
 class TGeometry;
 class TParticle;
@@ -111,9 +112,9 @@ public:
    AliStack      *Stack() {return (fRunLoader)?fRunLoader->Stack():0x0;}
    AliHeader*     GetHeader() {return (fRunLoader)?fRunLoader->GetHeader():0x0;}
 
-   TTree         *TreeD() {MayNotUse("TreeD"); return 0x0;}
-   TTree         *TreeS() {MayNotUse("TreeS"); return 0x0;}
-   TTree         *TreeR() {MayNotUse("TreeR"); return 0x0;}
+   TTree         *TreeD() const {MayNotUse("TreeD"); return 0x0;}
+   TTree         *TreeS() const {MayNotUse("TreeS"); return 0x0;}
+   TTree         *TreeR() const {MayNotUse("TreeR"); return 0x0;}
 
    
    void SetRunLoader(AliRunLoader* rloader);
@@ -122,14 +123,17 @@ public:
   virtual  void Announce() const;
    
   virtual  void  InitLoaders(); //prepares run (i.e. creates getters)
-  static void Deprecated(TObject *obj, const char *method,
-			 const char *replacement) {
-    if (obj)
-      ::Warning(Form("%s::%s", obj->ClassName(), method),
-		"method is depricated\nPlease use: %s", replacement);
-    else
-      ::Warning(method, "method is depricated\nPlease use: %s", replacement);
-  }
+  static void Deprecated(TObject *obj, const char *method, const char *replace)
+    {
+      //
+      // Indicates deprecated method
+      //
+      if (obj) ::Warning(Form("%s::%s", obj->ClassName(), method),
+		  "method is depricated\nPlease use: %s", replace);
+      else ::Warning(method, "method is depricated\nPlease use: %s", replace);
+    }
+
+
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
   Int_t          fRun;               //! Current run number
