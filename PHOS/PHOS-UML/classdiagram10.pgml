@@ -1,0 +1,264 @@
+<?xml version="1.0"?>
+<!DOCTYPE pgml SYSTEM "pgml.dtd">
+<pgml description="uci.uml.visual.UMLClassDiagram|S.100025"
+      name="Subtracking"
+>
+  <group name="Fig0"
+       description="uci.uml.visual.FigClass[184, 120, 123, 61]"
+       href="S.101764"
+       fill="1"
+       fillcolor="-56"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig0.0"
+      x="185"
+      y="121"
+      width="121"
+      height="59"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16711681"
+    />
+    <text name="Fig0.1"
+      x="184"
+      y="120"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliSubTracker</text>
+    <text name="Fig0.2"
+      x="184"
+      y="136"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    ></text>
+    <text name="Fig0.3"
+      x="184"
+      y="158"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >public void makeSubTracks()</text>
+  </group>
+  <group name="Fig1"
+       description="uci.uml.visual.FigClass[408, 144, 167, 61]"
+       href="S.101765"
+       fill="1"
+       fillcolor="-56"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig1.0"
+      x="409"
+      y="145"
+      width="165"
+      height="59"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16711681"
+    />
+    <text name="Fig1.1"
+      x="408"
+      y="144"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliSubTrack</text>
+    <text name="Fig1.2"
+      x="408"
+      y="160"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    ></text>
+    <text name="Fig1.3"
+      x="408"
+      y="182"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >public ClusterIterator getClusterIterator()</text>
+  </group>
+  <group name="Fig2"
+       description="uci.uml.visual.FigClass[152, 264, 96, 60]"
+       href="S.101769"
+       fill="1"
+       fillcolor="-1"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig2.0"
+      x="153"
+      y="265"
+      width="94"
+      height="58"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16711681"
+    />
+    <text name="Fig2.1"
+      x="152"
+      y="264"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliPHOSSubTrackerV1</text>
+    <text name="Fig2.2"
+      x="152"
+      y="279"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    ></text>
+    <text name="Fig2.3"
+      x="152"
+      y="301"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    ></text>
+  </group>
+  <group name="Fig4"
+       description="uci.uml.visual.FigClass[424, 288, 96, 60]"
+       href="S.101773"
+       fill="1"
+       fillcolor="-1"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig4.0"
+      x="425"
+      y="289"
+      width="94"
+      height="58"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16711681"
+    />
+    <text name="Fig4.1"
+      x="424"
+      y="288"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliPHOSSubTrack</text>
+    <text name="Fig4.2"
+      x="424"
+      y="303"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    ></text>
+    <text name="Fig4.3"
+      x="424"
+      y="325"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    ></text>
+  </group>
+  <group name="Fig3"
+       description="uci.uml.visual.FigGeneralization"
+       href="S.101772"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig2.0"
+      destPortFig="Fig0.0"
+      sourceFigNode="Fig2"
+      destFigNode="Fig0"
+    </private>
+    <path name="Fig3.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="247"
+              y="265" />
+      <lineto x="247"
+              y="180" />
+    </path>
+  </group>
+  <group name="Fig5"
+       description="uci.uml.visual.FigGeneralization"
+       href="S.101796"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig4.0"
+      destPortFig="Fig1.0"
+      sourceFigNode="Fig4"
+      destFigNode="Fig1"
+    </private>
+    <path name="Fig5.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="472"
+              y="289" />
+      <lineto x="472"
+              y="204" />
+    </path>
+  </group>
+</pgml>

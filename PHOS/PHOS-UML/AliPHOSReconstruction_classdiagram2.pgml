@@ -1,0 +1,617 @@
+<?xml version="1.0"?>
+<!DOCTYPE pgml SYSTEM "pgml.dtd">
+<pgml description="uci.uml.visual.UMLClassDiagram|S.100025"
+      name="Clusterisation"
+>
+  <group name="Fig0"
+       description="uci.uml.visual.FigInterface[16, 176, 246, 68]"
+       href="S.100193"
+       fill="1"
+       fillcolor="-56"
+       stroke="1"
+       strokecolor="-256"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig0.0"
+      x="17"
+      y="177"
+      width="244"
+      height="66"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-256"
+    />
+    <rectangle name="Fig0.1"
+      x="16"
+      y="176"
+      width="246"
+      height="36"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-256"
+    />
+    <text name="Fig0.2"
+      x="17"
+      y="177"
+      fill="1"
+      fillcolor="-56"
+      stroke="0"
+      strokecolor="-256"
+      font="Times"
+      textsize="10"
+    >&lt;&lt;Interface&gt;&gt;</text>
+    <text name="Fig0.3"
+      x="17"
+      y="195"
+      fill="1"
+      fillcolor="-56"
+      stroke="0"
+      strokecolor="-256"
+      font="Dialog"
+      textsize="9"
+    >AliPHOSClusterizer</text>
+    <text name="Fig0.4"
+      x="16"
+      y="211"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-256"
+      font="Dialog"
+      textsize="9"
+    >public int GetNumberOfClustersFound()
+public void MakeClusters()</text>
+  </group>
+  <group name="Fig1"
+       description="uci.uml.visual.FigClass[272, 172, 255, 223]"
+       href="S.100198"
+       fill="1"
+       fillcolor="-1"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig1.0"
+      x="273"
+      y="173"
+      width="253"
+      height="221"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    />
+    <text name="Fig1.1"
+      x="272"
+      y="172"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliPHOSClusterizerv1</text>
+    <text name="Fig1.2"
+      x="272"
+      y="190"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >private int fNumberOfEmcClusters = 0
+private int fNumberOfPpsdClusters = 0
+private fEmcClusteringThreshold = 0
+private fEmcEnergyThreshold = 0
+private fPpsdClusteringThreshold = 0
+private fPpsdEnergyThreshold = 0</text>
+    <text name="Fig1.3"
+      x="272"
+      y="278"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >public bool AreNeighbours()
+public void FillandSort()
+public void IsInEmc()
+public void PrintParameters()
+public void SetEmcClusteringThreshold()
+public void SetEmcEnergyThreshold()
+public void SetPpsdClusteringThreshold()
+public void SetPpsdEnergyThreshold()</text>
+  </group>
+  <group name="Fig2"
+       description="uci.uml.visual.FigClass[336, 36, 146, 83]"
+       href="S.100160"
+       fill="1"
+       fillcolor="-1"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig2.0"
+      x="337"
+      y="37"
+      width="144"
+      height="81"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    />
+    <text name="Fig2.1"
+      x="336"
+      y="36"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliPHOSDigit</text>
+    <text name="Fig2.2"
+      x="336"
+      y="54"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >private fEnergy = 0
+private int fId = 0</text>
+    <text name="Fig2.3"
+      x="336"
+      y="86"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >public float GetEnergy()
+public int GetId()</text>
+  </group>
+  <group name="Fig3"
+       description="uci.uml.visual.FigClass[542, 172, 206, 111]"
+       href="S.100094"
+       fill="1"
+       fillcolor="-1"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig3.0"
+      x="543"
+      y="173"
+      width="204"
+      height="109"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    />
+    <text name="Fig3.1"
+      x="542"
+      y="172"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliPHOSGeometry</text>
+    <text name="Fig3.2"
+      x="542"
+      y="190"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >private many data</text>
+    <text name="Fig3.3"
+      x="542"
+      y="208"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >public void IsInitialized()
+public void RelPosInAlice()
+public void RelPosInModule()
+public void RelToAbsNumbering()
+public void AbsToRelNumbering()</text>
+  </group>
+  <text name="Fig4"
+    x="600"
+    y="264"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-3654596"
+    font="dialog"
+    textsize="10"
+  >singleton</text>
+  <group name="Fig5"
+       description="uci.uml.visual.FigInterface[272, 400, 171, 110]"
+       href="S.100322"
+       fill="1"
+       fillcolor="-56"
+       stroke="1"
+       strokecolor="-256"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig5.0"
+      x="273"
+      y="401"
+      width="169"
+      height="108"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-256"
+    />
+    <rectangle name="Fig5.1"
+      x="272"
+      y="400"
+      width="171"
+      height="36"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-256"
+    />
+    <text name="Fig5.2"
+      x="273"
+      y="401"
+      fill="1"
+      fillcolor="-56"
+      stroke="0"
+      strokecolor="-256"
+      font="Times"
+      textsize="10"
+    >&lt;&lt;Interface&gt;&gt;</text>
+    <text name="Fig5.3"
+      x="273"
+      y="419"
+      fill="1"
+      fillcolor="-56"
+      stroke="0"
+      strokecolor="-256"
+      font="Dialog"
+      textsize="9"
+    >AliPHOSCluster</text>
+    <text name="Fig5.4"
+      x="272"
+      y="435"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-256"
+      font="Dialog"
+      textsize="9"
+    >public void AddDigit()
+public int GetMultiplicity()
+public void GetDigitsList()
+public void Print()
+public void GetRelPosition()</text>
+  </group>
+  <group name="Fig6"
+       description="uci.uml.visual.FigClass[16, 277, 245, 279]"
+       href="S.100334"
+       fill="1"
+       fillcolor="-1"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig6.0"
+      x="17"
+      y="278"
+      width="243"
+      height="277"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    />
+    <text name="Fig6.1"
+      x="16"
+      y="277"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliPHOSEmcCluster</text>
+    <text name="Fig6.2"
+      x="16"
+      y="295"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >private fDigitsList = 0
+private fEnergy = 0
+private int fMultiplicity = 0
+private fDelta = 4.
+private fLocMaxCut = 0.6
+public fW0 = 4.</text>
+    <text name="Fig6.3"
+      x="16"
+      y="383"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >public bool AreNeighbours()
+public void Compare()
+public void GetAbsPosition()
+public float GetDispersion()
+public void GetElipsAxis()
+public float GetMaximalEnergy()
+public void GetMultiplicityAtLevel()
+public void GetNumberOfLocalMaxima()
+public void GetRelPosition()
+public void GetTotalEnergy()
+public void SetLocalMaxCut()
+public void SetLowWeightCut()</text>
+  </group>
+  <group name="Fig7"
+       description="uci.uml.visual.FigClass[440, 397, 171, 111]"
+       href="S.100336"
+       fill="1"
+       fillcolor="-1"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig7.0"
+      x="441"
+      y="398"
+      width="169"
+      height="109"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    />
+    <text name="Fig7.1"
+      x="440"
+      y="397"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliPHOSPpsdCluster</text>
+    <text name="Fig7.2"
+      x="440"
+      y="415"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >public fDigitsList = 0
+private fEnergy = 0
+private int fMultiplicity = 0</text>
+    <text name="Fig7.3"
+      x="440"
+      y="461"
+      fill="1"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >public int Compare()
+public void GetRelPosition()
+public bool GetUp()</text>
+  </group>
+  <group name="Fig8"
+       description="uci.uml.visual.FigAssociation"
+       href="S.100303"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig1.0"
+      destPortFig="Fig2.0"
+      sourceFigNode="Fig1"
+      destFigNode="Fig2"
+    </private>
+    <path name="Fig8.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="280"
+              y="173" />
+      <lineto x="280"
+              y="48" />
+      <lineto x="337"
+              y="48" />
+    </path>
+  </group>
+  <group name="Fig9"
+       description="uci.uml.visual.FigAssociation"
+       href="S.100313"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig1.0"
+      destPortFig="Fig3.0"
+      sourceFigNode="Fig1"
+      destFigNode="Fig3"
+    </private>
+    <path name="Fig9.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="526"
+              y="177" />
+      <lineto x="543"
+              y="177" />
+    </path>
+  </group>
+  <group name="Fig10"
+       description="uci.uml.visual.FigRealization"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig6"
+      destPortFig="Fig5"
+      sourceFigNode="Fig6"
+      destFigNode="Fig5"
+    </private>
+    <path name="Fig10.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="261"
+              y="440" />
+      <lineto x="272"
+              y="440" />
+    </path>
+  </group>
+  <group name="Fig11"
+       description="uci.uml.visual.FigRealization"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig7"
+      destPortFig="Fig5"
+      sourceFigNode="Fig7"
+      destFigNode="Fig5"
+    </private>
+    <path name="Fig11.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="440"
+              y="440" />
+      <lineto x="440"
+              y="440" />
+    </path>
+  </group>
+  <group name="Fig12"
+       description="uci.uml.visual.FigRealization"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig1.0"
+      destPortFig="Fig0.0"
+      sourceFigNode="Fig1"
+      destFigNode="Fig0"
+    </private>
+    <path name="Fig12.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="273"
+              y="184" />
+      <lineto x="261"
+              y="184" />
+    </path>
+  </group>
+  <group name="Fig13"
+       description="uci.uml.visual.FigAssociation"
+       href="S.100969"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig1.0"
+      destPortFig="Fig6.0"
+      sourceFigNode="Fig1"
+      destFigNode="Fig6"
+    </private>
+    <path name="Fig13.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="273"
+              y="288" />
+      <lineto x="260"
+              y="288" />
+    </path>
+  </group>
+  <group name="Fig14"
+       description="uci.uml.visual.FigAssociation"
+       href="S.100972"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig1.0"
+      destPortFig="Fig7.0"
+      sourceFigNode="Fig1"
+      destFigNode="Fig7"
+    </private>
+    <path name="Fig14.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="512"
+              y="394" />
+      <lineto x="512"
+              y="398" />
+    </path>
+  </group>
+</pgml>

@@ -1,0 +1,239 @@
+<?xml version="1.0"?>
+<!DOCTYPE pgml SYSTEM "pgml.dtd">
+<pgml description="uci.uml.visual.UMLClassDiagram|S.100025"
+      name="Identification"
+>
+  <group name="Fig0"
+       description="uci.uml.visual.FigClass[24, 48, 137, 67]"
+       href="S.101849"
+       fill="1"
+       fillcolor="-56"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig0.0"
+      x="25"
+      y="49"
+      width="135"
+      height="65"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+    />
+    <text name="Fig0.1"
+      x="24"
+      y="48"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliParticleHunter</text>
+    <text name="Fig0.2"
+      x="24"
+      y="64"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    ></text>
+    <text name="Fig0.3"
+      x="24"
+      y="79"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >public void UseDetector(string)()
+public void FindParticles()
+public void FetchSubTracks()()</text>
+  </group>
+  <group name="Fig1"
+       description="uci.uml.visual.FigClass[240, 32, 167, 51]"
+       href="S.101765"
+       fill="1"
+       fillcolor="-56"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig1.0"
+      x="240"
+      y="32"
+      width="167"
+      height="5"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+    />
+    <text name="Fig1.1"
+      x="240"
+      y="36"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliSubTrack</text>
+    <text name="Fig1.2"
+      x="240"
+      y="52"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    ></text>
+    <text name="Fig1.3"
+      x="240"
+      y="67"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >public ClusterIterator getClusterIterator()</text>
+  </group>
+  <text name="Fig3"
+    x="159"
+    y="136"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-12829496"
+    font="monospaced"
+    textsize="12"
+  >fList-&gt;Reset() ;
+for each selected detector do {
+  fList-&gt;Add(detector-&gt;GetSubTracks(event))
+}</text>
+  <path name="Fig4"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-12829496"
+  >
+    <moveto x="152"
+            y="112" />
+    <lineto x="160"
+            y="136" />
+  </path>
+  <group name="Fig5"
+       description="uci.uml.visual.FigClass[56, 208, 96, 61]"
+       href="S.101859"
+       fill="1"
+       fillcolor="-56"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+    </private>
+    
+    <rectangle name="Fig5.0"
+      x="57"
+      y="209"
+      width="94"
+      height="59"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16711681"
+    />
+    <text name="Fig5.1"
+      x="56"
+      y="208"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    >AliParticle</text>
+    <text name="Fig5.2"
+      x="56"
+      y="224"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    ></text>
+    <text name="Fig5.3"
+      x="56"
+      y="246"
+      fill="1"
+      fillcolor="-56"
+      stroke="1"
+      strokecolor="-16777216"
+      font="Dialog"
+      textsize="9"
+    ></text>
+  </group>
+  <group name="Fig2"
+       description="uci.uml.visual.FigAssociation"
+       href="S.101854"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig0.0"
+      destPortFig="Fig1.0"
+      sourceFigNode="Fig0"
+      destFigNode="Fig1"
+    </private>
+    <path name="Fig2.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="160"
+              y="49" />
+      <lineto x="240"
+              y="37" />
+    </path>
+  </group>
+  <group name="Fig6"
+       description="uci.uml.visual.FigAssociation"
+       href="S.101860"
+       stroke="1"
+       strokecolor="-16777216"
+  >
+    <private>
+      sourcePortFig="Fig0.0"
+      destPortFig="Fig5.0"
+      sourceFigNode="Fig0"
+      destFigNode="Fig5"
+    </private>
+    <path name="Fig6.1"
+      description="uci.gef.FigPoly"
+      fill="0"
+      fillcolor="-1"
+      stroke="1"
+      strokecolor="-16777216"
+    >
+      <moveto x="104"
+              y="114" />
+      <lineto x="104"
+              y="209" />
+    </path>
+  </group>
+</pgml>

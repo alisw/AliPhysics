@@ -1,0 +1,352 @@
+<?xml version="1.0"?>
+<!DOCTYPE pgml SYSTEM "pgml.dtd">
+<pgml description="uci.uml.visual.UMLClassDiagram|S.100025"
+      name="TreeR"
+>
+  <text name="Fig0"
+    x="14"
+    y="32"
+    fill="1"
+    fillcolor="-3618561"
+    stroke="1"
+    strokecolor="-16777216"
+    font="sanserif"
+    textsize="24"
+  >TreeR</text>
+  <text name="Fig1"
+    x="25"
+    y="104"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+    font="dialog"
+    textsize="18"
+  >PHOSEmcClusters</text>
+  <path name="Fig2"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+  >
+    <moveto x="112"
+            y="64" />
+    <lineto x="112"
+            y="120" />
+  </path>
+  <path name="Fig3"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+  >
+    <moveto x="112"
+            y="120" />
+    <lineto x="192"
+            y="120" />
+  </path>
+  <text name="Fig4"
+    x="17"
+    y="144"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+    font="dialog"
+    textsize="18"
+  >PHOSPpsdClusters</text>
+  <text name="Fig5"
+    x="46"
+    y="184"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+    font="dialog"
+    textsize="18"
+  >PHOSSubTracks</text>
+  <text name="Fig6"
+    x="39"
+    y="224"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+    font="dialog"
+    textsize="18"
+  >PHOSParameters</text>
+  <path name="Fig7"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+  >
+    <moveto x="112"
+            y="120" />
+    <lineto x="112"
+            y="240" />
+  </path>
+  <path name="Fig8"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+  >
+    <moveto x="112"
+            y="160" />
+    <lineto x="192"
+            y="160" />
+  </path>
+  <path name="Fig9"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+  >
+    <moveto x="112"
+            y="200" />
+    <lineto x="192"
+            y="200" />
+  </path>
+  <path name="Fig10"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+  >
+    <moveto x="112"
+            y="240" />
+    <lineto x="192"
+            y="240" />
+  </path>
+  <text name="Fig11"
+    x="8"
+    y="296"
+    fill="1"
+    fillcolor="-3618561"
+    stroke="1"
+    strokecolor="-16777216"
+    font="sanserif"
+    textsize="24"
+  >TreeD</text>
+  <text name="Fig12"
+    x="156"
+    y="352"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+    font="dialog"
+    textsize="18"
+  >PHOS</text>
+  <path name="Fig13"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+  >
+    <moveto x="112"
+            y="328" />
+    <lineto x="112"
+            y="368" />
+  </path>
+  <path name="Fig14"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+  >
+    <moveto x="112"
+            y="368" />
+    <lineto x="192"
+            y="368" />
+  </path>
+  <path name="Fig15"
+    description="uci.gef.FigPoly"
+    fill="0"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-16777216"
+  >
+    <moveto x="376"
+            y="120" />
+    <lineto x="376"
+            y="120" />
+  </path>
+  <path name="Fig16"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-14081"
+    stroke="1"
+    strokecolor="-12829496"
+  >
+    <moveto x="376"
+            y="107" />
+    <lineto x="512"
+            y="107" />
+  </path>
+  <path name="Fig17"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-12829496"
+  >
+    <moveto x="512"
+            y="109" />
+    <lineto x="248"
+            y="358" />
+  </path>
+  <path name="Fig18"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-12829496"
+  >
+    <moveto x="384"
+            y="150" />
+    <lineto x="512"
+            y="150" />
+  </path>
+  <path name="Fig19"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-12829496"
+  >
+    <moveto x="513"
+            y="151" />
+    <lineto x="249"
+            y="359" />
+  </path>
+  <path name="Fig20"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-3654596"
+  >
+    <moveto x="376"
+            y="120" />
+    <lineto x="456"
+            y="120" />
+  </path>
+  <path name="Fig21"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-3654596"
+  >
+    <moveto x="456"
+            y="120" />
+    <lineto x="360"
+            y="192" />
+  </path>
+  <path name="Fig22"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-3654596"
+  >
+    <moveto x="384"
+            y="160" />
+    <lineto x="440"
+            y="160" />
+  </path>
+  <path name="Fig23"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-3654596"
+  >
+    <moveto x="438"
+            y="161" />
+    <lineto x="358"
+            y="193" />
+  </path>
+  <path name="Fig24"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-12793796"
+  >
+    <moveto x="376"
+            y="128" />
+    <lineto x="424"
+            y="128" />
+  </path>
+  <path name="Fig25"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-12793796"
+  >
+    <moveto x="422"
+            y="128" />
+    <lineto x="366"
+            y="224" />
+  </path>
+  <path name="Fig26"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-1"
+  >
+    <moveto x="624"
+            y="160" />
+    <lineto x="568"
+            y="256" />
+  </path>
+  <path name="Fig27"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-1"
+  >
+    <moveto x="384"
+            y="40" />
+    <lineto x="384"
+            y="48" />
+  </path>
+  <path name="Fig28"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-1"
+    stroke="1"
+    strokecolor="-12793796"
+  >
+    <moveto x="381"
+            y="168" />
+    <lineto x="365"
+            y="224" />
+  </path>
+  <path name="Fig29"
+    description="uci.gef.FigLine"
+    fill="1"
+    fillcolor="-12566464"
+    stroke="1"
+    strokecolor="-12793796"
+  >
+    <moveto x="356"
+            y="207" />
+    <lineto x="364"
+            y="223" />
+  </path>
+</pgml>
