@@ -110,6 +110,8 @@ void AliLevel3::Init(){
   fGlobalMerger=0;
   fTransformer = new AliL3Transform();
   fDoRoi = kFALSE;
+  fEta[0] = 0.;
+  fEta[1] = 0.9;
   fUseBinary =kFALSE;
   SetPath("");
   fFindVertex =kTRUE;
@@ -393,7 +395,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
       }
       fTrackMerger->SetVertex(fVertex);
     }
-    fTracker->InitSector(slice,fRow[patch]);//,fEta);
+    fTracker->InitSector(slice,fRow[patch],fEta);
     fTracker->SetVertex(fVertex);
     fBenchmark->Start("Tracker Read Hits");
     fTracker->ReadHits(npoints,points);
