@@ -186,7 +186,7 @@ void AliL3VHDLClusterFinder::MergeSeq()
 #ifdef DEBUG
   fprintf(fdeb,"merged with Mean=%d TC=%d (new Merge=%d) %d %d\n",fSeqs[fPList[fRP]].fMean,fSeqs[fPList[fRP]].fTotalCharge,fSeqs[fPList[fRP]].fMerge+1,fRow,fPad);
 #endif
-  if(fSeqs[fPList[fRP]].fRow==fSeq.fRow){
+  if(fSeqs[fPList[fRP]].fRow!=fSeq.fRow){
     LOG(AliL3Log::kWarning,"AliL3VHDLClusterFinder::","Memory Check")
       <<"Sequences can be merged on the same rows only."<<ENDLOG;
   }
