@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2000/09/06 14:35:44  morsch
+Use AliDecayerPythia for particle decays.
+
 Revision 1.19  2000/07/11 18:24:56  fca
 Coding convention corrections + few minor bug fixes
 
@@ -370,7 +373,7 @@ void AliGenParam::Generate()
 		  Int_t kf = iparticle->GetPdgCode();
 //
 // children
-		  if (ChildSelected(TMath::Abs(kf)))
+		  if (ChildSelected(TMath::Abs(kf)) || fForceDecay==all)
 		  {
 		      pc[0]=iparticle->Px();
 		      pc[1]=iparticle->Py();
