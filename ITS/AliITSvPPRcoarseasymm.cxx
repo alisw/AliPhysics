@@ -581,50 +581,112 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gspos("ICC4", 1, "ITSV", 0., 0., xltpc+dgh[2], 0, "ONLY");  
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
-  //     THE ABSORBER - COPPER PART
+  //     THE ABSORBER - COPPER PART - UPPER PART
   
   dgh[0] = 45.;
   dgh[1] = 45.+1.0;
   dgh[2] = (xltpc-100.7+1.5)/2.;
-  gMC->Gsvolu("ICU5", "TUBE", idtmed[279], dgh, 3);   
+  dgh[3] = 12.;
+  dgh[4] = 168.;
+  gMC->Gsvolu("ICU5", "TUBS", idtmed[279], dgh, 5);   
   gMC->Gspos("ICU5", 1, "ITSV", 0., 0., -100.7-dgh[2], 0, "ONLY");  
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
-  //     THE ABSORBER - CARBON PART
+  //     THE ABSORBER - COPPER PART - LOWER PART
+  
+  dgh[0] = 45.;
+  dgh[1] = 45.+1.0;
+  dgh[2] = (xltpc-100.7+1.5)/2.;
+  dgh[3] = 192.;
+  dgh[4] = 348.;  
+  gMC->Gsvolu("ICU6", "TUBS", idtmed[279], dgh, 5);   
+  gMC->Gspos("ICU6", 1, "ITSV", 0., 0., -100.7-dgh[2], 0, "ONLY");    
+  
+  // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
+  //     THE ABSORBER - CARBON PART - UPPER PART
   
   dgh[0] = 45.+1.0;
   dgh[1] = 45.+1.0+1.5;
   dgh[2] = (xltpc-100.7)/2.;
-  gMC->Gsvolu("ICC5", "TUBE", idtmed[274], dgh, 3);   
-  gMC->Gspos("ICC5", 1, "ITSV", 0., 0., -100.7-dgh[2], 0, "ONLY");    
-
+  dgh[3] = 12.;
+  dgh[4] = 168.;  
+  gMC->Gsvolu("ICC5", "TUBS", idtmed[274], dgh, 5);   
+  gMC->Gspos("ICC5", 1, "ITSV", 0., 0., -100.7-dgh[2], 0, "ONLY");   
   
+  // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
+  //     THE ABSORBER - CARBON PART - LOWER PART
+  
+  dgh[0] = 45.+1.0;
+  dgh[1] = 45.+1.0+1.5;
+  dgh[2] = (xltpc-100.7)/2.;
+  dgh[3] = 192.;
+  dgh[4] = 348.;  
+  gMC->Gsvolu("ICC6", "TUBS", idtmed[274], dgh, 5);   
+  gMC->Gspos("ICC6", 1, "ITSV", 0., 0., -100.7-dgh[2], 0, "ONLY");      
+
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
-  //     COPPER PART
+  //     COPPER PART - UPPER PART
     
   dgh[0] = 45.;
   dgh[1] = 74.5;
   dgh[2] = 0.5;
-  gMC->Gsvolu("ICU6", "TUBE", idtmed[279], dgh, 3);   
-  gMC->Gspos("ICU6", 1, "ITSV", 0., 0., -(xltpc+1.5+dgh[2]), 0, "ONLY");    
-  
+  dgh[3] = 12.;
+  dgh[4] = 168.;  
+  gMC->Gsvolu("ICU7", "TUBS", idtmed[279], dgh, 5);   
+  gMC->Gspos("ICU7", 1, "ITSV", 0., 0., -(xltpc+1.5+dgh[2]), 0, "ONLY");  
   
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
-  //     CARBON PART
+  //     COPPER PART - LOWER PART
+    
+  dgh[0] = 45.;
+  dgh[1] = 74.5;
+  dgh[2] = 0.5;
+  dgh[3] = 192.;
+  dgh[4] = 348.;   
+  gMC->Gsvolu("ICU8", "TUBS", idtmed[279], dgh, 5);   
+  gMC->Gspos("ICU8", 1, "ITSV", 0., 0., -(xltpc+1.5+dgh[2]), 0, "ONLY");      
+    
+  // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
+  //     CARBON PART - UPPER PART
   
   dgh[0] = 45.+1.0;
   dgh[1] = 74.5;
   dgh[2] = 0.75;
-  gMC->Gsvolu("ICC6", "TUBE", idtmed[274], dgh, 3);   
-  gMC->Gspos("ICC6", 1, "ITSV", 0., 0., -(xltpc+dgh[2]), 0, "ONLY");      
+  dgh[3] = 12.;
+  dgh[4] = 168.;   
+  gMC->Gsvolu("ICC7", "TUBS", idtmed[274], dgh, 5);   
+  gMC->Gspos("ICC7", 1, "ITSV", 0., 0., -(xltpc+dgh[2]), 0, "ONLY"); 
+  
+  // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
+  //     CARBON PART - LOWER PART
+  
+  dgh[0] = 45.+1.0;
+  dgh[1] = 74.5;
+  dgh[2] = 0.75;
+  dgh[3] = 192.;
+  dgh[4] = 348.;     
+  gMC->Gsvolu("ICC8", "TUBS", idtmed[274], dgh, 5);   
+  gMC->Gspos("ICC8", 1, "ITSV", 0., 0., -(xltpc+dgh[2]), 0, "ONLY");        
     
-  // --- DEFINE HOOK TO THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
+  // --- DEFINE HOOK TO THE TPC ON OTHER SIDE W.R.T. THE ABSORBER - UPPER PART
   
   dgh[0] = 74.5;
   dgh[1] = 79.5;
   dgh[2] = 2.5;
-  gMC->Gsvolu("IHOK", "TUBE", idtmed[284], dgh, 3);  
-  gMC->Gspos("IHOK", 1, "ITSV", 0., 0., -xltpc-dgh[2], 0, "ONLY");    
+  dgh[3] = 12.;
+  dgh[4] = 168.;    
+  gMC->Gsvolu("IHK1", "TUBS", idtmed[284], dgh, 5);  
+  gMC->Gspos("IHK1", 1, "ITSV", 0., 0., -xltpc-dgh[2], 0, "ONLY");   
+  
+  // --- DEFINE HOOK TO THE TPC ON OTHER SIDE W.R.T. THE ABSORBER - LOWER PART
+  
+  dgh[0] = 74.5;
+  dgh[1] = 79.5;
+  dgh[2] = 2.5;
+  dgh[3] = 192.;
+  dgh[4] = 348.;    
+  gMC->Gsvolu("IHK2", "TUBS", idtmed[284], dgh, 5);  
+  gMC->Gspos("IHK2", 1, "ITSV", 0., 0., -xltpc-dgh[2], 0, "ONLY");      
   
   // --- DEFINE RAILS BETWEEN THE ITS AND THE TPC
   
@@ -637,14 +699,12 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
 
   // --- DEFINE CYLINDERS HOLDING RAILS BETWEEN THE ITS AND THE TPC
   
-/*
   dgh[0] = 58.;
   dgh[1] = 59.;
   dgh[2] = 0.2;  //check the thickness  
   gMC->Gsvolu("ICYL", "TUBE", idtmed[285], dgh, 3);   
   gMC->Gspos("ICYL", 1, "ITSV", 0., 0., 74., 0, "ONLY");
-  gMC->Gspos("ICYL", 2, "ITSV", 0., 0., -74., idrtom[200], "ONLY");     
-*/
+  gMC->Gspos("ICYL", 2, "ITSV", 0., 0., -74., idrotm[200], "ONLY");     
   
   // --- Outputs the geometry tree in the EUCLID/CAD format 
   
