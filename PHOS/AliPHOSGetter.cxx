@@ -51,6 +51,7 @@
 #include "AliPHOS.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"  
+#include "AliHeader.h"  
 #include "AliPHOSLoader.h"
 #include "AliPHOSBeamTestEvent.h"
 #include "AliMC.h"
@@ -335,8 +336,11 @@ AliPHOSGetter * AliPHOSGetter::Instance(const char* alirunFileName, const char* 
 	}
       }
     }
-    else 
+    else {
+      AliRunLoader * rl = AliRunLoader::GetRunLoader(fgPhosLoader->GetTitle()) ; 
+      delete rl ; 
       fgObjGetter = new AliPHOSGetter(alirunFileName, version, openingOption) ;      
+    }
   }
   if (!fgObjGetter) 
     ::Error("AliPHOSGetter::Instance", "Failed to create the PHOS Getter object") ;
@@ -441,11 +445,11 @@ void AliPHOSGetter::ReadPrimaries()
   AliRunLoader * rl = AliRunLoader::GetRunLoader(PhosLoader()->GetTitle());
   
   // gets kine tree from the root file (Kinematics.root)
-  if ( ! rl->TreeK() )  // load treeK the first time
+  if ( ! rl->TreeK() ) { // load treeK the first time
     rl->LoadKinematics() ;
+  }
   
-  fNPrimaries = rl->Stack()->GetNtrack() ; 
-
+  fNPrimaries = (rl->GetHeader())->GetNtrack(); 
   if (fgDebug) 
     Info( "ReadTreeK", "Found %d particles in event # %d", fNPrimaries, EventNumber() ) ; 
 

@@ -52,6 +52,7 @@
 #include "AliEMCAL.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"  
+#include "AliHeader.h"  
 #include "AliEMCALLoader.h"
 #include "AliMC.h"
 
@@ -312,8 +313,11 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
 	}
       }
     }
-    else 
+    else { 
+      AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
+      delete rl ; 
       fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;      
+    }
   }
   if (!fgObjGetter) 
     ::Error("AliEMCALGetter::Instance", "Failed to create the EMCAL Getter object") ;
@@ -421,11 +425,9 @@ void AliEMCALGetter::ReadPrimaries()
   if ( ! rl->TreeK() )  // load treeK the first time
     rl->LoadKinematics() ;
   
-  fNPrimaries = rl->Stack()->GetNtrack() ; 
-
+  fNPrimaries = (rl->GetHeader())->GetNtrack(); 
   if (fgDebug) 
     Info("ReadTreeK", "Found %d particles in event # %d", fNPrimaries, EventNumber() ) ; 
-
 
   // first time creates the container
   if ( Primaries() ) 
