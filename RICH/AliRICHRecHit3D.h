@@ -26,7 +26,7 @@ public:
     }
     AliRICHRecHit3D(Int_t id, Float_t* rechit, Float_t omega, Float_t theta, Float_t phi);
     virtual ~AliRICHRecHit3D() {}
-    ClassDef(AliRICHRecHit3D,1)  //Reconstructed hit object for set:RICH
+    ClassDef(AliRICHRecHit3D,2)  //Reconstructed hit object for set:RICH
 };
 
 #endif
