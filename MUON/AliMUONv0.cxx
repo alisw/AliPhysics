@@ -1299,7 +1299,7 @@ void AliMUONv0::StepManager()
   static Int_t   idvol;
   static Int_t   vol[2];
   Int_t          ipart;
-  static Float_t hits[9];
+  static Float_t hits[10];
   Float_t        pos[3];
   Float_t        mom[4];
   Float_t        theta,phi;
