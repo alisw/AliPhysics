@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/11/22 11:30:30  hristov
+Correct log field
+
 Revision 1.1  2001/11/22 11:22:51  hristov
 Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
 
@@ -31,7 +34,7 @@ Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
 // Note: only a few constants are in the first version of this class,
 //       more should be added by TOF developpers
 //
-// Author: Jiri Chudoba (CERN)
+// Author: Jiri Chudoba (CERN), F. Pierella
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -46,6 +49,24 @@ const Int_t AliTOFConstants::fgkPadXSector;
 const Int_t AliTOFConstants::fgkNSectors;
 const Int_t AliTOFConstants::fgkNPlates;
 
+const Float_t AliTOFConstants::fgkrmin;
+const Float_t AliTOFConstants::fgkrmax;
+const Int_t AliTOFConstants::fgkmaxtoftree;
+const Int_t AliTOFConstants::fgkmaxNstrip;
+const Int_t AliTOFConstants::fgkPadXStrip;
+const Float_t AliTOFConstants::fgkzlenA;
+const Float_t AliTOFConstants::fgkzlenB;
+const Float_t AliTOFConstants::fgkzlenC;
+const Float_t AliTOFConstants::fgkXPad;
+const Float_t AliTOFConstants::fgkZPad;
+const Float_t AliTOFConstants::fgkMaxhZtof;
+const Float_t AliTOFConstants::fgkSigmaForTail1;
+const Float_t AliTOFConstants::fgkSigmaForTail2;
 const Int_t AliTOFConstants::fgkTimeDiff;
-
+const Float_t AliTOFConstants::fgkSpeedOfLight;
+const Float_t AliTOFConstants::fgkPionMass;
+const Float_t AliTOFConstants::fgkKaonMass;
+const Float_t AliTOFConstants::fgkProtonMass;
+const Float_t AliTOFConstants::fgkElectronMass;
+const Float_t AliTOFConstants::fgkMuonMass;
 ClassImp(AliTOFConstants)
