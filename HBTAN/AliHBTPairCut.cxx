@@ -162,6 +162,8 @@ void AliHBTPairCut::SetPartCut(AliHBTParticleCut* cut)
       Error("SetFirstPartCut","argument is NULL");
       return;
     }
+  if (fFirstPartCut == fSecondPartCut) fSecondPartCut = 0x0;
+  
   delete fFirstPartCut;
   fFirstPartCut = (AliHBTParticleCut*)cut->Clone();
   
@@ -267,6 +269,11 @@ void AliHBTPairCut::Streamer(TBuffer &b)
     {
       R__c = b.WriteVersion(AliHBTPairCut::IsA(), kTRUE);
       TObject::Streamer(b);
+      
+//      printf("Streamer Cut 1 %#x Cut 2 %#x\n",fFirstPartCut,fSecondPartCut);
+//      this->Dump();
+//      fFirstPartCut->Dump();
+      
       b << fFirstPartCut;
       b << fSecondPartCut;
       b << fNCuts;
