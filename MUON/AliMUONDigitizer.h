@@ -1,0 +1,60 @@
+#ifndef ALIMUONDIGITIZER_H
+#define ALIMUONDIGITIZER_H
+/* Copyright(c) 1998-2001, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+#include "../STEER/AliDigitizer.h"
+
+class AliRunDigitizer;
+class AliMUONPadHit;
+class AliHitMap;
+
+class AliMUONDigitizer : public AliDigitizer {
+ public:
+    
+    AliMUONDigitizer();
+    AliMUONDigitizer(AliRunDigitizer * manager);
+    virtual ~AliMUONDigitizer();
+
+    // Compare pad hits
+    virtual Bool_t Exists(const AliMUONPadHit * sdigit);
+    // Update a pad hit
+    virtual  void Update(AliMUONPadHit *sdigit);
+    // Create a new hit
+    virtual  void CreateNew(AliMUONPadHit *sdigit);
+
+    // Initialize merging and digitization
+    virtual Bool_t Init();
+
+    // Do the main work
+    void Digitize() ;
+    
+    enum {kBgTag = -1};
+    
+ private:    
+    void SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr);
+    
+ private:
+    AliRunDigitizer *fManager;      // ! pointer to the AliRunDigitizer object
+    TTree *fTrH1;                   // ! Hits Tree
+    TClonesArray *fHits;            // ! List of hits for one track only
+    TClonesArray *fPadHits;         // ! List of clusters for one track only
+    AliHitMap **fHitMap;            // ! pointer to array of pointers to hitmaps
+    Int_t fNch;                     // ! chamber nr (loop variable)
+    Int_t fTrack;                   // ! track nr (loop variable)
+    TObjArray *fTDList;             // ! list of AliMUONTransientDigits
+    TObjArray *fTrList;             // ! list of tracks
+    TClonesArray *fAddress;         // ! pointer to TClonesArray of TVectors with trackinfo
+    Int_t fCounter;                 // ! nr. of AliMUONTransientDigit
+    Int_t fCountadr;                // ! counter for trinfo
+    Int_t fDigits[6];               // ! array with digits
+    Int_t fEvNrSig;                 // signal     event number
+    Int_t fEvNrBgr;                 // background event number    
+    TClonesArray * fHeaderFiles ;   // Names of files with headers to merge
+    Bool_t fInitialized;            // if first file already read
+    
+    ClassDef(AliMUONDigitizer,1)
+};    
+#endif
+
