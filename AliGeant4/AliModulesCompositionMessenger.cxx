@@ -92,7 +92,6 @@ AliModulesCompositionMessenger::AliModulesCompositionMessenger(
 
   // set default values to a detector
   fModulesComposition->SwitchDetOn("NONE");
-  fModulesComposition->SetMagField(0.0*tesla);    
 }
 
 AliModulesCompositionMessenger::AliModulesCompositionMessenger() {
