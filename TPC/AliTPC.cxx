@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2000/10/05 16:06:09  kowal2
+Forward declarations. Changes due to a new class AliComplexCluster.
+
 Revision 1.23  2000/10/02 21:28:18  fca
 Removal of useless dependecies via forward declarations
 
@@ -106,6 +109,10 @@ Introduction of the Copyright and cvs Log
 #include "AliTPCRF1D.h"
 #include "AliDigits.h"
 #include "AliSimDigits.h"
+#include "AliTPCTrackHits.h"
+#include "AliPoints.h"
+#include "AliArrayBranch.h"
+
 
 #include "AliTPCDigitsArray.h"
 #include "AliComplexCluster.h"
@@ -119,6 +126,8 @@ Introduction of the Copyright and cvs Log
 
 #include <TInterpreter.h>
 #include <TTree.h>
+
+
 
 ClassImp(AliTPC) 
 
@@ -136,6 +145,9 @@ AliTPC::AliTPC()
   fDigitsArray = 0;
   fClustersArray = 0;
   fTPCParam=0;
+  fTrackHits = 0;  
+  fHitType = 2;  
+  fTPCParam = 0; 
 }
  
 //_____________________________________________________________________________
@@ -153,6 +165,13 @@ AliTPC::AliTPC(const char *name, const char *title)
   //MI change  
   fDigitsArray = 0;
   fClustersArray= 0;
+  //
+  fTrackHits = new AliTPCTrackHits;  //MI - 13.09.2000
+  fTrackHits->SetHitPrecision(0.002);
+  fTrackHits->SetStepPrecision(0.003);  
+  fTrackHits->SetMaxDistance(100); 
+
+  fHitType = 2;
   //
   // Initialise counters
   fNsectors = 0;
@@ -187,6 +206,7 @@ AliTPC::~AliTPC()
   delete fHits;
   delete fDigits;
   delete fTPCParam;
+  delete fTrackHits; //MI 15.09.2000
 }
 
 //_____________________________________________________________________________
@@ -195,8 +215,14 @@ void AliTPC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //
   // Add a hit to the list
   //
-  TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliTPChit(fIshunt,track,vol,hits);
+  //  TClonesArray &lhits = *fHits;
+  //  new(lhits[fNhits++]) AliTPChit(fIshunt,track,vol,hits);
+  if (fHitType&1){
+    TClonesArray &lhits = *fHits;
+    new(lhits[fNhits++]) AliTPChit(fIshunt,track,vol,hits);
+  }
+  if (fHitType&2)
+   AddHit2(track,vol,hits);
 }
  
 //_____________________________________________________________________________
@@ -721,7 +747,7 @@ void AliTPC::Hits2Clusters(TFile *of)
   TParticle *particle; // pointer to a given particle
   AliTPChit *tpcHit; // pointer to a sigle TPC hit
   TClonesArray *particles; //pointer to the particle list
-  Int_t sector,nhits;
+  Int_t sector;
   Int_t ipart;
   Float_t xyz[5];
   Float_t pl,pt,tanth,rpad,ratio;
@@ -769,15 +795,31 @@ void AliTPC::Hits2Clusters(TFile *of)
       //
       //  Get number of the TPC hits
       //
-      nhits=fHits->GetEntriesFast();
+      // nhits=fHits->GetEntriesFast();
       //
+     
+       tpcHit = (AliTPChit*)FirstHit(-1);
+
       // Loop over hits
       //
-      for(Int_t hit=0;hit<nhits;hit++){
-	tpcHit=(AliTPChit*)fHits->UncheckedAt(hit);
-        if (tpcHit->fQ == 0.) continue; //information about track (I.Belikov)
+       //   for(Int_t hit=0;hit<nhits;hit++){
+       //tpcHit=(AliTPChit*)fHits->UncheckedAt(hit);
+
+       while(tpcHit){
+ 
+	 if (tpcHit->fQ == 0.) {
+           tpcHit = (AliTPChit*) NextHit();
+           continue; //information about track (I.Belikov)
+	 }
 	sector=tpcHit->fSector; // sector number
-	if(sector != isec) continue; //terminate iteration
+
+
+	//	if(sector != isec) continue; //terminate iteration
+
+       if(sector != isec){
+	 tpcHit = (AliTPChit*) NextHit();
+	 continue; 
+       }
 	ipart=tpcHit->Track();
 	particle=(TParticle*)particles->UncheckedAt(ipart);
 	pl=particle->Pz();
@@ -820,17 +862,20 @@ void AliTPC::Hits2Clusters(TFile *of)
           if (TMath::Abs(xyz[0])>ymax) xyz[0]=yprim; 
 	xyz[1]=gRandom->Gaus(tpcHit->Z(),TMath::Sqrt(sigmaZ)); // z
           if (TMath::Abs(xyz[1])>fTPCParam->GetZLength()) xyz[1]=tpcHit->Z(); 
-	xyz[2]=tpcHit->fQ;                                     // q
-	xyz[3]=sigmaRphi;                                     // fSigmaY2
-	xyz[4]=sigmaZ;                                        // fSigmaZ2
+	xyz[2]=sigmaRphi;                                     // fSigmaY2
+	xyz[3]=sigmaZ;                                        // fSigmaZ2
+	xyz[4]=tpcHit->fQ;                                    // q
 
         AliTPCClustersRow *clrow=carray.GetRow(sector,tpcHit->fPadRow);
         if (!clrow) clrow=carray.CreateRow(sector,tpcHit->fPadRow);	
 
         Int_t tracks[3]={tpcHit->Track(), -1, -1};
-	AliTPCcluster cluster(xyz,tracks);
+	AliTPCcluster cluster(tracks,xyz);
 
         clrow->InsertCluster(&cluster); nclusters++;
+
+        tpcHit = (AliTPChit*)NextHit();
+        
 
       } // end of loop over hits
 
@@ -1094,7 +1139,8 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
        } // end of the sector digitization
 
       for(i=0;i<nrows;i++){
-        row[i]->Delete();     
+        row[i]->Delete();  
+        delete row[i];   
       }
       
        delete [] row; // delete the array of pointers to TObjArray-s
@@ -1399,6 +1445,11 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   Float_t xyz[4]; 
 
   AliTPChit *tpcHit; // pointer to a sigle TPC hit    
+  //MI change
+  TBranch * branch=0;
+  if (fHitType&2) branch = TH->GetBranch("TPC2");
+  else branch = TH->GetBranch("TPC");
+
  
   //----------------------------------------------
   // Create TObjArray-s, one for each row,
@@ -1424,26 +1475,43 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   previousTrack = -1; // nothing to store so far!
 
   for(Int_t track=0;track<ntracks;track++){
-
+    Bool_t isInSector=kTRUE;
     ResetHits();
 
-    TH->GetEvent(track); // get next track
-    Int_t nhits = fHits->GetEntriesFast(); // get number of hits for this track
+    if (fHitType&2) {
+      isInSector=kFALSE;
+      TBranch * br = TH->GetBranch("fTrackHitsInfo");
+      br->GetEvent(track);
+      AliObjectArray * ar = fTrackHits->fTrackHitsInfo;
+      for (UInt_t j=0;j<ar->GetSize();j++){
+	if (  ((AliTrackHitsInfo*)ar->At(j))->fVolumeID==isec) isInSector=kTRUE;
+      }
+    }
+    if (!isInSector) continue;
+    //MI change
+    branch->GetEntry(track); // get next track
 
-    if(nhits == 0) continue; // no hits in the TPC for this track
+    //M.I. changes
+
+    tpcHit = (AliTPChit*)FirstHit(-1);
 
     //--------------------------------------------------------------
     //  Loop over hits
     //--------------------------------------------------------------
 
-    for(Int_t hit=0;hit<nhits;hit++){
 
-      tpcHit = (AliTPChit*)fHits->UncheckedAt(hit); // get a pointer to a hit
+    while(tpcHit){
       
       Int_t sector=tpcHit->fSector; // sector number
-      if(sector != isec) continue; 
+      //      if(sector != isec) continue; 
+      if(sector != isec){
+	tpcHit = (AliTPChit*) NextHit();
+	continue; 
+      }
 
 	currentTrack = tpcHit->Track(); // track number
+
+
         if(currentTrack != previousTrack){
                           
            // store already filled fTrack
@@ -1524,6 +1592,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
           v(idx+2)=xyz[2];   // Z - time bin coordinate
 	  v(idx+3)=xyz[3];   // avalanche size  
 	} // end of loop over electrons
+
+        tpcHit = (AliTPChit*)NextHit();
         
       } // end of loop over hits
     } // end of loop over tracks
@@ -1588,6 +1658,8 @@ void AliTPC::MakeBranch(Option_t* option)
     gAlice->TreeD()->Branch(branchname,&fDigits, buffersize);
     printf("Making Branch %s for digits\n",branchname);
   }	
+
+  if (fHitType&2) MakeBranch2(option); // MI change 14.09.2000
 }
  
 //_____________________________________________________________________________
@@ -1762,12 +1834,17 @@ void AliTPC::Streamer(TBuffer &R__b)
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       AliDetector::Streamer(R__b);
+      R__b >> fTPCParam;
       if (R__v < 2) return;
       R__b >> fNsectors;
+      R__b >> fHitType;
+
    } else {
       R__b.WriteVersion(AliTPC::IsA());
       AliDetector::Streamer(R__b);
+      R__b << fTPCParam;
       R__b << fNsectors;
+      R__b << fHitType; 
    }
 }
   
@@ -1806,3 +1883,436 @@ AliHit(shunt,track)
 }
  
 
+//________________________________________________________________________
+// Additional code because of the AliTPCTrackHits
+
+void AliTPC::MakeBranch2(Option_t *option)
+{
+  //
+  // Create a new branch in the current Root Tree
+  // The branch of fHits is automatically split
+  // MI change 14.09.2000
+  if (fHitType&2==0) return;
+  char branchname[10];
+  sprintf(branchname,"%s2",GetName());  
+  //
+  // Get the pointer to the header
+  char *cH = strstr(option,"H");
+  //
+  if (fTrackHits   && gAlice->TreeH() && cH) {    
+    //    gAlice->TreeH()->Branch(branchname,&fTrackHits, fBufferSize);
+    AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHits, 
+						   gAlice->TreeH(),fBufferSize,1);
+    gAlice->TreeH()->GetListOfBranches()->Add(branch);
+    printf("* AliDetector::MakeBranch * Making Branch %s for trackhits\n",branchname);
+  }	
+}
+
+void AliTPC::SetTreeAddress()
+{
+  if (fHitType&1) AliDetector::SetTreeAddress();
+  if (fHitType&2) SetTreeAddress2();
+}
+
+void AliTPC::SetTreeAddress2()
+{
+  //
+  // Set branch address for the TrackHits Tree
+  // 
+  TBranch *branch;
+  char branchname[20];
+  sprintf(branchname,"%s2",GetName());
+  //
+  // Branch address for hit tree
+  TTree *treeH = gAlice->TreeH();
+  if (treeH) {
+    branch = treeH->GetBranch(branchname);
+    if (branch) branch->SetAddress(&fTrackHits);
+  }
+}
+
+void AliTPC::FinishPrimary()
+{
+  if (fTrackHits) fTrackHits->FlushHitStack();  
+}
+
+
+void AliTPC::AddHit2(Int_t track, Int_t *vol, Float_t *hits)
+{ 
+  //
+  // add hit to the list  
+  TClonesArray &particles = *(gAlice->Particles());
+  Int_t rtrack;
+  if (fIshunt) {
+    int primary = gAlice->GetPrimary(track);
+    ((TParticle *)particles[primary])->SetBit(kKeepBit);
+    rtrack=primary;
+  } else {
+    rtrack=track;
+    gAlice->FlagTrack(track);
+  }  
+  //AliTPChit *hit = (AliTPChit*)fHits->UncheckedAt(fNhits-1);
+  //if (hit->fTrack!=rtrack)
+  //  cout<<"bad track number\n";
+  if (fTrackHits) 
+    fTrackHits->AddHitKartez(vol[0],rtrack, hits[0],
+			     hits[1],hits[2],(Int_t)hits[3]);
+}
+
+void AliTPC::ResetHits()
+{
+  if (fHitType&1) AliDetector::ResetHits();
+  if (fHitType&2) ResetHits2();
+}
+
+void AliTPC::ResetHits2()
+{
+  //
+  //reset hits
+  if (fTrackHits) fTrackHits->Clear();
+}   
+
+AliHit* AliTPC::FirstHit(Int_t track)
+{
+  if (fHitType&2) return FirstHit2(track);
+  return AliDetector::FirstHit(track);
+}
+AliHit* AliTPC::NextHit()
+{
+  if (fHitType&2) return NextHit2();
+  return AliDetector::NextHit();
+}
+
+AliHit* AliTPC::FirstHit2(Int_t track)
+{
+  //
+  // Initialise the hit iterator
+  // Return the address of the first hit for track
+  // If track>=0 the track is read from disk
+  // while if track<0 the first hit of the current
+  // track is returned
+  // 
+  if(track>=0) {
+    gAlice->ResetHits();
+    gAlice->TreeH()->GetEvent(track);
+  }
+  //
+  if (fTrackHits) {
+    fTrackHits->First();
+    return fTrackHits->GetHit();
+  }
+  else return 0;
+}
+
+AliHit* AliTPC::NextHit2()
+{
+  //
+  //Return the next hit for the current track
+
+  if (fTrackHits) {
+    fTrackHits->Next();
+    return fTrackHits->GetHit();
+  }
+  else 
+    return 0;
+}
+
+void AliTPC::LoadPoints(Int_t)
+{
+  //
+  Int_t a = 0;
+  LoadPoints2(a);
+  // LoadPoints3(a);
+
+}
+
+
+void AliTPC::RemapTrackHitIDs(Int_t *map)
+{
+  if (!fTrackHits) return;
+  AliObjectArray * arr = fTrackHits->fTrackHitsInfo;
+  for (UInt_t i=0;i<arr->GetSize();i++){
+    AliTrackHitsInfo * info = (AliTrackHitsInfo *)(arr->At(i));
+    info->fTrackID = map[info->fTrackID];
+  }
+  
+}
+
+
+//_____________________________________________________________________________
+void AliTPC::LoadPoints2(Int_t)
+{
+  //
+  // Store x, y, z of all hits in memory
+  //
+  if (fTrackHits == 0) return;
+  //
+  Int_t nhits = fTrackHits->GetEntriesFast();
+  if (nhits == 0) return;
+  Int_t tracks = gAlice->GetNtrack();
+  if (fPoints == 0) fPoints = new TObjArray(tracks);
+  AliHit *ahit;
+  //
+  Int_t *ntrk=new Int_t[tracks];
+  Int_t *limi=new Int_t[tracks];
+  Float_t **coor=new Float_t*[tracks];
+  for(Int_t i=0;i<tracks;i++) {
+    ntrk[i]=0;
+    coor[i]=0;
+    limi[i]=0;
+  }
+  //
+  AliPoints *points = 0;
+  Float_t *fp=0;
+  Int_t trk;
+  Int_t chunk=nhits/4+1;
+  //
+  // Loop over all the hits and store their position
+  //
+  ahit = FirstHit2(-1);
+  //for (Int_t hit=0;hit<nhits;hit++) {
+  while (ahit){
+    //    ahit = (AliHit*)fHits->UncheckedAt(hit);
+    trk=ahit->GetTrack();
+    if(ntrk[trk]==limi[trk]) {
+      //
+      // Initialise a new track
+      fp=new Float_t[3*(limi[trk]+chunk)];
+      if(coor[trk]) {
+	memcpy(fp,coor[trk],sizeof(Float_t)*3*limi[trk]);
+	delete [] coor[trk];
+      }
+      limi[trk]+=chunk;
+      coor[trk] = fp;
+    } else {
+      fp = coor[trk];
+    }
+    fp[3*ntrk[trk]  ] = ahit->X();
+    fp[3*ntrk[trk]+1] = ahit->Y();
+    fp[3*ntrk[trk]+2] = ahit->Z();
+    ntrk[trk]++;
+    ahit = NextHit2();
+  }
+  //
+  for(trk=0; trk<tracks; ++trk) {
+    if(ntrk[trk]) {
+      points = new AliPoints();
+      points->SetMarkerColor(GetMarkerColor());
+      points->SetMarkerSize(GetMarkerSize());
+      points->SetDetector(this);
+      points->SetParticle(trk);
+      points->SetPolyMarker(ntrk[trk],coor[trk],GetMarkerStyle());
+      fPoints->AddAt(points,trk);
+      delete [] coor[trk];
+      coor[trk]=0;
+    }
+  }
+  delete [] coor;
+  delete [] ntrk;
+  delete [] limi;
+}
+
+
+//_____________________________________________________________________________
+void AliTPC::LoadPoints3(Int_t)
+{
+  //
+  // Store x, y, z of all hits in memory
+  // - only intersection point with pad row
+  if (fTrackHits == 0) return;
+  //
+  Int_t nhits = fTrackHits->GetEntriesFast();
+  if (nhits == 0) return;
+  Int_t tracks = gAlice->GetNtrack();
+  if (fPoints == 0) fPoints = new TObjArray(2*tracks);
+  fPoints->Expand(2*tracks);
+  AliHit *ahit;
+  //
+  Int_t *ntrk=new Int_t[tracks];
+  Int_t *limi=new Int_t[tracks];
+  Float_t **coor=new Float_t*[tracks];
+  for(Int_t i=0;i<tracks;i++) {
+    ntrk[i]=0;
+    coor[i]=0;
+    limi[i]=0;
+  }
+  //
+  AliPoints *points = 0;
+  Float_t *fp=0;
+  Int_t trk;
+  Int_t chunk=nhits/4+1;
+  //
+  // Loop over all the hits and store their position
+  //
+  ahit = FirstHit2(-1);
+  //for (Int_t hit=0;hit<nhits;hit++) {
+
+  Int_t lastrow = -1;
+  while (ahit){
+    //    ahit = (AliHit*)fHits->UncheckedAt(hit);
+    trk=ahit->GetTrack(); 
+    Float_t  x[3]={ahit->X(),ahit->Y(),ahit->Z()};
+    Int_t    index[3]={1,((AliTPChit*)ahit)->fSector,0};
+    Int_t    currentrow = fTPCParam->GetPadRow(x,index) ;
+    if (currentrow!=lastrow){
+      lastrow = currentrow;
+      //later calculate intersection point           
+      if(ntrk[trk]==limi[trk]) {
+	//
+	// Initialise a new track
+	fp=new Float_t[3*(limi[trk]+chunk)];
+	if(coor[trk]) {
+	  memcpy(fp,coor[trk],sizeof(Float_t)*3*limi[trk]);
+	  delete [] coor[trk];
+	}
+	limi[trk]+=chunk;
+	coor[trk] = fp;
+      } else {
+	fp = coor[trk];
+      }
+      fp[3*ntrk[trk]  ] = ahit->X();
+      fp[3*ntrk[trk]+1] = ahit->Y();
+      fp[3*ntrk[trk]+2] = ahit->Z();
+      ntrk[trk]++;
+    }
+    ahit = NextHit2();
+  }
+  
+  //
+  for(trk=0; trk<tracks; ++trk) {
+    if(ntrk[trk]) {
+      points = new AliPoints();
+      points->SetMarkerColor(GetMarkerColor()+1);
+      points->SetMarkerStyle(5);
+      points->SetMarkerSize(0.2);
+      points->SetDetector(this);
+      points->SetParticle(trk);
+      //      points->SetPolyMarker(ntrk[trk],coor[trk],GetMarkerStyle()20);
+      points->SetPolyMarker(ntrk[trk],coor[trk],30);
+      fPoints->AddAt(points,tracks+trk);
+      delete [] coor[trk];
+      coor[trk]=0;
+    }
+  }
+  delete [] coor;
+  delete [] ntrk;
+  delete [] limi;
+}
+
+
+
+void AliTPC::FindTrackHitsIntersection(TClonesArray * arr)
+{
+
+  //
+  //fill clones array with intersection of current point with the
+  //middle of the row
+  Int_t sector;
+  Int_t ipart;
+  
+  const Int_t kcmaxhits=30000;
+  TVector * xxxx = new TVector(kcmaxhits*4);
+  TVector & xxx = *xxxx;
+  Int_t maxhits = kcmaxhits;
+      
+  //
+  AliTPChit * tpcHit=0;
+  tpcHit = (AliTPChit*)FirstHit2(-1);
+  Int_t currentIndex=0;
+  Int_t lastrow=-1;  //last writen row
+
+  while (tpcHit){
+    if (tpcHit==0) continue;
+    sector=tpcHit->fSector; // sector number
+    ipart=tpcHit->Track();
+    
+    //find row number
+    
+    Float_t  x[3]={tpcHit->X(),tpcHit->Y(),tpcHit->Z()};
+    Int_t    index[3]={1,sector,0};
+    Int_t    currentrow = fTPCParam->GetPadRow(x,index) ;	
+    if (currentrow<0) continue;
+    if (lastrow<0) lastrow=currentrow;
+    if (currentrow==lastrow){
+      if ( currentIndex>=maxhits){
+	maxhits+=kcmaxhits;
+	xxx.ResizeTo(4*maxhits);
+      }     
+      xxx(currentIndex*4)=x[0];
+      xxx(currentIndex*4+1)=x[1];
+      xxx(currentIndex*4+2)=x[2];	
+      xxx(currentIndex*4+3)=tpcHit->fQ;
+      currentIndex++;	
+    }
+    else 
+      if (currentIndex>2){
+	Float_t sumx=0;
+	Float_t sumx2=0;
+	Float_t sumx3=0;
+	Float_t sumx4=0;
+	Float_t sumy=0;
+	Float_t sumxy=0;
+	Float_t sumx2y=0;
+	Float_t sumz=0;
+	Float_t sumxz=0;
+	Float_t sumx2z=0;
+	Float_t sumq=0;
+	for (Int_t index=0;index<currentIndex;index++){
+	  Float_t x,x2,x3,x4;
+	  x=x2=x3=x4=xxx(index*4);
+	  x2*=x;
+	  x3*=x2;
+	  x4*=x3;
+	  sumx+=x;
+	  sumx2+=x2;
+	  sumx3+=x3;
+	  sumx4+=x4;
+	  sumy+=xxx(index*4+1);
+	  sumxy+=xxx(index*4+1)*x;
+	  sumx2y+=xxx(index*4+1)*x2;
+	  sumz+=xxx(index*4+2);
+	  sumxz+=xxx(index*4+2)*x;
+	  sumx2z+=xxx(index*4+2)*x2;	 
+	  sumq+=xxx(index*4+3);
+	}
+	Float_t centralPad = (fTPCParam->GetNPads(sector,lastrow)-1)/2;
+	Float_t det=currentIndex*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumx*sumx4-sumx2*sumx3)+
+	  sumx2*(sumx*sumx3-sumx2*sumx2);
+	
+	Float_t detay=sumy*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumxy*sumx4-sumx2y*sumx3)+
+	  sumx2*(sumxy*sumx3-sumx2y*sumx2);
+	Float_t detaz=sumz*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumxz*sumx4-sumx2z*sumx3)+
+	  sumx2*(sumxz*sumx3-sumx2z*sumx2);
+	
+	Float_t detby=currentIndex*(sumxy*sumx4-sumx2y*sumx3)-sumy*(sumx*sumx4-sumx2*sumx3)+
+	  sumx2*(sumx*sumx2y-sumx2*sumxy);
+	Float_t detbz=currentIndex*(sumxz*sumx4-sumx2z*sumx3)-sumz*(sumx*sumx4-sumx2*sumx3)+
+	  sumx2*(sumx*sumx2z-sumx2*sumxz);
+	
+	Float_t y=detay/det+centralPad;
+	Float_t z=detaz/det;	
+	Float_t by=detby/det; //y angle
+	Float_t bz=detbz/det; //z angle
+	sumy/=Float_t(currentIndex);
+	sumz/=Float_t(currentIndex);
+	
+	AliComplexCluster cl;
+	cl.fX=z;
+	cl.fY=y;
+	cl.fQ=sumq;
+	cl.fSigmaX2=bz;
+	cl.fSigmaY2=by;
+	cl.fTracks[0]=ipart;
+	
+	AliTPCClustersRow * row = (fClustersArray->GetRow(sector,lastrow));
+	if (row!=0) row->InsertCluster(&cl);
+	currentIndex=0;
+	lastrow=currentrow;
+      } //end of calculating cluster for given row
+        	
+  } // end of loop over hits
+  xxxx->Delete();
+ 
+
+
+}

@@ -20,6 +20,7 @@ class TFile;
 class AliTPCParam;
 class AliTPCDigitsArray;
 class AliTPCClustersArray;
+class AliTPCTrackHits; // M.I.
 
 class AliTPC : public AliDetector {
 protected:
@@ -32,7 +33,10 @@ protected:
   //MI changes
   AliTPCDigitsArray * fDigitsArray;              //detector digit object  
   AliTPCClustersArray * fClustersArray; //detector cluster object
-  AliTPCParam *fTPCParam;
+  AliTPCParam *fTPCParam;           // pointer to TPC parameters 
+  AliTPCTrackHits *fTrackHits;      //hits for given track M.I.
+  Int_t  fHitType; // if fNewHit = 1 old data structure if 2 new hits
+  //  3 both types  
 
   //MK changes
 
@@ -83,6 +87,30 @@ public:
   void SetParam(AliTPCParam *param){fTPCParam=param;} // M.K, M.I changes
   void SetDigitsArray(AliTPCDigitsArray* param) {fDigitsArray=param;}  //MI change
   void SetClustersArray(AliTPCClustersArray *clusters) {fClustersArray = clusters;} //MI change
+
+// additional function neccesary for the new hits 
+   virtual void MakeBranch2(Option_t *opt=" ");  //
+   virtual void SetTreeAddress();
+   virtual void SetTreeAddress2();
+   virtual void AddHit2(Int_t a1,  Int_t *a2, Float_t *a3);  //
+   virtual void ResetHits();
+   virtual void ResetHits2();     
+   virtual AliHit* FirstHit(Int_t track);
+   virtual AliHit* NextHit();
+   virtual AliHit* FirstHit2(Int_t track);
+   virtual AliHit* NextHit2();
+   
+   virtual void LoadPoints(Int_t dummy);
+   virtual void LoadPoints2(Int_t dummy);
+   virtual void LoadPoints3(Int_t dumy);
+   virtual void FinishPrimary();
+   virtual void RemapTrackHitIDs(Int_t *map);
+   virtual void FindTrackHitsIntersection(TClonesArray * arr);
+   //fill clones array with intersection of current point with the
+   //middle of the row
+   void SetHitType(Int_t type){fHitType =type;} //set type of hit container
+
+
 private:
   //
   void DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet);
@@ -132,6 +160,9 @@ public:
    AliTPChit() {}
    AliTPChit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
    virtual ~AliTPChit() {}
+   void SetX(Float_t x){fX = x;}
+   void SetY(Float_t y){fY = y;}
+   void SetZ(Float_t z){fZ = z;}
  
    ClassDef(AliTPChit,1)  // Time Projection Chamber hits
 };
