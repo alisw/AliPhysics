@@ -1,26 +1,16 @@
-Int_t AliTOFanalyzeHits()
+Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
 {
   //
   // Analyzes the hits and fills QA-histograms 
+  // Use case:
+  // start aliroot
+  // root [0] .L AliTOFanalyzeHits.C
+  // root [1] AliTOFanalyzeHits()
   //
+  // Updated to the new I/O by: A. De Caro, C. Zampolli
 
   Int_t rc = 0;
-
-  if (!gAlice) {
-    cout << "<AliTOFanalyzeHits> No AliRun object found" << endl;
-    rc = 1;
-    return rc;
-  }
-  gAlice->GetEvent(0);
-
-  // Get the pointer to the TOF detector 
-  AliTOF *tof = (AliTOF *) gAlice->GetDetector("TOF");
-  if (!tof) {
-    cout << "<AliTOFanalyzeHits> No TOF detector found" << endl;
-    rc = 2;
-    return rc;
-  }
-
+  
   // Define the histograms
   // x,y,z, rho, tof, padx, padz, sector, plate, strip, (x vs y)
 
@@ -41,163 +31,239 @@ Int_t AliTOFanalyzeHits()
   // track length when striking the TOF (used by AliTOFT0)
   TH1F *htrackLenp= new TH1F("htrackLenp","Track Length on TOF for Primaries",800,0.,800.);
 
-  // Get the pointer hit tree
-  TTree *hitTree = gAlice->TreeH();  
-  if (!hitTree) {
-    cout << "<AliTOFanalyzeHits> No hit tree found" << endl;
-    rc = 4;
+  // Histograms added to control the right TOF element numbering:
+  // it should be increasing with the azimuthal and polar angles
+
+  TH2F *hmoduleVStheta = new TH2F("hmoduleVStheta", "hmoduleVStheta", 180,0.,180.,6,0,6);
+  TH2F *hsectorVSphi   = new TH2F("hsectorVSphi", "hsectorVSphi", 360,0.,360.,19,0,19);
+  TH2F *hstripVStheta   = new TH2F("hstripVStheta", "hstripVStheta", 180,0.,180.,25,0,25);
+  TH2F *hpadzVStheta   = new TH2F("hpadzVStheta", "hpadzVStheta", 180,0.,180.,3,0,3);
+  TH2F *hpadxVSphi     = new TH2F("hpadxVSphi", "hpadxVSphi", 360,0.,360.,49,0,49);
+
+  // Dynamically link some shared libs
+  if (gClassTable->GetID("AliRun") < 0) {
+    gROOT->LoadMacro("loadlibs.C");
+    loadlibs();
+  }
+
+  if (gAlice)
+    {
+      delete gAlice->GetRunLoader();
+      delete gAlice;
+      gAlice = 0x0;
+    }
+  
+  AliRunLoader *rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,"read");
+  if (!rl)
+    {
+      cerr<<"Can't load RunLoader from file"<<"!\n";
+      rc = 1;
+      return rc;
+    }
+  
+  rl->LoadgAlice();
+  gAlice = rl->GetAliRun();
+
+  if (!gAlice)
+    {
+      cerr << "<AliTOFanalyzeHits> AliRun object not found on file\n ";
+      rc = 2;
+      return rc;
+    }
+
+  // Get the pointer to the TOF detector
+  AliTOF *tof = (AliTOF *) gAlice->GetDetector("TOF");
+  AliLoader *tofl = rl->GetLoader("TOFLoader");
+  if (tof == 0x0 || tofl == 0x0) {
+    cerr << "<AliTOFanalyzeHits> Can not find TOF or TOFLoader\n";
+    rc = 3;
     return rc;
   }
 
   Int_t countHits = 0;
-  Int_t nBytes    = 0;
 
-  // Get the number of entries in the hit tree
-  // (Number of primary particles creating a hit somewhere)
-  Int_t nTrack = (Int_t) hitTree->GetEntries();
-  cout << "<AliTOFanalyzeHits> Found " << nTrack 
-       << " primary particles with hits" << endl;
+  rl->LoadHeader();
 
-  Int_t nPrimaryOnTof = 0;
-  Int_t nSecondaryOnTof = 0;
-  Int_t nelectron  = 0;
-  Int_t npion      = 0;
-  Int_t nkaon      = 0;
-  Int_t nproton    = 0;    
-  Int_t nmuon      = 0;
+  for (Int_t ievent=0; ievent<nevents; ievent++) {
+    printf ("Processing event %d \n", ievent);
+    rl->GetEvent(ievent);
+
+    // Get the pointer Hit tree
+    tofl->LoadHits();
+    TTree *hitTree = tofl->TreeH();
+    tof->SetTreeAddress();
+    if (!hitTree) {
+      cout << "<AliTOFanalyzeHits> No TreeH found" << endl;
+      rc = 4;
+      return rc;
+    }
+
+    rl->LoadKinematics();
+    //AliStack* stack = rl->Stack(); // it is not necessary to use the stack!
+
+    // Get the number of entries in the hit tree
+    // (Number of primary particles creating a hit somewhere)
+    Int_t nTrack = (Int_t) hitTree->GetEntries();
+    cout << "<AliTOFanalyzeHits> Found " << nTrack 
+         << " primary particles with hits" << endl;
+
+    Int_t nPrimaryOnTof = 0;
+    Int_t nSecondaryOnTof = 0;
+    Int_t nelectron  = 0;
+    Int_t npion      = 0;
+    Int_t nkaon      = 0;
+    Int_t nproton    = 0;    
+    Int_t nmuon      = 0;
   
-  // Loop through all entries in the tree
-  for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
+    // Loop through all entries in the tree
+    for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
 
-    gAlice->ResetHits();
-    nBytes += hitTree->GetEvent(iTrack);
+      tof->ResetHits();
+      hitTree->GetEvent(iTrack);
 
+      // Loop through the TOF hits  
+      AliTOFhitT0 *hit = (AliTOFhitT0 *) tof->FirstHit(-1);
+      while (hit) {
 
-    // Loop through the TOF hits  
-    Int_t iHit = 0;
-    AliTOFhitT0 *hit = (AliTOFhitT0 *) tof->FirstHit(-1);
-    while (hit) {
+	countHits++;
+	
+        Float_t x     = hit->X();
+        Float_t y     = hit->Y();
+        Float_t z     = hit->Z();
+        Float_t phiAngle=TMath::Pi() + TMath::ATan2(-y,-x);
+        Float_t rhoRadius=TMath::Sqrt(x*x+y*y);
+        Float_t thetaAngle=TMath::Pi() + TMath::ATan2(-rhoRadius,-z);
+        Float_t dummy=rhoRadius*phiAngle;
+        h2hitMap->Fill(dummy,z);
 
-      countHits++;
-      iHit++;
+        phiAngle*=180./TMath::Pi();
+        thetaAngle*=180./TMath::Pi();
 
-      Float_t x     = hit->X();
-      Float_t y     = hit->Y();
-      Float_t z     = hit->Z();
-      Float_t circleLen=TMath::Sqrt(x*x+y*y)*TMath::ATan2(y,x);
-      h2hitMap->Fill(circleLen,z);
+        Float_t flightTime = hit->GetTof(); // [s]
+        flightTime *= 1.e+09; // convert in [ns]
+        Float_t angle = hit->GetIncA();
+        Float_t tofmom = hit->GetMom(); // [GeV/c]
+        Float_t trackLen = hit->GetLen(); // [cm]
 
-      Float_t flightTime = hit->GetTof(); // [s]
-      flightTime*=1.e+09; // convert in [ns]
-      Float_t angle = hit->GetIncA();
-      Float_t tofmom= hit->GetMom(); // [GeV/c]
-      Float_t trackLen= hit->GetLen(); // [cm]
+        // TOF hit volumes
+        Int_t sector = hit->GetSector(); // range [1-18]
+        Int_t plate  = hit->GetPlate();  // range [1- 5]
+        Int_t strip  = hit->GetStrip();  // range [1-20]
+        Int_t padz   = hit->GetPadz();   // range [1- 2]
+        Int_t padx   = hit->GetPadx();   // range [1-48]
+        // it is QA, then I perform QA!
+        Bool_t isHitBad = (sector<1 || sector>18 || plate<1 || plate >5 || padz<1 || padz>2 || padx<1 || padx>48);
 
-      // TOF hit volumes
-      Int_t sector    = hit->GetSector(); // range [1-18]
-      Int_t plate     = hit->GetPlate();  // range [1- 5]
-      Int_t strip     = hit->GetStrip();  // range [1-20]
-      Int_t padz      = hit->GetPadz();   // range [1- 2]
-      Int_t padx      = hit->GetPadx();   // range [1-48]
-      // it is QA, then I perform QA!
-      Bool_t isHitBad = (sector<1 || sector>18 || plate<1 || plate >5 || padz<1 || padz>2 || padx<1 || padx>48);
+        if (isHitBad) {
+          cout << "<AliTOFanalyzeHits>  strange hit found" << endl;
+	  rc = 5;
+	  return rc;
+        }
 
-      if (isHitBad) {
-	cout << "<AliTOFanalyzeHits>  strange hit found" << endl;
-	rc = 3;
-	return rc;
+        hmoduleVStheta->Fill(thetaAngle,plate);
+	hstripVStheta->Fill(thetaAngle,strip);
+        hsectorVSphi->Fill(phiAngle,sector);
+        hpadxVSphi->Fill(phiAngle,padx);
+        hpadzVStheta->Fill(thetaAngle,padz);
+
+        // filling hit volume histos
+        hsector->Fill(sector);
+        hplate->Fill(plate);
+        hstrip->Fill(strip);
+        hpadx->Fill(padx);
+        hpadz->Fill(padz);
+
+        Int_t track = hit->Track();
+        TParticle *part = gAlice->Particle(track);
+
+        // getting MC info for the current track
+        if (part->GetFirstMother()<0){
+          Int_t icod = TMath::Abs(part->GetPdgCode());
+ 	  switch (icod) {
+	  case 211:
+	    npion++;
+	    break ;
+	  case 321:
+	    nkaon++;
+	    break ;
+	  case 2212:
+	    nproton++;
+	    break ;
+	  case 11:
+	    nelectron++;
+	    break ;
+	  case 13:
+	    nmuon++;
+	    break ;
+	  }
+	  htofp->Fill(flightTime);
+	  htofmomp->Fill(tofmom);
+          htrackLenp->Fill(trackLen);
+        } else {
+	  htofs->Fill(flightTime);
+	  htofmoms->Fill(tofmom);
+        }
+
+        // go to next hit
+        hit = (AliTOFhitT0 *) tof->NextHit();
+
       }
-      // filling hit volume histos
-      hsector->Fill(sector);
-      hplate->Fill(plate);
-      hstrip->Fill(strip);
-      hpadx->Fill(padx);
-      hpadz->Fill(padz);
-
-
-      Int_t track     = hit->Track();
-      TParticle *part = gAlice->Particle(track);
-
-      // getting MC info for the current track
-      if (part->GetFirstMother()<0){
-	Int_t icod = TMath::Abs(part->GetPdgCode());
-	switch (icod) {
-	case 211:
-	  npion++;
-	  break ;
-	case 321:
-	  nkaon++;
-	  break ;
-	case 2212:
-	  nproton++;
-	  break ;
-	case 11:
-	  nelectron++;
-	  break ;
-	case 13:
-	  nmuon++;
-	  break ;
-	}
-	htofp->Fill(flightTime);
-	htofmomp->Fill(tofmom);
-	htrackLenp->Fill(trackLen);
-      } else {
-	htofs->Fill(flightTime);
-	htofmoms->Fill(tofmom);
-      }
-
-      // go to next hit
-      hit = (AliTOFhitT0 *) tof->NextHit();         
 
     }
 
+    tofl->UnloadHits();
+    rl->UnloadKinematics();
+
+    cout << "<AliTOFanalyzeHits> Found " << countHits << " hits in total" << endl;
+    cout << npion     << " primary pions reached the TOF detector"     << endl;
+    cout << nkaon     << " primary kaons reached the TOF detector"     << endl;
+    cout << nproton   << " primary protons reached the TOF detector"   << endl;
+    cout << nelectron << " primary electrons reached the TOF detector" << endl;
+    cout << nmuon     << " primary muons reached the TOF detector"     << endl;
+
   }
 
-  cout << "<AliTOFanalyzeHits> Found " << countHits << " hits in total" << endl;
-  cout << npion     << " primary pions reached the TOF detector"     << endl;
-  cout << nkaon     << " primary kaons reached the TOF detector"     << endl;
-  cout << nproton   << " primary protons reached the TOF detector"   << endl;
-  cout << nelectron << " primary electrons reached the TOF detector" << endl;
-  cout << nmuon     << " primary muons reached the TOF detector"     << endl;
+  rl->UnloadHeader();
+  rl->UnloadgAlice();
 
+  if (drawing) {  
+    TCanvas *cHits = new TCanvas("cHits","AliTOFanalyzeHits hit volumes",50,50,900,900);
+    cHits->Divide(3,2);
+    cHits->cd(1);
+    hsector->Draw();
+    cHits->cd(2);
+    hplate->Draw();
+    cHits->cd(3);
+    hstrip->Draw();
+    cHits->cd(4);
+    hpadz->Draw();
+    cHits->cd(5);
+    hpadx->Draw();
+    
+    TCanvas *chitmap = new TCanvas("chitmap","AliTOFanalyzeHits Hit Map",50,50,600,600);
+    chitmap->cd();
+    h2hitMap->Draw();
+    
+    TCanvas *ctrackLen = new TCanvas("ctrackLen","AliTOFanalyzeHits Track Length for primaries on TOF",50,50,400,400);
+    ctrackLen->cd();
+    htrackLenp->Draw();
+    
+    TCanvas *ctofmom = new TCanvas("ctofmom","AliTOFanalyzeHits flight times",50,50,700,700);
+    ctofmom->Divide(2,2);
+    ctofmom->cd(1);
+    gPad->SetLogy();
+    htofp->Draw();
+    ctofmom->cd(2);
+    gPad->SetLogy();
+    htofs->Draw();
+    ctofmom->cd(3);
+    gPad->SetLogy();
+    htofmomp->Draw();
+    ctofmom->cd(4);
+    gPad->SetLogy();
+    htofmoms->Draw();
+  }
   
-  TCanvas *cHits = new TCanvas("cHits","AliTOFanalyzeHits hit volumes",50,50,900,900);
-  cHits->Divide(3,2);
-  cHits->cd(1);
-  hsector->Draw();
-  cHits->cd(2);
-  hplate->Draw();
-  cHits->cd(3);
-  hstrip->Draw();
-  cHits->cd(4);
-  hpadz->Draw();
-  cHits->cd(5);
-  hpadx->Draw();
-
-  TCanvas *chitmap = new TCanvas("chitmap","AliTOFanalyzeHits Hit Map",50,50,400,400);
-  chitmap->cd();
-  h2hitMap->Draw();
-
-  TCanvas *ctrackLen = new TCanvas("ctrackLen","AliTOFanalyzeHits Track Length for primaries on TOF",50,50,400,400);
-  ctrackLen->cd();
-  htrackLenp->Draw();
-
-  TCanvas *ctofmom = new TCanvas("ctofmom","AliTOFanalyzeHits flight times",50,50,700,700);
-  ctofmom->Divide(2,2);
-  ctofmom->cd(1);
-  gPad->SetLogy();
-  htofp->Draw();
-  ctofmom->cd(2);
-  gPad->SetLogy();
-  htofs->Draw();
-  ctofmom->cd(3);
-  gPad->SetLogy();
-  htofmomp->Draw();
-  ctofmom->cd(4);
-  gPad->SetLogy();
-  htofmoms->Draw();
-  
-
   // save histos into file TOF_hitsQA.root
   TFile *fout = new TFile("TOF_hitsQA.root","RECREATE");
   h2hitMap->Write();
@@ -211,9 +277,24 @@ Int_t AliTOFanalyzeHits()
   hpadz->Write();
   hpadx->Write();
   htrackLenp->Write();
+
+  hmoduleVStheta->Write();
+  hsectorVSphi->Write();
+  hstripVStheta->Write();
+  hpadzVStheta->Write();
+  hpadxVSphi->Write();
+
   fout->Close(); 
 
+  cout << " Finished AliTOFanalizeHits \n";
+
+  if (gAlice)
+    {
+      delete gAlice->GetRunLoader();
+      delete gAlice;
+      gAlice = 0x0;
+    }
+  
   return rc;
 
 }
-

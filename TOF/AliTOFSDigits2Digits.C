@@ -1,44 +1,54 @@
-Int_t AliTOFSDigits2Digits(Int_t nev=5) {
+Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
 
   // Adapted to the NewIO by I.Belikov (Jouri.Belikov@cern.ch)
-
   // number 3 is a legacy from AliDigit object
     
-   if (gAlice) {
+  Int_t rc = 0;
+
+  if (gAlice)
+    {
       delete gAlice->GetRunLoader();
-      delete gAlice;//if everything was OK here it is already NULL
+      delete gAlice;
       gAlice = 0x0;
-   }
-
-   AliRunLoader* rl = AliRunLoader::Open("galice.root");
-   if (rl == 0x0) {
+    }
+  
+  AliRunLoader* rl = AliRunLoader::Open("galice.root");
+  if (rl == 0x0)
+    {
       cerr<<"Can not open session"<<endl;
-      return 1;
-   }
-   
-   if (rl->LoadgAlice()) {
+      rc = 1;   
+      return rc;
+    }
+  
+  if (rl->LoadgAlice())
+    {
       cerr<<"Error occured while loading gAlice"<<endl;
-      return 1;
-   }
-
-   AliLoader *tofl = rl->GetLoader("TOFLoader");
-   if (tofl == 0x0) {
-      cerr<<"Can not get the TOF Loader"<<endl;
-      return 1;
-   }
-
+      rc = 2;
+      return rc;
+    }
+  
+  AliLoader *tofl = rl->GetLoader("TOFLoader");
+   if (tofl == 0x0)
+     {
+       cerr<<"Can not get the TOF Loader"<<endl;
+       rc = 3;
+       return rc;
+     }
+   
    gAlice=rl->GetAliRun();
-   if (!gAlice) {
-      cerr<<"Can't get gAlice !\n";
-      return 1;
-   }
-
+   if (!gAlice)
+     {
+       cerr<<"Can't get gAlice !\n";
+       rc = 4;
+       return rc;
+     }
+   
    tofl->LoadSDigits("read");
    tofl->LoadDigits("recreate");
-
+   
    Int_t totndig=0;   // total number of digits
    Int_t tottracks=0; // total number of tracks contributing to totndig
-
+   
    if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
    
    TClonesArray *fSDigits=new TClonesArray("AliTOFSDigit",  1000); 
@@ -47,17 +57,21 @@ Int_t AliTOFSDigits2Digits(Int_t nev=5) {
 
    for (Int_t ievent = 0; ievent < nev; ievent++) {
      rl->GetEvent(ievent);
-
+     
      TTree *sTree=tofl->TreeS();
-     if (sTree == 0) {
-       cerr<<"Can't get the sdigit tree !\n";
-       return 1;
-     }
+     if (sTree == 0)
+       {
+	 cerr<<"Can't get the sdigit tree !\n";
+	 rc = 5;
+	 return rc;
+       }
      TBranch *branch=sTree->GetBranch("TOF");
-     if (!branch) {
-       cerr<<"Cant' get the branch !\n";
-       return 1;
-     }
+     if (!branch)
+       {
+	 cerr<<"Cant' get the branch !\n";
+	 rc = 6;
+	 return rc;
+       }
      branch->SetAddress(&fSDigits);           
     
     TTree *dTree=tofl->TreeD();
@@ -107,10 +121,12 @@ Int_t AliTOFSDigits2Digits(Int_t nev=5) {
                                 padz<1 || padz>2    || 
                                 padx<1 || padx>48);
 	
-	if (isSDigitBad) {
-	  cout << "<AliTOFSDigits2Digits>  strange sdigit found" << endl;
-	  return 3;
-	}
+	if (isSDigitBad)
+	  {
+	    cout << "<AliTOFSDigits2Digits>  strange sdigit found" << endl;
+	    rc = 7;
+	    return rc;
+	  }
 	//-------------------------------------------------------
 
 	// start loop on number of slots for current sdigit
@@ -138,7 +154,6 @@ Int_t AliTOFSDigits2Digits(Int_t nev=5) {
 	  // adding a TOF digit for each slot
           {
           Int_t ndigits=da.GetEntriesFast();
-	  //cerr<<ndigits<<" ndig \n";
 	  new (da[ndigits]) AliTOFdigit(tracknum, vol, digit);
           }          
 	  totndig++;
@@ -160,13 +175,24 @@ Int_t AliTOFSDigits2Digits(Int_t nev=5) {
 
   delete fSDigits;
   delete fDigits;
-
+  
+  tofl->UnloadDigits();
+  tofl->UnloadSDigits();
+  rl->UnloadHeader();
+  rl->UnloadgAlice();
+  
   cout << "----------------------------------------------------------" << endl;
   cout << "<AliTOFSDigits2Digits> Summary" << endl;
   cout << "contributing tracks to " << totndig << " digits: " << tottracks << endl; 
   cout << "----------------------------------------------------------" << endl;
 
-  return 0;
-  
+  if (gAlice)
+    {
+      delete gAlice->GetRunLoader();
+      delete gAlice;
+      gAlice = 0x0;
+    }
+
+  return rc;
 
 }
