@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/11/16 08:57:42  morsch
+Volume YP32 obsolete.
+
 Revision 1.15  2001/11/05 10:41:06  morsch
 Avoid overlap of compensation magnet with HALL.
 
@@ -868,13 +871,13 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   gMC->Gsvolu("YGO4", "PCON", idtmed[iHeavy+40], par4, 24);
 
-  parPb[0]  = (zvac12-zvac10)/2.;
-  parPb[1]  = parPb[3];
-  parPb[2]  = 31.;
-  parPb[3]  = parPb[1]+2.*parPb[0]*TMath::Tan(thetaOpenPb);
-  parPb[4]  = 31.;
-  gMC->Gsvolu("YXO5", "CONE", idtmed[kPb], parPb, 5);
-  gMC->Gspos("YXO5", 1, "YGO4", 0., 0., -dl+(zvac10-zvac9)+parPb[0], 0, "ONLY");  
+//  parPb[0]  = (zvac12-zvac10)/2.;
+//  parPb[1]  = parPb[3];
+//  parPb[2]  = 31.;
+//  parPb[3]  = parPb[1]+2.*parPb[0]*TMath::Tan(thetaOpenPb);
+//  parPb[4]  = 31.;
+//  gMC->Gsvolu("YXO5", "CONE", idtmed[kPb], parPb, 5);
+//  gMC->Gspos("YXO5", 1, "YGO4", 0., 0., -dl+(zvac10-zvac9)+parPb[0], 0, "ONLY");  
 
   for (i=4; i<23; i+=3) par4[i]  = 0;
 
