@@ -16,7 +16,7 @@ Int_t AliTPCFindTracks(Int_t eventn=1) {
    TFile *in=TFile::Open("AliTPCclusters.root");
    if (!in->IsOpen()) {cerr<<"Can't open AliTPCclusters.root !\n"; return 2;}
 
-   AliTPCParam *par=(AliTPCParam*)in->Get("75x40_100x60");
+   AliTPCParam *par=(AliTPCParam*)in->Get("75x40_100x60_150x60");
    if (!par) {cerr<<"Can't get TPC parameters !\n"; return 3;}
  
    TStopwatch timer;

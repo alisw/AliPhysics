@@ -120,6 +120,12 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out, Int_t n)
     Int_t ver = TPC->IsVersion(); 
     cerr<<"+++ TPC version "<<ver<<" has been found !\n";
     AliTPCParam *digp=(AliTPCParam*)infile->Get("75x40_100x60");
+    if(digp){
+      delete digp;
+      digp = new AliTPCParamSR();
+    }
+    else digp=(AliTPCParam*)infile->Get("75x40_100x60_150x60");
+    
     if(!digp) { cerr<<"TPC parameters have not been found !\n"; return 1; }
     TPC->SetParam(digp);
 

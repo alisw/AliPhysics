@@ -28,6 +28,7 @@
 //TPC headers
 #include "AliTPC.h"
 #include "AliTPCParam.h"
+#include "AliTPCParamSR.h"
 #include "AliTPCPRF2D.h"
 #include "AliTPCRF1D.h"
 #include "AliDigits.h"

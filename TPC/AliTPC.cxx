@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.54  2002/03/18 17:59:13  kowal2
+Chnges in the pad geometry - 3 pad lengths introduced.
+
 Revision 1.53  2002/02/25 11:02:56  kowal2
 Changes towards speeding up the code. Thanks to Marian Ivanov.
 
@@ -1574,6 +1577,20 @@ void AliTPC::SetDefaults(){
   // Set response functions
 
   AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
+  if(param){
+    printf("You are using 2 pad-length geom hits with 3 pad-lenght geom digits...\n");
+    delete param;
+    param = new AliTPCParamSR();
+  }
+  else {
+    param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60_150x60");
+  }
+  if(!param){
+    printf("No TPC parameters found\n");
+    exit(4);
+  }
+
+
   AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
   AliTPCPRF2D    * prfouter1   = new AliTPCPRF2D;
   AliTPCPRF2D    * prfouter2   = new AliTPCPRF2D;  
@@ -3125,7 +3142,21 @@ void AliTPC::Digits2Reco(Int_t firstevent,Int_t lastevent)
   TDirectory *cwd = gDirectory;
 
 
-  AliTPCParam *dig=(AliTPCParam *)gDirectory->Get("75x40_100x60");
+  AliTPCParamSR *dig=(AliTPCParamSR *)gDirectory->Get("75x40_100x60");
+  if(dig){
+    printf("You are running 2 pad-length geom hits with 3 pad-length geom digits\n");
+    delete dig;
+    dig = new AliTPCParamSR();
+  }
+  else
+  {
+   dig=(AliTPCParamSR *)gDirectory->Get("75x40_100x60_150x60"); 
+  }
+  if(!dig){
+   printf("No TPC parameters found\n");
+   exit(3);
+  }
+   
   SetParam(dig);
   cout<<"AliTPC::Digits2Reco: TPC parameteres have been set"<<endl; 
   TFile *out;

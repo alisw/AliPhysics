@@ -59,9 +59,7 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
   //  if(gAlice)delete gAlice;   COMMENTED BECAUSE OF A BUG (IN COMPILED MODE)
   gAlice = (AliRun*)inkin->Get("gAlice");
   cout<<"AliRun object found on file "<<gAlice<<endl;
-  Float_t fifac=gAlice->Field()->Factor();
-  AliKalmanTrack::SetConvConst(100/0.299792458/0.2/fifac);
-  cout<<fifac*0.2<<" T Magnetic field is used\n";
+  AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
   inkin->Close();
   /*
     delete gAlice;  COMMENTED BECAUSE OF A BUG IN COMPILED MODE
@@ -77,7 +75,7 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
   if(kOLD){
     cf=TFile::Open("AliTPCclusters.root");
     if (!cf->IsOpen()) {cerr<<"Can't open AliTPCclusters.root !\n"; return 1;}
-    digp= (AliTPCParam*)cf->Get("75x40_100x60");
+    digp= (AliTPCParam*)cf->Get("75x40_100x60_150x60");
     if (!digp) { cerr<<"TPC parameters have not been found !\n"; return 2; }
   }
   ///////////
@@ -143,6 +141,7 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
            gt[ngood].x >>gt[ngood].y >>gt[ngood].z) {
       ngood++;
       cerr<<ngood<<"\r";
+      //cout<<ngood<<"\r";
       if (ngood==MAX) {
         cerr<<"Too many good tracks !\n";
         break;
@@ -153,28 +152,40 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
   } else {
     cerr<<"Marking good tracks (this will take a while)...\n";
     ngood=good_tracks(gt,45000,firstev,eventn); 
+    printf("Goood %d\n", ngood);
     ofstream out("good_tracks_tpc");
-    ofstream out2("good_tracks_tpc_par");
-
     if (out) {
       cout<<"File good_tracks_tpc opened\n";
       for (Int_t ngd=0; ngd<ngood; ngd++) {
-	Float_t pt =  TMath::Sqrt(gt[ngd].px*gt[ngd].px+gt[ngd].py*gt[ngd].py);
-	Float_t angle = gt[ngd].pz/pt;
         out<<gt[ngd].fEventN<<' '<<gt[ngd].lab<<' '<<gt[ngd].code<<' '<<
           gt[ngd].px<<' '<<gt[ngd].py<<' '<<gt[ngd].pz<<' '<<
           gt[ngd].x <<' '<<gt[ngd].y <<' '<<gt[ngd].z <<endl;
-	out2<<gt[ngd].fEventN<<"\t"<<gt[ngd].lab<<"\t"<<gt[ngd].code<<"\t"<<
-	  pt<<"\t"<<angle<<"\t"<<endl;
       }
     } else cerr<<"Can not open file (good_tracks_tpc) !\n";
+    out<<flush;
     out.close();
+
+    ofstream out2("good_tracks_tpc_par");
+
+    if (out2) {
+      //cout<<"File good_tracks_tpc opened\n";
+      for (Int_t ngd=0; ngd<ngood; ngd++) {
+	Float_t pt =  TMath::Sqrt(gt[ngd].px*gt[ngd].px+gt[ngd].py*gt[ngd].py);
+	Float_t angle = 0;
+	if (TMath::Abs(pt)>0.01) angle = gt[ngd].pz/pt;
+	out2<<gt[ngd].fEventN<<"\t"<<gt[ngd].lab<<"\t"<<gt[ngd].code<<"\t"<<
+	 pt<<"\t"<<angle<<"\t"<<endl;
+      }
+    } else cerr<<"Can not open file (good_tracks_tpc) !\n";
+    out2<<flush;
     out2.close();
+
   }
   cerr<<"Number of good tracks : "<<ngood<<endl;
+  cout<<"Number of good tracks : "<<ngood<<endl;
   if(ngood==0)return 5;
-  TH1F *hp=new TH1F("hp","PHI resolution",50,-200.,200.); hp->SetFillColor(4);
-  TH1F *hl=new TH1F("hl","LAMBDA resolution",50,-200,200);hl->SetFillColor(4);
+  TH1F *hp=new TH1F("hp","PHI resolution",50,-20.,20.); hp->SetFillColor(4);
+  TH1F *hl=new TH1F("hl","LAMBDA resolution",50,-20,20);hl->SetFillColor(4);
   TH1F *hpt=new TH1F("hpt","Relative Pt resolution",30,-10.,10.); 
   hpt->SetFillColor(2); 
   TH1F *hmpt=new TH1F("hmpt","Relative Pt resolution (pt>4GeV/c)",30,-60,60); 
@@ -240,7 +251,8 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
       
     //
     Double_t xk=gt[ngood].x;
-    printf("Track =%p\n",track);
+    if (!track) continue;
+    //    printf("Track =%p\n",track);
     track->PropagateTo(xk);
 
     if (lab==tlab) hfound->Fill(ptg);
@@ -257,7 +269,9 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
 
     if (TMath::Abs(gt[ngood].code)==11 && ptg>4.) {
       hmpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
-    } else {
+    } 
+    //else 
+    {
       Float_t phig=TMath::ATan2(gt[ngood].py,gt[ngood].px);
       hp->Fill((phi - phig)*1000.);
 
@@ -295,6 +309,7 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
   
   Stat_t ng=hgood->GetEntries(), nf=hfound->GetEntries();
   if (ng!=0) cerr<<"\n\nIntegral efficiency is about "<<nf/ng*100.<<" %\n";
+  if (ng!=0) cout<<"\n\nIntegral efficiency is about "<<nf/ng*100.<<" %\n";
   cout<<"Total number of found tracks ="<<nentr<<endl;
   cout<<"Total number of \"good\" tracks ="
       <<mingood<<"   (selected for comparison: "<<ng<<')'<<endl<<endl;
@@ -374,7 +389,7 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
 Int_t good_tracks(GoodTrackTPC *gt, Int_t max, Int_t firstev, Int_t eventn) {
   //eventn  - number of events in file
 
-  TFile *file=TFile::Open("rfio:galice.root");
+  TFile *file=TFile::Open("galice.root");
   if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}
   //  delete gAlice; gAlice = 0;
   if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
@@ -388,6 +403,16 @@ Int_t good_tracks(GoodTrackTPC *gt, Int_t max, Int_t firstev, Int_t eventn) {
   cerr<<"TPC version "<<ver<<" has been found !\n";
 
   AliTPCParam *digp=(AliTPCParam*)file->Get("75x40_100x60");
+  if(digp){
+    cerr<<"2 pad-lenght geom hits with 3 pad-length geom digits...\n";
+    delete digp;
+    digp = new AliTPCParamSR();
+   }
+   else
+   {
+     digp =(AliTPCParam*)gDirectory->Get("75x40_100x60_150x60");
+   }
+
   if (!digp) { cerr<<"TPC parameters have not been found !\n"; exit(6); }
   TPC->SetParam(digp);
 
@@ -448,7 +473,7 @@ Int_t good_tracks(GoodTrackTPC *gt, Int_t max, Int_t firstev, Int_t eventn) {
       break;
     case 2:
       {
-        sprintf(treeName,"TreeD_75x40_100x60_%d",event);  
+        sprintf(treeName,"TreeD_75x40_100x60_150x60_%d",event);  
         TD=(TTree*)gDirectory->Get(treeName);
         TD->GetBranch("Segment")->SetAddress(&digits);
         count = new Int_t[np];
@@ -498,6 +523,7 @@ Int_t good_tracks(GoodTrackTPC *gt, Int_t max, Int_t firstev, Int_t eventn) {
     }
   
     /** select tracks which are "good" enough **/
+    //printf("\t %d \n",np);
     for (Int_t i=0; i<np; i++) {
       if ((good[i]&0x5000) != 0x5000)
         if ((good[i]&0x2800) != 0x2800) continue;
@@ -514,7 +540,8 @@ Int_t good_tracks(GoodTrackTPC *gt, Int_t max, Int_t firstev, Int_t eventn) {
         //if (!(pp->TestBit(kPrimaryCharged))) continue; //only one decay is allowed
         }
       
-	//if(!(p->TestBit(kPrimaryCharged)))continue; // only primaries
+	if(!(p->TestBit(kPrimaryCharged)))continue; // only primaries
+	//	printf("1");
   
       gt[nt].fEventN=event;
       gt[nt].lab=i;
@@ -547,7 +574,7 @@ Int_t good_tracks(GoodTrackTPC *gt, Int_t max, Int_t firstev, Int_t eventn) {
         Int_t j, lab=phit->Track();
         for (j=0; j<nt; j++) {if (gt[j].fEventN==event && gt[j].lab==lab) break;}
         if (j==nt) continue;         
-
+	//printf("1-");
         // (px,py,pz) - in global coordinate system, (x,y,z) - in local !
         gt[j].px=px; gt[j].py=py; gt[j].pz=pz;
         Float_t cs,sn; digp->AdjustCosSin(phit->fSector,cs,sn);
@@ -557,6 +584,7 @@ Int_t good_tracks(GoodTrackTPC *gt, Int_t max, Int_t firstev, Int_t eventn) {
       }
       cerr<<np-i<<"        \r";
     }
+    //printf("\n%d\n",nt);
     cout<<endl;
     delete[] good;
   }             // ///         loop on events

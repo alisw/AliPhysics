@@ -292,7 +292,16 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
    Int_t ver = TPC->IsVersion(); 
    cerr<<"TPC version "<<ver<<" has been found !\n";
 
-   AliTPCParam *digp=(AliTPCParam*)file->Get("75x40_100x60");
+   AliTPCParamSR *digp=(AliTPCParamSR*)file->Get("75x40_100x60");
+   if(digp){
+    cerr<<"2 pad-lenght geom hits with 3 pad-length geom digits...\n";
+    delete digp;
+    digp = new AliTPCParamSR();
+   }
+   else
+   {
+     digp =(AliTPCParamSR *)gDirectory->Get("75x40_100x60_150x60");
+   }
    if (!digp) { cerr<<"TPC parameters have not been found !\n"; exit(6); }
    TPC->SetParam(digp);
 
@@ -350,7 +359,7 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
      break;
    case 2:
      {
-      char dname[100]; sprintf(dname,"TreeD_75x40_100x60_%d",event);
+      char dname[100]; sprintf(dname,"TreeD_75x40_100x60_150x60_%d",event);
       TTree *TD=(TTree*)gDirectory->Get(dname);
       AliSimDigits da, *digits=&da;
       TD->GetBranch("Segment")->SetAddress(&digits);

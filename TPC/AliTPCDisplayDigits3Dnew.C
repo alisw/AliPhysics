@@ -4,6 +4,7 @@
   #include "TView.h"
   #include "TPolyMarker3D.h"
   #include "AliSimDigits.h"
+#include "AliTPCParamSR.h"
 #endif
 
 //  
@@ -21,7 +22,17 @@ Int_t AliTPCDisplayDigits3D(Int_t eventn=0, Int_t noiseth=15, Bool_t sdigits=kFA
    TFile *cf=TFile::Open("galice.root");
    // if (!cf->IsOpen()){cerr<<"Can't open AliTPCclusters.root !\n"; return 3;}
 
-   AliTPCParam *param=(AliTPCParam *)cf->Get("75x40_100x60");
+   AliTPCParamSR *param=(AliTPCParamSR *)cf->Get("75x40_100x60");
+   if(param){
+     cerr<<"2 pad-length geom hits with 3 pad-lengths geom parameters\n";
+     delete param;
+     param = new AliTPCParamSR();
+   }
+   else
+   {
+     param=(AliTPCParamSR *)gDirectory->Get("75x40_100x60_150x60");
+   }
+
    if (!param) {cerr<<"TPC parameters have not been found !\n"; return 2;}
 
    TCanvas *c1=new TCanvas("ddisplay", "Digits display",0,0,700,730);
@@ -37,9 +48,9 @@ Int_t AliTPCDisplayDigits3D(Int_t eventn=0, Int_t noiseth=15, Bool_t sdigits=kFA
    
    char  cname[100];
    if (!sdigits)
-     sprintf(cname,"TreeD_75x40_100x60_%d",eventn);
+     sprintf(cname,"TreeD_75x40_100x60_150x60_%d",eventn);
    else
-     sprintf(cname,"TreeS_75x40_100x60_%d",eventn);
+     sprintf(cname,"TreeS_75x40_100x60_150x60_%d",eventn);
 
 // some "constants"
    Int_t markerColorSignal = 5;

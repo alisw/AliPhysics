@@ -30,7 +30,21 @@ Int_t AliTPCSDigits2Digits(Int_t nevent=1)
 
 
   // gAlice->GetEvent(0);
-  AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");      
+  AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");  
+  
+     AliTPCParamSR *dig=(AliTPCParamSR *)file->Get("75x40_100x60");
+   if(dig){
+     cerr<<"2 pad-length geom hits with 3 pad-lengths geom digits\n";
+     delete dig;
+     dig = new AliTPCParamSR();
+   }
+   else
+   {
+     dig=(AliTPCParamSR *)gDirectory->Get("75x40_100x60_150x60");
+   }
+   if (!dig) {cerr<<"TPC parameters have not been found !\n"; return 4;}
+   TPC->SetParam(dig);
+       
 
   TStopwatch timer;
   timer.Start();

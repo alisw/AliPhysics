@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/10/21 19:04:55  hristov
+Several patches were done to adapt the barel reconstruction to the multi-event case. Some memory leaks were corrected. (Yu.Belikov)
+
 Revision 1.6  2001/08/30 09:28:48  hristov
 TTree names are explicitly set via SetName(name) and then Write() is called
 
@@ -125,11 +128,11 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of, Int_t e
 
     // for backward compatibility
     
-    sprintf(dname,"TreeD_75x40_100x60");
+    sprintf(dname,"TreeD_75x40_100x60_150x60");
     sprintf(cname,"TreeC_TPC");
   }
   else {
-    sprintf(dname,"TreeD_75x40_100x60_%d",eventn);
+    sprintf(dname,"TreeD_75x40_100x60_150x60_%d",eventn);
     sprintf(cname,"TreeC_TPC_%d",eventn);
   }
   TTree *t = (TTree *)gDirectory->Get(dname);
