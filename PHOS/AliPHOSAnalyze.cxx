@@ -488,10 +488,10 @@ void AliPHOSAnalyze::DisplayKineEvent(Int_t evt)
   sprintf(histoname,"Event %d: Incident particles in module %d", evt, module) ; 
 
   Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by module   
-  fGeom->EmcModuleCoverage(module, tm, tM, pm, pM, AliPHOSGeometry::kDegre) ;
+  fGeom->EmcModuleCoverage(module, tm, tM, pm, pM, AliPHOSGeometry::fgDegre) ;
 
   Double_t theta, phi ; 
-  fGeom->EmcXtalCoverage(theta, phi, AliPHOSGeometry::kDegre) ;
+  fGeom->EmcXtalCoverage(theta, phi, AliPHOSGeometry::fgDegre) ;
 
   Int_t tdim = (Int_t)( (tM - tm) / theta ) ; 
   Int_t pdim = (Int_t)( (pM - pm) / phi ) ; 
@@ -577,9 +577,9 @@ void AliPHOSAnalyze::DisplayRecParticles()
       Text_t histoname[80] ; 
       sprintf(histoname,"Event %d: Reconstructed particles in module %d", fEvt, module) ; 
       Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by module   
-      fGeom->EmcModuleCoverage(module, tm, tM, pm, pM, AliPHOSGeometry::kDegre) ;
+      fGeom->EmcModuleCoverage(module, tm, tM, pm, pM, AliPHOSGeometry::fgDegre) ;
       Double_t theta, phi ; 
-      fGeom->EmcXtalCoverage(theta, phi, AliPHOSGeometry::kDegre) ;
+      fGeom->EmcXtalCoverage(theta, phi, AliPHOSGeometry::fgDegre) ;
       Int_t tdim = (Int_t)( (tM - tm) / theta ) ; 
       Int_t pdim = (Int_t)( (pM - pm) / phi ) ; 
       tm -= theta ; 

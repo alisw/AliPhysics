@@ -200,6 +200,8 @@ void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos)
 //____________________________________________________________________________
 Bool_t AliPHOSPpsdRecPoint::GetUp() 
 {
+  // Are we in the uper PPSD module ?
+
   Int_t relid[4] ;
   
   AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 

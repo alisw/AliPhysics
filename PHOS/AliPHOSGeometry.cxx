@@ -41,8 +41,8 @@ ClassImp(AliPHOSGeometry) ;
 
 AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;
 
-const TString AliPHOSGeometry::kDegre  = "deg" ; 
-const TString AliPHOSGeometry::kRadian = "rad" ; 
+TString AliPHOSGeometry::fgDegre  = "deg" ; 
+TString AliPHOSGeometry::fgRadian = "rad" ; 
 
 //____________________________________________________________________________
 AliPHOSGeometry::~AliPHOSGeometry(void)
@@ -97,9 +97,9 @@ void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t
   // calculates the angular coverage in theta and phi of a EMC module
 
  Double_t conv ; 
-  if ( opt == kRadian ) 
+  if ( opt == fgRadian ) 
     conv = 1. ; 
-  else if ( opt == kDegre )
+  else if ( opt == fgDegre )
     conv = 180. / TMath::Pi() ; 
   else {
     cout << "<I>  AliPHOSGeometry::EmcXtalCoverage : " << opt << " unknown option; result in radian " << endl ; 
@@ -131,9 +131,9 @@ void AliPHOSGeometry::EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t
   // calculates the angular coverage in theta and phi of a single crystal in a EMC module
 
   Double_t conv ; 
-  if ( opt == kRadian ) 
+  if ( opt == fgRadian ) 
     conv = 1. ; 
-  else if ( opt == kDegre )
+  else if ( opt == fgDegre )
     conv = 180. / TMath::Pi() ; 
   else {
     cout << "<I>  AliPHOSGeometry::EmcXtalCoverage : " << opt << " unknown option; result in radian " << endl ; 

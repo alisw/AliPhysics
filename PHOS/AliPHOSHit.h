@@ -22,8 +22,10 @@
 
 class AliPHOSHit : public AliHit {
 
-public:
-
+  friend ostream& operator << (ostream&, const AliPHOSHit&) ;
+  
+ public:
+  
   AliPHOSHit() {
     // default ctor 
   }
@@ -50,9 +52,8 @@ public:
   Bool_t operator == (AliPHOSHit const &rValue) const ;
   AliPHOSHit operator + (const AliPHOSHit& rValue) const ;
 
-  friend ostream& operator << (ostream&, const AliPHOSHit&) ;
 
-private:
+ private:
 
   Int_t     fId ;        // Absolute Id number of PHOS Xtal or PPSD pad
   Float_t   fELOS ;      // Energy deposited

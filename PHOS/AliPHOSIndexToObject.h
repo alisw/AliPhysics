@@ -40,6 +40,12 @@ public:
     // ctor: this is a singleton, the ctor should never be called but cint needs it as publiv
     assert(0==1) ; 
   } 
+  AliPHOSIndexToObject(const AliPHOSIndexToObject & obj) {
+    // cpy ctor requested by Coding Convention 
+    // but not yet needed
+    assert(0==1) ; 
+  } 
+ 
   virtual ~AliPHOSIndexToObject(){
     // dtor
   }
@@ -53,6 +59,13 @@ public:
   AliRecPoint *         GimeRecPoint(Int_t index, TString s) ; 
   AliPHOSTrackSegment * GimeTrackSegment(Int_t index) ;
   
+  AliPHOSIndexToObject & operator = (AliPHOSIndexToObject const & rvalue) {
+    // assignement operator requested by coding convention
+    // but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
+
  private:
   
   AliPHOSIndexToObject(AliPHOS * det) ; 

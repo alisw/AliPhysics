@@ -26,6 +26,12 @@ class AliPHOSRecPoint : public AliRecPoint {
  public:
 
   AliPHOSRecPoint() ;                   // ctor         
+  AliPHOSRecPoint(const AliPHOSRecPoint & rp) {
+    // cpy ctor requested by Coding Convention 
+    // but not yet needed
+    assert(0==1) ; 
+  } 
+  
   virtual ~AliPHOSRecPoint(){
     // dtor
   }
@@ -51,6 +57,13 @@ class AliPHOSRecPoint : public AliRecPoint {
   virtual void    Print(Option_t * opt = "void") {
     // Print prototype
   } 
+
+  AliPHOSRecPoint & operator = (AliPHOSRecPoint const & rvalue)  {
+    // assignement operator requested by coding convention
+    // but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
 
  protected:
   

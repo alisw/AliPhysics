@@ -26,7 +26,9 @@
 #include "AliDigitNew.h"
 
 class AliPHOSDigit : public AliDigitNew {
-  
+
+  friend class ostream& operator << ( ostream& , const AliPHOSDigit&) ;
+
  public:
   
   AliPHOSDigit() ;
@@ -38,9 +40,7 @@ class AliPHOSDigit : public AliDigitNew {
 
   Bool_t operator==(AliPHOSDigit const &rValue) const;
   AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
-  
-  friend class ostream& operator << ( ostream& , const AliPHOSDigit&) ;
-  
+    
   Int_t   Compare(TObject * obj) ;  
   Int_t   GetNprimary() const { 
     // returns the number of primaries

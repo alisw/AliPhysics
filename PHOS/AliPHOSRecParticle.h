@@ -36,7 +36,10 @@ public:
     // dtor
   }
   AliPHOSTrackSegment * GetPHOSTrackSegment() const ; 
-  Int_t                 GetPHOSTrackSegmentIndex(){return fPHOSTrackSegment;}
+  Int_t                 GetPHOSTrackSegmentIndex(){
+    // Getter 
+    return fPHOSTrackSegment ;
+  }
   Int_t *               GetPrimaries(Int_t & number) ;
 
 private:

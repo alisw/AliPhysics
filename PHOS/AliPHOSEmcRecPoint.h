@@ -31,6 +31,12 @@ public:
     // default ctor
   } ;                    
   AliPHOSEmcRecPoint(Float_t W0, Float_t LocMaxCut) ;
+  AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) {
+    // cpy ctor requested by Coding Convention 
+    // but not yet needed
+    assert(0==1) ; 
+  } 
+ 
   virtual ~AliPHOSEmcRecPoint() ;  
 
   virtual void  AddDigit(AliPHOSDigit & digit, Float_t Energy) ;  // add a digit to the digits list  
@@ -73,7 +79,14 @@ public:
     return kTRUE ; } 
   void        Print(Option_t * opt = "void") ; 
 
-private:
+  AliPHOSEmcRecPoint & operator = (AliPHOSEmcRecPoint const & rvalue)  {
+    // assignement operator requested by coding convention
+    // but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
+
+ private:
 
   Bool_t AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) ;
 
