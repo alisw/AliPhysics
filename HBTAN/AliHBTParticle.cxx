@@ -33,11 +33,12 @@ AliHBTParticle::AliHBTParticle(Int_t pdg, Double_t px, Double_t py, Double_t pz,
 
 //______________________________________________________________________________
 AliHBTParticle::AliHBTParticle(const TParticle &p):
-   fPdgCode(p.GetPdgCode()), 
+   fPdgCode(p.GetPdgCode()),fCalcMass(p.GetCalcMass()),
    fPx(p.Px()),fPy(p.Py()),fPz(p.Pz()),fE(p.Energy()), 
    fVx(p.Vx()),fVy(p.Vy()),fVz(p.Vz()),fVt(p.T())
 {
  //all copied in the initialization
+ 
 }
 
 //______________________________________________________________________________
