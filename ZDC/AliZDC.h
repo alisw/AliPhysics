@@ -24,7 +24,9 @@ public:
   virtual void  CreateMaterials() {}
   Int_t         DistancetoPrimitive(Int_t px, Int_t py);
   virtual Int_t IsVersion() const =0;
-  virtual void  ResetDigits(); 
+  virtual Float_t ZMin() const;	// Minimum overall dimension of the ZDC
+  virtual Float_t ZMax() const;	// Maximum overall dimension of the ZDC
+  virtual void  ResetDigits();
   virtual void  StepManager();
   
   // Switching off the shower development in ZDCs
@@ -37,7 +39,7 @@ protected:
   TClonesArray *fStHits;
   Int_t fNStHits;
   
-  Int_t   fNPrimaryHits;	// Number of primary particles
+//  Int_t   fNPrimaryHits;	// Number of primary particles
 
   Int_t   fNoShower;		// Flag to switch off the shower	
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2001/04/20 10:05:02  coppedis
+Minor changes
+
 Revision 1.20  2001/03/26 13:39:20  coppedis
 Comment prints
 
@@ -101,7 +104,7 @@ AliZDC::AliZDC()
 
   fNStHits = 0;
 
-  fNPrimaryHits = 0;
+//  fNPrimaryHits = 0;
   fNoShower   = 0;
 }
  
@@ -124,7 +127,7 @@ AliZDC::AliZDC(const char *name, const char *title)
   fStHits = new TClonesArray("AliZDCHit",1000);
   fNStHits = 0;
 
-  fNPrimaryHits = 0;
+//  fNPrimaryHits = 0;
   fNoShower   = 0;
 
 }
@@ -158,21 +161,44 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   
   static Float_t primKinEn, xImpact, yImpact, sFlag;
 
-  AliZDCHit *newquad, *curevquad, *curprimquad;
+  AliZDCHit *newquad, *curprimquad, *curevquad;  
   newquad = new AliZDCHit(fIshunt, track, vol, hits);
 
   TClonesArray &lsthits = *fStHits;
   TClonesArray &lhits = *fHits;
-   
+  
+  if(fNhits==0){
+      // First hit -> setting flag for primary or secondary particle
+      Int_t primary = gAlice->GetPrimary(track);     
+      if(track != primary){
+        newquad->fSFlag = 1;  // SECONDARY particle entering the ZDC
+      }
+      else if(track == primary){
+        newquad->fSFlag = 0;  // PRIMARY particle entering the ZDC
+      }  
+//      fNPrimaryHits += 1;
+      sFlag 	= newquad->fSFlag;
+      primKinEn = newquad->fPrimKinEn;
+      xImpact 	= newquad->fXImpact;
+      yImpact 	= newquad->fYImpact;
+   }
+   else{       
+      newquad->fPrimKinEn = primKinEn;
+      newquad->fXImpact	= xImpact;
+      newquad->fYImpact = yImpact;
+      newquad->fSFlag 	= sFlag;
+   }
+ 
   Int_t i,j,kStHit = 1;
   for(i=0; i<fNStHits; i++){
     // If hits are equal (same track, same volume), sum them.
      curevquad = (AliZDCHit*) lsthits[i];
      kStHit = 1;
      if(*curevquad == *newquad){
-        *curevquad = *curevquad+*newquad;
-        kStHit = 0;
+	*curevquad = *curevquad+*newquad;
+	kStHit = 0;
      } 
+     if(kStHit == 0) break;
   }
 
   for(j=0; j<fNhits; j++){
@@ -184,28 +210,6 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 	return;
      } 
   }
-  
-  if(fNhits==0){
-      // First hit -> setting flag for primary or secondary particle
-      Int_t primary = gAlice->GetPrimary(track);     
-      if(track != primary){
-        newquad->fSFlag = 1;  // Hit created by secondary particle entering the ZDC
-      }
-      else if(track == primary){
-        newquad->fSFlag = 0;  // Hit created by PRIMARY particle entering the ZDC
-      }  
-      fNPrimaryHits += 1;
-      sFlag = newquad->fSFlag;
-      primKinEn = newquad->fPrimKinEn;
-      xImpact = newquad->fXImpact;
-      yImpact = newquad->fYImpact;
-   }
-   else{       
-      newquad->fPrimKinEn = primKinEn;
-      newquad->fXImpact = xImpact;
-      newquad->fYImpact = yImpact;
-      newquad->fSFlag = sFlag;
-   }
 
     //Otherwise create a new hit
     new(lhits[fNhits]) AliZDCHit(newquad);
@@ -215,16 +219,29 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       new(lsthits[fNStHits]) AliZDCHit(newquad);
       fNStHits++;
     }
- 
-//    if(fDebug == 1){ 
-//      printf("\n  Primary Hits --------------------------------------------------------\n");
-//      fHits->Print("");
-//      printf("\n  Event Hits --------------------------------------------------------\n");
-//      fStHits->Print("");
-//    }
+
+    if(fDebug == 1){ 
+      printf("\n  Primary Hits --------------------------------------------------------\n");
+      fHits->Print("");
+      printf("\n  Event Hits --------------------------------------------------------\n");
+      fStHits->Print("");
+    }
 
     delete newquad;
   }
+//____________________________________________________________________________
+Float_t AliZDC::ZMin(void) const
+{
+  // Minimum dimension of the ZDC module in z
+  return 11600.;
+}
+
+//____________________________________________________________________________
+Float_t AliZDC::ZMax(void) const
+{
+  // Maximum dimension of the ZDC module in z
+  return  11750.;
+}
   
 //_____________________________________________________________________________
 void AliZDC::ResetDigits()
