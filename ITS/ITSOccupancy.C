@@ -74,7 +74,7 @@
 	#include <AliITSsegmentationSSD.h>
 #endif
 
-Int_t ITSOccupancy(char *name = "galice", Bool_t recreate = kFALSE, Int_t evNum = 0) {       
+Int_t ITSOccupancy(char *name = "galice", Int_t evNum = 0) {       
 		 
 	// Evaluate the name of the file to open...
 	Int_t filelen = strlen(name);
@@ -128,54 +128,34 @@ Int_t ITSOccupancy(char *name = "galice", Bool_t recreate = kFALSE, Int_t evNum 
 	// Histos for plotting occupancy distributions
 	TH1F *above[6], *below[6];
 	
-	if (recreate) {
-		// This work is done if the "recreate" option is true
-		TFile *file = new TFile("totals.root", "RECREATE");
-                file->cd();
-		for (Int_t lay = 0; lay < 6; lay++) {
-			Int_t nlads = gm->GetNladders(lay+1);
-			Int_t ndets = gm->GetNdetectors(lay+1);
-			Int_t dtype = lay / 2;
-			Int_t minID = gm->GetModuleIndex(lay+1, 1, 1);
-			Int_t maxID = gm->GetModuleIndex(lay+1, nlads, ndets);
-			Text_t ffname[20];
-			sprintf(ffname, "h_%d", lay+1);
-			below[lay] = new TH1F(ffname, "Total z distribution of digits", nbins[lay], -zmax[lay], zmax[lay]);
-			cout << "Evaluating total channels number of layer " << lay+1 << endl;
-			for (Int_t I = minID; I <= maxID; I++) {		
-				AliITSDetType *det = ITS->DetType(dtype);
-				AliITSsegmentation *seg = det->GetSegmentationModel();
-				Int_t NX = seg->Npx();
-				Int_t NZ = seg->Npz();
-				for (Int_t ix = 0; ix <= NX; ix++) {
-					for (Int_t iz = 0; iz <= NZ; iz++) {
-						Float_t lx[] = {0.0,0.0,0.0}, gx[] = {0.0,0.0,0.0};
-						seg->DetToLocal(ix, iz, lx[0], lx[2]);
-						gm->LtoG(I, lx, gx);
-						below[lay]->Fill(gx[2]);
-					}
+	for (Int_t lay = 0; lay < 6; lay++) {
+		Int_t nlads = gm->GetNladders(lay+1);
+		Int_t ndets = gm->GetNdetectors(lay+1);
+		Int_t dtype = lay / 2;
+		Int_t minID = gm->GetModuleIndex(lay+1, 1, 1);
+		Int_t maxID = gm->GetModuleIndex(lay+1, nlads, ndets);
+		Text_t ffname[20];
+		sprintf(ffname, "h_%d", lay+1);
+		below[lay] = new TH1F(ffname, "Total z distribution of digits", nbins[lay], -zmax[lay], zmax[lay]);
+		cout << "Evaluating total channels number of layer " << lay+1 << endl;
+		for (Int_t I = minID; I <= maxID; I++) {		
+			AliITSDetType *det = ITS->DetType(dtype);
+			AliITSsegmentation *seg = det->GetSegmentationModel();
+			Int_t NX = seg->Npx();
+			Int_t NZ = seg->Npz();
+			for (Int_t ix = 0; ix <= NX; ix++) {
+				for (Int_t iz = 0; iz <= NZ; iz++) {
+					Float_t lx[] = {0.0,0.0,0.0}, gx[] = {0.0,0.0,0.0};
+					seg->DetToLocal(ix, iz, lx[0], lx[2]);
+					gm->LtoG(I, lx, gx);
+					below[lay]->Fill(gx[2]);
 				}
 			}
-			// every generated histogram is written to the file
-			below[lay]->Write();
-			// and every counter histogram is created
-			sprintf(ffname, "H_%d", lay+1);
-			above[lay] = new TH1F(ffname, "histo", nbins[lay], -zmax[lay], zmax[lay]);
 		}
+		sprintf(ffname, "H_%d", lay+1);
+		above[lay] = new TH1F(ffname, "histo", nbins[lay], -zmax[lay], zmax[lay]);
 	}
-	else {
-		// Thi other work is done if the recreate option is false
-		TFile *file = new TFile("totals.root", "READ");
-		file->ls();
-		for (Int_t i = 0; i < 6; i++) {
-			Text_t ffname[20];
-			sprintf(ffname, "h_%d", i+1);
-			below[i] = (TH1F*)file->Get(ffname);
-			sprintf(ffname, "H_%d", i+1);
-			above[i] = new TH1F(ffname, "histo", nbins[i], -zmax[i], zmax[i]);
-		}
-	}
-	
+		
 	// Counting the hits, digits and recpoints contained in the ITS
 	TTree *TD = gAlice->TreeD();
 	ITS->ResetDigits();
@@ -237,12 +217,12 @@ Int_t ITSOccupancy(char *name = "galice", Bool_t recreate = kFALSE, Int_t evNum 
 		above[I-1]->Draw();
 		view->Update();
 	}
-	Text_t *filegif  = new Text_t[filelen + 11];
-	Text_t *fileps  = new Text_t[filelen + 11];
+	Text_t *filegif  = new Text_t[filelen + 23];
+	Text_t *fileps  = new Text_t[filelen + 23];
 	strcpy (filegif, name);
 	strcpy (fileps, name);
-	strcat (filegif, "_digs.gif");
-	strcat (fileps, "_digs.ps");
+	strcat (filegif, "_digit_occupancy.gif");
+	strcat (fileps, "_digit_occupancy.eps");
 	view->SaveAs(filegif);
 	view->SaveAs(fileps);
 	
