@@ -1,5 +1,3 @@
-#include "iostream.h"
-
 void MUONhitrectest (Int_t evNumber1=0,Int_t evNumber2=0) 
 {
 /////////////////////////////////////////////////////////////////////////
@@ -66,11 +64,11 @@ void MUONhitrectest (Int_t evNumber1=0,Int_t evNumber2=0)
        TClonesArray *Particles = gAlice->Particles();
        TTree *TR = gAlice->TreeR();
        Int_t nent=TR->GetEntries();
-       printf("Found %d entries in the tree (must be one per cathode per event! + 1empty)\n",nent);
+
        if (MUON) {
 	   Float_t xc[2000], yc[2000], itrc[2000];
 	   TClonesArray *MUONrawclust  = MUON->RawClustAddress(0);
-	   nbytes += TR->GetEvent(1);
+	   nbytes += TR->GetEvent(0);
 	   Int_t nrawcl = MUONrawclust->GetEntries();
 	   AliMUONRawCluster  *mRaw;
 	   for (Int_t iraw=0; iraw < nrawcl; iraw++) {
@@ -89,10 +87,10 @@ void MUONhitrectest (Int_t evNumber1=0,Int_t evNumber2=0)
 		   mHit;
 		   mHit=(AliMUONHit*)MUON->NextHit()) 
 	       {
-		   Int_t   nch   = mHit->fChamber;  // chamber number
-		   Float_t x     = mHit->fX;        // x-pos of hit
-		   Float_t y     = mHit->fY;        // y-pos
-		   Int_t   ip    = mHit->fParticle;
+		   Int_t   nch   = mHit->Chamber();  // chamber number
+		   Float_t x     = mHit->X();        // x-pos of hit
+		   Float_t y     = mHit->Y();        // y-pos
+		   Int_t   ip    = mHit->Particle();
 		   if (ip != kMuonPlus && ip != kMuonMinus) continue;
 		   if (nch != 1) continue;
 		   Float_t dmin=1.e8;
@@ -104,19 +102,21 @@ void MUONhitrectest (Int_t evNumber1=0,Int_t evNumber2=0)
 		   for (Int_t i=0; i<nrawcl; i++) {
 		       Float_t dx = xc[i]-x;
 		       Float_t dy = yc[i]-y;
-		       Float_t dr  = TMath::Sqrt(dx*dx+dy*dy);
+		       Float_t dr = TMath::Sqrt(dx*dx+dy*dy);
 		       if (dr<dmin) {
 			   imin=i;
 			   dmin=dr;
 		       }
-		       if (TMath::Abs(dy)< 0.05 && TMath::Abs(dx)< 0.2 ) npos++;
+		       if (TMath::Abs(dy) < 0.05 && TMath::Abs(dx) < 0.2 ) npos++;
 		   }
 		   mRaw = (AliMUONRawCluster*)MUONrawclust->UncheckedAt(imin);
-		   Int_t   track=mRaw->fTracks[1];
-		   Float_t xrec=mRaw->fX[1];
-		   Float_t yrec=mRaw->fY[0];
-		   Float_t x_res=xrec-x;
-		   Float_t y_res=yrec-y;
+		   Int_t   track = mRaw->fTracks[1];
+		   Float_t xrec  = mRaw->fX[1];
+		   Float_t yrec  = mRaw->fY[0];
+		   Float_t x_res = xrec-x;
+		   Float_t y_res = yrec-y;
+		   if (y_res > 0.05 ) printf("\n track %d %f\n", itrack, y_res);
+		   
 		   hresx->Fill(x_res,1.);
 		   hresy->Fill(y_res,1.);
 		   hpos->Fill(Float_t(npos), 1.);
@@ -126,9 +126,6 @@ void MUONhitrectest (Int_t evNumber1=0,Int_t evNumber2=0)
 			      itrack, x, y, nhit);
 		       h21->Fill(x,y,1.);
 		   }
-		   
-		   
-		   
 	       }  // hits
 	   } // tracks
        }   // end if MUON
