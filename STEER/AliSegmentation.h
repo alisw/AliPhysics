@@ -19,7 +19,7 @@ public TObject {
     // Set Chamber Segmentation Parameters
     //
     virtual ~AliSegmentation() {}
-    // Pad size Dx*Dy 
+    // Pad size Dx*Dy
     virtual void    SetPadSize(Float_t p1, Float_t p2)                                 = 0;
     // Anod Pitch
     virtual void    SetDAnod(Float_t D)                                                = 0;
@@ -39,11 +39,11 @@ public TObject {
     //
     // Pad size in x
     virtual Float_t Dpx() const                                                         = 0;
-    // Pad size in y 
+    // Pad size in y
     virtual Float_t Dpy() const                                                         = 0;
-    // Pad size in x by Sector 
+    // Pad size in x by Sector
     virtual Float_t Dpx(Int_t) const                                                    = 0;
-    // Pad size in y by Sector 
+    // Pad size in y by Sector
     virtual Float_t Dpy(Int_t) const                                                    = 0;
     // Maximum number of Pads in x
     virtual Int_t    Npx() const                                                        = 0;
@@ -53,7 +53,7 @@ public TObject {
     virtual void     SetPad(Int_t, Int_t)                                               = 0;
     // Set hit position
     virtual void     SetHit(Float_t, Float_t, Float_t )                                 = 0;
-    
+
     //
     // Iterate over pads
     // Initialiser
@@ -65,11 +65,11 @@ public TObject {
     //
     // Distance between 1 pad and a position
     virtual Float_t Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y, Int_t *dummy) = 0;
-    // Number of pads read in parallel and offset to add to x 
+    // Number of pads read in parallel and offset to add to x
     // (specific to LYON, but mandatory for display)
     virtual void GetNParallelAndOffset(Int_t iX, Int_t iY,
 				       Int_t *Nparallel, Int_t *Offset)                 = 0;
-    // Get next neighbours 
+    // Get next neighbours
     virtual void Neighbours
 	(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])            = 0;
     //
@@ -88,19 +88,19 @@ public TObject {
     virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z)                           = 0;
     // Initialise signal generation at coord (x,y,z)
     virtual void  SigGenInit(Float_t x, Float_t y, Float_t z)                           = 0;
-    // Current integration limits 
+    // Current integration limits
     virtual void  IntegrationLimits
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2)                            = 0;
     // Test points for auto calibration
     virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const                 = 0;
     // Draw the segmentation zones
-    virtual void Draw(const char *opt = "")  const                                  = 0;
+    virtual void Draw(const char *opt = "")                                             = 0;
     // Function for systematic corrections
     // Set the correction function
     virtual void SetCorrFunc(Int_t,  TF1*)                                               = 0;
     // Get the correction Function
     virtual TF1* CorrFunc(Int_t)  const                                                 = 0;
-	    
-    ClassDef(AliSegmentation,1) //Segmentation abstract base class 
+
+    ClassDef(AliSegmentation,1) //Segmentation abstract base class
 };
 #endif
