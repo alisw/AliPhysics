@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.27  2000/11/02 07:24:11  kowal2
+Correction in the TPC geometry.
+Changes due to the new hit structure.
+
 Revision 1.26  2000/10/05 16:16:29  kowal2
 Corrections of the hit recording algorithm.
 
@@ -1018,8 +1022,8 @@ void AliTPCv2::CreateGeometry()
 
   // Tpc Sandwich 21 - Al (central barrel)
 
-  dm[0]= 77.15;
-  dm[1]= 79.2;
+  dm[0]= 60.65;
+  dm[1]= 61.21;
   dm[2]= 75.2;
 
   gMC->Gsvolu("TS21","TUBE",idtmed[4],dm,3);
