@@ -1595,7 +1595,7 @@ void AliRICHv1::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliRICHv1::DrawDetector()
+void AliRICHv1::DrawModule()
 {
   //
   // Draw a shaded view of the Ring Imaging Cherenkov

@@ -2,21 +2,53 @@
  
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-AliRICH.o: /soft/root/include/TBRIK.h /soft/root/include/TNode.h
-AliRICH.o: /soft/root/include/TRandom.h /soft/root/include/TClass.h AliRICH.h
-AliRICH.o: /hdb2/offline/pro/include/AliDetector.h
-AliRICH.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
-AliRICH.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliRICH.o: /soft/root/include/TBRIK.h /soft/root/include/TShape.h
+AliRICH.o: /soft/root/include/TNamed.h /soft/root/include/TObject.h
+AliRICH.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
+AliRICH.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+AliRICH.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliRICH.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliRICH.o: /usr/include/gnu/stubs.h
+AliRICH.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliRICH.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliRICH.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliRICH.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliRICH.o: /soft/root/include/TBuffer.h /usr/include/string.h
+AliRICH.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
+AliRICH.o: /soft/root/include/TSeqCollection.h
+AliRICH.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
+AliRICH.o: /soft/root/include/TString.h /soft/root/include/TMath.h
+AliRICH.o: /soft/root/include/TRefCnt.h /soft/root/include/TMaterial.h
+AliRICH.o: /soft/root/include/TAttFill.h /soft/root/include/Gtypes.h
+AliRICH.o: /soft/root/include/Htypes.h /soft/root/include/TAttLine.h
+AliRICH.o: /soft/root/include/X3DBuffer.h /soft/root/include/TPolyLine3D.h
+AliRICH.o: /soft/root/include/TNode.h /soft/root/include/TRotMatrix.h
+AliRICH.o: /soft/root/include/TRandom.h /soft/root/include/TClass.h
+AliRICH.o: /soft/root/include/TDictionary.h /soft/root/include/Property.h
+AliRICH.o: AliRICH.h /hdb2/offline/pro/include/AliDetector.h
+AliRICH.o: /hdb2/offline/pro/include/AliModule.h
+AliRICH.o: /soft/root/include/TClonesArray.h /soft/root/include/TObjArray.h
+AliRICH.o: /soft/root/include/TBrowser.h /soft/root/include/TBrowserImp.h
 AliRICH.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
-AliRICH.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
-AliRICH.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliRun.h
-AliRICH.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliRICH.o: /soft/root/include/TArray.h /hdb2/offline/pro/include/AliHit.h
+AliRICH.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliRICH.o: /soft/root/include/TDirectory.h /soft/root/include/TDatime.h
 AliRICH.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
-AliRICH.o: /soft/root/include/TGeometry.h
+AliRICH.o: /soft/root/include/TBranch.h /soft/root/include/TStringLong.h
+AliRICH.o: /soft/root/include/TCut.h /soft/root/include/TGeometry.h
+AliRICH.o: /soft/root/include/THashList.h
 AliRICH.o: /hdb2/offline/pro/include/AliHeader.h
 AliRICH.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
-AliRICH.o: /hdb2/offline/pro/include/AliMC.h
+AliRICH.o: /soft/root/include/TError.h /hdb2/offline/pro/include/AliMC.h
 AliRICH.o: /hdb2/offline/pro/include/AliGenerator.h
 AliRICH.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
 AliRICH.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
-AliRICH.o: /hdb2/offline/pro/include/TGeant3.h
+AliRICH.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
+AliRICH.o: /soft/root/include/TAttAxis.h /usr/local/include/g++/fstream.h
+AliRICH.o: /usr/local/include/g++/iostream.h
+AliRICH.o: /usr/local/include/g++/streambuf.h /soft/root/include/TLego.h
+AliRICH.o: /soft/root/include/TF1.h /soft/root/include/TFormula.h
+AliRICH.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
+AliRICH.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
+AliRICH.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliRICH.o: /soft/root/include/TArrayD.h /hdb2/offline/pro/include/TGeant3.h
