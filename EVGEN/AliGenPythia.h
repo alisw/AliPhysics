@@ -46,10 +46,17 @@ class AliGenPythia : public AliGenMC
 	{fPtHardMin = ptmin; fPtHardMax = ptmax; }
     virtual void    SetYHard(Float_t ymin = -1.e10, Float_t ymax = 1.e10)
 	{fYHardMin = ymin; fYHardMax = ymax; }
+    // Set initial and final state gluon radiation
+    virtual void    SetGluonRadiation(Int_t iIn, Int_t iFin)
+	{fGinit = iIn; fGfinal = iFin;}
+    virtual void    SetPtKick(Float_t kt)
+	{fPtKick = kt;}
     // set centre of mass energy
     virtual void    SetEnergyCMS(Float_t energy = 5500) {fEnergyCMS = energy;}
     // treat protons as inside nuclei
     virtual void    SetNuclei(Int_t a1, Int_t a2);
+    virtual void    SetJetEtRange(Float_t etmin = 0., Float_t etmax = 1.e4)
+	{fEtMinJet = etmin; fEtMaxJet = etmax;}
     virtual void    SetJetEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
 	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
     virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
@@ -78,6 +85,9 @@ class AliGenPythia : public AliGenMC
     
     // get cross section of process
     virtual Float_t GetXsection() const {return fXsection;}
+    // get triggered jets
+    void GetJets(Float_t dist, Int_t part, Int_t& njets, Int_t& ntrig, Float_t[4][10]);
+    void LoadEvent();
     // Getters
     virtual Process_t    GetProcess() {return fProcess;}
     virtual StrucFunc_t  GetStrucFunc() {return fStrucFunc;}
@@ -86,7 +96,7 @@ class AliGenPythia : public AliGenMC
     virtual Float_t      GetEnergyCMS() {return fEnergyCMS;}
     virtual void         GetNuclei(Int_t&  a1, Int_t& a2)
 	{a1 = fNucA1; a2 = fNucA2;}
-    virtual void         GetJetEtaRange(Float_t& etamin, Float_t& etamax)
+    virtual void         GetJetEtRange(Float_t& etamin, Float_t& etamax)
 	{etamin = fEtaMinJet; etamax = fEtaMaxJet;}
     virtual void         GetJetPhiRange(Float_t& phimin, Float_t& phimax)
 	{phimin = fPhiMinJet*180./TMath::Pi(); phimax = fPhiMaxJet*180/TMath::Pi();}
@@ -96,7 +106,7 @@ class AliGenPythia : public AliGenMC
 	{phimin = fPhiMinGamma*180./TMath::Pi(); phimax = fPhiMaxGamma*180./TMath::Pi();}
     //
     virtual void FinishRun();
-    Bool_t CheckTrigger(TParticle* jet1, TParticle* jet2) const;
+    Bool_t CheckTrigger(TParticle* jet1, TParticle* jet2);
     
     // Assignment Operator
     AliGenPythia & operator=(const AliGenPythia & rhs);
@@ -104,7 +114,7 @@ class AliGenPythia : public AliGenMC
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
     Int_t  GenerateMB();
-    void   MakeHeader() const;    
+    void   MakeHeader();    
 
     TClonesArray* fParticles;     //Particle  List
     
@@ -127,10 +137,15 @@ class AliGenPythia : public AliGenMC
     Float_t     fYHardMax;        //higher y-hard cut
     Int_t       fNucA1;           //mass number nucleus side 1
     Int_t       fNucA2;           //mass number nucleus side 2
+    Int_t       fGinit;           //initial state gluon radiation
+    Int_t       fGfinal;          //final state gluon radiation
+    Float_t     fPtKick;          //Transverse momentum kick
     Bool_t      fFullEvent;       //!Write Full event if true
     AliDecayer  *fDecayer;        //!Pointer to the decayer instance
     Int_t       fDebugEventFirst; //!First event to debug
     Int_t       fDebugEventLast;  //!Last  event to debug
+    Float_t     fEtMinJet;        //Minimum et of triggered Jet
+    Float_t     fEtMaxJet;        //Maximum et of triggered Jet
     Float_t     fEtaMinJet;       //Minimum eta of triggered Jet
     Float_t     fEtaMaxJet;       //Maximum eta of triggered Jet
     Float_t     fPhiMinJet;       //Minimum phi of triggered Jet

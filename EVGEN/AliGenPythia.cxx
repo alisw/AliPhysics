@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.63  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.52.4.4  2002/10/10 16:40:08  hristov
 Updating VirtualMC to v3-09-02
 
@@ -203,8 +206,11 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include "AliPythia.h"
 #include "AliPDG.h"
+#include "AliConst.h"
 #include <TParticle.h>
 #include <TSystem.h>
+#include <TTree.h>
+#include <TDatabasePDG.h>
 
  ClassImp(AliGenPythia)
 
@@ -218,6 +224,7 @@ AliGenPythia::AliGenPythia()
   SetEventListRange();
   SetJetPhiRange();
   SetJetEtaRange();
+  SetJetEtRange();
   SetGammaPhiRange();
   SetGammaEtaRange();
 }
@@ -250,6 +257,7 @@ AliGenPythia::AliGenPythia(Int_t npart)
     SetEventListRange();
     SetJetPhiRange();
     SetJetEtaRange();
+    SetJetEtRange();
     SetGammaPhiRange();
     SetGammaEtaRange();
     // Options determining what to keep in the stack (Heavy flavour generation)
@@ -284,7 +292,8 @@ void AliGenPythia::SetEventListRange(Int_t eventFirst, Int_t eventLast)
 void AliGenPythia::Init()
 {
 // Initialisation
-  SetMC(AliPythia::Instance());
+    
+    SetMC(AliPythia::Instance());
     fPythia=(AliPythia*) fgMCEvGen;
 //
     fParentWeight=1./Float_t(fNpart);
@@ -309,8 +318,15 @@ void AliGenPythia::Init()
 
     fPythia->ProcInit(fProcess,fEnergyCMS,fStrucFunc);
 
-    //    fPythia->Pylist(0);
-    //    fPythia->Pystat(2);
+//  initial state radiation   
+    fPythia->SetMSTP(61,fGinit);
+//  final state radiation
+    fPythia->SetMSTP(71,fGfinal);
+//
+    fPythia->SetMSTP(91,1);
+    fPythia->SetMSTU(16,1);	
+    fPythia->SetMSTJ(1,1);
+//
 //  Parent and Children Selection
     switch (fProcess) 
     {
@@ -705,18 +721,36 @@ void AliGenPythia::SetNuclei(Int_t a1, Int_t a2)
 }
 
 
-void AliGenPythia::MakeHeader() const
+void AliGenPythia::MakeHeader()
 {
 // Builds the event header, to be called after each event
     AliGenEventHeader* header = new AliGenPythiaEventHeader("Pythia");
+//
+// Event type  
     ((AliGenPythiaEventHeader*) header)->SetProcessType(fPythia->GetMSTI(1));
+//
+// Number of trials
     ((AliGenPythiaEventHeader*) header)->SetTrials(fTrials);
+//
+// Event Vertex 
     header->SetPrimaryVertex(fEventVertex);
+//
+// Jets that have triggered
+    if (fProcess == kPyJets)
+    {
+	Int_t ntrig, njet;
+	Float_t jets[4][10];
+	GetJets(5.0, 1, njet, ntrig, jets);
+	for (Int_t i = 0; i < ntrig; i++) {
+	    ((AliGenPythiaEventHeader*) header)->AddJet(jets[0][i], jets[1][i], jets[2][i], 
+							jets[3][i]);
+	}
+    }
     gAlice->SetGenEventHeader(header);
 }
 	
 
-Bool_t AliGenPythia::CheckTrigger(TParticle* jet1, TParticle* jet2) const
+Bool_t AliGenPythia::CheckTrigger(TParticle* jet1, TParticle* jet2)
 {
 // Check the kinematic trigger condition
 //
@@ -732,19 +766,15 @@ Bool_t AliGenPythia::CheckTrigger(TParticle* jet1, TParticle* jet2) const
     Bool_t   triggered = kFALSE;
 
     if (fProcess == kPyJets) {
-	//Check eta range first...
-	if (
-	    ((eta[0] < fEtaMaxJet && eta[0] > fEtaMinJet)   &&
-	     (phi[0] < fPhiMaxJet && phi[0] > fPhiMinJet)) 
-	    
-	    ||
-	    
-	    ((eta[1] < fEtaMaxJet && eta[1] > fEtaMinJet)   &&
-	     (phi[1] < fPhiMaxJet && phi[1] > fPhiMinJet))
-	    )
-	{
-	    triggered = kTRUE;
-	}
+	Int_t njets = 0;
+	Int_t ntrig = 0;
+	Float_t jets[4][10];
+//
+// Use Pythia clustering on parton level to determine jet axis
+//
+	GetJets(5.0, 1, njets, ntrig, jets);
+	if (ntrig) triggered = kTRUE;
+//
     } else {
 	Int_t ij = 0;
 	Int_t ig = 1;
@@ -773,6 +803,90 @@ AliGenPythia& AliGenPythia::operator=(const  AliGenPythia& rhs)
     return *this;
 }
 
+void  AliGenPythia::LoadEvent()
+{
+//
+// Load event into Pythia Common Block
+//
+ 
+
+    Int_t npart = (Int_t) (gAlice->TreeK())->GetEntries(); 
+   (fPythia->GetPyjets())->N = npart;
+
+    for (Int_t part = 0; part < npart; part++) {
+	TParticle *MPart = gAlice->Particle(part);
+	Int_t kf     = MPart->GetPdgCode();
+	Int_t ks     = MPart->GetStatusCode();
+	Float_t px = MPart->Px();
+	Float_t py = MPart->Py();
+	Float_t pz = MPart->Pz();
+	Float_t e  = MPart->Energy();
+	Float_t p  = TMath::Sqrt(px * px + py * py + pz * pz);
+	Float_t m  = TMath::Sqrt(e * e - p * p);
+	
+	
+	(fPythia->GetPyjets())->P[0][part] = px;
+	(fPythia->GetPyjets())->P[1][part] = py;
+	(fPythia->GetPyjets())->P[2][part] = pz;
+	(fPythia->GetPyjets())->P[3][part] = e;
+	(fPythia->GetPyjets())->P[4][part] = m;
+	
+	(fPythia->GetPyjets())->K[1][part] = kf;
+	(fPythia->GetPyjets())->K[0][part] = ks;
+    }
+}
+
+
+void  AliGenPythia::GetJets(Float_t dist, Int_t part, Int_t& nJets, Int_t& nJetsTrig, Float_t jets[4][10])
+{
+//
+//  Calls the Pythia clustering algorithm to find jets in the current event
+//
+    Int_t n     = fPythia->GetN();
+    nJets       = 0;
+    nJetsTrig   = 0;
+//
+//  Configure cluster algorithm
+//    
+    fPythia->SetPARU(43, dist);
+    fPythia->SetMSTU(41, part);
+//
+//  Call cluster algorithm
+//    
+    fPythia->Pyclus(nJets);
+//
+//  Loading jets from common block
+//
+    Int_t i;
+    for (i = 0; i < nJets; i++) {
+	Float_t px    = (fPythia->GetPyjets())->P[0][n+i];
+	Float_t py    = (fPythia->GetPyjets())->P[1][n+i];
+	Float_t pz    = (fPythia->GetPyjets())->P[2][n+i];
+	Float_t e     = (fPythia->GetPyjets())->P[3][n+i];
+	Float_t pt    = TMath::Sqrt(px * px + py * py);
+	Float_t phi   = TMath::ATan2(py,px);
+	Float_t theta = TMath::ATan2(pt,pz);
+	Float_t et    = e * TMath::Sin(theta);
+	Float_t eta   = -TMath::Log(TMath::Tan(theta / 2.));
+
+	if (
+	    eta > fEtaMinJet && eta < fEtaMaxJet && 
+	    phi > fPhiMinJet && eta < fPhiMaxJet &&
+	    et  > fEtMinJet  && et  < fEtMaxJet     
+	    ) 
+	{
+//	    printf("\n*Trigger-Jet #%d: %10.3f %10.3f %10.3f %10.3f \n", i, pt, et, eta, phi * kRaddeg);
+	    jets[0][nJetsTrig] = px;
+	    jets[1][nJetsTrig] = py;
+	    jets[2][nJetsTrig] = pz;
+	    jets[3][nJetsTrig] = e;
+	    nJetsTrig++;
+	    
+	} else {
+//	    printf("\n........-Jet #%d: %10.3f %10.3f %10.3f %10.3f \n", i, pt, et, eta, phi * kRaddeg);
+	}
+    }
+}
 
 
 #ifdef never
