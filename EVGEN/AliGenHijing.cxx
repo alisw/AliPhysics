@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/09/07 16:55:40  morsch
+fHijing->Initialize(); after change of parameters. (Dmitri Yurevitch Peressounko)
+
 Revision 1.4  2000/07/11 18:24:56  fca
 Coding convention corrections + few minor bug fixes
 
@@ -94,7 +97,10 @@ void AliGenHijing::Init()
     fHijing->SetIHPR2(6,  fShadowing);
     fHijing->SetIHPR2(12, fDecaysOff);    
     fHijing->SetIHPR2(21, fKeep);
+    fHijing->Rluset(50,0);
     fHijing->Initialize();
+
+    
 //
     if (fEvaluate) EvaluateCrossSections();
 }
@@ -203,6 +209,7 @@ void AliGenHijing::Generate()
 	    }
 	}
     } // event loop
+    fHijing->Rluget(50,-1);
 }
 
 Bool_t AliGenHijing::KinematicSelection(TParticle *particle)
