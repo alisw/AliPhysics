@@ -1,4 +1,4 @@
-MUONdisplay (Int_t nevent=0) {
+MUONdisplay (Int_t nevent=0, TString fileName="galice.root") {
 // Dynamically link some shared libs
    if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
@@ -11,8 +11,8 @@ MUONdisplay (Int_t nevent=0) {
    }
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
-   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-   if (!file) file = new TFile("galice.root");
+   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(fileName);
+   if (!file) file = new TFile(fileName);
 
 // Get AliRun object from file or create it if not on file
    if (!gAlice) {
