@@ -32,8 +32,6 @@ class AliITSsimulationSPD : public AliITSsimulation {
     // Sum digitize module
     // Create maps to build the lists of tracks for each summable digit
     void InitSimulationModule(Int_t module,Int_t events);
-//    // Add summable digits to module maps.
-//    void AddSDigitsToModule(TClonesArray *sdig,Int_t mask);
     // Digitize module from the sum of summable digits.
     void FinishSDigitiseModule();
     void SDigitiseModule(AliITSmodule *mod, Int_t dummy0,Int_t dummy1);

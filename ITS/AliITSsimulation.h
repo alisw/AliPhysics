@@ -48,8 +48,9 @@ class AliITSsimulation : public TObject {
     // Reset module arrays (maps), etc
     virtual void InitSimulationModule( Int_t module, Int_t event ){;}
     // add (sum) a new list of summable digits to module, 
-    // add an offset (mask) to the track numbers
-    virtual void AddSDigitsToModule( TClonesArray *pItemArray, Int_t mask );
+    // add an offset (mask) to the track numbers. Returns kTRUE if there
+    // is a "good" signal in this module.
+    virtual Bool_t AddSDigitsToModule( TClonesArray *pItemArray, Int_t mask );
     // digitize module using the "slow" detector simulator from
     // the sum of summable digits.
     virtual void FinishSDigitiseModule(){;}

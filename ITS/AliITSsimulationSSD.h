@@ -29,8 +29,6 @@ class AliITSsimulationSSD: public AliITSsimulation {
     void Init(AliITSsegmentationSSD *seg,AliITSresponseSSD *resp);
     // Create maps to build the lists of tracks for each summable digit
     void InitSimulationModule(Int_t module,Int_t events);
-//    // Add summable digits to module maps.
-//    void AddSDigitsToModule(TClonesArray *sdig,Int_t mask);
     // Digitize module from the sum of summable digits.
     void FinishSDigitiseModule();
     //Digitizes all of the hits in a module

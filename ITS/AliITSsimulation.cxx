@@ -18,7 +18,7 @@
 #include "AliITSsimulation.h"
 #include "AliITSpList.h"
 
-ClassImp(AliITSsimulation)	
+ClassImp(AliITSsimulation)
 
 AliITSsimulation::AliITSsimulation(){
     // constructor
@@ -59,9 +59,10 @@ AliITSsimulation&  AliITSsimulation::operator=(const AliITSsimulation &source){
     return *this;
 }
 //______________________________________________________________________
-void AliITSsimulation::AddSDigitsToModule(TClonesArray *pItemA,Int_t mask ){
+Bool_t AliITSsimulation::AddSDigitsToModule(TClonesArray *pItemA,Int_t mask ){
     // Add Summable digits to module maps.
     Int_t nItems = pItemA->GetEntries();
+    Bool_t sig = kFALSE;
  
     // cout << "Adding "<< nItems <<" SDigits to module " << fModule << endl;
     for( Int_t i=0; i<nItems; i++ ) {
@@ -70,8 +71,10 @@ void AliITSsimulation::AddSDigitsToModule(TClonesArray *pItemA,Int_t mask ){
             Error( "AddSDigitsToModule","Error reading, SDigits module %d "
 		   "!= current module %d: exit",
 		   pItem->GetModule(), fModule );
-            return;
+            return sig;
         } // end if
+	if(pItem->GetSignal()>0.0 ) sig = kTRUE;
         fpList->AddItemTo( mask, pItem );
     } // end for i
+    return sig;
 }
