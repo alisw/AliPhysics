@@ -169,7 +169,7 @@ void AliPHOS::CreateMaterials()
 
   AliMixture(7, "Thermo Insul.$", aTI, zTI, dTI, -2, wTI) ;
 
-  // --- Textolitn ---
+  // --- Textolith ---
   Float_t aTX[4] = {16.0, 28.09, 12.011, 1.00794} ;
   Float_t zTX[4] = {8.0, 14.0, 6.0, 1.0} ;
   Float_t wTX[4] = {292.0, 68.0, 462.0, 736.0} ;
@@ -178,12 +178,12 @@ void AliPHOS::CreateMaterials()
   AliMixture(8, "Textolit$", aTX, zTX, dTX, -4, wTX) ;
 
   //--- FR4  ---
-  Float_t aFR[3] = {28.0855, 15.9994, 17.749} ; 
-  Float_t zFR[3] = {14., 8., 8.875} ; 
-  Float_t wFR[3] = {.28, .32, .4} ;
+  Float_t aFR[4] = {16.0, 28.09, 12.011, 1.00794} ;
+  Float_t zFR[4] = {8.0, 14.0, 6.0, 1.0} ;
+  Float_t wFR[4] = {292.0, 68.0, 462.0, 736.0} ;
   Float_t dFR = 1.8 ; 
 
-  AliMixture(9, "FR4$", aFR, zFR, dFR, -3, wFR) ;
+  AliMixture(9, "FR4$", aFR, zFR, dFR, -4, wFR) ;
 
   // --- The Composite Material for  micromegas (so far polyetylene) ---                                       
   Float_t aCM[2] = {12.01, 1.} ; 
