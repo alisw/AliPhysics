@@ -267,7 +267,7 @@ void Config()
 
   if(iMUON) {
     //=================== MUON parameters ===========================
-    AliMUON *MUON  = new AliMUONv0("MUON","normal MUON");
+    AliMUON *MUON  = new AliMUONv1("MUON","default");
   }
  
   //=================== PHOS parameters ===========================
