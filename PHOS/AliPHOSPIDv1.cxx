@@ -449,7 +449,28 @@ void  AliPHOSPIDv1::SetParameterToCalculateEllipse(TString particle, TString par
   else
     (*fParameters)(p,i) = par ;
 } 
-//________________________________________________________________________
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::SetParameterPhotonBoundary(Int_t i,Float_t param) 
+{
+  // Set parameter "Hard photon boundary" i to a value param
+  if(i>4 || i<0)
+    Error("SetParameterPhotonBoundary","Invalid parameter number: %d",i);
+  else
+    (*fParameters)(14,i) = param ;
+}
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::SetParameterPi0Boundary(Int_t i,Float_t param) 
+{
+  // Set parameter "Hard pi0 boundary" i to a value param
+  if(i>1 || i<0)
+    Error("SetParameterPi0Boundary","Invalid parameter number: %d",i);
+  else
+    (*fParameters)(15,i) = param ;
+}
+
+//____________________________________________________________________________
 const Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Option_t *  axis)const
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
