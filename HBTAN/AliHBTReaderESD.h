@@ -33,19 +33,82 @@ class AliHBTReaderESD: public AliHBTReader
     Bool_t        ReadsTracks() const {return kTRUE;}
     Bool_t        ReadsParticles() const {return fReadParticles;}
     
+    void          ReadDataTPC(){}
+    void          ReadDataITS(){}
+
+    void          SetTPCNClustersRange(Int_t min,Int_t max);
+    void          SetTPCChi2PerCluserRange(Float_t min, Float_t max);
+    void          SetC00Range(Float_t min, Float_t max);
+    void          SetC11Range(Float_t min, Float_t max);
+    void          SetC22Range(Float_t min, Float_t max);
+    void          SetC33Range(Float_t min, Float_t max);
+    void          SetC44Range(Float_t min, Float_t max);
+    void          SetNumberOfTrackPoints(Int_t n = 5,Float_t dr = 30.0) {fNTrackPoints = n; fdR = dr;}
+    Int_t         GetNumberOfTrackPoints() const {return fNTrackPoints;}
+    void          SetClusterMap(Bool_t flag = kTRUE){fClusterMap = flag;}
+
+    
     enum ESpecies {kESDElectron = 0, kESDMuon, kESDPion, kESDKaon, kESDProton, kNSpecies};
     static Int_t  GetSpeciesPdgCode(ESpecies spec);//skowron
     
   protected:
     Int_t         ReadNext();
     TFile*        OpenFile(Int_t evno);//opens files to be read for given event
-    void          CloseFiles(TFile*);//close files
 
     TString       fESDFileName;//name of the file with tracks
     TString       fGAlFileName;//name of the file with tracks
     TFile*        fFile;//! pointer to current ESD file
     AliRunLoader* fRunLoader;//!Run Loader
+    TIter*        fKeyIterator;
     Bool_t        fReadParticles;//flag indicating wether to read particles from kinematics
+    
+    Int_t         fNTrackPoints;//number of track points; if==0 track points are not created
+    Float_t       fdR;//spacing between points (along radius) in cm
+                      //Track Points are needed for Anti-Merging Cut
+    
+    Bool_t        fClusterMap;//Flag indicating if Claster Map should be created for each track
+                              //Claster map is needed for Anti-Splitting Cut
+
+    //Cut Parameters specific to TPC tracks
+        
+    Int_t         fNTPCClustMin;//Number of clusters min value
+    Int_t         fNTPCClustMax;//Number of clusters max value
+    
+    Float_t       fTPCChi2PerClustMin;//Chi^2 per number of clusters min value
+    Float_t       fTPCChi2PerClustMax;//Chi^2 per number of clusters max value
+
+
+    // Required parameters at vertex
+    Float_t       fC00Min;//C00 (0th diagonal element of covariance matrix) min value
+    Float_t       fC00Max;//C00 (0th diagonal element of covariance matrix) max value
+            
+    Float_t       fC11Min;//C11 (1th diagonal element of covariance matrix) min value
+    Float_t       fC11Max;//C11 (1th diagonal element of covariance matrix) max value
+    
+    Float_t       fC22Min;//C22 (2th diagonal element of covariance matrix) min value
+    Float_t       fC22Max;//C22 (2th diagonal element of covariance matrix) max value
+    
+    Float_t       fC33Min;//C33 (3th diagonal element of covariance matrix) min value
+    Float_t       fC33Max;//C33 (3th diagonal element of covariance matrix) max value
+    
+    Float_t       fC44Min;//C44 (4th diagonal element of covariance matrix) min value
+    Float_t       fC44Max;//C44 (4th diagonal element of covariance matrix) max value
+
+    // Required parameters at TPC Inner Layer
+    Float_t       fTPCC00Min;//C00 (0th diagonal element of covariance matrix) min value
+    Float_t       fTPCC00Max;//C00 (0th diagonal element of covariance matrix) max value
+            
+    Float_t       fTPCC11Min;//C11 (1th diagonal element of covariance matrix) min value
+    Float_t       fTPCC11Max;//C11 (1th diagonal element of covariance matrix) max value
+    
+    Float_t       fTPCC22Min;//C22 (2th diagonal element of covariance matrix) min value
+    Float_t       fTPCC22Max;//C22 (2th diagonal element of covariance matrix) max value
+    
+    Float_t       fTPCC33Min;//C33 (3th diagonal element of covariance matrix) min value
+    Float_t       fTPCC33Max;//C33 (3th diagonal element of covariance matrix) max value
+    
+    Float_t       fTPCC44Min;//C44 (4th diagonal element of covariance matrix) min value
+    Float_t       fTPCC44Max;//C44 (4th diagonal element of covariance matrix) max value
     
   private:
     ClassDef(AliHBTReaderESD,2)

@@ -31,61 +31,6 @@ AliHBTTrackPoints::AliHBTTrackPoints():
 {
   //constructor
 }
-AliHBTTrackPoints::AliHBTTrackPoints(const AliHBTTrackPoints& in):
- TObject(in),
- fN(in.fN),
- fX(new Float_t[fN]),
- fY(new Float_t[fN]),
- fZ(new Float_t[fN])
-{
-//cpy constructor
-  for (Int_t i = 0; i < fN; i++)
-   {
-     fX[i] = in.fX[i];
-     fY[i] = in.fY[i];
-     fZ[i] = in.fZ[i];
-   }
-}
-/***************************************************************/
-
-AliHBTTrackPoints& AliHBTTrackPoints::operator=(const AliHBTTrackPoints& in)
-{
-  //Assigment operator
-  if(this == &in) return *this;
-  TObject::operator=((const TObject&)in);
-  
-  if (in.fN <= 0)
-   {
-    delete [] fX;
-    delete [] fY;
-    delete [] fZ;
-    fN = 0;
-    fX = 0x0;
-    fY = 0x0;
-    fZ = 0x0;
-    return *this;
-   }
-   
-  if ( fN != in.fN )
-   {
-    delete [] fX;
-    delete [] fY;
-    delete [] fZ;
-    fN = in.fN;
-    fX = new Float_t[fN];
-    fY = new Float_t[fN];
-    fZ = new Float_t[fN];
-   }
-
-  for (Int_t i = 0; i < fN; i++)
-   {
-     fX[i] = in.fX[i];
-     fY[i] = in.fY[i];
-     fZ[i] = in.fZ[i];
-   }
-
-  return *this;
-}
 /***************************************************************/
 
 AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t dr, Float_t r0):
@@ -108,35 +53,27 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Fl
      fX = fY = fZ = 0x0;
      return;
    }
-  
-  for (Int_t i = 0; i < fN; i++)
+
+  Double_t x;
+  Double_t par[5];
+  track->GetInnerExternalParameters(x,par);     //get properties of the track
+  if (x == 0)
    {
-     fX[i] = 0.0;
-     fY[i] = 0.0;
-     fZ[i] = 0.0;
+     Error("AliHBTTrackPoints","This ESD track does not contain TPC information");
+     return;
    }
-  
-  TMath::Hypot(dr,r0)+mf;//just to shut up compilers warning
-//  Double_t x;
-//  Double_t par[5];
-//  track->GetInnerExternalParameters(x,par);     //get properties of the track
-//  if (x == 0)
-//   {
-//     Error("AliHBTTrackPoints","This ESD track does not contain TPC information");
-//     return;
-//   }
-//
-//  if (mf == 0.0)
-//   {
-//     Error("AliHBTTrackPoints","Zero Magnetic field passed as parameter.");
-//     return;
-//   }
+
+  if (mf == 0.0)
+   {
+     Error("AliHBTTrackPoints","Zero Magnetic field passed as parameter.");
+     return;
+   }
    
-//  Double_t alpha = track->GetInnerAlpha();
-//  Double_t cc = 1000./0.299792458/mf;//conversion constant
-//  Double_t c=par[4]/cc;
-//  
-//  MakePoints(dr,r0,x,par,c,alpha);
+  Double_t alpha = track->GetInnerAlpha();
+  Double_t cc = 1000./0.299792458/mf;//conversion constant
+  Double_t c=par[4]/cc;
+  
+  MakePoints(dr,r0,x,par,c,alpha);
   
 }
 /***************************************************************/
@@ -328,7 +265,6 @@ Double_t AliHBTTrackPoints::AvarageDistance(const AliHBTTrackPoints& tr)
 /***************************************************************/
 /***************************************************************/
 
-/*
 #include "AliRun.h"
 #include "AliESD.h"
 #include "AliRunLoader.h"
@@ -344,7 +280,6 @@ Double_t AliHBTTrackPoints::AvarageDistance(const AliHBTTrackPoints& tr)
 
 void AliHBTTrackPoints::testesd(Int_t entr,const char* fname )
 {
-//testing routine
   delete gAlice;
   gAlice = 0x0;
   AliRunLoader* rl = AliRunLoader::Open();
@@ -464,17 +399,13 @@ void AliHBTTrackPoints::testesd(Int_t entr,const char* fname )
   
   delete rl;
 }
-*/
 
 /***************************************************************/
 /***************************************************************/
 /***************************************************************/
 
-/*
 void AliHBTTrackPoints::testtpc(Int_t entr)
 {
-//testing routine
-
   delete gAlice;
   gAlice = 0x0;
   AliRunLoader* rl = AliRunLoader::Open();
@@ -600,6 +531,3 @@ void AliHBTTrackPoints::testtpc(Int_t entr)
   
   delete rl;
 }
-*/
-
-/***************************************************************/

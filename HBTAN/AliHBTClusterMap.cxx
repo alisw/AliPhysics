@@ -29,18 +29,22 @@ AliHBTClusterMap::AliHBTClusterMap():
 }
 /***********************************************************************/
 AliHBTClusterMap::AliHBTClusterMap(AliESDtrack* track):
- fPadRawMap(fNPadRows)
+ fPadRawMap( (track)?track->GetTPCClusterMap():fNPadRows )
 {
- //cotor
- track->Print();//to shut up compiler warning
+ //ctor
  
+ if (AliHBTParticle::GetDebug() > 2)
+  { 
+    Info("AliHBTClusterMap(AliESDtrack*)","");
+    Print();
+  } 
 } 
 /***********************************************************************/
 
 AliHBTClusterMap::AliHBTClusterMap(AliTPCtrack* track):
  fPadRawMap(fNPadRows)
 {
- //cotor
+ //ctor
  
  //Does not work since indeces in the claster index array 
  //in the TPC track does not correspond to the padraw segmatation
@@ -72,7 +76,7 @@ AliHBTClusterMap::AliHBTClusterMap(AliTPCtrack* track):
      }
     else
      { //we don't know the order (inner to outer or reverse)
-       //just to be save in case it is going change
+       //just to be save in case it is going to change
        Int_t n = 0, m = 0;
        if (prevrow < row)
         {
@@ -91,10 +95,12 @@ AliHBTClusterMap::AliHBTClusterMap(AliTPCtrack* track):
        prevrow = row; 
      }
   }
-  if (AliHBTParticle::GetDebug() > 2)
-   {
-     Print();
-   } 
+  
+ if (AliHBTParticle::GetDebug() > 2)
+  { 
+    Info("AliHBTClusterMap(AliTPCtrack*)","");
+    Print();
+  } 
 }
 /***********************************************************************/
 

@@ -121,9 +121,9 @@ AliHBTReader::~AliHBTReader()
 AliHBTReader& AliHBTReader::operator=(const AliHBTReader& in)
 {
   //Assigment operator
-  if (this == &in) return *this;  
-  TNamed::operator=( (const TNamed&)in );
-
+ if (this == &in) return *this;  
+ TNamed::operator=( (const TNamed&)in );
+  
  fCuts = (in.fCuts)?(TObjArray*)in.fCuts->Clone():0x0;
  fDirs = (in.fDirs)?(TObjArray*)in.fDirs->Clone():0x0;
  fCurrentEvent = 0;

@@ -37,8 +37,7 @@ AliHBTMonPxDistributionFctn::AliHBTMonPxDistributionFctn(Int_t nbins, Double_t m
 
 ClassImp(AliHBTMonPyDistributionFctn)
 
-AliHBTMonPyDistributionFctn::
-AliHBTMonPyDistributionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+AliHBTMonPyDistributionFctn::AliHBTMonPyDistributionFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
                         AliHBTMonOneParticleFctn1D(nbins,maxXval,minXval)
 {
   //constructor

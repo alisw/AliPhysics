@@ -25,9 +25,13 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
                 char *outfile = "hbtanalysis.root")
  {
    
-//  AliHBTTrackPoints::SetDebug(1);
+  AliHBTTrackPoints::SetDebug(0);
   AliHBTParticle::SetDebug(0);
+  AliLoader::SetDebug(0);
   
+  AliHBTParticleCut c1;
+  AliHBTParticleCut c2 = c1;
+
 //HBT Anlysis Macro
 //Anlyzes TPC recontructed tracks and simulated particles that corresponds to them
 
@@ -89,6 +93,8 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
    {
     AliHBTReaderESD* esdreader = new AliHBTReaderESD();
     esdreader->ReadParticles(kTRUE);
+    esdreader->SetNumberOfTrackPoints(5,30.);
+    esdreader->SetClusterMap();
     reader = esdreader;
    }
   else if(!TPC)
