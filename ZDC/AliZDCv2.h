@@ -50,6 +50,7 @@ protected:
   // Parameters for hadronic calorimeters geometry
   // NB -> parameters used in CreateZDC() and in StepManager()
   // (other parameters are defined in CreateZDC())
+  Float_t fDimZN[3];	// Dimensions of proton detector
   Float_t fDimZP[3];	// Dimensions of proton detector
   Float_t fPosZN[3];   	// Position of neutron detector
   Float_t fPosZP[3]; 	// Position of proton detector

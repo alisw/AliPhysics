@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/09/26 16:07:40  coppedis
+Changes in StepManager suggested by J.Chudoba
+
 Revision 1.5  2001/06/15 14:51:39  coppedis
 Geometry bug corrected
 
@@ -138,6 +141,9 @@ AliZDCv2::AliZDCv2(const char *name, const char *title)
   }
 
   // Parameters for hadronic calorimeters geometry
+  fDimZN[0] = 3.52;
+  fDimZN[1] = 3.52;
+  fDimZN[2] = 50.;  
   fDimZP[0] = 11.2;
   fDimZP[1] = 6.;
   fDimZP[2] = 75.;    
@@ -157,7 +163,8 @@ AliZDCv2::AliZDCv2(const char *name, const char *title)
   // Parameters for EM calorimeter geometry
   fPosZEM[0] = 8.5;
   fPosZEM[1] = 0.;
-  fPosZEM[2] = -1000.;
+//  fPosZEM[2] = -830.;
+  fPosZEM[2] = -735.;
   fZEMLength = 0.;
   
 }
@@ -613,7 +620,6 @@ void AliZDCv2::CreateZDC()
 
   // Parameters for hadronic calorimeters geometry
   // NB -> parameters used ONLY in CreateZDC()
-  Float_t fDimZN[3] = {3.52, 3.52, 50.};  // Dimensions of neutron detector
   Float_t fGrvZN[3] = {0.03, 0.03, 50.};  // Grooves for neutron detector
   Float_t fGrvZP[3] = {0.04, 0.04, 75.};  // Grooves for proton detector
   Int_t   fDivZN[3] = {11, 11, 0};  	  // Division for neutron detector
@@ -787,6 +793,9 @@ void AliZDCv2::CreateZDC()
   //	   beacause it's impossible to make a ZDC pcon volume to contain
   //	   both hadronics and EM calorimeters. (It causes many tracks abandoning).
   gMC->Gspos("ZEM ", 1,"ALIC", fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
+  
+  // Second EM ZDC (same side w.r.t. IP, just on the other side w.r.t. beam pipe)
+  gMC->Gspos("ZEM ", 2,"ALIC", -fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
   
   // --- Adding last slice at the end of the EM calorimeter 
 //  Float_t zLastSlice = fPosZEM[2]+fDimZEMPb+fDimZEM[0];
@@ -1244,29 +1253,55 @@ void AliZDCv2::StepManager()
   // Determine in which quadrant the particle is
        
     if(vol[0]==1){	//Quadrant in ZN
+      // Calculating particle coordinates inside ZN
       xdet[0] = x[0]-fPosZN[0];
       xdet[1] = x[1]-fPosZN[1];
-      if((xdet[0]<=0.) && (xdet[1]>=0.))  vol[1]=1;
-      if((xdet[0]>0.)  && (xdet[1]>0.))   vol[1]=2;
-      if((xdet[0]<0.)  && (xdet[1]<0.))   vol[1]=3;
-      if((xdet[0]>0.)  && (xdet[1]<0.))   vol[1]=4;
+      // Calculating quadrant in ZN
+      if(xdet[0]<=0.){
+        if(xdet[1]>=0.)     vol[1]=1;
+	else if(xdet[1]<0.) vol[1]=3;
+      }
+      else if(xdet[0]>0.){
+        if(xdet[1]>=0.)     vol[1]=2;
+        else if(xdet[1]<0.) vol[1]=4;
+      }
+      if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
+        printf("\n	StepManager->ERROR in ZN!!! vol[1] = %d, xdet[0] = %f,"
+	"xdet[1] = %f\n",vol[1], xdet[0], xdet[1]);
     }
+    
     else if(vol[0]==2){	//Quadrant in ZP
+      // Calculating particle coordinates inside ZP
       xdet[0] = x[0]-fPosZP[0];
       xdet[1] = x[1]-fPosZP[1];
-      if(xdet[0]>fDimZP[0])xdet[0]=fDimZP[0]-0.01;
-      if(xdet[0]<-fDimZP[0])xdet[0]=-fDimZP[0]+0.01;
-      Float_t xqZP = xdet[0]/(fDimZP[0]/2);
+      if(xdet[0]>=fDimZP[0])  xdet[0]=fDimZP[0]-0.01;
+      if(xdet[0]<=-fDimZP[0]) xdet[0]=-fDimZP[0]+0.01;
+      // Calculating tower in ZP
+      Float_t xqZP = xdet[0]/(fDimZP[0]/2.);
       for(int i=1; i<=4; i++){
          if(xqZP>=(i-3) && xqZP<(i-2)){
  	   vol[1] = i;
  	   break;
  	 }
       }
+      if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
+        printf("	StepManager->ERROR in ZP!!! vol[1] = %d, xdet[0] = %f,"
+	"xdet[1] = %f",vol[1], xdet[0], xdet[1]);
     }
-    else if(vol[0] == 3){	//ZEM has only 1 quadrant
-      vol[1] = 1;
-      xdet[0] = x[0]-fPosZEM[0];
+    
+    // Quadrant in ZEM: vol[1] = 1 -> particle in 1st ZEM (placed at x = 8.5 cm)
+    // 		 	vol[1] = 2 -> particle in 2nd ZEM (placed at x = -8.5 cm)
+    else if(vol[0] == 3){	
+      if(x[0]>0.){
+        vol[1] = 1;
+        // Particle x-coordinate inside ZEM1
+        xdet[0] = x[0]-fPosZEM[0];
+      }
+      else{
+   	vol[1] = 2;
+        // Particle x-coordinate inside ZEM2
+        xdet[0] = x[0]+fPosZEM[0];
+      }
       xdet[1] = x[1]-fPosZEM[1];
     }
 
@@ -1327,9 +1362,11 @@ void AliZDCv2::StepManager()
      if((destep=gMC->Edep())){
 
        // Particle velocity
+       Float_t beta = 0.;
        gMC->TrackMomentum(p);
        Float_t ptot=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
-       Float_t beta =  ptot/p[3];
+       if(p[3] > 0.00001) beta =  ptot/p[3];
+       else return;
        if(beta<0.67){
          return;
        }
@@ -1441,10 +1478,18 @@ void AliZDCv2::StepManager()
 //         printf("	out*GuiEff = %f	nphe = %d", out, nphe);
 //	 printf("ZEM --- ibeta = %d, ialfa = %d, ibe = %d"
 //	        "	-> out = %f, nphe = %d\n", ibeta, ialfa, ibe, out, nphe);
-	 hits[7] = 0;  	
-	 hits[8] = nphe;	//fLightPMC
-	 hits[9] = 0;
-	 AddHit(gAlice->CurrentTrack(), vol, hits);
+	 if(vol[1] == 1){
+	   hits[7] = 0;  	
+	   hits[8] = nphe;	//fLightPMC (ZEM1)
+	   hits[9] = 0;
+	   AddHit(gAlice->CurrentTrack(), vol, hits);
+	 }
+	 else{
+	   hits[7] = nphe;  	//fLightPMQ (ZEM2)
+	   hits[8] = 0;		
+	   hits[9] = 0;
+	   AddHit(gAlice->CurrentTrack(), vol, hits);
+	 }
        }
      }
    }
