@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/12/10 17:44:57  morsch
+Correct mother child relation for pi0.
+
 Revision 1.16  2002/11/28 11:46:15  morsch
 Don't track pi0 if already decayed.
 
@@ -440,11 +443,12 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
     if(!particles) particles = new TClonesArray("TParticle",1000);
 //    
     const Float_t kMass = TDatabasePDG::Instance()->GetParticle(kPi0)->Mass();
-    Float_t       e     = TMath::Sqrt(p[0] * p[0] + p[1] * p[1] +p[2] * p[2] * kMass * kMass);
+    Float_t       e     = TMath::Sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]+ kMass * kMass);
 //
 //  Decay the pi0    
     TLorentzVector pmom(p[0], p[1], p[2], e);
     fDecayer->Decay(kPi0, &pmom);
+    
 //
 // Put decay particles on the stack
 //
