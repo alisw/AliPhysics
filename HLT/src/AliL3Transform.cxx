@@ -1,9 +1,11 @@
+/* $Id$
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ASV
+// -- Copyright &copy AV
+// changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
+*/
 
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
-//#include <TFile.h>
 #include <math.h>
 
 //_____________________________________________________________
@@ -19,11 +21,17 @@ AliL3Transform::AliL3Transform(){
   Init();
 }
 
+AliL3Transform::AliL3Transform(const char* pathname){
+  //constructor
+  Init(pathname);
+}
 
 AliL3Transform::~AliL3Transform(){
 }
 
+/// old init function used by Anders for AliRoot version 3.06
 void AliL3Transform::Init(){
+
   //sector:
   fNTimeBins = 446;
   fNRowLow = 64;
@@ -40,15 +48,11 @@ void AliL3Transform::Init(){
   fNSlice = 36;
   fNRow = 176;
   fPi = 3.141592653589793;
-/*
+
+  fNRotShift=0.5;
   for(Int_t i=0;i<36;i++){
-    fCos[i] = cos(fPi/9*i);
-    fSin[i] = sin(fPi/9*i);
-  }
-*/
-  for(Int_t i=0;i<36;i++){
-    fCos[i] = cos( (2*fPi/18) * (i+0.5) );
-    fSin[i] = sin( (2*fPi/18) * (i+0.5) );
+    fCos[i] = cos( (2*fPi/18) * (i+fNRotShift) );
+    fSin[i] = sin( (2*fPi/18) * (i+fNRotShift) );
   }
 
   fX[0] = 84.570007324218750;
@@ -405,6 +409,64 @@ void AliL3Transform::Init(){
   fNPads[175] = 139;
 }
 
+void AliL3Transform::Init(const char* path){
+  Init(); //call the old init function to have some initial values
+
+  char *pathname=new char[1024];
+  strcpy(pathname,path);
+  strcat(pathname,"/l3transform.config");
+
+  FILE *fptr=fopen(pathname,"r");
+  if(!fptr){
+    LOG(AliL3Log::kWarning,"AliL3Transform::Init","File Open")<<"Pointer to Config File \""<<pathname<<"\" 0x0!"<<ENDLOG;
+    return;
+  }
+
+  char d1[250], d2[100], d3[100];
+  int dummy=0;
+  double ddummy=0.0;
+
+  while(!feof(fptr)) {
+    fscanf(fptr,"%s",d1);
+
+    if(strcmp(d1,"fNTimeBins")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNTimeBins=(Int_t)dummy;}
+    else if(strcmp(d1,"fNRowLow")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowLow=(Int_t)dummy;}    
+    else if(strcmp(d1,"fNRowUp")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowUp=(Int_t)dummy;}
+    else if(strcmp(d1,"fNSectorLow")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSectorLow=(Int_t)dummy;}
+    else if(strcmp(d1,"fNSectorUp")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSectorUp=(Int_t)dummy;}
+    else if(strcmp(d1,"fNSector")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSector=(Int_t)dummy;}
+    else if(strcmp(d1,"fPadPitchWidthLow")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fPadPitchWidthLow=(Double_t)ddummy;}
+    else if(strcmp(d1,"fPadPitchWidthUp")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fPadPitchWidthUp=(Double_t)ddummy;}
+    else if(strcmp(d1,"fZWidth")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fZWidth=(Double_t)ddummy;}
+    else if(strcmp(d1,"fZSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fZSigma=(Double_t)ddummy;}
+    else if(strcmp(d1,"fNSlice")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSlice=(Int_t)dummy;}
+    else if(strcmp(d1,"fNRow")==0){
+      fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRow=(Int_t)dummy;
+      if(fNRow!=176){
+	LOG(AliL3Log::kError,"AliL3Transform::Init","Overflow")<<"Number of PadRows should be 176! Check and fgrep the code for 176 to see the consequences of this major change!"<<ENDLOG;
+      }
+    }
+    else if(strcmp(d1,"fNRotShift")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fNRotShift=(Double_t)ddummy;}
+    else if(strcmp(d1,"fPi")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fPi=(Double_t)ddummy;}
+    else if(strcmp(d1,"fX[0]")==0){
+      fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fX[0]=(Double_t)ddummy;
+      for(Int_t i=1;i<fNRow;i++){fscanf(fptr,"%s %s %lf %s",d1,d2,&ddummy,d3);fX[i]=(Double_t)dummy;}
+    }
+    else if(strcmp(d1,"fNPads[0]")==0){
+      fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNPads[0]=(Int_t)dummy;
+      for(Int_t i=1;i<fNRow;i++){fscanf(fptr,"%s %s %d %s",d1,d2,&dummy,d3);fNPads[i]=(Int_t)dummy;}
+    }
+  }
+
+  for(Int_t i=0;i<36;i++){
+    fCos[i] = cos( (2*fPi/18) * (i+fNRotShift) );
+    fSin[i] = sin( (2*fPi/18) * (i+fNRotShift) );
+  }
+
+  fclose(fptr);
+  delete pathname;
+}
+
 Double_t AliL3Transform::GetEta(Float_t *xyz)
 {
   Double_t r3 = sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]+xyz[2]*xyz[2]);
@@ -422,7 +484,6 @@ Double_t AliL3Transform::GetEta(Int_t padrow,Int_t pad,Int_t time)
   return GetEta(xyz);
 }
 
-
 Double_t AliL3Transform::GetPhi(Float_t *xyz)
 {
   
@@ -430,7 +491,6 @@ Double_t AliL3Transform::GetPhi(Float_t *xyz)
   //if(phi<0) phi=phi+2*TMath::Pi();
   return phi;
 }
-
 
 Bool_t AliL3Transform::Slice2Sector(Int_t slice, Int_t slicerow, Int_t & sector, Int_t &row) const{
   if(slicerow<0&&slicerow>=fNRow) return kFALSE;
