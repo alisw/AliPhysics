@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.2.1  2002/07/12 12:32:50  gamez
+Division of CRT1 corrected
+
+Revision 1.3  2002/07/10 15:57:04  gamez
+CreateHall() removed, and new Molasse volumes
+
 Revision 1.2  2002/07/09 08:45:35  hristov
 Old style include files needed on HP (aCC)
 
@@ -123,14 +129,14 @@ void AliCRTv0::CreateGeometry()
   tspar[2] = (1900.+1150.)/2.+100.;
   tspar[3] = 0.;
   tspar[4] = 180.;
-  gMC->Gsvolu("CMO1", "TUBS", idtmed[1103], tspar, 5);
+  gMC->Gsvolu("CMO1", "TUBS", idtmed[1123], tspar, 5);
   gMC->Gspos("CMO1", 1, "ALIC", 0., 500., 1900.-tspar[2]+400., 0, "MANY");
 
   Float_t tbox[3];
   tbox[0] = 1250.;
   tbox[1] = (4420. - 1670.)/2.;
   tbox[2] = (1900.+1150.)/2. + 200.;
-  gMC->Gsvolu("CM12", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gsvolu("CM12", "BOX", idtmed[1123], tbox, 3);
   gMC->Gspos("CM12", 1, "ALIC", 0., 4420. -tbox[1], 1900.-tbox[2]+400., 0, "MANY");
 
   AliMatrix(idrotm[2003], 0., 0., 90., 0., 90., 90.);
@@ -139,7 +145,7 @@ void AliCRTv0::CreateGeometry()
   tube[0] = 455. + 100.;
   tube[1] = 555. + 375.;
   tube[2] = (5150. - 1166.)/2.;
-  gMC->Gsvolu("CMO2", "TUBE", idtmed[1103], tube, 3);
+  gMC->Gsvolu("CMO2", "TUBE", idtmed[1123], tube, 3);
   gMC->Gspos("CMO2", 1, "ALIC", -2100., 4420.-tube[2], 0., idrotm[2003], "MANY");
 
 
@@ -147,20 +153,20 @@ void AliCRTv0::CreateGeometry()
   tube[0] = 650.;
   tube[1] = 2987.7;
   tube[2] = (5150. - 690.)/2.;
-  gMC->Gsvolu("CMO3", "TUBE", idtmed[1103], tube, 3);
+  gMC->Gsvolu("CMO3", "TUBE", idtmed[1123], tube, 3);
   gMC->Gspos("CMO3", 1, "ALIC", 375., 4420.-tube[2], 1900.+2987.7, idrotm[2003], "MANY");
   // Behind the PGC2 up to the end of the M. volume.
   tbox[0] = 12073.;
   tbox[1] = 2575. + 95.;
   tbox[2] = (12073. - 1900.+2987.7+650.)/2.;
-  gMC->Gsvolu("CMO7", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gsvolu("CMO7", "BOX", idtmed[1123], tbox, 3);
   gMC->Gspos("CMO7", 1, "ALIC", 0., 4420.-tbox[1], 1900.+2987.7+650.+tbox[2], 0, "MANY");
 
   // Along the PX24 , upper part.
   tube[0] = 1250.;
   tube[1] = 2300;
   tube[2] = 2575. - 1300. + 95.;
-  gMC->Gsvolu("CMO4", "TUBE", idtmed[1103], tube, 3);
+  gMC->Gsvolu("CMO4", "TUBE", idtmed[1123], tube, 3);
   gMC->Gspos("CMO4", 1, "ALIC", 0., 404.+1300.+tube[2], -2300., idrotm[2003], "MANY");
 
   // Along the PX24 , lower part
@@ -169,13 +175,13 @@ void AliCRTv0::CreateGeometry()
   tspar[2] = 1300.;
   tspar[3] = kRaddeg*TMath::ASin(1070./1150.);
   tspar[4] = 360. - tspar[3];
-  gMC->Gsvolu("CMO5", "TUBS", idtmed[1103], tspar, 5);
+  gMC->Gsvolu("CMO5", "TUBS", idtmed[1123], tspar, 5);
   gMC->Gspos("CMO5", 1, "ALIC", 0., 404., -2300., idrotm[2003], "MANY");
   // behind the PX24
   tbox[0] = 12073.;
   tbox[1] = 2575. + 95.;
   tbox[2] = 8523./2.;
-  gMC->Gsvolu("CMO6", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gsvolu("CMO6", "BOX", idtmed[1123], tbox, 3);
   gMC->Gspos("CMO6", 1, "ALIC", 0., 4420.-tbox[1], -3550.-tbox[2], 0, "MANY");
 
 
@@ -183,14 +189,14 @@ void AliCRTv0::CreateGeometry()
   tbox[0] = (12073. - 1250.)/2.;
   tbox[1] = 2575. + 95.;
   tbox[2] = (8437.7+650.)/2.;
-  gMC->Gsvolu("CMO8", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gsvolu("CMO8", "BOX", idtmed[1123], tbox, 3);
   gMC->Gspos("CMO8", 1, "ALIC", 1250.+tbox[0], 4420.-tbox[1], -3550.+tbox[2], 0, "MANY");
 
   // on the left side of the hall, behind 
   tbox[0] = (12073. - 2755.)/2.;
   tbox[1] = 2575. + 95.;
   tbox[2] = (8437.7+650.)/2.;
-  gMC->Gsvolu("CMO9", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gsvolu("CMO9", "BOX", idtmed[1123], tbox, 3);
   gMC->Gspos("CMO9", 1, "ALIC", -2755.-tbox[0], 4420.-tbox[1], -3550.+tbox[2], 0, "MANY");
 
 
@@ -198,7 +204,7 @@ void AliCRTv0::CreateGeometry()
   tbox[0] = (2755. - 1250.)/2.;
   tbox[1] = 2575. + 95.;
   tbox[2] = (3550. - 555.)/2.;
-  gMC->Gsvolu("CM10", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gsvolu("CM10", "BOX", idtmed[1123], tbox, 3);
   gMC->Gspos("CM10", 1, "ALIC", -1250.-tbox[0], 4420.-tbox[1], -tbox[2]-555., 0, "MANY");
 
 
@@ -206,7 +212,7 @@ void AliCRTv0::CreateGeometry()
   tbox[0] = (2755. - 1250.)/2.;
   tbox[1] = 2575. + 95.;
   tbox[2] = (1900.+2987.7 - 555. + 650.)/2.;
-  gMC->Gsvolu("CM11", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gsvolu("CM11", "BOX", idtmed[1123], tbox, 3);
   gMC->Gspos("CM11", 1, "ALIC", -1250.-tbox[0], 4420.-tbox[1], 555.+tbox[2], 0, "MANY");
 
   //
@@ -223,11 +229,11 @@ void AliCRTv0::CreateGeometry()
   scint[0] = AliCRTConstants::fgActiveAreaLenght/2.;       // Half Length in X
   scint[1] = AliCRTConstants::fgActiveAreaHeight/2.;       // Half Length in Y
   scint[2] = AliCRTConstants::fgActiveAreaWidth/2.;        // Half Length in Z
-  gMC->Gsvolu("CRT1", "BOX ", idtmed[1102], scint, 3);  // Scintillators
+  gMC->Gsvolu("CRT1", "BOX ", idtmed[1112], scint, 3);  // Scintillators
   // Divide the modules in 2 planes.
   gMC->Gsdvn("CRT2", "CRT1", 2, 2);
   // Now divide each plane in 8 palettes
-  gMC->Gsdvn("CRT3", "CRT1", 8, 3);
+  gMC->Gsdvn("CRT3", "CRT2", 8, 3);
 
 
   //
