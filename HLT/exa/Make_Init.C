@@ -1,183 +1,114 @@
 // $Id$ 
 
 /**
-   Important macro to get certain Aliroot parameters. They are stored
-   in a file "Init.cxx". New init of AliL3Transform uses output to read certain
-   TPC parameters.
+   Macro to get the default parameters from AliTPCParam. 
+   Output is written to a file, which can be inserted directly into 
+   AliL3Transform.cxx as the default parameters to be set at top
 */
 
-void Make_Init(char *file, char *tofile="Init.cxx"){
-
-  TFile * rootf = new TFile(file,"READ");
-
-  if(!rootf->IsOpen()){
-    cerr<<"no file: "<<file<<endl;
-    return;
-  }
-
-  AliRun *gAlice = (AliRun*)rootf->Get("gAlice");
-  if(!gAlice){
-    cerr<<"no gAlice in file: "<<file<<endl;
-    return;
-  }  
-
-  AliTPCParam* par = (AliTPCParam*)rootf->Get("75x40_100x60");
-  if(!par){
-    cerr<<"no AliTPCParam 75x40_100x60 in file: "<<file<<endl;
-    return;
-  }
-
-  AliTPCParamSR *param=(AliTPCParamSR*)par;
+void Make_Init(char *tofile="Init.cxx")
+{
+  AliTPCParamSR *param = new AliTPCParamSR();
+  param->SetDefault();
+  if(!param)
+    {
+      cerr<<"AliL3Transform::MakeInitFile : No TPC parameters found"<<endl;
+      return;
+    }
+  
   AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
-  AliTPCPRF2D    * prfouter   = new AliTPCPRF2D;
+  AliTPCPRF2D    * prfouter1   = new AliTPCPRF2D;
+  AliTPCPRF2D    * prfouter2   = new AliTPCPRF2D;  
   AliTPCRF1D     * rf    = new AliTPCRF1D(kTRUE);
   rf->SetGauss(param->GetZSigma(),param->GetZWidth(),1.);
   rf->SetOffset(3*param->GetZSigma());
   rf->Update();
   
   TDirectory *savedir=gDirectory;
-  TFile *if=TFile::Open("$ALICE_ROOT/TPC/AliTPCprf2d.root");
-  if (!if->IsOpen()) { 
-    cerr<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !\n" ;
-    exit(3);
-  }
+  TFile *f1=TFile::Open("$ALICE_ROOT/TPC/AliTPCprf2d.root");
+  if (!f1->IsOpen()) 
+    { 
+      cerr<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !\n" ;
+      exit(3);
+    }
   prfinner->Read("prf_07504_Gati_056068_d02");
-  prfouter->Read("prf_10006_Gati_047051_d03");
-  if->Close();
+  prfouter1->Read("prf_10006_Gati_047051_d03");
+  prfouter2->Read("prf_15006_Gati_047051_d03");  
+  f1->Close();
   savedir->cd();
   
   param->SetInnerPRF(prfinner);
-  param->SetOuterPRF(prfouter); 
+  param->SetOuter1PRF(prfouter1); 
+  param->SetOuter2PRF(prfouter2);
   param->SetTimeRF(rf);
   
-  int fNTimeBins = par->GetMaxTBin()+1;
-  int fNRowLow = par->GetNRowLow();
-  int fNRowUp  = par->GetNRowUp();
-  int fNRow= fNRowLow + fNRowUp;
-  int fNSectorLow = par->GetNInnerSector();
-  int fNSectorUp = par->GetNOuterSector();
-  int fNSector = fNSectorLow + fNSectorUp;
-  int fNSlice = fNSectorLow;
-
+  Int_t fNTimeBins = param->GetMaxTBin()+1;
+  Int_t fNRowLow = param->GetNRowLow();
+  Int_t fNRowUp  = param->GetNRowUp();
+  Int_t fNRowUp1 = param->GetNRowUp1();
+  Int_t fNRowUp2 = param->GetNRowUp2();
+  Int_t fNRow= fNRowLow + fNRowUp;
+  Int_t fNSectorLow = param->GetNInnerSector();
+  Int_t fNSectorUp = param->GetNOuterSector();
+  Int_t fNSector = fNSectorLow + fNSectorUp;
+  Int_t fNSlice = fNSectorLow;
+  
   FILE *f = fopen(tofile,"w");
-  fprintf(f,"void AliL3Transform::Init(){\n");
-
-  fprintf(f,"  fBFieldFactor = %d ;\n",gAlice->Field()->Factor());
-  fprintf(f,"  //sector:\n");
-  fprintf(f,"  fNTimeBins = %d ;\n",fNTimeBins);
-  fprintf(f,"  fNRowLow = %d ;\n",fNRowLow);
-  fprintf(f,"  fNRowUp = %d ;\n",fNRowUp);
-  fprintf(f,"  fNSectorLow = %d ;\n",fNSectorLow);
-  fprintf(f,"  fNSectorUp = %d ;\n",fNSectorUp);
-  fprintf(f,"  fNSector = %d ;\n",fNSector);
-  fprintf(f,"  fPadPitchWidthLow = %f ;\n",par->GetPadPitchWidth(0));
-  fprintf(f,"  fPadPitchWidthUp = %f ;\n",par->GetPadPitchWidth(fNSectorLow));
-  fprintf(f,"  fZWidth = %.20f ;\n",par->GetZWidth());
-  fprintf(f,"  fZSigma = %.20f ;\n",par->GetZSigma());
-  fprintf(f,"  fZLength = %.20f ;\n",par->GetZLength());
-  fprintf(f,"  fZOffset = %.20f ;\n",par->GetZOffset());
-  fprintf(f,"  fDiffT = %.20f ;\n",par->GetDiffT());
-  fprintf(f,"  fDiffL = %.20f ;\n",par->GetDiffL());
-  fprintf(f,"  fInnerPadLength = %f ;\n",par->GetInnerPadLength());
-  fprintf(f,"  fOuterPadLength = %f ;\n",par->GetOuterPadLength());
-  fprintf(f,"  fInnerPRFSigma = %.20f ;\n",param->GetInnerPRF()->GetSigmaX());
-  fprintf(f,"  fOuterPRFSigma = %.20f ;\n",param->GetOuterPRF()->GetSigmaX());
-  fprintf(f,"  fTimeSigma = %.20f ;\n",param->GetTimeRF()->GetSigma());
-  
-  fprintf(f,"\n  //slices:\n");
-  fprintf(f,"  fNSlice = %d ;\n",fNSectorLow);
-  fprintf(f,"  fNRow = %d ;\n",fNRow);
-
-  //rotation shift put in by hand -> Constantin 
-  fprintf(f,"  fNRotShift = 0.5 ;\n");
-
-  fprintf(f,"  fPi = %.15f ;\n",TMath::Pi());
-  fprintf(f,"  for(Int_t i=0;i<36;i++){\n");
-  fprintf(f,"    fCos[i] = cos(2*fPi/9*(i+0.5));\n");
-  fprintf(f,"    fSin[i] = sin(2*fPi/9*(i+0.5));\n");
-  fprintf(f,"  }\n\n");
-
-  for(Int_t i=0;i<fNRow;i++){
-    int sec,row;
-    if( i < fNRowLow){sec =0;row =i;}
-    else{sec = fNSectorLow;row =i-fNRowLow;}
-    fprintf(f,"  fX[%d] = %3.15f ;\n",i,par->GetPadRowRadii(sec,row));
-  }
-  for(Int_t i=0;i<fNRow;i++){
-    int sec,row;
-    if( i < fNRowLow){sec =0;row =i;}
-    else{sec = fNSectorLow;row =i-fNRowLow;}
-    fprintf(f,"  fNPads[%d] = %d ;\n",i,par->GetNPads(sec,row));
-  }
-
-  fprintf(f,"}\n");
-  fclose(f);
-}
-
-void Make_Default(char *file,char *tofile)
-{
-  /*
-    Macro to write out default values, which should be used to initialize
-    the static data members of the AliL3Transform class. Macro does more
-    or less the same as the above, only the output syntax is changed in order
-    to use it for static data member initialization.
-  */
-  
-  TFile * rootf = new TFile(file,"READ");
-  
-  if(!rootf->IsOpen()){
-    cerr<<"no file: "<<file<<endl;
-    return;
-  }
-
-  AliTPCParam* par = (AliTPCParam*)rootf->Get("75x40_100x60");
-
-  if(!par){
-    cerr<<"no AliTPCParam 75x40_100x60 in file: "<<file<<endl;
-    return;
-  }
-
-  int fNTimeBins = par->GetMaxTBin()+1;
-  int fNRowLow = par->GetNRowLow();
-  int fNRowUp  = par->GetNRowUp();
-  int fNRow= fNRowLow + fNRowUp;
-  int fNSectorLow = par->GetNInnerSector();
-  int fNSectorUp = par->GetNOuterSector();
-  int fNSector = fNSectorLow + fNSectorUp;
-  int fNSlice = fNSectorLow;
-
-  FILE *f = fopen(tofile,"w");
+  if(!f)
+    {
+      cerr<<"Error opening file "<<tofile<<endl;
+      return;
+    }
+  fprintf(f,"const Double_t AliL3Transform::fBFACT = 0.0029980;\n");
+  fprintf(f,"Double_t AliL3Transform::fBField = 0.2;\n");
+  fprintf(f,"Int_t AliL3Transform::fVersion = 0;\n");
+  fprintf(f,"Int_t AliL3Transform::fBFieldFactor = %d ;\n",gAlice->Field()->Factor());
   fprintf(f,"Int_t AliL3Transform::fNTimeBins = %d ;\n",fNTimeBins);
   fprintf(f,"Int_t AliL3Transform::fNRowLow = %d ;\n",fNRowLow);
   fprintf(f,"Int_t AliL3Transform::fNRowUp = %d ;\n",fNRowUp);
+  fprintf(f,"Int_t AliL3Transform::fNRowUp1 = %d ;\n",fNRowUp1);
+  fprintf(f,"Int_t AliL3Transform::fNRowUp2 = %d ;\n",fNRowUp2);
   fprintf(f,"Int_t AliL3Transform::fNSectorLow = %d ;\n",fNSectorLow);
   fprintf(f,"Int_t AliL3Transform::fNSectorUp = %d ;\n",fNSectorUp);
   fprintf(f,"Int_t AliL3Transform::fNSector = %d ;\n",fNSector);
-  fprintf(f,"Double_t AliL3Transform::fPadPitchWidthLow = %f ;\n",par->GetPadPitchWidth(0));
-  fprintf(f,"Double_t AliL3Transform::fPadPitchWidthUp = %f ;\n",par->GetPadPitchWidth(fNSectorLow));
-  fprintf(f,"Double_t AliL3Transform::fZWidth = %.20f ;\n",par->GetZWidth());
-  fprintf(f,"Double_t AliL3Transform::fZSigma = %.20f ;\n",par->GetZSigma());
+  fprintf(f,"Double_t AliL3Transform::fPadPitchWidthLow = %f ;\n",param->GetInnerPadPitchWidth());
+  fprintf(f,"Double_t AliL3Transform::fPadPitchWidthUp = %f ;\n",param->GetOuterPadPitchWidth());
+  fprintf(f,"Double_t AliL3Transform::fZWidth = %.20f ;\n",param->GetZWidth());
+  fprintf(f,"Double_t AliL3Transform::fZSigma = %.20f ;\n",param->GetZSigma());
+  fprintf(f,"Double_t AliL3Transform::fZLength = %.20f ;\n",param->GetZLength());
+  fprintf(f,"Double_t AliL3Transform::fZOffset = %.20f ;\n",param->GetZOffset());
+  fprintf(f,"Double_t AliL3Transform::fDiffT = %.20f ;\n",param->GetDiffT());
+  fprintf(f,"Double_t AliL3Transform::fDiffL = %.20f ;\n",param->GetDiffL());
+  fprintf(f,"Double_t AliL3Transform::fInnerPadLength = %f ;\n",param->GetInnerPadLength());
+  fprintf(f,"Double_t AliL3Transform::fOuter1PadLength = %f ;\n",param->GetOuter1PadLength());
+  fprintf(f,"Double_t AliL3Transform::fOuter2PadLength = %f ;\n",param->GetOuter2PadLength());
+  fprintf(f,"Double_t AliL3Transform::fInnerPRFSigma = %.20f ;\n",param->GetInnerPRF()->GetSigmaX());
+  fprintf(f,"Double_t AliL3Transform::fOuter1PRFSigma = %.20f ;\n",param->GetOuter1PRF()->GetSigmaX());
+  fprintf(f,"Double_t AliL3Transform::fOuter2PRFSigma = %.20f ;\n",param->GetOuter2PRF()->GetSigmaX());
+  fprintf(f,"Double_t AliL3Transform::fTimeSigma = %.20f ;\n",param->GetTimeRF()->GetSigma());
   fprintf(f,"Int_t AliL3Transform::fNSlice = %d ;\n",fNSectorLow);
   fprintf(f,"Int_t AliL3Transform::fNRow = %d ;\n",fNRow);
-  fprintf(f,"Double_t AliL3Transform::fNRotShift = 0.5 ;\n");
+  fprintf(f,"Int_t AliL3Transform::fNRotShift = 0.5 ;\n");
   fprintf(f,"Double_t AliL3Transform::fPi = %.15f ;\n",TMath::Pi());
-  fprintf(f,"Double_t AliL3Transform::fX[176] = {\n");
+    
+  fprintf(f,"Double_t AliL3Transform::fX[159] = {");
   for(Int_t i=0;i<fNRow;i++){
     int sec,row;
     if( i < fNRowLow){sec =0;row =i;}
     else{sec = fNSectorLow;row =i-fNRowLow;}
     
-  fprintf(f,"                                    %3.15f,\n",par->GetPadRowRadii(sec,row));
+    fprintf(f,"                                    %3.15f,\n",param->GetPadRowRadii(sec,row));
   }
   fprintf(f,"};\n\n");
   
-  fprintf(f,"Int_t AliL3Transform::fNPads[176] = {\n");
+  fprintf(f,"Int_t AliL3Transform::fNPads[159] = {");
   for(Int_t i=0;i<fNRow;i++){
     int sec,row;
     if( i < fNRowLow){sec =0;row =i;}
     else{sec = fNSectorLow;row =i-fNRowLow;}
-  fprintf(f,"                                     %d,\n",par->GetNPads(sec,row));
+  fprintf(f,"                                     %d,\n",param->GetNPads(sec,row));
   }
+    
   fprintf(f,"};\n");
   fclose(f);
 }
