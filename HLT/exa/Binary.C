@@ -7,7 +7,6 @@ Macro for converting AliRoot digits into L3 RawData. Binary create for each patc
 Binary(char* in,int first, int last,char *path="."){
   char name[256];
   const Int_t npatch = 6;
-  Int_t row[npatch][2] = {{0,31},{32,63},{64,91},{92,119},{120,143},{144,175}};
   AliL3Logger l;
   //l.UnSet(AliL3Logger::kDebug);
   //l.UnSet(AliL3Logger::kAll);
@@ -23,7 +22,7 @@ Binary(char* in,int first, int last,char *path="."){
     for(int patch=0;patch<npatch;patch++){
       cerr<<"reading slice: "<<slice<<" patch: "<<patch<<" and storing to: "<<path<<"digits_"<<slice<<"_"<<patch<<".raw"<<endl;
       fFileHandler->Free();
-      fFileHandler->Init(slice,patch,row[patch]);      
+      fFileHandler->Init(slice,patch);      
       sprintf(name,"%s/digits_%d_%d.raw",path,slice,patch);
       fFileHandler->SetBinaryOutput(name);
       fFileHandler->AliDigits2CompBinary();

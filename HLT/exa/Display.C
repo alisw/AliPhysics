@@ -1,4 +1,10 @@
-void Display(char *trackfile=0,Bool_t rpoints = kFALSE,Bool_t tpoints = kTRUE)
+/**
+   Displays tracks and clusters read from a file. 
+   Functionality is now in AliL3Display. See also the
+   display.C macro.
+*/
+
+void Display(char *trackfile=0,Bool_t rpoints = kFALSE,Bool_t tpoints = kTRUE,Char_t *gfile="/prog/alice/data/GEO/alice.geom")
 {
 //  gROOT->Reset();
   Int_t minslice=0;
@@ -16,7 +22,6 @@ void Display(char *trackfile=0,Bool_t rpoints = kFALSE,Bool_t tpoints = kTRUE)
       fff[s][p] = new AliL3FileHandler();
       sprintf(fname,"points_%d_%d.raw",s,p);
       if(!fff[s][p]->SetBinaryInput(fname)){
-//        printf("no file %s\n",fname);
         delete fff[s][p];
         continue;
       }
@@ -121,7 +126,8 @@ void Display(char *trackfile=0,Bool_t rpoints = kFALSE,Bool_t tpoints = kTRUE)
 	  current_line->Draw("same");
 	}
     }
-  TFile *geofile = new TFile("/prog/alice/data/GEO/alice.geom","READ");  
+
+  TFile *geofile = new TFile(gfile,"READ");  
   TGeometry *geom=(TGeometry*)geofile->Get("AliceGeom");
   geom->Draw("same");
   
