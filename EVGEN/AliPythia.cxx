@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2002/02/07 10:43:06  morsch
+Tuned pp-min.bias settings (M.Monteno, R.Ugoccioni and N.Carrer)
+
 Revision 1.17  2001/12/19 15:40:43  morsch
 For kPyJets enforce simple jet topology, i.e no initial or final state
 gluon radiation and no primordial pT.
@@ -212,14 +215,10 @@ void AliPythia::SetNuclei(Int_t a1, Int_t a2)
 //    MSTP(52)  : (D=1) choice of proton and nuclear structure-function library
 //            =1: internal PYTHIA acording to MSTP(51) 
 //            =2: PDFLIB proton  s.f., with MSTP(51)  = 1000xNGROUP+NSET
-//            =3: PDFLIB proton  s.f. with nuclar correction:
-//                MSTP( 51)  = 1000xNPGROUP+NPSET
-//                MSTP(151)  = 1000xNAGROUP+NASET
+//    If the following mass number both not equal zero, nuclear corrections of the stf are used.
 //    MSTP(192) : Mass number of nucleus side 1
 //    MSTP(193) : Mass number of nucleus side 2
-
-    SetMSTP(52,3);
-    SetMSTP(191, 1001);
+    SetMSTP(52,2);
     SetMSTP(192, a1);
     SetMSTP(193, a2);  
 }
