@@ -15,6 +15,7 @@
 #include "EVGEN/AliGenHIJINGpara.h"
 #include "THijing/AliGenHijing.h"
 #include "PYTHIA6/AliGenPythia.h"
+#include "THerwig/AliGenHerwig.h"
 #include "EVGEN/AliGenParam.h"
 #include "EVGEN/AliGenMUONlib.h"
 #include "EVGEN/AliGenPHOSlib.h"
@@ -27,11 +28,11 @@
 #include "STRUCT/AliMAG.h"
 #endif
 
-enum gentype_t {hijing, hijingParam, gun, box, pythia, 
+enum gentype_t {hijing, hijingParam, gun, box, pythia, herwig, 
 		param1, param2, param3, param4, 
-		cocktail, fluka, halo, ntuple, scan, doublescan};
+		cocktail, fluka, halo, ntuple, scan};
 
-gentype_t gentype = hijing;
+gentype_t gentype = herwig;
 
 Int_t ntracks=1;
 
@@ -249,6 +250,40 @@ void Config()
 	gener->SetForceDecay(kSemiElectronic);
 //   Centre of mass energy 
 	gener->SetEnergyCMS(5500.);
+//   No Tracking 
+	gener->SetTrackingFlag(0);
+	gGener = gener;
+      }
+      break;              
+
+    case herwig:
+//********************************************
+// Example for Charm  Production with Pythia *
+//********************************************
+      {
+	AliGenHerwig *gener = new AliGenHerwig(-1);
+//   final state kinematic cuts
+	gener->SetMomentumRange(0,7000);
+	gener->SetPhiRange(0. ,360.);
+	gener->SetThetaRange(0., 180.);
+	gener->SetYRange(-10,10);
+	gener->SetPtRange(0,7000);
+//   vertex position and smearing 
+	gener->SetOrigin(0,0,0);       // vertex position
+	gener->SetVertexSmear(kPerEvent);
+	gener->SetSigma(0,0,5.6);      // Sigma in (X,Y,Z) (cm) on IP position
+//   Beam momenta
+	gener->SetBeamMomenta(7000,7000);
+//   Beams
+	gener->SetProjectile("P");
+	gener->SetTarget("P");
+//   Structure function
+	gener->SetStrucFunc(kGRVHO);
+//   Hard scatering
+	gener->SetPtHardMin(200);
+	gener->SetPtRMS(20);
+//   Min bias
+	gener->SetProcess(8000);
 //   No Tracking 
 	gener->SetTrackingFlag(0);
 	gGener = gener;
