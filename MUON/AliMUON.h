@@ -152,7 +152,7 @@ class AliMUON : public  AliDetector
     // Background eent for event mixing
     AliMUONMerger *fMerger;   // ! pointer to merger
     
-    ClassDef(AliMUON,5)  // MUON Detector base class
+    ClassDef(AliMUON,7)  // MUON Detector base class
 };
 #endif
 

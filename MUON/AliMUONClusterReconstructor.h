@@ -14,7 +14,6 @@
 
 class AliLoader;
 class AliMUON;
-class AliMUONChamber;
 class AliMUONRawCluster;
 class AliMUONClusterFinderVS;
 class AliMUONData;
@@ -32,15 +31,19 @@ class AliMUONClusterReconstructor : public TObject
   // Cluster Finding & Trigger
   virtual void   Digits2Clusters();
   virtual void   Digits2Clusters(AliRawReader* rawReader);
+  virtual void   Trigger2Trigger() ;
+  virtual void   Trigger2Trigger(AliRawReader* rawReader);
 
-
-  // void EventDump(void);  // dump reconstructed event
-  
-  // Set Reconstruction Model
-  virtual void   SetReconstructionModel(Int_t id, AliMUONClusterFinderVS* reconst);
- 
+  // pointer to data container
   AliMUONData*   GetMUONData() {return fMUONData;}
 
+  // Reco Model
+  AliMUONClusterFinderVS* GetRecoModel() {return fRecModel;}
+  //  AliMUONClusterFinderAZ* GetRecoModel() {return fRecModel;}
+  void   SetRecoModel(AliMUONClusterFinderVS* rec) {fRecModel = rec;}
+  //  void   SetRecoModel(AliMUONClusterFinderAZ* rec) {fRecModel = rec;}
+
+  // print level
   Int_t GetPrintLevel(void) const {return fPrintLevel;}
   void SetPrintLevel(Int_t printLevel) {fPrintLevel = printLevel;}
 
@@ -52,11 +55,9 @@ class AliMUONClusterReconstructor : public TObject
  private:
   static const Int_t fgkDefaultPrintLevel;     // Default print level
 
-  Int_t                   fNCh;                // Number of chambers   
-  Int_t                   fNTrackingCh;        // Number of tracking chambers*
   AliMUONData*            fMUONData;           //! Data container for MUON subsystem 
-  AliMUON*                fMUON;               //! pointer to MUON  
-  TObjArray*              fChambers;           //! List of Tracking Chambers
+  AliMUONClusterFinderVS* fRecModel;           //! cluster recontruction model
+  //AliMUONClusterFinderAZ* fRecModel;           //! cluster recontruction model
 
  // print level
   Int_t fPrintLevel;

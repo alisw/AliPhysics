@@ -55,7 +55,6 @@
 #include "AliMUONTrackParam.h"
 
 #include "AliSegmentation.h"
-#include "AliMUONResponse.h"
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
 #include "AliMC.h"
@@ -424,11 +423,9 @@ void AliMUONDisplay::DisplayColorScale()
     text->SetTextSize(0.2);
     text->SetTextAlign(22);
     
-    AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
-    AliMUONChamber *iChamber = &(pMUON->Chamber(fChamber-1));
-    AliMUONResponse * response=iChamber->ResponseModel();
-    Int_t adcmax=1024;
-    if (response) adcmax = (Int_t) response->MaxAdc();
+
+    Int_t adcmax=4096; // default 12 bits ADC
+
     
 
     TBox *box;
@@ -923,7 +920,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     AliMUON *pMUON  =     (AliMUON*)gAlice->GetModule("MUON");
     AliMUONChamber*       iChamber;
     AliSegmentation*      segmentation;
-    AliMUONResponse*      response;
    
     GetMUONData()->SetTreeAddress("D");
 
@@ -946,7 +942,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     iChamber = &(pMUON->Chamber(chamber-1));
 
     segmentation = iChamber->SegmentationModel(cathode);
-    response     = iChamber->ResponseModel();
     Float_t zpos = iChamber->Z();
 
     AliMUONDigit  *mdig;
@@ -956,8 +951,8 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     //loop over all digits and store their position
     
     Int_t npoints  = 1;
-    Float_t adcmax = 1024;
-    if (response&&chamber<11) adcmax = response->MaxAdc();
+    Float_t adcmax = 1024; // default
+    if (chamber<11) adcmax = 4096;
 
     for (Int_t digit = 0; digit < ndigits; digit++) {
         mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);

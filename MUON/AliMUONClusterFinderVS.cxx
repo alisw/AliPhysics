@@ -22,7 +22,7 @@
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
 #include "AliSegmentation.h"
-#include "AliMUONResponse.h"
+#include "AliMUONMathieson.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONHitMapA1.h"
 #include "AliLog.h"
@@ -558,20 +558,20 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 
 	    chi2f = (TMath::Log(fInput->TotalCharge(0)*fQrFit[0]
 		  /  (fInput->TotalCharge(1)*fQrFit[1]) )
-		  / fInput->Response()->ChargeCorrel() );
+		  / fInput->ChargeCorrel() );
 	    chi2f *=chi2f;
 	    chi2fi = (TMath::Log(fInput->TotalCharge(0)*(1-fQrFit[0])
 		  /  (fInput->TotalCharge(1)*(1-fQrFit[1])) )
-		  / fInput->Response()->ChargeCorrel() );
+		  / fInput->ChargeCorrel() );
 	    chi2f += chi2fi*chi2fi;
 
 	    chi2s = (TMath::Log(fInput->TotalCharge(0)*sQrFit[0]
 		  /  (fInput->TotalCharge(1)*sQrFit[1]) )
-		  / fInput->Response()->ChargeCorrel() );
+		  / fInput->ChargeCorrel() );
 	    chi2s *=chi2s;
 	    chi2si = (TMath::Log(fInput->TotalCharge(0)*(1-sQrFit[0])
 		  /  (fInput->TotalCharge(1)*(1-sQrFit[1])) )
-		  / fInput->Response()->ChargeCorrel() );
+		  / fInput->ChargeCorrel() );
 	    chi2s += chi2si*chi2si;
 
 	    // usefull to store the charge matching chi2 in the cluster
@@ -1963,7 +1963,7 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 	    for (i=0; i<fMul[cath]; i++) {
 		cnew.SetIndex(cnew.GetMultiplicity(cath), cath, c->GetIndex(i,cath));
 		fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
-		Float_t q1=fInput->Response()->IntXY(fSeg[cath]);
+		Float_t q1 = fInput->Mathieson()->IntXY(fSeg[cath]);
 		cnew.SetContrib(i, cath, q1*Float_t(cnew.GetCharge(cath))/Float_t(fQ[i][cath]));
 		cnew.SetMultiplicity(cath, cnew.GetMultiplicity(cath)+1 );
 	    }

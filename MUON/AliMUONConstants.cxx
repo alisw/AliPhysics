@@ -33,6 +33,17 @@ Float_t AliMUONConstants::fgDefaultChamberZ[14] =
 Float_t  AliMUONConstants::fgDzCh   = 15.5/2.;
 Float_t  AliMUONConstants::fgDzSlat = 8.5/2.;
 
+Float_t  AliMUONConstants::fgSqrtKx3Slat = 0.7131;
+Float_t  AliMUONConstants::fgSqrtKy3Slat = 0.7642;
+
+Float_t  AliMUONConstants::fgSqrtKx3St12 = 0.7000;
+Float_t  AliMUONConstants::fgSqrtKy3St12 = 0.7550;
+
+Float_t  AliMUONConstants::fgChargeCorrelSlat = 0.11;
+Float_t  AliMUONConstants::fgChargeCorrelSt12 = 0.0; //???
+
+Float_t  AliMUONConstants::fgPitchSlat = 0.25;
+Float_t  AliMUONConstants::fgPitchSt12 = 0.20; 
 
 Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  66.0,   80.,   80., 100., 100.};    
 Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 395.,  560.,  563., 850., 900.};  

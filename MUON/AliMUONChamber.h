@@ -53,10 +53,6 @@ class AliMUONChamber : public TObject
   virtual void    SetSegmentationModel(Int_t i, AliSegmentation* thisSegmentation) {
       fSegmentation->AddAt(thisSegmentation,i-1);
   }
-// Set Cluster reconstruction model  
-  virtual void    SetReconstructionModel(AliMUONClusterFinderVS *thisReconstruction) {
-      fReconstruction = thisReconstruction;
-  }
 //  
 //  Get pointer to response model
   virtual AliMUONResponse* &ResponseModel(){return fResponse;}
@@ -66,8 +62,7 @@ class AliMUONChamber : public TObject
       return (AliSegmentation *) (*fSegmentation)[isec-1];
   }
   virtual TObjArray* ChamberSegmentation() {return fSegmentation;}
-//  Get pointer to cluster reconstruction model
-  virtual AliMUONClusterFinderVS* &ReconstructionModel(){return fReconstruction;}
+
 // Get number of segmentation sectors  
   virtual Int_t Nsec() const        {return fnsec;}
 // Set number of segmented cathodes (1 or 2)  
@@ -136,7 +131,6 @@ class AliMUONChamber : public TObject
   Float_t fCurrentCorrel; //! charge correlation for current hit.
 
   TObjArray              *fSegmentation;    // pointer to segmentation
-  AliMUONClusterFinderVS *fReconstruction;  // pointer to reconstruction
   AliMUONResponse        *fResponse;        // pointer to response
   AliMUONGeometryModule  *fGeometry;        // pointer to geometry
   ClassDef(AliMUONChamber,3) // Muon tracking chamber class

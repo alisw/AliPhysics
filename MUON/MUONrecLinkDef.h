@@ -6,9 +6,9 @@
 #pragma link C++ class AliMUONClusterReconstructor+; 
 #pragma link C++ class AliMUONClusterFinderVS+; 
 #pragma link C++ class AliMUONClusterFinderAZ+; 
+#pragma link C++ class AliMUONMathieson+; 
 #pragma link C++ class AliMUONPixel+; 
 #pragma link C++ class AliMUONClusterInput+; 
-#pragma link C++ class AliMUONRawCluster+; 
 #pragma link C++ class AliMUONReconstructor+;
 #pragma link C++ class AliMUONEventReconstructor+; 
 #pragma link C++ class AliMUONTrack+; 
@@ -21,15 +21,6 @@
 #pragma link C++ class AliMUONTrackHit+; 
 #pragma link C++ class AliMUONSegment+;
 #pragma link C++ class AliMUONReconstHit+; 
-
-#pragma link C++ class AliMUONDigit+; 
-#pragma link C++ class AliMUONTransientDigit+; 
-
-
-#pragma link C++ class AliMUONTriggerDecision+; 
-#pragma link C++ class AliMUONGlobalTrigger+; 
-#pragma link C++ class AliMUONLocalTrigger+; 
-#pragma link C++ class AliMUONTriggerLut+; 
 
 #pragma link C++ class AliMUONDDLTrigger+;
 #pragma link C++ class AliMUONSubEventTrigger+;

@@ -27,7 +27,6 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 
-#include "AliMUON.h"
 #include "AliMUONDigit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
@@ -44,18 +43,12 @@ ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
 
 //__________________________________________________________________________
 AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliLoader* loader)
-  : TObject()
+  : TObject(),
+    fMUONData(0),
+    fPrintLevel(fgkDefaultPrintLevel),
+    fDebug(0)
 {
   // Standard Constructor
- 
-  fDebug           = 0;
-  fNCh             = 0;
-  fNTrackingCh     = 0;
-  fChambers        = 0;
-  fMUONData        = 0;
-  fChambers = new TObjArray(AliMUONConstants::NCh());
-
-  fPrintLevel = fgkDefaultPrintLevel;
 
   // initialize loader's
   fLoader = loader;
@@ -63,23 +56,16 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliLoader* loader)
   // initialize container
   fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
 
-  // Loading AliRun master
-  AliRunLoader* runloader = fLoader->GetRunLoader();
-  if (runloader->GetAliRun() == 0x0) runloader->LoadgAlice();
-  gAlice = runloader->GetAliRun();
+  // reconstruction model
+  fRecModel = new AliMUONClusterFinderVS();
+  //fRecModel = new AliMUONClusterFinderAZ();
 
-  // getting MUON
-  fMUON = (AliMUON*) gAlice->GetDetector("MUON");
 }
 
 //__________________________________________________________________________
 AliMUONClusterReconstructor::AliMUONClusterReconstructor()
   : TObject(),
-    fNCh(0),
-    fNTrackingCh(0),
     fMUONData(0),
-    fMUON(0),
-    fChambers(0),
     fPrintLevel(fgkDefaultPrintLevel),
     fDebug(0),
     fLoader(0)
@@ -87,18 +73,6 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor()
   // Default Constructor
 }
 
-//____________________________________________________________________
-void AliMUONClusterReconstructor::SetReconstructionModel(Int_t id, AliMUONClusterFinderVS *reconst)
-{
-  // take infos chambers from AliMUON
-  AliMUONChamber* pCh = 0;
-  pCh = &(fMUON->Chamber(id));
-
-  fChambers->AddAt(pCh, id);
-
-  // Set ClusterFinder for chamber id
-  ((AliMUONChamber*) fChambers->At(id))->SetReconstructionModel(reconst);
-}
 //_______________________________________________________________________
 AliMUONClusterReconstructor::AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs)
   : TObject(rhs)
@@ -124,10 +98,7 @@ AliMUONClusterReconstructor::operator=(const AliMUONClusterReconstructor& rhs)
 //__________________________________________________________________________
 AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
 {
-  if (fChambers){
-    fChambers->Clear(); // Sets pointers to 0 sinche it is not the owner
-    delete fChambers;
-  } 
+
   if (fMUONData)
     delete fMUONData;
 
@@ -144,15 +115,11 @@ void AliMUONClusterReconstructor::Digits2Clusters()
     dig1 = new TClonesArray("AliMUONDigit",1000);
     dig2 = new TClonesArray("AliMUONDigit",1000);
     AliMUONDigit *digit;
-// Loop on chambers and on cathode planes
-//
-//    fMUONData->ResetRawClusters();        
+
+// Loop on chambers and on cathode planes     
     TClonesArray * muonDigits;
 
     for (Int_t ich = 0; ich < 10; ich++) {
- 	AliMUONChamber* iChamber = (AliMUONChamber*) fChambers->At(ich);
-	AliMUONClusterFinderVS* rec = iChamber->ReconstructionModel();
-	//AliMUONClusterFinderAZ* rec = (AliMUONClusterFinderAZ*)iChamber->ReconstructionModel();
 
 	fMUONData->ResetDigits();
 	fMUONData->GetCathode(0);
@@ -164,7 +131,7 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 	Int_t n = 0;
 	for (k = 0; k < ndig; k++) {
 	    digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
-	    if (rec->TestTrack(digit->Track(0)))
+	    if (fRecModel->TestTrack(digit->Track(0)))
 	      new(lhits1[n++]) AliMUONDigit(*digit);
 	}
 	fMUONData->ResetDigits();
@@ -177,16 +144,16 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 	
 	for (k=0; k<ndig; k++) {
 	    digit= (AliMUONDigit*) muonDigits->UncheckedAt(k);
-	    if (rec->TestTrack(digit->Track(0)))
+	    if (fRecModel->TestTrack(digit->Track(0)))
 	      new(lhits2[n++]) AliMUONDigit(*digit);
 	}
 
-	if (rec) {	 
+	if (fRecModel) {	 
 	    AliMUONClusterInput::Instance()->SetDigits(ich, dig1, dig2);
-	    rec->FindRawClusters();
+	    fRecModel->FindRawClusters();
 	}
 	// copy into the container
-	TClonesArray* tmp = rec->GetRawClusters();
+	TClonesArray* tmp = fRecModel->GetRawClusters();
 	for (Int_t id = 0; id < tmp->GetEntriesFast(); id++) {
 	  AliMUONRawCluster* pClus = (AliMUONRawCluster*) tmp->At(id);
 	  fMUONData->AddRawCluster(ich, *pClus);
@@ -205,4 +172,20 @@ void AliMUONClusterReconstructor::Digits2Clusters(AliRawReader* /*rawReader*/)
 //  Perform cluster finding form raw data
 
    AliFatal("clusterization not implemented for raw data input");
+}
+//_______________________________________________________________________
+void AliMUONClusterReconstructor::Trigger2Trigger() 
+{
+// copy trigger from TreeD to TreeR
+
+  fMUONData->SetTreeAddress("GLT");
+  fMUONData->GetTriggerD();
+}
+//_______________________________________________________________________
+void AliMUONClusterReconstructor::Trigger2Trigger(AliRawReader* /*rawReader*/) 
+{
+// call the Trigger Algorithm from raw data and fill TreeR 
+
+   AliFatal("Trigger not implemented for raw data input");
+
 }

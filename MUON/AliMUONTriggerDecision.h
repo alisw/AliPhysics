@@ -49,10 +49,6 @@ class AliMUONTriggerDecision : public TObject
 
   void Digits2Trigger(); // main function for digitizer
 
-  void Trigger2Trigger();// main function for reconstructor
-
-  void Trigger2Trigger(AliRawReader* rawReader); // for raw data reader purpose
-
   void ClearDigits();
   TClonesArray* Digits(Int_t DetectionPlane);
   void AddDigit(Int_t id, Int_t* tracks, Int_t* charges, Int_t* digits);

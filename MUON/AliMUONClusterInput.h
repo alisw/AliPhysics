@@ -14,7 +14,7 @@ class TMinuit;
 class AliMUONDigit;
 class AliMUONRawCluster;
 class AliSegmentation;
-class AliMUONResponse;
+class AliMUONMathieson;
 
 class AliMUONClusterInput : public TObject 
 {
@@ -31,7 +31,9 @@ class AliMUONClusterInput : public TObject
     TClonesArray* Digits(Int_t cath) const {return fDigits[cath];}
     Int_t NDigits(Int_t cath) const {return fNDigits[cath];}
     AliSegmentation* Segmentation(Int_t cath) const {return fSegmentation[cath];}
-    AliMUONResponse* Response() const {return fResponse;}    
+    AliMUONMathieson* Mathieson() const {return fgMathieson;}    
+    Float_t ChargeCorrel() const {return fChargeCorrel;}    
+
 // Fitting    
     TMinuit*      Fitter() const {return fgMinuit;}
 // Current cluster information    
@@ -52,11 +54,12 @@ class AliMUONClusterInput : public TObject
     AliMUONClusterInput & operator = (const AliMUONClusterInput& rhs);
  private:
     static AliMUONClusterInput* fgClusterInput; // ! singleton instance
+    static AliMUONMathieson*    fgMathieson;     // ! Mathieson
+
     // Digits
     TClonesArray*        fDigits[2];       // ! Array of pointers to digits
     Int_t                fNDigits[2];      // ! Number of digits
     AliSegmentation*     fSegmentation[2]; // ! Segmentation per cathode
-    AliMUONResponse*     fResponse;        // ! Response
     Int_t                fNseg;            // ! number of cathode planes
     Int_t                fChamber;         // ! Current chamber number
     
@@ -70,6 +73,8 @@ class AliMUONClusterInput : public TObject
     Int_t                fChargeTot[2];    // ! Total charge
     Float_t              fQtot[2];         // ! Total charge
     Float_t              fZ;               // ! Current z-position
+    Float_t              fChargeCorrel;    // ! charge correlation 
+
     // Fitter
     static TMinuit*      fgMinuit;          // ! Fitter
     ClassDef(AliMUONClusterInput, 0)        // Global data service for hit reconstruction

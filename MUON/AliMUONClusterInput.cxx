@@ -21,8 +21,9 @@
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 #include "AliMUONClusterInput.h"
-#include "AliMUONResponse.h"
+#include "AliMUONMathieson.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONDigit.h"
 #include "AliLog.h"
@@ -31,18 +32,18 @@ ClassImp(AliMUONClusterInput)
 
 AliMUONClusterInput* AliMUONClusterInput::fgClusterInput = 0; 
 TMinuit* AliMUONClusterInput::fgMinuit = 0; 
+AliMUONMathieson* AliMUONClusterInput::fgMathieson = 0; 
 
 AliMUONClusterInput::AliMUONClusterInput()
-  : TObject()
+  : TObject(),
+    fCluster(0),
+    fChargeCorrel(1.) // in case not defined
+
 {
-  fgClusterInput = 0; 
-  fgMinuit = 0; 
   fDigits[0]=0;
   fDigits[1]=0;
   fSegmentation[0]=0;
   fSegmentation[1]=0;
-  fResponse=0;
-  fCluster=0;
 }
 
 AliMUONClusterInput* AliMUONClusterInput::Instance()
@@ -60,6 +61,7 @@ AliMUONClusterInput::~AliMUONClusterInput()
 {
 // Destructor
     delete fgMinuit;
+    delete fgMathieson;
 }
 
 AliMUONClusterInput::AliMUONClusterInput(const AliMUONClusterInput& clusterInput):TObject(clusterInput)
@@ -84,10 +86,23 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig1, TClonesAr
     pMUON = (AliMUON*) gAlice->GetModule("MUON");
     iChamber =  &(pMUON->Chamber(chamber));
 
+    fgMathieson = new AliMUONMathieson();
     fSegmentation[0]=iChamber->SegmentationModel(1);
     fSegmentation[1]=iChamber->SegmentationModel(2);
-    fResponse=iChamber->ResponseModel();
     fNseg = 2;
+    if (chamber < AliMUONConstants::NTrackingCh()) {
+      if (chamber > 3 ) {
+	fgMathieson->SetPitch(AliMUONConstants::PitchSlat());
+	fgMathieson->SetSqrtKx3AndDeriveKx2Kx4(AliMUONConstants::SqrtKx3Slat());
+	fgMathieson->SetSqrtKy3AndDeriveKy2Ky4(AliMUONConstants::SqrtKy3Slat());
+	fChargeCorrel = AliMUONConstants::ChargeCorrelSlat();
+      } else {
+	fgMathieson->SetPitch(AliMUONConstants::PitchSt12());
+	fgMathieson->SetSqrtKx3AndDeriveKx2Kx4(AliMUONConstants::SqrtKx3St12());
+	fgMathieson->SetSqrtKy3AndDeriveKy2Ky4(AliMUONConstants::SqrtKy3St12());
+	fChargeCorrel = AliMUONConstants::ChargeCorrelSt12();
+      }
+    }
 }
 
 void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig)
@@ -101,7 +116,6 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig)
     iChamber =  &(pMUON->Chamber(chamber));
 
     fSegmentation[0]=iChamber->SegmentationModel(1);
-    fResponse=iChamber->ResponseModel();
     fNseg=1;
 }
 
@@ -160,7 +174,7 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cat
    fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
 //  First Cluster
    fSegmentation[cath]->SetHit(par[0],par[1],fZ);
-   Float_t q1=fResponse->IntXY(fSegmentation[cath]);
+   Float_t q1=fgMathieson->IntXY(fSegmentation[cath]);
     
    Float_t value = fQtot[cath]*q1;
    return value;
@@ -179,11 +193,11 @@ Float_t AliMUONClusterInput::DiscrChargeS2(Int_t i,Double_t *par)
    fSegmentation[0]->SetPad(fix[i][0], fiy[i][0]);
 //  First Cluster
    fSegmentation[0]->SetHit(par[0],par[1],fZ);
-   Float_t q1=fResponse->IntXY(fSegmentation[0]);
+   Float_t q1=fgMathieson->IntXY(fSegmentation[0]);
     
 //  Second Cluster
    fSegmentation[0]->SetHit(par[2],par[3],fZ);
-   Float_t q2=fResponse->IntXY(fSegmentation[0]);
+   Float_t q2=fgMathieson->IntXY(fSegmentation[0]);
     
    Float_t value = fQtot[0]*(par[4]*q1+(1.-par[4])*q2);
    return value;
@@ -202,11 +216,11 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cat
    fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
 //  First Cluster
    fSegmentation[cath]->SetHit(par[0],par[1],fZ);
-   Float_t q1=fResponse->IntXY(fSegmentation[cath]);
+   Float_t q1=fgMathieson->IntXY(fSegmentation[cath]);
     
 //  Second Cluster
    fSegmentation[cath]->SetHit(par[2],par[3],fZ);
-   Float_t q2=fResponse->IntXY(fSegmentation[cath]);
+   Float_t q2=fgMathieson->IntXY(fSegmentation[cath]);
    Float_t value;
    if (cath==0) {
        value = fQtot[0]*(par[4]*q1+(1.-par[4])*q2);

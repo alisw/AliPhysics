@@ -1,20 +1,49 @@
 # $Id$
 
-SRCS:=  AliMUON.cxx \
-        AliMUONConstants.cxx \
-        AliMUONTriggerConstants.cxx \
-        AliMUONData.cxx \
-        AliMUONDataInterface.cxx \
-        AliMUONLoader.cxx \
+SRCS:=  AliMUON.cxx AliMUONv1.cxx \
+        AliMUONSegmentationV0.cxx \
+        AliMUONSegmentationV01.cxx \
+        AliMUONSegmentationV02.cxx \
+        AliMUONSegmentationTrigger.cxx  \
+        AliMUONSegmentationTriggerX.cxx \
+        AliMUONSegmentationTriggerY.cxx \
+        AliMUONSegmentationSlatModule.cxx \
+        AliMUONSegmentationSlatModuleN.cxx \
+        AliMUONSegmentationSlat.cxx \
+        AliMUONSegmentationSlatN.cxx \
         AliMUONSegmentationDetectionElement.cxx \
         AliMUONSegmentIndex.cxx \
         AliMUONSegmentManuIndex.cxx \
         AliMUONSegmentPosition.cxx\
+        AliMUONResponse.cxx \
+        AliMUONResponseV0.cxx \
+        AliMUONResponseTrigger.cxx \
+        AliMUONResponseTriggerV1.cxx\
+        AliMUONGeometryDEIndexing.cxx \
+        AliMUONCommonGeometryBuilder.cxx \
+        AliMUONSt1GeometryBuilder.cxx \
+        AliMUONSt1GeometryBuilderV2.cxx \
+        AliMUONSt2GeometryBuilder.cxx \
+        AliMUONSlatGeometryBuilder.cxx \
+        AliMUONTriggerGeometryBuilder.cxx \
+        AliMUONConstants.cxx \
+        AliMUONTriggerConstants.cxx \
+        AliMUONDataInterface.cxx \
+        AliMUONLoader.cxx \
         AliMUONChamber.cxx \
         AliMUONChamberTrigger.cxx \
         AliMUONTriggerCircuit.cxx \
-        AliMUONDisplay.cxx \
+        AliMUONData.cxx \
         AliMUONPoints.cxx \
+        AliMUONHit.cxx \
+        AliMUONHitMapA1.cxx \
+        AliMUONDigit.cxx \
+        AliMUONTransientDigit.cxx \
+        AliMUONRawCluster.cxx \
+        AliMUONGlobalTrigger.cxx  \
+        AliMUONLocalTrigger.cxx \
+        AliMUONTriggerLut.cxx \
+        AliMUONDisplay.cxx \
         AliMUONRecoDisplay.cxx \
         AliMUONRecoCheck.cxx
 

@@ -6,9 +6,9 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-#include "AliMUONResponseV0.h"
+#include "AliMUONResponse.h"
 
-class AliMUONResponseTrigger : public AliMUONResponseV0 
+class AliMUONResponseTrigger : public AliMUONResponse
 {
  public:
   AliMUONResponseTrigger();

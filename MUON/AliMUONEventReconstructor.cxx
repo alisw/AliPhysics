@@ -149,11 +149,6 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
   // initialize container
   fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
 
-   // Loading AliRun master
-  AliRunLoader* runloader = fLoader->GetRunLoader();
-  if (runloader->GetAliRun() == 0x0) runloader->LoadgAlice();
-  gAlice = runloader->GetAliRun();
-
   return;
 }
   //__________________________________________________________________________

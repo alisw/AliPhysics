@@ -1,38 +1,15 @@
 # $Id$
 
-SRCS:= AliMUONv0.cxx AliMUONv1.cxx AliMUONv3.cxx \
-       AliMUONGeometryDEIndexing.cxx \
-       AliMUONCommonGeometryBuilder.cxx \
-       AliMUONSt1GeometryBuilder.cxx \
-       AliMUONSt1GeometryBuilderV2.cxx \
-       AliMUONSt2GeometryBuilder.cxx \
-       AliMUONSlatGeometryBuilder.cxx \
-       AliMUONTriggerGeometryBuilder.cxx \
+SRCS:= AliMUONv0.cxx  AliMUONv3.cxx \
        AliMUONFactory.cxx \
-       AliMUONSegmentationV0.cxx \
-       AliMUONSegmentationV01.cxx \
-       AliMUONSegmentationV02.cxx \
-       AliMUONSegmentationTrigger.cxx  \
-       AliMUONSegmentationTriggerX.cxx \
-       AliMUONSegmentationTriggerY.cxx \
-       AliMUONSegmentationSlatModule.cxx \
-       AliMUONSegmentationSlatModuleN.cxx \
-       AliMUONSegmentationSlat.cxx \
-       AliMUONSegmentationSlatN.cxx \
        AliMUONSt1Segmentation.cxx \
        AliMUONSt12QuadrantSegmentation.cxx \
-       AliMUONResponse.cxx \
-       AliMUONResponseV0.cxx \
        AliMUONSt1Response.cxx \
-       AliMUONResponseTrigger.cxx \
-       AliMUONResponseTriggerV1.cxx\
        AliMUONSt1ElectronicElement.cxx \
        AliMUONSt1SpecialMotif.cxx \
        AliMUONSt1ResponseParameter.cxx \
        AliMUONSt1ResponseRule.cxx \
        AliMUONSt1IniReader.cxx \
-       AliMUONHit.cxx \
-       AliMUONHitMapA1.cxx \
        AliMUONPadHit.cxx \
        AliMUONSt1Decoder.cxx \
        AliMUONDigitizer.cxx \
@@ -40,6 +17,7 @@ SRCS:= AliMUONv0.cxx AliMUONv1.cxx AliMUONv3.cxx \
        AliMUONDigitizerv2.cxx \
        AliMUONSDigitizerv1.cxx \
        AliMUONMerger.cxx \
+       AliMUONTriggerDecision.cxx \
        AliMUONTest.cxx
 
 HDRS:= $(SRCS:.cxx=.h)

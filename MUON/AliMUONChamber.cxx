@@ -37,7 +37,6 @@ AliMUONChamber::AliMUONChamber()
     frMax(0.),
     fCurrentCorrel(1), // to avoid mistakes if ChargeCorrelInit is not called
     fSegmentation(0),
-    fReconstruction(0),
     fResponse(0),
     fGeometry(0)
 {
@@ -55,7 +54,6 @@ AliMUONChamber::AliMUONChamber(Int_t id)
     frMax(0.),
     fCurrentCorrel(1), // to avoid mistakes if ChargeCorrelInit is not called
     fSegmentation(0),
-    fReconstruction(0),
     fResponse(0),
     fGeometry(0)
 {

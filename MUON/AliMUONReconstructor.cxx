@@ -31,7 +31,6 @@
 #include "AliMUONData.h"
 #include "AliMUONEventReconstructor.h"
 #include "AliMUONClusterReconstructor.h"
-#include "AliMUONTriggerDecision.h"
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
@@ -63,16 +62,8 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader);
   AliMUONData* dataCluster = recoCluster->GetMUONData();
-
-  AliMUONTriggerDecision* trigDec = new AliMUONTriggerDecision(loader,0,dataCluster);
-  //  AliMUONData* dataTrig = trigDec->GetMUONData();
-
-
-  for (Int_t i = 0; i < 10; i++) {
-    AliMUONClusterFinderVS *recModel = new AliMUONClusterFinderVS();
-    recModel->SetGhostChi2Cut(10);
-    recoCluster->SetReconstructionModel(i,recModel);
-  } 
+  AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
+  recModel->SetGhostChi2Cut(10);
 
   loader->LoadDigits("READ");
   loader->LoadRecPoints("RECREATE");
@@ -95,7 +86,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     // trigger branch
     dataCluster->MakeBranch("TC");
     dataCluster->SetTreeAddress("TC");
-    trigDec->Trigger2Trigger(); 
+    recoCluster->Trigger2Trigger(); 
     dataCluster->Fill("TC");
 
     loader->WriteRecPoints("OVERWRITE");
@@ -134,7 +125,6 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   delete recoCluster;
   delete recoEvent;
-  delete trigDec;
 }
 
 //_____________________________________________________________________________
@@ -150,14 +140,8 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 
   AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader);
   AliMUONData* dataCluster = recoCluster->GetMUONData();
-
-  AliMUONTriggerDecision* trigDec = new AliMUONTriggerDecision(loader,0,dataCluster);
- 
-  for (Int_t i = 0; i < 10; i++) {
-    AliMUONClusterFinderVS *recModel = new AliMUONClusterFinderVS();
-    recModel->SetGhostChi2Cut(10);
-    recoCluster->SetReconstructionModel(i,recModel);
-  } 
+  AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
+  recModel->SetGhostChi2Cut(10);
 
   loader->LoadRecPoints("RECREATE");
   loader->LoadTracks("RECREATE");
@@ -181,7 +165,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     // trigger branch
     dataCluster->MakeBranch("TC");
     dataCluster->SetTreeAddress("TC");
-    trigDec->Trigger2Trigger(rawReader); 
+    recoCluster->Trigger2Trigger(rawReader); 
     dataCluster->Fill("TC");
 
     loader->WriteRecPoints("OVERWRITE");
@@ -219,7 +203,6 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 
   delete recoCluster;
   delete recoEvent;
-  delete trigDec;
 }
 
 //_____________________________________________________________________________

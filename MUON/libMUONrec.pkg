@@ -5,9 +5,9 @@ FSRCS= extrap.F
 SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONClusterFinderVS.cxx \
        AliMUONClusterFinderAZ.cxx \
+       AliMUONMathieson.cxx \
        AliMUONPixel.cxx \
        AliMUONClusterInput.cxx \
-       AliMUONRawCluster.cxx \
        AliMUONReconstructor.cxx \
        AliMUONEventReconstructor.cxx \
        AliMUONTrack.cxx \
@@ -20,12 +20,6 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONTrackHit.cxx \
        AliMUONSegment.cxx \
        AliMUONReconstHit.cxx \
-       AliMUONDigit.cxx \
-       AliMUONTransientDigit.cxx \
-       AliMUONTriggerDecision.cxx \
-       AliMUONGlobalTrigger.cxx  \
-       AliMUONLocalTrigger.cxx \
-       AliMUONTriggerLut.cxx \
        AliMUONDDLTrigger.cxx \
        AliMUONSubEventTrigger.cxx \
        AliMUONScalerEventTrigger.cxx \

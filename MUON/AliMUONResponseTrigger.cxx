@@ -26,7 +26,7 @@ ClassImp(AliMUONResponseTrigger)
 
 //------------------------------------------------------------------   
 AliMUONResponseTrigger::AliMUONResponseTrigger()
-  : AliMUONResponseV0()
+  : AliMUONResponse()
 {
 // Default constructor
 }

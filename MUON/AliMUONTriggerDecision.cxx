@@ -96,10 +96,6 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint, 
   }else{
     fMUONData = data;
   }
-  // Loading AliRun master
-  AliRunLoader* runloader = fLoader->GetRunLoader();
-  if (runloader->GetAliRun() == 0x0) runloader->LoadgAlice();
-  gAlice = runloader->GetAliRun();
 
   // getting MUON
   fMUON = (AliMUON*) gAlice->GetDetector("MUON");
@@ -1437,22 +1433,4 @@ void AliMUONTriggerDecision::Digits2Trigger(){
       fMUONData->AddLocalTrigger(*pLocTrig);  // add a local trigger in the list
     }
   }
-}
-
-//_______________________________________________________________________
-void AliMUONTriggerDecision::Trigger2Trigger() 
-{
-// copy trigger from TreeD to TreeR
-
-  fMUONData->SetTreeAddress("GLT");
-  fMUONData->GetTriggerD();
-}
-
-//_______________________________________________________________________
-void AliMUONTriggerDecision::Trigger2Trigger(AliRawReader* /*rawReader*/) 
-{
-// call the Trigger Algorithm from raw data and fill TreeR 
-
-   AliFatal("Trigger not implemented for raw data input");
-
 }
