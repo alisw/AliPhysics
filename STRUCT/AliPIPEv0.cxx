@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.19.4.1  2002/06/10 15:13:48  hristov
+Merged with v3-08-02
+
+Revision 1.21  2002/05/11 19:14:44  morsch
+PCONE QBEU had last z defined twice.
+
 Revision 1.20  2002/05/02 12:36:43  morsch
 New version of beam-pipe geometry. Ref. AL502206PL
 (used in production readiness report).
@@ -705,6 +711,9 @@ void AliPIPEv0::CreateGeometry()
 //    by rotating it to 180 deg. and make it invisible
 // 
     gMC->Gspos("QBPM",1,"ALIC",0,0,0,idrotm[2013], "ONLY");
+    gMC->Gsbool("QBPM", "L3DX");
+    gMC->Gsbool("QBPM", "L3O3");
+    gMC->Gsbool("QBPM", "L3O4");
 
 
 //
