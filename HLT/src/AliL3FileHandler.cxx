@@ -21,6 +21,7 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3TrackArray.h"
 
+
 //_____________________________________________________________
 // AliL3FileHandler
 //
@@ -131,7 +132,7 @@ Bool_t AliL3FileHandler::SetAliInput()
   fParam = (AliTPCParam*)fInAli->Get(AliL3Transform::GetParamName());
   if(!fParam){ 
     LOG(AliL3Log::kError,"AliL3FileHandler::SetAliInput","File Open")
-      <<"No AliTPCParam "<<AliL3Transform::GetParamName()<<"in File "<<fInAli->GetName()<<ENDLOG;
+      <<"No AliTPCParam "<<AliL3Transform::GetParamName()<<" in File "<<fInAli->GetName()<<ENDLOG;
     return kFALSE;
   }
   return kTRUE;
@@ -184,7 +185,7 @@ Bool_t AliL3FileHandler::IsDigit(Int_t event)
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::IsDigit","File")
     <<"Pointer to TFile = 0x0 "<<ENDLOG;
-    return kTRUE;  //may you are use binary input which is Digits!!
+    return kTRUE;  //maybe you are using binary input which is Digits!!
   }
   Char_t name[1024];
   sprintf(name,"TreeD_%s_%d",AliL3Transform::GetParamName(),event);
@@ -204,7 +205,6 @@ Bool_t AliL3FileHandler::IsDigit(Int_t event)
 ///////////////////////////////////////// Digit IO  
 Bool_t AliL3FileHandler::AliDigits2Binary(Int_t event)
 {
-  
   Bool_t out = kTRUE;
   UInt_t nrow;
   AliL3DigitRowData* data = AliDigits2Memory(nrow,event);
@@ -241,10 +241,10 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   }
   if(!fInAli->IsOpen()){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Memory","File")
-    <<"No Input avalible: TFile not opend"<<ENDLOG;
+    <<"No Input avalible: TFile not opened"<<ENDLOG;
     return 0;
   }
-
+  
   if(!fDigitsTree)
     GetDigitsTree(event);
   
@@ -345,9 +345,13 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
                                       + ndigits[lrow]*sizeof(AliL3DigitData);
       tmp += size;
       tempPt = (AliL3DigitRowData*)tmp;
-      //fLastIndex=n;
+#ifdef ASVVERSION
+      fLastIndex=n;
+#endif
     }
-  //fLastIndex++;
+#ifdef ASVVERSION
+  fLastIndex++;
+#endif
   return data;
 }
 

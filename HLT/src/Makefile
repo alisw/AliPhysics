@@ -37,6 +37,10 @@ ifndef NOLOGGING
 DEFSTR += -Duse_logging
 endif
 
+ifdef ASVVERSION
+DEFSTR += -DASVVERSION
+endif
+
 DEFSTR += $(EXTRADEF)
 
 ifdef MLUCDIR
