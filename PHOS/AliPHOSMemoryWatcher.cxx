@@ -47,9 +47,9 @@
 //*-- Author: Laurent Aphecetche(SUBATECH)
 // --- std system ---
 #include <iostream>
-#include <cstdio>
-#include <cstdlib>
-#include <cassert>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 // --- AliRoot header files ---
 #include "AliPHOSMemoryWatcher.h"
 // --- ROOT system ---
