@@ -168,15 +168,19 @@ void AliHBTPairCut::Streamer(TBuffer &b)
    if (b.IsReading()) 
     {
       Version_t v = b.ReadVersion(&R__s, &R__c);
-      TObject::Streamer(b);
-      b >> fFirstPartCut;
-      b >> fSecondPartCut;
-      b >> fNCuts;
-      for (Int_t i = 0;i<fNCuts;i++)
+      if (v > -1)
        {
-        b >> fCuts[i];
-       }
-      b.CheckByteCount(R__s, R__c,AliHBTPairCut::IsA());
+        TObject::Streamer(b);
+        b >> fFirstPartCut;
+        b >> fSecondPartCut;
+        b >> fNCuts;
+        for (Int_t i = 0;i<fNCuts;i++)
+         {
+          b >> fCuts[i];
+         }
+        }
+       b.CheckByteCount(R__s, R__c,AliHBTPairCut::IsA());
+        
     } 
    else 
     {
