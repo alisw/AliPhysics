@@ -4,6 +4,7 @@
 //*-- Copyright &copy ASV
 
 #include <string.h>
+#include "AliL3StandardIncludes.h"
 #include "AliL3Logging.h"
 #include "AliL3HistogramAdaptive.h"
 #include "AliL3Transform.h"

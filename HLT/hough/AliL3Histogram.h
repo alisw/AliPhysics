@@ -2,7 +2,6 @@
 #define ALIL3_HISTOGRAM
 
 #include "AliL3RootTypes.h"
-#include "AliL3StandardIncludes.h"
 
 #ifdef use_root
 #include <TH2.h>
