@@ -22,6 +22,7 @@ class AliL3HoughTransformerLUT : public AliL3HoughBaseTransformer {
   Int_t fNRows;
   Int_t fNEtas;
   Int_t fNPhi0;
+  Int_t fSlice;
   Int_t fSector;
   Int_t fSectorRow;
   Int_t fZSign;
@@ -43,7 +44,7 @@ class AliL3HoughTransformerLUT : public AliL3HoughBaseTransformer {
   Float_t CalcY(Int_t pad, Int_t row);
   Float_t CalcZ(Int_t time);  
 
-  Int_t FindIndex(Double_t rz2);
+  Int_t FindIndex(Float_t rz2);
 
  public:
 
