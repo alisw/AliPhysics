@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 
 
 ifndef PACKFFLAGS
@@ -39,7 +40,7 @@ else
 @PACKAGE@DCXXFLAGS:=$(filter-out -O%,$(CXXFLAGS))
 endif
 else
-@PACKAGE@DCXXFLAGS:=$(PACKCXXFLAGS)
+@PACKAGE@DCXXFLAGS:=$(PACKDCXXFLAGS)
 endif
 
 
@@ -186,7 +187,7 @@ ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
 endif
 	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
-	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
+	  export TMPDIR; mkdir -p $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
 	  \rm -f $(CURDIR)/$@ ;\
 	  TMPLIB=$(notdir $(@PACKAGE@LIB)); export TMPLIB;\
@@ -200,7 +201,7 @@ ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
 endif
 	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
-	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
+	  export TMPDIR; mkdir -p $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
 	  \rm -f $(CURDIR)/$@ ;\
 	  $(DYLD) $(@PACKAGE@DYFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(DYLIB);\
@@ -215,7 +216,7 @@ ifndef ALIQUIET
 	  @echo "***** Linking static library $@ *****"
 endif
 	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
-	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
+	  export TMPDIR; mkdir -p $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
 	  \rm -f $(CURDIR)/$@ ;\
 	  TMPLIB=$(notdir $(@PACKAGE@LIB)); export TMPLIB;\
@@ -246,7 +247,7 @@ $(@PACKAGE@DO): $(@PACKAGE@DS)
 ifndef ALIQUIET
 		@echo "***** Compiling $< *****";
 endif
-		$(MUTE)$(CXX) -c $(@PACKAGE@INC)  -I$(ALICE_ROOT) $< -o $@ $(@PACKAGE@DCXXFLAGS)
+		$(MUTE)$(CXX) $(@PACKAGE@DEFINE) -c $(@PACKAGE@INC)  -I$(ALICE_ROOT) $< -o $@ $(@PACKAGE@DCXXFLAGS)
 
 #Different targets for the module
 
