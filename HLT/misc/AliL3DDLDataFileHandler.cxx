@@ -230,7 +230,7 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
     Int_t zerosup = AliL3Transform::GetZeroSup();
     Int_t adcsat = AliL3Transform::GetADCSat();
     Int_t slice,srow;
-    Int_t lrow;
+    Int_t lrow=-1;
 
     while (fTPCStream->Next()){
 
