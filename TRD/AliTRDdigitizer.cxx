@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/02/28 19:00:13  cblume
+Add new TRD classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -515,7 +518,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
               Float_t signalAmp = Matrix->GetSignal(iRow,iCol,iTime);
 
               // Add the noise
-              signalAmp  = TMath::Max(gRandom->Gaus(signalAmp,fNoise),(Float_t) 0.0);
+              signalAmp  = TMath::Max((Float_t) gRandom->Gaus(signalAmp,fNoise)
+                                     ,(Float_t) 0.0);
 	      // Convert to fC
               signalAmp *= el2fC;
               // Convert to mV

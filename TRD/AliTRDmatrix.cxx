@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/02/28 19:10:26  cblume
+Include the new TRD classes
+
 Revision 1.3.4.1  2000/02/28 17:57:47  cblume
 GetTrack returns now -1 if no track is found
 
@@ -122,7 +125,7 @@ void AliTRDmatrix::Draw(Option_t *)
     for (Int_t iCol  = 0; iCol  < fCol;  iCol++ ) {
       for (Int_t iTime = 0; iTime < fTime; iTime++) {
         AliTRDpixel *pixel = GetPixel(iRow,iCol,iTime);
-        if (pixel) hMatrix->Fill3(iRow,iCol,iTime,pixel->GetSignal());
+        if (pixel) hMatrix->Fill(iRow,iCol,iTime,pixel->GetSignal());
       }
     }
   }
