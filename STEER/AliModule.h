@@ -22,6 +22,9 @@ class AliLoader;
 class AliTrackReference;
 class AliDigitizer;
 class AliRunDigitizer;
+class AliTracker;
+class AliESD;
+class AliRunLoader;
 
 
 class AliModule : public TNamed , public TAttLine, public TAttMarker,
@@ -87,6 +90,9 @@ public:
   virtual void        SDigits2Digits() {}
   virtual void        Hits2Digits() {}
   virtual void        Digits2Reco() {}
+  virtual void        Reconstruct() {}
+  virtual AliTracker* CreateTracker() {return NULL;}
+  virtual void        FillESD(AliESD* /*esd*/) {}
   virtual void        Digits2Raw() {}
   virtual void        Raw2Digits() {}
   virtual void        Browse(TBrowser *) {}
@@ -138,6 +144,9 @@ public:
   virtual  AliTrackReference * NextTrackReference();
   virtual void        MakeBranchTR(Option_t *opt=" ");
   TTree* TreeTR();  //shorcut method for accessing treeTR from folder
+
+  void                SetRunLoader(AliRunLoader* runLoader) 
+    {fRunLoader = runLoader;}
   
 //
   AliModule& operator=(const AliModule &mod)
@@ -164,6 +173,9 @@ protected:
   TClonesArray *fTrackReferences;     //!list of track references - for one primary track only -MI
   Int_t         fMaxIterTrackRef;     //!for track refernce iterator routines
   Int_t         fCurrentIterTrackRef; //!for track refernce iterator routines
-  ClassDef(AliModule,5)  //Base class for ALICE Modules
+
+  AliRunLoader* fRunLoader;   //!local pointer to run loader
+
+  ClassDef(AliModule,6)  //Base class for ALICE Modules
 };
 #endif

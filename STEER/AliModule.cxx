@@ -66,7 +66,8 @@ AliModule::AliModule():
   fEnable(1),
   fTrackReferences(0),
   fMaxIterTrackRef(0),
-  fCurrentIterTrackRef(0)
+  fCurrentIterTrackRef(0),
+  fRunLoader(0)
 {
   //
   // Default constructor for the AliModule class
@@ -89,7 +90,8 @@ AliModule::AliModule(const char* name,const char *title):
   fEnable(1),
   fTrackReferences(new TClonesArray("AliTrackReference", 100)),
   fMaxIterTrackRef(0),
-  fCurrentIterTrackRef(0)
+  fCurrentIterTrackRef(0),
+  fRunLoader(0)
 {
   //
   // Normal constructor invoked by all Modules.
@@ -137,7 +139,8 @@ AliModule::AliModule(const AliModule &mod):
   fEnable(0),
   fTrackReferences(0),
   fMaxIterTrackRef(0),
-  fCurrentIterTrackRef(0)
+  fCurrentIterTrackRef(0),
+  fRunLoader(0)
 {
   //
   // Copy constructor
@@ -689,12 +692,10 @@ AliTrackReference* AliModule::FirstTrackReference(Int_t track)
   // 
   if(track>=0) 
    {
-     AliRunLoader* rl = AliRunLoader::GetRunLoader();
-
-     rl->GetAliRun()->GetMCApp()->ResetTrackReferences();
-     rl->TreeTR()->GetEvent(track);
-     if (rl == 0x0)
+     if (fRunLoader == 0x0)
        Fatal("FirstTrackReference","AliRunLoader not initialized. Can not proceed");
+     fRunLoader->GetAliRun()->GetMCApp()->ResetTrackReferences();
+     fRunLoader->TreeTR()->GetEvent(track);
    }
   //
   fMaxIterTrackRef     = fTrackReferences->GetEntriesFast();
@@ -816,14 +817,12 @@ void AliModule::MakeBranchTR(Option_t */*option*/)
 //_____________________________________________________________________________
 TTree* AliModule::TreeTR()
 {
-  AliRunLoader* rl = AliRunLoader::GetRunLoader();
-
-  if ( rl == 0x0)
+  if ( fRunLoader == 0x0)
    {
      Error("TreeTR","Can not get the run loader");
      return 0x0;
    }
 
-  TTree* tree = rl->TreeTR();
+  TTree* tree = fRunLoader->TreeTR();
   return tree;
 }
