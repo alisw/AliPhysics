@@ -31,8 +31,10 @@ public:
   
   virtual ~ AliPHOSTrackSegmentMaker(){}  // dtor
 
-  virtual void MakeTrackSegments(DigitsList * DL, RecPointsList * emcl, RecPointsList * ppsdl, TrackSegmentsList * trsl ) = 0 ; 
-                                         // does the job
+  virtual void MakeTrackSegments(DigitsList * DL, 
+				 AliPHOSRecPoint::RecPointsList * emcl, 
+				 AliPHOSRecPoint::RecPointsList * ppsdl,
+				 AliPHOSTrackSegment::TrackSegmentsList * trsl ) = 0 ; // does the job
   virtual void SetMaxEmcPpsdDistance(Float_t r) = 0 ; 
   virtual void SetUnfoldFlag() = 0 ;
   virtual void UnsetUnfoldFlag() = 0 ;

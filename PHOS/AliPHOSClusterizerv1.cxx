@@ -169,7 +169,9 @@ Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit)
 }
 
 //____________________________________________________________________________
-void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * emcl, RecPointsList * ppsdl)
+void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, 
+					AliPHOSRecPoint::RecPointsList * emcl, 
+					AliPHOSRecPoint::RecPointsList * ppsdl)
 {
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits

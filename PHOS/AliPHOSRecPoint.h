@@ -21,29 +21,44 @@
 #include "AliRecPoint.h"
 #include "AliPHOSDigit.h"
 
-typedef TObjArray       RecPointsList ; 
-
 class AliPHOSRecPoint : public AliRecPoint {
 
-public:
+ public:
 
   AliPHOSRecPoint() ;                   // ctor         
-  virtual ~AliPHOSRecPoint(){}          // dtor
+  virtual ~AliPHOSRecPoint(){
+    // dtor
+  }
   virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy) = 0 ; 
-  virtual Int_t   Compare(TObject * obj) {  assert(0==1) ; return 1 ; }   
+  virtual Int_t   Compare(TObject * obj) { 
+    // check why this is done
+    assert(0==1) ; return 1 ; 
+  }   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
   virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
   virtual Int_t   GetPHOSMod(void) ;
   virtual Int_t * GetPrimaries(Int_t & number) ;
-  virtual Bool_t  IsEmc(void){return kTRUE ;} 
-  virtual Bool_t  IsSortable() const { return kTRUE ; }  
+  virtual Bool_t  IsEmc(void){
+    // says that this is a EMC
+    return kTRUE ;
+  } 
+  virtual Bool_t  IsSortable() const { 
+    // tells that this is a sortable object
+    return kTRUE ; 
+  }  
   virtual void    Paint(Option_t * option="");
-  virtual void    Print(Option_t * opt = "void") {} 
+  virtual void    Print(Option_t * opt = "void") {
+    // Print prototype
+  } 
 
-protected:
+ protected:
   
   Int_t fPHOSMod ;      // PHOS Module number in which the RecPoint is found
+
+ private:
+  
+  typedef TObjArray RecPointsList ; 
 
   ClassDef(AliPHOSRecPoint,1) // RecPoint for PHOS (Base Class)
  

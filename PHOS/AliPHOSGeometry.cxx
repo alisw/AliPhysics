@@ -39,7 +39,7 @@
 
 ClassImp(AliPHOSGeometry)
 
-  AliPHOSGeometry * AliPHOSGeometry::fGeom = 0 ;
+  AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;
 
 //____________________________________________________________________________
 AliPHOSGeometry::~AliPHOSGeometry(void)
@@ -390,7 +390,7 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance()
 { 
   // Returns the pointer of the unique instance
   
-  return (AliPHOSGeometry *) fGeom ; 
+  return (AliPHOSGeometry *) fgGeom ; 
 }
 
 //____________________________________________________________________________
@@ -399,17 +399,17 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t
   // Returns the pointer of the unique instance
 
   AliPHOSGeometry * rv = 0  ; 
-  if ( fGeom == 0 ) {
-    fGeom = new AliPHOSGeometry(name, title) ; 
-    rv = (AliPHOSGeometry * ) fGeom ; 
+  if ( fgGeom == 0 ) {
+    fgGeom = new AliPHOSGeometry(name, title) ; 
+    rv = (AliPHOSGeometry * ) fgGeom ; 
   }
   else {
-    if ( strcmp(fGeom->GetName(), name) != 0 ) {
-      cout << "AliPHOSGeometry <E> : current geometry is " << fGeom->GetName() << endl
+    if ( strcmp(fgGeom->GetName(), name) != 0 ) {
+      cout << "AliPHOSGeometry <E> : current geometry is " << fgGeom->GetName() << endl
 	   << "                      you cannot call     " << name << endl ; 
     }
     else
-      rv = (AliPHOSGeometry *) fGeom ; 
+      rv = (AliPHOSGeometry *) fgGeom ; 
   } 
   return rv ; 
 }

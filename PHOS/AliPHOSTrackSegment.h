@@ -25,17 +25,20 @@
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
 
-typedef TClonesArray TrackSegmentsList ; 
-
 class AliPHOSTrackSegment : public TObject  {
 
 public:
 
-  AliPHOSTrackSegment() {}       // ctor 
-  AliPHOSTrackSegment(AliPHOSEmcRecPoint * EmcRecPoint , AliPHOSPpsdRecPoint * PpsdUp, 
+  AliPHOSTrackSegment() {
+    // default ctor
+  } 
+  AliPHOSTrackSegment(AliPHOSEmcRecPoint * EmcRecPoint , 
+		      AliPHOSPpsdRecPoint * PpsdUp, 
 		      AliPHOSPpsdRecPoint * PpsdLow  ) ; // ctor
   AliPHOSTrackSegment(const AliPHOSTrackSegment & ts) ;  // ctor                   
-  virtual ~AliPHOSTrackSegment() {} // dtor 
+  virtual ~AliPHOSTrackSegment() {
+    // dtor
+  } 
 
   void Copy(TObject & obj) ;  
   virtual Int_t  DistancetoPrimitive(Int_t px, Int_t py);
@@ -51,23 +54,39 @@ public:
   Int_t * GetPrimariesPpsdLow(Int_t & number) ;
   Int_t * GetPrimariesPpsdUp(Int_t & number) ;
   AliPHOSEmcRecPoint *   GetEmcRecPoint() const ;  
-  Int_t                  GetEmcRecPointIndex() {return fEmcRecPoint; }
-  Int_t   GetIndexInList() const { return fIndexInList ; } 
+  Int_t   GetIndexInList() const { 
+    // returns the index of this in the list  
+    return fIndexInList ; 
+  } 
+  Int_t                   GetEmcRecPointIndex() {
+    // return the index of the EMC recpoint at the origine of this 
+    return fEmcRecPoint ; 
+  }
   AliPHOSPpsdRecPoint *  GetPpsdLowRecPoint() const ;
-  Int_t                  GetPpsdLowRecPointIndex() {return fPpsdLowRecPoint ; }
+  Int_t                  GetPpsdLowRecPointIndex() {
+    // returns the PPSD low recpoint at the origin of this 
+    return fPpsdLowRecPoint ; 
+  }
   AliPHOSPpsdRecPoint *  GetPpsdUpRecPoint() const ; 
-  Int_t                  GetPpsdUpRecPointIndex() {return fPpsdUpRecPoint ; }
+  Int_t                  GetPpsdUpRecPointIndex() {
+    // returns the PPSD up recpoint at the origin of this 
+    return fPpsdUpRecPoint ; 
+  }
   virtual void  Paint(Option_t * option="");
   void    Print() ;
-  void    SetIndexInList(Int_t val) { fIndexInList = val ; } 
+  void    SetIndexInList(Int_t val) { 
+    // sets the index value  of this in the list 
+    fIndexInList = val ; 
+  } 
  
-  
-private:
+ private:
   
   Int_t fEmcRecPoint ;     // The EMC reconstructed point index in array stored in TreeR/PHOSEmcRP
   Int_t fIndexInList ;     // the index of this TrackSegment in the list stored in TreeR (to be set by analysis)
   Int_t fPpsdLowRecPoint ; // The PPSD reconstructed point from the lower layer index in array stored in TreeR/PHOSPpsdRP
   Int_t fPpsdUpRecPoint ;  // The PPSD reconstructed point from the upper layer index in array stored in TreeR/PHOSPpsdRP
+
+  typedef TClonesArray TrackSegmentsList ; 
 
   ClassDef(AliPHOSTrackSegment,1)  // Track segment in PHOS
 

@@ -27,7 +27,8 @@ public:
   AliPHOSPIDv1(): fCutOnDispersion(1.5){}                     
   virtual ~ AliPHOSPIDv1(){} ; // dtor
 
-  virtual void MakeParticles(TrackSegmentsList * trsl, RecParticlesList * rpl ) ; // does the job
+  virtual void MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl, 
+			     AliPHOSRecParticle::RecParticlesList * rpl ) ; // does the job
   void Print() ; 
   virtual void SetDispersionCutOff(Float_t Dcut) {fCutOnDispersion = Dcut ; }    
   virtual void SetShowerProfileCuts(Float_t l1m, Float_t l1M, Float_t l2m, Float_t l2M) ; 

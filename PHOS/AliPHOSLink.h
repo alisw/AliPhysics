@@ -23,13 +23,26 @@ class AliPHOSLink : public  TObject{
 public:
   
   AliPHOSLink( Float_t r, Int_t EMC, Int_t PPSD) ;  // ctor            
-  virtual ~AliPHOSLink(){} // dtor
-  
+  virtual ~AliPHOSLink(){
+    // dtor
+  }
   Int_t   Compare(TObject * obj) ;
-  Int_t   GetEmc(void) { return fEmcN; }
-  Int_t   GetPpsd(void) { return fPpsdN ; }
-  Float_t GetR(void) { return fR ; } 
-  Bool_t  IsSortable() const{ return kTRUE ; }
+  Int_t   GetEmc(void) { 
+    // returns the index of EMC
+    return fEmcN; 
+  }
+  Int_t   GetPpsd(void) { 
+    // returns the index of PPSD
+    return fPpsdN ; 
+  }
+  Float_t GetR(void) { 
+    // returns the distance between EMC and PPSD
+    return fR ; 
+  } 
+  Bool_t  IsSortable() const{ 
+    // tells if this is a sortable object 
+    return kTRUE ; 
+  }
   
 private:
   

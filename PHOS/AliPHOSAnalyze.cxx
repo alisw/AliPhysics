@@ -82,6 +82,21 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
 }
 
 //____________________________________________________________________________
+AliPHOSAnalyze::AliPHOSAnalyze(const AliPHOSAnalyze & ana)
+{
+  // copy ctor
+  ( (AliPHOSAnalyze &)ana ).Copy(*this) ;
+}
+
+//____________________________________________________________________________
+AliPHOSAnalyze::Copy(TObject & obj)
+{
+  // copy an analysis into an other one
+  TObject::Copy(obj) ;
+  // I do nothing more because the copy is silly but the Code checkers requires one
+}
+
+//____________________________________________________________________________
 AliPHOSAnalyze::~AliPHOSAnalyze()
 {
   // dtor
@@ -271,25 +286,25 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 		      //fhElectronPositionY->Fill(recpart. ) ; 
 		      cout << "ELECTRON" << endl;
 		      break;
-		    case kNEUTRAL_HA:
+		    case kNEUTRALHA:
 		      fhNeutralHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhNeutralHadronPositionX->Fill(recpart. ) ;
 		      //fhNeutralHadronPositionY->Fill(recpart. ) ; 
 		      cout << "NEUTRAl HADRON" << endl;
 		      break ;
-		    case kNEUTRAL_EM:
+		    case kNEUTRALEM:
 		      fhNeutralEMEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhNeutralEMPositionX->Fill(recpart. ) ;
 		      //fhNeutralEMPositionY->Fill(recpart. ) ; 
 		      //cout << "NEUTRAL EM" << endl;
 		      break ;
-		    case kCHARGED_HA:
+		    case kCHARGEDHA:
 		      fhChargedHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhChargedHadronPositionX->Fill(recpart. ) ;
 		      //fhChargedHadronPositionY->Fill(recpart. ) ; 
 		      cout << "CHARGED HADRON" << endl;
 		      break ;
-		    case kGAMMA_HA:
+		    case kGAMMAHA:
 		      fhPhotonHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhPhotonHadronPositionX->Fill(recpart. ) ;
 		      //fhPhotonHadronPositionY->Fill(recpart. ) ; 
@@ -576,7 +591,7 @@ void AliPHOSAnalyze::DisplayRecParticles()
       Text_t canvasname[80] ; 
       sprintf(canvasname, "Reconstructed particles in PHOSmodule # %d", module) ;
       TCanvas * rparticlecanvas = new TCanvas("RparticleCanvas", canvasname, 650, 500) ; 
-      RecParticlesList * rpl = fPHOS->RecParticles() ; 
+      AliPHOSRecParticle::RecParticlesList * rpl = fPHOS->RecParticles() ; 
       Int_t nRecParticles = rpl->GetEntries() ; 
       Int_t nRecParticlesInModule = 0 ; 
       TIter nextRecPart(rpl) ; 
@@ -826,7 +841,7 @@ void AliPHOSAnalyze::DisplayTrackSegments()
       TCanvas * trackcanvas = new TCanvas("TrackSegmentCanvas", canvasname, 650, 500) ; 
       histotrack->Draw() ; 
 
-      TrackSegmentsList * trsegl = fPHOS->TrackSegments() ;
+      AliPHOSTrackSegment::TrackSegmentsList * trsegl = fPHOS->TrackSegments() ;
       AliPHOSTrackSegment * trseg ;
  
       Int_t nTrackSegments = trsegl->GetEntries() ;

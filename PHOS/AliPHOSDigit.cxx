@@ -85,7 +85,7 @@ Int_t AliPHOSDigit::Compare(TObject * obj)
   // Compares two digits with respect to its Id
   // to sort according increasing Id
 
-  Int_t rv ; 
+  Int_t rv ;
 
   AliPHOSDigit * digit = (AliPHOSDigit *)obj ; 
 

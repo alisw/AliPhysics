@@ -27,12 +27,14 @@
 
 class AliPHOSDigit : public AliDigitNew {
   
-public:
- 
+ public:
+  
   AliPHOSDigit() ;
   AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index = -1) ;
   AliPHOSDigit(const AliPHOSDigit & digit) ;
-  virtual ~AliPHOSDigit(){} 
+  virtual ~AliPHOSDigit(){
+    // dtor 
+  } 
 
   Bool_t operator==(AliPHOSDigit const &rValue) const;
   AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
@@ -40,12 +42,18 @@ public:
   friend class ostream& operator << ( ostream& , const AliPHOSDigit&) ;
   
   Int_t   Compare(TObject * obj) ;  
-  Int_t   GetNprimary() const { return fNprimary ; }
+  Int_t   GetNprimary() const { 
+    // returns the number of primaries
+    return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 
-  Bool_t  IsSortable() const { return kTRUE ; }
-  void    SetAmp(Int_t Amp) { fAmp=Amp ; } 
+  Bool_t  IsSortable() const { 
+    // says that AliPHOSDigits are sortable (needed for Sort method
+    return kTRUE ; }
+  void    SetAmp(Int_t Amp) { 
+    // sets the amplitude data member 
+    fAmp=Amp ; } 
 
-private:
+ private:
 
   Int_t fPrimary1 ;          // first primary (because objects in a TClonesArray bust have constant length) 
   Int_t fPrimary2 ;          // second primary (because objects in a TClonesArray bust have constant lengt) 

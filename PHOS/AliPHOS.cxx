@@ -40,6 +40,7 @@ ClassImp(AliPHOS)
 //____________________________________________________________________________
 AliPHOS::~AliPHOS()
 {
+  // dtor
   delete fHits ;
   delete fDigits ;
 }
@@ -300,12 +301,12 @@ void AliPHOS::CreateMaterials()
 }
 
 //____________________________________________________________________________
-RecPointsList * AliPHOS::EmcRecPoints(Int_t evt) 
+AliPHOSRecPoint::RecPointsList * AliPHOS::EmcRecPoints(Int_t evt) 
 {
   // returns the pointer to the EMCA RecPoints list
   // if the list is empty, get it from TreeR on the disk file
 
-  RecPointsList * rv = 0 ; 
+  AliPHOSRecPoint::RecPointsList * rv = 0 ; 
   
   if ( fEmcRecPoints ) 
     rv = fEmcRecPoints ; 
@@ -325,12 +326,12 @@ RecPointsList * AliPHOS::EmcRecPoints(Int_t evt)
 }
 
 //____________________________________________________________________________
-RecParticlesList * AliPHOS::RecParticles(Int_t evt) 
+AliPHOSRecParticle::RecParticlesList * AliPHOS::RecParticles(Int_t evt) 
 {
   // returns the pointer to the RecParticles list
   // if the list is empty, get it from TreeR on the disk file
 
-  RecParticlesList * rv = 0 ; 
+  AliPHOSRecParticle::RecParticlesList * rv = 0 ; 
   
   if ( fRecParticles ) 
     rv = fRecParticles ; 
@@ -350,12 +351,12 @@ RecParticlesList * AliPHOS::RecParticles(Int_t evt)
 }
 
 //____________________________________________________________________________
-RecParticlesList * AliPHOS::TrackSegments(Int_t evt) 
+AliPHOSRecParticle::RecParticlesList * AliPHOS::TrackSegments(Int_t evt) 
 {
   // returns the pointer to the TrackSegments list
   // if the list is empty, get it from TreeR on the disk file
 
-  TrackSegmentsList * rv = 0 ; 
+  AliPHOSTrackSegment::TrackSegmentsList * rv = 0 ; 
   
   if ( fTrackSegments ) 
     rv = fTrackSegments ; 

@@ -32,7 +32,8 @@ public:
   AliPHOSPID() ;          // ctor            
   virtual ~AliPHOSPID() ; // dtor
 
-  virtual void MakeParticles(TrackSegmentsList * trsl, RecParticlesList * rpl) {} ; 
+  virtual void MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl, 
+			     AliPHOSRecParticle::RecParticlesList * rpl) {} ; 
   virtual void SetShowerProfileCuts(Float_t, Float_t, Float_t, Float_t) {} ; 
   virtual void SetDispersionCutOff(Float_t ) {}    
 

@@ -71,7 +71,7 @@ AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
   SetBigBox(2, fGeom->GetOuterBoxSize(0) ); 
 
   fNRecParticles = 0 ; 
-  fFastRecParticles = new FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
+  fFastRecParticles = new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
 
   fResPara1 = 0.030 ;    // GeV
   fResPara2 = 0.00003 ; 
@@ -352,26 +352,26 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
     else {
       ran = fRan.Rndm() ; 
       if( ran <= 0.9498 )
-	rv = kNEUTRAL_EM ; 
+	rv = kNEUTRALEM ; 
       else
-	rv = kNEUTRAL_HA ; 
+	rv = kNEUTRALHA ; 
     }     
     break ; 
 
   case 2112:  // it's a neutron
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9998 )
-      rv = kNEUTRAL_HA ; 
+      rv = kNEUTRALHA ; 
     else 
-      rv = kNEUTRAL_EM ; 
+      rv = kNEUTRALEM ; 
     break ; 
 
   case -2112: // it's a anti-neutron
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9984 )
-      rv = kNEUTRAL_HA ; 
+      rv = kNEUTRALHA ; 
     else 
-      rv = kNEUTRAL_EM ; 
+      rv = kNEUTRALEM ; 
     break ; 
     
   case 11:    // it's a electron
@@ -379,7 +379,7 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
     if ( ran <= 0.9996 )
       rv = kELECTRON ; 
     else 
-      rv = kCHARGED_HA ; 
+      rv = kCHARGEDHA ; 
     break; 
 
   case -11:   // it's a positon
@@ -387,13 +387,13 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
     if ( ran <= 0.9996 )
       rv = kELECTRON ; 
     else 
-      rv = kCHARGED_HA ; 
+      rv = kCHARGEDHA ; 
     break; 
 
   case -1:    // it's a charged
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9996 )
-      rv = kCHARGED_HA ; 
+      rv = kCHARGEDHA ; 
     else 
       rv = kGAMMA ; 
 

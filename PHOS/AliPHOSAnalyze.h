@@ -30,11 +30,13 @@ public:
 
   AliPHOSAnalyze() ;              // ctor
   AliPHOSAnalyze(Text_t * name) ; // ctor
+  AliPHOSAnalyze(const AliPHOSAnalyze & ana) ; // cpy ctor                   
   virtual ~AliPHOSAnalyze() ;     // dtor
 
   void AnalyzeOneEvent(Int_t evt = -999) ;  // analyzes a single event ;
   void AnalyzeManyEvents(Int_t Nevtents = 100, Int_t Module=0) ;  // analyzes many events   ;
   void BookingHistograms() ;                // booking histograms for the ManyEvent analysis ;
+  void Copy(TObject & obj) ;                // copies an analysis into an other one   
   Bool_t Init(Int_t evt) ;                  // does various initialisations
   void DisplayKineEvent(Int_t evt = -999) ; // displays the Kine events in ALICE coordinate 
   void DisplayRecParticles() ;              // displays RecParticles in ALICE coordinate  
@@ -43,7 +45,7 @@ public:
   Bool_t OpenRootFile(Text_t * name) ;      // opens the root file
   void SavingHistograms() ;                 // Save histograms in a root file
  
-private:
+ private:
   
   AliPHOSClusterizer * fClu ;         // a clusterizer 
   Int_t fEvt ;                        // the evt number being processed 

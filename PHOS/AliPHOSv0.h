@@ -41,7 +41,7 @@ public:
   virtual void   Init(void) ;                                       // does nothing
   Int_t IsVersion(void) const { return 0 ; }
   void           MakeBranch(Option_t* opt) ;
-  virtual RecPointsList* PpsdRecPoints(Int_t evt=0) ;               // gets Array of clusters in the PPSD 
+  virtual AliPHOSRecPoint::RecPointsList* PpsdRecPoints(Int_t evt=0) ; // gets Array of clusters in the PPSD 
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
   void           ResetClusters(){} ;
   virtual void   ResetDigits() ; 

@@ -26,22 +26,26 @@ class AliPHOS : public AliDetector {
  public:
 
   AliPHOS(const char* name, const char* title): AliDetector(name,title) {} 
-  AliPHOS() : AliDetector() {} 
+  AliPHOS() : AliDetector() {
+    // default ctor
+  } 
   virtual ~AliPHOS() ; 
  
-  virtual void CreateMaterials() ;                     // defines the material of the detector
+  virtual void CreateMaterials() ;                                     // defines the material of the detector
   virtual AliPHOSGeometry * GetGeometry() = 0 ;  
-  RecPointsList* EmcRecPoints(Int_t evt=0) ;           // gets Array of cluster in the crystals 
-  RecParticlesList * RecParticles(Int_t evt = 0) ;     // gets Array of reconstructed particles
-  TrackSegmentsList * TrackSegments(Int_t evt=0) ;     // gets Array of track segments
-  virtual RecPointsList* PpsdRecPoints(Int_t evt=0)=0; // gets Array of clusters in the PPSD 
-  virtual TString Version() {return TString(" ") ; } 
+  AliPHOSRecPoint::RecPointsList* EmcRecPoints(Int_t evt=0) ;          // gets Array of cluster in the crystals 
+  AliPHOSRecParticle::RecParticlesList* RecParticles(Int_t evt = 0) ; // gets Array of reconstructed particles
+  AliPHOSTrackSegment::TrackSegmentsList* TrackSegments(Int_t evt=0) ;// gets Array of track segments
+  virtual AliPHOSRecPoint::RecPointsList* PpsdRecPoints(Int_t evt=0)=0;// gets Array of clusters in the PPSD 
+  virtual TString Version() {
+    // gives the version number (void for the base class)
+    return TString(" ") ; } 
 
  protected:
   
-  RecPointsList * fEmcRecPoints ;                 // The RecPoints (clusters) list in EMC 
-  TrackSegmentsList * fTrackSegments ;            // The TrackSegment list in PHOS
-  RecParticlesList * fRecParticles ;              // The reconstructed particles list in PHOS
+  AliPHOSRecPoint::RecPointsList * fEmcRecPoints ;         // The RecPoints (clusters) list in EMC 
+  AliPHOSTrackSegment::TrackSegmentsList * fTrackSegments ;// The TrackSegment list in PHOS
+  AliPHOSRecParticle::RecParticlesList * fRecParticles ;   // The reconstructed particles list in PHOS
 
 
   ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)

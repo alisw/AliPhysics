@@ -32,7 +32,7 @@
 
 ClassImp(AliPHOSIndexToObject)
   
-  AliPHOSIndexToObject * AliPHOSIndexToObject::fObjGetter = 0 ; 
+  AliPHOSIndexToObject * AliPHOSIndexToObject::fgObjGetter = 0 ; 
 
 //____________________________________________________________________________ 
 AliPHOSIndexToObject::AliPHOSIndexToObject(AliPHOS * det)
@@ -48,8 +48,8 @@ AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance()
   // Returns the pointer of the unique instance already defined
   
   AliPHOSIndexToObject * rv = 0 ;
-  if ( fObjGetter )
-    rv = fObjGetter ;
+  if ( fgObjGetter )
+    rv = fgObjGetter ;
   else
     cout << "AliPHOSIndexToObject::GetInstance ERROR: not yet initialized" << endl ;
   
@@ -62,12 +62,12 @@ AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance(AliPHOS * det)
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed (a new event for exemple)
 
-  if ( fObjGetter )      // delete it if already exists
-    delete fObjGetter ; 
+  if ( fgObjGetter )      // delete it if already exists
+    delete fgObjGetter ; 
 
-  fObjGetter = new AliPHOSIndexToObject(det) ; 
+  fgObjGetter = new AliPHOSIndexToObject(det) ; 
   
-  return fObjGetter ; 
+  return fgObjGetter ; 
   
 }
 
@@ -113,7 +113,7 @@ AliPHOSRecParticle * AliPHOSIndexToObject::GimeRecParticle(Int_t index)
 
   AliPHOSRecParticle * rv = 0 ; 
 
-  RecParticlesList * rplist = fDetector->RecParticles() ; 
+  AliPHOSRecParticle::RecParticlesList * rplist = fDetector->RecParticles() ; 
 
   Int_t rpentries  = 0 ; 
 
@@ -147,8 +147,8 @@ AliRecPoint * AliPHOSIndexToObject::GimeRecPoint(Int_t index, TString type)
 
   AliPHOSRecPoint * rv = 0 ; 
   
-  RecPointsList * emclist = fDetector->EmcRecPoints() ; 
-  RecPointsList * ppsdlist = fDetector->PpsdRecPoints() ; 
+  AliPHOSRecPoint::RecPointsList * emclist = fDetector->EmcRecPoints() ; 
+  AliPHOSRecPoint::RecPointsList * ppsdlist = fDetector->PpsdRecPoints() ; 
 
   Int_t emcentries  = 0 ; 
   Int_t ppsdentries = 0 ; 
@@ -200,7 +200,7 @@ AliPHOSTrackSegment * AliPHOSIndexToObject::GimeTrackSegment(Int_t index)
 
   AliPHOSTrackSegment * rv = 0 ; 
 
-  TrackSegmentsList * tslist = fDetector->TrackSegments() ; 
+  AliPHOSTrackSegment::TrackSegmentsList * tslist = fDetector->TrackSegments() ; 
 
   Int_t tsentries  = 0 ; 
 

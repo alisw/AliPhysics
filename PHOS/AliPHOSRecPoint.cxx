@@ -100,11 +100,11 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     Int_t iDigit;
     Int_t relid[4] ;
   
-    const Int_t fMulDigit=AliPHOSRecPoint::GetDigitsMultiplicity() ;
-    Float_t * xi = new Float_t [fMulDigit] ; 
-    Float_t * zi = new Float_t [fMulDigit] ;
+    const Int_t kMulDigit=AliPHOSRecPoint::GetDigitsMultiplicity() ;
+    Float_t * xi = new Float_t [kMulDigit] ; 
+    Float_t * zi = new Float_t [kMulDigit] ;
     
-    for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    for(iDigit = 0; iDigit < kMulDigit; iDigit++) {
       digit = (AliPHOSDigit *) fDigitsList[iDigit];
       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
       phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]) ;

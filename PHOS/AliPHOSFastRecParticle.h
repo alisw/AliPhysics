@@ -20,46 +20,66 @@
 
 // --- AliRoot header files ---
 
-typedef TClonesArray  FastRecParticlesList ; 
-
 const static Int_t kUNDEFINED =-1 ;
-const static Int_t kNEUTRAL_EM = 0 ;
-const static Int_t kNEUTRAL_HA = 1 ;
-const static Int_t kGAMMA      = 2 ; 
-const static Int_t kGAMMA_HA   = 3 ; 
-const static Int_t kABSURD_EM  = 4 ;
-const static Int_t kABSURD_HA  = 5 ;
-const static Int_t kELECTRON   = 6 ;
-const static Int_t kCHARGED_HA = 7 ;
+const static Int_t kNEUTRALEM = 0 ;
+const static Int_t kNEUTRALHA = 1 ;
+const static Int_t kGAMMA     = 2 ; 
+const static Int_t kGAMMAHA   = 3 ; 
+const static Int_t kABSURDEM  = 4 ;
+const static Int_t kABSURDHA  = 5 ;
+const static Int_t kELECTRON  = 6 ;
+const static Int_t kCHARGEDHA = 7 ;
 
 
 class AliPHOSFastRecParticle : public TParticle {
 
-public:
+ public:
   
-  AliPHOSFastRecParticle() {};          // ctor
+  AliPHOSFastRecParticle() {
+    // ctor 
+  };         
   AliPHOSFastRecParticle(const AliPHOSFastRecParticle & rp) ;  // ctor
   AliPHOSFastRecParticle(const TParticle & p) ;  // ctor
-  virtual ~AliPHOSFastRecParticle(){}  // dtor
-
+  virtual ~AliPHOSFastRecParticle(){
+    // dtor
+  }
   virtual Int_t DistancetoPrimitive(Int_t px, Int_t py) ; 
   virtual void Draw(Option_t *option) ;  
   virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
-  Int_t GetIndexInList() const { return fIndexInList ; } 
+  Int_t GetIndexInList() const { 
+    // returns the index of this in the list
+    return fIndexInList ; 
+  } 
   virtual Int_t * GetPrimaries(Int_t & number) ;
-  Int_t GetType() { return fType ; } 
+  Int_t GetType() { 
+    // returns the type of the particle
+    return fType ; 
+  } 
   TString Name() ; 
   virtual void Paint(Option_t * option="");
   void Print() ; 
-  void SetPrimary(Int_t index) { fPrimary = index ; }
-  void SetType(Int_t type) { fType = type ; } 
-  void SetIndexInList(Int_t val) { fIndexInList = val ; } 
+  void SetPrimary(Int_t index) { 
+    // sets the primary particle index
+    fPrimary = index ; 
+  }
+  void SetType(Int_t type) { 
+    // sets the particle type 
+    fType = type ; 
+  } 
+  void SetIndexInList(Int_t val) { 
+    // sets the value of the index in the list 
+    fIndexInList = val ; 
+  } 
 
-protected:
+ protected:
 
   Int_t fIndexInList ; // the index of this RecParticle in the list stored in TreeR (to be set by analysis)
   Int_t fPrimary ;     // (unique) primary particle index 
   Int_t fType ;        // particle type obtained by "virtual" reconstruction
+
+ private:
+
+  typedef TClonesArray  FastRecParticlesList ; 
 
   ClassDef(AliPHOSFastRecParticle,1)  // Reconstructed Particle produced by the fast simulation 
 

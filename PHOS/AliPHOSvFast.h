@@ -45,7 +45,8 @@ public:
                                                                      // makes the detected position
   void MakeRecParticle(const Int_t modid, const TVector3 pos, AliPHOSFastRecParticle & rp) ;  // makes a reconstructes particle from primary
   Int_t   MakeType(AliPHOSFastRecParticle & rp) ;                    // gets the detected type of particle
-  FastRecParticlesList * FastRecParticles() { return fFastRecParticles ; } // gets TClonesArray of reconstructed particles
+  // gets TClonesArray of reconstructed particles
+  AliPHOSFastRecParticle::FastRecParticlesList * FastRecParticles() { return fFastRecParticles ; } 
   virtual void ResetPoints() ; 
   void         ResetFastRecParticles() ; 
   void         SetBigBox(Int_t index, Float_t value) ;                             
@@ -58,7 +59,7 @@ private:
   Float_t fBigBoxX ;                         // main box containing all PHOS (EMC+PPSD)
   Float_t fBigBoxY ;                         // main box containing all PHOS (EMC+PPSD)
   Float_t fBigBoxZ ;                         // main box containing all PHOS (EMC+PPSD)
-  FastRecParticlesList * fFastRecParticles ; // list of particles modified by the response function 
+  AliPHOSFastRecParticle::FastRecParticlesList * fFastRecParticles ; // list of particles modified by the response function 
   AliPHOSGeometry * fGeom ;                  // geometry definition
   Int_t fNRecParticles ;                     // number of detected particles
   TRandom fRan ;                             // random number generator

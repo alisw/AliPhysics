@@ -38,7 +38,8 @@
 ClassImp( AliPHOSPIDv1) 
 
 //____________________________________________________________________________
-void  AliPHOSPIDv1::MakeParticles(TrackSegmentsList * trsl, RecParticlesList * rpl)
+void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl, 
+				  AliPHOSRecParticle::RecParticlesList * rpl)
 {
   // Makes a RecParticle out of a TrackSegment
 

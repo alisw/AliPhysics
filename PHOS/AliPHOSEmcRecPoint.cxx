@@ -61,6 +61,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(Float_t W0, Float_t LocMaxCut)
 //____________________________________________________________________________
 AliPHOSEmcRecPoint::~AliPHOSEmcRecPoint()
 {
+  // dtor
   if ( fEnergyList )
     delete[] fEnergyList ; 
 }
@@ -195,9 +196,9 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     Int_t iDigit;
     Int_t relid[4] ;
     
-    const Int_t fMulDigit = AliPHOSEmcRecPoint::GetDigitsMultiplicity() ; 
-    Float_t * xi = new Float_t[fMulDigit] ; 
-    Float_t * zi = new Float_t[fMulDigit] ; 
+    const Int_t kMulDigit = AliPHOSEmcRecPoint::GetDigitsMultiplicity() ; 
+    Float_t * xi = new Float_t[kMulDigit] ; 
+    Float_t * zi = new Float_t[kMulDigit] ; 
     
     // create the histogram for the single cluster 
     // 1. gets histogram boundaries
@@ -206,7 +207,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     Float_t ximin = 999. ; 
     Float_t zimin = 999. ;
     
-    for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    for(iDigit=0; iDigit<kMulDigit; iDigit++) {
       digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) ) ;
       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
       phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]);
@@ -238,7 +239,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     histo = new TH2F("cluster3D", title,  xdim, ximin, ximax, zdim, zimin, zimax)  ;
     
     Float_t x, z ; 
-    for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    for(iDigit=0; iDigit<kMulDigit; iDigit++) {
       digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) ) ;
       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
       phosgeom->RelPosInModule(relid, x, z);
@@ -246,7 +247,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     }
     
     if (!digitgraph) {
-      digitgraph = new TGraph(fMulDigit,xi,zi);
+      digitgraph = new TGraph(kMulDigit,xi,zi);
       digitgraph-> SetMarkerStyle(5) ; 
       digitgraph-> SetMarkerSize(1.) ;
       digitgraph-> SetMarkerColor(1) ;
@@ -293,7 +294,7 @@ Float_t  AliPHOSEmcRecPoint::GetDispersion()
   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
   
   Int_t iDigit;
-  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+  for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) ) ;
     Int_t relid[4] ;
     Float_t xi ;
@@ -561,24 +562,25 @@ void AliPHOSEmcRecPoint::Print(Option_t * option)
  
 }
 //______________________________________________________________________________
-void AliPHOSEmcRecPoint::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliPHOSEmcRecPoint.
+// void AliPHOSEmcRecPoint::Streamer(TBuffer &R__b)
+// {
+//    // Stream an object of class AliPHOSEmcRecPoint.
 
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliPHOSRecPoint::Streamer(R__b);
-      R__b >> fDelta;
-      fEnergyList = new Float_t[fMulDigit] ; 
-      R__b.ReadFastArray(fEnergyList, fMulDigit);
-      R__b >> fLocMaxCut;
-      R__b >> fW0;
-   } else {
-      R__b.WriteVersion(AliPHOSEmcRecPoint::IsA());
-      AliPHOSRecPoint::Streamer(R__b);
-      R__b << fDelta;
-      R__b.WriteFastArray(fEnergyList, fMulDigit);
-      R__b << fLocMaxCut;
-      R__b << fW0;
-   }
-}
+//    if (R__b.IsReading()) {
+//       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
+//       AliPHOSRecPoint::Streamer(R__b);
+//       R__b >> fDelta;
+//       fEnergyList = new Float_t[fMulDigit] ; 
+//       R__b.ReadFastArray(fEnergyList, fMulDigit);
+//       R__b >> fLocMaxCut;
+//       R__b >> fW0;
+//    } else {
+//       R__b.WriteVersion(AliPHOSEmcRecPoint::IsA());
+//       AliPHOSRecPoint::Streamer(R__b);
+//       R__b << fDelta;
+//       R__b.WriteFastArray(fEnergyList, fMulDigit);
+//       R__b << fLocMaxCut;
+//       R__b << fW0;
+//    }
+// }
+ 

@@ -47,7 +47,7 @@ ClassImp(AliPHOSv0hits)
 //____________________________________________________________________________
 AliPHOSv0hits::AliPHOSv0hits()
 {
-  // ctor
+  // default ctor
   fNTmpHits = 0 ; 
   fTmpHits  = 0 ; 
 }
@@ -56,6 +56,7 @@ AliPHOSv0hits::AliPHOSv0hits()
 AliPHOSv0hits::AliPHOSv0hits(const char *name, const char *title):
   AliPHOSv0(name,title)
 {
+  // ctor
    fHits= new TClonesArray("AliPHOSHit",1000) ;
 }
 

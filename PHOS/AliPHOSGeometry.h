@@ -31,7 +31,10 @@ class AliPHOSGeometry : public AliGeometry {
 
 public: 
 
-  AliPHOSGeometry() {} ;  // must be kept public for root persistency purposes, but should never be called by the outside world
+  AliPHOSGeometry() {
+    // default ctor 
+    // must be kept public for root persistency purposes, but should never be called by the outside world
+  } ;  
   virtual ~AliPHOSGeometry(void) ; 
   static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title) ; 
   static AliPHOSGeometry * GetInstance() ; 
@@ -187,7 +190,7 @@ private:
   Float_t fPPSDModuleSize[3] ;            // Size of an individual micromegas module
   Float_t fZDisplacement ;                // Z displacement of micromegas1 with respect to micromegas2  
 
-  static AliPHOSGeometry * fGeom ; // pointer to the unique instance of the singleton 
+  static AliPHOSGeometry * fgGeom ; // pointer to the unique instance of the singleton 
 
   ClassDef(AliPHOSGeometry,1)  // PHOS geometry class 
 

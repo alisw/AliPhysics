@@ -36,8 +36,13 @@ class AliPHOSIndexToObject : public TObject {
 
 public:
 
-  AliPHOSIndexToObject(){ assert(0==1) ; } // should be never called
-  virtual ~AliPHOSIndexToObject(){} ; // dtor
+  AliPHOSIndexToObject(){ 
+    // ctor: this is a singleton, the ctor should never be called but cint needs it as publiv
+    assert(0==1) ; 
+  } 
+  virtual ~AliPHOSIndexToObject(){
+    // dtor
+  }
 
   static AliPHOSIndexToObject * GetInstance(AliPHOS * det) ; 
   static AliPHOSIndexToObject * GetInstance() ; 
@@ -55,7 +60,7 @@ public:
   AliPHOS * fDetector ;                    // the detector 
   TTree * fReconstruct ;                   // the reconstruction tree  
 
-  static AliPHOSIndexToObject * fObjGetter ; // pointer to the unique instance of the singleton 
+  static AliPHOSIndexToObject * fgObjGetter ; // pointer to the unique instance of the singleton 
 
   ClassDef(AliPHOSIndexToObject,1)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 

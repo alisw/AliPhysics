@@ -24,15 +24,28 @@ class AliPHOSHit : public AliHit {
 
 public:
 
-  AliPHOSHit() {}
+  AliPHOSHit() {
+    // default ctor 
+  }
   AliPHOSHit(const AliPHOSHit & hit) ; 
   AliPHOSHit(Int_t primary, Int_t id, Float_t *hits) ;
   AliPHOSHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t id, Float_t *hits) ;
-  virtual ~AliPHOSHit(void) {}  
+  virtual ~AliPHOSHit(void) {
+    // dtor 
+  }  
   
-  Float_t GetEnergy(void)   const { return fELOS ; }
-  Int_t   GetId(void)       const { return fId ; }
-  Int_t   GetPrimary(void)  const { return fPrimary ; }
+  Float_t GetEnergy(void)   const { 
+    // returns the energy loss for this hit 
+    return fELOS ; 
+  }
+  Int_t   GetId(void)       const { 
+    // return the identificator of this his
+    return fId ; 
+  }
+  Int_t   GetPrimary(void)  const { 
+    // returns the primary particle id at the origine of this hit 
+    return fPrimary ; 
+  }
 
   Bool_t operator == (AliPHOSHit const &rValue) const ;
   AliPHOSHit operator + (const AliPHOSHit& rValue) const ;

@@ -145,10 +145,15 @@ Bool_t  AliPHOSTrackSegmentMakerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * ma
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * dl, RecPointsList * emcIn, TObjArray * emcOut, 
-					RecPointsList * ppsdIn, TObjArray * ppsdOutUp,
-					TObjArray * ppsdOutLow, Int_t & phosmod, Int_t & emcStopedAt, 
-					Int_t & ppsdStopedAt)
+void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * dl, 
+						AliPHOSRecPoint::RecPointsList * emcIn, 
+						TObjArray * emcOut, 
+						AliPHOSRecPoint::RecPointsList * ppsdIn, 
+						TObjArray * ppsdOutUp,
+						TObjArray * ppsdOutLow, 
+						Int_t & phosmod, 
+						Int_t & emcStopedAt, 
+						Int_t & ppsdStopedAt)
 {
   // Unfold clusters and fill xxxOut arrays with clusters from one PHOS module
  
@@ -291,9 +296,12 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks(TObjArray * emcRecPoints, TObjArray 
 }
     
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints, TObjArray * ppsdRecPointsUp, 
-				    TObjArray * ppsdRecPointsLow, TClonesArray * linklowArray, 
-				    TClonesArray * linkupArray, TrackSegmentsList * trsl) 
+void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints, 
+					    TObjArray * ppsdRecPointsUp, 
+					    TObjArray * ppsdRecPointsLow, 
+					    TClonesArray * linklowArray, 
+					    TClonesArray * linkupArray, 
+					    AliPHOSTrackSegment::TrackSegmentsList * trsl) 
 { 
 
   // Finds the smallest links and makes pairs of PPSD and EMC clusters with smallest distance 
@@ -366,8 +374,10 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints, TObjArray 
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl, RecPointsList * emcl, 
-					RecPointsList * ppsdl, TrackSegmentsList * trsl)
+void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl, 
+						    AliPHOSRecPoint::RecPointsList * emcl, 
+						    AliPHOSRecPoint::RecPointsList * ppsdl, 
+						    AliPHOSTrackSegment::TrackSegmentsList * trsl)
 {
   // Makes the track segments out of the list of EMC and PPSD Recpoints and stores them in a list
 
@@ -434,8 +444,13 @@ Double_t  AliPHOSTrackSegmentMakerv1::ShowerShape(Double_t r)
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl, RecPointsList * emcIn,  AliPHOSEmcRecPoint * iniEmc, 
-					 Int_t nMax, int * maxAt, Float_t * maxAtEnergy, TObjArray * emcList)
+void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl, 
+						 AliPHOSRecPoint::RecPointsList * emcIn, 
+						 AliPHOSEmcRecPoint * iniEmc, 
+						 Int_t nMax, 
+						 int * maxAt, 
+						 Float_t * maxAtEnergy, 
+						 TObjArray * emcList)
 { 
   // Performs the unfolding of a cluster with nMax overlapping showers 
   // This is time consuming (use the (Un)SetUnfolFlag()  )

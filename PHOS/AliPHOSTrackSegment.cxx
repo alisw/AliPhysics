@@ -41,8 +41,9 @@
 ClassImp(AliPHOSTrackSegment)
 
 //____________________________________________________________________________
-AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , AliPHOSPpsdRecPoint * ppsdrp1,
-                  AliPHOSPpsdRecPoint * ppsdrp2  ) 
+AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , 
+					  AliPHOSPpsdRecPoint * ppsdrp1,
+					  AliPHOSPpsdRecPoint * ppsdrp2  ) 
 {
   // ctor
 
@@ -209,6 +210,8 @@ Float_t AliPHOSTrackSegment::GetDistanceInPHOSPlane()
 //____________________________________________________________________________
 AliPHOSEmcRecPoint * AliPHOSTrackSegment::GetEmcRecPoint() const 
 {
+  // get the EMC recpoint at the origin of this track
+ 
   AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ;
   AliPHOSEmcRecPoint * rv = 0 ;
   if (  fEmcRecPoint > -1 )
@@ -310,7 +313,8 @@ TVector3 AliPHOSTrackSegment::GetMomentumDirection()
 //____________________________________________________________________________
 Int_t AliPHOSTrackSegment:: GetPHOSMod(void) 
 {
-  
+  // Returns the phos module which contains this track
+ 
   AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
   
   return emcrp->GetPHOSMod();  
@@ -319,9 +323,11 @@ Int_t AliPHOSTrackSegment:: GetPHOSMod(void)
 //____________________________________________________________________________
 AliPHOSPpsdRecPoint * AliPHOSTrackSegment::GetPpsdLowRecPoint() const 
 {
+  // Returns the lower PPSD rec point at the origin of this track
+  
   AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ;
   AliPHOSPpsdRecPoint * rv = 0 ;
-
+  
   if ( fPpsdLowRecPoint > -1 )
     rv = (AliPHOSPpsdRecPoint *)please->GimeRecPoint( fPpsdLowRecPoint, TString("ppsd") ) ;
   
@@ -331,6 +337,8 @@ AliPHOSPpsdRecPoint * AliPHOSTrackSegment::GetPpsdLowRecPoint() const
 //____________________________________________________________________________
 AliPHOSPpsdRecPoint * AliPHOSTrackSegment::GetPpsdUpRecPoint() const 
 {
+  // Returns the lower PPSD rec point at the origin of this track
+
   AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ;
   AliPHOSPpsdRecPoint * rv = 0 ;
  

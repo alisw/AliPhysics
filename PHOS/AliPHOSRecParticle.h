@@ -23,17 +23,18 @@
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSFastRecParticle.h"
 
-typedef TClonesArray RecParticlesList ; 
-
 class AliPHOSRecParticle : public AliPHOSFastRecParticle {
 
 public:
   
-  AliPHOSRecParticle() {};          // ctor
+  AliPHOSRecParticle() {
+    // ctor
+  }
   AliPHOSRecParticle(AliPHOSTrackSegment * ts) ;  // ctor
   AliPHOSRecParticle(const AliPHOSRecParticle & rp) ;  // ctor
-  virtual ~AliPHOSRecParticle(){} ; // dtor
-
+  virtual ~AliPHOSRecParticle(){
+    // dtor
+  }
   AliPHOSTrackSegment * GetPHOSTrackSegment() const ; 
   Int_t                 GetPHOSTrackSegmentIndex(){return fPHOSTrackSegment;}
   Int_t *               GetPrimaries(Int_t & number) ;
@@ -41,6 +42,9 @@ public:
 private:
 
   Int_t fPHOSTrackSegment ; // pointer to the associated track segment in PHOS  
+
+  typedef TClonesArray RecParticlesList ; 
+
 
   ClassDef(AliPHOSRecParticle,1)  // Reconstructed Particle
 };

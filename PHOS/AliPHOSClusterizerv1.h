@@ -42,7 +42,9 @@ public:
   virtual Float_t GetPpsdEnergyThreshold() { return  fPpsdEnergyThreshold;  }
 
   virtual Bool_t IsInEmc(AliPHOSDigit * digit) ;                      // Tells if id digit is in EMC
-  virtual void MakeClusters(const DigitsList * dl, RecPointsList * emcl, RecPointsList * ppsdl) ; // does the job 
+  virtual void MakeClusters(const DigitsList * dl, 
+			    AliPHOSRecPoint::RecPointsList * emcl, 
+			    AliPHOSRecPoint::RecPointsList * ppsdl) ; // does the job 
   virtual void PrintParameters() ;  
   virtual void SetCalibrationParameters(Float_t A,Float_t B){ fA = A ; fB = B;} 
   virtual void SetEmcClusteringThreshold(Float_t cluth) { fEmcClusteringThreshold = cluth ; }

@@ -36,8 +36,11 @@ public:
   AliPHOSClusterizer * GetClusterizer() { return fClusterizer ; }
   void Init(AliPHOSClusterizer * Clusterizer, AliPHOSTrackSegmentMaker * Tracker, 
 			  AliPHOSPID * Identifier) ;  
-  void Make(TClonesArray * DL, RecPointsList * emccl, RecPointsList * ppsdl, 
-	    TrackSegmentsList * trsl, RecParticlesList * rpl) ; // does the job
+  void Make(TClonesArray * DL, 
+	    AliPHOSRecPoint::RecPointsList * emccl, 
+	    AliPHOSRecPoint::RecPointsList * ppsdl, 
+	    AliPHOSTrackSegment::TrackSegmentsList * trsl, 
+	    AliPHOSRecParticle::RecParticlesList * rpl) ; // does the job
 
   void SetDebugReconstruction(Bool_t deb) { fDebugReconstruction = deb; }
 

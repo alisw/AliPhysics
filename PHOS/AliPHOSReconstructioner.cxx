@@ -64,8 +64,11 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
 } 
 
 //____________________________________________________________________________
- void AliPHOSReconstructioner::Make(DigitsList * dl, RecPointsList * emccl, RecPointsList * ppsdl, 
-				     TrackSegmentsList * trsl, RecParticlesList * rpl)
+ void AliPHOSReconstructioner::Make(DigitsList * dl, 
+				    AliPHOSRecPoint::RecPointsList * emccl, 
+				    AliPHOSRecPoint::RecPointsList * ppsdl, 
+				    AliPHOSTrackSegment::TrackSegmentsList * trsl, 
+				    AliPHOSRecParticle::RecParticlesList * rpl)
 {
   // Launches the Reconstruction process in the sequence: Make the reconstructed poins (clusterize)
   //                                                      Make the track segments 
@@ -285,28 +288,28 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
       primaries = (rp->GetPHOSTrackSegment())->GetPrimariesEmc(nprimaries);
       switch(rp->GetType())
 	{
-	case kNEUTRAL_EM:
+	case kNEUTRALEM:
 	  strcpy( particle, "NEUTRAL_EM");
 	  break;
-	case kNEUTRAL_HA:
+	case kNEUTRALHA:
 	  strcpy(particle, "NEUTRAL_HA");
 	  break;
 	case kGAMMA:
 	  strcpy(particle, "GAMMA");
 	  break ;
-	case kGAMMA_HA: 
+	case kGAMMAHA: 
 	  strcpy(particle, "GAMMA_H");
 	  break ;
-	case kABSURD_EM:
+	case kABSURDEM:
 	  strcpy(particle, "ABSURD_EM") ;
 	  break ;
-	case kABSURD_HA:
+	case kABSURDHA:
 	  strcpy(particle, "ABSURD_HA") ;
 	  break ;	
 	case kELECTRON:
 	  strcpy(particle, "ELECTRON") ;
 	  break ;
-	case kCHARGED_HA:
+	case kCHARGEDHA:
 	  strcpy(particle, "CHARGED_HA") ;
 	  break ; 
 	}
