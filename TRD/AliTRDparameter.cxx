@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/10/31 17:46:22  cblume
+New padplane (same number of columns in outer plane
+
 Revision 1.9  2002/10/28 13:02:51  cblume
 Bug fix in GetTiltingAngle()
 
@@ -523,7 +526,7 @@ void AliTRDparameter::SetNRowPad()
   	                     - fGeo->GetChamberLength(iplan,1)
                              - fGeo->GetChamberLength(iplan,2) / 2.;
         for (Int_t ic = 0; ic < icham; ic++) {
-          row0 += fGeo->GetChamberLength(iplan,icham);
+          row0 += fGeo->GetChamberLength(iplan,ic);
         }
         fRow0[iplan][icham][isect]       = row0;
 
