@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/10/22 08:25:25  fca
+remove double definition of destructors
+
 Revision 1.11  1999/10/22 08:16:49  fca
 Correct destructors, thanks to I.Hrivnacova
 
@@ -360,7 +363,7 @@ void AliITSv1::CreateGeometry()
   gMC->Gsvolu("ISUP", "TUBE", idtmed[274], dits, 0);
   for (i = 0; i < 6; ++i) {
     dits[0] = rl[i];
-    if (i < 5) dits[1] = rl[i];
+    if (i < 5) dits[1] = rl[i+1];
     else       dits[1] = rlim;
     dits[2] = drsu / 2.;
     zpos = dzl[i] + dzb[i] + dits[2];
