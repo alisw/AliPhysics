@@ -807,9 +807,23 @@ void FGeometryInit::PrintMagneticField(std::ostream& os) {
 
 int FGeometryInit::CurrentVolID(int ir, int& copyNo)
 {
+    if (ir == 0) 
+    {
+	copyNo = -1;
+	return -1;
+    }
+    
     G4PhysicalVolumeStore * pVolStore = G4PhysicalVolumeStore::GetInstance();
-    G4VPhysicalVolume * physicalvol = (*pVolStore)[ir- 1];
-    copyNo =  physicalvol->GetCopyNo();
+    G4VPhysicalVolume   * physicalvol = (*pVolStore)[ir- 1];
+    
+    if (physicalvol) {
+	copyNo =  physicalvol->GetCopyNo();
+    } else {
+	copyNo = -1;
+	return -1;
+    }
+    
+    
     int id = fVolIdVolumeMap[physicalvol];
     return id;
 }
