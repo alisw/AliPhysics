@@ -46,7 +46,6 @@ public:
   void      SetCopyTreesFromInput(Int_t i) {fCopyTreesFromInput = i;}
   Int_t     GetCopyTreesFromInput() {return fCopyTreesFromInput;}
   Int_t     GetOutputEventNr() {return fEvent;}
-  Bool_t    SetInput(char* inputFileString);
   void      SetCombinationFileName(TString fn) {fCombinationFileName = fn;} 
   TString   GetCombinationFileName() {return fCombinationFileName;}
   Int_t     GetNinputs() const {return fNinputs;}
@@ -54,10 +53,6 @@ public:
   TTree*    GetInputTreeS(Int_t i) const {return fArrayTreeS[i];}
   TTree*    GetInputTreeH(Int_t i) const {return fArrayTreeH[i];}
   TTree*    GetInputTreeTPCS(Int_t i) const {return fArrayTreeTPCS[i];}
-  Int_t     GetNextMask(Int_t i) const;
-  TTree*    GetNextTreeH(TTree *) const;
-  TTree*    GetNextTreeS(TTree *) const;
-  TTree*    GetNextTreeTPCS(TTree *) const;
   TTree*    GetTreeD() const {return fTreeD;}
   void      Digitize();
 
@@ -125,8 +120,6 @@ private:
   void              FinishGlobal();
   Int_t             fDebug;                //! specifies debug level, 0 is min
   
-  TFile* ConnectInputFile(Int_t input);    // open input file with index input
-
   ClassDef(AliRunDigitizer,1)
 };
 
