@@ -358,7 +358,6 @@ void AliPHOSv1::SDigits2Digits(){
 void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
 { 
 
-
   char *cH ; 
   // Create new branche in the current Root Tree in the digit Tree
   AliDetector::MakeBranch(opt) ;
@@ -371,8 +370,6 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
     sprintf(branchname,"%s",GetName());  
     if(fSDigits)
       fSDigits->Clear();
-    else
-      fSDigits = new TClonesArray("AliPHOSDigit",1000);
 
     fnSdigits = 0 ;
     gAlice->MakeBranchInTree(gAlice->TreeS(),branchname,&fSDigits,fBufferSize,file);  
@@ -386,9 +383,6 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
 
     if(fDigits)
       fDigits->Clear();
-    else
-      fDigits = new TClonesArray("AliPHOSDigit",1000);
-    fNdigits = 0 ;
     
     gAlice->MakeBranchInTree(gAlice->TreeD(),branchname,&fDigits,fBufferSize,file);  
   }
@@ -402,42 +396,34 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
 
     if(fEmcRecPoints)
       fEmcRecPoints->Delete() ; 
-    else
-      fEmcRecPoints = new TObjArray(100) ;
 
     if ( fEmcRecPoints && gAlice->TreeR() ) {
       sprintf(branchname,"%sEmcRP",GetName()) ;
-      gAlice->TreeR()->Branch(branchname, "TObjArray", &fEmcRecPoints, fBufferSize, splitlevel) ; 
+      gAlice->MakeBranchInTree(gAlice->TreeR(),branchname,"TObjArray",&fEmcRecPoints, fBufferSize, splitlevel,file); 
     }
 
     if(fPpsdRecPoints)
       fPpsdRecPoints->Delete() ; 
-    else
-      fPpsdRecPoints = new TObjArray(100) ;
 
     if ( fPpsdRecPoints && gAlice->TreeR() ) {
       sprintf(branchname,"%sPpsdRP",GetName()) ;
-      gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdRecPoints, fBufferSize, splitlevel) ;
+      gAlice->MakeBranchInTree(gAlice->TreeR(),branchname,"TObjArray",&fPpsdRecPoints, fBufferSize, splitlevel,file); 
     }
 
     if(fTrackSegments)
-      fTrackSegments->Delete() ; 
-    else
-      fTrackSegments = new TClonesArray("AliPHOSTrackSegment",100) ;
+      fTrackSegments->Clear() ; 
     
     if ( fTrackSegments && gAlice->TreeR() ) { 
       sprintf(branchname,"%sTS",GetName()) ;
-      gAlice->TreeR()->Branch(branchname, &fTrackSegments, fBufferSize) ;
+      gAlice->MakeBranchInTree(gAlice->TreeR(),branchname,&fTrackSegments,fBufferSize,file);
     }
     
     if(fRecParticles)
-      fRecParticles->Delete() ; 
-    else
-      fRecParticles = new TClonesArray("AliPHOSRecParticle",100) ;
+      fRecParticles->Clear() ; 
     
     if ( fRecParticles && gAlice->TreeR() ) { 
       sprintf(branchname,"%sRP",GetName()) ;
-      gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize) ;
+      gAlice->MakeBranchInTree(gAlice->TreeR(),branchname,&fRecParticles,fBufferSize,file); 
     }
     
   }

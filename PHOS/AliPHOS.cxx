@@ -60,12 +60,12 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name,title)
 {
   // ctor
 
-  fSDigits       = 0 ; 
-  fDigits        = 0 ; 
-  fEmcRecPoints  = 0 ; 
-  fPpsdRecPoints = 0 ;
-  fTrackSegments = 0 ;
-  fRecParticles  = 0 ;
+  fSDigits       = new TClonesArray("AliPHOSDigit",1000) ; 
+  fDigits        = new TClonesArray("AliPHOSDigit",1000) ;
+  fEmcRecPoints  = new TObjArray(100) ; 
+  fPpsdRecPoints = new TObjArray(100) ;
+  fTrackSegments = new TClonesArray("AliPHOSTrackSegment",100);
+  fRecParticles  = new TClonesArray("AliPHOSRecParticle",100);
   
 }
 //____________________________________________________________________________
@@ -360,38 +360,27 @@ void AliPHOS::SetTreeAddress()
   TBranch *branch;
   char branchname[20];
   sprintf(branchname,"%s",GetName());
-  //
+  
   // Branch address for hit tree
   TTree *treeH = gAlice->TreeH();
   if (treeH && fHits) {
     branch = treeH->GetBranch(branchname);
     if (branch) branch->SetAddress(&fHits);
   }
-  //
+ 
   // Branch address for digit tree
   TTree *treeD = gAlice->TreeD();
 
   if(fDigits)
       fDigits->Clear();
-  else{
-      cout << "AliPHOS:SetTree() fDigits " << fDigits << endl ;
-      cout << "AliPHOS:SetTree() creating new fDigits "<< endl ;
-      fDigits = new TClonesArray("AliPHOSDigit",1000);
-    }
 
   if (treeD && fDigits) {
     branch = treeD->GetBranch(branchname);
     if (branch) branch->SetAddress(&fDigits);
   }
 
-
   if(fSDigits)
     fSDigits->Clear();
-  else{
-      cout << "AliPHOS:SetTree() fSDigits " << fSDigits << endl ;
-      cout << "AliPHOS:SetTree() creating new fSDigits "<< endl ;
-      fSDigits = new TClonesArray("AliPHOSDigit",1000);
-   }
 
   if (gAlice->TreeS()  && fSDigits ) {
     branch = gAlice->TreeS()->GetBranch("PHOS");
@@ -405,11 +394,6 @@ void AliPHOS::SetTreeAddress()
 
   if(fEmcRecPoints)
     fEmcRecPoints->Delete();
-  else{
-      cout << "AliPHOS:SetTree() fEmcRecPoints " << fEmcRecPoints << endl ;
-      cout << "AliPHOS:SetTree() creating new fEmcRecPoints "<< endl ;
-      fEmcRecPoints = new TObjArray(100);
-   }
    
 
   if ( treeR && fEmcRecPoints ) {
@@ -421,11 +405,6 @@ void AliPHOS::SetTreeAddress()
 
   if(fPpsdRecPoints)
     fPpsdRecPoints->Delete();
-  else{
-      cout << "AliPHOS:SetTree() fPpsdRecPoints " << fPpsdRecPoints << endl ;
-      cout << "AliPHOS:SetTree() creating new fPpsdRecPoints "<< endl ;
-      fPpsdRecPoints = new TObjArray(100);
-   }
  
   if ( treeR && fPpsdRecPoints ) {
     branch = treeR->GetBranch("PHOSPpsdRP");
@@ -435,13 +414,7 @@ void AliPHOS::SetTreeAddress()
   //Branch address for TreeR: TrackSegments
 
   if(fTrackSegments)
-    fTrackSegments->Clear() ;
-  else{
-      cout << "AliPHOS:SetTree() fTrackSegments " << fTrackSegments << endl ;
-      cout << "AliPHOS:SetTree() creating new fTrackSegments "<< endl ;
-      fTrackSegments = new TClonesArray("AliPHOSTrackSegment",100);
-   }
- 
+    fTrackSegments->Clear() ; 
   
   if ( treeR && fTrackSegments ) {
     branch = treeR->GetBranch("PHOSTS");
@@ -452,13 +425,7 @@ void AliPHOS::SetTreeAddress()
 
   if(fRecParticles)
     fRecParticles->Clear() ;
-  else{
-      cout << "AliPHOS:SetTree() fRecParticles " << fRecParticles << endl ;
-      cout << "AliPHOS:SetTree() creating new fRecParticles "<< endl ;
-      fRecParticles = new TClonesArray("AliPHOSRecParticle",100);
-   }
-
-
+  
   if ( treeR && fRecParticles ) {
     branch = treeR->GetBranch("PHOSRP");
     if (branch) branch->SetAddress(&fRecParticles) ;
