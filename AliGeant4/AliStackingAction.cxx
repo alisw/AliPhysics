@@ -74,7 +74,7 @@ AliStackingAction::ClassifyNewTrack(const G4Track* track)
     // (secondary particles are stored 
     //  by AlTrackingAction::PreUserTrackingAction() method)
     if (fSavePrimaries)
-      fTrackingAction->SaveParticle(track);
+      fTrackingAction->SaveTrack(track);
   }  
   else {
      // exclude neutrinos
