@@ -24,7 +24,7 @@ ClassImp(AliMUONTransientDigit)
  
 //____________________________________________________________________________
 
-AliMUONTransientDigit::AliMUONTransientDigit(const AliMUONTransientDigit& digit)
+  AliMUONTransientDigit::AliMUONTransientDigit(const AliMUONTransientDigit& digit):AliMUONDigit(digit)
 {
 // dummy copy constructor
 }
@@ -49,7 +49,7 @@ AliMUONTransientDigit::~AliMUONTransientDigit()
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliMUONTransientDigit& AliMUONTransientDigit::operator =(const AliMUONTransientDigit& rhs)
+AliMUONTransientDigit& AliMUONTransientDigit::operator =(const AliMUONTransientDigit& /*rhs*/)
 {
 // Dummy assignment operator
     return *this;

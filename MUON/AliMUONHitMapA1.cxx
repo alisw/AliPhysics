@@ -48,7 +48,7 @@ AliMUONHitMapA1::AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig)
     Clear();
 }
 
-AliMUONHitMapA1::AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap)
+AliMUONHitMapA1::AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap):AliHitMap(hitMap)
 {
 // Dummy copy constructor
     ;
@@ -155,7 +155,7 @@ FlagType AliMUONHitMapA1::TestHit(Int_t ix, Int_t iy)
     }
 }
 
-AliMUONHitMapA1 & AliMUONHitMapA1::operator = (const AliMUONHitMapA1 & rhs) 
+AliMUONHitMapA1 & AliMUONHitMapA1::operator = (const AliMUONHitMapA1 & /*rhs*/) 
 {
 // Dummy assignment operator
     return *this;

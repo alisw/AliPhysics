@@ -53,13 +53,13 @@ AliMUONTriggerLut::~AliMUONTriggerLut() {
 }
 
 //----------------------------------------------------------------------
-AliMUONTriggerLut::AliMUONTriggerLut (const AliMUONTriggerLut& MUONTriggerLut)
+AliMUONTriggerLut::AliMUONTriggerLut (const AliMUONTriggerLut& MUONTriggerLut):TNamed(MUONTriggerLut)
 {
 // Dummy copy constructor
 }
 
 //----------------------------------------------------------------------
-AliMUONTriggerLut & AliMUONTriggerLut::operator=(const AliMUONTriggerLut& MUONTriggerLut)
+AliMUONTriggerLut & AliMUONTriggerLut::operator=(const AliMUONTriggerLut& /*MUONTriggerLut*/)
 {
 // Dummy assignment operator
     return *this;

@@ -97,12 +97,12 @@ AliMUONSegment::AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2)
   return;
 }
 
-AliMUONSegment::AliMUONSegment (const AliMUONSegment& MUONSegment)
+AliMUONSegment::AliMUONSegment (const AliMUONSegment& MUONSegment):TObject(MUONSegment)
 {
 // Dummy copy constructor
 }
 
-AliMUONSegment & AliMUONSegment::operator=(const AliMUONSegment& MUONSegment)
+AliMUONSegment & AliMUONSegment::operator=(const AliMUONSegment& /*MUONSegment*/)
 {
 // Dummy assignment operator
     return *this;
@@ -241,7 +241,7 @@ AliMUONHitForRec* AliMUONSegment::CreateHitForRecFromLinearExtrapToChamber (Int_
 }
 
   //__________________________________________________________________________
-void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, Double_t MCSfactor, Double_t Dz1, Double_t Dz2, Double_t Dz3, Int_t Station, Double_t InverseMomentum)
+void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, Double_t /*MCSfactor*/, Double_t /*Dz1*/, Double_t /*Dz2*/, Double_t /*Dz3*/, Int_t Station, Double_t InverseMomentum)
 {
   // Fill data members with values calculated from the array of track parameters
   // pointed to by "TrackParam" (index = 0 and 1 for first and second chambers

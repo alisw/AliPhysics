@@ -103,13 +103,13 @@ AliMUONTrack::~AliMUONTrack()
 }
 
   //__________________________________________________________________________
-AliMUONTrack::AliMUONTrack (const AliMUONTrack& MUONTrack)
+AliMUONTrack::AliMUONTrack (const AliMUONTrack& MUONTrack):TObject(MUONTrack)
 {
 // Dummy copy constructor
 }
 
   //__________________________________________________________________________
-AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& MUONTrack)
+AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& /*MUONTrack*/)
 {
 // Dummy assignment operator
     return *this;
@@ -401,7 +401,7 @@ void AliMUONTrack::SetTrackParamAtVertex()
 }
 
   //__________________________________________________________________________
-void TrackChi2(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag)
+void TrackChi2(Int_t &NParam, Double_t * /*Gradient*/, Double_t &Chi2, Double_t *Param, Int_t /*Flag*/)
 {
   // Return the "Chi2" to be minimized with Minuit for track fitting,
   // with "NParam" parameters
@@ -452,7 +452,7 @@ void TrackChi2(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Para
 }
 
   //__________________________________________________________________________
-void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag)
+void TrackChi2MCS(Int_t &NParam, Double_t * /*Gradient*/, Double_t &Chi2, Double_t *Param, Int_t /*Flag*/)
 {
   // Return the "Chi2" to be minimized with Minuit for track fitting,
   // with "NParam" parameters

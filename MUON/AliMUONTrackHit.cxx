@@ -50,13 +50,13 @@ AliMUONTrackHit::AliMUONTrackHit(AliMUONHitForRec* Hit)
 }
 
   //__________________________________________________________________________
-AliMUONTrackHit::AliMUONTrackHit (const AliMUONTrackHit& MUONTrackHit)
+AliMUONTrackHit::AliMUONTrackHit (const AliMUONTrackHit& MUONTrackHit):TObject(MUONTrackHit)
 {
 // Dummy copy constructor
 }
 
   //__________________________________________________________________________
-AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& MUONTrackHit)
+AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& /*MUONTrackHit*/)
 {
 // Dummy assignment operator
     return *this;

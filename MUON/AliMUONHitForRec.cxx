@@ -85,12 +85,12 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* RawCluster)
   return;
 }
 
-AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& MUONHitForRec)
+AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& MUONHitForRec):TObject(MUONHitForRec)
 {
 // Dummy copy constructor
 }
 
-AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& MUONHitForRec)
+AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& /*MUONHitForRec*/)
 {
 // Dummy assignment operator
     return *this;

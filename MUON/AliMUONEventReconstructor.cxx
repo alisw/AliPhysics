@@ -134,12 +134,12 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
   return;
 }
 
-AliMUONEventReconstructor::AliMUONEventReconstructor (const AliMUONEventReconstructor& Reconstructor)
+AliMUONEventReconstructor::AliMUONEventReconstructor (const AliMUONEventReconstructor& Reconstructor):TObject(Reconstructor)
 {
   // Dummy copy constructor
 }
 
-AliMUONEventReconstructor & AliMUONEventReconstructor::operator=(const AliMUONEventReconstructor& Reconstructor)
+AliMUONEventReconstructor & AliMUONEventReconstructor::operator=(const AliMUONEventReconstructor& /*Reconstructor*/)
 {
   // Dummy assignment operator
     return *this;
@@ -1403,7 +1403,6 @@ void AliMUONEventReconstructor::EventDump(void)
 
   AliMUONTrack *track;
   AliMUONTrackParam *trackParam, *trackParam1;
-  TParticle *p;
   Double_t bendingSlope, nonBendingSlope, pYZ;
   Double_t pX, pY, pZ, x, y, z, c;
   Int_t np, trackIndex, nTrackHits;

@@ -49,13 +49,13 @@ AliMUONTriggerCircuit::AliMUONTriggerCircuit()
 }
 
 //----------------------------------------------------------------------
-AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONTriggerCircuit& MUONTriggerCircuit)
+AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONTriggerCircuit& MUONTriggerCircuit):TObject(MUONTriggerCircuit)
 {
 // Dummy copy constructor
 }
 
 //----------------------------------------------------------------------
-AliMUONTriggerCircuit & AliMUONTriggerCircuit::operator=(const AliMUONTriggerCircuit& MUONTriggerCircuit)
+AliMUONTriggerCircuit & AliMUONTriggerCircuit::operator=(const AliMUONTriggerCircuit& /*MUONTriggerCircuit*/)
 {
 // Dummy assignment operator
     return *this;

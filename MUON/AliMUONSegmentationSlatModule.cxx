@@ -84,7 +84,7 @@ Float_t AliMUONSegmentationSlatModule::Dpx(Int_t isec) const
 } 
 
 
-Float_t AliMUONSegmentationSlatModule::Dpy(Int_t isec) const
+Float_t AliMUONSegmentationSlatModule::Dpy(Int_t /*isec*/) const
 {
 // Return y-strip width
 
@@ -140,7 +140,12 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 	x=y=0;
     }
 }
-
+//-------------------------------------------------------------------------
+void AliMUONSegmentationSlatModule::GetPadI(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy)
+{
+  GetPadI(x, y, ix, iy);
+}
+//-------------------------------------------------------------------------
 void AliMUONSegmentationSlatModule::
 SetPad(Int_t ix, Int_t iy)
 {
@@ -167,8 +172,12 @@ SetHit(Float_t x, Float_t y)
 
     
 }
-
-
+//----------------------------------------------------------
+void AliMUONSegmentationSlatModule::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
+{
+  SetHit(xhit, yhit);
+}
+//----------------------------------------------------------
 void AliMUONSegmentationSlatModule::
 FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
 {
@@ -232,7 +241,12 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
 	   fIymin, fIymax, fYmin, fYmax,  fNpyS[isec], fId, isec, Dpy(isec));
 */
 }
-
+//----------------------------------------------------------------------
+void AliMUONSegmentationSlatModule::FirstPad(Float_t xhit, Float_t yhit, Float_t /*zhit*/, Float_t dx, Float_t dy)
+{
+  FirstPad(xhit, yhit, dx, dy);
+}
+//----------------------------------------------------------------------
 void AliMUONSegmentationSlatModule::NextPad()
 {
 // Stepper for the iteration over pads
