@@ -101,6 +101,7 @@ c*-sum up total energy of all cells
       else
          et_ave=0.0
       endif
+      print *,'Iter ', n_iter, ' et_ave ', et_ave, ' #cells ', ncell 
 c*-Watch out!!! For mode=1, it can jump back to here for next iteration!!!
  999  continue
 c*-kill cells (flag=2) with Et below ET_MIN after background subtraction
@@ -216,10 +217,11 @@ c*-sum up unused cells within required distance of given eta/phi
                   endif
                endif
             enddo  ! do k=1,ncell
-! 5-oct-2001 by PAI
-            if(maxTowerInJet .gt. nc) then
-              ets = ets - et_ave*(maxTowerInJet - nc) 
-            endif
+!  5-oct-2001 by PAI - remove 20-feb-2002 by PAI
+! 20-feb-2002 - it is work if you apply cut on eT before jet finder !!!
+!            if(maxTowerInJet .gt. nc) then
+!              ets = ets - et_ave*(maxTowerInJet - nc) 
+!            endif
 ! 5-oct-2001 by PAI
             
 c*-reject cluster below minimum Ej_min
@@ -273,7 +275,9 @@ c*-after 10 iteration, stop working and finish
      +        .or. n_iter.eq.1) then ! minimum 2 iteration - 10-oct-2001 by pai
             et_ave=et_sum/float(ncell_tot-nc)
             n_iter=n_iter+1
-            et_sum_old=et_sum
+            et_sum_old = et_sum
+            print *,'End of iteration : et_ave ', et_ave, ' nc ', nc
+     + , ' Jet energy ', ets     
             goto 999
 c*-Watch out!!! Here is a big jump!!! 
          endif
