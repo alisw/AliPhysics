@@ -64,9 +64,9 @@ SLIBRARY	= $(ALICE_ROOT)/lib/libgeant321.$(SL) $(ALICE_ROOT)/lib/libgxint321.$(S
 ALIBRARY	= $(ALICE_ROOT)/lib/libgeant321.a $(ALICE_ROOT)/lib/libgxint321.a
 
 ifeq ($(PLATFORM),alpha)
-	default:	$(ALIBRARY)
+        default:	$(ALIBRARY)
 else
-	default:	$(SLIBRARY)
+        default:	$(SLIBRARY)
 endif
 
 $(ALICE_ROOT)/lib/libgeant321.$(SL) $(ALICE_ROOT)/lib/libgeant321.a:  $(GOBJ)

@@ -287,9 +287,9 @@ SLIBRARY	= $(ALICE_ROOT)/lib/libminicern.$(SL)
 ALIBRARY	= $(ALICE_ROOT)/lib/libminicern.a
 
 ifeq ($(PLATFORM),alpha)
-	default:	$(ALIBRARY)
+        default:	$(ALIBRARY)
 else
-	default:	$(SLIBRARY)
+        default:	$(SLIBRARY)
 endif
 
 $(ALICE_ROOT)/lib/libminicern.$(SL):  $(OBJS)
