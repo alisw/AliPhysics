@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/03/26 13:39:20  coppedis
+Comment prints
+
 Revision 1.19  2001/03/26 09:10:23  coppedis
 Corrected bug in constructor (fIshunt has to be =1)
 
@@ -109,17 +112,6 @@ AliZDC::AliZDC(const char *name, const char *title)
   //
   // Standard constructor for the Zero Degree Calorimeter base class
   //
-
-  // Check that DIPO is there (otherwise tracking is wrong!!!)
-  
-  AliModule* PIPE=gAlice->GetModule("PIPE");
-  AliModule* ABSO=gAlice->GetModule("ABSO");
-  AliModule* DIPO=gAlice->GetModule("DIPO");
-  AliModule* SHIL=gAlice->GetModule("SHIL");
-  if((!PIPE) || (!ABSO) || (!DIPO) || (!SHIL)) {
-    Error("Constructor","ZDC needs PIPE, ABSO, DIPO and SHIL!!!\n");
-    exit(1);
-  } 
 
   //
   // Allocate the array of hits
