@@ -27,9 +27,11 @@ extern AliRun *gAlice;
 extern TROOT *gROOT;
 
 Int_t AliESDcomparison(const Char_t *dir=".") { 
+   Double_t pi=0.2,pa=2;
+
    TH2F *tpcHist=(TH2F*)gROOT->FindObject("tpcHist");
    if (!tpcHist)
-     tpcHist=new TH2F("tpcHist","TPC dE/dX vs momentum",100,0.,4.,100,0.,500.);
+     tpcHist=new TH2F("tpcHist","TPC dE/dX vs momentum",100,pi,pa,100,0.,300.);
    tpcHist->SetXTitle("p (GeV/c)"); tpcHist->SetYTitle("dE/dx (Arb. Units)");
    tpcHist->SetMarkerStyle(8); 
    tpcHist->SetMarkerSize(0.3);
@@ -44,7 +46,7 @@ Int_t AliESDcomparison(const Char_t *dir=".") {
 
    for (Int_t i=0; i<nh; i++) {
      hprt[i]=(TH1F*)gROOT->FindObject(hname[i]);
-     if (hprt[i]==0) {hprt[i]=new TH1F(hname[i],"",20,0.,4.);hprt[i]->Sumw2();}
+     if (hprt[i]==0) {hprt[i]=new TH1F(hname[i],"",20,pi,pa);hprt[i]->Sumw2();}
    }
    TH1F *piG=hprt[0];
    TH1F *piR=hprt[1];
@@ -114,34 +116,34 @@ Int_t AliESDcomparison(const Char_t *dir=".") {
    //******* The loop over events
    while ((key=(TKey*)next())!=0) {
      rl->GetEvent(n);
-     ef->cd();
 
      cerr<<"Processing event number : "<<n++<<endl;
+
+     ef->cd();
 
      AliESD *event=(AliESD*)key->ReadObj();
 
      Int_t ntrk=event->GetNumberOfTracks();
      cerr<<"Number of ESD tracks : "<<ntrk<<endl; 
-     //****** The loop over tracks
+
+     // ****** The loop over tracks
 
      Int_t pisel=0,kasel=0,prsel=0,nsel=0;
 
      while (ntrk--) {
        AliESDtrack *t=event->GetTrack(ntrk);
 
-       Double_t p=t->GetP();
-
-       if (t->GetStatus()&AliESDtrack::kTPCin) {
-	 Double_t dedx=t->GetTPCsignal();
-         tpcHist->Fill(p,dedx,1);
-       }
-
        UInt_t status=AliESDtrack::kESDpid;
+       status|=AliESDtrack::kITSpid; 
        status|=AliESDtrack::kTPCpid; 
        status|=AliESDtrack::kTOFpid; 
 
        if ((t->GetStatus()&status) == status) {
          nsel++;
+
+         Double_t p=t->GetP();
+	 Double_t dedx=t->GetTPCsignal();
+         tpcHist->Fill(p,dedx,1);
 
          Int_t lab=TMath::Abs(t->GetLabel());
          TParticle *part=stack->Particle(lab);
@@ -158,25 +160,25 @@ Int_t AliESDcomparison(const Char_t *dir=".") {
          Double_t w[10];
          for (i=0; i<AliESDtrack::kSPECIES; i++) w[i]=c[i]*r[i]/rcc;
 
+         if (TMath::Abs(code)==2212) prR->Fill(p);
          if (w[4]>w[3] && w[4]>w[2] && w[4]>w[1] && w[4]>w[0]) {//proton
 	    prsel++;
 	    prG->Fill(p);
-            if (TMath::Abs(code)==2212) prR->Fill(p);
-            else prF->Fill(p);
+            if (TMath::Abs(code)!=2212) prF->Fill(p);
          }
 
+         if (TMath::Abs(code)==321) kaR->Fill(p);
          if (w[3]>w[4] && w[3]>w[2] && w[3]>w[1] && w[3]>w[0]) {//kaon
 	    kasel++;
 	    kaG->Fill(p);
-            if (TMath::Abs(code)==321) kaR->Fill(p);
-            else kaF->Fill(p);
+            if (TMath::Abs(code)!=321) kaF->Fill(p);
          }
 
+	 if (TMath::Abs(code)==211) piR->Fill(p);
 	 if (w[2]>w[3] && w[2]>w[4] && w[2]>w[1] && w[2]>w[0]) {//pion
 	    pisel++;
 	    piG->Fill(p);
-	    if (TMath::Abs(code)==211) piR->Fill(p);
-            else piF->Fill(p);
+	    if (TMath::Abs(code)!=211) piF->Fill(p);
          }
 
        }
@@ -187,6 +189,7 @@ Int_t AliESDcomparison(const Char_t *dir=".") {
      cerr<<"Number of selected pion ESD tracks : "<<pisel<<endl;
      cerr<<"Number of selected kaon ESD tracks : "<<kasel<<endl;
      cerr<<"Number of selected proton ESD tracks : "<<prsel<<endl;
+
    }
 
    timer.Stop(); timer.Print();
@@ -201,21 +204,24 @@ Int_t AliESDcomparison(const Char_t *dir=".") {
 
    c1->cd(2);
    //piG->Sumw2(); piF->Sumw2(); piR->Sumw2();
-   piGood->Divide(piR,piG,1,1,"b");
+   piGood->Add(piG,piF,1,-1);
+   piGood->Divide(piGood,piR,1,1,"b");
    piFake->Divide(piF,piG,1,1,"b");
    piGood->Draw("hist");
    piFake->Draw("same");
 
    c1->cd(3);
    //kaG->Sumw2(); kaF->Sumw2(); kaR->Sumw2();
-   kaGood->Divide(kaR,kaG,1,1,"b");
+   kaGood->Add(kaG,kaF,1,-1);
+   kaGood->Divide(kaGood,kaR,1,1,"b");
    kaFake->Divide(kaF,kaG,1,1,"b");
    kaGood->Draw("hist");
    kaFake->Draw("same");
 
    c1->cd(4);
    //prG->Sumw2(); prF->Sumw2(); prR->Sumw2();
-   prGood->Divide(prR,prG,1,1,"b");
+   prGood->Add(prG,prF,1,-1);
+   prGood->Divide(prGood,prR,1,1,"b");
    prFake->Divide(prF,prG,1,1,"b");
    prGood->Draw("hist");
    prFake->Draw("same");
