@@ -27,7 +27,7 @@ class TG4IntMap
 
     // methods
     G4bool Add(const G4String& first, G4int second);  
-    G4int GetSecond(const G4String& name);
+    G4int GetSecond(const G4String& name, G4bool warn = true);
     void PrintAll() const;
     void Clear();
 
