@@ -109,11 +109,6 @@ void TG4NameMap::Clear()
 // Clears the map.
 // ---
 
-  if (fMap.size()>0){
-    for (MapIterator i=fMap.begin(); i != fMap.end(); i++) {
-      delete (*i).second;
-    }
-    fMap.clear();
-  }
+  fMap.clear();
   fSecond = "Undefined";
 }  
