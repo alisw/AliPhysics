@@ -1,28 +1,17 @@
-#include <AliITSVertexerIons.h>
-#include "stdlib.h"
-#include <TMath.h>
-#include <TRandom.h>
-#include <TObjArray.h>
-#include <TROOT.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <Riostream.h>
-
+#include "AliITSVertexerIons.h"
+#include "AliITSVertexerPPZ.h"
+#include "AliESDVertex.h"
 #include "AliRun.h"
 #include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSLoader.h"
 #include "AliITSRecPoint.h"
-#include "AliGenerator.h"
-#include "AliMagF.h"
-
+#include <TMath.h>
+#include <TTree.h>
 #include <TH1.h>
 #include <TF1.h>
-#include <TCanvas.h>
-#include <AliESDVertex.h>
 #include <TObjArray.h>
-#include <TObject.h>
-#include <AliITSVertexerPPZ.h>
+
 //////////////////////////////////////////////////////////////////////
 // AliITSVertexerIons is a class for full 3D primary vertex         //
 // finding optimized for Ion-Ion interactions                       //
@@ -39,10 +28,9 @@
 //                                                                  //       
 //////////////////////////////////////////////////////////////////////
 
+
 ClassImp(AliITSVertexerIons)
-
-
-
+  
 //______________________________________________________________________
   AliITSVertexerIons::AliITSVertexerIons():AliITSVertexer() {
   // Default Constructor
@@ -60,7 +48,23 @@ AliITSVertexerIons::AliITSVertexerIons(TString fn):AliITSVertexer(fn) {
   fITS = 0;
   SetNpThreshold();
   SetMaxDeltaPhi();
-  SetMaxDeltaZ();}
+  SetMaxDeltaZ();
+}
+
+//______________________________________________________________________
+AliITSVertexerIons::AliITSVertexerIons(const AliITSVertexerIons &source):AliITSVertexer(source) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Error("AliITSVertexerIons","Copy constructor not allowed\n");
+}
+
+//_________________________________________________________________________
+AliITSVertexerIons& AliITSVertexerIons::operator=(const AliITSVertexerIons &/*source*/) {
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Error("= operator","Assignment operator not allowed\n");
+  return *this;
+}
 
 
 //______________________________________________________________________
@@ -70,7 +74,8 @@ AliITSVertexerIons::~AliITSVertexerIons() {
 }
 
 //______________________________________________________________________
-AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
+AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){ 
+// Defines the AliESDVertex for the current event
 
   fCurrentVertex = 0;
 
@@ -199,16 +204,16 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   // Fitting ...
   Double_t max;
   Int_t bin_max;
-  Double_t max_center;
+  Double_t maxcenter;
   
   max = hzv->GetMaximum();
   bin_max=hzv->GetMaximumBin();
-  max_center=hzv->GetBinCenter(bin_max);
+  maxcenter=hzv->GetBinCenter(bin_max);
   Double_t dxy=1.5;
   
-  TF1 *fz = new TF1 ("fz","([0]*exp(-0.5*((x-[1])/[2])*((x-[1])/[2])))+[3]",max_center-dxy,max_center+dxy);  
+  TF1 *fz = new TF1 ("fz","([0]*exp(-0.5*((x-[1])/[2])*((x-[1])/[2])))+[3]",maxcenter-dxy,maxcenter+dxy);  
   fz->SetParameter(0,max);
-  fz->SetParameter(1,max_center);
+  fz->SetParameter(1,maxcenter);
   fz->SetParameter(2,0.1);
   fz->SetLineColor(kRed);
   hzv->Fit("fz","RQ0");
@@ -238,21 +243,21 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   TF1 *fx = new TF1 ("fx","([0]*exp(-0.5*((x-[1])/[2])*((x-[1])/[2])))+[3]+[4]*x+[5]*x*x",x0-dxy,x0+dxy);  
   fx->SetParameter(0,100);
   Double_t dist=0.3;
-  Double_t x_approx=FindMaxAround(x0,hxv,dist);
-  if(fDebug>0) cout << "x_approx = " << x_approx << endl;
-  fx->SetParameter(1,x_approx);
-  Double_t dif_centroid=0.07;
-  fx->SetParLimits(1,x_approx-dif_centroid,x_approx+dif_centroid);
+  Double_t xapprox=FindMaxAround(x0,hxv,dist);
+  if(fDebug>0) cout << "xapprox = " << xapprox << endl;
+  fx->SetParameter(1,xapprox);
+  Double_t difcentroid=0.07;
+  fx->SetParLimits(1,xapprox-difcentroid,xapprox+difcentroid);
   fx->SetParameter(2,0.1);
   fx->SetLineColor(kRed);
   hxv->Fit("fx","RQW0"); 
   
   TF1 *fy = new TF1 ("fy","([0]*exp(-0.5*((x-[1])/[2])*((x-[1])/[2])))+[3]+[4]*x+[5]*x*x",y0-dxy,y0+dxy);  
   fy->SetParameter(0,100);
-  Double_t y_approx=FindMaxAround(y0,hyv,dist);
-  if(fDebug>0) cout << "y_approx = " << y_approx << endl;
-  fy->SetParameter(1,y_approx);
-  fy->SetParLimits(1,y_approx-dif_centroid,y_approx+dif_centroid);
+  Double_t yapprox=FindMaxAround(y0,hyv,dist);
+  if(fDebug>0) cout << "yapprox = " << yapprox << endl;
+  fy->SetParameter(1,yapprox);
+  fy->SetParLimits(1,yapprox-difcentroid,yapprox+difcentroid);
   fy->SetParameter(2,0.1);
   fy->SetLineColor(kRed);
   hyv->Fit("fy","RQW0");
@@ -284,6 +289,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
 
 //______________________________________________________________________
 void AliITSVertexerIons::PhiFunc(Double_t &x,Double_t &y,Double_t &phi) {
+  // Method for the computation of the phi angle given x and y. The result is in degrees. 
   if(y>0 && x>0) phi=(TMath::ATan((Double_t)(y/x))*57.29578);
   if(y>0 && x<0) phi=(TMath::ATan((Double_t)(y/x))*57.29578)+180;
   if(y<0 && x<0) phi=(TMath::ATan((Double_t)(y/x))*57.29578)+180;
@@ -322,15 +328,16 @@ void AliITSVertexerIons::PrintStatus() const {
 
 //________________________________________________________
 Double_t AliITSVertexerIons::FindMaxAround(Double_t point, TH1F *h, Double_t distance) {
-  Int_t max_content=0;
-  Int_t max_bin=0;
+  // It finds the maximum of h within point-distance and distance+point. 
+  Int_t maxcontent=0;
+  Int_t maxbin=0;
   for(Int_t i=0;i<h->GetNbinsX();i++) {
     Int_t content=(Int_t)h->GetBinContent(i);
     Double_t center=(Double_t)h->GetBinCenter(i);
-    if(TMath::Abs(center-point)>distance) continue;
-    if(content>max_content) {max_content=content;max_bin=i;}
+    if(fabs(center-point)>distance) continue;
+    if(content>maxcontent) {maxcontent=content;maxbin=i;}
   }
-  Double_t max=h->GetBinCenter(max_bin);
+  Double_t max=h->GetBinCenter(maxbin);
   return max;
 }
 

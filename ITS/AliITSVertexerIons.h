@@ -2,7 +2,6 @@
 #define ALIITSVERTEXERIONS_H
 
 #include <AliITSVertexer.h>
-#include <TH1F.h>
 
 //////////////////////////////////////////////////////////////////////
 // AliITSVertexerIons  is a class for full 3D primary vertex        //
@@ -21,6 +20,7 @@
 //////////////////////////////////////////////////////////////////////
 
 class AliITS;
+class TH1F;
 
 class AliITSVertexerIons : public AliITSVertexer {
 
@@ -39,12 +39,13 @@ class AliITSVertexerIons : public AliITSVertexer {
   Double_t GetMaxDeltaZ() const {return fMaxDeltaPhi;}
   void SetMaxDeltaZ(Double_t dz=0.15) {fMaxDeltaZ=dz;}
   Double_t FindMaxAround(Double_t point, TH1F *h, Double_t distance);
-
  protected:
   AliITS *fITS;            //! pointer to the AliITS object
   Int_t fNpThreshold;      // minimum number of rec points for vertexing
-  Double_t fMaxDeltaPhi;
-  Double_t fMaxDeltaZ;
+  Double_t fMaxDeltaPhi;   // Maximum phi difference for rec points correlation
+  Double_t fMaxDeltaZ;     // Maximum z difference for rec points correlation
+  AliITSVertexerIons(const AliITSVertexerIons &source); // copy constructor (NO copy allowed: the constructor is protected to avoid misuse)   
+  AliITSVertexerIons& operator=(const AliITSVertexerIons &source); // assignment operator (NO assignment allowed)
 
   ClassDef(AliITSVertexerIons,3);
 };
