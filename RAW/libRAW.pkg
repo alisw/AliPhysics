@@ -10,3 +10,6 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= LinkDef.h
 
+ifdef DATE_ROOT
+EINCLUDE+= ${DATE_COMMON_DEFS}
+endif
