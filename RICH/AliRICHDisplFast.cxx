@@ -80,7 +80,7 @@ void AliRICHDisplFast::Display()
   cout << " start to display..." << endl;     
   
   Int_t nPrimaries = (Int_t)pRich->GetLoader()->TreeH()->GetEntries();
-  TObjArray Hits[nPrimaries];
+  TObjArray * Hits = new TObjArray[nPrimaries];
   
   for(Int_t i=0;i<nPrimaries;i++) {
     pRich->GetLoader()->TreeH()->GetEntry(i);
@@ -188,5 +188,6 @@ void AliRICHDisplFast::Display()
       Display->Modified();
       getchar();
      }
+  delete [] Hits;
 }
 
