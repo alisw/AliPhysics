@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.53  2001/02/06 11:02:26  hristov
+New SetTrack interface added, added check for unfilled particles in FinishEvent (I.Hrivnacova)
+
 Revision 1.52  2001/02/05 16:22:25  buncic
 Added TreeS to GetEvent().
 
@@ -1937,7 +1940,7 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg,
   	              Double_t px, Double_t py, Double_t pz, Double_t e,
   		      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
 		      Double_t polx, Double_t poly, Double_t polz,
-		      AliMCProcess mech, Int_t &ntr, Float_t weight=1)
+		      AliMCProcess mech, Int_t &ntr, Float_t weight)
 { 
   //
   // Load a track on the stack
