@@ -84,8 +84,8 @@ Bool_t AliEMCALFast::EmcalAcceptance(Float_t eta, Float_t phi)
 // EMCAL eta-phi acceptance
     Bool_t acc = kFALSE;
     if (TMath::Abs(eta) < 0.7 &&
-	phi > 0. &&
-	phi < 120.*TMath::Pi()/180.)
+	phi > 60.*TMath::Pi()/180. &&
+	phi < TMath::Pi())
 	acc = kTRUE;
     return acc;
 }
