@@ -156,7 +156,8 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
       Int_t iClosestTrack = -1;
       Double_t minDistance = 1e6;
       Double_t pxyz[3], xyz[3];
-      Double_t rPHOS=460.;
+      Double_t rPHOS = 
+	AliPHOSGetter::Instance()->PHOSGeometry()->GetIPtoCrystalSurface();
       AliESDtrack *track;
       for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
 	track = fESD->GetTrack(iTrack);
