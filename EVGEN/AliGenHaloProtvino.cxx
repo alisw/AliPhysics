@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/02/01 15:28:22  morsch
+Fastidious print statements removed.
+
 Revision 1.5  2002/02/01 14:12:28  morsch
 Include new gas pressure estimates (LHC Pproject Note 273)
 
@@ -244,8 +247,6 @@ void AliGenHaloProtvino::Generate()
       KeepTrack(ntP);
       fParentWeight=wgt*GassPressureWeight(zPrimary);
       SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
-      SetHighWaterMark(nt);
-      
       //
       // Assume particles come from two directions with same probability
 
@@ -256,7 +257,7 @@ void AliGenHaloProtvino::Generate()
           fParentWeight=wgt*GassPressureWeight(-zPrimary);
           SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
       }
-      
+      SetHighWaterMark(nt);
   }
 }
  
