@@ -1,4 +1,4 @@
-{
+void digitsAna () {
 
 /////////////////////////////////////////////////////////////////////////
 //
@@ -14,13 +14,13 @@
   }
 
   // Input file name
-  Char_t *alifile = "galice_v2.root"; 
+  Char_t *alifile = "galice_v1.root"; 
 
   // Event number
   Int_t   nEvent  = 0;
 
   // Define the objects
-  AliTRDv2     *TRD;
+  AliTRDv1     *TRD;
   TClonesArray *TRDDigits;
   AliTRDdigit  *OneTRDDigit;
 
@@ -51,7 +51,7 @@
   TTree *DigitsTree = gAlice->TreeD();
 
   // Get the pointer to the detector classes
-  TRD = (AliTRDv2*) gAlice->GetDetector("TRD");
+  TRD = (AliTRDv1*) gAlice->GetDetector("TRD");
   // Get the pointer to the hit container
   if (TRD) TRDDigits = TRD->Digits();
 

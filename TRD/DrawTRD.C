@@ -1,4 +1,4 @@
-//void DrawTRD()
+void DrawTRD()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);

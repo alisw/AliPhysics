@@ -1,4 +1,4 @@
-{
+void digitsCreate () {
 
 /////////////////////////////////////////////////////////////////////////
 //
@@ -14,7 +14,7 @@
   }
 
   // Input (and output) file name
-  Char_t *alifile = "galice_v2.root"; 
+  Char_t *alifile = "galice_v1.root"; 
 
   // Event number
   Int_t   nEvent  = 0;
