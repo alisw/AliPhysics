@@ -17,7 +17,7 @@ data format.
 
 int main(int argc,char **argv)
 {
-  UInt_t nrows=175;
+  Int_t nrows=175;
   Bool_t altroout=kFALSE;
   FILE *afile=0;
 
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   
   //Read the file, and store the data in memory. Return value is a pointer to the data.
   digits = file.CompBinary2Memory(ndigits);
-  if(ndigits<nrows) nrows=ndigits;
+  if((Int_t)ndigits<nrows) nrows=ndigits;
 
   //Create an ALtroMemHandler object
   AliL3AltroMemHandler altromem;
@@ -61,14 +61,18 @@ int main(int argc,char **argv)
 
   UShort_t time,charge;
   UChar_t pad;
-  for(UInt_t row=0; row<nrows; row++) //Loop over padrows
+  Int_t crows=0,lrow=-1;
+  for(Int_t row=0; row<nrows; row++) //Loop over padrows
     {
       //Get the data on this padrow:
       AliL3DigitData *dataPt = (AliL3DigitData*)digits->fDigitData;
+      if(lrow+1==row) crows++;
       
       //Loop over all digits on this padrow:
       for(UInt_t ndig=0; ndig<digits->fNDigit; ndig++)
+	//for(UInt_t ndig=digits->fNDigit;ndig>0;ndig--)
 	{
+	  lrow=row;
 	  pad = dataPt[ndig].fPad;
 	  time = dataPt[ndig].fTime;
 	  charge = dataPt[ndig].fCharge;
@@ -84,5 +88,7 @@ int main(int argc,char **argv)
     altromem.WriteFinal();
     fclose(afile);
   }
+
+  cerr << "Rows: " << nrows << " Consecutive: " << crows << endl;
   return 0;
 }
