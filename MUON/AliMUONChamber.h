@@ -81,6 +81,9 @@ public TObject
 //
 // Initialisation of segmentation for hit  
   virtual void    SigGenInit(Float_t x, Float_t y, Float_t z);
+// Initialisation of charge fluctuation for given hit
+  virtual void    ChargeCorrelationInit();
+
 // Configuration forwarding
 //
 // Define signal distribution region
@@ -109,6 +112,7 @@ public TObject
   virtual Float_t DAlu() {return fdAlu;}  
   virtual void SetDGas(Float_t DGas) {fdGas = DGas;}
   virtual void SetDAlu(Float_t DAlu) {fdAlu = DAlu;}  
+  virtual void SetChargeCorrel(Float_t correl) {fChargeCorrel = correl;}
 // assignment operator  
   AliMUONChamber& operator =(const AliMUONChamber& rhs);
   
@@ -121,6 +125,9 @@ public TObject
   Int_t   fnsec; // number of semented cathode planes
   Float_t frMin; // innermost sensitive radius
   Float_t frMax; // outermost sensitive radius
+  Float_t fChargeCorrel; // amplitude of charge correlation on 2 cathods
+                         // is RMS of ln(q1/q2)
+  Float_t fCurrentCorrel; //! charge correlation for current hit.
 
   TObjArray              *fSegmentation;    // pointer to segmentation
   AliMUONClusterFinderVS *fReconstruction;  // pointer to reconstruction

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.6  2000/10/09 14:01:12  morsch
+Double inclusion of AliResponse removed.
+
 Revision 1.5  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -44,9 +47,14 @@ Revision 1.1.2.3  2000/05/05 10:09:52  morsch
 Log messages included
 */
 
+// --- MUON includes ---
 #include "AliMUONChamber.h"
 
+// --- ROOT includes ---
+
+#include "TRandom.h"
 #include "TMath.h"
+
 ClassImp(AliMUONChamber)	
 
     AliMUONChamber::AliMUONChamber()
@@ -59,6 +67,9 @@ ClassImp(AliMUONChamber)
     fnsec=1;
     fReconstruction=0;
     fId=0;
+    // to avoid mistakes if ChargeCorrelInit is not called
+    fChargeCorrel = 0;
+    fCurrentCorrel =1;
 }
 
     AliMUONChamber::AliMUONChamber(Int_t id) 
@@ -71,6 +82,9 @@ ClassImp(AliMUONChamber)
     fnsec=1;
     fReconstruction=0;
     fId=id;
+    // to avoid mistakes if ChargeCorrelInit is not called
+    fChargeCorrel = 0;
+    fCurrentCorrel =1;
 }
 
 AliMUONChamber::~AliMUONChamber() 
@@ -128,6 +142,16 @@ void    AliMUONChamber::SigGenInit(Float_t x, Float_t y, Float_t z)
     }
 }
 
+void AliMUONChamber::ChargeCorrelationInit() {
+// Initialisation of charge correlation for current hit
+// the value is stored, and then used by Disintegration
+if (fnsec==1) 
+    fCurrentCorrel =1;
+else 
+    // exponential is here to avoid eventual problems in 0 
+    fCurrentCorrel = TMath::Exp(gRandom->Gaus(0,fChargeCorrel/2));
+}
+
 void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof, 
 				    Float_t xhit, Float_t yhit, Float_t zhit,
 				    Int_t& nnew,Float_t newclust[6][500]) 
@@ -150,8 +174,10 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof,
     Float_t qcheck=0, qp;
     nnew=0;
     
+    // Cathode plane loop
     for (Int_t i=1; i<=fnsec; i++) {
 	qcheck=0;
+	Float_t qcath = qtot * (i==1? fCurrentCorrel : 1/fCurrentCorrel);
 	AliSegmentation * segmentation=
 	    (AliSegmentation *) (*fSegmentation)[i-1];
 	for (segmentation->FirstPad(xhit, yhit, zhit, dx, dy); 
@@ -163,17 +189,17 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof,
 //
 //
 	    if (qp > 1.e-4) {
-		qcheck+=qp*qtot;
+		qcheck+=qp*qcath;
 	    //
 	    // --- store signal information
-		newclust[0][nnew]=qtot;                     // total charge
+		newclust[0][nnew]=qcath;                     // total charge
 		newclust[1][nnew]=segmentation->Ix();       // ix-position of pad
 		newclust[2][nnew]=segmentation->Iy();       // iy-position of pad
-		newclust[3][nnew]=qp * qtot;                // charge on pad
+		newclust[3][nnew]=qp * qcath;                // charge on pad
 		newclust[4][nnew]=segmentation->ISector();  // sector id
 		newclust[5][nnew]=(Float_t) i;              // counter
 		nnew++;
-//		if (i==2) printf("\n i, nnew, q %d %d %f", i, nnew, qp*qtot);
+//		if (i==2) printf("\n i, nnew, q %d %d %f", i, nnew, qp*qcath);
 		
 	    }
 	} // Pad loop

@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.20  2000/12/04 17:48:23  gosset
+Modifications for stations 1 et 2 mainly:
+* station 1 with 4 mm gas gap and smaller cathode segmentation...
+* stations 1 and 2 with "grey" frame crosses
+* mean noise at 1.5 ADC channel
+* Ar-CO2 gas (80%+20%)
+
 Revision 1.19  2000/12/02 17:15:46  morsch
 Correction of dead zones in inner regions of stations 3-5
 Correction of length of slats 3 and 9 of station 4.
@@ -1922,7 +1929,8 @@ void AliMUONv1::StepManager()
   TLorentzVector mom;
   Float_t        theta,phi;
   Float_t        destep, step;
-  
+  Float_t        fCharge1=1;
+
   static Float_t eloss, eloss2, xhit, yhit, zhit, tof, tlength;
   const  Float_t kBig=1.e10;
   //  modifs perso
@@ -2002,6 +2010,7 @@ void AliMUONv1::StepManager()
       xhit    = pos[0];
       yhit    = pos[1];      
       zhit    = pos[2];      
+      Chamber(idvol).ChargeCorrelationInit();
       // Only if not trigger chamber
 
       

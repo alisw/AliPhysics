@@ -412,6 +412,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 
 //  MUON->SetResponseModel(chamber-1, response0);	    
  MUON->SetResponseModel(chamber-1, responseSt1); // special response	    
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
  chamber=2;
 //^^^^^^^^^
@@ -438,6 +439,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 
 //  MUON->SetResponseModel(chamber-1, response0);	    
  MUON->SetResponseModel(chamber-1, responseSt1); // special response
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 	    
 //
 //--------------------------------------------------------
@@ -467,6 +469,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetSegmentationModel(chamber-1, 2, seg32);
 
  MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
  chamber=4;
 //^^^^^^^^^
@@ -489,6 +492,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetSegmentationModel(chamber-1, 2, seg42);
 
  MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
 
 //--------------------------------------------------------
@@ -534,6 +538,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg52->SetPadDivision(nseg3);
  MUON->SetSegmentationModel(chamber-1, 2, seg52);
  MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
  chamber=6;
  MUON->SetNsec(chamber-1,2);
@@ -559,6 +564,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg62->SetPadDivision(nseg3);
  MUON->SetSegmentationModel(chamber-1, 2, seg62);
  MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
 //--------------------------------------------------------
 // Configuration for Chamber TC7/8  (Station 4) ----------           
@@ -610,6 +616,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg72->SetPadDivision(nseg4);
 
  MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
  chamber=8;
 //^^^^^^^^^
@@ -640,6 +647,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg82->SetPadDivision(nseg4);
 
  MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
 
 //--------------------------------------------------------
@@ -692,6 +700,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg92->SetPadDivision(nseg4);
 
  MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
  chamber=10;
 //^^^^^^^^^
@@ -722,6 +731,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg102->SetPadDivision(nseg4);
 
  MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
 //--------------------------------------------------------
 // Configuration for Trigger Stations -------------------- 
@@ -739,6 +749,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetSegmentationModel(chamber-1, 2, seg112);
 
  MUON->SetResponseModel(chamber-1, responseTrigger0);      
+ MUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
 
  
  chamber=12;
@@ -748,7 +759,9 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  AliMUONSegmentationTriggerY *seg122=new AliMUONSegmentationTriggerY;
  MUON->SetSegmentationModel(chamber-1, 2, seg122);
 
- MUON->SetResponseModel(chamber-1, responseTrigger0);      
+ MUON->SetResponseModel(chamber-1, responseTrigger0);
+ MUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
+      
   chamber=13;
  MUON->SetNsec(chamber-1,2);
  AliMUONSegmentationTriggerX *seg131=new AliMUONSegmentationTriggerX;
@@ -756,6 +769,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  AliMUONSegmentationTriggerY *seg132=new AliMUONSegmentationTriggerY;
  MUON->SetSegmentationModel(chamber-1, 2, seg132);
  MUON->SetResponseModel(chamber-1, responseTrigger0);      
+ MUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
 
  chamber=14;
  MUON->SetNsec(chamber-1,2);
@@ -765,6 +779,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetSegmentationModel(chamber-1, 2, seg142);
 
  MUON->SetResponseModel(chamber-1, responseTrigger0); 
+ MUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
 
 }
  
