@@ -7,8 +7,6 @@
 
 #include "AliPoints.h"
 
-const Int_t kNTRpoints = 75;
-
 class AliTRDpoints : public AliPoints {
 
  public:
@@ -25,6 +23,8 @@ class AliTRDpoints : public AliPoints {
   virtual void           SetTRpoints(Int_t n, Float_t *coor);
 
  protected:
+
+  enum { kNTRpoints = 75 };
 
   Float_t          fTRpoints[kNTRpoints];       //  The hits from TR photons
   Int_t            fNTRpoints;                  //  The number of TR photon hits
