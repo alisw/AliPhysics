@@ -50,7 +50,7 @@ class AliTPCCompression:public TObject{
   //This method creates a set of binary tables starting from a set of txt tables
   Int_t  DestroyTables(AliTPCHNode *RootNode[],Int_t NumTables);
   //This methods is use to deallocate the memory used by Huffman trees
-  void    CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTables);
+  Int_t  CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTables);
   //This method is like the previous one but the tables are stored in binary files
   //It is used in the decompression phase (DecompressDataOptTables())
  private:

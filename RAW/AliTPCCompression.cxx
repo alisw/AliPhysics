@@ -26,6 +26,7 @@
 #include <TObjArray.h>
 #include <Riostream.h>
 #include <TMath.h>
+#include <TSystem.h>
 #include "AliTPCBuffer160.h"
 #include "AliTPCHuffman.h"
 #include "AliTPCCompression.h"
@@ -436,7 +437,7 @@ Int_t AliTPCCompression::RetrieveTables(AliTPCHTable* table[],Int_t NumTable){
   Double_t code;
   UChar_t codeLen;
   ifstream fTable;  
-  char filename[15];
+  char filename[256];
   //The following for loop is used to generate the Huffman trees acording to the tables
   for(Int_t k=0;k<NumTable;k++){
     Int_t dim;//this variable contains the table dimension
@@ -446,7 +447,19 @@ Int_t AliTPCCompression::RetrieveTables(AliTPCHTable* table[],Int_t NumTable){
 #else
     fTable.open(filename);
 #endif
-    if(!fTable){cout<<"File doesn't exist:"<<filename<<endl; exit(1);}
+    if(!fTable && gSystem->Getenv("ALICE_ROOT")){
+      fTable.clear();
+      sprintf(filename,"%s/RAW/Table%d.dat",gSystem->Getenv("ALICE_ROOT"),k); 
+#ifndef __DECCXX 
+      fTable.open(filename,ios::binary);
+#else
+      fTable.open(filename);
+#endif
+    }
+    if(!fTable){
+      Error("RetrieveTables", "File doesn't exist: %s", filename);
+      return 1;
+    }
     fTable.read((char*)(&dim),sizeof(Int_t));
     if (fVerbose)
       cout<<"Table dimension: "<<dim<<endl;
@@ -480,7 +493,10 @@ Int_t AliTPCCompression::CreateTablesFromTxtFiles(Int_t NumTable){
     sprintf(filename,"Table%d.txt",k); 
     cout<<filename<<endl;
     fTable.open(filename);
-    if(!fTable){cout<<"File doesn't exist: "<<filename<<endl; exit(1);}
+    if(!fTable){
+      Error("CreateTablesFromTxtFiles", "File doesn't exist: %s", filename);
+      return 1;
+    }
     Int_t symbol=0;
     Double_t freq=0;
     table[k]=new AliTPCHTable(1024);
@@ -584,8 +600,14 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
   }
   //Tables are read from the files (Each codeword has been "Mirrored")
   AliTPCHTable **table = new AliTPCHTable*[NumTable];
-  RetrieveTables(table,NumTable);
+  for(Int_t i=0;i<NumTable;i++) table[i] = NULL;
+  if (RetrieveTables(table,NumTable) != 0) {
+    for(Int_t i=0;i<NumTable;i++) delete table[i];
+    delete [] table;
+    return 1;
+  }
   //the output file is open
+  f.clear();
 #ifndef __DECCXX 
   f.open(fDest,ios::binary|ios::out);
 #else
@@ -602,6 +624,7 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
   UInt_t  trailerNumbers=0;
   Double_t numElem[5]={0,0,0,0,0};
   Double_t fillWords=0.;
+  fStat.clear();
   fStat.open("Statistics",ios::app);
   fStat<<endl;
   fStat<<"-------------------COMPRESSION STATISTICS----------"<<endl;
@@ -760,7 +783,7 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
 /*                               DECOMPRESSION                                        */
 ////////////////////////////////////////////////////////////////////////////////////////
 
-void AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTables){
+Int_t AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTables){
   //For each table this method builds the associate Huffman tree starting from the codeword and 
   //the codelength of each symbol 
   if(fVerbose)
@@ -782,7 +805,19 @@ void AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTab
 #else
     fTable.open(filename);
 #endif
-    if(!fTable){cout<<"Tables don't exist !!!"<<endl;exit(1);}
+    if(!fTable && gSystem->Getenv("ALICE_ROOT")){
+      fTable.clear();
+      sprintf(filename,"%s/RAW/Table%d.dat",gSystem->Getenv("ALICE_ROOT"),k); 
+#ifndef __DECCXX 
+      fTable.open(filename,ios::binary);
+#else
+      fTable.open(filename);
+#endif
+    }
+    if(!fTable){
+      Error("CreateTreesFromFile", "File doesn't exist: %s", filename);
+      return 1;
+    }
     fTable.read((char*)(&dim),sizeof(Int_t));
     if (fVerbose)
       cout<<"Table dimension: "<<dim<<endl;
@@ -822,6 +857,7 @@ void AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTab
   if (fVerbose)
     cout<<"Trees generated \n";
   //At this point the trees are been built
+  return 0;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void AliTPCCompression::DeleteHuffmanTree(AliTPCHNode* node){
@@ -946,14 +982,25 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
     cout<<"Source File "<<fname<<" Destination File "<<fDest<<endl; 
   }
   AliTPCHNode ** rootNode = new AliTPCHNode*[NumTables];
+  for(Int_t i=0;i<NumTables;i++) rootNode[i] = NULL;
   //Creation of the Huffman trees
-  CreateTreesFromFile(rootNode,NumTables);
+  if (CreateTreesFromFile(rootNode,NumTables) != 0) {
+    for(Int_t i=0;i<NumTables;i++) {
+      if (rootNode[i]) DeleteHuffmanTree(rootNode[i]);
+    }
+    delete [] rootNode;
+    return 1;
+  }
+  f.clear();
 #ifndef __DECCXX
   f.open(fname,ios::binary|ios::in);
 #else
   f.open(fname,ios::in);
 #endif
-  if(!f){cout<<"File doesn't exist:"<<fname<<endl;;return -1;}
+  if(!f){
+    Error("DecompressDataOptTables", "File doesn't exist:",fname);
+    return -1;
+  }
   //to go to the end of the file
   f.seekg(0,ios::end);
   //to get the file dimension in byte
