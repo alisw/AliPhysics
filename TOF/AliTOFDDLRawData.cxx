@@ -259,7 +259,7 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch){
 
   //loop over TOF DDL files
   for(Int_t i=0;i<72;i++){
-    sprintf(fileName,"TOF_%d.ddl",i); //The name of the output file
+    sprintf(fileName,"TOF_%d.ddl",i+kDDLOffset); //The name of the output file
 #ifndef __DECCXX
     outfile.open(fileName,ios::binary);
 #else

@@ -47,6 +47,7 @@ class AliTOFDDLRawData:public TObject{
 
   Int_t fVerbose;            //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
   Int_t fIndex;              //number of 32 words to be stored into the output file
+  enum {kDDLOffset = 0x500};  //offset for DDL number
   ClassDef(AliTOFDDLRawData,1)
 };
     
