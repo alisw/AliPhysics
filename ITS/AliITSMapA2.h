@@ -34,7 +34,7 @@ class AliITSMapA2 : public AliITSMapA1{
     // clear map
     virtual void ClearMap();    
     // set hit. Over written with a null function. See Double version below.
-    virtual void SetHit(Int_t iz, Int_t ix, Int_t signal){}
+    virtual void SetHit(Int_t,Int_t,Int_t){}
     // set signal at a certain position in array
     void  SetHit(Int_t iz, Int_t ix, Double_t signal){
 	fHitMapD[CheckedIndex(iz, ix)]=signal;}
