@@ -541,7 +541,8 @@ void AliRun::InitMC(const char *setup)
     return;
   }
     
-  fMCApp=new AliMC(GetName(),GetTitle());
+  if (!fMCApp)  
+    fMCApp=new AliMC(GetName(),GetTitle());
     
   gROOT->LoadMacro(setup);
   gInterpreter->ProcessLine(fConfigFunction.Data());
@@ -550,9 +551,6 @@ void AliRun::InitMC(const char *setup)
 
   AliPDG::AddParticlesToPdgDataBase();  
 
-  fNdets = fModules->GetLast()+1;
-
-  // Added also after in case of interactive initialisation of modules
   fNdets = fModules->GetLast()+1;
 
   TIter next(fModules);
@@ -939,4 +937,6 @@ void AliRun::AddModule(AliModule* mod)
   else AliConfig::Instance()->Add(mod,fRunLoader->GetEventFolder()->GetName());
 
   Modules()->Add(mod);
+  
+  fNdets++;
 }

@@ -149,7 +149,6 @@ void ConfigCommon(Bool_t interactiveSetup)
   // Exclude detectors with temporary problem
   iCRT = 0;
   iEMCAL = 0;
-  iFMD = 0;
  
   // END OF ONLY FOR GEANT4
 
@@ -204,7 +203,7 @@ void ConfigCommon(Bool_t interactiveSetup)
     {
         //=================== SHIL parameters ============================
 
-        AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding");
+        AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
     }
 
 
@@ -293,8 +292,8 @@ void ConfigCommon(Bool_t interactiveSetup)
         AliTPC *TPC = new AliTPCv2("TPC", "Default");
 
         // All sectors included 
-        TPC->SetSecAL(-1);
         TPC->SetSecAU(-1);
+        TPC->SetSecAL(-1);
 
     }
 
@@ -307,7 +306,7 @@ void ConfigCommon(Bool_t interactiveSetup)
     if (iRICH)
     {
         //=================== RICH parameters ===========================
-        AliRICH *RICH = new AliRICHv3("RICH", "normal RICH");
+        AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
     }
 
 
@@ -400,6 +399,8 @@ void ConfigCommon(Bool_t interactiveSetup)
     else  
       AliRunConfiguration::SwitchHoles(kFALSE);
   }    
+
+  cout << "End of g4ConfigCommon.C" << endl;
 }
 
 Float_t EtaToTheta(Float_t arg){
