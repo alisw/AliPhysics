@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.11.4.3  2000/04/04 14:18:03  nilsen
+Fixed volume error with vomule SFR5. Loop positioning this volume is now from
+<=23 (was <=24). This may not be the final version.
+
 Revision 1.11.4.2  2000/03/04 23:46:02  nilsen
 Fixed up the comments/documentation.
 
@@ -2602,7 +2606,11 @@ void AliITSv3::CreateGeometry(){
     
     xpos = -dsrv[0] + .47 + TMath::Sqrt(3.) / 6. * 4.2;
     ypos = 0.;
-    for (j = 1; j <= 24; ++j) {
+    for (j = 1; j <= 23; ++j) { // Loop was to 24. Changed to 23 to fit inside
+                                // volume SSV1. This is the same number of
+                                // elements as SCH5 above. Done Bjorn S. Nilsen
+                                // April 4 2000. Error found by Ivana 
+                                // Hrivnacova March 29 2000.
       zpos = ((j - 1) - 11.) * 3.91 - -4.2/2.;
       gMC->Gspos("SFR5", j, "SSV1", xpos, ypos, zpos, 0, "ONLY");
     }
