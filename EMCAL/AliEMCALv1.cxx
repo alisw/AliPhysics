@@ -26,6 +26,9 @@
 // This Class not stores information on all particles prior to EMCAL entry - in order to facilitate analysis.
 // This is done by setting fIShunt =2, and flagging all parents of particles entering the EMCAL.
 
+// 15/02/2002 .... Yves Schutz
+//  1. fSamplingFraction and fLayerToPreshowerRatio have been removed
+//  2. Timing signal is collected and added to hit
 
 // --- ROOT system ---
 #include "TPGON.h"
@@ -60,6 +63,7 @@ ClassImp(AliEMCALv1)
 AliEMCALv1::AliEMCALv1():AliEMCALv0(){
   // ctor
 }
+
 //______________________________________________________________________
 AliEMCALv1::AliEMCALv1(const char *name, const char *title):
     AliEMCALv0(name,title){
@@ -69,10 +73,9 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title):
     gAlice->AddHitList(fHits);
 
     fNhits = 0;
-    fSamplingFraction = 12.9 ; 
-    fLayerToPreshowerRatio = 5.0/6.0; 
     fIshunt     =  2; // All hits are associated with particles entering the calorimeter
 }
+
 //______________________________________________________________________
 AliEMCALv1::~AliEMCALv1(){
     // dtor
@@ -116,69 +119,63 @@ void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
 }
 //______________________________________________________________________
 void AliEMCALv1::StepManager(void){
-    // Accumulates hits as long as the track stays in a single
-    // crystal or PPSD gas Cell
-    Int_t          id[2];           // (layer, phi, Eta) indices
-    Int_t          absid;
-    // position wrt MRS and energy deposited
-    Float_t        xyze[4]={0.,0.,0.,0.};
-    Float_t        pmom[4]={0.,0.,0.,0.};
-    TLorentzVector pos; // Lorentz vector of the track current position.
-    TLorentzVector mom; // Lorentz vector of the track current momentum.
-    Int_t tracknumber =  gAlice->CurrentTrack();
-    Int_t primary = 0;
-    static Int_t iparent = 0;
-    static Float_t ienergy = 0;
-    Int_t copy = 0;
+  // Accumulates hits as long as the track stays in a single
+  // crystal or PPSD gas Cell
 
+  Int_t          id[2];           // (layer, phi, Eta) indices
+  Int_t          absid;
+  // position wrt MRS and energy deposited
+  Float_t        xyzte[5]={0.,0.,0.,0.,0.};// position wrt MRS, time and energy deposited
+  Float_t        pmom[4]={0.,0.,0.,0.};
+  TLorentzVector pos; // Lorentz vector of the track current position.
+  TLorentzVector mom; // Lorentz vector of the track current momentum.
+  Int_t tracknumber =  gAlice->CurrentTrack();
+  Int_t primary = 0;
+  static Int_t iparent = 0;
+  static Float_t ienergy = 0;
+  Int_t copy = 0;
 
- if(gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"XALU") == 0)) // This Particle in enterring the Calorimeter 
- {
-
-gMC->TrackPosition(pos) ;
-    xyze[0] = pos[0] ;
-    xyze[1] = pos[1] ;
-    xyze[2] = pos[2] ;
-
-       if ( (xyze[1]*xyze[1] + xyze[2]*xyze[2] + xyze[3]*xyze[3]) <  (fGeom->GetEnvelop(0)+fGeom->GetGap2Active()+1.5 )*(fGeom->GetEnvelop(0)+fGeom->GetGap2Active()+1.5 ) )
-    {
-    iparent = tracknumber;
-    gMC->TrackMomentum(mom);
-    ienergy = mom[3]; 
-  TParticle * part = 0 ;
- Int_t parent = iparent ;
- while ( parent != -1 ) { // <------------- flags this particle to be kept and
-//all the ancestors of this particle
-   part = gAlice->Particle(parent) ;
-   part->SetBit(kKeepBit);
-   parent = part->GetFirstMother() ;
- }
+  
+  if(gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"XALU") == 0)){ // This Particle in enterring the Calorimeter
+    gMC->TrackPosition(pos) ;
+    xyzte[0] = pos[0] ;
+    xyzte[1] = pos[1] ;
+    xyzte[2] = pos[2] ;
+    if ( (xyzte[0]*xyzte[0] + xyzte[1]*xyzte[1])  
+	 <  (fGeom->GetEnvelop(0)+fGeom->GetGap2Active()+1.5 )*(fGeom->GetEnvelop(0)+fGeom->GetGap2Active()+1.5 ) ) {
+      iparent = tracknumber;
+      gMC->TrackMomentum(mom);
+      ienergy = mom[3]; 
+      TParticle * part = 0 ;
+      Int_t parent = iparent ;
+      while ( parent != -1 ) { // <------------- flags this particle to be kept and
+	//all the ancestors of this particle
+	part = gAlice->Particle(parent) ;
+	part->SetBit(kKeepBit);
+	parent = part->GetFirstMother() ;
       }
-
-
-
-}
- if(gMC->CurrentVolID(copy) == gMC->VolId("XPHI") ) { // We are in a Scintillator Layer 
-
+    }
+  }
+  if(gMC->CurrentVolID(copy) == gMC->VolId("XPHI") ) { // We are in a Scintillator Layer 
+    
     gMC->CurrentVolOffID(1, id[0]); // get the POLY copy number;
     gMC->CurrentVolID(id[1]); // get the phi number inside the layer
     primary = gAlice->GetPrimary(tracknumber);
     gMC->TrackPosition(pos);
     gMC->TrackMomentum(mom);
-    xyze[0] = pos[0];
-    xyze[1] = pos[1];
-    xyze[2] = pos[2];
-    xyze[3] = fSamplingFraction*(gMC->Edep()); // Correct for sampling calorimeter
+    xyzte[0] = pos[0];
+    xyzte[1] = pos[1];
+    xyzte[2] = pos[2];
+    xyzte[3] = gMC->TrackTime() ; 
+    xyzte[4] = gMC->Edep(); 
     pmom[0] = mom[0];
     pmom[1] = mom[1];
     pmom[2] = mom[2];
     pmom[3] = mom[3];
     
-    if(xyze[3] > 0.){// Track is inside the crystal and deposits some energy
-	absid = (id[0]-1)*(fGeom->GetNPhi()) + id[1];
-        if((absid/fGeom->GetNPhi()) < (2*fGeom->GetNZ()))
-        {xyze[3] = fLayerToPreshowerRatio*xyze[3] ;}  //                                             Preshower readout must be scaled
-        AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid, xyze, pmom);
+    if(xyzte[4] > 0.){// Track is inside a scintillator and deposits some energy
+      absid = (id[0]-1)*(fGeom->GetNPhi()) + id[1];
+      AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid, xyzte, pmom);
     } // there is deposited energy
-}
+  }
 }
