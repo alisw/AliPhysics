@@ -35,6 +35,7 @@
 #include <TGLabel.h>
 #include <TGTextEntry.h>
 #include <TTimer.h>
+#include <TApplication.h>
 #include "AliMonitorProcess.h"
 
 
@@ -369,7 +370,10 @@ void AliMonitorControl::HandleMenu(Int_t id)
 		 kMBIconQuestion, kMBYes | kMBNo, &result);
     if (result == kMBYes) {
       fMenuFile->EnableEntry(kMenuFileAbort);
-      if (fMonitorProcess->IsStopped()) exit(0);
+      if (fMonitorProcess->IsStopped()) {
+	delete fMonitorProcess;
+	gApplication->Terminate(0);
+      }
       fMonitorProcess->Stop();
       fTerminating = kTRUE;
     }
@@ -456,7 +460,10 @@ Bool_t AliMonitorControl::HandleTimer(TTimer* timer)
 // update the displayed information
 
   timer->TurnOff();
-  if (fTerminating && fMonitorProcess->IsStopped()) exit(0); 
+  if (fTerminating && fMonitorProcess->IsStopped()) {
+    delete fMonitorProcess;
+    gApplication->Terminate(0);
+  }
   UpdateStatus();
   gSystem->ProcessEvents();
   timer->TurnOn();

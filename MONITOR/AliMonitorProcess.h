@@ -85,7 +85,7 @@ private:
   void             StartNewRun();
 
   void             CheckForConnections();
-  void             BroadcastHistos();
+  void             BroadcastHistos(TSocket* toSocket = NULL);
   void             SetStatus(EStatus status);
 
   static const Int_t fgkPort;          // port number for client connections
@@ -120,6 +120,19 @@ private:
 
   EStatus          fStatus;             // current status
   Bool_t           fStopping;           // stop of process requested or not
+
+  class AliMonitorInterruptHandler : public TSignalHandler {
+  public:
+    AliMonitorInterruptHandler(AliMonitorProcess* process);
+    AliMonitorInterruptHandler(const AliMonitorInterruptHandler& handler);
+    AliMonitorInterruptHandler& operator = 
+      (const AliMonitorInterruptHandler& handler);
+    virtual Bool_t Notify();
+  private:
+    AliMonitorProcess* fProcess;       // process to notify
+  };
+
+  AliMonitorInterruptHandler* fInterruptHandler;  // interrupt handler
 
   ClassDef(AliMonitorProcess, 0)   // class for performing the monitoring
 };

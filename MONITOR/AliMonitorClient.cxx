@@ -512,6 +512,8 @@ AliMonitorClient::~AliMonitorClient()
   delete fHorizontalFrame;
 
   if (fSocket) {
+    fSocketHandler->Remove();
+    fSocket->Send("disconnect");
     fSocket->Close();
     delete fSocket;
     delete fSocketHandler;
@@ -539,6 +541,16 @@ void AliMonitorClient::CloseWindow()
   if (fMenuOptions->IsEntryChecked(kMenuOptSaveOnExit)) {
     SaveSettings();
   }
+  if (fSocket) {
+    fSocketHandler->Remove();
+    fSocket->Send("disconnect");
+    fSocket->Close();
+    delete fSocket;
+    fSocket = NULL;
+    delete fSocketHandler;
+    fSocketHandler = NULL;
+  }
+
   gApplication->Terminate(0);
 }
 
@@ -1042,7 +1054,7 @@ void AliMonitorClient::DisconnectFromServer()
 
   // disconnect from the server
   fSocketHandler->Remove();
-  fSocket->Send("Finished"); 
+  fSocket->Send("disconnect");
   fSocket->Close();
   delete fSocket;
   fSocket = NULL;
@@ -1873,18 +1885,42 @@ Bool_t AliMonitorClient::CheckForNewData()
 {
 // check whether the monitor process server sent new data
 
-  // receive a message from the server
+  // disable the socket handler in this method
   if (!fSocket || !fSocket->IsValid()) return kFALSE;
+  fSocketHandler->Remove();
+
+  // receive a control message from the server
+  char controlMessage[256];
+  if (fSocket->Recv(controlMessage, 255) <= 0) {
+    fSocketHandler->Add();
+    return kFALSE;
+  }
+
+  // if it is new histogram data, send ok
+  if ((strcmp(controlMessage, "histograms") != 0) ||
+      (fSocket->Send("ok") <= 0)) {
+    fSocketHandler->Add();
+    return kFALSE;
+  }
+
+  // get the histogram data
   TMessage* message = NULL;
-  Int_t result = fSocket->Recv(message);
+  if (fSocket->Recv(message) <= 0) {
+    fSocketHandler->Add();
+    return kFALSE;
+  }
 
   // replace the old folder of monitor histos with the new one
-  if (result > 0) {
+  if (message->GetClass()->InheritsFrom(TFolder::Class())) {
     if (fFolder) delete fFolder;
     fFolder = (TFolder*) message->ReadObject(message->GetClass());
+    delete message;
+    fSocketHandler->Add();
     return kTRUE;
   }
 
+  delete message;
+  fSocketHandler->Add();
   return kFALSE;
 }
 
