@@ -17,6 +17,7 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
   ((TFluka*) gMC)->SetXsco(xsco);
   ((TFluka*) gMC)->SetYsco(ysco);
   ((TFluka*) gMC)->SetZsco(zsco);
+  ((TFluka*) gMC)->SetMreg(mreg);
   (TVirtualMCApplication::Instance())->Stepping();
 } // end of endraw
 } // end of extern "C"

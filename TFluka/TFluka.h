@@ -102,13 +102,13 @@ class TFluka : public TVirtualMC {
   
   
   // functions for drawing
-  virtual void  DrawOneSpec(const char* name)
+  virtual void  DrawOneSpec(const char* /*name*/)
     {printf("WARNING: DrawOneSpec not yet implemented !\n");}
-  virtual void  Gsatt(const char* name, const char* att, Int_t val)
+  virtual void  Gsatt(const char* /*name*/, const char* /*att*/, Int_t /*val*/)
     {printf("WARNING: Gsatt not yet implemented !\n");}
-  virtual void  Gdraw(const char*,Double_t theta = 30, Double_t phi = 30,
-		      Double_t psi = 0, Double_t u0 = 10, Double_t v0 = 10,
-		      Double_t ul = 0.01, Double_t vl = 0.01)
+  virtual void  Gdraw(const char*,Double_t /*theta = 30*/, Double_t /*phi = 30*/,
+		      Double_t /*psi = 0*/, Double_t /*u0 = 10*/, Double_t /*v0 = 10*/,
+		      Double_t /*ul = 0.01*/, Double_t /*vl = 0.01*/)
     {printf("WARNING: Gdraw not yet implemented !\n");}
   
   // Euclid
@@ -204,8 +204,8 @@ class TFluka : public TVirtualMC {
   virtual Int_t    NSecondaries() const ;
   virtual void     GetSecondary(Int_t isec, Int_t& particleId, 
 			TLorentzVector& position, TLorentzVector& momentum);
-  virtual TMCProcess ProdProcess(Int_t isec) const ;
-  virtual Int_t    StepProcesses(TArrayI &proc) const
+  virtual TMCProcess ProdProcess() const ;
+  virtual Int_t    StepProcesses(TArrayI &/*proc*/) const
     {printf("WARNING: StepProcesses not yet implemented !\n"); return -1;}
   
   
@@ -283,13 +283,13 @@ class TFluka : public TVirtualMC {
   // mgdraw = 4
   // sodraw = 5
   // usdraw = 6
-  Int_t GetCaller() const {return iCaller;}
-  void SetCaller(Int_t l) {iCaller = l;}
+  Int_t GetCaller() const {return fCaller;}
+  void SetCaller(Int_t l) {fCaller = l;}
   
   // - Fluka Draw procedures formal parameters
-  Int_t GetIcode() const {return iIcode;}
-  void SetIcode(Int_t l) {iIcode = l;}
-  // in the case of sodraw iIcode=0
+  Int_t GetIcode() const {return fIcode;}
+  void SetIcode(Int_t l) {fIcode = l;}
+  // in the case of sodraw fIcode=0
 
   Int_t GetMreg() const {return fCurrentFlukaRegion;}
   void SetMreg(Int_t l) {fCurrentFlukaRegion = l;}
@@ -323,7 +323,7 @@ class TFluka : public TVirtualMC {
   virtual void     FutoTest() ;
 
  private:
-  TFluka(const TFluka &mc){}
+  TFluka(const TFluka &mc): TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &) {return (*this);}
 
  protected:
@@ -332,8 +332,8 @@ class TFluka : public TVirtualMC {
   TString sInputFileName;     //Name of the real input file (e.g. alice.inp)
   TString sCoreInputFileName; //Name of the input file (e.g. corealice.inp)
 
-  Int_t    iCaller; //Parameter to indicate who is the caller of the Fluka Draw
-  Int_t    iIcode;  //Fluka Draw procedures formal parameter 
+  Int_t    fCaller; //Parameter to indicate who is the caller of the Fluka Draw
+  Int_t    fIcode;  //Fluka Draw procedures formal parameter 
   Int_t    iNewreg; //Fluka Draw procedures formal parameter
   Double_t fRull;   //Fluka Draw procedures formal parameter
   Double_t fXsco;   //Fluka Draw procedures formal parameter

@@ -26,9 +26,9 @@
 #include "TVector3.h"
 
 extern "C" {
-void stuprf(Int_t& ij, Int_t& mreg,
-            Double_t& xx, Double_t& yy, Double_t& zz,
-	    Int_t& numsec, Int_t& npprmr)
+    void stuprf(Int_t& /*ij*/, Int_t& /*mreg*/,
+		Double_t& xx, Double_t& yy, Double_t& zz,
+		Int_t& numsec, Int_t& npprmr)
 {
 //*----------------------------------------------------------------------*
 //*                                                                      *
@@ -66,7 +66,7 @@ void stuprf(Int_t& ij, Int_t& mreg,
 // clarify with Alberto
   if (numsec > npprmr) {
 // Now call the PushTrack(...)
-    Int_t done = 1;
+    Int_t done = 0;
 
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
 

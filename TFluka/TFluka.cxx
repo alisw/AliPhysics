@@ -2190,24 +2190,24 @@ Bool_t   TFluka::IsTrackOut() const
 // Icode = 32: escape - call from Kasneu
 // Icode = 40: escape - call from Kashea
 // Icode = 51: escape - call from Kasoph
-  if (iIcode == 14 ||
-      iIcode == 23 ||
-      iIcode == 32 ||
-      iIcode == 40 ||
-      iIcode == 51) return 1;
+  if (fIcode == 14 ||
+      fIcode == 23 ||
+      fIcode == 32 ||
+      fIcode == 40 ||
+      fIcode == 51) return 1;
   else return 0;
 }
 
 Bool_t   TFluka::IsTrackDisappeared() const
 {
 // means all inelastic interactions and decays
-// iIcode from usdraw
-  if (iIcode == 101 || // inelastic interaction
-      iIcode == 102 || // particle decay
-      iIcode == 214 || // in-flight annihilation
-      iIcode == 215 || // annihilation at rest
-      iIcode == 217 || // pair production
-      iIcode == 221) return 1;
+// fIcode from usdraw
+  if (fIcode == 101 || // inelastic interaction
+      fIcode == 102 || // particle decay
+      fIcode == 214 || // in-flight annihilation
+      fIcode == 215 || // annihilation at rest
+      fIcode == 217 || // pair production
+      fIcode == 221) return 1;
   else return 0;
 }
 
@@ -2224,15 +2224,15 @@ Bool_t   TFluka::IsTrackStop() const
 // Icode = 33: time kill               - call from Kasneu
 // Icode = 41: time kill               - call from Kashea
 // Icode = 52: time kill               - call from Kasoph
-  if (iIcode == 12 ||
-      iIcode == 15 ||
-      iIcode == 21 ||
-      iIcode == 22 ||
-      iIcode == 24 ||
-      iIcode == 31 ||
-      iIcode == 33 ||
-      iIcode == 41 ||
-      iIcode == 52) return 1;
+  if (fIcode == 12 ||
+      fIcode == 15 ||
+      fIcode == 21 ||
+      fIcode == 22 ||
+      fIcode == 24 ||
+      fIcode == 31 ||
+      fIcode == 33 ||
+      fIcode == 41 ||
+      fIcode == 52) return 1;
   else return 0;
 }
 
@@ -2299,7 +2299,7 @@ void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
     Warning("GetSecondary","no secondaries available");
 } // end of GetSecondary
 
-TMCProcess TFluka::ProdProcess(Int_t isec) const
+TMCProcess TFluka::ProdProcess() const
 // Name of the process that has produced the secondary particles
 // in the current step
 {
@@ -2327,29 +2327,29 @@ TMCProcess TFluka::ProdProcess(Int_t isec) const
 //  const TMCProcess kIpPSynchrotron = kPSynchrotron;
 
     Int_t mugamma = TRACKR.jtrack == 7 || TRACKR.jtrack == 10 || TRACKR.jtrack == 11;
-    if (iIcode == 102) return kIpPDecay;
-    else if (iIcode == 104 || iIcode == 217) return kIpPPair;
-//  else if (iIcode == 104) return kIpPairFromPhoton;
-//  else if (iIcode == 217) return kIpPPairFromVirtualPhoton;
-    else if (iIcode == 219) return kIpPCompton;
-    else if (iIcode == 221) return kIpPPhotoelectric;
-    else if (iIcode == 105 || iIcode == 208) return kIpPBrem;
-//  else if (iIcode == 105) return kIpPBremFromHeavy;
-//  else if (iIcode == 208) return kPBremFromElectronOrPositron;
-    else if (iIcode == 103 || iIcode == 400) return kIpPDeltaRay;
-    else if (iIcode == 210 || iIcode == 212) return kIpPDeltaRay;
-//  else if (iIcode == 210) return kIpPMoller;
-//  else if (iIcode == 212) return kIpPBhabha;
-    else if (iIcode == 214 || iIcode == 215) return kIpPAnnihilation;
-//  else if (iIcode == 214) return kIpPAnnihilInFlight;
-//  else if (iIcode == 215) return kIpPAnnihilAtRest;
-    else if (iIcode == 101) return kIpPHadronic;
-    else if (iIcode == 101) {
+    if (fIcode == 102) return kIpPDecay;
+    else if (fIcode == 104 || fIcode == 217) return kIpPPair;
+//  else if (fIcode == 104) return kIpPairFromPhoton;
+//  else if (fIcode == 217) return kIpPPairFromVirtualPhoton;
+    else if (fIcode == 219) return kIpPCompton;
+    else if (fIcode == 221) return kIpPPhotoelectric;
+    else if (fIcode == 105 || fIcode == 208) return kIpPBrem;
+//  else if (fIcode == 105) return kIpPBremFromHeavy;
+//  else if (fIcode == 208) return kPBremFromElectronOrPositron;
+    else if (fIcode == 103 || fIcode == 400) return kIpPDeltaRay;
+    else if (fIcode == 210 || fIcode == 212) return kIpPDeltaRay;
+//  else if (fIcode == 210) return kIpPMoller;
+//  else if (fIcode == 212) return kIpPBhabha;
+    else if (fIcode == 214 || fIcode == 215) return kIpPAnnihilation;
+//  else if (fIcode == 214) return kIpPAnnihilInFlight;
+//  else if (fIcode == 215) return kIpPAnnihilAtRest;
+    else if (fIcode == 101) return kIpPHadronic;
+    else if (fIcode == 101) {
       if (!mugamma) return kIpPHadronic;
       else if (TRACKR.jtrack == 7) return kIpPPhotoFission;
       else return kIpPMuonNuclear;
     }
-    else if (iIcode == 225) return kIpPRayleigh;
+    else if (fIcode == 225) return kIpPRayleigh;
 // Fluka codes 100, 300 and 400 still to be investigasted
     else return kIpNoProc;
 }
