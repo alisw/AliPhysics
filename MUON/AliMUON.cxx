@@ -237,6 +237,7 @@ Int_t AliMUON::DistancetoPrimitive(Int_t , Int_t )
 void  AliMUON::SetTreeAddress()
 {
   GetMUONData()->SetLoader(fLoader); 
+  GetMUONData()->MakeBranch("D,RC");
   GetMUONData()->SetTreeAddress("H,D,RC");
   fHits = GetMUONData()->Hits(); // Added by Ivana to use the methods FisrtHit, NextHit of AliDetector
 }
@@ -447,7 +448,7 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
 }
 
 //_______________________________________________________________________
-void AliMUON::Trigger(Int_t nev){
+void AliMUON::Trigger(Int_t /*nev*/){
 // call the Trigger Algorithm and fill TreeR
 
   Int_t singlePlus[3]  = {0,0,0}; 
