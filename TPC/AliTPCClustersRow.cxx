@@ -12,6 +12,10 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+ 
+ /*
+    $Log$
+ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -60,5 +64,11 @@ TObject *AliTPCClustersRow::InsertCluster(const TObject *c)
   TClonesArray &lclusters = *fClusters;
   return new(lclusters[fNclusters++]) AliTPCcluster(*((AliTPCcluster*)c));
 }
+//__________________________________________________________________________
 
+
+TObject *AliTPCClustersRow::Append(){
+ //create new object return pointer to this object
+ return fClusters->operator[](fClusters->GetEntriesFast());
+}
 
