@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.33  2000/09/06 16:03:42  morsch
+Set ExternalDecayer, Decayer  and SetForceDecay methods added.
+Gspart calls for charmed and bottom hadrons added.
+Decay mode definitions for charmed and beauty hadrons have been taken out.
+They will be  handled by an external decayer.
+
 Revision 1.32  2000/08/24 16:28:53  hristov
 TGeant3::IsNewTrack corrected by F.Carminati
 
@@ -97,7 +103,6 @@ Introduction of the Copyright and cvs Log
 #include <TDatabasePDG.h>
 #include "AliDecayer.h"
 #include "AliDecayerPythia.h"
-
 #include "AliCallf77.h" 
  
 #ifndef WIN32 
@@ -1082,6 +1087,7 @@ void TGeant3::DefineParticles()
     mode[2] = 111208;
     mode[3] = 110809;
     Gsdk(ipa, bratio, mode);
+    */
 /* --- D- --- */
     /*
     for (kz = 0; kz < 6; ++kz) {
