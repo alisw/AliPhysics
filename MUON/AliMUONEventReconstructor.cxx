@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.10  2000/09/19 09:49:50  gosset
+AliMUONEventReconstructor package
+* track extrapolation independent from reco_muon.F, use of AliMagF...
+* possibility to use new magnetic field (automatic from generated root file)
+
 Revision 1.9  2000/07/20 12:45:27  gosset
 New "EventReconstructor..." structure,
 	hopefully more adapted to tree/streamer.
@@ -150,7 +155,7 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
   Float_t b[3], x[3];
   x[0] = 50.; x[1] = 50.; x[2] = 950.;
   gAlice->Field()->Field(x, b);
-  fSimpleBValue = TMath::Sign(fSimpleBValue, b[2]);
+  fSimpleBValue = TMath::Sign(fSimpleBValue,(Double_t) b[2]);
   // See how to get fSimple(BValue, BLength, BPosition)
   // automatically calculated from the actual magnetic field ????
 
