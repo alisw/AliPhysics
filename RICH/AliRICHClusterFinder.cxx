@@ -108,6 +108,11 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
 {
 //Finds cerenkov-feedback-mip mixture for a given cluster
   AliDebug(1,"Start.");ToAliDebug(1,pCluster->Print());
+
+  R()->GetLoader()->GetRunLoader()->LoadHeader();
+  AliStack *pStack = R()->GetLoader()->GetRunLoader()->Stack();
+  if(!pStack)
+  {AliInfo("No Stack found!!! No contrib to cluster found.");return;}
   
   TObjArray *pDigits = pCluster->Digits();
   if(!pDigits) return; //??????????
@@ -126,7 +131,8 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
   for(Int_t iDigN=0;iDigN<3*pCluster->Size()-1;iDigN++) {//loop on digits to sort tids
     AliDebug(1,Form("%4i for digit n. %4i",contribs[pindex[iDigN]],iDigN));
     if(contribs[pindex[iDigN]]!=contribs[pindex[iDigN+1]]) {
-      TParticle* particle = R()->GetLoader()->GetRunLoader()->Stack()->Particle(contribs[pindex[iDigN]]);
+      TParticle* particle = pStack->Particle(contribs[pindex[iDigN]]);
+      particle->Print();
       Int_t code   = particle->GetPdgCode();
       Double_t charge = 0;
       if(particle->GetPDG()) charge=particle->GetPDG()->Charge();
@@ -140,7 +146,7 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
   
   if (contribs[pindex[3*pCluster->Size()-1]]!=kBad) {
 
-     TParticle* particle = R()->GetLoader()->GetRunLoader()->Stack()->Particle(contribs[pindex[3*pCluster->Size()-1]]);
+     TParticle* particle = pStack->Particle(contribs[pindex[3*pCluster->Size()-1]]);
      Int_t code   = particle->GetPdgCode();
      Double_t charge = 0;
      if(particle->GetPDG()) charge=particle->GetPDG()->Charge();
