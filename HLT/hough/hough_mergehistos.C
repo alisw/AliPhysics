@@ -30,32 +30,41 @@ void hough_mergehistos(char *rootfile)
   
   for(int pat=0; pat<5; pat++)
     {
-      a = new AliL3HoughTransformer(slice,pat,eta,n_phi_segments);
+      a = new AliL3HoughTransformer(slice,pat,eta);
       hist[pat] = new TH2F("hist","Parameter space",xbin,xrange[0],xrange[1],ybin,yrange[0],yrange[1]);
       a->GetPixels(rootfile,raw);
       a->InitTemplates(hist[pat]);
-      a->Transform2Circle(hist[pat]);
-      
+      a->Transform2Circle(hist[pat],0);
       //AliL3TrackArray *tracks = b->FindMaxima(hist[pat]);
       
       delete a;
       
     }
   
-  
-  TCanvas *c1 = new TCanvas("c1","",800,800);
-  c1->Divide(2,2);
+  TCanvas *c1 = new TCanvas("c1","",1000,600);
+  c1->Divide(2);
   c1->cd(1);
-  hist[0]->DrawCopy("box");
+  hist[4]->DrawCopy("box");
   c1->cd(2);
+  for(int i=0; i<4; i++)
+    {
+      hist[4]->Add(hist[i]);
+    }  
+  tracks = (AliL3TrackArray*)b->FindPeak(hist[4],3,0.95,5);
+  track = (AliL3HoughTrack*)tracks->GetCheckedTrack(0);
+  printf("Pt %f phi0 %f\n",track->GetPt(),track->GetPhi0());
+  peaks->Fill(track->GetKappa(),track->GetPhi0(),1);
+  hist[4]->Draw("box");
+  peaks->Draw("same");
+  /*
   hist[4]->DrawCopy("box");
   c1->cd(3);
   hist[2]->DrawCopy("box");
   
   c1->cd(4);
-  hist[4]->Add(hist[0],hist[2]);
   hist[4]->Draw("box");
-
+  peaks->Draw("same");
+  */
   delete b;
   
   

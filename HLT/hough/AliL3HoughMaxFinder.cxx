@@ -242,7 +242,7 @@ AliL3TrackArray *AliL3HoughMaxFinder::LookInWindows(TH2F *hist,Int_t nbins,Int_t
 	{
 	  //Int_t bin = hist->GetBin(xbin,ybin);
 	  //if((Int_t)hist->GetBinContent(bin)==0) continue;
-
+	  
 	  Int_t xrange[2] = {xbin-nbins,xbin+nbins};
 	  Int_t yrange[2] = {ybin-nbins,ybin+nbins};
 	  if(LocatePeak(hist,track,xrange,yrange,t1,t2,t3))
@@ -252,6 +252,7 @@ AliL3TrackArray *AliL3HoughMaxFinder::LookInWindows(TH2F *hist,Int_t nbins,Int_t
 	}
     }
   tracks->QSort();
+  tracks->RemoveLast();
   return tracks;
   
 }
@@ -328,8 +329,11 @@ Bool_t AliL3HoughMaxFinder::LocatePeak(TH2F *hist,AliL3HoughTrack *track,Int_t *
 	}
     }
   
-  if(max_x == 0) return false;
-  
+  if(max_x == 0) 
+    {
+      //printf("\nmax_x == 0\n");
+      return false;
+    }
   //printf("max_xbin %d max_x %d m_low %d m_up %d\n",max_xbin,max_x,m_low[max_xbin],m_up[max_xbin]);
   //printf("ylow %f yup %f\n",hist->GetYaxis()->GetBinCenter(m_low[max_xbin]),hist->GetYaxis()->GetBinCenter(m_up[max_xbin]));
 
