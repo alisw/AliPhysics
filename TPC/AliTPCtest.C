@@ -10,19 +10,18 @@ Int_t AliTPCtest(Int_t n = 5) {
    grun(n);
 
    
-   AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
+AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
 
    Int_t ver=gAlice->GetDetector("TPC")->IsVersion();
    
-   AliRunLoader* rl = gAlice->GetRunLoader();
-   if (rl == 0x0)
-    {
+   AliRunLoader *rl = gAlice->GetRunLoader();
+   if (rl == 0x0) {
       cerr<<"Can not get run loader from gAlice"<<endl;
       return 1;
-    }
+   }
 
    delete rl;//close the session left after generation (grun.C)
-   gAlice= 0x0;
+   delete gAlice; gAlice=0x0;
    
    cout<<" \n\n\nClean -> Proceeding witg digitization \n\n\n";
    if ((ver!=1)&&(ver!=2)) {

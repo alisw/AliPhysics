@@ -25,15 +25,21 @@
 #include "AliTPCcluster.h"
 #include <TObjArray.h>
 #include <TFile.h>
-#include "AliTPCClustersArray.h"
 #include "AliTPCClustersRow.h"
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
-#include <Riostream.h>
 #include <TTree.h>
-#include "AliRunLoader.h"
-#include "AliLoader.h"
+
+ClassImp(AliTPCclusterer)
+
+AliTPCclusterer::AliTPCclusterer(const AliTPCParam *par) { 
+//-------------------------------------------------------
+//  The main constructor
+//-------------------------------------------------------
+  fClusterArray.Setup(par);
+  fClusterArray.SetClusterType("AliTPCcluster");
+}
 
 void AliTPCclusterer::FindPeaks(Int_t k,Int_t max,
 AliBin *b,Int_t *idx,UInt_t *msk,Int_t& n) {
@@ -87,65 +93,37 @@ AliTPCcluster &c) {
 }
 
 //_____________________________________________________________________________
-void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, AliLoader *of, Int_t eventn)
-{
+Int_t AliTPCclusterer::Digits2Clusters(TTree *dTree, TTree *cTree) {
   //-----------------------------------------------------------------
   // This is a simple cluster finder.
   //-----------------------------------------------------------------
-  AliRunLoader* rl = (AliRunLoader*)of->GetEventFolder()->FindObject(AliRunLoader::fgkRunLoaderName);
-  rl->GetEvent(eventn);
-  TDirectory *savedir=gDirectory; 
-
-  if (of->TreeR() == 0x0) of->MakeTree("R");
-  
-  
-  if (of == 0x0) 
-   {
-     cerr<<"AliTPC::Digits2Clusters(): output file not open !\n";
-     return;
-   }
-
-  const Int_t kMAXZ=par->GetMaxTBin()+2;
-
-  
-  TTree *t = (TTree *)of->TreeD();
-
-  if (!t) {
-    cerr<<"Input tree with digits not found"<<endl;
-    return;
+  TBranch *branch=dTree->GetBranch("Segment");
+  if (!branch) {
+     Error("Digits2Cluster","Can't get the branch !");
+     return 1;
   }
-
   AliSimDigits digarr, *dummy=&digarr;
-  t->GetBranch("Segment")->SetAddress(&dummy);
-  Stat_t nentries = t->GetEntries();
-
-  cout<<"Got "<<nentries<<" from TreeD"<<endl;
-
-//  ((AliTPCParam*)par)->Write(par->GetTitle());
+  branch->SetAddress(&dummy);
   
-  AliTPCClustersArray carray;
-  carray.Setup(par);
-  carray.SetClusterType("AliTPCcluster");
+  fClusterArray.MakeTree(cTree);
 
-  TTree* treeR = of->TreeR();
-  carray.MakeTree(treeR);
-
-
+  AliTPCParam *par=(AliTPCParam *)fClusterArray.GetParam();
+  const Int_t kMAXZ=par->GetMaxTBin()+2;
 
   Int_t nclusters=0;
 
-  for (Int_t n=0; n<nentries; n++) 
-   {
+  Int_t nentries = (Int_t)dTree->GetEntries();
+  for (Int_t n=0; n<nentries; n++) {
    
     Int_t sec, row;
-    t->GetEvent(n);
+    dTree->GetEvent(n);
 
     if (!par->AdjustSectorRow(digarr.GetID(),sec,row)) {
-       cerr<<"AliTPC warning: invalid segment ID ! "<<digarr.GetID()<<endl;
+       Error("Digits2Clusters","!nvalid segment ID ! %d",digarr.GetID());
        continue;
     }
 
-    AliTPCClustersRow *clrow=carray.CreateRow(sec,row);
+    AliTPCClustersRow *clrow=fClusterArray.CreateRow(sec,row);
 
     Float_t rx=par->GetPadRowRadii(sec,row);
 
@@ -254,23 +232,16 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, AliLoader *of, Int
          clrow->InsertCluster(&c); ncl++;
       }
     }
-    carray.StoreRow(sec,row);
-    carray.ClearRow(sec,row);
-
-    //cerr<<"sector, row, compressed digits, clusters: "
-    //<<sec<<' '<<row<<' '<<digarr.GetSize()<<' '<<ncl<<"                  \r";
+    fClusterArray.StoreRow(sec,row);
+    fClusterArray.ClearRow(sec,row);
 
     nclusters+=ncl;
 
     delete[] bins;  
   }
 
-  cerr<<"Number of found clusters : "<<nclusters<<"                        \n";
+  Info("Digits2Cluster","Number of found clusters : %d",nclusters);
 
-  of->WriteRecPoints("OVERWRITE");
-  
-  savedir->cd();
-
-//  delete t;  //Thanks to Mariana Bondila
+  return 0;
 }
 

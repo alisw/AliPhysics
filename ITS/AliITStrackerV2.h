@@ -11,31 +11,30 @@
 #include "AliTracker.h"
 #include "AliITSrecoV2.h"
 #include "AliITStrackV2.h"
-#include "AliConfig.h"
 
 class AliITSclusterV2;
+class AliESD;
 class AliITSgeom;
-class TFile;
+class TTree;
 
 
 //-------------------------------------------------------------------------
 class AliITStrackerV2 : public AliTracker {
 public:
   AliITStrackerV2():AliTracker(){}
-
-  AliITStrackerV2(const AliITSgeom *geom, Int_t event=0,
-                  const char* evfoldname = AliConfig::fgkDefaultEventFolderName);
-
+  AliITStrackerV2(const AliITSgeom *geom);
   AliCluster *GetCluster(Int_t index) const;
-  Int_t LoadClusters();
+  Int_t LoadClusters(TTree *cf);
   void UnloadClusters();
-  Int_t Clusters2Tracks();//
-  Int_t PropagateBack();//
-  Int_t RefitInward();//
-
+  Int_t Clusters2Tracks(TTree *in, TTree *out);
+  Int_t Clusters2Tracks(AliESD *event);
+  Int_t PropagateBack(TTree *in, TTree *out);
+  Int_t PropagateBack(AliESD *event);
+  Int_t RefitInward(TTree *in, TTree *out);
+  Int_t RefitInward(AliESD *event);
+  Bool_t RefitAt(Double_t x, AliITStrackV2 *seed, const AliITStrackV2 *t);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
-  //PH  Bool_t RefitAt(Double_t xx, AliITStrackV2 *t, Int_t *index);
 
   void SetLastLayerToTrackTo(Int_t l=0) {fLastLayerToTrackTo=l;} 
   void SetLayersNotToSkip(Int_t *l);
@@ -97,7 +96,6 @@ private:
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
   void  FollowProlongation();
   Int_t TakeNextProlongation();
-  Bool_t RefitAt(Double_t x, const AliITStrackV2 *t, AliITStrackV2 *tt);
   void ResetBestTrack() {
      fBestTrack.~AliITStrackV2();
      new(&fBestTrack) AliITStrackV2(fTrackToFollow);
@@ -113,12 +111,11 @@ private:
   AliITStrackV2 fTrackToFollow;          // followed track
   Int_t fPass;                           // current pass through the data 
   Int_t fConstraint[2];                  // constraint flags
-  TString fEvFolderName;  //event folder name
 
   Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
 
-  ClassDef(AliITStrackerV2,2)   //ITS tracker V2
+  ClassDef(AliITStrackerV2,1)   //ITS tracker V2
 };
 
 

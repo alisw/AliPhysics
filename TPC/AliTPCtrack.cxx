@@ -255,6 +255,15 @@ Double_t AliTPCtrack::GetPredictedChi2(const AliCluster *c) const
   return (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det;
 }
 
+Double_t AliTPCtrack::GetYat(Double_t xk) const {
+//-----------------------------------------------------------------
+// This function calculates the Y-coordinate of a track at the plane x=xk.
+//-----------------------------------------------------------------
+    Double_t c1=fP4*fX - fP2, r1=TMath::Sqrt(1.- c1*c1);
+    Double_t c2=fP4*xk - fP2, r2=TMath::Sqrt(1.- c2*c2);
+    return fP0 + (xk-fX)*(c1+c2)/(r1+r2);
+}
+
 //_____________________________________________________________________________
 Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho) {
   //-----------------------------------------------------------------

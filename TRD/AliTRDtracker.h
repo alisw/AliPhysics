@@ -4,16 +4,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */ 
 
-/* $Id$ */
-
 #include "AliTracker.h" 
 #include "TObjArray.h" 
 #include "AliBarrelTrack.h"
-
-#include <TNamed.h>
-#include <TH1.h>   
+#include "AliESD.h"
 
 class TFile;
+class TTree;
 class TParticle;
 class TParticlePDG;
 
@@ -29,7 +26,7 @@ const unsigned kMAX_CLUSTER_PER_TIME_BIN = 7000;
 const unsigned kZONES = 5; 
 const Int_t kTRACKING_SECTORS = 18; 
 
-class AliTRDtracker : public AliTracker {
+class AliTRDtracker : public AliTracker { 
 
  public:
 
@@ -38,13 +35,14 @@ class AliTRDtracker : public AliTracker {
   ~AliTRDtracker(); 
 
   Int_t         Clusters2Tracks(const TFile *in, TFile *out);
+  Int_t         Clusters2Tracks(AliESD* event);
   Int_t         PropagateBack(const TFile *in, TFile *out);
-  Int_t         PropagateBack();//Almost empty see .cxx for more comments
-  Int_t         Clusters2Tracks();//Almost empty see .cxx for more comments
+  Int_t         PropagateBack(AliESD* event);
+  Int_t         RefitInward(AliESD* event) {return 0;}
 
-  Int_t         LoadClusters() {LoadEvent(); return 0;};
-  void          UnloadClusters() {UnloadEvent();};
-  AliCluster   *GetCluster(Int_t index) const { return (AliCluster*) fClusters->UncheckedAt(index); };
+  Int_t         LoadClusters(TTree *cTree);
+  void          UnloadClusters(){UnloadEvent();}
+  AliCluster   *GetCluster(Int_t index) const { if (index >= fNclusters) return NULL; return (AliCluster*) fClusters->UncheckedAt(index); };
   virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   virtual void  UseClusters(const AliKalmanTrack *t, Int_t from=0) const;  
   
@@ -54,28 +52,29 @@ class AliTRDtracker : public AliTracker {
   Double_t      GetTiltFactor(const AliTRDcluster* c);
 
   void          ReadClusters(TObjArray *array, const Char_t *filename); 
+  Int_t         ReadClusters(TObjArray *array, TTree *in);
   Int_t         CookSectorIndex(Int_t gs) { return kTRACKING_SECTORS - 1 - gs; }
 
 
-  Float_t  GetSeedGap()       const {return fgkSeedGap;}   
+  Float_t  GetSeedGap()       const {return fSeedGap;}   
   Int_t    GetMaxGap()        const {return fMaxGap;}   
   Int_t    GetTimeBinsPerPlane()   const {return fTimeBinsPerPlane;}   
-  Float_t  GetSeedStep()      const {return fgkSeedStep;}
-  Float_t  GetSeedDepth()     const {return fgkSeedDepth;}
-  Float_t  GetSkipDepth()     const {return fgkSkipDepth;}
-  Double_t GetMaxChi2()       const {return fgkMaxChi2;}
-  Float_t  GetMaxSeedC()      const {return fgkMaxSeedC;}
-  Float_t  GetMaxSeedTan()    const {return fgkMaxSeedTan;}
-  Double_t GetSeedErrorSY()   const {return fgkSeedErrorSY;}
-  Double_t GetSeedErrorSY3()  const {return fgkSeedErrorSY3;}
-  Double_t GetSeedErrorSZ()   const {return fgkSeedErrorSZ;}
-  Float_t  GetLabelFraction() const {return fgkLabelFraction;}
-  Float_t  GetWideRoad()      const {return fgkWideRoad;}
+  Float_t  GetSeedStep()      const {return fSeedStep;}
+  Float_t  GetSeedDepth()     const {return fSeedDepth;}
+  Float_t  GetSkipDepth()     const {return fSkipDepth;}
+  Double_t GetMaxChi2()       const {return fMaxChi2;}
+  Float_t  GetMaxSeedC()      const {return fMaxSeedC;}
+  Float_t  GetMaxSeedTan()    const {return fMaxSeedTan;}
+  Double_t GetSeedErrorSY()   const {return fSeedErrorSY;}
+  Double_t GetSeedErrorSY3()  const {return fSeedErrorSY3;}
+  Double_t GetSeedErrorSZ()   const {return fSeedErrorSZ;}
+  Float_t  GetLabelFraction() const {return fLabelFraction;}
+  Float_t  GetWideRoad()      const {return fWideRoad;}
 
-  Float_t  GetMinClustersInTrack() const {return fgkMinClustersInTrack;}
-  Float_t  GetMinClustersInSeed()  const {return fgkMinClustersInSeed;} 
-  Float_t  GetMaxSeedDeltaZ()      const {return fgkMaxSeedDeltaZ;}
-  Float_t  GetMaxSeedVertexZ()     const {return fgkMaxSeedVertexZ;}
+  Float_t  GetMinClustersInTrack() const {return fMinClustersInTrack;}
+  Float_t  GetMinClustersInSeed()  const {return fMinClustersInSeed;} 
+  Float_t  GetMaxSeedDeltaZ()      const {return fMaxSeedDeltaZ;}
+  Float_t  GetMaxSeedVertexZ()     const {return fMaxSeedVertexZ;}
 
   // x <-> timebin conversions useful in analysis macros
   Double_t GetX(Int_t sec, Int_t plane, Int_t local_tb) const;
@@ -191,7 +190,7 @@ class AliTRDtracker : public AliTracker {
   Int_t         PropagateToOuterPlane(AliTRDtrack& t, Double_t x);
 
   Int_t         WriteTracks(); 
-  void          ReadClusters(TObjArray *array, const TFile *in = 0);
+  void          ReadClusters(TObjArray *array, const TFile *in=0);
 
   void          SetSY2corr(Float_t w)    {fSY2corr = w;}
   void          SetSZ2corr(Float_t w)    {fSZ2corr = w;}
@@ -222,41 +221,41 @@ class AliTRDtracker : public AliTracker {
   Float_t          fSZ2corr;          // Correction coefficient for
                                       // cluster SigmaZ2 
 
-  static const Float_t  fgkSeedGap;   // Distance between inner and outer
+  static const Float_t  fSeedGap;     // Distance between inner and outer
                                       // time bin in seeding 
                                       // (fraction of all time bins) 
   
-  static const Float_t  fgkSeedStep;    // Step in iterations
-  static const Float_t  fgkSeedDepth;   // Fraction of TRD allocated fgkor seeding
-  static const Float_t  fgkSkipDepth;   // Fraction of TRD which can be skipped
-                                      // in track prolongation		   
+  static const Float_t  fSeedStep;    // Step in iterations
+  static const Float_t  fSeedDepth;   // Fraction of TRD allocated for seeding
+  static const Float_t  fSkipDepth;   // Fraction of TRD which can be skipped
+                                      // in track prolongation             
   Int_t       fTimeBinsPerPlane;      // number of sensitive timebins per plane
   Int_t       fMaxGap;                // max gap (in time bins) in the track  
-                                      // in track prolongation		   
+                                      // in track prolongation             
 
-  static const Double_t fgkMaxChi2;     // max increment in track chi2 
- 	
-  static const Float_t  fgkMinClustersInTrack; // min number of clusters in track
+  static const Double_t fMaxChi2;     // max increment in track chi2 
+        
+  static const Float_t  fMinClustersInTrack; // min number of clusters in track
                                              // out of total timebins
 
-  static const Float_t  fgkMinFractionOfFoundClusters; // min fgkound clusters 
+  static const Float_t  fMinFractionOfFoundClusters; // min found clusters 
                                                      // out of expected  
 
-  static const Float_t  fgkMinClustersInSeed;  // min fgkraction of clusters in seed
-  static const Float_t  fgkMaxSeedDeltaZ;   // max dZ in MakeSeeds
-  static const Float_t  fgkMaxSeedDeltaZ12; // max abs(z1-z2) in MakeSeeds
-  static const Float_t  fgkMaxSeedC;       // max initial curvature in MakeSeeds
-  static const Float_t  fgkMaxSeedTan;     // max initial Tangens(lambda) in MakeSeeds
-  static const Float_t  fgkMaxSeedVertexZ; // max vertex Z in MakeSeeds
-  static const Double_t fgkSeedErrorSY;    // sy parameter in MakeSeeds
-  static const Double_t fgkSeedErrorSY3;   // sy3 parameter in MakeSeeds
-  static const Double_t fgkSeedErrorSZ;    // sz parameter in MakeSeeds
-  static const Float_t  fgkLabelFraction;  // min fgkraction of same label
-  static const Float_t  fgkWideRoad;       // max road width in FindProlongation
+  static const Float_t  fMinClustersInSeed;  // min fraction of clusters in seed
+  static const Float_t  fMaxSeedDeltaZ;   // max dZ in MakeSeeds
+  static const Float_t  fMaxSeedDeltaZ12; // max abs(z1-z2) in MakeSeeds
+  static const Float_t  fMaxSeedC;       // max initial curvature in MakeSeeds
+  static const Float_t  fMaxSeedTan;     // max initial Tangens(lambda) in MakeSeeds
+  static const Float_t  fMaxSeedVertexZ; // max vertex Z in MakeSeeds
+  static const Double_t fSeedErrorSY;    // sy parameter in MakeSeeds
+  static const Double_t fSeedErrorSY3;   // sy3 parameter in MakeSeeds
+  static const Double_t fSeedErrorSZ;    // sz parameter in MakeSeeds
+  static const Float_t  fLabelFraction;  // min fraction of same label
+  static const Float_t  fWideRoad;       // max road width in FindProlongation
 
   Bool_t                fVocal;   
   Bool_t                fAddTRDseeds;
- 
+
   Bool_t                fNoTilt;
  
   

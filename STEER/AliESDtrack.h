@@ -42,14 +42,23 @@ public:
   Float_t GetTPCsignal() const {return fTPCsignal;}
   Int_t GetTPCclusters(UInt_t *idx) const;
 
-  void SetITSpid(const Double_t *p) {;}
-  void GetITSpid(Double_t *p) const {;}
+  void SetITSpid(const Double_t *p);
+  void GetITSpid(Double_t *p) const;
   Float_t GetITSsignal() const {return fITSsignal;}
   Int_t GetITSclusters(UInt_t *idx) const;
 
+  void SetTRDpid(const Double_t *p);
+  void GetTRDpid(Double_t *p) const;
   Float_t GetTRDsignal() const {return fTRDsignal;}
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
+
+  void SetTOFsignal(Double_t tof) {fTOFsignal=tof;}
+  Float_t GetTOFsignal() const {return fTOFsignal;}
+  void    SetTOFpid(const Double_t *p);
+  void    GetTOFpid(Double_t *p) const;
+  UInt_t  GetTOFcluster() const {return fTOFindex;}
+  void  SetTOFcluster(UInt_t index) {fTOFindex=index;}
 
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
@@ -104,6 +113,11 @@ protected:
   Float_t fTRDr[kSPECIES]; //! "detector response probabilities" (for the PID)
 
   // TOF related track information
+  Float_t fTOFchi2;        // chi2 in the TOF
+  UInt_t  fTOFindex;       //! index of the assigned TOF cluster
+  Float_t fTOFsignal;      // detector's PID signal
+  Float_t fTOFr[kSPECIES]; // "detector response probabilities" (for the PID)
+
   // HMPID related track information
 
   ClassDef(AliESDtrack,1)  //ESDtrack 

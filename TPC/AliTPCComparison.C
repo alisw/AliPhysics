@@ -8,11 +8,13 @@
  * with several nice improvements by: M.Ivanov, GSI, m.ivanov@gsi.de        *
  ****************************************************************************/
 
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
   #include "alles.h"
   #include "AliTPCtracker.h"
   #include "AliRunLoader.h"
+  #include "AliTPCLoader.h"
   #include "AliMagF.h"
+  #include "AliRun.h"
 #endif
 
 struct GoodTrackTPC {
@@ -22,12 +24,14 @@ struct GoodTrackTPC {
   Float_t x,y,z;
 };
 
-Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname);
+Int_t 
+good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname);
 
-Int_t AliTPCComparison(Int_t event=0) {
+extern AliRun *gAlice;
 
-   if (gAlice) 
-    { 
+Int_t AliTPCComparison() {
+
+   if (gAlice) { 
        delete gAlice->GetRunLoader();
        delete gAlice;//if everything was OK here it is already NULL
        gAlice = 0x0;
@@ -36,34 +40,36 @@ Int_t AliTPCComparison(Int_t event=0) {
    cerr<<"Doing comparison...\n";
 
    const Int_t MAX=20000;
-   Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname = AliConfig::fgkDefaultEventFolderName);//declaration only
+   Int_t good_tracks_tpc(
+      GoodTrackTPC *gt, const Int_t max, 
+      const char* evfoldname = AliConfig::fgkDefaultEventFolderName
+   );//declaration only
 
    gBenchmark->Start("AliTPCComparison");
 
    AliRunLoader *rl = AliRunLoader::Open("galice.root","COMPARISON");
-   if (!rl) 
-     {
+   if (!rl) {
        cerr<<"Can't start sesion !\n";
        return 1;
-     }
+   }
 
    rl->LoadgAlice();
    if (rl->GetAliRun()) 
-    AliKalmanTrack::SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
-   else
-    {
+   AliKalmanTrack::SetConvConst(
+     1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField()
+   );
+   else {
        cerr<<"AliTPCComparison.C :Can't get AliRun !\n";
        return 1;
-    }
+   }
    rl->UnloadgAlice();
   
-   AliLoader * tpcl = rl->GetLoader("TPCLoader");
-   if (tpcl == 0x0)
-     {
+   AliTPCLoader * tpcl = (AliTPCLoader *)rl->GetLoader("TPCLoader");
+   if (tpcl == 0x0) {
        cerr<<"AliTPCComparison.C : Can not find TPCLoader\n";
        delete rl;
        return 3;
-     }
+   }
 
    Int_t nentr=0,i=0; TObjArray tarray(MAX);
    { /*Load tracks*/
@@ -76,13 +82,12 @@ Int_t AliTPCComparison(Int_t event=0) {
      TBranch *tbranch=tracktree->GetBranch("tracks");
      nentr=(Int_t)tracktree->GetEntries();
      AliTPCtrack *iotrack=0;
-     for (i=0; i<nentr; i++) 
-      {
+     for (i=0; i<nentr; i++) {
        iotrack=new AliTPCtrack;
        tbranch->SetAddress(&iotrack);
        tracktree->GetEvent(i);
        tarray.AddLast(iotrack);
-      }   
+     }   
      tpcl->UnloadTracks();
    }
 
@@ -116,7 +121,6 @@ Int_t AliTPCComparison(Int_t event=0) {
       } else cerr<<"Can not open file (good_tracks_tpc) !\n";
       out.close();
    }
-
 
 
    TH1F *hp=new TH1F("hp","PHI resolution",50,-20.,20.); hp->SetFillColor(4);
@@ -311,23 +315,22 @@ Int_t AliTPCComparison(Int_t event=0) {
 }
 
 
-Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname) {
+Int_t 
+good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname) {
    Int_t nt=0;
 
-   AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
-   if (rl == 0x0)
-    {
+   AliRunLoader *rl = AliRunLoader::GetRunLoader(evfoldname);
+   if (rl == 0x0) {
       ::Fatal("AliTPCComparison.C::good_tracks_tpc",
               "Can not find Run Loader in Folder Named %s",
               evfoldname);
-    }
-   AliLoader * tpcl = rl->GetLoader("TPCLoader");
-   if (tpcl == 0x0)
-     {
+   }
+   AliTPCLoader *tpcl = (AliTPCLoader *)rl->GetLoader("TPCLoader");
+   if (tpcl == 0x0) {
        cerr<<"AliTPCHits2Digits.C : Can not find TPCLoader\n";
        delete rl;
        return 0;
-     }
+   }
    
    rl->LoadgAlice();
    

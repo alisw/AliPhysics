@@ -32,8 +32,8 @@ void AliTRDdigits2cluster()
   clusterizer->SetVerbose(1);
 
   // Open the AliRoot file 
-  //  clusterizer->Open(infile,0);
-  clusterizer->Open(infile,outfile,0);
+  clusterizer->Open(infile,0);
+  //clusterizer->Open(infile,outfile,0);
 
 
   // Load the digits

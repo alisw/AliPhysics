@@ -41,4 +41,6 @@
 #pragma link C++ class  AliTOFReconstructionerV2+;
 #pragma link C++ class  AliTOFDigitMap+;
 
+#pragma link C++ class  AliTOFpidESD+;
+
 #endif

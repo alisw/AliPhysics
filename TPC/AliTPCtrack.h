@@ -45,6 +45,7 @@ public:
   Int_t Rotate(Double_t angle);
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}
 
+  Double_t GetYat(Double_t x) const ;
   Double_t GetX()     const {return fX;}
   Double_t GetAlpha() const {return fAlpha;}
   Double_t GetdEdx()  const {return fdEdx;}

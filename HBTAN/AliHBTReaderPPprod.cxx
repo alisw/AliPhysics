@@ -163,14 +163,16 @@ Int_t AliHBTReaderPPprod::Read(AliHBTRun* particles, AliHBTRun *tracks)
          AliTPCtrack *iotrack=0;
          
          fClustersFile->cd();
-         AliTPCtracker *tracker = new AliTPCtracker(TPCParam,currentEvent,"");
+printf("This method is not converted to the NewIO !\n"); //I.B.
+return 1; //I.B.
+         AliTPCtracker *tracker = new AliTPCtracker(TPCParam); //I.B.
+         //AliTPCtracker *tracker = new AliTPCtracker(TPCParam,currentEvent,"");
          if (!tracker) 
           {
             Error("AliHBTReaderPPprod::Read","Can't get a tracker !\n"); 
             return 3;
           }
-         tracker->LoadInnerSectors();
-         tracker->LoadOuterSectors();
+tracker->LoadClusters(0);//I.Belikov, "0" should be a pointer to a tree
    
          for (i=0; i<NTPCtracks; i++)
           {

@@ -6,41 +6,44 @@
 /* $Id$ */
 
 //-------------------------------------------------------
-//                       TPC clusterer
+//                  The TPC cluster finder
 //
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------
-#include <Rtypes.h>
+#include <TObject.h>
+#include "AliTPCClustersArray.h"
 
-#define kMAXCLUSTER 2500
-
-class TFile;
+class TTree;
 class AliTPCParam;
 class AliTPCcluster;
-class AliLoader;
 
-class AliTPCclusterer {
+class AliTPCclusterer : public TObject {
 public:
-   static void Digits2Clusters(const AliTPCParam *par, AliLoader *of, Int_t eventn=1);
+  AliTPCclusterer(const AliTPCParam *par);
+  Int_t Digits2Clusters(TTree *dig, TTree *clu);
 
 private:
-   class AliBin {
-   public:
-     UShort_t GetQ()    const   {return fQ;}
-     UInt_t   GetMask() const   {return fMask;}
-     void     SetQ(UShort_t q)  {fQ=q;}
-     void     SetMask(UInt_t m) {fMask=m;}
-   private:
-     UShort_t fQ;  //signal
-     UInt_t fMask; //peak mask
-   };
+  class AliBin {
+  public:
+    UShort_t GetQ()    const   {return fQ;}
+    UInt_t   GetMask() const   {return fMask;}
+    void     SetQ(UShort_t q)  {fQ=q;}
+    void     SetMask(UInt_t m) {fMask=m;}
+  private:
+    UShort_t fQ;  //signal
+    UInt_t fMask; //peak mask
+  };
 
 private:
-   static Bool_t IsMaximum(Int_t k, Int_t max, const AliBin *bins); 
+  static Bool_t IsMaximum(Int_t k, Int_t max, const AliBin *bins); 
   static void FindPeaks(Int_t k,Int_t m,AliBin*b,Int_t*idx,UInt_t*msk,Int_t&n);
-   static void MarkPeak(Int_t k, Int_t max, AliBin *bins, UInt_t m);
-   static void MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,
+  static void MarkPeak(Int_t k, Int_t max, AliBin *bins, UInt_t m);
+  static void MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,
    AliTPCcluster &c);
+
+  AliTPCClustersArray fClusterArray;  //! container managing the clusters
+
+  ClassDef(AliTPCclusterer,1)  // the TPC cluster finder
 };
 
 

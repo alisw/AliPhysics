@@ -1,125 +1,253 @@
 //********************************************************************
 //     Example of the reconstruction that generates the ESD
 // Input files: 
-//   a) AliTPCclusters.root containing the TPC clusters
-//      (the AliTPCFindClusters.C macro can be used to generate it)
-//   b) AliITSclustersV2.root containing the ITS clusters
+//   a) file containing the ITS clusters
 //      (the AliITSFindClustersV2.C macro can be used to generate it)
+//   b) file containing the TPC clusters
+//      (the AliTPCFindClusters.C macro can be used to generate it)
+//   c) file containing the TRD clusters
+//      (the AliTRDdigits2cluster.C macro can be used to generate it)
+//   d) file containing the TOF digits
+//      (the AliTOFSDigits2Digits.C macro can be used to generate it)
 // Ouput file:
 //      AliESDs.root containing the ESD events 
 //
 // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //********************************************************************
 
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
   #include <Riostream.h>
   #include "TFile.h"
+  #include "TSystem.h"
   #include "TStopwatch.h"
+  #include "TGeant3.h"
+
+  #include "AliMagF.h"
+  #include "AliRun.h"
+  #include "AliRunLoader.h"
+  #include "AliLoader.h"
 
   #include "AliESD.h"
   #include "AliESDpid.h"
-  #include "AliTPCpidESD.h"
-  #include "AliTPCParam.h"
-  #include "AliTPCtracker.h"
+
+  #include "AliITS.h"
   #include "AliITSgeom.h"
   #include "AliITStrackerV2.h"
+  #include "AliITSpidESD.h"
+  #include "AliITSLoader.h"
+
+  #include "AliTPCParam.h"
+  #include "AliTPCtracker.h"
+  #include "AliTPCpidESD.h"
+  #include "AliTPCLoader.h"
+
   #include "AliTRDtracker.h"
   #include "AliTRDPartID.h"
-  #include "AliITSpidESD.h"
+
+  #include "AliTOFpidESD.h"
 #endif
 
-Int_t AliESDtest(Int_t nev=1, 
-		 const char* fileNameITSClusters = "its.clusters.root",
-		 const char* fileNameTPCClusters = "tpc.clusters.root",
-		 const char* fileNameTRDClusters = "trd.clusters.root") { 
+extern TSystem *gSystem;
+extern AliRun *gAlice;
+extern TFile *gFile;
 
-   //File with the TPC clusters
-   TFile *tpccf=TFile::Open(fileNameTPCClusters);
-   if (!tpccf->IsOpen()) {
-      cerr<<"Can't open "<<fileNameTPCClusters<<" !\n"; 
+Int_t AliESDtest(Int_t nev=1) {
+
+/**** Initialization of the NewIO *******/
+
+   if (gAlice) {
+      delete gAlice->GetRunLoader();
+      delete gAlice; 
+      gAlice=0;
+   }
+
+   gSystem->Load("libgeant321");     // needed for the PID in TOF 
+   new TGeant3("");                  // must be re-done !
+
+   AliRunLoader *rl = AliRunLoader::Open("galice.root");
+   if (rl == 0x0) {
+      cerr<<"Can not open session"<<endl;
+      return 1;
+   }
+   Int_t retval = rl->LoadgAlice();
+   if (retval) {
+      cerr<<"AliESDtest.C : LoadgAlice returned error"<<endl;
+      delete rl;
+      return 1;
+   }
+   retval = rl->LoadHeader();
+   if (retval) {
+      cerr<<"AliESDtest.C : LoadHeader returned error"<<endl;
+      delete rl;
       return 2;
    }
-   AliTPCParam *par=(AliTPCParam*)tpccf->Get("75x40_100x60_150x60");
-   if (!par) {cerr<<"Can't get TPC parameters !\n"; return 3;}
+   gAlice=rl->GetAliRun();
+       
 
-   //An instance of the TPC tracker
-   AliTPCtracker tpcTracker(par);
+   AliKalmanTrack::SetConvConst(
+      1000/0.299792458/gAlice->Field()->SolenoidField()
+   );
 
-   //An instance of the TPC PID maker
-   Double_t parTPC[]={47.,0.1,3.};
-   AliTPCpidESD tpcPID(parTPC);
 
-   //File with the ITS clusters
-   TFile *itscf=TFile::Open(fileNameITSClusters);
-   if (!itscf->IsOpen()) {
-      cerr<<"Can't open "<<fileNameITSClusters<<".root !\n"; 
+
+/**** The ITS corner ********************/
+
+   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
+   if (itsl == 0x0) {
+      cerr<<"AliESDtest.C : Can not get the ITS loader"<<endl;
+      return 3;
+   }
+   itsl->LoadRecPoints("read");
+
+   AliITS *dITS = (AliITS*)gAlice->GetDetector("ITS");
+   if (!dITS) {
+      cerr<<"AliESDtest.C : Can not find the ITS detector !"<<endl;
       return 4;
    }
-   AliITSgeom *geom=(AliITSgeom*)itscf->Get("AliITSgeom");
-   if (!geom) {cerr<<"Can't get AliITSgeom !\n"; return 5;}
+   AliITSgeom *geom = dITS->GetITSgeom();
 
    //An instance of the ITS tracker
    AliITStrackerV2 itsTracker(geom);
    
    //An instance of the ITS PID maker
-   Double_t parITS[]={34.,0.12,3.};
+   Double_t parITS[]={34.,0.15,10.};
    AliITSpidESD itsPID(parITS);
 
-   //File with the TRD clusters
-   TFile *trdcf=TFile::Open(fileNameTRDClusters);
-   if (!trdcf->IsOpen()) {
-      cerr<<"Can't open "<<fileNameTRDClusters<<".root !\n"; 
+
+/**** The TPC corner ********************/
+
+   AliTPCLoader* tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
+   if (tpcl == 0x0) {
+      cerr<<"AliESDtest.C : can not get the TPC loader"<<endl;
+      return 5;
+   }
+   tpcl->LoadRecPoints("read");
+
+   rl->CdGAFile();
+   AliTPCParam *par=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
+   if (!par) { 
+      cerr<<"TPC parameters have not been found !\n";
       return 6;
    }
+   
+   //An instance of the TPC tracker
+   AliTPCtracker tpcTracker(par);
+
+   //An instance of the TPC PID maker
+   Double_t parTPC[]={47.,0.10,10.};
+   AliTPCpidESD tpcPID(parTPC);
+
+
+/**** The TRD corner ********************/
+
+   AliLoader* trdl = rl->GetLoader("TRDLoader");
+   if (trdl == 0x0) {
+      cerr<<"AliESDtest.C : can not get the TRD loader"<<endl;
+      return 5;
+   }
+   trdl->LoadRecPoints("read");
 
    //An instance of the TRD tracker
-   AliTRDtracker trdTracker(trdcf);
+   rl->CdGAFile();
+   AliTRDtracker trdTracker(gFile);  //galice.root file
 
+/*
    //An instance of the TRD PID maker
-   AliTRDPartID* trdPID = AliTRDPartID::GetFromFile();
-   if (!trdPID) return 7;
+   TFile* pidFile = TFile::Open("pid.root");
+   if (!pidFile->IsOpen()) {
+     cerr << "Can't get pid.root !\n";
+     return 7;
+   }
+   AliTRDPartID* trdPID = (AliTRDPartID*) pidFile->Get("AliTRDPartID");
+   if (!trdPID) {
+     cerr << "Can't get PID object !\n";
+     return 8;
+   }
+*/
+
+
+/**** The TOF corner ********************/
+
+   AliLoader* tofl = rl->GetLoader("TOFLoader");
+   if (tofl == 0x0) {
+      cerr<<"AliESDtest.C : can not get the TOF loader"<<endl;
+      return 5;
+   }
+   tofl->LoadDigits("read");
+
+
+   //Instance of the TOF PID maker
+   Double_t parTOF[]={130.,5.};
+   AliTOFpidESD tofPID(parTOF);
+
+
+   //rl->UnloadgAlice();
+
 
    TFile *ef=TFile::Open("AliESDs.root","RECREATE");
    if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
 
    TStopwatch timer;
    Int_t rc=0;
+   if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
    //The loop over events
    for (Int_t i=0; i<nev; i++) {
      cerr<<"\n\nProcessing event number : "<<i<<endl;
      AliESD *event=new AliESD(); 
+
+     rl->GetEvent(i);
  
-     tpcTracker.SetEventNumber(i); 
-     tpcTracker.LoadClusters(tpccf);
-
-     itsTracker.SetEventNumber(i); 
-     itsTracker.LoadClusters(itscf);
-
+     TTree *tpcTree=tpcl->TreeR();
+     if (!tpcTree) {
+        cerr<<"Can't get the TPC cluster tree !\n";
+        return 4;
+     }     
+     tpcTracker.LoadClusters(tpcTree);
      rc+=tpcTracker.Clusters2Tracks(event);
 
+
+     TTree *itsTree=itsl->TreeR();
+     if (!itsTree) {
+        cerr<<"Can't get the TPC cluster tree !\n";
+        return 4;
+     }     
+     itsTracker.LoadClusters(itsTree);
      rc+=itsTracker.Clusters2Tracks(event);
 
      rc+=itsTracker.PropagateBack(event); 
      itsTracker.UnloadClusters();
-
      itsPID.MakePID(event);
      
      rc+=tpcTracker.PropagateBack(event);
      tpcTracker.UnloadClusters();
-
      tpcPID.MakePID(event);
 
-     trdTracker.SetEventNumber(i);
-     trdcf->cd();
-     trdTracker.LoadClusters();
 
+     TTree *trdTree=trdl->TreeR();
+     if (!trdTree) {
+        cerr<<"Can't get the TPC cluster tree !\n";
+        return 4;
+     } 
+     trdTracker.LoadClusters(trdTree);
      rc+=trdTracker.PropagateBack(event);
      trdTracker.UnloadClusters();
 
+/*
      for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
        AliESDtrack* track = event->GetTrack(iTrack);
        trdPID->MakePID(track);
      }
+*/
+
+     TTree *tofTree=tofl->TreeD();
+     if (!tofTree) {
+        cerr<<"Can't get the TOF cluster tree !\n";
+        return 4;
+     } 
+     tofPID.LoadClusters(tofTree);
+     tofPID.MakePID(event);
+     tofPID.UnloadClusters();
+
 
     //Here is the combined PID
      AliESDpid::MakePID(event);
@@ -137,12 +265,13 @@ Int_t AliESDtest(Int_t nev=1,
    }
    timer.Stop(); timer.Print();
 
-   trdcf->Close();
-   delete geom;
-   itscf->Close();
+   //pidFile->Close();
+
    delete par;
-   tpccf->Close();
+
    ef->Close();
+
+   delete rl;
 
    return rc;
 }

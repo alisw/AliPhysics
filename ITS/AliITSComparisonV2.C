@@ -1,8 +1,14 @@
-#ifndef __CINT__
+/****************************************************************************
+ *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
+ ****************************************************************************/
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
   #include <Riostream.h>
   #include <fstream.h>
 
   #include "AliRun.h"
+  #include "AliHeader.h"
+  #include "AliStack.h"
   #include "AliRunLoader.h"
   #include "AliLoader.h"
   #include "AliITSLoader.h"
@@ -32,41 +38,43 @@ struct GoodTrackITS {
   Float_t x,y,z;
 };
 
-Int_t AliITSComparisonV2(Int_t event=0) {
+extern AliRun *gAlice;
+
+Int_t AliITSComparisonV2() {
    cerr<<"Doing comparison...\n";
-   if (gAlice) 
-    {
+   if (gAlice) {
       delete gAlice->GetRunLoader();
       delete gAlice; 
       gAlice=0;
-    }
+   }
    
    AliRunLoader *rl = AliRunLoader::Open("galice.root");
-   if (!rl) 
-     {
+   if (!rl) {
        cerr<<"AliITSComparisonV2.C :Can't start sesion !\n";
        return 1;
-     }
+   }
    rl->LoadgAlice();
    if (rl->GetAliRun()) 
-    AliKalmanTrack::SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
-   else
-    {
-       cerr<<"AliITSComparisonV2.C :Can't get AliRun !\n";
-       return 1;
-    }
+   AliKalmanTrack::
+   SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
+   else {
+      cerr<<"AliITSComparisonV2.C :Can't get AliRun !\n";
+      return 1;
+   }
    rl->UnloadgAlice();
     
    AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
-   if (itsl == 0x0)
-     {
+   if (itsl == 0x0) {
        cerr<<"AliITSComparisonV2.C : Can not find TPCLoader\n";
        delete rl;
        return 3;
-     }
+   }
    
    const Int_t MAX=15000;
-   Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, const char* evfoldname = AliConfig::fgkDefaultEventFolderName);//declaration only
+   Int_t good_tracks_its(
+     GoodTrackITS *gt, const Int_t max, 
+     const char* evfoldname = AliConfig::fgkDefaultEventFolderName
+   );//declaration only
 
    Int_t nentr=0; TObjArray tarray(2000);
    {/* Load tracks */ 
@@ -299,49 +307,39 @@ Int_t AliITSComparisonV2(Int_t event=0) {
    text->SetTextSize(0.05);
    text->Draw();
 
-//     PH taken from v3-09-09, but not used
-//    TCanvas *c2=new TCanvas("c2","",320,32,530,590);
+   TCanvas *c2=new TCanvas("c2","",320,32,530,590);
+   TPad *p6=new TPad("p6","",0.,0.,1.,.5); p6->Draw();
+   p6->cd(); p6->SetFillColor(42); p6->SetFrameFillColor(10); 
+   he->SetFillColor(2); he->SetFillStyle(3005);  
+   he->SetXTitle("Arbitrary Units"); 
+   he->Fit("gaus"); c2->cd();
 
-//    TPad *p6=new TPad("p6","",0.,0.,1.,.5); p6->Draw();
-//    p6->cd(); p6->SetFillColor(42); p6->SetFrameFillColor(10); 
-//    he->SetFillColor(2); he->SetFillStyle(3005);  
-//    he->SetXTitle("Arbitrary Units"); 
-//    he->Fit("gaus"); c2->cd();
-
-//    TPad *p7=new TPad("p7","",0.,0.5,1.,1.); p7->Draw(); 
-//    p7->cd(); p7->SetFillColor(42); p7->SetFrameFillColor(10);
-//    hep->SetXTitle("p (Gev/c)"); hep->SetYTitle("dE/dX (Arb. Units)"); 
-//    hep->Draw(); c1->cd();
+   TPad *p7=new TPad("p7","",0.,0.5,1.,1.); p7->Draw(); 
+   p7->cd(); p7->SetFillColor(42); p7->SetFrameFillColor(10);
+   hep->SetXTitle("p (Gev/c)"); hep->SetYTitle("dE/dX (Arb. Units)"); 
+   hep->Draw(); c1->cd();
    
-
    return 0;
 }
 
 Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, const char* evfoldname) {
-
-   Int_t nt=0;
-
    AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
-   if (rl == 0x0)
-    {
+   if (rl == 0x0) {
       ::Fatal("AliTPCComparison.C::good_tracks_its",
               "Can not find Run Loader in Folder Named %s",
               evfoldname);
-    }
+   }
 
    AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
-   if (itsl == 0x0)
-     {
+   if (itsl == 0x0) {
        cerr<<"AliITSComparisonV2.C : Can not find TPCLoader\n";
        delete rl;
        return 3;
-     }
+   }
    
    rl->LoadgAlice();
    rl->LoadHeader();
    Int_t np = rl->GetHeader()->GetNtrack();
-
-
 
    Int_t *good=new Int_t[np];
    Int_t k;
@@ -356,8 +354,8 @@ Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, const char* evfoldname)
       cerr<<"can't get ITS geometry !\n"; exit(9);
    }
 
-   itsl->LoadRawClusters();
-   TTree *cTree=itsl->TreeC();
+   itsl->LoadRecPoints();
+   TTree *cTree=itsl->TreeR();
    if (!cTree) {
       cerr<<"Can't get cTree !\n"; exit(7);
    }
@@ -379,8 +377,11 @@ Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, const char* evfoldname)
      while (ncl--) {
         AliITSclusterV2 *pnt=(AliITSclusterV2*)clusters->UncheckedAt(ncl);
         Int_t l0=pnt->GetLabel(0);
+	  if (l0>=np) {cerr<<"Wrong label: "<<l0<<endl; continue;}
         Int_t l1=pnt->GetLabel(1);
+	  if (l1>=np) {cerr<<"Wrong label: "<<l1<<endl; continue;}
         Int_t l2=pnt->GetLabel(2);
+	  if (l2>=np) {cerr<<"Wrong label: "<<l2<<endl; continue;}
         Int_t mask=1<<(lay-1);
         if (l0>=0) good[l0]|=mask; 
         if (l1>=0) good[l1]|=mask; 
@@ -403,13 +404,12 @@ Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, const char* evfoldname)
    while (in>>lab>>code>>px>>py>>pz>>x>>y>>z) {
       if (good[lab] != 0x3F) continue;
       TParticle *p = (TParticle*)stack->Particle(lab);
-      if (p == 0x0)
-       {
+      if (p == 0x0) {
          cerr<<"Can not get particle "<<lab<<endl;
          nt++;
          if (nt==max) {cerr<<"Too many good tracks !\n"; break;}
          continue;
-       }
+      }
       gt[nt].lab=lab;
       gt[nt].code=p->GetPdgCode();
 //**** px py pz - in global coordinate system

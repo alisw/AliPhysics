@@ -2,47 +2,46 @@
  *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
  ****************************************************************************/
 
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
   #include <Riostream.h>
-  #include "AliRun.h"
-  #include "AliTPCv1.h"
-  #include "AliTPCv2.h"
-  #include "AliTPCParam.h"
 
-  #include "TFile.h"
+  #include "AliRun.h"
+  #include "AliRunLoader.h"
+  #include "AliTPCLoader.h"
+  #include "AliTPCv1.h"
+  #include "AliTPCParam.h"
+  #include "AliTPCclusterer.h"
+
+  #include "TTree.h"
   #include "TStopwatch.h"
 #endif
 
-Int_t AliTPCFindClusters(Int_t N=-1) 
- {
-   
-   if (gAlice)
-    {
+extern AliRun *gAlice;
+
+Int_t AliTPCFindClusters(Int_t nev=5) {
+
+   if (gAlice) {
       delete gAlice->GetRunLoader();
       delete gAlice;//if everything was OK here it is already NULL
       gAlice = 0x0;
-    }
+   }
     
    AliRunLoader* rl = AliRunLoader::Open("galice.root");
-   if (rl == 0x0)
-    {
+   if (rl == 0x0) {
       cerr<<"Can not open session"<<endl;
       return 1;
-    }
+   }
    
-   if (rl->LoadgAlice())
-    {
+   if (rl->LoadgAlice()) {
       cerr<<"Error occured while l"<<endl;
       return 1;
-    }
-   AliKalmanTrack::SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
+   }
    
-   tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
-   if (tpcl == 0x0)
-    {
+   AliTPCLoader *tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
+   if (tpcl == 0x0) {
       cerr<<"Can not get TPC Loader"<<endl;
       return 1;
-    }
+   }
 
    gAlice=rl->GetAliRun();
    if (!gAlice) {
@@ -56,66 +55,57 @@ Int_t AliTPCFindClusters(Int_t N=-1)
 
    rl->CdGAFile();
    AliTPCParam *dig=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
-   if (!dig) 
-    {
-     dig=(AliTPCParam *)gDirectory->Get("75x40_100x60");
-     if (!param) 
-      {
+   if (!dig) {
         cerr<<"TPC parameters have not been found !\n";
         return 1;
-      }
-     else
-      {
-        cout<<"TPC 75x40_100x60 geometry found"<<endl;
-      }
-    }
-   else
-    {
-      cout<<"TPC 75x40_100x60_150x60  geometry found"<<endl;
-    }
+   }
 
-   Int_t n;
-   if (N<=0) n = rl->GetNumberOfEvents();
-   else n=N;
+   if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
    
+   tpcl->LoadRecPoints("recreate");
+   if (ver==1) tpcl->LoadHits("read");
+   else tpcl->LoadDigits("read");
+
    TStopwatch timer;
 
-   switch (ver) {
-   case 1:
+   if (ver==1) {
       cerr<<"Making clusters...\n";
-      {
-       AliTPCv1 &tpc=*((AliTPCv1*)TPC);
-       tpc.SetParam(dig); timer.Start(); cwd->cd(); 
-       tpc.SetLoader(tpcl);
-       tpcl->LoadHits("read");
-       tpcl->LoadRecPoints("recreate");
-       for(Int_t i=0;i<n;i++){
+      AliTPCv1 &tpc=*((AliTPCv1*)TPC);
+      tpc.SetParam(dig);
+      tpc.SetLoader(tpcl);
+      rl->LoadKinematics();
+      timer.Start();
+      for(Int_t i=0;i<nev;i++) {
          printf("Processing event %d\n",i);
          rl->GetEvent(i);
-         tpc.Hits2Clusters(out,i);
-       } 
+         tpc.Hits2Clusters(i);
       }
-      break;
-   case 2:
+   } else if (ver==2) {
       cerr<<"Looking for clusters...\n";
-      {
-	// delete gAlice; gAlice=0;
-       AliTPCv2 * tpc = new AliTPCv2();
-       tpc->SetLoader(tpcl);
-       tpcl->LoadDigits("read");
-       tpcl->LoadRecPoints("recreate");
-
-       tpc->SetParam(dig); timer.Start();
-       for (Int_t i=0;i<n;i++)
-        {
+      AliTPCclusterer *dummy=new AliTPCclusterer(dig), &clusterer=*dummy; 
+      timer.Start();
+      for (Int_t i=0;i<nev;i++) {
          printf("Processing event %d\n",i);
-         tpc->Digits2Clusters(i);
-         //AliTPCclusterer::Digits2Clusters(dig, out, i);
-       }
-       delete tpc;
+         rl->GetEvent(i);
+
+         TTree *out=tpcl->TreeR();
+         if (!out) {
+            tpcl->MakeTree("R");
+            out=tpcl->TreeR();
+         }
+         TTree *in=tpcl->TreeD();
+         if (!in) {
+            cerr<<"Can't get digits tree !\n";
+            return 4;
+         }
+
+         clusterer.Digits2Clusters(in,out);
+         
+         tpcl->WriteRecPoints("OVERWRITE");
       }
-      break;
-   default:
+      delete dummy;
+      delete dig;
+   } else {
       cerr<<"Invalid TPC version !\n";
       delete rl;
       return 5;
@@ -124,5 +114,6 @@ Int_t AliTPCFindClusters(Int_t N=-1)
    timer.Stop(); timer.Print();
 
    delete rl;
+
    return 0;
 }

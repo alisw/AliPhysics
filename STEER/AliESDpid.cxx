@@ -47,6 +47,18 @@ Int_t AliESDpid::MakePID(AliESD *event)
       for (Int_t j=0; j<ns; j++) p[j]*=d[j];
     }
 
+    if ((t->GetStatus()&AliESDtrack::kTRDpid )!=0) {
+      Double_t d[10];
+      t->GetTRDpid(d);
+      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+    }
+
+    if ((t->GetStatus()&AliESDtrack::kTOFpid )!=0) {
+      Double_t d[10];
+      t->GetTOFpid(d);
+      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+    }
+
     t->SetESDpid(p);
   }
   return 0;

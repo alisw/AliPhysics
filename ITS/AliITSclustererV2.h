@@ -9,22 +9,23 @@
 //
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //--------------------------------------------------------------
-#include <Rtypes.h>
+#include <TObject.h>
 
 class TFile;
+class TTree;
 class TClonesArray;
 
 class AliITSgeom;
 class AliITSclusterV2;
 class AliITSRawStream;
 
-class AliITSclustererV2 {
+class AliITSclustererV2 : public TObject {
 public:
   AliITSclustererV2(){ fEvent=0; fI=0; }
   AliITSclustererV2(const AliITSgeom *geom);
 
   void SetEvent(Int_t event) { fEvent=event; }
-  void Digits2Clusters(const TFile *in, TFile *out);
+  Int_t Digits2Clusters(TTree *in, TTree *out);
   void Digits2Clusters(TFile *out);
   void FindClustersSPD(const TClonesArray *dig, TClonesArray *cls);
   void FindClustersSPD(AliITSRawStream* input, TClonesArray** clusters);
@@ -34,7 +35,7 @@ public:
   void FindClustersSSD(AliITSRawStream* input, TClonesArray** clusters);
 
   void RecPoints2Clusters(const TClonesArray *p, Int_t idx, TClonesArray *c);
-  void Hits2Clusters(const TFile *in, TFile *out);
+  Int_t Hits2Clusters(TTree *in, TTree *out);
 
 private:
   class Ali1Dcluster {

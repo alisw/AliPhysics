@@ -117,7 +117,13 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
     fHits   = new TClonesArray("AliTOFhit",  1000);
     fTZero = kFALSE;
   }
-  gAlice->AddHitList(fHits);
+  if (gAlice==0) {
+     Fatal("AliTOF","gAlice==0 !");
+  }
+  if (gAlice->GetHitLists())
+     gAlice->AddHitList(fHits);
+  else Error("AliTOF","gAlice->GetHitLists()==0");
+
   fIshunt  = 0;
   fSDigits       = new TClonesArray("AliTOFSDigit",  1000);
   fDigits        = new TClonesArray("AliTOFdigit",  1000);

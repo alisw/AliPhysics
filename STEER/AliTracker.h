@@ -15,7 +15,8 @@
 class AliKalmanTrack;
 class AliCluster;
 class TFile;
-class AliRunLoader;
+class TTree;
+class AliESD;
 
 class AliTracker : public TObject {
 
@@ -26,8 +27,9 @@ public:
   
   AliTracker() { fX=fY=fZ=0.; fSigmaX=fSigmaY=fSigmaZ=0.; fEventN=0; fStoreBarrel = 1;}
   virtual ~AliTracker(){}
-  virtual Int_t Clusters2Tracks()=0;
-  virtual Int_t PropagateBack()=0;
+  virtual Int_t Clusters2Tracks(AliESD *event)=0;
+  virtual Int_t PropagateBack(AliESD *event)=0;
+  virtual Int_t RefitInward(AliESD *event)=0;
   void SetVertex(const Double_t *xyz, const Double_t *ers=0) { 
      fX=xyz[0]; fY=xyz[1]; fZ=xyz[2];
      if (ers) { fSigmaX=ers[0]; fSigmaY=ers[1]; fSigmaZ=ers[2]; } 
@@ -37,7 +39,7 @@ public:
   
 
 //protected:
-  virtual Int_t LoadClusters()=0;
+  virtual Int_t LoadClusters(TTree *)=0;
   virtual void UnloadClusters()=0;
   virtual AliCluster *GetCluster(Int_t index) const=0;
   virtual void  UseClusters(const AliKalmanTrack *t, Int_t from=0) const;

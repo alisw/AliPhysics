@@ -17,6 +17,7 @@
 #pragma link C++ class  AliTPChit+;
 #pragma link C++ class  AliTPCdigit+;
 #pragma link C++ class  AliTPCcluster+;
+#pragma link C++ class  AliTPCclusterer+;
 #pragma link C++ class  AliTPCtrack+;
 #pragma link C++ class  AliTPCtracker+;
 
@@ -55,7 +56,6 @@
 #pragma link C++ class AliHitInfo+;
 
 
-#pragma link C++ class AliTPCclusterer-;
 #pragma link C++ class AliTPCDigitizer;
 #pragma link C++ class AliTPCtrackerParam; 
 

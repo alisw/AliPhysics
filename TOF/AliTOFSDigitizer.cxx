@@ -178,6 +178,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 
   fRunLoader->LoadgAlice();
   fRunLoader->LoadHeader();
+  fRunLoader->LoadKinematics();
   gAlice = fRunLoader->GetAliRun();
   
   AliLoader* gime = fRunLoader->GetLoader("TOFLoader");

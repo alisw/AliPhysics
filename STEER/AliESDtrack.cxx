@@ -157,6 +157,17 @@ void AliESDtrack::SetIntegratedTimes(const Double_t *times) {
 }
 
 //_______________________________________________________________________
+void AliESDtrack::SetITSpid(const Double_t *p) {  
+  for (Int_t i=0; i<kSPECIES; i++) fITSr[i]=p[i];
+  SetStatus(AliESDtrack::kITSpid);
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetITSpid(Double_t *p) const {
+  for (Int_t i=0; i<kSPECIES; i++) p[i]=fITSr[i];
+}
+
+//_______________________________________________________________________
 Int_t AliESDtrack::GetITSclusters(UInt_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined ITS clusters 
@@ -186,6 +197,17 @@ void AliESDtrack::GetTPCpid(Double_t *p) const {
 }
 
 //_______________________________________________________________________
+void AliESDtrack::SetTRDpid(const Double_t *p) {  
+  for (Int_t i=0; i<kSPECIES; i++) fTRDr[i]=p[i];
+  SetStatus(AliESDtrack::kTRDpid);
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetTRDpid(Double_t *p) const {
+  for (Int_t i=0; i<kSPECIES; i++) p[i]=fTRDr[i];
+}
+
+//_______________________________________________________________________
 void    AliESDtrack::SetTRDpid(Int_t iSpecies, Float_t p)
 {
   fTRDr[iSpecies] = p;
@@ -194,6 +216,17 @@ void    AliESDtrack::SetTRDpid(Int_t iSpecies, Float_t p)
 Float_t AliESDtrack::GetTRDpid(Int_t iSpecies) const
 {
   return fTRDr[iSpecies];
+}
+
+//_______________________________________________________________________
+void AliESDtrack::SetTOFpid(const Double_t *p) {  
+  for (Int_t i=0; i<kSPECIES; i++) fTOFr[i]=p[i];
+  SetStatus(AliESDtrack::kTOFpid);
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetTOFpid(Double_t *p) const {
+  for (Int_t i=0; i<kSPECIES; i++) p[i]=fTOFr[i];
 }
 
 //_______________________________________________________________________

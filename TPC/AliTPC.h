@@ -69,7 +69,7 @@ public:
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials();
-  virtual void  Hits2Clusters(TFile *of, Int_t eventn=0);
+  virtual void  Hits2Clusters(Int_t eventn=0);
   virtual void  Hits2ExactClustersSector(Int_t isec); // MI change calculate "exact" cluster position
   
   virtual void  SDigits2Digits(){;} //MI change -cycling to production

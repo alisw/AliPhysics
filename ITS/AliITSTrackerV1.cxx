@@ -510,14 +510,15 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     cf->cd();
     TString foldname(fITS->GetLoader()->GetEventFolder()->GetName());
     
-    AliTPCtracker *tracker = new AliTPCtracker(digp,evNumber,foldname);  
-    //PH    AliTPCtracker *tracker = new AliTPCtracker(digp);            //I.B.
+    printf("This method is not converted to the NewIO !\n");  //I.B.
+    return; //I.B.
+    AliTPCtracker *tracker = new AliTPCtracker(digp);            //I.B.
     //PH    tracker->SetEventNumber(evNumber);                           //I.B.
 
     // Load clusters
-    //tracker->LoadInnerSectors(); //I.B.
-    //tracker->LoadOuterSectors(); //I.B.  
-    tracker->LoadClusters();       //I.B.
+    printf("This method is not converted to the NewIO !\n");  //I.B.
+    return; //I.B.
+    tracker->LoadClusters(0);       //I.B.
 
     // Load tracks
     TFile *tf=TFile::Open("AliTPCtracksSorted.root");  

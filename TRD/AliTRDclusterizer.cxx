@@ -239,21 +239,23 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     printf("AliTRDclusterizer::WriteClusters -- ");
     printf("Writing the cluster tree %-18s for event %d.\n"
 	  ,fClusterTree->GetName(),fEvent);
-
+    /*
     fClusterTree->Write();
-
     AliTRDgeometry *geo = fTRD->GetGeometry();
     geo->SetName("TRDgeometry");
     geo->Write();
-    fPar->Write();     
-     
+    fPar->Write();
+    */
+    AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
+    loader->WriteRecPoints("OVERWRITE");
+  
     return kTRUE;  
 
   }
-  
+  /*
   AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
   loader->WriteDigits("OVERWRITE");
-  
+  */
   printf("AliTRDclusterizer::WriteClusters -- ");
   printf("Unexpected detector index %d.\n",det);
  

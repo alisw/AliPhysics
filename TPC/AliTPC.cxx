@@ -73,8 +73,6 @@
 #include "AliTPCTrackHits.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCcluster.h"
-#include "AliTPCclusterer.h"
-#include "AliTPCtracker.h"
 #include "AliTrackReference.h"
 
 
@@ -316,8 +314,8 @@ void AliTPC::Clusters2Tracks()
   //-----------------------------------------------------------------
   // This is a track finder.
   //-----------------------------------------------------------------
-  AliTPCtracker tracker(fTPCParam,0,fLoader->GetEventFolder()->GetName());
-  tracker.Clusters2Tracks();
+  Error("Clusters2Tracks",
+  "Dummy function !  Call AliTPCtracker::Clusters2Tracks(...) instead !");
  }
 
 //_____________________________________________________________________________
@@ -839,13 +837,14 @@ void AliTPC::Digits2Clusters(Int_t eventnumber)
   //-----------------------------------------------------------------
   // This is a simple cluster finder.
   //-----------------------------------------------------------------
-  AliTPCclusterer::Digits2Clusters(fTPCParam, fLoader,eventnumber);
+  Error("Digits2Clusters",
+  "Dummy function !  Call AliTPCclusterer::Digits2Clusters(...) instead !");
 }
 
 extern Double_t SigmaY2(Double_t, Double_t, Double_t);
 extern Double_t SigmaZ2(Double_t, Double_t);
 //_____________________________________________________________________________
-void AliTPC::Hits2Clusters(TFile *of, Int_t eventn)
+void AliTPC::Hits2Clusters(Int_t eventn)
 {
   //--------------------------------------------------------
   // TPC simple cluster generator from hits
@@ -917,7 +916,7 @@ void AliTPC::Hits2Clusters(TFile *of, Int_t eventn)
   
   AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::fgkRunLoaderName);
   rl->CdGAFile();
-  fTPCParam->Write(fTPCParam->GetTitle());
+  //fTPCParam->Write(fTPCParam->GetTitle());
 
   AliTPCClustersArray carray;
   carray.Setup(fTPCParam);

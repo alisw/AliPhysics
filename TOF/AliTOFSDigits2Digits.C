@@ -1,111 +1,88 @@
-Int_t AliTOFSDigits2Digits(TString infileNameSDigits, Int_t firstEvent=0,Int_t nEvents=1, Int_t ndump=15)
-{
-  // Create TOF digits out of TOF sdigits (no merging implemented here).
-  // Input: infileNameSDigits --> TOF sdigits filename 
-  //        firstEvent        --> first event to digitize
-  //        nEvents           --> number of events to digitize 
-  //                              including the first and the last ones
-  // if nEvents==0 we sdigitize all events in infileNameSDigits
-  //        ndump             --> number of dumped digits
+Int_t AliTOFSDigits2Digits(Int_t nev=5) {
 
-  // Author: F. Pierella (Bologna University)
-  // report problem to pierella@bo.infn.it
-
-  // Use case: (start root)
-  //root [0] .L AliTOFSDigits2Digits.C                                    
-  //root [1] AliTOFSDigits2Digits("fileWithTOFSdigits.root")
-
+  // Adapted to the NewIO by I.Belikov (Jouri.Belikov@cern.ch)
 
   // number 3 is a legacy from AliDigit object
-  const Int_t kMAXDIGITS = 3;
-
-
-  // Dynamically link some shared libs
-  if (gClassTable->GetID("AliRun") < 0) {
-    gROOT->LoadMacro("loadlibs.C");
-    loadlibs();
-  } else {
-    delete gAlice;
-    gAlice = 0;
-  }
-  
-  Int_t rc=0;
-  
-  
-  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(infileNameSDigits.Data());
-  if(file){
-    cout<<"headerFile already open \n";
-  }
-  else {
-    // file is open in "update" mode
-    // in order to have a writable digits tree
-    if(!file)file=TFile::Open(infileNameSDigits.Data(),"update");
-  }
-  
-  // Get AliRun object from file
-  if (!gAlice) {
-    gAlice = (AliRun*)file->Get("gAlice");
-    if (gAlice) printf("AliRun object found on file\n");
-  }
-
-  if (nEvents == 0) nEvents = (Int_t) gAlice->TreeE()->GetEntries();
-  
-  AliTOF * tof = (AliTOF *) gAlice->GetDetector("TOF") ;
-
-  if (!tof) {
-    cout << "<AliTOFSDigits2Digits> No TOF detector found" << endl;
-    rc = 2;
-    return rc;
-  }
-
-  Int_t totndig=0;   // total number of digits
-  Int_t tottracks=0; // total number of tracks contributing to totndig
-  Int_t upperBoundEvNum=firstEvent+nEvents;
-  for (Int_t ievent = firstEvent; ievent < upperBoundEvNum; ievent++) {
-
-    gAlice->GetEvent(ievent);
-    if (gAlice->TreeD () == 0)
-      gAlice->MakeTree ("D");
     
-    //Make branches
-    char branchname[20];
-    sprintf (branchname, "%s", tof->GetName ());
-    //Make branch for digits
-    tof->MakeBranch ("D");
+   if (gAlice) {
+      delete gAlice->GetRunLoader();
+      delete gAlice;//if everything was OK here it is already NULL
+      gAlice = 0x0;
+   }
 
+   AliRunLoader* rl = AliRunLoader::Open("galice.root");
+   if (rl == 0x0) {
+      cerr<<"Can not open session"<<endl;
+      return 1;
+   }
+   
+   if (rl->LoadgAlice()) {
+      cerr<<"Error occured while loading gAlice"<<endl;
+      return 1;
+   }
 
-    // get the TOF branch in TreeS for current event
-    char tname[100]; sprintf(tname,"TreeS%d",ievent);
-    
-    TTree *sdigitstree=(TTree*)file->Get(tname);                   
-    
-    TClonesArray * fSDigits= new TClonesArray("AliTOFSDigit",  1000); 
-    sdigitstree->GetBranch("TOF")->SetAddress(&fSDigits);           
-    
-    Int_t nEntries = sdigitstree->GetEntries();                                
-    //cout << nEntries << endl;
-    
-    // Loop through all entries in the tree
-    Int_t nbytes;
+   AliLoader *tofl = rl->GetLoader("TOFLoader");
+   if (tofl == 0x0) {
+      cerr<<"Can not get the TOF Loader"<<endl;
+      return 1;
+   }
 
+   gAlice=rl->GetAliRun();
+   if (!gAlice) {
+      cerr<<"Can't get gAlice !\n";
+      return 1;
+   }
+
+   tofl->LoadSDigits("read");
+   tofl->LoadDigits("recreate");
+
+   Int_t totndig=0;   // total number of digits
+   Int_t tottracks=0; // total number of tracks contributing to totndig
+
+   if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
+   
+   TClonesArray *fSDigits=new TClonesArray("AliTOFSDigit",  1000); 
+   TClonesArray *fDigits =new TClonesArray("AliTOFdigit",  1000);
+   TClonesArray &da=*fDigits; 
+
+   for (Int_t ievent = 0; ievent < nev; ievent++) {
+     rl->GetEvent(ievent);
+
+     TTree *sTree=tofl->TreeS();
+     if (sTree == 0) {
+       cerr<<"Can't get the sdigit tree !\n";
+       return 1;
+     }
+     TBranch *branch=sTree->GetBranch("TOF");
+     if (!branch) {
+       cerr<<"Cant' get the branch !\n";
+       return 1;
+     }
+     branch->SetAddress(&fSDigits);           
+    
+    TTree *dTree=tofl->TreeD();
+    if (dTree == 0) {
+       tofl->MakeTree("D");
+       dTree=tofl->TreeD();
+    }
+    branch=dTree->GetBranch("TOF");
+    if (!branch) dTree->Branch("TOF",&fDigits);    
+    else branch->SetAddress(&fDigits);
+
+    Int_t nEntries = sTree->GetEntries();                                
     for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) {
+      sTree->GetEvent(iEntry);
       
-      // Import the tree
-      nbytes += sdigitstree->GetEvent(iEntry);
-      
-      // Get the number of sdigits
       Int_t ndig = fSDigits->GetEntriesFast();
-      cout << "------------------<AliTOFSDigits2Digits>------------------" << endl;
+      cout << "----------------<AliTOFSDigits2Digits>----------------" << endl;
       cout << "Found " << ndig << " TOF SDigits for event " << ievent << endl;
-      cout << "------------------------------------------------------------" << endl;
+      cout << "------------------------------------------------------" << endl;
 
-      // start loop on sdigits
       for (Int_t k = 0; k < ndig; k++) {
-
 	Int_t    vol[5];       // location for a digit
 	
 	// Get the information for this digit
-	AliTOFSDigit *tofsdigit = (AliTOFSDigit *) fSDigits->UncheckedAt(k);
+	AliTOFSDigit *tofsdigit = (AliTOFSDigit *)fSDigits->UncheckedAt(k);
 
 	Int_t nslot=tofsdigit->GetNDigits(); // get the number of slots
 	                                     // for current sdigit
@@ -125,27 +102,22 @@ Int_t AliTOFSDigits2Digits(TString infileNameSDigits, Int_t firstEvent=0,Int_t n
 
 	//--------------------- QA section ----------------------
 	// in the while, I perform QA
-	Bool_t isSDigitBad = (sector<1 || sector>18 || plate<1 || plate >5 || padz<1 || padz>2 || padx<1 || padx>48);
+	Bool_t isSDigitBad = (sector<1 || sector>18 || 
+                               plate<1 || plate >5  || 
+                                padz<1 || padz>2    || 
+                                padx<1 || padx>48);
 	
 	if (isSDigitBad) {
 	  cout << "<AliTOFSDigits2Digits>  strange sdigit found" << endl;
-	  rc = 3;
-	  return rc;
+	  return 3;
 	}
 	//-------------------------------------------------------
-
-	//------------------- Dump section ----------------------
-	if(k<ndump){
-	  cout << k << "-th | " << "Sector " << sector << " | Plate " << plate << " | Strip " << strip << " | PadZ " << padz << " | PadX " << padx << endl;
-	  cout << k << "-th sdigit" << endl;
-	  cout << "----------------------------------------------------"<< endl;
-	}
-	// ------------------------------------------------------
 
 	// start loop on number of slots for current sdigit
 	for (Int_t islot = 0; islot < nslot; islot++) {
 	  Float_t  digit[2];     // TOF digit variables
-	  Int_t tracknum[kMAXDIGITS];     // contributing tracks for the current slot
+          const Int_t kMAXDIGITS = 3;
+	  Int_t tracknum[kMAXDIGITS];//contributing tracks for the current slot
 	
 	  Float_t tdc=tofsdigit->GetTdc(islot); digit[0]=tdc;
 	  Float_t adc=tofsdigit->GetAdc(islot); digit[1]=adc;
@@ -164,32 +136,37 @@ Int_t AliTOFSDigits2Digits(TString infileNameSDigits, Int_t firstEvent=0,Int_t n
 	  }
 
 	  // adding a TOF digit for each slot
-	  tof->AddDigit(tracknum, vol, digit);
+          {
+          Int_t ndigits=da.GetEntriesFast();
+	  //cerr<<ndigits<<" ndig \n";
+	  new (da[ndigits]) AliTOFdigit(tracknum, vol, digit);
+          }          
 	  totndig++;
 	}
 
 
       } // end loop on sdigits
+      fSDigits->Clear();
       
     } // end loop on entries
 
-    // free used memory
-    fSDigits->Clear();
-    fSDigits=0;
+    dTree->Fill();
+    tofl->WriteDigits("OVERWRITE");
 
-    gAlice->TreeD()->Reset();
-    gAlice->TreeD()->Fill();
-    //gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
-    gAlice->TreeD()->AutoSave();
+    // free used memory
+    fDigits->Clear();
 
   } // end loop on events 
+
+  delete fSDigits;
+  delete fDigits;
 
   cout << "----------------------------------------------------------" << endl;
   cout << "<AliTOFSDigits2Digits> Summary" << endl;
   cout << "contributing tracks to " << totndig << " digits: " << tottracks << endl; 
   cout << "----------------------------------------------------------" << endl;
 
-  return rc;
+  return 0;
   
 
 }

@@ -2,90 +2,93 @@
  *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
  ****************************************************************************/
 
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
   #include <iostream.h>
   #include "AliTPCParam.h"
   #include "AliTPCtracker.h"
+  #include "AliRun.h"
+  #include "AliMagF.h"
+  #include "AliRunLoader.h"
+  #include "AliTPCLoader.h"
 
   #include "TFile.h"
   #include "TStopwatch.h"
 #endif
 
-Int_t AliTPCFindTracks(Int_t N=-1) {
+extern AliRun *gAlice;
+
+Int_t AliTPCFindTracks(Int_t nev=5) {
 
    cerr<<"Looking for tracks...\n";
 
-   if (gAlice)
-    {
+   if (gAlice) {
      delete gAlice->GetRunLoader();
      delete gAlice;
      gAlice = 0x0;
-    }
-    
-   rl = AliRunLoader::Open("galice.root");
-   if (rl == 0x0)
-    {
+   }
+
+   AliRunLoader *rl = AliRunLoader::Open("galice.root");
+   if (rl == 0x0) {
       cerr<<"Can not open session"<<endl;
       return 1;
-    }
-   tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
-   if (tpcl == 0x0)
-    {
+   }
+
+   AliTPCLoader *tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
+   if (tpcl == 0x0) {
       cerr<<"Can not get TPC Loader"<<endl;
       return 1;
-    }
+   }
    
-   if (rl->LoadgAlice())
-    {
-      cerr<<"Error occured while l"<<endl;
+   if (rl->LoadgAlice()) {
+      cerr<<"Error occured while loading gAlice"<<endl;
       return 1;
-    }
-   AliKalmanTrack::SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
+   }
+   AliKalmanTrack::SetConvConst(
+      1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField()
+   );
    rl->CdGAFile();
    AliTPCParam *dig=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
-   if (!dig) 
-    {
-     dig=(AliTPCParam *)gDirectory->Get("75x40_100x60");
-     if (!param) 
-      {
+   if (!dig) { 
         cerr<<"TPC parameters have not been found !\n";
         return 1;
-      }
-     else
-      {
-        cout<<"TPC 75x40_100x60 geometry found"<<endl;
-      }
-    }
-   else
-    {
-      cout<<"TPC 75x40_100x60_150x60  geometry found"<<endl;
-    }
+   }
 
-   rl->UnloadgAlice()   
-   
+   rl->UnloadgAlice();   
+
    tpcl->LoadRecPoints("read");
    tpcl->LoadTracks("recreate");
 
-   Int_t eventn;
-   if (N<=0) 
-    {
-     eventn = rl->GetNumberOfEvents();
-     rl->UnloadHeader();
-    }
-   else
-    eventn = N;
+   if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
     
    TStopwatch timer;
    Int_t rc=0;
-   for (Int_t i=0;i<eventn;i++){
+   AliTPCtracker tracker(dig);
+   for (Int_t i=0;i<nev;i++){
      printf("Processing event %d\n",i);
-     AliTPCtracker *tracker = new AliTPCtracker(dig,i);
-     rc=tracker->Clusters2Tracks();
-     delete tracker;
+     rl->GetEvent(i);
+
+     TTree *in=tpcl->TreeR();
+     if (!in) {
+        cerr<<"Can't get clusters tree !\n";
+        return 4;
+     }
+
+     TTree *out=tpcl->TreeT();
+     if (!out) {
+        tpcl->MakeTree("T");
+        out=tpcl->TreeT();
+     }
+         
+     rc=tracker.Clusters2Tracks(in,out);
+
+     tpcl->WriteTracks("OVERWRITE");
    }
+
    timer.Stop(); timer.Print();
  
    delete dig; //Thanks to Mariana Bondila
+
    delete rl;
+
    return rc;
 }

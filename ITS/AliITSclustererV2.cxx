@@ -6,10 +6,6 @@
 //uncomment the line below for running with V1 cluster finder classes 
 //#define V1
 
-//PH 19/05/2003 This class hast to be adapted to NewIO
-
-#include <stdlib.h>
-
 #include "AliRun.h"
 
 #include "AliITSclustererV2.h"
@@ -18,7 +14,6 @@
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
 
-#include <Riostream.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TClonesArray.h>
@@ -39,7 +34,10 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
   fI=0;
 
   Int_t mmax=geom->GetIndexMax();
-  if (mmax>2200) {cerr<<"Too many ITS subdetectors !\n"; exit(1);}
+  if (mmax>2200) {
+     Error("AliITSclustererV2","Too many ITS subdetectors !"); 
+     exit(1);
+  }
   Int_t m;
   for (m=0; m<mmax; m++) {
      Int_t lay,lad,det; g->GetModuleId(m,lay,lad,det);
@@ -89,26 +87,15 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
   fTanN=0.0075;
 }
 
-void AliITSclustererV2::Digits2Clusters(const TFile *in, TFile *out) {
+Int_t AliITSclustererV2::Digits2Clusters(TTree *dTree, TTree *cTree) {
   //------------------------------------------------------------
   // This function creates ITS clusters
   //------------------------------------------------------------
   Int_t ncl=0;
-  TDirectory *savedir=gDirectory;
 
-  if (!out->IsOpen()) {
-    cerr<<"AliITSclustererV2::Digits2Clusters(): output file not open !\n";
-    return;
-  }
-
-  Char_t name[100];
-  sprintf(name,"TreeD%d",fEvent);
-
-  //TTree *dTree=(TTree*)((TFile*)in)->Get(name);
-  TTree *dTree=gAlice->TreeD();
   if (!dTree) {
-    cerr<<"Input tree "<<name<<" not found !\n";
-    return;
+    Error("Digits2Clusters","Can't get the tree with digits !");
+    return 1;
   }
 
   TClonesArray *digitsSPD=new TClonesArray("AliITSdigitSPD",3000);
@@ -118,14 +105,12 @@ void AliITSclustererV2::Digits2Clusters(const TFile *in, TFile *out) {
   TClonesArray *digitsSSD=new TClonesArray("AliITSdigitSSD",3000);
   dTree->SetBranchAddress("ITSDigitsSSD",&digitsSSD);
 
-  Int_t mmax=(Int_t)dTree->GetEntries();
-
-  out->cd();
-
-  sprintf(name,"TreeC_ITS_%d",fEvent);
-  TTree cTree(name,"ITS clusters V2");
   TClonesArray *clusters=new TClonesArray("AliITSclusterV2",1000);
-  cTree.Branch("Clusters",&clusters);
+  TBranch *branch=cTree->GetBranch("Clusters");
+  if (!branch) cTree->Branch("Clusters",&clusters);
+  else branch->SetAddress(&clusters);
+
+  Int_t mmax=(Int_t)dTree->GetEntries();
 
   for (fI=0; fI<mmax; fI++) {
     dTree->GetEvent(fI);
@@ -139,14 +124,15 @@ void AliITSclustererV2::Digits2Clusters(const TFile *in, TFile *out) {
 
     ncl+=clusters->GetEntriesFast();
 
-    cTree.Fill();
+    cTree->Fill();
 
     digitsSPD->Clear();
     digitsSDD->Clear();
     digitsSSD->Clear();
     clusters->Clear();
   }
-  cTree.Write();
+
+  //cTree->Write();
 
   delete clusters;
 
@@ -154,11 +140,9 @@ void AliITSclustererV2::Digits2Clusters(const TFile *in, TFile *out) {
   delete digitsSDD;
   delete digitsSSD;
 
-  //delete dTree;
+  Info("Digits2Clusters","Number of found clusters : %d",ncl);
 
-  cerr<<"Number of found clusters : "<<ncl<<endl;
-
-  savedir->cd();
+  return 0;
 }
 
 void AliITSclustererV2::Digits2Clusters(TFile *out) {
@@ -167,7 +151,7 @@ void AliITSclustererV2::Digits2Clusters(TFile *out) {
   //------------------------------------------------------------
   TDirectory *savedir=gDirectory;
   if (!out->IsOpen()) {
-    cerr<<"AliITSclustererV2::Digits2Clusters(): output file not open !\n";
+    Error("Digits2Clusters","Output file not open !");
     return;
   }
   out->cd();
@@ -229,9 +213,13 @@ static void CheckLabels(Int_t lab[3]) {
        label=-3;
        while (part->P() < 0.005) {
           Int_t m=part->GetFirstMother();
-          if (m<0) {cerr<<"Primary momentum: "<<part->P()<<endl; break;}
+          if (m<0) {
+             Info("CheckLabels","Primary momentum: %f",part->P()); 
+             break;
+          }
           if (part->GetStatusCode()>0) {
-             cerr<<"Primary momentum: "<<part->P()<<endl; break;
+             Info("CheckLabels","Primary momentum: %f",part->P()); 
+             break;
           }
           label=m;
           part=(TParticle*)gAlice->Particle(label);
@@ -266,40 +254,30 @@ void AliITSclustererV2::RecPoints2Clusters
   }  
 } 
 
-void AliITSclustererV2::Hits2Clusters(const TFile *in, TFile *out) {
+Int_t AliITSclustererV2::Hits2Clusters(TTree *hTree, TTree *cTree) {
   //------------------------------------------------------------
   // This function creates ITS clusters
   //------------------------------------------------------------
-  TDirectory *savedir=gDirectory;
-
-  if (!out->IsOpen()) {
-    cerr<<"AliITSclustererV2::Hits2Clusters: output file not open !\n";
-    return;
-  }
-
   if (!gAlice) {
-     cerr<<"AliITSclustererV2::Hits2Clusters : gAlice==0 !\n";
-     return;
+     Error("Hits2Clusters","gAlice==0 !");
+     return 1;
   }
 
   AliITS *its  = (AliITS*)gAlice->GetModule("ITS");
   if (!its) { 
-     cerr<<"AliITSclustererV2::Hits2Clusters : Can't find the ITS !\n"; 
-     return; 
+     Error("Hits2Clusters","Can't find the ITS !"); 
+     return 2; 
   }
   AliITSgeom *geom=its->GetITSgeom();
   Int_t mmax=geom->GetIndexMax();
 
   its->InitModules(-1,mmax);
-  its->FillModules(gAlice->TreeH(),0);
+  its->FillModules(hTree,0);
 
-  out->cd();
-
-  Char_t name[100];
-  sprintf(name,"TreeC_ITS_%d",fEvent);
-  TTree cTree(name,"ITS clusters V2");
   TClonesArray *clusters=new TClonesArray("AliITSclusterV2",1000);
-  cTree.Branch("Clusters",&clusters);
+  TBranch *branch=cTree->GetBranch("Clusters");
+  if (!branch) cTree->Branch("Clusters",&clusters);
+  else branch->SetAddress(&clusters);
 
   static TClonesArray *points=its->RecPoints();
   AliITSsimulationFastPoints sim;
@@ -312,16 +290,17 @@ void AliITSclustererV2::Hits2Clusters(const TFile *in, TFile *out) {
     its->ResetRecPoints();
 
     ncl+=clusters->GetEntriesFast();
-    cTree.Fill();
+    cTree->Fill();
     clusters->Clear();
   }
-  cTree.Write();
 
-  cerr<<"Number of found fast clusters : "<<ncl<<endl;
+  Info("Hits2Clusters","Number of found fast clusters : %d",ncl);
+
+  //cTree->Write();
 
   delete clusters;
 
-  savedir->cd();
+  return 0;
 }
 
 //***********************************
@@ -375,8 +354,10 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
      if (!bins[k].IsNotUsed()) continue;
      Int_t ni=0, idx[200];
      FindCluster(k,kNzBins,bins,ni,idx);
-     if (ni==200) {cerr<<"SPD: Too big cluster !\n"; continue;}
-
+     if (ni==200) {
+        Info("FindClustersSPD","Too big cluster !"); 
+        continue;
+     }
      Int_t lab[4]; 
      lab[0]=-2;
      lab[1]=-2;
@@ -957,8 +938,7 @@ FindClustersSSD(const TClonesArray *digits, TClonesArray *clusters) {
             c[*n].SetQ(0.5*q);
             (*n)++;
             if (*n==MAX) {
-              cerr<<
-              "AliITSclustererV2::FindClustersSSD: Too many 1D clusters !\n";
+              Error("FindClustersSSD","Too many 1D clusters !");
               return;
             }
             c[*n].SetY(y/q+0.5*nd);
@@ -968,7 +948,7 @@ FindClustersSSD(const TClonesArray *digits, TClonesArray *clusters) {
          }
          (*n)++;
          if (*n==MAX) {
-          cerr<<"AliITSclustererV2::FindClustersSSD: Too many 1D clusters !\n";
+          Error("FindClustersSSD","Too many 1D clusters !");
           return;
          }
          y=q=qmax=0.;
@@ -996,7 +976,7 @@ FindClustersSSD(const TClonesArray *digits, TClonesArray *clusters) {
      c[*n].SetQ(0.5*q);
      (*n)++;
      if (*n==MAX) {
-        cerr<<"AliITSclustererV2::FindClustersSSD: Too many 1D clusters !\n";
+        Error("FindClustersSSD","Too many 1D clusters !");
         return;
      }
      c[*n].SetY(y/q+0.5*nd);
@@ -1006,7 +986,7 @@ FindClustersSSD(const TClonesArray *digits, TClonesArray *clusters) {
   }
   (*n)++;
   if (*n==MAX) {
-     cerr<<"AliITSclustererV2::FindClustersSSD: Too many 1D clusters !\n";
+     Error("FindClustersSSD","Too many 1D clusters !");
      return;
   }
 

@@ -270,14 +270,15 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
          
          AliTPCtrack *iotrack=0;
          
-         AliTPCtracker *tracker = new AliTPCtracker(TPCParam,currentEvent,AliConfig::fgkDefaultEventFolderName);//create the tacker for this event
+printf("This method is not converted to the NewIO !\n"); //I.B.
+         //AliTPCtracker *tracker = new AliTPCtracker(TPCParam,currentEvent,AliConfig::fgkDefaultEventFolderName);//create the tacker for this event
+         AliTPCtracker *tracker = new AliTPCtracker(TPCParam); //I.B.
          if (!tracker) //check if it has created succeffuly
           {//if not return with error
             Error("Read","Can't get a tracker !\n"); 
             continue;
           }
-         tracker->LoadInnerSectors();
-         tracker->LoadOuterSectors();
+         tracker->LoadClusters(0);//I.Belikov, "0" must be a pointer to a tree
    
          for (Int_t i=0; i<NTPCtracks; i++) //loop over all tpc tracks
           {
