@@ -63,8 +63,6 @@ $(DICT):				$(HDRS)
 
 depend:					$(SRCS)
 
-HEADERS		=	$(filter-out %LinkDef.h,$(HDRS))
-
 TOCLEAN		= $(OBJS) *Cint.cxx *Cint.h
 
 CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
