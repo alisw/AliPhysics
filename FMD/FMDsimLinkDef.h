@@ -24,6 +24,7 @@
 #pragma link C++ class  AliFMD1+;
 #pragma link C++ class  AliFMD2+;
 #pragma link C++ class  AliFMD3+;
+#pragma link C++ class  AliFMD3Support+;
 #pragma link C++ class  AliFMDRing+;
 #pragma link C++ class  AliFMDPolygon+;
 #pragma link C++ class  AliFMDBaseDigitizer+;

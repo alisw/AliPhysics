@@ -9,6 +9,7 @@ SRCS		=  AliFMD.cxx 			\
 		   AliFMD1.cxx 			\
 		   AliFMD2.cxx 			\
 		   AliFMD3.cxx 			\
+		   AliFMD3Support.cxx 		\
 		   AliFMDRing.cxx 		\
 		   AliFMDPolygon.cxx 		\
 		   AliFMDHit.cxx 		\
