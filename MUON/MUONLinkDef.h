@@ -48,6 +48,9 @@
 #pragma link C++ class  AliMUONSegmentationSlatN;
 #pragma link C++ class  AliMUONConstants;
 #pragma link C++ class  AliMUONClusterInput;
+#pragma link C++ class  AliMUONRecoEvent-;
+#pragma link C++ class  AliMUONRecoTrack;
+#pragma link C++ class  AliMUONRecoDisplay;
 #endif
 
 

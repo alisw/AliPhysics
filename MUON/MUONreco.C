@@ -65,6 +65,8 @@ void MUONreco (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHits = 0
       if (Reco->GetBkgGeantFile())Reco->NextBkgGeantEvent();
     }
     Reco->EventReconstruct();
+    // Write this event in a tree
+    Reco->FillEvent();
     // Dump current event
     Reco->EventDump();
   } // Event loop

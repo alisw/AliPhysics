@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.18  2000/10/26 12:47:03  gosset
+Real distance between chambers of each station taken into account
+for the reconstruction parameters "fSegmentMaxDistBending[5]"
+
 Revision 1.17  2000/10/24 09:26:20  gosset
 Comments updated
 
@@ -131,6 +135,7 @@ Addition of files for track reconstruction in C++
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "TParticle.h"
+#include "AliMUONRecoEvent.h"
 
 //************* Defaults parameters for reconstruction
 static const Double_t kDefaultMinBendingMomentum = 3.0;
@@ -192,6 +197,12 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
     gAlice->Field()->Dump();
     cout << endl;
   }
+  
+  // Initialize to 0 pointers to RecoEvent, tree and tree file
+  fRecoEvent = 0;
+  fEventTree = 0;
+  fTreeFile  = 0;
+  
   return;
 }
 
@@ -210,6 +221,12 @@ AliMUONEventReconstructor & AliMUONEventReconstructor::operator=(const AliMUONEv
 AliMUONEventReconstructor::~AliMUONEventReconstructor(void)
 {
   // Destructor for class AliMUONEventReconstructor
+  if (fTreeFile) {
+     fTreeFile->Close();
+     delete fTreeFile;
+  }
+//  if (fEventTree) delete fEventTree;
+  if (fRecoEvent) delete fRecoEvent;
   delete fHitsForRecPtr; // Correct destruction of everything ???? or delete [] ????
   for (Int_t st = 0; st < kMaxMuonTrackingStations; st++)
     delete fSegmentsPtr[st]; // Correct destruction of everything ????
@@ -1355,3 +1372,30 @@ void AliMUONEventReconstructor::EventDump(void)
   return;
 }
 
+void AliMUONEventReconstructor::FillEvent()
+{
+// Create a new AliMUONRecoEvent, fill its track list, then add it as a
+// leaf in the Event branch of TreeRecoEvent tree
+   cout << "Enter FillEvent() ...\n";
+
+   if (!fRecoEvent) {
+      fRecoEvent = new AliMUONRecoEvent();
+   } else {
+      fRecoEvent->Clear();
+   }
+   //save current directory
+   TDirectory *current =  gDirectory;
+   if (!fTreeFile)  fTreeFile  = new TFile("tree_reco.root", "RECREATE");
+   if (!fEventTree) fEventTree = new TTree("TreeRecoEvent", "MUON reconstructed events");
+   if (fRecoEvent->MakeDumpTracks(fRecTracksPtr)) {
+      if (fPrintLevel > 1) fRecoEvent->EventInfo();
+      TBranch *branch = fEventTree->GetBranch("Event");
+      if (!branch) branch = fEventTree->Branch("Event", "AliMUONRecoEvent", &fRecoEvent, 64000,1);
+      branch->SetAutoDelete();
+      fTreeFile->cd();
+      fEventTree->Fill();
+      fTreeFile->Write();
+   }
+   // restore directory
+   current->cd();
+}

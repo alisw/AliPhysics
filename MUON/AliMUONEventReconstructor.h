@@ -13,6 +13,7 @@ class AliMUONSegment;
 class TClonesArray;
 class TFile;
 class TTree;
+class AliMUONRecoEvent;
 
 // Constants which should be elsewhere ????
 const Int_t kMaxMuonTrackingChambers = 10;
@@ -75,6 +76,7 @@ class AliMUONEventReconstructor : public TObject {
   Double_t GetBendingMomentumFromImpactParam(Double_t ImpactParam);
   void EventReconstruct(void);
   void EventDump(void);  // dump reconstructed event
+  void FillEvent();      // fill and write tree of reconstructed events
 
  protected:
 
@@ -125,6 +127,11 @@ class AliMUONEventReconstructor : public TObject {
   // Track hits on reconstructed tracks
   TClonesArray *fRecTrackHitsPtr; // pointer to array of hits on reconstructed tracks
   Int_t fNRecTrackHits; // number of hits on reconstructed tracks
+
+  // Objects needed for tree writing
+  AliMUONRecoEvent *fRecoEvent; // the reconstructed event
+  TTree            *fEventTree; // tree of reconstructed events
+  TFile            *fTreeFile;  // file where the tree is outputed
 
   // Functions
   void ResetHitsForRec(void);
