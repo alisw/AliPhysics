@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/07/27 15:41:01  jchudoba
+merging/digitization classes
+
 */
 
 #include <TTree.h> 
@@ -36,6 +39,7 @@ $Log$
 #include "AliMUONTransientDigit.h"
 #include "AliRun.h"
 #include "AliPDG.h"
+#include "AliRunDigitizer.h"
 
 ClassImp(AliMUONDigitizer)
 
@@ -481,3 +485,4 @@ void AliMUONDigitizer::MixWith(char* HeaderFile, char* SDigitsFile){
   file = new TFile(((TObjString *) fHeaderFiles->At(fNinputs))->GetString()) ;  
   file->cd() ;
 
+*/
