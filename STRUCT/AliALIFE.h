@@ -12,9 +12,8 @@ class AliALIFE : public  TObject {
  public:
     AliALIFE(const char *name1, const char *name2);
     AliALIFE();    
-    AliALIFE(const AliALIFE &rh) {
-      // copy ctor requested by coding convention but not needed
-      Fatal("Copy constructor","not implemented");
+    AliALIFE(const AliALIFE &rhs) : TObject(rhs) {
+	rhs.Copy(*this);
     }
     virtual ~AliALIFE() {}
     void Cylinder(Float_t rmin, Float_t rmax,
@@ -66,12 +65,12 @@ class AliALIFE : public  TObject {
  private:
     void BodyHeader();
     void VolumeHeader();
-    AliALIFE & operator = (const AliALIFE &) {
-      // assignement operator requested by coding convention but not needed
-      return *this;
-    }
-    
+    void Copy(AliALIFE &alife) const;
 
+    AliALIFE & operator = (const AliALIFE &rhs) {
+	rhs.Copy(*this);
+	return (*this);
+    }
    ClassDef(AliALIFE,1)
 };
 #endif

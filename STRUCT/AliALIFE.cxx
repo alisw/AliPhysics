@@ -25,7 +25,8 @@
 
 ClassImp(AliALIFE)
 
-    AliALIFE::AliALIFE(const char* file1, const char* file2)
+
+AliALIFE::AliALIFE(const char* file1, const char* file2)
 {  
 // Constructor
     fNBodies = 0; 
@@ -40,7 +41,7 @@ ClassImp(AliALIFE)
     fDefaultVolume2 = "DEFAU2";    
 }
 
-    AliALIFE::AliALIFE()
+AliALIFE::AliALIFE()
 {
 // Default constructor
     fBodyFile   = "FlukaBody.inp";  
@@ -441,6 +442,13 @@ void AliALIFE::Finish()
     fclose(fFile2);    
 }
 
+void AliALIFE::Copy(AliALIFE&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
+}
 
 
 
