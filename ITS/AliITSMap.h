@@ -19,6 +19,8 @@ public:
   virtual  void  ClearMap()                                      =0;
     // Set a single hit
   virtual  void  SetHit(Int_t iz, Int_t ix, Int_t idigit)        =0;
+    // Set threshold for the signal
+  virtual  void  SetThreshold(Int_t)                             =0;
     // Delete a single hit
   virtual  void  DeleteHit(Int_t iz, Int_t ix)                   =0;
     // Flag a hit as used
