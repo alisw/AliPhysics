@@ -69,7 +69,7 @@ G4bool AliLegoSensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*)
 // ---
 
   // let lego process step
-  fStepManager->SetStep(step);
+  fStepManager->SetStep(step, kPostStepPoint);
   fLego->StepManager();
 
   return true;
