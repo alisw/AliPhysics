@@ -52,7 +52,7 @@ public:
    virtual void   AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits);
    virtual void   AddRawCluster(Int_t id, const AliRICHRawCluster& cluster);
    virtual void   AddRecHit1D(Int_t id, Float_t* rechit, Float_t* photons, Int_t* padsx, Int_t* padsy);
-   virtual void   AddRecHit3D(Int_t id, Float_t* rechit);
+   virtual void   AddRecHit3D(Int_t id, Float_t* rechit, Float_t omega, Float_t theta, Float_t phi);
 
    virtual void   BuildGeometry();   // TNode ROOT variant for event display
    virtual void   CreateGeometry();  // GEANT volumes tree for simulation

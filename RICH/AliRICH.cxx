@@ -15,6 +15,10 @@
 
 /*
   $Log$
+  
+  Revision 1.60  2002/10/22 16:28:21  alibrary
+  Introducing Riostream.h
+
   Revision 1.59  2002/10/14 14:57:31  hristov
   Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -178,7 +182,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TCanvas.h>
-//#include <TPad.h>
+#include <TStyle.h>
 #include <TF1.h>
 
 #include <Riostream.h>
@@ -198,13 +202,15 @@
 #include "AliRICHHitMapA1.h"
 #include "AliRICHClusterFinder.h"
 #include "AliRICHMerger.h"
+#include "AliRICHDigitizer.h"
 #include "AliRun.h"
+#include "AliRunDigitizer.h"
 #include "AliMC.h"
 #include "AliMagF.h"
 #include "AliConst.h"
 #include "AliPDG.h"
 #include "AliPoints.h"
-//#include "AliCallf77.h" 
+
 
 
 
@@ -421,23 +427,31 @@ void AliRICH::SDigits2Digits(Int_t nev, Int_t flag)
 // Called from macro. Multiple events, more functionality.   
    if(IsDebugDigit()) cout<<ClassName()<<"::SDigits2Digits()>\n";
 
-  AliRICHChamber*       iChamber;
+   //AliRICHChamber*       iChamber;
   
-  printf("Generating tresholds...\n");
+   //printf("Generating tresholds...\n");
   
-  for(Int_t i=0;i<7;i++) {
-    iChamber = &(Chamber(i));
-    iChamber->GenerateTresholds();
-  }
+   //for(Int_t i=0;i<7;i++) {
+   //iChamber = &(Chamber(i));
+   //iChamber->GenerateTresholds();
+   //}
   
-  int nparticles = gAlice->GetNtrack();
-  cout << "Particles (RICH):" <<nparticles<<endl;
-  if (nparticles <= 0) return;
-  if (!fMerger) {
-    fMerger = new AliRICHMerger();
-  }
-  fMerger->Init();
-  fMerger->Digitise(nev,flag);
+   //int nparticles = gAlice->GetNtrack();
+   //cout << "Particles (RICH):" <<nparticles<<endl;
+   //if (nparticles <= 0) return;
+   //if (!fMerger) {
+   //fMerger = new AliRICHMerger();
+   //}
+
+
+   //fMerger->Init();
+   //fMerger->Digitise(nev,flag);
+
+   AliRunDigitizer * manager = new AliRunDigitizer(1,1);
+   manager->SetInputStream(0,"galice.root");
+   //AliRICHDigitizer *dRICH  = new AliRICHDigitizer(manager);
+   manager->Exec("deb");
+
 }
 //___________________________________________
 void AliRICH::SDigits2Digits()
@@ -521,12 +535,12 @@ void AliRICH::AddRecHit1D(Int_t id, Float_t *rechit, Float_t *photons, Int_t *pa
 }
 
 //_____________________________________________________________________________
-void AliRICH::AddRecHit3D(Int_t id, Float_t *rechit)
+void AliRICH::AddRecHit3D(Int_t id, Float_t *rechit, Float_t omega, Float_t theta, Float_t phi)
 {
 // Add a RICH reconstructed hit to the list
 
     TClonesArray &lrec3D = *((TClonesArray*)fRecHits3D->At(id));
-    new(lrec3D[fNrechits3D[id]++]) AliRICHRecHit3D(id,rechit);
+    new(lrec3D[fNrechits3D[id]++]) AliRICHRecHit3D(id,rechit,omega,theta,phi);
 }
 
 //___________________________________________
@@ -2085,7 +2099,7 @@ void AliRICH::StepManager()
     Float_t        localTheta,localPhi;
     Float_t        theta,phi;
     Float_t        destep, step;
-    Double_t       ranf[2];
+    Double_t        ranf[2];
     Int_t          nPads;
     Float_t        coscerenkov;
     static Float_t eloss, xhit, yhit, tlength;
@@ -2316,8 +2330,19 @@ void AliRICH::StepManager()
 		Double_t rt = TMath::Sqrt(tc);
 		theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
 		phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
-		gMC->Gmtod(pos,localPos,1);                                                                    
-		gMC->Gmtod(mom,localMom,2);
+		
+		gMC->CurrentVolOffID(2,copy);
+		vol[0]=copy;
+		idvol=vol[0]-1;
+		
+
+		//gMC->Gmtod(pos,localPos,1);
+
+		Chamber(idvol).GlobaltoLocal(pos,localPos);
+                                                                    
+		//gMC->Gmtod(mom,localMom,2);
+
+		Chamber(idvol).GlobaltoLocal(mom,localMom);
 		
 		gMC->CurrentVolOffID(2,copy);
 		vol[0]=copy;
@@ -2449,8 +2474,14 @@ void AliRICH::StepManager()
 	    mom[1]=momentum(1);
 	    mom[2]=momentum(2);
 	    mom[3]=momentum(3);
-	    gMC->Gmtod(pos,localPos,1);                                                                    
-	    gMC->Gmtod(mom,localMom,2);
+
+	    //gMC->Gmtod(pos,localPos,1);
+	    
+	    Chamber(idvol).GlobaltoLocal(pos,localPos);
+                                                                    
+	    //gMC->Gmtod(mom,localMom,2);
+
+	    Chamber(idvol).GlobaltoLocal(mom,localMom);
 	    
 	    ipart  = gMC->TrackPid();
 	    //
@@ -2978,6 +3009,10 @@ void AliRICH::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
        
    }
    //   }
+
+   TStyle *mystyle=new TStyle("Plain","mystyle");
+   mystyle->SetPalette(1,0);
+   mystyle->cd();
    
    //Create canvases, set the view range, show histograms
 
@@ -3209,6 +3244,11 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    Int_t xmax=  NpadX/2;
    Int_t ymin= -NpadY/2;
    Int_t ymax=  NpadY/2;
+
+   Float_t PTfinal = 0;
+   Int_t pionCount = 0;
+   Int_t kaonCount = 0;
+   Int_t protonCount = 0;
    
    TH2F *feedback = 0;
    TH2F *mip = 0;
@@ -3217,17 +3257,17 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    TH1F *hitsX = 0;
    TH1F *hitsY = 0;
 
-   TH2F *hc0 = new TH2F("hc0","Zoom on center of central chamber",150,-30,30,150,-50,10);
+   TH2F *hc0 = new TH2F("hc0","Zoom on center of central chamber",150,-25,25,150,-45,5);
 
    if (diaglevel == 1)
      {
        printf("Single Ring Hits\n");
-       feedback = new TH2F("feedback","Feedback hit distribution",150,-30,30,150,-50,10);
-       mip = new TH2F("mip","Mip hit distribution",150,-30,30,150,-50,10);
-       cerenkov = new TH2F("cerenkov","Cerenkov hit distribution",150,-30,30,150,-50,10);
-       h = new TH2F("h","Detector hit distribution",150,-30,30,150,-50,10);
-       hitsX = new TH1F("hitsX","Distribution of hits along x-axis",150,-30,30);
-       hitsY = new TH1F("hitsY","Distribution of hits along z-axis",150,-50,10);
+       feedback = new TH2F("feedback","Feedback hit distribution",150,-20,20,150,-35,5);
+       mip = new TH2F("mip","Mip hit distribution",150,-20,20,150,-35,5);
+       cerenkov = new TH2F("cerenkov","Cerenkov hit distribution",150,-20,20,150,-35,5);
+       h = new TH2F("h","Detector hit distribution",150,-20,20,150,-35,5);
+       hitsX = new TH1F("hitsX","Distribution of hits along x-axis",150,-50,50);
+       hitsY = new TH1F("hitsY","Distribution of hits along z-axis",150,-50,50);
      }       
    else
      {
@@ -3252,7 +3292,7 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    TH2F *hc7 = new TH2F("hc7","Chamber 7 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
       
    TH1F *Clcharge = new TH1F("Clcharge","Cluster Charge Distribution",500,0.,500.);
-   TH1F *ckovangle = new TH1F("ckovangle","Cerenkov angle per photon",200,.3,1);
+   TH1F *ckovangle = new TH1F("ckovangle","Cerenkov angle per photon",100,.35,.8);
    TH1F *hckphi = new TH1F("hckphi","Cerenkov phi angle per photon",620,-3.1,3.1);
    TH1F *mother = new TH1F("mother","Cerenkovs per Mip",75,0.,75.);
    TH1F *radius = new TH1F("radius","Mean distance to Mip",100,0.,20.);
@@ -3272,15 +3312,23 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    TH1F *protonspectra = new TH1F("protonspectra","Proton Spectra",200,.5,10.);
    TH1F *kaonspectra = new TH1F("kaonspectra","Kaon Spectra",100,.5,10.);
    TH1F *chargedspectra = new TH1F("chargedspectra","Charged particles above 1 GeV Spectra",100,.5,10.);
-   TH1F *hitsPhi = new TH1F("hitsPhi","Distribution of phi angle of incidence",100,0,360);
-   TH1F *hitsTheta = new TH1F("hitsTheta","Distribution of Theta angle of incidence",100,0,15);
-   TH1F *Omega1D = new TH1F("omega","Reconstructed Cerenkov angle per track",200,.5,1);
-   TH1F *Theta = new TH1F("theta","Reconstructed theta incidence angle per track",200,0,15);
-   TH1F *Phi = new TH1F("phi","Reconstructed phi incidence per track",200,0,360);
-   TH1F *Omega3D = new TH1F("omega","Reconstructed Cerenkov angle per track",200,.3,1);
-   TH1F *PhotonCer = new TH1F("photoncer","Reconstructed Cerenkov angle per photon",200,.3,1);
+   TH1F *hitsPhi = new TH1F("hitsPhi","Distribution of phi angle of incidence",50,0,360);
+   TH1F *hitsTheta = new TH1F("hitsTheta","Distribution of theta angle of incidence",50,0,15);
+   TH1F *Omega1D = new TH1F("omega","Reconstructed Cerenkov angle per track",50,.5,1);
+   TH1F *Theta = new TH1F("theta","Reconstructed theta incidence angle per track",100,0,15);
+   TH1F *Phi = new TH1F("phi","Reconstructed phi incidence per track",100,0,360);
+   TH1F *Omega3D = new TH1F("omega","Reconstructed Cerenkov angle per track",100,.35,.8);
+   TH1F *PhotonCer = new TH1F("photoncer","Reconstructed Cerenkov angle per photon",100,.35,.8);
    TH2F *PadsUsed = new TH2F("padsused","Pads Used for Reconstruction",100,-30,30,100,-30,30);
    TH1F *MeanRadius = new TH1F("radius","Mean Radius for reconstructed track",100,0.,20.);
+   TH2F *identification = new TH2F("identification","Particle Identification",100,1,5,100,0,.8);
+   TH1F *OriginalOmega = new TH1F("Original Omega","Cerenkov angle per track",100,.35,.8);
+   TH1F *OriginalPhi = new TH1F("Original Phi","Distribution of phi angle of incidence per track",100,0,360);
+   TH1F *OriginalTheta = new TH1F("Original Theta","Distribution of theta angle per track",100,0,15);
+   TH1F *OmegaError = new TH1F("Omega Error","Difference between original an reconstructed cerenkov angle",100,0,.2);
+   TH1F *PhiError = new TH1F("Phi Error","Difference between original an reconstructed phi angle",100,0,360);
+   TH1F *ThetaError = new TH1F("Theta Error","Difference between original an reconstructed phi angle",100,0,15);
+
 
 //   Start loop over events 
 
@@ -3295,6 +3343,17 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    Int_t feed=0;
    Int_t padmip=0;
    Float_t x=0,y=0;
+
+   Float_t chiSquareOmega = 0;
+   Float_t chiSquareTheta = 0;
+   Float_t chiSquarePhi = 0;
+
+   Float_t recEffEvent = 0;
+   Float_t recEffTotal = 0;
+
+   Float_t trackglob[3];
+   Float_t trackloc[3];
+
    
    for (Int_t i=0;i<100;i++) mothers[i]=0;
 
@@ -3329,14 +3388,37 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 	     mHit;
 	     mHit=(AliRICHHit*)pRICH->NextHit()) 
 	   {
-	     //Int_t nch  = mHit->fChamber;              // chamber number
-	     x  = mHit->X();                           // x-pos of hit
-	     y  = mHit->Z();                           // y-pos
+	     Int_t nch  = mHit->Chamber();              // chamber number
+	     trackglob[0] = mHit->X();                 // x-pos of hit
+	     trackglob[1] = mHit->Y();
+	     trackglob[2] = mHit->Z();                 // y-pos of hit
+	     //x  = mHit->X();                           // x-pos of hit
+	     //y  = mHit->Z();                           // y-pos
 	     Float_t phi = mHit->Phi();                 //Phi angle of incidence
 	     Float_t theta = mHit->Theta();             //Theta angle of incidence
 	     Int_t index = mHit->Track();
 	     Int_t particle = (Int_t)(mHit->Particle());        
 	     //Int_t freon = (Int_t)(mHit->fLoss);    
+	     Float_t px = mHit->MomX();
+	     Float_t py = mHit->MomY();
+	     
+	     if (TMath::Abs(particle) < 10000000)
+	       {
+		 PTfinal=TMath::Sqrt(px*px + py*py);
+		 //printf("PTfinal 0: %f\n",PTfinal);
+	       }
+	
+	     chamber = &(pRICH->Chamber(nch-1));
+	     
+	     //printf("Nch:%d\n",nch);
+	     
+	     chamber->GlobaltoLocal(trackglob,trackloc);
+	     
+	     chamber->LocaltoGlobal(trackloc,trackglob);
+	     
+       
+	     x=trackloc[0];
+	     y=trackloc[2];
 	     
 	     hitsX->Fill(x,(float) 1);
 	     hitsY->Fill(y,(float) 1);
@@ -3390,7 +3472,7 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 	      h->Fill(x,y,(float) 1);
 		  //}
               //}
-          }
+	   }
 	   
 	   Int_t ncerenkovs = pRICH->Cerenkovs()->GetEntriesFast();
 	   //if (current->GetPdgCode() < 50000051 && current->GetPdgCode() > 50000040)
@@ -3401,16 +3483,33 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 	     totalphotonsevent->Fill(ncerenkovs,(float) 1);
 	     for (Int_t hit=0;hit<ncerenkovs;hit++) {
 	       AliRICHCerenkov* cHit = (AliRICHCerenkov*) pRICH->Cerenkovs()->UncheckedAt(hit);
-	       //Int_t nchamber = cHit->fChamber;     // chamber number
+	       Int_t nchamber = cHit->fChamber;     // chamber number
 	       Int_t index =    cHit->Track();
 	       //Int_t pindex =   (Int_t)(cHit->fIndex);
-	       Float_t cx  =      cHit->X();                // x-position
-	       Float_t cy  =      cHit->Z();                // y-position
+	       trackglob[0] = cHit->X();                 // x-pos of hit
+	       trackglob[1] = cHit->Y();
+	       trackglob[2] = cHit->Z();                 // y-pos of hit
+	       //Float_t cx  =      cHit->X();                // x-position
+	       //Float_t cy  =      cHit->Z();                // y-position
 	       Int_t cmother =  cHit->fCMother;      // Index of mother particle
 	       Int_t closs =    (Int_t)(cHit->fLoss);           // How did the particle get lost? 
 	       Float_t cherenkov = cHit->fCerenkovAngle;   //production cerenkov angle
-	       //printf ("Cerenkov hit number %d/%d, X:%d, Y:%d\n",hit,ncerenkovs,cx,cy); 
 	       
+	       chamber = &(pRICH->Chamber(nchamber-1));
+	     
+	       //printf("Nch:%d\n",nch);
+	       
+	       chamber->GlobaltoLocal(trackglob,trackloc);
+	     
+	       chamber->LocaltoGlobal(trackloc,trackglob);
+	     
+       
+	       Float_t cx=trackloc[0];
+	       Float_t cy=trackloc[2];
+	       
+	       //printf ("Cerenkov hit number %d/%d, X:%f, Y:%f\n",hit,ncerenkovs,cx,cy); 
+
+
 	       //printf("Particle:%9d\n",index);
 		 		 
 	       TParticle *current = (TParticle*)gAlice->Particle(index);
@@ -3473,8 +3572,8 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 		       Float_t mx = mipHit->X();
 		       Float_t my = mipHit->Z();
 		       //printf("FX %e, FY %e, VX %e, VY %e\n",cx,cy,mx,my);
-		       Float_t dx = cx - mx;
-		       Float_t dy = cy - my;
+		       Float_t dx = trackglob[0] - mx;
+		       Float_t dy = trackglob[2] - my;
 		       //printf("Dx:%f, Dy:%f\n",dx,dy);
 		       Float_t final_radius = TMath::Sqrt(dx*dx+dy*dy);
 		       //printf("Final radius:%f\n",final_radius);
@@ -3565,28 +3664,115 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 	       
 	       if(nrechits3D)
 		 {
-		   for (Int_t hit=0;hit<nrechits3D;hit++) {
-		     AliRICHRecHit3D* recHit3D = (AliRICHRecHit3D*) pRICH->RecHitsAddress3D(2)->UncheckedAt(hit);
-		     Float_t r_omega    = recHit3D->fOmega;                  // Cerenkov angle
-		     Float_t r_theta    = recHit3D->fTheta;                  // Theta angle of incidence
-		     Float_t r_phi      = recHit3D->fPhi;                    // Phi angle if incidence
-		     Float_t meanradius = recHit3D->fMeanRadius;              // Mean radius for reconstructed point
-		    
-		     //printf("rechit %f %f %f %f %f\n",recHit3D->fOmega,recHit3D->fTheta,recHit3D->fPhi, recHit3D->fX,recHit3D->fY);  
-		     
-		     Omega3D->Fill(r_omega,(float) 1);
-		     Theta->Fill(r_theta*180/TMath::Pi(),(float) 1);
-		     Phi->Fill(r_phi*180/TMath::Pi()-180,(float) 1);
-		     MeanRadius->Fill(meanradius,(float) 1);
-		   }
+		   recEffEvent = 0;
+		   
+		   //for (Int_t hit=0;hit<nrechits3D;hit++) {
+		   AliRICHRecHit3D* recHit3D = (AliRICHRecHit3D*) pRICH->RecHitsAddress3D(2)->UncheckedAt(track);
+		   Float_t r_omega    = recHit3D->fOmega;                  // Cerenkov angle
+		   Float_t r_theta    = recHit3D->fTheta;                  // Theta angle of incidence
+		   Float_t r_phi      = recHit3D->fPhi;                    // Phi angle if incidence
+		   Float_t meanradius = recHit3D->fMeanRadius;              // Mean radius for reconstructed point
+		   Float_t originalOmega = recHit3D->fOriginalOmega;       // Real Cerenkov angle
+		   Float_t originalTheta = recHit3D->fOriginalTheta;       // Real incidence angle
+		   Float_t originalPhi = recHit3D->fOriginalPhi;           // Real azimuthal angle
+		   
+		   
+		   //correction to track cerenkov angle
+		   originalOmega = (Float_t) ckovangle->GetMean();
+		   
+		   if(diaglevel == 4)
+		     {
+		       printf("\nMean cerenkov angle: %f\n", originalOmega);
+		       printf("Reconstructed cerenkov angle: %f\n",r_omega);
+		     }
+		   
+		   Float_t omegaError = TMath::Abs(originalOmega - r_omega);
+		   Float_t thetaError = TMath::Abs(originalTheta - r_theta);
+		   Float_t phiError   = TMath::Abs(originalPhi - r_phi);
+		   
+		   //chiSquareOmega += (omegaError/originalOmega)*(omegaError/originalOmega); 
+		   //chiSquareTheta += (thetaError/originalTheta)*(thetaError/originalTheta); 
+		   //chiSquarePhi += (phiError/originalPhi)*(phiError/originalPhi); 
+		   
+		   if(TMath::Abs(omegaError) < 0.015)
+		     recEffEvent += 1;
+		   
+		   
+		   
+		   //printf("rechit %f %f %f %f %f\n",recHit3D->fOmega,recHit3D->fTheta,recHit3D->fPhi, recHit3D->fX,recHit3D->fY);  
+		   
+		   Omega3D->Fill(r_omega,(float) 1);
+		   Theta->Fill(r_theta*180/TMath::Pi(),(float) 1);
+		   Phi->Fill(r_phi*180/TMath::Pi()-180,(float) 1);
+		   MeanRadius->Fill(meanradius,(float) 1);
+		   identification->Fill(PTfinal, r_omega,1);
+		   OriginalOmega->Fill(originalOmega, (float) 1);
+		   OriginalTheta->Fill(originalTheta, (float) 1);
+		   OriginalPhi->Fill(TMath::Abs(originalPhi), (float) 1);
+		   OmegaError->Fill(omegaError, (float) 1);
+		   ThetaError->Fill(thetaError, (float) 1);
+		   PhiError->Fill(phiError, (float) 1);
+		   
+		   recEffEvent = recEffEvent;
+		   recEffTotal += recEffEvent;
+		   
+		   Float_t pioncer = acos(sqrt((.139*.139+PTfinal*PTfinal)/(PTfinal*PTfinal*1.285*1.285)));
+		   Float_t kaoncer = acos(sqrt((.439*.439+PTfinal*PTfinal)/(PTfinal*PTfinal*1.285*1.285)));
+		   Float_t protoncer = acos(sqrt((.938*.938+PTfinal*PTfinal)/(PTfinal*PTfinal*1.285*1.285)));
+
+		   Float_t piondist = TMath::Abs(r_omega - pioncer);
+		   Float_t kaondist = TMath::Abs(r_omega - kaoncer);
+		   Float_t protondist = TMath::Abs(r_omega - protoncer);
+
+		   if(diaglevel == 4)
+		     {
+		       if(pioncer<r_omega)
+			 {
+			   printf("Identified as a PION!\n");
+			   pionCount += 1;
+			 }
+		       if(kaoncer<r_omega && pioncer>r_omega)
+			 {
+			   if(kaondist>piondist)
+			     {
+			       printf("Identified as a PION!\n");
+			       pionCount += 1;
+			     }
+			   else
+			     {
+			       printf("Identified as a KAON!\n");
+			       kaonCount += 1;
+			     }
+			 }			 }
+		       if(protoncer<r_omega && kaoncer>r_omega)
+			 {
+			   if(kaondist>protondist)
+			     {
+			       printf("Identified as a PROTON!\n");
+			       protonCount += 1;
+			     }
+			   else
+			     {
+			       printf("Identified as a KAON!\n");
+			       pionCount += 1;
+			     }
+			 }
+		       if(protoncer>r_omega)
+			 {
+			   printf("Identified as a PROTON!\n");
+			   protonCount += 1;
+			 }
+
+		       printf("\nReconstruction efficiency: %5.2f%%\n", recEffEvent*100);
 		 }
 	     }
        }
+   
        
        for (Int_t nmothers=0;nmothers<ntracks;nmothers++){
-	   totalphotonstrack->Fill(mothers[nmothers],(float) 1);
-	   mother->Fill(mothers2[nmothers],(float) 1);
-	   //printf ("Entries in %d : %d\n",nmothers, mothers[nmothers]);
+	 totalphotonstrack->Fill(mothers[nmothers],(float) 1);
+	 mother->Fill(mothers2[nmothers],(float) 1);
+	 //printf ("Entries in %d : %d\n",nmothers, mothers[nmothers]);
        }
        
        clusev->Fill(nraw,(float) 1);
@@ -3600,17 +3786,17 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
        pads = 0;
        nraw=0;
        padmip=0;
-
-
-
+       
+       
+       
        gAlice->ResetDigits();
        //Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
        gAlice->TreeD()->GetEvent(0);
-
+       
        if (diaglevel < 4)
 	 {
-
-
+	   
+	   
 	   TClonesArray *Digits  = pRICH->DigitsAddress(2);
 	   Int_t ndigits = Digits->GetEntriesFast();
 	   printf("Digits          : %d\n",ndigits);
@@ -3624,7 +3810,7 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 	     if( ipx<=100 && ipy <=100) hc0->Fill(ipx,ipy,(float) qtot);
 	   }
 	 }
-	 
+       
        if (diaglevel == 5)
 	 {
 	   for (Int_t ich=0;ich<7;ich++)
@@ -3657,7 +3843,61 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 	     }
 	 }
    }
+   
+   if(diaglevel == 4)
+     {
+
+       Stat_t omegaE;
+       Stat_t thetaE;
+       Stat_t phiE;
        
+       Stat_t omegaO;
+       Stat_t thetaO;
+       Stat_t phiO;
+       
+       for(Int_t i=0;i<99;i++)
+	 {
+	   omegaE = OriginalOmega->GetBinContent(i);
+	   if(omegaE != 0)
+	     {
+	       omegaO = Omega3D->GetBinContent(i);
+	       chiSquareOmega += (TMath::Power(omegaE,2) - TMath::Power(omegaO,2))/omegaO;
+	     }
+
+  	   thetaE = OriginalTheta->GetBinContent(i);
+	   if(thetaE != 0)
+	     {
+	       thetaO = Theta->GetBinContent(i);
+	       chiSquareTheta += (TMath::Power(thetaE,2) - TMath::Power(thetaO,2))/thetaO;
+	     }
+
+	   phiE = OriginalPhi->GetBinContent(i);
+	   if(phiE != 0)
+	     {
+	       phiO = Phi->GetBinContent(i);
+	       chiSquarePhi += (TMath::Power(phiE,2) - TMath::Power(phiO,2))/phiO;
+	     }
+	   
+	   //printf(" o: %f  t: %f  p: %f\n", OriginalOmega->GetBinContent(i), OriginalTheta->GetBinContent(i),OriginalPhi->GetBinContent(i));
+
+	 }
+
+       
+
+       printf("\nChi square test values:   Omega - %f\n", chiSquareOmega);
+       printf("                          Theta - %f\n", chiSquareTheta);
+       printf("                          Phi   - %f\n", chiSquarePhi);
+       
+       printf("\nKolmogorov test values:   Omega - %5.4f\n", Omega3D->KolmogorovTest(OriginalOmega));
+       printf("                          Theta - %5.4f\n", Theta->KolmogorovTest(OriginalTheta));
+       printf("                          Phi   - %5.4f\n", Phi->KolmogorovTest(OriginalPhi));
+
+       recEffTotal = recEffTotal/evNumber2;
+       printf("\nTotal reconstruction efficiency: %5.2f%%\n", recEffTotal*100);
+       printf("\n Pions: %d\n Kaons: %d\n Protons:%d\n",pionCount, kaonCount, protonCount);
+
+     }
+   
    
    //Create canvases, set the view range, show histograms
 
@@ -3673,9 +3913,25 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    TCanvas *c10 = 0;
    TCanvas *c11 = 0;
    TCanvas *c12 = 0;
+   TCanvas *c13 = 0;
+
    //TF1* expo = 0;
    //TF1* gaus = 0;
    
+   TStyle *mystyle=new TStyle("Plain","mystyle");
+   mystyle->SetPalette(1,0);
+   //mystyle->SetTitleYSize(0.2);
+   //mystyle->SetStatW(0.19);
+   //mystyle->SetStatH(0.1);
+   //mystyle->SetStatFontSize(0.01);
+   //mystyle->SetTitleYSize(0.3);
+   mystyle->SetFuncColor(2);
+   //mystyle->SetOptStat(0111);
+   mystyle->SetDrawBorder(0);
+   mystyle->SetTitleBorderSize(0);
+   mystyle->SetOptFit(1111);
+   mystyle->cd();
+
    
    TClonesArray *RecHits3D = pRICH->RecHitsAddress3D(2);
    Int_t nrechits3D = RecHits3D->GetEntriesFast();
@@ -3688,7 +3944,7 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
        
        c1 = new TCanvas("c1","Alice RICH digits",50,50,300,350);
        hc0->SetXTitle("ix (npads)");
-       hc0->Draw("box");
+       hc0->Draw("colz");
 	
 //
        c2 = new TCanvas("c2","Hits per type",100,100,600,700);
@@ -3698,25 +3954,25 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
        c2->cd(1);
        feedback->SetXTitle("x (cm)");
        feedback->SetYTitle("y (cm)");
-       feedback->Draw();
+       feedback->Draw("colz");
        
        c2->cd(2);
        //mip->SetFillColor(5);
        mip->SetXTitle("x (cm)");
        mip->SetYTitle("y (cm)");
-       mip->Draw();
+       mip->Draw("colz");
        
        c2->cd(3);
        //cerenkov->SetFillColor(5);
        cerenkov->SetXTitle("x (cm)");
        cerenkov->SetYTitle("y (cm)"); 
-       cerenkov->Draw();
+       cerenkov->Draw("colz");
        
        c2->cd(4);
        //h->SetFillColor(5);
        h->SetXTitle("x (cm)");
        h->SetYTitle("y (cm)");
-       h->Draw();
+       h->Draw("colz");
 
        c3 = new TCanvas("c3","Hits distribution",150,150,600,350);
        c3->Divide(2,1);
@@ -3883,38 +4139,149 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 
        if(nrechits3D)
 	 {
-	   c8 = new TCanvas("c8","3D reconstruction",50,50,1100,700);
-	   c8->Divide(4,2);
+	   c8 = new TCanvas("c8","3D reconstruction of Phi angle",50,50,300,1050);
+	   c8->Divide(1,3);
 	   //c2->SetFillColor(42);
 	   
+	   
+	   // data per hit
 	   c8->cd(1);
 	   hitsPhi->SetFillColor(5);
+	   if (evNumber2>10)
+	     hitsPhi->Fit("gaus");
 	   hitsPhi->Draw();
+	   
+	    //data per track
 	   c8->cd(2);
-	   hitsTheta->SetFillColor(5);
-	   hitsTheta->Draw();
+	   OriginalPhi->SetFillColor(5);
+	   if (evNumber2>10)
+	     OriginalPhi->Fit("gaus");
+	   OriginalPhi->Draw();
+
+	   //recontructed data
 	   c8->cd(3);
+	   Phi->SetFillColor(5);
+	   if (evNumber2>10)
+	     Phi->Fit("gaus");
+	   Phi->Draw();
+
+	   c9 = new TCanvas("c9","3D reconstruction of theta angle",75,75,300,1050);
+	   c9->Divide(1,3);
+
+	   // data per hit
+	   c9->cd(1);
+	   hitsTheta->SetFillColor(5);
+	   if (evNumber2>10)
+	     hitsTheta->Fit("gaus");
+	   hitsTheta->Draw();
+	   
+	   //data per track
+	   c9->cd(2);
+	   OriginalTheta->SetFillColor(5);
+	   if (evNumber2>10)
+	     OriginalTheta->Fit("gaus");
+	   OriginalTheta->Draw();
+
+	   //recontructed data
+	   c9->cd(3);
+	   Theta->SetFillColor(5);
+	   if (evNumber2>10)
+	     Theta->Fit("gaus");
+	   Theta->Draw();
+
+	   c10 = new TCanvas("c10","3D reconstruction of cherenkov angle",100,100,300,1050);
+	   c10->Divide(1,3);
+
+	   // data per hit
+	   c10->cd(1);
 	   ckovangle->SetFillColor(5);
 	   ckovangle->SetXTitle("angle (radians)");
+	   if (evNumber2>10)
+	     ckovangle->Fit("gaus");
 	   ckovangle->Draw();
-	   c8->cd(4);
+	   
+	   //data per track
+	   c10->cd(2);
+	   OriginalOmega->SetFillColor(5);
+	   OriginalOmega->SetXTitle("angle (radians)");
+	   if (evNumber2>10)
+	     OriginalOmega->Fit("gaus");
+	   OriginalOmega->Draw();
+
+	   //recontructed data
+	   c10->cd(3);
+	   Omega3D->SetFillColor(5);
+	   Omega3D->SetXTitle("angle (radians)");
+	   if (evNumber2>10)
+	     Omega3D->Fit("gaus");
+	   Omega3D->Draw(); 
+
+
+	   c11 = new TCanvas("c11","3D reconstruction of mean radius",125,125,300,700);
+	   c11->Divide(1,2);
+
+	   // data per hit
+	   c11->cd(1);
 	   radius->SetFillColor(5);
 	   radius->SetXTitle("radius (cm)");
 	   radius->Draw();
-	   c8->cd(5);
-	   Phi->SetFillColor(5);
-	   Phi->Draw();
-	   c8->cd(6);
-	   Theta->SetFillColor(5);
-	   Theta->Draw();
-	   c8->cd(7);
-	   Omega3D->SetFillColor(5);
-	   Omega3D->SetXTitle("angle (radians)");
-	   Omega3D->Draw(); 
-	   c8->cd(8);
+
+	   //recontructed data
+	   c11->cd(2);
 	   MeanRadius->SetFillColor(5);
 	   MeanRadius->SetXTitle("radius (cm)");
 	   MeanRadius->Draw();
+
+	   
+	   c12 = new TCanvas("c12","Cerenkov angle vs. Momentum",150,150,550,350);
+
+	   c12->cd(1);
+	   identification->SetFillColor(5);
+	   identification->SetXTitle("Momentum (GeV/c)");
+	   identification->SetYTitle("Cherenkov angle (radians)");
+	   
+	   //Float_t pionmass=.139;
+	   //Float_t kaonmass=.493;
+	   //Float_t protonmass=.938;
+	   //Float_t n=1.295;
+	   
+	   TF1 *pionplot = new TF1("pion","acos(sqrt((.139*.139+x*x)/(x*x*1.285*1.285)))",1,5);
+	   TF1 *kaonplot = new TF1("kaon","acos(sqrt((.439*.439+x*x)/(x*x*1.285*1.285)))",1,5);
+	   TF1 *protonplot = new TF1("proton","acos(sqrt((.938*.938+x*x)/(x*x*1.285*1.285)))",1,5);
+	   
+	   identification->Draw();
+
+	   pionplot->SetLineColor(5);
+	   pionplot->Draw("same");
+
+	   kaonplot->SetLineColor(4);
+	   kaonplot->Draw("same");
+
+	   protonplot->SetLineColor(3);
+	   protonplot->Draw("same");
+	   //identification->Draw("same");
+
+
+
+	   c13 = new TCanvas("c13","Reconstruction Errors",200,200,900,350);
+	   c13->Divide(3,1);
+
+	   c13->cd(1);
+	   PhiError->SetFillColor(5);
+	   if (evNumber2>10)
+	     PhiError->Fit("gaus");
+	   PhiError->Draw();
+	   c13->cd(2);
+	   ThetaError->SetFillColor(5);
+	   if (evNumber2>10)
+	     ThetaError->Fit("gaus");
+	   ThetaError->Draw();
+	   c13->cd(3);
+	   OmegaError->SetFillColor(5);
+	   OmegaError->SetXTitle("angle (radians)");
+	   if (evNumber2>10)
+	     OmegaError->Fit("gaus");
+	   OmegaError->Draw();
 	   
 	 }
        
