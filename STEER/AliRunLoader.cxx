@@ -630,7 +630,16 @@ Int_t AliRunLoader::LoadKinematics(Option_t* option)
     Error("LoadKinematics","Error occured while loading kinamatics tree.");
     return retval;
   }
- if (fStack) fStack->GetEvent();
+ if (fStack) 
+  {
+    retval = fStack->GetEvent();
+    if ( retval == kFALSE)
+     {
+       Error("LoadKinematics","Error occured while loading kinamatics tree.");
+       return retval;
+     }
+    
+  }
  return 0;
 }
 /**************************************************************************/
@@ -690,6 +699,7 @@ Int_t AliRunLoader::OpenDataFile(const TString& filename,TFile*& file,TDirectory
 TTree* AliRunLoader::TreeE() const
 {
  //returns the tree from folder; shortcut method
+ if (GetDebug() > 10) fEventFolder->ls();
  TObject *obj = fEventFolder->FindObject(fgkHeaderContainerName);
  return (obj)?dynamic_cast<TTree*>(obj):0x0;
 }
