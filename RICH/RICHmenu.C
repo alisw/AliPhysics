@@ -17,22 +17,20 @@ RICHmenu(Int_t nev=1)
   char *str="\"Number of events %d\"";
   
    TControlBar *menu = new TControlBar("vertical","RICH menu");
-   menu->AddButton("      Help for RICH      ","gSystem->Exec(\"less RICHHelp.txt\");", "Explains how to use RICH menus");
+   //menu->AddButton("      Help for RICH      ","gSystem->Exec(\"less RICHHelp.txt\");", "Explains how to use RICH menus");
+   menu->AddButton("      Help for RICH      ","RICHHelp()", "Explains how to use RICH menus");
    menu->AddButton("Configure",            "gSystem->Exec(\"rconfig\"); gSystem->Exit(0);","Interactive Configuration");
    menu->AddButton("Run",               "gAlice->Run(events)","Process an Alice event - WARNING: Overwrites previous data file!");
    menu->AddButton("Run Lego",          ".x RICHRunLego.C","Special runs to generate the radl/absl lego plots");
-   menu->AddButton("Digitise Event",             ".x RICHdigit.C(0,events-1,0)","Digitise event");
-   menu->AddButton(" Merge and Digitise Event ",             ".x RICHdigit.C(0,events-1,1)","Merge with background file and digitise");
+   menu->AddButton("Digitise Event",             ".x RICHdigit.C(events, 0)","Digitise event");
+   menu->AddButton(" Merge and Digitise Event ",             ".x RICHdigit.C(events,1)","Merge with background file and digitise");
    menu->AddButton("Clusterize Event",      ".x RICHrawclusters.C(0,events-1)","Reconstruct clusters");
-   // TODO: add the diaglevel here before the script
-   menu->AddButton("3D Hough Pat. Rec.",      ".x RICHdetect.C(0,events-1)","Lisbon");
-   menu->AddButton("1D Hough Pat. Rec.",      ".x RICHpatrec.C(0,events-1)","Bari");
+   menu->AddButton("Reconstruct Event",       ".x RICHreco.C(events)","Reconstruction algortihms");
    menu->AddButton("Diagnostics",       ".x RICHDiagnostics.C(events)","Miscellaneous diagnostics");
    menu->AddButton("Display",           ".x RICHdisplay.C","Display run");
    menu->AddButton("Geometry Browser",           "Gui()","Browse the GEANT geometry - WARNING: Overwrites previous data file!");
    menu->AddButton("File Browser",           "TBrowser new;","Browse data files");
-//   menu->AddButton("Draw",              ".x DrawRICH.C","bla bla");
-//   menu->AddButton("View",              ".x ViewRICH.C","does nothing???");
+   menu->AddButton("Draw RICH Detector",              "Draw()","Draw the GEANT defined modules");
    menu->AddButton("Quit AliRoot",             ".q","Close session");
 //   menu->AddButton("Reset",             "RICHReset()","Close and Restart AliRoot");
    
@@ -46,7 +44,7 @@ RICHmenu(Int_t nev=1)
 
 void RICHHelp()
 {
-   gSystem->Exec("xemacs RICHHelp.C &");
+   gSystem->Exec("emacs RICHHelp.txt &");
 }
 
 void RICHInit(Int_t events)
@@ -63,6 +61,12 @@ void Gui()
   gROOT->ProcessLine(".x TGeant3GUI.C");
 }
 
+void Draw()
+{
+  gAlice->Init("Config.C");
+  ((TGeant3*)gMC)->InitHIGZ();
+  gROOT->ProcessLine(".x DrawRICH.C");
+}
 
 void RICHReset()
 {
