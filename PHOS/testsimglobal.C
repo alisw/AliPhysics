@@ -238,7 +238,7 @@ Bool_t sim_exam()
       nhits += n ;
       his->Fill(n) ;
       // Get the data per block
-      TClonesArray * hita = static_cast<TClonesArray *>(gime -> Hits()) ;
+      const TClonesArray * hita = static_cast<const TClonesArray *>(gime -> Hits()) ;
       TIter next(hita) ;
       Float_t Et = 0. ;
       Int_t id = 0, block = 0 ;
