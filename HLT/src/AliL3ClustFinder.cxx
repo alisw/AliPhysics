@@ -473,9 +473,7 @@ void AliL3ClustFinder::WriteClusters(Int_t ncl,resx *r)
       fSpacePointData[counter].fXYErr = fXYErr;
       fSpacePointData[counter].fZErr = fZErr;
       fSpacePointData[counter].fID = counter
-                  +((fCurrentSlice&0x7f)<<25)+((fCurrentPatch&0x7)<<22);//uli
-      if(fCurrentRow > 170)
-	printf("padrow %d X %f Y %f Z %f\n",fCurrentRow,xyz[0],xyz[1],xyz[2]);
+                  +((fCurrentSlice&0x7f)<<25)+((fCurrentPatch&0x7)<<22);
       
       fNClusters++;
       counter++;
