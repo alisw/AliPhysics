@@ -34,7 +34,7 @@ Int_t ITSFindTracks(const Char_t *inname, const Char_t *inname2, const Char_t *o
 Int_t ITSPropagateBack(const Char_t *inname, const Char_t *outname);
 
 
-Int_t AliBarrelReconstruction(Int_t n) {
+Int_t AliBarrelReconstruction(Int_t n=1) {
    const Char_t *TPCdigName="rfio:galice.root";
    const Char_t *TPCclsName="AliTPCclusters.root";
    const Char_t *TPCtrkName="AliTPCtracks.root";
