@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/11/21 22:57:02  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.16  2002/01/23 09:36:52  morsch
 Don't use shunting if you don't want it !
 
@@ -98,8 +101,7 @@ AliPMD::AliPMD()
   //
   fIshunt = 0;
 
-  // Always make the TClonesArray, otherwise the automatic streamer gets angry
-  fRecPoints  = new TClonesArray("AliPMDRecPoint",10000); 
+  fRecPoints  = 0;
 
 }
  
