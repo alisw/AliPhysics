@@ -142,7 +142,7 @@ public:
     
   static const Bool_t SIDEP=kTRUE;
   static const Bool_t SIDEN=kFALSE;
-  static const Float_t PNsignalRatio = 7./8.;
+  static const Float_t PNsignalRatio = 0.875; // 7./8.;
   Int_t fSFF;              //forward stepping factor 
   Int_t fSFB;              //backward stepping factor 
 
