@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2003/02/24 16:46:11  morsch
+New parameterisation for Psi and Upsilon (PbPb)
+
 Revision 1.18  2002/11/07 09:13:42  morsch
 Use "Vogt" to label new distributions.
 
@@ -224,10 +227,15 @@ Double_t AliGenMUONlib::PtJpsiPbPb( Double_t *px, Double_t *dummy)
 	-1.83806e-01, 1.55853e-02, -7.23241e-04, 1.42105e-05
     };
     
-    Int_t j;
-    Double_t y = c[j = 7];
-    while (j > 0) y  = y * x +c[--j];
-    y = x * TMath::Exp(y);
+    Double_t y;
+    if (x < 10.) {
+	Int_t j;
+	y = c[j = 7];
+	while (j > 0) y  = y * x +c[--j];
+	y = x * TMath::Exp(y);
+    } else {
+	y = 0.;
+    }
     return y;
 }
 //
@@ -319,10 +327,15 @@ Double_t AliGenMUONlib::PtUpsilonPbPb( Double_t *px, Double_t *dummy)
 	-1.03488e+01, 1.28065e+01, -6.60500e+00, 1.66140e+00,       
 	-2.34293e-01, 1.86925e-02, -7.80708e-04, 1.30610e-05
     };
-    Int_t j;
-    Double_t y = c[j = 7];
-    while (j > 0) y  = y * x +c[--j];
-    y = x * TMath::Exp(y);
+    Double_t y;
+    if (x < 10.) {
+	Int_t j;
+	y = c[j = 7];
+	while (j > 0) y  = y * x +c[--j];
+	y = x * TMath::Exp(y);
+    } else {
+	y = 0.;
+    }
     return y;
 }
 
