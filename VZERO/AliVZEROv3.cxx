@@ -59,7 +59,6 @@
 #include "AliVZEROdigit.h"
 #include "AliVZEROhit.h"
 #include "AliVZEROv3.h"
-#include "AliVZEROConst.h" 
  
 ClassImp(AliVZEROv3)
 
@@ -828,7 +827,6 @@ void AliVZEROv3::StepManager()
      static    Int_t   vol[4];
      static    Float_t hits[21];
      static    Float_t eloss, tlength;
-     static    Int_t   tracks[2];
      static    Int_t   nPhotonsInStep;
      static    Int_t   nPhotons; 
      static    Int_t   numStep;
