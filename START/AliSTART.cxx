@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/09/19 18:41:45  alla
+Asimmetric START geometry
+
 Revision 1.22  2001/07/27 13:03:12  hristov
 Default Branch split level set to 99
 
@@ -115,6 +118,7 @@ Introduction of the Copyright and cvs Log
 #include "AliSTARTdigit.h"
 #include "AliMC.h"
 #include "AliSTARThit.h"
+#include "AliSTARThitPhoton.h"
 #include "AliSTARTvertex.h"
 
 ClassImp(AliSTART)
@@ -130,6 +134,7 @@ AliSTART::AliSTART()
   fIshunt   = 1;
   fHits     = 0;
   fDigits   = 0;
+  fPhotons  = 0;
 }
  
 //_____________________________________________________________________________
@@ -145,9 +150,13 @@ AliSTART::AliSTART(const char *name, const char *title)
   // Initialise Hit array
   fHits       = new TClonesArray("AliSTARThit",  405);
   gAlice->AddHitList(fHits);
+
+  fPhotons  = new TClonesArray("AliSTARThitPhoton", 10000);
+  gAlice->AddHitList (fPhotons);
   
   fIshunt     =  1;
   fIdSens   =  0;
+  fNPhotons =  0;
   SetMarkerColor(kRed);
 }
 
@@ -156,6 +165,10 @@ AliSTART::~AliSTART() {
   if (fHits) {
     fHits->Delete();
     delete fHits;
+  }
+  if (fPhotons) {
+    fPhotons->Delete();
+    delete fPhotons;
   }
 }
  
@@ -167,6 +180,15 @@ void AliSTART::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliSTARThit(fIshunt,track,vol,hits);
+}
+
+//_____________________________________________________________________________
+void AliSTART::AddHitPhoton(Int_t track, Int_t *vol, Float_t *hits)
+{
+  //  Add a START hit of photons
+  
+  TClonesArray &lhits = *fPhotons;
+  new(lhits[fNPhotons++]) AliSTARThitPhoton(fIshunt,track,vol,hits);
 }
 
 //_____________________________________________________________________________
@@ -242,13 +264,21 @@ void AliSTART::MakeBranch(Option_t* option, const char *file)
   // Specific START branches
   //
   // Create Tree branches for the START.
-  Int_t buffersize = 400;
-  char branchname[10];
+  Int_t buffersize = 4000;
+  char branchname[20];
   sprintf(branchname,"%s",GetName());
 
   AliDetector::MakeBranch(option,file);
 
   const char *cD = strstr(option,"D");
+  const char *cH = strstr(option,"H");
+  
+  if (cH)
+  {
+     sprintf (branchname, "%shitPhoton", GetName());
+     MakeBranchInTree (gAlice->TreeH(), branchname, &fPhotons, 50000, file);
+  } 
+
   
   if (cD) {
     digits = new AliSTARTdigit();
@@ -266,12 +296,40 @@ void AliSTART::MakeBranch(Option_t* option, const char *file)
 }    
 
 //_____________________________________________________________________________
+void AliSTART::ResetHits()
+{
+  AliDetector::ResetHits();
+  
+  fNPhotons = 0;
+  if (fPhotons)  fPhotons->Clear();
+}
+
+//_____________________________________________________________________________
+void AliSTART::SetTreeAddress()
+{
+  TBranch	*branch;
+  TTree		*treeH;
+
+  AliDetector::SetTreeAddress();
+  treeH = gAlice->TreeH();
+  
+  if (treeH)
+    if (fPhotons)
+    {
+       branch = treeH->GetBranch ("STARThitPhoton");
+       if (branch)  branch->SetAddress (&fPhotons);
+    }
+}
+
+
+//_____________________________________________________________________________
 
 void AliSTART::Hit2digit(Int_t evnum) 
 {
   //
   // From hits to digits
   //
+  /*
   Float_t x,y,e;
   Int_t nbytes = 0;
   Int_t hit;
@@ -376,7 +434,7 @@ void AliSTART::Hit2digit(Int_t evnum)
     td->Fill();
     printf("digits-> %d \n",digits->GetTime());
     td->Write();
-
+  */
 }
 
 

@@ -9,7 +9,7 @@ void STARTDigit ()
 
   AliRunDigitizer * manager = new AliRunDigitizer(1,1);
   manager->SetInputStream(0,"galice.root");
-  manager->SetOutputFile("digits.root");
+  //  manager->SetOutputFile("digits.root");
   AliSTARTDigitizer *START = new AliSTARTDigitizer(manager);
   manager->Exec("");
 }

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.8  2002/04/16 10:52:41  hristov
+Wrong usage of exit() corrected (Sun)
+
 Revision 1.7  2002/04/15 08:04:01  alla
 Digits and reconstruction with TObject
 
@@ -82,7 +85,7 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
 
  // Event ------------------------- LOOP  
    
-  gAlice->GetEvent(evNumber);
+  // gAlice->GetEvent(evNumber);
 
   sprintf(nameTD,"START_D_%d",evNumber);
   TObject *td = (TObject*)gDirectory->Get(nameTD);
@@ -94,33 +97,30 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
   }
   td->Read(nameTD);
   digits->Read(nameTD);
-  digits->Dump();
-  if(digits->GetTime()!=999999)
+  if(digits->GetTimeDiff()<TMath::Abs(1000))
     {
-      timediff=digits->GetTime();     //time in number of channels
-      timePs=(timediff-128)*10.;       // time in Ps channel_width =10ps
-      Float_t c = 299792458/1.e9;  //speed of light cm/ps
-      //Float_t c = 0.3;  //speed of light mm/ps
+      timediff=digits->GetTimeDiff();     //time in number of channels
+      timePs=(512-timediff)*2.5;       // time in Ps channel_width =10ps
+      cout<<"timediff "<< timediff<<" timePs "<<timePs<<endl;
+      // Float_t c = 299792458/1.e9;  //speed of light cm/ps
+      Float_t c = 0.3;  //speed of light mm/ps
       Float_t Zposit=timePs*c;// for 0 vertex
       cout<<" Zposit "<<Zposit<<endl;
       fvertex->Set((Int_t) Zposit);
       }
-    TTree *outTree = gAlice->TreeR();
-    if (!outTree) {
-      cerr<<"something wrong with output...."<<endl;
-      exit(111);
-    }
-    TTree *outTreeR = gAlice->TreeR();
+     /*
+        TTree *outTreeR = gAlice->TreeR();
     if (!outTreeR) {
       cerr<<"something wrong with output...."<<endl;
       exit(111);
     }
+    */
   sprintf(nameTR,"START_R_%d",evNumber);
   printf("%s\n",nameTR);
-    TDirectory *wd = gDirectory;
-    outTreeR->GetDirectory()->cd();
+  //  TDirectory *wd = gDirectory;
+  //  outTreeR->GetDirectory()->cd();
     fvertex->Write(nameTR);
-    wd->cd();
+    //  wd->cd();
 }
 
 

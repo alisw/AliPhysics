@@ -382,8 +382,8 @@ void AliSTARTv1::StepManager()
   TClonesArray &lhits = *fHits;
   
   if(!gMC->IsTrackAlive()) return; // particle has disappeared
-  Float_t charge = gMC->TrackCharge();
-  if(TMath::Abs(charge)<=0.) return; //take only charged particles
+  //  Float_t charge = gMC->TrackCharge();
+  //  if(TMath::Abs(charge)<=0.) return; //take only charged particles
   id=gMC->CurrentVolID(copy);
   
   

@@ -10,7 +10,7 @@ PACKAGE = START
 
 # C++ sources
 
-SRCS          = AliSTART.cxx AliSTARTv0.cxx AliSTARTv1.cxx AliSTARThit.cxx AliSTARTdigit.cxx AliSTARTvertex.cxx AliSTARTDigitizer.cxx 
+SRCS          = AliSTART.cxx AliSTARTv0.cxx AliSTARTv1.cxx AliSTARTv2.cxx AliSTARThit.cxx AliSTARThitPhoton.cxx AliSTARTdigit.cxx AliSTARTvertex.cxx AliSTARTDigitizer.cxx 
 
 # C++ Headers
 

@@ -5,40 +5,49 @@
 
 /* $Id$ */
 #include <TObject.h>
+#include <TArrayI.h>
 
 //___________________________________________
 class AliSTARTdigit: public TObject  {
 ////////////////////////////////////////////////////////////////////////
- protected:
-    Int_t fTimeAverage;     // Average time
-    Int_t fTimeDiff;  // Time difference
-
-
  public:
-    AliSTARTdigit(Int_t Timeav=999999, Int_t Timediff=999999);
+    AliSTARTdigit();
     virtual ~AliSTARTdigit() {}
-    void Set(Int_t, Int_t);
-    Int_t GetTime();
+    void SetTimeDiff(Int_t time) {fTimeDiff=time;}
+    void SetMeanTime(Int_t time) {fTimeAverage=time;}
+    Stat_t  GetTimeDiff() {return fTimeDiff;}
+    Stat_t  GetMeanTime() {return fTimeAverage;}
+    Stat_t  GetBestTimeRight() {return fTimeBestRight ;}
+    Stat_t  GetBestTimeLeft() {return fTimeBestLeft ;}
+    Stat_t  GetSumADCRight() {return fSumADCRight ;}
     void Print(); 
-
+    void SetTimeBestRight( Int_t time) {fTimeBestRight = time;}
+    void SetTimeBestLeft( Int_t time) {fTimeBestLeft = time;}
+    void SetSumADCRight( Int_t ADC) {fSumADCRight = ADC;}
+    //    void SetProcessKoef( Float_t pp) {fProcessKoef = pp;}
+    virtual void SetTimeRight (TArrayI &o);
+    virtual void SetTimeLeft (TArrayI &o);
+    virtual void GetTimeRight (TArrayI &o);
+    virtual void GetTimeLeft (TArrayI &o);
+    virtual void SetADCRight (TArrayI &o);
+    virtual void SetADCLeft (TArrayI &o);
+    virtual void GetADCRight (TArrayI &o);
+    virtual void GetADCLeft (TArrayI &o);
+  private: 
+    //    Float_t fProcessKoef;  // for pp fProcessKoef=1 ; for Pb-Pb - 0.001
+    Int_t fTimeAverage;     // Average time
+    Int_t fTimeDiff;        // Time difference
+    Int_t fTimeBestRight;   //TOF first particle on the right
+    Int_t fTimeBestLeft;    //TOF first particle on the left
+    Int_t fSumADCRight;    // multiplicity on the right side
+    TArrayI *fTimeRight;    // right array's TDC
+    TArrayI *fTimeLeft;     // left arraya's TDC
+    TArrayI *fADCRight;    // right array's ADC
+    TArrayI *fADCLeft;     // left arraya's ADC
 
     ClassDef(AliSTARTdigit,1)  //Digit (Header) object for set:START
 };
 
-inline  AliSTARTdigit::AliSTARTdigit(Int_t Timeav, Int_t Timediff):fTimeAverage(Timeav),fTimeDiff(Timediff)
-{
-  //
-  // Create START digit
-  //     
-}
-inline Int_t AliSTARTdigit::GetTime(){return fTimeDiff;}
-inline void AliSTARTdigit::Set(Int_t Timeav, Int_t Timediff)
-  {fTimeAverage=Timeav; fTimeDiff=Timediff;}
-
-inline void AliSTARTdigit::Print(){
-  printf("AliSTARTdigit: fTimeAverage=%d, fTimeDiff=%d\n",
-	 fTimeAverage, fTimeDiff);
-}
 
 #endif
 
