@@ -377,7 +377,7 @@ if(iMUON) {
   AliMUONResponse* responseChamber2;
 
   if (responseVersion == 2) {
-    AliMUONResponseSt1* responseCh1 = new AliMUONResponseSt1(1);
+    AliMUONSt1Response* responseCh1 = new AliMUONSt1Response(1);
     responseCh1->SetSqrtKx3AndDeriveKx2Kx4(0.7000); // sqrt(0.4900)
     responseCh1->SetSqrtKy3AndDeriveKy2Ky4(0.7550); // sqrt(0.5700)
     responseCh1->SetPitch(0.20); // anode-cathode distance
@@ -392,7 +392,7 @@ if(iMUON) {
     responseCh1->SetZeroSuppression(3);
     responseChamber1 = responseCh1;
 
-    AliMUONResponseSt1* responseCh2 = new AliMUONResponseSt1(2);
+    AliMUONSt1Response* responseCh2 = new AliMUONSt1Response(2);
     responseCh2->SetSqrtKx3AndDeriveKx2Kx4(0.7000); // sqrt(0.4900)
     responseCh2->SetSqrtKy3AndDeriveKy2Ky4(0.7550); // sqrt(0.5700)
     responseCh2->SetPitch(0.20); // anode-cathode distance
