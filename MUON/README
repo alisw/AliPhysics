@@ -35,7 +35,27 @@ for hits, you have to do the following before:
 root [0] gAlice->SetConfigFunction("Config( \"/home/martinez/aliroot/work_NewIO/test/\" , \"box\" );"); 
 
 ============================================================
- How to run MUON Digitalization
+ How to run MUON Hits to SDigits
+============================================================
+.L ALICE_ROOT/MUON/MUONHit2SDigit.C
+MUONHit2SDigit(0,99999,"galice.root")
+
+
+============================================================
+ How to run MUON Digitalization from SDigits
+============================================================
+To process the digitalization of hits the AliRunDigitizer 
+framework is used:
+
+AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
+manager->SetInputStream(0,"galice.root");
+AliMUONDigitizerv2* dMUON   = new AliMUONDigitizerv2(manager)
+manager->AddDigitizer(dMUON);
+manager->Exec("deb");
+
+
+============================================================
+ How to run MUON Digitalization from Hits
 ============================================================
 To process the digitalization of hits the AliRunDigitizer 
 framework is used:
@@ -94,6 +114,7 @@ Note1.In the actual version (dec-03) the following data
 members  of ALiMUONTrack:  fgFitter, fEventReconstructor, 
 and fTrackHitsPtr are not saved in the MUON.Track.root file
 
+
 ===========================================================
  How to run MUON Trigger Track reconstruction (new output)
 ===========================================================
@@ -105,6 +126,15 @@ To Load
 gSystem->Load("$ALICE_ROOT/MUON/MUONTriggerTracker_C.so")
 Output in MUON.Tracks.root using the new IO 
 as a TClonesArray of AliMUONTriggerTrack
+
+==========================================================
+ How to run full MUON  reconstruction 
+(clusterisation + trigger + tracking)
+===========================================================
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONChallengeTest.C++
+MUONRecoTest("galice.root");
 
 
 ============================================================
@@ -227,38 +257,30 @@ gAlice->Run(NumberOfEvents,"YourConfig.C");
 .q
 EOF
 
-aliroot -b << EOF 
+aliroot -b << EOF
+.L ALICE_ROOT/MUON/MUONHit2SDigit.C
+MUONHit2SDigit(0,99999,"galice.root")
+.q
+EOF
+
+
+aliroot -b << EOF
 AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
 manager->SetInputStream(0,"galice.root");
-AliMUONDigitizerv1* dMUON   = new AliMUONDigitizerv1(manager);
+AliMUONDigitizerv2* dMUON   = new AliMUONDigitizerv2(manager);
 manager->AddDigitizer(dMUON);
 manager->Exec("deb");
 .q
 EOF
 
-aliroot -b << EOF 
+aliroot -b << EOF
 .includepath $ALICE_ROOT/STEER
 .includepath $ALICE_ROOT/MUON
-.L $ALICE_ROOT/MUON/MUONrawclusters.C++
-MUONrawclusters("galice.root",0,99999); 
+.L $ALICE_ROOT/MUON/MUONChallengeTest.C++
+MUONRecoTest("galice.root");
 .q
 EOF
 
-aliroot -b << EOF 
-.includepath $ALICE_ROOT/STEER
-.includepath $ALICE_ROOT/MUON
-.L $ALICE_ROOT/MUON/MUONtrigger.C++
-MUONtrigger("galice.root",0,99999);
- .q
-EOF
-
-aliroot -b << EOF 
-.includepath $ALICE_ROOT/STEER
-.includepath $ALICE_ROOT/MUON
-.L $ALICE_ROOT/MUON/MUONTracker.C++
-MUONTracker("galice.root",0,99999) 
- .q
-EOF
 
 aliroot -b << EOF  
 .includepath $ALICE_ROOT/STEER
