@@ -2,28 +2,37 @@
 
 #include <TObjArray.h>
 
+//____________________
+///////////////////////////////////////////////////////
+//                                                   //
+// AliHBTRun                                         //
+//                                                   //
+// Class storing and managing events                 //
+//                                                   //
+// Piotr.Skowronski@cern.ch                          //
+// http://alisoft.cern.ch/people/skowron/analyzer    //
+//                                                   //
+///////////////////////////////////////////////////////
 
 ClassImp(AliHBTRun)
 /**************************************************************************/ 
 
 AliHBTRun::AliHBTRun()
-  { 
-  //contructor
-  
-    fEvents = new TObjArray();//create array for AliHBTEvents
-    if(!fEvents) Fatal("AliHBTRun::AliHBTRun","Can not allocate memory");
-    fEvents->SetOwner(); //array is an owner: when is deleted or cleared it deletes objects that it contains
-  }
+{ 
+ //contructor
+  fEvents = new TObjArray();//create array for AliHBTEvents
+  if(!fEvents) Fatal("AliHBTRun::AliHBTRun","Can not allocate memory");
+  fEvents->SetOwner(); //array is an owner: when is deleted or cleared it deletes objects that it contains
+}
 /**************************************************************************/
+
 AliHBTRun::~AliHBTRun()
-  {
-    //destructor
-    
-    delete fEvents;//delete array with events
-  }
-
-
+{
+  //destructor
+  delete fEvents;//delete array with events
+}
 /**************************************************************************/
+
 void AliHBTRun::Reset()
  { 
    fEvents->Clear();//clear an array with events. 
@@ -31,18 +40,15 @@ void AliHBTRun::Reset()
  }
 /**************************************************************************/
 
-
 void AliHBTRun::AddParticle(Int_t event, AliHBTParticle* part)
 {
  //Adds particle to event
- 
  //if there is no event of this number, crate it and add to the collection
  if(!GetEvent(event))  fEvents->AddAtAndExpand(new AliHBTEvent, event);
  
  GetEvent(event)->AddParticle(part);
 }
 /**************************************************************************/
-
 
 void AliHBTRun::AddParticle(Int_t event, TParticle* part)
 {
@@ -51,7 +57,6 @@ void AliHBTRun::AddParticle(Int_t event, TParticle* part)
  GetEvent(event)->AddParticle(part);
 }
 /**************************************************************************/
-
 
 void AliHBTRun::AddParticle(Int_t event, Int_t pdg, 
                             Double_t px, Double_t py, Double_t pz, Double_t etot,

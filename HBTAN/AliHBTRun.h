@@ -1,12 +1,21 @@
 #ifndef ALIHBTRUN_H
 #define ALIHBTRUN_H
+//____________________
+///////////////////////////////////////////////////////
+//                                                   //
+// AliHBTRun                                         //
+//                                                   //
+// Class storing and managing set events             //
+// designed for fast acces                           //
+//                                                   //
+// Piotr.Skowronski@cern.ch                          //
+// http://alisoft.cern.ch/people/skowron/analyzer    //
+//                                                   //
+///////////////////////////////////////////////////////
+
 
 #include "AliHBTEvent.h"
 #include <TObjArray.h>
-
-//class describing set of events (the run)
-//designed for fast acces
-//Piotr.Skowronski@cern.ch
 
 class AliHBTParticle;
 
@@ -47,7 +56,10 @@ inline
 AliHBTEvent* AliHBTRun::GetEvent(Int_t event) const
 {
 //returns pointer to AliHBTEvent number "event"
-  
+  //check if array is enough big - protect from error massage from array "Out Of Bounds"
+  if (event>=fEvents->GetSize()) return 0x0;//WARNING, that line relies 
+                                            //on index of first object in TObjArray is 0
+		    //== LowerBound = 0
   return (AliHBTEvent*)fEvents->At(event);
 }
 /**************************************************************************/
@@ -55,7 +67,8 @@ inline
 AliHBTParticle* AliHBTRun::GetParticle(Int_t event, Int_t n) 
 {
  //returns nth particle from event number event
-  return GetEvent(event)->GetParticle(n);
+  AliHBTEvent* e = GetEvent(event);
+  return (e)?e->GetParticle(n):0x0;
 }
 
 /**************************************************************************/
@@ -74,7 +87,8 @@ inline
 Int_t AliHBTRun::GetNumberOfParticlesInEvent(Int_t event) const
 {
 //returns number of Particles in event 
-  return GetEvent(event)->GetNumberOfParticles();
+  AliHBTEvent* e = GetEvent(event);
+  return (e)?e->GetNumberOfParticles():0x0;
 }
  
 #endif
