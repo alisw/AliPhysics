@@ -618,6 +618,7 @@ void  AliPHOSPIDv1::MakePID()
     stof[AliESDtrack::kNeutron][index]  = fTFneutralhadron->Eval(recpar->ToF()) ; 
     stof[AliESDtrack::kEleCon][index]   = fTFphoton->Eval(recpar->ToF()) ; // a conversion electron has the photon ToF
     stof[AliESDtrack::kKaon0][index]    = 0 ; // do not know yet what to to with K0
+    stof[AliESDtrack::kMuon][index]     = 0 ; // do not know yet what to do with muon
 
   }
   for (index = 0 ; index < kSPECIES ; index++) 
