@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.20  2000/07/10 15:28:39  fca
+  Correction of the inheritance scheme
+
   Revision 1.19  2000/06/30 16:29:51  dibari
   Added kDebugLevel variable to control output size on demand
 
@@ -88,6 +91,8 @@ AliRICH::AliRICH()
     fDchambers  = 0;
     fCerenkovs  = 0;
     fNdch       = 0;
+    fNrawch   = 0;
+    fNrechits = 0;
 }
 
 //___________________________________________
