@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.11  2001/11/29 14:16:51  morsch
+- truncated inner W-cone
+- new support structure
+
 Revision 1.10  2001/10/25 08:50:57  morsch
 New beamshield geometry with increased tolerances and insulation thickness.
 
@@ -139,7 +143,7 @@ void AliABSOv0::CreateGeometry()
     fMLayers[0][1]  = kC;                fZLayers[0][1] = zAbsCc;             
     fMLayers[0][2]  = kConcrete;         fZLayers[0][2] = zRear-dRear-dzFe;
     fMLayers[0][3]  = kSteel;            fZLayers[0][3] = zRear-dRear;
-    fMLayers[0][4]  = kCu;               fZLayers[0][4] = zRear;
+    fMLayers[0][4]  = kSteel;            fZLayers[0][4] = zRear;
 // 2 < theta < 3
     fNLayers[1] = 5; 
     fMLayers[1][0] = fMLayers[0][0];      fZLayers[1][0] = fZLayers[0][0];
@@ -227,12 +231,12 @@ void AliABSOv0::CreateGeometry()
   cpar[3] = zNose * TMath::Tan(accMax);
   cpar[4] = zNose * TMath::Tan(theta1)-dSteel;
   gMC->Gsvolu("ANOS", "CONE", idtmed[kW], cpar, 5);
-//
+  //
   dz = -(zRear-zAbsStart)/2.+cpar[0];
   gMC->Gspos("ANOS", 1, "ABSS", 0., 0., dz, 0, "ONLY");
-//
-// Tungsten inner shield
-//
+  //
+  // Tungsten inner shield
+  //
   Float_t zW = zTwoDeg+.1;
   Float_t dZ = zW+(zRear-dRear-zW)/2.;
   //
@@ -250,9 +254,11 @@ void AliABSOv0::CreateGeometry()
   pcpar[11] = (zRear-dRear) * TMath::Tan(accMin);
   
   gMC->Gsvolu("AWIN", "PCON", idtmed[kNiCuW+40], pcpar, 12);
-  //
   dz=(zW+zRear-dRear)/2-(zAbsStart+zRear)/2.;
   gMC->Gspos("AWIN", 1, "ABSS", 0., 0., dz, 0, "ONLY");
+//
+// First part replaced by Carbon  
+//
   cpar[0] = (200.-zW)/2.;
   cpar[1] = rAbs;
   cpar[2] = pcpar[5];
@@ -260,11 +266,25 @@ void AliABSOv0::CreateGeometry()
   cpar[4] = 200. * TMath::Tan(accMin);
   gMC->Gsvolu("ACNO", "CONE", idtmed[kC], cpar, 5);
   dz = zW-dZ+cpar[0];
-  
   gMC->Gspos("ACNO", 1, "AWIN", 0., 0., dz, 0, "ONLY");
+
+  Float_t zWW = 383.5;
+/*  
+  cpar[0] = (zRear-dRear-zWW)/2.;
+  cpar[1] = rAbs + (zWW-zOpen) *  TMath::Tan(thetaOpen1);
+  cpar[2] =  zWW * TMath::Tan(accMin);
+  cpar[3] = pcpar[10];
+  cpar[4] = pcpar[11];
+  gMC->Gsvolu("AWNO", "CONE", idtmed[kCu+40], cpar, 5);
+  dz = zWW-dZ+cpar[0];
+  
+  gMC->Gspos("AWNO", 1, "AWIN", 0., 0., dz, 0, "ONLY");
+*/
+  //
   //     Inner tracking region
   //
   //     mother volume: Cu
+  //
   //
   pcpar[0]  = 0.;
   pcpar[1]  = 360.;
@@ -437,22 +457,22 @@ void AliABSOv0::CreateGeometry()
     
   par[4]  = zRear;
   par[5]  = 100.;
-  par[6]  = 170.;
+  par[6]  = 180.;
   
-  par[7]  = zRear+2.;
+  par[7]  = zRear+20.;
   par[8]  = 100.;
-  par[9]  = 170.;
+  par[9]  = 180.;
 
-  par[10] = zRear+2.;
-  par[11] = 168.;
-  par[12] = 170.;
+  par[10] = zRear+20.;
+  par[11] = 178.;
+  par[12] = 180.;
 
   par[13] = 600.;
-  par[14] = 168.;
-  par[15] = 170.;
+  par[14] = 178.;
+  par[15] = 180.;
   
 
-  gMC->Gsvolu("ASSS", "PGON", idtmed[kSteel], par, 16);
+  gMC->Gsvolu("ASSS", "PGON", idtmed[kAl], par, 16);
   gMC->Gspos("ASSS", 1, "ALIC", 0., 0., 0., 0, "ONLY");
 
   Float_t trap[11];
@@ -473,8 +493,8 @@ void AliABSOv0::CreateGeometry()
   dz = (600.+zRear+2.)/2.+(trap[4]-trap[8])/2.;
   Float_t dy =  170.+trap[0];
   
-  gMC->Gspos("ASST", 1, "ALIC", 0.,  dy, dz, idrotm[1600], "ONLY");
-  gMC->Gspos("ASST", 2, "ALIC", 0., -dy, dz, idrotm[1601], "ONLY");
+//  gMC->Gspos("ASST", 1, "ALIC", 0.,  dy, dz, idrotm[1600], "ONLY");
+//  gMC->Gspos("ASST", 2, "ALIC", 0., -dy, dz, idrotm[1601], "ONLY");
 }
 
 //_____________________________________________________________________________
