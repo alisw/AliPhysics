@@ -32,8 +32,8 @@ public:
   Double_t Getphi()  const{return fX0;}          // gets the phi value for the track
   Double_t GetC() const {return fX4;}            // gets the curvature value for the track
   Double_t GetD() const{return fX2;}             // gets the radial impact parameter for the track
-  Double_t GetPt() const {return 0.299792458*0.2/(fX4*100.);} // gets the transvers momentum value for the
-                                                              //track           
+  Double_t GetPt() const {return 0.299792458*0.2*fFieldFactor/(fX4*100.);} // gets the transvers momentum 
+                                                                           // value for the track           
   void SetVertex(TVector &vert) { for(Int_t i=0;i<3;i++) fVertex(i) = vert(i);} // sets the vertex
                                                                                 // cohordinates
   void SetErrorVertex(TVector &evert) {for(Int_t i=0;i<3;i++) fErrorVertex(i) = evert(i);} // sets the errors
