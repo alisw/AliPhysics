@@ -43,20 +43,24 @@ void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
 //
     
     for (Int_t nev=0; nev<= evNumber2; nev++) {
+
 	Int_t nparticles = gAlice->GetEvent(nev);
 	if (nev < evNumber1) continue;
 	if (nparticles <= 0) return;
-	TClonesArray *fPartArray = gAlice->Particles();       
-	Int_t npart = fPartArray->GetEntriesFast();
+	
+	TObjArray*  parray = gAlice->Particles();
+	Int_t npart = (gAlice->TreeK())->GetEntries();
 //
 // Loop over primary particles (jpsi. upsilon, ...)
 //       
+	
 	for (Int_t part=0; part<npart; part++) {
-	    TParticle *MPart = (TParticle*) fPartArray->UncheckedAt(part);
+	    TParticle *MPart = gAlice->Particle(part);
 	    Int_t mpart  = MPart->GetPdgCode();
 	    Int_t child1 = MPart->GetFirstDaughter();
 	    Int_t child2 = MPart->GetLastDaughter();	
 	    Int_t mother = MPart->GetFirstMother();	   
+	    printf("\n  %d %d %d %d ", mpart, child1, child2, mother);
 	    
 	    Float_t Pt = MPart->Pt();
 	    Float_t E  = MPart->Energy();
