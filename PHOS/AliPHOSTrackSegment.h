@@ -16,69 +16,35 @@
 // --- ROOT system ---
 
 #include "TObject.h"
-#include "TVector3.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
 #include "AliPHOSEmcRecPoint.h"
-#include "AliPHOSPpsdRecPoint.h"
+#include "AliPHOSRecPoint.h"
 
 class AliPHOSTrackSegment : public TObject  {
 
 public:
 
-  AliPHOSTrackSegment() {
-    // default ctor
-  } 
+  AliPHOSTrackSegment() {} 
   AliPHOSTrackSegment(AliPHOSEmcRecPoint * EmcRecPoint , 
-		      AliPHOSPpsdRecPoint * PpsdUp, 
-		      AliPHOSPpsdRecPoint * PpsdLow  ) ; // ctor
+		      AliPHOSRecPoint * PpsdUp, 
+		      AliPHOSRecPoint * PpsdLow  ) ; // ctor
   AliPHOSTrackSegment(const AliPHOSTrackSegment & ts) ;  // ctor                   
-  virtual ~AliPHOSTrackSegment() {
-    // dtor
-  } 
+  virtual ~AliPHOSTrackSegment() {  } 
 
   void Copy(TObject & obj) ;  
-  virtual Int_t  DistancetoPrimitive(Int_t px, Int_t py);
-  virtual void   Draw(Option_t * option="") ;
-  virtual void   ExecuteEvent(Int_t event, Int_t px, Int_t py);
-  Float_t GetEnergy() ;   // Returns energy in EMC
-  
-  Float_t GetDistanceInPHOSPlane(void) ;   // Computes in PHOS plane the relative position between EMC and PPSD clusters 
-  virtual Int_t  GetPHOSMod(void) ; 
-  TVector3 GetMomentumDirection() ;        // Returns the momentum direction
-  void    GetPosition( TVector3 & pos ) ;  // Returns positions of hit
-  Int_t * GetPrimariesEmc(Int_t & number) ;
-  Int_t * GetPrimariesPpsdLow(Int_t & number) ;
-  Int_t * GetPrimariesPpsdUp(Int_t & number) ;
-  AliPHOSEmcRecPoint *   GetEmcRecPoint() const ;  
-  Int_t   GetIndexInList() const { 
-    // returns the index of this in the list  
-    return fIndexInList ; 
-  } 
-  Int_t                   GetEmcRecPointIndex() {
-    // return the index of the EMC recpoint at the origine of this 
-    return fEmcRecPoint ; 
-  }
-  AliPHOSPpsdRecPoint *  GetPpsdLowRecPoint() const ;
-  Int_t                  GetPpsdLowRecPointIndex() {
-    // returns the PPSD low recpoint at the origin of this 
-    return fPpsdLowRecPoint ; 
-  }
-  AliPHOSPpsdRecPoint *  GetPpsdUpRecPoint() const ; 
-  Int_t                  GetPpsdUpRecPointIndex() {
-    // returns the PPSD up recpoint at the origin of this 
-    return fPpsdUpRecPoint ; 
-  }
-  virtual void  Paint(Option_t * option="");
-  virtual void  Print(const char *) ;
-  void    SetIndexInList(Int_t val) { 
-    // sets the index value  of this in the list 
-    fIndexInList = val ; 
-  } 
-  void    SetPpsdUpRecPoint(AliPHOSPpsdRecPoint * PpsdUpRecPoint ); //sets PPSD up Rec Point
+
+  Int_t   GetIndexInList() const {    return fIndexInList ;   } 
+  Int_t   GetEmcIndex()const {  return fEmcRecPoint ;   }
+  Int_t   GetPpsdIndex()const{  return fPpsdLowRecPoint;}
+  Int_t   GetCpvIndex()const {  return fPpsdUpRecPoint; }
+
+  virtual void  Print(Option_t * option) ;
+  void    SetIndexInList(Int_t val){ fIndexInList = val ;     } 
+  void    SetCpvRecPoint(AliPHOSRecPoint * PpsdUpRecPoint ); //sets PPSD up Rec Point
 
   typedef TClonesArray TrackSegmentsList ; 
  

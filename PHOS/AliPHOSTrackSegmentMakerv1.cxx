@@ -22,26 +22,26 @@
 //
 
 // --- ROOT system ---
-
-#include "TObjArray.h"
-#include "TClonesArray.h"
-#include "TObjectTable.h"
-
+#include "TROOT.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TSystem.h"
+#include "TBenchmark.h"
 // --- Standard library ---
 
 #include <iostream.h>
+#include <iomanip.h>
 
 // --- AliRoot header files ---
 
 #include "AliPHOSTrackSegmentMakerv1.h"
-#include "AliPHOSIndexToObject.h"
+#include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSCpvRecPoint.h"
+#include "AliPHOSPpsdRecPoint.h"
 #include "AliPHOSLink.h"
 #include "AliPHOSv0.h"
 #include "AliRun.h"
-
-extern void UnfoldingChiSquare(Int_t &nPar, Double_t *Grad, Double_t & fret, Double_t *x, Int_t iflag) ; 
 
 ClassImp( AliPHOSTrackSegmentMakerv1) 
 
@@ -50,181 +50,165 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
  AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1() : AliPHOSTrackSegmentMaker()
 {
   // ctor
-
+  SetTitle("version 1") ;
+  SetName("AliPHOSTrackSegmentMaker") ;
   fR0 = 10. ;   
-  //clusters are sorted in "rows" and "columns" of width geom->GetCrystalSize(0),
-  fDelta = fR0 + fGeom->GetCrystalSize(0) ;
-  if(!gMinuit) gMinuit = new TMinuit(100) ;
-  fUnfoldFlag = kTRUE ; 
+  fEmcFirst = 0 ;    
+  fEmcLast  = 0 ;   
+  fCpvFirst = 0 ;   
+  fCpvLast  = 0 ;   
+  fPpsdFirst= 0 ;   
+  fPpsdLast = 0 ;   
+  fLinkLowArray = 0 ;
+  fLinkUpArray  = 0 ;
+  fIsInitialized = kFALSE ;
+}
+//____________________________________________________________________________
+ AliPHOSTrackSegmentMakerv1::  AliPHOSTrackSegmentMakerv1(const char* headerFile, const char* branchTitle): AliPHOSTrackSegmentMaker()
+{
+  // ctor
+  SetTitle("version 1") ;
+  SetName("AliPHOSTrackSegmentMaker") ;
+  fR0 = 10. ;   
+  fEmcFirst = 0 ;    
+  fEmcLast  = 0 ;   
+  fCpvFirst = 0 ;   
+  fCpvLast  = 0 ;   
+  fPpsdFirst= 0 ;   
+  fPpsdLast = 0 ;   
+
+  fHeaderFileName = headerFile ;
+  fRecPointsBranchTitle = branchTitle ;
+    
+  TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
+  
+  if(file == 0){
+    file = new TFile(fHeaderFileName.Data(),"update") ;
+    gAlice = (AliRun *) file->Get("gAlice") ;
+  }
+  
+  AliPHOS * phos = (AliPHOS *) gAlice->GetDetector("PHOS") ;    
+  fGeom  = AliPHOSGeometry::GetInstance(phos->GetGeometry()->GetName(),phos->GetGeometry()->GetTitle() );
+  
+  fEmcRecPoints = new TObjArray(200) ;
+  fCpvRecPoints = new TObjArray(200) ;
+  fClusterizer  = new AliPHOSClusterizerv1() ;
+  
+  fTrackSegments = new TClonesArray("AliPHOSTrackSegment",200) ;
+  
+  fLinkLowArray = new TClonesArray("AliPHOSLink", 1000);
+  fLinkUpArray  = new TClonesArray("AliPHOSLink", 1000); 
+  
+  fIsInitialized = kTRUE ;
+
+}
+//____________________________________________________________________________
+void  AliPHOSTrackSegmentMakerv1::Init(){
+
+  if(!fIsInitialized){
+    if(fHeaderFileName.IsNull())
+      fHeaderFileName = "galice.root" ;
+    
+    
+    TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
+    
+    if(file == 0){
+      file = new TFile(fHeaderFileName.Data(),"update") ;
+      gAlice = (AliRun *) file->Get("gAlice") ;
+    }
+    
+    AliPHOS * phos = (AliPHOS *) gAlice->GetDetector("PHOS") ;    
+    fGeom  = AliPHOSGeometry::GetInstance(phos->GetGeometry()->GetName(),phos->GetGeometry()->GetTitle() );
+
+
+    fEmcRecPoints = new TObjArray(200) ;
+    fCpvRecPoints = new TObjArray(200) ;
+    fClusterizer  = new AliPHOSClusterizerv1() ;
+
+    
+    fTrackSegments = new TClonesArray("AliPHOSTrackSegment",200) ;
+
+    fLinkLowArray = new TClonesArray("AliPHOSLink", 1000);
+    fLinkUpArray  = new TClonesArray("AliPHOSLink", 1000); 
+    
+    fIsInitialized = kTRUE ;
+   }
 }
 
 //____________________________________________________________________________
  AliPHOSTrackSegmentMakerv1::~AliPHOSTrackSegmentMakerv1()
 { 
   // dtor
+  if(fLinkLowArray) delete fLinkLowArray ;
+  if(fLinkUpArray)  delete fLinkUpArray  ;
 }
 
 //____________________________________________________________________________
-Bool_t  AliPHOSTrackSegmentMakerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Float_t * maxAtEnergy,
-				    Int_t nPar, Float_t * fitparameters)
-{ 
-  // Calls TMinuit to fit the energy distribution of a cluster with several maxima 
-
-  gMinuit->mncler();                     // Reset Minuit list of paramters
-  gMinuit->SetPrintLevel(-1) ;           // No Printout
-  gMinuit->SetFCN(UnfoldingChiSquare) ;  // To set the address of the minimization function 
-  gMinuit->SetObjectFit(emcRP) ;         // To tranfer pointer to UnfoldingChiSquare
-
-  // filling initial values for fit parameters
-  AliPHOSDigit * digit ;
-
-  Int_t ierflg  = 0; 
-  Int_t index   = 0 ;
-  Int_t nDigits = (Int_t) nPar / 3 ;
-
-  Int_t iDigit ;
-
-
-  for(iDigit = 0; iDigit < nDigits; iDigit++){
-    digit = (AliPHOSDigit *) maxAt[iDigit]; 
-
-    Int_t relid[4] ;
-    Float_t x ;
-    Float_t z ;
-    fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    fGeom->RelPosInModule(relid, x, z) ;
-
-    Float_t energy = maxAtEnergy[iDigit] ;
-
-    gMinuit->mnparm(index, "x",  x, 0.1, 0, 0, ierflg) ;
-    index++ ;   
-    if(ierflg != 0){ 
-      cout << "PHOS Unfolding>  Unable to set initial value for fit procedure : x = " << x << endl ;
-      return kFALSE;
-    }
-    gMinuit->mnparm(index, "z",  z, 0.1, 0, 0, ierflg) ;
-    index++ ;   
-    if(ierflg != 0){
-      cout << "PHOS Unfolding>  Unable to set initial value for fit procedure : z = " << z << endl ;
-      return kFALSE;
-    }
-    gMinuit->mnparm(index, "Energy",  energy , 0.05*energy, 0., 4.*energy, ierflg) ;
-    index++ ;   
-    if(ierflg != 0){
-      cout << "PHOS Unfolding>  Unable to set initial value for fit procedure : energy = " << energy << endl ;      
-      return kFALSE;
-    }
-  }
-
-  Double_t p0 = 0.1 ; // "Tolerance" Evaluation stops when EDM = 0.0001*p0 ; The number of function call slightly
-                      //  depends on it. 
-  Double_t p1 = 1.0 ;
-  Double_t p2 = 0.0 ;
-
-  gMinuit->mnexcm("SET STR", &p2, 0, ierflg) ;   // force TMinuit to reduce function calls  
-  gMinuit->mnexcm("SET GRA", &p1, 1, ierflg) ;   // force TMinuit to use my gradient  
-  gMinuit->SetMaxIterations(5);
-  gMinuit->mnexcm("SET NOW", &p2 , 0, ierflg) ;  // No Warnings
-
-  gMinuit->mnexcm("MIGRAD", &p0, 0, ierflg) ;    // minimize 
-
-  if(ierflg == 4){  // Minimum not found   
-    cout << "PHOS Unfolding>  Fit not converged, cluster abandoned "<< endl ;      
-    return kFALSE ;
-  }            
-  for(index = 0; index < nPar; index++){
-    Double_t err ;
-    Double_t val ;
-    gMinuit->GetParameter(index, val, err) ;    // Returns value and error of parameter index
-    fitparameters[index] = val ;
-   }
-
-  return kTRUE;
-
-}
-
-//____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::FillOneModule(AliPHOSRecPoint::RecPointsList * emcIn, 
-						TArrayI * emcOut, 
-						AliPHOSRecPoint::RecPointsList * ppsdIn, 
-						TArrayI * ppsdOutUp,
-						TArrayI * ppsdOutLow, 
-						Int_t & phosmod, 
-						Int_t & emcStopedAt, 
-						Int_t & ppsdStopedAt)
+void  AliPHOSTrackSegmentMakerv1::FillOneModule()
 {
-  // Fill xxxOut arrays with clusters from one PHOS module
+  // Finds bounds in which clusters from one PHOS module are
  
-  AliPHOSEmcRecPoint *  emcRecPoint  ; 
-  AliPHOSPpsdRecPoint * ppsdRecPoint ;
-  Int_t index ;
+
+  //First EMC clusters
+  Int_t totalEmc = fEmcRecPoints->GetEntriesFast() ;
+  for(fEmcFirst = fEmcLast; (fEmcLast < totalEmc) &&  
+	(((AliPHOSRecPoint *) fEmcRecPoints->At(fEmcLast))->GetPHOSMod() == fModule ); 
+      fEmcLast ++)  ;
   
-  Int_t nEmcUnfolded = emcIn->GetEntries() ;
-  emcOut->Set(nEmcUnfolded);
-  Int_t inEmcOut = 0 ;
-  for(index = emcStopedAt; index < nEmcUnfolded; index++){
+  
+  //Now CPV clusters
+  Int_t totalCpv = fCpvRecPoints->GetEntriesFast() ;
 
-    emcRecPoint = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
+  if(fModule <= fGeom->GetNCPVModules()){ // in CPV geometry
     
-    if(emcRecPoint->GetPHOSMod() != phosmod )  
-      break ;
+    for(fCpvFirst = fCpvLast; (fCpvLast < totalCpv) && 
+	  (((AliPHOSRecPoint *) fCpvRecPoints->At(fCpvLast))->GetPHOSMod() == fModule ); 
+	fCpvLast ++) ;
     
-    emcOut->AddAt(emcRecPoint->GetIndexInList(),inEmcOut) ;
-    inEmcOut++ ; 
+    fPpsdFirst = fCpvLast ; //To avoid scanning RecPoints between fPpsdFirst and fPpsdLast
+    fPpsdLast  = fCpvLast ; //and to be ready to switch to mixed geometry 
   }
-  emcOut->Set(inEmcOut) ;
-
-  emcStopedAt = index ;
-
-  ppsdOutLow->Set(ppsdIn->GetEntries()) ;
-  ppsdOutUp->Set(ppsdIn->GetEntries()) ;
-  Int_t inPpsdLow = 0;
-  Int_t inPpsdUp = 0;
-  for(index = ppsdStopedAt; index < ppsdIn->GetEntries(); index++){
-    ppsdRecPoint = (AliPHOSPpsdRecPoint *) ppsdIn->At(index) ;
-    if(ppsdRecPoint->GetPHOSMod() != phosmod )   
-      break ;
-    if(phosmod <= fGeom->GetNCPVModules())   //in CPV
-      ppsdOutUp->AddAt(index,inPpsdUp++) ;
-    else{			             //in PPSD
-      if(ppsdRecPoint->GetUp() ) 
-	ppsdOutUp->AddAt(index,inPpsdUp++) ;
-      else  
-	ppsdOutLow->AddAt(index,inPpsdLow++) ;
-    }
+  else{  //in PPSD geometry    
+    fCpvLast = fPpsdLast ;
+    //Upper layer first
+    for(fCpvFirst = fCpvLast; (fCpvLast < totalCpv) &&  
+	  (((AliPHOSPpsdRecPoint *) fCpvRecPoints->At(fCpvLast))->GetPHOSMod() == fModule ) &&
+	  (((AliPHOSPpsdRecPoint *) fCpvRecPoints->At(fCpvLast))->GetUp()) ; 
+	fCpvLast ++)  ;
+    
+    fPpsdLast= fCpvLast ;
+    for(fPpsdFirst = fPpsdLast; (fPpsdLast < totalCpv)  &&
+	  (((AliPHOSPpsdRecPoint *) fCpvRecPoints->At(fPpsdLast))->GetPHOSMod() == fModule ) &&
+	  (!((AliPHOSPpsdRecPoint *) fCpvRecPoints->At(fPpsdLast))->GetUp()) ; 
+	fPpsdLast ++) ;
   }
-  ppsdOutLow->Set(inPpsdLow);
-  ppsdOutUp->Set(inPpsdUp);
-  ppsdStopedAt = index ;
-   
+    
 }
 //____________________________________________________________________________
-Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcclu,AliPHOSPpsdRecPoint * PpsdClu, Bool_t &toofar)
+Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcClu,AliPHOSRecPoint * cpvClu, Bool_t &toofar)
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
- 
+  //clusters are sorted in "rows" and "columns" of width 1 cm
+  Float_t delta = 1 ;  // Width of the rows in sorting of RecPoints (in cm)
+                       // if you change this value, change it as well in xxxRecPoint::Compare()
   Float_t r = fR0 ;
  
   TVector3 vecEmc ;
-  TVector3 vecPpsd ;
+  TVector3 vecCpv ;
   
-  emcclu->GetLocalPosition(vecEmc) ;
-  PpsdClu->GetLocalPosition(vecPpsd)  ; 
-  if(emcclu->GetPHOSMod() == PpsdClu->GetPHOSMod()){ 
-    //    if(vecPpsd.X() >= vecEmc.X() - fDelta ){ 
-    //  if(vecPpsd.Z() >= vecEmc.Z() - fDelta ){
-	// Correct to difference in CPV and EMC position due to different distance to center.
-	// we assume, that particle moves from center
-	Float_t dCPV = fGeom->GetIPtoOuterCoverDistance();
-	Float_t dEMC = fGeom->GetIPtoCrystalSurface() ;
-	dEMC         = dEMC / dCPV ;
-        vecPpsd = dEMC * vecPpsd  - vecEmc ; 
-        r = vecPpsd.Mag() ;
-	//    } // if  zPpsd >= zEmc - fDelta
+  emcClu->GetLocalPosition(vecEmc) ;
+  cpvClu->GetLocalPosition(vecCpv)  ; 
+
+  if(emcClu->GetPHOSMod() == cpvClu->GetPHOSMod()){ 
+    if(vecCpv.X() <= vecEmc.X() + fR0 + 2*delta ){ 
+
+      vecCpv = vecCpv  - vecEmc ; 
+      r = vecCpv.Mag() ;
       toofar = kFALSE ;
-      //} // if  xPpsd >= xEmc - fDelta
-      // else 
-      //toofar = kTRUE ;
+
+    } // if  xPpsd >= xEmc + ...
+    else 
+      toofar = kTRUE ;
   } 
   else 
     toofar = kTRUE ;
@@ -236,482 +220,408 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::MakeLinks(TArrayI * emcRecPoints, TArrayI * ppsdRecPointsUp, 
-				     TArrayI * ppsdRecPointsLow, TClonesArray * linklowArray, 
-				     TClonesArray *linkupArray) 
+void  AliPHOSTrackSegmentMakerv1::MakeLinks()
 { 
   // Finds distances (links) between all EMC and PPSD clusters, which are not further apart from each other than fR0 
   
-  
-  AliPHOSPpsdRecPoint * ppsdlow ; 
-  AliPHOSPpsdRecPoint * ppsdup ;
+  fLinkUpArray->Clear() ;    
+  fLinkLowArray->Clear() ;
+
+  AliPHOSRecPoint * ppsd ; 
+  AliPHOSRecPoint * cpv ;
   AliPHOSEmcRecPoint * emcclu ;
 
   Int_t iLinkLow = 0 ;
   Int_t iLinkUp  = 0 ;
   
   Int_t iEmcRP;
-  
-  for(iEmcRP = 0; iEmcRP < emcRecPoints->GetSize(); iEmcRP++ ) {
-    emcclu = (AliPHOSEmcRecPoint *) fPlease->GimeRecPoint(emcRecPoints->At(iEmcRP),"emc") ;
-    Bool_t toofar ;
-    
-    Int_t iPpsdLow ;
-    
-    for(iPpsdLow = 0; iPpsdLow < ppsdRecPointsLow->GetSize();iPpsdLow++ ) {
+  for(iEmcRP = fEmcFirst; iEmcRP < fEmcLast; iEmcRP++ ) {
+    emcclu = (AliPHOSEmcRecPoint *) fEmcRecPoints->At(iEmcRP) ;
+
+    Bool_t toofar ;    
+    Int_t iPpsd ;
+    for(iPpsd = fPpsdFirst; iPpsd < fPpsdLast;iPpsd++ ) {
       
-      ppsdlow = (AliPHOSPpsdRecPoint *) fPlease->GimeRecPoint(ppsdRecPointsLow->At(iPpsdLow),"ppsd") ;
-      Float_t r = GetDistanceInPHOSPlane(emcclu, ppsdlow, toofar) ;
-      
+      ppsd = (AliPHOSRecPoint *) fCpvRecPoints->At(iPpsd) ;
+      Float_t r = GetDistanceInPHOSPlane(emcclu, ppsd, toofar) ;
+
       if(toofar) 
 	break ;	 
-      if(r < fR0){
-	new( (*linklowArray)[iLinkLow++]) AliPHOSLink(r, iEmcRP, iPpsdLow) ;
-      }
+      if(r < fR0)
+	new ((*fLinkLowArray)[iLinkLow++])  AliPHOSLink(r, iEmcRP, iPpsd) ;
     }
     
-    Int_t iPpsdUp = 0 ;    
-    for(iPpsdUp = 0; iPpsdUp < ppsdRecPointsUp->GetSize();iPpsdUp++ ) { 
+    Int_t iCpv = 0 ;    
+    for(iCpv = fCpvFirst; iCpv < fCpvLast;iCpv++ ) { 
       
-      ppsdup = (AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdRecPointsUp->At(iPpsdUp),"ppsd") ;
-      Float_t r = GetDistanceInPHOSPlane(emcclu, ppsdup, toofar) ;
+      cpv = (AliPHOSRecPoint *) fCpvRecPoints->At(iCpv) ;
+      Float_t r = GetDistanceInPHOSPlane(emcclu, cpv, toofar) ;
       
       if(toofar)
 	break ;	 
       if(r < fR0) { 
-	new( (*linkupArray)[iLinkUp++]) AliPHOSLink(r, iEmcRP, iPpsdUp) ;
+	new ((*fLinkUpArray)[iLinkUp++])  AliPHOSLink(r, iEmcRP, iCpv) ;
       }      
     }
   } 
   
-  linklowArray->Sort() ; //first links with smallest distances
-  linkupArray->Sort() ;
+  fLinkLowArray->Sort() ; //first links with smallest distances
+  fLinkUpArray->Sort() ;
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::MakePairs(TArrayI * emcRecPoints, 
-					    TArrayI * ppsdRecPointsUp, 
-					    TArrayI * ppsdRecPointsLow, 
-					    TClonesArray * linklowArray, 
-					    TClonesArray * linkupArray, 
-					    AliPHOSTrackSegment::TrackSegmentsList * trsl) 
+void  AliPHOSTrackSegmentMakerv1::MakePairs()
 { 
-
-  // Finds the smallest links and makes pairs of PPSD and EMC clusters with smallest distance 
   
-  TIter nextLow(linklowArray) ;
-  TIter nextUp(linkupArray) ;
+  //Make arrays to mark clusters already chousen
+  Int_t * emcExist = 0;
+  if(fEmcLast > fEmcFirst)
+    emcExist = new Int_t[fEmcLast-fEmcFirst] ;
+  
+  Int_t index;
+  for(index = 0; index <fEmcLast-fEmcFirst; index ++)
+    emcExist[index] = 1 ;
+  
+  Bool_t * cpvExist = 0;
+  if(fCpvLast > fCpvFirst)
+    cpvExist = new Bool_t[fCpvLast-fCpvFirst] ;
+  for(index = 0; index <fCpvLast-fCpvFirst; index ++)
+    cpvExist[index] = kTRUE ;
+  
+  Bool_t * ppsdExist = 0;
+  if(fPpsdLast > fPpsdFirst)
+    ppsdExist = new Bool_t[fPpsdLast-fPpsdFirst] ;
+  for(index = 0; index <fPpsdLast-fPpsdFirst; index ++)
+    ppsdExist[index] = kTRUE ;
+  
+  // Finds the smallest links and makes pairs of CPV and EMC clusters with smallest distance 
+  TIter nextLow(fLinkLowArray) ;
+  TIter nextUp(fLinkUpArray) ;
   
   AliPHOSLink * linkLow ;
   AliPHOSLink * linkUp ;
 
-  Int_t emc ;
-  Int_t ppsdLow ;
-  Int_t ppsdUp ;
 
-  AliPHOSPpsdRecPoint * nullpointer = 0 ;
-  ppsdUp = 0 ;
+  AliPHOSRecPoint * nullpointer = 0 ;
 
   while ( (linkLow =  (AliPHOSLink *)nextLow() ) ){
   
-    emc = emcRecPoints->At(linkLow->GetEmc()) ;
-    ppsdLow = ppsdRecPointsLow->At(linkLow->GetPpsd()) ;
-
-    if( (emc >= 0) && (ppsdLow >= 0) ){    // RecPoints not removed yet 
-      
-      new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment((AliPHOSEmcRecPoint *)fPlease->GimeRecPoint(emc,"emc"), 
-							  nullpointer, 
-							  (AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdLow,"ppsd") ) ;
-      ((AliPHOSTrackSegment* )trsl->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);    
+    if( (emcExist[linkLow->GetEmc()-fEmcFirst]> 0) && ppsdExist[linkLow->GetPpsd()-fPpsdFirst]  ){ // RecPoints not removed yet 
+      new ((*fTrackSegments)[fNTrackSegments]) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) fEmcRecPoints->At(linkLow->GetEmc()), 
+						 nullpointer, 
+						(AliPHOSPpsdRecPoint *)fCpvRecPoints->At(linkLow->GetPpsd()) ) ;
+	 
+      ((AliPHOSTrackSegment* )fTrackSegments->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);    
       //replace index of emc to negative and shifted index of TS      
-      emcRecPoints->AddAt(-2 - fNTrackSegments,linkLow->GetEmc()) ;  
-      //replace index of PPSD Low to negative and shifted index of TS      
-      ppsdRecPointsLow->AddAt(-2 - fNTrackSegments,linkLow->GetPpsd()) ; 
+      emcExist[linkLow->GetEmc()-fEmcFirst] = -2 - fNTrackSegments ;  
+      //mark ppsd as used
+      ppsdExist[linkLow->GetPpsd()-fPpsdFirst] = kFALSE ; 
       fNTrackSegments++ ;
-
     } 
   } 
 	 
+
   while ( (linkUp =  (AliPHOSLink *)nextUp() ) ){  
-    emc = emcRecPoints->At(linkUp->GetEmc()) ;
-    if(emc != -1){ //without ppsd Up yet 
+    if(emcExist[linkUp->GetEmc()-fEmcFirst] != -1){ //without ppsd Up yet 
 
-      ppsdUp = ppsdRecPointsUp->At(linkUp->GetPpsd()) ;
-      if(ppsdUp >= 0){ //ppsdUp still exist
+      if(cpvExist[linkUp->GetPpsd()-fCpvFirst]){ //CPV still exist
 	
-	if(emc >= 0){ //without ppsd Low => create new TS
+	if(emcExist[linkUp->GetEmc()-fEmcFirst] > 0){ //without ppsd Low => create new TS
 
-	  fNTrackSegments = trsl->GetEntries() ; 
-	  new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) fPlease->GimeRecPoint(emc,"emc"), 
-							      (AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdUp,"ppsd"), 
-							      nullpointer) ;
-	  ((AliPHOSTrackSegment *) trsl->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
+	  new ((* fTrackSegments)[fNTrackSegments]) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) fEmcRecPoints->At(linkUp->GetEmc()) , 
+								      (AliPHOSPpsdRecPoint *)fCpvRecPoints->At(linkUp->GetPpsd()), 
+								      nullpointer) ;
+	  ((AliPHOSTrackSegment *) fTrackSegments->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
 	  fNTrackSegments++ ;
 	}
 	else{ // append ppsd Up to existing TS
-	  ((AliPHOSTrackSegment *)trsl->At(-2-emc))->SetPpsdUpRecPoint((AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdUp,"ppsd"));
+	  ((AliPHOSTrackSegment *)fTrackSegments->At(-2-emcExist[linkUp->GetEmc()-fEmcFirst]))->SetCpvRecPoint((AliPHOSCpvRecPoint *)fCpvRecPoints->At(linkUp->GetPpsd()));
 	}
 
-	emcRecPoints->AddAt(-1,linkUp->GetEmc()) ; //Mark that PPSD Up found 
-	//replace index of PPSD Up to negative and shifted index of TS      
-	ppsdRecPointsUp->AddAt(-2 - fNTrackSegments,linkUp->GetPpsd()) ; 
+	emcExist[linkUp->GetEmc()-fEmcFirst] = -1 ; //Mark emc  that Cpv was found 
+	//mark CPV recpoint as already used 
+        cpvExist[linkUp->GetPpsd()-fCpvFirst] = kFALSE ;
       } //if ppsdUp still exist
     } 
   }	 
 
-  Int_t iEmcRP ;
-  for(iEmcRP = 0; iEmcRP <emcRecPoints->GetSize() ; iEmcRP++ ){
-    emc = emcRecPoints->At(iEmcRP) ;
-    if(emc >=0 ){
-      ppsdUp = 0;
-      ppsdLow = 0;
-      new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) fPlease->GimeRecPoint(emc,"emc"), 
-							  nullpointer, nullpointer ) ;
-      ((AliPHOSTrackSegment *) trsl->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
-      fNTrackSegments++;    
+  //look through emc recPoints left without CPV/PPSD
+  if(emcExist){ //if there is emc rec point
+    Int_t iEmcRP ;
+    for(iEmcRP = 0; iEmcRP < fEmcLast-fEmcFirst  ; iEmcRP++ ){
+      if(emcExist[iEmcRP] > 0 ){
+	new ((*fTrackSegments)[fNTrackSegments])  AliPHOSTrackSegment((AliPHOSEmcRecPoint *)fEmcRecPoints->At(iEmcRP+fEmcFirst), 
+								    nullpointer, 
+								    nullpointer ) ;
+	((AliPHOSTrackSegment *) fTrackSegments->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
+	fNTrackSegments++;    
+      } 
     }
-    
   }
   
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl, 
-						    AliPHOSRecPoint::RecPointsList * emcl, 
-						    AliPHOSRecPoint::RecPointsList * ppsdl, 
-						    AliPHOSTrackSegment::TrackSegmentsList * trsl)
+void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 {
   // Makes the track segments out of the list of EMC and PPSD Recpoints and stores them in a list
+
+  if(! fIsInitialized) Init() ;
+
+  if(strstr(option,"tim"))
+    gBenchmark->Start("PHOSTSMaker");  
+
+  Int_t nEvents = (Int_t) gAlice->TreeE()->GetEntries() ;
   
-  Int_t emcStopedAt  = 0 ; 
-  Int_t ppsdStopedAt = 0 ; 
-
-  fNTrackSegments = 0 ; 
-  
-  TArrayI * emcRecPoints     = new TArrayI(1000) ;  // these arrays keep indexes 
-  TArrayI * ppsdRecPointsUp  = new TArrayI(1000) ;  // of RecPoints, which are 
-  TArrayI * ppsdRecPointsLow = new TArrayI(1000) ;  // kept in TClonesArray's emcl, ppsdl, cpv
-  
-  TClonesArray * linklowArray = new TClonesArray("AliPHOSLink", 1000);
-  TClonesArray * linkupArray  = new TClonesArray("AliPHOSLink", 1000); 
-
-  if(fUnfoldFlag){
-    UnfoldAll(dl, emcl) ; // Unfolds all EMC clusters
-    UnfoldAll(dl, ppsdl) ; // Unfolds all CPV clusters
-  }
-
-  Int_t phosmod  = 1 ;
-  while(phosmod <= fGeom->GetNModules() ){
+  for(fEvent = 0;fEvent< nEvents; fEvent++){
+    if(!ReadRecPoints())  //reads RecPoints for event fEvent
+      return;
     
-    FillOneModule(emcl, emcRecPoints, ppsdl, ppsdRecPointsUp, ppsdRecPointsLow, phosmod, emcStopedAt, ppsdStopedAt) ;
-    
-    MakeLinks(emcRecPoints, ppsdRecPointsUp, ppsdRecPointsLow, linklowArray, linkupArray) ; 
-    
-    MakePairs(emcRecPoints, ppsdRecPointsUp, ppsdRecPointsLow, linklowArray, linkupArray, trsl) ;
-    
-    emcRecPoints->Reset() ;
-    
-    ppsdRecPointsUp->Reset() ;
-    
-    ppsdRecPointsLow->Reset() ;
-    
-    linkupArray->Clear() ;
-    
-    linklowArray->Clear() ;
-    
-    phosmod++ ; 
-  }
-
-  delete emcRecPoints ; 
-  emcRecPoints = 0 ; 
-  
-  delete ppsdRecPointsUp ; 
-  ppsdRecPointsUp = 0 ; 
-
-  delete ppsdRecPointsLow ; 
-  ppsdRecPointsLow = 0 ; 
-
-  delete linkupArray ; 
-  linkupArray = 0  ; 
-
-  delete linklowArray ; 
-  linklowArray = 0 ; 
-}
-
-//____________________________________________________________________________
-Double_t  AliPHOSTrackSegmentMakerv1::ShowerShape(Double_t r)
-{ 
-  // Shape of the shower (see PHOS TDR)
-  // If you change this function, change also the gradien evaluation  in ChiSquare()
-
-  Double_t r4    = r*r*r*r ;
-  Double_t r295  = TMath::Power(r, 2.95) ;
-  Double_t shape = TMath::Exp( -r4 * (1. / (2.32 + 0.26 * r4) + 0.0316 / (1 + 0.0652 * r295) ) ) ;
-  return shape ;
-}
-
-//____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::UnfoldAll(DigitsList * dl, AliPHOSRecPoint::RecPointsList * emcIn) 
-{
-  // Performs unfolding of all EMC/CPV but NOT ppsd clusters, sorts them and resets indexes in RecPoints
-
-  AliPHOSEmcRecPoint *  emcRecPoint  ; 
-  Int_t index ;
-  Int_t nEmcUnfolded = emcIn->GetEntries() ;
-
-  Int_t nModulesToUnfold ;
-
-  if(emcIn->GetEntries() > 0){
-
-    if(((AliPHOSRecPoint *)emcIn->At(0))->IsEmc()){
-      nModulesToUnfold = fGeom->GetNModules() ; 
+    for(fModule = 1; fModule <= fGeom->GetNModules() ; fModule++ ){
+      
+      FillOneModule() ; 
+      
+      MakeLinks() ;
+      
+      MakePairs() ;
+      
     }
-    else{
-      nModulesToUnfold = fGeom->GetNCPVModules() ;
-    }
-    
-    for(index = 0 ; index < nEmcUnfolded; index++){
-      
-      emcRecPoint = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
-      if(emcRecPoint->GetPHOSMod()> nModulesToUnfold)
-	break ;
-      
-      Int_t nMultipl = emcRecPoint->GetMultiplicity() ; 
-      Int_t * maxAt = new Int_t[nMultipl] ;
-      Float_t * maxAtEnergy = new Float_t[nMultipl] ;
-      Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy) ;
-      
-      if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0       
-	UnfoldClusters(dl, emcIn, emcRecPoint, nMax, maxAt, maxAtEnergy) ;
-	emcIn->Remove(emcRecPoint); 
-	emcIn->Compress() ;
-	index-- ;
-	nEmcUnfolded-- ;
-      }
-      
-      delete[] maxAt ; 
-      delete[] maxAtEnergy ; 
-    } //Unfolding finished
-   
-    emcIn->Sort() ;
-    
-    // to set index to new and correct index of old RecPoints
-    for( index = 0 ; index < emcIn->GetEntries() ; index++)
-      ((AliPHOSEmcRecPoint *) emcIn->At(index))->SetIndexInList(index) ;   
-    
+
+    WriteTrackSegments() ;
+    if(strstr(option,"deb"))
+      PrintTrackSegments(option) ;
   }
+
+  if(strstr(option,"tim")){
+    gBenchmark->Stop("PHOSTSMaker");
+    cout << "AliPHOSTSMaker:" << endl ;
+    cout << "  took " << gBenchmark->GetCpuTime("PHOSTSMaker") << " seconds for making TS " 
+	 <<  gBenchmark->GetCpuTime("PHOSTSMaker")/nEvents << " seconds per event " << endl ;
+    cout << endl ;
+  }
+
 
 }
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl, 
-						 AliPHOSRecPoint::RecPointsList * emcIn, 
-						 AliPHOSEmcRecPoint * iniEmc, 
-						 Int_t nMax, 
-						 int * maxAt, 
-						 Float_t * maxAtEnergy)
-{ 
-  // Performs the unfolding of a cluster with nMax overlapping showers 
-  // This is time consuming (use the (Un)SetUnfolFlag()  )
+void AliPHOSTrackSegmentMakerv1::Print(Option_t * option)const {
+  if(fIsInitialized){
+    cout <<  "======== AliPHOSTrackSegmentMakerv1 ========" << endl ;
+    cout <<  "Making Track segments "<< endl ;
+    cout <<  "    Headers file: " << fHeaderFileName.Data() << endl ;
+    cout <<  "    RecPoints branch file name: " <<fRecPointsBranchTitle.Data() << endl ;
+    cout <<  "    TrackSegments Branch file name: " << fTSBranchTitle.Data() << endl ;
+    cout <<  "with parameters: " << endl ;
+    cout <<  "    Maximal EMC - CPV (PPSD) distance " << fR0 << endl ;
+    cout <<  "============================================" << endl ;
+  }
+  else
+    cout << "AliPHOSTrackSegmentMakerv1 not initialized " << endl ;
+}
+//____________________________________________________________________________
+Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(){
 
-  Int_t nPar = 3 * nMax ;
-  Float_t * fitparameters = new Float_t[nPar] ;
+  //Make some initializations 
+  fEmcRecPoints->Clear() ;
+  fCpvRecPoints->Clear() ;
+  fTrackSegments->Clear() ;
+  fNTrackSegments = 0 ;
+  fEmcFirst = 0 ;    
+  fEmcLast  = 0 ;   
+  fCpvFirst = 0 ;   
+  fCpvLast  = 0 ;   
+  fPpsdFirst= 0 ;   
+  fPpsdLast = 0 ;   
 
 
-  Bool_t rv = FindFit(iniEmc, maxAt, maxAtEnergy, nPar, fitparameters) ;
-  if( !rv ) {
-    // Fit failed, return and remove cluster
-    delete[] fitparameters ; 
+  gAlice->GetEvent(fEvent) ;
+
+  // Get TreeR header from file
+  char treeName[20]; 
+  sprintf(treeName,"TreeR%d",fEvent);
+
+  if(gAlice->TreeR()==0){
+    cout << "Error in AliPHOSTrackSegmentMakerv1 : no "<<treeName << endl  ;
+    cout << "   Do nothing " << endl ;
+    return kFALSE ;
+  }
+
+  char * emcBranchName = new char[30];
+  // sprintf(emcBranchName,"PHOSEmcRP%d",fEvent);
+  sprintf(emcBranchName,"PHOSEmcRP");
+  char * cpvBranchName = new char[30];
+  //  sprintf(cpvBranchName,"PHOSCpvRP%d",fEvent);
+  sprintf(cpvBranchName,"PHOSCpvRP");
+  char * cluBranchName = new char[30];
+  //  sprintf(cluBranchName,"AliPHOSClusterizer%d",fEvent);
+  sprintf(cluBranchName,"AliPHOSClusterizer");
+
+  TBranch * emcBranch = 0;
+  TBranch * cpvBranch = 0;
+  TBranch * clusterizerBranch = 0;
+
+  TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
+  Int_t ibranch;
+  Bool_t emcNotFound = kTRUE ;
+  Bool_t cpvNotFound = kTRUE ;  
+  Bool_t clusterizerNotFound = kTRUE ;
+  
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+
+    if(emcNotFound){
+      emcBranch=(TBranch *) branches->At(ibranch) ;
+      if( fRecPointsBranchTitle.CompareTo(emcBranch->GetTitle())==0 )
+	if( strcmp(emcBranch->GetName(),emcBranchName) == 0) {
+	  emcNotFound = kFALSE ;
+	}
+    }
+    
+    if(cpvNotFound){
+      cpvBranch=(TBranch *) branches->At(ibranch) ;
+      if( fRecPointsBranchTitle.CompareTo(cpvBranch->GetTitle())==0 )
+	if( strcmp(cpvBranch->GetName(),cpvBranchName) == 0) 
+	  cpvNotFound = kFALSE ;
+    }
+    
+    if(clusterizerNotFound){
+      clusterizerBranch = (TBranch *) branches->At(ibranch) ;
+      if( fRecPointsBranchTitle.CompareTo(clusterizerBranch->GetTitle()) == 0)
+	if( strcmp(clusterizerBranch->GetName(),cluBranchName) == 0) 
+	  clusterizerNotFound = kFALSE ;
+    }
+    
+  }
+
+  if(clusterizerNotFound || emcNotFound || cpvNotFound){
+    cout << "AliPHOSTrackSegmentMakerv1: " << endl ;
+    cout << "    Can't find Branch with RecPoints or Clusterizer " ;
+    cout << "    Do nothing" <<endl  ;
+    return kFALSE ;
+  }
+  
+  emcBranch->SetAddress(&fEmcRecPoints) ;
+  cpvBranch->SetAddress(&fCpvRecPoints) ;
+  clusterizerBranch->SetAddress(&fClusterizer) ;
+  
+  gAlice->TreeR()->GetEvent(0) ;
+  
+  delete emcBranchName;
+  delete cpvBranchName;
+  delete cluBranchName;
+
+  return kTRUE ;
+  
+}
+//____________________________________________________________________________
+void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(){
+
+  char treeName[20]; 
+  sprintf(treeName,"TreeR%d",fEvent);
+  
+  
+  //First, check, if branches already exist
+  TBranch * tsMakerBranch = 0;
+  TBranch * tsBranch = 0;
+  
+  TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
+  Int_t ibranch;
+  Bool_t tsMakerNotFound = kTRUE ;
+  Bool_t tsNotFound = kTRUE ;
+  
+  for(ibranch = 0;(ibranch <branches->GetEntries())&&(tsMakerNotFound||tsNotFound);ibranch++){
+    if(tsMakerNotFound){
+      tsMakerBranch=(TBranch *) branches->At(ibranch) ;
+      if( (strcmp(tsMakerBranch->GetName(),"AliPHOSTrackSegmentMaker") == 0) &&
+	  (fTSBranchTitle.CompareTo( tsMakerBranch->GetTitle())==0 ))
+	tsMakerNotFound = kFALSE ;
+    }
+    if(tsNotFound){
+      tsBranch=(TBranch *) branches->At(ibranch) ;
+      if( (strcmp(tsBranch->GetName(),"PHOSTS") == 0)  &&
+	  (fTSBranchTitle.CompareTo( tsBranch->GetTitle())==0 ))
+	tsNotFound = kFALSE ;
+    }
+  }
+
+  if(!(tsMakerNotFound && tsNotFound )){ 
+    cout << "AliPHOSTrackSegmentMakerv1 error:"<< endl ;
+    cout << "       Branches PHOSTS and AliPHOSTrackSegementMaker " << endl ;
+    cout << "       with title '"<<fTSBranchTitle.Data() << "' already exist " << endl ;
+    cout << "       can not overwrite " << endl ;
     return ;
   }
 
-  Float_t xDigit ;
-  Float_t zDigit ;
-  Int_t relid[4] ;
-
-  Int_t nDigits = iniEmc->GetMultiplicity() ;  
-  Float_t xpar  ;
-  Float_t zpar  ;
-  Float_t epar  ;
-  Float_t distance ;
-  Float_t ratio ;
-  Float_t * efit = new Float_t[nDigits] ;
-  Int_t iparam ;
-  Int_t iDigit ;
-  
-  AliPHOSDigit * digit ;
-  Int_t * emcDigits = iniEmc->GetDigitsList() ;
-  Float_t * emcEnergies = iniEmc->GetEnergiesList() ;
-
-  Int_t iRecPoint = emcIn->GetEntries() ;
-
-  for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-    digit = fPlease->GimeDigit( emcDigits[iDigit] ) ;   
-    fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    fGeom->RelPosInModule(relid, xDigit, zDigit) ;
-    efit[iDigit] = 0;
-    iparam = 0 ;
-    
-    while(iparam < nPar ){
-      xpar = fitparameters[iparam] ;
-      zpar = fitparameters[iparam+1] ;
-      epar = fitparameters[iparam+2] ;
-      iparam += 3 ;
-      distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
-      distance =  TMath::Sqrt(distance) ;
-      efit[iDigit] += epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) ;
-    }
+  //Make branch in TreeR for TrackSegments 
+  char * filename = 0;
+  if(gSystem->Getenv("CONFIG_SPLIT_FILE")!=0){   //generating file name
+    filename = new char[strlen(gAlice->GetBaseFile())+20] ;
+    sprintf(filename,"%s/PHOS.Reco.root",gAlice->GetBaseFile()) ; 
   }
 
-  iparam = 0 ;
-  Float_t eDigit ;
-
-
-  while(iparam < nPar ){
-    xpar = fitparameters[iparam] ;
-    zpar = fitparameters[iparam+1] ;
-    epar = fitparameters[iparam+2] ;
-    iparam += 3 ;
-
-    if(iRecPoint >= emcIn->GetSize())
-      emcIn->Expand(2*iRecPoint) ;
-
-    if(iniEmc->IsEmc()){
-      (*emcIn)[iRecPoint] = new AliPHOSEmcRecPoint( iniEmc->GetLogWeightCut(), iniEmc->GetLocMaxCut() ) ;
-
-      AliPHOSEmcRecPoint * emcRP ;  
-      emcRP = (AliPHOSEmcRecPoint *) emcIn->At(iRecPoint);
-      iRecPoint++ ;
-      
-      for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-	digit = fPlease->GimeDigit( emcDigits[iDigit] ) ; 
-	fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-	fGeom->RelPosInModule(relid, xDigit, zDigit) ;
-	distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
-	distance =  TMath::Sqrt(distance) ;
-	ratio = epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) / efit[iDigit] ; 
-	eDigit = emcEnergies[iDigit] * ratio ;
-	emcRP->AddDigit( *digit, eDigit ) ;
-      }	
-      emcRP->EvalAll() ;
-    }
-    else{
-      (*emcIn)[iRecPoint] = new AliPHOSCpvRecPoint( iniEmc->GetLogWeightCut(), iniEmc->GetLocMaxCut() ) ;
-     
-      AliPHOSCpvRecPoint * cpvRP ;  
-      cpvRP = (AliPHOSCpvRecPoint *) emcIn->At(iRecPoint);
-
-      iRecPoint++ ;
-      
-      for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-	digit = fPlease->GimeDigit( emcDigits[iDigit] ) ; 
-	fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-	fGeom->RelPosInModule(relid, xDigit, zDigit) ;
-	distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
-	distance =  TMath::Sqrt(distance) ;
-	ratio = epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) / efit[iDigit] ; 
-	eDigit = emcEnergies[iDigit] * ratio ;
-	cpvRP->AddDigit( *digit, eDigit ) ;
-      }
-      cpvRP->EvalAll() ;
-    }
-    
-  }
+  TDirectory *cwd = gDirectory;
   
-  delete[] fitparameters ; 
-  delete[] efit ; 
-
+  //First TS
+  Int_t bufferSize = 32000 ;    
+  tsBranch = gAlice->TreeR()->Branch("PHOSTS",&fTrackSegments,bufferSize);
+  tsBranch->SetTitle(fTSBranchTitle.Data());
+  if (filename) {
+    tsBranch->SetFile(filename);
+    TIter next( tsBranch->GetListOfBranches());
+    while ((tsBranch=(TBranch*)next())) {
+      tsBranch->SetFile(filename);
+    }   
+    cwd->cd();
+  } 
+  
+  //Second -TSMaker
+  Int_t splitlevel = 0 ;
+  AliPHOSTrackSegmentMakerv1 * ts = this ;
+  tsMakerBranch = gAlice->TreeR()->Branch("AliPHOSTrackSegmentMaker","AliPHOSTrackSegmentMakerv1",
+					  &ts,bufferSize,splitlevel);
+  tsMakerBranch->SetTitle(fTSBranchTitle.Data());
+  if (filename) {
+    tsMakerBranch->SetFile(filename);
+    TIter next( tsMakerBranch->GetListOfBranches());
+    while ((tsMakerBranch=(TBranch*)next())) {
+      tsMakerBranch->SetFile(filename);
+    }   
+    cwd->cd();
+  } 
+  
+  gAlice->TreeR()->Fill() ;    
+  gAlice->TreeR()->Write(0,kOverwrite) ;  
+  
 }
 
-//______________________________________________________________________________
-void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)
-{
-  // Calculates th Chi square for the cluster unfolding minimization
-  // Number of parameters, Gradient, Chi squared, parameters, what to do
+
+//____________________________________________________________________________
+void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option){
   
-  AliPHOSEmcRecPoint * emcRP = (AliPHOSEmcRecPoint *) gMinuit->GetObjectFit() ; // EmcRecPoint to fit
-
-  Int_t * emcDigits     = emcRP->GetDigitsList() ;
-
-  Int_t nOfDigits = emcRP->GetDigitsMultiplicity() ; 
-
-  Float_t * emcEnergies = emcRP->GetEnergiesList() ;
-
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
-
-  AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
-
-  fret = 0. ;     
-  Int_t iparam ;
-
-  if(iflag == 2)
-    for(iparam = 0 ; iparam < nPar ; iparam++)    
-      Grad[iparam] = 0 ; // Will evaluate gradient
+  cout << "AliPHOSTrackSegmentMakerv1: " << endl ;
+  cout << "       Found " << fTrackSegments->GetEntriesFast() << "  trackSegments " << endl ;
   
-  Double_t efit ;    
-
-  AliPHOSDigit * digit ;
-  Int_t iDigit ;
-
-  for( iDigit = 0 ; iDigit < nOfDigits ; iDigit++) {
-
-    digit = please->GimeDigit( emcDigits[iDigit] ) ; 
-
-    Int_t relid[4] ;
-    Float_t xDigit ;
-    Float_t zDigit ;
-
-    geom->AbsToRelNumbering(digit->GetId(), relid) ;
-
-    geom->RelPosInModule(relid, xDigit, zDigit) ;
-
-     if(iflag == 2){  // calculate gradient
-       Int_t iParam = 0 ;
-       efit = 0 ;
-       while(iParam < nPar ){
-	 Double_t distance = (xDigit - x[iParam]) * (xDigit - x[iParam]) ;
-	 iParam++ ; 
-	 distance += (zDigit - x[iParam]) * (zDigit - x[iParam]) ; 
-	 distance = TMath::Sqrt( distance ) ; 
-	 iParam++ ; 	 
-	 efit += x[iParam] * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) ;
-	 iParam++ ;
-       }
-       Double_t sum = 2. * (efit - emcEnergies[iDigit]) / emcEnergies[iDigit] ; // Here we assume, that sigma = sqrt(E) 
-       iParam = 0 ;
-       while(iParam < nPar ){
-	 Double_t xpar = x[iParam] ;
-	 Double_t zpar = x[iParam+1] ;
-	 Double_t epar = x[iParam+2] ;
-	 Double_t dr = TMath::Sqrt( (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar) );
-	 Double_t shape = sum * AliPHOSTrackSegmentMakerv1::ShowerShape(dr) ;
-	 Double_t r4 = dr*dr*dr*dr ;
-	 Double_t r295 = TMath::Power(dr,2.95) ;
-	 Double_t deriv =-4. * dr*dr * ( 2.32 / ( (2.32 + 0.26 * r4) * (2.32 + 0.26 * r4) ) +
-					 0.0316 * (1. + 0.0171 * r295) / ( ( 1. + 0.0652 * r295) * (1. + 0.0652 * r295) ) ) ;
-	 
-	 Grad[iParam] += epar * shape * deriv * (xpar - xDigit) ;  // Derivative over x    
-	 iParam++ ; 
-	 Grad[iParam] += epar * shape * deriv * (zpar - zDigit) ;  // Derivative over z         
-	 iParam++ ; 
-	 Grad[iParam] += shape ;                                  // Derivative over energy     	
-	 iParam++ ; 
-       }
-     }
-     efit = 0;
-     iparam = 0 ;
-
-     while(iparam < nPar ){
-       Double_t xpar = x[iparam] ;
-       Double_t zpar = x[iparam+1] ;
-       Double_t epar = x[iparam+2] ;
-       iparam += 3 ;
-       Double_t distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
-       distance =  TMath::Sqrt(distance) ;
-       efit += epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) ;
-     }
-
-     fret += (efit-emcEnergies[iDigit])*(efit-emcEnergies[iDigit])/emcEnergies[iDigit] ; 
-     // Here we assume, that sigma = sqrt(E)
+  if(strstr(option,"all")) {  // printing found TS
+    cout << "TrackSegment # " << "    EMC RP#    " << "    CPV RP#    " << "     PPSD RP#" << endl ; 
+    
+    Int_t index;
+    for (index = 0 ; index <fTrackSegments->GetEntriesFast() ; index++) {
+      AliPHOSTrackSegment * ts = (AliPHOSTrackSegment * )fTrackSegments->At(index) ; 
+      cout<<"   "<< setw(4) << ts->GetIndexInList() << "            " 
+	  <<setw(4) << ts->GetEmcIndex()<< "            " 
+	  <<setw(4) << ts->GetCpvIndex()<< "            " 
+	  <<setw(4) << ts->GetPpsdIndex()<< endl ;
+    }	
+    
+    cout << "-------------------------------------------------------"<< endl ;
   }
+}
+//____________________________________________________________________________
+void AliPHOSTrackSegmentMakerv1::SetRecPointsBranch(const char * title){
+  //set the title of RecPoints 
+    fRecPointsBranchTitle = title ;
 
+}
+//____________________________________________________________________________
+void AliPHOSTrackSegmentMakerv1::SetTrackSegmentsBranch(const char * title){
+
+    fTSBranchTitle = title ; 
 }

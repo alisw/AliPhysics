@@ -36,7 +36,6 @@
 #include "AliPHOSPpsdRecPoint.h"
 #include "AliPHOSCpvRecPoint.h"
 #include "AliRun.h"
-#include "AliPHOSIndexToObject.h"
 
 ClassImp(AliPHOSPpsdRecPoint)
 
@@ -47,7 +46,6 @@ AliPHOSPpsdRecPoint::AliPHOSPpsdRecPoint(void)
 
   fMulDigit = 0 ;  
   fGeom = AliPHOSGeometry::GetInstance() ;  
-  fDelta = ((AliPHOSGeometry *)fGeom)->GetCrystalSize(0) ; 
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
 }
 
@@ -77,21 +75,23 @@ void AliPHOSPpsdRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
 
   fDigitsList[fMulDigit++]  =  digit.GetIndexInList() ; 
   fAmp += Energy ; 
+  EvalPHOSMod(&digit) ;
 }
 
 //____________________________________________________________________________
 Int_t AliPHOSPpsdRecPoint::Compare(const TObject * obj) const
 {
   // Compares according to the position
-  
+  Float_t delta = 1 ; //width of the "Sorting row"
+
   Int_t rv ; 
   
   if( (strcmp(obj->ClassName() , "AliPHOSPpsdRecPoint" )) == 0)  // PPSD Rec Point
     {
      AliPHOSPpsdRecPoint * clu = (AliPHOSPpsdRecPoint *)obj ; 
 
-     Float_t x1 , z1 ;
-     Float_t x2 , z2 ;
+     Float_t x1 , z1 ;    //This rec point
+     Float_t x2 , z2 ;    //
      
      Int_t phosmod1 ;
      Int_t phosmod2 ;
@@ -110,10 +110,10 @@ Int_t AliPHOSPpsdRecPoint::Compare(const TObject * obj) const
        up2 = 1 ;       
 
      TVector3 posloc ;
-     this->GetLocalPosition(posloc) ;
+     GetLocalPosition(posloc) ;
      x1 = posloc.X() ;
      z1 = posloc.Z() ; 
-     phosmod1 = this->GetPHOSMod();  
+     phosmod1 = GetPHOSMod();  
      clu->GetLocalPosition(posloc) ;
      x2 = posloc.X() ;
      z2 = posloc.Z() ; 
@@ -122,12 +122,12 @@ Int_t AliPHOSPpsdRecPoint::Compare(const TObject * obj) const
      if(phosmod1 == phosmod2 ) {
        
        if(up1 == up2 ){
-	 Int_t rowdif = (Int_t)TMath::Ceil(x1/fDelta) - (Int_t) TMath::Ceil(x2/fDelta) ;
+	 Int_t rowdif = (Int_t)TMath::Ceil(x1/delta) - (Int_t) TMath::Ceil(x2/delta) ;
 	 
 	 if (rowdif> 0) 
+	   rv = 1 ;
+	 else if(rowdif < 0) 
 	   rv = -1 ;
-      else if(rowdif < 0) 
-	rv = 1 ;
 	 else if(z1>z2) 
 	   rv = -1 ;
 	 else 
@@ -137,9 +137,9 @@ Int_t AliPHOSPpsdRecPoint::Compare(const TObject * obj) const
        else {
 	 
 	 if(up1 < up2 ) // Upper level first (up = True or False, True > False)
-	   rv = 1 ;   
+	   rv = -1 ;   
 	 else 
-	   rv = - 1 ;
+	   rv = 1 ;
        }
        
      } // if phosmod1 == phosmod2
@@ -158,7 +158,7 @@ Int_t AliPHOSPpsdRecPoint::Compare(const TObject * obj) const
   else
     {
       AliPHOSCpvRecPoint * clu  = (AliPHOSCpvRecPoint *) obj ;   
-      if(this->GetPHOSMod()  < clu->GetPHOSMod() ) 
+      if(GetPHOSMod()  < clu->GetPHOSMod() ) 
 	rv = -1 ;
       else 
 	rv = 1 ;
@@ -169,18 +169,17 @@ Int_t AliPHOSPpsdRecPoint::Compare(const TObject * obj) const
 }
 
 //____________________________________________________________________________
-void AliPHOSPpsdRecPoint::EvalAll( ){
-  AliPHOSRecPoint::EvalAll() ;
-  EvalLocalPosition( ) ;
+void AliPHOSPpsdRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits ){
+  AliPHOSRecPoint::EvalAll(logWeight,digits) ;
+  EvalLocalPosition(logWeight,digits) ;
+  EvalUp(digits) ;
 }
 
 //____________________________________________________________________________
-void AliPHOSPpsdRecPoint::EvalLocalPosition( )
+void AliPHOSPpsdRecPoint::EvalLocalPosition(Float_t logWeight,TClonesArray * digits )
 {
   // Calculates the local position in the PHOS-PPSD-module corrdinates
   
-  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
-
   Int_t relid[4] ;
 
   Float_t x = 0. ;
@@ -192,7 +191,7 @@ void AliPHOSPpsdRecPoint::EvalLocalPosition( )
   Int_t iDigit;
 
   for(iDigit = 0; iDigit < fMulDigit; iDigit++) {
-    digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) ); 
+    digit = (AliPHOSDigit *) digits->At(fDigitsList[iDigit]) ; 
  
     Float_t xi ;
     Float_t zi ;
@@ -212,29 +211,25 @@ void AliPHOSPpsdRecPoint::EvalLocalPosition( )
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSPpsdRecPoint::GetUp() const
+void AliPHOSPpsdRecPoint::EvalUp(TClonesArray * digits)
 {
   // Are we in the uper PPSD module ?
 
   Int_t relid[4] ;
   
-  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
-
   AliPHOSGeometry * phosgeom = (AliPHOSGeometry *) fGeom ;
   
   
-  AliPHOSDigit *digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[0]) ) ; 
+  AliPHOSDigit *digit = (AliPHOSDigit *) digits->At(fDigitsList[0]) ; 
   
   phosgeom->AbsToRelNumbering(digit->GetId(),relid);
-  Bool_t up ;
 
   if((Int_t)TMath::Ceil((Float_t)relid[1]/
 			(phosgeom->GetNumberOfModulesPhi()*phosgeom->GetNumberOfModulesZ())-0.0001 ) > 1) 
-    up = kFALSE ;
+    fUp = kFALSE ;
   else  
-    up = kTRUE ;
+    fUp = kTRUE ;
   
-  return up ;
 }
 //______________________________________________________________________________
 void AliPHOSPpsdRecPoint::Paint(Option_t *)
@@ -270,28 +265,12 @@ void AliPHOSPpsdRecPoint::Print(Option_t * option)
   
   cout << "AliPHOSPpsdRecPoint: " << endl ;
   
-  AliPHOSDigit * digit ; 
-  Int_t iDigit;
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+  Int_t iDigit; 
+  cout << " Digit{s} # " ; 
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) 
+    cout  << fDigitsList[iDigit] << "  " ;  
+  cout << endl   ;  
 
-  Float_t xi ;
-  Float_t zi ;
-  Int_t relid[4] ; 
-
-  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
-  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
-    digit = please->GimeDigit( fDigitsList[iDigit] ) ; 
-    if (digit) {
-      phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-      phosgeom->RelPosInModule(relid, xi, zi);
-      cout << " Id = " << digit->GetId() ;  
-      cout << "  Phos mod = " << relid[0] ;  
-      cout << "  PPSD mod = " << relid[1] ;  
-      cout << "  x = " << xi ;  
-      cout << "  z = " << zi ;  
-      cout << "   Energy = " << digit->GetAmp() << endl ;
-    }
-  }
   cout << "       Multiplicity    = " << fMulDigit  << endl ;
   cout << "       Stored at position " << fIndexInList << endl ; 
 }

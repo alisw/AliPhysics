@@ -22,6 +22,7 @@
 
 // --- ROOT system ---
 #include "TPad.h"
+#include "TClonesArray.h"
 
 // --- Standard library ---
 #include <iostream.h>
@@ -32,7 +33,6 @@
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSRecPoint.h"
-#include "AliPHOSIndexToObject.h"
 
 ClassImp(AliPHOSRecPoint)
 
@@ -44,6 +44,7 @@ AliPHOSRecPoint::AliPHOSRecPoint()
   // ctor
 
   fGeom = (AliPHOSGeometry*) AliPHOSGeometry::GetInstance() ;
+  fMaxTrack = 20 ;
   fPHOSMod = 0;
 }
 
@@ -153,73 +154,74 @@ break;
   }
 }
 //____________________________________________________________________________
-void AliPHOSRecPoint::EvalAll() {
+void AliPHOSRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits) {
   //evaluates (if necessary) all RecPoint data members 
 
-  EvalPHOSMod() ;
+  EvalPrimaries(digits) ;
 }
 //____________________________________________________________________________
-void AliPHOSRecPoint::EvalPHOSMod() 
+void AliPHOSRecPoint::EvalPHOSMod(AliPHOSDigit * digit) 
 {
   // Returns the PHOS module in which the RecPoint is found
- 
-  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
 
+  if( fPHOSMod == 0){
   Int_t relid[4] ; 
   
-  AliPHOSDigit * digit   ;
-  digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[0]) ) ;
   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
 
   phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fPHOSMod = relid[0];
+  }
 }
 
 //______________________________________________________________________________
-Int_t * AliPHOSRecPoint::GetPrimaries(Int_t & number) const
+void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
 {
-  // Constructs the list of primary particles which have contributed to this RecPoint
+  // Constructs the list of primary particles (tracks) which have contributed to this RecPoint
   
   AliPHOSDigit * digit ;
-  Int_t index ;
-  Int_t maxcounter = 20 ;
-  Int_t counter    = 0 ;
-  Int_t * tempo    = new Int_t[maxcounter] ;
-  AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
-  
+  Int_t * tempo    = new Int_t[fMaxTrack] ;
+
+  Int_t index ;  
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
-    digit = please->GimeDigit( fDigitsList[index] ) ; 
+    digit = (AliPHOSDigit *) digits->At( fDigitsList[index] ) ; 
     Int_t nprimaries = digit->GetNprimary() ;
     Int_t * newprimaryarray = new Int_t[nprimaries] ;
     Int_t ii ; 
     for ( ii = 0 ; ii < nprimaries ; ii++)
       newprimaryarray[ii] = digit->GetPrimary(ii+1) ; 
+
     Int_t jndex ;
     for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
-      if ( counter > maxcounter ) {
-	number = - 1 ;
-	cout << "AliPHOSRecPoint::GetNprimaries ERROR > increase maxcounter " << endl ;
+      if ( fMulTrack > fMaxTrack ) {
+	fMulTrack = - 1 ;
+	cout << "AliPHOSRecPoint::GetNprimaries ERROR > increase fMaxTrack " << endl ;
 	break ;
       }
       Int_t newprimary = newprimaryarray[jndex] ;
       Int_t kndex ;
       Bool_t already = kFALSE ;
-      for ( kndex = 0 ; kndex < counter ; kndex++ ) { //check if not already stored
+      for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
 	if ( newprimary == tempo[kndex] ){
 	  already = kTRUE ;
 	  break ;
 	}
       } // end of check
       if ( !already) { // store it
-	tempo[counter] = newprimary ; 
-	counter++ ;
+	tempo[fMulTrack] = newprimary ; 
+	fMulTrack++ ;
       } // store it
     } // all primaries in digit
     delete newprimaryarray ; 
   } // all digits
 
-  number = counter ; 
-  return tempo ; 
+  
+  fTracksList = new Int_t[fMulTrack] ;
+  for(index = 0; index < fMulTrack; index++)
+   fTracksList[index] = tempo[index] ;
+ 
+  delete tempo ;
+
 }
 
 //______________________________________________________________________________

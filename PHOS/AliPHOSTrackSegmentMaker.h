@@ -10,43 +10,45 @@
 // Associates EMC and PPSD clusters
 // Unfolds the EMC cluster   
 //                  
-//*-- Author: Dmitri Peressounko (RRC Ki & SUBATECH)
+//*-- Author: Dmitri Peressounko (RRC Kurchatov Institute  & SUBATECH)
 
 // --- ROOT system ---
+#include "TTask.h"
+
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "TObjArray.h"
-#include "AliPHOSDigit.h"
-#include "AliPHOSRecPoint.h"
-#include "AliPHOSIndexToObject.h"
-#include "AliPHOSTrackSegment.h"
 
-class  AliPHOSTrackSegmentMaker : public TObject {
+class AliPHOSClusterizer ;
+class AliPHOSGeometry ;
+
+class  AliPHOSTrackSegmentMaker : public TTask {
 
 public:
 
   AliPHOSTrackSegmentMaker() ;                     
+  AliPHOSTrackSegmentMaker(char* headerFile, char* branchTitle = 0) ;                     
   
   virtual ~ AliPHOSTrackSegmentMaker(){
     // dtor 
   } 
 
-  virtual void MakeTrackSegments(DigitsList * DL, 
-				 AliPHOSRecPoint::RecPointsList * emcl, 
-				 AliPHOSRecPoint::RecPointsList * ppsdl,
-				 AliPHOSTrackSegment::TrackSegmentsList * trsl ) = 0 ; // does the job
-  virtual void SetMaxEmcPpsdDistance(Float_t r) = 0 ; 
-  virtual void SetUnfoldFlag() = 0 ;
-  virtual void UnsetUnfoldFlag() = 0 ;
+  virtual void    Exec(Option_t * option) = 0 ;
+  virtual char*   GetRecPointsBranch ()const = 0 ;
+  virtual char*   GetTrackSegmentsBranch ()const = 0 ;
+
+  virtual void    Print(Option_t * option)const = 0;
+  //  virtual void Set...   // method to choose recPoints: along z only, along x ...???
+  //  virtual void SetChoosingAlgirithm() = 0 ;
+  //  virtual void SetMaxEmcCpvDistance(Float_t r) = 0 ; 
+  virtual Bool_t ReadRecPoints() = 0 ; 
+  virtual void SetRecPointsBranch(const char * title) = 0 ;
+  virtual void SetTrackSegmentsBranch(const char * title) = 0 ;
+  virtual void WriteTrackSegments() = 0 ;
   
  protected:
-  
-  Int_t                  fNTrackSegments ; // number of track segments found 
-  AliPHOSGeometry      * fGeom ;           // pointer to PHOS geometry  
-  AliPHOSIndexToObject * fPlease ;         // factory used to convert an index into the associated object
 
   ClassDef( AliPHOSTrackSegmentMaker,1)    // Algorithm class to make PHOS track segments (Base Class)
 

@@ -23,30 +23,28 @@
 
 // --- ROOT system ---
 
-#include "TObjArray.h"
-#include "TClonesArray.h"
+#include "TFile.h"
+#include "TROOT.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
-#include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSTrackSegment.h"
-#include "AliPHOSIndexToObject.h"
-#include "AliPHOSLink.h"
-#include "AliPHOSv0.h"
 #include "AliRun.h"
+#include "AliPHOSTrackSegmentMaker.h"
+#include "AliPHOS.h"
+#include "AliPHOSGeometry.h"
 
 ClassImp( AliPHOSTrackSegmentMaker) 
 
 
 //____________________________________________________________________________
- AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : fNTrackSegments(0)
+ AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : TTask()
 {
-  // ctor
-  fGeom = AliPHOSGeometry::GetInstance() ;
-  fPlease = AliPHOSIndexToObject::GetInstance() ; 
+}
+//____________________________________________________________________________
+AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(char * header,char * branch): TTask("AliPHOSTrackSegmentMaker","")
+{
+
 
 }
-
 

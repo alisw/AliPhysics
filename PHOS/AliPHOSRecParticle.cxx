@@ -33,26 +33,9 @@
 
 #include "AliPHOSRecParticle.h"
 #include "TPad.h"
-#include "AliPHOSIndexToObject.h"
 
 ClassImp(AliPHOSRecParticle)
 
-
-//____________________________________________________________________________
- AliPHOSRecParticle::AliPHOSRecParticle(AliPHOSTrackSegment * ts)
-{
-  // ctor
- 
-  fPHOSTrackSegment = ts->GetIndexInList() ;
-  fIndexInList      = -1 ;
-  Float_t kenergy   = ts->GetEnergy() ; 
-  TVector3 momdir   = ts->GetMomentumDirection() ;
-  fPx               = kenergy * momdir.X() ; 
-  fPy               = kenergy * momdir.Y() ; 
-  fPz               = kenergy * momdir.Z() ; 
-  fType             = kUNDEFINED;  
-  fE                = kenergy ;    // !!! all particles have mass = 0 
-}
 
 //____________________________________________________________________________
  AliPHOSRecParticle::AliPHOSRecParticle(const AliPHOSRecParticle & rp)
@@ -89,53 +72,44 @@ Int_t * AliPHOSRecParticle::GetPrimaries(Int_t & number)
 {
   // Retrieves all the primary particles at the origine of this reconstructed particle
 
-  AliPHOSTrackSegment * ts = GetPHOSTrackSegment() ;
+//   AliPHOSTrackSegment * ts = GetPHOSTrackSegment() ;
 
-  Int_t emcnumber = 0 ; 
-  Int_t * emclist = ts->GetPrimariesEmc(emcnumber) ;
+//   Int_t emcnumber = 0 ; 
+//   Int_t * emclist = ts->GetPrimariesEmc(emcnumber) ;
   
-  Int_t ppsdlnumber = 0 ;
-  Int_t * ppsdllist = ts->GetPrimariesPpsdLow(ppsdlnumber) ;
+//   Int_t ppsdlnumber = 0 ;
+//   Int_t * ppsdllist = ts->GetPrimariesPpsdLow(ppsdlnumber) ;
  
-  Int_t ppsdunumber = 0 ; 
-  Int_t * ppsdulist = ts->GetPrimariesPpsdUp(ppsdunumber) ;
+//   Int_t ppsdunumber = 0 ; 
+//   Int_t * ppsdulist = ts->GetPrimariesPpsdUp(ppsdunumber) ;
 
-  number = emcnumber + ppsdlnumber + ppsdunumber ;
-  Int_t * list   = new Int_t[number] ;
+//   number = emcnumber + ppsdlnumber + ppsdunumber ;
+//   Int_t * list   = new Int_t[number] ;
   
-  Int_t index ; 
-  for ( index = 0 ; index < emcnumber ; index++)
-    list[index] = emclist[index] ;
+//   Int_t index ; 
+//   for ( index = 0 ; index < emcnumber ; index++)
+//     list[index] = emclist[index] ;
 
-  Int_t jndex ; 
-  for ( jndex = 0 ; jndex < ppsdlnumber ; jndex++) {
-    assert(index < number) ;
-    list[index] = ppsdllist[jndex] ;
-    index++ ; 
-  }
+//   Int_t jndex ; 
+//   for ( jndex = 0 ; jndex < ppsdlnumber ; jndex++) {
+//     assert(index < number) ;
+//     list[index] = ppsdllist[jndex] ;
+//     index++ ; 
+//   }
 
-  for ( jndex = 0 ; jndex < ppsdunumber ; jndex++) {
-    assert(index < number) ;
-    list[index] = ppsdulist[jndex] ;
-    index++ ; 
-  }
+//   for ( jndex = 0 ; jndex < ppsdunumber ; jndex++) {
+//     assert(index < number) ;
+//     list[index] = ppsdulist[jndex] ;
+//     index++ ; 
+//   }
 
-  delete emclist ;
-  delete ppsdllist ;
-  delete ppsdulist ;
+//   delete emclist ;
+//   delete ppsdllist ;
+//   delete ppsdulist ;
 
-  return list ; 
+  return 0 ; //<--- list ; 
 }
 
-//____________________________________________________________________________
-AliPHOSTrackSegment * AliPHOSRecParticle::GetPHOSTrackSegment() const 
-{
-  // Retrieves the PHOS track segment at the origine of this reconstructed particle
-
-  AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
-  return please->GimeTrackSegment( fPHOSTrackSegment ) ;
-
-}
 
 
 

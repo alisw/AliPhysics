@@ -22,7 +22,6 @@
 #include "AliRecPoint.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSGeometry.h"
-class AliPHOSGeometry;
 
 class AliPHOSRecPoint : public AliRecPoint {
 
@@ -45,14 +44,16 @@ class AliPHOSRecPoint : public AliRecPoint {
     assert(0==1) ; 
   }
   virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy) = 0 ; 
-  virtual Int_t   Compare(const TObject * obj) const {assert(0==1) ; return 1 ;   }   
+  virtual Int_t   Compare(const TObject * obj) const = 0 ;   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
   virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
-  virtual void    EvalAll(void) ;  
-  virtual void    EvalPHOSMod(void) ;  
+  virtual void    EvalAll(Float_t logWeight,TClonesArray * digits) ;  
+  virtual void    EvalPHOSMod(AliPHOSDigit * digit) ;  
+  virtual void    EvalPrimaries(TClonesArray * digits) ;  
   virtual Int_t   GetPHOSMod(void) const {return fPHOSMod ; }
-  virtual Int_t * GetPrimaries(Int_t & number) const ;
+  virtual Int_t * GetPrimaries(Int_t & number) const {number = fMulTrack ; 
+                                                      return fTracksList ; }
   virtual Bool_t  IsEmc(void)const { return kTRUE ;  } 
   virtual Bool_t  IsSortable() const { 
     // tells that this is a sortable object

@@ -17,76 +17,82 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
-#include "TObjArray.h"
-#include "AliPHOSClusterizer.h"
-#include "AliPHOSEmcRecPoint.h"
-#include "AliPHOSPpsdRecPoint.h"
 #include "AliPHOSTrackSegmentMaker.h"
-#include "TMinuit.h" 
+
+class AliPHOSEmcRecPoint ;
+class AliPHOSRecPoint ;
+
 
 class  AliPHOSTrackSegmentMakerv1 : public AliPHOSTrackSegmentMaker {
 
 public:
 
   AliPHOSTrackSegmentMakerv1() ;                     
+  AliPHOSTrackSegmentMakerv1(const char* headerFile,const char* branchTitle = 0) ;                     
   AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegmentMakerv1 & tsm) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    assert(0==1) ; 
+    abort() ; 
   }
    
   virtual ~ AliPHOSTrackSegmentMakerv1() ; // dtor
   
-  Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, int * MaxAt, Float_t * maxAtEnergy, 
-		  Int_t NPar, Float_t * FitParametres) ; //Used in UnfoldClusters, calls TMinuit
-  void    FillOneModule(AliPHOSRecPoint::RecPointsList * emcIn, 
-			TArrayI * emcOut, 
-			AliPHOSRecPoint::RecPointsList * ppsdIn, 
-			TArrayI * ppsdOutUp, 
-			TArrayI * ppsdOutLow, 
-			Int_t &PHOSModule, 
-			Int_t & emcStopedAt, 
-			Int_t & ppsdStopedAt) ; // Fills temporary arrais with clusters from one module  
-  Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSPpsdRecPoint * Ppsd , Bool_t & TooFar ) ; // see R0
+  virtual char*  GetRecPointsBranch    (void)const{return (char*)fRecPointsBranchTitle.Data() ;}
+  virtual char*  GetTrackSegmentsBranch(void)const{return (char*)fTSBranchTitle.Data() ;}
 
-  void    MakeLinks(TArrayI * EmcRecPoints, TArrayI * PpsdRecPointsUp, TArrayI * PpsdRecPointsLow, 
-		    TClonesArray * LinkLowArray, TClonesArray *LinkUpArray) ; //Evaluates distances(links) between EMC and PPSD
-  void    MakePairs(TArrayI * EmcRecPoints, 
-		    TArrayI * PpsdRecPointsUp, 
-		    TArrayI * PpsdRecPointsLow, 
-		    TClonesArray * LinkLowArray, 
-		    TClonesArray * LinkUpArray, 
-		    AliPHOSTrackSegment::TrackSegmentsList * trsl) ; //Finds pairs(triplets) with smallest link
-  void    MakeTrackSegments(DigitsList * DL, 
-			    AliPHOSRecPoint::RecPointsList * emcl, 
-			    AliPHOSRecPoint::RecPointsList * ppsdl, 
-			    AliPHOSTrackSegment::TrackSegmentsList * trsl ) ; // does the job
-  virtual void SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;}
-  virtual void    SetUnfoldFlag() { fUnfoldFlag = kTRUE ; } ; 
-  static Double_t ShowerShape(Double_t r) ; // Shape of shower used in unfolding; class member function (not object member function)
-  void    UnfoldAll(DigitsList * Dl, AliPHOSRecPoint::RecPointsList * emcIn) ; 
-                                             // Unfolds and sorts all EMC clusters
-  void  UnfoldClusters(DigitsList * DL, 
-		       AliPHOSRecPoint::RecPointsList * emcIn, 
-		       AliPHOSEmcRecPoint * iniEmc, 
-		       Int_t Nmax, 
-		       int * maxAt, 
-		       Float_t * maxAtEnergy ) ; //Unfolds overlaping clusters using TMinuit package
-  virtual void UnsetUnfoldFlag() { fUnfoldFlag = kFALSE ; } 
+  virtual void   Exec(Option_t * option) ;
+          void   FillOneModule() ;       // Finds range in which RecPoints belonging current PHOS module are
+
+          void   MakeLinks() ;           //Evaluates distances(links) between EMC and PPSD
+          void   MakePairs() ;           //Finds pairs(triplets) with smallest link
+  virtual void   Print(Option_t * option) const ;
+  virtual Bool_t ReadRecPoints() ;
+  virtual void   SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;}
+  virtual void   SetRecPointsBranch(const char * title) ; 
+  virtual void   SetTrackSegmentsBranch(const char * title) ; 
+  virtual void   WriteTrackSegments() ;
 
   AliPHOSTrackSegmentMakerv1 & operator = (const AliPHOSTrackSegmentMakerv1 & )  {
     // assignement operator requested by coding convention
     // but not needed
-    assert(0==1) ;
+    abort() ;
     return *this ; 
   }
 
 private:
+  Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSRecPoint * Ppsd , Bool_t & TooFar ) ; // see R0
+  void    Init() ;
+  void    PrintTrackSegments(Option_t *option) ;
 
-  Float_t fDelta ;     // parameter used for sorting
+private:  
+
+  TString fHeaderFileName ;          // name of the file which contains gAlice, Tree headers etc.
+  TString fRecPointsBranchTitle ; // name of the file, where RecPoints branchs are stored
+  TString fTSBranchTitle ;        // name of the file, where TrackSegment branchs is stored
+  AliPHOSClusterizer * fClusterizer ; // !  
+  Int_t                  fNTrackSegments ; // number of track segments found 
+  AliPHOSGeometry      * fGeom ;           //! pointer to PHOS geometry  
+  Int_t          fEvent ;            // ! event being precessed
+  TObjArray    * fEmcRecPoints ;     // ! List of EMC Rec Points
+  TObjArray    * fCpvRecPoints ;     // ! List of CPV/PPSD recPoints
+  TClonesArray * fTrackSegments;     // ! list of final track segments
+
+
+  Bool_t  fIsInitialized ; //
+
   Float_t fR0 ;        // Maximum distance between a EMC RecPoint and a PPSD RecPoint   
-  Bool_t fUnfoldFlag ; // Directive to unfold or not the clusters in case of multiple maxima
+
+  TClonesArray * fLinkLowArray ;  //!
+  TClonesArray * fLinkUpArray  ;  //!
+
+
+  Int_t fEmcFirst;     //! Index of first EMC RecPoint belonging to currect PHOS module
+  Int_t fEmcLast ;     //!
+  Int_t fCpvFirst;     //! Cpv upper layer     
+  Int_t fCpvLast;      //! 
+  Int_t fPpsdFirst;    //! Cpv low layer     
+  Int_t fPpsdLast;     //!
+  Int_t fModule ;      //! number of module being processed
 
   ClassDef( AliPHOSTrackSegmentMakerv1,1)  // Implementation version 1 of algorithm class to make PHOS track segments 
 
