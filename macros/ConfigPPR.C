@@ -167,7 +167,7 @@ void Config()
     Int_t   iTPC    = 1;
     Int_t   iTRD    = 1;
     Int_t   iZDC    = 1;
-    Int_t   iEMCAL  = 0;
+    Int_t   iEMCAL  = 1;
     Int_t   iVZERO  = 1;
     Int_t   iCRT    = 0;
 
