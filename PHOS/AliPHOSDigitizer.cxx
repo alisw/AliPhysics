@@ -134,7 +134,7 @@ void AliPHOSDigitizer::Init(Int_t isOutFile){
 
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(char *HeaderFile,char *DigitsFile = 0):TTask("AliPHOSDigitizer","")
+AliPHOSDigitizer::AliPHOSDigitizer(char *HeaderFile,char *DigitsFile):TTask("AliPHOSDigitizer","")
 {
   // ctor
   fHeaderFiles  = new TClonesArray("TFile",1) ;          
@@ -476,7 +476,7 @@ Bool_t AliPHOSDigitizer::ReadSDigits(){
 
 }
 //__________________________________________________________________
-void AliPHOSDigitizer::MixWith(char* HeaderFile,Int_t isOutFile = 1, char* SDigitsFile =0){
+void AliPHOSDigitizer::MixWith(char* HeaderFile,Int_t isOutFile, char* SDigitsFile){
 //
 
   if(!fInitialized)
