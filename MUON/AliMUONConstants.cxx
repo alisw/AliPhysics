@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#include <TMath.h>
 #include "AliMUONConstants.h"
 
 ClassImp(AliMUONConstants)
@@ -55,4 +56,22 @@ Int_t AliMUONConstants::GetFirstDetElemId(Int_t chamberId)
 // ---
 
   return (chamberId+1)*100;
-}  
+} 
+ 
+//_____________________________________________________________________________
+Int_t AliMUONConstants::ChamberNumber(Float_t z) 
+{
+  // return chamber number according z position of hit. Should be taken from geometry ?
+ 
+  Float_t dMaxChamber = DzSlat() + DzCh() + 0.25; // cm st 3 &4 & 5
+  if ( z >  (DefaultChamberZ(4)+50.)) dMaxChamber = 7.; // cm stations 1 & 2
+  Int_t iChamber;
+
+  for (iChamber = 0; iChamber < 10; iChamber++) {
+    
+    if (TMath::Abs(z-DefaultChamberZ(iChamber)) < dMaxChamber) {
+      return iChamber;
+    }
+  }
+  return -1;
+}

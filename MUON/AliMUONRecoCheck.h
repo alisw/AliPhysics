@@ -33,7 +33,6 @@ public:
   void CleanMuonTrackRef();
   void ReconstructibleTracks();
   Int_t GetNumberOfReconstuctibleTracks() {return fReconstructibleTracks;}
-  Int_t ChamberNumber(Float_t z) const;
   Int_t GetNumberOfRecoTracks() {return fRecoTracks;}
   TClonesArray *GetTrackReco();
   TClonesArray *GetMuonTrackRef() {return fMuonTrackRef;}

@@ -76,6 +76,7 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
   fRunLoader->UnloadKinematics();
   fRunLoader->UnloadTrackRefs();
   fRunLoader->UnloadTracks();
+  fMuonTrackRef->Delete();
   delete fMuonTrackRef;
   delete fMUONData;
 }
@@ -121,10 +122,10 @@ void AliMUONRecoCheck::MakeTrackRef()
     iHitMin = 0;
     isNewTrack = kTRUE;
     
-    if (!trackRefs->GetEntries()) continue;
-    
-    while (isNewTrack) {
+    if (!trackRefs->GetEntries()) continue; 
 
+    while (isNewTrack) {
+      
       for (Int_t iHit = iHitMin; iHit < trackRefs->GetEntries(); iHit++) {
       
 	trackReference = (AliTrackReference*)trackRefs->At(iHit);
@@ -164,7 +165,7 @@ void AliMUONRecoCheck::MakeTrackRef()
 	hitForRec->SetZ(z);
 	hitForRec->SetBendingReso2(0.0); 
 	hitForRec->SetNonBendingReso2(0.0);  
-	iChamber = ChamberNumber(z);
+	iChamber = AliMUONConstants::ChamberNumber(z);
 	hitForRec->SetChamberNumber(iChamber);
 
 	muonTrack->AddTrackParamAtHit(trackParam);
@@ -216,6 +217,7 @@ void AliMUONRecoCheck::MakeTrackRef()
   delete muonTrack;
   delete trackParam;
   delete hitForRec;
+  trackRefs->Delete();
   delete trackRefs;
 
 }
@@ -225,6 +227,7 @@ TClonesArray* AliMUONRecoCheck::GetTrackReco()
 {
   // Return TClonesArray of reconstructed tracks
 
+  GetMUONData()->ResetRecTracks();
   GetMUONData()->SetTreeAddress("RT");
   fTrackReco = GetMUONData()->RecTracks(); 
   GetMUONData()->GetRecTracks();
@@ -352,7 +355,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
       hitForRec->SetNonBendingCoor(xRec);
       hitForRec->SetBendingCoor(yRec);
       hitForRec->SetZ(zRec);
-      iChamber = ChamberNumber(zRec);
+      iChamber = AliMUONConstants::ChamberNumber(zRec);
       hitForRec->SetChamberNumber(iChamber);
       hitForRec->SetBendingReso2(0.0); 
       hitForRec->SetNonBendingReso2(0.0); 
@@ -388,6 +391,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
   delete trackNew;
   delete hitForRec;
   delete trackParam;
+  newMuonTrackRef->Delete();
   delete newMuonTrackRef;
   
 }
@@ -427,28 +431,10 @@ void AliMUONRecoCheck::ReconstructibleTracks()
     isTrackOK = kTRUE;
     for (Int_t ch = 0; ch < 10; ch++) {
       if (!isChamberInTrack[ch]) isTrackOK = kFALSE;
-    }
-    if (isTrackOK) fReconstructibleTracks++;
+    }    if (isTrackOK) fReconstructibleTracks++;
     if (!isTrackOK) fMuonTrackRef->Remove(track); // remove non reconstructible tracks
   }
   fMuonTrackRef->Compress();
 }
 
 
-//_____________________________________________________________________________
-Int_t AliMUONRecoCheck::ChamberNumber(Float_t z) const
-{
-  // return chamber number according z position of hit. Should be taken from geometry ?
- 
-  Float_t dMaxChamber =  AliMUONConstants::DzSlat() + AliMUONConstants::DzCh() + 0.25; // cm st 3 &4 & 5
-  if ( z >  (AliMUONConstants::DefaultChamberZ(4)+50.)) dMaxChamber = 7.; // cm stations 1 & 2
-  Int_t iChamber;
-
-  for (iChamber = 0; iChamber < 10; iChamber++) {
-    
-    if (TMath::Abs(z-AliMUONConstants::DefaultChamberZ(iChamber)) < dMaxChamber) {
-      return iChamber;
-    }
-  }
-  return -1;
-}

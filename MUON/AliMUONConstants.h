@@ -39,6 +39,8 @@ class AliMUONConstants : public TObject {
     static  Int_t GetChamberId(Int_t detElemId); 
     static  Int_t GetFirstDetElemId(Int_t chamberId); 
 
+    static  Int_t ChamberNumber(Float_t z); 
+
  protected:
     AliMUONConstants() : TObject() {}
     virtual ~AliMUONConstants(){}

@@ -20,9 +20,11 @@
 // Hit for reconstruction in ALICE dimuon spectrometer
 //__________________________________________________________________________
 
+#include "AliTrackReference.h" 
 #include "AliMUONHitForRec.h" 
 #include "AliMUONRawCluster.h"
 #include "AliMUONHit.h"
+#include "AliMUONConstants.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONHitForRec) // Class implementation in ROOT context
@@ -38,21 +40,21 @@ AliMUONHitForRec::AliMUONHitForRec()
 }
 
   //__________________________________________________________________________
-AliMUONHitForRec::AliMUONHitForRec(AliMUONHit* theGhit)
+AliMUONHitForRec::AliMUONHitForRec(AliTrackReference* theGhit)
   : TObject()
 {
-  // Constructor for AliMUONHitForRec from a GEANT hit.
+  // Constructor for AliMUONHitForRec from a track ref. hit.
   // Fills the bending, non bending, and Z coordinates,
-  // which are taken from the coordinates of the GEANT hit,
-  // the track number (GEANT and not TH),
+  // which are taken from the coordinates of the track ref. hit,
+  // the track number (track ref. and not TH),
   // and the chamber number (0...).
   fBendingCoor = theGhit->Y();
   fNonBendingCoor = theGhit->X();
   fZ = theGhit->Z();
   // fTrack = theGhit->fTrack; ?????????
-  fChamberNumber = theGhit->Chamber() - 1;
+  fChamberNumber = AliMUONConstants::ChamberNumber(fZ);
   // other fields will be updated in
-  // AliMUONEventReconstructor::NewHitForRecFromGEANT,
+  // AliMUONEventReconstructor::NewHitForRecFromTrackRef,
   // except the following ones
   fIndexOfFirstSegment = -1;
   fNSegments = 0;
@@ -88,8 +90,8 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* theRawCluster)
   // other fields will be updated in
   // AliMUONEventReconstructor::AddHitsForRecFromRawClusters,
   // except the following ones
-  fTHTrack = -1;
-  fGeantSignal = -1;
+  fTTRTrack = -1;
+  fTrackRefSignal = -1;
   fIndexOfFirstSegment = -1;
   fNSegments = 0;
   fFirstTrackHitPtr = fLastTrackHitPtr = NULL;
@@ -108,8 +110,8 @@ AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& theMUONHitForRec)
   fNonBendingReso2 = theMUONHitForRec.fNonBendingReso2;
   fChamberNumber = theMUONHitForRec.fChamberNumber;
   fHitNumber = theMUONHitForRec.fHitNumber;
-  fTHTrack = theMUONHitForRec.fTHTrack;
-  fGeantSignal = theMUONHitForRec.fGeantSignal;
+  fTTRTrack = theMUONHitForRec.fTTRTrack;
+  fTrackRefSignal = theMUONHitForRec.fTrackRefSignal;
   fIndexOfFirstSegment = theMUONHitForRec.fIndexOfFirstSegment;
   fNSegments = theMUONHitForRec.fNSegments;
   fFirstTrackHitPtr = theMUONHitForRec.fFirstTrackHitPtr;
@@ -128,8 +130,8 @@ AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& theMUONHi
   fNonBendingReso2 = theMUONHitForRec.fNonBendingReso2;
   fChamberNumber = theMUONHitForRec.fChamberNumber;
   fHitNumber = theMUONHitForRec.fHitNumber;
-  fTHTrack = theMUONHitForRec.fTHTrack;
-  fGeantSignal = theMUONHitForRec.fGeantSignal;
+  fTTRTrack = theMUONHitForRec.fTTRTrack;
+  fTrackRefSignal = theMUONHitForRec.fTrackRefSignal;
   fIndexOfFirstSegment = theMUONHitForRec.fIndexOfFirstSegment;
   fNSegments = theMUONHitForRec.fNSegments;
   fFirstTrackHitPtr = theMUONHitForRec.fFirstTrackHitPtr;

@@ -198,6 +198,24 @@ To compile MUONRecoCheck.C
 // To run MUONRecoCheck
 MUONRecoCheck(nEvent,"galice.root"); // nEvent = nb of events
 
+
+============================================================
+ How to run MUONTracker macro
+============================================================
+To make the track reconstruction directly from AliTrackReference hits 
+which are recorded in TrackRefs.root during the simulation.
+It can be used to check the reconstruction without clusterization.	
+
+To compile MUONTracker.C
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONTracker.C+
+
+// To run MUONTracker
+MUONTracker(iEventMin,iEventMax,"galice.root"); // iEventMin: first event
+						// iEventMax: last event	
+
+
 ===========================================================
  Still working ..............
 ===========================================================

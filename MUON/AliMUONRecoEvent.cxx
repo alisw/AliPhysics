@@ -217,15 +217,15 @@ Bool_t AliMUONRecoEvent::MakeDumpTracks(Int_t muons, TClonesArray *tracksPtr,
 	Float_t signal = 0;
 	Float_t tht = 0;
 	for (int ihit = 0; ihit < nTrackHits; ihit++) {
-	  signal += ((AliMUONHitForRec*)((*hitsOnTrack)[ihit]))->GetGeantSignal();
-	  tht += TMath::Min (1,((AliMUONHitForRec*)((*hitsOnTrack)[ihit]))->GetTHTrack());
+	  signal += ((AliMUONHitForRec*)((*hitsOnTrack)[ihit]))->GetTrackRefSignal();
+	  tht += TMath::Min (1,((AliMUONHitForRec*)((*hitsOnTrack)[ihit]))->GetTTRTrack());
 	}
 	signal /= nTrackHits;
 	tht /= nTrackHits;
 	flag = 0;
 	if (TMath::Nint(signal) > 0) { // signal muon
 	  for (int ihit = 0; ihit < nTrackHits ; ihit++) {
-	    if (((AliMUONHitForRec*)((*hitsOnTrack)[ihit]))->GetTHTrack() != TMath::Nint(tht)) flag++;
+	    if (((AliMUONHitForRec*)((*hitsOnTrack)[ihit]))->GetTTRTrack() != TMath::Nint(tht)) flag++;
 	  }
 	} else flag = -9; // background track
 	//cout << TMath::Nint(signal) << " " << TMath::Nint(tht) << " " << recTrackNt->fFlag << endl;
@@ -259,8 +259,8 @@ Bool_t AliMUONRecoEvent::MakeDumpTracks(Int_t muons, TClonesArray *tracksPtr,
 	AliMUONHitForRec *hitForRec = 0;
 	for (int ihit = 0; ihit < nTrackHits; ihit++) {
 	  hitForRec = ((AliMUONTrackHit*)(*hitsOnTrack)[ihit])->GetHitForRecPtr();
-	  signal += hitForRec->GetGeantSignal();
-	  tht += TMath::Min (1,hitForRec->GetTHTrack());
+	  signal += hitForRec->GetTrackRefSignal();
+	  tht += TMath::Min (1,hitForRec->GetTTRTrack());
 	}
 	signal /= nTrackHits;
 	tht /= nTrackHits;
@@ -268,7 +268,7 @@ Bool_t AliMUONRecoEvent::MakeDumpTracks(Int_t muons, TClonesArray *tracksPtr,
 	if (TMath::Nint(signal) > 0) { // signal muon
 	  for (int ihit = 0; ihit < nTrackHits ; ihit++) {
 	    hitForRec = ((AliMUONTrackHit*)(*hitsOnTrack)[ihit])->GetHitForRecPtr();
-	    if (hitForRec->GetTHTrack() != TMath::Nint(tht)) flag++;
+	    if (hitForRec->GetTTRTrack() != TMath::Nint(tht)) flag++;
 	  }
 	} else flag = -9; // background track
 	//cout << TMath::Nint(signal) << " " << TMath::Nint(tht) << " " << recTrackNt->fFlag << endl;

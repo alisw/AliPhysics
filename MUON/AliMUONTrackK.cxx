@@ -218,9 +218,9 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
 
   if (fgDebug < 0 ) return;
   cout << fgEventReconstructor->GetBendingMomentumFromImpactParam(segment->GetBendingImpact()) << " " << 1/(*fTrackPar)(4,0) << " ";
-  if (fgEventReconstructor->GetRecGeantHits()) { 
-    // from GEANT hits
-    cout << ((AliMUONHitForRec*)((*fTrackHitsPtr)[0]))->GetTHTrack() << "<-->" << ((AliMUONHitForRec*)((*fTrackHitsPtr)[1]))->GetTHTrack() << " @ " << fStartSegment->GetHitForRec1()->GetChamberNumber() << endl;
+  if (fgEventReconstructor->GetRecTrackRefHits()) { 
+    // from track ref. hits
+    cout << ((AliMUONHitForRec*)((*fTrackHitsPtr)[0]))->GetTTRTrack() << "<-->" << ((AliMUONHitForRec*)((*fTrackHitsPtr)[1]))->GetTTRTrack() << " @ " << fStartSegment->GetHitForRec1()->GetChamberNumber() << endl;
   } else {
     // from raw clusters
     for (Int_t i=0; i<2; i++) {
@@ -530,7 +530,7 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 	    cout << ((AliMUONHitForRec*)((*fgHitForRec)[i1]))->GetBendingCoor() << " ";
 	    cout << ((AliMUONHitForRec*)((*fgHitForRec)[i1]))->GetNonBendingCoor() << " ";
 	    cout << ((AliMUONHitForRec*)((*fgHitForRec)[i1]))->GetZ() << " " << " ";
-	    cout << ((AliMUONHitForRec*)((*fgHitForRec)[i1]))->GetTHTrack() << endl;
+	    cout << ((AliMUONHitForRec*)((*fgHitForRec)[i1]))->GetTTRTrack() << endl;
 	  }
 	  cout << endl;
 	  cout << fNTrackHits << endl;
@@ -539,9 +539,9 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 	    printf(" * %d %10.4f %10.4f %10.4f", 
 	           hit->GetChamberNumber(), hit->GetBendingCoor(), 
 		   hit->GetNonBendingCoor(), hit->GetZ());
-	    if (fgEventReconstructor->GetRecGeantHits()) { 
-	      // from GEANT hits
-	      printf(" %3d %3d \n", hit->GetGeantSignal(), hit->GetTHTrack());
+	    if (fgEventReconstructor->GetRecTrackRefHits()) { 
+	      // from track ref. hits
+	      printf(" %3d %3d \n", hit->GetTrackRefSignal(), hit->GetTTRTrack());
 	    } else {
 	      // from raw clusters
 	      rawclusters = fgEventReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
@@ -911,7 +911,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    TMath::Abs((*fTrackParNew)(1,0)-x) <= windowNonB) {
 	//if (TMath::Abs((*fTrackParNew)(0,0)-y) <= windowB &&
 	  //    TMath::Abs((*fTrackParNew)(1,0)-x) <= windowNonB &&
-	  //  hit->GetGeantSignal() == 1) { // just for test
+	  //  hit->GetTrackRefSignal() == 1) { // just for test
 	  // Vector of measurements and covariance matrix
 	  point.Zero();
 	  point(0,0) = y;
@@ -939,7 +939,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    trackK = new ((*trackPtr)[nRecTracks]) AliMUONTrackK(NULL, NULL); 
 	    *trackK = *this;
 	    fgEventReconstructor->SetNRecTracks(nRecTracks+1);
-	    if (fgDebug > 0) cout << " ******** New track: " << ichamb << " " << hit->GetTHTrack() << " " << 1/(trackPar)(4,0) << " " << hit->GetBendingCoor() << " " << hit->GetNonBendingCoor() << " " << fNTrackHits << " " << nRecTracks << endl;
+	    if (fgDebug > 0) cout << " ******** New track: " << ichamb << " " << hit->GetTTRTrack() << " " << 1/(trackPar)(4,0) << " " << hit->GetBendingCoor() << " " << hit->GetNonBendingCoor() << " " << fNTrackHits << " " << nRecTracks << endl;
 	    trackK->fRecover = 0;
 	    *(trackK->fTrackPar) = trackPar;
 	    *(trackK->fWeight) += pointWeight; 
@@ -980,12 +980,12 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 		cout << hitLoop->GetBendingCoor() << " ";
 		cout << hitLoop->GetNonBendingCoor() << " ";
 		cout << hitLoop->GetZ() << " " << " ";
-		cout << hitLoop->GetGeantSignal() << " " << " ";
-		cout << hitLoop->GetTHTrack() << endl;
+		cout << hitLoop->GetTrackRefSignal() << " " << " ";
+		cout << hitLoop->GetTTRTrack() << endl;
 		printf(" ** %d %10.4f %10.4f %10.4f %d %d \n", 
 		       hitLoop->GetChamberNumber(), hitLoop->GetBendingCoor(), 
 		       hitLoop->GetNonBendingCoor(), hitLoop->GetZ(), 
-		       hitLoop->GetGeantSignal(), hitLoop->GetTHTrack());
+		       hitLoop->GetTrackRefSignal(), hitLoop->GetTTRTrack());
 	      }
 	    }
 	    //add point
@@ -1521,11 +1521,11 @@ vertex:
     }
     cout << endl;
   }
-  if (fgEventReconstructor->GetRecGeantHits()) { 
-      // from GEANT hits
+  if (fgEventReconstructor->GetRecTrackRefHits()) { 
+      // from track ref. hits
     for (Int_t i1=0; i1<fNTrackHits; i1++) {
       hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
-      cout << hit->GetTHTrack() + hit->GetGeantSignal()*10000 << " ";
+      cout << hit->GetTTRTrack() + hit->GetTrackRefSignal()*10000 << " ";
     }
   } else {
     // from raw clusters
@@ -2221,18 +2221,18 @@ void AliMUONTrackK::Print(FILE *lun) const
 
   Int_t flag = 1;
   AliMUONHitForRec *hit = 0; 
-  if (fgEventReconstructor->GetRecGeantHits()) { 
-    // from GEANT hits
+  if (fgEventReconstructor->GetRecTrackRefHits()) { 
+    // from track ref. hits
     for (Int_t j=0; j<fNTrackHits; j++) {
       hit = (AliMUONHitForRec*) fTrackHitsPtr->UncheckedAt(j);
-      if (hit->GetTHTrack() > 1) { flag = 0; break; }
+      if (hit->GetTTRTrack() > 1) { flag = 0; break; }
     }
     for (Int_t j=0; j<fNTrackHits; j++) {
       printf("%10.4f", GetChi2PerPoint(j));
       if (GetChi2PerPoint(j) > -0.1) {
 	hit = (AliMUONHitForRec*) fTrackHitsPtr->UncheckedAt(j);
 	fprintf(lun,"%3d %3d %10.4f", gAlice->GetEvNumber(), hit->GetChamberNumber(), GetChi2PerPoint(j));
-	fprintf(lun, "%3d %3d %3d \n", hit->GetGeantSignal(), hit->GetTHTrack(), flag);
+	fprintf(lun, "%3d %3d %3d \n", hit->GetTrackRefSignal(), hit->GetTTRTrack(), flag);
       }
     }
     printf("\n");

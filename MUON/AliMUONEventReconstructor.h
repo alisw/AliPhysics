@@ -22,6 +22,7 @@ class AliMUONRecoEvent;
 class AliMUONData;
 class AliRunLoader;
 class AliLoader;
+class AliTrackReference;
 
 class AliMUONEventReconstructor : public TObject {
 
@@ -51,18 +52,18 @@ class AliMUONEventReconstructor : public TObject {
   void SetSimpleBLength(Double_t SimpleBLength) {fSimpleBLength = SimpleBLength;}
   Double_t GetSimpleBPosition(void) const {return fSimpleBPosition;}
   void SetSimpleBPosition(Double_t SimpleBPosition) {fSimpleBPosition = SimpleBPosition;}
-  Int_t GetRecGeantHits(void) const {return fRecGeantHits;}
-  void SetRecGeantHits(Int_t RecGeantHits) {fRecGeantHits = RecGeantHits;}
+  Int_t GetRecTrackRefHits(void) const {return fRecTrackRefHits;}
+  void SetRecTrackRefHits(Int_t RecTrackRefHits) {fRecTrackRefHits = RecTrackRefHits;}
   Double_t GetEfficiency(void) const {return fEfficiency;}
   void SetEfficiency(Double_t Efficiency) {fEfficiency = Efficiency;}
   Int_t GetPrintLevel(void) const {return fPrintLevel;}
   void SetPrintLevel(Int_t PrintLevel) {fPrintLevel = PrintLevel;}
   void SetReconstructionParametersToDefaults(void);
 
-  // Parameters for GEANT background events
-  TFile* GetBkgGeantFile(void) const {return fBkgGeantFile;}
-  void SetBkgGeantFile(Text_t *BkgGeantFileName); // set background file for GEANT hits
-  void NextBkgGeantEvent(void); // next event in background file for GEANT hits
+  // Parameters for Track Ref. background events
+  TFile* GetBkgTrackRefFile(void) const {return fBkgTrackRefFile;}
+  void SetBkgTrackRefFile(Text_t *BkgTrackRefFileName); // set background file for track ref. hits
+  void NextBkgTrackRefEvent(void); // next event in background file for track ref. hits
 
   // Hits for reconstruction
   Int_t GetNHitsForRec(void) const {return fNHitsForRec;} // Number
@@ -124,8 +125,8 @@ class AliMUONEventReconstructor : public TObject {
   static const Double_t fgkDefaultSimpleBValue; // default value of magnetic field (dipole)
   static const Double_t fgkDefaultSimpleBLength; // default length of magnetic field (dipole)
   static const Double_t fgkDefaultSimpleBPosition; // default position of magnetic field (dipole)
-  static const Int_t fgkDefaultRecGeantHits; // default flag for reconstrution GEANT hits or Clusters
-  static const Double_t fgkDefaultEfficiency; // default chamber efficiency for GEANT hits recontruction
+  static const Int_t fgkDefaultRecTrackRefHits; // default flag for reconstrution track ref. hits or Clusters
+  static const Double_t fgkDefaultEfficiency; // default chamber efficiency for track ref. hits recontruction
 
   static const Int_t fgkDefaultPrintLevel; // default print level
 
@@ -148,18 +149,17 @@ class AliMUONEventReconstructor : public TObject {
   Double_t fSimpleBValue; // simple magnetic field: value (kG)
   Double_t fSimpleBLength; // simple magnetic field: length (cm)
   Double_t fSimpleBPosition; // simple magnetic field: Z central position (cm)
-  Int_t fRecGeantHits; // reconstruction from raw clusters (0) or from GEANT hits (1)
-  Double_t fEfficiency; // chamber efficiency (used for GEANT hits only)
+  Int_t fRecTrackRefHits; // reconstruction from raw clusters (0) or from track ref. hits (1)
+  Double_t fEfficiency; // chamber efficiency (used for track ref. hits only)
   Int_t fPrintLevel; // print level
 
-  // Parameters for GEANT background events
+  // Parameters for track ref. background events
   // should be in AliMUON class ????
-  TFile *fBkgGeantFile; // pointer to file
-  TTree *fBkgGeantTK; // pointer to tree TK
-  TClonesArray *fBkgGeantParticles;   // pointer to list of particles in tree TK
-  TTree *fBkgGeantTH; // pointer to tree TH
-  TClonesArray *fBkgGeantHits; // pointer to list of hits in tree TH
-  Int_t fBkgGeantEventNumber; // event number
+  TFile *fBkgTrackRefFile; // pointer to file
+  TTree *fBkgTrackRefTK; // pointer to tree TK
+  TClonesArray *fBkgTrackRefParticles;   // pointer to list of particles in tree TK
+  TTree *fBkgTrackRefTTR; // pointer to tree TTR
+  Int_t fBkgTrackRefEventNumber; // event number
   
   // Hits for reconstruction (should be in AliMUON ????)
   TClonesArray *fHitsForRecPtr; // pointer to the array of hits for reconstruction
@@ -200,9 +200,9 @@ class AliMUONEventReconstructor : public TObject {
   // Functions
   void ResetHitsForRec(void);
   void MakeEventToBeReconstructed(void);
-  void AddHitsForRecFromGEANT(TTree *TH);
-  void AddHitsForRecFromBkgGEANT(TTree *TH, TClonesArray *Hits);
-  AliMUONHitForRec* NewHitForRecFromGEANT(AliMUONHit* Hit, Int_t TrackNumber, Int_t HitNumber, Int_t Signal);
+  void AddHitsForRecFromTrackRef(TTree *TTR, Int_t Signal);
+  AliMUONHitForRec* NewHitForRecFromTrackRef(AliTrackReference* Hit, Int_t TrackNumber, Int_t Signal);
+  TClonesArray *CleanTrackRefs(TTree *treeTR);
 /*   void AddHitsForRecFromCathodeCorrelations(TTree* TC); */
   void AddHitsForRecFromRawClusters(TTree* TR);
   void SortHitsForRecWithIncreasingChamber();
@@ -230,6 +230,7 @@ class AliMUONEventReconstructor : public TObject {
   void RemoveDoubleTracksK(void);
   void GoToVertex(void);
   Bool_t CheckCandidateK(Int_t icand, Int_t nSeeds) const;
+
 
   ClassDef(AliMUONEventReconstructor, 0) // MUON event reconstructor in ALICE
     };

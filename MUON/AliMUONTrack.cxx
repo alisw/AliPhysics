@@ -123,18 +123,21 @@ AliMUONTrack::~AliMUONTrack()
 {
   // Destructor
   if (fTrackHitsPtr) {
+    fTrackHitsPtr->Clear();
     delete fTrackHitsPtr; // delete the TObjArray of pointers to TrackHit's
     fTrackHitsPtr = NULL;
   }
   
   if (fTrackParamAtHit) {
     // delete the TClonesArray of pointers to TrackParam
+    fTrackParamAtHit->Clear();
     delete fTrackParamAtHit;
     fTrackParamAtHit = NULL;
   }
 
   if (fHitForRecAtHit) {
     // delete the TClonesArray of pointers to HitForRec
+    fHitForRecAtHit->Clear();
     delete fHitForRecAtHit;
     fHitForRecAtHit = NULL;
   }

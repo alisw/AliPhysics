@@ -8,7 +8,7 @@
 
 #include <TObject.h>
 
-class AliMUONHit;
+class AliTrackReference;
 class AliMUONRawCluster;
 class AliMUONTrackHit;
 class AliMUONTrackParam;
@@ -19,7 +19,7 @@ class AliMUONHitForRec : public TObject {
   virtual ~AliMUONHitForRec(){} // Destructor
   AliMUONHitForRec (const AliMUONHitForRec& AliMUONHitForRec); // copy constructor
   AliMUONHitForRec& operator=(const AliMUONHitForRec& AliMUONHitForRec); // assignment operator
-  AliMUONHitForRec(AliMUONHit* mHit); // Constructor from GEANT hit
+  AliMUONHitForRec(AliTrackReference* mHit); // Constructor from track ref. hit
   AliMUONHitForRec(AliMUONRawCluster* theRawCluster); // Constructor from raw cluster
 
   // Inline functions for Get and Set
@@ -37,10 +37,10 @@ class AliMUONHitForRec : public TObject {
   void SetChamberNumber(Int_t ChamberNumber) { fChamberNumber = ChamberNumber;}
   Int_t GetHitNumber(void) const { return fHitNumber;}
   void SetHitNumber(Int_t HitNumber) { fHitNumber = HitNumber;}
-  Int_t GetTHTrack(void) const { return fTHTrack;}
-  void SetTHTrack(Int_t THTrack) { fTHTrack = THTrack;}
-  Int_t GetGeantSignal(void) const { return fGeantSignal;}
-  void SetGeantSignal(Int_t GeantSignal) { fGeantSignal = GeantSignal;}
+  Int_t GetTTRTrack(void) const { return fTTRTrack;}
+  void SetTTRTrack(Int_t TTRTrack) { fTTRTrack = TTRTrack;}
+  Int_t GetTrackRefSignal(void) const { return fTrackRefSignal;}
+  void SetTrackRefSignal(Int_t TrackRefSignal) { fTrackRefSignal = TrackRefSignal;}
   Int_t GetIndexOfFirstSegment(void) const { return fIndexOfFirstSegment;}
   void SetIndexOfFirstSegment(Int_t IndexOfFirstSegment) { fIndexOfFirstSegment = IndexOfFirstSegment;}
   Int_t GetNSegments(void) const { return fNSegments;}
@@ -72,9 +72,9 @@ class AliMUONHitForRec : public TObject {
   // ideal would be real link to "hit" or "reconstructed hit"
   // if everything would be in memory ????
   Int_t fChamberNumber; // chamber number (0...)
-  Int_t fHitNumber; // hit number (0...): RawCluster in "chamber" event of TR or GEANT hit in "track" event of TH
-  Int_t fTHTrack; // track number (0...) in TH
-  Int_t fGeantSignal; // Geant signal (1) or background (0)
+  Int_t fHitNumber; // hit number (0...): RawCluster in "chamber" event of TR or track ref. hit in "track" event of TTR
+  Int_t fTTRTrack; // track number (0...) in TTR
+  Int_t fTrackRefSignal; // Track ref. signal (1) or background (0)
 
   // links forward to the segment(s) if HitForRec in first chamber of a station
   Int_t fIndexOfFirstSegment; //! index of first Segment
