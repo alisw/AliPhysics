@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.5  2002/10/14 14:57:42  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.3.6.1  2002/07/24 11:07:40  alibrary
 Updating VirtualMC
 
@@ -50,7 +53,7 @@ Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <TMath.h>
 
 #include "AliTOFHitMap.h"

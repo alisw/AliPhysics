@@ -36,7 +36,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <stdlib.h>
 
 #include "AliTOFv4T0.h"

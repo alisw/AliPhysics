@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.40  2002/10/14 14:57:42  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.35.4.2  2002/07/24 10:08:43  alibrary
 Updating VirtualMC
 
@@ -139,9 +142,9 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
-#include <strstream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Rstrstream.h>
+#include <Riostream.h>
 #include <stdlib.h>
 
 #include "AliTOF.h"

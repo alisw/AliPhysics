@@ -34,8 +34,8 @@
 #include "TFolder.h"
 #include <TF1.h>
 #include <stdlib.h>
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 
 #include "AliTOFHitMap.h"
 #include "AliTOFSDigit.h"

@@ -43,7 +43,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <stdlib.h>
 
 #include "AliTOFv2FHoles.h"

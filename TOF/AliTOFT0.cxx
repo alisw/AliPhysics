@@ -82,9 +82,7 @@
 #include "TParticle.h"
 #include "TClonesArray.h"
 #include <stdlib.h>
-#include <iostream.h>
-#include <fstream.h>
-#include <iomanip.h>
+#include <Riostream.h>
 
 ClassImp(AliTOFT0)
 

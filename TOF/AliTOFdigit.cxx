@@ -28,7 +28,7 @@
  * provided "as is" without express or implied warranty.                  * 
  **************************************************************************/
 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliTOF.h"
 #include "AliTOFdigit.h"

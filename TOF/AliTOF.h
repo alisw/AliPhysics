@@ -27,7 +27,7 @@ class AliTOFMerger;
 #include "TObject.h"
 #include "TTree.h" 
 #include "AliDetector.h"
-#include <iostream.h>
+#include <Riostream.h>
 #include "AliTOFMerger.h"
 #include "AliTOFSDigitizer.h"
 

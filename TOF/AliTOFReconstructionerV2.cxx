@@ -29,8 +29,8 @@
 #include "TROOT.h"
 #include "TSystem.h"
 #include <stdlib.h>
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 #include "TGeant3.h"
 #include "TVirtualMC.h"
 

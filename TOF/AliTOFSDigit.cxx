@@ -28,7 +28,7 @@
 //
 //*-- Authors: F. Pierella, A. Seganti, D. Vicinanza
 
-#include <iostream.h>
+#include <Riostream.h>
 #include "TArrayF.h"
 #include "TArrayI.h"
 

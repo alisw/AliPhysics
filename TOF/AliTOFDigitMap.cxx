@@ -32,7 +32,7 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <TMath.h>
 
 #include "AliTOFDigitMap.h"

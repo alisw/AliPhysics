@@ -31,7 +31,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <assert.h>
 
 #include "AliTOFRoc.h"
