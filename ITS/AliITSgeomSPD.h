@@ -5,41 +5,29 @@
 
 /* $Id$ */
 
+
 #include "TShape.h"
 #include "TBRIK.h"
 
+#include "TObject.h"
 
-class AliITSgeomSPD: public TObject {
- private:
-    // define shape of active area using ROOT shapes so that they can
-    // be easly plotted. Inputs to TBRIK are
-    // Shape name (what ever that is)
-    // Shape title (what ever that means)
-    // name of material (something I took from ITSgeometry.tme file
-    // dx => 1/2 thickness of wafer's active volume (cm)
-    // dy => 1/2 r*phi size of active volume (cm)
-    // dz => 1/2 size of active volume (cm)
-    TBRIK *fShapeSPD;
-    // Other infomation like.
-    // Float_t fPitchZ;     // cm
-    // Float_t fPitchY;     // cm
-    // Float_t fCellZ;      // cm
-    // Float_t fCellY;      // cm
-    // or what other or different information that is needed.
-    Float_t dx;
-    Float_t dy;
-    Float_t dz;
+
+class AliITSgeomSPD:public TObject {
 
  public:
-    AliITSgeomSPD();
-    virtual ~AliITSgeomSPD(){};
-    TBRIK *GetShape() const {return fShapeSPD;}
+    virtual ~AliITSgeomSPD(){}; // destructor
+    virtual TShape *GetShape(){return (TShape*)0;} // get TShape
+    virtual Float_t GetDx(){return 0.0;}; // get width
+    virtual Float_t GetDy(){return 0.0;}; // get thickness
+    virtual Float_t GetDz(){return 0.0;}; // get length
+    virtual Int_t   GetNbinsX(){return 0;}; // get number of x pixels
+    virtual Float_t GetBinSizeX(Int_t i){return 0.0;}; // get x pixel size
+    virtual Int_t   GetNbinsZ(){return 0;}; // get number of z pixels
+    virtual Float_t GetBinSizeZ(Int_t i){return 0.0;}; // get z pixel size
+    virtual void    ReSetBins(Float_t dy,Int_t Nx, Float_t *bx,
+			      Int_t Nz,Float_t *bz){;}; // change pixel sizes
 
-    
-    Float_t GetDx() const {return dx;}
-    Float_t GetDy() const {return dy;}
-    Float_t GetDz() const {return dz;}
+    ClassDef(AliITSgeomSPD,2) // ITS SPD detector geometry class
 
-    ClassDef(AliITSgeomSPD,1) // ITS SPD detector geometry class
 };
 #endif

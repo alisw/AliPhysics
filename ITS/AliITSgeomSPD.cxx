@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/03/07 18:46:59  nilsen
+Merged form ITS-working to HEAD. Minor changes
+
 Revision 1.2.4.2  2000/03/04 23:55:08  nilsen
 Updated comments/documentation.
 
@@ -30,7 +33,8 @@ Introduction of the Copyright and cvs Log
 #include "AliITSgeomSPD.h"
 
 ClassImp(AliITSgeomSPD)
-AliITSgeomSPD::AliITSgeomSPD(){
+
+  /*AliITSgeomSPD::AliITSgeomSPD(){
 ////////////////////////////////////////////////////////////////////////
 //    default constructor
 ////////////////////////////////////////////////////////////////////////
@@ -40,4 +44,5 @@ AliITSgeomSPD::AliITSgeomSPD(){
 
     fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",
 			  dx,dy,dz);
-}
+			  }*/
+
