@@ -63,6 +63,7 @@
 #include "TClonesArray.h"
 #include "TROOT.h"
 #include "TTree.h"
+#include "TFile.h"
 
 // --- Standard library ---
 #include <iostream.h>   
@@ -403,6 +404,15 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
   
   if(fPID)
     delete fPID ;
+
+//    TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data()) ;
+    
+//    if(file != 0) {
+//      file->Close();
+//      delete file;
+//      printf("File %s is closed\n",fHeaderFileName.Data());
+//    }
+
 } 
 //____________________________________________________________________________
 void AliPHOSReconstructioner::SetBranchTitle(const char* branch, const char * title)

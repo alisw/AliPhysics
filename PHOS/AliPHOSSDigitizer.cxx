@@ -70,12 +70,12 @@ ClassImp(AliPHOSSDigitizer)
   AliPHOSSDigitizer::AliPHOSSDigitizer():TTask("AliPHOSSDigitizer","") 
 {
   // ctor
-  fA = 0;
-  fB = 10000000. ;
+  fA             = 0;
+  fB             = 10000000.;
   fPrimThreshold = 0.01 ;
-  fNevents = 0 ;     
-  fSDigits = 0 ;
-  fHits = 0 ;
+  fNevents       = 0 ;      
+  fSDigits       = 0 ;
+  fHits          = 0 ;
   fIsInitialized = kFALSE ;
 
 }
@@ -84,32 +84,15 @@ ClassImp(AliPHOSSDigitizer)
 AliPHOSSDigitizer::AliPHOSSDigitizer(const char* headerFile, const char *sDigitsTitle):TTask("AliPHOSSDigitizer","")
 {
   // ctor
-  fA = 0;
-  fB = 10000000.;
+  fA             = 0;
+  fB             = 10000000.;
   fPrimThreshold = 0.01 ;
-  fNevents = 0 ;      
-  fSDigitsTitle = sDigitsTitle ;
-  fHeadersFile = headerFile ;
-  fSDigits = new TClonesArray("AliPHOSDigit",1000);
-  fHits    = new TClonesArray("AliPHOSHit",1000);
+  fNevents       = 0 ;      
+  fSDigitsTitle  = sDigitsTitle ;
+  fHeadersFile   = headerFile ;
+  fIsInitialized = kFALSE ;
 
-  TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data() ) ;
-  
-  //File was not opened yet
-  if(file == 0){
-    if(fHeadersFile.Contains("rfio"))
-      file =	TFile::Open(fHeadersFile,"update") ;
-    else
-      file = new TFile(fHeadersFile.Data(),"update") ;
-    gAlice = (AliRun *) file->Get("gAlice") ;
-  }
-  
-  //add Task to //root/Tasks folder
-  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
-  phostasks->Add(this) ; 
-  
-  fIsInitialized = kTRUE ;
+  Init();
 }
 
 //____________________________________________________________________________ 
@@ -124,6 +107,9 @@ AliPHOSSDigitizer::~AliPHOSSDigitizer()
 //____________________________________________________________________________ 
 void AliPHOSSDigitizer::Init()
 {
+  // Initialization: open root-file, allocate arrays for hits and sdigits,
+  // attach task SDigitizer to the list of PHOS tasks
+  // 
   // Initialization can not be done in the default constructor
 
   if(!fIsInitialized){
@@ -135,17 +121,21 @@ void AliPHOSSDigitizer::Init()
     
     //if file was not opened yet, read gAlice
     if(file == 0){
-      file = new TFile(fHeadersFile.Data(),"update") ;
+      if(fHeadersFile.Contains("rfio"))
+	file =	TFile::Open(fHeadersFile,"update") ;
+      else
+	file = new TFile(fHeadersFile.Data(),"update") ;
       gAlice = (AliRun *) file->Get("gAlice") ;
     }
     
     fHits    = new TClonesArray("AliPHOSHit",1000);
     fSDigits = new TClonesArray("AliPHOSDigit",1000);
     
-    // add Task to //root/Tasks folder
-    TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-    TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
-    phostasks->Add(this) ; 
+    //add Task to //YSAlice/tasks/(S)Diditizer/PHOS
+    TFolder * alice  = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ; 
+    TTask * aliceSD  = (TTask*)alice->FindObject("tasks/(S)Digitizer") ; 
+    TTask * phosSD   = (TTask*)aliceSD->GetListOfTasks()->FindObject("PHOS") ;
+    phosSD->Add(this) ; 
     
     fIsInitialized = kTRUE ;
   }

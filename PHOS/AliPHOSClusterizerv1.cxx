@@ -103,20 +103,21 @@ ClassImp(AliPHOSClusterizerv1)
   fW0                      = 4.5 ;
   fW0CPV                   = 4.0 ;
   
-  fGeom  = 0 ;
+  fGeom                    = 0 ;
   
-  fDigits = 0 ;
-  fDigitizer = 0 ;
-  fEmcRecPoints = 0 ;
-  fCpvRecPoints = 0 ;
+  fDigits                  = 0 ;
+  fDigitizer               = 0 ;
+  fEmcRecPoints            = 0 ;
+  fCpvRecPoints            = 0 ;
 
-  fIsInitialized = kFALSE ;
+  fIsInitialized           = kFALSE ;
   
 }
 //____________________________________________________________________________
 AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* digitsFile):AliPHOSClusterizer()
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
+
   SetName("AliPHOSClusterizer");
   SetTitle("Version 1") ;
   
@@ -133,40 +134,14 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* di
   fW0                      = 4.5 ;
   fW0CPV                   = 4.0 ;
   
-  fToUnfold = kTRUE ;
+  fToUnfold                = kTRUE ;
   
-  fHeaderFileName = headerFile  ;
-  fDigitsBranchTitle = digitsFile ;
-  
-  TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
-  
-  if(file == 0){
-    if(fHeaderFileName.Contains("rfio")) // if we read file using HPSS
-      file =	TFile::Open(fHeaderFileName.Data(),"update") ;
-    else
-      file = new TFile(fHeaderFileName.Data(),"update") ;
-    gAlice = (AliRun *) file->Get("gAlice") ;
-  }
-  
-  AliPHOS * phos = (AliPHOS *) gAlice->GetDetector("PHOS") ;    
-  fGeom  = AliPHOSGeometry::GetInstance(phos->GetGeometry()->GetName(),phos->GetGeometry()->GetTitle() );
-  
-  fDigits = new TClonesArray("AliPHOSDigit",10) ;
-  fDigitizer = new AliPHOSDigitizer() ;
-  fEmcRecPoints = new TObjArray(200) ;
-  fCpvRecPoints = new TObjArray(200) ;
-  fEmcRecPoints->SetOwner();          // This lets Clear() really detete rec.points in array
-  fCpvRecPoints->SetOwner();
-  
-  if(!gMinuit) gMinuit = new TMinuit(100) ;
-  
-  // add Task to //root/Tasks folder
-  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
-  phostasks->Add(this) ; 
+  fHeaderFileName          = headerFile ;
+  fDigitsBranchTitle       = digitsFile ;
 
-
-  fIsInitialized = kTRUE ;
+  fIsInitialized           = kFALSE ;
+  
+  Init() ;
 
 }
 //____________________________________________________________________________
@@ -199,7 +174,6 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
 	 <<  gBenchmark->GetCpuTime("PHOSClusterizer")/nEvents << " seconds per event " << endl ;
     cout << endl ;
   }
-  
   
 }
 
@@ -294,16 +268,20 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Fl
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::Init()
 {
-  //Make all memory allocations which can not be done in default constructor.
+  // Make all memory allocations which can not be done in default constructor.
+  // Attach the Clusterizer task to the list of PHOS tasks
+
   if(!fIsInitialized){
     if(fHeaderFileName.IsNull())
       fHeaderFileName = "galice.root" ;
     
-    
     TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
     
     if(file == 0){
-      file = new TFile(fHeaderFileName.Data(),"update") ;
+      if(fHeaderFileName.Contains("rfio")) // if we read file using HPSS
+	file =	TFile::Open(fHeaderFileName.Data(),"update") ;
+      else
+	file = new TFile(fHeaderFileName.Data(),"update") ;
       gAlice = (AliRun *) file->Get("gAlice") ;
     }
      
@@ -319,10 +297,11 @@ void AliPHOSClusterizerv1::Init()
     
     if(!gMinuit) gMinuit = new TMinuit(100) ;
 
-    // add Task to //root/Tasks folder
-    TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-    TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
-    phostasks->Add(this) ; 
+    //add Task to //YSAlice/tasks/Reconstructioner/PHOS
+    TFolder * alice  = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ; 
+    TTask * aliceRe  = (TTask*)alice->FindObject("tasks/Reconstructioner") ; 
+    TTask * phosRe   = (TTask*)aliceRe->GetListOfTasks()->FindObject("PHOS") ;
+    phosRe->Add(this) ; 
 
     fIsInitialized = kTRUE ;
   }

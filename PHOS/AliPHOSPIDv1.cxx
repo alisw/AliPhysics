@@ -102,37 +102,9 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headeFile,const char * tsBranchTitle):Al
 
   SetName("AliPHOSPID") ;
   SetTitle("version1") ;
+  fIsInitialized = kFALSE ;
 
-  TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
-
-  if(file == 0){
-    if(fHeaderFileName.Contains("rfio")) // if we read file using HPSS
-      file = TFile::Open(fHeaderFileName.Data(),"update") ;
-    else
-      file = new TFile(fHeaderFileName.Data(),"update") ;
-    gAlice = (AliRun *) file->Get("gAlice") ;
-  }
-  
-  AliPHOS * phos = (AliPHOS *) gAlice->GetDetector("PHOS") ;    
-  fGeom  = AliPHOSGeometry::GetInstance(phos->GetGeometry()->GetName(),phos->GetGeometry()->GetTitle() );
-  
-  fTrackSegments = new TClonesArray("AliPHOSTrackSegment",1) ;
-  fTSMaker       = 0 ;
-  fEmcRecPoints  = new TObjArray(1) ;
-  fCpvRecPoints  = new TObjArray(1) ;
-  fClusterizer   = 0 ;
-  fRecParticles  = new TClonesArray("AliPHOSRecParticle",100) ;
-
-  fFormula = new TFormula("LambdaCuts","(x>1)*(x<3)*(y>0)*(y<x)") ;
-  
-  // add Task to //root/Tasks folder
-  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
-  phostasks->Add(this) ; 
-
-  fDispersion = 2.0; 
-  fCpvEmcDistance = 3.0 ;
-  fIsInitialized = kTRUE ;
+  Init() ;
 
 }
 //____________________________________________________________________________
@@ -144,6 +116,8 @@ AliPHOSPIDv1::~AliPHOSPIDv1()
 void AliPHOSPIDv1::Init()
 {
   // Make all memory allocations that are not possible in default constructor
+  // Add the PID task to the list of PHOS tasks
+
   if(!fIsInitialized){
     if(fHeaderFileName.IsNull())
       fHeaderFileName = "galice.root" ;
@@ -151,7 +125,10 @@ void AliPHOSPIDv1::Init()
     TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
 
     if(file == 0){
-      file = new TFile(fHeaderFileName.Data(),"update") ;
+      if(fHeaderFileName.Contains("rfio")) // if we read file using HPSS
+	file = TFile::Open(fHeaderFileName.Data(),"update") ;
+      else
+	file = new TFile(fHeaderFileName.Data(),"update") ;
       gAlice = (AliRun *) file->Get("gAlice") ;
     }
 
@@ -167,13 +144,14 @@ void AliPHOSPIDv1::Init()
     
     fFormula = new TFormula("LambdaCuts","(x>1)*(x<2.5)*(y>0)*(y<x)") ;
     
-    // add Task to //root/Tasks folder
-    TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-    TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
-    phostasks->Add(this) ; 
-
-    fDispersion = 2.0; 
+    fDispersion     = 2.0 ; 
     fCpvEmcDistance = 3.0 ;
+
+    //add Task to //YSAlice/tasks/Reconstructioner/PHOS
+    TFolder * alice  = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ; 
+    TTask * aliceRe  = (TTask*)alice->FindObject("tasks/Reconstructioner") ; 
+    TTask * phosRe   = (TTask*)aliceRe->GetListOfTasks()->FindObject("PHOS") ;
+    phosRe->Add(this) ; 
 
     fIsInitialized = kTRUE ;
   }

@@ -78,47 +78,56 @@ ClassImp(AliPHOSDigitizer)
 {
   // ctor
 
-  fSDigitizer = 0 ;
-  fNinputs = 1 ;
-  fPinNoise = 0.01 ;
-  fEMCDigitThreshold = 0.01 ;
-  fCPVNoise = 0.01;
-  fCPVDigitThreshold = 0.09 ;
-  fPPSDNoise = 0.0000001;
-  fPPSDDigitThreshold = 0.0000002 ;
-  fInitialized = kFALSE ;
+  fSDigitizer         = 0 ;
 
-  fHeaderFiles = 0;
-  fSDigitsTitles = 0;
-  fSDigits  = 0 ;
-  fDigits = 0;
+  fNinputs            = 1 ;
+  fPinNoise           = 0.01 ;
+  fEMCDigitThreshold  = 0.01 ;
+  fCPVNoise           = 0.01;
+  fCPVDigitThreshold  = 0.09 ;
+  fPPSDNoise          = 0.0000001;
+  fPPSDDigitThreshold = 0.0000002 ;  
+  fInitialized        = kFALSE ;
+
+  fHeaderFiles        = 0;
+  fSDigitsTitles      = 0;
+  fSDigits            = 0 ;
+  fDigits             = 0;
 
 }
 //____________________________________________________________________________ 
 void AliPHOSDigitizer::Init()
 {
   // Makes all memory allocations
+  // Adds Digitizer task to the folder of PHOS tasks
   
   if(!fInitialized){
     
-    fHeaderFiles  = new TClonesArray("TObjString",1) ;
-    new((*fHeaderFiles)[0]) TObjString("galice.root") ;
+    if (fHeaderFiles == 0) {
+      fHeaderFiles  = new TClonesArray("TObjString",1) ;
+      new((*fHeaderFiles)[0]) TObjString("galice.root") ;
+    }
     
     //Test, if this file already open
     
     TFile *file = (TFile*) gROOT->GetFile(((TObjString *) fHeaderFiles->At(0))->GetString() ) ;
     
-    if(file == 0){
-      file = new TFile(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;
-      gAlice = (AliRun *) file->Get("gAlice") ;
+    if(file==0){
+      if(((TObjString *) fHeaderFiles->At(0))->GetString().Contains("rfio"))
+	file =	TFile::Open(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;
+      else
+	file = new TFile(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;      
+      gAlice = (AliRun *) file->Get("gAlice") ;  //If not read yet
     }
     else
       file = new TFile(((TObjString *) fHeaderFiles->At(0))->GetString()) ;
     
     file->cd() ;
     
-    fSDigitsTitles = new TClonesArray("TObjString",1);
-    new((*fSDigitsTitles)[0]) TObjString("") ;   
+    if (fSDigitsTitles == 0) {
+      fSDigitsTitles = new TClonesArray("TObjString",1);
+      new((*fSDigitsTitles)[0]) TObjString("") ;   
+    }
     
     fSDigits      = new TClonesArray("TClonesArray",1) ;
     new((*fSDigits)[0]) TClonesArray("AliPHOSDigit",1000) ;
@@ -135,10 +144,11 @@ void AliPHOSDigitizer::Init()
     
     fIeventMax->AddAt((Int_t) gAlice->TreeE()->GetEntries(), 0 );
     
-    // add Task to //root/Tasks folder
-    TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-    TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
-    phostasks->Add(this) ; 
+    //add Task to //YSAlice/tasks/(S)Diditizer/PHOS
+    TFolder * alice  = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ; 
+    TTask * aliceSD  = (TTask*)alice->FindObject("tasks/(S)Digitizer") ; 
+    TTask * phosSD   = (TTask*)aliceSD->GetListOfTasks()->FindObject("PHOS") ;
+    phosSD->Add(this) ; 
     
     fInitialized = kTRUE ;
   }
@@ -152,52 +162,19 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char *sDigitsTit
   fHeaderFiles  = new TClonesArray("TObjString",1) ;          
   new((*fHeaderFiles)[0]) TObjString(headerFile) ;
   
-  // Header file, where result will be stored
-  TFile * file = (TFile*) gROOT->GetFile(((TObjString *) fHeaderFiles->At(0))->GetString() ) ;
-  if(file==0){
-      if(((TObjString *) fHeaderFiles->At(0))->GetString().Contains("rfio"))
-	file =	TFile::Open(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;
-      else
-	file = new TFile(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;      
-    gAlice = (AliRun *) file->Get("gAlice") ;  //If not read yet
-  }
-  
-  file->cd() ;
-  
   fSDigitsTitles = new TClonesArray("TObjString",1);         // Title name of the SDigits branch
   new((*fSDigitsTitles)[0]) TObjString(sDigitsTitle) ;  
     
-  fSDigits      = new TClonesArray("TClonesArray",1) ;      // here list of SDigits wil be stored
-  new((*fSDigits)[0]) TClonesArray("AliPHOSDigit",1000) ;
-    
-  fDigits = new TClonesArray("AliPHOSDigit",200000) ;
-  
-  fDigitsTitle = "" ; 
-
-  
-  fSDigitizer = 0 ;
-  
-  fIevent    = new TArrayI(1) ;
-  fIevent->AddAt(-1,0 ) ; 
-  fIeventMax = new TArrayI(1) ;
-  
-  // Get number of events to process
-  fIeventMax->AddAt((Int_t) gAlice->TreeE()->GetEntries(), 0 );
-  
-  fNinputs = 1 ;
-  
-  fPinNoise = 0.01 ;
-  fEMCDigitThreshold = 0.01 ;
-  fCPVNoise = 0.01;
-  fCPVDigitThreshold = 0.09 ;
-  fPPSDNoise = 0.0000001;
+  fNinputs            = 1 ;
+  fPinNoise           = 0.01 ;
+  fEMCDigitThreshold  = 0.01 ;
+  fCPVNoise           = 0.01;
+  fCPVDigitThreshold  = 0.09 ;
+  fPPSDNoise          = 0.0000001;
   fPPSDDigitThreshold = 0.0000002 ;  
-  
-  // add Task to //root/Tasks folder
-  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
-  phostasks->Add(this) ; 
-  fInitialized = kTRUE ;
+  fInitialized        = kFALSE ;
+
+  Init() ;
   
 }
 

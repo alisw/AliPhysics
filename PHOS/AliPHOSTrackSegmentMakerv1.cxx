@@ -68,20 +68,20 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
 
 
 //____________________________________________________________________________
- AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1() : AliPHOSTrackSegmentMaker()
+  AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1() : AliPHOSTrackSegmentMaker()
 {
   // ctor
   SetTitle("version 1") ;
   SetName("AliPHOSTrackSegmentMaker") ;
-  fR0 = 10. ;   
+  fR0       = 10. ;   
   fEmcFirst = 0 ;    
   fEmcLast  = 0 ;   
   fCpvFirst = 0 ;   
   fCpvLast  = 0 ;   
   fPpsdFirst= 0 ;   
   fPpsdLast = 0 ;   
-  fLinkLowArray = 0 ;
-  fLinkUpArray  = 0 ;
+  fLinkLowArray  = 0 ;
+  fLinkUpArray   = 0 ;
   fIsInitialized = kFALSE ;
 }
 //____________________________________________________________________________
@@ -91,7 +91,7 @@ AliPHOSTrackSegmentMaker()
   // ctor
   SetTitle("version 1") ;
   SetName("AliPHOSTrackSegmentMaker") ;
-  fR0 = 10. ;   
+  fR0       = 10. ;   
   fEmcFirst = 0 ;    
   fEmcLast  = 0 ;   
   fCpvFirst = 0 ;   
@@ -99,29 +99,11 @@ AliPHOSTrackSegmentMaker()
   fPpsdFirst= 0 ;   
   fPpsdLast = 0 ;   
 
-  fHeaderFileName = headerFile ;
+  fHeaderFileName       = headerFile ;
   fRecPointsBranchTitle = branchTitle ;
-    
-  TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
+  fIsInitialized        = kFALSE ;
   
-  if(file == 0){
-    file = new TFile(fHeaderFileName.Data(),"update") ;
-    gAlice = (AliRun *) file->Get("gAlice") ;
-  }
-  
-  AliPHOS * phos = (AliPHOS *) gAlice->GetDetector("PHOS") ;    
-  fGeom  = AliPHOSGeometry::GetInstance(phos->GetGeometry()->GetName(),phos->GetGeometry()->GetTitle() );
-  
-  fEmcRecPoints = new TObjArray(200) ;
-  fCpvRecPoints = new TObjArray(200) ;
-  fClusterizer  = new AliPHOSClusterizerv1() ;
-  
-  fTrackSegments = new TClonesArray("AliPHOSTrackSegment",200) ;
-  
-  fLinkLowArray = new TClonesArray("AliPHOSLink", 1000);
-  fLinkUpArray  = new TClonesArray("AliPHOSLink", 1000); 
-  
-  fIsInitialized = kTRUE ;
+  Init() ;
 
 }
 //____________________________________________________________________________
@@ -132,23 +114,23 @@ void  AliPHOSTrackSegmentMakerv1::Init()
   if(!fIsInitialized){
     if(fHeaderFileName.IsNull())
       fHeaderFileName = "galice.root" ;
-    
-    
+
     TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
-    
+
     if(file == 0){
-      file = new TFile(fHeaderFileName.Data(),"update") ;
+      if(fHeaderFileName.Contains("rfio")) // if we read file using HPSS
+	file =	TFile::Open(fHeaderFileName.Data(),"update") ;
+      else
+	file = new TFile(fHeaderFileName.Data(),"update") ;
       gAlice = (AliRun *) file->Get("gAlice") ;
     }
     
     AliPHOS * phos = (AliPHOS *) gAlice->GetDetector("PHOS") ;    
-    fGeom  = AliPHOSGeometry::GetInstance(phos->GetGeometry()->GetName(),phos->GetGeometry()->GetTitle() );
-
+    fGeom = AliPHOSGeometry::GetInstance(phos->GetGeometry()->GetName(),phos->GetGeometry()->GetTitle() );
 
     fEmcRecPoints = new TObjArray(200) ;
     fCpvRecPoints = new TObjArray(200) ;
     fClusterizer  = new AliPHOSClusterizerv1() ;
-
     
     fTrackSegments = new TClonesArray("AliPHOSTrackSegment",200) ;
 
