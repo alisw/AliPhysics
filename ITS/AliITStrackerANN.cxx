@@ -27,6 +27,9 @@
 #include <TTree.h>
 #include <TRandom.h>
 #include <TMatrixD.h>
+#if ROOT_VERSION_CODE >= ROOT_VERSION(4,0,2)
+  #include <TMatrixDEigen.h>
+#endif
 
 #include "AliITSgeom.h"
 #include "AliITStrackSA.h"
@@ -2007,7 +2010,13 @@ Bool_t AliITStrackerANN::AliITStrackANN::RiemannFit()
 	// Eigenvalue problem solving for V matrix
 	Int_t ileast = 0;
 	TVectorD eval(3), n(3);
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,2)
 	TMatrixD evec = sampleCov.EigenVectors(eval);
+#else
+	TMatrixDEigen ei(sampleCov);
+	TMatrixD evec = ei.GetEigenVectors();
+	eval = ei.GetEigenValuesRe();
+#endif
 	if (eval(1) < eval(ileast)) ileast = 1;
 	if (eval(2) < eval(ileast)) ileast = 2;
 	n(0) = evec(0, ileast);
