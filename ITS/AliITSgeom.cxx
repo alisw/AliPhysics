@@ -591,7 +591,7 @@ AliITSgeom& AliITSgeom::operator=(AliITSgeom &source){
    return *this;
 }
 //______________________________________________________________________
-inline Int_t AliITSgeom::GetNdetectors(Int_t lay) const {
+Int_t AliITSgeom::GetNdetectors(Int_t lay) const {
     // Return the number of detectors/ladder for the given layer
     // Inputs:
     //   Int_t lay   the layer number
@@ -605,7 +605,7 @@ inline Int_t AliITSgeom::GetNdetectors(Int_t lay) const {
         return ndet;
 }
 //______________________________________________________________________
-inline Int_t AliITSgeom::GetNladders(Int_t lay) const {
+Int_t AliITSgeom::GetNladders(Int_t lay) const {
     // Return the number of ladders for the given layer
     // Inputs:
     //   Int_t lay   the layer number
@@ -749,7 +749,7 @@ Int_t AliITSgeom::GetLastDet(Int_t dtype){
     return 0;
 }
 //______________________________________________________________________
-inline void AliITSgeom::GetCenterThetaPhi(Int_t lay,Int_t lad,Int_t det,
+void AliITSgeom::GetCenterThetaPhi(Int_t lay,Int_t lad,Int_t det,
                                    TVector &x){
     //      This function returns the Cartesian translation [cm] and the
     // 6 GEANT rotation angles [degrees]for a given layer ladder and
