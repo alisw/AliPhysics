@@ -139,10 +139,10 @@ class AliITSv11Geometry : public TObject {
   protected:
 
     // Units, Convert from k?? to cm,degree,GeV,seconds,
-    static const Double_t fgkmm = 0.10; // Convert mm to TGeom's cm.
-    static const Double_t fgkcm = 1.00; // Convert cv to TGeom's cm.
-    static const Double_t fgkDegree = 1.0; //Convert degrees to TGeom's degrees
-    static const Double_t fgkRadian = 180./3.14159265358979323846; //To Radians
+    static const Double_t fgkmm; // Convert mm to TGeom's cm.
+    static const Double_t fgkcm; // Convert cv to TGeom's cm.
+    static const Double_t fgkDegree; //Convert degrees to TGeom's degrees
+    static const Double_t fgkRadian; //To Radians
 
   private:
     Bool_t fDebug; //! Debug flag

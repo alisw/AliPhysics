@@ -40,6 +40,13 @@
 #include "AliITSv11Geometry.h"
 
 ClassImp(AliITSv11Geometry)
+
+
+const Double_t AliITSv11Geometry::fgkmm = 0.10;
+const Double_t AliITSv11Geometry::fgkcm = 1.00;
+const Double_t AliITSv11Geometry::fgkDegree = 1.0;
+const Double_t AliITSv11Geometry::fgkRadian = 180./3.14159265358979323846;
+
 //______________________________________________________________________
 Double_t AliITSv11Geometry::Yfrom2Points(Double_t x0,Double_t y0,
                                          Double_t x1,Double_t y1,
