@@ -12,6 +12,7 @@
 #include <TObjArray.h> // used in inline function GetModule.
 #include <TBranch.h>   // used in inline function SetHitsAddressBranch
 
+#include "AliRun.h"
 #include "AliDetector.h"
 
 class TString;
@@ -69,7 +70,7 @@ class AliITS : public AliDetector {
     virtual void MakeBranch(Option_t *opt=" ", const char *file=0);
     virtual void SetTreeAddress();
     // For a give branch from the treeH sets the TClonesArray address.
-    virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(fHits);}
+    virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
     // Return pointer to DetType #id
     AliITSDetType *DetType(Int_t id);
     //Int_t           NDetTypes() {return fNDetTypes;}
@@ -102,7 +103,9 @@ class AliITS : public AliDetector {
     //===================== Digitisation ===============================
     void MakeBranchS(const char *file);
     void SetTreeAddressS(TTree *treeS);
-    void MakeBranchD(const char *file);
+    void MakeBranchInTreeD(TTree *treeD,const char *file=0);
+    void MakeBranchD(const char *file){
+	MakeBranchInTreeD(gAlice->TreeD(),file);}
     void SetTreeAddressD(TTree *treeD);
     void Hits2SDigits(); // Turn hits into SDigits
     void Hits2PreDigits(); // Turn hits into SDigits

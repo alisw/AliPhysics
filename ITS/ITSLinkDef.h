@@ -129,4 +129,7 @@
 #pragma link C++ class  AliV0vertexer+;
 
 #pragma link C++ class  AliITSVertex+;
+
+#pragma link C++ class  AliITSDigitizer+;
+
 #endif

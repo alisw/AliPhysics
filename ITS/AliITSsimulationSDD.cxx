@@ -1372,6 +1372,7 @@ void AliITSsimulationSDD::Compress1D(){
     static Bool_t open=kTRUE;
     static TFile *outFile;
     Bool_t write = fResponse->OutputOption();
+    TDirectory *savedir = gDirectory;
  
     if (write ) {
 	if(open) {
@@ -1388,12 +1389,7 @@ void AliITSsimulationSDD::Compress1D(){
     fStream->ClearStream();
 
     // back to galice.root file
-
-    TTree *fAli=gAlice->TreeK();
-    TFile *file = 0;
-
-    if (fAli) file =fAli->GetCurrentFile();
-    file->cd();
+    if(savedir) savedir->cd();
 }
 //______________________________________________________________________
 void AliITSsimulationSDD::StoreAllDigits(){

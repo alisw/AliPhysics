@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.64  2001/11/19 16:17:02  nilsen
+Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
+bugs found by Rene require more work to fix. Will be fixed soon.
+
 Revision 1.63  2001/10/24 21:16:34  nilsen
 Removed some dead code and improved comments/documntation.
 
@@ -255,7 +259,6 @@ the AliITS class.
 #include <TString.h>
 
 #include "AliMC.h"
-#include "AliRun.h"
 #include "AliHeader.h"
 
 #include "AliITS.h"
@@ -989,7 +992,7 @@ void AliITS::SetTreeAddressS(TTree *treeS){
     if (branch) branch->SetAddress(&fSDigits);
 }
 //______________________________________________________________________
-void AliITS::MakeBranchD(const char *file){
+void AliITS::MakeBranchInTreeD(TTree *treeD,const char *file){
     // Creates Tree branches for the ITS.
     // Inputs:
     //      cont char *file  File name where Digits branch is to be written
@@ -1017,8 +1020,8 @@ void AliITS::MakeBranchD(const char *file){
     for (i=0; i<kNTYPES ;i++) {
 	if (kNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);
 	else  sprintf(branchname,"%sDigits%d",GetName(),i+1);      
-	if (fDtype && gAlice->TreeD()) {
-	    MakeBranchInTree(gAlice->TreeD(), 
+	if (fDtype && treeD) {
+	    MakeBranchInTree(treeD, 
 			     branchname, &((*fDtype)[i]),buffersize,file);
 	} // end if
     } // end for i
