@@ -16,6 +16,9 @@
 #include <G4AffineTransform.hh>
 #include <G4TransportationManager.hh>
 #include <G4Navigator.hh>
+#include <G4VProcess.hh>
+#include <G4ProcessManager.hh>
+#include <G4ProcessVector.hh>
 
 #include <Randomize.hh>
 #include <TLorentzVector.h>
@@ -174,19 +177,6 @@ void TG4StepManager::StopEvent()
   G4UImanager::GetUIpointer()->ApplyCommand("/alStacking/clearStack");
 }
 
-void TG4StepManager::Rndm(Float_t* array, const Int_t size) const
-{   
-// Random numbers array of the specified size.
-// ---
-
-  G4double* const kpDoubleArray = new G4double[size];
-  RandFlat::shootArray(size, kpDoubleArray);
-  for (G4int i=0; i<size; i++) { 
-    array[i] = kpDoubleArray[i]; 
-  } 
-  delete [] kpDoubleArray;
-}
- 
 void TG4StepManager::SetMaxStep(Float_t step)
 {
 // Maximum step allowed in the current logical volume.
@@ -1003,16 +993,16 @@ AliMCProcess TG4StepManager::ProdProcess(Int_t isec) const
     // the index of the first secondary of this step
     G4int startIndex 
       = secondaryTracks->entries() - nofSecondaries;
-           // (the secondaryTracks vector contains secondaries 
-           // produced by the track at previous steps, too)
+           // the secondaryTracks vector contains secondaries 
+           // produced by the track at previous steps, too
 
     // the secondary track with specified isec index
     G4Track* track = (*secondaryTracks)[startIndex + isec]; 
    
-    G4String g4Name = track->GetCreatorProcess()->GetProcessName(); 
+    const G4VProcess* kpProcess = track->GetCreatorProcess(); 
   
     TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
-    AliMCProcess mcProcess = pPhysicsManager->GetMCProcess(g4Name);
+    AliMCProcess mcProcess = pPhysicsManager->GetMCProcess(kpProcess);
   
     // distinguish kPDeltaRay from kPEnergyLoss  
     if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
@@ -1030,11 +1020,48 @@ AliMCProcess TG4StepManager::ProdProcess(Int_t isec) const
 
 Int_t TG4StepManager::StepProcesses(TArrayI &proc) const
 {
-// Fills the array of processes that were active in the current step.
+// Fills the array of processes that were active in the current step
+// and returns the number of them.
+// TBD: Distinguish between kPDeltaRay and kPEnergyLoss
 // ---
 
-  TG4Globals::Exception(
-     "TG4StepManager::StepProcesses(): not yet implemented.");
-     
-  return 0;   
+ if (fStepStatus == kVertex) {
+   G4cout << "kVertex" << G4endl;
+   G4int nofProcesses = 1;
+   proc.Set(nofProcesses);
+   proc[0] = kPNull;
+   return nofProcesses;
+ }  
+   
+#ifdef TGEANT4_DEBUG
+  CheckSteppingManager();
+  CheckStep("StepProcesses");
+#endif
+
+  // along step processes
+  G4ProcessManager* processManager
+    = fStep->GetTrack()->GetDefinition()->GetProcessManager();
+  G4ProcessVector* alongStepProcessVector 
+    = processManager->GetAlongStepProcessVector();
+  G4int nofProcesses = alongStepProcessVector->entries();
+  
+  // process defined step
+  const G4VProcess* kpLastProcess 
+    = fStep->GetPostStepPoint()->GetProcessDefinedStep();
+
+  // fill the array of processes 
+  proc.Set(nofProcesses);
+  TG4PhysicsManager* physicsManager = TG4PhysicsManager::Instance();
+  G4int i;  
+  for (i=0; i<nofProcesses-1; i++) {
+    G4VProcess* g4Process = (*alongStepProcessVector)[i];    
+    // do not fill transportation along step process
+    if (g4Process->GetProcessName() != "Transportation") {
+      physicsManager->GetMCProcess(g4Process);   
+      proc[i] = physicsManager->GetMCProcess(g4Process);
+    }  
+  }  
+  proc[nofProcesses-1] = physicsManager->GetMCProcess(kpLastProcess);
+    
+  return nofProcesses;  
 }
