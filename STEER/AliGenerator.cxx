@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.14  2001/07/27 17:13:12  morsch
+- SetTrack, KeepTrack and SetHighWaterMark methods added to delegate to local
+stack or stack owned by AliRun. (Piotr Skowronski, A.M.)
+- Changes needed for afterburners (Piotr Skowronski)
+
 Revision 1.13  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -332,7 +337,7 @@ void AliGenerator::VertexInternal()
 void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
                                Float_t *pmom, Float_t *vpos, Float_t *polar,
                                Float_t tof, AliMCProcess mech, Int_t &ntr,
-                               Float_t weight=1)
+                               Float_t weight)
 {
 
   if (fStack)
@@ -346,7 +351,7 @@ void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
                       Double_t px, Double_t py, Double_t pz, Double_t e,
                       Double_t vx, Double_t vy, Double_t vz, Double_t tof,
                       Double_t polx, Double_t poly, Double_t polz,
-                      AliMCProcess mech, Int_t &ntr, Float_t weight=1)
+                      AliMCProcess mech, Int_t &ntr, Float_t weight)
 {
   
   if (fStack)
