@@ -4,6 +4,7 @@
 
 #include <math.h>
 #include <iostream.h>
+#include <TObject.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <stdio.h>
