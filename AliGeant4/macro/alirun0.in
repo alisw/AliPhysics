@@ -1,0 +1,21 @@
+# $ Id:$
+# The simplest way how to run aligeant4;
+# all detector and structure modules of the default versions
+# (excluded G3-dependent/errorneous detectors) are built;
+# run with standard AliRoot generator (defined in Config.C).
+#
+
+/aliDet/switchOn ALL
+
+# switch off detectors with errors
+/aliDet/switchOff CASTOR
+/aliDet/switchOff RICH
+/aliDet/switchOff ZDC
+
+# detectors with temporary problem
+/aliDet/switchOff MUON
+
+/aliRun/initialize
+/aliRun/beamOn 1
+
+/control/exit

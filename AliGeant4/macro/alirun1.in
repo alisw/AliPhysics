@@ -1,0 +1,52 @@
+# $Id$
+# Example of interactive particle gun usage and
+# drawing trajectories;
+# two pi- are generated and one event is run
+# and visualized.
+#
+/aliDet/switchOn TPC0
+/aliDet/fieldValue 0.2 tesla
+
+/aliRun/initialize
+
+/aliDet/body/setVolume ALIC
+/aliDet/body/setVolVisibility true
+/aliDet/body/setVolColour Green
+
+/vis~/create_view/new_graphics_system DAWN
+/vis~/camera/zoom 15.
+
+/aliGenerator/set Gun
+
+/aliGun/particle pi-
+/aliGun/momentum    50. 0. 100. MeV
+/aliGun/addParticle
+
+/aliGun/momentum  -100. 0. 100. MeV
+/aliGun/addParticle
+
+/aliGun/list
+/tracking/storeTrajectory 1
+#/tracking/verbose 1
+
+# by default only charged tracks are visualized
+#/aliEvent/drawTracks ALL
+
+/aliRun/beamOn 1
+
+/control/exit
+
+// Possible options:
+
+// only high verbose level is listed
+
+// /tracking/verbose 5
+// /hits/verbose 1
+// /event/verbose 2
+// /run/verbose 2
+// /aliTracking/verbose 3
+// /aliTracking/loopVerbose 5
+// /aliEvent/verbose 2
+// /particle/select pi-
+// /particle/process/verbose 1
+

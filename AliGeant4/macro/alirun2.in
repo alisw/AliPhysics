@@ -1,0 +1,14 @@
+# $Id$
+# Example of special lego run with calling
+# macro lego.C from g4 and switching to root UI
+
+/aliDet/switchOn FMD
+/aliRun/initialize
+
+/aliRun/lego 
+
+/g4mc/rootMacro lego
+/g4mc/root
+
+/control/exit
+exit
