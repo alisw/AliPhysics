@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/30 12:07:49  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.2.4.3  2000/06/26 07:39:42  kowal2
 Changes to obey the coding rules
 
@@ -58,6 +61,7 @@ Digits handling in a new data structure
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include "AliTPC.h"
+#include <TClonesArray.h>
 
 
 
@@ -75,9 +79,13 @@ AliSimDigits::AliSimDigits()
 }
 AliSimDigits::~AliSimDigits()
 {
-  //  AliDigits::Invalidate();
-  if (fTracks != 0) fTracks->Delete();
-  if (fTrIndex != 0) fTrIndex->Delete();  
+
+  if (fTracks != 0) {
+    delete fTracks;
+  }
+  if (fTrIndex != 0) { 
+    delete fTrIndex;
+  } 
 
 }
 

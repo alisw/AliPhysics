@@ -16,6 +16,9 @@
 /*
 
 $Log$
+Revision 1.3  2000/06/30 12:07:49  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.2.4.3  2000/06/26 07:39:42  kowal2
 Changes to obey the coding rules
 
@@ -110,8 +113,13 @@ AliDigits::~AliDigits()
 {
   //
   //default destructor
-  if (fIndex !=0 ) fIndex->Delete();;
-  if (fElements != 0) fElements->Delete();
+  if (fIndex !=0 ) {
+    delete fIndex;
+  }
+  if (fElements != 0) {
+    delete fElements;
+  }
+  
   
 }
 
