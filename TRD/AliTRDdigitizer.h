@@ -57,6 +57,9 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual void         SetGeometry(AliTRDgeometry *geo)     { fGeo             = geo; };
   virtual void         SetParameter(AliTRDparameter *par)   { fPar             = par; };
   virtual void         SetMergeSignalOnly(Bool_t m = kTRUE) { fMergeSignalOnly = m;   };
+  virtual void         SetSimple(Int_t v = 1)               { fSimpleSim       = v;
+                                                              fSimpleDet       = 12;
+                                                              fCompress        = kFALSE; };
 
   AliTRDdigitsManager *Digits()                       const { return fDigitsManager; };
 
@@ -64,6 +67,7 @@ class AliTRDdigitizer : public AliDigitizer {
           Bool_t       GetSDigits()                   const { return fSDigits;       };
           Float_t      GetSDigitsScale()              const { return fSDigitsScale;  };
   AliTRDparameter     *GetParameter()                 const { return fPar;           };
+          Bool_t       GetSimple()                    const { return fSimpleSim;     };
 
  protected:
 
@@ -81,7 +85,9 @@ class AliTRDdigitizer : public AliDigitizer {
   Bool_t               fSDigits;            //  Switch for the summable digits
   Float_t              fSDigitsScale;       //  Scale factor for the summable digits 
   Bool_t               fMergeSignalOnly;    //  Merge only detectors that contain a signal
-
+  Bool_t               fSimpleSim;          //  Switch for the simplified simulation
+  Int_t                fSimpleDet;          //  Detecttor number used in the simplified simulation
+ 
  private:
 
   virtual void         DeConvExp(Double_t *source, Double_t *target, Int_t n, Int_t nexp);
