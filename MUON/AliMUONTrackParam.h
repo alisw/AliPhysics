@@ -38,7 +38,8 @@ class AliMUONTrackParam : public TObject {
   void ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackParam);
   void ExtrapToVertex();  // extrapolation to vertex through the absorber
   void BransonCorrection(); // makes Branson correction
-  Double_t TotalMomentumEnergyLoss(Double_t rLimit, Double_t pTotal, Double_t theta, Double_t xEndAbsorber, Double_t yEndAbsorber); // returns total momentum after energy loss correction in the absorber
+  Double_t TotalMomentumEnergyLoss(Double_t thetaLimit, Double_t pTotal, Double_t theta); // returns total momentum after energy loss correction in the absorber
+  void FieldCorrection(Double_t Z); // makes simple magnetic field correction through the absorber 
 
  protected:
  private:

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.11  2002/03/08 17:25:36  cussonno
+Update absorber energy loss and Branson corrections : simplified functions
+BransonCorrection and TotalMomentumEnergyLoss.
+
 Revision 1.10  2001/04/25 14:50:42  gosset
 Corrections to violations of coding conventions
 
@@ -267,9 +271,11 @@ void AliMUONTrackParam::ExtrapToVertex()
   
   Double_t zAbsorber = 503.0; // to be coherent with the Geant absorber geometry !!!!
   // Extrapolates track parameters upstream to the "Z" end of the front absorber
-  ExtrapToZ(zAbsorber);
+  ExtrapToZ(zAbsorber); // !!!
     // Makes Branson correction (multiple scattering + energy loss)
   BransonCorrection();
+    // Makes a simple magnetic field correction through the absorber
+  FieldCorrection(zAbsorber);
 }
 
 
@@ -394,14 +400,15 @@ void AliMUONTrackParam::BransonCorrection()
   Double_t  pYZ, pX, pY, pZ, pTotal, xEndAbsorber, yEndAbsorber, radiusEndAbsorber2, pT, theta;
   Int_t sign;
   static Bool_t first = kTRUE;
-  static Double_t zBP1, zBP2, rLimit, zEndAbsorber;
+  static Double_t zBP1, zBP2, rLimit, thetaLimit, zEndAbsorber;
   // zBP1 for outer part and zBP2 for inner part (only at the first call)
   if (first) {
     first = kFALSE;
   
     zEndAbsorber = 503;
-    rLimit = zEndAbsorber * TMath::Tan(3.0 * (TMath::Pi()) / 180.);
-    zBP1 = 450;
+    thetaLimit = 3.0 * (TMath::Pi()) / 180.;
+    rLimit = zEndAbsorber * TMath::Tan(thetaLimit);
+    zBP1 = 450; // values close to those calculated with EvalAbso.C
     zBP2 = 480;
   }
 
@@ -426,16 +433,18 @@ void AliMUONTrackParam::BransonCorrection()
   yBP = yEndAbsorber - (pY / pZ) * (zEndAbsorber - zBP);
 
   // new parameters after Branson and energy loss corrections
-  pZ = pTotal * zBP / TMath::Sqrt(xBP * xBP + yBP * yBP + zBP * zBP);
-  pX = pZ * xBP / zBP;
-  pY = pZ * yBP / zBP;
+//   Float_t zSmear = zBP - gRandom->Gaus(0.,2.);  // !!! possible smearing of Z vertex position
+  Float_t zSmear = zBP;
+  
+  pZ = pTotal * zSmear / TMath::Sqrt(xBP * xBP + yBP * yBP + zSmear * zSmear);
+  pX = pZ * xBP / zSmear;
+  pY = pZ * yBP / zSmear;
   fBendingSlope = pY / pZ;
   fNonBendingSlope = pX / pZ;
   
   pT = TMath::Sqrt(pX * pX + pY * pY);      
   theta = TMath::ATan2(pT, pZ); 
-  pTotal =
-    TotalMomentumEnergyLoss(rLimit, pTotal, theta, xEndAbsorber, yEndAbsorber);
+  pTotal = TotalMomentumEnergyLoss(thetaLimit, pTotal, theta);
 
   fInverseBendingMomentum = (sign / pTotal) *
     TMath::Sqrt(1.0 +
@@ -449,35 +458,77 @@ void AliMUONTrackParam::BransonCorrection()
   fNonBendingCoor = 0;
   fZ= 0;
 }
+
   //__________________________________________________________________________
-Double_t AliMUONTrackParam::TotalMomentumEnergyLoss(Double_t rLimit, Double_t pTotal, Double_t theta, Double_t xEndAbsorber, Double_t yEndAbsorber)
+Double_t AliMUONTrackParam::TotalMomentumEnergyLoss(Double_t thetaLimit, Double_t pTotal, Double_t theta)
 {
   // Returns the total momentum corrected from energy loss in the front absorber
   // One can use the macros MUONTestAbso.C and DrawTestAbso.C
   // to test this correction. 
+  // Momentum energy loss behaviour evaluated with the simulation of single muons (april 2002)
   Double_t deltaP, pTotalCorrected;
 
-  Double_t radiusEndAbsorber2 =
-    xEndAbsorber *xEndAbsorber + yEndAbsorber * yEndAbsorber;
-  // Parametrization to be redone according to change of absorber material ????
+   // Parametrization to be redone according to change of absorber material ????
   // See remark in function BransonCorrection !!!!
   // The name is not so good, and there are many arguments !!!!
-  if (radiusEndAbsorber2 < rLimit * rLimit) {
-    if (pTotal < 15) {
-      deltaP = 2.737 + 0.0494 * pTotal - 0.001123 * pTotal * pTotal;
+  if (theta  < thetaLimit ) {
+    if (pTotal < 20) {
+      deltaP = 2.5938 + 0.0570 * pTotal - 0.001151 * pTotal * pTotal;
     } else {
-      deltaP = 3.0643 + 0.01346 *pTotal;
+      deltaP = 3.0714 + 0.011767 *pTotal;
     }
-    deltaP = 0.63 * deltaP; // !!!! changes in the absorber composition ????
   } else {
-    if (pTotal < 15) {
-      deltaP  = 2.1380 + 0.0351 * pTotal - 0.000853 * pTotal * pTotal;
+    if (pTotal < 20) {
+      deltaP  = 2.1207 + 0.05478 * pTotal - 0.00145079 * pTotal * pTotal;
     } else { 
-      deltaP = 2.407 + 0.00702 * pTotal;
+      deltaP = 2.6069 + 0.0051705 * pTotal;
     }
-    deltaP = 0.67 * deltaP; // !!!! changes in the absorber composition ????
   }
   pTotalCorrected = pTotal + deltaP / TMath::Cos(theta);
   return pTotalCorrected;
 }
 
+  //__________________________________________________________________________
+void AliMUONTrackParam::FieldCorrection(Double_t Z)
+{
+  // 
+  // Correction of the effect of the magnetic field in the absorber
+  // Assume a constant field along Z axis.
+
+  Float_t b[3],x[3]; 
+  Double_t bZ;
+  Double_t pYZ,pX,pY,pZ,pT;
+  Double_t pXNew,pYNew;
+  Double_t c;
+
+  pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
+  c = TMath::Sign(1.0,fInverseBendingMomentum); // particle charge 
+ 
+  pZ = pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope)); 
+  pX = pZ * fNonBendingSlope; 
+  pY = pZ * fBendingSlope;
+  pT = TMath::Sqrt(pX*pX+pY*pY);
+
+  if (pZ <= 0) return;
+  x[2] = Z/2;
+  x[0] = x[2]*fNonBendingSlope;  
+  x[1] = x[2]*fBendingSlope;
+
+  // Take magn. field value at position x.
+  gAlice->Field()->Field(x, b);
+  bZ =  b[2];
+ 
+  // Transverse momentum rotation
+  // Parameterized with the study of DeltaPhi = phiReco - phiGen as a function of pZ.
+  Double_t phiShift = c*0.436*0.0003*bZ*Z/pZ;  
+  
+ // Rotate momentum around Z axis.
+  pXNew = pX*TMath::Cos(phiShift) - pY*TMath::Sin(phiShift);
+  pYNew = pX*TMath::Sin(phiShift) + pY*TMath::Cos(phiShift);
+ 
+  fBendingSlope = pYNew / pZ;
+  fNonBendingSlope = pXNew / pZ;
+  
+  fInverseBendingMomentum = c / TMath::Sqrt(pYNew*pYNew+pZ*pZ);
+ 
+}
