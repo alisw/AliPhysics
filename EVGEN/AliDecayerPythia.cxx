@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/02/22 17:28:05  morsch
+ReadDecayTable() and WriteDecayTable() methods added.
+
 Revision 1.9  2001/12/20 10:37:13  morsch
 - Add omega forced decay.
 - Semileptonic decays for some more B and D baryons.
@@ -104,11 +107,15 @@ void AliDecayerPythia::Init()
     fPythia->ResetDecayTable();
     for (j=0; j < 14; j++) {
 	kc=fPythia->Pycomp(heavy[j]);
-	fPythia->SetMDCY(kc,1,1);
-	for (i=fPythia->GetMDCY(kc,2); 
-	     i<fPythia->GetMDCY(kc,2)+fPythia->GetMDCY(kc,3); 
-	     i++) {
+	if (fDecay == kNoDecayHeavy) {
+	  fPythia->SetMDCY(kc,1,0);
+	} else {
+	  fPythia->SetMDCY(kc,1,1);
+	  for (i=fPythia->GetMDCY(kc,2); 
+	       i<fPythia->GetMDCY(kc,2)+fPythia->GetMDCY(kc,3); 
+	       i++) {
 	    fPythia->SetMDME(i,1,1);
+	  }
 	}
     }
 
@@ -142,6 +149,8 @@ void AliDecayerPythia::ForceDecay()
 // Force a particle decay mode
     Decay_t decay=fDecay;
     
+    if (decay == kNoDecayHeavy) return;
+
 //
 // select mode    
 
@@ -240,6 +249,7 @@ void AliDecayerPythia::ForceDecay()
     case kAll:
 	break;
     case kNoDecay:
+    case kNoDecayHeavy:
 	break;
     }
 }

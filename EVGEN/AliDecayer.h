@@ -16,7 +16,7 @@ class TLorentzVector;
 typedef enum
 { kSemiElectronic, kDiElectron, kSemiMuonic, kDiMuon,
   kBJpsiDiMuon, kBJpsiDiElectron, 
-  kBPsiPrimeDiMuon, kBPsiPrimeDiElectron, kPiToMu, kKaToMu, kNoDecay, kHadronicD, kOmega, kAll}
+  kBPsiPrimeDiMuon, kBPsiPrimeDiElectron, kPiToMu, kKaToMu, kNoDecay, kHadronicD, kOmega, kAll, kNoDecayHeavy}
 Decay_t;
 
 class AliDecayer :
