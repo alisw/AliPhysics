@@ -4,7 +4,8 @@ void Config(Int_t version)
 
   AliZDC* ZDC = 0;
   switch (version) {
-    case 1: ZDC  = new AliZDCv1("ZDC","normal ZDC"); break;
+    case 1: ZDC  = new AliZDCv1("ZDC","ZDCv1 detector"); break;
+    case 1: ZDC  = new AliZDCv2("ZDC","normal ZDC"); break;
   }  
 
 //=================== ZDC parameters ============================
