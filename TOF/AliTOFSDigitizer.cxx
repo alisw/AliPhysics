@@ -98,9 +98,9 @@ ClassImp(AliTOFSDigitizer)
      return;
    }
 
+  fRunLoader->LoadHeader();
   if (nEvents<0) {
     fEvent1=0;
-    fRunLoader->LoadHeader();
     fEvent2 = (Int_t)((fRunLoader->TreeE())->GetEntries());
   } else {
     fEvent1=evNumber1;
