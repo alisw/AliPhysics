@@ -14,7 +14,7 @@
 #include "TBranch.h"
 #include "TClonesArray.h"
 #include "TStopwatch.h"
-//#include "AliRunDigitizer.h"
+#include "AliRunDigitizer.h"
 #include "AliVZERODigitizer.h"
 
 void VZEROHits2Digits() 
