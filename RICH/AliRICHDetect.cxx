@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.9  2001/01/22 21:39:11  jbarbosa
+  Several tune-ups
+
   Revision 1.8  2000/11/15 15:52:53  jbarbosa
   Turned on spot algorithm.
 
@@ -148,7 +151,7 @@ void AliRICHDetect::Detect()
     Int_t nhits = pHits->GetEntriesFast();
     if (nhits == 0) continue;
     Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-    gAlice->TreeD()->GetEvent(nent-1);
+    gAlice->TreeD()->GetEvent(0);
     AliRICHHit *mHit = 0;
     AliRICHDigit *points = 0;
     //Int_t npoints=0;

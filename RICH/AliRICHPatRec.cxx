@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.8  2000/11/01 15:37:18  jbarbosa
+  Updated to use its own rec. point object.
+
   Revision 1.7  2000/10/03 21:44:09  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -116,7 +119,7 @@ void AliRICHPatRec::PatRec()
     segmentation=iChamber->GetSegmentationModel();
 
     nent=(Int_t)gAlice->TreeD()->GetEntries();
-    gAlice->TreeD()->GetEvent(nent-1);
+    gAlice->TreeD()->GetEvent(0);
     TClonesArray *pDigitss = pRICH->DigitsAddress(ich);
     ndigits[ich] = pDigitss->GetEntriesFast();
     printf("Digits in chamber %d: %d\n",ich,ndigits[ich]);
