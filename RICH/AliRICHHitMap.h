@@ -30,7 +30,7 @@ public AliRICHHitMap
     Int_t fNpy;
     TObjArray *fDigits;
     Int_t fNdigits;
-    Int_t *fHitMap;
+    Int_t *fHitMap;                  //!
     Int_t fMaxIndex;
     
  public:

@@ -625,8 +625,9 @@ void AliRICHdisplay::LoadDigits()
    AliRICHchamber*       iChamber;
    AliRICHsegmentation*  segmentation;
    Int_t NallDigits=0;
+   Int_t ich;
    
-   for (Int_t ich=0; ich<7; ich++) {
+   for (ich=0; ich<7; ich++) {
        TClonesArray *RICHdigits  = RICH->DigitsAddress(ich);
        if (RICHdigits == 0) continue;
        gAlice->ResetDigits();
@@ -637,7 +638,7 @@ void AliRICHdisplay::LoadDigits()
    }
    if (fPoints == 0) fPoints = new TObjArray(NallDigits);   
    Int_t counter=0;
-   for (Int_t ich=0; ich<7; ich++) {
+   for (ich=0; ich<7; ich++) {
        TClonesArray *RICHdigits  = RICH->DigitsAddress(ich);
        if (RICHdigits == 0) continue;
        gAlice->ResetDigits();

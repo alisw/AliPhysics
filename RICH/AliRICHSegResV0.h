@@ -86,8 +86,7 @@ public AliRICHsegmentation {
     Float_t fxt;
     Float_t fyt;
     //
-    // Version Identifier
-    char    *fName;       
+    char    *fName;       //! Version Identifier
 };
 
 class AliRICHresponseV0 : //Mathieson response
@@ -147,7 +146,7 @@ public AliRICHresponse {
     Float_t fKy2;
     Float_t fKy4;
     Float_t fPitch;           //anode-cathode pitch
-    char    *fName;           // Version Identifier
+    char    *fName;           //! Version Identifier
 };
 
 #endif

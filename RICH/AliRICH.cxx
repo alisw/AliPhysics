@@ -828,9 +828,10 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
     
-    static Bool_t first=true;
+    static Bool_t first=kTRUE;
     static TTree *TH1;
     static TFile *File;
+    Int_t i;
     char *Add = strstr(option,"Add");
 
     AliRICHchamber*  iChamber;
@@ -844,7 +845,7 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
     
     AliRICH *RICH  = (AliRICH *) gAlice->GetDetector("RICH");
     AliRICHHitMap* HitMap[10];
-    for (Int_t i=0; i<10; i++) {HitMap[i]=0;}
+    for (i=0; i<10; i++) {HitMap[i]=0;}
     if (Add ) {
 	if(first) {
 	    fFileName=filename;
@@ -853,7 +854,7 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 	    cout<<"I have opened "<<fFileName<<" file "<<endl;
 	    fHits2     = new TClonesArray("AliRICHhit",1000  );
 	    fClusters2 = new TClonesArray("AliRICHcluster",10000);
-	    first=false;
+	    first=kFALSE;
 	}
 	File->cd();
 	File->ls();
@@ -888,7 +889,7 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
     AliRICHHitMap* hm;
     
     for (int icat=0; icat<1; icat++) { 
-	for (Int_t i=0; i<7; i++) {
+	for (i=0; i<7; i++) {
 	    if (HitMap[i]) {
 		hm=HitMap[i];
 		delete hm;
@@ -896,7 +897,7 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 	    }
 	}
 	Int_t counter=0;
-	for (Int_t i =0; i<7; i++) {
+	for (i =0; i<7; i++) {
 	    iChamber=(AliRICHchamber*) (*fChambers)[i];
 	    if (iChamber->Nsec()==1 && icat==1) {
 		continue;
@@ -1176,8 +1177,8 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 	TClonesArray *fDch;
 	for (int k=0;k<7;k++) {
 	    fDch= RICH->DigitsAddress(k);
-	    int ndig=fDch->GetEntriesFast();
-	    printf (" k, ndigits %d %d \n",k,ndig);
+	    int ndigit=fDch->GetEntriesFast();
+	    printf (" k, ndigits %d %d \n",k,ndigit);
 	}
 	RICH->ResetDigits();
 	
