@@ -7,7 +7,6 @@
 class AliL3TrackArray;
 class AliL3MemHandler;
 class AliL3DigitRowData;
-class AliL3Transform;
 class AliL3ModelTrack;
 
 struct Cluster {
@@ -31,7 +30,6 @@ class AliL3Modeller {
   AliL3MemHandler *fMemHandler; //!
   AliL3DigitRowData *fRowData;//!
   
-  AliL3Transform *fTransform; //!
   Int_t fNClusters;
   Int_t fMaxClusters;
   
@@ -42,8 +40,8 @@ class AliL3Modeller {
   Int_t fSlice;
   Int_t fPatch;
   Char_t fPath[100];
-  
-  void FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row);
+
+  void FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row,Int_t npads);
   void CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigmaZ2);
   void FillZeros(AliL3DigitRowData *digPt,Digit *row);
 
@@ -52,14 +50,15 @@ class AliL3Modeller {
   AliL3Modeller();
   virtual ~AliL3Modeller();
   
-  void Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path);
+  void Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,Bool_t houghtracks=kFALSE);
   void FindClusters();
   void CheckForOverlaps();
   void CalculateCrossingPoints();
   void WriteRemaining();
   
   void SetInputData(AliL3DigitRowData *digits) {fRowData = digits;}
-  
+  void SetTrackThreshold(Int_t i) {fTrackThreshold=i;}
+
   AliL3TrackArray *GetTracks() {return fTracks;}
     
   ClassDef(AliL3Modeller,1) //Modeller class

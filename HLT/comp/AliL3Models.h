@@ -12,6 +12,7 @@ struct AliL3ClusterModel {
   Float_t fDCharge;
   Float_t fDSigmaY2;
   Float_t fDSigmaZ2;
+  UInt_t fNPads;
 };
 typedef struct AliL3ClusterModel AliL3ClusterModel;
 

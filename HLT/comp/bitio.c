@@ -57,57 +57,57 @@ void CloseInputBitFile(BIT_FILE *bit_file )
 
 void OutputBit( BIT_FILE *bit_file, int bit )
 {
-    if ( bit )
-        bit_file->rack |= bit_file->mask;
-    bit_file->mask >>= 1;
-    if ( bit_file->mask == 0 ) {
-	if ( putc( bit_file->rack, bit_file->file ) != bit_file->rack )
-	    fatal_error( "Fatal error in OutputBit!\n" );
-	else
-        if ( ( bit_file->pacifier_counter++ & PACIFIER_COUNT ) == 0 )
-		putc( '.', stdout );
-	bit_file->rack = 0;
-	bit_file->mask = 0x80;
-    }
+  if ( bit )
+    bit_file->rack |= bit_file->mask;
+  bit_file->mask >>= 1;
+  if ( bit_file->mask == 0 ) {
+    if ( putc( bit_file->rack, bit_file->file ) != bit_file->rack )
+      fatal_error( "Fatal error in OutputBit!\n" );
+    /*else
+      if ( ( bit_file->pacifier_counter++ & PACIFIER_COUNT ) == 0 )
+      putc( '.', stdout );*/
+    bit_file->rack = 0;
+    bit_file->mask = 0x80;
+  }
 }
 
 void OutputBits(BIT_FILE *bit_file,unsigned long code, int count )
 {
     unsigned long mask;
-
+    
     mask = 1L << ( count - 1 );
     while ( mask != 0) {
-        if ( mask & code )
-            bit_file->rack |= bit_file->mask;
-        bit_file->mask >>= 1;
-        if ( bit_file->mask == 0 ) {
-	    if ( putc( bit_file->rack, bit_file->file ) != bit_file->rack )
-		fatal_error( "Fatal error in OutputBit!\n" );
-        else if ( ( bit_file->pacifier_counter++ & PACIFIER_COUNT ) == 0 )
-		putc( '.', stdout );
-	    bit_file->rack = 0;
-            bit_file->mask = 0x80;
-        }
-        mask >>= 1;
+      if ( mask & code )
+	bit_file->rack |= bit_file->mask;
+      bit_file->mask >>= 1;
+      if ( bit_file->mask == 0 ) {
+	if ( putc( bit_file->rack, bit_file->file ) != bit_file->rack )
+	  fatal_error( "Fatal error in OutputBit!\n" );
+        /*else if ( ( bit_file->pacifier_counter++ & PACIFIER_COUNT ) == 0 )
+	  putc( '.', stdout );*/
+	bit_file->rack = 0;
+	bit_file->mask = 0x80;
+      }
+      mask >>= 1;
     }
 }
 
 int InputBit( BIT_FILE *bit_file )
 {
-    int value;
-
-    if ( bit_file->mask == 0x80 ) {
-        bit_file->rack = getc( bit_file->file );
-        if ( bit_file->rack == EOF )
-            fatal_error( "Fatal error in InputBit!\n" );
-    if ( ( bit_file->pacifier_counter++ & PACIFIER_COUNT ) == 0 )
-	    putc( '.', stdout );
-    }
-    value = bit_file->rack & bit_file->mask;
-    bit_file->mask >>= 1;
-    if ( bit_file->mask == 0 )
-	bit_file->mask = 0x80;
-    return( value ? 1 : 0 );
+  int value;
+  
+  if ( bit_file->mask == 0x80 ) {
+    bit_file->rack = getc( bit_file->file );
+    if ( bit_file->rack == EOF )
+      fatal_error( "Fatal error in InputBit!\n" );
+    /*if ( ( bit_file->pacifier_counter++ & PACIFIER_COUNT ) == 0 )
+      putc( '.', stdout );*/
+  }
+  value = bit_file->rack & bit_file->mask;
+  bit_file->mask >>= 1;
+  if ( bit_file->mask == 0 )
+    bit_file->mask = 0x80;
+  return( value ? 1 : 0 );
 }
 
 unsigned long InputBits( BIT_FILE *bit_file, int bit_count )
@@ -118,19 +118,19 @@ unsigned long InputBits( BIT_FILE *bit_file, int bit_count )
     mask = 1L << ( bit_count - 1 );
     return_value = 0;
     while ( mask != 0) {
-	if ( bit_file->mask == 0x80 ) {
-	    bit_file->rack = getc( bit_file->file );
-	    if ( bit_file->rack == EOF )
-		fatal_error( "Fatal error in InputBit!\n" );
-        if ( ( bit_file->pacifier_counter++ & PACIFIER_COUNT ) == 0 )
-		putc( '.', stdout );
-	}
-	if ( bit_file->rack & bit_file->mask )
-            return_value |= mask;
-        mask >>= 1;
-        bit_file->mask >>= 1;
-        if ( bit_file->mask == 0 )
-            bit_file->mask = 0x80;
+      if ( bit_file->mask == 0x80 ) {
+	bit_file->rack = getc( bit_file->file );
+	if ( bit_file->rack == EOF )
+	  fatal_error( "Fatal error in InputBit!\n" );
+        /*if ( ( bit_file->pacifier_counter++ & PACIFIER_COUNT ) == 0 )
+	  putc( '.', stdout );*/
+      }
+      if ( bit_file->rack & bit_file->mask )
+	return_value |= mask;
+      mask >>= 1;
+      bit_file->mask >>= 1;
+      if ( bit_file->mask == 0 )
+	bit_file->mask = 0x80;
     }
     return( return_value );
 }

@@ -82,7 +82,11 @@ void AliL3Compress::WriteFile(AliL3TrackArray *tracks)
     {
       AliL3ModelTrack *track = (AliL3ModelTrack*)tracks->GetCheckedTrack(i);
       if(!track) continue;
-            
+      
+      //Do not save useless tracks or clusters:
+      //if(track->CheckClustersQuality(2) == 0) 
+      //continue;
+      
       track->FillModel();
       model = track->GetModel();
       if(model->fNClusters==0) continue;
@@ -241,28 +245,37 @@ void AliL3Compress::CompressFile()
 	  	  
 	  //Write shape information:
 	  temp = (Int_t)cluster.fDSigmaY2;
-	  power = 1<<fNumShapeBits;
+	  if(temp<0)
+	    OutputBit(output,0);
+	  else
+	    OutputBit(output,1);
+	  power = 1<<(fNumShapeBits-1);
 	  if(abs(temp) >= power)
 	    {
 	      shapeo++;
 	      temp = power - 1;
 	    }
-	  OutputBits(output,abs(temp),fNumShapeBits);
+	  OutputBits(output,abs(temp),(fNumShapeBits-1));
 	  
 	  temp = (Int_t)cluster.fDSigmaZ2;
+	  if(temp<0)
+	    OutputBit(output,0);
+	  else
+	    OutputBit(output,1);
+	  power = 1<<(fNumShapeBits-1);
 	  if(abs(temp) >= power)
 	    {
 	      shapeo++;
 	      temp=power - 1;
 	    }
-	  OutputBits(output,abs(temp),fNumShapeBits);
+	  OutputBits(output,abs(temp),(fNumShapeBits-1));
 	}
     }
   
   fclose(input);
   CloseOutputBitFile(output);
 
-  cout<<endl<<"There was following number of overflows: "<<endl
+  cout<<endl<<"Saturations: "<<endl
       <<"Pad "<<pado<<endl
       <<"Time "<<timeo<<endl
       <<"Charge "<<chargeo<<endl
@@ -293,7 +306,7 @@ void AliL3Compress::ExpandFile()
   AliL3ClusterModel *clusters=0;
   Int_t count=0;
   
-  clusters = new AliL3ClusterModel[(NumRows[fPatch])];
+  clusters = new AliL3ClusterModel[(AliL3Transform::GetNRows(fPatch))];
   while(!feof(input->file))
     {
       input->mask=0x80;//make sure we read a new byte from file.
@@ -302,7 +315,7 @@ void AliL3Compress::ExpandFile()
       if(fread(&trackmodel,sizeof(AliL3TrackModel),1,input->file)!=1) break;
       fwrite(&trackmodel,sizeof(AliL3TrackModel),1,output);
       
-      for(Int_t i=0; i<NumRows[fPatch]; i++)
+      for(Int_t i=0; i<AliL3Transform::GetNRows(fPatch); i++)
 	{
 	  Int_t temp,sign;
 	  
@@ -337,10 +350,16 @@ void AliL3Compress::ExpandFile()
 	  clusters[i].fDCharge = temp;
 	  
 	  //Read shape information:
-	  temp = InputBits(input,fNumShapeBits);
+	  sign = InputBit(input);
+	  temp = InputBits(input,(fNumShapeBits-1));
+	  if(!sign)
+	    temp*=-1;
 	  clusters[i].fDSigmaY2 = temp;
 	  
-	  temp = InputBits(input,fNumShapeBits);
+	  sign = InputBit(input);
+	  temp = InputBits(input,(fNumShapeBits-1));
+	  if(!sign)
+	    temp*=-1;
 	  clusters[i].fDSigmaZ2 = temp;
 	}
       
@@ -366,17 +385,20 @@ void AliL3Compress::CreateDigitArray(Int_t maxnumber)
   fDPt = new AliL3RandomDigitData*[maxnumber];
 }
 
-void AliL3Compress::RestoreData()
+void AliL3Compress::RestoreData(Char_t which='u')
 {
+  //Restore the data.
+  //which == u : restore compressed data
+  //which == m : restore uncompressed data
   
-  //Read the uncompressed file:
-  ReadFile('u');
+
+  ReadFile(which);
   
-  CreateDigitArray(100000);
+  CreateDigitArray(10000000);
   
   Float_t pad,time,sigmaY2,sigmaZ2;
   Int_t charge;
-  for(Int_t j=NRows[fPatch][0]; j<=NRows[fPatch][1]; j++)
+  for(Int_t j=AliL3Transform::GetFirstRow(fPatch); j<=AliL3Transform::GetLastRow(fPatch); j++)
     {
       cout<<"Building clusters on row "<<j<<endl;
       for(Int_t i=0; i<fTracks->GetNTracks(); i++)
@@ -397,18 +419,20 @@ void AliL3Compress::RestoreData()
   QSort(fDPt,0,fNDigits);
 }
 
-void AliL3Compress::PrintDigits()
+void AliL3Compress::PrintDigits(Int_t padrow=-1)
 {
   Int_t pad,time,charge,row;
   for(Int_t i=0; i<fNDigits; i++)
     {
       row = fDPt[i]->fRow;
+      if(padrow > 0)
+	if(row != padrow) continue;
       pad = fDPt[i]->fPad;
       time = fDPt[i]->fTime;
       charge = fDPt[i]->fCharge;
       if(i>0 && row != fDPt[i-1]->fRow)
 	cout<<"---Padrow "<<row<<"---"<<endl;
-      cout<<"Pad "<<pad<<" time "<<time<<" charge "<<charge<<endl;
+      cout<<"Padrow "<<row<<" Pad "<<pad<<" time "<<time<<" charge "<<charge<<endl;
     }
 }
 
@@ -436,7 +460,7 @@ void AliL3Compress::WriteRestoredData()
       
   UInt_t digit_counter;
   Int_t row_counter=0;
-  for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
+  for(Int_t i=AliL3Transform::GetFirstRow(fPatch); i<=AliL3Transform::GetLastRow(fPatch); i++)
     {
       tempRow->fRow = i;
       ndigits=0;
@@ -456,7 +480,7 @@ void AliL3Compress::WriteRestoredData()
 	      time = origDig[digit_counter].fTime;
 	      charge = origDig[digit_counter].fCharge;
 	      digit_counter++;
-	      while((action=ComparePoints(i,pad,time)) == 1)
+	      while( (action=ComparePoints(i,pad,time)) == 1)
 		{
 		  tempDig[ndigits].fPad = fDPt[fNUsed]->fPad;
 		  tempDig[ndigits].fTime = fDPt[fNUsed]->fTime;
@@ -475,7 +499,10 @@ void AliL3Compress::WriteRestoredData()
 	    }
 	  
 	  if(fNUsed >= fNDigits) 
-	    break;
+	    {
+	      //cerr<<"AliL3Compress::WriteRestoredData() : Array out of range : "<<fNUsed<<" "<<fNDigits<<endl;
+	      break;
+	    }
 	  if(fDPt[fNUsed]->fRow != i) //we are on a new row
 	    break;
 	  tempDig[ndigits].fPad = fDPt[fNUsed]->fPad;
@@ -485,10 +512,9 @@ void AliL3Compress::WriteRestoredData()
 	  fNUsed++;
 	}
       //cout<<"Writing "<<ndigits<<" digits on row "<<i<<endl;
-      if(ndigits < 4)
+      if(ndigits > 4)
 	{
 	  row_counter++;
-	  cout<<"Few digits on row "<<i<<endl;
 	}
       tempRow->fNDigit = ndigits;
       Int_t size = sizeof(AliL3DigitData)*tempRow->fNDigit + sizeof(AliL3DigitRowData);
@@ -498,13 +524,13 @@ void AliL3Compress::WriteRestoredData()
       mem->UpdateRowPointer(origRow);
     }
   
-  if(row_counter != NumRows[fPatch])
-    cerr<<"AliL3Compress::WriteRestoredData() : Written rows: "<<row_counter<<" total rows "<<NumRows[fPatch]<<endl;
+  if(row_counter != AliL3Transform::GetNRows(fPatch))
+    cerr<<"AliL3Compress::WriteRestoredData() : Written rows: "<<row_counter<<" total rows "<<AliL3Transform::GetNRows(fPatch)<<endl;
   
   mem->Free();  
   sprintf(fname,"%s/restored_%d_%d.raw",fPath,fSlice,fPatch);
   mem->SetBinaryOutput(fname);
-  mem->Memory2CompBinary((UInt_t)NumRows[fPatch],(AliL3DigitRowData*)data);
+  mem->Memory2CompBinary((UInt_t)AliL3Transform::GetNRows(fPatch),(AliL3DigitRowData*)data);
   mem->CloseBinaryOutput();
   
   delete [] data;
@@ -516,33 +542,36 @@ void AliL3Compress::CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge
 {
   //Create raw data out of the cluster.
   
-  AliL3Transform *tr = new AliL3Transform();
-  TRandom *random = new TRandom();
-  
-  Int_t entries=1000;
-  TH1F *hist1 = new TH1F("hist1","",tr->GetNPads(row),0,tr->GetNPads(row)-1);
-  TH1F *hist2 = new TH1F("hist2","",tr->GetNTimeBins(),0,tr->GetNTimeBins()-1);
-  TH2F *hist3 = new TH2F("hist3","",tr->GetNPads(row),0,tr->GetNPads(row)-1,tr->GetNTimeBins(),0,tr->GetNTimeBins()-1);
-  
-  //Convert back the sigmas:
-  Float_t padw,timew;
-  if(fPatch < 3)
-    padw = tr->GetPadPitchWidthLow();
-  else
-    padw = tr->GetPadPitchWidthUp();
-  timew = tr->GetZWidth();
 
-  if(fPatch < 3)
-    sigmaY2 = sigmaY2/2.07;
-  sigmaY2 = sigmaY2/0.108;
-  sigmaY2 = sigmaY2/(padw*padw);
-  sigmaY2 = sigmaY2 - 1./12;
+    
+  //Convert back the sigmas:
+  /*
+    Float_t padw,timew;
+    if(fPatch < 2)
+    padw = AliL3Transform::GetPadPitchWidthLow();
+    else
+    padw = AliL3Transform::GetPadPitchWidthUp();
+    timew = AliL3Transform::GetZWidth();
+  */
   
-  if(fPatch < 3)
+  /*
+    if(fPatch < 3)
+    sigmaY2 = sigmaY2/2.07;
+    sigmaY2 = sigmaY2/0.108;
+  */
+  
+  //sigmaY2 = sigmaY2/(padw*padw);
+  
+  //sigmaY2 = sigmaY2;// - 1./12;
+  
+  /*
+    if(fPatch < 3)
     sigmaZ2 = sigmaZ2/1.77;
-  sigmaZ2 = sigmaZ2/0.169;
-  sigmaZ2 = sigmaZ2/(timew*timew);
-  sigmaZ2 = sigmaZ2 - 1./12;
+    sigmaZ2 = sigmaZ2/0.169;
+  */
+  
+  //sigmaZ2 = sigmaZ2/(timew*timew);
+  //sigmaZ2 = sigmaZ2;// - 1./12;
   
   if(sigmaY2 <= 0 || sigmaZ2 <= 0)
     {
@@ -550,6 +579,15 @@ void AliL3Compress::CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge
       cerr<<" on row "<<row<<" pad "<<pad<<" time "<<time<<endl;
       return;
     }
+  
+  TRandom *random = new TRandom();
+  
+  Int_t entries=1000;
+  TH1F *hist1 = new TH1F("hist1","",AliL3Transform::GetNPads(row),0,AliL3Transform::GetNPads(row)-1);
+  TH1F *hist2 = new TH1F("hist2","",AliL3Transform::GetNTimeBins(),0,AliL3Transform::GetNTimeBins()-1);
+  TH2F *hist3 = new TH2F("hist3","",AliL3Transform::GetNPads(row),0,AliL3Transform::GetNPads(row)-1,AliL3Transform::GetNTimeBins(),0,AliL3Transform::GetNTimeBins()-1);
+
+  
   
   //Create the distributions in pad and time:
   for(Int_t i=0; i<entries; i++)
@@ -579,6 +617,7 @@ void AliL3Compress::CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge
 	}
     }
   
+  Int_t local_dig=0;
   //Fill it into the digit array:
   for(Int_t i=0; i<hist3->GetNbinsX(); i++)
     {
@@ -600,14 +639,16 @@ void AliL3Compress::CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge
 	  fDigits[fNDigits].fTime = (Int_t)hist3->GetYaxis()->GetBinCenter(j);
 	  fDPt[fNDigits] = &fDigits[fNDigits];
 	  fNDigits++;
+	  local_dig++;
 	}
     }
+  //if(local_dig < 5)
+  //  cout<<"Small cluster "<<local_dig<<" pad "<<(Int_t)fDigits[fNDigits-1].fPad<<" time "<<(Int_t)fDigits[fNDigits-1].fTime<<endl;
   
   delete random;
   delete hist1;
   delete hist2;
   delete hist3;
-  delete tr;
 }
 
 void AliL3Compress::PrintCompRatio()
@@ -625,7 +666,7 @@ void AliL3Compress::PrintCompRatio()
   mem->CloseBinaryInput();
 
   Int_t digit_counter=0;
-  for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
+  for(Int_t i=AliL3Transform::GetFirstRow(fPatch); i<=AliL3Transform::GetLastRow(fPatch); i++)
     {
       digit_counter += rowPt->fNDigit;
       mem->UpdateRowPointer(rowPt);
@@ -705,7 +746,7 @@ void AliL3Compress::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last)
   }
 }
 
-void AliL3Compress::WriteRootFile(Char_t *digitsfile,Char_t *rootfile)
+void AliL3Compress::WriteRootFile(Char_t *newrootfile)
 {
 #ifdef use_aliroot
   Char_t fname[100];
@@ -715,15 +756,18 @@ void AliL3Compress::WriteRootFile(Char_t *digitsfile,Char_t *rootfile)
   UInt_t ndigits;
   AliL3DigitRowData *rowPt = (AliL3DigitRowData*)mem->CompBinary2Memory(ndigits);
   mem->CloseBinaryInput();
-
+  
+  sprintf(fname,"%s/digitfile",fPath);
+  
   AliL3FileHandler *file = new AliL3FileHandler();
-  if(!file->SetAliInput(digitsfile))
+  if(!file->SetAliInput(fname))
     {
-      cerr<<"AliL3Compress::WriteRootFile() : Error opening file: "<<digitsfile<<endl;
+      cerr<<"AliL3Compress::WriteRootFile() : Error opening file: "<<fname<<endl;
       return;
     }
-  file->Init(fSlice,fPatch,NRows[fPatch]);
-  file->AliDigits2RootFile(rowPt,rootfile);
+  const Int_t rows[2] = {AliL3Transform::GetFirstRow(fPatch),AliL3Transform::GetLastRow(fPatch)};
+  file->Init(fSlice,fPatch,rows);
+  file->AliDigits2RootFile(rowPt,newrootfile);
   file->CloseAliInput();
 
   delete mem;

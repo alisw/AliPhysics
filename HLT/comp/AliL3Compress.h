@@ -41,10 +41,10 @@ class AliL3Compress {
   void ReadFile(Char_t which);
   void CompressFile();
   void ExpandFile();
-  void RestoreData();
+  void RestoreData(Char_t which='u');
   void WriteRestoredData();
-  void WriteRootFile(Char_t *digitsfile,Char_t *rootfile);
-  void PrintDigits();
+  void WriteRootFile(Char_t *newrootfile);
+  void PrintDigits(Int_t padrow=-1);
   void PrintCompRatio();
   
   AliL3TrackArray *GetTracks() {return fTracks;}
@@ -59,8 +59,11 @@ inline Int_t  AliL3Compress::ComparePoints(Int_t row,UShort_t pad,UShort_t time)
   
   if(fDPt[fNUsed]->fRow != row) return 0;
   
+  
   if(fDPt[fNUsed]->fPad < pad) return 1;
   if(fDPt[fNUsed]->fPad == pad && fDPt[fNUsed]->fTime < time) return 1;
+  
+  //if(fDPt[fNUsed]->fPad == pad && fDPt[fNUsed]->fTime == time) return 2;
   
   return 0;
 

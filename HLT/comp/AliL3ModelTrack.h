@@ -3,9 +3,6 @@
 
 #include "AliL3Track.h"
 #include "AliL3Models.h"
-#include "AliL3Defs.h"
-
-class AliL3Transform;
 
 class AliL3ModelTrack : public AliL3Track {
 
@@ -14,7 +11,6 @@ class AliL3ModelTrack : public AliL3Track {
   Short_t fClusterCharge; //Average cluster charge
   AliL3ClusterModel *fClusters; //!
   AliL3TrackModel *fTrackModel; //!
-  AliL3Transform *fTransform; //!
   Short_t fNClusters;
   Int_t *fOverlap; //!
   Float_t fXYResidualQ; //Quantization steps.
@@ -35,7 +31,7 @@ class AliL3ModelTrack : public AliL3Track {
   virtual ~AliL3ModelTrack();
   
   void Init(Int_t slice,Int_t patch);
-  void SetCluster(Int_t row,Float_t dpad,Float_t dtime,Float_t charge,Float_t sigmaY2,Float_t sigmaZ2);
+  void SetCluster(Int_t row,Float_t dpad,Float_t dtime,Float_t charge,Float_t sigmaY2,Float_t sigmaZ2,Int_t npads);
   void FillModel();
   void FillTrack();
   void Print();
@@ -45,11 +41,13 @@ class AliL3ModelTrack : public AliL3Track {
   void SetOverlap(Int_t row,Int_t id);
   void SetXYResolution(Float_t f) {fXYResolution=f;}
   void SetZResolution(Float_t f) {fZResolution=f;}
+  Int_t CheckClustersQuality(UInt_t npads=3);
   
   AliL3ClusterModel *GetClusters() {return fClusters;}
   AliL3TrackModel *GetModel() {return fTrackModel;}
   AliL3ClusterModel *GetClusterModel(Int_t row);
   Int_t GetOverlap(Int_t row);
+  Int_t GetNPads(Int_t row);
   Float_t GetPadHit(Int_t row);
   Float_t GetTimeHit(Int_t row);
   Bool_t GetPad(Int_t row,Float_t &pad);
@@ -59,6 +57,8 @@ class AliL3ModelTrack : public AliL3Track {
   Bool_t GetZWidth(Int_t row,Float_t &width);
   Bool_t GetPadResidual(Int_t row,Float_t &res);
   Bool_t GetTimeResidual(Int_t row,Float_t &res);
+  Bool_t GetXYWidthResidual(Int_t row,Float_t &res);
+  Bool_t GetZWidthResidual(Int_t row,Float_t &res);
   Int_t GetNClusters() {return fNClusters;}
   
   Double_t GetParSigmaY2(Int_t row);
