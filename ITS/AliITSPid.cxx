@@ -1,5 +1,6 @@
 #include "AliITSPid.h"
 #include "TMath.h"
+#include "AliITSIOTrack.h"
 #include <iostream.h>
 ClassImp(AliITSPid)
 
@@ -12,7 +13,6 @@ Float_t AliITSPid::qcorr(Float_t xc)
   if(fcorr<=0.1)fcorr=0.1;
 return qtot/fcorr;
 }
-
 //-----------------------------------------------------------
 #include "vector.h"
 #include <algorithm>
@@ -34,7 +34,28 @@ Float_t AliITSPid::qtrm(Int_t track)
     for(Int_t i=0;i<nl;i++){q(i+1)=vf[i];} this->SetVec(track,q);
     return (q(6));
 }
+//........................................................
+Float_t AliITSPid::qtrm(Float_t qarr[6],Int_t narr)
+{
+  Float_t q[6],qm;
+  Int_t nl,ml;
+  narr>6?ml=6:ml=narr;
+  nl=0; for(Int_t i=0;i<ml;i++){if(qarr[i]>0.){q[i]=qarr[i];nl++;}}
+  if(nl==0)return 0.;
+    vector<float> vf(nl);
+    switch(nl){
+      case  1:qm=q[0]; break;
+      case  2:qm=(q[0]+q[1])/2.; break;
+      default:
+	for(Int_t i=0;i<nl;i++){vf[i]=q[i];}
+        sort(vf.begin(),vf.end());
+        qm= (vf[0]+vf[1])/2.;
+        break;
+    }
+    return qm;
+}
 //-----------------------------------------------------------
+//inline
 Int_t	AliITSPid::wpik(Int_t nc,Float_t q)
 {
        return pion();   
@@ -59,6 +80,7 @@ Int_t	AliITSPid::wpik(Int_t nc,Float_t q)
     return pion();    
 }
 //-----------------------------------------------------------
+//inline
 Int_t	AliITSPid::wpikp(Int_t nc,Float_t q)
 {
        return pion();   
@@ -90,6 +112,58 @@ Int_t	AliITSPid::wpikp(Int_t nc,Float_t q)
 Int_t	AliITSPid::GetPcode(TClonesArray* rps,Float_t pm)
 {
     return 0;    
+}
+//-----------------------------------------------------------
+Int_t   AliITSPid::GetPcode(AliTPCtrack *track)
+{
+      Double_t xk,par[5]; track->GetExternalParameters(xk,par);
+      Float_t phi=TMath::ASin(par[2]) + track->GetAlpha();
+      if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
+      if (phi>=TMath::Pi()) phi-=2*TMath::Pi();
+      Float_t lam=TMath::ATan(par[3]); 
+      Float_t pt_1=TMath::Abs(par[4]);
+      Float_t mom=1./(pt_1*TMath::Cos(lam));
+      Float_t dedx=track->GetdEdx();
+    Int_t pcode=GetPcode(dedx/40.,mom);
+    cout<<"TPCtrack dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
+    return pcode?pcode:211;
+    }
+//------------------------------------------------------------
+/*
+Int_t   AliITSPid::GetPcode(AliITSIOTrack *track)
+{
+    Double_t px,py,pz;
+    px=track->GetPx();
+    py=track->GetPy();
+    pz=track->GetPz();
+    Float_t mom=TMath::Sqrt(px*px+py*py+pz*pz);
+//???????????????????
+   // Float_t dedx=1.0;
+     Float_t dedx=track->GetdEdx();
+//???????????????????    
+    Int_t pcode=GetPcode(dedx,mom);
+    cout<<"ITSV1 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
+return pcode?pcode:211;
+}
+*/
+//-----------------------------------------------------------
+Int_t   AliITSPid::GetPcode(AliITStrackV2 *track)
+{
+  if(track==0)return 0;
+  //track->Propagate(track->GetAlpha(),3.,0.1/65.19*1.848,0.1*1.848);
+      track->PropagateTo(3.,0.0028,65.19);
+
+      track->PropagateToVertex();
+    Double_t xk,par[5]; track->GetExternalParameters(xk,par);
+    Float_t lam=TMath::ATan(par[3]);
+    Float_t pt_1=TMath::Abs(par[4]);
+    Float_t mom=0.;
+    if( (pt_1*TMath::Cos(lam))!=0. ){ mom=1./(pt_1*TMath::Cos(lam)); }else{mom=0.;};
+    Float_t dedx=track->GetdEdx();
+    //cout<<"lam,pt_1,mom,dedx="<<lam<<","<<pt_1<<","<<mom<<","<<dedx<<endl;
+    Int_t pcode=GetPcode(dedx,mom);
+    //cout<<"ITS V2 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
+return pcode?pcode:211;
 }
 //-----------------------------------------------------------
 Int_t	AliITSPid::GetPcode(Float_t q,Float_t pm)

@@ -60,6 +60,7 @@ void dedxhis(Int_t pcod=0,Float_t pmin=0,Float_t pmax=1300)
 
       //qplotP->GetXaxis()->SetTitleSize(0.05);
       //qplotP->GetYaxis()->SetTitleSize(0.05);
+      //gPad->SetFillColor(kWhite);    // b.b.
       gStyle->SetOptStat(0);
       qplotP->SetXTitle("(Mev/c)");
       qplotP->SetYTitle("(mips)");
@@ -603,7 +604,9 @@ Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, const Int_t event);
     cerr<<"Track "<<lab<<" was not found !\n";
     continue;
     }
-  track->Propagate(track->GetAlpha(),3.,0.1/65.19*1.848,0.1*1.848);
+    //track->Propagate(track->GetAlpha(),3.,0.1/65.19*1.848,0.1*1.848);
+    track->PropagateTo(3.,0.0028,65.19);
+
   track->PropagateToVertex();
 
   if (lab==tlab) hfound->Fill(ptg);

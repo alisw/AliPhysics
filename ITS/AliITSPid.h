@@ -3,6 +3,9 @@
 #include <TObject.h>
 #include <TClonesArray.h>
 #include <TVector.h>
+#include "../TPC/AliTPCtrack.h"
+#include "AliITSIOTrack.h"
+#include "AliITStrackV2.h"
 #include <assert.h>
 //#include <stl.h>
 //___________________________________________________________________________
@@ -22,6 +25,9 @@ public:
 	TVector* GetVec(Int_t track);
 	Int_t	GetPcode(TClonesArray*,Float_t);
 	Int_t	GetPcode(Float_t,Float_t);
+	Int_t   GetPcode(AliTPCtrack*);  // For PID TPC
+//        Int_t   GetPcode(AliITSIOTrack*); // For PID ITS tracking V1
+        Int_t   GetPcode(AliITStrackV2*); // For PID ITS tracking V2
 	void	SetCut(Int_t,Float_t,Float_t,Float_t,
 			    Float_t,Float_t,Float_t,Float_t);
 	Float_t GetWpi(){return fWpi;}
@@ -42,6 +48,7 @@ public:
 	Float_t qcorr(Float_t);
 	int	qcomp(Float_t* qa,Float_t* qb){return qa[0]>qb[0]?1:0;}
 	Float_t qtrm(Int_t track);
+	Float_t qtrm(Float_t qarr[6],Int_t narr);
 	Int_t	wpik(Int_t,Float_t);
 	Int_t	wpikp(Int_t,Float_t);
 	Int_t	pion(){return fWpi=1.,fPcode=211;}
