@@ -1,6 +1,7 @@
 #include "AliHBTasCorrFctn.h"
 #include <TH1.h>
-#include <Riostream.h>
+#include <TObjArray.h>
+
 
 ///////////////////////////////////////////////////////
 //                                                   //
