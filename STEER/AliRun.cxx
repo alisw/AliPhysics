@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.52  2001/02/05 16:22:25  buncic
+Added TreeS to GetEvent().
+
 Revision 1.51  2001/02/02 15:16:20  morsch
 SetHighWaterMark method added to mark last particle in event.
 
@@ -581,14 +584,26 @@ void AliRun::FinishEvent()
   if (fTreeK) {
     CleanParents();
     //    fTreeK->Fill();
+    Bool_t allFilled = kFALSE;
     TObject *part;
     for(i=0; i<fHgwmk+1; ++i) if((part=fParticleMap->At(i))) {
       fParticleBuffer = (TParticle*) part;
       fParticleFileMap[i]= (Int_t) fTreeK->GetEntries();
       fTreeK->Fill();
-      (*fParticleMap)[i]=0;
-    } else //printf("Why = 0 part # %d?\n",i);
-      break;
+      (*fParticleMap)[i]=0;      
+      
+      // When all primaries were filled no particle!=0
+      // should be left => to be removed later.
+      if (allFilled) printf("Why != 0 part # %d?\n",i);
+    }
+    else {
+      // // printf("Why = 0 part # %d?\n",i); => We know.
+      // break;
+           // we don't break now in order to be sure there is no
+	   // particle !=0 left.
+	   // To be removed later and replaced with break.
+      if(!allFilled) allFilled = kTRUE;
+    }  
   }
   
   // Write out the digits
@@ -1898,8 +1913,92 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
     fHeader.SetNtrack(fHgwmk+1);
   }
   ntr = fNtrack++;
+  
+/*
+  //
+  // Here we get the static mass
+  // For MC is ok, but a more sophisticated method could be necessary
+  // if the calculated mass is required
+  // also, this method is potentially dangerous if the mass
+  // used in the MC is not the same of the PDG database
+  //
+  Float_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
+  Float_t e=TMath::Sqrt(mass*mass+pmom[0]*pmom[0]+
+			pmom[1]*pmom[1]+pmom[2]*pmom[2]);
+			
+  SetTrack(done, parent, pdg, pmom[0], pmom[1], pmom[2], e,
+           vpos[0], vpos[1], vpos[2], tof, polar[0],polar[1],polar[2],
+	   mech, ntr, weight);
+*/	   
 }
 
+//_____________________________________________________________________________
+void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg,
+  	              Double_t px, Double_t py, Double_t pz, Double_t e,
+  		      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
+		      Double_t polx, Double_t poly, Double_t polz,
+		      AliMCProcess mech, Int_t &ntr, Float_t weight=1)
+{ 
+  //
+  // Load a track on the stack
+  //
+  // done        0 if the track has to be transported
+  //             1 if not
+  // parent      identifier of the parent track. -1 for a primary
+  // pdg         particle code
+  // kS          generation status code
+  // px, py, pz  momentum GeV/c
+  // vx, vy, vz  position 
+  // polar       polarisation 
+  // tof         time of flight in seconds
+  // mech        production mechanism
+  // ntr         on output the number of the track stored
+  //    
+  // New method interface: 
+  // arguments were changed to be in correspondence with TParticle
+  // constructor.
+  // Note: the energy is not calculated from the static mass but
+  // it is passed by argument e.
+
+  TClonesArray &particles = *fParticles;
+
+  const Int_t kS=0;
+  const Int_t kFirstDaughter=-1;
+  const Int_t kLastDaughter=-1;
+  
+  TParticle* particle
+    = new(particles[fLoadPoint++]) TParticle(pdg, kS, parent, -1, 
+                                        kFirstDaughter, kLastDaughter,
+				        px, py, pz, e, vx, vy, vz, tof);
+   
+  particle->SetPolarisation(polx, poly, polz);
+  particle->SetWeight(weight);
+  particle->SetUniqueID(mech);
+
+  if(!done) particle->SetBit(kDoneBit);
+
+  //  Declare that the daughter information is valid
+  particle->SetBit(kDaughtersBit);
+  //  Add the particle to the stack
+  fParticleMap->AddAtAndExpand(particle,fNtrack);
+
+  if(parent>=0) {
+    particle=(TParticle*) fParticleMap->At(parent);
+    particle->SetLastDaughter(fNtrack);
+    if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
+  } else { 
+    //
+    // This is a primary track. Set high water mark for this event
+    fHgwmk=fNtrack;
+    //
+    // Set also number if primary tracks
+    fHeader.SetNprimary(fHgwmk+1);
+    fHeader.SetNtrack(fHgwmk+1);
+  }
+  ntr = fNtrack++;
+}
+
+//_____________________________________________________________________________
 void AliRun::SetHighWaterMark(const Int_t nt)
 {
     //
