@@ -76,7 +76,7 @@ void Config()
   if (gSystem->Getenv("CONFIG_NPARTICLES"))
     int     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
   else
-    int     nParticles = 50;
+    int     nParticles = 5;
   cout << "\t* Creating and configuring generator for " << nParticles 
        << " particles..." << endl;
   
@@ -85,8 +85,8 @@ void Config()
   gener->SetMomentumRange(0, 999);
   gener->SetPhiRange(0, 360);
   // Set pseudorapidity range from -8 to 8.
-  Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
-  Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+  Float_t thmin = EtaToTheta(1);   // theta min. <---> eta max
+  Float_t thmax = EtaToTheta(-1);  // theta max. <---> eta min 
   gener->SetThetaRange(thmin,thmax);
   gener->SetOrigin(0, 0, 0);  //vertex position
   gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
@@ -102,27 +102,27 @@ void Config()
 
   cout << "\t* Defining which detectors to load..." << endl;
   
-  Int_t   iABSO  = 1; //1
+  Int_t   iABSO  = 0; //1
   Int_t   iCRT   = 0; //Not good ?
-  Int_t   iDIPO  = 1; //1
-  Int_t   iFMD   = 1; //1
-  Int_t   iFRAME = 1; //1
-  Int_t   iHALL  = 1; //1
-  Int_t   iITS   = 1; //1
-  Int_t   iMAG   = 1; //1
-  Int_t   iMUON  = 1; //1. Not good (newFlagLttc=10000 is outside array bounds)
-  Int_t   iPHOS  = 1; //1
-  Int_t   iPIPE  = 1; //1
+  Int_t   iDIPO  = 0; //1
+  Int_t   iFMD   = 0; //1
+  Int_t   iFRAME = 0; //1
+  Int_t   iHALL  = 0; //1
+  Int_t   iITS   = 0; //1
+  Int_t   iMAG   = 0; //1
+  Int_t   iMUON  = 0; //1. Not good (newFlagLttc=10000 is outside array bounds)
+  Int_t   iPHOS  = 0; //1
+  Int_t   iPIPE  = 0; //1
   Int_t   iPMD   = 0; //Not good (too many regions)
-  Int_t   iRICH  = 1; //1. Not good (no tracking with FRAME)
-  Int_t   iSHIL  = 1; //1. Not good (no tracking) (it works alone)
-  Int_t   iSTART = 1; //1. Not good (no tracking) (it works alone)
-  Int_t   iTOF   = 1; //1. Not good (no tracking) (newFlagLttc=10000 is outside array bounds if alone)
+  Int_t   iRICH  = 0; //1. Not good (no tracking with FRAME)
+  Int_t   iSHIL  = 0; //1. Not good (no tracking) (it works alone)
+  Int_t   iSTART = 0; //1. Not good (no tracking) (it works alone)
+  Int_t   iTOF   = 0; //1. Not good (no tracking) (newFlagLttc=10000 is outside array bounds if alone)
   Int_t   iTPC   = 1;
-  Int_t   iTRD   = 1; //1. Not good (no tracking) (Crash alone with FRAME)
-  Int_t   iZDC   = 1; //1. Needs SHIL and others
+  Int_t   iTRD   = 0; //1. Not good (no tracking) (Crash alone with FRAME)
+  Int_t   iZDC   = 0; //1. Needs SHIL and others
   Int_t   iEMCAL = 0; //Not good (Crash)
-  Int_t   iVZERO = 1;
+  Int_t   iVZERO = 0;
  
   cout << "\t* Creating the detectors ..." << endl;
   //=================== Alice BODY parameters =============================
@@ -401,6 +401,7 @@ void Config()
  
   
   cout << "<== Config.C..." << endl;
+  cout << "<== It is me ..." << endl;
 }
 
 Float_t EtaToTheta(Float_t arg){
