@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2002/11/15 17:39:10  morsch
+GetPythiaParticleName removed.
+
 Revision 1.26  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -248,6 +251,29 @@ AliEMCALJetFinder::~AliEMCALJetFinder()
 	fJets->Delete();
 	delete fJets;
     }
+    delete fLego;            
+    delete fLegoB;
+    delete fhLegoTracks;  
+    delete fhLegoEMCAL;   
+    delete fhLegoHadrCorr;
+    delete fhEff;         
+    delete fhCellEt;      
+    delete fhCellEMCALEt; 
+    delete fhTrackPt;     
+    delete fhTrackPtBcut; 
+    delete fhChPartMultInTpc;
+
+    delete[] fTrackList;
+    delete[] fPtT;      
+    delete[] fEtaT;     
+    delete[] fPhiT;     
+    delete[] fPdgT;     
+ 
+    delete[] fTrackListB;
+    delete[] fPtB;       
+    delete[] fEtaB;      
+    delete[] fPhiB;      
+    delete[] fPdgB;      
 }
 
 #ifndef WIN32
@@ -720,6 +746,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 // charged or neutral 
 	pdgP  = MPart->GetPDG();
         chTmp = pdgP->Charge() / 3.; // 13-feb-2001!!  
+
 	if (ich == 0) {
 	    if (chTmp == 0) {
 	        if (!fK0N) { 
@@ -731,6 +758,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 		}
 	    }
 	}
+
 // skip partons
 	if (TMath::Abs(mpart) <= 6         ||
 	    mpart == 21                    ||
@@ -740,10 +768,8 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 // final state only
 	if (child1 >= 0 && child1 < npart) continue;
 // acceptance cut
-	if (TMath::Abs(eta) > 0.7)         continue;
-//   Initial phi may be out of acceptance but track may 
-//   hit two the acceptance  - see variable curls
-	if (phi*180./TMath::Pi() > 120.)   continue;
+	if (eta > fEtaMax || eta < fEtaMin)    continue;
+	if (phi > fPhiMax || phi < fPhiMin )   continue;
 //
 	if (fDebug >= 3) 
 	printf("\n=>nsel:%5d mpart %5d child1 %5d eta %6.2f phi %6.2f pT %6.2f ch %3.0f ",
@@ -809,13 +835,12 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 //
 //  More to do ? Just think about it !
 //
-        
-	if (phi*180./TMath::Pi() > 120.)   continue;
+	if (phi > fPhiMax || phi < fPhiMin )   continue;
 
         if(TMath::Abs(chTmp) ) { // charge particle
 	  if (pT > fPtCut && !curls) {
-	     if (fDebug >= 8) printf("Charge :  fLego->Fill(%5.2f, %5.2f, %6.2f)\n",
-				      eta , phi, pT); 
+	     if (fDebug >= 8) printf("Charge :  fLego->Fill(%5.2f, %5.2f, %6.2f, %d)\n",
+				      eta , phi, pT, fNtS); 
              fLego->Fill(eta, phi, pT);
              fhLegoTracks->Fill(eta, phi, pT); // 20-feb for checking
 	     fTrackList[part] = 1;
@@ -823,8 +848,8 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
           }
 	} else if(ich==0 && fK0N) {
 	  // case of n, nbar and K0L
-	     if (fDebug >= 9) printf("Neutral :  fLego->Fill(%5.2f, %5.2f, %6.2f)\n",
-				      eta , phi, pT); 
+	     if (fDebug >= 9) printf("Neutral :  fLego->Fill(%5.2f, %5.2f, %6.2f, %d)\n",
+				      eta , phi, pT, fNtS); 
             fLego->Fill(eta, phi, pT);
 	    fTrackList[part] = 1;
 	    fNtS++;
@@ -857,7 +882,6 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 //
 // Access hit information    
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
-    
     TTree *treeH = gAlice->TreeH();
     Int_t ntracks = (Int_t) treeH->GetEntries();
 //
@@ -887,6 +911,7 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 	    Float_t phi    =    TMath::ATan2(y,x);
 
 	    if (fDebug >= 11) printf("\n Hit %f %f %f %f", x, y, z, eloss);
+//	    printf("\n Hit %f %f %f %f", x, y, z, eloss);
 	    
             etH = fSamplingF*eloss*TMath::Sin(theta);
 	    fLego->Fill(eta, phi, etH);
@@ -1102,6 +1127,7 @@ void AliEMCALJetFinder::FillFromParticles()
 	fEtaT[part]      = eta;
 	fPhiT[part]      = phi;
 	fPdgT[part]      = mpart;
+	fNtS++;
 	
 // final state only
  	if (child1 >= 0 && child1 < npart) continue;
@@ -1116,8 +1142,8 @@ void AliEMCALJetFinder::FillFromParticles()
         
 	if (TMath::Abs(eta) <= 0.9) fNChTpc++;
 // acceptance cut
-	if (TMath::Abs(eta) > 0.7)         continue;
-	if (phi*180./TMath::Pi() > 120.)   continue;
+	if (eta > fEtaMax || eta < fEtaMin)    continue;
+	if (phi > fPhiMax || phi < fPhiMin )   continue;
 //
         if(fK0N==0 ) { // exclude neutral hadrons
           if (mpart == kNeutron || mpart == kNeutronBar || mpart == kK0Long) continue; 
@@ -1173,8 +1199,8 @@ void AliEMCALJetFinder::FillFromPartons()
 // accept partons before fragmentation - p.57 in Pythia manual
 //        if(statusCode != 1) continue;
 // acceptance cut
-	if (TMath::Abs(eta) > 0.7)         continue;
-	if (phi*180./TMath::Pi() > 120.)   continue;
+	if (eta > fEtaMax || eta < fEtaMin)    continue;
+	if (phi > fPhiMax || phi < fPhiMin )   continue;
 // final state only
 //	if (child1 >= 0 && child1 < npart) continue;
 //
@@ -1333,7 +1359,6 @@ void AliEMCALJetFinder::SaveBackgroundEvent()
 	fEtaB[fNtB]       = fEtaT[i];
 	fPhiB[fNtB]       = fPhiT[i];
 	fPdgB[fNtB]       = fPdgT[i];
-
 	fTrackListB[fNtB] = 1;
 	fNtB++;
     }
@@ -1403,6 +1428,7 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 	} // Background available ?
 	
 	Int_t nT0 = nT + nTB;
+	printf("Total number of tracks %d\n", nT0);
 	
 	if (nT0 > 50) nT0 = 50;
 	
@@ -1671,3 +1697,130 @@ Bool_t AliEMCALJetFinder::IsThisPartonsOrDiQuark(Int_t pdg)
   return kFALSE;
 }
 
+void AliEMCALJetFinder::FindChargedJet()
+{
+//
+// Find jet from charged particle information only
+//
+    
+//
+//  Look for seeds
+//
+    Int_t njets = 0;
+    Int_t part  = 0;
+    Int_t nseed = 0;
+  
+//
+//
+    ResetJets();
+    
+//  
+    for (part = 0; part < fNt; part++) {
+	if (!fTrackList[part]) continue;
+	if (fPtT[part] > fEtSeed) nseed++;
+    }
+    printf("\nThere are %d seeds (%d)\n", nseed, fNtS);
+    Int_t* iSeeds = new Int_t[nseed];
+    nseed = 0;
+    
+    for (part = 0; part < fNt; part++) {
+	if (!fTrackList[part]) continue;
+	if (fPtT[part] > fEtSeed) iSeeds[nseed++] =  part;
+    }
+
+//
+// Loop over seeds
+//
+    Int_t seed = 0;
+    Float_t pt;
+    
+    while(1){
+//
+// Find seed with highest pt
+// 
+	Float_t ptmax = -1.;
+	Int_t   index = -1;
+	Int_t   jndex = -1;
+	for (seed = 0; seed < nseed; seed++) {
+	    if ((pt = fPtT[iSeeds[seed]]) > ptmax && iSeeds[seed] != -1) {
+		ptmax = pt;
+		index = seed;
+	    } // ptmax ?
+	} // seeds 
+	if (ptmax < 0.) break;
+	jndex = iSeeds[index];
+//
+// Remove from the list   
+	iSeeds[index] = -1;
+	printf("\n Next Seed %d %f", jndex, ptmax);
+//
+// Find tracks in cone around seed
+//
+	Float_t phiSeed = fPhiT[jndex];
+	Float_t etaSeed = fEtaT[jndex];
+	Float_t eT = 0.;
+	Float_t pxJ = 0.;
+	Float_t pyJ = 0.;
+	Float_t pzJ = 0.;
+	
+	for (part = 0; part < fNt; part++) {
+	    if (!fTrackList[part]) continue;
+	    Float_t deta = fEtaT[part] - etaSeed;
+	    Float_t dphi = fPhiT[part] - phiSeed;
+	    Float_t dR   = TMath::Sqrt(deta * deta + dphi * dphi);
+	    if (dR < fConeRadius) {
+		eT += fPtT[part];
+		Float_t theta = 2. * TMath::ATan(TMath::Exp(-fEtaT[part]));
+		Float_t px = fPtT[part] * TMath::Cos(fPhiT[part]);
+		Float_t py = fPtT[part] * TMath::Sin(fPhiT[part]);
+		Float_t pz = fPtT[part] / TMath::Tan(theta);
+		pxJ += px;
+		pyJ += py;
+		pzJ += pz;
+		//
+		// if seed, remove it
+		//
+		for (seed = 0; seed < nseed; seed++) {
+		    if (part == iSeeds[seed]) iSeeds[seed] = -1;
+		} // seed ?
+	    } // < cone radius
+	} // particle loop
+
+//
+//      Estimate of jet direction
+	Float_t phiJ   = TMath::ATan2(pyJ, pxJ);
+	Float_t thetaJ = TMath::ATan2(TMath::Sqrt(pxJ * pxJ + pyJ * pyJ), pzJ);
+	Float_t etaJ   = TMath::Log(TMath::Tan(thetaJ / 2.));
+	Float_t ptJ    = TMath::Sqrt(pxJ * pxJ + pyJ * pyJ);
+	
+//
+//      Sum up all energy
+//
+	Int_t iPhi0 = Int_t((phiJ - fPhiMin) / fDphi);
+	Int_t iEta0 = Int_t((etaJ - fEtaMin) / fDeta);
+	Int_t dIphi = Int_t(fConeRadius / fDphi);
+	Int_t dIeta = Int_t(fConeRadius / fDeta);
+	Int_t iPhi, iEta;
+	Float_t sumE = 0;
+	for (iPhi = iPhi0 -dIphi; iPhi < iPhi0 + dIphi; iPhi++) {
+	    for (iEta = iEta0 - dIeta; iEta < iEta0 + dIeta; iEta++) {
+		if (iPhi < 0 || iEta < 0) continue;
+		Float_t dPhi = fPhiMin + iPhi * fDphi;
+		Float_t dEta = fEtaMin + iEta * fDeta;
+		if (TMath::Sqrt(dPhi * dPhi + dEta * dEta) < fConeRadius) continue;
+		sumE += fLego->GetBinContent(iEta, iPhi);
+	    } // eta
+	} // phi
+//
+//
+//
+    	fJetT[njets++] = new AliEMCALJet(sumE, phiJ, etaJ);
+	FindTracksInJetCone();
+	printf("\n Jet Energy %f %f %f %f %d\n", eT, sumE, fPtT[6], fPtT[7], njets);
+	printf("\n Jet Phi %f %f %f \n", phiJ, fPhiT[6], fPhiT[7]);
+	printf("\n Jet Eta %f %f %f \n", etaJ, fEtaT[6], fEtaT[7]);
+    } // while(1)
+    EMCALJETS.njet = njets;
+    if (fWrite) WriteJets();
+    fEvent++;
+}

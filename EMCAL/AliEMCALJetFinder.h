@@ -29,6 +29,7 @@ class AliEMCALJetFinder : public TTask {
 		      Float_t min_move, Float_t max_move, Int_t mode,
 		      Float_t prec_bg, Int_t ierror);
     virtual void  Find();
+    virtual void  FindChargedJet();
     virtual void  FindTracksInJetCone();
     virtual void  Test();
     virtual void  BuildTrackFlagTable();
