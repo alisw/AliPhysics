@@ -68,7 +68,7 @@ TString AliPHOSQAMeanChecker::CheckingOperation()
   TString rv ; 
 
   Float_t checked = 0. ;  
-  if ( strcmp(fCheckable->HasA(),"I") &&  strcmp(fCheckable->HasA(),"F") ) {
+  if ( (fCheckable->HasA() == "I") &&  (fCheckable->HasA() == "F") ) {
     cout << " ERROR : checker " << GetName() << " says you got the wrong checkable " 
 	 << fCheckable->GetName() << endl ; 
     cout << "         or the checkable has no value !" << endl ; 

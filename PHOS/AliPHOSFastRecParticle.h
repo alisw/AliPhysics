@@ -41,7 +41,7 @@ class AliPHOSFastRecParticle : public TParticle {
     return fIndexInList ; 
   } 
   Int_t GetPrimary(){return fPrimary;}
-  Int_t GetType() { 
+  const Int_t GetType() const { 
     // returns the type of the particle
     return fType ; 
   } 

@@ -38,6 +38,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliRun.h"
+#include "AliPHOSGetter.h"
 
 ClassImp(AliPHOSEmcRecPoint)
 
@@ -50,9 +51,8 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() : AliPHOSRecPoint()
   fAmp   = 0. ;   
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
-  fGeom = AliPHOSGeometry::GetInstance() ;
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
-  
+   
 }
 
 //____________________________________________________________________________
@@ -114,7 +114,9 @@ Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
   
   Bool_t aren = kFALSE ;
   
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+
   Int_t relid1[4] ; 
   phosgeom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
 
@@ -177,7 +179,7 @@ Int_t AliPHOSEmcRecPoint::Compare(const TObject * obj) const
 void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
 {
 //   Commented by Dmitri Peressounko: there is no possibility to ensure, 
-//   that AliPHOSIndexToObject keeps the correct information.
+//   that AliPHOSGetter keeps the correct information.
 
 //   // Execute action corresponding to one event
 //   //  This member function is called when a AliPHOSRecPoint is clicked with the locator
@@ -188,7 +190,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
 
 //   //   static Int_t pxold, pyold;
 
-//   AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
+//   AliPHOSGetter * gime =  AliPHOSGetter::GetInstance() ; 
   
 //   static TGraph *  digitgraph = 0 ;
   
@@ -201,7 +203,8 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
     
 //   case kButton1Down: {
 //     AliPHOSDigit * digit ;
-//     AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+//     AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+//     AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
 //     Int_t iDigit;
 //     Int_t relid[4] ;
     
@@ -217,7 +220,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
 //     Float_t zimin = 999. ;
     
 //     for(iDigit=0; iDigit<kMulDigit; iDigit++) {
-//       digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) ) ;
+//       digit = (AliPHOSDigit *) ( gime->Digit(fDigitsList[iDigit]) ) ;
 //       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
 //       phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]);
 //       if ( xi[iDigit] > ximax )
@@ -249,7 +252,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
     
 //     Float_t x, z ; 
 //     for(iDigit=0; iDigit<kMulDigit; iDigit++) {
-//       digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) ) ;
+//       digit = (AliPHOSDigit *) ( gime->Digit(fDigitsList[iDigit]) ) ;
 //       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
 //       phosgeom->RelPosInModule(relid, x, z);
 //       histo->Fill(x, z, fEnergyList[iDigit] ) ;
@@ -298,7 +301,9 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
   Float_t z = locpos.Z() ;
 
   AliPHOSDigit * digit ;
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+ 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
   
   Int_t iDigit;
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
@@ -334,8 +339,10 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(TClonesArray * digits)
   Float_t z = locpos.Z() ;
 
   AliPHOSDigit * digit ;
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
-  
+
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+    
   Int_t iDigit;
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) ( digits->At(fDigitsList[iDigit]) ) ;
@@ -364,7 +371,10 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
   Double_t dxz  = 0.;
 
   AliPHOSDigit * digit ;
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+
   Int_t iDigit;
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
@@ -394,7 +404,9 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 //   //Apply correction due to non-perpendicular incidence
 //   Double_t CosX ;
 //   Double_t CosZ ;
-//   Double_t DistanceToIP= (Double_t ) ((AliPHOSGeometry *) fGeom)->GetIPtoCrystalSurface() ;
+//   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+//   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+  //   Double_t DistanceToIP= (Double_t ) phosgeom->GetIPtoCrystalSurface() ;
   
 //   CosX = DistanceToIP/TMath::Sqrt(DistanceToIP*DistanceToIP+x*x) ;
 //   CosZ = DistanceToIP/TMath::Sqrt(DistanceToIP*DistanceToIP+z*z) ;
@@ -439,7 +451,8 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
   
   AliPHOSDigit * digit ;
 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
 
   Int_t iDigit;
 

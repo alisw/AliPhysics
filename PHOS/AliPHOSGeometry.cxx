@@ -105,12 +105,14 @@ void AliPHOSGeometry::Init(void)
     fRotMatrixArray = new TObjArray(fNModules) ; 
 
     // post the geometry into the appropriate folder
-    //  get the alice folder
-    TFolder * alice = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ;
-    //  the folder that contains the alarms for PHOS   
-    TFolder * folder = (TFolder*)alice->FindObject("folders/Geometry/PHOS");   
+    TFolder * folder = (TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/Geometry/PHOS"); 
+    if ( !folder ) {
+      cerr << "ERROR: AliPHOSGeometry::Init -> No WhiteBoard/Geometry/PHOS found !" << endl ; 
+      abort();
+    } else {
     folder->SetOwner() ;
     folder->Add(this) ; 
+    }
   }
   else {
     fgInit = kFALSE ; 
@@ -191,7 +193,7 @@ void AliPHOSGeometry::SetPHOSAngles()
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * relid)
+Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * relid) const
 {
   // Converts the absolute numbering into the following array/
   //  relid[0] = PHOS Module number 1:fNModules 
@@ -261,7 +263,7 @@ Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * relid)
 }
 
 //____________________________________________________________________________  
-void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt) 
+void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt) const 
 {
   // calculates the angular coverage in theta and phi of one EMC (=PHOS) module
 
@@ -295,7 +297,7 @@ void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t
 }
 
 //____________________________________________________________________________  
-void AliPHOSGeometry::EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt) 
+void AliPHOSGeometry::EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt) const
 {
   // calculates the angular coverage in theta and phi of a single crystal in a EMC(=PHOS) module
 
@@ -396,7 +398,7 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) co
 }
 
 //____________________________________________________________________________
-void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & z, Double_t & x) 
+void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & z, Double_t & x) const
 {
   // calculates the impact coordinates on PHOS of a neutral particle  
   // emitted in the direction theta and phi in the ALICE global coordinate system
@@ -423,7 +425,7 @@ void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId)
+Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId) const
 {
   // Converts the relative numbering into the absolute numbering
   // EMCA crystals:
@@ -477,7 +479,7 @@ Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId)
 
 //____________________________________________________________________________
 
-void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) 
+void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) const
 {
   // Converts the absolute numbering into the global ALICE coordinate system
   // It works only for the GPS2 geometry
@@ -533,7 +535,7 @@ void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos )
 } 
 
 //____________________________________________________________________________
-void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t & z) 
+void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t & z) const 
 {
   // Converts the relative numbering into the local PHOS-module (x, z) coordinates
   // Note: sign of z differs from that in the previous version (Yu.Kharlov, 12 Oct 2000)

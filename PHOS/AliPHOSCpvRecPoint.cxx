@@ -146,7 +146,7 @@ void AliPHOSCpvRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
 
 //   //   static Int_t pxold, pyold;
 
-//   AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
+//   AliPHOSGetter * gime =  AliPHOSGetter::GetInstance() ; 
   
 //   static TGraph *  digitgraph = 0 ;
   
@@ -175,7 +175,7 @@ void AliPHOSCpvRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
 //     Float_t zimin = 999. ;
     
 //     for(iDigit=0; iDigit<kMulDigit; iDigit++) {
-//       digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) ) ;
+//       digit = (AliPHOSDigit *) ( gime->Digit(fDigitsList[iDigit]) ) ;
 //       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
 //       phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]);
 //       if ( xi[iDigit] > ximax )
@@ -207,7 +207,7 @@ void AliPHOSCpvRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
     
 //     Float_t x, z ; 
 //     for(iDigit=0; iDigit<kMulDigit; iDigit++) {
-//       digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) ) ;
+//       digit = (AliPHOSDigit *) ( gime->Digit(fDigitsList[iDigit]) ) ;
 //       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
 //       phosgeom->RelPosInModule(relid, x, z);
 //       histo->Fill(x, z, fEnergyList[iDigit] ) ;

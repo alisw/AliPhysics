@@ -24,23 +24,25 @@ class AliPHOSSDigitizer: public TTask {
 
 public:
   AliPHOSSDigitizer() ;          // ctor
-  AliPHOSSDigitizer(const char* HeaderFile,const char *SdigitsTitle = 0) ; 
-  virtual ~AliPHOSSDigitizer() ; // dtor
+  AliPHOSSDigitizer(const char* HeaderFile,const char *SdigitsTitle = "No Name") ; 
+  virtual ~AliPHOSSDigitizer(){} // dtor
 
   Float_t  Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
   Int_t    Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
 
   virtual void  Exec(Option_t *option); 
   
-  Float_t  GetPedestalParameter()const {return fA;}
-  Float_t  GetCalibrationParameter()const{return fB;}
-  char *   GetSDigitsBranch()const{return (char*) fSDigitsTitle.Data();}  
+  const Float_t  GetPedestalParameter()const {return fA;}
+  const Float_t  GetCalibrationParameter()const{return fB;}
+  const char *   GetSDigitsBranch()const{return GetName();}  
 
   virtual void Print(Option_t* option) const ;
 
   void     SetPedestalParameter(Float_t A){fA = A ;}
   void     SetSlopeParameter(Float_t B){fB = B ;}
   void     SetSDigitsBranch(const char * title ) ;
+
+  void  UseHitsFrom(const char * filename) ;      
 
   Bool_t   operator == (const AliPHOSSDigitizer & sd) const ;
 
@@ -49,15 +51,10 @@ private:
   void     PrintSDigits(Option_t * option) ;
 
 private:
-  Float_t fA ;              //Pedestal parameter
-  Float_t fB ;              //Slope Digitizition parameters
-  Int_t   fNevents ;        // Number of events to digitize
+
+  Float_t fA ;              // Pedestal parameter
+  Float_t fB ;              // Slope Digitizition parameters
   Float_t fPrimThreshold ;  // To store primari if Elos > threshold
-  TString fSDigitsTitle ;   // title of SDigits branch
-  TString fHeadersFile ;    //input file
-  Bool_t         fIsInitialized ; // kTRUE if SDigitizer is initialized
-  TClonesArray * fSDigits ; //! list of SDigits
-  TClonesArray * fHits ;    //!
 
 
   ClassDef(AliPHOSSDigitizer,1)  // description 

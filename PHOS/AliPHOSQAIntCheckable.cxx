@@ -40,8 +40,7 @@ ClassImp(AliPHOSQAIntCheckable)
   AliPHOSQAIntCheckable::AliPHOSQAIntCheckable(const char * name) : AliPHOSQAVirtualCheckable(name) 
 {
   //ctor initial value is zero
-  fType = new char[1] ; 
-  strcpy(fType,"I") ; 
+  fType  = "I" ; 
   fValue = 0 ; 
 }
 
@@ -50,7 +49,6 @@ ClassImp(AliPHOSQAIntCheckable)
   AliPHOSQAIntCheckable::~AliPHOSQAIntCheckable()
 {
   // dtor
-  delete fType ; 
 }
 
 //____________________________________________________________________________ 

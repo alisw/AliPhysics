@@ -73,23 +73,23 @@ public:
     return TString("rad") ; 
   }
 
-  Bool_t AbsToRelNumbering(const Int_t AbsId, Int_t * RelId) ; // converts the absolute PHOS numbering to a relative 
+  Bool_t AbsToRelNumbering(const Int_t AbsId, Int_t * RelId) const ; // converts the absolute PHOS numbering to a relative 
 
-  void EmcModuleCoverage(const Int_t m, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt = Radian() );
+  void EmcModuleCoverage(const Int_t m, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt = Radian() ) const ;
                                                          // calculates the angular coverage in theta and phi of a EMC module
-  void EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt = Radian() ) ; 
+  void EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt = Radian() ) const ; 
                                                          // calculates the angular coverage in theta and phi of a 
                                                          // single crystal in a EMC module
 
-  void ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & z, Double_t & x) ; 
+  void ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & z, Double_t & x) const ; 
                                                          // calculates the impact coordinates of a neutral particle  
                                                          // emitted in direction theta and phi in ALICE
  
-  void   RelPosInModule(const Int_t * RelId, Float_t & y, Float_t & z) ; // gets the position of element (pad or Xtal) relative to 
+  void   RelPosInModule(const Int_t * RelId, Float_t & y, Float_t & z) const ; // gets the position of element (pad or Xtal) relative to 
                                                                          // center of PHOS module  
-  void   RelPosInAlice(const Int_t AbsId, TVector3 &  pos) ;             // gets the position of element (pad or Xtal) relative to 
+  void   RelPosInAlice(const Int_t AbsId, TVector3 &  pos) const ;             // gets the position of element (pad or Xtal) relative to 
                                                                          // Alice
-  Bool_t RelToAbsNumbering(const Int_t * RelId, Int_t & AbsId) ;         // converts the absolute PHOS numbering to a relative 
+  Bool_t RelToAbsNumbering(const Int_t * RelId, Int_t & AbsId) const ;         // converts the absolute PHOS numbering to a relative 
 
   Bool_t  IsInitialized(void)                  const { return fgInit ; }  
                                                                        

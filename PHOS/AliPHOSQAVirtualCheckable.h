@@ -39,9 +39,9 @@ public:
   void Alarms() const ; 
   void CheckMe() ;
   virtual Bool_t HasChanged() const { return fChange ; } 
-  TList * GetAlarms() const { return  (TList*)fAlarms->FindObject(GetName()) ; }  
+  TObjArray * GetAlarms() const { return  (TObjArray*)fAlarms->FindObject(GetName()) ; }  
   virtual Float_t GetValue() const = 0 ; 
-  char * HasA() const { return fType ; }
+  TString HasA() const { return fType ; }
   virtual void Print() const = 0 ; 
   void RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message) ; 
   void RemoveChecker(AliPHOSQAChecker *ch) ; 
@@ -52,9 +52,9 @@ public:
 protected:
   
   AliPHOSQAChecker * fChecker ; // the task(s) that is going to act on the checkable
-  char * fType ;            //[1] I, F, or O 
-  TFolder * fAlarms ;       // folder that contains the PHOS alarms  
-  Bool_t fChange ;          // tells if the checkable has been updated
+  TString fType ;               // I, F, or O 
+  TFolder * fAlarms ;           // folder that contains the PHOS alarms  
+  Bool_t fChange ;              // tells if the checkable has been updated
 
   ClassDef(AliPHOSQAVirtualCheckable,1)  // description 
 

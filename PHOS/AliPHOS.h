@@ -41,13 +41,15 @@ class AliPHOS : public AliDetector {
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
   virtual void   CreateMaterials() ;                     
-  void CreatePHOSFolders();
+  void CreatePHOSWhiteBoard();
+  virtual  void  FinishRun() {WriteQA();}
   virtual  AliPHOSGeometry * GetGeometry() const ;
   virtual Int_t   IsVersion(void) const = 0 ;  
   AliPHOSQAChecker * QAChecker() {return fQATask;}  
-  virtual void    SetTreeAddress();                
+  virtual void    SetTreeAddress();   
+  virtual TTree * TreeQA() const {return fTreeQA; } 
   virtual TString Version() {return TString(" ") ; } 
- 
+  virtual void AliPHOS::WriteQA() ; 
   AliPHOS & operator = (const AliPHOS & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
@@ -57,11 +59,8 @@ class AliPHOS : public AliDetector {
  
 protected:
   
-  TFolder * fFGeom ;        //! Folder that holds the Geometry definition
-  AliPHOSGeometry * fGeom ; // Geometry definition
   AliPHOSQAChecker * fQATask ; //! PHOS checkers container
-  TTask * fSDTask ; //! PHOS (S)Digitizer container
-  TTask * fReTask ; //! PHOS Reconstructioner container
+  TTree * fTreeQA ;            // the QA tree that contains the alarms
 
   ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)
 

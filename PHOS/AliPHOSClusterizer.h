@@ -22,8 +22,8 @@ class AliPHOSClusterizer : public TTask {
 
 public:
 
-  AliPHOSClusterizer() ;          // ctor
-  AliPHOSClusterizer(const char * headerFile,const char * digitsBrancheTitle);
+  AliPHOSClusterizer() ;        // default ctor
+  AliPHOSClusterizer(const char * headerFile, const char * name) ;
   virtual ~AliPHOSClusterizer() ; // dtor
 
   virtual Float_t GetEmcClusteringThreshold()const = 0 ; 
@@ -46,13 +46,11 @@ public:
   virtual void SetCpvLocalMaxCut(Float_t cut) = 0 ; 
   virtual void SetCpvLogWeight(Float_t w) = 0 ; 
   virtual void SetPpsdClusteringThreshold(Float_t cluth) = 0 ; 
-
   virtual void SetDigitsBranch(const char * title) = 0 ;
   virtual void SetRecPointsBranch(const char *title) = 0 ;
-
   virtual void SetUnfolding(Bool_t toUnfold ) = 0 ;
+  virtual const char * Version() const = 0 ;  
 
- 
   ClassDef(AliPHOSClusterizer,1)  // Clusterization algorithm class 
 
 } ;

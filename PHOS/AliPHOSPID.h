@@ -30,28 +30,24 @@ class AliPHOSPID : public TTask {
 public:
 
   AliPHOSPID() ;          // ctor            
-  AliPHOSPID(const char* headerFile,const char * tsBranch) ;
+  AliPHOSPID(const char* headerFile,const char * name) ;
   virtual ~AliPHOSPID() ; // dtor
 
   virtual void Exec(Option_t * option) = 0 ;
   virtual char * GetRecParticlesBranch()const = 0 ;
   virtual char * GetTrackSegmentsBranch()const = 0 ;
   virtual void Init()= 0 ;
-
   virtual void Print(Option_t * option) const = 0 ; 
   virtual void PlotDispersionCuts()const = 0;
-  virtual Bool_t ReadTrackSegments()= 0 ;
-
+  virtual Bool_t ReadTrackSegments(Int_t event)= 0 ;
   virtual void SetIdentificationMethod(char * option) = 0 ;
-
   virtual void SetShowerProfileCut(char *  formula) = 0  ; 
   virtual void SetDispersionCut(Float_t cut) = 0  ;   
   virtual void SetCpvtoEmcDistanceCut(Float_t cut ) = 0;
-
   virtual void SetTrackSegmentsBranch(const char* title) = 0 ;
   virtual void SetRecParticlesBranch (const char* title) = 0 ;
-
-  virtual void WriteRecParticles()= 0 ; 
+  virtual const char * Version() const = 0 ;   
+  virtual void WriteRecParticles(Int_t event)= 0 ; 
 
 protected:
 

@@ -26,6 +26,7 @@
 #include "TClass.h"
 #include "TFolder.h"
 #include "TROOT.h"
+#include "TTree.h"
 
 
 // --- Standard library ---
@@ -37,6 +38,8 @@
 #include "AliPHOSQAVirtualCheckable.h"
 #include "AliPHOSQAChecker.h"
 #include "AliPHOSQAAlarm.h" 
+#include "AliPHOSGetter.h" 
+#include "AliPHOS.h" 
 
 ClassImp(AliPHOSQAVirtualCheckable)
 
@@ -44,20 +47,18 @@ ClassImp(AliPHOSQAVirtualCheckable)
   AliPHOSQAVirtualCheckable::AliPHOSQAVirtualCheckable(const char * name) : TNamed(name, name) 
 {
   // ctor, creates the task(s)
+  fType   = "" ; 
   fChange = kFALSE ; 
   // create a new folder that will hold the list of alarms
-  //  get the alice folder
-  TFolder * alice = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ;
   //  the folder that contains the alarms for PHOS   
-  fAlarms = (TFolder*)alice->FindObject("folders/QAAlarms/PHOS");   
+  fAlarms = (TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/QAAlarms/PHOS");   
   //  make it the owner of the objects that it contains
   fAlarms->SetOwner() ;
-  //  add the alarms list to //YSAlice/folders/QAAlarms/PHOS
-  TList * alarms = new TList() ; // deleted when fAlarms is deleted
+  //  add the alarms list to //YSAlice/WhiteBoard/QAAlarms/PHOS
+  TObjArray * alarms = new TObjArray() ; // deleted when fAlarms is deleted
   alarms->SetName(name) ; 
   fAlarms->Add(alarms) ; 
   fChecker = 0 ; 
-
 }
 
 //____________________________________________________________________________ 
@@ -65,7 +66,6 @@ ClassImp(AliPHOSQAVirtualCheckable)
 {
   // ctor 
   delete fAlarms ; 
-  delete fType ; 
 }
 
 //____________________________________________________________________________ 
@@ -83,7 +83,7 @@ ClassImp(AliPHOSQAVirtualCheckable)
   void AliPHOSQAVirtualCheckable::Alarms() const
 {
   // Prints all the alarms 
-  TList * alarms = GetAlarms() ; 
+  TObjArray * alarms = GetAlarms() ; 
   if (alarms->IsEmpty() )
     cout << " No alarms raised for checkable " << GetName() << endl ; 
   else {
@@ -105,7 +105,7 @@ void AliPHOSQAVirtualCheckable::CheckMe()
 //____________________________________________________________________________ 
 void AliPHOSQAVirtualCheckable::RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message)
 {
-  // Raise an alarm and store it in the appropriate folder : //YSAlice/folders/QAAlarms/PHOS/..
+  // Raise an alarm and store it in the appropriate folder : //YSAlice/WhiteBoard/QAAlarms/PHOS/..
   // cout << message ; 
   AliPHOSQAAlarm * alarm = new AliPHOSQAAlarm(time, checked, checker, message)  ;   
   GetAlarms()->Add(alarm) ; 
@@ -126,7 +126,7 @@ void AliPHOSQAVirtualCheckable::RaiseAlarm(const char * time, const char * check
   void AliPHOSQAVirtualCheckable::ResetAlarms()
 {
   // resets the list of alarms (delete the alarms from the list)
-  TList * alarms = GetAlarms() ; 
+  TObjArray * alarms = GetAlarms() ; 
   if (alarms->IsEmpty() )
     cout << " No alarms raised for checkable " << GetName() << endl ; 
   else {

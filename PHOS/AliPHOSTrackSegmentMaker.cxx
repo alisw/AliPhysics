@@ -32,11 +32,14 @@ ClassImp( AliPHOSTrackSegmentMaker)
 
 
 //____________________________________________________________________________
- AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : TTask()
+  AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : TTask("","")
 {
+  // ctor
 }
+
 //____________________________________________________________________________
-AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(char * header,char * branch): TTask("AliPHOSTrackSegmentMaker","")
+AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const char * headerFile, const char * name): TTask(name, headerFile)
 {
+  // ctor
 }
 

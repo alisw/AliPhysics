@@ -41,6 +41,7 @@
 #include "AliPHOSFastRecParticle.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSv4.h"
+#include "AliPHOSGetter.h"
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliMC.h"
@@ -74,10 +75,10 @@ AliPHOSv4::AliPHOSv4(const char *name, const char *title):
 {
   // ctor
 
-  // gets an instance of the geometry parameters class  
-  if (strcmp(GetTitle(),"") != 0 ) 
-    fGeom = AliPHOSGeometry::GetInstance(GetTitle(), "") ; 
-     
+  
+  // create the geometry parameters object  
+  // and post it to a folder (Post retrieves the correct geometry)
+  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0)->Post(gDirectory->GetName(), "G") ;    
     
     SetBigBox(0, GetGeometry()->GetOuterBoxSize(0) ) ;
     SetBigBox(1, GetGeometry()->GetOuterBoxSize(1) + GetGeometry()->GetCPVBoxSize(1) ) ; 

@@ -21,7 +21,6 @@
 
 #include "AliRecPoint.h"
 #include "AliPHOSDigit.h"
-#include "AliPHOSGeometry.h"
 
 class AliPHOSRecPoint : public AliRecPoint {
 

@@ -24,7 +24,7 @@ class TH2F ;
 
 class AliPHOSv1 ;
 class AliPHOSGeometry ;
-class AliPHOSIndexToObject ;
+class AliPHOSGetter ;
 
 class AliPHOSAnalyze : public TObject {
 
@@ -71,8 +71,6 @@ private:
 
   Float_t fCorrection ;               //! Conversion coefficient between True and Reconstructed energies
   Int_t   fEvt ;                      //! the evt number being processed 
-  AliPHOSGeometry * fGeom ;           //! the PHOS Geometry object
-  AliPHOSIndexToObject * fObjGetter ; //! provides methods to retrieve objects from their index in a list
   TString ffileName ;                 //! the root file that contains the data
 
 

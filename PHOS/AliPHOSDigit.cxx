@@ -48,12 +48,12 @@ ClassImp(AliPHOSDigit)
 }
 
 //____________________________________________________________________________
-AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index) 
+AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Int_t index) 
 {  
   // ctor with all data 
 
   fNMaxPrimary = 5 ; 
-  fAmp         = DigEnergy ;
+  fAmp         = digEnergy ;
   fId          = id ;
   fIndexInList = index ; 
   if( primary != -1){

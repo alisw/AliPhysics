@@ -33,6 +33,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSRecPoint.h"
+#include "AliPHOSGetter.h"
 
 ClassImp(AliPHOSRecPoint)
 
@@ -43,9 +44,10 @@ AliPHOSRecPoint::AliPHOSRecPoint()
 {
   // ctor
 
-  fGeom = (AliPHOSGeometry*) AliPHOSGeometry::GetInstance() ;
   fMaxTrack = 200 ;
   fPHOSMod = 0;
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  fGeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
 }
 
 //____________________________________________________________________________
@@ -97,7 +99,9 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     
   case kButton1Down:{
     AliPHOSDigit * digit ;
-    AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+    AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+
     Int_t iDigit;
     Int_t relid[4] ;
   
@@ -167,7 +171,8 @@ void AliPHOSRecPoint::EvalPHOSMod(AliPHOSDigit * digit)
   if( fPHOSMod == 0){
   Int_t relid[4] ; 
   
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
 
   phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fPHOSMod = relid[0];

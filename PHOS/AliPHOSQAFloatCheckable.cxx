@@ -40,8 +40,7 @@ ClassImp(AliPHOSQAFloatCheckable)
   AliPHOSQAFloatCheckable::AliPHOSQAFloatCheckable(const char * name) : AliPHOSQAVirtualCheckable(name) 
 {
   //ctor initial value is zero
-  fType = new char[1] ; 
-  strcpy(fType,"F") ;
+  fType = "F" ;
   fValue = 0. ; 
 }
 
@@ -50,7 +49,6 @@ ClassImp(AliPHOSQAFloatCheckable)
   AliPHOSQAFloatCheckable::~AliPHOSQAFloatCheckable()
 {
  // dtor
-  delete fType ; 
 }
 
 

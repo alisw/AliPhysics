@@ -41,8 +41,7 @@ ClassImp(AliPHOSQAChecker)
 {
   // ctor
   // stores checkers in the PHOS QA TTask folder //YSAlice/tasks/QA/PHOS
-  TFolder * alice  = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ; 
-  TTask * aliceQA  = (TTask*)alice->FindObject("tasks/QA") ; 
+  TTask * aliceQA  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/QA") ; 
   TTask * phosQA   = (TTask*)aliceQA->GetListOfTasks()->FindObject("PHOS") ;
   if (phosQA)  // PHOS QA Tasks container exists
    phosQA->Add(this) ;

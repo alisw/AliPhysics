@@ -127,6 +127,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
     ((AliPHOSQAIntCheckable*)(*fQAHitsMulB)[i])->AddChecker(bhmc) ;
     ((AliPHOSQAFloatCheckable*)(*fQATotEnerB)[i])->AddChecker(bemc) ; 
   }
+
 }
 
 //____________________________________________________________________________
@@ -139,6 +140,8 @@ AliPHOSv1::~AliPHOSv1()
     delete fHits ;
     fHits = 0 ; 
   }
+  if (fTreeQA) 
+    delete fTreeQA ; 
 }
 
 //____________________________________________________________________________
@@ -236,6 +239,7 @@ void AliPHOSv1::FinishEvent()
 //____________________________________________________________________________
 void AliPHOSv1::StepManager(void)
 {
+
   // Accumulates hits as long as the track stays in a single crystal or PPSD gas Cell
 
   Int_t          relid[4] ;           // (box, layer, row, column) indices

@@ -42,18 +42,17 @@
 ClassImp(AliPHOSPID)
 
 //____________________________________________________________________________
-  AliPHOSPID::AliPHOSPID():TTask()
+  AliPHOSPID::AliPHOSPID():TTask("","")
 {
   // ctor
 }
-//____________________________________________________________________________
-AliPHOSPID::AliPHOSPID(const char* header,const char * branch ):TTask()
-{
-  // ctor
-  cout << "AliPHOSPID: This constructor should be overwritten! "<< endl ;
-  abort() ;
 
+//____________________________________________________________________________
+AliPHOSPID::AliPHOSPID(const char* headerFile, const char * name ):TTask(name, headerFile)
+{
+  // ctor
 }
+
 //____________________________________________________________________________
 AliPHOSPID::~AliPHOSPID()
 {

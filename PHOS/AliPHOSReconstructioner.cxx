@@ -427,8 +427,8 @@ void AliPHOSReconstructioner::SetBranchTitle(const char* branch, const char * ti
   }
   
   if(strcmp(branch,"Digits") == 0){ 
-    fDigitizer->SetDigitsBranch(title) ;
-    fClusterizer->SetDigitsBranch(title) ;
+    fDigitizer->SetName(title) ;
+    fClusterizer->SetName(title) ;
     fDigitsBranch = title ;
     return ;
   }
@@ -507,8 +507,8 @@ void AliPHOSReconstructioner::StartFrom(char * module,char* title)
 	fSDigitsBranch = title ;
 	break ;
       case 16:   //"AliPHOSDigitizer"
-	fDigitizer->SetDigitsBranch(title) ;
-	fClusterizer->SetDigitsBranch(title) ;
+	fDigitizer->SetName(title) ;
+	fClusterizer->SetName(title) ;
 	fDigitsBranch = title ;
 	break ;
       case 18:   //"AliPHOSClusterizer"

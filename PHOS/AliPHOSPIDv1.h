@@ -33,47 +33,36 @@ public:
   virtual ~AliPHOSPIDv1() ; // dtor
 
   virtual void Exec(Option_t * option);
-  virtual char * GetRecParticlesBranch()const {return (char*) fRecparticlesTitle.Data() ;}      
-  virtual char * GetTrackSegmentsBranch()const{return (char*) fTSTitle.Data(); }
+  virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      
+  virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
 
   virtual void Init() ;
-
   virtual void PlotDispersionCuts()const ;
-
   virtual void Print(Option_t * option)const ; 
-  
-  virtual Bool_t ReadTrackSegments() ;
-
   virtual void SetIdentificationMethod(char * option = "CPV DISP" ){fIDOptions = option ;} 
-
-  virtual void SetShowerProfileCut(char * formula = 
-				   "0.35*0.35 - (x-1.386)*(x-1.386) - 1.707*1.707*(y-1.008)*(y-1.008)") ;
-
+  virtual void SetShowerProfileCut(char * formula = "0.35*0.35 - (x-1.386)*(x-1.386) - 1.707*1.707*(y-1.008)*(y-1.008)") ;
   virtual void SetDispersionCut(Float_t cut){fDispersion = cut ; } 
   virtual void SetCpvtoEmcDistanceCut(Float_t cut ) {fCpvEmcDistance = cut ;}
-  virtual void SetTrackSegmentsBranch(const char* title) { fTSTitle = title;}
-  virtual void SetRecParticlesBranch (const char* title) { fRecparticlesTitle = title;} 
-
-  virtual void WriteRecParticles() ; 
+  virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
+  virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
+  virtual const char * Version() const { return "pid-v1" ; }  
                      
-
  private:
-  void     MakeRecParticles(void ) ;
-  Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; 
-                                     // Relative Distance PPSD-EMC
-  TVector3 GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, AliPHOSRecPoint * ppsd)const ;
 
+  void     MakeRecParticles(void ) ;
+  Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; // Relative Distance PPSD-EMC
+  TVector3 GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, AliPHOSRecPoint * ppsd)const ;
   void     PrintRecParticles(Option_t * option) ;
+  virtual Bool_t ReadTrackSegments(Int_t event) ;
+  virtual void WriteRecParticles(Int_t event) ; 
 
  private:
 
   TString                fHeaderFileName ;    // file name with event header
-  TString                fTSTitle;            // branch name with track segments
+  TString                fTrackSegmentsTitle; // branch name with track segments
   TString                fRecPointsTitle ;    // branch name with rec points
-  TString                fRecparticlesTitle ; // branch name with rec particles
-
+  TString                fRecParticlesTitle ; // branch name with rec particles
   TString                fIDOptions ;         // PID option
-
   Int_t                  fNEvent ;            // current event number
   TObjArray            * fEmcRecPoints ;      // ! initial EMC RecPoints
   TObjArray            * fCpvRecPoints ;      // ! initial CPV RecPoints
@@ -83,13 +72,9 @@ public:
   AliPHOSClusterizer   * fClusterizer ;       // !
   AliPHOSTrackSegmentMaker * fTSMaker ;       // !
 
-  AliPHOSGeometry      * fGeom ;              // !pointer to PHOS geometry  
   TFormula             * fFormula ;           // formula to define cut on the shouer elips axis
   Float_t                fDispersion ;        // dispersion cut
   Float_t                fCpvEmcDistance ;    // Max EMC-CPV distance
-
-  Bool_t                 fIsInitialized ;     // kTRUE is inifialized
-
 
   ClassDef( AliPHOSPIDv1,1)  // Particle identifier implementation version 1
 

@@ -41,6 +41,7 @@ ClassImp(AliPHOSQAAlarm)
  fCable   = checked ; 
  fCer     = checker ; 
  fMessage = message ; 
+ fEvent   = gAlice->GetEvNumber() ;
 }
 
 //____________________________________________________________________________ 
@@ -54,5 +55,5 @@ ClassImp(AliPHOSQAAlarm)
 {
   // print the message 
 
-  cout << fMessage << endl;  
+  cout << "Event# " << fEvent << " " << fMessage << endl;  
 }

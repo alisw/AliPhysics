@@ -39,8 +39,7 @@ ClassImp(AliPHOSQAObjectCheckable)
 //____________________________________________________________________________ 
   AliPHOSQAObjectCheckable::AliPHOSQAObjectCheckable(const char * name) : AliPHOSQAVirtualCheckable(name) 
 {
-  fType = new char[1] ; 
-  strcpy(fType,"O") ; 
+  fType   = "O" ; 
   fObject = 0 ; 
 }
 

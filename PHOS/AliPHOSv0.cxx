@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
+
 
 //_________________________________________________________________________
 // Implementation version v0 of PHOS Manager class 
@@ -33,6 +33,7 @@
 #include "TGeometry.h"
 #include "TFolder.h"
 #include "TROOT.h"
+#include "TTree.h"
 
 
 // --- Standard library ---
@@ -49,6 +50,7 @@
 #include "AliConst.h"
 #include "AliMC.h"
 #include "AliPHOSGeometry.h"
+#include "AliPHOSGetter.h"
 
 ClassImp(AliPHOSv0)
 
@@ -62,10 +64,8 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   //        MIXT = 4 modules (EMC + CPV) and 1 module (EMC + PPSD)
  
   // create the geometry parameters object  
-  // it will posted to a folder
-
-  if (strcmp(GetTitle(),"") != 0 ) 
-    fGeom = AliPHOSGeometry::GetInstance(GetTitle(), "") ; 
+  // and post it to a folder (Post retrieves the correct geometry)
+  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0)->Post(gDirectory->GetName(), "G") ; 
 
 }
 
@@ -443,32 +443,42 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
 	  // inside bottom micromegas
 	  micro2node->cd() ; 
 	  //      a. top lid
+
 	  y = ( geom->GetMicromegas2Thickness() - geom->GetLidThickness() ) / 2. ; 
 	  sprintf(nodename, "%s%d%d%d", "Lidb", i, iphi, iz) ;
+
 	  TNode * toplidbnode = new TNode(nodename, nodename, "TopLid", 0, y, 0) ;
 	  toplidbnode->SetLineColor(kColorPPSD) ;  
 	  fNodes->Add(toplidbnode) ; 
 	  //      b. composite panel
+
 	  y = y - geom->GetLidThickness() / 2. - geom->GetCompositeThickness() / 2. ; 
 	  sprintf(nodename, "%s%d%d%d", "CompUb", i, iphi, iz) ;
+
 	  TNode * compupbnode = new TNode(nodename, nodename, "TopPanel", 0, y, 0) ;
 	  compupbnode->SetLineColor(kColorPPSD) ;  
 	  fNodes->Add(compupbnode) ; 
 	  //      c. anode
+
 	  y = y - geom->GetCompositeThickness() / 2. - geom->GetAnodeThickness()  / 2. ; 
 	  sprintf(nodename, "%s%d%d%d", "Anob", i, iphi, iz) ;
+
 	  TNode * anodebnode = new TNode(nodename, nodename, "Anode", 0, y, 0) ;
 	  anodebnode->SetLineColor(kColorPPSD) ;  
 	  fNodes->Add(anodebnode) ; 
 	  //      d. conversion gas
+
 	  y = y - geom->GetAnodeThickness() / 2. - ( geom->GetConversionGap() +  geom->GetAvalancheGap() )  / 2. ; 
 	  sprintf(nodename, "%s%d%d%d", "GGapb", i, iphi, iz) ;
+
 	  TNode * ggapbnode = new TNode(nodename, nodename, "GasGap", 0, y, 0) ;
 	  ggapbnode->SetLineColor(kColorGas) ;  
 	  fNodes->Add(ggapbnode) ;           
 	  //      f. cathode
+
 	  y = y - ( geom->GetConversionGap() + geom->GetAvalancheGap() ) / 2. - geom->GetCathodeThickness()  / 2. ; 
 	  sprintf(nodename, "%s%d%d%d", "Cathodeb", i, iphi, iz) ;
+
 	  TNode * cathodebnode = new TNode(nodename, nodename, "Cathode", 0, y, 0) ;
 	  cathodebnode->SetLineColor(kColorPPSD) ;  
 	  fNodes->Add(cathodebnode) ;        
@@ -1517,4 +1527,5 @@ void AliPHOSv0::Init(void)
     printf("\n");
   }  
 }
+
 

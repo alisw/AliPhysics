@@ -32,7 +32,7 @@ class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
 public:
   
   AliPHOSClusterizerv1() ;             // ctor            
-  AliPHOSClusterizerv1(const char * headerFile,const char *digitsBrancheTitle=0);
+  AliPHOSClusterizerv1(const char * headerFile, const char * name = 0);
   virtual ~AliPHOSClusterizerv1(){}    // dtor
   
   Int_t           AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
@@ -61,18 +61,18 @@ public:
   virtual void SetCpvLocalMaxCut(Float_t cut)            { fCpvLocMaxCut = cut ; }
   virtual void SetCpvLogWeight(Float_t w)                { fW0CPV = w ; }
   virtual void SetPpsdClusteringThreshold(Float_t cluth) { fPpsdClusteringThreshold = cluth ; }
-
   virtual void SetDigitsBranch(const char * title) { fDigitsBranchTitle = title  ;}
   virtual void SetRecPointsBranch(const char *title){fRecPointsBranchTitle = title; }
-
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE ) {fToUnfold = toUnfold ;}  
-
-  static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
-                                            // Chi^2 of the fit. Should be static to be passes to MINUIT
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
+  static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
+                                            // Chi^2 of the fit. Should be static to be passes to MINUIT
+  virtual const char * Version() const { return "clu-v1" ; }  
 
+  
 private:
+
   virtual Float_t Calibrate(Int_t amp)const {  return (amp-fPedestal)/fSlope ;}  // Tranforms Amp to energy 
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, int * MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
@@ -84,10 +84,10 @@ private:
 
   virtual void   MakeClusters( ) ;            
   virtual void   MakeUnfolding() ;
-  Bool_t         ReadDigits() ;
+  Bool_t         ReadDigits(Int_t event) ;
   void           UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,Int_t Nmax, 
 		       int * maxAt,Float_t * maxAtEnergy ) ; //Unfolds cluster using TMinuit package
-  void           WriteRecPoints() ;
+  void           WriteRecPoints(Int_t event) ;
   void           PrintRecPoints(Option_t * option) ;
 
 private:
@@ -96,21 +96,12 @@ private:
   TString fDigitsBranchTitle ;       // name of the file, where digits branch is stored
   TString fRecPointsBranchTitle ;    // name of the file, where RecPoints branchs are stored
 
-  Int_t   fEvent ;                   // Number of event currently processed 
   Bool_t  fToUnfold ;                // To perform unfolding 
 
-  Bool_t  fIsInitialized ;           // kTRUE if clisterizer is initialized
-
-  AliPHOSGeometry * fGeom ;          // !pointer to PHOS geometry
-
-  AliPHOSDigitizer * fDigitizer ;    // !digitizer which produced Digits we treat
 
   Int_t   fNumberOfEmcClusters ;     // number of EMC clusters found 
   Int_t   fNumberOfCpvClusters ;     // number of CPV+PPSD clusters found
-  TClonesArray * fDigits ;           // ! Initial list of digits
-  TObjArray    * fEmcRecPoints ;     // ! Final list of EMC Rec Points
-  TObjArray    * fCpvRecPoints ;     // ! Final list of CPV/PPSD recPoints
-
+ 
   Float_t fPedestal ;                // Calibration parameters 
   Float_t fSlope ;                   // read from Digitizer
 

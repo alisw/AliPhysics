@@ -7,7 +7,7 @@
 
 //_________________________________________________________________________
 // An alarm object that is instanciated by a AliPHOSQACheckable in response to
-// a AliPHOSQAChecker
+// a AliPHOSQAAlarm
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
 
@@ -23,6 +23,7 @@
 
 // --- AliRoot header files ---
 
+#include "AliRun.h"
 
 class AliPHOSQAAlarm : public TObject {
 
@@ -35,11 +36,11 @@ public:
 
  private:
 
-  
-  TString fTime ;    // time when the alarm was raised 
   TString fCable ;   // checkable name that raised the alarm
   TString fCer ;     // checker name that raised the alarm    
+  Int_t fEvent ;     // event number where alarms occured 
   TString fMessage ; // the whole error message 
+  TString fTime ;    // time when the alarm was raised 
 
   ClassDef(AliPHOSQAAlarm,1)  // description 
 

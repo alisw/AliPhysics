@@ -22,6 +22,7 @@
 
 #include "AliPHOSDigit.h"
 #include "AliPHOSEmcRecPoint.h"
+#include "AliPHOSGeometry.h"
 
 class AliPHOSCpvRecPoint : public AliPHOSEmcRecPoint  {
 
