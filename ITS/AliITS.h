@@ -15,6 +15,7 @@
 
 class TString;
 class TTree;
+class TFile;
 
 class AliITSDetType;
 class AliITSsimulation;
@@ -27,7 +28,7 @@ class AliITSdigit;
 class AliITSRecPoint;
 class AliITSRawCluster;
 class AliITSmodule;
-
+class AliITStrack;
 
 
 
@@ -132,6 +133,13 @@ class AliITS : public AliDetector {
     // Return pointer to the tree of clusters
     TTree          *TreeC() {return fTreeC;}
 
+
+    // tracking
+
+    AliITStrack Tracking(AliITStrack &track, AliITStrack *reference, TObjArray *fpoints, Int_t **vettid,
+	 Bool_t flagvert );  
+
+    void DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, Bool_t flagvert);
 
  protected:
 

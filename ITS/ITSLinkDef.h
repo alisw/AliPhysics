@@ -83,6 +83,10 @@
 #pragma link C++ class  AliITSdcsSSD+;
 #pragma link C++ class  AliITSclusterSSD+;
 #pragma link C++ class  AliITSpackageSSD+;
+// Classes used for Tracking
+#pragma link C++ class  AliITStrack+;
+#pragma link C++ class  AliITStracking+;
+#pragma link C++ class  AliITSiotrack+;
 // New used for Alignment studdies
 //#pragma link C++ class  AliITSAlignmentTrack-;
 //#pragma link C++ class  AliITSAlignmentModule-;
@@ -102,8 +106,6 @@
 //#pragma link C function GetStringDialog;
 //#pragma link C function GetIntegerDialog;
 //#pragma link C function GetFloatDialog;
-// New classes used for Tracking
-//#pragma link C++ class  AliITStrack+;
 // This class will always be for ITS only
 //#pragma link C++ class  AliITSvtest-;
 
