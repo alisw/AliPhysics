@@ -1,6 +1,6 @@
 enum gentype_t {hijing, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan, doublescan};
 
-gentype_t gentype=pythia;
+gentype_t gentype=param;
 //Int_t ntracks=2828*20;
 Int_t ntracks=200;
 void Config()
@@ -141,15 +141,7 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-4, cut,  cut,  cut, cut,  cut, 1
 //*******************************************************
 // Example for J/psi  Production from  Parameterisation *
 //*******************************************************
-     typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
-     AliGenParam *gener =
-	 new AliGenParam(ntracks,upsilon_p,
-			 AliGenMUONlib::GetPt(upsilon_p),
-			 AliGenMUONlib::GetY(upsilon_p),
-			 AliGenMUONlib::GetIp(upsilon_p));
-
-
-//     AliGenParam *gener = new AliGenParam(ntracks, jpsi_p);
+     AliGenParam *gener = new AliGenParam(ntracks,upsilon_p,);
      gener->SetMomentumRange(0,999);
      gener->SetPhiRange(0,360);
      gener->SetYRange(2.5,4);
