@@ -570,11 +570,10 @@ void TFluka::InitPhysics()
   printf("   last FLUKA material is %g\n", fLastMaterial);
  
 // construct file names
-  TString sAliceInp = getenv("ALICE_ROOT");
-  sAliceInp +="/TFluka/input/";
+  TString sAliceCoreInp = getenv("ALICE_ROOT");
+  sAliceCoreInp +="/TFluka/input/";
   TString sAliceTmp = "flukaMat.inp";
-  TString sAliceCoreInp = sAliceInp;
-  sAliceInp += GetInputFileName();
+  TString sAliceInp = GetInputFileName();
   sAliceCoreInp += GetCoreInputFileName();
   ifstream AliceCoreInp(sAliceCoreInp.Data());
   ifstream AliceFlukaMat(sAliceTmp.Data());
@@ -2185,8 +2184,10 @@ Double_t TFluka::TrackMass() const
 // PAPROP.am = particle mass in GeV
 // TRACKR.jtrack = identity number of the particle
   Int_t caller = GetCaller();
-  if (caller != 2)  // not eedraw 
+  if (caller != 2) {  // not eedraw 
+//    cout << "JTRACK=" << TRACKR.jtrack << " mass=" << PAPROP.am[TRACKR.jtrack+6] << endl;
     return PAPROP.am[TRACKR.jtrack+6];
+  }
   else
     return -1000.0;
 }
@@ -2535,8 +2536,8 @@ const char* TFluka::CurrentVolOffName(Int_t off) const
     return name;
 }
 
-Int_t TFluka::CurrentMaterial(Float_t &a, Float_t &z, 
-		      Float_t &dens, Float_t &radl, Float_t &absl) const
+Int_t TFluka::CurrentMaterial(Float_t & /*a*/, Float_t & /*z*/, 
+		      Float_t & /*dens*/, Float_t & /*radl*/, Float_t & /*absl*/) const
 {
 //
 //  Return the current medium number
