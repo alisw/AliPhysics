@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.8  2001/01/17 20:53:40  hristov
+Destructors corrected to avoid memory leaks
+
 Revision 1.7  2000/12/20 13:00:22  egangler
 
 Added charge correlation between cathods.
@@ -73,9 +76,7 @@ ClassImp(AliMUONChamber)
     AliMUONChamber::AliMUONChamber()
 {
 // Default constructor
-    fSegmentation = new TObjArray(2);
-    (*fSegmentation)[0] = 0;
-    (*fSegmentation)[1] = 0;    
+    fSegmentation = 0;
     fResponse=0;
     fnsec=1;
     fReconstruction=0;
