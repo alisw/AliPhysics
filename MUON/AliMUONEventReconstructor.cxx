@@ -992,7 +992,11 @@ void AliMUONEventReconstructor::ValidateTracksWithTrigger(void)
 {
   AliMUONTrack *track;
   TClonesArray *recTriggerTracks = fMUONData->RecTriggerTracks();
-  
+  if (recTriggerTracks == 0x0) {
+    fMUONData->SetTreeAddress("RL");
+    fMUONData->GetRecTriggerTracks();
+    recTriggerTracks = fMUONData->RecTriggerTracks();
+  } 
   track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
     track->MatchTriggerTrack(recTriggerTracks);
