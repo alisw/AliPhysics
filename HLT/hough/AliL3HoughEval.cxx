@@ -1,5 +1,5 @@
-//Author:        Anders Strand Vestbo
-//Last Modified: 28.6.01
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV 
 
 #include <math.h>
 #include <TH1.h>
@@ -18,6 +18,11 @@
 #include "AliL3Histogram1D.h"
 #include "AliL3Defs.h"
 
+//_____________________________________________________________
+// AliL3HoughEval
+//
+// Evaluation class for tracklets produced by the Hough transform.
+
 ClassImp(AliL3HoughEval)
 
 AliL3HoughEval::AliL3HoughEval()
@@ -28,7 +33,7 @@ AliL3HoughEval::AliL3HoughEval()
   fNumOfPadsToLook = 1;
   fNumOfRowsToMiss = 1;
   fEtaHistos=0;
-  
+  fRowPointers = 0;
 }
 
 
@@ -38,7 +43,11 @@ AliL3HoughEval::~AliL3HoughEval()
   if(fTransform)
     delete fTransform;
   if(fRowPointers)
-    delete [] fRowPointers;
+    {
+      for(Int_t i=0; i<fNrows; i++)
+	fRowPointers[i] = 0;
+      delete [] fRowPointers;
+    }
 }
 
 void AliL3HoughEval::InitTransformer(AliL3HoughTransformer *transformer)
@@ -57,7 +66,8 @@ void AliL3HoughEval::GenerateLUT()
 {
   //Generate a Look-up table, to limit the access to raw data
   
-  fRowPointers = new AliL3DigitRowData*[fNrows];
+  if(!fRowPointers)
+    fRowPointers = new AliL3DigitRowData*[fNrows];
 
   AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fHoughTransformer->GetDataPointer();
   if(!tempPt)
@@ -90,7 +100,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
       
       if(!track->GetCrossingPoint(padrow,xyz))  
 	{
-	  printf("AliL3HoughEval::LookInsideRoad : Track does not cross line!!\n");
+	  printf("AliL3HoughEval::LookInsideRoad : Track does not cross line!!; pt %f phi0 %f\n",track->GetPt(),track->GetPhi0());
 	  continue;
 	}
       
@@ -112,7 +122,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 	  AliL3DigitData *digPt = tempPt->fDigitData;
 	  for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	    {
-	      if(digPt->fCharge <= fHoughTransformer->GetThreshold()) continue;
+	      //if(digPt->fCharge <= fHoughTransformer->GetThreshold()) continue;
 	      UChar_t pad = digPt[j].fPad;
 	      if(pad < p) continue;
 	      if(pad > p) break;
@@ -142,6 +152,8 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
       track->SetEtaIndex(eta_index);
       track->SetWeight(total_charge,kTRUE);
       track->SetEta(eta_track);
+      track->SetRowRange(NRows[fPatch][0],NRows[fPatch][1]);
+      track->SetSlice(fSlice);
       if(fRemoveFoundTracks)
 	LookInsideRoad(track,eta_index,kTRUE);
       return kTRUE;
@@ -286,7 +298,7 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
   
 }
 
-void AliL3HoughEval::CompareMC(AliL3TrackArray *tracks,Char_t *trackfile)
+void AliL3HoughEval::CompareMC(AliL3TrackArray *tracks,Char_t *trackfile,Int_t threshold)
 {
   
   struct GoodTrack goodtracks[15000];
@@ -339,7 +351,7 @@ void AliL3HoughEval::CompareMC(AliL3TrackArray *tracks,Char_t *trackfile)
     {
       AliL3HoughTrack *tr = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
       if(!tr) continue;
-      //if(tr->GetWeight()<14000) continue;
+      if(tr->GetWeight()<threshold) continue;
       Int_t trackindex = tr->GetEtaIndex();
       if(trackindex <0 || trackindex >= fNEtaSegments) continue;
       ftracks[trackindex]++;

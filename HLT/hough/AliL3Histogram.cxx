@@ -1,10 +1,13 @@
-//Author:        Anders Strand Vestbo
-//Last Modified: 28.6.01
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV
 
 #include "AliL3Logging.h"
 #include "AliL3Histogram.h"
 
-//2D histogram class.
+//_____________________________________________________________
+// AliL3Histogram
+//
+// 2D histogram class
 
 ClassImp(AliL3Histogram)
 

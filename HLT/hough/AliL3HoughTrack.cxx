@@ -1,3 +1,7 @@
+//$Id$
+
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV 
 
 #include <math.h>
 
@@ -5,6 +9,11 @@
 #include "AliL3Transform.h"
 #include "AliL3Defs.h"
 #include "AliL3HoughTrack.h"
+
+//_____________________________________________________________
+// AliL3HoughTrack
+//
+// Track class for Hough tracklets
 
 ClassImp(AliL3HoughTrack)
 
@@ -44,6 +53,7 @@ void AliL3HoughTrack::Set(AliL3Track *track)
   SetLastPoint(tpt->GetLastPointX(),tpt->GetLastPointY(),tpt->GetLastPointZ());
   SetCharge(tpt->GetCharge());
   SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
+  SetSlice(tpt->GetSlice());
   return;
 
   fWeight = tpt->GetWeight();
@@ -66,7 +76,8 @@ Int_t AliL3HoughTrack::Compare(const AliL3Track *tpt) const
 
 void AliL3HoughTrack::SetEta(Double_t f)
 {
-  
+  //Set eta, and calculate fTanl, which is the tan of dipangle
+
   fEta = f;
   Double_t theta = 2*atan(exp(-1.*fEta));
   Double_t dipangle = Pi/2 - theta;
@@ -97,17 +108,20 @@ void AliL3HoughTrack::UpdateToFirstRow()
   Double_t radius = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 
   //Get the track parameters
+  
+  /*
+    Double_t x0    = GetR0() * cos(GetPhi0()) ;
+    Double_t y0    = GetR0() * sin(GetPhi0()) ;
+  */
+  Double_t rc    = GetRadius();//fabs(GetPt()) / ( BFACT * BField )  ;
   Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / fabs(GetCharge()) ;
-  Double_t x0    = GetR0() * cos(GetPhi0()) ;
-  Double_t y0    = GetR0() * sin(GetPhi0()) ;
-  Double_t rc    = fabs(GetPt()) / ( BFACT * bField )  ;
-  Double_t xc    = x0 - rc * cos(tPhi0) ;
-  Double_t yc    = y0 - rc * sin(tPhi0) ;
+  Double_t xc    = GetCenterX();//x0 - rc * cos(tPhi0) ;
+  Double_t yc    = GetCenterY();//y0 - rc * sin(tPhi0) ;
   
   //Check helix and cylinder intersect
   Double_t fac1 = xc*xc + yc*yc ;
   Double_t sfac = sqrt( fac1 ) ;
-    
+  
   if ( fabs(sfac-rc) > radius || fabs(sfac+rc) < radius ) {
     LOG(AliL3Log::kError,"AliL3HoughTrack::UpdateToFirstRow","Tracks")<<AliL3Log::kDec<<
       "Track does not intersect"<<ENDLOG;
@@ -161,7 +175,7 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weigh
   fMinDist = 100000;
   SetKappa(kappa);
   SetPhi0(phi);
-  Double_t pt = fabs(BFACT*bField/kappa);
+  Double_t pt = fabs(BFACT*BField/kappa);
   SetPt(pt);
   Double_t radius = 1/fabs(kappa);
   SetRadius(radius);

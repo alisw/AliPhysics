@@ -1,10 +1,13 @@
-//Author:        Anders Strand Vestbo
-//Last Modified: 28.6.01
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV
 
 #include "AliL3Logging.h"
 #include "AliL3Histogram1D.h"
 
-//2D histogram class.
+//_____________________________________________________________
+// AliL3Histogram1D
+//
+// 1D histogram class.
 
 ClassImp(AliL3Histogram1D)
 
@@ -74,6 +77,21 @@ Int_t AliL3Histogram1D::FindBin(Double_t x)
   
   return 1 + (Int_t)(fNbins*(x-fXmin)/(fXmax-fXmin));
 
+}
+
+Int_t AliL3Histogram1D::GetMaximumBin()
+{
+  Double_t max_value=0;
+  Int_t max_bin=0;
+  for(Int_t i=0; i<fNcells; i++)
+    {
+      if(fContent[i] > max_value)
+	{
+	  max_value=fContent[i];
+	  max_bin = i;
+	}
+    }
+  return max_bin;
 }
 
 Double_t AliL3Histogram1D::GetBinContent(Int_t bin)

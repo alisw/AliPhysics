@@ -40,7 +40,7 @@ class AliL3HoughEval : public TObject {
   void GenerateLUT();
   void DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist);
   Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Bool_t remove=kFALSE);
-  void CompareMC(AliL3TrackArray *tracks,Char_t *goodtracks="good_tracks");
+  void CompareMC(AliL3TrackArray *tracks,Char_t *goodtracks="good_tracks",Int_t treshold=0);
   void FindEta(AliL3TrackArray *tracks);
   
   //Getters
@@ -51,7 +51,7 @@ class AliL3HoughEval : public TObject {
   void SetNumOfRowsToMiss(Int_t i) {fNumOfRowsToMiss = i;}
   void SetNumOfPadsToLook(Int_t i) {fNumOfPadsToLook = i;}
 
-  ClassDef(AliL3HoughEval,1)
+  ClassDef(AliL3HoughEval,1) //Hough transform verfication class
 
 };
 

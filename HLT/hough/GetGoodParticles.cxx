@@ -5,10 +5,10 @@
 #endif
 
 
-void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitfile)
+void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitfile,Int_t event)
 {
 
-  Int_t good_number = 70;
+  Int_t good_number = 10; //Minimum number of points on a good track
   
   struct GoodTrack goodtracks[15000];
   Int_t nt=0;
@@ -28,7 +28,7 @@ void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitf
       return;
     }
   gAlice = (AliRun*)evfile->Get("gAlice");
-  gAlice->GetEvent(0);
+  gAlice->GetEvent(event);
 
   AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");
   AliTPCParam *param = (AliTPCParam*)evfile->Get("75x40_100x60");
@@ -52,7 +52,9 @@ void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitf
   AliL3Transform *transform = new AliL3Transform();
 
   TFile *digfile = TFile::Open(digitfile);
-  TTree *tree = (TTree*)digfile->Get("TreeD_75x40_100x60_0");
+  Char_t dname[100];
+  sprintf(dname,"TreeD_75x40_100x60_%d",event);
+  TTree *tree=(TTree*)digfile->Get(dname);
   AliSimDigits da, *digits=&da;
   tree->GetBranch("Segment")->SetAddress(&digits);
   
@@ -79,7 +81,7 @@ void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitf
 	if (idx0>=0 && dig>=zero) count[idx0]+=1;
 	if (idx1>=0 && dig>=zero) count[idx1]+=1;
 	if (idx2>=0 && dig>=zero) count[idx2]+=1;
-	  } while (digits->Next());
+      } while (digits->Next());
       
       for (Int_t j=0; j<np; j++) 
 	{
@@ -97,7 +99,7 @@ void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitf
   
   TTree *TH=gAlice->TreeH();
   Int_t npart=(Int_t)TH->GetEntries();
-    
+  cout<<"Found "<<npart<<" particles in this event"<<endl;
 
 
   while (npart--) {
@@ -120,13 +122,12 @@ void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitf
     if (hit1->fQ != 0.) continue;
     Int_t i=hit->Track();
     TParticle *p = (TParticle*)gAlice->Particle(i);
-    
+
     if (p->GetFirstMother()>=0) continue;  //secondary particle
     if (good[i] < good_number) continue;
     if (p->Pt() < 0.1) continue;
     if (TMath::Abs(p->Pz()/p->Pt())>0.999) continue;
-    printf("checking paricle %d with %d hits \n",i,good[i]);
-    
+    cout<<"Checking particle with "<<good[i]<<" hits, and pt: "<<p->Pt()<<endl;
     goodtracks[nt].eta = p->Eta();
     goodtracks[nt].label=i;
     goodtracks[nt].code=p->GetPdgCode();
@@ -137,7 +138,7 @@ void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitf
     
     if (hit0) delete hit0;
   }
-  
+  cout<<"Found "<<nt<<" good tracks in this event"<<endl;
   ofstream out(fname);
   if(out) 
     {

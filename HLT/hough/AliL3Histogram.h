@@ -69,7 +69,7 @@ class AliL3Histogram {
   Int_t GetNEntries() {return fEntries;}
   
   
-  ClassDef(AliL3Histogram,1)
+  ClassDef(AliL3Histogram,1) //2D histogram class
     
 };
 

@@ -32,6 +32,7 @@ class AliL3Histogram1D {
   void Reset();
   void Fill(Double_t x,Int_t weight=1);
   void AddBinContent(Int_t bin,Int_t weight);
+  Int_t GetMaximumBin();
   Int_t FindBin(Double_t x);
   Double_t GetBinContent(Int_t bin);
   Double_t GetBinCenter(Int_t bin);
@@ -46,7 +47,7 @@ class AliL3Histogram1D {
   TH1F *GetRootHisto() {return fRootHisto;}
 #endif
   
-  ClassDef(AliL3Histogram1D,1)
+  ClassDef(AliL3Histogram1D,1) //1D histogram class
     
 };
 

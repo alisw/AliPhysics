@@ -1,5 +1,5 @@
-//Author:        Anders Strand Vestbo
-//Last Modified: 14.09.01
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV 
 
 #include "AliL3MemHandler.h"
 #include "AliL3Logging.h"
@@ -8,6 +8,11 @@
 #include "AliL3Transform.h"
 #include "AliL3DigitData.h"
 #include "AliL3Histogram.h"
+
+//_____________________________________________________________
+// AliL3HoughTransformer
+//
+// Hough transformation class
 
 ClassImp(AliL3HoughTransformer)
 
@@ -156,6 +161,95 @@ void AliL3HoughTransformer::TransformCircle()
 	}
       AliL3MemHandler::UpdateRowPointer(tempPt);
     }
+}
+
+void AliL3HoughTransformer::TransformCircleC()
+{
+  //Circle transform, using combinations of every 2 points lying
+  //on different padrows and within the same etaslice.
+  
+
+  Int_t nrows = NRows[fPatch][1] - NRows[fPatch][0] + 1;
+  AliL3DigitRowData **rowPt = new AliL3DigitRowData*[nrows];
+  
+  AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fDigitRowData;
+  if(!tempPt)
+    printf("\nAliL3HoughTransformer::TransformCircleC() : Zero data pointer\n");
+  
+  Int_t prow;
+  for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
+    {
+      prow = i - NRows[fPatch][0];
+      rowPt[prow] = tempPt;
+      AliL3MemHandler::UpdateRowPointer(tempPt);
+    }
+  Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
+
+  AliL3DigitData *digPt;
+  Double_t r1,r2,phi1,phi2,eta,kappa,phi_0;
+  UShort_t charge1,charge2,time;
+  UChar_t pad;
+  Float_t xyz[3];
+  Int_t sector,row,eta_index1,eta_index2,tot_charge;
+  for(Int_t i=NRows[fPatch][0]; i<NRows[fPatch][1]; i++)
+    {
+      prow = i - NRows[fPatch][0];
+      digPt = rowPt[prow]->fDigitData;
+      for(UInt_t di=0; di<rowPt[prow]->fNDigit; di++)
+	{
+	  charge1 = digPt[di].fCharge;
+	  pad = digPt[di].fPad;
+	  time = digPt[di].fTime;
+	  if(charge1 <= fThreshold)
+	    continue;
+	  fTransform->Slice2Sector(fSlice,i,sector,row);
+	  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
+	  eta = fTransform->GetEta(xyz);
+	  eta_index1 = (Int_t)((eta-fEtaMin)/etaslice);
+	  if(eta_index1 < 0 || eta_index1 >= fNEtaSegments)
+	    continue;
+	  r1 = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+	  phi1 = atan2(xyz[1],xyz[0]);
+	  
+	  //Get the correct histogrampointer:
+	  AliL3Histogram *hist = fParamSpace[eta_index1];
+	  if(!hist)
+	    {
+	      printf("AliL3HoughTransformer::TransformCircleC() : No histogram at index %d\n",eta_index1);
+	      continue;
+	    }
+
+	  for(Int_t j=i+1; j<NRows[fPatch][1]; j++)
+	    {
+	      prow = j - NRows[fPatch][0];
+	      digPt = rowPt[prow]->fDigitData;
+	      for(UInt_t ni=0; ni<rowPt[prow]->fNDigit; ni++)
+		{
+		  charge2 = digPt[ni].fCharge;
+		  pad = digPt[ni].fPad;
+		  time = digPt[ni].fTime;
+		  if(charge2 <= fThreshold)
+		    continue;
+		  fTransform->Slice2Sector(fSlice,j,sector,row);
+		  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
+		  eta = fTransform->GetEta(xyz);
+		  eta_index2 = (Int_t)((eta-fEtaMin)/etaslice);
+		  if(eta_index2 != eta_index1)
+		    continue;
+		  r2 = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+		  phi2 = atan2(xyz[1],xyz[0]);
+		  
+		  phi_0 = atan( (r2*sin(phi1)-r1*sin(phi2))/(r2*cos(phi1)-r1*cos(phi2)) );
+		  kappa = 2*sin(phi2-phi_0)/r2;
+		  tot_charge = charge1+charge2;
+		  //printf("Filling kappa %f phi %f charge %d\n",kappa,phi_0,tot_charge);
+		  hist->Fill(kappa,phi_0,tot_charge);
+		}
+	    }
+	}
+    }
+
+  delete [] rowPt;
 }
 
 void AliL3HoughTransformer::TransformLine()

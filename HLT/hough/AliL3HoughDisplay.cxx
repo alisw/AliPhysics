@@ -1,6 +1,7 @@
-//Author:        Anders Strand Vestbo
-//Last Modified: 12.01.2001
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV 
 
+#include <iostream.h>
 #include <TCanvas.h>
 #include <TView.h>
 #include <TPolyMarker3D.h>
@@ -13,19 +14,24 @@
 #include "AliL3Transform.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3TrackArray.h"
-#include "AliL3Logging.h"
 #include "AliL3HoughDisplay.h"
 #include "AliL3Defs.h"
+#include "AliL3MemHandler.h"
+
+//_____________________________________________________________
+// Display class for Hough transform code
 
 ClassImp(AliL3HoughDisplay)
 
 
 AliL3HoughDisplay::AliL3HoughDisplay()
 {
-  //Ctor. Specify which slices you want to look at.
 
   fTracks = 0;
-
+  fDigitRowData = 0;
+  fNDigitRowData = 0;
+  fShowSlice = -1;
+  fPatch = -1;
   Init();
 }
 
@@ -39,8 +45,7 @@ void AliL3HoughDisplay::Init()
 {
   TFile *file = TFile::Open("/prog/alice/data/GEO/alice.geom");
   if(!file->IsOpen())
-    LOG(AliL3Log::kError,"AliL3HoughDisplay::AliL3HoughDisplay","File Open")
-      <<"Geometry file alice.geom does not exist"<<ENDLOG;
+    cerr<<"AliL3HoughDisplay::AliL3HoughDisplay : Geometry file alice.geom does not exist"<<endl;
   fGeom = (TGeometry*)file->Get("AliceGeom");
   file->Close();
   fTransform = new AliL3Transform();
@@ -67,7 +72,47 @@ void AliL3HoughDisplay::GenerateHits(AliL3HoughTrack *track,Float_t *x,Float_t *
     }
 }
 
-void AliL3HoughDisplay::DisplayTracks()
+TPolyMarker3D *AliL3HoughDisplay::LoadDigits()
+{
+  
+  AliL3DigitRowData *tempPt = fDigitRowData;
+  if(!tempPt)
+    {
+      cerr<<"AliL3HoughDisplay::LoadDigits : No data"<<endl;
+      return 0;
+    }
+  
+  Int_t nrows = NRows[fPatch][1] - NRows[fPatch][0] + 1;
+  Int_t count=0;
+  for(UInt_t i=0; i<nrows; i++)
+    {
+      count += tempPt->fNDigit;
+      AliL3MemHandler::UpdateRowPointer(tempPt);
+    }
+  tempPt = fDigitRowData;
+  TPolyMarker3D *pm = new TPolyMarker3D(count);
+  Float_t xyz[3];
+  Int_t sector,row;
+  count=0;
+  for(UInt_t i=0; i<nrows; i++)
+    {
+      AliL3DigitData *digPt = tempPt->fDigitData;
+      Int_t padrow = (Int_t)tempPt->fRow;
+      for(UInt_t j=0; j<tempPt->fNDigit; j++)
+	{
+	  fTransform->Slice2Sector(fShowSlice,padrow,sector,row);
+	  fTransform->Raw2Global(xyz,sector,row,(Int_t)digPt->fPad,(Int_t)digPt->fTime);
+	  pm->SetPoint(count,xyz[0],xyz[1],xyz[2]);
+	  count++;
+	}
+      AliL3MemHandler::UpdateRowPointer(tempPt);
+    }
+
+  cout<<"Displaying "<<count<<" digits"<<endl;
+  return pm;
+}
+
+void AliL3HoughDisplay::DisplayEvent()
 {
   //Display the found tracks.
   
@@ -82,7 +127,7 @@ void AliL3HoughDisplay::DisplayTracks()
   
   TView *v = new TView(1);
   v->SetRange(-430,-560,-430,430,560,1710);
-  
+
   c1->Clear();
   c1->SetFillColor(1);
   c1->SetTheta(90.);
@@ -102,13 +147,20 @@ void AliL3HoughDisplay::DisplayTracks()
       for(Int_t h=0; h<n; h++)
 	pm->SetPoint(h,x[h],y[h],z[h]);
       
-      pm->SetMarkerColor(2);
+      pm->SetMarkerColor(1);
       pm->Draw();
       TPolyLine3D *current_line = &(line[j]);
       current_line = new TPolyLine3D(n,x,y,z,"");
       current_line->SetLineColor(1);
       current_line->Draw("same");
       
+    }
+  
+  if(fShowSlice>=0)
+    {
+      TPolyMarker3D *pm = LoadDigits();
+      pm->SetMarkerColor(2);
+      pm->Draw("same");
     }
   
   fGeom->Draw("same");

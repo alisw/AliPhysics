@@ -34,10 +34,10 @@ class AliL3HoughMaxFinder : public TObject {
   AliL3TrackArray *FindMaxima(AliL3Histogram *hist,Int_t *rowrange=0,Int_t ref_row=0);
   AliL3TrackArray *LookForPeaks(AliL3Histogram *hist,Int_t nbins);
   
-  AliL3HoughTrack *FindPeak(Int_t t1,Double_t t2,Int_t t3);
+  void FindPeak(Int_t t1,Double_t t2,Int_t t3,Float_t &kappa,Float_t &phi0);
   AliL3HoughTrack *FindPeakLine(Double_t rho,Double_t theta);
   AliL3HoughTrack *CalculatePeakInWindow(Int_t *maxbin,Int_t t0,Int_t t1,Double_t t2,Int_t t3);
-  void FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t &n);
+  void FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t *weight,Int_t &n,Int_t y_window=2,Int_t x_bin_sides=1);
   void SortPeaks(struct AxisWindow **a,Int_t first,Int_t last);
   Int_t PeakCompare(struct AxisWindow *a,struct AxisWindow *b);
   
@@ -45,7 +45,7 @@ class AliL3HoughMaxFinder : public TObject {
   
   void SetHistogram(AliL3Histogram *hist) {fCurrentHisto = hist;}
   
-  ClassDef(AliL3HoughMaxFinder,1)
+  ClassDef(AliL3HoughMaxFinder,1) //Maximum finder class
 
 };
 
