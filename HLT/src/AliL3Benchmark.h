@@ -26,7 +26,9 @@ public:
    void       Start(const char *name);
    void       Stop(const char *name);
    void       Analyze(const char* name);
-
+   
+   static Double_t GetCpuTime();
+   
    ClassDef(AliL3Benchmark,0)  //L3 benchmark
 };
 

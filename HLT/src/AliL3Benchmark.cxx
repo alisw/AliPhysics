@@ -1,3 +1,5 @@
+
+#include <time.h>
 #include <TFile.h>
 #include "TGraphAsymmErrors.h"
 #include "TString.h"
@@ -152,4 +154,7 @@ void AliL3Benchmark::Analyze(const char* name){
   delete[] eyh;
 }
 
-
+Double_t AliL3Benchmark::GetCpuTime()
+{
+  {return (Double_t)(clock()) / CLOCKS_PER_SEC;}
+}
