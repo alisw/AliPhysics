@@ -17,6 +17,7 @@
 
 #include <TNamed.h>
 
+class TString;
 
 class AliMUONSegmentManuIndex : public TNamed {
  public:
@@ -31,8 +32,10 @@ class AliMUONSegmentManuIndex : public TNamed {
   Int_t GetManuId()        const{return fManuId;}
   Int_t GetBusPatchId()    const{return fBusPatchId;}
   Int_t GetManuChannelId() const{return fManuChannelId;}
+
+  static TString Name(Int_t manuId, Int_t manuchannel);
   
-  void Print() const;
+  void   Print() const;
 
  private:
   Int_t fChannelId; // Id of the channel within the detection element

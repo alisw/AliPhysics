@@ -39,7 +39,6 @@
 #include "AliMUONSegmentPosition.h"
 #include "AliMUONSegmentIndex.h"
 
-
 //___________________________________________
 ClassImp(AliMUONSegmentationDetectionElement)
 
@@ -56,11 +55,11 @@ const TString AliMUONSegmentationDetectionElement::fgkNonBendingExt = ".NonBendi
 
 AliMUONSegmentationDetectionElement::AliMUONSegmentationDetectionElement() : TObject()
 {
+  //Default constructor
   fMapManuIndexIndex= 0x0;
   fMapIndexManuIndex= 0x0;
   fMapIndexPosition= 0x0;
-  fXlocalSegmentPositions= 0x0;
-  fYlocalSegmentPositions= 0x0;
+  fMapPositionIndex=0X0;
 }
 
 
@@ -70,8 +69,6 @@ AliMUONSegmentationDetectionElement::AliMUONSegmentationDetectionElement() : TOb
 //   fMapManuIndexIndex= 0x0;
 //   fMapIndexManuIndex= 0x0;
 //   fMapIndexPosition= 0x0;
-//   fXlocalSegmentPositions= 0x0;
-//   fYlocalSegmentPositions= 0x0;
 // }
 
 //________________________________________________
@@ -83,16 +80,26 @@ AliMUONSegmentationDetectionElement::AliMUONSegmentationDetectionElement(const A
 }
 //_________________________________________________
 AliMUONSegmentationDetectionElement::~AliMUONSegmentationDetectionElement(){
+  //Class destructor
   fListOfIndexes->Delete();
   fListOfManuIndexes->Delete();
   fListOfPositions->Delete();
   fMapManuIndexIndex->Clear();
   fMapIndexManuIndex->Clear();
   fMapIndexPosition->Clear();
+  fMapPositionIndex->Clear();
+}
+
+//_________________________________________________
+AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::GetIndex(Int_t manu, Int_t channel) const
+{
+  // Getting AliMUONSegmentIndex from ManuIndex
+  return GetIndex( AliMUONSegmentManuIndex::Name(manu, channel).Data() ) ;
 }
 //_________________________________________________
-AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::GetIndex( const char * SegmentManuIndexName)
+AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::GetIndex( const char * SegmentManuIndexName) const
 {
+  // Getting AliMUONSegmentIndex from name of AliMUONSegmentManuIndex
   if (fMapManuIndexIndex) return  (AliMUONSegmentIndex*)  fMapManuIndexIndex->GetValue(SegmentManuIndexName);
   else {
     Warning("GetIndex","SegmentManuIndex %s out of DetectionElement Mapping %s",
@@ -100,10 +107,16 @@ AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::GetIndex( const char 
     return 0x0;
   }
 }
-
 //_________________________________________________
-AliMUONSegmentManuIndex * AliMUONSegmentationDetectionElement::GetManuIndex( const char * SegmentIndexName)
+AliMUONSegmentManuIndex * AliMUONSegmentationDetectionElement::GetManuIndex(Int_t padx, Int_t pady, Int_t cathode ) const
 {
+  // Getting ManuIndex from Index
+  return GetManuIndex( AliMUONSegmentIndex::Name(padx, pady, cathode).Data() ); 
+}
+//_________________________________________________
+AliMUONSegmentManuIndex * AliMUONSegmentationDetectionElement::GetManuIndex( const char * SegmentIndexName) const
+{
+  // Getting ManuIndex from manuname
   if (fMapIndexManuIndex) return (AliMUONSegmentManuIndex*) fMapIndexManuIndex->GetValue(SegmentIndexName);
   else {
     Warning("GetManuIndex","SegmentIndex %s out of Detection Element mapping %s",
@@ -111,10 +124,16 @@ AliMUONSegmentManuIndex * AliMUONSegmentationDetectionElement::GetManuIndex( con
     return 0x0;
   }
 }
-
 //_________________________________________________
-AliMUONSegmentPosition  * AliMUONSegmentationDetectionElement::GetPosition( const char * SegmentIndexName)
+AliMUONSegmentPosition  * AliMUONSegmentationDetectionElement::GetPosition(Int_t padx, Int_t pady, Int_t cathode ) const
 {
+  //Getting position from index
+  return GetPosition(  AliMUONSegmentIndex::Name(padx, pady, cathode).Data() ); 
+}
+//_________________________________________________
+AliMUONSegmentPosition  * AliMUONSegmentationDetectionElement::GetPosition( const char * SegmentIndexName) const
+{
+  // Getting position from indexname
   if (fMapIndexPosition) return (AliMUONSegmentPosition*) fMapIndexPosition->GetValue(SegmentIndexName);
   else {
     Warning("GetPosition","SegmentIndex %s out of DetectionElement mapping %s",
@@ -122,10 +141,28 @@ AliMUONSegmentPosition  * AliMUONSegmentationDetectionElement::GetPosition( cons
     return 0x0;
   }
 }
+//_________________________________________________
+AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::GetIndexFromPosition(Float_t x, Float_t y, Int_t cathode) const
+{
+  // Getting Index from position if position is a center pad position
+  return GetIndexFromPosition( AliMUONSegmentPosition::Name(x,y, cathode).Data() );
+}
+//_________________________________________________
+AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::GetIndexFromPosition( const char * PositionName) const
+{
+  // Getting index form positionname
+  if (fMapPositionIndex) return  (AliMUONSegmentIndex*)  fMapPositionIndex->GetValue(PositionName);
+  else {
+    Warning("GetIndexFromPosition","SegmentPosition %s out of DetectionElement Mapping %s",
+	    PositionName,fDetectionElementType.Data());
+    return 0x0;
+  }
+}
 
 //_________________________________________________
-AliMUONSegmentManuIndex * AliMUONSegmentationDetectionElement::FindManuIndex(const char* ManuIndexName)
+AliMUONSegmentManuIndex * AliMUONSegmentationDetectionElement::FindManuIndex( const char* ManuIndexName)const
 {
+  // Getting AliMUONSegmentManuIndex objecto from manu index
   if (fMapManuIndexIndex) return (AliMUONSegmentManuIndex*) fMapManuIndexIndex->FindObject(ManuIndexName);
   else  {
     Warning("FindManuIndex","SegmentManuIndex %s out of DetectionElement mapping %s",
@@ -135,33 +172,85 @@ AliMUONSegmentManuIndex * AliMUONSegmentationDetectionElement::FindManuIndex(con
 }
 
 //_________________________________________________
-AliMUONSegmentManuIndex * AliMUONSegmentationDetectionElement::FindIndex(const char* IndexName)
+AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::FindIndex(const char* IndexName) const
 {
-  if (fMapIndexPosition) return (AliMUONSegmentManuIndex *) fMapIndexPosition->FindObject(IndexName);
+  // Getting 
+  if (fMapIndexPosition) return (AliMUONSegmentIndex *) fMapIndexPosition->FindObject(IndexName);
   else {
     Warning("FindIndex","SegmentIndex %s out of DetectionElement mapping %s",
 	    IndexName,fDetectionElementType.Data());
     return 0x0;
   }
 }
+//_________________________________________________
+AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::FindIndexFromPosition(Float_t /*x*/, Float_t /*y*/, Int_t /*cathode*/ ) const
+{
 
+ //  char * name = AliMUONSegmentPosition::Name(x,y);
+
+//   if (GetIndexFromPosition( AliMUONSegmentPosition::Name(x,y)) ) 
+//     return GetIndexFromPosition( AliMUONSegmentPosition::Name(x,y) );
+  
+//   Float_t xl= ((Int_t) x*10 )/10.;
+//   Float_t yl= ((Int_t) y*10 )/10.;
+//   Int_t ix,iy, ixp;
+  
+//   for(ix=1; ix<4; ix++) {
+//     xl = ((Int_t) 0.5+10.*(x +  ((Float_t) ix )*0.1))/10.; 
+//     for(iy=-ix; iy<ix+1; iy++) {
+//       printf("A %d and %d and %f and %f \n",ix,iy,xl,yl);
+//       yl = ((Int_t) 10.*(y +  ((Float_t) iy )*0.1))/10. ;
+//       sprintf(name,"%5.1f-%5.1f",xl, yl);
+//       if (GetIndexFromPosition(name)) break;
+//     }
+//     if (GetIndexFromPosition(name)) break;
+    
+
+//     for(ixp=ix-1; ixp>-ix-1; ixp--) {
+//       xl = ((Int_t) 0.5+10.*(x +  ((Float_t) ixp )*0.1))/10. ;
+//       printf("B %d and %d and %f and %f \n",ixp,ix, xl, yl);
+//       sprintf(name,"%5.1f-%5.1f",xl, yl);
+//       if (GetIndexFromPosition(name)) break;
+//     }
+//     if (GetIndexFromPosition(name)) break;
+    
+//     for(iy=ix-1; iy>-ix-1; iy--) {
+//       yl = ((Int_t) 0.5+10.*(y +  ((Float_t) iy )*0.1))/10. ;
+//       printf("C %d and %d and %f and %f \n",-ix,iy,xl,yl);
+//       sprintf(name,"%5.1f-%5.1f",xl, yl);
+//       if (GetIndexFromPosition(name)) break;
+//     }
+//     if (GetIndexFromPosition(name)) break;
+    
+//     for(ixp=-ix+1; ixp<ix+1; ixp++) {
+//       xl = ((Int_t) 0.5+10.*(x +  ((Float_t) ixp )*0.1))/10. ;
+//       printf("D %d and %d and %f and %f \n",ixp,-ix,xl,yl);
+//       sprintf(name,"%5.1f-%5.1f",xl, yl);
+//       if (GetIndexFromPosition(name)) break;
+//     }
+//     if (GetIndexFromPosition(name)) break;
+//   }
+//   return GetIndexFromPosition(name);
+  return 0x0;
+}
 //_________________________________________________
 void    AliMUONSegmentationDetectionElement::Init(const char * DetectionElementType)
 {
-  TString ElementType(DetectionElementType);
-  fSegmentationMappingFile_Bending = fgkDefaultTop+fgkStationDir+"345"
-    +fgkBendingDir+"/"+ElementType+fgkBendingExt+fgkFileExt;
-  printf("file is %s\n", fSegmentationMappingFile_Bending.Data());
-  fSegmentationMappingFile_NonBending = fgkDefaultTop+fgkStationDir+"345"
-    +fgkNonBendingDir+"/"+ElementType+fgkNonBendingExt+fgkFileExt;
+  TString elementType(DetectionElementType);
+  fSegmentationMappingFileBending = fgkDefaultTop+fgkStationDir+"345"
+    +fgkBendingDir+"/"+elementType+fgkBendingExt+fgkFileExt;
+  printf("file is %s\n", fSegmentationMappingFileBending.Data());
+  fSegmentationMappingFileNonBending = fgkDefaultTop+fgkStationDir+"345"
+    +fgkNonBendingDir+"/"+elementType+fgkNonBendingExt+fgkFileExt;
 
   if (fMapManuIndexIndex==0x0) { 
-    fListOfIndexes = new TObjArray(10000);
-    fListOfManuIndexes =new TObjArray(10000);
-    fListOfPositions =new TObjArray(10000);
+    fListOfIndexes = new TObjArray(15000);
+    fListOfManuIndexes =new TObjArray(15000);
+    fListOfPositions =new TObjArray(15000);
     fMapManuIndexIndex= new TMap();
     fMapIndexManuIndex = new TMap();
     fMapIndexPosition = new TMap();
+    fMapPositionIndex = new TMap();
   }
   else {
     fListOfIndexes->Delete();
@@ -170,17 +259,15 @@ void    AliMUONSegmentationDetectionElement::Init(const char * DetectionElementT
     fMapManuIndexIndex->Clear();
     fMapIndexManuIndex->Clear();
     fMapIndexPosition->Clear();
+    fMapPositionIndex->Clear();
   }
-
-
-
   Int_t icathode;
   //Bendingplane
   icathode=0;
-  ReadingSegmentationMappingFile(fSegmentationMappingFile_Bending ,icathode);
+  ReadingSegmentationMappingFile(fSegmentationMappingFileBending ,icathode);
   //NonBendingplane
   icathode=1;
-  ReadingSegmentationMappingFile(fSegmentationMappingFile_NonBending,icathode);
+  ReadingSegmentationMappingFile(fSegmentationMappingFileNonBending,icathode);
   
 }
 //_______________________________________________________________
@@ -195,9 +282,7 @@ void AliMUONSegmentationDetectionElement::ReadingSegmentationMappingFile(TString
     Float_t x, y;
     while ( !in.eof()) {
       in >> id >> ix >> iy >> x >> y >> idmanu >> idchannel;
-      char name[10];
-      sprintf(name,"%d%d",ix,iy);
-      printf("%s id=%d ix=%d iy=%d x=%f y=%f idmanu=%d and idchannel=%d\n",name,id, ix, iy,  x, y,idmanu, idchannel);
+      printf("id=%d ix=%d iy=%d x=%f y=%f idmanu=%d and idchannel=%d\n",id, ix, iy,  x, y,idmanu, idchannel);
       
       fListOfIndexes->AddAt(     new AliMUONSegmentIndex(id,ix,iy,cathode), id);
       fListOfManuIndexes->AddAt( new AliMUONSegmentManuIndex(id,idmanu,0,idchannel), id);;
@@ -210,6 +295,7 @@ void AliMUONSegmentationDetectionElement::ReadingSegmentationMappingFile(TString
       fMapManuIndexIndex->Add( fListOfManuIndexes->At(id), fListOfIndexes->At(id));
       fMapIndexManuIndex->Add( fListOfIndexes->At(id),     fListOfManuIndexes->At(id));
       fMapIndexPosition->Add(  fListOfIndexes->At(id),     fListOfPositions->At(id));
+      fMapPositionIndex->Add(  fListOfPositions->At(id), fListOfIndexes->At(id) );
     } 
   }
   in.close();

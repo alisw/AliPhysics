@@ -38,16 +38,26 @@ class AliMUONSegmentationDetectionElement : public TObject {
   AliMUONSegmentationDetectionElement();
   //AliMUONSegmentationDetectionElement(const char* ElementType="");
   virtual ~AliMUONSegmentationDetectionElement();
+
+  // User functions
+  AliMUONSegmentIndex     * GetIndex(Int_t manu, Int_t channel) const;
+  AliMUONSegmentIndex     * GetIndexFromPosition(Float_t x, Float_t y, Int_t icathode) const;
+  AliMUONSegmentManuIndex * GetManuIndex( Int_t padx, Int_t pady, Int_t cathode) const ;
+  AliMUONSegmentPosition  * GetPosition(Int_t padx, Int_t pady, Int_t cathode) const ;
+
   
-  AliMUONSegmentIndex     * GetIndex( const char * SegmentManuIndexName);
-  AliMUONSegmentManuIndex * GetManuIndex( const char * SegmentIndexName);
-  AliMUONSegmentPosition  * GetPosition( const char * SegmentIndexName);
+  AliMUONSegmentIndex     * GetIndex( const char * SegmentManuIndexName)const;
+  AliMUONSegmentIndex     * GetIndexFromPosition( const char * PositionName)const;
+  AliMUONSegmentManuIndex * GetManuIndex( const char * SegmentIndexName) const;
+  AliMUONSegmentPosition  * GetPosition( const char * SegmentIndexName) const;
   TObjArray *            ListOfIndexes() {return fListOfIndexes;}
   TObjArray *            ListOfManuIndexes() {return fListOfIndexes;}
   TObjArray *            ListOfPositions() {return fListOfIndexes;}
  
-  AliMUONSegmentManuIndex * FindManuIndex(const char* ManuIndexName="");
-  AliMUONSegmentManuIndex * FindIndex(const char* IndexName="");
+  AliMUONSegmentManuIndex * FindManuIndex(const char* ManuIndexName="") const;
+  AliMUONSegmentIndex * FindIndex(const char* IndexName="") const;
+
+  AliMUONSegmentIndex * FindIndexFromPosition(Float_t x, Float_t y, Int_t cathode) const;
   
   void     Init(const char * DetectionElementType="slat220000N");
 
@@ -58,8 +68,8 @@ class AliMUONSegmentationDetectionElement : public TObject {
   
  private:
   // static data members  
-  static const TString fgkDefaultTop;  // 
-  static const TString fgkStationDir;  // 
+  static const TString fgkDefaultTop;  // Top directory of $Alice_ROOT/MUON/mapping
+  static const TString fgkStationDir;  // Directory for station station1, station2, station345
   static const TString fgkBendingDir;    //bending plane directory
   static const TString fgkNonBendingDir; //non-bending plane directory
   static const TString fgkFileExt;  // File extention
@@ -68,16 +78,15 @@ class AliMUONSegmentationDetectionElement : public TObject {
 
   // data members
   TString   fDetectionElementType;               //  Type of detection element St1Sector, slat220000N, etc ....
-  TString   fSegmentationMappingFile_Bending;    //  Segmentation & mapping file for bending plane
-  TString   fSegmentationMappingFile_NonBending; //  Segmentation & mapping file for non bending plane
-  TObjArray * fListOfIndexes;
-  TObjArray * fListOfManuIndexes;
-  TObjArray * fListOfPositions;
+  TString   fSegmentationMappingFileBending;    //  Segmentation & mapping file for bending plane
+  TString   fSegmentationMappingFileNonBending; //  Segmentation & mapping file for non bending plane
+  TObjArray * fListOfIndexes;        // TObject Array fo AliMUONSegmentIndex
+  TObjArray * fListOfManuIndexes;   // TObject Array fo AliMUONSegmentManuIndex
+  TObjArray * fListOfPositions;  // TObject Array fo AliMUONSegmentPositions
   TMap *    fMapManuIndexIndex;  // Map with key ManuIndex and value = Index
   TMap *    fMapIndexManuIndex;// Map with key ManuIndexIndex and value = ManuIndex
   TMap *    fMapIndexPosition;// Map with key Index and value = Position
-  TArrayF * fXlocalSegmentPositions; // Array of posible values of Xlocal
-  TArrayF * fYlocalSegmentPositions;// Array of posible values of Ylocal
+  TMap *    fMapPositionIndex;// Map with key Index and value = Position
   
 
   ClassDef(AliMUONSegmentationDetectionElement,1) // Segmentation for MUON detection elements

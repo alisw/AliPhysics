@@ -16,6 +16,7 @@
 //====================================================================
 
 #include <TNamed.h>
+#include <TString.h>
 
 class AliMUONSegmentIndex : public TNamed {
  public:
@@ -30,13 +31,14 @@ class AliMUONSegmentIndex : public TNamed {
   Int_t GetPadY()      const {return fPadX;} 
   Int_t GetCathode()   const {return fCathode;} 
   
+  static TString Name(Int_t padx, Int_t pady, Int_t cathode) ;
   void Print() const;
 
  private:
   Int_t fChannelId; // Id of the channel within the detection element
-  Int_t fPadX;
-  Int_t fPadY;
-  Int_t fCathode;
+  Int_t fPadX;      // pad index in the X direction
+  Int_t fPadY;      // pad index in the y direction
+  Int_t fCathode;   // cathode plane 0 bending 1 non bending
   
   ClassDef(AliMUONSegmentIndex,1) // Segmenation for MUON detection elements	
 };

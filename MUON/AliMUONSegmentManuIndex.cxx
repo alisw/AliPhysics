@@ -25,6 +25,7 @@
 //  Detailed information in Alice Technical Note xxxxxxxx (2004)
 //====================================================================
 
+#include <TString.h>
 
 #include "AliMUONSegmentManuIndex.h"
 
@@ -35,6 +36,7 @@ ClassImp(AliMUONSegmentManuIndex)
 //___________________________________________
 AliMUONSegmentManuIndex::AliMUONSegmentManuIndex() 
 {
+  //Default constructor
   fChannelId= 0;; // Id of the channel within the detection element
   fManuId= 0;; // Manu id in the detection element
   fBusPatchId= 0;; // BusPatchId in the detection element up to 4 for slats
@@ -43,10 +45,9 @@ AliMUONSegmentManuIndex::AliMUONSegmentManuIndex()
 //___________________________________________
 AliMUONSegmentManuIndex::AliMUONSegmentManuIndex(const Int_t channelId, const Int_t manuId, const Int_t busPatchId,  Int_t manuChannelId) : TNamed()
 {  
-  char name[10];
-  sprintf(name,"%d-%d",manuId,manuChannelId);
-  fName=name;
-  fTitle=name;
+  // Constructor to be used
+  fName = Name(manuId, manuChannelId).Data();
+  fTitle= Name(manuId, manuChannelId).Data();
   fChannelId     = channelId;
   fManuId        = manuId;
   fBusPatchId    = busPatchId;
@@ -55,16 +56,27 @@ AliMUONSegmentManuIndex::AliMUONSegmentManuIndex(const Int_t channelId, const In
 //_______________________________________________
 AliMUONSegmentManuIndex::~AliMUONSegmentManuIndex()
 {
-
+  // Destructor
 }
 //___________________________________________
 Int_t AliMUONSegmentManuIndex::Compare(const TObject *obj) const
 {
+  // Comparison of two AliMUONSegmentManuIndex objects
  AliMUONSegmentManuIndex * myobj = ( AliMUONSegmentManuIndex *) obj;
   return (fChannelId > myobj->GetChannelId()) ? 1 : -1;
 }
 //___________________________________________
+TString AliMUONSegmentManuIndex::Name(Int_t manuid, Int_t manuchannel) 
+{
+  // Definition of the name for TMap indexing
+  char name[15];
+  Int_t absid = manuid*64 + manuchannel;
+  sprintf(name,"%d",absid);
+  return TString(name);
+}
+//___________________________________________
 void AliMUONSegmentManuIndex::Print() const
 {
-  printf("%s id=%d ManuId=%d BusPatch=%d ManuChannelId=%d\n",fName.Data(),fChannelId,fManuId,fBusPatchId,fManuChannelId);   
+  // Printing AliMUONSegmentManuIndex information
+  Info("Print","Name=%s Id=%d BusPatch=%d ManuId=%d ManuChannelId=%d\n",fName.Data(),fChannelId,fBusPatchId,fManuId,fManuChannelId);   
 }

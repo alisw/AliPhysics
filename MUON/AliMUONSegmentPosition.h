@@ -15,7 +15,9 @@
 //  Detailed information in Alice Technical Note xxxxxxxx (2004)
 //====================================================================
 
+
 #include <TNamed.h>
+#include <TString.h>
 
 class AliMUONSegmentPosition : public TNamed
 {
@@ -30,12 +32,15 @@ class AliMUONSegmentPosition : public TNamed
     Float_t GetYlocal()   const {return fY;}
     Int_t   GetCathode()  const {return fCathode;}
 
-    void Print() const;
+
+    static TString Name(Float_t x, Float_t y, Int_t cathode) ;
+    void    Print() const;
+
  private:
-    Int_t fChannelId;   // Id of the channel within the detection element
-    Float_t fX;
-    Float_t fY;
-    Int_t fCathode;
+    Int_t   fChannelId;   // Id of the channel within the detection element
+    Float_t fX;           // Position X of the center of the segment (pad, strip, etc...)
+    Float_t fY;           // Position Y of the center of the segment (pad, strip, etc...)
+    Int_t   fCathode;     // Cathode Side Bending 1  or non bending 0 
      
     ClassDef(AliMUONSegmentPosition,1) // Loal positions of segments
 	

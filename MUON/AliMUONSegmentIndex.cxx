@@ -25,6 +25,8 @@
 //  Detailed information in Alice Technical Note xxxxxxxx (2004)
 //====================================================================
 
+#include <TString.h>
+
 #include "AliMUONSegmentIndex.h"
 
 //___________________________________________
@@ -34,6 +36,7 @@ ClassImp(AliMUONSegmentIndex)
 //___________________________________________
 AliMUONSegmentIndex::AliMUONSegmentIndex() : TNamed()
 {
+  // Constructor by default
   fChannelId = 0;
   fPadX = 0;
   fPadY = 0;
@@ -42,10 +45,9 @@ AliMUONSegmentIndex::AliMUONSegmentIndex() : TNamed()
 //___________________________________________
 AliMUONSegmentIndex::AliMUONSegmentIndex(const Int_t channelId, const Int_t padX, const Int_t padY, const Int_t cathode) : TNamed()
 {
-  char name[10];
-  sprintf(name,"%d-%d",padX,padY);
-  fName = name;
-  fTitle = name;
+  // Constructor to be used
+  fName  = Name(padX, padY, cathode).Data();
+  fTitle = Name(padX, padY, cathode).Data();
   fChannelId = channelId;
   fPadX = padX;
   fPadY = padY;
@@ -54,16 +56,27 @@ AliMUONSegmentIndex::AliMUONSegmentIndex(const Int_t channelId, const Int_t padX
 //_______________________________________________
 AliMUONSegmentIndex::~AliMUONSegmentIndex()
 {
-
+  // Destructor
 }
 //___________________________________________
 Int_t AliMUONSegmentIndex::Compare(const TObject *obj) const
 {
+  // Comparison of two AliMUONSegmentIndex objects
   AliMUONSegmentIndex * myobj = ( AliMUONSegmentIndex *) obj;
   return (fChannelId > myobj->GetChannelId()) ? 1 : -1;
 }
 //___________________________________________
+TString AliMUONSegmentIndex::Name(Int_t padx, Int_t pady, Int_t cathode)
+{
+  // Definition of the name of the object
+  char name[15];
+  sprintf(name,"%d-%d-%d",padx,pady,cathode);
+  return TString(name);
+}
+
+//___________________________________________
 void AliMUONSegmentIndex::Print() const
 {
-  printf("%s id=%d ix=%d iy=%d cathode=%d\n",fName.Data(),fChannelId,fPadX,fPadY,fCathode);   
+  // Printing information of AliMUONSegmentIndex
+  Info("Print", "Name=%s Id=%d PadX=%d PadY=%d Cathode=%d\n",fName.Data(),fChannelId,fPadX,fPadY,fCathode);   
 }

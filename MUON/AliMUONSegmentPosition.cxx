@@ -25,6 +25,8 @@
 //  Detailed information in Alice Technical Note xxxxxxxx (2004)
 //====================================================================
 
+#include <TMath.h>
+
 #include "AliMUONSegmentPosition.h"
 
 //___________________________________________
@@ -34,6 +36,7 @@ ClassImp(AliMUONSegmentPosition)
 //___________________________________________
 AliMUONSegmentPosition::AliMUONSegmentPosition() : TNamed()
 {
+//Default constructor
   fChannelId = 0;
   fX = 0.;
   fY = 0.;  
@@ -41,10 +44,9 @@ AliMUONSegmentPosition::AliMUONSegmentPosition() : TNamed()
 //___________________________________________
 AliMUONSegmentPosition::AliMUONSegmentPosition(const Int_t channelId, const Float_t x, const Float_t y, const Int_t cathode) : TNamed()
 {
-  char name[10];
-  sprintf(name,"%5.2f-%5.2f",x,y);
-  fName = name;
-  fTitle= name;
+  // Constructor to be used
+  fName = Name(x,y,cathode);
+  fTitle= Name(x,y,cathode);
   fChannelId = channelId;
   fX = x;
   fY = y;
@@ -53,16 +55,33 @@ AliMUONSegmentPosition::AliMUONSegmentPosition(const Int_t channelId, const Floa
 //_______________________________________________
 AliMUONSegmentPosition::~AliMUONSegmentPosition()
 {
-
+ // Destructor
 }
 //___________________________________________
 Int_t AliMUONSegmentPosition::Compare(const TObject *obj) const
 {
+  // Comparison of two AliMUONSegmentPosition objects
   AliMUONSegmentPosition * myobj = ( AliMUONSegmentPosition *) obj;
   return (fChannelId > myobj->GetChannelId()) ? 1 : -1;
 }
 //___________________________________________
+TString AliMUONSegmentPosition::Name(Float_t x, Float_t y, Int_t cathode) 
+{
+  // Definition of the name of AliMUONSegmentPosition
+  // Our convention since the smaller pad pich is 5 mm is to choice a 3mm unit:
+  // So for a position pair x,y and cathode plane icathode the name will be:
+  // xp = TMath::Nint(x*10./3.);
+  // yp = TMath::Nint(y+10./3.);
+  // sprintf(name,"%d-%d-%d",xp,yp,cathode);
+  Int_t xp = TMath::Nint(x*10./3.);
+  Int_t yp = TMath::Nint(y*10./3.);
+  char name[15];
+  sprintf(name,"%d-%d-%d",xp,yp,cathode);
+  return TString(name);
+}
+//___________________________________________
 void AliMUONSegmentPosition::Print() const
 {
-  printf("%s id=%d x=%f y=%f cathode=%d\n",fName.Data(),fChannelId, fX, fY,fCathode);   
+  // Printing AliMUONSegmentManuIndex information
+  Info("Print","Name=%s Id=%d X=%f Y=%f Cathode=%d\n",fName.Data(),fChannelId, fX, fY,fCathode);   
 }
