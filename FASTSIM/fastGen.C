@@ -34,6 +34,7 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
 	
 //  Initialize event
 	header->Reset(0,iev);
+	stack->Reset();
 	stack->BeginEvent(iev);
 
 //  Generate event
@@ -52,12 +53,10 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
 	header->SetNtrack(stack->GetNtrack());  
 //      I/O
 //	
-//	stack->FinishEvent();
-//	header->SetStack(stack);
-//	treeE->Fill();
-//	Reset stack
-
-	stack->Reset();
+	stack->FinishEvent();
+	header->SetStack(stack);
+	treeE->Fill();
+	(stack->TreeK())->Write(0,TObject::kOverwrite);
     } // event loop
 //
 //                         Termination
@@ -86,9 +85,9 @@ AliGenerator*  CreateGenerator()
 //   charm, beauty, charm_unforced, beauty_unforced, jpsi, jpsi_chi, mb
     gener->SetProcess(kPyJets);
 //   Centre of mass energy 
-    gener->SetEnergyCMS(14000.);
+    gener->SetEnergyCMS(5500.);
 //   Pt transfer of the hard scattering
-    gener->SetPtHard(5.,5.1);
+    gener->SetPtHard(50.,50.2);
 //   Initialize generator    
     return gener;
 }
