@@ -34,7 +34,6 @@ ClassImp(AliL3Track)
 AliL3Track::AliL3Track()
 {
   //Constructor
-
   fNHits = 0;
   fMCid = -1;
   fKappa=0;
@@ -57,6 +56,14 @@ AliL3Track::AliL3Track()
   SetLastPoint(0,0,0);
   memset(fHitNumbers,0,159*sizeof(UInt_t));
   fPID = 0;
+
+  fSector=0;
+  fPterr=0;
+  fPsierr=0;
+  fZ0err=0;
+  fTanlerr=0;
+  fPoint[0]=fPoint[1]=fPoint[2]=0;
+  fPointPsi=0;
 }
 
 void AliL3Track::Set(AliL3Track *tpt)
@@ -507,4 +514,11 @@ void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closestx,Double_t
   if((GetCharge()*diff_angle) < 0) diff_angle = diff_angle + GetCharge()*AliL3Transform::TwoPi();
   Double_t stot = fabs(diff_angle)*GetRadius();
   closestz = GetFirstPointZ() - stot*GetTgl();
+}
+
+void AliL3Track::Print() const
+{
+  LOG(AliL3Log::kInformational,"AliL3Track::Print","Print values")
+    <<fNHits<<" "<<fMCid<<" "<<fKappa<<" "<<fRadius<<" "<<fCenterX<<" "<<fCenterY<<" "<<fFromMainVertex<<" "<<fRowRange[0]<<" "<<fRowRange[1]<<" "<<fSector<<" "<<fQ<<" "<<fTanl<<" "<<fPsi<<" "<<fPt<<" "<<fLength<<" "<<fPterr<<" "<<fPsierr<<" "<<fZ0err<<" "<<fTanlerr<<" "<<fPhi0<<" "<<fR0<<" "<<fZ0<<" "<<fFirstPoint[0]<<" "<<fFirstPoint[1]<<" "<<fFirstPoint[2]<<" "<<fLastPoint[0]<<" "<<fLastPoint[1]<<" "<<fLastPoint[2]<<" "<<fPoint[0]<<" "<<fPoint[1]<<" "<<fPoint[2]<<" "<<fPointPsi<<" "<<fIsPoint<<" "<<fIsLocal<<" "<<fPID<<ENDLOG; 
+
 }

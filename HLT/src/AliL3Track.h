@@ -31,10 +31,10 @@ class AliL3Track {
   Double_t fPt;   //transverse momentum
   Double_t fLength; //length of track (s)
   
-  Double_t fPterr;   //errors for fast hough
-  Double_t fPsierr;  //errors for fast hough
-  Double_t fZ0err;   //errors for fast hough
-  Double_t fTanlerr; //errors for fast hough
+  Double_t fPterr;   //error in pt
+  Double_t fPsierr;  //error in psi
+  Double_t fZ0err;   //error in first point
+  Double_t fTanlerr; //error in tanl
 
   Double_t fPhi0; //azimuthal angle of the first point
   Double_t fR0;   //radius of the first point
@@ -127,6 +127,7 @@ class AliL3Track {
 
   UInt_t *GetHitNumbers() {return fHitNumbers;}
 
+  void Print() const;
   // setter   
   
   void SetMCid(Int_t f) {fMCid = f;}
