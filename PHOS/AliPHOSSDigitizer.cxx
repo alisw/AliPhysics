@@ -186,27 +186,23 @@ void AliPHOSSDigitizer::Exec(Option_t *option) {
     
     //Now made SDigits from hits, for PHOS it is the same, so just copy    
     Int_t itrack ;
-    for (itrack=0; itrack<gAlice->GetNtrack(); itrack++){
+    for (itrack=0; itrack < gAlice->GetNtrack(); itrack++){
       
-      //=========== Get the Hits Tree for the Primary track itrack
-      gAlice->ResetHits();    
-      gAlice->TreeH()->GetEvent(itrack);
+      //=========== Get the PHOS branch from Hits Tree for the Primary track itrack
+      branch->GetEntry(itrack,0);
       
       Int_t i;
       for ( i = 0 ; i < fHits->GetEntries() ; i++ ) {
 	AliPHOSHit * hit = (AliPHOSHit*)fHits->At(i) ;
-	AliPHOSDigit * newdigit ;
 
 	// Assign primary number only if contribution is significant
 	if( hit->GetEnergy() > fPrimThreshold)
-	  newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+	  new((*fSDigits)[nSdigits]) AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
 	else
-	  newdigit = new AliPHOSDigit( -1               , hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+	  new((*fSDigits)[nSdigits]) AliPHOSDigit( -1               , hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
 	
-	new((*fSDigits)[nSdigits]) AliPHOSDigit(* newdigit) ;
 	nSdigits++ ;  
 	
-	delete newdigit ;    
       } 
       
     } // loop over tracks
