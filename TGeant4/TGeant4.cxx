@@ -19,6 +19,8 @@
 
 #include "AliDecayer.h"
 
+ClassImp(TGeant4)
+
 //_____________________________________________________________________________
 TGeant4::TGeant4(const char* name, const char* title,
                  TG4VRunConfiguration* configuration, int argc, char** argv)
