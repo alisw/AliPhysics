@@ -18,7 +18,8 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
 		AliGenGSIlib.cxx \
 	        AliGenHijing.cxx \
-		AliGenEventHeader.cxx AliGenHijingEventHeader.cxx 
+		AliGenEventHeader.cxx AliGenHijingEventHeader.cxx \
+		AliDecayer.cxx AliDecayerPythia.cxx
 # C++ Headers
 
 HDRS          = $(SRCS:.cxx=.h) EVGENLinkDef.h
@@ -64,14 +65,11 @@ $(DICT):				$(HDRS)
 
 depend:					$(SRCS)
 
-HEADERS       = AliPythia.h
+HEADERS       = AliPythia.h GenTypeDefs.h AliDecayer.h
 
-TOCLEAN	      = $(OBJS) *Cint.cxx *Cint.h
+TOCLEAN		= $(OBJS) *Cint.cxx *Cint.h
 
 CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
-
-
-
 
 ############################### General Macros ################################
 
