@@ -21,6 +21,7 @@
 
 #include <TParticle.h>
 #include <TMath.h>
+#include "HBTprocCOMMON.h"
 
 #include <Riostream.h>
 #ifndef WIN32
@@ -465,3 +466,243 @@ void THBTprocessor::DumpSettings() const
  //prints values set in common blocks
   ctest();
 }
+void THBTprocessor::SetTrackRejectionFactor(Float_t trf) const 
+{
+ //setter
+ PARAMETERS.trk_accep = trf;
+}
+void THBTprocessor::SetRefControl(Int_t rc) const 
+{
+ //setter
+ PARAMETERS.ref_control = rc;
+}
+void THBTprocessor::SetPIDs(Int_t pid1,Int_t pid2) const 
+{
+ //setter
+ PARAMETERS.pid[0]=pid1; PARAMETERS.pid[1]=pid2;
+}
+void THBTprocessor::SetNPIDtypes(Int_t npidt)const 
+{
+ //setter
+ PARAMETERS.n_pid_types = npidt;
+}
+void THBTprocessor::SetDeltap(Float_t deltp) const 
+{
+ //setter
+ PARAMETERS.deltap=deltp; 
+}
+void THBTprocessor::SetMaxIterations(Int_t maxiter) const 
+{
+ //setter
+ PARAMETERS.maxit = maxiter;
+}
+void THBTprocessor::SetDelChi(Float_t dc)const 
+{
+ //setter
+ PARAMETERS.delchi = dc;
+}
+void THBTprocessor::SetIRand(Int_t irnd) const 
+{
+ //setter
+ PARAMETERS.irand = irnd;
+}
+void THBTprocessor::SetLambda(Float_t lam) const 
+{ 
+ //setter
+ PARAMETERS.lambda = lam;
+}
+void THBTprocessor::SetR1d(Float_t r) const 
+{
+ //setter
+ PARAMETERS.R_1d=r;
+}
+void THBTprocessor::SetRSide(Float_t rs) const 
+{
+ //setter
+ PARAMETERS.Rside=rs;
+}
+void THBTprocessor::SetROut(Float_t ro) const 
+{
+ //setter
+ PARAMETERS.Rout=ro;
+}
+void THBTprocessor::SetRLong(Float_t rl) const 
+{
+ //setter
+ PARAMETERS.Rlong=rl;
+}
+void THBTprocessor::SetRPerp(Float_t rp) const 
+{
+ //setter
+ PARAMETERS.Rperp=rp;
+}
+void THBTprocessor::SetRParallel(Float_t rprl) const 
+{
+ //setter
+ PARAMETERS.Rparallel=rprl;
+}
+void THBTprocessor::SetR0(Float_t r0) const 
+{
+ //setter
+ PARAMETERS.R0=r0;
+}
+void THBTprocessor::SetQ0(Float_t q0) const 
+{
+ //setter
+PARAMETERS.Q0=q0;
+}
+void THBTprocessor::SetSwitch1D(Int_t s1d) const 
+{
+ //setter
+ PARAMETERS.switch_1d = s1d;
+}
+void THBTprocessor::SetSwitch3D(Int_t s3d) const 
+{
+ //setter
+ PARAMETERS.switch_3d = s3d;
+}
+void THBTprocessor::SetSwitchType(Int_t st) const 
+{
+ //setter
+ PARAMETERS.switch_type = st;
+}
+
+void THBTprocessor::SetSwitchCoherence(Int_t sc) const 
+{
+ //setter
+ PARAMETERS. switch_coherence = sc;
+}
+void THBTprocessor::SetSwitchCoulomb(Int_t scol) const 
+{
+ //setter
+ PARAMETERS. switch_coulomb = scol;
+}
+void THBTprocessor::SetSwitchFermiBose(Int_t sfb) const 
+{
+ //setter
+ PARAMETERS.switch_fermi_bose = sfb;
+}
+      
+void THBTprocessor::SetPtRange(Float_t ptmin, Float_t ptmax)const  //Pt in GeV/c
+{ 
+ //setter
+  MESH.pt_min=ptmin;MESH.pt_max=ptmax;
+}
+
+void THBTprocessor::SetPxRange(Float_t pxmin, Float_t pxmax) const
+{ 
+ //setter
+ MESH.px_min=pxmin;MESH.px_max=pxmax;
+}
+
+void THBTprocessor::SetPyRange(Float_t pymin, Float_t pymax)const 
+{ 
+ //setter
+ MESH.py_min=pymin;MESH.py_max=pymax;
+}
+
+void THBTprocessor::SetPzRange(Float_t pzmin, Float_t pzmax) const
+{ 
+ //setter
+ MESH.pz_min=pzmin;MESH.pz_max=pzmax;
+}
+
+void THBTprocessor::SetPhiRange(Float_t phimin, Float_t phimax)const //Angle in degrees
+{ 
+ //setter
+ MESH.phi_min=phimin;MESH.phi_max=phimax;
+}
+
+void THBTprocessor::SetEtaRange(Float_t etamin, Float_t etamax)const //Pseudorapidity  !!!!!!!!!
+{ 
+ //setter
+ MESH.eta_min=etamin;MESH.eta_max=etamax;
+}
+
+void THBTprocessor::SetNPtBins(Int_t nptbin)const
+{
+//setter
+MESH.n_pt_bins=nptbin;
+}
+void THBTprocessor::SetNPhiBins(Int_t nphibin)const
+{
+//setter
+MESH.n_phi_bins=nphibin;
+}
+void THBTprocessor::SetNEtaBins(Int_t netabin)const
+{
+//setter
+MESH.n_eta_bins=netabin;
+}
+      
+void THBTprocessor::SetNPxBins(Int_t npxbin)const
+{
+//setter
+MESH.n_px_bins=npxbin;
+}
+void THBTprocessor::SetNPyBins(Int_t npybin)const
+{
+//setter
+MESH.n_py_bins=npybin;
+}
+void THBTprocessor::SetNPzBins(Int_t npzbin)const
+{
+//setter
+MESH.n_pz_bins=npzbin;
+}
+
+void THBTprocessor::SetNBins1DFineMesh(Int_t n)const
+{
+//setter
+MESH.n_1d_fine=n;
+}
+void THBTprocessor::SetBinSize1DFineMesh(Float_t x)const
+{
+//setter
+MESH.binsize_1d_fine=x;
+}
+      
+void THBTprocessor::SetNBins1DCoarseMesh(Int_t n)const
+{
+//setter
+MESH.n_1d_coarse =n;
+}
+void THBTprocessor::SetBinSize1DCoarseMesh(Float_t x)const
+{
+//setter
+MESH.binsize_1d_coarse=x;
+}
+      
+void THBTprocessor::SetNBins3DFineMesh(Int_t n)const
+{
+//setter
+MESH.n_3d_fine =n;
+}
+void THBTprocessor::SetBinSize3DFineMesh(Float_t x)const
+{
+//setter
+MESH.binsize_3d_fine=x;
+}
+      
+void THBTprocessor::SetNBins3DCoarseMesh(Int_t n)const
+{
+//setter
+MESH.n_3d_coarse=n;
+}
+void THBTprocessor::SetBinSize3DCoarseMesh(Float_t x)const
+{
+//setter
+MESH.binsize_3d_coarse=x;
+}      
+      
+void THBTprocessor::SetNBins3DFineProjectMesh(Int_t n )const
+{
+//setter
+MESH.n_3d_fine_project=n;
+}
+
+void THBTprocessor::SetPrintFull(Int_t flag) const 
+{
+ //setter
+ PARAMETERS.print_full=flag;
+} 
