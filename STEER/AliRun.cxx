@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.46  2000/12/14 19:29:27  fca
+galice.cuts was not read any more
+
 Revision 1.45  2000/11/30 07:12:49  alibrary
 Introducing new Rndm and QA classes
 
@@ -432,6 +435,13 @@ void AliRun::DumpPStack () const
 	 "\n=======================================================================\n\n");
 }
 
+void  AliRun::SetField(AliMagF* magField)
+{
+    // Set Magnetic Field Map
+    fField = magField;
+    fField->ReadField();
+}
+
 //_____________________________________________________________________________
 void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
 		      Float_t maxField, char* filename)
@@ -445,20 +455,14 @@ void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
 
   //
   // --- Sanity check on mag field flags
-  if(type<0 || type > 2) {
-    Warning("SetField",
-	    "Invalid magnetic field flag: %5d; Helix tracking chosen instead\n"
-	   ,type);
-    type=2;
-  }
   if(fField) delete fField;
   if(version==1) {
-    fField = new AliMagFC("Map1"," ",type,version,scale,maxField);
+    fField = new AliMagFC("Map1"," ",type,scale,maxField);
   } else if(version<=2) {
-    fField = new AliMagFCM("Map2-3",filename,type,version,scale,maxField);
+    fField = new AliMagFCM("Map2-3",filename,type,scale,maxField);
     fField->ReadField();
   } else if(version==3) {
-    fField = new AliMagFDM("Map4",filename,type,version,scale,maxField);
+    fField = new AliMagFDM("Map4",filename,type,scale,maxField);
     fField->ReadField();
   } else {
     Warning("SetField","Invalid map %d\n",version);

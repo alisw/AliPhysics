@@ -13,8 +13,8 @@ class AliMagFDM : public AliMagF
 
 public:
   AliMagFDM(){}
-  AliMagFDM(const char *name, const char *title, const Int_t integ, const Int_t
-  map, const Float_t factor, const Float_t fmax);
+  AliMagFDM(const char *name, const char *title, const Int_t integ,
+	    const Float_t factor, const Float_t fmax);
   virtual ~AliMagFDM(){} 
   virtual void Field(Float_t *x, Float_t *b);
   virtual void ReadField(); 

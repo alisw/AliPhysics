@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.6  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -42,17 +45,23 @@ ClassImp(AliMagF)
 
 //________________________________________
 AliMagF::AliMagF(const char *name, const char *title, const Int_t integ, 
-		 const Int_t map, const Float_t factor, const Float_t fmax)
+		 const Float_t factor, const Float_t fmax)
   : TNamed(name,title)
 {
   //
   // Standard constructor
   //
-  fMap = map;
-  fType = kUndef;
-  fInteg = integ;
-  fFactor = factor;
-  fMax = fmax;
+    if(integ<0 || integ > 2) {
+	Warning("SetField",
+		"Invalid magnetic field flag: %5d; Helix tracking chosen instead\n"
+		,integ);
+	fInteg = 2;
+    } else {
+	fInteg = integ;
+    }
+    fType = kUndef;
+    fFactor = factor;
+    fMax = fmax;
 }
 
 //________________________________________

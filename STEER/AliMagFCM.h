@@ -14,7 +14,7 @@ class AliMagFCM : public AliMagF
 
 public:
   AliMagFCM(){}
-  AliMagFCM(const char *name, const char *title, const Int_t integ, const Int_t map, 
+  AliMagFCM(const char *name, const char *title, const Int_t integ,
 	   const Float_t factor, const Float_t fmax);
   AliMagFCM(const AliMagFCM &mag);
   virtual ~AliMagFCM() {delete fB;}

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/12/01 11:20:27  alibrary
+Corrector dipole removed from ZDC
+
 Revision 1.3  2000/11/10 18:09:55  fca
 New field map for the ZDC
 
@@ -33,15 +36,16 @@ ClassImp(AliMagFC)
 
 //________________________________________
 AliMagFC::AliMagFC(const char *name, const char *title, const Int_t integ, 
-		   const Int_t map, const Float_t factor, const Float_t fmax)
-  : AliMagF(name,title,integ,map,factor,fmax)
+		   const Float_t factor, const Float_t fmax)
+  : AliMagF(name,title,integ,factor,fmax)
 {
   // 
   // Standard constructor
   //
-  printf("Constant Field %s created: map= %d, factor= %f\n",fName.Data(),map,
-	 factor);
   fType = kConst;
+  fMap  = 1;
+  printf("Constant Field %s created: map= %d, factor= %f\n",fName.Data(),fMap,
+	 factor);
 }
 
 //________________________________________

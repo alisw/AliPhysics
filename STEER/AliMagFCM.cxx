@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/12/01 11:20:27  alibrary
+Corrector dipole removed from ZDC
+
 Revision 1.4  2000/11/30 07:12:49  alibrary
 Introducing new Rndm and QA classes
 
@@ -37,15 +40,17 @@ ClassImp(AliMagFCM)
 
 //________________________________________
 AliMagFCM::AliMagFCM(const char *name, const char *title, const Int_t integ, 
-		     const Int_t map, const Float_t factor, const Float_t fmax)
-  : AliMagF(name,title,integ,map,factor,fmax)
+		     const Float_t factor, const Float_t fmax)
+  : AliMagF(name,title,integ,factor,fmax)
 {
   //
   // Standard constructor
   //
   fType = kConMesh;
+  fMap  = 2;
+  
   printf("Constant Mesh Field %s created: map= %d, factor= %f, file= %s\n",
-	 fName.Data(),map,factor,fTitle.Data());
+	 fName.Data(), fMap, factor,fTitle.Data());
 }
 
 //________________________________________

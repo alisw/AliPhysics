@@ -13,8 +13,8 @@ class AliMagF : public TNamed {
 
 public:
   AliMagF(){}
-  AliMagF(const char *name, const char *title, const Int_t integ, const Int_t map, 
-	  const Float_t factor, const Float_t fmax);
+  AliMagF(const char *name, const char *title, const Int_t integ, 
+	  const Float_t factor = 1., const Float_t fmax = 10.);
   virtual ~AliMagF() {}
   virtual void Field(Float_t *x, Float_t *b);
   virtual Int_t Type() const {return fType;}
