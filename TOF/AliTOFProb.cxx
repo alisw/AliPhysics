@@ -160,7 +160,9 @@ void AliTOFProb::Exec(const Option_t *dummyOpt)
     fNtuple->GetEvent(i);
     //Int_t event=(Int_t)(fNtuple->GetLeaf("event")->GetValue());
     Int_t pdgcode=(Int_t)(fNtuple->GetLeaf("ipart")->GetValue());
-    Float_t mass=fNtuple->GetLeaf("mext")->GetValue(0);
+    // unused for the time being in the context of probabilities
+    // probably it will be included in AliESD approach
+    //Float_t mass=fNtuple->GetLeaf("mext")->GetValue(0);
     Int_t matc=(Int_t)(fNtuple->GetLeaf("matc")->GetValue(0));
     Int_t imam=(Int_t)(fNtuple->GetLeaf("imam")->GetValue(0));
     Float_t time=fNtuple->GetLeaf("text")->GetValue(0); // [ns]

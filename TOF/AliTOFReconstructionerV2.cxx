@@ -327,8 +327,8 @@ void AliTOFReconstructionerV2::Exec(Option_t* option)
       Double_t cc[15];
       // get sigmaY and sigmaZ
       rt->GetExternalCovariance(cc);
-      Double_t sigmaY =TMath::Sqrt(cc[0]); // [cm]
-      Double_t sigmaZ =TMath::Sqrt(cc[2]); // [cm]
+      //Double_t sigmaY =TMath::Sqrt(cc[0]); // [cm]
+      //Double_t sigmaZ =TMath::Sqrt(cc[2]); // [cm]
 
       // arrays used by the DigitFinder
       Int_t nSlot=1;
@@ -344,8 +344,8 @@ void AliTOFReconstructionerV2::Exec(Option_t* option)
       for (Int_t j=0; j<fNDummyTracks; i++) {
 	AliTPCtrack *dummyrt=new AliTPCtrack(*rt);
 	// get ylrf and zlrf
-	Double_t ylrf= dummyrt->GetY();  // P0
-	Double_t zlrf= dummyrt->GetZ();  // P1
+	//Double_t ylrf= dummyrt->GetY();  // P0
+	//Double_t zlrf= dummyrt->GetZ();  // P1
 
 	// smear according to sigmaY and sigmaZ
 	//Double_t ylrfNew=gRandom->Gaus(ylrf,fScaleSigmaFactor*sigmaY);
