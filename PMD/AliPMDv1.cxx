@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.28  2003/10/08 12:59:08  bnandi
+zpos is positive
+
 Revision 1.27  2003/10/08 12:56:58  bnandi
 gaspmd[2] value changed from 7.0 to 0.25
 
@@ -552,8 +555,7 @@ void AliPMDv1::CreatePMD()
 
   // Gaspmd, the dimension of RECTANGULAR mother volume of PMD,
 
-  //  Float_t gaspmd[3] = {81.5,94.5,7.};
-  Float_t gaspmd[3] = {81.5,94.5,0.25};
+  Float_t gaspmd[3] = {81.5,94.5,7.};
   gaspmd[0] = sm_length_ax+sm_length_bx;
   gaspmd[1] = sm_length_ay+sm_length_by;
 
