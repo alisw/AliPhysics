@@ -1,12 +1,10 @@
 #ifndef ALIL3LOGGING_H
 #define ALIL3LOGGING_H
 
-#define use_logging
-
 #ifdef use_logging
 
-#include "/prog/alice/level3/kip/MLUC/include/MLUCLog.hpp"
-#include "/prog/alice/level3/kip/MLUC/include/MLUCLogServer.hpp"
+#include <MLUCLog.hpp>
+#include <MLUCLogServer.hpp>
 
 typedef MLUCLog AliL3Log;
 typedef MLUCLogServer AliL3LogServer;
