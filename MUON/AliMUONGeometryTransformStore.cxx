@@ -154,13 +154,26 @@ void  AliMUONGeometryTransformStore::Print(Option_t* /*option*/) const
 
     const double* translation = matrix->GetTranslation();
     cout << "   translation: "
+#if defined (__DECCXX)
+         << translation[0] << ", " 
+         << translation[1] << ", "
+         << translation[2] << endl;
+#else
          << std::fixed
          << std::setw(7) << std::setprecision(4) << translation[0] << ", " 
          << std::setw(7) << std::setprecision(4) << translation[1] << ", "
          << std::setw(7) << std::setprecision(4) << translation[2] << endl;
+#endif
 	 
     const double* rotation = matrix->GetRotationMatrix();
     cout << "   rotation matrix:  "
+#if defined (__DECCXX)
+         << rotation[0] << ", " << rotation[1] << ", " << rotation[2] << endl
+	 << "                     "	    
+         << rotation[3] << ", " << rotation[4] << ", " << rotation[5] << endl	    
+	 << "                     "	    
+         << rotation[6] << ", " << rotation[7] << ", " << rotation[8] << endl;
+#else
          << std::fixed
          << std::setw(7) << std::setprecision(4) 
          << rotation[0] << ", " << rotation[1] << ", " << rotation[2] << endl
@@ -168,7 +181,7 @@ void  AliMUONGeometryTransformStore::Print(Option_t* /*option*/) const
          << rotation[3] << ", " << rotation[4] << ", " << rotation[5] << endl	    
 	 << "                     "	    
          << rotation[6] << ", " << rotation[7] << ", " << rotation[8] << endl;
-
+#endif
   }
 }     
 

@@ -326,10 +326,16 @@ void  AliMUONGeometrySVMap::PrintPositions() const
 
     const double* translation = matrix->GetTranslation();
     cout << "   translation: "
+#if defined (__DECCXX)
+         << translation[0] << ", " 
+         << translation[1] << ", "
+         << translation[2] << endl;
+#else
          << std::fixed
          << std::setw(7) << std::setprecision(4) << translation[0] << ", " 
          << std::setw(7) << std::setprecision(4) << translation[1] << ", "
          << std::setw(7) << std::setprecision(4) << translation[2] << endl;
+#endif
   }
 }     
 

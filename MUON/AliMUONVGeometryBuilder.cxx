@@ -723,8 +723,9 @@ Bool_t  AliMUONVGeometryBuilder::WriteTransformations() const
     Error("WriteTransformations", "File not found.");
     return false;
   }
+#if !defined (__DECCXX)
   out.setf(std::ios::fixed);
-
+#endif
   WriteData1(out);
   WriteData2(out);
   
@@ -751,8 +752,9 @@ Bool_t  AliMUONVGeometryBuilder::WriteSVMap(Bool_t rebuild) const
     Error("WriteTransformations", "File not found.");
     return false;
   }
+#if !defined (__DECCXX)
   out.setf(std::ios::fixed);
-  
+#endif  
   if (rebuild)  RebuildSVMaps();
 
   WriteData3(out);
