@@ -97,7 +97,7 @@ AliDetector (name, title)
   fIdSens3 = 0;
   fIdSens4 = 0;
   fIdSens5 = 0;
-
+  fMerger = 0;
   SetMarkerColor (kRed);
 }
 
