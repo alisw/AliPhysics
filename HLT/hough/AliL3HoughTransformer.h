@@ -34,7 +34,6 @@ class AliL3HoughTransformer : public TObject {
   virtual ~AliL3HoughTransformer();
   
   void SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr);
-  void UpdateDataPointer(AliL3DigitRowData *&tempPt);
   void CreateHistograms(Int_t nxbin,Double_t ptmin,Int_t nybin,Double_t phimin,Double_t phimax);
   void CreateHistograms(Int_t nxbin=64,Double_t xmin=-0.006,Double_t xmax=0.006,
 			Int_t nybin=64,Double_t ymin=-0.26,Double_t ymax=0.26);

@@ -1,6 +1,7 @@
 //Author:        Anders Strand Vestbo
 //Last Modified: 14.09.01
 
+#include "AliL3MemHandler.h"
 #include "AliL3Logging.h"
 #include "AliL3HoughTransformer.h"
 #include "AliL3Defs.h"
@@ -25,7 +26,8 @@ AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta
   fEtaMax = fSlice < 18 ? 0.9 : -0.9;
   fTransform = new AliL3Transform();
   fThreshold = 0;
-  
+  fNDigitRowData=0;
+  fDigitRowData=0;
 }
 
 AliL3HoughTransformer::~AliL3HoughTransformer()
@@ -75,7 +77,7 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t 
 
 void AliL3HoughTransformer::Reset()
 {
-  //Reset all the histograms, and memory
+  //Reset all the histograms
 
   if(!fParamSpace)
     {
@@ -86,24 +88,12 @@ void AliL3HoughTransformer::Reset()
   
   for(Int_t i=0; i<fNEtaSegments; i++)
     fParamSpace[i]->Reset();
-  fNDigitRowData = 0;
-  fDigitRowData = 0;
 }
 
 void AliL3HoughTransformer::SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr)
 {
   fNDigitRowData = ndigits;
   fDigitRowData = ptr;
-}
-
-void AliL3HoughTransformer::UpdateDataPointer(AliL3DigitRowData *&tempPt)
-{
-  //Update the data pointer to the next padrow
-  
-  Byte_t *tmp = (Byte_t*)tempPt;
-  Int_t size = sizeof(AliL3DigitRowData) + tempPt->fNDigit*sizeof(AliL3DigitData);
-  tmp += size;
-  tempPt = (AliL3DigitRowData*)tmp;
 }
 
 void AliL3HoughTransformer::TransformCircle()
@@ -133,14 +123,14 @@ void AliL3HoughTransformer::TransformCircle()
 	  UShort_t charge = digPt[j].fCharge;
 	  UChar_t pad = digPt[j].fPad;
 	  UShort_t time = digPt[j].fTime;
-	  if(charge < fThreshold)
+	  if(charge <= fThreshold)
 	    continue;
 	  Int_t sector,row;
 	  Float_t xyz[3];
 	  fTransform->Slice2Sector(fSlice,i,sector,row);
 	  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
 	  Double_t eta = fTransform->GetEta(xyz);
-	  Int_t eta_index = (Int_t)(eta/etaslice);
+	  Int_t eta_index = (Int_t)((eta-fEtaMin)/etaslice);
 	  if(eta_index < 0 || eta_index >= fNEtaSegments)
 	    continue;
 	  
@@ -164,7 +154,7 @@ void AliL3HoughTransformer::TransformCircle()
 	      hist->Fill(kappa,phi0,charge);
 	    }
 	}
-      UpdateDataPointer(tempPt);
+      AliL3MemHandler::UpdateRowPointer(tempPt);
     }
 }
 
@@ -219,7 +209,7 @@ void AliL3HoughTransformer::TransformLine()
 	      hist->Fill(theta,rho,charge);
 	    }
 	}
-      UpdateDataPointer(tempPt);
+      AliL3MemHandler::UpdateRowPointer(tempPt);
     }
   
 }
