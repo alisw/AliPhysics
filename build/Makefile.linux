@@ -27,7 +27,7 @@ ifeq ($(CCMAJORV),2)
 CXXFLAGS       = $(OPT) -W -Wall -fPIC -pipe
 CXXFLAGSNO     = $(NOOPT) -W -Wall -fPIC -pipe
 else
-CXXFLAGS       = $(OPT) -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
+CXXFLAGS       = $(OPT) -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux
 CXXFLAGSNO     = $(NOOPT) -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
 endif
 CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi

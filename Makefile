@@ -11,6 +11,8 @@ else
 MUTE:=@
 endif
 
+CLEAN=$(findstring clean,$(patsubst %clean%,clean,$(MAKECMDGOALS)))
+
 #-------------------------------------------------------------------------------
 # IRST coding rule check
 
@@ -147,21 +149,19 @@ endif
 	@share/alibtool mkmodule  $(patsubst %/module.mk,%,$@) > $@;
 
 #-------------------------------------------------------------------------------
-# If cleaning, do not include dependencies or module.mk files.
-
-ifeq ($(findstring $(MAKECMDGOALS), clean distclean clean-all clean-dicts \
-clean-modules clean-depend clean-objects clean-libs clean-bins \
-clean-check-all),)
-
-#-------------------------------------------------------------------------------
 # If making modules, not not include anything
 
-ifneq ($(findstring modules,$(MAKECMDGOALS)),modules)
+ifeq ($(findstring modules,$(MAKECMDGOALS)),)
 
 #-------------------------------------------------------------------------------
 # Include the modules
 
 -include $(patsubst %,%/module.mk,$(MODULES))
+
+#-------------------------------------------------------------------------------
+# If cleaning, do not include dependencies or module.mk files.
+
+ifeq ($(CLEAN),)
 
 #-------------------------------------------------------------------------------
 # Include dependencies if not making them!
