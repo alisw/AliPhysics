@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2001/05/16 14:57:28  alibrary
+New files for folders and Stack
+
 Revision 1.23  2001/05/14 09:51:50  coppedis
 Change in AddHit suggested by J. Chudoba
 
@@ -381,28 +384,34 @@ void AliZDCv1::CreateBeamLine()
   gMC->Gsvolu("QT09", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QT09", 1, "ZDC ", 0., 0., tubpar[2] + zd1, 0, "ONLY");
   
+  
   // --- Insert TDI (inside ZDC volume)
   
   boxpar[0] = 5.6;
   boxpar[1] = 5.6;
   boxpar[2] = 400./2.;
   gMC->Gsvolu("QTD1", "BOX ", idtmed[7], boxpar, 3);
-  gMC->Gspos("QTD1", 1, "ZDC ", 0., 10.6, tubpar[2] + zd1 + 56.3, 0, "ONLY");
-  gMC->Gspos("QTD1", 2, "ZDC ", 0., -10.6, tubpar[2] + zd1 + 56.3, 0, "ONLY");
+  gMC->Gspos("QTD1", 1, "ZDC ", 3., 10.6, tubpar[2] + zd1 + 56.3, 0, "ONLY");
+  gMC->Gspos("QTD1", 2, "ZDC ", 3., -10.6, tubpar[2] + zd1 + 56.3, 0, "ONLY");
   
   boxpar[0] = 0.2/2.;
   boxpar[1] = 5.6;
   boxpar[2] = 400./2.;
   gMC->Gsvolu("QTD2", "BOX ", idtmed[6], boxpar, 3);
-  gMC->Gspos("QTD2", 1, "ZDC ", 5.6+boxpar[0], 0., tubpar[2] + zd1 + 56.3, 0, "ONLY");
+  gMC->Gspos("QTD2", 1, "ZDC ", 8.6+boxpar[0], 0., tubpar[2] + zd1 + 56.3, 0, "ONLY");
   
-  tubspar[0] = 6.2;
+  tubspar[0] = 6.2;   // R = 6.2 cm----------------------------------------
   tubspar[1] = 6.4;
   tubspar[2] = 400./2.;
   tubspar[3] = 180.-62.5;
   tubspar[4] = 180.+62.5;
+//  tubspar[0] = 10.5;    // R = 10.5 cm------------------------------------------
+//  tubspar[1] = 10.7;
+//  tubspar[2] = 400./2.;
+//  tubspar[3] = 180.-75.5;
+//  tubspar[4] = 180.+75.5;
   gMC->Gsvolu("QTD3", "TUBS", idtmed[6], tubspar, 5);
-  gMC->Gspos("QTD3", 1, "ZDC ", -3., 0., tubpar[2] + zd1 + 56.3, 0, "ONLY");
+  gMC->Gspos("QTD3", 1, "ZDC ", 0., 0., tubpar[2] + zd1 + 56.3, 0, "ONLY");
 
   zd1 += tubpar[2] * 2.;
   
@@ -1033,7 +1042,7 @@ void AliZDCv1::CreateMaterials()
   
   // --- Tracking media parameters 
   Float_t epsil  = .01, stmin=0.01, stemax = 1.;
-  Int_t   isxfld = gAlice->Field()->Integ();
+//  Int_t   isxfld = gAlice->Field()->Integ();
 //  Float_t fieldm = gAlice->Field()->Max();
   Float_t fieldm = 0., tmaxfd = 0.;
   Int_t   ifield = 0, isvolActive = 1, isvol = 0, inofld = 0;
@@ -1054,7 +1063,7 @@ void AliZDCv1::CreateMaterials()
   
   ifield =2;
   fieldm = 45.;
-  AliMedium(11, "ZVOIM", 11, isvol, isxfld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(11, "ZVOIM", 11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   
   // Thresholds for showering in the ZDCs 
   i = 1; //tantalum
@@ -1425,8 +1434,8 @@ void AliZDCv1::StepManager()
 //	printf("\n	# of p lost in Inner Triplet = %d\n",fpLostIT);
 //	printf("\n	# of p lost in D1  = %d\n",fpLostD1);
 //	printf("\n	# of p lost in TDI = %d\n",fpLostTDI);
-//        return;
 //      }
+//      return;
 //    }
   
   //Particle coordinates 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/05/14 09:57:39  coppedis
+A different geometry for the ZDCs
+
 
 */
 
@@ -437,7 +440,7 @@ void AliZDCv2::CreateBeamLine()
   Float_t zb = -800.;	 	// End of QBPM (from AliPIPEv0.cxx)
   tubpar[0] = 8.0/2.;
   tubpar[1] = 8.2/2.;
-  tubpar[2] = (1000+zb)/2.;	// From the end of QBPM to z=1000.
+  tubpar[2] = (1050+zb)/2.;	// From the end of QBPM to z=1050.
   gMC->Gsvolu("QT19", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QT19", 1, "ZDC ", 0., 0., zb - tubpar[2], 0, "ONLY");
 
@@ -966,7 +969,7 @@ void AliZDCv2::CreateMaterials()
   
   // --- Tracking media parameters 
   Float_t epsil  = .01, stmin=0.01, stemax = 1.;
-  Int_t   isxfld = gAlice->Field()->Integ();
+//  Int_t   isxfld = gAlice->Field()->Integ();
   Float_t fieldm = 0., tmaxfd = 0.;
   Int_t   ifield = 0, isvolActive = 1, isvol = 0, inofld = 0;
   
@@ -986,7 +989,7 @@ void AliZDCv2::CreateMaterials()
   
   ifield =2;
   fieldm = 45.;
-  AliMedium(11, "ZVOIM", 11, isvol, isxfld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(11, "ZVOIM", 11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   
   // Thresholds for showering in the ZDCs 
   i = 1; //tantalum
@@ -1357,8 +1360,8 @@ void AliZDCv2::StepManager()
 //	printf("\n	# of p lost in Inner Triplet = %d\n",fpLostIT);
 //	printf("\n	# of p lost in D1  = %d\n",fpLostD1);
 //	printf("\n	# of p lost in TDI = %d\n",fpLostTDI);
-//        return;
 //      }
+//      return;
 //    }
   
   //Particle coordinates 
