@@ -66,8 +66,8 @@ AliTOFDigitMap::AliTOFDigitMap(TClonesArray *dig)
   fNplate = AliTOFConstants::fgkNPlates;
   fNstrip = AliTOFConstants::fgkNStripC;
   fNpx  = AliTOFConstants::fgkNpadX;
-  fNpy  = AliTOFConstants::fgkNpadZ;
-  fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpy;
+  fNpz  = AliTOFConstants::fgkNpadZ;
+  fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
   fDigitMap = new Int_t[fMaxIndex];
   fDigits =  dig;
   Clear();
@@ -109,11 +109,11 @@ Int_t AliTOFDigitMap::CheckedIndex(Int_t *vol) const
 // Return checked indices for vol
 //
   Int_t index=
-    (vol[0]-1)*fNplate*fNstrip*fNpx*fNpy+             // sector
-    (vol[1]-1)*fNstrip*fNpx*fNpy+                     // plate
-    (vol[2]-1)*fNpx*fNpy+                             // strip
-    (vol[3]-1)*fNpy+                                  // padx
-    (vol[4]-1);                                        // pady (=padz)
+    (vol[0]/*-1*/)*fNplate*fNstrip*fNpx*fNpz+             // sector
+    (vol[1]/*-1*/)*fNstrip*fNpx*fNpz+                     // plate
+    (vol[2]/*-1*/)*fNpx*fNpz+                             // strip
+    (vol[3]/*-1*/)*fNpz+                                  // padx
+    (vol[4]/*-1*/);                                       // padz
 
     if (index >= fMaxIndex) {
       Error("AliTOFDigitMap","CheckedIndex - input outside bounds");
