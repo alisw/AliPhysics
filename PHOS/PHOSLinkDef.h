@@ -13,6 +13,7 @@
 #pragma link C++ class AliPHOS+;
 #pragma link C++ class AliPHOSv0+;
 #pragma link C++ class AliPHOSv1+;
+#pragma link C++ class AliPHOSv2+;
 #pragma link C++ class AliPHOSvFast+;
 #pragma link C++ class AliPHOSvImpacts+;
 #pragma link C++ class AliPHOSImpact+;
@@ -50,4 +51,5 @@
 #pragma link C++ class AliPHOSRecEmcManager+;
 #pragma link C++ class AliPHOSClusterizerv2+;
 #pragma link C++ class AliPHOSEvalRecPoint+;
+#pragma link C++ class AliPHOSPIDv2+;
 #endif

@@ -41,20 +41,36 @@ class AliPHOSFastRecParticle : public TParticle {
     return fIndexInList ; 
   } 
   Int_t GetPrimary(){return fPrimary;}
+  
   const Int_t GetType() const { 
     // returns the type of the particle
     return fType ; 
   } 
+  
+  void SetPIDBit(UInt_t fSet)
+  {
+  fType |= (1<<fSet) ; 
+  } 
+   
+  Bool_t TestPIDBit(UInt_t fTest){
+   if (fType & (1<<fTest) )
+     return  kTRUE ;	
+   else
+     return kFALSE ;
+   }
+     
   TString Name() ; 
   virtual void Paint(Option_t * option="");
   virtual void Print(const char * opt) ; 
   void SetPrimary(Int_t index) { // sets the primary particle index
     fPrimary = index ; 
   }
+  
   void SetType(Int_t type) { 
     // sets the particle type 
     fType = type ; 
-  } 
+  }	    
+ 
   void SetIndexInList(Int_t val) { 
     // sets the value of the index in the list 
     fIndexInList = val ; 
@@ -69,7 +85,7 @@ class AliPHOSFastRecParticle : public TParticle {
  protected:
 
   Int_t fIndexInList ; // the index of this RecParticle in the list stored in TreeR (to be set by analysis)
-  Int_t fPrimary ;  //  primary particle index 
+  Int_t fPrimary ;     //  primary particle index 
   Int_t fType ;        // particle type obtained by "virtual" reconstruction
 
  private:

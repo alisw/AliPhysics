@@ -40,7 +40,7 @@ ClassImp(AliPHOSFastRecParticle) ;
 {
   // copy ctor
 
-  fType        = rp.fType ; 
+  fType        = rp.fType ;
   fPdgCode     = rp.fPdgCode;
   fStatusCode  = rp.fStatusCode;
   fMother[0]   = rp.fMother[0];

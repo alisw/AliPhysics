@@ -87,8 +87,8 @@ test:
 		@echo " Starting the test of the simulation/reconstruction software. Please don't take the warning messages into account. "
 		@echo " ____________________________________________________________ "
 		@aliroot -b -q "test.C(100)" > out
-		@rm out
-		@rm testPHOS.root 
+#		@rm out
+#		@rm testPHOS.root 
 		@rm testsimglobal_C.so
 
 test10:	

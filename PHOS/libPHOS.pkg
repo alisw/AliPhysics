@@ -1,4 +1,4 @@
-SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx \
+SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSvFast.cxx AliPHOSvImpacts.cxx \
                  AliPHOSImpact.cxx \
                  AliPHOSHit.cxx \
@@ -21,7 +21,7 @@ SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx \
                  AliPHOSQAObjectCheckable.cxx AliPHOSQAChecker.cxx AliPHOSQAMeanChecker.cxx AliPHOSQAAlarm.cxx \
                  AliPHOSIhepAnalyze.cxx AliPHOSEvalRecPoint.cxx \
                  AliPHOSRecManager.cxx AliPHOSRecCpvManager.cxx AliPHOSRecEmcManager.cxx \
-                 AliPHOSClusterizerv2.cxx
+                 AliPHOSClusterizerv2.cxx AliPHOSPIDv2.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
