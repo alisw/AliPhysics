@@ -31,7 +31,7 @@ class AliTRDsim : public TObject {
   virtual void          Init();
   virtual Int_t         CreatePhotons(Int_t pdg, Float_t p
                                     , Int_t &nPhoton, Float_t *ePhoton);
-  virtual Int_t         TrPhotons(Double_t gamma, Int_t &nPhoton, Float_t *ePhoton);
+  virtual Int_t         TrPhotons(Float_t p, Float_t mass, Int_t &nPhoton, Float_t *ePhoton);
   virtual Double_t      Sigma(Double_t energykeV);
   virtual Double_t      Interpolate(Double_t energyMeV
                                   , Double_t *en, Double_t *mu, Int_t n);
@@ -39,8 +39,8 @@ class AliTRDsim : public TObject {
                              , Int_t &kl, Double_t &dx);
   virtual Double_t      Omega(Float_t rho, Float_t z, Float_t a) 
                              { return (28.8 * TMath::Sqrt(rho * z / a)); };
+  virtual Int_t         SelectNFoils(Float_t p);
 
-          void          SetNFoils(Int_t n)      { fNFoils    = n;       };
           void          SetFoilThick(Float_t t) { fFoilThick = t;
                            SetSigma();                                  };
           void          SetGapThick(Float_t t)  { fGapThick  = t;
@@ -73,7 +73,6 @@ class AliTRDsim : public TObject {
   virtual Double_t      GetMuHe(Double_t energyMeV);
   virtual Double_t      GetMuAi(Double_t energyMeV);
 
-          Int_t         GetNFoils() const       { return fNFoils;        };
           Float_t       GetFoilThick() const    { return fFoilThick;     };
           Float_t       GetGapThick() const     { return fGapThick;      };
           Float_t       GetFoilDens() const     { return fFoilDens;      };
@@ -85,7 +84,9 @@ class AliTRDsim : public TObject {
 
  protected:
 
-  Int_t     fNFoils;               // Number of foils in the radiator stack
+  Int_t     fNFoilsDim;            // Dimension of the NFoils array
+  Int_t    *fNFoils;               //[fNFoilsDim] Number of foils in the radiator stack
+  Double_t *fNFoilsUp;             //[fNFoilsDim] Upper momenta for a given number of foils
   Float_t   fFoilThick;            // Thickness of the foils (cm)
   Float_t   fGapThick;             // Thickness of the gaps between the foils (cm)
 
@@ -113,7 +114,7 @@ class AliTRDsim : public TObject {
 
   TH1D     *fSpectrum;             //!TR photon energy spectrum
 
-  ClassDef(AliTRDsim,1)            // Simulates TR photons
+  ClassDef(AliTRDsim,2)            // Simulates TR photons
 
 };
 #endif

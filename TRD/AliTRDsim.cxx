@@ -24,6 +24,7 @@
 //   17.07.1998 - A.Andronic                                                 //
 //   08.12.1998 - simplified version                                         //
 //   11.07.2000 - Adapted code to aliroot environment (C.Blume)              //
+//   04.06.2004 - Momentum dependent parameters implemented (CBL)            //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -49,6 +50,8 @@ AliTRDsim::AliTRDsim():TObject()
 
   fSpectrum = 0;
   fSigma    = 0;
+  fNFoils   = 0;
+  fNFoilsUp = 0;
 
   Init();
 
@@ -71,6 +74,8 @@ AliTRDsim::AliTRDsim(AliModule *mod, Int_t foil, Int_t gap)
 
   fSpectrum = 0;
   fSigma    = 0;
+  fNFoils   = 0;
+  fNFoilsUp = 0;
 
   Init();
 
@@ -109,6 +114,8 @@ AliTRDsim::~AliTRDsim()
 
   //  if (fSpectrum) delete fSpectrum;
   if (fSigma)    delete [] fSigma;
+  if (fNFoils)   delete [] fNFoils;
+  if (fNFoilsUp) delete [] fNFoilsUp;
 
 }
 
@@ -131,7 +138,6 @@ void AliTRDsim::Copy(TObject &s)
   // Copy function
   //
 
-  ((AliTRDsim &) s).fNFoils     = fNFoils;
   ((AliTRDsim &) s).fFoilThick  = fFoilThick;
   ((AliTRDsim &) s).fFoilDens   = fFoilDens;
   ((AliTRDsim &) s).fFoilOmega  = fFoilOmega;
@@ -149,7 +155,19 @@ void AliTRDsim::Copy(TObject &s)
   ((AliTRDsim &) s).fSpLower    = fSpLower;
   ((AliTRDsim &) s).fSpUpper    = fSpUpper;
 
-  if (((AliTRDsim &) s).fSigma) delete [] ((AliTRDsim &) s).fSigma;
+  if (((AliTRDsim &) s).fNFoils) delete [] ((AliTRDsim &) s).fNFoils;
+  ((AliTRDsim &) s).fNFoils   = new Int_t[fNFoilsDim];
+  for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
+    ((AliTRDsim &) s).fNFoils[iFoil] = fNFoils[iFoil];
+  }  
+
+  if (((AliTRDsim &) s).fNFoilsUp) delete [] ((AliTRDsim &) s).fNFoilsUp;
+  ((AliTRDsim &) s).fNFoilsUp = new Double_t[fNFoilsDim];
+  for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
+    ((AliTRDsim &) s).fNFoilsUp[iFoil] = fNFoilsUp[iFoil];
+  }  
+
+  if (((AliTRDsim &) s).fSigma)  delete [] ((AliTRDsim &) s).fSigma;
   ((AliTRDsim &) s).fSigma = new Double_t[fSpNBins];
   for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
     ((AliTRDsim &) s).fSigma[iBin] = fSigma[iBin];
@@ -164,11 +182,31 @@ void AliTRDsim::Init()
 {
   //
   // Initialization 
-  // The default radiator are 100 prolypropilene foils of 13 mu thickness
-  // with gaps of 60 mu filled with CO2.
+  // The default radiator are prolypropilene foils of 10 mu thickness
+  // with gaps of 80 mu filled with N2.
   // 
 
-  fNFoils     = 100;
+  fNFoilsDim   = 7;
+
+  if (fNFoils)   delete [] fNFoils;
+  fNFoils      = new Int_t[fNFoilsDim];
+  fNFoils[0]   = 170;
+  fNFoils[1]   = 250;
+  fNFoils[2]   = 310;
+  fNFoils[3]   = 380;
+  fNFoils[4]   = 430;
+  fNFoils[5]   = 490;
+  fNFoils[6]   = 550;
+
+  if (fNFoilsUp) delete [] fNFoilsUp;
+  fNFoilsUp    = new Double_t[fNFoilsDim];
+  fNFoilsUp[0] = 1.25;
+  fNFoilsUp[1] = 1.75;
+  fNFoilsUp[2] = 2.50;
+  fNFoilsUp[3] = 3.50;
+  fNFoilsUp[4] = 4.50;
+  fNFoilsUp[5] = 5.50;
+  fNFoilsUp[6] = 10000.0;
 
   fFoilThick  = 0.0013;
   fFoilDens   = 0.92;   
@@ -177,9 +215,9 @@ void AliTRDsim::Init()
   fFoilOmega  = Omega(fFoilDens,fFoilZ,fFoilA);
 
   fGapThick   = 0.0060;
-  fGapDens    = 0.001977;  
-  fGapZ       = 7.45455;
-  fGapA       = 14.9091;
+  fGapDens    = 0.00125;  
+  fGapZ       = 7.0;
+  fGapA       = 14.00674;
   fGapOmega   = Omega(fGapDens ,fGapZ ,fGapA );
 
   fTemp       = 293.16;
@@ -235,16 +273,14 @@ Int_t AliTRDsim::CreatePhotons(Int_t pdg, Float_t p
     break;
   };
 
-  // Calculate gamma
-  Double_t gamma = TMath::Sqrt(p*p + mass*mass) / mass;
-
   // Calculate the TR photons
-  return TrPhotons(gamma, nPhoton, ePhoton);
+  return TrPhotons(p, mass, nPhoton, ePhoton);
 
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDsim::TrPhotons(Double_t gamma, Int_t &nPhoton, Float_t *ePhoton)
+Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
+                         , Int_t &nPhoton, Float_t *ePhoton)
 {
   //
   // Produces TR photons.
@@ -254,6 +290,12 @@ Int_t AliTRDsim::TrPhotons(Double_t gamma, Int_t &nPhoton, Float_t *ePhoton)
   const Int_t    kSumMax = 10;
 
   Double_t kappa = fGapThick / fFoilThick;
+
+  // Calculate gamma
+  Double_t gamma = TMath::Sqrt(p*p + mass*mass) / mass;
+
+  // Select the number of foils corresponding to momentum
+  Int_t    foils = SelectNFoils(p);
 
   fSpectrum->Reset();
 
@@ -283,7 +325,7 @@ Int_t AliTRDsim::TrPhotons(Double_t gamma, Int_t &nPhoton, Float_t *ePhoton)
     }
 
     // Absorbtion
-    Double_t conv      = 1.0 - TMath::Exp(-fNFoils * fSigma[iBin]);
+    Double_t conv      = 1.0 - TMath::Exp(-foils * fSigma[iBin]);
 
     // eV -> keV
     Float_t  energykeV = energyeV * 0.001;
@@ -760,5 +802,25 @@ Int_t AliTRDsim::Locate(Double_t *xv, Int_t n, Double_t xval
   dx = xval - xv[kl];
 
   return 0;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDsim::SelectNFoils(Float_t p)
+{
+  //
+  // Selects the number of foils corresponding to the momentum
+  //
+
+  Int_t foils = fNFoils[fNFoilsDim-1];
+
+  for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
+    if (p < fNFoilsUp[iFoil]) {
+      foils = fNFoils[iFoil];
+      break;
+    }
+  }
+
+  return foils;
 
 }
