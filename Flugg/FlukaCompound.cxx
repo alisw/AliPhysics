@@ -70,7 +70,7 @@ G4std::ostream& operator<<(G4std::ostream& os, const FlukaCompound& flucomp) {
   os << "* " << matName << " COMPOUND (" << nmats << ")" << G4endl;
   
   //Material card
-  os << *(flucomp.GetFlukaMaterial());
+  //os << *(flucomp.GetFlukaMaterial());
 
   //The card
   G4int counttothree = 0;

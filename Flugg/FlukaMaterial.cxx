@@ -72,8 +72,8 @@ G4std::ostream& FlukaMaterial::PrintMaterialsByName(G4std::ostream& os) {
        i++) {
     FlukaMaterial* flumat     = (*i).second;
     
-    if (flumat->GetZ()) //Skip materials that describe only compounds
-      os << *flumat;
+    //if (flumat->GetZ()) //Skip materials that describe only compounds
+    os << *flumat;
   }
   return os;
 }
@@ -85,8 +85,8 @@ G4std::ostream& FlukaMaterial::PrintMaterialsByIndex(G4std::ostream& os) {
        i++) {
     FlukaMaterial* flumat     = (*i).second;
     
-    if (flumat->GetZ()) //Skip materials that describe only compounds
-      os << *flumat;
+    //if (flumat->GetZ()) //Skip materials that describe only compounds
+    os << *flumat;
   }
   return os;
 }
