@@ -29,7 +29,7 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("MAG",    1, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("PIPE",   4, 0, 0, kStructure);
+  detSwitch = new AliDetSwitch("PIPE",   5, 4, 4, kStructure);
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("SHIL",   1, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
@@ -39,7 +39,7 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("ITS",   10, 7, 7);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("MUON",   2, 0, 0);
+  detSwitch = new AliDetSwitch("MUON",   2, 1, 1);
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("PHOS",   5, 1, 1);
   AddDetSwitch(detSwitch); 
@@ -139,14 +139,12 @@ void AliDetConstruction::CreateDetectors()
   AddSingleModuleConstruction("BODY", 0, kStructure);
 
   // add modules constructions
-  const G4RWTPtrOrderedVector<AliDetSwitch>& krDetSwitchVector 
-    = GetDetSwitchVector();
-  for (G4int id=0; id<krDetSwitchVector.entries(); id++)
+  for (G4int id=0; id<fDetSwitchVector.entries(); id++)
   {
-    G4String detName = krDetSwitchVector[id]->GetDetName();
-    G4int version = krDetSwitchVector[id]->GetSwitchedVersion();
-    G4bool isStandalone = krDetSwitchVector[id]->IsStandalone();
-    AliModuleType type = krDetSwitchVector[id]->GetType();
+    G4String detName = fDetSwitchVector[id]->GetDetName();
+    G4int version = fDetSwitchVector[id]->GetSwitchedVersion();
+    G4bool isStandalone = fDetSwitchVector[id]->IsStandalone();
+    AliModuleType type = fDetSwitchVector[id]->GetType();
     
     if (version > -1)
       if (isStandalone)
@@ -165,73 +163,61 @@ void AliDetConstruction::CheckDetDependencies()
 // ZDC requires DIPO
 // ---
 
-  const G4RWTPtrOrderedVector<AliDetSwitch>& krDetSwitchVector 
-    = GetDetSwitchVector();
-
   // get switched versions of dependent modules
-  G4int nofDets = krDetSwitchVector.entries();
-  G4int verFRAME = -1; 
-  G4int verDIPO = -1; 
-  G4int verTOF = -1; 
-  G4int verTRD = -1; 
-  G4int verZDC = -1; 
-  AliDetSwitch* detSwitchFRAME = 0;
-  AliDetSwitch* detSwitchDIPO = 0;
-  for (G4int id=0; id<nofDets; id++) {  
-    G4String detName = krDetSwitchVector[id]->GetDetName();
-    if (detName == "FRAME") { 
-      verFRAME = krDetSwitchVector[id]->GetSwitchedVersion();  
-      detSwitchFRAME = krDetSwitchVector[id];
-    }  
-    if (detName == "DIPO") { 
-      verDIPO = krDetSwitchVector[id]->GetSwitchedVersion();  
-      detSwitchDIPO = krDetSwitchVector[id];
-    }  
-    if (detName == "TOF")  
-      verTOF = krDetSwitchVector[id]->GetSwitchedVersion();  
-    if (detName == "TRD")  
-      verTRD = krDetSwitchVector[id]->GetSwitchedVersion();  
-    if (detName == "ZDC")  
-      verZDC = krDetSwitchVector[id]->GetSwitchedVersion();  
-  }
+  G4int verTOF = GetDetSwitch("TOF")->GetSwitchedVersion(); 
+  G4int verTRD = GetDetSwitch("TRD")->GetSwitchedVersion(); 
+  G4int verZDC = GetDetSwitch("ZDC")->GetSwitchedVersion(); 
+  G4int verFRAME = GetDetSwitch("FRAME")->GetSwitchedVersion(); 
   
   // check dependencies  
-  if (verTRD > -1 && verTOF > -1) {
-    // both TRD and TOF 
+  if (verTOF > -1) {
+    // TOF requires FRAMEv1 
     if (verFRAME != 1) {
-      detSwitchFRAME->SwitchOn(1);
-      G4String text = "AliDetConstruction::CheckDetDependencies: \n";
-      text = text + "    Switched TOF and TRD require FRAME v1.\n"; 
-      text = text + "    The det switch for FRAME has been changed."; 
-      AliGlobals::Warning(text);
-    }  
-  }
-  else if (verTRD > -1 && verTOF == -1)   {
-    // only TRD
-    if (verFRAME < 0) {
-      detSwitchFRAME->SwitchOn(1);
-      G4String text = "AliDetConstruction::CheckDetDependencies: \n";
-      text = text + "    Switched TRD require FRAME.\n"; 
-      text = text + "    The det switch for FRAME has been changed."; 
-      AliGlobals::Warning(text);
-    }  
-  }  
-  else if (verTRD == -1 && verTOF > -1)   {
-    // only TOF
-    if (verFRAME != 1) {
-      detSwitchFRAME->SwitchOn(1);
+      GetDetSwitch("FRAME")->SwitchOn(1);
       G4String text = "AliDetConstruction::CheckDetDependencies: \n";
       text = text + "    Switched TOF requires FRAME v1.\n"; 
       text = text + "    The det switch for FRAME has been changed."; 
       AliGlobals::Warning(text);
     }  
   }
-  if (verZDC > 0 && verDIPO == -1) {
-      detSwitchDIPO->SwitchOnDefault();
+  if (verTRD > -1) {
+    // TRD requires FRAME
+    verFRAME = GetDetSwitch("FRAME")->GetSwitchedVersion(); 
+    if (verFRAME < 0) {
+      GetDetSwitch("FRAME")->SwitchOnDefault();
       G4String text = "AliDetConstruction::CheckDetDependencies: \n";
-      text = text + "    Switched ZDC requires DIPO.\n"; 
-      text = text + "    The det switch for DIPO has been changed."; 
+      text = text + "    Switched TRD requires FRAME.\n"; 
+      text = text + "    The det switch for FRAME has been changed."; 
       AliGlobals::Warning(text);
+    }  
+  }  
+  if (verZDC > 0) {
+    // ZDC requires PIPE, ABSO, DIPO, SHIL 
+    G4int verPIPE = GetDetSwitch("PIPE")->GetSwitchedVersion(); 
+    G4int verABSO = GetDetSwitch("ABSO")->GetSwitchedVersion(); 
+    G4int verDIPO = GetDetSwitch("DIPO")->GetSwitchedVersion(); 
+    G4int verSHIL = GetDetSwitch("SHIL")->GetSwitchedVersion(); 
+    if ( verPIPE != 1 || verABSO !=0 || verDIPO == -1 || verSHIL == -1) {
+      G4String text = "AliDetConstruction::CheckDetDependencies: \n";
+      text = text + "    Switched ZDC requires PIPE, ABSO, DIPO and SHIL.\n"; 
+      if (verPIPE == -1) {
+        GetDetSwitch("PIPE")->SwitchOnDefault();
+        text = text + "    The det switch for PIPE has been changed.\n"; 
+      }  
+      if (verABSO == -1) {
+        GetDetSwitch("ABSO")->SwitchOnDefault();
+        text = text + "    The det switch for ABSO has been changed.\n"; 
+      }  
+      if (verDIPO == -1) {
+        GetDetSwitch("DIPO")->SwitchOnDefault();
+        text = text + "    The det switch for DIPO has been changed.\n"; 
+      }  
+      if (verSHIL == -1) {
+        GetDetSwitch("SHIL")->SwitchOnDefault();
+        text = text + "    The det switch for SHIL has been changed."; 
+      }  
+      AliGlobals::Warning(text);
+    }  
   }    
 }  
 
