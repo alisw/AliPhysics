@@ -292,7 +292,6 @@ void AliITSClusterFinderSDD::Find1DClusters()
   
   for(i=0;i<fNofMaps;i++) delete[] dfadc[i];
   delete [] dfadc;
-  delete dfadc;  
 
   return;
 
@@ -340,7 +339,6 @@ void  AliITSClusterFinderSDD::GroupClusters()
   fClusters->Compress();
   
   delete [] label;
-  delete label;
   return;
 
 }

@@ -46,7 +46,6 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp)
     if (strstr(opt,"SetInvalid")) SetInvalidMC(fNInvalid,fISigma);
 	 
 	 delete [] detpar;
-	 delete detpar;
 
 }
 
