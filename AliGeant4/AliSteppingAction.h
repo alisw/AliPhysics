@@ -47,7 +47,8 @@ class AliSteppingAction : public G4UserSteppingAction
     void PrintTrackInfo(const G4Track* track) const;
   
     // static data members
-    static const G4double fgTolerance;
+    static const G4double fgkTolerance;    //tolerance used in detecting 
+                                           //of looping particles
 
     // data members
     G4ThreeVector   fKeptStepPoint;        //kept step point

@@ -40,53 +40,53 @@ class AliFiles
     
   private:       
     // static data members  
-    static const G4String  fgTop;        //top directory
-    static const G4String  fgConfig;     //path to general Config.C
-    static const G4String  fgDetConfig1; //path (part 1) to module Config.C/in
-    static const G4String  fgDetConfig2; //path (part 2) to module Config.C/in
-    static const G4String  fgDetConfig3; //path (part 3) to module Config.C/in
-    static const G4String  fgDetConfig4; //path (part 2) to module Config.C/in
-    static const G4String  fgDetConfigName1;  //config macro name (part 1)
-    static const G4String  fgDetConfigName2;  //config macro name (part 2)
-    static const G4String  fgDetData1;   //path (part 1) to module g3calls.dat
-    static const G4String  fgDetData2;   //path (part 2) to module g3calls.dat
-    static const G4String  fgDetData3;   //path (part 3) to module g3calls.dat
-    static const G4String  fgSTRUCT;     //structure directory name
+    static const G4String  fgkTop;        //top directory
+    static const G4String  fgkConfig;     //path to general Config.C
+    static const G4String  fgkDetConfig1; //path (part 1) to module Config.C/in
+    static const G4String  fgkDetConfig2; //path (part 2) to module Config.C/in
+    static const G4String  fgkDetConfig3; //path (part 3) to module Config.C/in
+    static const G4String  fgkDetConfig4; //path (part 2) to module Config.C/in
+    static const G4String  fgkDetConfigName1;  //config macro name (part 1)
+    static const G4String  fgkDetConfigName2;  //config macro name (part 2)
+    static const G4String  fgkDetData1;   //path (part 1) to module g3calls.dat
+    static const G4String  fgkDetData2;   //path (part 2) to module g3calls.dat
+    static const G4String  fgkDetData3;   //path (part 3) to module g3calls.dat
+    static const G4String  fgkSTRUCT;     //structure directory name
 };  
 
 // inline methods
 
 inline G4String AliFiles::Config()
-{ return fgConfig; }
+{ return fgkConfig; }
 
 inline G4String AliFiles::DetConfig1()
-{ return fgDetConfig1; }
+{ return fgkDetConfig1; }
 
 inline G4String AliFiles::DetConfig2()
-{ return fgDetConfig2; }
+{ return fgkDetConfig2; }
 
 inline G4String AliFiles::DetConfig3()
-{ return fgDetConfig3; }
+{ return fgkDetConfig3; }
 
 inline G4String AliFiles::DetConfig4()
-{ return fgDetConfig4; }
+{ return fgkDetConfig4; }
 
 inline G4String AliFiles::DetConfigName1()
-{ return fgDetConfigName1; }
+{ return fgkDetConfigName1; }
 
 inline G4String AliFiles::DetConfigName2()
-{ return fgDetConfigName2; }
+{ return fgkDetConfigName2; }
 
 inline G4String AliFiles::DetData1()
-{ return fgDetData1; }
+{ return fgkDetData1; }
 
 inline G4String AliFiles::DetData2()
-{ return fgDetData2; }
+{ return fgkDetData2; }
 
 inline G4String AliFiles::DetData3()
-{ return fgDetData3; }
+{ return fgkDetData3; }
 
 inline G4String AliFiles::STRUCT()
-{ return fgSTRUCT; }
+{ return fgkSTRUCT; }
 
 #endif //ALI_FILES_H

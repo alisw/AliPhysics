@@ -32,25 +32,25 @@ class TG3Units
 
   private:
     // static data members  
-    static const G4double fgLength;       //G3 length unit 
-    static const G4double fgTime;         //G3 time unit 
-    static const G4double fgCharge;       //G3 charge unit  
-    static const G4double fgEnergy;       //G3 energy unit  
-    static const G4double fgMass;         //G3 mass unit
-    static const G4double fgMassDensity;  //G3 mass density unit 
-    static const G4double fgAtomicWeight; //G3 atomic weight unit  
-    static const G4double fgField;        //G3 magnetic field unit 
+    static const G4double fgkLength;       //G3 length unit 
+    static const G4double fgkTime;         //G3 time unit 
+    static const G4double fgkCharge;       //G3 charge unit  
+    static const G4double fgkEnergy;       //G3 energy unit  
+    static const G4double fgkMass;         //G3 mass unit
+    static const G4double fgkMassDensity;  //G3 mass density unit 
+    static const G4double fgkAtomicWeight; //G3 atomic weight unit  
+    static const G4double fgkField;        //G3 magnetic field unit 
 };     
 
 // inline methods
 
-inline G4double TG3Units::Length() { return fgLength; }
-inline G4double TG3Units::Time()   { return fgTime; }
-inline G4double TG3Units::Charge() { return fgCharge; }
-inline G4double TG3Units::Energy() { return fgEnergy; }
-inline G4double TG3Units::Mass()   { return fgMass; }
-inline G4double TG3Units::MassDensity()  { return fgMassDensity; }
-inline G4double TG3Units::AtomicWeight() { return fgAtomicWeight; }
-inline G4double TG3Units::Field()  { return fgField; }
+inline G4double TG3Units::Length() { return fgkLength; }
+inline G4double TG3Units::Time()   { return fgkTime; }
+inline G4double TG3Units::Charge() { return fgkCharge; }
+inline G4double TG3Units::Energy() { return fgkEnergy; }
+inline G4double TG3Units::Mass()   { return fgkMass; }
+inline G4double TG3Units::MassDensity()  { return fgkMassDensity; }
+inline G4double TG3Units::AtomicWeight() { return fgkAtomicWeight; }
+inline G4double TG3Units::Field()  { return fgkField; }
 
 #endif //TG3_UNITS_H

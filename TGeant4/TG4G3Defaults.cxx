@@ -11,33 +11,33 @@
 // static const data members
 
 // precision tolerance
-const G4double TG4G3Defaults::fgCutTolerance = 1. * keV;
+const G4double TG4G3Defaults::fgkCutTolerance = 1. * keV;
 
 // kinetic energy cuts
-const G4double TG4G3Defaults::fgCUTGAM = 0.001 * GeV;
-const G4double TG4G3Defaults::fgCUTELE = 0.001 * GeV;
-const G4double TG4G3Defaults::fgCUTNEU = 0.01 * GeV;
-const G4double TG4G3Defaults::fgCUTHAD = 0.01 * GeV;
-const G4double TG4G3Defaults::fgCUTMUO = 0.01 * GeV;
-const G4double TG4G3Defaults::fgBCUTE  = fgCUTGAM;
-const G4double TG4G3Defaults::fgBCUTM  = fgCUTGAM;
-const G4double TG4G3Defaults::fgDCUTE  = 10. * TeV;
-const G4double TG4G3Defaults::fgDCUTM  = 10. * TeV;
-const G4double TG4G3Defaults::fgPPCUTM = 0.01 * GeV;
+const G4double TG4G3Defaults::fgkCUTGAM = 0.001 * GeV;
+const G4double TG4G3Defaults::fgkCUTELE = 0.001 * GeV;
+const G4double TG4G3Defaults::fgkCUTNEU = 0.01 * GeV;
+const G4double TG4G3Defaults::fgkCUTHAD = 0.01 * GeV;
+const G4double TG4G3Defaults::fgkCUTMUO = 0.01 * GeV;
+const G4double TG4G3Defaults::fgkBCUTE  = fgkCUTGAM;
+const G4double TG4G3Defaults::fgkBCUTM  = fgkCUTGAM;
+const G4double TG4G3Defaults::fgkDCUTE  = 10. * TeV;
+const G4double TG4G3Defaults::fgkDCUTM  = 10. * TeV;
+const G4double TG4G3Defaults::fgkPPCUTM = 0.01 * GeV;
 
 // physics processes
-const TG3FlagValue TG4G3Defaults::fgPAIR = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgCOMP = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgPHOT = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgPFIS = kInActivate; // 0
-const TG3FlagValue TG4G3Defaults::fgDRAY = kActivate2;  // 2
-const TG3FlagValue TG4G3Defaults::fgANNI = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgBREM = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgHADR = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgMUNU = kInActivate; // 0
-const TG3FlagValue TG4G3Defaults::fgDCAY = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgLOSS = kActivate2;  // 2
-const TG3FlagValue TG4G3Defaults::fgMULS = kActivate;   // 1
+const TG3FlagValue TG4G3Defaults::fgkPAIR = kActivate;   // 1
+const TG3FlagValue TG4G3Defaults::fgkCOMP = kActivate;   // 1
+const TG3FlagValue TG4G3Defaults::fgkPHOT = kActivate;   // 1
+const TG3FlagValue TG4G3Defaults::fgkPFIS = kInActivate; // 0
+const TG3FlagValue TG4G3Defaults::fgkDRAY = kActivate2;  // 2
+const TG3FlagValue TG4G3Defaults::fgkANNI = kActivate;   // 1
+const TG3FlagValue TG4G3Defaults::fgkBREM = kActivate;   // 1
+const TG3FlagValue TG4G3Defaults::fgkHADR = kActivate;   // 1
+const TG3FlagValue TG4G3Defaults::fgkMUNU = kInActivate; // 0
+const TG3FlagValue TG4G3Defaults::fgkDCAY = kActivate;   // 1
+const TG3FlagValue TG4G3Defaults::fgkLOSS = kActivate2;  // 2
+const TG3FlagValue TG4G3Defaults::fgkMULS = kActivate;   // 1
 
 TG4G3Defaults::TG4G3Defaults() {
 //
@@ -54,25 +54,25 @@ G4double TG4G3Defaults::CutValue(G4int g3Cut)
 
   switch (g3Cut) {
     case kCUTGAM:  
-      return fgCUTGAM; break;
+      return fgkCUTGAM; break;
     case kCUTELE:  
-      return fgCUTELE; break;
+      return fgkCUTELE; break;
     case kCUTNEU:  
-      return fgCUTNEU; break;
+      return fgkCUTNEU; break;
     case kCUTHAD:  
-      return fgCUTHAD; break;
+      return fgkCUTHAD; break;
     case kCUTMUO:  
-      return fgCUTMUO; break;
+      return fgkCUTMUO; break;
     case kBCUTE:   
-      return fgBCUTE;  break;
+      return fgkBCUTE;  break;
     case kBCUTM:   
-      return fgBCUTM;  break; 
+      return fgkBCUTM;  break; 
     case kDCUTE:   
-      return fgDCUTE;  break;
+      return fgkDCUTE;  break;
     case kDCUTM:   
-      return fgDCUTM;  break;
+      return fgkDCUTM;  break;
     case kPPCUTM:  
-      return fgPPCUTM; break;
+      return fgkPPCUTM; break;
     default:
       TG4Globals::Warning("TG4G3Defaults::CutValue: Inconsistent cut.");
       return 0.;      
@@ -86,29 +86,29 @@ TG3FlagValue TG4G3Defaults::FlagValue(G4int g3Flag)
 
   switch (g3Flag) {
     case kPAIR:
-      return fgPAIR; break;
+      return fgkPAIR; break;
     case kCOMP:
-      return fgCOMP; break;
+      return fgkCOMP; break;
     case kPHOT:
-      return fgPHOT; break;
+      return fgkPHOT; break;
     case kPFIS:
-      return fgPFIS; break;
+      return fgkPFIS; break;
     case kDRAY:
-      return fgDRAY; break;
+      return fgkDRAY; break;
     case kANNI:
-      return fgANNI; break;
+      return fgkANNI; break;
     case kBREM:
-      return fgBREM; break;
+      return fgkBREM; break;
     case kHADR:
-      return fgHADR; break;
+      return fgkHADR; break;
     case kMUNU:
-      return fgMUNU; break;
+      return fgkMUNU; break;
     case kDCAY:
-      return fgDCAY; break;
+      return fgkDCAY; break;
     case kLOSS:
-      return fgLOSS; break;
+      return fgkLOSS; break;
     case kMULS:
-      return fgMULS; break;
+      return fgkMULS; break;
     default:
       TG4Globals::Warning("TG4G3Defaults::FlagValue: Inconsistent flag.");
       return kUnset;      
@@ -120,7 +120,7 @@ G4bool TG4G3Defaults::IsDefaultCut(TG3Cut g3Cut, G4double value)
 // Tests if the parameter value is equal to the G3 default value.
 // ---
 
-  if (abs(value*GeV - CutValue(g3Cut)) > fgCutTolerance) 
+  if (abs(value*GeV - CutValue(g3Cut)) > fgkCutTolerance) 
     return false;
   else  
     return true;

@@ -36,36 +36,36 @@ class TG4G3Defaults
   private:
     // static data members  
       // precision tolerance
-    static const G4double fgCutTolerance; //tolerance for checking
+    static const G4double fgkCutTolerance; //tolerance for checking
                                           //cut values with default
        // kinetic energy cuts
-    static const G4double fgCUTGAM;   //CUTGAM default value 
-    static const G4double fgCUTELE;   //CUTELE default value
-    static const G4double fgCUTNEU;   //CUTNEU default value
-    static const G4double fgCUTHAD;   //CUTHAD default value
-    static const G4double fgCUTMUO;   //CUTMUO default value
-    static const G4double fgBCUTE;    //BCUTE default value
-    static const G4double fgBCUTM;    //BCUTM default value
-    static const G4double fgDCUTE;    //DCUTE default value
-    static const G4double fgDCUTM;    //DCUTM default value
-    static const G4double fgPPCUTM;   //PPCUTM default value
+    static const G4double fgkCUTGAM;   //CUTGAM default value 
+    static const G4double fgkCUTELE;   //CUTELE default value
+    static const G4double fgkCUTNEU;   //CUTNEU default value
+    static const G4double fgkCUTHAD;   //CUTHAD default value
+    static const G4double fgkCUTMUO;   //CUTMUO default value
+    static const G4double fgkBCUTE;    //BCUTE default value
+    static const G4double fgkBCUTM;    //BCUTM default value
+    static const G4double fgkDCUTE;    //DCUTE default value
+    static const G4double fgkDCUTM;    //DCUTM default value
+    static const G4double fgkPPCUTM;   //PPCUTM default value
        // physics processes flags
-    static const TG3FlagValue fgPAIR; //PAIR default value   
-    static const TG3FlagValue fgCOMP; //COMP default value   
-    static const TG3FlagValue fgPHOT; //PHOT default value   
-    static const TG3FlagValue fgPFIS; //PFIS default value   
-    static const TG3FlagValue fgDRAY; //DRAY default value  
-    static const TG3FlagValue fgANNI; //ANNI default value   
-    static const TG3FlagValue fgBREM; //BREM default value  
-    static const TG3FlagValue fgHADR; //HADR default value   
-    static const TG3FlagValue fgMUNU; //MUNU default value   
-    static const TG3FlagValue fgDCAY; //DCAY default value  
-    static const TG3FlagValue fgLOSS; //LOSS default value  
-    static const TG3FlagValue fgMULS; //MULS default value  
+    static const TG3FlagValue fgkPAIR; //PAIR default value   
+    static const TG3FlagValue fgkCOMP; //COMP default value   
+    static const TG3FlagValue fgkPHOT; //PHOT default value   
+    static const TG3FlagValue fgkPFIS; //PFIS default value   
+    static const TG3FlagValue fgkDRAY; //DRAY default value  
+    static const TG3FlagValue fgkANNI; //ANNI default value   
+    static const TG3FlagValue fgkBREM; //BREM default value  
+    static const TG3FlagValue fgkHADR; //HADR default value   
+    static const TG3FlagValue fgkMUNU; //MUNU default value   
+    static const TG3FlagValue fgkDCAY; //DCAY default value  
+    static const TG3FlagValue fgkLOSS; //LOSS default value  
+    static const TG3FlagValue fgkMULS; //MULS default value  
 };     
 
 // inline methods
 
-inline G4double TG4G3Defaults::CutTolerance() { return fgCutTolerance; }
+inline G4double TG4G3Defaults::CutTolerance() { return fgkCutTolerance; }
 
 #endif //ALI_G3DEFAULTS_H

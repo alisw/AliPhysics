@@ -10,7 +10,7 @@
 #include <G4Track.hh>
 #include <G4SteppingManager.hh>
 
-const G4double AliSteppingAction::fgTolerance = 1e-6*mm;
+const G4double AliSteppingAction::fgkTolerance = 1e-6*mm;
 
 AliSteppingAction::AliSteppingAction()
   : fKeptStepPoint(G4ThreeVector()),
@@ -104,7 +104,7 @@ void AliSteppingAction::UserSteppingAction(const G4Step* step)
 {
 // After processing the given number of steps (kCheckNofSteps)
 // the particle position is compared with the previus one
-// - in case the distance is less than fgTolerance value
+// - in case the distance is less than fgkTolerance value
 // the verbose mode is switched on, particle is let 
 // to process a small number of steps (kMaxNofLoopSteps)
 // and then stopped and killed.
@@ -140,7 +140,7 @@ void AliSteppingAction::UserSteppingAction(const G4Step* step)
     // detect looping track
     G4ThreeVector newStepPoint = step->GetPreStepPoint()->GetPosition();
     G4double trajectory = (newStepPoint-fKeptStepPoint).mag();
-    if (trajectory < fgTolerance) {
+    if (trajectory < fgkTolerance) {
 
       // print looping info
       if (fLoopVerboseLevel > 0) {

@@ -47,12 +47,12 @@ class AliGlobals
     
   private:       
     // static data members  
-    static const G4double  fgDefaultCut; //default cut value
+    static const G4double  fgkDefaultCut; //default cut value
 };  
 
 // inline methods
 
 inline G4double AliGlobals::DefaultCut()
-{ return fgDefaultCut; }
+{ return fgkDefaultCut; }
 
 #endif //ALI_GLOBALS_H

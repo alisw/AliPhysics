@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 // static data members
-const G4double AliGlobals::fgDefaultCut = 2.0*mm;
+const G4double AliGlobals::fgkDefaultCut = 2.0*mm;
 
 AliGlobals::AliGlobals() {
 //
