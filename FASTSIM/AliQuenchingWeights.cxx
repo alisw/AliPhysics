@@ -766,7 +766,7 @@ Double_t AliQuenchingWeights::CalcQuenchedEnergy(Int_t ipart, Double_t length, D
   return e-loss;
 }
 
-Double_t AliQuenchingWeights::GetELossRandom(Int_t ipart, TH1F *hell, Double_t e=1.e6) const
+Double_t AliQuenchingWeights::GetELossRandom(Int_t ipart, TH1F *hell, Double_t e) const
 {
   if(!hell){
     Warning("GetELossRandom","Pointer to length distribution is NULL.");
@@ -984,7 +984,7 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t medval,Double_t 
   return histx;
 }
 
-TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,Double_t l,Double_t e=1.e6) const
+TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,Double_t l,Double_t e) const
 {
   AliQuenchingWeights *dummy=new AliQuenchingWeights(*this);
   if(fMultSoft){
@@ -1019,7 +1019,7 @@ TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,Double_
   return h;
 }
 
-TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,TH1F *hEll,Double_t e=1.e6) const
+TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,TH1F *hEll,Double_t e) const
 {
   AliQuenchingWeights *dummy=new AliQuenchingWeights(*this);
   if(fMultSoft){
@@ -1241,7 +1241,7 @@ void AliQuenchingWeights::PlotContWeights(Int_t itype,Double_t medval) const
   c->Update();
 }
 
-void AliQuenchingWeights::PlotAvgELoss(Int_t len,Double_t e=1.e6)  const
+void AliQuenchingWeights::PlotAvgELoss(Int_t len,Double_t e)  const
 {
   if(!fTablesLoaded){
     Error("CalcMult","Tables are not loaded.");
@@ -1304,7 +1304,7 @@ void AliQuenchingWeights::PlotAvgELoss(Int_t len,Double_t e=1.e6)  const
   c->Update();
 }
 
-void AliQuenchingWeights::PlotAvgELoss(TH1F *hEll,Double_t e=1.e6) const
+void AliQuenchingWeights::PlotAvgELoss(TH1F *hEll,Double_t e) const
 {
   if(!fTablesLoaded){
     Error("CalcMult","Tables are not loaded.");
