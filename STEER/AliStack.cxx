@@ -25,6 +25,7 @@
  
 #include <TObjArray.h>
 #include <TParticle.h>
+#include <TParticlePDG.h>
 #include <TTree.h>
 #include <TFile.h>
 #include <TFolder.h>
@@ -150,17 +151,23 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
   // also, this method is potentially dangerous if the mass
   // used in the MC is not the same of the PDG database
   //
-  Float_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
-  Float_t e=TMath::Sqrt(mass*mass+pmom[0]*pmom[0]+
-			pmom[1]*pmom[1]+pmom[2]*pmom[2]);
-  
+    TParticlePDG* pmc =  TDatabasePDG::Instance()->GetParticle(pdg);
+    if (pmc) {
+	Float_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
+	Float_t e=TMath::Sqrt(mass*mass+pmom[0]*pmom[0]+
+			      pmom[1]*pmom[1]+pmom[2]*pmom[2]);
+	
 //    printf("Loading  mass %f ene %f No %d ip %d parent %d done %d pos %f %f %f mom %f %f %f kS %d m \n",
 //	   mass,e,fNtrack,pdg,parent,done,vpos[0],vpos[1],vpos[2],pmom[0],pmom[1],pmom[2],kS);
   
 
-  SetTrack(done, parent, pdg, pmom[0], pmom[1], pmom[2], e,
-           vpos[0], vpos[1], vpos[2], tof, polar[0], polar[1], polar[2],
-           mech, ntr, weight, is);
+	SetTrack(done, parent, pdg, pmom[0], pmom[1], pmom[2], e,
+		 vpos[0], vpos[1], vpos[2], tof, polar[0], polar[1], polar[2],
+		 mech, ntr, weight, is);
+    } else {
+	Warning("SetTrack", "Particle type %d not defined in PDG Database !\n", pdg);
+	Warning("SetTrack", "Particle skipped !\n");
+    }
 }
 
 //_____________________________________________________________________________
@@ -248,9 +255,10 @@ TParticle*  AliStack::GetNextTrack(Int_t& itrack)
     itrack = fCurrent;
     track->SetBit(kDoneBit);
   }
-  else 
+  else
     itrack = -1;
-
+  
+  fCurrentTrack = track;
   return track;
 }
 

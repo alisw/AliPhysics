@@ -38,6 +38,7 @@ class AliStack : public TVirtualMCStack
 		      TMCProcess mech, Int_t &ntr, Double_t weight,
 		      Int_t is);
     virtual TParticle* GetNextTrack(Int_t& track);
+    virtual TParticle* GetCurrentTrack() {return fCurrentTrack;}
     virtual TParticle* GetPrimaryForTracking(Int_t i);    
 
     void  MakeTree(Int_t event, const char *file);
@@ -84,6 +85,7 @@ class AliStack : public TVirtualMCStack
     TObjArray     *fParticleMap;       //! Map of particles in the supporting TClonesArray
     TArrayI        fParticleFileMap;   //  Map for particle ids 
     TParticle     *fParticleBuffer;    //! Pointer to current particle for writing
+    TParticle     *fCurrentTrack;      //! Pointer to particle currently transported
     TTree         *fTreeK;             //! Particle stack  
     Int_t          fNtrack;            //  Number of tracks
     Int_t          fNprimary;          //  Number of primaries
