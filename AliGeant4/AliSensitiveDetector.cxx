@@ -8,7 +8,7 @@
 #include "AliRun.h"
 #include "AliMCQA.h"
 
-#include "TG3Units.h"
+#include "TG4G3Units.h"
 
 AliSensitiveDetector::AliSensitiveDetector(G4String sdName, AliModule* module)
   : TG4VSensitiveDetector(sdName),
@@ -83,7 +83,7 @@ void AliSensitiveDetector::UserProcessHits(const G4Track* track,
   // directly to AliRun
   if (step) 
     gAlice->AddEnergyDeposit(
-      fID, step->GetTotalEnergyDeposit()/TG3Units::Energy());
+      fID, step->GetTotalEnergyDeposit()/TG4G3Units::Energy());
       
   fMCQA->StepManager(fModuleID);   
 
