@@ -21,11 +21,14 @@
   #include "TSystem.h"
   #include "TStopwatch.h"
   #include "TGeant3.h"
+  #include "TArrayF.h"
 
   #include "AliMagF.h"
   #include "AliRun.h"
   #include "AliRunLoader.h"
   #include "AliLoader.h"
+  #include "AliHeader.h"
+  #include "AliGenEventHeader.h"
 
   #include "AliESD.h"
   #include "AliESDpid.h"
@@ -109,8 +112,6 @@ Int_t AliESDtest(Int_t nev=1) {
 
    //An instance of the ITS tracker
    AliITStrackerV2 itsTracker(geom);
-   {Double_t xyz[]={0.,0.,0.}, ers[]={0.005, 0.005, 0.010};
-   itsTracker.SetVertex(xyz,ers);}
    
    //An instance of the ITS PID maker
    Double_t parITS[]={34.,0.15,10.};
@@ -221,8 +222,20 @@ Int_t AliESDtest(Int_t nev=1) {
 
      rl->GetEvent(i);
  
+//***** Primary vertex reconstruction (MC vertex position, for the moment)
+     TArrayF v(3);     
+     rl->GetHeader()->GenEventHeader()->PrimaryVertex(v);
+     Double_t vtx[3]={v[0],v[1],v[2]};
+     Double_t cvtx[6]={
+       0.005,
+       0.000, 0.005,
+       0.000, 0.000, 0.010
+     };
+     event->SetVertex(vtx,cvtx);
+     cvtx[1]=cvtx[0]; cvtx[2]=cvtx[5]; //trackers use only the diag.elements
 
 //***** Initial path towards the primary vertex
+     tpcTracker.SetVertex(vtx,cvtx);
      TTree *tpcTree=tpcl->TreeR();
      if (!tpcTree) {
         cerr<<"Can't get the TPC cluster tree !\n";
@@ -231,6 +244,7 @@ Int_t AliESDtest(Int_t nev=1) {
      tpcTracker.LoadClusters(tpcTree);
      rc+=tpcTracker.Clusters2Tracks(event);
 
+     itsTracker.SetVertex(vtx,cvtx);
      TTree *itsTree=itsl->TreeR();
      if (!itsTree) {
         cerr<<"Can't get the ITS cluster tree !\n";
@@ -289,6 +303,7 @@ Int_t AliESDtest(Int_t nev=1) {
 
 
 //***** Hyperon reconstruction 
+     vtxer.SetVertex(vtx);
      rc+=vtxer.Tracks2V0vertices(event);            // V0 finding
      rc+=cvtxer.V0sTracks2CascadeVertices(event);   // cascade finding
 

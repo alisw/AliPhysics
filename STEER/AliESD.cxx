@@ -38,6 +38,24 @@ AliESD::AliESD():
   fV0s("AliESDv0",200),
   fCascades("AliESDcascade",20)
 {
+  Int_t i;
+  for (i=0; i<3; i++) fVtx[i]=0.;
+  for (i=0; i<6; i++) fCovVtx[i]=0.;
 }
 
+void AliESD::SetVertex(const Double_t *vtx, const Double_t *cvtx) {
+  //Save the primary vertex position
+  Int_t i;
+  for (i=0; i<3; i++) fVtx[i]=vtx[i];
+  if (cvtx)
+  for (i=0; i<6; i++) fCovVtx[i]=cvtx[i];   
+}
+
+void AliESD::GetVertex(Double_t *vtx, Double_t *cvtx) const {
+  //Get the primary vertex position
+  Int_t i;
+  for (i=0; i<3; i++) vtx[i]=fVtx[i];
+  if (cvtx)
+  for (i=0; i<6; i++) cvtx[i]=fCovVtx[i];   
+}
 

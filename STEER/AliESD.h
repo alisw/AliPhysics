@@ -34,13 +34,13 @@ public:
 
   void SetEventNumber(Int_t n) {fEventNumber=n;}
 
-  AliESDtrack *GetTrack(Int_t i) {
+  AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks.UncheckedAt(i);
   }
-  AliESDCaloTrack *GetCaloTrack(Int_t i) {
+  AliESDCaloTrack *GetCaloTrack(Int_t i) const {
     return (AliESDCaloTrack *)fCaloTracks.UncheckedAt(i);
   }
-  AliESDMuonTrack *GetMuonTrack(Int_t i) {
+  AliESDMuonTrack *GetMuonTrack(Int_t i) const {
     return (AliESDMuonTrack *)fMuonTracks.UncheckedAt(i);
   }
 
@@ -54,19 +54,22 @@ public:
     new(fMuonTracks[fMuonTracks.GetEntriesFast()]) AliESDMuonTrack(*t);
   }
 
-  AliESDv0 *GetV0(Int_t i) {
+  AliESDv0 *GetV0(Int_t i) const {
     return (AliESDv0 *)fV0s.UncheckedAt(i);
   }
   void AddV0(const AliESDv0 *v) {
     new(fV0s[fV0s.GetEntriesFast()]) AliESDv0(*v);
   }
 
-  AliESDcascade *GetCascade(Int_t i) {
+  AliESDcascade *GetCascade(Int_t i) const {
     return (AliESDcascade *)fCascades.UncheckedAt(i);
   }
   void AddCascade(const AliESDcascade *c) {
     new(fCascades[fCascades.GetEntriesFast()]) AliESDcascade(*c);
   }
+
+  void SetVertex(const Double_t *vtx, const Double_t *cvtx=0);
+  void GetVertex(Double_t *vtx, Double_t *cvtx) const;
 
   Int_t  GetEventNumber() const {return fEventNumber;}
   Int_t  GetRunNumber() const {return fRunNumber;}
@@ -85,6 +88,9 @@ protected:
   Int_t        fRunNumber;       // Run Number
   Long_t       fTrigger;         // Trigger Type
   Int_t        fRecoVersion;     // Version of reconstruction 
+
+  Double_t fVtx[3];              // Primary vertex position
+  Double_t fCovVtx[6];           // Cov. matrix of the primary vertex position
 
   TClonesArray  fTracks;         // ESD tracks
   TClonesArray  fCaloTracks;     // Calorimeters' ESD tracks
