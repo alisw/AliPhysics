@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2001/05/23 11:59:46  morsch
+Use RemoveAt method instead of delete to remove objects from TClonesArray.
+
 Revision 1.24  2001/05/21 08:39:13  morsch
 Use fStepBack = 1 only in debug mode.
 
@@ -302,7 +305,7 @@ void AliLego::StepManager() {
 
    
   if (! fStepBack) {
-      printf("\n volume %s %d", vol, status);      
+//      printf("\n volume %s %d", vol, status);      
 //
 // Normal Forward stepping
 //
