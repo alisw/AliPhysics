@@ -56,7 +56,7 @@ AliMagFCM::AliMagFCM():
 //_______________________________________________________________________
 AliMagFCM::AliMagFCM(const char *name, const char *title, const Int_t integ, 
                      const Float_t factor, const Float_t fmax):
-  AliMagF(name,title,integ,factor,fmax),
+  AliMagFC(name,title,integ,factor,fmax),
   fXbeg(0),
   fYbeg(0),
   fZbeg(0),
@@ -86,7 +86,7 @@ AliMagFCM::AliMagFCM(const char *name, const char *title, const Int_t integ,
 
 //_______________________________________________________________________
 AliMagFCM::AliMagFCM(const AliMagFCM &magf):
-  AliMagF(magf),
+  AliMagFC(magf),
   fXbeg(0),
   fYbeg(0),
   fZbeg(0),
@@ -122,16 +122,24 @@ void AliMagFCM::Field(Float_t *x, Float_t *b)
   // --- find the position in the grid ---
   
   b[0]=b[1]=b[2]=0;
-  if(-700<x[2] && x[2]<fZbeg && x[0]*x[0]+(x[1]+30)*(x[1]+30) < 560*560) {
-    b[2]= fSolenoid;
+
+  
+  if(-700 < -x[2] && -x[2] < fZbeg && x[0] * x[0] +(x[1]+30)*(x[1]+30) < 560*560) {
+    b[2]=  fSolenoid;
   } else  {
-    Bool_t infield=(fZbeg<=x[2] && x[2]<fZbeg+fZdel*(fZn-1)
-		    &&  ( fXbeg <= TMath::Abs(x[0]) && TMath::Abs(x[0]) < fXbeg+fXdel*(fXn-1) )
-		    &&  ( fYbeg <= TMath::Abs(x[1]) && TMath::Abs(x[1]) < fYbeg+fYdel*(fYn-1) ));
+      // The field map used here was calculated in a coordinate system where the muon arm is at z > 0
+      // Transfom x -> -x and z -> -z 
+      Float_t xm = - x[0];
+      Float_t ym =   x[1];
+      Float_t zm = - x[2];
+ 
+      Bool_t infield=(fZbeg <= zm  && zm < fZbeg+fZdel*(fZn-1)
+		      &&  ( fXbeg <= TMath::Abs(xm) && TMath::Abs(xm) < fXbeg+fXdel*(fXn-1) )
+		      &&  ( fYbeg <= TMath::Abs(ym) && TMath::Abs(ym) < fYbeg+fYdel*(fYn-1) ));
     if(infield) {
-      xl[0]=TMath::Abs(x[0])-fXbeg;
-      xl[1]=TMath::Abs(x[1])-fYbeg;
-      xl[2]=x[2]-fZbeg;
+      xl[0]=TMath::Abs(xm)-fXbeg;
+      xl[1]=TMath::Abs(ym)-fYbeg;
+      xl[2]=zm-fZbeg;
       
       // --- start with x
       
@@ -179,61 +187,24 @@ void AliMagFCM::Field(Float_t *x, Float_t *b)
 	//ratx,raty,ratz,b[0],b[1],b[2]);
 	//
 	// ... use the dipole symmetry
-	if (x[0]*x[1] < 0) b[1]=-b[1];
-	if (x[0]<0) b[2]=-b[2];
+	if (xm*ym < 0) b[1]=-b[1];
+	if (xm<0)      b[2]=-b[2];
+	b[0] = -b[0];
+	b[2] = -b[2];
+	
       } else {
 	printf("Invalid field map for constant mesh %d\n",fMap);
       }
     } else {
 //This is the ZDC part
-    Float_t rad2=x[0]*x[0]+x[1]*x[1];
-    if(x[2]>kCORBEG2 && x[2]<kCOREND2){
-      if(rad2<kCOR2RA2){
-        b[0] = kFCORN2;
-      }
-    }
-    else if(x[2]>kZ1BEG && x[2]<kZ1END){  
-      if(rad2<kZ1RA2){
-        b[0] = -kG1*x[1];
-        b[1] = -kG1*x[0];
-      }
-    }
-    else if(x[2]>kZ2BEG && x[2]<kZ2END){  
-      if(rad2<kZ2RA2){
-        b[0] = kG1*x[1];
-        b[1] = kG1*x[0];
-      }
-    }
-    else if(x[2]>kZ3BEG && x[2]<kZ3END){  
-      if(rad2<kZ3RA2){
-        b[0] = kG1*x[1];
-        b[1] = kG1*x[0];
-      }
-    }
-    else if(x[2]>kZ4BEG && x[2]<kZ4END){  
-      if(rad2<kZ4RA2){
-        b[0] = -kG1*x[1];
-        b[1] = -kG1*x[0];
-      }
-    }
-    else if(x[2]>kD1BEG && x[2]<kD1END){ 
-      if(rad2<kD1RA2){
-        b[1] = -kFDIP;
-      }
-    }
-    else if(x[2]>kD2BEG && x[2]<kD2END){
-      if(((x[0]-kXCEN1D2)*(x[0]-kXCEN1D2)+(x[1]-kYCEN1D2)*(x[1]-kYCEN1D2))<kD2RA2
-        || ((x[0]-kXCEN2D2)*(x[0]-kXCEN2D2)+(x[1]-kYCEN2D2)*(x[1]-kYCEN2D2))<kD2RA2){
-	b[1] = kFDIP;
-      }
+	ZDCField(x,b);
     }
     
+    if(fFactor!=1) {
+	b[0]*=fFactor;
+	b[1]*=fFactor;
+	b[2]*=fFactor;
     }
-  }
-  if(fFactor!=1) {
-    b[0]*=fFactor;
-    b[1]*=fFactor;
-    b[2]*=fFactor;
   }
 }
 

@@ -29,7 +29,6 @@
 #include "AliFieldMap.h"
 #include "AliMagFMaps.h"
 
-
 ClassImp(AliMagFMaps)
 
 //_______________________________________________________________________
@@ -49,7 +48,7 @@ AliMagFMaps::AliMagFMaps():
 AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ, 
                          const Float_t factor, const Float_t fmax, const Int_t map, 
                          const Int_t l3):
-  AliMagF(name,title,integ,factor,fmax),
+  AliMagFC(name,title,integ,factor,fmax),
   fSolenoid(0),
   fSolenoidUser(0),
   fL3Option(l3),
@@ -72,7 +71,7 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
 
 //_______________________________________________________________________
 AliMagFMaps::AliMagFMaps(const AliMagFMaps &magf):
-  AliMagF(magf),
+  AliMagFC(magf),
   fSolenoid(0),
   fL3Option(0),
   fFieldRead(0)
@@ -209,11 +208,24 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
   //
   // --- find the position in the grid ---
   
-  if (!fFieldRead) ReadField();
+
+    
+    if (!fFieldRead) ReadField();
+
+  //
+  // Field Maps have been calculated for the coordinate system in which 
+  // the Muon Spectrometer is placed at z > 0
+  // Transform coordinates corresponingly 
+  //
   
   b[0]=b[1]=b[2]=0;
+  Float_t xm[3];
+  xm[0] = - x[0];
+  xm[1] =   x[1];
+  xm[2] = - x[2];
+  
   AliFieldMap* map = 0;
-  if (fFieldMap[0]->Inside(x[0], x[1], x[2])) {
+  if (fFieldMap[0]->Inside(xm[0], xm[1], xm[2])) {
       map = fFieldMap[0];
       if (!fL3Option) {
       //
@@ -222,60 +234,27 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
 	  b[2] = fSolenoidUser;
 	  return;
     }
-  } else if (fFieldMap[1]->Inside(x[0], x[1], x[2])) {
+  } else if (fFieldMap[1]->Inside(xm[0], xm[1], xm[2])) {
     map = fFieldMap[1];
-  } else if (fFieldMap[2]->Inside(x[0], x[1], x[2])) {
+  } else if (fFieldMap[2]->Inside(xm[0], xm[1], xm[2])) {
     map = fFieldMap[2];
   }
   
   if(map){
-    map->Field(x,b);
+    map->Field(xm,b);
+    b[0] = - b[0];
+    b[2] = - b[2];
+
   } else {
-    //This is the ZDC part
-    Float_t rad2=x[0]*x[0]+x[1]*x[1];
-    if(x[2]>kCORBEG2 && x[2]<kCOREND2){
-	if(rad2<kCOR2RA2){
-	    b[0] = kFCORN2;
-	}
-    } else if(x[2]>kZ1BEG && x[2]<kZ1END){  
-	if(rad2<kZ1RA2){
-	    b[0] = -kG1*x[1];
-	    b[1] = -kG1*x[0];
-	}
-    } else if(x[2]>kZ2BEG && x[2]<kZ2END){
-	if(rad2<kZ2RA2){
-	    b[0] = kG1*x[1];
-	    b[1] = kG1*x[0];
-	}
-    }
-    else if(x[2]>kZ3BEG && x[2]<kZ3END){
-	if(rad2<kZ3RA2){
-	    b[0] = kG1*x[1];
-	    b[1] = kG1*x[0];
-	}
-    }
-    else if(x[2]>kZ4BEG && x[2]<kZ4END){
-	if(rad2<kZ4RA2){
-	    b[0] = -kG1*x[1];
-	    b[1] = -kG1*x[0];
-	}
-    }
-    else if(x[2]>kD1BEG && x[2]<kD1END){ 
-	if(rad2<kD1RA2){
-	    b[1] = -kFDIP;
-	}
-    }
-    else if(x[2]>kD2BEG && x[2]<kD2END){
-	if(((x[0]-kXCEN1D2)*(x[0]-kXCEN1D2)+(x[1]-kYCEN1D2)*(x[1]-kYCEN1D2))<kD2RA2
-	   || ((x[0]-kXCEN2D2)*(x[0]-kXCEN2D2)+(x[1]-kYCEN2D2)*(x[1]-kYCEN2D2))<kD2RA2){
-	    b[1] = kFDIP;
-	}
-    }
+      //This is the ZDC part
+      ZDCField(x, b);
   }
+
+  
   if(fFactor!=1) {
-    b[0]*=fFactor;
-    b[1]*=fFactor;
-    b[2]*=fFactor;
+      b[0]*=fFactor;
+      b[1]*=fFactor;
+      b[2]*=fFactor;
   }
 }
 

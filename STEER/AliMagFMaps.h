@@ -9,10 +9,10 @@
 // Author: Andreas Morsch <andreas.morsch@cern.ch>
 //
 
-#include "AliMagF.h"
+#include "AliMagFC.h"
 class AliFieldMap;
 
-class AliMagFMaps : public AliMagF
+class AliMagFMaps : public AliMagFC
 {
   //Alice Magnetic Field with constant mesh
 

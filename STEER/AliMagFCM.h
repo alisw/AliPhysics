@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-#include "AliMagF.h"
+#include "AliMagFC.h"
 class TVector;
 
-class AliMagFCM : public AliMagF
+class AliMagFCM : public AliMagFC
 {
   //Alice Magnetic Field with constant mesh
 

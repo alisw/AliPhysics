@@ -26,7 +26,6 @@
 #include "TSystem.h"
 
 #include "AliMagFDM.h"
-    
 
 ClassImp(AliMagFDM)
 
@@ -67,7 +66,7 @@ AliMagFDM::AliMagFDM():
 //_______________________________________________________________________
 AliMagFDM::AliMagFDM(const char *name, const char *title, const Int_t integ,
                      const Float_t factor, const Float_t fmax):
-  AliMagF(name,title,integ,factor,fmax),
+  AliMagFC(name,title,integ,factor,fmax),
   fSolenoid(0),
   fInd(0),
   fZmin(0),
@@ -140,11 +139,15 @@ void AliMagFDM::Field(Float_t *xfi, Float_t *b)
   Double_t zz1, zz2,yy1,yy2,x2,x1; 
      
 // --- start the map fiel from z = 502.92 cm ---
+//
+// This map has been calculated in a coordinate system in which the muon spectrometer sits at z > 0
+// Transfor correspondingly.
 
-  x[0] = xfi[0];
-  x[1] = xfi[1];
-  x[2] = xfi[2];
+  x[0] = - xfi[0];
+  x[1] =   xfi[1];
+  x[2] = - xfi[2];
   b[0]=b[1]=b[2]=0;
+//
   //       printf("x[0]  %f,x[1] %f,x[2]  %f\n",x[0],x[1],x[2]); 
 
   Double_t rr=TMath::Sqrt(x[0]*x[0]+x[1]*x[1]);
@@ -259,9 +262,9 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
         }
        }
 
-       b[0]=bint[0];
+       b[0]=-bint[0];
        b[1]=bint[1];
-       b[2]=bint[2];
+       b[2]=-bint[2];
 
    }  
    else 
@@ -309,9 +312,9 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
        bint[jb-3] = Bb(zz1,zz2,yy1,yy2,x1,x2,iKvar,k0, l0, m0)*10 ; 
      }    
  
-   b[0]=bint[0];
+   b[0]=-bint[0];
    b[1]=bint[1];
-   b[2]=bint[2]; 
+   b[2]=-bint[2]; 
 
    } 
 
@@ -321,51 +324,9 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
  }
            
 } else {
+    ZDCField(xfi,b);
 
-//This is the ZDC part
-    Float_t rad2=x[0]*x[0]+x[1]*x[1];
-    if(x[2]>kCORBEG2 && x[2]<kCOREND2){
-      if(rad2<kCOR2RA2){
-        b[0] = kFCORN2;
-      }
     }
-    else if(x[2]>kZ1BEG && x[2]<kZ1END){  
-      if(rad2<kZ1RA2){
-        b[0] = -kG1*x[1];
-        b[1] = -kG1*x[0];
-      }
-    }
-    else if(x[2]>kZ2BEG && x[2]<kZ2END){  
-      if(rad2<kZ2RA2){
-        b[0] = kG1*x[1];
-        b[1] = kG1*x[0];
-      }
-    }
-    else if(x[2]>kZ3BEG && x[2]<kZ3END){  
-      if(rad2<kZ3RA2){
-        b[0] = kG1*x[1];
-        b[1] = kG1*x[0];
-      }
-    }
-    else if(x[2]>kZ4BEG && x[2]<kZ4END){  
-      if(rad2<kZ4RA2){
-        b[0] = -kG1*x[1];
-        b[1] = -kG1*x[0];
-      }
-    }
-    else if(x[2]>kD1BEG && x[2]<kD1END){ 
-      if(rad2<kD1RA2){
-        b[1] = -kFDIP;
-      }
-    }
-    else if(x[2]>kD2BEG && x[2]<kD2END){
-      if(((x[0]-kXCEN1D2)*(x[0]-kXCEN1D2)+(x[1]-kYCEN1D2)*(x[1]-kYCEN1D2))<kD2RA2
-        || ((x[0]-kXCEN2D2)*(x[0]-kXCEN2D2)+(x[1]-kYCEN2D2)*(x[1]-kYCEN2D2))<kD2RA2){
-	b[1] = kFDIP;
-      }
-    }
-      }
-    
 
   if(fFactor!=1) {
     b[0]*=fFactor;

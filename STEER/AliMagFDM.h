@@ -5,9 +5,9 @@
 
 /* $Id$ */
 
-#include "AliMagF.h"
+#include "AliMagFC.h"
 //
-class AliMagFDM : public AliMagF
+class AliMagFDM : public AliMagFC
 {
 //Alice Magnetic Field:Magnetic field map from IP to muon filter for Muon arm
 
@@ -28,8 +28,8 @@ public:
 protected:
 
 //
-  Float_t    fSolenoid; // Solenoid Field Strength
-  Int_t      fInd;      // Character number of validity Map region
+  Float_t fSolenoid; // Solenoid Field Strength
+  Int_t   fInd;      // Character number of validity Map region
 
   Float_t fZmin;  // Start of the cartesian  part  of MAP in z
   Float_t fZmax;  // End of Map in z   
