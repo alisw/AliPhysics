@@ -22,7 +22,7 @@
 
 class AliPHOSHit : public AliHit {
 
-  friend ostream& operator << (ostream&, const AliPHOSHit&) ;
+//   friend ostream& operator << (ostream&, const AliPHOSHit&) ;
   
  public:
   

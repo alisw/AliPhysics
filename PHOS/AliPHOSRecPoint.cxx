@@ -86,7 +86,7 @@ Int_t AliPHOSRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
  }
 
 //______________________________________________________________________________
-void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
+void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
 {
   // Execute action corresponding to one event
   // This member function is called when a AliPHOSRecPoint is clicked with the locator

@@ -491,7 +491,7 @@ const Int_t  AliPHOSPIDv1::GetHardPi0Bit(AliPHOSEmcRecPoint * emc) const
 }
 
 //____________________________________________________________________________
-TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const 
+TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * )const 
 { 
   // Calculates the momentum direction:
   //   1. if only a EMC RecPoint, direction is given by IP and this RecPoint

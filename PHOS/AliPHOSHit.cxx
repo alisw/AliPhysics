@@ -137,14 +137,15 @@ AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue)
 }
 
 //____________________________________________________________________________
-ostream& operator << (ostream& out, const AliPHOSHit& hit) 
-{
-  // Print out Id and energy 
+// Commented out by Yu.Kharlov 4.09.2003
+// ostream& operator << (ostream& out, const AliPHOSHit& hit) 
+// {
+//   // Print out Id and energy 
   
-  //out << "AliPHOSHit = " << hit.GetId() << " " << hit.GetEnergy() << "  " << hit.GetTime() << endl ;
-  Warning("operator <<", "Implement differently") ; 
-  return out ;
-}
+//   //out << "AliPHOSHit = " << hit.GetId() << " " << hit.GetEnergy() << "  " << hit.GetTime() << endl ;
+//   Warning("operator <<", "Implement differently") ; 
+//   return out ;
+// }
 
 
 

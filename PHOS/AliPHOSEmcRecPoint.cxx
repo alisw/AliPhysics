@@ -208,7 +208,7 @@ Int_t AliPHOSEmcRecPoint::Compare(const TObject * obj) const
   return rv ; 
 }
 //______________________________________________________________________________
-void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
+void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t) const
 {
   
   // Execute action corresponding to one event

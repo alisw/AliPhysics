@@ -130,7 +130,7 @@ Int_t AliPHOSCpvRecPoint::Compare(const TObject * obj) const
 }
 
 //______________________________________________________________________________
-void AliPHOSCpvRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
+void AliPHOSCpvRecPoint::ExecuteEvent(Int_t, Int_t, Int_t ) const
 {
 //   // Execute action corresponding to one event
 //   //  This member function is called when a AliPHOSRecPoint is clicked with the locator
