@@ -367,7 +367,9 @@ void AliEMCALDigitizer::Exec(Option_t *option)
    
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
-  
+  else if (fManager) 
+    fLastEvent = fFirstEvent ; 
+
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   
   Int_t ievent ;

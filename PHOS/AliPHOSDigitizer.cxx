@@ -408,13 +408,12 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSDigitizer");
   
-//   if (fManager) 
-//     fInput = fManager->GetNinputs() ;
- 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
 
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
+  else if (fManager) 
+    fLastEvent = fFirstEvent ; 
  
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   
