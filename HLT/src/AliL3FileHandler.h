@@ -10,6 +10,8 @@ class AliL3SpacePointData;
 class AliL3DigitRowData;
 class AliL3TrackSegmentData;
 class AliL3TrackArray;
+class AliSimDigits;
+class TTree;
 
 class AliL3FileHandler:public AliL3MemHandler{
  private:
@@ -17,9 +19,13 @@ class AliL3FileHandler:public AliL3MemHandler{
   AliTPCParam *fParam;
   AliL3Transform *fTransformer;//!
   Bool_t SetAliInput();
-
+  Int_t fLastIndex;
+  AliSimDigits *fDigits;
+  TTree *fDigitsTree;
   FILE *fMC;//!
-
+  
+  Bool_t GetDigitsTree(Int_t event);
+  
  public:
   AliL3FileHandler();
   virtual ~AliL3FileHandler();

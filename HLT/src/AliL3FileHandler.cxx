@@ -41,6 +41,9 @@ AliL3FileHandler::AliL3FileHandler(){
   fParam = 0;
   fTransformer = 0;
   fMC =0;
+  fLastIndex=0;
+  fDigits=0;
+  fDigitsTree=0;
 }
 
 
@@ -48,7 +51,9 @@ AliL3FileHandler::~AliL3FileHandler(){
   //Destructor
   if(fTransformer) delete fTransformer;
   if(fMC) CloseMCOutput();
+  if(fDigitsTree) delete fDigitsTree;
   if(fInAli) CloseAliInput();
+  
 }
 
 Bool_t AliL3FileHandler::SetMCOutput(char *name){
@@ -183,46 +188,39 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
     return 0;
   }
 
-  
-  TDirectory *savedir = gDirectory;
-  fInAli->cd();
-  //TTree *t=(TTree*)fInAli->Get("TreeD_75x40_100x60_0");
-  Char_t dname[100];
-  sprintf(dname,"TreeD_75x40_100x60_%d",event);
-  TTree *t=(TTree*)fInAli->Get(dname);
-  if(!t){
-    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Binary","AliRoot")
-    <<"No Digit Tree inside!"<<ENDLOG;
-    return 0;
-  }
-  AliSimDigits digarr, *dummy=&digarr;
-  t->GetBranch("Segment")->SetAddress(&dummy);
+  if(!fDigitsTree)
+    GetDigitsTree(event);
+    
   UShort_t dig;
   Int_t time,pad,sector,row;
   Int_t nrows=0;
   Int_t ndigitcount=0;
-  Int_t entries = (Int_t)t->GetEntries();
+  Int_t entries = (Int_t)fDigitsTree->GetEntries();
   Int_t ndigits[entries];
   Int_t lslice,lrow;
-  for(Int_t n=0; n<t->GetEntries(); n++)
+  
+  for(Int_t n=fLastIndex; n<fDigitsTree->GetEntries(); n++)
     {
-      t->GetEvent(n);
-      fParam->AdjustSectorRow(digarr.GetID(),sector,row);
+      fDigitsTree->GetEvent(n);
+      fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
       fTransformer->Sector2Slice(lslice,lrow,sector,row);
-      if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
-      //      if(fSlice != lslice) continue;
+      //if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
+      if(lslice < fSlice) continue;
+      if(lslice != fSlice) break;
+      if(lrow < fRowMin) continue;
+      if(lrow > fRowMax) break;
 
       Float_t xyz[3];
       ndigits[lrow] = 0;
-      digarr.First();
+      fDigits->First();
       do {
-        time=digarr.CurrentRow();
-        pad=digarr.CurrentColumn();
-        dig = digarr.GetDigit(time,pad);
+        time=fDigits->CurrentRow();
+        pad=fDigits->CurrentColumn();
+        dig = fDigits->GetDigit(time,pad);
         if(dig<=fParam->GetZeroSup()) continue;
         if(time < fParam->GetMaxTBin()-1 && time > 0)
-          if(digarr.GetDigit(time+1,pad) <= fParam->GetZeroSup()
-             && digarr.GetDigit(time-1,pad) <= fParam->GetZeroSup())
+          if(fDigits->GetDigit(time+1,pad) <= fParam->GetZeroSup()
+             && fDigits->GetDigit(time-1,pad) <= fParam->GetZeroSup())
             continue;
 
         fTransformer->Raw2Local(xyz,sector,row,pad,time);
@@ -232,7 +230,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
         ndigits[lrow]++; //for this row only
         ndigitcount++;  //total number of digits to be published
 
-      } while (digarr.Next());
+      } while (fDigits->Next());
 
       nrows++;
     }
@@ -240,35 +238,38 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
     + nrows*sizeof(AliL3DigitRowData);
 
   LOG(AliL3Log::kDebug,"AliL3FileHandler::AliDigits2Memory","Digits")
-  <<AliL3Log::kDec<<"Found "<<ndigitcount<<" Digits"<<ENDLOG;
-
+    <<AliL3Log::kDec<<"Found "<<ndigitcount<<" Digits"<<ENDLOG;
+  
   data=(AliL3DigitRowData*) Allocate(size);
   nrow = (UInt_t)nrows;
   AliL3DigitRowData *tempPt = data;
-  for(Int_t n=0; n<t->GetEntries(); n++)
+  for(Int_t n=fLastIndex; n<fDigitsTree->GetEntries(); n++)
     {
-      t->GetEvent(n);
-
+      fDigitsTree->GetEvent(n);
       Float_t xyz[3];
-      fParam->AdjustSectorRow(digarr.GetID(),sector,row);
+      fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
       fTransformer->Sector2Slice(lslice,lrow,sector,row);
-//      if(fSlice != lslice) continue;
-      if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
+      //if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
+      if(lslice < fSlice) continue;
+      if(lslice != fSlice) break;
+      if(lrow < fRowMin) continue;
+      if(lrow > fRowMax) break;
+
       tempPt->fRow = lrow;
       tempPt->fNDigit = ndigits[lrow];
 
       Int_t localcount=0;
-      digarr.First();
+      fDigits->First();
       do {
-        //dig=digarr.CurrentDigit();
+        //dig=fDigits->CurrentDigit();
 	//if (dig<=fParam->GetZeroSup()) continue;
-        time=digarr.CurrentRow();
-        pad=digarr.CurrentColumn();
-        dig = digarr.GetDigit(time,pad);
+        time=fDigits->CurrentRow();
+        pad=fDigits->CurrentColumn();
+        dig = fDigits->GetDigit(time,pad);
 	if (dig <= fParam->GetZeroSup()) continue;
 	if(time < fParam->GetMaxTBin()-1 && time > 0)
-          if(digarr.GetDigit(time-1,pad) <= fParam->GetZeroSup() &&
-             digarr.GetDigit(time+1,pad) <= fParam->GetZeroSup()) continue;
+          if(fDigits->GetDigit(time-1,pad) <= fParam->GetZeroSup() &&
+             fDigits->GetDigit(time+1,pad) <= fParam->GetZeroSup()) continue;
 
         //Exclude data outside cone:
         fTransformer->Raw2Local(xyz,sector,row,pad,time);
@@ -284,18 +285,34 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
         tempPt->fDigitData[localcount].fPad=pad;
         tempPt->fDigitData[localcount].fTime=time;
         localcount++;
-      } while (digarr.Next());
+      } while (fDigits->Next());
 
       Byte_t *tmp = (Byte_t*)tempPt;
       Int_t size = sizeof(AliL3DigitRowData)
                                       + ndigits[lrow]*sizeof(AliL3DigitData);
       tmp += size;
       tempPt = (AliL3DigitRowData*)tmp;
+      //fLastIndex=n;
     }
-  t->Delete();
-  savedir->cd();
-    
+  //fLastIndex++;
   return data;
+}
+
+Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
+{
+  
+  fInAli->cd();
+  Char_t dname[100];
+  sprintf(dname,"TreeD_75x40_100x60_%d",event);
+  fDigitsTree = (TTree*)fInAli->Get("TreeD_75x40_100x60_0");
+  if(!fDigitsTree) 
+    {
+      LOG(AliL3Log::kError,"AliL3FileHandler::GetDigitsTree","Digits Tree")
+	<<AliL3Log::kHex<<"Error getting digitstree "<<(Int_t)fDigitsTree<<ENDLOG;
+      return kFALSE;
+    }
+  fDigitsTree->GetBranch("Segment")->SetAddress(&fDigits);
+  return kTRUE;
 }
 
 void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile)
