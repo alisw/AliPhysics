@@ -35,14 +35,6 @@ setenv AG4_VISUALIZE 1
 unsetenv AG4_OPACS
 
 #
-# ====== AG4_STACKING
-# If set: the secondary particles are not tracked immediatelly
-#       when they are created but after the urgent stack is exhausted
-# If not set: the G4 default stacking is used
-setenv AG4_STACKING 1
-#unsetenv AG4_STACKING
-
-#
 # ====== AG4_NOPHYSICS
 # If set: only geantino or charged geantino can be shooted  
 #setenv AG4_NOPHYSICS 1
@@ -182,16 +174,6 @@ if ( "$VERBOSE" == "YES" ) then
   else
     echo "OPACS driver         is NOT selected."
   endif
-  if ("$?AG4_TOY" == 1) then
-    echo "Toy geometry         is     selected"
-  else
-    echo "Full geometry        is     selected"
-  endif
-  if ("$?AG4_STACKING" == 1) then
-    echo "Secondaries will be tracked after the urgent stack is exhausted."
-  else
-    echo "The Geant4 default stackin will be used."
-  endif
   if ("$?AG4_NOPHYSICS" == 1) then
     echo "Only geantino or charged geantino can be shooted."
   else
@@ -283,9 +265,9 @@ else
 endif
 
 if ("$?AG4_MAKESHLIB" == 0) then
-  unsetenv G4MAKESHLIB 
-else 
-  setenv G4MAKESHLIB ${G4INSTALL}/config/makeshlib.sh
+  unsetenv G4LIB_BUILD_SHARED
+else  
+  setenv G4LIB_BUILD_SHARED 1
 endif  
 
 # path to data files needed by hadronic processes

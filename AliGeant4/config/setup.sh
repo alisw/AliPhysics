@@ -35,14 +35,6 @@ export AG4_VISUALIZE=1
 unset AG4_OPACS
 
 #
-# ====== AG4_STACKING
-# If set: the secondary particles are not tracked immediatelly
-#       when they are created but after the urgent stack is exhausted
-# If not set: the G4 default stacking is used
-export AG4_STACKING=1
-#unset AG4_STACKING
-
-#
 # ====== AG4_NOPHYSICS
 # If set: only geantino or charged geantino can be shooted  
 #export AG4_NOPHYSICS=1
@@ -182,16 +174,6 @@ if [ "$VERBOSE" = "YES" ]; then
   else
     echo "OPACS driver         is NOT selected."
   fi
-  if [ $AG4_TOY ]; then
-    echo "Toy geometry         is     selected"
-  else
-    echo "Full geometry        is     selected"
-  fi
-  if [ $AG4_STACKING ]; then
-    echo "The ALICE default stacking will be used."
-  else
-    echo "The Geant4 default stacking will be used."
-  fi
   if [ $AG4_NOPHYSICS ]; then
     echo "Only geantino or charged geantino can be shooted."
   else
@@ -283,9 +265,9 @@ else
 fi
 
 if [ "$AG4_MAKESHLIB" = "" ]; then
-  unset G4MAKESHLIB  
+  unset G4LIB_BUILD_SHARED
 else
-  export G4MAKESHLIB=$G4INSTALL/config/makeshlib.sh
+  export G4LIB_BUILD_SHARED=1
 fi  
 
 # path to data files needed by hadronic processes
