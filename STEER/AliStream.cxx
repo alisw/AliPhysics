@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#include <TROOT.h>
 #include <TFile.h>
 #include <TObjString.h>
 

@@ -28,6 +28,7 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
+#include <TROOT.h>
 #include <TBranch.h>
 #include <TFile.h>
 #include <TFolder.h>
