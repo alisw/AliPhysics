@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2002/06/06 15:26:24  morsch
+Correct child-selection for kPhiKK
+
 Revision 1.10  2002/06/05 14:05:46  morsch
 Decayer option kPhiKK for forced phi->K+K- decay added.
 
@@ -171,7 +174,7 @@ Bool_t AliGenMC::KinematicSelection(TParticle *particle, Int_t flag) const
     Float_t pt    = particle->Pt();
     Float_t p     = particle->P();
     Float_t theta = particle->Theta();
-    Float_t mass  = particle->GetMass();
+    Float_t mass  = particle->GetCalcMass();
     Float_t mt2   = pt * pt + mass * mass;
     
     Float_t phi   = Float_t(TMath::ATan2(Double_t(py),Double_t(px)));
