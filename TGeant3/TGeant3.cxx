@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.23  2000/02/23 16:25:25  fca
+AliVMC and AliGeant3 classes introduced
+ReadEuclid moved from AliRun to AliModule
+
 Revision 1.22  2000/01/18 15:40:13  morsch
 Interface to GEANT3 routines GFTMAT, GBRELM and GPRELM added
 Define geant particle type 51: Feedback Photon with Cherenkov photon properties.
@@ -1004,7 +1008,7 @@ void TGeant3::DefineParticles()
 }
 
 //_____________________________________________________________________________
-Int_t TGeant3::VolId(Text_t *name) const
+Int_t TGeant3::VolId(const Text_t *name) const
 {
   //
   // Return the unique numeric identifier for volume name
@@ -1037,6 +1041,66 @@ const char* TGeant3::VolName(Int_t id) const
     return name;
   else
     return fVolNames[id-1];
+}
+
+//_____________________________________________________________________________
+void    TGeant3::SetCut(const char* cutName, Float_t cutValue)
+{
+  if(!strcmp(cutName,"CUTGAM")) 
+    fGccuts->cutgam=cutValue; 
+  else if(!strcmp(cutName,"CUTGAM")) 
+    fGccuts->cutele=cutValue; 
+  else if(!strcmp(cutName,"CUTELE")) 
+    fGccuts->cutneu=cutValue; 
+  else if(!strcmp(cutName,"CUTHAD")) 
+    fGccuts->cuthad=cutValue; 
+  else if(!strcmp(cutName,"CUTMUO")) 
+    fGccuts->cutmuo=cutValue; 
+  else if(!strcmp(cutName,"BCUTE")) 
+    fGccuts->bcute=cutValue; 
+  else if(!strcmp(cutName,"BCUTM")) 
+    fGccuts->bcutm=cutValue; 
+  else if(!strcmp(cutName,"DCUTE")) 
+    fGccuts->dcute=cutValue; 
+  else if(!strcmp(cutName,"DCUTM")) 
+    fGccuts->dcutm=cutValue; 
+  else if(!strcmp(cutName,"PPCUTM")) 
+    fGccuts->ppcutm=cutValue; 
+  else if(!strcmp(cutName,"TOFMAX")) 
+    fGccuts->tofmax=cutValue; 
+  else Warning("SetCut","Cut %s not implemented\n",cutName);
+}
+
+//_____________________________________________________________________________
+void    TGeant3::SetProcess(const char* flagName, Int_t flagValue)
+{
+  if(!strcmp(flagName,"PAIR")) 
+    fGcphys->ipair=flagValue;
+  else if(!strcmp(flagName,"COMP")) 
+    fGcphys->icomp=flagValue;
+  else if(!strcmp(flagName,"PHOT")) 
+    fGcphys->iphot=flagValue;
+  else if(!strcmp(flagName,"PFIS")) 
+    fGcphys->ipfis=flagValue;
+  else if(!strcmp(flagName,"DRAY")) 
+    fGcphys->idray=flagValue;
+  else if(!strcmp(flagName,"ANNI")) 
+    fGcphys->ianni=flagValue;
+  else if(!strcmp(flagName,"BREM")) 
+    fGcphys->ibrem=flagValue;
+  else if(!strcmp(flagName,"HADR")) 
+    fGcphys->ihadr=flagValue;
+  else if(!strcmp(flagName,"MUNU")) 
+    fGcphys->imunu=flagValue;
+  else if(!strcmp(flagName,"DCAY")) 
+    fGcphys->idcay=flagValue;
+  else if(!strcmp(flagName,"LOSS")) 
+    fGcphys->iloss=flagValue;
+  else if(!strcmp(flagName,"MULS")) 
+    fGcphys->imuls=flagValue;
+  else if(!strcmp(flagName,"RAYL")) 
+    fGcphys->irayl=flagValue;
+  else  Warning("SetFlag","Flag %s not implemented\n",flagName);
 }
 
 //_____________________________________________________________________________

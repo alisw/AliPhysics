@@ -584,7 +584,7 @@ public:
   Int_t CurrentVolOffID(Int_t off, Int_t &copy) const;
   const char* CurrentVolName() const;
   const char *CurrentVolOffName(Int_t off) const;
-  Int_t VolId(Text_t *name) const;
+  Int_t VolId(const Text_t *name) const;
   Int_t IdFromPDG(Int_t pdg) const;
   Int_t PDGFromId(Int_t pdg) const;
   void  DefineParticles();
@@ -617,6 +617,8 @@ public:
   void  SetMaxStep(Float_t maxstep);
   void  SetMaxNStep(Int_t maxnstp);
   Int_t GetMaxNStep() const;
+  void SetCut(const char* cutName, Float_t cutValue);
+  void SetProcess(const char* flagName, Int_t flagValue);
   //  void GetParticle(const Int_t pdg, char *name, Float_t &mass) const;
   virtual Int_t GetMedium() const;
   virtual Float_t Edep() const;

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.17  2000/02/23 16:25:25  fca
+AliVMC and AliGeant3 classes introduced
+ReadEuclid moved from AliRun to AliModule
+
 Revision 1.16  2000/01/18 16:27:18  morsch
 Dummy definition of Gftmat, Gbrelm and Gprelm added.
 
@@ -77,7 +81,9 @@ void    TGeant3::TrackMomentum(TLorentzVector&) const {}
 Int_t   TGeant3::IdFromPDG(Int_t) const {return -1;}
 Int_t   TGeant3::PDGFromId(Int_t) const {return -1;}
 void    TGeant3::DefineParticles() {}
-Int_t   TGeant3::VolId(Text_t*) const {return 0;}
+Int_t   TGeant3::VolId(const Text_t*) const {return 0;}
+void    TGeant3::SetCut(const char* , Float_t ) {}
+void    TGeant3::SetProcess(const char* , Int_t ) {}
 const char*   TGeant3::VolName(Int_t ) const {return 0;}
 Float_t TGeant3::TrackCharge() const {return 0;}
 Float_t TGeant3::TrackMass() const {return 0;}
