@@ -82,7 +82,7 @@
 
 
 // --- Standard library ---
-#include "TF1.h"
+#include "TFormula.h"
 #include "TBenchmark.h"
 #include "TPrincipal.h"
 #include "TFile.h" 
@@ -129,10 +129,21 @@ AliPHOSPIDv1::AliPHOSPIDv1(const TString alirunFileName, const TString eventFold
 AliPHOSPIDv1::~AliPHOSPIDv1()
 { 
   // dtor
+  fPrincipalPhoton = 0;
+  fPrincipalPi0 = 0;
 
   delete [] fX ;       // Principal input 
   delete [] fPPhoton ; // Photon Principal components
   delete [] fPPi0 ;    // Pi0 Principal components
+
+  delete fParameters;
+  delete fTFphoton;
+  delete fTFpiong;
+  delete fTFkaong;
+  delete fTFkaonl;
+  delete fTFhhadrong;
+  delete fTFhhadronl;
+  delete fDFmuon;
 }
 //____________________________________________________________________________
 const TString AliPHOSPIDv1::BranchName() const 
@@ -385,11 +396,7 @@ const Double_t  AliPHOSPIDv1::GausF(Double_t  x, Double_t  y, Double_t * par)
   //  Double_t arg    = - (y-mean) * (y-mean) / (2*sigma*sigma) ;
   //  return cnt * TMath::Exp(arg) ;
   if(TMath::Abs(sigma) > 1.e-10){
-    TF1 * f = new TF1("gaus","gaus",0,100);
-    f->SetParameters(cnt,mean,sigma);
-    Double_t arg  = f->Eval(y) ;
-    //cout<<"GausF : en "<<x<<" y "<<y<<" c "<< cnt << " mean "<<mean<<" sigma "<<sigma<<endl;
-    return arg;
+    return cnt*TMath::Gaus(y,mean,sigma);
   }
   else
     return 0.;
@@ -407,12 +414,7 @@ const Double_t  AliPHOSPIDv1::GausPol2(Double_t  x, Double_t y, Double_t * par)
   Double_t sigma  = par[6] + par[7] * x + par[8] * x * x ;
 
   if(TMath::Abs(sigma) > 1.e-10){
-    TF1 * f = new TF1("gaus","gaus",0,100);
-    f->SetParameters(cnt,mean,sigma);
-    Double_t arg  = f->Eval(y) ;
-  //cout<<"GausPol : en "<<x<<" y "<<y<<" c "<< cnt << " mean "<<mean<<" sigma "<<sigma<<endl;
-
-    return arg;
+    return cnt*TMath::Gaus(y,mean,sigma);
   }
   else
     return 0.;
@@ -756,12 +758,7 @@ const Double_t  AliPHOSPIDv1::LandauF(Double_t  x, Double_t y, Double_t * par)
   Double_t sigma  = par[7] / (x*x) + par[8] / x + par[6] ;
 
   if(TMath::Abs(sigma) > 1.e-10){
-    TF1 * f = new TF1("landau","landau",0.,100.);
-    f->SetParameters(cnt,mean,sigma);
-    Double_t arg  = f->Eval(y) ;
-    //    cout<<"LandauF : en "<<x<<" y  "<<y<<" c "<< cnt << " mean "<<mean<<" sigma "<<sigma<<endl;
-
-    return arg;
+    return cnt*TMath::Landau(y,mean,sigma);
   }
   else
     return 0.;
@@ -780,11 +777,7 @@ const Double_t  AliPHOSPIDv1::LandauPol2(Double_t  x, Double_t y, Double_t * par
   Double_t sigma  = par[8] * (x*x) + par[7] * x + par[6] ;
 
    if(TMath::Abs(sigma) > 1.e-10){
-    TF1 * f = new TF1("landau","landau",0.,100.);
-    f->SetParameters(cnt,mean,sigma);
-    Double_t arg  = f->Eval(y) ;
-    //cout<<"LandauPol : en "<<x<<" y  "<<y<<" c "<< cnt << " mean "<<mean<<" sigma "<<sigma<<endl;
-    return arg;
+    return cnt*TMath::Landau(y,mean,sigma);
   }
   else
     return 0.;
@@ -1072,15 +1065,11 @@ void  AliPHOSPIDv1::MakePID()
   }
   //  Info("MakePID", "Delete");
   
-  //   for (Int_t i =0; i< kSPECIES; i++){
-  //     delete [] stof[i];
-  //     cout<<i<<endl;
-  //     delete [] sdp[i];
-  //     cout<<i<<endl;
-  //     delete [] scpv[i];
-  //     cout<<i<<endl;
-  //   }
-  
+    for (Int_t i =0; i< kSPECIES; i++){
+      delete [] stof[i];
+      delete [] sdp[i];
+      delete [] scpv[i];
+    }
   //  Info("MakePID","End MakePID"); 
 }
 

@@ -21,6 +21,7 @@ class TTree ;
 class TCanvas ;
 class TFolder ;
 class TMatrixD ;
+class TFormula;
 // --- Standard library ---
 // --- AliRoot header files ---
 class AliPHOSEmcRecPoint ;
