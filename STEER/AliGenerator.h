@@ -32,7 +32,7 @@ class AliGenerator : public TNamed
     virtual void SetOrigin(const TLorentzVector &o);
     virtual void SetSigma(Float_t sx, Float_t sy, Float_t sz);
     virtual void SetMomentumRange(Float_t pmin=0, Float_t pmax=1.e10);
-    virtual void SetPtRange(Float_t ptmin=0, Float_t ptmax=1.e10);
+    virtual void SetPtRange(Float_t ptmin=0, Float_t ptmax=100);
     virtual void SetPhiRange(Float_t phimin=-180., Float_t phimax=180);
     virtual void SetYRange(Float_t ymin=-100, Float_t ymax=100);
     virtual void SetVRange(Float_t vxmin, Float_t vxmax,
