@@ -29,7 +29,7 @@ extern "C" {
 }
 #endif
 
-#include "AliRawEvent.h"
+#include "AliMDC.h"
 
 //______________________________________________________________________________
 static void AliMDCErrorHandler(int level, Bool_t abort, const char *location,
@@ -95,7 +95,7 @@ static void SMI_handle_command()
       strcpy(param, "");
    }
    if (strcmp(action, "STOP") == 0) {
-      if (gAliMDC) gAliMDC->SetStopLoop();
+      if (AliMDC::Instance()) AliMDC::Instance()->SetStopLoop();
    }
    smi_set_state("RUNNING");
 }

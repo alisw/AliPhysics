@@ -20,8 +20,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TFile.h>
+#include <TTree.h>
 #include "AliRawReaderRoot.h"
 #include "AliRawEvent.h"
+#include "AliRawEventHeader.h"
+#include "AliRawEquipmentHeader.h"
+#include "AliRawData.h"
 
 
 ClassImp(AliRawReaderRoot)

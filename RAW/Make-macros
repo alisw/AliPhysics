@@ -2,12 +2,18 @@
 
 ROOTH         = TH1.h
 
-SRCS          = AliRawEvent.cxx \
+SRCS          = AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
+		AliRawData.cxx AliRawEvent.cxx \
+		AliStats.cxx AliRawDB.cxx \
+		AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
+		AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
+		AliRunDB.cxx AliMDC.cxx \
 		AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
 		AliRawReaderDate.cxx AliTPCBuffer160.cxx AliTPCHuffman.cxx \
 		AliTPCCompression.cxx AliTPCRawStream.cxx \
 		AliITSRawStream.cxx AliITSRawStreamSPD.cxx \
-		AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx
+		AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx \
+		AliITSRawStreamSDDv2.cxx AliVMERawStream.cxx
 
 HDRS          = $(SRCS:.cxx=.h) LinkDef.h
 
@@ -15,13 +21,13 @@ DICT          = AliRawDict.cxx
 DICTH         = $(DICT:.cxx=.h)
 DICTO         = $(DICT:.cxx=.o)
 
-MAIN          = alimdc.cxx
+MAIN          = alimdc_main.cxx
 MAINO         = $(MAIN:.cxx=.o)
 
 OBJS          = $(SRCS:.cxx=.o) $(DICTO)
 
 ALLDICT       = $(DICT) $(DICTH)
-ALLSRCS       = $(SRCS) $(HDRS) $(MAIN) DateEvent.h
+ALLSRCS       = $(SRCS) $(HDRS) $(MAIN)
 ALLOBJS       = $(OBJS) $(MAINO)
 
 ALIRAW        = libRAW.so

@@ -52,6 +52,13 @@ CXXFLAGS += -DUSE_HLT -I$(ALITPC)
 LIBS     += -L$(ALITPC) -lSTEER -lTPC
 endif
 
+##### DATE #####
+
+ifdef DATE_ROOT
+DATEFLAGS = -DALI_DATE -D${DATE_SYS} -DDATE_SYS=${DATE_SYS} -Dlong32=${DATE_LONG32} -Dlong64=${DATE_LONG64} -DdatePointer=${DATE_POINTER} -I${DATE_COMMON_DEFS}
+CXXFLAGS += $(DATEFLAGS)
+endif
+
 ##### MACROS and TARGETS #####
 
 include Make-macros

@@ -4,8 +4,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ enum EAliRawEventType;
-
 #pragma link C++ class AliRawEvent;
 #pragma link C++ class AliRawEventHeader;
 #pragma link C++ class AliRawEquipmentHeader;

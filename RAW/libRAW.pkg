@@ -1,4 +1,9 @@
-SRCS:=  AliRawEvent.cxx \
+SRCS:=  AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
+	AliRawData.cxx AliRawEvent.cxx \
+	AliStats.cxx AliRawDB.cxx \
+	AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
+	AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
+	AliRunDB.cxx AliMDC.cxx \
 	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
 	AliRawReaderDate.cxx \
 	AliTPCBuffer160.cxx AliTPCHuffman.cxx AliTPCCompression.cxx \
