@@ -190,6 +190,24 @@ AliDataLoader* AliLoader::GetDataLoader(const char* name)
   return dynamic_cast<AliDataLoader*>(fDataLoaders->FindObject(name));
 }
 /*****************************************************************************/ 
+void AliLoader::AddDataLoader(AliDataLoader* dl)
+{
+
+  if (dl == 0x0)
+   {
+     Error("AddDataLoader","Pointer is NULL");
+     return;
+   }
+  if (fDataLoaders->FindObject(dl->GetName()))
+   {
+     Error("AddDataLoader","Such a loader exists");
+     return;
+   }
+  fDataLoaders->AddLast(dl);
+  dl->SetEventFolder(fEventFolder);
+  dl->SetFolder(GetDetectorDataFolder()); //Must exists - ensure register is called before
+}
+/*****************************************************************************/ 
 
 Int_t AliLoader::SetEvent()
 {
