@@ -26,7 +26,7 @@ class AliEventCut: public TObject
     AliEventCut(const AliEventCut& in);
     virtual ~AliEventCut();
     
-    virtual Bool_t Pass(AliAOD* aod) const;//returns kTRUE if rejected
+    virtual Bool_t Rejected(AliAOD* aod) const;//returns kTRUE if rejected
     void           AddBasePartCut(AliEventBaseCut* ebcut);
 
     void           SetNChargedRange(Int_t min,Int_t max, Double_t etamin = -10.0,Double_t etamax = 10.0);
@@ -45,7 +45,7 @@ class AliEventEmptyCut: public TObject
     AliEventEmptyCut(){}
     virtual ~AliEventEmptyCut(){}
     
-    Bool_t Pass(AliAOD* aod) const {return kFALSE;}//always accept
+    Bool_t Rejected(AliAOD* aod) const {return kFALSE;}//always accept
     
   protected:
   private:

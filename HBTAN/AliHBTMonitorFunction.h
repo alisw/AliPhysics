@@ -83,7 +83,7 @@ class AliHBTMonitorFunction: public TNamed
 inline AliVAODParticle* AliHBTMonitorFunction::CheckParticle(AliVAODParticle* particle) const
 {
   //check if particle meets the cut criteria
-  if(fParticleCut->Pass(particle)) //if the particle is BAD
+  if(fParticleCut->Rejected(particle)) //if the particle is BAD
    { 
      return 0x0;//it is BAD as well - so return
    }

@@ -42,7 +42,7 @@ class AliAODPairCut: public TNamed
   AliAODPairCut& operator = (const AliAODPairCut& in);
   
   virtual ~AliAODPairCut();
-  virtual Bool_t Pass(AliAODPair* pair) const;
+  virtual Bool_t Rejected(AliAODPair* pair) const;
   virtual Bool_t PassPairProp(AliAODPair* pair) const;
      
   virtual Bool_t IsEmpty() const {return kFALSE;}
@@ -94,7 +94,7 @@ class AliAODPairEmptyCut:  public AliAODPairCut
   AliAODPairEmptyCut(const AliAODPairEmptyCut& in):AliAODPairCut(in){};
   virtual ~AliAODPairEmptyCut(){};
   
-  Bool_t Pass(AliAODPair*) const {return kFALSE;} //accpept everything
+  Bool_t Rejected(AliAODPair*) const {return kFALSE;} //accpept everything
   Bool_t IsEmpty() const {return kTRUE;}
   
   ClassDef(AliAODPairEmptyCut,1)
@@ -118,7 +118,7 @@ class AliAODPairBaseCut: public TObject
   
   virtual   ~AliAODPairBaseCut(){}
      
-  virtual Bool_t    Pass(AliAODPair* pair) const;
+  virtual Bool_t    Rejected(AliAODPair* pair) const;
   
   void      SetRange(Double_t min, Double_t max){fMin = min; fMax = max;}
   
@@ -143,7 +143,7 @@ class AliAODPairBaseCut: public TObject
  };
 /******************************************************************/
 
-inline Bool_t AliAODPairBaseCut::Pass(AliAODPair* pair) const
+inline Bool_t AliAODPairBaseCut::Rejected(AliAODPair* pair) const
 {
   //checks if pair proprty is in range
   //null pointer check is made by AliAODPairCut, so here is unnecesary
@@ -309,7 +309,7 @@ class AliAODITSSeparationCut: public AliAODPairBaseCut
   AliAODITSSeparationCut(Int_t layer = 0, Double_t deltarphi = 0.01, Double_t deltaz = 0.08):
     AliAODPairBaseCut(deltarphi,deltaz,kHbtPairCutPropPixelSepar),fLayer(layer){}
   virtual ~AliAODITSSeparationCut(){}
-  Bool_t   Pass(AliAODPair* pair) const;
+  Bool_t   Rejected(AliAODPair* pair) const;
   Int_t    GetLayer() const {return fLayer;}
  protected:
   Int_t fLayer;//index of the layer that distance should be measured 0: 1st pixels
@@ -323,7 +323,7 @@ class AliAODOutSideSameSignCut: public AliAODPairBaseCut
  public:
   AliAODOutSideSameSignCut(){}
   virtual ~AliAODOutSideSameSignCut(){}
-  virtual Bool_t Pass(AliAODPair *p) const;
+  virtual Bool_t Rejected(AliAODPair *p) const;
  protected:
   virtual Double_t  GetValue(AliAODPair* /*pair*/) const {return 0.0;}
   ClassDef(AliAODOutSideSameSignCut,1)
@@ -335,7 +335,7 @@ class AliAODOutSideDiffSignCut: public AliAODPairBaseCut
  public:
   AliAODOutSideDiffSignCut(){}
   virtual ~AliAODOutSideDiffSignCut(){}
-  virtual Bool_t Pass(AliAODPair *p) const;
+  virtual Bool_t Rejected(AliAODPair *p) const;
  protected:
   virtual Double_t  GetValue(AliAODPair* /*pair*/) const {return 0.0;}
   ClassDef(AliAODOutSideDiffSignCut,1)
@@ -357,7 +357,7 @@ class AliAODLogicalOperPairCut:  public AliAODPairBaseCut
     class  AliAODDummyBasePairCut: public AliAODPairBaseCut
      {
        Double_t  GetValue(AliAODPair* /*pair*/) const {return 0.0;}
-       Bool_t    Pass(AliAODPair* /*pair*/) const;
+       Bool_t    Rejected(AliAODPair* /*pair*/) const;
      };
 
     ClassDef(AliAODLogicalOperPairCut,1)
@@ -370,7 +370,7 @@ class AliAODOrPairCut: public AliAODLogicalOperPairCut
      AliAODOrPairCut(){}
      AliAODOrPairCut(AliAODPairBaseCut* first, AliAODPairBaseCut* second):AliAODLogicalOperPairCut(first,second){}
      virtual   ~AliAODOrPairCut(){}
-     Bool_t    Pass(AliAODPair *p) const;
+     Bool_t    Rejected(AliAODPair *p) const;
      ClassDef(AliAODOrPairCut,1)
 };
 /******************************************************************/
@@ -381,7 +381,7 @@ class AliAODAndPairCut: public AliAODLogicalOperPairCut
      AliAODAndPairCut(){}
      AliAODAndPairCut(AliAODPairBaseCut* first, AliAODPairBaseCut* second):AliAODLogicalOperPairCut(first,second){}
      virtual   ~AliAODAndPairCut(){}
-     Bool_t    Pass(AliAODPair *p) const;
+     Bool_t    Rejected(AliAODPair *p) const;
      ClassDef(AliAODAndPairCut,1)
 };
 

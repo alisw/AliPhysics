@@ -78,7 +78,7 @@ Int_t AliRunAnalysis::Run()
       /******************************/ 
       /*  Event Cut                 */ 
       /******************************/ 
-      if ( Pass(eventrec,eventsim) )
+      if ( Rejected(eventrec,eventsim) )
        {
          if (AliVAODParticle::GetDebug()) Info("Run","Event rejected by Event Cut");
          continue; //Did not pass the 
@@ -125,16 +125,16 @@ void AliRunAnalysis::SetEventCut(AliEventCut* evcut)
 
 /*********************************************************/
 
-Bool_t AliRunAnalysis::Pass(AliAOD* recevent, AliAOD* simevent)
+Bool_t AliRunAnalysis::Rejected(AliAOD* recevent, AliAOD* simevent)
 {
   //checks the event cut
   if (fEventCut == 0x0) return kFALSE;
   
   if (fCutOnRec)
-    if (fEventCut->Pass(recevent)) return kTRUE;
+    if (fEventCut->Rejected(recevent)) return kTRUE;
     
   if (fCutOnSim)
-    if (fEventCut->Pass(simevent)) return kTRUE;
+    if (fEventCut->Rejected(simevent)) return kTRUE;
   
   return kFALSE;
 }

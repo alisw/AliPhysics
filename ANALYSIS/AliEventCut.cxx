@@ -40,7 +40,7 @@ AliEventCut::~AliEventCut()
 
 /*********************************************************/
 
-Bool_t AliEventCut::Pass(AliAOD* aod) const
+Bool_t AliEventCut::Rejected(AliAOD* aod) const
 {
   //returns kTRUE if rejected
   if (aod == 0x0)
@@ -53,7 +53,7 @@ Bool_t AliEventCut::Pass(AliAOD* aod) const
   AliEventBaseCut* becut;
   while (( becut = (AliEventBaseCut*)iter() ))
    {
-     if (becut->Pass(aod)) return kTRUE;
+     if (becut->Rejected(aod)) return kTRUE;
    }
   return kFALSE;
 }

@@ -100,7 +100,7 @@ void AliAODPairCut::AddBasePairCut(AliAODPairBaseCut* basecut)
 }
 /**********************************************************/
 
-Bool_t AliAODPairCut::Pass(AliAODPair* pair) const
+Bool_t AliAODPairCut::Rejected(AliAODPair* pair) const
 {
   //methods which checks if given pair meets all criteria of the cut
   //if it meets returns FALSE
@@ -112,8 +112,8 @@ Bool_t AliAODPairCut::Pass(AliAODPair* pair) const
     }
   
   //check particle's cuts
-  if( ( fFirstPartCut->Pass( pair->Particle1()) ) || 
-      ( fSecondPartCut->Pass(pair->Particle2()) )   )
+  if( ( fFirstPartCut->Rejected( pair->Particle1()) ) || 
+      ( fSecondPartCut->Rejected(pair->Particle2()) )   )
     {  
       return kTRUE;
     }
@@ -129,7 +129,7 @@ Bool_t AliAODPairCut::PassPairProp(AliAODPair* pair) const
   //examine all base pair cuts
   for (Int_t i = 0;i<fNCuts;i++)
     {
-      if ( (fCuts[i]->Pass(pair)) ) return kTRUE; //if one of the cuts reject, then reject
+      if ( (fCuts[i]->Rejected(pair)) ) return kTRUE; //if one of the cuts reject, then reject
     }
   return kFALSE;
 }
@@ -418,7 +418,7 @@ Double_t AliAODSeparationCut::GetValue(AliAODPair* pair) const
 
 ClassImp(AliAODITSSeparationCut)
 
-Bool_t AliAODITSSeparationCut::Pass(AliAODPair* pair) const
+Bool_t AliAODITSSeparationCut::Rejected(AliAODPair* pair) const
 {
  //Checks if two tracks do not cross first pixels too close to each other
  //If two tracks use the same cluster in pixels they are given
@@ -491,7 +491,7 @@ Double_t  AliAODCluterOverlapCut::GetValue(AliAODPair* pair) const
 /******************************************************************/
 ClassImp(AliAODOutSideSameSignCut)
 
-Bool_t AliAODOutSideSameSignCut::Pass(AliAODPair *p) const
+Bool_t AliAODOutSideSameSignCut::Rejected(AliAODPair *p) const
 {
   //returns kTRUE if pair DO NOT meet cut criteria
   
@@ -505,7 +505,7 @@ Bool_t AliAODOutSideSameSignCut::Pass(AliAODPair *p) const
 /******************************************************************/
 ClassImp(AliAODOutSideDiffSignCut)
 
-Bool_t AliAODOutSideDiffSignCut::Pass(AliAODPair *p) const
+Bool_t AliAODOutSideDiffSignCut::Rejected(AliAODPair *p) const
 {
   //returns kTRUE if pair DO NOT meet cut criteria
   
@@ -550,7 +550,7 @@ AliAODLogicalOperPairCut::~AliAODLogicalOperPairCut()
 }
 /******************************************************************/
 
-Bool_t AliAODLogicalOperPairCut::AliAODDummyBasePairCut::Pass(AliAODPair* /*pair*/)  const
+Bool_t AliAODLogicalOperPairCut::AliAODDummyBasePairCut::Rejected(AliAODPair* /*pair*/)  const
 {
   //checks if particles passes properties defined by this cut
   Warning("Pass","You are using dummy base cut! Probobly some logical cut is not set up properly");
@@ -588,26 +588,26 @@ void AliAODLogicalOperPairCut::Streamer(TBuffer &b)
 /******************************************************************/
 ClassImp(AliAODOrPairCut)
 
-Bool_t AliAODOrPairCut::Pass(AliAODPair * p) const
+Bool_t AliAODOrPairCut::Rejected(AliAODPair * p) const
 {
   //returns true when rejected 
   //AND operation is a little bit misleading but is correct
   //User wants to build logical cuts with natural (positive) logic
   //while ALIAN use inernally reverse (returns true when rejected)
-  if (fFirst->Pass(p) && fSecond->Pass(p) ) return kTRUE;//rejected (both rejected, returned kTRUE)
+  if (fFirst->Rejected(p) && fSecond->Rejected(p) ) return kTRUE;//rejected (both rejected, returned kTRUE)
   return kFALSE;//accepted, at least one accepted (returned kFALSE)
 }
 /******************************************************************/
 
 ClassImp(AliAODAndPairCut)
 
-Bool_t AliAODAndPairCut::Pass(AliAODPair * p)  const
+Bool_t AliAODAndPairCut::Rejected(AliAODPair * p)  const
 {
   //returns true when rejected 
   //OR operation is a little bit misleading but is correct
   //User wants to build logical cuts with natural (positive) logic
   //while ALIAN use inernally reverse (returns true when rejected)
-  if (fFirst->Pass(p) || fSecond->Pass(p)) return kTRUE;//rejected (any of two rejected(returned kTRUE) )
+  if (fFirst->Rejected(p) || fSecond->Rejected(p)) return kTRUE;//rejected (any of two rejected(returned kTRUE) )
   return kFALSE;//accepted (both accepted (returned kFALSE))
 }
 /******************************************************************/

@@ -70,7 +70,7 @@ class AliAODParticleCut: public TObject
     virtual ~AliAODParticleCut();
     AliAODParticleCut& operator = (const AliAODParticleCut& in);
     
-    virtual Bool_t Pass(AliVAODParticle* p) const;
+    virtual Bool_t Rejected(AliVAODParticle* p) const;
     Bool_t IsEmpty() const {return kFALSE;}
     
     void AddBasePartCut(AliAODParticleBaseCut* basecut);
@@ -120,7 +120,7 @@ class AliAODParticleEmptyCut:  public AliAODParticleCut
     AliAODParticleEmptyCut(){};
     virtual ~AliAODParticleEmptyCut(){};
     
-    Bool_t Pass(AliVAODParticle*) const {return kFALSE;} //accept everything
+    Bool_t Rejected(AliVAODParticle*) const {return kFALSE;} //accept everything
     Bool_t IsEmpty() const {return kTRUE;}
 
     ClassDef(AliAODParticleEmptyCut,1)
@@ -143,7 +143,7 @@ class AliAODParticleBaseCut: public TObject
 
      virtual           ~AliAODParticleBaseCut(){}
      
-     virtual Bool_t    Pass(AliVAODParticle *p) const;
+     virtual Bool_t    Rejected(AliVAODParticle *p) const;
      
      void              SetRange(Double_t min, Double_t max){fMin = min; fMax = max;}
 
@@ -170,7 +170,7 @@ class AliAODParticleBaseCut: public TObject
  };
 
 inline Bool_t
-AliAODParticleBaseCut::Pass(AliVAODParticle *p) const
+AliAODParticleBaseCut::Rejected(AliVAODParticle *p) const
 {
   //cjecks if particle property fits in range
   if ( (GetValue(p) < fMin) || (GetValue(p) > fMax ) ) return kTRUE; //rejected
@@ -361,7 +361,7 @@ class AliAODLogicalOperCut:  public AliAODParticleBaseCut
     class  AliAODDummyBaseCut: public AliAODParticleBaseCut 
      {
        Double_t  GetValue(AliVAODParticle * /*part*/) const {return 0.0;}
-       Bool_t    Pass(AliVAODParticle* /*part*/) const;
+       Bool_t    Rejected(AliVAODParticle* /*part*/) const;
      };
      
     ClassDef(AliAODLogicalOperCut,1)
@@ -373,7 +373,7 @@ class AliAODOrCut: public AliAODLogicalOperCut
      AliAODOrCut(){}
      AliAODOrCut(AliAODParticleBaseCut* first, AliAODParticleBaseCut* second):AliAODLogicalOperCut(first,second){}
      virtual   ~AliAODOrCut(){}
-     Bool_t    Pass(AliVAODParticle *p) const;
+     Bool_t    Rejected(AliVAODParticle *p) const;
      ClassDef(AliAODOrCut,1)
 };
 
@@ -383,7 +383,7 @@ class AliAODAndCut: public AliAODLogicalOperCut
      AliAODAndCut(){}
      AliAODAndCut(AliAODParticleBaseCut* first, AliAODParticleBaseCut* second):AliAODLogicalOperCut(first,second){}
      virtual   ~AliAODAndCut(){}
-     Bool_t    Pass(AliVAODParticle *p) const;
+     Bool_t    Rejected(AliVAODParticle *p) const;
      ClassDef(AliAODAndCut,1)
 };
 

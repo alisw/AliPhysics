@@ -372,7 +372,7 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
          
         if (fCheckParticlePID)
          {
-           if(Pass(p->GetPdgCode())) 
+           if(Rejected(p->GetPdgCode())) 
             {
               if ( AliVAODParticle::GetDebug() > 5 )
                 Info("ReadNext","Simulated Particle PID (%d) did not pass the cut.",p->GetPdgCode());
@@ -475,7 +475,7 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
            continue;
          }
 
-        if(Pass(pdgcode)) 
+        if(Rejected(pdgcode)) 
          {
            if ( AliVAODParticle::GetDebug() > 5 )
              Info("ReadNext","PID (%d) did not pass the cut.",pdgcode);
@@ -496,7 +496,7 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
            track->SetPIDprobability(charge*GetSpeciesPdgCode( (ESpecies)k ),w[k]);
          }
 
-        if(Pass(track))//check if meets all criteria of any of our cuts
+        if(Rejected(track))//check if meets all criteria of any of our cuts
                        //if it does not delete it and take next good track
          { 
            if ( AliVAODParticle::GetDebug() > 4 )

@@ -323,13 +323,13 @@ Int_t AliHBTReader::Read(AliHBTRun* particles, AliHBTRun *tracks)
 }      
 /*************************************************************************************/
 
-Bool_t AliHBTReader::Pass(AliHBTParticle* p)
+Bool_t AliHBTReader::Rejected(AliHBTParticle* p)
 {
  //Method examines whether particle meets all cut and particle type criteria
   
    if(p==0x0)//of corse we not pass NULL pointers
     {
-     Warning("Pass()","No Pasaran! We never accept NULL pointers");
+     Warning("Rejected()","No Pasaran! We never accept NULL pointers");
      return kTRUE;
     }
    //if no particle is specified, we pass all particles
@@ -338,14 +338,14 @@ Bool_t AliHBTReader::Pass(AliHBTParticle* p)
   for(Int_t i=0; i<fCuts->GetEntriesFast(); i++)   
    {
      AliHBTParticleCut &cut = *((AliHBTParticleCut*)fCuts->At(i));
-     if(!cut.Pass(p)) return kFALSE;  //accepted
+     if(!cut.Rejected(p)) return kFALSE;  //accepted
    }
    
   return kTRUE;//not accepted
 }
 /*************************************************************************************/
 
-Bool_t  AliHBTReader::Pass(Int_t pid)
+Bool_t  AliHBTReader::Rejected(Int_t pid)
 {
 //this method checks if any of existing cuts accepts this pid particles
 //or any cuts accepts all particles

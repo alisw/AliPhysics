@@ -125,8 +125,8 @@ class AliReader: public TNamed
     TH1I*                fTrackCounter; //histogram with number of tracks read
     
     virtual Int_t        ReadNext() = 0; //this methods reads next event and put result in fTracksEvent and/or fParticlesEvent
-    Bool_t               Pass(AliVAODParticle* p);//Checks if a given particle agains cuts
-    Bool_t               Pass(Int_t pid);//Checks if a given pid passes cuts
+    Bool_t               Rejected(AliVAODParticle* p);//Checks if a given particle agains cuts
+    Bool_t               Rejected(Int_t pid);//Checks if a given pid passes cuts
     void                 Blend();//Mixes current events in a symmetric way so after mixing thy are consistent
     
     TString&             GetDirName(Int_t entry);

@@ -30,7 +30,7 @@ AliEventBaseCut::AliEventBaseCut(Double_t min, Double_t max, EEventCutProperty p
 }
 /**********************************************************/
 
-Bool_t AliEventBaseCut::Pass(AliAOD* aod) const
+Bool_t AliEventBaseCut::Rejected(AliAOD* aod) const
 {
   if ( (GetValue(aod) < fMin) || (GetValue(aod) > fMax) ) return kTRUE;
   return kFALSE;

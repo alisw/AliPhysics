@@ -130,11 +130,11 @@ Int_t AliReaderKineTree::ReadNext()
          TParticle * p = stack->Particle(i);
 //         if (p->GetFirstMother() >= 0) continue; do not apply with pythia etc
          
-         if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
+         if(Rejected(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
                                              //if not take next partilce
          
          AliAODParticle* part = new AliAODParticle(*p,i);
-         if(Pass(part)) { delete part; continue;}//check if meets all criteria of any of our cuts
+         if(Rejected(part)) { delete part; continue;}//check if meets all criteria of any of our cuts
                                                   //if it does not delete it and take next good track
          fEventSim->AddParticle(part);//put particle in event
       }

@@ -150,7 +150,7 @@ Int_t AliHBTAnalysis::ProcessEvent(AliAOD* aodrec, AliAOD* aodsim)
      Error("ProcessEvent","Analysis <<%s>> option not specified.",GetName());
      return 1;
    }
-  if ( Pass(aodrec,aodsim) ) return 0;
+  if ( Rejected(aodrec,aodsim) ) return 0;
   
   //Move event to the apparent vertex -> must be after the event cut
   //It is important for any cut that use any spacial coordiantes, 
@@ -555,10 +555,10 @@ Int_t AliHBTAnalysis::ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim)
 
      part1= partEvent->GetParticle(j);
 
-     Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(part1);
+     Bool_t firstcut = fPairCut->GetFirstPartCut()->Rejected(part1);
 
      if (fBufferSize != 0) 
-       if ( (firstcut == kFALSE) || ( fPairCut->GetSecondPartCut()->Pass(part1) == kFALSE ) )
+       if ( (firstcut == kFALSE) || ( fPairCut->GetSecondPartCut()->Rejected(part1) == kFALSE ) )
         {
           //accepted by any cut
           // we have to copy because reader keeps only one event
@@ -579,9 +579,9 @@ Int_t AliHBTAnalysis::ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim)
         if (part1->GetUID() == part2->GetUID()) continue;
         partpair->SetParticles(part1,part2);
 
-           if(fPairCut->Pass(partpair)) //check pair cut
+           if(fPairCut->Rejected(partpair)) //check pair cut
             { //do not meets crietria of the 
-              if( fPairCut->Pass((AliHBTPair*)partpair->GetSwappedPair()) ) continue;
+              if( fPairCut->Rejected((AliHBTPair*)partpair->GetSwappedPair()) ) continue;
               else tmppartpair = (AliHBTPair*)partpair->GetSwappedPair();
             }
            else
@@ -614,9 +614,9 @@ Int_t AliHBTAnalysis::ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim)
                 part2= partEvent2->GetParticle(l);
                 partpair->SetParticles(part1,part2);
 
-                if( fPairCut->Pass(partpair) ) //check pair cut
+                if( fPairCut->Rejected(partpair) ) //check pair cut
                   { //do not meets crietria of the 
-                    if( fPairCut->Pass((AliHBTPair*)partpair->GetSwappedPair()) )
+                    if( fPairCut->Rejected((AliHBTPair*)partpair->GetSwappedPair()) )
                       continue;
                     else 
                      {
@@ -678,10 +678,10 @@ Int_t AliHBTAnalysis::ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/)
 
      track1= trackEvent->GetParticle(j);
 
-     Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(track1);
+     Bool_t firstcut = fPairCut->GetFirstPartCut()->Rejected(track1);
 
      if (fBufferSize != 0) 
-       if ( (firstcut == kFALSE) || ( fPairCut->GetSecondPartCut()->Pass(track1) == kFALSE ) )
+       if ( (firstcut == kFALSE) || ( fPairCut->GetSecondPartCut()->Rejected(track1) == kFALSE ) )
         {
           //accepted by any cut
           // we have to copy because reader keeps only one event
@@ -702,9 +702,9 @@ Int_t AliHBTAnalysis::ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/)
         if (track1->GetUID() == track2->GetUID()) continue;
         trackpair->SetParticles(track1,track2);
 
-           if(fPairCut->Pass(trackpair)) //check pair cut
+           if(fPairCut->Rejected(trackpair)) //check pair cut
             { //do not meets crietria of the 
-              if( fPairCut->Pass((AliHBTPair*)trackpair->GetSwappedPair()) ) continue;
+              if( fPairCut->Rejected((AliHBTPair*)trackpair->GetSwappedPair()) ) continue;
               else tmptrackpair = (AliHBTPair*)trackpair->GetSwappedPair();
             }
            else
@@ -737,9 +737,9 @@ Int_t AliHBTAnalysis::ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/)
                 track2= trackEvent2->GetParticle(l);
                 trackpair->SetParticles(track1,track2);
 
-                if( fPairCut->Pass(trackpair) ) //check pair cut
+                if( fPairCut->Rejected(trackpair) ) //check pair cut
                   { //do not meets crietria of the 
-                    if( fPairCut->Pass((AliHBTPair*)trackpair->GetSwappedPair()) )
+                    if( fPairCut->Rejected((AliHBTPair*)trackpair->GetSwappedPair()) )
                       continue;
                     else 
                      {
@@ -1671,8 +1671,8 @@ void AliHBTAnalysis::FilterOut(AliAOD* out1, AliAOD* out2, AliAOD* in) const
      in1 = in2 = kTRUE;
      part = in->GetParticle(i);
      
-     if ( cut1->Pass(part) ) in1 = kFALSE; //if part is rejected by cut1, in1 is false
-     if ( cut2->Pass(part) ) in2 = kFALSE; //if part is rejected by cut2, in2 is false
+     if ( cut1->Rejected(part) ) in1 = kFALSE; //if part is rejected by cut1, in1 is false
+     if ( cut2->Rejected(part) ) in2 = kFALSE; //if part is rejected by cut2, in2 is false
      
      if (gDebug)//to be removed in real analysis     
      if ( in1 && in2 ) //both cuts accepted, should never happen, just in case

@@ -30,7 +30,7 @@ class AliEventBaseCut: public TObject
     AliEventBaseCut();
     AliEventBaseCut(Double_t min,Double_t max, EEventCutProperty prop = kNone);
     virtual ~AliEventBaseCut(){}
-    virtual Bool_t Pass(AliAOD* aod) const;//returns kTRUE if rejected
+    virtual Bool_t Rejected(AliAOD* aod) const;//returns kTRUE if rejected
     virtual void   SetRange(Double_t min, Double_t max){fMin = min; fMax = max;}
 
     virtual EEventCutProperty GetProperty()const{return fProperty;}

@@ -45,7 +45,7 @@ class AliRunAnalysis: public TTask
     Bool_t        fCutOnSim;//flag indicating that event cut is performed on simulated particles 
     Bool_t        fCutOnRec;//flag indicating that event cut is performed on reconstructed tracks
     
-    Bool_t        Pass(AliAOD* recevent, AliAOD* simevent);
+    Bool_t        Rejected(AliAOD* recevent, AliAOD* simevent);
     
   private:
     void SetName(const char *){}//change SetName to be private

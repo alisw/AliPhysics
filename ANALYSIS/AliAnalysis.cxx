@@ -63,16 +63,16 @@ void AliAnalysis::SetEventCut(AliEventCut* evcut)
 }
 /*********************************************************/
 
-Bool_t AliAnalysis::Pass(AliAOD* recevent, AliAOD* simevent)
+Bool_t AliAnalysis::Rejected(AliAOD* recevent, AliAOD* simevent)
 {
   //checks the event cut
   if (fEventCut == 0x0) return kFALSE;
   
   if (fCutOnRec)
-    if (fEventCut->Pass(recevent)) return kTRUE;
+    if (fEventCut->Rejected(recevent)) return kTRUE;
     
   if (fCutOnSim)
-    if (fEventCut->Pass(simevent)) return kTRUE;
+    if (fEventCut->Rejected(simevent)) return kTRUE;
   
   return kFALSE;
 }

@@ -81,21 +81,21 @@ AliAODParticleCut::~AliAODParticleCut()
 } 
 /******************************************************************/
 
-Bool_t AliAODParticleCut::Pass(AliVAODParticle* p) const
+Bool_t AliAODParticleCut::Rejected(AliVAODParticle* p) const
 {
 //method checks all the cuts that are set (in the list)
 //If any of the baseCuts rejects particle False(rejection) is returned
 
  if(!p) 
   {
-    Warning("Pass()","No Pasaran! We never accept NULL pointers");
+    Warning("Rejected()","No Pasaran! We never accept NULL pointers");
     return kTRUE;
   }
  if( (p->GetPdgCode() != fPID) && ( fPID != 0)) return kTRUE;
  
  for (Int_t i = 0;i<fNCuts;i++)
    {
-    if ( (fCuts[i]->Pass(p)) )
+    if ( (fCuts[i]->Rejected(p)) )
      {
 //       fCuts[i]->Print();
        return kTRUE; //if one of the cuts rejects, then reject
@@ -424,7 +424,7 @@ AliAODLogicalOperCut::~AliAODLogicalOperCut()
 }
 /******************************************************************/
 
-Bool_t AliAODLogicalOperCut::AliAODDummyBaseCut::Pass(AliVAODParticle* /*part*/)  const
+Bool_t AliAODLogicalOperCut::AliAODDummyBaseCut::Rejected(AliVAODParticle* /*part*/)  const
 {
   //checks if particles passes properties defined by this cut
   Warning("Pass","You are using dummy base cut! Probobly some logical cut is not set up properly");
@@ -462,26 +462,26 @@ void AliAODLogicalOperCut::Streamer(TBuffer &b)
 /******************************************************************/
 ClassImp(AliAODOrCut)
 
-Bool_t AliAODOrCut::Pass(AliVAODParticle * p) const
+Bool_t AliAODOrCut::Rejected(AliVAODParticle * p) const
 {
   //returns true when rejected 
   //AND operation is a little bit misleading but is correct
   //User wants to build logical cuts with natural (positive) logic
   //while AODAN use inernally reverse (returns true when rejected)
-  if (fFirst->Pass(p) && fSecond->Pass(p)) return kTRUE;//rejected (both rejected, returned kTRUE)
+  if (fFirst->Rejected(p) && fSecond->Rejected(p)) return kTRUE;//rejected (both rejected, returned kTRUE)
   return kFALSE;//accepted, at least one accepted (returned kFALSE)
 }
 /******************************************************************/
 
 ClassImp(AliAODAndCut)
 
-Bool_t AliAODAndCut::Pass(AliVAODParticle * p)  const
+Bool_t AliAODAndCut::Rejected(AliVAODParticle * p)  const
 {
   //returns true when rejected 
   //OR operation is a little bit misleading but is correct
   //User wants to build logical cuts with natural (positive) logic
   //while AODAN use inernally reverse (returns true when rejected)
-  if (fFirst->Pass(p) || fSecond->Pass(p)) return kTRUE;//rejected (any of two rejected(returned kTRUE) )
+  if (fFirst->Rejected(p) || fSecond->Rejected(p)) return kTRUE;//rejected (any of two rejected(returned kTRUE) )
   return kFALSE;//accepted (both accepted (returned kFALSE))
 }
 /******************************************************************/

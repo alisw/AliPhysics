@@ -197,7 +197,7 @@ Int_t AliHBTReaderInternal::ReadNext()
             {
               //check if we are intersted with particles of this type
               //if not take next partilce
-              if( Pass(ttrack->GetNthPid(s)) ) 
+              if( Rejected(ttrack->GetNthPid(s)) ) 
                {
                  if (AliHBTParticle::GetDebug() > 9)
                   Info("ReadNext","Track Incarnation %d did not pass PID cut.",ttrack->GetNthPid(s));
@@ -225,7 +225,7 @@ Int_t AliHBTReaderInternal::ReadNext()
               track->SetCalcMass(mass);
               track->SetPdgCode(ttrack->GetNthPid(s),ttrack->GetNthPidProb(s));
               
-              if( Pass(track) )
+              if( Rejected(track) )
                 {
                   if (AliHBTParticle::GetDebug() > 9)
                    Info("ReadNext","Track Incarnation %d did not pass cut.",ttrack->GetNthPid(s));
@@ -255,10 +255,10 @@ Int_t AliHBTReaderInternal::ReadNext()
            for (Int_t s = 0; s < tpart->GetNumberOfPids(); s++)
             {
               if( pdgdb->GetParticle(tpart->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
-              if( Pass(tpart->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
+              if( Rejected(tpart->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
               AliHBTParticle* part = new AliHBTParticle(*tpart);
               part->SetPdgCode(tpart->GetNthPid(s),tpart->GetNthPidProb(s));
-              if( Pass(part) )
+              if( Rejected(part) )
                 {
                   delete part;
                   continue; 
@@ -281,7 +281,7 @@ Int_t AliHBTReaderInternal::ReadNext()
 
            for (Int_t s = 0; s < ttrack->GetNumberOfPids(); s++)
             {
-              if( Pass(ttrack->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
+              if( Rejected(ttrack->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
                                                          //if not take next partilce
               TParticlePDG* pdgp = pdgdb->GetParticle(ttrack->GetNthPid(s));
               if (pdgp == 0x0)//PDG part corresponding to new incarnation
@@ -304,7 +304,7 @@ Int_t AliHBTReaderInternal::ReadNext()
               track->SetCalcMass(mass);
               track->SetPdgCode(ttrack->GetNthPid(s),ttrack->GetNthPidProb(s));
               
-              if( Pass(track) )
+              if( Rejected(track) )
                 {
                   delete track;
                   continue; 

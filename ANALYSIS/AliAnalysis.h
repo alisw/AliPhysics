@@ -41,7 +41,7 @@ class AliAnalysis: public TTask
     void          SetPairCut(AliAODPairCut* cut);
     
   protected:
-    Bool_t        Pass(AliAOD* recevent, AliAOD* simevent);
+    Bool_t        Rejected(AliAOD* recevent, AliAOD* simevent);
     AliEventCut*  fEventCut;//event cut
 
     Bool_t        fCutOnSim;//flag indicating that event cut is performed on simulated particles 
@@ -58,19 +58,19 @@ class AliAnalysis: public TTask
     Bool_t (AliAnalysis::*fkPass2)(AliVAODParticle* partpair, AliVAODParticle* trackpair) const;//Pointer to function that performes cut on second particle
     Bool_t (AliAnalysis::*fkPassPairProp)(AliAODPair* partpair, AliAODPair* trackpair) const;//Pointer to function that performes pair cut
 
-    Bool_t PassPartAndTrack (AliAODPair* partpair, AliAODPair* trackpair) const {return (fPairCut->Pass((AliAODPair*)partpair))?kTRUE:fPairCut->Pass((AliAODPair*)trackpair);}
+    Bool_t PassPartAndTrack (AliAODPair* partpair, AliAODPair* trackpair) const {return (fPairCut->Rejected((AliAODPair*)partpair))?kTRUE:fPairCut->Rejected((AliAODPair*)trackpair);}
     Bool_t PassPartAndTrack1(AliVAODParticle* part, AliVAODParticle* track) const;
     Bool_t PassPartAndTrack2(AliVAODParticle* part, AliVAODParticle* track) const;
     Bool_t PassPairPropPartAndTrack (AliAODPair* partpair, AliAODPair* trackpair) const {return (fPairCut->PassPairProp((AliAODPair*)partpair))?kTRUE:fPairCut->PassPairProp((AliAODPair*)trackpair);}
 
-    Bool_t PassPart (AliAODPair* partpair, AliAODPair* /*trackpair*/) const {return fPairCut->Pass((AliAODPair*)partpair);}
-    Bool_t PassPart1(AliVAODParticle* part, AliVAODParticle* /*track*/) const {return fPairCut->GetFirstPartCut()->Pass(part);}
-    Bool_t PassPart2(AliVAODParticle* part, AliVAODParticle* /*track*/) const {return fPairCut->GetSecondPartCut()->Pass(part);}
+    Bool_t PassPart (AliAODPair* partpair, AliAODPair* /*trackpair*/) const {return fPairCut->Rejected((AliAODPair*)partpair);}
+    Bool_t PassPart1(AliVAODParticle* part, AliVAODParticle* /*track*/) const {return fPairCut->GetFirstPartCut()->Rejected(part);}
+    Bool_t PassPart2(AliVAODParticle* part, AliVAODParticle* /*track*/) const {return fPairCut->GetSecondPartCut()->Rejected(part);}
     Bool_t PassPairPropPart (AliAODPair* partpair, AliAODPair* /*trackpair*/) const {return fPairCut->PassPairProp((AliAODPair*)partpair);}
 
-    Bool_t PassTrack (AliAODPair* /*partpair*/, AliAODPair* trackpair) const {return fPairCut->Pass((AliAODPair*)trackpair);}
-    Bool_t PassTrack1(AliVAODParticle* /*part*/, AliVAODParticle* track) const {return fPairCut->GetFirstPartCut()->Pass(track);}
-    Bool_t PassTrack2(AliVAODParticle* /*part*/, AliVAODParticle* track) const {return fPairCut->GetSecondPartCut()->Pass(track);}
+    Bool_t PassTrack (AliAODPair* /*partpair*/, AliAODPair* trackpair) const {return fPairCut->Rejected((AliAODPair*)trackpair);}
+    Bool_t PassTrack1(AliVAODParticle* /*part*/, AliVAODParticle* track) const {return fPairCut->GetFirstPartCut()->Rejected(track);}
+    Bool_t PassTrack2(AliVAODParticle* /*part*/, AliVAODParticle* track) const {return fPairCut->GetSecondPartCut()->Rejected(track);}
     Bool_t PassPairPropTrack (AliAODPair* /*partpair*/, AliAODPair* trackpair) const {return fPairCut->PassPairProp((AliAODPair*)trackpair);}
 
   private:
@@ -82,7 +82,7 @@ inline Bool_t AliAnalysis::PassPartAndTrack1(AliVAODParticle* part,AliVAODPartic
 {
 //Checks first particle from both, particle and track pairs
   AliAODParticleCut* pc = fPairCut->GetFirstPartCut();
-  return (pc->Pass(part))?kTRUE:pc->Pass(track);
+  return (pc->Rejected(part))?kTRUE:pc->Rejected(track);
 }
 /*************************************************************************************/
 
@@ -90,7 +90,7 @@ inline Bool_t AliAnalysis::PassPartAndTrack2(AliVAODParticle* part,AliVAODPartic
 {
 //Checks second particle from both, particle and track pairs
   AliAODParticleCut* pc = fPairCut->GetSecondPartCut();
-  return (pc->Pass(part))?kTRUE:pc->Pass(track);
+  return (pc->Rejected(part))?kTRUE:pc->Rejected(track);
 }
 /*************************************************************************************/ 
 

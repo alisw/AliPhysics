@@ -85,8 +85,8 @@ class AliHBTReader: public TNamed
     TH1I*         fTrackCounter; //histogram with number of tracks read
     
     virtual Int_t ReadNext() = 0; //this methods reads next event and put result in fTracksEvent and/or fParticlesEvent
-    Bool_t Pass(AliHBTParticle* p);
-    Bool_t Pass(Int_t pid);
+    Bool_t Rejected(AliHBTParticle* p);
+    Bool_t Rejected(Int_t pid);
     void Blend();
     
     TString& GetDirName(Int_t entry);

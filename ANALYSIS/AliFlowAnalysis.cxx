@@ -102,7 +102,7 @@ Double_t AliFlowAnalysis::GetEventPlane(AliAOD* aod)
       }
      
      if (fPartCut)
-      if (fPartCut->Pass(aodtrack))
+      if (fPartCut->Rejected(aodtrack))
         continue;
 
      Double_t phi = TMath::Pi()+TMath::ATan2(-aodtrack->Py(),-aodtrack->Px()); 
@@ -142,7 +142,7 @@ void AliFlowAnalysis::GetFlow(AliAOD* aod,Double_t& v2,Double_t& psi)
         continue;
       }
      if (fPartCut)
-      if (fPartCut->Pass(aodtrack))
+      if (fPartCut->Rejected(aodtrack))
         continue;
       
      Double_t phi = TMath::Pi()+TMath::ATan2(-aodtrack->Py(),-aodtrack->Px()); 
