@@ -24,8 +24,6 @@ public:
    virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials() {}
-  virtual void  Undulation(char *, Float_t, Float_t, Float_t, Float_t,
-			   char (*)[5]);
   Int_t         DistancetoPrimitive(Int_t, Int_t);
   virtual Int_t IsVersion() const =0;
   virtual void  SetPAR(Float_t, Float_t, Float_t, Float_t);
