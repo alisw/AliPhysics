@@ -10,10 +10,11 @@ PACKAGE = ITS
 # C++ sources
 
 SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
-                AliITSvPPRcoarseasymm.cxx AliITSvPPRcoarsesymm.cxx\
-                AliITShit.cxx AliITSDetType.cxx \
+      AliITSv5symm.cxx AliITSv5asymm.cxx \
+      AliITSvPPRcoarseasymm.cxx AliITSvPPRcoarsesymm.cxx\
+      AliITShit.cxx AliITSDetType.cxx \
 		AliITSgeom.cxx AliITSgeomMatrix.cxx \
-                AliITSgeomSPD.cxx AliITSgeomSDD.cxx \
+      AliITSgeomSPD.cxx AliITSgeomSDD.cxx \
 		AliITSgeomSSD.cxx AliITSmodule.cxx \
 		AliITSsimulationFastPoints.cxx \
 		AliITSsimulationFastPointsV0.cxx AliITSsimulation.cxx \
