@@ -122,6 +122,7 @@ Introduction of the Copyright and cvs Log
 
 #include "AliTOF.h"
 #include "AliTOFhit.h"
+#include "AliTOFhitT0.h"
 #include "AliTOFdigit.h"
 #include "AliTOFSDigit.h"
 #include "AliTOFRawSector.h"
@@ -167,7 +168,7 @@ AliTOF::AliTOF()
 }
  
 //_____________________________________________________________________________
-AliTOF::AliTOF(const char *name, const char *title)
+AliTOF::AliTOF(const char *name, const char *title, Option_t *option="noTimeZero")
        : AliDetector(name,title)
 {
   //
@@ -177,15 +178,13 @@ AliTOF::AliTOF(const char *name, const char *title)
   //
 
   // Initialization of hits, sdigits and digits array
-  //
-
-  fDTask=0;
-  fReTask=0;
-  fFGeom=0;
-  fReconParticles=0;
-  fMerger=0;
-
-  fHits   = new TClonesArray("AliTOFhit",  1000);
+  // added option for time zero analysis
+  if (strstr(option,"tzero")){
+    fHits   = new TClonesArray("AliTOFhitT0",  1000);
+    cout << "tzero option requires AliTOFv4T0 as TOF version (check Your Config.C)" << endl;
+  }else{
+    fHits   = new TClonesArray("AliTOFhit",  1000);
+  }
   gAlice->AddHitList(fHits);
   fIshunt  = 0;
   fSDigits       = new TClonesArray("AliTOFSDigit",  1000);
@@ -338,7 +337,18 @@ void AliTOF::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliTOFhit(fIshunt, track, vol, hits);
 }
- 
+
+//_____________________________________________________________________________
+void AliTOF::AddT0Hit(Int_t track, Int_t *vol, Float_t *hits)
+{
+  //
+  // Add a TOF hit
+  // new with placement used
+  //
+  TClonesArray &lhits = *fHits;
+  new(lhits[fNhits++]) AliTOFhitT0(fIshunt, track, vol, hits);
+}
+
 //_____________________________________________________________________________
 void AliTOF::AddDigit(Int_t *tracks, Int_t *vol, Float_t *digits)
 {
@@ -546,6 +556,12 @@ void AliTOF::CreateMaterials()
   Float_t wwa[2] = {  2.,  1. };
   Float_t dwa    = 1.0;
   Int_t nwa = -2;
+
+// stainless steel
+  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
+  Float_t zsteel[4] = { 26.,24.,28.,14. };
+  Float_t wsteel[4] = { .715,.18,.1,.005 };
+
   //
   //AliMaterial(0, "Vacuum$", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
   AliMaterial( 1, "Air$",14.61,7.3,0.001205,30423.24,67500.);
@@ -562,6 +578,7 @@ void AliTOF::CreateMaterials()
   AliMixture (12, "Freon$",  afre, zfre, densfre, nfre, wfre);
   AliMixture (13, "Quartz$", aq, zq, dq, nq, wq);
   AliMixture (14, "Water$",  awa, zwa, dwa, nwa, wwa);
+  AliMixture (15, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
 
   Float_t epsil, stmin, deemax, stemax;
  
@@ -593,6 +610,7 @@ void AliTOF::CreateMaterials()
   AliMedium(14, "Fre-S$", 12, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium(15, "Glass$", 13, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium(16, "Water$", 14, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(17, "STEEL$", 15, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
 }
 
 //_____________________________________________________________________________

@@ -35,7 +35,7 @@ class AliTOFMerger;
 class AliTOF : public AliDetector {
 public:
   AliTOF(); 
-  AliTOF(const char *name, const char *title);
+  AliTOF(const char *name, const char *title, Option_t *option="noTimeZero");
   virtual ~AliTOF() ;
 // getters for AliTOF object status
   Int_t GetNStripA() const {return fNStripA;}
@@ -49,6 +49,7 @@ public:
 
   virtual void    SetTreeAddress();
   virtual void    AddHit(Int_t track, Int_t* vol, Float_t* hits);
+  virtual void    AddT0Hit(Int_t track, Int_t* vol, Float_t* hits);
   virtual void    AddDigit(Int_t* tracks, Int_t* vol, Float_t* digits);
   virtual void    AddSDigit(Int_t tracknum, Int_t* vol, Float_t* digits);
   virtual void    CreateGeometry();
