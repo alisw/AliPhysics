@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.4.8  2000/10/02 15:55:26  barbera
+Forward declarations added and formatting
+
+Revision 1.7  2000/09/22 12:36:38  nilsen
+Minor changes to improve compilation and create less NOISE.
+
 Revision 1.6  2000/07/10 16:07:18  fca
 Release version of ITS code
 

@@ -148,9 +148,10 @@ class AliITSmodule:public TObject{
     //________________________________________________________________
     //
     AliITS       *fITS;       // Pointer to ITS detector
-    Int_t        fIndex;      //Index of this module in ITSmodules TObjectArray
+    Int_t         fIndex;      //Index of this module in ITSmodules TObjectArray
     TObjArray    *fHitsM;     // Pointer to list of hits on this module
-    TArrayI      *fTrackIndex,*fHitIndex; // track index, hit index
+    TArrayI      *fTrackIndex; // track index
+    TArrayI      *fHitIndex; // hit index
 
     ClassDef(AliITSmodule,1) // Copy the hits into a more useful order
 
