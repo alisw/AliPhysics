@@ -71,6 +71,7 @@ void AliPHOSGeometry::Init(void)
                                              fGeometryEMCA = new AliPHOSEMCAGeometry();
     if ( ((strcmp( fName, "GPS2" ))  == 0) ) fGeometryCPV  = new AliPHOSPPSDGeometry();
     if ( ((strcmp( fName, "IHEP" ))  == 0) ) fGeometryCPV  = new AliPHOSCPVGeometry ();
+                                             fGeometrySUPP = new AliPHOSSupportGeometry();
     fNModules = 5;
     fPHOSAngle = new Float_t[fNModules] ;
     Int_t index ;

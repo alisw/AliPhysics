@@ -31,6 +31,7 @@
 #include "AliPHOSEMCAGeometry.h"
 #include "AliPHOSCPVGeometry.h"
 #include "AliPHOSPPSDGeometry.h"
+#include "AliPHOSSupportGeometry.h"
 #include "AliPHOSRecPoint.h"
 
 
@@ -219,6 +220,20 @@ public:
   Float_t GetIPtoCPVDistance(void)             const {
     return  GetIPtoOuterCoverDistance() - GetCPVBoxSize(1) - 1.0; }
 
+  // Return PHOS' support geometrical parameters
+
+  Float_t GetRailOuterSize(Int_t index)  const { return fGeometrySUPP->GetRailOuterSize(index); }
+  Float_t GetRailPart1    (Int_t index)  const { return fGeometrySUPP->GetRailPart1    (index); }
+  Float_t GetRailPart2    (Int_t index)  const { return fGeometrySUPP->GetRailPart2    (index); }
+  Float_t GetRailPart3    (Int_t index)  const { return fGeometrySUPP->GetRailPart3    (index); }
+  Float_t GetRailPos      (Int_t index)  const { return fGeometrySUPP->GetRailPos      (index); }
+  Float_t GetRailLength   ()             const { return fGeometrySUPP->GetRailLength   ();      }
+  Float_t GetDistanceBetwRails()         const { return fGeometrySUPP->GetDistanceBetwRails();  }
+  Float_t GetRailsDistanceFromIP()       const { return fGeometrySUPP->GetRailsDistanceFromIP();}
+  Float_t GetRailRoadSize (Int_t index)  const { return fGeometrySUPP->GetRailRoadSize (index); }
+  Float_t GetCradleWallThickness()       const { return fGeometrySUPP->GetCradleWallThickness();}
+  Float_t GetCradleWall   (Int_t index)  const { return fGeometrySUPP->GetCradleWall   (index); }
+  Float_t GetCradleWheel  (Int_t index)  const { return fGeometrySUPP->GetCradleWheel  (index); }
 
 protected:
 
@@ -235,6 +250,7 @@ private:
   TObjArray               *fRotMatrixArray ; // Liste of rotation matrices (one per phos module)
   AliPHOSEMCAGeometry     *fGeometryEMCA ;   // Geometry object for Electromagnetic calorimeter
   AliPHOSCPVBaseGeometry  *fGeometryCPV ;    // Geometry object for CPV (either GPS2 or IHEP)
+  AliPHOSSupportGeometry  *fGeometrySUPP ;   // Geometry object for PHOS support
 
   void                 SetPHOSAngles(); // calculates the PHOS modules PHI angle
 
