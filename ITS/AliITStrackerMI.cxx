@@ -871,18 +871,9 @@ Int_t AliITStrackerMI::AliITSlayer::InsertCluster(AliITSclusterV2 *c) {
     return 1;
   }
   fCurrentSlice=-1;
-  if (fN==0) {fClusters[fN++]=c; return 0;}
-  Int_t i=FindClusterIndex(c->GetZ());
-  memmove(fClusters+i+1 ,fClusters+i,(fN-i)*sizeof(AliITSclusterV2*));
-  memmove(fY+i+1 ,fY+i,(fN-i)*sizeof(Float_t));
-  memmove(fZ+i+1 ,fZ+i,(fN-i)*sizeof(Float_t));
-  fClusters[i]=c; fN++;
-  //
+  fClusters[fN]=c;
+  fN++;
   AliITSdetector &det=GetDetector(c->GetDetectorIndex());    
-  Double_t y=fR*det.GetPhi() + c->GetY();
-  if (y>2.*fR*TMath::Pi()) y -= 2.*fR*TMath::Pi();
-  fY[i] = y;
-  fZ[i] = c->GetZ(); 
   if (c->GetY()<det.GetYmin()) det.SetYmin(c->GetY());
   if (c->GetY()>det.GetYmax()) det.SetYmax(c->GetY());
   if (c->GetZ()<det.GetZmin()) det.SetZmin(c->GetZ());
@@ -896,6 +887,31 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
   //
   //sort clusters
   //
+  AliITSclusterV2 **clusters = new AliITSclusterV2*[fN];
+  Float_t *z                = new Float_t[fN];
+  Int_t   * index           = new Int_t[fN];
+  //
+  for (Int_t i=0;i<fN;i++){
+    z[i] = fClusters[i]->GetZ();
+  }
+  TMath::Sort(fN,z,index,kFALSE);
+  for (Int_t i=0;i<fN;i++){
+    clusters[i] = fClusters[index[i]];
+  }
+  //
+  for (Int_t i=0;i<fN;i++){
+    fClusters[i] = clusters[i];
+    fZ[i]        = fClusters[i]->GetZ();
+    AliITSdetector &det=GetDetector(fClusters[i]->GetDetectorIndex());    
+    Double_t y=fR*det.GetPhi() + fClusters[i]->GetY();
+    if (y>2.*fR*TMath::Pi()) y -= 2.*fR*TMath::Pi();
+    fY[i] = y;
+  }
+  delete[] index;
+  delete[] z;
+  delete[] clusters;
+  //
+
   fYB[0]=10000000;
   fYB[1]=-10000000;
   for (Int_t i=0;i<fN;i++){
@@ -917,66 +933,58 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
   for (Int_t i=0;i<21;i++) {fBy20[i][0] =  fYB[0]+(i-0.75)*fDy20; fBy20[i][1] =  fYB[0]+(i+0.75)*fDy20;}
   //
   //
-  for (Int_t i=0;i<fN;i++) for (Int_t irot=-1;irot<=1;irot++){
-    Float_t curY = fY[i]+irot*2.*TMath::Pi()*fR;
-    if (curY<fYB[0]-fDy5) continue;
-    if (curY>fYB[1]+fDy5) continue; 
-    //
-    // slice 10
-    if (TMath::Abs(fYB[1]-fYB[0])<=0) continue;
-    Float_t fslice = TMath::Nint(10.*(curY-fYB[0])/(fYB[1]-fYB[0]));
-    Float_t ymiddle = fYB[0]+fslice*fDy10;
-    for (Int_t di =-1;di<=1;di++){
-      if (TMath::Abs(curY-(ymiddle+(float)di*fDy10))<0.75*fDy10){
-	//
-	Int_t slice = int(fslice+21.0001)-21+di;
-	if (slice<0) continue;
-	if (slice>10) continue;
-	if (fN10[slice]>=kMaxClusterPerLayer10) break;
-	fClusters10[slice][fN10[slice]] = fClusters[i];
-	fY10[slice][fN10[slice]] = curY;
-	fZ10[slice][fN10[slice]] = fZ[i];
-	fClusterIndex10[slice][fN10[slice]]=i;
-	fN10[slice]++;
+  for (Int_t i=0;i<fN;i++)
+    for (Int_t irot=-1;irot<=1;irot++){
+      Float_t curY = fY[i]+irot*TMath::TwoPi()*fR; 
+      // slice 5
+      for (Int_t slice=0; slice<6;slice++){
+	if (fBy5[slice][0]<curY && curY<fBy5[slice][1]&&fN5[slice]<kMaxClusterPerLayer5){
+	  fClusters5[slice][fN5[slice]] = fClusters[i];
+	  fY5[slice][fN5[slice]] = curY;
+	  fZ5[slice][fN5[slice]] = fZ[i];
+	  fClusterIndex5[slice][fN5[slice]]=i;
+	  fN5[slice]++;
+	}
       }
+      // slice 10
+      for (Int_t slice=0; slice<11;slice++){
+	if (fBy10[slice][0]<curY && curY<fBy10[slice][1]&&fN10[slice]<kMaxClusterPerLayer10){
+	  fClusters10[slice][fN10[slice]] = fClusters[i];
+	  fY10[slice][fN10[slice]] = curY;
+	  fZ10[slice][fN10[slice]] = fZ[i];
+	  fClusterIndex10[slice][fN10[slice]]=i;
+	  fN10[slice]++;
+	}
+      }
+      // slice 20
+      for (Int_t slice=0; slice<21;slice++){
+	if (fBy20[slice][0]<curY && curY<fBy20[slice][1]&&fN20[slice]<kMaxClusterPerLayer20){
+	  fClusters20[slice][fN20[slice]] = fClusters[i];
+	  fY20[slice][fN20[slice]] = curY;
+	  fZ20[slice][fN20[slice]] = fZ[i];
+	  fClusterIndex20[slice][fN20[slice]]=i;
+	  fN20[slice]++;
+	}
+      }      
     }
-    //
-    // slice 5
-    fslice = TMath::Nint(5.*(curY-fYB[0])/(fYB[1]-fYB[0]));
-    ymiddle = fYB[0]+fslice*fDy5;
-    for (Int_t di =-1;di<=1;di++){
-      if (TMath::Abs(curY-(ymiddle+(float)di*fDy5))<0.75*fDy5){
-	//
-	Int_t slice = int(fslice+21.0001)-21+di;
-	if (slice<0) continue;
-	if (slice>5) continue;
-	if (fN5[slice]>=kMaxClusterPerLayer5) break;
-	fClusters5[slice][fN5[slice]] = fClusters[i];
-	fY5[slice][fN5[slice]] = curY;
-	fZ5[slice][fN5[slice]] = fZ[i];
-	fClusterIndex5[slice][fN5[slice]]=i;
-	fN5[slice]++;
-      }
-    }
-    //
-    // slice 20
-    fslice = TMath::Nint(20.*(curY-fYB[0])/(fYB[1]-fYB[0]));
-    ymiddle = fYB[0]+fslice*fDy20;
-    for (Int_t di =-1;di<=1;di++){
-      if (TMath::Abs(curY-(ymiddle+(float)di*fDy20))<0.75*fDy20){
-	//
-	Int_t slice = int(fslice+21.0001)-21+di;
-	if (slice<0) continue;
-	if (slice>20) continue;
-	if (fN20[slice]>=kMaxClusterPerLayer20) break;
-	fClusters20[slice][fN20[slice]] = fClusters[i];
-	fY20[slice][fN20[slice]] = curY;
-	fZ20[slice][fN20[slice]] = fZ[i];
-	fClusterIndex20[slice][fN20[slice]]=i;
-	fN20[slice]++;
-      }
+
+  //
+  // consistency check
+  //
+  for (Int_t i=0;i<fN-1;i++){
+    if (fZ[i]>fZ[i+1]){
+      printf("Bugg\n");
     }
   }
+  //
+  for (Int_t slice=0;slice<21;slice++)
+  for (Int_t i=0;i<fN20[slice]-1;i++){
+    if (fZ20[slice][i]>fZ20[slice][i+1]){
+      printf("Bugg\n");
+    }
+  }
+
+
 }
 
 
@@ -1006,20 +1014,6 @@ Int_t AliITStrackerMI::AliITSlayer::FindClusterIndex(Float_t z) const {
   }
   return m;
 }
-/*
-void AliITStrackerMI::AliITSlayer::
-SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin, Double_t ymax) {
-  //--------------------------------------------------------------------
-  // This function sets the "window"
-  //--------------------------------------------------------------------
-  fI=FindClusterIndex(zmin); fZmax=zmax;
-  fImax = TMath::Min(FindClusterIndex(zmax)+1,fN);
-  Double_t circle=2*TMath::Pi()*fR;
-  if (ymax>circle) { ymax-=circle; ymin-=circle; }
-  fYmin=ymin; fYmax=ymax;
-  fSkip = 0;
-}
-*/
 
 
 void AliITStrackerMI::AliITSlayer::
@@ -1028,7 +1022,7 @@ SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin, Double_t ymax) {
   // This function sets the "window"
   //--------------------------------------------------------------------
  
-  Double_t circle=2*TMath::Pi()*fR;
+  Double_t circle=TMath::TwoPi()*fR;
   fYmin = ymin; fYmax =ymax;
   Float_t ymiddle = (fYmin+fYmax)*0.5;
   if (ymiddle<fYB[0]) {fYmin+=circle; fYmax+=circle;ymiddle+=circle;}
@@ -1043,7 +1037,7 @@ SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin, Double_t ymax) {
   fYcs  = fY;
   fZcs  = fZ;
   fNcs  = fN;
-  //
+          
   //is in 20 slice?
   if (fCurrentSlice<0&&TMath::Abs(fYmax-fYmin)<1.49*fDy20){
     Int_t slice = int(0.5+(ymiddle-fYB[0])/fDy20);
@@ -1091,38 +1085,14 @@ SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin, Double_t ymax) {
       fNcs  = fN5[fCurrentSlice];
     }
   }  
-  //  
+  
   fI=FindClusterIndex(zmin); fZmax=zmax;
   fImax = TMath::Min(FindClusterIndex(zmax)+1,fNcs);
+  //  fImax = fNcs;
   fSkip = 0;
   fAccepted =0;
 }
 
-/*
-const AliITSclusterV2 *AliITStrackerMI::AliITSlayer::GetNextCluster(Int_t &ci){
-  //--------------------------------------------------------------------
-  // This function returns clusters within the "window" 
-  //--------------------------------------------------------------------
-  const AliITSclusterV2 *cluster=0;
-  for (Int_t i=fI; i<fN; i++) {
-    const AliITSclusterV2 *c=fClusters[i];
-    if (c->GetZ() > fZmax) break;
-    //    if (c->IsUsed()) continue;
-    const AliITSdetector &det=GetDetector(c->GetDetectorIndex());    
-    Double_t y=fR*det.GetPhi() + c->GetY();
-
-    if (y>2.*fR*TMath::Pi()) y -= 2*fR*TMath::Pi();
-    if (y>1.*fR*TMath::Pi() && fYmax<y) y -= 2*fR*TMath::Pi();
-
-    if (y<fYmin) continue;
-    if (y>fYmax) continue;
-    cluster=c; ci=i;
-    fI=i+1;
-    break; 
-  }
-  return cluster;
-}
-*/
 
 const AliITSclusterV2 *AliITStrackerMI::AliITSlayer::GetNextCluster(Int_t &ci){
   //--------------------------------------------------------------------
@@ -1134,6 +1104,7 @@ const AliITSclusterV2 *AliITStrackerMI::AliITSlayer::GetNextCluster(Int_t &ci){
     for (Int_t i=fI; i<fImax; i++) {
       Double_t y = fY[i];
       if (fYmax<y) y -= rpi2;
+      if (fYmin>y) y += rpi2;
       if (y<fYmin) continue;
       if (y>fYmax) continue;
       if (fClusters[i]->GetQ()==0&&fSkip==2) continue;
@@ -2816,14 +2787,17 @@ Int_t AliITStrackerMI::GetError(Int_t layer, const AliITSclusterV2*cl, Float_t t
 
 //STRIPS
   if (layer>3){ 
+    //factor 1.8 appears in new simulation
+    //
+    Float_t scale=1.8;
     if (cl->GetNy()==100||cl->GetNz()==100){
-      erry = 0.004;
-      errz = 0.2;
+      erry = 0.004*scale;
+      errz = 0.2*scale;
       return 100;
     }
     if (cl->GetNy()+cl->GetNz()>12){
-      erry = 0.06;
-      errz = 0.57;
+      erry = 0.06*scale;
+      errz = 0.57*scale;
       return 100;
     }
     Float_t normq = cl->GetQ()/(TMath::Sqrt(1+theta*theta+phi*phi));
@@ -2831,39 +2805,39 @@ Int_t AliITStrackerMI::GetError(Int_t layer, const AliITSclusterV2*cl, Float_t t
     //
     if (cl->GetType()==1 || cl->GetType()==10 ){     							       
       if (chargematch<1.0 || (cl->GetNy()+cl->GetNz()<nz+ny+0.5)){
-	errz = 0.043;
-	erry = 0.00094;
+	errz = 0.043*scale;
+	erry = 0.00094*scale;
 	return 101;
       }
       if (cl->GetNy()+cl->GetNz()<nz+ny+1.2){
-	errz = 0.06;
-	erry =0.0013;
+	errz = 0.06*scale;
+	erry =0.0013*scale;
 	return 102;
       }
-      erry = 0.0027;
-      errz = TMath::Min(0.028*(chargematch+cl->GetNy()+cl->GetNz()-nz+ny),0.15);
+      erry = 0.0027*scale;
+      errz = TMath::Min(0.028*(chargematch+cl->GetNy()+cl->GetNz()-nz+ny),0.15)*scale;
       return 103;
     }
     if (cl->GetType()==2 || cl->GetType()==11 ){ 
-      erry = TMath::Min(0.0010*(1+chargematch+cl->GetNy()+cl->GetNz()-nz+ny),0.05);
-      errz = TMath::Min(0.025*(1+chargematch+cl->GetNy()+cl->GetNz()-nz+ny),0.5);
+      erry = TMath::Min(0.0010*(1+chargematch+cl->GetNy()+cl->GetNz()-nz+ny),0.05)*scale;
+      errz = TMath::Min(0.025*(1+chargematch+cl->GetNy()+cl->GetNz()-nz+ny),0.5)*scale;
       return 104;
     }
     
     if (cl->GetType()>100 ){     							       
       if ((chargematch+cl->GetNy()+cl->GetNz()-nz-ny<1.5)){
-	errz = 0.05;
-	erry = 0.00096;
+	errz = 0.05*scale;
+	erry = 0.00096*scale;
 	return 105;
       }
       if (cl->GetNy()+cl->GetNz()-nz-ny<1){
-	errz = 0.10;
-	erry = 0.0025;
+	errz = 0.10*scale;
+	erry = 0.0025*scale;
 	return 106;
       }
 
-      errz = TMath::Min(0.05*(chargematch+cl->GetNy()+cl->GetNz()-nz-ny),0.4);
-      erry = TMath::Min(0.003*(chargematch+cl->GetNy()+cl->GetNz()-nz-ny),0.05);
+      errz = TMath::Min(0.05*(chargematch+cl->GetNy()+cl->GetNz()-nz-ny),0.4)*scale;
+      erry = TMath::Min(0.003*(chargematch+cl->GetNy()+cl->GetNz()-nz-ny),0.05)*scale;
       return 107;
     }    
     Float_t diff = cl->GetNy()+cl->GetNz()-ny-nz;
