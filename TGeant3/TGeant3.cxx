@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.45  2000/12/21 16:49:56  morsch
+Adding particles to the PDG database delegated to AliPDG.
+
+$Log$
 Revision 1.44  2000/12/20 09:46:51  alibrary
 dlsym not supported on HP, reverting to gcomad
 
@@ -654,70 +658,6 @@ void TGeant3::LoadAddress()
   // Assigns the address of the GEANT common blocks to the structures
   // that allow their access from C++
   //
-  void *handle = dlopen (NULL, RTLD_LAZY);
-
-#ifndef WIN32
-  fQuest  = (Quest_t *)  dlsym(handle,"quest_");
-  fGcbank = (Gcbank_t *) dlsym(handle,"gcbank_");
-  fGclink = (Gclink_t *) dlsym(handle,"gclink_");
-  fGccuts = (Gccuts_t *) dlsym(handle,"gccuts_");
-  fGcmulo = (Gcmulo_t *) dlsym(handle,"gcmulo_");
-  fGcflag = (Gcflag_t *) dlsym(handle,"gcflag_");
-  fGckine = (Gckine_t *) dlsym(handle,"gckine_");
-  fGcking = (Gcking_t *) dlsym(handle,"gcking_");
-  fGckin2 = (Gckin2_t *) dlsym(handle,"gckin2_");
-  fGckin3 = (Gckin3_t *) dlsym(handle,"gckin3_");
-  fGcmate = (Gcmate_t *) dlsym(handle,"gcmate_");
-  fGctmed = (Gctmed_t *) dlsym(handle,"gctmed_");
-  fGctrak = (Gctrak_t *) dlsym(handle,"gctrak_");
-  fGctpol = (Gctpol_t *) dlsym(handle,"gctpol_");
-  fGcvolu = (Gcvolu_t *) dlsym(handle,"gcvolu_");
-  fGcnum  = (Gcnum_t *)  dlsym(handle,"gcnum_");
-  fGcsets = (Gcsets_t *) dlsym(handle,"gcsets_");
-  fGcphys = (Gcphys_t *) dlsym(handle,"gcphys_");
-  fGcphlt = (Gcphlt_t *) dlsym(handle,"gcphlt_");
-  fGcopti = (Gcopti_t *) dlsym(handle,"gcopti_");
-  fGctlit = (Gctlit_t *) dlsym(handle,"gctlit_");
-  fGcvdma = (Gcvdma_t *) dlsym(handle,"gcvdma_");
-  
-  // Commons for GEANE
-  fErtrio = (Ertrio_t *) dlsym(handle,"ertrio_");
-  fEropts = (Eropts_t *) dlsym(handle,"eropts_");
-  fEroptc = (Eroptc_t *) dlsym(handle,"eroptc_");
-  fErwork = (Erwork_t *) dlsym(handle,"erwork_");
-#else  
-  fQuest  = (Quest_t *)  dlsym(handle,"QUEST");
-  fGcbank = (Gcbank_t *) dlsym(handle,"GCBANK");
-  fGclink = (Gclink_t *) dlsym(handle,"GCLINK");
-  fGccuts = (Gccuts_t *) dlsym(handle,"GCCUTS");
-  fGcmulo = (Gcmulo_t *) dlsym(handle,"GCMULO");
-  fGcflag = (Gcflag_t *) dlsym(handle,"GCFLAG");
-  fGckine = (Gckine_t *) dlsym(handle,"GCKINE");
-  fGcking = (Gcking_t *) dlsym(handle,"GCKING");
-  fGckin2 = (Gckin2_t *) dlsym(handle,"GCKIN2");
-  fGckin3 = (Gckin3_t *) dlsym(handle,"GCKIN3");
-  fGcmate = (Gcmate_t *) dlsym(handle,"GCMATE");
-  fGctmed = (Gctmed_t *) dlsym(handle,"GCTMED");
-  fGctrak = (Gctrak_t *) dlsym(handle,"GCTRAK");
-  fGctpol = (Gctpol_t *) dlsym(handle,"GCTPOL");
-  fGcvolu = (Gcvolu_t *) dlsym(handle,"GCVOLU");
-  fGcnum  = (Gcnum_t *)  dlsym(handle,"GCNUM");
-  fGcsets = (Gcsets_t *) dlsym(handle,"GCSETS");
-  fGcphys = (Gcphys_t *) dlsym(handle,"GCPHYS");
-  fGcphlt = (Gcphlt_t *) dlsym(handle,"GCPHLT");
-  fGcopti = (Gcopti_t *) dlsym(handle,"GCOPTI");
-  fGctlit = (Gctlit_t *) dlsym(handle,"GCTLIT");
-  fGcvdma = (Gcvdma_t *) dlsym(handle,"GCVDMA");
-  
-  // Commons for GEANE
-  fErtrio = (Ertrio_t *) dlsym(handle,"ERTRIO");
-  fEropts = (Eropts_t *) dlsym(handle,"EROPTS");
-  fEroptc = (Eroptc_t *) dlsym(handle,"EROPTC");
-  fErwork = (Erwork_t *) dlsym(handle,"ERWORK");
-#endif
-  
-  // Variables for ZEBRA store
-  //
    Int_t *addr;
    gcomad(PASSCHARD("QUEST"), (int*&) fQuest PASSCHARL("QUEST"));
    gcomad(PASSCHARD("GCBANK"),(int*&) fGcbank  PASSCHARL("GCBANK"));
@@ -986,14 +926,13 @@ void TGeant3::DefineParticles()
   // and numbers above 5 000 000 for special applications
   //
 
-
-
   const Int_t kion=10000000;
 
   const Int_t kspe=50000000;
-  
+
 //
-//
+// Ions 
+
   fPDGCode[fNPDGCodes++]=kion+10020;   // 45 = Deuteron
 
   fPDGCode[fNPDGCodes++]=kion+10030;   // 46 = Triton
@@ -1005,10 +944,10 @@ void TGeant3::DefineParticles()
   fPDGCode[fNPDGCodes++]=kion+20030;   // 49 = HE3
 
   fPDGCode[fNPDGCodes++]=kspe+50;      // 50 = Cherenkov
-
+// special 
   Gspart(51, "FeedbackPhoton", 7, 0., 0.,1.e20 );
   fPDGCode[fNPDGCodes++]=kspe+51;      // 51 = FeedbackPhoton
-
+//
   Gspart(52, "Lambda_c+", 4, 2.2849, +1., 2.06e-13);
   fPDGCode[fNPDGCodes++]=4122;         //52 = Lambda_c+
 
@@ -1061,10 +1000,10 @@ void TGeant3::DefineParticles()
   fPDGCode[fNPDGCodes++]=553;          // 68 = Upsilon(1S)
 
   Gspart(69, "Upsilon(2S)", 10.0233, 3, 0., 0.);
-  fPDGCode[fNPDGCodes++]=20553;       // 69 = Upsilon(2S)
+  fPDGCode[fNPDGCodes++]=20553;        // 69 = Upsilon(2S)
 
   Gspart(70, "Upsilon(3S)", 10.3553, 3, 0., 0.);
-  fPDGCode[fNPDGCodes++]=30553;       // 70 = Upsilon(3S)
+  fPDGCode[fNPDGCodes++]=30553;        // 70 = Upsilon(3S)
 
 /* --- Define additional decay modes --- */
 /* --- omega(783) --- */
@@ -1207,9 +1146,7 @@ void TGeant3::DefineParticles()
     ipa = 115;
     Gsdk(ipa, bratio, mode);
     */
-
 //
-
     AliPDG::AddParticlesToPdgDataBase();
 }
 
