@@ -12,9 +12,13 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+  
 /*
 $Log$
+Revision 1.4  2001/03/09 13:01:41  morsch
+- enum constants for paramterisation type (particle family) moved to AliGen*lib.h
+- use AliGenGSIlib::kUpsilon, AliGenPHOSlib::kEtaPrime to access the constants
+
 Revision 1.3  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -32,165 +36,1000 @@ Introduction of the Copyright and cvs Log
 
 */
 
-// Implementation of AliGenLib 
-// using GSI specific parameterisations.
-// So far for Upsilon resonances only. 
-// Different paramterisations of y and pt can be chosen.
-// Responsible: Andres.Sandoval@cern.ch
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+// Implementation of AliGenlib to collect parametrisations used for        //
+// GSI simulations.                                                        //
+// It is an extension of AliMUONLib providing in addition the option       //
+// for different parametrisations of pt, y and ip for every particle type  //
+//                                                                         //
+// Responsible: Andres.Sandoval@cern.ch                                    //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
 
 #include "TMath.h"
+#include "TRandom.h"
 #include "TString.h"
-
 #include "AliGenGSIlib.h"
 #include "iostream.h"
 
+
 ClassImp(AliGenGSIlib)
 
-  Bool_t AliGenGSIlib::fgDebug =kFALSE;
-//                      Upsilon
+//==========================================================================
 //
+//              Definition of Particle Distributions
+//                    
+//==========================================================================
 //
-//                  pt-distribution
-//____________________________________________________________
+//                         Upsilon 
+//
+//--------------------------------------------------------------------------
+//
+//                  upsilon particle composition
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpUpsilon(TRandom *)
+{
+
+  return 553;     
+
+}
+//--------------------------------------------------------------------------
+//
+//                   upsilon pt-distribution FLAT
+//
+//____________________________________________________________--------------
+Double_t AliGenGSIlib::PtUpsilonFlat( Double_t *px, Double_t *dummy )
+{
+
+  const Double_t kptmin = 0.0;
+  const Double_t kptmax  = 15.0;
+  Double_t x=*px;
+  Double_t weight = 0.;
+
+  if (kptmin < x < kptmax) weight = 1.;
+
+  return weight;
+   
+}
+//--------------------------------------------------------------------------
+//
+//                    upsilon y-distribution FLAT
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YUpsilonFlat(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ky0 = 1.5;
+  const Double_t kb=1.;
+  Double_t yu;
+  Double_t y=TMath::Abs(*py);
+
+  if (y < ky0)
+    yu=kb;
+  else
+    yu = 0.;
+
+  return yu;
+
+}
+//--------------------------------------------------------------------------
+//
+//                 upsilon pt-distribution RITMAN
+//
+//--------------------------------------------------------------------------
 Double_t AliGenGSIlib::PtUpsilonRitman( Double_t *px, Double_t *dummy )
 {
-  // Upsilon pT
-  /*   AliGenMUONlib parametrisation
-  const Double_t kpt0 = 5.3;
-  const Double_t kxn  = 2.5;
-  Double_t x=*px;
-  //
-  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
-  return x/TMath::Power(pass1,kxn);
-  */
-  if (fgDebug) cout<<"Ritman Pt paramtrisation\n";
+
   const Double_t kpt0 = 4.7;
   const Double_t kxn  = 3.5;
   Double_t x=*px;
-  //
+
   Double_t pass1 = 1.+((x*x)/(kpt0*kpt0));
+
   return x/TMath::Power(pass1,kxn);
    
 }
+//--------------------------------------------------------------------------
 //
-//                    y-distribution
+//                  upsilon y-distribution RITMAN
 //
-//____________________________________________________________
+//--------------------------------------------------------------------------
 Double_t AliGenGSIlib::YUpsilonRitman(Double_t *py, Double_t *dummy)
 {
 
-    // Upsilon y
-
-/*   original from AliGenMUON
-    const Double_t ky0 = 3.;
-    const Double_t kb=1.;
-    Double_t yu;
-    Double_t y=TMath::Abs(*py);
-    //
-    if (y < ky0)
-    yu=kb;
-    else
-    yu=kb*TMath::Exp(-(y-ky0)*(y-ky0)/2);
-    return yu;
-    */
-  if (fgDebug) cout<<"Ritman Y paramtrisation\n";
-  return 0.003;  //GSI parametrisation 
-}
-//                 particle composition
-//
-Int_t AliGenGSIlib::IpUpsilonRitman(TRandom *)
-{
-// y composition
-  if (fgDebug) cout<<"Ritman Ip paramtrisation\n";
-  return 553;     
-}
-
-
-Double_t AliGenGSIlib::PtUpsilonKarel( Double_t *px, Double_t *dummy )
-{
-  // Upsilon pT
-  //to implement
-  if (fgDebug) cout<<"Karel Pt paramtrisation\n";
-
-  return 0.;   
-}
-//
-//                    y-distribution
-//
-//____________________________________________________________
-Double_t AliGenGSIlib::YUpsilonKarel(Double_t *py, Double_t *dummy)
-{
-  
-  // Upsilon y
-//to implement
-  if (fgDebug) cout<<"Karel Y paramtrisation\n";
-  return 0.003;  //Karel parametrisation 
-}
-
-//                 particle composition
-//
-
-Int_t AliGenGSIlib::IpUpsilonKarel(TRandom *)
-{
-  // y composition//
-  //to implement
-  if (fgDebug) cout<<"Karel Ip paramtrisation\n";
-  return 553;     
-}
-
-
-
-Double_t AliGenGSIlib::PtUpsilonMUON( Double_t *px, Double_t *dummy )
-{
-// Upsilon pT
-  const Double_t kpt0 = 5.3;
-  const Double_t kxn  = 2.5;
-  Double_t x=*px;
-  //
-  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
-  return x/TMath::Power(pass1,kxn);
-}
-//
-//                    y-distribution
-//
-//____________________________________________________________
-Double_t AliGenGSIlib::YUpsilonMUON(Double_t *py, Double_t *dummy)
-{
-// Upsilon y
   const Double_t ky0 = 3.;
   const Double_t kb=1.;
   Double_t yu;
   Double_t y=TMath::Abs(*py);
-  //
+
   if (y < ky0)
     yu=kb;
   else
     yu=kb*TMath::Exp(-(y-ky0)*(y-ky0)/2);
+
   return yu;
+   
 }
-//                 particle composition
+//--------------------------------------------------------------------------
 //
-Int_t AliGenGSIlib::IpUpsilonMUON(TRandom *)
+//                 upsilon pt-distribution kAREL
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtUpsilonKarel( Double_t *px, Double_t *dummy )
 {
-// y composition
-    return 553;
+
+  //to implement
+
+  return 0.1;   
+
+}
+//--------------------------------------------------------------------------
+//
+//                  upsilon y-distribution KAREL
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YUpsilonKarel(Double_t *py, Double_t *dummy)
+{
+  
+  //to implement
+
+  return 0.2;  
+
+}
+//--------------------------------------------------------------------------
+//
+//                 upsilon pt-distribution MUONlib
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtUpsilonMUON( Double_t *px, Double_t *dummy )
+{
+
+  const Double_t kpt0 = 5.3;
+  const Double_t kxn  = 2.5;
+  Double_t x=*px;
+
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+
+  return x/TMath::Power(pass1,kxn);
+
+}
+//--------------------------------------------------------------------------
+//
+//                   upsilon y-distribution MUONlib
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YUpsilonMUON(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ky0 = 3.;
+  const Double_t kb=1.;
+  Double_t yu;
+  Double_t y=TMath::Abs(*py);
+
+  if (y < ky0)
+    yu=kb;
+  else
+    yu=kb*TMath::Exp(-(y-ky0)*(y-ky0)/2);
+
+  return yu;
+
+}
+//--------------------------------------------------------------------------
+//
+//                             J/Psi
+//
+//--------------------------------------------------------------------------
+//
+//                    J/Psi particle composition
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpJpsi(TRandom *)
+{
+
+  return 443;     
+
+}
+//--------------------------------------------------------------------------
+//
+//                   J/Psi pt-distribution FLAT
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtJpsiFlat( Double_t *px, Double_t *dummy )
+{
+
+  const Double_t kptmin = 0.0;
+  const Double_t kptmax  = 15.0;
+  Double_t x=*px;
+  Double_t weight = 0.;
+
+  if (kptmin < x < kptmax) weight = 1.;
+
+  return weight;
+   
+}
+//--------------------------------------------------------------------------
+//
+//                    J/Psi y-distribution FLAT
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YJpsiFlat(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ky0 = 1.5;
+  const Double_t kb=1.;
+  Double_t yu;
+  Double_t y=TMath::Abs(*py);
+
+  if (y < ky0)
+    yu=kb;
+  else
+    yu = 0.;
+
+  return yu;
+
+}
+//--------------------------------------------------------------------------
+//
+//                   J/Psi pt-distribution MUONlib
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtJpsiMUON( Double_t *px, Double_t *dummy )
+{
+
+  const Double_t kpt0 = 4.;
+  const Double_t kxn  = 3.6;
+  Double_t x=*px;
+
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+   
+}
+//--------------------------------------------------------------------------
+//
+//                   J/Psi pt-distribution Ritman
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtJpsiRitman( Double_t *px, Double_t *dummy )
+{
+
+  const Double_t kpt0 = 2.3;
+  const Double_t kxn  = 3.5;
+  Double_t x=*px;
+
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+
+  return x/TMath::Power(pass1,kxn);
+   
+}
+//--------------------------------------------------------------------------
+//
+//                    J/Psi y-distribution MUONlib
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YJpsiMUON(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ky0 = 4.;
+  const Double_t kb=1.;
+  Double_t yj;
+  Double_t y=TMath::Abs(*py);
+
+  if (y < ky0)
+    yj=kb;
+  else
+    yj=kb*TMath::Exp(-(y-ky0)*(y-ky0)/2);
+  return yj;
+
+}
+//--------------------------------------------------------------------------
+//
+//                  J/Psi pt-distribution by Sergei
+//
+//--------------------------------------------------------------------------
+//Double_t AliGenGSIlib::PtJpsi( Double_t *px, Double_t *dummy )
+//{
+
+//  return x = gRandom->Rndm()*10.;
+
+//}
+//--------------------------------------------------------------------------
+//
+//                  J/Psi y-distribution by Sergei
+//
+//--------------------------------------------------------------------------
+/*Double_t AliGenGSIlib::YJpsi(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ky0 = 4.;
+  const Double_t kb=1.;
+  Double_t yj;
+  Double_t y=TMath::Abs(*py);
+  //
+  if (y < ky0)
+    yj=kb;
+  else
+    yj=kb*TMath::Exp(-(y-ky0)*(y-ky0)/2);
+  return yj;
+
+}
+*/
+//--------------------------------------------------------------------------
+//
+//                        Charm
+//
+//--------------------------------------------------------------------------
+//
+//                    charm particle composition
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpCharm(TRandom *ran)
+{
+  
+    Float_t random;
+    Int_t ip;
+    // 411,421,431,4122
+    random = ran->Rndm();
+    if (random < 0.5) {
+	ip=411;
+    } else if (random < 0.75) {
+	ip=421;
+    } else if (random < 0.90) {
+	ip=431;
+    } else {
+	ip=4122;
+    }
+    if (ran->Rndm() < 0.5) {ip=-ip;}
+    
+    return ip;
+
+}
+//--------------------------------------------------------------------------
+//
+//                    charm pt-distribution, FLAT
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtCharmFlat( Double_t *px, Double_t *dummy)
+{
+
+  Double_t x=*px;
+
+  if (x>10.)  x = 0.;
+  else x=1.;
+  return x ;
+
+}
+//--------------------------------------------------------------------------
+//
+//                    charm pt-distribution, from Dariuzs Miskowiec
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtCharmGSI( Double_t *px, Double_t *dummy)
+{
+  //Taken from PYTHIA with MRS D-' (3031 from PDFLIB), K=3.0
+  const Double_t kp1 = 1.3;
+  const Double_t kp2  = 0.39;
+  const Double_t kp3  = 0.018;
+  const Double_t kp4  = 0.91;
+  Double_t x=*px;
+
+  Double_t pass1 =TMath::Exp(-x/kp2)  ;
+  Double_t pass2 =TMath::Exp(-x/kp4)  ;
+  return TMath::Power(x,kp1) * (pass1 + kp3 * pass2);
+
+}
+//--------------------------------------------------------------------------
+//
+//                    charm pt-distribution, from MUONlib
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtCharmMUON( Double_t *px, Double_t *dummy)
+{
+
+  const Double_t kpt0 = 4.08;
+  const Double_t kxn  = 9.40;
+  Double_t x=*px;
+
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+
+  return x/TMath::Power(pass1,kxn);
+
+}
+//--------------------------------------------------------------------------
+//
+//                    charm y-distribution
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YCharm( Double_t *px, Double_t *dummy)
+{
+
+    Double_t *dum=0;
+
+    return YJpsiMUON(px,dum);
+
+}
+//--------------------------------------------------------------------------
+//
+//                        Beauty
+//
+//--------------------------------------------------------------------------
+//
+//                    beauty particle composition
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpBeauty(TRandom *ran)
+{  
+
+    Float_t random;
+    Int_t ip;
+    random = ran->Rndm();
+    if (random < 0.5) {
+	ip=511;
+    } else if (random < 0.75) {
+	ip=521;
+    } else if (random < 0.90) {
+	ip=531;
+    } else {
+	ip=5122;
+    }
+    if (ran->Rndm() < 0.5) {ip=-ip;}
+    
+    return ip;
+}
+//--------------------------------------------------------------------------
+//
+//                    beauty pt-distribution, FLAT
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtBeautyFlat( Double_t *px, Double_t *dummy)
+{
+
+  Double_t x=*px;
+
+  if (x>10.) x=0.;
+  else x = 1.;
+  return x ;
+
+}
+//--------------------------------------------------------------------------
+//
+//
+//                    beauty pt-distribution, from D. Miskowiec
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtBeautyGSI( Double_t *px, Double_t *dummy)
+{
+  //Taken from PYTHIA with MRS D-' (3031 from PDFLIB), K=3.0
+  const Double_t kp1 = 1.3;
+  const Double_t kp2  = 1.78;
+  const Double_t kp3  = 0.0096;
+  const Double_t kp4  = 4.16;
+  Double_t x=*px;
+
+  Double_t pass1 =TMath::Exp(-x/kp2)  ;
+  Double_t pass2 =TMath::Exp(-x/kp4)  ;
+
+  return TMath::Power(x,kp1) * (pass1 + kp3 * pass2);
+
+}
+//--------------------------------------------------------------------------
+//
+//                    beauty pt-distribution, from MUONlib
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::PtBeautyMUON( Double_t *px, Double_t *dummy)
+{
+
+  const Double_t kpt0 = 4.;
+  const Double_t kxn  = 3.6;
+  Double_t x=*px;
+
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+
+  return x/TMath::Power(pass1,kxn);
+
+}
+//--------------------------------------------------------------------------
+//
+//                    beauty y-distribution
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YBeauty( Double_t *px, Double_t *dummy)
+{
+
+    Double_t *dum=0;
+
+    return YJpsiMUON(px,dum);
+
+}
+//--------------------------------------------------------------------------
+//
+//                          Eta
+//
+//--------------------------------------------------------------------------
+//
+//                 eta particle composition 
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpEta(TRandom *)
+{
+
+  return 221;     
+
+}
+//--------------------------------------------------------------------------
+//
+//                  eta pt-distribution
+//
+//____________________________________________________________--------------
+Double_t AliGenGSIlib::PtEtaPHOS( Double_t *px, Double_t *dummy )
+{
+
+  return PtScal(*px,3);  //  3==> Eta in the PtScal function
+   
+}
+//--------------------------------------------------------------------------
+//
+//                   eta y-distribution 
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YEtaPHOS(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ka    = 1000.;
+  const Double_t kdy   = 4.;
+
+  Double_t y=TMath::Abs(*py);
+
+  Double_t ex = y*y/(2*kdy*kdy);
+
+  return ka*TMath::Exp(-ex);
+
+}
+//--------------------------------------------------------------------------
+//
+//                       Etaprime
+//
+//--------------------------------------------------------------------------
+//
+//                 etaprime particle composition 
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpEtaprime(TRandom *)
+{
+
+  return 331;     
+
+}
+//--------------------------------------------------------------------------
+//
+//                 etaprime pt-distribution
+//
+//____________________________________________________________--------------
+Double_t AliGenGSIlib::PtEtaprimePHOS( Double_t *px, Double_t *dummy )
+{
+
+  return PtScal(*px,5);  //  5==> Etaprime in the PtScal function
+   
+}
+//--------------------------------------------------------------------------
+//
+//                  etaprime y-distribution 
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YEtaprimePHOS(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ka    = 1000.;
+  const Double_t kdy   = 4.;
+
+  Double_t y=TMath::Abs(*py);
+
+  Double_t ex = y*y/(2*kdy*kdy);
+
+  return ka*TMath::Exp(-ex);
+
+}
+//--------------------------------------------------------------------------
+//
+//                       omega 
+//
+//--------------------------------------------------------------------------
+//
+//                 omega particle composition 
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpOmega(TRandom *)
+{
+
+  return 223;     
+
+}
+//--------------------------------------------------------------------------
+//
+//                  omega pt-distribution
+//
+//____________________________________________________________--------------
+Double_t AliGenGSIlib::PtOmega( Double_t *px, Double_t *dummy )
+{
+
+  return PtScal(*px,4);  //  4==> Omega in the PtScal function
+   
+}
+//--------------------------------------------------------------------------
+//
+//                   omega y-distribution 
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YOmega(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ka    = 1000.;
+  const Double_t kdy   = 4.;
+
+
+  Double_t y=TMath::Abs(*py);
+
+  Double_t ex = y*y/(2*kdy*kdy);
+
+  return ka*TMath::Exp(-ex);
+
+}
+//--------------------------------------------------------------------------
+//
+//                       Rho 
+//
+//--------------------------------------------------------------------------
+//
+//                 rho particle composition 
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpRho(TRandom *)
+{
+
+  return 113;     
+
+}
+//--------------------------------------------------------------------------
+//
+//                  rho pt-distribution
+//
+//____________________________________________________________--------------
+Double_t AliGenGSIlib::PtRho( Double_t *px, Double_t *dummy )
+{
+
+  return PtScal(*px,11);  //  11==> Rho in the PtScal function
+   
+}
+//--------------------------------------------------------------------------
+//
+//                   rho y-distribution 
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YRho(Double_t *py, Double_t *dummy)
+{
+  const Double_t ka    = 1000.;
+  const Double_t kdy   = 4.;
+
+
+  Double_t y=TMath::Abs(*py);
+
+  Double_t ex = y*y/(2*kdy*kdy);
+
+  return ka*TMath::Exp(-ex);
+
+}
+//--------------------------------------------------------------------------
+//
+//                              Pion
+//
+//--------------------------------------------------------------------------
+//
+//                 particle composition  pi+, pi0, pi-
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpPionPHOS(TRandom *ran)
+{
+
+    Float_t random = ran->Rndm();
+
+    if ( (3.*random)  < 1. ) 
+    {
+          return 211 ;
+    } 
+    else
+    {  
+      if ( (3.*random) >= 2.)
+      {
+         return -211 ;
+      }
+      else 
+      {
+        return 111  ;
+      }
+    }
+}
+//--------------------------------------------------------------------------
+//
+//                  pion pt-distribution
+//
+//       Pion transverse momentum distribtuion as in AliGenMUONlib class, 
+//       version 3.01 of aliroot:
+//       PT-PARAMETERIZATION CDF, PRL 61(88) 1819
+//       POWER LAW FOR PT > 500 MEV
+//       MT SCALING BELOW (T=160 MEV)
+//
+//____________________________________________________________--------------
+Double_t AliGenGSIlib::PtPion( Double_t *px, Double_t *dummy )
+{
+
+  const Double_t kp0 = 1.3;
+  const Double_t kxn = 8.28;
+  const Double_t kxlim=0.5;
+  const Double_t kt=0.160;
+  const Double_t kxmpi=0.139;
+  const Double_t kb=1.;
+  Double_t y, y1, kxmpi2, ynorm, a;
+  Double_t x=*px;
+
+  y1=TMath::Power(kp0/(kp0+kxlim),kxn);
+  kxmpi2=kxmpi*kxmpi;
+  ynorm=kb*(TMath::Exp(-sqrt(kxlim*kxlim+kxmpi2)/kt));
+  a=ynorm/y1;
+  if (x > kxlim)
+    y=a*TMath::Power(kp0/(kp0+x),kxn);
+  else
+    y=kb*TMath::Exp(-sqrt(x*x+kxmpi2)/kt);
+  return y*x;
+   
+}
+//--------------------------------------------------------------------------
+//
+//                    pion y-distribution 
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YPion(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ka    = 7000.;   
+  const Double_t kdy   = 4.;
+
+  Double_t y=TMath::Abs(*py);
+
+  Double_t ex = y*y/(2*kdy*kdy);
+
+  return ka*TMath::Exp(-ex);
+
+}
+//--------------------------------------------------------------------------
+//
+//
+//                        Kaon
+//--------------------------------------------------------------------------
+//
+//                kaon particle composition K+, K-, Ko_short, Ko_long
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpKaonPHOS(TRandom *ran)
+{
+
+    Float_t random = ran->Rndm();
+    Float_t random2 = ran->Rndm();
+    if (random2 < 0.5) 
+    {
+      if (random < 0.5) {       
+        return  321;   //   K+
+      } else {
+        return -321;   // K-
+      }
+    }
+    else
+    {  
+      if (random < 0.5) {       
+        return  130;   // K^0 short
+      } else {  
+        return  310;   // K^0 long
+      }
+    }
+}
+//--------------------------------------------------------------------------
+//
+//                   kaon pt-distribution
+//
+//____________________________________________________________--------------
+Double_t AliGenGSIlib::PtKaonPHOS( Double_t *px, Double_t *dummy )
+{
+
+  return PtScal(*px,2);  //  2==> Kaon in the PtScal function
+   
+}
+//--------------------------------------------------------------------------
+//
+//                    kaon y-distribution 
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YKaonPHOS(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ka    = 1000.;
+  const Double_t kdy   = 4.;
+
+  Double_t y=TMath::Abs(*py);
+
+  Double_t ex = y*y/(2*kdy*kdy);
+
+  return ka*TMath::Exp(-ex);
+
+}
+//--------------------------------------------------------------------------
+//
+//                        Phi  
+//
+//--------------------------------------------------------------------------
+//
+//                 particle composition 
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpPhi(TRandom *)
+{
+
+  return 333;     
+
+}
+//--------------------------------------------------------------------------
+//
+//                   phi pt-distribution
+//
+//____________________________________________________________--------------
+Double_t AliGenGSIlib::PtPhiPHOS( Double_t *px, Double_t *dummy )
+{
+
+  return PtScal(*px,6);  //  6==> Phi in the PtScal function
+   
+}
+//--------------------------------------------------------------------------
+//
+//                    phi y-distribution 
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YPhiPHOS(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ka    = 1000.;
+  const Double_t kdy   = 4.;
+
+
+  Double_t y=TMath::Abs(*py);
+ 
+  Double_t ex = y*y/(2*kdy*kdy);
+
+  return ka*TMath::Exp(-ex);
+
+}
+//--------------------------------------------------------------------------
+//
+//                          Baryons
+//
+//--------------------------------------------------------------------------
+//
+//                 baryons particle composition p, pbar, n, nbar
+//
+//--------------------------------------------------------------------------
+Int_t AliGenGSIlib::IpBaryons(TRandom *ran)
+{
+
+    Float_t random = ran->Rndm();
+    Float_t random2 = ran->Rndm();
+    if (random2 < 0.5) 
+    {
+      if (random < 0.5) {       
+        return  2212;   //   p
+      } else {
+        return -2212;   // pbar
+      }
+    }
+    else
+    {  
+      if (random < 0.5) {       
+        return  2112;   // n
+      } else {  
+        return -2112;   // n bar
+      }
+    }
+}
+//--------------------------------------------------------------------------
+//
+//                  baryons pt-distribution
+//
+//____________________________________________________________--------------
+Double_t AliGenGSIlib::PtBaryons( Double_t *px, Double_t *dummy )
+{
+
+  return PtScal(*px,7);  //  7==> Baryon in the PtScal function
+   
+}
+//--------------------------------------------------------------------------
+//
+//                   baryons y-distribution 
+//
+//--------------------------------------------------------------------------
+Double_t AliGenGSIlib::YBaryons(Double_t *py, Double_t *dummy)
+{
+
+  const Double_t ka    = 1000.;
+  const Double_t kdy   = 4.;
+
+  Double_t y=TMath::Abs(*py);
+
+  Double_t ex = y*y/(2*kdy*kdy);
+
+  return ka*TMath::Exp(-ex);
+
+}
+//============================================================= 
+//
+//                    Mt-scaling as in AliGenPHOSlib  
+//
+//============================================================= 
+//
+ Double_t AliGenGSIlib::PtScal(Double_t pt, Int_t np)
+{
+// Function for the calculation of the Pt distribution for a 
+// given particle np, from the pion Pt distribution using the 
+// mt scaling. 
+
+// It was taken from AliGenPHOSlib aliroot version 3.04, which 
+// is an update of the one in AliGenMUONlib aliroot version 3.01
+// with an extension for Baryons but supressing Rhos
+// np = 1=>Pions 2=>Kaons 3=>Etas 4=>Omegas 5=>ETA' 6=>PHI
+//      7=>BARYONS-BARYONBARS
+
+// The present adds the Rhos
+
+// MASS   1=>PI, 2=>K, 3=>ETA, 4=>OMEGA, 5=>ETA', 6=>PHI 
+//        7=>BARYON-BARYONBAR, 11==>RHO
+
+  const Double_t khm[11] = {0.1396, 0.494,  0.547,    0.782,   0.957,   1.02, 
+                                         0.938, 0. , 0., 0., 0.769};
+
+  //     VALUE MESON/PI AT 5 GEV
+
+  const Double_t kfmax[11]={1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
+
+  np--;
+  Double_t f5=TMath::Power(((sqrt(100.018215)+2.)/(sqrt(100.+khm[np]*khm[np])+2.0)),12.3);
+  Double_t kfmax2=f5/kfmax[np];
+  // PIONS
+  Double_t ptpion=100.*PtPion(&pt, (Double_t*) 0);
+  Double_t fmtscal=TMath::Power(((sqrt(pt*pt+0.018215)+2.)/
+                                 (sqrt(pt*pt+khm[np]*khm[np])+2.0)),12.3)/ kfmax2;
+  return fmtscal*ptpion;
 }
 
+//==========================================================================
+//
+//                     Set Getters 
+//    
+//==========================================================================
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
 
 typedef Int_t (*GenFuncIp) (TRandom *);
 
-
-
 GenFunc AliGenGSIlib::GetPt(Int_t param, const char * tname)
 {
 // Return pointer to pT parameterisation
-  GenFunc func=0;
-  TString sname(tname);
-  switch (param) 
+   GenFunc func=0;
+   TString sname(tname);
+
+   switch (param) 
     {
     case kUpsilon:
+      if (sname=="FLAT"){
+	func= PtUpsilonFlat;
+	break;
+      }
       if (sname=="MUON"){
 	func= PtUpsilonMUON;
 	break;
@@ -206,6 +1045,97 @@ GenFunc AliGenGSIlib::GetPt(Int_t param, const char * tname)
       break;
        func=0;
         printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
+
+    case kJPsi:
+      if (sname=="FLAT"){
+	func= PtJpsiFlat;
+	break;
+      }
+      if (sname=="MUON"){
+	func= PtJpsiMUON;
+	break;
+      }
+      //      if (sname=="SERGEI"){
+      //	func= PtJpsi;
+      //	break;
+      //     }
+      break;
+        func=0;
+        printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
+
+    case kCharm: 
+      if (sname=="FLAT"){
+	func= PtCharmFlat;
+	break;
+      }
+
+      if (sname=="MUON"){
+	func= PtCharmMUON;
+	break;
+      }
+
+      if (sname=="GSI"){
+	func= PtCharmGSI;
+	break;
+      }
+      break;
+       func=0;
+        printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
+
+    case kBeauty: 
+      if (sname=="FLAT"){
+	func= PtBeautyFlat;
+	break;
+      }
+      if (sname=="MUON"){
+	func= PtBeautyMUON;
+	break;
+      }
+      if (sname=="GSI"){
+	func= PtBeautyGSI;
+	break;
+      }
+      break;
+       func=0;
+        printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
+
+
+    case kEta:
+         func=PtEtaPHOS;
+         break;
+
+    case kEtaprime:
+         func=PtEtaprimePHOS;
+         break;
+
+    case kOmega:
+         func=PtOmega;
+         break;
+
+    case kRho:
+	 func=PtRho;
+	 break;
+
+    case kKaon:
+         func=PtKaonPHOS;
+         break;
+
+    case kPion:
+         func=PtPion;
+         break;
+
+    case kPhi:
+         func=PtPhiPHOS;
+         break;
+
+	 //    case kLambda:
+	 //         func=PtLambda;
+	 //         break;
+
+    case kBaryons:
+         func=PtBaryons;
+         break;
+
     default:
         func=0;
         printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
@@ -213,16 +1143,19 @@ GenFunc AliGenGSIlib::GetPt(Int_t param, const char * tname)
     return func;
 }
 
-
-
 GenFunc AliGenGSIlib::GetY(Int_t param, const char * tname)
 {
-  // Return pointer to y- parameterisation
+// Return pointer to y- parameterisation
    GenFunc func=0;
-    TString sname(tname);
-    switch (param) 
+   TString sname(tname);
+
+   switch (param) 
     {
     case kUpsilon:
+      if (sname=="FLAT"){
+	func= YUpsilonFlat;
+	break;
+      }
       if (sname=="MUON"){
 	func= YUpsilonMUON;
 	break;
@@ -238,6 +1171,69 @@ GenFunc AliGenGSIlib::GetY(Int_t param, const char * tname)
       func=0;
       printf("<AliGenGSIlib::GetY> unknown parametrisation\n");
       break;
+
+    case kJPsi:
+      if (sname=="FLAT"){
+	func= YJpsiFlat;
+	break;
+      }
+      if (sname=="MUON"){
+	func= YJpsiMUON;
+	break;
+      }
+      //      if (sname=="SERGEI"){
+      //	func= YJpsi;
+      //	break;
+      //      }
+   
+      func=0;
+      printf("<AliGenGSIlib::GetY> unknown parametrisation\n");
+      break;
+     
+    case kCharm: 
+	func= YCharm;
+	break;
+
+    case kBeauty: 
+	func= YBeauty;
+	break;
+
+    case kEta:
+         func=YEtaPHOS;
+         break;
+
+    case kEtaprime:
+         func=YEtaprimePHOS;
+         break;
+
+    case kOmega:
+         func=YOmega;
+         break;
+
+    case kRho:
+	 func=YRho;
+	 break;
+
+    case kKaon:
+         func=YKaonPHOS;
+         break;
+
+    case kPion:
+         func=YPion;
+         break;
+
+    case kPhi:
+         func=YPhiPHOS;
+         break;
+
+	 //    case kLambda:
+	 //         func=YLambda;
+	 //         break;
+
+    case kBaryons:
+         func=YBaryons;
+         break;
+
     default:
         func=0;
         printf("<AliGenGSIlib::GetY> unknown parametrisation\n");
@@ -245,38 +1241,72 @@ GenFunc AliGenGSIlib::GetY(Int_t param, const char * tname)
     return func;
 }
 
-
-
 GenFuncIp AliGenGSIlib::GetIp(Int_t param, const char * tname)
 {
 // Return pointer to particle type parameterisation
-    GenFuncIp func=0;
-    TString sname(tname);
-    switch (param) 
+   GenFuncIp func=0;
+   TString sname(tname);
+
+   switch (param) 
     {
     case kUpsilon:
-      if (sname=="MUON"){
-	func=IpUpsilonMUON;
+	func= IpUpsilon;
 	break;
-      }
-      if (sname=="RITMAN"){
-	func=IpUpsilonRitman;
+
+    case kJPsi:
+	func= IpJpsi;
 	break;
-      }
-      if (sname=="KAREL"){
-	func=IpUpsilonKarel;
+
+    case kCharm: 
+	func= IpCharm;
 	break;
-      }
-      func=0;
-      printf("<AliGenGSIlib::GetIP> unknown parametrisation\n");
-      break;
+
+    case kBeauty: 
+	func= IpBeauty;
+	break;
+
+    case kEta:
+         func=IpEta;
+         break;
+
+    case kEtaprime:
+         func=IpEtaprime;
+         break;
+
+    case kOmega:
+         func=IpOmega;
+         break;
+
+    case kRho:
+	 func=IpRho;
+	 break;
+
+    case kKaon:
+         func=IpKaonPHOS;
+         break;
+
+    case kPion:
+         func=IpPionPHOS;
+         break;
+
+    case kPhi:
+         func=IpPhi;
+         break;
+
+	 //    case kLambda:
+	 //         func=IpLambda;
+	 //         break;
+
+    case kBaryons:
+         func=IpBaryons;
+         break;
+
     default:
         func=0;
         printf("<AliGenGSIlib::GetIp> unknown parametrisation\n");
     }
     return func;
 }
-
 
 
 
