@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/06/30 12:19:07  morsch
+Type of fFileName changed to TString, fp has been !-ed.
+
 Revision 1.6  2000/06/09 20:36:01  morsch
 All coding rule violations except RS3 corrected
 
@@ -40,8 +43,6 @@ Introduction of the Copyright and cvs Log
 // Constructor
     fName="Halo";
     fTitle="Halo from LHC Tunnel";
-    // Set the default file 
-    fFileName=TString("~/marsip/marsip5.mu");
 //
 //  Read all particles
     fNpart=-1;
@@ -54,8 +55,6 @@ AliGenHalo::AliGenHalo(Int_t npart)
 // Constructor
     fName="Halo";
     fTitle="Halo from LHC Tunnel";
-    // Set the default file 
-    fFileName=TString("~/marsip/marsip5.mu");
 //
 //  Read all particles
     fNpart=-1;
