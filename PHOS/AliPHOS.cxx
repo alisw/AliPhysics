@@ -54,7 +54,6 @@ Int_t    AliPHOS::fgOrder       = 2 ;
 Double_t AliPHOS::fgTimeMax     = 2.56E-5 ;  // each sample is over 100 ns fTimeMax/fTimeBins
 Double_t AliPHOS::fgTimePeak    = 4.1E-6 ;   // 4 micro seconds
 Double_t AliPHOS::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
- 
 
 //____________________________________________________________________________
   AliPHOS:: AliPHOS() : AliDetector()
@@ -94,6 +93,10 @@ void AliPHOS::Copy(AliPHOS & phos)
   TObject::Copy(phos) ; 
   //  fQATask = AliPHOSQAChecker::Copy(*(phos.fQATask)) ; 
   phos.fTreeQA = fTreeQA->CloneTree() ; 
+  phos.fHighCharge        = fHighCharge ;
+  phos.fHighGain          = fHighGain ; 
+  phos.fHighLowGainFactor = fHighLowGainFactor ;  
+  phos.fLowGainOffset     = fLowGainOffset;   
 }
 
 //____________________________________________________________________________
@@ -408,7 +411,7 @@ void AliPHOS::Digits2Raw()
   TClonesArray* digits = loader->Digits() ;
 
   if (!digits) {
-    Error("Digits2Raw", "no digits found !");
+    AliError(Form("No digits found !"));
     return;
   }
 
@@ -419,7 +422,7 @@ void AliPHOS::Digits2Raw()
   // get the geometry
   AliPHOSGeometry* geom = GetGeometry();
   if (!geom) {
-    Error("Digits2Raw", "no geometry found !");
+    AliError(Form("No geometry found !"));
     return;
   }
 
@@ -599,15 +602,14 @@ void AliPHOS::SetTreeAddress()
   TBranch *branch;
   char branchname[20];
   sprintf(branchname,"%s",GetName());
-  
   // Branch address for hit tree
-  TTree *treeH = TreeH();
+    TTree *treeH = TreeH();
   if (treeH) {
     branch = treeH->GetBranch(branchname);
     if (branch) 
      { 
        if (fHits == 0x0) fHits= new TClonesArray("AliPHOSHit",1000);
-       //Info("SetTreeAddress","<%s> Setting Hits Address",GetName());
+       //AliInfo(Form("<%s> Setting Hits Address",GetName()));
        branch->SetAddress(&fHits);
      }
   }
@@ -632,7 +634,7 @@ void AliPHOS::WriteQA()
  
   if (alarmsF == 0x0)
    {
-     Error("WriteQA","Can not find folder with qa alarms");
+     AliError(Form("Can not find folder with qa alarms"));
      return;
    }
   TString branchName(alarmsF->GetName());

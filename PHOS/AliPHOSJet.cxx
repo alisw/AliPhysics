@@ -37,7 +37,7 @@ ClassImp(AliPHOSJet)
   
 //____________________________________________________________________________ 
 AliPHOSJet::AliPHOSJet():TObject() {
-  //Inicilize members
+  //Initialize members
   fNpart = 0 ;
   fList = 0 ;
   //  fMode = 0 ;
@@ -155,7 +155,7 @@ void AliPHOSJet::AddDigit(Double_t e, Double_t eta, Double_t phi, Int_t index){
 //   case 1: 
 //     return AcceptConeDeviation(dEta,dPhi,p->Energy() );
 //   default:
-//     Error("IsInCone","Unknown mode of cone calculation %d \n",mode );
+//     AliError(Form("Unknown mode of cone calculation %d \n",mode ));
 //   }
 //   return kFALSE ;
 //}

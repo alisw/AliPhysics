@@ -64,7 +64,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliLog.h"
 #include "AliRunDigitizer.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSGetter.h"
@@ -164,7 +164,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   Int_t ReadEvent = event ; 
   if (fManager) 
     ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
-  Info("Digitize", "Adding event %d from input stream 0 %s %s", ReadEvent, GetTitle(), fEventFolderName.Data()) ; 
+  AliInfo(Form("Adding event %d from input stream 0 %s %s", 
+	       ReadEvent, GetTitle(), fEventFolderName.Data())) ; 
   gime->Event(ReadEvent, "S") ;
   TClonesArray * digits = gime->Digits() ; 
   digits->Clear() ;
@@ -186,7 +187,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   AliPHOSSDigitizer * sDigitizer = gime->SDigitizer(); 
 
   if ( !sDigitizer )
-    Fatal("Digitize", "SDigitizer with name %s %s not found", GetTitle(), fEventFolderName.Data() ) ; 
+    AliFatal(Form("SDigitizer with name %s %s not found", 
+		  GetTitle(), fEventFolderName.Data() )) ; 
 
   //take all the inputs to add together and load the SDigits
   TObjArray * sdigArray = new TObjArray(fInput) ;
@@ -198,7 +200,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     AliPHOSGetter * gime = AliPHOSGetter::Instance(fInputFileNames[i], tempo) ;
     if (fManager) 
       ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
-    Info("Digitize", "Adding event %d from input stream %d %s %s", ReadEvent, i, fInputFileNames[i].Data(), tempo.Data()) ; 
+    AliInfo(Form("Adding event %d from input stream %d %s %s", 
+		 ReadEvent, i, fInputFileNames[i].Data(), tempo.Data())) ; 
     gime->Event(ReadEvent,"S");
     sdigArray->AddAt(gime->SDigits(), i) ;
   }
@@ -396,7 +399,8 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   // by default fLastEvent = fFirstEvent (process only one event)
 
   if (!fInit) { // to prevent overwrite existing file
-    Error( "Exec", "Give a version name different from %s", fEventFolderName.Data() ) ;
+    AliError(Form("Give a version name different from %s", 
+		  fEventFolderName.Data() )) ;
     return ;
   }   
 
@@ -443,9 +447,9 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     gBenchmark->Stop("PHOSDigitizer");
     TString message ; 
     message = "  took %f seconds for Digitizing %f seconds per event\n" ; 
-    Info("Exec", message.Data(), 
+    AliInfo(Form( message.Data(), 
 	 gBenchmark->GetCpuTime("PHOSDigitizer"), 
-	 gBenchmark->GetCpuTime("PHOSDigitizer")/nEvents ); 
+	 gBenchmark->GetCpuTime("PHOSDigitizer")/nEvents )); 
   } 
 }
 
@@ -478,7 +482,8 @@ Bool_t AliPHOSDigitizer::Init()
   fInit = kTRUE ; 
   AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName) ; 
   if ( gime == 0 ) {
-    Fatal("Init" ,"Could not obtain the Getter object for file %s and event %s !", GetTitle(), fEventFolderName.Data()) ;  
+    AliFatal(Form("Could not obtain the Getter object for file %s and event %s !", 
+		  GetTitle(), fEventFolderName.Data()));  
     return kFALSE;
   } 
   
@@ -488,7 +493,8 @@ Bool_t AliPHOSDigitizer::Init()
   
   TString opt("Digits") ; 
   if(gime->VersionExists(opt) ) { 
-    Error( "Init", "Give a version name different from %s", fEventFolderName.Data() ) ;
+    AliError(Form("Give a version name different from %s", 
+		  fEventFolderName.Data() )) ;
     fInit = kFALSE ; 
   }
 
@@ -565,7 +571,7 @@ void AliPHOSDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
   }
   // looking for file which contains AliRun
   if (gSystem->AccessPathName(alirunFileName)) {// file does not exist
-    Error("MixWith", "File %s does not exist!", alirunFileName.Data()) ;
+    AliError(Form("File %s does not exist!", alirunFileName.Data())) ;
     return ; 
   }
   // looking for the file which contains SDigits
@@ -574,7 +580,7 @@ void AliPHOSDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
     if ( eventFolderName != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
       fileName = fileName.ReplaceAll(".root", "") + "_" + eventFolderName + ".root" ;
     if ( (gSystem->AccessPathName(fileName)) ) { 
-      Error("MixWith", "The file %s does not exist!", fileName.Data()) ;
+      AliError(Form("The file %s does not exist!", fileName.Data())) ;
       return ;
     }
     // need to increase the arrays
@@ -597,7 +603,7 @@ void AliPHOSDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
 void AliPHOSDigitizer::Print()const 
 {
   // Print Digitizer's parameters
-  Info("Print", "\n------------------- %s -------------", GetName() ) ; 
+  AliInfo(Form("\n------------------- %s -------------", GetName() )) ; 
   if( strcmp(fEventFolderName.Data(), "") != 0 ){
     printf(" Writing Digits to branch with title  %s\n", fEventFolderName.Data()) ;
     
@@ -628,7 +634,7 @@ void AliPHOSDigitizer::Print()const
     printf(" ---------------------------------------------------\n") ;   
   }
   else
-    Info("Print", "AliPHOSDigitizer not initialized" ) ;
+    AliInfo(Form("AliPHOSDigitizer not initialized" )) ;
   
 }
 
@@ -640,7 +646,7 @@ void AliPHOSDigitizer::Print()const
   AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName) ; 
   TClonesArray * digits = gime->Digits() ; 
   
-  Info("PrintDigits", "%d", digits->GetEntriesFast()) ; 
+  AliInfo(Form("%d", digits->GetEntriesFast())) ; 
   printf("\nevent %d", gAlice->GetEvNumber()) ;
   printf("\n       Number of entries in Digits list %d", digits->GetEntriesFast() )  ;  
 

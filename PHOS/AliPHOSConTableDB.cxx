@@ -33,6 +33,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSConTableDB.h"
 
@@ -101,7 +102,7 @@ void  AliPHOSConTableDB::BuildDB(void)
   //assuming, that prototype is centered in the third module of the PHOS
   fNcrInProto =fProtoRaws*fProtoColumns ;
   if(!fNcrInProto){
-    Error("BuildDB", "configuratio of prototype is not known!!!\n Specify number of raws and columns in prototype") ;
+    AliError(Form("configuratio of prototype is not known!!!\n Specify number of raws and columns in prototype"));
     return ;
   }
   fRawOffset = (fGeom->GetNPhi() - fProtoRaws)/2 ;
@@ -201,7 +202,7 @@ void AliPHOSConTableDB::Print()const {
   else
     message += " null \n"  ;
 
-  Info("Print", message.Data(), GetName(), GetTitle(), fGeom->GetName(), fGeom->GetTitle() ) ; 
+  AliInfo(Form(message.Data(), GetName(), GetTitle(), fGeom->GetName(), fGeom->GetTitle() )) ; 
 
   message  = "\n-------Prototype parameters--------\n" ;
   message += "    number of columns: %d \n" ; 
@@ -211,7 +212,7 @@ void AliPHOSConTableDB::Print()const {
   message += "    col: %d of %d\n" ; 
   message += "------------------------------------ \n" ;
 
-  Info("Print", message.Data(), fProtoColumns, fProtoRaws, fRawOffset, fGeom->GetNPhi(), fColOffset,fGeom->GetNZ() );   
+  AliInfo(Form(message.Data(), fProtoColumns, fProtoRaws, fRawOffset, fGeom->GetNPhi(), fColOffset,fGeom->GetNZ() ));   
 }
 //____________________________________________________________________________
 AliPHOSConTableDB& AliPHOSConTableDB::operator=(const AliPHOSConTableDB& cdb){

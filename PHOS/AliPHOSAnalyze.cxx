@@ -76,7 +76,7 @@
 
 // --- AliRoot header files ---
 
-//#include "AliRun.h"
+#include "AliLog.h"
 #include "AliStack.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSAnalyze.h"
@@ -108,7 +108,7 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * fileName)
   fRunLoader = AliRunLoader::Open(fileName,"AliPHOSAnalyze");
   if (fRunLoader == 0x0)
    {
-     Error("AliPHOSAnalyze","Error Loading session");
+     AliError(Form("Error Loading session"));
    }
 }
 
@@ -135,20 +135,20 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
   //========== Create ObjectLoader
   if (fRunLoader == 0x0)
    {
-     Error("DrawRecon","Error Loading session");
+     AliError(Form("Error Loading session"));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("DrawRecon","Could not obtain the Loader object !"); 
+     AliError(Form("Could not obtain the Loader object !")); 
      return ;
    } 
   
   
   if(Nevent >= fRunLoader->GetNumberOfEvents() ) {
-    Error("DrawRecon", "There is no event %d only %d events available", Nevent, fRunLoader->GetNumberOfEvents() ) ;
+    AliError(Form("There is no event %d only %d events available", Nevent, fRunLoader->GetNumberOfEvents() )) ;
     return ;
   }
   const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
@@ -262,7 +262,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
   TString message ; 
   message  = "Number of EMC + CPV SDigits per module: \n" ;
   message += "%d %d %d %d %d\n"; 
-  Info("DrawRecon", message.Data(), nsdig[0], nsdig[1], nsdig[2], nsdig[3], nsdig[4] ) ;
+  AliInfo(Form(message.Data(), nsdig[0], nsdig[1], nsdig[2], nsdig[3], nsdig[4] )) ;
 
   //Plot digits
   Int_t iDigit ;
@@ -383,14 +383,14 @@ void AliPHOSAnalyze::Ls(){
   
   if (fRunLoader == 0x0)
    {
-     Error("Ls","Error Loading session");
+     AliError(Form("Error Loading session"));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("Ls","Could not obtain the Loader object !"); 
+     AliError(Form("Could not obtain the Loader object !")); 
      return ;
    } 
 
@@ -402,7 +402,7 @@ void AliPHOSAnalyze::Ls(){
    {
      if (gime->LoadSDigits("READ"))
       {
-        Error("Ls","Problems with loading summable digits");
+        AliError(Form("Problems with loading summable digits"));
         return;
       }
    }
@@ -424,7 +424,7 @@ void AliPHOSAnalyze::Ls(){
    {
      if (gime->LoadDigits("READ"))
       {
-        Error("Ls","Problems with loading digits");
+        AliError(Form("Problems with loading digits"));
         return;
       }
    }
@@ -447,7 +447,7 @@ void AliPHOSAnalyze::Ls(){
    {
      if (gime->LoadRecPoints("READ"))
       {
-        Error("Ls","Problems with loading rec points");
+        AliError(Form("Problems with loading rec points"));
         return;
       }
    }
@@ -465,7 +465,7 @@ void AliPHOSAnalyze::Ls(){
       message += "\n" ;
     }
   }
-  Info("LS", message.Data()) ;  
+  AliInfo(Form(message.Data())) ;  
 }
 //____________________________________________________________________________
  void AliPHOSAnalyze::InvariantMass()
@@ -473,14 +473,14 @@ void AliPHOSAnalyze::Ls(){
   // Calculates Real and Mixed invariant mass distributions
   if (fRunLoader == 0x0)
    {
-     Error("DrawRecon","Error Loading session");
+     AliError(Form("Error Loading session"));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("DrawRecon","Could not obtain the Loader object !"); 
+     AliError(Form("Could not obtain the Loader object !")); 
      return ;
    } 
   
@@ -542,7 +542,7 @@ void AliPHOSAnalyze::Ls(){
     Int_t iRecParticle ;
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp){
-      Error("InvariantMass", "Can't find RecParticles") ; 
+      AliError(Form("Can't find RecParticles")) ; 
       return ;
     }
 
@@ -657,14 +657,14 @@ void AliPHOSAnalyze::Ls(){
 
   if (fRunLoader == 0x0)
    {
-     Error("DrawRecon","Error Loading session");
+     AliError(Form("Error Loading session"));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("DrawRecon","Could not obtain the Loader object !"); 
+     AliError(Form("Could not obtain the Loader object !")); 
      return ;
    } 
 
@@ -686,17 +686,17 @@ void AliPHOSAnalyze::Ls(){
     Int_t iRecParticle ;
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp) {
-      Error("EnergyResolution", "Event %d,  Can't find RecParticles ", ievent) ;  
+      AliError(Form("Event %d,  Can't find RecParticles ", ievent)) ;  
       return ;
     }
     TClonesArray * ts = gime->TrackSegments() ;
     if(!ts) {
-      Error("EnergyResolution", "Event %d,  Can't find TrackSegments", ievent) ;  
+      AliError(Form("Event %d,  Can't find TrackSegments", ievent)) ;  
       return ;
     }
     TObjArray * emcrp = gime->EmcRecPoints() ;
     if(!emcrp){
-      Error("EnergyResolution", "Event %d,  Can't find EmcRecPoints") ; 
+      AliError(Form("Event %d,  Can't find EmcRecPoints")) ; 
       return ;
     }
       
@@ -810,14 +810,14 @@ void AliPHOSAnalyze::PositionResolution()
 
   if (fRunLoader == 0x0)
    {
-     Error("DrawRecon","Error Loading session");
+     AliError(Form("Error Loading session"));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("DrawRecon","Could not obtain the Loader object !"); 
+     AliError(Form("Could not obtain the Loader object !")); 
      return ;
    } 
   
@@ -833,17 +833,17 @@ void AliPHOSAnalyze::PositionResolution()
     fRunLoader->GetEvent(ievent) ;
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp) {
-      Error("PositionResolution", "Event %d,  Can't find RecParticles", ievent) ;
+      AliError(Form("Event %d,  Can't find RecParticles", ievent)) ;
       return ;
     }
     TClonesArray * ts = gime->TrackSegments() ;
     if(!ts) {
-      Error("PositionResolution", "Event %d,  Can't find TrackSegments", ievent) ;
+      AliError(Form("Event %d,  Can't find TrackSegments", ievent)) ;
       return ;
     }
     TObjArray * emcrp = gime->EmcRecPoints() ;
     if(!emcrp){
-      Error("PositionResolution", "Event %d,  Can't find EmcRecPoints", ievent) ;
+      AliError(Form("Event %d,  Can't find EmcRecPoints", ievent)) ;
       return ;
     }
     
@@ -1032,14 +1032,14 @@ void AliPHOSAnalyze::Contamination(){
 
   if (fRunLoader == 0x0)
    {
-     Error("DrawRecon","Error Loading session");
+     AliError(Form("Error Loading session"));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("DrawRecon","Could not obtain the Loader object !"); 
+     AliError(Form("Could not obtain the Loader object !")); 
      return ;
    } 
   
@@ -1054,17 +1054,17 @@ void AliPHOSAnalyze::Contamination(){
     
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp) {
-      Error("Contamination", "Event %d,  Can't find RecParticles", ievent) ;
+      AliError(Form("Event %d,  Can't find RecParticles", ievent)) ;
       return ;
     }
     TClonesArray * ts = gime->TrackSegments() ;
     if(!ts) {
-      Error("Contamination", "Event %d,  Can't find TrackSegments", ievent) ;
+      AliError(Form("Event %d,  Can't find TrackSegments", ievent)) ;
       return ;
     }
     TObjArray * emcrp = gime->EmcRecPoints() ;
     if(!emcrp){
-      Error("Contamination", "Event %d,  Can't find EmcRecPoints", ievent) ;
+      AliError(Form("Event %d,  Can't find EmcRecPoints", ievent)) ;
       return ;
     }
     
@@ -1276,7 +1276,7 @@ void AliPHOSAnalyze::Contamination(){
       totalInd+=counter[i1][i2] ;
   message += "Indentified particles: %d" ; 
   
- Info("Contamination", message.Data(), maxevent, 
+ AliInfo(Form(message.Data(), maxevent, 
       counter[2][0], counter[2][1], counter[2][2], counter[2][3], counter[2][4], 
       counter[3][0], counter[3][1], counter[3][2], counter[3][3], counter[3][4], 
       counter[0][0], counter[0][1], counter[0][2], counter[0][3], counter[0][4], 
@@ -1285,6 +1285,6 @@ void AliPHOSAnalyze::Contamination(){
       counter[5][0], counter[5][1], counter[5][2], counter[5][3], counter[5][4], 
       counter[6][0], counter[6][1], counter[6][2], counter[6][3], counter[6][4], 
       counter[7][0], counter[7][1], counter[7][2], counter[7][3], counter[7][4], 
-      totalInd ) ;
+      totalInd )) ;
 
 }

@@ -66,7 +66,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliGenerator.h"
 #include "AliPHOSPIDv0.h"
@@ -170,14 +170,15 @@ void  AliPHOSPIDv0::Exec(Option_t * option)
   AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
   if(runget == 0x0) 
    {
-     Error("Exec","Can not find run getter in event folder \"%s\"",GetTitle());
+     AliError(Form("Can not find run getter in event folder \"%s\"",
+		   GetTitle()));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("Exec","Could not obtain the Loader object !"); 
+     AliError("Could not obtain the Loader object !"); 
      return ;
    } 
 
@@ -191,7 +192,9 @@ void  AliPHOSPIDv0::Exec(Option_t * option)
   
   for(ievent = 0; ievent < nevents; ievent++){
     runget->GetEvent(ievent);
-    Info("Exec", "event %d %d %d", ievent, gime->EmcRecPoints(), gime->TrackSegments()) ;
+    AliInfo(Form("event %d %d %d", 
+		 ievent, gime->EmcRecPoints(), 
+		 gime->TrackSegments())) ;
     MakeRecParticles() ;
     
     WriteRecParticles();
@@ -206,8 +209,9 @@ void  AliPHOSPIDv0::Exec(Option_t * option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSPID");
-    Info("Exec", "took %f seconds for PID %f seconds per event", 
-	 gBenchmark->GetCpuTime("PHOSPID"), gBenchmark->GetCpuTime("PHOSPID")/nevents) ; 
+    AliInfo(Form("took %f seconds for PID %f seconds per event", 
+		 gBenchmark->GetCpuTime("PHOSPID"), 
+		 gBenchmark->GetCpuTime("PHOSPID")/nevents)) ; 
   }
   
 }
@@ -220,14 +224,15 @@ void AliPHOSPIDv0::Init()
   AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
   if(runget == 0x0) 
    {
-     Error("Exec","Can not find run getter in event folder \"%s\"",GetTitle());
+     AliError(Form("Can not find run getter in event folder \"%s\"",
+		   GetTitle()));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("Exec","Could not obtain the Loader object !"); 
+     AliError("Could not obtain the Loader object !"); 
      return ;
    } 
    
@@ -247,14 +252,15 @@ void  AliPHOSPIDv0::MakeRecParticles()
   AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
   if(runget == 0x0) 
    {
-     Error("Exec","Can not find run getter in event folder \"%s\"",GetTitle());
+     AliError(Form("Can not find run getter in event folder \"%s\"",
+		   GetTitle()));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("Exec","Could not obtain the Loader object !"); 
+     AliError("Could not obtain the Loader object !"); 
      return ;
    } 
 
@@ -348,19 +354,20 @@ void  AliPHOSPIDv0:: Print() const
   message += "    RecParticles Branch title   %s\n" ;  
   message += "with parameters:\n"  ;
   message += "    Maximal EMC - CPV  distance (cm) %f\n" ;
-  Info("Print", message.Data(),  
+  AliInfo(Form( message.Data(),  
        GetTitle(), 
        fRecPointsTitle.Data(), 
        fTrackSegmentsTitle.Data(), 
        fRecParticlesTitle.Data(), 
-       fCpvEmcDistance );
+       fCpvEmcDistance ));
 
   if(fIDOptions.Contains("dis",TString::kIgnoreCase ))
-    Info("Print", "                    dispersion cut %f",  fDispersion ) ;
+    AliInfo(Form("                    dispersion cut %f",  fDispersion )) ;
   if(fIDOptions.Contains("ell",TString::kIgnoreCase ))
-    Info("Print", "             Eliptic cuts function: %s",  fFormula->GetTitle() ) ;
+    AliInfo(Form("             Eliptic cuts function: %s",  
+		 fFormula->GetTitle() )) ;
   if(fIDOptions.Contains("tim",TString::kIgnoreCase ))
-    Info("Print",  "             Time Gate used: %f",  fTimeGate) ;
+    AliInfo(Form("             Time Gate used: %f",  fTimeGate)) ;
 }
 
 //____________________________________________________________________________
@@ -380,14 +387,15 @@ void  AliPHOSPIDv0::WriteRecParticles()
   AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
   if(runget == 0x0) 
    {
-     Error("Exec","Can not find run getter in event folder \"%s\"",GetTitle());
+     AliError(Form("Can not find run getter in event folder \"%s\"",
+		   GetTitle()));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("Exec","Could not obtain the Loader object !"); 
+     AliError("Could not obtain the Loader object !"); 
      return ;
    } 
 
@@ -506,14 +514,15 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
   AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
   if(runget == 0x0) 
    {
-     Error("WriteRecParticles","Can not find run getter in event folder \"%s\"",GetTitle());
+     AliError(Form("Can not find run getter in event folder \"%s\"",
+		   GetTitle()));
      return;
    }
   
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
   if ( gime == 0 ) 
    {
-     Error("WriteRecParticles","Could not obtain the Loader object !"); 
+     AliError("Could not obtain the Loader object !"); 
      return ;
    } 
 
@@ -524,10 +533,11 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
   TString message ; 
   message  = "event %d\n" ; 
   message += "       found %d RecParticles\n" ; 
-  Info("PrintRecParticles", message.Data(), gAlice->GetEvNumber(), recParticles->GetEntriesFast() ) ;   
+  AliInfo(Form(message.Data(), 
+	       gAlice->GetEvNumber(), recParticles->GetEntriesFast() )) ;   
 
   if(strstr(option,"all")) {  // printing found TS
-    Info("PrintRecParticles","  PARTICLE   Index    \n"  ) ; 
+    AliInfo("  PARTICLE   Index"  ) ; 
    
     Int_t index ;
     for (index = 0 ; index < recParticles->GetEntries() ; index++) {
@@ -565,7 +575,8 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
       //    Int_t nprimaries;
       //    primaries = rp->GetPrimaries(nprimaries);
       
-      Info("PrintRecParticles", "          %s     %d\n",  particle, rp->GetIndexInList()) ;
+      AliInfo(Form("          %s     %d",  
+		   particle, rp->GetIndexInList())) ;
     }
   }  
 }

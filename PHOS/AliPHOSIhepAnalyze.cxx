@@ -43,6 +43,7 @@
 #include "AliHeader.h"
 
 // --- PHOS header files ---
+#include "AliLog.h"
 #include "AliPHOSIhepAnalyze.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSRecParticle.h"
@@ -71,7 +72,7 @@ AliPHOSIhepAnalyze::AliPHOSIhepAnalyze(Text_t * name) : fFileName(name) {
   fRunLoader = AliRunLoader::Open(fFileName);
   if (fRunLoader == 0x0)
    {
-     Fatal("AliPHOSIhepAnalyze","Can not load event from file %s",name);
+     AliFatal(Form("Can not load event from file %s",name));
    }
  }
 
@@ -106,33 +107,33 @@ void AliPHOSIhepAnalyze::AnalyzeCPV1(Int_t Nevents)
   AliPHOSLoader* please = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( please == 0 )
    {
-     Error("AnalyzeCPV1","Could not obtain the Loader object !");
+     AliError(Form("Could not obtain the Loader object !"));
      return ;
    }
 
   const AliPHOSGeometry *  fGeom  = please->PHOSGeometry();
 
-  Info("AnalyzeCPV1", "Start CPV Analysis-1. Resolutions, cluster multiplicity and lengths") ;
+  AliInfo(Form("Start CPV Analysis-1. Resolutions, cluster multiplicity and lengths")) ;
   for ( Int_t ievent=0; ievent<Nevents; ievent++) {  
     
     Int_t nTotalGen = 0;
     Int_t nChargedGen = 0;
 
     Int_t ntracks = gAlice->GetEvent(ievent);
-    Info("AnalyzeCPV1", ">>>>>>>Event %d .<<<<<<<", ievent) ;
+    AliInfo(Form(">>>>>>>Event %d .<<<<<<<", ievent)) ;
     
   /******************************************************************/
       TTree* treeH = please->TreeH();
       if (treeH == 0x0)
        {
-         Error("AnalyzeCPV1","Can not get TreeH");
+        AliError(Form("Can not get TreeH"));
          return;
        }
 /******************************************************************/     
 
     // Get branch of CPV impacts
     if (! (branchCPVimpacts =treeH->GetBranch("PHOSCpvImpacts")) ) {
-      Info("AnalyzeCPV1", "Couldn't find branch PHOSCpvImpacts. Exit.") ;
+      AliWarning(Form("Couldn't find branch PHOSCpvImpacts. Exit.")) ;
       return;
     }
  
@@ -239,10 +240,10 @@ void AliPHOSIhepAnalyze::AnalyzeCPV1(Int_t Nevents)
 	  gImpY = ygen;
 	}
       }
-      Info("AnalyzeCPV1", "Impact global (X,Z,Y) = %f %f %f", gImpX, gImpZ, gImpY);
-      Info("AnalyzeCPV1", "Impact local (X,Z) = %f %f", locImpX, locImpZ);
-      Info("AnalyzeCPV1", "Reconstructed (X,Z) = %f %f", xrec, zrec);
-      Info("AnalyzeCPV1", "dxmin %f dzmin %f", dxmin, dzmin);
+      AliInfo(Form("Impact global (X,Z,Y) = %f %f %f", gImpX, gImpZ, gImpY));
+      AliInfo(Form("Impact local (X,Z) = %f %f", locImpX, locImpZ));
+      AliInfo(Form("Reconstructed (X,Z) = %f %f", xrec, zrec));
+      AliInfo(Form("dxmin %f dzmin %f", dxmin, dzmin));
       hDx  ->Fill(dxmin);
       hDz  ->Fill(dzmin);
 //        hDr  ->Fill(TMath::Sqrt(r2min));
@@ -252,8 +253,8 @@ void AliPHOSIhepAnalyze::AnalyzeCPV1(Int_t Nevents)
     }
     delete [] hitsPerModule;
 
-    Info("AnalyzeCPV1", "++++ Event %d : total %d impacts, %d charged impacts and %d  rec. points.", 
-          ievent, nTotalGen, nChargedGen, please->CpvRecPoints()->GetEntries()) ;
+    AliInfo(Form("++++ Event %d : total %d impacts, %d charged impacts and %d  rec. points.", 
+          ievent, nTotalGen, nChargedGen, please->CpvRecPoints()->GetEntries())) ;
   }
   // Save histograms
 
@@ -340,32 +341,32 @@ void AliPHOSIhepAnalyze::AnalyzeEMC1(Int_t Nevents)
   AliPHOSLoader* please = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( please == 0 )
    {
-     Error("AnalyzeEMC1","Could not obtain the Loader object !");
+     AliError(Form("Could not obtain the Loader object !"));
      return ;
    }
 
   const AliPHOSGeometry *  fGeom  = please->PHOSGeometry();
 
-  Info("AnalyzeCPV1", "Start EMC Analysis-1. Resolutions, cluster multiplicity and lengths");
+  AliInfo(Form("Start EMC Analysis-1. Resolutions, cluster multiplicity and lengths"));
   for ( Int_t ievent=0; ievent<Nevents; ievent++) {  
     
     Int_t nTotalGen = 0;
 
     Int_t ntracks = gAlice->GetEvent(ievent);
 
-    Info("AnalyzeCPV1", " >>>>>>>Event %d .<<<<<<<", ievent) ;
+    AliInfo(Form(" >>>>>>>Event %d .<<<<<<<", ievent)) ;
 
     TTree* treeH = please->TreeH();
     if (treeH == 0x0)
      {
-       Error("AnalyzeEMC1","Can not get TreeH");
+      AliError(Form("Can not get TreeH"));
        return;
      }
 
     
     // Get branch of EMC impacts
     if (! (branchEMCimpacts =treeH->GetBranch("PHOSEmcImpacts")) ) {
-      Info("AnalyzeCPV1", " Couldn't find branch PHOSEmcImpacts. Exit.");
+      AliWarning(Form(" Couldn't find branch PHOSEmcImpacts. Exit."));
       return;
     }
  
@@ -466,10 +467,10 @@ void AliPHOSIhepAnalyze::AnalyzeEMC1(Int_t Nevents)
 	  gImpY = ygen;
 	}
       }
-      Info("AnalyzeCPV1", " Impact global (X,Z,Y) = %f %f %f", gImpX, gImpZ, gImpY);
-      Info("AnalyzeCPV1", " Impact local (X,Z) = %f %f", locImpX, locImpZ);
-      Info("AnalyzeCPV1", " Reconstructed (X,Z) = %f %f", xrec, zrec);
-      Info("AnalyzeCPV1", " dxmin %f dzmin %f", dxmin, dzmin) ;
+      AliInfo(Form(" Impact global (X,Z,Y) = %f %f %f", gImpX, gImpZ, gImpY));
+      AliInfo(Form(" Impact local (X,Z) = %f %f", locImpX, locImpZ));
+      AliInfo(Form(" Reconstructed (X,Z) = %f %f", xrec, zrec));
+      AliInfo(Form(" dxmin %f dzmin %f", dxmin, dzmin)) ;
       hDx  ->Fill(dxmin);
       hDz  ->Fill(dzmin);
 //        hDr  ->Fill(TMath::Sqrt(r2min));
@@ -479,8 +480,8 @@ void AliPHOSIhepAnalyze::AnalyzeEMC1(Int_t Nevents)
     }
     delete [] hitsPerModule;
 
-    Info("AnalyzeCPV1", "++++ Event %d : total  %d impacts,  %d Emc rec. points.", 
-	 ievent, nTotalGen, please->EmcRecPoints()->GetEntriesFast()) ; 
+    AliInfo(Form("++++ Event %d : total  %d impacts,  %d Emc rec. points.", 
+	 ievent, nTotalGen, please->EmcRecPoints()->GetEntriesFast())) ; 
 
   }
   // Save histograms
@@ -559,7 +560,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
   AliPHOSLoader* please = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( please == 0 )
    {
-     Error("AnalyzeCPV2","Could not obtain the Loader object !");
+     AliError(Form("Could not obtain the Loader object !"));
      return ;
    }
   const AliPHOSGeometry *  fGeom  = please->PHOSGeometry();
@@ -578,7 +579,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
       TTree* treeH = please->TreeH();
       if (treeH == 0x0)
        {
-        Error("AnalyzeCPV2","Can not get TreeH");
+	 AliError(Form("Can not get TreeH"));
         return;
        }
 
@@ -596,7 +597,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
           
       for (Int_t itrack=0; itrack<ntracks; itrack++) {
 	branchCPVimpacts ->SetAddress(&fCpvImpacts);
-	Info("AnalyzeCPV1", " branchCPVimpacts ->SetAddress(&fCpvImpacts) OK.");
+	AliInfo(Form(" branchCPVimpacts ->SetAddress(&fCpvImpacts) OK."));
 	branchCPVimpacts ->GetEntry(itrack,0);
 
 	for (Int_t iModule=0; iModule < nOfModules; iModule++) {
@@ -629,7 +630,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
   		Float_t dz = genHit1->Z() - genHit2->Z();
 		Float_t dr = TMath::Sqrt(dx*dx + dz*dz);
 		hDrijCPVg->Fill(dr);
-//      		Info("AnalyzeCPV1", "(dx dz dr): %f %f", dx, dz);
+//      		AliInfo(Form("(dx dz dr): %f %f", dx, dz));
 	      }
 	  }
       }
@@ -668,8 +669,8 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
 	    }	
 	}
       
-      Info("AnalyzeCPV1", " Event %d . Total of %d hits, %d rec.points.", 
-	   nev, nGenCPV, nRecCPV) ; 
+      AliInfo(Form(" Event %d . Total of %d hits, %d rec.points.", 
+	   nev, nGenCPV, nRecCPV)) ; 
     
       delete [] hitsPerModule;
 
@@ -702,7 +703,7 @@ void AliPHOSIhepAnalyze::CpvSingle(Int_t nevents)
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( gime == 0 )
    {
-     Error("CpvSingle","Could not obtain the Loader object !");
+     AliError(Form("Could not obtain the Loader object !"));
      return ;
    }
   
@@ -725,8 +726,8 @@ void AliPHOSIhepAnalyze::CpvSingle(Int_t nevents)
 	hNrpX->Fill(rpMultX);
 	hNrpZ->Fill(rpMultZ);
 	hChi2->Fill(((AliPHOSEvalRecPoint*)pt)->Chi2Dof());
-	Info("AnalyzeCPV1", "+++++ Event %d . (Mult,MultX,MultZ) = %d %d %d +++++", 
-	     ievent, rpMult, rpMultX, rpMultZ) ;
+	AliInfo(Form("+++++ Event %d . (Mult,MultX,MultZ) = %d %d %d +++++", 
+	     ievent, rpMult, rpMultX, rpMultZ)) ;
 
       }
 
@@ -788,7 +789,7 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
   AliPHOSLoader* please = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( please == 0 )
    {
-     Error("HitsCPV","Could not obtain the Loader object !");
+     AliError(Form("Could not obtain the Loader object !"));
      return ;
    }
   const AliPHOSGeometry *  fGeom  = please->PHOSGeometry();
@@ -805,7 +806,7 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
    TTree* treeH = please->TreeH();
    if (treeH == 0x0)
     {
-      Error("CPVSingle","Can not get TreeH");
+      AliError(Form("Can not get TreeH"));
       return;
     }
 
@@ -823,7 +824,7 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
           
   for (Int_t itrack=0; itrack<ntracks; itrack++) {
     branchCPVimpacts ->SetAddress(&fCpvImpacts);
-    Info("AnalyzeCPV1", " branchCPVimpacts ->SetAddress(&fCpvImpacts) OK.");
+    AliInfo(Form(" branchCPVimpacts ->SetAddress(&fCpvImpacts) OK."));
     branchCPVimpacts ->GetEntry(itrack,0);
 
     for (Int_t iModule=0; iModule < nOfModules; iModule++) {
@@ -853,7 +854,7 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
 
 //    Int_t ntracks = gAlice->GetEvent(ievent);
 //    Int_t nOfModules = fGeom->GetNModules();
-//    Info("AnalyzeCPV1", " Tracks: "<<ntracks<<"  Modules: "<<nOfModules);
+//    AliInfo(Form(" Tracks: "<<ntracks<<"  Modules: "<<nOfModules));
 
 //    if (! (branchCPVimpacts =gAlice->TreeH()->GetBranch("PHOSCpvImpacts")) )  return;
 
@@ -861,27 +862,27 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
 //      branchCPVimpacts ->SetAddress(&fCpvImpacts);
 //      Info("AnalyzeCPV1", " branchCPVimpacts ->SetAddress(&fCpvImpacts) OK.");
 //      branchCPVimpacts ->GetEntry(itrack,0);
-//      Info("AnalyzeCPV1", " branchCPVimpacts ->GetEntry(itrack,0) OK.");
+//      Info(Form(" branchCPVimpacts ->GetEntry(itrack,0) OK."));
     
 //      for (Int_t iModule=0; iModule < nOfModules; iModule++) {
 //        impacts = (TClonesArray *)fCpvImpacts->At(iModule);
-//        Info("AnalyzeCPV1", " fCpvImpacts->At(iModule) OK.");
+//        Info(Form(" fCpvImpacts->At(iModule) OK."));
 //        // Do loop over impacts in the module
 //        for (Int_t iImpact=0; iImpact<impacts->GetEntries(); iImpact++) {
 //  	impact=(AliPHOSImpact*)impacts->At(iImpact);
 //  	impact->Print();
 //  	if(IsCharged(impact->GetPid()))
 //  	  {
-//  	    Info("AnalyzeCPV1", " Add charged hit..";
+//  	    Info(Form(" Add charged hit.."));
 //  	    new(hits[hits.GetEntriesFast()]) AliPHOSImpact(*impact);
-//  	    Info("AnalyzeCPV1", "done.");
+//  	    Info(Form("done."));
 //  	  }
 //        }
 //      }
 //      fCpvImpacts->Clear();
 //    }
 
-//    Info("AnalyzeCPV1", " PHOS event "<<ievent<<": "<<hits.GetEntries()<<" charged CPV hits.");
+//    Info(Form(" PHOS event "<<ievent<<": "<<hits.GetEntries()<<" charged CPV hits."));
 
 }
 
@@ -904,13 +905,13 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
 //  	}
 //      }
 
-//    Info("AnalyzeCPV1", " PHOS module "<<iModule<<": "<<hits->GetEntries()<<" charged CPV hits.");
+//    Info(Form(" PHOS module "<<iModule<<": "<<hits->GetEntries()<<" charged CPV hits."));
 //  }
 
 Bool_t AliPHOSIhepAnalyze::IsCharged(Int_t pdgCode)
 {
   // For HIJING
-  Info("AnalyzeCPV1", "pdgCode %d", pdgCode);
+  AliInfo(Form("pdgCode %d", pdgCode));
   if(pdgCode==211 || pdgCode==-211 || pdgCode==321 || pdgCode==-321 || pdgCode==11 || pdgCode==-11 || pdgCode==2212 || pdgCode==-2212) return kTRUE;
   else
     return kFALSE;

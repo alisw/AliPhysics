@@ -30,6 +30,7 @@
 #include "TFolder.h"
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliConfig.h"
 #include "AliPHOSDigit.h" 
 #include "AliPHOSClusterizer.h"
@@ -279,7 +280,7 @@ void AliPHOSEvalRecPoint::InitTwoGam(Float_t* gamma1, Float_t* gamma2)
   Float_t yy = lpos.X();
   Float_t e = GetEnergy();
 
-  Info("InitTwoGam", "(x,z,e)[old] = (%f, %f, %f)", yy, xx, e) ;
+  AliInfo(Form("(x,z,e)[old] = (%f, %f, %f)", yy, xx, e)) ;
 
 //    xx = XY(xx/e);
 //    yy = XY(yy/e);
@@ -455,14 +456,12 @@ void AliPHOSEvalRecPoint::TwoGam(Float_t* gamma1, Float_t* gamma2)
 	  
 	  Float_t dx1 =  x1c - ix;
 	  Float_t dy1 =  y1c - iy;
-//  	  Info("TwoGam", "Mult %d dx1 %f dy1 %f", nDigits, dx1, dy1) ;
-//  	  AG(e1c,dx1,dy1,a1,gx1,gy1);
+
 	  GetReconstructionManager()->AG(e1c,dx1,dy1,a1,gx1,gy1);
 
 	  Float_t dx2 =  x2c - ix;
 	  Float_t dy2 =  y2c - iy;
-//  	  Info("TwoGam", "      dx2 %f dy2 %f", dx2, dy2) ;
-//  	  AG(e2c,dx2,dy2,a2,gx2,gy2);
+
 	  GetReconstructionManager()->AG(e2c,dx2,dy2,a2,gx2,gy2);
       
 	  Float_t a = a1+a2;
@@ -520,8 +519,8 @@ void AliPHOSEvalRecPoint::TwoGam(Float_t* gamma1, Float_t* gamma2)
     loop20: ;
       Float_t step = st*gr;
 
-      Info("TwoGam", "Iteration %d dof %d chisq/dof %f chstop/dof %f step %d stpmin %d",
-	   iter, dof, ch/dof, chstop/dof, step, stpmin) ;
+      AliInfo(Form("Iteration %d dof %d chisq/dof %f chstop/dof %f step %d stpmin %d",
+	   iter, dof, ch/dof, chstop/dof, step, stpmin)) ;
 
       
       if(step<stpmin) 
@@ -569,9 +568,9 @@ void AliPHOSEvalRecPoint::TwoGam(Float_t* gamma1, Float_t* gamma2)
   TString message ; 
   message  = "     (x,z,e)[1 fit] = (%f, %f, %f)\n" ;  
   message  = "     (x,z,e)[2 fit] = (%f, %f, %f)\n" ;  
-  Info("TwoGam", message.Data(), 
+  AliInfo(Form(message.Data(), 
        x1New, z1New, e1New, 
-       x2New, z2New, e2New) ;
+       x2New, z2New, e2New)) ;
 
   fChi2Dof = chisq;
 
@@ -659,7 +658,8 @@ void AliPHOSEvalRecPoint::UnfoldTwoMergedPoints(Float_t* gamma1, Float_t* gamma2
 	  eDigit = eDigit*ratio;
 	  newRP->AddDigit(*digit,eDigit);
 	}
-      Info("UnfoldTwoMergedPoints", "======= Split: daughter rec point %d =================", iMax) ;
+      AliInfo(Form("======= Split: daughter rec point %d =================", 
+		   iMax)) ;
       newRP->Print();
 
     }
@@ -737,7 +737,8 @@ void AliPHOSEvalRecPoint::EvaluatePosition()
 	  Float_t a;
 	  GetReconstructionManager()->AG(e,dx,dy,a,gx,gy);
 	  Float_t dd;
-	  Info("EvaluatePosition", "  (ix iy  xc yc  dx dy)   %f %f %f %f %f %f", ix, iy, xc, yc, dx, dy) ;
+	  AliInfo(Form("  (ix iy  xc yc  dx dy)   %f %f %f %f %f %f", 
+		       ix, iy, xc, yc, dx, dy)) ;
 	  Float_t chi2dg = GetReconstructionManager()->OneGamChi2(a,eDigit,e,dd);
 
   	  // Exclude digit with too large chisquare.
@@ -752,7 +753,7 @@ void AliPHOSEvalRecPoint::EvaluatePosition()
       Float_t grc = TMath::Sqrt(grxc*grxc + gryc*gryc);
       if(grc<1.e-10) grc=1.e-10;
       Float_t sc = 1. + chisqc/chisq;
-       Info("EvaluatePosition", " chisq: %f", chisq) ;
+       AliInfo(Form(" chisq: %f", chisq)) ;
       st = st/sc;
       if(chisqc>chisq)
 	goto loop20;
@@ -771,8 +772,8 @@ void AliPHOSEvalRecPoint::EvaluatePosition()
     loop20: ;
       Float_t step = st*gr;
 
-      Info("EvaluatePosition", " Iteration %d dof %d chisq/dof %f chstop/dof %f step %d stpMin %d",
-	   iter, dof, chisq/dof, chisq/dof, chstop/dof, step, stpMin) ;
+      AliInfo(Form(" Iteration %d dof %d chisq/dof %f chstop/dof %f step %d stpMin %d",
+	   iter, dof, chisq/dof, chisq/dof, chstop/dof, step, stpMin)) ;
 	
 
       if(step<stpMin)
@@ -821,7 +822,7 @@ Bool_t AliPHOSEvalRecPoint::KillWeakPoint()
   Float_t thr0 = GetReconstructionManager()->KillGamMinEnergy();
   
   if(GetEnergy()<thr0) {
-    Info("KillWeakPoint", "+++++++ Killing this rec point ++++++++++") ;
+    AliInfo(Form("+++++++ Killing this rec point ++++++++++")) ;
     RemoveFromWorkingPool(this);
     return kTRUE;
   }
@@ -865,9 +866,9 @@ void AliPHOSEvalRecPoint::MergeClosePoint()
 	    {
 	      if(TooClose(rp))
 		{
-		  Info("MergeClosePoint", "+++++++ Merging point 1: ++++++") ;
+		  AliInfo(Form("+++++++ Merging point 1: ++++++")) ;
 		  this->Print();
-		  Info("MergeClosePoint", "+++++++ and point 2: ++++++++++") ;
+		  AliInfo(Form("+++++++ and point 2: ++++++++++")) ;
 		  ((AliPHOSEvalRecPoint*)rp)->Print();
 
 		  //merge two rec. points
@@ -896,7 +897,7 @@ void AliPHOSEvalRecPoint::MergeClosePoint()
 		  RemoveFromWorkingPool(rp);
 		  delete rp;
 		  
-		  Info("MergeClosePoint", "++++++ Resulting point: ++++++++") ;
+		  AliInfo(Form("++++++ Resulting point: ++++++++")) ;
 		  this->Print();
 
 		  break;
@@ -924,7 +925,7 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
 
   AliPHOSClusterizer* clusterizer = GetClusterizer();
   if(!clusterizer) {
-    Fatal("UnfoldLocalMaxima", "Cannot get clusterizer") ;
+    AliFatal(Form("Cannot get clusterizer")) ;
   }
 
   if(this->IsEmc()) {
@@ -1007,14 +1008,15 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
 	      GetReconstructionManager()->AG(eMax,dz,dx,singleShowerGain,gxMax,gyMax);
   	      Float_t totalGain = eFit[iDigit];
     	      Float_t ratio = singleShowerGain/totalGain; 
-	      Info("UnfoldLocalMaxima", " ratio -> %f", ratio) ;
+	      AliInfo(Form(" ratio -> %f", ratio)) ;
   	      eDigit = eDigit*ratio;
 	      newRP->AddDigit(*digit,eDigit);
   	    }
 	}
 
       newRP->EvalLocalPosition(logWeight,digits);
-      Info("UnfoldLocalMaxima", "======= Unfold: daughter rec point %d =================", iMax) ;
+      AliInfo(Form("======= Unfold: daughter rec point %d =================", 
+		   iMax)) ;
       newRP->Print();
     }
 
@@ -1037,7 +1039,7 @@ void AliPHOSEvalRecPoint::PrintPoint()
   TString message ; 
   message  = "       Chi2/dof = %f" ;
   message += "       Local (x,z) = (%f, %f) in module %d" ; 
-  Info("Print", message.Data(), Chi2Dof(), lpos.X(), lpos.Z(), GetPHOSMod()) ;
+  AliInfo(Form(message.Data(), Chi2Dof(), lpos.X(), lpos.Z(), GetPHOSMod())) ;
 
 }
 
@@ -1048,7 +1050,7 @@ AliPHOSRecManager* AliPHOSEvalRecPoint::GetReconstructionManager() const
   TFolder* wPoolF = (TFolder*)aliceF->FindObject("WhiteBoard/RecPoints/PHOS/SmP");
   AliPHOSRecManager* recMng = (AliPHOSRecManager*)wPoolF->FindObject("AliPHOSRecManager");
   if(!recMng) { 
-    Fatal("GetReconstructionManager", "Couldn't find Reconstruction Manager") ;  
+    AliFatal(Form("Couldn't find Reconstruction Manager")) ;  
   }
 
   return recMng;
@@ -1077,7 +1079,7 @@ const TObject* AliPHOSEvalRecPoint::GetWorkingPool()
   TFolder* wPoolF = (TFolder*)aliceF->FindObject("WhiteBoard/RecPoints/PHOS/SmP");
   TObject* wPool = wPoolF->FindObject("SmartPoints");
   if(!wPool) { 
-    Fatal("GetWorkingPool", "Couldn't find Working Pool") ;  
+    AliFatal(Form("Couldn't find Working Pool")) ;  
   }
 
   return wPool;

@@ -47,7 +47,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliLog.h"
 #include "AliPHOSLoader.h"
 #include "AliPHOS.h"
 #include "AliPHOSHit.h"
@@ -116,7 +116,7 @@ Int_t AliPHOSLoader::SetEvent()
  Int_t retval = AliLoader::SetEvent();
   if (retval)
    {
-     Error("SetEvent","AliLoader::SetEvent returned error");
+     AliError("returned error");
      return retval;
    }
 
@@ -144,7 +144,7 @@ Int_t AliPHOSLoader::GetEvent()
   retval = AliLoader::GetEvent();
   if (retval)
    {
-     Error("GetEvent","AliLoader::GetEvent returned error");
+     AliError("returned error");
      return retval;
    }
   
@@ -195,7 +195,7 @@ Int_t AliPHOSLoader::LoadHits(Option_t* opt)
   
   if (res)
    {//oops, error
-     Error("LoadHits","AliLoader::LoadHits returned error");
+     AliError("returned error");
      return res;
    }
 
@@ -214,7 +214,7 @@ Int_t AliPHOSLoader::LoadSDigits(Option_t* opt)
   res = AliLoader::LoadSDigits(opt);
   if (res)
    {//oops, error
-     Error("PostSDigits","AliLoader::LoadSDigits returned error");
+     AliError("returned error");
      return res;
    }
   return ReadSDigits();
@@ -229,7 +229,7 @@ Int_t AliPHOSLoader::LoadDigits(Option_t* opt)
   res = AliLoader::LoadDigits(opt);
   if (res)
    {//oops, error
-     Error("LoadDigits","AliLoader::LoadDigits returned error");
+     AliError("returned error");
      return res;
    }
   return ReadDigits();
@@ -243,14 +243,14 @@ Int_t AliPHOSLoader::LoadRecPoints(Option_t* opt)
   res = AliLoader::LoadRecPoints(opt);
   if (res)
    {//oops, error
-     Error("LoadRecPoints","AliLoader::LoadRecPoints returned error");
+     AliError("returned error");
      return res;
    }
 
   TFolder * phosFolder = GetDetectorDataFolder();
   if ( phosFolder  == 0x0 ) 
    {
-     Error("PostDigits","Can not get detector data folder");
+     AliError("Can not get detector data folder");
      return 1;
    }
   return ReadRecPoints();
@@ -260,12 +260,12 @@ Int_t AliPHOSLoader::LoadRecPoints(Option_t* opt)
 Int_t  AliPHOSLoader::LoadTracks(Option_t* opt)
 {
  //Loads Tracks: Open File, Reads Tree and posts, Read Data and Posts
- if (GetDebug()) Info("LoadTracks","opt = %s",opt);
+  AliDebug(1, Form("opt = %s",opt));
  Int_t res;
  res = AliLoader::LoadTracks(opt);
  if (res)
    {//oops, error
-      Error("LoadTracks","AliLoader::LoadTracks returned error");
+      AliError("returned error");
       return res;
    }  
  return ReadTracks();
@@ -280,7 +280,7 @@ Int_t AliPHOSLoader::LoadRecParticles(Option_t* opt)
   res = AliLoader::LoadRecParticles(opt);
   if (res)
    {//oops, error
-     Error("LoadRecParticles","AliLoader::LoadRecParticles returned error");
+     AliError("returned error");
      return res;
    }
   return ReadRecParticles();
@@ -294,7 +294,7 @@ Int_t AliPHOSLoader::PostHits()
   Int_t reval = AliLoader::PostHits();
   if (reval)
    {
-     Error("PostHits","AliLoader::  returned error");
+     AliError("returned error");
      return reval;
    }
   return ReadHits();
@@ -307,7 +307,7 @@ Int_t AliPHOSLoader::PostSDigits()
   Int_t reval = AliLoader::PostSDigits();
   if (reval)
    {
-     Error("PostSDigits","AliLoader::PostSDigits  returned error");
+     AliError("returned error");
      return reval;
    }
   return ReadSDigits();
@@ -320,7 +320,7 @@ Int_t AliPHOSLoader::PostDigits()
   Int_t reval = AliLoader::PostDigits();
   if (reval)
    {
-     Error("PostDigits","AliLoader::PostDigits  returned error");
+     AliError("returned error");
      return reval;
    }
   return ReadDigits();
@@ -333,7 +333,7 @@ Int_t AliPHOSLoader::PostRecPoints()
   Int_t reval = AliLoader::PostRecPoints();
   if (reval)
    {
-     Error("PostRecPoints","AliLoader::PostRecPoints  returned error");
+     AliError("returned error");
      return reval;
    }
   return ReadRecPoints();
@@ -347,7 +347,7 @@ Int_t AliPHOSLoader::PostRecParticles()
   Int_t reval = AliLoader::PostRecParticles();
   if (reval)
    {
-     Error("PostRecParticles","AliLoader::PostRecParticles  returned error");
+     AliError("returned error");
      return reval;
    }
   return ReadRecParticles();
@@ -360,7 +360,7 @@ Int_t AliPHOSLoader::PostTracks()
   Int_t reval = AliLoader::PostTracks();
   if (reval)
    {
-     Error("PostTracks","AliLoader::PostTracks  returned error");
+     AliError("returned error");
      return reval;
    }
   return ReadTracks();
@@ -390,18 +390,18 @@ Int_t AliPHOSLoader::ReadHits()
   
   if(treeh == 0)
    {
-    Error("ReadHits"," Cannot read TreeH from folder");
+    AliError("Cannot read TreeH from folder");
     return 1;
   }
   
   TBranch * hitsbranch = treeh->GetBranch(fDetectorName);
   if (hitsbranch == 0) 
    {
-    Error("ReadHits"," Cannot find branch PHOS"); 
+    AliError("Cannot find branch PHOS"); 
     return 1;
   }
-  
-  if (GetDebug()) Info("ReadHits","Reading Hits");
+
+  AliDebug(1, "Reading Hits");
   
   if (hitsbranch->GetEntries() > 1)
    {
@@ -451,14 +451,14 @@ Int_t AliPHOSLoader::ReadSDigits()
   if(treeS==0)
    {
      //May happen if file is truncated or new in LoadSDigits
-     //Error("ReadSDigits","There is no SDigit Tree");
+     //AliError("There is no SDigit Tree");
      return 0;
    }
   
   TBranch * branch = treeS->GetBranch(fDetectorName);
   if (branch == 0) 
    {//easy, maybe just a new tree
-    //Error("ReadSDigits"," Cannot find branch PHOS"); 
+    //AliError("Cannot find branch PHOS"); 
     return 0;
   }
     
@@ -487,14 +487,14 @@ Int_t AliPHOSLoader::ReadDigits()
   if(treeD==0)
    {
      //May happen if file is truncated or new in LoadSDigits
-     //Error("ReadDigits","There is no Digit Tree");
+     //AliError("There is no Digit Tree");
      return 0;
    }
 
   TBranch * branch = treeD->GetBranch(fDetectorName);
   if (branch == 0) 
    {//easy, maybe just a new tree
-    //Error("ReadDigits"," Cannot find branch ",fDetectorName.Data()); 
+    //AliError("Cannot find branch ",fDetectorName.Data()); 
     return 0;
    }
   
@@ -513,7 +513,7 @@ void AliPHOSLoader::Track(Int_t itrack)
    {
      if (LoadHits())
       {
-        Error("Track","Can not load hits.");
+        AliError("Can not load hits.");
         return;
       } 
    }
@@ -581,7 +581,8 @@ Int_t AliPHOSLoader::ReadRecPoints()
 
   if (emcbranch == 0x0)
    {
-     Error("ReadRecPoints","Can not get branch with EMC Rec. Points named %s",fgkEmcRecPointsBranchName.Data());
+     AliError(Form("Can not get branch with EMC Rec. Points named %s",
+		   fgkEmcRecPointsBranchName.Data()));
      retval = 1;
    }
   else
@@ -592,7 +593,8 @@ Int_t AliPHOSLoader::ReadRecPoints()
   TBranch * cpvbranch = treeR->GetBranch(fgkCpvRecPointsBranchName);
   if (cpvbranch == 0x0)
    {
-     Error("ReadRecPoints","Can not get branch with CPV Rec. Points named %s",fgkCpvRecPointsBranchName.Data());
+     AliError(Form("Can not get branch with CPV Rec. Points named %s",
+		   fgkCpvRecPointsBranchName.Data()));
      retval = 2;
    }
   else
@@ -631,14 +633,15 @@ Int_t AliPHOSLoader::ReadTracks()
    {
      //May happen if file is truncated or new in LoadSDigits, or the file is in update mode, 
      //but tracking was not performed yet for a current event
-     //Error("ReadTracks","There is no Tree with Tracks");
+     //AliError("There is no Tree with Tracks");
      return 0;
    }
   
   TBranch * branch = treeT->GetBranch(fgkTrackSegmentsBranchName);
   if (branch == 0) 
    {//easy, maybe just a new tree
-    Error("ReadTracks"," Cannot find branch named %s",fgkTrackSegmentsBranchName.Data());
+    AliError(Form("Cannot find branch named %s",
+		  fgkTrackSegmentsBranchName.Data()));
     return 0;
   }
 
@@ -669,14 +672,15 @@ Int_t AliPHOSLoader::ReadRecParticles()
      //May happen if file is truncated or new in LoadSDigits, 
      //or the file is in update mode, 
      //but tracking was not performed yet for a current event
-     //     Error("ReadRecParticles","There is no Tree with Tracks and Reconstructed Particles");
+     //     AliError("There is no Tree with Tracks and Reconstructed Particles");
      return 0;
    }
   
   TBranch * branch = treeP->GetBranch(fgkRecParticlesBranchName);
   if (branch == 0) 
    {//easy, maybe just a new tree
-    Error("ReadRecParticles"," Cannot find branch %s",fgkRecParticlesBranchName.Data()); 
+    AliError(Form("Cannot find branch %s",
+		  fgkRecParticlesBranchName.Data())); 
     return 0;
   }
 
@@ -704,12 +708,10 @@ AliPHOSLoader* AliPHOSLoader::GetPHOSLoader(const  char* eventfoldername)
 {
   // Return PHOS loader
   AliRunLoader* rn  = AliRunLoader::GetRunLoader(eventfoldername);
-  if (rn == 0x0)
-   {
-     cerr<<"Error: <AliPHOSLoader::GetPHOSLoader>: "
-         << "Can not find Run Loader in folder "<<eventfoldername<<endl;
-     return 0x0;
-   }
+  if (rn == 0x0) {
+    printf("Can not find Run Loader in folder %s", eventfoldername);
+    return 0x0 ; 
+  }
   return dynamic_cast<AliPHOSLoader*>(rn->GetLoader("PHOSLoader"));
 }
 /***************************************************************************************/
@@ -767,11 +769,13 @@ Bool_t AliPHOSLoader::BranchExists(const TString& recName)
     TString branchName(branch->GetName() ) ; 
     TString branchTitle(branch->GetTitle() ) ;  
     if ( branchName.BeginsWith(dataname) && branchTitle.BeginsWith(fBranchTitle) ){  
-      Warning("BranchExists","branch %s  with title  %s ",dataname.Data(),fBranchTitle.Data());
+      AliWarning(Form("branch %s  with title  %s ",
+		      dataname.Data(),fBranchTitle.Data()));
       return kTRUE ;
     }
     if ( branchName.BeginsWith(zername) &&  branchTitle.BeginsWith(titleName) ){
-      Warning("BranchExists","branch AliPHOS... with title  %s ",branch->GetTitle());
+      AliWarning(Form("branch AliPHOS... with title  %s ",
+		      branch->GetTitle()));
       return kTRUE ; 
     }
   }
@@ -860,14 +864,14 @@ void AliPHOSLoader::ReadCalibrationDB(const char * database,const char * filenam
   if(!file)
     file = TFile::Open(filename);
   if(!file){
-    Error ("ReadCalibrationDB", "Cannot open file %s", filename) ;
+    AliError(Form("Cannot open file %s", filename)) ;
     return ;
   }
   if(fcdb)
     fcdb->Delete() ;
   fcdb = dynamic_cast<AliPHOSCalibrationDB *>(file->Get("AliPHOSCalibrationDB")) ;
   if(!fcdb)
-    Error ("ReadCalibrationDB", "No database %s in file %s", database, filename) ;
+    AliError(Form("No database %s in file %s", database, filename)) ;
 }
 //____________________________________________________________________________ 
 
@@ -914,18 +918,18 @@ void AliPHOSLoader::MakeRecPointsArray()
   // Add RecPoints array to the data folder
   if ( EmcRecPoints() == 0x0)
    {
-    if (GetDebug()>9) Info("MakeRecPointsArray","Making array for EMC");
+     AliDebug(9, "Making array for EMC");
     TObjArray* emc = new TObjArray(100) ;
     emc->SetName(fgkEmcRecPointsName) ;
     GetDetectorDataFolder()->Add(emc);
    }
 
   if ( CpvRecPoints() == 0x0)
-   {
-    if (GetDebug()>9) Info("MakeRecPointsArray","Making array for CPV");
-    TObjArray* cpv = new TObjArray(100) ;
-    cpv->SetName(fgkCpvRecPointsName);
-    GetDetectorDataFolder()->Add(cpv);
+   { 
+     AliDebug(9, "Making array for CPV");
+     TObjArray* cpv = new TObjArray(100) ;
+     cpv->SetName(fgkCpvRecPointsName);
+     GetDetectorDataFolder()->Add(cpv);
    }
 }
 

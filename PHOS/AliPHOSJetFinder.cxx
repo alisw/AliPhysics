@@ -29,6 +29,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliPHOSJet.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
@@ -166,7 +167,7 @@ void  AliPHOSJetFinder::FindJetsFromParticles(const TClonesArray * plist,TObjArr
 void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray * jets){
   //Find jets in the case witht detector at the level of digits.
   if(digits->GetEntries()==0){
-    Error("JetsFromDigits","No entries in digits list \n") ;
+    AliError(Form("No entries in digits list \n")) ;
     return ;
   }
 
@@ -288,7 +289,7 @@ void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray
 Double_t AliPHOSJetFinder::Calibrate(const AliPHOSDigit * digit){ 
 //   if(fPedestals || fGains ){  //use calibration data
 //     if(!fPedestals || !fGains ){
-//       Error("Calibrate","Either Pedestals of Gains not set!") ;
+//       AliError(Form("Either Pedestals of Gains not set!")) ;
 //       return 0 ;
 //     }
 //     Float_t en=(digit->GetAmp() - fPedestals->Data(digit->GetId)()))*fGains->Data(digit->GetId()) ;
@@ -301,7 +302,7 @@ Double_t AliPHOSJetFinder::Calibrate(const AliPHOSDigit * digit){
   if(fSimGain==0){ //read simulation parameters
     AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
     if(!gime){
-      Error("Calibrate","Can not read Calibration parameters") ;
+      AliError(Form("Can not read Calibration parameters")) ;
       return 0 ;
     }
     const TTask * task = gime->Digitizer() ;

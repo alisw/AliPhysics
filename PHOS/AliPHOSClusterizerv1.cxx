@@ -53,6 +53,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSGeometry.h" 
 #include "AliPHOSClusterizerv1.h"
@@ -162,9 +163,9 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSClusterizer");
-    Info("Exec", "  took %f seconds for Clusterizing %f seconds per event \n",
+    AliInfo(Form("took %f seconds for Clusterizing %f seconds per event \n",
 	 gBenchmark->GetCpuTime("PHOSClusterizer"), 
-	 gBenchmark->GetCpuTime("PHOSClusterizer")/nEvents ) ; 
+	 gBenchmark->GetCpuTime("PHOSClusterizer")/nEvents )) ; 
   } 
 }
 
@@ -961,7 +962,7 @@ void AliPHOSClusterizerv1::Print()const
   else 
     message = " AliPHOSClusterizerv1 not initialized " ;
   
-  Info("Print", message.Data(),  
+  AliInfo(Form("%s, %s %s %s %s %s %s %s %s %s %s", message.Data(),  
        taskName.Data(), 
        GetTitle(),
        taskName.Data(), 
@@ -971,7 +972,7 @@ void AliPHOSClusterizerv1::Print()const
        fW0, 
        fCpvClusteringThreshold, 
        fCpvLocMaxCut, 
-       fW0CPV ) ; 
+       fW0CPV )) ; 
 }
 
 
@@ -985,9 +986,10 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
   TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
 
-  printf("\nevent %d \n", gAlice->GetEvNumber())  ;
-  printf("       Found %d EMC RecPoints and %d CPV RecPoints \n",
-         emcRecPoints->GetEntriesFast(),cpvRecPoints->GetEntriesFast())  ; 
+  AliInfo(Form("\nevent %d \n    Found %d EMC RecPoints and %d CPV RecPoints", 
+	       gAlice->GetEvNumber(),
+	       emcRecPoints->GetEntriesFast(),
+	       cpvRecPoints->GetEntriesFast() ))  ;
  
   fRecPointsInRun +=  emcRecPoints->GetEntriesFast() ; 
   fRecPointsInRun +=  cpvRecPoints->GetEntriesFast() ; 

@@ -29,7 +29,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliLog.h"
 #include "AliPHOSFastRecParticle.h"
 #include "TPad.h"
 #include "TPaveText.h"
@@ -198,7 +198,8 @@ Bool_t AliPHOSFastRecParticle::IsPi0(TString purity) const
   if      (purity == "low"   ) pi0Like = TestPIDBit(9);
   else if (purity == "medium") pi0Like = TestPIDBit(10);
   else if (purity == "high"  ) pi0Like = TestPIDBit(11);
-  else Error("IsPi0","Wrong purity type: %s",purity.Data());
+  else 
+    AliError(Form("Wrong purity type: %s",purity.Data()));
   if (pi0Like                                      && //  pi0 by PCA
       (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  fast by TOF
       (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0))&& //  neutral by CPV
@@ -219,7 +220,8 @@ Bool_t AliPHOSFastRecParticle::IsElectron(TString purity) const
   if      (purity == "low"   ) photonLike = TestPIDBit(6);
   else if (purity == "medium") photonLike = TestPIDBit(7);
   else if (purity == "high"  ) photonLike = TestPIDBit(8);
-  else Error("IsElectron","Wrong purity type: %s",purity.Data());
+  else 
+    AliError(Form("Wrong purity type: %s",purity.Data()));
   
   if (photonLike                                   && //  photon by PCA
       (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
@@ -241,7 +243,8 @@ Bool_t AliPHOSFastRecParticle::IsEleCon(TString purity) const
   if      (purity == "low"   ) photonLike = TestPIDBit(6);
   else if (purity == "medium") photonLike = TestPIDBit(7);
   else if (purity == "high"  ) photonLike = TestPIDBit(8);
-  else Error("IsElectron","Wrong purity type: %s",purity.Data());
+  else 
+    AliError(Form("Wrong purity type: %s",purity.Data()));
   
   if (photonLike                                   && //  photon by PCA
       (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
@@ -490,7 +493,7 @@ void AliPHOSFastRecParticle::Print()const
 {
   // Print the type, energy and momentum of the reconstructed particle
 
-  Info("Print", "-----------------------------") ;  
+  AliInfo(Form("Print", "-----------------------------")) ;  
   printf("PID bits are %d%d%d %d%d%d %d%d%d %d%d%d",  
 	 TestPIDBit(0),TestPIDBit(1),
 	 TestPIDBit(2),TestPIDBit(3),

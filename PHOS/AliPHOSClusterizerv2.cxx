@@ -27,6 +27,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliPHOSClusterizerv2.h"
 #include "AliPHOSGetter.h"
 #include "TFolder.h"
@@ -88,9 +89,9 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     
     gime->Event(ievent,"D") ;
     
-    Info("Exec", "MakeClusters invoked..") ;
+    AliInfo(Form("MakeClusters invoked..")) ;
     MakeClusters() ;
-    Info("Exec", "MakeClusters done.") ;
+    AliInfo(Form("MakeClusters done.")) ;
 
 
     //SmartRecPoints will communicate with wPool.
@@ -128,8 +129,8 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     wPoolF->Remove(recCpv);
     delete recCpv;
 
-    Info("Exec", "       %d", gime->CpvRecPoints()->GetEntries() ) ;
-    Info("Exec", "       %d cpvRecPoints", cpvRecPoints->GetEntries() ) ;
+    AliInfo(Form("       %d", gime->CpvRecPoints()->GetEntries() )) ;
+    AliInfo(Form("       %d cpvRecPoints", cpvRecPoints->GetEntries() )) ;
 
 
     // Now Emc reconstruction
@@ -167,11 +168,11 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     message += "       %d\n" ;
     message += "       %d emcRecPoints\n" ;
 
-    Info("Exec", message.Data(), 
+    AliInfo(Form("%s", message.Data(), 
 	 nOldCpv, 
 	 gime->CpvRecPoints()->GetEntries(),cpvRecPoints->GetEntries(), 
 	 nOldEmc, 
-	 gime->EmcRecPoints()->GetEntries(), emcRecPoints->GetEntries() ) ; 
+	 gime->EmcRecPoints()->GetEntries(), emcRecPoints->GetEntries() )); 
 
     WriteRecPoints();
 
@@ -180,7 +181,7 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
 
   if(strstr(option,"tim")) {
     gBenchmark->Stop("PHOSClusterizer");
-    Info("Exec","took %f seconds for Clusterizing", gBenchmark->GetCpuTime("PHOSClusterizer") ) ;
+    AliInfo(Form("took %f seconds for Clusterizing", gBenchmark->GetCpuTime("PHOSClusterizer") )) ;
   }
 }
 

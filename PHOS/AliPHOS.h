@@ -19,6 +19,7 @@ class TRandom ;
 
 // --- AliRoot header files ---
 #include "AliDetector.h" 
+#include "AliLog.h"
 #include "AliPHOSGeometry.h" 
 class AliPHOSQAChecker ;
 
@@ -34,7 +35,7 @@ public:
   virtual ~AliPHOS() ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     // do not use this definition but the one below
-    Fatal("AddHit(Int_t, Int_t*, Float_t *)", "do not use") ;
+    AliFatal(Form("do not use")) ;
     
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, 

@@ -31,6 +31,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliPHOSLoader.h"
 #include "AliGenerator.h"
 #include "AliPHOSGeometry.h"
@@ -230,13 +231,13 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t) const
   AliRunLoader* rn = AliRunLoader::GetRunLoader(AliConfig::GetDefaultEventFolderName());
   if (rn == 0x0) 
     {
-      Error("ExecuteEvent","Can not find Run Loader in Default Event Folder");
+      AliError(Form("Cannot find Run Loader in Default Event Folder"));
       return;
     }
   AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(rn->GetLoader("PHOSLoader"));
   if (gime == 0x0) 
     {
-      Error("ExecuteEvent","Can not find PHOS Loader from Run Loader");
+      AliError(Form("Cannot find PHOS Loader from Run Loader"));
       return;
     }
   
@@ -855,17 +856,17 @@ void AliPHOSEmcRecPoint::Print(Option_t *) const
   TString message ; 
   message  = "AliPHOSEmcRecPoint:\n" ;
   message +=  " digits # = " ; 
-  Info("Print", message.Data()) ; 
+  AliInfo(Form(message.Data())) ; 
 
   Int_t iDigit;
   for(iDigit=0; iDigit<fMulDigit; iDigit++)
     printf(" %d ", fDigitsList[iDigit] ) ;  
   
-  Info("Print", " Energies = ") ;
+  printf(" Energies = ") ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
     printf(" %f ", fEnergyList[iDigit] ) ;
   printf("\n") ; 
-   Info("Print", " Primaries  ") ;
+   printf(" Primaries  ") ;
   for(iDigit = 0;iDigit < fMulTrack; iDigit++)
     printf(" %d ", fTracksList[iDigit]) ;
   printf("\n") ; 	
@@ -874,7 +875,7 @@ void AliPHOSEmcRecPoint::Print(Option_t *) const
   message += "       Number of primaries %d" ; 
   message += "       Stored at position %d" ; 
  
-  Info("Print", message.Data(), fMulDigit, fAmp, fMulTrack,GetIndexInList() ) ;  
+  printf(message.Data(), fMulDigit, fAmp, fMulTrack,GetIndexInList() ) ;  
 }
  
   

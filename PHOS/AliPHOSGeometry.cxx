@@ -35,7 +35,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliLog.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSEMCAGeometry.h" 
 #include "AliPHOSRecPoint.h"
@@ -76,7 +76,8 @@ void AliPHOSGeometry::Init(void)
   
   TString test(GetName()) ; 
   if (test != "IHEP" ) {
-    Fatal("Init", "%s is not a known geometry (choose among IHEP)", test.Data() ) ; 
+    AliFatal(Form("%s is not a known geometry (choose among IHEP)", 
+		  test.Data() )) ; 
   }
 
   fgInit     = kTRUE ; 
@@ -143,7 +144,8 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t
   }
   else {
     if ( strcmp(fgGeom->GetName(), name) != 0 ) 
-      ::Error("GetInstance", "Current geometry is %s. You cannot call %s", fgGeom->GetName(), name) ; 
+      ::Error("GetInstance", "Current geometry is %s. You cannot call %s", 
+		      fgGeom->GetName(), name) ; 
     else
       rv = (AliPHOSGeometry *) fgGeom ; 
   } 
@@ -159,7 +161,8 @@ void AliPHOSGeometry::SetPHOSAngles()
   Float_t pphi =  2 * TMath::ATan( GetOuterBoxSize(0)  / ( 2.0 * GetIPtoUpperCPVsurface() ) ) ;
   pphi *= kRADDEG ;
   if (pphi > fAngle){ 
-    Error("SetPHOSAngles", "PHOS modules overlap!\n pphi = %f fAngle = %f", pphi, fAngle);
+    AliError(Form("PHOS modules overlap!\n pphi = %f fAngle = %f", 
+		  pphi, fAngle));
 
   }
   pphi = fAngle;
@@ -217,7 +220,7 @@ void AliPHOSGeometry::EmcModuleCoverage(Int_t mod, Double_t & tm, Double_t & tM,
   else if ( opt == Degre() )
     conv = 180. / TMath::Pi() ; 
   else {
-    Warning("EmcModuleCoverage", "%s unknown option; result in radian", opt) ; 
+    AliWarning(Form("%s unknown option; result in radian", opt)) ; 
     conv = 1. ;
       }
 
@@ -252,7 +255,7 @@ void AliPHOSGeometry::EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t
   else if ( opt == Degre() )
     conv = 180. / TMath::Pi() ; 
   else {
-    Warning("EmcXtalCoverage", "%s unknown option; result in radian", opt) ;  
+    AliWarning(Form("%s unknown option; result in radian", opt)) ;  
     conv = 1. ;
       }
 
@@ -499,7 +502,8 @@ TVector3 AliPHOSGeometry::GetModuleCenter(char *det, Int_t module) const
   Float_t rDet = 0.;
   if      (strcmp(det,"CPV") == 0) rDet  = GetIPtoCPVDistance   ();
   else if (strcmp(det,"EMC") == 0) rDet  = GetIPtoCrystalSurface();
-  else Fatal("GetModuleCenter","Wrong detector name %s",det);
+  else 
+    AliFatal(Form("Wrong detector name %s",det));
 
   Float_t angle = GetPHOSAngle(module); // (40,20,0,-20,-40) degrees
   angle *= TMath::Pi()/180;

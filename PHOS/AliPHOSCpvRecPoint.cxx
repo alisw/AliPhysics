@@ -30,6 +30,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliPHOSGeometry.h" 
 #include "AliPHOSDigit.h"
 #include "AliPHOSCpvRecPoint.h"
@@ -282,7 +283,7 @@ void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight,TClonesArray * digi
     x = -1e6 ;
     z = -1e6 ;
     if (fMulDigit != 0) 
-      Warning(":EvalLocalPosition", "Too low log weight factor to evaluate cluster's center" ) ;
+      AliWarning(Form("Too low log weight factor to evaluate cluster's center" )) ;
   }
   fLocPos.SetX(x)  ;
   fLocPos.SetY(0.) ;
@@ -347,21 +348,21 @@ void AliPHOSCpvRecPoint::Print()
   TString message ; 
   message  =  "AliPHOSCpvRecPoint: " ;
   message +=  "Digits #   " ;
-  Info("Print", message.Data()) ; 
+  AliInfo(Form(message.Data())) ; 
   
   Int_t iDigit;
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
-    Info("Print", " %d ", fDigitsList[iDigit]) ; 
+    printf(" %d \n", fDigitsList[iDigit]) ; 
 
-  Info("Print", "Energies: ")  ;
+  printf("Energies: \n")  ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
-    Info("Print", " %f ", fEnergyList[iDigit]) ; 
+    printf(" %f ", fEnergyList[iDigit]) ; 
   
   message  = "       Multiplicity    = %d\n" ;
   message += "       Cluster Energy  = %f\n" ;
   message += "       Stored at position %d\n" ; 
  
-  Info("Print", message.Data(), fMulDigit, fAmp, GetIndexInList() ) ; 
+  printf(message.Data(), fMulDigit, fAmp, GetIndexInList() ) ; 
 
 }

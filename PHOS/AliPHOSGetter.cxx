@@ -44,11 +44,10 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TParticle.h>
-#include <TH1D.h>
 #include <TF1.h>
 #include <TGraph.h>
 //#include <TCanvas.h>
-#include <TFrame.h>
+//#include <TFrame.h>
 
 // --- Standard library ---
 

@@ -96,7 +96,7 @@
 
 
 // --- AliRoot header files ---
-
+#include "AliLog.h"
 #include "AliGenerator.h"
 #include "AliPHOS.h"
 #include "AliPHOSPIDv1.h"
@@ -374,9 +374,9 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
       PrintRecParticles(option);
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSPID");
-    Info("Exec", "took %f seconds for PID %f seconds per event", 
+    AliInfo(Form("took %f seconds for PID %f seconds per event", 
 	 gBenchmark->GetCpuTime("PHOSPID"),  
-	 gBenchmark->GetCpuTime("PHOSPID")/nEvents) ;
+	 gBenchmark->GetCpuTime("PHOSPID")/nEvents)) ;
   }
   if(fWrite)
     Unload();
@@ -425,9 +425,13 @@ const TString AliPHOSPIDv1::GetFileNamePrincipal(TString particle) const
   //Get file name that contains the PCA for a particle ("photon or pi0")
   particle.ToLower();
   TString name;
-  if      (particle=="photon") name = fFileNamePrincipalPhoton ;
-  else if (particle=="pi0"   ) name = fFileNamePrincipalPi0    ;
-  else    Error("GetFileNamePrincipal","Wrong particle name: %s (choose from pi0/photon)\n",particle.Data());
+  if      (particle=="photon") 
+    name = fFileNamePrincipalPhoton ;
+  else if (particle=="pi0"   ) 
+    name = fFileNamePrincipalPi0    ;
+  else    
+    AliError(Form("Wrong particle name: %s (choose from pi0/photon)\n",
+		  particle.Data()));
   return name;
 }
 
@@ -436,9 +440,9 @@ Float_t  AliPHOSPIDv1::GetParameterCalibration(Int_t i) const
 {
   // Get the i-th parameter "Calibration"
   Float_t param = 0.;
-  if (i>2 || i<0)
-    Error("GetParameterCalibration","Invalid parameter number: %d",i);
-  else
+  if (i>2 || i<0) { 
+    AliError(Form("Invalid parameter number: %d",i));
+  } else
     param = (*fParameters)(0,i);
   return param;
 }
@@ -464,13 +468,17 @@ Float_t  AliPHOSPIDv1::GetParameterCpv2Emc(Int_t i, TString axis) const
 {
   // Get the i-th parameter "CPV-EMC distance" for the specified axis
   Float_t param = 0.;
-  if(i>2 || i<0)
-    Error("GetParameterCpv2Emc","Invalid parameter number: %d",i);
-  else {
+  if(i>2 || i<0) {
+    AliError(Form("Invalid parameter number: %d",i));
+  } else {
     axis.ToLower();
-    if      (axis == "x") param = (*fParameters)(1,i);
-    else if (axis == "z") param = (*fParameters)(2,i);
-    else Error("GetParameterCpv2Emc","Invalid axis name: %s",axis.Data());
+    if      (axis == "x") 
+      param = (*fParameters)(1,i);
+    else if (axis == "z") 
+      param = (*fParameters)(2,i);
+    else { 
+      AliError(Form("Invalid axis name: %s",axis.Data()));
+    }
   }
   return  param;
 }
@@ -518,9 +526,9 @@ Float_t  AliPHOSPIDv1::GetParameterPhotonBoundary (Int_t i) const
   // Get the parameter "i" to calculate the boundary on the moment M2x
   // for photons at high p_T
   Float_t param = 0;
-  if (i>3 || i<0)
-    Error("GetParameterPhotonBoundary","Wrong parameter number: %d\n",i);
-  else
+  if (i>3 || i<0) {
+    AliError(Form("Wrong parameter number: %d\n",i));
+  } else
     param = (*fParameters)(14,i) ;
   return param;
 }
@@ -531,9 +539,9 @@ Float_t  AliPHOSPIDv1::GetParameterPi0Boundary (Int_t i) const
   // Get the parameter "i" to calculate the boundary on the moment M2x
   // for pi0 at high p_T
   Float_t param = 0;
-  if (i>2 || i<0)
-    Error("GetParameterPi0Boundary","Wrong parameter number: %d\n",i);
-  else
+  if (i>2 || i<0) {
+    AliError(Form("Wrong parameter number: %d\n",i));
+  } else
     param = (*fParameters)(15,i) ;
   return param;
 }
@@ -544,9 +552,9 @@ Float_t  AliPHOSPIDv1::GetParameterTimeGate(Int_t i) const
   // Get TimeGate parameter depending on Purity-Efficiency i:
   // i=0 - Low purity, i=1 - Medium purity, i=2 - High purity
   Float_t param = 0.;
-  if(i>2 || i<0)
-    Error("GetParameterTimeGate","Invalid Efficiency-Purity choice %d",i);
-  else
+  if(i>2 || i<0) {
+    AliError(Form("Invalid Efficiency-Purity choice %d",i));
+  } else
     param = (*fParameters)(3,i) ; 
   return param;
 }
@@ -560,10 +568,13 @@ Float_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(TString particle, TString 
   particle.ToLower();
   param.   ToLower();
   Int_t offset = -1;
-  if      (particle == "photon") offset=0;
-  else if (particle == "pi0")    offset=5;
+  if      (particle == "photon") 
+    offset=0;
+  else if (particle == "pi0")    
+    offset=5;
   else
-    Error("GetParameterToCalculateEllipse","Wrong particle name: %s (choose from pi0/photon)\n",particle.Data());
+    AliError(Form("Wrong particle name: %s (choose from pi0/photon)\n",
+		  particle.Data()));
 
   Int_t p= -1;
   Float_t par = 0;
@@ -574,11 +585,11 @@ Float_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(TString particle, TString 
   else if(param.Contains("x0"))p=7+offset; 
   else if(param.Contains("y0"))p=8+offset;
 
-  if      (i>4 || i<0)
-    Error("GetParameterToCalculateEllipse", "No parameter with index", i) ; 
-  else if (p==-1)
-    Error("GetParameterToCalculateEllipse", "No parameter with name %s", param.Data() ) ; 
-  else
+  if      (i>4 || i<0) {
+    AliError(Form("No parameter with index %d", i)) ; 
+  } else if (p==-1) {
+    AliError(Form("No parameter with name %s", param.Data() )) ; 
+  } else
     par = (*fParameters)(p,i) ;
   
   return par;
@@ -617,7 +628,7 @@ Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint *
 Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint * cpv, Int_t effPur, Float_t e) const
 {
   if(effPur>2 || effPur<0)
-    Error("GetCPVBit","Invalid Efficiency-Purity choice %d",effPur);
+    AliError(Form("Invalid Efficiency-Purity choice %d",effPur));
   
   Float_t sigX = GetCpv2EmcDistanceCut("X",e);
   Float_t sigZ = GetCpv2EmcDistanceCut("Z",e);
@@ -653,7 +664,7 @@ Int_t  AliPHOSPIDv1::GetPrincipalBit(TString particle, const Double_t* p, Int_t 
   if((effPur==0) && (r<9./2.)) prinbit= 1;
 
   if(r<0)
-    Error("GetPrincipalBit", "Negative square?") ;
+    AliError("Negative square?") ;
 
   return prinbit;
 
@@ -671,7 +682,8 @@ Int_t  AliPHOSPIDv1::GetHardPhotonBit(AliPHOSEmcRecPoint * emc) const
     TMath::Exp(-TMath::Power(e-GetParameterPhotonBoundary(1),2)/2.0/
 	        TMath::Power(GetParameterPhotonBoundary(2),2)) +
     GetParameterPhotonBoundary(3);
-  //Info("GetHardPhotonBit","E=%f, m2x=%f, boundary=%f",e,m2x,m2xBoundary);
+  AliDebug(1, Form("GetHardPhotonBit","E=%f, m2x=%f, boundary=%f",
+		       e,m2x,m2xBoundary));
   if (m2x < m2xBoundary)
     return 1;// A hard photon
   else
@@ -689,7 +701,7 @@ Int_t  AliPHOSPIDv1::GetHardPi0Bit(AliPHOSEmcRecPoint * emc) const
   Float_t m2x = emc->GetM2x();
   Float_t m2xBoundary = GetParameterPi0Boundary(0) +
                     e * GetParameterPi0Boundary(1);
-  //Info("GetHardPi0Bit","E=%f, m2x=%f, boundary=%f",e,m2x,m2xBoundary);
+  AliDebug(1,Form("E=%f, m2x=%f, boundary=%f",e,m2x,m2xBoundary));
   if (m2x > m2xBoundary)
     return 1;// A hard pi0
   else
@@ -809,7 +821,7 @@ void  AliPHOSPIDv1::MakePID()
 
 //   const Int_t kMAXPARTICLES = 2000 ; 
 //   if (nparticles >= kMAXPARTICLES) 
-//     Error("MakePID", "Change size of MAXPARTICLES") ; 
+//     AliError("Change size of MAXPARTICLES") ; 
 //   Double_t stof[kSPECIES][kMAXPARTICLES] ;
 
 
@@ -1064,7 +1076,7 @@ void  AliPHOSPIDv1::MakeRecParticles()
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
   TClonesArray * trackSegments = gime->TrackSegments() ; 
   if ( !emcRecPoints || !cpvRecPoints || !trackSegments ) {
-    Fatal("MakeRecParticles", "RecPoints or TrackSegments not found !") ;  
+    AliFatal("RecPoints or TrackSegments not found !") ;  
   }
   TClonesArray * recParticles  = gime->RecParticles() ; 
   recParticles->Clear();
@@ -1096,7 +1108,7 @@ void  AliPHOSPIDv1::MakeRecParticles()
     // Choose the cluster energy range
     
     if (!emc) {
-      Fatal("MakeRecParticles", "-> emc(%d) = %d", ts->GetEmcIndex(), emc ) ;
+      AliFatal(Form("-> emc(%d) = %d", ts->GetEmcIndex(), emc )) ;
     }
 
     Float_t e = emc->GetEnergy() ;   
@@ -1203,7 +1215,7 @@ void  AliPHOSPIDv1::Print() const
 {
   // Print the parameters used for the particle type identification
 
-    Info("Print", "=============== AliPHOSPIDv1 ================") ;
+    AliInfo("=============== AliPHOSPIDv1 ================") ;
     printf("Making PID\n") ;
     printf("    Pricipal analysis file from 0.5 to 100 %s\n", fFileNamePrincipalPhoton.Data() )   ; 
     printf("    Name of parameters file     %s\n", fFileNameParameters.Data() )  ;
@@ -1248,7 +1260,7 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
       message += rp->GetType()  ;
     }
   }
-  Info("Print", message.Data() ) ; 
+  AliInfo(message.Data() ) ; 
 }
 
 //____________________________________________________________________________
@@ -1294,8 +1306,8 @@ void  AliPHOSPIDv1::SetParameters()
   // Open a text file with PID parameters
   FILE *fd = fopen(fFileNameParameters.Data(),"r");
   if (!fd)
-    Fatal("SetParameter","File %s with a PID parameters cannot be opened\n",
-	  fFileNameParameters.Data());
+    AliFatal(Form("File %s with a PID parameters cannot be opened\n",
+	  fFileNameParameters.Data()));
 
   Int_t i=0;
   // Read parameter file line-by-line and skip empty line and comments
@@ -1306,7 +1318,7 @@ void  AliPHOSPIDv1::SetParameters()
 	   &(*fParameters)(i,0), &(*fParameters)(i,1), 
 	   &(*fParameters)(i,2), &(*fParameters)(i,3));
     i++;
-    //Info("SetParameters", "line %d: %s",i,string);
+    AliDebug(1, Form("SetParameters", "line %d: %s",i,string));
   }
   fclose(fd);
 }
@@ -1315,9 +1327,9 @@ void  AliPHOSPIDv1::SetParameters()
 void  AliPHOSPIDv1::SetParameterCalibration(Int_t i,Float_t param) 
 {
   // Set parameter "Calibration" i to a value param
-  if(i>2 || i<0)
-    Error("SetParameterCalibration","Invalid parameter number: %d",i);
-  else
+  if(i>2 || i<0) {
+    AliError(Form("Invalid parameter number: %d",i));
+  } else
     (*fParameters)(0,i) = param ;
 }
 
@@ -1327,13 +1339,15 @@ void  AliPHOSPIDv1::SetParameterCpv2Emc(Int_t i, TString axis, Float_t cut)
   // Set the parameters to calculate Cpv-to-Emc Distance Cut depending on 
   // Purity-Efficiency point i
 
-  if(i>2 || i<0)
-    Error("SetParameterCpv2Emc","Invalid parameter number: %d",i);
-  else {
+  if(i>2 || i<0) {
+    AliError(Form("Invalid parameter number: %d",i));
+  } else {
     axis.ToLower();
     if      (axis == "x") (*fParameters)(1,i) = cut;
     else if (axis == "z") (*fParameters)(2,i) = cut;
-    else Error("SetParameterCpv2Emc","Invalid axis name: %s",axis.Data());
+    else { 
+      AliError(Form("Invalid axis name: %s",axis.Data()));
+    }
   }
 }
 
@@ -1341,9 +1355,9 @@ void  AliPHOSPIDv1::SetParameterCpv2Emc(Int_t i, TString axis, Float_t cut)
 void  AliPHOSPIDv1::SetParameterPhotonBoundary(Int_t i,Float_t param) 
 {
   // Set parameter "Hard photon boundary" i to a value param
-  if(i>4 || i<0)
-    Error("SetParameterPhotonBoundary","Invalid parameter number: %d",i);
-  else
+  if(i>4 || i<0) {
+    AliError(Form("Invalid parameter number: %d",i));
+  } else
     (*fParameters)(14,i) = param ;
 }
 
@@ -1351,9 +1365,9 @@ void  AliPHOSPIDv1::SetParameterPhotonBoundary(Int_t i,Float_t param)
 void  AliPHOSPIDv1::SetParameterPi0Boundary(Int_t i,Float_t param) 
 {
   // Set parameter "Hard pi0 boundary" i to a value param
-  if(i>1 || i<0)
-    Error("SetParameterPi0Boundary","Invalid parameter number: %d",i);
-  else
+  if(i>1 || i<0) {
+    AliError(Form("Invalid parameter number: %d",i));
+  } else
     (*fParameters)(15,i) = param ;
 }
 
@@ -1361,9 +1375,9 @@ void  AliPHOSPIDv1::SetParameterPi0Boundary(Int_t i,Float_t param)
 void  AliPHOSPIDv1::SetParameterTimeGate(Int_t i, Float_t gate) 
 {
   // Set the parameter TimeGate depending on Purity-Efficiency point i 
-  if (i>2 || i<0)
-    Error("SetParameterTimeGate","Invalid Efficiency-Purity choice %d",i);
-  else
+  if (i>2 || i<0) {
+    AliError(Form("Invalid Efficiency-Purity choice %d",i));
+  } else
     (*fParameters)(3,i)= gate ; 
 } 
 
@@ -1381,18 +1395,19 @@ void  AliPHOSPIDv1::SetParameterToCalculateEllipse(TString particle, TString par
   if      (particle == "photon") offset=0;
   else if (particle == "pi0")    offset=5;
   else
-    Error("SetParameterToCalculateEllipse","Wrong particle name: %s (choose from pi0/photon)\n",particle.Data());
+    AliError(Form("Wrong particle name: %s (choose from pi0/photon)\n",
+		  particle.Data()));
 
   if     (param.Contains("a")) p=4+offset; 
   else if(param.Contains("b")) p=5+offset; 
   else if(param.Contains("c")) p=6+offset; 
   else if(param.Contains("x0"))p=7+offset; 
   else if(param.Contains("y0"))p=8+offset;
-  if((i>4)||(i<0))
-    Error("SetEllipseParameter", "No parameter with index %d", i) ; 
-  else if(p==-1)
-    Error("SetEllipseParameter", "No parameter with name %s", param.Data() ) ; 
-  else
+  if((i>4)||(i<0)) {
+    AliError(Form("No parameter with index %d", i)) ; 
+  } else if(p==-1) {
+    AliError(Form("No parameter with name %s", param.Data() )) ; 
+  } else
     (*fParameters)(p,i) = par ;
 } 
 

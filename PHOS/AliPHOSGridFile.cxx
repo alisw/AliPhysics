@@ -26,7 +26,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliLog.h"
 #include "AliPHOSGridFile.h" 
 
 ClassImp(AliPHOSGridFile) ;
@@ -69,7 +69,7 @@ TString AliPHOSGridFile::GetLFN() const
   TString fileName(Pwd()) ;
   fileName += "galice.root" ; 
   if ( !fGrid->GetAccessPath(fileName) ) { 
-    Warning("GetLFN", "file %s does not exist", fileName.Data()) ; 
+    AliWarning(Form("file %s does not exist", fileName.Data())) ; 
     fileName = "" ; 
   }
   else 
@@ -96,7 +96,7 @@ void AliPHOSGridFile::Help()
 {
   // Prints information on available lfn's
   
-  Info("Info", "  ") ; 
+  AliInfo(Form("")) ; 
 
 }
 
@@ -107,7 +107,7 @@ void AliPHOSGridFile::ListEvents() const
 
   char path[80] ; 
   sprintf(path, "%s/%s-%s/%s/%s/%s", fRoot.Data(), fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), fRun.Data()) ; 
-  Info("ListEvents", "Searching %s", path) ; 
+  AliInfo(Form("Searching %s", path)) ; 
   Grid_ResultHandle_t gr = fGrid->Find(path, "galice.root") ; 
   TGridResult ar(gr) ;
   ar.Print() ; 
@@ -120,7 +120,7 @@ void AliPHOSGridFile::ListRuns() const
 
   char path[80] ; 
   sprintf(path, "%s/%s-%s/%s/%s", fRoot.Data(), fYear.Data(), fProd.Data(), fVers.Data(), fType.Data()) ; 
-  Info("ListEvents", "Searching %s", path) ; 
+  AliInfo(Form("Searching %s", path)) ; 
   Grid_ResultHandle_t gr = fGrid->OpenDir(path) ; 
   TGridResult ar(gr) ;
   ar.Print() ; 
@@ -133,12 +133,12 @@ Bool_t AliPHOSGridFile::SetYearProd(TString year, TString prod)
   Bool_t rv = kFALSE ;
   char tempo[80] ; 
   sprintf(tempo, "/%s-%s", year.Data(), prod.Data()) ; 
-
+  
   TString path(fRoot) ; 
   path += tempo ; 
-  if ( !fGrid->OpenDir(path) )  
-    Error("ctor", "Cannot find directory %s ", path.Data() ) ; 
-  else {
+  if ( !fGrid->OpenDir(path) ) {  
+    AliError(Form("Cannot find directory %s", path.Data() )) ; 
+  } else {
     rv = kTRUE ; 
     fYear = year ;  
     fProd = prod ; 
@@ -158,9 +158,9 @@ Bool_t AliPHOSGridFile::SetVers(TString vers)
 
   TString path(fRoot) ; 
   path += tempo ; 
- if ( !fGrid->OpenDir(path) )  
-    Error("ctor", "Cannot find directory %s ", path.Data() ) ; 
-  else {
+  if ( !fGrid->OpenDir(path) ) {  
+    AliError(Form("Cannot find directory %s ", path.Data() )) ; 
+  } else {
     rv = kTRUE ; 
     fVers = vers ; 
     fPath = path ;
@@ -178,9 +178,9 @@ Bool_t AliPHOSGridFile::SetType(TString type)
  
   TString path(fRoot) ;
   path += tempo ; 
-  if ( !fGrid->OpenDir(path) )  
-    Error("ctor", "Cannot find directory %s ", path.Data() ) ; 
-  else {
+  if ( !fGrid->OpenDir(path) ) {  
+    AliError(Form("Cannot find directory %s ", path.Data() )) ; 
+  } else {
     rv = kTRUE ; 
     fType = type ;  
     fPath = path ; 
@@ -198,9 +198,9 @@ Bool_t AliPHOSGridFile::SetPath(TString year, TString prod, TString vers, TStrin
     
   TString path(fRoot) ; 
   path += tempo ; 
-  if ( !fGrid->OpenDir(path) )  
-    Error("ctor", "Cannot find directory %s ", path.Data() ) ; 
-  else {
+  if ( !fGrid->OpenDir(path) ) {  
+    AliError(Form("Cannot find directory %s ", path.Data() )) ; 
+  } else {
     rv = kTRUE ; 
     fPath = path ; 
     fYear += year ; 
@@ -230,9 +230,9 @@ Bool_t AliPHOSGridFile::SetRun(Int_t run)
 
   TString path(fRoot) ; 
   path += tempo ;
-  if ( !fGrid->OpenDir(path) )  
-    Error("ctor", "Cannot find directory %s ", path.Data() ) ; 
-  else {
+  if ( !fGrid->OpenDir(path) ) {  
+    AliError(Form("Cannot find directory %s ", path.Data() )) ; 
+  } else {
     rv = kTRUE ; 
     fRun = srun ; 
     fPath = path ; 
@@ -258,9 +258,9 @@ Bool_t AliPHOSGridFile::SetEvt(Int_t evt)
   sprintf(tempo, "/%s-%s/%s/%s/%s/%s/", fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), fRun.Data(), sevt.Data()) ; 
   TString path(fRoot) ; 
   path += tempo ;
-  if ( !fGrid->OpenDir(path) )  
-    Error("ctor", "Cannot find directory %s ", path.Data() ) ; 
-  else {
+  if ( !fGrid->OpenDir(path) ) {  
+    AliError(Form("Cannot find directory %s ", path.Data() )) ; 
+  } else {
     rv = kTRUE ; 
     fEvt = sevt ; 
     fPath = path ; 

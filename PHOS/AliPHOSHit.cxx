@@ -140,7 +140,7 @@ AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue)
 //   // Print out Id and energy 
   
 //   //out << "AliPHOSHit = " << hit.GetId() << " " << hit.GetEnergy() << "  " << hit.GetTime() << endl ;
-//   Warning("operator <<", "Implement differently") ; 
+//   AliWarning("operator <<", "Implement differently") ; 
 //   return out ;
 // }
 
