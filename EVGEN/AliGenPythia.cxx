@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.61  2002/07/30 09:52:38  morsch
+Call SetGammaPhiRange() and SetGammaEtaRange() in the constructor.
+
 Revision 1.60  2002/07/19 14:49:03  morsch
 Typo corrected.
 
@@ -724,15 +727,17 @@ Bool_t AliGenPythia::CheckTrigger(TParticle* jet1, TParticle* jet2) const
 
     if (fProcess == kPyJets) {
 	//Check eta range first...
-	if ((eta[0] < fEtaMaxJet && eta[0] > fEtaMinJet) ||
-	    (eta[1] < fEtaMaxJet && eta[1] > fEtaMinJet))
+	if (
+	    ((eta[0] < fEtaMaxJet && eta[0] > fEtaMinJet)   &&
+	     (phi[0] < fPhiMaxJet && phi[0] > fPhiMinJet)) 
+	    
+	    ||
+	    
+	    ((eta[1] < fEtaMaxJet && eta[1] > fEtaMinJet)   &&
+	     (phi[1] < fPhiMaxJet && phi[1] > fPhiMinJet))
+	    )
 	{
-	    //Eta is okay, now check phi range
-	    if ((phi[0] < fPhiMaxJet && phi[0] > fPhiMinJet) ||
-		(phi[1] < fPhiMaxJet && phi[1] > fPhiMinJet))
-	    {
-		triggered = kTRUE;
-	    }
+	    triggered = kTRUE;
 	}
     } else {
 	Int_t ij = 0;
