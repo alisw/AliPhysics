@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/12/20 08:39:39  fca
+Support for Cerenkov and process list in Virtual MC
+
 Revision 1.13  2000/11/30 07:12:54  alibrary
 Introducing new Rndm and QA classes
 
@@ -101,22 +104,27 @@ void AliGeant3::FinishGeometry()
 //____________________________________________________________________________
 void AliGeant3::Init()
 {
-  //
-  //=================Create Materials and geometry
-  //
-  TObjArray *modules = gAlice->Modules();
-  TIter next(modules);
-  AliModule *detector;
-  while((detector = (AliModule*)next())) {
-    // Initialise detector materials and geometry
-    detector->CreateMaterials();
-    detector->CreateGeometry();
-    detector->Init();
-    detector->BuildGeometry();
-  }
+    //
+    //=================Create Materials and geometry
+    //
+    TObjArray *modules = gAlice->Modules();
+    TIter next(modules);
+    AliModule *detector;
+    while((detector = (AliModule*)next())) {
+      // Initialise detector materials and geometry
+      detector->CreateMaterials();
+      detector->CreateGeometry();
+    }
+    //Terminate building of geometry
+    FinishGeometry();
+    
+    next.Reset();
+    while((detector = (AliModule*)next())) {
+      // Initialise detector and display geometry
+      detector->Init();
+      detector->BuildGeometry();
+    }
 
-  //Terminate building of geometry
-  FinishGeometry();
 }
 
 //____________________________________________________________________________
