@@ -47,8 +47,8 @@ class AliGenMC : public AliGenerator
     Int_t  CheckPDGCode(Int_t pdgcode);
 
  protected:
-    TArrayI     fParentSelect;  // Parent particles to be selected 
-    TArrayI     fChildSelect;   // Decay products to be selected
+    TArrayI     fParentSelect;  //!Parent particles to be selected 
+    TArrayI     fChildSelect;   //!Decay products to be selected
     Int_t       fCutOnChild;    // Cuts on decay products (children)  are enabled/disabled
     Float_t     fChildPtMin;    // Children minimum pT
     Float_t     fChildPtMax;    // Children maximum pT
@@ -63,7 +63,7 @@ class AliGenMC : public AliGenerator
     Decay_t     fForceDecay;    // Decay channel forced
     Float_t     fMaxLifeTime;   // Maximum lifetime for unstable particles
     
-    ClassDef(AliGenMC,3)       // AliGenerator implementation for generators using MC methods
+    ClassDef(AliGenMC,4)       // AliGenerator implementation for generators using MC methods
 };
 #endif
 
