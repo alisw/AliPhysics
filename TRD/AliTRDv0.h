@@ -22,8 +22,9 @@ public:
 protected:
   Int_t        fIdSens1;    // 1st sensitive volume identifier
   Int_t        fIdSens2;    // 2nd sensitive volume identifier
+  Int_t        fIdSens3;    // 3rd sensitive volume identifier
   
-  ClassDef(AliTRDv0,1)     // Transition Radiation Detector version 0
+  ClassDef(AliTRDv0,1)      // Transition Radiation Detector version 0
 };
 
 #endif
