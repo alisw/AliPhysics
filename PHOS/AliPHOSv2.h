@@ -10,11 +10,9 @@
 //*-- Author: Gines MARTINEZ (SUBATECH)
 
 // --- ROOT system ---
-#include "TClonesArray.h"
 
 // --- AliRoot header files ---
 #include "AliPHOSv1.h"
-#include "AliPHOSReconstructioner.h"
 
 class AliPHOSv2 : public AliPHOSv1 {
 

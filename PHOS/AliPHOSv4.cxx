@@ -38,7 +38,8 @@
 #include <stdio.h>
 
 // --- AliRoot header files ---
-
+#include "AliPHOSFastRecParticle.h"
+#include "AliPHOSGeometry.h"
 #include "AliPHOSv4.h"
 #include "AliRun.h"
 #include "AliConst.h"

@@ -25,26 +25,15 @@
 //  
 
 // --- ROOT system ---
-
-#include "TBRIK.h"
-#include "TNode.h"
-#include "TRandom.h"
+#include "TClonesArray.h"
 
 // --- Standard library ---
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <strstream.h>
 
 // --- AliRoot header files ---
 
 #include "AliPHOSv2.h"
 #include "AliPHOSHit.h"
-#include "AliPHOSDigit.h"
-#include "AliPHOSReconstructioner.h"
-#include "AliRun.h"
-#include "AliConst.h"
 
 ClassImp(AliPHOSv2)
 
