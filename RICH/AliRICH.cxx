@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.43  2001/02/23 17:19:06  jbarbosa
+  Corrected photocathode definition in BuildGeometry().
+
   Revision 1.42  2001/02/13 20:07:23  jbarbosa
   Parametrised definition of photcathode dimensions. New spacers. New data members in AliRICHHit to store particle momentum
   when entering the freon. Corrected calls to particle stack.
@@ -127,7 +130,7 @@
 #include "AliRICHSegmentationV0.h"
 #include "AliRICHHit.h"
 #include "AliRICHCerenkov.h"
-#include "AliRICHPadHit.h"
+#include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHTransientDigit.h"
 #include "AliRICHRawCluster.h"
@@ -160,8 +163,8 @@ AliRICH::AliRICH()
 
     fIshunt     = 0;
     fHits       = 0;
-    fPadHits    = 0;
-    fNPadHits   = 0;
+    fSDigits    = 0;
+    fNSDigits   = 0;
     fNcerenkovs = 0;
     fDchambers  = 0;
     fRecHits1D = 0;
@@ -192,11 +195,11 @@ AliRICH::AliRICH(const char *name, const char *title)
     
     fHits       = new TClonesArray("AliRICHHit",1000  );
     gAlice->AddHitList(fHits);
-    fPadHits    = new TClonesArray("AliRICHPadHit",100000);
+    fSDigits    = new TClonesArray("AliRICHSDigit",100000);
     fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
     gAlice->AddHitList(fCerenkovs);
     //gAlice->AddHitList(fHits);
-    fNPadHits   = 0;
+    fNSDigits   = 0;
     fNcerenkovs = 0;
     fIshunt     = 0;
     
@@ -258,7 +261,7 @@ AliRICH::~AliRICH()
 
     fIshunt  = 0;
     delete fHits;
-    delete fPadHits;
+    delete fSDigits;
     delete fCerenkovs;
     
     //PH Delete TObjArrays
@@ -329,15 +332,16 @@ void AliRICH::SDigits2Digits()
    if (nparticles > 0) Digitise(0,0);
 }
 //___________________________________________
-void AliRICH::AddPadHit(Int_t *clhits)
+void AliRICH::AddSDigit(Int_t *clhits)
 {
 
 //
 // Add a RICH pad hit to the list
 //
 
-    TClonesArray &lPadHits = *fPadHits;
-    new(lPadHits[fNPadHits++]) AliRICHPadHit(clhits);
+  //printf("fsdigits:%p, data: %d\n",fSDigits,clhits[2]);
+    TClonesArray &lSDigits = *fSDigits;
+    new(lSDigits[fNSDigits++]) AliRICHSDigit(clhits);
 } 
 //_____________________________________________________________________________
 void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
@@ -1640,19 +1644,28 @@ void AliRICH::MakeBranch(Option_t* option, char *file)
     char *cH = strstr(option,"H");
     char *cD = strstr(option,"D");
     char *cR = strstr(option,"R");
+    char *cS = strstr(option,"S");
 
     if (cH) {
       sprintf(branchname,"%sCerenkov",GetName());
       if (fCerenkovs   && gAlice->TreeH()) {
         gAlice->MakeBranchInTree(gAlice->TreeH(), 
                                  branchname, &fCerenkovs, kBufferSize, file) ;
-      }    
-      sprintf(branchname,"%sPadHits",GetName());
-      if (fPadHits   && gAlice->TreeH()) {
+      } 
+      sprintf(branchname,"%sSDigits",GetName());
+      if (fSDigits   && gAlice->TreeH()) {
         gAlice->MakeBranchInTree(gAlice->TreeH(), 
-                                 branchname, &fPadHits, kBufferSize, file) ;
+                                 branchname, &fSDigits, kBufferSize, file) ;
       }
-    }
+    }   
+      
+    /*if (cS) {  
+      sprintf(branchname,"%sSDigits",GetName());
+      if (fSDigits   && gAlice->TreeS()) {
+        gAlice->MakeBranchInTree(gAlice->TreeS(), 
+                                 branchname, &fSDigits, kBufferSize, file) ;
+      }
+    }*/
     
     if (cD) {
     //
@@ -1716,17 +1729,26 @@ void AliRICH::SetTreeAddress()
     TTree *treeH = gAlice->TreeH();
     TTree *treeD = gAlice->TreeD();
     TTree *treeR = gAlice->TreeR();
+    TTree *treeS = gAlice->TreeS();
     
     if (treeH) {
-	if (fPadHits) {
-	    branch = treeH->GetBranch("RICHPadHits");
-	    if (branch) branch->SetAddress(&fPadHits);
-	}
-	if (fCerenkovs) {
+      if (fCerenkovs) {
 	    branch = treeH->GetBranch("RICHCerenkov");
 	    if (branch) branch->SetAddress(&fCerenkovs);
 	}
+      if (fSDigits) {
+	branch = treeH->GetBranch("RICHSDigits");
+	if (branch) branch->SetAddress(&fSDigits);
+      }
     }
+    
+    /*if (treeS) {
+      if (fSDigits) {
+	branch = treeS->GetBranch("RICHSDigits");
+	if (branch) branch->SetAddress(&fSDigits);
+      }
+    }*/
+    
     
     if (treeD) {
 	for (int i=0; i<kNCH; i++) {
@@ -1769,9 +1791,9 @@ void AliRICH::ResetHits()
 {
   // Reset number of clusters and the cluster array for this detector
     AliDetector::ResetHits();
-    fNPadHits   = 0;
+    fNSDigits   = 0;
     fNcerenkovs = 0;
-    if (fPadHits)  fPadHits->Clear();
+    if (fSDigits)  fSDigits->Clear();
     if (fCerenkovs) fCerenkovs->Clear();
 }
 
@@ -2140,7 +2162,7 @@ void AliRICH::StepManager()
 		    ckovData[3] = pos[2];                 // Z-position for hit
 		    ckovData[4] = theta;                      // theta angle of incidence
 		    ckovData[5] = phi;                      // phi angle of incidence 
-		    ckovData[8] = (Float_t) fNPadHits;      // first padhit
+		    ckovData[8] = (Float_t) fNSDigits;      // first sdigit
 		    ckovData[9] = -1;                       // last pad hit
 		    ckovData[13] = 4;                       // photon was detected
 		    ckovData[14] = mom[0];
@@ -2152,11 +2174,11 @@ void AliRICH::StepManager()
 		    cherenkovLoss  += destep;
 		    ckovData[7]=cherenkovLoss;
 		    
-		    nPads = MakePadHits(localPos[0],localPos[2],cherenkovLoss,idvol,kCerenkov);
+		    nPads = Hits2SDigits(localPos[0],localPos[2],cherenkovLoss,idvol,kCerenkov);
 		    		    
-		    if (fNPadHits > (Int_t)ckovData[8]) {
+		    if (fNSDigits > (Int_t)ckovData[8]) {
 			ckovData[8]= ckovData[8]+1;
-			ckovData[9]= (Float_t) fNPadHits;
+			ckovData[9]= (Float_t) fNSDigits;
 		    }
 
 		    //printf("Cerenkov loss: %f\n", cherenkovLoss);
@@ -2277,7 +2299,7 @@ void AliRICH::StepManager()
 		hits[3] = localPos[2];                 // Z-position for hit
 		hits[4] = localTheta;                  // theta angle of incidence
 		hits[5] = localPhi;                    // phi angle of incidence 
-		hits[8] = (Float_t) fNPadHits;    // first padhit
+		hits[8] = (Float_t) fNSDigits;    // first sdigit
 		hits[9] = -1;                     // last pad hit
 		hits[13] = fFreonProd;           // did id hit the freon?
 		hits[14] = mom[0];
@@ -2320,7 +2342,7 @@ void AliRICH::StepManager()
 		    {
 		      if(gMC->TrackPid() == kNeutron)
 			printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
-		      nPads = MakePadHits(xhit,yhit,eloss,idvol,kMip);
+		      nPads = Hits2SDigits(xhit,yhit,eloss,idvol,kMip);
 		      hits[17] = nPads;
 		      //printf("nPads:%d",nPads);
 		    }
@@ -2328,9 +2350,9 @@ void AliRICH::StepManager()
 		
 		hits[6]=tlength;
 		hits[7]=eloss;
-		if (fNPadHits > (Int_t)hits[8]) {
+		if (fNSDigits > (Int_t)hits[8]) {
 		    hits[8]= hits[8]+1;
-		    hits[9]= (Float_t) fNPadHits;
+		    hits[9]= (Float_t) fNSDigits;
 		}
 		
 		//if(sector !=-1)
@@ -2350,7 +2372,7 @@ void AliRICH::StepManager()
 		  {
 		    if(gMC->TrackPid() == kNeutron)
 		      printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
-		    nPads = MakePadHits(xhit,yhit,eloss,idvol,kMip);
+		    nPads = Hits2SDigits(xhit,yhit,eloss,idvol,kMip);
 		    hits[17] = nPads;
 		    //printf("Npads:%d",NPads);
 		  }
@@ -2378,7 +2400,7 @@ void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
 //
     for (Int_t icat=1;icat<2;icat++) {
 	gAlice->ResetDigits();
-	gAlice->TreeD()->GetEvent(0);
+	gAlice->TreeD()->GetEvent(1);
 	for (Int_t ich=0;ich<kNCH;ich++) {
 	  AliRICHChamber* iChamber=(AliRICHChamber*) (*fChambers)[ich];
 	  TClonesArray *pRICHdigits  = this->DigitsAddress(ich);
@@ -2423,31 +2445,31 @@ void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
     //gObjectTable->Print();
 }
 
-AliRICHPadHit* AliRICH::FirstPad(AliRICHHit*  hit,TClonesArray *clusters ) 
+AliRICHSDigit* AliRICH::FirstPad(AliRICHHit*  hit,TClonesArray *clusters ) 
 {
 //
     // Initialise the pad iterator
-    // Return the address of the first padhit for hit
+    // Return the address of the first sdigit for hit
     TClonesArray *theClusters = clusters;
     Int_t nclust = theClusters->GetEntriesFast();
     if (nclust && hit->fPHlast > 0) {
 	sMaxIterPad=Int_t(hit->fPHlast);
 	sCurIterPad=Int_t(hit->fPHfirst);
-	return (AliRICHPadHit*) clusters->UncheckedAt(sCurIterPad-1);
+	return (AliRICHSDigit*) clusters->UncheckedAt(sCurIterPad-1);
     } else {
 	return 0;
     }
     
 }
 
-AliRICHPadHit* AliRICH::NextPad(TClonesArray *clusters) 
+AliRICHSDigit* AliRICH::NextPad(TClonesArray *clusters) 
 {
 
   // Iterates over pads
   
     sCurIterPad++;
     if (sCurIterPad <= sMaxIterPad) {
-	return (AliRICHPadHit*) clusters->UncheckedAt(sCurIterPad-1);
+	return (AliRICHSDigit*) clusters->UncheckedAt(sCurIterPad-1);
     } else {
 	return 0;
     }
@@ -2490,7 +2512,7 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	    pFile=new TFile(fFileName);
 	    cout<<"I have opened "<<fFileName<<" file "<<endl;
 	    fHits2     = new TClonesArray("AliRICHHit",1000  );
-	    fClusters2 = new TClonesArray("AliRICHPadHit",10000);
+	    fClusters2 = new TClonesArray("AliRICHSDigit",10000);
 	    first=kFALSE;
 	}
 	pFile->cd();
@@ -2598,10 +2620,10 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	      
 	      //
 	      // Loop over pad hits
-	      for (AliRICHPadHit* mPad=
-		     (AliRICHPadHit*)pRICH->FirstPad(mHit,fPadHits);
+	      for (AliRICHSDigit* mPad=
+		     (AliRICHSDigit*)pRICH->FirstPad(mHit,fSDigits);
 		   mPad;
-		   mPad=(AliRICHPadHit*)pRICH->NextPad(fPadHits))
+		   mPad=(AliRICHSDigit*)pRICH->NextPad(fSDigits))
 		{
 		  Int_t ipx      = mPad->fPadX;       // pad number on X
 		  Int_t ipy      = mPad->fPadY;       // pad number on Y
@@ -2696,10 +2718,10 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	    Int_t rmax = (Int_t)iChamber->ROuter();
 	    //
 	    // Loop over pad hits
-	    for (AliRICHPadHit* mPad=
-		   (AliRICHPadHit*)pRICH->FirstPad(mHit,fClusters2);
+	    for (AliRICHSDigit* mPad=
+		   (AliRICHSDigit*)pRICH->FirstPad(mHit,fClusters2);
 		 mPad;
-		 mPad=(AliRICHPadHit*)pRICH->NextPad(fClusters2))
+		 mPad=(AliRICHSDigit*)pRICH->NextPad(fClusters2))
 	      {
 		Int_t ipx      = mPad->fPadX;       // pad number on X
 		Int_t ipy      = mPad->fPadY;       // pad number on Y
@@ -2881,7 +2903,7 @@ AliRICH& AliRICH::operator=(const AliRICH& rhs)
     
 }
 
-Int_t AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
+Int_t AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
 {
 //
 //  Calls the charge disintegration method of the current chamber and adds
@@ -2915,7 +2937,7 @@ Int_t AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol,
 
 	    //printf(" %d %d %d %d %d\n",  clhits[0],  clhits[1],  clhits[2],  clhits[3],  clhits[4]);
 	    
-	    AddPadHit(clhits);
+	    AddSDigit(clhits);
 	}
     }
 return nnew;

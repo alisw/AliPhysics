@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.10  2001/02/13 20:18:48  jbarbosa
+  Corrected some more positioning of points. Changes in LoadDigits to accomodate the new IO.
+
   Revision 1.9  2000/11/01 15:33:11  jbarbosa
   Updated to handle both reconstruction algorithms.
 
@@ -88,7 +91,7 @@
 
 #include "AliRICHHit.h"
 #include "AliRICHCerenkov.h"
-#include "AliRICHPadHit.h"
+#include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
 #include "AliRICHRecHit1D.h"
@@ -952,7 +955,7 @@ void AliRICHDisplay::LoadDigits()
 	 printf ("Chamber:%d has adress:%p\n", ich, pRICHdigits );
 	 if (pRICHdigits == 0) continue;
 	 gAlice->ResetDigits();
-	 gAlice->TreeD()->GetEvent(0);
+	 gAlice->TreeD()->GetEvent(1);
 	 Int_t ndigits = pRICHdigits->GetEntriesFast();
 	 printf("ndigits:%d\n",ndigits);
 	 nAllDigits+=ndigits;
@@ -964,7 +967,7 @@ void AliRICHDisplay::LoadDigits()
 	 TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
 	 if (pRICHdigits == 0) continue;
 	 gAlice->ResetDigits();
-	 gAlice->TreeD()->GetEvent(0);
+	 gAlice->TreeD()->GetEvent(1);
 	 Int_t ndigits = pRICHdigits->GetEntriesFast();
 	 if (ndigits == 0) continue;
 	 iChamber = &(pRICH->Chamber(ich));

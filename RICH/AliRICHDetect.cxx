@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.10  2001/02/13 20:39:06  jbarbosa
+  Changes to make it work with new IO.
+
   Revision 1.9  2001/01/22 21:39:11  jbarbosa
   Several tune-ups
 
@@ -151,7 +154,7 @@ void AliRICHDetect::Detect()
     Int_t nhits = pHits->GetEntriesFast();
     if (nhits == 0) continue;
     Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-    gAlice->TreeD()->GetEvent(0);
+    gAlice->TreeD()->GetEvent(1);
     AliRICHHit *mHit = 0;
     AliRICHDigit *points = 0;
     //Int_t npoints=0;

@@ -18,7 +18,7 @@ static const int kNCH=7;
 class TFile;
 
 class AliRICHHit;
-class AliRICHPadHit;
+class AliRICHSDigit;
 class AliRICHRawCluster;
 class AliRICHRecHit1D;
 class AliRICHRecHit3D;
@@ -39,7 +39,7 @@ class AliRICH : public  AliDetector {
     virtual       ~AliRICH();
     virtual void   AddHit(Int_t track, Int_t *vol, Float_t *hits);
     virtual void   AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs);
-    virtual void   AddPadHit(Int_t *clhits);
+    virtual void   AddSDigit(Int_t *clhits);
     virtual void   AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits);
     virtual void   AddRawCluster(Int_t id, const AliRICHRawCluster& cluster);
     virtual void   AddRecHit1D(Int_t id, Float_t* rechit, Float_t* photons, Int_t* padsx, Int_t* padsy);
@@ -55,7 +55,7 @@ class AliRICH : public  AliDetector {
     Int_t          DistancetoPrimitive(Int_t px, Int_t py);
     virtual Int_t  IsVersion() const =0;
 //
-    TClonesArray  *PadHits() {return fPadHits;}
+    TClonesArray  *SDigits() {return fSDigits;}
     TClonesArray  *Cerenkovs() {return fCerenkovs;}
     virtual void   MakeBranch(Option_t *opt=" ", char *file=0);
     void           SetTreeAddress();
@@ -83,12 +83,12 @@ class AliRICH : public  AliDetector {
 // Get source debugging level
     Int_t GetDebugLevel() {return fDebugLevel;}
 // Response Simulation
-    virtual Int_t   MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id, ResponseType res);
+    virtual Int_t   Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id, ResponseType res);
 // Return reference to Chamber #id
     virtual AliRICHChamber& Chamber(Int_t id) {return *((AliRICHChamber *) (*fChambers)[id]);}
 // Retrieve pad hits for a given Hit
-    virtual AliRICHPadHit* FirstPad(AliRICHHit *hit, TClonesArray *clusters);
-    virtual AliRICHPadHit* NextPad(TClonesArray *clusters);
+    virtual AliRICHSDigit* FirstPad(AliRICHHit *hit, TClonesArray *clusters);
+    virtual AliRICHSDigit* NextPad(TClonesArray *clusters);
 // Return pointers to digits 
     TObjArray            *Dchambers() {return fDchambers;}
     Int_t                *Ndch() {return fNdch;}
@@ -109,9 +109,9 @@ class AliRICH : public  AliDetector {
     
  protected:
     TObjArray            *fChambers;           // List of Tracking Chambers
-    Int_t                 fNPadHits;           // Number of clusters
+    Int_t                 fNSDigits;           // Number of clusters
     Int_t                 fNcerenkovs;         // Number of cerenkovs
-    TClonesArray         *fPadHits;            // List of clusters
+    TClonesArray         *fSDigits;            // List of clusters
     TObjArray            *fDchambers;          // List of digits
     TClonesArray         *fCerenkovs;          // List of cerenkovs
     Int_t                 fNdch[kNCH];         // Number of digits

@@ -8,9 +8,8 @@
 #pragma link C++ class  AliRICHv1+;
 #pragma link C++ class  AliRICHv2+;
 #pragma link C++ class  AliRICHHit+;
-//#pragma link C++ class  AliRICHPadHit+;
 #pragma link C++ class  AliRICHDigit+;
-#pragma link C++ class  AliRICHPadHit+;
+#pragma link C++ class  AliRICHSDigit+;
 #pragma link C++ class  AliRICHTransientDigit+;
 #pragma link C++ class  AliRICHRawCluster+;
 #pragma link C++ class  AliRICHRecHit1D+;

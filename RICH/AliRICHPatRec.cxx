@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.9  2001/02/13 20:38:48  jbarbosa
+  Changes to make it work with new IO.
+
   Revision 1.8  2000/11/01 15:37:18  jbarbosa
   Updated to use its own rec. point object.
 
@@ -43,7 +46,7 @@
 
 #include "AliRICHHit.h"
 #include "AliRICHCerenkov.h"
-#include "AliRICHPadHit.h"
+#include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
 #include "AliRICHRecHit1D.h"
@@ -119,7 +122,7 @@ void AliRICHPatRec::PatRec()
     segmentation=iChamber->GetSegmentationModel();
 
     nent=(Int_t)gAlice->TreeD()->GetEntries();
-    gAlice->TreeD()->GetEvent(0);
+    gAlice->TreeD()->GetEvent(1);
     TClonesArray *pDigitss = pRICH->DigitsAddress(ich);
     ndigits[ich] = pDigitss->GetEntriesFast();
     printf("Digits in chamber %d: %d\n",ich,ndigits[ich]);

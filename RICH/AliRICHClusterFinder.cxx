@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.9  2001/01/26 20:00:27  hristov
+  Major upgrade of AliRoot code
+
   Revision 1.8  2000/11/02 09:11:12  jbarbosa
   Removed AliRICHRecHit.h from include.
 
@@ -50,7 +53,7 @@
 #include "AliRICHHit.h"
 #include "AliRICHHitMapA1.h"
 #include "AliRICHCerenkov.h"
-#include "AliRICHPadHit.h"
+#include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
 
