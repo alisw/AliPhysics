@@ -114,6 +114,7 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
       }
     }
   }
+  ReadTreeQA() ;
   fDebug="";
 }
 //____________________________________________________________________________ 
@@ -970,7 +971,7 @@ void AliPHOSGetter::Event(Int_t event)
   ReadTreeS() ;
   ReadTreeD() ;
   ReadTreeR() ;
-  ReadTreeQA() ;
+  //ReadTreeQA() ;
   ReadPrimaries() ;
 }
 
