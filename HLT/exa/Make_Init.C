@@ -67,15 +67,15 @@ void Make_Init(char *file, char *tofile="Init.cxx"){
   fprintf(f,"  fPadPitchWidthUp = %f ;\n",par->GetPadPitchWidth(fNSectorLow));
   fprintf(f,"  fZWidth = %.20f ;\n",par->GetZWidth());
   fprintf(f,"  fZSigma = %.20f ;\n",par->GetZSigma());
-  fprintf(f,"  fZOffset = %.20f\n",par->GetZOffset());
+  fprintf(f,"  fZOffset = %.20f ;\n",par->GetZOffset());
   fprintf(f,"  fDiffT = %.20f ;\n",par->GetDiffT());
   fprintf(f,"  fDiffL = %.20f ;\n",par->GetDiffL());
-  fprintf(f,"  fInnerPadLength = %f\n",par->GetInnerPadLength());
-  fprintf(f,"  fOuterPadLength = %f\n",par->GetOuterPadLength());
-  fprintf(f,"  fInnerPRFSigma = %.20f\n",param->GetInnerPRF()->GetSigmaX());
-  fprintf(f,"  fOuterPRFSigma = %.20f\n",param->GetOuterPRF()->GetSigmaX());
-  fprintf(f,"  fTimeSigma = %.20f\n",param->GetTimeRF()->GetSigma());
-  fprintf(f,"  fZLength = %f\n",par->GetZLength());
+  fprintf(f,"  fInnerPadLength = %f ;\n",par->GetInnerPadLength());
+  fprintf(f,"  fOuterPadLength = %f ;\n",par->GetOuterPadLength());
+  fprintf(f,"  fInnerPRFSigma = %.20f ;\n",param->GetInnerPRF()->GetSigmaX());
+  fprintf(f,"  fOuterPRFSigma = %.20f ;\n",param->GetOuterPRF()->GetSigmaX());
+  fprintf(f,"  fTimeSigma = %.20f ;\n",param->GetTimeRF()->GetSigma());
+  fprintf(f,"  fZLength = %f ;\n",par->GetZLength());
   
   fprintf(f,"\n  //slices:\n");
   fprintf(f,"  fNSlice = %d ;\n",fNSectorLow);
