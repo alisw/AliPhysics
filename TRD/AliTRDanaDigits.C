@@ -15,16 +15,16 @@ void AliTRDanaDigits()
   }
 
   // Input file name
-  //Char_t *alifile = "galice.root"; 
-  Char_t *alifile = "galice_jiri.root"; 
+  Char_t *alifile = "galice.root"; 
 
   // Event number
   Int_t   nEvent  = 0;
 
   // Define the objects
-  AliTRDv1       *trd;
-  AliTRDgeometry *geo;
-  AliTRDdigit    *digit;
+  AliTRDv1        *trd;
+  AliTRDgeometry  *geo;
+  AliTRDdigit     *digit;
+  AliTRDparameter *par;
 
   Int_t           track;
 
@@ -61,26 +61,28 @@ void AliTRDanaDigits()
     break;
   }
 
+  // The parameter object
+  par = new AliTRDparameter("TRDparameter","TRD parameter class");
+
   // Create the digits manager
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
   digitsManager->SetDebug(1);
-  digitsManager->SetSDigits(kTRUE);
 
   // Read the digits from the file
   digitsManager->Open(alifile);
   digitsManager->ReadDigits();
 
   // Get the detector number
-  Int_t iDet = 423;
+  Int_t iDet = 514;
   cout << " iDet = " << iDet << endl;
 
   // Define the detector matrix for one chamber
   const Int_t iSec = geo->GetSector(iDet);
   const Int_t iCha = geo->GetChamber(iDet);
   const Int_t iPla = geo->GetPlane(iDet);
-  Int_t  rowMax = geo->GetRowMax(iPla,iCha,iSec);
-  Int_t  colMax = geo->GetColMax(iPla);
-  Int_t timeMax = geo->GetTimeMax();
+  Int_t  rowMax = par->GetRowMax(iPla,iCha,iSec);
+  Int_t  colMax = par->GetColMax(iPla);
+  Int_t timeMax = par->GetTimeMax();
   cout << "Geometry: rowMax = "  <<  rowMax
                 << " colMax = "  <<  colMax
                 << " timeMax = " << timeMax << endl;
@@ -94,7 +96,6 @@ void AliTRDanaDigits()
         digit = digitsManager->GetDigit(row,col,time,iDet);
         track = digitsManager->GetTrack(0,row,col,time,iDet);
         
-        printf("time=%d, col=%d, row=%d, amp=%f\n",time,col,row,digit->GetAmp());
         matrix->SetSignal(row,col,time,digit->GetAmp());
 
         delete digit;
@@ -105,9 +106,6 @@ void AliTRDanaDigits()
 
   // Display the detector matrix
   matrix->Draw();
-  //matrix->DrawRow(18);
-  //matrix->DrawCol(58);
-  //matrix->DrawTime(20);
   matrix->ProjRow();
   matrix->ProjCol();
   matrix->ProjTime();
