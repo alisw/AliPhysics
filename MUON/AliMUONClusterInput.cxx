@@ -212,7 +212,7 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cat
 }
 
 AliMUONClusterInput& AliMUONClusterInput
-::operator = (const AliMUONClusterInput& rhs)
+::operator = (const AliMUONClusterInput& /*rhs*/)
 {
 // Dummy assignment operator
     return *this;

@@ -615,7 +615,7 @@ TF1* AliMUONSegmentationV01::CorrFunc(Int_t isec) const
 }
 
 AliMUONSegmentationV01& AliMUONSegmentationV01::operator 
-=(const AliMUONSegmentationV01 & rhs)
+=(const AliMUONSegmentationV01 & /*rhs*/)
 {
 // Dummy assignment operator
     return *this;

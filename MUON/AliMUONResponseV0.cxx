@@ -92,7 +92,7 @@ Float_t AliMUONResponseV0::IntXY(AliSegmentation * segmentation)
 		      fKy4*(TMath::ATan(uy2)-TMath::ATan(uy1)));
 }
 
-Int_t  AliMUONResponseV0::DigitResponse(Int_t digit, AliMUONTransientDigit* where)
+Int_t  AliMUONResponseV0::DigitResponse(Int_t digit, AliMUONTransientDigit* /*where*/)
 {
     // add white noise and do zero-suppression and signal truncation
 //     Float_t meanNoise = gRandom->Gaus(1, 0.2);

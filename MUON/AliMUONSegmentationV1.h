@@ -43,9 +43,9 @@ public AliSegmentation {
      // Pad size in y 
     virtual Float_t Dpy() const {return fDpy;}
     // Pad size in x by Sector
-    virtual Float_t Dpx(Int_t i) const {return fDpx;}
+    virtual Float_t Dpx(Int_t /*i*/) const {return fDpx;}
     // Pad size in y by Sector 
-    virtual Float_t Dpy(Int_t i)const {return fDpy;}
+    virtual Float_t Dpy(Int_t /*i*/)const {return fDpy;}
     // Maximum number of Pads in x
     virtual Int_t   Npx() const {return fNpx;}
     // Maximum number of Pads in y
@@ -61,7 +61,7 @@ public AliSegmentation {
     virtual Float_t GetAnod(Float_t xhit) const;
     // Transform from pad to real coordinates
     virtual void    GetPadI(Float_t x ,Float_t y , Int_t &ix, Int_t &iy);
-    virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)
+    virtual void    GetPadI(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy)
 	{GetPadI(x, y, ix, iy);}
     // Transform from real to pad coordinates
     virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
@@ -71,7 +71,7 @@ public AliSegmentation {
     virtual void     SetPad(Int_t ix, Int_t iy);
     // Set hit position
     virtual void     SetHit(Float_t xhit, Float_t yhit);
-    virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
+    virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
 	 {SetHit(xhit, yhit);}
     //
     // Iterate over pads
@@ -79,7 +79,7 @@ public AliSegmentation {
     virtual void SetPadCoord(Int_t iX, Int_t iY);
     // Initialiser
     virtual void  FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy);
-    virtual void  FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy)
+    virtual void  FirstPad(Float_t xhit, Float_t yhit, Float_t /*zhit*/, Float_t dx, Float_t dy)
 	{FirstPad(xhit, yhit, dx, dy);}
     // Stepper
     virtual void  NextPad();
@@ -103,8 +103,8 @@ public AliSegmentation {
     // current sector
     virtual Int_t ISector();
     // calculate sector from pad coordinates
-    virtual Int_t Sector(Int_t ix, Int_t iy)   {return 1;}
-    virtual Int_t Sector(Float_t x, Float_t y) {return 1;}
+    virtual Int_t Sector(Int_t /*ix*/, Int_t /*iy*/)   {return 1;}
+    virtual Int_t Sector(Float_t /*x*/, Float_t /*y*/) {return 1;}
     // Position of pad in perellel read-out
     virtual Int_t IsParallel2(Int_t iX, Int_t iY);
     virtual Int_t IsParallel3(Int_t iX, Int_t iY);
@@ -131,7 +131,7 @@ public AliSegmentation {
     virtual void Draw(const char * = "") const {}
     // Function for systematic corrections
     // Set the correction function
-    virtual void SetCorrFunc(Int_t dum, TF1* func) {fCorr=func;}
+    virtual void SetCorrFunc(Int_t /*dum*/, TF1* func) {fCorr=func;}
     // Get the correction function
     virtual TF1* CorrFunc(Int_t) const {return fCorr;}
     //

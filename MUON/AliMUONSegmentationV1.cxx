@@ -29,7 +29,7 @@
 //___________________________________________
 ClassImp(AliMUONSegmentationV1)
 
-AliMUONSegmentationV1::AliMUONSegmentationV1(const AliMUONSegmentationV1& segmentation)
+  AliMUONSegmentationV1::AliMUONSegmentationV1(const AliMUONSegmentationV1& segmentation):AliSegmentation(segmentation)
 {
 // Dummy copy constructor
 }
@@ -283,7 +283,7 @@ Int_t AliMUONSegmentationV1::IsParallel3(Int_t iX, Int_t iY)
     return (iX%9)/3+1 - (iY%3==2 && iX%3==0);
 }
 
-Int_t AliMUONSegmentationV1::NParallel2(Int_t iX, Int_t iY)
+Int_t AliMUONSegmentationV1::NParallel2(Int_t /*iX*/, Int_t iY)
 {
 // returns the number of pads connected in parallel for zone 2
 // iX and iY are assumed to be positive and starting at 0 numbering (cF. iX)
@@ -355,7 +355,7 @@ Int_t AliMUONSegmentationV1::ISector()
     return GetZone(fIx,fIy);
 }
 
-void AliMUONSegmentationV1::SigGenInit(Float_t x,Float_t y,Float_t z)
+void AliMUONSegmentationV1::SigGenInit(Float_t x,Float_t y,Float_t /*z*/)
 {
 //
 //  Initialises pad and wire position during stepping
@@ -366,7 +366,7 @@ void AliMUONSegmentationV1::SigGenInit(Float_t x,Float_t y,Float_t z)
 
 }
 
-Int_t AliMUONSegmentationV1::SigGenCond(Float_t x,Float_t y,Float_t z)
+Int_t AliMUONSegmentationV1::SigGenCond(Float_t x,Float_t y,Float_t /*z*/)
 {
 //
 //  Signal will be generated if particle crosses pad boundary or
@@ -539,7 +539,7 @@ void AliMUONSegmentationV1::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) con
     y[0]=x[0];
 }
 
-AliMUONSegmentationV1& AliMUONSegmentationV1::operator =(const AliMUONSegmentationV1 & rhs)
+AliMUONSegmentationV1& AliMUONSegmentationV1::operator =(const AliMUONSegmentationV1 & /*rhs*/)
 {
 // Dummy assignment operator
     return *this;
