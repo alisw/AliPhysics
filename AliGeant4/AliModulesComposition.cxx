@@ -106,24 +106,20 @@ void AliModulesComposition::ConstructModules()
      // common setAllLVSensitive is overridden by Config.in
      // macro
   
-  // one module constructions
+  // configure single modules
   G4int nofDets = fModuleConstructionVector.entries();
   G4int i;
   for (i=0; i<nofDets; i++) {
     fModuleConstructionVector[i]->Configure(*AliFiles::Instance());
+    cout << "Module " << fModuleConstructionVector[i]->GetDetName() 
+         << " configured." << endl;
   }  
   if (fForceAllLVSensitive)
     SetAllLVSensitiveToModules(fForceAllLVSensitive);
       // override the setAllLVSensitive by Config.in macro
       // if required
      
-  for (i=0; i<nofDets; i++) {
-    G4cout << "Module " << fModuleConstructionVector[i]->GetDetName()
-           << " will be constructed now." << G4endl;
-    fModuleConstructionVector[i]->Construct();
-  }  
-    
-  // more modules construction
+  // configure dependent modules
   G4int nofModules = fMoreModulesConstruction->GetNofModules();
   if (nofModules>0) {
     fMoreModulesConstruction->Configure(*AliFiles::Instance());
@@ -131,7 +127,17 @@ void AliModulesComposition::ConstructModules()
       SetAllLVSensitiveToModules(fForceAllLVSensitive);
         // override the setAllLVSensitive by Config.in macro
         // if required
+  }  
 
+  // construct single modules
+  for (i=0; i<nofDets; i++) {
+    G4cout << "Module " << fModuleConstructionVector[i]->GetDetName()
+           << " will be constructed now." << G4endl;
+    fModuleConstructionVector[i]->Construct();
+  }  
+    
+  // construct dependent modules
+  if (nofModules>0) {
     G4cout << "Dependent modules will be constructed now." << G4endl;
     fMoreModulesConstruction->Construct();
   }  
@@ -141,6 +147,21 @@ void AliModulesComposition::ConstructModules()
         // this step can be done only after the sensitive
         // detectors have been created
 }  
+
+AliDetSwitch* AliModulesComposition::GetDetSwitch(const G4String& detName)
+{
+// Returns the detector switch with given detector name.
+// ---
+
+  AliDetSwitch* detSwitch = 0;
+  for (G4int id=0; id<fDetSwitchVector.entries(); id++) {  
+    detSwitch = fDetSwitchVector[id];
+    if (detSwitch->GetDetName() == detName) return detSwitch; 
+  }
+  
+  return detSwitch;  
+} 
+
 
 void AliModulesComposition::SetReadGeometryToModules(G4bool readGeometry)
 {
@@ -377,11 +398,13 @@ void AliModulesComposition::GenerateXMLGeometry() const
   // XML filename
   // according to last switched detector
   G4String detName;
+  G4String detVersion = "";
   G4int version = -1;
   for (G4int i=fDetSwitchVector.entries()-1; i>=0; i--) {
     version = fDetSwitchVector[i]->GetSwitchedVersion();
     if (version > -1) {
       detName = fDetSwitchVector[i]->GetDetName();
+      AliGlobals::AppendNumberToString(detVersion,version); 
       break;
     }  
   }  
@@ -402,7 +425,7 @@ void AliModulesComposition::GenerateXMLGeometry() const
   //                     "v4", world->GetLogicalVolume());
 
   // generate volumes tree
-  xml.GenerateSection(detName, version, "today", "Generated from Geant4",
+  xml.GenerateSection(detName, detVersion, "today", "Generated from Geant4",
                       topName, world->GetLogicalVolume());
   xml.CloseFile();
   
@@ -437,17 +460,6 @@ G4String AliModulesComposition::GetSwitchedDetsList() const
 
   return svList;
 }
-
-const G4RWTPtrOrderedVector<AliDetSwitch>& 
-AliModulesComposition::GetDetSwitchVector() const
-{
-// Returns detSwitch vector.
-// ---
-
-  //const AliDetSwitchVector& vector = fDetSwitchVector;
-  const G4RWTPtrOrderedVector<AliDetSwitch>& vector = fDetSwitchVector;
-  return vector;
-}  
 
 G4String AliModulesComposition::GetAvailableDetsList() const
 { 
