@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/02/22 14:00:20  morsch
+Protection against replication of fieldmap data in gAlice.
+
 Revision 1.1  2002/02/14 11:41:28  morsch
 Magnetic field map for ALICE for L3+muon spectrometer stored in 3 seperate
 root files.
@@ -231,13 +234,16 @@ AliFieldMap & AliFieldMap::operator =(const AliFieldMap &magf)
 void AliFieldMap::Streamer(TBuffer &R__b)
 {
    // Stream an object of class AliFieldMap.
-   if (R__b.IsReading()) {
-      AliFieldMap::Class()->ReadBuffer(R__b, this);
-   } else {
-       if (!fWriteEnable) {
-	   delete fB;
-	   fB = 0;
-       }
-      AliFieldMap::Class()->WriteBuffer(R__b, this);
-   }
+    TVector* save;
+    
+    if (R__b.IsReading()) {
+	AliFieldMap::Class()->ReadBuffer(R__b, this);
+    } else {
+	if (!fWriteEnable) {
+	    save = fB;
+	    fB = 0;
+	}
+	AliFieldMap::Class()->WriteBuffer(R__b, this);
+	if (!fWriteEnable) fB = save;
+    }
 }
