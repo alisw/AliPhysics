@@ -271,7 +271,7 @@ void AliMUONClusterReconstructor::Digits2ClustersNew()
 	  }
 	}
 
-	if (id[idDE] < 500 && id[idDE] > 299) continue; // temporary patch til St2 geometry is not yet ok (CF)
+	//	if (id[idDE] < 500 && id[idDE] > 299) continue; // temporary patch til St2 geometry is not yet ok (CF)
 
 	// cluster finder
 	if (fRecModel) {
