@@ -39,7 +39,7 @@ AliMpPlaneAreaPadIterator::AliMpPlaneAreaPadIterator(
                                 const AliMpPlaneAreaPadIterator& right)
   : AliMpVPadIterator(right)
 {
-// copy constructor
+// Copy constructor
  
   Fatal("Copy constructor", "Not implemented");
 }
@@ -57,7 +57,7 @@ AliMpPlaneAreaPadIterator::AliMpPlaneAreaPadIterator()
 //______________________________________________________________________________
 AliMpPlaneAreaPadIterator::~AliMpPlaneAreaPadIterator()
 {
-// destructor
+// Destructor
 
   // delete created iterators here
 }
@@ -72,7 +72,11 @@ AliMpPlaneAreaPadIterator::operator = (const AliMpPlaneAreaPadIterator& right)
 {
 // Assignement operator
 
-  Fatal("operator =", "Not implemented.");
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+
   return *this;
 } 
 
