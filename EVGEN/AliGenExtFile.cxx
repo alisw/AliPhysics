@@ -13,79 +13,21 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.24  2002/10/21 09:20:51  alibrary
-Introduce Riostream.h and remove unused variables
-
-Revision 1.23  2002/10/14 14:55:35  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.20.4.1  2002/06/10 14:57:41  hristov
-Merged with v3-08-02
-
-Revision 1.22  2002/05/15 11:59:49  morsch
-CdEventFile() method added.
-
-Revision 1.21  2002/04/26 10:39:31  morsch
-AliGenExtFile derives from AliGenMC. Generate() uses methods from AliGenMC (N. Carrer)
-
-Revision 1.20  2002/03/22 09:43:28  morsch
-Don't delete the TParticle.
-
-Revision 1.19  2002/02/08 16:50:50  morsch
-Add name and title in constructor.
-
-Revision 1.18  2001/11/12 14:31:00  morsch
-Memory leaks fixed. (M. Bondila)
-
-Revision 1.17  2001/11/09 09:12:58  morsch
-Generalization by using AliGenReader object to read particles from file.
-
-Revision 1.16  2001/07/27 17:09:35  morsch
-Use local SetTrack, KeepTrack and SetHighWaterMark methods
-to delegate either to local stack or to stack owned by AliRun.
-(Piotr Skowronski, A.M.)
-
-Revision 1.15  2001/01/23 13:29:37  morsch
-Add method SetParticleCode and enum type Code_t to handle both PDG (new ntuples)
-and GEANT3 codes (old ntuples) in input file.
-
-Revision 1.14  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.13  2000/11/30 07:12:50  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.12  2000/10/27 13:54:45  morsch
-Remove explicite reference to input file from constuctor.
-
-Revision 1.11  2000/10/02 21:28:06  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.10  2000/07/11 18:24:55  fca
-Coding convention corrections + few minor bug fixes
-
-Revision 1.9  2000/06/14 15:20:09  morsch
-Include clean-up (IH)
-
-Revision 1.8  2000/06/09 20:36:44  morsch
-All coding rule violations except RS3 corrected
-
-Revision 1.7  2000/02/16 14:56:27  morsch
-Convert geant particle code into pdg code before putting particle on the stack.
-
-Revision 1.6  1999/11/09 07:38:48  fca
-Changes for compatibility with version 2.23 of ROOT
-
-Revision 1.5  1999/09/29 09:24:12  fca
-Introduction of the Copyright and cvs Log
-
-*/
-
+/* $Id$ */
 
 // Event generator that using an instance of type AliGenReader
-// reads particles from a file and applies cuts. 
+// reads particles from a file and applies cuts.
+// Example: In your Config.C you can include the following lines
+//   AliGenExtFile *gener = new AliGenExtFile(-1);
+//  gener->SetMomentumRange(0,999);
+//  gener->SetPhiRange(-180.,180.);
+//  gener->SetThetaRange(0,180);
+//  gener->SetYRange(-999,999);
+//  AliGenReaderTreeK * reader = new AliGenReaderTreeK();
+//  reader->SetFileName("myFileWithTreeK.root");
+//  gener->SetReader(reader);
+//  gener->Init();
+
 
 #include <Riostream.h>
 
@@ -237,7 +179,9 @@ void AliGenExtFile::Generate()
 	                 (TMath::Abs(idpart) > 10);
       // printf("*** pdg, first daughter, trk = %d, %d, %d\n",
       //   idpart,decayed, doTracking);
-      SetTrack(doTracking,-1,idpart,p,origin,polar,0,kPPrimary,nt);
+      //PH      SetTrack(doTracking,-1,idpart,p,origin,polar,0,kPPrimary,nt);
+      Int_t parent = iparticle->GetFirstMother();
+      SetTrack(doTracking,parent,idpart,p,origin,polar,0,kPPrimary,nt);
       KeepTrack(nt);
     } // track loop
 
