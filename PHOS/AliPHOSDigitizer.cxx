@@ -291,7 +291,6 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   ticks->Delete() ;
   delete ticks ;
   
-  
   //Now CPV digits (different noise and no timing)
   for(absID = nEMC+1; absID <= nCPV; absID++){
     Float_t noise = gRandom->Gaus(0., fCPVNoise) ; 
@@ -646,12 +645,13 @@ void AliPHOSDigitizer::Print()const
       digit = (AliPHOSDigit * )  digits->At(index) ;
       if(digit->GetNprimary() == 0) 
 	continue;
-      printf("\n%6d  %8d    %6.5e %4d      %2d :",
+      printf("%6d  %8d    %6.5e %4d      %2d :",
 	      digit->GetId(), digit->GetAmp(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
 	printf("%d ",digit->GetPrimary(iprimary+1) ) ; 
       }    
+      printf("\n") ;
     }
   }
   
@@ -666,12 +666,13 @@ void AliPHOSDigitizer::Print()const
     for (index = 0 ; index < digits->GetEntriesFast(); index++) {
       digit = (AliPHOSDigit * )  digits->At(index) ;
       if(digit->GetId() > maxEmc){
-	printf("\n%6d  %8d    %4d      %2d :",
+	printf("%6d  %8d    %4d      %2d :",
 		digit->GetId(), digit->GetAmp(), digit->GetIndexInList(), digit->GetNprimary()) ;  
 	Int_t iprimary;
 	for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
 	  printf("%d ",digit->GetPrimary(iprimary+1) ) ; 
 	}    
+	printf("\n") ;
       }
     }
   }
