@@ -17,13 +17,15 @@ class TClonesArray;
 public:
   AliFMD();
   AliFMD(const char *name, const char *title);
+  AliFMD(const AliFMD& FMD):AliDetector(FMD) {;}  //copy ctor
   virtual       ~AliFMD(); 
-  virtual void   AddHit(Int_t, Int_t*, Float_t*);
-  virtual void   AddDigit(Int_t*);
+ AliFMD&  operator=(const AliFMD&)                 {return *this;}
+  virtual void   AddHit(Int_t track, Int_t * vol, Float_t * hits);
+  virtual void   AddDigit(Int_t* digits);
    virtual void   BuildGeometry();
   virtual void   CreateGeometry() {}
   virtual void   CreateMaterials()=0; 
-  virtual Int_t  DistanceToPrimitive(Int_t px, Int_t py);
+  virtual const Int_t  DistanceToPrimitive(Int_t px, Int_t py);
   virtual Int_t  IsVersion() const =0;
   virtual void   Init();
   virtual void   MakeBranch(Option_t *opt=" ");
@@ -35,12 +37,12 @@ public:
   virtual void   StepManager() {}
    
   void SetEventNumber(Int_t i)     {fEvNrSig = i;}
-  void  Eta2Radius(Float_t, Float_t, Float_t*);
+
 
  
    // Digitisation
   TClonesArray *ReconParticles() const {return fReconParticles;}   
-  virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
+  virtual const void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
  protected:
@@ -54,7 +56,7 @@ public:
   Int_t fEvNrSig;                 // signal     event number
 
 
-  TClonesArray *fReconParticles;
+  TClonesArray *fReconParticles; //array of reconstructed multiplicity in 0.1eta
 
  ClassDef(AliFMD,6)  //Class for the FMD detector
 };

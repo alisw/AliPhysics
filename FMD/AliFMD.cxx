@@ -47,8 +47,6 @@
 #include <TClonesArray.h>
 #include <TFile.h>
 #include <TGeometry.h>
-#include <TLorentzVector.h>
-#include <TMath.h>
 #include <TNode.h>
 #include <TTUBE.h>
 #include <TTree.h>
@@ -60,7 +58,6 @@
 #include "AliFMDhit.h"
 #include "AliFMDv1.h"
 #include "AliLoader.h"
-#include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliFMDDigitizer.h"
@@ -102,6 +99,7 @@ AliDetector (name, title)
 //-----------------------------------------------------------------------------
 AliFMD::~AliFMD ()
 {
+  //destructor for base class AliFMD
   if (fHits)
     {
       fHits->Delete ();
@@ -189,7 +187,7 @@ void AliFMD::BuildGeometry ()
 }
 
 //_____________________________________________________________________________
-Int_t AliFMD::DistanceToPrimitive (Int_t /*px*/, Int_t /*py*/)
+const Int_t AliFMD::DistanceToPrimitive (Int_t /*px*/, Int_t /*py*/)
 {
   //
   // Calculate the distance from the mouse to the FMD on the screen
@@ -301,19 +299,6 @@ void AliFMD::SetTreeAddress ()
 }
 
 
-
-void
-AliFMD::Eta2Radius (Float_t eta, Float_t zDisk, Float_t * radius)
-{
-  Float_t expEta = TMath::Exp (-eta);
-  Float_t theta = TMath::ATan (expEta);
-  theta = 2. * theta;
-  Float_t rad = zDisk * (TMath::Tan (theta));
-  *radius = rad;
-
-  if (fDebug)
-    printf ("%s: eta %f radius %f\n", ClassName (), eta, rad);
-}
 
 //-----------------------------------------------------------------------
 
