@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Rectangular geometry - Bedanga Mohanty - Spetember 2003
 
 ////////////////////////////////////////////////
 //  Manager and hits classes for set:PMD      //
@@ -17,6 +18,11 @@ class AliPMDv1 : public AliPMD {
 
 private:
   Int_t fMedSens;
+  Int_t fMedSens1;
+  Float_t dbox_mm1[3];
+  Float_t dbox_mm12[3];
+  Float_t dbox_mm2[3];
+  Float_t dbox_mm22[3];
   
 public:
   AliPMDv1();
