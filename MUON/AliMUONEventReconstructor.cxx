@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/27 14:11:36  gosset
+Corrections against violations of coding conventions
+
 Revision 1.3  2000/06/16 07:27:08  gosset
 To remove problem in running RuleChecker, like in MUON-dev
 
@@ -67,6 +70,7 @@ Addition of files for track reconstruction in C++
 #include "AliMUONChamber.h"
 #include "AliMUONTrackHit.h"
 #include "AliRun.h"
+#include "TParticle.h"
 
 #ifndef WIN32 
 # define initfield initfield_
@@ -849,6 +853,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegme
     // pointer to segment
     endSegment = (AliMUONSegment*) ((*fSegmentsPtr[endStation])[iEndSegment]);
     // test compatibility between current segment and "extrapSegment"
+    // 4 because 4 quantities in chi2
     if ((endSegment->
 	 NormalizedChi2WithSegment(extrapSegment,
 				   fMaxSigma2Distance)) <= 4.0) {
@@ -909,6 +914,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
       // pointer to HitForRec
       hit = (AliMUONHitForRec*) ((*fHitsForRecPtr)[iHit]);
       // test compatibility between current HitForRec and "extrapHitForRec"
+      // 2 because 2 quantities in chi2
       if ((hit->
 	   NormalizedChi2WithHitForRec(extrapHitForRec,
 				       fMaxSigma2Distance)) <= 2.0) {
@@ -973,23 +979,29 @@ void AliMUONEventReconstructor::MakeTrackCandidates(void)
 void AliMUONEventReconstructor::FollowTracks(void)
 {
   // Follow tracks in stations(1..) 3, 2 and 1
+  // too long: should be made more modular !!!!
   AliMUONHitForRec *bestHit, *extrapHit, *hit;
   AliMUONSegment *bestSegment, *extrapSegment, *segment;
-  AliMUONTrack *track;
-  AliMUONTrackParam *trackParam1, trackParam[2];
+  AliMUONTrack *track, *nextTrack;
+  AliMUONTrackParam *trackParam1, trackParam[2], trackParamVertex;
   Int_t ch, chBestHit, iHit, iSegment, station, trackIndex;
-  Double_t bestChi2, chi2, dZ1, dZ2, maxSigma2Distance, mcsFactor;
+  Double_t bestChi2, chi2, dZ1, dZ2, dZ3, maxSigma2Distance, mcsFactor;
   AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
-  maxSigma2Distance = 4. * fMaxSigma2Distance; // sigma2cut increased by 4 !!!!
+  // local maxSigma2Distance, for easy increase in testing
+  maxSigma2Distance = fMaxSigma2Distance;
   if (fPrintLevel >= 2)
     cout << "enter FollowTracks" << endl;
   // Loop over track candidates
-  for (trackIndex = 0; trackIndex < fNRecTracks; trackIndex++) {
+  track = (AliMUONTrack*) fRecTracksPtr->First();
+  trackIndex = -1;
+  while (track) {
+    // Follow function for each track candidate ????
+    trackIndex++;
+    nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track); // prepare next track
     if (fPrintLevel >= 2)
       cout << "FollowTracks: track candidate(0..): " << trackIndex << endl;
-    // function for each track candidate ????
-    track = (AliMUONTrack*) ((*fRecTracksPtr)[trackIndex]);
     // Fit track candidate from vertex at X = Y = 0 
+    track->SetFitMCS(0);  // fit without Multiple Scattering
     track->Fit(track->GetTrackParamAtVertex(), 3);
     if (fPrintLevel >= 10) {
       cout << "FollowTracks: track candidate(0..): " << trackIndex
@@ -997,7 +1009,8 @@ void AliMUONEventReconstructor::FollowTracks(void)
       track->RecursiveDump();
     }
     // Loop over stations(1..) 3, 2 and 1
-    // something SPECIAL for stations 2 and 1 for majority coincidence ????
+    // something SPECIAL for stations 2 and 1 for majority 3 coincidence ????
+    // otherwise: majority coincidence 2 !!!!
     for (station = 2; station >= 0; station--) {
       // Track parameters at first track hit (smallest Z)
       trackParam1 = ((AliMUONTrackHit*)
@@ -1015,9 +1028,15 @@ void AliMUONEventReconstructor::FollowTracks(void)
       // Z difference between the two previous stations
       dZ2 = (&(pMUON->Chamber(2 * station + 2)))->Z() -
 	(&(pMUON->Chamber(2 * station + 4)))->Z();
-      extrapSegment->SetBendingCoorReso2(fBendingResolution);
-      extrapSegment->SetNonBendingCoorReso2(fNonBendingResolution);
-      extrapSegment->UpdateFromStationTrackParam(trackParam, mcsFactor, dZ1, dZ2);
+      // Z difference between the two chambers in the previous station
+      dZ3 = (&(pMUON->Chamber(2 * station)))->Z() -
+	(&(pMUON->Chamber(2 * station + 1)))->Z();
+      extrapSegment->SetBendingCoorReso2(fBendingResolution * fBendingResolution);
+      extrapSegment->
+	SetNonBendingCoorReso2(fNonBendingResolution * fNonBendingResolution);
+      extrapSegment->UpdateFromStationTrackParam
+	(trackParam, mcsFactor, dZ1, dZ2, dZ3, station,
+	 trackParam1->GetInverseBendingMomentum());
       bestChi2 = 5.0;
       bestSegment = NULL;
       if (fPrintLevel >= 10) {
@@ -1100,26 +1119,125 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	  }
 	}
 	else {
-	  fRecTracksPtr->RemoveAt(trackIndex); // Remove candidate
+	  // Remove current track candidate and update fNRecTracks
+	  // To be checked: recursive delete of TrackHit's !!!!
+	  // For cleaner implementation: call track->Remove()
+	  // to be coded, with all cleanings,
+	  // including links between HitForRec's and TrackHit's !!!!
+	  fRecTracksPtr->Remove(track);
+	  fNRecTracks--;
+	  delete extrapSegment;
 	  break; // stop the search for this candidate:
 	  // exit from the loop over station
 	}
       }
+      delete extrapSegment;
       // Sort track hits according to increasing Z
       track->GetTrackHitsPtr()->Sort();
       // Update track parameters at first track hit (smallest Z)
       trackParam1 = ((AliMUONTrackHit*)
 		     (track->GetTrackHitsPtr()->First()))->GetTrackParam();
-      // Track fit from first track hit varying X and Y
+      // Track fit from first track hit varying X and Y,
+      // with multiple Coulomb scattering if all stations
+      if (station == 0) track->SetFitMCS(1);
+      else track->SetFitMCS(0);
       track->Fit(trackParam1, 5);
       if (fPrintLevel >= 10) {
 	cout << "FollowTracks: track candidate(0..): " << trackIndex
 	     << " after fit from station(0..): " << station << " to 4" << endl;
 	track->RecursiveDump();
       }
-      delete extrapSegment;
+      // Track extrapolation to the vertex through the absorber (Branson)
+      if (station == 0) {
+	trackParamVertex = *trackParam1;
+	(&trackParamVertex)->ExtrapToVertex();
+	track->SetTrackParamAtVertex(&trackParamVertex);
+      }
+      if (fPrintLevel >= 1) {
+	cout << "FollowTracks: track candidate(0..): " << trackIndex
+	     << " after fit from station(0..): " << station << " to 4" << endl;
+	//      track->RecursiveDump(); // CCC
+      }
     } // for (station = 2;...
-  } // for (trackIndex = 0;...
+    // go really to next track
+    track = nextTrack;
+  } // while (track)
+  // Compression of track array (necessary after Remove ????)
+  fRecTracksPtr->Compress();
+  return;
+}
+
+  //__________________________________________________________________________
+void AliMUONEventReconstructor::EventDump(void)
+{
+  // Dump reconstructed event (track parameters at vertex and at first hit),
+  // and the particle parameters
+
+  AliMUONTrack *track;
+  AliMUONTrackParam *trackParam, *trackParam1;
+  TClonesArray *particles; // pointer to the particle list
+  TParticle *p;
+  Double_t bendingSlope, nonBendingSlope, pYZ;
+  Double_t pX, pY, pZ, x, y, z, c;
+  Int_t np, trackIndex, nTrackHits;
+ 
+  if (fPrintLevel >= 1) cout << "****** enter EventDump ******" << endl;
+  if (fPrintLevel >= 1) {
+    cout << " Number of Reconstructed tracks :" <<  fNRecTracks << endl; 
+  }
+  fRecTracksPtr->Compress(); // for simple loop without "Next" since no hole
+  // Loop over reconstructed tracks
+  for (trackIndex = 0; trackIndex < fNRecTracks; trackIndex++) {
+    if (fPrintLevel >= 1)
+      cout << " track number: " << trackIndex << endl;
+    // function for each track for modularity ????
+    track = (AliMUONTrack*) ((*fRecTracksPtr)[trackIndex]);
+    nTrackHits = track->GetNTrackHits();
+    if (fPrintLevel >= 1)
+      cout << " number of track hits: " << nTrackHits << endl;
+    // track parameters at Vertex
+    trackParam = track->GetTrackParamAtVertex();
+    x = trackParam->GetNonBendingCoor();
+    y = trackParam->GetBendingCoor();
+    z = trackParam->GetZ();
+    bendingSlope = trackParam->GetBendingSlope();
+    nonBendingSlope = trackParam->GetNonBendingSlope();
+    pYZ = 1/TMath::Abs(trackParam->GetInverseBendingMomentum());
+    pZ = pYZ/TMath::Sqrt(1+bendingSlope*bendingSlope);
+    pX = pZ * nonBendingSlope;
+    pY = pZ * bendingSlope;
+    c = TMath::Sign(1.0, trackParam->GetInverseBendingMomentum());
+    if (fPrintLevel >= 1)
+      printf(" track parameters at Vertex z= %f: X= %f Y= %f pX= %f pY= %f pZ= %f c= %f\n",
+	     z, x, y, pX, pY, pZ, c);
+
+    // track parameters at first hit
+    trackParam1 = ((AliMUONTrackHit*)
+		   (track->GetTrackHitsPtr()->First()))->GetTrackParam();
+    x = trackParam1->GetNonBendingCoor();
+    y = trackParam1->GetBendingCoor();
+    z = trackParam1->GetZ();
+    bendingSlope = trackParam1->GetBendingSlope();
+    nonBendingSlope = trackParam1->GetNonBendingSlope();
+    pYZ = 1/TMath::Abs(trackParam1->GetInverseBendingMomentum());
+    pZ = pYZ/TMath::Sqrt(1.0 + bendingSlope * bendingSlope);
+    pX = pZ * nonBendingSlope;
+    pY = pZ * bendingSlope;
+    c = TMath::Sign(1.0, trackParam1->GetInverseBendingMomentum());
+    if (fPrintLevel >= 1)
+      printf(" track parameters at z= %f: X= %f Y= %f pX= %f pY= %f pZ= %f c= %f\n",
+	     z, x, y, pX, pY, pZ, c);
+  }
+  // informations about generated particles
+  particles = gAlice->Particles();
+  np = particles->GetEntriesFast();
+  printf(" **** number of generated particles: %d  \n", np);
+  
+  for (Int_t iPart = 0; iPart < np; iPart++) {
+    p = (TParticle*) particles->UncheckedAt(iPart);
+    printf(" particle %d: type= %d px= %f py= %f pz= %f pdg= %d\n",
+	   iPart, p->GetPdgCode(), p->Px(), p->Py(), p->Pz(), p->GetPdgCode());    
+  }
   return;
 }
 

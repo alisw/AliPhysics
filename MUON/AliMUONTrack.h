@@ -29,11 +29,17 @@ class AliMUONTrack : public TObject {
   AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegment, AliMUONEventReconstructor* EventReconstructor); // Constructor from two Segment's
   AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec, AliMUONEventReconstructor* EventReconstructor); // Constructor from one Segment and one HitForRec
 
+  AliMUONEventReconstructor* GetEventReconstructor(void) {return fEventReconstructor;};
   AliMUONTrackParam* GetTrackParamAtVertex(void);
-  void SetTrackParamAtVertex(void);
-  AliMUONTrackParam* GetTrackParamAtFirstHit(void);
+  void SetTrackParamAtVertex(void); // Set track parameters at vertex from last stations 4 & 5
+  void SetTrackParamAtVertex(AliMUONTrackParam* TrackParam) {fTrackParamAtVertex = *TrackParam;};
+
   TClonesArray* GetTrackHitsPtr(void);
   Int_t GetNTrackHits(void);
+  Int_t GetFitMCS(void) {return fFitMCS;};
+  void SetFitMCS(Int_t FitMCS);
+
+  AliMUONTrackParam* GetTrackParamAtFirstHit(void);
 
   void RecursiveDump(void); // Recursive dump (with track hits)
   void Fit(AliMUONTrackParam *TrackParam, Int_t NParam); // Fit
@@ -47,6 +53,7 @@ class AliMUONTrack : public TObject {
   AliMUONTrackParam fTrackParamAtVertex; // Track parameters at vertex
   TClonesArray *fTrackHitsPtr; // Pointer to array of TrackHit's
   Int_t fNTrackHits; // Number of TrackHit's
+  Int_t fFitMCS; // 0(1) for fit without(with) multiple Coulomb scattering
   
   ClassDef(AliMUONTrack, 1) // Class definition in ROOT context
     };

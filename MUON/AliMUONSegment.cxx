@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/25 13:06:39  hristov
+Inline functions moved from *.cxx to *.h files instead of forward declarations
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -229,7 +232,7 @@ AliMUONHitForRec* AliMUONSegment::CreateHitForRecFromLinearExtrapToChamber (Int_
 }
 
   //__________________________________________________________________________
-void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, Double_t MCSfactor, Double_t Dz1, Double_t Dz2)
+void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, Double_t MCSfactor, Double_t Dz1, Double_t Dz2, Double_t Dz3, Int_t Station, Double_t InverseMomentum)
 {
   // Fill data members with values calculated from the array of track parameters
   // pointed to by "TrackParam" (index = 0 and 1 for first and second chambers
@@ -239,28 +242,108 @@ void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, 
   // with one chamber for the coordinate, two chambers for the angle,
   // due to the arrangement in stations.
   // Resolution coming from:
-  // coordinate in closest station at "Dz1",
+  // coordinate in closest station at "Dz1" from current "Station",
   // slope between closest stations, with "Dz2" interval between them,
-  // extrapolation over "Dz" from closest station.
+  // interval "Dz3" between chambers of closest station,
+  // extrapolation over "Dz1" from closest station,
+  // "InverseMomentum".
   // When called, "fBendingCoorReso2" and "fNonBendingCoorReso2"
   // are assumed to be filled
   // with the variance on bending and non bending coordinates.
+  // The "road" is parametrized from the old reco_muon.F
+  // with 8 cm between stations.
   AliMUONTrackParam *param0;
   Double_t cReso2, sReso2;
+  // parameters to define the widths of the searching roads in station 0,1,2
+  // width = p0 + p1/ (momentum)^2
+  //                  station number:        0         1          2
+  static Double_t p0BendingCoor[3] =     { 6.43e-2, 1.64e-2,   0.034 };   
+  static Double_t p1BendingCoor[3] =     {    986.,    821.,    446. };  
+  static Double_t p0BendingSlope[3] =    { 3.54e-6, 3.63e-6,  3.6e-6 };  
+  static Double_t p1BendingSlope[3] =    { 4.49e-3,  4.8e-3,   0.011 };  
+  static Double_t p0NonBendingCoor[3] =  { 4.66e-2, 4.83e-2,   0.049 };   
+  static Double_t p1NonBendingCoor[3] =  {   1444.,    866.,    354. };  
+  static Double_t p0NonBendingSlope[3] = { 6.14e-4, 6.49e-4, 6.85e-4 };  
+  static Double_t p1NonBendingSlope[3] = {      0.,      0.,      0. };  
   param0 = &(TrackParam[0]);
+
+// OLD version
+//   // Bending plane
+//   fBendingCoor = param0->GetBendingCoor(); // coordinate
+//   fBendingSlope = param0->GetBendingSlope(); // slope
+//   cReso2 = fBendingCoorReso2;
+//   sReso2 = 2.0 * cReso2 / Dz2 / Dz2;
+//   fBendingCoorReso2 = cReso2 + (sReso2 + MCSfactor) * Dz1 * Dz1;
+//   fBendingSlopeReso2 = sReso2 + 2.0 * MCSfactor;
+//   // Non bending plane
+//   fNonBendingCoor = param0->GetNonBendingCoor(); // coordinate
+//   fNonBendingSlope = param0->GetNonBendingSlope(); // slope
+//   cReso2 = fNonBendingCoorReso2;
+//   sReso2 = 2.0 * cReso2 / Dz2 / Dz2;
+//   fNonBendingCoorReso2 = cReso2 + (sReso2 + MCSfactor) * Dz1 * Dz1;
+//   fNonBendingSlopeReso2 = sReso2 + 2.0 * MCSfactor;
+
+  // Coordinate and slope
   // Bending plane
   fBendingCoor = param0->GetBendingCoor(); // coordinate
   fBendingSlope = param0->GetBendingSlope(); // slope
-  cReso2 = fBendingCoorReso2;
-  sReso2 = 2.0 * cReso2 / Dz2 / Dz2;
-  fBendingCoorReso2 = cReso2 + (sReso2 + MCSfactor) * Dz1 * Dz1;
-  fBendingSlopeReso2 = sReso2 + 2.0 * MCSfactor;
   // Non bending plane
   fNonBendingCoor = param0->GetNonBendingCoor(); // coordinate
   fNonBendingSlope = param0->GetNonBendingSlope(); // slope
+
+  // Resolutions
+  // cReso2 and sReso2 have to be subtracted here from the parametrization
+  // because they are added in the functions "NormalizedChi2WithSegment"
+  // and "NormalizedChi2WithHitForRec"
+  // Bending plane
+  cReso2 = fBendingCoorReso2;
+  sReso2 = (2. * cReso2 )/ (Dz3*Dz3) ;
+  fBendingCoorReso2 = p0BendingCoor[Station] + p1BendingCoor[Station]*InverseMomentum*InverseMomentum - cReso2;
+  fBendingSlopeReso2 = p0BendingSlope[Station] + p1BendingSlope[Station]*InverseMomentum*InverseMomentum - sReso2;
+  // Non bending plane
   cReso2 = fNonBendingCoorReso2;
-  sReso2 = 2.0 * cReso2 / Dz2 / Dz2;
-  fNonBendingCoorReso2 = cReso2 + (sReso2 + MCSfactor) * Dz1 * Dz1;
-  fNonBendingSlopeReso2 = sReso2 + 2.0 * MCSfactor;
+  sReso2 =  (2. * cReso2 )/ (Dz3*Dz3) ;
+  fNonBendingCoorReso2 = p0NonBendingCoor[Station] + p1NonBendingCoor[Station]*InverseMomentum*InverseMomentum - cReso2;
+  fNonBendingSlopeReso2 = p0NonBendingSlope[Station] + p1NonBendingSlope[Station]*InverseMomentum*InverseMomentum - sReso2;
   return;
 }
+
+// OLD function, with roads automatically calculated instead from being parametrized
+// kept because it would be a better solution,
+// if one can really find the right values.
+//   //__________________________________________________________________________
+// void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, Double_t MCSfactor, Double_t Dz1, Double_t Dz2)
+// {
+//   // Fill data members with values calculated from the array of track parameters
+//   // pointed to by "TrackParam" (index = 0 and 1 for first and second chambers
+//   // of the station, respectively).
+//   // Multiple Coulomb scattering is taking into account with "MCSfactor"
+//   // corresponding to one chamber,
+//   // with one chamber for the coordinate, two chambers for the angle,
+//   // due to the arrangement in stations.
+//   // Resolution coming from:
+//   // coordinate in closest station at "Dz1",
+//   // slope between closest stations, with "Dz2" interval between them,
+//   // extrapolation over "Dz" from closest station.
+//   // When called, "fBendingCoorReso2" and "fNonBendingCoorReso2"
+//   // are assumed to be filled
+//   // with the variance on bending and non bending coordinates.
+//   AliMUONTrackParam *param0;
+//   Double_t cReso2, sReso2;
+//   param0 = &(TrackParam[0]);
+//   // Bending plane
+//   fBendingCoor = param0->GetBendingCoor(); // coordinate
+//   fBendingSlope = param0->GetBendingSlope(); // slope
+//   cReso2 = fBendingCoorReso2;
+//   sReso2 = 2.0 * cReso2 / Dz2 / Dz2;
+//   fBendingCoorReso2 = cReso2 + (sReso2 + MCSfactor) * Dz1 * Dz1;
+//   fBendingSlopeReso2 = sReso2 + 2.0 * MCSfactor;
+//   // Non bending plane
+//   fNonBendingCoor = param0->GetNonBendingCoor(); // coordinate
+//   fNonBendingSlope = param0->GetNonBendingSlope(); // slope
+//   cReso2 = fNonBendingCoorReso2;
+//   sReso2 = 2.0 * cReso2 / Dz2 / Dz2;
+//   fNonBendingCoorReso2 = cReso2 + (sReso2 + MCSfactor) * Dz1 * Dz1;
+//   fNonBendingSlopeReso2 = sReso2 + 2.0 * MCSfactor;
+//   return;
+// }

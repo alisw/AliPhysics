@@ -54,7 +54,7 @@ class AliMUONSegment : public TObject {
   AliMUONSegment* CreateSegmentFromLinearExtrapToStation (Int_t Station, Double_t MCSfactor);
   Double_t NormalizedChi2WithSegment(AliMUONSegment* Segment, Double_t Sigma2Cut);
   AliMUONHitForRec* CreateHitForRecFromLinearExtrapToChamber (Int_t Chamber, Double_t MCSfactor);
-  void UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, Double_t MCSfactor, Double_t Dz1, Double_t Dz2);
+  void UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, Double_t MCSfactor, Double_t Dz1, Double_t Dz2, Double_t Dz3, Int_t Station, Double_t InverseMomentum);
 
   // What is necessary for sorting TClonesArray's; sufficient too ????
   Bool_t IsSortable() const { return kTRUE; }

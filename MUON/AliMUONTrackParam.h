@@ -35,6 +35,9 @@ class AliMUONTrackParam : public TObject {
 
   void ExtrapToZ(Double_t Z);
   void ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackParam);
+  void ExtrapToVertex();  // extrapolation to vertex through the absorber
+  void BransonCorrection(); // makes Branson correction
+  Double_t TotalMomentumEnergyLoss(Double_t rLimit, Double_t pTotal, Double_t theta, Double_t xEndAbsorber, Double_t yEndAbsorber); // returns total momentum after energy loss correction in the absorber
 
  protected:
  private:

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:49  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.3  2000/06/09 21:03:09  morsch
 Make includes consistent with new file structure.
 
@@ -227,5 +230,149 @@ void AliMUONTrackParam::ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackP
   // second extrapolation
   (&(TrackParam[i2]))->ExtrapToZ(extZ[1]);
   return;
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackParam::ExtrapToVertex()
+{
+  // Extrapolation to the vertex.
+  // Returns the track parameters resulting from the extrapolation,
+  // in the current TrackParam.
+  // Changes parameters according to branson correction through the absorber 
+  
+  Double_t zAbsorber = 503.0; // to be coherent with the Geant absorber geometry !!!!
+  // Extrapolates track parameters upstream to the "Z" end of the front absorber
+  ExtrapToZ(zAbsorber);
+    // Makes Branson correction (multiple scattering + energy loss)
+  BransonCorrection();
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackParam::BransonCorrection()
+{
+  // Branson correction of track parameters
+  // the entry parameters have to be calculated at the end of the absorber
+  Double_t zEndAbsorber, zBP, xBP, yBP;
+  Double_t  pYZ, pX, pY, pZ, pTotal, xEndAbsorber, yEndAbsorber, radiusEndAbsorber2, pT, theta;
+  Int_t sign;
+  // Would it be possible to calculate all that from Geant configuration ????
+  // Radiation lengths outer part theta > 3 degres
+  static Double_t x01[9] = { 18.8,    // C (cm)
+			     10.397,   // Concrete (cm)
+			     0.56,    // Plomb (cm)
+			     47.26,   // Polyethylene (cm)
+			     0.56,   // Plomb (cm)
+			     47.26,   // Polyethylene (cm)
+			     0.56,   // Plomb (cm)
+			     47.26,   // Polyethylene (cm)
+			     0.56 };   // Plomb (cm)
+  // inner part theta < 3 degres
+  static Double_t x02[3] = { 18.8,    // C (cm)
+			     10.397,   // Concrete (cm)
+			     0.35 };    // W (cm) 
+  // z positions of the materials inside the absober outer part theta > 3 degres
+  static Double_t z1[10] = { 90, 315, 467, 472, 477, 482, 487, 492, 497, 502 };
+  // inner part theta < 3 degres
+  static Double_t z2[4] = { 90, 315, 467, 503 };
+  static Bool_t first = kTRUE;
+  static Double_t zBP1, zBP2, rLimit;
+  // Calculates z positions of the Branson's planes: zBP1 for outer part and zBP2 for inner part (only at the first call)
+  if (first) {
+    first = kFALSE;
+    Double_t aNBP = 0.0;
+    Double_t aDBP = 0.0;
+    for (Int_t iBound = 0; iBound < 9; iBound++) {
+      aNBP = aNBP +
+	(z1[iBound+1] * z1[iBound+1] * z1[iBound+1] -
+	 z1[iBound]   * z1[iBound]   * z1[iBound]    ) / x01[iBound];
+      aDBP = aDBP +
+	(z1[iBound+1] * z1[iBound+1] - z1[iBound]   * z1[iBound]    ) / x01[iBound];
+    }
+    zBP1 = (2.0 * aNBP) / (3.0 * aDBP);
+    aNBP = 0.0;
+    aDBP = 0.0;
+    for (Int_t iBound = 0; iBound < 3; iBound++) {
+      aNBP = aNBP +
+	(z2[iBound+1] * z2[iBound+1] * z2[iBound+1] -
+	 z2[iBound]   * z2[iBound ]  * z2[iBound]    ) / x02[iBound];
+      aDBP = aDBP +
+	(z2[iBound+1] * z2[iBound+1] - z2[iBound] * z2[iBound]) / x02[iBound];
+    }
+    zBP2 = (2.0 * aNBP) / (3.0 * aDBP);
+    rLimit = z2[3] * TMath::Tan(3.0 * (TMath::Pi()) / 180.);
+  }
+
+  pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
+  sign = 1;      
+  if (fInverseBendingMomentum < 0) sign = -1;     
+  pZ = pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope)); 
+  pX = pZ * fNonBendingSlope; 
+  pY = pZ * fBendingSlope; 
+  pTotal = TMath::Sqrt(pYZ *pYZ + pX * pX);
+  xEndAbsorber = fNonBendingCoor; 
+  yEndAbsorber = fBendingCoor; 
+  radiusEndAbsorber2 = xEndAbsorber * xEndAbsorber + yEndAbsorber * yEndAbsorber;
+
+  if (radiusEndAbsorber2 > rLimit*rLimit) {
+    zEndAbsorber = z1[9];
+    zBP = zBP1;
+  } else {
+    zEndAbsorber = z2[2];
+    zBP = zBP2;
+  }
+
+  xBP = xEndAbsorber - (pX / pZ) * (zEndAbsorber - zBP);
+  yBP = yEndAbsorber - (pY / pZ) * (zEndAbsorber - zBP);
+
+  // new parameters after Branson and energy loss corrections
+  pZ = pTotal * zBP / TMath::Sqrt(xBP * xBP + yBP * yBP + zBP * zBP);
+  pX = pZ * xBP / zBP;
+  pY = pZ * yBP / zBP;
+  fBendingSlope = pY / pZ;
+  fNonBendingSlope = pX / pZ;
+  
+  pT = TMath::Sqrt(pX * pX + pY * pY);      
+  theta = TMath::ATan2(pT, pZ); 
+  pTotal =
+    TotalMomentumEnergyLoss(rLimit, pTotal, theta, xEndAbsorber, yEndAbsorber);
+
+  fInverseBendingMomentum = (sign / pTotal) *
+    TMath::Sqrt(1.0 +
+		fBendingSlope * fBendingSlope +
+		fNonBendingSlope * fNonBendingSlope) /
+    TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope);
+
+  // vertex position at (0,0,0)
+  // should be taken from vertex measurement ???
+  fBendingCoor = 0.0;
+  fNonBendingCoor = 0;
+  fZ= 0;
+}
+
+  //__________________________________________________________________________
+Double_t AliMUONTrackParam::TotalMomentumEnergyLoss(Double_t rLimit, Double_t pTotal, Double_t theta, Double_t xEndAbsorber, Double_t yEndAbsorber)
+{
+  // Returns the total momentum corrected from energy loss in the front absorber
+  Double_t deltaP, pTotalCorrected;
+
+  Double_t radiusEndAbsorber2 =
+    xEndAbsorber *xEndAbsorber + yEndAbsorber * yEndAbsorber;
+  // Parametrization to be redone according to change of absorber material ????
+  // The name is not so good, and there are many arguments !!!!
+  if (radiusEndAbsorber2 < rLimit * rLimit) {
+    if (pTotal < 15) {
+      deltaP = 2.737 + 0.0494 * pTotal - 0.001123 * pTotal * pTotal;
+    } else {
+      deltaP = 3.0643 + 0.01346 *pTotal;
+    }
+  } else {
+    if (pTotal < 15) {
+      deltaP  = 2.1380 + 0.0351 * pTotal - 0.000853 * pTotal * pTotal;
+    } else { 
+      deltaP = 2.407 + 0.00702 * pTotal;
+    }
+  }
+  pTotalCorrected = pTotal + deltaP / TMath::Cos(theta);
+  return pTotalCorrected;
 }
 

@@ -64,6 +64,7 @@ class AliMUONEventReconstructor : public TObject {
   Double_t GetImpactParamFromBendingMomentum(Double_t BendingMomentum);
   Double_t GetBendingMomentumFromImpactParam(Double_t ImpactParam);
   void EventReconstruct(void);
+  void EventDump(void);  // dump reconstructed event
 
  protected:
 
