@@ -25,7 +25,7 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv2.h"
 #include "STRUCT/AliPIPEv0.h"
-#include "ITS/AliITSvPPRasymm.h"
+#include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv2FHoles.h"
 #include "TOF/AliTOFv4T0.h"
@@ -126,17 +126,17 @@ void Config()
     gMC->SetCut("TOFMAX", tofmax); 
 
 
-    int     nParticles = 30;
+    int     nParticles = 100;
     if (gSystem->Getenv("CONFIG_NPARTICLES"))
     {
         nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
     }
 
     AliGenCocktail *gener = new AliGenCocktail();
-    gener->SetPhiRange(220, 320);
+    gener->SetPhiRange(0, 360);
     // Set pseudorapidity range from -8 to 8.
-    Float_t thmin = EtaToTheta(0.12);   // theta min. <---> eta max
-    Float_t thmax = EtaToTheta(-0.12);  // theta max. <---> eta min 
+    Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
+    Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
     gener->SetThetaRange(thmin,thmax);
     gener->SetOrigin(0, 0, 0);  //vertex position
     gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
@@ -260,32 +260,19 @@ void Config()
     // Detailed geometries:         
     //
     //
-    //AliITS *ITS  = new AliITSv5symm("ITS","Updated ITS TDR detailed version with symmetric services");
     //
-    //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
-    //
-	AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
-	ITS->SetMinorVersion(2);					 // don't touch this parameter if you're not an ITS developer
-	ITS->SetReadDet(kFALSE);					 // don't touch this parameter if you're not an ITS developer
-    //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
+	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","ITS PPR detailed version with asymmetric services");
+	ITS->SetMinorVersion(2);  // don't touch this parameter if you're not an ITS developer
+	ITS->SetReadDet(kTRUE);	  // don't touch this parameter if you're not an ITS developer
+	//    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
 	ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
 	ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
 	ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
 	ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
-	ITS->SetRails(0);	     // 1 --> rails in ; 0 --> rails out
-	ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
-	//
-    //AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
-    //ITS->SetMinorVersion(2);                                       // don't touch this parameter if you're not an ITS developer
-    //ITS->SetReadDet(kFALSE);                                       // don't touch this parameter if you're not an ITS developer
-    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det"); // don't touch this parameter if you're not an ITS developer
-    //ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
-    //ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
-    //ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
-    //ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
-    //ITS->SetRails(0);              // 1 --> rails in ; 0 --> rails out
-    //ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
-    //
+	ITS->SetRails(0);	       // 1 --> rails in ; 0 --> rails out
+	ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
+
+ 
     //
     // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
     // for reconstruction !):

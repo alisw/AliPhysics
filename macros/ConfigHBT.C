@@ -27,7 +27,7 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv2.h"
 #include "STRUCT/AliPIPEv0.h"
-#include "ITS/AliITSvPPRasymm.h"
+#include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv2.h"
 #include "RICH/AliRICHv1.h"
@@ -320,9 +320,9 @@ void Config()
     //
     //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     //
-    AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
-    ITS->SetMinorVersion(2);                                         // don't touch this parameter if you're not an ITS developer
-    ITS->SetReadDet(kFALSE);                                         // don't touch this parameter if you're not an ITS developer
+    AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","New ITS PPR detailed version with asymmetric services");
+    ITS->SetMinorVersion(2); // don't touch this parameter if you're not an ITS developer
+    ITS->SetReadDet(kTRUE);  // don't touch this parameter if you're not an ITS developer
     //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
     ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
     ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
