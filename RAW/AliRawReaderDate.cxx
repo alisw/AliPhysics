@@ -468,6 +468,7 @@ Bool_t AliRawReaderDate::NextEvent()
 {
 // go to the next event in the date file
 
+#ifdef ALI_DATE
   if (!fFile) return kFALSE;
 
   eventHeaderStruct header;
@@ -492,6 +493,8 @@ Bool_t AliRawReaderDate::NextEvent()
   };
 
   fEvent = NULL;
+#ifdef ALI_DATE
+
   return kFALSE;
 }
 
