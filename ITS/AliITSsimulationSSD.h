@@ -20,7 +20,7 @@ public:
   virtual ~AliITSsimulationSSD();
     
   void DigitiseModule(AliITSmodule *mod, Int_t module, Int_t dummy);  
-  void HitToDigit(Int_t &hit,Int_t idtrack,Int_t nhits,TObjArray *hits);            
+  void HitToDigit(Int_t &hit,Int_t nhits,TObjArray *hits);            
 
   // return the pointer to the signal array of P strip
   TArrayF* GetSignalP() {return fP;}
@@ -40,11 +40,11 @@ protected:
   
 protected:
   
-  AliITSdcsSSD    *fDCS;
-  Int_t   fNstrips;
-  Float_t fPitch;
-  TArrayF *fN;         // for signal N side
-  TArrayF *fP;         // for signal P side
+  AliITSdcsSSD    *fDCS; //!
+  Int_t   fNstrips;      //!
+  Float_t fPitch;        //!
+  TArrayF *fN;         //! for signal N side
+  TArrayF *fP;         //! for signal P side
   AliITSdictSSD *fTracksP;  //!
   AliITSdictSSD *fTracksN;  //! 
   //______________________________________________________________

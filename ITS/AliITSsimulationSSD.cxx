@@ -98,9 +98,9 @@ void AliITSsimulationSSD::DigitiseModule(AliITSmodule *mod,Int_t module,
        fTracksN[i].ZeroTracks();
     }
     
+    //unsafe code but that's it for the moment
     for(i=0; i<nhits; i++) {
-       Int_t idtrack=mod->GetHitTrackIndex(i);  
-       HitToDigit(i,idtrack,nhits,hits);
+       HitToDigit(i,nhits,hits);
     }
  
    
@@ -115,34 +115,25 @@ void AliITSsimulationSSD::DigitiseModule(AliITSmodule *mod,Int_t module,
 
 //---------------------------------------------------------------
 
-void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
+void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,
                                      Int_t nhits,TObjArray *hits) {
   // Turns one or more hits in an SSD module into one or more digits.
      
-    Int_t      stripP, stripN, i;
-    Float_t    dsP, dsN;
-    Float_t    sP, sN;
-    Float_t    eP, eN;
-    Float_t    arrayEP[10];         // hard-wired number of steps
-    Float_t    arrayEN[10];
     Int_t      track = -3;
-       
     Float_t    ionization = 0;
-    Float_t    signal;
     
     AliITSdictSSD *dict;  
     
- 
+
     // check if this is the right order !!!!!
+
 
     AliITShit *hitI = (AliITShit*)hits->At(hitNo++);
     AliITShit *hitE = (AliITShit*)hits->At(hitNo);
 
-
     while (!((hitE->StatusExiting()) || 
              (hitE->StatusDisappeared()) ||
              (hitE->StatusStop()))) {
-       
         if (++hitNo<nhits) {
            ionization = hitE->GetIonization(); 
            hitE = (AliITShit*)hits->At(hitNo);
@@ -151,7 +142,6 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
     
         
     if (hitI->GetTrack() == hitE->GetTrack()) 
-       //track = idtrack;
        track = hitI->GetTrack();
     else 
        printf("!!! Emergency !!!\n");
@@ -177,42 +167,10 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
 
     Float_t dx = (xE - xI);
     Float_t dz = (zE - zI);
-              
     
-    // Debuging
-    /*
-    fSegmentation->GetPadIxz(xI,zI,stripP,stripN);
-   
-       printf("%5d %8.3f %8.3f %8.3f %8.3f %d %d  %d\n", 
-             hitNo, xI, zI, dx, dz, 
-             stripP, stripN, track);
-     printf("%10.5f %10d \n", ionization, hitI->fTrack); 
-    */ 
-    
-    // end of debuging   
-    
-    
-    eP=0;
-    eN=0;
-    
-    for (i=0; i<fSteps; i++) {
-        
-      //        arrayEP[i] = gRandom->Landau(ionization/fSteps, ionization/(4*fSteps));
-      //        arrayEN[i] = gRandom->Landau(ionization/fSteps, ionization/(4*fSteps));
-        arrayEP[i] = ionization/fSteps;
-        arrayEN[i] = ionization/fSteps;
-       
-        eP += arrayEP[i];
-        eN += arrayEN[i];
-    } 
-       
     const Float_t kconv = 1.0e9 / 3.6;  // GeV -> e-hole pairs
-       
-    for(i=0; i<fSteps; i++) {
-    
-        arrayEP[i] = kconv * arrayEP[i] * (ionization / eP); 
-        arrayEN[i] = kconv * arrayEN[i] * (ionization / eN);        
-    }    
+
+    Float_t enStep = kconv*ionization/fSteps;
         
     dx /= fSteps;
     dz /= fSteps;  
@@ -220,19 +178,18 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
     Float_t sigmaP, sigmaN; 
     fResponse->SigmaSpread(sigmaP,sigmaN); 
 
-    //printf("SigmaP SigmaN %f %f\n",sigmaP, sigmaN);
-
     Float_t noiseP, noiseN;
     fResponse->GetNoiseParam(noiseP,noiseN);
 
-    //printf("NoiseP NoiseN %f %f\n",noiseP, noiseN);
 
-    for(i=0; i<fSteps; i++) {
-        
+    Int_t stripP,stripN;
+    Float_t    dsP=0, dsN=0;
+    Float_t    sP=0, sN=0;
+    Float_t signal=0;
+    for(Int_t i=0; i<fSteps; i++) {
         Int_t j;
-       
         fSegmentation->GetPadIxz(xI,zI,stripP,stripN);
-        //printf("hitNo %d i xI zI stripP stripN %d %f %f %d %d\n",hitNo,i,xI, zI, stripP, stripN);
+
         dsP    = Get2Strip(1,stripP,xI, zI); // Between 0-1
         dsN    = Get2Strip(0,stripN,xI, zI); // Between 0-1
 
@@ -247,15 +204,11 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
         sN = (i>fSteps-2 && dsN>0.3 && dsN<0.7)? 20. : sN;  // square of (microns) 
 
         sP = (i==2 && dsP>0.4 && dsP<0.6)? 15. : sP;  // square of (microns) 
-        sN = (i==8 && dsN>0.4 && dsN<0.6)? 15. : sN;  // square of (microns)        
-        
-        
-	//printf("i=%d SigmaP SigmaN sP sN %f %f %e %e\n",i,sigmaP, sigmaN,sP,sN);
+        sN = (i==8 && dsN>0.4 && dsN<0.6)? 15. : sN;  // square of (microns) 
         
         for (j=-1; j<2; j++) {
             if (stripP+j<0 || stripP+j>fNstrips) continue;
-            signal = arrayEP[i] * TMath::Abs( (F(j+0.5-dsP,sP)-F(j-0.5-dsP,sP)) );
-            //printf("SimSSD::HitsToDigits:%d arrayEP[%d]=%e signal=%e\n",j,i,arrayEP[i],signal);
+            signal = enStep * TMath::Abs( (F(j+0.5-dsP,sP)-F(j-0.5-dsP,sP)) );
 	    if (signal > noiseP/fSteps) {
                (*fP)[stripP+j] += signal;
                dict = (fTracksP+stripP+j);   
@@ -265,8 +218,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
 
         for (j=-1; j<2; j++) {
             if (stripN+j<0 || stripN+j>fNstrips) continue;
-            signal = arrayEN[i] * TMath::Abs( (F(j+0.5-dsN,sN)-F(j-0.5-dsN,sN)) );
-            //printf("SimSSD::HitsToDigits:%d arrayEN[%d]=%e signal=%e\n",j,i,arrayEN[i],signal);
+            signal = enStep * TMath::Abs( (F(j+0.5-dsN,sN)-F(j-0.5-dsN,sN)) );
             if (signal > noiseN/fSteps) {
                (*fN)[stripN+j] += signal;
                dict = (fTracksN+stripN+j);    //co to jest
