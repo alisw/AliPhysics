@@ -1,7 +1,6 @@
 #include "AliHBTasCorrFctn.h"
 #include <TH1.h>
-#include <TObjArray.h>
-
+#include <Riostream.h>
 
 ///////////////////////////////////////////////////////
 //                                                   //
@@ -117,7 +116,7 @@ void AliHBTasCorrFctn::Init()
 
 void AliHBTasCorrFctn::ProcessDiffEventParticles(AliHBTPair* pair)
 {
-     
+//fills denumerator with data from different events 
      Double_t rplane=0.;   //reaction plane angle - 2 B determined
      Double_t phi=(pair->Particle1()->Phi()+pair->Particle2()->Phi())/2.-rplane; //deltaphi bo nie mam nic innego pod reka
      phi=phi*360/(2*TMath::Pi());
@@ -139,14 +138,16 @@ void AliHBTasCorrFctn::ProcessDiffEventParticles(AliHBTPair* pair)
 /******************************************************************/
 
 
-void AliHBTasCorrFctn::SetParams(Int_t nbins, Float_t maxXval, Float_t minXval){
-     fnbins=nbins;
+void AliHBTasCorrFctn::SetParams(Int_t nbins, Float_t maxXval, Float_t minXval)
+{
+//sets parameters for histograms
+   	fnbins=nbins;
      fmaxXval= maxXval;
      fminXval=minXval;
 }
 TH1* AliHBTasCorrFctn::GetResult()
 {
-       
+//does nothing, it can as well have nothing inside, its just for class to work normally
      TH1D *den = ((TH1D*)fDen->UncheckedAt(1));
      return den;
  }
@@ -164,7 +165,7 @@ AliHBTasCorrFctn(name,title,nbins,maxXval,minXval)
 
 void AliHBTQOutasCorrFctn::BuildHistos()
 {
-    
+//builds histograms
      Int_t i;
      int n=GetNumberOfIntervals();
 
@@ -176,9 +177,9 @@ void AliHBTQOutasCorrFctn::BuildHistos()
      
 
      
-     TH1D *Num;
-     TH1D *Den;
-     TH1D *Rat;
+     TH1D *num;
+     TH1D *den;
+     TH1D *rat;
      
      TString nameNum = "NumOut";
      TString nameDen = "DenOut";
@@ -194,21 +195,21 @@ void AliHBTQOutasCorrFctn::BuildHistos()
 	  nameRat +=TString(buff);
 	  
 	  
-	  Num = new TH1D(nameNum.Data(),nameNum.Data(),nbins,min,max);
-	  Den = new TH1D(nameDen.Data(),nameDen.Data(),nbins,min,max);
-	  Rat = new TH1D(nameRat.Data(),nameRat.Data(),nbins,min,max);
+	  num = new TH1D(nameNum.Data(),nameNum.Data(),nbins,min,max);
+	  den = new TH1D(nameDen.Data(),nameDen.Data(),nbins,min,max);
+	  rat = new TH1D(nameRat.Data(),nameRat.Data(),nbins,min,max);
 	  
-	  Num->Sumw2();
-	  Den->Sumw2();
-	  Rat->Sumw2();
+	  num->Sumw2();
+	  den->Sumw2();
+	  rat->Sumw2();
 	  
-	  Num->Reset();
-	  Den->Reset();
-	  Rat->Reset();
+	  num->Reset();
+	  den->Reset();
+	  rat->Reset();
 	  
-	  fNum->Add(Num);
-	  fDen->Add(Den);
-	  fRat->Add(Rat);
+	  fNum->Add(num);
+	  fDen->Add(den);
+	  fRat->Add(rat);
 	  
 	  nameNum = TString("NumOut");
 	  nameDen = TString("DenOut");
@@ -230,7 +231,7 @@ AliHBTasCorrFctn(name,title,nbins,maxXval,minXval)
 
 void AliHBTQSideasCorrFctn::BuildHistos()
 {
-    
+//builds histograms
      Int_t i;
      int n=GetNumberOfIntervals();
      int nbins=Getnbins();
@@ -241,9 +242,9 @@ void AliHBTQSideasCorrFctn::BuildHistos()
      
 
      
-     TH1D *Num;
-     TH1D *Den;
-     TH1D *Rat;
+     TH1D *num;
+     TH1D *den;
+     TH1D *rat;
      
      TString nameNum = "NumSide";
      TString nameDen = "DenSide";
@@ -259,21 +260,21 @@ void AliHBTQSideasCorrFctn::BuildHistos()
 	  nameRat +=TString(buff);
 	  
 	  
-	  Num = new TH1D(nameNum.Data(),nameNum.Data(),nbins,min,max);
-	  Den = new TH1D(nameDen.Data(),nameDen.Data(),nbins,min,max);
-	  Rat = new TH1D(nameRat.Data(),nameRat.Data(),nbins,min,max);
+	  num = new TH1D(nameNum.Data(),nameNum.Data(),nbins,min,max);
+	  den = new TH1D(nameDen.Data(),nameDen.Data(),nbins,min,max);
+	  rat = new TH1D(nameRat.Data(),nameRat.Data(),nbins,min,max);
 	  
-	  Num->Sumw2();
-	  Den->Sumw2();
-	  Rat->Sumw2();
+	  num->Sumw2();
+	  den->Sumw2();
+	  rat->Sumw2();
 	  
-	  Num->Reset();
-	  Den->Reset();
-	  Rat->Reset();
+	  num->Reset();
+	  den->Reset();
+	  rat->Reset();
 	  
-	  fNum->Add(Num);
-	  fDen->Add(Den);
-	  fRat->Add(Rat);
+	  fNum->Add(num);
+	  fDen->Add(den);
+	  fRat->Add(rat);
 	  
 	  nameNum = TString("NumSide");
 	  nameDen = TString("DenSide");
@@ -295,7 +296,7 @@ AliHBTasCorrFctn(name,title,nbins,maxXval,minXval)
 
 void AliHBTQLongasCorrFctn::BuildHistos()
 {
-    
+//builds histograms
      Int_t i;
      int n=GetNumberOfIntervals();
      int nbins=Getnbins();
@@ -306,9 +307,9 @@ void AliHBTQLongasCorrFctn::BuildHistos()
      
 
      
-     TH1D *Num;
-     TH1D *Den;
-     TH1D *Rat;
+     TH1D *num;
+     TH1D *den;
+     TH1D *rat;
      
      TString nameNum = "NumLong";
      TString nameDen = "DenLong";
@@ -324,21 +325,21 @@ void AliHBTQLongasCorrFctn::BuildHistos()
 	  nameRat +=TString(buff);
 	  
 	  
-	  Num = new TH1D(nameNum.Data(),nameNum.Data(),nbins,min,max);
-	  Den = new TH1D(nameDen.Data(),nameDen.Data(),nbins,min,max);
-	  Rat = new TH1D(nameRat.Data(),nameRat.Data(),nbins,min,max);
+	  num = new TH1D(nameNum.Data(),nameNum.Data(),nbins,min,max);
+	  den = new TH1D(nameDen.Data(),nameDen.Data(),nbins,min,max);
+	  rat = new TH1D(nameRat.Data(),nameRat.Data(),nbins,min,max);
 	  
-	  Num->Sumw2();
-	  Den->Sumw2();
-	  Rat->Sumw2();
+	  num->Sumw2();
+	  den->Sumw2();
+	  rat->Sumw2();
 	  
-	  Num->Reset();
-	  Den->Reset();
-	  Rat->Reset();
+	  num->Reset();
+	  den->Reset();
+	  rat->Reset();
 	  
-	  fNum->Add(Num);
-	  fDen->Add(Den);
-	  fRat->Add(Rat);
+	  fNum->Add(num);
+	  fDen->Add(den);
+	  fRat->Add(rat);
 	  
 	  nameNum = TString("NumLong");
 	  nameDen = TString("DenLong");
