@@ -49,31 +49,34 @@ void simu(Int_t nevents=1, TString opt="GSD", TString name="all")
   else 
     sim.SetMakeDigits(name.Data()) ;    
   //Merging
-  if ( !opt.Contains("M") )
+  if ( opt.Contains("M") )
     sim.MergeWith("./bgrd/galice.root", nevents) ;  
   // to implement 
   sim.Run(nevents) ;  
-  // Checking result
-  if ( name.Contains("PHOS") ) {
-    cout << ">>>>>>>>>>>> PHOS " << endl ; 
-    AliPHOSGetter * gime = AliPHOSGetter::Instance("galice.root") ;
-    Int_t event ; 
-    for (event = 0; event < gime->MaxEvent(); event++) {
-      cout << "event # " << event << endl ; 
-      gime->Event(event, "SD") ; 
-      cout << "  SDigits # " << gime->SDigits()->GetEntries() << endl ; 
-      cout << "   Digits # " << gime->Digits()->GetEntries() << endl ; 
+
+  if ( !opt.Contains("M") ) {
+    // Checking result
+    if ( name.Contains("PHOS") ) {
+      cout << ">>>>>>>>>>>> PHOS " << endl ; 
+      AliPHOSGetter * gime = AliPHOSGetter::Instance("galice.root") ;
+      Int_t event ; 
+      for (event = 0; event < gime->MaxEvent(); event++) {
+	cout << "event # " << event << endl ; 
+	gime->Event(event, "SD") ; 
+	cout << "  SDigits # " << gime->SDigits()->GetEntries() << endl ; 
+	cout << "   Digits # " << gime->Digits()->GetEntries() << endl ; 
+      }
     }
-  }
-  if ( name.Contains("EMCAL") ) {
-    cout << ">>>>>>>>>>>> EMCAL " << endl ; 
-    AliEMCALGetter * gime = AliEMCALGetter::Instance("galice.root") ;
-    Int_t event ; 
-    for (event = 0; event < gime->MaxEvent(); event++) {
-      cout << "event # " << event << endl ; 
-      gime->Event(event, "SD") ; 
-      cout << "  SDigits # " << gime->SDigits()->GetEntries() << endl ; 
-      cout << "   Digits # " << gime->Digits()->GetEntries() << endl ; 
+    if ( name.Contains("EMCAL") ) {
+      cout << ">>>>>>>>>>>> EMCAL " << endl ; 
+      AliEMCALGetter * gime = AliEMCALGetter::Instance("galice.root"); 
+      Int_t event ; 
+      for (event = 0; event < gime->MaxEvent(); event++) {
+	cout << "event # " << event << endl ; 
+	gime->Event(event, "SD") ; 
+	cout << "  SDigits # " << gime->SDigits()->GetEntries() << endl ; 
+	cout << "   Digits # " << gime->Digits()->GetEntries() << endl ; 
+      }
     }
   }
 }
