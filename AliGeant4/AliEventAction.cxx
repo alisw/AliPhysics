@@ -20,6 +20,7 @@
 #include <G4VVisManager.hh>
 #include <G4UImanager.hh>
 
+//_____________________________________________________________________________
 AliEventAction::AliEventAction()
   : fVerboseLevel(1), 
     fDrawFlag("CHARGED")
@@ -29,11 +30,13 @@ AliEventAction::AliEventAction()
   fTimer = new G4Timer();
 }
 
+//_____________________________________________________________________________
 AliEventAction::AliEventAction(const AliEventAction& right) {
 //
   AliGlobals::Exception("AliEventAction is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliEventAction::~AliEventAction() {
 //
   delete fMessenger;
@@ -42,6 +45,7 @@ AliEventAction::~AliEventAction() {
 
 // operators
 
+//_____________________________________________________________________________
 AliEventAction& AliEventAction::operator=(const AliEventAction &right)
 {
   // check assignement to self
@@ -54,6 +58,7 @@ AliEventAction& AliEventAction::operator=(const AliEventAction &right)
 
 // private methods
 
+//_____________________________________________________________________________
 void AliEventAction::DisplayEvent(const G4Event* event) const
 {
 // Draws trajectories.
@@ -98,6 +103,7 @@ void AliEventAction::DisplayEvent(const G4Event* event) const
 
 // public methods
 
+//_____________________________________________________________________________
 void AliEventAction::BeginOfEventAction(const G4Event* event)
 {
 // Called by G4 kernel at the beginning of event.
@@ -114,6 +120,7 @@ void AliEventAction::BeginOfEventAction(const G4Event* event)
   fTimer->Start();
 }
 
+//_____________________________________________________________________________
 void AliEventAction::EndOfEventAction(const G4Event* event)
 {
 // Called by G4 kernel at the end of event.

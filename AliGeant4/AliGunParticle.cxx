@@ -7,6 +7,7 @@
 
 #include <G4ParticleDefinition.hh>
 
+//_____________________________________________________________________________
 AliGunParticle::AliGunParticle()
   : fParticleDefinition(0),
     fParticleMomentum(G4ThreeVector(0., 0., 1.)),
@@ -17,6 +18,7 @@ AliGunParticle::AliGunParticle()
 //
 }
 
+//_____________________________________________________________________________
 AliGunParticle::AliGunParticle(G4ParticleDefinition* particleDef,
                    G4ParticleMomentum momentum, G4ThreeVector position, 
                    G4double time, G4ThreeVector polarization )
@@ -29,6 +31,7 @@ AliGunParticle::AliGunParticle(G4ParticleDefinition* particleDef,
 //
 }
 
+//_____________________________________________________________________________
 AliGunParticle::AliGunParticle( G4ParticleDefinition* particleDef, 
                    G4ParticleMomentum momentumDir, G4double kinEnergy,
 		   G4ThreeVector position, G4double time, 
@@ -45,18 +48,21 @@ AliGunParticle::AliGunParticle( G4ParticleDefinition* particleDef,
   fParticleMomentum = pmag*momentumDir;
 }
 
+//_____________________________________________________________________________
 AliGunParticle::AliGunParticle(const AliGunParticle& right) {
 //
   // copy stuff
   *this = right;
 }
 
+//_____________________________________________________________________________
 AliGunParticle::~AliGunParticle() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 AliGunParticle& AliGunParticle::operator=(const AliGunParticle& right)
 {    
   // check assignement to self
@@ -71,6 +77,7 @@ AliGunParticle& AliGunParticle::operator=(const AliGunParticle& right)
   return *this;
 }
 
+//_____________________________________________________________________________
 G4int AliGunParticle::operator==(const AliGunParticle& right) const 
 {
 //    
@@ -84,6 +91,7 @@ G4int AliGunParticle::operator==(const AliGunParticle& right) const
   return returnValue;  
 }
 
+//_____________________________________________________________________________
 G4int AliGunParticle::operator!=(const AliGunParticle& right) const
 {
 //    
@@ -95,6 +103,7 @@ G4int AliGunParticle::operator!=(const AliGunParticle& right) const
 
 // public methods
 
+//_____________________________________________________________________________
 void AliGunParticle::Print() const
 {
 // Prints particle properties.
@@ -112,6 +121,7 @@ void AliGunParticle::Print() const
   G4cout << fPolarization << G4endl;
 }  
 
+//_____________________________________________________________________________
 void AliGunParticle::SetKineticEnergy(G4double kinEnergy)
 {
 // Sets kinetic energy.
@@ -123,6 +133,7 @@ void AliGunParticle::SetKineticEnergy(G4double kinEnergy)
   fParticleMomentum.setMag(pmag); 
 }
 
+//_____________________________________________________________________________
 G4double AliGunParticle::GetKineticEnergy() const
 {
 // Gets kinetic energy.
@@ -133,11 +144,3 @@ G4double AliGunParticle::GetKineticEnergy() const
    = sqrt(fParticleMomentum.mag()*fParticleMomentum.mag() + mass*mass);
   return energy - mass;
 }
-
-
-
-
-
-
-
-

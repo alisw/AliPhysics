@@ -11,16 +11,19 @@
 // static data members
 const G4double AliGlobals::fgkDefaultCut = 2.0*mm;
 
+//_____________________________________________________________________________
 AliGlobals::AliGlobals() {
 //
 }
   
+//_____________________________________________________________________________
 AliGlobals::~AliGlobals() {
 //
 }
   
 // static methods
 
+//_____________________________________________________________________________
 void AliGlobals::Exception(const char* s)
 {
 // Prints error message end exits the program.
@@ -32,6 +35,7 @@ void AliGlobals::Exception(const char* s)
   exit(1);
 }
 
+//_____________________________________________________________________________
 void AliGlobals::Warning(const char* s)
 {
 // Prints warning message.
@@ -44,27 +48,32 @@ void AliGlobals::Warning(const char* s)
 }
 
 #ifdef G4USE_STL
+//_____________________________________________________________________________
 void AliGlobals::Exception(G4std::string s) {
 //
   AliGlobals::Exception(s.c_str());
 }
 
+//_____________________________________________________________________________
 void AliGlobals::Exception(G4String s) {
 //
    AliGlobals::Exception(s.c_str());
 }
 
+//_____________________________________________________________________________
 void AliGlobals::Warning(G4std::string s) {
 //
   AliGlobals::Warning(s.c_str());
 }
 
+//_____________________________________________________________________________
 void AliGlobals::Warning(G4String s) {
 //
   AliGlobals::Warning(s.c_str());
 }
 #endif
 
+//_____________________________________________________________________________
 void AliGlobals::AppendNumberToString(G4String& s, G4int a)
 {
 // Appends number to string.
@@ -72,6 +81,7 @@ void AliGlobals::AppendNumberToString(G4String& s, G4int a)
   TG4Globals::AppendNumberToString(s, a);
 }
 
+//_____________________________________________________________________________
 G4int AliGlobals::StringToInt(G4String s)
 {
 // Converts one char string to integer number.

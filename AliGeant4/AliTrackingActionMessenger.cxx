@@ -10,6 +10,7 @@
 #include <G4UIdirectory.hh>
 #include <G4UIcmdWithAnInteger.hh>
 
+//_____________________________________________________________________________
 AliTrackingActionMessenger::AliTrackingActionMessenger(
                               AliTrackingAction* trackingAction)
   :fTrackingAction(trackingAction)
@@ -41,10 +42,12 @@ AliTrackingActionMessenger::AliTrackingActionMessenger(
   fNewVerboseTrackCmd->AvailableForStates(PreInit, Init, Idle);
 }
 
+//_____________________________________________________________________________
 AliTrackingActionMessenger::AliTrackingActionMessenger() {
 //
 }
 
+//_____________________________________________________________________________
 AliTrackingActionMessenger::AliTrackingActionMessenger(
                                  const AliTrackingActionMessenger& right) {
 //				 
@@ -52,6 +55,7 @@ AliTrackingActionMessenger::AliTrackingActionMessenger(
     "AliTrackingActionMessenger is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliTrackingActionMessenger::~AliTrackingActionMessenger() {
 //
   delete fTrackingDirectory;
@@ -62,6 +66,7 @@ AliTrackingActionMessenger::~AliTrackingActionMessenger() {
 
 // operators
 
+//_____________________________________________________________________________
 AliTrackingActionMessenger& 
 AliTrackingActionMessenger::operator=(const AliTrackingActionMessenger &right)
 {
@@ -76,6 +81,7 @@ AliTrackingActionMessenger::operator=(const AliTrackingActionMessenger &right)
 
 // public methods
 
+//_____________________________________________________________________________
 void AliTrackingActionMessenger::SetNewValue(G4UIcommand* command, 
        G4String newValue)
 { 

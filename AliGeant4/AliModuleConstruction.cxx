@@ -18,6 +18,7 @@
 #include <G4LogicalVolumeStore.hh>
 #include <G4LogicalVolume.hh>
 
+//_____________________________________________________________________________
 AliModuleConstruction::AliModuleConstruction(G4String moduleName) 
   : fModuleName(moduleName), 
     fModuleFrameName(moduleName),
@@ -32,6 +33,7 @@ AliModuleConstruction::AliModuleConstruction(G4String moduleName)
   fMessenger = new AliModuleConstructionMessenger(this, moduleName);
 }
 
+//_____________________________________________________________________________
 AliModuleConstruction::AliModuleConstruction(const AliModuleConstruction& right)
 {
 //
@@ -42,6 +44,7 @@ AliModuleConstruction::AliModuleConstruction(const AliModuleConstruction& right)
   *this = right;
 }
 
+//_____________________________________________________________________________
 AliModuleConstruction::AliModuleConstruction()
   : fModuleName(""), 
     fModuleFrameName(""),
@@ -55,6 +58,7 @@ AliModuleConstruction::AliModuleConstruction()
 //
 }
 
+//_____________________________________________________________________________
 AliModuleConstruction::~AliModuleConstruction()
 {
 //
@@ -64,6 +68,7 @@ AliModuleConstruction::~AliModuleConstruction()
 
 // operators
 
+//_____________________________________________________________________________
 AliModuleConstruction& 
 AliModuleConstruction::operator=(const AliModuleConstruction& right)
 {    
@@ -87,6 +92,7 @@ AliModuleConstruction::operator=(const AliModuleConstruction& right)
   return *this;
 }
 
+//_____________________________________________________________________________
 G4int 
 AliModuleConstruction::operator==(const AliModuleConstruction& right) const
 {
@@ -94,6 +100,7 @@ AliModuleConstruction::operator==(const AliModuleConstruction& right) const
   return 0;
 }
 
+//_____________________________________________________________________________
 G4int 
 AliModuleConstruction::operator!=(const AliModuleConstruction& right) const
 {
@@ -106,6 +113,7 @@ AliModuleConstruction::operator!=(const AliModuleConstruction& right) const
 
 // protected methods
 
+//_____________________________________________________________________________
 void AliModuleConstruction::RegisterLogicalVolume(G4LogicalVolume* lv,
        G4String path, AliLVStructure& lvStructure)
 {
@@ -133,6 +141,7 @@ void AliModuleConstruction::RegisterLogicalVolume(G4LogicalVolume* lv,
 
 // public methods
 
+//_____________________________________________________________________________
 void AliModuleConstruction::SetDetFrame(G4bool warn)
 { 
 // The logical volume with name identical with
@@ -148,6 +157,7 @@ void AliModuleConstruction::SetDetFrame(G4bool warn)
   }  
 }
 
+//_____________________________________________________________________________
 void AliModuleConstruction::SetDetFrame(G4String frameName, G4bool warn)
 { 
 // The logical volume with frameName
@@ -158,6 +168,7 @@ void AliModuleConstruction::SetDetFrame(G4String frameName, G4bool warn)
   SetDetFrame(warn);
 }
 
+//_____________________________________________________________________________
 void AliModuleConstruction::ListAllLVTree()
 {
 // Lists all logical volumes tree if the frame logical volume 
@@ -173,6 +184,7 @@ void AliModuleConstruction::ListAllLVTree()
   }   
 }
 
+//_____________________________________________________________________________
 void AliModuleConstruction::ListAllLVTreeLong()
 {
 // Lists all logical volume tree if the frame logical volume 
@@ -188,6 +200,7 @@ void AliModuleConstruction::ListAllLVTreeLong()
   }  
 }
 
+//_____________________________________________________________________________
 void AliModuleConstruction::ListLVTree(G4String lvName)
 {
 // Lists logical volumes tree (daughters) of the logical volume 
@@ -204,6 +217,7 @@ void AliModuleConstruction::ListLVTree(G4String lvName)
   }
 }
 
+//_____________________________________________________________________________
 void AliModuleConstruction::ListLVTreeLong(G4String lvName)
 {
 // Lists logical volumes tree (daughters) of the logical volume 
@@ -219,6 +233,7 @@ void AliModuleConstruction::ListLVTreeLong(G4String lvName)
   }
 }
 
+//_____________________________________________________________________________
 G4LogicalVolume* AliModuleConstruction::FindLogicalVolume(
                                           G4String name, G4bool silent) const
 {
@@ -243,6 +258,7 @@ G4LogicalVolume* AliModuleConstruction::FindLogicalVolume(
 
 #ifdef ALICE_VISUALIZE
 
+//_____________________________________________________________________________
 void AliModuleConstruction::SetDetVisibility(G4bool visibility)
 {
 // Sets visibility to all detector logical volumes if
@@ -259,6 +275,7 @@ void AliModuleConstruction::SetDetVisibility(G4bool visibility)
 }
 
 
+//_____________________________________________________________________________
 void AliModuleConstruction::SetLVTreeVisibility(G4LogicalVolume* lv, 
                              G4bool visibility)
 { 
@@ -274,6 +291,7 @@ void AliModuleConstruction::SetLVTreeVisibility(G4LogicalVolume* lv,
   }
 }
 
+//_____________________________________________________________________________
 void AliModuleConstruction::SetVolumeVisibility(G4LogicalVolume* lv, 
                              G4bool visibility)
 { 
@@ -297,6 +315,7 @@ void AliModuleConstruction::SetVolumeVisibility(G4LogicalVolume* lv,
   }
 }
 
+//_____________________________________________________________________________
 void AliModuleConstruction::SetDetColour(G4String colName)
 {
 // Sets colour to all detector logical volumes if
@@ -312,6 +331,7 @@ void AliModuleConstruction::SetDetColour(G4String colName)
   }  
 }
 
+//_____________________________________________________________________________
 void AliModuleConstruction::SetLVTreeColour(G4LogicalVolume* lv, 
                              G4String colName)
 { 
@@ -328,6 +348,7 @@ void AliModuleConstruction::SetLVTreeColour(G4LogicalVolume* lv,
   }
 }
 
+//_____________________________________________________________________________
 void AliModuleConstruction::SetVolumeColour(G4LogicalVolume* lv,
                              G4String colName)
 {

@@ -11,10 +11,12 @@
 
 // static data members
 
+//_____________________________________________________________________________
 AliColourStore* AliColourStore::fgInstance = 0;
 
 // lifecycle
 
+//_____________________________________________________________________________
 AliColourStore::AliColourStore() {
 //
   fColours.insert(AliColour("White",     1.0, 1.0, 1.0));    
@@ -35,18 +37,21 @@ AliColourStore::AliColourStore() {
   fColours.insert(AliColour("GrayClair", 0.6, 0.6, 0.6));
 }
 
+//_____________________________________________________________________________
 AliColourStore::AliColourStore(const AliColourStore& right) {
 // 
   AliGlobals::Exception(
     "Attempt to copy AliColourStore singleton.");
 }
 
+//_____________________________________________________________________________
 AliColourStore::~AliColourStore() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 AliColourStore& AliColourStore::operator=(const AliColourStore& right)
 {
   // check assignement to self
@@ -60,6 +65,7 @@ AliColourStore& AliColourStore::operator=(const AliColourStore& right)
 
 // static methods
   
+//_____________________________________________________________________________
 AliColourStore* AliColourStore::Instance() 
 {
 // Returns the singleton instance.
@@ -75,6 +81,7 @@ AliColourStore* AliColourStore::Instance()
 
 // public methods
 
+//_____________________________________________________________________________
 G4Colour AliColourStore::GetColour(G4String name) const
 {
 // Retrieves the colour by name.
@@ -93,6 +100,7 @@ G4Colour AliColourStore::GetColour(G4String name) const
   return 0;
 }
     
+//_____________________________________________________________________________
 G4String AliColourStore::GetColoursList() const
 {
 // Returns the list of all defined colours names.
@@ -108,6 +116,7 @@ G4String AliColourStore::GetColoursList() const
   return list;
 } 
        
+//_____________________________________________________________________________
 G4String AliColourStore::GetColoursListWithCommas() const
 {
 // Returns the list of all defined colours names

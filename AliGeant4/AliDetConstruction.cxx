@@ -10,6 +10,7 @@
 #include "AliRun.h"
 #include "AliModule.h"
 
+//_____________________________________________________________________________
 AliDetConstruction::AliDetConstruction()
   : fTopVolumeName("ALIC")
 {
@@ -59,18 +60,21 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch);  
 }
 
+//_____________________________________________________________________________
 AliDetConstruction::AliDetConstruction(const AliDetConstruction& right)
   : AliModulesComposition(right)
 {
   // AliModuleComposition is protected from copying
 }  
 
+//_____________________________________________________________________________
 AliDetConstruction::~AliDetConstruction() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 AliDetConstruction& 
 AliDetConstruction::operator=(const AliDetConstruction& right)
 {
@@ -86,6 +90,7 @@ AliDetConstruction::operator=(const AliDetConstruction& right)
           
 // private methods
 
+//_____________________________________________________________________________
 void AliDetConstruction::BuildDetectors()
 {
 // Create module constructions for AliModules 
@@ -129,6 +134,7 @@ void AliDetConstruction::BuildDetectors()
   SetProcessConfigToModules(false); 	
 }
 
+//_____________________________________________________________________________
 void AliDetConstruction::CreateDetectors()
 {
 // Creates AliModules and their module constructions 
@@ -154,6 +160,7 @@ void AliDetConstruction::CreateDetectors()
   }    
 }
 
+//_____________________________________________________________________________
 void AliDetConstruction::CheckDetDependencies()
 {
 // Checks modules dependencies.
@@ -223,6 +230,7 @@ void AliDetConstruction::CheckDetDependencies()
 
 // public methods
 
+//_____________________________________________________________________________
 G4VPhysicalVolume* AliDetConstruction::Construct()
 {
 // Constructs geometry.

@@ -9,18 +9,21 @@
 #include <G4Geantino.hh>
 #include <G4ChargedGeantino.hh>
 
+//_____________________________________________________________________________
 AliEmptyPhysicsList::AliEmptyPhysicsList() {
 //
   defaultCutValue = AliGlobals::DefaultCut();
   SetVerboseLevel(1);
 }
 
+//_____________________________________________________________________________
 AliEmptyPhysicsList::~AliEmptyPhysicsList() {
 //
 }
 
 // public methods
 
+//_____________________________________________________________________________
 void AliEmptyPhysicsList::ConstructParticle()
 {
 // In this method, static member functions should be called
@@ -35,6 +38,7 @@ void AliEmptyPhysicsList::ConstructParticle()
   ConstructBarions();
 }
 
+//_____________________________________________________________________________
 void AliEmptyPhysicsList::ConstructBosons()
 {
 // Constructs pseudo-particles only.
@@ -44,21 +48,25 @@ void AliEmptyPhysicsList::ConstructBosons()
   G4ChargedGeantino::ChargedGeantinoDefinition();
 }
 
+//_____________________________________________________________________________
 void AliEmptyPhysicsList::ConstructLeptons()
 {
   // no leptons
 }
 
+//_____________________________________________________________________________
 void AliEmptyPhysicsList::ConstructMesons()
 {
  //  no mesons
 }
 
+//_____________________________________________________________________________
 void AliEmptyPhysicsList::ConstructBarions()
 {
  // no barions
 }
 
+//_____________________________________________________________________________
 void AliEmptyPhysicsList::ConstructProcess()
 {
 // Constructs physics processes.
@@ -69,16 +77,19 @@ void AliEmptyPhysicsList::ConstructProcess()
   ConstructGeneral();
 }
 
+//_____________________________________________________________________________
 void AliEmptyPhysicsList::ConstructEM()
 {
   // no EM
 }
 
+//_____________________________________________________________________________
 void AliEmptyPhysicsList::ConstructGeneral()
 {
   // no Decay Process
 }
 
+//_____________________________________________________________________________
 void AliEmptyPhysicsList::SetCuts()
 {
 // Sets the default range cut values for all defined particles.

@@ -15,6 +15,7 @@
 #include <G4UIcmdWithAString.hh>
 #include <G4UIcmdWithoutParameter.hh>
 
+//_____________________________________________________________________________
 AliModuleConstructionMessenger::AliModuleConstructionMessenger(
    AliModuleConstruction* moduleConstruction, G4String moduleName)
  : fModuleConstruction(moduleConstruction)
@@ -128,10 +129,12 @@ AliModuleConstructionMessenger::AliModuleConstructionMessenger(
 #endif //ALICE_VISUALIZE
 }
 
+//_____________________________________________________________________________
 AliModuleConstructionMessenger::AliModuleConstructionMessenger() {
 //
 }
 
+//_____________________________________________________________________________
 AliModuleConstructionMessenger::AliModuleConstructionMessenger(
                                 const AliModuleConstructionMessenger& right)
 {
@@ -140,6 +143,7 @@ AliModuleConstructionMessenger::AliModuleConstructionMessenger(
     "AliModuleConstructionMessenger is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliModuleConstructionMessenger::~AliModuleConstructionMessenger()
 {
 //
@@ -162,6 +166,7 @@ AliModuleConstructionMessenger::~AliModuleConstructionMessenger()
 
 // operators
 
+//_____________________________________________________________________________
 AliModuleConstructionMessenger& 
 AliModuleConstructionMessenger::operator=(
                                 const AliModuleConstructionMessenger& right)
@@ -177,6 +182,7 @@ AliModuleConstructionMessenger::operator=(
           
 // public methods
   
+//_____________________________________________________________________________
 void AliModuleConstructionMessenger::SetNewValue(G4UIcommand* command,
                                                  G4String newValues)
 {

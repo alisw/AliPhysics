@@ -16,10 +16,12 @@
 #include <G4VUserTrackInformation.hh>
 #include <G4TrackingManager.hh>
 #include <G4SteppingManager.hh>
+#include <G4UImanager.hh>
 
 // static data members
 AliTrackingAction* AliTrackingAction::fgInstance = 0;
 
+//_____________________________________________________________________________
 AliTrackingAction::AliTrackingAction()
   : fPrimaryTrackID(0),
     fVerboseLevel(2),
@@ -37,11 +39,13 @@ AliTrackingAction::AliTrackingAction()
   fgInstance = this;
 }
 
+//_____________________________________________________________________________
 AliTrackingAction::AliTrackingAction(const AliTrackingAction& right) {
 //
   AliGlobals::Exception("AliTrackingAction is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliTrackingAction::~AliTrackingAction() {
 //
   delete fMessenger;
@@ -49,6 +53,7 @@ AliTrackingAction::~AliTrackingAction() {
 
 // operators
 
+//_____________________________________________________________________________
 AliTrackingAction& 
 AliTrackingAction::operator=(const AliTrackingAction &right)
 {
@@ -62,6 +67,7 @@ AliTrackingAction::operator=(const AliTrackingAction &right)
 
 // private methods
 
+//_____________________________________________________________________________
 AliTrackInformation* AliTrackingAction::GetTrackInformation(
                                            const G4Track* track,
                                            const G4String& method) const
@@ -85,6 +91,7 @@ AliTrackInformation* AliTrackingAction::GetTrackInformation(
   
 // public methods
 
+//_____________________________________________________________________________
 void AliTrackingAction::PrepareNewEvent()
 {
 // Called by G4 kernel at the beginning of event.
@@ -97,7 +104,7 @@ void AliTrackingAction::PrepareNewEvent()
   stepManager->SetSteppingManager(fpTrackingManager->GetSteppingManager());
 }
 
-#include <G4UImanager.hh>
+//_____________________________________________________________________________
 void AliTrackingAction::PreTrackingAction(const G4Track* aTrack)
 {
 // Called by G4 kernel before starting tracking.
@@ -156,6 +163,7 @@ void AliTrackingAction::PreTrackingAction(const G4Track* aTrack)
   gAlice->PreTrack();
 }
 
+//_____________________________________________________________________________
 void AliTrackingAction::PostTrackingAction(const G4Track* aTrack)
 {
 // Called by G4 kernel after finishing tracking.
@@ -197,6 +205,7 @@ void AliTrackingAction::PostTrackingAction(const G4Track* aTrack)
   gAlice->PostTrack();
 }
 
+//_____________________________________________________________________________
 void AliTrackingAction::FinishPrimaryTrack()
 {
 // Calls AliRun::PurifyKine and fills trees of hits
@@ -224,6 +233,7 @@ void AliTrackingAction::FinishPrimaryTrack()
   fPrimaryTrackID = 0;
 }  
 
+//_____________________________________________________________________________
 void AliTrackingAction::SaveTrack(const G4Track* track)
 {
 // Get all needed parameters from G4track and pass them
@@ -291,6 +301,7 @@ void AliTrackingAction::SaveTrack(const G4Track* track)
                    
 }
 
+//_____________________________________________________________________________
 void AliTrackingAction::SetNewVerboseLevel(G4int level)
 { 
 // Set the new verbose level that will be set when the track with 
@@ -300,6 +311,7 @@ void AliTrackingAction::SetNewVerboseLevel(G4int level)
   fNewVerboseLevel = level;  
 }
 
+//_____________________________________________________________________________
 void AliTrackingAction::SetNewVerboseTrackID(G4int trackID)
 { 
 // Set the trackID for which the new verbose level (fNewVerboseLevel)

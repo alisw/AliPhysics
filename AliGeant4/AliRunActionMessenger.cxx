@@ -10,6 +10,7 @@
 #include <G4UIdirectory.hh>
 #include <G4UIcmdWithAnInteger.hh>
 
+//_____________________________________________________________________________
 AliRunActionMessenger::AliRunActionMessenger(AliRunAction* runAction)
   : fRunAction(runAction)
 {
@@ -25,16 +26,19 @@ AliRunActionMessenger::AliRunActionMessenger(AliRunAction* runAction)
   fVerboseCmd->AvailableForStates(PreInit, Init, Idle, GeomClosed, EventProc);
 }
 
+//_____________________________________________________________________________
 AliRunActionMessenger::AliRunActionMessenger() {
 //
 }
 
+//_____________________________________________________________________________
 AliRunActionMessenger::AliRunActionMessenger(const AliRunActionMessenger& right)
 {
 //
   AliGlobals::Exception("AliRunActionMessenger is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliRunActionMessenger::~AliRunActionMessenger() {
 //
   delete fRunActionDirectory;
@@ -43,6 +47,7 @@ AliRunActionMessenger::~AliRunActionMessenger() {
 
 // operators
 
+//_____________________________________________________________________________
 AliRunActionMessenger& 
 AliRunActionMessenger::operator=(const AliRunActionMessenger &right)
 {
@@ -56,6 +61,7 @@ AliRunActionMessenger::operator=(const AliRunActionMessenger &right)
 
 // public methods
 
+//_____________________________________________________________________________
 void AliRunActionMessenger::SetNewValue(G4UIcommand* command, 
        G4String newValue)
 { 

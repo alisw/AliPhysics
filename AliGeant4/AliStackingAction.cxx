@@ -19,6 +19,7 @@
 #include <G4AntiNeutrinoMu.hh>
 #include <G4AntiNeutrinoTau.hh>
 
+//_____________________________________________________________________________
 AliStackingAction::AliStackingAction()
   : fStage(0), 
     fVerboseLevel(0),
@@ -30,11 +31,13 @@ AliStackingAction::AliStackingAction()
   fMessenger = new AliStackingActionMessenger(this);
 }
 
+//_____________________________________________________________________________
 AliStackingAction::AliStackingAction(const AliStackingAction& right) {
 //
   AliGlobals::Exception("AliStackingAction is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliStackingAction::~AliStackingAction() {
 // 
   delete fPrimaryStack;
@@ -43,6 +46,7 @@ AliStackingAction::~AliStackingAction() {
 
 // operators
 
+//_____________________________________________________________________________
 AliStackingAction& 
 AliStackingAction::operator=(const AliStackingAction &right)
 {
@@ -56,6 +60,7 @@ AliStackingAction::operator=(const AliStackingAction &right)
 
 // public methods
 
+//_____________________________________________________________________________
 G4ClassificationOfNewTrack 
 AliStackingAction::ClassifyNewTrack(const G4Track* track)
 {
@@ -100,6 +105,7 @@ AliStackingAction::ClassifyNewTrack(const G4Track* track)
   return classification;
 }
 
+//_____________________________________________________________________________
 void AliStackingAction::NewStage()
 {
 // Called by G4 kernel at the new stage of stacking.
@@ -128,6 +134,7 @@ void AliStackingAction::NewStage()
   }
 }
     
+//_____________________________________________________________________________
 void AliStackingAction::PrepareNewEvent()
 {
 // Called by G4 kernel at the beginning of event.

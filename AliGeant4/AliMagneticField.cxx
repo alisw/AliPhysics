@@ -12,6 +12,7 @@
 
 //  Constructors
 
+//_____________________________________________________________________________
 AliMagneticField::AliMagneticField()
   : G4UniformMagField(G4ThreeVector()) 
 {
@@ -20,6 +21,7 @@ AliMagneticField::AliMagneticField()
   GetGlobalFieldManager()->CreateChordFinder(this);
 }
 
+//_____________________________________________________________________________
 AliMagneticField::AliMagneticField(G4ThreeVector fieldVector)
   : G4UniformMagField(fieldVector)
 {    
@@ -28,6 +30,7 @@ AliMagneticField::AliMagneticField(G4ThreeVector fieldVector)
   GetGlobalFieldManager()->CreateChordFinder(this);
 }
 
+//_____________________________________________________________________________
 AliMagneticField::AliMagneticField(const AliMagneticField& right)
   : G4UniformMagField(right)
 {
@@ -36,12 +39,14 @@ AliMagneticField::AliMagneticField(const AliMagneticField& right)
   GetGlobalFieldManager()->CreateChordFinder(this);
 }
 
+//_____________________________________________________________________________
 AliMagneticField::~AliMagneticField() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 AliMagneticField& 
 AliMagneticField::operator=(const AliMagneticField& right)
 {				  
@@ -56,6 +61,7 @@ AliMagneticField::operator=(const AliMagneticField& right)
 
 // public methods
 
+//_____________________________________________________________________________
 void AliMagneticField::SetFieldValue(G4double fieldValue)
 {
 // Sets the value of the Global Field to fieldValue along Z.
@@ -64,6 +70,7 @@ void AliMagneticField::SetFieldValue(G4double fieldValue)
   G4UniformMagField::SetFieldValue(G4ThreeVector(0,0,fieldValue));
 }
 
+//_____________________________________________________________________________
 void AliMagneticField::SetFieldValue(G4ThreeVector fieldVector)
 {
 // Sets the value of the Global Field.
@@ -84,9 +91,10 @@ void AliMagneticField::SetFieldValue(G4ThreeVector fieldVector)
   }
 }
 
+//_____________________________________________________________________________
 G4FieldManager*  AliMagneticField::GetGlobalFieldManager()
 {
-// Utility method/
+// Utility method
 // ---
 
   return G4TransportationManager::GetTransportationManager()

@@ -22,6 +22,7 @@
 
 #include <TParticle.h>
 
+//_____________________________________________________________________________
 AliPrimaryGeneratorAction::AliPrimaryGeneratorAction()
   : fGenerator(kAliGenerator),
     fNofGunParticles(1),
@@ -32,6 +33,7 @@ AliPrimaryGeneratorAction::AliPrimaryGeneratorAction()
   fMessenger = new AliPrimaryGeneratorMessenger(this);
 }
 
+//_____________________________________________________________________________
 AliPrimaryGeneratorAction::AliPrimaryGeneratorAction(
                                     const AliPrimaryGeneratorAction& right) {
 //				    
@@ -39,6 +41,7 @@ AliPrimaryGeneratorAction::AliPrimaryGeneratorAction(
     "AliPrimaryGeneratorAction is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliPrimaryGeneratorAction::~AliPrimaryGeneratorAction() {
 //
   delete fMessenger;
@@ -47,6 +50,7 @@ AliPrimaryGeneratorAction::~AliPrimaryGeneratorAction() {
 
 // operators
 
+//_____________________________________________________________________________
 AliPrimaryGeneratorAction& 
 AliPrimaryGeneratorAction::operator=(const AliPrimaryGeneratorAction &right)
 {
@@ -61,6 +65,7 @@ AliPrimaryGeneratorAction::operator=(const AliPrimaryGeneratorAction &right)
 
 // private methods
 
+//_____________________________________________________________________________
 void AliPrimaryGeneratorAction::ConstructGenerator()
 {
 // Constructs selected generator.
@@ -82,6 +87,7 @@ void AliPrimaryGeneratorAction::ConstructGenerator()
   }
 }   
       
+//_____________________________________________________________________________
 void AliPrimaryGeneratorAction::ConstructGeantinoGenerator(G4bool isCharged)
 {
 // Geantino with random momentum direction
@@ -131,6 +137,7 @@ void AliPrimaryGeneratorAction::ConstructGeantinoGenerator(G4bool isCharged)
   }
 } 
             
+//_____________________________________________________________________________
 void AliPrimaryGeneratorAction::ConstructAliGenerator()
 {
 // Generator from AliRoot
@@ -148,6 +155,7 @@ void AliPrimaryGeneratorAction::ConstructAliGenerator()
   generator->Generate();
 }
 
+//_____________________________________________________________________________
 void AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries(G4Event* event)
 {
 // Creates a new G4PrimaryVertex objects for each TParticle
@@ -238,6 +246,7 @@ void AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries(G4Event* event)
 
 // public methods
 
+//_____________________________________________________________________________
 void AliPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
 // Generates primary particles by the selected generator.
@@ -271,6 +280,7 @@ void AliPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   }  
 }
 
+//_____________________________________________________________________________
 void AliPrimaryGeneratorAction::SetGenerator(AliPrimaryGenerator generator)
 { 
 // Sets generator.
@@ -279,6 +289,7 @@ void AliPrimaryGeneratorAction::SetGenerator(AliPrimaryGenerator generator)
   fGenerator = generator; 
 }
 
+//_____________________________________________________________________________
 void AliPrimaryGeneratorAction::SetNofGunParticles(G4int nofParticles)
 { 
 // Sets number of primary particles.
@@ -288,9 +299,3 @@ void AliPrimaryGeneratorAction::SetNofGunParticles(G4int nofParticles)
 
   fNofGunParticles = nofParticles;
 }
-
-
-
-
-
-

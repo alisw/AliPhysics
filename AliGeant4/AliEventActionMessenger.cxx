@@ -11,6 +11,7 @@
 #include <G4UIcmdWithAString.hh>
 #include <G4UIcmdWithAnInteger.hh>
 
+//_____________________________________________________________________________
 AliEventActionMessenger::AliEventActionMessenger(AliEventAction* eventAction)
   :fEventAction(eventAction)
 { 
@@ -34,16 +35,19 @@ AliEventActionMessenger::AliEventActionMessenger(AliEventAction* eventAction)
   fVerboseCmd->AvailableForStates(Idle);
 }
 
+//_____________________________________________________________________________
 AliEventActionMessenger::AliEventActionMessenger(){
 //
 }
 
+//_____________________________________________________________________________
 AliEventActionMessenger::AliEventActionMessenger(
                                  const AliEventActionMessenger& right) {
 //				 
   AliGlobals::Exception("AliEventActionMessenger is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliEventActionMessenger::~AliEventActionMessenger() {
 //
   delete fEventDirectory;
@@ -53,6 +57,7 @@ AliEventActionMessenger::~AliEventActionMessenger() {
 
 // operators
 
+//_____________________________________________________________________________
 AliEventActionMessenger& 
 AliEventActionMessenger::operator=(const AliEventActionMessenger &right)
 {
@@ -66,6 +71,7 @@ AliEventActionMessenger::operator=(const AliEventActionMessenger &right)
 
 // public methods
 
+//_____________________________________________________________________________
 void AliEventActionMessenger::SetNewValue(G4UIcommand* command, 
        G4String newValue)
 { 

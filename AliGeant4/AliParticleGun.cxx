@@ -13,11 +13,13 @@
 #include <G4PrimaryVertex.hh>
 #include <G4Event.hh>
 
+//_____________________________________________________________________________
 AliParticleGun::AliParticleGun() {
 //
   fMessenger = new AliParticleGunMessenger(this);
 }
 
+//_____________________________________________________________________________
 AliParticleGun::AliParticleGun(const AliParticleGun& right)
   : G4VPrimaryGenerator(right)
 {
@@ -28,6 +30,7 @@ AliParticleGun::AliParticleGun(const AliParticleGun& right)
   *this = right;
 }
 
+//_____________________________________________________________________________
 AliParticleGun::~AliParticleGun() {
 //
   fGunParticlesVector.clearAndDestroy();
@@ -36,6 +39,7 @@ AliParticleGun::~AliParticleGun() {
 
 // operators
 
+//_____________________________________________________________________________
 AliParticleGun& AliParticleGun::operator=(const AliParticleGun& right)
 {
   // check assignement to self
@@ -57,6 +61,7 @@ AliParticleGun& AliParticleGun::operator=(const AliParticleGun& right)
   
 // public methods
 
+//_____________________________________________________________________________
 void AliParticleGun::AddParticle(AliGunParticle* particle)
 { 
 // Adds particle.
@@ -65,6 +70,7 @@ void AliParticleGun::AddParticle(AliGunParticle* particle)
   fGunParticlesVector.insert(particle); 
 }
 
+//_____________________________________________________________________________
 void AliParticleGun::RemoveParticle(G4int iParticle)
 { 
 // Removes particle.
@@ -75,6 +81,7 @@ void AliParticleGun::RemoveParticle(G4int iParticle)
   delete particle;  
 }
 
+//_____________________________________________________________________________
 void AliParticleGun::GeneratePrimaryVertex(G4Event* event)
 {
 // Generates primary vertices.
@@ -143,6 +150,7 @@ void AliParticleGun::GeneratePrimaryVertex(G4Event* event)
          << "   " << nofGunParticles << " of primary particles " << G4endl;  
 }
 
+//_____________________________________________________________________________
 void AliParticleGun::Reset()
 { 
 // Resets the particle gun.
@@ -151,6 +159,7 @@ void AliParticleGun::Reset()
   fGunParticlesVector.clearAndDestroy(); 
 }
 
+//_____________________________________________________________________________
 void AliParticleGun::List()
 {
 // Lists the particle gun.

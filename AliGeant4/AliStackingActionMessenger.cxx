@@ -11,6 +11,7 @@
 #include <G4UIcmdWithAnInteger.hh>
 #include <G4UIcmdWithoutParameter.hh>
 
+//_____________________________________________________________________________
 AliStackingActionMessenger::AliStackingActionMessenger(
                               AliStackingAction* stackingAction)
   :fStackingAction(stackingAction)
@@ -27,16 +28,19 @@ AliStackingActionMessenger::AliStackingActionMessenger(
   fVerboseCmd->AvailableForStates(Idle);
 }
 
+//_____________________________________________________________________________
 AliStackingActionMessenger::AliStackingActionMessenger() {
 //
 }
 
+//_____________________________________________________________________________
 AliStackingActionMessenger::AliStackingActionMessenger(
                                  const AliStackingActionMessenger& right) {
 //				 
   AliGlobals::Exception("AliStackingActionMessenger is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliStackingActionMessenger::~AliStackingActionMessenger() {
 //
   delete fStackingDirectory;
@@ -45,6 +49,7 @@ AliStackingActionMessenger::~AliStackingActionMessenger() {
 
 // operators
 
+//_____________________________________________________________________________
 AliStackingActionMessenger& 
 AliStackingActionMessenger::operator=(const AliStackingActionMessenger &right)
 {
@@ -59,6 +64,7 @@ AliStackingActionMessenger::operator=(const AliStackingActionMessenger &right)
 
 // public methods
 
+//_____________________________________________________________________________
 void AliStackingActionMessenger::SetNewValue(G4UIcommand* command, 
        G4String newValue)
 { 

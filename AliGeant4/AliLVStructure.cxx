@@ -14,6 +14,7 @@
 #endif //ALICE_VISUALIZE
 #include <G4LogicalVolume.hh>
 
+//_____________________________________________________________________________
 AliLVStructure::AliLVStructure(G4String path)
   : fPathName(path),
     fDirName(path),
@@ -29,16 +30,19 @@ AliLVStructure::AliLVStructure(G4String path)
   }
 }
 
+//_____________________________________________________________________________
 AliLVStructure::AliLVStructure(const AliLVStructure& right)
 {
   // copy stuff
   *this = right;
 }
 
+//_____________________________________________________________________________
 AliLVStructure::AliLVStructure() {
 //
 }
 
+//_____________________________________________________________________________
 AliLVStructure::~AliLVStructure() {
 //
   fStructures.clearAndDestroy();
@@ -47,6 +51,7 @@ AliLVStructure::~AliLVStructure() {
 
 // operators
 
+//_____________________________________________________________________________
 AliLVStructure& AliLVStructure::operator=(const AliLVStructure &right)
 {
   // check assignement to self
@@ -75,6 +80,7 @@ AliLVStructure& AliLVStructure::operator=(const AliLVStructure &right)
   return *this;
 }
 
+//_____________________________________________________________________________
 G4int AliLVStructure::operator==(const AliLVStructure &right) const
 {
   // check == to self
@@ -85,6 +91,7 @@ G4int AliLVStructure::operator==(const AliLVStructure &right) const
 
 // private methods
 
+//_____________________________________________________________________________
 AliLVStructure* AliLVStructure::FindSubDirectory(G4String subDir)
 {
 // Finds the subdirectory.
@@ -96,6 +103,7 @@ AliLVStructure* AliLVStructure::FindSubDirectory(G4String subDir)
   return 0;
 }
 
+//_____________________________________________________________________________
 G4String AliLVStructure::ExtractDirName(G4String name)
 {
 // Extracts the directory name from the path.
@@ -109,6 +117,7 @@ G4String AliLVStructure::ExtractDirName(G4String name)
 
 // public methods
 
+//_____________________________________________________________________________
 void AliLVStructure::AddNewVolume(G4LogicalVolume* lv, 
                       G4String treeStructure)
 {
@@ -143,6 +152,7 @@ void AliLVStructure::AddNewVolume(G4LogicalVolume* lv,
   }
 }
 
+//_____________________________________________________________________________
 G4LogicalVolume* AliLVStructure::GetVolume(G4String lvName)
 {
 // Returns logical volume of lvName if present in the structure,
@@ -156,6 +166,7 @@ G4LogicalVolume* AliLVStructure::GetVolume(G4String lvName)
   return 0;
 }
 
+//_____________________________________________________________________________
 G4LogicalVolume* AliLVStructure::FindVolume(G4String name)
 {
 // Finds logical volume of given name in all structure tree.
@@ -189,6 +200,7 @@ G4LogicalVolume* AliLVStructure::FindVolume(G4String name)
   }
 }
 
+//_____________________________________________________________________________
 void AliLVStructure::ListTree() const
 {
 // Prints LV tree structure.
@@ -203,6 +215,7 @@ void AliLVStructure::ListTree() const
   }
 }
         
+//_____________________________________________________________________________
 void AliLVStructure::ListTreeLong() const
 {
 // Prints LV tree structure with number of
@@ -219,6 +232,7 @@ void AliLVStructure::ListTreeLong() const
   }
 }
         
+//_____________________________________________________________________________
 void AliLVStructure::SetVerboseLevel(G4int verbose) 
 {
 // Sets verbose level.
@@ -231,6 +245,7 @@ void AliLVStructure::SetVerboseLevel(G4int verbose)
 }
 
 #ifdef ALICE_VISUALIZE
+//_____________________________________________________________________________
 void AliLVStructure::SetTreeVisibility(G4bool visibility)       
 {
 // Sets visibility to all logical volumes in the structure 
@@ -259,6 +274,7 @@ void AliLVStructure::SetTreeVisibility(G4bool visibility)
   }
 }
 
+//_____________________________________________________________________________
 void AliLVStructure::SetTreeColour(G4String colName)
 {
 // Sets colour specified  by name to all logical volumes

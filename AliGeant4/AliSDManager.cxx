@@ -19,6 +19,7 @@
 
 AliSDManager* AliSDManager::fgInstance = 0;
 
+//_____________________________________________________________________________
 AliSDManager* AliSDManager::Instance()
 {
 // Returns the singleton instance.
@@ -30,6 +31,7 @@ AliSDManager* AliSDManager::Instance()
   return fgInstance;
 }  
     
+//_____________________________________________________________________________
 AliSDManager::AliSDManager()
   : fNofLVWithSD(0)
 {
@@ -38,12 +40,14 @@ AliSDManager::AliSDManager()
   fgInstance = this;
 }
 
+//_____________________________________________________________________________
 AliSDManager::AliSDManager(const AliSDManager& right) {
 //
   AliGlobals::Exception(
     "Singleton AliSDManager is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliSDManager::~AliSDManager()
 {
   //delete fMessenger;
@@ -51,6 +55,7 @@ AliSDManager::~AliSDManager()
 
 // operators
 
+//_____________________________________________________________________________
 AliSDManager& AliSDManager::operator=(const AliSDManager& right)
 {
   // check assignement to self
@@ -64,6 +69,7 @@ AliSDManager& AliSDManager::operator=(const AliSDManager& right)
           
 // private methods
 
+//_____________________________________________________________________________
 void AliSDManager::CreateLegoSD(G4LogicalVolume* lv, AliLego* lego) const
 { 
 // Replaces the existing sensitive detector of the logical volume
@@ -98,6 +104,7 @@ void AliSDManager::CreateLegoSD(G4LogicalVolume* lv, AliLego* lego) const
   lv->SetSensitiveDetector(legoVSD);	     
 }
 
+//_____________________________________________________________________________
 void AliSDManager::UnsetLegoSD(G4LogicalVolume* lv) const
 { 
 // Replace the lego sensitive detector of the logical volume
@@ -129,6 +136,7 @@ void AliSDManager::UnsetLegoSD(G4LogicalVolume* lv) const
 
 // public methods
 
+//_____________________________________________________________________________
 void AliSDManager::CreateSD(G4LogicalVolume* lv, AliModule* module) const
 { 
 // Creates/retrieves a sensitive detector for the logical volume.
@@ -160,6 +168,7 @@ void AliSDManager::CreateSD(G4LogicalVolume* lv, AliModule* module) const
   lv->SetSensitiveDetector(sd);	     
 }
 
+//_____________________________________________________________________________
 AliModule* AliSDManager::FindAliModule(G4LogicalVolume* lv) const
 {
 // Finds the module containing specified logical volume.
@@ -188,6 +197,7 @@ AliModule* AliSDManager::FindAliModule(G4LogicalVolume* lv) const
   return module;
 }  
 
+//_____________________________________________________________________________
 void AliSDManager::SetLego(AliLego* lego) const 
 { 
 // Replaces the existing sensitive detectors 
@@ -210,6 +220,7 @@ void AliSDManager::SetLego(AliLego* lego) const
   }
 }
 
+//_____________________________________________________________________________
 void AliSDManager::UnsetLego() const
 {
 // Replace the lego sensitive detectors 

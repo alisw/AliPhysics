@@ -12,6 +12,7 @@
 
 const G4double AliSteppingAction::fgkTolerance = 1e-6*mm;
 
+//_____________________________________________________________________________
 AliSteppingAction::AliSteppingAction()
   : fKeptStepPoint(G4ThreeVector())
 {
@@ -19,11 +20,13 @@ AliSteppingAction::AliSteppingAction()
   fMessenger = new AliSteppingActionMessenger(this);
 }
 
+//_____________________________________________________________________________
 AliSteppingAction::AliSteppingAction(const AliSteppingAction& right) {
 //
   AliGlobals::Exception("AliSteppingAction is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliSteppingAction::~AliSteppingAction() {
 //
   delete fMessenger;
@@ -31,6 +34,7 @@ AliSteppingAction::~AliSteppingAction() {
 
 // operators
 
+//_____________________________________________________________________________
 AliSteppingAction& 
 AliSteppingAction::operator=(const AliSteppingAction &right)
 {
@@ -44,6 +48,7 @@ AliSteppingAction::operator=(const AliSteppingAction &right)
 
 // public methods
 
+//_____________________________________________________________________________
 void AliSteppingAction::SteppingAction(const G4Step* step)
 {
 // After processing the given number of steps (kCheckNofSteps)
