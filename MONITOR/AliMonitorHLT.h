@@ -38,8 +38,8 @@ private:
   AliMonitorHisto* fTrackDr0;           // dr0 distribution of HLT tracks
   AliMonitorHisto* fTrackEtaVsPhi;      // phi vs eta for HLT tracks
   AliMonitorHisto* fPtEtaVsPhi;         // phi vs eta for HLT tracks
-  AliMonitorHisto* fTrackZvsNHits;
-  AliMonitorHisto* fTrackXYvsNHits;
+  AliMonitorHisto* fTrackZvsNHits;      // z vs the number of hits per track
+  AliMonitorHisto* fTrackXYvsNHits;     // xy vs the number of hits per track
 
   ClassDef(AliMonitorHLT, 0)   // creation and filling of monitor histograms for HLT
 };

@@ -30,6 +30,7 @@
 #include "AliITSclusterV2.h"
 #include "AliITStrackV2.h"
 #include "AliRunLoader.h"
+#include "AliRawReader.h"
 #include <TFolder.h>
 #include <TTree.h>
 

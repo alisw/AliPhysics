@@ -22,6 +22,7 @@ class TFolder;
 class TTree;
 #ifdef ALI_HLT
 class AliLevel3;
+class AliL3Hough;
 #endif
 
 
@@ -74,15 +75,17 @@ private:
   Bool_t           ReconstructV0s();
 #ifdef ALI_HLT
   void             CreateHLT(const char* fileName);
+  void             CreateHLTHough(const char* fileName);
 #endif
   Bool_t           ReconstructHLT(Int_t iEvent);
+  Bool_t           ReconstructHLTHough(Int_t iEvent);
 
   Bool_t           WriteHistos();
   void             StartNewRun();
 
   void             CheckForConnections();
   void             BroadcastHistos();
-  void             SetStatus(EStatus);
+  void             SetStatus(EStatus status);
 
   static const Int_t fgkPort;          // port number for client connections
 
@@ -94,6 +97,7 @@ private:
   TString          fFileName;           // physical file name
 #ifdef ALI_HLT
   AliLevel3*       fHLT;                // the HLT tracker
+  AliL3Hough*      fHLTHough;           // the HLT hough transformer
 #endif
 
   UInt_t           fRunNumber;          // current run number

@@ -1,7 +1,7 @@
 SRCS:=  AliMonitorPlot.cxx AliMonitorHisto.cxx AliMonitorTrend.cxx \
 	AliMonitor.cxx \
 	AliMonitorTPC.cxx AliMonitorITS.cxx AliMonitorV0s.cxx \
-	AliMonitorHLT.cxx \
+	AliMonitorHLT.cxx AliMonitorHLTHough.cxx \
 	AliMonitorDataTPC.cxx \
 	AliMonitorProcess.cxx AliMonitorControl.cxx \
 	AliMonitorDialog.cxx AliMonitorClient.cxx

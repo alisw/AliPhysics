@@ -32,6 +32,7 @@
 #include "AliTPCclusterMI.h"
 #include "AliTPCtrack.h"
 #include "AliRunLoader.h"
+#include "AliRawReader.h"
 #include <TFolder.h>
 #include <TTree.h>
 

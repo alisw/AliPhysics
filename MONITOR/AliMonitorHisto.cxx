@@ -82,7 +82,7 @@ AliMonitorHisto::AliMonitorHisto(const AliMonitorHisto& histo) :
 //_____________________________________________________________________________
 AliMonitorHisto& AliMonitorHisto::operator =(const AliMonitorHisto& histo)
 {
-// assignment operatore
+// assignment operator
 
   AliMonitorPlot::operator =(histo);
 

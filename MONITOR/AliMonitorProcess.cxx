@@ -31,6 +31,7 @@
 #include "AliMonitorITS.h"
 #include "AliMonitorV0s.h"
 #include "AliMonitorHLT.h"
+#include "AliMonitorHLTHough.h"
 #include "AliRawReaderRoot.h"
 #include "AliLoader.h"
 #include "AliRun.h"
@@ -51,6 +52,9 @@
 #ifdef ALI_HLT
 #include <AliLevel3.h>
 #include <AliL3Transform.h>
+#include <AliL3StandardIncludes.h>
+#include <AliL3HoughMaxFinder.h>
+#include <AliL3Hough.h>
 #endif
 
 ClassImp(AliMonitorProcess) 
@@ -114,6 +118,7 @@ AliMonitorProcess::AliMonitorProcess(const char* alienDir,
   fMonitors.Add(new AliMonitorV0s);
 #ifdef ALI_HLT
   fMonitors.Add(new AliMonitorHLT(fTPCParam));
+  fMonitors.Add(new AliMonitorHLTHough(fTPCParam));
 #endif
 
   for (Int_t iMonitor = 0; iMonitor < fMonitors.GetEntriesFast(); iMonitor++) {
@@ -314,6 +319,7 @@ Bool_t AliMonitorProcess::ProcessFile()
        nEvents, fFileName.Data());
 #ifdef ALI_HLT
   CreateHLT(fFileName);
+  CreateHLTHough(fFileName);
 #endif
 
   // loop over the events
@@ -339,6 +345,8 @@ Bool_t AliMonitorProcess::ProcessFile()
     if (!ReconstructV0s()) return kFALSE;
     if (fStopping) break;
     if (!ReconstructHLT(iEvent)) return kFALSE;
+    if (fStopping) break;
+    if (!ReconstructHLTHough(iEvent)) return kFALSE;
     if (fStopping) break;
 
     if (fDisplaySocket) fDisplaySocket->Send("new event");
@@ -598,6 +606,25 @@ void AliMonitorProcess::CreateHLT(const char* fileName)
   
   fHLT->WriteFiles("./hlt/");  
 }
+
+//_____________________________________________________________________________
+void AliMonitorProcess::CreateHLTHough(const char* fileName)
+{
+
+// create the HLT Hough transform (L3Hough) object
+
+  if (fHLTHough) delete fHLTHough;
+
+  char name[256];
+  strcpy(name, fileName);
+
+  fHLTHough = new AliL3Hough();
+  fHLTHough->SetTransformerParams(64,64,0.1,30);
+//  fHLTHough->Init("./", kFALSE, 20, kFALSE,0,name);
+  fHLTHough->SetAddHistograms();
+  fHLTHough->GetMaxFinder()->SetThreshold(55000); // or 14000 ?
+
+}
 #endif
 
 //_____________________________________________________________________________
@@ -638,6 +665,40 @@ Bool_t AliMonitorProcess::ReconstructHLT(
 #endif
 }
 
+//_____________________________________________________________________________
+Bool_t AliMonitorProcess::ReconstructHLTHough(
+#ifdef ALI_HLT
+  Int_t iEvent
+#else
+  Int_t /* iEvent */
+#endif
+)
+{
+// run the HLT Hough transformer
+
+  SetStatus(kRecHLT);
+
+#ifndef ALI_HLT
+  Warning("ReconstructHLTHough", "the code was compiled without HLT support");
+  return kTRUE;
+
+#else
+  if (!fHLTHough) return kFALSE;
+
+  //  fHLTHough->Process(0, 35);
+  // Loop over TPC sectors and process the data
+  for(Int_t i=0; i<=35; i++)
+    {
+      fHLTHough->ReadData(i,iEvent);
+      fHLTHough->Transform();
+      //      if(fHLTHough->fAddHistograms)
+      fHLTHough->AddAllHistograms();
+      fHLTHough->FindTrackCandidates();
+      fHLTHough->WriteTracks(i,"./hlt");
+    }
+  return kTRUE;
+#endif
+}
 
 //_____________________________________________________________________________
 Bool_t AliMonitorProcess::WriteHistos()
