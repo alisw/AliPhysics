@@ -178,8 +178,6 @@ AliPHOSGetter * AliPHOSGetter::GetInstance()
     cout << "AliPHOSGetter::GetInstance ERROR: not yet initialized" << endl ;
 
   fFile->cd() ;  
-
-  gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
   return rv ;
 }
 
