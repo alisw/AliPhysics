@@ -1,6 +1,11 @@
 #ifndef ALIMEVSIMCONFIG_H
 #define ALIMEVSIMCONFIG_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 #include "TObject.h"
 
 class AliGenMevSim;
