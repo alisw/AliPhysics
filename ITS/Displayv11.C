@@ -37,6 +37,8 @@ void Displayv11(const char* filename=""){
     bar->AddButton("Set perspective off","ISetits(4,0)","Perspective off");
     bar->AddButton("Set circle/80","ISetits(1,80)","circles ~ by 80 lines");
     bar->AddButton("Display Geometry","Displayit()","Run Displayit");
+    bar->AddButton("Display SPD Thermal Sheald","EngineeringSPDThS()",
+                   "Run EngineeringSPDThS");
     bar->AddButton("Display SDD Cone","EngineeringSDDCone()",
                    "Run EngineeringSDDCone");
     bar->AddButton("Display SDD Centeral Cylinder","EngineeringSDDCylinder()",
@@ -182,6 +184,68 @@ void Displayit(){
         view4->Side();
         if(ISetits(3,-1)!=0) view4->ShowAxis();
     } // end if view4
+    //
+}
+//----------------------------------------------------------------------
+void EngineeringSPDThS(){
+    // Display SPD Thermal Sheald Geometry
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Retrurn:
+    //    none.
+    Int_t irr;
+    //
+    TGeoManager *mgr2 = gGeoManager;
+    TGeoVolume *ALIC = mgr2->GetTopVolume();
+    TCanvas *c4;
+    if(!(c4 = (TCanvas*)gROOT->FindObject("C4")))
+        c4 = new TCanvas("C4","ITS SDD Cylinder Geometry",900,450);
+    c4->Divide(2,1);
+    TGeoVolume *ITS,*SPDThS=0;
+    TGeoNode *node;
+    TArrow *arrow=new TArrow();
+    //
+    node = ALIC->FindNode("ITSV_1");
+    ITS = node->GetVolume();
+    node = ITS->FindNode("ITSspdThermalSheald_1");
+    SPDThS = node->GetVolume();
+    //
+    mgr2->SetNsegments(ISetits(1,-1));
+    //
+    mgr2->SetVisLevel(6);
+    mgr2->SetVisOption(0);
+    //mgr2->CheckOverlaps(0.01);
+    //mgr2->PrintOverlaps();
+    mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
+    if(ISetits(2,-1)!=0) mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
+    //
+    c4->cd(1);
+    SPDThS->Draw();
+    TPad *p1 = c4->GetPad(1);
+    TView *view1 = p1->GetView();
+    if(view1){
+        view1->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
+        if(irr) cout <<"error="<<irr<<endl;
+        if(ISetits(4,-1)==0) view1->SetParralel();
+        else  view1->SetPerspective();
+        view1->Front();
+        if(ISetits(3,-1)!=0) view1->ShowAxis();
+    } // end if view1
+    //
+    c4->cd(2);
+    SPDThS->Draw();
+    TPad *p2 = c4->GetPad(2);
+    TView *view2 = p2->GetView();
+    if(view2){
+        view2->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
+        if(irr) cout <<"error="<<irr<<endl;
+        if(ISetits(4,-1)==0) view2->SetParralel();
+        else  view2->SetPerspective();
+        view2->Top();
+        if(ISetits(3,-1)!=0) view2->ShowAxis();
+    } // end if view2
     //
 }
 //----------------------------------------------------------------------
