@@ -17,7 +17,7 @@ ClassImp(AliITStracking)
  
 
 AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference, 
-                AliITS *aliITS, TObjArray *rpoints, Double_t Ptref, Int_t **vettid, Bool_t flagvert) {										 
+                AliITS *aliITS, TObjArray *rpoints, Double_t Ptref, Int_t **vettid, Bool_t flagvert,  AliITSRad *rl) {										 
 ///////////////////////   This function perform the tracking in ITS detectors /////////////////////
 ///////////////////////     reference is a pointer to the final best track    ///////////////////// 
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
@@ -54,21 +54,26 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
       Chi2Now = trackITS->GetChi2();
       Chi2Now/=NumClustNow;
       //cout<<" Chi2Now =  "<<Chi2Now<<"\n"; 
-
+    /*
     // if(Ptref > 0.6 && Chi2Now > 20.) continue; 
     if(Ptref > 0.6 && Chi2Now > 30.) continue; 	  
     if((Ptref <= 0.6 && Ptref>0.2)&& Chi2Now > 15.) continue;        
      // if(Chi2Now>5.) continue; 
       //if(Chi2Now>15.) continue;     
      // if(Ptref <= 0.2 && Chi2Now > 10.) continue;  
-     if(Ptref <= 0.2 && Chi2Now > 8.) continue;  		 		    	       	 	 	 
+     if(Ptref <= 0.2 && Chi2Now > 8.) continue; 
+     */
+     if(Ptref > 1.0 && Chi2Now > 30.) continue; 
+     if((Ptref >= 0.6 && Ptref<=1.0) && Chi2Now > 40.) continue;     	  
+     if((Ptref <= 0.6 && Ptref>0.2)&& Chi2Now > 40.) continue;            
+     if(Ptref <= 0.2 && Chi2Now > 8.) continue;        		 		    	       	 	 	 
     }
      	         
     Int_t layerInit = (*trackITS).GetLayer();
     Int_t layernew = layerInit - 2;  // -1 for new layer, -1 for matrix index 
 					  
     Int_t NLadder[]= {20, 40, 14, 22, 34, 38}; 
-	 Int_t NDetector[]= {4,  4,   5,  8, 23, 26}; 
+    Int_t NDetector[]= {4,  4,   6,  8, 23, 26}; 
 				 		
     TList listoftrack;    	 
     Int_t ladp, ladm, detp,detm,ladinters,detinters; 	
@@ -197,8 +202,8 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
           Float_t sigmatotphi, sigmatotz;
    		  		  
           //Float_t epsphi=3.2, epsz=3.; 
-			 Float_t epsphi=3.2, epsz=3.0;              
-          //if(Ptref<0.2) {epsphi=3.; epsz=3.;}
+	    Float_t epsphi=5.0, epsz=5.0;              
+          if(Ptref<0.2) {epsphi=3.; epsz=3.;}
 		  		  
           Double_t Rtrack=(*trackITS).Getrtrack();
           Double_t sigmaphi=sigma[0]/(Rtrack*Rtrack);
@@ -223,8 +228,8 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
        
           if(iriv == 0) flaghit=1;
  
-          (*newTrack).AddMS();  // add the multiple scattering matrix to the covariance matrix 
-	  (*newTrack).AddEL(1.,0);
+          (*newTrack).AddMS(rl);  // add the multiple scattering matrix to the covariance matrix 
+	  (*newTrack).AddEL(rl,1.,0);
 	   	 
 	  Double_t sigmanew[2];
 	  sigmanew[0]= sigmaphi;
@@ -253,8 +258,8 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
     if(flaghit==0 || outinters==-2) {
       AliITStrack *newTrack = new AliITStrack(*trackITS);	 
       (*newTrack).SetLayer((*trackITS).GetLayer()-1); 
-      (*newTrack).AddMS();  // add the multiple scattering matrix to the covariance matrix  
-      (*newTrack).AddEL(1.,0);  	      
+      (*newTrack).AddMS(rl);  // add the multiple scattering matrix to the covariance matrix  
+      (*newTrack).AddEL(rl,1.,0);  	      
 				    		  
       listoftrack.AddLast(newTrack);	  
     }	
@@ -262,7 +267,7 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
 
     //gObjectTable->Print();   // stampa memoria
 
-    AliITStracking(&listoftrack, reference, aliITS, rpoints,Ptref,vettid,flagvert);          
+    AliITStracking(&listoftrack, reference, aliITS, rpoints,Ptref,vettid,flagvert,rl);          
     listoftrack.Delete();
   } // end of for on tracks
 
@@ -286,7 +291,7 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
   //////////////////////////////////      limits for Geometry 5      /////////////////////////////
   
   Int_t NLadder[]= {20, 40, 14, 22, 34, 38};
-  Int_t NDetector[]= {4,  4,   5,  8, 23, 26}; 
+  Int_t NDetector[]= {4,  4,   6,  8, 23, 26}; 
 
   Float_t Detx[]= {0.64, 0.64, 3.509, 3.509, 3.65, 3.65 };
   Float_t Detz[]= {4.19, 4.19, 3.75 , 3.75 , 2   , 2    };

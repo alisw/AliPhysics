@@ -67,8 +67,8 @@ public:
 
   Double_t GetSigmaphi() const{return ((Double_t)(*fmCovariance)(0,0));}
   Double_t GetSigmaZ() const{return ((Double_t)(*fmCovariance)(1,1));}
-  void AddEL(Double_t signdE,  Bool_t flagtot, Double_t mass=0.1396); 
-  void AddMS();
+  void AddEL(AliITSRad *rl,Double_t signdE,  Bool_t flagtot, Double_t mass=0.1396); 
+  void AddMS(AliITSRad *rl);
   void Correct(Double_t rk); 
   void SetDv(Double_t x) {Dv=x;}
   void SetZv(Double_t x) {Zv=x;}
@@ -78,7 +78,7 @@ public:
   void SetsigmaZv( Double_t x) {sigmaZv=x;} 
   Double_t GetsigmaDv() {return sigmaDv;}
   Double_t GetsigmaZv() {return sigmaZv;} 
-  void PrimaryTrack();
+  void PrimaryTrack(AliITSRad *rl);
   void Setd2(TVector &x) {for(Int_t i=0; i<6; i++){d2(i)=x(i);}}
   void Settgl2(TVector &x) {for(Int_t i=0; i<6; i++){tgl2(i)=x(i);}}
   void Setdtgl(TVector &x) {for(Int_t i=0; i<6; i++){dtgl(i)=x(i);}} 

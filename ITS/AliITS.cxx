@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2001/02/28 18:16:46  mariana
+Make the code compatible with the new AliRun
+
 Revision 1.34  2001/02/11 15:51:39  mariana
 Set protection in MakeBranch
 
@@ -189,7 +192,8 @@ the AliITS class.
 
 #include "AliITStrack.h"
 #include "AliITSiotrack.h"
-#include "AliITStracking.h" 
+#include "AliITStracking.h"
+#include "AliITSRad.h"   
 #include "../TPC/AliTPC.h"
 #include "../TPC/AliTPCParam.h"
 
@@ -1312,7 +1316,7 @@ Option_t *option,Option_t *opt,Text_t *filename)
 //________________________________________________________________
 
 AliITStrack  AliITS::Tracking(AliITStrack &track, AliITStrack *reference,TObjArray *fastpoints, Int_t
-**vettid, Bool_t flagvert ) { 
+**vettid, Bool_t flagvert,  AliITSRad *rl  ) { 
 										
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it 
 
@@ -1326,7 +1330,7 @@ AliITStrack  AliITS::Tracking(AliITStrack &track, AliITStrack *reference,TObjArr
   Double_t Pt=(tr).GetPt();
   //cout << "\n Pt = " << Pt <<"\n";
 
-  AliITStracking obj(list, reference, this, fastpoints,TMath::Abs(Pt),vettid, flagvert);
+  AliITStracking obj(list, reference, this, fastpoints,TMath::Abs(Pt),vettid, flagvert, rl);
   list->Delete();
   delete list;
 
@@ -1363,6 +1367,10 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
 
   const char *pname="75x40_100x60";
   
+ Int_t imax=200,jmax=450;
+  AliITSRad *rl = new AliITSRad(imax,jmax);
+  //cout<<" dopo costruttore AliITSRad\n"; getchar();
+    
   struct GoodTrack {
     Int_t lab,code;
     Float_t px,py,pz,x,y,z,pxg,pyg,pzg,ptg;
@@ -1378,9 +1386,9 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
   
   GoodTrack gt[7000];
   Int_t ngood=0;
-  ifstream in("good_tracks");
+  ifstream in("itsgood_tracks");
 
-  cerr<<"Reading good tracks...\n";
+  cerr<<"Reading itsgood tracks...\n";
   while (in>>gt[ngood].lab>>gt[ngood].code
 	  >>gt[ngood].px >>gt[ngood].py>>gt[ngood].pz
 	  >>gt[ngood].x  >>gt[ngood].y >>gt[ngood].z
@@ -1393,7 +1401,7 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
       break;
     }
   }
-  if (!in.eof()) cerr<<"Read error (good_tracks) !\n";
+  if (!in.eof()) cerr<<"Read error (itsgood_tracks) !\n";
   
   
 // Load tracks
@@ -1572,7 +1580,7 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
 
 /////////////////////////////////////////////////////////////////////////////////////////////////  	 
 	 	
-    primarytrack.PrimaryTrack();
+    primarytrack.PrimaryTrack(rl);
     TVector  d2=primarytrack.Getd2();
     TVector  tgl2=primarytrack.Gettgl2();
     TVector  dtgl=primarytrack.Getdtgl();
@@ -1582,15 +1590,15 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
     trackITS.SetVertex(vertex); trackITS.SetErrorVertex(ervertex);
     result.SetVertex(vertex);   result.SetErrorVertex(ervertex);   
     */                         
-    Tracking(trackITS,&result,recPoints,vettid, flagvert);  
+    Tracking(trackITS,&result,recPoints,vettid, flagvert,rl);  
 	     
-     cout<<" progressive track number = "<<j<<"\r";
+    // cout<<" progressive track number = "<<j<<"\r";
    // cout<<j<<"\r";
-    //cout<<" progressive track number = "<<j<<"\n";
+   // cout<<" progressive track number = "<<j<<"\n";
     Long_t labITS=result.GetLabel();
-    //cout << " ITS track label = " << labITS << "\n"; 		    
+   // cout << " ITS track label = " << labITS << "\n"; 		    
     int lab=track->GetLabel();		    
-  //  cout << " TPC track label = " << lab <<"\n";
+   // cout << " TPC track label = " << lab <<"\n";
     //result.GetClusters(); getchar();  //to print the cluster matrix
 	 
 //propagation to vertex

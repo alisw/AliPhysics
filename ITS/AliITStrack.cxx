@@ -8,6 +8,7 @@
 #include "AliRun.h"
 #include "AliITStrack.h"
 #include "AliGenerator.h"
+#include "AliITSRad.h"
 
 
 ClassImp(AliITStrack)
@@ -30,7 +31,6 @@ AliITStrack::AliITStrack() {
   for(i=0; i<6; i++) (*ClusterInTrack)(i,6)=(*ClusterInTrack)(i,7)=
                            (*ClusterInTrack)(i,8)=-1.;
   rtrack=0.; 
-  //alphaprov=-50.; //provvisorio 
   d2.ResizeTo(6);
   tgl2.ResizeTo(6); 
   dtgl.ResizeTo(6);   
@@ -69,7 +69,7 @@ AliITStrack::AliITStrack(const AliITStrack &cobj) {
   d2=cobj.d2;
   tgl2=cobj.tgl2;
   dtgl=cobj.dtgl;
-  //alphaprov=cobj.alphaprov;  //provvisorio    
+    
  
   *fmCovariance = *cobj.fmCovariance;
  
@@ -197,22 +197,7 @@ void AliITStrack::LmTPC() {
   fvTrack(1)=zm;
   fvTrack(3)=tpctrack(4);
   fvTrack(4)=tpctrack(2);
-  /*
-  //provvisorio
-   alphaprov=pigre-PhiDef(x0m,y0m)-PhiDef(fVertex(0),fVertex(1));
-  if(alphaprov<0.) alphaprov=alphaprov+2.*pigre;
-  //cout<<" PhiDef(x0m,y0m) ="<<PhiDef(x0m,y0m)<<"\n";
-  //cout<<" PhiDef(fVertex(0),fVertex(1)) = "<<PhiDef(fVertex(0),fVertex(1))<<"\n";
-  //cout<<"alphaprov = "<<alphaprov<<"\n"; getchar();
-  //cout<<" fvTrack(0) prima = "<<fvTrack(0)<<"\n";
-  fvTrack(0)-=alphaprov;
-  if(fvTrack(0)<0.) fvTrack(0)+= 2.*pigre;
-  //cout<<" fvTrack(0) dopo = "<<fvTrack(0)<<"  alphaprov = "<<alphaprov<<"\n"; 
-  cout<<" fvertex = "<<fVertex(0)<<" "<<fVertex(1)<<" "<<fVertex(2)<<"\n";   
-  fVertex(0)=0.;
-  fVertex(1)=0.;
-/////////////////////////////////////////////////////////////////////////////////////////////////// 
-*/ 
+
   
   Double_t dd=TMath::Sqrt((x0m-fVertex(0))*(x0m-fVertex(0))+(y0m-fVertex(1))*(y0m-fVertex(1)));
   Double_t signdd;
@@ -224,23 +209,7 @@ void AliITStrack::LmTPC() {
   TMatrix localM(5,5);    
   Double_t cov[15];
   fTPCtrack->GetCovariance(cov);
-  /*
-  localM(0,0)=cov[0];
-  localM(1,1)=cov[2];
-  localM(2,2)=cov[5];
-  localM(3,3)=cov[9];
-  localM(4,4)=cov[14];
-  localM(1,0)=localM(0,1)=cov[1];
-  localM(2,0)=localM(0,2)=cov[3];
-  localM(2,1)=localM(1,2)=cov[4];
-  localM(3,0)=localM(0,3)=cov[6];
-  localM(3,1)=localM(1,3)=cov[7];
-  localM(3,2)=localM(2,3)=cov[8];
-  localM(4,0)=localM(0,4)=cov[10];
-  localM(4,1)=localM(1,4)=cov[11];
-  localM(4,2)=localM(2,4)=cov[12];
-  localM(4,3)=localM(3,4)=cov[13];
-  */
+
   localM(0,0)=cov[0];
   localM(1,1)=cov[2];
   localM(3,3)=cov[5];
@@ -323,7 +292,7 @@ AliITStrack &AliITStrack::operator=(AliITStrack obj) {
   d2=obj.d2;
   tgl2=obj.tgl2; 
   dtgl=obj.dtgl; 
-  //alphaprov=obj.alphaprov; //proviisorio   
+ 
     
   *fmCovariance = *obj.fmCovariance;
   *ClusterInTrack = *obj.ClusterInTrack;
@@ -441,6 +410,7 @@ void AliITStrack::Propagation(Double_t rk) {
   *fmCovariance = B;    
 	
 }
+/*
 void AliITStrack::AddEL(Double_t signdE, Bool_t flagtot, Double_t mass) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
 //  add energy loss
@@ -475,7 +445,83 @@ void AliITStrack::AddEL(Double_t signdE, Bool_t flagtot, Double_t mass) {
   fvTrack(4)=CC; 
     		
 }
+*/
+void AliITStrack::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double_t mass=0.1396) {
+//Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
+//  add energy loss
 
+  TVector s(6);  
+  //s(0)=0.0026+0.00283; s(1)=0.018; s(2)=0.0094; s(3)=0.0095; s(4)=0.0091; s(5)=0.0087;
+  //0.00277 is added in the first layer to take into account the energy loss in the beam pipe
+
+  //for(int k=0; k<6; k++) cout<<s(k)<<" "; cout<<"\n";
+  
+  //Double_t Cold=fvTrack(4);
+  
+  Double_t phi=fvTrack(0);
+  Double_t tgl=fvTrack(3);
+  Double_t theta=((TMath::Pi())/2.)-TMath::ATan(tgl);
+  //phi*=180./TMath::Pi();
+  //theta*=180./TMath::Pi();
+  //Double_t rad90=(TMath::Pi())/2.;
+  Double_t rad40=(TMath::Pi())*40./180.;
+  Double_t rad100=(TMath::Pi())*100/180;
+  Double_t rad360=(TMath::Pi())*2.;
+  Int_t imax=rl->Getimax();
+  Int_t jmax=rl->Getjmax();
+  Int_t i=(Int_t) ( (theta-rad40)/rad100*imax);
+  Int_t j=(Int_t) ( phi/rad360*jmax );
+  //Int_t i=(Int_t)( ((theta-((TMath::Pi())/4.))/((TMath::Pi())/2.))*imax );
+  //Int_t j=(Int_t)( (phi/((TMath::Pi())*2.))*jmax );
+  if(i<0) i=0;
+  if(i>=imax) i=imax-1;
+  if(j<0) j=0;
+  if(j>=jmax) j=jmax-1;
+  
+  s(0) = 0.0028/TMath::Sin(theta)+( rl->GetRadMatrix1() )(i,j);   // 0.0028 takes into account the beam pipe
+  s(1) = ( rl->GetRadMatrix2() )(i,j);
+  s(2) = ( rl->GetRadMatrix3() )(i,j);
+  s(3) = ( rl->GetRadMatrix4() )(i,j);
+  s(4) = ( rl->GetRadMatrix5() )(i,j);
+  s(5) = ( rl->GetRadMatrix6() )(i,j);
+  
+  //for(int k=0; k<6; k++) cout<<s(k)<<" "; getchar();
+    
+  //if(phi>60) {cout<<" phi = "<<phi<<"\n"; getchar();}
+  //if(theta<45 || theta>135) {cout<<" theta = "<<theta<<"\n"; getchar();}
+  //cout<<" dentro AddEl: phi, theta = "<<phi<<" "<<theta<<"\n"; getchar(); 
+    
+  Double_t cl=1.+fvTrack(3)*fvTrack(3);  // cl=1/(cosl)**2 = 1 + (tgl)**2 
+  Double_t sqcl=TMath::Sqrt(cl);
+  Double_t pt=GetPt();
+     
+  Double_t p2=pt*pt*cl;
+  Double_t E=TMath::Sqrt(p2+mass*mass);
+  Double_t beta2=p2/(p2+mass*mass);
+  
+  Double_t dE;
+  if(flagtot) {
+    Double_t stot=s(0)+s(1)+s(2)+s(3)+s(4)+s(5);
+    dE=0.153/beta2*(log(5940*beta2/(1-beta2)) - beta2)*stot*21.82*sqcl;
+  } else {
+    dE=0.153/beta2*(log(5940*beta2/(1-beta2)) - beta2)*s(fLayer-1)*21.82*sqcl;
+  }   
+  dE=signdE*dE/1000.; 
+	  
+  E+=dE;
+  Double_t p=TMath::Sqrt(E*E-mass*mass);   
+  Double_t sign=1.;
+  if((fvTrack)(4) < 0.) sign=-1.; 
+  pt=sign*p/sqcl; 
+  Double_t CC=(0.3*0.2)/(pt*100.);
+  fvTrack(4)=CC;
+  
+  
+  //Double_t DelCC=CC-Cold;
+  //cout<<"  CC , DelCC, covCC = "<<CC<<" "<<DelCC<<" "<<(*fmCovariance)(4,4)<<"\n"; getchar();
+  //(*fmCovariance)(4,4)=(*fmCovariance)(4,4)+DelCC*DelCC;
+    		
+}
 void  AliITStrack::Correct(Double_t rk) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
 // correct track to take into account real geometry detector
@@ -496,7 +542,7 @@ void  AliITStrack::Correct(Double_t rk) {
   rtrack=rk;
   		
 }
-
+/*
 void AliITStrack::AddMS() {
        
 //////////   Modification of the covariance matrix to take into account multiple scattering  ///////////
@@ -510,6 +556,81 @@ void AliITStrack::AddMS() {
   Int_t layer=(Int_t)GetLayer();
   
   Double_t tgl=fvTrack(3);
+  Double_t cosl=TMath::Cos(TMath::ATan(tgl));	
+  Double_t D=fvTrack(2);
+  Double_t C=fvTrack(4);
+  Double_t Cy=C/2.;
+  Double_t Q20=1./(cosl*cosl);	 
+  Double_t Q30=C*tgl;
+   
+  Double_t Q40=Cy*(rtrack*rtrack-D*D)/(1.+ 2.*Cy*D);
+  Double_t dd=D+Cy*D*D-Cy*rtrack*rtrack;
+  Double_t Q41=-1./cosl*TMath::Sqrt(rtrack*rtrack - dd*dd)/(1.+ 2.*Cy*D);
+  
+   
+  TMatrix J(5,2);	
+  J(0,0)=0.; J(0,1)=0.;
+  J(1,0)=0.; J(1,1)=0.;
+  J(2,0)=Q40;    
+  J(2,1)=Q41;   	
+  J(3,0)=Q20;  J(3,1)=0.;
+  J(4,0)=Q30;   J(4,1)=0.;
+		 	
+  Double_t p2=(GetPt()*GetPt())/(cosl*cosl);
+  Double_t beta2=p2/(p2+mass*mass);
+  Double_t theta2=14.1*14.1/(beta2*p2*1.e6)*(s(layer-1)/cosl);	
+	
+  TMatrix Jt(TMatrix::kTransposed,J);	
+  TMatrix Q(J,TMatrix::kMult,Jt);
+  Q*=theta2;	
+		    
+  (*fmCovariance)+=Q;
+  
+}
+*/
+void AliITStrack::AddMS(AliITSRad *rl) {
+       
+//////////   Modification of the covariance matrix to take into account multiple scattering  ///////////
+//Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it     
+   
+  TVector s(6);
+
+  //s(0)=0.0026+0.00283; s(1)=0.018; s(2)=0.0094; s(3)=0.0095; s(4)=0.0091; s(5)=0.0087;
+//0.00277 is added in the first layer to take into account the energy loss in the beam pipe 
+
+
+  Double_t phi=fvTrack(0);
+  Double_t tgl=fvTrack(3);
+  Double_t theta=((TMath::Pi())/2.)-TMath::ATan(tgl);
+  //phi*=180./TMath::Pi();
+  //theta*=180./TMath::Pi();  
+  //Double_t rad90=(TMath::Pi())/2.;
+  Double_t rad40=(TMath::Pi())*40./180.;
+  Double_t rad100=(TMath::Pi())*100/180;
+  Double_t rad360=(TMath::Pi())*2.;
+  Int_t imax=rl->Getimax();
+  Int_t jmax=rl->Getjmax();
+  Int_t i=(Int_t) ( (theta-rad40)/rad100*imax);
+  Int_t j=(Int_t) ( phi/rad360*jmax);
+  //Int_t i=(Int_t)( ((theta-((TMath::Pi())/4.))/((TMath::Pi())/2.))*imax );
+  //Int_t j=(Int_t)( (phi/((TMath::Pi())*2.))*jmax );
+
+  if(i<0) i=0;
+  if(i>=imax) i=imax-1;
+  if(j<0) j=0;
+  if(j>=jmax) j=jmax-1;
+  
+  s(0) = 0.0028/TMath::Sin(theta)+( rl->GetRadMatrix1() )(i,j);   // 0.0028 takes into account the beam pipe
+  s(1) = ( rl->GetRadMatrix2() )(i,j);
+  s(2) = ( rl->GetRadMatrix3() )(i,j);
+  s(3) = ( rl->GetRadMatrix4() )(i,j);
+  s(4) = ( rl->GetRadMatrix5() )(i,j);
+  s(5) = ( rl->GetRadMatrix6() )(i,j);
+      
+  Double_t mass=0.1396;
+  Int_t layer=(Int_t)GetLayer();
+  
+  //Double_t tgl=fvTrack(3);
   Double_t cosl=TMath::Cos(TMath::ATan(tgl));	
   Double_t D=fvTrack(2);
   Double_t C=fvTrack(4);
@@ -540,7 +661,7 @@ void AliITStrack::AddMS() {
 		 	
   Double_t p2=(GetPt()*GetPt())/(cosl*cosl);
   Double_t beta2=p2/(p2+mass*mass);
-  Double_t theta2=14.1*14.1/(beta2*p2*1.e6)*(s(layer-1)/cosl);	
+  Double_t theta2=14.1*14.1/(beta2*p2*1.e6)*(s(layer-1)/cosl);
 	
   TMatrix Jt(TMatrix::kTransposed,J);	
   TMatrix Q(J,TMatrix::kMult,Jt);
@@ -549,8 +670,7 @@ void AliITStrack::AddMS() {
   (*fmCovariance)+=Q;
   
 }
-
-void AliITStrack::PrimaryTrack() {
+void AliITStrack::PrimaryTrack(AliITSRad *rl) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
 // calculation of part of covariance matrix for vertex  constraint
 
@@ -570,7 +690,7 @@ void AliITStrack::PrimaryTrack() {
   TMatrix  newC(5,5);
   newC(4,4)=(*fmCovariance)(4,4);
   (*fmCovariance)=newC;
-  AddEL(1.,1);
+  AddEL(rl,1.,1);
   fLayer=0;
   Int_t i;
   for (i=0; i<6; i++) {
@@ -579,8 +699,8 @@ void AliITStrack::PrimaryTrack() {
     d2(i)=(*fmCovariance)(2,2);
     tgl2(i)=(*fmCovariance)(3,3);
     dtgl(i)=(*fmCovariance)(2,3); 
-    AddMS();    
-    AddEL(-1,0); 	   
+    AddMS(rl);    
+    AddEL(rl,-1,0); 	   
   } 		
 }	
  

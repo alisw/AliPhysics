@@ -29,6 +29,7 @@ class AliITSRecPoint;
 class AliITSRawCluster;
 class AliITSmodule;
 class AliITStrack;
+class AliITSRad; 
 
 const Int_t kNTYPES=3;
 
@@ -141,7 +142,7 @@ class AliITS : public AliDetector {
     // tracking
 
     AliITStrack Tracking(AliITStrack &track, AliITStrack *reference, TObjArray *fpoints, Int_t **vettid,
-	 Bool_t flagvert );  
+	 Bool_t flagvert,  AliITSRad *rl );  
 
     void DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, Bool_t flagvert);
 
