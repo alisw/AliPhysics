@@ -102,6 +102,8 @@ void AliTRDv2::CreateGeometry()
   Float_t par_nc[nparnc];
   Float_t par_oc[nparoc];
 
+  Int_t icham;
+
   Int_t *idtmed = gAlice->Idtmed();
   
   AliMC* pMC = AliMC::GetMC();
@@ -145,7 +147,7 @@ void AliTRDv2::CreateGeometry()
 
   // Definition of the chambers 
   Char_t ctagc[5], ctagi[5];
-  for (Int_t icham = 1; icham <= ncham; ++icham) {
+  for (icham = 1; icham <= ncham; ++icham) {
 
     // Carbon frame of the inner chambers (C) 
     par_ch[0] = widmi + (icham-1) * widdifc - frame;
@@ -202,7 +204,7 @@ void AliTRDv2::CreateGeometry()
   pMC->Gsvolu("UT3I", "BOX ", idtmed[1308-1], par_ic, nparic);
   // Xe/Isobutane layer (gasvolume) 
   par_ic[2] = xethick / 2.;
-  for (Int_t icham = 1; icham <= 6; ++icham) {
+  for (icham = 1; icham <= 6; ++icham) {
     sprintf(ctagc,"UXI%1d",icham);
     pMC->Gsvolu(ctagc, "BOX ", idtmed[1309-1], par_ic, nparic);
   }
@@ -239,7 +241,7 @@ void AliTRDv2::CreateGeometry()
   pMC->Gsvolu("UT3N", "BOX ", idtmed[1308-1], par_nc, nparnc);
   // Xe/Isobutane layer (gasvolume) 
   par_nc[2] = xethick / 2.;
-  for (Int_t icham = 1; icham <= 6; ++icham) {
+  for (icham = 1; icham <= 6; ++icham) {
     sprintf(ctagc,"UXN%1d",icham);
     pMC->Gsvolu(ctagc, "BOX ", idtmed[1309-1], par_nc, nparnc);
   }
@@ -276,7 +278,7 @@ void AliTRDv2::CreateGeometry()
   pMC->Gsvolu("UT3O", "BOX ", idtmed[1308-1], par_oc, nparoc);
   // Xe/Isobutane layer (gasvolume) 
   par_oc[2] = xethick / 2.;
-  for (Int_t icham = 1; icham <= 6; ++icham) {
+  for (icham = 1; icham <= 6; ++icham) {
     sprintf(ctagc,"UXO%1d",icham);
     pMC->Gsvolu(ctagc, "BOX ", idtmed[1309-1], par_oc, nparoc);
   }
@@ -308,7 +310,7 @@ void AliTRDv2::CreateGeometry()
   pMC->Gspos("UT2I", 1, "UT1I", 0., 0., pezpos, 0, "ONLY");
   pMC->Gspos("UT2N", 1, "UT1N", 0., 0., pezpos, 0, "ONLY");
   pMC->Gspos("UT2O", 1, "UT1O", 0., 0., pezpos, 0, "ONLY");
-  for (Int_t icham = 1; icham <= ncham; ++icham) {
+  for (icham = 1; icham <= ncham; ++icham) {
     // The inner chambers 
     sprintf(ctagi,"UII%1d",icham);
     sprintf(ctagc,"UXI%1d",icham);
@@ -348,7 +350,7 @@ void AliTRDv2::CreateGeometry()
   }
 
   // Position of the inner part of the chambers in the carbon-frames 
-  for (Int_t icham = 1; icham <= ncham; ++icham) {
+  for (icham = 1; icham <= ncham; ++icham) {
     xpos = 0.;
     ypos = 0.;
     zpos = 0.;
@@ -367,7 +369,7 @@ void AliTRDv2::CreateGeometry()
   }
 
   // Position of the chambers in the full TRD-setup 
-  for (Int_t icham = 1; icham <= ncham; ++icham) {
+  for (icham = 1; icham <= ncham; ++icham) {
     // The inner chambers
     xpos = 0.;
     ypos = 0.;

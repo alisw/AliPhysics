@@ -305,7 +305,7 @@ void AliTRD::Init()
 }
 
 //_____________________________________________________________________________
-void AliTRD::SetGasMix(Int_t imix = 0)
+void AliTRD::SetGasMix(Int_t imix)
 {
 
   if ((imix < 0) || (imix > 1)) {
@@ -320,7 +320,7 @@ void AliTRD::SetGasMix(Int_t imix = 0)
 }
 
 //_____________________________________________________________________________
-void AliTRD::SetSensPlane(Int_t iplane = 0)
+void AliTRD::SetSensPlane(Int_t iplane)
 {
 
   if ((iplane < 0) || (iplane > 6)) {
@@ -337,7 +337,7 @@ void AliTRD::SetSensPlane(Int_t iplane = 0)
 }
 
 //_____________________________________________________________________________
-void AliTRD::SetSensChamber(Int_t ichamber = 0)
+void AliTRD::SetSensChamber(Int_t ichamber)
 {
 
   if ((ichamber < 0) || (ichamber > 5)) {
@@ -354,7 +354,7 @@ void AliTRD::SetSensChamber(Int_t ichamber = 0)
 }
 
 //_____________________________________________________________________________
-void AliTRD::SetSensSector(Int_t isector = 0)
+void AliTRD::SetSensSector(Int_t isector)
 {
 
   if ((isector < 0) || (isector > 18)) {
