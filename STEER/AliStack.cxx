@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/07/03 08:10:57  hristov
+J.Chudoba's changes merged correctly with the HEAD
+
 Revision 1.6  2001/05/31 06:59:06  fca
 Clean setting and deleting of fParticleBuffer
 
@@ -555,7 +558,7 @@ TParticle* AliStack::Particle(Int_t i)
   // Return particle with specified ID
   
   if(!(*fParticleMap)[i]) {
-    Int_t nentries = fParticles->GetEntries();
+    Int_t nentries = fParticles->GetEntriesFast();
     // algorithmic way of getting entry index
     // (primary particles are filled after secondaries)
     Int_t entry;
