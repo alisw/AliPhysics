@@ -1474,18 +1474,21 @@ void AliMUONClusterFinderVS::FindRawClusters()
 	    fSector= fSeg[cath]->Sector(i,j)/100;
 	    if (fDebugLevel)
 		printf("\n New Seed %d %d ", i,j);
-	    
+	
+            
 	    FindCluster(i,j,cath,c);
 //          ^^^^^^^^^^^^^^^^^^^^^^^^
 	    // center of gravity
-	    c.fX[0] /= c.fQ[0];
+	    if (c.fX[0]!=0.) c.fX[0] /= c.fQ[0];
 // Force on anod
 	    c.fX[0]=fSeg[0]->GetAnod(c.fX[0]);
-	    c.fY[0] /= c.fQ[0];
-	    c.fX[1] /= c.fQ[1];
-// Force on anod
+	    if (c.fY[0]!=0.) c.fY[0] /= c.fQ[0];
+      	    
+	    if(c.fQ[1]!=0.) c.fX[1] /= c.fQ[1];
+	    	    			
+	   // Force on anod
 	    c.fX[1]=fSeg[0]->GetAnod(c.fX[1]);
-	    c.fY[1] /= c.fQ[1];
+	     if(c.fQ[1]!=0.) c.fY[1] /= c.fQ[1];
 	    
 	    c.fZ[0] = fZPlane;
 	    c.fZ[1] = fZPlane;	    
