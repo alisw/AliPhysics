@@ -29,20 +29,12 @@ class AliHBTFunction: public TNamed
 {
   public:
     AliHBTFunction();
-    AliHBTFunction(const char* name,const char* title);
+    AliHBTFunction(const char* name, const char* title);
+    AliHBTFunction(const AliHBTFunction & source);
+    
     virtual ~AliHBTFunction();
     
-  AliHBTFunction(const AliHBTFunction & source) {
-    // Copy constructor needed by the coding conventions byt not used
-    Fatal("AliHBTFunction(const AliHBTFunction & source)",
-	  "not implemented");
-  }
-
-  AliHBTFunction & operator= (const AliHBTFunction & source) {
-    // Assignment needed by the coding conventions byt not used
-    Fatal("Assignment operator","not implemented");
-    return * this;
-  }
+    AliHBTFunction & operator= (const AliHBTFunction & source);
 
     virtual TH1* GetNumerator() const = 0;
     virtual TH1* GetDenominator() const = 0;
@@ -63,7 +55,7 @@ class AliHBTFunction: public TNamed
     virtual void BuildHistos() = 0;//builds default histograms
     AliHBTPairCut*   fPairCut;     //pair cut
     
-   ClassDef(AliHBTFunction,2)
+    ClassDef(AliHBTFunction,2)
 };
 /******************************************************************/
 inline AliHBTPair* AliHBTFunction::CheckPair(AliHBTPair* pair)
@@ -175,16 +167,9 @@ class AliHBTFunction1D: public AliHBTFunction
   AliHBTFunction1D(const Char_t *name, const Char_t *title);
   AliHBTFunction1D(const Char_t *name, const Char_t *title,
                    Int_t nbins, Float_t maxXval, Float_t minXval);
-  AliHBTFunction1D(const AliHBTFunction1D & source) {
-    // Copy constructor needed by the coding conventions byt not used
-    Fatal("AliHBTFunction1D(const AliHBTFunction1D & source)",
-	  "not implemented");
-  }
-  AliHBTFunction1D & operator= (const AliHBTFunction1D & source) {
-    // Assignment needed by the coding conventions byt not used
-    Fatal("Assignment operator","not implemented");
-    return * this;
-  }
+
+  AliHBTFunction1D(const AliHBTFunction1D & source);
+  AliHBTFunction1D & operator= (const AliHBTFunction1D& /*source*/);
 
   virtual ~AliHBTFunction1D();
   
@@ -244,17 +229,9 @@ class AliHBTFunction2D: public AliHBTFunction
                       Int_t nXbins, Double_t maxXval, Double_t minXval, 
                       Int_t nYbins, Double_t maxYval, Double_t minYval);
 	  
-  AliHBTFunction2D(const AliHBTFunction2D & source) {
-    // Copy constructor needed by the coding conventions byt not used
-    Fatal("AliHBTFunction2D(const AliHBTFunction2D & source)",
-	  "not implemented");
-  }
+  AliHBTFunction2D(const AliHBTFunction2D & source);
 
-  AliHBTFunction2D & operator= (const AliHBTFunction2D & source) {
-    // Assignment needed by the coding conventions byt not used
-    Fatal("Assignment operator","not implemented");
-    return * this;
-  }
+  AliHBTFunction2D & operator= (const AliHBTFunction2D & /*source*/);
 
   virtual ~AliHBTFunction2D();
   
@@ -325,17 +302,8 @@ class AliHBTFunction3D: public AliHBTFunction
                    Int_t nYbins, Double_t maxYval, Double_t minYval, 
                    Int_t nZbins, Double_t maxZval, Double_t minZval);
 
-  AliHBTFunction3D(const AliHBTFunction3D & source) {
-    // Copy constructor needed by the coding conventions byt not used
-    Fatal("AliHBTFunction3D(const AliHBTFunction3D & source)",
-	  "not implemented");
-  }
-
-  AliHBTFunction3D & operator= (const AliHBTFunction3D & source) {
-    // Assignment needed by the coding conventions byt not used
-    Fatal("Assignment operator","not implemented");
-    return * this;
-  }
+  AliHBTFunction3D(const AliHBTFunction3D & source);
+  AliHBTFunction3D & operator= (const AliHBTFunction3D & /*source*/);
 
   virtual ~AliHBTFunction3D();//destructor
 

@@ -46,11 +46,20 @@ AliHBTFunction::AliHBTFunction():
 //Default constructor
 }
 /******************************************************************/
+
 AliHBTFunction::AliHBTFunction(const char* name,const char* title):
   TNamed(name,title),
   fPairCut(new AliHBTEmptyPairCut()) //dummy cut  
 {
 //Constructor  
+}
+/******************************************************************/
+
+AliHBTFunction::AliHBTFunction(const AliHBTFunction & source):
+ TNamed(source),
+ fPairCut((AliHBTPairCut*)source.fPairCut->Clone())
+{
+// Copy constructor needed by the coding conventions
 }
 /******************************************************************/
 
@@ -60,6 +69,13 @@ AliHBTFunction::~AliHBTFunction()
   delete fPairCut;
 }
 /******************************************************************/
+AliHBTFunction & AliHBTFunction::operator= (const AliHBTFunction & source)
+{
+ // Assignment needed by the coding conventions
+  delete fPairCut;
+  fPairCut = (AliHBTPairCut*)source.fPairCut->Clone();
+  return * this;
+}
 
 void AliHBTFunction::WriteFunction()
 {
@@ -236,6 +252,22 @@ AliHBTFunction1D::AliHBTFunction1D(const Char_t *name, const Char_t *title,
 }
 /******************************************************************/
 
+AliHBTFunction1D::AliHBTFunction1D(const AliHBTFunction1D& source):
+ AliHBTFunction(source)
+{
+// Copy constructor needed by the coding conventions byt not used
+  Fatal("AliHBTFunction1D(const AliHBTFunction1D&)","Cpy ctor not usable.");
+}
+/******************************************************************/
+
+AliHBTFunction1D& AliHBTFunction1D::operator= (const AliHBTFunction1D & /*source*/) 
+{
+// Assignment needed by the coding conventions byt not used
+  Fatal("Assignment operator","not implemented");
+  return * this;
+ }
+/******************************************************************/
+
 AliHBTFunction1D::~AliHBTFunction1D()
 {
 //destructor
@@ -400,9 +432,24 @@ AliHBTFunction2D::AliHBTFunction2D(const Char_t *name, const Char_t *title,
   BuildHistos(nXbins,maxXval,minXval,nYbins,maxYval,minYval);
 }	  
 /******************************************************************/
+AliHBTFunction2D::AliHBTFunction2D(const AliHBTFunction2D & source):
+ AliHBTFunction(source)
+{
+// Copy constructor needed by the coding conventions byt not used
+  Fatal("AliHBTFunction2D(const AliHBTFunction2D&)","Cpy ctor not usable.");
+}
+/******************************************************************/
+
+AliHBTFunction2D& AliHBTFunction2D::operator= (const AliHBTFunction2D& /*source*/) {
+// Assignment needed by the coding conventions byt not used
+  Fatal("Assignment operator","not implemented");
+  return * this;
+}
+/******************************************************************/
 
 AliHBTFunction2D::~AliHBTFunction2D()
 {
+//dtor
   delete fNumerator;
   delete fDenominator;
 }
@@ -419,7 +466,7 @@ void AliHBTFunction2D::BuildHistos()
 void AliHBTFunction2D::BuildHistos(Int_t nxbins, Float_t xmax, Float_t xmin,
                                    Int_t nybins, Float_t ymax, Float_t ymin)
 {
-  //Builds numerator and denominator histograms (2d-case)
+//Builds numerator and denominator histograms (2d-case)
  TString numstr = fName + " Numerator";  //title and name of the 
                                            //numerator histogram
  TString denstr = fName + " Denominator";//title and name of the 
@@ -446,9 +493,9 @@ void AliHBTFunction2D::SetNumberOfBinsToScale(UInt_t xn, UInt_t yn)
 
 Double_t AliHBTFunction2D::Scale()
 {
-  // Calculates the factor that should be used to scale 
-  // quatience of fNumerator and fDenominator to 1 at 
-  // given region
+// Calculates the factor that should be used to scale 
+// quatience of fNumerator and fDenominator to 1 at 
+// given region
   if (gDebug>0) Info("Scale","Enetered Scale()");
   if(!fNumerator) 
    {
@@ -594,6 +641,22 @@ AliHBTFunction3D::AliHBTFunction3D(const Char_t *name, const Char_t *title,
  //constructor
  BuildHistos( nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval);
 }	  
+/******************************************************************/
+
+AliHBTFunction3D::AliHBTFunction3D(const AliHBTFunction3D& source):
+ AliHBTFunction(source)
+{
+// Copy constructor needed by the coding conventions byt not used
+  Fatal("AliHBTFunction3D(const AliHBTFunction3D&)","Cpy ctor not usable.");
+}
+/******************************************************************/
+
+AliHBTFunction3D& AliHBTFunction3D::operator= (const AliHBTFunction3D & /*source*/) 
+{
+// Assignment needed by the coding conventions byt not used
+  Fatal("Assignment operator","not implemented");
+  return * this;
+ }
 /******************************************************************/
 
 

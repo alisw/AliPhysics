@@ -41,7 +41,7 @@ class AliHBTPairCut: public TNamed
   
   void SetPartCut(AliHBTParticleCut* cut);//sets the the same cut on both particles
   
-  void AddBasePairCut(AliHbtBasePairCut* cut);
+  virtual void AddBasePairCut(AliHbtBasePairCut* cut);
   
   void SetQInvRange(Double_t min, Double_t max);
   void SetKtRange(Double_t min, Double_t max);
@@ -76,7 +76,7 @@ class AliHBTEmptyPairCut:  public AliHBTPairCut
   //Class describing cut on pairs of particles
  public:
   AliHBTEmptyPairCut(){};
-  AliHBTEmptyPairCut(const AliHBTEmptyPairCut& in){}; 
+  AliHBTEmptyPairCut(const AliHBTEmptyPairCut& in):AliHBTPairCut(in){};
   virtual ~AliHBTEmptyPairCut(){};
   
   Bool_t Pass(AliHBTPair*) const {return kFALSE;} //accpept everything
