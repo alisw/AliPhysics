@@ -83,7 +83,6 @@ AliGenMUONCocktail::AliGenMUONCocktail(const AliGenMUONCocktail & cocktail):
 AliGenMUONCocktail::~AliGenMUONCocktail()
 {
 // Destructor
-    delete fEntries;
 }
 
 //_________________________________________________________________________
