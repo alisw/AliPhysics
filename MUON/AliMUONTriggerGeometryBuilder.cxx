@@ -165,9 +165,9 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 		    tpar[0] = (kXMAX/2.) * zRatio;
 		    if (iline==5) tpar[0] = ((kXMAX-kXMED)/2.)*zRatio;
 		    if (icolumn==0) 
-			sprintf(volEnv[i],"S%dL%d",icount,iline);
-		    else
 			sprintf(volEnv[i],"S%dR%d",icount,iline);
+		    else
+			sprintf(volEnv[i],"S%dL%d",icount,iline);
 		    gMC->Gsvolu(volEnv[i],"BOX",idAir,tpar,0); 
 		    i++;
 		}
@@ -252,10 +252,10 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    dpar[0] = (kXMAX/2.)*zRatio;
 	    dpar[1] =  kYMIN*zRatio;
 
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[2], true, TGeoTranslation(xEnv, yEnvM,kZm));
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[6], true, TGeoTranslation(-xEnv, yEnvP,kZp));	    
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[11], true, TGeoTranslation(xEnv,-yEnvM,kZm));
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[15], true, TGeoTranslation(-xEnv,-yEnvP,kZp));
+	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[2], true, TGeoTranslation(xEnv,-yEnvM,kZm));
+	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[6], true, TGeoTranslation(xEnv, yEnvM,kZm));
+            GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[11], true, TGeoTranslation(-xEnv,-yEnvP,kZp));
+            GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[15], true, TGeoTranslation(-xEnv, yEnvP,kZp));
 
 	    GetChamber(10+icount)->GetGeometry()->AddEnvelopeConstituentParam(volAlu,volEnv[2],iVolNum++,3, dpar);
 	    GetChamber(10+icount)->GetGeometry()->AddEnvelopeConstituentParam(volAlu,volEnv[6],iVolNum++,3, dpar);
@@ -268,10 +268,10 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    yEnvP = (yEnvMsave + kYMIN * zRatio ) * zpm + kYMIN * zRatio;
 	    yEnvM = (yEnvPsave + kYMIN * zRatio ) * zmp + kYMIN * zRatio;
 
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[1], true, TGeoTranslation(xEnv, yEnvP,kZp));
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[7], true, TGeoTranslation(-xEnv, yEnvM,kZm));	    
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[10], true, TGeoTranslation(xEnv,-yEnvP,kZp));
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[16], true, TGeoTranslation(-xEnv,-yEnvM,kZm));
+	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[1], true, TGeoTranslation(xEnv,-yEnvP,kZp));
+	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[7], true, TGeoTranslation(xEnv, yEnvP,kZp));
+	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[10], true, TGeoTranslation(-xEnv,-yEnvM,kZm));
+	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[16], true, TGeoTranslation(-xEnv, yEnvM,kZm));
 
 	    GetChamber(10+icount)->GetGeometry()->AddEnvelopeConstituentParam(volAlu,volEnv[1],iVolNum++,3,dpar);
 	    GetChamber(10+icount)->GetGeometry()->AddEnvelopeConstituentParam(volAlu,volEnv[7],iVolNum++,3,dpar);
@@ -285,11 +285,11 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    yEnvP = (yEnvMsave + kYMIN * zRatio ) * zpm + kYMIN * zRatio;
 	    yEnvM = (yEnvPsave + kYMIN * zRatio ) * zmp + kYMIN * zRatio;
 
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[0], true, TGeoTranslation(xEnv, yEnvM,kZm));
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[8], true, TGeoTranslation(-xEnv, yEnvP,kZp));	    
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[9], true, TGeoTranslation(xEnv,-yEnvM,kZm));
-	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[17], true, TGeoTranslation(-xEnv,-yEnvP,kZp));
-
+	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[0], true, TGeoTranslation(xEnv,-yEnvM,kZm));
+	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[8], true, TGeoTranslation(xEnv, yEnvM,kZm));
+	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[9], true, TGeoTranslation(-xEnv,-yEnvP,kZp));
+	    GetChamber(10+icount)->GetGeometry()->AddEnvelope(volEnv[17], true, TGeoTranslation(-xEnv, yEnvP,kZp));
+	    
 	    GetChamber(10+icount)->GetGeometry()->AddEnvelopeConstituentParam(volAlu,volEnv[0],iVolNum++,3,dpar);
 	    GetChamber(10+icount)->GetGeometry()->AddEnvelopeConstituentParam(volAlu,volEnv[8],iVolNum++,3,dpar);
 	    GetChamber(10+icount)->GetGeometry()->AddEnvelopeConstituentParam(volAlu,volEnv[9],iVolNum++,3,dpar);
