@@ -23,7 +23,7 @@ class AliHBTEvent: public TObject
     AliHBTEvent();
     virtual ~AliHBTEvent();
     const static UInt_t fgkInitEventSize; //initial number of the array
-                                         //if expanded, this size is used also
+                                          //if expanded, this size is used also
     AliHBTParticle* GetParticle(Int_t n);  //gets particle 
     AliHBTParticle* GetParticleSafely(Int_t n); //gets particle with index check
     
@@ -36,15 +36,15 @@ class AliHBTEvent: public TObject
     void    Reset(); //deletes all entries
     void    SetOwner(Bool_t owns = kTRUE){ fOwner = owns; }
     Bool_t  IsOwner() {return fOwner;}
+    
   protected:
     AliHBTParticle ** fParticles; //!array of pointers to the particles
     Int_t  fNParticles; //!number of particles in Event
     Int_t  fSize;       //!current size of the array
     Bool_t fOwner;      //flag if that event owns the 
     void   Expand();    //expands the array if necessary
+
   private:
-    
-  public:
     ClassDef(AliHBTEvent,1)
  };
 /**************************************************************************/ 
