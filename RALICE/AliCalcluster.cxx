@@ -15,7 +15,23 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
+
+///////////////////////////////////////////////////////////////////////////
+// Class AliCalcluster
+// Description of a cluster of calorimeter modules.
+// A matrix geometry is assumed in which a cluster center
+// is identified by (row,col) and contains sig as signal
+// being the signal of the complete cluster.
+// Some info about cluster topology is provided in order
+// to enable EM or hadronic cluster identification.
+//
+//--- Author: Nick van Eijndhoven 13-jun-1997 UU-SAP Utrecht
+//- Modified: NvE 31-oct-1999 UU-SAP Utrecht 
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliCalcluster.h"
  
@@ -174,14 +190,14 @@ Float_t AliCalcluster::GetColumnDispersion()
 ///////////////////////////////////////////////////////////////////////////
 void AliCalcluster::Start(AliCalmodule& m)
 {
-// Reset cluster data and start with module m
+// Reset cluster data and start with module m.
 // A module can only start a cluster when it contains
-// a signal, has not been used in a cluster yet and is not
-// situated at a detector edge
+// a signal, has not been used in a cluster yet, is not
+// situated at a detector edge and is not declared dead.
 
  Float_t pos[3]={0,0,0};
 
- if ((m.GetClusteredSignal() > 0.) && (m.GetEdgeValue() == 0))
+ if (m.GetClusteredSignal()>0. && m.GetEdgeValue()==0 && m.GetDeadValue()==0)
  {
   fCenter=&m;
   m.GetPosition(pos,"sph");
@@ -231,7 +247,9 @@ void AliCalcluster::Add(AliCalmodule& m)
 ///////////////////////////////////////////////////////////////////////////
 void AliCalcluster::AddVetoSignal(Float_t* r,TString f,Float_t s)
 {
-// Associate an (extrapolated) AliSignal at location r as veto to the cluster
+// Associate an (extrapolated) AliSignal at location r as veto to the cluster.
+// The signal value s indicates the confidence level of hit association
+// and has to be provided by the user.
 // Note : The default signal value (s) is 0
  if (!fVetos)
  {
@@ -239,7 +257,7 @@ void AliCalcluster::AddVetoSignal(Float_t* r,TString f,Float_t s)
   fVetos=new TObjArray();
  } 
 
- fVetos->Add(new AliSignal);
+ fVetos->Add(new AliSignal(1));
  fNvetos++;
 
  ((AliSignal*)fVetos->At(fNvetos-1))->SetPosition(r,f);
@@ -254,8 +272,8 @@ Int_t AliCalcluster::GetNvetos()
 ///////////////////////////////////////////////////////////////////////////
 AliSignal* AliCalcluster::GetVetoSignal(Int_t i)
 {
-// Provide access to the i-th veto signal of this cluster
-// Note : The first hit corresponds to i=1
+// Provide access to the i-th veto signal of this cluster.
+// Note : The first hit corresponds to i=1.
 
  if (i>0 && i<=fNvetos)
  {
@@ -268,5 +286,36 @@ AliSignal* AliCalcluster::GetVetoSignal(Int_t i)
   cout << " --- First signal (if any) returned." << endl;
   return (AliSignal*)fVetos->At(0);
  }
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliCalcluster::GetVetoLevel()
+{
+// Provide the confidence level of best associated veto signal.
+ Float_t cl=0;
+ Float_t clmax=0;
+ if (fVetos)
+ {
+  for (Int_t i=0; i<fNvetos; i++)
+  {
+   cl=((AliSignal*)fVetos->At(i))->GetSignal();
+   if (cl>clmax) clmax=cl;
+  }
+ }
+ return clmax;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliCalcluster::HasVetoHit(Double_t cl)
+{
+// Investigate if cluster has an associated veto hit with conf. level > cl.
+// Returns 1 if there is such an associated veto hit, otherwise returns 0.
+// Note : This function is faster than GetVetoLevel().
+ if (fVetos)
+ {
+  for (Int_t i=0; i<fNvetos; i++)
+  {
+   if (((AliSignal*)fVetos->At(i))->GetSignal() > cl) return 1;
+  }
+ }
+ return 0;
 }
 ///////////////////////////////////////////////////////////////////////////

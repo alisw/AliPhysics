@@ -5,92 +5,6 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////////////////////////////////////
-// Class AliInvmass
-// Construction of invariant mass and combinatorial background.
-//
-// Example :
-// ---------
-//
-// TObjArray* photons=new TObjArray(); // Array with photon tracks for pi0 rec.
-//
-// // Code to create some photon tracks from pi0 decays
-// Int_t ntracks=200;
-// for (Int_t i=0; i<ntracks; i++)
-// {
-//  photons->Add(new Alitrack);
-//  ...
-//  ...
-//  ...
-// }  
-//
-// // Perform the invariant mass and comb. bkg. reconstruction
-//
-// TObjArray* allm=q.Invmass(photons,photons); // All reconstructed invariant masses
-//
-// TH1F* hall=new TH1F("hall","hall",200,0,2); // Histo with M_inv of all combinations
-//
-// Int_t nall=0;
-// if (allm) nall=allm->GetEntries();
-//
-// AliTrack* t;
-// Float_t minv;
-// for (Int_t j=0; j<nall; j++)
-// {
-//  t=(AliTrack*)allm->At(j);
-//  if (t)
-//  {
-//   minv=t->GetMass();
-//   hall->Fill(minv);
-//  }
-// }
-//
-// TObjArray* bkgm=q.CombBkg(photons,photons); // Reconstructed comb. background
-//
-// TH1F* hbkg=new TH1F("hbkg","hbkg",200,0,2); // Histo with M_inv. of comb. background
-//
-// Int_t nbkg=0;
-// if (bkgm) nbkg=bkgm->GetEntries();
-//
-// for (Int_t j=0; j<nbkg; j++)
-// {
-//  t=(AliTrack*)bkgm->At(j);
-//  if (t)
-//  {
-//   minv=t->GetMass();
-//   hbkg->Fill(minv);
-//  }
-// }
-//
-// TH1F* hsig=new TH1F("sig","sig",200,0,2);   // Histo with the bkg. subtracted signal
-// hsig->Sumw2();
-// hsig->Add(hall,hbkg,1,-1);
-//
-//
-// Note : By default the storage of the reconstructed information is performed
-//        in separate TObjArrays for the signal and comb. background resp.
-//        In order to limit the memory usage, AliInvmass::SetStorageMode(1) may be
-//        used to activate only a single TObjArray to store the reconstructed information.
-//        Consequently, the following statements 
-//
-//         TObjArray* allm=q.Invmass(photons,photons);
-//         TObjArray* bkgm=q.CombBkg(photons,photons);
-//
-//        will result in the fact that after he invokation of CombBkg
-//        the information of "allm" is lost due to the fact that the storage is
-//        is re-used for "bkgm" in case the "single storage" option has been selected.
-//        Usage of the, in that case invalid, pointer "allm" may cause your
-//        program to crash.
-//
-//        * Thus : In case of single storage usage, all invokations of the returned
-//                 array pointer have to be completed before invoking any memberfunction
-//                 of the same AliInvmass object again.
-//        
-//        
-//
-//--- NvE 12-apr-1999 UU-SAP Utrecht
-////////////////////////////////////////////////////////////////////////////////
-
 #include <iostream.h>
 #include <math.h>
  
@@ -127,6 +41,6 @@ class AliInvmass : public TObject
  private:
   void Combine(TObjArray* a1,TObjArray* a2); // Make two-particle combinations
 
- ClassDef(AliInvmass,1) // Class definition to enable ROOT I/O
+ ClassDef(AliInvmass,1) // Construction of invariant mass and combinatorial background.
 };
 #endif

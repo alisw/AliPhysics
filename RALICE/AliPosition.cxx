@@ -15,7 +15,47 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
+
+///////////////////////////////////////////////////////////////////////////
+// Class AliPosition
+// Handling of positions in various reference frames.
+//
+// This class is meant to serve as a base class for ALICE objects
+// that have a unique position in 3-dimensional space.
+//
+// Note :
+// ------
+// Positions (r), errors (e) and reference frames (f) are specified via
+//
+//    SetPosition(Float_t* r,TString f)
+//    SetPositionErrors(Float_t* e,TString f)
+//
+// under the following conventions :
+//
+// f="car" ==> r in Cartesian coordinates   (x,y,z)
+// f="sph" ==> r in Spherical coordinates   (r,theta,phi)
+// f="cyl" ==> r in Cylindrical coordinates (rho,phi,z)
+//
+// All angles are in radians.
+//
+// Example :
+// ---------
+//
+// AliPosition q;
+// Float_t pos[3]={-1,25,7};
+// Float_t err[3]={0.08,1.85,0.5};
+// q.SetPosition(pos,"car");
+// q.SetPositionErrors(pos,"car");
+// Float_t loc[3],dloc[3];
+// q.GetPosition(loc,"sph");
+// q.GetPositionErrors(dloc,"sph");
+//
+//--- Author: Nick van Eijndhoven 06-feb-1999 UU-SAP Utrecht
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliPosition.h"
  
@@ -67,5 +107,31 @@ void AliPosition::SetPosition(Ali3Vector& r)
  Double_t a[3];
  r.GetVector(a,"sph");
  SetVector(a,"sph");
+ r.GetErrors(a,"car");
+ SetErrors(a,"car");
+}
+///////////////////////////////////////////////////////////////////////////
+void AliPosition::SetPositionErrors(Double_t* r,TString f)
+{
+// Store position errors according to reference frame f
+ SetErrors(r,f);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliPosition::GetPositionErrors(Double_t* r,TString f)
+{
+// Provide position errors according to reference frame f
+ GetErrors(r,f);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliPosition::SetPositionErrors(Float_t* r,TString f)
+{
+// Store position errors according to reference frame f
+ SetErrors(r,f);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliPosition::GetPositionErrors(Float_t* r,TString f)
+{
+// Provide position errors according to reference frame f
+ GetErrors(r,f);
 }
 ///////////////////////////////////////////////////////////////////////////

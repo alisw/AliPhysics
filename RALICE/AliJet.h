@@ -4,43 +4,6 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-
-///////////////////////////////////////////////////////////////////////////
-// Class AliJet
-// Creation and investigation of a jet of particle tracks.
-// An AliJet can be constructed by adding AliTracks.
-//
-// Coding example to make 2 jets j1 and j2.
-// ----------------------------------------
-// j1 contains the AliTracks 1 and 2
-// j2 contains the AliTracks 3 and 4
-//
-// AliTrack t1,t2,t3,t4;
-//  ...
-//  ... // code to fill the AliTrack data
-//  ...
-// AliJet j1(5);
-// AliJet j2(12);
-// j1.Add(t1);
-// j1.Add(t2);
-// j2.Add(t3);
-// j2.Add(t4);
-//
-// j1.Info();
-// j2.Info("sph");
-//
-// Float_t e1=j1.GetEnergy();
-// Float_t pnorm=j1->GetMomentum();
-// Ali3Vector p=j1->Get3Momentum();
-// Float_t m=j1.GetInvmass();
-// Int_t ntk=j1.GetNtracks();
-// AliTrack* tj=j1.GetTrack(1);
-//
-// Note : All quantities are in GeV, GeV/c or GeV/c**2
-//
-//--- NvE 10-jul-1997 UU-SAP Utrecht
-//--- Modified : NvE 06-apr-1999 UU-SAP Utrecht to inherit from Ali4Vector
-///////////////////////////////////////////////////////////////////////////
  
 #include <iostream.h>
 #include <math.h>
@@ -79,6 +42,6 @@ class AliJet : public TObject,public Ali4Vector
   Int_t fNtrk;               // The number of tracks in the jet
   TObjArray* fTracks;        // Array to hold the pointers to the tracks of the jet
  
- ClassDef(AliJet,1) // Class definition to enable ROOT I/O
+ ClassDef(AliJet,1) // Creation and investigation of a jet of particle tracks.
 };
 #endif

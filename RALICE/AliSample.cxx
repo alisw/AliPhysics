@@ -15,7 +15,36 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
+
+///////////////////////////////////////////////////////////////////////////
+// Class AliSample
+// Perform statistics on various multi-dimensional data samples
+// A data sample can be filled using the "Enter" and/or "Remove" functions,
+// whereas the "Reset" function resets the complete sample to 'empty'.
+// The info which can be extracted from a certain data sample are the
+// sum, mean, variance, sigma, covariance and correlation.
+// The "Info" function provides all statistics data for a certain sample.
+// The variables for which these stat. parameters have to be calculated
+// are indicated by the index of the variable which is passed as an
+// argument to the various member functions.
+// The index convention for a data point (x,y) is : x=1  y=2
+//
+// Example :
+// ---------
+// For an AliSample s a data point (x,y) can be entered as s.Enter(x,y) and
+// the mean_x can be obtained as s.GetMean(1) whereas the mean_y is obtained
+// via s.GetMean(2).
+// The correlation between x and y is available via s.GetCor(1,2).
+// The x-statistics are obtained via s.Info(1), y-statistics via s.Info(2),
+// and the covariance and correlation between x and y via s.Info(1,2).
+// All statistics of a sample are obtained via s.Info().
+//
+//--- Author: Nick van Eijndhoven 30-mar-1996 CERN Geneva
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliSample.h"
  

@@ -15,7 +15,54 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
+
+///////////////////////////////////////////////////////////////////////////
+// Class AliBoost
+// Perform various Lorentz transformations.
+//
+// Example :
+// =========
+//
+// Float_t a[3]={0.1,0.2,0.3};
+// Float_t ea[3]={0.01,0.02,0.03};
+// Ali3Vector beta;
+// beta.SetVector(a,"car");
+// beta.SetErrors(ea,"car");
+//
+// AliBoost b1;
+// b1.SetBeta(beta);
+// b1.Info();
+//
+// Float_t b[4]={14,1,2,3};
+// Float_t eb[4]={1.4,0.1,0.2,0.3};
+// Ali4Vector p;
+// p.SetVector(b,"car");
+// p.SetErrors(eb,"car");
+// Ali4Vector pprim=b1.Boost(p);
+// p.Info();
+// pprim.Info();
+//
+// p=b1.Inverse(pprim);
+// pprim.Info();
+// p.Info();
+//
+// Float_t c[4]={5,0,0,4};
+// Float_t ec[4]={0.5,0,0,0.4};
+// Ali4Vector q;
+// q.SetVector(c,"car");
+// q.SetErrors(ec,"car");
+//
+// AliBoost b2;
+// b2.Set4Momentum(q);
+// b2.Info("sph");
+//
+//--- Author: Nick van Eijndhoven 14-may-1996 UU-SAP Utrecht
+//- Modified: NvE 24-oct-1999 UU-SAP Utrecht
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliBoost.h"
  
@@ -23,52 +70,51 @@ ClassImp(AliBoost) // Class implementation to enable ROOT I/O
  
 AliBoost::AliBoost()
 {
-// Creation of a Lorentz boost object and initialisation of parameters
- fGamma=1;
- fBeta2=0;
+// Creation of a Lorentz boost object and initialisation of parameters.
+// Beta is set to (0,0,0) and consequently Gamma=1. 
+// All errors are initialised to 0. 
  Double_t a[3]={0,0,0};
  fBeta.SetVector(a,"sph");
+ fGamma=1;
+ fDgamma=0;
+ fDresult=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliBoost::~AliBoost()
 {
-// Default destructor
+// Default destructor.
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliBoost::SetBeta(Ali3Vector b)
 {
-// Setting of boost parameters on basis of beta 3-vector
- fBeta2=b.Dot(b);
+// Setting of boost parameters on basis of beta 3-vector.
+// The errors on the beta 3-vector are taken from the input 3-vector.
+// The gamma value and its error are calculated accordingly.
  fBeta=b;
+ Double_t beta2=fBeta.Dot(fBeta);
+ Double_t dbeta2=fBeta.GetResultError();
 
- if (fBeta2 > 1.)
+ if (beta2 > 1.)
  {
   cout << " *AliBoost::SetBeta* beta > 1." << endl;
  }
- Double_t test=1.-fBeta2;
  fGamma=0;
- if (test > 0.) fGamma=sqrt(1./test);
-}
-///////////////////////////////////////////////////////////////////////////
-void AliBoost::SetGamma(Double_t g,Ali3Vector v)
-{
-// Setting of boost parameters on basis of gamma and direction 3-vector
- if (g >= 1.)
+ fDgamma=0;
+ Double_t temp=1.-beta2;
+ if (temp > 0.)
  {
-  fGamma=g;
-  fBeta2=1.-(1./(fGamma*fGamma));
-  fBeta=v*sqrt(fBeta2);
- }
- else
- {
-  cout << " *AliBoost::SetGamma* Invalid input gamma = " << g << endl;
+  fGamma=sqrt(1./temp);
+  fDgamma=fabs(dbeta2/(2.*pow(temp,1.5)));
  }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliBoost::Set4Momentum(Ali4Vector& p)
 {
-// Setting of boost parameters on basis of momentum 4-vector data
+// Setting of boost parameters on basis of momentum 4-vector data.
+// The errors of the input 4-vector are used to calculate the
+// errors on the beta 3-vector and the gamma factor.
  Double_t E=p.GetScalar();
+ Double_t dE=p.GetResultError();
  if (E <= 0.)
  {
   cout << " *AliBoost::Set4Momentum* Unphysical situation." << endl;
@@ -77,57 +123,112 @@ void AliBoost::Set4Momentum(Ali4Vector& p)
  else
  {
   Ali3Vector b=p.Get3Vector();
+  Double_t vb[3],eb[3];
+  b.GetVector(vb,"car");
+  b.GetErrors(eb,"car");
   b=b/E;
+  for (Int_t i=0; i<3; i++)
+  {
+   eb[i]=sqrt(pow(eb[i]/E,2)+pow(vb[i]*dE/(E*E),2));
+  }
+  b.SetErrors(eb,"car");
   SetBeta(b);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
 Ali3Vector AliBoost::GetBetaVector()
 {
-// Provide the the beta 3-vector
+// Provide the beta 3-vector.
  return fBeta;
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliBoost::GetBeta()
 {
-// Provide the norm of the beta 3-vector
- return sqrt(fBeta2);
+// Provide the norm of the beta 3-vector.
+// The error on the value can be obtained via GetResultError().
+ Double_t norm=fBeta.GetNorm();
+ fDresult=fBeta.GetResultError();
+ return norm;
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliBoost::GetGamma()
 {
-// Provide the gamma factor
+// Provide the gamma factor.
+// The error on the value can be obtained via GetResultError().
+ fDresult=fDgamma;
  return fGamma;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliBoost::GetResultError()
+{
+// Provide the error on the result of an operation yielding a scalar.
+// E.g. GetBeta() or GetGamma()
+ return fDresult;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliBoost::Info(TString f)
 {
-// Printing of the boost parameter info in coordinate frame f
-
- cout << " *AliBoost::Info* beta = " << sqrt(fBeta2) << " gamma = " << fGamma << endl
-      << "  Beta";
+// Printing of the boost parameter info in coordinate frame f.
+ Double_t beta=fBeta.GetNorm();
+ Double_t dbeta=fBeta.GetResultError();
+ cout << " *AliBoost::Info* beta : " << beta << " error : " << dbeta
+      << " gamma : " << fGamma << " error : " << fDgamma << endl;
+ cout << "  Beta"; 
  fBeta.Info(f);
 }
 ///////////////////////////////////////////////////////////////////////////
 Ali4Vector AliBoost::Boost(Ali4Vector& v)
 {
-// Perform the Lorentz boost on the 4-vector v
- if (fBeta2 > 1.e-20)
+// Perform the Lorentz boost on the 4-vector v.
+// Error propagation is performed automatically.
+// Note : As an approximation Beta and p.Dot(Beta) are considered as
+//        independent quantities.
+
+ Double_t beta=fBeta.GetNorm();
+ Double_t dbeta=fBeta.GetResultError();
+
+ Double_t beta2=pow(beta,2);
+
+ if (beta > 1.e-10)
  {
   Double_t E=v.GetScalar();
+  Double_t dE=v.GetResultError();
+
   Ali3Vector p=v.Get3Vector();
+
   Double_t pdotbeta=p.Dot(fBeta);
+  Double_t dpdotbeta=p.GetResultError();
 
-  Double_t Eprim;
-  Eprim=fGamma*(E-pdotbeta);
+  // Determine the new vector components
+  Double_t Eprim=fGamma*(E-pdotbeta);
 
-  Ali3Vector term1,term2,pprim;
-  term1=fBeta*((fGamma-1.)*pdotbeta/fBeta2);
-  term2=fBeta*(fGamma*E);
-  pprim=p+term1-term2;
+  Double_t z=((fGamma-1.)*pdotbeta/beta2)-fGamma*E;
+  Ali3Vector add=fBeta*z;
 
+  // Determine errors on the new vector components
+  Double_t dEprim=sqrt(pow((E-pdotbeta)*fDgamma,2)+pow(fGamma*dE,2)
+                      +pow(fGamma*dpdotbeta,2));
+  Double_t dz=sqrt( pow(((fGamma-1.)/beta2)*dpdotbeta,2) + pow(fGamma*dE,2)
+                   +pow((
+    ((2./beta)-(4.*pow(beta,3)-6.*pow(beta,5))/(2.*pow((pow(beta,4)-pow(beta,6)),1.5)))*pdotbeta
+    +beta*E/pow(fGamma,3))*dbeta,2) );
+
+  Double_t vb[3],eb[3];
+  fBeta.GetVector(vb,"car");
+  fBeta.GetErrors(eb,"car");
+  for (Int_t i=0; i<3; i++)
+  {
+   eb[i]=sqrt(pow(z*eb[i],2)+pow(vb[i]*dz,2));
+  }
+  add.SetErrors(eb,"car");
+
+  // Calculate the new 3-vector
+  Ali3Vector pprim=p+add;
+
+  // Set the components and errors of the new 4-vector 
   Ali4Vector w;
   w.SetVector(Eprim,pprim);
+  w.SetScalarError(dEprim);
 
   return w;
  }
@@ -139,23 +240,56 @@ Ali4Vector AliBoost::Boost(Ali4Vector& v)
 ///////////////////////////////////////////////////////////////////////////
 Ali4Vector AliBoost::Inverse(Ali4Vector& vprim)
 {
-// Perform the inverse Lorentz boost on the 4-vector vprim
- if (fBeta2 > 1.e-20)
+// Perform the inverse Lorentz boost on the 4-vector vprim.
+// Error propagation is performed automatically.
+// Note : As an approximation Beta and pprim.Dot(Beta) are considered as
+//        independent quantities.
+
+ Double_t beta=fBeta.GetNorm();
+ Double_t dbeta=fBeta.GetResultError();
+
+ Double_t beta2=pow(beta,2);
+
+ if (beta > 1.e-10)
  {
   Double_t Eprim=vprim.GetScalar();
+  Double_t dEprim=vprim.GetResultError();
+
   Ali3Vector pprim=vprim.Get3Vector();
+
   Double_t pprimdotbeta=pprim.Dot(fBeta);
+  Double_t dpprimdotbeta=pprim.GetResultError();
 
-  Double_t E;
-  E=fGamma*(Eprim+pprimdotbeta);
+  // Determine the new vector components
+  Double_t E=fGamma*(Eprim+pprimdotbeta);
 
-  Ali3Vector term1,term2,p;
-  term1=fBeta*((fGamma-1.)*pprimdotbeta/fBeta2);
-  term2=fBeta*(fGamma*Eprim);
-  p=pprim+term1+term2;
+  Double_t z=((fGamma-1.)*pprimdotbeta/beta2)+fGamma*Eprim;
+  Ali3Vector add=fBeta*z;
 
+  // Determine errors on the prime-vector components
+  Double_t dE=sqrt(pow((Eprim+pprimdotbeta)*fDgamma,2)+pow(fGamma*dEprim,2)
+                      +pow(fGamma*dpprimdotbeta,2));
+  Double_t dz=sqrt( pow(((fGamma-1.)/beta2)*dpprimdotbeta,2) + pow(fGamma*dEprim,2)
+                   +pow((
+    ((2./beta)-(4.*pow(beta,3)-6.*pow(beta,5))/(2.*pow((pow(beta,4)-pow(beta,6)),1.5)))*pprimdotbeta
+    -beta*Eprim/pow(fGamma,3))*dbeta,2) );
+
+  Double_t vb[3],eb[3];
+  fBeta.GetVector(vb,"car");
+  fBeta.GetErrors(eb,"car");
+  for (Int_t i=0; i<3; i++)
+  {
+   eb[i]=sqrt(pow(z*eb[i],2)+pow(vb[i]*dz,2));
+  }
+  add.SetErrors(eb,"car");
+
+  // Calculate the new 3-vector
+  Ali3Vector p=pprim+add;
+
+  // Set the components and errors of the new 4-vector 
   Ali4Vector w;
   w.SetVector(E,p);
+  w.SetScalarError(dE);
 
   return w;
  }

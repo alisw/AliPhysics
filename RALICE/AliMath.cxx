@@ -15,7 +15,28 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
+
+///////////////////////////////////////////////////////////////////////////
+// Class AliMath
+// Various mathematical tools which may be very convenient while
+// performing physics analysis.
+//
+// Example : Probability of a Chi-squared value
+// =========
+//
+// AliMath M;
+// Float_t chi2=20;            // The chi-squared value
+// Int_t ndf=12;               // The number of degrees of freedom
+// Float_t p=M.Prob(chi2,ndf); // The probability that at least a Chi-squared
+//                             // value of chi2 will be observed, even for a
+//                             // correct model
+//
+//--- Author: Nick van Eijndhoven 14-nov-1998 UU-SAP Utrecht
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliMath.h"
  

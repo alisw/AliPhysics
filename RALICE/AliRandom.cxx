@@ -15,7 +15,100 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
+
+///////////////////////////////////////////////////////////////////////////
+// Class AliRandom
+// Generate universal random numbers on all common machines.
+// Available distributions : Uniform, Gaussian, Poisson and
+//                           User defined function
+//
+// Features :
+// ----------
+// 1) Period = 2**144
+// 2) Same sequence of 24-bit real numbers on all common machines
+//
+// Reference :
+// -----------
+// G.Marsaglia and A.Zaman, FSU-SCRI-87-50, Florida State University, 1987.
+//
+// Coding example :
+// ----------------
+//
+// Float_t rndm;          // Variable to hold a single random number
+// const Int_t n=1000;
+// Float_t rvec[n];       // Vector to hold n random numbers
+//
+// AliRandom r;           // Create a Random object with default sequence
+//
+// rndm=r.Uniform();      // Provide a uniform random number in <0,1>
+// Float_t a=3.;
+// Float_t b=5.;
+// rndm=r.Uniform(a,b);   // Provide a uniform random number in <a,b>
+// r.Uniform(rvec,n);     // Provide n uniform randoms in <0,1> in rvec
+// r.Uniform(rvec,n,a,b); // Provide n uniform randoms in <a,b> in rvec
+//
+// rndm=r.Gauss();             // Provide a Gaussian random number with
+//                             // mean=0 and sigma=1
+// Float_t mean=25.;
+// Float_t sigma=5.;
+// rndm=r.Gauss(mean,sigma);   // Provide a Gaussian random number
+//                             // with specified mean and sigma
+// r.Gauss(rvec,n);            // n Gaussian randoms mean=0 sigma=1
+// r.Gauss(rvec,n,mean,sigma); // n Gaussian randoms with specified
+//                             //  mean and sigma
+//
+// rndm=r.Poisson(mean);  // Provide a Poisson random number with
+//                        // specified mean
+// r.Poisson(rvec,nmean); // n Poisson randoms with specified mean
+//
+// Int_t seed=1837724
+// AliRandom p(seed);        // Create a Random object with specified seed.
+//                           // The sequence is started from scratch.
+// Int_t cnt1=25;
+// Int_t cnt2=8;
+// AliRandom q(seed,cnt1,cnt2); // Create a Random object with specified seed
+//                              // The sequence is started at the location
+//                              // denoted by the counters cnt1 and cnt2.
+//
+// q.Info();     // Print the current seed, cnt1 and cnt2 values.
+// q.GetSeed();  // Provide the current seed value.
+// q.GetCnt1();  // Provide the current cnt1 value.
+// q.GetCnt2();  // Provide the current cnt2 value.
+//
+// Float_t udist(Float_t x) // A user defined distribution
+// {
+//  return x*x-4.*x;
+// }
+//
+// Int_t nbins=100;
+// q.SetUser(a,b,nbins,udist); // Initialise generator for udist distribution
+// q.User(); // Provide a random number according to the udist distribution
+// q.User(rvec,n); // Provide n randoms according to the udist distribution
+//
+// Float_t* x=new Float_t[nbins];
+// Float_t* y=new Float_t[nbins];
+//
+// ... code to fill x[] and y[] ..
+//
+// AliRandom s;
+// s.SetUser(x,y,nbins); // Initialise generator for (x[i],y[i]) distribution
+// s.User(); // Provide a random number according to the user distribution
+// s.User(rvec,n); // Provide n randoms according to the user distribution
+//
+// Notes :
+// -------
+// 1) Allowed seed values : 0 <= seed <= 921350143
+//    Default seed = 53310452
+// 2) To ensure a unique sequence for each run, one can automatically
+//    construct a seed value by e.g. using the date and time.
+// 3) Using the rvec facility saves a lot of CPU time for large n values.
+//
+//--- Author: Nick van Eijndhoven 11-oct-1997 UU-SAP Utrecht
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliRandom.h"
  
@@ -23,7 +116,7 @@ ClassImp(AliRandom) // Class implementation to enable ROOT I/O
  
 AliRandom::AliRandom()
 {
-// Creation of an AliRandom object and default initialisation
+// Creation of an AliRandom object and default initialisation.
 //
 // A seed is used to create the initial u[97] table.
 // This seed is converted into four startup parameters i j k and l

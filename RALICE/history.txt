@@ -177,3 +177,47 @@
 28-jun-1999 NvE Ali4Vector casting changed in AliVertex::Add() and some explicit type conversions
                 added and an unused variable removed in AliInvmass to prevent g++ errors/warnings
                 (thanks to Eugene van der Pijll).
+23-sep-1999 NvE Errors and error propagation introduced in Ali3Vector in view of track
+                reconstruction/extrapolation development.
+                Also AliPosition and AliSignal updated accordingly by introducing the
+                SetPositionErrors(), SetSignalErrors() and Get memberfunctions.
+                Note : Errors (propagation) not yet fully implemented in Ali4Vector and
+                       AliBoost. 
+24-sep-1999 NvE In Ali4Vector internally the Lorentz invariant (x^mu x_mu) is now stored
+                instead of the scalar part x^0. This will yield better precision and
+                e.g. automatically conserves the particle identity (mass) in elastic
+                collisions. 
+08-oct-1999 NvE GetResultError() introduced in Ali3Vector to provide error information
+                on results obtained from operations which yield a scalar.
+                Examples are the error on the norm (GetNorm) and the dotproduct (Dot).
+13-oct-1999 NvE Errors and error propagation fully implemented in Ali4Vector.
+15-oct-1999 NvE Algorithms for error calculations optimised for accuracy in Ali3Vector
+                and Ali4Vector.
+                Also particle mass datamember removed from AliTrack, since this is now
+                automatically handled via the SetInvariant()/GetInvariant() memberfunctions
+                of Ali4Vector.
+16-oct-1999 NvE Storage of multiple signal values (with errors) implemented in AliSignal
+                and AliCalmodule updated accordingly.
+                All documentation moved from the .h files into the .cxx files and also
+                Copyright and cvs logs introduced.
+                Html documentation generated for all classes using the ROOT automatic
+                documentation generator facility.
+18-oct-1999 NvE Classes Ali3VectorObj, Ali4VectorObj and AliPositionObj introduced.
+20-oct-1999 NvE AliTrack::AddSignal() & co. added to enable relating AliSignals to a certain
+                AliTrack object in view of track reconstruction development.
+                Also memberfunction Info() added to AliSignal.
+24-oct-1999 NvE Full error propagation implemented in AliBoost and obsolete memberfunction
+                AliBoost::SetGamma() removed.
+25-oct-1999 NvE Undefined "dtheta2" fixed in Ali3Vector::GetErrors() thanks to Rene Brun.
+29-oct-1999 NvE Compress() invoked for TObjArray fModules after removal of a single module
+                in AliCalorimeter::Reset().
+                Begin- and endpoint introduced for AliTrack.
+30-oct-1999 NvE Pointer handling introduced instead of object copying in AliCalorimeter::Sortm
+                to enhance speed. Also AliCalorimeter::GetModule(row,col) introduced.
+                Array creation moved out of default constructor of AliSignal to comply with
+                ROOT I/O requirements.
+31-oct-1999 NvE AliCalmodule::GetSignal() removed; the AliSignal memberfunction is used
+                instead and AliCalorimeter::GetSignal() takes care of the dead modules. 
+                AliCalcluster::Start updated accordingly.
+                New memberfunctions GetVetoLevel() and HasVetoHit() introduced 
+                for AliCalcluster. 

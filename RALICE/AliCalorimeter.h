@@ -5,41 +5,6 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////
-// Class AliCalorimeter
-// Description of a modular calorimeter system.
-// A matrix geometry is used in which a module is identified by (row,col).
-// Note : First module is identified as (1,1).
-//
-// This is the way to define and enter signals into a calorimeter :
-//
-//   AliCalorimeter cal(10,15);  // Calorimeter of 10x15 modules
-//                               // All module signals set to 0.
-//   cal.AddSignal(5,7,85.4);
-//   cal.AddSignal(5,7,25.9);
-//   cal.AddSignal(3,5,1000);
-//   cal.SetSignal(5,7,10.3);
-//   cal.Reset(3,5);             // Reset module (3,5) as being 'not fired'
-//                               // All module data are re-initialised.
-//   cal.SetEdgeOn(1,1);         // Declare module (1,1) as an 'edge module'
-//   cal.SetDead(8,3);
-//   cal.SetGain(2,8,3.2);
-//
-//   Float_t vec[3]={6,1,20};
-//   cal.SetPosition(2,8,vec,"car");
-//
-//   Float_t loc[3]={-1,12,3};
-//   cal.AddVetoSignal(loc,"car"); // Associate (extrapolated) position as a veto
-//
-//   cal.Group(2);      // Group 'fired' modules into clusters
-//                      // Perform grouping over 2 rings around the center
-//   cal.Reset();       // Reset the complete calorimeter
-//                      // Normally to prepare for the next event data
-//                      // Note : Module gain, edge and dead flags remain
-//
-//--- NvE 13-jun-1997 UU-SAP Utrecht
-///////////////////////////////////////////////////////////////////////////
- 
 #include <iostream.h>
 #include <math.h>
  
@@ -47,14 +12,12 @@
 #include "TObjArray.h"
 #include "TH2.h"
 #include "TString.h"
-
-#include "AliDetector.h"
-
+ 
 #include "AliCalmodule.h"
 #include "AliCalcluster.h"
 #include "AliSignal.h"
  
-class AliCalorimeter : public AliDetector
+class AliCalorimeter : public TObject
 {
  public:
   AliCalorimeter();                                // Default constructor
@@ -73,6 +36,7 @@ class AliCalorimeter : public AliDetector
   Float_t GetClusteredSignal(Int_t row,Int_t col); // Provide module signal after clustering
   AliCalcluster* GetCluster(Int_t j);              // Access to cluster number j
   AliCalmodule* GetModule(Int_t j);                // Access to 'fired' module number j
+  AliCalmodule* GetModule(Int_t row,Int_t col);    // Access to module at (row,col)
   void SetEdgeOn(Int_t row,Int_t col);             // Indicate module as 'edge module'
   void SetEdgeOff(Int_t row,Int_t col);            // Indicate module as 'non-edge module'
   Int_t GetEdgeValue(Int_t row,Int_t col);         // Provide the edge flag of a module
@@ -95,7 +59,7 @@ class AliCalorimeter : public AliDetector
   Int_t fNsignals;                           // The number of modules with a signal
   Int_t fNclusters;                          // The number of clusters
   AliCalmodule** fMatrix;                    //! The matrix of modules for internal use
-  void Sortm(AliCalmodule*);                 // Order the modules with decreasing signal
+  void Sortm(AliCalmodule** a,Int_t& n);     // Order the modules with decreasing signal
   TObjArray* fClusters;                      // The array of clusters
   void AddRing(Int_t row,Int_t col,Int_t n); // add signals of n rings around cluster center
   TObjArray* fModules;                       // The array of modules for output
@@ -106,6 +70,6 @@ class AliCalorimeter : public AliDetector
   Int_t fNvetos;                             // The number of associated veto signals
   TObjArray* fVetos;                         // The array of associated (extrapolated) veto signals
  
- ClassDef(AliCalorimeter,1) // Class definition to enable ROOT I/O
+ ClassDef(AliCalorimeter,1) // Description of a modular calorimeter system.
 };
 #endif

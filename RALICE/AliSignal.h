@@ -5,50 +5,31 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////
-// Class AliSignal
-// Handling of ALICE (extrapolated) signals.
-//
-// Note :
-// ------
-// Signal positions (r) and reference frames (f) are specified via
-// SetPosition(r,f) under the following conventions :
-//
-// f="car" ==> r is Cartesian   (x,y,z)
-// f="sph" ==> r is Spherical   (r,theta,phi)
-// f="cyl" ==> r is Cylindrical (rho,phi,z)
-//
-// All angles are in radians.
-//
-// Example :
-// ---------
-//
-// AliSignal s;
-// Float_t pos[3]={-1,25,7};
-// Float_t signal=120.8;
-// s.SetPosition(pos,"car");
-// s.SetSignal(signal);
-// Float_t loc[3];
-// s.GetPosition(loc,"sph");
-// Float_t adc=s.GetSignal();
-//
-//--- NvE 23-jan-1999 UU-SAP Utrecht
-///////////////////////////////////////////////////////////////////////////
+#include "TObject.h"
+#include "TArrayF.h"
 
 #include "AliPosition.h"
 
 class AliSignal : public TObject,public AliPosition
 {
  public:
-  AliSignal();                         // Default constructor
-  ~AliSignal();                        // Destructor
-  virtual void SetSignal(Float_t sig); // Store signal value
-  virtual Float_t GetSignal();         // Provide signal value
-  virtual void Reset();                // Reset all values to 0
+  AliSignal(Int_t n=1);                                 // Default constructor
+  ~AliSignal();                                         // Destructor
+  virtual void SetSignal(Double_t sig,Int_t j=1);       // Store j-th signal value
+  virtual void AddSignal(Double_t sig,Int_t j=1);       // Add value to j-th signal value
+  virtual Float_t GetSignal(Int_t j=1);                 // Provide j-th signal value
+  virtual void SetSignalError(Double_t dsig,Int_t j=1); // Store error on j-th signal value
+  virtual Float_t GetSignalError(Int_t j=1);            // Provide error j-th signal value
+  virtual void ResetSignals();                          // Reset all signal values and errors to 0
+  virtual void ResetPosition();                         // Reset position and errors to 0
+  virtual void Reset();                                 // Reset signal and pos. values and errors
+  void Info(TString f="car");                           // Print signal info for coord. frame f
 
  protected:
-  Float_t fSignal; // Signal value
+  Int_t fNvalues;    // The number of values per signal
+  TArrayF* fSignal;  // Signal values
+  TArrayF* fDsignal; // Errors on signal values
 
- ClassDef(AliSignal,1) // Class definition to enable ROOT I/O
+ ClassDef(AliSignal,1) // Handling of ALICE (extrapolated) signals.
 };
 #endif

@@ -5,18 +5,6 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////
-// Class AliCalcluster
-// Description of a cluster of calorimeter modules.
-// A matrix geometry is assumed in which a cluster center
-// is identified by (row,col) and contains sig as signal
-// being the signal of the complete cluster.
-// Some info about cluster topology is provided in order
-// to enable EM or hadronic cluster identification
-//
-//--- NvE 13-jun-1997 UU-SAP Utrecht
-///////////////////////////////////////////////////////////////////////////
- 
 #include <iostream.h>
 #include <math.h>
  
@@ -43,6 +31,8 @@ class AliCalcluster : public TObject,public AliPosition
   void AddVetoSignal(Float_t* r,TString f,Float_t s=0); // Associate (extrapolated) signal
   AliSignal* GetVetoSignal(Int_t j); // Access to veto signal number j
   Int_t GetNvetos();                 // Provide the number of veto signals
+  Float_t GetVetoLevel();            // Provide confidence level of best associated veto hit
+  Int_t HasVetoHit(Double_t cl);     // Check for ass. veto hit with conf. level > cl
  
  protected:
   AliCalmodule* fCenter; // Pointer to the central module of the cluster
@@ -56,6 +46,6 @@ class AliCalcluster : public TObject,public AliPosition
   Int_t fNvetos;         // The number of associated veto signals
   TObjArray* fVetos;     // The array of associated veto signals
  
- ClassDef(AliCalcluster,1) // Class definition to enable ROOT I/O
+ ClassDef(AliCalcluster,1) // Description of a cluster of calorimeter modules.
 };
 #endif

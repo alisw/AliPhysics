@@ -5,16 +5,6 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////
-// Class AliCalmodule
-// Description of a module in a calorimeter system.
-// A matrix geometry is assumed, such that a module
-// is identified by (row,col) and contains a certain signal
-// Note : row and col start counting at 1
-//
-//--- NvE 13-jun-1997 UU-SAP Utrecht
-///////////////////////////////////////////////////////////////////////////
- 
 #include <iostream.h>
  
 #include "AliSignal.h"
@@ -31,7 +21,6 @@ class AliCalmodule : public AliSignal
   void SetColumn(Int_t i);                         // Set the column number of the module
   Int_t GetRow();                                  // Return the row number of the module
   Int_t GetColumn();                               // Return the column number of the module
-  Float_t GetSignal();                             // Return the signal value of the module
   void SetClusteredSignal(Float_t val);            // Set the signal of the module after clustering
   Float_t GetClusteredSignal();                    // Return module signal after clustering
   void SetEdgeOn();                                // Set flag to indicate modules at edges
@@ -53,6 +42,6 @@ class AliCalmodule : public AliSignal
   Int_t fDead;     // Flag to indicate dead module (1=dead 0=alive)
   Float_t fGain;   // Gain of the module's readout system
  
- ClassDef(AliCalmodule,1) // Class definition to enable ROOT I/O
+ ClassDef(AliCalmodule,1) // Description of a module in a calorimeter system.
 };
 #endif

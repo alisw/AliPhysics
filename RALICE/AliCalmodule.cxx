@@ -15,7 +15,21 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
+
+///////////////////////////////////////////////////////////////////////////
+// Class AliCalmodule
+// Description of a module in a calorimeter system.
+// A matrix geometry is assumed, such that a module
+// is identified by (row,col) and contains a certain signal.
+// Note : row and col start counting at 1.
+//
+//--- Author: Nick van Eijndhoven 13-jun-1997 UU-SAP Utrecht
+//- Modified: NvE 31-oct-1999 UU-SAP Utrecht
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliCalmodule.h"
  
@@ -42,7 +56,7 @@ AliCalmodule::AliCalmodule(Int_t row,Int_t col,Float_t sig)
 // Module constructor with initialisation of module data
  fRow=row;
  fCol=col;
- fSignal=sig;
+ AliSignal::SetSignal(sig);
  fSigc=sig;
  fEdge=0;
  fDead=0;
@@ -66,7 +80,7 @@ void AliCalmodule::SetSignal(Int_t row,Int_t col,Float_t sig)
 // Set or change the data of the module
  fRow=row;
  fCol=col;
- fSignal=sig;
+ AliSignal::SetSignal(sig);
  fSigc=sig;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -75,7 +89,7 @@ void AliCalmodule::AddSignal(Int_t row,Int_t col,Float_t sig)
 // Add or change the data of the module
  fRow=row;
  fCol=col;
- fSignal+=sig;
+ AliSignal::AddSignal(sig);
  fSigc+=sig;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -139,19 +153,6 @@ Int_t AliCalmodule::GetColumn()
 {
 // Provide the column number of the module
  return fCol;
-}
-///////////////////////////////////////////////////////////////////////////
-Float_t AliCalmodule::GetSignal()
-{
-// Provide the signal value of the module
- if (!fDead)
- {
-  return fSignal;
- }
- else
- {
-  return 0;
- }
 }
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliCalmodule::GetClusteredSignal()

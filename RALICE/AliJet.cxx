@@ -15,7 +15,47 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
+
+///////////////////////////////////////////////////////////////////////////
+// Class AliJet
+// Creation and investigation of a jet of particle tracks.
+// An AliJet can be constructed by adding AliTracks.
+//
+// Coding example to make 2 jets j1 and j2.
+// ----------------------------------------
+// j1 contains the AliTracks 1 and 2
+// j2 contains the AliTracks 3 and 4
+//
+// AliTrack t1,t2,t3,t4;
+//  ...
+//  ... // code to fill the AliTrack data
+//  ...
+// AliJet j1(5);
+// AliJet j2(12);
+// j1.Add(t1);
+// j1.Add(t2);
+// j2.Add(t3);
+// j2.Add(t4);
+//
+// j1.Info();
+// j2.Info("sph");
+//
+// Float_t e1=j1.GetEnergy();
+// Float_t pnorm=j1->GetMomentum();
+// Ali3Vector p=j1->Get3Momentum();
+// Float_t m=j1.GetInvmass();
+// Int_t ntk=j1.GetNtracks();
+// AliTrack* tj=j1.GetTrack(1);
+//
+// Note : All quantities are in GeV, GeV/c or GeV/c**2
+//
+//--- Author: Nick van Eijndhoven 10-jul-1997 UU-SAP Utrecht
+//- Modified: NvE 06-apr-1999 UU-SAP Utrecht to inherit from Ali4Vector
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliJet.h"
  
