@@ -123,7 +123,6 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard)
   fARD = ard ;
   SetName("Default");
   SetTitle("aliroot") ;
-  Init() ;
   
 }
 
@@ -146,7 +145,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   // This design avoids scanning over the list of digits to add 
   // contribution to new SDigits only.
 
-  if( strcmp(GetName(), "") == 0 )
+  if( !AliPHOSGetter::GetInstance())
     Init() ;
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
