@@ -7,6 +7,7 @@
 #pragma link C++ class  AliRICHv0+;
 #pragma link C++ class  AliRICHv1+;
 #pragma link C++ class  AliRICHv2+;
+#pragma link C++ class  AliRICHv3+;
 #pragma link C++ class  AliRICHHit+;
 #pragma link C++ class  AliRICHDigit+;
 #pragma link C++ class  AliRICHSDigit+;
