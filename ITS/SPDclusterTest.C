@@ -54,10 +54,6 @@ void SPDclusterTest(Int_t evNumber1=0,Int_t evNumber2=0){
     if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
  }
 
-  //to get the segmentation pointer
-  AliITS *ITS  = (AliITS*) gAlice->GetModule("ITS");
-  AliITSDetType *iDetType=ITS->DetType(0);
-  AliITSsegmentationSPD *seg=(AliITSsegmentationSPD*)iDetType->GetSegmentationModel();
 
 //=======================================================
 //--booking of ntuples 
@@ -127,7 +123,10 @@ void SPDclusterTest(Int_t evNumber1=0,Int_t evNumber2=0){
 
    // Get pointers to Alice detectors and Digit containers
    AliITS *ITS  = (AliITS *)gAlice->GetModule("ITS");
-   TClonesArray *Particles = gAlice->Particles();
+   //to get the segmentation pointer
+   AliITSDetType *iDetType=ITS->DetType(0);
+   AliITSsegmentationSPD *seg=(AliITSsegmentationSPD*)iDetType->GetSegmentationModel();
+   //TClonesArray *Particles = gAlice->Particles();
    if(!ITS) return;
 
    // fill modules with sorted by module hits
