@@ -18,11 +18,11 @@ RICHmenu(Int_t nev=1)
   
    TControlBar *menu = new TControlBar("vertical","RICH menu");
    menu->AddButton("      Help for RICH      ","gSystem->Exec(\"less RICHHelp.txt\");", "Explains how to use RICH menus");
-   menu->AddButton("Configure",            "gSystem->Exec(\"rconfig\"); gSystem->Exit(0);","Configure the simulation");
-   //menu->AddButton("Run",               "RICHInit(nev)","Process an Alice event - WARNING: Overwrites previous data file!");
+   menu->AddButton("Configure",            "gSystem->Exec(\"rconfig\"); gSystem->Exit(0);","Interactive Configuration");
    menu->AddButton("Run",               "gAlice->Run(events)","Process an Alice event - WARNING: Overwrites previous data file!");
    menu->AddButton("Run Lego",          ".x RICHRunLego.C","Special runs to generate the radl/absl lego plots");
-   menu->AddButton("Digitise Event",             ".x RICHdigit.C(0,events-1)","Digitise event");
+   menu->AddButton("Digitise Event",             ".x RICHdigit.C(0,events-1,0)","Digitise event");
+   menu->AddButton(" Merge and Digitise Event ",             ".x RICHdigit.C(0,events-1,1)","Merge with background file and digitise");
    menu->AddButton("Clusterize Event",      ".x RICHrawclusters.C(0,events-1)","Reconstruct clusters");
    // TODO: add the diaglevel here before the script
    menu->AddButton("3D Hough Pat. Rec.",      ".x RICHdetect.C(0,events-1)","Lisbon");
@@ -31,8 +31,6 @@ RICHmenu(Int_t nev=1)
    menu->AddButton("Display",           ".x RICHdisplay.C","Display run");
    menu->AddButton("Geometry Browser",           "Gui()","Browse the GEANT geometry - WARNING: Overwrites previous data file!");
    menu->AddButton("File Browser",           "TBrowser new;","Browse data files");
-//   menu->AddButton("Test",              ".x RICHtest.C","bla bla");
-//   menu->AddButton("Edit Configuration",".x RICHConfig.C","Interactive Configuration");
 //   menu->AddButton("Draw",              ".x DrawRICH.C","bla bla");
 //   menu->AddButton("View",              ".x ViewRICH.C","does nothing???");
    menu->AddButton("Quit AliRoot",             ".q","Close session");
@@ -63,7 +61,6 @@ void Gui()
   gAlice->Init("Config.C");
   ((TGeant3*)gMC)->InitHIGZ();
   gROOT->ProcessLine(".x TGeant3GUI.C");
-  //printf("Doesn't work yet\n");
 }
 
 
@@ -71,8 +68,7 @@ void RICHReset()
 {
 //   gSystem->Exec("aliroot mrich.C &");
 
-   // This doesn't work for Win (eheheh) and aliroot must be in the path
-   gSystem->Exec("xterm +ls -e aliroot mrich.C &");
+  gSystem->Exec("xterm +ls -e aliroot mrich.C &");
    gSystem->Exit(0);
 }
 
