@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.13  2001/11/06 18:29:36  dibari
+  minor correcttion of Taligent rules
+
   Revision 1.12  2001/09/07 08:38:10  hristov
   Pointers initialised to 0 in the default constructors
 
@@ -71,9 +74,7 @@ ClassImp(AliRICHChamber)
     
 AliRICHChamber::AliRICHChamber() 
 {
-
-//
-// Chamber object constructor
+// default ctor
 
     fpRotMatrix = 0;
     fSegmentation = 0;
@@ -86,34 +87,8 @@ AliRICHChamber::AliRICHChamber()
     for(Int_t i=0; i<50; ++i) fIndexMap[i] = 0;
 }
 
-AliRICHChamber::AliRICHChamber(const AliRICHChamber& Chamber)
-{
-// Copy Constructor
-}
-
-
-AliRICHResponse* AliRICHChamber::GetResponseModel()
-{
-//  
-//  Get reference to response model
-    return fResponse;
-}
-
-void   AliRICHChamber::ResponseModel(AliRICHResponse* thisResponse)
-{
-// Configure response model
-    fResponse=thisResponse;
-}
-
-void AliRICHChamber::Init(Int_t id)
-{
-// Initialise chambers
-    fSegmentation->Init(id);
-}
-
 void AliRICHChamber::LocaltoGlobal(Float_t pos[3],Float_t Globalpos[3])
 {
-
 // Local coordinates to global coordinates transformation
 
     Double_t *pMatrix;
@@ -146,7 +121,6 @@ void AliRICHChamber::GlobaltoLocal(Float_t pos[3],Float_t Localpos[3])
     Localpos[1]=Localpos[0]*matrixCopy(1,0)+Localpos[1]*matrixCopy(1,1)+Localpos[2]*matrixCopy(1,2);
     Localpos[2]=Localpos[0]*matrixCopy(2,0)+Localpos[1]*matrixCopy(2,1)+Localpos[2]*matrixCopy(2,2);
 } 
-
 
 void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 				    Int_t& nnew,Float_t newclust[5][500],ResponseType res) 
@@ -232,12 +206,6 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 }
 
 
-AliRICHChamber& AliRICHChamber::operator=(const AliRICHChamber& rhs)
-{
-// Assignment operator
-    return *this;
-    
-}
 
 
 void AliRICHChamber::GenerateTresholds()
