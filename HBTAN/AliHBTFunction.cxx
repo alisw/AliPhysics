@@ -121,6 +121,7 @@ TH1* AliHBTFunction::GetRatio(Double_t normfactor)
     }
    TString str = fName + " ratio";
    TH1 *result = (TH1*)GetNumerator()->Clone(str.Data());
+   result->SetDirectory(0x0);
    
    result->SetTitle(str.Data());
    
@@ -234,6 +235,7 @@ AliHBTCorrelFunction& AliHBTCorrelFunction::operator=(const AliHBTCorrelFunction
   if (&in == this) return *this;
   delete fRatio;
   fRatio=(in.fRatio)?(TH1*)in.fRatio->Clone():0x0;
+  fRatio->SetDirectory(0x0);
   return *this;
 }
 
