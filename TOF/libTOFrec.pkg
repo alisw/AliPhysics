@@ -1,0 +1,10 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+SRCS  = AliTOFtrack.cxx  AliTOFtracker.cxx  AliTOFpidESD.cxx  \
+	AliTOFReconstructor.cxx  \
+	AliTOFPID.cxx  AliTOFProb.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR=TOFrecLinkDef.h
