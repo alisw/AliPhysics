@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2000/04/26 10:17:32  fca
+Changes in Lego for G4 compatibility
+
 Revision 1.30  2000/04/18 19:11:40  fca
 Introduce variable Config.C function signature
 
@@ -937,8 +940,12 @@ void AliRun::ResetGenerator(AliGenerator *generator)
   // Load the event generator
   //
   if(fGenerator)
-    Warning("ResetGenerator","Replacing generator %s with %s\n",
-	    fGenerator->GetName(),generator->GetName());
+    if(generator)
+      Warning("ResetGenerator","Replacing generator %s with %s\n",
+	      fGenerator->GetName(),generator->GetName());
+    else
+      Warning("ResetGenerator","Replacing generator %s with NULL\n",
+	      fGenerator->GetName());
   fGenerator = generator;
 }
 
@@ -1364,6 +1371,9 @@ void AliRun::RunLego(const char *setup,Int_t ntheta,Float_t themin,
   // check if initialisation has been done
   if (!fInitDone) InitMC(setup);
 
+  //Save current generator
+  AliGenerator *gen=Generator();
+
   //Create Lego object  
   fLego = new AliLego("lego",ntheta,themin,themax,nphi,phimin,phimax,rmin,rmax,zmax);
 
@@ -1378,6 +1388,12 @@ void AliRun::RunLego(const char *setup,Int_t ntheta,Float_t themin,
   
   // End of this run, close files
   FinishRun();
+
+  // Delete Lego Object
+  delete fLego; fLego=0;
+
+  // Restore current generator
+  SetGenerator(gen);
 }
 
 //_____________________________________________________________________________

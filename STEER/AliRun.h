@@ -114,6 +114,7 @@ public:
    virtual  void  InitMC(const char *setup="Config.C");
    virtual  void  Init(const char *setup="Config.C") {InitMC(setup);}
    Bool_t         IsFolder() {return kTRUE;}
+   virtual AliLego* Lego() const {return fLego;}
    virtual  void  MakeTree(Option_t *option="KH");
    TClonesArray  *Particles() {return fParticles;};
    virtual  void  PurifyKine();
@@ -129,7 +130,7 @@ public:
   {RunMC(nevent,setup);}
    virtual  void  RunLego(const char *setup="Config.C",Int_t ntheta=60,Float_t themin=2,Float_t themax=178,
 			  Int_t nphi=60,Float_t phimin=0,Float_t phimax=360,Float_t rmin=0,
-			  Float_t rmax=570,Float_t zmax=10000);
+			  Float_t rmax=430,Float_t zmax=10000);
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
    virtual  void  SetCurrentTrack(Int_t track);                           
    virtual  void  SetDebug(const Int_t level=1) {fDebug = level;}

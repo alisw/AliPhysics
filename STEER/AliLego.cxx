@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/04/26 10:17:31  fca
+Changes in Lego for G4 compatibility
+
 Revision 1.12  2000/04/07 11:12:33  fca
 G4 compatibility changes
 
@@ -118,6 +121,8 @@ AliLego::~AliLego()
    delete fHistAbso;
    delete fHistGcm2;
    delete fHistReta;
+   gAlice->ResetGenerator(0);
+   delete fGener;
 }
 
 //___________________________________________
