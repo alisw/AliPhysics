@@ -12,7 +12,10 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+ 
+/*
+$Log$
+*/
 #include <iostream.h>
 #include <TMath.h>
 #include <TString.h>
@@ -44,11 +47,7 @@ AliITSetfSDD::AliITSetfSDD(Double_t timestep, Int_t amplif)
 
   fT0 = 0.;
   fDf = ppower(10,9)/(kMaxNofSamples*fSamplingTime);
-  fA0 = 16500.; // AL: 16500.;  // TB: 24000.; // 26000.; // 24000.; // 18000.; 
 
-  if(amplif == 2) fA0 = 24000.;
-//  cout << "fA0: " << fA0 << endl;
-//  cout << "fTimeDelay: " << fTimeDelay << endl;
   Int_t i,j;
   for(i=0; i<kMaxNofPoles; i++) {
     fZeroM[i] = 0.;
@@ -60,17 +59,35 @@ AliITSetfSDD::AliITSetfSDD(Double_t timestep, Int_t amplif)
   }
   // Alice
 
-  fPoleM[0] = 1.;
-  fPoleR[0] = -4140000.; // AL: -4140000.; // TB: -3000000.; // -3750000.; // -3500000; // -3000000.; 
-  fPoleI[0] = 0.; // AL: 0.; // TB: 4000000.; // 3750000.; // 3500000.; // 3000000.; 
-  if(amplif == 2) {
+  // PASCAL amplif
+  fA0 = 5.53269815e+11; 
+  fPoleM[0] = 3.;
+  fPoleR[0] = -8280000.; 
+  fPoleI[0] = 0.; 
+
+  if(amplif == 2) { // OLA amplif.
+    fA0 = 24000.;
+    fPoleM[0] = 1.;
     fPoleR[0] = -3000000.;
     fPoleI[0] = 4000000.;
+    fPoleM[1] = 1.;
+    fPoleR[1] = fPoleR[0];
+    fPoleI[1] = -fPoleI[0]; 
   }
-  fPoleM[1] = 1.;
-  fPoleR[1] = fPoleR[0];
-  fPoleI[1] = -fPoleI[0]; 
 
+  if( amplif == 3 ) { // old PASCAL
+    fA0 = 16500.; // AL: 16500.;  // TB: 24000.; // 26000.; // 24000.; // 18000.; 
+    fPoleM[0] = 1.;
+    fPoleR[0] = -4140000.; // AL: -4140000.; // TB: -3000000.; // -3750000.; // -3500000; // -3000000.; 
+    fPoleI[0] = 0.; // AL: 0.; // TB: 4000000.; // 3750000.; // 3500000.; // 3000000.; 
+    fPoleM[1] = 1.;
+    fPoleR[1] = fPoleR[0];
+    fPoleI[1] = -fPoleI[0]; 
+  }
+
+  //cout << "fA0: " << fA0 << endl;
+  //cout << "fTimeDelay: " << fTimeDelay << endl;
+  
   // Compute Transfer Function
 
   Double_t PI = acos(-1.);

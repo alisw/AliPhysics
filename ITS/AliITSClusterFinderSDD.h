@@ -4,7 +4,9 @@
 ////////////////////////////////////////////////
 //  ITS Cluster Finder Class                 //
 ////////////////////////////////////////////////
-
+/*
+  $Id$
+*/
 
 #include "AliITSClusterFinder.h"
 
@@ -13,9 +15,9 @@ class TFile;
 
 class AliITSClusterFinderSDD : public AliITSClusterFinder{
  public:
-
-    AliITSClusterFinderSDD(AliITSsegmentation *seg,AliITSresponse *response,
-			   TClonesArray *digits,TClonesArray *recpoints);
+    AliITSClusterFinderSDD
+	(AliITSsegmentation *seg,AliITSresponse *response,
+	 TClonesArray *digits,TClonesArray *recpoints);
     AliITSClusterFinderSDD();
     virtual ~AliITSClusterFinderSDD();
 
@@ -46,7 +48,7 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
 	fMaxNCells=maxc;}
     virtual Int_t MaxNCells() {// get MaxNCells
 	return fMaxNCells;}
-    virtual void SetTimeCorr(Float_t timec=23.) {// setNCells
+    virtual void SetTimeCorr(Float_t timec=19.3) {// setNCells
 	fTimeCorr=timec;}
     virtual Float_t TimeCorr() {// get Time Correction (ns)
 	return fTimeCorr;}
@@ -58,23 +60,22 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     void  GroupClusters();
     void  SelectClusters();
     void  GetRecPoints();
-    void ResolveClusters(); // Boris........ 
-    void ResolveClustersE(); // Ernesto 
-    Int_t SearchPeak(Float_t *spect,Int_t xdim,Int_t zdim,Int_t *peakX, Int_t
-		     *peakZ, Float_t *peakAmp, Float_t minpeak ); // Ernesto
-    Int_t NoLinearFit(Int_t xdim,Int_t zdim,Float_t *param,Float_t *spe,
-		      Int_t *niter, Float_t *chir );
-    void Minim( Int_t xdim, Int_t zdim, Float_t *param, Float_t *prm0,
-		Float_t *steprm,Float_t *chisqr,Float_t *spe,Float_t *speFit );
+    void  ResolveClusters(); // Boris........ 
+    void  ResolveClustersE(); // Ernesto 
+    Int_t SearchPeak(Float_t *spect,Int_t xdim,Int_t zdim,Int_t *peakX,
+		     Int_t *peakZ,Float_t *peakAmp,Float_t minpeak); // Ernesto
+    Int_t NoLinearFit( Int_t xdim, Int_t zdim, Float_t *param, Float_t *spe,
+		       Int_t *niter, Float_t *chir );
+    void  Minim( Int_t xdim, Int_t zdim, Float_t *param, Float_t *prm0,
+		Float_t *steprm, Float_t *chisqr,Float_t *spe,Float_t *speFit);
     Float_t ChiSqr( Int_t xdim, Int_t zdim, Float_t *spe, Float_t *speFit );
-    void PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe, Float_t
-		   *Integral=0 );
-    void Print();
+    void  PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe,
+		   Float_t *Integral=0 );
+    void  Print();
 
  private:
     AliITSClusterFinderSDD(const AliITSClusterFinderSDD &source); // copy ctor
     AliITSClusterFinderSDD& operator=(const AliITSClusterFinderSDD &source);
-
  private:
     Int_t               fModule;        //! ITS current module 
     TClonesArray       *fClusters;      //! clusters
@@ -89,7 +90,6 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     Int_t               fMaxNCells;     //! max num of cells
 
     ClassDef(AliITSClusterFinderSDD,1) // SDD clustering - Piergiorgio C. algo
-
-};
+    };
 
 #endif

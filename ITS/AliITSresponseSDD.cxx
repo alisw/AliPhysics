@@ -12,6 +12,10 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+/*
+$Id$
+$Log$
+*/
 
 #include <TString.h>
 #include <TRandom.h>
@@ -19,11 +23,10 @@
 #include "AliITSresponseSDD.h"
 
 
-//___________________________________________
-ClassImp(AliITSresponseSDD)    
+//______________________________________________________________________
+ClassImp(AliITSresponseSDD)
 
-AliITSresponseSDD::AliITSresponseSDD()
-{
+AliITSresponseSDD::AliITSresponseSDD(){
   // default constructor
    fGaus = 0;
    SetDeadChannels();
@@ -35,6 +38,7 @@ AliITSresponseSDD::AliITSresponseSDD()
    // SetClock();
    SetNoiseParam();
    SetNoiseAfterElectronics();
+   SetJitterError();
    SetElectronics();
    SetDynamicRange();
    SetChargeLoss();
@@ -49,16 +53,15 @@ AliITSresponseSDD::AliITSresponseSDD()
    // set the default zero suppression parameters
    fCPar[0]=0;
    fCPar[1]=0;
-   fCPar[2]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.2);
-   fCPar[3]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.2);
+   fCPar[2]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.5);
+   fCPar[3]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.5);
    fCPar[4]=0;
    fCPar[5]=0;
    fCPar[6]=0;
    fCPar[7]=0;
 }
-
-AliITSresponseSDD::AliITSresponseSDD(const char *dataType)
-{
+//______________________________________________________________________
+AliITSresponseSDD::AliITSresponseSDD(const char *dataType){
   // constructor
    fGaus = 0;
    SetDeadChannels();
@@ -70,6 +73,7 @@ AliITSresponseSDD::AliITSresponseSDD(const char *dataType)
    // SetClock();
    SetNoiseParam();
    SetNoiseAfterElectronics();
+   SetJitterError();
    SetElectronics();
    SetDynamicRange();
    SetChargeLoss();
@@ -84,44 +88,39 @@ AliITSresponseSDD::AliITSresponseSDD(const char *dataType)
    // set the default zero suppression parameters
    fCPar[0]=0;
    fCPar[1]=0;
-   fCPar[2]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.2);
-   fCPar[3]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.2);
+   fCPar[2]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.5);
+   fCPar[3]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.5);
    fCPar[4]=0;
    fCPar[5]=0;
    fCPar[6]=0;
    fCPar[7]=0;
 }
-
+//______________________________________________________________________
 AliITSresponseSDD::~AliITSresponseSDD() { 
 
   if(fGaus) delete fGaus;
-
 }
-
-void AliITSresponseSDD::SetCompressParam(Int_t  cp[8])
-{
+//______________________________________________________________________
+void AliITSresponseSDD::SetCompressParam(Int_t  cp[8]){
   // set compression param
 
     Int_t i;
     for (i=0; i<8; i++) {
         fCPar[i]=cp[i];
-        //printf("\n CompressPar %d %d \n",i,fCPar[i]);
-    
-    }
+        //printf("\n CompressPar %d %d \n",i,fCPar[i]);    
+    } // end for i
 }
-
-void AliITSresponseSDD::GiveCompressParam(Int_t  cp[8])
-{
+//______________________________________________________________________
+void AliITSresponseSDD::GiveCompressParam(Int_t  cp[8]){
   // give compression param
 
     Int_t i;
     for (i=0; i<8; i++) {
         cp[i]=fCPar[i];
-    }
+    } // end for i
 }
-
-void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan) 
-{
+//______________________________________________________________________
+void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan){
     // Set fGain to zero to simulate a random distribution of 
     // dead modules, dead chips and single dead channels
 
@@ -190,7 +189,8 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan)
         chip_mod[i-1] = module;
         for( Int_t m=0; m<fChannels; m++ ) 
             fGain[module-1][chi-1][m] = 0.;
-        cout << i << ": Dead chip nr. " << chip[i-1] << " in module nr: " << chip_mod[i-1] << endl;
+        cout << i << ": Dead chip nr. " << chip[i-1] << " in module nr: " 
+	     << chip_mod[i-1] << endl;
     }
 
     //  cout << "channels" << endl;
@@ -209,10 +209,11 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan)
             if( module == mod[k] ) { flag_mod = 1; break; }
         if( flag_mod == 1 ) continue;
         Int_t chipp = (Int_t) (fChips*gran->Uniform() + 1.);
-        if( chipp <=0 || chipp > fChips ) cout << "Wrong chip: " << chipp << endl;
+        if( chipp <=0 || chipp > fChips ) cout << "Wrong chip: "<< chipp<<endl;
         Int_t flag_chip = 0;
         for( k=0; k<nchip; k++) 
-            if( chipp == chip[k] && module == chip_mod[k] ) { flag_chip = 1; break; }
+            if( chipp == chip[k] && module == chip_mod[k] ) { 
+		flag_chip = 1; break; }
         if( flag_chip == 1 ) continue;
         i++;
         channel[i-1] = (Int_t) (fChannels*gran->Uniform() + 1.); 
@@ -221,7 +222,9 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan)
         channel_chip[i-1] = chipp;
         channel_mod[i-1] = module;
         fGain[module-1][chipp-1][channel[i-1]-1] = 0.;
-        cout << i << ": Dead channel nr. " << channel[i-1] << " in chip nr. " << channel_chip[i-1] << " in module nr: " << channel_mod[i-1] << endl;
+        cout << i << ": Dead channel nr. " << channel[i-1] << " in chip nr. " 
+	     << channel_chip[i-1] << " in module nr: " << channel_mod[i-1] 
+	     << endl;
     }
     
     delete [] mod;
@@ -231,40 +234,41 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan)
     delete [] channel_mod;
     delete [] channel_chip;
 }
+//______________________________________________________________________
+void AliITSresponseSDD::PrintGains(){
+    //
 
-void AliITSresponseSDD::PrintGains()
-{
-    // Print Electronics Gains
+  if( GetDeadModules() == 0 && 
+      GetDeadChips() == 0 && 
+      GetDeadChannels() == 0 )
+      return;  
+
+  // Print Electronics Gains
   cout << "**************************************************" << endl; 
   cout << "             Print Electronics Gains              " << endl;
   cout << "**************************************************" << endl;
-
-//  FILE *f = fopen( "gains.txt", "w" );
-//  fprintf( f, "    Module    Chip   Channel   Gain\n" );
 
   // Print SDD electronic gains
   for(Int_t t=0; t<fModules;t++)
     for(Int_t u=0; u<fChips;u++)
       for(Int_t v=0; v<fChannels;v++)
       {
-        cout << "Gain for Module: " << t+1 << ", Chip " << u+1 << ", Channel " << v+1 << " = " << fGain[t][u][v] << endl;
-//        if( fGain[t][u][v] != 1.0 )
-//          fprintf( f, " %8d %8d %8d   %f\n", t+1, u+1, v+1, fGain[t][u][v] );
+        if( fGain[t][u][v] != 1.0 )
+           cout << "Gain for Module: " << t+1 << ", Chip " << u+1 << 
+                   ", Channel " << v+1 << " = " << fGain[t][u][v] << endl;
       }
-//  fclose( f );
 }
-
-void AliITSresponseSDD::Print()
-{
+//______________________________________________________________________
+void AliITSresponseSDD::Print(){
   // Print SDD response Parameters
 
    cout << "**************************************************" << endl;
    cout << "   Silicon Drift Detector Response Parameters    " << endl;
    cout << "**************************************************" << endl;
-   cout << "Diffusion Coefficients: " << fDiffCoeff << ", " << fDiffCoeff1 << endl;
+   cout << "Diffusion Coefficients: "<< fDiffCoeff<< ", "<<fDiffCoeff1 << endl;
 
    cout << "Hardware compression parameters: " << endl; 
-   for(Int_t i=0; i<8; i++) cout << "fCPar[" << i << "] = " << fCPar[i] << endl;
+   for(Int_t i=0; i<8; i++) cout << "fCPar[" << i << "] = " << fCPar[i] <<endl;
    cout << "Noise before electronics (arbitrary units): " << fNoise << endl;
    cout << "Baseline (ADC units): " << fBaseline << endl;
    cout << "Noise after electronics (ADC units): " << fNoiseAfterEl << endl;

@@ -12,6 +12,10 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+/*
+  $Id$
+  $Log$
+ */
 
 #include <iostream.h>
 #include <stdlib.h>
@@ -142,6 +146,8 @@ AliITSsimulationSDD::AliITSsimulationSDD(){
     fHis           = 0;
 //    fpList         = 0;
     fHitMap2       = 0;
+    fHitSigMap2    = 0;
+    fHitNoiMap2    = 0;
     fElectronics   = 0;
     fStream        = 0;
     fInZR          = 0;
@@ -186,6 +192,8 @@ AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,
     fHis           = 0;
 //    fpList         = 0;
     fHitMap2       = 0;
+    fHitSigMap2    = 0;
+    fHitNoiMap2    = 0;
     fElectronics   = 0;
     fStream        = 0;
     fInZR          = 0;
@@ -214,7 +222,9 @@ void AliITSsimulationSDD::Init(AliITSsegmentationSDD *seg,
 
     fpList = new AliITSpList( fSegmentation->Npz(),
                               fScaleSize*fSegmentation->Npx() );
-    fHitMap2 = new AliITSMapA2(fSegmentation,fScaleSize,1);
+    fHitSigMap2 = new AliITSMapA2(fSegmentation,fScaleSize,1);
+    fHitNoiMap2 = new AliITSMapA2(fSegmentation,fScaleSize,1);
+    fHitMap2 = fHitSigMap2;
 
     fNofMaps = fSegmentation->Npz();
     fMaxNofSamples = fSegmentation->Npx();
@@ -296,7 +306,8 @@ AliITSsimulationSDD::~AliITSsimulationSDD() {
     // destructor
 
 //    delete fpList;
-    delete fHitMap2;
+    delete fHitSigMap2;
+    delete fHitNoiMap2;
     delete fStream;
     delete fElectronics;
 
@@ -323,7 +334,8 @@ void AliITSsimulationSDD::InitSimulationModule( Int_t module, Int_t event ) {
 void AliITSsimulationSDD::ClearMaps() {
     // clear maps
     fpList->ClearMap();
-    fHitMap2->ClearMap();
+    fHitSigMap2->ClearMap();
+    fHitNoiMap2->ClearMap();
 }
 //______________________________________________________________________
 void AliITSsimulationSDD::SDigitiseModule( AliITSmodule *mod, Int_t md, Int_t ev){
@@ -336,14 +348,20 @@ void AliITSsimulationSDD::SDigitiseModule( AliITSmodule *mod, Int_t md, Int_t ev
 
     InitSimulationModule( md, ev );
     HitsToAnalogDigits( mod );
+    ChargeToSignal( kFALSE ); // - Process signal without add noise
+    fHitMap2 = fHitNoiMap2;   // - Swap to noise map
+    ChargeToSignal( kTRUE );  // - Process only noise
+    fHitMap2 = fHitSigMap2;   // - Return to signal map
     WriteSDigits();
     ClearMaps();
 }
 //______________________________________________________________________
-/*void AliITSsimulationSDD::AddSDigitsToModule( TClonesArray *pItemArray, Int_t mask ) {
+Bool_t AliITSsimulationSDD::AddSDigitsToModule( TClonesArray *pItemArray, Int_t mask ) {
     // Add Summable digits to module maps.
-    Int_t nItems = pItemArray->GetEntries();
-
+    Int_t    nItems = pItemArray->GetEntries();
+    Double_t maxadc = fResponse->MaxAdc();
+    Bool_t sig = kFALSE;
+    
     // cout << "Adding "<< nItems <<" SDigits to module " << fModule << endl;
     for( Int_t i=0; i<nItems; i++ ) {
         AliITSpListItem * pItem = (AliITSpListItem *)(pItemArray->At( i ));
@@ -351,12 +369,21 @@ void AliITSsimulationSDD::SDigitiseModule( AliITSmodule *mod, Int_t md, Int_t ev
             Error( "AliITSsimulationSDD",
                    "Error reading, SDigits module %d != current module %d: exit\n",
                     pItem->GetModule(), fModule );
-            return;
+            return sig;
         } // end if
-        
-        fpList->AddItemTo( mask, pItem );
+
+	if(pItem->GetSignal()>0.0 ) sig = kTRUE;
+        fpList->AddItemTo( mask, pItem ); // Add SignalAfterElect + noise
+        AliITSpListItem * pItem2 = fpList->GetpListItem( pItem->GetIndex() );
+        Double_t sigAE = pItem2->GetSignalAfterElect();
+        if( sigAE >= maxadc ) sigAE = maxadc-1; // avoid overflow signal
+        Int_t ia;
+        Int_t it;
+        fpList->GetMapIndex( pItem->GetIndex(), ia, it );
+        fHitMap2->SetHit( ia, it, sigAE );
     }
-}*/
+    return sig;
+}
 //______________________________________________________________________
 void AliITSsimulationSDD::FinishSDigitiseModule() {
     // digitize module using the "slow" detector simulator from
@@ -374,13 +401,32 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
     InitSimulationModule( md, ev );
 
     if( !nhits && fCheckNoise ) {
-        ChargeToSignal();
+        ChargeToSignal( kTRUE );  // process noise
         GetNoise();
         ClearMaps();
         return;
     } else 
         if( !nhits ) return;
+        
     HitsToAnalogDigits( mod );
+    ChargeToSignal( kTRUE );  // process signal + noise
+
+    for( Int_t i=0; i<fNofMaps; i++ ) {
+        for( Int_t j=0; j<fMaxNofSamples; j++ ) {
+            Int_t jdx = j*fScaleSize;
+            Int_t index = fpList->GetHitIndex( i, j );
+            AliITSpListItem pItemTmp2( fModule, index, 0. );
+            // put the fScaleSize analog digits in only one
+            for( Int_t ik=0; ik<fScaleSize; ik++ ) {
+                AliITSpListItem *pItemTmp = fpList->GetpListItem( i, jdx+ik );
+                if( pItemTmp == 0 ) continue;
+                pItemTmp2.Add( pItemTmp );
+            }
+            fpList->DeleteHit( i, j );
+            fpList->AddItemTo( 0, &pItemTmp2 );
+        }
+    }
+
     FinishDigits();
     ClearMaps();
 }
@@ -388,11 +434,6 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
 void AliITSsimulationSDD::FinishDigits() {
     // introduce the electronics effects and do zero-suppression if required
 
-    // Fill maps from fpList.
-    Int_t maxIndex = fpList->GetEntries();
-    for(Int_t i=0;i<maxIndex;i++) fHitMap2->SetHit(i,fpList->GetSignal(i));
-
-    ChargeToSignal();
     ApplyDeadChannels();
     if( fCrosstalkFlag ) ApplyCrosstalk();
 
@@ -421,6 +462,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     Double_t eVpairs    = 3.6;  // electron pair energy eV.
     Float_t  nsigma     = fResponse->NSigmaIntegration(); //
     Int_t    nlookups   = fResponse->GausNLookUp();       //
+    Float_t  jitter     = ((AliITSresponseSDD*)fResponse)->JitterError(); // 
 
     // Piergiorgio's part (apart for few variables which I made float
     // when i thought that can be done
@@ -471,6 +513,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     for(ii=0; ii<nhits; ii++) {
         if(!mod->LineSegmentL(ii,xL[0],dxL[0],xL[1],dxL[1],xL[2],dxL[2],
                               depEnergy,itrack)) continue;
+        xL[0] += 0.0001*gRandom->Gaus( 0, jitter ); //
         depEnergy  *= kconv;
         hitDetector = mod->GetDet();
         //tof         = 1.E+09*(mod->GetHit(ii)->GetTOF()); // tof in ns.
@@ -641,6 +684,9 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
                     timeAmplitude *= norm;
                     timeAmplitude *= 10;
 //                    ListOfFiredCells(arg,timeAmplitude,alst,padr);
+                    Double_t charge = timeAmplitude;
+                    charge += fHitMap2->GetSignal(index,it-1);
+                    fHitMap2->SetHit(index, it-1, charge);
                     fpList->AddSignal(index,it-1,itrack,ii-1,
                                      mod->GetIndex(),timeAmplitude);
                 } // end if anodeAmplitude and loop over time in window
@@ -758,34 +804,24 @@ void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
     digits[1] = j;
     digits[2] = signal;
 
-    Int_t jdx = j*fScaleSize;
-    AliITSpListItem pItem;
-
-    // put the fScaleSize analog digits in only one
-    for( Int_t ik=0; ik<fScaleSize; ik++ ) {
-        AliITSpListItem* pItemTmp = fpList->GetpListItem( i, jdx+ik );
-        if( pItemTmp == 0 ) continue;
-        Double_t sig = 0.0;
-        for( Int_t l=0; l<pItemTmp->GetNsignals(); l++ ) {
-            Double_t signalT = pItemTmp->GetSignal( l );
-        //    if( signalT <= 0.0 ) break; // no more signals
-            sig += signalT;
-            Int_t track      = pItemTmp->GetTrack( l );
-            Int_t hit        = pItemTmp->GetHit( l );
-            pItem.AddSignal( track, hit, -1, -1, signalT );
+    AliITSpListItem *pItem = fpList->GetpListItem( i, j );
+    if( pItem == 0 ) {
+        phys = 0.0;
+        for( Int_t l=0; l<3; l++ ) {
+            tracks[l]  = 0;
+            hits[l]    = 0;
+            charges[l] = 0.0;
         }
-        // add to noise : total signal - sum of signal tracks
-        pItem.AddNoise( -1, -1, pItemTmp->GetSignal() - sig );
-    }
+    } else {
+        Int_t idtrack =  pItem->GetTrack( 0 );
+        if( idtrack >= 0 ) phys = pItem->GetSignal();  
+        else phys = 0.0;
 
-    Int_t idtrack =  pItem.GetTrack( 0 );
-    if( idtrack >= 0 ) phys = pItem.GetSumSignal();  
-    else phys = 0;
-
-    for( Int_t l=0; l<3; l++ ) {
-        tracks[l]  = pItem.GetTrack( l );
-        hits[l]    = pItem.GetHit( l );
-        charges[l] = pItem.GetSignal( l );
+        for( Int_t l=0; l<3; l++ ) {
+            tracks[l]  = pItem->GetTrack( l );
+            hits[l]    = pItem->GetHit( l );
+            charges[l] = pItem->GetSignal( l );
+        }
     }
 
     fITS->AddSimDigit( 1, phys, digits, tracks, hits, charges ); 
@@ -914,7 +950,7 @@ void AliITSsimulationSDD::SortTracks(Int_t *tracks,Float_t *charges,
 }
 */
 //______________________________________________________________________
-void AliITSsimulationSDD::ChargeToSignal() {
+void AliITSsimulationSDD::ChargeToSignal(Bool_t bAddNoise) {
     // add baseline, noise, electronics and ADC saturation effects
 
     char opt1[20], opt2[20];
@@ -937,8 +973,10 @@ void AliITSsimulationSDD::ChargeToSignal() {
             if (read && i<fNofMaps) GetAnodeBaseline(i,baseline,noise);
             for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
                 fInZR[k]  = fHitMap2->GetSignal(i,k);
-                contrib   = (baseline + noise*gRandom->Gaus());
-                fInZR[k] += contrib;
+                if( bAddNoise ) {
+                    contrib   = (baseline + noise*gRandom->Gaus());
+                    fInZR[k] += contrib;
+                }
             } // end for k
             for(k=0; k<fMaxNofSamples; k++) {
                 Double_t newcont = 0.;
@@ -963,8 +1001,10 @@ void AliITSsimulationSDD::ChargeToSignal() {
         if  (read && i<fNofMaps) GetAnodeBaseline(i,baseline,noise);
         for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
             fInZR[k]  = fHitMap2->GetSignal(i,k);
-            contrib   = (baseline + noise*gRandom->Gaus());
-            fInZR[k] += contrib;
+            if( bAddNoise ) {
+                contrib   = (baseline + noise*gRandom->Gaus());
+                fInZR[k] += contrib;
+            }
             fInZI[k]  = 0.;
         } // end for k
         FastFourierTransform(fElectronics,&fInZR[0],&fInZI[0],1);
@@ -1227,7 +1267,7 @@ Int_t AliITSsimulationSDD::Convert8to10(Int_t signal) const {
         else  return (256+((signal-192)<<3)+4);
     } // end if signal < 224
     if (TMath::Odd(signal)) return (512+((signal-224)<<4)+7);
-    return (512+((signal-224)<<4)+7);
+    return (512+((signal-224)<<4)+8);
 }
 
 /*
@@ -1677,19 +1717,27 @@ Float_t AliITSsimulationSDD::GetNoise() {
 //______________________________________________________________________
 void AliITSsimulationSDD::WriteSDigits(){
     // Fills the Summable digits Tree
-    Int_t i,ni,j,nj;
     static AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
 
-    fpList->GetMaxMapIndex( ni, nj );
-    for( i=0; i<ni; i++ )
-        for( j=0; j<nj; j++ ) {
-//            if( fpList->GetSignalOnly( i, j ) > 0.5*fT1[0] ) { 
-            if( fpList->GetpListItem( i, j ) != 0 )
-                // above small threshold.
-                aliITS->AddSumDigit( *(fpList->GetpListItem( i, j ) ) );
-//                cout << "pListSDD: " << *(pList->GetpListItem(i,j)) << endl;
-//            } // end if
-        } // end for i,j
+    for( Int_t i=0; i<fNofMaps; i++ ) {
+        for( Int_t j=0; j<fMaxNofSamples; j++ ) {
+            Double_t sig = fHitMap2->GetSignal( i, j );
+            if( sig > 0.2 ) {
+                Int_t jdx = j*fScaleSize;
+                Int_t index = fpList->GetHitIndex( i, j );
+                AliITSpListItem pItemTmp2( fModule, index, 0. );
+                // put the fScaleSize analog digits in only one
+                for( Int_t ik=0; ik<fScaleSize; ik++ ) {
+                    AliITSpListItem *pItemTmp = fpList->GetpListItem( i, jdx+ik );
+                    if( pItemTmp == 0 ) continue;
+                    pItemTmp2.Add( pItemTmp );
+                }
+                pItemTmp2.AddSignalAfterElect( fModule, index, sig );
+                pItemTmp2.AddNoise( fModule, index, fHitNoiMap2->GetSignal( i, j ) );         
+                aliITS->AddSumDigit( pItemTmp2 );
+            } // end if (sig > 0.2)
+        }
+    }
     return;
 }
 //______________________________________________________________________

@@ -85,7 +85,7 @@ class AliITSsimulationSDD : public AliITSsimulation {
     virtual void SetFileName(const char *filnam) {fFileName=filnam;}
 
     // add baseline, noise, electronics and ADC saturation effects
-    void ChargeToSignal();
+    void ChargeToSignal(Bool_t bAddNoise=kFALSE);
     // add dead channels
     void ApplyDeadChannels();
     // add crosstalk effect
@@ -97,8 +97,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     void ClearMaps();
     // Summable Digitses a SDD module
     void SDigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev);
-//    // Add Summable digits to module maps.
-//    void AddSDigitsToModule( TClonesArray *pItemArray, Int_t mask );
+    // Add Summable digits to module maps.
+    Bool_t AddSDigitsToModule( TClonesArray *pItemArray, Int_t mask );
     // digitize module from the sum of summable digits.
     void FinishSDigitiseModule();
     // Writes summable digits
@@ -149,6 +149,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     AliITS         *fITS;          //! local pointer to ITS
 //    AliITSMapA1    *fHitMap1;      //! local pointer to map of digits
     AliITSMapA2    *fHitMap2;      //! local pointer to map of signals
+    AliITSMapA2    *fHitSigMap2;   //! local pointer to map of signals
+    AliITSMapA2    *fHitNoiMap2;   //! local pointer to map of signals
 //    AliITSpList    *fpList;        //! 
 //    TObjArray      *falist;        //
 //    TClonesArray   *fpadr;         //

@@ -12,6 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+/*
+  $Id$
+  $Log$
+ */
+
 #include <iostream.h>
 #include <TFile.h>
 #include <TMath.h>
@@ -64,7 +69,7 @@ AliITSClusterFinderSDD::AliITSClusterFinderSDD(){
     fCutAmplitude = 0;
     SetDAnode();
     SetDTime();
-    SetMinPeak();
+    SetMinPeak((Int_t)(((AliITSresponseSDD*)fResponse)->GetNoiseAfterElectronics()*5));
     SetMinNCells();
     SetMaxNCells();
     SetTimeCorr();
@@ -348,7 +353,7 @@ Int_t AliITSClusterFinderSDD::SearchPeak(Float_t *spect,Int_t xdim,Int_t zdim,
     Int_t i,j;
     // search peaks
     for( Int_t z=1; z<zdim-1; z++ ){
-        for( Int_t x=2; x<xdim-3; x++ ){
+        for( Int_t x=1; x<xdim-2; x++ ){
             Float_t sxz = spect[x*zdim+z];
             Float_t sxz1 = spect[(x+1)*zdim+z];
             Float_t sxz2 = spect[(x-1)*zdim+z];
@@ -748,7 +753,7 @@ void AliITSClusterFinderSDD::ResolveClustersE(){
             //        clusterJ->PrintInfo();
             Float_t *par = new Float_t[npeak*5+1];
             par[0] = (Float_t)npeak;                
-            // Initial paramiters in cell dimentions
+            // Initial parameters in cell dimentions
             Int_t k1 = 1;
             for( i=0; i<npeak; i++ ){
                 par[k1] = peakAmp1[i];
@@ -799,8 +804,8 @@ void AliITSClusterFinderSDD::ResolveClustersE(){
                 newiTimef *= fTimeStep;
                 if( newiTimef > fTimeCorr ) newiTimef -= fTimeCorr;
                 if( electronics == 1 ){
-                    newiTimef *= 0.999438;    // PASCAL
-                    newiTimef += (6./fDriftSpeed - newiTimef/3000.);
+                //    newiTimef *= 0.999438;    // PASCAL
+                //    newiTimef += (6./fDriftSpeed - newiTimef/3000.);
                 }else if( electronics == 2 )
                     newiTimef *= 0.99714;    // OLA
                 Float_t driftPath = fSddLength - newiTimef * fDriftSpeed;
@@ -812,17 +817,17 @@ void AliITSClusterFinderSDD::ResolveClustersE(){
                 clusterI.SetAsigma( sigma[i]*anodePitch );
                 clusterI.SetTsigma( tau[i]*fTimeStep );
                 clusterI.SetQ( integral[i] );
-                //        clusterI.PrintInfo();
+                //    clusterI.PrintInfo();
                 iTS->AddCluster( 1, &clusterI );
             } // end for i
             fClusters->RemoveAt( j );
             delete [] par;
-        } else {
+        } else {  // something odd
+            cout << " --- Peak not found!!!!  minpeak=" << fMinPeak<< 
+                    " cluster peak=" << clusterJ->PeakAmpl() << 
+                    " module=" << fModule << endl; 
             clusterJ->PrintInfo(); 
-            cout <<" --- Peak not found!!!!  minpeak=" << fMinPeak<< 
-                   " cluster peak=" << clusterJ->PeakAmpl() << 
-                   " npeak=" << npeak << endl << "xdim=" << xdim-2 << " zdim="
-                   << zdim-2 << endl << endl;
+            cout << " xdim=" << xdim-2 << " zdim=" << zdim-2 << endl << endl;
         }
         delete [] sp;
     } // cluster loop
