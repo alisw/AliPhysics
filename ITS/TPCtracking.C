@@ -17,13 +17,13 @@ void TPCtracking( Int_t N =-1 )
   cout<<endl<<N<<" EVENTS FOUND"<<endl;
   */
 
-  cout<<"Running AliBarrelReconstruction.C  ...\n";
-  gROOT->LoadMacro("AliBarrelReconstruction.C");
-  AliBarrelReconstruction(N);
+  cout<<"Running AliBarrelReconstruction4ITS.C  ...\n";
+  gROOT->LoadMacro("$ALICE_ROOT/ITS/AliBarrelReconstruction4ITS.C");
+  AliBarrelReconstruction4ITS(N);
   
-  cout<<"Running AliTPCComparison.C  ...\n";
-  gROOT->LoadMacro("AliTPCComparison.C");
-  AliTPCComparison(N);
+  cout<<"Running AliTPCComparison4ITS.C  ...\n";
+  gROOT->LoadMacro("$ALICE_ROOT/ITS/AliTPCComparison4ITS.C");
+  AliTPCComparison4ITS(N);
   
   
  }
