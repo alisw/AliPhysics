@@ -129,8 +129,8 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
     Float_t    dsP, dsN;
     Float_t    sP, sN;
     Float_t    eP, eN;
-    Float_t    arrayEP[fSteps];
-    Float_t    arrayEN[fSteps];
+    Float_t    arrayEP[10];
+    Float_t    arrayEN[10];
     Int_t      track = 0;
        
     Float_t    ionization = 0;
