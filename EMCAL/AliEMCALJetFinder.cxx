@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2002/01/22 17:25:47  morsch
+Some corrections for event mixing and bg event handling.
+
 Revision 1.10  2002/01/22 10:31:44  morsch
 Some correction for bg mixing.
 
@@ -972,7 +975,6 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 		fTrackListB[part] = 1;
 
 		if (dr < fConeRadius) {
-		    printf("\n B sel %d %d %d", part, nj+2, nTB);
 		    fTrackListB[part] = nj+2;
 		    nTB++;
 		} // < ConeRadius ?
