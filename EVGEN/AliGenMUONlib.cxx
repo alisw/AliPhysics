@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/11/07 09:06:10  morsch
+J/Psi and Upsilon pt and y distributions from R. Vogt 2002 added.
+
 Revision 1.16  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -612,14 +615,14 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	func=PtEta;
 	break;
     case kJpsi:
-	if (sname == "PbPb") {
+	if (sname == "Vogt") {
 	    func=PtJpsiPbPb;
 	} else {
 	    func=PtJpsi;
 	}
 	break;
     case kUpsilon:
-	if (sname == "PbPb") {
+	if (sname == "Vogt") {
 	    func=PtUpsilonPbPb;
 	} else {
 	    func=PtUpsilon;
@@ -662,14 +665,14 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	func=YOmega;
 	break;
     case kJpsi:
-	if (sname == "PbPb") {
+	if (sname == "Vogt") {
 	    func=YJpsiPbPb;
 	} else {
 	    func=YJpsi;
 	}
 	break;
     case kUpsilon:
-	if (sname == "PbPb") {
+	if (sname == "Vogt") {
 	    func=YUpsilonPbPb;
 	} else {
 	    func=YUpsilon;
