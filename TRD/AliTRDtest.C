@@ -578,7 +578,7 @@ Int_t AliTRDanalyzeCluster()
   TH1F *hClusAll   = new TH1F("hClusAll"  ,"Amplitude of the cluster (all)"     
                                           ,501,-0.5,500.5);
   TH1F *hClusNoise = new TH1F("hClusNoise","Amplitude of the cluster (noise)"   
-                                          ,  5,-0.5,  4.5);
+                                          , 11,-0.5, 10.5);
   TH1F *hClusEl    = new TH1F("hClusEl"   ,"Amplitude of the cluster (electron)"
                                           ,501,-0.5,500.5);
   TH1F *hClusPi    = new TH1F("hClusPi"   ,"Amplitude of the cluster (pion)"    
@@ -696,10 +696,10 @@ Int_t AliTRDanalyzeCluster()
   fun->SetLineColor(2);
   fun->Draw("SAME");
   
-  //cCluster->cd(2);
-  //gPad->SetLogy();
+  cCluster->cd(2);
+  gPad->SetLogy();
   Float_t meanNoise = hClusNoise->GetMean();
-  //hClusNoise->Draw();
+  hClusNoise->Draw();
 
   cCluster->cd(3);
   gPad->SetLogy();
