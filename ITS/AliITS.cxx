@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.43  2001/04/26 13:22:52  barbera
+TMatrix and TVector elimininated to speed up the code
+
 Revision 1.42  2001/04/25 21:55:12  barbera
 Updated version to be compatible with actual verion of STEER and TPC
 
@@ -1151,11 +1154,11 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
 	    AliITSmodule *mod = (AliITSmodule *)fITSmodules->At(module);
 
 	    geom->GetModuleId(module,lay, lad, detect);
-            if ( lay == 6 )
+/*            if ( lay == 6 )
 	      ((AliITSsegmentationSSD*)(((AliITSsimulationSSD*)sim)->GetSegmentation()))->SetLayer(6);
 	    if ( lay == 5 )
 	      ((AliITSsegmentationSSD*)(((AliITSsimulationSSD*)sim)->GetSegmentation()))->SetLayer(5);
-
+*/
 	    sim->DigitiseModule(mod,module,evNumber);
 	    // fills all branches - wasted disk space
 	    gAlice->TreeD()->Fill(); 
@@ -1699,10 +1702,9 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
 		if(C>0.) charge=-1;  else charge=1;
 		iotrack->SetCharge(charge);
 		
-		
 
 
-      iotrack->SetCovMatrix(C00,C10,C11,C20,C21,C22,C30,C31,C32,C33,C40,C41,C42,C43,C44);         
+      iotrack->SetCovMatrix(C00,C10,C11,C20,C21,C22,C30,C31,C32,C33,C40,C41,C42,C43,C44);  
 
       Double_t px=pt*TMath::Cos(phivertex);
       Double_t py=pt*TMath::Sin(phivertex);
