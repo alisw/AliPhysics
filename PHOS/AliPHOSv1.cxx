@@ -382,16 +382,13 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 
   if ( fEmcRecPoints && gAlice->TreeR() ) {
     sprintf(branchname,"%sEmcRP",GetName()) ;
-    
     gAlice->TreeR()->Branch(branchname, "TObjArray", &fEmcRecPoints, fBufferSize, splitlevel) ; 
   }
 
   fPpsdRecPoints->Delete() ; 
 
-
   if ( fPpsdRecPoints && gAlice->TreeR() ) {
     sprintf(branchname,"%sPpsdRP",GetName()) ;
-     
     gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdRecPoints, fBufferSize, splitlevel) ;
   }
 
@@ -563,7 +560,8 @@ void AliPHOSv1::StepManager(void)
 
       gMC -> TrackPosition(pos);
       Float_t xyzm[3], xyzd[3], xyd[2];
-      for (Int_t i=0; i<3; i++) xyzm[i] = pos[i];
+      Int_t i;
+      for (i=0; i<3; i++) xyzm[i] = pos[i];
       gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
       xyd[0]  = xyzd[0];
       xyd[1]  =-xyzd[2];
@@ -573,7 +571,7 @@ void AliPHOSv1::StepManager(void)
       TLorentzVector  pmom;
       gMC -> TrackMomentum(pmom);
       Float_t pm[3], pd[3];
-      for (Int_t i=0; i<3; i++) pm[i]   = pmom[i];
+      for (i=0; i<3; i++) pm[i]   = pmom[i];
       gMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
       pmom[0] = pd[0];
       pmom[1] =-pd[1];
@@ -604,12 +602,12 @@ void AliPHOSv1::StepManager(void)
       Float_t xmean = 0;
       Float_t zmean = 0;
       Float_t qsum  = 0;
-      Int_t ndigits;
+      Int_t   idigit,ndigits;
 
       // 2. go through the current digit list and sum digits in pads
 
       ndigits = cpvDigits->GetEntriesFast();
-      for (Int_t idigit=0; idigit<ndigits-1; idigit++) {
+      for (idigit=0; idigit<ndigits-1; idigit++) {
 	AliPHOSCPVDigit  *cpvDigit1 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
 	Float_t x1 = cpvDigit1->GetXpad() ;
 	Float_t z1 = cpvDigit1->GetYpad() ;
@@ -629,7 +627,7 @@ void AliPHOSv1::StepManager(void)
       // 3. add digits to temporary hit list fTmpHits
 
       ndigits = cpvDigits->GetEntriesFast();
-      for (Int_t idigit=0; idigit<ndigits; idigit++) {
+      for (idigit=0; idigit<ndigits; idigit++) {
 	AliPHOSCPVDigit  *cpvDigit = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
 	relid[0] = moduleNumber + 1 ;                             // CPV (or PHOS) module number
 	relid[1] =-1 ;                                            // means CPV

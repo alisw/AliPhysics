@@ -633,7 +633,7 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
  void AliPHOSAnalyze::InvariantMass(Int_t Nevents )    
 {
   // Calculates Real and Mixed invariant mass distributions
-  Int_t NMixedEvents = 4 ; //# of events used for calculation of 'mixed' distribution 
+  const Int_t NMixedEvents = 4 ; //# of events used for calculation of 'mixed' distribution 
   Int_t MixedLoops = (Int_t )TMath::Ceil(Nevents/NMixedEvents) ;
   
   //========== Booking Histograms

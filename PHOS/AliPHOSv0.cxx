@@ -555,7 +555,8 @@ void AliPHOSv0:: BuildGeometryforCPV(void)
     // inside each CPV box:
 
     // Frame around CPV
-    for (Int_t j=0; j<=1; j++) {
+    Int_t j;
+    for (j=0; j<=1; j++) {
       sprintf(nodename, "CPVModule%d Frame%d", i, j+1) ;
       x = TMath::Sign(1,2*j-1) * (fGeom->GetCPVBoxSize(0) - fGeom->GetCPVFrameSize(0)) / 2;
       TNode * cpvFrameNode = new TNode(nodename , nodename ,"CPVFrameLR", x, 0, 0) ;
@@ -570,7 +571,7 @@ void AliPHOSv0:: BuildGeometryforCPV(void)
     }
 
     // 4 printed circuit boards
-    for (Int_t j=0; j<4; j++) {
+    for (j=0; j<4; j++) {
       sprintf(nodename, "CPVModule%d PCB%d", i, j+1) ;
       y = fGeom->GetCPVFrameSize(1) / 2 - fGeom->GetFTPosition(j) + fGeom->GetCPVTextoliteThickness()/2;
       TNode * cpvPCBNode = new TNode(nodename , nodename ,"CPVPCB", 0, y, 0) ;

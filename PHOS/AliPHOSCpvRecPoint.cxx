@@ -451,8 +451,9 @@ void AliPHOSCpvRecPoint::GetClusterLengths(Int_t &lengX, Int_t &lengZ)
     Int_t absId = digit->GetId();
     phosgeom->AbsToRelNumbering(absId, relid) ;
 
+    Int_t i;
     dejavu=kFALSE;
-    for (Int_t i=0; i<lengX; i++) if (relid[2]==idX[i]) { dejavu=kTRUE; break; }
+    for (i=0; i<lengX; i++) if (relid[2]==idX[i]) { dejavu=kTRUE; break; }
     if (!dejavu) {
       idX[lengX]=relid[2];
       lengX++;
@@ -460,7 +461,7 @@ void AliPHOSCpvRecPoint::GetClusterLengths(Int_t &lengX, Int_t &lengZ)
     }
 
     dejavu=kFALSE;
-    for (Int_t i=0; i<lengZ; i++) if (relid[3]==idZ[i]) { dejavu=kTRUE; break; }
+    for (i=0; i<lengZ; i++) if (relid[3]==idZ[i]) { dejavu=kTRUE; break; }
     if (!dejavu) {
       idZ[lengZ]=relid[3];
       lengZ++;

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/11/13 09:34:11  martinez
+  Copy constructor and operator = changed
+
   Revision 1.1  2000/11/03 16:49:35  schutz
   New class AliPHOSCPVModule
 
@@ -98,7 +101,7 @@ AliPHOSCPVModule::~AliPHOSCPVModule(void)
 
 //______________________________________________________________________________
 
-void AliPHOSCPVModule::Clear(Option_t *opt="")
+void AliPHOSCPVModule::Clear(Option_t *opt)
 {
 // Clear hit information
 
