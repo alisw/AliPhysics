@@ -66,7 +66,7 @@ void AliL3ConfMapper::InitVolumes()
   
   //Should be done after setting the track parameters
   
-  fNumRowSegmentPlusOne = 176;//NumRows[0]; //Maximum 32.
+  fNumRowSegmentPlusOne = AliL3Transform::GetNRows();//NumRows[0]; //Maximum 32.
   fNumPhiSegmentPlusOne = fNumPhiSegment+1;
   fNumEtaSegmentPlusOne = fNumEtaSegment+1;
   fNumPhiEtaSegmentPlusOne = fNumPhiSegmentPlusOne*fNumEtaSegmentPlusOne;
@@ -117,7 +117,7 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   else //complete sector
     {
       fRowMin = 0;
-      fRowMax = 175;
+      fRowMax = AliL3Transform::GetNRows() - 1;
     }
   if(etarange)
     {
@@ -138,6 +138,8 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   nTracks=0;
   fMainVertexTracks = 0;
   fClustersUnused = 0;
+  fEtaHitsOutOfRange=0;
+  fPhiHitsOutOfRange=0;
   
   fNumRowSegment = fRowMax - fRowMin; //number of rows to be considered by tracker
   LOG(AliL3Log::kInformational,"AliL3ConfMapper::InitSector","B-field")

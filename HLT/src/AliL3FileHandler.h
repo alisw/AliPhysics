@@ -34,7 +34,7 @@ class AliL3FileHandler:public AliL3MemHandler{
   Bool_t SetAliInput(char *name);
   Bool_t SetAliInput(TFile *file);
   void CloseAliInput(); 
-  Bool_t IsDigit();
+  Bool_t IsDigit(Int_t event);
   
   Bool_t SetMCOutput(char *name);
   Bool_t SetMCOutput(FILE *file);

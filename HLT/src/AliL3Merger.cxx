@@ -172,7 +172,7 @@ AliL3Track * AliL3Merger::MultiMerge(AliL3TrackArray *mergedtracks,AliL3Track **
   for(Int_t i=0;i<ntrack;i++){
     nps+=tracks[i]->GetNHits();
   }
-  if(nps>176){
+  if(nps>AliL3Transform::GetNRows()){
     LOG(AliL3Log::kWarning,"AliL3Merger::MultiMerge","Adding Points")
     <<AliL3Log::kDec<<"Too many Points: "<<nps<<ENDLOG;
     return 0;
@@ -181,7 +181,7 @@ AliL3Track * AliL3Merger::MultiMerge(AliL3TrackArray *mergedtracks,AliL3Track **
   //create new track
   AliL3Track *newtrack = mergedtracks->NextTrack();
   //copy points
-  UInt_t nn[176];
+  UInt_t nn[AliL3Transform::GetNRows()];
   nps = 0;
 
 //  for(Int_t i=0;i<ntrack;i++){
@@ -218,7 +218,7 @@ void* AliL3Merger::GetNtuple(char *varlist){
 void* AliL3Merger::GetNtuple(){
 #ifdef use_root
   TNtuple* nt = new TNtuple("ntuple","ntuple",
-       "dx:dy:dz:dk:dpsi:dtgl:dq:disx:disy:disz:dis:n0:n1:diff:drx:dry:drz");
+			    "dx:dy:dz:dk:dpsi:dtgl:dq:disx:disy:disz:dis:n0:n1:diff:drx:dry:drz");
   return (void*) nt;
 #else
   return 0;
@@ -258,6 +258,9 @@ void AliL3Merger::FillNtuple(void *nt,AliL3Track *innertrack,AliL3Track *outertr
     data[11]= outertrack->GetNHits();
     data[12]= innertrack->GetNHits();
     data[13] = Float_t(TrackDiff(innertrack,outertrack));
+    data[14]=0;
+    data[15]=0;
+    data[16]=0;
 #ifdef use_root
     TNtuple *ntuple = (TNtuple *) nt;
     ntuple->Fill(data);
@@ -291,7 +294,7 @@ Bool_t AliL3Merger::IsTrack(AliL3Track *innertrack,AliL3Track *outertrack){
 
   if(innertrack->GetCharge()!=outertrack->GetCharge()) return kFALSE;
   if( (!innertrack->IsPoint()) || (!outertrack->IsPoint()) )  return kFALSE; 
-  if(innertrack->GetNHits()+outertrack->GetNHits()>176) return kFALSE;
+  if(innertrack->GetNHits()+outertrack->GetNHits()>AliL3Transform::GetNRows()) return kFALSE;
 
   if(fabs(innertrack->GetPointY()-outertrack->GetPointY()) >fMaxY) return kFALSE;
   if(fabs(innertrack->GetPointZ()-outertrack->GetPointZ()) >fMaxZ) return kFALSE;

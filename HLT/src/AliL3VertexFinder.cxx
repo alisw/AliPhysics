@@ -8,6 +8,7 @@
 #include "AliL3Vertex.h"
 #include "AliL3VertexFinder.h"
 #include "AliL3SpacePointData.h"
+#include "AliL3Transform.h"
 
 //_____________________________________________________________
 // AliL3VertexFinder
@@ -60,7 +61,7 @@ void AliL3VertexFinder::Read(Int_t ncluster, AliL3SpacePointData* hits ){
   //  analyze sector 
   // 
   
-  const Int_t seedRow = 175; 
+  const Int_t seedRow = AliL3Transform::GetNRows() - 1; 
   const Int_t firstRow = seedRow-32;
   for(Int_t n=0;n<ncluster;n++){
     if(hits[n].fPadRow==seedRow)

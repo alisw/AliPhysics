@@ -174,7 +174,7 @@ void AliL3FileHandler::CloseAliInput()
   
 }
 
-Bool_t AliL3FileHandler::IsDigit()
+Bool_t AliL3FileHandler::IsDigit(Int_t event)
 {
   //Check if there is a TPC digit tree in the current file.
   //Return kTRUE if tree was found, and kFALSE if not found.
@@ -184,7 +184,9 @@ Bool_t AliL3FileHandler::IsDigit()
     <<"Pointer to TFile = 0x0 "<<ENDLOG;
     return kTRUE;  //may you are use binary input which is Digits!!
   }
-  TTree *t=(TTree*)fInAli->Get("TreeD_75x40_100x60_0");
+  Char_t name[1024];
+  sprintf(name,"TreeD_75x40_100x60_150x60_%d",event);
+  TTree *t=(TTree*)fInAli->Get(name);
   if(t){
     LOG(AliL3Log::kInformational,"AliL3FileHandler::IsDigit","File Type")
     <<"Found Digit Tree -> Use Fast Cluster Finder"<<ENDLOG;
@@ -272,14 +274,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
         dig = fDigits->GetDigit(time,pad);
         if(dig<=fParam->GetZeroSup()) continue;
         
-	/*
-	  if(time < fParam->GetMaxTBin()-1 && time > 0)
-	  if(fDigits->GetDigit(time+1,pad) <= fParam->GetZeroSup()
-	  && fDigits->GetDigit(time-1,pad) <= fParam->GetZeroSup())
-	  continue;
-	*/
-	
-        AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
+	AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
         if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
           continue;
 
@@ -322,12 +317,6 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
         dig = fDigits->GetDigit(time,pad);
 	if (dig <= fParam->GetZeroSup()) continue;
 	
-	/*
-	  if(time < fParam->GetMaxTBin()-1 && time > 0)
-          if(fDigits->GetDigit(time-1,pad) <= fParam->GetZeroSup() &&
-	  fDigits->GetDigit(time+1,pad) <= fParam->GetZeroSup()) continue;
-	*/
-        
 	//Exclude data outside cone:
         AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
         if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))

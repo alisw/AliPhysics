@@ -93,7 +93,7 @@ void AliL3TrackMerger::SlowMerge(AliL3TrackArray *mergedtrack,AliL3TrackArray *t
       outertrack->CalculatePoint(xval);
       innertrack->CalculatePoint(xval);
       PrintDiff(innertrack,outertrack);
-      FillNtuple(ntuple,innertrack,outertrack);
+      //FillNtuple(ntuple,innertrack,outertrack);
       tracksout->Remove(outmin);
       tracksin->Remove(inmin);
 //      tracksout->Compress();

@@ -119,7 +119,7 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
       return;
     }
   
-  AliL3Transform::Init(path);//Initialize the detector parameters.
+  AliL3Transform::Init(path,!binary);//Initialize the detector parameters.
   fWriteOut = kFALSE;
   fUseBinary = binary;
   SetPath(path);
@@ -138,43 +138,30 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
   switch(npatches){
   case 1:
     fNPatch = 1;        //number of patches change row in process
-    fRow[0][0] = 0;     // first row
-    fRow[0][1] = 175;   // last row
+    fRow[0][0] = 0;
+    fRow[0][1] = AliL3Transform::GetNRows();
     break;
   case 2:
     fNPatch = 2;        //number of patches change row in process
     fRow[0][0] = 0;     // first row
-    fRow[0][1] = 54;
-    fRow[1][0] = 55;
-    fRow[1][1] = 175;   // last row
+    fRow[0][1] = AliL3Transform::GetLastRow(1);
+    fRow[1][0] = AliL3Transform::GetFirstRow(2);
+    fRow[1][1] = AliL3Transform::GetLastRow(5);
     break;
-  case 5:
-    fNPatch = 5;        //number of patches change row in process
-    fRow[0][0] = 0;     // first row
-    fRow[0][1] = 45;
-    fRow[1][0] = 46;
-    fRow[1][1] = 77;
-    fRow[2][0] = 78;
-    fRow[2][1] = 109;
-    fRow[3][0] = 110; 
-    fRow[3][1] = 141;
-    fRow[4][0] = 142;
-    fRow[4][1] = 175;   // last row
-    break;
-  default: //should match entries in AliL3Transform
-    fNPatch = 6;        //number of patches change row in process
-    fRow[0][0] = 0;     // first row
-    fRow[0][1] = 31;
-    fRow[1][0] = 32;
-    fRow[1][1] = 63;
-    fRow[2][0] = 64;
-    fRow[2][1] = 91;
-    fRow[3][0] = 92;
-    fRow[3][1] = 119;
-    fRow[4][0] = 120;
-    fRow[4][1] = 143;   
-    fRow[5][0] = 144;
-    fRow[5][1] = 175;   // last row 
+  default: 
+    fNPatch = 6;        
+    fRow[0][0] = AliL3Transform::GetFirstRow(0);
+    fRow[0][1] = AliL3Transform::GetLastRow(0);
+    fRow[1][0] = AliL3Transform::GetFirstRow(1);
+    fRow[1][1] = AliL3Transform::GetLastRow(1);
+    fRow[2][0] = AliL3Transform::GetFirstRow(2);
+    fRow[2][1] = AliL3Transform::GetLastRow(2);
+    fRow[3][0] = AliL3Transform::GetFirstRow(3);
+    fRow[3][1] = AliL3Transform::GetLastRow(3);
+    fRow[4][0] = AliL3Transform::GetFirstRow(4);
+    fRow[4][1] = AliL3Transform::GetLastRow(4);
+    fRow[5][0] = AliL3Transform::GetFirstRow(5);
+    fRow[5][1] = AliL3Transform::GetLastRow(5);
   }
 
   fVertexFinder = new AliL3VertexFinder();
@@ -197,7 +184,7 @@ void AliLevel3::DoBench(char* name){
 
 void AliLevel3::DoMc(char* file){
 #ifdef use_aliroot
-  if(!fFileHandler->IsDigit())
+  if(!fFileHandler->IsDigit(fEvent))
     fFileHandler->SetMCOutput(file);
 #endif
 }
@@ -273,7 +260,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
   char name[256];
   Bool_t UseCF = kFALSE;
 #ifdef use_aliroot
-  UseCF = fFileHandler->IsDigit();
+  UseCF = fFileHandler->IsDigit(fEvent);
 #else
   if(fUseBinary)
     UseCF = kTRUE; //In case you are not using aliroot
@@ -513,9 +500,9 @@ void AliLevel3::ProcessSlice(Int_t slice){
     memory->Free();
   }
   fBenchmark->Start("Patch Merger");
-  fTrackMerger->SlowMerge();
+  //fTrackMerger->SlowMerge();
   //fTrackMerger->AddAllTracks();
-  //fTrackMerger->Merge();
+  fTrackMerger->Merge();
   fBenchmark->Stop("Patch Merger");
   /*
   //write merged tracks

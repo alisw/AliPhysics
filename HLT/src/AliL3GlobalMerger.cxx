@@ -167,7 +167,7 @@ void AliL3GlobalMerger::SlowMerge(){
         track0->CalculateReferencePoint(angle);
         track1->CalculateReferencePoint(angle);
 	PrintDiff(track0,track1);
-        FillNtuple(ntuple,track0,track1);
+        //FillNtuple(ntuple,track0,track1);
         ttt0->Remove(min0);
         ttt1->Remove(min1);
 	
