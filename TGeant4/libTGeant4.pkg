@@ -68,4 +68,8 @@ SRCS:=TG4Editor.cxx \
 
 HDRS:=$(SRCS:.cxx=.h)
 
-EINCLUDE:=$(G4INSTALL)/include $(CLHEP_BASE_DIR)/include
+include $(G4INSTALL)/config/G4UI_USE.gmk
+include $(G4INSTALL)/config/G4VIS_USE.gmk
+include $(G4INSTALL)/config/interactivity.gmk
+
+EINCLUDE:=$(CPPFLAGS) $(G4INSTALL)/include $(CLHEP_BASE_DIR)/include
