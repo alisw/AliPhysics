@@ -75,7 +75,7 @@ class AliGenParam : public AliGenerator
     Float_t     fChildThetaMax;// Children maximum theta
     Float_t     fDeltaPt;      // pT sampling in steps of fDeltaPt
     TArrayI     fChildSelect;  // Children to be selected from decay products
-    AliDecayer  *fDecayer;      // Pointer to pythia object for decays
+    AliDecayer  *fDecayer;     // ! Pointer to pythia object for decays
  private:
     // check if particle is selected as child
     Bool_t ChildSelected(Int_t ip);
