@@ -62,20 +62,21 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1()
   // default ctor (to be used)
 
   fA                       = 0.;
-  fB                       = 0.01 ;
+  fB                       = 0.0000001 ;
   fGeom                    = AliPHOSGeometry::GetInstance();
   fNumberOfEmcClusters     = 0 ; 
   fNumberOfPpsdClusters    = 0 ; 
-  fEmcClusteringThreshold  = 0.1;   
-  fEmcEnergyThreshold      = 0.01;    
-  fPpsdClusteringThreshold = 0.0;
-  fPpsdEnergyThreshold     = 0.1;  
+  fEmcClusteringThreshold  = 0.2;   
+  fEmcEnergyThreshold      = 0.05;    
+  fPpsdClusteringThreshold = 0.0000002 ;
+  fPpsdEnergyThreshold     = 0.0000002 ;  
   fCpvClusteringThreshold  = 0.0;
-  fCpvEnergyThreshold      = 0.1;  
+  fCpvEnergyThreshold      = 0.09;  
   fW0                      = 4.5 ;
-  fLocMaxCut               = 0.06 ;
-  fW0CPV                   = 4.5 ;
-  fLocMaxCutCPV            = 0.06 ;
+  fLocMaxCut               = 0.03 ;
+  fW0CPV                   = 4.0 ;
+  fLocMaxCutCPV            = 0.03 ;
+
 }
 
 //____________________________________________________________________________

@@ -255,7 +255,7 @@ Int_t AliPHOSv1::Digitize(Float_t Energy)
 {
   // Applies the energy calibration
   
-  Float_t fB = 100000000. ;
+  Float_t fB = 10000000. ;
   Float_t fA = 0. ;
   Int_t chan = Int_t(fA + Energy*fB ) ;
   return chan ;

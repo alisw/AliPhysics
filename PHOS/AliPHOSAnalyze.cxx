@@ -147,13 +147,6 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
 
   //========== Create the Clusterizer
   fClu = new AliPHOSClusterizerv1() ; 
-
-  fClu->SetEmcEnergyThreshold(0.05) ;
-  fClu->SetEmcClusteringThreshold(0.20) ;
-  fClu->SetPpsdEnergyThreshold    (0.0000002) ;
-  fClu->SetPpsdClusteringThreshold(0.0000001) ;
-  fClu->SetLocalMaxCut(0.03) ;
-  fClu->SetCalibrationParameters(0., 0.00000001) ;
   
   gAlice->GetEvent(Nevent);
   
@@ -316,19 +309,6 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
       cout << "Analyze > Starting Reconstructing " << endl ; 
       //========== Create the Clusterizer
       fClu = new AliPHOSClusterizerv1() ; 
-      fClu->SetEmcEnergyThreshold(0.05) ; 
-      fClu->SetEmcClusteringThreshold(0.20) ; 
-      fClu->SetLocalMaxCut(0.03) ;
-      if (strcmp(fGeom->GetName(),"GPS2") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
-	fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
-	fClu->SetPpsdClusteringThreshold(0.0000001) ; 
-      }
-      if (strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
-	fClu->SetLocalMaxCutCPV(0.03) ;
-	fClu->SetLogWeightCutCPV(4.0) ;
-	fClu->SetCpvEnergyThreshold(0.09) ;
-      }
-      fClu->SetCalibrationParameters(0., 0.00000001) ; 
       
       //========== Creates the track segment maker
       fTrs = new AliPHOSTrackSegmentMakerv1()  ;
