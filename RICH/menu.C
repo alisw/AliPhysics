@@ -5,13 +5,18 @@ AliLoader *rl;
 AliRICH *r;
 AliStack *s;
 
-AliRICH * R()    {return r;}
-void ph(Int_t event=0) {R()->PrintHits(event);}    //utility print hits for 'event' event
-void ps(Int_t event=0) {R()->PrintSDigits(event);} //utility print sdigits
-void pd(Int_t event=0) {R()->PrintDigits(event);}  //utility print digits
-void pc(Int_t event=0) {R()->PrintClusters(event);}//utility print clusters
-void pt(Int_t event=0) {R()->PrintTracks(event);}  //utility print tracks
-//void st(Int_t event=0) {R()->PrintStack(event);} //utiltity print stack
+void ph(Int_t event=0)  {r->PrintHits(event);}    //utility print hits for 'event' event
+void ps(Int_t event=0)  {r->PrintSDigits(event);} //utility print sdigits
+void pd(Int_t event=0)  {r->PrintDigits(event);}  //utility print digits
+void pc(Int_t event=0)  {r->PrintClusters(event);}//utility print clusters
+void pt(Int_t event=0)  {r->PrintTracks(event);}  //utility print tracks
+Int_t ne(Int_t event=0) {r->Nparticles(kElectron,event);}   //utility number of electrons
+Int_t npi0(Int_t event=0) {r->Nparticles(kPi0,event);}   //utility number of electrons
+Int_t npip(Int_t event=0) {r->Nparticles(kPiPlus,event);}   //utility number of electrons
+Int_t npim(Int_t event=0) {r->Nparticles(kPiMinus,event);}   //utility number of electrons
+Int_t nk0(Int_t event=0) {r->Nparticles(kK0,event);}   //utility number of electrons
+Int_t nkp(Int_t event=0) {r->Nparticles(kKPlus,event);}   //utility number of electrons
+Int_t nkm(Int_t event=0) {r->Nparticles(kKMinus,event);}   //utility number of electrons
 //__________________________________________________________________________________________________
 void pp(int tid)
 {
@@ -38,24 +43,25 @@ void PrintParticleInfo(int tid)
 Int_t prim(Int_t tid)
 {
 // Provides mother TID for the given TID
-  R()->GetLoader()->GetRunLoader()->LoadHeader();  R()->GetLoader()->GetRunLoader()->LoadKinematics();
+  al->LoadHeader();  al->LoadKinematics();
   
-  if(tid<0||tid>=R()->GetLoader()->GetRunLoader()->Stack()->GetNtrack())
-    cout<<"Valid tid number is 0-"<<R()->GetLoader()->GetRunLoader()->Stack()->GetNtrack()-1<<" for this event.\n";
+  if(tid<0||tid>=al->Stack()->GetNtrack())
+    cout<<"Valid tid number is 0-"<<al->Stack()->GetNtrack()-1<<" for this event.\n";
   else
     while(1){
-      TParticle *p=R()->GetLoader()->GetRunLoader()->GetAliRun()->Stack()->Particle(tid);
+      TParticle *p=al->Stack()->Particle(tid);
       if(p->GetMother(0)==-1) break;
       tid=p->GetMother(0);
     }
   
-  R()->GetLoader()->GetRunLoader()->UnloadKinematics();  R()->GetLoader()->GetRunLoader()->UnloadHeader();
+  al->UnloadKinematics();  al->UnloadHeader();
   return tid;
 }
 
 //__________________________________________________________________________________________________
 void Show()
 {  
+//  CreateHists();
   Info("","\n\n\n");
 //load all trees  
   al->LoadHeader(); 
@@ -64,7 +70,6 @@ void Show()
         Bool_t isSdigits=!rl->LoadSDigits();  
           Bool_t isDigits=!rl->LoadDigits();//loaders
             Bool_t isClusters=!rl->LoadRecPoints();
-  
   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
     Int_t iNparticles=al->Stack()->GetNtrack();
@@ -127,12 +132,7 @@ void Show()
         if(isClusters) rl->UnloadRecPoints();
           al->UnloadHeader();
             al->UnloadKinematics();
-  
-  TVector counters=r->Counters();
-  
-  counters(9)=counters(0); for(Int_t i=1;i<=8;i++) counters(9)-=counters(i);
-  counters.Print();
-  cout<<endl;
+  ShowHists();            
 }//void Show()
 //__________________________________________________________________________________________________
 
@@ -181,7 +181,7 @@ void menu()
   if(ReadAlice()){//it's from file, show some info
     pMenu->AddButton("Show",            "Show()",             "Shows the structure of events in files");
     pMenu->AddButton("Display Fast",    "AliRICHDisplFast *d = new AliRICHDisplFast(); d->Exec();",        "Display Fast");
-    pMenu->AddButton("Control Plots",   "R()->ControlPlots()","Create some control histograms");
+    pMenu->AddButton("Control Plots",   "r->ControlPlots()","Create some control histograms");
     
   }else{//it's aliroot, simulate
     pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
@@ -199,101 +199,60 @@ void menu()
 void DebugOFF(){  Info("DebugOFF","");  AliLog::SetGlobalDebugLevel(0);}
 void DebugON() {  Info("DebugON","");   AliLog::SetGlobalDebugLevel(AliLog::kDebug);}
 //__________________________________________________________________________________________________
-void ReadRaw()
+TObjArray * CreateHists(Double_t pcut=0.9)
 {
-// First interation for TB raw data reader  
-  char *sRawFileName="beam/run1822_4sigma.dat";
-  FILE *pRawFile=fopen(sRawFileName,"r");
-  if(!pRawFile){Error("ReadRaw","Something wrong with raw data file %s",sRawFileName); return;}
+  TH2F *pPosH2    =new TH2F("pos"   ,"Pos mixture",5,0,5, 9,0,9); pPosH2->SetStats(0);
+  TH2F *pNegH2    =new TH2F("neg"   ,"Neg mixture",5,0,5, 9,0,9); pNegH2->SetStats(0);
+  TH2F *pPosCutH2 =new TH2F("poscut",Form("Pos mixture with P>%4.2f GeV",pcut),5,0,5, 9,0,9); pPosCutH2->SetStats(0);
+  TH2F *pNegCutH2 =new TH2F("negcut",Form("Neg mixture with P>%4.2f GeV",pcut),5,0,5, 9,0,9); pNegCutH2->SetStats(0);
+  pPosH2->GetXaxis()->SetBinLabel(1,"e^{+}");        pNegH2->GetXaxis()->SetBinLabel(1,"e^{-}");  
+  pPosH2->GetXaxis()->SetBinLabel(2,"#mu^{+}");      pNegH2->GetXaxis()->SetBinLabel(2,"#mu^{-}");
+  pPosH2->GetXaxis()->SetBinLabel(3,"#pi^{+}");      pNegH2->GetXaxis()->SetBinLabel(3,"#pi^{-}");
+  pPosH2->GetXaxis()->SetBinLabel(4,"K^{+}");        pNegH2->GetXaxis()->SetBinLabel(4,"K^{-}");  
+  pPosH2->GetXaxis()->SetBinLabel(5,"p^{+}");        pNegH2->GetXaxis()->SetBinLabel(5,"p^{-}");  
   
-  Int_t iNpads=0,q=0,x=0,y=0;
+  pPosCutH2->GetXaxis()->SetBinLabel(1,"e^{+}");     pNegCutH2->GetXaxis()->SetBinLabel(1,"e^{-}");  
+  pPosCutH2->GetXaxis()->SetBinLabel(2,"#mu^{+}");   pNegCutH2->GetXaxis()->SetBinLabel(2,"#mu^{-}");
+  pPosCutH2->GetXaxis()->SetBinLabel(3,"#pi^{+}");   pNegCutH2->GetXaxis()->SetBinLabel(3,"#pi^{-}");
+  pPosCutH2->GetXaxis()->SetBinLabel(4,"K^{+}");     pNegCutH2->GetXaxis()->SetBinLabel(4,"K^{-}");  
+  pPosCutH2->GetXaxis()->SetBinLabel(5,"p^{+}");     pNegCutH2->GetXaxis()->SetBinLabel(5,"p^{-}");  
   
-  while(fscanf(pRawFile,"%i",&iNpads)){
-    Info("ReadRaw","%i pads fired",iNpads);
-    for(Int_t i=0;i<iNpads;i++)
-      fscanf(pRawFile,"%i %i %i",&q,&x,&y);
-  }
-  fclose(pRawFile);
-}
-//__________________________________________________________________________________________________
-void FillContribs(Int_t part,Int_t C, Bool_t print)
-{
-  static Int_t contrib[10][7][2];
-  static Bool_t kEnter=kFALSE;
+  pPosH2->GetYaxis()->SetBinLabel(1,"ch1");          pNegH2->GetYaxis()->SetBinLabel(1,"ch1");  
+  pPosH2->GetYaxis()->SetBinLabel(2,"ch2");          pNegH2->GetYaxis()->SetBinLabel(2,"ch2");  
+  pPosH2->GetYaxis()->SetBinLabel(3,"ch3");          pNegH2->GetYaxis()->SetBinLabel(3,"ch3");  
+  pPosH2->GetYaxis()->SetBinLabel(4,"ch4");          pNegH2->GetYaxis()->SetBinLabel(4,"ch4");  
+  pPosH2->GetYaxis()->SetBinLabel(5,"ch5");          pNegH2->GetYaxis()->SetBinLabel(5,"ch5");  
+  pPosH2->GetYaxis()->SetBinLabel(6,"ch6");          pNegH2->GetYaxis()->SetBinLabel(6,"ch6");  
+  pPosH2->GetYaxis()->SetBinLabel(7,"ch7");          pNegH2->GetYaxis()->SetBinLabel(7,"ch7");  
+  pPosH2->GetYaxis()->SetBinLabel(8,"prim");         pNegH2->GetYaxis()->SetBinLabel(8,"prim");  
+  pPosH2->GetYaxis()->SetBinLabel(9,"tot");          pNegH2->GetYaxis()->SetBinLabel(9,"tot");  
 
-  C--; // chamber numbering from 1 to 7
-  if(!kEnter) {
-    for(Int_t i=0;i<10;i++) {
-      for(Int_t j=0;j<7;j++) {
-        for(Int_t k=0;k<2;k++) contrib[i][j][k]=0;
-      }
-    }
-    kEnter=kTRUE;
-  }
-
-  if(print) {
-    for(Int_t k=0;k<2;k++) {cout << "----------------Positives  to RICH ---------------" << endl;
-                            cout << " chamber    1    2    3     4     5     6    7    " << endl;
-                            cout << " -------------------------------------------------" << endl;
-      for(Int_t i=0;i<4;i++) {
-        if(i==0) cout << " e";
-        if(i==1) cout << "pi";
-        if(i==2) cout << " K";
-        if(i==3) cout << " p";
-        if(k==0) cout << "+         ";
-        if(k==1) cout << "-         ";
-        for(Int_t j=0;j<7;j++) {
-          cout << contrib[i][j][k] << "    ";
-        }
-          cout << endl;
-      }
-    }
-  }
-
-  // +ves
-  if(part==kPositron)    contrib[0][C][0]++;
-  if(part==kPiPlus)      contrib[1][C][0]++;
-  if(part==kKPlus)       contrib[2][C][0]++;
-  if(part==kProton)      contrib[3][C][0]++;
-
-  // -ves
-  if(part==kElectron)    contrib[0][C][1]++;
-  if(part==kPiMinus)     contrib[1][C][1]++;
-  if(part==kKMinus)      contrib[2][C][1]++;
-  if(part==kProtonBar)   contrib[3][C][1]++;
-}
-//__________________________________________________________________________________________________
-void ParticleContribs()
-{
-  Bool_t isHits    =!rl->LoadHits();
-  if(!isHits){Error("Exec","No hits. No contribs to calculate.");return;}
-  
-  TH1F *pDistH1 = new TH1F("distH1","length of charge track in amp gap;cm",100,0.,5.);
-
-  al->LoadHeader();  al->LoadKinematics();
-
-
-
-  for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events Loop
-    al->GetEvent(iEventN);
-    
-    AliStack *pStack=al->Stack();
-    Info("","Event %i-> Totaly %i primaries %i",iEventN,pStack->GetNtrack(),pStack->GetNprimary());
-    
-    
-    for(Int_t i=0;i<rl->TreeH()->GetEntries();i++){//prims loop
-      rl->TreeH()->GetEntry(i);
-      for(Int_t j=0;j<r->Hits()->GetEntries();j++){//hits loop for a given primary
-        AliRICHhit *pHit = (AliRICHhit*)r->Hits()->At(j);
-        TParticle *pParticle = al->Stack()->Particle(pHit->GetTrack());
-//          if(pParticle->P()>1) FillContribs(pParticle->GetPdgCode(),pHit->C(),kFALSE);
-        if(pParticle->GetPDG()->Charge()!=0) pDistH1->Fill(pHit->Length());
-      }//hits loop
-    }//prims loop
-  }//events loop
-  FillContribs(0,0,kTRUE);
-  pDistH1->Draw();
+  pPosCutH2->GetYaxis()->SetBinLabel(1,"ch1");          pNegCutH2->GetYaxis()->SetBinLabel(1,"ch1");  
+  pPosCutH2->GetYaxis()->SetBinLabel(2,"ch2");          pNegCutH2->GetYaxis()->SetBinLabel(2,"ch2");  
+  pPosCutH2->GetYaxis()->SetBinLabel(3,"ch3");          pNegCutH2->GetYaxis()->SetBinLabel(3,"ch3");  
+  pPosCutH2->GetYaxis()->SetBinLabel(4,"ch4");          pNegCutH2->GetYaxis()->SetBinLabel(4,"ch4");  
+  pPosCutH2->GetYaxis()->SetBinLabel(5,"ch5");          pNegCutH2->GetYaxis()->SetBinLabel(5,"ch5");  
+  pPosCutH2->GetYaxis()->SetBinLabel(6,"ch6");          pNegCutH2->GetYaxis()->SetBinLabel(6,"ch6");  
+  pPosCutH2->GetYaxis()->SetBinLabel(7,"ch7");          pNegCutH2->GetYaxis()->SetBinLabel(7,"ch7");  
+  pPosCutH2->GetYaxis()->SetBinLabel(8,"prim");         pNegCutH2->GetYaxis()->SetBinLabel(8,"prim");  
+  pPosCutH2->GetYaxis()->SetBinLabel(9,"tot");          pNegCutH2->GetYaxis()->SetBinLabel(9,"tot");  
+  TObjArray *pOA=new TObjArray;
+  pOA->Add(pPosH2);pOA->Add(pNegH2);pOA->Add(pPosCutH2);pOA->Add(pNegCutH2);  
+  return pOA;
 }//ParticleContribs()
+//__________________________________________________________________________________________________
+
+void ShowHists()
+{
+  pC=new TCanvas("c1","Particle composition");
+  pC->Divide(2,2);
+  pC->cd(1);  pos->Draw("text"); gPad->SetGrid();
+  pC->cd(2);  neg->Draw("text"); gPad->SetGrid();
+  pC->cd(3);  poscut->Draw("text"); gPad->SetGrid();
+  pC->cd(4);  negcut->Draw("text"); gPad->SetGrid();
+}
+
+
 //__________________________________________________________________________________________________
 void CheckPR()
 {
@@ -305,7 +264,7 @@ void CheckPR()
   AliMagF * magf = gAlice->Field();
   AliTracker::SetFieldMap(magf);
   for(Int_t iEvtN=0;iEvtN<R()->GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
-    R()->GetLoader()->GetRunLoader()->GetEvent(iEvtN);
+    al->GetEvent(iEvtN);
     AliRICHTracker *tr = new AliRICHTracker();
     tr->RecWithStack(hn);
 //    Info("CheckPR","Pattern Recognition done for event %i \b",iEvtN);
