@@ -41,7 +41,8 @@ Int_t AliITSComparisonV2() {
    TFile *tf=TFile::Open("AliITStracksV2.root");
    if (!tf->IsOpen()) {cerr<<"Can't open AliITStracksV2.root !\n"; return 3;}
    TObjArray tarray(2000);
-   TTree *tracktree=(TTree*)tf->Get("TreeT");
+   TTree *tracktree=(TTree*)tf->Get("ITSf");
+   if (!tracktree) {cerr<<"Can't get a tree with ITS tracks !\n"; return 4;}
    TBranch *tbranch=tracktree->GetBranch("tracks");
    Int_t nentr=(Int_t)tracktree->GetEntries(),i;
    for (i=0; i<nentr; i++) {
@@ -109,20 +110,26 @@ Int_t AliITSComparisonV2() {
    TH1F *hz=new TH1F("hz","Longitudinal impact parameter",30,-300,300); 
    //hmpt->SetFillColor(6);
 
-   TH1F *hgood=new TH1F("hgood","Good tracks",30,0.1,6.1);    
-   TH1F *hfound=new TH1F("hfound","Found tracks",30,0.1,6.1);
-   TH1F *hfake=new TH1F("hfake","Fake tracks",30,0.1,6.1);
-   TH1F *hg=new TH1F("hg","",30,0.1,6.1); //efficiency for good tracks
+   AliITStrackV2 *trk=(AliITStrackV2*)tarray.UncheckedAt(0);
+   Double_t pmin=0.1*(100/0.299792458/0.2/trk->GetConvConst());
+   Double_t pmax=6.0+pmin;
+
+   TH1F *hgood=new TH1F("hgood","Good tracks",30,pmin,pmax);    
+   TH1F *hfound=new TH1F("hfound","Found tracks",30,pmin,pmax);
+   TH1F *hfake=new TH1F("hfake","Fake tracks",30,pmin,pmax);
+   TH1F *hg=new TH1F("hg","",30,pmin,pmax); //efficiency for good tracks
    hg->SetLineColor(4); hg->SetLineWidth(2);
-   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,0.1,6.1);
+   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,pmin,pmax);
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
 
-   TH1F *hptw=new TH1F("hptw","Weghted pt",30,0.1,6.1);
+   TH1F *hptw=new TH1F("hptw","Weghted pt",30,pmax,pmin);
 
    while (ngood--) {
       Int_t lab=gt[ngood].lab, tlab=-1;
       Double_t pxg=gt[ngood].px, pyg=gt[ngood].py, pzg=gt[ngood].pz;
       Double_t ptg=TMath::Sqrt(pxg*pxg+pyg*pyg);
+
+      if (ptg<pmin) continue;
 
       hgood->Fill(ptg);
 
@@ -214,9 +221,9 @@ Int_t AliITSComparisonV2() {
    hg->SetXTitle("Pt (GeV/c)");
    hg->Draw();
 
-   TLine *line1 = new TLine(0,1.0,7,1.0); line1->SetLineStyle(4);
+   TLine *line1 = new TLine(pmin,1.0,pmax,1.0); line1->SetLineStyle(4);
    line1->Draw("same");
-   TLine *line2 = new TLine(0,0.9,7,0.9); line2->SetLineStyle(4);
+   TLine *line2 = new TLine(pmin,0.9,pmax,0.9); line2->SetLineStyle(4);
    line2->Draw("same");
 
    hf->SetFillColor(1);
@@ -277,7 +284,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t entr=(Int_t)cTree->GetEntries();
    for (k=0; k<entr; k++) {
      if (!cTree->GetEvent(k)) continue;
-     Int_t lay,lad,det;  geom->GetModuleId(k-1,lay,lad,det);
+     Int_t lay,lad,det;  geom->GetModuleId(k,lay,lad,det);
      if (lay<1 || lay>6) {
 	cerr<<"wrong layer !\n"; exit(10);
      }

@@ -40,6 +40,8 @@ AliITStrackV2::AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *) {
   SetLabel(t.GetLabel());
   SetChi2(0.);
   SetNumberOfClusters(0);
+  //SetConvConst(t.GetConvConst());
+
   fdEdx  = 0.;
   fAlpha = t.GetAlpha();
   if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
@@ -499,28 +501,28 @@ Int_t AliITStrackV2::Invariant() const {
   if (fC22<=0) {cout<<"fC22="<<fC22<<endl; return 0;}
   if (fC33<=0) {cout<<"fC33="<<fC33<<endl; return 0;}
   if (fC44<=0) {cout<<"fC44="<<fC44<<endl; return 0;}
+  /*
+  TMatrixD m(5,5);
+  m(0,0)=fC00; 
+  m(1,0)=fC10; m(1,1)=fC11; 
+  m(2,0)=fC20; m(2,1)=fC21; m(2,2)=fC22;
+  m(3,0)=fC30; m(3,1)=fC31; m(3,2)=fC32; m(3,3)=fC33;
+  m(4,0)=fC40; m(4,1)=fC41; m(4,2)=fC42; m(4,3)=fC43; m(4,4)=fC44;
 
-   TMatrixD m(5,5);
-   m(0,0)=fC00; 
-   m(1,0)=fC10; m(1,1)=fC11; 
-   m(2,0)=fC20; m(2,1)=fC21; m(2,2)=fC22;
-   m(3,0)=fC30; m(3,1)=fC31; m(3,2)=fC32; m(3,3)=fC33;
-   m(4,0)=fC40; m(4,1)=fC41; m(4,2)=fC42; m(4,3)=fC43; m(4,4)=fC44;
+  m(0,1)=m(1,0);
+  m(0,2)=m(2,0); m(1,2)=m(2,1);
+  m(0,3)=m(3,0); m(1,3)=m(3,1); m(2,3)=m(3,2);
+  m(0,4)=m(4,0); m(1,4)=m(4,1); m(2,4)=m(4,2); m(3,4)=m(4,3);
 
-   m(0,1)=m(1,0);
-   m(0,2)=m(2,0); m(1,2)=m(2,1);
-   m(0,3)=m(3,0); m(1,3)=m(3,1); m(2,3)=m(3,2);
-   m(0,4)=m(4,0); m(1,4)=m(4,1); m(2,4)=m(4,2); m(3,4)=m(4,3);
-   /*
-   Double_t det=m.Determinant(); 
+  Double_t det=m.Determinant(); 
 
-   if (det <= 0) {
-       cout<<" bad determinant "<<det<<endl;
-       m.Print(); 
-       return 0;
-   }
-   */
-   return 1;
+  if (det <= 0) {
+      cout<<" bad determinant "<<det<<endl;
+      m.Print(); 
+      return 0;
+  }
+  */
+  return 1;
 }
 
 //____________________________________________________________________________
@@ -798,3 +800,15 @@ Int_t AliITStrackV2::Improve(Double_t x0,Double_t xv,Double_t yv) {
 } 
 */
 
+void AliITStrackV2::ResetCovariance() {
+  //------------------------------------------------------------------
+  //This function makes a track forget its history :)  
+  //------------------------------------------------------------------
+
+  fC00*=10.;
+  fC10=0.;  fC11*=10.;
+  fC20=0.;  fC21=0.;  fC22*=10.;
+  fC30=0.;  fC31=0.;  fC32=0.;  fC33*=10.;
+  fC40=0.;  fC41=0.;  fC42=0.;  fC43=0.;  fC44*=10.;
+
+}

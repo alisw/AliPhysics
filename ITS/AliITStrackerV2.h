@@ -25,7 +25,7 @@ public:
 
   AliCluster *GetCluster(Int_t index) const;
   Int_t Clusters2Tracks(const TFile *in, TFile *out);
-  Int_t PropagateBack(const TFile *in, TFile *out) {return 0;}
+  Int_t PropagateBack(const TFile *in, TFile *out);
 
 private:
 
@@ -96,6 +96,7 @@ public:
   Double_t GetThickness(Double_t phi, Double_t z) const;
 
   Int_t InRoad() const ;
+  Int_t GetNumberOfClusters() const {return fN;}
 };
 
  private:

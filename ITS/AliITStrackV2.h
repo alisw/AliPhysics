@@ -48,17 +48,12 @@ public:
   Double_t GetX()    const {return fX;}
   Double_t GetAlpha()const {return fAlpha;}
   Float_t  GetdEdx() const {return fdEdx;}
-
   Double_t GetY()    const {return fP0;}
   Double_t GetZ()    const {return fP1;}
   Double_t GetSnp()  const {return fP2;}
   Double_t GetTgl()  const {return fP3;}
   Double_t Get1Pt()  const {return fP4*GetConvConst();}
-
-
   Double_t GetD() const;
-
-
   Double_t GetSigmaY2() const {return fC00;}
   Double_t GetSigmaZ2() const {return fC11;}
 
@@ -80,6 +75,8 @@ public:
                   Double_t x0, Double_t pm=0.139) const;
   Int_t Update(const Double_t *m, Double_t chi2, UInt_t i);
   Int_t Improve(Double_t x0,Double_t yv,Double_t zv);
+  void ResetCovariance();
+  void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
 
   Int_t Invariant() const;
 

@@ -39,11 +39,8 @@ Int_t AliITSFindClustersV2() {
       return 3;
    }
 
-   gAlice->MakeTree("R");
-   ITS->MakeBranch("R",0);
-   gAlice->TreeR()->Fill();
-
-   //////////////// Taken from ITSHitsToFastPoints.C ///////////////////////
+   gAlice->MakeTree("R"); ITS->MakeBranch("R",0);
+//////////////// Taken from ITSHitsToFastPoints.C ///////////////////////
    AliITSsimulationFastPoints *sim = new AliITSsimulationFastPoints();
    for (Int_t i=0;i<3;i++) { ITS->SetSimulationModel(i,sim); }
 
@@ -51,8 +48,7 @@ Int_t AliITSFindClustersV2() {
    Int_t size=-1;
    Int_t bgr_ev=Int_t(ev/nsignal);
    ITS->HitsToFastRecPoints(ev,bgr_ev,size," ","All"," ");
-   //////////////////////////////////////////////////////////////////////////
-
+//////////////////////////////////////////////////////////////////////////
    delete gAlice; gAlice=0;
    in->Close();
 
@@ -107,7 +103,7 @@ Int_t AliITSFindClustersV2() {
 
    for (Int_t i=0; i<nentr; i++) {
        if (!pTree->GetEvent(i)) {cTree->Fill(); continue;}
-       Int_t lay,lad,det; geom->GetModuleId(i-1,lay,lad,det);
+       Int_t lay,lad,det; geom->GetModuleId(i,lay,lad,det);
        Float_t x,y,zshift; geom->GetTrans(lay,lad,det,x,y,zshift); 
        Double_t rot[9];    geom->GetRotMatrix(lay,lad,det,rot);
        Double_t yshift = x*rot[0] + y*rot[1];
