@@ -17,7 +17,7 @@ class AliITSgeomMatrix{
 	AliITSgeomMatrix(const Int_t idt,const Int_t id[3],
 			 const Double_t rot[3],const Double_t tran[3]);
         AliITSgeomMatrix(const Int_t idt,const Int_t id[3],
-		         const Double_t matrix[3][3],const Double_t tran[3]);
+		         Double_t matrix[3][3],const Double_t tran[3]);
         AliITSgeomMatrix(const Double_t rotd[6]/*degrees Geant angles*/,
                          const Int_t idt,const Int_t id[3],
                          const Double_t tran[3]);
@@ -32,7 +32,7 @@ class AliITSgeomMatrix{
               for(Int_t i=0;i<3;i++)frot[i] = rot[i];this->MatrixFromAngle();}
 	void SetTranslation(const Double_t tran[3]){
 	                    for(Int_t i=0;i<3;i++) ftran[i] = tran[i];}
-	void SetMatrix(const Double_t matrix[3][3]){ for(Int_t i=0;i<3;i++)
+	void SetMatrix(Double_t matrix[3][3]){ for(Int_t i=0;i<3;i++)
 	 for(Int_t j=0;j<3;j++) fm[i][j]=matrix[i][j];this->AngleFromMatrix();}
 	void SetDetectorIndex(const Int_t idt) {fDetectorIndex = idt;}
 	void SetIndex(const Int_t id[3]){
@@ -52,16 +52,16 @@ class AliITSgeomMatrix{
 	void LtoGPosition(const Double_t l[3],Double_t g[3]);
 	void GtoLMomentum(const Double_t g[3],Double_t l[3]);
 	void LtoGMomentum(const Double_t l[3],Double_t g[3]);
-	void GtoLPositionError(const Double_t g[3][3],Double_t l[3][3]);
-	void LtoGPositionError(const Double_t l[3][3],Double_t g[3][3]);
+	void GtoLPositionError(Double_t g[3][3],Double_t l[3][3]);
+	void LtoGPositionError(Double_t l[3][3],Double_t g[3][3]);
 	// Tracking Related Routines
 	void GtoLPositionTracking(const Double_t g[3],Double_t l[3]);
 	void LtoGPositionTracking(const Double_t l[3],Double_t g[3]);
 	void GtoLMomentumTracking(const Double_t g[3],Double_t l[3]);
 	void LtoGMomentumTracking(const Double_t l[3],Double_t g[3]);
-	void GtoLPositionErrorTracking(const Double_t g[3][3],
+	void GtoLPositionErrorTracking(Double_t g[3][3],
 				       Double_t l[3][3]);
-	void LtoGPositionErrorTracking(const Double_t l[3][3],
+	void LtoGPositionErrorTracking(Double_t l[3][3],
 				       Double_t g[3][3]);
 	Double_t Distance2(const Double_t t[3]){Double_t d=0.0,q;
                  for(Int_t i=0;i<3;i++){q = t[i]-ftran[i]; d += q*q;}

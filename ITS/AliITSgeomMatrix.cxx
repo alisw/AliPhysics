@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.2  2000/08/29 20:16:50  nilsen
+New class for ITS coordiante transformations used by AliITSgeom nearly
+exclusively.
+
 Revision 1.1.2.1  2000/06/04 16:32:31  Nilsen
 A new class to hold the matrix information needed by AliITSgeom.
 
@@ -117,7 +121,7 @@ AliITSgeomMatrix::AliITSgeomMatrix(const Int_t idt,const Int_t id[3],
 }
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(const Int_t idt, const Int_t id[3],
-                                   const Double_t matrix[3][3],
+                                   Double_t matrix[3][3],
                                    const Double_t tran[3]){
 ////////////////////////////////////////////////////////////////////////
 // This is a constructor for the AliITSgeomMatrix class. The rotation matrix
@@ -353,7 +357,7 @@ void AliITSgeomMatrix::LtoGMomentum(const Double_t l[3],Double_t g[3]){
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLPositionError(const Double_t g[3][3],
+void AliITSgeomMatrix::GtoLPositionError(Double_t g[3][3],
                                                Double_t l[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // Given an Uncertainty matrix in Global coordinates it is rotated so that 
@@ -368,7 +372,7 @@ void AliITSgeomMatrix::GtoLPositionError(const Double_t g[3][3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::LtoGPositionError(const Double_t l[3][3],
+void AliITSgeomMatrix::LtoGPositionError(Double_t l[3][3],
                                                Double_t g[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // Given an Uncertainty matrix in Local coordinates it is rotated so that 
@@ -508,7 +512,7 @@ void AliITSgeomMatrix::LtoGMomentumTracking(const Double_t l[3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLPositionErrorTracking(const Double_t g[3][3],
+void AliITSgeomMatrix::GtoLPositionErrorTracking(Double_t g[3][3],
 						 Double_t l[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
@@ -538,7 +542,7 @@ void AliITSgeomMatrix::GtoLPositionErrorTracking(const Double_t g[3][3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::LtoGPositionErrorTracking(const Double_t l[3][3],
+void AliITSgeomMatrix::LtoGPositionErrorTracking(Double_t l[3][3],
 						 Double_t g[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.

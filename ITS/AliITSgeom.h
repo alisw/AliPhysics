@@ -268,9 +268,9 @@ class AliITSgeom : public TObject {
     // module index number. The global and local coordinate are
     // given in two floating point arrays g[3], and l[3].
     void GtoL(const Int_t index,const Float_t *g,Float_t *l){
-         Double_t dg[3],dl[3];for(Int_t i=0;i<3;i++) dg[i] = g[i];
+         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dg[i] = g[i];
          fGm[index]->GtoLPosition(dg,dl);
-         for(Int_t i=0;i<3;i++) l[i] =dl[i];}
+         for(i=0;i<3;i++) l[i] =dl[i];}
     //     Transforms from the ALICE Global coordinate system
     // to the detector local coordinate system for the detector
     // defined by the layer, ladder, and detector numbers. The
@@ -291,9 +291,9 @@ class AliITSgeom : public TObject {
     // module index number. The global and local coordinate are
     // given in two Double point arrays g[3], and l[3].
     void GtoL(const Int_t index,const Double_t *g,Double_t *l){
-         Double_t dg[3],dl[3];for(Int_t i=0;i<3;i++) dg[i] = g[i];
+         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dg[i] = g[i];
          fGm[index]->GtoLPosition(dg,dl);
-         for(Int_t i=0;i<3;i++) l[i] =dl[i];}
+         for(i=0;i<3;i++) l[i] =dl[i];}
 //
     //     Transforms from the ALICE Global coordinate system
     // to the detector local coordinate system (used for ITS tracking)
@@ -330,9 +330,9 @@ class AliITSgeom : public TObject {
     // for the detector module index number. The global and local
     // coordinate are given in two float point arrays g[3], and l[3].
     void GtoLMomentum(const Int_t index,const Float_t *g,Float_t *l){
-         Double_t dg[3],dl[3];for(Int_t i=0;i<3;i++) dg[i] = g[i];
+         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dg[i] = g[i];
          fGm[index]->GtoLMomentum(dg,dl);
-         for(Int_t i=0;i<3;i++) l[i] =dl[i];}
+         for(i=0;i<3;i++) l[i] =dl[i];}
     //     Transforms of momentum types of quantities from the ALICE
     // Global coordinate system to the detector local coordinate system
     // for the detector layer ladder and detector numbers. The global
@@ -346,9 +346,9 @@ class AliITSgeom : public TObject {
     // for the detector module index number. The global and local
     // coordinate are given in two Double point arrays g[3], and l[3].
     void GtoLMomentum(const Int_t index,const Double_t *g,Double_t *l){
-         Double_t dg[3],dl[3];for(Int_t i=0;i<3;i++) dg[i] = g[i];
+         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dg[i] = g[i];
          fGm[index]->GtoLMomentum(dg,dl);
-         for(Int_t i=0;i<3;i++) l[i] =dl[i];}
+         for(i=0;i<3;i++) l[i] =dl[i];}
 //
     //     Transforms of momentum types of quantities from the ALICE
     // Global coordinate system to the detector local coordinate system
@@ -394,9 +394,9 @@ class AliITSgeom : public TObject {
     // module index number. The global and local coordinate are
     // given in two floating point arrays g[3], and l[3].
     void LtoG(const Int_t index,const Float_t *l,Float_t *g){
-         Double_t dg[3],dl[3];for(Int_t i=0;i<3;i++) dl[i] = l[i];
+         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dl[i] = l[i];
          fGm[index]->LtoGPosition(dl,dg);
-         for(Int_t i=0;i<3;i++) g[i] =dg[i];}
+         for(i=0;i<3;i++) g[i] =dg[i];}
     //     Transforms from the detector local coordinate system
     // to the ALICE Global coordinate system for the detector
     // defined by the layer, ladder, and detector numbers. The
@@ -417,9 +417,9 @@ class AliITSgeom : public TObject {
     // module index number. The global and local coordinate are
     // given in two Double point arrays g[3], and l[3].
     void LtoG(const Int_t index,const Double_t *l,Double_t *g){
-         Double_t dg[3],dl[3];for(Int_t i=0;i<3;i++) dl[i] = l[i];
+         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dl[i] = l[i];
          fGm[index]->LtoGPosition(dl,dg);
-         for(Int_t i=0;i<3;i++) g[i] =dg[i];}
+         for(i=0;i<3;i++) g[i] =dg[i];}
 //
     //     Transforms from the detector local coordinate system (used
     // for ITS tracking) to the ALICE Global coordinate system 
@@ -456,9 +456,9 @@ class AliITSgeom : public TObject {
     // for the detector module index number. The global and local
     // coordinate are given in two float point arrays g[3], and l[3].
     void LtoGMomentum(const Int_t index,const Float_t *l,Float_t *g){
-         Double_t dg[3],dl[3];for(Int_t i=0;i<3;i++) dl[i] = l[i];
+         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dl[i] = l[i];
          fGm[index]->LtoGMomentum(dl,dg);
-         for(Int_t i=0;i<3;i++) g[i] =dg[i];}
+         for(i=0;i<3;i++) g[i] =dg[i];}
     //     Transforms of momentum types of quantities from the detector
     // local coordinate system to the ALICE Global coordinate system
     // for the detector layer ladder and detector numbers. The global
@@ -573,7 +573,7 @@ class AliITSgeom : public TObject {
     // system. The specific detector is determined by the module index
     // number.
     void GtoLErrorMatrix(const Int_t index,const Double_t **g,Double_t **l){
-         fGm[index]->GtoLPositionError((Double_t[3][3])g,(Double_t[3][3])l);}
+         fGm[index]->GtoLPositionError((Double_t (*)[3])g,(Double_t (*)[3])l);}
 //
     //     Transforms a matrix, like an Uncertainty or Error matrix from
     // the ALICE Global coordinate system to a detector local coordinate
@@ -582,16 +582,16 @@ class AliITSgeom : public TObject {
     void GtoLErrorMatrixTracking(const Int_t index,const Double_t **g,
 				 Double_t **l){
 	if(IsGeantToTracking()) fGm[index]->GtoLPositionError((
-	    Double_t[3][3])g,(Double_t[3][3])l);
+	    Double_t (*)[3])g,(Double_t (*)[3])l);
 	else fGm[index]->GtoLPositionErrorTracking(
-	     (Double_t[3][3])g,(Double_t[3][3])l);}
+	     (Double_t (*)[3])g,(Double_t (*)[3])l);}
 //
     //     Transforms a matrix, like an Uncertainty or Error matrix from
     // the detector local coordinate system to a ALICE Global coordinate
     // system. The specific detector is determined by the module index
     // number.
     void LtoGErrorMatrix(const Int_t index,const Double_t **l,Double_t **g){
-         fGm[index]->LtoGPositionError((Double_t[3][3])l,(Double_t[3][3])g);}
+         fGm[index]->LtoGPositionError((Double_t (*)[3])l,(Double_t (*)[3])g);}
 //
     //     Transforms a matrix, like an Uncertainty or Error matrix from
     // the detector local coordinate system (used by ITS tracking) to a
@@ -600,9 +600,9 @@ class AliITSgeom : public TObject {
     void LtoGErrorMatrixTracking(const Int_t index,const Double_t **l,
 				 Double_t **g){
          if(IsGeantToTracking()) fGm[index]->LtoGPositionError((
-	    Double_t[3][3])g,(Double_t[3][3])l);
-	else fGm[index]->LtoGPositionErrorTracking((Double_t[3][3])l,
-					       (Double_t[3][3])g);}
+	    Double_t (*)[3])g,(Double_t (*)[3])l);
+	else fGm[index]->LtoGPositionErrorTracking((Double_t (*)[3])l,
+					       (Double_t (*)[3])g);}
 //
     //     Transforms a matrix, like an Uncertainty or Error matrix from
     // one detector local coordinate system to another detector local

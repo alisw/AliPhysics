@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.9  2000/08/29 20:19:03  nilsen
+Removed dependancy on structure AliITSeomS and replaced it with class
+AliITSgeomMatrix. Added many new functions with many new arguments. Most
+in the form of in line functions for speed.
+
 Revision 1.4.4.6  2000/06/04 16:33:32  Nilsen
 A restructured AliITSgeom class. Now used AliITSgeomMatrix.
 
@@ -909,7 +914,7 @@ void AliITSgeom::GeantToTracking(AliITSgeom &source){
    return;
 }
 //______________________________________________________________________
-Int_t AliITSgeom::GetNearest(const Double_t g[3],const Int_t lay=0){
+Int_t AliITSgeom::GetNearest(const Double_t g[3],const Int_t lay){
 ////////////////////////////////////////////////////////////////////////
 //      Finds the Detector (Module) that is nearest the point g [cm] in
 // ALICE Global coordinates. If layer !=0 then the search is restricted
@@ -929,7 +934,7 @@ Int_t AliITSgeom::GetNearest(const Double_t g[3],const Int_t lay=0){
      return in;
 }
 //______________________________________________________________________
-void AliITSgeom::GetNearest27(const Double_t g[3],Int_t n[27],const Int_t lay=0){
+void AliITSgeom::GetNearest27(const Double_t g[3],Int_t n[27],const Int_t lay){
 ////////////////////////////////////////////////////////////////////////
 //      Finds 27 Detectors (Modules) that are nearest the point g [cm] in
 // ALICE Global coordinates. If layer !=0 then the search is restricted
