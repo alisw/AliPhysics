@@ -8,7 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //                                                                           //
-// FLUKA implementation of the TVirtualMC Interface                          //
+// FLUKA implementation of the AliMC Interface                               //
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,6 +16,9 @@
 
 #include "TVirtualMC.h"
 #include "TMCProcess.h" 
+
+#include <map>
+#include <vector>
 
 //Forward declaration
 class TG4GeometryManager;
@@ -184,8 +187,7 @@ class TFluka : public TVirtualMC {
     {printf("WARNING: MaxStep not yet implemented !\n"); return -1.;}
   virtual Int_t    GetMaxNStep() const
     {printf("WARNING: GetMaxNStep not yet implemented !\n"); return -1;}
-  virtual Int_t    GetMedium() const
-    {printf("WARNING: GetMedium not yet implemented !\n"); return -1;}
+  virtual Int_t    GetMedium() const;
   
   // tracking particle 
   // dynamic properties
@@ -293,6 +295,8 @@ class TFluka : public TVirtualMC {
   // - Verbosity level
   Int_t GetVerbosityLevel() const {return fVerbosityLevel;}
   void SetVerbosityLevel(Int_t l) {fVerbosityLevel = l;}
+  void SetCurrentFlukaRegion(Int_t reg) {fCurrentFlukaRegion=reg;}
+  Int_t GetCurrentFlukaRegion() const {return fCurrentFlukaRegion;}
 
  private:
   TFluka(const TFluka &mc){}
@@ -300,13 +304,20 @@ class TFluka : public TVirtualMC {
 
  protected:
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
-  TString fInputFileName; //Name of the input file (f.e. mu.inp)
+  TString fInputFileName; //Name of the input file (f.e. alice.inp)
   
 
 
   //Geometry through Geant4 for the time being!!!
   TG4GeometryManager*  fGeometryManager; //geometry manager
   TG4DetConstruction*  fDetector;        //Detector
+
+  //Index of fluka region at each step
+  Int_t fCurrentFlukaRegion;
+  //Map between volume name and media indices
+  map<TString, Int_t, less<TString> > fVolumeMediaMap;
+  //Map between region and media indices
+  vector<Int_t> fMediaByRegion;
 
 
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo

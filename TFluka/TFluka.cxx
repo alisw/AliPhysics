@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/11/07 17:59:10  iglez2
+Included the geometry through geant4_vmc/FLUGG
+
 Revision 1.4  2002/11/04 16:00:46  iglez2
 The conversion between ID and PDG now uses Fluka routines and arrays which is more consistent.
 
@@ -110,7 +113,8 @@ TFluka::TFluka()
   :TVirtualMC(),
    fVerbosityLevel(0),
    fInputFileName(""),
-   fDetector(0)
+   fDetector(0),
+   fCurrentFlukaRegion(-1)
 { 
   //
   // Default constructor
@@ -121,7 +125,8 @@ TFluka::TFluka(const char *title, Int_t verbosity)
   :TVirtualMC("TFluka",title),
    fVerbosityLevel(verbosity),
    fInputFileName(""),
-   fDetector(0)
+   fDetector(0),
+   fCurrentFlukaRegion(-1)
 {
   if (fVerbosityLevel >=3)
     cout << "==> TFluka::TFluka(" << title << ") constructor called." << endl;
@@ -193,6 +198,15 @@ void TFluka::FinishGeometry() {
 
   fGeometryManager->Ggclos();
 
+  FGeometryInit* flugg = FGeometryInit::GetInstance();
+  map<TString, Int_t, less<TString> >::iterator i;
+  for (fVolumeMediaMap.begin(); i != fVolumeMediaMap.end(); i++) {
+    TString volName = (*i).first;
+    Int_t   media   = (*i).second;
+    Int_t   region  = flugg->GetRegionFromName(volName);
+    fMediaByRegion[region] = media;
+  }
+  
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::FinishGeometry() called." << endl;
 } 
@@ -316,6 +330,7 @@ void TFluka::Gstpar(Int_t itmed, const char *param, Double_t parval) {
 Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,  
 		     Float_t *upar, Int_t np)  {
 //
+  fVolumeMediaMap[TString(name)] = nmed;
   return fGeometryManager->Gsvolu(name, shape, nmed, upar, np); 
 }
 Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,  
@@ -398,6 +413,12 @@ void TFluka::WriteEuclid(const char* fileName, const char* topVol,
 
 
 
+//_____________________________________________________________________________
+// methods needed by the stepping
+//____________________________________________________________________________ 
+Int_t TFluka::GetMedium() const {
+  return fMediaByRegion[fCurrentFlukaRegion];
+}
 
 
 
