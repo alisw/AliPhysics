@@ -41,10 +41,11 @@
 
 #include "AliPHOSv3.h"
 #include "AliPHOSHit.h"
-#include "AliPHOSDigit.h"
+#include "AliPHOSCPVDigit.h"
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliMC.h"
+#include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOSv3)
 
@@ -71,27 +72,27 @@ AliPHOSv1(name,title)
   fElectronsPerGeV = 2.77e+8 ; 
 }
 
-//____________________________________________________________________________
-AliPHOSv3::AliPHOSv3(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
-  AliPHOSv1(Reconstructioner,name,title)
-{
-  // ctor 
+// //____________________________________________________________________________
+// AliPHOSv3::AliPHOSv3(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
+//   AliPHOSv1(Reconstructioner,name,title)
+// {
+//   // ctor 
 
-  // Number of electrons created in the PIN due to light collected in the PbWo4 crystal is calculated using 
-  // following formula
-  // NumberOfElectrons = EnergyLost * LightYield * PINEfficiency * 
-  //                     exp (-LightYieldAttenuation * DistanceToPINdiodeFromTheHit) *
-  //                     RecalibrationFactor ;
-  // LightYield is obtained as a Poissonian distribution with a mean at 700000 photons per GeV fromValery Antonenko
-  // PINEfficiency is 0.1875 from Odd Harald Odland work
-  // k_0 is 0.0045 from Valery Antonenko 
+//   // Number of electrons created in the PIN due to light collected in the PbWo4 crystal is calculated using 
+//   // following formula
+//   // NumberOfElectrons = EnergyLost * LightYield * PINEfficiency * 
+//   //                     exp (-LightYieldAttenuation * DistanceToPINdiodeFromTheHit) *
+//   //                     RecalibrationFactor ;
+//   // LightYield is obtained as a Poissonian distribution with a mean at 700000 photons per GeV fromValery Antonenko
+//   // PINEfficiency is 0.1875 from Odd Harald Odland work
+//   // k_0 is 0.0045 from Valery Antonenko 
 
-  fLightYieldMean = 700000.;
-  fIntrinsicPINEfficiency = 0.1875 ;
-  fLightYieldAttenuation = 0.0045 ;
-  fRecalibrationFactor = 6.2 / fLightYieldMean ;
-  fElectronsPerGeV = 2.77e+8 ;
-}
+//   fLightYieldMean = 700000.;
+//   fIntrinsicPINEfficiency = 0.1875 ;
+//   fLightYieldAttenuation = 0.0045 ;
+//   fRecalibrationFactor = 6.2 / fLightYieldMean ;
+//   fElectronsPerGeV = 2.77e+8 ;
+// }
 //____________________________________________________________________________
 
 void AliPHOSv3::StepManager(void)
@@ -116,7 +117,7 @@ void AliPHOSv3::StepManager(void)
 
   if ( name == "GPS2" || name == "MIXT" ) {            // ======> CPV is a GPS' PPSD
 
-    if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
+    if( gMC->CurrentVolID(copy) == gMC->VolId("PCEL") ) // We are inside a gas cell 
     {
       gMC->TrackPosition(pos) ;
       xyze[0] = pos[0] ;
@@ -151,7 +152,7 @@ void AliPHOSv3::StepManager(void)
 
     // Yuri Kharlov, 28 September 2000
 
-    if( gMC->CurrentVolID(copy) == gMC->VolId("CPVQ") &&
+    if( gMC->CurrentVolID(copy) == gMC->VolId("PCPQ") &&
 	gMC->IsTrackEntering()  &&
 	gMC->TrackCharge() != 0) {      
 

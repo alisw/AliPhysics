@@ -49,12 +49,11 @@
 
 #include "AliPHOSv1.h"
 #include "AliPHOSHit.h"
-#include "AliPHOSDigit.h"
-#include "AliPHOSReconstructioner.h"
-#include "AliPHOSSDigitizer.h"
+#include "AliPHOSCPVDigit.h"
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliMC.h"
+#include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOSv1)
 
@@ -64,9 +63,6 @@ AliPHOSv0()
 {
   // ctor
  
-  fReconstructioner  = 0;
-  fTrackSegmentMaker = 0;
-
 }
 
 //____________________________________________________________________________
@@ -84,10 +80,6 @@ AliPHOSv0(name,title)
   //     (this array is reset after each primary has been tracked).
   //
 
-  fPinElectronicNoise = 0.010 ;
-  fDigitThreshold      = 0.01 ;   // 1 GeV 
-  fDigitizeA= 0. ;             
-  fDigitizeB = 10000000. ;    
 
 
   // We do not want to save in TreeH the raw hits
@@ -99,44 +91,41 @@ AliPHOSv0(name,title)
 
   fNhits = 0 ;
 
-  fReconstructioner  = 0;
-  fTrackSegmentMaker = 0;
-
   fIshunt     =  1 ; // All hits are associated with primary particles
   
 }
 
 //____________________________________________________________________________
-AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
-  AliPHOSv0(name,title)
-{
-  // ctor : title is used to identify the layout
-  //        GPS2 = 5 modules (EMC + PPSD)   
+// AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
+//   AliPHOSv0(name,title)
+// {
+//   // ctor : title is used to identify the layout
+//   //        GPS2 = 5 modules (EMC + PPSD)   
 
-  fPinElectronicNoise = 0.010 ;
+//   fPinElectronicNoise = 0.010 ;
 
-  // We do not want to save in TreeH the raw hits
+//   // We do not want to save in TreeH the raw hits
 
-  fDigits = 0 ;
-  fHits= new TClonesArray("AliPHOSHit",1000) ;
+//   fDigits = 0 ;
+//   fHits= new TClonesArray("AliPHOSHit",1000) ;
 
-  fNhits = 0 ;
+//   fNhits = 0 ;
 
-  fIshunt     =  1 ; // All hits are associated with primary particles
+//   fIshunt     =  1 ; // All hits are associated with primary particles
  
-  // gets an instance of the geometry parameters class  
-  fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
+//   // gets an instance of the geometry parameters class  
+//   fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
 
-  if (fGeom->IsInitialized() ) 
-    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
-  else
-    cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
+//   if (fGeom->IsInitialized() ) 
+//     cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+//   else
+//     cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
 
-  // Defining the PHOS Reconstructioner
+//   // Defining the PHOS Reconstructioner
  
- fReconstructioner = Reconstructioner ;
+//  fReconstructioner = Reconstructioner ;
 
-}
+// }
 
 //____________________________________________________________________________
 AliPHOSv1::~AliPHOSv1()
@@ -213,95 +202,141 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
 }
 
 //____________________________________________________________________________
-void AliPHOSv1::Hits2SDigits(){
-  char * fileSDigits = 0 ;
-  AliPHOSSDigitizer * sd = new AliPHOSSDigitizer(fileSDigits) ;
-  sd->SetPedestalParameter(fDigitizeA) ;
-  sd->SetSlopeParameter(fDigitizeB) ;
-  sd->Exec("") ;
-  delete sd ;
-}
+//void AliPHOSv1::Hits2SDigits(){
+//   char * fileSDigits = 0 ;
+//   AliPHOSSDigitizer * sd = new AliPHOSSDigitizer(fileSDigits) ;
+//   sd->SetPedestalParameter(fDigitizeA) ;
+//   sd->SetSlopeParameter(fDigitizeB) ;
+//   sd->Exec("") ;
+//   delete sd ;
+//}
 
 //____________________________________________________________________________
-void AliPHOSv1::SDigits2Digits(){
-  //Adds noise to the summable digits and removes everething below thresholds
-  //Note, that sDigits should be SORTED in accordance with abs ID.
+//void AliPHOSv1::SDigits2Digits(){
+//   //Adds noise to the summable digits and removes everething below thresholds
+//   //Note, that sDigits should be SORTED in accordance with abs ID.
 
 
-  gAlice->TreeS()->GetEvent(0) ;
+//   gAlice->TreeS()->GetEvent(0) ;
 
-  // First calculate noise induced by the PIN diode of the PbWO crystals
-  Int_t iCurSDigit = 0 ;
+//   // First calculate noise induced by the PIN diode of the PbWO crystals
+//   Int_t iCurSDigit = 0 ;
 
-  //we assume, that there is al least one EMC digit...
-  if(fSDigits->GetEntries() == 0) {
-    cout << "PHOS::SDigits2Digits>  No SDigits !!! Do not produce Digits " << endl ;
-    return ;
-  }
+//   //we assume, that there is al least one EMC digit...
+//   if(fSDigits->GetEntries() == 0) {
+//     cout << "PHOS::SDigits2Digits>  No SDigits !!! Do not produce Digits " << endl ;
+//     return ;
+//   }
 
-  Int_t idCurSDigit = ((AliPHOSDigit *)fSDigits->At(0))->GetId() ;
 
-  Int_t absID ;
-  for(absID = 1; absID < fGeom->GetNModules()*fGeom->GetNPhi()*fGeom->GetNZ(); absID++){
-    Float_t noise = gRandom->Gaus(0., fPinElectronicNoise) ; 
-    if(absID < idCurSDigit ){ 
-      if(noise >fDigitThreshold ){
-	new((*fDigits)[fNdigits]) AliPHOSDigit( -1,absID,Digitize(noise) ) ;
-	fNdigits++ ;  
-      }
-    }
-    else{ //add noise and may be remove the true hit
-      Float_t signal = noise + Calibrate(((AliPHOSDigit *)fSDigits->At(iCurSDigit))->GetAmp()) ;
-      if( signal >fDigitThreshold ){
-	AliPHOSDigit * digit = (AliPHOSDigit*) fSDigits->At(iCurSDigit) ;
-	new((*fDigits)[fNdigits]) AliPHOSDigit( *digit ) ;
-	((AliPHOSDigit *)fDigits->At(fNdigits))->SetAmp(Digitize(signal));
-	fNdigits++ ;  
-      }
+//     Int_t itrack ;
+//     for (itrack=0; itrack<gAlice->GetNtrack(); itrack++){
+      
+//       //=========== Get the Hits Tree for the Primary track itrack
+//       gAlice->ResetHits();    
+//       gAlice->TreeH()->GetEvent(itrack);
+      
+//       Int_t i;
+//       for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
+// 	AliPHOSHit * hit = (AliPHOSHit*)fHits->At(i) ;
+// 	AliPHOSDigit * newdigit ;
 
-      if(iCurSDigit < fSDigits->GetEntries()-1){
-	iCurSDigit++ ;
-	idCurSDigit = ((AliPHOSDigit*)fSDigits->At(iCurSDigit))->GetId() ;
-      }
-      else
-	idCurSDigit = 10000000; //no real hits left    
-    }
+// 	// Assign primary number only if contribution is significant
+// 	if( hit->GetEnergy() > fPrimThreshold)
+// 	  newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+// 	else
+// 	  newdigit = new AliPHOSDigit( -1               , hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+	
+// 	new((*sdigits)[nSdigits]) AliPHOSDigit(* newdigit) ;
+// 	nSdigits++ ;  
+	
+// 	delete newdigit ;    
+//       } 
+      
+//     } // loop over tracks
     
-  }  
+//     sdigits->Sort() ;
+    
+//     nSdigits = sdigits->GetEntries() ;
+//     sdigits->Expand(nSdigits) ;
+    
+//     Int_t i ;
+//     for (i = 0 ; i < nSdigits ; i++) { 
+//       AliPHOSDigit * digit = (AliPHOSDigit *) sdigits->At(i) ; 
+//       digit->SetIndexInList(i) ;     
+//     }
+    
+//     gAlice->TreeS()->Fill() ;
+//     gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
 
-  //remove PPSD/CPV digits below thresholds
-  Int_t idigit ;
-  for(idigit = iCurSDigit; idigit < fSDigits->GetEntries() ; idigit++){  //loop over CPV/PPSD digits
+
+
+
+
+
+//   Int_t idCurSDigit = ((AliPHOSDigit *)fSDigits->At(0))->GetId() ;
+
+//   Int_t absID ;
+//   for(absID = 1; absID < fGeom->GetNModules()*fGeom->GetNPhi()*fGeom->GetNZ(); absID++){
+//     Float_t noise = gRandom->Gaus(0., fPinElectronicNoise) ; 
+//     if(absID < idCurSDigit ){ 
+//       if(noise >fDigitThreshold ){
+// 	new((*fDigits)[fNdigits]) AliPHOSDigit( -1,absID,Digitize(noise) ) ;
+// 	fNdigits++ ;  
+//       }
+//     }
+//     else{ //add noise and may be remove the true hit
+//       Float_t signal = noise + Calibrate(((AliPHOSDigit *)fSDigits->At(iCurSDigit))->GetAmp()) ;
+//       if( signal >fDigitThreshold ){
+// 	AliPHOSDigit * digit = (AliPHOSDigit*) fSDigits->At(iCurSDigit) ;
+// 	new((*fDigits)[fNdigits]) AliPHOSDigit( *digit ) ;
+// 	((AliPHOSDigit *)fDigits->At(fNdigits))->SetAmp(Digitize(signal));
+// 	fNdigits++ ;  
+//       }
+
+//       if(iCurSDigit < fSDigits->GetEntries()-1){
+// 	iCurSDigit++ ;
+// 	idCurSDigit = ((AliPHOSDigit*)fSDigits->At(iCurSDigit))->GetId() ;
+//       }
+//       else
+// 	idCurSDigit = 10000000; //no real hits left    
+//     }
     
-    AliPHOSDigit * digit = (AliPHOSDigit *) fSDigits->At(idigit) ; 
-    Float_t ene = Calibrate(digit->GetAmp()) ;
+//   }  
+
+//   //remove PPSD/CPV digits below thresholds
+//   Int_t idigit ;
+//   for(idigit = iCurSDigit; idigit < fSDigits->GetEntries() ; idigit++){  //loop over CPV/PPSD digits
     
-    Int_t relid[4] ; 
-    fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
-    if ( relid[0] > fGeom->GetNCPVModules() ){ //ppsd
-      if ( ( (relid[1] > 0) && (ene > fPpsdEnergyThreshold)) ||    //PPSD digit
-	   ( (relid[1] < 0) && (ene > fCpvEnergyThreshold ) ) )	   //CPV digit 
-	new((*fDigits)[fNdigits]) AliPHOSDigit( *digit ) ;
-	fNdigits++ ;
-    }
-  }    
+//     AliPHOSDigit * digit = (AliPHOSDigit *) fSDigits->At(idigit) ; 
+//     Float_t ene = Calibrate(digit->GetAmp()) ;
     
-  fDigits->Compress() ;  
+//     Int_t relid[4] ; 
+//     fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
+//     if ( relid[0] > fGeom->GetNCPVModules() ){ //ppsd
+//       if ( ( (relid[1] > 0) && (ene > fPpsdEnergyThreshold)) ||    //PPSD digit
+// 	   ( (relid[1] < 0) && (ene > fCpvEnergyThreshold ) ) )	   //CPV digit 
+// 	new((*fDigits)[fNdigits]) AliPHOSDigit( *digit ) ;
+// 	fNdigits++ ;
+//     }
+//   }    
+    
+//   fDigits->Compress() ;  
   
-  fNdigits = fDigits->GetEntries() ;
-  fDigits->Expand(fNdigits) ;
+//   fNdigits = fDigits->GetEntries() ;
+//   fDigits->Expand(fNdigits) ;
 
-  Int_t i ;
-  for (i = 0 ; i < fNdigits ; i++) { 
-    AliPHOSDigit * digit = (AliPHOSDigit *) fDigits->At(i) ; 
-    digit->SetIndexInList(i) ;     
-  }
+//   Int_t i ;
+//   for (i = 0 ; i < fNdigits ; i++) { 
+//     AliPHOSDigit * digit = (AliPHOSDigit *) fDigits->At(i) ; 
+//     digit->SetIndexInList(i) ;     
+//   }
 
-  gAlice->TreeD()->Fill() ;
+//   gAlice->TreeD()->Fill() ;
 
-  gAlice->TreeD()->Write(0,TObject::kOverwrite) ;
+//   gAlice->TreeD()->Write(0,TObject::kOverwrite) ;
  
-}
+//}
 
 //___________________________________________________________________________
 void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
@@ -320,7 +355,6 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
     if(fSDigits)
       fSDigits->Clear();
 
-    fnSdigits = 0 ;
     gAlice->MakeBranchInTree(gAlice->TreeS(),branchname,&fSDigits,fBufferSize,file);  
   }
   
@@ -380,67 +414,67 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
 }
 
 //_____________________________________________________________________________
-void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
-{ 
-  // 1. Reinitializes the existing RecPoint, TrackSegment, and RecParticles Lists and 
-  // 2. Creates TreeR with a branch for each list
-  // 3. Steers the reconstruction processes
-  // 4. Saves the 3 lists in TreeR
-  // 5. Write the Tree to File
+//void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
+//{ 
+//   // 1. Reinitializes the existing RecPoint, TrackSegment, and RecParticles Lists and 
+//   // 2. Creates TreeR with a branch for each list
+//   // 3. Steers the reconstruction processes
+//   // 4. Saves the 3 lists in TreeR
+//   // 5. Write the Tree to File
   
-  fReconstructioner = Reconstructioner ;
+//   fReconstructioner = Reconstructioner ;
     
-  // 1.
+//   // 1.
 
-  //  gAlice->MakeTree("R") ; 
+//   //  gAlice->MakeTree("R") ; 
   
-  MakeBranch("R") ;
+//   MakeBranch("R") ;
   
-  // 3.
+//   // 3.
 
-  fReconstructioner->Make(fDigits, fEmcRecPoints, fPpsdRecPoints, fTrackSegments, fRecParticles);
+//   fReconstructioner->Make(fDigits, fEmcRecPoints, fPpsdRecPoints, fTrackSegments, fRecParticles);
 
-  printf("Reconstruction: %d %d %d %d\n",
-	 fEmcRecPoints->GetEntries(),fPpsdRecPoints->GetEntries(),
-	 fTrackSegments->GetEntries(),fRecParticles->GetEntries());
+//   printf("Reconstruction: %d %d %d %d\n",
+// 	 fEmcRecPoints->GetEntries(),fPpsdRecPoints->GetEntries(),
+// 	 fTrackSegments->GetEntries(),fRecParticles->GetEntries());
 
-  // 4. Expand or Shrink the arrays to the proper size
+//   // 4. Expand or Shrink the arrays to the proper size
   
-  Int_t size ;
+//   Int_t size ;
   
-  size = fEmcRecPoints->GetEntries() ;
-  fEmcRecPoints->Expand(size) ;
+//   size = fEmcRecPoints->GetEntries() ;
+//   fEmcRecPoints->Expand(size) ;
 
-  size = fPpsdRecPoints->GetEntries() ;
-  fPpsdRecPoints->Expand(size) ;
+//   size = fPpsdRecPoints->GetEntries() ;
+//   fPpsdRecPoints->Expand(size) ;
 
-  size = fTrackSegments->GetEntries() ;
-  fTrackSegments->Expand(size) ;
+//   size = fTrackSegments->GetEntries() ;
+//   fTrackSegments->Expand(size) ;
 
-  size = fRecParticles->GetEntries() ;
-  fRecParticles->Expand(size) ;
+//   size = fRecParticles->GetEntries() ;
+//   fRecParticles->Expand(size) ;
 
-  gAlice->TreeR()->Fill() ;
-  // 5.
+//   gAlice->TreeR()->Fill() ;
+//   // 5.
 
-  gAlice->TreeR()->Write(0,TObject::kOverwrite) ;
+//   gAlice->TreeR()->Write(0,TObject::kOverwrite) ;
  
-  // Deleting reconstructed objects
-  ResetReconstruction();
+//   // Deleting reconstructed objects
+//   ResetReconstruction();
   
-}
+//}
 
-//____________________________________________________________________________
-void AliPHOSv1::ResetReconstruction() 
-{ 
-  // Deleting reconstructed objects
+// //____________________________________________________________________________
+// void AliPHOSv1::ResetReconstruction() 
+// { 
+//   // Deleting reconstructed objects
 
-  if ( fEmcRecPoints  )  fEmcRecPoints ->Delete();
-  if ( fPpsdRecPoints )  fPpsdRecPoints->Delete();
-  if ( fTrackSegments )  fTrackSegments->Delete();
-  if ( fRecParticles  )  fRecParticles ->Delete();
+//   if ( fEmcRecPoints  )  fEmcRecPoints ->Delete();
+//   if ( fPpsdRecPoints )  fPpsdRecPoints->Delete();
+//   if ( fTrackSegments )  fTrackSegments->Delete();
+//   if ( fRecParticles  )  fRecParticles ->Delete();
   
-}
+// }
 
 //____________________________________________________________________________
 
@@ -461,7 +495,7 @@ void AliPHOSv1::StepManager(void)
 
   if ( name == "GPS2" || name == "MIXT" ) {            // ======> CPV is a GPS' PPSD
 
-    if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
+    if( gMC->CurrentVolID(copy) == gMC->VolId("PCEL") ) // We are inside a gas cell 
     {
       gMC->TrackPosition(pos) ;
       xyze[0] = pos[0] ;
@@ -496,7 +530,7 @@ void AliPHOSv1::StepManager(void)
 
     // Yuri Kharlov, 28 September 2000
 
-    if( gMC->CurrentVolID(copy) == gMC->VolId("CPVQ") &&
+    if( gMC->CurrentVolID(copy) == gMC->VolId("PCPQ") &&
 	(gMC->IsTrackEntering() ) &&
 	gMC->TrackCharge() != 0) {      
       
