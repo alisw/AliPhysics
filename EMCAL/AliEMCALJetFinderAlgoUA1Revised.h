@@ -46,7 +46,7 @@ public:
   void SetPtCut(Float_t ptCut)               {fPtCut = ptCut;}
   Float_t GetPtCut() const                   {return fPtCut;}
   void SetHadronCorrection(AliEMCALHadronCorrectionv1 *hadCorr) {fHadCorr = hadCorr;}
-  AliEMCALHadronCorrectionv1* GetHadronCorrection() {return fHadCorr;}
+  AliEMCALHadronCorrectionv1* GetHadronCorrection() const {return fHadCorr;}
   void SetJetFindingParameters(Int_t numUnits, Float_t eSeed, Float_t coneRad, Float_t jetEMin, Float_t etMin, 
                                Float_t minMove, Float_t maxMove, Float_t bgMaxMove); 
   void SetJetFindingParameters(Int_t numUnits, Float_t eSeed, Float_t coneRad, Float_t jetEMin, Float_t etMin);
