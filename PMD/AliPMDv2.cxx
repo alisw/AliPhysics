@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 21:28:12  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.6  1999/09/29 09:24:28  fca
 Introduction of the Copyright and cvs Log
 
@@ -36,6 +39,9 @@ Introduction of the Copyright and cvs Log
 #include "AliMC.h" 
 #include "AliMagF.h" 
 #include "AliConst.h" 
+
+#include "TMath.h"
+static const Double_t kPI=TMath::Pi();
  
 static Float_t smod1[3], smod2[3], smod3[3], smod4[3];
 static Int_t maxbox, kdet;

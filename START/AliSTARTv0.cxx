@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/02 21:28:13  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.8  2000/07/13 16:41:29  fca
 New START corrected for coding conventions
 
@@ -46,6 +49,7 @@ Introduction of the Copyright and cvs Log
 #include <TGeometry.h>
 #include <TTUBE.h>
 #include <TNode.h>
+#include <TLorentzVector.h>
 
 #include "AliSTARTv0.h"
 #include "AliRun.h"

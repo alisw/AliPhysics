@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/02 21:28:05  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.7  2000/01/19 17:16:41  fca
 Introducing a list of lists of hits -- more hits allowed for detector now
 
@@ -53,6 +56,8 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliConst.h"
+#include "TMath.h"
+static const Double_t kPI=TMath::Pi();
 
 ClassImp(AliCASTOR)
  

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 21:28:17  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.6  2000/05/10 16:52:18  vicinanz
 New TOF version with holes for PHOS/RICH
 
@@ -78,6 +81,7 @@ Introduction of the Copyright and cvs Log
 #include "TBRIK.h"
 #include "TGeometry.h"
 #include "TNode.h"
+#include <TLorentzVector.h>
 #include "TObject.h"
 #include "AliRun.h"
 #include "AliMC.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/10/02 21:28:17  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.17  2000/06/06 07:52:09  vicinanz
 NodeName array dimension enlarged
 
@@ -82,6 +85,7 @@ Introduction of the Copyright and cvs Log
 #include "TGeometry.h"
 #include "TNode.h"
 #include "TObject.h"
+#include <TLorentzVector.h>
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliMagF.h"

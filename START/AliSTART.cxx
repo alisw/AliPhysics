@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/10/13 13:14:08  hristov
+Bug fixes and code cleaning
+
 Revision 1.10  2000/10/02 21:28:13  fca
 Removal of useless dependecies via forward declarations
 
@@ -68,6 +71,7 @@ Introduction of the Copyright and cvs Log
 #include "TNode.h"
 #include "TRandom.h"
 #include "TGeometry.h"
+#include "TParticle.h"
 #include "AliRun.h"
 #include "AliSTART.h"
 #include "AliSTARTdigit.h"

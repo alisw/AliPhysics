@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/11/17 10:15:24  morsch
+Call to AliDetector::ResetHits() added to method  AliPMD::ResetHits()
+
 Revision 1.10  2000/11/06 09:07:13  morsch
 Set  fRecPoints to zero in default constructor.
 
@@ -79,7 +82,9 @@ AliPMD::AliPMD()
   // Default constructor
   //
   fIshunt = 0;
-  fRecPoints  = NULL;
+
+  // Always make the TClonesArray, otherwise the automatic streamer gets angry
+  fRecPoints  = new TClonesArray("AliPMDRecPoint",10000); 
 }
  
 //_____________________________________________________________________________

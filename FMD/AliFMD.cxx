@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/02 21:28:07  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.7  2000/01/19 17:16:47  fca
 Introducing a list of lists of hits -- more hits allowed for detector now
 
@@ -48,6 +51,7 @@ Introduction of the Copyright and cvs Log
 #include <TTUBE.h>
 #include <TNode.h>
 #include <TGeometry.h>
+#include <TLorentzVector.h>
 
 #include "AliMC.h"
 #include "AliRun.h"

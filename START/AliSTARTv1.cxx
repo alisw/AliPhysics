@@ -31,6 +31,7 @@
 #include <TGeometry.h>
 #include <TTUBE.h>
 #include <TNode.h>
+#include <TLorentzVector.h>
 
 #include "AliSTARTv1.h"
 #include "AliRun.h"
@@ -388,7 +389,8 @@ void AliSTARTv1::StepManager()
       edep=edep+de;
       //       printf ("E deposition %f\n",edep);
       //    for (i=0; i<=6; i++){
-      //    printf(" HITS on START inside %f\n",hits[i]); } 
+      //    printf(" HITS on START inside %f\n",hits[i]); 
+      } 
     }
     if(gMC->IsTrackExiting())	{
       Float_t de=gMC->Edep(); 
@@ -396,7 +398,7 @@ void AliSTARTv1::StepManager()
       hits[3]=edep*1e3;
       Int_t i;
       for (i=0; i<=6; i++){
-	printf(" HITS on START Exit %f\n",hits[i]); } 
+	//printf(" HITS on START Exit %f\n",hits[i]); } 
       //      for (i=0; i<=1; i++) { printf("START vol %d\n",vol[i]);}
      
       new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->CurrentTrack(),vol,hits);      
