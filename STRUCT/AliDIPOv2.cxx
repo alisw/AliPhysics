@@ -103,15 +103,15 @@ void AliDIPOv2::CreateSpectrometerDipole()
   tpar[2] = 5.; 
   //
   tpar[3] = -250.55+kZDipole;
-  tpar[4] = 30.5;
+  tpar[4] = 30.1;
   tpar[5] = 527.34; 
   //
   tpar[6] = -160.7+kZDipole;
-  tpar[7] = 30.5;
+  tpar[7] = 30.1;
   tpar[8] = 527.34; 
   //
-  tpar[9] = 30.+kZDipole;
-  tpar[10] = 30.5;
+  tpar[9] = 35.+kZDipole;
+  tpar[10] = 30.1;
   tpar[11] = 527.34;
 
   tpar[12] = 150.8+kZDipole;
