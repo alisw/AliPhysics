@@ -13,10 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Rec Point in the PHOS EM calorimeter 
-//*-- Author : Dmitri Peressounko RRC KI
-//////////////////////////////////////////////////////////////////////////////
+//  RecPoint implementation for PHOS-EMC 
+//  An EmcRecPoint is a cluster of digits   
+//           
+//*-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
+
 
 // --- ROOT system ---
 #include "TPad.h"
@@ -53,16 +57,10 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(Float_t W0, Float_t LocMaxCut)
 }
 
 //____________________________________________________________________________
-AliPHOSEmcRecPoint::~AliPHOSEmcRecPoint() 
-{
-  // dtor 
-}
-
-//____________________________________________________________________________
 void AliPHOSEmcRecPoint::AddDigit(AliDigitNew & digit, Float_t Energy)
 {
-  // adds a digit to the digits list
-  // and accumulates the total amplitude and the multiplicity 
+  // Adds a digit to the RecPoint
+  //  and accumulates the total amplitude and the multiplicity 
   
   if ( fMulDigit >= fMaxDigit ) { // increase the size of the lists 
     fMaxDigit*=2 ; 
@@ -98,6 +96,7 @@ void AliPHOSEmcRecPoint::AddDigit(AliDigitNew & digit, Float_t Energy)
 //____________________________________________________________________________
 Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) 
 {
+  // Tells if (true) or not (false) two digits are neighbors)
   
   Bool_t aren = kFALSE ;
   
@@ -120,6 +119,8 @@ Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
 //____________________________________________________________________________
 Int_t AliPHOSEmcRecPoint::Compare(TObject * obj)
 {
+  // Compares two RecPoints according to their position in the PHOS modules
+
   Int_t rv ; 
 
   AliPHOSEmcRecPoint * clu = (AliPHOSEmcRecPoint *)obj ; 
@@ -158,7 +159,7 @@ Int_t AliPHOSEmcRecPoint::Compare(TObject * obj)
 //______________________________________________________________________________
 void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 {
-  //Execute action corresponding to one event
+  // Execute action corresponding to one event
   //  This member function is called when a AliPHOSRecPoint is clicked with the locator
   //
   //  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
@@ -259,6 +260,8 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 //____________________________________________________________________________
 Float_t  AliPHOSEmcRecPoint::GetDispersion() 
 {
+  // Calculates the dispersion of the shower at the origine of the RecPoint
+
   Float_t d    = 0 ;
   Float_t wtot = 0 ;
 
@@ -266,7 +269,6 @@ Float_t  AliPHOSEmcRecPoint::GetDispersion()
   GetLocalPosition(locpos);
   Float_t x = locpos.X() ;
   Float_t z = locpos.Z() ;
-  //  Int_t i = GetPHOSMod() ;
 
   AliPHOSDigit * digit ;
   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
@@ -292,6 +294,8 @@ Float_t  AliPHOSEmcRecPoint::GetDispersion()
 //____________________________________________________________________________
 void  AliPHOSEmcRecPoint::GetElipsAxis(Float_t * lambda)
 {
+  // Calculates the axis of the shower ellipsoid
+  
   Float_t wtot = 0. ;
   Float_t x    = 0.;
   Float_t z    = 0.;
@@ -333,8 +337,57 @@ void  AliPHOSEmcRecPoint::GetElipsAxis(Float_t * lambda)
 }
 
 //____________________________________________________________________________
+void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
+{
+  // Calculates the center of gravity in the local PHOS-module coordinates 
+  
+  if( fLocPos.X() < 1000000.) { // already evaluated
+   LPos = fLocPos ;
+   return ;
+  }
+
+  Float_t wtot = 0. ;
+ 
+  Int_t relid[4] ;
+
+  Float_t x = 0. ;
+  Float_t z = 0. ;
+  
+  AliPHOSDigit * digit ;
+
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+
+  Int_t iDigit;
+
+
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    digit = (AliPHOSDigit *) fDigitsList[iDigit];
+
+    Float_t xi ;
+    Float_t zi ;
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
+    Float_t w = TMath::Max( 0., fW0 + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
+    x    += xi * w ;
+    z    += zi * w ;
+    wtot += w ;
+
+  }
+
+  x /= wtot ;
+  z /= wtot ;
+  fLocPos.SetX(x)  ;
+  fLocPos.SetY(0.) ;
+  fLocPos.SetZ(z)  ;
+
+  LPos = fLocPos ;
+}
+
+//____________________________________________________________________________
 Float_t AliPHOSEmcRecPoint::GetMaximalEnergy(void)
 {
+  // Finds the maximum energy in the cluster
+  
   Float_t menergy = 0. ;
 
   Int_t iDigit;
@@ -350,6 +403,8 @@ Float_t AliPHOSEmcRecPoint::GetMaximalEnergy(void)
 //____________________________________________________________________________
 Int_t AliPHOSEmcRecPoint::GetMultiplicityAtLevel(Float_t H) 
 {
+  // Calculates the multiplicity of digits with energy larger than H*energy 
+  
   Int_t multipl   = 0 ;
   Int_t iDigit ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
@@ -363,6 +418,9 @@ Int_t AliPHOSEmcRecPoint::GetMultiplicityAtLevel(Float_t H)
 //____________________________________________________________________________
 Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEnergy) 
 { 
+  // Calculates the number of local maxima in the cluster using fLocalMaxCut as the minimum
+  //  energy difference between two local maxima
+
   AliPHOSDigit * digit ;
   AliPHOSDigit * digitN ;
   
@@ -410,50 +468,6 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEn
   return iDigitN ;
 }
 
-//____________________________________________________________________________
-void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
-{
-  if( fLocPos.X() < 1000000.) { // already evaluated
-   LPos = fLocPos ;
-   return ;
-  }
-
-  Float_t wtot = 0. ;
- 
-  Int_t relid[4] ;
-
-  Float_t x = 0. ;
-  Float_t z = 0. ;
-  
-  AliPHOSDigit * digit ;
-
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
-
-  Int_t iDigit;
-
-
-  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
-    digit = (AliPHOSDigit *) fDigitsList[iDigit];
-
-    Float_t xi ;
-    Float_t zi ;
-    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    phosgeom->RelPosInModule(relid, xi, zi);
-    Float_t w = TMath::Max( 0., fW0 + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
-    x    += xi * w ;
-    z    += zi * w ;
-    wtot += w ;
-
-  }
-
-  x /= wtot ;
-  z /= wtot ;
-  fLocPos.SetX(x)  ;
-  fLocPos.SetY(0.) ;
-  fLocPos.SetZ(z)  ;
-
-  LPos = fLocPos ;
-}
 
 // //____________________________________________________________________________
 // AliPHOSEmcRecPoint& AliPHOSEmcRecPoint::operator = (AliPHOSEmcRecPoint Clu) 
@@ -492,6 +506,8 @@ void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::Print(Option_t * option) 
 {
+  // Print the list of digits belonging to the cluster
+  
   cout << "AliPHOSEmcRecPoint: " << endl ;
 
   AliPHOSDigit * digit ; 
@@ -520,8 +536,9 @@ void AliPHOSEmcRecPoint::Print(Option_t * option)
 //______________________________________________________________________________
 void AliPHOSEmcRecPoint::Streamer(TBuffer &R__b)
 {
-   // Stream an object of class AliPHOSEmcRecPoint.
-
+  // Stream an object of class AliPHOSEmcRecPoint.
+  // Needed because of the array fEnergyList
+  
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       AliPHOSRecPoint::Streamer(R__b);

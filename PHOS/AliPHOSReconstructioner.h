@@ -5,16 +5,12 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Algorithme class for the reconstruction   //
-//                                            //
-//  Author Gines MARTINEZ     SUBATECH        //
-//                                            //
-//  january 2000:                             //
-//             added Particle identifier (YS) //
-//                                            //  
-//                                            //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+//  Algorithm class for the reconstruction: clusterizer
+//                                          track segment maker
+//                                          particle identifier   
+//                  
+//*-- Author: Gines Martinez & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -32,10 +28,10 @@ class AliPHOSReconstructioner : public TObject {
 
 public:
 
-  AliPHOSReconstructioner(); //ctor            
+  AliPHOSReconstructioner(){} //ctor            
   AliPHOSReconstructioner(AliPHOSClusterizer * Clusterizer, AliPHOSTrackSegmentMaker * Tracker, 
 			  AliPHOSPID * Identifier); //ctor            
-  ~AliPHOSReconstructioner(); // dtor
+  ~AliPHOSReconstructioner(){} // dtor
 
   AliPHOSClusterizer * GetClusterizer() { return fClusterizer ; }
   void Init(AliPHOSClusterizer * Clusterizer, AliPHOSTrackSegmentMaker * Tracker, 
@@ -50,7 +46,7 @@ private:
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Method for track segments finding
   AliPHOSPID * fPID ;                             // Method for identifying the type of particle
  
-  ClassDef(AliPHOSReconstructioner,1)  // Reconstruction interface , version 1
+  ClassDef(AliPHOSReconstructioner,1)  // Reconstruction algorithm class (Base Class)
 
 }; 
 

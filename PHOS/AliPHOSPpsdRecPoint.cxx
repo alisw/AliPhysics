@@ -13,17 +13,21 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// RecPoint in the PHOS PPSD: a list of AliPHOSDigit's
-//*-- Author : Yves Schutz  SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+//  A RecPoint (cluster) in the PPSD 
+//  A PPSD RecPoint ends up to be a single digit
+//                
+//*--  Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
+
 #include "TPad.h"
+
 // --- Standard library ---
 
 #include <iostream>
-#include <cassert>
 
 // --- AliRoot header files ---
 
@@ -36,16 +40,12 @@ ClassImp(AliPHOSPpsdRecPoint)
 //____________________________________________________________________________
 AliPHOSPpsdRecPoint::AliPHOSPpsdRecPoint(void)
 { 
+  // ctor
+
   fMulDigit = 0 ;  
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;  
   fDelta = geom->GetCrystalSize(0) ; 
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
-}
-
-//____________________________________________________________________________
-AliPHOSPpsdRecPoint::~AliPHOSPpsdRecPoint(void) // dtor
-{ 
-  //dtor  
 }
 
 //____________________________________________________________________________
@@ -76,12 +76,11 @@ void AliPHOSPpsdRecPoint::AddDigit(AliDigitNew & digit, Float_t Energy)
   fAmp += Energy ; 
 }
 
-
-
-
 //____________________________________________________________________________
 Int_t AliPHOSPpsdRecPoint::Compare(TObject * obj)
 {
+  // Compares according to the position
+  
   Int_t rv ; 
   
   AliPHOSPpsdRecPoint * clu = (AliPHOSPpsdRecPoint *)obj ; 
@@ -154,8 +153,10 @@ Int_t AliPHOSPpsdRecPoint::Compare(TObject * obj)
 }
 
 //____________________________________________________________________________
-void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos){
-
+void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos)
+{
+  // Calculates the local position in the PHOS-PPSD-module corrdinates
+  
   if( fLocPos.X() < 1000000.) { //allready evaluated
    LPos = fLocPos ;
    return ;
@@ -216,32 +217,35 @@ Bool_t AliPHOSPpsdRecPoint::GetUp()
 //______________________________________________________________________________
 void AliPHOSPpsdRecPoint::Paint(Option_t *)
 {
-//*-*-*-*-*-*-*-*-*-*-*Paint this ALiRecPoint as a TMarker  with its current attributes*-*-*-*-*-*-*
-//*-*                  =============================================
-   TVector3 pos(0.,0.,0.) ;
-   GetLocalPosition(pos) ;
-   Coord_t x = pos.X() ;
-   Coord_t y = pos.Z() ;
-   Color_t markercolor = 1 ;
-   Size_t  markersize  = 1. ;
-   Style_t markerstyle = 2 ;
-   if (GetUp()) 
-     markerstyle = 3 ;
+  //*-*-*-*-*-*-*-*-*-*-*Paint this ALiRecPoint as a TMarker  with its current attributes*-*-*-*-*-*-*
+  //*-*                  =============================================
 
-   if (!gPad->IsBatch()) {
-     gVirtualX->SetMarkerColor(markercolor);
-     gVirtualX->SetMarkerSize (markersize);
-     gVirtualX->SetMarkerStyle(markerstyle);
-   }
-   gPad->SetAttMarkerPS(markercolor,markerstyle,markersize);
-   gPad->PaintPolyMarker(1,&x,&y,"");
-
-
+  TVector3 pos(0.,0.,0.) ;
+  GetLocalPosition(pos) ;
+  Coord_t x = pos.X() ;
+  Coord_t y = pos.Z() ;
+  Color_t markercolor = 1 ;
+  Size_t  markersize  = 1. ;
+  Style_t markerstyle = 2 ;
+  if (GetUp()) 
+    markerstyle = 3 ;
+  
+  if (!gPad->IsBatch()) {
+    gVirtualX->SetMarkerColor(markercolor);
+    gVirtualX->SetMarkerSize (markersize);
+    gVirtualX->SetMarkerStyle(markerstyle);
+  }
+  gPad->SetAttMarkerPS(markercolor,markerstyle,markersize);
+  gPad->PaintPolyMarker(1,&x,&y,"");
+  
+  
 }
 
 //____________________________________________________________________________
 void AliPHOSPpsdRecPoint::Print(Option_t * option) 
 {
+  // Print the digits information 
+  
   cout << "AliPHOSPpsdRecPoint: " << endl ;
   
   AliPHOSDigit * digit ; 
@@ -267,35 +271,3 @@ void AliPHOSPpsdRecPoint::Print(Option_t * option)
 }
 
 
-// //____________________________________________________________________________
-// AliPHOSPpsdRecPoint& AliPHOSPpsdRecPoint::operator = (AliPHOSPpsdRecPoint Clu)
-// {
-//  int* DL = Clu.GetDigitsList() ; 
-  
-//   if(fDigitsList) 
-//     delete fDigitsList ;
-
-//   AliPHOSDigit * digit ;
- 
-//   Int_t iDigit;
-
-//   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
-//     digit = (AliPHOSDigit *) DL[iDigit];
-//     AddDigit(*digit) ;
-//   }
-
-//   fDelta = Clu.GetDelta() ; 
-//   delete DL ; 
-
-//   fAmp       = Clu.GetEnergy() ;
-//   fGeom      = Clu.GetGeom() ;
-//   TVector3 LocPos;
-//   Clu.GetLocalPosition(LocPos) ;
-//   fLocPos    = LocPos;
-//   fMulDigit  = Clu.GetMultiplicity() ;
-//   fMaxDigit  = Clu.GetMaximumMultiplicity() ;
-//   fPHOSMod   = Clu.GetPHOSMod() ;
-  
-
-//   return *this ;
-// }

@@ -13,10 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Geometry class for PHOS version SUBATECH
-//*-- Author : Y. Schutz SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+// Geometry class  for PHOS : singleton  
+// The EMC modules are parametrized so that any configuration can be easily implemented 
+// The title is used to identify the type of CPV used. So far only PPSD implemented
+//                  
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -26,7 +30,6 @@
 // --- Standard library ---
 
 #include <iostream>
-#include <cassert>
 
 // --- AliRoot header files ---
 
@@ -41,6 +44,8 @@ ClassImp(AliPHOSGeometry)
 //____________________________________________________________________________
 AliPHOSGeometry::~AliPHOSGeometry(void)
 {
+  // dtor
+
   fRotMatrixArray->Delete() ; 
   delete fRotMatrixArray ; 
 }
@@ -48,11 +53,12 @@ AliPHOSGeometry::~AliPHOSGeometry(void)
 //____________________________________________________________________________
 Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * relid)
 {
-  // relid[0] = PHOS Module number 1:fNModules 
-  // relid[1] = 0 if PbW04
-  //          = PPSD Module number 1:fNumberOfModulesPhi*fNumberOfModulesZ*2 (2->up and bottom level)
-  // relid[2] = Row number inside a PHOS or PPSD module
-  // relid[3] = Column number inside a PHOS or PPSD module
+  // Converts the absolute numbering into the following array/
+  //  relid[0] = PHOS Module number 1:fNModules 
+  //  relid[1] = 0 if PbW04
+  //           = PPSD Module number 1:fNumberOfModulesPhi*fNumberOfModulesZ*2 (2->up and bottom level)
+  //  relid[2] = Row number inside a PHOS or PPSD module
+  //  relid[3] = Column number inside a PHOS or PPSD module
 
   Bool_t rv  = kTRUE ; 
   Float_t id = AbsId ;
@@ -166,7 +172,8 @@ void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_
 //____________________________________________________________________________
 void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat)
 {
-
+  // Calculates the ALICE global coordinates of a RecPoint and the error matrix
+ 
   AliPHOSRecPoint * tmpPHOS = (AliPHOSRecPoint *) RecPoint ;  
   TVector3 localposition ;
 
@@ -206,6 +213,8 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TM
 //____________________________________________________________________________
 void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)
 {
+  // Calculates the ALICE global coordinates of a RecPoint 
+
   AliPHOSRecPoint * tmpPHOS = (AliPHOSRecPoint *) RecPoint ;  
   TVector3 localposition ;
   tmpPHOS->GetLocalPosition(gpos) ;
@@ -242,6 +251,8 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)
 //____________________________________________________________________________
 void AliPHOSGeometry::Init(void)
 {
+  // Initializes the PHOS parameters
+  
   fRotMatrixArray = new TObjArray(fNModules) ; 
 
   cout << "PHOS geometry setup: parameters for option " << fName << " " << fTitle << endl ;
@@ -260,7 +271,7 @@ void AliPHOSGeometry::Init(void)
 //____________________________________________________________________________
 void AliPHOSGeometry::InitPHOS(void)
 {
-     // PHOS 
+  // Initializes the EMC parameters
 
   fNPhi     = 64 ; 
   fNZ       = 64 ; 
@@ -335,7 +346,7 @@ void AliPHOSGeometry::InitPHOS(void)
 //____________________________________________________________________________
 void AliPHOSGeometry::InitPPSD(void)
 {
-    // PPSD
+  // Initializes the PPSD parameters
     
   fAnodeThickness           = 0.0009 ; 
   fAvalancheGap             = 0.01 ; 
@@ -375,12 +386,16 @@ void AliPHOSGeometry::InitPPSD(void)
 //____________________________________________________________________________
 AliPHOSGeometry *  AliPHOSGeometry::GetInstance() 
 { 
+  // Returns the pointer of the unique instance
+  
   return (AliPHOSGeometry *) fGeom ; 
 }
 
 //____________________________________________________________________________
 AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t* title) 
 {
+  // Returns the pointer of the unique instance
+
   AliPHOSGeometry * rv = 0  ; 
   if ( fGeom == 0 ) {
     fGeom = new AliPHOSGeometry(name, title) ; 
@@ -400,9 +415,9 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t
 //____________________________________________________________________________
 Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId)
 {
-
-  // AbsId = 1:fNModules * fNPhi * fNZ  -> PbWO4
-  // AbsId = 1:fNModules * 2 * (fNumberOfModulesPhi * fNumberOfModulesZ) * fNumberOfPadsPhi * fNumberOfPadsZ -> PPSD
+  // Converts the relative numbering into the absolute numbering
+  //  AbsId = 1:fNModules * fNPhi * fNZ  -> PbWO4
+  //  AbsId = 1:fNModules * 2 * (fNumberOfModulesPhi * fNumberOfModulesZ) * fNumberOfPadsPhi * fNumberOfPadsZ -> PPSD
 
   Bool_t rv = kTRUE ; 
  
@@ -430,6 +445,8 @@ Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId)
 
 void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) 
 {
+  // Converts the absolute numbering into the global ALICE coordinates
+  
    if (id > 0) { 
 
   Int_t relid[4] ;
@@ -484,6 +501,8 @@ void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos )
 //____________________________________________________________________________
 void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t & z) 
 {
+  // Converts the relative numbering into the local PHOS-module (x, z) coordinates
+  
   Int_t ppsdmodule  ; 
   Int_t row        = relid[2] ; //offset along z axiz
   Int_t column     = relid[3] ; //offset along x axiz
@@ -511,6 +530,8 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 //____________________________________________________________________________
 void AliPHOSGeometry::SetPHOSAngles() 
 { 
+  // Calculates the position in ALICE of the PHOS modules
+  
   Double_t const kRADDEG = 180.0 / kPI ;
   Float_t pphi =  TMath::ATan( fOuterBoxSize[0]  / ( 2.0 * fIPtoOuterCoverDistance ) ) ;
   pphi *= kRADDEG ;
@@ -525,6 +546,7 @@ void AliPHOSGeometry::SetPHOSAngles()
 void AliPHOSGeometry::SetLeadConverterThickness(Float_t e) 
 {
   // should ultimately disappear 
+  
   cout << " AliPHOSGeometry WARNING : You have changed LeadConverterThickness from " 
        << fLeadConverterThickness << " to " << e << endl ;
 

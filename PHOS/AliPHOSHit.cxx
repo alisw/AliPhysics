@@ -13,10 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Hit classes for PHOS
-//*-- Author : Maxim Volkov, RRC KI
-//////////////////////////////////////////////////////////////////////////////
+//  Hits class for PHOS     
+//  A hit in PHOS is the sum of all hits in a single crystal
+//               
+//*-- Author: Maxime Volkov (RRC KI) & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -25,7 +28,6 @@
 #include <cstring>
 #include <cstdlib>
 #include <strstream>
-#include <cassert>
 
 // --- AliRoot header files ---
 #include "AliPHOSHit.h"
@@ -38,7 +40,8 @@ ClassImp(AliPHOSHit)
 //____________________________________________________________________________
 AliPHOSHit::AliPHOSHit(Int_t primary, Int_t id, Float_t *hits)
 {
-
+  // ctor
+  
    fId         = id ;
    fX          = hits[0] ;
    fY          = hits[1] ;
@@ -50,6 +53,8 @@ AliPHOSHit::AliPHOSHit(Int_t primary, Int_t id, Float_t *hits)
 //____________________________________________________________________________
 Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
 { 
+  // Two hits are identical if they have the same Id and originate from the same primary
+
   Bool_t rv = kFALSE ; 
 
   if ( fId == rValue.GetId() && fPrimary == rValue.GetPrimary() ) 
@@ -61,6 +66,7 @@ Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
 //____________________________________________________________________________
 AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue) const
 {
+  // Add the energy of the hit
   
   AliPHOSHit added(*this);
 
@@ -70,8 +76,6 @@ AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue) const
 
    added.fELOS += rValue.GetEnergy() ;
     
-   assert ( added.fPrimary == rValue.fPrimary ) ; 
-
    return added;
 
 }
@@ -79,6 +83,8 @@ AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue) const
 //____________________________________________________________________________
 ostream& operator << (ostream& out, const AliPHOSHit& hit) 
 {
+  // Print out Id and energy 
+  
   out << "AliPHOSHit = " << hit.GetId() << " " << hit.GetEnergy() << endl ;
   return out ;
 }

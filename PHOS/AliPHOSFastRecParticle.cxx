@@ -13,10 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Particle modified by PHOS response to be used by AliPHOSvFast
-//*-- Y. Schutz:   SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+//  A  Particle modified by PHOS response and produced by AliPHOSvFast
+//  To become a general class of AliRoot ?    
+//               
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -35,6 +38,8 @@ ClassImp(AliPHOSFastRecParticle)
 //____________________________________________________________________________
  AliPHOSFastRecParticle::AliPHOSFastRecParticle(const AliPHOSFastRecParticle & rp)
 {
+  // copy ctor
+
   fType        = rp.fType ; 
   fPdgCode     = rp.fPdgCode;
   fStatusCode  = rp.fStatusCode;
@@ -60,6 +65,8 @@ ClassImp(AliPHOSFastRecParticle)
 //____________________________________________________________________________
  AliPHOSFastRecParticle::AliPHOSFastRecParticle(const TParticle & pp)
 {
+  // ctor from a TParticle (crummy?!)
+ 
   TParticle & pnoconst = const_cast<TParticle &>(pp) ;
   AliPHOSFastRecParticle & p = static_cast<AliPHOSFastRecParticle&>(pnoconst) ;
 
@@ -82,11 +89,6 @@ ClassImp(AliPHOSFastRecParticle)
   fPolarTheta  = p.fPolarTheta;
   fPolarPhi    = p.fPolarPhi;
   fParticlePDG = p.fParticlePDG; 
-}
-
-//____________________________________________________________________________
- AliPHOSFastRecParticle::~AliPHOSFastRecParticle()
-{
 }
 
 //____________________________________________________________________________
@@ -121,8 +123,7 @@ void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 {
   //  Execute action corresponding to one event
   //  This member function is called when a AliPHOSFastRecParticle is clicked with the locator
-  //
-    
+     
   if (!gPad->IsEditable()) 
     return ;
 
@@ -156,9 +157,24 @@ void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
   }
 
 }
+
+//____________________________________________________________________________
+Int_t * AliPHOSFastRecParticle::GetPrimaries(Int_t & number) 
+{
+  // Retrieves the unique primary particle at the origine of the present reconstruced particle
+
+  number = 1 ; 
+  Int_t * list = new Int_t[1] ;
+  list[0] = fPrimary ; 
+  
+  return list ;
+}
+
 //____________________________________________________________________________
 TString AliPHOSFastRecParticle::Name()
 {
+  // Returns the name of the particle type
+  
   TString  name ; 
   switch (fType) {
   case kGAMMA:
@@ -190,27 +206,29 @@ TString AliPHOSFastRecParticle::Name()
 //______________________________________________________________________________
 void AliPHOSFastRecParticle::Paint(Option_t *)
 {
-// Paint this ALiRecParticle in theta,phi coordinate as a TMarker  with its current attributes
+  // Paint this ALiRecParticle in theta,phi coordinate as a TMarker  with its current attributes
 
   Double_t kRADDEG = 180. / TMath::Pi() ; 
-   Coord_t x = Phi() * kRADDEG     ;
-   Coord_t y = Theta() * kRADDEG     ;
-   Color_t markercolor = 1 ;
-   Size_t  markersize  = 1. ;
-   Style_t markerstyle = 5 ;
-
-   if (!gPad->IsBatch()) {
-     gVirtualX->SetMarkerColor(markercolor) ;
-     gVirtualX->SetMarkerSize (markersize)  ;
-     gVirtualX->SetMarkerStyle(markerstyle) ;
-   }
-   gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
-   gPad->PaintPolyMarker(1,&x,&y,"") ;
+  Coord_t x = Phi() * kRADDEG     ;
+  Coord_t y = Theta() * kRADDEG     ;
+  Color_t markercolor = 1 ;
+  Size_t  markersize  = 1. ;
+  Style_t markerstyle = 5 ;
+  
+  if (!gPad->IsBatch()) {
+    gVirtualX->SetMarkerColor(markercolor) ;
+    gVirtualX->SetMarkerSize (markersize)  ;
+    gVirtualX->SetMarkerStyle(markerstyle) ;
+  }
+  gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
+  gPad->PaintPolyMarker(1,&x,&y,"") ;
 }
 
 //____________________________________________________________________________
 void AliPHOSFastRecParticle::Print()
 {
+  // Print the typr, energy and momentum
+  
   cout << "AliPHOSFastRecParticle > " << "type is  " << Name() << endl 
        << "                     " << "Energy = " << fE << endl 
        << "                     " << "Px     = " << fPx << endl 

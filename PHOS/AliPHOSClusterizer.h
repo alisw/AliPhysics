@@ -5,14 +5,9 @@
                             
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Algorithme class for the clusterization   //
-//  interface class                           //
-//  Version SUBATECH                          //
-//  Author Yves Schutz     SUBATECH           //
-//                                            //  
-//   pABC                                     //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+//  Base class for the clusterization algorithm (pure abstract)
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -25,8 +20,8 @@
 
 #include "AliPHOSDigit.h"
 
-typedef TClonesArray    RecPointsList ; // a cluster has a variable size (see ROOT FAQ)  
-typedef TClonesArray    DigitsList ; //for digits saved on disk
+typedef TClonesArray    RecPointsList ; 
+typedef TClonesArray    DigitsList ;   
 
 class AliPHOSClusterizer : public TObject {
 
@@ -56,7 +51,7 @@ public:
   virtual void SetPpsdClusteringThreshold(Float_t cluth) = 0 ; 
   virtual void SetPpsdEnergyThreshold(Float_t enth) = 0 ; 
  
-  ClassDef(AliPHOSClusterizer,1)  // clusterization interface, version 1
+  ClassDef(AliPHOSClusterizer,1)  // Clusterization algorithm class (abstract base class)
 
 } ;
 

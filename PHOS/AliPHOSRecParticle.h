@@ -5,12 +5,11 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  A Reconstructed Particle in PHOS          //
-//  Yves Schutz SUBATECH                      //
-//  To become a general class of AliRoot ?    //  
-//                                            //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+//  A Reconstructed Particle in PHOS    
+//  To become a general class of AliRoot ?        
+//       
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -34,13 +33,13 @@ public:
   virtual ~AliPHOSRecParticle() ; // dtor
 
   AliPHOSTrackSegment * GetPHOSTrackSegment() const { return fPHOSTrackSegment ; } 
+  virtual Int_t * GetPrimaries(Int_t & number) ;
 
 private:
 
   AliPHOSTrackSegment * fPHOSTrackSegment ; // pointer to the associated track segment in PHOS  
 
-  ClassDef(AliPHOSRecParticle,1)  // Reconstructed Particle, version 1
-
+  ClassDef(AliPHOSRecParticle,1)  // Reconstructed Particle
 };
 
 #endif // AliPHOSRECPARTICLE_H

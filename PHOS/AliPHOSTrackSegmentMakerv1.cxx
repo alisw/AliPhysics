@@ -13,11 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Algorithm class to construct track segments connection RecPoints in 
-// EMCA and Ppsd. Unfolds also the clusters in EMCA. 
-//*-- Author : D. Peressounko  SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+// Implementation version 1 of algorithm class to construct PHOS track segments
+// Associates EMC and PPSD clusters
+// Unfolds the EMC cluster   
+//                  
+//*-- Author: Dmitri Peressounko (RRC Ki & SUBATECH)
+//
 
 // --- ROOT system ---
 
@@ -44,9 +48,10 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
 
 
 //____________________________________________________________________________
- AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1() 
+ AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1() : AliPHOSTrackSegmentMaker()
 {
   // ctor
+
   fR0 = 4. ;   
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
   //clusters are sorted in "rows" and "columns" of width geom->GetCrystalSize(0),
@@ -59,13 +64,15 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
  AliPHOSTrackSegmentMakerv1::~AliPHOSTrackSegmentMakerv1()
 { 
   // dtor
-  delete fMinuit ; 
+ 
+   delete fMinuit ; 
 }
+
 //____________________________________________________________________________
 Bool_t  AliPHOSTrackSegmentMakerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Float_t * maxAtEnergy,
 				    Int_t nPar, Float_t * fitparameters)
 { 
-  // Calls TMinuit for fitting cluster with several maxima 
+  // Calls TMinuit to fit the energy distribution of a cluster with several maxima 
 
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
 
@@ -139,7 +146,7 @@ Bool_t  AliPHOSTrackSegmentMakerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * ma
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * Dl, RecPointsList * emcIn, TObjArray * emcOut, 
+void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * dl, RecPointsList * emcIn, TObjArray * emcOut, 
 					RecPointsList * ppsdIn, TObjArray * ppsdOutUp,
 					TObjArray * ppsdOutLow, Int_t & phosmod, Int_t & emcStopedAt, 
 					Int_t & ppsdStopedAt)
@@ -165,7 +172,7 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * Dl, RecPointsList *
     if(nMax <= 1 )     // if cluster is very flat (no pronounced maximum) then nMax = 0 
       emcOut->Add(emcRecPoint) ;
     else if (fUnfoldFlag) {
-      UnfoldClusters(Dl, emcIn, emcRecPoint, nMax, maxAt, maxAtEnergy, emcOut) ;
+      UnfoldClusters(dl, emcIn, emcRecPoint, nMax, maxAt, maxAtEnergy, emcOut) ;
       emcIn->Remove(emcRecPoint); 
       emcIn->Compress() ;
       nEmcUnfolded-- ;
@@ -192,6 +199,8 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * Dl, RecPointsList *
 //____________________________________________________________________________
 Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcclu,AliPHOSPpsdRecPoint * PpsdClu, Bool_t &toofar)
 {
+  // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
+ 
   Float_t r = fR0 ;
  
   TVector3 vecEmc ;
@@ -227,8 +236,8 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks(TObjArray * emcRecPoints, TObjArray 
 				     TObjArray * ppsdRecPointsLow, TClonesArray * linklowArray, 
 				     TClonesArray *linkupArray) 
 { 
-  //Finds distanses (links) between all EMC and PPSD clusters, which are not further from each other than fR0 
-
+  // Finds distances (links) between all EMC and PPSD clusters, which are not further apart from each other than fR0 
+  
   TIter nextEmc(emcRecPoints) ;
   Int_t iEmcClu = 0 ; 
   
@@ -314,8 +323,10 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints, TObjArray 
 	 } // while nextUp
 	 
 	 nextUp.Reset();
-         AliPHOSTrackSegment * subtr = new AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
-	 trsl->Add(subtr) ;  
+//          AliPHOSTrackSegment * subtr = new AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
+// 	 trsl->Add(subtr) ;  
+	 new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
+	 fNTrackSegments++ ;
 	 emcRecPoints->AddAt(nullpointer,linkLow->GetEmc()) ;	  
 	 ppsdRecPointsLow->AddAt(nullpointer,linkLow->GetPpsd()) ;
 	 
@@ -340,9 +351,12 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints, TObjArray 
       }
       
     }
-    AliPHOSTrackSegment * subtr = new AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
-    trsl->Add(subtr) ;   
- 
+//     AliPHOSTrackSegment * subtr = new AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
+//     trsl->Add(subtr) ;   
+    new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
+    fNTrackSegments++ ;
+    
+
     if(ppsdUp)  
       ppsdRecPointsUp->AddAt(nullpointer,linkUp->GetPpsd()) ;
   }
@@ -350,10 +364,10 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints, TObjArray 
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * DL, RecPointsList * emcl, 
+void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl, RecPointsList * emcl, 
 					RecPointsList * ppsdl, TrackSegmentsList * trsl)
 {
-  // main function, does the job
+  // Makes the track segments out of the list of EMC and PPSD Recpoints and stores them in a list
 
   Int_t phosmod      = 1 ;
   Int_t emcStopedAt  = 0 ; 
@@ -371,7 +385,7 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * DL, RecPointsLi
   
   while(phosmod <= geom->GetNModules() ){
     
-    FillOneModule(DL, emcl, emcRecPoints, ppsdl, ppsdRecPointsUp, ppsdRecPointsLow, phosmod, emcStopedAt, ppsdStopedAt) ;
+    FillOneModule(dl, emcl, emcRecPoints, ppsdl, ppsdRecPointsUp, ppsdRecPointsLow, phosmod, emcStopedAt, ppsdStopedAt) ;
 
     MakeLinks(emcRecPoints, ppsdRecPointsUp, ppsdRecPointsLow, linklowArray, linkupArray) ; 
 
@@ -408,7 +422,9 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * DL, RecPointsLi
 //____________________________________________________________________________
 Double_t  AliPHOSTrackSegmentMakerv1::ShowerShape(Double_t r)
 { 
-// If you change this function, change also gradiend evaluation  in ChiSquare()
+  // Shape of the shower (see PHOS TDR)
+  // If you change this function, change also the gradien evaluation  in ChiSquare()
+
   Double_t r4    = r*r*r*r ;
   Double_t r295  = TMath::Power(r, 2.95) ;
   Double_t shape = TMath::Exp( -r4 * (1. / (2.32 + 0.26 * r4) + 0.0316 / (1 + 0.0652 * r295) ) ) ;
@@ -416,11 +432,12 @@ Double_t  AliPHOSTrackSegmentMakerv1::ShowerShape(Double_t r)
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * DL, RecPointsList * emcIn,  AliPHOSEmcRecPoint * iniEmc, 
+void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl, RecPointsList * emcIn,  AliPHOSEmcRecPoint * iniEmc, 
 					 Int_t nMax, int * maxAt, Float_t * maxAtEnergy, TObjArray * emcList)
 { 
-  // fits cluster with nMax overlapping showers 
-  
+  // Performs the unfolding of a cluster with nMax overlapping showers 
+  // This is time consuming (use the (Un)SetUnfolFlag()  )
+
   Int_t nPar = 3 * nMax ;
   Float_t fitparameters[nPar] ;
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
@@ -464,7 +481,7 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * DL, RecPointsList 
       iparam += 3 ;
       distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
       distance =  TMath::Sqrt(distance) ;
-      efit[iDigit] += epar * ShowerShape(distance) ;
+      efit[iDigit] += epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) ;
     }
   }
 
@@ -485,7 +502,7 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * DL, RecPointsList 
       geom->RelPosInModule(relid, xDigit, zDigit) ;
       distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
       distance =  TMath::Sqrt(distance) ;
-      ratio = epar * ShowerShape(distance) / efit[iDigit] ; 
+      ratio = epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) / efit[iDigit] ; 
       eDigit = emcEnergies[iDigit] * ratio ;
       emcRP->AddDigit( *digit, eDigit ) ;
     }
@@ -498,8 +515,8 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * DL, RecPointsList 
 //______________________________________________________________________________
 void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)
 {
-
-// Number of parameters, Gradient, Chi squared, parameters, what to do
+  // Calculates th Chi square for the cluster unfolding minimization
+  // Number of parameters, Gradient, Chi squared, parameters, what to do
 
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
 

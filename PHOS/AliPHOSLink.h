@@ -5,13 +5,10 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Short description                         //
-//  Version SUBATECH                          //
-//  Author Dmitri Peressounko   SUBATECH      //
-//      comment: auxiliary class used   ONLY  //  
-//               by AliPHOSTrackSegmentMaker  //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+//  Algorithm class used only by AliPHOSTrackSegmentMaker 
+//                  
+//*-- Author: Dmitri Peressounko (SUBATECH)
 
 // --- ROOT system ---
 
@@ -38,9 +35,9 @@ private:
   
   Int_t fEmcN ;  // Emc index
   Int_t fPpsdN ; // Ppsd index 
-  Float_t fR ;   // Distance 
+  Float_t fR ;   // Distance between EMC and PPSD RecPoints in a track segment 
   
-  ClassDef(AliPHOSLink,1)  // description , version 1
+  ClassDef(AliPHOSLink,1)  // Auxilliary algorithm class used by AliPHOSTrackSegmentMaker
 
 };
 

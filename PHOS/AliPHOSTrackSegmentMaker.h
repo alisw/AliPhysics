@@ -5,13 +5,12 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////
-//  Subtrackin class for PHOS                    //
-//  Version SUBATECH                             //
-//  Author Dmitri Peressounko RRC Ki             //
-//     comment: finds pairs of clusters EMC+PPSD //  
-//              performs unfolding.              //
-///////////////////////////////////////////////////
+//_________________________________________________________________________
+// Algorithm Base class to construct PHOS track segments
+// Associates EMC and PPSD clusters
+// Unfolds the EMC cluster   
+//                  
+//*-- Author: Dmitri Peressounko (RRC Ki & SUBATECH)
 
 // --- ROOT system ---
 
@@ -24,7 +23,7 @@
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
 
-typedef TObjArray TrackSegmentsList ;
+typedef TClonesArray TrackSegmentsList ;
 
 class  AliPHOSTrackSegmentMaker : public TObject {
 
@@ -39,8 +38,12 @@ public:
   virtual void SetMaxEmcPpsdDistance(Float_t r) = 0 ; 
   virtual void SetUnfoldFlag() = 0 ;
   virtual void UnsetUnfoldFlag() = 0 ;
-
-  ClassDef( AliPHOSTrackSegmentMaker,1)  // subtracking implementation , version 1
+  
+ protected:
+  
+  Int_t fNTrackSegments ; // number of track segments found 
+  
+  ClassDef( AliPHOSTrackSegmentMaker,1)  // Algorithm class to make PHOS track segments (Base Class)
 
 };
 

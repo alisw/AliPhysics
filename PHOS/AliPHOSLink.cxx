@@ -13,10 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Auxiliary class, used ONLY by AliPHOSTrackSegmentMaker
-//*-- Author : Dmitri Peressounko  SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+//  Algorithm class used only by AliPHOSTrackSegmentMaker 
+//                  
+//*-- Author: Dmitri Peressounko (SUBATECH)
 
 // --- ROOT system ---
 
@@ -30,6 +32,8 @@ ClassImp(AliPHOSLink)
 //____________________________________________________________________________
   AliPHOSLink::AliPHOSLink(Float_t r, Int_t Emc, Int_t Ppsd)
 {
+  // ctor
+
   fR     = r ;  
   fEmcN  = Emc ;
   fPpsdN = Ppsd ;   
@@ -38,6 +42,8 @@ ClassImp(AliPHOSLink)
 //____________________________________________________________________________
 Int_t AliPHOSLink::Compare(TObject * obj)
 {
+  // Compare according to the distance between EMC and PPSD RecPoints in a track segment 
+
   Int_t rv ;
 
   AliPHOSLink * link = (AliPHOSLink *) obj ;

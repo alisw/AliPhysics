@@ -13,10 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// A brief description of the class
-//*-- Author : Yves Schutz  SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+// Algorithm Base class to construct PHOS track segments
+// Associates EMC and PPSD clusters
+// Unfolds the EMC cluster   
+//                  
+//*-- Author: Dmitri Peressounko (RRC Ki & SUBATECH)
+
 
 // --- ROOT system ---
 
@@ -39,9 +44,9 @@ ClassImp( AliPHOSTrackSegmentMaker)
 
 
 //____________________________________________________________________________
- AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() // ctor
+ AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : fNTrackSegments(0)
 {
-
+  // ctor
 }
 
 

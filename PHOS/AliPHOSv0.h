@@ -3,13 +3,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////
-//  Manager class  for PHOS                   //
-//  Version SUBATECH                          //
-//  Author  Y. Schutz SUBATECH                //
-//       geometry parametrized for any        //  
-//       shape of modules                     //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+// Implementation version v0 of PHOS Manager class 
+// Layout EMC + PPSD has name GPS2  
+//                  
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 #include "TClonesArray.h"
@@ -55,19 +53,19 @@ public:
   
 protected:
 
-  Float_t fDigitThreshold ;             // Threshold for the digit registration 
-  RecPointsList * fEmcClusters ;        // The RecPoints (clusters) list in EMC 
-  AliPHOSGeometry * fGeom ;             // geometry definition
-  Int_t fNTmpHits ;                     //!  used internally for digitalization
-  Float_t fPinElectronicNoise  ;       // Electronic Noise in the PIN
-  RecPointsList * fPpsdClusters ;       // The RecPoints (clusters) list in PPSD 
-  AliPHOSReconstructioner * fReconstructioner ; // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
-  TClonesArray * fTmpHits ;             //!  used internally for digitalization 
+  Float_t fDigitThreshold ;                       // Threshold for the digit registration 
+  RecPointsList * fEmcClusters ;                  // The RecPoints (clusters) list in EMC 
+  AliPHOSGeometry * fGeom ;                       // Geometry definition
+  Int_t fNTmpHits ;                               //!  Used internally for digitalization
+  Float_t fPinElectronicNoise  ;                  // Electronic Noise in the PIN
+  RecPointsList * fPpsdClusters ;                 // The RecPoints (clusters) list in PPSD 
+  AliPHOSReconstructioner * fReconstructioner ;   // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
+  TClonesArray * fTmpHits ;                       //!  Used internally for digitalization 
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
-  TrackSegmentsList * fTrackSegments ;  // The TrackSegment list in PHOS
-  RecParticlesList * fRecParticles ;    // The reconstructed particles list in PHOS
+  TrackSegmentsList * fTrackSegments ;            // The TrackSegment list in PHOS
+  RecParticlesList * fRecParticles ;              // The reconstructed particles list in PHOS
 
-  ClassDef(AliPHOSv0,1)  // PHOS main class , version subatech
+  ClassDef(AliPHOSv0,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 
 };
 

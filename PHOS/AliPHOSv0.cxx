@@ -13,10 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Manager class for PHOS version SUBATECH
-//*-- Author : Y. Schutz SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+// Implementation version v0 of PHOS Manager class 
+// Layout EMC + PPSD has name GPS2  
+//                  
+//*-- Author: Yves Schutz (SUBATECH)
+
 
 // --- ROOT system ---
 
@@ -46,6 +50,7 @@ ClassImp(AliPHOSv0)
 //____________________________________________________________________________
 AliPHOSv0::AliPHOSv0()
 {
+  // ctor
   fNTmpHits = 0 ; 
   fTmpHits  = 0 ; 
 }
@@ -54,7 +59,8 @@ AliPHOSv0::AliPHOSv0()
 AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   AliPHOS(name,title)
 {
-  
+  // ctor : title is used to identify the layout
+  //        GPS2 = 5 modules (EMC + PPSD)   
   // We use 2 arrays of hits :
   //
   //   - fHits (the "normal" one), which retains the hits associated with
@@ -92,7 +98,8 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
 AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
   AliPHOS(name,title)
 {
-  
+  // ctor : title is used to identify the layout
+  //        GPS2 = 5 modules (EMC + PPSD)   
   // We use 2 arrays of hits :
   //
   //   - fHits (the "normal" one), which retains the hits associated with
@@ -101,6 +108,7 @@ AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *nam
   //
   //   - fTmpHits, which retains all the hits of the current event. It 
   //     is used for the digitization part.
+
   fPinElectronicNoise = 0.010 ;
   fHits   = new TClonesArray("AliPHOSHit",100) ;
   fDigits = new TClonesArray("AliPHOSDigit",100) ;
@@ -126,6 +134,8 @@ AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *nam
 //____________________________________________________________________________
 AliPHOSv0::~AliPHOSv0()
 {
+  // dtor
+
   fTmpHits->Delete() ; 
   delete fTmpHits ;
   fTmpHits = 0 ; 
@@ -146,6 +156,10 @@ AliPHOSv0::~AliPHOSv0()
 //____________________________________________________________________________
 void AliPHOSv0::AddHit(Int_t primary, Int_t Id, Float_t * hits)
 {
+  // Add a hit to the hit list.
+  // A PHOS hit is the sum of all hits in a single crystal
+  //   or in a single PPSD gas cell
+
   Int_t hitCounter ;
   TClonesArray &ltmphits = *fTmpHits ;
   AliPHOSHit *newHit ;
@@ -188,6 +202,36 @@ void AliPHOSv0::AddHit(Int_t primary, Int_t Id, Float_t * hits)
 //____________________________________________________________________________
 void AliPHOSv0::BuildGeometry()
 {
+  // Build the PHOS geometry for the ROOT display
+  //BEGIN_HTML
+  /*
+    <H2>
+     PHOS in ALICE displayed by root
+    </H2>
+    <UL>
+    <LI> All Views
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="All Views" SRC="../images/AliPHOSv0AllViews.gif"> 
+    </CENTER></P></LI>
+    <LI> Front View
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="Front View" SRC="../images/AliPHOSv0FrontView.gif"> 
+    </CENTER></P></LI>
+     <LI> 3D View 1
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="3D View 1" SRC="../images/AliPHOSv03DView1.gif"> 
+    </CENTER></P></LI>
+    <LI> 3D View 2
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="3D View 2" SRC="../images/AliPHOSv03DView2.gif"> 
+    </CENTER></P></LI>
+    </UL>
+  */
+  //END_HTML  
 
   this->BuildGeometryforPHOS() ; 
   if ( ( strcmp(fGeom->GetName(), "GPS2" ) == 0 ) ) 
@@ -200,7 +244,7 @@ void AliPHOSv0::BuildGeometry()
 //____________________________________________________________________________
 void AliPHOSv0:: BuildGeometryforPHOS(void)
 {
- // Build the PHOS geometry for the ROOT display
+ // Build the PHOS-EMC geometry for the ROOT display
 
   const Int_t kColorPHOS = kRed ;
   const Int_t kColorXTAL = kBlue ;
@@ -299,8 +343,26 @@ void AliPHOSv0:: BuildGeometryforPHOS(void)
 //____________________________________________________________________________
 void AliPHOSv0:: BuildGeometryforPPSD(void)
 {
- //  Build the PPSD geometry for the ROOT display
-
+ //  Build the PHOS-PPSD geometry for the ROOT display
+ //BEGIN_HTML
+  /*
+    <H2>
+     PPSD displayed by root
+    </H2>
+    <UL>
+    <LI> Zoom on PPSD: Front View
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="PPSD Front View" SRC="../images/AliPHOSv0PPSDFrontView.gif"> 
+    </CENTER></P></LI>
+    <LI> Zoom on PPSD: Perspective View
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="PPSD Prespective View" SRC="../images/AliPHOSv0PPSDPerspectiveView.gif"> 
+    </CENTER></P></LI>
+    </UL>
+  */
+  //END_HTML  
   Double_t const kRADDEG = 180.0 / kPI ;
 
   const Int_t kColorPHOS = kRed ;
@@ -541,6 +603,7 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
 //____________________________________________________________________________
 void AliPHOSv0::CreateGeometry()
 {
+  // Create the PHOS geometry for Geant
 
   AliPHOSv0 *phostmp = (AliPHOSv0*)gAlice->GetModule("PHOS") ;
 
@@ -550,7 +613,6 @@ void AliPHOSv0::CreateGeometry()
     return;
     
   }
-
   // Get pointer to the array containing media indeces
   Int_t *idtmed = fIdtmed->GetArray() - 699 ;
 
@@ -591,7 +653,19 @@ void AliPHOSv0::CreateGeometry()
 //____________________________________________________________________________
 void AliPHOSv0::CreateGeometryforPHOS()
 {
-  // Get pointer to the array containing media indeces
+  // Create the PHOS-EMC geometry for GEANT
+    //BEGIN_HTML
+  /*
+    <H2>
+    Geant3 geometry tree of PHOS-EMC in ALICE
+    </H2>
+    <P><CENTER>
+    <IMG Align=BOTTOM ALT="EMC geant tree" SRC="../images/EMCinAlice.gif"> 
+    </CENTER><P>
+  */
+  //END_HTML  
+  
+  // Get pointer to the array containing media indexes
   Int_t *idtmed = fIdtmed->GetArray() - 699 ;
 
   // ---
@@ -847,7 +921,20 @@ void AliPHOSv0::CreateGeometryforPHOS()
 //____________________________________________________________________________
 void AliPHOSv0::CreateGeometryforPPSD()
 {
-  // Get pointer to the array containing media indeces
+  // Create the PHOS-PPSD geometry for GEANT
+
+  //BEGIN_HTML
+  /*
+    <H2>
+    Geant3 geometry tree of PHOS-PPSD in ALICE
+    </H2>
+    <P><CENTER>
+    <IMG Align=BOTTOM ALT="PPSD geant tree" SRC="../images/PPSDinAlice.gif"> 
+    </CENTER><P>
+  */
+  //END_HTML  
+
+  // Get pointer to the array containing media indexes
   Int_t *idtmed = fIdtmed->GetArray() - 699 ;
   
   // The box containing all ppsd's for one PHOS module filled with air 
@@ -1034,7 +1121,10 @@ void AliPHOSv0::CreateGeometryforPPSD()
 }
 
 //___________________________________________________________________________
-Int_t AliPHOSv0::Digitize(Float_t Energy){
+Int_t AliPHOSv0::Digitize(Float_t Energy)
+{
+  // Applies the energy calibration
+  
   Float_t fB = 100000000. ;
   Float_t fA = 0. ;
   Int_t chan = Int_t(fA + Energy*fB ) ;
@@ -1043,8 +1133,10 @@ Int_t AliPHOSv0::Digitize(Float_t Energy){
 //___________________________________________________________________________
 void AliPHOSv0::FinishEvent()
 {
-//    cout << "//_____________________________________________________" << endl ;
-//    cout << "<I> AliPHOSv0::FinishEvent() -- Starting digitalization" << endl ;
+  // Makes the digits from the sum of summed hit in a single crystal or PPSD gas cell
+  // Adds to the energy the electronic noise
+  // Keeps digits with energy above fDigitThreshold
+
   Int_t i ;
   Int_t relid[4];
   Int_t j ; 
@@ -1053,7 +1145,7 @@ void AliPHOSv0::FinishEvent()
   AliPHOSDigit * newdigit ;
   AliPHOSDigit * curdigit ;
   Bool_t deja = kFALSE ; 
-
+  
   for ( i = 0 ; i < fNTmpHits ; i++ ) {
     hit = (AliPHOSHit*)fTmpHits->At(i) ;
     newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
@@ -1100,7 +1192,8 @@ void AliPHOSv0::FinishEvent()
 //____________________________________________________________________________
 void AliPHOSv0::Init(void)
 {
- 
+  // Just prints an information message
+  
   Int_t i;
 
   printf("\n");
@@ -1119,10 +1212,8 @@ void AliPHOSv0::Init(void)
 //___________________________________________________________________________
 void AliPHOSv0::MakeBranch(Option_t* opt)
 {  
-  //
-  // Create a new branch in the current Root Tree
-  // The branch of fHits is automatically split
-  //
+  // Create new branche in the current Root Tree in the digit Tree
+
   AliDetector::MakeBranch(opt) ;
   
   char branchname[10];
@@ -1132,54 +1223,86 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
   if (fDigits && gAlice->TreeD() && cdD) {
     gAlice->TreeD()->Branch(branchname,&fDigits, fBufferSize);
   }
-  char *cdR = strstr(opt,"R");
-  if (fRecParticles && gAlice->TreeR() && cdR) {
-    gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize);
-  }
 }
 
 //_____________________________________________________________________________
 void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 { 
-  // reinitializes the existing RecPoint Lists and steers the reconstruction processes
-
+  // 1. Reinitializes the existing RecPoint, TrackSegment, and RecParticles Lists and 
+  // 2. Creates a branch in TreeR for each list
+  // 3. Steers the reconstruction processes
+  // 4. Saves the 3 lists in TreeR
+  // 5. Write the Tree to File
+  
   fReconstructioner = Reconstructioner ;
+  
+  char branchname[10] ;
 
+  // 1.
+  
   if (fEmcClusters) { 
     fEmcClusters->Delete() ; 
     delete fEmcClusters ;
     fEmcClusters = 0 ; 
   }
   fEmcClusters= new RecPointsList("AliPHOSEmcRecPoint", 100) ;
- 
+  if ( fEmcClusters && gAlice->TreeR() ) {
+    sprintf(branchname,"%sERP",GetName()) ;
+    gAlice->TreeR()->Branch(branchname, &fEmcClusters, fBufferSize);
+  }
+
   if (fPpsdClusters) { 
     fPpsdClusters->Delete() ; 
     delete fPpsdClusters ; 
     fPpsdClusters = 0 ; 
   }
   fPpsdClusters = new RecPointsList("AliPHOSPpsdRecPoint", 100) ;
+  if ( fPpsdClusters && gAlice->TreeR() ) {
+     sprintf(branchname,"%sPRP",GetName()) ;
+     gAlice->TreeR()->Branch(branchname, &fPpsdClusters, fBufferSize);
+ }
 
-  if (fTrackSegments) {  
+  if (fTrackSegments) { 
    fTrackSegments->Delete() ; 
     delete fTrackSegments ; 
     fTrackSegments = 0 ; 
   }
-  fTrackSegments = new TrackSegmentsList(100) ;
- 
+  fTrackSegments = new TrackSegmentsList("AliPHOSTrackSegment", 100) ;
+  if ( fTrackSegments && gAlice->TreeR() ) { 
+    sprintf(branchname,"%sTS",GetName()) ;
+    gAlice->TreeR()->Branch(branchname, &fTrackSegments, fBufferSize);
+  }
+
  if (fRecParticles) {  
    fRecParticles->Delete() ; 
     delete fRecParticles ; 
     fRecParticles = 0 ; 
   }
   fRecParticles = new RecParticlesList("AliPHOSRecParticle", 100) ;
+  if ( fRecParticles && gAlice->TreeR() ) { 
+    sprintf(branchname,"%sRP",GetName()) ;
+    gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize);
+  }
+  
+  // 3.
 
   fReconstructioner->Make(fDigits, fEmcClusters, fPpsdClusters, fTrackSegments, fRecParticles);
 
+  // 4.
+
+  gAlice->TreeR()->Fill() ;
+ 
+  // 5.
+
+  gAlice->TreeR()->Write() ;
+  
 }
 
 //____________________________________________________________________________
 void AliPHOSv0::StepManager(void)
 {
+  // Accumulates hits as long as the track stays in a single crystal or PPSD gas Cell
+
   Int_t          relid[4] ;      // (box, layer, row, column) indices
   Float_t        xyze[4] ;       // position wrt MRS and energy deposited
   TLorentzVector pos ;
@@ -1187,9 +1310,8 @@ void AliPHOSv0::StepManager(void)
 
   Int_t primary =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
   TString name = fGeom->GetName() ; 
-
   if ( name == "GPS2" ) { // the CPV is a PPSD
-    if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") )
+    if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
     {
       gMC->TrackPosition(pos) ;
       xyze[0] = pos[0] ;

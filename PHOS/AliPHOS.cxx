@@ -13,10 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Base Class of PHOS.
-// Only creates the materials
-//*-- Author : Laurent Aphecetche  SUBATECH 
+// Base Class for PHOS description:
+//   PHOS consists of a PbWO4 calorimeter (EMCA) and a gazeous charged 
+//    particles detector (CPV or PPSD).
+//   The only provided method here is CreateMaterials, 
+//    which defines the materials common to all PHOS versions.   
+// 
+//*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
@@ -27,21 +33,9 @@
 
 #include "AliPHOS.h"
 #include "AliMC.h"
-//#include "TGeant3.h"
 #include "AliRun.h"
 
 ClassImp(AliPHOS)
-
-//____________________________________________________________________________
-AliPHOS::AliPHOS(const char* name, const char* title) 
-  : AliDetector(name,title) 
-{
-}
-
-//____________________________________________________________________________
-AliPHOS::AliPHOS() : AliDetector()
-{
-}
 
 //____________________________________________________________________________
 AliPHOS::~AliPHOS()
@@ -53,7 +47,8 @@ AliPHOS::~AliPHOS()
 //____________________________________________________________________________
 void AliPHOS::CreateMaterials()
 {
-  // DEFINITION OF PHOS MATERIALS
+  // Definitions of materials to build PHOS and associated tracking media.
+  // media number in idtmed are 699 to 798.
 
   // --- The PbWO4 crystals ---
   Float_t aX[3] = {207.19, 183.85, 16.0} ;

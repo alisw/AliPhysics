@@ -13,9 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// A brief description of the class
-//*-- Author : Yves Schutz  SUBATECH 
+//  Base class for the clusterization algorithm (pure abstract)
+//
+//*-- Author: Yves Schutz  SUBATECH 
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---

@@ -11,13 +11,14 @@ PACKAGE = PHOS
 
 SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSHit.cxx \
                    AliPHOSGeometry.cxx \
-                   AliPHOSDigit.cxx \
+                   AliPHOSDigit.cxx  \
                    AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx AliPHOSPpsdRecPoint.cxx \
 		   AliPHOSClusterizer.cxx AliPHOSClusterizerv1.cxx  AliPHOSLink.cxx \
 		   AliPHOSReconstructioner.cxx  AliPHOSTrackSegment.cxx \
                    AliPHOSTrackSegmentMaker.cxx AliPHOSTrackSegmentMakerv1.cxx \
                    AliPHOSRecParticle.cxx AliPHOSPID.cxx AliPHOSPIDv1.cxx \
-                   AliPHOSAnalyze.cxx  AliPHOSvFast.cxx AliPHOSFastRecParticle.cxx
+                   AliPHOSAnalyze.cxx  AliPHOSvFast.cxx AliPHOSFastRecParticle.cxx \
+                   AliPHOSArray.cxx
 
 
 # C++ Headers

@@ -6,9 +6,8 @@
    <meta name="GENERATOR" content="Mozilla/4.51 [en] (X11; I; Linux 2.2.5-15 i686) [Netscape]">
    <title>PHOS Geometry in AliRoot</title>
 <link REL="stylesheet" href="http://www-subatech.in2p3.fr/~photons/gps_alice.css" type="text/css">
-</head>
-<body>
-
+  <body>
+    
 <h1 class="page-header">
 Geometry & Materials
 </h1>
@@ -81,11 +80,22 @@ detectors per PHOS module, each detectors being subdivided into <i>fNumberOfPads
 x <i>fNumberOfPadsZ </i>gas cells, a Lead converter and a second layer
 of gas detectors identical to the first layer. This second part is positionned
 on top of the EMCA module.
+<P>
+The class <a href="html/AliPHOSv0.html"> AliPHOSv0 </a> ( <a href="html/AliPHOSv0_Tree.ps"> inheritance tree </a>) describes this geometry. We have defined also a class 
+<a href="html/AliPHOSv1.html"> AliPHOSv1 </a> ( <a href="html/AliPHOSv1_Tree.ps"> inheritance tree </a>) which in addition contains the photodiode response and the light transport through the crystal.
+<P>
+The parameters of the geometry are given in class  <a href="html/AliPHOSGeometry.html"> AliPHOSGeometry </a>( <a href="html/AliPHOSGeometry_Tree.ps"> inheritance tree </a>)
 <br><br>
     <center>
-      <img SRC="PHOSGeantTree.gif" ALT="Geant Tree for PHOS" >
+      <img SRC=" html/images/EMCinAlice.gif" ALT="Geant Tree for PHOS" >
       <br><br>
-      <b> Figure 1.: </b> <i> GEANT Tree which describes the PHOS geometry </i>
+      <b> Figure 1.a: </b> <i> GEANT Tree which describes the EMC-PHOS geometry </i>
+    </center>
+    <P>
+    <center>
+      <img SRC=" html/images/PPSDinAlice.gif" ALT="Geant Tree for PHOS" >
+      <br><br>
+      <b> Figure 1.b: </b> <i> GEANT Tree which describes the PPSD-PHOS geometry </i>
     </center>
 
 <h4>
@@ -165,23 +175,20 @@ AliPHOS * phos = new AliPHOSv4("PHOS", char * name) ;
 <i>GPS2</i>: will create EMCA plus PPSD
 <br><br>
     <center>
-	  <table>
-	    <tr>
-	      <td align=center valign=baseline>
-		<img SRC="AlicebyGeant.gif" ALT="Geant display of PHOS" width="447" height="429" >
-	      </td>
-	      <td align=center valign=baseline>
-		<img SRC="AlicebyRoot.gif" ALT="Root display of Alice" width="447" height="429" >
-	      </td>
-	    <tr>
-	      <td align=left valign=top>
-		<b> Figure 3.: </b> <i> GEANT display of ALICE </i>
-	      </td>
-	      <td align=left valign=top>
-		<b> Figure 4.: </b> <i> Root display of ALICE  </i>
-	      </td>
-	    </tr>	  
-	  </table>
+	  <img SRC="html/images/AliPHOSv0AllViews.gif" ALT="ROOT display of PHOS: All Views" >
+	  <b> Figure 3a.: </b> <i> ROOT Display of ALICE: All Views   </i>
+	  <P>
+	  <img SRC="html/images/AliPHOSv0FrontView.gif" ALT="ROOT display of PHOS: Front View" >
+	  <b> Figure 3b.: </b> <i> ROOT Display of ALICE: Front Views   </i>
+	  <P>
+	  <img SRC="html/images/AliPHOSv03DView1.gif" ALT="ROOT display of PHOS: 3D View" >
+	  <b> Figure 3c.: </b> <i> ROOT Display of ALICE: All View3   </i>
+	  <P>
+	   <img SRC="html/images/AliPHOSv0PPSDFrontView.gif" ALT="Zoom on PPSD: Front View " >
+	  <b> Figure 4.a: </b> <i> ROOT Display of ALICE: zoom on PPSD, Front Views  </i>
+	  <P>
+	   <img SRC="html/images/AliPHOSv0PPSDPerspectiveView.gif" ALT="Zoom on PPSD: Perspective View " >
+	  <b> Figure 4.b: </b> <i> ROOT Display of ALICE: zoom on PPSD, Perspective View  </i>
 	</center> <br><br>
 </li>
 
@@ -202,7 +209,7 @@ EMCA module of 2 layers of 4x4 gas detectors each, each detector having
 </address>
 <!-- Created: Wed Nov 17 12:16:58 CET 1999 -->
 <!-- hhmts start -->
-Last modified: Tue Nov 23 09:49:02 CET 1999
+Last modified: Sun Mar 12 23:49:58 CET 2000
 <!-- hhmts end -->
 <div align=right><a href="http://validator.w3.org/check/referer"><img SRC="vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div>
 

@@ -5,13 +5,12 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////
-//  Track Segment Maker class for PHOS           //
-//  Version SUBATECH                             //
-//  Author Dmitri Peressounko RRC Ki             //
-//     comment: finds pairs of clusters EMC+PPSD //  
-//              performs unfolding.              //
-///////////////////////////////////////////////////
+//_________________________________________________________________________
+// Implementation version 1 of algorithm class to construct PHOS track segments
+// Associates EMC and PPSD clusters
+// Unfolds the EMC cluster   
+//                  
+//*-- Author: Dmitri Peressounko (RRC Ki & SUBATECH)
 
 // --- ROOT system ---
 
@@ -55,12 +54,12 @@ public:
 
 private:
 
-  Float_t fDelta ;    // parameter used for sorting
-  TMinuit * fMinuit ; // Minuit object needed by cluster unfolding
-  Float_t fR0 ;
-  Bool_t fUnfoldFlag ;// Directive to unfold or not the clusters in case of multiple maxima
+  Float_t fDelta ;     // parameter used for sorting
+  TMinuit * fMinuit ;  // Minuit object needed by cluster unfolding
+  Float_t fR0 ;        // Maximum distance between a EMC RecPoint and a PPSD RecPoint   
+  Bool_t fUnfoldFlag ; // Directive to unfold or not the clusters in case of multiple maxima
 
-  ClassDef( AliPHOSTrackSegmentMakerv1,1)  // track segment maker implementation , version 1
+  ClassDef( AliPHOSTrackSegmentMakerv1,1)  // Implementation version 1 of algorithm class to make PHOS track segments 
 
 };
 

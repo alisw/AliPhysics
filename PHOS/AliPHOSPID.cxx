@@ -13,11 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// To identify the type of particle detected in PHOS with or without the help 
-// from other detectors
-//*-- Author : Yves Schutz  SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+//  Algorithm class for the identification of particles detected in PHOS        
+//  base  class                             
+//                  
+//*-- Author: Yves Schutz (SUBATECH)
+
 
 // --- ROOT system ---
 

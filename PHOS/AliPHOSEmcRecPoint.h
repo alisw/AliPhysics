@@ -5,13 +5,11 @@
 
 /* $Id$ */
 
-//////////////////////////////////////////////////
-//  Rec Point in the EM calorimeter of PHOS     //
-//                                              //
-//  Author Dmitri Peressounko RRC KI            //
-//   comment: contains list of AliPHOSDigit's * //  
-//     and evaluates a few average values       //
-//////////////////////////////////////////////////
+//_________________________________________________________________________
+//  RecPoint implementation for PHOS-EMC 
+//  An EmcRecPoint is a cluster of digits   
+//           
+//*-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
 
 // --- ROOT system ---
 
@@ -30,7 +28,8 @@ public:
 
   AliPHOSEmcRecPoint(){} ;                    
   AliPHOSEmcRecPoint(Float_t W0, Float_t LocMaxCut) ;
-  virtual ~AliPHOSEmcRecPoint() ; 
+  virtual ~AliPHOSEmcRecPoint(){} 
+
   void        AddDigit(AliDigitNew & digit, Float_t Energy) ;  // add a digit to the digits list  
   Int_t       Compare(TObject * obj) ;                         // method for sorting  
   
@@ -57,12 +56,12 @@ private:
 
   Bool_t AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) ;
 
-  Float_t  fDelta ;        // parameter used to sort the clusters   
-  Float_t  fLocMaxCut ;    // parameter used for local maximum searc
+  Float_t  fDelta ;        // parameter used to sort the clusters    
+  Float_t  fLocMaxCut ;    // minimum energy difference to distinguish two maxima 
   Float_t * fEnergyList ;  // energy of digits
   Float_t  fW0 ;           // logarithmic weight factor for center of gravity calculation
 
-  ClassDef(AliPHOSEmcRecPoint,1)  // EMC RecPoint, version 1
+  ClassDef(AliPHOSEmcRecPoint,1)  // EMC RecPoint (cluster)
 
 };
 

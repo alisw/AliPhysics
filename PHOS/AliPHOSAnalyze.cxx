@@ -13,9 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Algorythm class to analyze PHOS events
-//*-- Y. Schutz :   SUBATECH 
+// Algorythm class to analyze PHOSv0 events:
+// Construct histograms and displays them.
+// Use the macro EditorBar.C for best access to the functionnalities
+//
+//*-- Author: Y. Schutz (SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
@@ -53,7 +58,7 @@ ClassImp(AliPHOSAnalyze)
 //____________________________________________________________________________
   AliPHOSAnalyze::AliPHOSAnalyze()
 {
-  // ctor
+  // default ctor (useless)
   
   fRootFile = 0 ; 
 }
@@ -61,7 +66,7 @@ ClassImp(AliPHOSAnalyze)
 //____________________________________________________________________________
 AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
 {
-  // ctor
+  // ctor: analyze events from root file: name
   
   Bool_t ok = OpenRootFile(name)  ; 
   if ( !ok ) {
@@ -104,6 +109,10 @@ AliPHOSAnalyze::~AliPHOSAnalyze()
 //____________________________________________________________________________
 void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 {
+  // analyze one single event with id=evt
+
+  TStopwatch ts ; 
+  ts.Start() ; 
   Bool_t ok = Init(evt) ; 
   
   if ( ok ) {
@@ -120,17 +129,26 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
     fPHOS->Reconstruction(fRec);  
     
     // =========== End of reconstruction
+
+    // =========== Write the root file
+
+    fRootFile->Write() ;
     
+    // =========== Finish
+
     cout << "AnalyzeOneEvent > event # " << fEvt << " processed" << endl ;   
   } // ok
   else
     cout << "AnalyzeOneEvent > filed to process event # " << evt << endl ;   
-
+  
+  ts.Stop() ;   cout << "CPU  time = " << ts.CpuTime()   << endl ; 
+  cout << "Real time = " << ts.RealTime()  << endl ; 
 }
 
 //____________________________________________________________________________
- void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)   // analyzes many events   
+ void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)    
 {
+  // analyzes Nevents events in a single PHOS module  
 
   if ( fRootFile == 0 ) 
     cout << "AnalyzeManyEvents > " << "Root File not openned" << endl ;  
@@ -224,7 +242,13 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	    {
 	      if ( recparticle->GetPHOSTrackSegment()->GetPHOSMod() == module )
 		{ 
-		  cout << "Particle type is " << recparticle->GetType() << endl ;  
+		  cout << "Particle type is " << recparticle->GetType() << endl ; 
+		  Int_t numberofprimaries = 0 ;
+		  Int_t * listofprimaries = recparticle->GetPrimaries(numberofprimaries) ;
+		  cout << "Number of primaries = " << numberofprimaries << endl ; 
+		  Int_t index ;
+		  for ( index = 0 ; index < numberofprimaries ; index++)
+		    cout << "    primary # " << index << " =  " << listofprimaries[index] << endl ;  
 		  switch(recparticle->GetType())
 		    {
 		    case kGAMMA:
@@ -281,6 +305,8 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 //____________________________________________________________________________
 void  AliPHOSAnalyze::BookingHistograms()
 {
+  // Books the histograms where the results of the analysis are stored (to be changed)
+
   if (fhEmcDigit )         
     delete fhEmcDigit  ;
   if (fhVetoDigit )     
@@ -327,6 +353,10 @@ void  AliPHOSAnalyze::BookingHistograms()
 //____________________________________________________________________________
 Bool_t AliPHOSAnalyze::Init(Int_t evt)
 {
+  // Do a few initializations: open the root file
+  //                           get the AliRun object
+  //                           defines the clusterizer, tracksegment maker and particle identifier
+  //                           sets the associated parameters
 
   Bool_t ok = kTRUE ; 
   
@@ -357,7 +387,7 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
 
     fClu =  new AliPHOSClusterizerv1() ; 
     fClu->SetEmcEnergyThreshold(0.030) ; 
-    fClu->SetEmcClusteringThreshold(0.50) ; 
+    fClu->SetEmcClusteringThreshold(1.0) ; 
     fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
     fClu->SetPpsdClusteringThreshold(0.0000001) ; 
     fClu->SetLocalMaxCut(0.03) ;
@@ -403,6 +433,10 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
 //____________________________________________________________________________
 void AliPHOSAnalyze::DisplayKineEvent(Int_t evt)
 {
+  // Display particles from the Kine Tree in global Alice (theta, phi) coordinates. 
+  // One PHOS module at the time.
+  // The particle type can be selected.
+  
   if (evt == -999) 
     evt = fEvt ;
 
@@ -473,7 +507,8 @@ void AliPHOSAnalyze::DisplayKineEvent(Int_t evt)
 	fGeom->ImpactOnEmc(theta, phi, mod, z, x) ;
 	if ( mod == module ) {
 	  nparticlein++ ; 
-	  histoparticle->Fill(phi*kRADDEG, theta*kRADDEG, particle->Energy() ) ; 
+	  if (particle->Energy() >  fClu->GetEmcClusteringThreshold()  )
+	    histoparticle->Fill(phi*kRADDEG, theta*kRADDEG, particle->Energy() ) ; 
 	} 
       } 
     }
@@ -491,6 +526,10 @@ void AliPHOSAnalyze::DisplayKineEvent(Int_t evt)
 //____________________________________________________________________________
 void AliPHOSAnalyze::DisplayRecParticles()
 {
+  // Display reconstructed particles in global Alice(theta, phi) coordinates. 
+  // One PHOS module at the time.
+  // Click on symbols indicate the reconstructed particle type. 
+
   if (fEvt == -999) {
     cout << "DisplayRecParticles > Analyze an event first ... (y/n) " ; 
     Text_t answer[1] ; 
@@ -529,7 +568,14 @@ void AliPHOSAnalyze::DisplayRecParticles()
       Double_t kRADDEG = 180. / TMath::Pi() ; 
       while ( (rp = (AliPHOSRecParticle *)nextRecPart() ) ) {
 	AliPHOSTrackSegment * ts = rp->GetPHOSTrackSegment() ; 
-	if ( ts->GetPHOSMod() == module ) {  
+	if ( ts->GetPHOSMod() == module ) {
+	  Int_t numberofprimaries = 0 ;
+	  Int_t * listofprimaries = rp->GetPrimaries(numberofprimaries) ;
+	  cout << "Number of primaries = " << numberofprimaries << endl ; 
+	  Int_t index ;
+	  for ( index = 0 ; index < numberofprimaries ; index++)
+	    cout << "    primary # " << index << " =  " << listofprimaries[index] << endl ;  
+	  
 	  nRecParticlesInModule++ ; 
 	  Double_t theta = rp->Theta() * kRADDEG ;
 	  Double_t phi   = rp->Phi() * kRADDEG ;
@@ -558,6 +604,10 @@ void AliPHOSAnalyze::DisplayRecParticles()
 //____________________________________________________________________________
 void AliPHOSAnalyze::DisplayRecPoints()
 {
+  // Display reconstructed points in local PHOS-module (x, z) coordinates. 
+  // One PHOS module at the time.
+  // Click on symbols displays the EMC cluster, or PPSD information.
+
   if (fEvt == -999) {
     cout << "DisplayRecPoints > Analyze an event first ... (y/n) " ; 
     Text_t answer[1] ; 
@@ -709,6 +759,10 @@ void AliPHOSAnalyze::DisplayRecPoints()
 //____________________________________________________________________________
 void AliPHOSAnalyze::DisplayTrackSegments()
 {
+  // Display track segments in local PHOS-module (x, z) coordinates. 
+  // One PHOS module at the time.
+  // One symbol per PHOS subsystem: EMC, upper PPSD, lower PPSD.
+
   if (fEvt == -999) {
     cout << "DisplayTrackSegments > Analyze an event first ... (y/n) " ; 
     Text_t answer[1] ; 
@@ -778,13 +832,17 @@ void AliPHOSAnalyze::DisplayTrackSegments()
 //____________________________________________________________________________
 Bool_t AliPHOSAnalyze::OpenRootFile(Text_t * name)
 {
-  fRootFile   = new TFile(name) ;
+  // Open the root file named "name"
+  
+  fRootFile   = new TFile(name, "update") ;
   return  fRootFile->IsOpen() ; 
 }
 //____________________________________________________________________________
 void AliPHOSAnalyze::SavingHistograms()
 {
-  Text_t outputname[80] ;// = fRootFile->GetName();
+  // Saves the histograms in a root file named "name.analyzed" 
+
+  Text_t outputname[80] ;
   sprintf(outputname,"%s.analyzed",fRootFile->GetName());
   TFile output(outputname,"RECREATE");
   output.cd();

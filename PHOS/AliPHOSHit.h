@@ -3,21 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////
-//  Hits class for PHOS                       //
-//  Version SUBATECH                          //
-//  A hit in PHOS is the sum of all hits in a //
-//  a single crystal due to one ans only one  //  
-//  primary particle                          //
-//  Author M. Volkov, RRC KI                  //
-//  october 1999:                             // 
-//            Modified by Y. Schutz SUBATECH  //
-//  january 2000:                             // 
-//            Modified by Y. Schutz SUBATECH  //
-//            added fPrimary                  //
-////////////////////////////////////////////////
-
 /* $Id$ */
+
+//_________________________________________________________________________
+//  Hits class for PHOS     
+//  A hit in PHOS is the sum of all hits in a single crystal
+//               
+//*-- Author: Maxime Volkov (RRC KI) & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -51,7 +43,7 @@ private:
   Float_t   fELOS ;      // Energy deposited
   Int_t     fPrimary ;   // Primary particles at the origine of the hit
 
-  ClassDef(AliPHOSHit,1)  // Hits object for PHOS
+  ClassDef(AliPHOSHit,1)  // Hit for PHOS
 
 } ;
 

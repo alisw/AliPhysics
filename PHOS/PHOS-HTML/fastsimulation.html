@@ -19,8 +19,30 @@ that each sub-detector makes a Use Case for a fast simulation scheme. Here is wh
 <P>
 
 <center><img SRC="usecasefastsimulation.gif" ALT="[Use Case for fast simulation]" height=425 width=483></center>
+<P>
+This has been implemented in a new class <a href="html/AliPHOSvFast.html"> AliPHOSvFast </a> ( <a href="html/AliPHOSvFast_Tree.ps"> 
+inheritance tree </a> ). The synopsis goes as follow :
+<br> <br>
+<pre class="code">      
+      AliPHOSvFast::AliDetector
+      
+      <b>CreateGeometry() </b> {
 
+       describes the coarse outline of PHOS as 5 boxes }
 
+      <b>StepManager()</b> {
+
+       when particle reaches PHOS {
+         stop the tracking
+         modifiy the attributes (energy, momentum, type) of the primary particle according to the PHOS response
+         construct a "virtual" reconstructed particle }
+       save the reconstructed particle in a list }
+
+      <b>FinishEvent()</b> {
+
+        write the list in TreeR
+        write the TreeR to file }
+</pre>
 <hr>
 <address class="left">
 &copy; <a href="mailto:schutz@in2p3.fr">Groupe Photons Subatech</a> <a href="http://www-subatech.in2p3.fr/~photons/subatech/en_index.shtml">[Go
@@ -29,7 +51,7 @@ to the GPS Home Page]</a></address>
 <address class="right"> 
 <!-- Created: Tue Oct 26 19:52:56 CEST 1999 -->
 <!-- hhmts start -->
-Last modified: Wed Dec  7 18:54:10 CET 1999
+Last modified: Sun Mar 12 23:52:09 CET 2000
 <!-- hhmts end --></address>
 
 <div align=right><a href="http://validator.w3.org/check/referer"><img SRC="vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div>

@@ -5,12 +5,9 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Algorythm class to analyze PHOS events    //
-//  Yves Schutz            SUBATECH           //
-//                                            //  
-//                                            //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+//  Algorithm class to analyze PHOSv0 events    
+//*-- Author : Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -49,40 +46,40 @@ private:
   
   AliPHOSClusterizer * fClu ;       // a clusterizer 
   Int_t fEvt ;                      // the evt number being processed 
-  AliPHOSGeometry * fGeom;          // the PHOS Geometry object
+  AliPHOSGeometry * fGeom ;         // the PHOS Geometry object
   AliPHOSv0 * fPHOS ;               // the PHOS object from the root file 
   AliPHOSPID * fPID ;               // a particle identifier
   AliPHOSReconstructioner * fRec ;  // a reconstructioner  
   TFile * fRootFile ;               // the root file that contains the data
   AliPHOSTrackSegmentMaker * fTrs ; // a tracksegmentmaker ;
-  TH1F * fhEmcDigit        ;   // Histo of digit energies in the Emc 
-  TH1F * fhVetoDigit       ;   // Histo of digit energies in the Veto 
-  TH1F * fhConvertorDigit  ;   // Histo of digit energies in the Convertor
-  TH1F * fhEmcCluster      ;   // Histo of Cluster energies in Emc
-  TH1F * fhVetoCluster     ;   // Histo of Cluster energies in Veto
-  TH1F * fhConvertorCluster;   // Histo of Cluster energies in Convertor
-  TH2F * fhConvertorEmc    ;   // 2d Convertor versus Emc energies
-  TH1F * fhPhotonEnergy    ;   // Spectrum of detected photons
-  TH1F * fhElectronEnergy  ;   // Spectrum of detected electrons
-  TH1F * fhNeutralHadronEnergy   ;   // Spectrum of detected neutral hadron
-  TH1F * fhNeutralEMEnergy   ;   // Spectrum of detected neutral EM
-  TH1F * fhChargedHadronEnergy   ;   // Spectrum of detected charged
-  TH1F * fhPhotonHadronEnergy  ; // Spectrum of detected Photon-Hadron
-  TH1F * fhPhotonPositionX ;   // X distribution of detected photons
-  TH1F * fhElectronPositionX ; // X distribution of detected electrons
-  TH1F * fhNeutralHadronPositionX  ; // X distribution of detected neutral hadron
-  TH1F * fhNeutralEMPositionX  ; // X distribution of detected neutral EM
-  TH1F * fhChargedHadronPositionX  ; // X distribution of detected charged
-  TH1F * fhPhotonHadronPositionX  ; // X distribution of detected Photon-Hadron
-  TH1F * fhPhotonPositionY   ; // Y distribution of detected photons
-  TH1F * fhElectronPositionY ; // Y distribution of detected electrons
-  TH1F * fhNeutralHadronPositionY  ; // Y distribution of detected neutral hadron
-  TH1F * fhNeutralEMPositionY  ; // Y distribution of detected neutral EM
-  TH1F * fhChargedHadronPositionY  ; // Y distribution of detected charged
-  TH1F * fhPhotonHadronPositionY  ; // Y distribution of detected Photon-Hadron
+  TH1F * fhEmcDigit ;               // Histo of digit energies in the Emc 
+  TH1F * fhVetoDigit ;              // Histo of digit energies in the Veto 
+  TH1F * fhConvertorDigit ;         // Histo of digit energies in the Convertor
+  TH1F * fhEmcCluster ;             // Histo of Cluster energies in Emc
+  TH1F * fhVetoCluster ;            // Histo of Cluster energies in Veto
+  TH1F * fhConvertorCluster ;       // Histo of Cluster energies in Convertor
+  TH2F * fhConvertorEmc ;           // 2d Convertor versus Emc energies
+  TH1F * fhPhotonEnergy ;           // Spectrum of detected photons
+  TH1F * fhElectronEnergy ;         // Spectrum of detected electrons
+  TH1F * fhNeutralHadronEnergy ;    // Spectrum of detected neutral hadron
+  TH1F * fhNeutralEMEnergy ;        // Spectrum of detected neutral EM
+  TH1F * fhChargedHadronEnergy ;    // Spectrum of detected charged
+  TH1F * fhPhotonHadronEnergy ;     // Spectrum of detected Photon-Hadron
+  TH1F * fhPhotonPositionX ;        // X distribution of detected photons
+  TH1F * fhElectronPositionX ;      // X distribution of detected electrons
+  TH1F * fhNeutralHadronPositionX ; // X distribution of detected neutral hadron
+  TH1F * fhNeutralEMPositionX ;     // X distribution of detected neutral EM
+  TH1F * fhChargedHadronPositionX ; // X distribution of detected charged
+  TH1F * fhPhotonHadronPositionX ;  // X distribution of detected Photon-Hadron
+  TH1F * fhPhotonPositionY ;        // Y distribution of detected photons
+  TH1F * fhElectronPositionY ;      // Y distribution of detected electrons
+  TH1F * fhNeutralHadronPositionY ; // Y distribution of detected neutral hadron
+  TH1F * fhNeutralEMPositionY ;     // Y distribution of detected neutral EM
+  TH1F * fhChargedHadronPositionY ; // Y distribution of detected charged
+  TH1F * fhPhotonHadronPositionY ;  // Y distribution of detected Photon-Hadron
 
 
-ClassDef(AliPHOSAnalyze,1)  // PHOS event analyzis , version 1
+ClassDef(AliPHOSAnalyze,1)  // PHOSv0 event analyzis algorithm
 
 };
 

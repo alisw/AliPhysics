@@ -5,14 +5,10 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Clusterizer implementation version 1      //
-//  algorithme class                          //
-//                                            //
-//  Author Yves Schutz     SUBATECH           //
-//                                            //  
-//                                            //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+//  Implementation version 1 of the clusterization algorithm                     
+//
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -58,18 +54,18 @@ public:
   
 private:
   
-  Float_t fA ;
-  Float_t fB ;
-  Float_t fEmcClusteringThreshold ; 
-  Float_t fEmcEnergyThreshold ; 
-  Float_t fLocMaxCut ;   
-  Int_t   fNumberOfEmcClusters ; 
-  Int_t   fNumberOfPpsdClusters ; 
-  Float_t fPpsdClusteringThreshold ; 
-  Float_t fPpsdEnergyThreshold ;  
-  Float_t fW0 ;   
+  Float_t fA ;                       // offset of the energy calibration
+  Float_t fB ;                       // gain of the energy calibration
+  Float_t fEmcClusteringThreshold ;  // minimum energy to include a EMC digit in a cluster
+  Float_t fEmcEnergyThreshold ;      // minimum energy of EMC digit to be considered
+  Float_t fLocMaxCut ;               // minimum energy difference to distinguish local maxima in a cluster
+  Int_t   fNumberOfEmcClusters ;     // number of EMC clusters found 
+  Int_t   fNumberOfPpsdClusters ;    // number of PPSD clusters found
+  Float_t fPpsdClusteringThreshold ; // minimum energy to include a PPSD digit in a cluster
+  Float_t fPpsdEnergyThreshold ;     // minimum energy of PPSD digit to be considered
+  Float_t fW0 ;                      // logarithmic weight for the cluster center of gravity calculation
     
-  ClassDef(AliPHOSClusterizerv1,1)  // Clusterizer implementation , version 1
+  ClassDef(AliPHOSClusterizerv1,1)  // Clusterizer implementation version 1
 
 };
 

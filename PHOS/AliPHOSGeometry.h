@@ -5,13 +5,12 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Geometry class  for PHOS : singleton      //
-//  Version SUBATECH                          //
-//  Author  Y. Schutz SUBATECH                //
-//       geometry parametrized for any        //  
-//       shape of modules                     //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+// Geometry class  for PHOS : singleton  
+// The EMC modules are parametrized so that any configuration can be easily implemented 
+// The title is used to identify the type of CPV used. So far only PPSD implemented
+//                  
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -32,7 +31,7 @@ class AliPHOSGeometry : public AliGeometry {
 
 public: 
 
-  AliPHOSGeometry() {} ;  // must be kept public for root persistency purposes
+  AliPHOSGeometry() {} ;  // must be kept public for root persistency purposes, but should never be called by the outside world
   virtual ~AliPHOSGeometry(void) ; 
   static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title) ; 
   static AliPHOSGeometry * GetInstance() ; 
@@ -50,9 +49,9 @@ public:
 
   // General
 
-  Bool_t AbsToRelNumbering(const Int_t AbsId, Int_t * RelId) ;           // converts the absolute PHOS numbering to a relative 
+  Bool_t AbsToRelNumbering(const Int_t AbsId, Int_t * RelId) ; // converts the absolute PHOS numbering to a relative 
   void EmcModuleCoverage(const Int_t m, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt = kRadian);    
-                                                                         // calculates the angular coverage in theta and phi of a EMC module
+                                                         // calculates the angular coverage in theta and phi of a EMC module
   void EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt = kRadian) ; 
                                                                          // calculates the angular coverage in theta and phi of a 
                                                                          // single crystal in a EMC module
@@ -77,6 +76,8 @@ public:
   Float_t    GetGapBetweenCrystals(void)          const { return fGapBetweenCrystals ; }
   Float_t    GetIPtoCrystalSurface(void)          const { return fIPtoCrystalSurface ; }
   Float_t    GetIPtoOuterCoverDistance(void)      const { return fIPtoOuterCoverDistance ; }
+  Float_t    GetIPtoPpsdUp(void)                  const { return (fIPtoOuterCoverDistance - fPPSDBoxSize[1] + fPPSDModuleSize[1]/2 ); } 
+  Float_t    GetIPtoPpsdLow(void)                 const { return (fIPtoOuterCoverDistance - fPPSDModuleSize[1]/2 ); } 
   Float_t    GetIPtoTopLidDistance(void)          const { return fIPtoTopLidDistance ; }
   Float_t    GetLowerThermoPlateThickness(void)   const { return fLowerThermoPlateThickness ; }
   Float_t    GetLowerTextolitPlateThickness(void) const { return fLowerTextolitPlateThickness ; }
@@ -188,7 +189,7 @@ private:
 
   static AliPHOSGeometry * fGeom ; // pointer to the unique instance of the singleton 
 
-  ClassDef(AliPHOSGeometry,1)  // PHOS geometry class , version subatech
+  ClassDef(AliPHOSGeometry,1)  // PHOS geometry class 
 
 } ;
 

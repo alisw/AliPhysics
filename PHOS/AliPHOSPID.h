@@ -5,15 +5,11 @@
                             
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Algorithme class for the identification of//
-//          particles detected in PHOS        //
-//  base  class                               //
-//  Version SUBATECH                          //
-//  Author Yves Schutz     SUBATECH           //
-//                                            //  
-//   pABC                                     //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+//  Algorithm class for the identification of particles detected in PHOS        
+//  base  class                             
+//                  
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -40,7 +36,7 @@ public:
   virtual void SetShowerProfileCuts(Float_t, Float_t, Float_t, Float_t) {} ; 
   virtual void SetDispersionCutOff(Float_t ) {}    
 
-  ClassDef(AliPHOSPID,1)  // Particle Identifier interface, version 1
+  ClassDef(AliPHOSPID,1)  // Particle Identifier algorithm (base class)
 
 } ;
 

@@ -13,10 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Algorithm class to identify the type of particle from the PHOS TrackSegment alone 
-//*-- Author : Y. Schutz SUBATECH
-//////////////////////////////////////////////////////////////////////////////
+// Implementation version v1 of the PHOS particle identifier 
+// Identification is based on information from PPSD and EMC
+//                  
+//*-- Author: Yves Schutz (SUBATECH)
+
 
 // --- ROOT system ---
 
@@ -32,26 +36,10 @@
 
 ClassImp( AliPHOSPIDv1) 
 
-
-//____________________________________________________________________________
- AliPHOSPIDv1::AliPHOSPIDv1(): fCutOnDispersion(1.5) 
-
-{
-  // ctor
-
-}
-
-//____________________________________________________________________________
- AliPHOSPIDv1::~AliPHOSPIDv1()
-{ 
-  // dtor
-}
-
-
 //____________________________________________________________________________
 void  AliPHOSPIDv1::MakeParticles(TrackSegmentsList * trsl, RecParticlesList * rpl)
 {
-  // main function, does the job
+  // Makes a RecParticle out of a TrackSegment
 
   TIter next(trsl) ; 
   AliPHOSTrackSegment * tracksegment ; 
@@ -112,6 +100,8 @@ void  AliPHOSPIDv1::MakeParticles(TrackSegmentsList * trsl, RecParticlesList * r
 //____________________________________________________________________________
 void  AliPHOSPIDv1:: Print() 
 {
+  // Print the parameters used for the particle type identification
+  
   cout << "AliPHOSPIDv1 : cuts for the particle idendification based on the shower profile " << endl 
        << fLambda1m << " < value1 < " << fLambda1M << endl 
        << fLambda2m << " < value2 < " << fLambda2M << endl ;  
@@ -121,6 +111,8 @@ void  AliPHOSPIDv1:: Print()
 //____________________________________________________________________________
 void  AliPHOSPIDv1::SetShowerProfileCuts(Float_t l1m, Float_t l1M, Float_t l2m, Float_t l2M)
 {
+  // Modifies the parameters used for the particle type identification
+
   fLambda1m = l1m ; 
   fLambda1M = l1M ; 
   fLambda2m = l2m ; 

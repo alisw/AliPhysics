@@ -13,10 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// A brief description of the class
-//*-- Author : Gines MARTINEZ  SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+//  Algorithm class for the reconstruction: clusterizer
+//                                          track segment maker
+//                                          particle identifier   
+//                  
+//*-- Author: Gines Martinez & Yves Schutz (SUBATECH)
+
 
 // --- ROOT system ---
 
@@ -31,28 +36,18 @@
 
 ClassImp(AliPHOSReconstructioner)
 
-
-//____________________________________________________________________________
-AliPHOSReconstructioner::AliPHOSReconstructioner() 
-{
-  // ctor
-}        
-
 //____________________________________________________________________________
 AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterizer, 
 						 AliPHOSTrackSegmentMaker * Tracker,
 						 AliPHOSPID * Pid)
 {
+  // ctor
+  
   fClusterizer        = Clusterizer ;
   fTrackSegmentMaker  = Tracker ;
   fPID                = Pid ; 
 } 
 
-//____________________________________________________________________________
-AliPHOSReconstructioner::~AliPHOSReconstructioner() 
-{
-  // dtor
-}  
 
 //____________________________________________________________________________
  void AliPHOSReconstructioner::Init(AliPHOSClusterizer * Clusterizer, 
@@ -64,19 +59,20 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
   fPID                = Pid ; 
 } 
 
-
-
 //____________________________________________________________________________
  void AliPHOSReconstructioner::Make(TClonesArray * dl, RecPointsList * emccl, RecPointsList * ppsdl, 
 				     TrackSegmentsList * trsl, RecParticlesList * rpl)
 {
+  // Launches the Reconstruction process in the sequence: Make the reconstructed poins (clusterize)
+  //                                                      Make the track segments 
+  //                                                      Make the reconstructed particles
 
-  cout << "Clusterizing" << endl;
+  cout << "Start making reconstructed points (clusterizing)" << endl;
   fClusterizer->MakeClusters(dl, emccl, ppsdl);
 
-  cout << "Segment Track  Maker" << endl;
+  cout << "Start making track segments" << endl;
   fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;
 
-  cout << "Particle Maker" << endl;
+  cout << "Start making reconstructed particles" << endl;
   fPID->MakeParticles(trsl, rpl) ; 
 }

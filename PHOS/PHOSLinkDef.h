@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliPHOS ;
+#pragma link C++ class AliPHOSArray ;
 #pragma link C++ class AliPHOSClusterizer ;
 #pragma link C++ class AliPHOSClusterizerv1 ;
 #pragma link C++ class AliPHOSDigit ;

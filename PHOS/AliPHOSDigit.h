@@ -5,13 +5,15 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  The digit  class: a list of abs Id, energy//
-//  Version SUBATECH                          //
-//  Author Laurent Aphecetche     SUBATECH    //
-//      comment: added sortable YS            //  
-//                                            //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+//  PHOS digit: Id
+//              energy
+//              3 identifiers for the primary particle(s) at the origine of the digit
+//  The digits are made in FinishEvent() by summing all the hits in a single PHOS crystal or PPSD gas cell
+//  It would be nice to replace the 3 identifiers by an array, but, because digits are kept in a TClonesQArray,
+//   it is not possible to stream such an array... (beyond my understqnding!)
+//
+//*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -30,7 +32,7 @@ public:
   AliPHOSDigit() ;
   AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy) ;
   AliPHOSDigit(const AliPHOSDigit & digit) ;
-  virtual ~AliPHOSDigit() ;  
+  virtual ~AliPHOSDigit(){} 
 
   Bool_t operator==(AliPHOSDigit const &rValue) const;
   AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
@@ -50,7 +52,7 @@ private:
   Int_t fPrimary3 ;          // third primary (because I do not know how to stream *fPrimary) 
   Int_t fNprimary ;          // Number of primaries
   
-  ClassDef(AliPHOSDigit,1)   // Digit in PHOS, version 1 
+  ClassDef(AliPHOSDigit,1)   // Digit in PHOS 
 
 } ;
 

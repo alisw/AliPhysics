@@ -5,15 +5,10 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//   Abstract Base Class for PHOS             //
-//  Version SUBATECH                          //
-//  Author  Laurent Aphecetche SUBATECH       //
-//   The only provided method here is         // 
-//   CreateMaterials, which defines the       // 
-//   materials common to all PHOS versions.   // 
-//                                            //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+//  Base Class for PHOS     
+//                  
+//*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
@@ -27,14 +22,14 @@ class AliPHOS : public AliDetector {
 
  public:
 
-  AliPHOS(const char* name, const char* title) ;
-  AliPHOS() ;
+  AliPHOS(const char* name, const char* title): AliDetector(name,title) {} 
+  AliPHOS() : AliDetector() {} 
   virtual ~AliPHOS() ; 
  
-  virtual void CreateMaterials() ;
-  virtual AliPHOSGeometry *  GetGeometry() = 0 ; 
+  virtual void CreateMaterials() ;               // defines the material of the detector
+  virtual AliPHOSGeometry *  GetGeometry() = 0 ; // hands the pointer to the unique geometry object
 
-  ClassDef(AliPHOS,2) // Photon Spectrometer Detector
+  ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)
 
 } ;
 

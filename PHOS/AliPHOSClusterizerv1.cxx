@@ -13,9 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// A brief description of the class
-//*-- Author : Yves Schutz  SUBATECH 
+//  Implementation version 1 of the clusterization algorithm 
+// 
+//*-- Author: Yves Schutz (SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
@@ -40,6 +43,8 @@ ClassImp(AliPHOSClusterizerv1)
 //____________________________________________________________________________
 AliPHOSClusterizerv1::AliPHOSClusterizerv1()
 {
+  // default ctor (to be used)
+
   fA                       = 0.;
   fB                       = 0.01 ;
   fNumberOfEmcClusters     = 0 ; 
@@ -55,9 +60,13 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1()
 //____________________________________________________________________________
 Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)
 {
-  // neigbours are defined as digits having at least common vertex
-  // The order of A and B in AreNeighbours(A,B) is important: first (A) should be digit 
-  // in cluster, which compared with digits not clusterized yet  
+  // Gives the neighbourness of two digits = 0 are not neighbour but continue searching 
+  //                                       = 1 are neighbour
+  //                                       = 2 are not neighbour but do not continue searching
+  // neighbours are defined as digits having at least common vertex
+  // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
+  //                                      which is compared to a digit (d2)  not yet in a cluster  
+
   Int_t rv = 0 ; 
 
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
@@ -94,7 +103,7 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl) 
 {
-  // copies the digits with energy above thershold and sorts the list
+  // Copies the digits with energy above thershold and sorts the list
   // according to increasing Id number
 
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
@@ -134,13 +143,18 @@ void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl)
 //____________________________________________________________________________
 void AliPHOSClusterizerv1:: GetNumberOfClustersFound(Int_t * numb) 
 {
- numb[0] = fNumberOfEmcClusters ; 
- numb[1] = fNumberOfPpsdClusters ; 
+  // Fills numb with the number of EMC  (numb[0]) clusters found
+  //                               PPSD (numb[1]) clusters found
+
+  numb[0] = fNumberOfEmcClusters ; 
+  numb[1] = fNumberOfPpsdClusters ; 
 }
 
 //____________________________________________________________________________
 Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit) 
 {
+  // Tells if (true) or not (false) the digit is in a PHOS-EMC module
+ 
   Bool_t rv = kFALSE ; 
 
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;  
@@ -157,7 +171,8 @@ Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit)
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * emcl, RecPointsList * ppsdl)
 {
-
+  // Steering method to construct the clusters stored in a list of Reconstructed Points
+  // A cluster is defined as a list of neighbour digits
   
   // Fill and sort the working digits list
   TObjArray tempodigitslist( dl->GetEntries() ) ;
@@ -258,6 +273,8 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * e
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::PrintParameters() 
 {
+  // Print the energy thresholds 
+
   cout << "PHOS Clusterizer version 1 :" << endl 
        << "                       EMC  Clustering threshold = " << fEmcClusteringThreshold << endl
        << "                       EMC  Energy threshold     = " << fEmcEnergyThreshold << endl                  

@@ -13,17 +13,24 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// Digit class for PHOS that contains an absolute ID and an energy
-//*-- Author : Laurent Aphecetche  SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+//  PHOS digit: Id
+//              energy
+//              3 identifiers for the primary particle(s) at the origine of the digit
+//  The digits are made in FinishEvent() by summing all the hits in a single PHOS crystal or PPSD gas cell
+//  It would be nice to replace the 3 identifiers by an array, but, because digits are kept in a TClonesQArray,
+//   it is not possible to stream such an array... (beyond my understqnding!)
+//
+//*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
+
 
 // --- ROOT system ---
 
 // --- Standard library ---
 
 #include <iostream>
-#include <cassert> 
 
 // --- AliRoot header files ---
 
@@ -35,6 +42,8 @@ ClassImp(AliPHOSDigit)
 //____________________________________________________________________________
   AliPHOSDigit::AliPHOSDigit() 
 {
+  // default ctor 
+
   fNprimary = 0 ;  
   fPrimary1 = -1 ; 
   fPrimary2 = -1 ; 
@@ -44,6 +53,8 @@ ClassImp(AliPHOSDigit)
 //____________________________________________________________________________
 AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy) 
 {  
+  // ctor with all data 
+
   fId         = id ;
   fAmp        = DigEnergy ;
   fPrimary1   = primary ;
@@ -52,7 +63,9 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy)
 
 //____________________________________________________________________________
 AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) 
-{  
+{
+  // copy ctor
+  
   fId       = digit.fId;
   fAmp      = digit.fAmp ;
   fNprimary = digit.fNprimary ;
@@ -62,13 +75,11 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
 }
 
 //____________________________________________________________________________
-AliPHOSDigit::~AliPHOSDigit()
-{
-}
-
-//____________________________________________________________________________
 Int_t AliPHOSDigit::Compare(TObject * obj)
 {
+  // Compares two digits with respect to its Id
+  // to sort according increasing Id
+
   Int_t rv ; 
 
   AliPHOSDigit * digit = (AliPHOSDigit *)obj ; 
@@ -89,6 +100,8 @@ Int_t AliPHOSDigit::Compare(TObject * obj)
 //____________________________________________________________________________
 Int_t AliPHOSDigit::GetPrimary(Int_t index) const
 {
+  // Returns the primary particle id index =1,2,3
+ 
   Int_t rv = -1 ; 
   if ( index > 3 )
     cout << "AliPHOSDigit  ERROR > only 3 primaries allowed" << endl ; 
@@ -113,6 +126,8 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
 //____________________________________________________________________________
 Bool_t AliPHOSDigit::operator==(AliPHOSDigit const & digit) const 
 {
+  // Two digits are equal if they have the same Id
+  
   if ( fId == digit.fId ) 
     return kTRUE ;
   else 
@@ -122,6 +137,8 @@ Bool_t AliPHOSDigit::operator==(AliPHOSDigit const & digit) const
 //____________________________________________________________________________
 AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit) 
 {
+  // Adds the amplitude of digits and completes the list of primary particles
+  
   fAmp += digit.fAmp ;
  
   // Here comes something crummy ... but I do not know how to stream pointers
@@ -170,7 +187,12 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
 //____________________________________________________________________________
 ostream& operator << ( ostream& out , const AliPHOSDigit & digit)
 {
-  out << "ID " << digit.fId << " Energy = " << digit.fAmp ;
+  // Prints the data of the digit
+  
+  out << "ID " << digit.fId << " Energy = " << digit.fAmp << endl 
+      << "Primary 1 = " << digit.fPrimary1 << endl 
+      << "Primary 2 = " << digit.fPrimary2 << endl 
+      << "Primary 3 = " << digit.fPrimary3 << endl ;
 
   return out ;
 }

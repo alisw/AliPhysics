@@ -5,12 +5,11 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Short description                         //
-//  Author                 SUBATECH           //
-//      comment                               //  
-//                                            //
-////////////////////////////////////////////////
+//_________________________________________________________________________
+//  Base Class for PHOS     
+//                  
+//*-- Author: (SUBATECH)
+
 
 // --- ROOT system ---
 
@@ -27,7 +26,7 @@ public:
 
 private:
 
-  ClassDef(AliPHOSxxx,1)  // description , version 1
+  ClassDef(AliPHOSxxx,1)  // description 
 
 };
 

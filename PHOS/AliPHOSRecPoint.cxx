@@ -13,10 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
-// PHOSRecPoint base class deriving from AliRecPoint
-//*-- Author : Gines MARTINEZ  SUBATECH 
-//////////////////////////////////////////////////////////////////////////////
+//  Base Class for PHOS Reconstructed Points  
+//                  
+//*-- Author: Gines Martinez (SUBATECH)
 
 // --- ROOT system ---
 #include "TPad.h"
@@ -40,35 +42,30 @@ ClassImp(AliPHOSRecPoint)
 AliPHOSRecPoint::AliPHOSRecPoint()
   : AliRecPoint()
 {
+  // ctor
+
   fGeom =   AliPHOSGeometry::GetInstance() ;
   fPHOSMod = 0;
 }
 
 //____________________________________________________________________________
-AliPHOSRecPoint::~AliPHOSRecPoint()
-{
-  // dtor
-}
-
-//____________________________________________________________________________
 Int_t AliPHOSRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
 {
-  //Compute distance from point px,py to  a AliPHOSRecPoint considered as a Tmarker
-  //  Compute the closest distance of approach from point px,py to this marker.
-  //  The distance is computed in pixels units.
-  //
+  // Compute distance from point px,py to  a AliPHOSRecPoint considered as a Tmarker
+  // Compute the closest distance of approach from point px,py to this marker.
+  // The distance is computed in pixels units.
 
-   TVector3 pos(0.,0.,0.) ;
-   GetLocalPosition( pos) ;
-   Float_t x =  pos.X() ;
-   Float_t y =  pos.Z() ;
-   const Int_t kMaxDiff = 10;
-   Int_t pxm  = gPad->XtoAbsPixel(x);
-   Int_t pym  = gPad->YtoAbsPixel(y);
-   Int_t dist = (px-pxm)*(px-pxm) + (py-pym)*(py-pym);
-
-   if (dist > kMaxDiff) return 9999;
-   return dist;
+  TVector3 pos(0.,0.,0.) ;
+  GetLocalPosition( pos) ;
+  Float_t x =  pos.X() ;
+  Float_t y =  pos.Z() ;
+  const Int_t kMaxDiff = 10;
+  Int_t pxm  = gPad->XtoAbsPixel(x);
+  Int_t pym  = gPad->YtoAbsPixel(y);
+  Int_t dist = (px-pxm)*(px-pxm) + (py-pym)*(py-pym);
+  
+  if (dist > kMaxDiff) return 9999;
+  return dist;
 }
 
 //___________________________________________________________________________
@@ -87,76 +84,77 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
   //
   // If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
   // and switched off when the mouse button is released.
-  //
 
   //  static Int_t pxold, pyold;
 
-   static TGraph *  digitgraph = 0 ;
-   static TPaveText* clustertext = 0 ;
-
-   if (!gPad->IsEditable()) return;
-
-   switch (event) {
-
-
-   case kButton1Down:{
-     AliPHOSDigit * digit ;
-     AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
-     Int_t iDigit;
-     Int_t relid[4] ;
-     Float_t xi[fMulDigit] ;
-     Float_t zi[fMulDigit] ;
- 
-     for(iDigit=0; iDigit<fMulDigit; iDigit++) {
-       digit = (AliPHOSDigit *) fDigitsList[iDigit];
-       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-       phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]) ;
-     }
-
-     if (!digitgraph) {
-       digitgraph = new TGraph(fMulDigit,xi,zi);
-       digitgraph-> SetMarkerStyle(5) ; 
-       digitgraph-> SetMarkerSize(1.) ;
-       digitgraph-> SetMarkerColor(1) ;
-       digitgraph-> Draw("P") ;
-     }
-     if (!clustertext) {
+  static TGraph *  digitgraph = 0 ;
+  static TPaveText* clustertext = 0 ;
   
-       TVector3 pos(0.,0.,0.) ;
-       GetLocalPosition(pos) ;
-       clustertext = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+50,pos.Z()+35,"") ;
-       Text_t  line1[40] ;
-       Text_t  line2[40] ;
-       sprintf(line1,"Energy=%1.2f GeV",GetEnergy()) ;
-       sprintf(line2,"%d Digits",GetDigitsMultiplicity()) ;
-       clustertext ->AddText(line1) ;
-       clustertext ->AddText(line2) ;
-       clustertext ->Draw("");
-     }
-     gPad->Update() ; 
-     Print() ;
+  if (!gPad->IsEditable()) return;
+  
+  switch (event) {
+    
+    
+  case kButton1Down:{
+    AliPHOSDigit * digit ;
+    AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+    Int_t iDigit;
+    Int_t relid[4] ;
+    Float_t xi[fMulDigit] ;
+    Float_t zi[fMulDigit] ;
+    
+    for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+      digit = (AliPHOSDigit *) fDigitsList[iDigit];
+      phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+      phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]) ;
+    }
+    
+    if (!digitgraph) {
+      digitgraph = new TGraph(fMulDigit,xi,zi);
+      digitgraph-> SetMarkerStyle(5) ; 
+      digitgraph-> SetMarkerSize(1.) ;
+      digitgraph-> SetMarkerColor(1) ;
+      digitgraph-> Draw("P") ;
+    }
+    if (!clustertext) {
+      
+      TVector3 pos(0.,0.,0.) ;
+      GetLocalPosition(pos) ;
+      clustertext = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+50,pos.Z()+35,"") ;
+      Text_t  line1[40] ;
+      Text_t  line2[40] ;
+      sprintf(line1,"Energy=%1.2f GeV",GetEnergy()) ;
+      sprintf(line2,"%d Digits",GetDigitsMultiplicity()) ;
+      clustertext ->AddText(line1) ;
+      clustertext ->AddText(line2) ;
+      clustertext ->Draw("");
+    }
+    gPad->Update() ; 
+    Print() ;
   }
-
-     break;
-
-   case kButton1Up:
-     if (digitgraph) {
-       delete digitgraph  ;
-       digitgraph = 0 ;
-     }
-     if (clustertext) {
-       delete clustertext ;
-       clustertext = 0 ;
-     }
-     
-     break;
-     
-   }
+  
+  break;
+  
+  case kButton1Up:
+    if (digitgraph) {
+      delete digitgraph  ;
+      digitgraph = 0 ;
+    }
+    if (clustertext) {
+      delete clustertext ;
+      clustertext = 0 ;
+    }
+    
+    break;
+    
+  }
 }
 
 //____________________________________________________________________________
 Int_t AliPHOSRecPoint::GetPHOSMod()
-{ 
+{
+  // Returns the PHOS module in which the RecPoint is found
+ 
   if(fPHOSMod > 0) 
     return fPHOSMod ;
 
@@ -172,11 +170,13 @@ Int_t AliPHOSRecPoint::GetPHOSMod()
 }
 
 //______________________________________________________________________________
-void AliPHOSRecPoint::GetPrimaries(Int_t & number, Int_t * list)
+Int_t * AliPHOSRecPoint::GetPrimaries(Int_t & number)
 {
+  // Constructs the list of primary particles which have contributed to this RecPoint
+  
   AliPHOSDigit * digit ;
   Int_t index ;
-  Int_t maxcounter = 3 ;
+  Int_t maxcounter = 10 ;
   Int_t counter    = 0 ;
   Int_t * tempo    = new Int_t[maxcounter] ;
   
@@ -203,39 +203,36 @@ void AliPHOSRecPoint::GetPrimaries(Int_t & number, Int_t * list)
 	  break ;
 	}
       } // end of check
-      if ( !already) { // store it 
-	  tempo[counter] = newprimary ; 
-	  counter++ ;
+      if ( !already) { // store it
+	tempo[counter] = newprimary ; 
+	counter++ ;
       } // store it
     } // all primaries in digit
     delete newprimaryarray ; 
   } // all digits
 
   number = counter ; 
-  for ( index = 0 ; index < number ; index ++ )
-    list[index] = tempo[index] ;
-  
-  delete tempo ; 
+  return tempo ; 
 }
 
 //______________________________________________________________________________
 void AliPHOSRecPoint::Paint(Option_t *)
 {
-// Paint this ALiRecPoint as a TMarker  with its current attributes
-
-   TVector3 pos(0.,0.,0.)  ;
-   GetLocalPosition(pos)   ;
-   Coord_t x = pos.X()     ;
-   Coord_t y = pos.Z()     ;
-   Color_t markercolor = 1 ;
-   Size_t  markersize = 1. ;
-   Style_t markerstyle = 5 ;
-
-   if (!gPad->IsBatch()) {
-     gVirtualX->SetMarkerColor(markercolor) ;
-     gVirtualX->SetMarkerSize (markersize)  ;
-     gVirtualX->SetMarkerStyle(markerstyle) ;
-   }
-   gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
-   gPad->PaintPolyMarker(1,&x,&y,"") ;
+  // Paint this ALiRecPoint as a TMarker  with its current attributes
+  
+  TVector3 pos(0.,0.,0.)  ;
+  GetLocalPosition(pos)   ;
+  Coord_t x = pos.X()     ;
+  Coord_t y = pos.Z()     ;
+  Color_t markercolor = 1 ;
+  Size_t  markersize = 1. ;
+  Style_t markerstyle = 5 ;
+  
+  if (!gPad->IsBatch()) {
+    gVirtualX->SetMarkerColor(markercolor) ;
+    gVirtualX->SetMarkerSize (markersize)  ;
+    gVirtualX->SetMarkerStyle(markerstyle) ;
+  }
+  gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
+  gPad->PaintPolyMarker(1,&x,&y,"") ;
 }

@@ -3,15 +3,16 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////
-//  Manager class  for PHOS                   //
-//  Version SUBATECH                          //
-//  Author  Y. Schutz SUBATECH                //
-//       This is the class to be used for     //  
-//       fast simulations                     //
-////////////////////////////////////////////////
-
 /* $Id$ */
+
+//_________________________________________________________________________
+// Implementation of the PHOS manager class for fast simulations     
+// Tracks particles until the reach a grossly designed PHOS module
+// Modify the particles property (momentum, energy, type) according to
+//  the PHOS response function. The result is called a virtual reconstructed
+//  particle.                                
+//                  
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 #include "TClonesArray.h"
@@ -70,7 +71,7 @@ private:
   Double_t fPosParaB1 ;                      // parameter for the position resolution 
   Double_t fPosParaB2 ;                      // parameter for the position resolution
 
-  ClassDef(AliPHOSvFast,1)  // PHOS main class , version for fast simulation
+  ClassDef(AliPHOSvFast,1)  //  Implementation of the PHOS manager class for fast simulations  
 
 };
 
