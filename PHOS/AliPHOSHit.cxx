@@ -49,11 +49,12 @@ AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit)
   fX       = hit.fX ; 
   fY       = hit.fY ; 
   fZ       = hit.fZ ; 
+  fPid     = hit.fPid ;
  
 } 
 
 //____________________________________________________________________________
-AliPHOSHit::AliPHOSHit(Int_t Shunt, Int_t primary, Int_t Track, Int_t id, Float_t *hits) : AliHit(Shunt, Track)
+AliPHOSHit::AliPHOSHit(Int_t Shunt, Int_t primary, Int_t Track, Int_t id, Float_t *hits, Int_t pid) : AliHit(Shunt, Track)
 {
   // ctor
   
@@ -64,6 +65,7 @@ AliPHOSHit::AliPHOSHit(Int_t Shunt, Int_t primary, Int_t Track, Int_t id, Float_
    fZ          = hits[2] ;
    fELOS       = hits[3] ;
    fPrimary    = primary ;
+   fPid        = pid ; 
 }
 
 //____________________________________________________________________________
@@ -86,9 +88,10 @@ AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue) const
   
   AliPHOSHit added(*this);
 
-   added.fX    = rValue.fX  ;
-   added.fY    = rValue.fY ;
-   added.fZ    = rValue.fZ ;
+  // the accumulated hit position is the position of the first hi
+  //    added.fX    = rValue.fX  ;
+  //    added.fY    = rValue.fY ;
+  //    added.fZ    = rValue.fZ ;
 
    added.fELOS += rValue.GetEnergy() ;
     

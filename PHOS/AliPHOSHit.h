@@ -30,7 +30,7 @@ class AliPHOSHit : public AliHit {
     // default ctor 
   }
   AliPHOSHit(const AliPHOSHit & hit) ; 
-  AliPHOSHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t id, Float_t *hits) ;
+  AliPHOSHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t id, Float_t *hits, Int_t pid) ;
   virtual ~AliPHOSHit(void) {
     // dtor 
   }  
@@ -56,6 +56,7 @@ class AliPHOSHit : public AliHit {
 
   Int_t     fId ;        // Absolute Id number of PHOS Xtal or PPSD pad
   Float_t   fELOS ;      // Energy deposited
+  Int_t     fPid ;       // type of the particle that initiates that hit 
   Int_t     fPrimary ;   // Primary particles at the origine of the hit
 
   ClassDef(AliPHOSHit,1)  // Hit for PHOS
