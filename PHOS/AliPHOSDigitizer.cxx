@@ -157,7 +157,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   
   // Makes the digitization of the collected summable digits.
   //  It first creates the array of all PHOS modules
-  //  filled with noise (different for EMC, CPV and PPSD) and
+  //  filled with noise (different for EMC, and CPV) and
   //  then adds contributions from SDigits. 
   // This design avoids scanning over the list of digits to add 
   // contribution to new SDigits only.
