@@ -9,13 +9,13 @@
 #define TG4_LIMITS_H
 
 #include "TG4Globals.h"
-#include "TG3Cut.h"
-#include "TG3Flag.h"
+#include "TG4G3Cut.h"
+#include "TG4G3Control.h"
 
 #include <G4UserLimits.hh>
 
-class TG4CutVector;
-class TG4FlagVector;
+class TG4G3CutVector;
+class TG4G3ControlVector;
 
 class G4VProcess;
 
@@ -30,14 +30,14 @@ class TG4Limits: public G4UserLimits
     TG4Limits& operator=(const TG4Limits& right);
 
     // set methods
-    void SetG3Cut(TG3Cut g3Cut, G4double cutValue);
-    void SetG3Flag(TG3Flag g3Flag, G4double flagValue);
+    void SetG3Cut(TG4G3Cut cut, G4double cutValue);
+    void SetG3Control(TG4G3Control control, G4double controlValue);
     void SetG3DefaultCuts();
-    void SetG3DefaultFlags();
+    void SetG3DefaultControls();
     
     // get methods
     G4bool IsCut() const;
-    G4bool IsFlag() const;
+    G4bool IsControl() const;
     virtual G4double GetUserMinEkine(const G4Track& track);
     G4double GetMinEkineForGamma(const G4Track& track) const;
     G4double GetMinEkineForElectron(const G4Track& track) const;
@@ -45,20 +45,20 @@ class TG4Limits: public G4UserLimits
     G4double GetMinEkineForNeutralHadron(const G4Track& track) const;
     G4double GetMinEkineForMuon(const G4Track& track) const;
     G4double GetMinEkineForOther(const G4Track& track) const;
-    G4int GetFlag(G4VProcess* process) const; 
+    G4int GetControl(G4VProcess* process) const; 
 
   private:
     // data members
-    G4bool            fIsCut;      //true if any cut value is set
-    G4bool            fIsFlag;     //true if any flag value is set
-    TG4CutVector*     fCutVector;  //TG4CutVector
-    TG4FlagVector*    fFlagVector; //TG4FlagVector
+    G4bool              fIsCut;    //true if any cut value is set
+    G4bool              fIsControl;//true if any flag value is set
+    TG4G3CutVector*     fCutVector;    //TG4CutVector
+    TG4G3ControlVector* fControlVector;//TG4ControlVector
 };
 
 // inline methods
 
 inline G4bool TG4Limits::IsCut() const  { return fIsCut; }
-inline G4bool TG4Limits::IsFlag() const { return fIsFlag; }
+inline G4bool TG4Limits::IsControl() const { return fIsControl; }
 
 #endif //TG4_USER_LIMITS_H
 

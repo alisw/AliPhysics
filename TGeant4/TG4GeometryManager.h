@@ -9,8 +9,8 @@
 
 #include "TG4NameMap.h"
 #include "TG4Globals.h"
-#include "TG3Cut.h"
-#include "TG3Flag.h"
+#include "TG4G3Cut.h"
+#include "TG4G3Control.h"
 
 #include <globals.hh>
 #include <G3SensVolVector.hh>
@@ -130,8 +130,8 @@ class TG4GeometryManager
 
   private:
     // methods
-    void GstparCut(G4int itmed, TG3Cut par, G4double parval);
-    void GstparFlag(G4int itmed, TG3Flag par, G4double parval);
+    void GstparCut(G4int itmed, TG4G3Cut par, G4double parval);
+    void GstparControl(G4int itmed, TG4G3Control control, G4double parval);
         
     // static data members
     static TG4GeometryManager*  fgInstance;     //this instance

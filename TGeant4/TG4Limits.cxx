@@ -4,8 +4,8 @@
 // See the class description in the header file.
 
 #include "TG4Limits.h"
-#include "TG4CutVector.h"
-#include "TG4FlagVector.h"
+#include "TG4G3CutVector.h"
+#include "TG4G3ControlVector.h"
 
 TG4Limits::TG4Limits()
   : G4UserLimits(),              
@@ -13,25 +13,25 @@ TG4Limits::TG4Limits()
     // fMaxStep (DBL_MAX), fMaxTrack(DBL_MAX),fMaxTime(DBL_MAX),
     // fMinEkine(0.), fMinRange(0.)
     fIsCut(false),
-    fIsFlag(false) 
+    fIsControl(false) 
 {
 //
-  fCutVector = new TG4CutVector();
-  fFlagVector = new TG4FlagVector();
+  fCutVector = new TG4G3CutVector();
+  fControlVector = new TG4G3ControlVector();
 }
 
 TG4Limits::TG4Limits(const TG4Limits& right)
   : G4UserLimits(right) 
 {
 //    
-  fCutVector = new TG4CutVector(*right.fCutVector);
-  fFlagVector = new TG4FlagVector(*right.fFlagVector);
+  fCutVector = new TG4G3CutVector(*right.fCutVector);
+  fControlVector = new TG4G3ControlVector(*right.fControlVector);
 }  
 
 TG4Limits::~TG4Limits() {
 //
   delete fCutVector;
-  delete fFlagVector;
+  delete fControlVector;
 }
 
 // operators
@@ -45,7 +45,7 @@ TG4Limits& TG4Limits::operator=(const TG4Limits& right)
   G4UserLimits::operator=(right);
 
   *fCutVector  = *right.fCutVector;
-  *fFlagVector = *right.fFlagVector;
+  *fControlVector = *right.fControlVector;
 
   return *this;  
 }    
@@ -66,22 +66,22 @@ G4double TG4Limits::GetUserMinEkine(const G4Track& track)
 
 // public methods
 
-void TG4Limits::SetG3Cut(TG3Cut g3Cut, G4double cutValue)
+void TG4Limits::SetG3Cut(TG4G3Cut cut, G4double cutValue)
 {
 // Sets the cut value for the specified cut.
 // ---
 
-  fCutVector->SetG3Cut(g3Cut, cutValue);
+  fCutVector->SetG3Cut(cut, cutValue);
   fIsCut = true;
 }
 
-void TG4Limits::SetG3Flag(TG3Flag g3Flag, G4double flagValue)
+void TG4Limits::SetG3Control(TG4G3Control control, G4double flagValue)
 {
 // Sets the process control value for the specified flag.
 // ---
 
-  fFlagVector->SetG3Flag(g3Flag, flagValue);
-  if (flagValue - kUnset > 0.01) fIsFlag = true;
+  fControlVector->SetG3Control(control, flagValue);
+  if (flagValue - kUnset > 0.01) fIsControl = true;
 }
 
 void TG4Limits::SetG3DefaultCuts()
@@ -93,13 +93,13 @@ void TG4Limits::SetG3DefaultCuts()
   fIsCut = true;  
 }
 
-void TG4Limits::SetG3DefaultFlags()
+void TG4Limits::SetG3DefaultControls()
 {
 // Sets the G3 default process control values for all flags.
 // ---
 
-  fFlagVector->SetG3Defaults();
-  fIsFlag = true;
+  fControlVector->SetG3Defaults();
+  fIsControl = true;
 }
 
 G4double TG4Limits::GetMinEkineForGamma(const G4Track& track) const
@@ -165,14 +165,14 @@ G4double TG4Limits::GetMinEkineForOther(const G4Track& track) const
  return fMinEkine;
 }
 
-G4int TG4Limits::GetFlag(G4VProcess* process) const 
+G4int TG4Limits::GetControl(G4VProcess* process) const 
 {
 // Returns the flag value for the particle associated with
 // the specified process.
 // ---
 
-  if (fIsFlag)
-    return fFlagVector->GetFlag(process);
+  if (fIsControl)
+    return fControlVector->GetControl(process);
   else 
     return kUnset;
 }
