@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/27 13:31:29  barbera
+Rails between ITS and TPC added.
+
 Revision 1.8  2000/10/27 13:03:08  barbera
 Small changes in the SPD volumes and materials
 
@@ -561,10 +564,12 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   
   dgh[0] = 0.85;
   dgh[1] = 10.;
-  dgh[2] = 145.;  // actual half length is 190. but clashes with services !
+  dgh[2] = 132.75;  // In the case of symmetric services the rails
+                    // cannot be longer than 145 cm on the opposite side
+						  // w.r.t. the absorber
   gMC->Gsvolu("IRAI", "BOX ", idtmed[285], dgh, 3);   
-  gMC->Gspos("IRAI", 1, "ITSV", 53., 0., 0., 0, "ONLY");
-  gMC->Gspos("IRAI", 2, "ITSV", -53., 0., 0., 0, "ONLY");        
+  gMC->Gspos("IRAI", 1, "ITSV", 53., 0., -12.25, 0, "ONLY");
+  gMC->Gspos("IRAI", 2, "ITSV", -53., 0., -12.25, 0, "ONLY");        
   
   
   // --- Outputs the geometry tree in the EUCLID/CAD format 
