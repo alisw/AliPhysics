@@ -796,17 +796,12 @@ C---CALLED BY F-N G(AK)
 
 c-------------#include "gen/pilot.h"
       FUNCTION DFRSIN(X)
-
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)      
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 
       DIMENSION A(0:16),B(0:15),C1(0:25),C2(0:28)
-
       PARAMETER (Z1 = 1, R8 = Z1/8, R32 = Z1/32)
-
       DATA C0 /1.25331 41373 15500 3D0/
-
       DATA NA,NB,NC1,NC2 /16,15,25,28/
-
       DATA A( 0) / 0.76435 13866 41860 002D0/
       DATA A( 1) /-0.43135 54754 76601 793D0/
       DATA A( 2) / 0.43288 19997 97266 531D0/
@@ -971,17 +966,14 @@ c-------------#include "gen/pilot.h"
       END
 
 c--#include "gen/pilot.h"
-      FUNCTION CGAMMA(Z)
- 
+      FUNCTION CGAMMA(Z) 
       
       COMPLEX*8 CGAMMA
       COMPLEX*8 Z,U,V,F,H,S       
       CHARACTER NAME*(*)
       CHARACTER*80 ERRTXT      
       PARAMETER (NAME = 'CGAMMA')
-
       DIMENSION C(0:15)
-
       PARAMETER (Z1 = 1, HF = Z1/2)
 
 c--#if defined(CERNLIB_QF2C)
