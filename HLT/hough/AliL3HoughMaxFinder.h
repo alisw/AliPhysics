@@ -4,6 +4,7 @@
 #define ALIL3_HOUGH_MaxFinder
 
 #include "AliL3RootTypes.h"
+#include "AliL3StandardIncludes.h"
 
 class AliL3Histogram;
 class AliL3TrackArray;
