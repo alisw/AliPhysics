@@ -272,7 +272,7 @@ Bool_t CheckAlice()
     if(gSystem->Exec("ls galice.root")){
       Info("CheckAlice","It's AliRoot, and no galice.root: SIMULATION");
       gAlice->SetDebug(-1);
-      gAlice->Init("AliceConfig.C");
+      gAlice->Init("ConfigRich.C");
       r=(AliRICH*)gAlice->GetDetector("RICH");
       return kFALSE;
     }else{//galice.root is present we want to read alice from file
