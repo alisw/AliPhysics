@@ -88,7 +88,9 @@ AliAOD* AliHBTPositionRandomizer::GetEventSim() const
     return 0x0;
   } 
  AliAOD *e =  fReader->GetEventSim();
- if (e->IsRandomized() == kFALSE) Randomize(e);
+ if (e) 
+   if (e->IsRandomized() == kFALSE) 
+     Randomize(e);
  return e;
 }
 /*********************************************************************/
@@ -102,7 +104,7 @@ AliAOD* AliHBTPositionRandomizer::GetEventRec() const
     return 0x0;
   }  
  AliAOD *e =  fReader->GetEventRec();
- if (fRandomizeTracks) if (e->IsRandomized() == kFALSE) Randomize(e);
+ if (fRandomizeTracks && e) if (e->IsRandomized() == kFALSE) Randomize(e);
  return e;
 }
 /*********************************************************************/
