@@ -215,14 +215,20 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
    //rl->UnloadgAlice();
 
 
+   TFile *bf=TFile::Open("AliESDcheck.root","RECREATE");
+   if (!bf || !bf->IsOpen()) {
+      cerr<<"Can't open AliESDcheck.root !\n"; return 1;
+   }
    TFile *ef=TFile::Open("AliESDs.root","RECREATE");
-   if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
+   if (!ef || !ef->IsOpen()) {cerr<<"Can't open AliESDs.root !\n"; return 2;}
 
    TStopwatch timer;
    Int_t rc=0;
    if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
    //The loop over events
    for (Int_t i=0; i<nev; i++) {
+     Char_t ename[100]; 
+
      cerr<<"\n\nProcessing event number : "<<i<<endl;
      AliESD *event=new AliESD(); 
      event->SetRunNumber(run);
@@ -264,6 +270,11 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
      itsTracker.LoadClusters(itsTree);
      rc+=itsTracker.Clusters2Tracks(event);
 
+       //checkpoint
+       bf->cd();
+       sprintf(ename,"in%d",i);
+       event->Write(ename); bf->Flush();
+       ef->cd();
 
 //***** Back propagation towards the outer barrel detectors
      rc+=itsTracker.PropagateBack(event); 
@@ -295,6 +306,14 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
      tofPID.UnloadClusters();
 
 
+       //checkpoint
+       bf->cd();
+       strcat(ename,";*"); bf->Delete(ename);
+       sprintf(ename,"out%d",i);
+       event->Write(ename); bf->Flush();
+       ef->cd();
+
+
 //***** Now the final refit at the primary vertex...
      rc+=trdTracker.RefitInward(event);
      trdTracker.UnloadClusters();
@@ -312,22 +331,31 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
      AliESDpid::MakePID(event);
 
 
+       //checkpoint
+       bf->cd();
+       strcat(ename,";*"); bf->Delete(ename);
+       sprintf(ename,"refit%d",i);
+       event->Write(ename); bf->Flush();
+       ef->cd();
+
+       bf->Close();
+
 //***** Hyperon reconstruction 
      vtxer.SetVertex(vtx);
      rc+=vtxer.Tracks2V0vertices(event);            // V0 finding
      rc+=cvtxer.V0sTracks2CascadeVertices(event);   // cascade finding
 
 
-
 //***** Some final manipulations with this event 
      if (rc==0) {
-        Char_t ename[100]; 
         sprintf(ename,"%d",i);
 	ef->cd();
-        if (!event->Write(ename)) rc++;
+        if (!event->Write(ename)) rc++; ef->Flush();
+        bf=TFile::Open("AliESDcheck.root","RECREATE");
      } 
      if (rc) {
         cerr<<"Something bad happened...\n";
+        bf=TFile::Open("AliESDcheck.root","UPDATE");
      }
      delete event;
    }
@@ -338,6 +366,7 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
    delete par;
 
    ef->Close();
+   bf->Close();
 
    delete rl;
 
