@@ -38,6 +38,7 @@ ClassImp(AliTrackReference)
 
 //_______________________________________________________________________
  AliTrackReference::AliTrackReference():
+   TObject(),
    fTrack(0),
    fX(0),
    fY(0),
@@ -45,7 +46,8 @@ ClassImp(AliTrackReference)
    fPx(0),
    fPy(0),
    fPz(0),
-   fLength(0)
+   fLength(0),
+   fTime(0)
 {
   //
   // Default constructor
@@ -55,7 +57,9 @@ ClassImp(AliTrackReference)
 }
 
 //_______________________________________________________________________
-AliTrackReference::AliTrackReference(Int_t label) {
+AliTrackReference::AliTrackReference(Int_t label) :
+  TObject()
+{
   //
   // Create Reference object out of label and
   // data in TVirtualMC object
