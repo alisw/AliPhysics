@@ -354,9 +354,10 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     }// end if
 
     Int_t rails = 1;  // flag for rails (1 --> rails in; 0 --> rails out)
-  
-    Int_t fluid = 1;  // flag for the cooling fluid (1 --> water; 0 --> freon)
 
+    Int_t fluid = 1;  // flag for the cooling fluid (1 --> water; 0 --> freon)
+                      // This option is maintained for SDD and SSD only
+                      // For SPD the cooling liquid is C4F10
     rails = GetRails();
 
     fluid = GetCoolingFluid();
@@ -367,11 +368,6 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
 	    "1 (rails in) will be used." << endl;
     }// end if
 
-    if(fluid != 0 && fluid != 1) {
-	cout << "ITS - WARNING: the switch for cooling fluid is not set "
-	    "neither to 0 (freon) nor to 1 (water). The default value of "
-	    "1 (water) will be used." << endl;  
-    }// end if
 
     cout << "ITS: Detector thickness on layer 1 is set to " << 
 	ddet1 << " microns." << endl;
@@ -385,11 +381,6 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
 	cout << "ITS: Rails are out." << endl; 
     } else {
 	cout << "ITS: Rails are in." << endl;
-    }// end if
-    if(fluid == 0 ) {
-	cout << "ITS: The cooling fluid is freon." << endl; 
-    } else {
-	cout << "ITS: The cooling fluid is water." << endl;
     }// end if
 
     ddet1  = ddet1*0.0001/2.; // conversion from tot length in um to half in cm
@@ -1228,25 +1219,14 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
 	dits[4] = 180;
 	gMC->Gsvolu("I114", "TUBS", idtmed[264], dits, 5);  
 
-	if (fluid == 1) {
-	    dits[0] = 0;
-	    dits[1] = 0.025;
-	    dits[2] = 24;
-	    dits[3] = 0;
-	    dits[4] = 180;
-	    gMC->Gsvolu("I115", "TUBS", idtmed[211], dits, 5); // set water 
-	                                                       // as cooling 
-	                                                       // fluid   
-	} else {
-	    dits[0] = 0;
-	    dits[1] = 0.025;
-	    dits[2] = 24;
-	    dits[3] = 0;
-	    dits[4] = 180;
-	    gMC->Gsvolu("I115", "TUBS", idtmed[212], dits, 5); // set freon 
-	                                                       // as cooling 
-	                                                       // fluid       
-	} // end if fluid
+	dits[0] = 0;
+	dits[1] = 0.025;
+	dits[2] = 24;
+	dits[3] = 0;
+	dits[4] = 180;
+	gMC->Gsvolu("I115", "TUBS", idtmed[211], dits, 5); // set freon 
+                                                       	   // as cooling 
+                                                           // fluid      
 	dits[0] = 0.063;
 	dits[1] = 0.035;
 	dits[2] = 24;
@@ -1272,20 +1252,12 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
 	di1d1[2] = 3.536;
 	gMC->Gsvolu("I1D1", "BOX ", idtmed[250], di1d1, 3);// contains detector
                                                            // layer 2
-	if (fluid == 1) {
-	    dits[0] = 0.063;
-	    dits[1] = 0.025;
-	    dits[2] = 24;
-	    gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3); // set water as
-	                                                       // cooling fuid
-	} else {
-	    dits[0] = 0.063;
-	    dits[1] = 0.025;
-	    dits[2] = 24;
-	    gMC->Gsvolu("I117", "BOX ", idtmed[212], dits, 3); // set freon
+	dits[0] = 0.063;
+	dits[1] = 0.025;
+	dits[2] = 24;
+	gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3); // set freon
 	                                                       // as cooling
                                                                // fluid
-	}// end if fluid
 
 	dits1[0] = 0.64;
 	dits1[1] = ddet1;
@@ -1363,87 +1335,52 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
      dits[2] = 0.55;
      gMC->Gsvolu("I678", "TUBE", idtmed[263], dits, 3); // was I178 in old geom
 
-     if (fluid == 1) {
-        dits[0] = 0;
-        dits[1] = 0.3;
-        dits[2] = 1.5;
-        gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); // set water as cooling fluid
-	                                                   // was I177 in old geom.
-     } else {
-         dits[0] = 0;
-        dits[1] = 0.3;
-        dits[2] = 1.5;
-        gMC->Gsvolu("I677", "TUBE", idtmed[212], dits, 3); // set freon as cooling fluid
-	                                                   // was I177 in old geom.    
-     }
+
+     dits[0] = 0;
+     dits[1] = 0.3;
+     dits[2] = 1.5;
+     gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); // set freon as cooling fluid
+	                                      // was I177 in old geom.    
+ 
      
      dits[0] = 0.07;
      dits[1] = 0.125;
      dits[2] = 0.3;
      gMC->Gsvolu("I675", "TUBE", idtmed[263], dits, 3); // was I175 in old geom
 
-     if (fluid == 1) {
-        dits[0] = 0;
-        dits[1] = 0.1;
-        dits[2] = 0.8;
-        gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); // set water as cooling fluid
-	                                                   // was I174 in old geom.
-     } else {
-        dits[0] = 0;
-        dits[1] = 0.1;
-        dits[2] = 0.8;
-        gMC->Gsvolu("I674", "TUBE", idtmed[212], dits, 3); // set freon as cooling fluid
-	                                                   // was I174 in old geom.     
-     }
+
+     dits[0] = 0;
+     dits[1] = 0.1;
+     dits[2] = 0.8;
+     gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); // set freon as cooling fluid
+     // was I174 in old geom.     
      
-     if (fluid == 1) {
-        dits[0] = 0;
-        dits[1] = 0.1;
-        dits[2] = 3;
-        gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); // set water as cooling fluid
-	                                                   // was I172 in old geom.
-     } else {
-        dits[0] = 0;
-        dits[1] = 0.1;
-        dits[2] = 3;
-        gMC->Gsvolu("I672", "TUBE", idtmed[212], dits, 3); // set freon as cooling fluid
-	                                                   // was I172 in old geom.        
-     }
      
-     if (fluid == 1) {     
-        dits[0] = 0;
-        dits[1] = 0.0746;
-        dits[2] = 0.8;
-        gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); // set water as cooling fluid
-	                                                   // was I170 in old geom.
-     } else {
-        dits[0] = 0;
-        dits[1] = 0.0746;
-        dits[2] = 0.8;
-        gMC->Gsvolu("I670", "TUBE", idtmed[212], dits, 3); // set freon as cooling fluid
-	                                                   // was I170 in old geom.     
-     }
+     dits[0] = 0;
+     dits[1] = 0.1;
+     dits[2] = 3;
+     gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); // set freon as cooling fluid
+     // was I172 in old geom.        
      
-     if (fluid == 1) {     
-        dits[0] = 3.7;
-        dits[1] = 5.4;
-        dits[2] = 0.35;
-        dits[3] = 2;
-        dits[4] = 36;
-        gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); // set water as cooling fluid
-	                                                   // was I168 in old geom.
-     } else {
-        dits[0] = 3.7;
-        dits[1] = 5.4;
-        dits[2] = 0.35;
-        dits[3] = 2;
-        dits[4] = 36;
-        gMC->Gsvolu("I668", "TUBS", idtmed[212], dits, 5); // set freon as cooling fluid
-	                                                   // was I168 in old geom.
-     }
+ 
+     dits[0] = 0;
+     dits[1] = 0.0746;
+     dits[2] = 0.8;
+     gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); // set freon as cooling fluid
+     // was I170 in old geom.     
+    
+     
+     dits[0] = 3.7;
+     dits[1] = 5.4;
+     dits[2] = 0.35;
+     dits[3] = 2;
+     dits[4] = 36;
+     gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); // set freon as cooling fluid
+     // was I168 in old geom.
+     
 
 
-  }
+    }
 
   // --- Define SPD (option 'b') volumes ----------------------------
   
@@ -1677,21 +1614,13 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
      dits[4] = 180;
      gMC->Gsvolu("I114", "TUBS", idtmed[264], dits, 5);  
 
-     if (fluid == 1) {
-        dits[0] = 0;
-        dits[1] = 0.025;
-        dits[2] = 24;
-        dits[3] = 0;
-        dits[4] = 180;
-        gMC->Gsvolu("I115", "TUBS", idtmed[211], dits, 5);  // set water as cooling fluid   
-     } else {
-        dits[0] = 0;
-        dits[1] = 0.025;
-        dits[2] = 24;
-        dits[3] = 0;
-        dits[4] = 180;
-        gMC->Gsvolu("I115", "TUBS", idtmed[212], dits, 5);  // set freon as cooling fluid
-     }
+     dits[0] = 0;
+     dits[1] = 0.025;
+     dits[2] = 24;
+     dits[3] = 0;
+     dits[4] = 180;
+     gMC->Gsvolu("I115", "TUBS", idtmed[211], dits, 5);  // set freon as cooling fluid
+     
      
      dits[0] = 0.063;
      dits[1] = 0.035;
@@ -1719,17 +1648,12 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
      gMC->Gsvolu("I1D1", "BOX ", idtmed[250], di1d1, 3);  // contains detector
                                                           // layer 2
    
-     if (fluid == 1) {
-        dits[0] = 0.063;
-        dits[1] = 0.025;
-        dits[2] = 24;
-        gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3); // set water as cooling fluid
-     } else {
-        dits[0] = 0.063;
-        dits[1] = 0.025;
-        dits[2] = 24;
-        gMC->Gsvolu("I117", "BOX ", idtmed[212], dits, 3); // set freon as cooling fluid
-     }
+
+     dits[0] = 0.063;
+     dits[1] = 0.025;
+     dits[2] = 24;
+     gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3); // set freon as cooling fluid
+    
 
      dits1[0] = 0.64;
      dits1[1] = ddet1;
@@ -1792,84 +1716,47 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
      dits[2] = 0.55;
      gMC->Gsvolu("I678", "TUBE", idtmed[263], dits, 3); // was I178 in old geom.
 
-     if (fluid == 1) {
-        dits[0] = 0;
-        dits[1] = 0.3;
-        dits[2] = 1.5;
-        gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); //set water as cooling fluid
-	                                                   // was I177 in old geom.
-     } else {
-        dits[0] = 0;
-        dits[1] = 0.3;
-        dits[2] = 1.5;
-        gMC->Gsvolu("I677", "TUBE", idtmed[212], dits, 3); //set freon as cooling fluid
-	                                                   // was I177 in old geom.     
-     }
-
+     dits[0] = 0;
+     dits[1] = 0.3;
+     dits[2] = 1.5;
+     gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); //set freon as cooling fluid
+     // was I177 in old geom.     
+     
      dits[0] = 0.07;
      dits[1] = 0.125;
      dits[2] = 0.3;
      gMC->Gsvolu("I675", "TUBE", idtmed[263], dits, 3); // was I175 in old geom.
 
-     if (fluid == 1) {
-        dits[0] = 0;
-        dits[1] = 0.1;
-        dits[2] = 0.8;
-        gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); //set water as cooling fluid
-	                                                   // was I174 in old geom.
-     } else {
-        dits[0] = 0;
-        dits[1] = 0.1;
-        dits[2] = 0.8;
-        gMC->Gsvolu("I674", "TUBE", idtmed[212], dits, 3); //set freon as cooling fluid
-	                                                   // was I174 in old geom.     
-     }
+
+     dits[0] = 0;
+     dits[1] = 0.1;
+     dits[2] = 0.8;
+     gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); //set freon as cooling fluid
+     // was I174 in old geom.     
      
-     if (fluid == 1) {
-        dits[0] = 0;
-        dits[1] = 0.1;
-        dits[2] = 3;
-        gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); //set water as cooling fluid
-	                                                   // was I172 in old geom.
-     } else {
-        dits[0] = 0;
-        dits[1] = 0.1;
-        dits[2] = 3;
-        gMC->Gsvolu("I672", "TUBE", idtmed[212], dits, 3); //set freon as cooling fluid
-	                                                   // was I172 in old geom.     
-     }
      
-     if (fluid == 1) {
-        dits[0] = 0;
-        dits[1] = 0.0746;
-        dits[2] = 0.8;
-        gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); //set water as cooling fluid
-	                                                   // was I170 in old geom.
-     } else {
-        dits[0] = 0;
-        dits[1] = 0.0746;
-        dits[2] = 0.8;
-        gMC->Gsvolu("I670", "TUBE", idtmed[212], dits, 3); //set freon as cooling fluid
-	                                                   // was I170 in old geom.     
-     }
+
+     dits[0] = 0;
+     dits[1] = 0.1;
+     dits[2] = 3;
+     gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); //set freon as cooling fluid
+     // was I172 in old geom.     
      
-     if (fluid == 1) {
-        dits[0] = 3.7;
-        dits[1] = 5.4;
-        dits[2] = 0.35;
-        dits[3] = 2;
-        dits[4] = 36;
-        gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); //set water as cooling fluid
-	                                                   // was I168 in old geom.
-     } else {
-        dits[0] = 3.7;
-        dits[1] = 5.4;
-        dits[2] = 0.35;
-        dits[3] = 2;
-        dits[4] = 36;
-        gMC->Gsvolu("I668", "TUBS", idtmed[212], dits, 5); //set freon as cooling fluid
-	                                                   // was I168 in old geom.     
-     }
+
+     dits[0] = 0;
+     dits[1] = 0.0746;
+     dits[2] = 0.8;
+     gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); //set freon as cooling fluid
+     // was I170 in old geom.     
+
+     dits[0] = 3.7;
+     dits[1] = 5.4;
+     dits[2] = 0.35;
+     dits[3] = 2;
+     dits[4] = 36;
+     gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); //set freon as cooling fluid
+     // was I168 in old geom.     
+     
      
 
   }
@@ -4660,20 +4547,141 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
     Float_t epsilServ  = 1.0E-3; // 0.003; // cm
     Float_t stminServ  = 0.0; //0.003; // cm "Default value used"
 
-    // Freon
+    // Freon PerFluorobuthane C4F10 see 
+    // http://st-support-cooling-electronics.web.cern.ch/
+    //        st-support-cooling-electronics/default.htm
     Float_t afre[2]  = { 12.011,18.9984032 };
     Float_t zfre[2]  = { 6., 9. };
-    Float_t wfre[2]  = { 5.,12. };
-    Float_t densfre  = 1.5;
+    Float_t wfre[2]  = { 4.,10. };
+    Float_t densfre  = 1.52;
 
-    // --- Define the various materials and media for GEANT --- 
-    // AliMaterial(Int_t imat, const char* name, Float_t a, Float_t z,
-    //              Float_t dens, Float_t radl, Float_t absl,
-    //              Float_t *buf=0, Int_t nwbuf=0)
-    //AliMedium(Int_t numed, const char *name, Int_t nmat,
-    //          Int_t isvol, Int_t ifield, Float_t fieldm,
-    //          Float_t tmaxfd, Float_t stemax, Float_t deemax,
-    //          Float_t epsil, Float_t stmin, Float_t *ubuf=0, Int_t nbuf=0)
+
+    //CM55J
+
+    Float_t aCM55J[4]={12.0107,14.0067,15.9994,1.00794};
+    Float_t zCM55J[4]={6.,7.,8.,1.};
+    Float_t wCM55J[4]={0.908508078,0.010387573,0.055957585,0.025146765};
+    Float_t dCM55J = 1.63;
+
+    //ALCM55J
+
+    Float_t aALCM55J[5]={12.0107,14.0067,15.9994,1.00794,26.981538};
+    Float_t zALCM55J[5]={6.,7.,8.,1.,13.};
+    Float_t wALCM55J[5]={0.817657902,0.0093488157,0.0503618265,0.0226320885,0.1};
+    Float_t dALCM55J = 1.9866;
+
+    //Si Chips
+
+    Float_t aSICHIP[6]={12.0107,14.0067,15.9994,1.00794,28.0855,107.8682};
+    Float_t zSICHIP[6]={6.,7.,8.,1.,14., 47.};
+    Float_t wSICHIP[6]={0.039730642,0.001396798,0.01169634,0.004367771,0.844665,0.09814344903};
+    Float_t dSICHIP = 2.36436;
+
+    //Inox
+    
+    Float_t aINOX[9]={12.0107,54.9380, 28.0855,30.9738,32.066,58.6928,55.9961,95.94,55.845};
+    Float_t zINOX[9]={6.,25.,14.,15.,16., 28.,24.,42.,26.};
+    Float_t wINOX[9]={0.0003,0.02,0.01,0.00045,0.0003,0.12,0.17,0.025,0.654};
+    Float_t dINOX = 8.03;
+
+    //SDD HV microcable
+
+    Float_t aHVm[5]={12.0107,1.00794,14.0067,15.9994,26.981538};
+    Float_t zHVm[5]={6.,1.,7.,8.,13.};
+    Float_t wHVm[5]={0.520088819984,0.01983871336,0.0551367996,0.157399667056, 0.247536};
+    Float_t dHVm = 1.6087;
+
+    //SDD LV+signal cable
+
+    Float_t aLVm[5]={12.0107,1.00794,14.0067,15.9994,26.981538};
+    Float_t zLVm[5]={6.,1.,7.,8.,13.};
+    Float_t wLVm[5]={0.21722436468,0.0082859922,0.023028867,0.06574077612, 0.68572};
+    Float_t dLVm = 2.1035;
+
+    //SDD hybrid microcab
+
+    Float_t aHLVm[5]={12.0107,1.00794,14.0067,15.9994,26.981538};
+    Float_t zHLVm[5]={6.,1.,7.,8.,13.};
+    Float_t wHLVm[5]={0.24281879711,0.00926228815,0.02574224025,0.07348667449, 0.64869};
+    Float_t dHLVm = 2.0502;
+
+    //SDD anode microcab
+
+    Float_t aALVm[5]={12.0107,1.00794,14.0067,15.9994,26.981538};
+    Float_t zALVm[5]={6.,1.,7.,8.,13.};
+    Float_t wALVm[5]={0.392653705471,0.0128595919215,0.041626868025,0.118832707289, 0.431909};
+    Float_t dALVm = 2.0502;
+
+    //X7R capacitors
+
+    Float_t aX7R[7]={137.327,47.867,15.9994,58.6928,63.5460,118.710,207.2};
+    Float_t zX7R[7]={56.,22.,8.,28.,29.,50.,82.};
+    Float_t wX7R[7]={0.251639432,0.084755042,0.085975822,0.038244751,0.009471271,0.321736471,0.2081768};
+    Float_t dX7R = 7.14567;
+
+    // AIR
+
+    Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+    Float_t zAir[4]={6.,7.,8.,18.};
+    Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+    Float_t dAir = 1.20479E-3;
+
+    // Water
+
+    Float_t aWater[2]={1.00794,15.9994};
+    Float_t zWater[2]={1.,8.};
+    Float_t wWater[2]={0.111894,0.888106};
+    Float_t dWater   = 1.0;
+
+    // CERAMICS
+  //     94.4% Al2O3 , 2.8% SiO2 , 2.3% MnO , 0.5% Cr2O3
+    Float_t acer[5]  = { 26.981539,15.9994,28.0855,54.93805,51.9961 };
+    Float_t zcer[5]  = {       13.,     8.,    14.,     25.,    24. };
+    Float_t wcer[5]  = {.4443408,.5213375,.0130872,.0178135,.003421};
+    Float_t denscer  = 3.6;
+
+    //G10FR4
+
+    Float_t zG10FR4[14] = {14.00,	20.00,	13.00,	12.00,	5.00,	22.00,	11.00,	19.00,	26.00,	9.00,	8.00,	6.00,	7.00,	1.00};
+    Float_t aG10FR4[14] = {28.0855000,40.0780000,26.9815380,24.3050000,10.8110000,47.8670000,22.9897700,39.0983000,55.8450000,18.9984000,15.9994000,12.0107000,14.0067000,1.0079400};
+    Float_t wG10FR4[14] = {0.15144894,0.08147477,0.04128158,0.00904554,0.01397570,0.00287685,0.00445114,0.00498089,0.00209828,0.00420000,0.36043788,0.27529426,0.01415852,0.03427566};
+    Float_t densG10FR4= 1.8;
+    
+     //--- EPOXY  --- C18 H19 O3
+      Float_t aEpoxy[3] = {15.9994, 1.00794, 12.0107} ; 
+      Float_t zEpoxy[3] = {     8.,      1.,      6.} ; 
+      Float_t wEpoxy[3] = {     3.,     19.,     18.} ; 
+      Float_t dEpoxy = 1.8 ;
+
+      // rohacell: C9 H13 N1 O2
+    Float_t arohac[4] = {12.01,  1.01, 14.010, 16.};
+    Float_t zrohac[4] = { 6.,    1.,    7.,     8.};
+    Float_t wrohac[4] = { 9.,   13.,    1.,     2.};
+    Float_t drohac    = 0.05;
+
+    // If he/she means stainless steel (inox) + Aluminium and Zeff=15.3383 then
+//
+// %Al=81.6164 %inox=100-%Al
+
+    Float_t aInAl[5] = {27., 55.847,51.9961,58.6934,28.0855 };
+    Float_t zInAl[5] = {13., 26.,24.,28.,14. };
+    Float_t wInAl[5] = {.816164, .131443,.0330906,.0183836,.000919182};
+    Float_t dInAl    = 3.075;
+
+    // Kapton
+
+    Float_t aKapton[4]={1.00794,12.0107, 14.010,15.9994};
+    Float_t zKapton[4]={1.,6.,7.,8.};
+    Float_t wKapton[4]={0.026362,0.69113,0.07327,0.209235};
+    Float_t dKapton   = 1.42;
+
+    //SDD ruby sph.
+    Float_t aAlOxide[2]  = { 26.981539,15.9994};
+    Float_t zAlOxide[2]  = {       13.,     8.};
+    Float_t wAlOxide[2]  = {0.4707, 0.5293};
+    Float_t dAlOxide     = 3.97;
+
+
     AliMaterial(1,"SI$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(1,"SI$",1,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 
@@ -4683,28 +4691,28 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
     AliMaterial(3,"SPD SI BUS$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(3,"SPD SI BUS$",3,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 
-    AliMaterial(4,"C (M55J)$",0.12011E+02,0.60000E+01,0.1930E+01,0.22100E+02,0.99900E+03);
+    AliMixture(4,"C (M55J)$",aCM55J,zCM55J,dCM55J,4,wCM55J);
     AliMedium(4,"C (M55J)$",4,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(5,"AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+    AliMixture(5,"AIR$",aAir,zAir,dAir,4,wAir);
     AliMedium(5,"AIR$",5,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
 
-    AliMaterial(6,"GEN AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+    AliMixture(6,"GEN AIR$",aAir,zAir,dAir,4,wAir);
     AliMedium(6,"GEN AIR$",6,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
 
-    AliMaterial(7,"SDD SI CHIP$",0.374952E+02,0.178184E+02,0.24485E+01,0.76931E+01,0.99900E+03);
+    AliMixture(7,"SDD SI CHIP$",aSICHIP,zSICHIP,dSICHIP,6,wSICHIP);
     AliMedium(7,"SDD SI CHIP$",7,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 
-    AliMaterial(9,"SDD C (M55J)$",0.123565E+02,0.64561E+01,0.18097E+01,0.229570E+02,0.99900E+03);
+    AliMixture(9,"SDD C (M55J)$",aCM55J,zCM55J,dCM55J,4,wCM55J);
     AliMedium(9,"SDD C (M55J)$",9,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(10,"SDD AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+    AliMixture(10,"SDD AIR$",aAir,zAir,dAir,4,wAir);
     AliMedium(10,"SDD AIR$",10,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
 
     AliMaterial(11,"AL$",0.26982E+02,0.13000E+02,0.26989E+01,0.89000E+01,0.99900E+03);
     AliMedium(11,"AL$",11,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(12,"WATER$",0.14322E+02,0.72167E+01,0.10000E+01,0.35759E+02,0.94951E+02);
+    AliMixture(12, "Water$",aWater,zWater,dWater,2,wWater);
     AliMedium(12,"WATER$",12,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(13,"Freon$",afre,zfre,densfre,-2,wfre);
@@ -4712,23 +4720,22 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
 
     AliMaterial(14,"COPPER$",0.63546E+02,0.29000E+02,0.89600E+01,0.14300E+01,0.99900E+03);
     AliMedium(14,"COPPER$",14,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
-
-    AliMaterial(15,"CERAMICS$",0.22314E+02,0.10856E+02,0.36000E+01,0.76200E+01,0.31901E+02);
+    AliMixture(15,"CERAMICS$",acer,zcer,denscer,5,wcer);
     AliMedium(15,"CERAMICS$",15,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(20,"SSD C (M55J)$",0.12011E+02,0.60000E+01,0.1930E+01,0.22100E+02,0.99900E+03);
+    AliMixture(20,"SSD C (M55J)$",aCM55J,zCM55J,dCM55J,4,wCM55J);
     AliMedium(20,"SSD C (M55J)$",20,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(21,"SSD AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+    AliMixture(21,"SSD AIR$",aAir,zAir,dAir,4,wAir);
     AliMedium(21,"SSD AIR$",21,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
 
-    AliMaterial(25,"G10FR4$",0.17749E+02,0.88750E+01,0.18000E+01,0.21822E+02,0.99900E+03);
+    AliMixture(25,"G10FR4$",aG10FR4,zG10FR4,densG10FR4,14,wG10FR4);
     AliMedium(25,"G10FR4$",25,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(26,"GEN C (M55J)$",0.12011E+02,0.60000E+01,0.1930E+01,0.22100E+02,0.99900E+03);
+     AliMixture(26,"GEN C (M55J)$",aCM55J,zCM55J,dCM55J,4,wCM55J);
     AliMedium(26,"GEN C (M55J)$",26,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(27,"GEN Air$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+    AliMixture(27,"GEN Air$",aAir,zAir,dAir,4,wAir);
     AliMedium(27,"GEN Air$",27,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
 
     AliMaterial(51,"SPD SI$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
@@ -4740,40 +4747,40 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
     AliMaterial(53,"SPD SI BUS$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(53,"SPD SI BUS$",53,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 
-    AliMaterial(54,"SPD C (M55J)$",0.12011E+02,0.60000E+01,0.1930E+01,0.22100E+02,0.99900E+03);
+    AliMixture(54,"SPD C (M55J)$",aCM55J,zCM55J,dCM55J,4,wCM55J);
     AliMedium(54,"SPD C (M55J)$",54,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(55,"SPD AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+    AliMixture(55,"SPD AIR$",aAir,zAir,dAir,4,wAir);
     AliMedium(55,"SPD AIR$",55,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
 
-    AliMaterial(56,"SPD KAPTON(POLYCH2)$",0.14000E+02,0.71770E+01,0.13000E+01,0.31270E+02,0.99900E+03);
+    AliMixture(56, "SPD KAPTON(POLYCH2)", aKapton, zKapton, dKapton, 4, wKapton);
     AliMedium(56,"SPD KAPTON(POLYCH2)$",56,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(61,"EPOXY$",0.17749E+02,0.88750E+01,0.18000E+01,0.21822E+02,0.99900E+03);
+    AliMixture(61,"EPOXY$",aEpoxy,zEpoxy,dEpoxy,-3,wEpoxy);
     AliMedium(61,"EPOXY$",61,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMaterial(62,"SILICON$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(62,"SILICON$",62,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 
-    AliMaterial(63,"KAPTONH(POLYCH2)$",0.14000E+02,0.71770E+01,0.13000E+01,0.31270E+02,0.99900E+03);
+    AliMixture(63, "KAPTONH(POLYCH2)", aKapton, zKapton, dKapton, 4, wKapton);
     AliMedium(63,"KAPTONH(POLYCH2)$",63,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMaterial(64,"ALUMINUM$",0.26982E+02,0.13000E+02,0.26989E+01,0.89000E+01,0.99900E+03);
     AliMedium(64,"ALUMINUM$",64,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(65,"INOX$",0.55098E+02,0.2572E+02,0.7900E+01,0.17800E+01,0.99900E+03);
+    AliMixture(65,"INOX$",aINOX,zINOX,dINOX,9,wINOX);
     AliMedium(65,"INOX$",65,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(68,"ROHACELL$",0.123974E+02,0.62363E+01,0.500E-01,0.80986E+03,0.99900E+03);
+    AliMixture(68,"ROHACELL$",arohac,zrohac,drohac,-4,wrohac);
     AliMedium(68,"ROHACELL$",68,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(69,"SDD C AL (M55J)$",0.138802E+02,0.71315E+01,0.19837E+01,0.176542E+02,0.99900E+03);
+     AliMixture(69,"SDD C AL (M55J)$",aALCM55J,zALCM55J,dALCM55J,5,wALCM55J);
     AliMedium(69,"SDD C AL (M55J)$",69,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
   
-    AliMaterial(70,"SDDKAPTON (POLYCH2)$",0.14000E+02,0.71770E+01,0.13000E+01,0.31270E+02,0.99900E+03);
+    AliMixture(70, "SDDKAPTON (POLYCH2)", aKapton, zKapton, dKapton, 4, wKapton);
     AliMedium(70,"SDDKAPTON (POLYCH2)$",70,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(71,"ITS SANDW A$",0.12011E+02,0.60000E+01,0.2115E+00,0.17479E+03,0.99900E+03);
+     AliMaterial(71,"ITS SANDW A$",0.12011E+02,0.60000E+01,0.2115E+00,0.17479E+03,0.99900E+03);
     AliMedium(71,"ITS SANDW A$",71,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMaterial(72,"ITS SANDW B$",0.12011E+02,0.60000E+01,0.27000E+00,0.18956E+03,0.99900E+03);
@@ -4791,31 +4798,31 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
     AliMaterial(76,"SPDBUS(AL+KPT+EPOX)$",0.19509E+02,0.96502E+01,0.19060E+01,0.15413E+02,0.99900E+03);
     AliMedium(76,"SPDBUS(AL+KPT+EPOX)$",76,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
                
-    AliMaterial(77,"SDD X7R capacitors$",0.1157516E+03,0.477056E+02,0.67200E+01,0.14236E+01,0.99900E+03);
+    AliMixture(77,"SDD X7R capacitors$",aX7R,zX7R,dX7R,7,wX7R);
     AliMedium(77,"SDD X7R capacitors$",77,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(78,"SDD ruby sph. Al2O3$",0.218101E+02,0.106467E+02,0.39700E+01,0.48539E+01,0.99900E+03);
+    AliMixture(78,"SDD ruby sph. Al2O3$",aAlOxide,zAlOxide,dAlOxide,2,wAlOxide);
     AliMedium(78,"SDD ruby sph. Al2O3$",78,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMaterial(79,"SDD SI insensitive$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(79,"SDD SI insensitive$",79,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(80,"SDD HV microcable$",0.159379E+02,0.78598E+01,0.16087E+01,0.217906E+02,0.99900E+03);
+    AliMixture(80,"SDD HV microcable$",aHVm,zHVm,dHVm,5,wHVm);
     AliMedium(80,"SDD HV microcable$",80,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(81,"SDD LV+signal cable$",0.223689E+02,0.108531+02,0.21035E+01,0.13440E+02,0.99900E+03);
+    AliMixture(81,"SDD LV+signal cable$",aLVm,zLVm,dLVm,5,wLVm);
     AliMedium(81,"SDD LV+signal cable$",81,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(82,"SDD hybrid microcab$",0.218254E+02,0.106001E+02,0.20502E+01,0.137308E+02,0.99900E+03);
+    AliMixture(82,"SDD hybrid microcab$",aHLVm, zHLVm,dHLVm,5,wHLVm);
     AliMedium(82,"SDD hybrid microcab$",82,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(83,"SDD anode microcab$",0.186438E+02,0.91193E+01,0.17854E+01,0.176451E+02,0.99900E+03);
+    AliMixture(83,"SDD anode microcab$",aALVm,zALVm,dALVm,5,wALVm);
     AliMedium(83,"SDD anode microcab$",83,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMaterial(84,"SDD/SSD rings$",0.123565E+02,0.64561E+01,0.18097E+01,0.229570E+02,0.99900E+03);
     AliMedium(84,"SDD/SSD rings$",84,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(85,"inox/alum$",0.321502E+02,0.153383E+02,0.30705E+01,0.69197E+01,0.99900E+03);
+    AliMixture(85,"inox/alum$",aInAl,zInAl,dInAl,5,wInAl);
     AliMedium(85,"inox/alum$",85,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     // special media to take into account services in the SDD and SSD 
@@ -4981,16 +4988,16 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
 
     AliMaterial(92, "SPD cone$",28.0855, 14., 2.33, 9.36, 999);    
     AliMedium(92,"SPD cone$",92,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
-
+    /*  Material with fractional Z not actually used
     AliMaterial(93, "SDD End ladder$", 69.9298, 29.8246, 0.3824, 36.5103, 999);
     AliMedium(93,"SDD End ladder$",93,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
-
+    */
     AliMaterial(94, "SDD cone$",63.546, 29., 1.15, 1.265, 999);
     AliMedium(94,"SDD cone$",94,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
-
+    /* Material with fractional Z not actually used
     AliMaterial(95, "SSD End ladder$", 32.0988, 15.4021, 0.68, 35.3238, 999); 
     AliMedium(95,"SSD End ladder$",95,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
-  
+    */
     AliMaterial(96, "SSD cone$",63.546, 29., 1.15, 1.265, 999);
     AliMedium(96,"SSD cone$",96,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
 }
