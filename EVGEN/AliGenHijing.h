@@ -82,7 +82,7 @@ class AliGenHijing : public AliGenMC
 
 // Physics Routines	    
     virtual void EvaluateCrossSections();
-    virtual void Boost(TClonesArray* particles);
+    virtual void Boost();
     virtual TGraph* CrossSection()     {return fDsigmaDb;}
     virtual TGraph* BinaryCollisions() {return fDnDb;}
     virtual Bool_t  CheckTrigger();
@@ -135,16 +135,17 @@ class AliGenHijing : public AliGenMC
     Int_t 	fSpecn;		 // Num. of spectator neutrons
     Int_t 	fSpecp;		 // Num. of spectator protons
     Int_t       fLHC;            // Assume LHC as lab frame
+    TClonesArray* fParticles;    // Particle List
     
  private:
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
     // check seleted daughters
-    Bool_t DaughtersSelection(TParticle* iparticle, TClonesArray* particles);
+    Bool_t DaughtersSelection(TParticle* iparticle);
     // check if stable
     Bool_t Stable(TParticle*  particle);
     
-    ClassDef(AliGenHijing,3) // AliGenerator interface to Hijing
+    ClassDef(AliGenHijing,4) // AliGenerator interface to Hijing
 };
 #endif
 
