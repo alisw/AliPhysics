@@ -34,6 +34,6 @@ protected:
   Float_t   fPz;     // momentum
   Float_t   fLength; // track lenght from its origin
 
-  ClassDef(AliTrackReference,2)  //Base class for all Alice hits
+  ClassDef(AliTrackReference,2)  //Base class for all Alice track references
 };
 #endif
