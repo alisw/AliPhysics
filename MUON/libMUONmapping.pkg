@@ -1,0 +1,83 @@
+#
+# mapping 
+#
+
+# Category basic
+#
+SRCS +=  \
+	 mapping/AliMpArea.cxx  \
+	 mapping/AliMpConstants.cxx  \
+	 mapping/AliMpIntPair.cxx  \
+	 mapping/AliMpPad.cxx  \
+	 mapping/AliMpPadIteratorPtr.cxx  \
+	 mapping/AliMpPadPair.cxx  \
+	 mapping/AliMpTransformer.cxx  \
+	 mapping/AliMpTransformPadIterator.cxx  \
+	 mapping/AliMpVIndexed.cxx  \
+	 mapping/AliMpVPadIterator.cxx  \
+	 mapping/AliMpVSegmentation.cxx  \
+
+# Category motif
+#
+SRCS +=  \
+	 mapping/AliMpConnection.cxx  \
+	 mapping/AliMpMotif.cxx  \
+	 mapping/AliMpMotifMap.cxx  \
+	 mapping/AliMpMotifPosition.cxx  \
+	 mapping/AliMpMotifPositionPadIterator.cxx  \
+	 mapping/AliMpMotifSpecial.cxx  \
+	 mapping/AliMpMotifType.cxx  \
+	 mapping/AliMpMotifTypePadIterator.cxx  \
+	 mapping/AliMpVMotif.cxx  \
+
+# Category sector
+#
+SRCS +=  \
+	 mapping/AliMpFiles.cxx  \
+	 mapping/AliMpNeighboursPadIterator.cxx  \
+	 mapping/AliMpPadRow.cxx  \
+	 mapping/AliMpPadRowLSegment.cxx  \
+	 mapping/AliMpPadRowRSegment.cxx  \
+	 mapping/AliMpReader.cxx  \
+	 mapping/AliMpRow.cxx  \
+	 mapping/AliMpRowSegment.cxx  \
+	 mapping/AliMpRowSegmentLSpecial.cxx  \
+	 mapping/AliMpRowSegmentRSpecial.cxx  \
+	 mapping/AliMpSectorAreaHPadIterator.cxx  \
+	 mapping/AliMpSectorAreaVPadIterator.cxx  \
+	 mapping/AliMpSector.cxx  \
+	 mapping/AliMpSectorPadIterator.cxx  \
+	 mapping/AliMpSectorSegmentation.cxx  \
+	 mapping/AliMpSubZone.cxx  \
+	 mapping/AliMpVPadRowSegment.cxx  \
+	 mapping/AliMpVRowSegment.cxx  \
+	 mapping/AliMpVRowSegmentSpecial.cxx  \
+	 mapping/AliMpZone.cxx  \
+
+# Category plane
+#
+SRCS +=  \
+	 mapping/AliMpPlaneAreaPadIterator.cxx  \
+	 mapping/AliMpPlane.cxx  \
+	 mapping/AliMpPlaneSegmentation.cxx  \
+	 mapping/AliMpSectorPosition.cxx  \
+
+# Category graphics
+#
+SRCS +=  \
+	 mapping/AliMpGraphContext.cxx  \
+	 mapping/AliMpMotifPainter.cxx  \
+	 mapping/AliMpRowPainter.cxx  \
+	 mapping/AliMpRowSegmentPainter.cxx  \
+	 mapping/AliMpSectorPainter.cxx  \
+	 mapping/AliMpSubZonePainter.cxx  \
+	 mapping/AliMpVPainter.cxx  \
+	 mapping/AliMpZonePainter.cxx  \
+
+HDRS         =  $(SRCS:.cxx=.h) 
+
+DHDR:= MUONLinkDefMapping.h
+
+EINCLUDE:= RAW MUON/mapping
+
+SUBDIR := mapping
