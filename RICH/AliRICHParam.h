@@ -18,7 +18,7 @@ public:
   inline  Bool_t SigGenCond(Float_t x,Float_t y);
   Float_t Gain(Float_t y);                                 //Returns total charge induced by single photon
   Float_t TotalCharge(Int_t iPID,Float_t eloss,Float_t y); //Returns total charge induced by particle lost eloss GeV
-  Float_t PadCharge(Int_t iPadX,Int_t iPadY);              //Returns charge for a given pad
+  Float_t PadCharge(Int_t /* iPadX */,Int_t /* iPadY */) {return 0;}   //Returns charge for a given pad
         
   void    Segmentation(Int_t Nx,Int_t Ny)    {fNpadX=Nx;fNpadY=Ny;Recalc();}
   Int_t   Nx()                          const{return fNpadX;}
