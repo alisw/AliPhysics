@@ -5,8 +5,8 @@ void RichBatch(const Int_t iNevents,const Bool_t isDebug,const char *sConfigFile
   Info("my/RichBatch.C","%i event(s) requested, debug %i,config file %s",iNevents,isDebug,sConfigFileName);  
   TStopwatch sw;TDatime time;	
 
-  AliSimulation a;  a.Run(iNevents);
-   
+  AliSimulation     *pSim=new AliSimulation;     pSim->Run(iNevents); delete pSim;
+  AliReconstruction *pRec=new AliReconstruction; pRec->Run();         delete pRec; 
   cout<<"\nInfo in <my/RichBatch.C>: Start time: ";time.Print();
     cout<<"Info in <my/RichBatch.C>: Stop  time: ";time.Set();  time.Print();
     cout<<"Info in <my/RichBatch.C>: Time  used: ";sw.Print();
