@@ -39,8 +39,7 @@ public:
    void Hit2digit(){return;}
    virtual void   MakeBranch(Option_t *opt=" ");
    virtual void   StepManager(){}
-   void PrintMedium(Int_t iMediumId=0);//Prints "iMediumId" TMED properties
-   /*
+  /*
    TTree   *fTreeD;        //tree
    TTree * GetTree() { return fTreeD;}//return reference to actual tree 
    Bool_t  SetTree(Int_t nevent=0, TDirectory *dir = gDirectory);//map tree from given directory
