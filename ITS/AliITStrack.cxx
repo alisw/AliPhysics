@@ -73,7 +73,8 @@ AliITStrack::AliITStrack(const AliITStrack &cobj) {
  
   *ClusterInTrack = *cobj.ClusterInTrack;
  
-  for(Int_t i=0; i<cobj.flistCluster->GetSize(); i++) 
+  Int_t i;
+  for(i=0; i<cobj.flistCluster->GetSize(); i++) 
     flistCluster->AddLast(cobj.flistCluster->At(i));
  
 }
@@ -355,10 +356,12 @@ void AliITStrack::Search(TVector VecTotLabref, Long_t &labref, Int_t &freq){
 
   Int_t vecfreq[18];
 
-  for(Int_t i=0; i<18; i++) vecfreq[i]=0;
+  Int_t i,j;
   
-  for(Int_t i=0; i<18; i++) {
-    for(Int_t j=0; j<18; j++) {
+  for(i=0; i<18; i++) vecfreq[i]=0;
+  
+  for(i=0; i<18; i++) {
+    for(j=0; j<18; j++) {
       if(VecTotLabref(i) == 0.) VecTotLabref(i)=-3.;  
       if( (VecTotLabref(i)>=0.) && (VecTotLabref(i)==VecTotLabref(j)) ) vecfreq[i]++;    
     }  
@@ -366,7 +369,7 @@ void AliITStrack::Search(TVector VecTotLabref, Long_t &labref, Int_t &freq){
   Int_t imax=-1000;
   Long_t  labdefault= (Long_t)1000000.;
   freq=0;
-  for(Int_t i=0; i<18; i++) {
+  for(i=0; i<18; i++) {
     if(vecfreq[i]>freq) {freq=vecfreq[i]; imax=i;}  
   }
   if(imax<0) labref=labdefault; else labref=(Long_t) VecTotLabref(imax);
@@ -417,7 +420,7 @@ void AliITStrack::Propagation(Double_t rk) {
   *fmCovariance = B;    
   	
 }
-void AliITStrack::AddEL(Double_t signdE, Bool_t flagtot, Double_t mass=0.1396) {
+void AliITStrack::AddEL(Double_t signdE, Bool_t flagtot, Double_t mass) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
 //  add energy loss
 
