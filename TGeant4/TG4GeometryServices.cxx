@@ -131,7 +131,7 @@ G4int TG4GeometryServices::SetUserLimits(G4UserLimits* userLimits,
   G4ToG3VolumeName(volName);
 
   G4int counter = 0;
-  for (G4int i=0; i<pLVStore->entries(); i++) {
+  for (G4int i=0; i<pLVStore->size(); i++) {
     G4LogicalVolume* lv = (*pLVStore)[i];
     G4String name = lv->GetName();
     G4ToG3VolumeName(name);
@@ -192,7 +192,7 @@ G4Material* TG4GeometryServices::MixMaterials(G4String name, G4double density,
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
 
   G4int counter = 0;  
-  for (G4int i=0; i<pLVStore->entries(); i++) {
+  for (G4int i=0; i<pLVStore->size(); i++) {
     G4LogicalVolume* lv = (*pLVStore)[i];
     if (IsG3Volume(lv->GetName())) counter++;
   }
@@ -207,7 +207,7 @@ Int_t TG4GeometryServices::NofG4LogicalVolumes() const
 // ---
 
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  return pLVStore->entries();
+  return pLVStore->size();
 }
 
 
@@ -219,7 +219,7 @@ Int_t TG4GeometryServices::NofG4PhysicalVolumes() const
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
 
   G4int counter = 0;
-  for (G4int i=0; i<pLVStore->entries(); i++) {
+  for (G4int i=0; i<pLVStore->size(); i++) {
     counter += ((*pLVStore)[i])->GetNoDaughters();
   }
   
@@ -246,8 +246,8 @@ G4int TG4GeometryServices::GetVolumeID(const G4String& volName) const
   G4String g4VolName = CutName(volName);
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
   
-  for (G4int i=0; i<pLVStore->entries(); i++) {
-    G4LogicalVolume* lv = pLVStore->at(i);
+  for (G4int i=0; i<pLVStore->size(); i++) {
+    G4LogicalVolume* lv = (*pLVStore)[i];
     G4VSensitiveDetector* sd = lv->GetSensitiveDetector();
   
     if ((sd) && (sd->GetName()==g4VolName)) {
@@ -309,8 +309,8 @@ G4String TG4GeometryServices::GetVolumeName(G4int volumeId) const
 
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
   
-  for (G4int i=0; i<pLVStore->entries(); i++) {
-    G4LogicalVolume* lv = pLVStore->at(i);
+  for (G4int i=0; i<pLVStore->size(); i++) {
+    G4LogicalVolume* lv = (*pLVStore)[i];
     G4VSensitiveDetector* sd = lv->GetSensitiveDetector();
     
     if (sd) {
@@ -342,8 +342,8 @@ G4LogicalVolume* TG4GeometryServices::GetLogicalVolume(G4int volumeId) const
 
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
   
-  for (G4int i=0; i<pLVStore->entries(); i++) {
-    G4LogicalVolume* lv = pLVStore->at(i);
+  for (G4int i=0; i<pLVStore->size(); i++) {
+    G4LogicalVolume* lv = (*pLVStore)[i];
     if (GetVolumeID(lv) == volumeId) return lv;
   }
   
