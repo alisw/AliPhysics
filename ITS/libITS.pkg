@@ -1,6 +1,6 @@
 SRCS = 	AliITS.cxx \
 		AliITSvSPD02.cxx \
-          AliITSvSDD03.cxx \
+                AliITSvSDD03.cxx AliITSvSSD03.cxx \
 		AliITSvPPRcoarseasymm.cxx \
 		AliITSvPPRasymmFMD.cxx \
 		AliITSv11.cxx \

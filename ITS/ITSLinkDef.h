@@ -18,6 +18,7 @@
 #pragma link C++ class  AliITSvPPRasymmFMD+;
 #pragma link C++ class  AliITSvSPD02+;
 #pragma link C++ class  AliITSvSDD03+;
+#pragma link C++ class  AliITSvSSD03+;
 #pragma link C++ class  AliITSv11+;
 #pragma link C++ class  AliITSv11Geometry+;
 #pragma link C++ class  AliITSv11GeometrySupport+;
