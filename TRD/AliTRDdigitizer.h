@@ -74,7 +74,9 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual void         SetSDigits(Int_t v = 1)              { fSDigits        = v;        };
   virtual void         SetSDigitsScale(Float_t s)           { fSDigitsScale   = s;        };
   virtual void         SetEvent(Int_t v = 0)                { fEvent          = v;        };
-  virtual void         SetManager(AliTRDdigitsManager *man) { fDigitsManager  = man;      };    
+  virtual void         SetManager(AliTRDdigitsManager *man) { fDigitsManager  = man;      };   
+  virtual void         SetHitTypeStandard()                 { if (fTRD) fTRD->SetHitTypeStandard();   }; 
+  virtual void         SetHitTypeCompressed()               { if (fTRD) fTRD->SetHitTypeCompressed(); }; 
 
   AliTRDdigitsManager *Digits() const                       { return fDigitsManager;      };
 

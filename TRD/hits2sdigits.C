@@ -15,7 +15,7 @@ void hits2sdigits()
   }
 
   // Input (and output) file name
-  Char_t *alifile = "galice_signal.root"; 
+  Char_t *alifile = "galice.root"; 
 
   // Create the TRD digitzer 
   AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
@@ -29,6 +29,9 @@ void hits2sdigits()
 
   // Open the AliRoot file
   digitizer->Open(alifile);
+
+  // For uncompressed hits
+  digitizer->SetHitTypeStandard();
 
   // Create the digits
   digitizer->MakeDigits();
