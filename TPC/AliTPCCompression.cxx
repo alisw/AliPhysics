@@ -22,7 +22,7 @@
 // Similarly decompression is also done backward so that the final file is restored
 // after the compression and decompression phase.
 
-
+#include <stdlib.h>
 #include <TObjArray.h>
 #include "Riostream.h"
 #include "TMath.h"
