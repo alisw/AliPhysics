@@ -12,6 +12,7 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gROOT->LoadMacro(macro);
     html.Convert(macro,"Example Macro");
   } else {
+    gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libRALICE");
     html.MakeAll(force);
   }
 }
