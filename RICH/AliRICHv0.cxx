@@ -15,6 +15,10 @@
 
 /*
   $Log$
+  Revision 1.5  2000/04/19 13:28:46  morsch
+  Major changes in geometry (parametrised), materials (updated) and
+  step manager (diagnostics) (JB, AM)
+
 */
 
 
@@ -903,8 +907,8 @@ void AliRICHv0::StepManager()
     static Int_t   idvol;
     static Int_t   vol[2];
     Int_t          ipart;
-    static Float_t hits[16];
-    static Float_t Ckov_data[16];
+    static Float_t hits[17];
+    static Float_t Ckov_data[17];
     TLorentzVector Position;
     TLorentzVector Momentum;
     Float_t        pos[3];
