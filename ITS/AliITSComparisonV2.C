@@ -124,13 +124,13 @@ Int_t AliITSComparisonV2() {
 	UInt_t flags=AliESDtrack::kTPCin|AliESDtrack::kITSin;
 
         if ((status&AliESDtrack::kITSrefit)==0)
-	  if ((status&flags)!=status) continue;
+	  if ((status&flags)!=flags) continue;
 
         AliITStrackV2 *iotrack=0;
         iotrack=new AliITStrackV2(*t);
         //if (t->GetConstrainedChi2()>=20) continue;   //  constrained 
         //else iotrack=new AliITStrackV2(*t,kTRUE);    //     track
-        if ((status&flags)==status) {
+        if ((status&flags)==flags) {
            iotrack->PropagateTo(3.,0.0028,65.19);
            iotrack->PropagateToVertex();
         }

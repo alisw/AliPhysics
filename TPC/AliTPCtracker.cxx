@@ -730,11 +730,16 @@ Int_t AliTPCtracker::RefitInward(AliESD* event) {
     AliESDtrack* track = event->GetTrack(i);
     ULong_t status = track->GetStatus();
 
+    if ( (status & AliESDtrack::kTPCrefit) != 0 ) continue;    
     if ( (status & AliESDtrack::kTPCout ) == 0 ) continue;
-    if ( (status & AliESDtrack::kTPCrefit) != 0 ) continue;
-    
+
+    if ( (status & AliESDtrack::kTRDout ) != 0 ) 
+      if ( (status & AliESDtrack::kTRDrefit ) == 0 ) continue;
+
     AliTPCtrack* tpcTrack = new AliTPCtrack(*track);
     AliTPCseed* seed = new AliTPCseed(*tpcTrack, tpcTrack->GetAlpha());
+
+    if ( (status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance();
 
     fSectors = fOuterSec;
 
