@@ -2,7 +2,7 @@ void ViewITSSPD(Int_t version1,Int_t version2){
     gMC->Gsatt("ITSV","seen",0);// Air
       gMC->Gsatt("ITSD","seen",0);// Air
         gMC->Gsatt("IT12","seen",0);// Air
-	if(version1==10) gMC->Gsatt("I651","seen",1);gMC->Gsatt("I651","colo",7);  // Services
+	if(version1==10){gMC->Gsatt("I651","seen",1);gMC->Gsatt("I651","colo",7);} // Services
           gMC->Gsatt("I12B","seen",0);// Air
             gMC->Gsatt("I10B","seen",0);// Air
               gMC->Gsatt("I105","seen",1);gMC->Gsatt("I105","colo",7);// SPD End ladder
