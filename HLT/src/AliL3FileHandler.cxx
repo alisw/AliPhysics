@@ -261,11 +261,14 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
         pad=fDigits->CurrentColumn();
         dig = fDigits->GetDigit(time,pad);
         if(dig<=fParam->GetZeroSup()) continue;
-        if(time < fParam->GetMaxTBin()-1 && time > 0)
-          if(fDigits->GetDigit(time+1,pad) <= fParam->GetZeroSup()
-             && fDigits->GetDigit(time-1,pad) <= fParam->GetZeroSup())
-            continue;
-
+        
+	/*
+	  if(time < fParam->GetMaxTBin()-1 && time > 0)
+	  if(fDigits->GetDigit(time+1,pad) <= fParam->GetZeroSup()
+	  && fDigits->GetDigit(time-1,pad) <= fParam->GetZeroSup())
+	  continue;
+	*/
+	
         AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
         if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
           continue;
@@ -310,11 +313,14 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
         pad=fDigits->CurrentColumn();
         dig = fDigits->GetDigit(time,pad);
 	if (dig <= fParam->GetZeroSup()) continue;
-	if(time < fParam->GetMaxTBin()-1 && time > 0)
+	
+	/*
+	  if(time < fParam->GetMaxTBin()-1 && time > 0)
           if(fDigits->GetDigit(time-1,pad) <= fParam->GetZeroSup() &&
-             fDigits->GetDigit(time+1,pad) <= fParam->GetZeroSup()) continue;
-
-        //Exclude data outside cone:
+	  fDigits->GetDigit(time+1,pad) <= fParam->GetZeroSup()) continue;
+	*/
+        
+	//Exclude data outside cone:
         AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
         if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
           continue;
