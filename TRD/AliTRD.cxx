@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.44  2003/01/28 14:38:18  cblume
+Add track length to track references
+
 Revision 1.43  2002/11/21 22:38:47  alibrary
 Removing AliMC and AliMCProcess
 
@@ -364,8 +367,7 @@ void AliTRD::AddCluster(Float_t *pos, Int_t det, Float_t amp
 }
 
 //_____________________________________________________________________________
-void  AliTRD::AddTrackReference(Int_t label, TLorentzVector p
-                              , TLorentzVector x, Float_t length)
+void  AliTRD::AddTrackReference(Int_t label, TVirtualMC *vMC)
 {
   //
   // Add a trackrefernce to the list
@@ -378,12 +380,7 @@ void  AliTRD::AddTrackReference(Int_t label, TLorentzVector p
 
   Int_t nref = fTrackReferences->GetEntriesFast();
   TClonesArray &lref = *fTrackReferences;
-  AliTrackReference * ref =  new(lref[nref]) AliTrackReference();
-  ref->SetMomentum(p[0],p[1],p[2]);
-  ref->SetPosition(x[0],x[1],x[2]);
-  ref->SetTrack(label);
-  ref->SetLength(length);
-
+  new(lref[nref]) AliTrackReference(label, vMC);
 }
 
 //_____________________________________________________________________________

@@ -13,15 +13,24 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//----------------------------------------------------------------------
-//  Class containing the kinematic information of tracks at various
-//  points in the simulation to check the reconstruction
-//  Origin: M.Ivanov
-//----------------------------------------------------------------------
 
 #include "AliTrackReference.h"
+#include "TParticle.h"
+#include "AliRun.h"
+#include "TLorentzVector.h"
+
+// 
+// Track Reference object is created every time particle is 
+// crossing detector bounds. The object is created by Step Manager
+//
+// The class stores the following informations:
+// track label, 
+// track position: X,Y,X
+// track momentum px, py, pz
+// track length and time of fligth: both in cm
+// status bits from Monte Carlo
+//
+
 
 ClassImp(AliTrackReference)
 
@@ -38,5 +47,54 @@ ClassImp(AliTrackReference)
 {
   //
   // Default constructor
-  //
+  // Creates empty object
+
+  for(Int_t i=0; i<16; i++) ResetBit(BIT(i));
 }
+
+//_______________________________________________________________________
+AliTrackReference::AliTrackReference(Int_t label, TVirtualMC *vMC) {
+  //
+  // Create Reference object out of label and
+  // data in TVirtualMC object
+  //
+  // Creates an object and fill all parameters 
+  // from data in VirtualMC
+  //
+  // Sylwester Radomski, (S.Radomski@gsi.de)
+  // GSI, Jan 31, 2003
+  //
+
+  TLorentzVector vec;
+  
+  fTrack = label;
+  fLength = vMC->TrackLength();
+  fTime = vMC->TrackTime();
+
+  vMC->TrackPosition(vec);
+
+  fX = vec[0];
+  fY = vec[1];
+  fZ = vec[2];
+  
+  vMC->TrackMomentum(vec);
+  
+  fPx = vec[0];
+  fPy = vec[1];
+  fPy = vec[2];
+
+  // Set Up status code 
+  // Copy Bits from virtual MC
+
+  for(Int_t i=0; i<16; i++) ResetBit(BIT(i));
+
+  SetBit(BIT(0), vMC->IsNewTrack());
+  SetBit(BIT(1), vMC->IsTrackAlive());
+  SetBit(BIT(2), vMC->IsTrackDisappeared());
+  SetBit(BIT(3), vMC->IsTrackEntering());
+  SetBit(BIT(4), vMC->IsTrackExiting());
+  SetBit(BIT(5), vMC->IsTrackInside());
+  SetBit(BIT(6), vMC->IsTrackOut());
+  SetBit(BIT(7), vMC->IsTrackStop()); 
+}
+//_______________________________________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2003/01/31 11:41:06  cblume
+Fix bug in StepManager in treating geometry with holes
+
 Revision 1.37  2003/01/28 14:38:18  cblume
 Add track length to track references
 
@@ -650,7 +653,7 @@ void AliTRDv1::StepManager()
 	  // momentum components of the particle
           if (gMC->IsTrackEntering() || gMC->IsTrackExiting()) {
             gMC->TrackMomentum(mom);
-            AddTrackReference(gAlice->CurrentTrack(),mom,pos,gMC->TrackLength());
+            AddTrackReference(gAlice->CurrentTrack(),gMC);
           }
 
           // Create the hits from TR photons

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.45  2003/01/14 10:50:20  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.44  2002/11/21 22:43:32  alibrary
 Removing AliMC and AliMCProcess
 
@@ -1976,24 +1979,11 @@ void AliTPCv2::StepManager()
 
   id = gMC->CurrentVolID(copy); // current volume Id
 
-  if (gMC->IsTrackEntering() && ( (id == fIdLSec) || (id == fIdUSec))){
-    //    printf("track  %d entering volume %d\n",gAlice->CurrentTrack(),id);
-    TLorentzVector p;
-    TLorentzVector x;
-    gMC->TrackMomentum(p);
-    gMC->TrackPosition(x);
-    AddTrackReference(gAlice->CurrentTrack(),p,x,gMC->TrackLength());
-  }
+  if ( (gMC->IsTrackEntering() || gMC->IsTrackExiting()) &&
+       ((id == fIdLSec) || (id == fIdUSec)) ) {
 
-  if (gMC->IsTrackExiting() && ( (id == fIdLSec) || (id == fIdUSec))){
-    //    printf("track  %d exiting volume %d\n",gAlice->CurrentTrack(),id);
-    TLorentzVector p;
-    TLorentzVector x;
-    gMC->TrackMomentum(p);
-    gMC->TrackPosition(x);
-    AddTrackReference(gAlice->CurrentTrack(),p,x,gMC->TrackLength());
+    AddTrackReference(gAlice->CurrentTrack(), gMC);
   }
-
 
   if(id == fIdLSec){
     vol[0] = copy-1; // lower sector number

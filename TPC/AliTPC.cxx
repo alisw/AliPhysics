@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.65  2002/11/21 22:43:32  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.64  2002/10/23 07:17:33  alibrary
 Introducing Riostream.h
 
@@ -398,7 +401,7 @@ void AliTPC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
    AddHit2(track,vol,hits);
 }
 
-void  AliTPC::AddTrackReference(Int_t lab, TLorentzVector p, TLorentzVector x, Float_t length){
+void  AliTPC::AddTrackReference(Int_t label, TVirtualMC *vMC){
   //
   // add a trackrefernce to the list
   if (!fTrackReferences) {
@@ -407,11 +410,7 @@ void  AliTPC::AddTrackReference(Int_t lab, TLorentzVector p, TLorentzVector x, F
   }
   Int_t nref = fTrackReferences->GetEntriesFast();
   TClonesArray &lref = *fTrackReferences;
-  AliTrackReference * ref =  new(lref[nref]) AliTrackReference;
-  ref->SetMomentum(p[0],p[1],p[2]);
-  ref->SetPosition(x[0],x[1],x[2]);
-  ref->SetTrack(lab);
-  ref->SetLength(length);
+  new(lref[nref]) AliTrackReference(label, vMC);
 }
  
 //_____________________________________________________________________________
