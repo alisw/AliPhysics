@@ -51,6 +51,8 @@ AliRawReader::AliRawReader()
   fSelectDetectorID = -1;
   fSelectMinDDLID = -1;
   fSelectMaxDDLID = -1;
+
+  fErrorCode = 0;
 }
 
 AliRawReader::AliRawReader(const AliRawReader& rawReader) :
@@ -64,6 +66,8 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fSelectDetectorID = rawReader.fSelectDetectorID;
   fSelectMinDDLID = rawReader.fSelectMinDDLID;
   fSelectMaxDDLID = rawReader.fSelectMaxDDLID;
+
+  fErrorCode = 0;
 }
 
 AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
@@ -76,6 +80,8 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   fSelectDetectorID = rawReader.fSelectDetectorID;
   fSelectMinDDLID = rawReader.fSelectMinDDLID;
   fSelectMaxDDLID = rawReader.fSelectMaxDDLID;
+
+  fErrorCode = rawReader.fErrorCode;
 
   return *this;
 }
@@ -107,14 +113,14 @@ Bool_t AliRawReader::IsSelected() const
 }
 
 
-Bool_t AliRawReader::CheckMiniHeader() const
+Bool_t AliRawReader::CheckMiniHeader(AliMiniHeader* miniHeader) const
 {
 // check the magic number of the mini header
 
-  if ((fMiniHeader->fMagicWord[2] != 0x12) ||
-      (fMiniHeader->fMagicWord[1] != 0x34) ||
-      (fMiniHeader->fMagicWord[0] != 0x56)) {
-    Error("CheckMiniHeader", "wrong magic word!");
+  if (!miniHeader) miniHeader = fMiniHeader;
+  if ((miniHeader->fMagicWord[2] != 0x12) ||
+      (miniHeader->fMagicWord[1] != 0x34) ||
+      (miniHeader->fMagicWord[0] != 0x56)) {
     return kFALSE;
   }
   return kTRUE;
@@ -173,5 +179,14 @@ Bool_t AliRawReader::ReadNextChar(UChar_t& data)
     return kFALSE;
   }
   return kTRUE;
+}
+
+
+Int_t AliRawReader::CheckData() const
+{
+// check the consistency of the data
+// derived classes should overwrite the default method which returns 0 (no err)
+
+  return 0;
 }
 

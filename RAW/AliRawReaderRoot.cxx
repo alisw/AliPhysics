@@ -184,41 +184,75 @@ Bool_t AliRawReaderRoot::ReadMiniHeader()
 // read a mini header at the current position
 // returns kFALSE if the mini header could not be read
 
+  fErrorCode = 0;
   if (!fEvent) return kFALSE;
+
   do {
-    if (fCount > 0) fPosition += fCount;      // skip payload if event was not selected
-    if (!fSubEvent || (fPosition >= fEnd)) {  // new sub event
+    // skip payload (if event was not selected)
+    if (fCount > 0) fPosition += fCount;
+
+    // get the first or the next sub event if at the end of a sub event
+    if (!fSubEvent || (fPosition >= fEnd)) {
+
+      // check for end of event data
       if (fSubEventIndex >= fEvent->GetNSubEvents()) return kFALSE;
       fSubEvent = fEvent->GetSubEvent(fSubEventIndex++);
+
+      // check the magic word of the sub event
+      if (!fSubEvent->GetHeader()->IsValid()) {
+	Error("ReadMiniHeader", "wrong magic number in sub event!");
+	fSubEvent->GetHeader()->Dump();
+	fErrorCode = kErrMagic;
+	return kFALSE;
+      }
+
       fRawData = fSubEvent->GetRawData();
       fCount = 0;
       fPosition = (UChar_t*) fRawData->GetBuffer();
       fEnd = ((UChar_t*) fRawData->GetBuffer()) + fRawData->GetSize();
     }
-    if (fPosition >= fEnd) continue;          // no data left in the payload
+
+    // continue with the next sub event if no data left in the payload
+    if (fPosition >= fEnd) continue;
+
+    // check that there are enough bytes left for the mini header
     if (fPosition + sizeof(AliMiniHeader) > fEnd) {
-      Error("ReadMiniHeader", "could not read data!");
-      return kFALSE;
-    }
-    fMiniHeader = (AliMiniHeader*) fPosition;
-    fPosition += sizeof(AliMiniHeader);
-    if (!CheckMiniHeader()) {
+      Error("ReadMiniHeader", "could not read mini header data!");
       Warning("ReadMiniHeader", "skipping %d bytes", fEnd - fPosition);
       fSubEvent->GetHeader()->Dump();
       fCount = 0;
       fPosition = fEnd;
+      fErrorCode = kErrNoMiniHeader;
+      continue;
+    }
+
+    // "read" and check the mini header
+    fMiniHeader = (AliMiniHeader*) fPosition;
+    fPosition += sizeof(AliMiniHeader);
+    if (!CheckMiniHeader()) {
+      Error("ReadMiniHeader", "wrong magic word in mini header!");
+      Warning("ReadMiniHeader", "skipping %d bytes", fEnd - fPosition);
+      fSubEvent->GetHeader()->Dump();
+      fCount = 0;
+      fPosition = fEnd;
+      fErrorCode = kErrMiniMagic;
       continue;
     }
     fCount = fMiniHeader->fSize;
-    if (fPosition + fCount > fEnd) {  // check data size in mini header and sub event
+
+    // check consistency of data size in the mini header and in the sub event
+    if (fPosition + fCount > fEnd) {  
       Error("ReadMiniHeader", "size in mini header exceeds event size!");
       Warning("ReadMiniHeader", "skipping %d bytes", fEnd - fPosition);
       fSubEvent->GetHeader()->Dump();
       fCount = 0;
       fPosition = fEnd;
+      fErrorCode = kErrSize;
       continue;
     }
+
   } while (!IsSelected());
+
   return kTRUE;
 }
 
@@ -227,6 +261,7 @@ Bool_t AliRawReaderRoot::ReadNextData(UChar_t*& data)
 // reads the next payload at the current position
 // returns kFALSE if the data could not be read
 
+  fErrorCode = 0;
   while (fCount == 0) {
     if (!ReadMiniHeader()) return kFALSE;
   }
@@ -241,8 +276,10 @@ Bool_t AliRawReaderRoot::ReadNext(UChar_t* data, Int_t size)
 // reads the next block of data at the current position
 // returns kFALSE if the data could not be read
 
+  fErrorCode = 0;
   if (fPosition + size > fEnd) {
     Error("ReadNext", "could not read data!");
+    fErrorCode = kErrOutOfBounds;
     return kFALSE;
   }
   memcpy(data, fPosition, size);
@@ -266,3 +303,47 @@ Bool_t AliRawReaderRoot::Reset()
   return kTRUE;
 }
 
+
+Int_t AliRawReaderRoot::CheckData() const
+{
+// check the consistency of the data
+
+  if (!fEvent) return 0;
+
+  AliRawEvent* subEvent = NULL;
+  Int_t subEventIndex = 0;
+  UChar_t* position = 0;
+  UChar_t* end = 0;
+
+  while (kTRUE) {
+    // get the first or the next sub event if at the end of a sub event
+    if (!subEvent || (position >= end)) {
+
+      // check for end of event data
+      if (subEventIndex >= fEvent->GetNSubEvents()) return 0;
+      subEvent = fEvent->GetSubEvent(subEventIndex++);
+
+      // check the magic word of the sub event
+      if (!fSubEvent->GetHeader()->IsValid()) return kErrMagic;
+
+      AliRawData* rawData = subEvent->GetRawData();
+      position = (UChar_t*) rawData->GetBuffer();
+      end = ((UChar_t*) rawData->GetBuffer()) + rawData->GetSize();
+    }
+
+    // continue with the next sub event if no data left in the payload
+    if (position >= end) continue;
+
+    // check that there are enough bytes left for the mini header
+    if (position + sizeof(AliMiniHeader) > end) return kErrNoMiniHeader;
+
+    // "read" and check the mini header
+    AliMiniHeader* miniHeader = (AliMiniHeader*) position;
+    position += sizeof(AliMiniHeader);
+    if (!CheckMiniHeader(miniHeader)) return kErrMiniMagic;
+
+    // check consistency of data size in the mini header and in the sub event
+    if (position + miniHeader->fSize > end) return kErrSize;
+    position += miniHeader->fSize;
+  };
+}

@@ -31,6 +31,8 @@ class AliRawReaderRoot: public AliRawReader {
 
     virtual Bool_t   Reset();
 
+    virtual Int_t    CheckData() const;
+
   protected :
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size);
 

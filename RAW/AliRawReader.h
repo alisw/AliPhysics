@@ -39,10 +39,15 @@ class AliRawReader: public TObject {
 
     virtual Bool_t   Reset() = 0;
 
+    enum {kErrMagic=1, kErrNoMiniHeader=2, kErrMiniMagic=3, 
+	  kErrSize=4, kErrOutOfBounds=5};
+    virtual Int_t    CheckData() const;
+    Int_t            GetErrorCode() {return fErrorCode;};
+
   protected :
     Bool_t           IsSelected() const;
 
-    Bool_t           CheckMiniHeader() const;
+    Bool_t           CheckMiniHeader(AliMiniHeader* miniHeader = NULL) const;
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size) = 0;
 
     AliMiniHeader*   fMiniHeader;  // current mini header
@@ -51,6 +56,8 @@ class AliRawReader: public TObject {
     Int_t            fSelectDetectorID;  // id of selected detector (<0 = no selection)
     Int_t            fSelectMinDDLID;    // minimal index of selected DDLs (<0 = no selection)
     Int_t            fSelectMaxDDLID;    // maximal index of selected DDLs (<0 = no selection)
+
+    Int_t            fErrorCode;         // code of last error
 
     ClassDef(AliRawReader, 0) // base class for reading raw digits
 };
