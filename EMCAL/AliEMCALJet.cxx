@@ -43,8 +43,31 @@ AliEMCALJet::~AliEMCALJet()
 }
 
 
+void AliEMCALJet::SetTrackList(Int_t n, Float_t* pt, Float_t* eta, Float_t* phi)
+{
+//
+// 
+    fNt = n;
+    for (Int_t i = 0; i < n; i++) {
+	fPtT [i]  = pt [i];
+	fEtaT[i]  = eta[i];
+	fPhiT[i]  = phi[i];
+    }
+}
 
 
+
+Int_t AliEMCALJet::TrackList(Float_t* pt, Float_t* eta, Float_t* phi)
+{
+//
+// 
+    for (Int_t i = 0; i < fNt; i++) {
+	pt [i] = fPtT [i];
+	eta[i] = fEtaT[i];
+	phi[i] = fPhiT[i];
+    }
+    return fNt;
+}
 
 
 

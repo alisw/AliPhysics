@@ -18,19 +18,20 @@ class AliEMCALJet : public TObject {
   void SetPhi(Float_t val)    {fPhi    = val;}  
   void SetEta(Float_t val)    {fEta    = val;}    
   void SetTrackList(Int_t val, Float_t* pt, Float_t* eta, Float_t* phi);
-  Float_t Energy() {return fEnergy;}
-  Float_t Phi()    {return fPhi;}
-  Float_t Eta()    {return fEta;}
+  Float_t Energy()  {return fEnergy;}
+  Float_t Phi()     {return fPhi;}
+  Float_t Eta()     {return fEta;}
   Int_t   TrackList(Float_t* pt, Float_t* eta, Float_t* phi);
-
+  Int_t   NTracks() {return fNt;} 
+  
 protected:
   Float_t  fEnergy;   // Jet Energy
   Float_t  fEta;      // Jet Phi
   Float_t  fPhi;      // Jet Eta
   Int_t    fNt;       // Number of associated tracks
-  Float_t  fPtT [50]; //!
-  Float_t  fEtaT[50]; //!
-  Float_t  fPhiT[50]; //!
+  Float_t  fPtT [50]; //
+  Float_t  fEtaT[50]; //
+  Float_t  fPhiT[50]; //
   ClassDef(AliEMCALJet,2) // Jet for EMCAL
 
 } ;
