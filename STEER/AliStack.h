@@ -63,7 +63,7 @@ class AliStack : public TObject
     Int_t       CurrentTrack() const;
     TObjArray*  Particles() const;
     TParticle*  Particle(Int_t id);
-    Int_t       GetPrimary(Int_t id) const;
+    Int_t       GetPrimary(Int_t id);
     TTree*      TreeK() const {return fTreeK;}
     
   protected:

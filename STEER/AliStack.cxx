@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/09/04 15:10:37  hristov
+Additional protection is included to avoid some problems using Hijing
+
 Revision 1.14  2001/08/30 09:44:06  hristov
 VertexSource_t added to avoid the warnings
 
@@ -612,20 +615,18 @@ TParticle* AliStack::Particle(Int_t i)
 }
 
 //_____________________________________________________________________________
-Int_t AliStack::GetPrimary(Int_t id) const
+Int_t AliStack::GetPrimary(Int_t id)
 {
   //
   // Return number of primary that has generated track
   //
   
   int current, parent;
-  TParticle *part;
   //
   parent=id;
   while (1) {
     current=parent;
-    part = (TParticle *)fParticleMap->At(current);
-    parent=part->GetFirstMother();
+    parent=Particle(current)->GetFirstMother();
     if(parent<0) return current;
   }
 }
