@@ -18,7 +18,7 @@
 #endif
 
 
-void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAndParticles", 
+void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAndParticles",
                 Int_t first = -1,Int_t last = -1,
                 char *outfile = "data.root")
  {
@@ -44,25 +44,26 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
 //if first or last is negative (or both), it reads from current directory
 //
 //these names I use when analysis is done directly from CASTOR files via RFIO
-  const char* basedir="rfio:/castor/cern.ch/user/s/skowron";
-  const char* serie="10k.12fm";
-  const char* field = "0.2";
- 
+
+  const char* basedir=".";
+  const char* serie="";
+  const char* field = "";
+  cout<<"AliHBTWriteInternFormat.C: datatype is "<<datatype<<" dir is basedir"<<endl;
   // Dynamically link some shared libs                    
   
-//  gROOT->LoadMacro("loadlibs.C");
-//  loadlibs();
-  
+  cout<<"AliHBTWriteInternFormat.C: Loading  HBTAN .....\n";
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libHBTAN");
+  cout<<"AliHBTWriteInternFormat.C: ..... Loaded\n";
   
 
   /***********************************************************/
-  
+   
   AliHBTReader* reader;
   Int_t kine = strcmp(datatype,"Kine");
   Int_t TPC = strcmp(datatype,"TPC");
   Int_t ITSv1 = strcmp(datatype,"ITSv1");
   Int_t ITSv2 = strcmp(datatype,"ITSv2");
+  Int_t intern = strcmp(datatype,"Intern");
 
   if(!kine)
    {
@@ -71,7 +72,9 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
    }
   else if(!TPC)
    {
-    reader = new AliHBTReaderTPC();
+    cout<<"AliHBTWriteInternFormat.C: Creating Reader TPC .....\n";
+    reader = new AliHBTReaderTPC("tpc.tracks.root","tpc.clusters.root");
+    cout<<"AliHBTWriteInternFormat.C: ..... Created\n";
    }
   else if(!ITSv1)
    {
@@ -79,7 +82,13 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
    }
   else if(!ITSv2)
    {
-    reader = new AliHBTReaderITSv2();
+    cout<<"AliHBTWriteInternFormat.C: Creating Reader ITSv2 .....\n";
+    reader = new AliHBTReaderITSv2("its.tracksv2.root","its.clustersv2.root");
+    cout<<"AliHBTWriteInternFormat.C: ..... Created\n";
+   }
+  else if(!intern)
+   {
+    reader = new AliHBTReaderInternal("kine.root");
    }
   else
    {
@@ -90,17 +99,25 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
   TObjArray* dirs=0;
   if ( (first >= 0) && (last>=0) && ( (last-first)>=0 ) )
    {//read from many dirs dirs
+     cout<<"AliHBTWriteInternFormat.C: ..... Setting dirs first="<<first<<" last="<<last<<"\n";
      char buff[50];
      dirs = new TObjArray(last-first+1);
+     dirs->SetOwner();
      for (Int_t i = first; i<=last; i++)
       { 
-        sprintf(buff,"%s/%s/%s/%d",basedir,field,serie,i);
+        sprintf(buff,"%s/%s/%s/%05d",basedir,field,serie,i);
         TObjString *odir= new TObjString(buff);
         dirs->Add(odir);
       }
     }
+    
    reader->SetDirs(dirs);
+
+   cout<<"AliHBTWriteInternFormat.C:   P R O C S E S S I N G .....\n\n";
    AliHBTReaderInternal::Write(reader,outfile);
+   cout<<"\n\nAliHBTWriteInternFormat.C:   F I N I S H E D";
    
+   if (dirs) delete dirs;
+   delete reader;
  }
 
