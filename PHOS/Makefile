@@ -76,6 +76,15 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 
 -include tgt_$(ALICE_TARGET)/Make-depend 
 
+test:	
+		@echo " ____________________________________________________________ "
+		@echo " "
+		@echo " Starting the test of the simulation/reconstruction software. Please don't take the warning messages into account. "
+		@echo " ____________________________________________________________ "
+		@aliroot -b -q testsim.C > out
+		@aliroot -b -q testsimglobal.C > out
+		@rm out
+		@rm testPHOS.root
 
 
 

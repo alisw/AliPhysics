@@ -13,7 +13,7 @@ void Config()
   
   new     AliGeant3("C++ Interface to Geant3");
   
-  TFile  *rootfile = new TFile("galice.root", "recreate");
+  TFile  *rootfile = new TFile("testPHOS.root", "recreate");
   rootfile->SetCompressionLevel(2);
   
   
@@ -85,7 +85,7 @@ void Config()
   //
   //gener->SetVertexSmear(perTrack); 
   
-  gAlice->SetField(-999, 2);  //Specify maximum magnetic field in Tesla (neg. ==> default field)
+  gAlice->SetField(0,2);  //Specify maximum magnetic field in Tesla (neg. ==> default field)
   
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");

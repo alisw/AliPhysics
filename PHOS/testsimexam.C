@@ -46,7 +46,8 @@ void testsimexam (Int_t nevent=1, const char *config="testconfig.C")
 
    // Get the number of events generated in the simulation
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance("galice.root") ; 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance("testPHOS.root") ; 
+  gime->Event(0,"Q");
   Int_t maxevent = gime->MaxEvent() ; 
  
   // Examine the alarms
@@ -76,14 +77,14 @@ void testsimexam (Int_t nevent=1, const char *config="testconfig.C")
           boolala = 1; 
           cerr<<" _____________________________________________________________ "<<endl;
           cerr<< " " <<endl;
-          cerr << "       MESS ==> Examination detected an error in "<<namemul << endl ;    
+          cerr << "             MESS ==> Examination detected an error in "<<namemul << endl ;    
           cerr<<" _____________________________________________________________ "<<endl;
 	}
         if (ratioenb[i]>maxAlaTotEnB) {
           boolala = 1;
           cerr<<" _____________________________________________________________ "<<endl;
           cerr<< " " <<endl;
-          cerr << "       MESS ==> Examination detected an error in "<<namen << endl ;
+          cerr << "             MESS ==> Examination detected an error in "<<namen << endl ;
           cerr<<" _____________________________________________________________ "<<endl;
 	}
 	    
@@ -98,7 +99,7 @@ void testsimexam (Int_t nevent=1, const char *config="testconfig.C")
      boolala = 1;
      cerr<<" _____________________________________________________________ "<<endl;
      cerr<< " " <<endl;
-     cerr << "          MESS ==> Examination detected an error in HitsM." << endl ;
+     cerr << "             MESS ==> Examination detected an error in HitsM." << endl ;
      cerr<<" _____________________________________________________________ "<<endl;
   }
 
@@ -106,7 +107,7 @@ void testsimexam (Int_t nevent=1, const char *config="testconfig.C")
      boolala = 1;
      cerr<<" _____________________________________________________________ "<<endl;
      cerr<< " " <<endl;
-     cerr << "         MESS ==> Examination detected an error in TotEn." << endl ;
+     cerr << "             MESS ==> Examination detected an error in TotEn." << endl ;
      cerr<<" _____________________________________________________________ "<<endl;
   }
 
@@ -116,7 +117,7 @@ void testsimexam (Int_t nevent=1, const char *config="testconfig.C")
     if ( boolala == 1 ) {
   cerr<<" _____________________________________________________________ "<<endl;
   cerr<< " " <<endl;
-  cerr << "          MESS ==> Examination sets up the file that will be sent to the responsible for PHOS in ALIROOT development (30s). " << endl ;
+  cerr << "             MESS ==> Examination sets up the file that will be sent to PHOS director (30s). " << endl ;
   cerr<<" _____________________________________________________________ "<<endl;    
       Int_t index = 0 ; 
       Int_t nhits = 0 ; 
@@ -154,7 +155,7 @@ void testsimexam (Int_t nevent=1, const char *config="testconfig.C")
 	 //get the number of the event
          gime->Event(index) ; 
          // get the number of cells reached during this event and fill the total multiplicity histogram
-         Int_t n = gime->NHits() ;
+         Int_t n = gime->Hits()->GetEntries() ;
          nhits += n ; 
          his->Fill(n) ;  
          // Get the data per block      
@@ -192,7 +193,7 @@ void testsimexam (Int_t nevent=1, const char *config="testconfig.C")
         
       nhits /= maxevent ; 
       cerr << "av = " << nhits << endl ;
-      TFile * file = gROOT -> GetFile("galice.root");
+      TFile * file = gROOT -> GetFile("testPHOS.root");
       file -> Write();
       his->Draw() ;
       hisnrg->Draw() ;
@@ -215,11 +216,11 @@ void testsimexam (Int_t nevent=1, const char *config="testconfig.C")
       hisba.Delete() ;
       hisbanrg.Delete() ; 
       file->Close();
-      // gSystem->Exec("uuencode $ALICE_ROOT/PHOS/galice.root galice.root | mail -s 'PHOS INSTALLATION ERROR  ' schutz@in2p3.fr"); 
+      //  gSystem->Exec("uuencode $ALICE_ROOT/PHOS/testPHOS.root testPHOS.root | mail -s 'PHOS INSTALLATION ERROR  ' schutz@in2p3.fr"); 
    
     }
   cerr<<" _____________________________________________________________ "<<endl;
   cerr<< " " <<endl;
-  cerr << "           MESS ==> Examination ended successfully. " << endl ;
+  cerr << "             MESS ==> Examination ended successfully. " << endl ;
   cerr<<" _____________________________________________________________ "<<endl;   
 }
