@@ -15,6 +15,7 @@ struct ClusterData
   UInt_t fFlags;
   UInt_t fChargeFalling; //for deconvolution
   UInt_t fLastCharge;    //for deconvolution
+  UInt_t fLastMergedPad; //dont merge twice per pad
 };
 typedef struct ClusterData ClusterData;
 
@@ -76,3 +77,5 @@ class AliL3ClustFinderNew {
 };
 
 #endif
+
+
