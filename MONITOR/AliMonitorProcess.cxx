@@ -795,6 +795,7 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(
       for(Int_t ipatch = 0; ipatch < AliL3Transform::GetNPatches(); ipatch++)
 	{
 	  // Read digits
+	  fHLTHough->GetMemHandler(ipatch)->Free();
 	  fHLTHough->GetMemHandler(ipatch)->Init(islice,ipatch);
 	  AliL3DigitRowData *digits = (AliL3DigitRowData *)fHLTHough->GetMemHandler(ipatch)->AliAltroDigits2Memory(ndigits,iEvent);
 
