@@ -3,7 +3,6 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV
 
-#include "AliL3StandardIncludes.h"
 
 #include "AliL3Logging.h"
 #include "AliL3Histogram.h"
