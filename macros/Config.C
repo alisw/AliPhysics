@@ -29,7 +29,7 @@
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv2FHoles.h"
 #include "TOF/AliTOFv4T0.h"
-#include "RICH/AliRICHv3.h"
+#include "RICH/AliRICHv1.h"
 #include "ZDC/AliZDCv2.h"
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"
@@ -340,7 +340,7 @@ void Config()
     if (iRICH)
     {
         //=================== RICH parameters ===========================
-        AliRICH *RICH = new AliRICHv3("RICH", "normal RICH");
+        AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
 
     }
 
