@@ -158,37 +158,6 @@ C --- phi ---
 C
       RETURN
       END
-*CMZ :  2.00/01 23/04/98  08.37.08  by  Federico Carminati
-*CMZ :  2.00/00 16/04/98  12.54.34  by  Unknown
-*CMZ :  1.05/00 08/06/94  09.19.45  by  Nick van Eijndhoven (RUU/CERN)
-*-- Author :    Nick van Eijndhoven (RUU/CERN)   08/06/94
-      SUBROUTINE SXSROT(NMAT,THETA1,PHI1,THETA2,PHI2,THETA3,PHI3)
-C
-C *** INITIALISATION OF THE ALICE ZEBRA STRUCTURE ***
-C *** FCA 22-APR-1998 CERN EP ***
-C
-C CALLED BY : *_GEOM, *_ROTM, *_TMED
-C ORIGIN    : FEDERICO CARMINATI
-C
-#undef CERNLIB_GEANT321_GCBANK_INC
-#undef CERNLIB_GEANT321_GCLINK_INC
-#include "geant321/gcbank.inc"
-*KEND.
-*
-      NMAT=1
-      IF(JROTM.GT.0) THEN
-         NS=IQ(JROTM-2)
-         DO KZ=1,NS
-            IF(LQ(JROTM-KZ).EQ.0) THEN
-               NMAT=KZ
-               GOTO 10
-            ENDIF
-         ENDDO
-         NMAT=NS+1
-      ENDIF
- 10   CALL GSROTM(NMAT,THETA1,PHI1,THETA2,PHI2,THETA3,PHI3)
-*
- 999  END
 *CMZ :          30/12/98  16.23.44  by  Rene Brun
 *-- Author :    Rene Brun   30/12/98
       subroutine setclip(name,xmin,xmax,ymin,ymax,zmin,zmax)
