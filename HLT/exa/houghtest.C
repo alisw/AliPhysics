@@ -2,12 +2,14 @@ void houghtest(Int_t slice,Char_t *path,Int_t n_eta_segments)
 {
   
 
-  hough = new AliL3Hough(path,kTRUE,n_eta_segments);
+  hough = new AliL3Hough();
+  hough->Init(path,kTRUE,n_eta_segments,kTRUE);
+  
   hough->ReadData(slice);
-  
+
   hough->Transform();
-  
-  hough->SetPeakThreshold(1000);
+
+  hough->SetPeakThreshold(1);
   hough->AddAllHistograms();
   hough->FindTrackCandidates();
   
@@ -54,8 +56,8 @@ void display(AliL3Hough *hough,Int_t eta_index)
   
   //Draw the parameter space
   c1 = new TCanvas("c1","",2);
-  hough->GetTransformer(0)->GetHistogram(eta_index)->Draw("box");
-  
+  hough->GetTransformer(0)->GetHistogram(eta_index)->Draw("lego");
+  return;
   //Draw the tracks
   c2 = new TCanvas("c2","",2);
   digitd->Draw();
