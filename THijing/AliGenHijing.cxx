@@ -73,8 +73,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fDnDb       =  0;
     fPtMinJet   = -2.5; 	
     fRadiation  =  3;
-    fEventVertex.Set(3);
-//
+    //
     SetSimpleJets();
     SetNoGammas();
 //
@@ -170,7 +169,7 @@ void AliGenHijing::Generate()
   Float_t polar[3]    =   {0,0,0};
   Float_t origin[3]   =   {0,0,0};
   Float_t origin0[3]  =   {0,0,0};
-  Float_t p[3], random[6];
+  Float_t p[3];
   Float_t tof;
 
 //  converts from mm/c to s
@@ -186,22 +185,10 @@ void AliGenHijing::Generate()
   fTrials = 0;
   for (j = 0;j < 3; j++) origin0[j] = fOrigin[j];
   if(fVertexSmear == kPerEvent) {
-      Float_t dv[3];
-      dv[2] = 1.e10;
-      while(TMath::Abs(dv[2]) > fCutVertexZ*fOsigma[2]) {
-	  Rndm(random,6);
-	  for (j=0; j < 3; j++) {
-	      dv[j] = fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		  TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-	  }
-      }
-      for (j=0; j < 3; j++) origin0[j] += dv[j];
-  } else if (fVertexSmear == kPerTrack) {
-//	    fHijing->SetMSTP(151,0);
-      for (j = 0; j < 3; j++) {
-//	      fHijing->SetPARP(151+j, fOsigma[j]*10.);
-      }
-  }
+      Vertex();
+      for (j=0; j < 3; j++) origin0[j] = fVertex[j];
+  } 
+
   while(1)
   {
 //    Generate one event
@@ -234,9 +221,9 @@ void AliGenHijing::Generate()
 //      Get event vertex
 //
       TParticle *  iparticle = (TParticle *) fParticles->At(0);
-      fEventVertex[0] = origin0[0];
-      fEventVertex[1] = origin0[1];	
-      fEventVertex[2] = origin0[2];
+      fVertex[0] = origin0[0];
+      fVertex[1] = origin0[1];	
+      fVertex[2] = origin0[2];
       
 //
 //      First select parent particles
@@ -530,7 +517,7 @@ void AliGenHijing::MakeHeader()
 // Bookkeeping for kinematic bias
     ((AliGenHijingEventHeader*) header)->SetTrials(fTrials);
 // Event Vertex
-    header->SetPrimaryVertex(fEventVertex);
+    header->SetPrimaryVertex(fVertex);
     gAlice->SetGenEventHeader(header);   
     fCollisionGeometry = (AliGenHijingEventHeader*)  header;
 }
