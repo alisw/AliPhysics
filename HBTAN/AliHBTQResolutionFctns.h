@@ -40,8 +40,8 @@ class AliHBTQOutResolVSQInvFctn: public AliHBTTwoPairFctn2D
    TH1* GetResult(){return fNumerator;}  
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
-     x = partpair->GetQOutCMSLC() - trackpair->GetQOutCMSLC();
-     y = partpair->GetQInv();
+     y = partpair->GetQOutCMSLC() - trackpair->GetQOutCMSLC();
+     x = partpair->GetQInv();
     }
   protected:
   private: 
@@ -60,8 +60,8 @@ class AliHBTQSideResolVSQInvFctn: public AliHBTTwoPairFctn2D
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair,  Double_t& x, Double_t& y)
     {
-     x = partpair->GetQSideCMSLC() - trackpair->GetQSideCMSLC();
-     y = partpair->GetQInv();
+     y = partpair->GetQSideCMSLC() - trackpair->GetQSideCMSLC();
+     x = partpair->GetQInv();
     }
    TH1* GetResult(){return fNumerator;} 
   protected:
@@ -81,8 +81,8 @@ class AliHBTQLongResolVSQInvFctn: public AliHBTTwoPairFctn2D
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
-     x = partpair->GetQLongCMSLC() - trackpair->GetQLongCMSLC();
-     y = partpair->GetQInv();
+     y = partpair->GetQLongCMSLC() - trackpair->GetQLongCMSLC();
+     x = partpair->GetQInv();
     }
    TH1* GetResult(){return fNumerator;} 
   protected:
@@ -102,8 +102,8 @@ class AliHBTQInvResolVSKtFctn: public AliHBTTwoPairFctn2D
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
-     x = partpair->GetQInv() - trackpair->GetQInv();
-     y = partpair->GetKt();
+     y = partpair->GetQInv() - trackpair->GetQInv();
+     x = partpair->GetKt();
     }
    TH1* GetResult(){return fNumerator;} 
   protected:
@@ -122,8 +122,8 @@ class AliHBTQOutResolVSKtFctn: public AliHBTTwoPairFctn2D
    TH1* GetResult(){return GetNumerator();}
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
-     x = partpair->GetQOutCMSLC() - trackpair->GetQOutCMSLC();
-     y = partpair->GetKt();
+     y = partpair->GetQOutCMSLC() - trackpair->GetQOutCMSLC();
+     x = partpair->GetKt();
     }
   protected:
   private:
@@ -141,8 +141,8 @@ class AliHBTQSideResolVSKtFctn: public AliHBTTwoPairFctn2D
    TH1* GetResult(){return GetNumerator();}
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
-     x = partpair->GetQSideCMSLC() - trackpair->GetQSideCMSLC();
-     y = partpair->GetKt();
+     y = partpair->GetQSideCMSLC() - trackpair->GetQSideCMSLC();
+     x = partpair->GetKt();
     }
   protected:
   private:
@@ -160,8 +160,8 @@ class AliHBTQLongResolVSKtFctn: public AliHBTTwoPairFctn2D
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
-     x = partpair->GetQLongCMSLC() - trackpair->GetQLongCMSLC();
-     y = partpair->GetKt();
+     y = partpair->GetQLongCMSLC() - trackpair->GetQLongCMSLC();
+     x = partpair->GetKt();
     }
    TH1* GetResult(){return fNumerator;}  
   protected:
@@ -180,8 +180,8 @@ class AliHBTQOutResolVSQOutFctn: public AliHBTTwoPairFctn2D
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
-     y = partpair->GetQOutCMSLC();
-     x = y - trackpair->GetQOutCMSLC();
+     x = partpair->GetQOutCMSLC();
+     y = x - trackpair->GetQOutCMSLC();
     }
    TH1* GetResult(){return fNumerator;}  
   protected:
@@ -202,8 +202,8 @@ class AliHBTQSideResolVSQSideFctn: public AliHBTTwoPairFctn2D
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
-     y = partpair->GetQSideCMSLC();
-     x = y - trackpair->GetQSideCMSLC();
+     x = partpair->GetQSideCMSLC();
+     y = x - trackpair->GetQSideCMSLC();
     }
    TH1* GetResult(){return fNumerator;}  
   protected:
@@ -225,8 +225,8 @@ class AliHBTQLongResolVSQLongFctn: public AliHBTTwoPairFctn2D
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
-     y = partpair->GetQLongCMSLC();
-     x = y - trackpair->GetQLongCMSLC();
+     x = partpair->GetQLongCMSLC();
+     y = x - trackpair->GetQLongCMSLC();
     }
    TH1* GetResult(){return fNumerator;}  
   protected:

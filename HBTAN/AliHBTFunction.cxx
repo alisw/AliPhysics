@@ -329,7 +329,7 @@ void AliHBTOnePairFctn2D::ProcessSameEventParticles(AliHBTPair* pair)
    { 
      Double_t x,y;
      GetValues(pair,x,y);
-     fNumerator->Fill(y,x);
+     fNumerator->Fill(x,y);
    }
 }
 
@@ -340,7 +340,7 @@ void AliHBTOnePairFctn2D::ProcessDiffEventParticles(AliHBTPair* pair)
    { 
      Double_t x,y;
      GetValues(pair,x,y);
-     fDenominator->Fill(y,x);
+     fDenominator->Fill(x,y);
    }
 
 }
@@ -505,7 +505,7 @@ ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
    { 
      Double_t x,y;
      GetValues(trackpair,partpair,x,y);
-     fNumerator->Fill(y,x);
+     fNumerator->Fill(x,y);
    }
 }
 
@@ -518,7 +518,7 @@ ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
    { 
      Double_t x,y;
      GetValues(trackpair,partpair,x,y);
-     fDenominator->Fill(y,x);
+     fDenominator->Fill(x,y);
    }
 
 }
@@ -537,7 +537,7 @@ ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
    { 
      Double_t x,y,z;
      GetValues(trackpair,partpair,x,y,z);
-     fNumerator->Fill(z,y,x);
+     fNumerator->Fill(x,y,z);
    }
 }
 
@@ -550,7 +550,7 @@ ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
    { 
      Double_t x,y,z;
      GetValues(trackpair,partpair,x,y,z);
-     fDenominator->Fill(z,y,x);
+     fDenominator->Fill(x,y,z);
    }
 
 }
