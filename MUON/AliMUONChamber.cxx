@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.5  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.4  2000/06/29 12:34:09  morsch
 AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
 it usable with any other geometry class. The link to the object to which it belongs is
@@ -41,7 +45,6 @@ Log messages included
 */
 
 #include "AliMUONChamber.h"
-#include "AliMUONResponse.h"
 
 #include "TMath.h"
 ClassImp(AliMUONChamber)	
@@ -146,6 +149,7 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof,
     
     Float_t qcheck=0, qp;
     nnew=0;
+    
     for (Int_t i=1; i<=fnsec; i++) {
 	qcheck=0;
 	AliSegmentation * segmentation=
@@ -156,11 +160,10 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof,
 	{
 	    qp=fResponse->IntXY(segmentation);
 	    qp=TMath::Abs(qp);
-	    
 //
 //
 	    if (qp > 1.e-4) {
-		qcheck+=qp;
+		qcheck+=qp*qtot;
 	    //
 	    // --- store signal information
 		newclust[0][nnew]=qtot;                     // total charge
@@ -170,8 +173,11 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof,
 		newclust[4][nnew]=segmentation->ISector();  // sector id
 		newclust[5][nnew]=(Float_t) i;              // counter
 		nnew++;
+//		if (i==2) printf("\n i, nnew, q %d %d %f", i, nnew, qp*qtot);
+		
 	    }
 	} // Pad loop
+	
     } // Cathode plane loop
 }
 
