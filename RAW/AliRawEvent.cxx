@@ -1454,7 +1454,6 @@ Int_t AliMDC::Run()
                   Info("Run", "Skipping %s (%d bytes)", header.GetTypeName(), skip);
                continue;
             }
-            break;
          default:
             ALIDEBUG(1) {
                Int_t s = header.GetEventSize() - header.HeaderSize();
