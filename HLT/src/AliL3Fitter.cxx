@@ -52,7 +52,7 @@ AliL3Fitter::~AliL3Fitter()
       for(Int_t j=0; j<6; j++)
 	{
 	  if(fClusters[i][j])
-	    delete fClusters[i][j];
+	    delete [] fClusters[i][j];
 	}
     }
 }

@@ -1005,7 +1005,7 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
   fN2PeaksPrevEtaSlice = fNPeaks;
 
   for(Int_t i=0; i<hist->GetNbinsY(); i++)
-    delete localmaxima[i];
+    delete [] localmaxima[i];
 
   delete [] localmaxima;
   delete [] nmaxs;
