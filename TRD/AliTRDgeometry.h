@@ -30,6 +30,10 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t   Impact(const TParticle* ) const { return kTRUE; };
   virtual Bool_t   Local2Global(Int_t d, Float_t *local, Float_t *global, AliTRDparameter *par) const;
   virtual Bool_t   Local2Global(Int_t p, Int_t c, Int_t s, Float_t *local, Float_t *global, AliTRDparameter *par) const;
+
+  virtual Bool_t   Global2Local(Int_t mode, Float_t *local, Float_t *global, Int_t* index,  AliTRDparameter *par) const;
+  virtual Bool_t   Global2Detector(Float_t global[3], Int_t index[3],  AliTRDparameter *par);
+
   virtual Bool_t   Rotate(Int_t d, Float_t *pos, Float_t *rot) const;
   virtual Bool_t   RotateBack(Int_t d, Float_t *rot, Float_t *pos) const;
 
@@ -81,7 +85,7 @@ class AliTRDgeometry : public AliGeometry {
   static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / fgkNsect; }; 
 
  protected:
-
+ 
   static const Int_t   fgkNsect;                            // Number of sectors in the full detector (18)
   static const Int_t   fgkNplan;                            // Number of planes of the TRD (6)
   static const Int_t   fgkNcham;                            // Number of chambers in z-direction (5)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2003/09/18 09:06:07  cblume
+Geometry update, Removal of compiler warnings
+
 Revision 1.22  2002/11/21 22:38:47  alibrary
 Removing AliMC and AliMCProcess
 
@@ -404,6 +407,84 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
   return RotateBack(idet,rot,global);
 
 }
+
+
+
+//_____________________________________________________________________________
+Bool_t AliTRDgeometry::Global2Local(Int_t mode, Float_t *local, Float_t *global, Int_t* index,  AliTRDparameter *par) const
+{
+  //
+  // Converts local pad-coordinates (row,col,time) into 
+  // global ALICE reference frame coordinates (x,y,z)
+  //
+  //index[0]=plane number
+  //index[1]=chamber number
+  //index[2]=sector number
+  //
+  // mode=0  - local coordinate in y, z,             x - rotated global   
+  // mode=2  - local coordinate in pad, and pad row, x - rotated global
+  //
+  if (!par) {
+    Error("Local2Global","No parameter defined\n");
+    return kFALSE;
+  }
+  
+  //Int_t    idet    = GetDetector(iplan,icham,isect); // Detector number
+  Int_t    idet      = GetDetector(index[0],index[1],index[2]); // Detector number
+  Rotate(idet,global,local);
+  if (mode==0) return kTRUE;
+  //
+  //  Float_t  row0      = par->GetRow0(iplan,icham,isect);
+  //Float_t  col0      = par->GetCol0(iplan);
+  //Float_t  time0     = par->GetTime0(iplan);
+  //
+  // mode 1 to be implemented later
+  // calculate (x,y,z) position in time bin pad row pad
+  //
+  //rot[0] = time0 - (timeSlice - par->GetTimeBefore()) 
+  //       * par->GetTimeBinSize();
+  //rot[1] = col0  + padCol                    
+  //       * par->GetColPadSize(iplan);
+  //rot[2] = row0  + padRow                    
+  //       * par->GetRowPadSize(iplan,icham,isect);
+
+  return kTRUE;
+
+}
+
+//___________________________________________________________________
+Bool_t   AliTRDgeometry::Global2Detector(Float_t global[3], Int_t index[3], AliTRDparameter *par)
+{
+  //  
+  //
+  //input = global position
+  //output =index
+  //index[0]=plane number
+  //index[1]=chamber number
+  //index[2]=sector number
+  Float_t fi;
+  //
+  fi = TMath::ATan2(global[1],global[0]);
+  if (fi<0) fi += 2*TMath::Pi();
+  index[2] = Int_t(TMath::Nint((fi - GetAlpha()/2.)/GetAlpha()));
+  //
+  //
+  Float_t locx = global[0] * fRotA11[index[2]] + global[1] * fRotA12[index[2]];  
+  index[0] = 0;
+  Float_t max = locx-par->GetTime0(0);
+  for (Int_t iplane=1; iplane<fgkNplan;iplane++){
+    Float_t dist = TMath::Abs(locx-par->GetTime0(iplane));
+    if (dist < max){
+      index[0] = iplane;
+      max = dist;
+    }
+  }
+  Float_t theta = TMath::ATan2(global[2],locx);
+  index[1] = TMath::Nint(float(fgkNcham)*theta/(0.25*TMath::Pi()));
+  return kTRUE;
+
+}
+
 
 //_____________________________________________________________________________
 Bool_t AliTRDgeometry::Rotate(Int_t d, Float_t *pos, Float_t *rot) const
