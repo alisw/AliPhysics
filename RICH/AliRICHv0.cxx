@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.14  2000/07/10 15:28:39  fca
+  Correction of the inheritance scheme
+
   Revision 1.13  2000/06/30 16:38:15  dibari
   Test on kDebugevel
 
@@ -107,15 +110,15 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
     geometry->SetOuterFreonWidth(40.3);
     geometry->SetInnerFreonLength(131);
     geometry->SetInnerFreonWidth(40.3);
-    geometry->SetFreonThickness(1);
+    geometry->SetFreonThickness(1.5);
 //
 //  Response parameters
     AliRICHResponseV0*  responseV0   = new AliRICHResponseV0;
     responseV0->SetSigmaIntegration(5.);
-    responseV0->SetChargeSlope(40.);
+    responseV0->SetChargeSlope(27.);
     responseV0->SetChargeSpread(0.18, 0.18);
-    responseV0->SetMaxAdc(1024);
-    responseV0->SetAlphaFeedback(0.05);
+    responseV0->SetMaxAdc(4096);
+    responseV0->SetAlphaFeedback(0.036);
     responseV0->SetEIonisation(26.e-9);
     responseV0->SetSqrtKx3(0.77459667);
     responseV0->SetKx2(0.962);
