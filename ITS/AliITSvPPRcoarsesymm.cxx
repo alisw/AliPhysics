@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/16 13:49:15  barbera
+Services volumes slightly modified and material added following Pierluigi Barberis' information
+
 Revision 1.4  2000/10/07 15:33:07  barbera
 Small corrections to the ITSV mother volume
 
@@ -304,7 +307,7 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[0] = 0.;
   dgh[1] = 360.;
   dgh[2] = 4.;
-  dgh[3] = -76.708;
+  dgh[3] = -77.2;
   dgh[4] = 45.;
   dgh[5] = 56.;
   dgh[6] = -36.;     
@@ -313,7 +316,7 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[9] = 36.;
   dgh[10] = 3.3;
   dgh[11] = 56.;
-  dgh[12] = 76.708;
+  dgh[12] = 77.2;
   dgh[13] = 45.;
   dgh[14] = 56.;
   gMC->Gsvolu("ITSD", "PCON", idtmed[275], dgh, 15);
@@ -454,21 +457,21 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   
   dgh[0] = 45.;
   dgh[1] = 45.+1.0;
-  dgh[2] = 9.75;
+  dgh[2] = 9.5;
   
   gMC->Gsvolu("ICCU", "TUBE", idtmed[279], dgh, 3);  
-  gMC->Gspos("ICCU", 1, "ITSV", 0., 0., 86.45, 0, "ONLY");
-  gMC->Gspos("ICCU", 2, "ITSV", 0., 0., -86.45, idrotm[200], "ONLY");
+  gMC->Gspos("ICCU", 1, "ITSV", 0., 0., 86.7, 0, "ONLY");
+  gMC->Gspos("ICCU", 2, "ITSV", 0., 0., -86.7, idrotm[200], "ONLY");
   
   // --- Define cables at the end of the ITS cones - carbon part
   
   dgh[0] = 45.+1.0;
   dgh[1] = 45.+1.0+1.5;
-  dgh[2] = 9.75;
+  dgh[2] = 9.5;
   
   gMC->Gsvolu("ICCC", "TUBE", idtmed[274], dgh, 3);  
-  gMC->Gspos("ICCC", 1, "ITSV", 0., 0., 86.45, 0, "ONLY");
-  gMC->Gspos("ICCC", 2, "ITSV", 0., 0., -86.45, idrotm[200], "ONLY");  
+  gMC->Gspos("ICCC", 1, "ITSV", 0., 0., 86.7, 0, "ONLY");
+  gMC->Gspos("ICCC", 2, "ITSV", 0., 0., -86.7, idrotm[200], "ONLY");  
   
   // --- Define patch panels at the end of the ITS cones
   
