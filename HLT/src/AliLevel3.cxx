@@ -225,8 +225,6 @@ void AliLevel3::ProcessSlice(Int_t slice){
 #ifdef use_aliroot
   UseCF = fFileHandler->IsDigit();
 #endif
-//  Int_t row[5][2] = {{ 0,173}};
-//  Int_t row[5][2] = {{ 0, 45},{46,77},{78,109},{110,141},{142,173}};
   const Int_t maxpoints=100000;
   const Int_t pointsize = maxpoints * sizeof(AliL3SpacePointData);
   AliL3MemHandler *memory = new AliL3MemHandler();
