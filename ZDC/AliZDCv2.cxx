@@ -1180,7 +1180,7 @@ void AliZDCv2::StepManager()
   TLorentzVector s, p;
   const char *knamed;
 
-  for (j=0;j<10;j++) hits[j]=999.;
+  for (j=0;j<10;j++) hits[j]=-999.;
   
   // --- This part is for no shower developement in beam pipe and TDI
   // If particle interacts with beam pipe or TDI -> return
@@ -1189,15 +1189,13 @@ void AliZDCv2::StepManager()
     if(fNoShower==1) {
       if(gMC->GetMedium() == fMedSensPI) {
         knamed = gMC->CurrentVolName();
-	// Ch debug
-	printf("\t fMedSensPI -> medium: %d, Volume: %s \n",gMC->GetMedium(),knamed);
-        if(!strncmp(knamed,"YM", 2))  fpLostIT += 1;
-        if(!strncmp(knamed,"YD1",2))  fpLostD1 += 1;
+	//printf("\t fMedSensPI -> medium: %d, Volume: %s \n",gMC->GetMedium(),knamed);
+        if(!strncmp(knamed,"YMQ",3))  fpLostIT += 1;
+        if(!strncmp(knamed,"YD1",3))   fpLostD1 += 1;
       }
       else if(gMC->GetMedium() == fMedSensTDI){ // NB->Cu = TDI or D1 vacuum chamber
         knamed = gMC->CurrentVolName();
-	// Ch debug
-	printf("\t fMedSensTDI -> medium: %d, Volume: %s \n",gMC->GetMedium(),knamed);
+	//printf("\t fMedSensTDI -> medium: %d, Volume: %s \n",gMC->GetMedium(),knamed);
         if(!strncmp(knamed,"MD1",3)) fpLostD1 += 1;
         if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
       }
@@ -1216,27 +1214,18 @@ void AliZDCv2::StepManager()
   
   //Particle coordinates 
     gMC->TrackPosition(s);
-    for(j=0; j<=2; j++){
-       x[j] = s[j];
-    }
+    for(j=0; j<=2; j++) x[j] = s[j];
     hits[0] = x[0];
     hits[1] = x[1];
     hits[2] = x[2];
 
   // Determine in which ZDC the particle is
     knamed = gMC->CurrentVolName();
-    if(!strncmp(knamed,"ZN",2)){
-      vol[0]=1;
-    }
-    else if(!strncmp(knamed,"ZP",2)){
-      vol[0]=2;
-    }
-    else if(!strncmp(knamed,"ZE",2)){
-      vol[0]=3;
-    }
+    if(!strncmp(knamed,"ZN",2))      vol[0]=1;
+    else if(!strncmp(knamed,"ZP",2)) vol[0]=2;
+    else if(!strncmp(knamed,"ZE",2)) vol[0]=3;
   
   // Determine in which quadrant the particle is
-       
     if(vol[0]==1){	//Quadrant in ZN
       // Calculating particle coordinates inside ZN
       xdet[0] = x[0]-fPosZN[0];
@@ -1271,7 +1260,7 @@ void AliZDCv2::StepManager()
       }
       if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
         printf("	ZDC StepManager->ERROR in ZP!!! vol[1] = %d, xdet[0] = %f,"
-	"xdet[1] = %f",vol[1], xdet[0], xdet[1]);
+	"xdet[1] = %f\n",vol[1], xdet[0], xdet[1]);
     }
     
     // Quadrant in ZEM: vol[1] = 1 -> particle in 1st ZEM (placed at x = 8.5 cm)
@@ -1292,7 +1281,6 @@ void AliZDCv2::StepManager()
 
   // Store impact point and kinetic energy of the ENTERING particle
     
-//    if(Curtrack==Prim){
       if(gMC->IsTrackEntering()){
         //Particle energy
         gMC->TrackMomentum(p);
@@ -1314,7 +1302,6 @@ void AliZDCv2::StepManager()
 	  return;
 	}
       }
-//    } // Curtrack IF
              
       // Charged particles -> Energy loss
       if((destep=gMC->Edep())){
@@ -1334,7 +1321,7 @@ void AliZDCv2::StepManager()
 	   AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 	   }
       }
-  }// NB -> Questa parentesi (chiude il primo IF) io la sposterei al fondo!???
+  }
 
 
   // *** Light production in fibres 
