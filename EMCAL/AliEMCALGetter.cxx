@@ -116,7 +116,7 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
     //open headers file
     fFile = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
     
-    if(fFile == 0){    //if file was not opened yet, read gAlice
+    if(!fFile){    //if file was not opened yet, read gAlice
       //      if(fHeaderFile.Contains("rfio")) // if we read file using HPSS
 	fFile =	TFile::Open(fHeaderFile.Data(),rw) ;
 	//else
@@ -140,7 +140,7 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
   if (!EMCAL()) {
     if (fDebug)
       cout << "INFO: AliEMCALGetter -> Posting EMCAL to Folders" << endl ; 
-    AliConfig * conf = AliConfig::Instance() ; 
+    AliConfig * conf = AliConfig::Instance() ;
     conf->Add(static_cast<AliDetector*>(gAlice->GetDetector("EMCAL"))) ; 
     conf->Add(static_cast<AliModule*>(gAlice->GetDetector("EMCAL"))) ; 
   }
