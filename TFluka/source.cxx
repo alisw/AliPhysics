@@ -17,6 +17,7 @@
 //Virutal MC
 #include "TFluka.h"
 #include "TVirtualMCStack.h"
+#include "TVirtualMCApplication.h"
 #include "TParticle.h"
 #include "TVector3.h"
 
@@ -36,7 +37,6 @@
 # define geohsm GEOHSM
 # define soevsv SOEVSV
 #endif
-
 
 extern "C" {
   //
@@ -101,6 +101,10 @@ extern "C" {
     // Get the stack produced from the generator
     TVirtualMCStack* cppstack = fluka->GetStack();
     //Get next particle
+    if (STACK.lstack != 1) {
+	TVirtualMCApplication::Instance()->PostTrack();
+	TVirtualMCApplication::Instance()->FinishPrimary();
+    }
     Int_t itrack = -1;
     TParticle* particle = cppstack->GetNextTrack(itrack);
 
@@ -144,6 +148,7 @@ extern "C" {
     /* Lstack is the stack counter: of course any time source is called it
      * must be =0
      */
+    
     STACK.lstack++;
     cout << "\t* Storing particle parameters in the stack, lstack = " 
 	 << STACK.lstack << endl;
@@ -270,7 +275,7 @@ extern "C" {
     
     cout << "\t* EPISOR.lsouit = " << (EPISOR.lsouit?'T':'F') << endl;
     cout << "\t* " << STACK.lstack << " particles in the event" << endl;
-      
+    TVirtualMCApplication::Instance()->PreTrack();
 #ifdef METHODDEBUG
     cout << "<== source(" << nomore << ")" << endl;
 #endif
