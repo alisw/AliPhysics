@@ -13,6 +13,7 @@ class AliMUONHit : public AliHit {
     
     AliMUONHit() {}
     AliMUONHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
+    AliMUONHit(Int_t fIshunt, Int_t track, Int_t iChamber, Int_t idpart, Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, Float_t theta, Float_t phi, Float_t length, Float_t destep);
     virtual ~AliMUONHit() {}
     Int_t   Chamber()  {return fChamber;}
     Float_t Particle() {return fParticle;}    
