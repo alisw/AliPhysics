@@ -58,13 +58,6 @@ void MUONrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
 //
     Int_t Nh=0;
     Int_t Nh1=0;
-    for (int nev=evNumber1; nev<= evNumber2; nev++) {
-	Int_t nparticles = gAlice->GetEvent(nev);
-	cout << "nev         " << nev <<endl;
-	cout << "nparticles  " << nparticles <<endl;
-	if (nev < evNumber1) continue;
-	if (nparticles <= 0) return;
-	gAlice->RunReco("MUON");
-    }   // event loop 
+    gAlice->RunReco("MUON", evNumber1, evNumber2+1);
 }
 
