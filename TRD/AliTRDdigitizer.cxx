@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2000/12/07 12:20:46  cblume
+Go back to array compression. Use sampled PRF to speed up digitization
+
 Revision 1.15  2000/11/23 14:34:08  cblume
 Fixed bug in expansion routine of arrays (initialize buffers properly)
 
@@ -253,6 +256,8 @@ void AliTRDdigitizer::Copy(TObject &d)
   // Copy function
   //
 
+  Int_t iBin;
+
   ((AliTRDdigitizer &) d).fInputFile     = NULL;
   ((AliTRDdigitizer &) d).fDigits        = NULL;
   ((AliTRDdigitizer &) d).fTRD           = NULL;
@@ -290,7 +295,7 @@ void AliTRDdigitizer::Copy(TObject &d)
   ((AliTRDdigitizer &) d).fPRFpad        = fPRFpad;
   if (((AliTRDdigitizer &) d).fPRFsmp) delete ((AliTRDdigitizer &) d).fPRFsmp;
   ((AliTRDdigitizer &) d).fPRFsmp = new Float_t[fPRFbin];
-  for (Int_t iBin = 0; iBin < fPRFbin; iBin++) {
+  for (iBin = 0; iBin < fPRFbin; iBin++) {
     ((AliTRDdigitizer &) d).fPRFsmp[iBin] = fPRFsmp[iBin];
   }                                                                             
   ((AliTRDdigitizer &) d).fTRFbin        = fTRFbin;
@@ -299,7 +304,7 @@ void AliTRDdigitizer::Copy(TObject &d)
   ((AliTRDdigitizer &) d).fTRFwid        = fTRFwid;
   if (((AliTRDdigitizer &) d).fTRFint) delete ((AliTRDdigitizer &) d).fTRFint;
   ((AliTRDdigitizer &) d).fTRFint = new Float_t[fTRFbin];
-  for (Int_t iBin = 0; iBin < fTRFbin; iBin++) {
+  for (iBin = 0; iBin < fTRFbin; iBin++) {
     ((AliTRDdigitizer &) d).fTRFint[iBin] = fTRFint[iBin];
   }                                                                             
 
