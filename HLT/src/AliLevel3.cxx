@@ -221,6 +221,7 @@ void AliLevel3::SetTrackerParam(Int_t phi_segments, Int_t eta_segments,
     fTracker->NonVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack);
   
   fTracker->SetParamDone(true);
+  fTracker->InitVolumes();
 }
 
 void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
