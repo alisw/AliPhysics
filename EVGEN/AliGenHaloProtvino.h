@@ -25,13 +25,15 @@ public:
     virtual void Generate();
     virtual Float_t GassPressureWeight(Float_t zPrimary);
     virtual void SetSide(Int_t flag = 1) {fSide = flag;}
-    
+    virtual void SetNskip(Int_t nskip) {fNskip = nskip;}
+
     AliGenHaloProtvino & operator=(const AliGenHaloProtvino & rhs);
 
 protected:
   FILE*    fFile;                       // ! Pointer to file
   TString  fFileName;                   //   Choose the file
   Int_t    fSide;                       //   Muon arm side (1) / Castor side (-1) 
+  Int_t    fNskip;                      //   
   
   ClassDef(AliGenHaloProtvino,1)        //   LHC background boundary source (Protvino Group results)
 };

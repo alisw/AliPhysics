@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.3  2001/07/27 17:09:36  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.2  2001/06/14 12:15:27  morsch
 Bugs corrected. SetSide() method added.
 
@@ -104,6 +109,7 @@ void AliGenHaloProtvino::Generate()
   Int_t   inuc;
   //
   Int_t ipart, ncols, nt;
+  Int_t nskip = 0;
   Int_t nread = 0;
   while(1) {
       ncols = fscanf(fFile,"%f %d %d %f %f %f %f %f %f",
@@ -112,23 +118,25 @@ void AliGenHaloProtvino::Generate()
 		     &tx, &ty);
 /*
       printf(" \n %f %d %d %f %f %f %f %f %f",
-		     zPrimary, inuc, ipart, wgt, 
-		     ekin, origin[0], origin[1],
-		     tx, ty);
+             zPrimary, inuc, ipart, wgt, 
+             ekin, origin[0], origin[1],
+             tx, ty);
 */
+      
       if (ncols < 0) break;
+
+      nskip++;
+      if (fNpart !=-1 && nskip <= fNskip) continue;
+      
       nread++;
-
       if (fNpart !=-1 && nread > fNpart) break;
-
-
 
       amass = TDatabasePDG::Instance()->GetParticle(ipart)->Mass();
 
       //
       // Momentum vector
       //
-      p0=sqrt(ekin*ekin + 2.*amass);
+      p0=sqrt(ekin*ekin + 2.*amass*ekin);
       
       txy=TMath::Sqrt(tx*tx+ty*ty);
       if (txy == 1.) {
@@ -140,8 +148,8 @@ void AliGenHaloProtvino::Generate()
       p[0]=p0*tx;
       p[1]=p0*ty;
       p[2]=-p0*tz;
-
-      origin[2] = 21.965;
+      
+      origin[2] = -2196.5;
 
       //
       //
@@ -158,7 +166,7 @@ void AliGenHaloProtvino::Generate()
 	  origin[2]  = -origin[2];
 	  p[2]       = -p[2];
       }
-      
+
       SetTrack(0,-1,kProton,pP,originP,polar,0,kPNoProcess,ntP);
       KeepTrack(ntP);
       fParentWeight=wgt*GassPressureWeight(zPrimary);
@@ -168,13 +176,14 @@ void AliGenHaloProtvino::Generate()
       //
       // Assume particles come from two directions with same probability
 
-      origin[2]=-origin[2];
-      p[2]=-p[2];
-      fParentWeight=wgt*GassPressureWeight(-zPrimary);
-      SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
-      origin[2]=-origin[2];
-      p[2]=-p[2];
-      origin[2]=-origin[2];
+      // Both Side are considered
+      if (fSide > 1) {
+          origin[2]=-origin[2];
+          p[2]=-p[2];
+          fParentWeight=wgt*GassPressureWeight(-zPrimary);
+          SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+      }
+      
   }
 }
  
