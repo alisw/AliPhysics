@@ -133,6 +133,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
   fDigitsBranchTitle       = GetName() ;
 
   TString tempo(GetName()) ; 
+  tempo.Append(":") ;
   tempo.Append(Version()) ; 
   SetName(tempo.Data()) ; 
   fRecPointsInRun          = 0 ; 
@@ -156,13 +157,14 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
     Print("") ; 
 
  //check, if the branch with name of this" already exits?
+  gAlice->GetEvent(0) ;
   TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
   TIter next(lob) ; 
   TBranch * branch = 0 ;  
   Bool_t phosemcfound = kFALSE, phoscpvfound = kFALSE, clusterizerfound = kFALSE ; 
   
   TString taskName(GetName()) ; 
-  taskName.ReplaceAll(Version(), "") ;
+  taskName.Remove(taskName.Index(Version()) -1) ;
 
   while ( (branch = (TBranch*)next()) && (!phosemcfound || !phoscpvfound || !clusterizerfound) ) {
     if ( (strcmp(branch->GetName(), "PHOSEmcRP")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
@@ -181,17 +183,24 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
     return ; 
   }       
 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
   Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ;
   Int_t ievent ;
 
   for(ievent = 0; ievent < nevents; ievent++){
-    
-    gAlice->GetEvent(ievent) ;
-    gAlice->SetEvent(ievent) ;
 
-    if(!ReadDigits(ievent))  //reads digits for event fEvent
-      continue;
-    
+
+    fPedestal = gime->Digitizer(taskName)->GetPedestal() ;
+    fSlope    = gime->Digitizer(taskName)->GetSlope() ;
+
+
+    fNumberOfEmcClusters  = 0 ;
+    fNumberOfCpvClusters  = 0 ;
+   
+    gime->Event(ievent,"D") ;
+    // if(!ReadDigits(ievent))  //reads digits for event fEvent
+    //  continue;
+
     MakeClusters() ;
     
     if(fToUnfold) 
@@ -316,7 +325,7 @@ void AliPHOSClusterizerv1::Init()
     SetTitle("galice.root") ;
 
   TString taskName(GetName()) ; 
-  taskName.ReplaceAll(Version(), "") ;
+  taskName.Remove(taskName.Index(Version()) -1) ;
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), taskName.Data()) ; 
   if ( gime == 0 ) {
@@ -328,11 +337,12 @@ void AliPHOSClusterizerv1::Init()
     gMinuit = new TMinuit(100) ;
 
   //add Task to //YSAlice/tasks/Reconstructioner/PHOS
-  TTask * aliceRe  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/Reconstructioner") ; 
-  TTask * phosRe   = (TTask*)aliceRe->GetListOfTasks()->FindObject("PHOS") ;
-  phosRe->Add(this) ; 
+  gime->PostClusterizer(this) ;
   // create a folder on the white board //YSAlice/WhiteBoard/RecPoints/PHOS/recpointsName
-  gime->Post(GetTitle(), "R", taskName.Data() ) ; 
+  gime->PostRecPoints(taskName.Data() ) ;
+
+  gime->PostDigits(taskName.Data()) ;
+  gime->PostDigitizer(taskName.Data()) ;
   
 }
 
@@ -437,8 +447,6 @@ Bool_t AliPHOSClusterizerv1::ReadDigits(Int_t event)
  {
    // reads digitis with specified title from TreeD
 
-  fNumberOfEmcClusters  = 0 ;
-  fNumberOfCpvClusters  = 0 ;
 
   if ( gAlice->TreeD()==0) {  
    cerr << "ERROR: AliPHOSClusterizerv1::ReadDigits There is no Digit Tree" << endl;
@@ -497,11 +505,13 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
 
   // Creates new branches with given title
   // fills and writes into TreeR.
+  TString branchName(GetName()) ; 
+  branchName.Remove(branchName.Index(Version())-1) ; 
   
   AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-  TClonesArray * digits = gime->Digits() ; 
+  TObjArray * emcRecPoints = gime->EmcRecPoints(branchName) ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints(branchName) ; 
+  TClonesArray * digits = gime->Digits(branchName) ; 
 
   Int_t index ;
   //Evaluate position, dispersion and other RecPoint properties...
@@ -540,8 +550,6 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
   //Make new branches
   TDirectory *cwd = gDirectory;
   
-  TString branchName(GetName()) ; 
-  branchName.ReplaceAll(Version(), "") ; 
  
   Int_t bufferSize = 32000 ;    
   Int_t splitlevel = 0 ;
@@ -574,7 +582,7 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
   } 
     
   //And Finally  clusterizer branch
-  AliPHOSClusterizerv1 * cl = (AliPHOSClusterizerv1*)gime->Clusterizer(GetName()) ;
+  AliPHOSClusterizerv1 * cl = (AliPHOSClusterizerv1*)gime->Clusterizer(branchName) ;
   TBranch * clusterizerBranch = gAlice->TreeR()->Branch("AliPHOSClusterizer","AliPHOSClusterizerv1",
 					      &cl,bufferSize,splitlevel);
   clusterizerBranch->SetTitle(branchName);
@@ -600,15 +608,17 @@ void AliPHOSClusterizerv1::MakeClusters()
 {
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
+  TString branchName(GetName()) ; 
+  branchName.Remove(branchName.Index(Version())-1) ; 
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
 
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
+  TObjArray * emcRecPoints = gime->EmcRecPoints(branchName) ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints(branchName) ; 
   emcRecPoints->Delete() ;
   cpvRecPoints->Delete() ;
   
-  TClonesArray * digits = gime->Digits() ; 
+  TClonesArray * digits = gime->Digits(branchName) ; 
   TClonesArray * digitsC =  (TClonesArray*)digits->Clone() ;
   
  
@@ -711,7 +721,7 @@ void AliPHOSClusterizerv1::MakeClusters()
   } // while digit
 
   delete digitsC ;
-
+ 
 }
 
 //____________________________________________________________________________
