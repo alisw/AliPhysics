@@ -3,6 +3,12 @@
 #ifndef ALIL3HOUGHBASETRANSFORMER_H
 #define ALIL3HOUGHBASETRANSFORMER_H
 
+//-------------------------------------------------------------------------
+//                Class AliL3HoughBaseTransformer
+//   This is the base class for all the Hough Transformer tracking
+//   algorithms for HLT. 
+//-------------------------------------------------------------------------
+
 #include "AliL3RootTypes.h"
 
 #ifdef do_mc
@@ -18,7 +24,7 @@ typedef struct AliL3TrackIndex AliL3TrackIndex;
 class AliL3DigitRowData;
 class AliL3Histogram;
 
-#include "../RAW/AliTPCRawStream.h"
+#include "AliTPCRawStream.h"
 
 class AliL3HoughBaseTransformer {
 
