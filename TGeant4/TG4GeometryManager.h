@@ -53,6 +53,9 @@ class TG4GeometryManager
                      Int_t isvol, Int_t ifield, Float_t fieldm, Float_t tmaxfd, 
                      Float_t stemax, Float_t deemax, Float_t epsil, 
 		     Float_t stmin, Float_t* ubuf, Int_t nbuf);
+    void  Matrix(Int_t& krot, Double_t thetaX, Double_t phiX, 
+                     Double_t thetaY, Double_t phiY, Double_t thetaZ, 
+		     Double_t phiZ);
     void  Matrix(Int_t& krot, Float_t thetaX, Float_t phiX, 
                      Float_t thetaY, Float_t phiY, Float_t thetaZ, 
 		     Float_t phiZ);
@@ -70,21 +73,34 @@ class TG4GeometryManager
 
     // functions from GGEOM 
     Int_t Gsvolu(const char *name, const char *shape, Int_t nmed,  
+                         Double_t *upar, Int_t np); 
+    Int_t Gsvolu(const char *name, const char *shape, Int_t nmed,  
                          Float_t *upar, Int_t np); 
     void  Gsdvn(const char *name, const char *mother, Int_t ndiv, 
                         Int_t iaxis);
- 
+    void  Gsdvn2(const char *name, const char *mother, Int_t ndiv, 
+                         Int_t iaxis, Double_t c0i, Int_t numed); 
     void  Gsdvn2(const char *name, const char *mother, Int_t ndiv, 
                          Int_t iaxis, Float_t c0i, Int_t numed); 
+    void  Gsdvt(const char *name, const char *mother, Double_t step,
+                         Int_t iaxis, Int_t numed, Int_t ndvmx); 
     void  Gsdvt(const char *name, const char *mother, Float_t step,
                          Int_t iaxis, Int_t numed, Int_t ndvmx); 
+    void  Gsdvt2(const char *name, const char *mother, Double_t step, 
+                         Int_t iaxis, Double_t c0, Int_t numed, Int_t ndvmx); 
     void  Gsdvt2(const char *name, const char *mother, Float_t step, 
                          Int_t iaxis, Float_t c0, Int_t numed, Int_t ndvmx); 
 
     void  Gsord(const char *name, Int_t iax); 
     void  Gspos(const char *name, Int_t nr, const char *mother,  
+                        Double_t x, Double_t y, Double_t z, Int_t irot, 
+                        const char *konly); 
+    void  Gspos(const char *name, Int_t nr, const char *mother,  
                         Float_t x, Float_t y, Float_t z, Int_t irot, 
                         const char *konly); 
+    void  Gsposp(const char *name, Int_t nr, const char *mother,  
+                         Double_t x, Double_t y, Double_t z, Int_t irot,
+                         const char *konly, Double_t *upar, Int_t np); 
     void  Gsposp(const char *name, Int_t nr, const char *mother,  
                          Float_t x, Float_t y, Float_t z, Int_t irot,
                          const char *konly, Float_t *upar, Int_t np); 
@@ -132,6 +148,7 @@ class TG4GeometryManager
     // methods
     void GstparCut(G4int itmed, TG4G3Cut par, G4double parval);
     void GstparControl(G4int itmed, TG4G3Control control, G4double parval);
+    void SetUserLimits();
         
     // static data members
     static TG4GeometryManager*  fgInstance;     //this instance
