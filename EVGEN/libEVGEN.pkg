@@ -30,7 +30,7 @@ $(ROOTSYS)/include/TParticle.h
 
 DHDR:=EVGENLinkDef.h
 
-EXPORT:=AliDecayer.h AliGenMC.h AliStructFuncType.h AliGenCocktailAfterBurner.h
+EXPORT:=AliDecayer.h AliGenMC.h AliStructFuncType.h AliGenCocktailAfterBurner.h AliGenCocktail.h
 
 
 
