@@ -13,6 +13,7 @@ class AliHBTEvent;
 class AliHBTParticleCut;
 class AliHBTParticle;
 class TString;
+class TH1I;
  
 class AliHBTReader: public TNamed
 {
@@ -45,6 +46,8 @@ class AliHBTReader: public TNamed
     void          SetBlend(Bool_t flag = kTRUE){fBlend=flag;}
     virtual Int_t GetNumberOfDirs() const {return (fDirs)?fDirs->GetEntries():0;}
     void          ReadEventsFromTo(Int_t first,Int_t last){fFirst = first; fLast = last;}
+    TH1I*         GetTrackCounter() const {return fTrackCounter;}
+    void          WriteTrackCounter() const;
   protected:
     
     TObjArray*    fCuts;//array with particle cuts
@@ -68,6 +71,8 @@ class AliHBTReader: public TNamed
     
     Int_t         fFirst;//first event to return (all are before are skipped)
     Int_t         fLast;//last
+
+    TH1I*         fTrackCounter; //histogram with number of tracks read
     
     virtual Int_t ReadNext() = 0; //this methods reads next event and put result in fTracksEvent and/or fParticlesEvent
     Bool_t Pass(AliHBTParticle*);

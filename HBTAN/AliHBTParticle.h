@@ -1,9 +1,16 @@
 #ifndef ALIHBTPARTICLE
 #define ALIHBTPARTICLE
-
-//Ali HBT Particle: simplified class TParticle
-//Simplified in order to minimize the size of object
+//___________________________________________________________
+/////////////////////////////////////////////////////////////
+//
+// class AliHBTParticle
+//
+// Ali HBT Particle: simplified class TParticle
+// Simplified in order to minimize the size of object
 //  - we want to keep a lot of such a objects in memory
+// Additionaly adjusted for HBT Analysies purposes
+//
+/////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 #include <TLorentzVector.h>
@@ -13,6 +20,7 @@
 #include "AliConst.h"
 
 class TParticle;
+//class AliHBTTrackPoints;
 
 class AliHBTParticle : public TObject
 {

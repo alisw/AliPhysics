@@ -5,6 +5,7 @@
 #include <TObjArray.h>
 #include <TClass.h>
 #include <TRandom.h>
+#include <TH1.h>
 
 #include "AliHBTParticleCut.h"
 #include "AliHBTEvent.h"
@@ -29,7 +30,8 @@ AliHBTReader::AliHBTReader():
  fBufferEvents(kFALSE),
  fBlend(kFALSE),
  fFirst(0),
- fLast(0)
+ fLast(0),
+ fTrackCounter(0x0)
 {
 //constructor
 }
@@ -49,7 +51,8 @@ AliHBTReader::AliHBTReader(TObjArray* dirs):
  fBufferEvents(kFALSE),
  fBlend(kFALSE),
  fFirst(0),
- fLast(0)
+ fLast(0),
+ fTrackCounter(0x0)
 {
 //ctor with array of directories to read as parameter
 }
@@ -65,23 +68,34 @@ AliHBTReader::~AliHBTReader()
   }
  delete fParticlesEvent;
  delete fTracksEvent;
+ delete fTrackCounter;
 }
 /*************************************************************************************/
 
 Int_t AliHBTReader::Next()
 {
 //moves to next event
+
+  //if asked to read up to event nb. fLast, and it is overcome, report no more events
   if ((fNEventsRead > fLast) && (fLast > 0) ) return kTRUE;
-   
-  do
+  
+  if (fTrackCounter == 0x0)//create Track Counter
    {
-    if ( ReadNext() == kTRUE)
+     fTrackCounter = new TH1I("trackcounter","Track Counter",20000,0,20000);
+     fTrackCounter->SetDirectory(0x0);
+   }
+  
+  do //if asked to read from event fFirst, rewind to it
+   {
+    if ( ReadNext() == kTRUE) //if no more evets, return it
       return kTRUE;
    }while (fNEventsRead < fFirst);
+   
+  //here we have event
   
-  if (fBlend) Blend();
+  if (fBlend) Blend();//Mix particles order 
   
-  if (fBufferEvents)
+  if (fBufferEvents)//store events if buffering is on
    {
      if ( ReadsTracks() && fTracksEvent) 
        fTracks->SetEvent(fNEventsRead-1-fFirst,fTracksEvent);
@@ -333,4 +347,16 @@ void AliHBTReader::Blend()
      fParticlesEvent->SwapParticles(i,with);
      if (fTracksEvent) fTracksEvent->SwapParticles(i,with);
    }
+}
+/*************************************************************************************/
+
+void AliHBTReader::WriteTrackCounter() const
+{
+ //writes the counter histogram
+ 
+ if (fTrackCounter) fTrackCounter->Write(0,TObject::kOverwrite);
+ else 
+  {
+    Warning("WriteTrackCounter","Counter is NULL");
+  }
 }

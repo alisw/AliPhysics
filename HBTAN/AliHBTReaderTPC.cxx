@@ -13,6 +13,7 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <TParticle.h>
+#include <TH1.h>
 
 #include <Varargs.h>
 
@@ -29,6 +30,8 @@
 #include "AliHBTEvent.h"
 #include "AliHBTParticle.h"
 #include "AliHBTParticleCut.h"
+
+
 
 ClassImp(AliHBTReaderTPC)
 
@@ -118,6 +121,7 @@ void AliHBTReaderTPC::Rewind()
   fRunLoader = 0x0;
   fCurrentDir = 0;
   fNEventsRead= 0;
+  if (fTrackCounter) fTrackCounter->Reset();
 }
 /********************************************************************/
 
@@ -127,7 +131,8 @@ Int_t AliHBTReaderTPC::ReadNext()
  //reurns 0 if everything is OK
  //
   Info("Read","");
-
+  
+  Int_t ntracksread = 0;
  
   TObjArray *tarray = new TObjArray(5000); //cotainer for tpc tracks
   tarray->SetOwner(); //set the ownership of the objects it contains
@@ -254,7 +259,7 @@ Int_t AliHBTReaderTPC::ReadNext()
     Info("ReadNext","Read %d tracks and %d particles from event %d (event %d in dir %d).",
             fParticlesEvent->GetNumberOfParticles(), fTracksEvent->GetNumberOfParticles(),
             fNEventsRead,fCurrentEvent,fCurrentDir);
-    
+    fTrackCounter->Fill(fTracksEvent->GetNumberOfParticles());
     fCurrentEvent++;
     fNEventsRead++;
     delete tarray;

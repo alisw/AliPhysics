@@ -12,6 +12,7 @@
 
 #include <TString.h>
 class TFile;
+class TArrayF;
 class AliRunLoader;
 class AliTPCLoader;
 class AliTPCtrack;

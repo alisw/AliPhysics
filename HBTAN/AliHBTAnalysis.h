@@ -1,5 +1,24 @@
 #ifndef ALIHBTANALYSIS_H
 #define ALIHBTANALYSIS_H
+//_________________________________________________________
+////////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTAnalysis
+//
+// Central Object Of HBTAnalyser: 
+// This class performs main looping within HBT Analysis
+// User must plug a reader of Type AliHBTReader
+// User plugs in coorelation and monitor functions
+// as well as monitor functions
+//
+// HBT Analysis Tool, which is integral part of AliRoot,
+// ALICE Off-Line framework:
+//
+// Piotr.Skowronski@cern.ch
+// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
+//
+////////////////////////////////////////////////////////////////////////////
+//_________________________________________________________
 
 #include <TObject.h>
 
@@ -18,10 +37,6 @@ class AliHBTMonOneParticleFctn;
 class AliHBTMonTwoParticleFctn;
 
 class TList;
-
-//____________________
-//Central Object of HBT Analyser
-//Performs looping over events/particles
 
 class AliHBTAnalysis: public TObject
  {
@@ -107,11 +122,7 @@ class AliHBTAnalysis: public TObject
      static const UInt_t fgkFctnArraySize;//!
      static const UInt_t fgkDefaultMixingInfo;//!
      static const Int_t  fgkDefaultBufferSize;//!
-   public:
+
      ClassDef(AliHBTAnalysis,0)
  };
-
-
-
-
 #endif

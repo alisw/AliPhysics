@@ -1,3 +1,23 @@
+//_________________________________________________________
+////////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTAnalysis
+//
+// Central Object Of HBTAnalyser: 
+// This class performs main looping within HBT Analysis
+// User must plug a reader of Type AliHBTReader
+// User plugs in coorelation and monitor functions
+// as well as monitor functions
+//
+// HBT Analysis Tool, which is integral part of AliRoot,
+// ALICE Off-Line framework:
+//
+// Piotr.Skowronski@cern.ch
+// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
+//
+////////////////////////////////////////////////////////////////////////////
+//_________________________________________________________
+
 #include "AliHBTAnalysis.h"
 #include "AliHBTRun.h"
 #include "AliHBTEvent.h"
@@ -13,22 +33,6 @@
 #include <TBenchmark.h>
 #include <TList.h>
 
-//_________________________________________________________
-///////////////////////////////////////////////////////////
-//
-//Central Object Of HBTAnalyser: 
-//This class performs main looping within HBT Analysis
-//User must plug a reader of Type AliHBTReader
-//User plugs in coorelation and monitor functions
-//as well as monitor functions
-//
-//HBT Analysis Tool, which is integral part of AliRoot,
-//ALICE Off-Line framework:
-//
-//Piotr.Skowronski@cern.ch
-//more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
-//
-//_________________________________________________________
 
 ClassImp(AliHBTAnalysis)
 
@@ -140,6 +144,7 @@ void AliHBTAnalysis::DeleteFunctions()
  for(ii = 0; ii<fNParticleAndTrackMonitorFunctions; ii++)
    delete fParticleAndTrackMonitorFunctions[ii];
  fNParticleAndTrackMonitorFunctions = 0;
+ 
 }
 /*************************************************************************************/ 
 
@@ -165,6 +170,8 @@ void AliHBTAnalysis::Init()
    
  for(ii = 0; ii<fNParticleAndTrackMonitorFunctions; ii++)
    fParticleAndTrackMonitorFunctions[ii]->Init();
+   
+
 }
 /*************************************************************************************/ 
 
@@ -273,6 +280,7 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
   AliHBTEventBuffer partbuffer(fBufferSize);
   AliHBTEventBuffer trackbuffer(fBufferSize);
   
+  Int_t ntracks = 0;
   
   register UInt_t ii;
   
@@ -282,6 +290,7 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
   Int_t i = -1;
   while (fReader->Next() == kFALSE)
     {
+      ntracks = 0;
       i++;
       partEvent= fReader->GetParticleEvent();
       trackEvent = fReader->GetTrackEvent();
@@ -348,6 +357,8 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
             }
 
          if (firstcut) continue;
+         
+         ntracks++;
          
          for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
            fParticleMonitorFunctions[ii]->Process(part1);
