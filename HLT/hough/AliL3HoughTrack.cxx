@@ -55,6 +55,7 @@ void AliL3HoughTrack::Set(AliL3Track *track)
   SetCharge(tpt->GetCharge());
   SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
   SetSlice(tpt->GetSlice());
+  SetNHits(1);
   return;
 
   fWeight = tpt->GetWeight();
@@ -191,7 +192,9 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weigh
   Double_t yc = GetFirstPointY() - GetRadius() * sin(trackPhi0) ;
   SetCenterX(xc);
   SetCenterY(yc);
+  SetNHits(1); //just for the trackarray IO
   fIsHelix = true;
+  
   
 }
 
