@@ -30,7 +30,7 @@ class AliPHOSPID : public TTask {
 public:
 
   AliPHOSPID() ;          // ctor            
-  AliPHOSPID(const char* headerFile,const char * tsBranch = 0) ;
+  AliPHOSPID(const char* headerFile,const char * tsBranch) ;
   virtual ~AliPHOSPID() ; // dtor
 
   virtual void Exec(Option_t * option) = 0 ;
@@ -42,7 +42,7 @@ public:
   virtual void PlotDispersionCuts()const = 0;
   virtual Bool_t ReadTrackSegments()= 0 ;
 
-  virtual void SetIdentificationMethod(char * option = "CPV DISP" ) = 0 ;
+  virtual void SetIdentificationMethod(char * option) = 0 ;
 
   virtual void SetShowerProfileCut(char *  formula) = 0  ; 
   virtual void SetDispersionCut(Float_t cut) = 0  ;   

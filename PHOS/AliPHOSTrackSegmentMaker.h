@@ -29,7 +29,7 @@ class  AliPHOSTrackSegmentMaker : public TTask {
 public:
 
   AliPHOSTrackSegmentMaker() ;                     
-  AliPHOSTrackSegmentMaker(char* headerFile, char* branchTitle = 0) ;                     
+  AliPHOSTrackSegmentMaker(char* headerFile, char* branchTitle) ;                     
   
   virtual ~ AliPHOSTrackSegmentMaker(){
     // dtor 
