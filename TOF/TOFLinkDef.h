@@ -35,5 +35,6 @@
 #pragma link C++ class  AliTOFPad+;
 #pragma link C++ class  AliTOFTrack+;
 #pragma link C++ class  AliTOFRecHit+;
+#pragma link C++ class  AliTOFReconstructioner+;
 
 #endif

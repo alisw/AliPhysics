@@ -125,7 +125,7 @@ void AliTOFSDigitizer::InitParameters()
 }
 
 //__________________________________________________________________
-Double_t TimeWithTail(Double_t* x, Double_t* par)
+Double_t TimeWithTailS(Double_t* x, Double_t* par)
 {
   // sigma - par[0], alpha - par[1], part - par[2]
   //  at x<part*sigma - gauss
@@ -152,7 +152,7 @@ void AliTOFSDigitizer::Exec(Option_t *option) {
     return;
   }
 
-  if (fEdgeTails) ftail = new TF1("tail",TimeWithTail,-2,2,3);
+  if (fEdgeTails) ftail = new TF1("tail",TimeWithTailS,-2,2,3);
 
   if (fNevents == 0)
     fNevents = (Int_t) gAlice->TreeE()->GetEntries();
