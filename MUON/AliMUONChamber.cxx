@@ -162,12 +162,11 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t /*tof*/,
     //
     // Loop Over Pads
     
-    Float_t qcheck=0, qp;
+    Float_t qp; 
     nnew=0;
     
     // Cathode plane loop
     for (Int_t i=1; i<=fnsec; i++) {
-	qcheck=0;
 	Float_t qcath = qtot * (i==1? fCurrentCorrel : 1/fCurrentCorrel);
 	AliSegmentation * segmentation=
       //PH	    (AliSegmentation *) (*fSegmentation)[i-1];
@@ -180,10 +179,16 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t /*tof*/,
 	    qp=TMath::Abs(qp);
 //
 //
-	    if (qp > 1.e-4) {
-		qcheck+=qp*qcath;
-	    //
-	    // --- store signal information
+	    if (qp > 1.e-4) 
+            {
+		if (nnew >= 500) // Perform a bounds check on nnew since it is assumed
+		                 // newclust only contains 500 elements.
+		{
+			Error("DisIntegration", "Limit of 500 pad responses reached.");
+			return;
+		};
+		//
+		// --- store signal information
 		newclust[0][nnew]=qcath;                     // total charge
 		newclust[1][nnew]=segmentation->Ix();       // ix-position of pad
 		newclust[2][nnew]=segmentation->Iy();       // iy-position of pad
@@ -191,7 +196,6 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t /*tof*/,
 		newclust[4][nnew]=segmentation->ISector();  // sector id
 		newclust[5][nnew]=(Float_t) i;              // counter
 		nnew++;
-//		if (i==2) printf("\n i, nnew, q %d %d %f", i, nnew, qp*qcath);
 		
 	    }
 	} // Pad loop
