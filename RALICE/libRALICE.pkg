@@ -3,7 +3,7 @@ SRCS=  Ali3Vector.cxx Ali4Vector.cxx AliBoost.cxx AliCalcluster.cxx \
 	AliMath.cxx AliPosition.cxx AliRandom.cxx AliSample.cxx AliSignal.cxx \
 	AliTrack.cxx AliVertex.cxx Ali3VectorObj.cxx Ali4VectorObj.cxx \
 	AliPositionObj.cxx AliEvent.cxx AliCollider.cxx AliObjMatrix.cxx \
-        AliAttrib.cxx AliAttribObj.cxx AliHelix.cxx 
+        AliAttrib.cxx AliAttribObj.cxx AliHelix.cxx AliDevice.cxx 
 
 HDRS= $(SRCS:.cxx=.h)
 

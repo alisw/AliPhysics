@@ -38,5 +38,6 @@
  #pragma link C++ class AliAttrib+;
  #pragma link C++ class AliAttribObj+;
  #pragma link C++ class AliHelix+;
+ #pragma link C++ class AliDevice+;
 #endif
  

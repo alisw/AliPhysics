@@ -406,7 +406,7 @@ Double_t AliMath::BesselK0(Double_t x) const
 
  // Parameters of the polynomial approximation  
  const Double_t kp1=-0.57721566,  kp2=0.42278420,   kp3=0.23069756,
-                kp4= 3.488590e-2, kp5=2.62698e-3,   kp6=1.0750e-4,    kp7=7.4e-5;
+                kp4= 3.488590e-2, kp5=2.62698e-3,   kp6=1.0750e-4,    kp7=7.4e-6;
 
  const Double_t kq1= 1.25331414,  kq2=-7.832358e-2, kq3= 2.189568e-2,
                 kq4=-1.062446e-2, kq5= 5.87872e-3,  kq6=-2.51540e-3,  kq7=5.3208e-4;

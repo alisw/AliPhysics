@@ -507,3 +507,11 @@
 12-may-2004 NvE Track reference-point introduced in AliTrack.
 02-jun-2004 NvE Memberfunction GetUnprimed introduced for Ali3Vector.
 17-jun-2004 NvE New class AliHelix introduced and "macgcclib" added to create ralice libs on MAC.
+24-jun-2004 NvE Coefficient kp7 changed from 7.4e-5 to 7.4e-6 in AliMath::BesselK0 to correct typo
+                (thanks Josh de Bever).
+                Typos corrected (i.e. abs() replaced by fabs() in several places) in AliHelix
+                to satisfy the Intel compiler (thanks Fons Rademakers).
+25-jun-2004 NvE Protection introduced in AliSignal::GetNlinks.
+29-jun-2004 NvE New class AliDevice introduced.
+                New memberfunctions and datamembers introduced in AliEvent to support investigation
+                and ordering of hits of various (classes of) devices.

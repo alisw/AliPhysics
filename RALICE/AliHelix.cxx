@@ -311,7 +311,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
   Double_t betavec[3];
   if (iaxis>0) beta.GetVector(betavec,"car");
   if (iaxis<0) betaprim.GetVector(betavec,"car");
-  if (TMath::Abs(betavec[TMath::Abs(iaxis)-1])/betanorm<1e-10) return;
+  if (fabs(betavec[abs(iaxis)-1])/betanorm<1e-10) return;
  }
 
  // The LAB location in which the velocity of the particle is defined
@@ -344,7 +344,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
  SetHelix(loc,vel,w,0,kUnchanged,bvec);
 
  Int_t bend=0;
- if (TMath::Abs(w)>0 && TMath::Abs(fVt)>0) bend=1;
+ if (fabs(w)>0 && fabs(fVt)>0) bend=1;
 
  // Flight time boundaries.
  // The time origin t=0 is chosen to indicate the position in which
@@ -380,8 +380,8 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
     loc[0]=fX0;
     loc[1]=fY0;
     loc[2]=fZ0;
-    tmin=(range[0]-loc[TMath::Abs(iaxis)-1])/velprim[TMath::Abs(iaxis)-1];
-    tmax=(range[1]-loc[TMath::Abs(iaxis)-1])/velprim[TMath::Abs(iaxis)-1];
+    tmin=(range[0]-loc[abs(iaxis)-1])/velprim[abs(iaxis)-1];
+    tmax=(range[1]-loc[abs(iaxis)-1])/velprim[abs(iaxis)-1];
    }
    if (tmax<tmin)
    {
@@ -417,7 +417,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
    // was defined is taken as the starting point.
    // The endpoint is initially obtained by applying the tofmax from the start point.
    tmin=0;
-   if (TMath::Abs(fVz)>0) tmin=-fZ0/fVz;
+   if (fabs(fVz)>0) tmin=-fZ0/fVz;
    v=beta*c;
    if (rx) r1=(*rx);
    r=v*tmin;
@@ -463,7 +463,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
   // In case this point can't be reached, the point in which the particle velocity
   // was defined is taken as the starting point.
   tmin=0;
-  if (TMath::Abs(fVz)>0) tmin=-fZ0/fVz;
+  if (fabs(fVz)>0) tmin=-fZ0/fVz;
   tmax=tmin+fTofmax;
 
   if (tmax<tmin)
@@ -487,7 +487,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
     if (scale1/scale>1.1 || scale/scale1>1.1) r1*=scale1/scale;
     // Re-calculate the tmin for this new starting point
     r1.GetVector(vec1,"car");
-    if (TMath::Abs(fVz)>0) tmin=(vec1[2]-fZ0)/fVz;
+    if (fabs(fVz)>0) tmin=(vec1[2]-fZ0)/fVz;
     tmax=tmin+fTofmax;
    }
    if (rend)
@@ -497,7 +497,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
     // All coordinates in the selected unit scale
     if (scale2/scale>1.1 || scale/scale2>1.1) r2*=scale2/scale;
     r2.GetVector(vec2,"car");
-    if (TMath::Abs(fVz)>0) tmax=(vec2[2]-fZ0)/fVz;
+    if (fabs(fVz)>0) tmax=(vec2[2]-fZ0)/fVz;
    }
    // Make the curve on basis of the flight time boundaries and exit
    if (tmax<tmin)
@@ -510,8 +510,8 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
   }
   else // User explicitly specified range
   {
-   vec1[TMath::Abs(iaxis)-1]=range[0];
-   vec2[TMath::Abs(iaxis)-1]=range[1];
+   vec1[abs(iaxis)-1]=range[0];
+   vec2[abs(iaxis)-1]=range[1];
    r1.SetVector(vec1,"car");
    r2.SetVector(vec2,"car");
    if (iaxis>0) // Range specified in LAB frame
@@ -528,7 +528,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
    Double_t test=0;
    for (Int_t i=0; i<3; i++)
    {
-    test=TMath::Abs(vec1[i]-vec2[i]);
+    test=fabs(vec1[i]-vec2[i]);
     if (test>dmax)
     {
      dmax=test;
@@ -670,7 +670,7 @@ void AliHelix::Refresh(Int_t mode)
 //
 // The default is mode=0.
 
- if (TMath::Abs(mode)<2) fRefresh=mode;
+ if (abs(mode)<2) fRefresh=mode;
  if (fCurves) fCurves->Delete();
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -777,8 +777,8 @@ AliPosition* AliHelix::Extrapolate(AliTrack* t,Double_t* pars,Double_t scale)
  }
 
  Double_t range[2];
- range[0]=pars[0]-TMath::Abs(pars[1])/2.;
- range[1]=pars[0]+TMath::Abs(pars[1])/2.;
+ range[0]=pars[0]-fabs(pars[1])/2.;
+ range[1]=pars[0]+fabs(pars[1])/2.;
 
  Int_t iaxis=int(pars[2]);
 
@@ -799,9 +799,9 @@ AliPosition* AliHelix::Extrapolate(AliTrack* t,Double_t* pars,Double_t scale)
 
  // The accuracy on the impact point 
  Float_t err[3];
- err[0]=TMath::Abs(first[0]-last[0]);
- err[1]=TMath::Abs(first[1]-last[1]);
- err[2]=TMath::Abs(first[2]-last[2]);
+ err[0]=fabs(first[0]-last[0]);
+ err[1]=fabs(first[1]-last[1]);
+ err[2]=fabs(first[2]-last[2]);
 
  // Take the middle point as impact location
  ip=np/2;

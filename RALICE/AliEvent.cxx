@@ -13,14 +13,21 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.20 2004/02/06 15:25:07 nick Exp $
+// $Id: AliEvent.cxx,v 1.21 2004/05/04 15:33:04 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
 // Creation and investigation of an Alice physics event.
 // An AliEvent can be constructed by adding AliTracks, Alivertices, AliJets
-// and/or devices like AliCalorimeters.
+// and/or devices like AliCalorimeters or AliDevice (derived) objects.
+//
 // All objects which are derived from TObject can be regarded as a device.
+// However, AliDevice (or derived) objects profit from additional hit
+// handling facilities.
+// A "hit" is a generic name indicating an AliSignal (or derived) object.
+// Note that AliEvent does NOT own hits; it only provides references to hits
+// obtained from the various devices.
+// This implies that hits should be owned by the devices themselves.
 //
 // The basic functionality of AliEvent is identical to the one of AliVertex.
 // So, an AliEvent may be used as the primary vertex with some additional
@@ -62,7 +69,7 @@
 //    which may include pointers to other objects. Therefore it is recommended to provide
 //    for all devices a specific copy constructor and override the default Clone()
 //    memberfunction using this copy constructor.
-//    An example for this may be seen from AliCalorimeter.   
+//    Examples for this may be seen from AliCalorimeter, AliSignal and AliDevice.   
 //
 // See also the documentation provided for the memberfunction SetOwner(). 
 //
@@ -83,12 +90,22 @@
 //
 // Fill the event structure with the basic objects
 // 
-//        AliCalorimeter emcal;
+//        AliCalorimeter emcal; // Note : AliCalorimeter is NOT derived from AliDevice
 //         ...
 //         ... // code to fill the calorimeter data
 //         ...
 //
 //        evt.AddDevice(emcal);
+//
+//        // Assume AliTOF has been derived from AliDevice
+//        AliTOF tof1;
+//        AliTOF tof2;
+//         ...
+//         ... // code to fill the tof1 and tof2 data
+//         ...
+//
+//        evt.AddDevice(tof1);
+//        evt.AddDevice(tof2);
 //
 //        AliTrack* tx=new AliTrack();
 //        for (Int_t i=0; i<10; i++)
@@ -104,6 +121,17 @@
 //        {
 //         delete tx;
 //         tx=0;
+//        }
+//
+// Order and investigate all the hits of all the TOF devices
+//
+//        TObjArray* hits=evt.GetHits("AliTOF");
+//        TObjArray ordered=evt.SortHits(hits);
+//        Int_t nhits=ordered.GetEntries();
+//        for (Int_t i=0; i<nhits; i++)
+//        {
+//         AliSignal* sx=(AliSignal*)ordered.At(i);
+//         if (sx) sx->Data();
 //        }
 //
 // Build the event structure (vertices, jets, ...) for physics analysis
@@ -201,7 +229,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2004/02/06 15:25:07 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2004/05/04 15:33:04 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -226,6 +254,7 @@ AliEvent::AliEvent() : AliVertex()
  fIdTarg=0;
  fDevices=0;
  fDevCopy=0;
+ fHits=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliEvent::AliEvent(Int_t n) : AliVertex(n)
@@ -249,6 +278,7 @@ AliEvent::AliEvent(Int_t n) : AliVertex(n)
  fIdTarg=0;
  fDevices=0;
  fDevCopy=0;
+ fHits=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliEvent::~AliEvent()
@@ -258,6 +288,11 @@ AliEvent::~AliEvent()
  {
   delete fDevices;
   fDevices=0;
+ }
+ if (fHits)
+ {
+  delete fHits;
+  fHits=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -299,6 +334,21 @@ AliEvent::AliEvent(const AliEvent& evt) : AliVertex(evt)
    }
   }
  }
+
+ fHits=0;
+ if (evt.fHits)
+ {
+  Int_t nhits=evt.fHits->GetEntries();
+  if (nhits)
+  {
+   fHits=new TObjArray(nhits);
+   for (Int_t ih=0; ih<nhits; ih++)
+   {
+    AliSignal* sx=(AliSignal*)evt.fHits->At(ih);
+    fHits->Add(sx);
+   }
+  }
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::Reset()
@@ -326,6 +376,11 @@ void AliEvent::Reset()
  {
   delete fDevices;
   fDevices=0;
+ }
+ if (fHits)
+ {
+  delete fHits;
+  fHits=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -669,6 +724,115 @@ void AliEvent::ShowDevices() const
  else
  {
   cout << " No devices present for this event." << endl;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliEvent::GetNhits(const char* classname)
+{
+// Provide the number of hits registered to the specified device class.
+// The specified device class has to be derived from AliDevice.
+// It is possible to indicate with the argument "classname" a specific
+// device instead of a whole class of devices. However, in such a case
+// it is more efficient to use the GetDevice() memberfunction directly.
+ LoadHits(classname);
+ Int_t nhits=0;
+ if (fHits) nhits=fHits->GetEntries();
+ return nhits;
+}
+///////////////////////////////////////////////////////////////////////////
+TObjArray* AliEvent::GetHits(const char* classname)
+{
+// Provide the references to all the hits registered to the specified
+// device class.
+// The specified device class has to be derived from AliDevice.
+// It is possible to indicate with the argument "classname" a specific
+// device instead of a whole class of devices. However, in such a case
+// it is more efficient to use the GetDevice() memberfunction directly.
+ LoadHits(classname);
+ return fHits;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::LoadHits(const char* classname)
+{
+// Load the references to the various hits registered to the specified
+// device class.
+// The specified device class has to be derived from AliDevice.
+ if (fHits) fHits->Clear();
+
+ Int_t ndev=GetNdevices();
+ for (Int_t idev=1; idev<=ndev; idev++)
+ {
+  TObject* obj=GetDevice(idev);
+  if (!obj) continue;
+
+  if (obj->InheritsFrom(classname) && obj->InheritsFrom("AliDevice"))
+  {
+   AliDevice* dev=(AliDevice*)GetDevice(idev);
+   Int_t nhits=dev->GetNhits();
+   if (nhits)
+   {
+    if (!fHits) fHits=new TObjArray();
+    for (Int_t ih=1; ih<=nhits; ih++)
+    {
+     AliSignal* sx=dev->GetHit(ih);
+     if (sx) fHits->Add(sx);
+    }
+   }
+  }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+TObjArray AliEvent::SortHits(TObjArray* hits,Int_t idx,Int_t mode) const
+{
+// Order the references to an array of hits by looping over the input array "hits"
+// and checking the signal value. The ordered array is returned as a TObjArray.
+// Note that the input array is not modified.
+// A "hit" represents an abstract object which is derived from AliSignal.
+// The user can specify the index of the signal slot to perform the sorting on.
+// By default the slotindex will be 1.
+// Via the "mode" argument the user can specify ordering in decreasing
+// order (mode=-1) or ordering in increasing order (mode=1).
+// The default is mode=-1.
+// Signals which were declared as "Dead" will be rejected.
+// The gain etc... corrected signals will be used in the ordering process.
+ 
+ if (idx<=0 || abs(mode)!=1 || !hits)
+ {
+  TObjArray ordered;
+  return ordered;
+ }
+ else
+ {
+  AliDevice dev;
+  TObjArray ordered=dev.SortHits(idx,mode,hits);
+  return ordered;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+TObjArray AliEvent::SortHits(TObjArray* hits,TString name,Int_t mode) const
+{
+// Order the references to an array of hits by looping over the input array "hits"
+// and checking the signal value. The ordered array is returned as a TObjArray.
+// Note that the input array is not modified.
+// A "hit" represents an abstract object which is derived from AliSignal.
+// The user can specify the name of the signal slot to perform the sorting on.
+// In case no matching slotname is found, the signal will be skipped.
+// Via the "mode" argument the user can specify ordering in decreasing
+// order (mode=-1) or ordering in increasing order (mode=1).
+// The default is mode=-1.
+// Signals which were declared as "Dead" will be rejected.
+// The gain etc... corrected signals will be used in the ordering process.
+ 
+ if (abs(mode)!=1 || !hits)
+ {
+  TObjArray ordered;
+  return ordered;
+ }
+ else
+ {
+  AliDevice dev;
+  TObjArray ordered=dev.SortHits(name,mode,hits);
+  return ordered;
  }
 }
 ///////////////////////////////////////////////////////////////////////////

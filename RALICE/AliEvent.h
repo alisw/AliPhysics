@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.15 2004/02/06 15:25:07 nick Exp $
+// $Id: AliEvent.h,v 1.16 2004/05/04 15:33:04 nick Exp $
 
 #include <math.h>
  
@@ -13,6 +13,7 @@
 #include "TTimeStamp.h"
  
 #include "AliVertex.h"
+#include "AliDevice.h"
  
 class AliEvent : public AliVertex
 {
@@ -51,22 +52,28 @@ class AliEvent : public AliVertex
   void ShowDevices() const;               // Provide on overview of the available devices
   TObject* GetDevice(Int_t i) const;      // Provide i-th device of the event
   TObject* GetDevice(TString name) const; // Provide device with name "name"
+  Int_t GetNhits(const char* classname);  // Provide number of hits for the specified device class
+  TObjArray* GetHits(const char* classname); // Provide refs to all hits of the specified device class 
+  TObjArray SortHits(TObjArray* hits,TString name,Int_t mode=-1) const; // Sort hits by named signal value
+  TObjArray SortHits(TObjArray* hits,Int_t idx=1,Int_t mode=-1) const;  // Sort hits by indexed signal value
 
  protected:
-  TTimeStamp fDaytime;      // The date and time stamp
-  Int_t fRun;               // The run number
-  Int_t fEvent;             // The event number
-  Int_t fAproj;             // The projectile A value
-  Int_t fZproj;             // The projectile Z value
-  Double_t fPnucProj;       // The projectile momentum per nucleon
-  Int_t fIdProj;            // User defined projectile particle ID
-  Int_t fAtarg;             // The target A value
-  Int_t fZtarg;             // The target Z value
-  Double_t fPnucTarg;       // The target momentum per nucleon
-  Int_t fIdTarg;            // User defined target particle ID
-  TObjArray* fDevices;      // Array to hold the pointers to the various devices
-  Int_t fDevCopy;           // Flag to denote creation of private copies of the devices
+  TTimeStamp fDaytime;                  // The date and time stamp
+  Int_t fRun;                           // The run number
+  Int_t fEvent;                         // The event number
+  Int_t fAproj;                         // The projectile A value
+  Int_t fZproj;                         // The projectile Z value
+  Double_t fPnucProj;                   // The projectile momentum per nucleon
+  Int_t fIdProj;                        // User defined projectile particle ID
+  Int_t fAtarg;                         // The target A value
+  Int_t fZtarg;                         // The target Z value
+  Double_t fPnucTarg;                   // The target momentum per nucleon
+  Int_t fIdTarg;                        // User defined target particle ID
+  TObjArray* fDevices;                  // Array to hold the pointers to the various devices
+  Int_t fDevCopy;                       // Flag to denote creation of private copies of the devices
+  void LoadHits(const char* classname); // Load references to the hits registered to the specified device class
+  TObjArray* fHits;                     //! Temp. array to hold references to the registered AliDevice hits
 
- ClassDef(AliEvent,13) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,14) // Creation and investigation of an Alice physics event.
 };
 #endif

@@ -743,7 +743,7 @@ Int_t AliSignal::GetNlinks(TObject* obj,Int_t j) const
  Int_t n=0;
  if (!j)
  {
-  n=fLinks->GetNrefs(obj);
+  if (fLinks) n=fLinks->GetNrefs(obj);
  }
  else
  {

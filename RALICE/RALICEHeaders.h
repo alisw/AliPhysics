@@ -33,3 +33,4 @@
 #include "AliAttrib.h"
 #include "AliAttribObj.h"
 #include "AliHelix.h"
+#include "AliDevice.h"
