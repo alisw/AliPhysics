@@ -8,7 +8,7 @@ aliroot -q -b "$ALICE_ROOT/TPC/AliTPCHits2Digits.C($1)"
 # prepare TPC tracks for matching with the ITS
 aliroot -q -b "$ALICE_ROOT/ITS/TPCtracking.C($1)"
 # digitize ITS
-aliroot -q -b "$ALICE_ROOT/ITS/AliITSHitsToDigitsDefault.C(0,$[$1-1])"
+aliroot -q -b "$ALICE_ROOT/ITS/AliITSHits2DigitsDefault.C"
 # create reconstructed points for the ITS
 aliroot -q -b "$ALICE_ROOT/ITS/ITSDigitsToClusters.C(0,$[$1-1])"
 # prepare for tracking
