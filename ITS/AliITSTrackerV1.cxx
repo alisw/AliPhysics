@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.26  2002/10/25 18:44:33  barbera
+Unnecessary print-out removed
+
 Revision 1.25  2002/10/24 17:12:58  barbera
 ITS tracking V1 integrated with the last version of ITS PID
 
@@ -536,9 +539,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 
     gAlice->GetEvent(evNumber);  //modificato per gestire hbt
  
-    AliKalmanTrack *kkprov;
-    //kkprov->SetConvConst(100/0.299792458/0.2/fFieldFactor);
-    kkprov->SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
+    AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
    // cout<<" field = "<<gAlice->Field()->SolenoidField()<<endl;
 
 
