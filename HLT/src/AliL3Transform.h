@@ -3,6 +3,10 @@
 #ifndef ALIL3TRANSFORM_H
 #define ALIL3TRANSFORM_H
 
+#ifdef use_aliroot
+  class AliRunLoader;
+#endif
+
 #include "AliL3RootTypes.h"
 
 class AliL3Transform {
