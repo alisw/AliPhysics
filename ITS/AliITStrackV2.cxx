@@ -176,7 +176,7 @@ Double_t AliITStrackV2::GetPredictedChi2(const AliCluster *c) const
 
 //_____________________________________________________________________________
 Double_t AliITStrackV2::GetPredictedChi2(const AliCluster *c,Double_t *m,
-Double_t x0, Double_t pm=0.139) const {
+Double_t x0, Double_t pm) const {
   //-----------------------------------------------------------------
   // This function calculates a chi2 increment with a vertex contraint 
   //-----------------------------------------------------------------
