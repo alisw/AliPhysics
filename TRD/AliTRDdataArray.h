@@ -33,6 +33,8 @@ class AliTRDdataArray : public AliTRDsegmentID {
   virtual Int_t  GetNCol() const               { return fNcol;       };
   virtual Int_t  GetNtime() const              { return fNtime;      };
           Int_t  GetIndex(Int_t row, Int_t col, Int_t time) const;
+          Int_t  GetBufType() const            { return fBufType;    };
+  virtual Int_t  GetNelems() const             { return fNelems;     };
 
  protected:
 

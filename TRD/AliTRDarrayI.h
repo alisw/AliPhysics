@@ -8,10 +8,11 @@
 #include <TObject.h>
 #include <TArrayI.h>
 
-class AliTRDarrayI: public TObject ,public TArrayI {
+class AliTRDarrayI: public TObject, public TArrayI {
 
 public:
 
+  AliTRDarrayI();
   virtual ~AliTRDarrayI();
   void Copy(TObject &a);
   void Expand(Int_t n);  

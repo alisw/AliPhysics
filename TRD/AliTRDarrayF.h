@@ -5,18 +5,19 @@
 
 /* $Id: AliTRDarrayF.h,v */
 
-#include "TObject.h"
-#include "TArrayF.h"
+#include <TObject.h>
+#include <TArrayF.h>
 
-class AliTRDarrayF: public TObject ,public TArrayF {
+class AliTRDarrayF: public TObject, public TArrayF {
 
 public:
 
-  ~AliTRDarrayF();
+  AliTRDarrayF();
+  virtual ~AliTRDarrayF();
   void Copy(TObject &a);
   void Expand(Int_t n);  
 
-  ClassDef(AliTRDarrayF,1)  
+  ClassDef(AliTRDarrayF,1)  // An array of floats
 
 };
 
