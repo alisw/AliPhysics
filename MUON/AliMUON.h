@@ -35,6 +35,7 @@ class AliMUONMerger;
 class AliMUONGeometryBuilder;
 class AliMUONVGeometryBuilder;
 class AliMUONGeometryDEIndexing;
+class AliMUONFactory;
 class AliESD;
 
 class AliMUON : public  AliDetector 
@@ -159,6 +160,7 @@ class AliMUON : public  AliDetector
     Int_t fCurIterPad;        // Current pad index
     // Background eent for event mixing
     AliMUONMerger *fMerger;   // ! pointer to merger
+    AliMUONFactory* fFactory; // ! MUON factory
     
     ClassDef(AliMUON,8)  // MUON Detector base class
 };

@@ -67,6 +67,7 @@
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONSDigitizerv1.h"
 #include "AliMUONRawData.h"
+#include "AliMUONFactory.h"
 #include "AliLog.h"
 
 // Defaults parameters for Z positions of chambers
@@ -106,7 +107,8 @@ AliMUON::AliMUON()
     fMaxDestepAlu(0.),
     fMaxIterPad(0),
     fCurIterPad(0),
-    fMerger(0)
+    fMerger(0),
+    fFactory(0)
 {
 // Default Constructor
 //
@@ -134,7 +136,8 @@ AliMUON::AliMUON(const char *name, const char *title)
     fMaxDestepAlu(-1), // in the calculation of the tracking parameters
     fMaxIterPad(0),
     fCurIterPad(0),
-    fMerger(0)
+    fMerger(0),
+    fFactory(0)
 {
 
   fIshunt =  0;
@@ -225,6 +228,7 @@ AliMUON::~AliMUON()
   delete fMUONData;
   delete fGeometryBuilder;
   delete fDEIndexing;
+  delete fFactory; 
 }
 
 //________________________________________________________________________

@@ -127,7 +127,7 @@ AliMUONv1::~AliMUONv1()
   delete [] fDestepSum;
   delete fElossRatio;
   delete fAngleEffect10;
-  delete fAngleEffectNorma;  
+  delete fAngleEffectNorma; 
 }
 
 //_____________________________________________________________________________
@@ -176,19 +176,17 @@ void AliMUONv1::Init()
    fGeometryBuilder->InitGeometry();
    AliDebug(1,"Finished Init for version 1 - CPC chamber type");   
 
-   AliMUONFactory* factory = 0x0;
-
    if (fSegmentationType == 1) {
-     factory = new AliMUONFactory();
+     fFactory = new AliMUONFactory("Old MUON Factory");
      printf("\n Old Segmentation \n");
    }
 
    if (fSegmentationType == 2) {
-     factory = new AliMUONFactoryV2();
+     fFactory = new AliMUONFactoryV2("New MUON Factory");
      printf("\n New Segmentation \n");
    } 
 
-   factory->Build(this, "default");
+   fFactory->Build(this, "default");
 
    //
    // Initialize segmentation
@@ -954,7 +952,8 @@ void AliMUONv1::StepManagerOld2()
 //    new hit 
       
       new(lhits[fNhits++]) 
-          AliMUONHit(fIshunt, gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);
+          AliMUONHit(fIshunt, gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits,
+	             true);
       eloss = 0; 
       //
       // Check additional signal generation conditions 
