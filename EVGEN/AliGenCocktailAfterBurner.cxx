@@ -375,7 +375,7 @@ TMCProcess AliGenCocktailAfterBurner::IntToMCProcess(Int_t no)
     return kPNoProcess;
 }
 
-void AliGenCocktailAfterBurner::Copy(AliGenCocktailAfterBurner &) const
+void AliGenCocktailAfterBurner::Copy(TObject &) const
 {
     Fatal("Copy","Not implemented!\n");
 }

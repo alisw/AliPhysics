@@ -72,7 +72,7 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
                                           //needed by some afterburners that works better with higher statistics 
                                           //this generates such a artificial one
  private:
-    void Copy(AliGenCocktailAfterBurner &arun) const;    
+    void Copy(TObject &arun) const;    
 
     ClassDef(AliGenCocktailAfterBurner,2) // Particle cocktail generator a la SHAKER
                                           //background events added

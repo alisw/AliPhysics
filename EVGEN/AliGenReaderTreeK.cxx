@@ -159,7 +159,7 @@ AliGenReaderTreeK& AliGenReaderTreeK::operator=(const  AliGenReaderTreeK& rhs)
     return *this;
 }
 
-void AliGenReaderTreeK::Copy(AliGenReaderTreeK&) const
+void AliGenReaderTreeK::Copy(TObject&) const
 {
     //
     // Copy 

@@ -54,7 +54,7 @@ class AliGenReaderEcalJets : public AliGenReader
     TTree            *fTreeNtuple;  // pointer to the TTree
 
  private:
-    void Copy(AliGenReaderEcalJets&) const;
+    void Copy(TObject&) const;
     ClassDef(AliGenReaderEcalJets,1) // Read particles from cwn-ntuple
 };
 #endif

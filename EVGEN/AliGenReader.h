@@ -33,7 +33,7 @@ class AliGenReader : public TObject
     const Text_t *fFileName;      // Name of file to read from
     Code_t        fCode;          // Particle code type
  private:
-    void Copy(AliGenReader&) const;
+    void Copy(TObject&) const;
     
     ClassDef(AliGenReader,1) //Generate particles from external file
 };

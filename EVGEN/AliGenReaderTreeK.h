@@ -50,7 +50,7 @@ class AliGenReaderTreeK : public AliGenReader
     TString&   GetDirName(Int_t entry);
     TParticle* GetParticle(Int_t i);
  private:
-    void Copy(AliGenReaderTreeK&) const;    
+    void Copy(TObject&) const;    
     ClassDef(AliGenReaderTreeK,1) // Read particles from TreeK
 };
 

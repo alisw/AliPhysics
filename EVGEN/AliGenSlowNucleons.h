@@ -47,7 +47,7 @@ public:
     void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q);
     Double_t Maxwell(Double_t m, Double_t p, Double_t t);
     void     Lorentz(Double_t m, Double_t beta, Float_t* q);
-    void Copy(AliGenSlowNucleons&) const;
+    void Copy(TObject&) const;
     AliGenSlowNucleons & operator=(const AliGenSlowNucleons & rhs);
  protected:
     Float_t  fCMS;          // Center of mass energy

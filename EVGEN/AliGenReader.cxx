@@ -32,7 +32,7 @@ AliGenReader& AliGenReader::operator=(const  AliGenReader& rhs)
     return *this;
 }
 
-void AliGenReader::Copy(AliGenReader&) const
+void AliGenReader::Copy(TObject&) const
 {
     //
     // Copy 

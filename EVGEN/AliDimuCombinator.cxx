@@ -491,7 +491,7 @@ AliDimuCombinator& AliDimuCombinator::operator=(const  AliDimuCombinator& rhs)
 }
 
 
-void AliDimuCombinator::Copy(AliDimuCombinator&) const
+void AliDimuCombinator::Copy(TObject&) const
 {
   //
   // Copy 

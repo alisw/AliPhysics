@@ -138,7 +138,7 @@ AliGenReaderCwn& AliGenReaderCwn::operator=(const  AliGenReaderCwn& rhs)
     return *this;
 }
 
-void AliGenReaderCwn::Copy(AliGenReaderCwn&) const
+void AliGenReaderCwn::Copy(TObject&) const
 {
     //
     // Copy 

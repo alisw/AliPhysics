@@ -356,7 +356,7 @@ Float_t AliGenHaloProtvino::GassPressureWeight(Float_t zPrimary)
     return weight;
 }
 
-void AliGenHaloProtvino::Copy(AliGenHaloProtvino&) const
+void AliGenHaloProtvino::Copy(TObject&) const
 {
     //
     // Copy 

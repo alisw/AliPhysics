@@ -221,7 +221,7 @@ AliGenExtFile& AliGenExtFile::operator=(const  AliGenExtFile& rhs)
 }
  
 
-void AliGenExtFile::Copy(AliGenExtFile&) const
+void AliGenExtFile::Copy(TObject&) const
 {
     //
     // Copy 

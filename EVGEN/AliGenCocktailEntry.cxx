@@ -79,7 +79,7 @@ AliGenCocktailEntry& AliGenCocktailEntry::operator
     return (*this);
 }
 
-void AliGenCocktailEntry::Copy(AliGenCocktailEntry&) const
+void AliGenCocktailEntry::Copy(TObject&) const
 {
     //
     // Copy 

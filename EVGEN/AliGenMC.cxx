@@ -343,7 +343,7 @@ AliGenMC& AliGenMC::operator=(const  AliGenMC& rhs)
     return *this;
 }
 
-void AliGenMC::Copy(AliGenMC&) const
+void AliGenMC::Copy(TObject&) const
 {
     //
     // Copy 

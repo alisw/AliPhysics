@@ -22,7 +22,7 @@ class AliDimuCombinator:
 {
 public:
     AliDimuCombinator();
-    void  Copy(AliDimuCombinator &combi) const;
+    void  Copy(TObject &combi) const;
 //    
 //  Iterators
 //  Access to particle stack

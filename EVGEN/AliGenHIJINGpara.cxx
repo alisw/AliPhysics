@@ -422,7 +422,7 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
     fNt = nt;
 }
 
-void AliGenHIJINGpara::Copy(AliGenHIJINGpara &) const
+void AliGenHIJINGpara::Copy(TObject &) const
 {
   Fatal("Copy","Not implemented!\n");
 }

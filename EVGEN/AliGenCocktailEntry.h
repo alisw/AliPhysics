@@ -39,7 +39,7 @@ class AliGenCocktailEntry : public TNamed
     Float_t fRate;              // Rate per event
     Float_t fKineBias;          // Bias due to kinematic selecion
     Float_t fBias;              // Bias
-    void Copy(AliGenCocktailEntry&) const;
+    void Copy(TObject&) const;
  private:
     ClassDef(AliGenCocktailEntry,1) // Generator entry of AliGenCocktail
 };

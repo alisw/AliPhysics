@@ -80,7 +80,7 @@ public:
     Float_t         fAge;    // Time of flight
 
  private:
-    void Copy(AliGenFLUKAsource &arun) const;
+    void Copy(TObject &arun) const;
 
     ClassDef(AliGenFLUKAsource,1) //Boundary source
 };

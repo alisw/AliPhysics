@@ -44,7 +44,7 @@ class AliGenCocktail : public AliGenerator
     TObjLink *flnk2;      // ! Iterator for second generator
 //
  private:
-    void Copy(AliGenCocktail &arun) const;
+    void Copy(TObject &arun) const;
     ClassDef(AliGenCocktail,1) // Particle cocktail generator a la SHAKER
 };
 

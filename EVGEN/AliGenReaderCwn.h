@@ -45,7 +45,7 @@ class AliGenReaderCwn : public AliGenReader
     Float_t         fP;               // Total momentum
     Float_t         fE;               // Total energy
  private:
-    void Copy(AliGenReaderCwn&) const;
+    void Copy(TObject&) const;
     ClassDef(AliGenReaderCwn,1) // Read particles from cwn-ntuple
 };
 #endif

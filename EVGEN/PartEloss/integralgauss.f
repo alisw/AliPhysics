@@ -6,9 +6,7 @@
       REAL*8 a1,b1,diff1,d1,sr,sd,EPS,fu1r,fu1d
       EXTERNAL eloss_func1, eloss_func2
       PARAMETER (EPS=1.e-9, JMAX=12)
-      INTEGER j,j1
-      REAL*8 osr,ostr,str
-      REAL*8 del,sumr,x
+      REAL*8 osr,ostr
       ostr=-1.e10
       osr=-1.e10
       a1=0.0
@@ -37,7 +35,6 @@
       REAL*8           funr,yy,fund
       REAL*8           xr,length,noc,qq,nnorm,rri,fracc
       COMMON /input/   xr,length,noc,qq,nnorm,rri,fracc
-      REAL*8           fragm
       EXTERNAL         eloss_lookup
       REAL*8           cont, disc, wwt, tepsi
 *
@@ -146,7 +143,7 @@ c      fragmbkk = (fragv+frags)
 
       FUNCTION eloss_fragm(xxx,qqq)
       REAL*8   alpha, beta, gamma, n
-      REAL*8   sbar, xx, qq, xxx, qqq, lambda, fragv, frags
+      REAL*8   sbar, xx, qq, xxx, qqq, lambda
 *
       xx = xxx
       qq = qqq

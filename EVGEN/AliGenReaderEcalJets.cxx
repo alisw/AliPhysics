@@ -132,7 +132,7 @@ AliGenReaderEcalJets& AliGenReaderEcalJets::operator=(const  AliGenReaderEcalJet
     return (*this);
 }
 
-void AliGenReaderEcalJets::Copy(AliGenReaderEcalJets&) const
+void AliGenReaderEcalJets::Copy(TObject&) const
 {
     //
     // Copy 

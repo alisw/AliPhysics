@@ -79,7 +79,7 @@ void AliGenHalo::Init()
 void AliGenHalo::Generate()
 {
 // Generate from input file
-    FILE *fp = fopen(fFileName,"r");
+    fp = fopen(fFileName,"r");
     if (fp) {
 	printf("\n File %s opened for reading ! \n ", (char*) &fFileName);
     } else {
@@ -143,7 +143,7 @@ AliGenHalo& AliGenHalo::operator=(const  AliGenHalo& rhs)
 }
 
 
-void AliGenHalo::Copy(AliGenHalo&) const
+void AliGenHalo::Copy(TObject&) const
 {
     //
     // Copy 

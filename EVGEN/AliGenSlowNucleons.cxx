@@ -264,7 +264,7 @@ AliGenSlowNucleons& AliGenSlowNucleons::operator=(const  AliGenSlowNucleons& rhs
     return *this;
 }
 
-void AliGenSlowNucleons::Copy(AliGenSlowNucleons&) const
+void AliGenSlowNucleons::Copy(TObject&) const
 {
     //
     // Copy 

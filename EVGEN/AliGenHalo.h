@@ -25,7 +25,7 @@ class AliGenHalo : public AliGenerator
     virtual void Generate();
     AliGenHalo & operator=(const AliGenHalo & rhs);
  private:
-    void Copy(AliGenHalo &Halo) const;
+    void Copy(TObject &Halo) const;
  protected:
     FILE *fp;                             // ! Pointer to file
     TString  fFileName;                   //   Choose the file

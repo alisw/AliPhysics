@@ -231,7 +231,7 @@ AliGenCocktail& AliGenCocktail::operator=(const  AliGenCocktail& rhs)
     return (*this);
 }
 
-void AliGenCocktail::Copy(AliGenCocktail &) const
+void AliGenCocktail::Copy(TObject &) const
 {
     Fatal("Copy","Not implemented!\n");
 }

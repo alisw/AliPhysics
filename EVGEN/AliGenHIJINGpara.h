@@ -42,7 +42,7 @@ class AliGenHIJINGpara : public AliGenerator
   AliDecayer* fDecayer; // ! Pointer to pythia object for decays
 
   void DecayPi0(Float_t* orig, Float_t * p);
-  void Copy(AliGenHIJINGpara &para) const;
+  void Copy(TObject &para) const;
   ClassDef(AliGenHIJINGpara,3) // Hijing parametrisation generator
 };
 #endif

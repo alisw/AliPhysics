@@ -119,7 +119,7 @@ AliGenReaderEcalHijing& AliGenReaderEcalHijing::operator=(const  AliGenReaderEca
     return (*this);
 }
 
-void AliGenReaderEcalHijing::Copy(AliGenReaderEcalHijing&) const
+void AliGenReaderEcalHijing::Copy(TObject&) const
 {
     //
     // Copy 

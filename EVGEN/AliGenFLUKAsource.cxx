@@ -290,7 +290,7 @@ AliGenFLUKAsource& AliGenFLUKAsource::operator=(const  AliGenFLUKAsource& rhs)
 }
 
 
-void AliGenFLUKAsource::Copy(AliGenFLUKAsource &) const
+void AliGenFLUKAsource::Copy(TObject &) const
 {
     Fatal("Copy","Not implemented!\n");
 }

@@ -121,7 +121,7 @@ void AliGenBeamGas::Generate()
 
 
 
-void AliGenBeamGas::Copy(AliGenBeamGas&) const
+void AliGenBeamGas::Copy(TObject&) const
 {
     //
     // Copy 

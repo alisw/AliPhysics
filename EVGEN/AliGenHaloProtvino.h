@@ -43,7 +43,7 @@ protected:
   Float_t  fZ1[21],    fZ2[21];         // ! z-positions for gas pressure tables
   Float_t  fG1[21][5], fG2[21][5];      // ! gas pressures
  private:
-  void Copy(AliGenHaloProtvino&) const;
+  void Copy(TObject&) const;
   ClassDef(AliGenHaloProtvino,1)        //   LHC background boundary source (Protvino Group results)
       
 

@@ -28,7 +28,7 @@ class AliGenBeamGas : public AliGenExtFile
  protected:
     Int_t fInteractions;    // Number of interactions
  private:
-    void Copy(AliGenBeamGas&) const;
+    void Copy(TObject&) const;
     
     ClassDef(AliGenBeamGas,1) //Generator for beam gas interactions
 	

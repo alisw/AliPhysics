@@ -454,7 +454,7 @@ void AliGenParam::Generate()
   SetHighWaterMark(nt);
 }
 
-void AliGenParam::Draw()
+void AliGenParam::Draw( const char * /*opt*/)
 {
     //
     // Draw the pT and y Distributions

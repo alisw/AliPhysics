@@ -44,7 +44,7 @@ class AliGenReaderEcalHijing : public AliGenReader
     Float_t         fPzhij[10000];    // pz
     Float_t         fEhij[10000];     // energy
  private:
-    void Copy(AliGenReaderEcalHijing&) const;
+    void Copy(TObject&) const;
     
     ClassDef(AliGenReaderEcalHijing,1) // Read particles from cwn-ntuple
 };

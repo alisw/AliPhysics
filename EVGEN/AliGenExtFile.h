@@ -30,7 +30,7 @@ class AliGenExtFile : public AliGenMC
     void SetReader(AliGenReader* reader) {fReader = reader;}
  protected:
     void CdEventFile();
-    void Copy(AliGenExtFile&) const;
+    void Copy(TObject&) const;
     const Text_t     *fFileName;      //! File to read from
     AliGenReader     *fReader;        //! Reader to read the file
     
