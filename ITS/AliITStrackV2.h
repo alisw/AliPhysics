@@ -53,7 +53,7 @@ public:
   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
   void UpdateESDtrack(ULong_t flags);
   
-  void *operator new(size_t s,void *p) { return p; }
+  void *operator new(size_t /* s */,void *p) { return p; }
   void *operator new(size_t s) { return ::operator new(s); }
   
   Int_t GetDetectorIndex() const {return GetLabel();}
