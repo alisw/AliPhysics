@@ -21,8 +21,7 @@ class AliRICHResponse;
 class TClonesArray;
 
 
-class AliRICHClusterFinder :
- public TObject
+class AliRICHClusterFinder : public TObject
 {
  public:
     AliRICHClusterFinder
@@ -69,24 +68,25 @@ class AliRICHClusterFinder :
     virtual void   FillCluster(AliRICHRawCluster *cluster, Int_t flag);
     virtual void   FillCluster(AliRICHRawCluster *cluster) {
 	FillCluster(cluster,1);}
+   
     TClonesArray* RawClusters(){return fRawClusters;}
     AliRICHClusterFinder& operator=(const AliRICHClusterFinder& rhs);
     ClassDef(AliRICHClusterFinder,1) //Class for clustering and reconstruction of space points
+
 protected:
     AliRICHSegmentation*    fSegmentation;                 //Segmentation model
     AliRICHResponse*        fResponse;                     //Response model
     TClonesArray*           fRawClusters;                  //Raw clusters list
-    Int_t                   fChamber;                      //Chamber number
-    Int_t                   fNRawClusters;                 //Number of raw clusters
     AliRICHHitMapA1*        fHitMap;                       //Hit Map with digit positions
     TF1*                    fCogCorr;                      //Correction for center of gravity
+    TClonesArray*           fDigits;                       //List of digits
+    Int_t                   fNdigits;                      //Number of digits
+    Int_t                   fChamber;                      //Chamber number
+    Int_t                   fNRawClusters;                 //Number of raw clusters
     Int_t                   fNperMax;                      //Number of pad hits per local maximum
     Int_t                   fDeclusterFlag;                //Split clusters flag
     Int_t                   fClusterSize;                  //Size of cluster 
     Int_t                   fNPeaks;                       //Number of maxima in the cluster
-    TClonesArray*           fDigits;                       //List of digits
-    Int_t                   fNdigits;                      //Number of digits
-
 };
 #endif
 
