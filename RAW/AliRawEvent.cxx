@@ -1156,7 +1156,11 @@ private:
    AliMDC *fMDC;   // alimdc to signal
 public:
    AliMDCInterruptHandler(AliMDC *mdc) : TSignalHandler(kSigUser1, kFALSE), fMDC(mdc) { }
-   Bool_t Notify() { fMDC->SetStopLoop(); return kTRUE; }
+   Bool_t Notify() {
+      Info("Notify", "received a SIGUSR1 signal");
+      fMDC->SetStopLoop();
+      return kTRUE;
+   }
 };
 
 //______________________________________________________________________________
@@ -1331,7 +1335,7 @@ Int_t AliMDC::Run()
 
       // If we were in looping mode stop directly after a SIGUSR1 signal
       if (StopLoop()) {
-         Info("Run", "SIGUSR1, processed %d events", fNumEvents);
+         Info("Run", "Stopping loop, processed %d events", fNumEvents);
          break;
       }
 
