@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.41  2001/01/26 20:00:20  hristov
+  Major upgrade of AliRoot code
+
   Revision 1.40  2001/01/24 20:58:03  jbarbosa
   Enhanced BuildGeometry. Now the photocathodes are drawn.
 
@@ -403,18 +406,16 @@ void AliRICH::BuildGeometry()
     
     new TBRIK("S_RICH","S_RICH","void",71.09999,11.5,73.15);
 
-    Float_t csi_length = segmentation->Npx()*segmentation->Dpx() + segmentation->DeadZone();
-    Float_t csi_width = segmentation->Npy()*segmentation->Dpy() + 2*segmentation->DeadZone();
+    Float_t padplane_width = segmentation->GetPadPlaneWidth();
+    Float_t padplane_length = segmentation->GetPadPlaneLength();
 
-    Float_t padplane_width = (csi_width - 2*segmentation->DeadZone())/3;
-    Float_t padplane_length = (csi_length - segmentation->DeadZone())/2;
+    //printf("\n\n\n\n\n In BuildGeometry() npx: %d, npy: %d, dpx: %f, dpy:%f\n\n\n\n\n\n",segmentation->Npx(),segmentation->Npy(),segmentation->Dpx(),segmentation->Dpy());
 
-    //if (segmentation->GetPadPlaneWidth()>0)
-      //{
-	new TBRIK("PHOTO","PHOTO","void", padplane_width/2,.1,padplane_length/2);
-	//printf("\n\n\n\n\n Padplane   w: %f l: %f \n\n\n\n\n", padplane_width/2,padplane_length/2);
-	//printf("\n\n\n\n\n Padplane   w: %f l: %f \n\n\n\n\n", segmentation->GetPadPlaneWidth(), segmentation->GetPadPlaneLength());
-      //}
+    new TBRIK("PHOTO","PHOTO","void", padplane_width/2,.1,padplane_length/2);
+
+    //printf("\n\n\n\n\n Padplane   w: %f l: %f \n\n\n\n\n", padplane_width/2,padplane_length/2);
+    //printf("\n\n\n\n\n Padplane   w: %f l: %f \n\n\n\n\n", segmentation->GetPadPlaneWidth(), segmentation->GetPadPlaneLength());
+  
 
     top->cd();
     Float_t pos1[3]={0,471.8999,165.2599};
@@ -634,12 +635,12 @@ void AliRICH::CreateGeometry()
     //End_Html
 
   AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH"); 
-  AliSegmentation*  segmentation;
+  AliRICHSegmentationV0*  segmentation;
   AliRICHGeometry*  geometry;
   AliRICHChamber*       iChamber;
 
   iChamber = &(pRICH->Chamber(0));
-  segmentation=iChamber->GetSegmentationModel(0);
+  segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel(0);
   geometry=iChamber->GetGeometryModel();
 
   Float_t distance;
@@ -653,11 +654,10 @@ void AliRICH::CreateGeometry()
   //Float_t csi_length = 160*.8 + 2.6;
   //Float_t csi_width = 144*.84 + 2*2.6;
 
-  Float_t deadzone=2.6;
-
-  Float_t csi_length = segmentation->Npx()*segmentation->Dpx() + deadzone;
-  Float_t csi_width = segmentation->Npy()*segmentation->Dpy() + 2*deadzone;
- 
+  Float_t csi_length = segmentation->Npx()*segmentation->Dpx() + segmentation->DeadZone();
+  Float_t csi_width = segmentation->Npy()*segmentation->Dpy() + 2*segmentation->DeadZone();
+  
+  //printf("\n\n\n\n\n In CreateGeometry() npx: %d, npy: %d, dpx: %f, dpy:%f  deadzone: %f \n\n\n\n\n\n",segmentation->Npx(),segmentation->Npy(),segmentation->Dpx(),segmentation->Dpy(),segmentation->DeadZone());
   
   Int_t *idtmed = fIdtmed->GetArray()-999;
     
@@ -982,55 +982,44 @@ void AliRICH::CreateGeometry()
     
     AliMatrix(idrotm[1019], 0., 0., 90., 0., 90., 90.);
     
-    //Int_t nspacers = (Int_t)(TMath::Abs(geometry->GetInnerFreonLength()/14.4));
-    Int_t nspacers = 9;
+     //Placing of the spacers inside the freon slabs
+
+    Int_t nspacers = 30;
     //printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Spacers:%d\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",nspacers); 
 
     //printf("Nspacers: %d", nspacers);
     
-    //for (i = 1; i <= 9; ++i) {
-      //zs = (5 - i) * 14.4;                       //Original settings 
-    for (i = 0; i < nspacers; i++) {
-	zs = (TMath::Abs(nspacers/2) - i) * 14.4;
-	gMC->Gspos("SPAC", i, "FRE1", 6.7, 0., zs, idrotm[1019], "ONLY");  //Original settings 
-	//gMC->Gspos("SPAC", i, "FRE1", zs, 0., 6.7, idrotm[1019], "ONLY"); 
-    }
-    //for (i = 10; i <= 18; ++i) {
-      //zs = (14 - i) * 14.4;                       //Original settings 
-    for (i = nspacers; i < nspacers*2; ++i) {
-	zs = (nspacers + TMath::Abs(nspacers/2) - i) * 14.4;
-	gMC->Gspos("SPAC", i, "FRE1", -6.7, 0., zs, idrotm[1019], "ONLY"); //Original settings  
-	//gMC->Gspos("SPAC", i, "FRE1", zs, 0., -6.7, idrotm[1019], "ONLY");  
-    }
-
-    //for (i = 1; i <= 9; ++i) {
-      //zs = (5 - i) * 14.4;                       //Original settings 
-      for (i = 0; i < nspacers; i++) {
-	zs = (TMath::Abs(nspacers/2) - i) * 14.4;
-	gMC->Gspos("SPAC", i, "FRE2", 6.7, 0., zs, idrotm[1019], "ONLY");  //Original settings 
-	//gMC->Gspos("SPAC", i, "FRE2", zs, 0., 6.7, idrotm[1019], "ONLY");
-    }
-    //for (i = 10; i <= 18; ++i) {
-      //zs = (5 - i) * 14.4;                       //Original settings 
-      for (i = nspacers; i < nspacers*2; ++i) {
-	zs = (nspacers + TMath::Abs(nspacers/2) - i) * 14.4;
-	gMC->Gspos("SPAC", i, "FRE2", -6.7, 0., zs, idrotm[1019], "ONLY");  //Original settings 
-	//gMC->Gspos("SPAC", i, "FRE2", zs, 0., -6.7, idrotm[1019], "ONLY");
+    for (i = 0; i < nspacers/3; i++) {
+	zs = -11.6/2 + (TMath::Abs(nspacers/6) - i) * 12.2;
+	gMC->Gspos("SPAC", i, "FRE1", 10.5, 0., zs, idrotm[1019], "ONLY");  //Original settings 
     }
     
-    /*gMC->Gspos("FRE1", 1, "OQF1", 0., 0., 0., 0, "ONLY");
-    gMC->Gspos("FRE2", 1, "OQF2", 0., 0., 0., 0, "ONLY");
-    gMC->Gspos("OQF1", 1, "SRIC", 31.3, -4.724, 41.3, 0, "ONLY");
-    gMC->Gspos("OQF2", 2, "SRIC", 0., -4.724, 0., 0, "ONLY");
-    gMC->Gspos("OQF1", 3, "SRIC", -31.3, -4.724, -41.3, 0, "ONLY");
-    gMC->Gspos("BARR", 1, "QUAR", -21.65, 0., 0., 0, "ONLY");           //Original settings 
-    gMC->Gspos("BARR", 2, "QUAR", 21.65, 0., 0., 0, "ONLY");            //Original settings 
-    gMC->Gspos("QUAR", 1, "SRIC", 0., -3.974, 0., 0, "ONLY");
-    gMC->Gspos("GAP ", 1, "META", 0., 4.8, 0., 0, "ONLY");
-    gMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
-    gMC->Gspos("CSI ", 1, "SRIC", 0., 6.526, 0., 0, "ONLY");*/
+    for (i = nspacers/3; i < (nspacers*2)/3; i++) {
+	zs = -11.6/2 + (nspacers/3 + TMath::Abs(nspacers/6) - i) * 12.2;
+	gMC->Gspos("SPAC", i, "FRE1", 0, 0., zs, idrotm[1019], "ONLY");  //Original settings 
+    }
+    
+    for (i = (nspacers*2)/3; i < nspacers; ++i) {
+	zs = -11.6/2 + ((nspacers*2)/3 + TMath::Abs(nspacers/6) - i) * 12.2;
+	gMC->Gspos("SPAC", i, "FRE1", -10.5, 0., zs, idrotm[1019], "ONLY"); //Original settings  
+    }
 
+    for (i = 0; i < nspacers/3; i++) {
+	zs = -11.6/2 + (TMath::Abs(nspacers/6) - i) * 12.2;
+	gMC->Gspos("SPAC", i, "FRE2", 10.5, 0., zs, idrotm[1019], "ONLY");  //Original settings 
+    }
+    
+    for (i = nspacers/3; i < (nspacers*2)/3; i++) {
+	zs = -11.6/2 + (nspacers/3 + TMath::Abs(nspacers/6) - i) * 12.2;
+	gMC->Gspos("SPAC", i, "FRE2", 0, 0., zs, idrotm[1019], "ONLY");  //Original settings 
+    }
+    
+    for (i = (nspacers*2)/3; i < nspacers; ++i) {
+	zs = -11.6/2 + ((nspacers*2)/3 + TMath::Abs(nspacers/6) - i) * 12.2;
+	gMC->Gspos("SPAC", i, "FRE2", -10.5, 0., zs, idrotm[1019], "ONLY"); //Original settings  
+    }
 
+    
     gMC->Gspos("FRE1", 1, "OQF1", 0., 0., 0., 0, "ONLY");
     gMC->Gspos("FRE2", 1, "OQF2", 0., 0., 0., 0, "ONLY");
     gMC->Gspos("OQF1", 1, "SRIC", geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2 + 2, 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
@@ -1068,7 +1057,11 @@ void AliRICH::CreateGeometry()
     //printf("Position of the gap: %f to %f\n", 1.276 + geometry->GetGapThickness()/2 - geometry->GetProximityGapThickness()/2 - .2, 1.276 + geometry->GetGapThickness()/2 - geometry->GetProximityGapThickness()/2 + .2);
     
     //     Place RICH inside ALICE apparatus 
-  
+
+    // The placing of the chambers is measured from the vertex to the base of the methane vessel (490 cm)
+
+    //Float_t offset =  1.276 - geometry->GetGapThickness()/2;
+
     AliMatrix(idrotm[1000], 90., 0., 70.69, 90., 19.31, -90.);
     AliMatrix(idrotm[1001], 90., -20., 90., 70., 0., 0.);
     AliMatrix(idrotm[1002], 90., 0., 90., 90., 0., 0.);
@@ -1667,6 +1660,7 @@ void AliRICH::MakeBranch(Option_t* option, char *file)
 	    if (fDchambers   && gAlice->TreeD()) {
            gAlice->MakeBranchInTree(gAlice->TreeD(), 
                                     branchname, &((*fDchambers)[i]), kBufferSize, file) ;
+	   printf("Making Branch %sDigits%d\n",GetName(),i+1);
 	    }	
       }
     }
@@ -1871,17 +1865,6 @@ void   AliRICH::SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconst)
     ((AliRICHChamber*) (*fChambers)[id])->SetReconstructionModel(reconst);
 }
 
-void   AliRICH::SetNsec(Int_t id, Int_t nsec)
-{
-
-//
-// Sets the number of padplanes
-//
-
-    ((AliRICHChamber*) (*fChambers)[id])->SetNsec(nsec);
-}
-
-
 //___________________________________________
 void AliRICH::StepManager()
 {
@@ -1892,7 +1875,7 @@ void AliRICH::StepManager()
     static Int_t   idvol;
     static Int_t   vol[2];
     Int_t          ipart;
-    static Float_t hits[18];
+    static Float_t hits[22];
     static Float_t ckovData[19];
     TLorentzVector position;
     TLorentzVector momentum;
@@ -2225,6 +2208,14 @@ void AliRICH::StepManager()
 	  }*/
 	if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy))
 	  {
+	    gMC->TrackMomentum(momentum);
+	    mom[0]=momentum(0);
+	    mom[1]=momentum(1);
+	    mom[2]=momentum(2);
+	    mom[3]=momentum(3);
+	    hits [19] = mom[0];
+	    hits [20] = mom[1];
+	    hits [21] = mom[2];
 	    fFreonProd=1;
 	  }
 
@@ -2284,6 +2275,7 @@ void AliRICH::StepManager()
 		hits[14] = mom[0];
 		hits[15] = mom[1];
 		hits[16] = mom[2];
+		hits[18] = 0;               // dummy cerenkov angle
 
 		tlength = 0;
 		eloss   = 0;
@@ -2378,7 +2370,7 @@ void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
 //
     for (Int_t icat=1;icat<2;icat++) {
 	gAlice->ResetDigits();
-	gAlice->TreeD()->GetEvent(1); // spurious +1 ...
+	gAlice->TreeD()->GetEvent(0);
 	for (Int_t ich=0;ich<kNCH;ich++) {
 	  AliRICHChamber* iChamber=(AliRICHChamber*) (*fChambers)[ich];
 	  TClonesArray *pRICHdigits  = this->DigitsAddress(ich);
@@ -2549,11 +2541,11 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	  if (nch >kNCH) continue;
 	  iChamber = &(pRICH->Chamber(nch));
 	  
-	  TParticle *current = (TParticle*)(*gAlice->Particles())[index];
+	  TParticle *current = (TParticle*)gAlice->Particle(index);
 	  
 	  if (current->GetPdgCode() >= 50000050)
 	    {
-	      TParticle *motherofcurrent = (TParticle*)(*gAlice->Particles())[current->GetFirstMother()];
+	      TParticle *motherofcurrent = (TParticle*)gAlice->Particle(current->GetFirstMother());
 	      particle = motherofcurrent->GetPdgCode();
 	    }
 	  else
