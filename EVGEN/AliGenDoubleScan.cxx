@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.7  2001/07/27 17:09:35  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.6  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -55,6 +60,8 @@ AliGenDoubleScan::AliGenDoubleScan(Int_t npart)
     :AliGenScan(npart)
 {
 // Constructor
+    fName = "Double Scan";
+    fTitle= "Particle Generator for two correlated particles on a grid";
 }
 
 //____________________________________________________________

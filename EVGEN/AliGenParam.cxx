@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.35  2002/01/21 10:02:40  morsch
+ty is Double_t
+Abort if too high rapidity causes numerical paroblem. User has to specify
+meaningful y-range.
+
 Revision 1.34  2001/11/27 13:13:07  morsch
 Maximum lifetime for long-lived particles to be put on the stack is parameter.
 It can be set via SetMaximumLifetime(..).
@@ -135,11 +140,15 @@ AliGenParam::AliGenParam()
 // Set random number generator   
     sRandom = fRandom;
     fDecayer = 0;
+
+
 }
 
 AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Int_t param, char* tname):AliGenMC(npart)
 {
 // Constructor using number of particles parameterisation id and library
+    fName = "Param";
+    fTitle= "Particle Generator using pT and y parameterisation";
     
     fPtParaFunc = Library->GetPt(param, tname);
     fYParaFunc  = Library->GetY (param, tname);
@@ -161,7 +170,10 @@ AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Int_t param, char* t
 AliGenParam::AliGenParam(Int_t npart, Int_t param, char* tname):AliGenMC(npart)
 {
 // Constructor using parameterisation id and number of particles
-//      
+//
+    fName = "Param";
+    fTitle= "Particle Generator using pT and y parameterisation";
+      
     AliGenLib* pLibrary = new AliGenMUONlib();
  
     fPtParaFunc = pLibrary->GetPt(param, tname);
@@ -191,6 +203,9 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
 {
 // Constructor
 // Gines Martinez 1/10/99 
+    fName = "Param";
+    fTitle= "Particle Generator using pT and y parameterisation";
+
     fPtParaFunc = PtPara; 
     fYParaFunc  = YPara;  
     fIpParaFunc = IpPara;
@@ -306,7 +321,7 @@ void AliGenParam::Generate()
   static TClonesArray *particles;
   //
   if(!particles) particles = new TClonesArray("TParticle",1000);
-
+  
   static TDatabasePDG *pDataBase = new TDatabasePDG();
   if(!pDataBase) pDataBase = new TDatabasePDG();
   //
@@ -330,7 +345,7 @@ void AliGenParam::Generate()
 	  fChildWeight=(fDecayer->GetPartialBranchingRatio(iPart))*fParentWeight;	   
 	  TParticlePDG *particle = pDataBase->GetParticle(iPart);
 	  Float_t am = particle->Mass();
-
+	  
 	  Rndm(random,2);
 //
 // phi
@@ -498,14 +513,14 @@ void AliGenParam::Generate()
 					   0, kPDecay, nt, wgtch);
 			  pParent[i] = nt;
 			  KeepTrack(nt); 
-		      }
-		  }
+		      } // Selected
+		  } // Particle loop 
 	      }  // Decays by Lujet
-
+	      particles->Clear();
 	      if (pFlag)      delete[] pFlag;
 	      if (pParent)    delete[] pParent;
 	      if (pSelected)  delete[] pSelected;	   
-	      if (trackIt)    delete[] trackIt;	    
+	      if (trackIt)    delete[] trackIt;
 	  } // kinematic selection
 	  else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
 	  {

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.48  2001/12/20 11:44:28  morsch
+Add kinematic bias for direct gamma production.
+
 Revision 1.47  2001/12/19 14:45:00  morsch
 Store number of trials in header.
 
@@ -169,6 +172,8 @@ AliGenPythia::AliGenPythia(Int_t npart)
 // semimuonic decay
 // structure function GRVHO
 //
+    fName = "Pythia";
+    fTitle= "Particle Generator using PYTHIA";
     fXsection  = 0.;
     fNucA1=0;
     fNucA2=0;
@@ -243,7 +248,7 @@ void AliGenPythia::Init()
 	fParentSelect[1] =   421;
 	fParentSelect[2] =   431;
 	fParentSelect[3] =  4122;
-	fFlavorSelect    =     4;	
+	fFlavorSelect    =  4;	
 	break;
     case kPyBeauty:
 	fParentSelect[0]=  511;

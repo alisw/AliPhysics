@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.9  2001/07/27 17:09:36  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.8  2000/12/06 15:11:38  morsch
 Correct double declared data members.
 
@@ -62,6 +67,10 @@ AliGenScan::AliGenScan(Int_t npart)
     :AliGenerator(npart)
 {
 // Constructor
+    fName  = "Scan";
+    fTitle = "Generator for particles on a grid";
+
+
     fXCmin=0;
     fXCmax=0;
     fNx=1;

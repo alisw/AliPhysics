@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2002/01/31 20:17:55  morsch
+Allow for triggered jets with simplified topology: Exact pT, back-to-back
+
 Revision 1.35  2001/12/13 07:56:25  hristov
 Set pointers to zero in the default constructor
 
@@ -160,9 +163,9 @@ AliGenHijing::AliGenHijing()
                  :AliGenMC()
 {
 // Constructor
-  fHijing = 0;
-  fDsigmaDb = 0;
-  fDnDb = 0;
+    fHijing = 0;
+    fDsigmaDb = 0;
+    fDnDb = 0;
 }
 
 AliGenHijing::AliGenHijing(Int_t npart)
@@ -170,6 +173,9 @@ AliGenHijing::AliGenHijing(Int_t npart)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
+    fName = "Hijing";
+    fTitle= "Particle Generator using HIJING";
+
     SetEnergyCMS();
     SetImpactParameterRange();
     SetTarget();

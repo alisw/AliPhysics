@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/11/12 14:31:00  morsch
+Memory leaks fixed. (M. Bondila)
+
 Revision 1.17  2001/11/09 09:12:58  morsch
 Generalization by using AliGenReader object to read particles from file.
 
@@ -78,8 +81,6 @@ Introduction of the Copyright and cvs Log
 	 :AliGenerator(-1)
 {
 //  Constructor
-    fName="ExtFile";
-    fTitle="Primaries from ext. File";
 //
 //  Read all particles
     fNpart  =- 1;

@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.6  2001/07/27 17:09:35  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.5  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -81,8 +86,8 @@ AliGenBox::AliGenBox(Int_t npart)
   //
   // Standard constructor
   //
-  fName="Box";
-  fTitle="Box particle generator";
+  fName  = "Box";
+  fTitle = "Box particle generator";
   // Generate Proton by default
   fIpart=kProton;
 }
