@@ -110,7 +110,8 @@ void AliRICHv0::StepManager()
   Info("X4 glo","(x,y,z)=(%+8.3f,%+8.3f,%+8.3f) (r,theta,phi)=(%8.3f,%8.3f,%8.3f)",
                       glo[0],glo[1],glo[2],x4.Rho(),x4.Theta()*TMath::RadToDeg(),x4.Phi()*TMath::RadToDeg());  
   Info("X4 loc","(x,y,z)=(%+8.3f,%+8.3f,%8.3f) by gMC->Gmtod()",loc[0],loc[1],loc[2]);  
-  if(gMC->VolId("GAP ")==gMC->CurrentVolID(copy0)){
+  static Int_t idGAP = gMC->VolId("GAP ");
+  if(idGAP==gMC->CurrentVolID(copy0)){
     Int_t iChamber;
     gMC->CurrentVolOffID(2,iChamber);
     TVector2 x2=C(iChamber)->Mrs2Pc(x4);

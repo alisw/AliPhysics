@@ -38,17 +38,22 @@ void AliRICHv1::StepManager()
          
   Int_t          copy;
   static Int_t   iCurrentChamber;
+  static Int_t idRRAD = gMC->VolId("RRAD");
+  static Int_t idRRWI = gMC->VolId("RRWI");
+  static Int_t idRICH = gMC->VolId("RICH");
+  static Int_t idRPC  = gMC->VolId("RPC ");
+  static Int_t idRGAP = gMC->VolId("RGAP");
 //history of Cerenkovs
   if(gMC->TrackPid()==kCerenkov){
-    if( gMC->IsNewTrack()   && gMC->CurrentVolID(copy)==gMC->VolId("RRAD")) fCounters(0)++;// 0- Ckovs produced in radiator
-    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==gMC->VolId("RRAD")) fCounters(1)++;// 1- Ckovs absorbed in radiator
-    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==gMC->VolId("RRWI")) fCounters(2)++;// 2- Ckovs absorbed in radiator window
-    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==gMC->VolId("RICH")) fCounters(4)++;// 4- Ckovs absorbed in CH4
+    if( gMC->IsNewTrack()   && gMC->CurrentVolID(copy)==idRRAD) fCounters(0)++;// 0- Ckovs produced in radiator
+    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==idRRAD) fCounters(1)++;// 1- Ckovs absorbed in radiator
+    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==idRRWI) fCounters(2)++;// 2- Ckovs absorbed in radiator window
+    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==idRICH) fCounters(4)++;// 4- Ckovs absorbed in CH4
   }
           
 //Treat photons    
   static TLorentzVector cerX4;
-  if((gMC->TrackPid()==kCerenkov||gMC->TrackPid()==kFeedback)&&gMC->CurrentVolID(copy)==gMC->VolId("RPC ")){//photon in PC
+  if((gMC->TrackPid()==kCerenkov||gMC->TrackPid()==kFeedback)&&gMC->CurrentVolID(copy)==idRPC){//photon in PC
     if(gMC->Edep()>0){//photon in PC +DE
       if(IsLostByFresnel()){ 
         if(gMC->TrackPid()==kCerenkov) fCounters(7)++;// 7- Ckovs reflected from CsI
@@ -66,7 +71,7 @@ void AliRICHv1::StepManager()
 //Treat charged particles  
   static Float_t eloss;
   static TLorentzVector mipInX4,mipOutX4;
-  if(gMC->TrackCharge() && gMC->CurrentVolID(copy)==gMC->VolId("RGAP")){//MIP in GAP
+  if(gMC->TrackCharge() && gMC->CurrentVolID(copy)==idRGAP){//MIP in GAP
     gMC->CurrentVolOffID(1,iCurrentChamber);//RICH-RGAP
     if(gMC->IsTrackEntering()||gMC->IsNewTrack()) {//MIP in GAP entering or newly created
       eloss=0;                                                           

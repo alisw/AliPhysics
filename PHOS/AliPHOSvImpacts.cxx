@@ -206,7 +206,8 @@ void AliPHOSvImpacts::StepManager(void)
 
   // Add impact to EMC
 
-  if( gMC->CurrentVolID(copy) == gMC->VolId("PXTL") &&
+  static Int_t idPXTL = gMC->VolId("PXTL");
+  if( gMC->CurrentVolID(copy) == idPXTL &&
       gMC->IsTrackEntering() ) {
     gMC->TrackMomentum(pmom);
     gMC->TrackPosition(pos) ;
@@ -235,7 +236,8 @@ void AliPHOSvImpacts::StepManager(void)
 
   // Add impact to CPV
 
-  if( gMC->CurrentVolID(copy) == gMC->VolId("PCPQ") &&
+  static Int_t idPCPQ = gMC->VolId("PCPQ");
+  if( gMC->CurrentVolID(copy) == idPCPQ &&
       gMC->IsTrackEntering() ) {
     gMC->TrackMomentum(pmom);
     gMC->TrackPosition(pos) ;

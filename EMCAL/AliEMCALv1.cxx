@@ -123,7 +123,8 @@ void AliEMCALv1::StepManager(void){
   
   AliEMCALGeometry * geom = GetGeometry() ; 
 
-  if(gMC->CurrentVolID(copy) == gMC->VolId("XPHI") ) { // We are in a Scintillator Layer 
+  static Int_t idXPHI = gMC->VolId("XPHI");
+  if(gMC->CurrentVolID(copy) == idXPHI ) { // We are in a Scintillator Layer 
     Float_t depositedEnergy ; 
     
     if( ((depositedEnergy = gMC->Edep()) > 0.)  && (gMC->TrackTime() < fTimeCut)){// Track is inside a scintillator and deposits some energy

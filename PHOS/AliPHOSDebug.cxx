@@ -545,7 +545,8 @@ void AliPHOSv1::StepManager(void)
 
     // Yuri Kharlov, 28 September 2000
 
-    if( gMC->CurrentVolID(copy) == gMC->VolId("PCPQ") &&
+    static Int_t idPCPQ = gMC->VolId("PCPQ");
+    if( gMC->CurrentVolID(copy) == idPCPQ &&
 	entered &&
 	gMC->TrackCharge() != 0) {      
       

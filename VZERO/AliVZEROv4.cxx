@@ -888,17 +888,26 @@ void AliVZEROv4::StepManager()
      vol[2]    = gMC->CurrentVolID(copy);
      vol[3]    = copy;
      
-     if      ( gMC->CurrentVolID(copy) == gMC->VolId("V0R1") ||
-               gMC->CurrentVolID(copy) == gMC->VolId("V0L1") )
+     static Int_t idV0R1 = gMC->VolId("V0R1");
+     static Int_t idV0L1 = gMC->VolId("V0L1");
+     static Int_t idV0R2 = gMC->VolId("V0R2");
+     static Int_t idV0L2 = gMC->VolId("V0L2");
+     static Int_t idV0R3 = gMC->VolId("V0R3");
+     static Int_t idV0L3 = gMC->VolId("V0L3");
+     static Int_t idV0R4 = gMC->VolId("V0R4");
+     static Int_t idV0L4 = gMC->VolId("V0L4");
+
+     if      ( gMC->CurrentVolID(copy) == idV0R1 ||
+               gMC->CurrentVolID(copy) == idV0L1 )
 	       ringNumber = 1.0;
-     else if ( gMC->CurrentVolID(copy) == gMC->VolId("V0R2") ||
-               gMC->CurrentVolID(copy) == gMC->VolId("V0L2") ) 
+     else if ( gMC->CurrentVolID(copy) == idV0R2 ||
+               gMC->CurrentVolID(copy) == idV0L2 ) 
 	       ringNumber = 2.0;  
-     else if ( gMC->CurrentVolID(copy) == gMC->VolId("V0R3") ||
-               gMC->CurrentVolID(copy) == gMC->VolId("V0L3") )
+     else if ( gMC->CurrentVolID(copy) == idV0R3 ||
+               gMC->CurrentVolID(copy) == idV0L3 )
 	       ringNumber = 3.0;
-     else if ( gMC->CurrentVolID(copy) == gMC->VolId("V0R4") ||
-               gMC->CurrentVolID(copy) == gMC->VolId("V0L4") )
+     else if ( gMC->CurrentVolID(copy) == idV0R4 ||
+               gMC->CurrentVolID(copy) == idV0L4 )
 	       ringNumber = 4.0;	       
      else
      	       ringNumber = 0.0;

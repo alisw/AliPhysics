@@ -292,7 +292,8 @@ void AliPHOSv1::StepManager(void)
 
   Int_t moduleNumber ;
   
-  if( gMC->CurrentVolID(copy) == gMC->VolId("PCPQ") &&
+  static Int_t idPCPQ = gMC->VolId("PCPQ");
+  if( gMC->CurrentVolID(copy) == idPCPQ &&
       (gMC->IsTrackEntering() ) &&
       gMC->TrackCharge() != 0) {      
     
@@ -387,8 +388,8 @@ void AliPHOSv1::StepManager(void)
   }
 
  
-  
-  if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") ) { //  We are inside a PBWO crystal
+  static Int_t idPXTL = gMC->VolId("PXTL");  
+  if(gMC->CurrentVolID(copy) == idPXTL ) { //  We are inside a PBWO crystal
 
     gMC->TrackPosition(pos) ;
     xyzte[0] = pos[0] ;
