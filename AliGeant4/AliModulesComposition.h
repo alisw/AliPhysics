@@ -49,8 +49,6 @@ class AliModulesComposition : public G4VUserDetectorConstruction
 
     // set methods
     void SetMagField(G4double fieldValue);
-    void SetAllLVSensitive(G4bool allLVSensitive);
-    void SetForceAllLVSensitive(G4bool allLVSensitive);
     void SetReadGeometry(G4bool readGeometry);
     void SetWriteGeometry(G4bool writeGeometry);
     void SetProcessConfigToModules(G4bool processConfig);
@@ -86,7 +84,6 @@ class AliModulesComposition : public G4VUserDetectorConstruction
     // methods
     void SetReadGeometryToModules(G4bool readGeometry);
     void SetWriteGeometryToModules(G4bool writeGeometry);
-    void SetAllLVSensitiveToModules(G4bool allSensitive);
 
     // data members
     AliSingleModuleConstructionRWVector fModuleConstructionVector; //..
@@ -97,21 +94,11 @@ class AliModulesComposition : public G4VUserDetectorConstruction
 
     AliMagneticField*                fMagneticField;  //magnetic field
     AliModulesCompositionMessenger*  fMessenger;      //messenger
-    G4bool  fAllLVSensitive;      //option applied to all modules   
-                                  //(overriden by modules specific setting)
-    G4bool  fForceAllLVSensitive; //option applied to all modules 
-                                  //(overrides modules specific setting)
     G4bool  fReadGeometry;        //option applied to all modules
     G4bool  fWriteGeometry;       //option applied to all modules     
 };
 
 // inline methods
-
-inline void AliModulesComposition::SetAllLVSensitive(G4bool allLVSensitive)
-{ fAllLVSensitive = allLVSensitive; }
-
-inline void AliModulesComposition::SetForceAllLVSensitive(G4bool forceAllLVSensitive)
-{ fForceAllLVSensitive = forceAllLVSensitive; }
 
 inline void AliModulesComposition::SetReadGeometry(G4bool readGeometry)
 { fReadGeometry = readGeometry; }
