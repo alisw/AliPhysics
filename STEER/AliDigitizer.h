@@ -29,7 +29,7 @@ class AliDigitizer: public TTask {
 		 const Text_t* title="AliDigitizer");
 // Copy ctor needed because there is a pointer
     AliDigitizer(const AliDigitizer &dig);
-    AliDigitizer& operator=(AliDigitizer &dig)
+    AliDigitizer& operator=(const AliDigitizer &dig)
       {dig.Copy(*this);return *this;}
       
     virtual ~AliDigitizer();

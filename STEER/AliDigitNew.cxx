@@ -16,9 +16,9 @@
 /* $Id$ */
 
 //-----------------------------------------------------------------------
-//
 //    Proposal for a new digitisation abstract class
-//
+//    Used by EMCAL, PHOS, PMD, TOF digitizers and/or rec. points
+//    Author:
 //-----------------------------------------------------------------------
 
 #include "AliDigitNew.h"

@@ -15,11 +15,11 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////
-//                                                               //
-//    Generate the final state of the interaction as the input   //
-//    to the MonteCarlo                                          //
-//
+//-----------------------------------------------------------------
+//    Generate the final state of the interaction as the input
+//    to the MonteCarlo
+//    Author: A.Morsch
+//-----------------------------------------------------------------
 //Begin_Html
 /*
 <img src="picts/AliGeneratorClass.gif">

@@ -16,9 +16,10 @@
 /* $Id$ */
 
 //------------------------------------------------------------------------
-//
 //        Generic Lego generator code
-//
+//    Uses geantino rays to check the material distributions and detector's
+//    geometry
+//    Author: A.Morsch
 //------------------------------------------------------------------------
 
 #include "AliLegoGenerator.h"

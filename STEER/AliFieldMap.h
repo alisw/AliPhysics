@@ -24,14 +24,14 @@ public:
     virtual AliFieldMap & operator=(const AliFieldMap &map);
 
     virtual void Field(Float_t *x, Float_t *b);
-    Float_t Bx(const Int_t ix, const Int_t iy, const Int_t iz) {
-	return (*fB)(3*(ix*(fZn*fYn)+iy*fZn+iz));
+    Float_t Bx(const Int_t ix, const Int_t iy, const Int_t iz) const{
+	return (*fB)(3*((ix*fYn+iy)*fZn+iz));
     }
-    Float_t By(const Int_t ix, const Int_t iy, const Int_t iz) {
-	return (*fB)(3*(ix*(fZn*fYn)+iy*fZn+iz)+1);
+    Float_t By(const Int_t ix, const Int_t iy, const Int_t iz) const{
+	return (*fB)(3*((ix*fYn+iy)*fZn+iz)+1);
     }
-    Float_t Bz(const Int_t ix, const Int_t iy, const Int_t iz) {
-	return (*fB)(3*(ix*(fZn*fYn)+iy*fZn+iz)+2);
+    Float_t Bz(const Int_t ix, const Int_t iy, const Int_t iz) const{
+	return (*fB)(3*((ix*fYn+iy)*fZn+iz)+2);
     }
 
     Bool_t Inside(Float_t x, Float_t y, Float_t z) const

@@ -16,9 +16,10 @@
 /* $Id$ */
 
 //------------------------------------------------------------------------
-//
 //    Lego generator in Eta bins
-//
+//    Uses geantino rays to check the material distributions and detector's
+//    geometry
+//    Author: A.Morsch 
 //------------------------------------------------------------------------
 
 #include "AliLegoGeneratorEta.h"

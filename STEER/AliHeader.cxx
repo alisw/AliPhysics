@@ -16,9 +16,10 @@
 /* $Id$ */
 
 //-----------------------------------------------------------------------
-//
 //     Simulation event header class
-//
+//     Collaborates with AliRun, AliStack, and AliGenReaderTreeK classes
+//     Many other classes depend on it
+//     Author:
 //-----------------------------------------------------------------------
 
 #include <stdio.h>

@@ -61,6 +61,7 @@ class AliStack : public TVirtualMCStack
     virtual Int_t GetNtrack() const;
     Int_t       GetNprimary() const;
     virtual Int_t CurrentTrack() const;
+    virtual Int_t CurrentTrackParent() const;
     TObjArray*  Particles() const;
     TParticle*  Particle(Int_t id);
     Int_t       GetPrimary(Int_t id);

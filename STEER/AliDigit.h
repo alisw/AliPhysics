@@ -13,9 +13,6 @@
 #include "TObject.h"
 
 class AliDigit : public TObject {
-protected:
-  Int_t     fTracks[3];   //tracks number making this digit (up to 3)
-
 public:
   AliDigit();
   AliDigit(Int_t *track);
@@ -24,6 +21,9 @@ public:
   virtual Int_t GetTrack(Int_t i) const 
   {assert(0<=i&&i<=2); return fTracks[i];}
   
+protected:
+  Int_t     fTracks[3];   //tracks number making this digit (up to 3)
+
   ClassDef(AliDigit,1)  //Base class for all Alice digits
 };
 #endif

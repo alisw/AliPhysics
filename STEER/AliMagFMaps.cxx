@@ -15,9 +15,12 @@
 
 /* $Id$ */
 
-//
+//------------------------------------------------------------------------
+// Magnetic field composed by 3 maps: the L3 magnet, extended region, and
+// dipole magnet
+// Used in the configuration macros (macros/Config.C, etc.)
 // Author: Andreas Morsch <andreas.morsch@cern.ch>
-//
+//------------------------------------------------------------------------
 
 #include <TFile.h>
 #include <TSystem.h>

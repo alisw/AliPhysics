@@ -133,6 +133,7 @@ void AliGausCorr::PrintCv() const
 //_______________________________________________________________________
 AliGausCorr & AliGausCorr::operator=(const AliGausCorr & tgcorr)
 {
+  // Assignment operator
   if(&tgcorr != this && tgcorr.fSize!=fSize){
     if(fCv)delete fCv;
     fSize = tgcorr.fSize;

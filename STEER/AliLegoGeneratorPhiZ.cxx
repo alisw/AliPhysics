@@ -16,9 +16,10 @@
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//
 //    Lego generator in Phi - Z bins
-//
+//    Uses geantino rays to check the material distributions and detector's
+//    geometry
+//    Author: A.Morsch 
 //-------------------------------------------------------------------------
 
 #include "AliLegoGeneratorPhiZ.h"

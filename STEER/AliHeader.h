@@ -48,7 +48,7 @@ public:
 
   virtual void Print(const char *opt=0) const;
 
-  AliHeader& operator=(AliHeader& head) 
+  AliHeader& operator=(const AliHeader& head) 
     {head.Copy(*this); return *this;}
   
 protected:

@@ -15,9 +15,11 @@
 
 /* $Id$ */
 
-//
+//----------------------------------------------------------------------
 // Basic magnetic field class
-//
+// Used in all the detectors, and also in the traking classes
+// Author:
+//----------------------------------------------------------------------
 
 #include "AliMagF.h"
 

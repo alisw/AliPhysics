@@ -137,7 +137,7 @@ protected:
   TObjArray    fPMDCluster;             // List of PMD clusters
 
 private:
-  AliESD(const AliESD &);
+  AliESD(const AliESD &esd);
   AliESD & operator=(const AliESD &) {return (*this);}
   
   ClassDef(AliESD,1)  //ESD 

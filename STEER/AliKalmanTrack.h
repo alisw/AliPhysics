@@ -75,10 +75,10 @@ private:
   static Double_t fgConvConst; //conversion constant cm -> GeV/c
 
   // variables for time integration
-  static const Int_t fTypes = 5; 
+  static const Int_t fgkTypes = 5;  // Number of track types (e,mu,pi,k,p)
   Bool_t  fStartTimeIntegral;       // indicator wether integrate time
   Float_t fIntegratedTime[5];       // intgrated time
-  Float_t fIntegratedLength;
+  Float_t fIntegratedLength;        // integrated length
   
   ClassDef(AliKalmanTrack,2)    // Reconstructed track
 };

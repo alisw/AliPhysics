@@ -179,7 +179,7 @@ TParticle *AliPoints::GetParticle() const
 }
 
 //_______________________________________________________________________
-void AliPoints::InspectParticle()
+void AliPoints::InspectParticle() const
 {
   //
   //   Inspect particle corresponding to this point

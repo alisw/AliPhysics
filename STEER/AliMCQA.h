@@ -21,7 +21,7 @@ class AliMCQA : public TObject
 public:
   AliMCQA();
   AliMCQA(Int_t ndets);
-  AliMCQA(const AliMCQA &);
+  AliMCQA(const AliMCQA &qa);
   virtual ~AliMCQA();
   Bool_t  IsFolder() const {return kTRUE;}
   virtual  void  Browse(TBrowser *b);

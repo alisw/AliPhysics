@@ -16,9 +16,10 @@
 /* $Id$ */
 
 //-----------------------------------------------------------------------
-//
 //    Base Hit class for all detectors
-//
+//    Contains the coordinates of the hit (single energy deposition)
+//    and the number of correspondent track
+//    Author:
 //-----------------------------------------------------------------------
 
 #include "TParticle.h"

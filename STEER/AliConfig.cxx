@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// Class for configuration of TFolder and TTasks
+// in AliRoot. Used by AliRun, AliGenerator, 
+// AliModule and AliDetector classes
+// as well as by the PHOS and EMCAL Getters
+// Author: Originally developed by the PHOS group
+
 #include <Riostream.h>
 #include <TDatabasePDG.h>
 #include <TFolder.h>
@@ -217,6 +223,7 @@ AliConfig::AliConfig(const char *name, const char *title):
 //____________________________________________________________________________
 AliConfig::~AliConfig()
 { 
+  // destructor
   delete [] fDetectorFolder ;  
   delete fDetectorTask ;  
   delete fTopFolder ; 
@@ -225,6 +232,7 @@ AliConfig::~AliConfig()
 //____________________________________________________________________________
 void AliConfig::AddInFolder (const char *dir, TObject *obj)
 {
+  // Adds an object "obj" to a folder named "dir"
   TFolder *folder =
     dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));
   if (folder)
@@ -234,6 +242,8 @@ void AliConfig::AddInFolder (const char *dir, TObject *obj)
 //____________________________________________________________________________
 void    AliConfig::AddSubFolder(const char * dir[], TObject *obj)
 {
+  // Adds a subfolder taken from "obj" to all the folders from dir,
+  // which are found in the top folder
   int iDir = 0;
   
   while (dir[iDir]) 
@@ -250,6 +260,8 @@ void    AliConfig::AddSubFolder(const char * dir[], TObject *obj)
 //____________________________________________________________________________
 void    AliConfig::AddSubTask(const char * dir[], TObject *obj)
 {
+  // Adds a subtask taken from "obj" to all the folders from dir,
+  // which are found in the top folder
   int iDir = 0;
   
   while (dir[iDir]) 
@@ -268,6 +280,8 @@ void    AliConfig::AddSubTask(const char * dir[], TObject *obj)
 //____________________________________________________________________________
 TObject* AliConfig::FindInFolder (const char *dir, const char *name)
 {
+  // Searches for object with "name" in the top directory and in
+  // the directory "dir"
   if(!name) return(fTopFolder->FindObject(name));
   TFolder * folder = dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));
   if (!folder) return (NULL);
@@ -277,30 +291,36 @@ TObject* AliConfig::FindInFolder (const char *dir, const char *name)
 //____________________________________________________________________________
 void    AliConfig::Add (AliGenerator * obj)
 {
+  // Adds new AliGenerator to the generator's folder
   AddInFolder(fGeneratorFolder, obj);
 }
 
 //____________________________________________________________________________
 void    AliConfig::Add (TVirtualMC * obj)
 {
+  // Adds new object of type TVirtualMC to the MC folder
   AddInFolder(fMCFolder, obj);
 }
 
 //____________________________________________________________________________
 void    AliConfig::Add (TDatabasePDG * obj)
 {
+  // Adds new TDatabasePDG to the PDG folder
   AddInFolder(fPDGFolder, obj);
 }
 
 //____________________________________________________________________________
 void    AliConfig::Add (AliModule* obj)
 {
+  // Adds new module to the folder of modules 
   AddInFolder(fModuleFolder, obj);
 }
 
 //____________________________________________________________________________
 void    AliConfig::Add (AliDetector * obj)
 {
+  // Adds new detector to the detctor's folder as well as to
+  // the detector's task
   AddSubFolder(fDetectorFolder, obj); 
   AddSubTask(fDetectorTask, obj);
 }
@@ -309,6 +329,8 @@ void    AliConfig::Add (AliDetector * obj)
 //____________________________________________________________________________
 void    AliConfig::Add (char *list)
 {
+  // Finds in the list of directories all macros named Configure.C 
+  // and Default.C and uses them to configure the setup
   char *path;
   
   const char   *confPath = gSystem->Getenv ("ALICE_CONFIG_PATH");

@@ -10,7 +10,7 @@ class TVector;
 
 class AliMagFCM : public AliMagF
 {
-  //Alice Magnetic Field with constan mesh
+  //Alice Magnetic Field with constant mesh
 
 public:
   AliMagFCM();

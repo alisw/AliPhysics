@@ -16,9 +16,9 @@
 /* $Id$ */
 
 //-----------------------------------------------------------------------
-//
 //    Class to debug entry and exit from a volume
-//
+//    Used by AliLego class
+//    Author: A.Morsch
 //-----------------------------------------------------------------------
 
 
@@ -67,6 +67,8 @@ Bool_t  AliDebugVolume::IsVEqual(const char* name, const Int_t copy) const
 //_______________________________________________________________________
 char*   AliDebugVolume::Status() const
 {
+  // Returns the status of the particle with respect to 
+  // the current volume (Undefined, Entering, Exiting) 
   char* tmp;
   tmp = "Undefined";
   if (fStatus == 1) tmp = "Entering";

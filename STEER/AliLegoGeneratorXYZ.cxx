@@ -16,9 +16,10 @@
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//
 //      Lego generator in x - y - z bins
-//
+//    Uses geantino rays to check the material distributions and detector's
+//    geometry
+//    Author: A.Morsch 
 //-------------------------------------------------------------------------
 
 #include "AliLegoGeneratorXYZ.h"

@@ -446,6 +446,7 @@ void AliStack::PurifyKine()
    //   delete [] map;
 }
 
+//_____________________________________________________________________________
 Bool_t AliStack::KeepPhysics(TParticle* part)
 {
     //
@@ -663,6 +664,23 @@ Int_t AliStack::TreeKEntry(Int_t id) const
 }
 
 //_____________________________________________________________________________
+Int_t AliStack::CurrentTrackParent() const
+{
+  //
+  // Return number of the parent of the current track
+  //
+  
+  TParticle* current = (TParticle*)fParticleMap->At(fCurrent);
+
+  if (current) 
+    return current->GetFirstMother();
+  else {
+    Warning("CurrentTrackParent", "Current track not found in the stack");
+    return -1;
+  }  
+}
+ 
+//_____________________________________________________________________________
 Int_t AliStack::GetPrimary(Int_t id)
 {
   //
@@ -856,6 +874,7 @@ void AliStack::FinishRun()
     }
 }
 
+//_____________________________________________________________________________
 Bool_t AliStack::GetEvent(Int_t event)
 {
 //
