@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/06/09 10:31:36  hristov
+sqrt changed to TMath::Sqrt
+
 Revision 1.7  1999/11/03 18:01:40  fca
 Remove non orthogonal unused matrix
 
@@ -38,6 +41,7 @@ Introduction of the Copyright and cvs Log
 #include "AliPMDv1.h"
 #include "AliRun.h"
 #include "AliMC.h" 
+#include "AliMagF.h" 
 #include "AliConst.h" 
  
 static Int_t maxbox, kdet;

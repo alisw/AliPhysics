@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.6  2000/09/19 09:49:50  gosset
 AliMUONEventReconstructor package
 * track extrapolation independent from reco_muon.F, use of AliMagF...
@@ -68,6 +74,7 @@ Addition of files for track reconstruction in C++
 #include "AliMUONTrackParam.h" 
 #include "AliMUONChamber.h" 
 #include "AliRun.h" 
+#include "AliMagF.h" 
 
 ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
 

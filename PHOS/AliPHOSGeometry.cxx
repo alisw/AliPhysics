@@ -173,7 +173,7 @@ void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_
 }
 
 //____________________________________________________________________________
-void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat)
+void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat) const
 {
   // Calculates the ALICE global coordinates of a RecPoint and the error matrix
  
@@ -214,7 +214,7 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TM
 }
 
 //____________________________________________________________________________
-void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)
+void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const
 {
   // Calculates the ALICE global coordinates of a RecPoint 
 

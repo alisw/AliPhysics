@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,6 +34,7 @@ $Log$
 #include "AliPMDv2.h"
 #include "AliRun.h"
 #include "AliMC.h" 
+#include "AliMagF.h" 
 #include "AliConst.h" 
  
 static Float_t smod1[3], smod2[3], smod3[3], smod4[3];

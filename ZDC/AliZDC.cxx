@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/07/10 13:58:01  fca
+New version of ZDC from E.Scomparin & C.Oppedisano
+
 Revision 1.7  2000/01/19 17:17:40  fca
 
 Revision 1.6  1999/09/29 09:24:35  fca
@@ -33,6 +36,7 @@ Introduction of the Copyright and cvs Log
 
 #include <TBRIK.h>
 #include <TNode.h>
+#include "TGeometry.h"
 
 #include "AliZDC.h"
 #include "AliRun.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/07/10 20:57:39  hristov
+Update of TPC code and macros by M.Kowalski
+
 Revision 1.14  2000/06/30 12:07:50  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -81,6 +84,7 @@ Introduction of the Copyright and cvs Log
 #include <TMath.h>
 #include "AliTPCv3.h"
 #include "AliRun.h"
+#include "AliMC.h"
 #include "AliConst.h"
 #include "AliTPCDigitsArray.h"
 #include"AliTPCParam.h"

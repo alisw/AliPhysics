@@ -20,6 +20,8 @@
 #include <string.h>
 
 #include <TStopwatch.h>
+#include <TSystem.h>
+#include <TROOT.h>
 #include <TCanvas.h>
 #include <TF1.h>
 #include <TRandom.h>

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/07/11 11:12:34  fca
+Some syntax corrections for non standard HP aCC
+
 Revision 1.1  2000/07/10 13:58:01  fca
 New version of ZDC from E.Scomparin & C.Oppedisano
 
@@ -24,9 +27,12 @@ Revision 1.6  1999/09/29 09:24:35  fca
 Introduction of the Copyright and cvs Log
 
 */
+#include <assert.h>
+
 #include <TRandom.h>
 #include <TLorentzVector.h>
 #include <TVector3.h>
+#include "TDatabasePDG.h"
 
 #include "AliGenZDC.h"
 #include "AliConst.h"
@@ -113,8 +119,7 @@ void AliGenZDC::Generate()
     if((fIpart==kProton) || (fIpart==kNeutron)){
       ExtractFermi(fIpart,fPp,fProbintp,fProbintn,ddp);
     }
-    if(fIpart==kProton) {mass = 0.93956563;}
-    if(fIpart==kNeutron) {mass = 0.93827231;}
+    mass=gAlice->PDGDB()->GetParticle(fIpart)->Mass();
 //  printf(" pLABx = %f  pLABy = %f  pLABz = %f \n",pLab[0],pLab[1],pLab[2]); 
     for(i=0; i<=2; i++){
        balp[i] = -pLab[i];
@@ -189,12 +194,13 @@ void AliGenZDC::ExtractFermi(Int_t id, Double_t* fPp, Double_t* fProbintp,
 //
   Int_t i;
   Float_t xx = gRandom->Rndm();
+  assert ( id==kProton && id==kNeutron );
   if(id==kProton){
     for(i=0; i<=200; i++){
        if((xx>=fProbintp[i-1]) && (xx<fProbintp[i])) break;
        }
   }
-  else if(id==kNeutron){
+  else {
     for(i=0; i<=200; i++){
        if((xx>=fProbintn[i-1]) && (xx<fProbintn[i])) break;
        }
@@ -212,7 +218,7 @@ void AliGenZDC::ExtractFermi(Int_t id, Double_t* fPp, Double_t* fProbintp,
 void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossAngle, 
                 Int_t fBeamCrossPlane, Double_t* pLab)
 {
-  Double_t tetpart, fipart, tetdiv, fidiv, angleSum[2], tetsum, fisum, dplab[3];
+  Double_t tetpart, fipart, tetdiv=0, fidiv=0, angleSum[2], tetsum, fisum, dplab[3];
   Double_t rvec;
 
   Int_t i;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.1  2000/02/28 19:01:42  cblume
 Add new TRD classes
 
@@ -27,6 +30,7 @@ Add new TRD classes
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDgeometryHole.h"
+#include "AliMC.h"
 
 ClassImp(AliTRDgeometryHole)
 

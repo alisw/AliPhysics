@@ -24,6 +24,8 @@
 
 // --- ROOT system ---
 
+#include "TTree.h"
+
 // --- Standard library ---
 
 // --- AliRoot header files ---

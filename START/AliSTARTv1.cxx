@@ -35,6 +35,7 @@
 #include "AliSTARTv1.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliMagF.h"
 #include "AliSTARThit.h"
 
 #include <iostream.h>

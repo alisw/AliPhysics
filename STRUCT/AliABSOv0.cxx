@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/06/15 09:40:31  morsch
+Obsolete typedef keyword removed
+
 Revision 1.5  2000/06/12 19:39:01  morsch
 New structure of beam pipe and heating jacket.
 
@@ -56,6 +59,7 @@ Standard version of ABSO
 
 #include "AliABSOv0.h"
 #include "AliRun.h"
+#include "AliMC.h"
 #include "AliConst.h"
 
 ClassImp(AliABSOv0)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.20  2000/06/08 18:32:57  cblume
 Make code compliant to coding conventions
 
@@ -69,6 +72,8 @@ Introduction of the Copyright and cvs Log
 #include <TMath.h>
 #include <TNode.h>
 #include <TPGON.h> 
+#include <TGeometry.h>
+#include <TTree.h>
 
 #include "AliTRD.h"
 #include "AliRun.h"
@@ -78,6 +83,8 @@ Introduction of the Copyright and cvs Log
 #include "AliTRDgeometryHole.h"
 #include "AliTRDgeometryFull.h"
 #include "AliTRDrecPoint.h"
+#include "AliMagF.h"
+#include "AliMC.h"
  
 ClassImp(AliTRD)
  

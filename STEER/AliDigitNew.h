@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////
 
 #include "TObject.h"
-#include "TClonesArray.h" 
+class TClonesArray;
 
 typedef TClonesArray DigitsList ;       
 

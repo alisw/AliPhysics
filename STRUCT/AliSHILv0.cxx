@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/09/12 17:00:45  morsch
+Overlaps in YMO3 and YMO4 (side-effect from last update only) corrected.
+
 Revision 1.8  2000/09/12 16:11:43  morsch
 - Bug in volume YGO2 corrected: PCON started with twice the same z-value.
 - Recesses for chambers added to outer Pb cone.
@@ -60,6 +63,7 @@ Standard version of SHIL
 
 #include "AliSHILv0.h"
 #include "AliRun.h"
+#include "AliMC.h"
 #include "AliConst.h"
 
 ClassImp(AliSHILv0)

@@ -27,6 +27,7 @@
 #include "TBRIK.h"
 #include "TNode.h"
 #include "TRandom.h"
+#include "TTree.h"
 
 
 // --- Standard library ---
@@ -44,6 +45,7 @@
 #include "AliPHOSReconstructioner.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliMC.h"
 
 ClassImp(AliPHOSv1)
 

@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.30  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.29  2000/07/28 13:49:38  morsch
 SetAcceptance defines inner and outer chamber radii according to angular acceptance.
 Can be used for simple acceptance studies.
@@ -132,6 +138,7 @@ Log message added
 #include <TTUBE.h>
 #include <TBRIK.h>
 #include <TRotMatrix.h>
+#include <TGeometry.h>
 #include <TNode.h> 
 #include <TTree.h> 
 #include <TRandom.h> 
@@ -1019,8 +1026,8 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 
 		    if (mHit->fParticle == kMuonPlus 
 			|| mHit->fParticle == kMuonMinus) {
-			xhit[nch][nmuon[nch]]=mHit->fX;
-			yhit[nch][nmuon[nch]]=mHit->fY;
+			xhit[nch][nmuon[nch]]=mHit->X();
+			yhit[nch][nmuon[nch]]=mHit->Y();
 			nmuon[nch]++;
 			if (nmuon[nch] >2) printf("nmuon %d\n",nmuon[nch]);
 		    }
@@ -1138,8 +1145,8 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 		    iChamber = &(pMUON->Chamber(nch));
 		    Int_t rmin = (Int_t)iChamber->RInner();
 		    Int_t rmax = (Int_t)iChamber->ROuter();
-                    Float_t xbgr=mHit->fX;
-		    Float_t ybgr=mHit->fY;
+                    Float_t xbgr=mHit->X();
+		    Float_t ybgr=mHit->Y();
 		    Bool_t cond=kFALSE;
 		    
 		    for (Int_t imuon =0; imuon < nmuon[nch]; imuon++) {

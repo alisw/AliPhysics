@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/06/27 13:08:50  cblume
+Changed to Copy(TObject &A) to appease the HP-compiler
+
 Revision 1.6  2000/06/09 11:10:07  cblume
 Compiler warnings and coding conventions, next round
 
@@ -42,6 +45,7 @@ Add new TRD classes
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TF1.h>
+#include <TTree.h>
 
 #include "AliTRDclusterizerV1.h"
 #include "AliTRDmatrix.h"

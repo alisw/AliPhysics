@@ -46,8 +46,8 @@ public:
   virtual ~AliPHOSGeometry(void) ; 
   static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title="") ; 
   static AliPHOSGeometry * GetInstance() ; 
-  virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat)  ;
-  virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)  ; 
+  virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat) const;
+  virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const; 
 
   AliPHOSGeometry & operator = (const AliPHOSGeometry  & rvalue) const {
     // assignement operator requested by coding convention

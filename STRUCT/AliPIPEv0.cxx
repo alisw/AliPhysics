@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/06/11 12:37:01  morsch
+Coding rule violations corrected
+
 Revision 1.7  2000/02/23 16:25:24  fca
 AliVMC and AliGeant3 classes introduced
 ReadEuclid moved from AliRun to AliModule
@@ -30,6 +33,7 @@ Introduction of the Copyright and cvs Log
 
 #include "AliPIPEv0.h"
 #include "AliRun.h"
+#include "AliMC.h"
 #include "TSystem.h"
  
 ClassImp(AliPIPEv0)

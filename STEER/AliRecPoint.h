@@ -13,25 +13,20 @@
 //                                            //
 ////////////////////////////////////////////////
 
-// --- ROOT system ---
-
-#include "TObject.h"
-#include "TVector3.h"
-#include "TMatrix.h"
-#include "TClonesArray.h"
-
 // --- Standard library ---
 
 #include "assert.h"
 #include "iostream.h"
 
+// --- ROOT system ---
+
+#include "TObject.h"
+#include "TVector3.h"
+class TMatrix;
+
 // --- AliRoot header files ---
 
-#include "AliDigitNew.h"
-#include "AliGeometry.h"
-//#include "AliTrack.h"
-
-
+class AliDigitNew;
 class AliGeometry;
 
 class AliRecPoint : public TObject {
@@ -47,11 +42,11 @@ public:
   void  Copy(AliRecPoint &recp) const;
   virtual void  GetCovarianceMatrix(TMatrix & mat) ;
   virtual AliGeometry * GetGeom() const { return fGeom; } 
-  virtual void  GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) ; // return the global position in ALICE
+  virtual void  GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const ; // return global position in ALICE
   virtual int * GetDigitsList(void) const { return fDigitsList ; }
   //  virtual int * GetTracksList(void) const { return fTracksList ; }
-  virtual Float_t GetEnergy() {return fAmp; } 
-  virtual void  GetLocalPosition(TVector3 & pos) ;
+  virtual Float_t GetEnergy() const {return fAmp; } 
+  virtual void  GetLocalPosition(TVector3 & pos) const ;
   virtual Int_t GetDigitsMultiplicity(void) const { return fMulDigit ; }
   Int_t         GetIndexInList() const { return fIndexInList ; } 
   virtual Int_t GetMaximumDigitMultiplicity() const { return  fMaxDigit; } 
@@ -76,7 +71,7 @@ protected:
   Int_t *       fDigitsList ; //[fMulDigit] list of digit's indexes from which the point was reconstructed 
   Int_t *       fTracksList ; //[fMulTrack] list of tracks to which the point was assigned 
 
-  ClassDef(AliRecPoint,1)
+  ClassDef(AliRecPoint,1) // Base class for reconstructed space points
  
 };
 

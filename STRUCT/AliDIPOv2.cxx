@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/06/20 10:53:01  morsch
+Volume placed outside mother volume (DDIP) corrected (Galina Chabratova)
+
 Revision 1.11  2000/06/11 12:33:46  morsch
 Coding rule violations corrected
 
@@ -53,6 +56,8 @@ Introduction of the Copyright and cvs Log
 
 #include "AliDIPOv2.h"
 #include "AliRun.h"
+#include "AliMC.h"
+#include "AliMagF.h"
 #include "AliConst.h"
  
 ClassImp(AliDIPOv2)

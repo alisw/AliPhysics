@@ -20,7 +20,7 @@ SRCS          = AliDetector.cxx	AliHeader.cxx	AliMagF.cxx \
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) AliPDG.h STEERLinkDef.h
+HDRS          = $(SRCS:.cxx=.h) AliPDG.h $(ROOTSYS)/include/TH2.h STEERLinkDef.h 
 
 # Library dictionary
 
@@ -63,12 +63,11 @@ $(DICT):				$(HDRS)
 
 depend:					$(SRCS)
 
-HEADERS =	$(filter-out %LinkDef.h,$(HDRS) AliConst.h AliCallf77.h \
-                  Copyright.h)
+HEADERS 	= $(SRCS:.cxx=.h) AliPDG.h AliConst.h AliCallf77.h 
 
 TOCLEAN		= $(OBJS) *Cint.cxx *Cint.h
 
-CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
+CHECKS        	= $(patsubst %.cxx,check/%.viol,$(SRCS))
 
 ############################### General Macros ################################
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/07/12 08:56:25  fca
+Coding convention correction and warning removal
+
 Revision 1.16  2000/05/26 08:35:03  fca
 Move the check on z after z has been retrieved
 
@@ -79,11 +82,13 @@ Introduction of the Copyright and cvs Log
 //////////////////////////////////////////////////////////////
 
 #include "TMath.h"
+
 #include "AliLego.h"
 #include "AliLegoGenerator.h"
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliMC.h"
+#include "TH2.h"
 
 ClassImp(AliLego)
 

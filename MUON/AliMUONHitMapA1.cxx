@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/07/13 16:19:44  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.3  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -76,7 +79,7 @@ void AliMUONHitMapA1::Clear(const char *)
     memset(fHitMap,0,sizeof(int)*fMaxIndex);
 }
 
-Int_t AliMUONHitMapA1::CheckedIndex(Int_t ix, Int_t iy)
+Int_t AliMUONHitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
 {
 // Return checked indices ix, iy
     Int_t index=2*fNpy*(ix+fNpx)+(iy+fNpy);
@@ -125,13 +128,13 @@ void AliMUONHitMapA1::FlagHit(Int_t ix, Int_t iy)
 	-TMath::Abs(fHitMap[CheckedIndex(ix, iy)]);
 }
 
-Int_t AliMUONHitMapA1::GetHitIndex(Int_t ix, Int_t iy)
+Int_t AliMUONHitMapA1::GetHitIndex(Int_t ix, Int_t iy) const
 {
 // Get absolute value of contents of hit cell ix,iy
     return TMath::Abs(fHitMap[CheckedIndex(ix, iy)])-1;
 }
 
-TObject* AliMUONHitMapA1::GetHit(Int_t ix, Int_t iy)
+TObject* AliMUONHitMapA1::GetHit(Int_t ix, Int_t iy) const
 {
     // Get pointer to object at hit cell ix, iy
     // Force crash if index does not exist ! (Manu)

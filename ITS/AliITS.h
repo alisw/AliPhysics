@@ -11,6 +11,7 @@
 
 
 #include "AliDetector.h"
+#include "TObjArray.h"
 
 class TObjArray;
 class TString;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/25 13:06:39  hristov
+Inline functions moved from *.cxx to *.h files instead of forward declarations
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -52,9 +55,9 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONHit* Ghit)
   // which are taken from the coordinates of the GEANT hit,
   // the track number (GEANT and not TH),
   // and the chamber number (0...).
-  fBendingCoor = Ghit->fY;
-  fNonBendingCoor = Ghit->fX;
-  fZ = Ghit->fZ;
+  fBendingCoor = Ghit->Y();
+  fNonBendingCoor = Ghit->X();
+  fZ = Ghit->Z();
   // fTrack = Ghit->fTrack; ?????????
   fChamberNumber = Ghit->fChamber - 1;
   // other fields will be updated in

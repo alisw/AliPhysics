@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.5  2000/06/30 16:30:28  dibari
+  Disabled writing to rechits.
+
   Revision 1.4  2000/06/15 15:46:59  jbarbosa
   Corrected compilation errors on HP-UX (replaced pow with TMath::Power)
 
@@ -37,6 +40,7 @@
 #include "AliRICHDigit.h"
 #include "AliRun.h"
 #include "TParticle.h"
+#include "TTree.h"
 #include "TMath.h"
 #include "TRandom.h"
 
@@ -155,9 +159,9 @@ void AliRICHDetect::Detect()
     //printf("Aqui vou eu\n");
     Int_t nch  = mHit->fChamber;
     //printf("Aqui fui eu\n");
-    trackglob[0] = mHit->fX;
-    trackglob[1] = mHit->fY;
-    trackglob[2] = mHit->fZ;
+    trackglob[0] = mHit->X();
+    trackglob[1] = mHit->Y();
+    trackglob[2] = mHit->Z();
 
     cx=trackglob[0];
     cy=trackglob[2];

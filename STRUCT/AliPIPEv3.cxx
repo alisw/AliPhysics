@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/06/11 12:38:00  morsch
+Coding rule violations corrected
+
 Revision 1.6  1999/10/06 19:57:07  fca
 Correct materials in pipe
 
@@ -37,6 +40,8 @@ Introduction of the Copyright and cvs Log
 
 #include "AliPIPEv3.h"
 #include "AliRun.h"
+#include "AliMC.h"
+#include "AliMagF.h"
  
 ClassImp(AliPIPEv3)
  

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.3  2000/06/07 16:27:01  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -44,6 +47,7 @@ Add new TRD classes
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TRandom.h>
+#include <TTree.h>
 
 #include "AliTRDclusterizerV0.h"
 #include "AliTRDconst.h"
@@ -162,10 +166,10 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
               continue;
 
             Float_t pos[3];
-                    pos[0]   = hit->fX;
-                    pos[1]   = hit->fY;
-                    pos[2]   = hit->fZ;
-            Int_t   track    = hit->fTrack;
+                    pos[0]   = hit->X();
+                    pos[1]   = hit->Y();
+                    pos[2]   = hit->Z();
+            Int_t   track    = hit->Track();
             Int_t   detector = hit->GetDetector();
             Int_t   plane    = geo->GetPlane(detector);
             Int_t   sector   = geo->GetSector(detector);

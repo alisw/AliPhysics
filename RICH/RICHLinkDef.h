@@ -29,7 +29,7 @@
 #pragma link C++ class  AliRICHHitMap;
 #pragma link C++ class  AliRICHHitMapA1;
 #pragma link C++ class  AliRICHTresholdMap;
-#pragma link C++ class  AliRICHClusterFinder;
+#pragma link C++ class  AliRICHClusterFinder-;
 #pragma link C++ class  AliRICHPatRec;
 #endif
 

@@ -5,14 +5,14 @@
 
 /* $Id$ */
 
-#include <TNamed.h>
-#include <TSystem.h>
-#include <TClonesArray.h>
-#include <TBrowser.h>
-#include <TAttLine.h>
-#include <TAttMarker.h>
-#include <TArrayI.h>
-#include <AliHit.h>
+#include "TNamed.h"
+#include "TAttLine.h"
+#include "TAttMarker.h"
+
+//#include <TSystem.h>
+class TClonesArray;
+class TBrowser;
+class TArrayI;
 
 class AliModule : public TNamed , public TAttLine, public TAttMarker {
 public:
@@ -24,15 +24,15 @@ public:
   virtual ~AliModule();
 
   // Inline functions
-  virtual  int           GetNdigits() {return 0;}
-  virtual  int           GetNhits()   {return 0;}
+  virtual  int           GetNdigits() const {return 0;}
+  virtual  int           GetNhits()  const {return 0;}
   virtual  TArrayI      *GetIdtmed()   const {return fIdtmed;}
   virtual  TList        *Histograms() const {return fHistograms;}
   virtual  TList        *Nodes()  const {return fNodes;}
-  virtual  TClonesArray *Digits() {return 0;}
-  virtual  TClonesArray *Hits()   {return 0;}
-  virtual  TObjArray    *Points() {return 0;}
-  virtual  Int_t         GetIshunt() {return 0;}
+  virtual  TClonesArray *Digits() const {return 0;}
+  virtual  TClonesArray *Hits()   const {return 0;}
+  virtual  TObjArray    *Points() const {return 0;}
+  virtual  Int_t         GetIshunt() const {return 0;}
   virtual  void          SetIshunt(Int_t) {}
   virtual  Bool_t        IsActive() const {return fActive;}
   virtual  Bool_t        IsFolder() const {return kTRUE;}
@@ -87,10 +87,8 @@ public:
   virtual void        ResetPoints() {}
   virtual void        SetTreeAddress() {}
   virtual void        SetTimeGate(Float_t) {}
-  virtual Float_t     GetTimeGate() {return 1.e10;}
+  virtual Float_t     GetTimeGate() const {return 1.e10;}
   virtual void        StepManager() {}
-  //virtual AliHit*     FirstHit(Int_t) {return 0;}
-  //virtual AliHit*     NextHit() {return 0;}
   virtual void        SetBufferSize(Int_t) {}  
   virtual void        SetEuclidFile(char *material,char *geometry=0);
   virtual void ReadEuclid(const char *filnam, char *topvol);

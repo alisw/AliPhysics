@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2000/08/28 10:02:30  kowal2
+Corrected bug in the StepManager
+
 Revision 1.23  2000/07/10 20:57:39  hristov
 Update of TPC code and macros by M.Kowalski
 
@@ -87,6 +90,7 @@ Introduction of the Copyright and cvs Log
 #include "AliTPCv2.h"
 #include "AliTPCDigitsArray.h"
 #include "AliRun.h"
+#include "AliMC.h"
 #include "AliConst.h"
 #include "AliPDG.h"
 #include "AliTPCParam.h"

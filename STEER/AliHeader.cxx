@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/07/12 08:56:25  fca
+Coding convention correction and warning removal
+
 Revision 1.2  1999/09/29 09:24:29  fca
 Introduction of the Copyright and cvs Log
 
@@ -61,7 +64,7 @@ void AliHeader::Reset(Int_t run, Int_t event)
   fEvent=event;
 }
 
-void AliHeader::Dump()
+void AliHeader::Print(const char *)
 {
   //
   // Dumps header content

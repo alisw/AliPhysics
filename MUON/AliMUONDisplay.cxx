@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.6  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.5  2000/06/28 15:16:35  morsch
 (1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
 to allow development of slat-muon chamber simulation and reconstruction code in the MUON
@@ -119,6 +123,7 @@ it is now really the Z position of the chambers.
 #include <TVirtualX.h>
 #include <TMath.h>
 #include <TMatrix.h>
+#include <TGeometry.h>
 #include <X3DBuffer.h>
 #include <TMarker3DBox.h>
 
@@ -1123,11 +1128,11 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
             points->SetMarkerColor(kRed);
             points->SetMarkerStyle(5);
             points->SetMarkerSize(1.);
-            points->SetParticle(mHit->fTrack);
+            points->SetParticle(mHit->Track());
             points->SetHitIndex(hit);
             points->SetTrackIndex(track);
             points->SetDigitIndex(-1);
-	    points->SetPoint(0,mHit->fX,mHit->fY,zpos);
+	    points->SetPoint(0,mHit->X(),mHit->Y(),zpos);
 	}
 	nhold+=nhits;
     }

@@ -24,9 +24,9 @@ public TObject {
     // Delete a single hit
     virtual  void  DeleteHit(Int_t ix, Int_t iy)                   =0;
     // Get index of hit in the list of digits
-    virtual Int_t  GetHitIndex(Int_t ix, Int_t iy)                 =0;
+    virtual Int_t  GetHitIndex(Int_t ix, Int_t iy) const           =0;
     // Get pointer to digit
-    virtual TObject * GetHit(Int_t ix, Int_t iy)                   =0;
+    virtual TObject * GetHit(Int_t ix, Int_t iy) const             =0;
     // Flag a hit as used
     virtual void   FlagHit(Int_t ix, Int_t iy)                     =0;
     // Test hit status

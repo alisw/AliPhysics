@@ -24,7 +24,7 @@ SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) PHOSLinkDef.h
+HDRS          = $(SRCS:.cxx=.h) $(ROOTSYS)/include/TTree.h PHOSLinkDef.h
 
 # Library dictionary
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/05/18 14:33:01  vicinanz
+Modified to be full HP compliant
+
 Revision 1.14  2000/05/15 19:32:36  fca
 Add AddHitList !!
 
@@ -71,7 +74,11 @@ Introduction of the Copyright and cvs Log
 #include "TNode.h"
 #include "TObject.h"
 #include "TRandom.h"
+#include "TTree.h"
+
 #include "AliRun.h"
+#include "AliMC.h"
+#include "AliMagF.h"
 #include "AliConst.h"
 
  

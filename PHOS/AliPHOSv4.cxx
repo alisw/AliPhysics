@@ -29,6 +29,8 @@
 #include "TBRIK.h"
 #include "TNode.h"
 #include "TParticle.h"
+#include "TTree.h"
+#include "TGeometry.h"
 
 // --- Standard library ---
 
@@ -39,6 +41,7 @@
 #include "AliPHOSv4.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliMC.h"
 
 ClassImp(AliPHOSv4)
 

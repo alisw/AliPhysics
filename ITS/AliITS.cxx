@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2000/10/02 16:31:39  barbera
+General code clean-up
+
 Revision 1.9.2.14  2000/10/02 15:43:51  barbera
 General code clean-up (e.g., printf -> cout)
 
@@ -125,6 +128,7 @@ the AliITS class.
 #include "AliITSmodule.h"
 #include "AliITSRecPoint.h"
 #include "AliITSRawCluster.h"
+#include "AliMC.h"
 
 const Int_t AliITS::fgkNTYPES=3;
 

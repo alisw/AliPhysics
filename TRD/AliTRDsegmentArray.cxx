@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/27 13:08:50  cblume
+Changed to Copy(TObject &A) to appease the HP-compiler
+
 Revision 1.3  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -34,6 +37,8 @@ Add new TRD classes
 //  Alice segment manager class                                              //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <TTree.h>
 
 #include "AliTRD.h"
 #include "AliTRDgeometry.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/08/24 09:23:59  hristov
+Bug in ZDC geometry corrected by E.Scomparin
+
 Revision 1.3  2000/07/12 06:59:16  fca
 Fixing dimension of hits array
 
@@ -47,6 +50,7 @@ Introduction of the Copyright and cvs Log
 #include "stdio.h"
 #include "AliZDCv1.h"
 #include "AliRun.h"
+#include "AliMagF.h"
 #include "AliMC.h"
 #include "AliCallf77.h"
 #include "AliConst.h"
@@ -1050,10 +1054,10 @@ void AliZDCv1::StepManager()
 //       Int_t pcID = gMC->TrackPid();
 //       printf("	Pc %d in quadrant %d -> beta = %f \n", pcID, vol[1], beta);
        if(beta<0.67) return;
-       if((beta>=0.67) && (beta<=0.75)) ibeta = 0;
-       if((beta>0.75)  && (beta<=0.85)) ibeta = 1;
-       if((beta>0.85)  && (beta<=0.95)) ibeta = 2;
-       if((beta>0.95)  && (beta<=1.00)) ibeta = 3;
+       else if((beta>=0.67) && (beta<=0.75)) ibeta = 0;
+       else if((beta>0.75)  && (beta<=0.85)) ibeta = 1;
+       else if((beta>0.85)  && (beta<=0.95)) ibeta = 2;
+       else ibeta = 3;
  
        // Angle between particle trajectory and fibre axis
        // 1 -> Momentum directions

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/18 14:33:01  vicinanz
+Modified to be full HP compliant
+
 Revision 1.1  2000/05/10 16:52:18  vicinanz
 New TOF version with holes for PHOS/RICH
 
@@ -249,7 +252,7 @@ void AliTOFRawSector::WriteSector()
     for(nRoc=1; nRoc<=14; nRoc++){
        AliTOFRoc* currentRoc = (AliTOFRoc*)fRocData->UncheckedAt(nRoc);
        currentRoc->SetHeader();
-       UInt_t RocHeader = currentRoc->Header;
+       //       UInt_t RocHeader = currentRoc->Header;
 //      fprintf(rawfile,RocHeader);
     }
     
@@ -258,14 +261,14 @@ void AliTOFRawSector::WriteSector()
        Int_t rocItems = currentRoc->Items;
 
        for(Int_t nItem=1; nItem<=rocItems;nItem++){
-          UInt_t TimeRow = currentRoc->GetTimeRow(nItem);
+	 //          UInt_t TimeRow = currentRoc->GetTimeRow(nItem);
 //          fprintf(rawfile,TimeRow);
-          UInt_t ChrgRow = currentRoc->GetTimeRow(nItem);
+	  //          UInt_t ChrgRow = currentRoc->GetTimeRow(nItem);
 //          fprintf(rawfile,ChrgRow);
        }
     }
     
-    UInt_t EndOfSector = GlobalCheckSum;
+    //    UInt_t EndOfSector = GlobalCheckSum;
 //    fprintf(rawfile,EndOfSector);
 }
 
@@ -290,12 +293,12 @@ void AliTOFRawSector::ReadSector()
        currentRoc->SetHeader(RocHeader);
     }
     
-    UInt_t SCMWord;
+    //    UInt_t SCMWord;
 //    fscanf(rawfile,SCMWord);
     
     for(nRoc=1; nRoc<=14; nRoc++){
        AliTOFRoc* currentRoc = (AliTOFRoc*)fRocData->UncheckedAt(nRoc);
-       Int_t Size = currentRoc->SetSize();
+       //       Int_t Size = currentRoc->SetSize();
        Int_t nItems = currentRoc->Items;
        for(Int_t nrow=0; nrow<=nItems; nrow++){
           UInt_t charRow,timeRow;
@@ -304,7 +307,7 @@ void AliTOFRawSector::ReadSector()
 //         fscanf(rawfile, timeRow);
 	  currentRoc->SetTime(nrow, timeRow);
        }
-       Int_t FinalWord;
+       //       Int_t FinalWord;
 //       fscanf(rawfile,FinalWord);              
     }
 //    fscanf(rawfile,GlobalCheckSum);

@@ -51,11 +51,11 @@ public AliMUONSegmentationV0 {
     // Get member data
     //
     // Pad size in x by Sector
-    virtual Float_t Dpx(Int_t isec);
+    virtual Float_t Dpx(Int_t isec) const;
     // Pad size in y by Sector
-    virtual Float_t Dpy(Int_t isec);
+    virtual Float_t Dpy(Int_t isec) const;
     // Max number of Pads in x
-    virtual Int_t   Npx(){return fNpxS[fNsec-1][1]+1;}
+    virtual Int_t   Npx() const {return fNpxS[fNsec-1][1]+1;}
     //
     virtual void    SetPad(Int_t ix,Int_t iy);
     //

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/09 20:37:20  morsch
+All coding rule violations except RS3 corrected
+
 Revision 1.4  1999/11/03 17:43:20  fca
 New version from G.Martinez & A.Morsch
 
@@ -25,6 +28,7 @@ Introduction of the Copyright and cvs Log
 
 #include "AliGenScan.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
  ClassImp(AliGenScan)
     

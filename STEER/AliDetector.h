@@ -6,7 +6,7 @@
 /* $Id$ */
 
 #include <AliModule.h>
-#include <AliHit.h>
+class AliHit;
 
 class AliDetector : public AliModule {
 
@@ -20,12 +20,12 @@ public:
 
   // Inline functions
           void  Copy(AliDetector &det) const;
-  virtual int   GetNdigits() {return fNdigits;}
-  virtual int   GetNhits()   {return fNhits;}
-  TClonesArray *Digits() {return fDigits;}
-  TClonesArray *Hits()   {return fHits;}
-  TObjArray    *Points() {return fPoints;}
-  Int_t         GetIshunt() {return fIshunt;}
+  virtual int   GetNdigits() const {return fNdigits;}
+  virtual int   GetNhits()   const {return fNhits;}
+  TClonesArray *Digits() const {return fDigits;}
+  TClonesArray *Hits()   const {return fHits;}
+  TObjArray    *Points() const {return fPoints;}
+  Int_t         GetIshunt() const {return fIshunt;}
   void          SetIshunt(Int_t ishunt) {fIshunt=ishunt;}
   AliDetector &operator=(const AliDetector &det) 
   {det.Copy(*this); return (*this);}
@@ -40,7 +40,7 @@ public:
   virtual void        ResetPoints();
   virtual void        SetTreeAddress();
   virtual void        SetTimeGate(Float_t gate) {fTimeGate=gate;}
-  virtual Float_t     GetTimeGate() {return fTimeGate;}
+  virtual Float_t     GetTimeGate() const {return fTimeGate;}
   virtual void        StepManager() {}
   virtual void        DrawModule() {}
   virtual AliHit*     FirstHit(Int_t track);

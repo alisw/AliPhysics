@@ -13,7 +13,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TH2.h>
+#include "TNamed.h"
+class TH2F;
 
 class AliLegoGenerator;
 

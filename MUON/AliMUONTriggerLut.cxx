@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.3  2000/06/25 16:47:43  pcrochet
 pow replaced by TMath::Power
 
@@ -27,6 +33,7 @@ pow replaced by TMath::Power
 #include "AliMUONPoints.h"
 #include "TMath.h"
 #include "TFile.h"
+#include "TROOT.h"
 #include "TH3.h"
 #include <iostream.h>
 

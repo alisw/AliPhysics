@@ -45,17 +45,17 @@ public AliSegmentation {
     // Get member data
     //
     // Pad size in x
-    virtual Float_t Dpx(){return fDpx;}
+    virtual Float_t Dpx() const {return fDpx;}
     // Pad size in y
-    virtual Float_t Dpy(){return fDpy;}
+    virtual Float_t Dpy() const {return fDpy;}
     // Pad size in x by Sector
-    virtual Float_t Dpx(Int_t) {return fDpx;}
+    virtual Float_t Dpx(Int_t) const {return fDpx;}
     // Pad size in y by Secto
-    virtual Float_t Dpy(Int_t) {return fDpy;}
+    virtual Float_t Dpy(Int_t) const {return fDpy;}
     // Maximum number of Pads in x
-    virtual Int_t   Npx(){return fNpx;}
+    virtual Int_t   Npx() const {return fNpx;}
     // Maximum number of Pads in y
-    virtual Int_t   Npy(){return fNpy;}
+    virtual Int_t   Npy() const {return fNpy;}
     // Set pad position
     virtual void     SetPad(Int_t ix, Int_t iy);
     // Set hit position
@@ -86,13 +86,13 @@ dummy);
     //
     // Current Pad during Integration
     // x-coordinaten
-    virtual Int_t  Ix(){return fIx;}
+    virtual Int_t  Ix() const {return fIx;}
     // y-coordinate
-    virtual Int_t  Iy(){return fIy;}
+    virtual Int_t  Iy() const {return fIy;}
     // current sector
-    virtual Int_t  ISector(){return 1;}
+    virtual Int_t  ISector() const {return 1;}
     // calculate sector from pad coordinates
-    virtual Int_t  Sector(Int_t ix, Int_t iy) {return 1;}
+    virtual Int_t  Sector(Int_t ix, Int_t iy) const {return 1;}
     //
     // Signal Generation Condition during Stepping
     virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z);

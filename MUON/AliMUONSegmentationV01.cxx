@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.5  2000/07/13 16:19:44  fca
 Mainly coding conventions + some small bug fixes
 
@@ -74,14 +80,14 @@ AliMUONSegmentationV01::AliMUONSegmentationV01()
     (*fCorr)[2]=0;
 } 
 
-Float_t AliMUONSegmentationV01::Dpx(Int_t isec)
+Float_t AliMUONSegmentationV01::Dpx(Int_t isec) const
 {
 //
 // Returns x-pad size for given sector isec
-   return fDpxD[isec];
+   return fDpxD.At(isec);
 }
 
-Float_t AliMUONSegmentationV01::Dpy(Int_t isec)
+Float_t AliMUONSegmentationV01::Dpy(Int_t isec) const
 {
 //
 // Returns y-pad size for given sector isec

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2000/10/02 16:35:23  barbera
+Forward declarations added
+
 Revision 1.14.4.12  2000/10/02 16:04:03  barbera
 Forward declarations added
 
@@ -76,6 +79,7 @@ Introduction of the Copyright and cvs Log
 #include <TBRIK.h>
 
 #include "AliRun.h"
+#include "AliMC.h"
 #include "TSystem.h"
 #if ALIITSPRINTGEOM==1
 #include "../TGeant3/TGeant3.h"

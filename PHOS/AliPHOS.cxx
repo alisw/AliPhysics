@@ -34,6 +34,7 @@
 #include "AliPHOS.h"
 #include "AliMC.h"
 #include "AliRun.h"
+#include "AliMagF.h"
 
 ClassImp(AliPHOS)
 

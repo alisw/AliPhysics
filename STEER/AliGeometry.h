@@ -16,14 +16,8 @@
 // --- ROOT system ---
 
 #include "TNamed.h"
-#include "TVector3.h" 
-
-// --- Standard library ---
-
-// --- AliRoot header files ---
- 
-#include "AliRecPoint.h"
-
+class TVector3;
+class TMatrix;
 class AliRecPoint;
 
 class AliGeometry : public TNamed {
@@ -33,14 +27,14 @@ public:
   AliGeometry() ;          // ctor            
   virtual ~AliGeometry() ; // dtor
  
-  virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos, TMatrix & mat) = 0   ; 
-  virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos) = 0 ; 
+  virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos, TMatrix & mat) const = 0; 
+  virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos) const = 0; 
 
 protected:
 
   AliGeometry(const Text_t* name, const Text_t* title) : TNamed (name,title) {}                                   
 
-  ClassDef(AliGeometry,1)  // description , version 1
+  ClassDef(AliGeometry,1)  // Base class for detector geometry
 
 };
 

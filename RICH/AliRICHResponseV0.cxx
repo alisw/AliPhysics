@@ -15,11 +15,15 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/12 15:29:37  jbarbosa
+  Cleaned up version.
+
 */
 
 #include "AliRICHResponseV0.h"
 #include "AliRICHSegmentation.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 #include <TMath.h>
 #include <TRandom.h>

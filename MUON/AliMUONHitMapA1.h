@@ -29,9 +29,9 @@ public AliHitMap
     // Delete a single hit
     virtual  void  DeleteHit(Int_t ix, Int_t iy);
     // Get index of hit in the list of digits
-    virtual Int_t  GetHitIndex(Int_t ix, Int_t iy);
+    virtual Int_t  GetHitIndex(Int_t ix, Int_t iy) const;
     // Get pointer to digit
-    virtual TObject*  GetHit(Int_t ix, Int_t iy);
+    virtual TObject*  GetHit(Int_t ix, Int_t iy) const;
     // Flag a hit as used
     virtual  void  FlagHit(Int_t ix, Int_t iy);
     // Test hit status
@@ -41,7 +41,7 @@ public AliHitMap
     
  private:
     // Check index
-    Int_t CheckedIndex(Int_t ix, Int_t iy);
+    Int_t CheckedIndex(Int_t ix, Int_t iy) const;
  private:
     AliSegmentation *fSegmentation;       // Chamber segmentation
     Int_t fNpx;                           // Maximum number of pads in x

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/07/13 16:41:29  fca
+New START corrected for coding conventions
+
 Revision 1.7  2000/01/21 15:45:23  fca
 New Version from Alla
 
@@ -47,6 +50,7 @@ Introduction of the Copyright and cvs Log
 #include "AliSTARTv0.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliMagF.h"
 #include "AliSTARThit.h"
 
 #include <iostream.h>

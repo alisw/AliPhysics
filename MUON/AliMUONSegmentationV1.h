@@ -39,17 +39,17 @@ public AliSegmentation {
     // Get member data
     //
     // Pad size in x
-    virtual Float_t Dpx(){return fDpx;}
+    virtual Float_t Dpx() const {return fDpx;}
      // Pad size in y 
-    virtual Float_t Dpy(){return fDpy;}
+    virtual Float_t Dpy() const {return fDpy;}
     // Pad size in x by Sector
-    virtual Float_t Dpx(Int_t i){return fDpx;}
+    virtual Float_t Dpx(Int_t i) const {return fDpx;}
     // Pad size in y by Sector 
-    virtual Float_t Dpy(Int_t i){return fDpy;}
+    virtual Float_t Dpy(Int_t i)const {return fDpy;}
     // Maximum number of Pads in x
-    virtual Int_t   Npx(){return fNpx;}
+    virtual Int_t   Npx() const {return fNpx;}
     // Maximum number of Pads in y
-    virtual Int_t   Npy(){return fNpy;}
+    virtual Int_t   Npy() const {return fNpy;}
     //
     // Get  the zone of segmentation
     virtual Int_t GetZone(Float_t X, Float_t Y);

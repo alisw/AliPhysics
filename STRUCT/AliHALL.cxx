@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/06/13 14:55:26  morsch
+Unused variables removed
+
 Revision 1.8  2000/06/11 12:35:41  morsch
 Coding rule violations corrected
 
@@ -49,6 +52,8 @@ Introduction of the Copyright and cvs Log
 
 #include "AliHALL.h"
 #include "AliRun.h"
+#include "AliMC.h"
+#include "AliMagF.h"
 #include "AliConst.h"
  
 ClassImp(AliHALL)

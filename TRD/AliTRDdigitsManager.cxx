@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.4  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -35,6 +38,8 @@ Add new class AliTRDdigitsManager
 //  AliTRDdataArray objects.                                                 //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <TTree.h>
 
 #include "AliRun.h"
 

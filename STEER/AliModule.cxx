@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/07/12 08:56:25  fca
+Coding convention correction and warning removal
+
 Revision 1.10  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -47,13 +50,17 @@ Introduction of the Copyright and cvs Log
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+#include <TClass.h>
+#include <TNode.h>
+#include <TRandom.h>
+#include "TSystem.h"
+
 #include "AliModule.h"
 #include "AliRun.h"
 #include "AliHit.h"
 #include "AliPoints.h"
-#include <TClass.h>
-#include <TNode.h>
-#include <TRandom.h>
+#include "AliMagF.h"
+#include "AliMC.h"
 
 ClassImp(AliModule)
  

@@ -5,24 +5,26 @@
 
 /* $Id$ */
 
-#include <TROOT.h>
-#include <TBrowser.h>
-#include <TList.h>
+class TBrowser;
+class TList;
+class TTree;
+class TGeometry;
+class TDatabasePDG;
+#include <TArrayI.h>
+#include <TArrayF.h>
 #include <TStopwatch.h>
-#include <TTree.h>
-#include <TGeometry.h>
-#include <TDatabasePDG.h>
 
-#include "AliDetector.h"
-#include "AliHeader.h"
-#include "AliMagF.h"
-#include "AliMC.h"
-#include "AliGenerator.h"
+class AliDetector;
+class AliModule;
+class AliMagF;
+class AliMC;
 class AliLego;
+class AliDisplay;
+#include "AliHeader.h"
+#include "AliGenerator.h"
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
-class AliDisplay;
 
 class AliRun : public TNamed {
 public:
@@ -44,8 +46,8 @@ public:
    Int_t          CurrentTrack() const {return fCurrent;}
    AliDisplay    *Display() { return fDisplay;}
    virtual  Int_t DistancetoPrimitive(Int_t px, Int_t py);
-   virtual  void  DumpPart (Int_t i);
-   virtual  void  DumpPStack ();
+   virtual  void  DumpPart (Int_t i) const;
+   virtual  void  DumpPStack () const;
    virtual AliMagF *Field() const {return fField;}
    virtual  void  FillTree();
    virtual  void  FinishPrimary();
@@ -58,13 +60,12 @@ public:
    Int_t          GetRunNumber() const {return fRun;}
    void           SetRunNumber(Int_t run) {fRun=run;}
    Int_t          GetDebug() const {return fDebug;}
-   AliModule     *GetModule(const char *name);
-   AliDetector   *GetDetector(const char *name);
-   Int_t          GetModuleID(const char *name);
+   AliModule     *GetModule(const char *name) const;
+   AliDetector   *GetDetector(const char *name) const;
+   Int_t          GetModuleID(const char *name) const;
    virtual  Int_t GetEvent(Int_t event);
    virtual  void  SetEvent(Int_t event) {fEvent=event;}
-   virtual  void  SetConfigFunction(const char * config="Config();") 
-    {fConfigFunction=config;}
+   virtual  void  SetConfigFunction(const char * config="Config();");
    virtual  const char *GetConfigFunction() const 
     {return fConfigFunction.Data();}
    TGeometry     *GetGeometry();
@@ -72,8 +73,8 @@ public:
    virtual  void  GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
 			       Float_t &e, Float_t *vpos, Float_t *polar, 
 			       Float_t &tof);
-   Int_t          GetNtrack() {return fNtrack;}
-   virtual  Int_t GetPrimary(Int_t track);
+   Int_t          GetNtrack() const {return fNtrack;}
+   virtual  Int_t GetPrimary(Int_t track) const;
    virtual  void  InitMC(const char *setup="Config.C");
    virtual  void  Init(const char *setup="Config.C") {InitMC(setup);}
    Bool_t         IsFolder() const {return kTRUE;}
@@ -109,12 +110,12 @@ public:
    virtual  Float_t TrackingZmax() const {return fTrZmax;}
    virtual  Float_t TrackingRmax() const {return fTrRmax;}
    virtual  void    TrackingLimits( Float_t rmax=1.e10, Float_t zmax=1.e10) {fTrRmax=rmax; fTrZmax=zmax;}
-   virtual  Int_t   DetFromMate(Int_t i) { return (*fImedia)[i];}
-   virtual  AliGenerator* Generator() {return fGenerator;}
+   virtual  Int_t   DetFromMate(Int_t i) const { return (*fImedia)[i];}
+   virtual  AliGenerator* Generator() const {return fGenerator;}
    virtual  void SetGenerator(AliGenerator *generator);
    virtual  void ResetGenerator(AliGenerator *generator);
    virtual  void EnergySummary();
-   virtual  const TDatabasePDG* PDGDB() const {return fPDGDB;}
+   virtual  TDatabasePDG* PDGDB() const {return fPDGDB;}
 
 
    TTree         *TreeD() {return fTreeD;}

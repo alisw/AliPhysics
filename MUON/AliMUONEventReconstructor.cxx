@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.12  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.11  2000/09/22 09:16:33  hristov
 Casting needed on DEC
 
@@ -95,6 +101,7 @@ Addition of files for track reconstruction in C++
 
 #include <TRandom.h>
 #include <TFile.h>
+#include <TTree.h>
 
 #include "AliMUONEventReconstructor.h"
 #include "AliMUON.h"
@@ -105,6 +112,7 @@ Addition of files for track reconstruction in C++
 #include "AliMUONTrack.h"
 #include "AliMUONChamber.h"
 #include "AliMUONTrackHit.h"
+#include "AliMagF.h"
 #include "AliRun.h"
 #include "TParticle.h"
 
@@ -551,8 +559,8 @@ AliMUONHitForRec* AliMUONEventReconstructor::NewHitForRecFromGEANT(AliMUONHit* H
   // only if hit is efficient (keep track for checking ????)
   if (gRandom->Rndm() > fEfficiency) return NULL;
   // only if radius between RMin and RMax
-  bendCoor = Hit->fY;
-  nonBendCoor = Hit->fX;
+  bendCoor = Hit->Y();
+  nonBendCoor = Hit->X();
   radius = TMath::Sqrt((bendCoor * bendCoor) + (nonBendCoor * nonBendCoor));
   if ((radius < fRMin[chamber]) || (radius > fRMax[chamber])) return NULL;
   // new AliMUONHitForRec from GEANT hit and increment number of AliMUONHitForRec's

@@ -38,17 +38,17 @@ public TObject {
     // Get member data
     //
     // Pad size in x
-    virtual Float_t Dpx()                                                               = 0;
+    virtual Float_t Dpx() const                                                         = 0;
     // Pad size in y 
-    virtual Float_t Dpy()                                                               = 0;
+    virtual Float_t Dpy() const                                                         = 0;
     // Pad size in x by Sector 
-    virtual Float_t Dpx(Int_t)                                                          = 0;
+    virtual Float_t Dpx(Int_t) const                                                    = 0;
     // Pad size in y by Sector 
-    virtual Float_t Dpy(Int_t)                                                          = 0;
+    virtual Float_t Dpy(Int_t) const                                                    = 0;
     // Maximum number of Pads in x
-    virtual Int_t    Npx()                                                              = 0;
+    virtual Int_t    Npx() const                                                        = 0;
     // Maximum number of Pads in y
-    virtual Int_t    Npy()                                                              = 0;
+    virtual Int_t    Npy() const                                                        = 0;
     // Set pad position
     virtual void     SetPad(Int_t, Int_t)                                               = 0;
     // Set hit position
@@ -75,13 +75,13 @@ public TObject {
     //
     // Current pad cursor during disintegration
     // x-coordinate
-    virtual Int_t  Ix()                                                                 = 0;
+    virtual Int_t  Ix() const                                                           = 0;
     // y-coordinate
-    virtual Int_t  Iy()                                                                 = 0;
+    virtual Int_t  Iy() const                                                           = 0;
     // current sector
-    virtual Int_t  ISector()                                                            = 0;
+    virtual Int_t  ISector() const                                                      = 0;
     // calculate sector from pad coordinates
-    virtual Int_t  Sector(Int_t ix, Int_t iy)                                           = 0;
+    virtual Int_t  Sector(Int_t ix, Int_t iy) const                                     = 0;
     //
     // Signal Generation Condition during Stepping
     virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z)                           = 0;
@@ -100,6 +100,6 @@ public TObject {
     // Get the correction Function
     virtual TF1* CorrFunc(Int_t)                                                        = 0;
 	    
-    ClassDef(AliSegmentation,1) //Segmentation virtual base class 
+    ClassDef(AliSegmentation,1) //Segmentation abstract base class 
 };
 #endif

@@ -31,7 +31,7 @@ public:
                      AliDisplay(Int_t size);
                      AliDisplay(const AliDisplay &disp);
    virtual          ~AliDisplay();
-   virtual Bool_t    AllViews() {return fDrawAllViews;}
+   virtual Bool_t    AllViews() const {return fDrawAllViews;}
    virtual void      Clear(Option_t *option="");
    TSlider          *CutSlider() {return fCutSlider;}
    virtual void      ShowTrack(Int_t trackNumber); // *MENU*
@@ -50,11 +50,11 @@ public:
    virtual void      EnableDetector(const char *name); // *MENU*
    TSlider          *EtaSlider() {return fEtaSlider;}
    virtual void      ExecuteEvent(Int_t event, Int_t px, Int_t py);
-   Int_t             GetZoomMode() {return fZoomMode;}
+   Int_t             GetZoomMode() const {return fZoomMode;}
    virtual void      LoadPoints();
-   TPad             *Pad() {return fPad;}
+   TPad             *Pad() const {return fPad;}
    virtual void      Paint(Option_t *option="");
-   Float_t           PTcut() {return fPTcut;}
+   Float_t           PTcut() const {return fPTcut;}
    virtual void      SetDrawHits(Bool_t draw=kTRUE) {fDrawHits=draw;}   // *MENU*
    virtual void      SetDrawParticles(Bool_t draw=kTRUE) {fDrawParticles=draw;} // *MENU*
    virtual void      SetPTcut(Float_t ptcut=1.5); // *MENU*

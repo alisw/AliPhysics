@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.4  2000/05/16 08:30:02  fca
 Using automatic streamer for c arrays
 
@@ -33,7 +36,10 @@ Y.Schutz new classes for reconstruction
 
 //-*-C++-*-
 //_________________________________________________________________________
-// Base Class of Cluster (empty cxx needed by Root)
+// Base Class for reconstructed space points 
+// usually coming from the clusterisation algorithms
+// run on the digits
+//
 //*-- Author : Yves Schutz  SUBATECH 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -46,6 +52,8 @@ Y.Schutz new classes for reconstruction
 // --- AliRoot header files ---
 
 #include "AliRecPoint.h"
+#include "AliGeometry.h"
+#include "AliDigitNew.h"
 
 ClassImp(AliRecPoint)
 
@@ -169,7 +177,7 @@ void AliRecPoint::GetCovarianceMatrix(TMatrix & mat)
 }
 
 //____________________________________________________________________________
-void AliRecPoint::GetLocalPosition(TVector3 & pos)
+void AliRecPoint::GetLocalPosition(TVector3 & pos) const
 {
   // returns the position of the cluster in the local reference system of the sub-detector
 
@@ -187,7 +195,7 @@ AliRecPoint & AliRecPoint::operator= (const AliRecPoint &recp)
 
 
 //____________________________________________________________________________
-void AliRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat)
+void AliRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const
 {
   // returns the position of the cluster in the global reference system of ALICE
   // and the uncertainty on this position

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/09/12 14:36:17  morsch
+In gudcay(): call ForceDecay() before Decay()
+
 Revision 1.8  2000/09/06 14:56:34  morsch
 gudcay() method implemented.
 Decays are performed using  the AliDecayer interface. The pointer to the instance of AliDecayer
@@ -51,6 +54,8 @@ ReadEuclid moved from AliRun to AliModule
 #include "AliRun.h"
 #include "TGeant3.h"
 #include "AliCallf77.h" 
+#include "AliModule.h"
+#include "AliMagF.h"
 
 #ifndef WIN32
 

@@ -10,7 +10,7 @@
 
 class AliITS;
 class AliITShit;
-class TArrayI;
+#include "TArrayI.h"
 
 
 class AliITSmodule:public TObject{

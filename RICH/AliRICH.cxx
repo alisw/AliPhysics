@@ -15,6 +15,12 @@
 
 /*
   $Log$
+  Revision 1.24  2000/10/02 15:43:17  jbarbosa
+  Fixed forward declarations.
+  Fixed honeycomb density.
+  Fixed cerenkov storing.
+  New electronics.
+
   Revision 1.23  2000/09/13 10:42:14  hristov
   Minor corrections for HP, DEC and Sun; strings.h included
 
@@ -56,6 +62,9 @@
 #include <TArrayF.h>
 #include <TFile.h>
 #include <TParticle.h>
+#include <TGeometry.h>
+#include <TTree.h>
+
 #include <iostream.h>
 #include <strings.h>
 
@@ -72,6 +81,7 @@
 #include "AliRICHClusterFinder.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliMagF.h"
 #include "AliConst.h"
 #include "AliPDG.h"
 #include "AliPoints.h"

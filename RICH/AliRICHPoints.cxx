@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2000/10/02 15:50:43  jbarbosa
+  Fixed forward declarations.
+
   Revision 1.3  2000/06/12 15:26:36  jbarbosa
   Cleaned up version.
 
@@ -40,12 +43,14 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 #include <TPad.h>
+#include <TTree.h>
 #include <TView.h>
 #include <TMath.h>
 #include <TPolyMarker3D.h>
 #include <TMarker3DBox.h>
 
 #include <AliRICH.h>
+#include "TParticle.h"
 #include "AliRICHDisplay.h"
 #include "AliRICHPoints.h"
 #include "AliRun.h"

@@ -30,7 +30,7 @@ public:
   virtual  void  SetEvent(Int_t event) {fEvent = event;}
   virtual  Int_t GetEvent() const {return fEvent;}
 
-  virtual void Dump();
+  virtual void Print(const char *opt=0);
   
 protected:
   Int_t         fRun;         //Run number

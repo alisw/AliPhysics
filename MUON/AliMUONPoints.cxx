@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.3  2000/06/27 10:13:01  morsch
 Obsolete global variables removed from file.
 
@@ -55,6 +59,8 @@ Log messages included
 #include "AliMUONRawCluster.h"
 
 
+#include <TROOT.h>
+#include <TTree.h>
 #include <TPolyMarker3D.h>
 #include <TMatrix.h>
 #include <TPad.h>

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/07/13 16:19:09  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.8  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -64,6 +67,8 @@ Introduction of the Copyright and cvs Log
 #include "AliDisplay.h"
 #include "AliPoints.h"
 #include "TParticle.h"
+#include "AliGeometry.h"
+#include "TGeometry.h"
 
 static const Float_t kptcutmax  = 2;
 static const Float_t ketacutmax = 1.5;

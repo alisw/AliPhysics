@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.6  2000/10/02 15:46:38  jbarbosa
+  Fixed forward declarations.
+
   Revision 1.5  2000/06/30 16:49:34  dibari
   Different call for ring drawing.
 
@@ -57,6 +60,7 @@
 #include <TArc.h>
 #include <TTUBE.h>
 #include <TSlider.h>
+#include <TGeometry.h>
 #include <TSliderBox.h>
 #include <TGaxis.h>
 #include <TVirtualX.h>
@@ -990,7 +994,7 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
 	    fPhits->AddAt(points,npoints);
             mHit = (AliRICHHit*)pRICHhits->UncheckedAt(hit);
 	    TParticle *current = 
-		(TParticle*)(*gAlice->Particles())[mHit->fTrack];
+		(TParticle*)(*gAlice->Particles())[mHit->Track()];
 	    if (current->GetPdgCode() == 50000050) {
 		points->SetMarkerColor(kBlue);
 	    } else if (current->GetPdgCode() == 50000051) {
@@ -1000,11 +1004,11 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
 	    }
             points->SetMarkerStyle(5);
             points->SetMarkerSize(1.);
-            points->SetParticle(mHit->fTrack);
+            points->SetParticle(mHit->Track());
 	    points->SetHitIndex(hit);
             points->SetTrackIndex(track);
             points->SetDigitIndex(-1);
-            points->SetPoint(hit,mHit->fX, mHit->fY, mHit->fZ);
+            points->SetPoint(hit,mHit->X(), mHit->Y(), mHit->Z());
 	    npoints++;
 	}
     }
@@ -1050,9 +1054,9 @@ void AliRICHDisplay::LoadCerenkovs(Int_t chamber)
 	
 	for (Int_t hit=0;hit<nhits;hit++) {
             mCerenkov = (AliRICHCerenkov*)pRICHCerenkovs->UncheckedAt(hit);
-	    (*xp)(npoints)=mCerenkov->fX;
-            (*yp)(npoints)=mCerenkov->fY;
-            (*zp)(npoints)=mCerenkov->fZ;
+	    (*xp)(npoints)=mCerenkov->X();
+            (*yp)(npoints)=mCerenkov->Y();
+            (*zp)(npoints)=mCerenkov->Z();
             (*ptrk)(npoints)=Float_t(mCerenkov->GetTrack());
             (*phit)(npoints)=Float_t(hit);
             npoints++;

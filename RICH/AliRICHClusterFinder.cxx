@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.5  2000/10/02 15:45:58  jbarbosa
+  Fixed forward declarations.
+
   Revision 1.4  2000/06/12 19:01:29  morsch
   Clean-up bug in Centered() corrected.
 
@@ -1126,12 +1129,42 @@ AliRICHClusterFinder& AliRICHClusterFinder::operator=(const AliRICHClusterFinder
     
 }
 
+//______________________________________________________________________________
+void AliRICHClusterFinder::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliRICHClusterFinder.
 
-
-
-
-
-
-
-
-
+   if (R__b.IsReading()) {
+      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
+      TObject::Streamer(R__b);
+      R__b >> fSegmentation;
+      R__b >> fResponse;
+      R__b >> fRawClusters;
+      R__b >> fHitMap;
+      R__b >> fCogCorr;
+      R__b >> fDigits;
+      R__b >> fNdigits;
+      R__b >> fChamber;
+      R__b >> fNRawClusters;
+      R__b >> fNperMax;
+      R__b >> fDeclusterFlag;
+      R__b >> fClusterSize;
+      R__b >> fNPeaks;
+   } else {
+      R__b.WriteVersion(AliRICHClusterFinder::IsA());
+      TObject::Streamer(R__b);
+      R__b << fSegmentation;
+      R__b << fResponse;
+      R__b << fRawClusters;
+      R__b << fHitMap;
+      R__b << fCogCorr;
+      R__b << fDigits;
+      R__b << fNdigits;
+      R__b << fChamber;
+      R__b << fNRawClusters;
+      R__b << fNperMax;
+      R__b << fDeclusterFlag;
+      R__b << fClusterSize;
+      R__b << fNPeaks;
+   }
+}

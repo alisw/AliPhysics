@@ -14,7 +14,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
-#include <TLorentzVector.h>
+class TLorentzVector;
 
 class AliMC;
 class AliDecayer;
@@ -204,7 +204,7 @@ class AliMC : public TNamed
   AliMC(const AliMC &) {}
   AliMC & operator=(const AliMC &) {return (*this);}
 
-  ClassDef(AliMC,1)  //Geometry Interface Class
+  ClassDef(AliMC,1)  //Virtual MonteCarlo Interface
 };
 
 #endif 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/05/10 21:56:07  fca
+Avoid clashes with ITS and add supports
+
 Revision 1.7  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 
@@ -42,6 +45,7 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include "AliFMDv1.h"
 #include "AliMC.h"
+#include "AliMagF.h"
 #include "stdlib.h"
  
 ClassImp(AliFMDv1)

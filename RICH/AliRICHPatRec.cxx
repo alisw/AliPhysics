@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.5  2000/10/02 15:50:25  jbarbosa
+  Fixed forward declarations.
+
   Revision 1.4  2000/06/30 16:33:43  dibari
   Several changes (ring drawing, fiducial selection, etc.)
 
@@ -52,6 +55,7 @@
 #include <TRandom.h>
 #include <TCanvas.h>
 #include <TH2.h>
+#include <TTree.h>
 
 
 ClassImp(AliRICHPatRec)
@@ -202,9 +206,9 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
     AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1);
     if(mHit==0) return 1;
     ich = mHit->fChamber-1;
-    trackglob[0] = mHit->fX;
-    trackglob[1] = mHit->fY;
-    trackglob[2] = mHit->fZ;
+    trackglob[0] = mHit->X();
+    trackglob[1] = mHit->Y();
+    trackglob[2] = mHit->Z();
     pX = mHit->fMomX;
     pY = mHit->fMomY;
     pZ = mHit->fMomZ;

@@ -10,6 +10,7 @@
 
 #include "AliRun.h"
 #include "AliRecPoint.h"
+#include "AliGeometry.h"
 
 #include "AliTRDconst.h"
 
@@ -23,10 +24,10 @@ class AliTRDgeometry : public AliGeometry {
   virtual void    CreateGeometry(Int_t *idtmed);
   virtual Int_t   IsVersion() const = 0;
   virtual void    Init();
-  virtual Bool_t  Local2Global(Int_t d, Float_t *local, Float_t *global);
-  virtual Bool_t  Local2Global(Int_t p, Int_t c, Int_t s, Float_t *local, Float_t *global);
+  virtual Bool_t  Local2Global(Int_t d, Float_t *local, Float_t *global) const;
+  virtual Bool_t  Local2Global(Int_t p, Int_t c, Int_t s, Float_t *local, Float_t *global) const;
   virtual Bool_t  Rotate(Int_t d, Float_t *pos, Float_t *rot);
-  virtual Bool_t  RotateBack(Int_t d, Float_t *rot, Float_t *pos);
+  virtual Bool_t  RotateBack(Int_t d, Float_t *rot, Float_t *pos) const;
 
   virtual void    SetPHOShole() = 0;
   virtual void    SetRICHhole() = 0;
@@ -38,25 +39,25 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t  GetPHOShole() = 0;
   virtual Bool_t  GetRICHhole() = 0;
 
-  virtual Int_t   GetDetector(Int_t p, Int_t c, Int_t s);
-  virtual Int_t   GetPlane(Int_t d);
-  virtual Int_t   GetChamber(Int_t d);
-  virtual Int_t   GetSector(Int_t d);
+  virtual Int_t   GetDetector(Int_t p, Int_t c, Int_t s) const;
+  virtual Int_t   GetPlane(Int_t d) const;
+  virtual Int_t   GetChamber(Int_t d) const;
+  virtual Int_t   GetSector(Int_t d) const;
 
   virtual Int_t   GetRowMax(Int_t p, Int_t c, Int_t s) { return fRowMax[p][c][s]; };
   virtual Int_t   GetColMax(Int_t p)                   { return fColMax[p];       };
   virtual Int_t   GetTimeMax()                         { return fTimeMax;         };
  
-  virtual Float_t GetRow0(Int_t p, Int_t c, Int_t s)   { return fRow0[p][c][s]; };
-  virtual Float_t GetCol0(Int_t p)                     { return fCol0[p];       };
-  virtual Float_t GetTime0(Int_t p)                    { return fTime0[p];      };
+  virtual Float_t GetRow0(Int_t p, Int_t c, Int_t s)   const { return fRow0[p][c][s]; };
+  virtual Float_t GetCol0(Int_t p)                     const { return fCol0[p];       };
+  virtual Float_t GetTime0(Int_t p)                    const { return fTime0[p];      };
 
-  virtual Float_t GetRowPadSize()                      { return fRowPadSize;  };
-  virtual Float_t GetColPadSize()                      { return fColPadSize;  };
-  virtual Float_t GetTimeBinSize()                     { return fTimeBinSize; };
+  virtual Float_t GetRowPadSize()                      const { return fRowPadSize;  };
+  virtual Float_t GetColPadSize()                      const { return fColPadSize;  };
+  virtual Float_t GetTimeBinSize()                     const { return fTimeBinSize; };
 
-  virtual void    GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat); 
-  virtual void    GetGlobal(const AliRecPoint *p, TVector3 &pos);   
+  virtual void    GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat) const; 
+  virtual void    GetGlobal(const AliRecPoint *p, TVector3 &pos) const;   
 
  protected:
 

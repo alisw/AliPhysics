@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2000/07/10 20:57:39  hristov
+Update of TPC code and macros by M.Kowalski
+
 Revision 1.19.2.4  2000/06/26 07:39:42  kowal2
 Changes to obey the coding rules
 
@@ -92,6 +95,7 @@ Introduction of the Copyright and cvs Log
 #include <iostream.h>
 #include <fstream.h>
 #include "AliMC.h"
+#include "AliMagF.h"
 
 
 #include "AliTPCParamSR.h"
@@ -770,14 +774,14 @@ void AliTPC::Hits2Clusters(TFile *of)
         if (tpcHit->fQ == 0.) continue; //information about track (I.Belikov)
 	sector=tpcHit->fSector; // sector number
 	if(sector != isec) continue; //terminate iteration
-	ipart=tpcHit->fTrack;
+	ipart=tpcHit->Track();
 	particle=(TParticle*)particles->UncheckedAt(ipart);
 	pl=particle->Pz();
 	pt=particle->Pt();
 	if(pt < 1.e-9) pt=1.e-9;
 	tanth=pl/pt;
 	tanth = TMath::Abs(tanth);
-	rpad=TMath::Sqrt(tpcHit->fX*tpcHit->fX + tpcHit->fY*tpcHit->fY);
+	rpad=TMath::Sqrt(tpcHit->X()*tpcHit->X() + tpcHit->Y()*tpcHit->Y());
 	ratio=0.001*rpad/pt; // pt must be in MeV/c - historical reason
 
 	//   space-point resolutions
@@ -803,15 +807,15 @@ void AliTPC::Hits2Clusters(TFile *of)
 	// smearing --> rotate to the 1 (13) or to the 25 (49) sector,
 	// then the inaccuracy in a X-Y plane is only along Y (pad row)!
 	//
-        Float_t xprim= tpcHit->fX*cph + tpcHit->fY*sph;
-	Float_t yprim=-tpcHit->fX*sph + tpcHit->fY*cph;
+        Float_t xprim= tpcHit->X()*cph + tpcHit->Y()*sph;
+	Float_t yprim=-tpcHit->X()*sph + tpcHit->Y()*cph;
 	xyz[0]=gRandom->Gaus(yprim,TMath::Sqrt(sigmaRphi));   // y
           Float_t alpha=(isec < fTPCParam->GetNInnerSector()) ?
 	  fTPCParam->GetInnerAngle() : fTPCParam->GetOuterAngle();
           Float_t ymax=xprim*TMath::Tan(0.5*alpha);
           if (TMath::Abs(xyz[0])>ymax) xyz[0]=yprim; 
-	xyz[1]=gRandom->Gaus(tpcHit->fZ,TMath::Sqrt(sigmaZ)); // z
-          if (TMath::Abs(xyz[1])>fTPCParam->GetZLength()) xyz[1]=tpcHit->fZ; 
+	xyz[1]=gRandom->Gaus(tpcHit->Z(),TMath::Sqrt(sigmaZ)); // z
+          if (TMath::Abs(xyz[1])>fTPCParam->GetZLength()) xyz[1]=tpcHit->Z(); 
 	xyz[2]=tpcHit->fQ;                                     // q
 	xyz[3]=sigmaRphi;                                     // fSigmaY2
 	xyz[4]=sigmaZ;                                        // fSigmaZ2
@@ -819,7 +823,7 @@ void AliTPC::Hits2Clusters(TFile *of)
         AliTPCClustersRow *clrow=carray.GetRow(sector,tpcHit->fPadRow);
         if (!clrow) clrow=carray.CreateRow(sector,tpcHit->fPadRow);	
 
-        Int_t tracks[3]={tpcHit->fTrack, -1, -1};
+        Int_t tracks[3]={tpcHit->Track(), -1, -1};
 	AliTPCcluster cluster(xyz,tracks);
 
         clrow->InsertCluster(&cluster); nclusters++;
@@ -906,12 +910,12 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
       if (tpcHit==0) continue;
       sector=tpcHit->fSector; // sector number
       if(sector != isec) continue; 
-      ipart=tpcHit->fTrack;
+      ipart=tpcHit->Track();
       if (ipart<npart) particle=(TParticle*)particles->UncheckedAt(ipart);
       
       //find row number
 
-      Float_t  x[3]={tpcHit->fX,tpcHit->fY,tpcHit->fZ};
+      Float_t  x[3]={tpcHit->X(),tpcHit->Y(),tpcHit->Z()};
       Int_t    index[3]={1,isec,0};
       Int_t    currentrow = fTPCParam->GetPadRow(x,index) ;	
       if (currentrow<0) continue;
@@ -1435,7 +1439,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       Int_t sector=tpcHit->fSector; // sector number
       if(sector != isec) continue; 
 
-	currentTrack = tpcHit->fTrack; // track number
+	currentTrack = tpcHit->Track(); // track number
         if(currentTrack != previousTrack){
                           
            // store already filled fTrack
@@ -1469,7 +1473,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
        //---------------------------------------------------
 
 
-        Float_t time = 1.e6*(fTPCParam->GetZLength()-TMath::Abs(tpcHit->fZ))
+        Float_t time = 1.e6*(fTPCParam->GetZLength()-TMath::Abs(tpcHit->Z()))
                                                         /fTPCParam->GetDriftV(); 
 	// in microseconds!	
 	Float_t attProb = fTPCParam->GetAttCoef()*
@@ -1483,9 +1487,9 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
         for(Int_t nel=0;nel<qI;nel++){
           // skip if electron lost due to the attachment
           if((gRandom->Rndm(0)) < attProb) continue; // electron lost!
-	  xyz[0]=tpcHit->fX;
-	  xyz[1]=tpcHit->fY;
-	  xyz[2]=tpcHit->fZ;	  
+	  xyz[0]=tpcHit->X();
+	  xyz[1]=tpcHit->Y();
+	  xyz[2]=tpcHit->Z();	  
 	  xyz[3]= (Float_t) (-gasgain*TMath::Log(gRandom->Rndm()));
 	  index[0]=1;
 	  

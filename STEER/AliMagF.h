@@ -6,7 +6,6 @@
 /* $Id$ */
 
 #include "TNamed.h"
-#include "TVector.h"
 
 enum Field_t {kUndef=1, kConst=1, kConMesh=2, kDipoMap=3};
 
@@ -18,7 +17,7 @@ public:
 	  const Float_t factor, const Float_t fmax);
   virtual ~AliMagF() {}
   virtual void Field(Float_t *x, Float_t *b);
-  virtual Int_t Type() {return fType;}
+  virtual Int_t Type() const {return fType;}
   virtual Float_t Max() const {return fMax;}
   virtual Int_t Map() const {return fMap;}
   virtual Int_t Integ() const {return fInteg;}

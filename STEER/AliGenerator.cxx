@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/07/12 08:56:25  fca
+Coding convention correction and warning removal
+
 Revision 1.6  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -154,4 +157,101 @@ void AliGenerator::Init()
   //
 }
 
+//_______________________________________________________________________
+void AliGenerator::SetOrigin(Float_t ox, Float_t oy, Float_t oz)
+{
+  //
+  // Set the vertex for the generated tracks
+  //
+  fOrigin[0]=ox;
+  fOrigin[1]=oy;
+  fOrigin[2]=oz;
+}
 
+//_______________________________________________________________________
+void AliGenerator::SetOrigin(const TLorentzVector &o)
+{
+  //
+  // Set the vertex for the generated tracks
+  //
+  fOrigin[0]=o[0];
+  fOrigin[1]=o[1];
+  fOrigin[2]=o[2];
+}
+
+//_______________________________________________________________________
+void AliGenerator::SetSigma(Float_t sx, Float_t sy, Float_t sz)
+{
+  //
+  // Set the spread of the vertex
+  //
+  fOsigma[0]=sx;
+  fOsigma[1]=sy;
+  fOsigma[2]=sz;
+}
+
+//_______________________________________________________________________
+void AliGenerator::SetMomentumRange(Float_t pmin, Float_t pmax)
+{
+  //
+  // Set the momentum range for the generated particles
+  //
+  fPMin = pmin;
+  fPMax = pmax;
+  SetBit(kMomentumRange);
+}
+
+//_______________________________________________________________________
+void AliGenerator::SetPtRange(Float_t ptmin, Float_t ptmax)
+{
+  //
+  // Set the Pt range for the generated particles
+  //
+  fPtMin = ptmin;
+  fPtMax = ptmax;
+  SetBit(kPtRange);
+}
+
+//_______________________________________________________________________
+void AliGenerator::SetPhiRange(Float_t phimin, Float_t phimax)
+{
+  //
+  // Set the Phi range for the generated particles
+  //
+  fPhiMin = TMath::Pi()*phimin/180;
+  fPhiMax = TMath::Pi()*phimax/180; SetBit(kPhiRange);
+}
+
+//_______________________________________________________________________
+void AliGenerator::SetYRange(Float_t ymin=-100, Float_t ymax=100)
+{
+  //
+  // Set the Rapidity range for the generated particles
+  //
+  fYMin=ymin;
+  fYMax=ymax;
+  SetBit(kYRange);
+}
+
+//_______________________________________________________________________
+void AliGenerator::SetVRange(Float_t vxmin, Float_t vxmax,
+			     Float_t vymin, Float_t vymax,
+			     Float_t vzmin, Float_t vzmax)
+{
+  //
+  // Set the vertex range for the generated particles
+  //
+  fVMin[0]=vxmin; fVMin[1]=vymin; fVMin[2]=vzmin;
+  fVMax[0]=vxmax; fVMax[1]=vymax; fVMax[2]=vzmax;
+  SetBit(kVertexRange);
+}
+
+//_______________________________________________________________________
+void AliGenerator::SetThetaRange(Float_t thetamin, Float_t thetamax)
+{
+  //
+  // Set the theta range for the generated particles
+  //
+  fThetaMin = TMath::Pi()*thetamin/180;
+  fThetaMax = TMath::Pi()*thetamax/180; SetBit(kThetaRange);
+}

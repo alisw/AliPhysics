@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2000/09/12 14:14:55  morsch
+Call fDecayer->ForceDecay() at the beginning of Generate().
+
 Revision 1.21  2000/09/08 15:39:01  morsch
 Handle the case fForceDecay=all during the generation, i.e. select all secondaries.
 
@@ -59,6 +62,7 @@ Introduction of the Copyright and cvs Log
 #include "AliDecayerPythia.h"
 #include "AliGenMUONlib.h"
 #include "AliRun.h"
+#include "AliMC.h"
 #include "AliPythia.h"
 #include <TParticle.h>
 #include <TParticlePDG.h>

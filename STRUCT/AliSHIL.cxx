@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/06/11 12:38:40  morsch
+Coding rule violations corrected
+
 Revision 1.8  2000/02/23 13:48:33  morsch
 Detailed composition of insulation material.
 
@@ -42,6 +45,7 @@ Introduction of the Copyright and cvs Log
 
 #include "AliSHIL.h"
 #include "AliRun.h"
+#include "AliMagF.h"
 #include "AliConst.h"
 
 ClassImp(AliSHIL)

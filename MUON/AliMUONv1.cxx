@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/02 17:20:45  egangler
+Cleaning of the code (continued ) :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.5  2000/06/28 15:16:35  morsch
 (1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
 to allow development of slat-muon chamber simulation and reconstruction code in the MUON
@@ -58,6 +64,7 @@ Log messages included.
 #include "AliMUONv1.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliMagF.h"
 #include "AliCallf77.h"
 #include "AliConst.h" 
 #include "AliMUONChamber.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.5  2000/06/09 19:55:18  morsch
 Introduce new class AliMagFDM - Galina Chabratova
 
@@ -30,7 +33,6 @@ Introduction of the Copyright and cvs Log
 
 
 #include "AliMagF.h"
-#include "TSystem.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/07/12 08:56:25  fca
+Coding convention correction and warning removal
+
 Revision 1.5  1999/09/29 09:24:29  fca
 Introduction of the Copyright and cvs Log
 
@@ -37,14 +40,16 @@ Introduction of the Copyright and cvs Log
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+#include <TClass.h>
+#include <TNode.h>
+#include <TRandom.h>
+#include <TTree.h>
+#include "TBrowser.h"
+
 #include "AliDetector.h"
 #include "AliRun.h"
 #include "AliHit.h"
 #include "AliPoints.h"
-#include <TClass.h>
-#include <TNode.h>
-#include <TRandom.h>
-
 // Static variables for the hit iterator routines
 static Int_t sMaxIterHit=0;
 static Int_t sCurIterHit=0;
@@ -219,9 +224,9 @@ void AliDetector::LoadPoints(Int_t)
     } else {
       fp = coor[trk];
     }
-    fp[3*ntrk[trk]  ] = ahit->fX;
-    fp[3*ntrk[trk]+1] = ahit->fY;
-    fp[3*ntrk[trk]+2] = ahit->fZ;
+    fp[3*ntrk[trk]  ] = ahit->X();
+    fp[3*ntrk[trk]+1] = ahit->Y();
+    fp[3*ntrk[trk]+2] = ahit->Z();
     ntrk[trk]++;
   }
   //

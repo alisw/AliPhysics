@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/07/13 16:19:09  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.2  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -312,7 +315,6 @@ if ((kfdZbg/100<xL3[2] && xL3[2]<zCmin && r0<rPmax) || ((zCmin<=xL3[2] && xL3[2]
 //_________________________________________
 
 void AliMagFDM::FZ(Double_t *u, Float_t  *Ar, Float_t *du,Int_t *ki,Int_t *kf,Double_t *a1,Double_t *a2 ,Int_t *nu)
-  
 {
   //
   // Z component of the field

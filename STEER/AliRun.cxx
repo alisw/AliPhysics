@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.41  2000/07/13 16:19:09  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.40  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -106,6 +109,10 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+ 
 #include <TFile.h>
 #include <TRandom.h>
 #include <TBRIK.h> 
@@ -113,6 +120,10 @@ Introduction of the Copyright and cvs Log
 #include <TCint.h> 
 #include <TSystem.h>
 #include <TObjectTable.h>
+#include <TTree.h>
+#include <TGeometry.h>
+#include <TROOT.h>
+#include "TBrowser.h"
 
 #include "TParticle.h"
 #include "AliRun.h"
@@ -122,11 +133,10 @@ Introduction of the Copyright and cvs Log
 #include "AliMagFC.h"
 #include "AliMagFCM.h"
 #include "AliMagFDM.h"
+#include "AliHit.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
- 
+#include "AliDetector.h"
+
 AliRun *gAlice;
 
 static AliHeader *gAliHeader;
@@ -369,7 +379,7 @@ Int_t AliRun::DistancetoPrimitive(Int_t, Int_t)
 }
 
 //_____________________________________________________________________________
-void AliRun::DumpPart (Int_t i)
+void AliRun::DumpPart (Int_t i) const
 {
   //
   // Dumps particle i in the stack
@@ -379,7 +389,7 @@ void AliRun::DumpPart (Int_t i)
 }
 
 //_____________________________________________________________________________
-void AliRun::DumpPStack ()
+void AliRun::DumpPStack () const
 {
   //
   // Dumps the particle stack
@@ -672,7 +682,7 @@ void AliRun::EnergySummary()
 }
 
 //_____________________________________________________________________________
-AliModule *AliRun::GetModule(const char *name)
+AliModule *AliRun::GetModule(const char *name) const
 {
   //
   // Return pointer to detector from name
@@ -681,7 +691,7 @@ AliModule *AliRun::GetModule(const char *name)
 }
  
 //_____________________________________________________________________________
-AliDetector *AliRun::GetDetector(const char *name)
+AliDetector *AliRun::GetDetector(const char *name) const
 {
   //
   // Return pointer to detector from name
@@ -690,7 +700,7 @@ AliDetector *AliRun::GetDetector(const char *name)
 }
  
 //_____________________________________________________________________________
-Int_t AliRun::GetModuleID(const char *name)
+Int_t AliRun::GetModuleID(const char *name) const
 {
   //
   // Return galice internal detector identifier from name
@@ -843,7 +853,7 @@ void AliRun::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
 }
 
 //_____________________________________________________________________________
-Int_t AliRun::GetPrimary(Int_t track)
+Int_t AliRun::GetPrimary(Int_t track) const
 {
   //
   // return number of primary that has generated track
@@ -1456,6 +1466,16 @@ void AliRun::RunLego(const char *setup,Int_t ntheta,Float_t themin,
 
   // Restore current generator
   SetGenerator(gen);
+}
+
+//_____________________________________________________________________________
+void AliRun::SetConfigFunction(const char * config) 
+{
+  //
+  // Set the signature of the function contained in Config.C to configure
+  // the run
+  //
+  fConfigFunction=config;
 }
 
 //_____________________________________________________________________________

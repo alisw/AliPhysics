@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/09 20:37:51  morsch
+All coding rule violations except RS3 corrected
+
 Revision 1.1  2000/02/23 16:25:14  morsch
 First commit of this file
 
@@ -22,6 +25,7 @@ First commit of this file
 
 #include "AliGenDoubleScan.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
  ClassImp(AliGenDoubleScan)
     

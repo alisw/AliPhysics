@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/07/11 18:24:55  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.1  2000/06/09 20:22:58  morsch
 Same class as previously in AliSimpleGen.cxx
 All coding rule violations except RS3 corrected (AM)
@@ -60,6 +63,7 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliPDG.h"
+#include "AliMC.h"
 
 ClassImp(AliGenBox)
 

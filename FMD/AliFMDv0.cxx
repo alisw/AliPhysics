@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  1999/09/29 09:24:14  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,6 +42,8 @@ $Log$
 #include "AliRun.h"
 #include "AliFMDv0.h"
 #include "AliMC.h"
+#include "AliMagF.h"
+
 #include "stdlib.h"
  
 ClassImp(AliFMDv0)

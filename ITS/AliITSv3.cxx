@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/07/10 16:07:19  fca
+Release version of ITS code
+
 Revision 1.11.4.4  2000/05/19 10:09:51  nilsen
 fix for bug with HP and Sun unix + fix for event display in ITS-working branch
 
@@ -77,6 +80,7 @@ Introduction of the Copyright and cvs Log
 #include <TClonesArray.h>
 
 #include "AliMC.h"
+#include "AliMagF.h"
 #include "AliConst.h"
 
 #include "AliITShit.h"

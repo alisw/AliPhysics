@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.7  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -62,6 +65,8 @@ Add new TRD classes
 #include <TMath.h>
 #include <TVector.h>
 #include <TRandom.h>
+#include <TROOT.h>
+#include <TTree.h>
 
 #include "AliTRD.h"
 #include "AliTRDdigitizer.h"
@@ -457,11 +462,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
             AliTRDhit *hit = (AliTRDhit *) fTRD->Hits()->UncheckedAt(iHit);
             Float_t pos[3];
-                    pos[0]   = hit->fX;
-                    pos[1]   = hit->fY;
-                    pos[2]   = hit->fZ;
+                    pos[0]   = hit->X();
+                    pos[1]   = hit->Y();
+                    pos[2]   = hit->Z();
             Float_t q        = hit->GetCharge();
-            Int_t   track    = hit->fTrack;
+            Int_t   track    = hit->Track();
             Int_t   detector = hit->GetDetector();
             Int_t   plane    = fGeo->GetPlane(detector);
             Int_t   sector   = fGeo->GetSector(detector);

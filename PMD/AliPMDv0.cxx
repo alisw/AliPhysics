@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  1999/10/06 13:05:52  fca
+Temporary fix to keep the code working waiting for Y.Viyogi
+
 Revision 1.6  1999/09/29 09:24:28  fca
 Introduction of the Copyright and cvs Log
 
@@ -35,6 +38,7 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include "AliMC.h" 
 #include "AliConst.h" 
+#include "AliMagF.h"
  
 static Float_t smod2[3], smod3[3], smod4[3];
 static Int_t maxbox, kdet;

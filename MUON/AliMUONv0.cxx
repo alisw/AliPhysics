@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/06/27 07:31:07  morsch
+fChambers = 0; deleted from constructor.
+
 Revision 1.10  2000/06/26 14:02:38  morsch
 Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
 
@@ -57,6 +60,7 @@ Gammas and neutrons are also scored in the stepmanager
 #include "AliMUONChamber.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliMagF.h"
 #include "AliMUONHit.h"
 #include "AliMUONPadHit.h"
 #include "AliCallf77.h"

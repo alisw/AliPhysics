@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.6  2000/09/11 13:23:37  morsch
+Write last seed to file (fortran lun 50) and reed back from same lun using calls to
+luget_hijing and luset_hijing.
+
 Revision 1.5  2000/09/07 16:55:40  morsch
 fHijing->Initialize(); after change of parameters. (Dmitri Yurevitch Peressounko)
 
@@ -36,6 +40,7 @@ AliGenerator interface class to HIJING using THijing (test version)
 #include "AliGenHijing.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 #include <TArrayI.h>
 #include <TParticle.h>

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/07/13 16:41:29  fca
+New START corrected for coding conventions
+
 Revision 1.8  2000/03/27 17:24:25  alla
 Modifing geometry
 
@@ -271,8 +274,8 @@ void AliSTART::Hit2digit(Int_t evnum)
 	startHit   = (AliSTARThit*)fHits->UncheckedAt(hit);
 	pmt=startHit->fPmt;
 	e=startHit->fEtot;
-	x=startHit->fX;
-	y=startHit->fY;
+	x=startHit->X();
+	y=startHit->Y();
 	volume = startHit->fVolume;
 	if(volume==1){
 	  timeright = startHit->fTime;

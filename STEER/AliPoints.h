@@ -6,8 +6,8 @@
 /* $Id$ */
 
 #include "TPolyMarker3D.h"
-#include "AliDetector.h"
-#include "TParticle.h"
+class AliDetector;
+class TParticle;
 
 class AliPoints : public TPolyMarker3D {
 public:
@@ -18,8 +18,8 @@ public:
   void          Copy(AliPoints &pts) const;
   virtual Int_t         DistancetoPrimitive(Int_t px, Int_t py);
   virtual void          ExecuteEvent(Int_t event, Int_t px, Int_t py);
-  AliDetector          *GetDetector() {return fDetector;}
-  Int_t                 GetIndex() {return fIndex;}
+  AliDetector          *GetDetector() const {return fDetector;}
+  Int_t                 GetIndex() const {return fIndex;}
   TParticle            *GetParticle() const;
   virtual const Text_t *GetName() const;
   virtual void          InspectParticle(); // *MENU*

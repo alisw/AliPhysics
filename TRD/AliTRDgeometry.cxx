@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.3  2000/06/07 16:25:37  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -37,6 +40,7 @@ Add new TRD classes
 
 #include "AliTRDgeometry.h"
 #include "AliTRDrecPoint.h"
+#include "AliMC.h"
 
 ClassImp(AliTRDgeometry)
 
@@ -290,7 +294,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::Local2Global(Int_t idet, Float_t *local, Float_t *global)
+Bool_t AliTRDgeometry::Local2Global(Int_t idet, Float_t *local, Float_t *global) const
 {
   //
   // Converts local pad-coordinates (row,col,time) into 
@@ -307,7 +311,7 @@ Bool_t AliTRDgeometry::Local2Global(Int_t idet, Float_t *local, Float_t *global)
  
 //_____________________________________________________________________________
 Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
-                                  , Float_t *local, Float_t *global)
+                                  , Float_t *local, Float_t *global) const
 {
   //
   // Converts local pad-coordinates (row,col,time) into 
@@ -358,7 +362,7 @@ Bool_t AliTRDgeometry::Rotate(Int_t d, Float_t *pos, Float_t *rot)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::RotateBack(Int_t d, Float_t *rot, Float_t *pos)
+Bool_t AliTRDgeometry::RotateBack(Int_t d, Float_t *rot, Float_t *pos) const
 {
   //
   // Rotates a chambers from the position of sector 0 into its
@@ -379,7 +383,7 @@ Bool_t AliTRDgeometry::RotateBack(Int_t d, Float_t *rot, Float_t *pos)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetDetector(Int_t p, Int_t c, Int_t s)
+Int_t AliTRDgeometry::GetDetector(Int_t p, Int_t c, Int_t s) const
 {
   //
   // Convert plane / chamber / sector into detector number
@@ -390,7 +394,7 @@ Int_t AliTRDgeometry::GetDetector(Int_t p, Int_t c, Int_t s)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetPlane(Int_t d)
+Int_t AliTRDgeometry::GetPlane(Int_t d) const
 {
   //
   // Reconstruct the plane number from the detector number
@@ -401,7 +405,7 @@ Int_t AliTRDgeometry::GetPlane(Int_t d)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetChamber(Int_t d)
+Int_t AliTRDgeometry::GetChamber(Int_t d) const
 {
   //
   // Reconstruct the chamber number from the detector number
@@ -412,7 +416,7 @@ Int_t AliTRDgeometry::GetChamber(Int_t d)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetSector(Int_t d)
+Int_t AliTRDgeometry::GetSector(Int_t d) const
 {
   //
   // Reconstruct the sector number from the detector number
@@ -423,7 +427,7 @@ Int_t AliTRDgeometry::GetSector(Int_t d)
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat)
+void AliTRDgeometry::GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat) const
 {
   // 
   // Returns the global coordinate and error matrix of a AliTRDrecPoint
@@ -435,7 +439,7 @@ void AliTRDgeometry::GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::GetGlobal(const AliRecPoint *p, TVector3 &pos)
+void AliTRDgeometry::GetGlobal(const AliRecPoint *p, TVector3 &pos) const
 {
   // 
   // Returns the global coordinate and error matrix of a AliTRDrecPoint

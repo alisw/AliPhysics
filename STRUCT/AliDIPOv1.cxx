@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/06/11 12:33:34  morsch
+Coding rule violations corrected
+
 Revision 1.6  1999/09/29 09:24:30  fca
 Introduction of the Copyright and cvs Log
 
@@ -42,6 +45,8 @@ Introduction of the Copyright and cvs Log
 
 #include "AliDIPOv1.h"
 #include "AliRun.h"
+#include "AliMC.h"
+#include "AliMagF.h"
  
 ClassImp(AliDIPOv1)
  

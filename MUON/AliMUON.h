@@ -24,7 +24,7 @@ class AliMUONRawCluster;
 class AliMUONClusterFinderVS;
 class AliMUONReconstHit;
 class TVector;
-class TObjArray;
+#include "TObjArray.h"
 class TFile;
 class TTree;
 

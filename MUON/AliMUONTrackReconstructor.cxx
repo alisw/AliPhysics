@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:49  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.7  2000/06/09 22:06:29  morsch
 Some coding rule violations corrected. Will soon be obsolete.
 
@@ -735,12 +738,12 @@ void trackf_read_fit(Int_t &ievr, Int_t &nev, Int_t &nhittot1, Int_t *izch, Doub
 	  {
 	      if (mHit->fChamber > 10) continue;
 	      TClonesArray *fPartArray = gAlice->Particles();
-	      Int_t ftrack = mHit->fTrack;
+	      Int_t ftrack = mHit->Track();
 	      Int_t id = ((TParticle*) fPartArray->UncheckedAt(ftrack))->GetPdgCode();
 	      
 	      if (id==kMuonPlus||id==kMuonMinus) {
-		  xgeant[nhittot1]   = mHit->fY;
-		  ygeant[nhittot1]   = mHit->fX;
+		  xgeant[nhittot1]   = mHit->Y();
+		  ygeant[nhittot1]   = mHit->X();
 		  izch[nhittot1]     = mHit->fChamber;
 //		  printf("id %d ch %d x %f y %f\n",id,izch[nhittot1],xgeant[nhittot1],ygeant[nhittot1]);  
 		  nhittot1++;
@@ -792,7 +795,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 		if (mHit->fChamber > 10) continue;
 		TClonesArray *fPartArray = gAlice->Particles();
 		TParticle *particle;
-		Int_t ftrack = mHit->fTrack;
+		Int_t ftrack = mHit->Track();
 		Int_t id = ((TParticle*) fPartArray->UncheckedAt(ftrack))->GetPdgCode();
 
 //		if (id==kMuonPlus||id==kMuonMinus) {
@@ -800,8 +803,8 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 		    // inversion de x et y car le champ est inverse dans le programme tracking
 		    xtrg[maxidg]   = 0;       
 		    ytrg[maxidg]   = 0;       
-		    xgeant[maxidg]   = mHit->fY;             // x-pos of hit
-		    ygeant[maxidg]   = mHit->fX;             // y-pos of hit
+		    xgeant[maxidg]   = mHit->Y();             // x-pos of hit
+		    ygeant[maxidg]   = mHit->X();             // y-pos of hit
 		    clsize1[maxidg]   = 0;     // cluster size on 1-st cathode
 		    clsize2[maxidg]   = 0;     // cluster size on 2-nd cathode
 		    cx[maxidg]     = mHit->fCyHit;            // Px/P of hit
@@ -891,8 +894,8 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	    // inversion de x et y car le champ est inverse dans le programme tracking !!!!
 	    xtrg[maxidg]   = 0;                    // only for reconstructed point
 	    ytrg[maxidg]   = 0;                    // only for reconstructed point
-	    xgeant[maxidg]   = mHit->fY;           // x-pos of hit
-	    ygeant[maxidg]   = mHit->fX;           // y-pos of hit
+	    xgeant[maxidg]   = mHit->Y();           // x-pos of hit
+	    ygeant[maxidg]   = mHit->X();           // y-pos of hit
 	    clsize1[maxidg]   = 0;           // cluster size on 1-st cathode
 	    clsize2[maxidg]   = 0;           // cluster size on 2-nd cathode
 	    cx[maxidg]     = mHit->fCyHit;         // Px/P of hit
@@ -901,7 +904,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	    izch[maxidg]   = mHit->fChamber;       // chamber number
 	    ptotg[maxidg]  = mHit->fPTot;          // P of hit 
 	    
-	    Int_t ftrack = mHit->fTrack;
+	    Int_t ftrack = mHit->Track();
 	    Int_t id1  = ftrack;                   // track number 
 	    Int_t idum = track+1;
 	    
@@ -1001,13 +1004,13 @@ void trackf_read_spoint(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *
 		    AliMUONHit* mHit;
 		    mHit=(AliMUONHit*) (pMUONhits->UncheckedAt(ihit));
 		    Int_t id = (Int_t) mHit->fParticle;
-		    xgeant[mpoi] = mHit->fY;          
-		    ygeant[mpoi] = mHit->fX; 
+		    xgeant[mpoi] = mHit->Y();          
+		    ygeant[mpoi] = mHit->X(); 
 		    if (id == kMuonPlus)  itypg[mpoi]=5;
 		    if (id == kMuonMinus) itypg[mpoi]=6;
 		    TParticle *particle;
 		    particle = (TParticle*) 
-			(fPartArray->UncheckedAt(mHit->fTrack));
+			(fPartArray->UncheckedAt(mHit->Track()));
 		    TParticle* particleM=(TParticle*) 
 			(fPartArray->UncheckedAt(particle->GetFirstMother()));
 		    Int_t iparent=particleM->GetPdgCode();

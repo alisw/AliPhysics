@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/01/19 17:17:06  fca
+Introducing a list of lists of hits -- more hits allowed for detector now
+
 Revision 1.5  1999/09/29 09:24:27  fca
 Introduction of the Copyright and cvs Log
 
@@ -45,6 +48,8 @@ Introduction of the Copyright and cvs Log
 
 #include <TBRIK.h>
 #include <TNode.h>
+#include <TGeometry.h>
+
 #include "AliPMD.h"
 #include "AliRun.h"
 #include "AliMC.h" 

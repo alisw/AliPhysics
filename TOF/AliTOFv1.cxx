@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/06/06 07:52:09  vicinanz
+NodeName array dimension enlarged
+
 Revision 1.16  2000/05/10 16:52:18  vicinanz
 New TOF version with holes for PHOS/RICH
 
@@ -76,9 +79,12 @@ Introduction of the Copyright and cvs Log
 
 #include "AliTOFv1.h"
 #include "TBRIK.h"
+#include "TGeometry.h"
 #include "TNode.h"
 #include "TObject.h"
 #include "AliRun.h"
+#include "AliMC.h"
+#include "AliMagF.h"
 #include "AliConst.h"
 
  
