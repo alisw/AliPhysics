@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/12/03 09:03:06  hristov
+Changes needed on Itanium (F.Carminati)
+
 Revision 1.12  2002/10/14 14:55:33  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -85,8 +88,6 @@ int xargc=0;
   extern "C" int __mb_cur_max=0; 
 #endif 
 
-//int gcbank_[4000000];
-
 //_____________________________________________________________________________
 int main(int argc, char **argv)
 {
@@ -109,7 +110,7 @@ int main(int argc, char **argv)
     
   // Start interactive geant
   
-  TRint *theApp = new TRint("aliroot", &argc, argv, 0, 0);
+  TRint *theApp = new TRint("aliroot", &argc, argv);
   
   // --- Start the event loop ---
   theApp->Run();
