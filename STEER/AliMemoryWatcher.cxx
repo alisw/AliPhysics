@@ -44,6 +44,7 @@
 //*-- Author: Laurent Aphecetche(SUBATECH)
 // --- std system ---
 class assert ; 
+#include <malloc.h>
 // --- AliRoot header files ---
 #include "AliMemoryWatcher.h"
 // --- ROOT system ---
@@ -59,6 +60,7 @@ AliMemoryWatcher::AliMemoryWatcher(UInt_t maxsize)
 {
   //ctor
   fMAXSIZE=maxsize;
+  fUseMallinfo = true;
   fPID = gSystem->GetPid();
   sprintf(fCmd,"ps -h -p %d -o vsize,rssize",fPID);
   fX = new Int_t[fMAXSIZE];
@@ -75,6 +77,7 @@ AliMemoryWatcher::AliMemoryWatcher(const AliMemoryWatcher& mw):
 {
   //copy ctor
   fMAXSIZE = mw.fMAXSIZE ;
+  fUseMallinfo = mw.fUseMallinfo;
   fPID = mw.fPID ; 
   strcpy(fCmd, mw.fCmd) ; 
   fX = new Int_t[fMAXSIZE];
@@ -106,20 +109,30 @@ void AliMemoryWatcher::Watch(Int_t x)
       fTimer->Start(true);
       fTimer->Stop();
     }
-    static Int_t vsize, rssize;
-    static FILE* pipe = 0;
-    pipe = popen(fCmd,"r");
-    if ( pipe ) {
-    
-      fscanf(pipe,"%d %d",&vsize,&rssize);
-      
+    if ( fUseMallinfo ) {
+      static struct mallinfo meminfo;
+      meminfo = mallinfo();
       fX[fSize] = x ;
-      fVSIZE[fSize] = vsize ;
-      fRSSIZE[fSize] = rssize ;
+      fVSIZE[fSize] = (meminfo.hblkhd + meminfo.uordblks) / 1024;
+      fRSSIZE[fSize] =  meminfo.uordblks / 1024;
       fTIME[fSize] = fTimer->CpuTime();
       fSize++;
+    } else {
+      static Int_t vsize, rssize;
+      static FILE* pipe = 0;
+      pipe = popen(fCmd,"r");
+      if ( pipe ) {
+    
+	fscanf(pipe,"%d %d",&vsize,&rssize);
+      
+	fX[fSize] = x ;
+	fVSIZE[fSize] = vsize ;
+	fRSSIZE[fSize] = rssize ;
+	fTIME[fSize] = fTimer->CpuTime();
+	fSize++;
+      }
+      assert(pclose(pipe)!=-1);
     }
-    assert(pclose(pipe)!=-1);
     fTimer->Start(true);
   }
   else {

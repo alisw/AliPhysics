@@ -50,6 +50,7 @@ public:
   AliMemoryWatcher(UInt_t maxsize=10000);
   AliMemoryWatcher(const AliMemoryWatcher& mw);
   ~AliMemoryWatcher() ;
+  void SetUseMallinfo(Bool_t use) { fUseMallinfo = use; }
   void Watch(Int_t x);
   
   UInt_t Size(void) const { return fSize; }
@@ -64,6 +65,7 @@ public:
   Int_t       Write(const char *name=0, Int_t option=0, Int_t bufsize=0);
   AliMemoryWatcher & operator = (const AliMemoryWatcher &) { return *this; } 
 private:
+  Bool_t fUseMallinfo; // use mallinfo function instead of ps command
   Int_t fPID;          // PID of the process to watch
   char fCmd[1024];     // the command sent to the system to retrieve things ("ps .....")
   UInt_t fMAXSIZE;     // maximum size of arrays where the informationis stored
