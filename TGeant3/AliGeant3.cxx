@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/07/19 09:10:23  morsch
+In decays with AliDecayer put long-lived particles undecayed on the stack.
+
 Revision 1.17  2001/06/15 09:31:23  morsch
 In gudcay: write only first generation decay products to stack to respect the possibility of secondary, tertiary, ... vertices during tracking.
 
@@ -466,7 +469,7 @@ void gudcay()
     Int_t i,j;
 
 // Array to flag deselected particles
-    Int_t* pFlag = new Int_t[np];
+    Int_t pFlag[200];
     for (i=0; i<np; i++) pFlag[i]=0;
 // Particle loop
     for (i=1; i < np; i++) 
@@ -520,8 +523,6 @@ void gudcay()
 // increase stack counter
 	(geant3->Gcking()->ngkine)=index+1;
     }
-//
-    if (pFlag) delete[] pFlag;
 }
 
 //______________________________________________________________________
