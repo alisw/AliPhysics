@@ -31,7 +31,6 @@ AliL3ConfMapper::AliL3ConfMapper()
   fVertex = NULL;
   fTrack = NULL;
   fHit = NULL;
-  fHits = NULL;
   fVolume = NULL;
   fRow = NULL;
   fBench = (Bool_t)true;
@@ -49,9 +48,6 @@ AliL3ConfMapper::~AliL3ConfMapper()
   }
   if(fRow) {
     delete [] fRow;
-  }
-  if(fHits) {
-    delete [] (Byte_t *)fHits;
   }
   if(fHit) {
     delete [] fHit;
@@ -76,10 +72,6 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
       delete [] fHit;
     }
   
-  if(fHits) {
-    delete [] (Byte_t *)fHits;
-  }
-
   if(fTrack) 
     {
       delete fTrack;
@@ -116,14 +108,8 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   
   Int_t max_num_of_tracks = 3000;
   Int_t max_num_of_hits = 90000;
-//  Int_t max_num_of_hits = 20000;
-//  Int_t max_num_of_tracks = 2000;
 
-  fHits= (AliL3ConfMapPoint **) new Byte_t[sizeof(AliL3ConfMapPoint *)*max_num_of_hits]; 
   fHit = new AliL3ConfMapPoint[max_num_of_hits];
-  for(Int_t i=0;i<max_num_of_hits;i++){
-    fHits[i]=&(fHit[i]); 
-  }
   fTrack = new AliL3TrackArray("AliL3ConfMapTrack",max_num_of_tracks);
   
   nTracks=0;
@@ -137,31 +123,9 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
 
 Bool_t AliL3ConfMapper::ReadHits(UInt_t count, AliL3SpacePointData* hits )
 {
-  AliL3ConfMapPoint *thisHit = &(fHit[0]);  
   Int_t nhit=(Int_t)count; 
-  for (Int_t i=0;i<nhit;i++){
-
-//      AliL3ConfMapPoint *thisHit = &(fHit[i]);
-//      AliL3ConfMapPoint *thisHit = fHits[i];
-      Int_t slice = (hits[i].fID>>25) & 0x7f; 
-      thisHit->SetHitNumber(hits[i].fID);
-      thisHit->SetPadRow(hits[i].fPadRow);
-      thisHit->SetSector(slice);
-      thisHit->SetX(hits[i].fX);
-      thisHit->SetY(hits[i].fY);
-      thisHit->SetZ(hits[i].fZ);
-      thisHit->SetXerr(sqrt(hits[i].fXYErr));
-      thisHit->SetYerr(sqrt(hits[i].fXYErr));
-      thisHit->SetZerr(sqrt(hits[i].fZErr));
-//      thisHit->SetXerr(3.16227766016837941e-01);
-//      thisHit->SetYerr(3.16227766016837941e-01);
-//      thisHit->SetZerr(4.47213595499957928e-01);
-      thisHit++;
-
-//      fHits[i]->ReadHits(&(hits[i]));
-//      thisHit->ReadHits(&(hits[i]));
-//      thisHit++;
-    }
+  for (Int_t i=0;i<nhit;i++)
+    fHit[i].ReadHits(&(hits[i]));
   fClustersUnused += nhit;
   LOG(AliL3Log::kInformational,"AliL3ConfMapper::ReadHits","#hits")<<AliL3Log::kDec
   <<"hit_counter: "<<nhit<<" count: "<<count<<ENDLOG;
@@ -204,8 +168,7 @@ void AliL3ConfMapper::SetPointers()
     {
       
       //AliL3ConfMapPoint *thisHit = (AliL3ConfMapPoint*)fHit->At(j);
-//      AliL3ConfMapPoint *thisHit = &(fHit[j]);
-      AliL3ConfMapPoint *thisHit = fHits[j];
+      AliL3ConfMapPoint *thisHit = &(fHit[j]);
 
       thisHit->Setup(fVertex);
       

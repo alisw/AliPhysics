@@ -29,7 +29,6 @@ class AliL3ConfMapper {
   Bool_t fParamSet;
   Bool_t fVertexFinder;  //Include vertexfinding or not (latter case vertex=(0,0,0))
 
-  AliL3ConfMapPoint **fHits;  //!
   AliL3ConfMapPoint *fHit;  //!
   AliL3TrackArray *fTrack;  //!
   Double_t fMaxDca;      //cut value for momentum fit
