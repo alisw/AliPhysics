@@ -159,7 +159,7 @@ void DimuonCombinator::SetSecondRange(Int_t from, Int_t to)
 //                       Selection
 //
 
-Int_t DimuonCombinator::Selected(GParticle* part)
+Bool_t DimuonCombinator::Selected(GParticle* part)
 {
 // 
 //
@@ -174,7 +174,7 @@ Int_t DimuonCombinator::Selected(GParticle* part)
     
 }
 
-Int_t DimuonCombinator::Selected(GParticle* part1, GParticle* part2)
+Bool_t DimuonCombinator::Selected(GParticle* part1, GParticle* part2)
 {
      return Selected(part1)*Selected(part2);
 }
@@ -225,17 +225,82 @@ void DimuonCombinator::SmearGauss(Float_t width, Float_t & value)
 //              Weighting
 // 
 
-Float_t DimuonCombinator::Weight(GParticle* part1, GParticle* part2)
+Float_t DimuonCombinator::Decay_Prob(GParticle* part)
 {
-    if (part1->GetParent() == part2->GetParent()) {
-	return (part1->GetWgt())*fRate1;
+    Float_t d, h, theta, CTau;
+    GParticle* parent = Parent(part);
+    Int_t ipar=Type(parent);
+    if (ipar==8 || ipar==9) {
+	CTau=780.4;
+    } else if (ipar==11 || ipar==12) {
+	CTau=370.9;
     } else {
-	return (part1->GetWgt())*(part2->GetWgt())*fRate1*fRate2;
+	CTau=0;
+    }
+    
+    
+    Float_t GammaBeta=(parent->GetMomentum())/(parent->GetMass());
+//
+// this part is still very ALICE muon-arm specific
+//
+    theta=parent->GetTheta();
+    h=90*TMath::Tan(theta);
+    
+    if (h<4) {
+	d=4/TMath::Sin(theta);
+    } else {
+	d=90/TMath::Cos(theta);
+    }
+    
+    if (CTau > 0) {
+	return 1-TMath::Exp(-d/CTau/GammaBeta);
+    } else {
+	return 1;
     }
 }
 
+Float_t DimuonCombinator::Weight(GParticle* part1, GParticle* part2)
+{
+    Float_t wgt=(part1->GetWgt())*(part2->GetWgt());
+    
+    if (Correlated(part1, part2)) {
+	return wgt/(Parent(part1)->GetWgt())*fRate1;
+    } else {
+	return wgt*fRate1*fRate2;
+    }
+} 
+
+
 Float_t DimuonCombinator::Weight(GParticle* part)
 {
-    return part->GetWgt()*fRate1;
+    return (part->GetWgt())*(Parent(part)->GetWgt())*fRate1;
+}
+Bool_t  DimuonCombinator::Correlated(GParticle* part1, GParticle* part2)
+{
+    if (Origin(part1) == Origin(part2)) {
+	return kTRUE;
+    } else {
+	return kFALSE;
+    }
+}
+GParticle* DimuonCombinator::Parent(GParticle* part)
+{
+    return (GParticle*) (fPartArray->UncheckedAt(part->GetParent()));
+}
+
+Int_t DimuonCombinator::Origin(GParticle* part)
+{
+    Int_t iparent= part->GetParent();
+    if (iparent < 0) return iparent;
+    Int_t ip;
+    while(1) {
+	ip=((GParticle*) fPartArray->UncheckedAt(iparent))->GetParent();
+	if (ip < 0) {
+	    break;
+	} else {
+	    iparent=ip;
+	}
+    }
+    return iparent;
 }
 

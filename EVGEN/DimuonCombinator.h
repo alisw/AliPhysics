@@ -30,24 +30,28 @@ public:
 	fRate2=1.;
     }
 //    
-//  Iterators    
+//  Iterators
+//  Single muons
     GParticle* FirstMuon();
     GParticle* NextMuon();
+//  Single muons selected
     GParticle* FirstMuonSelected();
     GParticle* NextMuonSelected();
-    
+//  Dimuons    
     void FirstMuonPair(GParticle* & muon1, GParticle* & muon2);
     void NextMuonPair(GParticle* & muon1, GParticle* & muon2);
+//  Dimuons selected    
     void FirstMuonPairSelected(GParticle* & muon1, GParticle* & muon2);
     void NextMuonPairSelected(GParticle* & muon1, GParticle* & muon2);
+//  Loop over all prticles    
     void ResetRange();
+//  Set two ranges for dimuon loop    
     void SetFirstRange (Int_t from, Int_t to);
     void SetSecondRange(Int_t from, Int_t to);    
 //  Cuts
-    void SetPtMin(Float_t ptmin){fPtMin=ptmin;}
-    void SetEtaCut(Float_t etamin, Float_t etamax){fEtaMin=etamin; fEtaMax=etamax;}    
-    Int_t Selected(GParticle* part);
-    Int_t Selected(GParticle* part1, GParticle* part2);
+    void SetPtMin(Float_t ptmin) {fPtMin=ptmin;}
+    void SetEtaCut(Float_t etamin, Float_t etamax){fEtaMin=etamin; fEtaMax=etamax;}      Bool_t Selected(GParticle* part);
+    Bool_t Selected(GParticle* part1, GParticle* part2);
 // Kinematics
     Float_t Mass(GParticle* part1, GParticle* part);
     Float_t PT(GParticle* part1, GParticle* part);
@@ -55,19 +59,21 @@ public:
     Float_t Y(GParticle* part1, GParticle* part);
 // Response
     void SmearGauss(Float_t width, Float_t & value);
-    
 // Weight
+    Bool_t  Correlated(GParticle* part1, GParticle* part2);
     void    SetRate(Float_t rate){fRate1=rate;}
     void    SetRate(Float_t rate1, Float_t rate2 ){fRate1=rate1; fRate2=rate2;}
     Float_t Weight(GParticle* part);
     Float_t Weight(GParticle* part1, GParticle* part);
-
+    Float_t Decay_Prob(GParticle* part);
+    
  private:
     void FirstPartner();
     void NextPartner();
     void FirstPartnerSelected();
     void NextPartnerSelected();
-
+    Int_t Origin(GParticle* part);
+    GParticle* Parent(GParticle* part);
     GParticle* Partner();
     Int_t Type(GParticle *part){return part->GetKF();}
 private:
