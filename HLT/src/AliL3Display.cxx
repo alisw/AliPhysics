@@ -71,6 +71,7 @@ void AliL3Display::Setup(Char_t *trackfile,Char_t *path)
 {
   //Read in the hit and track information from produced files.
   
+  AliL3Transform::Init(path);
   Char_t fname[256];
   AliL3MemHandler *clusterfile[36][6];
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)

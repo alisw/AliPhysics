@@ -34,6 +34,7 @@
 
 ClassImp(AliL3Transform)
 
+Double_t AliL3Transform::fBField = 0.2;
 Int_t AliL3Transform::fVersion = 0;
 Int_t AliL3Transform::fNTimeBins = 446 ;
 Int_t AliL3Transform::fNRowLow = 64 ;

@@ -7,6 +7,7 @@ class AliL3Transform {
 
  private:
   
+  static Double_t fBField;
   static Int_t fNTimeBins;
   static Int_t fNRowLow;
   static Int_t fNRowUp;
@@ -31,6 +32,8 @@ class AliL3Transform {
   
   static void Init(const Char_t* path); //new init for all AliRoot versions
   
+  static void SetBField(Double_t f) {fBField = f;}
+  static Double_t GetBField() {return fBField;}
   static Int_t GetVersion(){return fVersion;}
   static Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
   static Double_t GetPadPitchWidthUp() {return fPadPitchWidthUp;}

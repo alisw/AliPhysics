@@ -10,6 +10,7 @@
 #include "AliL3ConfMapPoint.h"
 #include "AliL3ConfMapFit.h"
 #include "AliL3ConfMapTrack.h"
+#include "AliL3Transform.h"
 #include <math.h>
 
 //_____________________________________________________________
@@ -165,8 +166,8 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
   Double_t radius = sqrt(a2Xy*a2Xy+1)/(2*fabs(a1Xy));
   SetRadius(radius);
 
-  //fPt = (Double_t)(BFACT * BField * fRadius);
-  Double_t pt = (Double_t)(BFACT * BField * GetRadius());
+  //fPt = (Double_t)(BFACT * AliL3Transform::GetBField() * fRadius);
+  Double_t pt = (Double_t)(BFACT * AliL3Transform::GetBField() * GetRadius());
   SetPt(pt);
 
   if(GetPt() > max_Dca) //go for fit of helix in real space
@@ -204,7 +205,7 @@ void AliL3ConfMapTrack::UpdateToFirstPoint()
   Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / fabs(GetCharge()) ;
   Double_t x0    = GetR0() * cos(GetPhi0()) ;
   Double_t y0    = GetR0() * sin(GetPhi0()) ;
-  Double_t rc    = fabs(GetPt()) / ( BFACT * BField )  ;
+  Double_t rc    = fabs(GetPt()) / ( BFACT * AliL3Transform::GetBField() )  ;
   Double_t xc    = x0 - rc * cos(tPhi0) ;
   Double_t yc    = y0 - rc * sin(tPhi0) ;
   

@@ -11,6 +11,5 @@ const Double_t Pi = 3.14159265358979323846;
 const Double_t ToRad = Pi/180.;
 const Int_t MaxNPads = 256;
 const Int_t MaxNTimeBins = 512;
-const Double_t BField = 0.2;
 
 #endif /* _ALIL3DEFS_H_ */

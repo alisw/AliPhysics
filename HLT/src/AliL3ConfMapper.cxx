@@ -15,6 +15,7 @@
 #include "AliL3ConfMapTrack.h"
 #include "AliL3ConfMapPoint.h"
 #include "AliL3TrackArray.h"
+#include "AliL3Transform.h"
 
 //_____________________________________________________________
 // AliL3ConfMapper
@@ -143,7 +144,7 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   
   fNumRowSegment = fRowMax - fRowMin; //number of rows to be considered by tracker
   LOG(AliL3Log::kInformational,"AliL3ConfMapper::InitSector","B-field")
-    <<"Tracker initializing assuming magnetic field of "<<BField<<ENDLOG;
+    <<"Tracker initializing assuming magnetic field of "<<AliL3Transform::GetBField()<<ENDLOG;
   
   fTrack->Reset();
 }

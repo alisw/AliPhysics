@@ -155,7 +155,7 @@ void AliL3Track::CalculateHelix(){
   //Calculate Radius, CenterX and Centery from Psi, X0, Y0
   //
   
-  fRadius = fPt / (BFACT*BField);
+  fRadius = fPt / (BFACT*AliL3Transform::GetBField());
   if(fRadius) fKappa = -fQ*1./fRadius;
   else fRadius = 999999;  //just zero
   Double_t trackPhi0 = fPsi + fQ *0.5 * pi;

@@ -11,6 +11,7 @@
 #include "AliL3Vertex.h"
 #include "AliL3ConfMapTrack.h"
 #include "AliL3ConfMapPoint.h"
+#include "AliL3Transform.h"
 
 //_____________________________________________________________
 // AliL3ConfMapFit
@@ -373,7 +374,7 @@ Int_t AliL3ConfMapFit::FitCircle()
   psi  = psi + q * 0.5F * pi ;
   if ( psi < 0 ) psi = psi + 2*pi;
   
-  pt   = (Double_t)(BFACT * BField * radius ) ;
+  pt   = (Double_t)(BFACT * AliL3Transform::GetBField() * radius ) ;
   fTrack->SetPsi(psi);
   fTrack->SetPt(pt);
 
@@ -403,7 +404,7 @@ Int_t AliL3ConfMapFit::FitLine ( )
   //find sum , sums ,sumz, sumss 
   // 
   Double_t dx, dy ;
-  Double_t radius = (Double_t)(fTrack->GetPt() / ( BFACT * BField ) ) ;
+  Double_t radius = (Double_t)(fTrack->GetPt() / ( BFACT * AliL3Transform::GetBField() ) ) ;
 
   //TObjArray *hits = fTrack->GetHits();
   //Int_t num_of_hits = fTrack->GetNumberOfPoints();
