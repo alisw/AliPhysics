@@ -62,18 +62,23 @@ void AliRICHDisplFast::Display()
   TH2F *h2_disp   = new TH2F("h2_disp"  ,"STAR-RICH Event Display",165,Xmin,Xmax,100,Ymin,Ymax);
   TH2F *gHitsH2   = new TH2F("gHitsH2"  ,"STAR-RICH Event Display",165,Xmin,Xmax,100,Ymin,Ymax);
   TH2F *h2_dispad = new TH2F("h2_dispad","STAR-RICH Event Display",161,0.,161.,145,0.,145.);
+  TH2F *gClustersH2 = new TH2F("gClusH2"  ,"STAR-RICH Event Display",165,Xmin,Xmax,100,Ymin,Ymax);
 
   TCanvas *Display = new TCanvas("Display","Star Display",0,0,800,800);
     
   // Display event...
 
-  gStyle->SetPalette(1,0);
-    
-  AliRICH *pRich = (AliRICH*)gAlice->GetDetector("RICH");
-  pRich->GetLoader()->LoadDigits();
-  pRich->GetLoader()->TreeD()->GetEntry(0);
-  pRich->GetLoader()->LoadHits();
+  gStyle->SetPalette(1);
 
+  AliRICH *pRich = (AliRICH*)gAlice->GetDetector("RICH");
+  pRich->GetLoader()->LoadRecPoints();
+  pRich->GetLoader()->LoadDigits();
+  pRich->GetLoader()->LoadHits();
+  pRich->GetLoader()->TreeD()->GetEntry(0);
+  pRich->GetLoader()->TreeR()->GetEntry(0);
+
+  cout << " start to display..." << endl;     
+  
   Int_t nPrimaries = (Int_t)pRich->GetLoader()->TreeH()->GetEntries();
   TObjArray Hits[nPrimaries];
   
@@ -87,7 +92,8 @@ void AliRICHDisplFast::Display()
            
   for(Int_t iChamber=1;iChamber<=7;iChamber++) {
     
-     Int_t nDigits = pRich->DigitsOld(iChamber)->GetEntries();
+     Int_t nDigits = pRich->Digits(iChamber)->GetEntries();
+     Int_t nClusters = pRich->Clusters(iChamber)->GetEntries();
    
      Display->ToggleEventStatus();
      Display->Modified();
@@ -104,21 +110,7 @@ void AliRICHDisplFast::Display()
 //     h2_dispad->Reset();
 
      Double_t xpad,ypad;
-     
-// loop for Digits...           
-     
-     for(Int_t j=0;j<nDigits;j++)
-	{
-          AliRICHDigit *pDigit = (AliRICHDigit*)pRich->DigitsOld(iChamber)->At(j);
-	  AliRICHParam::Pad2Loc(pDigit->PadX(),pDigit->PadY(),xpad,ypad);
-          Float_t charge = (Float_t)pDigit->Signal();
-	  h2_disp->Fill(xpad,ypad,charge);
-          h2_dispad->Fill(pDigit->PadX(),pDigit->PadY(),pDigit->Signal());
-          pDigit->Print();
-	}
 
-      cout << " -----------------" << endl;
-      
       for(Int_t i=0;i<nPrimaries;i++) {
         pRich->GetLoader()->TreeH()->GetEntry(i);
         Int_t nHits = pRich->Hits()->GetEntries();
@@ -131,10 +123,33 @@ void AliRICHDisplFast::Display()
             TVector3 xyzhit(pHit->X(),pHit->Y(),pHit->Z());
             TVector3 hitlocal = pRich->C(iChamber)->Glob2Loc(xyzhit);
             gHitsH2->Fill(hitlocal.X(),hitlocal.Y());
-//            pHit->Print();
+//            pHit->Print("");
           }
          }         
        }
+     
+     for(Int_t j=0;j<nDigits;j++)
+	{
+          AliRICHdigit *pDigit = (AliRICHdigit*)pRich->Digits(iChamber)->At(j);
+	  AliRICHParam::Pad2Loc(pDigit->X(),pDigit->Y(),xpad,ypad);
+          Float_t charge = (Float_t)pDigit->Q();
+	  h2_disp->Fill(xpad,ypad,charge);
+          h2_dispad->Fill(pDigit->X(),pDigit->Y(),pDigit->Q());
+          pDigit->Print("");
+	}
+        
+     for(Int_t j=0;j<nClusters;j++)
+        {
+          AliRICHcluster *pCluster = (AliRICHcluster*)pRich->Clusters(iChamber)->At(j);
+//          gClustersH2->Fill(pCluster->X(),pCluster->Y(),pCluster->Q());
+          gClustersH2->Fill(pCluster->X(),pCluster->Y(),100);
+        }
+
+        
+        
+        
+      cout << " -----------------" << endl;
+      
              
       // end loop
                     
@@ -159,11 +174,18 @@ void AliRICHDisplFast::Display()
       gHitsH2->SetMarkerStyle(29);
       gHitsH2->SetMarkerSize(0.4);
       gHitsH2->Draw("same");
-//      gHitsH2->Draw();
       Display->Update();
       Display->Modified();
        
       getchar();
-    }
+      gClustersH2->SetTitle(Form("Chamber %2i",iChamber));
+      gClustersH2->SetMarkerColor(kBlue);
+      gClustersH2->SetMarkerStyle(29);
+      gClustersH2->SetMarkerSize(0.4);
+      gClustersH2->Draw("same");
+      Display->Update();
+      Display->Modified();
+      getchar();
+     }
 }
 
