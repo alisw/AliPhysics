@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2001/01/22 21:35:39  jbarbosa
+  Added deadzone size to data members
+
   Revision 1.3  2000/10/03 21:44:09  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -117,7 +120,7 @@ Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
     {
       if (y> fPadPlane_Width/2 +fDeadZone)
 	{
-	  if ( fPadPlane_Width/2 +fDeadZone +  fPadPlane_Width)
+	  if ( fPadPlane_Width/2 +fDeadZone + fPadPlane_Width)
 	    fSector=0;
 	}
       if (y< fPadPlane_Width/2)
