@@ -21,7 +21,7 @@ config files, simulation, digitalization, clusterization,
 reconstruction and macro analysis
 
 ==========================================================
- How to run a MUON simulation 
+ How to run a MUON generation
 ==========================================================
 aliroot
 root [0] gAlice->Run(10,"$ALICE_ROOT/MUON/Config_MUON_test.C");
@@ -125,6 +125,14 @@ gAlice->Init("$ALICE_ROOT/MUON/Config_MUON_test.C");
 .L $ALICE/geant3/TGeant3/G3GUI.C
 G3GUI()
 
+
+============================================================
+ How to run MUONdisplay
+============================================================
+Frist you need to perfomr a full simulation: 
+generation, digitalisation and clusterisation
+.L $ALICE_ROOT/MUON/MUONdisplay.C
+MUONdisplay(0,"galice.root")
 
 ============================================================
  Tracking parameters, cuts, energy loss and physics processes

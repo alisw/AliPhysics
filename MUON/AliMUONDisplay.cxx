@@ -621,6 +621,8 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
     Float_t dx   = xmax-xmin;
     Float_t dy   = ymax-ymin;
     
+
+
     if (strlen(option) == 0) {
 	TPaveText *title = new TPaveText(xmin +0.01*dx, ymax-0.09*dy, xmin +0.5*dx, ymax-0.01*dy);
 //      title->SetTextSize(0.023932);
@@ -890,14 +892,13 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
     AliMUONChamber*  iChamber;
     
     TClonesArray *muonRawClusters  = pMUON->GetMUONData()->RawClusters(chamber-1);
+
     if (muonRawClusters == 0) return;
 
-//     pMUON->ResetRawClusters();
-
     Int_t nent = 0;
-    if (gAlice->TreeR()) {
-	nent=(Int_t)gAlice->TreeR()->GetEntries();
-	gAlice->TreeR()->GetEvent(0);
+    if (pMUON->GetMUONData()->TreeR()) {
+	nent=(Int_t) pMUON->GetMUONData()->TreeR()->GetEntries();
+	pMUON->GetMUONData()->TreeR()->GetEvent(0);
     }
     
     Int_t nrawcl = muonRawClusters->GetEntriesFast();
@@ -943,21 +944,21 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
     iChamber = &(pMUON->Chamber(chamber-1));
     Float_t zpos=iChamber->Z();
 
-    Int_t ntracks = (Int_t)pMUON->TreeH()->GetEntries(); //skowron
+    Int_t ntracks = (Int_t)pMUON->GetMUONData()->TreeH()->GetEntries(); //skowron
     Int_t nthits  = 0;
     for (track = 0; track < ntracks; track++) {
-	gAlice->ResetHits();
-	pMUON->TreeH()->GetEvent(track);//skowron
-	TClonesArray *muonHits  = pMUON->Hits();
+	pMUON->GetMUONData()->ResetHits();
+	pMUON->GetMUONData()->GetTrack(track);//skowron
+	TClonesArray *muonHits  = pMUON->GetMUONData()->Hits();
 	if (muonHits == 0) return;
 	nthits += muonHits->GetEntriesFast();
     } 
     if (fPhits == 0) fPhits = new TObjArray(nthits);
     Int_t nhold=0;
     for (track=0; track<ntracks;track++) {
-	gAlice->ResetHits();
-	pMUON->TreeH()->GetEvent(track);//skowron
-	TClonesArray *muonHits  = pMUON->Hits();
+	pMUON->GetMUONData()->ResetHits();
+	pMUON->GetMUONData()->GetTrack(track);//skowron
+	TClonesArray *muonHits  = pMUON->GetMUONData()->Hits();
 	if (muonHits == 0) return;
 	Int_t nhits = muonHits->GetEntriesFast();
 	if (nhits == 0) continue;

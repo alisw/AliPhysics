@@ -1,30 +1,38 @@
 MUONdisplay (Int_t nevent=0, TString fileName="galice.root") {
-// Dynamically link some shared libs
-   if (gClassTable->GetID("AliRun") < 0) {
-      gROOT->LoadMacro("loadlibs.C");
-      loadlibs();
-      /*
-   } else {
-      delete gAlice;
-      gAlice = 0;
-      */
-   }
+ 
+  // Getting runloader 
+  AliRunLoader * RunLoader = AliRunLoader::Open(fileName,"MUONFolder","READ");
+  if (RunLoader == 0x0) {
+    Error("MUONdisplay","Inut file %s error!",fileName);
+    return;   
+  }
+  RunLoader->LoadHeader();
+  RunLoader->LoadKinematics("READ");
 
-// Connect the Root Galice file containing Geometry, Kine and Hits
-   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(fileName);
-   if (!file) file = new TFile(fileName);
+  // Getting MUONloader 
+  AliLoader * MUONLoader  = RunLoader->GetLoader("MUONLoader");
+  MUONLoader->LoadHits("READ");
+  MUONLoader->LoadDigits("READ");
+  MUONLoader->LoadRecPoints("READ");
 
-// Get AliRun object from file or create it if not on file
-   if (!gAlice) {
-      gAlice = (AliRun*)file->Get("gAlice");
-      if (gAlice) printf("AliRun object found on file\n");
-      if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-   }
-   
+  if (RunLoader->GetAliRun() == 0x0) RunLoader->LoadgAlice();
+  gAlice = RunLoader->GetAliRun();
+
+  // Getting Module MUON  
+  AliMUON * MUON  = (AliMUON *) gAlice->GetDetector("MUON");
+  if (!MUON) {
+    Error("MUONdisplay","Module MUON not found in the input file");
+    return;
+  }
+  // Getting Muon data
+  AliMUONData * muondata = MUON->GetMUONData(); 
+  muondata->SetLoader(MUONLoader);
+  muondata->SetTreeAddress("H,D,RC,GLT");
+
 // Create Event Display object
    AliMUONDisplay *muondisplay = new AliMUONDisplay(750);
 
 // Display first event
-   gAlice->GetEvent(nevent);
+   RunLoader->GetEvent(nevent);
    muondisplay->ShowNextEvent(0);
 }
