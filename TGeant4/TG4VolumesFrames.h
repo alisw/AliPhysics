@@ -17,6 +17,7 @@
 #include <TGFrame.h>
 
 class TGLabel;
+class TGTab;
 class TGTextBuffer;
 class TGTextEntry;
 class TGComboBox;
@@ -26,7 +27,7 @@ class TG4VolumesFrames : public TObject {
 
 public:   
 
-    TG4VolumesFrames( TGCompositeFrame* parent, TGMainFrame* actionFrame);
+    TG4VolumesFrames( TGTab* Tab, TGMainFrame* actionFrame);
     virtual ~TG4VolumesFrames();
     
     void SetVolumesComboEntries();

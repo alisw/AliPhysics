@@ -17,6 +17,7 @@
 #include <TGFrame.h>
 
 class TGLabel;
+class TGTab;
 class TGTextBuffer;
 class TGTextEntry;
 class TGComboBox;
@@ -25,7 +26,7 @@ class TG4MaterialsFrames : public TObject {
 
 public:   
 
-    TG4MaterialsFrames(  TGCompositeFrame* Parent, TGMainFrame* ActionFrame);
+    TG4MaterialsFrames(  TGTab* tab, TGMainFrame* ActionFrame);
     virtual ~TG4MaterialsFrames();
     
     void DisplayMaterialCharacteristics();

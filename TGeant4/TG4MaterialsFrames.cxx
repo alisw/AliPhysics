@@ -17,6 +17,7 @@
 #include <TGTextEntry.h>
 #include <TGComboBox.h>
 #include <TGLabel.h>
+#include <TGTab.h>
  
 #include <G4Material.hh>
 #include <G4Element.hh>
@@ -25,10 +26,11 @@
 
  ClassImp(TG4MaterialsFrames)
 
-TG4MaterialsFrames::TG4MaterialsFrames( TGCompositeFrame* Parent, TGMainFrame* ActionFrame )
+TG4MaterialsFrames::TG4MaterialsFrames( TGTab* Tab, TGMainFrame* ActionFrame )
 { 
 //---> creates the materials properties display frame
 //---> and plunges it into the main frame
+   TGCompositeFrame* Parent = Tab->AddTab("Materials Properties");
    fCapFrame = new TGCompositeFrame(Parent, 60, 20, kHorizontalFrame);
    ULong_t back= TGFrame::GetBlackPixel(); 
    fCapFrame->ChangeBackground(back);   

@@ -17,6 +17,7 @@
 #include <TGTextEntry.h>
 #include <TGComboBox.h>
 #include <TGLabel.h>
+#include <TGTab.h>
 #include <TGFrame.h>
 
 #include <G4LogicalVolumeStore.hh>
@@ -27,10 +28,11 @@
  
  ClassImp(TG4VolumesFrames)
 
-TG4VolumesFrames::TG4VolumesFrames( TGCompositeFrame* Parent, TGMainFrame* ActionFrame)
+TG4VolumesFrames::TG4VolumesFrames( TGTab* Tab, TGMainFrame* ActionFrame)
 { 
 //---> creates the volumes properties display frame
 //---> and plunges it into the main frame
+   TGCompositeFrame* Parent = Tab->AddTab("Volumes Properties");
    fCapFrame = new TGCompositeFrame(Parent, 60, 20, kHorizontalFrame);
    ULong_t back= TGFrame::GetBlackPixel(); 
    fCapFrame->ChangeBackground(back);
