@@ -32,10 +32,11 @@ AliRICHChamber::AliRICHChamber(Int_t iChamber):TNamed()
     const Double_t kAngVer=20;   //  vertical angle between chambers    20   grad     
     const Double_t kAngCom=30;   //  common RICH rotation with respect to x axis  20   grad     
   
-    RotY(90);//rotate around y since initila position is in XY plane
-    fCenterX3.SetXYZ(490,0,0);  //shift center along x by 490 cm
-    fPcX3.SetXYZ(490+8-0.2,0,0);//position of the center of apmlification gap (anod wires plane)
-    fRadX3.SetXYZ(490-2,0,0);   //position of the entrance to freon
+    RotY(90);//rotate around y since initial position is in XY plane
+    fRad   .SetXYZ(490-2    ,0,0);       //position of the entrance to freon 1.5 cm of freon+0.5 cm of quartz window
+    fCenter.SetXYZ(490      ,0,0);      //shift center along x by 490 cm
+    fAnod  .SetXYZ(490+8-0.2,0,0);  //position of the center of apmlification gap (anod wires plane)
+    fPc    .SetXYZ(490+8    ,0,0);        //position of the center of PC 
     switch(iChamber){
       case 1:        
         RotY(kAngHor);  RotZ(-kAngVer);   //right and down 
@@ -72,6 +73,9 @@ void AliRICHChamber::Print(Option_t *opt) const
 {
 // Debug printout
   TNamed::Print(opt);
-  fCenterX3.Print(opt);
+  fRad.Print(opt);
+  fCenter.Print(opt);
+  fAnod.Print(opt);
+  fPc.Print(opt);
 }//Print()
 //__________________________________________________________________________________________________

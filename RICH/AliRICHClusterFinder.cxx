@@ -39,14 +39,14 @@ AliRICHClusterFinder::AliRICHClusterFinder(AliRICH *pRICH)
   AliDebug(1,"main ctor Stop.");
 }//main ctor
 //__________________________________________________________________________________________________
-void AliRICHClusterFinder::Exec()
+void AliRICHClusterFinder::Exec(const Option_t *)
 {
 //Main method of cluster finder. Loops on  events and chambers, everything else is done in FindClusters()  
   AliDebug(1,"Exec Start.");
     
   R()->GetLoader()                ->LoadDigits();   
 //  R()->GetLoader()->GetRunLoader()->LoadHeader(); 
-  R()->GetLoader()->GetRunLoader()->LoadKinematics(); //header is already loaded
+  if(!R()->GetLoader()->GetRunLoader()->TreeK()) R()->GetLoader()->GetRunLoader()->LoadKinematics();
 
   for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events loop
     AliDebug(1,Form("Processing event %i...",iEventN));

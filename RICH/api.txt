@@ -1,8 +1,8 @@
 How to open session:
-	use static methode  AliRunLoader::Open("galice.root","AlicE","update")
-How to retrive pointer to alice run loader:
-        use pRICH->GetLoader()->GetRunLoader() (all detector classes inherit from AliDetector wich has GetLoader())
-	use methode AliRun::GetRunLoader for gAlice (depricated)
+	use static method  AliRunLoader::Open("galice.root","AlicE","update")
+How to retrieve pointer to alice run loader:
+        use pRICH->GetLoader()->GetRunLoader() (all detector classes inherit from AliDetector which has GetLoader())
+	use method AliRun::GetRunLoader for gAlice (deprecated)
 How to get pointers to different root trees:
 	TreeE belongs to AliRunLoader, available after AliRunLoader::LoadHeader()
 	TreeK belongs to AliRunLoader, available after AliRunLoader::LoadKinematics()
@@ -10,37 +10,48 @@ How to get pointers to different root trees:
 	TreeS belongs to AliLoader   , available after AliLoader::LoadSDigits()
 	TreeD belongs to AliLoader   , available after AliLoader::LoadDigits()
 	TreeR belongs to AliLoader   , available after AliLoader::LoadRecPoints()
-        all methodes return 0 on success. 
+        all methods return 0 on success. 
+How to get event of interest:
+	AliRunLoader::GetEvent(event_number) returns 0 on success
 How to deal with the stack of particles?
         - first of all, the stack includes primary as well as secondary particles
 	- pointer to the stack is taken:
-         	AliRun::Stack() (global gAlice of type AliRun - depricated way to do)
+         	AliRun::Stack() (global gAlice of type AliRun - deprecated way to do)
           	AliRunLoader::Stack() but before one needs to load event header by AliRunLoader::LoadHeader() otherwise both methods return 0.
           	Moreover loading header gives the information about number of particles only. 
-          	To retrive the list of particle one also needs to load kinematics by AliRunLoader::LoadKinematics()        
+          	To retrieve the list of particle one also needs to load kinematics by AliRunLoader::LoadKinematics()        
 	- total amount of particles in stack for a given event:        
          	AliStack::GetNtrack() 
                 AliRun::GetEvent() (after LoadHeader())
 	- total amount of primary particles in stack for a given event (after LoadHeader()): 
         	AliStack::GetNprimary() 
-How to retrive hits:
-  -Hits are stored on primary by primary basis. Hits for the given primary is TClonesArray.
-   To retrieve all hits one needs to do:
-     -initialise the root tree and containers:    AliLoader::LoadHits() 
-     -read number of entries in TreeH:           TreeH()->GetEntries()
-     -loop on the list of entires:
-How to retrive sdigits? 
+How to retrieve hits:
+	Hits are stored on primary by primary basis. Hits for the given primary is TClonesArray.
+   	To retrieve all hits one needs to do:
+     	-initialize the root tree and containers:   pRich->GetLoader()->LoadHits();  (AliLoader::LoadHits() returns 0 on success)
+     	-read number of entries in TreeH:           pRich->GetLoader()->TreeH()->GetEntries()
+     	-then for each entry:                       pRich->GetLoader()->TreeH()->GetEntry(i)
+How to retrieve sdigits? 
 	Sdigits stored in tree S with the branch of TClonesArray, all sdigits in a single TClonesArray
 	So the tree has only one entry.
 	One needs to say:
 	pRich->GetLoader()->LoadSDigits(); this one open file, get the tree and invoke AliRICH::SetTreeAddress()    
-What are the debug methodes avail:
+How to retrieve digits? 
+	Digits stored in tree D with the 7 branches of TClonesArray, one per chamber, all digits of a given chamber in a single TClonesArray
+	So the tree has only one entry.
+	-One needs to say:
+	  pRich->GetLoader()->LoadDigits(); this one opens file, gets the tree and invoke AliRICH::SetTreeAddress() which in turn corresponds 
+          branches of the tree to the digits containers in memory. There are 7 containers, one per chamber, all of them belong to AliRICH.
+	-Then one needs to take the tree entry (only one) to the memory:
+          pRich->GetLoader()->TreeD()->GetEntry(0) 
+	-Finally pRich->Digits(chamber_number) returns the pointer to TClonesArray of AliRICHdigit          
+What are the debug methods avail:
 	AliModule::GetDebug() now depricated, use AliDebug printout instead
 	AliModule::SetDebug()
 	AliRun::GetDebug()
 	AliRun::SetDebug()
 How to get info for a given particle number:
-	Header and Kinematics trees must be loaded, then possible to retrive pointer to Stack of particles
+	Header and Kinematics trees must be loaded, then possible to retrieve pointer to Stack of particles
 	Int_t AliRunLoader::LoadHeader(); Int_t AliRunLoader::LoadKinematics()
 	AliStack *AliRunLoader::Stack()
 	TParticle *AliStack::Particle(tid)
@@ -53,15 +64,16 @@ What are hte meanings of different VMC flags:
 	gMC->IsTrackAlive()
 	gMC->IsTrackStop()
 	gMC->IsTrackDisappeared()
-How is sdigit prodiced from hit:
-	Responsible methode is AliRICH::
+How is sdigit produced from hit:
+	Responsible method is AliRICH::Hits2SDigits
 	One hit may affect one or more pads.
-        Hit position is taken on the anod wires plane as the most of avalanche is developed there.
-        This poistion is not directly avalable, track intersections with entrance and exit of amplification gap are only store.
-        So the position in the middle of the gap is calculated as average out of In and Out position.
-        Then, total charge collected for this hit is calculated by AliRICHParam::Hit2Qdc.        
+        Hit position is taken on the anode wires plane as the most of avalanche is developed there.
+        This position is not directly available, track intersections with entrance and exit of amplification gap are only stored.
+        So the position in the middle of the gap is calculated as average out of pHit->In() and pHit->Out() positions.
+        Then, total charge collected for this hit is calculated by AliRICHParam::Hit2Qdc.    
+        Area of disintegration is a list of pads affected by current hit. This is a parameter of Mathienson    
 How to get pad number for a local position:
-	use static TVector AliRICHParam::Loc2Pad(TVector2 position)
+	use static TVector AliRICHParam::Loc2Pad(TVector2 position);
 Why list of chambers belongs to AliRICHParam:
         
         

@@ -16,8 +16,8 @@
 #include "AliRICH.h"
 #include "AliRICHParam.h"
 #include "AliRICHChamber.h"
-#include "AliRICHClusterFinder.h"
-#include <TArrayF.h>
+#include "AliRICHTracker.h"
+//#include <TArrayF.h>
 #include <TGeometry.h>
 #include <TBRIK.h>
 #include <TTUBE.h>
@@ -34,21 +34,28 @@
 #include <TVirtualMC.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TStopwatch.h>
+#include <TBenchmark.h>
 #include <AliLog.h>
+#include <TNtupleD.h>
+#include <AliTracker.h>
+#include <AliRawDataHeader.h>
+#include <Riostream.h>
+
  
 ClassImp(AliRICHhit)
 //__________________________________________________________________________________________________
 void AliRICHhit::Print(Option_t*)const
 {
-  AliInfo(Form("Ch=%1i, TID=%6i, eloss=%9.3f eV, in-out dist=%9.4f, OUT(%7.2f,%7.2f,%7.2f)"
-      ,fChamber,fTrack,fEloss*1e9,Length(),fOutX3.X(),fOutX3.Y(),fOutX3.Z()));
+  AliInfo(Form("Ch=%1i,TID=%6i,Elos=%9.3f eV,IN(%6.2f,%6.2f,%6.2f)-OUT(%6.2f,%6.2f,%6.2f)=%9.4f"
+      ,fChamber,fTrack,fEloss*1e9,fInX3.X() ,fInX3.Y() ,fInX3.Z(),
+                                  fOutX3.X(),fOutX3.Y(),fOutX3.Z(),Length()));
 }
 //__________________________________________________________________________________________________
 ClassImp(AliRICHdigit)
 //__________________________________________________________________________________________________
 void AliRICHdigit::Print(Option_t*)const
 {
+//Print current digit  
   AliInfo(Form("cfm=%9i, cs=%2i, x=%3i, y=%3i, q=%8.3f, TID1=%5i, TID2=%5i, TID3=%5i",
                   fCFM,fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]));
 }
@@ -57,6 +64,7 @@ ClassImp(AliRICHcluster)
 //__________________________________________________________________________________________________
 void AliRICHcluster::Print(Option_t*)const
 {
+//Print current cluster  
   const char *status=0;
   switch(fStatus){
     case      kRaw: status="raw"     ;break;
@@ -124,14 +132,14 @@ void AliRICH::Hits2SDigits()
     GetLoader()->GetRunLoader()->GetEvent(iEventN);//get next event
   
     if(!GetLoader()->TreeH()) GetLoader()->LoadHits();    GetLoader()->GetRunLoader()->LoadHeader(); 
-                                                          GetLoader()->GetRunLoader()->LoadKinematics();//from
+             if(!GetLoader()->GetRunLoader()->TreeK())    GetLoader()->GetRunLoader()->LoadKinematics();//from
     if(!GetLoader()->TreeS()) GetLoader()->MakeTree("S"); MakeBranch("S");//to
           
     for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
       GetLoader()->TreeH()->GetEntry(iPrimN);
       for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop 
         AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);//get current hit                
-        TVector2 x2 = C(pHit->C())->Mrs2Pc(0.5*(pHit->InX3()+pHit->OutX3()));//hit position in the anod plane
+        TVector2 x2 = C(pHit->C())->Mrs2Anod(0.5*(pHit->InX3()+pHit->OutX3()));//hit position in the anod plane
         Int_t iTotQdc=P()->TotQdc(x2,pHit->Eloss());//total charge produced by hit, 0 if hit in dead zone
         if(iTotQdc==0) continue;
         //
@@ -162,6 +170,51 @@ void AliRICH::Hits2SDigits()
   GetLoader()->UnloadSDigits();  
   AliDebug(1,"Stop.");
 }//Hits2SDigits()
+//__________________________________________________________________________________________________
+void AliRICH::Digits2Raw()
+{
+//Loops over all digits and creates raw data files in DDL format. GetEvent() is done outside (AliSimulation)
+  AliDebug(1,"Start.");
+  GetLoader()->LoadDigits();
+  GetLoader()->TreeD()->GetEntry(0);
+  
+  Int_t kRichOffset=0x700; //currently one DDL per 3 sectors
+  
+  ofstream file135,file246;//output streams 2 DDL per chamber
+  AliRawDataHeader header;//empty DDL miniheader
+  UInt_t word32=1;        //32 bits data word 
+  
+  for(Int_t iChN=1;iChN<=kNchambers;iChN++){ //2 DDL per chamber open both in parallel   
+    file135.open(Form("RICH_%4i.ddl",kRichOffset+2*iChN-1));   //left part of chamber; sectors 1-3-5
+    file246.open(Form("RICH_%4i.ddl",kRichOffset+2*iChN));     //right part of chamber; sectors 2-4-6
+//common DDL header defined by standart, now dummy as the total number of bytes is not yet known    
+    file135.write((char*)&header,sizeof(header)); //dummy header just place holder
+    file246.write((char*)&header,sizeof(header)); //actual will be written later
+//now coming RICH private header 16 32-bits wors currently signifying nothing
+    for(Int_t i=0;i<16;i++){    
+      word32='t';
+      file135.write((char*)&word32,sizeof(word32)); //dummy header just place holder
+      file246.write((char*)&word32,sizeof(word32)); //actual will be written later
+    }
+    
+    Int_t counter135=0,counter246=0;//counts total number of records per DDL 
+    
+    for(Int_t iDigN=0;iDigN<Digits(iChN)->GetEntriesFast();iDigN++){//digits loop for a given chamber
+      AliRICHdigit *pDig=(AliRICHdigit*)Digits(iChN)->At(iDigN);
+      word32=UInt_t (pDig->Q()+0x400*pDig->X()+0x4000*pDig->Y());            //arbitrary structure
+      switch(pDig->S()){//readout by vertical sectors: 1,3,5-left DDL 2,4,6-right DDL
+        case 1: case 3: case 5: file135.write((char*)&word32,sizeof(word32)); counter135++; break;
+        case 2: case 4: case 6: file246.write((char*)&word32,sizeof(word32)); counter246++; break;
+      }//switch sector  
+    }//digits loop for a given chamber
+//now count total byte number for each DDL file and rewrite actual header    
+    header.fSize=sizeof(header)+counter135*sizeof(word32);   header.SetAttribute(0); file135.seekp(0); file135.write((char*)&header,sizeof(header));
+    header.fSize=sizeof(header)+counter246*sizeof(word32);   header.SetAttribute(0); file246.seekp(0); file246.write((char*)&header,sizeof(header));
+    file135.close(); file246.close();
+  }//chambers loop  
+  GetLoader()->UnloadDigits();
+  AliDebug(1,"Stop.");      
+}//Digits2Raw()
 //__________________________________________________________________________________________________
 void AliRICH::BuildGeometry() 
 {
@@ -441,38 +494,48 @@ void AliRICH::Print(Option_t *option)const
 //__________________________________________________________________________________________________
 void AliRICH::ControlPlots()
 { 
-// Creates a set of hists to control the results of simulation. Hists are in file $HOME/RCP.root
-     
+//Creates a set of QA hists to control the results of simulation. Hists are in file $HOME/RCP.root     
   TH1F             *pElecP=0 ,*pMuonP=0 ,*pPionP=0 ,*pKaonP=0 ,*pProtP=0,  //stack particles
-                   *pHxD=0,*pHyD=0,*pNumClusH1=0,
+                   *pHxD=0,*pHyD=0,*pHxSd=0,*pHySd=0,      //diff hit position - digit sdigit position 
+                   *pNumClusH1=0,
                    *pQdcH1=0,       *pSizeH1=0,
                    *pPureMipQdcH1=0,*pPureMipSizeH1=0,
                    *pPureCerQdcH1=0,*pPureCerSizeH1=0,
                    *pPureFeeQdcH1=0,*pPureFeeSizeH1=0,
                    *pMipQdcH1=0,    *pPhotQdcH1=0;  
   TH2F *pMapH2=0,*pPureMipMapH2=0,*pPureCerMapH2=0,*pPureFeeMapH2=0;
-  
-  GetLoader()->GetRunLoader()->LoadHeader();  
-  GetLoader()->GetRunLoader()->LoadKinematics();  
-  
-  Bool_t isDig =!GetLoader()->LoadDigits();
+  TH1F *pelecRadius=0,*pprotRadius=0,*pprotbarRadius=0;
+//load all information  
+                 GetLoader()->GetRunLoader()->LoadHeader();  
+                 GetLoader()->GetRunLoader()->LoadKinematics();  
+                 GetLoader()->LoadHits();  
+  Bool_t isSdig=0;//!GetLoader()->LoadSDigits();
+  Bool_t isDig =0;//!GetLoader()->LoadDigits();
   Bool_t isClus=!GetLoader()->LoadRecPoints();
 
-//  if(!isDig && !isClus){AliError("No digits and clusters! Nothing to do.");return;}
-  
-  TStopwatch sw;TDatime time;
+  gBenchmark->Start("ControlPlots");
     
   TFile *pFile = new TFile("$(HOME)/RCP.root","RECREATE");   
-  pElecP=new TH1F("Pelec","e  versus momentum;P [GeV]",1000,-10,10); 
-  pMuonP=new TH1F("Pmuon","mu versus momentum;P [GeV]",1000,-10,10); 
-  pPionP=new TH1F("Ppion","pi versus momentum;P [GeV]",1000,-10,10); 
-  pKaonP=new TH1F("Pkaon","K  versus momentum;P [GeV]",1000,-10,10); 
-  pProtP=new TH1F("Pprot","p  versus momentum;P [GeV]",1000,-10,10); 
+  
+  pElecP=new TH1F("Pelec","Electrons made hit in RICH;p [GeV]",1000,-30,30); 
+  pMuonP=new TH1F("Pmuon","Muons made hit in RICH;p [GeV]",1000,-30,30); 
+  pPionP=new TH1F("Ppion","Pions made hit in RICH;p [GeV]",1000,-30,30); 
+  pKaonP=new TH1F("Pkaon","Kaon made hit in RICH;p [GeV]",1000,-30,30); 
+  pProtP=new TH1F("Pprot","Protons made hit in RICH;p [GeV]",1000,-30,30); 
+  pelecRadius=new TH1F("elecRadius","elec",600,0.,600.);  
+  pprotRadius=new TH1F("protRadius","elec",600,0.,600.);  
+  pprotbarRadius=new TH1F("protbarRadius","elec",600,0.,600.);
+    
+  if(isSdig){
+    AliInfo("SDigits available");
+    pHxSd=new TH1F("DiffHitSDigitX","Hit-SDigit diff X all chambers;diff [cm]",300,-10,10); 
+    pHySd=new TH1F("DiffHitSDigitY","Hit-SDigit diff Y all chambers;diff [cm]",300,-10,10); 
+  }//isSdig
   
   if(isDig){
     AliInfo("Digits available");
-    pHxD=new TH1F("HitDigitDiffX","Hit-Digits diff X all chambers;diff [cm]",100,-10,10); 
-    pHyD=new TH1F("HitDigitDiffY","Hit-Digits diff Y all chambers;diff [cm]",100,-10,10); 
+    pHxD=new TH1F("DiffHitDigitX","Hit-Digit diff X all chambers;diff [cm]",300,-10,10); 
+    pHyD=new TH1F("DiffHitDigitY","Hit-Digit diff Y all chambers;diff [cm]",300,-10,10); 
   }//isDig
   
   if(isClus){ 
@@ -497,20 +560,21 @@ void AliRICH::ControlPlots()
     pPureFeeQdcH1 =new TH1F("QdcPureFee"  ,"Feedback only Cluster Charge all chambers;q [QDC]",P()->MaxQdc(),0,P()->MaxQdc());
     pPureFeeSizeH1=new TH1F("SizePureFee" ,"Feedback only Cluster size all chambers;size [number of pads in cluster]",100,0,100);
     pPureFeeMapH2 =new TH2F("MapPureFee"  ,"Feedback only Cluster map;x [cm];y [cm]",1000,0,P()->PcSizeX(),1000,0,P()->PcSizeY());
+
   }//isClus
-  
+//end of hists booking  
   for(Int_t iEvtN=0;iEvtN < GetLoader()->GetRunLoader()->GetAliRun()->GetEventsPerRun();iEvtN++){//events loop
-    GetLoader()->GetRunLoader()->GetEvent(iEvtN);    //gets current event
+    GetLoader()->GetRunLoader()->GetEvent(iEvtN);    //get current event
     
-    if(!GetLoader()->TreeH()) GetLoader()->LoadHits();
     for(Int_t iPrimN=0;iPrimN < GetLoader()->TreeH()->GetEntries();iPrimN++){//hit tree loop
       GetLoader()->TreeH()->GetEntry(iPrimN);      
-      for(Int_t j=0;j<Hits()->GetEntries();j++){//hits loop for a given primary
-      AliRICHhit *pHit = (AliRICHhit*)Hits()->At(j);
-        TParticle *pParticle = GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack());
+      for(Int_t j=0;j<Hits()->GetEntries();j++){//hits loop
+        AliRICHhit *pHit = (AliRICHhit*)Hits()->At(j);
+        TParticle *pParticle = GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack());//get particle produced this hit
+        Double_t Radius = TMath::Sqrt(pParticle->Vx()*pParticle->Vx()+pParticle->Vy()*pParticle->Vy()+pParticle->Vz()*pParticle->Vz());
         switch(pParticle->GetPdgCode()){
-          case kPositron : pElecP->Fill( pParticle->P()); break;
-          case kElectron : pElecP->Fill(-pParticle->P()); break;
+          case kPositron : pElecP->Fill( pParticle->P());pelecRadius->Fill(Radius); break;
+          case kElectron : pElecP->Fill(-pParticle->P());pelecRadius->Fill(Radius); break;
           
           case kMuonPlus : pMuonP->Fill( pParticle->P()); break;
           case kMuonMinus: pMuonP->Fill(-pParticle->P()); break;
@@ -521,18 +585,39 @@ void AliRICH::ControlPlots()
           case kKPlus    : pKaonP->Fill( pParticle->P()); break;
           case kKMinus   : pKaonP->Fill(-pParticle->P()); break;
           
-          case kProton   : pProtP->Fill( pParticle->P()); break;
-          case kProtonBar: pProtP->Fill(-pParticle->P()); break;
+          case kProton   : pProtP->Fill( pParticle->P()); pprotRadius->Fill(Radius); break;
+          case kProtonBar: pProtP->Fill(-pParticle->P()); pprotbarRadius->Fill(Radius); break;
               
         }//switch PdgCode
             
       }//hits loop
     }//hit tree loop
     
-    if(isClus) GetLoader()->TreeR()->GetEntry(0);
+    if(isSdig){
+      GetLoader()->TreeS()->GetEntry(0);  
+      for(Int_t iSdigN=0;iSdigN<SDigits()->GetEntries();iSdigN++){//sdigits loop 
+        AliRICHdigit *pSdig=(AliRICHdigit*)SDigits()->At(iSdigN); //get current sdigit pointer  
+        AliRICHhit   *pHit=Hit(pSdig->GetTrack(0));               //get hit of this sdigit (always one)
+        TVector2 hit2 =C(pHit->C())->Mrs2Pc(pHit->OutX3());       //this hit position  in local system
+        TVector2 sdig2=P()->Pad2Loc(pSdig->Pad());                //center of pad for this sdigit
+        pHxSd->Fill(hit2.X()-sdig2.X());        
+        pHySd->Fill(hit2.Y()-sdig2.Y());      
+      }//sdigits loop
+    }//if(isSdig)
+        
     if(isDig)  GetLoader()->TreeD()->GetEntry(0);  
+    if(isClus) GetLoader()->TreeR()->GetEntry(0);
     
     for(Int_t iChamN=1;iChamN<=7;iChamN++){//chambers loop
+      if(isDig){
+        for(Int_t iDigN=0;iDigN<Digits(iChamN)->GetEntries();iDigN++){//digits loop
+          AliRICHdigit *pDig=(AliRICHdigit*)Digits(iChamN)->At(iDigN);
+          AliRICHhit   *pHit=Hit(pDig->GetTrack(0));           //get first hit of this digit
+          TVector2 hitV2=C(iChamN)->Mrs2Pc(pHit->OutX3()); 
+          TVector2 digV2=P()->Pad2Loc(pDig->Pad());            //center of pad for this digit
+          pHxD->Fill(hitV2.X()-digV2.X());        pHyD->Fill(hitV2.Y()-digV2.Y());
+        }//digits loop
+      }//isDig
       if(isClus){
         Int_t iNclusCham=Clusters(iChamN)->GetEntries(); if(iNclusCham) pNumClusH1->Fill(iNclusCham);//number of clusters per event
         for(Int_t iClusN=0;iClusN<iNclusCham;iClusN++){//clusters loop
@@ -557,18 +642,11 @@ void AliRICH::ControlPlots()
            if(!pClus->IsPureMip())     pPhotQdcH1->Fill(pClus->Q());  //not MIP
         }//clusters loop
       }//isClus
-      if(isDig){
-        for(Int_t iDigN=0;iDigN<Digits(iChamN)->GetEntries();iDigN++){//digits loop
-          AliRICHdigit *pDig=(AliRICHdigit*)Digits(iChamN)->At(iDigN);
-          AliRICHhit   *pHit=Hit(pDig->GetTrack(0));//get first hit of this digit
-          TVector2 hitV2=C(iChamN)->Mrs2Pc(pHit->OutX3()); TVector2 digV2=P()->Pad2Loc(pDig->Pad());//center of pad for digit
-          pHxD->Fill(hitV2.X()-digV2.X()); pHyD->Fill(hitV2.Y()-digV2.Y());
-        }//digits loop
-      }//isDig
     }//chambers loop
     Info("ControlPlots","Event %i processed.",iEvtN);
   }//events loop 
-  
+             GetLoader()->UnloadHits();
+  if(isSdig) GetLoader()->UnloadSDigits();
   if(isDig)  GetLoader()->UnloadDigits();
   if(isClus) GetLoader()->UnloadRecPoints();
   
@@ -576,10 +654,11 @@ void AliRICH::ControlPlots()
   GetLoader()->GetRunLoader()->UnloadKinematics();  
   
   pFile->Write(); delete pFile;
-  sw.Print();time.Print();
+  
+  gBenchmark->Show("ControlPlots");
 }//ControlPlots()
 //__________________________________________________________________________________________________
-AliRICHhit* AliRICH::Hit(Int_t tid)
+AliRICHhit* AliRICH::Hit(Int_t tid)const
 {
 //defines which hit provided by given tid for the currently loaded event
   GetLoader()->LoadHits();
@@ -597,8 +676,8 @@ AliRICHhit* AliRICH::Hit(Int_t tid)
 void AliRICH::PrintHits(Int_t iEvtN)
 {
 //Prints a list of RICH hits for a given event. Default is event number 0.
+  if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
   AliInfo(Form("List of RICH hits for event %i",iEvtN));
-  GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
   if(GetLoader()->LoadHits()) return;
   
   Int_t iTotalHits=0;
@@ -608,14 +687,15 @@ void AliRICH::PrintHits(Int_t iEvtN)
     iTotalHits+=Hits()->GetEntries();
   }
   GetLoader()->UnloadHits();
+  ResetHits();
   AliInfo(Form("totally %i hits",iTotalHits));
 }
 //__________________________________________________________________________________________________
 void AliRICH::PrintSDigits(Int_t iEvtN)
 {
 //prints a list of RICH sdigits  for a given event
+  if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
   Info("PrintSDigits","List of RICH sdigits for event %i",iEvtN);
-  GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
   if(GetLoader()->LoadSDigits()) return;
   
   GetLoader()->TreeS()->GetEntry(0);
@@ -627,8 +707,8 @@ void AliRICH::PrintSDigits(Int_t iEvtN)
 void AliRICH::PrintDigits(Int_t iEvtN)
 {
 //prints a list of RICH digits  for a given event
+  if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
   Info("PrintDigits","List of RICH digits for event %i",iEvtN);
-  GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
   if(GetLoader()->LoadDigits()) return;
   
   Int_t iTotalDigits=0;
@@ -644,7 +724,7 @@ void AliRICH::PrintDigits(Int_t iEvtN)
 void AliRICH::PrintClusters(Int_t iEvtN)
 {
 //prints a list of RICH clusters  for a given event
-  Info("PrintClusters","List of RICH clusters for event %i",iEvtN);
+  AliInfo(Form("List of RICH clusters for event %i",iEvtN));
   GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
   if(GetLoader()->LoadRecPoints()) return;
   
@@ -655,7 +735,7 @@ void AliRICH::PrintClusters(Int_t iEvtN)
     iTotalClusters+=Clusters(iChamber)->GetEntries();
   }
   GetLoader()->UnloadRecPoints();
-  Info("PrintClusters","totally %i clusters",iTotalClusters);
+  AliInfo(Form("totally %i clusters for event %i",iTotalClusters,iEvtN));
 }
 //__________________________________________________________________________________________________
 void AliRICH::PrintTracks(Int_t iEvtN)
@@ -667,35 +747,14 @@ void AliRICH::PrintTracks(Int_t iEvtN)
   if(GetLoader()->GetRunLoader()->LoadKinematics()) return;
   AliStack *pStack=GetLoader()->GetRunLoader()->Stack();
   
-  for(Int_t i=0;i<pStack->GetNtrack();i++){
-    pStack->Particle(i)->Print();
-  }
+  for(Int_t i=0;i<pStack->GetNtrack();i++) pStack->Particle(i)->Print();
   
-  AliInfo(Form("totally %i tracks including %i primaries",pStack->GetNtrack(),pStack->GetNprimary()));
+  AliInfo(Form("totally %i tracks including %i primaries for event %i",pStack->GetNtrack(),pStack->GetNprimary(),iEvtN));
   GetLoader()->GetRunLoader()->UnloadHeader();
   GetLoader()->GetRunLoader()->UnloadKinematics();
 }
 //__________________________________________________________________________________________________
-Int_t AliRICH::Nparticles(Int_t iPartID,Int_t iEvtN,AliRunLoader *pRL)
-{
-//counts total number of particles of given type (including secondary) for a given event
-  pRL->GetEvent(iEvtN);    
-  if(pRL->LoadHeader()) return 0;
-  if(pRL->LoadKinematics()) return 0;
-  AliStack *pStack=pRL->Stack();
-  
-  Int_t iCounter=0;
-  for(Int_t i=0;i<pStack->GetNtrack();i++){
-    if(pStack->Particle(i)->GetPdgCode()==iPartID) iCounter++;
-  }
-  
-  pRL->UnloadHeader();
-  pRL->UnloadKinematics();
-  return iCounter;
-}
-
-//__________________________________________________________________________________________________
-void AliRICH::GeomPadPanelFrame()
+void AliRICH::GeomPadPanelFrame()const
 {
 //Pad Panel frame  6 sectors
   Double_t cm=1,mm=0.1*cm;//default is cm
@@ -731,7 +790,7 @@ void AliRICH::GeomPadPanelFrame()
     gMC->Gspos("PPFL",8,"RPPF",  +224.5*mm,  +151.875*mm,     0.85*mm,  0,"ONLY");
 }//GeomPadPanelFrame()
 //__________________________________________________________________________________________________
-void AliRICH::GeomAmpGap()
+void AliRICH::GeomAmpGap()const
 {
 //Gap - anod wires 6 copies to RICH
   Double_t cm=1,mm=0.1*cm,mkm=0.001*mm;//default is cm
@@ -752,7 +811,7 @@ void AliRICH::GeomAmpGap()
     gMC->Gspos("RANO",i,"RGAP",     0*mm, -411/2*mm+i*4*mm, 0.185*mm, matrixIdReturn,"ONLY"); //WP 2099P1  
 }//GeomAmpGap()
 //__________________________________________________________________________________________________
-void AliRICH::GeomRadiators()
+void AliRICH::GeomRadiators()const
 {
 //Defines radiators geometry  
   Double_t mm=0.1;//default is cm
@@ -778,7 +837,7 @@ void AliRICH::GeomRadiators()
         gMC->Gspos("RRSP",10*i+j,"RRAD",-1330*mm/2+116*mm+j*122*mm,(i-1)*105*mm,-0.5*mm,0,"ONLY");//spacers
 }//GeomRadiators()
 //__________________________________________________________________________________________________
-void AliRICH::GeomSandBox()
+void AliRICH::GeomSandBox()const
 {
 //Defines SandBox geometry
   Double_t mm=0.1;//default is cm
@@ -793,7 +852,7 @@ void AliRICH::GeomSandBox()
     gMC->Gspos("RSCO",2,"RSNB", 0*mm, 0*mm,    -25*mm, 0,"ONLY"); //cover to sandbox
 }//GeomSandBox()
 //__________________________________________________________________________________________________
-void AliRICH::GeomRadioSrc()
+void AliRICH::GeomRadioSrc()const
 {
 // Defines geometry for radioactive source  
   Double_t cm=1,mm=0.1*cm,mkm=0.001*cm;
@@ -820,7 +879,7 @@ void AliRICH::GeomRadioSrc()
           gMC->Gspos("RSSR",1,"RSSS",   0,        0,  -4.5*mm, 0,"ONLY");//Sr90  in support steel screw
 }//GeomSr90()
 //__________________________________________________________________________________________________
-void AliRICH::GeomAerogel()
+void AliRICH::GeomAerogel()const
 {
 //Creates detailed geometry for aerogel study.
   AliDebug(1,"Start.");
@@ -869,3 +928,22 @@ void AliRICH::CreateGeometry()
   AliDebug(1,"Stop main.");  
 }//CreateGeometry()
 //__________________________________________________________________________________________________
+void AliRICH::CheckPR()const
+{
+//Pattern recognition with stack particles
+  TFile *pFile = new TFile("$(HOME)/RPR.root","RECREATE","RICH Pattern Recognition");
+  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:TrackX:TrackY:MinX:MinY:ChargeMIP:ThetaCerenkov:NPhotons:MipIndex:Chamber:Particle");
+  printf("\n\n");
+  printf("Pattern Recognition done for event %5i",0);
+  AliMagF * magf = gAlice->Field();
+  AliTracker::SetFieldMap(magf);
+  for(Int_t iEvtN=0;iEvtN<GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
+    GetLoader()->GetRunLoader()->GetEvent(iEvtN);
+    AliRICHTracker *tr = new AliRICHTracker();
+    tr->RecWithStack(hn);
+//    Info("CheckPR","Pattern Recognition done for event %i \b",iEvtN);
+    printf("\b\b\b\b\b%5i",iEvtN+1);
+  }
+  printf("\n\n");
+  pFile->Write();pFile->Close();
+}

@@ -10,14 +10,17 @@ void ps(Int_t event=0)  {r->PrintSDigits(event);} //utility print sdigits
 void pd(Int_t event=0)  {r->PrintDigits(event);}  //utility print digits
 void pc(Int_t event=0)  {r->PrintClusters(event);}//utility print clusters
 void pt(Int_t event=0)  {r->PrintTracks(event);}  //utility print tracks
-Int_t ne(Int_t event=0)   {AliRICH::Nparticles(kElectron,event,al);} //utility number of electrons
-Int_t npi0(Int_t event=0) {AliRICH::Nparticles(kPi0,event,al);}      //utility number of electrons
-Int_t npip(Int_t event=0) {AliRICH::Nparticles(kPiPlus,event,al);}   //utility number of electrons
-Int_t npim(Int_t event=0) {AliRICH::Nparticles(kPiMinus,event,al);}  //utility number of electrons
-Int_t nk0(Int_t event=0)  {AliRICH::Nparticles(kK0,event,al);}       //utility number of electrons
-Int_t nkp(Int_t event=0)  {AliRICH::Nparticles(kKPlus,event,al);}    //utility number of electrons
-Int_t nkm(Int_t event=0)  {AliRICH::Nparticles(kKMinus,event,al);}   //utility number of electrons
-Int_t npp(Int_t event=0)  {AliRICH::Nparticles(kProton,event,al);}   //utility number of protons
+Int_t nem(Int_t event=0)  {AliRICHDisplFast::Nparticles(kElectron  ,event,al);} //utility number of electrons
+Int_t nep(Int_t event=0)  {AliRICHDisplFast::Nparticles(kPositron  ,event,al);} //utility number of positrons
+Int_t nmup(Int_t event=0) {AliRICHDisplFast::Nparticles(kMuonPlus  ,event,al);} //utility number of positive muons
+Int_t nmum(Int_t event=0) {AliRICHDisplFast::Nparticles(kMuonMinus ,event,al);} //utility number of negative muons
+Int_t npi0(Int_t event=0) {AliRICHDisplFast::Nparticles(kPi0       ,event,al);} //utility number of electrons
+Int_t npip(Int_t event=0) {AliRICHDisplFast::Nparticles(kPiPlus    ,event,al);} //utility number of electrons
+Int_t npim(Int_t event=0) {AliRICHDisplFast::Nparticles(kPiMinus   ,event,al);} //utility number of electrons
+Int_t nk0(Int_t event=0)  {AliRICHDisplFast::Nparticles(kK0        ,event,al);} //utility number of electrons
+Int_t nkp(Int_t event=0)  {AliRICHDisplFast::Nparticles(kKPlus     ,event,al);} //utility number of electrons
+Int_t nkm(Int_t event=0)  {AliRICHDisplFast::Nparticles(kKMinus    ,event,al);} //utility number of electrons
+Int_t npp(Int_t event=0)  {AliRICHDisplFast::Nparticles(kProton    ,event,al);} //utility number of protons
 //__________________________________________________________________________________________________
 void pp(int tid)
 {
@@ -73,30 +76,7 @@ void Show()
             Bool_t isClusters=!rl->LoadRecPoints();
   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    Int_t iNparticles=al->Stack()->GetNtrack();
-    Int_t iNprims=al->Stack()->GetNprimary();
     
-    Int_t iElectronCounter=0,iPositronCounter=0;    
-    Int_t iPiPlusCounter=0,iPiMinusCounter=0;    
-    Int_t iKPlusCounter=0,iKMinusCounter=0;    
-    Int_t iProtonCounter=0,iProtonBarCounter=0;    
-    Int_t nP=0;
-    Info("Show-STA"," %i particles to be read",iNparticles);
-    for(Int_t iParticleN=0;iParticleN<iNparticles;iParticleN++){//stack loop
-      TParticle *pPart=al->Stack()->Particle(iParticleN);
-      nP++;
-      if(nP%10000==0) Info("Show-STA"," %i particles read",nP);
-      switch(pPart->GetPdgCode()){
-        case kKPlus: iKPlusCounter++; break;
-        case kKMinus:iKMinusCounter++; break;
-        case kProton: iProtonCounter++; break;
-        case kProtonBar:iProtonBarCounter++; break;
-        case kElectron: iElectronCounter++; break;
-        case kPositron:iPositronCounter++; break;
-        case kPiPlus: iPiPlusCounter++; break;
-        case kPiMinus:iPiMinusCounter++; break;
-      }
-    }//stack loop
     
     Info("Show-STA","Evt %i->   %i particles %i primaries  %i e- %i e+",
                      iEventN,   iNparticles,    iNprims,      iElectronCounter,      iPositronCounter);
@@ -108,19 +88,6 @@ void Show()
                      iEventN,   iNparticles,    iNprims,      iProtonCounter,        iProtonBarCounter);
     
     Int_t iHitsCounter=0;
-    Int_t iNentries=rl->TreeH()->GetEntries();
-    for(Int_t iEntryN=0;iEntryN<iNentries;iEntryN++){//TreeH loop
-      rl->TreeH()->GetEntry(iEntryN);//get current entry (prim)          
-      
-      for(Int_t iHitN=0;iHitN<r->Hits()->GetEntries();iHitN++){//hits loop
-        iHitsCounter++;
-        AliRICHhit *pHit = (AliRICHhit*)r->Hits()->At(iHitN);//get current hit
-        TParticle *pPart=al->Stack()->Particle(pHit->GetTrack());//get stack particle which produced the current hit
-      }//hits loop
-      
-      if(iEntryN<7) Info("Show","Evt %i-> prim %4i has %4i hits from %s (,%7.2f,%7.2f)",
-                  iEventN,iEntryN, r->Hits()->GetEntries(), pPart->GetName(), pPart->Theta()*TMath::RadToDeg(),pPart->Phi()*TMath::RadToDeg());
-    }//TreeH loop
     Info("Show-HIT","Evt %i->   %i particles %i primaries  %i entries in TreeH %i hits",
                      iEventN,   iNparticles,    iNprims,      iNentries,         iHitsCounter);
     
@@ -202,7 +169,7 @@ void RichMenu()
     pMenu->AddButton("Show",            "Show()",             "Shows the structure of events in files");
     pMenu->AddButton("Display Fast",    "AliRICHDisplFast *d = new AliRICHDisplFast(); d->Exec();",        "Display Fast");
     pMenu->AddButton("Control Plots",   "ControlPlots()",     "Create some control histograms");
-    
+    pMenu->AddButton("Recon with stack","r->CheckPR()",     "Create RSR.root with ntuple hn");    
   }else{//it's aliroot, simulate
     pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
     pMenu->AddButton("Debug OFF",    "DebugOFF();",   "Switch debug on-off");   
@@ -219,60 +186,6 @@ void RichMenu()
 void DebugOFF(){  Info("DebugOFF","");  AliLog::SetGlobalDebugLevel(0);}
 void DebugON() {  Info("DebugON","");   AliLog::SetGlobalDebugLevel(AliLog::kDebug);}
 //__________________________________________________________________________________________________
-TObjArray * CreateHists(Double_t pcut=0.9)
-{
-  TH2F *pPosH2    =new TH2F("pos"   ,"Pos mixture",5,0,5, 9,0,9); pPosH2->SetStats(0);
-  TH2F *pNegH2    =new TH2F("neg"   ,"Neg mixture",5,0,5, 9,0,9); pNegH2->SetStats(0);
-  TH2F *pPosCutH2 =new TH2F("poscut",Form("Pos mixture with P>%4.2f GeV",pcut),5,0,5, 9,0,9); pPosCutH2->SetStats(0);
-  TH2F *pNegCutH2 =new TH2F("negcut",Form("Neg mixture with P>%4.2f GeV",pcut),5,0,5, 9,0,9); pNegCutH2->SetStats(0);
-  pPosH2->GetXaxis()->SetBinLabel(1,"e^{+}");        pNegH2->GetXaxis()->SetBinLabel(1,"e^{-}");  
-  pPosH2->GetXaxis()->SetBinLabel(2,"#mu^{+}");      pNegH2->GetXaxis()->SetBinLabel(2,"#mu^{-}");
-  pPosH2->GetXaxis()->SetBinLabel(3,"#pi^{+}");      pNegH2->GetXaxis()->SetBinLabel(3,"#pi^{-}");
-  pPosH2->GetXaxis()->SetBinLabel(4,"K^{+}");        pNegH2->GetXaxis()->SetBinLabel(4,"K^{-}");  
-  pPosH2->GetXaxis()->SetBinLabel(5,"p^{+}");        pNegH2->GetXaxis()->SetBinLabel(5,"p^{-}");  
-  
-  pPosCutH2->GetXaxis()->SetBinLabel(1,"e^{+}");     pNegCutH2->GetXaxis()->SetBinLabel(1,"e^{-}");  
-  pPosCutH2->GetXaxis()->SetBinLabel(2,"#mu^{+}");   pNegCutH2->GetXaxis()->SetBinLabel(2,"#mu^{-}");
-  pPosCutH2->GetXaxis()->SetBinLabel(3,"#pi^{+}");   pNegCutH2->GetXaxis()->SetBinLabel(3,"#pi^{-}");
-  pPosCutH2->GetXaxis()->SetBinLabel(4,"K^{+}");     pNegCutH2->GetXaxis()->SetBinLabel(4,"K^{-}");  
-  pPosCutH2->GetXaxis()->SetBinLabel(5,"p^{+}");     pNegCutH2->GetXaxis()->SetBinLabel(5,"p^{-}");  
-  
-  pPosH2->GetYaxis()->SetBinLabel(1,"ch1");          pNegH2->GetYaxis()->SetBinLabel(1,"ch1");  
-  pPosH2->GetYaxis()->SetBinLabel(2,"ch2");          pNegH2->GetYaxis()->SetBinLabel(2,"ch2");  
-  pPosH2->GetYaxis()->SetBinLabel(3,"ch3");          pNegH2->GetYaxis()->SetBinLabel(3,"ch3");  
-  pPosH2->GetYaxis()->SetBinLabel(4,"ch4");          pNegH2->GetYaxis()->SetBinLabel(4,"ch4");  
-  pPosH2->GetYaxis()->SetBinLabel(5,"ch5");          pNegH2->GetYaxis()->SetBinLabel(5,"ch5");  
-  pPosH2->GetYaxis()->SetBinLabel(6,"ch6");          pNegH2->GetYaxis()->SetBinLabel(6,"ch6");  
-  pPosH2->GetYaxis()->SetBinLabel(7,"ch7");          pNegH2->GetYaxis()->SetBinLabel(7,"ch7");  
-  pPosH2->GetYaxis()->SetBinLabel(8,"prim");         pNegH2->GetYaxis()->SetBinLabel(8,"prim");  
-  pPosH2->GetYaxis()->SetBinLabel(9,"tot");          pNegH2->GetYaxis()->SetBinLabel(9,"tot");  
-
-  pPosCutH2->GetYaxis()->SetBinLabel(1,"ch1");          pNegCutH2->GetYaxis()->SetBinLabel(1,"ch1");  
-  pPosCutH2->GetYaxis()->SetBinLabel(2,"ch2");          pNegCutH2->GetYaxis()->SetBinLabel(2,"ch2");  
-  pPosCutH2->GetYaxis()->SetBinLabel(3,"ch3");          pNegCutH2->GetYaxis()->SetBinLabel(3,"ch3");  
-  pPosCutH2->GetYaxis()->SetBinLabel(4,"ch4");          pNegCutH2->GetYaxis()->SetBinLabel(4,"ch4");  
-  pPosCutH2->GetYaxis()->SetBinLabel(5,"ch5");          pNegCutH2->GetYaxis()->SetBinLabel(5,"ch5");  
-  pPosCutH2->GetYaxis()->SetBinLabel(6,"ch6");          pNegCutH2->GetYaxis()->SetBinLabel(6,"ch6");  
-  pPosCutH2->GetYaxis()->SetBinLabel(7,"ch7");          pNegCutH2->GetYaxis()->SetBinLabel(7,"ch7");  
-  pPosCutH2->GetYaxis()->SetBinLabel(8,"prim");         pNegCutH2->GetYaxis()->SetBinLabel(8,"prim");  
-  pPosCutH2->GetYaxis()->SetBinLabel(9,"tot");          pNegCutH2->GetYaxis()->SetBinLabel(9,"tot");  
-  TObjArray *pOA=new TObjArray;
-  pOA->Add(pPosH2);pOA->Add(pNegH2);pOA->Add(pPosCutH2);pOA->Add(pNegCutH2);  
-  return pOA;
-}//ParticleContribs()
-//__________________________________________________________________________________________________
-
-void ShowHists()
-{
-  pC=new TCanvas("c1","Particle composition");
-  pC->Divide(2,2);
-  pC->cd(1);  pos->Draw("text"); gPad->SetGrid();
-  pC->cd(2);  neg->Draw("text"); gPad->SetGrid();
-  pC->cd(3);  poscut->Draw("text"); gPad->SetGrid();
-  pC->cd(4);  negcut->Draw("text"); gPad->SetGrid();
-}
-
-//__________________________________________________________________________________________________
 void GeomGui()
 {
   if(gGeoManager){ 
@@ -287,3 +200,130 @@ void ControlPlots()
   r->ControlPlots();
   new TBrowser;
 }
+//__________________________________________________________________________________________________
+void ParticleComposition()
+{
+  TH2F *pFluxH2    =new TH2F("flux","Charged flux for central Hijing event with Vertex<470 P>5MeV for electrons and positrons, P>1GeV for others",10,-5,5, 10,0,10); pFluxH2->SetStats(0);
+  pFluxH2->GetXaxis()->SetBinLabel(1,Form("p^{-}>%dGeV"   ,cutPproton));        
+  pFluxH2->GetXaxis()->SetBinLabel(2,Form("K^{-}>%dGeV"   ,cutPkaonminus));        
+  pFluxH2->GetXaxis()->SetBinLabel(3,Form("#pi^{-}>%dGeV" , ));      
+  pFluxH2->GetXaxis()->SetBinLabel(4,Form("#mu^{-}>%dGeV" , ));      
+  pFluxH2->GetXaxis()->SetBinLabel(5,Form("e^{+}>%dGeV"   ,));        
+  
+  pFluxH2->GetXaxis()->SetBinLabel(6,Form("e^{-}>%dGeV"));        
+  pFluxH2->GetXaxis()->SetBinLabel(7,Form("#mu^{+}>%dGeV"));      
+  pFluxH2->GetXaxis()->SetBinLabel(8,Form("#pi^{+}>%dGeV"));      
+  pFluxH2->GetXaxis()->SetBinLabel(9,Form("K^{+}>%dGeV"));        
+  pFluxH2->GetXaxis()->SetBinLabel(10,Form("p^{+}>%dGeV"));        
+  
+  pFluxH2->GetYaxis()->SetBinLabel(1,"sum");  
+  pFluxH2->GetYaxis()->SetBinLabel(2,"ch1");  
+  pFluxH2->GetYaxis()->SetBinLabel(3,"ch2");  
+  pFluxH2->GetYaxis()->SetBinLabel(4,"ch3");  
+  pFluxH2->GetYaxis()->SetBinLabel(5,"ch4");  
+  pFluxH2->GetYaxis()->SetBinLabel(6,"ch5");  
+  pFluxH2->GetYaxis()->SetBinLabel(7,"ch6");  
+  pFluxH2->GetYaxis()->SetBinLabel(8,"ch7");  
+  pFluxH2->GetYaxis()->SetBinLabel(9,"prim"); 
+  pFluxH2->GetYaxis()->SetBinLabel(10,"tot");  
+
+  TH1F *pElecP=new TH1F("Pelec","Electrons made hit in RICH;p [GeV]",1000,-10,10); 
+  TH1F *pMuonP=new TH1F("Pmuon","Muons made hit in RICH;p [GeV]"    ,1000,-10,10); 
+  TH1F *pPionP=new TH1F("Ppion","Pions made hit in RICH;p [GeV]"    ,1000,-10,10); 
+  TH1F *pKaonP=new TH1F("Pkaon","Kaon made hit in RICH;p [GeV]"     ,1000,-10,10); 
+  TH1F *pProtP=new TH1F("Pprot","Protons made hit in RICH;p [GeV]"  ,1000,-10,10); 
+  
+  al->LoadHeader(); 
+  al->LoadKinematics();  
+  Int_t iNparticles=al->Stack()->GetNtrack();
+  Int_t iNprims=al->Stack()->GetNprimary();
+  
+  for(Int_t iParticleN=0;iParticleN<iNparticles;iParticleN++){//stack loop
+    TParticle *pPart=al->Stack()->Particle(iParticleN);
+
+    if(iParticleN%10000==0) Info("Show-STA"," %i particles read",iParticleN);
+    
+    switch(pPart->GetPdgCode()){
+      case kPositron:  pFluxH2->Fill(-1,9);  break;
+      case kElectron:  pFluxH2->Fill( 0,9);  break;
+      
+      case kMuonMinus: pFluxH2->Fill(-2,9);  break;
+      case kMuonPlus:  pFluxH2->Fill( 1,9);  break;
+      
+      case kPiMinus:   pFluxH2->Fill(-3,9);  break;
+      case kPiPlus:    pFluxH2->Fill( 2,9);  break;
+      
+      case kKMinus:    pFluxH2->Fill(-4,9);  break;
+      case kKPlus:     pFluxH2->Fill( 3,9);  break;
+      
+      case kProtonBar: pFluxH2->Fill(-5,9);  break;
+      case kProton:    pFluxH2->Fill( 4,9);  break;            
+    }//switch
+  }//stack loop
+
+  
+  
+    
+  rl->LoadHits(); 
+    
+        
+  for(Int_t iEntryN=0;iEntryN < rl->TreeH()->GetEntries();iEntryN++){//TreeH loop
+    rl->TreeH()->GetEntry(iEntryN);//get current entry (prim)                
+    for(Int_t iHitN=0;iHitN<r->Hits()->GetEntries();iHitN++){//hits loop
+      AliRICHhit *pHit = (AliRICHhit*)r->Hits()->At(iHitN);//get current hit
+      TParticle  *pPart=al->Stack()->Particle(pHit->GetTrack());//get stack particle which produced the current hit
+      
+      if(TMath::Sqrt(pPart->Vx()*pPart->Vx()+pPart->Vy()*pPart->Vy()+pPart->Vz()*pPart->Vz()) > 470) continue; //cut on vertex position
+      if(pPart->GetPdgCode()==kElectron && pPart->P()<0.005)                                         continue; //cut on electron momentum 5MeV
+      if(pPart->GetPdgCode()==kPositron && pPart->P()<0.005)                                         continue; //cut on electron momentum 5MeV
+      if(pPart->GetPdgCode()!=kElectron && pPart->P()<1)                                             continue; //cut on others momentum 1GeV
+      
+      switch(pPart->GetPdgCode()){
+        case kPositron : pElecP->Fill(-pPart->P()); pFluxH2->Fill(-1,pHit->C());break;
+        case kElectron : pElecP->Fill( pPart->P()); pFluxH2->Fill( 0,pHit->C());break;
+         
+        case kMuonPlus : pMuonP->Fill( pPart->P()); pFluxH2->Fill(-2,pHit->C());break;
+        case kMuonMinus: pMuonP->Fill(-pPart->P()); pFluxH2->Fill( 1,pHit->C());break;
+                     
+        case kPiMinus  : pPionP->Fill(-pPart->P()); pFluxH2->Fill(-3,pHit->C());break;
+        case kPiPlus   : pPionP->Fill( pPart->P()); pFluxH2->Fill( 2,pHit->C());break;
+           
+        case kKPlus    : pKaonP->Fill( pPart->P()); pFluxH2->Fill(-4,pHit->C());break;
+        case kKMinus   : pKaonP->Fill(-pPart->P()); pFluxH2->Fill( 3,pHit->C());break;
+           
+        case kProton   : pProtP->Fill( pPart->P()); pFluxH2->Fill(-5,pHit->C());break;
+        case kProtonBar: pProtP->Fill(-pPart->P()); pFluxH2->Fill( 4,pHit->C());break;
+      }
+    }//hits loop      
+  }//TreeH loop
+                        
+  rl->UnloadHits();  
+  al->UnloadHeader(); 
+  al->UnloadKinematics();  
+  
+  
+  for(Int_t i=1;i<=pFluxH2->GetNbinsX();i++){
+    Stat_t sum=0;
+    for(Int_t j=2;j<=8;j++)    sum+=pFluxH2->GetBinContent(i,j);    
+    pFluxH2->SetBinContent(i,1,sum);
+  }
+  
+  TCanvas *pC1=new TCanvas("canvas1",Form("Event Nprims=%i",iNprims),1000,900);
+  pFluxH2->Draw("text");  gPad->SetGrid();
+  
+  new TCanvas("celec","",200,100); pElecP->Draw();
+  new TCanvas("cmuon","",200,100); pMuonP->Draw();
+  new TCanvas("cpion","",200,100); pPionP->Draw();
+  new TCanvas("ckaon","",200,100); pKaonP->Draw();
+  new TCanvas("cprot","",200,100); pProtP->Draw();
+  
+}
+
+
+
+
+
+
+
+
+

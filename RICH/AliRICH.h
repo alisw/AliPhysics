@@ -1,10 +1,9 @@
 #ifndef AliRICH_h
 #define AliRICH_h
-
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <Riostream.h>
+//#include <Riostream.h>
 #include <TClonesArray.h>
 #include <TObjArray.h>
 #include <TVector.h>
@@ -178,17 +177,18 @@ public:
   virtual Int_t         IsVersion()                           const =0;                                  //interface from         
   virtual void          StepManager()                               =0;                                  //interface from AliMC
   virtual void          Hits2SDigits();                                                                  //interface from AliSimulation
+  virtual void          Digits2Raw();                                                                    //interface from AliSimulation
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* man) const {return new AliRICHDigitizer(man);}  //interface from AliSimulation
   virtual void          SetTreeAddress();                                                                //interface from AliLoader
   virtual void          MakeBranch(Option_t *opt=" ");                                                   //interface from AliLoader
   virtual void          CreateMaterials();                                                               //interface from AliMC
   virtual void          CreateGeometry();                                                                //interface from AliMC
-          void          GeomPadPanelFrame();                                                             //defines PPF geometry
-          void          GeomAmpGap();                                                                    //defines gap geometry + anod wires
-          void          GeomRadiators();                                                                 //defines radiators geometry
-          void          GeomSandBox();                                                                   //defines sandbox geometry
-          void          GeomRadioSrc();                                                                  //defines radio source geometry
-          void          GeomAerogel();                                                                   //defines aerogel geometry
+          void          GeomPadPanelFrame()const;                                                        //defines PPF geometry
+          void          GeomAmpGap()       const;                                                        //defines gap geometry + anod wires
+          void          GeomRadiators()    const;                                                        //defines radiators geometry
+          void          GeomSandBox()      const;                                                        //defines sandbox geometry
+          void          GeomRadioSrc()     const;                                                        //defines radio source geometry
+          void          GeomAerogel()      const;                                                        //defines aerogel geometry
   virtual void          BuildGeometry();                                                                 //interface 
 //private part  
   static  Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola);       //deals with Fresnel absorption
@@ -196,7 +196,6 @@ public:
   inline  void    CreateSDigits();                                       //create sdigits container as a simple list
   inline  void    CreateDigits();                                        //create digits container as 7 lists, one per chamber
   inline  void    CreateClusters();                                      //create clusters container  as 7 lists, one per chamber
-//        void    ResetHits()                {AliDetector::ResetHits();}  //virtual  
           void    ResetSDigits()             {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 
           void    ResetDigits()              {if(fDigitsNew)for(int i=0;i<kNchambers;i++){fDigitsNew->At(i)->Clear();fNdigitsNew[i]=0;}} //virtual
           void    ResetClusters()            {if(fClusters) for(int i=0;i<kNchambers;i++){fClusters ->At(i)->Clear();fNclusters[i]=0;}}
@@ -214,18 +213,19 @@ public:
   void            PrintDigits  (Int_t iEvent=0);                        //prints a list of digits for a given event
   void            PrintClusters(Int_t iEvent=0);                        //prints a list of clusters for a given event
   void            PrintTracks  (Int_t iEvent=0);                        //prints a list of tracks for a given event
-  static Int_t    Nparticles   (Int_t iPID,Int_t iEvent=0,AliRunLoader *p=0); //returns a number of particles 
-  AliRICHhit*     Hit(Int_t tid);                                       //returns pointer of the first RICH hit created by a given particle 
-            
+  void            CheckPR      ()const;                                 //utility-> run staff for stack ??????     
+  AliRICHhit*     Hit(Int_t tid)const;                                  //returns pointer of the first RICH hit created by a given particle 
   inline void AddHit(Int_t chamber,Int_t tid,TVector3 in3,TVector3 out3,Double_t eloss=0);           //add new hit
   inline void AddSDigit(Int_t c,TVector pad,Double_t q,Int_t pid,Int_t tid);                         //add new sdigit
   inline void AddDigit(int c,TVector pad,int q,int cfm,int *tid);                                    //add new digit
 //  void AddDigit(Int_t c,TVector pad,Int_t q)//for real data digits
 //       {TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(0));new(tmp[fNdigitsNew[0]++])AliRICHdigit(c,pad,q,0,-1,-1,-1);}  
   inline void AddCluster(AliRICHcluster &cl);                                                        //add new cluster                        
+  using AliModule::AddHit;                                              //to get rid of virtual hidden warning
+  using AliModule::AddDigit;                                            //to get rid of virtual hidden warning 
+  using AliModule::Digits;                                              //to get rid of virtual hidden warning 
 protected:  
-  enum                  EMedia {kAir=1,kRoha,kSiO2,kC6F14,kCH4,kCsI,kGridCu,kOpSiO2,kGap,kAl,kGlass,kCu,kW
-                                      ,kSteel,kPerpex,kSr90,kMylar,kGel,kReflector};
+  enum                  EMedia {kAir=1,kRoha,kSiO2,kC6F14,kCH4,kCsI,kGridCu,kOpSiO2,kGap,kAl,kGlass,kCu,kW,kSteel,kPerpex,kSr90,kMylar,kGel,kReflector};
   enum                  ECounters {kStepManager=0,kCerProdTot,kCerProdRad,kCerKillTot,kCerKillRad,kCerKillRef,kEleProdTot};
   AliRICHParam         *fpParam;                   //main RICH parametrization     
                                                    //fHits and fDigits belong to AliDetector

@@ -17,6 +17,8 @@ public:
   virtual AliTracker*  CreateTracker(AliRunLoader*)const       {AliDebug(1,"Start.");return new AliRICHTracker;}    //virtual from AliReconstructor
   virtual void         Reconstruct(AliRunLoader* pAL) const;              //virtual from AliReconstructor
   virtual void         FillESD(AliRunLoader* pAL, AliESD* pESD) const;    //virtual from AliReconstructor
+  using AliReconstructor::Reconstruct;                                    //to get rid of virtual hidden warning 
+  using AliReconstructor::FillESD;                                        //to get rid of virtual hidden warning 
 private:
   AliRICH*             GetRICH(AliRunLoader* pAL) const;
 

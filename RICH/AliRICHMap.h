@@ -1,7 +1,5 @@
 #ifndef AliRICHMap_h
 #define AliRICHMap_h
-
-
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -24,7 +22,7 @@ public:
   void     FlagHit(Int_t ix,Int_t iy)            {(*fMap)(ix, iy)=-TMath::Abs((*fMap)(ix,iy));}                    //virtual
   Bool_t   ValidateHit(Int_t,Int_t)              {return 1;}                                                       //virtual
   inline   FlagType TestHit(Int_t ix,Int_t iy);                                                                    //virtual
-  void     Print()                          const{fMap->Print();}                                                  
+  void     Print(const Option_t *)          const{fMap->Print();}                                                  
 protected:
   TClonesArray *fDigits;                                 //List of digits
   Int_t         fNdigits;                                //Number of digits

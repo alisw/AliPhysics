@@ -22,10 +22,12 @@
 #include <TView.h>
 #include <TPolyMarker3D.h>
 #include <TPolyLine3D.h>
+#include <TPolyLine.h>
 
 ClassImp(AliRICHParam)
 Bool_t   AliRICHParam::fgIsWireSag            =kTRUE;   //take ware sagita into account?
 Bool_t   AliRICHParam::fgIsResolveClusters    =kTRUE;   //do cluster resolving?
+Bool_t   AliRICHParam::fgIsFeedback           =kTRUE;   //generate feedback photons?
 Bool_t   AliRICHParam::fgIsRadioSrc           =kFALSE;  //put radioactive source instead of radiators?
 Bool_t   AliRICHParam::fgIsAerogel            =kFALSE;  //special aerogel configuration
 Bool_t   AliRICHParam::fgIsTestBeam           =kFALSE;  //special test beam configuration
@@ -38,7 +40,7 @@ Float_t  AliRICHParam::fgSigmaThSpread        =0.035; //
 //__________________________________________________________________________________________________
 void AliRICHParam::Print(Option_t*) const
 {
-  AliInfo(Form("Pads in chamber (%3i,%3i) in sector (%2i,%2i)",NpadsX(),NpadsY(),NpadsXsec(),NpadsYsec()));
+  AliInfo(Form("Pads in chamber (%3i,%3i) in sector (%2i,%2i) pad size (%4.2f,%4.2f)",NpadsX(),NpadsY(),NpadsXsec(),NpadsYsec(),PadSizeX(),PadSizeY()));
   AliInfo(Form("Resolve clusters %i sagita %i Radio source %i Aerogel %i TestBeam %i",
                 IsResolveClusters(),IsWireSag(),IsRadioSrc(),IsAerogel(),IsTestBeam())); 
   fpChambers->Print();
@@ -82,100 +84,59 @@ Float_t AliRICHParam::AbsCH4(Float_t eV)
 }//AbsoCH4()
 //__________________________________________________________________________________________________
 void AliRICHParam::TestSeg()
-{
-  
-  new TCanvas("name","PC segmentation");
-  gPad->Range(-20,-20,200,150);
-  AliRICHDisplFast::DrawSectors();
-  
-  TLatex t; t.SetTextSize(0.02);
-  t.DrawText(0,140,"View from interaction point");
-  t.DrawLatex(PcSizeX()+10,120,Form("Pc  %6.2fx%6.2fcm %3ix%3ipads",PcSizeX()    ,PcSizeY(),    NpadsX()   ,NpadsY()));
-  t.DrawLatex(PcSizeX()+10,115,Form("Sec %6.2fx%5.2fcm %3ix%2ipads",SectorSizeX(),SectorSizeY(),NpadsXsec(),NpadsYsec()));
-  t.DrawLatex(PcSizeX()+10,110,Form("Pad %6.2fx%4.2fcm DeadZone %6.2fcm",PadSizeX()   ,PadSizeY(),DeadZone()));
-  
-  TVector2 v2;
-  t.SetTextAlign(12);
-  v2=AliRICHParam::Pad2Loc( 1,24);  t.DrawText(v2.X(),v2.Y(),"sec 1");  
-  v2=AliRICHParam::Pad2Loc(81,24);  t.DrawText(v2.X(),v2.Y(),"sec 2");  
-  v2=AliRICHParam::Pad2Loc( 1,70);  t.DrawText(v2.X(),v2.Y(),"sec 3");  
-  v2=AliRICHParam::Pad2Loc(81,70);  t.DrawText(v2.X(),v2.Y(),"sec 4");  
-  v2=AliRICHParam::Pad2Loc( 1,120); t.DrawText(v2.X(),v2.Y(),"sec 5");  
-  v2=AliRICHParam::Pad2Loc(81,120); t.DrawText(v2.X(),v2.Y(),"sec 6");  
-  
-//  TGaxis *pAx=new TGaxis(0,0,140,  0,0,140,510,"-="); pAx->SetTitle("x, cm"); pAx->SetTextSize(0.05); pAx->Draw();
-//  TGaxis *pAy=new TGaxis(0,0,  0,140,0,140,510,"-="); pAy->SetTitle("y, cm"); pAy->SetTextSize(0.05); pAy->Draw();
-   
-  
-  t.SetTextColor(kBlue);  
+{  
+  new TCanvas("pads","PC segmentation - pads display",700,600);
+  gPad->Range(-5,-5,PcSizeX()+5,PcSizeY()+15);
+  TVector p(2);   TVector2 c;    TVector2 b;   //current: pad, pad center, pad boundary
+// list of corners:
+  Double_t x0=0,x1=SectorSizeX(),x2=SectorSizeX()+DeadZone(),                                                                 x3=PcSizeX();  
+  Double_t y0=0,y1=SectorSizeY(),y2=SectorSizeY()+DeadZone(),y3=2*SectorSizeY()+DeadZone(),y4=PcSizeY()-SectorSizeY(),y5=PcSizeY();  
+  DrawSectors();
+//header 
+  TLatex t;
+  t.SetTextSize(0.02); t.SetTextColor(kBlack); t.SetTextAlign(11);
+  t.DrawLatex(0,PcSizeY()+10,Form("IP in front of this page. pad size %.2fx%.2fcm   dead zone %.2fcm",PadSizeX(),PadSizeY(),DeadZone()));
+  t.DrawLatex(0,PcSizeY()+ 5,Form("Pc  %.2fx%.2f cm %ix%i pads               Sec %.2fx%.2f cm %ix%i pads",
+                                         PcSizeX()     , PcSizeY()     , NpadsX()    , NpadsY()                                 ,
+                                         SectorSizeX() , SectorSizeY() , NpadsXsec() , NpadsYsec()                              ));
+//sectors  
+  t.SetTextSize(0.015); t.SetTextColor(kRed); t.SetTextAlign(22);
+  c=Pad2Loc( 40, 24); t.DrawText(c.X(),c.Y(),Form("sec 1 (%.2f,%.2f)",c.X(),c.Y()  ));  
+  c=Pad2Loc( 40, 75); t.DrawText(c.X(),c.Y(),Form("sec 3 (%.2f,%.2f)",c.X(),c.Y()  ));  
+  c=Pad2Loc( 40,121); t.DrawText(c.X(),c.Y(),Form("sec 5 (%.2f,%.2f)",c.X(),c.Y()  ));  
+  c=Pad2Loc(120, 24); t.DrawText(c.X(),c.Y(),Form("sec 2 (%.2f,%.2f)",c.X(),c.Y()  ));  
+  c=Pad2Loc(120, 75); t.DrawText(c.X(),c.Y(),Form("sec 4 (%.2f,%.2f)",c.X(),c.Y()  ));  
+  c=Pad2Loc(120,121); t.DrawText(c.X(),c.Y(),Form("sec 6 (%.2f,%.2f)",c.X(),c.Y()  ));  
+//coners  
+  t.SetTextSize(0.015); t.SetTextColor(kBlue);
 
-  Double_t margin=5;
-  Double_t x0=0; Double_t x1=SectorSizeX(); Double_t x2=SectorSizeX()+DeadZone(); Double_t x3=PcSizeX();
-  Double_t y0=0; Double_t y1=SectorSizeY(); Double_t y2=SectorSizeY()+DeadZone(); 
-  Double_t y3=2*SectorSizeY()+DeadZone(); Double_t y4=PcSizeY()-SectorSizeY();
-  Double_t y5=PcSizeY();
-   
-//write pad numbers along x  
-  t.SetTextAlign(13); t.DrawText(x0,y0,"1");  
-  t.SetTextAlign(33); t.DrawText(x1,y0,"80");
-  t.SetTextAlign(13); t.DrawText(x2,y0,"81");   
-  t.SetTextAlign(33); t.DrawText(x3,y0,"160");
-//write pad numbers along y    
-  t.SetTextAlign(31); t.DrawText(x0,y0,"1");  
-  t.SetTextAlign(33); t.DrawText(x0,y1,"48"); 
-  t.SetTextAlign(31); t.DrawText(x0,y2,"49");
-  t.SetTextAlign(33); t.DrawText(x0,y3,"96"); 
-  t.SetTextAlign(31); t.DrawText(x0,y4,"97");
-  t.SetTextAlign(33); t.DrawText(x0,y5,"144");        
+  b.Set(x0,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x0,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x0,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x0,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x0,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x0,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
   
-   
-//positions along x   
-  t.SetTextColor(kGreen);
-  t.SetTextAlign(11);t.DrawText(x0,y0-margin,Form("%5.2f",x0));   
-  t.SetTextAlign(31);t.DrawText(x1,y0-margin,Form("%5.2f",x1));   
-  t.SetTextAlign(11);t.DrawText(x2,y0-margin,Form("%5.2f",x2));   
-  t.SetTextAlign(31);t.DrawText(x3,y0-margin,Form("%5.2f",x3));   
-//positions along y
-  t.SetTextAlign(31);t.DrawText(x0-margin,y0,Form("%5.2f",y0));   
-  t.SetTextAlign(33);t.DrawText(x0-margin,y1,Form("%5.2f",y1));   
-  t.SetTextAlign(31);t.DrawText(x0-margin,y2,Form("%5.2f",y2));   
-  t.SetTextAlign(33);t.DrawText(x0-margin,y3,Form("%5.2f",y3));   
-  t.SetTextAlign(31);t.DrawText(x0-margin,y4,Form("%5.2f",y4));   
-  t.SetTextAlign(33);t.DrawText(x0-margin,y5,Form("%5.2f",y5));   
-//coners      
-  t.SetTextColor(kRed);
-  t.SetTextSize(0.01);
-  TVector pad(2);
-//sector 1  
-  v2=Pad2Loc(Loc2Pad(TVector2(x0,y0)));t.SetTextAlign(11);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x0,y1)));t.SetTextAlign(13);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x1,y1)));t.SetTextAlign(33);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x1,y0)));t.SetTextAlign(31);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-//secr 3
-  v2=Pad2Loc(Loc2Pad(TVector2(x0,y2)));t.SetTextAlign(11);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x0,y3)));t.SetTextAlign(13);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x1,y3)));t.SetTextAlign(33);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x1,y2)));t.SetTextAlign(31);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-//secr 5   
-  v2=Pad2Loc(Loc2Pad(TVector2(x0,y4)));t.SetTextAlign(11);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x0,y5)));t.SetTextAlign(13);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x1,y5)));t.SetTextAlign(33);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x1,y4)));t.SetTextAlign(31);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-
-  v2=Pad2Loc(Loc2Pad(TVector2(x2,y4)));t.SetTextAlign(11);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x2,y5)));t.SetTextAlign(13);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x3,y5)));t.SetTextAlign(33);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x3,y4)));t.SetTextAlign(31);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-
-  v2=Pad2Loc(Loc2Pad(TVector2(x2,y2)));t.SetTextAlign(11);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x2,y3)));t.SetTextAlign(13);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x3,y3)));t.SetTextAlign(33);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x3,y2)));t.SetTextAlign(31);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-
-  v2=Pad2Loc(Loc2Pad(TVector2(x2,y0)));t.SetTextAlign(11);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x2,y1)));t.SetTextAlign(13);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x3,y1)));t.SetTextAlign(33);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
-  v2=Pad2Loc(Loc2Pad(TVector2(x3,y0)));t.SetTextAlign(31);t.DrawText(v2.X(),v2.Y(),Form("%5.2f,%5.2f",v2.X(),v2.Y()));
+  b.Set(x1,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x1,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x1,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x1,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x1,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x1,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  
+  b.Set(x2,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x2,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x2,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x2,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x2,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x2,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  
+  b.Set(x3,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x3,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x3,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x3,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x3,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+  b.Set(x3,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
 }//TestSeg()
 //__________________________________________________________________________________________________
 void AliRICHParam::TestResp()
@@ -250,3 +211,21 @@ void AliRICHParam::DrawAxis()
   TPolyLine3D *pYaxis=new TPolyLine3D(2,Y);pYaxis->SetLineColor(kGreen); pYaxis->Draw();
   TPolyLine3D *pZaxis=new TPolyLine3D(2,Z);pZaxis->SetLineColor(kBlue);  pZaxis->Draw();  
 }
+//__________________________________________________________________________________________________
+void AliRICHParam::DrawSectors() 
+{ 
+  Double_t xLeft[5]  = {0,0,SectorSizeX(),SectorSizeX(),0};
+  Double_t xRight[5] = {SectorSizeX()+DeadZone(),SectorSizeX()+DeadZone(),PcSizeX(),PcSizeX(),SectorSizeX()+DeadZone()};
+  
+  Double_t yDown[5]   = {0,SectorSizeY(),SectorSizeY(),0,0};
+  Double_t yCenter[5] = {  SectorSizeY()+DeadZone(),2*SectorSizeY()+DeadZone(),2*SectorSizeY()+DeadZone(),
+                           SectorSizeY()+DeadZone(),SectorSizeY()+DeadZone()};  
+  Double_t yUp[5]     = {2*SectorSizeY()+2*DeadZone(),PcSizeY(),PcSizeY(),2*SectorSizeY()+2*DeadZone(),2*SectorSizeY()+2*DeadZone()};
+  
+  TPolyLine *sec1 = new TPolyLine(5,xLeft ,yDown);    sec1->SetLineColor(21);  sec1->Draw();
+  TPolyLine *sec2 = new TPolyLine(5,xRight,yDown);    sec2->SetLineColor(21);  sec2->Draw();
+  TPolyLine *sec3 = new TPolyLine(5,xLeft ,yCenter);  sec3->SetLineColor(21);  sec3->Draw();
+  TPolyLine *sec4 = new TPolyLine(5,xRight,yCenter);  sec4->SetLineColor(21);  sec4->Draw();
+  TPolyLine *sec5 = new TPolyLine(5,xLeft, yUp);      sec5->SetLineColor(21);  sec5->Draw();
+  TPolyLine *sec6 = new TPolyLine(5,xRight,yUp);      sec6->SetLineColor(21);  sec6->Draw();
+}//DrawSectors()

@@ -9,37 +9,36 @@
 class AliRICHHelix: public TObject
 {
 public:
-           AliRICHHelix()                                              {;}
-           AliRICHHelix(TVector3 x0,TVector3 p0,Int_t q,Double_t b=0.4)  {fX0=x0;fP0=p0;fQ=q;fBz=b;} //takes position and momentum at parametrised point
-  virtual ~AliRICHHelix()                                              {;}        
-  inline void   Propagate(Double_t lenght);
-         Bool_t Intersection(TVector3 plane)          {return Intersection(plane,plane.Unit());} // special plane given by point only
-  inline Bool_t Intersection(TVector3 planePoint,TVector3 planeNorm); //intersection with plane given by point and normal vector
-  inline Int_t  RichIntersect(AliRICHParam *pParam);
-  TVector3 X()const {return fX;}
-  TVector3 P()const {return fP;}
-  TVector3 X0()const {return fX0;}
-  TVector3 P0()const {return fP0;}
-  TVector2 PosPc() const {return fPosPc;}           //returns position of intersection with PC
-  TVector2 PosRad()const {return fPosRad;}          //returns position of intersection with radiator 
-  TVector3 Ploc()const   {return fPloc;}            //returns momentum at the position of intersection with radiator 
-  
-         void   Print(Option_t *sOption)const; //virtual interface from TObject
+  AliRICHHelix():TObject()                                                                                                          {;}
+  AliRICHHelix(const TVector3 &x0,const TVector3 &p0,Int_t q=1,Double_t b=0.2):TObject(),fX0(x0),fP0(p0),fX(x0),fP(p0),
+                                                                                         fLen(0),fQ(q),fBz(b)                       {;}
+  virtual ~AliRICHHelix()                                                                                                           {;}        
+           
+  inline void     Propagate(Double_t len);                                          //propogate helix by length len along it
+  inline Int_t    RichIntersect(AliRICHParam *pParam);                              //search intersection with any RICH chamber 
+  inline Bool_t   Intersection(TVector3 planePnt,TVector3 planeNorm);               //intersection with plane given by point and normal vector
+         Bool_t   Intersection(TVector3 pl)    {return Intersection(pl,pl.Unit());} // special plane given by point only
+         TVector2 PosRad()                const{return fPosRad;}          //returns position of intersection with radiator (local system)
+         TVector2 PosAnod()               const{return fPosAnod;}         //returns position of intersection with anod wires plane (local system)
+         TVector2 PosPc()                 const{return fPosPc;}           //returns position of intersection with PC (local system)
+         TVector3 Ploc()                  const{return fPloc;}            //returns momentum at the position of intersection with radiator   
+         void     Print(Option_t *sOption)const; //virtual interface from TObject
 protected:
   TVector3 fX0;            //helix position in parametrised point, cm    in MRS
   TVector3 fP0;            //helix momentum in parametrised point, GeV/c in MRS
   TVector3 fX;             //helix position in point of interest,  cm    in MRS
   TVector3 fP;             //helix momentum in point of interest,  GeV/c in MRS
-  Double_t fLength;        //helix length in point of interest    
+  Double_t fLen;           //helix length in point of interest    
   Int_t    fQ;             //sign of track charge (value not provided by current ESD)  
   Double_t fBz;            //magnetic field along z value in Tesla under assumption of uniformity 
-  TVector2 fPosPc;         //position on PC in local system
-  TVector2 fPosRad;        //position on radiator in local system 
+  TVector2 fPosRad;        //track intersection with radiator (local system)
+  TVector2 fPosAnod;       //track intersection with anod wires plane (local system)
+  TVector2 fPosPc;         //track intersection with PC (local system)
   TVector3 fPloc;          //momentum in local system
   ClassDef(AliRICHHelix,0) //General helix
 };//class AliRICHHelix
 //__________________________________________________________________________________________________
-void AliRICHHelix::Propagate(Double_t length)
+void AliRICHHelix::Propagate(Double_t len)
 {
 // Propogates the helix to the position of interest defined by helix length s  
 // Assumes uniform magnetic field along z direction.  
@@ -47,13 +46,13 @@ void AliRICHHelix::Propagate(Double_t length)
   Double_t a = -c*fBz*fQ;
  
   Double_t rho = a/fP0.Mag();
-  fX.SetX( fX0.X()+fP0.X()*TMath::Sin(rho*length)/a-fP0.Y()*(1-TMath::Cos(rho*length))/a  );
-  fX.SetY( fX0.Y()+fP0.Y()*TMath::Sin(rho*length)/a+fP0.X()*(1-TMath::Cos(rho*length))/a  ); 
-  fX.SetZ( fX0.Z()+fP0.Z()*length/fP0.Mag()                                               );
-  fP.SetX( fP0.X()*TMath::Cos(rho*length)-fP0.Y()*TMath::Sin(rho*length)                  );
-  fP.SetY( fP0.Y()*TMath::Cos(rho*length)+fP0.X()*TMath::Sin(rho*length)                  );
-  fP.SetZ( fP0.Z()                                                                        );
-  fLength=length;
+  fX.SetX( fX0.X()+fP0.X()*TMath::Sin(rho*len)/a-fP0.Y()*(1-TMath::Cos(rho*len))/a  );
+  fX.SetY( fX0.Y()+fP0.Y()*TMath::Sin(rho*len)/a+fP0.X()*(1-TMath::Cos(rho*len))/a  ); 
+  fX.SetZ( fX0.Z()+fP0.Z()*len/fP0.Mag()                                            );
+  fP.SetX( fP0.X()*TMath::Cos(rho*len)-fP0.Y()*TMath::Sin(rho*len)                  );
+  fP.SetY( fP0.Y()*TMath::Cos(rho*len)+fP0.X()*TMath::Sin(rho*len)                  );
+  fP.SetZ( fP0.Z()                                                                  );
+  fLen=len;
 }
 //__________________________________________________________________________________________________
 Bool_t AliRICHHelix::Intersection(TVector3 planePoint,TVector3 planeNorm)
@@ -62,9 +61,9 @@ Bool_t AliRICHHelix::Intersection(TVector3 planePoint,TVector3 planeNorm)
 // Returns kTrue if helix intersects the plane, kFALSE otherwise.
 // Stores result in current helix fields fX and fP.   
   
-  Double_t s=(planePoint-fX0)*planeNorm,dist=99999,distPrev=dist;
+  Double_t s=(planePoint-fX0)*planeNorm,dist=99999,distPrev=dist;//estimates initial distance to plane
 
-  while(TMath::Abs(dist)>0.0001){
+  while(TMath::Abs(dist)>0.00001){
     Propagate(s);                        //calculates helix at the distance s from x0 ALONG the helix
     dist=(fX-planePoint)*planeNorm;      //distance between current helix position and plane
     if(TMath::Abs(dist) >= TMath::Abs(distPrev)) { return kFALSE;}
@@ -83,13 +82,19 @@ Int_t AliRICHHelix::RichIntersect(AliRICHParam *pParam)
     if(Intersection(pParam->C(iChamberN)->Rad())){//there is intersection with radiator plane
       fPosRad=pParam->C(iChamberN)->Mrs2Rad(fX);//position on radiator plane
       if(pParam->IsAccepted(fPosRad)){//intersection within radiator (even if in dead zone)
+        
         if(Intersection(pParam->C(iChamberN)->Pc())){//there is intersection with photocathode
           fPosPc=pParam->C(iChamberN)->Mrs2Pc(fX);//position on photcathode plane
           if(pParam->IsAccepted(fPosPc)){//intersection within pc (even if in dead zone)
-            fPloc=pParam->C(iChamberN)->PMrs2Loc(fP);
+            
+            Intersection(pParam->C(iChamberN)->Anod()); //search for anod intersection position
+            fPosAnod=pParam->C(iChamberN)->Mrs2Anod(fX);
+            
+            fPloc=pParam->C(iChamberN)->PMrs2Loc(fP);//trasform p to local system
             return iChamberN;
           }//if inside PC
-        }//if for PC
+        }//if intersects PC
+        
       }//if inside radiator
     }//if for radiator       
   }//chamber loop

@@ -16,7 +16,7 @@ public:
   virtual ~AliRICHClusterFinder()                                          {;}
   
   AliRICH        *R()                                              {return fRICH;}   //returns pointer to RICH  
-  void            Exec();                                                            //loop on events and chambers  
+  void            Exec(const Option_t *option="");                                   //loop on events and chambers  
   void            FindClusters(Int_t iChamber);                                      //find all clusters for a given chamber
   void            FindClusterContribs(AliRICHcluster *pCluster);                     //find CFM for the current cluster
   void            FormRawCluster(Int_t i, Int_t j);                                  //form a raw cluster

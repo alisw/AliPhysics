@@ -40,7 +40,8 @@ public:
          void     TestResp();                                                            //test the response group of methodes
          void     TestSeg();                                                             //test the segmentation group of methodes
          void     TestTrans();                                                           //test the transform group of methodes
-         void     DrawAxis();
+  static void     DrawAxis();
+  static void     DrawSectors();
 //flags staff         
   static           void     SetAerogel(Bool_t a)                   {fgIsAerogel=a;}
   static           Bool_t   IsAerogel()                            {return fgIsAerogel;}
@@ -105,8 +106,10 @@ public:
   static Float_t  DenGel()                 {return (RefIdxGel(0)-1)/0.21;} //aerogel density gr/cm^3 parametrization by E.Nappi
 //trasformation methodes
   inline static TVector  Loc2Area(const TVector2 &x2);                                             //return area affected by hit x2
-  inline static Int_t    Loc2Sec(const TVector2 &x2);                                              //return sector for given position
+  inline static Int_t    Loc2Sec(const TVector2 &x2);                                              //return sector containing given position
+         static Int_t    Loc2Sec(Double_t x,Double_t y) {return Loc2Sec(TVector2(x,y));}           //return sector containing given position
   inline static TVector  Loc2Pad(const TVector2 &x2);                                              //return pad containing given position
+         static TVector  Loc2Pad(Double_t x,Double_t y) {return Loc2Pad(TVector2(x,y));}           //return pad containing given position
   inline static TVector2 Pad2Loc(TVector pad);                                                     //return center of the pad
          static TVector2 Pad2Loc(Int_t x,Int_t y) {TVector pad(2);pad[0]=x;pad[1]=y;return Pad2Loc(pad);}//return center of the pad (x,y)
   inline static Int_t    Pad2Sec(const TVector &pad);                                              //return sector of given pad
@@ -136,6 +139,7 @@ protected:
   static Bool_t     fgIsTestBeam;                           //test beam geometry instead of normal RICH flag
   static Bool_t     fgIsWireSag;                            //wire sagitta ON/OFF flag
   static Bool_t     fgIsResolveClusters;                    //declustering ON/OFF flag
+  static Bool_t     fgIsFeedback;                           //generate feedback photon?
 
          TObjArray *fpChambers;                             //list of chambers    
   static Int_t      fgHV[6];                                //HV applied to anod wires
@@ -200,9 +204,9 @@ TVector AliRICHParam::Loc2Pad(const TVector2 &loc)
   if(sec==1||sec==3||sec==5)    pad[0]=           Int_t(            loc.X()   / PadSizeX() )+1; //sector 1 or 3 or 5
   else                          pad[0]=NpadsX() - Int_t( (PcSizeX()-loc.X())  / PadSizeX() )  ; //sector 2 or 4 or 6
 //second deal with y
-       if(sec==1||sec==2)       pad[1]=Int_t(             loc.Y()                / PadSizeY() )+1;           //sector 1 or 2 
-  else if(sec==3||sec==4)       pad[1]=Int_t( (loc.Y()-SectorSizeY()-DeadZone()) / PadSizeY() )+NpadsYsec(); //sector 3 or 4    
-  else                          pad[1]=NpadsY() - Int_t( (PcSizeY()-loc.Y())  / PadSizeY() ); //sector 5 or 6        
+       if(sec==1||sec==2)       pad[1]=Int_t(             loc.Y()                / PadSizeY())+1;               //sector 1 or 2 
+  else if(sec==3||sec==4)       pad[1]=Int_t( (loc.Y()-SectorSizeY()-DeadZone()) / PadSizeY())+NpadsYsec()+1;  //sector 3 or 4    
+  else                          pad[1]=NpadsY() - Int_t( (PcSizeY()-loc.Y())     / PadSizeY());                //sector 5 or 6        
   return pad;
 }
 //__________________________________________________________________________________________________

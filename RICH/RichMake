@@ -10,7 +10,7 @@ include	lib$(Module)rec.pkg
 SrcRec   	:=$(SRCS)
 
 RootTarget      :=$(shell root-config --arch)
-DirOut	        :=$(LIB_MY)/$(Module)
+DirOut	        :=/tmp/$(Module)
 LibBase		:=$(LIB_MY)/lib$(Module)base.so
 LibSim		:=$(LIB_MY)/lib$(Module)sim.so
 LibRec		:=$(LIB_MY)/lib$(Module)rec.so
@@ -44,7 +44,7 @@ ifeq ($(RootTarget),linuxicc)
  LibOpt      :=-O -g -shared -Wl
 else
  Compiler    :=g++
- CompilerOpt :=-g -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ CompilerOpt :=-g -W -Wall -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
  LibOpt      :=-O -g -shared -Wl
 endif
 
@@ -71,6 +71,7 @@ $(LibRec):	$(ObjRec)
         
 $(DepFile):	$(HdrBase) $(HdrSim) $(HdrRec)
 	@[ -d $(DirOut) ] || mkdir -p $(DirOut)
+	@[ -d $(LIB_MY) ] || mkdir -p $(LIB_MY)
 	@touch $(DepFile)
 	@echo "Generating dependency $@"
 	$(Mute)rmkdepend -f$(DepFile) -p$(DirOut)/ -- $(CompilerOpt) -- $(SrcBase) $(SrcSim) $(SrcRec) 2>/dev/null
@@ -117,8 +118,9 @@ show:
 	@echo -e "Rec Library: $(LibRec)\n"
 
 spec:	$(SrcBase)
-	@echo $^
-	@echo $@
+	@echo "^ $^"
+	@echo "@ $@"
+	@echo "< $<"
                 
 clean:
 	@echo "Cleaning..."

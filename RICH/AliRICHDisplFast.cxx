@@ -17,12 +17,13 @@
 #include "AliRICHChamber.h"
 #include "AliRICHParam.h"
 #include <AliLoader.h>
+#include <AliRunLoader.h>
+#include <AliStack.h>
 #include <TCanvas.h>
-#include <TPolyLine.h>
-#include <TParticle.h>
 #include <TStyle.h>
-#include <TMath.h>
 #include <TLatex.h>
+#include <TH2F.h>
+#include <TParticle.h>
 
 ClassImp(AliRICHDisplFast)
 //__________________________________________________________________________________________________
@@ -36,7 +37,6 @@ void AliRICHDisplFast::ShowEvent(Int_t iEvtNmin,Int_t iEvtNmax)
   if(!isDigits){Error("ShoEvent","No digits. Nothing to display.");return;}
   
   TCanvas *canvas = new TCanvas("RICHDisplay","RICH Display",0,0,1226,900);
-//  TCanvas *canvas = (TCanvas*)gROOT->FindObjectAny("RICHDisplay");
   
   gStyle->SetPalette(1);
 
@@ -54,8 +54,8 @@ void AliRICHDisplFast::ShowEvent(Int_t iEvtNmin,Int_t iEvtNmax)
   
   if(iEvtNmax>gAlice->GetEventsPerRun()) iEvtNmax=gAlice->GetEventsPerRun();
 
-  TText *t = new TText();
-  t->SetTextSize(0.10);
+  TLatex t;
+  t.SetTextSize(0.10);
 
   TText *tit = new TText(0.1,0.6,"RICH Display");
   tit->SetTextSize(0.10);
@@ -64,8 +64,8 @@ void AliRICHDisplFast::ShowEvent(Int_t iEvtNmin,Int_t iEvtNmax)
         
     canvas->cd(1);
     sprintf(titdisp,"Event Number %i",iEventN);
-    t->SetText(0.2,0.4,titdisp);
-    t->Draw();
+    t.SetText(0.2,0.4,titdisp);
+    t.Draw();
     tit->Draw();
     pRich->GetLoader()->GetRunLoader()->GetEvent(iEventN);
     pRich->GetLoader()->TreeD()->GetEntry(0);
@@ -75,7 +75,7 @@ void AliRICHDisplFast::ShowEvent(Int_t iEvtNmin,Int_t iEvtNmax)
         AliRICHdigit *pDig = (AliRICHdigit*)pRich->Digits(iChamber)->At(j);
         TVector2 x2=AliRICHParam::Pad2Loc(pDig->Pad());
         pDigitsH2[iChamber]->Fill(x2.X(),x2.Y());
-      }
+      }//digits loop
       if(iChamber==1) canvas->cd(7);
       if(iChamber==2) canvas->cd(8);
       if(iChamber==3) canvas->cd(4);
@@ -89,10 +89,8 @@ void AliRICHDisplFast::ShowEvent(Int_t iEvtNmin,Int_t iEvtNmax)
     canvas->Modified();
     
     if(iEvtNmin<iEvtNmax) gPad->WaitPrimitive();
-//    canvas->cd(3);
-//    gPad->Clear();
   }
-}
+}//ShowEvent()
 //__________________________________________________________________________________________________
 void AliRICHDisplFast::Exec(Option_t *)
 {
@@ -151,7 +149,7 @@ void AliRICHDisplFast::Exec(Option_t *)
       pHitsH2->SetTitle(Form("event %i chamber %2i",iEventN,iChamber));
       pHitsH2->SetMarkerColor(kRed); pHitsH2->SetMarkerStyle(29); pHitsH2->SetMarkerSize(0.4);
       pHitsH2->Draw();
-      DrawSectors();
+      AliRICHParam::DrawSectors();
       TLatex l; l.SetNDC(); l.SetTextSize(0.02);
       if(!isHits)     {l.SetTextColor(kRed)  ;l.DrawLatex(0.1,0.01,"No Hits"    );}
       if(!isDigits)   {l.SetTextColor(kGreen);l.DrawLatex(0.4,0.01,"No DIGITS"  );}
@@ -194,21 +192,20 @@ void AliRICHDisplFast::Exec(Option_t *)
   if(isClusters) pRich->GetLoader()->UnloadRecPoints();
 }//Exec()
 //__________________________________________________________________________________________________
-void AliRICHDisplFast::DrawSectors() 
-{ 
-  AliRICHParam p;
-  Double_t xLeft[5]  = {0,0,p.SectorSizeX(),p.SectorSizeX(),0};
-  Double_t xRight[5] = {p.SectorSizeX()+p.DeadZone(),p.SectorSizeX()+p.DeadZone(),p.PcSizeX(),p.PcSizeX(),p.SectorSizeX()+p.DeadZone()};
+Int_t AliRICHDisplFast::Nparticles(Int_t iPartID,Int_t iEvtN,AliRunLoader *pRL)
+{
+//counts total number of particles of given type (including secondary) for a given event
+  pRL->GetEvent(iEvtN);    
+  if(pRL->LoadHeader()) return 0;
+  if(pRL->LoadKinematics()) return 0;
+  AliStack *pStack=pRL->Stack();
   
-  Double_t yDown[5]   = {0,p.SectorSizeY(),p.SectorSizeY(),0,0};
-  Double_t yCenter[5] = {  p.SectorSizeY()+p.DeadZone(),2*p.SectorSizeY()+p.DeadZone(),2*p.SectorSizeY()+p.DeadZone(),
-                           p.SectorSizeY()+p.DeadZone(),p.SectorSizeY()+p.DeadZone()};  
-  Double_t yUp[5]     = {2*p.SectorSizeY()+2*p.DeadZone(),p.PcSizeY(),p.PcSizeY(),2*p.SectorSizeY()+2*p.DeadZone(),2*p.SectorSizeY()+2*p.DeadZone()};
+  Int_t iCounter=0;
+  for(Int_t i=0;i<pStack->GetNtrack();i++){
+    if(pStack->Particle(i)->GetPdgCode()==iPartID) iCounter++;
+  }
   
-  TPolyLine *sec1 = new TPolyLine(5,xLeft ,yDown);    sec1->SetLineColor(21);  sec1->Draw();
-  TPolyLine *sec2 = new TPolyLine(5,xRight,yDown);    sec2->SetLineColor(21);  sec2->Draw();
-  TPolyLine *sec3 = new TPolyLine(5,xLeft ,yCenter);  sec3->SetLineColor(21);  sec3->Draw();
-  TPolyLine *sec4 = new TPolyLine(5,xRight,yCenter);  sec4->SetLineColor(21);  sec4->Draw();
-  TPolyLine *sec5 = new TPolyLine(5,xLeft, yUp);      sec5->SetLineColor(21);  sec5->Draw();
-  TPolyLine *sec6 = new TPolyLine(5,xRight,yUp);      sec6->SetLineColor(21);  sec6->Draw();
-}//DrawSectors()
+  pRL->UnloadHeader();
+  pRL->UnloadKinematics();
+  return iCounter;
+}
