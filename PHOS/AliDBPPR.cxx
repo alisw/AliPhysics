@@ -22,7 +22,6 @@
 //////////////////////////////////////////////////////////////////////////////
  
 #include <stdlib.h> 
-#include <iostream.h> 
  
 // --- ROOT system ---
 #include "TSQLServer.h" 

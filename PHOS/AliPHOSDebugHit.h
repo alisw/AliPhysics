@@ -19,9 +19,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
-
-
 class AliPHOSHit : public AliHit {
 
   friend ostream& operator << (ostream&, const AliPHOSHit&) ;
