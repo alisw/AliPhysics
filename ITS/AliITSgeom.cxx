@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4.4.10  2000/06/12 18:09:49  barbera
+fixed posible compilation errors on HP unix
+
+Revision 1.4.4.9  2000/06/11 20:29:22  barbera
+Minore modifications.
+
 Revision 1.4.4.5  2000/03/04 23:42:39  nilsen
 Updated the comments/documentations and improved the maintainability of the
 code.
@@ -235,32 +241,32 @@ pixel coordinate system.
 // Int_t GetStartSPD()
 //     This functions returns the starting module index number for the
 // silicon pixels detectors (SPD). Typically this is zero. To loop over all
-// of the pixel detectors do: for(Int_t i=GetStartSPD();i<=GetLastSPD();i++)
+// of the pixel detectors do: for(i=GetStartSPD();i<=GetLastSPD();i++)
 //
 // Int_t GetLastSPD()
 //     This functions returns the last module index number for the
 // silicon pixels detectors (SPD). To loop over all of the pixel detectors 
-// do: for(Int_t i=GetStartSPD();i<=GetLastSPD();i++)
+// do: for(i=GetStartSPD();i<=GetLastSPD();i++)
 //
 // Int_t GetStartSDD()
 //     This functions returns the starting module index number for the
 // silicon drift detectors (SDD). To loop over all of the drift detectors 
-// do: for(Int_t i=GetStartSDD();i<=GetLastSDD();i++)
+// do: for(i=GetStartSDD();i<=GetLastSDD();i++)
 //
 // Int_t GetLastSDD()
 //     This functions returns the last module index number for the
 // silicon drift detectors (SDD). To loop over all of the drift detectors 
-// do: for(Int_t i=GetStartSDD();i<=GetLastSDD();i++)
+// do: for(i=GetStartSDD();i<=GetLastSDD();i++)
 //
 // Int_t GetStartSSD()
 //     This functions returns the starting module index number for the
 // silicon strip detectors (SSD). To loop over all of the strip detectors 
-// do: for(Int_t i=GetStartSSD();i<=GetLastSSD();i++)
+// do: for(i=GetStartSSD();i<=GetLastSSD();i++)
 //
 // Int_t GetStartSSD()
 //     This functions returns the last module index number for the
 // silicon strip detectors (SSD). To loop over all of the strip detectors 
-// do: for(Int_t i=GetStartSSD();i<=GetLastSSD();i++)
+// do: for(i=GetStartSSD();i<=GetLastSSD();i++)
 //
 // TObject *GetShape(Int_t lay,Int_t lad,Int_t det)
 //     This functions returns the shape object AliITSgeomSPD, AliITSgeomSDD,
@@ -277,8 +283,6 @@ pixel coordinate system.
 #include "AliITSgeom.h"
 #include "AliITSgeomSPD300.h"
 #include "AliITSgeomSPD425.h"
-#include "AliITSgeomSDD.h"
-#include "AliITSgeomSSD.h"
 #include "TRandom.h"
 
 ClassImp(AliITSgeom)
@@ -310,8 +314,9 @@ AliITSgeom::~AliITSgeom(){
 ////////////////////////////////////////////////////////////////////////
   // Default destructor.
   // if arrays exist delete them. Then set everything to zero.
+   Int_t i;
    if(fGm!=0){
-      for(Int_t i=0;i<fNlayers;i++) delete[] fGm[i];
+      for(i=0;i<fNlayers;i++) delete[] fGm[i];
       delete[] fGm;
    } // end if fGm!=0
    if(fNlad!=0) delete[] fNlad;
@@ -1689,26 +1694,26 @@ void AliITSgeom::Streamer(TBuffer &lRb){
     Int_t i,j,k,n;
 
 
-   printf("AliITSgeomStreamer starting\n");
+    //   printf("AliITSgeomStreamer starting\n");
    if (lRb.IsReading()) {
       Version_t lRv = lRb.ReadVersion(); if (lRv) { }
       TObject::Streamer(lRb);
-      printf("AliITSgeomStreamer reading fNlayers\n");
+//      printf("AliITSgeomStreamer reading fNlayers\n");
       lRb >> fNlayers;
       if(fNlad!=0) delete[] fNlad;
       if(fNdet!=0) delete[] fNdet;
       fNlad = new Int_t[fNlayers];
       fNdet = new Int_t[fNlayers];
-      printf("AliITSgeomStreamer fNlad\n");
+//      printf("AliITSgeomStreamer fNlad\n");
       for(i=0;i<fNlayers;i++) lRb >> fNlad[i];
-      printf("AliITSgeomStreamer fNdet\n");
+//      printf("AliITSgeomStreamer fNdet\n");
       for(i=0;i<fNlayers;i++) lRb >> fNdet[i];
       if(fGm!=0){
 	  for(i=0;i<fNlayers;i++) delete[] fGm[i];
 	  delete[] fGm;
       } // end if fGm!=0
       fGm = new AliITSgeomS*[fNlayers];
-      printf("AliITSgeomStreamer AliITSgeomS\n");
+//      printf("AliITSgeomStreamer AliITSgeomS\n");
       for(i=0;i<fNlayers;i++){
 	  n     = fNlad[i]*fNdet[i];
 	  fGm[i] = new AliITSgeomS[n];
@@ -1750,5 +1755,5 @@ void AliITSgeom::Streamer(TBuffer &lRb){
       // lRb << fShape;
       //if (fShape) fShape->Streamer(lRb);
    } // end if reading
-   printf("AliITSgeomStreamer Finished\n");
+   //   printf("AliITSgeomStreamer Finished\n");
 }
