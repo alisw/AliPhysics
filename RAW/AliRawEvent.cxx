@@ -4,7 +4,11 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#if defined(__DECCXX)
+#include <sys/statvfs.h>
+#else
 #include <sys/vfs.h>
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
