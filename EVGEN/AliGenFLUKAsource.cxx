@@ -226,8 +226,11 @@ void AliGenFLUKAsource::Generate()
 	part=kIfluge[int(ifip)-1];	
 //
 // Calculate momentum from kinetic energy and mass of the particle
+#if ROOT_VERSION_CODE > 197895
         amass = gMC->ParticleMass(part);
-
+#else
+	amass = (TDatabasePDG::Instance())->GetParticle(part)->Mass();
+#endif
 	prwn=fEkin*sqrt(1. + 2.*amass/fEkin);
 
 
