@@ -45,3 +45,14 @@ LIBS          = $(ROOTLIBS)
 GLIBS         = $(ROOTLIBS) -lXm -lXt -lX11 -lm -lPW -lUfor -lfor -lFutil -lots
 
 CLIBS         = $(LIBDIR)/libminicern.a
+
+# Cure funny problem 
+# sometimes in dependencies system include files of the sort
+# /usr/.../filename AND /usr/.../filename.cc are present
+# DEC believes that /usr/.../filename is the executable to be
+# built from /usr/.../filename.cc 
+# Just avoid this to happen
+
+% : %.cc
+	@;
+
