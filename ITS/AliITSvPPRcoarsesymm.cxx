@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/10/06 23:09:12  barbera
+New coarse geometry (symmetric services
+
 Revision 1.20  2000/10/02 21:28:08  fca
 Removal of useless dependecies via forward declarations
 
@@ -235,6 +238,57 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   zmax  = 76.708;
   xltpc = 284.;
     
+  // --- Define ghost volume containing the whole ITS (including services) 
+  //     and fill it with air 
+  
+  dgh[0] = 0.;
+  dgh[1] = 360.;
+  dgh[2] = 12.;
+  dgh[3] = -xltpc-5.-0.1;
+  dgh[4] = 62.4;
+  dgh[5] = 85.;
+  dgh[6] = -xltpc;
+  dgh[7] = 61.5;
+  dgh[8] = 85.;
+  dgh[9] = -xltpc;
+  dgh[10] = 61.5;
+  dgh[11] = 61.5+4.;
+  dgh[12] = -100.7;
+  dgh[13] = 44.9;
+  dgh[14] = 56.1;
+  dgh[15] = -76.708;
+  dgh[16] = 44.9;
+  dgh[17] = 56.1;
+  dgh[18] = -36.;
+  dgh[19] = 3.29;
+  dgh[20] = 56.1; 
+  dgh[21] = 36.;
+  dgh[22] = 3.29;
+  dgh[23] = 56.1;
+  dgh[24] = 76.708;
+  dgh[25] = 44.9;
+  dgh[26] = 56.1;
+  dgh[27] = 100.7;
+  dgh[28] = 44.9;
+  dgh[29] = 56.1;
+  dgh[30] = xltpc;
+  dgh[31] = 61.5;
+  dgh[32] = 61.5+4.;
+  dgh[33] = xltpc;
+  dgh[34] = 61.5;
+  dgh[35] = 85.;
+  dgh[36] = xltpc+4.+0.1;
+  dgh[37] = 62.4;
+  dgh[38] = 85.;
+
+  gMC->Gsvolu("ITSV", "PCON", idtmed[275], dgh, 39);
+  
+  // --- Place the ghost volume in its mother volume (ALIC) and make it 
+  //     invisible 
+  
+  gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  //gMC->Gsatt("ITSV", "SEEN", 0); 
+ 
   
   // --- Define ghost volume containing the six layers and fill it with air 
   
@@ -253,12 +307,12 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[12] = 76.708;
   dgh[13] = 45.;
   dgh[14] = 56.;
-  gMC->Gsvolu("ITSV", "PCON", idtmed[275], dgh, 15);
+  gMC->Gsvolu("ITSD", "PCON", idtmed[275], dgh, 15);
   
-  // --- Place the ghost volume in its mother volume (ITSV) and make it 
+  // --- Place the ghost volume in its mother volume (ALIC) and make it 
   //     invisible 
   
-  gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ITSD", 1, "ITSV", 0., 0., 0., 0, "ONLY");
   //gMC->Gsatt("ITSV", "SEEN", 0);
   
   //     ITS LAYERS (SILICON) 
@@ -267,37 +321,37 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dits[1] = rl[0] + drl[0];
   dits[2] = dzl[0];
   gMC->Gsvolu("ITS1", "TUBE", idtmed[199], dits, 3);
-  gMC->Gspos("ITS1", 1, "ITSV", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ITS1", 1, "ITSD", 0., 0., 0., 0, "ONLY");
   
   dits[0] = rl[1];
   dits[1] = rl[1] + drl[1];
   dits[2] = dzl[1];
   gMC->Gsvolu("ITS2", "TUBE", idtmed[199], dits, 3);
-  gMC->Gspos("ITS2", 1, "ITSV", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ITS2", 1, "ITSD", 0., 0., 0., 0, "ONLY");
   
   dits[0] = rl[2];
   dits[1] = rl[2] + drl[2];
   dits[2] = dzl[2];
   gMC->Gsvolu("ITS3", "TUBE", idtmed[224], dits, 3);
-  gMC->Gspos("ITS3", 1, "ITSV", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ITS3", 1, "ITSD", 0., 0., 0., 0, "ONLY");
   
   dits[0] = rl[3];
   dits[1] = rl[3] + drl[3];
   dits[2] = dzl[3];
   gMC->Gsvolu("ITS4", "TUBE", idtmed[224], dits, 3);
-  gMC->Gspos("ITS4", 1, "ITSV", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ITS4", 1, "ITSD", 0., 0., 0., 0, "ONLY");
   
   dits[0] = rl[4];
   dits[1] = rl[4] + drl[4];
   dits[2] = dzl[4];
   gMC->Gsvolu("ITS5", "TUBE", idtmed[249], dits, 3);
-  gMC->Gspos("ITS5", 1, "ITSV", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ITS5", 1, "ITSD", 0., 0., 0., 0, "ONLY");
   
   dits[0] = rl[5];
   dits[1] = rl[5] + drl[5];
   dits[2] = dzl[5];
   gMC->Gsvolu("ITS6", "TUBE", idtmed[249], dits, 3);
-  gMC->Gspos("ITS6", 1, "ITSV", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ITS6", 1, "ITSD", 0., 0., 0., 0, "ONLY");
   
   // END-LADDER ELECTRONICS BOXES AND CABLES 
   
@@ -307,8 +361,8 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
     dits[1] = dits[0] + drb[i];
     dits[2] = dzb[i] / 2.;
     zpos = dzl[i] + dits[2];
-    gMC->Gsposp("IELE", i+1, "ITSV", 0., 0., zpos, 0, "ONLY", dits, 3);
-    gMC->Gsposp("IELE", i+1+6, "ITSV", 0., 0.,-zpos, 0, "ONLY", dits, 3);
+    gMC->Gsposp("IELE", i+1, "ITSD", 0., 0., zpos, 0, "ONLY", dits, 3);
+    gMC->Gsposp("IELE", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
   }
     
 
@@ -325,8 +379,8 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   pcits[8] = 10.065+2.;	  // check thickness !!
   gMC->Gsvolu("ICO1", "PCON", idtmed[275], pcits, 9);    // check the medium !!
   AliMatrix(idrotm[200], 90., 0., 90., 90., 180., 0.);
-  gMC->Gspos("ICO1", 1, "ITSV", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ICO1", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY");
+  gMC->Gspos("ICO1", 1, "ITSD", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ICO1", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
 
 
   //    DEFINE END CONES FOR SDD
@@ -341,8 +395,8 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   pcits[7] = 28.;
   pcits[8] = 28.+3.0;	  // check thickness !!
   gMC->Gsvolu("ICO2", "PCON", idtmed[275], pcits, 9);    // check the medium !!
-  gMC->Gspos("ICO2", 1, "ITSV", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ICO2", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY");
+  gMC->Gspos("ICO2", 1, "ITSD", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ICO2", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
 
 
   //    DEFINE END CONES FOR SSD
@@ -357,8 +411,8 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   pcits[7] = 47.;
   pcits[8] = 47.+4.0;	  // check thickness !!
   gMC->Gsvolu("ICO3", "PCON", idtmed[275], pcits, 9);    // check the medium !!
-  gMC->Gspos("ICO3", 1, "ITSV", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ICO3", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY");
+  gMC->Gspos("ICO3", 1, "ITSD", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ICO3", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
 
   
   // SERVICES
@@ -371,8 +425,8 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[2] = 9.75;
   
   gMC->Gsvolu("ICA1", "TUBE", idtmed[275], dgh, 3);  // check medium !!!
-  gMC->Gspos("ICA1", 1, "ALIC", 0., 0., 86.45, 0, "ONLY");
-  gMC->Gspos("ICA1", 2, "ALIC", 0., 0., -86.45, idrotm[200], "ONLY");
+  gMC->Gspos("ICA1", 1, "ITSV", 0., 0., 86.45, 0, "ONLY");
+  gMC->Gspos("ICA1", 2, "ITSV", 0., 0., -86.45, idrotm[200], "ONLY");
   
   // --- Define patch panels at the end of the ITS cones
   
@@ -381,8 +435,8 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[2] = 2.25;
   
   gMC->Gsvolu("IPAN", "TUBE", idtmed[275], dgh, 3);  // check medium !!!  
-  gMC->Gspos("IPAN", 1, "ALIC", 0., 0., 98.45, 0, "ONLY");  
-  gMC->Gspos("IPAN", 2, "ALIC", 0., 0., -98.45, idrotm[200], "ONLY"); 
+  gMC->Gspos("IPAN", 1, "ITSV", 0., 0., 98.45, 0, "ONLY");  
+  gMC->Gspos("IPAN", 2, "ITSV", 0., 0., -98.45, idrotm[200], "ONLY"); 
   
   // --- Define cables/cooling 
   
@@ -396,8 +450,8 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[7] = 61.8;
   dgh[8] = 65.8;    // same cross section
   gMC->Gsvolu("ICC1", "PCON", idtmed[275], dgh, 9);  // check medium !!!  
-  gMC->Gspos("ICC1", 1, "ALIC", 0., 0., 0., 0, "ONLY");  
-  gMC->Gspos("ICC1", 2, "ALIC", 0., 0., 0., idrotm[200], "ONLY"); 
+  gMC->Gspos("ICC1", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
+  gMC->Gspos("ICC1", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY"); 
   
   // --- Define cables/cooling behind the TPC 
   
@@ -411,8 +465,8 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[7] = 62.5;
   dgh[8] = 74.5;    
   gMC->Gsvolu("ICC2", "PCON", idtmed[275], dgh, 9);  // check medium !!!  
-  gMC->Gspos("ICC2", 1, "ALIC", 0., 0., 0., 0, "ONLY");  
-  gMC->Gspos("ICC2", 2, "ALIC", 0., 0., 0., idrotm[200], "ONLY");   
+  gMC->Gspos("ICC2", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
+  gMC->Gspos("ICC2", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY");   
     
   // --- Define hook for the TPC on other side w.r.t. the absorber
   
@@ -420,7 +474,7 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[1] = 79.5;
   dgh[2] = 2.5;
   gMC->Gsvolu("IHOK", "TUBE", idtmed[275], dgh, 3);  // check medium !!!  
-  gMC->Gspos("IHOK", 1, "ALIC", 0., 0., -xltpc-dgh[2], 0, "ONLY");    
+  gMC->Gspos("IHOK", 1, "ITSV", 0., 0., -xltpc-dgh[2], 0, "ONLY");    
   
   
   // --- Outputs the geometry tree in the EUCLID/CAD format 
@@ -680,6 +734,8 @@ void AliITSvPPRcoarsesymm::StepManager(){
 //    Called for every step in the ITS, then calls the AliITShit class
 // creator with the information to be recoreded about that hit.
 ////////////////////////////////////////////////////////////////////////
+
+/*
   Int_t         copy, id;
   Float_t       hits[8];
   Int_t         vol[4];
@@ -751,7 +807,7 @@ void AliITSvPPRcoarsesymm::StepManager(){
 //
 // no hits for this coarse symmetric version.
 //
-
+*/
 }
 /*
 //____________________________________________________________________________
