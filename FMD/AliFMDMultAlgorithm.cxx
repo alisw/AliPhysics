@@ -22,17 +22,36 @@
 // Derived classes will implement various ways of reconstructing the
 // charge particle multiplicity in the FMD.  
 // 
-#include "AliFMDReconstructionAlgorithm.h"	// ALIFMDRECONSTRUCTIONALGORITHM_H
-#include "AliFMDDigit.h"			// ALIFMDDIGIT_H
+#include "AliFMDMultAlgorithm.h"	// ALIFMDMULTALGORITHM_H
+#include "AliFMDDigit.h"		// ALIFMDDIGIT_H
+#include <TClonesArray.h>               // ROOT_TClonesArray
 
 //____________________________________________________________________
-ClassImp(AliFMDReconstructionAlgorithm);
+ClassImp(AliFMDMultAlgorithm);
 
 //____________________________________________________________________
-AliFMDReconstructionAlgorithm::AliFMDReconstructionAlgorithm(const char* name, 
-							     const char* title)
-  : TNamed(name, title)
+AliFMDMultAlgorithm::AliFMDMultAlgorithm(const char* name, const char* title)
+  : TNamed(name, title), 
+    fTreeR(0), 
+    fMult(0), 
+    fFMD(0)
 {}
+
+//____________________________________________________________________
+AliFMDMultAlgorithm::~AliFMDMultAlgorithm()
+{
+  if (fMult) delete fMult;
+}
+
+
+//____________________________________________________________________
+void
+AliFMDMultAlgorithm::PreEvent(TTree* treeR, Float_t /* ipZ */) 
+{
+  if (fMult) fMult->Clear();
+  fNMult = 0;
+  fTreeR = treeR;
+}
 
 
 

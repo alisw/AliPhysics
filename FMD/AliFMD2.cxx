@@ -22,9 +22,9 @@
 // This implements the geometry for FMD2
 //
 #include "AliFMD2.h"		// ALIFMD2_H 
-#include "TVirtualMC.h"		// ROOT_TVirtualMC
-#include "AliLog.h"		// ALILOG_H
 #include "AliFMDRing.h"		// ALIFMDRING_H 
+#include <AliLog.h>		// ALILOG_H
+#include <TVirtualMC.h>		// ROOT_TVirtualMC
 
 //____________________________________________________________________
 ClassImp(AliFMD2);

@@ -19,13 +19,13 @@
 //
 // Class to read ADC values from a AliRawReader object. 
 //
-#include "AliLog.h"		// ALILOG_H
+#include <AliLog.h>		// ALILOG_H
 #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDRawStream.h"	// ALIFMDRAWSTREAM_H 
 #include "AliRawReader.h"	// ALIRAWREADER_H 
 #include "AliFMDRawReader.h"	// ALIFMDRAWREADER_H 
-#include "TArrayI.h"		// ROOT_TArrayI
+#include <TArrayI.h>		// ROOT_TArrayI
 // #include <TClonesArray.h>	// ROOT_TClonesArray
 
 //____________________________________________________________________
@@ -37,7 +37,8 @@ AliFMDRawReader::AliFMDRawReader(AliFMD* fmd, AliRawReader* reader)
     fFMD(fmd),
     fReader(reader)
 {
-  SetSampleRate();
+  // Default CTOR
+  SetSampleRate(fmd->GetSampleRate());
 }
 
 
@@ -45,6 +46,7 @@ AliFMDRawReader::AliFMDRawReader(AliFMD* fmd, AliRawReader* reader)
 void
 AliFMDRawReader::Exec(Option_t*) 
 {
+  // Read raw data into the digits array
   if (!fReader->ReadHeader()) {
     Error("ReadAdcs", "Couldn't read header");
     return;

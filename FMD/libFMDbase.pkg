@@ -2,7 +2,8 @@
 #
 # $Id$
 
-SRCS	=  AliFMDDigit.cxx
+SRCS	=  AliFMDDigit.cxx		\
+	   AliFMDMap.cxx		
 HDRS	=  $(SRCS:.cxx=.h)
 DHDR	:= FMDbaseLinkDef.h
 

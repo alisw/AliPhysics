@@ -27,22 +27,20 @@
 // Latest changes by Christian Holm Christensen
 //
 
-#include <math.h>
-
+#include <AliLog.h>		// ALILOG_H
 #include "AliFMDRing.h"		// ALIFMDRING_H
-#include "AliLog.h"		// ALILOG_H
-#include "TMath.h"		// ROOT_TMath
-#include "TH2.h"		// ROOT_TH2
-#include "TVirtualMC.h"		// ROOT_TVirtualMC
-#include "TVector2.h"		// ROOT_TVector2
-#include "TBrowser.h"		// ROOT_TBrowser
-#include "TString.h"		// ROOT_TString
-#include "TArc.h"		// ROOT_TArc
-#include "TObjArray.h"		// ROOT_TObjArray
-#include "TXTRU.h"		// ROOT_TXTRU
-#include "TNode.h"		// ROOT_TNode
-#include "TRotMatrix.h"		// ROOT_TRotMatrix
-#include "TList.h"		// ROOT_TList
+#include <TMath.h>		// ROOT_TMath
+#include <TH2.h>		// ROOT_TH2
+#include <TVirtualMC.h>		// ROOT_TVirtualMC
+#include <TVector2.h>		// ROOT_TVector2
+#include <TBrowser.h>		// ROOT_TBrowser
+#include <TString.h>		// ROOT_TString
+#include <TArc.h>		// ROOT_TArc
+#include <TObjArray.h>		// ROOT_TObjArray
+#include <TXTRU.h>		// ROOT_TXTRU
+#include <TNode.h>		// ROOT_TNode
+#include <TRotMatrix.h>		// ROOT_TRotMatrix
+#include <TList.h>		// ROOT_TList
 
 const Char_t* AliFMDRing::fgkRingFormat         = "FRG%c";
 const Char_t* AliFMDRing::fgkVirtualFormat      = "FV%c%c";
@@ -221,7 +219,7 @@ AliFMDRing::SetupCoordinates()
   double xD        = fLowR + TMath::Sqrt(r2 - tanTheta2 * lr2);
   double xD2       = TMath::Power(xD,2);
   //double xD_2      = fLowR - TMath::Sqrt(r2 - tanTheta2 * lr2);
-  double yB        = sqrt(r2 - hr2 + 2 * fHighR * xD - xD2);
+  double yB        = TMath::Sqrt(r2 - hr2 + 2 * fHighR * xD - xD2);
   double xC        = ((xD + TMath::Sqrt(-tanTheta2 * xD2 + r2 
 					+ r2 * tanTheta2)) 
 		       / (1 + tanTheta2));

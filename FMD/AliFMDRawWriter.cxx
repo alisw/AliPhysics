@@ -19,13 +19,13 @@
 //
 // Class to write ADC values to a raw data file
 //
-#include "AliLog.h"		// ALILOG_H
+#include <AliLog.h>		// ALILOG_H
+#include <AliLoader.h>		// ALILOADER_H
+#include <AliAltroBuffer.h>     // ALIALTROBUFFER_H
 #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDRawWriter.h"	// ALIFMDRAWREADER_H 
-#include "AliAltroBuffer.h"     // ALIALTROBUFFER_H
-#include "AliLoader.h"		// ALILOADER_H
-#include "TArrayI.h"		// ROOT_TArrayI
+#include <TArrayI.h>		// ROOT_TArrayI
 #include <TClonesArray.h>	// ROOT_TClonesArray
 
 //____________________________________________________________________

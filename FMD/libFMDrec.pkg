@@ -2,12 +2,17 @@
 #
 # $Id$
 
-SRCS		=  AliFMDReconstructor.cxx \
-		   AliFMDReconstructionAlgorithm.cxx \
-		   AliFMDRawStream.cxx  \
-		   AliFMDRawReader.cxx  \
-		   AliFMDParticles.cxx	\
-		   AliFMDUShortMap.cxx
+SRCS		=  AliFMDReconstructor.cxx 	\
+		   AliFMDRawStream.cxx  	\
+		   AliFMDRawReader.cxx  	\
+		   AliFMDMultAlgorithm.cxx 	\
+		   AliFMDMultNaiive.cxx 	\
+		   AliFMDMultPoisson.cxx 	\
+		   AliFMDMultRegion.cxx		\
+		   AliFMDMult.cxx		\
+		   AliFMDMultStrip.cxx		\
+		   AliFMDUShortMap.cxx 		\
+		   AliFMDBoolMap.cxx
 HDRS		=  $(SRCS:.cxx=.h)
 DHDR		:= FMDrecLinkDef.h
 EINCLUDE 	:= $(ALICE)/RAW

@@ -102,7 +102,7 @@ AliFMDBaseDigit::Print(Option_t* /* option*/) const
   cout << ClassName() << ": FMD" << fDetector << fRing << "[" 
        << setw(3) << fSector << ","
        << setw(3) << fStrip << "]" 
-       << endl;
+       << flush;
 }
 
 //====================================================================

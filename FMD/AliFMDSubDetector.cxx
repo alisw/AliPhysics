@@ -29,10 +29,10 @@
 
 #include "AliFMDSubDetector.h"	// ALIFMDSUBDETECTOR_H
 #include "AliFMDRing.h"		// ALIFMDRING_H
-#include "AliLog.h"		// ALILOG_H
-#include "TVirtualMC.h"		// ROOT_TVirtualMC
-#include "TList.h"		// ROOT_TList
-#include "TString.h"		// ROOT_TString
+#include <AliLog.h>		// ALILOG_H
+#include <TVirtualMC.h>		// ROOT_TVirtualMC
+#include <TList.h>		// ROOT_TList
+#include <TString.h>		// ROOT_TString
 
 ClassImp(AliFMDSubDetector);
 

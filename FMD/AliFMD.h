@@ -34,9 +34,9 @@ class AliFMD : public AliDetector
 public:
   AliFMD();
   AliFMD(const char *name, const char *title, bool detailed);
-  AliFMD(const AliFMD& FMD) : AliDetector(FMD)  {}  //copy ctor
+  AliFMD(const AliFMD& other);
   virtual ~AliFMD(); 
-  AliFMD&               operator=(const AliFMD&)  {return *this;}
+  AliFMD& operator=(const AliFMD& other);
 
   // GEometry ANd Tracking (GEANT :-)
   virtual void   CreateGeometry();
@@ -106,62 +106,76 @@ public:
   void     SetLegRadius(Double_t     radius=.5);
   void     SetLegOffset(Double_t     offset=.5);
   void     SetModuleSpacing(Double_t spacing=1);
+  void     SetSiDensity(Float_t r=2.33)         { fSiDensity = r; }
+  void     SetSiThickness(Float_t r=0.03)       { fSiThickness = r; }
+  void     SetVA1MipRange(UShort_t r=20)        { fVA1MipRange = r; }
+  void     SetAltroChannelSize(UShort_t s=1024) { fAltroChannelSize = s;}
+  void     SetSampleRate(UShort_t r=1)          { fSampleRate = (r>2 ? 2 : r);}
 
   // Get various parameters
-  Int_t    GetSiId() const                 { return (*fIdtmed)[kSiId]; }
-  Int_t    GetAirId() const                { return (*fIdtmed)[kAirId]; }
-  Int_t    GetPlasticId() const            { return (*fIdtmed)[kPlasticId]; }
-  Int_t    GetPcbId() const                { return (*fIdtmed)[kPcbId]; }
-  Int_t    GetKaptionId() const            { return (*fIdtmed)[kKaptionId]; }
-  Int_t    GetCarbonId() const             { return (*fIdtmed)[kCarbonId]; }
+  Int_t    GetSiId()                 const { return (*fIdtmed)[kSiId]; }
+  Int_t    GetAirId()                const { return (*fIdtmed)[kAirId]; }
+  Int_t    GetPlasticId()            const { return (*fIdtmed)[kPlasticId]; }
+  Int_t    GetPcbId()                const { return (*fIdtmed)[kPcbId]; }
+  Int_t    GetAlId()                 const { return (*fIdtmed)[kAlId]; }
+  Int_t    GetCarbonId()             const { return (*fIdtmed)[kCarbonId]; }
   Int_t    GetPrintboardRotationId() const { return fPrintboardRotationId; }
-  Int_t    GetShortLegId() const	   { return fShortLegId; }
-  Int_t    GetLongLegId() const	           { return fLongLegId; }
-  Double_t GetLegLength() const	           { return fLegLength; }
-  Double_t GetLegRadius() const	           { return fLegRadius; }
-  Double_t GetModuleSpacing() const	   { return fModuleSpacing; }  
-
+  Int_t    GetShortLegId()           const { return fShortLegId; }
+  Int_t    GetLongLegId()            const { return fLongLegId; }
+  Double_t GetLegLength()            const { return fLegLength; }
+  Double_t GetLegRadius()            const { return fLegRadius; }
+  Double_t GetModuleSpacing()        const { return fModuleSpacing; }  
+  Float_t  GetSiDensity()            const { return fSiDensity; }
+  Float_t  GetSiThickness()          const { return fSiThickness; }
+  UShort_t GetVA1MipRange()          const { return fVA1MipRange; }
+  UShort_t GetAltroChannelSize()     const { return fAltroChannelSize; }
+  UShort_t GetSampleRate()           const { return fSampleRate; }
+  Float_t  GetEdepMip()              const { 
+    return fSiDeDxMip * fSiDensity * fSiThickness;
+  }
+  
   // Utility
   void   Browse(TBrowser* b);
-  Float_t GetSiDensity() const { return fSiDensity; }
   enum { 
     kBaseDDL = 0x1000 // DDL offset for the FMD
   };
 protected:
+  TClonesArray*      HitsArray();
+  TClonesArray*      DigitsArray();
+  TClonesArray*      SDigitsArray();
+
   enum {
     kSiId,                 // ID of Si medium
     kAirId,                // ID of Air medium
     kPlasticId,            // ID of Plastic medium
     kPcbId,                // ID of PCB medium
     kSiChipId,             // ID of Si Chip medium
-    kKaptionId,            // ID of Kaption medium
+    kAlId,                 // ID of Al medium
     kCarbonId              // ID of Carbon medium
   };
-
-  void    SetSiDensity(Float_t r=2.33) { fSiDensity = r; }
-  TClonesArray*      HitsArray();
-  TClonesArray*      DigitsArray();
-  TClonesArray*      SDigitsArray();
   
-  AliFMDRing*        fInner;        // Inner ring structure
-  AliFMDRing*        fOuter;        // Outer ring structure  
-  AliFMDSubDetector* fFMD1;         // FMD1 structure
-  AliFMDSubDetector* fFMD2;         // FMD2 structure  
-  AliFMDSubDetector* fFMD3;         // FMD3 structure
-
-  TClonesArray*      fSDigits;
-  Int_t              fNsdigits;
+  AliFMDRing*        fInner;                // Inner ring structure
+  AliFMDRing*        fOuter;                // Outer ring structure  
+  AliFMDSubDetector* fFMD1;                 // FMD1 structure
+  AliFMDSubDetector* fFMD2;                 // FMD2 structure  
+  AliFMDSubDetector* fFMD3;                 // FMD3 structure
+  TClonesArray*      fSDigits;              // Summable digits
+  Int_t              fNsdigits;             // Number of digits  
+  Int_t              fPrintboardRotationId; // ID of Rotation of print bard
+  Int_t              fIdentityRotationId;   // ID of identity matrix 
+  Int_t              fShortLegId;           // ID short leg volume
+  Int_t              fLongLegId;            // ID long leg volume  
+  Double_t           fLegLength;            // Leg length
+  Double_t           fLegRadius;            // Leg radius
+  Double_t           fModuleSpacing;        // Staggering offset 
+  Float_t            fSiDensity;            // Density of Silicon
+  Float_t            fSiThickness;          // Thickness of silicon wafers
+  const Float_t      fSiDeDxMip;            // MIP dE/dx in Silicon
+  UShort_t           fVA1MipRange;          // # MIPs the pre-amp can do    
+  UShort_t           fAltroChannelSize;     // Largest # to store in 1 ADC ch.
+  UShort_t           fSampleRate;           // Times the ALTRO samples pre-amp.
   
-  Float_t    fSiDensity;            // Density of Silicon
-  Int_t      fPrintboardRotationId; // ID of Rotation of print bard
-  Int_t      fIdentityRotationId;   // ID of identity matrix 
-  Int_t      fShortLegId;           // ID short leg volume
-  Int_t      fLongLegId;            // ID long leg volume  
-  Double_t   fLegLength;            // Leg length
-  Double_t   fLegRadius;            // Leg radius
-  Double_t   fModuleSpacing;        // Staggering offset 
-  
-  ClassDef(AliFMD,8)     // Base class FMD entry point
+  ClassDef(AliFMD,9)     // Base class FMD entry point
 };
 
 #endif

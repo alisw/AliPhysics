@@ -21,7 +21,7 @@
 // 
 //
 #include "AliFMDRawStream.h"		// ALIFMDRAWSTREAM_H
-#include "AliRawReader.h"		// ALIRAWREADER_H
+#include <AliRawReader.h>		// ALIRAWREADER_H
 
 //____________________________________________________________________
 ClassImp(AliFMDRawStream);

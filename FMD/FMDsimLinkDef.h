@@ -15,7 +15,6 @@
 // #pragma link C++ class  std::pair<Float_t,UShort_t>;
 // #pragma link C++ class  AliFMDMap<std::pair<Float_t,UShort_t> >;
 // #pragma link C++ typedef  AliFMDEdepMap;
-#pragma link C++ class  AliFMDMap+;
 #pragma link C++ class  AliFMDEdepMap+;
 #pragma link C++ class  AliFMDHit+;
 #pragma link C++ class  AliFMD+;

@@ -35,9 +35,6 @@
 #ifndef ROOT_TObjArray
 # include <TObjArray.h>
 #endif
-// #ifndef ALIFMDUSHORTMAP_H
-// # include <AliFMDUShortMap.h>
-// #endif
 
 //____________________________________________________________________
 class TClonesArray;
@@ -47,21 +44,15 @@ class AliRunLoader;
 class AliFMDDigit;
 class AliRawReader;
 
-// typedef AliFMDUShortMap AliFMDAdcMap;
-
-
 //____________________________________________________________________
 class AliFMDReconstructor: public AliReconstructor 
 {
 public:
   AliFMDReconstructor();
   AliFMDReconstructor(const AliFMDReconstructor& other);
-  virtual ~AliFMDReconstructor() {}
+  virtual ~AliFMDReconstructor();
   AliFMDReconstructor& operator=(const AliFMDReconstructor& other);
 
-  void         SetDeltaEta(Float_t deta=.1)  { fDeltaEta = deta;  }
-  void         SetDeltaPhi(Float_t dphi=360) { fDeltaPhi = dphi;  } 
-  void         SetThreshold(UShort_t t=6)    { fThreshold = t; }
   void         SetPedestal(Float_t mean=10, Float_t width=1, Float_t f=3);
      
   virtual void Reconstruct(AliRunLoader* runLoader) const;
@@ -74,30 +65,16 @@ protected:
 				AliRawReader* rawReader) const;
   virtual void     ProcessDigits(TClonesArray* digits) const;
   virtual UShort_t SubtractPedestal(AliFMDDigit* digit) const;
-  virtual void     ReconstructFromCache() const;
 
-  mutable AliRunLoader* fRunLoader;  // Run loader 
-  mutable AliLoader*    fFMDLoader;  // FMD specific loader 
-  mutable TClonesArray* fParticles;  // Array of particles 
-  mutable AliFMD*       fFMD;        // Pointer to FMD manager 
+  mutable AliRunLoader* fRunLoader;  //! Run loader 
+  mutable AliLoader*    fFMDLoader;  //! FMD specific loader 
+  mutable AliFMD*       fFMD;        //! Pointer to FMD manager 
   
   TObjArray	        fAlgorithms;    // Array of algorithms
-  Float_t               fDeltaEta;      // Bin size in eta
-  Float_t               fDeltaPhi;      // Bin size in phi
-  UShort_t              fThreshold;     // Threshold for Poisson recon.
   Float_t               fPedestal;      // Pedestal to subtract
   Float_t               fPedestalWidth; // Width of pedestal
   Float_t               fPedestalFactor;// Number of pedestal widths 
-  mutable Int_t         fEmptyStrips;   // Number of empty strips
-  mutable Int_t         fTotalStrips;   // Total number of strips 
   mutable Float_t       fCurrentVertex; // Z-coordinate of primary vertex
-  
-  enum { 
-    kMaxDetectors = 3,                  // Maximum number of sub-det.
-    kMaxRings     = 2,                  // Maximum number of rings
-    kMaxSectors   = 40,                 // Maximum number of sectors
-    kMaxStrips    = 512                 // Maximum number of strips
-  };
   
   ClassDef(AliFMDReconstructor, 0)  // class for the FMD reconstruction
 }; 

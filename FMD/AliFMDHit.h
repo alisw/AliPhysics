@@ -13,11 +13,10 @@
 // through a detector.
 //
 #ifndef ALIHIT_H
-# include "AliHit.h"
+# include <AliHit.h>
 #endif
- 
 
-
+//___________________________________________________________________
 class AliFMDHit : public AliHit 
 {
 public:

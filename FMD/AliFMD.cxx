@@ -96,21 +96,24 @@
 // Many modifications by Christian Holm Christensen <cholm@nbi.dk>
 //
 
-#include "TClonesArray.h"	// ROOT_TClonesArray
-#include "TGeometry.h"		// ROOT_TGeomtry
-#include "TNode.h"		// ROOT_TNode
-#include "TTUBE.h"		// ROOT_TTUBE
-#include "TTree.h"		// ROOT_TTree
-#include "TVirtualMC.h"		// ROOT_TVirtualMC
-#include "TBrowser.h"		// ROOT_TBrowser
-#include "TMath.h"		// ROOT_TMath
+// These files are not in the same directory, so there's no reason to
+// ask the preprocessor to search in the current directory for these
+// files by including them with `#include "..."' 
+#include <TClonesArray.h>	// ROOT_TClonesArray
+#include <TGeometry.h>		// ROOT_TGeomtry
+#include <TNode.h>		// ROOT_TNode
+#include <TTUBE.h>		// ROOT_TTUBE
+#include <TTree.h>		// ROOT_TTree
+#include <TVirtualMC.h>		// ROOT_TVirtualMC
+#include <TBrowser.h>		// ROOT_TBrowser
+#include <TMath.h>		// ROOT_TMath
 
-#include "AliRunDigitizer.h"	// ALIRUNDIGITIZER_H
-#include "AliLoader.h"		// ALILOADER_H
-#include "AliRun.h"		// ALIRUN_H
-#include "AliMC.h"		// ALIMC_H
-#include "AliLog.h"		// ALILOG_H
-#include "AliMagF.h"		// ALIMAGF_H
+#include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
+#include <AliLoader.h>		// ALILOADER_H
+#include <AliRun.h>		// ALIRUN_H
+#include <AliMC.h>		// ALIMC_H
+#include <AliLog.h>		// ALILOG_H
+#include <AliMagF.h>		// ALIMAGF_H
 #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIG_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
@@ -132,14 +135,19 @@ AliFMD::AliFMD()
     fFMD3(0), 
     fSDigits(0), 
     fNsdigits(0),
-    fSiDensity(0),
     fPrintboardRotationId(0),
     fIdentityRotationId(0),
     fShortLegId(0),
     fLongLegId(0),
     fLegLength(0),
     fLegRadius(0),
-    fModuleSpacing(0)
+    fModuleSpacing(0), 
+    fSiDensity(0),
+    fSiThickness(0),
+    fSiDeDxMip(1.664),
+    fVA1MipRange(0),
+    fAltroChannelSize(0),
+    fSampleRate(0)
 {
   //
   // Default constructor for class AliFMD
@@ -148,6 +156,33 @@ AliFMD::AliFMD()
   fHits     = 0;
   fDigits   = 0;
   fIshunt   = 0;
+}
+
+//____________________________________________________________________
+AliFMD::AliFMD(const AliFMD& other)
+  : AliDetector(other),
+    fInner(other.fInner), 
+    fOuter(other.fOuter),
+    fFMD1(other.fFMD1),
+    fFMD2(other.fFMD2), 
+    fFMD3(other.fFMD3), 
+    fSDigits(other.fSDigits), 
+    fNsdigits(other.fNsdigits),
+    fPrintboardRotationId(other.fPrintboardRotationId),
+    fIdentityRotationId(other.fIdentityRotationId),
+    fShortLegId(other.fShortLegId),
+    fLongLegId(other.fLongLegId),
+    fLegLength(other.fLegLength),
+    fLegRadius(other.fLegRadius),
+    fModuleSpacing(other.fModuleSpacing), 
+    fSiDensity(other.fSiDensity),
+    fSiThickness(other.fSiThickness),
+    fSiDeDxMip(other.fSiDeDxMip),
+    fVA1MipRange(other.fVA1MipRange),
+    fAltroChannelSize(other.fAltroChannelSize),
+    fSampleRate(other.fSampleRate)
+{
+  // Copy constructor 
 }
 
 //____________________________________________________________________
@@ -160,14 +195,19 @@ AliFMD::AliFMD(const char *name, const char *title, bool detailed)
     fFMD3(0),
     fSDigits(0),
     fNsdigits(0),
-    fSiDensity(0),
     fPrintboardRotationId(0),
     fIdentityRotationId(0),
     fShortLegId(0),
     fLongLegId(0),
     fLegLength(0),
     fLegRadius(0),
-    fModuleSpacing(0)
+    fModuleSpacing(0), 
+    fSiDensity(0),
+    fSiThickness(0),
+    fSiDeDxMip(1.664),
+    fVA1MipRange(0),
+    fAltroChannelSize(0),
+    fSampleRate(0)
 {
   //
   // Standard constructor for Forward Multiplicity Detector
@@ -209,13 +249,18 @@ AliFMD::AliFMD(const char *name, const char *title, bool detailed)
   SetLegRadius();
   SetLegOffset();
   SetModuleSpacing();
+  SetSiThickness();
+  SetSiDensity();
+  SetVA1MipRange();
+  SetAltroChannelSize();
+  SetSampleRate();
   
   fInner->SetLowR(4.3);
   fInner->SetHighR(17.2);
   fInner->SetWaferRadius(13.4/2);
   fInner->SetTheta(36/2);
   fInner->SetNStrips(512);
-  fInner->SetSiThickness(.03);
+  fInner->SetSiThickness(fSiThickness);
   fInner->SetPrintboardThickness(.11);
   fInner->SetBondingWidth(.5);
 
@@ -223,8 +268,8 @@ AliFMD::AliFMD(const char *name, const char *title, bool detailed)
   fOuter->SetHighR(28.0);
   fOuter->SetWaferRadius(13.4/2);
   fOuter->SetTheta(18/2);
-  fOuter->SetNStrips( 256);
-  fOuter->SetSiThickness(.03);
+  fOuter->SetNStrips(256);
+  fOuter->SetSiThickness(fSiThickness);
   fOuter->SetPrintboardThickness(.1);
   fOuter->SetBondingWidth(.5);
   
@@ -260,6 +305,35 @@ AliFMD::~AliFMD ()
     delete fSDigits;
     fSDigits = 0;
   }
+}
+
+//____________________________________________________________________
+AliFMD&
+AliFMD::operator=(const AliFMD& other)
+{
+  AliDetector::operator=(other);
+  fInner		= other.fInner; 
+  fOuter		= other.fOuter;
+  fFMD1			= other.fFMD1;
+  fFMD2			= other.fFMD2; 
+  fFMD3			= other.fFMD3; 
+  fSDigits		= other.fSDigits; 
+  fNsdigits		= other.fNsdigits;
+  fSiDensity		= other.fSiDensity;
+  fPrintboardRotationId	= other.fPrintboardRotationId;
+  fIdentityRotationId	= other.fIdentityRotationId;
+  fShortLegId		= other.fShortLegId;
+  fLongLegId		= other.fLongLegId;
+  fLegLength		= other.fLegLength;
+  fLegRadius		= other.fLegRadius;
+  fModuleSpacing	= other.fModuleSpacing; 
+  fSiDensity		= other.fSiDensity;
+  fSiThickness		= other.fSiThickness;
+  fVA1MipRange		= other.fVA1MipRange;
+  fAltroChannelSize	= other.fAltroChannelSize;
+  fSampleRate		= other.fSampleRate;
+
+  return *this;
 }
 
 //====================================================================
@@ -326,9 +400,9 @@ AliFMD::CreateGeometry()
 			fPrintboardRotationId, 
 			fIdentityRotationId);
 
-  fFMD1->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kKaptionId]);
-  fFMD2->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kKaptionId]);
-  fFMD3->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kKaptionId]);
+  fFMD1->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kAlId]);
+  fFMD2->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kAlId]);
+  fFMD3->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kAlId]);
   
   fFMD1->Geometry("ALIC", fPrintboardRotationId, fIdentityRotationId);
   fFMD2->Geometry("ALIC", fPrintboardRotationId, fIdentityRotationId);
@@ -398,6 +472,18 @@ void AliFMD::CreateMaterials()
   AliMedium(kCarbonId, "FMD Carbon$",id,0,fieldType,maxField,maxBending,
 	    maxStepSize,maxEnergyLoss,precision,minStepSize);
 
+  // Aluminum
+  a                = 26.981539;
+  z                = 13.;
+  density          = 2.7;
+  radiationLength  = 8.9;
+  id               = kAlId;
+  AliMaterial(id, "FMD Aluminum$", a, z, density, radiationLength, 
+	      absorbtionLength);
+  AliMedium(kAlId, "FMD Aluminum$", id, 0, fieldType, maxField, maxBending,
+	    maxStepSize, maxEnergyLoss, precision, minStepSize);
+  
+  
   // Silicon chip 
   {
     Float_t as[] = { 12.0107,      14.0067,      15.9994,
@@ -417,8 +503,8 @@ void AliFMD::CreateMaterials()
 	      maxBending, maxStepSize, maxEnergyLoss, precision, minStepSize);
   }
   
-
-  // Kaption 
+#if 0
+  // Kaption
   {
     Float_t as[] = { 1.00794,  12.0107,  14.010,   15.9994};
     Float_t zs[] = { 1.,        6.,       7.,       8.};
@@ -428,12 +514,13 @@ void AliFMD::CreateMaterials()
     maxStepSize      = .001;
     precision        = .001;
     minStepSize      = .001;
-    id               = kKaptionId;
+    id               = KaptionId;
     AliMixture(id, "FMD Kaption$", as, zs, density, 4, ws);
-    AliMedium(kKaptionId, "FMD Kaption$",id,0,fieldType,maxField,maxBending,
+    AliMedium(kAlId, "FMD Kaption$",id,0,fieldType,maxField,maxBending,
 	      maxStepSize,maxEnergyLoss,precision,minStepSize);
   }
-  
+#endif
+
   // Air
   {
     Float_t as[] = { 12.0107, 14.0067,   15.9994,  39.948 };
@@ -943,8 +1030,11 @@ AliFMD::Hits2SDigits()
   // Create AliFMDSDigit's from AliFMDHit's.  This is done by creating
   // an AliFMDSDigitizer object, and executing it. 
   // 
-  AliDigitizer* sdig = new AliFMDSDigitizer("galice.root");
-  sdig->Exec("");
+  AliFMDSDigitizer* digitizer = new AliFMDSDigitizer("galice.root");
+  digitizer->SetSampleRate(fSampleRate);
+  digitizer->SetVA1MipRange(fVA1MipRange);
+  digitizer->SetAltroChannelSize(fAltroChannelSize);
+  digitizer->Exec("");
 }
 
   
@@ -953,7 +1043,11 @@ AliDigitizer*
 AliFMD::CreateDigitizer(AliRunDigitizer* manager) const
 {
   // Create a digitizer object 
-  return new AliFMDDigitizer(manager);
+  AliFMDDigitizer* digitizer = new AliFMDDigitizer(manager);
+  digitizer->SetSampleRate(fSampleRate);
+  digitizer->SetVA1MipRange(fVA1MipRange);
+  digitizer->SetAltroChannelSize(fAltroChannelSize);
+  return digitizer;
 }
 
 //====================================================================
@@ -969,219 +1063,8 @@ AliFMD::Digits2Raw()
   // This uses the class AliFMDRawWriter to do the job.   Please refer
   // to that class for more information. 
   AliFMDRawWriter writer(this);
+  writer.SetSampleRate(fSampleRate);
   writer.Exec();
-  
-#if 0
-  // Digits are read from the Digit branch, and processed to make
-  // three DDL files, one for each of the sub-detectors FMD1, FMD2,
-  // and FMD3. 
-  //
-  // The raw data files consists of a header, followed by ALTRO
-  // formatted blocks.  
-  // 
-  //          +-------------+
-  //          | Header      |
-  //          +-------------+
-  //          | ALTRO Block |
-  //          | ...         |
-  //          +-------------+
-  //          DDL file 
-  // 
-  // An ALTRO formatted block, in the FMD context, consists of a
-  // number of counts followed by a trailer. 
-  // 
-  //          +------------------+
-  //          | Count            |
-  //          | ...              |
-  //          | possible fillers |
-  //          +------------------+
-  //          | Trailer          |
-  //          +------------------+
-  //          ALTRO block 
-  // 
-  // The counts are listed backwards, that is, starting with the
-  // latest count, and ending in the first. 
-  // 
-  // Each count consist of 1 or more ADC samples of the VA1_ALICE
-  // pre-amp. signal.  Just how many samples are used depends on
-  // whether the ALTRO over samples the pre-amp.  Each sample is a
-  // 10-bit word, and the samples are grouped into 40-bit blocks 
-  //
-  //          +------------------------------------+
-  //          |  S(n)   | S(n-1) | S(n-2) | S(n-3) |
-  //          |  ...    | ...    | ...    | ...    |
-  //          |  S(2)   | S(1)   | AA     | AA     |
-  //          +------------------------------------+
-  //          Counts + possible filler 
-  //
-  // The trailer of the number of words of signales, the starting
-  // strip number, the sector number, and the ring ID; each 10-bit
-  // words,  packed into 40-bits. 
-  // 
-  //          +------------------------------------+
-  //          | # words | start  | sector | ring   |
-  //          +------------------------------------+
-  //          Trailer
-  // 
-  // Note, that this method assumes that the digits are ordered. 
-  //
-  AliFMD* fmd = static_cast<AliFMD*>(gAlice->GetDetector(GetName()));
-  fLoader->LoadDigits();
-  TTree* digitTree = fLoader->TreeD();
-  if (!digitTree) {
-    Error("Digits2Raw", "no digit tree");
-    return;
-  }
-  
-  TClonesArray* digits = new TClonesArray("AliFMDDigit", 1000);
-  fmd->SetTreeAddress();
-  TBranch* digitBranch = digitTree->GetBranch(GetName());
-  if (!digitBranch) {
-    Error("Digits2Raw", "no branch for %s", GetName());
-    return;
-  }
-  digitBranch->SetAddress(&digits);
-  
-  Int_t nEvents = Int_t(digitTree->GetEntries());
-  for (Int_t event = 0; event < nEvents; event++) {
-    fmd->ResetDigits();
-    digitTree->GetEvent(event);
-    
-    Int_t nDigits = digits->GetEntries();
-    if (nDigits < 1) continue;
-
-
-    UShort_t prevDetector = 0;
-    Char_t   prevRing     = '\0';
-    UShort_t prevSector   = 0;
-    // UShort_t prevStrip    = 0;
-
-    // The first seen strip number for a channel 
-    UShort_t startStrip   = 0;
-    
-    // Which channel number in the ALTRO channel we're at 
-    UShort_t offset       = 0;
-
-    // How many times the ALTRO Samples one VA1_ALICE channel 
-    Int_t sampleRate = 1;
-
-    // A buffer to hold 1 ALTRO channel - Normally, one ALTRO channel
-    // holds 128 VA1_ALICE channels, sampled at a rate of `sampleRate' 
-    TArrayI channel(128 * sampleRate);
-    
-    // The Altro buffer 
-    AliAltroBuffer* altro = 0;
-    
-    // Loop over the digits in the event.  Note, that we assume the
-    // the digits are in order in the branch.   If they were not, we'd
-    // have to cache all channels before we could write the data to
-    // the ALTRO buffer, or we'd have to set up a map of the digits. 
-    for (Int_t i = 0; i < nDigits; i++) {
-      // Get the digit
-      AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
-
-      UShort_t det    = digit->Detector();
-      Char_t   ring   = digit->Ring();
-      UShort_t sector = digit->Sector();
-      UShort_t strip  = digit->Strip();
-      if (det != prevDetector) {
-	AliDebug(10, Form("FMD: New DDL, was %d, now %d",
-			  kBaseDDL + prevDetector - 1,
-			  kBaseDDL + det - 1));
-	// If an altro exists, delete the object, flushing the data to
-	// disk, and closing the file. 
-	if (altro) { 
-	  // When the first argument is false, we write the real
-	  // header. 
-	  AliDebug(10, Form("New altro: Write channel at %d Strip: %d "
-			    "Sector: %d  Ring: %d", 
-			    i, startStrip, prevSector, prevRing));
-	  // TPC to FMD translations 
-	  // 
-	  //    TPC                FMD
-	  //    ----------+-----------
-	  //    pad       |      strip
-	  //    row       |     sector
-	  //    sector    |       ring
-	  // 
-	  altro->WriteChannel(Int_t(startStrip), 
-			      Int_t(prevSector), 
-			      Int_t((prevRing == 'I' ? 0 : 1)), 
-			      channel.fN, channel.fArray, 0);
-	  altro->Flush();
-	  altro->WriteDataHeader(kFALSE, kFALSE);
-	  delete altro;
-	  altro = 0;
-	}
-
-	prevDetector = det;
-	// Need to open a new DDL! 
-	Int_t ddlId = kBaseDDL + det - 1;
-	TString filename(Form("%s_%d.ddl", GetName(),  ddlId));
-
-	AliDebug(10, Form("New altro buffer with DDL file %s", 
-			  filename.Data()));
-	AliDebug(10, Form("New altro at %d", i));
-	// Create a new altro buffer - a `1' as the second argument
-	// means `write mode' 
-	altro = new AliAltroBuffer(filename.Data(), 1);
-	
-	// Write a dummy (first argument is true) header to the DDL
-	// file - later on, when we close the file, we write the real
-	// header
-	altro->WriteDataHeader(kTRUE, kFALSE);
-
-	// Figure out the sample rate 
-	if (digit->Count2() > 0) sampleRate = 2;
-	if (digit->Count3() > 0) sampleRate = 3;
-
-	channel.Set(128 * sampleRate);
-	offset     = 0;
-	prevRing   = ring;
-	prevSector = sector;
-	startStrip = strip;
-      }
-      else if (offset == 128                        
-	       || digit->Ring() != prevRing 
-	       || digit->Sector() != prevSector) {
-	// Force a new Altro channel
-	AliDebug(10, Form("Flushing channel to disk because %s",
-			  (offset == 128 ? "channel is full" :
-			   (ring != prevRing ? "new ring up" :
-			    "new sector up"))));
-	AliDebug(10, Form("New Channel: Write channel at %d Strip: %d "
-			  "Sector: %d  Ring: %d", 
-			  i, startStrip, prevSector, prevRing));
-	altro->WriteChannel(Int_t(startStrip), 
-			    Int_t(prevSector), 
-			    Int_t((prevRing == 'I' ? 0 : 1)), 
-			    channel.fN, channel.fArray, 0);
-	// Reset and update channel variables 
-	channel.Reset(0);
-	offset     = 0; 
-	startStrip = strip;
-	prevRing   = ring;
-	prevSector = sector;
-      }
-
-      // Store the counts of the ADC in the channel buffer 
-      channel[offset * sampleRate] = digit->Count1();
-      if (sampleRate > 1) 
-	channel[offset * sampleRate + 1] = digit->Count2();
-      if (sampleRate > 2) 
-	channel[offset * sampleRate + 2] = digit->Count3();
-      offset++;
-    }
-    // Finally, we need to close the final ALTRO buffer if it wasn't
-    // already 
-    if (altro) {
-      altro->Flush();
-      altro->WriteDataHeader(kFALSE, kFALSE);
-      delete altro;
-    }
-  }
-  fLoader->UnloadDigits();
-#endif
 }
 
 //==================================================================

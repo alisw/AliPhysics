@@ -192,17 +192,17 @@
 //                    -1 + B + exp(-B)
 //
 
-#include "TTree.h"		// ROOT_TTree
-#include "TRandom.h"		// ROOT_TRandom
-#include "AliLog.h"		// ALILOG_H
+#include <TTree.h>		// ROOT_TTree
+#include <TRandom.h>		// ROOT_TRandom
+#include <AliLog.h>		// ALILOG_H
 #include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
-#include "AliRunDigitizer.h"	// ALIRUNDIGITIZER_H
-#include "AliRun.h"		// ALIRUN_H
-#include "AliLoader.h"		// ALILOADER_H
-#include "AliRunLoader.h"	// ALIRUNLOADER_H
+#include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
+#include <AliRun.h>		// ALIRUN_H
+#include <AliLoader.h>		// ALILOADER_H
+#include <AliRunLoader.h>	// ALIRUNLOADER_H
     
 //____________________________________________________________________
 ClassImp(AliFMDEdepMap);
@@ -375,8 +375,8 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 	  if (strip % 128 == 0) last = 0;
 	  
 	  Float_t edep = fEdep(detector, r->GetId(), sector, strip).fEdep;
-	  ConvertToCount(edep, last, r->GetSiThickness(), fmd->GetSiDensity(), 
-			 counts);
+	  ConvertToCount(edep, last, r->GetSiThickness(), 
+			 fmd->GetSiDensity(), counts);
 	  last = edep;
 	  AddDigit(fmd, detector, r->GetId(), sector, strip, 
 		   edep, UShort_t(counts[0]), 

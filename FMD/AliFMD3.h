@@ -20,8 +20,8 @@ public:
 				Int_t colour, Double_t zMother);
 protected:
   void     CalculateDz();
-  Int_t    fVolumeId;
-  Double_t fDz;
+  Int_t    fVolumeId;  // Volume ID
+  Double_t fDz;        // Half-length in Z
   ClassDef(AliFMD3,1); // Geometry of FMD3 
 };
 

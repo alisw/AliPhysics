@@ -1,5 +1,5 @@
-#ifndef ALIFMDRECONSTRUCTIONALGORITHM_H
-#define ALIFMDRECONSTRUCTIONALGORITHM_H
+#ifndef ALIFMDMULTALGORITHM_H
+#define ALIFMDMULTALGORITHM_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
  * reserved. 
  *
@@ -22,22 +22,32 @@
 
 //____________________________________________________________________
 class AliFMDDigit;
+class TTree;
+class AliFMD;
+class TClonesArray;
 
 //____________________________________________________________________
-class AliFMDReconstructionAlgorithm : public TNamed
+class AliFMDMultAlgorithm : public TNamed
 {
 public:
-  AliFMDReconstructionAlgorithm(const char* name, const char* title);
-  virtual ~AliFMDReconstructionAlgorithm() {}
+  AliFMDMultAlgorithm(const char* name, const char* title);
+  virtual ~AliFMDMultAlgorithm();
   
-  virtual void PreEvent() {};
+  virtual void PreRun(AliFMD* fmd) { fFMD = fmd; }
+  virtual void PreEvent(TTree* treeR, Float_t ipZ);
   virtual void ProcessDigit(AliFMDDigit* digit, 
 			    Float_t eta, 
 			    Float_t phi, 
 			    UShort_t counts) = 0;
-  virtual void PostEvent() {};
+  virtual void PostEvent() {}
+  virtual void PostRun() {}
 protected:
-  ClassDef(AliFMDReconstructionAlgorithm, 0) // Base class for algorithms
+  TTree*        fTreeR;     //! Reconstruction tree  
+  TClonesArray* fMult;      //! Reconstructed multiplicities
+  Int_t         fNMult;     //! Number of reconstructed multiplicities
+  AliFMD*       fFMD;       //! Detector information 
+  
+  ClassDef(AliFMDMultAlgorithm, 0) // Base class for algorithms
 };
 
 #endif

@@ -12,6 +12,7 @@
 #pragma link C++ class  AliFMDBaseDigit+;
 #pragma link C++ class  AliFMDDigit+;
 #pragma link C++ class  AliFMDSDigit+;
+#pragma link C++ class  AliFMDMap+;
 
 #else
 # error Not for compilation 
