@@ -55,6 +55,7 @@
 #pragma link C++ class  AliStream+;
 #pragma link C++ class  AliMergeCombi+;
 #pragma link C++ class  AliFieldMap-;
+#pragma link C++ class  AliGaussCorr+;
 
 #endif
 
