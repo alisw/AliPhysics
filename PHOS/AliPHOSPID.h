@@ -16,7 +16,7 @@
 #include "TTask.h" 
 class TFormula ;
 class TClonesArray ;
-
+class TFile ; 
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -31,6 +31,7 @@ class AliPHOSPID : public TTask {
 
   AliPHOSPID() ;          // ctor            
   AliPHOSPID(const char* headerFile,const char * name, const Bool_t toSplit) ;
+  AliPHOSPID(AliPHOSPID& pid) ;          // cpy ctor            
   virtual ~AliPHOSPID() ; // dtor
 
   virtual void Exec(Option_t * option) { Warning("Exec", "not defined" ) ; }
@@ -42,15 +43,16 @@ class AliPHOSPID : public TTask {
   //virtual void SetIdentificationMethod(char * option) = 0 ;
   //virtual void SetShowerProfileCut(char *  formula) = 0  ; 
   //virtual void SetDispersionCut(Float_t cut) = 0  ;   
-  virtual void SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur,Float_t cut ) { Warning("SetCpvtoEmcDistanceCut", "not defined" ) ;}
-  virtual void SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gate) { Warning("SetTimeGate", "not defined" ) ; }
+  virtual void SetCpvtoEmcDistanceCut(Float_t ClusterEn, TString EffPur,Float_t cut ) { Warning("SetCpvtoEmcDistanceCut", "not defined" ) ;}
+  virtual void SetTimeGate(Float_t ClusterEn, TString EffPur, Float_t gate) { Warning("SetTimeGate", "not defined" ) ; }
   //  virtual void SetTrackSegmentsBranch(const char* title) { Warning("Exec", "not defined" ) ; }
   //  virtual void SetRecParticlesBranch (const char* title) { Warning("SetTecParticlesBranch", "not defined" ) ; }
   //  virtual void SetSplitFile(const TString splitFileName = "PHOS.RecData.root") const ; 
   virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
   virtual void WriteRecParticles(Int_t event) { Warning("WriteRecParticles", "not defined" ) ; }
+  AliPHOSPID & operator = (const AliPHOSPID & pid) { return *this ; }
 
-private: 
+protected: 
   virtual void Init() { Warning("Init", "not defined" ) ; } 
 
 protected:
