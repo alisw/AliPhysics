@@ -27,6 +27,7 @@ SRCS          = AliGenHIJINGpara.cxx AliGenHIJINGparaBa.cxx \
                 AliGenHBTprocessor.cxx \
 		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx \
 		AliGenReaderEcalHijing.cxx AliGenReaderEcalJets.cxx \
+		AliGeVSimParticle.cxx AliGenGeVSim.cxx AliGenBeamGas.cxx \
 		AliGeVSimParticle.cxx AliGenGeVSim.cxx \
 		AliGenAfterBurnerFlow.cxx
 

@@ -53,6 +53,7 @@
 #pragma link C++ class  AliGenReaderEcalJets++;
 #pragma link C++ class  AliGenGeVSim+;
 #pragma link C++ class  AliGeVSimParticle+;
+#pragma link C++ class  AliGenBeamGas+;
 #pragma link C++ class  AliGenAfterBurnerFlow+;
 #endif
 
