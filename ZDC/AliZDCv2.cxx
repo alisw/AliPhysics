@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/06/13 11:17:49  coppedis
+Bug corrected
+
 Revision 1.3  2001/06/13 11:11:02  coppedis
 Minor changes
 
@@ -192,12 +195,12 @@ void AliZDCv2::CreateBeamLine()
   conpar[0] = 0.;
   conpar[1] = 360.;
   conpar[2] = 2.;
-  conpar[3] = -1100.;
+  conpar[3] = 2000.;
   conpar[4] = 0.;
-  conpar[5] = 155.;
+  conpar[5] = 55.;
   conpar[6] = 13060.;
   conpar[7] = 0.;
-  conpar[8] = 155.;
+  conpar[8] = 55.;
   gMC->Gsvolu("ZDC ", "PCON", idtmed[11], conpar, 9);
   gMC->Gspos("ZDC ", 1, "ALIC", 0., 0., 0., 0, "ONLY");
 
@@ -320,14 +323,14 @@ void AliZDCv2::CreateBeamLine()
   boxpar[1] = 5.6;
   boxpar[2] = 400./2.;
   gMC->Gsvolu("QTD1", "BOX ", idtmed[7], boxpar, 3);
-  gMC->Gspos("QTD1", 1, "ZDC ", 0., 10.6, tubpar[2] + zd1 + 56.3, 0, "ONLY");
-  gMC->Gspos("QTD1", 2, "ZDC ", 0., -10.6, tubpar[2] + zd1 + 56.3, 0, "ONLY");
+  gMC->Gspos("QTD1", 1, "ZDC ", 3., 10.6, tubpar[2] + zd1 + 56.3, 0, "ONLY");
+  gMC->Gspos("QTD1", 2, "ZDC ", 3., -10.6, tubpar[2] + zd1 + 56.3, 0, "ONLY");
   
   boxpar[0] = 0.2/2.;
   boxpar[1] = 5.6;
   boxpar[2] = 400./2.;
   gMC->Gsvolu("QTD2", "BOX ", idtmed[6], boxpar, 3);
-  gMC->Gspos("QTD2", 1, "ZDC ", 5.6+boxpar[0], 0., tubpar[2] + zd1 + 56.3, 0, "ONLY");
+  gMC->Gspos("QTD2", 1, "ZDC ", 8.6+boxpar[0], 0., tubpar[2] + zd1 + 56.3, 0, "ONLY");
   
 //  tubspar[0] = 6.2;	// R = 6.2 cm----------------------------------------
 //  tubspar[1] = 6.4;
@@ -340,7 +343,7 @@ void AliZDCv2::CreateBeamLine()
   tubspar[3] = 180.-75.5;
   tubspar[4] = 180.+75.5;
   gMC->Gsvolu("QTD3", "TUBS", idtmed[6], tubspar, 5);
-  gMC->Gspos("QTD3", 1, "ZDC ", -3., 0., tubpar[2] + zd1 + 56.3, 0, "ONLY");
+  gMC->Gspos("QTD3", 1, "ZDC ", 0., 0., tubpar[2] + zd1 + 56.3, 0, "ONLY");
 
   zd1 += tubpar[2] * 2.;
   
@@ -453,7 +456,7 @@ void AliZDCv2::CreateBeamLine()
   tubpar[1] = 8.2/2.;
   tubpar[2] = (1050+zb)/2.;	// From the end of QBPM to z=1050.
   gMC->Gsvolu("QT19", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT19", 1, "ZDC ", 0., 0., zb - tubpar[2], 0, "ONLY");
+  gMC->Gspos("QT19", 1, "ALIC", 0., 0., zb - tubpar[2], 0, "ONLY");
 
   
   // --  END OF BEAM PIPE VOLUME DEFINITION.  
@@ -785,11 +788,14 @@ void AliZDCv2::CreateZDC()
   gMC->Gspos("ZEV1", 1,"ZETR", -DimVoid[0]+zTran, 0., DisplFib, 0, "ONLY");
 
   // --- Positioning the ZEM into the ZDC - rotation for 90 degrees  
-  gMC->Gspos("ZEM ", 1,"ZDC ", fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
+  // NB -> In AliZDCv2 ZEM is positioned in ALIC (instead of in ZDC) volume
+  //	   beacause it's impossible to make a ZDC pcon volume to contain
+  //	   both hadronics and EM calorimeters. (It causes many tracks abandoning).
+  gMC->Gspos("ZEM ", 1,"ALIC", fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
   
   // --- Adding last slice at the end of the EM calorimeter 
 //  Float_t zLastSlice = fPosZEM[2]+fDimZEMPb+fDimZEM[0];
-//  gMC->Gspos("ZEL2", 1,"ZDC ", fPosZEM[0], fPosZEM[1], zLastSlice, irot1, "ONLY");
+//  gMC->Gspos("ZEL2", 1,"ALIC", fPosZEM[0], fPosZEM[1], zLastSlice, irot1, "ONLY");
   
 }
  
