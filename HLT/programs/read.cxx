@@ -15,9 +15,9 @@
 #include "AliL3Logger.h"
 
 /**
-Example program how to open and read a raw datafile.
-In addition it shows, how to store (and read) the
-digits in an Altro like data format. 
+   Example program how to open and read a raw datafile.
+   In addition it shows, how to store (and read) the
+   digits in an Altro like data format. 
 */
 
 int main(int argc,char **argv)

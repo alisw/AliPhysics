@@ -8,7 +8,6 @@
 #include <libgen.h>
 #include <math.h>
 #include <AliL3RootTypes.h>
-#include <AliL3Defs.h>
 #include <AliL3Transform.h>
 #include <AliL3Logging.h>
 #include <AliL3Logger.h>
@@ -22,33 +21,39 @@
 #include <TMath.h>
 #endif
 
-/*
-  This program extracts parameters and lookup tables needed for the
-  vhdl implementation of the Hough transform. 
- */
+/**
+   This program extracts parameters and lookup tables needed for the
+   vhdl implementation of the Hough transform. 
+*/
 
 int main(int argc,char **argv)
 {
   Int_t patch=0;
   Int_t slice=0;
   Char_t path[1000];
-  //cout<<"Usage: transform [slice] [patch] [path]"<<endl;
+
+  AliL3Logger l;
+  l.Set(AliL3Logger::kAll);
+  l.UseStderr();
+  //l.UseStdout();
+  //l.UseStream();
     
   if (argc>1) {
     slice=atoi(argv[1]);
   }
   if (argc>2) {
     patch=atoi(argv[2]);
-  }  if (argc>3) {
+  }  
+  if (argc>3) {
     strcpy(path,argv[3]);
   } else strcpy(path,"/tmp/data/RawData/slice0");
-
-  AliL3Logger l;
-  l.UseStdout();
-  //l.UseStream();
+  if(argc>4){
+    cout<<"Usage: transform [slice] [patch] [path]"<<endl;
+    exit(1);
+  }
 
   AliL3Transform::Init(path);
-  //cout << "Transform version: " << AliL3Transform::GetVersion() << endl;
+  //cerr << "Transform version: " << AliL3Transform::GetVersion() << endl;
 
   Int_t npads=0;
   Int_t sector=0;
@@ -57,6 +62,9 @@ int main(int argc,char **argv)
   Float_t Xt[200];
   Float_t Yt[200];
 
+
+#ifdef DOTESTS /* do some tests in root histos */
+#ifdef use_root
   Float_t xbins[126];
   for(int t=0;t<126;t++){
     Float_t eta=exp(2.*1./125*t);
@@ -64,8 +72,6 @@ int main(int argc,char **argv)
     //cout << eta << " " << xbins[t] << endl;
   }
 
-#ifdef DOTESTS /* do some tests in root histos */
-#ifdef use_root
   TApplication theApp("App", &argc, argv);
   
   TCanvas *c = new TCanvas("c", "The Histogram Canvas", 800, 800);
@@ -84,7 +90,7 @@ int main(int argc,char **argv)
   Float_t xyz[3]={0,0,0};
   Float_t rpe[3]={0,0,0};
   int rebinned=0;
-  for(Int_t rr=NRows[patch][0];rr<=NRows[patch][1];rr++){
+  for(Int_t rr=AliL3Transform::GetFirstRow(patch);rr<=AliL3Transform::GetLastRow(patch);rr++){
     npads=AliL3Transform::GetNPads(rr);
     AliL3Transform::Slice2Sector(slice,rr,sector,sector_row);
     for(Int_t pp=0;pp<npads;pp++){
@@ -113,10 +119,13 @@ int main(int argc,char **argv)
     }
   }
 #else /* do the extraction of the parameters */
-  AliL3Transform::Slice2Sector(slice,NRows[patch][0],sector,sector_row);
+  Int_t firstrow=AliL3Transform::GetFirstRow(patch);
+  Int_t lastrow=AliL3Transform::GetLastRow(patch);
+  AliL3Transform::Slice2Sector(slice,firstrow,sector,sector_row);
 
   Float_t ytabval=0;
-  Int_t maxrow=NRows[patch][1]-NRows[patch][0];
+  //Int_t maxrow=NRows[patch][1]-NRows[patch][0];
+  Int_t maxrow=AliL3Transform::GetNRows(patch);  
   Float_t padpitch=0;
   if(sector<AliL3Transform::GetNSectorLow())
     padpitch=AliL3Transform::GetPadPitchWidthLow();
@@ -126,20 +135,21 @@ int main(int argc,char **argv)
   printf("MinRow: %d\nMaxRow: %d\n",0,maxrow);
   printf("YPadWidth: %.2f\n",padpitch);
   printf("ZSign: %d\n",slice < 18 ? 1:-1);
-  printf("ZWidth: %.2f\n",AliL3Transform::GetZWidth());
+  //printf("ZWidth: %.2f\n",AliL3Transform::GetZWidth());
+  printf("ZWidth: %.2f\n",AliL3Transform::GetZLength()+AliL3Transform::GetZOffset());
   printf("TimeWidth: %.2f\n\n",AliL3Transform::GetZWidth());
 
   //calculating lookup tables for slice and patch!
-  for(Int_t rr=NRows[patch][0];rr<=NRows[patch][1];rr++){
+  for(Int_t rr=firstrow;rr<=lastrow;rr++){
     npads=AliL3Transform::GetNPads(rr);
     
     //Y(row,pad)=pad*padpitch-ytabval(row);
     ytabval=0.5*(npads-1)*padpitch;
 
-    Xt[rr-NRows[patch][0]]=AliL3Transform::Row2X(rr);
-    Yt[rr-NRows[patch][0]]=ytabval;
+    Xt[rr-firstrow]=AliL3Transform::Row2X(rr);
+    Yt[rr-firstrow]=ytabval;
     //row in patch: X(row) Y_part(row)
-    printf("Row: %d X: %.2f Y: %.2f\n",rr-NRows[patch][0],AliL3Transform::Row2X(rr),ytabval);
+    printf("Row: %d X: %.2f Y: %.2f\n",rr-firstrow,AliL3Transform::Row2X(rr),ytabval);
   }
   printf("\n\nVHDL-Output for LUT:\nX_table := (");
   for(int i=0;i<maxrow-1;i++){
