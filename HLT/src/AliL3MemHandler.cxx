@@ -651,8 +651,8 @@ Int_t AliL3MemHandler::Memory2CompMemory(UInt_t nrow,
       }
       while(digit<row_pt->fNDigit && row_pt->fDigitData[digit].fPad == pad){
         UShort_t charge = row_pt->fDigitData[digit].fCharge;
-        if(charge>=AliL3Transform::GetADCSat()){
-          charge=AliL3Transform::GetADCSat();
+        if(charge>=1023){
+          charge=1023;
         }
         Write(comp,index,subindex,charge);
         if(digit+1<row_pt->fNDigit&&row_pt->fDigitData[digit+1].fPad == pad){
@@ -669,7 +669,7 @@ Int_t AliL3MemHandler::Memory2CompMemory(UInt_t nrow,
       Write(comp,index,subindex,0);
       Write(comp,index,subindex,0);
     }
-
+    
     Int_t size = sizeof(AliL3DigitData) * row_pt->fNDigit+
                                             sizeof(AliL3DigitRowData);
     Byte_t  *byte_pt =(Byte_t *) row_pt;
