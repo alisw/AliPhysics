@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.2  2003/03/25 23:27:19  nilsen
+ITS new Geometry files. Not yet ready for uses, committed to allow additional
+development.
+
 Revision 1.1  2003/02/10 17:03:52  nilsen
 New version and structure of ITS V11 geometry. Work still in progress.
 
@@ -108,7 +112,7 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     fH.Size(4,"SSD support cone Rohacell foam Spoak"); // Poly-cone Volume H.
     fI.Size(9,"SSD lower/inner right part of SSD cone"); //Poly-cone Volume I.
     fJ.Size(4,"SSD inner most foam core"); // Poly-cone Volume J.
-    fK.Size(7,"SSD inner most inserto material"); // Poly-cone Volume K.
+    fK.Size(6,"SSD inner most inserto material"); // Poly-cone Volume K.
     fL.Size(4,"SSD Bottom cone Rohacell foam Spoak"); // Poly-cone Volume L.
     fM.Size(4,"SSD mounting post foam substitute, Inserto");//Poly-cone Vol. M
     fN.Size(4,"SSD mounting post CF subsititute, Inserto");//Poly-cone Vol. N
@@ -187,7 +191,7 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     fC.Z(1)  = fB.ZAt(5);
     fC.Rx(1) = fB.Rmin(5);
     fC.Rn(2) = fA.Rmin(5)+fCthick;//leave space for carbon fiber covering hole
-    fC.Z(2)  = ZFromRminSSDcone(fC.Rn(2),+fCthick);
+    fC.Z(2)  = ZFromRminSSDcone(fC.Rmin(2),+fCthick);
     fC.Rn(1) = RminFrom2Points(fC,2,0,fC.ZAt(1));
     fC.Rx(3) = fA.Rmin(6)+fCthick;
     fC.Rn(3) = fC.Rmax(3);
@@ -213,7 +217,7 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     fF.Rx(0) = fF.Rmin(0);
     fF.Rn(1) = fA.Rmin(5);
     fF.Rx(1) = fF.Rmin(0);
-    fF.Z(1)  = RminFromZSSDcone(fF.ZAt(1),+fCthick);
+    fF.Z(1)  = ZFromRminSSDcone(fF.Rmin(1),+fCthick);
     fF.Z(2)  = fC.ZAt(3);
     fF.Rn(2) = fF.Rmin(1);
     fF.Rx(2) = fF.Rmax(1);
@@ -246,13 +250,13 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     // carbon fiber thickness uniform in this phi direction. We can only
     // make it a fixed angular thickness.
     t *= 180.0/TMath::Pi();
-    fH.P0()  = 5.0 - 2.0*t; // degrees
-    fH.dP()  = 12.5+t; // degrees see drawing ALR-0767.
+    fH.P0()  = 12.5+t; // degrees
+    fH.dP()  = 5.0 - 2.0*t; // degrees see drawing ALR-0767.
     fH.Z(0)  = fF.ZAt(1);
     fH.Rn(0) = fG.Rmin(0);
     fH.Rx(0) = fH.Rmin(0);
     fH.Z(1)  = fF.ZAt(3);
-    fH.Rn(1) = RminFromZSSDcone(fH.Z(1),-fCthick);
+    fH.Rn(1) = RminFromZSSDcone(fH.Z(1),+fCthick);
     fH.Rx(1) = fH.Rmax(0);
     fH.Z(2)  = ZFromRminSSDcone(fG.Rmin(2),+fCthick);
     fH.Rn(2) = fG.Rmin(2);
@@ -273,7 +277,7 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     fI.Rx(1) = fI.Rmax(0);
     fI.Rn(4) = fRinMin;
     fI.Rn(5) = fRinMin;
-    RadiusOfCurvature(fRcurv,90.0,0.0,fRinMin,90.0-fTc,Z,fI.Rx(5)); // z dummy
+    RadiusOfCurvature(fRcurv,90.0,0.0,fRinMax,90.0-fTc,Z,fI.Rx(5)); // z dummy
     fI.Z(5)  = ZFromRmaxSSDcone(fI.Rx(5));
     fI.Z(6)  = fZcylinder;
     fI.Rn(6) = fRinMin;
@@ -284,7 +288,7 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     Rmin = fI.Rmin(5);
     RadiusOfCurvature(fRcurv,90.0-fTc,fI.Z(5),fI.Rmax(5),90.0,Z,Rmax);
     Rmax = fRinMax;
-    fI.Z(8)  = Z+(fI.ZAt(5)-Z)*(fI.Rmax(8)-Rmax)/(fI.Rmax(7)-Rmax);
+    fI.Z(8)  = Z+(fI.ZAt(5)-Z)*(fI.Rmax(8)-Rmax)/(fI.Rmax(5)-Rmax);
     fI.Rx(6) = RmaxFrom2Points(fI,8,5,fI.ZAt(6));
     fI.Rx(7) = fI.Rmax(6);
     fI.Z(3)  = Z-fdZin;
@@ -306,21 +310,19 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     fK.Rn(2) = fI.Rmin(4);
     fK.Rn(3) = fK.Rmin(2);
     fK.Rn(4) = fK.Rmin(2);
-    fK.Rn(5) = fK.Rmin(2);
-    fK.Rx(5) = fI.Rmin(8);
-    fK.Z(6)  = fI.ZAt(6);
-    fK.Rn(6) = fI.Rmin(6);
-    fK.Rx(6) = fI.Rmin(7);
+    fK.Rx(4) = fI.Rmax(5)-fCthick*fSintc;
     RadiusOfCurvature(fRcurv+fCthick,90.0,fK.ZAt(1),fK.Rmin(1),
 		                90.0-fTc,fK.Z(0),fK.Rn(0));
     fK.Rx(0) = fK.Rmin(0);
-    fK.Z(3)  = fK.ZAt(0)+(fThickness+2.0*fCthick)*fCostc;;
-    fK.Rx(3) = fK.Rmax(0)+(fThickness+2.0*fCthick)*fSintc;
+    fK.Z(3)  = fK.ZAt(0)+(fThickness-2.0*fCthick)*fCostc;;
+    fK.Rx(3) = fK.Rmax(0)+(fThickness-2.0*fCthick)*fSintc;
     fK.Rx(1) = RmaxFrom2Points(fK,3,0,fK.ZAt(1));
     fK.Rx(2) = fK.Rmax(1);
-    fK.Rx(4) = fI.Rmax(5)-fCthick*fSintc;
     fK.Z(4)  = ZFromRmaxSSDcone(fK.Rmax(4),-fCthick);
-    fK.Z(5)  = fI.ZAt(5)-fRcurv*fCostc-fCthick;
+    fK.Rn(5) = fK.Rmin(2);
+    fK.Z(5)  = fI.ZAt(6);
+    fK.Rx(5) = (fI.Rmax(5)-fI.Rmax(8))/(fI.ZAt(5)-fI.ZAt(8))*
+	       (fK.ZAt(5)-fK.ZAt(4)) + fK.Rmax(4);
     // Now for foam core at the inner most radius.
     fJ.P0() = 0.0;
     fJ.dP() = 360.0;
@@ -329,7 +331,7 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     fJ.Rx(0) = fJ.Rmin(0);
     fJ.Rx(1) = fJ.Rmax(0);
     fJ.Z(1)  = ZFromRmaxSSDcone(fJ.Rmax(1),-fCthick);
-    fJ.Rn(1) = RminFromZSSDcone(fJ.ZAt(1),-fCthick);
+    fJ.Rn(1) = RminFromZSSDcone(fJ.ZAt(1),+fCthick);
     fJ.Z(2)  = fK.ZAt(0);
     fJ.Rn(2) = fK.Rmin(0);
     fJ.Rx(2) = RmaxFromZSSDcone(fJ.ZAt(2),-fCthick);
@@ -342,13 +344,13 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     // carbon fiber thickness uniform in this phi direction. We can only
     // make it a fixed angular thickness.
     t *= 180.0/TMath::Pi();
-    fL.P0() = 5.0 - 2.0*t; // degrees
-    fL.dP() = 12.5+t; // degrees see drawing ALR-0767.
+    fL.P0() = 12.5+t; // degrees
+    fL.dP() = 5.0 - 2.0*t; // degrees see drawing ALR-0767.
     fL.Z(0) = fH.ZAt(2);
-    fL.Rn(0) = fI.Rmin(0);
+    fL.Rn(0) = fH.Rmin(2);
     fL.Rx(0) = fL.Rmin(0);
     fL.Z(1)  = fJ.ZAt(0);
-    fL.Rn(1) = fJ.Rmin(1);
+    fL.Rn(1) = fJ.Rmin(0);
     fL.Rx(1) = fI.Rmax(1);
     fL.Z(2)  = fH.ZAt(3);
     fL.Rn(2) = fL.Rmin(1);
@@ -357,8 +359,8 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     fL.Rn(3) = fL.Rmin(2);
     fL.Rx(3) = fL.Rmin(3);
     // Now for the SSD mounting posts
-    fO.P0()  = 180.0*fdRpost/(fRpostMin+0.5*fdRpost)/TMath::Pi(); // degrees
-    fO.dP()  = fPhi0Post; //
+    fO.P0()  = fPhi0Post; // degrees
+    fO.dP()  = 180.0*fdRpost/(fRpostMin+0.5*fdRpost)/TMath::Pi(); //
     fO.Rn(0) = fRpostMin+fdRpost;
     fO.Rx(0) = fO.Rmin(0);
     fO.Z(0)  = ZFromRmaxSSDcone(fO.Rmax(0));
@@ -375,9 +377,9 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     fP.Rn(0) = fO.Rmin(0)-fCthick;
     fP.Rx(0) = fP.Rmin(0);
     fP.Z(0)  = ZFromRmaxSSDcone(fP.Rmax(0));
-    fP.Rn(1) = fO.Rmin(0)+fCthick;
+    fP.Rn(1) = fO.Rmin(1)+fCthick;
     fP.Rx(1) = fO.Rmin(0)-fCthick;
-    fP.Z(1)  = ZFromRminSSDcone(fP.Rmin(1));
+    fP.Z(1)  = ZFromRmaxSSDcone(fP.Rmin(1));
     fP.Rn(2) = fP.Rmin(1);
     fP.Rx(2) = fP.Rmax(1);
     fP.Z(2)  = fZ0+fZpostMax;
@@ -405,7 +407,7 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     fN.Rx(0) = fN.Rmin(0);
     fN.Rx(1) = fN.Rmax(0);
     fN.Z(1)  = ZFromRmaxSSDcone(fN.Rmax(1));
-    fN.Rn(1) = RminFromZSSDcone(fN.ZAt(1),-fCthick);
+    fN.Rn(1) = RmaxFromZSSDcone(fN.ZAt(1),-fCthick);
     fN.Z(2)  = fM.ZAt(3);
     fN.Rn(2) = fM.Rmin(3);
     fN.Rx(2) = RmaxFromZSSDcone(fN.ZAt(2));
@@ -524,17 +526,17 @@ void AliITSGeometrySSDCone::PositionG3Geometry(AliITSBaseVolParams &moth,
     if(cn==1) init=kTRUE;
     Pos(fA,cn,moth,trans,0);
     Pos(fI,cn,moth,trans,0);
-    Pos(fG,fNspoaks*(cn-1)+1,fA,trans,0);
+    Pos(fG,fNspoaks*(cn-1)+1,moth,trans,0);
     irotSpoaks = irot;
-    j = 0;
+    j = 1;
     for(i=fNspoaks*(cn-1)+2;i<fNspoaks*cn+1;i++){
 	ZMatrix(++irot,((Double_t)j)*360./((Double_t)fNspoaks));
-	Pos(fG,i,fA,trans,irot);
+	Pos(fG,i,moth,trans,irot);
 	j++;
     } // end for i
     Pos(fO,fNposts*(cn-1)+1,moth,trans,0);
     irotPost = irot;
-    j = 0;
+    j = 1;
     for(i=fNposts*(cn-1)+2;i<fNposts*cn+1;i++){
 	ZMatrix(++irot,((Double_t)j)*360./((Double_t)fNposts));
 	Pos(fO,i,moth,trans,irot);
@@ -617,8 +619,8 @@ void AliITSGeometrySSDCone::PositionG3Geometry(AliITSBaseVolParams &moth,
     Pos(fM,1,fJ,zero,0);
     Pos(fN,1,fI,zero,0);
     for(i=1;i<fNposts;i++){
-	Pos(fN,i+1,fJ,zero,irotPost+i);
-	Pos(fM,i+1,fI,zero,irotPost+i);
+	Pos(fN,i+1,fI,zero,irotPost+i);
+	Pos(fM,i+1,fJ,zero,irotPost+i);
     } // end for i
     return;
 }

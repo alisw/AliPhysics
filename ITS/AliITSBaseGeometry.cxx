@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2003/03/27 08:49:39  hristov
+Initialization of static data members in the implementation file
+
 Revision 1.2  2003/03/25 23:27:19  nilsen
 ITS new Geometry files. Not yet ready for uses, committed to allow additional
 development.
@@ -1598,8 +1601,8 @@ void AliITSPConeData::Print(ostream *os){
     *os <<"       Z        ,      Rmin      ,      Rmax      " << endl;
     fmt = os->setf(ios::scientific);  // set scientific floating point output
     for(i=0;i<fNz;i++){
-	*os << setprecision(16) << fZ[i] <<" ";
-	*os << setprecision(16) << fRmin[i] << " ";
+	*os << setprecision(16) << fZ[i] <<"\t";
+	*os << setprecision(16) << fRmin[i] << "\t";
 	*os << setprecision(16) << fRmax[i] << endl;
     } // end for i
     os->flags(fmt); // reset back to old formating.
@@ -1695,8 +1698,8 @@ void AliITSPGonData::Print(ostream *os){
     *os <<"       Z        ,      Rmin      ,      Rmax      " << endl;
     fmt = os->setf(ios::scientific);  // set scientific floating point output
     for(i=0;i<fNz;i++){
-	*os << setprecision(16) << fZ[i] <<" ";
-	*os << setprecision(16) << fRmin[i] << " ";
+	*os << setprecision(16) << fZ[i] <<"\t";
+	*os << setprecision(16) << fRmin[i] << "\t";
 	*os << setprecision(16) << fRmax[i] << endl;
     } // end for i
     os->flags(fmt); // reset back to old formating.
@@ -1792,8 +1795,8 @@ void AliITSTubeData::Print(ostream *os){
     *os << "Volume "<< GetVid() << " Name: " << *GetName() << endl;
     *os <<"       Z        ,      Rmin      ,      Rmax      " << endl;
     fmt = os->setf(ios::scientific);  // set scientific floating point output
-    *os << setprecision(16) << fDz <<" ";
-    *os << setprecision(16) << fRmin << " ";
+    *os << setprecision(16) << fDz <<"\t";
+    *os << setprecision(16) << fRmin << "\t";
     *os << setprecision(16) << fRmax << endl;
     os->flags(fmt); // reset back to old formating.
     return;

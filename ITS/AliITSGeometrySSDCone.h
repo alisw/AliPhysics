@@ -69,7 +69,7 @@ class  AliITSGeometrySSDCone : public AliITSBaseGeometry {
 	{return p.ZAt(4)+(p.Rmax(4)+th/fCostc-r)/fTantc;}
     // General SSD Inner cone Surface equation for z.
     Double_t ZFromRminpCone(AliITSPConeData &p,Double_t r,Double_t th=0.0)
-	{return p.ZAt(3)+(p.Rmax(3)+th/fCostc-r)/fTantc;}
+	{return p.ZAt(3)+(p.Rmin(3)+th/fCostc-r)/fTantc;}
     Double_t ZFromRmaxSSDcone(Double_t r,Double_t th=0.0)
 	{return ZFromRmaxpCone(fA,r,th);}
     Double_t ZFromRminSSDcone(Double_t r,Double_t th=0.0)
