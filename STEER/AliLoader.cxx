@@ -504,7 +504,7 @@ void AliLoader::MakeTree(Option_t *option)
  }
 
 /*****************************************************************************/ 
-Int_t  AliLoader::WriteHits(Option_t* opt)
+Int_t  AliLoader::WriteHits(Option_t* opt) const
  {
    // Writes hits
    AliDataLoader* dl = GetHitsDataLoader();
@@ -513,7 +513,7 @@ Int_t  AliLoader::WriteHits(Option_t* opt)
  }
 /*****************************************************************************/ 
 
-Int_t AliLoader::WriteSDigits(Option_t* opt)
+Int_t AliLoader::WriteSDigits(Option_t* opt) const
  {
    // Writes summable digits
    AliDataLoader* dl = GetSDigitsDataLoader();
@@ -523,35 +523,35 @@ Int_t AliLoader::WriteSDigits(Option_t* opt)
  
 /*****************************************************************************/ 
 
-Int_t AliLoader::PostSDigitizer(TTask* sdzer)
+Int_t AliLoader::PostSDigitizer(TTask* sdzer) const
 {
   // Posts sdigitizer
   return GetSDigitsDataLoader()->GetBaseTaskLoader()->Post(sdzer);
 }
 /*****************************************************************************/ 
 
-Int_t AliLoader::PostDigitizer(AliDigitizer* task)
+Int_t AliLoader::PostDigitizer(AliDigitizer* task) const
  {
    // Posts digitizer
   return GetDigitsDataLoader()->GetBaseTaskLoader()->Post(task);
  }
 /*****************************************************************************/ 
 
-Int_t AliLoader::PostReconstructioner(TTask* task)
+Int_t AliLoader::PostReconstructioner(TTask* task) const
  {
    // Posts Reconstructioner
   return GetRecPointsDataLoader()->GetBaseTaskLoader()->Post(task);
  }
 /*****************************************************************************/ 
 
-Int_t AliLoader::PostTracker(TTask* task)
+Int_t AliLoader::PostTracker(TTask* task) const
  {
    // Posts a tracker
   return GetTracksDataLoader()->GetBaseTaskLoader()->Post(task);
  }
 /*****************************************************************************/ 
 
-Int_t AliLoader::PostPIDTask(TTask* task)
+Int_t AliLoader::PostPIDTask(TTask* task) const
  {
   // Posts particle identification task
   return GetRecParticlesDataLoader()->GetBaseTaskLoader()->Post(task);
@@ -839,7 +839,7 @@ void  AliLoader::SetDirName(TString& dirname)
 
 /*****************************************************************************/ 
 
-void AliLoader::SetDigitsFileNameSuffix(const TString& suffix)
+void AliLoader::SetDigitsFileNameSuffix(const TString& suffix) const
 {
   //adds the suffix before ".root", 
   //e.g. TPC.Digits.root -> TPC.DigitsMerged.root

@@ -87,27 +87,32 @@ class AliLoader: public TNamed
     TObject**      TrackerRef();
     TObject**      PIDTaskRef();
     
-    virtual void   MakeHitsContainer(){GetHitsDataLoader()->MakeTree();}
-    virtual void   MakeSDigitsContainer(){GetSDigitsDataLoader()->MakeTree();}
-    virtual void   MakeDigitsContainer(){GetDigitsDataLoader()->MakeTree();}
-    virtual void   MakeRecPointsContainer(){GetRecPointsDataLoader()->MakeTree();}
-    virtual void   MakeTracksContainer(){GetTracksDataLoader()->MakeTree();}
-    virtual void   MakeRecParticlesContainer(){GetRecParticlesDataLoader()->MakeTree();}
+    virtual void   MakeHitsContainer() const {GetHitsDataLoader()->MakeTree();}
+    virtual void   MakeSDigitsContainer() const {GetSDigitsDataLoader()->MakeTree();}
+    virtual void   MakeDigitsContainer() const {GetDigitsDataLoader()->MakeTree();}
+    virtual void   MakeRecPointsContainer() const {GetRecPointsDataLoader()->MakeTree();}
+    virtual void   MakeTracksContainer() const {GetTracksDataLoader()->MakeTree();}
+    virtual void   MakeRecParticlesContainer() const {GetRecParticlesDataLoader()->MakeTree();}
         
     virtual void   CleanFolders();
     virtual void   CloseFiles();
 
-    virtual Int_t  PostSDigitizer(TTask* sdzer);//adds it to Run SDigitizer
-    virtual Int_t  PostDigitizer(AliDigitizer* task);
-    virtual Int_t  PostReconstructioner(TTask* task);
-    virtual Int_t  PostTracker(TTask* task);
-    virtual Int_t  PostPIDTask(TTask* task);
+    virtual Int_t  PostSDigitizer(TTask* sdzer) const;//adds it to Run SDigitizer
+    virtual Int_t  PostDigitizer(AliDigitizer* task) const;
+    virtual Int_t  PostReconstructioner(TTask* task) const;
+    virtual Int_t  PostTracker(TTask* task) const;
+    virtual Int_t  PostPIDTask(TTask* task) const;
     
-    virtual Int_t  WriteSDigitizer(Option_t* opt=""){return GetSDigitsDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
-    virtual Int_t  WriteDigitizer(Option_t* opt=""){return GetDigitsDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
-    virtual Int_t  WriteReconstructioner(Option_t* opt=""){return GetRecPointsDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
-    virtual Int_t  WriteTracker(Option_t* opt=""){return GetTracksDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
-    virtual Int_t  WritePIDTask(Option_t* opt=""){return GetRecParticlesDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
+    virtual Int_t  WriteSDigitizer(Option_t* opt="") const
+      {return GetSDigitsDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
+    virtual Int_t  WriteDigitizer(Option_t* opt="") const
+      {return GetDigitsDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
+    virtual Int_t  WriteReconstructioner(Option_t* opt="") const
+      {return GetRecPointsDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
+    virtual Int_t  WriteTracker(Option_t* opt="") const
+      {return GetTracksDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
+    virtual Int_t  WritePIDTask(Option_t* opt="") const
+      {return GetRecParticlesDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
 
     TTree*         TreeH() const
       {return GetHitsDataLoader()->Tree();}      //returns the tree from folder; shortcut method
@@ -122,52 +127,86 @@ class AliLoader: public TNamed
     TTree*         TreeP() const
       {return GetRecParticlesDataLoader()->Tree();} //returns the tree from folder; shortcut method
 
-    Int_t          LoadHits(Option_t* opt=""){Int_t status = GetHitsDataLoader()->Load(opt);SetTAddrInDet();return status;}
-    Int_t          LoadSDigits(Option_t* opt=""){Int_t status = GetSDigitsDataLoader()->Load(opt);SetTAddrInDet(); return status;}
-    Int_t          LoadDigits(Option_t* opt=""){Int_t status = GetDigitsDataLoader()->Load(opt);SetTAddrInDet();return status;}
-    Int_t          LoadRecPoints(Option_t* opt=""){return GetRecPointsDataLoader()->Load(opt);}
-    Int_t          LoadTracks(Option_t* opt=""){return GetTracksDataLoader()->Load(opt);}
-    Int_t          LoadRecParticles(Option_t* opt=""){return GetRecParticlesDataLoader()->Load(opt);}
+    Int_t          LoadHits(Option_t* opt=""){
+      Int_t status = GetHitsDataLoader()->Load(opt);
+      SetTAddrInDet();
+      return status;
+    }
+    Int_t          LoadSDigits(Option_t* opt=""){
+      Int_t status = GetSDigitsDataLoader()->Load(opt);
+      SetTAddrInDet();
+      return status;
+    }
+    Int_t          LoadDigits(Option_t* opt=""){
+      Int_t status = GetDigitsDataLoader()->Load(opt);
+      SetTAddrInDet();
+      return status;
+    }
+    Int_t          LoadRecPoints(Option_t* opt="") const {
+      return GetRecPointsDataLoader()->Load(opt);
+    }
+    Int_t          LoadTracks(Option_t* opt="") const {
+      return GetTracksDataLoader()->Load(opt);
+    }
+    Int_t          LoadRecParticles(Option_t* opt="") const {
+      return GetRecParticlesDataLoader()->Load(opt);
+    }
     
-    Int_t          LoadSDigitizer(Option_t* opt=""){return GetSDigitsDataLoader()->GetBaseTaskLoader()->Load(opt);}
-    Int_t          LoadDigitizer(Option_t* opt=""){return GetDigitsDataLoader()->GetBaseTaskLoader()->Load(opt);}
-    Int_t          LoadReconstructioner(Option_t* opt=""){return GetRecPointsDataLoader()->GetBaseTaskLoader()->Load(opt);}
-    Int_t          LoadTracker(Option_t* opt=""){return GetTracksDataLoader()->GetBaseTaskLoader()->Load(opt);}
-    Int_t          LoadPIDTask(Option_t* opt=""){return GetRecParticlesDataLoader()->GetBaseTaskLoader()->Load(opt);}
+    Int_t          LoadSDigitizer(Option_t* opt="") const {
+      return GetSDigitsDataLoader()->GetBaseTaskLoader()->Load(opt);
+    }
+    Int_t          LoadDigitizer(Option_t* opt="") const {
+      return GetDigitsDataLoader()->GetBaseTaskLoader()->Load(opt);
+    }
+    Int_t          LoadReconstructioner(Option_t* opt="") const {
+      return GetRecPointsDataLoader()->GetBaseTaskLoader()->Load(opt);
+    }
+    Int_t          LoadTracker(Option_t* opt="") const {
+      return GetTracksDataLoader()->GetBaseTaskLoader()->Load(opt);
+    }
+    Int_t          LoadPIDTask(Option_t* opt="") const {
+      return GetRecParticlesDataLoader()->GetBaseTaskLoader()->Load(opt);
+    }
 
-    void           UnloadHits(){GetHitsDataLoader()->Unload();}
-    void           UnloadSDigits(){GetSDigitsDataLoader()->Unload();}
-    void           UnloadDigits(){GetDigitsDataLoader()->Unload();}
-    void           UnloadRecPoints(){GetRecPointsDataLoader()->Unload();}
-    void           UnloadTracks(){GetTracksDataLoader()->Unload();}
-    void           UnloadRecParticles(){GetRecParticlesDataLoader()->Unload();}
+    void           UnloadHits() const {GetHitsDataLoader()->Unload();}
+    void           UnloadSDigits() const {GetSDigitsDataLoader()->Unload();}
+    void           UnloadDigits() const {GetDigitsDataLoader()->Unload();}
+    void           UnloadRecPoints() const{GetRecPointsDataLoader()->Unload();}
+    void           UnloadTracks() const {GetTracksDataLoader()->Unload();}
+    void           UnloadRecParticles() const {GetRecParticlesDataLoader()->Unload();}
     void           UnloadAll();
 
-    virtual Int_t  ReloadHits(){return GetHitsDataLoader()->Reload();}  //unload and load again Hits
-    virtual Int_t  ReloadSDigits(){return GetSDigitsDataLoader()->Reload();} //unload and load again 
-    virtual Int_t  ReloadDigits(){return GetDigitsDataLoader()->Reload();} //unload and load again 
-    virtual Int_t  ReloadRecPoints(){return GetRecPointsDataLoader()->Reload();} //unload and load again 
-    virtual Int_t  ReloadTracks(){return GetTracksDataLoader()->Reload();} //unload and load again 
-    virtual Int_t  ReloadRecParticles(){return GetRecParticlesDataLoader()->Reload();} //unload and load again 
+    virtual Int_t  ReloadHits() const {return GetHitsDataLoader()->Reload();}  //unload and load again Hits
+    virtual Int_t  ReloadSDigits() const {return GetSDigitsDataLoader()->Reload();} //unload and load again 
+    virtual Int_t  ReloadDigits() const {return GetDigitsDataLoader()->Reload();} //unload and load again 
+    virtual Int_t  ReloadRecPoints() const {return GetRecPointsDataLoader()->Reload();} //unload and load again 
+    virtual Int_t  ReloadTracks() const {return GetTracksDataLoader()->Reload();} //unload and load again 
+    virtual Int_t  ReloadRecParticles() const {return GetRecParticlesDataLoader()->Reload();} //unload and load again 
     virtual Int_t  ReloadAll(); //unload and load again everything that was loaded 
     
   //these methods writes object from folder to proper file
-    virtual Int_t  WriteHits(Option_t* opt="");
-    virtual Int_t  WriteSDigits(Option_t* opt="");
-    virtual Int_t  WriteDigits(Option_t* opt=""){return GetDigitsDataLoader()->WriteData(opt);}
-    virtual Int_t  WriteRecPoints(Option_t* opt=""){return GetRecPointsDataLoader()->WriteData(opt);}
-    virtual Int_t  WriteTracks(Option_t* opt=""){return GetTracksDataLoader()->WriteData(opt);}
-    virtual Int_t  WriteRecParticles(Option_t* opt=""){return GetRecParticlesDataLoader()->WriteData(opt);}
+    virtual Int_t  WriteHits(Option_t* opt="") const;
+    virtual Int_t  WriteSDigits(Option_t* opt="") const;
+    virtual Int_t  WriteDigits(Option_t* opt="") const {return GetDigitsDataLoader()->WriteData(opt);}
+    virtual Int_t  WriteRecPoints(Option_t* opt="") const {return GetRecPointsDataLoader()->WriteData(opt);}
+    virtual Int_t  WriteTracks(Option_t* opt="") const {return GetTracksDataLoader()->WriteData(opt);}
+    virtual Int_t  WriteRecParticles(Option_t* opt="") const {return GetRecParticlesDataLoader()->WriteData(opt);}
 
     
   //void SetTopFolder(TString& str){}; //Sets root top folder for the run
     
-    void           SetHitsFileName(const TString& fname){GetHitsDataLoader()->SetFileName(fname);}
-    void           SetSDigitsFileName(const TString& fname){GetSDigitsDataLoader()->SetFileName(fname);}
-    void           SetDigitsFileName(const TString& fname){GetDigitsDataLoader()->SetFileName(fname);}
-    void           SetRecPointsFileName(const TString& fname){GetRecPointsDataLoader()->SetFileName(fname);}
-    void           SetTracksFileName(const TString& fname){GetTracksDataLoader()->SetFileName(fname);}
-    void           SetRecParticlesFileName(const TString& fname){GetRecParticlesDataLoader()->SetFileName(fname);}
+    void           SetHitsFileName(const TString& fname) const 
+      {GetHitsDataLoader()->SetFileName(fname);}
+    void           SetSDigitsFileName(const TString& fname) const 
+      {GetSDigitsDataLoader()->SetFileName(fname);}
+    void           SetDigitsFileName(const TString& fname) const
+      {GetDigitsDataLoader()->SetFileName(fname);}
+    void           SetRecPointsFileName(const TString& fname) const
+      {GetRecPointsDataLoader()->SetFileName(fname);}
+    void           SetTracksFileName(const TString& fname) const
+      {GetTracksDataLoader()->SetFileName(fname);}
+    void           SetRecParticlesFileName(const TString& fname) const
+      {GetRecParticlesDataLoader()->SetFileName(fname);}
 
     const TString& GetHitsFileName() const 
       {return GetHitsDataLoader()->GetFileName();}
@@ -182,11 +221,16 @@ class AliLoader: public TNamed
     const TString& GetRecParticlesFileName() const
       {return GetRecParticlesDataLoader()->GetFileName();}
    
-    virtual void  CleanHits()     {GetHitsDataLoader()->Clean();}       //cleans hits from folder
-    virtual void  CleanSDigits()  {GetSDigitsDataLoader()->Clean();}    //cleans digits from folder
-    virtual void  CleanDigits()   {GetDigitsDataLoader()->Clean();}     //cleans sdigits from folder
-    virtual void  CleanRecPoints(){GetRecPointsDataLoader()->Clean();}  //cleans rec. points from folder
-    virtual void  CleanTracks()   {GetTracksDataLoader()->Clean();}     //cleans tracks from folder
+    virtual void  CleanHits() const
+      {GetHitsDataLoader()->Clean();}       //cleans hits from folder
+    virtual void  CleanSDigits() const
+      {GetSDigitsDataLoader()->Clean();}    //cleans digits from folder
+    virtual void  CleanDigits() const
+      {GetDigitsDataLoader()->Clean();}     //cleans sdigits from folder
+    virtual void  CleanRecPoints() const
+      {GetRecPointsDataLoader()->Clean();}  //cleans rec. points from folder
+    virtual void  CleanTracks() const
+      {GetTracksDataLoader()->Clean();}     //cleans tracks from folder
     
     virtual void  CleanSDigitizer();                    //cleans SDigitizer from folder
     virtual void  CleanDigitizer();                     //cleans Digitizer from folder
@@ -194,19 +238,31 @@ class AliLoader: public TNamed
     virtual void  CleanTracker();                       //cleans tracker from folder
     virtual void  CleanPIDTask();              //cleans Reconstructions (clusterizer) from folder
 
-    virtual void  SetHitsFileOption(Option_t* newopt){GetHitsDataLoader()->SetFileOption(newopt);}          //Sets Hits File Option in open
-    virtual void  SetSDigitsFileOption(Option_t* newopt){GetSDigitsDataLoader()->SetFileOption(newopt);}    //Sets S. Digits File Option in open
-    virtual void  SetDigitsFileOption(Option_t* newopt){GetDigitsDataLoader()->SetFileOption(newopt);}      //Sets Digits File Option in open
-    virtual void  SetRecPointsFileOption(Option_t* newopt){GetRecPointsDataLoader()->SetFileOption(newopt);}//Sets Rec Ponoints File Option in open
-    virtual void  SetTracksFileOption(Option_t* newopt){GetTracksDataLoader()->SetFileOption(newopt);}      //Sets Tracks File Option in open
-    virtual void  SetRecParticlesFileOption(Option_t* newopt){GetRecParticlesDataLoader()->SetFileOption(newopt);}//Sets Rec Ponoints File Option in open
+    virtual void  SetHitsFileOption(Option_t* newopt) const
+      {GetHitsDataLoader()->SetFileOption(newopt);}          //Sets Hits File Option in open
+    virtual void  SetSDigitsFileOption(Option_t* newopt) const
+      {GetSDigitsDataLoader()->SetFileOption(newopt);}    //Sets S. Digits File Option in open
+    virtual void  SetDigitsFileOption(Option_t* newopt) const
+      {GetDigitsDataLoader()->SetFileOption(newopt);}      //Sets Digits File Option in open
+    virtual void  SetRecPointsFileOption(Option_t* newopt) const
+      {GetRecPointsDataLoader()->SetFileOption(newopt);}//Sets Rec Ponoints File Option in open
+    virtual void  SetTracksFileOption(Option_t* newopt) const
+      {GetTracksDataLoader()->SetFileOption(newopt);}      //Sets Tracks File Option in open
+    virtual void  SetRecParticlesFileOption(Option_t* newopt) const
+      {GetRecParticlesDataLoader()->SetFileOption(newopt);}//Sets Rec Ponoints File Option in open
     
-    virtual void  SetHitsComprLevel(Int_t cl){GetHitsDataLoader()->SetCompressionLevel(cl);}
-    virtual void  SetDigitsComprLevel(Int_t cl){GetSDigitsDataLoader()->SetCompressionLevel(cl);}
-    virtual void  SetSDigitsComprLevel(Int_t cl){GetDigitsDataLoader()->SetCompressionLevel(cl);}
-    virtual void  SetRecPointsComprLevel(Int_t cl){GetRecPointsDataLoader()->SetCompressionLevel(cl);}
-    virtual void  SetTracksComprLevel(Int_t cl){GetTracksDataLoader()->SetCompressionLevel(cl);}
-    virtual void  SetRecParticlesComprLevel(Int_t cl){GetRecParticlesDataLoader()->SetCompressionLevel(cl);}
+    virtual void  SetHitsComprLevel(Int_t cl) const
+      {GetHitsDataLoader()->SetCompressionLevel(cl);}
+    virtual void  SetDigitsComprLevel(Int_t cl) const
+      {GetSDigitsDataLoader()->SetCompressionLevel(cl);}
+    virtual void  SetSDigitsComprLevel(Int_t cl) const
+      {GetDigitsDataLoader()->SetCompressionLevel(cl);}
+    virtual void  SetRecPointsComprLevel(Int_t cl) const
+      {GetRecPointsDataLoader()->SetCompressionLevel(cl);}
+    virtual void  SetTracksComprLevel(Int_t cl) const
+      {GetTracksDataLoader()->SetCompressionLevel(cl);}
+    virtual void  SetRecParticlesComprLevel(Int_t cl) const
+      {GetRecParticlesDataLoader()->SetCompressionLevel(cl);}
     
     virtual void  SetCompressionLevel(Int_t cl);//Sets compression level in all the files
     void          SetDirName(TString& name);//sets the directory name for all the I/O environment
@@ -214,7 +270,7 @@ class AliLoader: public TNamed
     const TString& GetDetectorName() const{return fDetectorName;}//returns the name of the detector
     AliRunLoader*  GetRunLoader();//gets the run-getter from event folder
     
-    void          SetDigitsFileNameSuffix(const TString& suffix);//adds the suffix before ".root", 
+    void          SetDigitsFileNameSuffix(const TString& suffix) const;//adds the suffix before ".root", 
                                                           //e.g. TPC.Digits.root -> TPC.DigitsMerged.root
                                                               //made on Jiri Chudoba demand
     void Synchronize();
@@ -247,12 +303,18 @@ class AliLoader: public TNamed
     //reads data from the file and posts them into folder
 
 
-    virtual Int_t PostHits(){return GetHitsDataLoader()->GetBaseLoader(0)->Load();}
-    virtual Int_t PostSDigits(){return GetSDigitsDataLoader()->GetBaseLoader(0)->Load();}
-    virtual Int_t PostDigits(){return GetDigitsDataLoader()->GetBaseLoader(0)->Load();}
-    virtual Int_t PostRecPoints(){return GetRecPointsDataLoader()->GetBaseLoader(0)->Load();}
-    virtual Int_t PostTracks(){return GetTracksDataLoader()->GetBaseLoader(0)->Load();}
-    virtual Int_t PostRecParticles(){return GetRecParticlesDataLoader()->GetBaseLoader(0)->Load();}
+    virtual Int_t PostHits() const
+      {return GetHitsDataLoader()->GetBaseLoader(0)->Load();}
+    virtual Int_t PostSDigits() const
+      {return GetSDigitsDataLoader()->GetBaseLoader(0)->Load();}
+    virtual Int_t PostDigits() const
+      {return GetDigitsDataLoader()->GetBaseLoader(0)->Load();}
+    virtual Int_t PostRecPoints() const
+      {return GetRecPointsDataLoader()->GetBaseLoader(0)->Load();}
+    virtual Int_t PostTracks() const
+      {return GetTracksDataLoader()->GetBaseLoader(0)->Load();}
+    virtual Int_t PostRecParticles() const
+      {return GetRecParticlesDataLoader()->GetBaseLoader(0)->Load();}
     
     void          Clean();//calls clean for data loaders
     void          Clean(const TString& name);//removes and deletes object from data folder 
