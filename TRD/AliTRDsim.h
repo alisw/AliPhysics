@@ -71,16 +71,17 @@ class AliTRDsim : public TObject {
   virtual Double_t      GetMuN2(Double_t energyMeV);
   virtual Double_t      GetMuO2(Double_t energyMeV);
   virtual Double_t      GetMuHe(Double_t energyMeV);
+  virtual Double_t      GetMuAi(Double_t energyMeV);
 
-          Int_t         GetNFoils() const       { return fNFoils;    };
-          Float_t       GetFoilThick() const    { return fFoilThick; };
-          Float_t       GetGapThick() const     { return fGapThick;  };
-          Float_t       GetFoilDens() const     { return fFoilDens;  };
-          Float_t       GetGapDens() const      { return fGapDens;   };
-          Double_t      GetFoilOmega() const    { return fFoilOmega; };
-          Double_t      GetGapOmega() const     { return fGapOmega;  };
-          Float_t       GetTemp() const         { return fTemp;      };
-          TH1D         *GetSpectrum() const     { return fSpectrum;  };
+          Int_t         GetNFoils() const       { return fNFoils;        };
+          Float_t       GetFoilThick() const    { return fFoilThick;     };
+          Float_t       GetGapThick() const     { return fGapThick;      };
+          Float_t       GetFoilDens() const     { return fFoilDens;      };
+          Float_t       GetGapDens() const      { return fGapDens;       };
+          Double_t      GetFoilOmega() const    { return fFoilOmega;     };
+          Double_t      GetGapOmega() const     { return fGapOmega;      };
+          Float_t       GetTemp() const         { return fTemp / 273.16; };
+          TH1D         *GetSpectrum() const     { return fSpectrum;      };
 
  protected:
 

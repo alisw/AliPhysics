@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/11/14 10:50:46  cblume
+Changes in digits IO. Add merging of summable digits
+
 Revision 1.10  2001/05/31 16:53:26  alibrary
 Correction to the destructor
 
@@ -363,14 +366,11 @@ Double_t AliTRDsim::Sigma(Double_t energykeV)
   // Calculates the absorbtion crosssection for a one-foil-one-gap-radiator
   //
 
-  // Gas at 0 C
-  const Double_t kTemp0 = 273.16;
-
   // keV -> MeV
   Double_t energyMeV = energykeV * 0.001;
   if (energyMeV >= 0.001) {
-    return(GetMuPo(energyMeV) * fFoilDens * fFoilThick + 
-           GetMuCO(energyMeV) * fGapDens  * fGapThick  * fTemp/kTemp0);
+    return(GetMuPo(energyMeV) * fFoilDens * fFoilThick +
+           GetMuAi(energyMeV) * fGapDens  * fGapThick  * GetTemp());
   }
   else {
     return 1e6;
@@ -693,6 +693,50 @@ Double_t AliTRDsim::GetMuHe(Double_t energyMeV)
                     , 2.00000E+00, 3.00000E+00, 4.00000E+00
                     , 5.00000E+00, 6.00000E+00, 8.00000E+00
                     , 1.00000E+01, 1.50000E+01, 2.00000E+01 };
+
+  return Interpolate(energyMeV,en,mu,kN);
+
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDsim::GetMuAi(Double_t energyMeV)
+{
+  //
+  // Returns the photon absorbtion cross section for air
+  // Implemented by Oliver Busch
+  //
+
+  const Int_t kN = 38;
+
+  Double_t mu[kN] = { 0.35854E+04, 0.11841E+04, 0.52458E+03,
+                      0.16143E+03, 0.14250E+03, 0.15722E+03,
+                      0.77538E+02, 0.40099E+02, 0.23313E+02,
+                      0.98816E+01, 0.51000E+01, 0.16079E+01,
+                      0.77536E+00, 0.35282E+00, 0.24790E+00,
+                      0.20750E+00, 0.18703E+00, 0.16589E+00,
+                      0.15375E+00, 0.13530E+00, 0.12311E+00,
+                      0.10654E+00, 0.95297E-01, 0.86939E-01,
+                      0.80390E-01, 0.70596E-01, 0.63452E-01,
+                      0.56754E-01, 0.51644E-01, 0.44382E-01,
+                      0.35733E-01, 0.30721E-01, 0.27450E-01,
+                      0.25171E-01, 0.22205E-01, 0.20399E-01,
+                      0.18053E-01, 0.18057E-01 };
+
+
+
+  Double_t en[kN] = { 0.10000E-02, 0.15000E-02, 0.20000E-02,
+                      0.30000E-02, 0.32029E-02, 0.32029E-02,
+                      0.40000E-02, 0.50000E-02, 0.60000E-02,
+                      0.80000E-02, 0.10000E-01, 0.15000E-01,
+                      0.20000E-01, 0.30000E-01, 0.40000E-01,
+                      0.50000E-01, 0.60000E-01, 0.80000E-01,
+                      0.10000E+00, 0.15000E+00, 0.20000E+00,
+                      0.30000E+00, 0.40000E+00, 0.50000E+00,
+                      0.60000E+00, 0.80000E+00, 0.10000E+01,
+                      0.12500E+01, 0.15000E+01, 0.20000E+01,
+                      0.30000E+01, 0.40000E+01, 0.50000E+01,
+                      0.60000E+01, 0.80000E+01, 0.10000E+02,
+                      0.15000E+02, 0.20000E+02 };
 
   return Interpolate(energyMeV,en,mu,kN);
 
