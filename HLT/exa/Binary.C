@@ -4,7 +4,7 @@
 Macro for converting AliRoot digits into L3 RawData. Binary create for each patch its own file. singlepatch uses one file per slice. 
  */
 
-Binary(char* in,int first, int last,char *path=""){
+Binary(char* in,int first, int last,char *path="."){
   char name[256];
   const Int_t npatch = 6;
   Int_t row[npatch][2] = {{0,31},{32,63},{64,91},{92,119},{120,143},{144,175}};
