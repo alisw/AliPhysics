@@ -46,6 +46,7 @@ AliEMCALHit::AliEMCALHit(){
    
     fId      = 0;
     fELOS    = 0.0;
+    fTime    = 0.0;
     fPrimary = 0;
     fTrack   = 0;
     fX       = 0.0;
@@ -75,6 +76,7 @@ AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit){
     fPe       = hit.fPe;
     fIparent = hit.fIparent;
     fIenergy = hit.fIenergy;
+    fTime    = hit.fTime  ;
 }
 //______________________________________________________________________
 AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, Float_t ienergy, Int_t id,
@@ -85,8 +87,9 @@ AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, 
     fX          = hits[0];
     fY          = hits[1];
     fZ          = hits[2];
+    fTime       = hits[3] ;
     fId         = id;
-    fELOS       = hits[3];
+    fELOS       = hits[4];
     fPrimary    = primary;
     fPx          = p[0];
     fPy          = p[1];
@@ -111,7 +114,10 @@ AliEMCALHit AliEMCALHit::operator+(const AliEMCALHit &rValue){
     // Add the energy of the hit
 
     fELOS += rValue.GetEnergy() ;
-
+ 
+    if(rValue.GetTime() < fTime)
+      fTime = rValue.GetTime() ;
+ 
     return *this;
 
 }
@@ -122,6 +128,7 @@ ostream& operator << (ostream& out,AliEMCALHit& hit){
     out << "AliEMCALHit:";
     out << "id=" <<  hit.GetId();
     out << ", Eloss=" <<  hit.GetEnergy();
+    out << ", Time=" << hit.GetTime();
     out << "GeV , Track no.=" << hit.GetPrimary();
     out << ", (xyz)=(" << hit.X()<< ","<< hit.Y()<< ","<<hit.Z()<<") cm";
     out << ", fTrack=" << hit.GetTrack();
