@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.2  2001/11/22 11:30:30  hristov
+Correct log field
+
 Revision 1.1  2001/11/22 11:22:51  hristov
 Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
 
@@ -168,7 +171,7 @@ TObject* AliTOFHitMap::GetHit(Int_t *vol) const
 //
 // Get pointer to object at vol
 // return 0 if vol out of bounds
-    Int_t index=GetHitIndex(vol)-1;
+    Int_t index=GetHitIndex(vol);
     return (index <0) ? 0 : fSDigits->UncheckedAt(index);
 }
 
