@@ -31,6 +31,7 @@ class AliClusterMap: public TObject
    virtual ~AliClusterMap(){}
    Float_t GetOverlapFactor(const AliClusterMap& clmap) const;
    Bool_t  HasClAtPadRow(Int_t i) const { return fPadRawMap.TestBitNumber(i);}
+   void    Print(const Option_t * opt) const {TObject::Print(opt);}
    void    Print() const;
   protected:
   private:

@@ -73,7 +73,7 @@ class AliAODParticleBaseCut: public TObject
      Double_t          GetMaximum() const {return fMax;}
      
      EAODCutProperty   GetProperty() const {return fProperty;}
-     virtual void Print(void) const;
+     virtual void Print(const Option_t * opt = "") const;
      
    protected:
      virtual Double_t  GetValue(AliVAODParticle *) const = 0;
@@ -250,7 +250,7 @@ class AliAODPIDCut:  public AliAODParticleBaseCut
      virtual ~AliAODPIDCut(){}
      
      void SetPID(Int_t pid){fPID = pid;}
-     void Print(void) const;
+     void Print(const Option_t * opt = "") const;
    protected:
      Double_t  GetValue(AliVAODParticle * p)const{return p->GetProbability(fPID);}
      Int_t     fPID; //pid of particle that the pid is set 

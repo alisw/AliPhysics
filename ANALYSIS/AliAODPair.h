@@ -76,7 +76,8 @@ class AliAODPair: public TObject
    void   MirrorSecond();
    void   DeleteSecond();
    
-   void   Print(Option_t* /*option*/ = "" ) ;
+   void   Print(const Option_t* option ) const {TObject::Print(option);}
+   void   Print() ;
    
  protected:
    AliVAODParticle* fPart1;  //pointer to first particle

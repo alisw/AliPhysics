@@ -635,7 +635,7 @@ void   AliAODPair::DeleteSecond()
   fPart2 = 0x0;
 }
 
-void   AliAODPair::Print(Option_t* /*option*/) 
+void   AliAODPair::Print() 
 {
   if (fPart1) fPart1->Print();
   if (fPart2) fPart2->Print();

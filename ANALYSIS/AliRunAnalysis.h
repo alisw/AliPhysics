@@ -27,10 +27,11 @@ class AliRunAnalysis: public TTask
     virtual ~AliRunAnalysis();
     
     Int_t         Run();
+    void          Add(TTask *t){TTask::Add(t);}
     void          Add(AliAnalysis* a);
     void          SetReader(AliReader* reader){fReader = reader;}
     
-    const char*   GetName(){return "RunAnalysis";}
+    const char*   GetName() const {return "RunAnalysis";}
     void          EventCutOnRec(Bool_t flag){fCutOnRec = flag;}
     void          EventCutOnSim(Bool_t flag){fCutOnSim = flag;}
     void          SetEventCut(AliEventCut* evcut);

@@ -301,7 +301,7 @@ void AliAODParticleCut::Streamer(TBuffer &b)
 }
 /******************************************************************/
 
-void AliAODParticleCut::Print(void) const
+void AliAODParticleCut::Print(const Option_t * /*opt*/) const
 {
   //prints all information about the cut to stdout
   cout<<"Printing AliAODParticleCut, this = "<<this<<endl;

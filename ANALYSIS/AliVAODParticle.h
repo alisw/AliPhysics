@@ -82,7 +82,7 @@ public:
   virtual AliTrackPoints*  GetTPCTrackPoints() const {return 0x0;}
   virtual AliTrackPoints*  GetITSTrackPoints() const {return 0x0;}
   virtual AliClusterMap*   GetClusterMap() const {return 0x0;}
-  virtual void             Print() const = 0;
+  virtual void             Print(const Option_t * opt = "") const = 0;
 
   static void    SetDebug(Int_t dbg=1){fgDebug=dbg;}
   static Int_t   GetDebug(){return fgDebug;}

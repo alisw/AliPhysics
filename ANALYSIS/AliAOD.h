@@ -49,7 +49,7 @@ public:
   Int_t                    GetNumberOfCharged(Double_t etamin = -10.0, Double_t etamax = 10.0) const;
   void                     Move(Double_t x, Double_t y, Double_t z);//moves all spacial coordinates about this vector
   virtual void             SetOwner(Bool_t owner);
-  virtual void             Print(Option_t* /*option*/ = 0);
+  virtual void             Print(const Option_t* /*option*/ = "") const;
   TClass*                  GetParticleClass();
 private:
   TClonesArray            *fParticles;   // array of AOD particles, AliAOD is owner of particles

@@ -123,7 +123,7 @@ public:
   void            SetUID(Int_t id){fIdxInEvent = id;}
   
   const Char_t*   GetName() const; 
-  void            Print() const;
+  void            Print(const Option_t * opt = "") const;
   
   void            SetTPCTrackPoints(AliTrackPoints* tpts){fTPCTrackPoints = tpts;}
   AliTrackPoints* GetTPCTrackPoints() const {return fTPCTrackPoints;}

@@ -395,7 +395,7 @@ Float_t AliAODParticle::GetNthPidProb(Int_t idx) const
 }
 //______________________________________________________________________________
 
-void AliAODParticle::Print() const
+void AliAODParticle::Print(const Option_t * /*opt*/) const
 {
 //prints information about particle
   printf("____________________________________________________\n");

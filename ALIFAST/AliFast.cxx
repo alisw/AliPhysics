@@ -311,7 +311,7 @@ void AliFast::Clear(Option_t *option)
 }
 
 //_____________________________________________________________________________
-void AliFast::Draw(Option_t */*option*/) const
+void AliFast::Draw(Option_t */*option*/)
 {
   //
   //    Insert current event in graphics pad list

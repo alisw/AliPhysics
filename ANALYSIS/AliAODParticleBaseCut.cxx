@@ -26,7 +26,7 @@
 #include <Riostream.h>
 
 ClassImp(AliAODParticleBaseCut)
-void AliAODParticleBaseCut::Print(void) const
+  void AliAODParticleBaseCut::Print(const Option_t * /*opt*/) const
 {
   // prints the information anout the base cut to stdout
   cout<<"fMin="<<fMin <<", fMax=" <<fMax<<"    ";
@@ -91,7 +91,7 @@ ClassImp( AliAODVzCut )
 
 ClassImp( AliAODPIDCut )
 
-void AliAODPIDCut::Print(void) const
+void AliAODPIDCut::Print(const Option_t * /*opt*/) const
 {
   cout<<"PID "<<fPID<<" ";
   AliAODParticleBaseCut::Print();

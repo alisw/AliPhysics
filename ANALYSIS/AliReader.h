@@ -86,6 +86,7 @@ class AliReader: public TNamed
     virtual AliAOD*      GetEventRec(Int_t n);//returns event number n
     virtual AliAOD*      GetEventSim(Int_t n);
     
+    virtual Int_t        Read(const char * name) {return TObject::Read(name);}
     virtual Int_t        Read(AliAODRun* particles, AliAODRun *tracks);//Reads all available evenets and stores them in 'particles' and 'tracks'
 
     virtual Int_t        GetNumberOfRecEvents();//Returns number of available events -> usually conncected with reading all events

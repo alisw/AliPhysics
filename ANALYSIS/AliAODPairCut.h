@@ -34,6 +34,7 @@ class AliAODPairCut: public TNamed
   
   virtual void AddBasePairCut(AliAODPairBaseCut* cut);
   
+  virtual void Print(const Option_t * opt) const {TNamed::Print(opt);}
   virtual void Print();
 
   void SetDeltaERange(Double_t min, Double_t max);

@@ -40,7 +40,7 @@ public:
      {afast.Copy(*this); return (*this);}
 
    virtual void       Browse(TBrowser *b);
-   virtual void       Draw(Option_t *option="") const;  // *MENU*
+   virtual void       Draw(Option_t *option="");  // *MENU*
    Int_t              GetVersion() const {return fVersion;}
    Int_t              GetVersionDate() const {return fVersionDate;}
    virtual void       Clear(Option_t *option="");
@@ -48,6 +48,8 @@ public:
    virtual void       FillClone();
    virtual void       Finish();
    virtual void       GetTreeEvent(Int_t event);  // *MENU*
+   virtual void       Init(const char * setup)
+     {AliRun::Init(setup);}
    virtual void       Init();
    Bool_t             IsFolder() const {return kTRUE;}
    virtual void       Make(Int_t i=0);
@@ -62,6 +64,8 @@ public:
    AliFDet           *Detector()    const {return fDet;}
    TTree             *Tree()        const {return fTree;}
 
+   void              Run(Int_t nevent, const char * setup)
+     {AliRun::Run(nevent,setup);}
    Int_t             Run()          const {return fRun;}
    Int_t             Event()        const {return fEvent;}
    Int_t             Mode()         const {return fMode;}
@@ -76,7 +80,8 @@ public:
 
 
 //    Setter for Event Display
-   void           SetDisplay(AliFVirtualDisplay *display) {fFDisplay=display;}
+   void           SetDisplay(AliDisplay *display) 
+     {fFDisplay=(AliFVirtualDisplay*)display;}
 //    Setters for flags and switches
    void           SetLuminosity(Int_t lumi=1)   {fLuminosity=lumi;}
    void           SetBfield(Bool_t field=1)     {fBfield=field;}

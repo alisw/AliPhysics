@@ -84,7 +84,7 @@ class AliAODParticleCut: public TObject
     void SetVyRange(Double_t min, Double_t max);
     void SetVzRange(Double_t min, Double_t max);
     
-    void Print(void) const;
+    void Print(const Option_t * opt = "") const;
   protected:
      
     AliAODParticleBaseCut* FindCut(AliAODParticleBaseCut::EAODCutProperty property);

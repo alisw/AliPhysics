@@ -378,7 +378,7 @@ void AliAOD::Move(Double_t x, Double_t y, Double_t z)
 }
 /**************************************************************************/
 
-void AliAOD::Print(Option_t* /*option*/)
+void AliAOD::Print(const Option_t* /*option*/) const
 {
   //Prints AOD
   TString ts;
