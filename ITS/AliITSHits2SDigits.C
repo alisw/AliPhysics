@@ -1,39 +1,32 @@
-Int_t AliITSHits2DigitsDubna(const char *inFile = "galice.root"){
+Int_t AliITSHits2SDigits(const char *inFile = "galice.root"){
     // Connect the Root Galice file containing Geometry, Kine and Hits
-
+  
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile);
     if (file) {file->Close(); delete file;}
-    cout << "AliITSHits2DigitsDubna" << endl;
+    cout << "AliITSHits2Digits" << endl;
     file = new TFile(inFile,"UPDATE");
     if (!file->IsOpen()) {
 	cerr<<"Can't open "<<inFile<<" !" << endl;
 	return 1;
-    } // end if
+    } // end if !file
     file->ls();
 
     // Get AliRun object from file or return if not on file
     if (gAlice) delete gAlice;
     gAlice = (AliRun*)file->Get("gAlice");
     if (!gAlice) {
-	cerr<<"AliITSHits2DigitsDubna.C : AliRun object not found on file"
+	cerr << "AliITSITSHits2Digits.C : AliRun object not found on file"
 	    << endl;
 	return 2;
     } // end if !gAlice
 
-    if(!gAlice->TreeD()){ 
-	cout << "Having to create the Digits Tree." << endl;
-	gAlice->MakeTree("D");
-    } // end if !gAlice->TreeD()
-    //make branch
-    ITS->MakeBranch("D");
-    ITS->SetTreeAddress();
     gAlice->GetEvent(0);
     AliITS *ITS = (AliITS*)gAlice->GetDetector("ITS");      
     if (!ITS) {
-	cerr<<"AliITSHits2DigitsDubna.C : AliITS object not found on file" 
+	cerr<<"AliITSHits2Digits.C : AliITS object not found on file" 
 	    << endl;
 	return 3;
-    } // end if !ITS
+    }  // end if !ITS
 
     // Set the simulation models for the three detector types
     AliITSgeom *geom = ITS->GetITSgeom();
@@ -43,9 +36,8 @@ Int_t AliITSHits2DigitsDubna(const char *inFile = "galice.root"){
     AliITSDetType *iDetType=ITS->DetType(0);
     AliITSsegmentationSPD *seg0=(AliITSsegmentationSPD*)iDetType->
 	GetSegmentationModel();
-    AliITSresponseSPDdubna *res0 = new AliITSresponseSPDdubna();
-    ITS->SetResponseModel(0,res0);
-    AliITSsimulationSPDdubna *sim0=new AliITSsimulationSPDdubna(seg0,res0);
+    AliITSresponseSPD *res0 = (AliITSresponseSPD*)iDetType->GetResponseModel();
+    AliITSsimulationSPD *sim0=new AliITSsimulationSPD(seg0,res0);
     ITS->SetSimulationModel(0,sim0);
     // test
     cout << "SPD dimensions " << seg0->Dx() << " " << seg0->Dz() << endl;
@@ -97,12 +89,19 @@ Int_t AliITSHits2DigitsDubna(const char *inFile = "galice.root"){
     AliITSsimulationSSD *sim2 = new AliITSsimulationSSD(seg2,res2);
     ITS->SetSimulationModel(2,sim2);
 
+    if(!gAlice->TreeS()){ 
+	cout << "Having to create the SDigits Tree." << endl;
+	gAlice->MakeTree("S");
+    } // end if !gAlice->TreeS()
+    //make branch
+    ITS->MakeBranch("S");
+    ITS->SetTreeAddress();
     cout << "Digitizing ITS..." << endl;
 
     TStopwatch timer;
     Long_t size0 = file->GetSize();
     timer.Start();
-    ITS->Hits2Digits();
+    ITS->Hits2SDigits();
     timer.Stop(); timer.Print();
 
     delete gAlice;   gAlice=0;

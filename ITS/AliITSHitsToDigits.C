@@ -1,51 +1,48 @@
-Int_t AliITSHits2DigitsDubna(const char *inFile = "galice.root"){
+Int_t AliITSHitsToDigits(const char *inFile="galice.root"){
+/////////////////////////////////////////////////////////////////////////
+//   This macro is a small example of a ROOT macro
+//   illustrating how to read the output of GALICE
+//   and do some analysis.
+//   
+/////////////////////////////////////////////////////////////////////////
+
+    // Dynamically link some shared libs
+    if (gClassTable->GetID("AliRun") < 0) {
+	gROOT->LoadMacro("loadlibs.C");
+	loadlibs();
+    } // end if
+
     // Connect the Root Galice file containing Geometry, Kine and Hits
 
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile);
-    if (file) {file->Close(); delete file;}
-    cout << "AliITSHits2DigitsDubna" << endl;
-    file = new TFile(inFile,"UPDATE");
-    if (!file->IsOpen()) {
-	cerr<<"Can't open "<<inFile<<" !" << endl;
-	return 1;
-    } // end if
+    cout << "file " << inFile << endl;
+    if (file) file->Close(); 
+    if (!file) file = new TFile(inFile,"UPDATE");
     file->ls();
 
-    // Get AliRun object from file or return if not on file
-    if (gAlice) delete gAlice;
-    gAlice = (AliRun*)file->Get("gAlice");
+    // Get AliRun object from file or create it if not on file
+
     if (!gAlice) {
-	cerr<<"AliITSHits2DigitsDubna.C : AliRun object not found on file"
-	    << endl;
-	return 2;
-    } // end if !gAlice
+	gAlice = (AliRun*)file->Get("gAlice");
+	if (gAlice) printf("AliRun object found on file\n");
+	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
+    } // end if !gAlice 
 
-    if(!gAlice->TreeD()){ 
-	cout << "Having to create the Digits Tree." << endl;
-	gAlice->MakeTree("D");
-    } // end if !gAlice->TreeD()
-    //make branch
-    ITS->MakeBranch("D");
-    ITS->SetTreeAddress();
-    gAlice->GetEvent(0);
-    AliITS *ITS = (AliITS*)gAlice->GetDetector("ITS");      
-    if (!ITS) {
-	cerr<<"AliITSHits2DigitsDubna.C : AliITS object not found on file" 
-	    << endl;
-	return 3;
-    } // end if !ITS
+    AliITS *ITS  = (AliITS*) gAlice->GetModule("ITS");
+    if (!ITS) return;
 
-    // Set the simulation models for the three detector types
+    // Set the simulation models
     AliITSgeom *geom = ITS->GetITSgeom();
+
+    Int_t nbgr_ev=0;
 
     // SPD
     cout << "Changing from Default SPD simulation, and responce." << endl;
     AliITSDetType *iDetType=ITS->DetType(0);
     AliITSsegmentationSPD *seg0=(AliITSsegmentationSPD*)iDetType->
 	GetSegmentationModel();
-    AliITSresponseSPDdubna *res0 = new AliITSresponseSPDdubna();
-    ITS->SetResponseModel(0,res0);
-    AliITSsimulationSPDdubna *sim0=new AliITSsimulationSPDdubna(seg0,res0);
+    AliITSresponseSPD *res0 = (AliITSresponseSPD*)iDetType->GetResponseModel();
+    AliITSsimulationSPD *sim0=new AliITSsimulationSPD(seg0,res0);
     ITS->SetSimulationModel(0,sim0);
     // test
     cout << "SPD dimensions " << seg0->Dx() << " " << seg0->Dz() << endl;
@@ -97,15 +94,37 @@ Int_t AliITSHits2DigitsDubna(const char *inFile = "galice.root"){
     AliITSsimulationSSD *sim2 = new AliITSsimulationSSD(seg2,res2);
     ITS->SetSimulationModel(2,sim2);
 
-    cout << "Digitizing ITS..." << endl;
-
+    if(!gAlice->TreeD()){ 
+	cout << "Having to create the Digits Tree." << endl;
+	gAlice->MakeTree("D");
+    } // end if !gAlice->TreeD()
+    //make branch
+    ITS->MakeBranch("D");
+    ITS->SetTreeAddress();
+    gAlice->GetEvent(0);
+    cout<<"Digitizing ITS..." << endl;
     TStopwatch timer;
     Long_t size0 = file->GetSize();
-    timer.Start();
-    ITS->Hits2Digits();
-    timer.Stop(); timer.Print();
 
-    delete gAlice;   gAlice=0;
+    for (Int_t nev=evNumber1; nev<= evNumber2; nev++) {
+	cout << "nev         " <<nev<<endl;
+	if(nev>0) {
+	    nparticles = gAlice->GetEvent(nev);
+	    gAlice->SetEvent(nev);
+	    if(!gAlice->TreeD()) gAlice->MakeTree("D");
+	    ITS->MakeBranch("D");
+	} // end if nev>0
+	cout << "nparticles  " <<nparticles<<endl;
+	if (nev < evNumber1) continue;
+	if (nparticles <= 0) return;
+
+	Int_t nbgr_ev=0;
+	if(nsignal) nbgr_ev=Int_t(nev/nsignal);
+	timer.Start();
+	ITS->HitsToDigits(nev,nbgr_ev,size," ","All"," ");
+	timer.Stop(); timer.Print();
+    } // event loop
+
     file->Close();
     Long_t size1 = file->GetSize();
     cout << "File size before = " << size0 << " file size after = " << size1;
@@ -113,4 +132,3 @@ Int_t AliITSHits2DigitsDubna(const char *inFile = "galice.root"){
     delete file;
     return 0;
 };
-
