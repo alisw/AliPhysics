@@ -25,7 +25,7 @@ Int_t AliTRDanalyzeDigits()
 
   // Get the digitizer object
   TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
-  AliTRDdigitizer *digitizer = (AliTRDdigitizer *) file->Get("digitizer");
+  AliTRDdigitizer *digitizer = (AliTRDdigitizer *) file->Get("TRDdigitizer");
   if (!digitizer) {
     cout << "<AliTRDanalyzeDigits> No digitizer object found" << endl;
     rc = 3;

@@ -18,7 +18,7 @@ void hits2sdigits()
   Char_t *alifile = "galice.root"; 
 
   // Create the TRD digitzer 
-  AliTRDdigitizer *digitizer = new AliTRDdigitizer("digitizer","Digitizer class");
+  AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer","Digitizer class");
 
   // Set the parameter
   digitizer->SetVerbose(1);

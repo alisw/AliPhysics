@@ -14,7 +14,7 @@ Int_t AliTRDcreateDigits()
   gAlice->GetEvent(0);
 
   // Create the TRD digitzer 
-  AliTRDdigitizer *digitizer = new AliTRDdigitizer("digitizer","Digitizer class");
+  AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer","Digitizer class");
   digitizer->InitDetector();
 
   // Set the parameter (for TRF ~200ns)
