@@ -5,7 +5,6 @@
 #include <TH1.h>
 #include <TFile.h>
 #include <TNtuple.h>
-#include <TRandom.h> 
 #include <TVector.h>
 #include <TArrayI.h>
 
@@ -60,7 +59,7 @@ public:
   virtual void GetAnodeBaseline(Int_t i, Float_t &baseline, Float_t &noise);
   virtual void AddDigit(Int_t i, Int_t j, Int_t signal);
   virtual void  FindCluster
-       (Int_t i, Int_t j,Int_t signal,Int_t minval,Bool_t cond);
+       (Int_t i, Int_t j,Int_t signal,Int_t minval,Bool_t &cond);
 
 
   // get parameters for 1D - this could be changed when we get more
@@ -76,14 +75,15 @@ public:
   void ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,TObjArray *list,
                         TClonesArray *padr);
 
-  void CreateHistograms();
+  void CreateHistograms(Int_t scale);
+  void FillHistograms();
   void ResetHistograms();
   // Get the pointer to the array of histograms
   TObjArray*  GetHistArray() {return fHis;}
 
   // create a separate tree for background monitoring (2D) 
   virtual  void  MakeTreeB(Option_t *option="B") 
-      { fTreeB = new TNtuple("ntuple","2D backgr","nz:nl:nh:low:anode");}
+    { fTreeB = new TNtuple("ntuple","2D backgr","nz:nl:nh:low:anode");}
   void           GetTreeB(Int_t) { }
 
   // Return pointer to TreeB
@@ -91,15 +91,18 @@ public:
 
   void WriteToFile(TFile *fp);
   TH1F *GetAnode(Int_t wing, Int_t anode); 
-  Float_t GetNoise(Float_t threshold);
+  void SetCheckNoise(Bool_t check=kFALSE) {fCheckNoise=check;}
+  Float_t GetNoise();
+  void SetDoFFT(Int_t doFFT=1) {fDoFFT=doFFT;}
+
 
 private:
-  AliITS              *fITS;  // local pointer to ITS
+  AliITS              *fITS;  //! local pointer to ITS
 
-  AliITSMapA1         *fHitMap1; // local pointer to map of digits
-  AliITSMapA2         *fHitMap2; // local pointer to map of signals
-  AliITSInStream      *fStream;  // input file stream
-  AliITSetfSDD        *fElectronics; // local pointer to electronics simulation
+  AliITSMapA1         *fHitMap1; //! local pointer to map of digits
+  AliITSMapA2         *fHitMap2; //! local pointer to map of signals
+  AliITSInStream      *fStream;  //! input file stream
+  AliITSetfSDD        *fElectronics; //! local pointer to electronics simulation
   
   TArrayI             fD;            // decrease values for baseline eq.
   TArrayI             fT1;           // low thresholds
@@ -111,13 +114,15 @@ private:
   TString             fParam;        // Compresion algorithm options
   TString             fFileName;     // File name for possible options above
 
-  Bool_t fFlag;         // Flag to simulate perpendicular tracks
+  Bool_t fFlag;         // Flag used to simulate perpendicular tracks
+  Bool_t fCheckNoise;   // Flag used to check the simulated noise
+  Int_t  fDoFFT;        // Flag used to switch off electronics when 0
   Int_t fNofMaps;       // Number of anodes used ( 1 - 2*nanodes per wing )
   Int_t fMaxNofSamples; // Number of time samples
   Int_t fScaleSize;     // scale size factor for the samples in FFT
   Int_t fModule;  // in case bgr, noise, param change module-by-module
   Int_t fEvent;   // solely for output from bgr monitoring of 2D
-
+  
   TObjArray *fHis;             // just in case for histogramming
 
   Double_t            *fInZR;  // ! [fScaleSize*fMaxNofSamples]  
