@@ -446,7 +446,7 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 		  if((maxlastrow-maxfirstrow) < fTrackNRows[xbin + ybin*nxbins]) {
 		    fTrackNRows[xbin + ybin*nxbins] = maxlastrow-maxfirstrow;
 		    fInitialGapCount[xbin + ybin*nxbins] = 1;
-		    if((maxlastrow-maxfirstrow+1)<MIN_TRACK_LENGTH)
+		    if((maxlastrow-maxfirstrow+1)<=MIN_TRACK_LENGTH)
 		      fInitialGapCount[xbin + ybin*nxbins] = MAX_N_GAPS+1;
 		    if(maxtrackpt < 0.9*0.1*AliL3Transform::GetSolenoidField())
 		      fInitialGapCount[xbin + ybin*nxbins] = MAX_N_GAPS;
