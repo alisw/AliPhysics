@@ -58,8 +58,8 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
 {
   // ctor : title is used to identify the layout
  
-  // create the getter
-  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0);
+  // create the getter not needed
+  //AliPHOSGetter::GetInstance(gDirectory->GetName(), 0);
   
 }
 
