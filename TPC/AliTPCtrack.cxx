@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2002/11/25 09:33:30  hristov
+Tracking of secondaries (M.Ivanov)
+
 Revision 1.14  2002/10/23 13:45:00  hristov
 Fatal if no magnetic field set for the reconstruction (Y.Belikov)
 
@@ -414,3 +417,15 @@ void AliTPCtrack::ResetCovariance() {
   fC40=0.;  fC41=0.;  fC42=0.;  fC43=0.;  fC44*=10.;
 
 }
+
+////////////////////////////////////////////////////////////////////////
+Double_t AliTPCtrack::Phi() const {
+
+  Double_t phi =  TMath::ASin(GetSnp()) + fAlpha;
+  if (phi<0) phi+=2*TMath::Pi();
+  if (phi>=2*TMath::Pi()) phi-=2*TMath::Pi();
+  return phi;
+}
+////////////////////////////////////////////////////////////////////////
+
+

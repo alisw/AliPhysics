@@ -61,6 +61,16 @@ public:
   Double_t GetSigmaY2() const {return fC00;}
   Double_t GetSigmaZ2() const {return fC11;}
 
+// Some methods useful for users. Implementation is not
+// optimized for speed but for minimal maintanance effort
+  Double_t Phi() const;
+  Double_t Theta() const {return TMath::Pi()/2.-TMath::ATan(GetTgl());}
+  Double_t Px() const {return TMath::Cos(Phi())/TMath::Abs(Get1Pt());}
+  Double_t Py() const {return TMath::Sin(Phi())/TMath::Abs(Get1Pt());}
+  Double_t Pz() const {return GetTgl()/TMath::Abs(Get1Pt());}
+  Double_t Pt() const {return 1./Get1Pt();}
+  Double_t P() const {return TMath::Sqrt(Pt()*Pt()+Pz()*Pz());}
+
   Int_t Compare(const TObject *o) const;
 
   void GetExternalParameters(Double_t& xr, Double_t x[5]) const ;
