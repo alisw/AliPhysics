@@ -23,7 +23,6 @@ class AliGenPythia : public AliGenMC
     virtual void    Generate();
     virtual void    Init();
     // set a cut on the Z coord. of the primary vertex (cm)
-    virtual void    SetCutVertexZ(Float_t cut=999999.) {fCutVertexZ = cut;}
     //
     virtual void    SetEventListRange(Int_t eventFirst=-1, Int_t eventLast=-1);
     // select process type
@@ -65,8 +64,6 @@ class AliGenPythia : public AliGenMC
     AliDecayer  *fDecayer;        //!Pointer to the decayer instance
     Int_t       fDebugEventFirst; //!First event to debug
     Int_t       fDebugEventLast;  //!Last  event to debug
-    TArrayF     fEventVertex;     //!The current event vertex
-    Float_t     fCutVertexZ;      //cut on Z vertex position (cm)
  private:
     // adjust the weight from kinematic cuts
     void   AdjustWeights();

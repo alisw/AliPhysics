@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.41  2001/10/08 08:45:42  morsch
+Possibility of vertex cut added.
+
 Revision 1.40  2001/09/25 11:30:23  morsch
 Pass event vertex to header.
 
@@ -291,13 +294,13 @@ void AliGenPythia::Generate()
 	Int_t np = fParticles->GetEntriesFast();
 	if (np == 0 ) continue;
 // Get event vertex and discard the event if the Z coord. is too big	
-	TParticle *  iparticle = (TParticle *) fParticles->At(0);
-	Float_t distz = iparticle->Vz()/10. - fOrigin.At(2);
-	if(TMath::Abs(distz)>fCutVertexZ)continue;
+	TParticle *iparticle = (TParticle *) fParticles->At(0);
+	Float_t distz = iparticle->Vz()/10.;
+	if(TMath::Abs(distz)>fCutVertexZ*fOsigma[2]) continue;
 //
-	fEventVertex[0] = iparticle->Vx()/10.;
-	fEventVertex[1] = iparticle->Vy()/10.;	
-	fEventVertex[2] = iparticle->Vz()/10.;
+	fEventVertex[0] = iparticle->Vx()/10.+fOrigin.At(0);
+	fEventVertex[1] = iparticle->Vy()/10.+fOrigin.At(1);
+	fEventVertex[2] = iparticle->Vz()/10.+fOrigin.At(2);
 //
 	Int_t* pParent   = new Int_t[np];
 	Int_t* pSelected = new Int_t[np];
