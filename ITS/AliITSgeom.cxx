@@ -58,8 +58,8 @@ Introduction of the Copyright and cvs Log
 
 
 ////////////////////////////////////////////////////////////////////////
-// The structure ITS_geom:
-//     The structure ITS_geom has been defined to hold all of the
+// The structure AliITSgeomS:
+//     The structure AliITSgeomS has been defined to hold all of the
 // information necessary to do the coordinate transformations for one
 // detector between the ALICE Cartesian global and the detector local
 // coordinate systems. The rotations are implemented in the following
@@ -167,11 +167,11 @@ pixel coordinate system.
 // active detector volumes for each ladder. This array is typically
 // created and filled by the AliITSgeom creator function.
 //
-// ITS_geom **fg
-//     A pointer to an array of pointers pointing to the ITS_geom
+// AliITSgeomS **fGm
+//     A pointer to an array of pointers pointing to the AliITSgeomS
 // structure containing the coordinate transformation information.
-// The ITS_geom structure corresponding to layer=lay, ladder=lad,
-// and detector=det is gotten by fg[lay-1][(fNlad[lay-1]*(lad-1)+det-1)].
+// The AliITSgeomS structure corresponding to layer=lay, ladder=lad,
+// and detector=det is gotten by fGm[lay-1][(fNlad[lay-1]*(lad-1)+det-1)].
 // In this way a lot of space is saved over trying to keep a three
 // dimensional array fNlayersXmax(fNlad)Xmax(fNdet), since the number
 // of detectors typically increases with layer number.
@@ -275,7 +275,10 @@ pixel coordinate system.
 #include <iomanip.h>
 #include <stdio.h>
 #include "AliITSgeom.h"
-#include "AliITSgeomSPD.h"
+#include "AliITSgeomSPD300.h"
+#include "AliITSgeomSPD425.h"
+#include "AliITSgeomSDD.h"
+#include "AliITSgeomSSD.h"
 #include "TRandom.h"
 
 ClassImp(AliITSgeom)
@@ -291,7 +294,7 @@ AliITSgeom::AliITSgeom(){
    fNlayers = 0;
    fNlad    = 0;
    fNdet    = 0;
-   fg       = 0;
+   fGm       = 0;
    fShape   = 0;
    return;
 }
@@ -300,23 +303,23 @@ AliITSgeom::AliITSgeom(){
 AliITSgeom::~AliITSgeom(){
 ////////////////////////////////////////////////////////////////////////
 //     The destructor for the AliITSgeom class. If the arrays fNlad,
-// fNdet, or fg have had memory allocated to them, there pointer values
+// fNdet, or fGm have had memory allocated to them, there pointer values
 // are non zero, then this memory space is freed and they are set
 // to zero. In addition, fNlayers is set to zero. The destruction of
 // TObjArray fShape is, by default, handled by the TObjArray destructor.
 ////////////////////////////////////////////////////////////////////////
   // Default destructor.
   // if arrays exist delete them. Then set everything to zero.
-   if(fg!=0){
-      for(Int_t i=0;i<fNlayers;i++) delete[] fg[i];
-      delete[] fg;
-   } // end if fg!=0
+   if(fGm!=0){
+      for(Int_t i=0;i<fNlayers;i++) delete[] fGm[i];
+      delete[] fGm;
+   } // end if fGm!=0
    if(fNlad!=0) delete[] fNlad;
    if(fNdet!=0) delete[] fNdet;
    fNlayers = 0;
    fNlad    = 0;
    fNdet    = 0;
-   fg       = 0;
+   fGm       = 0;
    return;
 }
 
@@ -328,13 +331,13 @@ AliITSgeom::AliITSgeom(const char *filename){
 ////////////////////////////////////////////////////////////////////////
    FILE     *pf;
    Int_t    i;
-   ITS_geom *g;
+   AliITSgeomS *g;
    Int_t    l,a,d;
    Float_t  x,y,z,o,p,q,r,s,t;
    Double_t oor,pr,qr,rr,sr,tr; // Radians
    Double_t lr[9];
    Double_t si; // sin(angle)
-   Double_t PI = TMath::Pi(), byPI = PI/180.;
+   Double_t pi = TMath::Pi(), byPI = pi/180.;
 
    pf = fopen(filename,"r");
 
@@ -356,18 +359,18 @@ AliITSgeom::AliITSgeom(const char *filename){
       if(fNdet[l-1]<d) fNdet[l-1] = d;
    } // end for ever loop
    // counted the number of ladders and detectors now allocate space.
-   fg = new ITS_geom* [fNlayers];
+   fGm = new AliITSgeomS* [fNlayers];
    for(i=0;i<fNlayers;i++){
-      fg[i] = 0;
+      fGm[i] = 0;
       l = fNlad[i]*fNdet[i];
-      fg[i] = new ITS_geom[l]; // allocate space for transforms
+      fGm[i] = new AliITSgeomS[l]; // allocate space for transforms
    } // end for i
 
    // Set up Shapes for a default configuration of 6 layers.
-   fShape = new TObjArray;
-   AddShape((TObject *) new AliITSgeomSPD());  // shape 0
+   fShape = new TObjArray(3);
+   AddShape((TObject *) new AliITSgeomSPD300());  // shape 0
    AddShape((TObject *) new AliITSgeomSDD());  // shape 1
-   AddShape((TObject *) new AliITSgeomSPD());  // shape 2
+   AddShape((TObject *) new AliITSgeomSSD());  // shape 2
 
    // prepare to read in transforms
    rewind(pf); // start over reading file
@@ -382,7 +385,7 @@ AliITSgeom::AliITSgeom(const char *filename){
       }// end if l
       l--; a--; d--; // shift layer, ladder, and detector counters to zero base
       i = d + a*fNdet[l]; // position of this detector
-      g = &(fg[l][i]);
+      g = &(fGm[l][i]);
 
       oor = byPI*o;
       pr = byPI*p;
@@ -429,9 +432,9 @@ AliITSgeom::AliITSgeom(const char *filename){
          for(d=0;d<3;d++) g->fr[3*a+d] = lr[3*a+d] = si*lr[3*a+d];
       } // end for a
       // get angles from matrix up to a phase of 180 degrees.
-      oor     = atan2(lr[7],lr[8]);if(oor<0.0) oor += 2.0*PI;
-      pr     = asin(lr[2]);       if(pr<0.0) pr += 2.0*PI;
-      qr     = atan2(lr[3],lr[0]);if(qr<0.0) qr += 2.0*PI;
+      oor     = atan2(lr[7],lr[8]);if(oor<0.0) oor += 2.0*pi;
+      pr     = asin(lr[2]);       if(pr<0.0) pr += 2.0*pi;
+      qr     = atan2(lr[3],lr[0]);if(qr<0.0) qr += 2.0*pi;
       g->frx = oor;
       g->fry = pr;
       g->frz = qr;
@@ -444,7 +447,7 @@ AliITSgeom::AliITSgeom(const char *filename){
 }
 
 //________________________________________________________________________
-AliITSgeom::AliITSgeom(AliITSgeom &source){
+AliITSgeom::AliITSgeom(const AliITSgeom &source){
 ////////////////////////////////////////////////////////////////////////
 //     The copy constructor for the AliITSgeom class. It calls the
 // = operator function. See the = operator function for more details.
@@ -456,7 +459,7 @@ AliITSgeom::AliITSgeom(AliITSgeom &source){
 }
 
 //________________________________________________________________________
-void AliITSgeom::operator=(AliITSgeom &source){
+/*void AliITSgeom::operator=(const AliITSgeom &source){
 ////////////////////////////////////////////////////////////////////////
 //     The = operator function for the AliITSgeom class. It makes an
 // independent copy of the class in such a way that any changes made
@@ -469,10 +472,10 @@ void AliITSgeom::operator=(AliITSgeom &source){
    if(this == &source) return; // don't assign to ones self.
 
    // if there is an old structure allocated delete it first.
-   if(fg != 0){
-      for(i=0;i<fNlayers;i++) delete[] fg[i];
-      delete[] fg;
-   } // end if fg != 0 
+   if(fGm != 0){
+      for(i=0;i<fNlayers;i++) delete[] fGm[i];
+      delete[] fGm;
+   } // end if fGm != 0 
    if(fNlad != 0) delete[] fNlad;
    if(fNdet != 0) delete[] fNdet;
 
@@ -482,21 +485,64 @@ void AliITSgeom::operator=(AliITSgeom &source){
    fNdet = new Int_t[fNlayers];
    for(i=0;i<fNlayers;i++) fNdet[i] = source.fNdet[i];
    fShape = new TObjArray(*(source.fShape));//This does not make a proper copy.
-   fg = new ITS_geom* [fNlayers];
+   fGm = new AliITSgeomS* [fNlayers];
    for(i=0;i<fNlayers;i++){
-      fg[i] = new ITS_geom[fNlad[i]*fNdet[i]];
+      fGm[i] = new AliITSgeomS[fNlad[i]*fNdet[i]];
       for(j=0;j<(fNlad[i]*fNdet[i]);j++){
-	  fg[i][j].fShapeIndex = source.fg[i][j].fShapeIndex;
-	  fg[i][j].fx0 = source.fg[i][j].fx0;
-	  fg[i][j].fy0 = source.fg[i][j].fy0;
-	  fg[i][j].fz0 = source.fg[i][j].fz0;
-	  fg[i][j].frx = source.fg[i][j].frx;
-	  fg[i][j].fry = source.fg[i][j].fry;
-	  fg[i][j].frz = source.fg[i][j].frz;
-	  for(k=0;k<9;k++) fg[i][j].fr[k] = source.fg[i][j].fr[k];
+	  fGm[i][j].fShapeIndex = source.fGm[i][j].fShapeIndex;
+	  fGm[i][j].fx0 = source.fGm[i][j].fx0;
+	  fGm[i][j].fy0 = source.fGm[i][j].fy0;
+	  fGm[i][j].fz0 = source.fGm[i][j].fz0;
+	  fGm[i][j].frx = source.fGm[i][j].frx;
+	  fGm[i][j].fry = source.fGm[i][j].fry;
+	  fGm[i][j].frz = source.fGm[i][j].frz;
+	  for(k=0;k<9;k++) fGm[i][j].fr[k] = source.fGm[i][j].fr[k];
       } // end for j
    } // end for i
    return;
+   }*/
+//________________________________________________________________________
+AliITSgeom& AliITSgeom::operator=(const AliITSgeom &source){
+////////////////////////////////////////////////////////////////////////
+//     The = operator function for the AliITSgeom class. It makes an
+// independent copy of the class in such a way that any changes made
+// to the copied class will not affect the source class in any way.
+// This is required for many ITS alignment studies where the copied
+// class is then modified by introducing some misalignment.
+////////////////////////////////////////////////////////////////////////
+   Int_t i,j,k;
+
+   if(this == &source) return *this; // don't assign to ones self.
+
+   // if there is an old structure allocated delete it first.
+   if(fGm != 0){
+      for(i=0;i<fNlayers;i++) delete[] fGm[i];
+      delete[] fGm;
+   } // end if fGm != 0 
+   if(fNlad != 0) delete[] fNlad;
+   if(fNdet != 0) delete[] fNdet;
+
+   fNlayers = source.fNlayers;
+   fNlad = new Int_t[fNlayers];
+   for(i=0;i<fNlayers;i++) fNlad[i] = source.fNlad[i];
+   fNdet = new Int_t[fNlayers];
+   for(i=0;i<fNlayers;i++) fNdet[i] = source.fNdet[i];
+   fShape = new TObjArray(*(source.fShape));//This does not make a proper copy.
+   fGm = new AliITSgeomS* [fNlayers];
+   for(i=0;i<fNlayers;i++){
+      fGm[i] = new AliITSgeomS[fNlad[i]*fNdet[i]];
+      for(j=0;j<(fNlad[i]*fNdet[i]);j++){
+	  fGm[i][j].fShapeIndex = source.fGm[i][j].fShapeIndex;
+	  fGm[i][j].fx0 = source.fGm[i][j].fx0;
+	  fGm[i][j].fy0 = source.fGm[i][j].fy0;
+	  fGm[i][j].fz0 = source.fGm[i][j].fz0;
+	  fGm[i][j].frx = source.fGm[i][j].frx;
+	  fGm[i][j].fry = source.fGm[i][j].fry;
+	  fGm[i][j].frz = source.fGm[i][j].frz;
+	  for(k=0;k<9;k++) fGm[i][j].fr[k] = source.fGm[i][j].fr[k];
+      } // end for j
+   } // end for i
+   return *this;
 }
 //________________________________________________________________________
 void AliITSgeom::GtoL(Int_t lay,Int_t lad,Int_t det,
@@ -511,10 +557,10 @@ void AliITSgeom::GtoL(Int_t lay,Int_t lad,Int_t det,
 // three elements are g[0]=x, g[1]=y, and g[2]=z, similarly for l.
 ////////////////////////////////////////////////////////////////////////
    Double_t x,y,z;
-   ITS_geom *gl;
+   AliITSgeomS *gl;
 
    lay--; lad--; det--;
-   gl = &(fg[lay][fNdet[lay]*lad+det]);
+   gl = &(fGm[lay][fNdet[lay]*lad+det]);
 
    x    = g[0] - gl->fx0;
    y    = g[1] - gl->fy0;
@@ -634,10 +680,10 @@ void AliITSgeom::LtoG(Int_t lay,Int_t lad,Int_t det,
 // three elements are l[0]=x, l[1]=y, and l[2]=z, similarly for g.
 ////////////////////////////////////////////////////////////////////////
    Double_t x,y,z;
-   ITS_geom *gl;
+   AliITSgeomS *gl;
 
    lay--; lad--; det--;
-   gl   = &(fg[lay][fNdet[lay]*lad+det]);
+   gl   = &(fGm[lay][fNdet[lay]*lad+det]);
 
    x    = gl->fr[0]*l[0] + gl->fr[3]*l[1] + gl->fr[6]*l[2];
    y    = gl->fr[1]*l[0] + gl->fr[4]*l[1] + gl->fr[7]*l[2];
@@ -799,10 +845,10 @@ void AliITSgeom::GtoLMomentum(Int_t lay,Int_t lad,Int_t det,
 // three elements are g[0]=x, g[1]=y, and g[2]=z, similarly for l.
 ////////////////////////////////////////////////////////////////////////
    Double_t px,py,pz;
-   ITS_geom *gl;
+   AliITSgeomS *gl;
 
    lay--; lad--; det--;
-   gl = &(fg[lay][fNdet[lay]*lad+det]);
+   gl = &(fGm[lay][fNdet[lay]*lad+det]);
 
    px   = g[0];
    py   = g[1];
@@ -845,10 +891,10 @@ void AliITSgeom::LtoGMomentum(Int_t lay,Int_t lad,Int_t det,
 // three elements are l[0]=x, l[1]=y, and l[2]=z, similarly for g.
 ////////////////////////////////////////////////////////////////////////
    Double_t px,py,pz;
-   ITS_geom *gl;
+   AliITSgeomS *gl;
 
    lay--; lad--; det--;
-   gl   = &(fg[lay][fNdet[lay]*lad+det]);
+   gl   = &(fGm[lay][fNdet[lay]*lad+det]);
 
    px   = gl->fr[0]*l[0] + gl->fr[3]*l[1] + gl->fr[6]*l[2];
    py   = gl->fr[1]*l[0] + gl->fr[4]*l[1] + gl->fr[7]*l[2];
@@ -909,20 +955,20 @@ void AliITSgeom::GtoLErrorMatrix(const Int_t index,Double_t **g,Double_t **l){
 // matrix l[i][l] = T[i][j]*g[j][k]*T[l][k] (sum over repeated indexes). 
 // Where T[l][k] is the transpose of T[k][l].
 ////////////////////////////////////////////////////////////////////////
-    Double_t R[3][3],Rt[3][3];
+    Double_t lR[3][3],lRt[3][3];
     Int_t    lay,lad,det,i,j,k,n;
-    ITS_geom *gl;
+    AliITSgeomS *gl;
 
     GetModuleId(index,lay,lad,det);
     lay--;lad--;det--;
-    gl = &(fg[lay][fNdet[lay]*lad+det]);
+    gl = &(fGm[lay][fNdet[lay]*lad+det]);
 
     for(i=0;i<3;i++)for(j=0;j<3;j++){
-	R[i][j] = Rt[j][i] = gl->fr[3*i+j];
+	lR[i][j] = lRt[j][i] = gl->fr[3*i+j];
     } // end for i,j
 
     for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)for(n=0;n<3;n++){
-	l[i][n] = R[i][j]*g[j][k]*Rt[k][n];
+	l[i][n] = lR[i][j]*g[j][k]*lRt[k][n];
     } // end for i,j,k,l
     return;
 }
@@ -937,20 +983,20 @@ void AliITSgeom::LtoGErrorMatrix(const Int_t index,Double_t **l,Double_t **g){
 // matrix g[i][l] = T[j][i]*l[j][k]*T[k][l] (sum over repeated indexes). 
 // Where T[j][i] is the transpose of T[i][j].
 ////////////////////////////////////////////////////////////////////////
-    Double_t R[3][3],Rt[3][3];
+    Double_t lR[3][3],lRt[3][3];
     Int_t    lay,lad,det,i,j,k,n;
-    ITS_geom *gl;
+    AliITSgeomS *gl;
 
     GetModuleId(index,lay,lad,det);
     lay--;lad--;det--;
-    gl = &(fg[lay][fNdet[lay]*lad+det]);
+    gl = &(fGm[lay][fNdet[lay]*lad+det]);
 
     for(i=0;i<3;i++)for(j=0;j<3;j++){
-	R[i][j] = Rt[j][i] = gl->fr[3*i+j];
+	lR[i][j] = lRt[j][i] = gl->fr[3*i+j];
     } // end for i,j
 
     for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)for(n=0;n<3;n++){
-	g[i][n] = Rt[i][j]*l[j][k]*R[k][n];
+	g[i][n] = lRt[i][j]*l[j][k]*lR[k][n];
     } // end for i,j,k,l
     return;
 }
@@ -1016,15 +1062,15 @@ void AliITSgeom::GetRotMatrix(Int_t lay,Int_t lad,Int_t det,Double_t *mat){
 ////////////////////////////////////////////////////////////////////////
 //     Returns, in the Double_t array pointed to by mat, the full rotation
 // matrix for the give detector defined by layer, ladder, and detector.
-// It returns all nine elements of fr in the ITS_geom structure. See the
-// description of the ITS_geom structure for further details of this
+// It returns all nine elements of fr in the AliITSgeomS structure. See the
+// description of the AliITSgeomS structure for further details of this
 // rotation matrix.
 ////////////////////////////////////////////////////////////////////////
    Int_t    i;
-   ITS_geom *g;
+   AliITSgeomS *g;
 
    lay--; lad--; det--; // shift to base 0
-   g = &(fg[lay][fNdet[lay]*lad+det]);
+   g = &(fGm[lay][fNdet[lay]*lad+det]);
    for(i=0;i<9;i++) mat[i] = g->fr[i];
    return;
 }
@@ -1033,8 +1079,8 @@ void AliITSgeom::GetRotMatrix(Int_t index,Double_t *mat){
 ////////////////////////////////////////////////////////////////////////
 //     Returns, in the Double_t array pointed to by mat, the full rotation
 // matrix for the give detector defined by the module index number.
-// It returns all nine elements of fr in the ITS_geom structure. See the
-// description of the ITS_geom structure for further details of this
+// It returns all nine elements of fr in the AliITSgeomS structure. See the
+// description of the AliITSgeomS structure for further details of this
 // rotation matrix.
 ////////////////////////////////////////////////////////////////////////
    Int_t    lay,lad,det;
@@ -1048,8 +1094,8 @@ void AliITSgeom::GetRotMatrix(Int_t lay,Int_t lad,Int_t det,Float_t *mat){
 ////////////////////////////////////////////////////////////////////////
 //     Returns, in the Float_t array pointed to by mat, the full rotation
 // matrix for the give detector defined by layer, ladder, and detector.
-// It returns all nine elements of fr in the ITS_geom structure. See the
-// description of the ITS_geom structure for further details of this
+// It returns all nine elements of fr in the AliITSgeomS structure. See the
+// description of the AliITSgeomS structure for further details of this
 // rotation matrix.
 ////////////////////////////////////////////////////////////////////////
    Int_t    i;
@@ -1065,8 +1111,8 @@ void AliITSgeom::GetRotMatrix(Int_t index,Float_t *mat){
 ////////////////////////////////////////////////////////////////////////
 //     Returns, in the Float_t array pointed to by mat, the full rotation
 // matrix for the give detector defined by module index number.
-// It returns all nine elements of fr in the ITS_geom structure. See the
-// description of the ITS_geom structure for further details of this
+// It returns all nine elements of fr in the AliITSgeomS structure. See the
+// description of the AliITSgeomS structure for further details of this
 // rotation matrix.
 ////////////////////////////////////////////////////////////////////////
    Int_t    i,lay,lad,det;
@@ -1077,6 +1123,56 @@ void AliITSgeom::GetRotMatrix(Int_t index,Float_t *mat){
    for(i=0;i<9;i++) mat[i] = (Float_t) matd[i];
    return;
 }
+
+//___________________________________________________________________________
+Int_t AliITSgeom::GetStartDet(Int_t id){
+  /////////////////////////////////////////////////////////////////////////
+  // returns the starting module index value for a give type of detector id
+  /////////////////////////////////////////////////////////////////////////
+  Int_t first;
+  switch(id)
+  {
+  case 0:
+     first = GetModuleIndex(1,1,1);
+     break;
+  case 1:
+     first = GetModuleIndex(3,1,1);
+     break;
+  case 2:
+     first = GetModuleIndex(5,1,1);
+     break;
+  default:
+     printf("<AliITSgeom::GetFirstDet> undefined detector type\n");
+     first = 0;
+
+  }
+  return first;
+}
+
+//___________________________________________________________________________
+Int_t AliITSgeom::GetLastDet(Int_t id){
+  /////////////////////////////////////////////////////////////////////////
+  // returns the last module index value for a give type of detector id
+  /////////////////////////////////////////////////////////////////////////
+  Int_t last;
+  switch(id)
+  {
+  case 0:
+     last = GetLastSPD();
+     break;
+   case 1:
+     last = GetLastSDD();
+     break;
+   case 2:
+     last = GetLastSSD();
+     break;
+   default:
+     printf("<AliITSgeom::GetLastDet> undefined detector type\n");
+     last = 0;
+  }
+  return last;
+}
+
 //___________________________________________________________________________
 void AliITSgeom::PrintComparison(FILE *fp,AliITSgeom *other){
 ////////////////////////////////////////////////////////////////////////
@@ -1084,7 +1180,7 @@ void AliITSgeom::PrintComparison(FILE *fp,AliITSgeom *other){
 // print to a file pointed to by the file pointer fp the difference
 // between two AliITSgeom classes. The format of the file is basicly,
 // define d? to be the difference between the same element of the two
-// classes. For example dfrx = this->fg[i][j].frx - other->fg[i][j].frx.
+// classes. For example dfrx = this->fGm[i][j].frx - other->fGm[i][j].frx.
 // if(at least one of dfx0, dfy0, dfz0,dfrx,dfry,dfrz are non zero) then print
 // layer ladder detector dfx0 dfy0 dfz0 dfrx dfry dfrz
 // if(at least one of the 9 elements of dfr[] are non zero) then print
@@ -1100,14 +1196,14 @@ void AliITSgeom::PrintComparison(FILE *fp,AliITSgeom *other){
    Int_t    i,j,k,l;
    Double_t xt,yt,zt,xo,yo,zo;
    Double_t rxt,ryt,rzt,rxo,ryo,rzo;  // phi in radians
-   ITS_geom *gt,*go;
+   AliITSgeomS *gt,*go;
    Bool_t   t;
 
    for(i=0;i<this->fNlayers;i++){
       for(j=0;j<this->fNlad[i];j++) for(k=0;k<this->fNdet[i];k++){
 	 l   = this->fNdet[i]*j+k; // resolved index
-         gt  = &(this->fg[i][l]);
-	 go  = &(other->fg[i][l]);
+         gt  = &(this->fGm[i][l]);
+	 go  = &(other->fGm[i][l]);
          xt  = gt->fx0; yt  = gt->fy0; zt  = gt->fz0;
          xo  = go->fx0; yo  = go->fy0; zo  = go->fz0;
          rxt = gt->frx; ryt = gt->fry; rzt = gt->frz;
@@ -1146,13 +1242,13 @@ void AliITSgeom::PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det){
 // to by the file pointer fp. This can be set to stdout if you want.
 ////////////////////////////////////////////////////////////////////////
    Int_t    i,j,k,l;
-   ITS_geom *gt;
+   AliITSgeomS *gt;
 
    i  = lay-1;
    j  = lad-1;
    k  = det-1;
    l  = this->fNdet[i]*j+k; // resolved index
-   gt = &(this->fg[i][l]);
+   gt = &(this->fGm[i][l]);
    fprintf(fp,"%1.1d %2.2d %2.2d Trans=%f %f %f rot=%f %f %f Shape=%d\n",
 	   i+1,j+1,k+1,gt->fx0,gt->fy0,gt->fz0,gt->frx,gt->fry,gt->frz,
            gt->fShapeIndex);
@@ -1162,7 +1258,7 @@ void AliITSgeom::PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det){
    return;
 }
 //___________________________________________________________________________
-ofstream & AliITSgeom::PrintGeom(ofstream &R__b){
+ofstream & AliITSgeom::PrintGeom(ofstream &lRb){
 ////////////////////////////////////////////////////////////////////////
 //     The default Streamer function "written by ROOT" doesn't write out
 // the arrays referenced by pointers. Therefore, a specific Streamer function
@@ -1174,26 +1270,26 @@ ofstream & AliITSgeom::PrintGeom(ofstream &R__b){
    // Stream an object of class AliITSgeom.
     Int_t i,j,k;
 
-    R__b.setf(ios::scientific);
-    R__b << fNlayers << " ";
-    for(i=0;i<fNlayers;i++) R__b << fNlad[i] << " ";
-    for(i=0;i<fNlayers;i++) R__b << fNdet[i] << "\n";
+    lRb.setf(ios::scientific);
+    lRb << fNlayers << " ";
+    for(i=0;i<fNlayers;i++) lRb << fNlad[i] << " ";
+    for(i=0;i<fNlayers;i++) lRb << fNdet[i] << "\n";
     for(i=0;i<fNlayers;i++) for(j=0;j<fNlad[i]*fNdet[i];j++){
-	R__b <<setprecision(16) << fg[i][j].fShapeIndex << " ";
-	R__b <<setprecision(16) << fg[i][j].fx0 << " ";
-	R__b <<setprecision(16) << fg[i][j].fy0 << " ";
-	R__b <<setprecision(16) << fg[i][j].fz0 << " ";
-	R__b <<setprecision(16) << fg[i][j].frx << " ";
-	R__b <<setprecision(16) << fg[i][j].fry << " ";
-	R__b <<setprecision(16) << fg[i][j].frz << "\n";
-	for(k=0;k<9;k++) R__b <<setprecision(16) << fg[i][j].fr[k] << " ";
-	R__b << "\n";
+	lRb <<setprecision(16) << fGm[i][j].fShapeIndex << " ";
+	lRb <<setprecision(16) << fGm[i][j].fx0 << " ";
+	lRb <<setprecision(16) << fGm[i][j].fy0 << " ";
+	lRb <<setprecision(16) << fGm[i][j].fz0 << " ";
+	lRb <<setprecision(16) << fGm[i][j].frx << " ";
+	lRb <<setprecision(16) << fGm[i][j].fry << " ";
+	lRb <<setprecision(16) << fGm[i][j].frz << "\n";
+	for(k=0;k<9;k++) lRb <<setprecision(16) << fGm[i][j].fr[k] << " ";
+	lRb << "\n";
       } // end for i,j
-//      R__b << fShape;
-      return R__b;
+//      lRb << fShape;
+      return lRb;
 }
 //___________________________________________________________________________
-ifstream & AliITSgeom::ReadGeom(ifstream &R__b){
+ifstream & AliITSgeom::ReadGeom(ifstream &lRb){
 ////////////////////////////////////////////////////////////////////////
 //     The default Streamer function "written by ROOT" doesn't write out
 // the arrays referenced by pointers. Therefore, a specific Streamer function
@@ -1205,94 +1301,33 @@ ifstream & AliITSgeom::ReadGeom(ifstream &R__b){
    // Stream an object of class AliITSgeom.
     Int_t i,j,k;
 
-      R__b >> fNlayers;
+      lRb >> fNlayers;
       if(fNlad!=0) delete[] fNlad;
       if(fNdet!=0) delete[] fNdet;
       fNlad = new Int_t[fNlayers];
       fNdet = new Int_t[fNlayers];
-      for(i=0;i<fNlayers;i++) R__b >> fNlad[i];
-      for(i=0;i<fNlayers;i++) R__b >> fNdet[i];
-      if(fg!=0){
-	  for(i=0;i<fNlayers;i++) delete[] fg[i];
-	  delete[] fg;
-      } // end if fg!=0
-      fg = new ITS_geom*[fNlayers];
+      for(i=0;i<fNlayers;i++) lRb >> fNlad[i];
+      for(i=0;i<fNlayers;i++) lRb >> fNdet[i];
+      if(fGm!=0){
+	  for(i=0;i<fNlayers;i++) delete[] fGm[i];
+	  delete[] fGm;
+      } // end if fGm!=0
+      fGm = new AliITSgeomS*[fNlayers];
       for(i=0;i<fNlayers;i++){
-	  fg[i] = new ITS_geom[fNlad[i]*fNdet[i]];
+	  fGm[i] = new AliITSgeomS[fNlad[i]*fNdet[i]];
 	  for(j=0;j<fNlad[i]*fNdet[i];j++){
-	      R__b >> fg[i][j].fShapeIndex;
-	      R__b >> fg[i][j].fx0;
-	      R__b >> fg[i][j].fy0;
-	      R__b >> fg[i][j].fz0;
-	      R__b >> fg[i][j].frx;
-	      R__b >> fg[i][j].fry;
-	      R__b >> fg[i][j].frz;
-	      for(k=0;k<9;k++) R__b >> fg[i][j].fr[k];
+	      lRb >> fGm[i][j].fShapeIndex;
+	      lRb >> fGm[i][j].fx0;
+	      lRb >> fGm[i][j].fy0;
+	      lRb >> fGm[i][j].fz0;
+	      lRb >> fGm[i][j].frx;
+	      lRb >> fGm[i][j].fry;
+	      lRb >> fGm[i][j].frz;
+	      for(k=0;k<9;k++) lRb >> fGm[i][j].fr[k];
 	  } // end for j
       } // end for i
-//      R__b >> fShape;
-      return R__b;
-}
-//___________________________________________________________________________
-void AliITSgeom::Streamer(TBuffer &R__b){
-////////////////////////////////////////////////////////////////////////
-//     The default Streamer function "written by ROOT" doesn't write out
-// the arrays referenced by pointers. Therefore, a specific Streamer function
-// has to be written. This function should not be modified but instead added
-// on to so that older versions can still be read. The proper handling of
-// the version dependent streamer function hasn't been written do to the lack
-// of finding an example at the time of writing.
-////////////////////////////////////////////////////////////////////////
-   // Stream an object of class AliITSgeom.
-    Int_t i,j,k;
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);
-      R__b >> fNlayers;
-      if(fNlad!=0) delete[] fNlad;
-      if(fNdet!=0) delete[] fNdet;
-      fNlad = new Int_t[fNlayers];
-      fNdet = new Int_t[fNlayers];
-      for(i=0;i<fNlayers;i++) R__b >> fNlad[i];
-      for(i=0;i<fNlayers;i++) R__b >> fNdet[i];
-      if(fg!=0){
-	  for(i=0;i<fNlayers;i++) delete[] fg[i];
-	  delete[] fg;
-      } // end if fg!=0
-      fg = new ITS_geom*[fNlayers];
-      for(i=0;i<fNlayers;i++){
-	  fg[i] = new ITS_geom[fNlad[i]*fNdet[i]];
-	  for(j=0;j<fNlad[i]*fNdet[i];j++){
-	      R__b >> fg[i][j].fShapeIndex;
-	      R__b >> fg[i][j].fx0;
-	      R__b >> fg[i][j].fy0;
-	      R__b >> fg[i][j].fz0;
-	      R__b >> fg[i][j].frx;
-	      R__b >> fg[i][j].fry;
-	      R__b >> fg[i][j].frz;
-	      for(k=0;k<9;k++) R__b >> fg[i][j].fr[k];
-	  } // end for j
-      } // end for i
-      R__b >> fShape;
-   } else {
-      R__b.WriteVersion(AliITSgeom::IsA());
-      TObject::Streamer(R__b);
-      R__b << fNlayers;
-      for(i=0;i<fNlayers;i++) R__b << fNlad[i];
-      for(i=0;i<fNlayers;i++) R__b << fNdet[i];
-      for(i=0;i<fNlayers;i++) for(j=0;j<fNlad[i]*fNdet[i];j++){
-	  R__b << fg[i][j].fShapeIndex;
-	  R__b << fg[i][j].fx0;
-	  R__b << fg[i][j].fy0;
-	  R__b << fg[i][j].fz0;
-	  R__b << fg[i][j].frx;
-	  R__b << fg[i][j].fry;
-	  R__b << fg[i][j].frz;
-	  for(k=0;k<9;k++) R__b << fg[i][j].fr[k];
-      } // end for i,j
-      R__b << fShape;
-   }
+//      lRb >> fShape;
+      return lRb;
 }
 //______________________________________________________________________
 //     The following routines modify the transformation of "this"
@@ -1304,14 +1339,14 @@ void AliITSgeom::SetByAngles(Int_t lay,Int_t lad,Int_t det,
 //     This function computes a new rotation matrix based on the angles
 // rx, ry, and rz (in radians) for a give detector on the give ladder
 // in the give layer. A new
-// fg[layer-1][(fNlad[layer-1]*(ladder-1)+detector-1)].fr[] array is
+// fGm[layer-1][(fNlad[layer-1]*(ladder-1)+detector-1)].fr[] array is
 // computed.
 ////////////////////////////////////////////////////////////////////////
-   ITS_geom *g;
+   AliITSgeomS *g;
    Double_t  sx,cx,sy,cy,sz,cz;
 
    lay--; lad--; det--; // set to zero base now.
-   g = &(fg[lay][fNdet[lay]*lad+det]);
+   g = &(fGm[lay][fNdet[lay]*lad+det]);
 
    sx = sin(rx); cx = cos(rx);
    sy = sin(ry); cy = cos(ry);
@@ -1385,12 +1420,12 @@ void AliITSgeom::GlobalChange(Float_t *tran,Float_t *rot){
    Int_t    i,j,k,l;
    Double_t rx,ry,rz;
    Double_t sx,cx,sy,cy,sz,cz;
-   ITS_geom *gl;
+   AliITSgeomS *gl;
 
    for(i=0;i<fNlayers;i++){
       for(j=0;j<fNlad[i];j++) for(k=0;k<fNdet[i];k++){
 	 l = fNdet[i]*j+k; // resolved index
-         gl = &(fg[i][l]);
+         gl = &(fGm[i][l]);
          gl->fx0 += tran[0];
          gl->fy0 += tran[1];
          gl->fz0 += tran[2];
@@ -1441,12 +1476,12 @@ void AliITSgeom::GlobalCylindericalChange(Float_t *tran,Float_t *rot){
    Int_t    i,j,k,l;
    Double_t rx,ry,rz,r,phi,rphi; // phi in radians
    Double_t sx,cx,sy,cy,sz,cz,r0;
-   ITS_geom *gl;
+   AliITSgeomS *gl;
 
    for(i=0;i<fNlayers;i++){
       for(j=0;j<fNlad[i];j++) for(k=0;k<fNdet[i];k++){
 	 l     = fNdet[i]*j+k; // resolved index
-         gl    = &(fg[i][l]);
+         gl    = &(fGm[i][l]);
 	 r = r0= TMath::Hypot(gl->fy0,gl->fx0);
 	 phi   = atan2(gl->fy0,gl->fx0);
 	 rphi  = r0*phi;
@@ -1491,12 +1526,12 @@ void AliITSgeom::RandomChange(Float_t *stran,Float_t *srot){
    Double_t rx,ry,rz;
    Double_t sx,cx,sy,cy,sz,cz;
    TRandom  ran;
-   ITS_geom *gl;
+   AliITSgeomS *gl;
 
    for(i=0;i<fNlayers;i++){
       for(j=0;j<fNlad[i];j++) for(k=0;k<fNdet[i];k++){
 	 l = fNdet[i]*j+k; // resolved index
-         gl = &(fg[i][l]);
+         gl = &(fGm[i][l]);
          gl->fx0 += ran.Gaus(0.0,stran[0]);
          gl->fy0 += ran.Gaus(0.0,stran[1]);
          gl->fz0 += ran.Gaus(0.0,stran[2]);
@@ -1537,12 +1572,12 @@ void AliITSgeom::RandomCylindericalChange(Float_t *stran,Float_t *srot){
    Double_t  rx,ry,rz,r,phi,x,y;  // phi in radians
    Double_t  sx,cx,sy,cy,sz,cz,r0;
    TRandom   ran;
-   ITS_geom  *gl;
+   AliITSgeomS  *gl;
 
    for(i=0;i<fNlayers;i++){
       for(j=0;j<fNlad[i];j++) for(k=0;k<fNdet[i];k++){
 	 l     = fNdet[i]*j+k; // resolved index
-         gl    = &(fg[i][l]);
+         gl    = &(fGm[i][l]);
 	 x     = gl->fx0;
 	 y     = gl->fy0;
 	 r = r0= TMath::Hypot(y,x);
@@ -1581,18 +1616,19 @@ void AliITSgeom::GeantToTracking(AliITSgeom &source){
 // y coordinate system for layer 1 is rotated about the z axis 180 degrees
 // so that it points in the same direction as it does in all of the other
 // layers.
+// Fixed for bug and new calulation of tracking coordiantes. BSN June 8 2000.
 ////////////////////////////////////////////////////////////////////////////
    Double_t oor,pr,qr;
    Int_t    i,j,k;
-   Double_t PI = TMath::Pi();
+   Double_t pi = TMath::Pi();
 
    if(this == &source) return; // don't assign to ones self.
 
    // if there is an old structure allocated delete it first.
-   if(fg != 0){
-      for(i=0;i<fNlayers;i++) delete[] fg[i];
-      delete[] fg;
-   } // end if fg != 0 
+   if(fGm != 0){
+      for(i=0;i<fNlayers;i++) delete[] fGm[i];
+      delete[] fGm;
+   } // end if fGm != 0 
    if(fNlad != 0) delete[] fNlad;
    if(fNdet != 0) delete[] fNdet;
 
@@ -1602,40 +1638,117 @@ void AliITSgeom::GeantToTracking(AliITSgeom &source){
    fNdet = new Int_t[fNlayers];
    for(i=0;i<fNlayers;i++) fNdet[i] = source.fNdet[i];
    fShape = new TObjArray(*(source.fShape));//This does not make a proper copy.
-   fg = new ITS_geom* [fNlayers];
+   fGm = new AliITSgeomS* [fNlayers];
    for(i=0;i<fNlayers;i++){
-      fg[i] = new ITS_geom[fNlad[i]*fNdet[i]];
+      fGm[i] = new AliITSgeomS[fNlad[i]*fNdet[i]];
       for(j=0;j<(fNlad[i]*fNdet[i]);j++){
-	  fg[i][j].fShapeIndex = source.fg[i][j].fShapeIndex;
-	  fg[i][j].fx0 = source.fg[i][j].fx0;
-	  fg[i][j].fy0 = source.fg[i][j].fy0;
-	  fg[i][j].fz0 = source.fg[i][j].fz0;
-	  fg[i][j].frx = source.fg[i][j].frx;
-	  fg[i][j].fry = source.fg[i][j].fry;
-	  fg[i][j].frz = source.fg[i][j].frz;
-	  for(k=0;k<9;k++) fg[i][j].fr[k] = source.fg[i][j].fr[k];
+	  fGm[i][j].fShapeIndex = source.fGm[i][j].fShapeIndex;
+	  fGm[i][j].fx0 = source.fGm[i][j].fx0;
+	  fGm[i][j].fy0 = source.fGm[i][j].fy0;
+	  fGm[i][j].fz0 = source.fGm[i][j].fz0;
+	  fGm[i][j].frx = source.fGm[i][j].frx;
+	  fGm[i][j].fry = source.fGm[i][j].fry;
+	  fGm[i][j].frz = source.fGm[i][j].frz;
+	  for(k=0;k<9;k++) fGm[i][j].fr[k] = source.fGm[i][j].fr[k];
 	  if(i==0) { // layer=1 is placed up side down
-	      fg[i][j].fr[0] = +source.fg[i][j].fr[1];
-	      fg[i][j].fr[1] = -source.fg[i][j].fr[1];
-	      fg[i][j].fr[4] = +source.fg[i][j].fr[5];
-	      fg[i][j].fr[5] = -source.fg[i][j].fr[4];
-	  }else{
-	      fg[i][j].fr[0] = -source.fg[i][j].fr[1];
-	      fg[i][j].fr[1] = +source.fg[i][j].fr[1];
-	      fg[i][j].fr[4] = -source.fg[i][j].fr[5];
-	      fg[i][j].fr[5] = +source.fg[i][j].fr[4];
+	      // mupliply by -1  0 0
+	      //              0 -1 0
+	      //              0  0 1.
+	      fGm[i][j].fr[0] = -source.fGm[i][j].fr[0];
+	      fGm[i][j].fr[1] = -source.fGm[i][j].fr[1];
+	      fGm[i][j].fr[2] = -source.fGm[i][j].fr[2];
+	      fGm[i][j].fr[3] = -source.fGm[i][j].fr[3];
+              fGm[i][j].fr[4] = -source.fGm[i][j].fr[4];
+              fGm[i][j].fr[5] = -source.fGm[i][j].fr[5];
 	  } // end if i=1
 	  // get angles from matrix up to a phase of 180 degrees.
-	  oor     = atan2(fg[i][j].fr[7],fg[i][j].fr[8]);
-	  if(oor<0.0) oor += 2.0*PI;
-	  pr     = asin(fg[i][j].fr[2]);
-	  if(pr<0.0) pr += 2.0*PI;
-	  qr     = atan2(fg[i][j].fr[3],fg[i][j].fr[0]);
-	  if(qr<0.0) qr += 2.0*PI;
-	  fg[i][j].frx = oor;
-	  fg[i][j].fry = pr;
-	  fg[i][j].frz = qr;
+	  oor     = atan2(fGm[i][j].fr[7],fGm[i][j].fr[8]);
+	  if(oor<0.0) oor += 2.0*pi;
+	  pr     = asin(fGm[i][j].fr[2]);
+	  if(pr<0.0) pr += 2.0*pi;
+	  qr     = atan2(fGm[i][j].fr[3],fGm[i][j].fr[0]);
+	  if(qr<0.0) qr += 2.0*pi;
+	  fGm[i][j].frx = oor;
+	  fGm[i][j].fry = pr;
+	  fGm[i][j].frz = qr;
       } // end for j
    } // end for i
    return;
+}
+//___________________________________________________________________________
+void AliITSgeom::Streamer(TBuffer &lRb){
+////////////////////////////////////////////////////////////////////////
+//     The default Streamer function "written by ROOT" doesn't write out
+// the arrays referenced by pointers. Therefore, a specific Streamer function
+// has to be written. This function should not be modified but instead added
+// on to so that older versions can still be read. The proper handling of
+// the version dependent streamer function hasn't been written do to the lack
+// of finding an example at the time of writing.
+////////////////////////////////////////////////////////////////////////
+   // Stream an object of class AliITSgeom.
+    Int_t i,j,k,n;
+
+
+   printf("AliITSgeomStreamer starting\n");
+   if (lRb.IsReading()) {
+      Version_t lRv = lRb.ReadVersion(); if (lRv) { }
+      TObject::Streamer(lRb);
+      printf("AliITSgeomStreamer reading fNlayers\n");
+      lRb >> fNlayers;
+      if(fNlad!=0) delete[] fNlad;
+      if(fNdet!=0) delete[] fNdet;
+      fNlad = new Int_t[fNlayers];
+      fNdet = new Int_t[fNlayers];
+      printf("AliITSgeomStreamer fNlad\n");
+      for(i=0;i<fNlayers;i++) lRb >> fNlad[i];
+      printf("AliITSgeomStreamer fNdet\n");
+      for(i=0;i<fNlayers;i++) lRb >> fNdet[i];
+      if(fGm!=0){
+	  for(i=0;i<fNlayers;i++) delete[] fGm[i];
+	  delete[] fGm;
+      } // end if fGm!=0
+      fGm = new AliITSgeomS*[fNlayers];
+      printf("AliITSgeomStreamer AliITSgeomS\n");
+      for(i=0;i<fNlayers;i++){
+	  n     = fNlad[i]*fNdet[i];
+	  fGm[i] = new AliITSgeomS[n];
+	  for(j=0;j<n;j++){
+	      lRb >> fGm[i][j].fShapeIndex;
+	      lRb >> fGm[i][j].fx0;
+	      lRb >> fGm[i][j].fy0;
+	      lRb >> fGm[i][j].fz0;
+	      lRb >> fGm[i][j].frx;
+	      lRb >> fGm[i][j].fry;
+	      lRb >> fGm[i][j].frz;
+	      for(k=0;k<9;k++) lRb >> fGm[i][j].fr[k];
+	  } // end for j
+      } // end for i
+      /*
+      if(fShape!=0){
+	  delete fShape;
+      } // end if
+      printf("AliITSgeomStreamer reading fShape\n");
+      lRb >> fShape;
+      */
+      //if (fShape) fShape->Streamer(lRb);
+   } else {
+      lRb.WriteVersion(AliITSgeom::IsA());
+      TObject::Streamer(lRb);
+      lRb << fNlayers;
+      for(i=0;i<fNlayers;i++) lRb << fNlad[i];
+      for(i=0;i<fNlayers;i++) lRb << fNdet[i];
+      for(i=0;i<fNlayers;i++) for(j=0;j<fNlad[i]*fNdet[i];j++){
+	  lRb << fGm[i][j].fShapeIndex;
+	  lRb << fGm[i][j].fx0;
+	  lRb << fGm[i][j].fy0;
+	  lRb << fGm[i][j].fz0;
+	  lRb << fGm[i][j].frx;
+	  lRb << fGm[i][j].fry;
+	  lRb << fGm[i][j].frz;
+	  for(k=0;k<9;k++) lRb << fGm[i][j].fr[k];
+      } // end for i,j
+      // lRb << fShape;
+      //if (fShape) fShape->Streamer(lRb);
+   } // end if reading
+   printf("AliITSgeomStreamer Finished\n");
 }

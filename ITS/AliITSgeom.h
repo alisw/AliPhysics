@@ -19,12 +19,12 @@
 /////////////////////////////////////////////////////////////////////////
 #include <fstream.h>
 #include "TObjArray.h"
-#include "AliITSgeomSPD.h"
-#include "AliITSgeomSDD.h"
-#include "AliITSgeomSSD.h"
+//#include "AliITSgeomSPD.h"
+//#include "AliITSgeomSDD.h"
+//#include "AliITSgeomSSD.h"
 
 
-struct ITS_geom {
+struct AliITSgeomS {
     Int_t   fShapeIndex; // Shape index for this volume
     Float_t fx0,fy0,fz0; // Translation vector
     Float_t frx,fry,frz; // Rotation about axis, angle radians
@@ -35,54 +35,51 @@ struct ITS_geom {
 
 class AliITSgeom : public TObject {
 
- private:
-    Int_t     fNlayers; // The number of layers.
-    Int_t     *fNlad;   // Array of the number of ladders/layer(layer)
-    Int_t     *fNdet;   // Array of the number of detectors/ladder(layer)
-    ITS_geom  **fg;     // Structure of translation and rotation.
-    TObjArray *fShape;  // Array of shapes and detector information.
-
  public:
-    AliITSgeom();                      // Default constructor
-    AliITSgeom(const char *filename);  // Constructor
-    AliITSgeom(AliITSgeom &source);    // Copy constructor
-    void operator=(AliITSgeom &source);// = operator
-    virtual ~AliITSgeom();             // Default destructor
-    // this is a dummy routine for now.
-    Int_t GetNdetectors(Int_t layer) const {return fNdet[layer-1];}
-    Int_t GetNladders(Int_t layer)   const {return fNlad[layer-1];}
-    Int_t GetNlayers()               const {return fNlayers;}
+    AliITSgeom();                            // Default constructor
+    AliITSgeom(const char *filename);        // Constructor
+    AliITSgeom(const AliITSgeom &source);    // Copy constructor
+    //    void operator=(const AliITSgeom &source);// = operator
+    AliITSgeom& operator=(const AliITSgeom &source);// = operator
+
+    virtual ~AliITSgeom();                   // Default destructor
+
+    Int_t GetNdetectors(Int_t layer) const {return fNdet[layer-1];}// return number of detector a ladder has
+    Int_t GetNladders(Int_t layer)   const {return fNlad[layer-1];}// return number of laders a layer has
+    Int_t GetNlayers()               const {return fNlayers;} // return number of layer the ITS has
     void GetAngles(Int_t lay,Int_t lad,Int_t det,
 			  Float_t &rx,Float_t &ry,Float_t &rz)const {
-                          rx = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].frx;
-                          ry = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fry;
-                          rz = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].frz;}
+                          rx = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].frx;
+                          ry = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].fry;
+                          rz = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].frz;} // Get agnles of roations for a give module
     void GetTrans(Int_t lay,Int_t lad,Int_t det,
 			 Float_t &x,Float_t &y,Float_t &z)const {
-                         x = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fx0;
-                         y = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fy0;
-                         z = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fz0;}
+                         x = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].fx0;
+                         y = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].fy0;
+                         z = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].fz0;} // get translation for a given module
     void SetByAngles(Int_t lay,Int_t lad,Int_t det,
 		     Float_t rx,Float_t ry,Float_t rz);
     void SetByAngles(Int_t index,Double_t angl[]);
     void SetTrans(Int_t lay,Int_t lad,Int_t det,
 			 Float_t x,Float_t y,Float_t z){
-                         fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fx0 = x;
-                         fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fy0 = y;
-                         fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fz0 = z;}
+                         fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].fx0 = x;
+                         fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].fy0 = y;
+                         fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].fz0 = z;}// Set translation vector for a give module
     void SetTrans(Int_t index,Double_t x[]);
     void GetRotMatrix(Int_t lay,Int_t lad,Int_t det,Float_t *mat);
     void GetRotMatrix(Int_t lay,Int_t lad,Int_t det,Double_t *mat);
     void GetRotMatrix(Int_t index,Float_t *mat);
     void GetRotMatrix(Int_t index,Double_t *mat);
-    Int_t GetStartSPD() {return GetModuleIndex(1,1,1);}
-    Int_t GetLastSPD() {return GetModuleIndex(2,fNlad[1],fNdet[1]);}
-    Int_t GetStartSDD() {return GetModuleIndex(3,1,1);}
-    Int_t GetLastSDD() {return GetModuleIndex(4,fNlad[3],fNdet[3]);}
-    Int_t GetStartSSD() {return GetModuleIndex(5,1,1);}
-    Int_t GetLastSSD() {return GetModuleIndex(6,fNlad[5],fNdet[5]);}
+    Int_t GetStartDet(Int_t dtype );
+    Int_t GetLastDet(Int_t dtype);
+    Int_t GetStartSPD() {return GetModuleIndex(1,1,1);} // return starting index for SPD
+    Int_t GetLastSPD() {return GetModuleIndex(2,fNlad[1],fNdet[1]);}// return Ending index for SPD
+    Int_t GetStartSDD() {return GetModuleIndex(3,1,1);} // return starting index for SDD
+    Int_t GetLastSDD() {return GetModuleIndex(4,fNlad[3],fNdet[3]);}// return Ending index for SDD
+    Int_t GetStartSSD() {return GetModuleIndex(5,1,1);} // return starting index for SSD
+    Int_t GetLastSSD() {return GetModuleIndex(6,fNlad[5],fNdet[5]);}// return Ending index for SSD
     Int_t GetIndexMax() {return GetModuleIndex(fNlayers,fNlad[fNlayers-1],
-					       fNdet[fNlayers-1])+1;}
+					       fNdet[fNlayers-1])+1;}// return Ending index for all ITS
     void GtoL(Int_t lay,Int_t lad,Int_t det,const Float_t *g,Float_t *l);
     void GtoL(const Int_t *id,const Float_t *g,Float_t *l);
     void GtoL(const Int_t index,const Float_t *g,Float_t *l);
@@ -121,11 +118,13 @@ class AliITSgeom : public TObject {
     void PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det);
     ofstream &PrintGeom(ofstream &out);
     ifstream &ReadGeom(ifstream &in);
-    virtual Int_t IsVersion() const {return 1;}
-    void AddShape(TObject *shp){fShape->AddLast(shp);}
+    virtual Int_t IsVersion() const {return 1;} // return version number
+    void AddShape(TObject *shp){fShape->AddLast(shp);} // Add Shapes
     virtual TObject *GetShape(Int_t lay,Int_t lad,Int_t det)
-	const {return fShape->At(fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].
-				 fShapeIndex);}
+	const {return fShape->At(fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].
+				 fShapeIndex);} // return specific TShape
+
+    TObjArray *Shape() {return fShape;} // return Shapes array
 
     void GeantToTracking(AliITSgeom &source); // This converts the geometry
     // transformations from that used by the ITS and it's Monte Carlo to that
@@ -137,6 +136,13 @@ class AliITSgeom : public TObject {
     // This allocates and fills gt with the geometry transforms between the
     // global coordinate system to the local coordinate system used to do
     // tracking.
+
+ private:
+    Int_t        fNlayers; // The number of layers.
+    Int_t        *fNlad;   // Array of the number of ladders/layer(layer)
+    Int_t        *fNdet;   // Array of the number of detectors/ladder(layer)
+    AliITSgeomS  **fGm;     // Structure of translation and rotation.
+    TObjArray    *fShape;  // Array of shapes and detector information.
     
     ClassDef(AliITSgeom,1) // ITS geometry class
 };
