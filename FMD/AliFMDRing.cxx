@@ -26,6 +26,9 @@
 //
 // Latest changes by Christian Holm Christensen
 //
+
+#include <math.h>
+
 #include "AliFMDRing.h"		// ALIFMDRING_H
 #include "AliLog.h"		// ALILOG_H
 #include "TMath.h"		// ROOT_TMath
