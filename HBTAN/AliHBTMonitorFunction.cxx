@@ -88,7 +88,22 @@ void AliHBTMonitorFunction::Write()
  }
 /******************************************************************/
 
+void AliHBTMonitorFunction::Init()
+ {
+   //Writes an function to disk
+   if (AliHBTParticle::GetDebug()>0) Info("Init","%s",GetName());
+   
+   if (GetResult() == 0x0)
+    {
+      Warning("Init","Function has NULL result histogram!");
+      return;
+    }
+   GetResult()->Reset();
+   GetResult()->SetDirectory(0x0);
+   if (AliHBTParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
+ }
 /******************************************************************/
+
 void AliHBTMonitorFunction::SetParticleCut(AliHBTParticleCut* cut)
 {
 //Sets new Particle Cut. Old one is deleted

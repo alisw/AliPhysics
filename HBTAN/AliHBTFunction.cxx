@@ -69,6 +69,10 @@ AliHBTFunction::AliHBTFunction(const AliHBTFunction & source):
 AliHBTFunction::~AliHBTFunction()
 {
 //destructor  
+  if (AliHBTParticle::GetDebug() > 1)
+   {
+     Info("~AliHBTFunction","Deleting %s",GetName());
+   }
   delete fPairCut;
 }
 /******************************************************************/
@@ -201,14 +205,14 @@ void AliHBTFunction::InitFunction()
 {
 //Iniotializes fctn.: Resets histograms
 //In case histograms are not created in ctor, builds with default parameters
-  Info("InitFunction","%s",GetName());
+  if (AliHBTParticle::GetDebug()>1) Info("InitFunction","%s",GetName());
   if ( !(GetNumerator()&&GetDenominator()) ) BuildHistos();
   GetNumerator()->Reset();
   GetDenominator()->Reset();
 
   GetNumerator()->SetDirectory(0x0);
   GetDenominator()->SetDirectory(0x0);
-  Info("InitFunction","Done");
+  if (AliHBTParticle::GetDebug()>1) Info("InitFunction","Done");
 }
 /******************************************************************/
 /******************************************************************/
