@@ -17,7 +17,7 @@
 
 //-------------------------------------------------------------------------
 //                Implementation of the AliKalmanTrack class
-//
+//   that is the base for AliTPCtrack, AliITStrackV2 and AliTRDtrack
 //        Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
 

@@ -18,7 +18,9 @@ class AliSimDigits;
 //class TFile;
 class AliTPCBuffer:public TObject{
 public:
-  AliTPCBuffer(){}//default constructor
+  AliTPCBuffer(){
+    //default constructor
+  }
   AliTPCBuffer(const char* fileName);//constructor
   virtual ~AliTPCBuffer();//destructor
   AliTPCBuffer(const AliTPCBuffer &source); // copy constructor

@@ -16,9 +16,10 @@
 
 // Storing digits in a binary file
 // according to the DDL mapping
-//
+// To be used in Alice Data Challenges
+// This class is used by AliTPCDDL.C macro
 // Author: D.Favretto
-//
+
 #include "Riostream.h"
 #include "TObjArray.h"
 #include "AliTPCBuffer.h"
@@ -42,6 +43,7 @@ AliTPCBuffer::AliTPCBuffer(const char* fileName){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 AliTPCBuffer::~AliTPCBuffer(){
+  // The destructor closes the IO stream
   f.close();
   //delete tree;
   //delete fout;
