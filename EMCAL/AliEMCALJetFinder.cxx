@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/01/22 10:31:44  morsch
+Some correction for bg mixing.
+
 Revision 1.9  2002/01/21 16:28:42  morsch
 Correct sign of dphi.
 
@@ -387,12 +390,14 @@ void AliEMCALJetFinder::BookLego()
     fNbinPhi = geom->GetNPhi();
     const Float_t  phiMin  = geom->GetArm1PhiMin()*TMath::Pi()/180.;
     const Float_t  phiMax  = geom->GetArm1PhiMax()*TMath::Pi()/180.;
-    const Float_t  etaMin  = geom->GetArm1EtaMin()*TMath::Pi()/180.;
-    const Float_t  etaMax  = geom->GetArm1EtaMax()*TMath::Pi()/180.;
+    const Float_t  etaMin  = geom->GetArm1EtaMin();
+    const Float_t  etaMax  = geom->GetArm1EtaMax();
     fDphi   = (phiMax-phiMin)/fNbinEta;
     fDeta   = 1.4/fNbinEta;
     fNtot   = fNbinPhi*fNbinEta;
-    
+//
+//  Don't add histos to the current directory
+    TH2::AddDirectory(0);
 //    
 //  Signal map
     fLego = new TH2F("legoH","eta-phi",
@@ -403,6 +408,7 @@ void AliEMCALJetFinder::BookLego()
     fLegoB = new TH2F("legoB","eta-phi",
 			   fNbinEta, etaMin, etaMax, 
 			   fNbinPhi, phiMin, phiMax);
+    
 }
 
 void AliEMCALJetFinder::DumpLego()
@@ -488,7 +494,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	if (fDebug > 0) {
 	    if (part == 6 || part == 7)
 	    {
-		printf("\n Simulated Jet (pt, eta, phi): %d %f %f %f", 
+		printf("\n Simulated Jet (pt, eta, phi): %d %f %f %f\n", 
 		       part-5, pT, eta, phi);
 	    }
 
@@ -539,8 +545,8 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 
 	Bool_t curls = kFALSE;
 	Float_t dphi = PropagatePhi(pT, pdgP->Charge(), curls);
-	if (fDebug) printf("\n Delta phi %f pT%f", dphi, pT);
-	if (curls && fDebug) printf("\n Track is curling %f", pT);
+	if (fDebug > 1) printf("\n Delta phi %f pT%f", dphi, pT);
+	if (curls && fDebug > 1) printf("\n Track is curling %f", pT);
 	Float_t phiHC = phi + dphi;
 //
 // Momentum smearing goes here ...
@@ -573,7 +579,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	fNtS++;
 	
 	fLego->Fill(eta, phi, p);
-	if (fHCorrection) fLego->Fill(eta, phiHC, -dpH);
+	if (fHCorrection && !curls) fLego->Fill(eta, phiHC, -dpH);
     } // primary loop
     DumpLego();
 }
@@ -590,9 +596,6 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 //  Reset eta-phi map if needed
     if (flag == 0)    fLego->Reset();
 //  Initialize from background event if available
-    if (fBackground)  InitFromBackground();
-    
-
 //
 // Access hit information    
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
@@ -624,6 +627,9 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 	    Float_t theta  =    TMath::ATan2(r,z);
 	    Float_t eta    =   -TMath::Log(TMath::Tan(theta/2.));
 	    Float_t phi    =    TMath::ATan2(y,x);
+
+	    if (fDebug > 1) printf("\n Hit %f %f %f %f", x, y, z, eloss);
+	    
 	    fLego->Fill(eta, phi, fSamplingF*eloss);
 	} // Hit Loop
     } // Track Loop
@@ -908,12 +914,13 @@ void AliEMCALJetFinder::SaveBackgroundEvent()
     
     for (Int_t i = 0; i < fNt; i++) {
 	if (!fTrackList[i]) continue;
-	fPtB [fNtB]      = fPtT [i];
-	fEtaB[fNtB]      = fEtaT[i];
-	fPhiB[fNtB]      = fPhiT[i];
+	fPtB [fNtB]       = fPtT [i];
+	fEtaB[fNtB]       = fEtaT[i];
+	fPhiB[fNtB]       = fPhiT[i];
 	fTrackListB[fNtB] = 1;
 	fNtB++;
     }
+    fBackground = 1;
 }
 
 void AliEMCALJetFinder::InitFromBackground()
@@ -962,8 +969,11 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 		Float_t eta      = fEtaB[part];
 		Float_t dr       = TMath::Sqrt((etaj-eta)*(etaj-eta) +
 					       (phij-phi)*(phij-phi));
+		fTrackListB[part] = 1;
+
 		if (dr < fConeRadius) {
-		    fTrackList[part] = nj+2;
+		    printf("\n B sel %d %d %d", part, nj+2, nTB);
+		    fTrackListB[part] = nj+2;
 		    nTB++;
 		} // < ConeRadius ?
 	    } // particle loop
@@ -973,9 +983,9 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 	
 	if (nT0 > 50) nT0 = 50;
 	
-	Float_t* ptT  = new Float_t[nT];
-	Float_t* etaT = new Float_t[nT];
-	Float_t* phiT = new Float_t[nT];
+	Float_t* ptT  = new Float_t[nT0];
+	Float_t* etaT = new Float_t[nT0];
+	Float_t* phiT = new Float_t[nT0];
 	Int_t iT = 0;
 	Int_t j;
 	
@@ -1003,11 +1013,12 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 	
 	if (fBackground) {
 	    for (Int_t part = 0; part < fNtB; part++) {
-		if (fTrackList[part] == nj+2) {
+		if (fTrackListB[part] == nj+2) {
 		    Int_t index = 0;
 		    for (j=iT-1; j>=0; j--) {
 			if (fPtB[part] > ptT[j]) {
 			    index = j+1;
+
 			    break;
 			}
 		    }
@@ -1025,7 +1036,7 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 	    } // particle loop
 	} // Background available ?
 
-	fJetT[nj]->SetTrackList(nT, ptT, etaT, phiT);
+	fJetT[nj]->SetTrackList(nT0, ptT, etaT, phiT);
 	delete[] ptT;
 	delete[] etaT;
 	delete[] phiT;
