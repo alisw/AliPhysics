@@ -4,7 +4,7 @@ CSRCS:=fpu.c
 ELIBSDIR:=
 
 ELIBS:= MUON TPC ITS PMD TRD FMD TOF PHOS CRT RICH ZDC VZERO EMCAL STRUCT \
-START EVGEN STEER CONTAINERS pythia6 pdf THijing hijing TMEVSIM \
+START EVGEN STEER CONTAINERS pythia6 AliPythia6 pdf THijing hijing TMEVSIM \
 mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN FASTSIM microcern
 
 # The two variables below are used for the creation of profile target.
@@ -36,4 +36,4 @@ ARLIBS:= \
    STEER/tgt_$(ALICE_TARGET)/G__STEER.o $(LIBPATH)/libSTEER.a \
    CONTAINERS/tgt_$(ALICE_TARGET)/G__CONTAINERS.o $(LIBPATH)/libCONTAINERS.a
 
-SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lFASTSIM -lmicrocern
+SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lFASTSIM -lmicrocern
