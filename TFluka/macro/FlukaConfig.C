@@ -9,13 +9,18 @@ void Config()
   
   // libraries required by fluka21
 
-  char * gvmc = gSystem->ExpandPathName("$(G4VMC)/examples/macro/g4libs.C");
-  gROOT->LoadMacro(gvmc);
-  g4libs();
+  if (!gSystem->Getenv("WITH_ROOT")) {
+     cout << "=== RUNNING TFluka with FLUGG ===\n";
+     char * gvmc = gSystem->ExpandPathName("$(G4VMC)/examples/macro/g4libs.C");
+     gROOT->LoadMacro(gvmc);
+     g4libs();
 
-  cout << "\t* Loading Flugg..." << endl;  
-  gSystem->Load("libFlugg");    
-  
+     cout << "\t* Loading Flugg..." << endl;  
+     gSystem->Load("libFlugg");    
+  } else {
+     cout << "=== RUNNING TFluka with TGeo ===\n";
+     gSystem->Load("libGeom");
+  }     
   cout << "\t* Loading TFluka..." << endl;  
   gSystem->Load("libTFluka");    
     
