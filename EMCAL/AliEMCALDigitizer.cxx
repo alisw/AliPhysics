@@ -536,7 +536,8 @@ void AliEMCALDigitizer::InitParameters()
 {
   fMeanPhotonElectron = 1250 ; // electrons per GeV
   
-  fPinNoise           = 0.001 ; // noise equivalent GeV (random choice)
+  Warning("InitParameters", "No noise added\n") ; 
+  fPinNoise           = 0. ; // 0.001 ; // noise equivalent GeV (random choice)
   fDigitThreshold     = fPinNoise * 3; //2 sigma
   fTimeResolution     = 0.5e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
