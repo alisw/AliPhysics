@@ -27,6 +27,7 @@ public:
   Int_t PropagateBack(const TFile *in, TFile *out);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
+  Bool_t RefitAt(Double_t x, AliITStrackV2 *t, Int_t *index);
 
   class AliITSdetector {
   public:

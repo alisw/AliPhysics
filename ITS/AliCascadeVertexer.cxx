@@ -80,6 +80,9 @@ AliCascadeVertexer::V0sTracks2CascadeVertices(const TFile *inp, TFile *out) {
        AliITStrackV2 *iotrack=new AliITStrackV2;
        branch->SetAddress(&iotrack);
        trkTree->GetEvent(i);
+
+       iotrack->PropagateTo(3.,0.0023,65.19); iotrack->PropagateTo(2.5,0.,0.);
+
        ntrack++; trks.AddLast(iotrack);
        
    }   
@@ -139,6 +142,13 @@ AliCascadeVertexer::V0sTracks2CascadeVertices(const TFile *inp, TFile *out) {
          Double_t r2=x*x + y*y; 
          if (r2 > fRmax*fRmax) continue;   // condition on fiducial zone
          if (r2 < fRmin*fRmin) continue;
+
+         {
+   //I.B.
+         Double_t x1,y1,z1; V0ver->GetXYZ(x1,y1,z1);
+         if (r2 > (x1*x1+y1*y1)) continue;
+         if (z*z > z1*z1) continue;
+         }
 
    // get cascade momentum
          

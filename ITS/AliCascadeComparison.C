@@ -69,6 +69,7 @@ Int_t AliCascadeComparison(Int_t code=3312) {
        cTree->GetEvent(i);
        carray.AddLast(iovertex);
    }
+   delete cTree;
    cf->Close();
 
    /*** Check if the file with the "good" cascades exists ***/
@@ -129,7 +130,7 @@ Int_t AliCascadeComparison(Int_t code=3312) {
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
 
    Double_t mmin=cascadeMass-cascadeWindow, mmax=cascadeMass+cascadeWindow;
-   TH1F *cs =new TH1F("v0s","Cascade Effective Mass",40, mmin, mmax);
+   TH1F *cs =new TH1F("cs","Cascade Effective Mass",40, mmin, mmax);
    cs->SetXTitle("(GeV)"); cs->SetFillColor(6);
 
    Double_t pxg=0.,pyg=0.,ptg=0.;
@@ -264,7 +265,8 @@ Int_t AliCascadeComparison(Int_t code=3312) {
    c2->cd(2);
    gPad->SetFillColor(42); gPad->SetFrameFillColor(10);
    cs->SetXTitle("(GeV/c)"); 
-   cs->Fit("gaus","","",cascadeMass-cascadeWidth,cascadeMass+cascadeWidth);
+   //cs->Fit("gaus","","",cascadeMass-cascadeWidth,cascadeMass+cascadeWidth);
+   cs->Draw();
    Double_t max=cs->GetMaximum();
    TLine *line3 = 
       new TLine(cascadeMass-cascadeWidth,0.,cascadeMass-cascadeWidth,max);
@@ -357,7 +359,7 @@ Int_t good_cascades(GoodCascade *gc, Int_t max) {
       if (i==ngt) continue;
 
       /*** fiducial volume ***/
-      Double_t x=bp->Vx(), y=bp->Vy(), z=bp->Vz(), r2=x*x+y*y; //bachelor
+      Double_t x=bp->Vx(), y=bp->Vy(), r2=x*x+y*y; //bachelor
       if (r2<r2min) continue;
       if (r2>r2max) continue;
       TParticle *pp=gAlice->Particle(plab);
@@ -372,7 +374,7 @@ Int_t good_cascades(GoodCascade *gc, Int_t max) {
       gc[nc].code=code;
       gc[nc].plab=plab;   gc[nc].nlab=nlab; gc[nc].blab=blab;
       gc[nc].px=cp->Px(); gc[nc].py=cp->Py(); gc[nc].pz=cp->Pz();
-      gc[nc].x=x; gc[nc].y=y; gc[nc].z=z;
+      gc[nc].x=bp->Vx(); gc[nc].y=bp->Vy(); gc[nc].z=bp->Vz();
       nc++;
 
    }

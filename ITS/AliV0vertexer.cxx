@@ -64,6 +64,9 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
        AliITStrackV2 *iotrack=new AliITStrackV2;
        branch->SetAddress(&iotrack);
        trkTree->GetEvent(i);
+
+       iotrack->PropagateTo(3.,0.0023,65.19); iotrack->PropagateTo(2.5,0.,0.);
+
        if (iotrack->Get1Pt() > 0.) {nneg++; negtrks.AddLast(iotrack);}
        else {npos++; postrks.AddLast(iotrack);}
    }   
@@ -79,11 +82,18 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
       if (i%10==0) cerr<<nneg-i<<'\r';
       AliITStrackV2 *ntrk=(AliITStrackV2 *)negtrks.UncheckedAt(i);
 
+      if (TMath::Abs(ntrk->GetD())<fDPmin) continue;
+      if (TMath::Abs(ntrk->GetD())>fRmax) continue;
+
       for (Int_t k=0; k<npos; k++) {
          AliITStrackV2 *ptrk=(AliITStrackV2 *)postrks.UncheckedAt(k);
 
-         if (TMath::Abs(ntrk->GetD())<fDNmin) continue;
          if (TMath::Abs(ptrk->GetD())<fDPmin) continue;
+         if (TMath::Abs(ptrk->GetD())>fRmax) continue;
+
+         if (TMath::Abs(ntrk->GetD())<fDNmin)
+         if (TMath::Abs(ptrk->GetD())<fDNmin) continue;
+
 
          AliITStrackV2 nt(*ntrk), pt(*ptrk), *pnt=&nt, *ppt=&pt;
 
@@ -106,7 +116,9 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
          Double_t px,py,pz; vertex.GetPxPyPz(px,py,pz);
          Double_t p2=px*px+py*py+pz*pz;
          Double_t cost=(x*px+y*py+z*pz)/TMath::Sqrt(p2*(r2+z*z));
-         if (cost<fCPAmax) continue;
+
+         if (cost < (5*fCPAmax-0.9-TMath::Sqrt(r2)*(fCPAmax-1))/4.1) continue;
+         //if (cost < fCPAmax) continue;
 
          //vertex.ChangeMassHypothesis(); //default is Lambda0 
 
@@ -270,8 +282,8 @@ Double_t AliV0vertexer::PropagateToDCA(AliITStrackV2 *n, AliITStrackV2 *p) {
     return 1.e+33;
   }  
 
-  //return TMath::Sqrt(dm);
-  return TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+  return TMath::Sqrt(dm*TMath::Sqrt(dy2*dz2));
+  //return TMath::Sqrt(dx*dx + dy*dy + dz*dz);
 }
 
 
