@@ -54,7 +54,11 @@ void AliITSv5::CreateMaterials()
   //
   // Read materials for the ITS
   //
-  FILE *file = fopen(fEuclidMaterial.Data(),"r");
+  char *filtmp;
+  //
+  filtmp=gSystem->ExpandPathName(fEuclidMaterial.Data());
+  FILE *file = fopen(filtmp,"r");
+  delete [] filtmp;
   if(file) {
     fclose(file);
     gAlice->ReadEuclidMedia(fEuclidMaterial.Data(),this);
