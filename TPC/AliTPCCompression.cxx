@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:*/
+/* $Id$ */
 
 // This class contains the implementation of the 
 // compression and decompression algorithms 
@@ -233,8 +233,12 @@ Int_t AliTPCCompression::StoreTables(AliTPCHTable* table[],const Int_t NumTable)
   char filename[15];
   ofstream fTable;
   for(Int_t k=0;k<NumTable;k++){
-    sprintf(filename,"Table%d.dat",k); 
+    sprintf(filename,"Table%d.dat",k);
+#ifndef __DECCXX 
     fTable.open(filename,ios::binary);
+#else
+    fTable.open(filename);
+#endif
     Int_t dim=table[k]->Size();
     //Table dimension is written into a file
     fTable.write((char*)(&dim),sizeof(Int_t));
@@ -357,7 +361,11 @@ Int_t AliTPCCompression::RetrieveTables(AliTPCHTable* table[],Int_t NumTable){
   for(Int_t k=0;k<NumTable;k++){
     Int_t dim;//this variable contains the table dimension
     sprintf(filename,"Table%d.dat",k); 
+#ifndef __DECCXX 
     fTable.open(filename,ios::binary);
+#else
+    fTable.open(filename);
+#endif
     fTable.read((char*)(&dim),sizeof(Int_t));
     if (fVerbose)
       cout<<"Table dimension: "<<dim<<endl;
@@ -439,7 +447,11 @@ Int_t AliTPCCompression::CompressData(AliTPCHTable* table[],Int_t NumTable,const
   cout<<" COMPRESSION "<<endl;
   cout<<"compression of the file "<<fSource<<" Output File: "<<fDest<<endl;
   //the output file is open
+#ifndef __DECCXX 
   f.open(fDest,ios::binary|ios::out);
+#else
+  f.open(fDest,ios::out);
+#endif
   //Tables are written into the output file
   for(Int_t k=0;k<NumTable;k++){
     Int_t dim=table[k]->Size();
@@ -555,7 +567,11 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
   AliTPCHTable **table = new AliTPCHTable*[NumTable];
   RetrieveTables(table,NumTable);
   //the output file is open
+#ifndef __DECCXX 
   f.open(fDest,ios::binary|ios::out);
+#else
+  f.open(fDest,ios::out);
+#endif
   // Source file is open
   AliTPCBuffer160 buff(fSource,0);
   //coded words are written into a file
@@ -785,7 +801,11 @@ void AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],const Int_t 
     RootNode[k]=new AliTPCHNode(); //RootNode is the root of the tree
     Int_t dim=0;//this variable contains the table dimension
     sprintf(filename,"Table%d.dat",k); 
+#ifndef __DECCXX 
     fTable.open(filename,ios::binary);
+#else
+    fTable.open(filename);
+#endif
     fTable.read((char*)(&dim),sizeof(Int_t));
     if (fVerbose)
       cout<<"Table dimension: "<<dim<<endl;
@@ -901,8 +921,12 @@ ULong_t AliTPCCompression::GetDecodedWord(AliTPCHNode* root){
 Int_t AliTPCCompression::DecompressData(Int_t NumTables,const char* fname,char* fDest){
   //Decompression method 
   cout<<"   DECOMPRESSION:"<<endl;
-  cout<<"Source File "<<fname<<" Destination File "<<fDest<<endl; 
+  cout<<"Source File "<<fname<<" Destination File "<<fDest<<endl;
+#ifndef __DECCXX 
   f.open(fname,ios::binary|ios::in);
+#else
+  f.open(fname,ios::in);
+#endif
   if(!f){cout<<"File doesn't exist\n";return -1;}
   AliTPCHNode ** rootNode = new AliTPCHNode*[NumTables];
   //Creation of the Huffman trees
@@ -981,7 +1005,11 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
   AliTPCHNode ** rootNode = new AliTPCHNode*[NumTables];
   //Creation of the Huffman trees
   CreateTreesFromFile(rootNode,NumTables);
+#ifndef __DECCXX
   f.open(fname,ios::binary|ios::in);
+#else
+  f.open(fname,ios::in);
+#endif
   if(!f){cout<<"File doesn't exist\n";return -1;}
   //to go to the end of the file
   f.seekg(0,ios::end);

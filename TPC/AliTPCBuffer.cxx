@@ -32,7 +32,11 @@ ClassImp(AliTPCBuffer)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 AliTPCBuffer::AliTPCBuffer(const char* fileName){
   // Constructor
+#ifndef __DECCXX
   f.open("AliTPCDDL.dat",ios::binary|ios::out);
+#else
+  f.open("AliTPCDDL.dat",ios::out);
+#endif
   // fout=new TFile(fileName,"recreate");
   // tree=new TTree("tree","Values");
   fNumberOfDigits=0;

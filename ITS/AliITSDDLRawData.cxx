@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:*/
+/* $Id$ */
 
 //This class contains all the necessary methods to create the Raw Data
 //files (slides) for the ITS data challenges for:
@@ -330,7 +330,11 @@ Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
   ULong_t size=0;           // size of the data block that follows the mini header
   Int_t magicWord=0x123456;  // Magic word used to distinguish between data and garbage
   sprintf(fileName,"SPDslice%d",sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
+#ifndef __DECCXX
   outfile.open(fileName,ios::binary);
+#else
+  outfile.open(fileName);
+#endif
   ULong_t miniHeader[3];
   Int_t miniHeaderSize=sizeof(ULong_t)*3;
   Int_t version=1;          //version of the mini header 
@@ -372,7 +376,11 @@ Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
       sliceNumber++;
       sprintf(fileName,"SPDslice%d",sliceNumber); 
       if(i!=(kDDLsNumber-1))
+#ifndef __DECCXX
 	outfile.open(fileName,ios::binary);
+#else
+	outfile.open(fileName);
+#endif
       countDDL=0;
     }//end if
   }//end for
@@ -589,7 +597,11 @@ Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
   ULong_t size=0;               // size of the data block that follows the mini header
   Int_t magicWord=0x123456;     // Magic word used to distinguish between data and garbage
   sprintf(fileName,"SSDslice%d",sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
+#ifndef __DECCXX
   outfile.open(fileName,ios::binary);
+#else
+  outfile.open(fileName);
+#endif
   ULong_t miniHeader[3];
   Int_t miniHeaderSize=sizeof(ULong_t)*3;
   Int_t version=1;              //version of the mini header 
@@ -634,7 +646,11 @@ Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
       sliceNumber++;
       sprintf(fileName,"SSDslice%d",sliceNumber); 
       if(i!=(kDDLsNumber-1))
+#ifndef __DECCXX
 	outfile.open(fileName,ios::binary);
+#else
+	outfile.open(fileName);
+#endif
       countDDL=0;
     }//end if
   }//end for
@@ -684,7 +700,11 @@ Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
   ULong_t size=0;               // size of the data block that follows the mini header
   Int_t magicWord=0x123456;     // Magic word used to distinguish between data and garbage
   sprintf(fileName,"SDDslice%d",sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
+#ifndef __DECCXX
   outfile.open(fileName,ios::binary);
+#else
+  outfile.open(fileName);
+#endif
   ULong_t miniHeader[3];
   Int_t miniHeaderSize=sizeof(ULong_t)*3;
   Int_t version=1;             //version of the mini header 
@@ -729,7 +749,11 @@ Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
       sliceNumber++;
       sprintf(fileName,"SDDslice%d",sliceNumber); 
       if(i!=(kDDLsNumber-1))
+#ifndef __DECCXX
 	outfile.open(fileName,ios::binary);
+#else
+	outfile.open(fileName);
+#endif
       countDDL=0;
     }//end if
   }//end for
@@ -824,7 +848,11 @@ void AliITSDDLRawData::TestFormat(){
   Int_t miniHeaderSize=sizeof(ULong_t)*3;
   for(Int_t i=1;i<=ldcsNumber;i++){
     sprintf(filename,"SPDslice%d",i);  
+#ifndef __DECCXX
     f.open(filename,ios::binary|ios::in);
+#else
+    f.open(filename,ios::in);
+#endif
     if(!f){exit(1);}
     //loop over the DDL block 
     //here the Mini Header is read

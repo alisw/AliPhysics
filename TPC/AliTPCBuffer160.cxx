@@ -43,11 +43,19 @@ AliTPCBuffer160::AliTPCBuffer160(const char* fileName,Int_t flag){
     //the buffer is cleaned 
     for (Int_t i=0;i<5;i++)fBuffer[i]=0;
     //open the output file
+#ifndef __DECCXX
     f.open(fileName,ios::binary|ios::out);
+#else
+    f.open(fileName,ios::out);
+#endif
   }
   else{
     //open the input file
+#ifndef __DECCXX
     f.open(fileName,ios::binary|ios::in);
+#else
+    f.open(fileName,ios::in);
+#endif
     if(!f){cout<<"File doesn't exist\n";exit(-1);}
     fShift=0;
     //To get the file dimension (position of the last element in term of bytes)

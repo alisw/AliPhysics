@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:*/
+/* $Id$ */
 
 //This class conteins all the methods to create raw data 
 //as par a given DDL.
@@ -54,7 +54,11 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber){
   if (216%LDCsNumber) ddlPerFile++;
   cout<<"Number of DDL per slide: "<<ddlPerFile<<endl;
   ifstream f;
+#ifndef __DECCXX
   f.open("AliTPCDDL.dat",ios::binary);
+#else
+  f.open("AliTPCDDL.dat");
+#endif
   if(!f){cout<<"File doesn't exist !!"<<endl;return;}
   struct DataPad{
     Int_t Sec;
@@ -183,11 +187,19 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
       sprintf(filename,"TPCslice%d.comp",i);
       sprintf(dest,"TPCslice%d.decomp",i);
     }
+#ifndef __DECCXX
     f.open(filename,ios::binary|ios::in);
+#else
+    f.open(filename,ios::in);
+#endif
     if(!f){cout<<"File doesn't exist \n";exit(1);}
     cout<<filename<<"  "<<dest<<endl;
     ofstream fdest;
+#ifndef __DECCXX
     fdest.open(dest,ios::binary);
+#else
+    fdest.open(dest);
+#endif
     //loop over the DDL block 
     //Each block contains a Mini Header followed by raw data (ALTRO FORMAT)
     //The number of block is ceil(216/LDCsNumber)
@@ -200,7 +212,11 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
       //open the temporay File
       ofstream fo;
       char temp[15]="TempFile";
+#ifndef __DECCXX
       fo.open(temp,ios::binary);
+#else
+      fo.open(temp);
+#endif
       Int_t car=0;
       for(ULong_t j=0;j<size;j++){
 	f.read((char*)(&car),1);
@@ -216,7 +232,11 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
       delete util;
       //the temp compressed file is open and copied to the final file fdest
       ifstream fi;
+#ifndef __DECCXX
       fi.open("TempCompDecomp",ios::binary);
+#else
+      fi.open("TempCompDecomp");
+#endif
       fi.seekg(0,ios::end);
       size=fi.tellg();
       fi.seekg(0);
@@ -255,7 +275,11 @@ void AliTPCDDLRawData::RawDataAltro()const{
   //It is used to debug the code and create the tables used in the compresseion phase
   Int_t offset=1;
   ifstream f;
+#ifndef __DECCXX
   f.open("AliTPCDDL.dat",ios::binary);
+#else
+  f.open("AliTPCDDL.dat");
+#endif
   if(!f){cout<<"File doesn't exist !!"<<endl;return;}
   struct DataPad{
     Int_t Sec;
@@ -344,7 +368,11 @@ void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp){
     sprintf(dest,"AltroDDLRecomposedDec.dat");
   ofstream fdest;
 
+#ifndef __DECCXX
   fdest.open(dest,ios::binary);
+#else
+  fdest.open(dest);
+#endif
   ULong_t size=0;
   //Int_t MagicWord,DDLNumber,SecNumber,SubSector,Detector,flag=0;
   for(Int_t i=1;i<=LDCsNumber;i++){
@@ -352,7 +380,11 @@ void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp){
       sprintf(filename,"TPCslice%d",i);  
     else
       sprintf(filename,"TPCslice%d.decomp",i);  
+#ifndef __DECCXX
     f.open(filename,ios::binary|ios::in);
+#else
+    f.open(filename,ios::in);
+#endif
     if(!f){cout<<"The file doesn't exist"<<endl;exit(1);}
     //loop over the DDL block 
     //Each block contains a Mini Header followed by raw data (ALTRO FORMAT)
