@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:08  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 /////////////////////////////////////////////////////////
@@ -106,6 +109,8 @@ void AliCPVv0::StepManager()
 //      cout << "AliCPVv0::StepManager() entered to CPV to the volume " 
 //           << VolumeName << "!\n";
 //    }
+
+  Int_t i;
   
   if( strcmp(gMC->CurrentVolName(),"CPV ")==0 && gMC->IsTrackEntering() )
   {
@@ -123,9 +128,9 @@ void AliCPVv0::StepManager()
     TLorentzVector xyzt;
     gMC -> TrackPosition(xyzt);
     Float_t xyzm[3], xyzd[3], xyd[2];
-    for (Int_t i=0; i<3; i++) xyzm[i] = xyzt[i];
+    for (i=0; i<3; i++) xyzm[i] = xyzt[i];
     gMC -> Gmtod (xyzm, xyzd, 1);
-    for (Int_t i=0; i<2; i++) xyd[i]  = xyzd[i];
+    for (i=0; i<2; i++) xyd[i]  = xyzd[i];
 
     // Current momentum of the hit's track in the MARS ref. system
     

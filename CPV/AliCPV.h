@@ -44,7 +44,7 @@ public:
   TLorentzVector GetMomentum()  {return  fMomentum; }
   Float_t        GetXY(Int_t i) {return  fXYhit[i]; }
   Int_t          GetIpart()     {return  fIpart;    }
-  void           Print();
+  void           Print(Option_t * =" ");
 
   ClassDef(AliCPVExactHit,1)  // Hits object for set:CPV
 };
@@ -64,7 +64,7 @@ public:
            AliCPVHit(Float_t *xy);
 
   Float_t  GetXY(Int_t i) {return  fXYhit[i]; }
-  void     Print();
+  void     Print(Option_t * =" ");
 
   ClassDef(AliCPVHit,1)  // Hits object for set:CPV
 };
