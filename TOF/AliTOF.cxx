@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/08/29 12:59:01  vicinanz
+Minor changes to the Digitizer procedure
+
 Revision 1.22  2001/08/28 08:45:58  vicinanz
 TTask and TFolder structures implemented
 
@@ -254,9 +257,11 @@ AliTOF::~AliTOF()
 {
   // remove the alice folder 
   // and task that TOF creates instead of AliRun
+  /* PH Temporarily commented because of problems
   TFolder * alice = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("FPAlice") ;
   delete alice;
   alice = 0;
+  */
 }
 
 //_____________________________________________________________________________
