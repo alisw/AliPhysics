@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/01/26 21:41:55  morsch
+Use access functions to AliMUONDigit member data.
+
 Revision 1.10  2001/01/25 20:41:56  morsch
 Protect against empty TreeD and TreeR.
 
@@ -915,9 +918,10 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     Int_t nent = 0;
  
    if (gAlice->TreeD()) {
-	nent = (Int_t) gAlice->TreeD()->GetEntries();
-	printf(" entries %d \n", nent);
-	gAlice->TreeD()->GetEvent(cathode-1);
+     nent = (Int_t) gAlice->TreeD()->GetEntries();
+     printf(" entries %d \n", nent);
+     //     gAlice->TreeD()->GetEvent(nent-2+cathode-1);
+     gAlice->TreeD()->GetEvent(cathode-1);
     }
     
     Int_t ndigits = muonDigits->GetEntriesFast();
@@ -930,8 +934,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     response     = iChamber->ResponseModel();
     Float_t zpos = iChamber->Z();
 
-    segmentation->Dump();
-    
     AliMUONDigit  *mdig;
     AliMUONPoints *points  = 0;
     TMarker3DBox  *marker  = 0;
@@ -1028,7 +1030,7 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t cathode)
     Int_t nent = 0;
     if (gAlice->TreeR()) {
 	nent=(Int_t)gAlice->TreeR()->GetEntries();
-	gAlice->TreeR()->GetEvent(nent-2+cathode-1);
+	gAlice->TreeR()->GetEvent(cathode-1);
     }
     
     Int_t nrawcl = muonRawClusters->GetEntriesFast();
