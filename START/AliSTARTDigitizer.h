@@ -24,7 +24,7 @@ class AliSTARTDigitizer : public AliDigitizer {
   TArrayI * ADC() {return fADC;} //for slow simulation
   // Do the main work
   void Exec (Option_t* /*option=0*/) ;
-  Bool_t RegisterPhotoE(Float_t e);
+  Bool_t RegisterPhotoE(Double_t e);
   enum {kBgTag = -1};
 
 private:
