@@ -17,6 +17,7 @@ class THijing;
 class TArrayI;
 class TParticle;
 class TClonesArray;
+class TGraph;
 
 class AliGenHijing : public AliGenerator
 {
@@ -59,6 +60,8 @@ class AliGenHijing : public AliGenerator
     AliGenHijing &  operator=(const AliGenHijing & rhs);
 // Physics Routines	    
     virtual void EvaluateCrossSections();
+    virtual TGraph* CrossSection()     {return fDsigmaDb;}
+    virtual TGraph* BinaryCollisions() {return fDnDb;}    
  protected:
     Bool_t SelectFlavor(Int_t pid);
     void   MakeHeader();
@@ -91,7 +94,8 @@ class AliGenHijing : public AliGenerator
     Float_t     fPtHardMin;      // lower pT-hard cut 
     Float_t     fPtHardMax;      // higher pT-hard cut
     Int_t       fSpectators;     // put spectators on stack
-
+    TGraph*     fDsigmaDb;       // dSigma/db for the system
+    TGraph*     fDnDb;           // dNBinaryCollisions/db    
  private:
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip);
