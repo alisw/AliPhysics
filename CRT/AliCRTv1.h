@@ -18,8 +18,8 @@ public:
   virtual ~AliCRTv1();
 
   AliCRTv1&       operator=(const AliCRTv1& crt);
-  virtual TString Version();
-  virtual Int_t   IsVersion() const;
+  virtual TString Version() { return TString("v1"); }
+  virtual Int_t   IsVersion() const { return 1; }
 
   virtual void    AddHit(Int_t track, Int_t *vol, Float_t *hits);
   virtual void    FinishEvent();
@@ -40,9 +40,4 @@ private:
   ClassDef(AliCRTv1, 1)  //Class for CRT, version 1, Shafts outside of AliHALL
 };
 
-inline TString AliCRTv1::Version()
-{ return TString("v1"); }
-
-inline Int_t AliCRTv1::IsVersion() const
-{ return 1; }
 #endif // ALICRTV1_H
