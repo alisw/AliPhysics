@@ -2472,6 +2472,7 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESD *event)
   Int_t ntracks=0;
   for (Int_t i=0;i<nseed;i++){
     AliTPCseed * seed = (AliTPCseed*) fSeeds->UncheckedAt(i);
+    if (!seed) continue;
     AliESDtrack *esd=event->GetTrack(i);
     seed->CookdEdx(0.02,0.6);
     CookLabel(seed,0.1); //For comparison only
