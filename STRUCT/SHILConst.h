@@ -10,7 +10,7 @@
 // angle of 3rd cone
   const Float_t thetaOpen3 = 0.9*kDegrad;
 // angle of beam tube in second cone
-  const Float_t thetaOpenB = 0.74*kDegrad;
+  const Float_t thetaOpenB = 0.84*kDegrad;
 // inner lead Cone opening angle
   const Float_t thetaOpenPb = 0.6*kDegrad;
 // Outer Pb Cone opening angle
@@ -21,11 +21,12 @@
   const Float_t zFilterIn       = 1471.;
   const Float_t zFilterOut      = zFilterIn+120.;
 // end of 2-degree outer cone
-  const Float_t zConeE    = 30./TMath::Tan(accMin);
+//  const Float_t zConeE    = 30./TMath::Tan(accMin);
+  const Float_t zConeE    = 859.;
 //
 //
   Float_t dTubeS=0.1;
-  const Float_t dInsuS=0.9;
+  const Float_t dInsuS=0.6;
   const Float_t dEnveS=0.1;
   const Float_t dProtS=0.2;
   const Float_t dFreeS=0.5;
@@ -42,6 +43,7 @@
   const Float_t dr12=0.875;
 // delta_R to catch up with cone
   const Float_t dr13=0.525;
+
 // flange length
   const Float_t dF1=2.*3.9;
 // bellow length
@@ -106,7 +108,7 @@
 //
 // Bellow2
 //
-  const Float_t rB2=15.35;
+  const Float_t rB2=15.85;
   const Float_t hB2=2.25;
   const Float_t lB2=2.32;
   const Float_t eB2=0.05;
