@@ -102,7 +102,8 @@ int main(int argc,char **argv)
 	  pad = dataPt[ndig].fPad;
 	  time = dataPt[ndig].fTime;
 	  charge = dataPt[ndig].fCharge;
-	  cout << "Padrow " << row << " pad " << (int)pad << " time " <<(int) time << " charge " << (int)charge << endl;
+	  cout << "Padrow " << r << " pad " << (int)pad << " time " <<(int) time << " charge " << (int)charge << endl;
+	  //	  cout << "Padrow " << row << " pad " << (int)pad << " time " <<(int) time << " charge " << (int)charge << endl;
 	  if(altroout) altromem.Write(row,pad,time,charge);
 	}
       

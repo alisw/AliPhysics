@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   //Give slice and patch information (see filename convention)
   if((patch>=0)&&(patch<6)) file.Init(slice,patch);
   else {
-    Int_t srows[2]={0,175};
+    Int_t srows[2]={0,AliL3Transform::GetLastRow(5)};
     patch=0;
     file.Init(slice,patch,srows);
   }

@@ -69,6 +69,10 @@ all : $(PRGS)
 runhough : runhough.o
 	$(LD) $< $(LDFLAGS) -o $@
 
+#run hough transform on l3 data.
+runvhdlhough : runvhdlhough.o
+	$(LD) $< $(LDFLAGS) -o $@
+
 #run conventional clusterfinder on altro data
 runvhdlcf : runvhdlcf.o
 	$(LD) $< $(LDFLAGS) -o $@
@@ -81,9 +85,11 @@ runit : runit.o
 read : read.o
 	$(LD) $< $(LDFLAGS) -o $@
 
+#convert to binary
 convbin : ali2raw.o
 	$(LD) $< $(LDFLAGS) -o $@
 
+#get transform values
 gettransform : gettransform.o
 	$(LD) $< $(LDFLAGS) -o $@
 
