@@ -163,6 +163,13 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 
       while(1) //Loop over current sequence
 	{
+	  if(data[bin].fTime >= fTransform->GetNTimeBins())
+	    {
+	      LOG(AliL3Log::kFatal,"AliL3ClustFinderNew::ProcessRow","Digits")
+		<<"Timebin out of range "<<(Int_t)data[bin].fTime<<ENDLOG;
+	      break;
+	    }
+
 	  //Get the current ADC-value
 	  UInt_t charge = data[bin].fCharge;
 	  
@@ -200,7 +207,8 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	seq_mean = seq_average/seq_charge;
       else
 	{
-	  printf("\nCF: Should not happen\n");
+	  LOG(AliL3Log::kFatal,"AliL3ClustFinderNew::ProcessRow","Data")
+	    <<"Error in data given to the cluster finder"<<ENDLOG;
 	  seq_mean = 1;
 	  seq_charge = 1;
 	}
