@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4.2.2  2000/05/08 14:50:58  cblume
+Add functions ProjRow(), ProjCol(), and ProjTime()
+
+Revision 1.4.2.1  2000/04/27 12:47:02  cblume
+Replace Fill3() by Fill()
+
 Revision 1.4  2000/02/28 19:10:26  cblume
 Include the new TRD classes
 
@@ -246,6 +252,102 @@ void AliTRDmatrix::DrawTime(Int_t iTime)
   hSliceTime->SetXTitle("Pad-row (z)");
   hSliceTime->SetYTitle("Pad-column (rphi)");
   hSliceTime->Draw("COLZ");
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmatrix::ProjRow()
+{
+  //
+  // Projects the detector matrix along the row-axis
+  //
+
+  Char_t ctitle[60];
+  sprintf(ctitle,"Row-projection (Sector:%d Chamber:%d Plane:%d)"
+                ,fSector,fChamber,fPlane);
+  TH2F *hProjRow = new TH2F("hProjRow",ctitle,fCol ,-0.5,fCol +0.5
+                                             ,fTime,-0.5,fTime+0.5);
+
+  for (Int_t iRow  = 0; iRow  < fRow;  iRow++ ) {
+    for (Int_t iCol  = 0; iCol  < fCol;  iCol++ ) {
+      for (Int_t iTime = 0; iTime < fTime; iTime++) {
+        AliTRDpixel *pixel = GetPixel(iRow,iCol,iTime);
+        if (pixel) hProjRow->Fill(iCol,iTime,pixel->GetSignal());
+      }
+    }
+  }
+
+  gStyle->SetOptStat(0);
+  TCanvas *cProjRow = new TCanvas("cProjRow","Detector matrix 2D-projection"
+                                            ,50,50,600,400);
+  cProjRow->ToggleEventStatus();
+  hProjRow->SetXTitle("Pad-column (rphi)");
+  hProjRow->SetYTitle("Timebucket");
+  hProjRow->Draw("COLZ");
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmatrix::ProjCol()
+{
+  //
+  // Projects the detector matrix along the column-axis
+  //
+
+  Char_t ctitle[60];
+  sprintf(ctitle,"Column-projection (Sector:%d Chamber:%d Plane:%d)"
+                ,fSector,fChamber,fPlane);
+  TH2F *hProjCol = new TH2F("hProjCol",ctitle,fRow ,-0.5,fRow +0.5
+                                             ,fTime,-0.5,fTime+0.5);
+
+  for (Int_t iRow  = 0; iRow  < fRow;  iRow++ ) {
+    for (Int_t iCol  = 0; iCol  < fCol;  iCol++ ) {
+      for (Int_t iTime = 0; iTime < fTime; iTime++) {
+        AliTRDpixel *pixel = GetPixel(iRow,iCol,iTime);
+        if (pixel) hProjCol->Fill(iRow,iTime,pixel->GetSignal());
+      }
+    }
+  }
+
+  gStyle->SetOptStat(0);
+  TCanvas *cProjCol = new TCanvas("cProjCol","Detector matrix 2D-projection"
+                                            ,50,50,600,400);
+  cProjCol->ToggleEventStatus();
+  hProjCol->SetXTitle("Pad-row (z)");
+  hProjCol->SetYTitle("Timebucket");
+  hProjCol->Draw("COLZ");
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmatrix::ProjTime()
+{
+  //
+  // Projects the detector matrix along the time-axis
+  //
+
+  Char_t ctitle[60];
+  sprintf(ctitle,"Time-projection (Sector:%d Chamber:%d Plane:%d)"
+                ,fSector,fChamber,fPlane);
+  TH2F *hProjTime = new TH2F("hProjTime",ctitle,fRow,-0.5,fRow+0.5
+                                               ,fCol,-0.5,fCol+0.5);
+
+  for (Int_t iRow = 0; iRow < fRow; iRow++) {
+    for (Int_t iCol = 0; iCol < fCol; iCol++) {
+      for (Int_t iTime = 0; iTime < fTime; iTime++) {
+        AliTRDpixel *pixel = GetPixel(iRow,iCol,iTime);
+        if (pixel) hProjTime->Fill(iRow,iCol,pixel->GetSignal());
+      }
+    }
+  }
+
+  gStyle->SetOptStat(0);
+  TCanvas *cProjTime = new TCanvas("cProjTime","Detector matrix 2D-projection"
+                                              ,50,50,600,400);
+  cProjTime->ToggleEventStatus();
+  hProjTime->SetXTitle("Pad-row (z)");
+  hProjTime->SetYTitle("Pad-column (rphi)");
+  hProjTime->Draw("COLZ");
 
 }
 
