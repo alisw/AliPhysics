@@ -219,7 +219,7 @@ void AliITSsegmentationSPD::SetBinSize(Float_t *x,Float_t *z){
     Int_t i;
 
     for(i=0;i<256;i++) fCellSizeX[i] = x[i];
-    for(i=0;i<280;i++) fCellSizeX[i] = z[i];
+    for(i=0;i<280;i++) fCellSizeZ[i] = z[i];
     return;
 }
 //----------------------------------------------------------------------
