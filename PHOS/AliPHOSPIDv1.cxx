@@ -989,8 +989,8 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
     for (index = 0 ; index < recParticles->GetEntries() ; index++) {
        AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) recParticles->At(index) ;       
 
-       cout << setw(10) << rp->Name() << "  "
-	    << setw(5) <<  rp->GetIndexInList() << " " <<endl;
+       cout << std::setw(10) << rp->Name() << "  "
+	    << std::setw(5) <<  rp->GetIndexInList() << " " <<endl;
        cout << "Type "<<  rp->GetType() << endl;
     }
     cout << "-------------------------------------------" << endl ;
