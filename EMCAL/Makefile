@@ -16,7 +16,8 @@ SRCS          =  AliEMCAL.cxx  AliEMCALGeometry.cxx AliEMCALv0.cxx \
 	         AliEMCALGetter.cxx AliEMCALTick.cxx \
 		 AliEMCALRecPoint.cxx AliEMCALTowerRecPoint.cxx \
 		 AliEMCALClusterizer.cxx AliEMCALClusterizerv1.cxx \
-         AliEMCALHadronCorrection.cxx AliEMCALHadronCorrectionv0.cxx
+                 AliEMCALHadronCorrection.cxx AliEMCALHadronCorrectionv0.cxx \
+		 AliEMCALJetMicroDst.cxx
 
 # FORTRAN sources
 
