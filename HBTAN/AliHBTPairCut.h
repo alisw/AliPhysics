@@ -23,7 +23,7 @@ enum AliHBTPairCutProperty
   kHbtPairCutPropNone
  };
 
-class AliHBTPairCut: public TObject
+class AliHBTPairCut: public TNamed
 {
   public:
     AliHBTPairCut();
@@ -55,15 +55,15 @@ class AliHBTPairCut: public TObject
     AliHBTParticleCut*      fFirstPartCut;//cut on first particle in pair
     AliHBTParticleCut*      fSecondPartCut;//cut on second particle in pair
 
-    AliHbtBasePairCut** fCuts; //!
-    Int_t fNCuts;
+    AliHbtBasePairCut** fCuts; //! array of poiters to base cuts
+    Int_t fNCuts;//Number of cuts in fCuts array
        
        
     AliHbtBasePairCut* FindCut(AliHBTPairCutProperty);
   private:
     static const Int_t fkgMaxCuts;
   public:
-    ClassDef(AliHBTPairCut,1)
+    ClassDef(AliHBTPairCut,2)
  
 };
 /******************************************************************/
