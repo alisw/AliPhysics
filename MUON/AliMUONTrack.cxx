@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.10  2001/04/09 12:25:09  gosset
+Inversion of covariance matrices with local copy of TMinuit::mnvert,
+for symmetric positive definite matrices, instead of TMatrixD::Invert
+
 Revision 1.9  2001/01/17 20:59:24  hristov
 chPrev initialised
 
@@ -714,7 +718,10 @@ Double_t MultipleScatteringAngle2(AliMUONTrackHit *TrackHit)
 
   // taken from TMinuit package of Root (l>=n)
   // fVERTs, fVERTq and fVERTpp changed to localVERTs, localVERTq and localVERTpp
-  Double_t localVERTs[n], localVERTq[n], localVERTpp[n];
+  //  Double_t localVERTs[n], localVERTq[n], localVERTpp[n];
+  Double_t * localVERTs = new Double_t[n];
+  Double_t * localVERTq = new Double_t[n];
+  Double_t * localVERTpp = new Double_t[n];
   // fMaxint changed to localMaxint
   Int_t localMaxint = n;
 
@@ -786,9 +793,15 @@ L60:
             a[j + k*l] = a[k + j*l];
         }
     }
+    delete localVERTs;
+    delete localVERTq;
+    delete localVERTpp;
     return;
 //*-*-                  failure return
 L100:
+    delete localVERTs;
+    delete localVERTq;
+    delete localVERTpp;
     ifail = 1;
 } /* mnvertLocal */
 
