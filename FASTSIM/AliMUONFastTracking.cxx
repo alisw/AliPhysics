@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2004/01/27 18:02:38  hristov
+Removing some warning (Sun)
+
 Revision 1.7  2003/11/13 14:21:57  morsch
 Coding Rule violation corrections.
 
@@ -802,8 +805,10 @@ void AliMUONFastTracking::SetBackground(Float_t bkg){
 
 TF1* AliMUONFastTracking::GetFitP(Int_t ip,Int_t itheta,Int_t iphi) { 
   // gets the correct prec-pgen distribution for a given LUT cell 
-  if (!fFitp[ip][itheta][iphi]) { 
-    fFitp[ip][itheta][iphi] = new TF1("fit1",FitP,-20.,20.,6);
+  if (!fFitp[ip][itheta][iphi]) {
+    char name[256];
+    sprintf(name, "fit_%d_%d_%d", ip, itheta, iphi);
+    fFitp[ip][itheta][iphi] = new TF1(name ,FitP,-20.,20.,6);
     fFitp[ip][itheta][iphi]->SetNpx(500);    
     fFitp[ip][itheta][iphi]->SetParameters(0.,0.,0.,0.,0.,0.);    
   }
