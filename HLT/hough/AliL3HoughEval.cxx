@@ -10,7 +10,6 @@
 #include <TFile.h>
 #endif
 #include "AliL3MemHandler.h"
-#include "GetGoodParticles.h"
 #include "AliL3TrackArray.h"
 #include "AliL3Logging.h"
 #include "AliL3HoughEval.h"

@@ -17,7 +17,6 @@
 #pragma link C++ class AliL3HoughIntMerger;
 #pragma link C++ class AliL3HoughGlobalMerger;
 #pragma link C++ class AliL3HoughDisplay;
-#pragma link C++ function GetGoodParticles(Int_t,Int_t,char *,char *);
 
 #endif
 

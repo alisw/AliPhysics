@@ -61,15 +61,8 @@ DICT = AliL3HoughCint.cxx
 DICTH = AliL3HoughCint.h
 DICTO = $(OBJDIR)/AliL3HoughCint.o
 
-ifeq ($(USEPACKAGE),ROOT) 
 HDRS = $(SRCS:.cxx=.h) AliL3HoughLinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
-endif
-
-ifeq ($(USEPACKAGE),ALIROOT)
-HDRS = $(SRCS:.cxx=.h) GetGoodParticles.h AliL3HoughLinkDef.h
-OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/GetGoodParticles.o $(DICTO)
-endif
 
 LEVELSO = $(LIBDIR)/libAliL3Hough.so
 
