@@ -788,7 +788,7 @@ void AliMC::SetTransPar(const char *filename)
 }
 
 //_______________________________________________________________________
-void AliMC::Browse(TBrowser *b) const
+void AliMC::Browse(TBrowser *b)
 {
   //
   // Called when the item "Run" is clicked on the left pane

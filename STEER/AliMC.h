@@ -69,7 +69,7 @@ public:
    virtual  void  SetDebug(Int_t level=0) {fDebug = level;}
    virtual  void  Init();
    virtual  void  SetTransPar(const char *filename="$(ALICE_ROOT)/data/galice.cuts");
-   virtual  void  Browse(TBrowser *b) const;
+   virtual  void  Browse(TBrowser *b);
    AliMCQA       *GetMCQA() const {return fMCQA;}
    //PH
    virtual  void  AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const;
