@@ -30,7 +30,7 @@
 //                         kGAMMA,kELECTRON etc.
 //
 //    User Case:
-//    root [0] AliPHOSAnalyzer * a = new AliPHOSAnalyzer("galice.root")
+//    root [0] AliPHOSAnalyze * a = new AliPHOSAnalyze("galice.root")
 //                    // set the file you want to analyse
 //    root [1] a->DrawRecon(1,3)
 //                    // plot RecObjects, made in event 1, PHOS module 3 
@@ -114,8 +114,8 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * fileName)
 {
   // ctor: analyze events from root file "name"
   ffileName = fileName ;
-  fCorrection = 1.2 ;  //Value calculated for default parameters of reconstruction  
- 
+  fCorrection = 1.05 ;  //Value calculated for default parameters of reconstruction  
+  fObjGetter = 0 ;  // should be instantiated
 }
 
 //____________________________________________________________________________
@@ -337,7 +337,49 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
   nbar->Draw("boxsame") ;
   
 }
+//____________________________________________________________________________
+void AliPHOSAnalyze::Ls(){
+  //lists branches and titles of PHOS-related branches of TreeR, TreeD, TreeS
+  
+  if(fObjGetter == 0)
+    fObjGetter = AliPHOSIndexToObject::GetInstance(ffileName.Data()) ;
 
+  Int_t ibranch;
+  TObjArray * branches; 
+  
+  branches = gAlice->TreeS()->GetListOfBranches() ;
+ 
+  cout << "TreeS: " << endl ;
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+    TBranch * branch=(TBranch *) branches->At(ibranch) ;
+    if(strstr(branch->GetName(),"PHOS") )
+      cout << "       " << branch->GetName() << "     " << branch->GetTitle() << endl ;
+  }
+  cout << endl ;
+ 
+  branches = gAlice->TreeD()->GetListOfBranches() ;
+  
+  cout << "TreeD: " << endl ;
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+    TBranch * branch=(TBranch *) branches->At(ibranch) ;
+    if(strstr(branch->GetName(),"PHOS") )
+      cout << "       " << branch->GetName() << "     " << branch->GetTitle() << endl ;
+  }
+  cout << endl ;
+  
+
+  branches = gAlice->TreeR()->GetListOfBranches() ;
+  
+  cout << "TreeR: " << endl ;
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+    TBranch * branch=(TBranch *) branches->At(ibranch) ;
+    if(strstr(branch->GetName(),"PHOS") )
+      cout << "       " << branch->GetName() << "     " << branch->GetTitle() << endl ;
+  }
+  cout << endl ;
+
+
+}
 //____________________________________________________________________________
  void AliPHOSAnalyze::InvariantMass(const char* branchTitle)    
 {

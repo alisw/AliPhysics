@@ -49,6 +49,8 @@ public:
 
   void Contamination(const char* RecPartTitle = "") ;      // Counts contamination of photon spectrum
 
+  void Ls() ; //Prints PHOS-related contents of TreeS, TreeD and TreeR
+
   void SetEnergyCorrection(const Float_t ecor){fCorrection = ecor ;} 
 
   AliPHOSAnalyze & operator = (const AliPHOSAnalyze & rvalue)  {
