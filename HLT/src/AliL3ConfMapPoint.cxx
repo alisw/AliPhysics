@@ -1,5 +1,7 @@
+// @(#) $Id$
+
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
-//*-- Copyright &copy ASV
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -9,10 +11,14 @@
 #include "AliL3Vertex.h"
 #include "AliL3ConfMapTrack.h"
 
+/**
+<pre>
 //_____________________________________________________________
 // AliL3ConfMapPoint
 //
 // Hit class for conformal mapper
+</pre
+*/
 
 ClassImp(AliL3ConfMapPoint)
 
@@ -56,9 +62,9 @@ Bool_t AliL3ConfMapPoint::ReadHits(AliL3SpacePointData* hits ){
   SetX(hits->fX);
   SetY(hits->fY);
   SetZ(hits->fZ);
-  SetXerr(sqrt(hits->fXYErr));
-  SetYerr(sqrt(hits->fXYErr));
-  SetZerr(sqrt(hits->fZErr));
+  SetXerr(sqrt(hits->fSigmaY2));
+  SetYerr(sqrt(hits->fSigmaY2));
+  SetZerr(sqrt(hits->fSigmaZ2));
   return kTRUE;
 }
 

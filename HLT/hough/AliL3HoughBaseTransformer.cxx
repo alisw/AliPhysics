@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -10,6 +10,7 @@
 #include "AliL3MemHandler.h"
 #include "AliL3DigitData.h"
 #include "AliL3Histogram.h"
+
 
 //_____________________________________________________________
 // AliL3HoughBaseTransformer
@@ -54,13 +55,13 @@ AliL3HoughBaseTransformer::~AliL3HoughBaseTransformer()
 {
 }
 
-void AliL3HoughBaseTransformer::Init(Int_t slice,Int_t patch,Int_t n_eta_segments)
+void AliL3HoughBaseTransformer::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t n_seqs)
 {
   fSlice = slice;
   fPatch = patch;
   fNEtaSegments = n_eta_segments;
   fEtaMin = 0;
-  fEtaMax = fSlice < 18 ? 0.9 : -0.9;
+  fEtaMax = fSlice < 18 ? 1. : -1.;
   fLowerThreshold = 3;
   fUpperThreshold = 1023;
 }

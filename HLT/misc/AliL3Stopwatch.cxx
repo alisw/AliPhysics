@@ -1,17 +1,7 @@
-// $Id$
-// Author: C. Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
+// @(#) $Id$
 
-
-/** \class AliL3Stopwatch
-//<pre>
-//----------------------------------------------------
-// AliL3Stopwatch
-//
-// Stopwatch class. This class returns the real and cpu time between   
-// the start and stop events (taken from Root)
-//</pre>
-*/
-
+// Author: C. Loizides <mailto:loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3Stopwatch.h"
 
@@ -22,6 +12,18 @@
 #if GCCVERSION == 3
 using namespace std;
 #endif
+
+
+/** \class AliL3Stopwatch
+<pre>
+//----------------------------------------------------
+// AliL3Stopwatch
+//
+// Stopwatch class. This class returns the real and cpu time between   
+// the start and stop events (taken from Root)
+</pre>
+*/
+
 
 ClassImp(AliL3Stopwatch)
 

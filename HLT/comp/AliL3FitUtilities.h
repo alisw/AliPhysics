@@ -1,9 +1,20 @@
+// @(#) $Id$
+
 #ifndef AliL3FitUtilities
 #define AliL3FitUtilities
 
-void   f2gauss5( double, double *, double *,double *,int );
+//This we do because this file is read both with c and c++ compiler, 
+//and extern "C" is needed only in case of c++.
+#ifdef __cplusplus
+extern "C" 
+#endif
+void f2gauss5( double, double *, double *,double *,int );
+
+#ifdef __cplusplus 
+extern "C" 
+#endif
 int lev_marq_fit( double x[], double y[], double sig[], int NPT, double a[], int ia[], double dev[], int MA,
-                  double *chisq_p, void (*funcs)(double, double [], double *, double [], int) );
+		  double *chisq_p, void (*funcs)(double, double [], double *, double [], int) );
 
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 #define min(x, y) (((x) < (y)) ? (x) : (y))

@@ -1,7 +1,7 @@
-// $Id$
+// @8#) $Id$
 
-// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-// changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 

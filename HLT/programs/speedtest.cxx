@@ -1,3 +1,5 @@
+// $Id$
+
 #include "speedtest.h"
 
 int main(int arg,char **arc){

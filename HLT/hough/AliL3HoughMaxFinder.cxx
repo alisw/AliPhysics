@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -96,6 +96,7 @@ void AliL3HoughMaxFinder::CreateNtuppel()
 #ifndef no_root
   //content#; neighbouring bins of the peak.
   fNtuppel = new TNtuple("ntuppel","Peak charateristics","kappa:phi0:weigth:content3:content5:content1:content7");
+  fNtuppel->SetDirectory(0);
 #endif  
 }
 
@@ -238,9 +239,12 @@ void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
   Int_t bin[9];
   Double_t value[9];
   
-  for(Int_t xbin=xmin+1; xbin<xmax-1; xbin++)
+  //Float_t max_kappa = 0.001;
+  //Float_t max_phi0 = 0.08;
+
+  for(Int_t xbin=xmin+1; xbin<=xmax-1; xbin++)
     {
-      for(Int_t ybin=ymin+1; ybin<ymax-1; ybin++)
+      for(Int_t ybin=ymin+1; ybin<=ymax-1; ybin++)
 	{
 	  bin[0] = fCurrentHisto->GetBin(xbin-1,ybin-1);
 	  bin[1] = fCurrentHisto->GetBin(xbin,ybin-1);
@@ -262,7 +266,6 @@ void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
 	  value[8] = fCurrentHisto->GetBinContent(bin[8]);
 	  
 	  
-	  
 	  if(value[4]>value[0] && value[4]>value[1] && value[4]>value[2]
 	     && value[4]>value[3] && value[4]>value[5] && value[4]>value[6]
 	     && value[4]>value[7] && value[4]>value[8])
@@ -277,33 +280,29 @@ void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
 		  cout<<"AliL3HoughMaxFinder::FindMaxima : Array out of range "<<fNPeaks<<endl;
 		  return;
 		}
-
-	      /*
+	      
 	      //Check the gradient:
-	      if(value[3]/value[4] > 1./grad_x || value[5]/value[4] < 1./grad_x ||
-		 value[1]/value[4] < 1./grad_y || value[7]/value[4] < 1./grad_y)
-		continue;
-	      */
-
-
+	      //if(value[1]/value[4] > grad_y || value[7]/value[4] > grad_y)
+	      //continue;
+	      
 	      fXPeaks[fNPeaks] = max_x;
 	      fYPeaks[fNPeaks] = max_y;
 	      fWeight[fNPeaks] = (Int_t)value[4];
 	      fNPeaks++;
-	      
+
 	      /*
 	      //Check if the peak is overlapping with a previous:
 	      Bool_t bigger = kFALSE;
-	      for(Int_t p=0; p<entries; p++)
-	      {
-	        if(fabs(max_x - xpeaks[p]) < kappa_overlap && fabs(max_y - ypeaks[p]) < phi_overlap)
-	      {
-	      bigger = kTRUE;
-		      if(value[4] > weight[p]) //this peak is bigger.
+	      for(Int_t p=0; p<fNPeaks; p++)
+	        {
+		  if(fabs(max_x - fXPeaks[p]) < max_kappa && fabs(max_y - fYPeaks[p]) < max_phi0)
+		    {
+		      bigger = kTRUE;
+		      if(value[4] > fWeight[p]) //this peak is bigger.
 			{
-			  xpeaks[p] = max_x;
-			  ypeaks[p] = max_y;
-			  weight[p] = (Int_t)value[4];
+		 	  fXPeaks[p] = max_x;
+			  fYPeaks[p] = max_y;
+			  fWeight[p] = (Int_t)value[4];
 			}
 		      else
 			continue; //previous peak is bigger.
@@ -311,15 +310,13 @@ void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
 		}
 	      if(!bigger) //there were no overlapping peaks.
 		{
-		xpeaks[entries] = max_x;
-		  ypeaks[entries] = max_y;
-		  weight[entries] = (Int_t)value[4];
-		  entries++;
+		  fXPeaks[fNPeaks] = max_x;
+		  fYPeaks[fNPeaks] = max_y;
+		  fWeight[fNPeaks] = (Int_t)value[4];
+		  fNPeaks++;
 		}
 	      */
 	    }
-	  else
-	    continue; //not a maxima
 	}
     }
   
@@ -630,11 +627,12 @@ void AliL3HoughMaxFinder::FindPeak1(Int_t y_window,Int_t x_bin_sides)
       printf("AliL3HoughMaxFinder::FindPeak1 : No input histogram\n");
       return;
     }  
+
   //Int_t y_window=2;
   //Int_t x_bin_sides=1;
   
   //Float_t max_kappa = 0.001;
-  //Float_t max_phi0 = 0.05;
+  //Float_t max_phi0 = 0.08;
   
   Int_t max_sum=0;
   
@@ -702,15 +700,19 @@ void AliL3HoughMaxFinder::FindPeak1(Int_t y_window,Int_t x_bin_sides)
 	  butt += fCurrentHisto->GetBinContent(bin);
 	}
       
-      if(butt < fThreshold)
-	continue;
+      //if(butt < fThreshold)
+      //	continue;
       
       fXPeaks[fNPeaks] = fCurrentHisto->GetBinCenterX(windowPt[i]->xbin);
       fYPeaks[fNPeaks] = top/butt;
       fWeight[fNPeaks] = (Int_t)butt;
       //cout<<"mean in y "<<ypeaks[n]<<" on x "<<windowPt[i]->xbin<<" content "<<butt<<endl;
       fNPeaks++;
-      if(fNPeaks==fNMax) break;
+      if(fNPeaks==fNMax) 
+	{
+	  cerr<<"AliL3HoughMaxFinder::FindPeak1 : Peak array out of range!!!"<<endl;
+	  break;
+	}
     }
 
   
@@ -750,17 +752,18 @@ void AliL3HoughMaxFinder::FindPeak1(Int_t y_window,Int_t x_bin_sides)
       fXPeaks[i] = top/butt;
       fYPeaks[i] = ytop/ybutt;
       fWeight[i] = w;
-      //cout<<"Setting weight "<<w<<" kappa "<<xpeaks[i]<<" phi0 "<<ypeaks[i]<<endl;
+      //cout<<"Setting weight "<<w<<" kappa "<<fXPeaks[i]<<" phi0 "<<fYPeaks[i]<<endl;
       
       /*
       //Check if this peak is overlapping with a previous:
-      for(Int_t p=0; p<i-1; p++)
+      for(Int_t p=0; p<i; p++)
 	{
-	  if(fabs(fXPeaks[p] - fXPeaks[i]) < max_kappa ||
+	  //cout<<fabs(fXPeaks[p] - fXPeaks[i])<<" "<<fabs(fYPeaks[p] - fYPeaks[i])<<endl;
+	  if(fabs(fXPeaks[p] - fXPeaks[i]) < max_kappa &&
 	     fabs(fYPeaks[p] - fYPeaks[i]) < max_phi0)
 	    {
 	      fWeight[i]=0;
-	      break;
+	      //break;
 	    }
 	}
       */

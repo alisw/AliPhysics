@@ -1,5 +1,10 @@
+// @(#) $Id$
+
 #ifndef ALIL3_Evaluate
 #define ALIL3_Evaluate
+
+
+class TClonesArray;
 
 #include <TObject.h>
 #include <TH1.h>
@@ -43,6 +48,7 @@ class AliL3Evaluate {
   AliL3SpacePointData *fClusters[36][6]; //!
   TTree *fDigitsTree;
   AliSimDigits *fDigits;
+  Char_t fPath[1024];
   Int_t fMinSlice;
   Int_t fMaxSlice;
   UInt_t fNcl[36][6];
@@ -78,20 +84,22 @@ class AliL3Evaluate {
   AliL3Evaluate();
   AliL3Evaluate(Char_t *path,Int_t min_clusters,Int_t minhits,Double_t minpt=0.1,Int_t *slice=0);
   virtual ~AliL3Evaluate();
-
+  
+  void LoadData(Int_t event=-1,Bool_t sp=kFALSE);
   void CreateHistos(Int_t nbin=20,Float_t xlow=0,Float_t xup=4);
   void Write2File(Char_t *outputfile);
   void FillEffHistos();
   void FillEffHistosNAIVE();
   void CalcEffHistos();
   void AssignIDs();
-  void GetGoodParticles(Char_t *particle_file,Bool_t sector=kFALSE);
+  void GetGoodParticles(Char_t *particle_file,Int_t event=-1,Int_t *padrowrange=0);
   void GetFastClusterIDs(Char_t *path);
-  void GetCFeff(Char_t *outfile);
+  void GetCFeff(Char_t *path,Char_t *outfile,Int_t nevent=0,Bool_t sp=kFALSE);
   Int_t GetMCTrackLabel(AliL3Track *track);
   TNtupleD *CalculateResiduals(Char_t *datapath);
-  TNtuple *EvaluatePoints(Char_t *path);
-  
+  void EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *tofile,Int_t nevent=1,Bool_t offline=kFALSE,Bool_t sp=kFALSE);
+  Float_t GetCrossingAngle(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz);
+  Int_t FindPrimaries(Int_t nparticles);
   void SetMinPoints(Int_t f) {fMinPointsOnTrack = f;}
   void SetMinGoodPt(Double_t f) {fMinGoodPt = f;}
   void SetMaxFalseClusters(Float_t f) {fMaxFalseClusters = f;}
@@ -103,7 +111,7 @@ class AliL3Evaluate {
   TH1F *GetFakeEffEta() {return fFakeTrackEffEta;}
   TH1F *GetFakeEffPt() {return fFakeTrackEffPt;}
   TH1F *GetPtRes() {return fPtRes;}
-
+  AliL3TrackArray *GetTracks() {return fTracks;}
   
   ClassDef(AliL3Evaluate,1) //Tracking evaluation class
 };

@@ -1,0 +1,30 @@
+#!/bin/bash
+###########
+# $Id$
+
+export ALIHLT_USEPACKAGE=ALIROOT
+#export ALIHLT_USEPACKAGE=ROOT
+#export ALIHLT_USEPACKAGE=STANDALONE
+
+export ALIHLT_BASEDIR=$HOME/work/
+export ALIHLT_TOPDIR=$ALIHLT_BASEDIR/level3code
+export ALIHLT_LIBDIR=$ALIHLT_TOPDIR/lib_$ALIHLT_USEPACKAGE
+
+export ALIHLT_NOLOGGING=true
+export ALIHLT_DOMC=true
+export ALIHLT_HAVEASV=false
+export ALIHLT_ALIDETECT=false
+
+#export ALIHLT_MLUCDIR=/usr/local/kip/MLUC
+
+#export ALIHLT_DATADIR=/mnt/local/alidata/head
+#export ALIHLT_TRANSFORMFILE=$ALIHLT_DATADIR/l3transform.config
+#export ALIHLT_GEOPATH=$ALIDATADIR
+
+
+if test -z "$LD_LIBRARY_PATH"; then
+  export LD_LIBRARY_PATH=$ALIHLT_MLUCDIR/lib:$ALIHLT_LIBDIR
+elif test -z "`echo $LD_LIBRARY_PATH | grep $ALIHLT_MLUCDIR/lib`"; 
+then
+  export LD_LIBRARY_PATH=$ALIHLT_MLUCDIR/lib:$ALIHLT_LIBDIR:$LD_LIBRARY_PATH 
+fi

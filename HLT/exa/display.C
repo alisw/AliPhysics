@@ -5,22 +5,17 @@
    Uses the AliL3Display class. 
 */
 
-void display(int minslice,int maxslice,char *file="tracks.raw",char *path="./",char *gfile="$(LEVEL3)/GEO/alice.geom")
+void display(Int_t minslice,Int_t maxslice,Char_t *file="tracks.raw",Char_t *path="./",Char_t *gfile="$(ALIGEOPATH)/alice.geom")
 {
-  AliL3Logger l;
-  //l.UnSet(AliL3Logger::kDebug);
-  //l.UnSet(AliL3Logger::kAll);
-  //l.Set(AliL3Logger::kInformational);
-  //l.UseStdout();
-  l.UseStream();
-
   gStyle->SetOptStat(0);
-  int slice[2] = {minslice,maxslice};
+  Int_t slice[2] = {minslice,maxslice};
 
-  a = new AliL3Display(slice,gfile);
-  a->Setup(file,path);
-  //a->Setup("/prog/alice/data/Rawdata/1_patch/pp/recon_6/tracks.raw","/prog/alice/data/Rawdata/1_patch/pp/recon_6/");
-
+  AliL3Display *a = new AliL3Display(slice,gfile);
+  //a->Setup(file,path);
+  a->Setup(file,path,0,kTRUE);
+  
+  
+  /* Choose one of the following */
   a->DisplayAll();
   //a->DisplayTracks();
   //a->DisplayClusters();
@@ -29,3 +24,23 @@ void display(int minslice,int maxslice,char *file="tracks.raw",char *path="./",c
 }
 
 
+void display_cl(Int_t ev=0,Char_t *path="./",Char_t *gfile="$(LEVEL3)/GEO/alice.geom")
+{
+  gStyle->SetOptStat(0);
+  Int_t slice[2] = {0,35};
+
+  Char_t file[1024];
+  sprintf(file,"%s/tracks_%d.raw",path,ev);
+
+  a = new AliL3Display(slice,gfile);
+  //a->Setup(file,path);
+  a->Setup(file,path,ev,kTRUE);
+  
+  
+  /* Choose one of the following */
+  a->DisplayAll();
+  //a->DisplayTracks();
+  //a->DisplayClusters();
+
+  //a->DisplayClusterRow(1,151,file,"colz");
+}

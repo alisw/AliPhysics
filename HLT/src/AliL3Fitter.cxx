@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group 
 
 #include "AliL3StandardIncludes.h"
 #include <math.h>
@@ -13,10 +13,15 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3MemHandler.h"
 #include "AliL3Transform.h"
+
+/** \class AliL3Fitter
+<pre>
 //_____________________________________________________________
 // AliL3Fitter
 //
 // Fit class HLT
+</pre>
+*/
 
 ClassImp(AliL3Fitter)
 
@@ -26,9 +31,22 @@ AliL3Fitter::AliL3Fitter(AliL3Vertex *vertex)
   fTrack=0;
   fVertex = vertex;
   fVertexConstraint=kTRUE;
+  memset(fClusters,0,36*6*sizeof(AliL3SpacePointData*));
 }
 
-void AliL3Fitter::LoadClusters(Char_t *path)
+AliL3Fitter::~AliL3Fitter()
+{
+  for(Int_t i=0; i<36; i++)
+    {
+      for(Int_t j=0; j<6; j++)
+	{
+	  if(fClusters[i][j])
+	    delete fClusters[i][j];
+	}
+    }
+}
+
+void AliL3Fitter::LoadClusters(Char_t *path,Int_t event,Bool_t sp)
 {
   Char_t fname[256];
   AliL3MemHandler *clusterfile[36][6];
@@ -36,8 +54,16 @@ void AliL3Fitter::LoadClusters(Char_t *path)
     {
       for(Int_t p=0; p<6; p++)
 	{
+	  Int_t patch;
+	  if(sp==kTRUE)
+	    patch=-1;
+	  else
+	    patch=p;
+	  if(fClusters[s][p])
+	    delete fClusters[s][p];
+	  fClusters[s][p] = 0;
 	  clusterfile[s][p] = new AliL3MemHandler();
-	  sprintf(fname,"%spoints_%d_%d.raw",path,s,p);
+	  sprintf(fname,"%s/points_%d_%d_%d.raw",path,event,s,patch);
 	  if(!clusterfile[s][p]->SetBinaryInput(fname))
 	    {
 	      delete clusterfile[s][p];
@@ -47,6 +73,8 @@ void AliL3Fitter::LoadClusters(Char_t *path)
 	  fClusters[s][p] = (AliL3SpacePointData*)clusterfile[s][p]->Allocate();
 	  clusterfile[s][p]->Binary2Memory(fNcl[s][p],fClusters[s][p]);
 	  clusterfile[s][p]->CloseBinaryInput();
+	  if(sp==kTRUE)
+	    break;
 	}
     }
 }
@@ -87,7 +115,6 @@ Int_t AliL3Fitter::FitCircle()
   
   //
   //     Loop over hits calculating average
-  
   Double_t fXYWeight[(fTrack->GetNHits())];
   UInt_t *hitnum = fTrack->GetHitNumbers();
   for(Int_t i=0; i<fTrack->GetNHits(); i++)
@@ -96,9 +123,8 @@ Int_t AliL3Fitter::FitCircle()
       Int_t slice = (id>>25) & 0x7f;
       Int_t patch = (id>>22) & 0x7;
       UInt_t pos = id&0x3fffff;
-      
       AliL3SpacePointData *points = fClusters[slice][patch];
-      fXYWeight[i] = 1./ (Double_t)(points[pos].fXYErr*points[pos].fXYErr + points[pos].fXYErr*points[pos].fXYErr);
+      fXYWeight[i] = 1./ (Double_t)(points[pos].fSigmaY2 + points[pos].fSigmaY2);
       wsum += fXYWeight[i];
       xav += fXYWeight[i]*points[pos].fX;
       yav += fXYWeight[i]*points[pos].fY;
@@ -120,7 +146,7 @@ Int_t AliL3Fitter::FitCircle()
   Double_t xyav  = 0.0 ; 
   Double_t yyav  = 0.0 ;
   Double_t xi, yi ;
-
+  
   for(Int_t i=0; i<fTrack->GetNHits(); i++)
     { 
       UInt_t id = hitnum[i];
@@ -128,6 +154,7 @@ Int_t AliL3Fitter::FitCircle()
       Int_t patch = (id>>22) & 0x7;
       UInt_t pos = id&0x3fffff;
       AliL3SpacePointData *points = fClusters[slice][patch];
+
       xi = points[pos].fX -xav;
       yi        = points[pos].fY - yav ;
       xxav     += xi * xi * fXYWeight[i];
@@ -312,13 +339,13 @@ Int_t AliL3Fitter::FitCircle()
      if (fabs(dlamda)<   dlamax) break ;
   }
 
-  Double_t chi2 = (Double_t)(chiscl * lamda) ;
+  //Double_t chi2 = (Double_t)(chiscl * lamda) ;
  
   //fTrack->SetChiSq1(chi2);
   // Double_t dchisq = chiscl * dlamda ;	     
-//
-//-->  NOW CALCULATE THE MATRIX ELEMENTS FOR ALPHA, BETA & KAPPA
-//
+  //
+  //-->  NOW CALCULATE THE MATRIX ELEMENTS FOR ALPHA, BETA & KAPPA
+  //
   Double_t h11   = xxav  -     lamda ;
   Double_t h14   = xrrav ;
   Double_t h22   = yyav  -     lamda ; 
@@ -410,7 +437,7 @@ Int_t AliL3Fitter::FitCircle()
   pt   = (Double_t)(AliL3Transform::GetBFact() * AliL3Transform::GetBField() * radius ) ;
   fTrack->SetPsi(psi);
   fTrack->SetPt(pt);
-  fTrack->SetFirstPoint(x0,y0,0);
+  //fTrack->SetFirstPoint(x0,y0,0);
   //
 //    Get errors from fast fit
 //
@@ -443,6 +470,7 @@ Int_t AliL3Fitter::FitLine ( )
   //Int_t num_of_hits = fTrack->GetNumberOfPoints();
 
   Double_t fS[(fTrack->GetNHits())];
+  Double_t *fZWeight = new Double_t[fTrack->GetNHits()];
   UInt_t *hitnum = fTrack->GetHitNumbers();
   if (fVertexConstraint==kTRUE)
     {
@@ -453,7 +481,7 @@ Int_t AliL3Fitter::FitLine ( )
       AliL3SpacePointData *points = fClusters[slice][patch];
       
       dx = points[pos].fX - fVertex->GetX();
-      dy = points[pos].fY - fVertex->GetY() ;
+      dy = points[pos].fY - fVertex->GetY();
     }
   else 
     {
@@ -494,6 +522,7 @@ Int_t AliL3Fitter::FitLine ( )
       UInt_t pos = id&0x3fffff;
       AliL3SpacePointData *points = fClusters[slice][patch];
       
+      fZWeight[i] = 1./(Double_t)(points[pos].fSigmaZ2);
       if(i>0)
 	{
 	  id = hitnum[i-1];
@@ -511,11 +540,11 @@ Int_t AliL3Fitter::FitLine ( )
       else
 	fS[i]=total_s;
       
-      sum += 1/(points[pos].fZErr*points[pos].fZErr);
-      ss  += 1/(points[pos].fZErr*points[pos].fZErr) * fS[i];
-      sz  += 1/(points[pos].fZErr*points[pos].fZErr)*points[pos].fZ;
-      sss += 1/(points[pos].fZErr*points[pos].fZErr)* fS[i] * fS[i];
-      ssz += 1/(points[pos].fZErr*points[pos].fZErr) * fS[i] * points[pos].fZ;
+      sum += fZWeight[i];
+      ss  += fZWeight[i] * fS[i];
+      sz  += fZWeight[i] * points[pos].fZ;
+      sss += fZWeight[i] * fS[i] * fS[i];
+      ssz += fZWeight[i] * fS[i] * points[pos].fZ;
       
     }
   
@@ -550,7 +579,7 @@ Int_t AliL3Fitter::FitLine ( )
       UInt_t pos = id&0x3fffff;
       AliL3SpacePointData *points = fClusters[slice][patch];
       r1   = points[pos].fZ - tanl * fS[i] - z0 ;
-      chi2 += (Double_t) ( (Double_t)(1/(points[pos].fZErr*points[pos].fZErr)) * (r1 * r1) );
+      chi2 += (Double_t) ( (Double_t)(fZWeight[i]) * (r1 * r1) );
     }
   
   //fTrack->SetChiSq2(chi2);
@@ -566,6 +595,6 @@ Int_t AliL3Fitter::FitLine ( )
   
   fTrack->SetTglerr(dtanl);
   fTrack->SetZ0err(dz0);
-  
+  delete [] fZWeight;
   return 0 ;
 } 

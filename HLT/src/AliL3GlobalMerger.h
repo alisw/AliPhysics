@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_GLOBALMERGER_H
 #define ALIL3_GLOBALMERGER_H
 

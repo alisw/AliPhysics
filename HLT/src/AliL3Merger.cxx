@@ -18,11 +18,15 @@
 #include <TFile.h>
 #endif
 
+/** \class AliL3Merger
+<pre>
 //_____________________________________________________________
 // AliL3Merger
 //
 // The L3 merger base class
 //
+</pre>
+*/
 
 ClassImp(AliL3Merger)
 

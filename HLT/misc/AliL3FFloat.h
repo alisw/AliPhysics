@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3FFLOAT_H
 #define ALIL3FFLOAT_H
 

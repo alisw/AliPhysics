@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 #include "AliL3Logging.h"
@@ -246,12 +246,17 @@ void AliL3Histogram::Draw(Char_t *option)
 #ifdef use_root
   if(!fRootHisto)
     CreateRootHisto();
-  for(Int_t bin=0; bin<fNcells; bin++)
+  
+  for(Int_t xbin=GetFirstXbin(); xbin<=GetLastXbin(); xbin++)
     {
-      fRootHisto->AddBinContent(bin,GetBinContent(bin));
+      for(Int_t ybin=GetFirstYbin(); ybin<=GetLastYbin(); ybin++)
+	{
+	  Int_t bin = GetBin(xbin,ybin);
+	  fRootHisto->Fill(GetBinCenterX(xbin),GetBinCenterY(ybin),GetBinContent(bin));
+	}
     }
   
-  fRootHisto->SetStats(kFALSE);
+  //fRootHisto->SetStats(kFALSE);
   fRootHisto->Draw(option);
   return;
 #endif

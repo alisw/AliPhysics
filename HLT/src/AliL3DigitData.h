@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef _DIGITDATA_H_
 #define _DIGITDATA_H_
 

@@ -1,18 +1,26 @@
 // $Id$
 
-// Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de
+// Author: Constantin Loizides <mailto: loizides@ikf.uni-frankfurt.de
 
 
-#include <stream.h>
-#include <libgen.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3RootTypes.h"
+#include "AliL3Logging.h"
 #include "AliL3Logger.h"
 #include "AliL3MemHandler.h"
 #include "AliL3AltroMemHandler.h"
 #include "AliL3DigitData.h"
 #include "AliL3Transform.h"
-#include "AliL3Logging.h"
-#include "AliL3Logger.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#else
+#include <stream.h>
+#endif
+
+#include <libgen.h>
+
 
 /**
    Example program how to open and read a raw datafile.
@@ -20,7 +28,7 @@
    digits in an Altro like data format. 
 */
 
-int main(int argc,char **argv)
+int main(Int_t argc,Char_t **argv)
 {
   Int_t slice=0;
   Int_t patch=0;
@@ -103,7 +111,7 @@ int main(int argc,char **argv)
 	  time = dataPt[ndig].fTime;
 	  charge = dataPt[ndig].fCharge;
 	  cout << "Padrow " << r << " pad " << (int)pad << " time " <<(int) time << " charge " << (int)charge << endl;
-	  //	  cout << "Padrow " << row << " pad " << (int)pad << " time " <<(int) time << " charge " << (int)charge << endl;
+	  //cout << "Padrow " << row << " pad " << (int)pad << " time " <<(int) time << " charge " << (int)charge << endl;
 	  if(altroout) altromem.Write(r,pad,time,charge);
 	}
       

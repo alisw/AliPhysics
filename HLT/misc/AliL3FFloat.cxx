@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Constantin Loizides <mailto:loizides@fi.uib.no>
-//*-- Copyright & copy CL
+//*-- Copyright & copy ALICE HLT Group
 
 #ifdef USEFFLOAT
 
@@ -20,7 +20,7 @@
 #include "AliL3FFloat.h"
 
 /** \class AliL3FFloat
-//<pre>
+<pre>
 //----------------------------------------------------
 // AliL3FFloat
 //
@@ -32,7 +32,7 @@
 // more it keeps the exact value in floating precision
 // and gathers some statistical information about 
 // its usage.
-//</pre>
+</pre>
 */
 
 ClassImp(AliL3FFloat)

@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -12,10 +12,14 @@
 #include "AliL3ConfMapPoint.h"
 #include "AliL3Transform.h"
 
+/** \class AliL3ConfMapFit
+<pre>
 //_____________________________________________________________
 // AliL3ConfMapFit
 //
 // Fit class for conformal mapping tracking
+</pre>
+*/
 
 ClassImp(AliL3ConfMapFit)
 

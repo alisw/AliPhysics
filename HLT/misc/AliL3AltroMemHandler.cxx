@@ -1,7 +1,7 @@
-// $Id$
+// @(#) $Id$
 
-// Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de>
-// *-- Copyright & copy CL
+// Author: Constantin Loizides <mailto: loizides@ikf.uni-frankfurt.de>
+// *-- Copyright & copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -9,14 +9,14 @@
 #include "AliL3Logging.h"
 
 /** \class AliL3AltroMemHandler
-//<pre>
+<pre>
 //--------------------------------------------------------------------
 // AliL3AltroMemHandler
 //
 // Converts digits in memory into a backlinked ALTRO like data format.
 // Its output file is used as input to the various VHDL testbenches.
 // The file misc/read.cxx shows how to use this class.
-//</pre>
+</pre>
 */
 
 ClassImp(AliL3AltroMemHandler)

@@ -15,7 +15,11 @@
 #include <AliL3MemHandler.h>
 #include <AliL3HoughTransformerVhdl.h>
 
-int main(int argc,char **argv)
+#if GCCVERSION == 3
+using namespace std;
+#endif
+
+int main(Int_t argc,Char_t **argv)
 {
   Int_t patch=0;
   Int_t slice=0;

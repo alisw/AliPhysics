@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ULI
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -14,11 +14,15 @@
 #include "AliL3Transform.h"
 #include "AliL3ConfMapPoint.h"
 
+/** \class AliL3TrackArray
+<pre>
 //_____________________________________________________________
 // AliL3TrackArray
 //
 // Track array class 
 //
+</pre>
+*/
 
 ClassImp(AliL3TrackArray)
 

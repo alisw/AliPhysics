@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group 
 
 #include "AliL3StandardIncludes.h"
 #include <TCanvas.h>
@@ -34,10 +34,14 @@
 using namespace std;
 #endif
 
+/** \class AliL3Display
+<pre>
 //_____________________________________________________________
 // AliL3Display
 //
 // Simple display class for the HLT tracks.
+</pre>
+*/
 
 ClassImp(AliL3Display)
 
@@ -72,19 +76,27 @@ AliL3Display::~AliL3Display()
     delete fTracks;
 }
 
-void AliL3Display::Setup(Char_t *trackfile,Char_t *path)
+void AliL3Display::Setup(Char_t *trackfile,Char_t *path,Int_t event,Bool_t sp)
 {
   //Read in the hit and track information from produced files.
   
-  AliL3Transform::Init(path);
   Char_t fname[256];
   AliL3MemHandler *clusterfile[36][6];
+  memset(fClusters,0,36*6*sizeof(AliL3SpacePointData*));
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
     {
-      for(Int_t p=0; p<6; p++)
+      for(Int_t p=0; p<AliL3Transform::GetNPatches(); p++)
 	{
+	  Int_t patch;
+	  if(sp==kTRUE)
+	    patch=-1;
+	  else
+	    patch=p;
 	  clusterfile[s][p] = new AliL3MemHandler();
-	  sprintf(fname,"%spoints_%d_%d.raw",path,s,p);
+	  if(event<0)
+	    sprintf(fname,"%s/points_%d_%d.raw",path,s,patch);
+	  else
+	    sprintf(fname,"%s/points_%d_%d_%d.raw",path,event,s,patch);
 	  if(!clusterfile[s][p]->SetBinaryInput(fname))
 	    {
 	      LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
@@ -96,10 +108,12 @@ void AliL3Display::Setup(Char_t *trackfile,Char_t *path)
 	  fClusters[s][p] = (AliL3SpacePointData*)clusterfile[s][p]->Allocate();
 	  clusterfile[s][p]->Binary2Memory(fNcl[s][p],fClusters[s][p]);
 	  clusterfile[s][p]->CloseBinaryInput();
+	  if(sp==kTRUE)
+	    break;
 	}
     }
   
-  
+  if(!trackfile) return;
   AliL3MemHandler *tfile = new AliL3MemHandler();
   if(!tfile->SetBinaryInput(trackfile))
     {
@@ -239,7 +253,7 @@ void AliL3Display::DisplayClusters(Bool_t x3don)
 	      xyz[0] = points[i].fX;
 	      xyz[1] = points[i].fY;
 	      xyz[2] = points[i].fZ;
-	      
+	      //AliL3Transform::Local2Global(xyz,s);
 	      pm->SetPoint(i,xyz[0],xyz[1],xyz[2]); 
 	      
 	    }
@@ -432,6 +446,7 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
 	  xyz[1] = points[i].fY;
 	  xyz[2] = points[i].fZ;
 	  AliL3Transform::Global2Raw(xyz,sector,row);
+	  //AliL3Transform::Local2Raw(xyz,sector,row);
 	  histfast->Fill(xyz[1],xyz[2],1);
 	  
 	  

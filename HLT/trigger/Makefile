@@ -1,0 +1,20 @@
+#$Id$
+##################################
+# Makefile for HLT Trigger code. #
+#                                #
+# Author: Anders Vestbo,         #                    
+#         Constantin Loizides    #
+##################################
+
+MODNAME = AliL3Trigger
+
+ifndef ALIHLT_TOPDIR
+TOPDIR = $(shell pwd)/..
+endif
+
+
+include $(ALIHLT_TOPDIR)/Makefile.conf
+
+SRCS	= AliD0toKpi.cxx
+
+include $(ALIHLT_TOPDIR)/Makefile.rules

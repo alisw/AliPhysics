@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_HOUGH_Track
 #define ALIL3_HOUGH_Track
 
@@ -24,8 +26,8 @@ class AliL3HoughTrack : public AliL3Track {
   
   virtual void Set(AliL3Track *track);
   virtual Int_t Compare(const AliL3Track *track) const;
-  virtual void CalculateHelix();
   
+  Bool_t IsHelix() {return fIsHelix;}
   void UpdateToFirstRow();
   void SetTrackParameters(Double_t kappa,Double_t eangle,Int_t weight);  
   void SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int_t *rowrange,Int_t ref_row);
@@ -37,8 +39,9 @@ class AliL3HoughTrack : public AliL3Track {
   Int_t GetEtaIndex() const {return fEtaIndex;}
   Double_t GetEta() const {return fEta;}
   Int_t GetSlice()  const {return fSlice;}
-  void GetLineCrossingPoint(Int_t padrow,Double_t *xy);
-
+  void GetLineCrossingPoint(Int_t padrow,Float_t *xy);
+  
+  void SetHelixTrue() {fIsHelix=kTRUE;}
   void SetSlice(Int_t slice) {fSlice=slice;}
   void SetEta(Double_t f);
   void SetWeight(Int_t i,Bool_t update=kFALSE) {if(update) fWeight+= i; else fWeight = i;}

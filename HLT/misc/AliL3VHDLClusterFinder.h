@@ -1,11 +1,9 @@
+// @(#) $Id$
+
 #ifndef AliL3_VHDLClusterFinder
 #define AliL3_VHDLClusterFinder
 
-#include "AliL3RootTypes.h"
-#include "AliL3Logging.h"
 #include "AliL3AltroMemHandler.h"
-
-//#define DEBUG
 
 struct VHDLClusterData
 {
@@ -58,7 +56,7 @@ class AliL3VHDLClusterFinder
   UInt_t fMinMerge;   //minimum number of merges for cluster
   Int_t fNClusters;   //number of found clusters
 
-#ifdef DEBUG
+#ifdef VHDLDEBUG
   FILE *fdeb; //!
 #endif
 

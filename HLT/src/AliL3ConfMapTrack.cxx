@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group 
 
 #include "AliL3StandardIncludes.h"
 
@@ -13,10 +13,14 @@
 #include "AliL3ConfMapTrack.h"
 #include "AliL3Transform.h"
 
+/** \class AliL3ConfMapTrack
+<pre>
 //_____________________________________________________________
 // AliL3ConfMapTrack
 //
 // Track class for conformal mapper
+</pre>
+*/
 
 ClassImp(AliL3ConfMapTrack)
 
@@ -171,6 +175,17 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
     {
       AliL3ConfMapFit *fit = new AliL3ConfMapFit(this,vertex);
       fit->FitHelix();
+      
+      AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)lastHit;
+      AliL3ConfMapPoint *fHit = (AliL3ConfMapPoint*)firstHit;
+      
+      //Z0 should not be overwritten here, since it is used as a starting
+      //point for the track swim in UpdateToFirstPoint. fFirstPointX and Y
+      //will be overwritten in UpdateToFirstPoint with the track fit 
+      //crossing point.
+      SetFirstPoint(lHit->GetX(),lHit->GetY(),GetZ0());
+      SetLastPoint(fHit->GetX(),fHit->GetY(),fHit->GetZ());
+      
       UpdateToFirstPoint();
       
       delete fit;
@@ -184,7 +199,7 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
 	"Track with pt<max_Dca :"<<GetPt()<<ENDLOG;
     }
 }
-
+/*
 void AliL3ConfMapTrack::UpdateToFirstPoint()
 {
   //Update track parameters to the innermost point on the track.
@@ -251,7 +266,7 @@ void AliL3ConfMapTrack::UpdateToFirstPoint()
   SetZ0(z);
   SetPsi(tPsi);
 }
-
+*/
 Int_t AliL3ConfMapTrack::GetMCLabel()
 {
   //For evaluation study.

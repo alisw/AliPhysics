@@ -1,5 +1,7 @@
+// @(#) $Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -57,7 +59,7 @@ void AliL3HoughGlobalMerger::Merge()
     {
       if(slice+1 == fNSlices) continue;
       AliL3TrackArray *t1 = fTracks[slice];
-      AliL3TrackArray *t2 = fTracks[slice+1];
+      //AliL3TrackArray *t2 = fTracks[slice+1];
       Float_t angle = AliL3Transform::Pi()/18;
       AliL3Transform::Local2GlobalAngle(&angle,slice);
       

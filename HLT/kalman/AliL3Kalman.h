@@ -1,0 +1,52 @@
+// @(#) $Id$
+
+#ifndef ALIL3_KALMAN
+#define ALIL3_KALMAN
+
+#include "AliL3RootTypes.h"
+#include "AliL3KalmanTrack.h"
+#include "AliL3Track.h"
+
+class AliL3SpacePointData;
+class AliL3TrackArray;
+class AliL3Benchmark;
+
+class AliL3Kalman {
+
+ private:
+
+  Int_t fMinSlice;
+  Int_t fMaxSlice;
+  AliL3SpacePointData *fClusters[36][6];
+  Char_t fPath[1024];
+  UInt_t fNcl[36][6];
+  AliL3TrackArray *fTracks;
+  AliL3TrackArray *fKalmanTracks;
+  AliL3TrackArray *fSeeds;
+
+  AliL3Benchmark *fBenchmark;
+  Int_t fMinPointsOnTrack;
+  Int_t fRow[6][2];
+  Char_t fWriteOutPath[256];
+  Bool_t fWriteOut;
+
+ public:
+
+  AliL3Kalman(Char_t *datapath, Int_t *slice=0, Int_t min_clusters=0);
+  virtual ~AliL3Kalman();
+  void Init();
+  void LoadTracks(Int_t event, Bool_t sp);
+  void ProcessTracks();
+  //Int_t MakeSeed(AliL3SpacePointData *points, UInt_t pos, AliL3KalmanTrack *kalmantrack);
+  Int_t MakeSeed(AliL3KalmanTrack *kalmantrack, AliL3Track *track);
+  //Int_t Propagate(AliL3SpacePointData *points, UInt_t pos, AliL3KalmanTrack *kalmantrack);
+  Int_t Propagate(AliL3KalmanTrack *kalmantrack, AliL3Track *track);
+  Int_t Update(AliL3SpacePointData *points, UInt_t pos, AliL3KalmanTrack *kalmantrack);
+  //Int_t Update(AliL3SpacePointData *points, UInt_t pos, UInt_t slice, UInt_t patch, AliL3KalmanTrack *kalmantrack);
+  void WriteKalmanTrack(AliL3KalmanTrack *kalmantrack);
+  void Dispay();
+  void WriteFiles(Char_t *path="./"){fWriteOut = kTRUE; sprintf(fWriteOutPath,"%s",path);}
+  Double_t GetCpuTime();
+};
+
+#endif

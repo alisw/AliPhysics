@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
-//*-- Copyright & copy CL
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -15,6 +15,8 @@
 #if GCCVERSION == 3
 using namespace std;
 #endif
+
+//#define FULLLUT
 
 //_____________________________________________________________
 // AliL3HoughTransformerLUT
@@ -44,6 +46,7 @@ AliL3HoughTransformerLUT::AliL3HoughTransformerLUT() : AliL3HoughBaseTransformer
   fLUTX=0;
   fLUTY=0;
   fLUTEta=0;
+  fLUTEtaReal=0;
   fLUTphi0=0;
   fLUT2sinphi0=0;
   fLUT2cosphi0=0;
@@ -51,6 +54,9 @@ AliL3HoughTransformerLUT::AliL3HoughTransformerLUT() : AliL3HoughBaseTransformer
   
   fLastPad=0;
   fLastIndex=0;
+  fAccCharge=0;
+
+  fDoMC = kFALSE;
 }
 
 AliL3HoughTransformerLUT::AliL3HoughTransformerLUT(Int_t slice,Int_t patch,Int_t n_eta_segments) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments)
@@ -72,6 +78,7 @@ AliL3HoughTransformerLUT::AliL3HoughTransformerLUT(Int_t slice,Int_t patch,Int_t
   fLUTX=0;
   fLUTY=0;
   fLUTEta=0;
+  fLUTEtaReal=0;
   fLUTphi0=0;
   fLUT2sinphi0=0;
   fLUT2cosphi0=0;
@@ -79,6 +86,8 @@ AliL3HoughTransformerLUT::AliL3HoughTransformerLUT(Int_t slice,Int_t patch,Int_t
 
   fLastPad=0;
   fLastIndex=0;
+  fAccCharge=0;
+  fDoMC=kFALSE;
 
   Init(slice,patch,n_eta_segments);
 }
@@ -86,20 +95,6 @@ AliL3HoughTransformerLUT::AliL3HoughTransformerLUT(Int_t slice,Int_t patch,Int_t
 AliL3HoughTransformerLUT::~AliL3HoughTransformerLUT()
 {
   DeleteHistograms();
-
-#ifdef do_mc
-#if 0
-  if(fTrackID)
-    {
-      for(Int_t i=0; i<fNEtas; i++)
-	{
-	  if(!fTrackID[i]) continue;
-	  delete fTrackID[i];
-	}
-      delete [] fTrackID;
-    }
-#endif
-#endif
 
   if(fNRows){
     delete[] fLUTX;
@@ -109,6 +104,7 @@ AliL3HoughTransformerLUT::~AliL3HoughTransformerLUT()
 
   if(fNEtas){
     delete[] fLUTEta;
+    delete[] fLUTEtaReal;
     fNEtas=0;
   }
 }
@@ -137,7 +133,7 @@ void AliL3HoughTransformerLUT::DeleteHistograms()
   }
 }
 
-void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments) 
+void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t n_seqs) 
 {
   AliL3HoughBaseTransformer::Init(slice,patch,n_eta_segments);
 
@@ -149,6 +145,7 @@ void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments
   }
   if(fNEtas){
     delete[] fLUTEta;
+    delete[] fLUTEtaReal;
     fNEtas=0;
   }
 
@@ -189,10 +186,12 @@ void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments
 
   //lookup tables for rz2s <=> etas
   fLUTEta=new Float_t[fNEtas];
+  fLUTEtaReal=new Float_t[fNEtas];
   for(Int_t rr=0;rr<fNEtas;rr++){
     Float_t eta=etamin_+(rr+1)*fEtaSlice;
     fLUTEta[rr]=CalcRoverZ2(eta);
-    //cout << rr << ": " << eta << " " << fLUTEta[rr] << " " << GetEta(rr,fSlice) << endl;
+    fLUTEtaReal[rr]=eta-0.5*fEtaSlice;
+    //cout << rr << ": " << eta << " " << fLUTEtaReal[rr] << " " << GetEta(rr,fSlice) << " - " << fLUTEta[rr] << endl;
   }
 }
 
@@ -223,22 +222,6 @@ void AliL3HoughTransformerLUT::CreateHistograms(Int_t nxbin,Double_t xmin,Double
       fParamSpace[i] = new AliL3Histogram(histname,"",nxbin,xmin,xmax,nybin,ymin,ymax);
     }
   
-#ifdef do_mc
-  if(fDoMC)
-    {
-      cerr << "Did not program changes in AliL3TransformerLUT for DO_MC!" << endl;
-      exit(1);
-#if 0
-      AliL3Histogram *hist = fParamSpace[0];
-      Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
-      cout<<"Allocating "<<fNEtas*ncells*sizeof(TrackIndex)<<" bytes to fTrackID"<<endl;
-      fTrackID = new TrackIndex*[fNEtas];
-      for(Int_t i=0; i<fNEtas; i++)
-	fTrackID[i] = new TrackIndex[ncells];
-#endif
-    }
-#endif
-
   //create lookup table for sin and cos
   fNPhi0=nybin+1;
 
@@ -271,27 +254,21 @@ void AliL3HoughTransformerLUT::Reset()
   
   for(Int_t i=0; i<fNEtas; i++)
     fParamSpace[i]->Reset();
-#ifdef do_mc
-  if(fDoMC)
-    {
-      cerr << "Did not program changes in AliL3TransformerLUT for DO_MC!" << endl;
-      exit(1);
-#if 0
-      AliL3Histogram *hist = fParamSpace[0];
-      Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
-      for(Int_t i=0; i<fNEtas; i++)
-	memset(fTrackID[i],0,ncells*sizeof(TrackIndex));
-#endif
-    }
-#endif
 }
 
 Int_t AliL3HoughTransformerLUT::GetEtaIndex(Double_t eta)
 {
   //Return the histogram index of the corresponding eta. 
   
+#ifdef FULLLUT 
+  /* try to imitate a circuit -> should 
+     go into the VHDL implementation of transformer */
   Float_t rz2=CalcRoverZ2(eta);
   return FindIndex(rz2);
+#else /* optimize for speed on the computer */
+  Double_t index = (eta-GetEtaMin())/fEtaSlice;
+  return (Int_t)index;
+#endif
 }
 
 Int_t AliL3HoughTransformerLUT::FindIndex(Float_t rz2, Int_t start)
@@ -310,7 +287,8 @@ Int_t AliL3HoughTransformerLUT::FindIndex(Float_t rz2, Int_t start)
     }
     index++;
   }
-  //cout << start << " - " << index << ": " << rz2 << " " << fLUTEta[index] << endl;
+  //cout << start << " - " << index << " " << ": " << rz2 << " " << fLUTEta[index] << endl;
+
   return index;
 }
 
@@ -369,7 +347,27 @@ Double_t AliL3HoughTransformerLUT::GetEta(Int_t eta_index,Int_t slice)
     return 0.;
   }
 
-  return (CalcEta(fLUTEta[eta_index])-0.5*fEtaSlice);
+  //return (CalcEta(fLUTEta[eta_index])-0.5*fEtaSlice);
+  return(fLUTEtaReal[eta_index]);
+}
+
+void AliL3HoughTransformerLUT::AddCurveToHistogram(Int_t new_eta_index)
+{
+  //Get the correct histogrampointer:
+  AliL3Histogram *hist = fParamSpace[fLastIndex];
+  if(!hist){
+    //LOG(AliL3Log::kWarning,"AliL3HoughTransformerLUT::TransformCircle","Histograms")<<"Error getting histogram in index "<<fLastIndex<<"."<<ENDLOG;
+    return;
+  }
+
+  //Fill the histogram along the phirange
+  for(Int_t b=0; b<fNPhi0; b++){
+    hist->Fill(fLUTKappa[b],fLUTphi0[b],fAccCharge);
+    //cout << kappa << " " << fLUTphi0[b] << " " << fAccCharge << endl;
+  }
+
+  fAccCharge=0;
+  fLastIndex=new_eta_index;
 }
 
 void AliL3HoughTransformerLUT::TransformCircle()
@@ -413,6 +411,12 @@ void AliL3HoughTransformerLUT::TransformCircle()
       //start a new row
       fLastPad=-1;
 
+      if(fAccCharge>0) cerr << "Big error " << endl;
+
+      //accumulate charge per histogram
+      fAccCharge=0;
+      fLastIndex=-1;
+
       //Loop over the data on this padrow:
       for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	{
@@ -426,108 +430,89 @@ void AliL3HoughTransformerLUT::TransformCircle()
 	  UShort_t time = digPt[j].fTime;
 
 	  if(fLastPad!=pad){ //only update if necessary
-	    fLastIndex=fNEtas-1;   
-  
-	    //calculate hough for this pad
+
+	    //if there is accumalated charge, put it in the right histogram
+	    if(fAccCharge>0) AddCurveToHistogram(-1);
+
+#ifdef FULLLUT
+	    fLastIndex=fNEtas-1;
+#endif
+
+	    //calculate hough for the new pad
 	    Float_t y = CalcY(pad,row);
 	    Float_t y2 = y*y;
 	    r2 = x2 + y2;
-	    Float_t R2 = 1. / r2;
-	    for(Int_t b=0; b<fNPhi0; b++)
-	      fLUTKappa[b]=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
+	    Float_t xr2=x/r2;
+	    Float_t yr2=y/r2;
 
+	    //AliL3Histogram *hist = fParamSpace[0];
+	    //Int_t bb=hist->GetFirstYbin();
+	    //if(fNPhi0-1!=hist->GetLastYbin()) cerr << "should not be" << endl;
+	    for(Int_t b=0; b<fNPhi0; b++){
+	      fLUTKappa[b]=(yr2*fLUT2cosphi0[b]-xr2*fLUT2sinphi0[b]);
+
+	      //Float_t phi=atan2(y,x);
+	      //Float_t phi0 = hist->GetBinCenterY(bb);
+	      //Float_t R=sqrt(r2);
+	      //Float_t kappa = 2*sin(phi - phi0)/R;
+	      //cout << fLUTKappa[b] << " " << kappa << endl;
+	      //bb++;
+	      //Int_t bina=hist->FindBin(fLUTphi0[b],fLUTKappa[b]);
+	      //Int_t binb=hist->FindBin(phi0,kappa);
+	      //if(bina!=binb) cout << bina << " " << binb << endl;
+	    }
+	    
 	    fLastPad=pad;
 	  }
 
 	  //find eta slice
 	  Float_t z = CalcZ(time);
 	  Float_t z2=z*z;
+
+#ifdef FULLLUT
 	  Float_t rz2 = 1 + r2/z2;
 	  Int_t eta_index = FindIndex(rz2,fLastIndex);
-	  //cout << row << " " << (int)pad << " " << (int)time << " " << eta_index <<" " <<fLastIndex<< endl;
+#else
+	  Double_t r = sqrt(r2+z2);
+	  Double_t etaval = 0.5 * log((r+z)/(r-z));
+	  Int_t eta_index = GetEtaIndex(etaval);
+#endif
+	  //cout << row << " " << (int)pad << " " << (int)time << " " << eta_index << " " << fLastIndex << endl;
 	  if(eta_index < 0 || eta_index >= fNEtas){
 	    //LOG(AliL3Log::kWarning,"AliL3HoughTransformerLUT::TransformCircle","Histograms")<<"No histograms corresponding to eta index value of "<<eta_index<<"."<<ENDLOG;
 	    continue;
 	  }	  
-	  //Get the correct histogrampointer:
-	  AliL3Histogram *hist = fParamSpace[eta_index];
-	  if(!hist){
-	    //LOG(AliL3Log::kWarning,"AliL3HoughTransformerLUT::TransformCircle","Histograms")<<"Error getting histogram in index "<<eta_index<<"."<<ENDLOG;
-	    continue;
-	  }
-	  fLastIndex=eta_index;
 
-	  //Fill the histogram along the phirange
-	  for(Int_t b=0; b<fNPhi0; b++){
-	    hist->Fill(fLUTKappa[b],fLUTphi0[b],charge);
-	    //hist->Fill(fLUTKappa[b],fLUTphi0[b],1);
-	    //cout << kappa << " " << fLUTphi0[b] << " " << charge << endl;
+#ifndef FULLLUT
+	  if(fLastIndex==-1) fLastIndex=eta_index;
+#endif
 
-#ifdef do_mcc
-	    if(fDoMC)
-	      {
-		cerr << "Did not program changes in AliL3TransformerLUT for DO_MC!" << endl;
-		exit(1);
-#if 0
-		Int_t bin = hist->FindBin(kappa,phi0);
-		for(Int_t t=0; t<3; t++)
-		  {
-		    Int_t label = digPt[j].fTrackID[t];
-		    if(label < 0) break;
-		    UInt_t c;
-		    for(c=0; c<MaxTrack; c++)
-		      if(fTrackID[eta_index][bin].fLabel[c] == label || fTrackID[eta_index][bin].fNHits[c] == 0)
-			break;
-		    if(c == MaxTrack-1) LOG(AliL3Log::kError,"AliL3HoughTransformerLUT::TransformCircle","MCData") <<"Array reached maximum!! "<<c<<endl;
-		    fTrackID[eta_index][bin].fLabel[c] = label;
-		    fTrackID[eta_index][bin].fNHits[c]++;
-		  }
-#endif
-	      }
-#endif
+	  if(fLastIndex!=eta_index){
+	    AddCurveToHistogram(eta_index);
 	  }
+
+	  fAccCharge+=charge;
+	  //fAccCharge+=1;
 	}
+
+      //in case there is charge, store it before moving to the next row
+      if(fAccCharge>0) AddCurveToHistogram(-1);
       
       //Move the data pointer to the next padrow:
       AliL3MemHandler::UpdateRowPointer(tempPt);
     }
+
+      if(fAccCharge>0) cerr << "Big error " << endl;
 }
 
 Int_t AliL3HoughTransformerLUT::GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi)
 {
-  if(!fDoMC)
+  if(fDoMC)
     {
-      cerr<<"AliL3HoughTransformer::GetTrackID : Flag switched off"<<endl;
+      cerr<<"AliL3HoughTransformerLUT does not provide MC information..."<<endl;
       return -1;
     }
   
-#ifdef do_mcc
-  cerr << "Did not program changes in AliL3TransformerLUT for DO_MC!" << endl;
-  exit(1);
-#if 0
-  if(eta_index < 0 || eta_index > fNEtas)
-    {
-      cerr<<"AliL3HoughTransformer::GetTrackID : Wrong etaindex "<<eta_index<<endl;
-      return -1;
-    }
-  AliL3Histogram *hist = fParamSpace[eta_index];
-  Int_t bin = hist->FindBin(kappa,psi);
-  Int_t label=-1;
-  Int_t max=0;
-  for(UInt_t i=0; i<MaxTrack; i++)
-    {
-      Int_t nhits=fTrackID[eta_index][bin].fNHits[i];
-      if(nhits == 0) break;
-      if(nhits > max)
-	{
-	  max = nhits;
-	  label = fTrackID[eta_index][bin].fLabel[i];
-	}
-    }
-  return label;
-#endif
-#endif
-  cout<<"AliL3HoughTransformer::GetTrackID : Compile with do_mc flag!"<<endl;
   return -1;
 }
 
@@ -555,6 +540,8 @@ void AliL3HoughTransformerLUT::Print()
   if(!fNEtas) return;
   cout << "fLUTEta " << fNEtas << endl;
   for(Int_t i=0;i<fNEtas;i++) cout << "fLUTEta[" << i << "]=" << fLUTEta[i] << endl;
+  cout << "fLUTEtaReal " << fNEtas << endl;
+  for(Int_t i=0;i<fNEtas;i++) cout << "fLUTEtaReal[" << i << "]=" << fLUTEtaReal[i] << endl;
   if(!fNPhi0) return;
   cout << "fLUTphi0 " << fNPhi0 << endl;
   for(Int_t i=0;i<fNPhi0;i++) cout << "fLUTPhi0[" << i << "]=" << fLUTphi0[i] << endl;

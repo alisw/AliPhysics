@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy Uli 
+//*-- Copyright &copy ALICE HLT Group 
 
 #include "AliL3StandardIncludes.h"
 
@@ -11,11 +11,15 @@
 #include "AliL3Transform.h"
 #include "AliL3TrackArray.h"
 
+/** \class AliL3GlobalMerger
+<pre>
 //_____________________________________________________________
 // AliL3GlobalMerger
 //
 // The L3 Slice merger
 //
+</pre>
+*/
 
 ClassImp(AliL3GlobalMerger)
 
@@ -166,8 +170,8 @@ void AliL3GlobalMerger::SlowMerge(){
 	  MultiMerge(tout,track,2); 
         track0->CalculateReferencePoint(angle);
         track1->CalculateReferencePoint(angle);
-	PrintDiff(track0,track1);
-        //FillNtuple(ntuple,track0,track1);
+	//PrintDiff(track0,track1);
+        FillNtuple(ntuple,track0,track1);
         ttt0->Remove(min0);
         ttt1->Remove(min1);
 	

@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifdef __CINT__
  
 #pragma link off all globals;
@@ -25,10 +27,15 @@
 #pragma link C++ class AliL3TrackArray;
 #pragma link C++ class AliL3Logger;
 #pragma link C++ class AliL3MemHandler;
-#pragma link C++ class AliL3FileHandler;
-#pragma link C++ class AliL3Evaluate; 
 #pragma link C++ class AliL3Display; 
 #pragma link C++ class AliL3ClustFinderNew;
+#pragma link C++ class AliL3Fitter;
+#pragma link C++ class AliL3RawDataFileHandler;
+
+#ifdef use_aliroot
+#pragma link C++ class AliL3FileHandler;
+#pragma link C++ class AliL3Evaluate; 
+#endif
 
 #endif
 

@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_HOUGHCLUSTERTRANSFORMER
 #define ALIL3_HOUGHCLUSTERTRANSFORMER
 
@@ -33,8 +35,8 @@ class AliL3HoughClusterTransformer : public AliL3HoughBaseTransformer {
   void FindClusters();
   void Reset();
   void TransformCircle();
-  void TransformCircleC(Int_t row_range);
-  void TransformLine(){};
+  void TransformCircleC(Int_t *row_range,Int_t every);
+  void TransformLine(Int_t *rowrange=0,Float_t *phirange=0){};
   
   Int_t GetEtaIndex(Double_t eta);
   AliL3Histogram *GetHistogram(Int_t eta_index);

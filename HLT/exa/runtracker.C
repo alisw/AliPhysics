@@ -1,39 +1,44 @@
 // $Id$
 
 /**
-   Run this macro for cluster finder and track follower (see steering class
-   AliLevel3. 
+   Run this macro for cluster finder and track follower 
+   (see steering class AliLevel3).
+   In argument path, you have to provide the path to where the directory where the data files
+   should be located. In case of reading from a rootfile, you have to
+   make a symbolic link "digitfile.root" which points to the rootfile containing AliROOT 
+   digits tree.
 */
 
-void runtracker(int minslice,int maxslice,char* path=0,char *rootfile=0,int nevent=1)
+void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t nevent=1,Char_t *opath="./")
 {
-  AliL3Logger l;
-  l.Set(AliL3Logger::kAll);
-  l.UseStdout();
-  //l.UseStream();
-
-  char path_to_use[1024];
-  if(!path) 
-    //strcpy(path_to_use,"/usr/local/anders/data/hg_42105_s1-3/");
-    strcpy(path_to_use,"/tmp/data/new/hijing/bfact1/1000/rawdata/");
-  else strcpy(path_to_use,path);
+  //Set your configuration here:
+  Bool_t binary=kFALSE; //Assume input is RLE binary files, or rootfile.
+  Bool_t pileup=kFALSE; //Assume input is pileup event = non RLE binary files.
+  Int_t npatches = 1;   //Options; 1, 2 and 6.
+  Char_t trackparams[] = "SetTrackingParameters_pp.C"; //Set this to correspond with mult. and BField
   
-  AliL3Transform::Init(path_to_use);  
-
-  Int_t phi_segments,eta_segments,trackletlength,tracklength;
-  Int_t rowscopetracklet,rowscopetrack;
-  Double_t min_pt_fit,maxangle,goodDist,hitChi2Cut;
-  Double_t goodHitChi2,trackChi2Cut,maxphi,maxeta;
-
+  AliL3Transform::Init(path,!binary);
+  
   for(Int_t ev=0; ev<nevent; ev++)
     {
-      if(!rootfile)
+      if(binary)
 	a = new AliLevel3();
-      else
-	a = new AliLevel3(rootfile);
+      else 
+	{
+	  Char_t fname[1024];
+	  sprintf(fname,"%s/digitfile.root",path);
+	  a = new AliLevel3(fname);
+	}
+      
+      a->Init(path,binary,npatches);
+      
+      if(pileup)
+	a->DoPileup();
+      
+      gROOT->LoadMacro(trackparams);
+      SetTrackingParameters(a);
 
-      a->Init(path_to_use);
-
+#if 0 /* little comments */
       phi_segments = 50;   //devide the space into phi_segments and eta_segments
       eta_segments = 100;  //to access the search of points to that area!
       trackletlength = 3;  //number of hits a tracklet has to have
@@ -48,17 +53,13 @@ void runtracker(int minslice,int maxslice,char* path=0,char *rootfile=0,int neve
       hitChi2Cut = 100;    //maximum chi2 of added hit to track
       goodHitChi2 = 20;    //stop looking for next hit to add if chi2 is less than goodHitChi2
       trackChi2Cut = 50;   //maximum chi2 for track after final fit
-       
-      //main vertex tracking parameters:
-      a->SetTrackerParam(phi_segments,eta_segments,trackletlength,tracklength,
-			 rowscopetracklet,rowscopetrack,
-			 min_pt_fit,maxangle,goodDist,hitChi2Cut,
-			 goodHitChi2,trackChi2Cut,50,maxphi,maxeta,kTRUE);
+#endif
+
 
       //a->DoRoi();    /*do region of interest*/
       //a->DoMc();     /*do monte carlo identification*/
-      a->WriteFiles(); /*enable output*/
-
+      a->WriteFiles(opath); /*enable output*/
+      
       a->ProcessEvent(minslice,maxslice);
       //a->DoBench("benchmark_0");
 

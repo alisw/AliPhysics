@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_HISTOGRAMADAPTIVE
 #define ALIL3_HISTOGRAMADAPTIVE
 

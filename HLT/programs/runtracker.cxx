@@ -3,9 +3,8 @@
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
 //*-- Copyright &copy ASV
 
-#include <stream.h>
-#include <string.h>
-#include <stdlib.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3RootTypes.h"
 #include "AliLevel3.h"
 
@@ -13,9 +12,13 @@
 
 #if GCCVERSION == 3
 using namespace std;
+#else
+#include <stream.h>
+#include <string.h>
+#include <stdlib.h>
 #endif
 
-int main(int argc,char **argv)
+int main(Int_t argc,Char_t **argv)
 {
   
   if(argc != 4)

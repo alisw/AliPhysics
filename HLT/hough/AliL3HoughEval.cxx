@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -86,7 +86,7 @@ void AliL3HoughEval::GenerateLUT()
   
 }
 
-Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crossed,Bool_t remove)
+Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crossed,Int_t *rowrange,Bool_t remove)
 {
   //Look at rawdata along the road specified by the track candidates.
   //If track is good, return true, if not return false.
@@ -97,13 +97,24 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
   Float_t xyz[3];
   
   Int_t total_charge=0;//total charge along the road
-    
-  for(Int_t padrow = AliL3Transform::GetFirstRow(fPatch); padrow <= AliL3Transform::GetLastRow(fPatch); padrow++)
+  
+  //for(Int_t padrow = AliL3Transform::GetFirstRow(fPatch); padrow <= AliL3Transform::GetLastRow(fPatch); padrow++)
+  for(Int_t padrow = rowrange[0]; padrow<=rowrange[1]; padrow++)
     {
       Int_t prow = padrow - AliL3Transform::GetFirstRow(fPatch);
-      if(!track->GetCrossingPoint(padrow,xyz))  
+      if(track->IsHelix())
 	{
-	  continue;
+	  if(!track->GetCrossingPoint(padrow,xyz))  
+	    {
+	      continue;
+	    }
+	}
+      else
+	{
+	  track->GetLineCrossingPoint(padrow,xyz);
+	  xyz[0] += AliL3Transform::Row2X(track->GetFirstRow());
+	  Float_t R = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+	  xyz[2] = R*track->GetTgl();
 	}
       
       AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);
@@ -125,7 +136,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
 	  AliL3DigitData *digPt = tempPt->fDigitData;
 	  for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	    {
-	      UChar_t pad = digPt[j].fPad;
+	      Int_t pad = digPt[j].fPad;
 	      Int_t charge = digPt[j].fCharge;
 	      if(charge <= fHoughTransformer->GetLowerThreshold()) continue;
 	      if(pad < p) continue;
@@ -136,7 +147,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
 	      if(pixel_index != track->GetEtaIndex()) continue;
 	      total_charge += digPt[j].fCharge;
 	      if(remove)
-		digPt[j].fCharge = 0; //Erase the track from image
+		digPt[j].fCharge = 0; //Erease the track from image
 	      npixs++;
 	    }
 	}
@@ -151,12 +162,12 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
   
   nrows_crossed += nrow; //Update the number of rows crossed.
   
-  if(nrow >= AliL3Transform::GetNRows(fPatch) - fNumOfRowsToMiss)//this was a good track
+  if(nrow >= rowrange[1]-rowrange[0]+1 - fNumOfRowsToMiss)//this was a good track
     {
       if(fRemoveFoundTracks)
 	{
 	  Int_t dummy=0;
-	  LookInsideRoad(track,dummy,kTRUE);
+	  LookInsideRoad(track,dummy,rowrange,kTRUE);
 	}
       return kTRUE;
     }

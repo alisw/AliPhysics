@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_HOUGH_Eval
 #define ALIL3_HOUGH_Eval
 
@@ -37,7 +39,7 @@ class AliL3HoughEval {
   void InitTransformer(AliL3HoughBaseTransformer *transformer);
   void GenerateLUT();
   void DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist);
-  Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crossed,Bool_t remove=kFALSE);
+  Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crossed,Int_t *rowrange,Bool_t remove=kFALSE);
 #ifdef use_root
   void CompareMC(AliL3TrackArray *tracks,Char_t *goodtracks="good_tracks",Int_t treshold=0);
 #endif
@@ -50,6 +52,7 @@ class AliL3HoughEval {
   void RemoveFoundTracks() {fRemoveFoundTracks = kTRUE;}
   void SetNumOfRowsToMiss(Int_t i) {fNumOfRowsToMiss = i;}
   void SetNumOfPadsToLook(Int_t i) {fNumOfPadsToLook = i;}
+  void SetSlice(Int_t i) {fSlice=i;}
 
   ClassDef(AliL3HoughEval,1) //Hough transform verfication class
 

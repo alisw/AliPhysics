@@ -1,5 +1,7 @@
+// @(#) $Id$
+
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy Uli
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -7,12 +9,15 @@
 #include "AliL3Logging.h"
 #include "AliL3Vertex.h"
 
+/** \class AliL3Vertex
+<pre>
 //_____________________________________________________________
 // AliL3Vertex
 //
 // Stores the information of the vertex position
 //
-
+</pre>
+*/
 
 ClassImp(AliL3Vertex)
 AliL3Vertex::AliL3Vertex(){

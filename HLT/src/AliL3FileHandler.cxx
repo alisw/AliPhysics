@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>
-//*-- Copyright &copy Uli 
+//*-- Copyright &copy ALICE HLT Group 
 
 #include "AliL3StandardIncludes.h"
 #include <TClonesArray.h>
@@ -22,7 +22,12 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3TrackArray.h"
 
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
+/** \class AliL3FileHandler
+<pre>
 //_____________________________________________________________
 // AliL3FileHandler
 //
@@ -56,6 +61,8 @@
 // file.Init(slice,patch,NumberOfRowsInPatch);
 // file.AliDigits2RootFile(dataPt,"new_galice.root");
 // file.CloseAliInput();
+</pre>
+*/
 
 ClassImp(AliL3FileHandler)
 
@@ -90,9 +97,10 @@ void AliL3FileHandler::FreeDigitsTree()
   fDigits=0;
   fDigitsTree->Delete();
   fDigitsTree=0;
+  fLastIndex=0;
 }
 
-Bool_t AliL3FileHandler::SetMCOutput(char *name)
+Bool_t AliL3FileHandler::SetMCOutput(Char_t *name)
 {
   fMC = fopen(name,"w");
   if(!fMC){
@@ -141,7 +149,7 @@ Bool_t AliL3FileHandler::SetAliInput()
   return kTRUE;
 }
 
-Bool_t AliL3FileHandler::SetAliInput(char *name)
+Bool_t AliL3FileHandler::SetAliInput(Char_t *name)
 {
   //Open the AliROOT file with name.
   
@@ -206,11 +214,15 @@ Bool_t AliL3FileHandler::IsDigit(Int_t event)
 }
 
 ///////////////////////////////////////// Digit IO  
-Bool_t AliL3FileHandler::AliDigits2Binary(Int_t event)
+Bool_t AliL3FileHandler::AliDigits2Binary(Int_t event,Bool_t altro)
 {
   Bool_t out = kTRUE;
   UInt_t nrow;
-  AliL3DigitRowData* data = AliDigits2Memory(nrow,event);
+  AliL3DigitRowData* data = 0;
+  if(altro)
+    data = AliAltroDigits2Memory(nrow,event);
+  else
+    data = AliDigits2Memory(nrow,event);
   out = Memory2Binary(nrow,data);
   Free();
   return out;
@@ -253,7 +265,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   }
   
   if(!fDigitsTree)
-    GetDigitsTree(event);
+    if(!GetDigitsTree(event)) return 0;
   
   UShort_t dig;
   Int_t time,pad,sector,row;
@@ -274,7 +286,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
       if(lslice != fSlice) break;
       if(lrow < fRowMin) continue;
       if(lrow > fRowMax) break;
-
+      
       ndigits[lrow] = 0;
       fDigits->First();
       do {
@@ -366,7 +378,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   return data;
 }
 
-AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t event)
+AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t event,Bool_t eventmerge)
 {
   //Read data from AliROOT file into memory, and store it in the HLT data format.
   //Returns a pointer to the data.
@@ -387,9 +399,16 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
     <<"No Input avalible: TFile not opened"<<ENDLOG;
     return 0;
   }
+  if(eventmerge == kTRUE && event >= 1024)
+    {
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliAltroDigits2Memory","TrackIDs")
+	<<"Too many events if you want to merge!!"<<ENDLOG;
+      return 0;
+    }
+  
   
   if(!fDigitsTree)
-    GetDigitsTree(event);
+    if(!GetDigitsTree(event)) return 0;
   
   UShort_t dig;
   Int_t time,pad,sector,row;
@@ -664,9 +683,18 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
 	      tempPt->fDigitData[localcount].fPad=pad;
 	      tempPt->fDigitData[localcount].fTime=time;
 #ifdef do_mc
-	      tempPt->fDigitData[localcount].fTrackID[0] = fDigits->GetTrackIDFast(time,pad,0)-2;
-	      tempPt->fDigitData[localcount].fTrackID[1] = fDigits->GetTrackIDFast(time,pad,1)-2;
-	      tempPt->fDigitData[localcount].fTrackID[2] = fDigits->GetTrackIDFast(time,pad,2)-2;
+	      tempPt->fDigitData[localcount].fTrackID[0] = (fDigits->GetTrackIDFast(time,pad,0)-2);
+	      tempPt->fDigitData[localcount].fTrackID[1] = (fDigits->GetTrackIDFast(time,pad,1)-2);
+	      tempPt->fDigitData[localcount].fTrackID[2] = (fDigits->GetTrackIDFast(time,pad,2)-2);
+	      if(eventmerge == kTRUE) //careful track mc info will be touched
+		{//Event are going to be merged, so event number is stored in the upper 10 bits.
+		  tempPt->fDigitData[localcount].fTrackID[0] += 128; //leave some room
+		  tempPt->fDigitData[localcount].fTrackID[1] += 128; //for neg. numbers
+		  tempPt->fDigitData[localcount].fTrackID[2] += 128;
+		  tempPt->fDigitData[localcount].fTrackID[0] += ((event&0x3ff)<<22);
+		  tempPt->fDigitData[localcount].fTrackID[1] += ((event&0x3ff)<<22);
+		  tempPt->fDigitData[localcount].fTrackID[2] += ((event&0x3ff)<<22);
+		}
 #endif
 	      localcount++;
 	    }
@@ -856,16 +884,16 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 }
 
 ///////////////////////////////////////// Point IO  
-Bool_t AliL3FileHandler::AliPoints2Binary(){
+Bool_t AliL3FileHandler::AliPoints2Binary(Int_t eventn){
   Bool_t out = kTRUE;
   UInt_t npoint;
-  AliL3SpacePointData *data = AliPoints2Memory(npoint);
+  AliL3SpacePointData *data = AliPoints2Memory(npoint,eventn);
   out = Memory2Binary(npoint,data);
   Free();
   return out;
 }
 
-AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
+AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint,Int_t eventn){
   AliL3SpacePointData *data = 0;
   npoint=0;
   if(!fInAli){
@@ -883,7 +911,6 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
   fInAli->cd();
   
   Char_t cname[100];
-  Int_t eventn = 0;
   sprintf(cname,"TreeC_TPC_%d",eventn);
   AliTPCClustersArray carray;
   carray.Setup(fParam);
@@ -919,6 +946,9 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
   data = (AliL3SpacePointData *) Allocate(size);
   npoint = sum;
   UInt_t n=0; 
+  Int_t pat=fPatch;
+  if(fPatch==-1)
+    pat=0;
   for(Int_t i=0; i<carray.GetTree()->GetEntries(); i++){
     if(!clusterrow[i]) continue;
     Int_t row = rows[i];
@@ -931,10 +961,15 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
       data[n].fY = c->GetY();
       data[n].fX = fParam->GetPadRowRadii(sector,row);
       data[n].fCharge = (UInt_t)c->GetQ();
-      data[n].fID = n+((fSlice&0x7f)<<25)+((fPatch&0x7)<<22);//uli
+      data[n].fID = n+((fSlice&0x7f)<<25)+((pat&0x7)<<22);//uli
       data[n].fPadRow = lrow;
-      data[n].fXYErr = sqrt(c->GetSigmaY2());
-      data[n].fZErr = sqrt(c->GetSigmaZ2());
+      data[n].fSigmaY2 = c->GetSigmaY2();
+      data[n].fSigmaZ2 = c->GetSigmaZ2();
+#ifdef do_mc
+      data[n].fTrackID[0] = c->GetLabel(0);
+      data[n].fTrackID[1] = c->GetLabel(1);
+      data[n].fTrackID[2] = c->GetLabel(2);
+#endif
       if(fMC) fprintf(fMC,"%d %d\n",data[n].fID,c->GetLabel(0));
       n++;
     }

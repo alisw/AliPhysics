@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_HOUGH_MaxFinder
 #define ALIL3_HOUGH_MaxFinder
 

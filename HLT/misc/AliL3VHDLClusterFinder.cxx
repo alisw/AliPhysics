@@ -1,10 +1,14 @@
-// $Id$
+// @(#) $Id$
 
-// Author: Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
-//*-- Copyright & copy CL
+// Author: Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
+//*-- Copyright & copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
+#include "AliL3RootTypes.h"
+#include "AliL3Logging.h"
+#include "AliL3AltroMemHandler.h"
 
+//#define VHDLDEBUG
 #include "AliL3VHDLClusterFinder.h"
 
 #if GCCVERSION == 3
@@ -12,7 +16,7 @@ using namespace std;
 #endif
 
 /** \class AliL3VHDLClusterFinder
-//<pre>
+<pre>
 //____________________________________________________
 // AliL3VHDLClusterFinder
 //
@@ -22,7 +26,7 @@ using namespace std;
 // Most important parameters:
 // fThreshold - threshold for noise clusters
 // fMatch - length in time for overlapping sequences
-//</pre> 
+</pre> 
 */
 
 
@@ -43,7 +47,7 @@ AliL3VHDLClusterFinder::AliL3VHDLClusterFinder()
   fcalcerr = kTRUE;
 
   Clear();
-#ifdef DEBUG
+#ifdef VHDLDEBUG
   fdeb=fopen("vhdlclusterfinder.debug","w");
   //fdeb=stderr;
 #endif
@@ -51,7 +55,7 @@ AliL3VHDLClusterFinder::AliL3VHDLClusterFinder()
 
 AliL3VHDLClusterFinder::~AliL3VHDLClusterFinder()
 {
-#ifdef DEBUG
+#ifdef VHDLDEBUG
   fclose(fdeb);
 #endif
 }
@@ -76,7 +80,7 @@ void AliL3VHDLClusterFinder::ProcessDigits()
     for(UChar_t ii=0;ii<i;ii++) cout << (int)charges[ii] << " ";
     cout << endl;
 #endif
-#ifdef DEBUG
+#ifdef VHDLDEBUG
     fprintf(fdeb,"ProcessDigits: Input Data: %d %d %d charges:",(int)rrow,(int)rpad,(int)rtime);
     for(UChar_t ii=0;ii<i;ii++) fprintf(fdeb," %d",(int)charges[ii]);
     fprintf(fdeb,"\n");
@@ -127,7 +131,7 @@ void AliL3VHDLClusterFinder::ProcessDigits()
     ProcessSequence();
     OutputMemory();      
 
-#ifdef DEBUG
+#ifdef VHDLDEBUG
     fflush(fdeb);
 #endif
     i=n; //store size of charges array
@@ -169,7 +173,7 @@ void AliL3VHDLClusterFinder::ProcessSequence()
   fRow=fNRow;
   fPad=fNPad;
 
-#ifdef DEBUG
+#ifdef VHDLDEBUG
   fprintf(fdeb,"ProcessSequence: Mean=%d TC=%d ",fSeq.fMean,fSeq.fTotalCharge);
 #endif
 
@@ -178,7 +182,7 @@ void AliL3VHDLClusterFinder::ProcessSequence()
 
 void AliL3VHDLClusterFinder::PrepareMemory()
 {
-#ifdef DEBUG
+#ifdef VHDLDEBUG
   fprintf(fdeb,"PrepareMemory %d %d %d\n",fRP,fEP,fWP);
 #endif
   fRP=fEP;
@@ -187,7 +191,7 @@ void AliL3VHDLClusterFinder::PrepareMemory()
 
 void AliL3VHDLClusterFinder::FlushMemory()
 {
-#ifdef DEBUG
+#ifdef VHDLDEBUG
   fprintf(fdeb,"FlushMemory %d %d %d %d\n",fFP,fRP,fEP,fWP);
 #endif
   fFP=fWP;
@@ -216,7 +220,7 @@ void AliL3VHDLClusterFinder::CompareSeq()
 
 void AliL3VHDLClusterFinder::MergeSeq()
 {
-#ifdef DEBUG
+#ifdef VHDLDEBUG
   fprintf(fdeb,"merged with Mean=%d TC=%d (new Merge=%d) %d %d\n",fSeqs[fPList[fRP]].fMean,fSeqs[fPList[fRP]].fTotalCharge,fSeqs[fPList[fRP]].fMerge+1,fRow,fPad);
 #endif
   if(fSeqs[fPList[fRP]].fRow!=fSeq.fRow){
@@ -259,7 +263,7 @@ void AliL3VHDLClusterFinder::MergeSeq()
 
 void AliL3VHDLClusterFinder::InsertSeq()
 {
-#ifdef DEBUG
+#ifdef VHDLDEBUG
   fprintf(fdeb,"inserted %d %d\n",fRow,fPad);
 #endif
   NextFreeIndex();    //get next index
@@ -297,7 +301,7 @@ void AliL3VHDLClusterFinder::OutputMemory()
     }
 
     if(mno<fMinMerge){ //noise cluster
-#ifdef DEBUG
+#ifdef VHDLDEBUG
     fprintf(fdeb,"OutputMemory %d %d: noise cluster (merge): Row %d Pad %.3f Time %.3f TC %d Merge %d\n",fOP,fFP,row,mpad,mtime,tc,mno);
 #endif          
       FreeSeq(index);  
@@ -306,7 +310,7 @@ void AliL3VHDLClusterFinder::OutputMemory()
     }
 
     if(tc<fThreshold){ //total charge below threshold
-#ifdef DEBUG
+#ifdef VHDLDEBUG
     fprintf(fdeb,"OutputMemory %d %d: noise cluster (threshold): Row %d Pad %.3f Time %.3f TC %d Merge %d\n",fOP,fFP,row,mpad,mtime,tc,mno);
 #endif          
       FreeSeq(index);
@@ -314,7 +318,7 @@ void AliL3VHDLClusterFinder::OutputMemory()
       //continue;
     }
 
-#ifdef DEBUG
+#ifdef VHDLDEBUG
     fprintf(fdeb,"OutputMemory %d: Row %d Pad %.3f Time %.3f TC %d Merge %d\n",fNClusters,row,mpad,mtime,tc,mno);
 #endif    
 

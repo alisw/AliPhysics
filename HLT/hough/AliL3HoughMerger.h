@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_HOUGH_Merger
 #define ALIL3_HOUGH_Merger
 

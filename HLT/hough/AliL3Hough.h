@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_HOUGH
 #define ALIL3_HOUGH
 
@@ -13,6 +15,7 @@ class AliL3TrackArray;
 class AliL3HoughMerger;
 class AliL3HoughIntMerger;
 class AliL3HoughGlobalMerger;
+class AliL3Benchmark;
 
 class AliL3Hough {
   
@@ -27,7 +30,8 @@ class AliL3Hough {
   Int_t fNPatches;
   Int_t fVersion; //which HoughTransformer to use
   Int_t fCurrentSlice;
-
+  Int_t fPeakThreshold;
+  
   Float_t fLowPt;
   Float_t fPhi;
   Int_t fNBinX;
@@ -40,9 +44,11 @@ class AliL3Hough {
   AliL3HoughEval **fEval; //!
   AliL3HoughMaxFinder *fPeakFinder; //!
   AliL3TrackArray **fTracks; //!
+  AliL3TrackArray *fGlobalTracks; //!
   AliL3HoughMerger *fMerger; //!
   AliL3HoughIntMerger *fInterMerger; //!
   AliL3HoughGlobalMerger *fGlobalMerger; //!
+  AliL3Benchmark *fBenchmark; //!
 
   void CleanUp();
   Double_t GetCpuTime();
@@ -58,7 +64,7 @@ class AliL3Hough {
 
   void Process(Int_t minslice,Int_t maxslice);
   void ReadData(Int_t slice,Int_t eventnr=0);
-  void Transform(Int_t row_range = -1);
+  void Transform(Int_t *row_range = 0);
   void ProcessSliceIter();
   void ProcessPatchIter(Int_t patch);
   void MergePatches();
@@ -72,6 +78,7 @@ class AliL3Hough {
   void WriteTracks(Int_t slice,Char_t *path="./");
   void WriteDigits(Char_t *outfile="output_digits.root");
   void InitEvaluate();
+  void DoBench(Char_t *filename);
   
   //Setters
   void SetNEtaSegments(Int_t i) {fNEtaSegments = i;}
@@ -81,7 +88,8 @@ class AliL3Hough {
   void SetTransformerParams(Int_t nx=64, Int_t ny=64,Float_t lpt=0.1,Float_t phi=30) {fNBinX=nx;fNBinY=ny;fLowPt=lpt;fPhi=phi;}
   void SetThreshold(Int_t t=3) {fThreshold=t;}
   void SetNSaveIterations(Int_t t=10) {fNSaveIterations=t;}
-
+  void SetPeakThreshold(Int_t i=0) {fPeakThreshold=i;}
+  
   //Getters
   AliL3HoughBaseTransformer *GetTransformer(Int_t i) {if(!fHoughTransformer[i]) return 0; return fHoughTransformer[i];}
   AliL3TrackArray *GetTracks(Int_t i) {if(!fTracks[i]) return 0; return fTracks[i];}

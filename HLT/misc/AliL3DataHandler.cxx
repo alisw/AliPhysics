@@ -1,19 +1,24 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
-#include "AliL3DataHandler.h"
+#include "AliL3RootTypes.h"
+#include "AliL3Logging.h"
+#include "AliL3MemHandler.h"
 #include "AliL3Logging.h"
 #include "AliL3TransBit.h"
 #include "AliL3Transform.h"
+#include "AliL3DataHandler.h"
 
 #if GCCVERSION == 3
 using namespace std;
 #endif
 
+/** \class AliL3DataHandler
+<pre>
 //_____________________________________________________________
 // AliL3DataHandler
 //
@@ -51,6 +56,8 @@ using namespace std;
 //
 // Everything is written using 8 bit;
 // (ROW < 176, PAD < 200, ADC < 255, if(NZEROS > 255) write 2 words;)
+</pre>
+*/
 
 ClassImp(AliL3DataHandler)
   

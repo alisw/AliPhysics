@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Constantin Loizides <mailto:loizides@fi.uib.no>
-//*-- Copyright&Copy CL
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -172,7 +172,7 @@ void AliL3HoughTransformerVhdl::TransformCircle()
 	    //	  hist->Fill(kappa,phi,charge);
 
 	    for(Int_t b=fNPhi0/2+1; b<fNPhi0; b++){ 
-	      Float_t exact_kappa=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
+	      //Float_t exact_kappa=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
 	      
 	      phi=fLUTphi0[b];
 
@@ -190,8 +190,7 @@ void AliL3HoughTransformerVhdl::TransformCircle()
 
 	      lastkappa=kappa;
 	      lastkappaprime=kappaprime;
-
-	      //	    hist->Fill(kappa,phi,charge);
+	      //hist->Fill(kappa,phi,charge);
 	    } // end positive running values
 
 	    phi = fLUTphi0[fNPhi0/2];
@@ -203,7 +202,7 @@ void AliL3HoughTransformerVhdl::TransformCircle()
 	    //hist->Fill(kappa,fLUTphi0[b],charge);
 
 	    for(Int_t b=fNPhi0/2-1; b>=0; b--){ 
-	      Float_t exact_kappa=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
+	      //Float_t exact_kappa=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
 
 	      Float_t phi = fLUTphi0[b];
 
@@ -221,8 +220,7 @@ void AliL3HoughTransformerVhdl::TransformCircle()
 
 	      lastkappa=kappa;
 	      lastkappaprime=kappaprime;
-	      
-	      //	    hist->Fill(kappa,phi,charge);
+	      //hist->Fill(kappa,phi,charge);
 	    }
 
 	    fLastPad=pad;
@@ -346,7 +344,7 @@ void AliL3HoughTransformerVhdl::PrintVhdl()
 
   cout << "\nfNLUT2cosphi0 := " << fNPhi0 << ";" << endl;
   cout << "fLUT2cosphi0 := (";
-  for(Int_t i=0;i<fNPhi0;i++) cout << fLUT2cosphi0[i] << ", ";
+  for(Int_t i=0;i<fNPhi0-1;i++) cout << fLUT2cosphi0[i] << ", ";
   cout << fLUT2cosphi0[fNPhi0-1] << " );\n" << endl; 
 
   //cout << "\nfEpsilon := " << fEpsilon << endl;

@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3HoughDisplay
 #define ALIL3HoughDisplay
 

@@ -1,5 +1,7 @@
+// @(#) $Id$
+
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy Uli
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -14,15 +16,16 @@
 #include "AliL3Logging.h"
 #include "AliL3Benchmark.h"
 
-/**
-// \class AliL3Benchmark
+/** \class AliL3Benchmark
+</pre>
 //_____________________________________________________________
 //
 // AliL3Benchmark
 //
 //   Benchmark class for level3 code
 //  
-//</pre>
+//
+</pre>
 */
 
 ClassImp(AliL3Benchmark)
@@ -176,7 +179,7 @@ void AliL3Benchmark::Analyze(const char* name){
   gr->SetTitle("benchmark");
   gr->SetMarkerStyle(8);
   gr->SetMinimum(0);
-  gr->Draw("ALP");
+  //gr->Draw("ALP");
   gr->Write();
   file->Close();
   delete file; 

@@ -1,5 +1,7 @@
+// @(#) $Id$
+
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ULI
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -10,11 +12,15 @@
 #include "AliL3Transform.h"
 #include "AliL3TrackArray.h"
 
+/** \class AliL3TrackMerger
+<pre>
 //_____________________________________________________________
 // AliL3TrackMerger
 //
 // The L3 track segment merger
 //
+</pre
+*/
 
 ClassImp(AliL3TrackMerger)
 

@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV
+//*-- Copyright &copy ALICE HLT Group
 
 #include <string.h>
 #include "AliL3StandardIncludes.h"
@@ -98,6 +98,7 @@ Int_t AliL3HistogramAdaptive::FindBin(Double_t x,Double_t y)
 
 Int_t AliL3HistogramAdaptive::FindXbin(Double_t x)
 {
+  
   Double_t ptfind = fabs(AliL3Transform::GetBFact()*AliL3Transform::GetBField()/x);
   if(ptfind < fMinPt || ptfind > fMaxPt) return -1;
   //  cout<<"Looking for pt "<<ptfind<<endl;
@@ -148,7 +149,7 @@ Double_t AliL3HistogramAdaptive::GetBinCenterX(Int_t xbin)
       return 0;
     }
   Double_t pt = fMinPt;
-  Double_t delta_pt,local_pt;
+  Double_t delta_pt=0,local_pt=0;
   Int_t bin=0;
   while(pt < fMaxPt)
     {

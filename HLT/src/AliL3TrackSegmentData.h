@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef _ALIL3TRACKSEGMENTDATA_H_
 #define _ALIL3TRACKSEGMENTDATA_H_
 

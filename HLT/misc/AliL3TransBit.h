@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3TRANSBIT_H
 #define ALIL3TRANSBIT_H
 

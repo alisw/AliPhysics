@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group
  
 #include "AliL3StandardIncludes.h"
 #include <sys/time.h>
@@ -14,11 +14,16 @@
 #include "AliL3TrackArray.h"
 #include "AliL3Transform.h"
 
+/** \class AliL3ConfMapper
+<pre>
 //_____________________________________________________________
 // AliL3ConfMapper
 //
 // Conformal mapping base class
 //
+</pre>
+*/
+
 ClassImp(AliL3ConfMapper)
 
 Double_t AliL3ConfMapper::pi=3.14159265358979323846;
@@ -87,8 +92,8 @@ void AliL3ConfMapper::InitVolumes()
   memset(fVolume,0,fBounds*sizeof(AliL3ConfMapContainer));
   memset(fRow,0,fNumRowSegmentPlusOne*sizeof(AliL3ConfMapContainer));
   
-  Int_t max_num_of_tracks = 1000;
-  Int_t max_num_of_hits = 80000;
+  Int_t max_num_of_tracks = 2000;
+  Int_t max_num_of_hits = 120000;
   
   if(fHit)
     delete [] fHit;
@@ -168,6 +173,11 @@ Bool_t AliL3ConfMapper::ReadHits(UInt_t count, AliL3SpacePointData* hits )
 
 void AliL3ConfMapper::SetPointers()
 {
+  
+  //Check if there are not enough clusters to make a track in this sector
+  //Can happen in pp events.
+  if(fClustersUnused < fMinPoints[fVertexConstraint])
+    return;
   
   //Reset detector volumes
   memset(fVolume,0,fBounds*sizeof(AliL3ConfMapContainer));
@@ -375,7 +385,12 @@ void AliL3ConfMapper::SetTrackletCuts(Double_t maxangle,Double_t goodDist, Bool_
 void AliL3ConfMapper::ClusterLoop()
 {
   //Loop over hits, starting at outermost padrow, and trying to build segments.
-
+  
+  //Check if there are not enough clusters to make a track in this sector
+  //Can happen in pp events.
+  if(fClustersUnused < fMinPoints[fVertexConstraint])
+    return;
+  
   Int_t row_segm,lastrow = fRowMin + fMinPoints[fVertexConstraint];
   AliL3ConfMapPoint *hit;
   
@@ -763,13 +778,49 @@ Bool_t AliL3ConfMapper::VerifyRange(const AliL3ConfMapPoint *hit1,const AliL3Con
 
 }
 
-Double_t AliL3ConfMapper::TrackletAngle(const AliL3ConfMapTrack *track,Int_t n) const
+Double_t AliL3ConfMapper::TrackletAngle(AliL3ConfMapTrack *track,Int_t n) const
 {
   // Returns the angle 'between' the last three points (started at point number n) on this track.
-
-  return 0;
-  /*
+  
+  if(n > track->GetNumberOfPoints())
+    n = track->GetNumberOfPoints();
+  
+  if(n<3)
+    return 0;
+  
   Double_t x1[2];
+  Double_t x2[2];
+  Double_t x3[2];
+  Double_t angle1,angle2;
+  Int_t counter=0;
+  for(track->StartLoop(); track->LoopDone(); track->GetNextHit())
+    {
+      AliL3ConfMapPoint *p = (AliL3ConfMapPoint*)track->currentHit;
+      if( (n-1) == counter)
+	{
+	  x1[0] = p->GetX();
+	  x1[1] = p->GetY();
+	}
+      else if( (n-2) == counter)
+	{
+	  x2[0] = p->GetX();
+	  x2[1] = p->GetY();
+	}
+      else if( (n-3) == counter)
+	{
+	  x3[0] = p->GetX();
+	  x3[1] = p->GetY();
+	}
+      counter++;
+    }
+  
+  angle1 = atan2(x2[1]-x3[1],x2[0]-x3[0]);
+  angle2 = atan2(x1[1]-x2[1],x1[0]-x2[0]);
+  
+  return fabs(angle1-angle2);
+  
+  /*
+    Double_t x1[2];
   Double_t x2[2];
   Double_t angle1,angle2;
   TObjArray *hits = track->GetHits();

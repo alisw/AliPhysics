@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifdef __CINT__
  
 #pragma link off all globals;
@@ -19,7 +21,13 @@
 #pragma link C++ class AliL3HoughGlobalMerger;
 #pragma link C++ class AliL3HoughDisplay;
 #pragma link C++ class AliL3HoughClusterTransformer;
-//#pragma link C++ class AliL3HistogramAdaptive;
+#pragma link C++ class AliL3HistogramAdaptive;
+#pragma link C++ class AliL3HoughTest;
+#pragma link C++ class AliL3HoughTransformerNew;
+
+#ifdef use_aliroot
+#pragma link C++ class AliL3HoughTransformerGlobal;
+#endif
 
 #endif
 

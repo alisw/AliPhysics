@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_ConfMapTrack
 #define ALIL3_ConfMapTrack
 
@@ -20,7 +22,7 @@ class AliL3ConfMapTrack :public AliL3Track {
   AliL3ConfMapTrack();
   virtual ~AliL3ConfMapTrack();
   void Fill(AliL3Vertex *vertex,Double_t max_Dca);
-  void UpdateToFirstPoint();
+  //void UpdateToFirstPoint();
   void Reset();
   void UpdateParam(AliL3ConfMapPoint *hit);
   void DeleteCandidate();

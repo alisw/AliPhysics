@@ -4,30 +4,33 @@
    Macro for converting AliRoot digits into L3 RawData. 
    Binary creates for each patch its own file. 
    Singlepatch uses one file per slice (sp=kTRUE). 
+   Run with ALIROOT (not root)
 */
 
-binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
+binary(Char_t* inpath,Char_t *outpath,Int_t first,Int_t last,Int_t event,Bool_t sp=kFALSE){
 
-  AliL3Transform::Init(path);
-  
+  AliL3Transform::Init(inpath,kTRUE);
+
   if(sp) {
-    singlepatch(in,first,last,path);
+    singlepatch(inpath,outpath,first,last,event);
     return;
   }
 
-  char name[256];
+  Char_t name[256];
   const Int_t npatch = 6;
-  
-  AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
-  fFileHandler->SetAliInput(in);
+  Bool_t altrodigits=kFALSE;
 
-  for(int slice=first; slice<=last; slice++){
-    for(int patch=0;patch<npatch;patch++){
-      cerr<<"reading slice: "<<slice<<" patch: "<<patch<<" and storing to: "<<path<<"/digits_"<<slice<<"_"<<patch<<".raw"<<endl;
+  sprintf(name,"%s/digitfile.root",inpath);
+  AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
+  fFileHandler->SetAliInput(name);
+
+  for(Int_t slice=first; slice<=last; slice++){
+    for(Int_t patch=0;patch<npatch;patch++){
+      cerr<<"reading slice: "<<slice<<" patch: "<<patch<<" and storing to: "<<outpath<<"/digits_"<<slice<<"_"<<patch<<".raw"<<endl;
       fFileHandler->Init(slice,patch);      
-      sprintf(name,"%s/digits_%d_%d.raw",path,slice,patch);
+      sprintf(name,"%s/digits_%d_%d_%d.raw",outpath,event,slice,patch);
       fFileHandler->SetBinaryOutput(name);
-      fFileHandler->AliDigits2CompBinary();
+      fFileHandler->AliDigits2CompBinary(event,altrodigits);
       fFileHandler->CloseBinaryOutput();      
       fFileHandler->Free();
       cerr<<" done"<<endl;
@@ -36,7 +39,7 @@ binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
   fFileHandler->CloseAliInput();
 }
 
-void write2rootfile(char *in,int first,int last,char *path)
+void write2rootfile(Char_t *in,Int_t first,Int_t last,Char_t *path)
 {
   //Write new rootfile, using data from the binary files. 
 
@@ -49,9 +52,9 @@ void write2rootfile(char *in,int first,int last,char *path)
       cout<<"Delete file "<<filename<<endl;
       return;
     }
-  for(int slice=first; slice<=last; slice++)
+  for(Int_t slice=first; slice<=last; slice++)
     {
-      for(int patch=0; patch<=5; patch++)
+      for(Int_t patch=0; patch<=5; patch++)
 	{
 	  c = new AliL3Compress(slice,patch,path);
 	  c->WriteRootFile(filename,in);
@@ -61,29 +64,24 @@ void write2rootfile(char *in,int first,int last,char *path)
   
 }
  
-void singlepatch(char* in,int first=0, int last=0,char *path=".",int event=0)
+void singlepatch(Char_t* inpath,Char_t *outpath,Int_t first=0, Int_t last=0,Int_t event=0)
 {
-  AliL3Logger l;
-  //l.UnSet(AliL3Logger::kDebug);
-  //l.UnSet(AliL3Logger::kAll);
-  //l.Set(AliL3Logger::kInformational);
-  l.UseStderr();
-  //l.UseStream();
-  
-  char name[256];
+   
+  Char_t name[256];
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
-  fFileHandler->SetAliInput(in);
-
-  Int_t srow[2] = {0,175};
-  int patch=0;
-  for(int slice=first; slice<=last; slice++)
+  sprintf(name,"%s/digitfile.root",inpath);
+  fFileHandler->SetAliInput(name);
+  
+  Bool_t altrodigits=kFALSE;
+  Int_t patch=-1;
+  for(Int_t slice=first; slice<=last; slice++)
     {
       cerr<<"reading slice: "<<slice;
       fFileHandler->Free();
-      fFileHandler->Init(slice,patch,srow);
-      sprintf(name,"%s/digits_%d_%d.raw",path,slice,patch);
+      fFileHandler->Init(slice,patch);
+      sprintf(name,"%s/digits_%d_%d_%d.raw",outpath,event,slice,patch);
       fFileHandler->SetBinaryOutput(name);
-      fFileHandler->AliDigits2CompBinary(event);
+      fFileHandler->AliDigits2CompBinary(event,altrodigits);
       fFileHandler->CloseBinaryOutput();      
       cerr<<" done"<<endl;
     }
@@ -92,12 +90,5 @@ void singlepatch(char* in,int first=0, int last=0,char *path=".",int event=0)
 }
 
 void make_init_file(Char_t *f,Char_t *path="./"){
-  AliL3Logger l;
-  //l.UnSet(AliL3Logger::kDebug);
-  //l.UnSet(AliL3Logger::kAll);
-  //l.Set(AliL3Logger::kInformational);
-  l.UseStderr();
-  //l.UseStream();
-
   AliL3Transform::MakeInitFile(f,path);
 }

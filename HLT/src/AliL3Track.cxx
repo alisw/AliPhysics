@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ASV
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -11,16 +11,21 @@
 #include "AliL3Transform.h"
 #include "AliL3Vertex.h"
 
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
+/** \class AliL3Track
+//<pre>
 //_____________________________________________________________
 // AliL3Track
 //
 // Track base class
 //Begin_Html
-/*
-<img src="track_coordinates.gif">
-*/
+//<img src="track_coordinates.gif">
 //End_Html
+</pre>
+*/
 
 ClassImp(AliL3Track)
 
@@ -49,6 +54,8 @@ AliL3Track::AliL3Track()
   fIsLocal=true;
   fRowRange[0]=0;
   fRowRange[1]=0;
+  SetFirstPoint(0,0,0);
+  SetLastPoint(0,0,0);
   memset(fHitNumbers,0,159*sizeof(UInt_t));
 }
 
@@ -147,6 +154,9 @@ void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
   SetCenterX(center[0]);
   SetCenterY(center[1]);
   
+  SetPhi0(atan2(fFirstPoint[1],fFirstPoint[0]));
+  SetR0(sqrt(fFirstPoint[0]*fFirstPoint[0]+fFirstPoint[1]*fFirstPoint[1]));
+  
   if(!tolocal)
     fIsLocal=kFALSE;
   else
@@ -164,47 +174,56 @@ void AliL3Track::CalculateHelix(){
 
   fCenterX = fFirstPoint[0] - fRadius *  cos(trackPhi0);
   fCenterY = fFirstPoint[1] - fRadius *  sin(trackPhi0);
+  
+  SetPhi0(atan2(fFirstPoint[1],fFirstPoint[0]));
+  SetR0(sqrt(fFirstPoint[0]*fFirstPoint[0]+fFirstPoint[1]*fFirstPoint[1]));
 }
 
-Double_t AliL3Track::GetCrossingAngle(Int_t padrow) 
+Double_t AliL3Track::GetCrossingAngle(Int_t padrow,Int_t slice) 
 {
   //Calculate the crossing angle between track and given padrow.
-  
-  if(!IsLocal())
-    {
-      printf("Track is not given in local coordinates\n");
-      return 0;
-    }
-  
-  Float_t xyz[3];
-  if(!GetCrossingPoint(padrow,xyz))
-    printf("AliL3HoughTrack::GetCrossingPoint : Track does not cross line!!\n");
-  
   //Take the dot product of the tangent vector of the track, and
   //vector perpendicular to the padrow.
   //In order to do this, we need the tangent vector to the track at the
   //point. This is done by rotating the radius vector by 90 degrees;
   //rotation matrix: (  0  1 )
   //                 ( -1  0 )
-  
+
+  Float_t angle=0;//Angle perpendicular to the padrow in local coordinates
+  if(slice>=0)//Global coordinates
+    {
+      AliL3Transform::Local2GlobalAngle(&angle,slice);
+      if(!CalculateReferencePoint(angle,AliL3Transform::Row2X(padrow)))
+	cerr<<"AliL3Track::GetCrossingAngle : Track does not cross line in slice "<<slice<<" row "<<padrow<<endl;
+    }
+  else //should be in local coordinates
+    {
+      Float_t xyz[3];
+      GetCrossingPoint(padrow,xyz);
+      fPoint[0] = xyz[0];
+      fPoint[1] = xyz[1];
+      fPoint[2] = xyz[2];
+    }
+    
   Double_t tangent[2];
-  tangent[0] = -1.*(xyz[1] - GetCenterY())/GetRadius();
-  tangent[1] = (xyz[0] - GetCenterX())/GetRadius();
   
-  Double_t perp_padrow[2] = {1,0}; //locally in slice
+  tangent[0] = (fPoint[1] - GetCenterY())/GetRadius();
+  tangent[1] = -1.*(fPoint[0] - GetCenterX())/GetRadius();
+
+  Double_t perp_padrow[2] = {cos(angle),sin(angle)}; 
   
   Double_t cos_beta = fabs(tangent[0]*perp_padrow[0] + tangent[1]*perp_padrow[1]);
   if(cos_beta > 1) cos_beta=1;
   return acos(cos_beta);
 }
 
-Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz) 
+Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
 {
   //Assumes the track is given in local coordinates
-
+  
   if(!IsLocal())
     {
-      printf("GetCrossingPoint: Track is given on global coordinates\n");
+      cerr<<"GetCrossingPoint: Track is given on global coordinates"<<endl;
       return false;
     }
   
@@ -221,7 +240,7 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
   Double_t y2 = GetCenterY() - aa2;
   xyz[1] = y1;
   if(fabs(y2) < fabs(y1)) xyz[1] = y2;
-  
+ 
   Double_t yHit = xyz[1];
   Double_t angle1 = atan2((yHit - GetCenterY()),(xHit - GetCenterX()));
   if(angle1 < 0) angle1 += 2.*AliL3Transform::Pi();
@@ -233,8 +252,9 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
   Double_t s_tot = fabs(diff_angle)*GetRadius();
   Double_t zHit = GetFirstPointZ() + s_tot*GetTgl();
   xyz[2] = zHit;
-  
+ 
   return true;
+
 }
 
 
@@ -383,6 +403,71 @@ Bool_t AliL3Track::CalculatePoint(Double_t xplane){
   fPointPsi = fmod(fPointPsi, 2*pi);
 
   return IsPoint(kTRUE);
+}
+
+void AliL3Track::UpdateToFirstPoint()
+{
+  //Update track parameters to the innermost point on the track.
+  //Basically it justs calculates the intersection of the track, and a cylinder
+  //with radius = r(innermost point). Then the parameters are updated to this point.
+  //Should be called after the helixfit (in FillTracks).
+  
+  Double_t radius = sqrt(GetFirstPointX()*GetFirstPointX() + GetFirstPointY()*GetFirstPointY());
+  
+  //Get the track parameters
+  
+  Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / abs(GetCharge()) ;
+  
+  Double_t x0    = GetR0() * cos(GetPhi0()) ;
+  Double_t y0    = GetR0() * sin(GetPhi0()) ;
+  Double_t rc    = fabs(GetPt()) / ( BFACT * AliL3Transform::GetBField() )  ;
+  Double_t xc    = x0 - rc * cos(tPhi0) ;
+  Double_t yc    = y0 - rc * sin(tPhi0) ;
+
+  //Check helix and cylinder intersect
+  
+  Double_t fac1 = xc*xc + yc*yc ;
+  Double_t sfac = sqrt( fac1 ) ;
+    
+  if ( fabs(sfac-rc) > radius || fabs(sfac+rc) < radius ) {
+    LOG(AliL3Log::kError,"AliL3ConfMapTrack::UpdateToLastPoint","Tracks")<<AliL3Log::kDec<<
+      "Track does not intersect"<<ENDLOG;
+    return;
+  }
+  
+  //Find intersection
+  
+  Double_t fac2   = ( radius*radius + fac1 - rc*rc) / (2.00 * radius * sfac ) ;
+  Double_t phi    = atan2(yc,xc) + GetCharge()*acos(fac2) ;
+  Double_t td     = atan2(radius*sin(phi) - yc,radius*cos(phi) - xc) ;
+  
+  //Intersection in z
+  
+  if ( td < 0 ) td = td + 2. * pi ;
+  Double_t deltat = fmod((-GetCharge()*td + GetCharge()*tPhi0),2*pi) ;
+  if ( deltat < 0.      ) deltat += 2. * pi ;
+  if ( deltat > 2.*pi ) deltat -= 2. * pi ;
+  Double_t z = GetZ0() + rc * GetTgl() * deltat ;
+ 
+  
+  Double_t xExtra = radius * cos(phi) ;
+  Double_t yExtra = radius * sin(phi) ;
+  
+  Double_t tPhi = atan2(yExtra-yc,xExtra-xc);
+  
+  //if ( tPhi < 0 ) tPhi += 2. * M_PI ;
+  
+  Double_t tPsi = tPhi - GetCharge() * 0.5 * pi / abs(GetCharge()) ;
+  if ( tPsi > 2. * pi ) tPsi -= 2. * pi ;
+  if ( tPsi < 0.        ) tPsi += 2. * pi ;
+  
+  //And finally, update the track parameters
+  SetCenterX(xc);
+  SetCenterY(yc);
+  SetR0(radius);
+  SetPhi0(phi);
+  SetFirstPoint(radius*cos(phi),radius*sin(phi),z);
+  SetPsi(tPsi);
 }
 
 void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_t &closest_y,Double_t &closest_z)

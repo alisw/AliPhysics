@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifdef __CINT__
  
 #pragma link off all globals;
@@ -10,8 +12,11 @@
 #pragma link C++ class AliL3AltroMemHandler;
 #pragma link C++ class AliL3DataHandler;
 #pragma link C++ class AliL3VHDLClusterFinder;
+#pragma link C++ class AliL3TPCMapping;
+
 #ifdef USEFFLOAT
 #pragma link C++ class AliL3FFloat;
 #endif
+
 #endif
 

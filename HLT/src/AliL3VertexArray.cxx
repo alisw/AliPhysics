@@ -1,5 +1,7 @@
+// @(#) $Id$
+
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy Uli
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -7,6 +9,8 @@
 #include "AliL3VertexArray.h"
 
 
+/** \class AliL3VertexArray
+<pre>
 //_____________________________________________________________
 // AliL3VertexArray
 //
@@ -21,8 +25,10 @@
 //  FindSectorVertex();
 //  Double_t z = GetZSector();
 //  Double_t zerr = GetZSectorErr();
-//// do somethink with z, zerr
+//  // do somethink with z, zerr
 //}
+</pre>
+*/
 
 ClassImp(AliL3VertexArray)
 void AliL3VertexArray::AnalyzeSector(Float_t *vertex, Int_t *array, Int_t len){

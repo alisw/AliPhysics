@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef AliL3_ClustFinderNew
 #define AliL3_ClustFinderNew
 
@@ -9,8 +11,8 @@ struct ClusterData
   UInt_t fTotalCharge;
   UInt_t fPad;
   UInt_t fTime;
-  UInt_t fPad2;  //for error in XY direction
-  UInt_t fTime2; //for error in Z  direction
+  UInt_t fPad2;     //for error in XY direction
+  ULong64_t fTime2; //for error in Z  direction
   UInt_t fMean;
   UInt_t fFlags;
   UInt_t fChargeFalling; //for deconvolution
@@ -28,10 +30,11 @@ class AliL3ClustFinderNew {
   
   AliL3DigitRowData *fDigitRowData; //!
   AliL3SpacePointData *fSpacePointData; //!
-  Bool_t fDeconvTime;
-  Bool_t fDeconvPad;
-  Bool_t fstdout;
-  Bool_t fcalcerr;
+  Bool_t fDeconvTime; //deconv in time direction
+  Bool_t fDeconvPad;  //deconv in pad direction
+  Bool_t fStdout;     //have print out in write clusters
+  Bool_t fCalcerr;    //calculate centroid sigmas
+  Bool_t fRawSP;      //store centroids in raw system
 
   UInt_t fNDigitRowData;
   Int_t fFirstRow;
@@ -67,9 +70,9 @@ class AliL3ClustFinderNew {
   void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
   void SetThreshold(UInt_t i) {fThreshold=i;}
   void SetMatchWidth(UInt_t i) {fMatch=i;}
-  void SetSTDOutput(Bool_t f=kFALSE) {fstdout=f;}  
-  void SetCalcErr(Bool_t f=kTRUE) {fcalcerr=f;}
-
+  void SetSTDOutput(Bool_t f=kFALSE) {fStdout=f;}  
+  void SetCalcErr(Bool_t f=kTRUE) {fCalcerr=f;}
+  void SetRawSP(Bool_t f=kFALSE) {fRawSP=f;}
   Int_t GetNumberOfClusters() {return fNClusters;}
   
   ClassDef(AliL3ClustFinderNew,1) //Fast cluster finder

@@ -1,6 +1,6 @@
 // $Id$
 
-// Author: Constantin Loizides <loizides@ikf.physik.uni-frankfurt.de>
+// Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de>
 
 /**
  Example program how to run the "standalone" clusterfinder.
@@ -9,20 +9,27 @@
 */
 
 
-#include <stream.h>
-#include <libgen.h>
+#include "AliL3StandardIncludes.h"
 
+#include "AliL3Logging.h"
+#include "AliL3Logger.h"
 #include "AliL3RootTypes.h"
 #include "AliL3Transform.h"
 #include "AliL3ClustFinderNew.h"
 #include "AliL3MemHandler.h"
 #include "AliL3SpacePointData.h"
-#include "AliL3Logging.h"
-#include "AliL3Logger.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#else
+#include <stream.h>
+#endif
+
+#include <libgen.h>
 
 #define MAXCLUSTER 25000
 
-int main(int argc,char **argv)
+int main(Int_t argc,Char_t **argv)
 {
   Int_t slice=0;
   Int_t patch=0;

@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_Stopwatch
 #define ALIL3_Stopwatch
 

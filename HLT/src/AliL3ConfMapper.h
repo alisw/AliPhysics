@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_ConfMapper
 #define ALIL3_ConfMapper
 
@@ -123,7 +125,7 @@ class AliL3ConfMapper {
   Int_t EvaluateHit(AliL3ConfMapPoint *start_hit,AliL3ConfMapPoint *hit,AliL3ConfMapTrack *track);
 
   Double_t CalcDistance(const AliL3ConfMapPoint *hit1,const AliL3ConfMapPoint *hit2) const;
-  Double_t TrackletAngle(const AliL3ConfMapTrack *track,Int_t n=3) const;
+  Double_t TrackletAngle(AliL3ConfMapTrack *track,Int_t n=3) const;
   Bool_t VerifyRange(const AliL3ConfMapPoint *hit1,const AliL3ConfMapPoint *hit2) const;
   Int_t FillTracks();
   

@@ -1,7 +1,8 @@
+// @(#) $Id$
+
 #ifndef ALIL3_MEMHANDLER_H
 #define ALIL3_MEMHANDLER_H
 
-#include <stdlib.h>
 #include "AliL3RootTypes.h"
 #include "AliL3DigitData.h"
 
@@ -40,7 +41,6 @@ class AliL3MemHandler{
                       UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
   void AddDataRandom(AliL3DigitData *data,UInt_t & ndata,
                       UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
-  
 
  protected:
   Int_t fRowMin;
@@ -48,7 +48,7 @@ class AliL3MemHandler{
   Int_t fSlice;
   Int_t fPatch;
 
-  Int_t fEtaMinTimeBin[159];
+  Int_t fEtaMinTimeBin[159]; //for ROI in eta only
   Int_t fEtaMaxTimeBin[159];
   
   FILE *fInBinary;//!
@@ -124,6 +124,7 @@ class AliL3MemHandler{
   Byte_t *Allocate();  // allocate size of Binary Input File
   Byte_t *Allocate(AliL3TrackArray *array);
   Byte_t *GetDataPointer(UInt_t &size) {size = fSize; return fPt;}
+  FILE *GetFilePointer() {return fInBinary;}
   void   Free();
   
   //Getters:
@@ -136,17 +137,41 @@ class AliL3MemHandler{
   virtual void FreeDigitsTree() {return;}
   virtual Bool_t SetAliInput(char *name){return 0;}
   virtual void CloseAliInput(){return;} 
-  virtual Bool_t IsDigit(){return 0;}
+  virtual Bool_t IsDigit(Int_t i=0){return 0;}
   virtual Bool_t SetMCOutput(char *name){return 0;}
   virtual Bool_t SetMCOutput(FILE *file){return 0;}
   virtual void CloseMCOutput(){return;}
-  virtual Bool_t AliDigits2Binary(Int_t event=0){return 0;}
+  virtual Bool_t AliDigits2Binary(Int_t event=0,Bool_t altro=kFALSE){return 0;}
   virtual AliL3DigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event=0){return 0;}
-  virtual AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0){return 0;}
+  virtual AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0,Bool_t eventmerge=kFALSE){return 0;}
   virtual Bool_t AliDigits2CompBinary(Int_t event=0,Bool_t altro=kFALSE){return 0;}  
   virtual void AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile){return;}
-  virtual Bool_t AliPoints2Binary(){return 0;}
-  virtual AliL3SpacePointData *AliPoints2Memory(UInt_t & npoint){return 0;}
+  virtual Bool_t AliPoints2Binary(Int_t eventn=0){return 0;}
+  virtual AliL3SpacePointData *AliPoints2Memory(UInt_t & npoint,Int_t eventn=0){return 0;}
+
+  //AliL3RawDataFileHandler
+  virtual Bool_t SetRawInput(Char_t *name){return 0;}
+  virtual Bool_t SetRawInput(ifstream *file){return 0;}
+  virtual void CloseRawInput(){} 
+  virtual Int_t ReadRawInput(){return 0;}
+  virtual Short_t** GetRawData(Int_t &channels, Int_t & timebins){return 0;}
+
+  virtual Bool_t SetRawOutput(Char_t *name){return 0;}
+  virtual Bool_t SetRawOutput(ofstream *file){return 0;}
+  virtual void CloseRawOutput(){} 
+  virtual Bool_t SaveRawOutput(){return 0;}
+
+  virtual Bool_t SetMappingFile(Char_t *name){return 0;}
+  virtual Bool_t SetMappingFile(FILE *file){return 0;}
+  virtual void CloseMappingFile(){} 
+  virtual Int_t ReadMappingFile(){return 0;}
+  
+  virtual Bool_t SetRawPedestalsInput(Char_t *name){return 0;}
+  virtual Bool_t SetRawPedestalsInput(ifstream *file){return 0;}
+  virtual void CloseRawPedestalsInput(){} 
+  virtual Int_t ReadRawPedestalsInput(){return 0;}
+
+  virtual AliL3DigitRowData* RawData2Memory(UInt_t &nrow,Int_t event=-1){return 0;}
 
   ClassDef(AliL3MemHandler,1) // Memory handler class
 };

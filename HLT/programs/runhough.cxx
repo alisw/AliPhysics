@@ -1,6 +1,6 @@
 // $Id$
 
-// Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de
+// Author: Constantin Loizides <mailto: loizides@ikf.uni-frankfurt.de
 
 #include <AliL3StandardIncludes.h>
 
@@ -19,8 +19,8 @@
 #include <AliL3HoughTransformerLUT.h>
 #include <AliL3HoughTransformerVhdl.h>
 #include <AliL3HoughMaxFinder.h>
-//#include <AliL3FFloat.h>
 #include <AliL3Hough.h>
+
 #ifndef no_root
 #include <TROOT.h>
 #include <TApplication.h>
@@ -34,7 +34,7 @@
 using namespace std;
 #endif
 
-int main(int argc,char **argv)
+int main(Int_t argc,Char_t **argv)
 {
   Int_t sl=0;
   Int_t sh=0;
@@ -82,8 +82,6 @@ int main(int argc,char **argv)
   //AliL3FFloat::PrintStat();
   exit(0);
 }
-
-
 
 
 //----------------------------------------------------------------------------------

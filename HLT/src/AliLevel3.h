@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALILEVEL3_H
 #define ALILEVEL3_H
 
@@ -69,11 +71,13 @@ class AliLevel3 : public TObject {
 
   Char_t fPath[256];
   Char_t fWriteOutPath[256];
-
+  
   Bool_t fDoRoi;
   Bool_t fFindVertex;
   Bool_t fDoNonVertex;
-
+  Bool_t fPileUp;
+  Bool_t fNoCF;
+  
   Bool_t fUseBinary;
   Bool_t fWriteOut;
 
@@ -86,7 +90,7 @@ class AliLevel3 : public TObject {
                                           Int_t slice,Int_t patch);
   Int_t WriteTracks(char *filename,AliL3Merger *merger,char opt='o');  
   void WriteResults();
-
+  void FitGlobalTracks();
   void SetPath(char *p){sprintf(fPath,"%s",p);}
 
  public:
@@ -115,6 +119,8 @@ class AliLevel3 : public TObject {
   void DoNonVertexTracking() {fDoNonVertex=kTRUE;}
   void FindVertex() {fFindVertex=kTRUE;}
   void DoBench(char* name="benchmark");
+  void DoPileup() {fPileUp = kTRUE;}
+  void NoCF() {fNoCF=kTRUE;}
   void DoRoi(Float_t e0=0.4,Float_t e1=0.5){fEta[0]=e0;fEta[1]=e1;fDoRoi=kTRUE;}
   void WriteFiles(Char_t *path="./"){fWriteOut = kTRUE; sprintf(fWriteOutPath,"%s",path);}
   //void UseBinaryInput(char *path){SetPath(path);fUseBinary=kTRUE;}

@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_Fitter
 #define ALIL3_Fitter
 
@@ -18,9 +20,9 @@ class AliL3Fitter {
 
  public:
   AliL3Fitter(AliL3Vertex *vertex);
-  virtual ~AliL3Fitter() {};
+  virtual ~AliL3Fitter();
   
-  void LoadClusters(Char_t *path);
+  void LoadClusters(Char_t *path,Int_t event=0,Bool_t sp=kFALSE);
   Int_t FitHelix(AliL3Track *track);
   Int_t FitCircle();
   Int_t FitLine();

@@ -1,8 +1,7 @@
-//$Id$
+// @(#) $Id$
 
-// Original author: Marian Ivanov, GSI Darmstadt for AliROOT
-// migrated to L3 by Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright & copy ASV
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright & copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -12,8 +11,11 @@
 using namespace std;
 #endif
 
+/** \class AliL3Transbit
+<pre>
 //_____________________________________________________________
-// AliL3Transbit (taken from the offline AliROOT code)
+// AliL3Transbit (taken from the offline AliROOT code,
+// original author: Marian Ivanov, GSI Darmstadt for AliROOT)
 //
 // Time Projection Chamber ADC bit compresion lookup table
 //
@@ -45,6 +47,8 @@ using namespace std;
 //
 //    for( Int_t i=0;i<x1-1;i++) cout<<i<<"\t"<<trans.Get1to0(i+1)-trans.Get1to0(i)<<"\n"; > tabled.txt
 //
+</pre>
+*/
 
 ClassImp(AliL3TransBit)
 ClassImp(AliL3TransBit_v1)

@@ -1,27 +1,34 @@
-/* $Id$ 
-   Author: Constantin Loizides <loizides@ikf.physik.uni-frankfurt.de>
-*/
+// $Id$ 
+
+//   Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de>
 
 #ifndef use_aliroot
 BOMB THE COMPILE: USEPACKAGE=ALIROOT
 #endif
 
-#include <stream.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3RootTypes.h"
 #include "AliL3MemHandler.h"
 #include "AliL3FileHandler.h"
 #include "AliL3DigitData.h"
 #include "AliL3Transform.h"
 
+#if GCCVERSION == 3
+using namespace std;
+#else
+#include <stream.h>
+#endif
+
 /**
    Converts from AliRoot Digits to L3-RawDigits
  */
-int Make_Init(char *file, char *tofile=NULL);
+Int_t Make_Init(Char_t *file, Char_t *tofile);
 
-int main (int argc, char** argv)
+int main (Int_t argc, Char_t** argv)
 {
-  int first=0;
-  int last=0;
+  Int_t first=0;
+  Int_t last=0;
 
   if(argc<3)
   {
@@ -31,7 +38,7 @@ int main (int argc, char** argv)
   if(argc<4) first=atoi(argv[3]);
   if(argc<5) first=atoi(argv[4]);
 
-  char transname[1000];
+  Char_t transname[1000];
   const Int_t npatch = 6;
   Int_t row[npatch][2] = {{0,31},{32,63},{64,91},{92,119},{120,143},{144,175}};
   
@@ -79,16 +86,15 @@ int Make_Init(char *file, char *tofile=NULL){
     return -2;
   }
 
-  int fNTimeBins = par->GetMaxTBin()+1;
-  int fNRowLow = par->GetNRowLow();
-  int fNRowUp  = par->GetNRowUp();
-  int fNRow= fNRowLow + fNRowUp;
-  int fNSectorLow = par->GetNInnerSector();
-  int fNSectorUp = par->GetNOuterSector();
-  int fNSector = fNSectorLow + fNSectorUp;
-  //  int fNSlice = fNSectorLow;
+  Int_t fNTimeBins = par->GetMaxTBin()+1;
+  Int_t fNRowLow = par->GetNRowLow();
+  Int_t fNRowUp  = par->GetNRowUp();
+  Int_t fNRow= fNRowLow + fNRowUp;
+  Int_t fNSectorLow = par->GetNInnerSector();
+  Int_t fNSectorUp = par->GetNOuterSector();
+  Int_t fNSector = fNSectorLow + fNSectorUp;
 
-  char tofilename[1000];
+  Char_t tofilename[1000];
   if(tofile){
     strcpy(tofilename,tofile);
     strcat(tofilename,".transform-config");
@@ -143,7 +149,7 @@ int Make_Init(char *file, char *tofile=NULL){
 
 
 #if 0
-void singlepatch(char* in,int first, int last,char *path="",int event=0)
+void singlepatch(Char_t* in,Int_t first, Int_t last,Char_t *path="",Int_t event=0)
 {
   AliL3Logger l;
   //l.UnSet(AliL3Logger::kDebug);
@@ -152,14 +158,14 @@ void singlepatch(char* in,int first, int last,char *path="",int event=0)
   //l.UseStdout();
   l.UseStream();
   
-  char fname[100];
+  Char_t fname[100];
   sprintf(fname,"%sevent_%d/",path,event);
-  char name[256];
+  Char_t name[256];
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
   fFileHandler->SetAliInput(in);
   Int_t srow[2] = {0,175};
-  int patch=0;
-  for(int slice=first; slice<=last; slice++)
+  Int_t patch=0;
+  for(Int_t slice=first; slice<=last; slice++)
     {
       cerr<<"reading slice: "<<slice;
       fFileHandler->Free();

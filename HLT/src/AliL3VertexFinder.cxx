@@ -1,5 +1,7 @@
+// @(#) $Id$
+
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy Uli
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -10,6 +12,8 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3Transform.h"
 
+/** \class AliL3VertexFinder
+<pre>
 //_____________________________________________________________
 // AliL3VertexFinder
 //
@@ -24,6 +28,8 @@
 //   SetZErr(GetZErrSector());
 // 
 //
+</pre>
+*/
 
 ClassImp(AliL3VertexFinder)
 AliL3VertexFinder::AliL3VertexFinder(){

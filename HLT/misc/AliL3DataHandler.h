@@ -1,7 +1,8 @@
+// @(#) $Id$
+
 #ifndef ALIL3DATAHANDLER_H
 #define ALIL3DATAHANDLER_H
 
-#include "AliL3RootTypes.h"
 #include "AliL3MemHandler.h"
 
 class AliL3TransBit;

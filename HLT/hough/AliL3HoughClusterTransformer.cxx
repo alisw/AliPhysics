@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -263,7 +263,7 @@ void AliL3HoughClusterTransformer::TransformCircle()
     }
 }
 
-void AliL3HoughClusterTransformer::TransformCircleC(Int_t row_range)
+void AliL3HoughClusterTransformer::TransformCircleC(Int_t *row_range,Int_t every)
 {
   //Circle transform, using combinations of every 2 points lying
   //on different padrows and within the same etaslice.

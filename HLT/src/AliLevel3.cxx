@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
-// Author: Anders Vestbo <mailto:vestbo$fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ASV
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -27,6 +27,7 @@
 #include "AliL3DigitData.h"
 #include "AliL3TrackArray.h"
 #include "AliL3MemHandler.h"
+#include "AliL3Fitter.h"
 #ifdef use_aliroot
 #include "AliL3FileHandler.h"
 #endif
@@ -36,6 +37,8 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3VertexData.h"
 
+/** \class AliLevel3
+<pre>
 //_____________________________________________________________
 //
 //  AliLevel3
@@ -46,13 +49,13 @@
 //  You must always remember to set the tracking parameters. E.g.:
 // 
 //  AliLevel3 *level3 = new AliLevel3(inputfile,outputfile);
-//  level3->SetTrackerParam(); //Sets default tracking parameters
+//  level3->SetTrackerParam();   //Sets default tracking parameters
 //  level3->ProcessSector(2,2);  //Does tracking on sector 2 (actually 2+38)
-//Begin_Html
-/*
-<img src="tpcsectorsnb.gif">
-*/
+//Begin_Html 
+//<img src="tpcsectorsnb.gif">
 //End_Html
+</pre>
+*/
 
 ClassImp(AliLevel3)
 
@@ -112,7 +115,7 @@ AliLevel3::AliLevel3(TFile *in)
 
 void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
 {
-#ifdef ASVVERSION
+  /*#ifdef ASVVERSION
   if(npatches != 1 && binary == kFALSE)
     {
       LOG(AliL3Log::kWarning,"AliLevel3::Init","NPatches")
@@ -120,7 +123,7 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
       npatches = 1;
     }
 #endif
-  
+  */
   if(!binary && !fInputFile)
     {
       LOG(AliL3Log::kError,"AliLevel3::Init","Files")
@@ -128,12 +131,13 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
       return;
     }
   
-  AliL3Transform::Init(path,!binary);//Initialize the detector parameters.
   fWriteOut = kFALSE;
+  fPileUp = kFALSE;
+  fNoCF=kFALSE;
   fUseBinary = binary;
   SetPath(path);
   fGlobalMerger = 0;
-
+  
   fDoRoi = kFALSE;
   fDoNonVertex = kFALSE;
   fFindVertex = kFALSE;
@@ -145,10 +149,15 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
   fEvent=0;
 
   switch(npatches){
+  case 0:
+    fNPatch = 1;
+    fRow[0][0] = AliL3Transform::GetFirstRow(3);
+    fRow[0][1] = AliL3Transform::GetLastRow(5);
+    break;
   case 1:
     fNPatch = 1;        //number of patches change row in process
     fRow[0][0] = 0;
-    fRow[0][1] = AliL3Transform::GetNRows();
+    fRow[0][1] = AliL3Transform::GetLastRow(-1);
     break;
   case 2:
     fNPatch = 2;        //number of patches change row in process
@@ -189,6 +198,8 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
 
 void AliLevel3::DoBench(char* name){
   fBenchmark->Analyze(name);
+  delete fBenchmark;
+  fBenchmark = new AliL3Benchmark();
 }
 
 void AliLevel3::DoMc(char* file){
@@ -255,14 +266,18 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
     fNTrackData=0;
     fTrackData=0;
   }
-  fBenchmark->Start("Global Merger");
-  fGlobalMerger->AddAllTracks();
-  //fGlobalMerger->Merge();
-  fGlobalMerger->SlowMerge();
-  fBenchmark->Stop("Global Merger");
-
+  fBenchmark->Start("Global track merger");
+  //fGlobalMerger->AddAllTracks();
+  fGlobalMerger->SetParameter(1.2,1.6,0.003,0.02,0.03);
+  fGlobalMerger->Merge();
+  //fGlobalMerger->SlowMerge();
+  fBenchmark->Stop("Global track merger");
+  
+  FitGlobalTracks();
+  
   if(fWriteOut) WriteResults(); 
   delete fGlobalMerger; fGlobalMerger = 0;
+  fFileHandler->FreeDigitsTree();
 }
 
 void AliLevel3::ProcessSlice(Int_t slice){
@@ -274,14 +289,16 @@ void AliLevel3::ProcessSlice(Int_t slice){
   if(fUseBinary)
     UseCF = kTRUE; //In case you are not using aliroot
 #endif
-  const Int_t maxpoints=100000;
+  if(fNoCF == kTRUE) //In case you don't want to run with cluster finder
+    UseCF = kFALSE;
+
+  const Int_t maxpoints=120000;
   const Int_t pointsize = maxpoints * sizeof(AliL3SpacePointData);
   AliL3MemHandler *memory = new AliL3MemHandler();
 
   fTrackMerger->Reset();
   fTrackMerger->SetRows(fRow[0]);
   
-
   for(Int_t patch=fNPatch-1;patch>=0;patch--){
     fFileHandler->Init(slice,patch,&fRow[patch][0]);
     UInt_t npoints=0;
@@ -294,17 +311,27 @@ void AliLevel3::ProcessSlice(Int_t slice){
           if(1){     //Binary to Memory
 	    fFileHandler->Free();
             if(fNPatch == 1)
-	      sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,-1);
+	      sprintf(name,"%sdigits_%d_%d_%d.raw",fPath,fEvent,slice,-1);
 	    else
-	      sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
+	      sprintf(name,"%sdigits_%d_%d_%d.raw",fPath,fEvent,slice,patch);
 	    if(!fFileHandler->SetBinaryInput(name)) return;
-	    digits= (AliL3DigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
+	    if(fPileUp)
+	      { //Read binary files which are not RLE
+		digits = (AliL3DigitRowData*)fFileHandler->Allocate();
+		fFileHandler->Binary2Memory(ndigits,digits); 
+	      }
+	    else //Read RLE binary files
+	      digits= (AliL3DigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
+
 	    fFileHandler->CloseBinaryInput(); 
           }
 
           if(0){     //Binary to Memory with Benchmark 
-            fFileHandler->Free();
-            sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
+	    fFileHandler->Free();
+            if(fNPatch == 1)
+	      sprintf(name,"%sdigits_%d_%d_%d.raw",fPath,fEvent,slice,-1);
+	    else
+	      sprintf(name,"%sdigits_%d_%d_%d.raw",fPath,fEvent,slice,patch);
             if(!memory->SetBinaryInput(name)) return;
             UInt_t compsize=memory->GetFileSize();
             UInt_t *comp=(UInt_t *)memory->Allocate(compsize);
@@ -323,7 +350,10 @@ void AliLevel3::ProcessSlice(Int_t slice){
             fFileHandler->ResetRandom();
             fFileHandler->SetRandomCluster(100);
             fFileHandler->SetNGenerate(100);
-            sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
+            if(fNPatch == 1)
+	      sprintf(name,"%sdigits_%d_%d_%d.raw",fPath,fEvent,slice,-1);
+	    else
+	      sprintf(name,"%sdigits_%d_%d_%d.raw",fPath,fEvent,slice,patch);
             if(!memory->SetBinaryInput(name)) return;
             UInt_t compsize=memory->GetFileSize();
             UInt_t *comp=(UInt_t *)memory->Allocate(compsize);
@@ -343,7 +373,10 @@ void AliLevel3::ProcessSlice(Int_t slice){
           fFileHandler->Free();
           Int_t sli[2]={0,0};
           fFileHandler->SetROI(fEta,sli);
-          sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
+          if(fNPatch==1)
+	    sprintf(name,"%sdigits_%d_%d_%d.raw",fPath,fEvent,slice,-1);
+	  else
+	    sprintf(name,"%sdigits_%d_%d_%d.raw",fPath,fEvent,slice,patch);
           if(!memory->SetBinaryInput(name)) return;
           UInt_t compsize=memory->GetFileSize();
           UInt_t *comp=(UInt_t *)memory->Allocate(compsize);
@@ -360,7 +393,10 @@ void AliLevel3::ProcessSlice(Int_t slice){
       else{
 #ifdef use_aliroot
         fBenchmark->Start("Dummy Unpacker");
-        sprintf(name,"digits_%d_%d.raw",slice,patch);
+        if(fNPatch==1)
+	  sprintf(name,"digits_%d_%d_%d.raw",fEvent,slice,-1);
+	else
+	  sprintf(name,"digits_%d_%d_%d.raw",fEvent,slice,patch);
         fBenchmark->Stop("Dummy Unpacker");
 
         if(0){    //Ali to Binary
@@ -370,7 +406,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
         }
   
         if(1){     //Ali to Memory
-          digits=(AliL3DigitRowData *)fFileHandler->AliDigits2Memory(ndigits,fEvent);
+          digits=(AliL3DigitRowData *)fFileHandler->AliAltroDigits2Memory(ndigits,fEvent);
           if(0){   //Memory to Binary
             fFileHandler->SetBinaryOutput(name);
             fFileHandler->Memory2CompBinary(ndigits,digits);
@@ -381,7 +417,6 @@ void AliLevel3::ProcessSlice(Int_t slice){
       }//end else UseBinary
 
       points = (AliL3SpacePointData *) memory->Allocate(pointsize);
-  
       fClusterFinder = new AliL3ClustFinderNew();
       fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1],maxpoints);
       fClusterFinder->SetDeconv(fClusterDeconv);
@@ -390,10 +425,10 @@ void AliLevel3::ProcessSlice(Int_t slice){
       if((fXYClusterError>0)&&(fZClusterError>0))
 	fClusterFinder->SetCalcErr(kFALSE);
       fClusterFinder->SetOutputArray(points);
-      fBenchmark->Start("Cluster Finder");
+      fBenchmark->Start("Cluster finder");
       fClusterFinder->Read(ndigits,digits);
       fClusterFinder->ProcessDigits();
-      fBenchmark->Stop("Cluster Finder");
+      fBenchmark->Stop("Cluster finder");
       npoints = fClusterFinder->GetNumberOfClusters();
       delete fClusterFinder;
       fClusterFinder = 0;
@@ -404,7 +439,10 @@ void AliLevel3::ProcessSlice(Int_t slice){
     else{// if not use Clusterfinder
       if(fUseBinary){//Binary to Memory
         memory->Free();
-        sprintf(name,"/%spoints_%d_%d.raw",fPath,slice,patch);
+        if(fNPatch==1)
+	  sprintf(name,"%s/points_%d_%d_%d.raw",fPath,fEvent,slice,-1);
+	else
+	  sprintf(name,"%s/points_%d_%d_%d.raw",fPath,fEvent,slice,patch);
         if(!memory->SetBinaryInput(name)) return;
         points = (AliL3SpacePointData *) memory->Allocate();
         memory->Binary2Memory(npoints,points);
@@ -445,23 +483,21 @@ void AliLevel3::ProcessSlice(Int_t slice){
       }
       fTrackMerger->SetVertex(fVertex);
     }
+
     fTracker->InitSector(slice,fRow[patch],fEta);
     fTracker->SetVertex(fVertex);
-    fBenchmark->Start("Tracker Read Hits");
+    fBenchmark->Start("Tracker setup"); 
     fTracker->ReadHits(npoints,points);
-    fBenchmark->Stop("Tracker Read Hits");
-    fBenchmark->Start("MainVertexTracking A"); 
-    fTracker->MainVertexTracking();
-    //fTracker->MainVertexTracking_a();
-    fBenchmark->Stop("MainVertexTracking A");
-    //fBenchmark->Start("MainVertexTracking B"); 
-    //fTracker->MainVertexTracking_b();
-    //fBenchmark->Stop("MainVertexTracking B");
-    fBenchmark->Start("Tracking fit");
+    fTracker->MainVertexTracking_a();
+    fBenchmark->Stop("Tracker setup");
+    fBenchmark->Start("Track follower");
+    fTracker->MainVertexTracking_b();
+    fBenchmark->Stop("Track follower");
     if(fDoNonVertex)
       fTracker->NonVertexTracking();//Do a second pass for nonvertex tracks
+    fBenchmark->Start("Sector track fitting");
     fTracker->FillTracks();
-    fBenchmark->Stop("Tracking fit");
+    fBenchmark->Stop("Sector track fitting");
 
     if(fWriteOut) 
        WriteSpacePoints(npoints, points, slice, patch); //do after Tracking
@@ -479,7 +515,10 @@ void AliLevel3::ProcessSlice(Int_t slice){
 
     //write tracks
     if(fWriteOut){
-      sprintf(name,"%stracks_tr_%d_%d.raw",fWriteOutPath,slice,patch);
+      if(fNPatch==1)
+	sprintf(name,"%s/tracks_tr_%d_%d_%d.raw",fWriteOutPath,fEvent,slice,-1);
+      else
+	sprintf(name,"%s/tracks_tr_%d_%d_%d.raw",fWriteOutPath,fEvent,slice,patch);
       memory->SetBinaryOutput(name);
       memory->Memory2Binary(ntracks0,trackdata0);
       memory->CloseBinaryOutput();
@@ -514,11 +553,11 @@ void AliLevel3::ProcessSlice(Int_t slice){
 
     memory->Free();
   }
-  fBenchmark->Start("Patch Merger");
+  //fBenchmark->Start("Patch Merger");
   //fTrackMerger->SlowMerge();
   fTrackMerger->AddAllTracks();
   //fTrackMerger->Merge();
-  fBenchmark->Stop("Patch Merger");
+  //fBenchmark->Stop("Patch Merger");
   /*
   //write merged tracks
   if(fWriteOut){
@@ -535,10 +574,35 @@ void AliLevel3::ProcessSlice(Int_t slice){
   delete memory;
 }
 
+void AliLevel3::FitGlobalTracks()
+{
+  AliL3Fitter *fitter = new AliL3Fitter(fVertex);
+  if(fNPatch==1)
+    fitter->LoadClusters(fWriteOutPath,fEvent,kTRUE);
+  else
+    fitter->LoadClusters(fWriteOutPath,fEvent,kFALSE);
+  
+  fBenchmark->Start("Global track fitter");
+  AliL3TrackArray *tracks = fGlobalMerger->GetOutTracks();
+  for(Int_t i=0; i<tracks->GetNTracks(); i++)
+    {
+      AliL3Track *tr = tracks->GetCheckedTrack(i);
+      if(!tr) continue;
+      fitter->FitHelix(tr);
+      tr->UpdateToFirstPoint();
+    }
+  fBenchmark->Stop("Global track fitter");
+  delete fitter;
+}
+
 void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
-                                                      Int_t slice,Int_t patch){
+				 Int_t slice,Int_t patch)
+{
   char name[256];
-  sprintf(name,"%spoints_%d_%d.raw",fWriteOutPath,slice,patch);
+  if(fNPatch==1)
+    sprintf(name,"%s/points_%d_%d_%d.raw",fWriteOutPath,fEvent,slice,-1);
+  else
+    sprintf(name,"%s/points_%d_%d_%d.raw",fWriteOutPath,fEvent,slice,patch);
   AliL3MemHandler * memory = new AliL3MemHandler();
   memory->SetBinaryOutput(name);
   memory->Transform(npoints,points,slice);
@@ -547,7 +611,8 @@ void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
   delete  memory;
 }
 
-Int_t AliLevel3::WriteTracks(char *filename,AliL3Merger *merger,char opt){
+Int_t AliLevel3::WriteTracks(char *filename,AliL3Merger *merger,char opt)
+{
   AliL3MemHandler *memory = new AliL3MemHandler();
   memory->SetBinaryOutput(filename);
   if(opt=='a'||opt=='i'){  //add intracks
@@ -571,10 +636,10 @@ void AliLevel3::WriteResults()
 {
   //Write the resulting tracks to outputfile
   Char_t fname[256];
-  sprintf(fname,"%stracks.raw",fWriteOutPath);
+  sprintf(fname,"%s/tracks_%d.raw",fWriteOutPath,fEvent);
   WriteTracks(fname,fGlobalMerger,'a');
   //WriteTracks("tracks.raw",fGlobalMerger,'a');
-  sprintf(fname,"%stracks_gl.raw",fWriteOutPath);
+  sprintf(fname,"%s/tracks_gl_%d.raw",fWriteOutPath,fEvent);
   WriteTracks(fname,fGlobalMerger,'o');
   //WriteTracks("tracks_gl.raw",fGlobalMerger,'o');
 }

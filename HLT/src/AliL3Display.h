@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_Display
 #define ALIL3_Display
 
@@ -25,7 +27,7 @@ class AliL3Display : public TObject {
   AliL3Display(Int_t *slice, Char_t *gfile="$(LEVEL3)/GEO/alice.geom");
   virtual ~AliL3Display();
 
-  void Setup(Char_t *trackfile,Char_t *path);
+  void Setup(Char_t *trackfile,Char_t *path,Int_t event=-1,Bool_t sp=kFALSE);
   void DisplayTracks(Int_t min_hits=10,Bool_t x3don=kTRUE,Float_t thr=0.);
   void DisplayAll(Int_t min_hits=10,Bool_t x3don=kTRUE);
   void DisplayClusters(Bool_t x3don=kTRUE);

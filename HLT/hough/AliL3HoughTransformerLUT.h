@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_HOUGHTRANSFORMERLUT
 #define ALIL3_HOUGHTRANSFORMERLUT
 
@@ -34,6 +36,7 @@ class AliL3HoughTransformerLUT : public AliL3HoughBaseTransformer {
   Float_t *fLUTX; //!
   Float_t *fLUTY; //!
   Float_t *fLUTEta; //!
+  Float_t *fLUTEtaReal; //!
   Float_t *fLUTphi0; //!
   Float_t *fLUT2sinphi0; //!   
   Float_t *fLUT2cosphi0; //!
@@ -41,6 +44,7 @@ class AliL3HoughTransformerLUT : public AliL3HoughBaseTransformer {
   
   Int_t fLastPad;
   Int_t fLastIndex;
+  Int_t fAccCharge;
 
   Float_t CalcRoverZ2(Float_t eta);
   Float_t CalcEta(Float_t roverz2);
@@ -49,6 +53,7 @@ class AliL3HoughTransformerLUT : public AliL3HoughBaseTransformer {
   Float_t CalcZ(Int_t time);  
 
   Int_t FindIndex(Float_t rz2, Int_t start=-100);
+  void AddCurveToHistogram(Int_t new_eta_index=-1);
 
  public:
 
@@ -61,8 +66,8 @@ class AliL3HoughTransformerLUT : public AliL3HoughBaseTransformer {
   void Reset();
 
   void TransformCircle();
-  void TransformCircleC(Int_t row_range){STDCERR<<"TransformCircleC is not defined for this transformer!"<<STDENDL;}
-  void TransformLine() {STDCERR<<"TransformLine is not defined for this transformer!"<<STDENDL;}
+  void TransformCircleC(Int_t *row_range,Int_t every){STDCERR<<"TransformCircleC is not defined for this transformer!"<<STDENDL;}
+  void TransformLine(Int_t *rowrange=0,Float_t *phirange=0) {STDCERR<<"TransformLine is not defined for this transformer!"<<STDENDL;}
 
   Int_t GetEtaIndex(Double_t eta);
   AliL3Histogram *GetHistogram(Int_t eta_index);
@@ -70,10 +75,9 @@ class AliL3HoughTransformerLUT : public AliL3HoughBaseTransformer {
   Int_t GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi);
   
   void Print();
-  void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100);
-  
+  void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100,Int_t n_seqs=-1);
+
   ClassDef(AliL3HoughTransformerLUT,1) //Normal Hough transformation class
 
 };
-
 #endif

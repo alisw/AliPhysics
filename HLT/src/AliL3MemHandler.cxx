@@ -1,8 +1,7 @@
-// $Id$
+// @(#) $Id$
 
-// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>
-//*-- Copyright &copy Uli 
-// changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>, Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group 
 
 #include "AliL3StandardIncludes.h"
 
@@ -14,7 +13,7 @@
 #include "AliL3MemHandler.h"
 
 /** \class AliL3MemHandler 
-//<pre>
+<pre>
 //_____________________________________________________________
 // AliL3MemHandler
 //
@@ -69,7 +68,7 @@
 // -----------------------
 //
 // The data is RLE encoded and currently using _10_ bit range for the ADC-values.
-//</pre> 
+</pre>
 */  
   
 ClassImp(AliL3MemHandler)
@@ -499,15 +498,16 @@ Bool_t AliL3MemHandler::Binary2Memory(UInt_t & nrow,AliL3DigitRowData *data)
     Byte_t  *byte_pt =(Byte_t *) row_pt;
 
     if(fread(row_pt,sizeof(AliL3DigitRowData),1,fInBinary)!=1) break;
+
     byte_pt += sizeof(AliL3DigitRowData);
     outsize += sizeof(AliL3DigitRowData);
 
     Int_t size = sizeof(AliL3DigitData) * row_pt->fNDigit;
-   
-    if(fread(byte_pt,size,1,fInBinary)!=1) break;
+
+    //if(fread(byte_pt,size,1,fInBinary)!=1) break;
+    fread(byte_pt,size,1,fInBinary);
     byte_pt += size;
     outsize += size;
-
     row_pt = (AliL3DigitRowData *) byte_pt;
     rowcount++;
   }  

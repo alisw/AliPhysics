@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef AliL3_Trigger
 #define AliL3_Trigger
 

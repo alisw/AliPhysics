@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3TRACK_H
 #define ALIL3TRACK_H
 
@@ -73,14 +75,15 @@ class AliL3Track {
   Bool_t CalculateEdgePoint(Double_t angle);//Calculate crossing point with line
   Bool_t CalculatePoint(Double_t xplane);   //Calculate crossing point with X-plane
   Bool_t IsPoint() {return fIsPoint;}
-  Double_t GetCrossingAngle(Int_t padrow);
+  Double_t GetCrossingAngle(Int_t padrow,Int_t slice=-1);
   Bool_t GetCrossingPoint(Int_t padrow,Float_t *xyz);
   Double_t GetDistance(Double_t x0,Double_t x1){return 0;}
-  
+  void UpdateToFirstPoint();
+
   void GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_t &closest_y,Double_t &closest_z);
   void Rotate(Int_t slice,Bool_t tolocal=kFALSE);
   Bool_t IsLocal() {return fIsLocal;}
-
+  
   // getter
   Double_t GetFirstPointX() {return fFirstPoint[0];}
   Double_t GetFirstPointY() {return fFirstPoint[1];}

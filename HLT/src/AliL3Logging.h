@@ -1,8 +1,12 @@
+// @(#) $Id$
+
 #ifndef ALIL3LOGGING_H
 #define ALIL3LOGGING_H
 
-#ifdef use_logging
+#include "AliL3RootTypes.h"
+#include "AliL3StandardIncludes.h"
 
+#ifdef use_logging
 #include <MLUCLog.hpp>
 #include <MLUCLogServer.hpp>
 

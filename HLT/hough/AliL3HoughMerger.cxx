@@ -1,5 +1,7 @@
+// @(#) $Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -143,7 +145,7 @@ void AliL3HoughMerger::MergePatches(Bool_t slow)
 void AliL3HoughMerger::Merge()
 {
   Double_t edge0 = PI/18.;
-  Double_t edge1 = 2*PI - edge0;
+  //Double_t edge1 = 2*PI - edge0;
   AliL3TrackArray *ttt = GetOutTracks();
   
   Int_t subsec = GetNIn() - 2; 
@@ -152,7 +154,7 @@ void AliL3HoughMerger::Merge()
     if(i==subsec) tout = GetInTracks(subsec+1);
     AliL3TrackArray *tin = GetInTracks(i);
     Double_t xval = AliL3Transform::Row2X(AliL3Transform::GetLastRow(i));
-    Double_t xmax = AliL3Transform::Row2X(AliL3Transform::GetLastRow(i+1));
+    //Double_t xmax = AliL3Transform::Row2X(AliL3Transform::GetLastRow(i+1));
     Double_t ymax = xval*tan(edge0);
     for(Int_t out=0;out<tout->GetNTracks();out++){
       AliL3Track *outtrack=tout->GetCheckedTrack(out);

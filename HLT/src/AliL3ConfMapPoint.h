@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3_ConfMapPoint
 #define ALIL3_ConfMapPoint
 

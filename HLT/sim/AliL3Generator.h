@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 #ifndef ALIL3GENERATOR_H
 #define ALIL3GENERATOR_H
 

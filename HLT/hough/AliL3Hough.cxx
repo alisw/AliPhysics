@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 #include <sys/time.h>
@@ -17,6 +17,7 @@
 #include "AliL3HoughTransformerLUT.h"
 #include "AliL3HoughTransformerVhdl.h"
 #include "AliL3HoughMaxFinder.h"
+#include "AliL3Benchmark.h"
 #ifdef use_aliroot
 #include "AliL3FileHandler.h"
 #else
@@ -71,15 +72,17 @@ AliL3Hough::AliL3Hough()
   fMerger           = 0;
   fInterMerger      = 0;
   fGlobalMerger     = 0;
-
+  fBenchmark        = 0;
+  
   fNEtaSegments     = 0;
   fNPatches         = 0;
   fVersion          = 0;
   fCurrentSlice     = 0;
-
+  
   SetTransformerParams();
   SetThreshold();
   SetNSaveIterations();
+  SetPeakThreshold();
 }
 
 AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv)
@@ -109,6 +112,8 @@ AliL3Hough::~AliL3Hough()
     delete fPeakFinder;
   if(fGlobalMerger)
     delete fGlobalMerger;
+  if(fBenchmark)
+    delete fBenchmark;
 }
 
 void AliL3Hough::CleanUp()
@@ -123,12 +128,11 @@ void AliL3Hough::CleanUp()
       if(fMemHandler[i]) delete fMemHandler[i];
     }
   
-  /*
-  if(fTracks) delete [] fTracks;
-  if(fEval) delete [] fEval;
-  if(fHoughTransformer) delete [] fHoughTransformer;
-  if(fMemHandler) delete [] fMemHandler;
-  */
+  if(fTracks) delete [] fTracks;
+  if(fEval) delete [] fEval;
+  if(fHoughTransformer) delete [] fHoughTransformer;
+  if(fMemHandler) delete [] fMemHandler;
+  
 }
 
 void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv)
@@ -150,9 +154,10 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 
   AliL3Transform::Init(fPath,!fBinary);
   fNPatches = AliL3Transform::GetNPatches();
-
+  
   fHoughTransformer = new AliL3HoughBaseTransformer*[fNPatches];
   fMemHandler = new AliL3MemHandler*[fNPatches];
+
   fTracks = new AliL3TrackArray*[fNPatches];
   fEval = new AliL3HoughEval*[fNPatches];
 
@@ -169,7 +174,7 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 	fHoughTransformer[i] = new AliL3HoughTransformerVhdl(0,i,fNEtaSegments,fNSaveIterations);
 	break;
       default:
-	fHoughTransformer[i] = new AliL3HoughTransformer(0,i,fNEtaSegments);
+	fHoughTransformer[i] = new AliL3HoughTransformer(0,i,fNEtaSegments,kFALSE,kFALSE);
       }
 
       fHoughTransformer[i]->CreateHistograms(fNBinX,fLowPt,fNBinY,-fPhi,fPhi);
@@ -202,6 +207,13 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
   fMerger = new AliL3HoughMerger(fNPatches);
   fInterMerger = new AliL3HoughIntMerger();
   fGlobalMerger = 0;
+  fBenchmark = new AliL3Benchmark();
+
+}
+
+void AliL3Hough::DoBench(Char_t *name)
+{
+  fBenchmark->Analyze(name);
 }
 
 void AliL3Hough::Process(Int_t minslice,Int_t maxslice)
@@ -216,8 +228,8 @@ void AliL3Hough::Process(Int_t minslice,Int_t maxslice)
       if(fAddHistograms)
 	AddAllHistograms();
       FindTrackCandidates();
-      Evaluate();
-      fGlobalMerger->FillTracks(fTracks[0],i);
+      //Evaluate();
+      //fGlobalMerger->FillTracks(fTracks[0],i);
     }
 }
 
@@ -247,7 +259,7 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
       else //read data from root file
 	{
 #ifdef use_aliroot
-	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliDigits2Memory(ndigits,eventnr);
+	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliAltroDigits2Memory(ndigits,eventnr);
 	  fMemHandler[i]->FreeDigitsTree();
 #else
 	  cerr<<"You cannot read from rootfile now"<<endl;
@@ -260,7 +272,7 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
     }
 }
 
-void AliL3Hough::Transform(Int_t row_range)
+void AliL3Hough::Transform(Int_t *row_range)
 {
   //Transform all data given to the transformer within the given slice
   //(after ReadData(slice))
@@ -270,10 +282,12 @@ void AliL3Hough::Transform(Int_t row_range)
   for(Int_t i=0; i<fNPatches; i++)
     {
       fHoughTransformer[i]->Reset();//Reset the histograms
-      if(row_range < 0)
+      fBenchmark->Start("Hough Transform");
+      if(!row_range)
 	fHoughTransformer[i]->TransformCircle();
       else
-	fHoughTransformer[i]->TransformCircleC(row_range);
+	fHoughTransformer[i]->TransformCircleC(row_range,1);
+      fBenchmark->Stop("Hough Transform");
     }
   cpuTime = GetCpuTime() - initTime;
   LOG(AliL3Log::kInformational,"AliL3Hough::Transform()","Timing")
@@ -333,12 +347,14 @@ void AliL3Hough::ProcessSliceIter()
 		  fEval[i]->SetNumOfPadsToLook(2);
 		  fEval[i]->SetNumOfRowsToMiss(2);
 		  fEval[i]->RemoveFoundTracks();
+		  /*
 		  Int_t nrows=0;
 		  if(!fEval[i]->LookInsideRoad(track,nrows))
 		    {
 		      fTracks[0]->Remove(fTracks[0]->GetNTracks()-1);
 		      fTracks[0]->Compress();
 		    }
+		  */
 		}
 	    }
 	  
@@ -378,12 +394,14 @@ void AliL3Hough::ProcessPatchIter(Int_t patch)
 	  track->SetTrackParameters(fPeakFinder->GetXPeak(0),fPeakFinder->GetYPeak(0),fPeakFinder->GetWeight(0));
 	  track->SetEtaIndex(i);
 	  track->SetEta(tr->GetEta(i,fCurrentSlice));
+	  /*
 	  Int_t nrows=0;
 	  if(!ev->LookInsideRoad(track,nrows))
 	    {	
 	      tracks->Remove(tracks->GetNTracks()-1);
 	      tracks->Compress();
 	    }
+	  */
 	}
     }
   fTracks[0]->QSort();
@@ -398,6 +416,7 @@ void AliL3Hough::AddAllHistograms()
 
   Double_t initTime,cpuTime;
   initTime = GetCpuTime();
+  fBenchmark->Start("Add Histograms");
   for(Int_t i=0; i<fNEtaSegments; i++)
     {
       AliL3Histogram *hist0 = fHoughTransformer[0]->GetHistogram(i);
@@ -407,6 +426,7 @@ void AliL3Hough::AddAllHistograms()
 	  hist0->Add(hist);
 	}
     }
+  fBenchmark->Stop("Add Histograms");
   fAddHistograms = kTRUE;
   cpuTime = GetCpuTime() - initTime;
   LOG(AliL3Log::kInformational,"AliL3Hough::AddAllHistograms()","Timing")
@@ -425,7 +445,7 @@ void AliL3Hough::FindTrackCandidates()
   
   Double_t initTime,cpuTime;
   initTime = GetCpuTime();
-
+  fBenchmark->Start("Find Maxima");
   for(Int_t i=0; i<n_patches; i++)
     {
       AliL3HoughBaseTransformer *tr = fHoughTransformer[i];
@@ -437,12 +457,12 @@ void AliL3Hough::FindTrackCandidates()
 	  if(hist->GetNEntries()==0) continue;
 	  fPeakFinder->Reset();
 	  fPeakFinder->SetHistogram(hist);
-	  //fPeakFinder->FindPeak1(3,1);
+	  //fPeakFinder->FindPeak1(2,1);
 	  fPeakFinder->FindMaxima(0,0); //Simple maxima finder
 	  //fPeakFinder->FindAbsMaxima();
 	  for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	    {
-	      if(fPeakFinder->GetWeight(k) == 0) continue;
+	      if(fPeakFinder->GetWeight(k) == 0 || fPeakFinder->GetWeight(k) < fPeakThreshold) continue;
 	      AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
 	      track->SetTrackParameters(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),fPeakFinder->GetWeight(k));
 	      track->SetEtaIndex(j);
@@ -452,6 +472,7 @@ void AliL3Hough::FindTrackCandidates()
 	}
       fTracks[i]->QSort();
     }
+  fBenchmark->Stop("Find Maxima");
   cpuTime = GetCpuTime() - initTime;
   LOG(AliL3Log::kInformational,"AliL3Hough::FindTrackCandidates()","Timing")
     <<"Maxima finding done in "<<cpuTime*1000<<" ms"<<ENDLOG;
@@ -508,7 +529,6 @@ Int_t AliL3Hough::Evaluate(Int_t road_width,Int_t nrowstomiss)
   //how many good rows (padrows with signal) 
   //did it cross in the slice
   if(fAddHistograms) 
-
     {
       for(Int_t j=0; j<tracks->GetNTracks(); j++)
 	{
@@ -554,28 +574,21 @@ void AliL3Hough::EvaluatePatch(Int_t i,Int_t road_width,Int_t nrowstomiss)
 	  continue;
 	} 
       nrows=0;
-      Bool_t result = fEval[i]->LookInsideRoad(track,nrows);
+      Int_t rowrange[2] = {AliL3Transform::GetFirstRow(i),AliL3Transform::GetLastRow(i)};
+      Bool_t result = fEval[i]->LookInsideRoad(track,nrows,rowrange);
       if(fAddHistograms)
 	{
 	  Int_t pre=track->GetNHits();
 	  track->SetNHits(pre+nrows);
 	}
-      //else//the track crossed too few good padrows (padrows with signal) in the patch, so remove it
-      //{
-      if(result == kFALSE)
-	tracks->Remove(j);
-      //}
+      else//the track crossed too few good padrows (padrows with signal) in the patch, so remove it
+	{
+	  if(result == kFALSE)
+	    tracks->Remove(j);
+	}
     }
   
   tracks->Compress();
-  /*
-    if(!fAddHistograms)
-    {
-    tracks->Compress();
-    tracks->QSort(); 
-    fMerger->FillTracks(tracks,i); //Copy tracks to the track merger
-    }
-  */
 
 }
 
@@ -584,6 +597,7 @@ void AliL3Hough::MergeEtaSlices()
   //Merge tracks found in neighbouring eta slices.
   //Removes the track with the lower weight.
   
+  fBenchmark->Start("Merge Eta-slices");
   AliL3TrackArray *tracks = fTracks[0];
   if(!tracks)
     {
@@ -599,44 +613,43 @@ void AliL3Hough::MergeEtaSlices()
 	  AliL3HoughTrack *track2 = (AliL3HoughTrack*)tracks->GetCheckedTrack(k);
 	  if(!track2) continue;
 	  if(abs(track1->GetEtaIndex() - track2->GetEtaIndex()) != 1) continue;
-	  if(track1->GetKappa() == track2->GetKappa() && track1->GetPsi() == track2->GetPsi())
+	  if(fabs(track1->GetKappa()-track2->GetKappa()) < 0.006 && 
+	     fabs(track1->GetPsi()- track2->GetPsi()) < 0.1)
 	    {
-	      cout<<"Merging track in slices "<<track1->GetEtaIndex()<<" "<<track2->GetEtaIndex()<<endl;
-		if(track1->GetWeight() > track2->GetWeight())
-		  tracks->Remove(k);
-		else
-		  tracks->Remove(j);
+	      //cout<<"Merging track in slices "<<track1->GetEtaIndex()<<" "<<track2->GetEtaIndex()<<endl;
+	      if(track1->GetWeight() > track2->GetWeight())
+		tracks->Remove(k);
+	      else
+		tracks->Remove(j);
 	    }
 	}
     }
+  fBenchmark->Stop("Merge Eta-slices");
   tracks->Compress();
 }
 
 void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
 {
-  //Write the tracks in slice
   
-  AliL3MemHandler *mem = new AliL3MemHandler();
+  AliL3MemHandler mem;
   Char_t fname[100];
   if(fAddHistograms)
     {
       sprintf(fname,"%s/tracks_ho_%d.raw",path,slice);
-      mem->SetBinaryOutput(fname);
-      mem->TrackArray2Binary(fTracks[0]);
-      mem->CloseBinaryOutput();
+      mem.SetBinaryOutput(fname);
+      mem.TrackArray2Binary(fTracks[0]);
+      mem.CloseBinaryOutput();
     }
   else 
     {
       for(Int_t i=0; i<fNPatches; i++)
 	{
 	  sprintf(fname,"%s/tracks_ho_%d_%d.raw",path,slice,i);
-	  mem->SetBinaryOutput(fname);
-	  mem->TrackArray2Binary(fTracks[i]);
-	  mem->CloseBinaryOutput();
+	  mem.SetBinaryOutput(fname);
+	  mem.TrackArray2Binary(fTracks[i]);
+	  mem.CloseBinaryOutput();
 	}
     }
-  delete mem;
-  
 }
 
 void AliL3Hough::WriteDigits(Char_t *outfile)

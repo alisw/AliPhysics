@@ -1,17 +1,12 @@
+// @(#) $Id$
+
 #ifndef ALIL3LOGGER_H
 #define ALIL3LOGGER_H
 
 #include "AliL3RootTypes.h"
-
-#if GCCVERSION == 3
-#include <fstream>
-#include <iosfwd>
-#else
-#include <fstream.h>
-#endif
+#include "AliL3StandardIncludes.h"
 
 class MLUCLogServer;
-class ofstream;
 
 class AliL3Logger{
   public:
