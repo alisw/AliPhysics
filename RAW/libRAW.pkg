@@ -4,7 +4,8 @@ SRCS:=  AliRawEvent.cxx \
 	AliTPCBuffer160.cxx AliTPCHuffman.cxx AliTPCCompression.cxx \
 	AliTPCRawStream.cxx \
 	AliITSRawStream.cxx AliITSRawStreamSPD.cxx \
-	AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx
+	AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx \
+	AliITSRawStreamSDDv2.cxx AliVMERawStream.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

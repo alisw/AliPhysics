@@ -33,5 +33,7 @@
 #pragma link C++ class AliITSRawStreamSPD+;
 #pragma link C++ class AliITSRawStreamSDD+;
 #pragma link C++ class AliITSRawStreamSSD+;
+#pragma link C++ class AliITSRawStreamSDDv2+;
+#pragma link C++ class AliVMERawStream+;
 
 #endif
