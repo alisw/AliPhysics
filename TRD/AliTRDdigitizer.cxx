@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/05 07:27:53  cblume
+Changes in the header-files by FCA
+
 Revision 1.9  2000/10/02 21:28:19  fca
 Removal of useless dependecies via forward declarations
 
@@ -551,7 +554,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
               Int_t timeD = timeH - timeE;
 
               // Apply the gas gain including fluctuations
-              Int_t signal = (Int_t) (-fGasGain * TMath::Log(gRandom->Rndm()));
+              Float_t ggRndm = 0.0;
+              do {
+                ggRndm = gRandom->Rndm();
+	      } while (ggRndm <= 0);
+              Int_t signal = (Int_t) (-fGasGain * TMath::Log(ggRndm));
 
 	      // The distance of the electron to the center of the pad 
 	      // in units of pad width
