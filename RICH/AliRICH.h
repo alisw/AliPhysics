@@ -1,5 +1,5 @@
-#ifndef ALIRICH_H
-#define ALIRICH_H
+#ifndef AliRICH_h
+#define AliRICH_h
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -28,16 +28,21 @@ class AliRICHChamber;
 class AliRICHCerenkov;
 class AliSegmentation;
 class AliRICHResponse;
-class AliRICHEllipse;
 class AliRICHGeometry;
 class AliRICHMerger;
 
-class AliRICH : public  AliDetector {
- public:
-    AliRICH();
-    AliRICH(const char *name, const char *title);
-    AliRICH(const AliRICH& RICH);
-    virtual       ~AliRICH();
+class AliRICH : public AliDetector 
+{
+   
+enum EDebugBits {kDebugStart=BIT(0),kDebugParam=BIT(1),kDebugHit=BIT(2),kDebugDigit=BIT(3),kDebugReco=BIT(4)};
+   
+public:
+// ctor dtor staff      
+   AliRICH(); // default ctor
+   AliRICH(const char *name, const char *title); // named ctor
+   AliRICH(const AliRICH& RICH);   
+   virtual       ~AliRICH();
+   
     virtual void   AddHit(Int_t track, Int_t *vol, Float_t *hits);
     virtual void   AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs);
     virtual void   AddSDigit(Int_t *clhits);
@@ -47,9 +52,9 @@ class AliRICH : public  AliDetector {
     virtual void   AddRecHit3D(Int_t id, Float_t* rechit);
 
 
-    virtual void   BuildGeometry();
-    virtual void   CreateGeometry();
-    virtual void   CreateMaterials();
+    virtual void   BuildGeometry();   // TNode ROOT variant for event display
+    virtual void   CreateGeometry();  // GEANT volumes tree fro simulation
+    virtual void   CreateMaterials(); // GEANT materials definition
     virtual Float_t AbsoCH4(Float_t x);
     virtual Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola);
     virtual void   StepManager();
@@ -67,27 +72,53 @@ class AliRICH : public  AliDetector {
     virtual void   ResetRecHits1D();
     virtual void   ResetRecHits3D();
     virtual void   FindClusters(Int_t nev,Int_t lastEntry);
-    virtual void   Hits2SDigits();
-    virtual void   SDigits2Digits();
-    virtual void   SDigits2Digits(Int_t nev, Int_t flag);
-    virtual void   Digits2Reco();
-// 
-// Configuration Methods (per station id)
-//
-// Set Chamber Segmentation Parameters
-// id refers to the station and isec to the cathode plane   
-// Set Segmentation and Response Model
-    virtual void   SetGeometryModel(Int_t id, AliRICHGeometry *geometry);
-    virtual void   SetSegmentationModel(Int_t id, AliSegmentation *segmentation);
-    virtual void   SetResponseModel(Int_t id, AliRICHResponse *response);
-// Set Reconstruction Model
-    virtual void   SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconstruction);
-// Set source debugging level
-    void           SetDebugLevel(Int_t level) {fDebugLevel=level;}
+// Converters    
+   virtual void   Hits2SDigits();
+   virtual void   SDigits2Digits();
+   virtual void   SDigits2Digits(Int_t nev, Int_t flag);
+   virtual void   Digits2Reco();
+
+// Models for chambers
+   virtual void     SetGeometryModel(Int_t iChamberN, AliRICHGeometry *pRICHGeo)
+	                                                    {((AliRICHChamber*)fChambers->At(iChamberN))->GeometryModel(pRICHGeo);}
+   AliRICHGeometry* GetGeometryModel(Int_t iChamberN=0)const{return ((AliRICHChamber*)fChambers->At(iChamberN))->GetGeometryModel();}
+    
+   virtual void     SetSegmentationModel(Int_t iChamberN, AliSegmentation *pAliSeg)
+                                                                       {((AliRICHChamber*)fChambers->At(iChamberN))->SetSegmentationModel(pAliSeg);}
+   AliSegmentation* GetSegmentationModel(Int_t iChamberN=0)const{return ((AliRICHChamber*)fChambers->At(iChamberN))->GetSegmentationModel();}
+	 
+   virtual void     SetResponseModel(Int_t iChamberN, AliRICHResponse *pRICHRes)
+	                                                           {((AliRICHChamber*)fChambers->At(iChamberN))->ResponseModel(pRICHRes);}
+   AliRICHResponse* GetResponseModel(Int_t iChamberN)  const{return ((AliRICHChamber*)fChambers->At(iChamberN))->GetResponseModel();}
+
+   virtual void     SetReconstructionModel(Int_t id, AliRICHClusterFinder *pRICHReco)
+                                                           {    ((AliRICHChamber*)fChambers->At(id))->SetReconstructionModel(pRICHReco);}
+// Debug staff
+   void   SetDebugLevel(Int_t level) {fDebugLevel=level;}
+   Int_t  GetDebugLevel()       const{return fDebugLevel;}
+   
+   void   SetDebugStart()     {fDebugLevel+=kDebugStart;}        // Controls debug message at the entring point of methods
+   void ResetDebugStart()     {fDebugLevel-=kDebugStart;}        // Controls debug message at the entring point of methods
+   Bool_t  IsDebugStart()const{return fDebugLevel&kDebugStart;}  // Controls debug message at the entring point of methods
+   
+   void   SetDebugParam()     {fDebugLevel+=kDebugParam;}        // Controls debug printout for the parameters
+   void ResetDebugParam()     {fDebugLevel-=kDebugParam;}        // Controls debug printout for the parameters
+   Bool_t  IsDebugParam()const{return fDebugLevel&kDebugParam;}  // Controls debug printout for the parameters
+   
+   void   SetDebugHit()       {fDebugLevel+=kDebugHit;}          // Controls debug printout for hits
+   void ResetDebugHit()       {fDebugLevel-=kDebugHit;}          // Controls debug printout for hits
+   Bool_t  IsDebugHit()  const{return fDebugLevel&kDebugHit;}    // Controls debug printout for hits
+   
+   void   SetDebugDigit()     {fDebugLevel+=kDebugDigit;}        // Controls debug printout for digits
+   void ResetDebugDigit()     {fDebugLevel-=kDebugDigit;}        // Controls debug printout for digits
+   Bool_t  IsDebugDigit()const{return fDebugLevel&kDebugDigit;}  // Controls debug printout for digits
+   
+   void   SetDebugReco()      {fDebugLevel+=kDebugReco;}         // Controls debug printout for reco
+   void ResetDebugReco()      {fDebugLevel-=kDebugReco;}         // Controls debug printout for reco
+   Bool_t  IsDebugReco() const{return fDebugLevel&kDebugReco;}   // Controls debug printout for reco
+   
 // Set Merger
     virtual void   SetMerger(AliRICHMerger* thisMerger) {fMerger=thisMerger;}  
-// Get source debugging level
-    Int_t          GetDebugLevel() {return fDebugLevel;}
 // Response Simulation
     virtual Int_t  Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id, ResponseType res);
 // Return reference to Chamber #id
@@ -118,7 +149,9 @@ class AliRICH : public  AliDetector {
     // Single events
     virtual void DiagnosticsSE(Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0);
     
- protected:
+   virtual void Print(Option_t *option)const;
+    
+protected:
     TObjArray            *fChambers;           // List of Tracking Chambers
     Int_t                 fNSDigits;           // Number of clusters
     Int_t                 fNcerenkovs;         // Number of cerenkovs
@@ -152,11 +185,20 @@ class AliRICH : public  AliDetector {
     Int_t fLostFresnel;                        // Cerenkovs lost by Fresnel reflection
 
 
-// Background eent for event mixing
-    Text_t *fFileName;                         // ! File with background hits
-    AliRICHMerger *fMerger;                    // ! pointer to merger
+// Background event for event mixing
+    Text_t *fFileName;                         //! File with background hits
+    AliRICHMerger *fMerger;                    //! pointer to merger
     
     ClassDef(AliRICH,1)                        //Hits manager for set:RICH
 };
-#endif
+    
+inline void AliRICH::Print(Option_t *option)const
+{
+   if(IsDebugParam()){
+      GetGeometryModel(0)->Print();
+      GetSegmentationModel(0)->Print();
+      GetResponseModel(0)->Print();
+   }
+}//inline void AliRICH::Print(Option_t *option)const
 
+#endif
