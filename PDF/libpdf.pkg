@@ -390,3 +390,5 @@ npdf/eks98.F \
 npdf/eksarp.F \
 npdf/sfeks98.F \
 npdf/structa.F 
+
+PACKFFLAGS := $(FFLAGS) -IPDF/pdf

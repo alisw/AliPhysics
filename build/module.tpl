@@ -18,6 +18,16 @@ else
 @PACKAGE@CXXFLAGS:=$(PACKCXXFLAGS)
 endif
 
+ifndef PACKDCXXFLAGS
+ifeq ($(PLATFORM),linuxicc)
+@PACKAGE@DCXXFLAGS:=$(filter-out -O%,$(CXXFLAGS)) -O0
+else
+@PACKAGE@DCXXFLAGS:=$(filter-out -O%,$(CXXFLAGS))
+endif
+else
+@PACKAGE@DCXXFLAGS:=$(PACKCXXFLAGS)
+endif
+
 
 ifdef DHDR
 WITHDICT=YES
@@ -143,12 +153,12 @@ endif
 	  $(SHLD) $(SOFLAGS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO)) $(SHLIB) ;\
       cd $(CURDIR) ; rm -rf $$TMPDIR
 	  $(MUTE)chmod a-w $@
- 
+
 $(@PACKAGE@BIN):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Making executable $@ *****"
 endif
-	  $(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(LIBS) $(@PACKAGE@ELIBS) $(EXEFLAGS) -o $@ 
+	  $(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBS) $(LIBS) $(EXEFLAGS) -o $@ 
 
 $(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk
 ifndef ALIQUIET
@@ -161,7 +171,7 @@ $(@PACKAGE@DO): $(@PACKAGE@DS)
 ifndef ALIQUIET
 		@echo "***** Compiling $< *****";
 endif
-		$(MUTE)$(CXX) -c $(@PACKAGE@INC)  -I$(ALICE_ROOT) $< -o $@ $(@PACKAGE@CXXFLAGS)
+		$(MUTE)$(CXX) -c $(@PACKAGE@INC)  -I$(ALICE_ROOT) $< -o $@ $(@PACKAGE@DCXXFLAGS)
 
 #Different targets for the module
 

@@ -4,6 +4,8 @@ dummies.F hbcdf.F fzdummies.F \
 	  mathlib/gen/c/gamma.F \
 	  mathlib/gen/c/gamma128.F \
 	  mathlib/gen/c/gamma64.F \
+	  mathlib/gen/c/erf64.F \
+	  mathlib/gen/c/erf128.F \
 	  mathlib/gen/d/gauss.F \
 	  mathlib/gen/d/gauss128.F \
 	  mathlib/gen/d/gauss64.F \
@@ -224,11 +226,15 @@ CSRCS=\
 ifeq ($(PLATFORM),linux)
 	  CSRCS += packlib/kernlib/kerngen/unix/lnxgs/ishftr.c
 endif
+ifeq ($(PLATFORM),linuxicc)
+	  CSRCS += packlib/kernlib/kerngen/unix/lnxgs/ishftr.c
+endif
 ifeq ($(PLATFORM),hpux)
 	  CSRCS += packlib/kernlib/kerngen/unix/hpxgs/traceqc.c packlib/kernlib/kerngen/ccgen/lnblnk.c
 endif
 
-
+PACKFFLAGS := $(FFLAGS) -IMINICERN/packlib/kernlib/kernnum \
+                        -IMINICERN/packlib/kernlib/kerngen/kerngen
 
 
 EINCLUDE:= MINICERN/packlib/kernlib/kerngen MINICERN/packlib/zebra MINICERN/packlib/kernlib/kernnum MINICERN/mathlib/gen
