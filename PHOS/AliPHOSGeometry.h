@@ -150,7 +150,7 @@ private:
   Int_t   fNZ ;                           // Number of crystal units in Z direction
   Float_t fOuterBoxSize[3] ;              // Size of the outer  thermo insulating foam box
   Float_t fOuterBoxThickness[3] ;         // Thickness of the outer thermo insulating foam box
-  Float_t fPHOSAngle[4] ;                 // Position angles of modules
+  Float_t * fPHOSAngle ;                  //[fNModules] Position angles of modules
   Float_t fPinDiodeSize[3] ;              // Size of the PIN Diode 
   TObjArray *  fRotMatrixArray ;          // Liste of rotation matrices (one per phos module)
   Float_t fSecondUpperPlateThickness ;    // Thickness of  upper polystyrene foam plate

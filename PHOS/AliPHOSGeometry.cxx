@@ -48,6 +48,8 @@ AliPHOSGeometry::~AliPHOSGeometry(void)
 
   fRotMatrixArray->Delete() ; 
   delete fRotMatrixArray ; 
+
+  delete fPHOSAngle ; 
 }
 
 //____________________________________________________________________________
@@ -276,12 +278,12 @@ void AliPHOSGeometry::InitPHOS(void)
   fNPhi     = 64 ; 
   fNZ       = 64 ; 
   fNModules =  5 ; 
+
+  fPHOSAngle = new Float_t[fNModules] ;
+  Int_t index ;
+  for ( index = 0; index < fNModules; index++ )
+    fPHOSAngle[index] = 0.0 ; // Module position angles are set in CreateGeometry()
   
-  fPHOSAngle[0] = 0.0 ; // Module position angles are set in CreateGeometry()
-  fPHOSAngle[1] = 0.0 ;
-  fPHOSAngle[2] = 0.0 ;
-  fPHOSAngle[3] = 0.0 ;
- 
   fXtlSize[0] =  2.2 ;
   fXtlSize[1] = 18.0 ;
   fXtlSize[2] =  2.2 ;
