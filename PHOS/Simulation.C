@@ -50,7 +50,7 @@ void simu(Int_t nevents=1, TString opt="GSD", TString name="all")
     sim.SetMakeDigits(name.Data()) ;    
   //Merging
   if ( opt.Contains("M") )
-    sim.MergeWith("./bgrd/galice.root", nevents) ;  
+    sim.MergeWith("./bgrd/galice.root", 1) ;  
   // to implement 
   sim.Run(nevents) ;  
 
