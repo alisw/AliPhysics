@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.13  2001/05/10 12:26:31  jbarbosa
+  Totally reworked version of reconstruction algorithm.
+
   Revision 1.12  2001/02/27 22:15:03  jbarbosa
   Removed compiler warning.
 
@@ -52,6 +55,8 @@
   J. Barbosa's spot reconstruction algorithm.
 
 */
+
+#include <stdlib.h>
 
 
 #include "AliRICH.h"
