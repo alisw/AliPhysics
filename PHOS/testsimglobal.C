@@ -160,13 +160,13 @@ Bool_t sim_exam()
     
     if (ratiohmb[i] > maxAlaHitsMB){
       error = kTRUE ;
-      mess = "Examination detected an error in " + TString(namemul) ;
+      mess = "Examination detected an error in " + TString((const char *)namemul) ;
       write_info(mess) ;
     }
     
     if (ratioenb[i] > maxAlaTotEnB) {
       error = kTRUE ;
-      mess = "Examination detected an error in " + TString(namen)  ;
+      mess = "Examination detected an error in " + TString((const char *)namen)  ;
       write_info(mess) ;
     }
   }

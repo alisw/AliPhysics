@@ -12,7 +12,7 @@ PACKAGE = PHOS
 SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx \
                  AliPHOSvFast.cxx AliPHOSvImpacts.cxx \
                  AliPHOSImpact.cxx \
-                 AliPHOSHit.cxx AliPHOSTick.cxx\
+                 AliPHOSHit.cxx \
                  AliPHOSGeometry.cxx \
 		 AliPHOSEMCAGeometry.cxx \
 		 AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx \
