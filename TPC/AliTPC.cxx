@@ -78,6 +78,8 @@
 #include "AliTrackReference.h"
 #include "AliMC.h"
 #include "AliTPCDigitizer.h"
+#include "AliTPCBuffer.h"
+#include "AliTPCDDLRawData.h"
 #include "AliTPCclustererMI.h"
 #include "AliTPCtrackerMI.h"
 #include "AliTPCpidESD.h"
@@ -857,6 +859,107 @@ void AliTPC::Digits2Clusters(Int_t /*eventnumber*/) const
   Error("Digits2Clusters",
   "Dummy function !  Call AliTPCclusterer::Digits2Clusters(...) instead !");
 }
+
+
+//_____________________________________________________________________________
+void AliTPC::Digits2Raw()
+{
+// convert digits of the current event to raw data
+
+  static const Int_t kThreshold = 0;
+  static const Bool_t kCompress = kTRUE;
+
+  fLoader->LoadDigits();
+  TTree* digits = fLoader->TreeD();
+  if (!digits) {
+    Error("Digits2Raw", "no digits tree");
+    return;
+  }
+
+  AliSimDigits digarr;
+  AliSimDigits* digrow = &digarr;
+  digits->GetBranch("Segment")->SetAddress(&digrow);
+
+  const char* fileName = "AliTPCDDL.dat";
+  AliTPCBuffer* buffer  = new AliTPCBuffer(fileName);
+  //Verbose level
+  // 0: Silent
+  // 1: cout messages
+  // 2: txt files with digits 
+  //BE CAREFUL, verbose level 2 MUST be used only for debugging and
+  //it is highly suggested to use this mode only for debugging digits files
+  //reasonably small, because otherwise the size of the txt files can reach
+  //quickly several MB wasting time and disk space.
+  buffer->SetVerbose(0);
+
+  Int_t nEntries = Int_t(digits->GetEntries());
+  Int_t previousSector = -1;
+  Int_t subSector = 0;
+  for (Int_t i = 0; i < nEntries; i++) {
+    digits->GetEntry(i);
+    Int_t sector, row;
+    fTPCParam->AdjustSectorRow(digarr.GetID(), sector, row);
+    if(previousSector != sector) {
+      subSector = 0;
+      previousSector = sector;
+    }
+
+    if (sector < 36) { //inner sector [0;35]
+      if (row != 30) {
+	//the whole row is written into the output file
+	buffer->WriteRowBinary(kThreshold, digrow, 0, 0, 0, 
+			       sector, subSector, row);
+      } else {
+	//only the pads in the range [37;48] are written into the output file
+	buffer->WriteRowBinary(kThreshold, digrow, 37, 48, 1, 
+			       sector, subSector, row);
+	subSector = 1;
+	//only the pads outside the range [37;48] are written into the output file
+	buffer->WriteRowBinary(kThreshold, digrow, 37, 48, 2, 
+			       sector, subSector, row);
+      }//end else
+
+    } else { //outer sector [36;71]
+      if (row == 54) subSector = 2;
+      if ((row != 27) && (row != 76)) {
+	buffer->WriteRowBinary(kThreshold, digrow, 0, 0, 0,
+			       sector, subSector, row);
+      } else if (row == 27) {
+	  //only the pads outside the range [43;46] are written into the output file
+	  buffer->WriteRowBinary(kThreshold, digrow, 43, 46, 2,
+				 sector, subSector, row);
+	  subSector = 1;
+	  //only the pads in the range [43;46] are written into the output file
+	  buffer->WriteRowBinary(kThreshold, digrow, 43, 46, 1,
+				 sector, subSector, row);
+      } else if (row == 76) {
+	  //only the pads outside the range [33;88] are written into the output file
+	  buffer->WriteRowBinary(kThreshold, digrow, 33, 88, 2,
+				 sector, subSector, row);
+	  subSector = 3;
+	  //only the pads in the range [33;88] are written into the output file
+	  buffer->WriteRowBinary(kThreshold, digrow, 33, 88, 1,
+				 sector, subSector, row);
+      }
+    }//end else
+  }//end for
+
+  delete buffer;
+  fLoader->UnloadDigits();
+
+  AliTPCDDLRawData rawWriter;
+  rawWriter.SetVerbose(0);
+
+  rawWriter.RawData(fileName);
+  gSystem->Unlink(fileName);
+
+  if (kCompress) {
+    Info("Digits2Raw", "compressing raw data");
+    rawWriter.RawDataCompDecompress(kTRUE);
+    gSystem->Unlink("Statistics");
+  }
+}
+
 
 extern Double_t SigmaY2(Double_t, Double_t, Double_t);
 extern Double_t SigmaZ2(Double_t, Double_t);

@@ -66,6 +66,8 @@ public:
   virtual void  Digits2Clusters(Int_t eventnumber=0) const;
   virtual void  Clusters2Tracks() const;
 
+  virtual void  Digits2Raw();
+
   Int_t         GetNsectors() const  {return fNsectors;}
   virtual void  MakeBranch(Option_t *opt=" ");
   virtual void  ResetDigits();

@@ -22,6 +22,7 @@
 // Author: D.Favretto
 
 #include "AliTPCBuffer160.h"
+#include "AliRawDataHeader.h"
 #include <TObjArray.h>
 #include <Riostream.h>
 #include <TMath.h>
@@ -35,7 +36,7 @@ AliTPCBuffer160::AliTPCBuffer160(const char* fileName,Int_t flag){
   //if flag = 0 the actual object is used in the read mode
   fFlag=flag;
   fCurrentCell=0;
-  fMiniHeaderPos=0;
+  fDataHeaderPos=0;
   fMaskBackward=0xFF;
   fVerbose=0;
   if (flag){
@@ -57,7 +58,10 @@ AliTPCBuffer160::AliTPCBuffer160(const char* fileName,Int_t flag){
 #else
     f = new fstream(fileName,ios::in);
 #endif
-    if(!f){cout<<"File doesn't exist:"<<fileName<<endl;;exit(-1);}
+    if(!f){
+      Error("AliTPCBuffer160", "File doesn't exist: %s", fileName);
+      return;
+    }
     fShift=0;
     //To get the file dimension (position of the last element in term of bytes)
     f->seekg(0, ios::end);
@@ -69,7 +73,7 @@ AliTPCBuffer160::AliTPCBuffer160(const char* fileName,Int_t flag){
 }
 
 AliTPCBuffer160::AliTPCBuffer160(fstream* file, Int_t size){
-//constructor for reading a file with mini header
+//constructor for reading a file
   fFlag=0;
   f=file;
   fCurrentCell=0;
@@ -77,11 +81,11 @@ AliTPCBuffer160::AliTPCBuffer160(fstream* file, Int_t size){
   fMaskBackward=0xFF;
   fVerbose=0;
 
-  fMiniHeaderPos=f->tellg();
-  f->seekg(fMiniHeaderPos+size);
+  fDataHeaderPos=f->tellg();
+  f->seekg(fDataHeaderPos+size);
   fFilePosition=f->tellg();
   fFileEnd=fFilePosition;
-  f->seekg(fMiniHeaderPos);
+  f->seekg(fDataHeaderPos);
   fCreated = kFALSE;
 }
 
@@ -91,7 +95,7 @@ AliTPCBuffer160::~AliTPCBuffer160(){
     //Flush out the Buffer content at the end only if Buffer wasn't completely filled
     Flush();
     if(fVerbose)
-      cout<<"File Created\n";
+      Info("~AliTPCBuffer160", "File Created");
   }//end if
   if (fCreated) {
     f->close();
@@ -110,7 +114,7 @@ AliTPCBuffer160::AliTPCBuffer160(const AliTPCBuffer160 &source)
   this->fFlag=source.fFlag;
   this->fMaskBackward=source.fMaskBackward;
   this->fFilePosition=source.fFilePosition;
-  this->fMiniHeaderPos=source.fMiniHeaderPos;
+  this->fDataHeaderPos=source.fDataHeaderPos;
   this->fVerbose=source.fVerbose;
   for (Int_t i=0;i<5;i++)this->fBuffer[i]=source.fBuffer[i];
   return;
@@ -125,7 +129,7 @@ AliTPCBuffer160& AliTPCBuffer160::operator=(const AliTPCBuffer160 &source){
   this->fFlag=source.fFlag;
   this->fMaskBackward=source.fMaskBackward;
   this->fFilePosition=source.fFilePosition;
-  this->fMiniHeaderPos=source.fMiniHeaderPos;
+  this->fDataHeaderPos=source.fDataHeaderPos;
   this->fVerbose=source.fVerbose;
   for (Int_t i=0;i<5;i++)this->fBuffer[i]=source.fBuffer[i];
   return *this;
@@ -182,7 +186,7 @@ Int_t AliTPCBuffer160::GetNextBackWord(){
   UInt_t temp;
   UInt_t value;
   if (!fShift){
-    if (fFilePosition>fMiniHeaderPos){
+    if (fFilePosition>fDataHeaderPos){
       fFilePosition-=sizeof(UInt_t)*5;
       f->seekg(fFilePosition);
       f->read((char*)fBuffer,sizeof(UInt_t)*5);
@@ -212,7 +216,7 @@ Int_t AliTPCBuffer160::GetNextBackWord(){
     }
     else {
 //      f->seekg(fFileEnd);
-      f->seekg(fMiniHeaderPos);
+      f->seekg(fDataHeaderPos);
       return -1;
     }
   }//end if
@@ -319,38 +323,24 @@ Int_t AliTPCBuffer160::ReadTrailerBackward(Int_t &WordsNumber,Int_t &PadNumber,I
   return 0;
 } 
 
-void AliTPCBuffer160::WriteMiniHeader(UInt_t Size,Int_t SecNumber,Int_t SubSector,Int_t Detector,Int_t Flag ){
+void AliTPCBuffer160::WriteDataHeader(Bool_t dummy, Bool_t compressed){
   //Size msg errore sector number sub-sector number 0 for TPC 0 for uncompressed
-  Int_t ddlNumber;
-  UInt_t miniHeader[3];
-  Int_t version=1;
-  if(SecNumber<36)
-    ddlNumber=SecNumber*2+SubSector;
-  else
-    ddlNumber=72+(SecNumber-36)*4+SubSector;
-  //  cout<<"DDL number "<<ddlNumber<<endl;
-  for(Int_t i=0;i<3;i++)miniHeader[i]=0;
-  Int_t miniHeaderSize=(sizeof(UInt_t))*3;
-  PackWord(miniHeader[1],Detector,0,7);
-  PackWord(miniHeader[1],0x123456,8,31);
-  PackWord(miniHeader[2],version,0,7);
-  PackWord(miniHeader[2],Flag,8,15);
-  PackWord(miniHeader[2],ddlNumber,16,31);
-  if (!Size){
+  AliRawDataHeader header;
+  if (dummy){
     //if size=0 it means that this mini header is a dummi mini header
-    fMiniHeaderPos=f->tellp();
-    //cout<<" Position of the DUMMY MH:"<<fMiniHeaderPos<<" Size:"<<Size<<endl;
-    miniHeader[0]=Size;
-    f->write((char*)(miniHeader),miniHeaderSize);
+    fDataHeaderPos=f->tellp();
+    //cout<<" Position of the DUMMY DH:"<<fMiniHeaderPos<<" Size:"<<Size<<endl;
+    f->write((char*)(&header),sizeof(header));
   }//end if
   else{
     UInt_t currentFilePos=f->tellp();
-    f->seekp(fMiniHeaderPos);
-    Size=currentFilePos-fMiniHeaderPos-miniHeaderSize;
-    //cout<<"Current Position (Next MH) "<<currentFilePos<<" Position of the MH:"<<fMiniHeaderPos<<" Size:"<<Size<<endl;
-    miniHeader[0]=Size;
-    //cout<<"Mini Header Size:"<<miniHeader[0]<<endl;
-    f->write((char*)(miniHeader),miniHeaderSize);
+    f->seekp(fDataHeaderPos);
+    header.fSize=currentFilePos-fDataHeaderPos;
+    header.SetAttribute(0);  // valid data
+    if (compressed) header.SetAttribute(1); 
+    //cout<<"Current Position (Next DH) "<<currentFilePos<<" Position of the DH:"<<fDataHeaderPos<<" Size:"<<Size<<endl;
+    //cout<<"Data Header Size:"<<header.fSize<<endl;
+    f->write((char*)(&header),sizeof(header));
     f->seekp(currentFilePos);
   }
   return;
@@ -368,8 +358,8 @@ void AliTPCBuffer160::PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, In
   length=StopBit-StartBit+1;
   sum=(UInt_t)TMath::Power(2,length)-1;
   if(Word > sum){
-    cout<<"WARNING::Word to be filled is not within desired length"<<endl;
-    exit(-1);
+    Error("PackWord", "Word to be filled is not within desired length");
+    return;
   }
   offSet=sum;
   offSet<<=StartBit;

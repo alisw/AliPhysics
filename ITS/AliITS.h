@@ -151,9 +151,7 @@ class AliITS : public AliDetector {
 
     //===================== Raw Data IO ================================
     // Write digits into raw data format
-    virtual void Digits2RawData() {}
-    // Decode raw data and store digits
-    virtual void RawData2Digits() {}
+    virtual void Digits2Raw();
 
     //==================== Clusterization ==============================
     // create separate tree for clusters - declustering refining

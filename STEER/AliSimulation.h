@@ -22,6 +22,7 @@ public:
 
   void           SetNumberOfEvents(Int_t nEvents);
   void           SetConfigFile(const char* fileName);
+  void           SetGAliceFile(const char* fileName);
 
   void           SetRunGeneration(Bool_t run) {fRunGeneration = run;};
   void           SetRunSimulation(Bool_t run) {fRunSimulation = run;};
@@ -35,6 +36,8 @@ public:
                    {fMakeDigits = detectors;};
   void           SetMakeDigitsFromHits(const char* detectors)
                    {fMakeDigitsFromHits = detectors;};
+  void           SetWriteRawData(const char* detectors)
+                   {fWriteRawData = detectors;};
 
   virtual Bool_t Run(Int_t nEvents = 0);
 
@@ -43,6 +46,7 @@ public:
   virtual Bool_t RunDigitization(const char* detectors = "ALL",
 				 const char* excludeDetectors = "");
   virtual Bool_t RunHitsDigitization(const char* detectors = "ALL");
+  virtual Bool_t WriteRawData(const char* detectors = "ALL");
 
 private:
   AliRunLoader*  LoadRun() const;
@@ -54,6 +58,7 @@ private:
   TString        fMakeSDigits;        // create sdigits for these detectors
   TString        fMakeDigits;         // create digits for these detectors
   TString        fMakeDigitsFromHits; // create digits from hits for these detectors
+  TString        fWriteRawData;       // write raw data for these detectors
   Bool_t         fStopOnError;        // stop or continue on errors
 
   Int_t          fNEvents;            // number of events

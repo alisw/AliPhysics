@@ -48,6 +48,7 @@
 #include "AliRun.h"
 #include "AliTrackReference.h"
 #include "AliMC.h"
+#include "../RAW/AliRawDataHeader.h"
 
 ClassImp(AliModule)
  
@@ -825,4 +826,53 @@ TTree* AliModule::TreeTR()
 
   TTree* tree = fRunLoader->TreeTR();
   return tree;
+}
+
+
+//_____________________________________________________________________________
+void AliModule::Digits2Raw()
+{
+// This is a dummy version that just copies the digits file contents
+// to a raw data file.
+
+  Warning("Digits2Raw", "Dummy version called for %s", GetName());
+
+  const Int_t kNDetectors = 16;
+  const char* kDetectors[kNDetectors] = {"TPC", "ITSSPD", "ITSSDD", "ITSSSD", "TRD", "TOF", "PHOS", "RICH", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO", "CRT"};
+  const Int_t kDetectorDDLs[kNDetectors] = {216, 20, 12, 16, 18, 5, 1, 5, 1, 7, 1, 1, 3, 1, 1};
+  Int_t nDDLs = 1;
+  Int_t ddlOffset = 0;
+  for (Int_t i = 0; i < kNDetectors; i++) {
+    if (strcmp(GetName(), kDetectors[i]) == 0) {
+      nDDLs = kDetectorDDLs[i];
+      ddlOffset = 0x100 * i;
+    }
+  }
+
+  if (!GetLoader()) return;
+  fstream digitsFile(GetLoader()->GetDigitsFileName(), ios::in);
+  if (!digitsFile) return;
+
+  digitsFile.seekg(0, ios::end);
+  UInt_t size = digitsFile.tellg();
+  UInt_t ddlSize = size/nDDLs;
+  Char_t* buffer = new Char_t[ddlSize+1];
+
+  for (Int_t iDDL = 0; iDDL < nDDLs; iDDL++) {
+    char fileName[20];
+    sprintf(fileName, "%s_%d.ddl", GetName(), iDDL + ddlOffset);
+    fstream rawFile(fileName, ios::out);
+    if (!rawFile) return;
+
+    AliRawDataHeader header;
+    header.fSize = ddlSize + sizeof(header);
+    rawFile.write((char*) &header, sizeof(header));
+
+    digitsFile.read(buffer, ddlSize);
+    rawFile.write(buffer, ddlSize);
+    rawFile.close();
+  }
+
+  digitsFile.close();
+  delete[] buffer;
 }

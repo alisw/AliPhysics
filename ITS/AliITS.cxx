@@ -110,6 +110,7 @@ the AliITS class.
 #include "AliITSsimulationSSD.h"
 #include "AliMC.h"
 #include "AliITSDigitizer.h"
+#include "AliITSDDLRawData.h"
 #include "AliITSclustererV2.h"
 #include "AliITStrackerV2.h"
 #include "AliITStrackerSA.h"
@@ -1389,6 +1390,46 @@ void AliITS::AddSimDigit(Int_t id,Float_t phys,Int_t *digits,Int_t *tracks,
     break;
   } // end switch id
 }
+
+//______________________________________________________________________
+void AliITS::Digits2Raw()
+{
+// convert digits of the current event to raw data
+
+  fLoader->LoadDigits();
+  TTree* digits = fLoader->TreeD();
+  if (!digits) {
+    Error("Digits2Raw", "no digits tree");
+    return;
+  }
+  SetTreeAddressD(digits);
+
+  AliITSDDLRawData rawWriter;
+  //Verbose level
+  // 0: Silent
+  // 1: cout messages
+  // 2: txt files with digits 
+  //BE CAREFUL, verbose level 2 MUST be used only for debugging and
+  //it is highly suggested to use this mode only for debugging digits files
+  //reasonably small, because otherwise the size of the txt files can reach
+  //quickly several MB wasting time and disk space.
+  rawWriter.SetVerbose(0);
+    
+  //SILICON PIXEL DETECTOR
+  Info("Digits2Raw", "Formatting raw data for SPD");
+  rawWriter.RawDataSPD(digits->GetBranch("ITSDigitsSPD"));
+    
+  //SILICON DRIFT DETECTOR
+  Info("Digits2Raw", "Formatting raw data for SDD");
+  rawWriter.RawDataSDD(digits->GetBranch("ITSDigitsSDD"));
+    
+  //SILICON STRIP DETECTOR
+  Info("Digits2Raw", "Formatting raw data for SSD");
+  rawWriter.RawDataSSD(digits->GetBranch("ITSDigitsSSD"));
+
+  fLoader->UnloadDigits();
+}
+
 //______________________________________________________________________
 void AliITS::MakeTreeC(Option_t *option){
   //   Create a separate tree to store the clusters.

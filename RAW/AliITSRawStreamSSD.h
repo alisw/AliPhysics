@@ -18,6 +18,7 @@ class AliITSRawStreamSSD: public AliITSRawStream {
     Int_t            GetSideFlag() const {return fCoord1;};
     Int_t            GetStrip() const {return fCoord2;};
 
+    enum {kDDLOffset = 0x300};    // offset for DDL numbers
     enum {kDDLsNumber = 16};      // number of DDLs in SSD
     enum {kModulesPerDDL = 109};  // number of modules in each DDL
 

@@ -95,7 +95,7 @@ public:
   virtual AliVertexer* CreateVertexer() const {return NULL;}
   virtual AliTracker* CreateTracker() const {return NULL;}
   virtual void        FillESD(AliESD* /*esd*/) const {}
-  virtual void        Digits2Raw() {}
+  virtual void        Digits2Raw();
   virtual void        Raw2Digits() {}
   virtual void        Browse(TBrowser *) {}
   virtual void        CreateGeometry() {}

@@ -18,6 +18,7 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     Int_t            GetAnode() const {return fCoord1;};
     Int_t            GetTime() const {return fCoord2;};
 
+    enum {kDDLOffset = 0x200};    // offset for DDL numbers
     enum {kDDLsNumber = 12};      // number of DDLs in SDD
     enum {kModulesPerDDL = 22};   // number of modules in each DDL 
 

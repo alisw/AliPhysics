@@ -72,9 +72,13 @@
 // than two event streams. It is assumed that the sdigits were already       //
 // produced for the background events.                                       //
 //                                                                           //
-// The methods RunSimulation, RunSDigitization, RunDigitization and          //
-// RunHitsDigitization can be used to run only parts of the full simulation  //
-// chain.                                                                    //
+// The output of raw data can be switched on by calling                      //
+//                                                                           //
+//   sim.SetWriteRawData("MUON");   // write raw data for MUON               //
+//                                                                           //
+// The methods RunSimulation, RunSDigitization, RunDigitization,             //
+// RunHitsDigitization and WriteRawData can be used to run only parts of     //
+// the full simulation chain.                                                //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -88,6 +92,7 @@
 #include "AliRunDigitizer.h"
 #include "AliDigitizer.h"
 #include <TObjString.h>
+#include <TSystem.h>
 
 
 ClassImp(AliSimulation)
@@ -103,6 +108,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fMakeSDigits("ALL"),
   fMakeDigits("ALL"),
   fMakeDigitsFromHits(""),
+  fWriteRawData(""),
   fStopOnError(kFALSE),
 
   fNEvents(1),
@@ -114,6 +120,7 @@ AliSimulation::AliSimulation(const char* configFileName,
 {
 // create simulation object with default parameters
 
+  SetGAliceFile("galice.root");
 }
 
 //_____________________________________________________________________________
@@ -125,6 +132,7 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fMakeSDigits(sim.fMakeSDigits),
   fMakeDigits(sim.fMakeDigits),
   fMakeDigitsFromHits(sim.fMakeDigitsFromHits),
+  fWriteRawData(sim.fWriteRawData),
   fStopOnError(sim.fStopOnError),
 
   fNEvents(sim.fNEvents),
@@ -182,6 +190,21 @@ void AliSimulation::SetConfigFile(const char* fileName)
 }
 
 //_____________________________________________________________________________
+void AliSimulation::SetGAliceFile(const char* fileName)
+{
+// set the name of the galice file
+// the path is converted to an absolute one if it is relative
+
+  fGAliceFileName = fileName;
+  if (!gSystem->IsAbsoluteFileName(fGAliceFileName)) {
+    char* absFileName = gSystem->ConcatFileName(gSystem->WorkingDirectory(),
+						fGAliceFileName);
+    fGAliceFileName = absFileName;
+    delete[] absFileName;
+  }
+}
+
+//_____________________________________________________________________________
 void AliSimulation::MergeWith(const char* fileName, Int_t nSignalPerBkgrd)
 {
 // add a file with background events for merging
@@ -230,6 +253,13 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     }
   }
 
+  // digits -> raw data
+  if (!fWriteRawData.IsNull()) {
+    if (!WriteRawData(fWriteRawData)) {
+      if (fStopOnError) return kFALSE;
+    }
+  }
+
   return kTRUE;
 }
 
@@ -260,7 +290,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 	  "Check your config file: %s", fConfigFileName.Data());
     return kFALSE;
   }
-  fGAliceFileName = runLoader->GetFileName();
+  SetGAliceFile(runLoader->GetFileName());
 
   if (!gAlice->Generator()) {
     Error("RunSimulation", "gAlice has no generator object. "
@@ -435,6 +465,57 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
   delete runLoader;
 
   Info("RunHitsDigitization", "execution time:");
+  stopwatch.Print();
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::WriteRawData(const char* detectors)
+{
+// convert the digits to raw data
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
+  AliRunLoader* runLoader = LoadRun();
+  if (!runLoader) return kFALSE;
+
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+    Info("WriteRawData", "processing event %d", iEvent);
+    runLoader->GetEvent(iEvent);
+    TString baseDir = gSystem->WorkingDirectory();
+    char dirName[256];
+    sprintf(dirName, "raw%d", iEvent);
+    gSystem->MakeDirectory(dirName);
+    if (!gSystem->ChangeDirectory(dirName)) {
+      Error("WriteRawData", "couldn't change to directory %s", dirName);
+      if (fStopOnError) return kFALSE; else continue;
+    }
+
+    TString detStr = detectors;
+    TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+    for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
+      AliModule* det = (AliModule*) detArray->At(iDet);
+      if (!det || !det->IsActive()) continue;
+      if (IsSelected(det->GetName(), detStr)) {
+	Info("WriteRawData", "creating raw data from digits for %s", 
+	     det->GetName());
+	det->Digits2Raw();
+      }
+    }
+
+    gSystem->ChangeDirectory(baseDir);
+    if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
+      Error("WriteRawData", "the following detectors were not found: %s", 
+	    detStr.Data());
+      if (fStopOnError) return kFALSE;
+    }
+  }
+
+  delete runLoader;
+
+  Info("WriteRawData", "execution time:");
   stopwatch.Print();
 
   return kTRUE;

@@ -28,6 +28,7 @@
 #include "AliTPCCompression.h"
 #include "AliTPCBuffer160.h"
 #include "AliTPCDDLRawData.h"
+#include "AliRawDataHeader.h"
 
 ClassImp(AliTPCDDLRawData)
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -48,22 +49,19 @@ AliTPCDDLRawData& AliTPCDDLRawData::operator=(const AliTPCDDLRawData &source){
 
 
 ////////////////////////////////////////////////////////////////////////////
-void AliTPCDDLRawData::RawData(Int_t LDCsNumber,Int_t EventNumber){
-  //Raw data slides generation
+void AliTPCDDLRawData::RawData(const char* inputFileName){
+  //Raw data generation
   //Number of DDL=2*36+4*36=216
   //2 DDL for each inner sector
   //4 DDL for each outer sector
-  Int_t ddlPerFile=216/LDCsNumber;
   Int_t offset=1;
-  if (216%LDCsNumber) ddlPerFile++;
-  cout<<"Number of DDL per slide: "<<ddlPerFile<<endl;
   ifstream f;
 #ifndef __DECCXX
-  f.open("AliTPCDDL.dat",ios::binary);
+  f.open(inputFileName,ios::binary);
 #else
-  f.open("AliTPCDDL.dat");
+  f.open(inputFileName);
 #endif
-  if(!f){cout<<"File doesn't exist !!"<<endl;return;}
+  if(!f){Error("RawData", "File doesn't exist !!");return;}
   struct DataPad{
     Int_t Sec;
     Int_t SubSec;
@@ -74,33 +72,35 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber,Int_t EventNumber){
   };
   DataPad data;
 
-  //AliTPCBuffer160 is used in write mode to generate AltroFormat.dat file
-  Int_t sliceNumber=1;
+  //AliTPCBuffer160 is used in write mode to generate raw data file
   char  filename[15];
-  sprintf(filename,"Ev%dTPCslice%d",EventNumber,sliceNumber); 
-  cout<<"   Creating "<<filename<<endl;
-  AliTPCBuffer160 *buffer=new AliTPCBuffer160(filename,1);
-
-  UInt_t count=0;
+  Int_t ddlNumber=0;
+  AliTPCBuffer160 *buffer=NULL;
   Int_t pSecNumber=-1;  //Previous Sector number
   Int_t pRowNumber=-1;  //Previous Row number  
   Int_t pPadNumber=-1;  //Previous Pad number
   Int_t pTimeBin=-1;    //Previous Time-Bin
   Int_t pSubSector=-1;  //Previous Sub Sector
   Int_t bunchLength=0;
-  Int_t countDDL=0;
   Int_t nwords=0;
   UInt_t numPackets=0;
+
   while (f.read((char*)(&data),sizeof(data))){
-    count++;
     if (pPadNumber==-1){
       pSecNumber=data.Sec;
       pRowNumber=data.Row;
       pPadNumber=data.Pad;
       pTimeBin=data.Time;
       pSubSector=data.SubSec;
+
+      if(data.Sec<36)
+	ddlNumber=data.Sec*2+data.SubSec;
+      else
+	ddlNumber=72+(data.Sec-36)*4+data.SubSec;
+      sprintf(filename,"TPC_%d.ddl",ddlNumber+kDDLOffset); 
+      buffer=new AliTPCBuffer160(filename,1);
       //size magic word sector number sub-sector number 0 for TPC 0 for uncompressed
-      buffer->WriteMiniHeader(0,pSecNumber,pSubSector,0,0);//Dummy;
+      buffer->WriteDataHeader(kTRUE,kFALSE);//Dummy;
       bunchLength=1;
       buffer->FillBuffer(data.Dig-offset);
       nwords++;
@@ -123,25 +123,19 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber,Int_t EventNumber){
 	  nwords=0;
 
 	  if(pSubSector!=data.SubSec){
-	    countDDL++;
-	    if(countDDL==ddlPerFile){
-	      //size magic word sector number sub-sector number 0 for TPC 0 for uncompressed
-	      buffer->Flush();
-	      buffer->WriteMiniHeader(1,pSecNumber,pSubSector,0,0);
-	      //cout<<"Mini header for DDL:"<<PSecNumber<<" Sub-sec:"<<PSubSector<<endl;
-	      delete buffer;
-	      sliceNumber++;
-	      sprintf(filename,"Ev%dTPCslice%d",EventNumber,sliceNumber);
-	      cout<<"   Creating "<<filename<<endl;
-	      buffer=new AliTPCBuffer160(filename,1);
-	      buffer->WriteMiniHeader(0,data.Sec,data.SubSec,0,0);//Dummy;
-	      countDDL=0;
-	    }//end if
-	    else{
-	      buffer->Flush();
-	      buffer->WriteMiniHeader(1,pSecNumber,pSubSector,0,0);
-	      buffer->WriteMiniHeader(0,data.Sec,data.SubSec,0,0);//Dummy;
-	    }
+	    //size magic word sector number sub-sector number 0 for TPC 0 for uncompressed
+	    buffer->Flush();
+	    buffer->WriteDataHeader(kFALSE,kFALSE);
+	    //cout<<"Data header for DDL:"<<PSecNumber<<" Sub-sec:"<<PSubSector<<endl;
+	    delete buffer;
+
+	    if(data.Sec<36)
+	      ddlNumber=data.Sec*2+data.SubSec;
+	    else
+	      ddlNumber=72+(data.Sec-36)*4+data.SubSec;
+	    sprintf(filename,"TPC_%d.ddl",ddlNumber+kDDLOffset); 
+	    buffer=new AliTPCBuffer160(filename,1);
+	    buffer->WriteDataHeader(kTRUE,kFALSE);//Dummy;
 	    pSubSector=data.SubSec;
 	  }//end if
 	}//end if
@@ -156,16 +150,17 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber,Int_t EventNumber){
       nwords++;
     }//end else
   }//end while
-  buffer->FillBuffer(pTimeBin);
-  buffer->FillBuffer(bunchLength+2);
-  nwords+=2;
-  buffer->WriteTrailer(nwords,pPadNumber,pRowNumber,pSecNumber);
-  //write the  M.H.
-  buffer->Flush();
-  buffer->WriteMiniHeader(1,pSecNumber,pSubSector,0,0);
-  //cout<<"Mini header for D D L:"<<pSecNumber<<" Sub-sec:"<<pSubSector<<endl;
-  delete buffer;
-  cout<<"Number of digits: "<<count<<endl;
+  if (buffer) {
+    buffer->FillBuffer(pTimeBin);
+    buffer->FillBuffer(bunchLength+2);
+    nwords+=2;
+    buffer->WriteTrailer(nwords,pPadNumber,pRowNumber,pSecNumber);
+    //write the  D.H.
+    buffer->Flush();
+    buffer->WriteDataHeader(kFALSE,kFALSE);
+    //cout<<"Data header for D D L:"<<pSecNumber<<" Sub-sec:"<<pSubSector<<endl;
+    delete buffer;
+  }
   f.close();
   return;
 }
@@ -173,48 +168,44 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber,Int_t EventNumber){
 ////////////////////////////////////////////////////////////////////////////
 
 
-Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t EventNumber,Int_t Comp){
+Int_t AliTPCDDLRawData::RawDataCompDecompress(Bool_t compress){
   //This method is used to compress and decompress the slides
   static const Int_t kNumTables=5;
   char filename[20];
-  char dest[20];
   fstream f;
   UInt_t size=0;
-  //Int_t MagicWord,DDLNumber,SecNumber,SubSector,Detector;
-  Int_t flag=0;
-  for(Int_t i=1;i<=LDCsNumber;i++){
-    if(!Comp){
-      sprintf(filename,"Ev%dTPCslice%d",EventNumber,i);
-      sprintf(dest,"Ev%dTPCslice%d.comp",EventNumber,i);
-    }
-    else{
-      sprintf(filename,"Ev%dTPCslice%d.comp",EventNumber,i);
-      sprintf(dest,"Ev%dTPCslice%d.decomp",EventNumber,i);
-    }
+  AliTPCCompression util;
+  util.SetVerbose(0);
+
+  for(Int_t i=0;i<216;i++){
+    sprintf(filename,"TPC_%d.ddl",i+kDDLOffset);
 #ifndef __DECCXX
     f.open(filename,ios::binary|ios::in);
 #else
     f.open(filename,ios::in);
 #endif
-    if(!f){cout<<"BE CAREFUL!! There isn't enough data to generate "<<LDCsNumber<<" slices"<<endl;break;}
+    if(!f.is_open()){f.clear(); continue;}
     if (fVerbose)
-      cout<<filename<<"  "<<dest<<endl;
+      Info("RawDataCompDecompress", "&s -> dest.ddl", filename);
     ofstream fdest;
 #ifndef __DECCXX
-    fdest.open(dest,ios::binary);
+    fdest.open("dest.ddl",ios::binary);
 #else
-    fdest.open(dest);
+    fdest.open("dest.ddl");
 #endif
     //loop over the DDL block 
-    //Each block contains a Mini Header followed by raw data (ALTRO FORMAT)
+    //Each block contains a Data Header followed by raw data (ALTRO FORMAT)
     //The number of block is ceil(216/LDCsNumber)
-    UInt_t miniHeader[3];
-    //here the Mini Header is read
-    while( (f.read((char*)(miniHeader),sizeof(UInt_t)*3)) ){
-      size=miniHeader[0];
+    AliRawDataHeader header;
+    //here the Data Header is read
+    while( f.read((char*)(&header),sizeof(header)) ){
+      size=header.fSize-sizeof(header);
       // cout<<"Data size:"<<size<<endl;
       //Int_t dim=sizeof(UInt_t)+sizeof(Int_t)*5;
       //cout<<" Sec "<<SecNumber<<" SubSector "<<SubSector<<" size "<<size<<endl;
+      Bool_t compressed = header.TestAttribute(1);
+      if ((compressed && compress) ||
+	  (!compressed && !compress)) continue;
       //open the temporay File
       ofstream fo;
       char temp[15]="TempFile";
@@ -230,14 +221,13 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t EventNumber
       }//end for
       fo.close();
       //The temp file is compressed or decompressed
-      AliTPCCompression *util = new AliTPCCompression();
-      util->SetVerbose(0);
-      if(!Comp){
-	util->CompressDataOptTables(kNumTables,temp,"TempCompDecomp");
+      Int_t result=0;
+      if(compress){
+	result=util.CompressDataOptTables(kNumTables,temp,"TempCompDecomp");
       }
       else
-	util->DecompressDataOptTables(kNumTables,temp,"TempCompDecomp");
-      delete util;
+	result=util.DecompressDataOptTables(kNumTables,temp,"TempCompDecomp");
+      if (result != 0) break;
       //the temp compressed file is open and copied to the final file fdest
       ifstream fi;
 #ifndef __DECCXX
@@ -248,18 +238,12 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t EventNumber
       fi.seekg(0,ios::end);
       size=fi.tellg();
       fi.seekg(0);
-      //The Mini Header is updated (size and Compressed flag) 
+      //The Data Header is updated (size and Compressed flag) 
       //and written into the output file
-      miniHeader[0]=size;
-      if(!Comp)
-	flag=1;
-      else
-	flag=0;
-      UInt_t aux=0x0;
-      flag<<=8;
-      aux|=flag;
-      miniHeader[2]=miniHeader[2]|aux;
-      fdest.write((char*)(miniHeader),sizeof(UInt_t)*3);
+      header.fSize=size+sizeof(header);
+      if (compress) header.SetAttribute(1);
+      else header.ResetAttribute(1);
+      fdest.write((char*)(&header),sizeof(header));
       //The compressem temp file is copied into the output file fdest
       for(UInt_t j=0;j<size;j++){
 	fi.read((char*)(&car),1);
@@ -272,22 +256,26 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t EventNumber
     fdest.close();
     remove("TempFile");
     remove("TempCompDecomp");
+    rename("dest.ddl",filename);
   }//end for
   return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-void AliTPCDDLRawData::RawDataAltro()const{
+void AliTPCDDLRawData::RawDataAltro(const char* inputFileName, const char* outputFileName)const{
   //This method is used to build the Altro format from AliTPCDDL.dat
   //It is used to debug the code and creates the tables used in the compresseion phase
   Int_t offset=1;
   ifstream f;
 #ifndef __DECCXX
-  f.open("AliTPCDDL.dat",ios::binary);
+  f.open(inputFileName,ios::binary);
 #else
-  f.open("AliTPCDDL.dat");
+  f.open(inputFileName);
 #endif
-  if(!f){cout<<"File doesn't exist !!"<<endl;return;}
+  if(!f){
+    Error("RawDataAltro", "File doesn't exist !!");
+    return;
+  }
   struct DataPad{
     Int_t Sec;
     Int_t SubSec;
@@ -299,9 +287,8 @@ void AliTPCDDLRawData::RawDataAltro()const{
   DataPad data;
 
   //AliTPCBuffer160 is used in write mode to generate AltroFormat.dat file
-  char  filename[30]="AltroFormatDDL.dat";
-  cout<<"   Creating "<<filename<<endl;
-  AliTPCBuffer160 *buffer=new AliTPCBuffer160(filename,1);
+  Info("RawDataAltro", "Creating &s", outputFileName);
+  AliTPCBuffer160 *buffer=new AliTPCBuffer160(outputFileName,1);
 
   UInt_t count=0;
   Int_t pSecNumber=-1;  //Previous Sector number
@@ -355,55 +342,41 @@ void AliTPCDDLRawData::RawDataAltro()const{
   nwords+=2;
   buffer->WriteTrailer(nwords,pPadNumber,pRowNumber,pSecNumber);
   delete buffer;
-  cout<<"Number of digits: "<<count<<endl;
+  Info("RawDataAltro", "Number of digits: %d", count);
   f.close(); 
   return;
 }
 
 /////////////////////////////////////////////////////////////////////////
-void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t EventNumber,Int_t Comp){
+void AliTPCDDLRawData::RawDataAltroDecode(const char* outputFileName){
   //This method merges the slides in only one file removing at the same 
-  //time all the mini headers. The file so obtained must be Altro format
+  //time all the data headers. The file so obtained must be Altro format
   //complaiant.
   //It is used mainly in the debugging phase 
   char filename[15];
-  char dest[30];
   fstream f;
-  if(!Comp)
-    sprintf(dest,"AltroDDLRecomposed.dat");
-  else
-    sprintf(dest,"AltroDDLRecomposedDec.dat");
   ofstream fdest;
 
 #ifndef __DECCXX
-  fdest.open(dest,ios::binary);
+  fdest.open(outputFileName,ios::binary);
 #else
-  fdest.open(dest);
+  fdest.open(outputFileName);
 #endif
   UInt_t size=0;
-  //Int_t MagicWord,DDLNumber,SecNumber,SubSector,Detector,flag=0;
-  for(Int_t i=1;i<=LDCsNumber;i++){
-    if(!Comp){
-      sprintf(filename,"Ev%dTPCslice%d",EventNumber,i);  
-    }
-    else{
-      sprintf(filename,"Ev%dTPCslice%d.decomp",EventNumber,i);  
-    }
+  AliRawDataHeader header;
+  for(Int_t i=0;i<216;i++){
+    sprintf(filename,"TPC_%d.ddl",i+kDDLOffset);
 #ifndef __DECCXX
     f.open(filename,ios::binary|ios::in);
 #else
     f.open(filename,ios::in);
 #endif
-    if(!f){cout<<"BE CAREFUL!! There isn't enough data to generate "<<LDCsNumber<<" slices"<<endl;break;}
+    if(!f)continue;
     //loop over the DDL block 
-    //Each block contains a Mini Header followed by raw data (ALTRO FORMAT)
-    //The number of block is ceil(216/LDCsNumber)
-    UInt_t miniHeader[3];
-    //here the Mini Header is read
-    //cout<<filename<<endl;
-    while( (f.read((char*)(miniHeader),sizeof(UInt_t)*3)) ){
+    //Each block contains a Data Header followed by raw data (ALTRO FORMAT)
+    while( (f.read((char*)(&header),sizeof(header))) ){
       Int_t car=0;
-      size=miniHeader[0];
+      size=header.fSize-sizeof(header);
       for(UInt_t j=0;j<size;j++){
 	f.read((char*)(&car),1);
 	fdest.write((char*)(&car),1);
