@@ -10,6 +10,8 @@
 #include "TG4Globals.h"
 #include "TG4NameMap.h"
 #include "TG4IntMap.h"
+#include "TG4G3Cut.h"
+#include "TG4G3Control.h"
 
 #include <Rtypes.h>
 #include "AliMCProcess.h"
@@ -38,6 +40,7 @@ class TG4PhysicsManager
         
     // methods
     void BuildPhysics();
+    void Gstpar(Int_t itmed, const char *param, Float_t parval); 
 
     // set methods
     void SetCut(const char* cutName, Float_t cutValue);
@@ -82,6 +85,8 @@ class TG4PhysicsManager
   private:
     // methods
     void FillProcessMap();
+    void GstparCut(G4int itmed, TG4G3Cut par, G4double parval);
+    void GstparControl(G4int itmed, TG4G3Control control, G4double parval);
 
     // static data members
     static TG4PhysicsManager*  fgInstance; //this instance
