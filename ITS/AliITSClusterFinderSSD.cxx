@@ -18,8 +18,6 @@
 Adding rekonstruction facilities
 Piotr Krzysztof Skowronski 
 December 1999.
-
-$Log$
 */
 
 /*
@@ -29,18 +27,21 @@ Automatic combination routines improved (traps)
 
 */
 
+#include <iostream.h>
+
+
 #include "AliRun.h"
 #include "AliITS.h"
+#include "AliITSdigit.h"
+#include "AliITSRawCluster.h"
+#include "AliITSRecPoint.h"
 #include "AliITSMapA1.h"
 #include "AliITSClusterFinderSSD.h"
 #include "AliITSclusterSSD.h"
 #include "AliITSpackageSSD.h"
- 
+#include "AliITSsegmentation.h"
 
-const Bool_t AliITSClusterFinderSSD::fgkSIDEP=kTRUE;
-const Bool_t AliITSClusterFinderSSD::fgkSIDEN=kFALSE;
-
-static const Int_t debug=0;
+const Int_t debug=0;
 
 ClassImp(AliITSClusterFinderSSD)
 
@@ -53,6 +54,7 @@ ClassImp(AliITSClusterFinderSSD)
 
 AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesArray *digits, TClonesArray *recp)   
 {
+
 
     fSegmentation=seg;
     fDigits=digits;
@@ -96,6 +98,7 @@ AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesA
 //-------------------------------------------------------
 AliITSClusterFinderSSD::~AliITSClusterFinderSSD() {
    
+
     delete fClusterP;
     delete fClusterN;        
     delete fPackages;        
@@ -144,6 +147,9 @@ void AliITSClusterFinderSSD::InitReconstruction()
 //---------------------------------------------
 void AliITSClusterFinderSSD::FindRawClusters() 
 {
+
+
+
 //Piotr Krzysztof Skowronski
 //Warsaw University of Technology
 //skowron@if.pw.edu.pl
@@ -285,8 +291,8 @@ void AliITSClusterFinderSSD::SeparateOverlappedClusters()
 	     }
 	  } // end loop over number of digits
           //split this cluster if necessary
-          if(numerofsplits>0) SplitCluster(splitlist,numerofsplits,i,fgkSIDEP); 
-	  numerofsplits=0;
+          if(numerofsplits>0) SplitCluster(splitlist,numerofsplits,i,fgkSIDEP);
+  	  numerofsplits=0;
 
 	  //in signed places (splitlist)
   } // end loop over clusters on Pside
@@ -504,6 +510,8 @@ void AliITSClusterFinderSSD::FillDigitsIndex()
       }
  }
    
+ delete [] PSidx;
+ delete [] NSidx;
 
  if (debug) cout<<"Digits :  P = "<<fNDigitsP<<"   N = "<<fNDigitsN<<endl;
 
@@ -1158,7 +1166,7 @@ ResolveOneBestMatchingPoint(AliITSpackageSSD *pkg)
  
  pkg->DelClusterOI(pi, fgkSIDEP);
  pkg->DelClusterOI(ni, fgkSIDEN);
- 
+
  if (split) {
    if (debug) cout<<"spltting package ...\n";
    new ((*fPackages)[fNPackages]) AliITSpackageSSD(fClusterP,fClusterN);
@@ -1253,6 +1261,14 @@ void AliITSClusterFinderSSD:: ResolvePackageWithOnePSideCluster(AliITSpackageSSD
 
  }
 
+ delete [] XN;
+ delete [] XNerr;
+ delete [] SP;
+ delete [] SN;
+ delete [] SPerr;
+ delete [] SNerr;
+
+
 }
 
 
@@ -1318,6 +1334,12 @@ void AliITSClusterFinderSSD::ResolvePackageWithOneNSideCluster(AliITSpackageSSD 
     CreateNewRecPoint(XP[k],XPerr[k], XN,XNerr, SP[k]+SN[k], SPerr[k]+SNerr[k],clusterP, clusterN, 1.0);
   }
   
+ delete [] XP;
+ delete [] XPerr;
+ delete [] SP;
+ delete [] SN;
+ delete [] SPerr;
+ delete [] SNerr;
                
 }
 
@@ -1547,8 +1569,15 @@ CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
      fSegmentation->GetPadIxz(P,N,stripP,stripN);
      digP = (AliITSdigitSSD*)fMap->GetHit(1,stripP);
      digN = (AliITSdigitSSD*)fMap->GetHit(0,stripN);
-     sigP = digP->fSignal;
-     sigN = digN->fSignal;
+     printf("SSD: digP digN %p %p\n",digP,digN);
+     if(digP) sigP = digP->fSignal;
+     else sigP=0;
+     if(digN) sigN = digN->fSignal;
+     else sigN=0;
+     if (!digP && !digN) {
+       Error("CreateNewRecPoint","cannot find the digit!");
+       return kFALSE;
+     }
      // add the rec point info
      AliITSRecPoint rnew;
      rnew.SetX(P*kconv);
@@ -1557,16 +1586,19 @@ CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
      rnew.SetdEdX(Sig/kdEdXtoQ);
      rnew.SetSigmaX2( kRMSx* kRMSx); 
      rnew.SetSigmaZ2( kRMSz* kRMSz);
-     rnew.SetProbability((float)prob);
+     //rnew.SetProbability((float)prob);
      if(sigP > sigN) {
         rnew.fTracks[0]=digP->fTracks[0];
         rnew.fTracks[1]=digP->fTracks[1];
         rnew.fTracks[2]=digP->fTracks[2];
+	//printf("sigP>sigN: %d %d %d\n",digP->fTracks[0],digP->fTracks[1],digP->fTracks[2]);
      } else {
         rnew.fTracks[0]=digN->fTracks[0];
         rnew.fTracks[1]=digN->fTracks[1];
         rnew.fTracks[2]=digN->fTracks[2];
+	//printf("sigN>sigP: %d %d %d\n",digN->fTracks[0],digN->fTracks[1],digN->fTracks[2]);
      }
+     //printf("SSD: track1 track2 track3 X Z %d %d %d %f %f\n",rnew.fTracks[0],rnew.fTracks[1],rnew.fTracks[2],P*kconv,N*kconv);
      fITS->AddRecPoint(rnew);
      /*
      // it was
@@ -1881,6 +1913,7 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
   AliITSdigitSSD *dig;
   for (i=0;i<fNClusterP;i++)
     {
+      //printf("P side cluster: cluster number %d\n",i);
       cluster = GetPSideCluster(i);
       if (!cluster->IsConsumed())
         {
@@ -1897,6 +1930,10 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
               x2 = pos;
               z2 = 1;
               GetCrossing (x2,z2);
+	      fSegmentation->GetPadIxz((x1+x2)/2,(z1+z2)/2,stripP,stripN);
+	      dig = (AliITSdigitSSD*)fMap->GetHit(1,stripP);
+	      if (!dig) printf("SSD: check the digit!  dig %p\n",dig);
+	      if(!dig) continue;
 	      AliITSRawClusterSSD cnew;
 	      Int_t nstripsP=cluster->GetNumOfDigits();
 	      cnew.fMultiplicity=nstripsP;
@@ -1915,8 +1952,6 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
 	      cnew.fQErr=sigerr;
 	      //cnew.fProbability=0.75; 
 	      fITS->AddCluster(2,&cnew);
-	      fSegmentation->GetPadIxz((x1+x2)/2,(z1+z2)/2,stripP,stripN);
-	      dig = (AliITSdigitSSD*)fMap->GetHit(1,stripP);
 	      // add the rec point info
 	      AliITSRecPoint rnew;
               rnew.SetX(kconv*(x1+x2)/2);
@@ -1925,10 +1960,12 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
               rnew.SetdEdX(sig/kdEdXtoQ);
 	      rnew.SetSigmaX2( kRMSx* kRMSx);
 	      rnew.SetSigmaZ2( kRMSz* kRMSz);
-              rnew.SetProbability(0.75);
+              //rnew.SetProbability(0.75);
 	      rnew.fTracks[0]=dig->fTracks[0];
 	      rnew.fTracks[1]=dig->fTracks[1];
 	      rnew.fTracks[2]=dig->fTracks[2];
+	      //printf("digP: %d %d %d\n",dig->fTracks[0],dig->fTracks[1],dig->fTracks[2]);
+	      //printf("SSD - P : track1 track2 track3  X Z %d %d %d %f %f\n",rnew.fTracks[0],rnew.fTracks[1],rnew.fTracks[2],kconv*(x1+x2)/2,kconv*(z1+z2)/2);
               fITS->AddRecPoint(rnew);
 	      /*
               fPointsM->AddLast( (TObject*) 
@@ -1943,6 +1980,7 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
 
   for (i=0;i<fNClusterN;i++)
     {
+      //printf("N side cluster: cluster number %d\n",i);
       cluster = GetNSideCluster(i);
       if (!cluster->IsConsumed())
         {
@@ -1961,6 +1999,10 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
               z2 = pos;
               
               GetCrossing (x2,z2);
+	      fSegmentation->GetPadIxz((x1+x2)/2,(z1+z2)/2,stripP,stripN);
+	      dig = (AliITSdigitSSD*)fMap->GetHit(0,stripN);
+	      if (!dig) printf("SSD: check the digit! dig %p\n",dig);
+	      if(!dig) continue;
 	      AliITSRawClusterSSD cnew;
 	      Int_t nstripsN=cluster->GetNumOfDigits();
 	      cnew.fMultiplicity=0;
@@ -1979,9 +2021,6 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
 	      cnew.fQErr=sigerr;
 	      //cnew.fProbability=0.75; 
 	      fITS->AddCluster(2,&cnew);
-	      // add the rec point info
-	      fSegmentation->GetPadIxz((x1+x2)/2,(z1+z2)/2,stripP,stripN);
-	      dig = (AliITSdigitSSD*)fMap->GetHit(0,stripN);
 	      AliITSRecPoint rnew;
               rnew.SetX(kconv*(x1+x2)/2);
               rnew.SetZ(kconv*(z1+z2)/2);
@@ -1989,10 +2028,12 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
               rnew.SetdEdX(sig/kdEdXtoQ);
 	      rnew.SetSigmaX2( kRMSx* kRMSx);
 	      rnew.SetSigmaZ2( kRMSz* kRMSz);
-              rnew.SetProbability(0.75);
+              //rnew.SetProbability(0.75);
 	      rnew.fTracks[0]=dig->fTracks[0];
 	      rnew.fTracks[1]=dig->fTracks[1];
 	      rnew.fTracks[2]=dig->fTracks[2];
+	      //printf("digN: %d %d %d\n",dig->fTracks[0],dig->fTracks[1],dig->fTracks[2]);
+	      //printf("SSD -N : track1 track2 track3  X Z %d %d %d %f %f\n",rnew.fTracks[0],rnew.fTracks[1],rnew.fTracks[2],kconv*(x1+x2)/2,kconv*(z1+z2)/2);
               fITS->AddRecPoint(rnew);
 	      /*
               fPointsM->AddLast( (TObject*) 
