@@ -4,26 +4,49 @@
 //
 // class AliReader
 //
-// Reader Base class (reads particles and tracks and
-// puts it to the AliAODRun objects
+// Reader Base class 
+// Reads particles and tracks and
+// puts them to the AliAOD objects and eventually, if needed, buffers AliAODs in AliAODRun(s)
+//
+// User loops over events calling method Next. In case of success this method returns 0.
+// In case of error or if there is no more events to read, non-0 value is returned
+//
+// Reading can be rewound to the beginning using method Rewind.
+//
+// Tracks are read to the fEventRec (contains reconstructed tracks) 
+// and fEventSim (corresponding MC simulated data) data members,
+// that are of the type AliAOD. 
+//
+// If a given reader has ability of reading both, reconstructed and simulated data, 
+// these are structured in AODs so a "n'th" simulated particle 
+// (the one stored in the fEventSim at slot n) 
+// corresponds to the n'th reconstructed track (the one stored in the fEventRec at slot n).
+//
+// The same reconstructed track can be present more than ones in the AOD,
+// but with a different PID. In this case
+// pointer to the corresponding MC simulated particles is also present more than ones.
+// This situation happens if you want to read all particles 
+// with PID probability of being , e.g.,  pion higher than 60%
+// and being kaon higher than 40%. Than, if a given track has probability Ppid(pi)=52% and Ppid(K)=48% 
+// than it is read twise.
 //
 // Provides functionality for both buffering and non-buffering reading
 // This can be switched on/off via method SetEventBuffering(bool)
 // The main method that inheriting classes need to implement is ReadNext()
 // that read next event in queue.
+//
 // The others are:
 // Bool_t  ReadsRec() const; specifies if reader is able to read simulated particles
 // Bool_t  ReadsSim() const; specifies if reader is able to read reconstructed tracks
 // void    Rewind(); rewind reading to the beginning
 //
-// reading of next event is triggered via method Next()
-//
 // This class provides full functionality for reading from many sources
-// User can provide TObjArray of TObjString (SetDirs method or via parameter 
-// in constructor) which desribes paths of directories to search data in.
+// User can provide TObjArray of TObjStrings (SetDirs method or via parameter 
+// in the constructor) which desribes paths of directories to search data in.
 // If none specified current directory is searched.
-//
+// 
 // Piotr.Skowronski@cern.ch
+//
 ///////////////////////////////////////////////////////////////////////////
 
 #include <TString.h>
