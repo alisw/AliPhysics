@@ -4,11 +4,13 @@
 #include "AliL3RootTypes.h"
 
 class AliL3MemHandler;
+class AliL3Benchmark;
 
 class AliL3DataCompressor {
   
  private:
   AliL3MemHandler *fMemHandler;  //!
+  AliL3Benchmark *fBenchmark;    //!
   Int_t fMinSlice;
   Int_t fMaxSlice;
   Char_t fPath[1024]; //!
@@ -23,11 +25,9 @@ class AliL3DataCompressor {
   void ProcessData(Char_t *trackpath,Int_t padoverlap,Int_t timeoverlap,Int_t padsearch,Int_t timesearch);
   void CompressAndExpand(Int_t bitspad,Int_t bitstime,Int_t bitscharge,Int_t bitsshape);
   void WriteRemainingDigits();
-  void WriteRemainingClusters();
   void FindOfflineClusters(Bool_t remains);
-  
   void RestoreData();
-  
+  void DoBench(Char_t *fname="benchmark");
 
   ClassDef(AliL3DataCompressor,1) 
 

@@ -89,10 +89,6 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,
       track->CalculateHelix();
     }    
   
-  CalculateCrossingPoints();
-  
-  CheckForOverlaps();
-  
   UInt_t ndigits=0;
   AliL3DigitRowData *digits=0;
 #ifdef use_aliroot
@@ -338,10 +334,10 @@ Bool_t AliL3Modeller::CheckCluster(Digit *row,Int_t hitpad,Int_t hittime)
   Int_t time,pad,charge,padsign=-1,timesign=-1;
   time = hittime;
   pad = hitpad;
+  Int_t npads=0;
   //cout<<"Checking cluster "<<hitpad<<" hittime "<<hittime<<endl;
   while(1)
     {
-      
       Bool_t last_was_falling=kFALSE;
       Int_t last_charge=0;
       Int_t seq_charge=0;
@@ -390,7 +386,10 @@ Bool_t AliL3Modeller::CheckCluster(Digit *row,Int_t hitpad,Int_t hittime)
 	}
       
       if(seq_charge)
-	pad += padsign;
+	{
+	  pad += padsign;
+	  npads++;
+	}
       else
 	{
 	  if(cluster_charge==0 && abs(pad-hitpad)<=fPadSearch && pad > 0)
@@ -422,7 +421,10 @@ Bool_t AliL3Modeller::CheckCluster(Digit *row,Int_t hitpad,Int_t hittime)
       last_seq_charge = seq_charge;
     }
   
-  return kTRUE;
+  if(npads < 2 || npads > 8)
+    return kFALSE;
+  else
+    return kTRUE;
 }
 
 void AliL3Modeller::FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row,Int_t npads)

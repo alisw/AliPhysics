@@ -12,6 +12,7 @@
 #include "AliL3TrackArray.h"
 #include "AliL3ModelTrack.h"
 #include "AliL3Modeller.h"
+#include "AliL3Benchmark.h"
 
 #include <AliTPCParamSR.h>
 #include <AliTPCDigitsArray.h>
@@ -42,6 +43,7 @@ AliL3DataCompressor::AliL3DataCompressor()
   fMemHandler=0;
   fMinSlice=0;
   fMaxSlice=0;
+  fBenchmark=0;
 }
 
 AliL3DataCompressor::AliL3DataCompressor(Char_t *path,Int_t minslice,Int_t maxslice)
@@ -49,13 +51,21 @@ AliL3DataCompressor::AliL3DataCompressor(Char_t *path,Int_t minslice,Int_t maxsl
   fMinSlice=minslice;
   fMaxSlice=maxslice;
   strcpy(fPath,path);
-  fMemHandler = new AliL3MemHandler();
+  fMemHandler = new AliL3FileHandler();
+  fBenchmark = new AliL3Benchmark();
 }
 
 AliL3DataCompressor::~AliL3DataCompressor()
 {
   if(fMemHandler)
     delete fMemHandler;
+  if(fBenchmark)
+    delete fBenchmark;
+}
+
+void AliL3DataCompressor::DoBench(Char_t *fname)
+{
+  fBenchmark->Analyze(fname);
 }
 
 void AliL3DataCompressor::ProcessData(Char_t *trackpath,Int_t padoverlap,Int_t timeoverlap,Int_t padsearch,Int_t timesearch)
@@ -71,7 +81,15 @@ void AliL3DataCompressor::ProcessData(Char_t *trackpath,Int_t padoverlap,Int_t t
 	  modeller->SetOverlap(padoverlap,timeoverlap);
 	  modeller->SetSearchRange(padsearch,timesearch);
 	  modeller->Init(slice,patch,trackpath,fPath,kTRUE,kTRUE);
+	  fBenchmark->Start("Calclulate Crossing");
+	  modeller->CalculateCrossingPoints();
+	  fBenchmark->Stop("Calclulate Crossing");
+	  fBenchmark->Start("Check for overlaps");
+	  modeller->CheckForOverlaps();
+	  fBenchmark->Stop("Check for overlaps");
+	  fBenchmark->Start("Find clusters");
 	  modeller->FindClusters();
+	  fBenchmark->Stop("Find clusters");
 	  modeller->WriteRemaining();
 	  
 	  AliL3TrackArray *tracks = modeller->GetTracks();
@@ -193,30 +211,6 @@ void AliL3DataCompressor::FindOfflineClusters(Bool_t remains)
   in->Close();
 }
 
-void AliL3DataCompressor::WriteRemainingClusters()
-{
-  //Write the output from the offline cluster finder into 
-  //binary files.
-
-  Char_t filename[1024];
-  sprintf(filename,"%s/comp/AliTPCclusters_remains.root",fPath);
-  AliL3FileHandler file;
-  file.SetAliInput(filename);
-  
-  for(Int_t slice=fMinSlice; slice<=fMaxSlice; slice++)
-    {
-      for(Int_t patch=0; patch < AliL3Transform::GetNPatches(); patch++)
-	{
-	  file.Init(slice,patch);
-	  sprintf(filename,"%s/comp/clusters_remains_%d_%d.raw",fPath,slice,patch);
-	  file.SetBinaryOutput(filename);
-	  file.AliPoints2Binary();
-	  file.CloseBinaryOutput();
-	}
-    }
-  file.CloseAliInput();
-}
-
 void AliL3DataCompressor::RestoreData()
 {
   //Restore the uncompressed data together with the remaining clusters,
@@ -224,6 +218,10 @@ void AliL3DataCompressor::RestoreData()
   //final offline tracker. 
   
   Char_t filename[1024];
+  
+  sprintf(filename,"%s/comp/AliTPCclusters_remains.root",fPath);
+  if(!fMemHandler->SetAliInput(filename))
+    cerr<<"AliL3DataCompressor::RestoreData : Problems opening "<<filename<<endl;
   
   sprintf(filename,"%s/digitfile.root",fPath);
   TFile *rootfile = TFile::Open(filename);
@@ -252,7 +250,7 @@ void AliL3DataCompressor::RestoreData()
   carray.Setup(param);
   carray.SetClusterType("AliTPCcluster");
   carray.MakeTree();
-
+  
   //Now start the loop:
   for(Int_t slice=fMinSlice; slice<=fMaxSlice; slice++)
     {
@@ -266,12 +264,12 @@ void AliL3DataCompressor::RestoreData()
 	  cout<<"Found "<<nclusters<<" clusters in slice "<<slice<<" patch "<<patch<<endl;
 	  
 	  //Get the uncompressed data:
-	  
 	  AliL3Compress *comp = new AliL3Compress(slice,patch,fPath);
-
 	  comp->ReadFile('u');
 
 	  AliL3TrackArray *tracks = comp->GetTracks();
+	  Short_t *used = new Short_t[tracks->GetNTracks()];
+	  	  
 	  for(Int_t padrow=AliL3Transform::GetFirstRow(patch); padrow<=AliL3Transform::GetLastRow(patch); padrow++)
 	    {
 	      Int_t sec,row;
@@ -281,59 +279,115 @@ void AliL3DataCompressor::RestoreData()
 	      
 	      Float_t pad,time,xywidth,zwidth;
 	      Int_t charge;
+	      
+	      //Get the remaining clusters:
+	      memset(used,0,tracks->GetNTracks()*sizeof(Short_t));
+	      while(counter < nclusters && points[counter].fPadRow == padrow)
+		{
+		  Float_t temp[3] = {points[counter].fX,points[counter].fY,points[counter].fZ};
+		  AliL3Transform::Local2Raw(temp,sec,row);
+		  Int_t tpad,ttime;
+		  tpad = TMath::Nint(temp[1]);
+		  ttime = TMath::Nint(temp[2]);
+		  
+		  //Get the track data, if the order is such:
+		  for(Int_t i=0; i<tracks->GetNTracks(); i++)
+		    {
+		      if(used[i] == 1) continue;
+		      AliL3ModelTrack *track = (AliL3ModelTrack*)tracks->GetCheckedTrack(i);
+		      if(!track) continue;
+		      if(!track->IsPresent(padrow)) continue;
+		      track->GetPad(padrow,pad);
+		      track->GetTime(padrow,time);
+		      track->GetClusterCharge(padrow,charge);
+
+		      Float_t xyz[3];
+		      AliL3Transform::Raw2Local(xyz,sec,row,pad,time);
+		      
+		      if(TMath::Nint(pad) > tpad) continue;
+		      if(TMath::Nint(pad) == tpad &&
+			 TMath::Nint(time) > ttime) continue;
+		      
+		      used[i]=1;
+
+		      track->GetXYWidth(padrow,xywidth);
+		      track->GetZWidth(padrow,zwidth);
+		      
+		      Int_t trpad,trtime;
+		      trpad = TMath::Nint(pad);
+		      trtime = TMath::Nint(time);
+		      if(trpad < 0 || trpad >= AliL3Transform::GetNPads(padrow) ||
+			 trtime < 0 || trtime >= AliL3Transform::GetNTimeBins())
+			{
+			  cerr<<"AliL3DataCompressor::RestoreData : Wrong pad "<<trpad<<" or time "<<trtime<<endl;
+			  track->Print();
+			  return;
+			}
+		      
+		      xywidth = (xywidth+1./12)*pow(AliL3Transform::GetPadPitchWidth(patch),2);
+		      zwidth = (zwidth+1./12)*pow(AliL3Transform::GetZWidth(),2);
+		      
+		      AliTPCcluster *c = new AliTPCcluster();
+		      c->SetY(xyz[1]);
+		      c->SetZ(xyz[2]);
+		      c->SetSigmaY2(xywidth);
+		      c->SetSigmaZ2(zwidth);
+		      c->SetQ(charge);
+		      
+		      
+		      c->SetLabel(digits->GetTrackID(trtime,trpad,0),0);
+		      c->SetLabel(digits->GetTrackID(trtime,trpad,1),1);
+		      c->SetLabel(digits->GetTrackID(trtime,trpad,2),2);
+		      
+		      clrow->InsertCluster(c);
+		      delete c;
+		    }
+		  		  
+		  AliTPCcluster *c = new AliTPCcluster();
+		  c->SetY(points[counter].fY);
+		  c->SetZ(points[counter].fZ);
+		  c->SetQ(points[counter].fCharge);
+		  
+		  xywidth = points[counter].fXYErr * points[counter].fXYErr;
+		  zwidth = points[counter].fZErr * points[counter].fZErr;
+		  c->SetSigmaY2(xywidth);
+		  c->SetSigmaZ2(zwidth);
+		  
+		  c->SetLabel(digits->GetTrackID(ttime,tpad,0),0);
+		  c->SetLabel(digits->GetTrackID(ttime,tpad,1),1);
+		  c->SetLabel(digits->GetTrackID(ttime,tpad,2),2);
+		  
+		  clrow->InsertCluster(c);
+		  delete c;
+		  counter++;
+		}
+	      
+	      //Fill the remaining tracks:
 	      for(Int_t i=0; i<tracks->GetNTracks(); i++)
 		{
+		  if(used[i] == 1) continue;
 		  AliL3ModelTrack *track = (AliL3ModelTrack*)tracks->GetCheckedTrack(i);
 		  if(!track) continue;
 		  if(!track->IsPresent(padrow)) continue;
 		  track->GetPad(padrow,pad);
 		  track->GetTime(padrow,time);
 		  track->GetClusterCharge(padrow,charge);
-
+		  
 		  Float_t xyz[3];
 		  AliL3Transform::Raw2Local(xyz,sec,row,pad,time);
 		  
+		  used[i]=1;
 		  
-		  //Fill the remaining clusters first, if the order is such;
-		  while(counter < nclusters && points[counter].fPadRow == padrow && points[counter].fY <= xyz[1])
-		    {
-		      if(points[counter].fY == xyz[1] && points[counter].fZ < xyz[2]) break;//same pad
-		      AliTPCcluster *c = new AliTPCcluster();
-		      c->SetY(points[counter].fY);
-		      c->SetZ(points[counter].fZ);
-		      c->SetQ(points[counter].fCharge);
-		      
-		      xywidth = points[counter].fXYErr * points[counter].fXYErr;
-		      zwidth = points[counter].fZErr * points[counter].fZErr;
-		      c->SetSigmaY2(xywidth);
-		      c->SetSigmaZ2(zwidth);
-		      
-		      Float_t temp[3] = {points[counter].fX,points[counter].fY,points[counter].fZ};
-		      AliL3Transform::Local2Raw(temp,sec,row);
-		      Int_t tpad,ttime;
-		      tpad = TMath::Nint(temp[1]);
-		      ttime = TMath::Nint(temp[2]);
-		      c->SetLabel(digits->GetTrackID(ttime,tpad,0),0);
-		      c->SetLabel(digits->GetTrackID(ttime,tpad,1),1);
-		      c->SetLabel(digits->GetTrackID(ttime,tpad,2),2);
-
-		      clrow->InsertCluster(c);
-		      delete c;
-		      if(counter == nclusters - 1) break;
-		      counter++;
-		    }
-		  
-		  //Now, fill the track data:
 		  track->GetXYWidth(padrow,xywidth);
 		  track->GetZWidth(padrow,zwidth);
-
-		  Int_t tpad,ttime;
-		  tpad = TMath::Nint(pad);
-		  ttime = TMath::Nint(time);
-		  if(tpad < 0 || tpad >= AliL3Transform::GetNPads(padrow) ||
-		     ttime < 0 || ttime >= AliL3Transform::GetNTimeBins())
+		  
+		  Int_t trpad,trtime;
+		  trpad = TMath::Nint(pad);
+		  trtime = TMath::Nint(time);
+		  if(trpad < 0 || trpad >= AliL3Transform::GetNPads(padrow) ||
+		     trtime < 0 || trtime >= AliL3Transform::GetNTimeBins())
 		    {
-		      cerr<<"AliL3DataCompressor::RestoreData : Wrong pad "<<tpad<<" or time "<<ttime<<endl;
+		      cerr<<"AliL3DataCompressor::RestoreData : Wrong pad "<<trpad<<" or time "<<trtime<<endl;
 		      track->Print();
 		      return;
 		    }
@@ -348,47 +402,26 @@ void AliL3DataCompressor::RestoreData()
 		  c->SetSigmaZ2(zwidth);
 		  c->SetQ(charge);
 		  
-		  
-		  c->SetLabel(digits->GetTrackID(ttime,tpad,0),0);
-		  c->SetLabel(digits->GetTrackID(ttime,tpad,1),1);
-		  c->SetLabel(digits->GetTrackID(ttime,tpad,2),2);
-		  		  
-		  clrow->InsertCluster(c);
-		  delete c;
-		}
-
-	      //Fill the rest of the remaining clusters on this row:
-	      while(counter < nclusters && points[counter].fPadRow == padrow)
-		{
-		  AliTPCcluster *c = new AliTPCcluster();
-		  c->SetY(points[counter].fY);
-		  c->SetZ(points[counter].fZ);
-		  xywidth = points[counter].fXYErr * points[counter].fXYErr;
-		  zwidth = points[counter].fZErr * points[counter].fZErr;
-		  
-		  Float_t temp[3] = {points[counter].fX,points[counter].fY,points[counter].fZ};
-		  AliL3Transform::Local2Raw(temp,sec,row);
-
-		  Int_t tpad,ttime;
-		  tpad = TMath::Nint(temp[1]);
-		  ttime = TMath::Nint(temp[2]);
-		  c->SetSigmaY2(xywidth);
-		  c->SetSigmaZ2(zwidth);
-		  c->SetQ(points[counter].fCharge);
-		  
-		  c->SetLabel(digits->GetTrackID(ttime,tpad,0),0);
-		  c->SetLabel(digits->GetTrackID(ttime,tpad,1),1);
-		  c->SetLabel(digits->GetTrackID(ttime,tpad,2),2);
+		  c->SetLabel(digits->GetTrackID(trtime,trpad,0),0);
+		  c->SetLabel(digits->GetTrackID(trtime,trpad,1),1);
+		  c->SetLabel(digits->GetTrackID(trtime,trpad,2),2);
 		  
 		  clrow->InsertCluster(c);
 		  delete c;
-		  counter++;
 		}
-
+	      
 	      carray.StoreRow(sec,row);
 	      carray.ClearRow(sec,row);
 	      darray->ClearRow(sec,row);
+	      for(Int_t tr=0; tr<tracks->GetNTracks(); tr++)
+		{
+		  AliL3ModelTrack *track = (AliL3ModelTrack*)tracks->GetCheckedTrack(tr);
+		  if(!track) continue;
+		  if(track->IsPresent(padrow) && used[tr]==0)
+		    cerr<<"AliL3DataCompressor::RestoreData : Track "<<tr<<" in sector "<<sec<<" row "<<row<<" was not used"<<endl;
+		}
 	    }
+	  delete [] used;
 	  delete comp;
 	  fMemHandler->Free();
 	  if(nclusters != counter)
@@ -407,17 +440,13 @@ void AliL3DataCompressor::RestoreData()
   
 }
 
-
 Int_t AliL3DataCompressor::FindRemaining(Int_t slice,Int_t patch)
 {
-  Char_t filename[1024];
-  sprintf(filename,"%s/comp/clusters_remains_%d_%d.raw",fPath,slice,patch);
-  fMemHandler->SetBinaryInput(filename);
   fMemHandler->Init(slice,patch);
-  UInt_t pointsize = 10000*sizeof(AliL3SpacePointData);
-  UInt_t npoints;
-  AliL3SpacePointData *points = (AliL3SpacePointData*)fMemHandler->Allocate(pointsize);
-  fMemHandler->Binary2Memory(npoints,points);
+  UInt_t npoints=0;
+  if(!fMemHandler->AliPoints2Memory(npoints))
+    cerr<<"AliL3DataCompressor::FindRemaining : Problems loading clusters "<<endl;
   
   return (Int_t)npoints;
 }
+

@@ -675,7 +675,7 @@ void AliL3Compress::PrintCompRatio(FILE *outfile)
   fclose(file2);
   
   if(outfile)
-    fprintf(outfile,"%f\n",(Float_t)(filesize1 + (10*digit_counter)/8)/(Float_t)(filesize2));
+    fprintf(outfile,"%d %d %d %d %f\n",fPatch,filesize2,filesize1,digit_counter,(Float_t)(filesize1 + (10*digit_counter)/8)/(Float_t)(filesize2));
   else
     {
       cout<<"----------------------"<<endl;
