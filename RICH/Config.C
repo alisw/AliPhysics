@@ -14,7 +14,8 @@ new AliGeant3("C++ Interface to Geant3");
 TFile *rootfile = new TFile("galice.root","recreate");
 rootfile->SetCompressionLevel(2);
 TGeant3 *geant3 = (TGeant3*)gMC;
- 
+
+geant3->Grndmq(0,0,5," ");
  
 //=======================================================================
 // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
@@ -127,7 +128,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      gener->SetYRange(-10,10);
      gener->SetPtRange(0,100);
      gener->SetOrigin(0,0,0);          // vertex position
-     gener->SetVertexSmear(kPerEvent); 
+     gener->SetVertexSmear(perEvent); 
      gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP position
 //     gener->SetStrucFunc(DO_Set_1);
      gener->SetProcess(mb); 
@@ -176,7 +177,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*******************************************************
      AliGenExtFile *gener = new AliGenExtFile(-1); 
      gener->SetFileName("$(ALICE_ROOT)/data/dtujet93.root");
-     gener->SetVertexSmear(kPerEvent); 
+     gener->SetVertexSmear(perEvent); 
      gener->SetTrackingFlag(1);
      break;
 
@@ -315,7 +316,7 @@ if(iITS) {
 // understandable to the CAD system EUCLID. The default (=0) means that you 
 // dont want to use this facility.
 //
-AliITS *ITS  = new AliITSv5("ITS","normal ITS");
+AliITS *ITS  = new AliITSvn("ITS","normal ITS");
 ITS->SetEUCLID(0);
 }
 
@@ -339,7 +340,7 @@ if(iTPC) {
 
   gROOT->LoadMacro("SetTPCParam.C");
   AliTPCParam *param = SetTPCParam();
-  AliTPC *TPC  = new AliTPCv1("TPC","Normal TPC"); //v1 is default
+  AliTPC *TPC  = new AliTPCvn("TPC","Normal TPC"); //v1 is default
   TPC->SetParam(param); // pass the parameter object to the TPC
 
 // set gas mixture
@@ -388,10 +389,10 @@ if(iRICH) {
 //  Response parameters
     AliRICHResponseV0*  Rresponse0   = new AliRICHResponseV0;
     Rresponse0->SetSigmaIntegration(5.);
-    Rresponse0->SetChargeSlope(20.);
+    Rresponse0->SetChargeSlope(27.);
     Rresponse0->SetChargeSpread(0.18, 0.18);
-    Rresponse0->SetMaxAdc(1024);
-    Rresponse0->SetAlphaFeedback(0.05);
+    Rresponse0->SetMaxAdc(4096);
+    Rresponse0->SetAlphaFeedback(0.036);
     Rresponse0->SetEIonisation(26.e-9);
     Rresponse0->SetSqrtKx3(0.77459667);
     Rresponse0->SetKx2(0.962);
