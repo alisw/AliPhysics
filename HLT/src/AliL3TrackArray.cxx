@@ -117,7 +117,7 @@ Bool_t AliL3TrackArray::SetSize(Int_t newsize){
   }
   delete[]  fTrack;
   delete[] fIsPresent;
-  fTrack =  new AliL3Track*[fSize];
+  fTrack =  new AliL3Track*[newsize];
   fIsPresent = new Bool_t[newsize];
   for(Int_t i=0; i<fSize;i++){
     fTrack[i]   = tmp[i];
