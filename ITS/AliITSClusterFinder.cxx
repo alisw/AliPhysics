@@ -138,7 +138,7 @@ void AliITSClusterFinder::FindRawClusters(Int_t module){
     TObjArray *clust0=0; // A spacific cluster of digits
     TObjArray *clust1=0; // A spacific cluster of digits
     AliITSdigit *dig=0; // locat pointer to a digit
-    Int_t i=0,nc=0,j[4],k,k2;
+    Int_t i=0,nc=0,j[4],k,k2=0;
 
     // Copy all digits for this module into a local TObjArray.
     for(i=0;i<ndigits;i++) digs->AddAt(new AliITSdigit(*((AliITSdigit*)(fDigits->At(i)))),i);
