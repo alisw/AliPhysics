@@ -57,9 +57,15 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void   SetRails(Int_t v=1){ 
 	 // Set flag for rails
 	 fRails = v;}	 
-    virtual void   SetCoolingFluid(Int_t v=1){ 
+    virtual void   SetCoolingFluid(Int_t v=1){
 	 // Set flag for cooling fluid
-	 fFluid = v;}	 	 
+	 fFluid = v;}
+    virtual void SetDensityServicesByThickness(){// uses services density
+	// calculation based on the thickness of the services.
+	fByThick = kTRUE;}
+    virtual void SetDensityServicesByMass(){// uses services density
+	// calculation based on the Mass of the services.
+	fByThick = kFALSE;}
     virtual Bool_t GetEUCLID(){return fEuclidOut;}// returns value Euclid flag.
     virtual const char  *GetEULIIDFileName() const{ // return .euc file name
 	                               return fEuclidGeometry.Data();}
@@ -87,13 +93,13 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual Float_t GetThicknessChip2(){ 
 	 // Get chip thickness in layer 2
 	 return fChip2;}
-    virtual Int_t GetRails(){ 
+    virtual Int_t GetRails(){
 	 // Get flag for rails
-	 return fRails;}	 
+	 return fRails;}
     virtual Int_t GetCoolingFluid(){ 
 	 // Get flag for cooling fluid
-	 return fFluid;}	 	 	 
-	 	 
+	 return fFluid;}
+
  private:
     void InitAliITSgeom();
 
@@ -101,6 +107,8 @@ class AliITSvPPRasymmFMD : public AliITS {
     Bool_t fEuclidOut;        // Flag to write geometry in euclid format
     Bool_t fGeomDetOut;       // Flag to write .det file out
     Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
+    Bool_t fByThick;          // Flag to use services materials by thickness
+                              // ture, or mass false.
     Int_t  fMajorVersion;     // Major version number == IsVersion
     Int_t  fMinorVersion;     // Minor version number
     char   fEuclidGeomDet[60];// file where detector transormation are define.
@@ -114,7 +122,7 @@ class AliITSvPPRasymmFMD : public AliITS {
     Int_t    fFluid;          // flag to switch between water (=1) and freon (=0)
     Int_t fIDMother;          //! ITS Mother Volume id.
 
-    ClassDef(AliITSvPPRasymmFMD,1)  //Hits manager for set:ITS version 8 
+    ClassDef(AliITSvPPRasymmFMD,2)  //Hits manager for set:ITS version 8 
                                  // PPR detailed Geometry asymmetric
 };
  
