@@ -38,6 +38,7 @@ class AliSteppingActionMessenger: public G4UImessenger
     // data members
     AliSteppingAction*     fSteppingAction; //associated class  
     G4UIcmdWithAnInteger*  fLoopVerboseCmd; //command: loopVerbose
+    G4UIcmdWithAnInteger*  fMaxNofStepsCmd; //command: maxNofSteps
 };
 
 #endif //ALI_STEPPING_ACTION_MESSENGER_H
