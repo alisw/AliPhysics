@@ -312,7 +312,7 @@ void AliL3MemHandler::Free()
   //Clear the memory, if allocated.
   
   if(!fPt){
-    LOG(AliL3Log::kWarning,"AliL3MemHandler::Free","Memory")
+    LOG(AliL3Log::kInformational,"AliL3MemHandler::Free","Memory")
       <<"No Memory allocated - can't Free"<<ENDLOG;
     return;
   }  

@@ -168,7 +168,7 @@ void AliL3FileHandler::FreeDigitsTree()
 {
   if(!fDigitsTree)
     {
-      LOG(AliL3Log::kWarning,"AliL3FileHandler::FreeDigitsTree()","Pointer")
+      LOG(AliL3Log::kInformational,"AliL3FileHandler::FreeDigitsTree()","Pointer")
 	<<"Cannot free digitstree, it is not present"<<ENDLOG;
       return;
     }
