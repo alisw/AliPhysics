@@ -17,6 +17,8 @@
 #include "AliBarrelTrack.h"
 
 class TFile;
+class TTree;
+class TBranch;
 class AliTPCParam;
 class TObjArray;
 class AliESD;
