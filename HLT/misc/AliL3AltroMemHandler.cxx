@@ -6,6 +6,7 @@ Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de>
 #include <stdio.h>
 #include <string.h>
 #include "AliL3AltroMemHandler.h"
+#include "AliL3Logging.h"
 
 /** \class AliL3AltroMemHandler
 //<pre>
@@ -15,6 +16,7 @@ Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de>
 // Converts digits in memory into a backlinked ALTRO like data format.
 // Its output file is used as input to the various VHDL testbenches.
 // The file misc/read.cxx shows how to use this class.
+//</pre>
 */
 
 ClassImp(AliL3AltroMemHandler)

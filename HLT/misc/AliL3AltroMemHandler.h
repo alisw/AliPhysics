@@ -2,7 +2,6 @@
 #define ALIL3ALTROMEMHANDLER_H
 
 #include "AliL3RootTypes.h"
-#include "AliL3Logging.h"
 
 //Maximum size of Altro packet equals 1000 bit
 #define ALTRO_PACKET_SIZE 125
