@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.16  2000/04/19 12:55:43  morsch
+  Newly structured and updated version (JB, AM)
+
 */
 
 
@@ -99,7 +102,7 @@ AliRICH::AliRICH(const char *name, const char *title)
     fNrawch      = new Int_t[7];
     
     fRawClusters = new TObjArray(7);
-    printf("Created fRwClusters with adress:%p",fRawClusters);
+    //printf("Created fRwClusters with adress:%p",fRawClusters);
 
     for (i=0; i<7 ;i++) {
       (*fRawClusters)[i] = new TClonesArray("AliRICHRawCluster",10000); 
@@ -111,7 +114,7 @@ AliRICH::AliRICH(const char *name, const char *title)
     for (i=0; i<7 ;i++) {
 	(*fRecHits)[i] = new TClonesArray("AliRICHRecHit",1000); 
     }
-    printf("Created fRecHits with adress:%p",fRecHits);
+    //printf("Created fRecHits with adress:%p",fRecHits);
 
         
     SetMarkerColor(kRed);
@@ -612,7 +615,7 @@ AliRICHPadHit* AliRICH::NextPad(TClonesArray *clusters)
 }
 
 
-void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
+void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 {
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
@@ -628,7 +631,7 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
     AliRICHChamber*       iChamber;
     AliRICHSegmentation*  segmentation;
 
-    
+    Int_t digitse=0;
     Int_t trk[50];
     Int_t chtrk[50];  
     TObjArray *list=new TObjArray;
@@ -707,50 +710,90 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 		mHit;
 		mHit=(AliRICHHit*)RICH->NextHit()) 
 	    {
-		Int_t   nch   = mHit->fChamber-1;  // chamber number
-		if (nch >7) continue;
-		iChamber = &(RICH->Chamber(nch));
-		
+	      
+	      digitse=0;
+	      
+	      Int_t   nch   = mHit->fChamber-1;  // chamber number
+	      if (nch >7) continue;
+	      iChamber = &(RICH->Chamber(nch));
+	      
+	      TParticle *current = (TParticle*)(*gAlice->Particles())[track];
+	      
+	      Int_t particle = current->GetPdgCode();
+	      
+	      //printf("Flag:%d\n",flag);
+	      //printf("Track:%d\n",track);
+	      //printf("Particle:%d\n",particle);
+	      
+	      if (flag == 0)
+		digitse=1;
+	      
+	      if (flag == 1) 
+		if(TMath::Abs(particle) == 211 || TMath::Abs(particle) == 111)
+		  digitse=1;
+	      
+	      if (flag == 2)
+		if(TMath::Abs(particle)==321 || TMath::Abs(particle)==130 || TMath::Abs(particle)==310 
+		   || TMath::Abs(particle)==311)
+		  digitse=1;
+	      
+	      if (flag == 3 && TMath::Abs(particle)==2212)
+		digitse=1;
+	      
+	      if (flag == 4 && TMath::Abs(particle)==13)
+		digitse=1;
+
+	      if (flag == 5 && TMath::Abs(particle)==11)
+		digitse=1;
+	      
+	      if (flag == 6 && TMath::Abs(particle)==2112)
+		digitse=1;
+		  
+
+	      //printf ("Particle: %d, Flag: %d, Digitse: %d\n",particle,flag,digitse); 
+
+
+	      if (digitse)
+		{
 		
 //
 // Loop over pad hits
-		for (AliRICHPadHit* mPad=
+		  for (AliRICHPadHit* mPad=
 			 (AliRICHPadHit*)RICH->FirstPad(mHit,fPadHits);
-		     mPad;
-		     mPad=(AliRICHPadHit*)RICH->NextPad(fPadHits))
-		{
-		    Int_t cathode  = mPad->fCathode;    // cathode number
-		    Int_t ipx      = mPad->fPadX;       // pad number on X
-		    Int_t ipy      = mPad->fPadY;       // pad number on Y
-		    Int_t iqpad    = mPad->fQpad;       // charge per pad
-//
-//
-		    //printf("X:%d, Y:%d, Q:%d\n",ipx,ipy,iqpad);
-
-		    Float_t thex, they;
-		    segmentation=iChamber->GetSegmentationModel(cathode);
-		    segmentation->GetPadCxy(ipx,ipy,thex,they);
-		    new((*p_adr)[countadr++]) TVector(2);
-		    TVector &trinfo=*((TVector*) (*p_adr)[countadr-1]);
-		    trinfo(0)=(Float_t)track;
-		    trinfo(1)=(Float_t)iqpad;
-		    
-		    digits[0]=ipx;
-		    digits[1]=ipy;
-		    digits[2]=iqpad;
-		    
-		    AliRICHTransientDigit* pdigit;
-		    // build the list of fired pads and update the info
-		    if (!HitMap[nch]->TestHit(ipx, ipy)) {
-			list->AddAtAndExpand(
-			    new AliRICHTransientDigit(nch,digits),counter);
+		       mPad;
+		       mPad=(AliRICHPadHit*)RICH->NextPad(fPadHits))
+		    {
+		      Int_t cathode  = mPad->fCathode;    // cathode number
+		      Int_t ipx      = mPad->fPadX;       // pad number on X
+		      Int_t ipy      = mPad->fPadY;       // pad number on Y
+		      Int_t iqpad    = mPad->fQpad;       // charge per pad
+		      //
+		      //
+		      //printf("X:%d, Y:%d, Q:%d\n",ipx,ipy,iqpad);
+		      
+		      Float_t thex, they;
+		      segmentation=iChamber->GetSegmentationModel(cathode);
+		      segmentation->GetPadCxy(ipx,ipy,thex,they);
+		      new((*p_adr)[countadr++]) TVector(2);
+		      TVector &trinfo=*((TVector*) (*p_adr)[countadr-1]);
+		      trinfo(0)=(Float_t)track;
+		      trinfo(1)=(Float_t)iqpad;
+		      
+		      digits[0]=ipx;
+		      digits[1]=ipy;
+		      digits[2]=iqpad;
+		      
+		      AliRICHTransientDigit* pdigit;
+		      // build the list of fired pads and update the info
+		      if (!HitMap[nch]->TestHit(ipx, ipy)) {
+			list->AddAtAndExpand(new AliRICHTransientDigit(nch,digits),counter);
 			HitMap[nch]->SetHit(ipx, ipy, counter);
 			counter++;
 			pdigit=(AliRICHTransientDigit*)list->At(list->GetLast());
 			// list of tracks
 			TObjArray *trlist=(TObjArray*)pdigit->TrackList();
 			trlist->Add(&trinfo);
-		    } else {
+		      } else {
 			pdigit=(AliRICHTransientDigit*) HitMap[nch]->GetHit(ipx, ipy);
 			// update charge
 			(*pdigit).fSignal+=iqpad;
@@ -782,8 +825,9 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 				chtrk[tr]=Int_t(pptrk(1));
 			    }
 			} // end if nptracks
-		    } //  end if pdigit
-		} //end loop over clusters
+		      } //  end if pdigit
+		    } //end loop over clusters
+		}// track type condition
 	    } // hit loop
 	} // track loop
 	

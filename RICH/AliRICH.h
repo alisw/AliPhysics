@@ -67,7 +67,7 @@ class AliRICH : public  AliDetector {
     virtual void   ResetRawClusters();
     virtual void   ResetRecHits();
     virtual void   FindClusters(Int_t,Int_t);
-    virtual void   Digitise(Int_t,Option_t *opt=" ",Text_t *name=" ");
+    virtual void   Digitise(Int_t nev,Int_t flag,Option_t *opt=" ",Text_t *name=" ");
 // 
 // Configuration Methods (per station id)
 //
