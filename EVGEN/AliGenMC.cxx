@@ -111,6 +111,10 @@ void AliGenMC::Init()
 	break;
     case kPhiKK:
 	fChildSelect[0]=kKPlus;
+	break;
+    case kBJpsi:
+	fChildSelect[0]=443;
+	break;
     case kOmega:	
     case kAll:
     case kNoDecay:

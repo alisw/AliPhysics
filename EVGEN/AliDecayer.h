@@ -17,7 +17,7 @@ typedef enum
     kBJpsiDiMuon, kBJpsiDiElectron, 
     kBPsiPrimeDiMuon, kBPsiPrimeDiElectron, kPiToMu,
     kKaToMu, kNoDecay,
-    kHadronicD, kOmega, kPhiKK, kAll, kNoDecayHeavy, kHardMuons
+    kHadronicD, kOmega, kPhiKK, kAll, kNoDecayHeavy, kHardMuons, kBJpsi
 } Decay_t;
 #endif
 
