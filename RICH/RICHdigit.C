@@ -62,6 +62,18 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
     }
       
    AliRICH *RICH  = (AliRICH*) gAlice->GetDetector("RICH");
+
+   AliRICHChamber*       iChamber;
+   
+   printf("Generating tresholds...\n");
+
+   for(Int_t i=0;i<7;i++)
+     {
+       iChamber = &(RICH->Chamber(i));
+       iChamber->GenerateTresholds();
+     }
+   
+
 //
 // Event Loop
 //
@@ -72,10 +84,10 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
        if (nev < evNumber1) continue;
        if (nparticles <= 0) return;
        if (RICH) RICH->Digitise(nev, particle_type);
-       char hname[30];
-       sprintf(hname,"TreeD%d",nev);
-       gAlice->TreeD()->Write(hname);
-       gAlice->TreeD()->Reset();
+       //char hname[30];
+       //sprintf(hname,"TreeD%d",nev);
+       //gAlice->TreeD()->Write(hname);
+       //gAlice->TreeD()->Reset();
    } // event loop 
    file->Close();
 
