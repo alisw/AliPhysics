@@ -84,6 +84,7 @@
 #pragma link C++ class  AliReconstruction+;
 #pragma link C++ class  AliVertexGenFile+;
 #pragma link C++ class  AliVertexer+;
+#pragma link C++ class  AliLog+;
 #endif
 
 

@@ -19,7 +19,7 @@ AliMemoryWatcher.cxx AliBarrelTrack.cxx \
 AliESDtrack.cxx AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDHLTtrack.cxx AliESDv0.cxx AliESDcascade.cxx AliESDVertex.cxx AliESDpid.cxx \
 AliVertexer.cxx \
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
-AliReconstructor.cxx
+AliReconstructor.cxx AliLog.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
