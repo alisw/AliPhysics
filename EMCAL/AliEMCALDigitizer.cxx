@@ -92,11 +92,11 @@ ClassImp(AliEMCALDigitizer)
   fTimeResolution     = 0.5e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
   fPreShowerDigitThreshold = fTowerDigitThreshold/25. ;
-  fADCchannelTower = 0.003;        // width of one ADC channel in GeV
+  fADCchannelTower = 0.000160;      // width of one ADC channel in GeV
   fADCpedestalTower = 0.005 ;      // pedestal of ADC
   fNADCTower = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
 
-  fADCchannelPreSho  = 0.0003 ;          // width of one ADC channel in Pre Shower
+  fADCchannelPreSho  = 0.00000170;          // width of one ADC channel in Pre Shower
   fADCpedestalPreSho = 0.005 ;         // pedestal of ADC
   fNADCPreSho = (Int_t) TMath::Power(2,12);      // number of channels in Pre Shower ADC
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
@@ -118,11 +118,11 @@ Bool_t AliEMCALDigitizer::Init()
   fTimeSignalLength   = 1.0e-9 ;
   fPreShowerDigitThreshold = fTowerDigitThreshold/25. ;
   fInitialized = kFALSE ;
-  fADCchannelTower = 0.003;        // width of one ADC channel in GeV
+  fADCchannelTower = 0.000160;       // width of one ADC channel in GeV
   fADCpedestalTower = 0.005 ;      // GeV
   fNADCTower = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
 
-  fADCchannelPreSho = 0.0003 ;          // width of one ADC channel in Pre Shower
+  fADCchannelPreSho = 0.00000170;          // width of one ADC channel in Pre Shower
   fADCpedestalPreSho = 0.005 ;         // 
   fNADCPreSho = (Int_t) TMath::Power(2,12);      // number of channels in Pre ShowerADC
 
@@ -364,7 +364,8 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
   
   //Set indexes in list of digits
   //Int_t i ;
-  for (i = 0 ; i < ndigits ; i++) { 
+ cout << "fNADCTower = " << fNADCTower << "   fNADCPreSho = " << fNADCPreSho << endl ; 
+ for (i = 0 ; i < ndigits ; i++) { 
     AliEMCALDigit * digit = (AliEMCALDigit *) digits->At(i) ; 
     digit->SetIndexInList(i) ; 
     Float_t energy = sDigitizer->Calibrate(digit->GetAmp()) ;
@@ -380,12 +381,15 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
   Int_t nphi = AliEMCALGetter::GetInstance()->EMCALGeometry()->GetNPhi() ; 
   Int_t nz   = AliEMCALGetter::GetInstance()->EMCALGeometry()->GetNZ() ;
   
-  if(absId <= nphi*nz) //digitize as tower
-    channel = (Int_t) TMath::Ceil( (energy + fADCpedestalTower)/fADCchannelTower )  ;
-  if(channel > fNADCTower ) channel =  fNADCTower ;
-  else 
-    channel =  (Int_t) TMath::Ceil( (energy + fADCpedestalPreSho)/fADCchannelPreSho )  ;
-  if(channel > fNADCPreSho ) channel =  fNADCPreSho ;
+  if(absId <= nphi*nz){  //digitize as tower
+    channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalTower)/fADCchannelTower ))  ;
+  if(channel > fNADCTower ) 
+    channel =  fNADCTower ;
+  } else {
+    channel =  static_cast<Int_t>(TMath::Ceil( (energy + fADCpedestalPreSho)/fADCchannelPreSho ))  ;
+  if(channel > fNADCPreSho ) 
+    channel =  fNADCPreSho ;
+  }
   
   return channel ;
 }
