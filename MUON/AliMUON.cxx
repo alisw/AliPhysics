@@ -95,7 +95,7 @@ AliMUON::AliMUON()
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
-    fSegmentationType(0),// 0 for undefined
+    fSegmentationType(1),// set to 1 default wise old seg
     fDEIndexing(0),
     fAccCut(kFALSE),
     fAccMin(0.),
@@ -123,7 +123,7 @@ AliMUON::AliMUON(const char *name, const char *title)
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
-    fSegmentationType(0),// 0 for undefined
+    fSegmentationType(1),// set to 1 default wise old seg
     fDEIndexing(0),
     fAccCut(kFALSE),
     fAccMin(0.),
