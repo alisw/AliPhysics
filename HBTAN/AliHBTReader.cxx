@@ -19,8 +19,11 @@ AliHBTReader::AliHBTReader()
 AliHBTReader::~AliHBTReader()
 {
 //destructor
-  fCuts->SetOwner();
-  delete fCuts;
+ if(fCuts)
+  {
+   fCuts->SetOwner();
+   delete fCuts;
+  }
 }
 
 /*************************************************************************************/
