@@ -10,6 +10,7 @@
  
 #pragma link C++ class  AliZDC+;
 #pragma link C++ class  AliZDCv1+;
+#pragma link C++ class  AliZDCv2+;
 #pragma link C++ class  AliZDCHit+;
 #pragma link C++ class  AliZDCDigit+;
 #pragma link C++ class  AliGenZDC+;
