@@ -346,6 +346,19 @@ Int_t TFlukaMCGeometry::GetMedium() const
 }
 
 //_____________________________________________________________________________
+Int_t TFlukaMCGeometry::GetFlukaMaterial(Int_t imed) const
+{
+// Returns FLUKA material index for medium IMED
+   TGeoMedium *med = (TGeoMedium*)gGeoManager->GetListOfMedia()->At(imed-1);
+   if (!med) {
+      Error("GetFlukaMaterial", "MEDIUM %i nor found", imed);
+      return -1;
+   }
+   Int_t imatfl = med->GetMaterial()->GetIndex();
+   return imatfl;   
+}
+
+//_____________________________________________________________________________
 void TFlukaMCGeometry::Medium(Int_t& kmed, const char* name, Int_t nmat, Int_t isvol,
 		     Int_t ifield, Double_t fieldm, Double_t tmaxfd,
 		     Double_t stemax, Double_t deemax, Double_t epsil,
@@ -400,7 +413,7 @@ void TFlukaMCGeometry::Medium(Int_t& kmed, const char* name, Int_t nmat, Int_t i
   //  performed with g3helix; ifield = 3 if tracking performed with g3helx3.
   //  
 
-  kmed = gGeoManager->GetListOfMedia()->GetSize()+3; // !!! in FLUKA they start with 3
+  kmed = gGeoManager->GetListOfMedia()->GetSize()+1;
   gGeoManager->Medium(name,kmed,nmat, isvol, ifield, fieldm, tmaxfd, stemax,deemax, epsil, stmin);
   printf("Medium %s: kmed=%i, nmat=%i, isvol=%i\n", name, kmed, nmat,isvol);
 }

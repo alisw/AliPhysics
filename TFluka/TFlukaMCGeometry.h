@@ -109,6 +109,7 @@ class TFlukaMCGeometry : public TVirtualMCGeometry {
     const char*   CurrentVolName() const;
     const char*   CurrentVolOffName(Int_t off) const;
     Int_t         GetMedium() const;
+    Int_t         GetFlukaMaterial(Int_t imed) const;
     Int_t         GetLastMaterialIndex() const {return fLastMaterial;}
     virtual Int_t VolId(const Text_t* volName) const;
     virtual const char* VolName(Int_t id) const;
