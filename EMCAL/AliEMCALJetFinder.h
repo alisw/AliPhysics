@@ -61,7 +61,8 @@ class AliEMCALJetFinder : public TTask {
     //    virtual void Print(Option_t* option="") const;    // *MENU*
 
     Bool_t GetWriteKey() {return fWrite;}
-    AliEMCALJet* GetJetT() {return fJetT[0];}
+  //AliEMCALJet* GetJetT() {return fJetT[0];}
+    AliEMCALJet* GetJetT(Int_t n = 0) {return fJetT[n];}
     virtual void DrawHistsForTuning(Int_t mode=0);           // *MENU*
     virtual void PrintParameters(Int_t mode=0);              // *MENU*
     virtual const Char_t* GetFileNameForParameters(Char_t* dir="RES/");
