@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.5  2002/06/25 08:17:33  hristov
+* Additional protection
+*
 * Revision 1.4  2002/06/22 10:50:18  hristov
 * Better protection
 *
@@ -296,23 +299,23 @@
             IF ( BIMPTR .GE. RADTOT ) THEN
                X1 = BIMPTR - RADTOT
                DUMMY = 2.D+00 * X1 / ( RADPRO + X1 )
-               IF (ABS(DUMMY).GT.1.0) THEN
+               IF (ABS(DUMMY).GT.1.D0) THEN
                   PRINT *,"Warning in GEANT321/peanut/bimsel.F "
                   PRINT *,"Illegal ACOS argument ",DUMMY
-                  DUMMY = SIGN(1.0, DUMMY )
+                  DUMMY = SIGN(1.D0, DUMMY )
                ENDIF
                ANGRED = ACOS ( DUMMY ) / PI
                X1 = X1 / ( R0PROT * RPRONU * RADCO2 )
                DSKRED = ( 0.5D+00 * X1 * X1 + X1 + 1.D+00 ) * EXP (-X1)
      &                * ANGRED
-               IF (DSKRED.EQ.0.0) DSKRED=1.D+00
+               IF (DSKRED.EQ.0.D0) DSKRED=1.D+00
             ELSE
                X1 = RADPRO + BIMPTR - RADTOT
                DUMMY = 2.D+00 * X1 / ( RADPRO + X1 )
-               IF (ABS(DUMMY).GT.1.0) THEN
+               IF (ABS(DUMMY).GT.1.D0) THEN
                   PRINT *,"Warning in GEANT321/peanut/bimsel.F "
                   PRINT *,"Illegal ACOS argument ",DUMMY
-                  DUMMY = SIGN(1.0, DUMMY )
+                  DUMMY = SIGN(1.D0, DUMMY )
                ENDIF
                ANGRED = ACOS ( DUMMY ) / PI
                X1 = X1 / ( R0PROT * RPRONU * RADCO2 )
