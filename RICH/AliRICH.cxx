@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.50  2001/05/10 14:44:16  jbarbosa
+  Corrected some overlaps (thanks I. Hrivnacovna).
+
   Revision 1.49  2001/05/10 12:23:49  jbarbosa
   Repositioned the RICH modules.
   Eliminated magic numbers.
@@ -2694,7 +2697,7 @@ AliRICH& AliRICH::operator=(const AliRICH& rhs)
     
 }
 
-void AliRICH::DiagnosticsFE(Int_t evNumber1=0,Int_t evNumber2=0)
+void AliRICH::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
 {
   
   Int_t NpadX = 162;                 // number of pads on X
@@ -3212,7 +3215,7 @@ void AliRICH::DiagnosticsFE(Int_t evNumber1=0,Int_t evNumber2=0)
 //_________________________________________________________________________________________________
 
 
-void AliRICH::DiagnosticsSE(Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
+void AliRICH::DiagnosticsSE(Int_t diaglevel,Int_t evNumber1,Int_t evNumber2)
 {
 
 AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
