@@ -65,7 +65,7 @@ class AliALIFE : public  TObject {
  private:
     void BodyHeader();
     void VolumeHeader();
-    void Copy(AliALIFE &alife) const;
+    void Copy(TObject &alife) const;
 
     AliALIFE & operator = (const AliALIFE &rhs) {
 	rhs.Copy(*this);

@@ -446,7 +446,7 @@ void AliALIFE::Finish(Bool_t iremove)
     }
 }
 
-void AliALIFE::Copy(AliALIFE&) const
+void AliALIFE::Copy(TObject&) const
 {
     //
     // Copy 
