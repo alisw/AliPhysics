@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.5  2000/07/18 16:04:06  gosset
+AliMUONEventReconstructor package:
+* a few minor modifications and more comments
+* a few corrections
+  * right sign for Z of raw clusters
+  * right loop over chambers inside station
+  * symmetrized covariance matrix for measurements (TrackChi2MCS)
+  * right sign of charge in extrapolation (ExtrapToZ)
+  * right zEndAbsorber for Branson correction below 3 degrees
+* use of TVirtualFitter instead of TMinuit for AliMUONTrack::Fit
+* no parameter for AliMUONTrack::Fit() but more fit parameters in Track object
+
 Revision 1.4  2000/07/03 07:53:31  morsch
 Double declaration problem on HP solved.
 
@@ -54,15 +66,39 @@ Addition of files for track reconstruction in C++
 
 ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
 
+  // A few calls in Fortran or from Fortran (extrap.F).
+  // Needed, instead of calls to Geant subroutines,
+  // because double precision is necessary for track fit converging with Minuit.
+  // The "extrap" functions should be translated into C++ ????
 #ifndef WIN32 
-# define reco_ghelix reco_ghelix_
+# define extrap_onestep_helix extrap_onestep_helix_
+# define extrap_onestep_helix3 extrap_onestep_helix3_
+# define extrap_onestep_rungekutta extrap_onestep_rungekutta_
+# define gufld_double gufld_double_
 #else 
-# define reco_ghelix RECO_GHELIX
+# define extrap_onestep_helix EXTRAP_ONESTEP_HELIX
+# define extrap_onestep_helix3 EXTRAP_ONESTEP_HELIX3
+# define extrap_onestep_rungekutta EXTRAP_ONESTEP_RUNGEKUTTA
+# define gufld_double GUFLD_DOUBLE
 #endif 
 
-extern "C"
-{
-void type_of_call reco_ghelix(Double_t &Charge, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
+extern "C" {
+  void type_of_call extrap_onestep_helix
+  (Double_t &Charge, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
+
+  void type_of_call extrap_onestep_helix3
+  (Double_t &Field, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
+
+  void type_of_call extrap_onestep_rungekutta
+  (Double_t &Charge, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
+
+  void type_of_call gufld_double(Double_t *Position, Double_t *Field) {
+    // interface to "gAlice->Field()->Field" for arguments in double precision
+    Float_t x[3], b[3];
+    x[0] = Position[0]; x[1] = Position[1]; x[2] = Position[2];
+    gAlice->Field()->Field(x, b);
+    Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
+  }
 }
 
 // Inline functions for Get and Set: inline removed because it does not work !!!!
@@ -109,22 +145,18 @@ void AliMUONTrackParam::ExtrapToZ(Double_t Z)
   // Track parameter extrapolation to the plane at "Z".
   // On return, the track parameters resulting from the extrapolation
   // replace the current track parameters.
-  // Use "reco_ghelix" which should be replaced by something else !!!!
   if (this->fZ == Z) return; // nothing to be done if same Z
   Double_t forwardBackward; // +1 if forward, -1 if backward
   if (Z > this->fZ) forwardBackward = 1.0;
   else forwardBackward = -1.0;
-  Double_t temp, vGeant3[7], vGeant3New[7]; // 7 in parameter ????
+  Double_t vGeant3[7], vGeant3New[7]; // 7 in parameter ????
   Int_t iGeant3, stepNumber;
   Int_t maxStepNumber = 5000; // in parameter ????
   // For safety: return kTRUE or kFALSE ????
-  // Parameter vector for calling GHELIX in Geant3
+  // Parameter vector for calling EXTRAP_ONESTEP
   SetGeant3Parameters(vGeant3, forwardBackward);
-  // For use of reco_ghelix...: invert X and Y, PX/PTOT and PY/PTOT !!!!
-  temp = vGeant3[0]; vGeant3[0] = vGeant3[1]; vGeant3[1] = temp;
-  temp = vGeant3[3]; vGeant3[3] = vGeant3[4]; vGeant3[4] = temp;
   // sign of charge (sign of fInverseBendingMomentum if forward motion)
-  // must be also changed if backward extrapolation
+  // must be changed if backward extrapolation
   Double_t chargeExtrap = forwardBackward *
     TMath::Sign(Double_t(1.0), this->fInverseBendingMomentum);
   Double_t stepLength = 6.0; // in parameter ????
@@ -133,21 +165,15 @@ void AliMUONTrackParam::ExtrapToZ(Double_t Z)
   while (((forwardBackward * (vGeant3[2] - Z)) <= 0.0) &&
 	 (stepNumber < maxStepNumber)) {
     stepNumber++;
-    // call Geant3 "ghelix" subroutine through a copy in "reco_muon.F":
-    // the true function should be called, but how ???? and remove prototyping ...
-    reco_ghelix(chargeExtrap, stepLength, vGeant3, vGeant3New);
+    // Option for switching between helix and Runge-Kutta ???? 
+    // extrap_onestep_rungekutta(chargeExtrap, stepLength, vGeant3, vGeant3New);
+    extrap_onestep_helix(chargeExtrap, stepLength, vGeant3, vGeant3New);
     if ((forwardBackward * (vGeant3New[2] - Z)) > 0.0) break; // one is beyond Z
     // better use TArray ????
     for (iGeant3 = 0; iGeant3 < 7; iGeant3++)
       {vGeant3[iGeant3] = vGeant3New[iGeant3];}
   }
   // check maxStepNumber ????
-  // For use of reco_ghelix...:
-  // invert back X and Y, PX/PTOT and PY/PTOT, both for vGeant3 and vGeant3New !!!!
-  temp = vGeant3[0]; vGeant3[0] = vGeant3[1]; vGeant3[1] = temp;
-  temp = vGeant3New[0]; vGeant3New[0] = vGeant3New[1]; vGeant3New[1] = temp;
-  temp = vGeant3[3]; vGeant3[3] = vGeant3[4]; vGeant3[4] = temp;
-  temp = vGeant3New[3]; vGeant3New[3] = vGeant3New[4]; vGeant3New[4] = temp;
   // Interpolation back to exact Z (2nd order)
   // should be in function ???? using TArray ????
   Double_t dZ12 = vGeant3New[2] - vGeant3[2]; // 1->2

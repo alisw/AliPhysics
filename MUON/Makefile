@@ -46,7 +46,7 @@ DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
 # Fortran sources
 
-FSRCS	      = reco_muon.F
+FSRCS	      = reco_muon.F extrap.F
 
 # FORTRAN Objectrs
 

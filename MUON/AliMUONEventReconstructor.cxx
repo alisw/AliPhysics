@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.9  2000/07/20 12:45:27  gosset
+New "EventReconstructor..." structure,
+	hopefully more adapted to tree/streamer.
+"AliMUONEventReconstructor::RemoveDoubleTracks"
+	to keep only one track among similar ones.
+
 Revision 1.8  2000/07/18 16:04:06  gosset
 AliMUONEventReconstructor package:
 * a few minor modifications and more comments
@@ -82,7 +88,6 @@ Addition of files for track reconstruction in C++
 #include <TRandom.h>
 #include <TFile.h>
 
-#include "AliCallf77.h" 
 #include "AliMUONEventReconstructor.h"
 #include "AliMUON.h"
 #include "AliMUONHitForRec.h"
@@ -94,20 +99,6 @@ Addition of files for track reconstruction in C++
 #include "AliMUONTrackHit.h"
 #include "AliRun.h"
 #include "TParticle.h"
-
-#ifndef WIN32 
-# define initfield initfield_
-# define reco_gufld reco_gufld_
-#else 
-# define initfield INITFIELD
-# define reco_gufld RECO_GUFLD
-#endif 
-
-extern "C"
-{
-void type_of_call initfield();
-void type_of_call reco_gufld(Double_t *Coor, Double_t *Field);
-}
 
 //************* Defaults parameters for reconstruction
 static const Double_t kDefaultMinBendingMomentum = 3.0;
@@ -155,26 +146,20 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
   fRecTrackHitsPtr = new TClonesArray("AliMUONTrack", 100);
   fNRecTrackHits = 0; // really needed or GetEntriesFast sufficient ????
 
-  // Initialize magnetic field
-  // using Fortran subroutine INITFIELD in "reco_muon.F".
-  // Should rather use AliMagF ???? and remove prototyping ...
-  initfield();
-  // Impression de quelques valeurs
-  Double_t coor[3], field[3];
-  coor[0] = 50.0;
-  coor[1] = 50.0;
-  coor[2] = 950.0;
-  reco_gufld(coor, field);
-  cout << "coor: " << coor[0] << ", " << coor[1] << ", " << coor[2] << endl;
-  cout << "field: " << field[0] << ", " << field[1] << ", " << field[2] << endl;
-  coor[2] = -950.0;
-  reco_gufld(coor, field);
-  cout << "coor: " << coor[0] << ", " << coor[1] << ", " << coor[2] << endl;
-  cout << "field: " << field[0] << ", " << field[1] << ", " << field[2] << endl;
-  coor[2] = -950.0;
+  // Sign of fSimpleBValue according to sign of value at (50,50,950).
+  Float_t b[3], x[3];
+  x[0] = 50.; x[1] = 50.; x[2] = 950.;
+  gAlice->Field()->Field(x, b);
+  fSimpleBValue = TMath::Sign(fSimpleBValue, b[2]);
+  // See how to get fSimple(BValue, BLength, BPosition)
+  // automatically calculated from the actual magnetic field ????
 
   if (fPrintLevel >= 0) {
-    cout << "AliMUONEventReconstructor constructed with defaults" << endl; Dump();}
+    cout << "AliMUONEventReconstructor constructed with defaults" << endl; Dump();
+    cout << endl << "Magnetic field from root file:" << endl;
+    gAlice->Field()->Dump();
+    cout << endl;
+  }
   return;
 }
 
