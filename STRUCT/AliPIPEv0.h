@@ -21,7 +21,9 @@ public:
   virtual void   CreateMaterials();
   virtual Int_t  IsVersion() const {return 0;}
   virtual void  DrawModule();
-   
+ private:
+  virtual void  Undulation(char *undul, Float_t pitch, Float_t thick, Float_t zundul, Float_t rundul,
+                           char (*cone)[5]);
    ClassDef(AliPIPEv0,1)  //Class for PIPE version 0
 };
  
