@@ -182,7 +182,7 @@ AliHBTLLWeights::AliHBTLLWeights():
  fColoumbSwitch(kTRUE),
  fQuantStatSwitch(kTRUE),
  fStrongInterSwitch(kTRUE),
- fColWithResidNuclSwitch(kTRUE),
+ fColWithResidNuclSwitch(kFALSE),
  fNuclMass(0.0),
  fNuclCharge(0.0),
  fRandomPosition(kFALSE),
@@ -194,6 +194,34 @@ AliHBTLLWeights::AliHBTLLWeights():
 // Default Constructor 
 }
 /**************************************************************/
+
+AliHBTLLWeights::AliHBTLLWeights(const AliHBTLLWeights &/*source*/):
+ TObject(),
+ fTest(kTRUE),
+ fColoumbSwitch(kTRUE),
+ fQuantStatSwitch(kTRUE),
+ fStrongInterSwitch(kTRUE),
+ fColWithResidNuclSwitch(kFALSE),
+ fNuclMass(0.0),
+ fNuclCharge(0.0),
+ fRandomPosition(kFALSE),
+ fRadius(0.0),
+ fPID1(0),
+ fPID2(0),
+ fSigma(0.0)
+{
+  //Copy ctor needed by the coding conventions but not used
+  Fatal("AliHBTLLWeights","copy ctor not implemented");
+}
+/************************************************************/
+
+AliHBTLLWeights& AliHBTLLWeights::operator=(const AliHBTLLWeights& /*source*/)
+{
+  //Assignment operator needed by the coding conventions but not used
+  Fatal("AliHBTLLWeights","assignment operator not implemented");
+  return * this;
+}
+/************************************************************/
 
 AliHBTLLWeights* AliHBTLLWeights::Instance()
 {     
@@ -214,6 +242,7 @@ Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
 {
 // calculates weight for a pair
   static const Double_t cmtofm = 1.e13;
+  static const Double_t cmtoOneOverGeV = cmtofm*fgkWcons;  
   
   AliHBTParticle *part1 = partpair->Particle1();
   AliHBTParticle *part2 = partpair->Particle2();
@@ -249,14 +278,14 @@ Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
   FSI_MOM.P2Y = part2->Py();
   FSI_MOM.P2Z = part2->Pz();
 
-  FSI_COOR.X1 = part1->Vx()*cmtofm;
-  FSI_COOR.Y1 = part1->Vy()*cmtofm;
-  FSI_COOR.Z1 = part1->Vz()*cmtofm;
+  FSI_COOR.X1 = part1->Vx()*cmtoOneOverGeV;
+  FSI_COOR.Y1 = part1->Vy()*cmtoOneOverGeV;
+  FSI_COOR.Z1 = part1->Vz()*cmtoOneOverGeV;
   FSI_COOR.T1 = part1->T();
 
-  FSI_COOR.X2 = part2->Vx()*cmtofm;
-  FSI_COOR.Y2 = part2->Vy()*cmtofm;
-  FSI_COOR.Z2 = part2->Vz()*cmtofm;
+  FSI_COOR.X2 = part2->Vx()*cmtoOneOverGeV;
+  FSI_COOR.Y2 = part2->Vy()*cmtoOneOverGeV;
+  FSI_COOR.Z2 = part2->Vz()*cmtoOneOverGeV;
   FSI_COOR.T2 = part2->T();
   
   ltran12();

@@ -64,6 +64,9 @@ class AliHBTLLWeights: public TObject
 
    private:
      AliHBTLLWeights();
+     AliHBTLLWeights(const AliHBTLLWeights &/*source*/);
+     AliHBTLLWeights & operator=(const AliHBTLLWeights& /*source*/);
+     
      ClassDef(AliHBTLLWeights,1)
  };
 
