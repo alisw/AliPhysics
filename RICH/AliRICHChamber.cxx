@@ -16,25 +16,23 @@
 /* $Id$ */
 
 #include "AliRICHChamber.h"
-
-#include <TLorentzVector.h>
-#include <TParticle.h>
+#include "AliRICHConst.h" //for r2d
+#include "AliRICHParam.h"
 #include <TRandom.h>
-#include <TObjArray.h>
 #include <TRotMatrix.h>
-#include <AliRICHTresholdMap.h>
-#include <AliSegmentation.h>
-#include <AliRICHSegmentationV0.h>
-#include <AliRICHGeometry.h>
-#include <AliRICHResponse.h>
+#include "AliRICHTresholdMap.h"
+#include "AliSegmentation.h"
+#include "AliRICHSegmentationV0.h"
+#include "AliRICHGeometry.h"
+#include "AliRICHResponse.h"
 
 ClassImp(AliRICHChamber)	
-    
+//______________________________________________________________________________    
 AliRICHChamber::AliRICHChamber() 
-{
-// default ctor
-
-    fpRotMatrix = 0;
+{//default ctor
+  fpParam=0;    
+  fpRotMatrix=0;
+  
     fSegmentation = 0;
     fResponse = 0;
     fGeometry = 0;
@@ -44,10 +42,56 @@ AliRICHChamber::AliRICHChamber()
     frMax = 140;
     for(Int_t i=0; i<50; ++i) fIndexMap[i] = 0;
 }
+//______________________________________________________________________________
+AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
+{//named ctor. Defines all geometry parameters for the given module.
+ // 4 5 6 |----> X
+ // 1 2 3 | 
+ //   0   V Z  
+  SetCenter(0,pParam->Offset(),0);//put to 2 position   
+  switch(iModuleN){
+    case 0:
+      RotateX(pParam->AngleYZ());
+      fName="RICHc0";fTitle="RICH chamber 0";
+      break;      
+    case 1:
+      RotateZ(pParam->AngleXY());      
+      fName="RICHc1";fTitle="RICH chamber 1";
+      break;      
+    case 2:
+      fName="RICHc2";fTitle="RICH chamber 2";
+      break;      
+    case 3:
+      RotateZ(-pParam->AngleXY());      
+      fName="RICHc3";fTitle="RICH chamber 3";
+      break;      
+    case 4:
+      RotateX(-pParam->AngleYZ());  //порядок важен, поворот не комутативен    
+      RotateZ( pParam->AngleXY());      
+      fName="RICHc4";fTitle="RICH chamber 4";
+      break;      
+    case 5:
+      RotateX(-pParam->AngleYZ());
+      fName="RICHc5";fTitle="RICH chamber 5";
+      break;      
+    case 6:
+      RotateX(-pParam->AngleYZ());            
+      RotateZ(-pParam->AngleXY());      
+      fName="RICHc6";fTitle="RICH chamber 6";
+      break;      
+    default:
+      Fatal("named ctor","Wrong chamber number %i, check muster class ctor",iModuleN);
+  }//switch(iModuleN)
+  RotateZ(pParam->AngleRot());//apply common rotation  
+  new TRotMatrix("rot"+fName,"rot"+fName, Rot().ThetaX()*r2d, Rot().PhiX()*r2d,
+                                          Rot().ThetaY()*r2d, Rot().PhiY()*r2d,
+                                          Rot().ThetaZ()*r2d, Rot().PhiZ()*r2d);
+  fpParam=pParam;
+}
+//______________________________________________________________________________
 
 void AliRICHChamber::LocaltoGlobal(Float_t pos[3],Float_t Globalpos[3])
-{
-// Local coordinates to global coordinates transformation
+{//Local coordinates to global coordinates transformation
 
     Double_t *pMatrix;
     pMatrix =  fpRotMatrix->GetMatrix();
@@ -60,10 +104,7 @@ void AliRICHChamber::LocaltoGlobal(Float_t pos[3],Float_t Globalpos[3])
 }
 
 void AliRICHChamber::GlobaltoLocal(Float_t pos[3],Float_t Localpos[3])
-{
-//
-// Global coordinates to local coordinates transformation
-//
+{// Global coordinates to local coordinates transformation
     TMatrix matrixCopy(3,3);
     Double_t *pMatrixOrig = fpRotMatrix->GetMatrix();
     for(Int_t i=0;i<3;i++)
@@ -83,7 +124,6 @@ void AliRICHChamber::GlobaltoLocal(Float_t pos[3],Float_t Localpos[3])
 void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 				    Int_t& nnew,Float_t newclust[5][500],ResponseType res) 
 {
-//    
 //  Generates pad hits (simulated cluster) 
 //  using the segmentation and the response model
     
@@ -159,40 +199,24 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 	  //printf("Newcluster:%d\n",i);
 	}
       } // Pad loop
-    //if (fSegmentation->ISector()==2)
-      //printf("Nnew:%d\n\n\n\n",nnew);
-}
-
-
-
-
+}//void AliRICHChamber::DisIntegration(...
+//______________________________________________________________________________
 void AliRICHChamber::GenerateTresholds()
-{
-
-// Generates random treshold charges for all pads 
-
-  //printf("Pads : %dx%d\n",fSegmentation->Npx(),fSegmentation->Npy());
-
+{//Generates random treshold charges for all pads 
   Int_t nx = fSegmentation->Npx();
   Int_t ny = fSegmentation->Npy();
 
-  //Int_t size=nx*ny;
-
-  //printf("Size:%d\n",size);
-
   fTresh = new AliRICHTresholdMap(fSegmentation);
-
-  //printf("Generating tresholds...\n");
-
-  for(Int_t i=-nx/2;i<nx/2;i++)
-    {
-      for(Int_t j=-ny/2;j<ny/2;j++)
-	{
-	  Int_t pedestal = (Int_t)(gRandom->Gaus(50, 10));
-	  //Int_t pedestal =0;
-	  fTresh->SetHit(i,j,pedestal);
-	  //printf("Pad %d %d has pedestal %d.\n",i,j,pedestal);
-	}
+  for(Int_t i=-nx/2;i<nx/2;i++){
+    for(Int_t j=-ny/2;j<ny/2;j++){
+      Int_t pedestal = (Int_t)(gRandom->Gaus(50, 10));
+      fTresh->SetHit(i,j,pedestal);
     }
-      
-}
+  }      
+}//void AliRICHChamber::GenerateTresholds()
+//______________________________________________________________________________
+void AliRICHChamber::Print(Option_t *option) const
+{
+  Info(fName.Data(),"r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
+                     Rho(), Theta()*r2d,Phi()*r2d ,   X(),    Y(),    Z());
+}//void AliRICHChamber::Print(Option_t *option)const

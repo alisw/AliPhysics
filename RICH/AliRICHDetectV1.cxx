@@ -21,10 +21,8 @@
 #include "AliRICH.h"
 #include "AliRICHPoints.h"
 #include "AliRICHDetect.h"
-#include "AliRICHHit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
-#include "AliRICHCerenkov.h"
 #include "AliRICHSegmentationV0.h"
 #include "AliRun.h"
 #include "TParticle.h"
@@ -196,7 +194,7 @@ void AliRICHDetectV1::Detect(Int_t nev, Int_t type)
     Int_t nhits = pHits->GetEntriesFast();
     if (nhits == 0) continue;
     //Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-    AliRICHHit *mHit = 0;
+    AliRICHhit *mHit = 0;
     //Int_t npoints=0;
     
     Int_t counter=0, counter1=0;
@@ -240,7 +238,7 @@ void AliRICHDetectV1::Detect(Int_t nev, Int_t type)
     
     //printf("Cerenkovs       : %d\n",counter);
     
-    mHit = (AliRICHHit*) pHits->UncheckedAt(0);
+    mHit = (AliRICHhit*) pHits->UncheckedAt(0);
     Int_t nch  = mHit->Chamber();
     originalTheta = mHit->Theta();
     originalPhi = mHit->Phi();

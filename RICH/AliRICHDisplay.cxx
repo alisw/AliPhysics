@@ -60,8 +60,6 @@
 #include "AliRICHPoints.h"
 #include "AliHeader.h"
 
-#include "AliRICHHit.h"
-#include "AliRICHCerenkov.h"
 #include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
@@ -1050,12 +1048,12 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
 	if (pRICHhits == 0) return;
 	Int_t nhits = pRICHhits->GetEntriesFast();
 	if (nhits == 0) continue;
-	AliRICHHit *mHit;
+	AliRICHhit *mHit;
 	AliRICHPoints *points = 0;
 	for (Int_t hit=0;hit<nhits;hit++) {
 	    points = new AliRICHPoints(1);
 	    fPhits->AddAt(points,npoints);
-            mHit = (AliRICHHit*)pRICHhits->UncheckedAt(hit);
+            mHit = (AliRICHhit*)pRICHhits->UncheckedAt(hit);
 	    TParticle *current = (TParticle*)gAlice->Particle(mHit->Track());
 	    if (current->GetPdgCode() == 50000050) {
 		points->SetMarkerColor(kBlue);

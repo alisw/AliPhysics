@@ -35,7 +35,6 @@
 #include "AliHitMap.h"
 #include "AliRICHHitMapA1.h"
 #include "AliRICH.h"
-#include "AliRICHHit.h"
 #include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHTransientDigit.h"
@@ -149,7 +148,7 @@ void AliRICHDigitizer::CreateNew(AliRICHSDigit *padhit)
 Bool_t AliRICHDigitizer::Init()
 {
 // Initialisation
-  fHits     = new TClonesArray("AliRICHHit",1000);
+  fHits     = new TClonesArray("AliRICHhit",1000);
   fSDigits  = new TClonesArray("AliRICHSDigit",1000);
   return kTRUE;
 }
@@ -246,7 +245,7 @@ void AliRICHDigitizer::Exec(Option_t* option)
       //
       //   Loop over hits
       for(Int_t i = 0; i < fHits->GetEntriesFast(); ++i) {
-	AliRICHHit* mHit = static_cast<AliRICHHit*>(fHits->At(i));
+	AliRICHhit* mHit = static_cast<AliRICHhit*>(fHits->At(i));
 	fNch = mHit->Chamber()-1;  // chamber number
 	if (fNch >= kNCH) {
 	  cerr<<"AliRICHDigitizer: chamber nr. fNch out of range: "<<fNch<<endl;

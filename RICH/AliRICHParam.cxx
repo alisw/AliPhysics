@@ -7,28 +7,29 @@ ClassImp(AliRICHParam)
 // RICH main parameters manipulator
 AliRICHParam::AliRICHParam()
 {//defines the default parameters
-  Segmentation         (144,160);               //nx,ny   
-  DeadZone             (3*cm);                  //spacer between PC planes
-  PadSize              (8.4*mm,8.0*mm);   
-  Size                 (80*cm,7*cm,60*cm);      //full length, not GEANT half notation
-  AngleRot             (0*deg);                 //rotation of the whole RICH around Z
-  AnglesDeg            (20,19.5);               //XY angle, YZ angle  deg  
-  Offset               (490*cm+1.267*cm);       //1.267???????cm distance from IP to the center of module 
-  GapThickness         (8*cm);               //Gap Thickness
-  ProximityGapThickness(0.4*cm);             //Proximity Gap Thickness
-  QuartzLength         (133*cm);             //Quartz Length
-  QuartzWidth          (127.9*cm);           //Quartz Width
-  QuartzThickness      (0.5*cm);             //Quartz Thickness
-  OuterFreonLength     (133*cm);             //Outer Freon Length
-  OuterFreonWidth      (41.3*cm);            //Outer Freon Width
-  InnerFreonLength     (133*cm);             //Inner Freon Length
-  InnerFreonWidth      (41.3*cm);            //Inner Freon Width
-  FreonThickness       (1.5*cm);             //Freon Thickness
-  RadiatorToPads       (0);               //Distance from radiator to pads
+  Segmentation         (144,160);           //nx,ny   
+  DeadZone             (3*cm);              //spacer between PC planes
+  PadSize              (8.4*mm,8.0*mm);     
   
-  SigmaIntegration(5.);
+  Size                 (80*cm,7*cm,60*cm);  //full length, not GEANT half notation
+  AngleRot             (-60);               //rotation of the whole RICH around Z, deg
+  Angles               (20,19.5);           //XY angle, YZ angle  deg  
+  Offset               (490*cm+1.267*cm);   //1.267???????cm distance from IP to the center of module 
+  GapThickness         (8*cm);              
+  ProximityGapThickness(0.4*cm);            
+  QuartzLength         (133*cm);            
+  QuartzWidth          (127.9*cm);          
+  QuartzThickness      (0.5*cm);            
+  OuterFreonLength     (133*cm);            
+  OuterFreonWidth      (41.3*cm);           
+  InnerFreonLength     (133*cm);            
+  InnerFreonWidth      (41.3*cm);           
+  FreonThickness       (1.5*cm);            
+  RadiatorToPads       (0);                 
+  
   ChargeSlope(27.);
   ChargeSpreadX(0.18);ChargeSpreadY(0.18);
+  SigmaIntegration(5.);
   MaxAdc(4096);
   AlphaFeedback(0.036);
   EIonisation(26.e-9);

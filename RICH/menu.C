@@ -1,30 +1,27 @@
 void Show()
 {  
 //How to get number of events:  
-  gpRL->LoadHeader();//without this the following will be zero:
-  Info("RICH/menu.C::Show","3 ways to get number of events 1=%i 2=%i 3=%i",
+  Info("RICH/menu.C::Show","3 ways to get number of events 1=%i 2=%f 3=%f",
                           gAlice->GetEventsPerRun(),
-                          gpRL->TreeE()->GetEntries(),
+                          al->TreeE()->GetEntries(),
                           gAlice->TreeE()->GetEntries());
-//
-  return;
-  for(Int_t iEventN=0;iEventN<iNevents;iEventN++){// loop on events
-      Int_t iNparticles=gAlice->GetEvent(iEventN);
-      Int_t iNtracks=gAlice->TreeH()->GetEntries();
-      cout<<"Event "<<iEventN<<" contains "<<iNparticles<<" particles and "<<iNtracks<<" tracks\n";
-
-      for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){ // loop on tracks
-         gAlice->TreeH()->GetEntry(iTrackN);
-        // gAlice->Particle(iTrackN)->Print();
-         for(AliRICHhit *pRICHhit=(AliRICHhit*)pRICH->FirstHit(-1);pRICHhit;pRICHhit->(AliRICHhit*)pRICH->NextHit()){
-             TVector3 mrsV3(pRICHhit->X(),pRICHhit->Y(),pRICHhit->Z());
-             cout<<"Before\n";mrsV3.Dump();
-             TVector3 armV3=pRICH->ToArm(mrsV3);
-             cout<<"After\n";armV3.Dump();
-         }//loop on hits of given track
-      }// loop on tracks
-   }//loop on events
-
+  rl->LoadHits();
+  for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){// loop on events
+    Int_t iNparticles=gAlice->GetEvent(iEventN);
+    Int_t iNtracks=rl->TreeH()->GetEntries();
+    Info("RICH/menu.C::Show","Event %i contains %i particles in total while %i are primary",
+                                     iEventN,    iNparticles,                iNtracks);
+    for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){ // loop on tracks
+      rl->TreeH()->GetEntry(iTrackN);
+      al->Stack()->Particle(iTrackN)->Print();
+      Info("RICH/menu.C::Show","track %i has %i hits",iTrackN,r->Hits()->GetEntries());
+//      for(AliRICHhit *pRichHit=(AliRICHhit*)gpRich->FirstHit(-1);pRichHit;pRichHit=(AliRICHhit*)gpRich->NextHit()){
+//        pRichHit->Dump();        
+//              TVector3 armV3=pRICH->ToArm(mrsV3);
+//              cout<<"After\n";armV3.Dump();
+//      }//loop on hits of given track
+    }// loop on tracks
+  }//loop on events
 }//void Show()
 
 void menu(Int_t iNevents=5)// How many events to generate.
@@ -35,60 +32,92 @@ void menu(Int_t iNevents=5)// How many events to generate.
 
   TControlBar *pMenu = new TControlBar("vertical","RICH main");
        
+  pMenu->AddButton("Debug ON-OFF",     "Debug();",   "Switch debug on-off");   
   if(GetAlice()){//it's from file, reconstruct
     pMenu->AddButton("Show","Show()","Shows the structure of events in files");
+    pMenu->AddButton("Hits2SDigits","r->Hits2SDigits()","Perform first phase converstion");
     pMenu->AddButton("RingViewer","RingViewer()","Show rings with reconstructed info");
   }else{//it's aliroot, simulate
-    pMenu->AddButton("Init",         "Init()",                "Normal init");   
     pMenu->AddButton("Run",           runString.Data(),       "Process!");
   }
-  pMenu->AddButton("Debug ON",     "gAlice->SetDebug(1)",   "Switch debug on");   
-  pMenu->AddButton("Debug OFF",    "gAlice->SetDebug()",    "Switch debug off");     
   pMenu->AddButton("Geo",          "Geo()",                 "Geomentry submenu");
   pMenu->AddButton("Browser",      "new TBrowser;",         "Start ROOT TBrowser");
   pMenu->AddButton("Quit",         ".q",                    "Close session");
   pMenu->Show();
+  a=gAlice;//for manual manipulation convinience
 }//void menu(Int_t iNevents)
 
-void Init()
-{
-  gAlice->Init("~/my/AliceConfig.C");
-}
 
-AliRunLoader *rl,*gpRL;
-AliLoader *rrl,*gpRichLoader;
-AliRICH *r,*gpRich;
+void Debug()
+{
+  if(gAlice->GetDebug()){
+    Info("RICH/menu.C::Debug","OFF");
+    gAlice->SetDebug(0);
+    if(r)r->SetDebug(0);
+    if(t)t->SetDebug(0);
+    AliLoader::SetDebug(0);
+  }else{
+    Info("RICH/menu.C::Debug","ON");
+    gAlice->SetDebug(1);
+    if(r)r->SetDebug(1);
+    if(t)t->SetDebug(1);
+    AliLoader::SetDebug(1);
+  }
+}//void Debug()
+
 AliRun *a;
+AliRunLoader *al;
+AliLoader *rl,*tl,*il;
+
+AliRICH *r;
+AliTPC *t;
+AliITS *i;
+AliPHOS *p;
+
 Bool_t GetAlice()
 {
   if(gAlice){//it's aliroot
-    Info("RICH/menu.C::GetAlice","gAlice!=NULL, it's aliroot, execute Init()");
-    Init();
+    Info("RICH/menu.C::GetAlice","gAlice!=NULL, IT'S ALIROOT, EXECUTE Init()");
+    gAlice->Init("~/my/AliceConfig.C");
+    r=(AliRICH*)gAlice->GetDetector("RICH");
+    t=(AliTPC*)gAlice->GetDetector("TPC");
+    i=(AliITS*)gAlice->GetDetector("ITS");
+    p=(AliPHOS*)gAlice->GetDetector("PHOS");    
     return kFALSE;
   }else{//it's root with ALICE libs loaded
-    Info("RICH/menu.C::GetAlice","gAlice=0, getting it from simulated file.");
-    
-    gpRL=AliRunLoader::Open("galice.root","AlicE","update");
-    if(!gpRL) Fatal("GetAlice","Can't get AliRunLoader");
-    
-    gpRL->LoadgAlice();
+    Info("RICH/menu.C::GetAlice","gAlice=0, GETTING IT FROM SIMULATED FILE.");
+        
+    if(!(al=AliRunLoader::Open("galice.root","AlicE","update"))) Fatal("RICH/menu.C::GetAlice","Can't get AliRunLoader");
+    al->LoadgAlice();
     if(!gAlice) Fatal("RICH/menu.C::GetAlice","No gAlice in file");
-//    gAlice=gpRL->GetAliRun();    
-    
-    gpRich=(AliRICH*)gAlice->GetDetector("RICH"); 
-    if(!gpRich) Fatal("RICH/menu.C::GetAlice","No RICH in file");
-    
-    gpRichLoader=gpRL->GetLoader("RICHLoader");     
-    if(!gpRichLoader) Fatal("RICH/menu.C::GetAlice","No RICH loader in file");    
-    
-    Info("RICH/menu.C::GetAlice","contains %i event(s)",gAlice->GetEventsPerRun());
-    rl=gpRL;rrl=gpRichLoader;r=gpRich;a=gAlice;//for manual manipulation convinience
+//    a=al->GetAliRun();    
+    al->LoadHeader();//loads events tree
+    al->LoadKinematics();//loads the primaries info
+//RICH      
+    if(!(r=(AliRICH*)gAlice->GetDetector("RICH"))) Warning("RICH/menu.C::GetAlice","No RICH in file");
+    if(!(rl=al->GetLoader("RICHLoader")))          Warning("RICH/menu.C::GetAlice","No RICH loader in file");        
+//TPC            
+    if(!(t=(AliTPC*)gAlice->GetDetector("TPC")))   Warning("RICH/menu.C::GetAlice","No TPC in file");
+    if(!(tl=al->GetLoader("TPCLoader")))           Warning("RICH/menu.C::GetAlice","No TPC loader in file");    
+        
+    Info("RICH/menu.C::GetAlice","Run contains %i event(s)",gAlice->GetEventsPerRun());    
     return kTRUE;
   }       
 }//void GetAlice()         
 
+void RingViewer()
+{
+  gStyle->SetPalette(1);
+  TCanvas *view=new TCanvas("Display","ALICE RICH Display",0,0,1200,750);
+  
+  TH2F *pH2=new TH2F("pH2F","RICH DISPLAY",160,0,160,144,0,144);
+  pH2->SetStats(0);
+  pH2->SetMaximum(100);
 
+  Int_t Nevents = gAlice->GetEventsPerRun();
+}
 
+//______________________________________________________________________________
 void Geo()
 {
   TControlBar *pMenu = new TControlBar("vertical","RICH draw");
@@ -107,7 +136,6 @@ void GeoTest()
 {
 
    TBRIK *pAliceBRIK=new TBRIK("aliceBRIK","ALICE mother volume","void",500,500,500);
-   AliRICH *pRICH=(AliRICH*)gAlice->GetDetector("RICH");
    TBRIK *pArmBRIK=new TBRIK("armBRIK","RICH arm1","void",pRICH->GetSizeX(),pRICH->GetSizeY(),pRICH->GetSizeZ());
    
    TNode *pAliceNode=new TNode("aliceNode","Mother volume","aliceBRIK");
@@ -147,19 +175,7 @@ void GeoTest()
    
    aliceNode->Draw();
 }//void GeoTest()
-
-void RingViewer()
-{
-  gStyle->SetPalette(1);
-  TCanvas *view = new TCanvas("Display","ALICE RICH Display",0,0,1200,750);
-  
-  TH2F *p2F = new TH2F("p2F","RICH DISPLAY",160,0,160,144,0,144);
-  p2F->SetStats(0);
-  p2F->SetMaximum(100);
-
-  Int_t Nevents = gAlice->GetEventsPerRun();
-}
-
+//______________________________________________________________________________
 void PrintGeo(Float_t rotDeg=0)
 {
   AliRICHParam *p=new AliRICHParam;  
@@ -176,21 +192,21 @@ void PrintGeo(Float_t rotDeg=0)
   cout<<endl;
   Double_t phi=90*deg+kRot,theta=90*deg-kT;    
   Info("   menu for          0","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2g,  phi*r2g,  
+                                 r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
   
   phi=90*deg+kRot+kP,theta=90*deg;
   Info("   menu for          1","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2g,  phi*r2g,  
+                                 r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
   
   phi=90*deg+kRot,theta=90*deg;
   Info("   menu for          2","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2g,  phi*r2g,  
+                                 r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
@@ -198,7 +214,7 @@ void PrintGeo(Float_t rotDeg=0)
   
   phi=90*deg+kRot-kP,theta=90*deg;
   Info("   menu for          3","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2g,  phi*r2g,  
+                                 r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
@@ -206,7 +222,7 @@ void PrintGeo(Float_t rotDeg=0)
 
   phi=90*deg+kRot+kP,theta=90*deg+kT;
   Info("   menu for          4","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2g,  phi*r2g,  
+                                 r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
@@ -214,14 +230,14 @@ void PrintGeo(Float_t rotDeg=0)
   
   phi=90*deg+kRot,theta=90*deg+kT;
   Info("   menu for          5","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2g,  phi*r2g,  
+                                 r,      theta*r2d,  phi*r2d,  
                                                                 r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
   
   phi=90*deg+kRot-kP,theta=90*deg+kT;
   Info("   menu for          6","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2g,  phi*r2g,  
+                                 r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));

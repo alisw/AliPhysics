@@ -30,7 +30,6 @@
 #include "AliMagF.h"
 #include "AliPDG.h"
 #include "AliRICHGeometry.h"
-#include "AliRICHHit.h"
 #include "AliRICHResponseV0.h"
 #include "AliRICHSegmentationV1.h"
 #include "AliRICHv3.h"
@@ -801,7 +800,7 @@ void AliRICHv3::StepManager()
     Float_t        theta,phi;
     Float_t        destep, step;
     Double_t        ranf[2];
-    Int_t          nPads;
+    Int_t          nPads=1;
     Float_t        coscerenkov;
     static Float_t eloss, xhit, yhit, tlength;
     const  Float_t kBig=1.e10;
@@ -1068,7 +1067,7 @@ void AliRICHv3::StepManager()
 		    ckovData[3] = pos[2];                 // Z-position for hit
 		    ckovData[4] = theta;                      // theta angle of incidence
 		    ckovData[5] = phi;                      // phi angle of incidence 
-		    ckovData[8] = (Float_t) fNSDigits;      // first sdigit
+		    ckovData[8] = (Float_t) fNsdigits;      // first sdigit
 		    ckovData[9] = -1;                       // last pad hit
 		    ckovData[13] = 4;                       // photon was detected
 		    ckovData[14] = mom[0];
@@ -1082,9 +1081,9 @@ void AliRICHv3::StepManager()
 		    
 		    //nPads = Hits2SDigits(localPos[0],localPos[2],cherenkovLoss,idvol,kCerenkov);//for photons in CsI kir
 		    		    
-		    if (fNSDigits > (Int_t)ckovData[8]) {
+		    if (fNsdigits > (Int_t)ckovData[8]) {
 			ckovData[8]= ckovData[8]+1;
-			ckovData[9]= (Float_t) fNSDigits;
+			ckovData[9]= (Float_t) fNsdigits;
 		    }
 
 		    //printf("Cerenkov loss: %f\n", cherenkovLoss);
@@ -1093,7 +1092,7 @@ void AliRICHv3::StepManager()
 		    //printf("nPads:%d",nPads);
 		    
 		    //TClonesArray *Hits = RICH->Hits();
-		    AliRICHHit *mipHit =  (AliRICHHit*) (fHits->UncheckedAt(0));
+		    AliRICHhit *mipHit =  (AliRICHhit*) (fHits->UncheckedAt(0));
 		    if (mipHit)
 		      {
 			mom[0] = current->Px();
@@ -1211,7 +1210,7 @@ void AliRICHv3::StepManager()
 		hits[3] = localPos[2];                 // Z-position for hit
 		hits[4] = localTheta;                  // theta angle of incidence
 		hits[5] = localPhi;                    // phi angle of incidence 
-		hits[8] = (Float_t) fNSDigits;    // first sdigit
+		hits[8] = (Float_t) fNsdigits;    // first sdigit
 		hits[9] = -1;                     // last pad hit
 		hits[13] = fFreonProd;           // did id hit the freon?
 		hits[14] = mom[0];
@@ -1263,13 +1262,13 @@ void AliRICHv3::StepManager()
 		
 		hits[6]=tlength;
 		hits[7]=eloss;
-		if (fNSDigits > (Int_t)hits[8]) {
+		if (fNsdigits > (Int_t)hits[8]) {
 		    hits[8]= hits[8]+1;
-		    hits[9]= (Float_t) fNSDigits;
+		    hits[9]= (Float_t) fNsdigits;
 		}
 		
 		//if(sector !=-1)
-		new(lhits[fNhits++]) AliRICHHit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
+		new(lhits[fNhits++]) AliRICHhit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 		eloss = 0; 
 		//
 		// Check additional signal generation conditions 

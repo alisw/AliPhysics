@@ -39,8 +39,6 @@
 #include "AliRICHDisplay.h"
 #include "AliRICHPoints.h"
 #include "AliRun.h"
-#include "AliRICHHit.h"
-#include "AliRICHCerenkov.h"
 #include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
@@ -91,7 +89,7 @@ void AliRICHPoints::DumpHit()
   //
   //   Dump hit corresponding to this point
   //
-  AliRICHHit *hit = GetHit();
+  AliRICHhit *hit = GetHit();
   if (hit) hit->Dump();
 }
 
@@ -111,7 +109,7 @@ void AliRICHPoints::InspectHit()
   //
   //   Inspect hit corresponding to this point
   //
-  AliRICHHit *hit = GetHit();
+  AliRICHhit *hit = GetHit();
   if (hit) hit->Inspect();
 }
 
@@ -146,7 +144,7 @@ TParticle *AliRICHPoints::GetParticle() const
 }
 
 //_____________________________________________________________________________
-AliRICHHit *AliRICHPoints::GetHit() const
+AliRICHhit *AliRICHPoints::GetHit() const
 {
   //
   //   Returns pointer to hit index in AliRun::fParticles
@@ -156,7 +154,7 @@ AliRICHHit *AliRICHPoints::GetHit() const
   TClonesArray *pRICHhits  = pRICH->Hits();
   Int_t nhits = pRICHhits->GetEntriesFast();
   if (fHitIndex < 0 || fHitIndex >= nhits) return 0;
-  return (AliRICHHit*)pRICHhits->UncheckedAt(fHitIndex);
+  return (AliRICHhit*)pRICHhits->UncheckedAt(fHitIndex);
 }
 
 //_____________________________________________________________________________
@@ -192,7 +190,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
   AliRICHPoints *points = 0;
   TMarker3DBox  *marker = 0;
     
-  AliRICHHit *mHit = GetHit();
+  AliRICHhit *mHit = GetHit();
 
   printf("Hit %d on chamber: %d\n",fHitIndex, mHit->Chamber());
 

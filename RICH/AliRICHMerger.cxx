@@ -28,7 +28,6 @@
 #include "AliHitMap.h"
 #include "AliRICHHitMapA1.h"
 #include "AliRICH.h"
-#include "AliRICHHit.h"
 #include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHTransientDigit.h"
@@ -139,7 +138,7 @@ TFile* AliRICHMerger::InitBgr()
   TFile *file = new TFile(fFnBgr);
 // add error checking later
   printf("\n AliRICHMerger has opened %s file with background event \n", fFnBgr);
-  fHitsBgr     = new TClonesArray("AliRICHHit",1000);
+  fHitsBgr     = new TClonesArray("AliRICHhit",1000);
   fSDigitsBgr  = new TClonesArray("AliRICHSDigit",1000);
   return file;
 }
@@ -209,9 +208,9 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
     treeH->GetEvent(fTrack);
     //
     //   Loop over hits
-    for(AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1); 
+    for(AliRICHhit* mHit=(AliRICHhit*)pRICH->FirstHit(-1); 
 	mHit;
-	mHit=(AliRICHHit*)pRICH->NextHit()) 
+	mHit=(AliRICHhit*)pRICH->NextHit()) 
     {
 	  
       fNch = mHit->Chamber()-1;  // chamber number
@@ -314,10 +313,10 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
       fTrH1->GetEvent(fTrack);
       //
       //   Loop over hits
-      AliRICHHit* mHit;
+      AliRICHhit* mHit;
       for(Int_t i = 0; i < fHitsBgr->GetEntriesFast(); ++i) 
       {	
-	mHit   = (AliRICHHit*) (*fHitsBgr)[i];
+	mHit   = (AliRICHhit*) (*fHitsBgr)[i];
 	fNch   = mHit->Chamber()-1;  // chamber number
 	iChamber = &(pRICH->Chamber(fNch));
 

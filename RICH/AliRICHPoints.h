@@ -22,7 +22,7 @@ public:
   Int_t                 GetTrackIndex(); // *MENU*
   Int_t                 GetDigitIndex() {return fDigitIndex;}
   Int_t                 GetIndex() {return fIndex;}
-  AliRICHHit           *GetHit() const;
+  AliRICHhit           *GetHit() const;
   AliRICHDigit         *GetDigit() const;
   virtual const Text_t *GetName() const;
   virtual Text_t       *GetObjectInfo(Int_t px, Int_t py);

@@ -7,8 +7,10 @@
 class AliRICHParam :public TObject  
 {
 public:
-                 AliRICHParam();  
-  void    Recalc();//Recalculate dependent parameters after changes 
+           AliRICHParam();  
+  virtual ~AliRICHParam()                    {;}  
+  
+  void    Recalc();//Recalculate dependent parameters after changes applied  
   void    Segmentation(Int_t Nx, Int_t Ny)   {fNx=Nx;fNy=Ny;Recalc();}
   Int_t   Nx()                          const{return fNx;}
   Int_t   Ny()                          const{return fNy;}   
@@ -19,14 +21,15 @@ public:
   Float_t PadY()                        const{return fPadY;}
   Float_t PadPlaneWidth()               const{return fPadPlaneWidth;}
   Float_t PadPlaneLength()              const{return fPadPlaneLength;}  
+
   void    Size(Float_t x,Float_t y,Float_t z){fSizeX=x;fSizeY=y;fSizeZ=z;}
-  void    GeantSize(Float_t *pParam)    const{pParam[0]=fSizeX/2;pParam[1]=fSizeY/2;pParam[2]=fSizeZ/2;}  
+  void    GeantSize(Float_t *pArr)      const{pArr[0]=fSizeX/2;pArr[1]=fSizeY/2;pArr[2]=fSizeZ/2;}  
   Float_t SizeX()                       const{return fSizeX;}
   Float_t SizeY()                       const{return fSizeY;}
   Float_t SizeZ()                       const{return fSizeZ;}   
   void    Offset(Float_t offset)             {       fOffset=offset;}  
   Float_t Offset()                      const{return fOffset;}  
-  void    AnglesDeg(Float_t xy,Float_t yz)   {       fAngleXY=xy;fAngleYZ=yz;} 
+  void    Angles(Float_t xy,Float_t yz)      {       fAngleXY=xy;fAngleYZ=yz;} 
   Float_t AngleYZ()                     const{return fAngleYZ*d2r;} 
   Float_t AngleXY()                     const{return fAngleXY*d2r;} 
   void    AngleRot(Float_t angle)            {       fAngleRot=angle;}
@@ -90,21 +93,21 @@ protected:
   Float_t fSizeX;             //chamber length, cm
   Float_t fSizeY;             //chamber thickness, cm
   Float_t fSizeZ;             //chamber width, cm
-  Float_t fAngleRot;          //azimuthal rotation angle in X-Y plane, grad  
-  Float_t fAngleYZ;           //angle between RICH chambers in YZ plane, grad
-  Float_t fAngleXY;           //angle between RICH chambers in XY plane, grad
+  Float_t fAngleRot;          //azimuthal rotation angle in X-Y plane, deg  
+  Float_t fAngleYZ;           //angle between RICH chambers in YZ plane, deg
+  Float_t fAngleXY;           //angle between RICH chambers in XY plane, deg
   Float_t fOffset;            //chambers offset from IP, cm   
   Float_t fGapThickness;            //gap thickness, cm
   Float_t fProximityGapThickness;   //proximity gap thickness, cm
-  Float_t fQuartzLength;            //quartz length
-  Float_t fQuartzWidth;             //quartz width
-  Float_t fQuartzThickness;         //quartz thickness
-  Float_t fOuterFreonLength;        //outer freon length
-  Float_t fOuterFreonWidth;         //outer freon width
-  Float_t fInnerFreonLength;        //inner freon length
-  Float_t fInnerFreonWidth;         //inner freon width
+  Float_t fQuartzLength;            //quartz length, cm
+  Float_t fQuartzWidth;             //quartz width, cm
+  Float_t fQuartzThickness;         //quartz thickness, cm
+  Float_t fOuterFreonLength;        //outer freon length, cm
+  Float_t fOuterFreonWidth;         //outer freon width, cm
+  Float_t fInnerFreonLength;        //inner freon length, cm
+  Float_t fInnerFreonWidth;         //inner freon width, cm
   Float_t fFreonThickness;          //freon thickness
-  Float_t fRadiatorToPads;          //distance from radiator to pads
+  Float_t fRadiatorToPads;          //distance from radiator to pads, cm
 
   Float_t fChargeSlope;              //Slope of the charge distribution
   Float_t fChargeSpreadX;            //Width of the charge distribution in x

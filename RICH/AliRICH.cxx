@@ -44,11 +44,9 @@
 #include "AliMagF.h"
 #include "AliPoints.h"
 #include "AliRICH.h"
-#include "AliRICHCerenkov.h"
 #include "AliRICHClusterFinder.h"
 #include "AliRICHDigit.h"
 #include "AliRICHDigitizer.h"
-#include "AliRICHHit.h"
 #include "AliRICHHitMapA1.h"
 #include "AliRICHMerger.h"
 #include "AliRICHRawCluster.h"
@@ -65,6 +63,8 @@
 static Int_t sMaxIterPad=0;    // Static variables for the pad-hit iterator routines
 static Int_t sCurIterPad=0;
  
+ClassImp(AliRICHhit)
+ClassImp(AliRICHdigit)
 ClassImp(AliRICH)
     
 //___________________________________________
@@ -80,7 +80,7 @@ AliRICH::AliRICH()
   fIshunt     = 0;
   fHits       = 0;
   fSDigits    = 0;
-  fNSDigits   = 0;
+  fNsdigits   = 0;
   fNcerenkovs = 0;
   fDchambers  = 0;
   fRecHits1D = 0;
@@ -94,20 +94,20 @@ AliRICH::AliRICH()
       fNrechits1D[i] = 0;
       fNrechits3D[i] = 0;
   }
-  fFileName = 0;
-  fMerger = 0;
+//kir  fFileName = 0;
+//kir  fMerger = 0;
 }//AliRICH::AliRICH()
 //______________________________________________________________________________
 AliRICH::AliRICH(const char *name, const char *title)
         :AliDetector(name,title)
 {//Named ctor
   if(GetDebug())Info("named ctor","Start.");
-  fHits       = new TClonesArray("AliRICHHit",1000  );
+  fHits       = new TClonesArray("AliRICHhit",1000  );
   fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
-  fSDigits    = new TClonesArray("AliRICHSDigit",100000);
+  fSDigits    = new TClonesArray("AliRICHdigit",100000);
   gAlice->AddHitList(fHits);
   gAlice->AddHitList(fCerenkovs);
-  fNSDigits   = 0;
+  fNsdigits   = 0;
   fNcerenkovs = 0;
   fIshunt     = 0;
   fDchambers  =new TObjArray(kNCH);
@@ -128,8 +128,8 @@ AliRICH::AliRICH(const char *name, const char *title)
   for (i=0; i<kNCH; i++) 
     (*fChambers)[i] = new AliRICHChamber();*/  
   
-  fFileName = 0;
-  fMerger = 0;
+//kir  fFileName = 0;
+//kir  fMerger = 0;
   if(GetDebug())Info("named ctor","Stop.");
 }//AliRICH::AliRICH(const char *name, const char *title)
 //______________________________________________________________________________
@@ -165,62 +165,64 @@ AliRICH::~AliRICH()
     }                     
   if(GetDebug()) Info("dtor","Stop.");    
 }//AliRICH::~AliRICH()
-//_____________________________________________________________________________
-Int_t AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
-{
-//  Calls the charge disintegration method of the current chamber and adds
-//  the simulated cluster to the root tree 
+//______________________________________________________________________________
+void AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
+{//calls the charge disintegration method of the current chamber and adds all generated sdigits to the list of digits
+
   if(GetDebug()) Info("Hits2SDigits","Start.");
    
-   Int_t clhits[5];
-   Float_t newclust[4][500];
-   Int_t nnew;
-    
-//
-//  Integrated pulse height on chamber
-    
-    clhits[0]=fNhits+1;
+   Int_t iChamber,iPadX,iPadY,iAdc,iTrack;
+   Float_t list[4][500];
+   Int_t iNdigits;
+        
 
-    ((AliRICHChamber*)fChambers->At(idvol))->DisIntegration(eloss, xhit, yhit, nnew, newclust, res);
+  ((AliRICHChamber*)fChambers->At(idvol))->DisIntegration(eloss, xhit, yhit, iNdigits, list, res);
     Int_t ic=0;
     
-//
-//  Add new clusters
-    for (Int_t i=0; i<nnew; i++) {
-	if (Int_t(newclust[0][i]) > 0) {
+  for(Int_t i=0; i<iNdigits; i++) {
+    if(Int_t(list[0][i]) > 0) {
 	    ic++;
-//  Cluster Charge
-	    clhits[1] = Int_t(newclust[0][i]);
-//  Pad: ix
-	    clhits[2] = Int_t(newclust[1][i]);
-//  Pad: iy 
-	    clhits[3] = Int_t(newclust[2][i]);
-//  Pad: chamber sector
-	    clhits[4] = Int_t(newclust[3][i]);
+	    iAdc = Int_t(list[0][i]);
+	    iPadX = Int_t(list[1][i]);
+	    iPadY = Int_t(list[2][i]);
+	    iChamber = Int_t(list[3][i]);
 
-	    //printf(" %d %d %d %d %d\n",  clhits[0],  clhits[1],  clhits[2],  clhits[3],  clhits[4]);
 	    
-	    AddSDigit(clhits);
+	    AddSDigit(iChamber,iPadX,iPadY,iAdc,iTrack);
 	}
     }
     
    if(gAlice->TreeS()){
 	gAlice->TreeS()->Fill();
 	gAlice->TreeS()->Write(0,TObject::kOverwrite);
-	//printf("Filled SDigits...\n");
    }
   if(GetDebug()) Info("Hits2SDigits","Stop.");    
-   return nnew;
 }//Int_t AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
 
+void AliRICH::Hits2SDigits(Int_t iEventN)
+{//Create a list of sdigits corresponding to list of hits. Every hit generates sdigit.
+  if(GetDebug()) Info("Hit2SDigits(iEventN)","Start.");
+  
+  gAlice->GetEvent(iEventN);
+  
+  if(!fLoader->TreeS()) fLoader->MakeTree("S");
+  MakeBranch("S");
+  
+  for(int i=0;i<iEventN+40;i++) AddSDigit(i,13,24,55,2010);
+  
+  fLoader->WriteSDigits("OVERWRITE");
+  
+  if(GetDebug()) Info("Hit2SDigits(iEventN)","Stop.");
+}
+//______________________________________________________________________________
 void AliRICH::Hits2SDigits()
-{//Dummy: sdigits are created during transport. Called from alirun.   
+{//Calls Hits2SDigits(EventNumber) for all events in the current run
   if(GetDebug()) Info("Hit2SDigits","Start.");
-
-  int nparticles = gAlice->GetNtrack();
-  cout << "Particles (RICH):" <<nparticles<<endl;
-  if (nparticles > 0) printf("SDigits were already generated.\n");
-
+  
+  for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++)
+    Hits2SDigits(iEventN);
+        
+  if(GetDebug()) Info("Hit2SDigits","Stop.");
 }
 //______________________________________________________________________________
 void AliRICH::SDigits2Digits()
@@ -264,28 +266,6 @@ void AliRICH::Digits2Reco()
   if (nparticles > 0) FindClusters(0,0);
 
 }//void AliRICH::Digits2Reco()  
-//______________________________________________________________________________
-void AliRICH::AddHit(Int_t track, Int_t *vol, Float_t *hits)
-{// Adds the current hit to the RICH hits list
-
-    TClonesArray &lhits = *fHits;
-    new(lhits[fNhits++]) AliRICHHit(fIshunt,track,vol,hits);
-}
-
-void AliRICH::AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs)
-{
-// Adds a RICH cerenkov hit to the Cerenkov Hits list   
-
-    TClonesArray &lcerenkovs = *fCerenkovs;
-    new(lcerenkovs[fNcerenkovs++]) AliRICHCerenkov(fIshunt,track,vol,cerenkovs);
-}
-
-void AliRICH::AddSDigit(Int_t *aSDigit)
-{// Adds the current S digit to the RICH list of S digits   
-
-  TClonesArray &lSDigits = *fSDigits;
-  new(lSDigits[fNSDigits++]) AliRICHSDigit(aSDigit);
-} 
 
 
 void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
@@ -1592,14 +1572,6 @@ Float_t AliRICH::AbsoCH4(Float_t x)
 
 
 //___________________________________________
-void AliRICH::ResetHits()
-{// Reset number of clusters and the cluster array for this detector
-  AliDetector::ResetHits();
-  fNSDigits   = 0;
-  fNcerenkovs = 0;
-  if (fSDigits)  fSDigits->Clear();
-  if (fCerenkovs) fCerenkovs->Clear();
-}
 //____________________________________________
 void AliRICH::ResetDigits()
 {//Reset number of digits and the digits array for this detector
@@ -1687,7 +1659,7 @@ void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
     //gObjectTable->Print();
 }//void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
 //______________________________________________________________________________
-AliRICHSDigit* AliRICH::FirstPad(AliRICHHit*  hit,TClonesArray *clusters ) 
+AliRICHSDigit* AliRICH::FirstPad(AliRICHhit*  hit,TClonesArray *clusters ) 
 {// Initialise the pad iterator Return the address of the first sdigit for hit
     TClonesArray *theClusters = clusters;
     Int_t nclust = theClusters->GetEntriesFast();
@@ -1794,9 +1766,9 @@ void AliRICH::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
 	   gAlice->ResetHits();
 	   treeH->GetEvent(track);
 	   	   	   
-	   for(AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1); 
+	   for(AliRICHhit* mHit=(AliRICHhit*)pRICH->FirstHit(-1); 
 	       mHit;
-	       mHit=(AliRICHHit*)pRICH->NextHit()) 
+	       mHit=(AliRICHhit*)pRICH->NextHit()) 
 	     {
 	       //Int_t nch  = mHit->fChamber;              // chamber number
 	       //Float_t x  = mHit->X();                    // x-pos of hit
@@ -2397,9 +2369,9 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 	 Int_t nhits = pRICH->Hits()->GetEntriesFast();
 	 if (nhits) Nh+=nhits;
 	 printf("Hits            : %d\n",nhits);
-	 for(AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1); 
+	 for(AliRICHhit* mHit=(AliRICHhit*)pRICH->FirstHit(-1); 
 	     mHit;
-	     mHit=(AliRICHHit*)pRICH->NextHit()) 
+	     mHit=(AliRICHhit*)pRICH->NextHit()) 
 	   {
 	     Int_t nch  = mHit->Chamber();              // chamber number
 	     trackglob[0] = mHit->X();                 // x-pos of hit
@@ -2551,7 +2523,7 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 		       //printf ("Cerenkov hit number %d/%d, X:%d, Y:%d\n",hit,ncerenkovs,cx,cy); 
 		       
 		       //TParticle *MIP = (TParticle*)gAlice->Particle(cmother);
-		       AliRICHHit* mipHit = (AliRICHHit*) pRICH->Hits()->UncheckedAt(0);
+		       AliRICHhit* mipHit = (AliRICHhit*) pRICH->Hits()->UncheckedAt(0);
 		       mom[0] = current->Px();
 		       mom[1] = current->Py();
 		       mom[2] = current->Pz();
@@ -3467,18 +3439,18 @@ void AliRICH::MakeBranch(Option_t* option)
 
 
   if(cH&&TreeH()){
-    if(!fHits) fHits=new TClonesArray("AliRICHHit",1000  );
+    if(!fHits) fHits=new TClonesArray("AliRICHhit",1000  );
     if(!fCerenkovs) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
     MakeBranchInTree(TreeH(),"RICHCerenkov", &fCerenkovs, kBufferSize, 0) ;
 
-    //kir if(!fSDigits) fSDigits    = new TClonesArray("AliRICHSDigit",100000);
+    //kir if(!fSDigits) fSDigits    = new TClonesArray("AliRICHdigit",100000);
     //kir MakeBranchInTree(TreeH(),"RICHSDigits", &fSDigits, kBufferSize, 0) ;
   }     
   AliDetector::MakeBranch(option);//this is after cH because we need to guarantee that fHits array is created
       
   if(cS&&fLoader->TreeS()){  
-    if(!fSDigits) fSDigits=new TClonesArray("AliRICHSDigit",100000);
-    MakeBranchInTree(gAlice->TreeS(),"RICHSDigits",&fSDigits,kBufferSize,0) ;
+    if(!fSDigits) fSDigits=new TClonesArray("AliRICHdigit",100000);
+    MakeBranchInTree(fLoader->TreeS(),"RICH",&fSDigits,kBufferSize,0) ;
   }
    
   int i;
@@ -3552,38 +3524,39 @@ void AliRICH::SetTreeAddress()
   TTree *treeS = fLoader->TreeS();
     
   if(treeH){
+    if(GetDebug())Info("SetTreeAddress","tree H is requested.");
+    if(fHits==0x0) fHits=new TClonesArray("AliRICHhit",1000); 
+    
     branch = treeH->GetBranch("RICHCerenkov");
     if(branch){
       if (fCerenkovs == 0x0) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000); 
         branch->SetAddress(&fCerenkovs);
     }
        
-     branch = treeH->GetBranch("RICHSDigits");
-     if (branch) 
-      {
-        if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHSDigit",100000);
-        branch->SetAddress(&fSDigits);
-         //printf("Setting sdigits branch address at %p in TreeH\n",&fSDigits);
-      }
-     if (fHits == 0x0) fHits       = new TClonesArray("AliRICHHit",1000  ); 
-    }
+//kir      branch = treeH->GetBranch("RICHSDigits");
+//kir      if (branch) 
+//kir       {
+//kir         if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHdigit",100000);
+//kir         branch->SetAddress(&fSDigits);
+//kir       }
+  }//if(treeH)
  
    //this is after TreeH because we need to guarantee that fHits array is created
-   AliDetector::SetTreeAddress();
+  AliDetector::SetTreeAddress();
     
-   if (treeS) {
-      branch = treeS->GetBranch("RICHSDigits");
-      if (branch) 
-        {
-          if (fSDigits == 0x0) fSDigits = new TClonesArray("AliRICHSDigit",100000);
-          branch->SetAddress(&fSDigits);
-          //printf("Setting sdigits branch address at %p in TreeS\n",&fSDigits);
-        }
+  if(treeS){
+    if(GetDebug())Info("SetTreeAddress","tree S is requested.");
+    branch = treeS->GetBranch("RICH");
+    if(branch){
+      if(!fSDigits) fSDigits=new TClonesArray("AliRICHdigit",100000);
+      branch->SetAddress(&fSDigits);
     }
+  }
     
     
-   if (treeD) 
-    {
+  if(treeD){
+    if(GetDebug())Info("SetTreeAddress","tree D is requested.");
+
       if (fDchambers == 0x0) 
         {
            fDchambers = new TObjArray(kNCH);
@@ -3602,8 +3575,9 @@ void AliRICH::SetTreeAddress()
       }
     }
     
-  if (treeR) {
-    
+  if(treeR){
+    if(GetDebug())Info("SetTreeAddress","tree R is requested.");
+
     if (fRawClusters == 0x0 ) 
      {
        fRawClusters = new TObjArray(kNCH);
@@ -3655,7 +3629,7 @@ void AliRICH::SetTreeAddress()
 	  }
       } 
       
-  }
+  }//if(treeR)
   if(GetDebug())Info("SetTreeAddress","Stop.");
 }//void AliRICH::SetTreeAddress()
 //______________________________________________________________________________
@@ -3666,3 +3640,4 @@ void AliRICH::Print(Option_t *option)const
   GetSegmentationModel(0)->Print(option);
   GetResponseModel(0)->Print(option);
 }//void AliRICH::Print(Option_t *option)const
+

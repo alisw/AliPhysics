@@ -15,8 +15,7 @@
 
 /* $Id$ */
 
-#include "AliRICHHit.h"
-#include "AliRICHCerenkov.h"
+
 #include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
@@ -186,7 +185,7 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich, Float_t rectheta, Float_t
     TTree *treeH = pRICH->TreeH();
     treeH->GetEvent(itr);
  
-    AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1);
+    AliRICHhit* mHit=(AliRICHhit*)pRICH->FirstHit(-1);
     if(mHit==0) return 1;
     ich = mHit->Chamber()-1;
     trackglob[0] = mHit->X();
