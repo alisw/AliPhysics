@@ -271,7 +271,8 @@ AliRun::~AliRun()
   if(fTreeE)curfil=fTreeE->GetCurrentFile();
   delete fImedia;
   delete fField;
-  delete fMC;
+  // delete fMC;
+  delete gMC; gMC=0;
   delete fGeometry;
   delete fDisplay;
   delete fGenerator;
