@@ -312,11 +312,7 @@ void ConfigCommon(Bool_t interactiveSetup)
     if (iRICH)
     {
         //=================== RICH parameters ===========================
-/*
         AliRICH *RICH = new AliRICHv3("RICH", "normal RICH");
-*/
-        AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
-
     }
 
 
