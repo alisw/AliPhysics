@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.29  2001/02/28 16:34:40  kowal2
+Protection against nonphysical values of the avalanche size,
+10**6 is the maximum
+
 Revision 1.28  2001/01/26 19:57:19  hristov
 Major upgrade of AliRoot code
 
@@ -1637,8 +1641,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	  //
 	  // protection for the nonphysical avalanche size (10**6 maximum)
 	  //  
-	  xyz[3]= (Float_t) 
-           (-gasgain*TMath::Log(gRandom->Rndm()*(1.-1.93e-22)+1.928e-22));  
+          Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
+	  xyz[3]= (Float_t) (-gasgain*TMath::Log(rn)); 
 	  index[0]=1;
 	  
 	  TransportElectron(xyz,index); //MI change -august	  
