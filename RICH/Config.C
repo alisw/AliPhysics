@@ -378,7 +378,7 @@ if(iRICH) {
     GeometryV0->SetGapThickness(8);
     GeometryV0->SetProximityGapThickness(.4);
     GeometryV0->SetQuartzLength(133);
-    GeometryV0->SetQuartzWidth(123.9);
+    GeometryV0->SetQuartzWidth(127.9);
     GeometryV0->SetQuartzThickness(.5);
     GeometryV0->SetOuterFreonLength(133);
     GeometryV0->SetOuterFreonWidth(41.3);
