@@ -45,57 +45,56 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliCRTv1.h"
 
-#include <TBRIK.h>
-#include <TGeometry.h>
+#include <TClonesArray.h>
 #include <TLorentzVector.h>
-#include <TNode.h>
 #include <TPDGCode.h>
 
-#include "AliCRTConstants.h"
-#include "AliCRTv1.h"
-#include "AliConst.h"
-#include "AliMagF.h"
 #include "AliRun.h"
+#include "AliConst.h"
+
+#include "AliCRThit.h"
+#include "AliCRTConstants.h"
 
 ClassImp(AliCRTv1)
  
 //_____________________________________________________________________________
-AliCRTv1::AliCRTv1() : AliCRTv0()
+AliCRTv1::AliCRTv1()
+  : AliCRTv0()
 {
   //
-  // Default constructor for CRT
+  // Default constructor
   //
-  fCRTStatus = kTRUE;
-  fRICHStatus = kFALSE;
-  fTPCStatus = kFALSE;
-  fMagnetStatus = kTRUE;
-
-  fCRTModule = kFALSE;
+  fIshunt = 0;
+  fHits = 0;
 }
  
 //_____________________________________________________________________________
 AliCRTv1::AliCRTv1(const char *name, const char *title)
-  : AliCRTv0(name,title)
+  : AliCRTv0(name, title)
 {
   //
-  // Standard constructor for CRT
+  // Standard constructor
   //
   //Begin_Html
   /*
     <img src="picts/AliCRTv1.gif">
   */
   //End_Html
-  fCRTStatus = kTRUE;
-  fCRTModule = kFALSE;
+  fIshunt =  1; // All hits are associated with primary particles  
 
-  fRICHStatus = kFALSE;
-  fTPCStatus = kFALSE;
-  fMagnetStatus = kFALSE;
+  fHits =  new TClonesArray("AliCRThit",400);
+  gAlice->AddHitList(fHits);
+
+  SetMarkerColor(7);
+  SetMarkerStyle(2);
+  SetMarkerSize(0.4);
 }
 
 //_____________________________________________________________________________
 AliCRTv1::AliCRTv1(const AliCRTv1& crt)
+  : AliCRTv0(crt)
 {
   //
   // Copy ctor.
@@ -104,13 +103,31 @@ AliCRTv1::AliCRTv1(const AliCRTv1& crt)
 }
 
 //_____________________________________________________________________________
-AliCRTv1& AliCRTv1::operator= (const AliCRTv1& crt)
+AliCRTv1::~AliCRTv1()
+{
+  //
+  // Default destructor
+  //
+}
+
+//_____________________________________________________________________________
+AliCRTv1& AliCRTv1::operator=(const AliCRTv1& crt)
 {
   //
   // Asingment operator
   //
   crt.Copy(*this);
   return *this;
+}
+
+//_____________________________________________________________________________
+void AliCRTv1::CreateMaterials()
+{
+  //
+  // Create Materials.
+  // Use the parent class definition of the materials
+  //
+  AliCRT::CreateMaterials();
 }
 
 //_____________________________________________________________________________
@@ -121,371 +138,83 @@ void AliCRTv1::CreateGeometry()
   //
 
   Int_t  idrotm[2499];    // The rotation matrix.
+  Int_t* idtmed = fIdtmed->GetArray() - 1099 ;
 
-  Int_t * idtmed = fIdtmed->GetArray() - 1099 ;
-
-  //
   // Shafts.
   this->CreateShafts();
 
-  //
   // Molasse.
   this->CreateMolasse();
 
-
-  //
-  // Scintillators
-
-  Float_t box[3];
-  box[0] = AliCRTConstants::fgCageLenght/2.; // Half Length of the box along the X axis, cm.
-  box[1] = AliCRTConstants::fgCageHeight/2.; // Half Length of the box along the Y axis, cm.
-  box[2] = AliCRTConstants::fgCageWidth/2.;  // Half Length of the box along the Z axis, cm.
-
-  //
-  // Create a big voluem with air barrel above the magnet
+  // Create a big volume with air barrel above the magnet
   Float_t barrel[10];
   Float_t magnetSides = 3.;
   Float_t planesPerpendicularToZ = 2.;
-  Float_t rMin = 790.;
-  Float_t rMax = rMin + 20.; // 20 cm width
   barrel[0] = 22.5;
   barrel[1] = 45*magnetSides;
   barrel[2] = magnetSides;
   barrel[3] = planesPerpendicularToZ;
-  barrel[4] = -600.;
-  barrel[5] = rMin;
-  barrel[6] = rMax;
-  barrel[7] = 600.;
-  barrel[8] = rMin;
-  barrel[9] = rMax;
-  gMC->Gsvolu("CRT4", "PGON", idtmed[1114], barrel, 10);
+  barrel[4] = -700.;
+  barrel[5] = AliCRTConstants::fgMagMinRadius;
+  barrel[6] = AliCRTConstants::fgMagMinRadius + 2.; // 2 cm width
+  barrel[7] = -barrel[4];
+  barrel[8] = barrel[5];
+  barrel[9] = barrel[6];
+  gMC->Gsvolu("CRT4", "PGON", idtmed[1112], barrel, 10);
   gMC->Gspos("CRT4", 1 , "CRT", 0., -30., 0., 0, "ONLY");
-  
 
-  // Create  the current sicuiitllator arry
-  // Define the Scintillators. as a big box.
-  Float_t scint[3];
-  scint[0] = AliCRTConstants::fgActiveAreaLenght/2.;   // Half Length in X
-  scint[1] = AliCRTConstants::fgActiveAreaHeight/2.;   // Half Length in Y
-  scint[2] = AliCRTConstants::fgActiveAreaWidth/2.;    // Half Length in Z
-  gMC->Gsvolu("CRT1", "BOX ", idtmed[1112], scint, 3); // Scintillators
   //
-  // -- X axis.
-  // we'll start dawing from the center.
-  Float_t initX = 0.;
-  
-  //
-  // -- Y axis
-  Float_t gapY   = 30.;        // 30 cms. above the barrel.
-  // For the height we staimate the from the center of the ceiling,
-  // if were a cilinder, must be about 280cm.
-  Float_t barrelc = 790.; // Barrel radius.
-  Float_t height  = barrelc + gapY - 30.;
-  Float_t initY = height;
-  
-  //
-  // -- Z axis.
-  // we'll start dawing from the center.
-  
-  //
-  // Put 4 modules on the top of the magnet
-  Int_t step = 4;
-  for ( Int_t i = 1 ; i <= 4 ; i++ ) {
-    gMC->Gspos("CRT1", i, "CRT", initX, initY, (i-step)*box[2], 0, "ONLY");
-    step--;
-  }
-  
-  // Modules on the barrel sides.
-  // Because the openenig angle for each face is 22.5, and if we want to
-  //    put the modules right in the middle
-  Float_t xtragap = 10.;
-  Float_t initXside = (height+xtragap)*TMath::Sin(2*22.5*kDegrad);//rigthside
-  Float_t initYside = (height+xtragap)*TMath::Cos(2*22.5*kDegrad);
-  
-  // Put 4 modules on the left side of the magnet
-  // The rotation matrix parameters, for the left side.
-  AliMatrix(idrotm[232], 90., 315., 90., 45., 0., 337.5);
-  Int_t stepl = 4;
-  for ( Int_t i = 1 ; i <= 4 ; i++ ) {
-    gMC->Gspos("CRT1", i+4, "CRT", initXside, initYside, (i-stepl)*box[2],
-	       idrotm[232], "ONLY");
-    stepl--;
-  }
-  
-  // Put 4 modules on the right side of the magnet
-  // The rotation matrix parameters for the right side.
+  Float_t box[3];
+  box[0] = AliCRTConstants::fgSinglePaletteLenght/4;
+  box[1] = AliCRTConstants::fgSinglePaletteHeight/2;
+  box[2] = AliCRTConstants::fgSinglePaletteWidth/2;
+  gMC->Gsvolu("CRT6", "BOX", idtmed[1113], box, 3);
+
+  // In the right side side of the magnet
   AliMatrix(idrotm[231], 90., 45., 90., 315., 180., 202.5);
-  Int_t stepr = 4;
-  for ( Int_t i = 1 ; i <= 4 ; i++ ) {
-    gMC->Gspos("CRT1", i+8, "CRT", -initXside, initYside, (i-stepr)*box[2],
-	       idrotm[231], "ONLY");
-    stepr--;
+
+  // In the left side side of the magnet
+  //AliMatrix(idrotm[232], 90., 315., 90., 315., 0.0000040, 263.0707092);
+  AliMatrix(idrotm[232], 90, 315, 90, 315, 0, 263);
+
+  // Now put them into the volume created above
+  // First above the magnet.
+  const Float_t away = (2.*barrel[5]*TMath::Sin(kDegrad*22.5))/4.;
+  const Int_t nModules = 10;
+  for (Int_t i = 0; i < nModules; i++) {
+    Float_t zCoordinate = i*100 - 450;
+    // In the lef side
+    gMC->Gspos("CRT6", i, "CRT4", -away, barrel[5]+1., zCoordinate, 0, "ONLY");
+    // In the rigth side
+    gMC->Gspos("CRT6",i+10,"CRT4", away, barrel[5]+1., zCoordinate, 0, "ONLY");
+
+    // The most away part (left side)
+    gMC->Gspos("CRT6", i+20, "CRT4", 3*away, barrel[5]+21 - away, zCoordinate, idrotm[232], "ONLY");
+    // The inner part (left side)
+    gMC->Gspos("CRT6", i+30, "CRT4", 4*away, barrel[5]+21 - 2*away, zCoordinate, idrotm[232], "ONLY");
+
+    // The most away part (rigth side)
+    gMC->Gspos("CRT6", i+40, "CRT4", -3*away, barrel[5]+21. - away, zCoordinate, idrotm[231], "ONLY");
+    // The inner part (rigth side)
+    gMC->Gspos("CRT6", i+50, "CRT4", -4*away, barrel[5]+21 - 2*away, zCoordinate, idrotm[231], "ONLY");
   }
-  
-  this->CreateMagnetGeometry();
-  this->CreateRICHGeometry();
-  this->CreateTPCGeometry();
-  
-}
 
-//_____________________________________________________________________________
-void AliCRTv1::CreateMagnetGeometry()
-{
-  
-  cout<<"\n\n\tYou are requiring the CRT with the Magnet Activated!\n\n";
-  
-  Int_t  idrotm[2499];    // The rotation matrix.
-
-  Int_t * idtmed = fIdtmed->GetArray() - 1099 ;
-
-  // Disable the CRT StepManager method.
-  fCRTStatus = kFALSE;
-
-  Float_t barrel[10];
-  Float_t magnetSides = 3.;
-  Float_t planesPerpendicularToZ = 2.;
-  //Float_t rMin = 790.;
-  //Float_t rMax = rMin + 20.; // 20 cm width
-
-  // MAgnet
-  // Create the upper faces of the magnet.
-  barrel[0] = 22.5;
-  barrel[1] = 360.;
-  barrel[2] = 8.;
-  barrel[3] = 2.;
-  barrel[4] = -600.;
-  barrel[5] = 580.;
-  barrel[6] = 790.;
-  barrel[7] = 600.;
-  barrel[8] = 580.;
-  barrel[9] = 790.;
-  gMC->Gsvolu("C3MO", "PGON", idtmed[1114], barrel, 10);
-  gMC->Gspos("C3MO", 1, "CRT", 0., -30., 0., 0, "ONLY");
-
-  // Define coils 
-  
-  barrel[5] = 585.;
-  barrel[6] = 690.;
-  barrel[8] = 585.;
-  barrel[9] = 690.;
-  gMC->Gsvolu("C3CO", "PGON", idtmed[1108], barrel, 10); //Aluminium
-  gMC->Gspos("C3CO", 1, "C3MO", 0., 0., 0., 0, "ONLY");
-  
-  barrel[5] = 580.;
-  barrel[6] = 585.;
-  barrel[8] = 580.;
-  barrel[9] = 585.;
-  gMC->Gsvolu("C3C1", "PGON", idtmed[1128], barrel, 10);// Aluminium
-  gMC->Gspos("C3C1", 1, "C3MO", 0., 0., 0., 0, "ONLY");
-
-  // Define yoke 
-  
-  barrel[5] = 690.;
-  barrel[6] = 790.;
-  barrel[8] = 690.;
-  barrel[9] = 790.;
-  gMC->Gsvolu("C3YO", "PGON", idtmed[1109], barrel, 10); // Iron
-  gMC->Gspos("C3YO", 1, "C3MO", 0., 0., 0., 0, "ONLY");
-
-
-  // Now create one inside the magnet as L3C1
-  // voulme for tracking.
-  barrel[0] = 22.5;
+  // Now the magnet doors
+  magnetSides = 8.;
   barrel[1] = 45*magnetSides;
   barrel[2] = magnetSides;
-  barrel[3] = planesPerpendicularToZ;
-  barrel[4] = -600.;
-  barrel[5] = 575.;
-  barrel[6] = 580.;
-  barrel[7] = 600.;
-  barrel[8] = 575.;
-  barrel[9] = 580.;
-  gMC->Gsvolu("C3CI", "PGON", idtmed[1134], barrel, 10);
-  gMC->Gspos("C3CI", 1 , "CRT", 0., -30., 0., 0, "ONLY");
-
-  // And a detector layer in the door 10 cm thick
-  // Volume for tracking.
-  barrel[0] = 22.5;
-  barrel[1] = 360.;
-  barrel[2] = 8.;
-  barrel[3] = 2.;
-  barrel[4] = 590.;
-  barrel[5] = 0.;
-  barrel[6] = 580.;
-  barrel[7] = 600.;
+  barrel[4] = 700.;
+  barrel[5] = 0;
+  barrel[6] = 790;
+  barrel[7] = barrel[4] + 2.;
   barrel[8] = barrel[5];
   barrel[9] = barrel[6];
-  gMC->Gsvolu("C3C2", "PGON", idtmed[1154], barrel, 10); // Air
-  gMC->Gspos("C3C2", 1, "CRT",  0., -30., 0., 0, "ONLY");
-  AliMatrix(idrotm[1010], 90., 0., 90., 90., 180., 0.);
-  gMC->Gspos("C3C2", 2, "CRT",  0., -30., 0., idrotm[1010], "ONLY");
+  gMC->Gsvolu("CRT5", "PGON", idtmed[1111], barrel, 10);
+  gMC->Gspos("CRT5", 1, "CRT", 0., -30., 0., 0, "ONLY");
 
+  AliMatrix(idrotm[300], 90., 0., 90., 90., 180., 0.);
+  gMC->Gspos("CRT5", 2, "CRT", 0., -30., 0., idrotm[300], "ONLY");
 
-
-  barrel[4] = 600.;
-  barrel[5] = 0.;
-  barrel[6] = 790.;
-  barrel[7] = 700.;
-  barrel[8] = barrel[5];
-  barrel[9] = barrel[6];
-  gMC->Gsvolu("C3DO", "PGON", idtmed[1174], barrel, 10); // Air
-  gMC->Gspos("C3DO", 1, "CRT", 0., -30., 0., 0, "ONLY");
-  AliMatrix(idrotm[1010], 90., 0., 90., 90., 180., 0.);
-  gMC->Gspos("C3DO", 2, "CRT", 0., -30., 0., idrotm[1010], "ONLY");
-
-  barrel[4] = 610.;
-  barrel[5] = 0.;
-  barrel[6] = 790.;
-  barrel[7] = 700.;
-  barrel[8] = barrel[5];
-  barrel[9] = barrel[6];
-  gMC->Gsvolu("C3FR", "PGON", idtmed[1149], barrel, 10); // Iron
-  gMC->Gspos("C3FR", 1, "C3DO", 0., 0., 0., 0, "ONLY");
-  // INNER LAYER 
-  
-  barrel[4] = 600.;
-  barrel[7] = 610.;
-  gMC->Gsvolu("C3IR", "PGON", idtmed[1149], barrel, 10); //Iron
-  gMC->Gspos("C3IR", 1, "C3DO", 0., 0., 0., 0, "ONLY");
-
-}
-
-//_____________________________________________________________________________
-void AliCRTv1::CreateTPCGeometry()
-{
-  cout<<"\n\n\tYou are requiring the CRT with the TPC Activated!\n\n";
-  Int_t * idtmed = fIdtmed->GetArray() - 1099 ;
-
-  // Disable the CRT StepManager method.
-  fCRTStatus = kFALSE;
-  // Disable the MAgnet
-  fMagnetStatus = kFALSE;
-  // Disable th RICH
-  fRICHStatus = kFALSE;
-
-  // TPC
-  // Tpc SAndwich 1 - Al
-  // TSA1
-  Float_t tube[5];
-  tube[0]=274.8124;
-  tube[1]=278.;
-  tube[2]=252.1;
-  tube[3] = 0.;
-  tube[4] = 180.;
-  gMC->Gsvolu("CSA1","TUBS",idtmed[1154],tube,5);
-  // TSA1->TOCV (0.,0.,3.) ->TOIN (0.,0.,0.)->TPC (0.,0.,0.)->ALIC(0.,0.,0.)
-  gMC->Gspos("CSA1 ",1,"CRT",0.,0.,0.,0,"ONLY");
-
-}
-
-//_____________________________________________________________________________
-void AliCRTv1::CreateRICHGeometry()
-{
-
-  cout<<"\n\n\tYou are requiring the CRT with the RICH Activated!\n\n";
-
-  Int_t  idrotm[2499];    // The rotation matrix.
-
-  Int_t * idtmed = fIdtmed->GetArray() - 1099 ;
-
-  // Disable the CRT StepManager method.
-  fCRTStatus = kFALSE;
-  // Disable the MAgnet
-  fMagnetStatus = kFALSE;
-
-
-  // now create  volume to simulate the HMPID volume. CSI
-  Float_t csi_length = 160*.8 + 2.6;
-  Float_t csi_width = 144*.84 + 2*2.6;
-  Float_t tbox[3];
-  tbox[0] = csi_width/2;
-  tbox[1] = 11.5;
-  tbox[2] = csi_length/2;
-  gMC->Gsvolu("CRIC ", "BOX ", idtmed[1174], tbox, 3);
-
-  Double_t dOffset = 490+1.267 - 8/2;  // distance from center of mother volume ALIC to methane
-  
-  Double_t dAlpha = 19.5; // angle between centers of chambers - y-z plane
-  Double_t dAlphaRad = dAlpha*kDegrad;
-  
-  Double_t dBeta = 20.;   // angle between center of chambers - y-x plane
-  Double_t dBetaRad = dBeta*kDegrad;
-   
-  Double_t dRotAngle = 60.;     // the whole RICH is to be rotated in x-y plane + means clockwise rotation 
-  Double_t dRotAngleRad = dRotAngle*kDegrad;
-   
-    
-   TRotMatrix *pRotMatrix; // tmp pointer
-   
-   TVector3 vector(0,dOffset,0); // Position of chamber 2 without rotation
-
-   // Chamber 0  standalone (no other chambers in this row) 
-   AliMatrix(idrotm[1000],90, -dRotAngle+360,90-dAlpha, 90-dRotAngle, dAlpha, -90+300);
-   pRotMatrix=new TRotMatrix("rot993","rot993",90,-dRotAngle, 90-dAlpha,90-dRotAngle,dAlpha, -90);
-   
-   vector.SetXYZ(0,dOffset,0);  vector.RotateX(dAlphaRad); 
-   vector.RotateZ(-dRotAngleRad);
-   
-   gMC->Gspos("CRIC",1,"CRT",vector.X(),vector.Y(),vector.Z(),idrotm[1000], "ONLY");
-   
-   // Chamber 1   
-   AliMatrix(idrotm[1001],90,-dBeta-dRotAngle,90,90-dBeta-dRotAngle, 0,0);
-
-   pRotMatrix=new TRotMatrix("rot994","rot994",90,-dBeta-dRotAngle,90,90-dBeta-dRotAngle,0,0);  
-   
-   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(-dBetaRad); 
-   vector.RotateZ(-dRotAngleRad);
-   
-   gMC->Gspos("CRIC",2,"CRT",vector.X(),vector.Y(),vector.Z(),idrotm[1001], "ONLY");           
-   
-   // Chamber 2   the top one with no Alpha-Beta rotation
-   AliMatrix(idrotm[1002],90,-dRotAngle,90,90-dRotAngle,0,0);
-
-   pRotMatrix=new TRotMatrix("rot995","rot995",90,-dRotAngle,90,90-dRotAngle,0,0);
-   
-   vector.SetXYZ(0,dOffset,0);
-   vector.RotateZ(-dRotAngleRad);
-   
-   gMC->Gspos("CRIC",3,"CRT",vector.X(),vector.Y(),vector.Z(),idrotm[1002], "ONLY");           
-   
-   // Chamber 3
-   AliMatrix(idrotm[1003],90,dBeta-dRotAngle,90.,90+dBeta-dRotAngle,0,0);
-   pRotMatrix=new TRotMatrix("rot996","rot996", 90,dBeta-dRotAngle,90.,90+dBeta-dRotAngle,0,0);
-   
-   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); 
-   vector.RotateZ(-dRotAngleRad);
-   
-   gMC->Gspos("CRIC",4,"CRT",vector.X(),vector.Y(),vector.Z(),idrotm[1003], "ONLY");
-
-   // Chamber 4
-   AliMatrix(idrotm[1004],90,360-dBeta-dRotAngle,108.2,90-dBeta-dRotAngle,18.2,90-dBeta-60);
-   pRotMatrix=new TRotMatrix("rot997","rot997",90,360-dBeta-dRotAngle,108.2,90-dBeta-dRotAngle,18.2,90-dBeta);
-   
-   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(-dBetaRad); vector.RotateX(-dAlphaRad); 
-   vector.RotateZ(-dRotAngleRad);
-   
-   gMC->Gspos("CRIC",5,"CRT",vector.X(),vector.Y(),vector.Z(),idrotm[1004], "ONLY");
-
-   // Chamber 5
-   AliMatrix(idrotm[1005],90,-dRotAngle+360,90+dAlpha,90-dRotAngle,dAlpha,90-60);     
-
-   pRotMatrix=new TRotMatrix("rot998","rot998",90,-dRotAngle,90+dAlpha,90-dRotAngle,dAlpha,90);     
-   
-   vector.SetXYZ(0,dOffset,0); vector.RotateX(-dAlphaRad); 
-   vector.RotateZ(-dRotAngleRad);
-   
-   gMC->Gspos("CRIC",6,"CRT",vector.X(),vector.Y(),vector.Z(),idrotm[1005], "ONLY");           
-   
-   // Chamber 6           
-   AliMatrix(idrotm[1006],90,dBeta-dRotAngle+360,108.2,90+dBeta-dRotAngle,18.2,90+dBeta-60);
-
-   pRotMatrix=new TRotMatrix("rot999","rot999",90,dBeta-dRotAngle,108.2,90+dBeta-dRotAngle,18.2,90+dBeta);    
-   
-   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); vector.RotateX(-dAlphaRad); 
-   vector.RotateZ(-dRotAngleRad);
-   
-   gMC->Gspos("CRIC",7,"CRT",vector.X(),vector.Y(),vector.Z(),idrotm[1006], "ONLY");
-   
 }
 
 //_____________________________________________________________________________
@@ -494,108 +223,98 @@ void AliCRTv1::CreateMolasse()
   //
   //
   //
-
   Int_t  idrotm[2499];    // The rotation matrix.
-
-  Int_t * idtmed = fIdtmed->GetArray() - 1099 ;
-
-  //
-  // Molasse
-  //
+  Int_t* idtmed = fIdtmed->GetArray() - 1099 ;
 
   // Exactly above the hall
   Float_t tspar[5];
-  tspar[0] = 1170.;
-  tspar[1] = 1170. + 375.;
-  tspar[2] = (1900.+1150.)/2.+100.;
-  tspar[3] = 0.;
-  tspar[4] = 180.;
+  tspar[0] = 1170;
+  tspar[1] = 1170 + 375;
+  tspar[2] = (1900 + 1150)/2 + 100;
+  tspar[3] = 0;
+  tspar[4] = 180;
   gMC->Gsvolu("CMO1", "TUBS", idtmed[1123], tspar, 5);
-  gMC->Gspos("CMO1", 1, "CRT", 0., 500., 1900.-tspar[2]+400., 0, "MANY");
+  gMC->Gspos("CMO1", 1, "CRT", 0, 500., 1900 - tspar[2] + 400, 0, "MANY");
 
   Float_t tbox[3];
-  tbox[0] = 1250.;
-  tbox[1] = (4420. - 1670.)/2.;
-  tbox[2] = (1900.+1150.)/2. + 200.;
+  tbox[0] = 1250;
+  tbox[1] = (4420 - 1670)/2;
+  tbox[2] = (1900 + 1150)/2 + 200;
   gMC->Gsvolu("CM12", "BOX", idtmed[1123], tbox, 3);
-  gMC->Gspos("CM12", 1, "CRT", 0., 4420. -tbox[1], 1900.-tbox[2]+400., 0, "MANY");
+  gMC->Gspos("CM12",1,"CRT",0, 4420 - tbox[1], 1900 - tbox[2] + 400, 0,"MANY");
 
   AliMatrix(idrotm[2003], 0., 0., 90., 0., 90., 90.);
   // Along the PM25
   Float_t tube[3];
-  tube[0] = 455. + 100.;
-  tube[1] = 555. + 375.;
-  tube[2] = (5150. - 1166.)/2.;
+  tube[0] = 455 + 100;
+  tube[1] = 555 + 375;
+  tube[2] = (5150 - 1166)/2;
   gMC->Gsvolu("CMO2", "TUBE", idtmed[1123], tube, 3);
-  gMC->Gspos("CMO2", 1, "CRT", -2100., 4420.-tube[2], 0., idrotm[2003], "MANY");
-
+  gMC->Gspos("CMO2", 1, "CRT", -2100, 4420 - tube[2], 0, idrotm[2003], "MANY");
 
   // Along the PGC2
-  tube[0] = 650.;
+  tube[0] = 650;
   tube[1] = 2987.7;
-  tube[2] = (5150. - 690.)/2.;
+  tube[2] = (5150 - 690)/2;
   gMC->Gsvolu("CMO3", "TUBE", idtmed[1123], tube, 3);
-  gMC->Gspos("CMO3", 1, "CRT", 375., 4420.-tube[2], 1900.+2987.7, idrotm[2003], "MANY");
+  gMC->Gspos("CMO3",1,"CRT", 375, 4420 - tube[2], 1900 + 2987.7,idrotm[2003],"MANY");
+
   // Behind the PGC2 up to the end of the M. volume.
-  tbox[0] = 12073.;
-  tbox[1] = 2575. + 95.;
-  tbox[2] = (12073. - 1900.-2987.7-650.)/2.;
+  tbox[0] = 12073;
+  tbox[1] = 2575 + 95;
+  tbox[2] = (12073 - 1900 - 2987.7 - 650)/2.;
   gMC->Gsvolu("CMO7", "BOX", idtmed[1123], tbox, 3);
-  gMC->Gspos("CMO7", 1, "CRT", 0., 4420.-tbox[1], 1900.+2987.7+650.+tbox[2], 0, "MANY");
+  gMC->Gspos("CMO7", 1, "CRT", 0, 4420 - tbox[1], 1900 + 2987.7 + 650 + tbox[2], 0, "MANY");
 
   // Along the PX24 , upper part.
-  tube[0] = 1250.;
+  tube[0] = 1250;
   tube[1] = 2300;
-  tube[2] = 2575. - 1300. + 95.;
+  tube[2] = 2575 - 1300 + 95;
   gMC->Gsvolu("CMO4", "TUBE", idtmed[1123], tube, 3);
-  gMC->Gspos("CMO4", 1, "CRT", 0., 404.+1300.+tube[2], -2300., idrotm[2003], "MANY");
+  gMC->Gspos("CMO4", 1, "CRT", 0, 404 + 1300 + tube[2], -2300, idrotm[2003], "MANY");
 
   // Along the PX24 , lower part
-  tspar[0] = 1250.;
+  tspar[0] = 1250;
   tspar[1] = 2300;
-  tspar[2] = 1300.;
+  tspar[2] = 1300;
   tspar[3] = kRaddeg*TMath::ASin(1070./1150.);
-  tspar[4] = 360. - tspar[3];
+  tspar[4] = 360 - tspar[3];
   gMC->Gsvolu("CMO5", "TUBS", idtmed[1123], tspar, 5);
-  gMC->Gspos("CMO5", 1, "CRT", 0., 404., -2300., idrotm[2003], "MANY");
+  gMC->Gspos("CMO5", 1, "CRT", 0., 404, -2300, idrotm[2003], "MANY");
   // behind the PX24
-  tbox[0] = 12073.;
-  tbox[1] = 2575. + 95.;
-  tbox[2] = 8523./2.;
+  tbox[0] = 12073;
+  tbox[1] = 2575 + 95;
+  tbox[2] = 8523/2;
   gMC->Gsvolu("CMO6", "BOX", idtmed[1123], tbox, 3);
-  gMC->Gspos("CMO6", 1, "CRT", 0., 4420.-tbox[1], -3550.-tbox[2], 0, "MANY");
-
+  gMC->Gspos("CMO6", 1, "CRT", 0., 4420 - tbox[1], -3550 - tbox[2], 0, "MANY");
 
   // On the right side of th hall
-  tbox[0] = (12073. - 1250.)/2.;
-  tbox[1] = 2575. + 95.;
-  tbox[2] = (8437.7+650.)/2.;
+  tbox[0] = (12073 - 1250)/2;
+  tbox[1] = 2575 + 95;
+  tbox[2] = (8437.7+650)/2;
   gMC->Gsvolu("CMO8", "BOX", idtmed[1123], tbox, 3);
-  gMC->Gspos("CMO8", 1, "CRT", 1250.+tbox[0], 4420.-tbox[1], -3550.+tbox[2], 0, "MANY");
+  gMC->Gspos("CMO8", 1, "CRT", 1250 + tbox[0], 4420 - tbox[1], -3550 + tbox[2], 0, "MANY");
 
   // on the left side of the hall, behind 
-  tbox[0] = (12073. - 2755.)/2.;
-  tbox[1] = 2575. + 95.;
-  tbox[2] = (8437.7+650.)/2.;
+  tbox[0] = (12073 - 2755)/2;
+  tbox[1] = 2575 + 95;
+  tbox[2] = (8437.7 + 650)/2.;
   gMC->Gsvolu("CMO9", "BOX", idtmed[1123], tbox, 3);
-  gMC->Gspos("CMO9", 1, "CRT", -2755.-tbox[0], 4420.-tbox[1], -3550.+tbox[2], 0, "MANY");
-
+  gMC->Gspos("CMO9", 1, "CRT", -2755 - tbox[0], 4420 - tbox[1], -3550 + tbox[2], 0, "MANY");
 
   // Molasse betwen the PX24 & PM25 on the left side.
-  tbox[0] = (2755. - 1250.)/2.;
-  tbox[1] = 2575. + 95.;
-  tbox[2] = (3550. - 555.)/2.;
+  tbox[0] = (2755 - 1250)/2;
+  tbox[1] = 2575 + 95;
+  tbox[2] = (3550 - 555)/2;
   gMC->Gsvolu("CM10", "BOX", idtmed[1123], tbox, 3);
-  gMC->Gspos("CM10", 1, "CRT", -1250.-tbox[0], 4420.-tbox[1], -tbox[2]-555., 0, "MANY");
-
+  gMC->Gspos("CM10", 1, "CRT", -1250 - tbox[0], 4420 - tbox[1], -tbox[2] - 555, 0, "MANY");
 
   // Molasse betwen the PGC2 & PM25 on the left side.
-  tbox[0] = (2755. - 1250.)/2.;
-  tbox[1] = 2575. + 95.;
-  tbox[2] = (1900.+2987.7 - 555. + 650.)/2.;
+  tbox[0] = (2755 - 1250)/2;
+  tbox[1] = 2575 + 95;
+  tbox[2] = (1900 + 2987.7 - 555 + 650)/2;
   gMC->Gsvolu("CM11", "BOX", idtmed[1123], tbox, 3);
-  gMC->Gspos("CM11", 1, "CRT", -1250.-tbox[0], 4420.-tbox[1], 555.+tbox[2], 0, "MANY");
-
+  gMC->Gspos("CM11", 1, "CRT", -1250 - tbox[0], 4420 - tbox[1], 555 + tbox[2], 0, "MANY");
 
 }
 
@@ -606,8 +325,7 @@ void AliCRTv1::CreateShafts()
   //
   //
   Int_t  idrotm[2499];    // The rotation matrix.
-
-  Int_t * idtmed = fIdtmed->GetArray() - 1099 ;
+  Int_t* idtmed = fIdtmed->GetArray() - 1099 ;
 
   // Create a mother volume.
   Float_t pbox[3];
@@ -616,130 +334,125 @@ void AliCRTv1::CreateShafts()
   pbox[1] = AliCRTConstants::fgDepth;
   pbox[2] = pbox[0];
   gMC->Gsvolu("CRT", "BOX", idtmed[1114], pbox, 3);
-  gMC->Gspos("CRT", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("CRT", 1, "ALIC", 0, 0, 0, 0, "ONLY");
 
   // HAll ceiling
   Float_t ptubs[5];
-  ptubs[0] = 1070.;
-  ptubs[1] = 1170.;
-  ptubs[2] = 1900.;
-  ptubs[3] = 0.;
-  ptubs[4] = 180.;
+  ptubs[0] = 1070;
+  ptubs[1] = 1170;
+  ptubs[2] = 1900;
+  ptubs[3] = 0;
+  ptubs[4] = 180;
   gMC->Gsvolu("CHC1", "TUBS", idtmed[1116], ptubs, 5);
-  gMC->Gspos("CHC1", 1, "CRT", 0., 500., 0., 0, "ONLY");
-
+  gMC->Gspos("CHC1", 1, "CRT", 0, 500, 0, 0, "ONLY");
 
   //
   // Acces shafts
   //
   AliMatrix(idrotm[2001], 0., 0., 90., 0., 90., 90.);
-  
+
   // PX24
-  ptubs[0] = 1150.;
-  ptubs[1] = 1250.;
-  ptubs[2] = 1300.;
-  ptubs[3] = kRaddeg*TMath::ASin(1070./ptubs[0]);
+  ptubs[0] = 1150;
+  ptubs[1] = 1250;
+  ptubs[2] = 1300;
+  ptubs[3] = kRaddeg*TMath::ASin(1070/ptubs[0]);
   ptubs[4] = 360 - ptubs[3];
   gMC->Gsvolu("CSF1", "TUBS", idtmed[1116], ptubs, 5);
-  gMC->Gspos("CSF1", 1, "CRT", 0., 404., -2300., idrotm[2001], "MANY");
+  gMC->Gspos("CSF1", 1, "CRT", 0., 404, -2300, idrotm[2001], "MANY");
 
   Float_t ptube[3];
   ptube[0] = ptubs[0];
   ptube[1] = ptubs[1];
-  ptube[2] = 2575. - ptubs[2] + 95.;
+  ptube[2] = 2575 - ptubs[2] + 95;
   gMC->Gsvolu("CSF2", "TUBE", idtmed[1116], ptube, 3);
-  gMC->Gspos("CSF2", 1, "CRT", 0., 404.+ptubs[2]+ptube[2], -2300., idrotm[2001], "MANY");
-  
+  gMC->Gspos("CSF2", 1, "CRT", 0, 404 + ptubs[2] + ptube[2], -2300, idrotm[2001], "MANY");
+
   // Concrete walls along the shaft
-  pbox[0] = 585./2.;
-  pbox[1] = 2575. + 95.;
-  pbox[2] = 20.;
+  pbox[0] = 585/2;
+  pbox[1] = 2575 + 95;
+  pbox[2] = 20;
   gMC->Gsvolu("CSW1", "BOX", idtmed[1116], pbox, 3);
-  gMC->Gspos("CSW1", 1, "CRT", -290-pbox[0], 404.-1300.+pbox[1], -3450.+210.*2, 0, "MANY");
-  
+  gMC->Gspos("CSW1", 1, "CRT", -290 - pbox[0], 404 - 1300 + pbox[1], -3450 + 210*2, 0, "MANY");
+
   //
-  pbox[0] = 750./2.;
-  pbox[1] = 2575. + 95.;
-  pbox[2] = 20.;
+  pbox[0] = 750/2;
+  pbox[1] = 2575 + 95;
+  pbox[2] = 20;
   gMC->Gsvolu("CSW3", "BOX", idtmed[1116], pbox, 3);
-  gMC->Gspos("CSW3", 1, "CRT", 420.-290.+pbox[0], 404.-1300.+pbox[1], -3450.+210.*2, 0, "MANY");
-  
+  gMC->Gspos("CSW3", 1, "CRT", 420 - 290 +pbox[0], 404 - 1300 + pbox[1], -3450 + 210*2, 0, "MANY");
+
   //
-  pbox[0] = 60.;
-  pbox[1] = 2575. + 95.;
-  pbox[2] = 210.;
+  pbox[0] = 60;
+  pbox[1] = 2575 + 95;
+  pbox[2] = 210;
   gMC->Gsvolu("CSW2", "BOX", idtmed[1116], pbox, 3);
-  gMC->Gspos("CSW2", 1, "CRT", -290-pbox[0], 404.-1300.+pbox[1], -3450.+pbox[2], 0, "MANY");
-  gMC->Gspos("CSW2", 2, "CRT", 420.-290.+pbox[0], 404.-1300.+pbox[1], -3450.+pbox[2], 0, "MANY");
-  
-  
+  gMC->Gspos("CSW2", 1, "CRT", -290 - pbox[0], 404 - 1300 + pbox[1], -3450 + pbox[2], 0, "MANY");
+  gMC->Gspos("CSW2", 2, "CRT", 420 - 290 + pbox[0], 404 - 1300 + pbox[1], -3450 + pbox[2], 0, "MANY");
+
   // 
-  pbox[0] = 1000.;
-  pbox[1] = 80.;
-  pbox[2] = 200.;
+  pbox[0] = 1000;
+  pbox[1] = 80;
+  pbox[2] = 200;
   gMC->Gsvolu("CSP1", "BOX", idtmed[1116], pbox, 3);
-  gMC->Gspos("CSP1", 1, "CRT", 0., 2600.-700., -1150-pbox[2], 0, "MANY");
-  
+  gMC->Gspos("CSP1", 1, "CRT", 0, 2600 - 700, -1150 - pbox[2], 0, "MANY");
+
   //
   pbox[0] = 340.8;
-  pbox[1] = 300./2.;
-  pbox[2] = 460./2.;
+  pbox[1] = 300/2.;
+  pbox[2] = 460/2.;
   gMC->Gsvolu("CSP2", "BOX", idtmed[1116], pbox, 3);
-  gMC->Gspos("CSP2", 1, "CRT", 0., 2950.-700., -3450+pbox[2], 0, "MANY");
-  
+  gMC->Gspos("CSP2", 1, "CRT", 0, 2950.-700., -3450+pbox[2], 0, "MANY");
+
   //
-  pbox[0] = 600.;
-  pbox[1] = 150.;
-  pbox[2] = 75.;
+  pbox[0] = 600;
+  pbox[1] = 150;
+  pbox[2] = 75;
   gMC->Gsvolu("CSP3", "BOX", idtmed[1116], pbox, 3);
-  gMC->Gspos("CSP3", 1, "CRT", 0., 2950.-700., -1150.-210.-pbox[2], 0, "MANY");
-  
+  gMC->Gspos("CSP3", 1, "CRT", 0, 2950.-700., -1150.-210.-pbox[2], 0, "MANY");
+
   //
-  pbox[0] = 600.;
-  pbox[1] = 250.;
-  pbox[2] = 38.;
+  pbox[0] = 600;
+  pbox[1] = 250;
+  pbox[2] = 38;
   gMC->Gsvolu("CSP4", "BOX", idtmed[1116], pbox, 3);
-  gMC->Gspos("CSP4", 1, "CRT", 0., 2950.-700.+155.+pbox[1], -1150.-210.-pbox[2], 0, "MANY");
-  
-  
+  gMC->Gspos("CSP4", 1, "CRT", 0, 2950 - 700 + 155+pbox[1], -1150 - 210 - pbox[2], 0, "MANY");
+
   // Shielding plug
-  pbox[0] = 850.;
-  pbox[1] = 90.;
-  pbox[2] = 720.;
+  pbox[0] = 850;
+  pbox[1] = 90;
+  pbox[2] = 720;
   gMC->Gsvolu("CSP5", "BOX", idtmed[1116], pbox, 3);
-  gMC->Gspos("CSP5", 1, "CRT", 0., 2950.-700., -3450.+460.+pbox[2], 0, "MANY");
-  
+  gMC->Gspos("CSP5", 1, "CRT", 0, 2950 - 700, -3450 + 460 + pbox[2], 0,"MANY");
+
   //
-  pbox[0] = 80.;
-  pbox[1] = 150.;
-  pbox[2] = 720.;
+  pbox[0] = 80;
+  pbox[1] = 150;
+  pbox[2] = 720;
   gMC->Gsvolu("CSP6", "BOX", idtmed[1116], pbox, 3);
-  gMC->Gspos("CSP6", 1, "CRT", 1150.-600., 2950.-700., -3450.+460.+pbox[2], 0, "MANY");
-  gMC->Gspos("CSP6", 2, "CRT", -1150.+600., 2950.-700., -3450.+460.+pbox[2], 0, "MANY");
-  
-  
+  gMC->Gspos("CSP6", 1, "CRT", 1150 - 600 , 2950 - 700, -3450 + 460 + pbox[2], 0, "MANY");
+  gMC->Gspos("CSP6", 2, "CRT", -1150 + 600, 2950 - 700, -3450 + 460 + pbox[2], 0, "MANY");
+
   //
-  pbox[0] = 130.;
-  pbox[1] = 60.;
-  pbox[2] = 750.;
+  pbox[0] = 130;
+  pbox[1] = 60;
+  pbox[2] = 750;
   gMC->Gsvolu("CSP7", "BOX", idtmed[1116], pbox, 3);
-  gMC->Gspos("CSP7", 1, "CRT", 850.+pbox[0], 2950.-700.+100., -3450.+460.+pbox[2], 0, "MANY");
-  gMC->Gspos("CSP7", 2, "CRT", -850.-pbox[0], 2950.-700.+100., -3450.+460.+pbox[2], 0, "MANY");
-  
-  
+  gMC->Gspos("CSP7", 1, "CRT", 850 + pbox[0], 2950 - 700 + 100, -3450 + 460 + pbox[2], 0, "MANY");
+  gMC->Gspos("CSP7", 2, "CRT", -850 - pbox[0], 2950 - 700+ 100, -3450 + 460 + pbox[2], 0, "MANY");
+
   // PM25 Acces Shaft
-  ptube[0] = 910./2.;
-  ptube[1] = ptube[0] + 100.;
-  ptube[2] = (5150. - 1166.)/2.;
+  ptube[0] = 910/2;
+  ptube[1] = ptube[0] + 100;
+  ptube[2] = (5150 - 1166)/2;
   gMC->Gsvolu("CSF3", "TUBE", idtmed[1116], ptube, 3);
-  gMC->Gspos("CSF3", 1, "CRT", -2100., AliCRTConstants::fgDepth-ptube[2], 0., idrotm[2001], "MANY");
-  
+  gMC->Gspos("CSF3", 1, "CRT", -2100, AliCRTConstants::fgDepth-ptube[2], 0, idrotm[2001], "MANY");
+
   // PGC2 Access Shaft
-  ptube[0] = 1100./2.;
-  ptube[1] = ptube[0] + 100.;
-  ptube[2] = (5150. - 690.)/2.;
+  ptube[0] = 1100/2;
+  ptube[1] = ptube[0] + 100;
+  ptube[2] = (5150 - 690)/2;
   gMC->Gsvolu("CSF4", "TUBE", idtmed[1116], ptube, 3);
-  gMC->Gspos("CSF4", 1, "CRT", 375., AliCRTConstants::fgDepth-ptube[2], 1900.+2987.7, idrotm[2001], "MANY");
+  gMC->Gspos("CSF4", 1, "CRT", 375, AliCRTConstants::fgDepth-ptube[2], 1900 + 2987.7, idrotm[2001], "MANY");
 
 }
 
@@ -749,7 +462,7 @@ void AliCRTv1::DrawDetector()
   //
   // Draw a shaded view of the L3 magnet
   //
-  cout << "AliCRTv1::DrawModule() : Drawing the module" << endl;
+  //cout << "AliCRTv1::DrawModule() : Drawing the module" << endl;
   
   
   Int_t able = 1;
@@ -817,173 +530,100 @@ void AliCRTv1::StepManager()
   //
   // Called for every step in the Cosmic Ray Trigger
   //
-  static Int_t   vol[5];
+  static Int_t   vol[1];
   Int_t          ipart;
   TLorentzVector pos;
   TLorentzVector mom;
 
   static Float_t hits[14];
   static Float_t eloss;
-  static Float_t elossMag;
 
-  if ( !gMC->IsTrackAlive() ) return;
+  if ( gMC->TrackPid() != kMuonMinus ) return;
+
+  // Only charged tracks
+  if ( !(gMC->TrackCharge()) ) return;
 
   if (gMC->IsNewTrack()) {
     // Reset the deposited energy
-    eloss = 0.;
-    elossMag = 0.;
+    eloss = 0;
   }
 
   // Add th energy loss in each step.
   eloss += gMC->Edep();
 
-  gMC->TrackPosition(pos);
+  if ( ( (strcmp(gMC->CurrentVolName(),"CRT4") == 0) || // Magnet
+	 (strcmp(gMC->CurrentVolName(),"CRT5") == 0) || // CRT
+	 (strcmp(gMC->CurrentVolName(),"CRT6") == 0) || // Magnet Doors
+	 (strcmp(gMC->CurrentVolName(),"CSF2") == 0) || // PX24
+	 (strcmp(gMC->CurrentVolName(),"CSF3") == 0) || // PM25
+	 (strcmp(gMC->CurrentVolName(),"CSF4") == 0) )  // PGC2
+       && gMC->IsTrackEntering() ) {
 
-  //
-  // CRT
-  //
-
-  if ( gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"CRT4") == 0)
-       &&(gMC->TrackPid() == kMuonMinus || gMC->TrackPid() == kMuonPlus) ) {
-    
     // Get current particle id(ipart),track position (pos) and momentum (mom)
     gMC->TrackPosition(pos);
     gMC->TrackMomentum(mom);
     ipart = gMC->TrackPid();
-    
-    vol[0] = 1;
-    vol[1] = 0;
-    vol[2] = 0;
-    vol[3] = 0;
-    vol[4] = 0;
 
     ipart = gMC->TrackPid();
     hits[0]  = (Float_t)ipart; //                 (fId)
     
-    hits[1]  = pos[0]; // X coordinate (fX)
-    hits[2]  = pos[1]; // Y coordinate (fY)
-    hits[3]  = pos[2]; // Z coordinate (fZ)
-    hits[4]  = mom[0]; // Px           (fpxug)
-    hits[5]  = mom[1]; // Py           (fpyug)
-    hits[6]  = mom[2]; // Pz           (fpzug)
-    
-    hits[7]  = gMC->GetMedium();  //layer(flay)
-    hits[8] = eloss;              // Energy loss
-    
-    hits[9] = 1; // CRT mother activated.
-    hits[10] = 0;
-    hits[11] = 0;
-    hits[12] = 0;
-    hits[13] = 0;
+    hits[1] = pos[0]; // X coordinate (fX)
+    hits[2] = pos[1]; // Y coordinate (fY)
+    hits[3] = pos[2]; // Z coordinate (fZ)
+    hits[4] = mom[0]; // Px           (fpxug)
+    hits[5] = mom[1]; // Py           (fpyug)
+    hits[6] = mom[2]; // Pz           (fpzug)
+    hits[7] = eloss;              // Energy loss
 
-    //hits[9] = gAlice->GetCurrentTrackNumber();
-    
+    // Tag the volumes
+    if      ( (strcmp(gMC->CurrentVolName(),"CRT4")==0) ) vol[0] = 1; // Magnet
+    else if ( (strcmp(gMC->CurrentVolName(),"CRT5")==0) ) vol[0] = 2; // CRT
+    else if ( (strcmp(gMC->CurrentVolName(),"CRT6")==0) ) vol[0] = 3; // Doors
+    else if ( (strcmp(gMC->CurrentVolName(),"CSF2")==0) ) vol[0] = 4; // PX24
+    else if ( (strcmp(gMC->CurrentVolName(),"CSF3")==0) ) vol[0] = 5; // PM25
+    else if ( (strcmp(gMC->CurrentVolName(),"CSF4")==0) ) vol[0] = 6; // PGC2
+    else                                                  vol[0] = -1;// ?
+    //vol[0]  = gMC->GetMedium();  //layer(flay)
+
     AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
-    
-    eloss = 0.;
 
-  } else if (gMC->IsTrackEntering()&&(strcmp(gMC->CurrentVolName(),"CRT1")==0)
-	     &&(gMC->TrackPid()==kMuonMinus || gMC->TrackPid()==kMuonPlus)) {
-    
-    vol[0] = 0;
-    vol[1] = 1;
-    vol[2] = 0;
-    vol[3] = 0;
-    vol[4] = 0;
-
-    hits[9] = 0; // CRT mother activated.
-    hits[10] = 1;
-    hits[11] = 0;
-    hits[12] = 0;
-    hits[13] = 0;
-
-    //hits[10] = 1;
-    
-    //AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
-    
-    //eloss = 0.;
-
-
-  } else if (gMC->IsTrackEntering()&&(strcmp(gMC->CurrentVolName(),"C3CI")==0)
-      &&(gMC->TrackPid()==kMuonMinus || gMC->TrackPid()==kMuonPlus)) {
-
-    //
-    // Inside the magnet, upper part.
-    //
-  
-    // Get current particle id(ipart),track position (pos) and momentum (mom)
-
-    vol[0] = 0;
-    vol[1] = 0;
-    vol[2] = 1;
-    vol[3] = 0;
-    vol[4] = 0;
-
-    hits[9] = 0; // CRT mother activated.
-    hits[10] = 0;
-    hits[11] = 1;
-    hits[12] = 0;
-    hits[13] = 0;
-      
-    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
-    
-    //eloss = 0.;
-
-  } else if ( gMC->IsTrackEntering()&&(strcmp(gMC->CurrentVolName(),"CRIC")==0)
-       && (gMC->TrackPid()==kMuonMinus || gMC->TrackPid()==kMuonPlus) ) {
-
-    //
-    // HMPID
-    //
-    
-    // Get current particle id(ipart),track position (pos) and momentum (mom)
-
-    vol[0] = 0;
-    vol[1] = 0;
-    vol[2] = 0;
-    vol[3] = 1;
-    vol[4] = 0;
-
-    hits[9] = 0;
-    hits[10] = 0;
-    hits[11] = 0;
-    hits[12] = 1;
-    hits[13] = 0;
-    
-    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
-    
-    //eloss = 0.;
-
-
-  } else if (gMC->IsTrackEntering()&&(strcmp(gMC->CurrentVolName(),"CSA1")==0)
-	     &&(gMC->TrackPid()==kMuonMinus || gMC->TrackPid()==kMuonPlus)) {
-
-    //
-    // TPC
-    //
-    
-    // Get current particle id(ipart),track position (pos) and momentum (mom)
-    
-    vol[0] = 0;
-    vol[1] = 0;
-    vol[2] = 0;
-    vol[3] = 0;
-    vol[4] = 1;
-
-    hits[9] = 0;
-    hits[10] = 0;
-    hits[11] = 0;
-    hits[12] = 0;
-    hits[13] = 1;
-
-    
-    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
-    
-    //eloss = 0.;
+    // Reset the deposited energy only when you reach the Magnet
+    if ( (strcmp(gMC->CurrentVolName(),"CRT4")==0) ) eloss = 0;
 
   } else {
     return;
   }
 
+}
 
+//_____________________________________________________________________________
+void AliCRTv1::AddHit(Int_t track, Int_t *vol, Float_t *hits)
+{
+  //
+  // Add a CRT hit
+  //
+  TClonesArray &lhits = *fHits;
+  new(lhits[fNhits++]) AliCRThit(fIshunt,track,vol,hits);
+}
+
+//_____________________________________________________________________________
+void AliCRTv1::ResetHits()
+{
+  // Reset number of clusters and the cluster array for this detector
+  AliDetector::ResetHits();
+}
+
+//_____________________________________________________________________________
+void AliCRTv1::ResetDigits()
+{
+  //
+  // Reset number of digits and the digits array for this detector
+  AliDetector::ResetDigits();
+} 
+
+//____________________________________________________________________________
+void AliCRTv1::FinishEvent()
+{
+  //
+  //
 }
