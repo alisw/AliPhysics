@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+// Library class for particle pt and y distributions used for 
+// muon spectrometer simulations.
+// To be used with AliGenParam.
+//
+// andreas.morsch@cern.ch
+
 #include "AliGenLib.h"
 
 class AliGenMUONlib :
@@ -54,9 +60,9 @@ class AliGenMUONlib :
     static Double_t YBeauty(Double_t *py, Double_t *dummy);
     static Int_t    IpBeauty(TRandom *ran);
 //
-    GenFunc   GetPt(Int_t param, const char* tname=0);
-    GenFunc   GetY (Int_t param, const char* tname=0);
-    GenFuncIp GetIp(Int_t param, const char* tname=0);    
+    GenFunc   GetPt(Int_t param, const char* tname=0) const;
+    GenFunc   GetY (Int_t param, const char* tname=0) const;
+    GenFuncIp GetIp(Int_t param, const char* tname=0) const;    
     ClassDef(AliGenMUONlib,0) // Library providing y and pT parameterisations
 };
 #endif
