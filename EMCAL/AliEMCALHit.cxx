@@ -51,7 +51,12 @@ AliEMCALHit::AliEMCALHit(){
     fX       = 0.0;
     fY       = 0.0;
     fZ       = 0.0;
-    fP       = 0.0;
+    fPx       = 0.0;
+    fPy       = 0.0;
+    fPz       = 0.0;
+    fPe       = 0.0;
+    fIparent = 0;
+    fIenergy = 0.0;
 }
 //______________________________________________________________________
 AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit){
@@ -64,22 +69,31 @@ AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit){
     fX       = hit.fX;
     fY       = hit.fY;
     fZ       = hit.fZ;
-    fP       = hit.fP;
+    fPx       = hit.fPx;
+    fPy       = hit.fPy;
+    fPz       = hit.fPz;
+    fPe       = hit.fPe;
+    fIparent = hit.fIparent;
+    fIenergy = hit.fIenergy;
 }
 //______________________________________________________________________
-AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t id,
-			 Float_t *hits,TLorentzVector *p):AliHit(shunt, track){
+AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, Float_t ienergy, Int_t id,
+			 Float_t *hits,Float_t *p):AliHit(shunt, track){
     //
     // Create a CPV hit object
     //
-
     fX          = hits[0];
     fY          = hits[1];
     fZ          = hits[2];
     fId         = id;
     fELOS       = hits[3];
     fPrimary    = primary;
-    fP          = *p;
+    fPx          = p[0];
+    fPy          = p[1];
+    fPz          = p[2];
+    fPe          = p[3];
+    fIparent    = iparent;
+    fIenergy    = ienergy;
 }
 //______________________________________________________________________
 Bool_t AliEMCALHit::operator==(AliEMCALHit const &rValue) const{ 
@@ -87,7 +101,7 @@ Bool_t AliEMCALHit::operator==(AliEMCALHit const &rValue) const{
     // from the same primary
     Bool_t rv = kFALSE;
 
-    if ( (fId == rValue.GetId()) && ( fPrimary == rValue.GetPrimary()) )
+    if ( (fId == rValue.GetId()) && ( fPrimary == rValue.GetIparent()) )
 	rv = kTRUE;
 
     return rv;
@@ -111,8 +125,10 @@ ostream& operator << (ostream& out,AliEMCALHit& hit){
     out << "GeV , Track no.=" << hit.GetPrimary();
     out << ", (xyz)=(" << hit.X()<< ","<< hit.Y()<< ","<<hit.Z()<<") cm";
     out << ", fTrack=" << hit.GetTrack();
-    out << ", P=(" << hit.GetP().Px() << "," << hit.GetP().Py() <<","
-                   << hit.GetP().Pz() << "," << hit.GetP().E();
+    out << ", P=(" << hit.GetPx() << "," << hit.GetPy() << "," << hit.GetPz()
+                  << "," <<hit.GetPe() << ") GeV"  ;
+    out << ", Enterring particle ID" << hit.GetIparent();
+    out << ", Enterring particle initial energy = " << hit.GetIenergy() << " GeV" ;
     out << endl;
 
     return out;

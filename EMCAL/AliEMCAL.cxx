@@ -111,7 +111,7 @@ void AliEMCAL::CreateMaterials(){
  
  // The scintillator of the CPV made of Polystyrene scintillator                   -> idtmed[1601]
   AliMedium(2, "CPV scint.   $", 2, 1,
-            isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+            isxfld, sxmgmx, 10.0, 0.001, 0.1, 0.001, 0.001, 0, 0) ;
 
   // Various Aluminium parts made of Al                                             -> idtmed[1602]
   AliMedium(3, "Al parts     $", 3, 0,
@@ -123,16 +123,27 @@ void AliEMCAL::CreateMaterials(){
 // --- Set decent energy thresholds for gamma and electron tracking
 
   // Tracking threshold for photons and electrons in Lead 
-  gMC->Gstpar(idtmed[1600], "CUTGAM",0.5E-4) ; 
-  gMC->Gstpar(idtmed[1600], "CUTELE",1.0E-4) ;
+ // gMC->Gstpar(idtmed[1600], "CUTGAM",0.5E-4) ; 
+ // gMC->Gstpar(idtmed[1600], "CUTELE",1.0E-4) ;
 
   // --- Generate explicitly delta rays in Lead ---
   gMC->Gstpar(idtmed[1600], "LOSS",3.) ;
   gMC->Gstpar(idtmed[1600], "DRAY",1.) ;
  
+  gMC->Gstpar(idtmed[1600],"CUTGAM",0.00008) ;
+  gMC->Gstpar(idtmed[1600],"CUTELE",0.001) ;
+  gMC->Gstpar(idtmed[1600],"BCUTE",0.0001) ;
+
 // --- and in aluminium parts ---
   gMC->Gstpar(idtmed[1602], "LOSS",3.) ;
   gMC->Gstpar(idtmed[1602], "DRAY",1.) ;
+
+
+// --- and finally in the scintillator ---
+  gMC->Gstpar(idtmed[1601],"CUTGAM",0.00008) ;
+  gMC->Gstpar(idtmed[1601],"CUTELE",0.001) ;
+  gMC->Gstpar(idtmed[1601],"BCUTE",0.0001) ;
+
 
 }
 //____________________________________________________________________________

@@ -3,13 +3,19 @@ AliEMCAL.cxx  \
 AliEMCALGeometry.cxx \
 AliEMCALHit.cxx \
 AliEMCALv0.cxx \
-AliEMCALv1.cxx
+AliEMCALv1.cxx \
+AliEMCALDigit.cxx \
+AliEMCALSDigitizer.cxx \
+AliEMCALDigitizer.cxx
 
 HDRS= \
 AliEMCAL.h  \
 AliEMCALGeometry.h \
 AliEMCALHit.h \
 AliEMCALv0.h \
-AliEMCALv1.h 
+AliEMCALv1.h \
+AliEMCALDigit.h \
+AliEMCALSDigitizer.h \
+AliEMCALDigitizer.h
 
 DHDR:=EMCALLinkDef.h

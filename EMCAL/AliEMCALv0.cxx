@@ -56,6 +56,7 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title):
 
     if (strcmp(GetTitle(),"") != 0 )
 	fGeom =  AliEMCALGeometry::GetInstance(GetTitle(), "") ;
+
 }
 //______________________________________________________________________
 void AliEMCALv0::BuildGeometry(){
@@ -114,12 +115,12 @@ void AliEMCALv0::CreateGeometry(){
     envelopC[3] = 2;
     envelopB[3] = 2;
 
-    envelopB[4] = (fGeom->GetEnvelop(0) + fGeom->GetGap2Active() + 1.59) /
-                  (tan(2*atan(exp(-0.7)))) ;
+    envelopB[4] = (fGeom->GetEnvelop(0) + fGeom->GetGap2Active()) /
+                  (tan(2*atan(exp(0.7)))) ;
     envelopB[5] = fGeom->GetEnvelop(0) + fGeom->GetGap2Active(); //rmin
     envelopD[6] = envelopB[6] = envelopB[5] + 3.18;  //rmax
-    envelopB[7] = (fGeom->GetEnvelop(0) + fGeom->GetGap2Active()+ 1.59) /
-	          (tan(2*atan(exp(0.7)))) ;
+    envelopB[7] = (fGeom->GetEnvelop(0) + fGeom->GetGap2Active()) /
+	          (tan(2*atan(exp(-0.7)))) ;
     envelopB[8] = envelopB[5] ;
     envelopB[9] = envelopB[6] ;
 
@@ -129,14 +130,14 @@ void AliEMCALv0::CreateGeometry(){
     gMC->Gsvolu("XPST", "PGON", idtmed[1601], 0, 0) ;
     gMC->Gsvolu("XPBX", "PGON", idtmed[1600], 0, 0) ; // filled with Lead
     gMC->Gsdvn("XPHI", "XPST", fGeom->GetNPhi(), 2) ; // Naming Phi divisions
-
+    
     Int_t idrotm = 1;
     AliMatrix(idrotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ;
 
     // Position  ENV1 container in ALIC
-    gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+    gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "MANY") ;
     // Position  ARM1  into ENV1
-    gMC->Gspos("XALU", 1, "XEN1", 0.0, 0.0, 0.0 , idrotm, "MANY") ;
+    gMC->Gspos("XALU", 1, "XEN1", 0.0, 0.0, 0.0 , idrotm, "ONLY") ;
 
     for (int i = 0; i < (fGeom->GetNLayers()); i++ ){
 	envelopC[5] = envelopD[6] ; //rmin
@@ -165,7 +166,7 @@ void AliEMCALv0::CreateGeometry(){
 			    0.0, 0.0, 0.0 , idrotm, "MANY", envelopD, 10) ;
 	    } // end for j
 	} // end if i
-    } // for i
+    }  // for i
 }
 //______________________________________________________________________
 void AliEMCALv0::Init(void){

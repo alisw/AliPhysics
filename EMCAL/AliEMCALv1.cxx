@@ -80,8 +80,8 @@ AliEMCALv1::~AliEMCALv1(){
     }
 }
 //______________________________________________________________________
-void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, 
-			Int_t id, Float_t * hits,TLorentzVector *p){
+void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t iparent, Float_t ienergy, 
+			Int_t id, Float_t * hits,Float_t * p){
     // Add a hit to the hit list.
     // A PHOS hit is the sum of all hits in a single crystal
     //   or in a single PPSD gas cell
@@ -91,11 +91,10 @@ void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber,
     AliEMCALHit *curHit;
     Bool_t deja = kFALSE;
 
-    newHit = new AliEMCALHit(shunt, primary, tracknumber, id, hits, p);
-
+    newHit = new AliEMCALHit(shunt, primary, tracknumber, iparent, ienergy, id, hits, p);
     for ( hitCounter = fNhits-1; hitCounter >= 0 && !deja; hitCounter-- ) {
 	curHit = (AliEMCALHit*) (*fHits)[hitCounter];
-	// We add hits with the same primary, while GEANT treats
+	// We add hits with the same tracknumber, while GEANT treats
 	// primaries succesively
 	if(curHit->GetPrimary() != primary) break;
 	if( *curHit == *newHit ) {
@@ -119,26 +118,41 @@ void AliEMCALv1::StepManager(void){
     Int_t          absid;
     // position wrt MRS and energy deposited
     Float_t        xyze[4]={0.,0.,0.,0.};
+    Float_t        pmom[4]={0.,0.,0.,0.};
     TLorentzVector pos; // Lorentz vector of the track current position.
     TLorentzVector mom; // Lorentz vector of the track current momentum.
     Int_t tracknumber =  gAlice->CurrentTrack();
-    static Int_t primary;
+    Int_t primary;
+    static Int_t iparent = 0;
+    static Float_t ienergy = 0;
+    Int_t copy;
+
+
+ if(gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"XALU") == 0)) 
+ {
+    iparent = tracknumber;
+    gMC->TrackMomentum(mom);
+    ienergy = mom[3]; 
+}
+ if(gMC->CurrentVolID(copy) == gMC->VolId("XPHI") ) { //  We are inside a PBWO crysta
 
     gMC->CurrentVolOffID(1, id[0]); // get the POLY copy number;
     gMC->CurrentVolID(id[1]); // get the phi number inside the layer
     primary = gAlice->GetPrimary(tracknumber);
-    if(gMC->IsTrackEntering()&&id[0]==1) primary = tracknumber;
-//    tracknumber = primary;
     gMC->TrackPosition(pos);
     gMC->TrackMomentum(mom);
     xyze[0] = pos[0];
     xyze[1] = pos[1];
     xyze[2] = pos[2];
     xyze[3] = gMC->Edep();
-
+    pmom[0] = mom[0];
+    pmom[1] = mom[1];
+    pmom[2] = mom[2];
+    pmom[3] = mom[3];
+    
     if(xyze[3] > 0.){// Track is inside the crystal and deposits some energy
 	absid = (id[0]-1)*(fGeom->GetNPhi()) + id[1];
-	AddHit(fIshunt, primary,tracknumber, absid, xyze, &mom);
+	AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid, xyze, pmom);
     } // there is deposited energy
-
+}
 }

@@ -10,7 +10,8 @@ PACKAGE = EMCAL
 # C++ sources
 
 SRCS          =  AliEMCAL.cxx  AliEMCALGeometry.cxx AliEMCALv0.cxx \
-	         AliEMCALv1.cxx AliEMCALHit.cxx
+	         AliEMCALv1.cxx AliEMCALHit.cxx AliEMCALDigit.cxx \
+                 AliEMCALSDigitizer.cxx AliEMCALDigitizer.cxx 
 
 # C++ Headers
 

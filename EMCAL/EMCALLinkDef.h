@@ -9,4 +9,7 @@
 #pragma link C++ class AliEMCALv0+;
 #pragma link C++ class AliEMCALv1+;
 #pragma link C++ class AliEMCALHit+;
+#pragma link C++ class AliEMCALDigit+;
+#pragma link C++ class AliEMCALSDigitizer+;
+#pragma link C++ class AliEMCALDigitizer+;
 #endif

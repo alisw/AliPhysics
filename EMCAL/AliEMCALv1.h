@@ -28,8 +28,8 @@ class AliEMCALv1 : public AliEMCALv0 {
     // requested by the Coding Convention
     AliEMCALv1(const AliEMCALv0 & emcal) {abort();}
     virtual ~AliEMCALv1(void) ;
-    virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track,
-			  Int_t id, Float_t *hits, TLorentzVector *p);
+    virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t iparent, Float_t ienergy,
+			  Int_t id, Float_t *hits, Float_t *p);
     // Gives the version number 
     virtual Int_t  IsVersion(void) const {return 1;}
     virtual void StepManager(void) ;
