@@ -680,9 +680,6 @@ TGeometry *AliRun::GetGeometry()
   // Unlink and relink nodes in detectors
   // This is bad and there must be a better way...
   //
-  TList *tnodes=fGeometry->GetListOfNodes(); 
-  TNode *alice=(TNode*)tnodes->At(0);
-  TList *gnodes=alice->GetListOfNodes();
   
   TIter next(fModules);
   AliModule *detector;
@@ -693,7 +690,7 @@ TGeometry *AliRun::GetGeometry()
     TNode *node, *node1;
     for ( j=0; j<dnodes->GetSize(); j++) {
       node = (TNode*) dnodes->At(j);
-      node1 = (TNode*) gnodes->FindObject(node->GetName());
+      node1 = fGeometry->GetNode(node->GetName());
       dnodes->Remove(node);
       dnodes->AddAt(node1,j);
     }
