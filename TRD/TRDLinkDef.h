@@ -36,6 +36,7 @@
 #pragma link C++ class  AliTRDtrackingSector+;
 #pragma link C++ class  AliTRDtrack-;
 #pragma link C++ class  AliTRDtracker+;
+#pragma link C++ class  AliTRDtrackHits+;
 #pragma link C++ class  AliTRDcluster+;
 #pragma link C++ class  AliTRDpid+;
 #pragma link C++ class  AliTRDpidLQ+;
