@@ -84,11 +84,11 @@ void AliPHOSGeometry::Init(void)
   
   Float_t * emcParams = fGeometryEMCA->GetEMCParams() ;
   
-  fPHOSParams[0] =  TMath::Max(fGeometryCPV->GetCPVBoxSize(0)/2., 
-			       (emcParams[0]*(fGeometryCPV->GetCPVBoxSize(1)+emcParams[3]) - 
+  fPHOSParams[0] =  TMath::Max((Double_t)fGeometryCPV->GetCPVBoxSize(0)/2., 
+			       (Double_t)(emcParams[0]*(fGeometryCPV->GetCPVBoxSize(1)+emcParams[3]) - 
 				emcParams[1]* fGeometryCPV->GetCPVBoxSize(1))/emcParams[3] ) ;
   fPHOSParams[1] = emcParams[1] ;
-  fPHOSParams[2] = TMath::Max(emcParams[2], fGeometryCPV->GetCPVBoxSize(2)/2.);
+  fPHOSParams[2] = TMath::Max((Double_t)emcParams[2], (Double_t)fGeometryCPV->GetCPVBoxSize(2)/2.);
   fPHOSParams[3] = emcParams[3] + fGeometryCPV->GetCPVBoxSize(1)/2. ;
   
   fIPtoUpperCPVsurface = fGeometryEMCA->GetIPtoOuterCoverDistance() - fGeometryCPV->GetCPVBoxSize(1) ;
