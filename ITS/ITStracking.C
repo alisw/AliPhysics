@@ -1,4 +1,6 @@
+#ifndef __CINT__
 #include "iostream.h"
+#endif
 
 void ITStracking(Int_t evNumber1=0,Int_t evNumber2=0,int min_t=-1, int max_t=0,Bool_t flagvert=1) {
 

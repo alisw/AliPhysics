@@ -47,7 +47,8 @@ void ITSPlotTracks(){
 
   /////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-  ifstream in1 ("AliITSTrag.out");
+ ifstream in1 ("AliITSTrag.out");
+
   Double_t ptg; 
   for(;;) {
     in1 >> ptg; 
@@ -56,17 +57,20 @@ void ITSPlotTracks(){
   }
   in1.close();
    
-  Int_t neglabs=0;	 // provvisoria
+  Int_t neglabs=0;	
   for (;;){    
-    for (int r=0; r<9; r++) in>>DataOut(r);
+    for (int r=0; r<10; r++) in>>DataOut(r);
     if( in.eof() ) break;
 
     Double_t ptg=DataOut(0); Double_t labITS=DataOut(1); Double_t labTPC=DataOut(2); Double_t ptperc=DataOut(3);	  
     Double_t deltalam=DataOut(4); Double_t deltaphi=DataOut(5);
-    Double_t Dtot=DataOut(6); Double_t Dr=DataOut(7); Double_t Dz=DataOut(8);	
+    Double_t Dtot=DataOut(6); Double_t Dr=DataOut(7); Double_t Dz=DataOut(8);
+    Double_t signC=DataOut(9);
+    
+   // if(signC<0) continue;	
 
-     if(labITS<0) neglabs++;    // provvisoria
-	  if(labITS>=0) hfound->Fill(ptg); else 	{   hfake->Fill(ptg);}
+     if(labITS<0) neglabs++;    
+      if(labITS>=0) hfound->Fill(ptg); else 	{   hfake->Fill(ptg);}
 
 	  if(labITS>=0 ) {	  
       hpt->Fill(ptperc);

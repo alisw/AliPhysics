@@ -22,20 +22,22 @@
 //
 //   Loop over events 
 //
-
    char tname[30];
+   for (int nev=evNumber1; nev<= evNumber2; nev++) {
+ 
 
-   for (int nev=0; nev<= evNumber2; nev++) {
+  // for (int nev=0; nev<= evNumber2; nev++) {
 
    sprintf(tname,"TreeT%d",nev);
    TTree *tracktree=(TTree*)file->Get(tname);
    TBranch *tbranch=tracktree->GetBranch("ITStracks");
+   cout<<" nev = "<<nev<<"\n";
 	//cout<<" open the file \n"; 
 	
    Int_t nentr=tracktree->GetEntries();
 
    TObjArray tarray(nentr);
-   AliITSIOTrack *iotrack=0;
+  // AliITSIOTrack *iotrack=0;
    printf("nentr %d\n",nentr);
 	
    for (Int_t i=0; i<nentr; i++) {
@@ -46,10 +48,11 @@
        tracktree->GetEvent(i);
 		 tarray.AddLast(iotrack);
    }
-	file->Close();		 
+   //file->Close();		 
 	
 	  AliITSIOTrack *iotrack;
-   for (Int_t i=0; i<nentr; i++) {	
+   for (Int_t i=0; i<nentr; i++) {
+     AliITSIOTrack *iotrack=new AliITSIOTrack;   	
 	 iotrack=(AliITSIOTrack*)tarray.UncheckedAt(i);
 	 if(!iotrack) continue;
      Int_t label=iotrack->GetLabel();
@@ -59,8 +62,8 @@
 	  Double_t Dr=iotrack->GetStateD();		  
 	  Double_t C=iotrack->GetStateC();
 	  
-      cout<<" track label = "<<label<<"\n";
-      cout<<" phi z D tanl C = "<<phistate<<" "<<Zstate<<" "<<Dr<<" "<<tgl<<" "<<C<<"\n"; 	  
+     // cout<<" track label = "<<label<<"\n";
+     // cout<<" phi z D tanl C = "<<phistate<<" "<<Zstate<<" "<<Dr<<" "<<tgl<<" "<<C<<"\n"; 	  
 	  
 	  		  		    
 	    
@@ -73,9 +76,10 @@
        printf(" i %d label x y z %d %f %f %f\n",i,label,x,y,z);
        // delete iotrack;
 		 */
-		 
+    delete iotrack;		 
    }  
 
-   }   // event loop    
+   }   // event loop 
+   file->Close();   
 }
 

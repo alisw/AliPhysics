@@ -1,4 +1,6 @@
-rm galice.root
-rm AliTPCtracks.root
-rm AliTPCclusters.root
+rm *.root
 rm good_tracks_tpc
+rm itsgood_tracks
+rm *.out
+rm *.in
+rm *.hist
