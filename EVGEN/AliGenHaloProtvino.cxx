@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/02/01 14:12:28  morsch
+Include new gas pressure estimates (LHC Pproject Note 273)
+
 Revision 1.4  2001/12/19 16:30:24  morsch
 Some bugs corrected and skip method added. (Rachid Guernane)
 
@@ -51,7 +54,6 @@ Generator to read beam halo file from Protvino group.
 	 :AliGenerator(-1)
 {
 // Constructor
-    printf("\n Calling Default Constructor");
     
     fName  = "HaloProtvino";
     fTitle = "Halo from LHC Tunnel";
@@ -68,7 +70,6 @@ AliGenHaloProtvino::AliGenHaloProtvino(Int_t npart)
     :AliGenerator(npart)
 {
 // Constructor
-    printf("\n Calling Constructor");
     fName = "Halo";
     fTitle= "Halo from LHC Tunnel";
 //
@@ -160,7 +161,7 @@ void AliGenHaloProtvino::Init()
 	Float_t z = 20.+i*1.;
 	z*=100;
 	Float_t wgt = GassPressureWeight(z);
-	printf("\n %f %f", z, wgt);
+//	printf("\n %f %f", z, wgt);
 	sum+=wgt;
     }
     sum/=250.;
