@@ -1,0 +1,5 @@
+rm galice.root
+rm tpctracks.root
+rm AliTPCtracks.root
+rm AliTPCclusters.root
+rm good_tracks
