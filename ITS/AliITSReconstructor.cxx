@@ -26,6 +26,7 @@
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
 #include "AliITSclustererV2.h"
+#include "AliITStrackerMI.h"
 #include "AliITStrackerSA.h"
 #include "AliITSVertexerIons.h"
 #include "AliITSVertexerFast.h"
@@ -126,7 +127,9 @@ AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader) const
 // create a ITS tracker
 
   AliITSgeom* geom = GetITSgeom(runLoader);
-  if (!geom) return NULL;
+  if (!geom) return NULL; 
+  TString selectedTracker = GetOption();
+  if (selectedTracker.Contains("MI")) return new AliITStrackerMI(geom);
   return new AliITStrackerSA(geom);
 }
 

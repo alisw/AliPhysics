@@ -3,7 +3,7 @@
 
 
 
-#include "AliITStrackerV2.h"
+#include "AliITStrackerMI.h"
 
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -20,7 +20,7 @@ class AliESDVertex;
 class AliITSVertexer;
 class TTree;
 
-class AliITStrackerSA : public AliITStrackerV2 {
+class AliITStrackerSA : public AliITStrackerMI {
 
 
  public:
@@ -31,14 +31,14 @@ class AliITStrackerSA : public AliITStrackerV2 {
   AliITStrackerSA(AliITSgeom *geom,AliITSVertexer *vertexer);
   AliITStrackerSA(AliITStrackerSA& tracker);
   virtual ~AliITStrackerSA();  
-  virtual Int_t Clusters2Tracks(AliESD *event){Int_t rc = AliITStrackerV2::Clusters2Tracks(event); if(!rc) rc=FindTracks(event); return rc;}
+  virtual Int_t Clusters2Tracks(AliESD *event){Int_t rc = AliITStrackerMI::Clusters2Tracks(event); if(!rc) rc=FindTracks(event); return rc;}
   Int_t FindTracks(AliESD* event);
   void  FindTracks(TTree *out,Int_t evnumber=0);
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,
                           Double_t *errorprimvert);
 
   AliITStrackV2* FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
-  Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerV2::LoadClusters(cf); SetClusterTree(cf);SetSixPoints(kTRUE); return rc;}
+  Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf);SetSixPoints(kTRUE); return rc;}
   void SetVertex(AliESDVertex *vtx){fVert = vtx;}
   void SetClusterTree(TTree * itscl){fITSclusters = itscl;}
   void SetSixPoints(Bool_t sp = kTRUE){fSixPoints = sp;}

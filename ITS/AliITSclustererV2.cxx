@@ -51,6 +51,7 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
      fYshift[m] = x*ca + y*sa;
      fZshift[m] = (Double_t)z;
      fNdet[m] = (lad-1)*g->GetNdetectors(lay) + (det-1);
+     fNlayer[m] = lay-1;
   }
   fNModules = g->GetIndexMax();
 
@@ -283,22 +284,51 @@ static void CheckLabels2(Int_t lab[10]) {
   //------------------------------------------------------------
 
   Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+  Int_t nlabels =0; 
+  for (Int_t i=0;i<10;i++) if (lab[i]>=0) nlabels++;
+
   for (Int_t i=0;i<10;i++){
     Int_t label = lab[i];
     if (label>=0 && label<ntracks) {
       TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
-      if (part->P() < 0.005) {
-	Int_t m=part->GetFirstMother();
-	if (m<0) {	
-	  continue;
-	}
-	if (part->GetStatusCode()>0) {
-	  continue;
-	}
-	lab[i]=m;       
+      if (part->P() < 0.02) {
+	  Int_t m=part->GetFirstMother();
+	  if (m<0) {	
+	    continue;
+	  }
+	  if (part->GetStatusCode()>0) {
+	    continue;
+	  }
+	  lab[i]=m;       
       }
-    }    
+      else
+	if (part->P() < 0.12 && nlabels>3) {
+	  lab[i]=-2;
+	  nlabels--;
+	} 
+    }
+    else{
+      if ( (label>ntracks||label <0) && nlabels>3) {
+	lab[i]=-2;
+	nlabels--;
+      } 
+    }
+  }  
+  if (nlabels>3){
+    for (Int_t i=0;i<10;i++){
+      if (nlabels>3){
+	Int_t label = lab[i];
+	if (label>=0 && label<ntracks) {
+	  TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+	  if (part->P() < 0.1) {
+	    lab[i]=-2;
+	    nlabels--;
+	  }
+	}
+      }
+    }
   }
+
   //compress labels -- if multi-times the same
   Int_t lab2[10];
   for (Int_t i=0;i<10;i++) lab2[i]=-2;
@@ -316,6 +346,8 @@ static void CheckLabels2(Int_t lab[10]) {
 }
 
 static void AddLabel(Int_t lab[10], Int_t label) {
+  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+  if (label>ntracks) return;
   for (Int_t i=0;i<10;i++){
     if (label<0) break;
     if (lab[i]==label) break;
@@ -455,21 +487,15 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
         Info("FindClustersSPD","Too big cluster !"); 
         continue;
      }
-     Int_t lab[4]; 
-     lab[0]=-2;
-     lab[1]=-2;
-     lab[2]=-2;
-     lab[3]=fNdet[fI];
      Int_t milab[10];
      for (Int_t ilab=0;ilab<10;ilab++){
        milab[ilab]=-2;
      }
 
-
      d=(AliITSdigitSPD*)digits->UncheckedAt(idx[0]);
      Int_t ymin=d->GetCoord2(),ymax=ymin;
      Int_t zmin=d->GetCoord1(),zmax=zmin;
-     Float_t y=0.,z=0.,q=0.;
+
      for (Int_t l=0; l<ni; l++) {
         d=(AliITSdigitSPD*)digits->UncheckedAt(idx[l]);
 
@@ -477,55 +503,65 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
         if (ymax < d->GetCoord2()) ymax=d->GetCoord2();
         if (zmin > d->GetCoord1()) zmin=d->GetCoord1();
         if (zmax < d->GetCoord1()) zmax=d->GetCoord1();
-
-        Int_t lab0=(d->GetTracks())[0];      
-        if (lab0>=0) {
-	  if (lab[0]<0) {
-             lab[0]=lab0;
-          } else if (lab[1]<0) {
-            if (lab0!=lab[0]) lab[1]=lab0;
-	  } else if (lab[2]<0) {
-            if (lab0!=lab[0])
-            if (lab0!=lab[1]) lab[2]=lab0;
-          }
-        }
-        Float_t qq=d->GetSignal();
-        y+=qq*fYSPD[d->GetCoord2()]; z+=qq*fZSPD[d->GetCoord1()]; q+=qq;   
-	// MI addition - find all labels
-	for (Int_t dlab=0;dlab<3;dlab++){
+	// MI addition - find all labels in cluster
+	for (Int_t dlab=0;dlab<10;dlab++){
 	  Int_t digitlab = (d->GetTracks())[dlab];
 	  if (digitlab<0) continue;
-	  for (Int_t index=0;index<10;index++){
-	    if (milab[index]<0)  {
-	      milab[index] = digitlab;	    
-	      break;
-	    }
-	    if (milab[index]==digitlab) break;
-	  }
+	  AddLabel(milab,digitlab);	  
 	}
-     }     
-     y/=q; z/=q;
-     y-=fHwSPD; z-=fHlSPD;
-
-     Float_t lp[5];
-     lp[0]=-(-y+fYshift[fI]); if (fI<=fLastSPD1) lp[0]=-lp[0];
-     lp[1]=  -z+fZshift[fI];
-     // Float_t factor=TMath::Max(double(ni-3.),1.5);
-     Float_t factor=1.5;
-     lp[2]= (fYpitchSPD*fYpitchSPD/12.)*factor;
-     lp[3]= (fZ1pitchSPD*fZ1pitchSPD/12.)*factor;
-     //lp[4]= q;
-     lp[4]= (zmax-zmin+1)*100 + (ymax-ymin+1);
-
-     CheckLabels(lab);
+	if (milab[9]>0) CheckLabels2(milab);
+     }
      CheckLabels2(milab);
-     CheckLabels2(milab);
-     milab[3]=fNdet[fI];
-     d=(AliITSdigitSPD*)digits->UncheckedAt(idx[0]);
-     Int_t info[3] = {ni,0,1};
-     new (cl[n]) AliITSclusterV2(milab,lp,info); n++; 
+     //
+     //Int_t idy = (fNlayer[fI]==0)? 2:3; 
+     //for (Int_t iz=zmin; iz<=zmax;iz+=2)
+     //Int_t idy = (ymax-ymin)/4.; // max 2 clusters
+     Int_t idy = 0; // max 2 clusters
+     if (fNlayer[fI]==0 &&idy<3) idy=3;
+     if (fNlayer[fI]==1 &&idy<4) idy=4; 
+     Int_t idz =3;
+     for (Int_t iz=zmin; iz<=zmax;iz+=idz)
+       for (Int_t iy=ymin; iy<=ymax;iy+=idy){
+	 //
+	 Int_t ndigits =0;
+	 Double_t y=0.,z=0.,q=0.;	 
+	 for (Int_t l=0; l<ni; l++) {
+	   d=(AliITSdigitSPD*)digits->UncheckedAt(idx[l]);
+	   if (zmax-zmin>=idz || ymax-ymin>=idy){
+	     if (TMath::Abs( d->GetCoord2()-iy)>0.75*idy) continue;
+	     if (TMath::Abs( d->GetCoord1()-iz)>0.75*idz) continue;
+	   }
+	   ndigits++;
+	   Double_t qq=d->GetSignal();
+	   y+=qq*fYSPD[d->GetCoord2()]; z+=qq*fZSPD[d->GetCoord1()]; q+=qq;   
+	  
+	 }     
+	 if (ndigits==0) continue;
+	 y/=q; z/=q;
+	 y-=fHwSPD; z-=fHlSPD;
+	 
+	 Float_t lp[5];
+	 lp[0]=-(-y+fYshift[fI]); if (fI<=fLastSPD1) lp[0]=-lp[0];
+	 lp[1]=  -z+fZshift[fI];
+	 // Float_t factor=TMath::Max(double(ni-3.),1.5);
+	 Float_t factory=TMath::Max(ymax-ymin,1);
+	 Float_t factorz=TMath::Max(zmax-zmin,1);
+	 factory*= factory;
+	 factorz*= factorz;	
+	 //lp[2]= (fYpitchSPD*fYpitchSPD/12.)*factory;
+	 //lp[3]= (fZ1pitchSPD*fZ1pitchSPD/12.)*factorz;
+	 lp[2]= (fYpitchSPD*fYpitchSPD/12.);
+	 lp[3]= (fZ1pitchSPD*fZ1pitchSPD/12.);
+	 //lp[4]= q;
+	 lp[4]= (zmax-zmin+1)*100 + (ymax-ymin+1);
+	 
+	 milab[3]=fNdet[fI];
+	 d=(AliITSdigitSPD*)digits->UncheckedAt(idx[0]);
+	 Int_t info[3] = {ymax-ymin+1,zmax-zmin+1,fNlayer[fI]};
+	 new (cl[n]) AliITSclusterV2(milab,lp,info); n++; 	 
+       }
   }
-
+  
   delete [] bins;
 }
 
@@ -719,6 +755,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
       FindPeaks(i, nzBins, bins[s], idx, msk, npeaks);
 
       if (npeaks>30) continue;
+      if (npeaks==0) continue;
 
       Int_t k,l;
       for (k=0; k<npeaks-1; k++){//mark adjacent peaks
@@ -754,23 +791,50 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	 for (Int_t ilab=0;ilab<10;ilab++){
 	   milab[ilab]=-2;
 	 }
-
-	 /*
-         Float_t s2 = c.GetSigmaY2()/c.GetQ() - c.GetY()*c.GetY();
-	 Float_t w=par->GetPadPitchWidth(sec);
-         c.SetSigmaY2((s2 + 1./12.)*w*w);
-         if (s2 != 0.) {
-	   c.SetSigmaY2(c.GetSigmaY2()*0.108);
-	   if (sec<par->GetNInnerSector()) c.SetSigmaY2(c.GetSigmaY2()*2.07);
-         }
-
-         s2 = c.GetSigmaZ2()/c.GetQ() - c.GetZ()*c.GetZ();
-         w=par->GetZWidth();
-         c.SetSigmaZ2((s2 + 1./12.)*w*w);
-         if (s2 != 0.) {
-	   c.SetSigmaZ2(c.GetSigmaZ2()*0.169);
-	   if (sec<par->GetNInnerSector()) c.SetSigmaZ2(c.GetSigmaZ2()*1.77);
-         }
+	 Int_t maxi=0,mini=0,maxj=0,minj=0;
+	 //AliBin *bmax=&bins[s][idx[k]];
+	 //Float_t max = TMath::Max(TMath::Abs(bmax->GetQ())/5.,3.);
+	 Float_t max=3;
+	 for (Int_t di=-2; di<=2;di++)
+	   for (Int_t dj=-3;dj<=3;dj++){
+	     Int_t index = idx[k]+di+dj*nzBins;
+	     if (index<0) continue;
+	     if (index>=nMaxBin) continue;
+	     AliBin *b=&bins[s][index];
+	     if (TMath::Abs(b->GetQ())>max){
+	       if (di>maxi) maxi=di;
+	       if (di<mini) mini=di;
+	       if (dj>maxj) maxj=dj;
+	       if (dj<minj) minj=dj;
+	       //
+	       if (TMath::Abs(di)<2&&TMath::Abs(dj)<2){
+		 AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
+		 for (Int_t itrack=0;itrack<10;itrack++){
+		   Int_t track = (d->GetTracks())[itrack];
+		   if (track>=0) {
+		     AddLabel(milab, track); 
+		   }
+		 }
+	       }
+	     }
+	   }
+	 
+	 /* 
+	    Float_t s2 = c.GetSigmaY2()/c.GetQ() - c.GetY()*c.GetY();
+	    Float_t w=par->GetPadPitchWidth(sec);
+	    c.SetSigmaY2(s2);
+	    if (s2 != 0.) {
+	    c.SetSigmaY2(c.GetSigmaY2()*0.108);
+	    if (sec<par->GetNInnerSector()) c.SetSigmaY2(c.GetSigmaY2()*2.07);
+	    }	 
+	    s2 = c.GetSigmaZ2()/c.GetQ() - c.GetZ()*c.GetZ();
+	    w=par->GetZWidth();
+	    c.SetSigmaZ2(s2);
+	    
+	    if (s2 != 0.) {
+	    c.SetSigmaZ2(c.GetSigmaZ2()*0.169);
+	    if (sec<par->GetNInnerSector()) c.SetSigmaZ2(c.GetSigmaZ2()*1.77);
+	    }
 	 */
 
          c.SetSigmaY2(0.0030*0.0030);
@@ -779,7 +843,12 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 
          Float_t y=c.GetY(),z=c.GetZ(), q=c.GetQ();
          y/=q; z/=q;
-
+	 //
+	 //Float_t s2 = c.GetSigmaY2()/c.GetQ() - y*y;
+	 // c.SetSigmaY2(s2);
+	 //s2 = c.GetSigmaZ2()/c.GetQ() - z*z;
+         //c.SetSigmaZ2(s2);
+	 //
          y=(y-0.5)*fYpitchSDD;
          y-=fHwSDD;
          y-=fYoffSDD;  //delay ?
@@ -792,111 +861,29 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          z=  -z+fZshift[fI];
          c.SetY(y);
          c.SetZ(z);
-
+	 c.SetNy(maxj-minj+1);
+	 c.SetNz(maxi-mini+1);
+	 c.SetType(npeaks);
          c.SetQ(q/12.7);  //to be consistent with the SSD charges
 
          if (c.GetQ() < 20.) continue; //noise cluster
-
-	 if (digits) {
-	   AliBin *b=&bins[s][idx[k]];
-	   AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-	   Int_t l0=(d->GetTracks())[0];
-	   //if (l0<0) {
-	     b=&bins[s][idx[k]-1];
-	     if (b->GetQ()>0) {
-	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-	       l0=(d->GetTracks())[0];
-	       AddLabel(milab, (d->GetTracks())[0]); 
-	       AddLabel(milab, (d->GetTracks())[1]); 
-	       AddLabel(milab, (d->GetTracks())[2]); 
-	     }
-	     //}
-	     //if (l0<0) {
-	     b=&bins[s][idx[k]+1];
-	     if (b->GetQ()>0) {
-	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-	       l0=(d->GetTracks())[0];
-	       AddLabel(milab, (d->GetTracks())[0]); 
-	       AddLabel(milab, (d->GetTracks())[1]); 
-	       AddLabel(milab, (d->GetTracks())[2]); 
-	     }
-	     // }
-	     //if (l0<0) {
-	     b=&bins[s][idx[k]-nzBins];
-	     if (b->GetQ()>0) {
-	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-	       l0=(d->GetTracks())[0];
-	       AddLabel(milab, (d->GetTracks())[0]); 
-	       AddLabel(milab, (d->GetTracks())[1]); 
-	       AddLabel(milab, (d->GetTracks())[2]); 
-	     }
-	     //}
-	     //if (l0<0) {
-	     b=&bins[s][idx[k]+nzBins];
-	     if (b->GetQ()>0) {
-	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-	       l0=(d->GetTracks())[0];
-	       AddLabel(milab, (d->GetTracks())[0]); 
-	       AddLabel(milab, (d->GetTracks())[1]); 
-	       AddLabel(milab, (d->GetTracks())[2]); 
-	     }
-	     //}
-
-	     //if (l0<0) {
-	     b=&bins[s][idx[k]+nzBins+1];
-	     if (b->GetQ()>0) {
-	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-	       l0=(d->GetTracks())[0];
-	       AddLabel(milab, (d->GetTracks())[0]); 
-	       AddLabel(milab, (d->GetTracks())[1]); 
-	       AddLabel(milab, (d->GetTracks())[2]); 
-	     }
-	     //}
-	     //if (l0<0) {
-	     b=&bins[s][idx[k]+nzBins-1];
-	     if (b->GetQ()>0) {
-	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-	       l0=(d->GetTracks())[0];
-	       AddLabel(milab, (d->GetTracks())[0]); 
-	       AddLabel(milab, (d->GetTracks())[1]); 
-	       AddLabel(milab, (d->GetTracks())[2]); 
-	     }
-	     //}
-	     //if (l0<0) {
-	     b=&bins[s][idx[k]-nzBins+1];
-	     if (b->GetQ()>0) {
-	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-	       l0=(d->GetTracks())[0];
-	       AddLabel(milab, (d->GetTracks())[0]); 
-	       AddLabel(milab, (d->GetTracks())[1]); 
-	       AddLabel(milab, (d->GetTracks())[2]); 
-	     }
-	     //}
-	     //if (l0<0) {
-	     b=&bins[s][idx[k]-nzBins-1];
-	     if (b->GetQ()>0) {
-	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-	       l0=(d->GetTracks())[0];
-	       AddLabel(milab, (d->GetTracks())[0]); 
-	       AddLabel(milab, (d->GetTracks())[1]); 
-	       AddLabel(milab, (d->GetTracks())[2]); 
-	     }
-	     //}
-
+	 
+	 if (digits) {	  
+	   //	   AliBin *b=&bins[s][idx[k]];
+	   //	   AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 	   {
-	     Int_t lab[3];
-	     lab[0]=(d->GetTracks())[0];
-	     lab[1]=(d->GetTracks())[1];
-	     lab[2]=(d->GetTracks())[2];
-	     CheckLabels(lab);
+	     //Int_t lab[3];
+	     //lab[0]=(d->GetTracks())[0];
+	     //lab[1]=(d->GetTracks())[1];
+	     //lab[2]=(d->GetTracks())[2];
+	     //CheckLabels(lab);
 	     CheckLabels2(milab); 
 	     c.SetLabel(milab[0],0);
 	     c.SetLabel(milab[1],1);
 	     c.SetLabel(milab[2],2);
-	     c.SetLayer(3);
+	     c.SetLayer(fNlayer[fI]);
 	   }
 	 }
-
          new (cl[ncl]) AliITSclusterV2(c); ncl++;
       }
     }
@@ -921,7 +908,7 @@ FindClustersSDD(const TClonesArray *digits, TClonesArray *clusters) {
      Int_t y=d->GetCoord2()+1;   //y
      Int_t z=d->GetCoord1()+1;   //z
      Int_t q=d->GetSignal();
-
+     if (q<3) continue;
 
      if (z <= fNzSDD) {
        bins[0][y*kNzBins+z].SetQ(q);
@@ -987,6 +974,8 @@ void AliITSclustererV2::FindClustersSDD(AliITSRawStream* input,
   Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD);
 }
 
+
+
 void AliITSclustererV2::
 FindClustersSSD(Ali1Dcluster* neg, Int_t nn, 
 		Ali1Dcluster* pos, Int_t np,
@@ -995,90 +984,462 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   // Actual SSD cluster finder
   //------------------------------------------------------------
   TClonesArray &cl=*clusters;
-
-  Int_t lab[4]={-2,-2,-2,-2};
+  //
   Float_t tanp=fTanP, tann=fTanN;
   if (fI>fLastSSD1) {tann=fTanP; tanp=fTanN;}
-
   Int_t idet=fNdet[fI];
   Int_t ncl=0;
+  //
+  Int_t negativepair[30000];
+  Int_t cnegative[3000];  
+  Int_t cused1[3000];
+  Int_t positivepair[30000];
+  Int_t cpositive[3000];
+  Int_t cused2[3000];
+  for (Int_t i=0;i<3000;i++) {cnegative[i]=0; cused1[i]=0;}
+  for (Int_t i=0;i<3000;i++) {cpositive[i]=0; cused2[i]=0;}
+  Short_t pairs[1000][1000];
+  memset(pairs,0,sizeof(Short_t)*1000000);  
+  //
+  // find available pairs
+  //
   for (Int_t i=0; i<np; i++) {
-    //Float_t dq_min=1.e+33;
-    Float_t ybest=1000,zbest=1000,qbest=0;
     Float_t yp=pos[i].GetY()*fYpitchSSD; 
+    if (pos[i].GetQ()<3) continue;
     for (Int_t j=0; j<nn; j++) {
-      //if (pos[i].fTracks[0] != neg[j].fTracks[0]) continue;
+      if (neg[j].GetQ()<3) continue;
       Float_t yn=neg[j].GetY()*fYpitchSSD;
       Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
       Float_t yt=yn + tann*zt;
       zt-=fHlSSD; yt-=fHwSSD;
       if (TMath::Abs(yt)<fHwSSD+0.01)
-      if (TMath::Abs(zt)<fHlSSD+0.01) {
-      //if (TMath::Abs(pos[i].GetQ()-neg[j].GetQ())<dq_min) {
-	//dq_min=TMath::Abs(pos[i].GetQ()-neg[j].GetQ());
-        ybest=yt; zbest=zt; 
-        qbest=0.5*(pos[i].GetQ()+neg[j].GetQ());
-
-        lab[0]=pos[i].GetLabel(0);
-        lab[1]=pos[i].GetLabel(1);
-        lab[2]=neg[i].GetLabel(0);
-        lab[3]=(((i<<10) + j)<<10) + idet; // pos|neg|det
-        Float_t lp[5];
-        lp[0]=-(-ybest+fYshift[fI]);
-        lp[1]=  -zbest+fZshift[fI];
-        lp[2]=0.0025*0.0025*1.5;  //SigmaY2 - 1.5 safety factor
-        lp[3]=0.110*0.110*1.5;  //SigmaZ2   - 1.5 safety factor
-        if (pos[i].GetNd()+neg[j].GetNd() > 4) {
-           lp[2]*=9;
-           lp[3]*=9;
-        }
-        lp[4]=qbest;        //Q
-	Int_t milab[10];
-	for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
-	milab[0]=pos[i].GetLabel(0);
-        milab[1]=neg[j].GetLabel(0);
-	milab[2]=pos[i].GetLabel(1);
-        milab[3]=neg[j].GetLabel(1);
-	milab[4]=pos[i].GetLabel(2);
-        milab[5]=neg[j].GetLabel(2);
-	//
-        CheckLabels(lab);
-	CheckLabels2(milab);
-	milab[3]=(((i<<10) + j)<<10) + idet; // pos|neg|det
-	Int_t info[3] = {0,0,5};
-        new (cl[ncl]) AliITSclusterV2(milab,lp,info); ncl++;
+      if (TMath::Abs(zt)<fHlSSD+0.01*(neg[j].GetNd()+pos[i].GetNd())) {
+	negativepair[i*10+cnegative[i]] =j;  //index
+	positivepair[j*10+cpositive[j]] =i;
+	cnegative[i]++;  //counters
+	cpositive[j]++;	
+	pairs[i][j]=100;
       }
     }
-    /*
-    if (ybest<100) {
-       lab[3]=idet;
-       Float_t lp[5];
-       lp[0]=-ybest-fYshift[fI];
-       lp[1]= zbest+fZshift[fI];
-       lp[2]=0.002*0.002;  //SigmaY2
-       lp[3]=0.080*0.080;  //SigmaZ2
-       lp[4]=qbest;        //Q
-       //
-       new (cl[ncl]) AliITSclusterV2(lab,lp); ncl++;
+  }
+  //
+  for (Int_t i=0; i<np; i++) {
+    Float_t yp=pos[i].GetY()*fYpitchSSD; 
+    if (pos[i].GetQ()<3) continue;
+    for (Int_t j=0; j<nn; j++) {
+      if (neg[j].GetQ()<3) continue;
+      if (cpositive[j]&&cnegative[i]) continue;
+      Float_t yn=neg[j].GetY()*fYpitchSSD;
+      Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+      Float_t yt=yn + tann*zt;
+      zt-=fHlSSD; yt-=fHwSSD;
+      if (TMath::Abs(yt)<fHwSSD+0.1)
+      if (TMath::Abs(zt)<fHlSSD+0.15) {
+	if (cnegative[i]==0) pos[i].SetNd(100);  // not available pair
+	if (cpositive[j]==0) neg[j].SetNd(100);  // not available pair
+	negativepair[i*10+cnegative[i]] =j;  //index
+	positivepair[j*10+cpositive[j]] =i;
+	cnegative[i]++;  //counters
+	cpositive[j]++;	
+	pairs[i][j]=100;
+      }
     }
-    */
+  }
+  //
+  Float_t lp[5];
+  Int_t milab[10];
+  Double_t ratio;
+  
+  //
+  // sign gold tracks
+  //
+  for (Int_t ip=0;ip<np;ip++){
+    Float_t ybest=1000,zbest=1000,qbest=0;
+    //
+    // select gold clusters
+    if ( (cnegative[ip]==1) && cpositive[negativepair[10*ip]]==1){ 
+      Float_t yp=pos[ip].GetY()*fYpitchSSD; 
+      Int_t j = negativepair[10*ip];      
+      ratio = (pos[ip].GetQ()-neg[j].GetQ())/(pos[ip].GetQ()+neg[j].GetQ());
+      //
+      Float_t yn=neg[j].GetY()*fYpitchSSD;
+      Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+      Float_t yt=yn + tann*zt;
+      zt-=fHlSSD; yt-=fHwSSD;
+      ybest=yt; zbest=zt; 
+      qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
+      lp[0]=-(-ybest+fYshift[fI]);
+      lp[1]=  -zbest+fZshift[fI];
+      lp[2]=0.0025*0.0025;  //SigmaY2
+      lp[3]=0.110*0.110;  //SigmaZ2
+      
+      lp[4]=qbest;        //Q
+      for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+      for (Int_t ilab=0;ilab<3;ilab++){
+	milab[ilab] = pos[ip].GetLabel(ilab);
+	milab[ilab+3] = neg[j].GetLabel(ilab);
+      }
+      //
+      CheckLabels2(milab);
+      milab[3]=(((ip<<10) + j)<<10) + idet; // pos|neg|det
+      Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fI]};
+      AliITSclusterV2 * cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+      ncl++;
+      cl2->SetChargeRatio(ratio);    	
+      cl2->SetType(1);
+      pairs[ip][j]=1;
+      if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
+	cl2->SetType(2);
+	pairs[ip][j]=2;
+      }
+      cused1[ip]++;
+      cused2[j]++;
+    }
+  }
+    
+  for (Int_t ip=0;ip<np;ip++){
+    Float_t ybest=1000,zbest=1000,qbest=0;
+    //
+    //
+    // select "silber" cluster
+    if ( cnegative[ip]==1 && cpositive[negativepair[10*ip]]==2){
+      Int_t in  = negativepair[10*ip];
+      Int_t ip2 = positivepair[10*in];
+      if (ip2==ip) ip2 =  positivepair[10*in+1];
+      Float_t pcharge = pos[ip].GetQ()+pos[ip2].GetQ();
+      if (TMath::Abs(pcharge-neg[in].GetQ())<10){
+	//
+	// add first pair
+	if (pairs[ip][in]==100){  //
+	  Float_t yp=pos[ip].GetY()*fYpitchSSD; 
+	  Float_t yn=neg[in].GetY()*fYpitchSSD;
+	  Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+	  Float_t yt=yn + tann*zt;
+	  zt-=fHlSSD; yt-=fHwSSD;
+	  ybest =yt;  zbest=zt; 
+	  qbest =pos[ip].GetQ();
+	  lp[0]=-(-ybest+fYshift[fI]);
+	  lp[1]=  -zbest+fZshift[fI];
+	  lp[2]=0.0025*0.0025;  //SigmaY2
+	  lp[3]=0.110*0.110;  //SigmaZ2
+	  
+	  lp[4]=qbest;        //Q
+	  for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	  for (Int_t ilab=0;ilab<3;ilab++){
+	    milab[ilab] = pos[ip].GetLabel(ilab);
+	    milab[ilab+3] = neg[in].GetLabel(ilab);
+	  }
+	  //
+	  CheckLabels2(milab);
+	  ratio = (pos[ip].GetQ()-neg[in].GetQ())/(pos[ip].GetQ()+neg[in].GetQ());
+	  milab[3]=(((ip<<10) + in)<<10) + idet; // pos|neg|det
+	  Int_t info[3] = {pos[ip].GetNd(),neg[in].GetNd(),fNlayer[fI]};
+	  AliITSclusterV2 * cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+	  ncl++;
+	  cl2->SetChargeRatio(ratio);    	
+	  cl2->SetType(5);
+	  pairs[ip][in] = 5;
+	  if ((pos[ip].GetNd()+neg[in].GetNd())>6){ //multi cluster
+	    cl2->SetType(6);
+	    pairs[ip][in] = 6;
+	  }
+	}
+	//
+	// add second pair
+	
+	//	if (!(cused1[ip2] || cused2[in])){  //
+	if (pairs[ip2][in]==100){
+	  Float_t yp=pos[ip2].GetY()*fYpitchSSD;
+	  Float_t yn=neg[in].GetY()*fYpitchSSD;
+	  Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+	  Float_t yt=yn + tann*zt;
+	  zt-=fHlSSD; yt-=fHwSSD;
+	  ybest =yt;  zbest=zt; 
+	  qbest =pos[ip2].GetQ();
+	  lp[0]=-(-ybest+fYshift[fI]);
+	  lp[1]=  -zbest+fZshift[fI];
+	  lp[2]=0.0025*0.0025;  //SigmaY2
+	  lp[3]=0.110*0.110;  //SigmaZ2
+	  
+	  lp[4]=qbest;        //Q
+	  for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	  for (Int_t ilab=0;ilab<3;ilab++){
+	    milab[ilab] = pos[ip2].GetLabel(ilab);
+	    milab[ilab+3] = neg[in].GetLabel(ilab);
+	  }
+	  //
+	  CheckLabels2(milab);
+	  ratio = (pos[ip2].GetQ()-neg[in].GetQ())/(pos[ip2].GetQ()+neg[in].GetQ());
+	  milab[3]=(((ip2<<10) + in)<<10) + idet; // pos|neg|det
+	  Int_t info[3] = {pos[ip2].GetNd(),neg[in].GetNd(),fNlayer[fI]};
+	  AliITSclusterV2 *cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+	  ncl++;
+	  cl2->SetChargeRatio(ratio);    	
+	  cl2->SetType(5);
+	  pairs[ip2][in] =5;
+	  if ((pos[ip2].GetNd()+neg[in].GetNd())>6){ //multi cluster
+	    cl2->SetType(6);
+	    pairs[ip2][in] =6;
+	  }
+	}	
+	cused1[ip]++;
+	cused1[ip2]++;
+	cused2[in]++;
+      }
+    }    
+  }
+  
+  //  
+  for (Int_t jn=0;jn<nn;jn++){
+    if (cused2[jn]) continue;
+    Float_t ybest=1000,zbest=1000,qbest=0;
+    // select "silber" cluster
+    if ( cpositive[jn]==1 && cnegative[positivepair[10*jn]]==2){
+      Int_t ip  = positivepair[10*jn];
+      Int_t jn2 = negativepair[10*ip];
+      if (jn2==jn) jn2 =  negativepair[10*ip+1];
+      Float_t pcharge = neg[jn].GetQ()+neg[jn2].GetQ();
+      //
+      if (TMath::Abs(pcharge-pos[ip].GetQ())<10){
+	//
+	// add first pair
+	//	if (!(cused1[ip]||cused2[jn])){
+	if (pairs[ip][jn]==100){
+	  Float_t yn=neg[jn].GetY()*fYpitchSSD; 
+	  Float_t yp=pos[ip].GetY()*fYpitchSSD;
+	  Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+	  Float_t yt=yn + tann*zt;
+	  zt-=fHlSSD; yt-=fHwSSD;
+	  ybest =yt;  zbest=zt; 
+	  qbest =neg[jn].GetQ();
+	  lp[0]=-(-ybest+fYshift[fI]);
+	  lp[1]=  -zbest+fZshift[fI];
+	  lp[2]=0.0025*0.0025;  //SigmaY2
+	  lp[3]=0.110*0.110;  //SigmaZ2
+	  
+	  lp[4]=qbest;        //Q
+	  for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	  for (Int_t ilab=0;ilab<3;ilab++){
+	    milab[ilab] = pos[ip].GetLabel(ilab);
+	    milab[ilab+3] = neg[jn].GetLabel(ilab);
+	  }
+	  //
+	  CheckLabels2(milab);
+	  ratio = (pos[ip].GetQ()-neg[jn].GetQ())/(pos[ip].GetQ()+neg[jn].GetQ());
+	  milab[3]=(((ip<<10) + jn)<<10) + idet; // pos|neg|det
+	  Int_t info[3] = {pos[ip].GetNd(),neg[jn].GetNd(),fNlayer[fI]};
+	  AliITSclusterV2 * cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+	  ncl++;
+	  cl2->SetChargeRatio(ratio);    	
+	  cl2->SetType(7);
+	  pairs[ip][jn] =7;
+	  if ((pos[ip].GetNd()+neg[jn].GetNd())>6){ //multi cluster
+	    cl2->SetType(8);
+	    pairs[ip][jn]=8;
+	  }
+	}
+	//
+	// add second pair
+	//	if (!(cused1[ip]||cused2[jn2])){
+	if (pairs[ip][jn2]==100){
+	  Float_t yn=neg[jn2].GetY()*fYpitchSSD; 
+	  Double_t yp=pos[ip].GetY()*fYpitchSSD; 
+	  Double_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+	  Double_t yt=yn + tann*zt;
+	  zt-=fHlSSD; yt-=fHwSSD;
+	  ybest =yt;  zbest=zt; 
+	  qbest =neg[jn2].GetQ();
+	  lp[0]=-(-ybest+fYshift[fI]);
+	  lp[1]=  -zbest+fZshift[fI];
+	  lp[2]=0.0025*0.0025;  //SigmaY2
+	  lp[3]=0.110*0.110;  //SigmaZ2
+	  
+	  lp[4]=qbest;        //Q
+	  for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	  for (Int_t ilab=0;ilab<3;ilab++){
+	    milab[ilab] = pos[ip].GetLabel(ilab);
+	    milab[ilab+3] = neg[jn2].GetLabel(ilab);
+	  }
+	  //
+	  CheckLabels2(milab);
+	  ratio = (pos[ip].GetQ()-neg[jn2].GetQ())/(pos[ip].GetQ()+neg[jn2].GetQ());
+	  milab[3]=(((ip<<10) + jn2)<<10) + idet; // pos|neg|det
+	  Int_t info[3] = {pos[ip].GetNd(),neg[jn2].GetNd(),fNlayer[fI]};
+	  AliITSclusterV2* cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+	  ncl++;
+	  cl2->SetChargeRatio(ratio);    	
+	  pairs[ip][jn2]=7;
+	  cl2->SetType(7);
+	  if ((pos[ip].GetNd()+neg[jn2].GetNd())>6){ //multi cluster
+	    cl2->SetType(8);
+	    pairs[ip][jn2]=8;
+	  }
+	}
+	cused1[ip]++;
+	cused2[jn]++;
+	cused2[jn2]++;
+      }
+    }    
+  }
+  
+  for (Int_t ip=0;ip<np;ip++){
+    Float_t ybest=1000,zbest=1000,qbest=0;
+    //
+    // 2x2 clusters
+    //
+    if ( (cnegative[ip]<5) && cpositive[negativepair[10*ip]]<5){ 
+      Float_t minchargediff =4.;
+      Int_t j=-1;
+      for (Int_t di=0;di<cnegative[ip];di++){
+	Int_t   jc = negativepair[ip*10+di];
+	Float_t chargedif = pos[ip].GetQ()-neg[jc].GetQ();
+	if (TMath::Abs(chargedif)<minchargediff){
+	  j =jc;
+	  minchargediff = TMath::Abs(chargedif);
+	}
+      }
+      if (j<0) continue;  // not proper cluster      
+      Int_t count =0;
+      for (Int_t di=0;di<cnegative[ip];di++){
+	Int_t   jc = negativepair[ip*10+di];
+	Float_t chargedif = pos[ip].GetQ()-neg[jc].GetQ();
+	if (TMath::Abs(chargedif)<minchargediff+3.) count++;
+      }
+      if (count>1) continue;  // more than one "proper" cluster for positive
+      //
+      count =0;
+      for (Int_t dj=0;dj<cpositive[j];dj++){
+	Int_t   ic  = positivepair[j*10+dj];
+	Float_t chargedif = pos[ic].GetQ()-neg[j].GetQ();
+	if (TMath::Abs(chargedif)<minchargediff+3.) count++;
+      }
+      if (count>1) continue;  // more than one "proper" cluster for negative
+      
+      Int_t jp = 0;
+      
+      count =0;
+      for (Int_t dj=0;dj<cnegative[jp];dj++){
+	Int_t   ic = positivepair[jp*10+dj];
+	Float_t chargedif = pos[ic].GetQ()-neg[jp].GetQ();
+	if (TMath::Abs(chargedif)<minchargediff+4.) count++;
+      }
+      if (count>1) continue;   
+      if (pairs[ip][j]<100) continue;
+      //
+      //almost gold clusters
+      Float_t yp=pos[ip].GetY()*fYpitchSSD; 
+      Float_t yn=neg[j].GetY()*fYpitchSSD;
+      Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+      Float_t yt=yn + tann*zt;
+      zt-=fHlSSD; yt-=fHwSSD;
+      ybest=yt; zbest=zt; 
+      qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
+      lp[0]=-(-ybest+fYshift[fI]);
+      lp[1]=  -zbest+fZshift[fI];
+      lp[2]=0.0025*0.0025;  //SigmaY2
+      lp[3]=0.110*0.110;  //SigmaZ2	
+      lp[4]=qbest;        //Q
+      for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+      for (Int_t ilab=0;ilab<3;ilab++){
+	milab[ilab] = pos[ip].GetLabel(ilab);
+	milab[ilab+3] = neg[j].GetLabel(ilab);
+      }
+      //
+      CheckLabels2(milab);
+      ratio = (pos[ip].GetQ()-neg[j].GetQ())/(pos[ip].GetQ()+neg[j].GetQ());
+      milab[3]=(((ip<<10) + j)<<10) + idet; // pos|neg|det
+      Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fI]};
+      AliITSclusterV2 * cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+      ncl++;
+      cl2->SetChargeRatio(ratio);    	
+      cl2->SetType(10);
+      pairs[ip][j]=10;
+      if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
+	cl2->SetType(11);
+	pairs[ip][j]=11;
+      }
+      cused1[ip]++;
+      cused2[j]++;      
+    }
+
+  }
+  
+  //  
+  for (Int_t i=0; i<np; i++) {
+    Float_t ybest=1000,zbest=1000,qbest=0;
+    Float_t yp=pos[i].GetY()*fYpitchSSD; 
+    if (pos[i].GetQ()<3) continue;
+    for (Int_t j=0; j<nn; j++) {
+    //    for (Int_t di = 0;di<cpositive[i];di++){
+    //  Int_t j = negativepair[10*i+di];
+      if (neg[j].GetQ()<3) continue;
+      if (cused2[j]||cused1[i]) continue;      
+      if (pairs[i][j]>0 &&pairs[i][j]<100) continue;
+      ratio = (pos[i].GetQ()-neg[j].GetQ())/(pos[i].GetQ()+neg[j].GetQ());      
+      Float_t yn=neg[j].GetY()*fYpitchSSD;
+      Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+      Float_t yt=yn + tann*zt;
+      zt-=fHlSSD; yt-=fHwSSD;
+      if (TMath::Abs(yt)<fHwSSD+0.01)
+      if (TMath::Abs(zt)<fHlSSD+0.01*(neg[j].GetNd()+pos[i].GetNd())) {
+        ybest=yt; zbest=zt; 
+        qbest=0.5*(pos[i].GetQ()+neg[j].GetQ());
+        lp[0]=-(-ybest+fYshift[fI]);
+        lp[1]=  -zbest+fZshift[fI];
+        lp[2]=0.0025*0.0025;  //SigmaY2
+        lp[3]=0.110*0.110;  //SigmaZ2
+
+        lp[4]=qbest;        //Q
+	for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	for (Int_t ilab=0;ilab<3;ilab++){
+	  milab[ilab] = pos[i].GetLabel(ilab);
+	  milab[ilab+3] = neg[j].GetLabel(ilab);
+	}
+	//
+	CheckLabels2(milab);
+	milab[3]=(((i<<10) + j)<<10) + idet; // pos|neg|det
+	Int_t info[3] = {pos[i].GetNd(),neg[j].GetNd(),fNlayer[fI]};
+        AliITSclusterV2 * cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info); 
+	ncl++;
+	cl2->SetChargeRatio(ratio);
+	cl2->SetType(100+cpositive[j]+cnegative[i]);
+	//cl2->SetType(0);
+	/*
+	  if (pairs[i][j]<100){
+	  printf("problem:- %d\n", pairs[i][j]);
+	  }
+	  if (cnegative[i]<2&&cpositive[j]<2){
+	  printf("problem:- %d\n", pairs[i][j]);
+	  }
+	*/
+      }
+    }
   }
 }
 
+
 void AliITSclustererV2::
-FindClustersSSD(const TClonesArray *digits, TClonesArray *clusters) {
+FindClustersSSD(const TClonesArray *alldigits, TClonesArray *clusters) {
   //------------------------------------------------------------
   // Actual SSD cluster finder
   //------------------------------------------------------------
-  Int_t smax=digits->GetEntriesFast();
+  Int_t smaxall=alldigits->GetEntriesFast();
+  if (smaxall==0) return;
+  TObjArray *digits = new TObjArray;
+  for (Int_t i=0;i<smaxall; i++){
+    AliITSdigitSSD *d=(AliITSdigitSSD*)alldigits->UncheckedAt(i);
+    if (d->GetSignal()<3) continue;
+    digits->AddLast(d);
+  }
+  Int_t smax = digits->GetEntriesFast();
   if (smax==0) return;
-
+  
   const Int_t MAX=1000;
   Int_t np=0, nn=0; 
   Ali1Dcluster pos[MAX], neg[MAX];
   Float_t y=0., q=0., qmax=0.; 
   Int_t lab[4]={-2,-2,-2,-2};
-
+  
   AliITSdigitSSD *d=(AliITSdigitSSD*)digits->UncheckedAt(0);
   q += d->GetSignal();
   y += d->GetCoord2()*d->GetSignal();
@@ -1089,28 +1450,60 @@ FindClustersSSD(const TClonesArray *digits, TClonesArray *clusters) {
   Int_t *n=&nn;
   Ali1Dcluster *c=neg;
   Int_t nd=1;
+  Int_t milab[10];
+  for (Int_t ilab=0;ilab<10;ilab++){
+    milab[ilab]=-2;
+  }
+  milab[0]=d->GetTrack(0); milab[1]=d->GetTrack(1); milab[2]=d->GetTrack(2);
+
   for (Int_t s=1; s<smax; s++) {
-      d=(AliITSdigitSSD*)digits->UncheckedAt(s);
+      d=(AliITSdigitSSD*)digits->UncheckedAt(s);      
       Int_t strip=d->GetCoord2();
       if ((strip-curr) > 1 || flag!=d->GetCoord1()) {
          c[*n].SetY(y/q);
          c[*n].SetQ(q);
          c[*n].SetNd(nd);
-         c[*n].SetLabels(lab);
+	 CheckLabels2(milab);
+         c[*n].SetLabels(milab);
          //Split suspiciously big cluster
-         if (nd>3) {
-            c[*n].SetY(y/q-0.5*nd);
-            c[*n].SetQ(0.5*q);
-            (*n)++;
-            if (*n==MAX) {
-              Error("FindClustersSSD","Too many 1D clusters !");
+	 /*
+	 if (nd>10&&nd<16){
+	   c[*n].SetY(y/q-0.3*nd);
+	   c[*n].SetQ(0.5*q);
+	   (*n)++;
+	   if (*n==MAX) {
+	     Error("FindClustersSSD","Too many 1D clusters !");
               return;
-            }
-            c[*n].SetY(y/q+0.5*nd);
-            c[*n].SetQ(0.5*q);
-            c[*n].SetNd(nd);
-            c[*n].SetLabels(lab);
-         }
+	   }
+	   c[*n].SetY(y/q-0.0*nd);
+	   c[*n].SetQ(0.5*q);
+	   c[*n].SetNd(nd);
+	   (*n)++;
+	   if (*n==MAX) {
+	     Error("FindClustersSSD","Too many 1D clusters !");
+              return;
+	   }
+	   //
+	   c[*n].SetY(y/q+0.3*nd);
+	   c[*n].SetQ(0.5*q);
+	   c[*n].SetNd(nd);
+	   c[*n].SetLabels(milab);
+	 }
+	 else{
+	 */
+	 if (nd>4&&nd<25) {
+	   c[*n].SetY(y/q-0.25*nd);
+	   c[*n].SetQ(0.5*q);
+	   (*n)++;
+	   if (*n==MAX) {
+	     Error("FindClustersSSD","Too many 1D clusters !");
+	     return;
+	   }
+	   c[*n].SetY(y/q+0.25*nd);
+	   c[*n].SetQ(0.5*q);
+	   c[*n].SetNd(nd);
+	   c[*n].SetLabels(milab);
+	 }	 
          (*n)++;
          if (*n==MAX) {
           Error("FindClustersSSD","Too many 1D clusters !");
@@ -1119,6 +1512,11 @@ FindClustersSSD(const TClonesArray *digits, TClonesArray *clusters) {
          y=q=qmax=0.;
          nd=0;
          lab[0]=lab[1]=lab[2]=-2;
+	 //
+	 for (Int_t ilab=0;ilab<10;ilab++){
+	   milab[ilab]=-2;
+	 }
+	 //
          if (flag!=d->GetCoord1()) { n=&np; c=pos; }
       }
       flag=d->GetCoord1();
@@ -1128,6 +1526,9 @@ FindClustersSSD(const TClonesArray *digits, TClonesArray *clusters) {
       if (d->GetSignal()>qmax) {
          qmax=d->GetSignal();
          lab[0]=d->GetTrack(0); lab[1]=d->GetTrack(1); lab[2]=d->GetTrack(2);
+      }
+      for (Int_t ilab=0;ilab<10;ilab++) {
+	if (d->GetTrack(ilab)>=0) AddLabel(milab, (d->GetTrack(ilab))); 
       }
       curr=strip;
   }

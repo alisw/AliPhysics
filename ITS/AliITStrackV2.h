@@ -30,18 +30,24 @@
 #include "AliITSrecoV2.h"
 
 class AliESDtrack;
+class AliTPCtrack;
 
 //_____________________________________________________________________________
 class AliITStrackV2 : public AliKalmanTrack {
+  friend class AliITStrackerV2;
+  friend class AliITStrackerMI;
 public:
   AliITStrackV2();
+  AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *);
   AliITStrackV2(AliESDtrack& t,Bool_t c=kFALSE) throw (const Char_t *);
   AliITStrackV2(const AliITStrackV2& t);
   Int_t PropagateToVertex(Double_t d=0., Double_t x0=0.);
   Int_t Propagate(Double_t alpha, Double_t xr);
+  Int_t GetProlongationFast(Double_t alpha, Double_t xr,Double_t &y, Double_t &z);
   Int_t CorrectForMaterial(Double_t d, Double_t x0=21.82);
   Int_t PropagateTo(Double_t xr, Double_t d, Double_t x0=21.82);
   Int_t Update(const AliCluster* cl,Double_t chi2,UInt_t i);
+  Int_t UpdateMI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz, Double_t chi2,UInt_t i);  
   Int_t Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]);
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}
   void SetSampledEdx(Float_t q, Int_t i);
@@ -51,15 +57,15 @@ public:
   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
   void UpdateESDtrack(ULong_t flags);
   void SetConstrainedESDtrack(Double_t chi2); 
-
   void SetReconstructed(Bool_t sr=kTRUE){fReconstructed = sr;}
+  
   Bool_t GetReconstructed() const {return fReconstructed;}
   void SetChi2MIP(Int_t i,Float_t val){fChi2MIP[i]=val;}
   Float_t GetChi2MIP(Int_t i) const {return fChi2MIP[i];}  
   void IncrementNSkipped(){fNSkipped++;} // increment by 1 the # of skipped cls
-  Int_t GetNSkipped() const {return fNSkipped;}
+  Float_t GetNSkipped() const {return fNSkipped;}
   void IncrementNUsed(){fNUsed++;} // increment by 1 the # of shared clusters
-  Int_t GetNUsed() const {return fNUsed;}
+  Float_t GetNUsed() const {return fNUsed;}
   AliESDtrack *GetESDtrack() const {return fESDtrack;}
   Double_t GetCov33() const {return fC33;} // cov. matrix el. 3,3
   Double_t GetCov44() const {return fC44;} // cov. matrix el. 4,4
@@ -67,6 +73,8 @@ public:
   Float_t GetDz(Int_t i) const {return fDz[i];}
   Float_t GetSigmaY(Int_t i) const {return fSigmaY[i];}
   Float_t GetSigmaZ(Int_t i) const {return fSigmaZ[i];}
+
+
 
   Int_t GetDetectorIndex() const {return GetLabel();}
   Double_t GetX()    const {return fX;}
@@ -91,12 +99,9 @@ public:
   Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
   Int_t GetGlobalXYZat(Double_t r,Double_t &x,Double_t &y,Double_t &z) const;
   Double_t GetPredictedChi2(const AliCluster *cluster) const;
+  Double_t GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz) const;
   Int_t Invariant() const;
  
-  AliITStrackV2& operator=(const AliITStrackV2& /*t*/) {
-    Error("operator=","Assignment is not allowed !"); return *this;
-  }
-
 protected:
   Double_t fX;              // X-coordinate of this track (reference plane)
   Double_t fAlpha;          // rotation angle
@@ -114,18 +119,29 @@ protected:
   Double_t fC20, fC21, fC22;             // of the
   Double_t fC30, fC31, fC32, fC33;       // track
   Double_t fC40, fC41, fC42, fC43, fC44; // parameters 
-  Int_t fNUsed;                          // number of shared clusters
-  Int_t fNSkipped;                       // number of skipped clusters
+  Float_t fNUsed;                          // number of shared clusters
+  Float_t fNSkipped;                       // number of skipped clusters
+  Float_t fNDeadZone;                     // number of clusters in dead zone
+  Float_t fDeadZoneProbability;          // probability to cross dead zone
   Bool_t fReconstructed;                 // reconstructed - accepted flag
-  Float_t fChi2MIP[6];                   // MIP chi squres 
+  Float_t fChi2MIP[12];                   // MIP chi squres 
   UInt_t fIndex[kMaxLayer]; // indices of associated clusters 
   Float_t fdEdxSample[4];   // array of dE/dx samples b.b.
-  Float_t fDy[6];           //dy in layer
-  Float_t fDz[6];           //dz in layer
-  Float_t fSigmaY[6];       //sigma y 
-  Float_t fSigmaZ[6];       //sigma z
+  Float_t fDy[12];           //dy in layer
+  Float_t fDz[12];           //dz in layer
+  Float_t fSigmaY[12];       //sigma y 
+  Float_t fSigmaZ[12];       //sigma z
+  Float_t fNy[6];              //expected size of cluster
+  Float_t fNz[6];              //expected size of cluster
+  Float_t fD[2];            //distance to the vertex
+  Float_t fNormQ[6];        // normalized Q
+  Float_t fExpQ;            // expected Q
+  Float_t fNormChi2[6];     // normalized chi2 
+  Float_t fChi22;           // chi22
+  Float_t fdEdxMismatch;    
+  Bool_t fConstrain;        //indication of the vertex constrain
+  Int_t  fClIndex[6];       //cluster Index
   AliESDtrack *fESDtrack;   //! pointer to the connected ESD track
-
   ClassDef(AliITStrackV2,3)   //ITS reconstructed track
 };
 

@@ -63,6 +63,7 @@ SRCS = 	AliITS.cxx \
 		AliITSclusterV2.cxx \
 		AliITStrackV2.cxx \
 		AliITStrackerV2.cxx \
+		AliITStrackerMI.cxx \
 		AliITSVertexer.cxx \
 		AliITSVertexerIons.cxx \
 		AliITSVertexerPPZ.cxx \

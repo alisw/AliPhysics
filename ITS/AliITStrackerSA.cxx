@@ -41,13 +41,13 @@
 ClassImp(AliITStrackerSA)
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA():AliITStrackerV2(){
+AliITStrackerSA::AliITStrackerSA():AliITStrackerMI(){
   // Default constructor
   Init();
  
 }
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom):AliITStrackerV2(geom) 
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom):AliITStrackerMI(geom) 
 {
   // Standard constructor (Vertex is known and passed to this obj.)
   Init();
@@ -57,7 +57,7 @@ AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom):AliITStrackerV2(geom)
 }
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliESDVertex *vert):AliITStrackerV2(geom) 
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliESDVertex *vert):AliITStrackerMI(geom) 
 {
   // Standard constructor (Vertex is known and passed to this obj.)
   Init();
@@ -68,7 +68,7 @@ AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliESDVertex *vert):AliITStra
 
 //______________________________________________________________________
 AliITStrackerSA::AliITStrackerSA(const AliITStrackerSA &trkr) : 
-                    AliITStrackerV2(trkr) {
+                    AliITStrackerMI(trkr) {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
   Error("AliITStrackerSA","Copy constructor not allowed\n");
@@ -84,7 +84,7 @@ AliITStrackerSA& AliITStrackerSA::operator=(const
 }
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliITSVertexer *vertexer):AliITStrackerV2(geom) 
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliITSVertexer *vertexer):AliITStrackerMI(geom) 
 {
   // Standard constructor (Vertex is unknown - vertexer is passed to this obj)
   Init();
@@ -94,7 +94,7 @@ AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliITSVertexer *vertexer):Ali
 }
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITStrackerSA& tracker):AliITStrackerV2(){
+AliITStrackerSA::AliITStrackerSA(AliITStrackerSA& tracker):AliITStrackerMI(){
   // Copy constructor
   fPhiEstimate = tracker.fPhiEstimate;
   for(Int_t i=0;i<2;i++){
@@ -815,7 +815,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
               if(cl1!=0) trac->AddClusterV2(1,(clind1[l2] & 0x0fffffff)>>0);
               if(cl0!=0) trac->AddClusterV2(0,(clind0[l1] & 0x0fffffff)>>0);
             
-              //fit with Kalman filter using AliITStrackerV2::RefitAt()
+              //fit with Kalman filter using AliITStrackerMI::RefitAt()
           
               AliITStrackV2* ot = new AliITStrackV2(*trac);
               
@@ -902,6 +902,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   Int_t numberofpoints;
   if(fSixPoints) numberofpoints=6;
   else numberofpoints=5;
+  CookLabel(otrack,0.); //MI change - to see fake ratio
   Int_t label =  Label(cl0->GetLabel(0),cl1->GetLabel(0), 
                        cl2->GetLabel(0),cl3->GetLabel(0),
                        cl4->GetLabel(0),labl[0],
