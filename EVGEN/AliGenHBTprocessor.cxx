@@ -65,8 +65,6 @@
 
 
 
-const Int_t AliGenHBTprocessor::fgkHBTPMAXPART = 100000;
-
 ClassImp(AliGenHBTprocessor)
 
 
@@ -74,7 +72,7 @@ ClassImp(AliGenHBTprocessor)
 AliGenCocktailAfterBurner*  GetGenerator();
 /*******************************************************************/
 
-AliGenHBTprocessor::AliGenHBTprocessor() : AliGenerator(-1) 
+AliGenHBTprocessor::AliGenHBTprocessor() : AliGenerator() 
 {
   //
   // Standard constructor
@@ -83,7 +81,6 @@ AliGenHBTprocessor::AliGenHBTprocessor() : AliGenerator(-1)
   SetName("AliGenHBTprocessor");
   SetTitle("AliGenHBTprocessor");
   
-  //  fRandom ->SetSeed(0);
   sRandom = fRandom;
   fHBTprocessor = new THBTprocessor();
 
@@ -157,7 +154,7 @@ void AliGenHBTprocessor::InitStatusCodes()
  //creates and inits status codes array to zero
   AliGenCocktailAfterBurner *cab = GetGenerator();
 
-  if(!cab) Fatal("AliGenHBTprocessor::InitStatusCodes()","Can not find AliGenCocktailAfterBurner generator");
+  if(!cab) Fatal("InitStatusCodes()","Can not find AliGenCocktailAfterBurner generator");
 
   Int_t nev = cab->GetNumberOfEvents();
 
@@ -190,6 +187,7 @@ void AliGenHBTprocessor::CleanStatusCodes()
 void AliGenHBTprocessor::Init()
   {  
   //sets up parameters in generator
+   
    THBTprocessor *thbtp = fHBTprocessor;
    
 
@@ -264,13 +262,18 @@ void AliGenHBTprocessor::Init()
 void AliGenHBTprocessor::Generate()
  {
  //starts processig 
-   
-   if (gAlice->GetEventsPerRun() <2)
+   AliGenCocktailAfterBurner* cab = GetGenerator();
+   if (cab == 0x0)
     {
-      Fatal("AliGenHBTprocessor::Generate()",
-            "HBT Processor needs more than 1 event to work properly,\
-             but there is only %d set", gAlice->GetEventsPerRun());
+      Fatal("Generate()","AliGenHBTprocessor needs AliGenCocktailAfterBurner to be main generator");
     }
+   if (cab->GetNumberOfEvents() <2)
+    {
+      Fatal("Generate()",
+            "HBT Processor needs more than 1 event to work properly,\
+             but there is only %d set", cab->GetNumberOfEvents());
+    }
+  
   
    fHBTprocessor->Initialize(); //reset all fields of common blocks 
                                    //in case there are many HBT processors
@@ -917,9 +920,9 @@ AliGenCocktailAfterBurner*  GetGenerator()
    if(!gAlice)
     {
       cout<<endl<<"ERROR: There is NO gALICE! Check what you are doing!"<<endl;
-      gAlice->Fatal("AliGenHBTprocessor.cxx: alihbtp_getnumofev()",
+      gROOT->Fatal("AliGenHBTprocessor.cxx: GetGenerator()",
                     "\nRunning HBT Processor without gAlice... Exiting \n");
-      return 0;
+      return 0x0;
     }
    AliGenerator * gen = gAlice->Generator();
    
@@ -927,22 +930,24 @@ AliGenCocktailAfterBurner*  GetGenerator()
     {
       gAlice->Fatal("AliGenHBTprocessor.cxx: GetGenerator()",
 	            "\nThere is no generator in gAlice, exiting\n");
-      return 0;
+      return 0x0;
     }
-   
-   const Char_t *genname = gen->GetName();
-   Char_t name[30];
-   strcpy(name,"AliGenCocktailAfterBurner");
-   
-   if (strcmp(name,genname))
-   {
-      gAlice->Fatal("AliGenHBTprocessor.cxx: GetGenerator()",
-	            "\nThe main Generator is not a AliGenCocktailAfterBurner, exiting\n");
-      return 0;
-   }
-   
-   AliGenCocktailAfterBurner* CAB= (AliGenCocktailAfterBurner*) gen;
 
+   //we do not sure actual type of the genetator
+   //and simple casting is risky - we use ROOT machinery to do safe cast
+   
+   TClass* cabclass = AliGenCocktailAfterBurner::Class(); //get AliGenCocktailAfterBurner TClass
+   TClass* genclass = gen->IsA();//get TClass of the generator we got from galice 
+   //use casting implemented in TClass
+   //cast gen to cabclass
+   AliGenCocktailAfterBurner* CAB=(AliGenCocktailAfterBurner*)genclass->DynamicCast(cabclass,gen);
+                                                                        
+   if (CAB == 0x0)//if generator that we got is not AliGenCocktailAfterBurner or its descendant we get null
+   {              //then quit with error
+      gAlice->Fatal("AliGenHBTprocessor.cxx: GetGenerator()",
+                    "\nThe main Generator is not a AliGenCocktailAfterBurner, exiting\n");
+      return 0x0;
+   }
    //   cout<<endl<<"Got generator"<<endl;
    return CAB;
    
@@ -955,20 +960,23 @@ AliGenHBTprocessor* GetAliGenHBTprocessor()
 //AliGenCocktailAfterBurner (can be more than one)
 //
  AliGenCocktailAfterBurner* gen = GetGenerator();
- AliGenerator * g = gen->GetCurrentGenerator();
- 
- const Char_t *genname = g->GetName();
- Char_t name[30];
- strcpy(name,"AliGenHBTprocessor");
-   
- if (strcmp(name,genname))
+ AliGenerator* g = gen->GetCurrentGenerator();
+ if(g == 0x0)
+  {
+    gAlice->Fatal("AliGenHBTprocessor.cxx: GetAliGenHBTprocessor()",
+                  "Can not get the current generator. Exiting");
+    return 0x0;
+  }
+  
+ TClass* hbtpclass = AliGenHBTprocessor::Class(); //get AliGenCocktailAfterBurner TClass
+ TClass* gclass = g->IsA();//get TClass of the current generator we got from CAB
+ AliGenHBTprocessor* hbtp = (AliGenHBTprocessor*)gclass->DynamicCast(hbtpclass,g);//try to cast 
+ if (hbtp == 0x0)
    {
       gAlice->Fatal("AliGenHBTprocessor.cxx: GetAliGenHBTprocessor()",
                     "\nCurrernt generator in AliGenCocktailAfterBurner is not a AliGenHBTprocessor, exiting\n");
-      return 0;
+      return 0x0;
    }
- 
- AliGenHBTprocessor* hbtp = (AliGenHBTprocessor*)g;
  return hbtp;
 }
 

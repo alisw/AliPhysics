@@ -30,7 +30,6 @@ class AliGenHBTprocessor : public AliGenerator {
 
     Int_t   GetHbtPStatusCode(Int_t part) const; 
     void    SetHbtPStatusCode(Int_t hbtstatcode, Int_t part);
-    static const Int_t fgkHBTPMAXPART;
 /************* S E T T E R S ******************/  
 
     virtual void SetTrackRejectionFactor(Float_t trf = 1.0);
