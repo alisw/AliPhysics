@@ -33,6 +33,7 @@
 
 #include "AliRun.h"
 #include "AliPMD.h"
+#include "AliPMDhit.h"
 #include "AliHit.h"
 #include "AliDetector.h"
 #include "AliRunLoader.h"
@@ -301,11 +302,19 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
-	      edep       = fPMDHit->fEnergy;
-	      Int_t vol1 = fPMDHit->fVolume[1]; // Column
-	      Int_t vol2 = fPMDHit->fVolume[2]; // Row
-	      Int_t vol3 = fPMDHit->fVolume[3]; // UnitModule
-	      Int_t vol6 = fPMDHit->fVolume[6]; // SuperModule
+	      /*
+		edep       = fPMDHit->fEnergy;
+		Int_t vol1 = fPMDHit->fVolume[1]; // Column
+		Int_t vol2 = fPMDHit->fVolume[2]; // Row
+		Int_t vol3 = fPMDHit->fVolume[3]; // UnitModule
+		Int_t vol6 = fPMDHit->fVolume[6]; // SuperModule
+	      */
+	      edep       = fPMDHit->GetEnergy();
+	      Int_t vol1 = fPMDHit->GetVolume(1); // Column
+	      Int_t vol2 = fPMDHit->GetVolume(2); // Row
+	      Int_t vol3 = fPMDHit->GetVolume(3); // UnitModule
+	      Int_t vol6 = fPMDHit->GetVolume(6); // SuperModule
+
 	      // -----------------------------------------//
 	      // For Super Module 1 & 2                   //
 	      //  nrow = 96, ncol = 48                    //
@@ -544,11 +553,18 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
-	      edep       = fPMDHit->fEnergy;
-	      Int_t vol1 = fPMDHit->fVolume[1]; // Column
-	      Int_t vol2 = fPMDHit->fVolume[2]; // Row
-	      Int_t vol3 = fPMDHit->fVolume[3]; // UnitModule
-	      Int_t vol6 = fPMDHit->fVolume[6]; // SuperModule
+	      /*
+		edep       = fPMDHit->fEnergy;
+		Int_t vol1 = fPMDHit->fVolume[1]; // Column
+		Int_t vol2 = fPMDHit->fVolume[2]; // Row
+		Int_t vol3 = fPMDHit->fVolume[3]; // UnitModule
+		Int_t vol6 = fPMDHit->fVolume[6]; // SuperModule
+	      */
+	      edep       = fPMDHit->GetEnergy();
+	      Int_t vol1 = fPMDHit->GetVolume(1); // Column
+	      Int_t vol2 = fPMDHit->GetVolume(2); // Row
+	      Int_t vol3 = fPMDHit->GetVolume(3); // UnitModule
+	      Int_t vol6 = fPMDHit->GetVolume(6); // SuperModule
 
 	      // -----------------------------------------//
 	      // For Super Module 1 & 2                   //
