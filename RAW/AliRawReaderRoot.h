@@ -24,9 +24,16 @@ class AliRawReaderRoot: public AliRawReader {
     virtual const UInt_t* GetTriggerPattern() const;
     virtual const UInt_t* GetDetectorPattern() const;
     virtual const UInt_t* GetAttributes() const;
+    virtual UInt_t   GetLDCId() const;
     virtual UInt_t   GetGDCId() const;
 
-    virtual Bool_t   ReadMiniHeader();
+    virtual Int_t    GetEquipmentSize() const;
+    virtual Int_t    GetEquipmentType() const;
+    virtual Int_t    GetEquipmentId() const;
+    virtual const UInt_t* GetEquipmentAttributes() const;
+    virtual Int_t    GetEquipmentElementSize() const;
+
+    virtual Bool_t   ReadHeader();
     virtual Bool_t   ReadNextData(UChar_t*& data);
 
     virtual Bool_t   Reset();

@@ -34,28 +34,82 @@ AliRawReaderDate::AliRawReaderDate(
 #else
 				   void* /* event */
 #endif
-)
+				   ) :
+  fRequireMiniHeader(kTRUE),
+  fEvent(NULL),
+  fSubEvent(NULL),
+  fEquipment(NULL),
+  fIsOwner(kFALSE),
+  fPosition(NULL),
+  fEnd(NULL)
 {
 // create an object to read digits from the given date event
 
 #ifdef ALI_DATE
   fEvent = (eventHeaderStruct*) event;
-  fSubEvent = NULL;
-  fPosition = fEnd = NULL;
+#else
+  Fatal("AliRawReaderDate", "this class was compiled without DATE");
+#endif
+}
+
+AliRawReaderDate::AliRawReaderDate(
+#ifdef ALI_DATE
+				   const char* fileName, Int_t eventNumber
+#else
+				   const char* /*fileName*/, 
+				   Int_t /*eventNumber*/
+#endif
+				   ) :
+  fRequireMiniHeader(kTRUE),
+  fEvent(NULL),
+  fSubEvent(NULL),
+  fEquipment(NULL),
+  fIsOwner(kFALSE),
+  fPosition(NULL),
+  fEnd(NULL)
+{
+// create an object to read digits from the given date event
+
+#ifdef ALI_DATE
+  FILE* file = fopen(fileName, "rb");
+  if (!file) {
+    Error("AliRawReaderDate", "could not open file %s", fileName);
+    return;
+  }
+  eventHeaderStruct header;
+  UInt_t headerSize = sizeof(eventHeaderStruct);
+  while (fread(&header, 1, headerSize, file) == headerSize) {
+    if (eventNumber == 0) {
+      UChar_t* buffer = new UChar_t[header.eventSize];
+      fseek(file, -headerSize, SEEK_CUR);
+      if (fread(buffer, 1, header.eventSize, file) != header.eventSize) break;
+      fEvent = (eventHeaderStruct*) buffer;
+      fIsOwner = kTRUE;
+      break;
+    }
+    fseek(file, header.eventSize-headerSize, SEEK_CUR);
+    eventNumber--;
+  }
+  fclose(file);
+
 #else
   Fatal("AliRawReaderDate", "this class was compiled without DATE");
 #endif
 }
 
 AliRawReaderDate::AliRawReaderDate(const AliRawReaderDate& rawReader) :
-  AliRawReader(rawReader)
+  AliRawReader(rawReader),
+  fRequireMiniHeader(rawReader.fRequireMiniHeader),
+  fEvent(rawReader.fEvent),
+  fSubEvent(rawReader.fSubEvent),
+  fEquipment(rawReader.fEquipment),
+  fIsOwner(kFALSE),
+  fPosition(rawReader.fPosition),
+  fEnd(rawReader.fEnd)
+
 {
 // copy constructor
 
-  fEvent = rawReader.fEvent;
-  fSubEvent = rawReader.fSubEvent;
-  fPosition = rawReader.fPosition;
-  fEnd = rawReader.fEnd;
 }
 
 AliRawReaderDate& AliRawReaderDate::operator = (const AliRawReaderDate& 
@@ -66,6 +120,15 @@ AliRawReaderDate& AliRawReaderDate::operator = (const AliRawReaderDate&
   this->~AliRawReaderDate();
   new(this) AliRawReaderDate(rawReader);
   return *this;
+}
+
+AliRawReaderDate::~AliRawReaderDate()
+{
+// destructor
+
+#ifdef ALI_DATE
+  if (fIsOwner) delete[] fEvent;
+#endif
 }
 
 
@@ -141,6 +204,18 @@ const UInt_t* AliRawReaderDate::GetAttributes() const
 #endif
 }
 
+UInt_t AliRawReaderDate::GetLDCId() const
+{
+// get the LDC Id from the event header
+
+#ifdef ALI_DATE
+  if (!fSubEvent) return 0;
+  return fSubEvent->eventLdcId;
+#else
+  return 0;
+#endif
+}
+
 UInt_t AliRawReaderDate::GetGDCId() const
 {
 // get the GDC Id from the event header
@@ -154,7 +229,68 @@ UInt_t AliRawReaderDate::GetGDCId() const
 }
 
 
-Bool_t AliRawReaderDate::ReadMiniHeader()
+Int_t AliRawReaderDate::GetEquipmentSize() const
+{
+// get the size of the equipment
+
+#ifdef ALI_DATE
+  if (!fEquipment) return 0;
+  return fEquipment->equipmentSize;
+#else
+  return 0;
+#endif
+}
+
+Int_t AliRawReaderDate::GetEquipmentType() const
+{
+// get the type from the equipment header
+
+#ifdef ALI_DATE
+  if (!fEquipment) return -1;
+  return fEquipment->equipmentType;
+#else
+  return 0;
+#endif
+}
+
+Int_t AliRawReaderDate::GetEquipmentId() const
+{
+// get the ID from the equipment header
+
+#ifdef ALI_DATE
+  if (!fEquipment) return -1;
+  return fEquipment->equipmentId;
+#else
+  return 0;
+#endif
+}
+
+const UInt_t* AliRawReaderDate::GetEquipmentAttributes() const
+{
+// get the attributes from the equipment header
+
+#ifdef ALI_DATE
+  if (!fEquipment) return NULL;
+  return fEquipment->equipmentTypeAttribute;
+#else
+  return 0;
+#endif
+}
+
+Int_t AliRawReaderDate::GetEquipmentElementSize() const
+{
+// get the basic element size from the equipment header
+
+#ifdef ALI_DATE
+  if (!fEquipment) return 0;
+  return fEquipment->equipmentBasicElementSize;
+#else
+  return 0;
+#endif
+}
+
+
+Bool_t AliRawReaderDate::ReadHeader()
 {
 // read a mini header at the current position
 // returns kFALSE if the mini header could not be read
@@ -170,82 +306,109 @@ Bool_t AliRawReaderDate::ReadMiniHeader()
     // skip payload (if event was not selected)
     if (fCount > 0) fPosition += fCount;
 
-    // get the first or the next sub event if at the end of a sub event
-    if (!fSubEvent || (fPosition >= fEnd)) {
+    // get the first or the next equipment if at the end of an equipment
+    if (!fEquipment || (fPosition >= fEnd)) {
 
-      // check for end of event data
-      if (fPosition >= ((UChar_t*)fEvent)+fEvent->eventSize) return kFALSE;
-      if (fSubEvent) {
-	fSubEvent = (eventHeaderStruct*) (((UChar_t*)fSubEvent) + 
-					  fSubEvent->eventSize);
+      // get the first or the next sub event if at the end of a sub event
+      if (!fSubEvent || 
+	  (fPosition >= ((UChar_t*)fSubEvent) + fSubEvent->eventSize)) {
+
+	// check for end of event data
+	if (fPosition >= ((UChar_t*)fEvent)+fEvent->eventSize) return kFALSE;
+	if (fSubEvent) {
+	  fSubEvent = (eventHeaderStruct*) (((UChar_t*)fSubEvent) + 
+					    fSubEvent->eventSize);
+	} else {
+	  fSubEvent = (eventHeaderStruct*) (((UChar_t*)fEvent) + 
+					    fEvent->eventHeadSize);
+	}
+
+	// check the magic word of the sub event
+	if (fSubEvent->eventMagic != EVENT_MAGIC_NUMBER) {
+	  Error("ReadHeader", "wrong magic number in sub event!\n"
+		" run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
+		fSubEvent->eventRunNb, 
+		fSubEvent->eventId[0], fSubEvent->eventId[1],
+		fSubEvent->eventLdcId, fSubEvent->eventGdcId);
+	  fErrorCode = kErrMagic;
+	  return kFALSE;
+	}
+
+	fEquipment = (equipmentHeaderStruct*)
+	  (((UChar_t*)fSubEvent) + fSubEvent->eventHeadSize);
+
       } else {
-	fSubEvent = (eventHeaderStruct*) (((UChar_t*)fEvent) + 
-					  fEvent->eventHeadSize);
-      }
-
-      // check the magic word of the sub event
-      if (fSubEvent->eventMagic != EVENT_MAGIC_NUMBER) {
-	Error("ReadMiniHeader", "wrong magic number in sub event!\n"
-	      " run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
-	      fSubEvent->eventRunNb, 
-	      fSubEvent->eventId[0], fSubEvent->eventId[1],
-	      fSubEvent->eventLdcId, fSubEvent->eventGdcId);
-	fErrorCode = kErrMagic;
-	return kFALSE;
+	fEquipment = (equipmentHeaderStruct*) fEnd;
       }
 
       fCount = 0;
-      fPosition = ((UChar_t*)fSubEvent) + fSubEvent->eventHeadSize + 
-	sizeof(equipmentHeaderStruct);
-      fEnd = ((UChar_t*)fSubEvent) + fSubEvent->eventSize;
+      fPosition = ((UChar_t*)fEquipment) + sizeof(equipmentHeaderStruct);
+      fEnd = fPosition + fEquipment->equipmentSize;
     }
 
     // continue with the next sub event if no data left in the payload
     if (fPosition >= fEnd) continue;
 
-    // check that there are enough bytes left for the mini header
-    if (fPosition + sizeof(AliMiniHeader) > fEnd) {
-      Error("ReadMiniHeader", "could not read mini header data!");
-      Warning("ReadMiniHeader", "skipping %d bytes\n"
-	      " run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
-	      fEnd - fPosition, fSubEvent->eventRunNb, 
-	      fSubEvent->eventId[0], fSubEvent->eventId[1],
-	      fSubEvent->eventLdcId, fSubEvent->eventGdcId);
-      fCount = 0;
-      fPosition = fEnd;
-      fErrorCode = kErrNoMiniHeader;
-      continue;
+    fMiniHeader = NULL;
+    if (fRequireMiniHeader) {
+      // check that there are enough bytes left for the mini header
+      if (fPosition + sizeof(AliMiniHeader) > fEnd) {
+	Error("ReadHeader", "could not read mini header data!");
+	Warning("ReadHeader", "skipping %d bytes\n"
+		" run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
+		fEnd - fPosition, fSubEvent->eventRunNb, 
+		fSubEvent->eventId[0], fSubEvent->eventId[1],
+		fSubEvent->eventLdcId, fSubEvent->eventGdcId);
+	fCount = 0;
+	fPosition = fEnd;
+	fErrorCode = kErrNoMiniHeader;
+	continue;
+      }
+
+      // "read" and check the mini header
+      fMiniHeader = (AliMiniHeader*) fPosition;
+      fPosition += sizeof(AliMiniHeader);
+      if (!CheckMiniHeader()) {
+	Error("ReadHeader", "wrong magic word in mini header!");
+	Warning("ReadHeader", "skipping %d bytes\n"
+		" run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
+		fEnd - fPosition, fSubEvent->eventRunNb, 
+		fSubEvent->eventId[0], fSubEvent->eventId[1],
+		fSubEvent->eventLdcId, fSubEvent->eventGdcId);
+	fCount = 0;
+	fPosition = fEnd;
+	fErrorCode = kErrMiniMagic;
+	continue;
+      }
+
+    } else {  // if mini header not required
+      // assume there is a mini header if the magic word is correct
+      if ((fPosition + sizeof(AliMiniHeader) <= fEnd) &&
+	  CheckMiniHeader((AliMiniHeader*) fPosition)) {
+	fMiniHeader = (AliMiniHeader*) fPosition;
+	fPosition += sizeof(AliMiniHeader);
+      }
     }
 
-    // "read" and check the mini header
-    fMiniHeader = (AliMiniHeader*) fPosition;
-    fPosition += sizeof(AliMiniHeader);
-    if (!CheckMiniHeader()) {
-      Error("ReadMiniHeader", "wrong magic word in mini header!");
-      Warning("ReadMiniHeader", "skipping %d bytes\n"
-	      " run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
-	      fEnd - fPosition, fSubEvent->eventRunNb, 
-	      fSubEvent->eventId[0], fSubEvent->eventId[1],
-	      fSubEvent->eventLdcId, fSubEvent->eventGdcId);
-      fCount = 0;
-      fPosition = fEnd;
-      fErrorCode = kErrMiniMagic;
-      continue;
-    }
-    fCount = fMiniHeader->fSize;
+    if (fMiniHeader) {
+      fCount = fMiniHeader->fSize;
 
-    // check consistency of data size in the mini header and in the sub event
-    if (fPosition + fCount > fEnd) {
-      Error("ReadMiniHeader", "size in mini header exceeds event size!");
-      Warning("ReadMiniHeader", "skipping %d bytes\n"
-	      " run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
-	      fEnd - fPosition, fSubEvent->eventRunNb, 
-	      fSubEvent->eventId[0], fSubEvent->eventId[1],
-	      fSubEvent->eventLdcId, fSubEvent->eventGdcId);
-      fCount = 0;
-      fPosition = fEnd;
-      fErrorCode = kErrSize;
-      continue;
+      // check consistency of data size in the mini header and in the sub event
+      if (fPosition + fCount > fEnd) {
+	Error("ReadHeader", "size in mini header exceeds event size!");
+	Warning("ReadHeader", "skipping %d bytes\n"
+		" run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
+		fEnd - fPosition, fSubEvent->eventRunNb, 
+		fSubEvent->eventId[0], fSubEvent->eventId[1],
+		fSubEvent->eventLdcId, fSubEvent->eventGdcId);
+	fCount = 0;
+	fPosition = fEnd;
+	fErrorCode = kErrSize;
+	continue;
+      }
+
+    } else {
+      fCount = fEnd - fPosition;
     }
 
   } while (!IsSelected());
@@ -263,7 +426,7 @@ Bool_t AliRawReaderDate::ReadNextData(UChar_t*& data)
 
   fErrorCode = 0;
   while (fCount == 0) {
-    if (!ReadMiniHeader()) return kFALSE;
+    if (!ReadHeader()) return kFALSE;
   }
   data = fPosition;
   fPosition += fCount;  

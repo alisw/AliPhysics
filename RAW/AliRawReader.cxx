@@ -20,13 +20,13 @@
 //
 // The derived classes, which operate on concrete raw data formats,
 // should implement
-// - ReadMiniHeader to read the next mini header
+// - ReadHeader to read the next (mini or equipment) header
 // - ReadNextData to read the next raw data block (=1 DDL)
 // - ReadNext to read a given number of bytes
 // - several getters like GetType
 //
 // Sequential access to the raw data is provided by the methods
-// ReadMiniHeader, ReadNextData, ReadNextInt, ReadNextShort, ReadNextChar
+// ReadHeader, ReadNextData, ReadNextInt, ReadNextShort, ReadNextChar
 //
 // If only data from a specific detector (and a given range of DDL numbers)
 // should be read, this can be achieved by the Select method.
@@ -41,33 +41,29 @@
 ClassImp(AliRawReader)
 
 
-AliRawReader::AliRawReader()
+AliRawReader::AliRawReader() :
+  fMiniHeader(NULL),
+  fCount(0),
+  fSelectDetectorID(-1),
+  fSelectMinDDLID(-1),
+  fSelectMaxDDLID(-1),
+  fErrorCode(0)
 {
 // default constructor: initialize data members
 
-  fMiniHeader = NULL;
-  fCount = 0;
-
-  fSelectDetectorID = -1;
-  fSelectMinDDLID = -1;
-  fSelectMaxDDLID = -1;
-
-  fErrorCode = 0;
 }
 
 AliRawReader::AliRawReader(const AliRawReader& rawReader) :
-  TObject(rawReader)
+  TObject(rawReader),
+  fMiniHeader(rawReader.fMiniHeader),
+  fCount(rawReader.fCount),
+  fSelectDetectorID(rawReader.fSelectDetectorID),
+  fSelectMinDDLID(rawReader.fSelectMinDDLID),
+  fSelectMaxDDLID(rawReader.fSelectMaxDDLID),
+  fErrorCode(0)
 {
 // copy constructor
 
-  fMiniHeader = rawReader.fMiniHeader;
-  fCount = rawReader.fCount;
-
-  fSelectDetectorID = rawReader.fSelectDetectorID;
-  fSelectMinDDLID = rawReader.fSelectMinDDLID;
-  fSelectMaxDDLID = rawReader.fSelectMaxDDLID;
-
-  fErrorCode = 0;
 }
 
 AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
@@ -103,6 +99,7 @@ Bool_t AliRawReader::IsSelected() const
 // apply the selection (if any)
 
   if (fSelectDetectorID >= 0) {
+    if (!fMiniHeader) return kFALSE;
     if (fMiniHeader->fDetectorID != fSelectDetectorID) return kFALSE;
     if ((fSelectMinDDLID >= 0) && (fMiniHeader->fDDLID < fSelectMinDDLID))
       return kFALSE;
@@ -118,6 +115,7 @@ Bool_t AliRawReader::CheckMiniHeader(AliMiniHeader* miniHeader) const
 // check the magic number of the mini header
 
   if (!miniHeader) miniHeader = fMiniHeader;
+  if (!miniHeader) return kFALSE;
   if ((miniHeader->fMagicWord[2] != 0x12) ||
       (miniHeader->fMagicWord[1] != 0x34) ||
       (miniHeader->fMagicWord[0] != 0x56)) {
@@ -132,7 +130,7 @@ Bool_t AliRawReader::ReadNextInt(UInt_t& data)
 // returns kFALSE if the data could not be read
 
   while (fCount == 0) {
-    if (!ReadMiniHeader()) return kFALSE;
+    if (!ReadHeader()) return kFALSE;
   }
   if (fCount < (Int_t) sizeof(data)) {
     Error("ReadNextInt", 
@@ -152,7 +150,7 @@ Bool_t AliRawReader::ReadNextShort(UShort_t& data)
 // returns kFALSE if the data could not be read
 
   while (fCount == 0) {
-    if (!ReadMiniHeader()) return kFALSE;
+    if (!ReadHeader()) return kFALSE;
   }
   if (fCount < (Int_t) sizeof(data)) {
     Error("ReadNextShort", 
@@ -172,7 +170,7 @@ Bool_t AliRawReader::ReadNextChar(UChar_t& data)
 // returns kFALSE if the data could not be read
 
   while (fCount == 0) {
-    if (!ReadMiniHeader()) return kFALSE;
+    if (!ReadHeader()) return kFALSE;
   }
   if (!ReadNext((UChar_t*) &data, sizeof(data))) {
     Error("ReadNextChar", "could not read data!");

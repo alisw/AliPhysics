@@ -23,15 +23,28 @@ class AliRawReader: public TObject {
     virtual const UInt_t* GetTriggerPattern() const = 0;
     virtual const UInt_t* GetDetectorPattern() const = 0;
     virtual const UInt_t* GetAttributes() const = 0;
+    virtual UInt_t   GetLDCId() const = 0;
     virtual UInt_t   GetGDCId() const = 0;
 
-    Int_t            GetDataSize() const {return fMiniHeader->fSize;};
-    Int_t            GetDetectorID() const {return fMiniHeader->fDetectorID;};
-    Int_t            GetDDLID() const {return fMiniHeader->fDDLID;};
-    Int_t            GetVersion() const {return fMiniHeader->fVersion;};
-    Bool_t           IsCompressed() const {return fMiniHeader->fCompressionFlag != 0;};
+    virtual Int_t    GetEquipmentSize() const = 0;
+    virtual Int_t    GetEquipmentType() const = 0;
+    virtual Int_t    GetEquipmentId() const = 0;
+    virtual const UInt_t* GetEquipmentAttributes() const = 0;
+    virtual Int_t    GetEquipmentElementSize() const = 0;
 
-    virtual Bool_t   ReadMiniHeader() = 0;
+    Int_t            GetDataSize() const 
+      {if (fMiniHeader) return fMiniHeader->fSize; else return 0;};
+    Int_t            GetDetectorID() const 
+      {if (fMiniHeader) return fMiniHeader->fDetectorID; else return -1;};
+    Int_t            GetDDLID() const 
+      {if (fMiniHeader) return fMiniHeader->fDDLID; else return -1;};
+    Int_t            GetVersion() const 
+      {if (fMiniHeader) return fMiniHeader->fVersion; else return -1;};
+    Bool_t           IsCompressed() const 
+      {if (fMiniHeader) return fMiniHeader->fCompressionFlag != 0; 
+      else return kFALSE;};
+
+    virtual Bool_t   ReadHeader() = 0;
     virtual Bool_t   ReadNextData(UChar_t*& data) = 0;
     virtual Bool_t   ReadNextInt(UInt_t& data);
     virtual Bool_t   ReadNextShort(UShort_t& data);
