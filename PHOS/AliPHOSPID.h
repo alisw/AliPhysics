@@ -19,6 +19,8 @@ class TClonesArray ;
 
 // --- Standard library ---
 
+#include <iostream>
+
 // --- AliRoot header files ---
 
 class AliPHOSGeometry ;
