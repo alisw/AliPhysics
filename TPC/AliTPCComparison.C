@@ -3,16 +3,17 @@
   #include "AliTPCtracker.h"
 #endif
 
-struct GoodTrack {
+struct GoodTrackTPC {
   Int_t fEventN; //event number
   Int_t lab;
   Int_t code;
   Float_t px,py,pz;
   Float_t x,y,z;
 };
-Int_t good_tracks(GoodTrack *gt, Int_t max, Int_t eventn=1);
 
 Int_t AliTPCComparison(Int_t eventn=1) {
+   Int_t good_tracks_tpc(GoodTrackTPC *gt, Int_t max, Int_t eventn=1);
+
    cerr<<"Doing comparison...\n";
    Int_t i;
    gBenchmark->Start("AliTPCComparison");
@@ -35,12 +36,13 @@ Int_t AliTPCComparison(Int_t eventn=1) {
    // Load clusters
    eventptr[0]=0;
    eventptr[1]=0;
+   char   tname[100];  //Y.B.
    for (Int_t event=0;event<eventn; event++){
      cf->cd();
      tracker = new AliTPCtracker(digp,event);
      tracker->LoadInnerSectors();
      tracker->LoadOuterSectors();
-     char   tname[100];
+     //Y.B. char   tname[100];
      if (eventn==-1) {
        sprintf(tname,"TreeT_TPC");
      }
@@ -64,16 +66,16 @@ Int_t AliTPCComparison(Int_t eventn=1) {
      }   
      eventptr[event+1] = nentr;  //store end of the event
      delete tracker;
+     delete tracktree; //Thanks to Mariana Bondila
    }
    tf->Close();
+   delete digp; //Thanks to Mariana Bondila
    cf->Close();
   
-   //MI change for a moment
-
 
 /////////////////////////////////////////////////////////////////////////
-   //   GoodTrack gt[15000];
-   GoodTrack gt[45000];
+   const Int_t MAX=45000;
+   GoodTrackTPC gt[MAX];
 
    Int_t ngood=0;
    ifstream in("good_tracks_tpc");
@@ -84,7 +86,7 @@ Int_t AliTPCComparison(Int_t eventn=1) {
                  gt[ngood].x >>gt[ngood].y >>gt[ngood].z) {
          ngood++;
          cerr<<ngood<<'\r';
-         if (ngood==45000) {
+         if (ngood==MAX) {
             cerr<<"Too many good tracks !\n";
             break;
          }
@@ -92,7 +94,7 @@ Int_t AliTPCComparison(Int_t eventn=1) {
       if (!in.eof()) cerr<<"Read error (good_tracks_tpc) !\n";
    } else {
       cerr<<"Marking good tracks (this will take a while)...\n";
-      ngood=good_tracks(gt,45000,eventn);   //mi change
+      ngood=good_tracks_tpc(gt,MAX,eventn);   //mi change
       ofstream out("good_tracks_tpc");
       if (out) {
          for (Int_t ngd=0; ngd<ngood; ngd++)            
@@ -102,11 +104,10 @@ Int_t AliTPCComparison(Int_t eventn=1) {
       } else cerr<<"Can not open file (good_tracks_tpc) !\n";
       out.close();
 
-      /*
       cerr<<"Preparing tracks for matching with the ITS...\n";
       tarray.Sort();
       tf=TFile::Open("AliTPCtracks.root","recreate");
-      tracktree=new TTree("TPCf","Tree with TPC tracks");
+      tracktree=new TTree(tname,"Tree with \"forward\" TPC tracks");
       tracktree->Branch("tracks","AliTPCtrack",&iotrack,32000,0);
       for (i=0; i<nentr; i++) {
           iotrack=(AliTPCtrack*)tarray.UncheckedAt(i);
@@ -114,7 +115,6 @@ Int_t AliTPCComparison(Int_t eventn=1) {
       }
       tracktree->Write();
       tf->Close();
-      */
    }
    cerr<<"Number of good tracks : "<<ngood<<endl;
 
@@ -335,10 +335,10 @@ Int_t AliTPCComparison(Int_t eventn=1) {
 }
 
 
-Int_t good_tracks(GoodTrack *gt, Int_t max, Int_t eventn) {
+Int_t good_tracks_tpc(GoodTrackTPC *gt, Int_t max, Int_t eventn) {
   //eventn  - number of events in file
 
-   TFile *file=TFile::Open("rfio:galice.root");
+   TFile *file=TFile::Open("galice.root");
    if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}
 
    if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
@@ -388,7 +388,8 @@ Int_t good_tracks(GoodTrack *gt, Int_t max, Int_t eventn) {
 	 AliTPCClustersArray *ca=new AliTPCClustersArray;
 	 ca->Setup(digp);
 	 ca->SetClusterType("AliTPCcluster");
-	 ca->ConnectTree("Segment Tree");
+	 //ca->ConnectTree("Segment Tree");
+	 ca->ConnectTree("TreeC_TPC_0");
 	 Int_t nrows=Int_t(ca->GetTree()->GetEntries());
 	 for (Int_t n=0; n<nrows; n++) {
 	   AliSegmentID *s=ca->LoadEntry(n);
@@ -449,6 +450,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max, Int_t eventn) {
 	 }
        }
        delete[] count;
+       delete TD; //Thanks to Mariana Bondila
        break;
      default:
        cerr<<"Invalid TPC version !\n";
@@ -502,7 +504,6 @@ Int_t good_tracks(GoodTrack *gt, Int_t max, Int_t eventn) {
      delete[] good;
    }
    delete gAlice; gAlice=0;
-
    file->Close();
    gBenchmark->Stop("AliTPCComparison");
    gBenchmark->Show("AliTPCComparison");   

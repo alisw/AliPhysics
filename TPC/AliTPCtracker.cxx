@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/07/23 12:01:30  hristov
+Initialisation added
+
 Revision 1.12  2001/07/20 14:32:44  kowal2
 Processing of many events possible now
 
@@ -60,15 +63,6 @@ Splitted from AliTPCtracking
 #include "AliTPCcluster.h"
 #include "AliTPCParam.h"
 #include "AliTPCClustersRow.h"
-
-
-AliTPCtracker::AliTPCtracker(const AliTPCParam *par): 
-fkNIS(par->GetNInnerSector()/2), 
-fkNOS(par->GetNOuterSector()/2)
-{;
-//MI change only provisore - need change in the ITS code which depend on it
-}
-
 
 //_____________________________________________________________________________
 AliTPCtracker::AliTPCtracker(const AliTPCParam *par, Int_t eventn): 
@@ -595,6 +589,9 @@ Int_t AliTPCtracker::ReadSeeds(const TFile *inp) {
   }
   
   delete seed;
+
+  delete seedTree; //Thanks to Mariana Bondila
+
   savedir->cd();
 
   return 0;
@@ -721,7 +718,7 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   }
 
   in->cd();
-  TTree *bckTree=(TTree*)in->Get("ITSb");
+  TTree *bckTree=(TTree*)in->Get("TreeT_ITSb_0");
   if (!bckTree) {
      cerr<<"AliTPCtracker::PropagateBack() ";
      cerr<<"can't get a tree with back propagated ITS tracks !\n";
@@ -730,7 +727,7 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   AliTPCtrack *bckTrack=new AliTPCtrack; 
   bckTree->SetBranchAddress("tracks",&bckTrack);
 
-  TTree *tpcTree=(TTree*)in->Get("TPCf");
+  TTree *tpcTree=(TTree*)in->Get("TreeT_TPC_0");
   if (!tpcTree) {
      cerr<<"AliTPCtracker::PropagateBack() ";
      cerr<<"can't get a tree with TPC tracks !\n";
@@ -764,7 +761,7 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   }
 
   out->cd();
-  TTree backTree("TPCb","Tree with back propagated TPC tracks");
+  TTree backTree("TreeT_TPCb_0","Tree with back propagated TPC tracks");
   AliTPCtrack *otrack=0;
   backTree.Branch("tracks","AliTPCtrack",&otrack,32000,0);
 
@@ -828,6 +825,9 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
 
   delete bckTrack;
   delete tpcTrack;
+
+  delete bckTree; //Thanks to Mariana Bondila
+  delete tpcTree; //Thanks to Mariana Bondila
 
   return 0;
 }

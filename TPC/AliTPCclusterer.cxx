@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/08/30 09:28:48  hristov
+TTree names are explicitly set via SetName(name) and then Write() is called
+
 Revision 1.5  2001/07/20 14:32:44  kowal2
 Processing of many events possible now
 
@@ -280,5 +283,7 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of, Int_t e
   carray.GetTree()->SetName(cname);
   carray.GetTree()->Write();
   savedir->cd();
+
+  delete t;  //Thanks to Mariana Bondila
 }
 

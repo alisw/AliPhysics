@@ -22,8 +22,7 @@ class AliTPCParam;
 class AliTPCtracker : public AliTracker {
 public:
    AliTPCtracker():AliTracker(),fkNIS(0),fkNOS(0) {}
-   AliTPCtracker(const AliTPCParam *par, Int_t eventn);
-  AliTPCtracker(const AliTPCParam *par);
+   AliTPCtracker(const AliTPCParam *par, Int_t eventn=0);
   ~AliTPCtracker();
 
    Int_t ReadSeeds(const TFile *in);

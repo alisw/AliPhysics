@@ -28,8 +28,10 @@ Int_t AliTPCFindTracks(Int_t eventn=1) {
    }
    timer.Stop(); timer.Print();
  
+   delete par; //Thanks to Mariana Bondila
+
    in->Close();
    out->Close();
 
-   return 1;
+   return 0;
 }
