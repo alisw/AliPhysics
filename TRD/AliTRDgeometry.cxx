@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/11/06 17:19:41  cblume
+Add detailed geometry and simple simulator
+
 Revision 1.13  2001/08/02 08:30:45  cblume
 Fix positions of cooling material
 
@@ -116,12 +119,16 @@ ClassImp(AliTRDgeometry)
   //
   // Dimensions of the detector
   //
+
+  // Inner and outer radius of the mother volumes 
   const Float_t AliTRDgeometry::fgkRmin    = 294.0;
   const Float_t AliTRDgeometry::fgkRmax    = 368.0;
 
+  // Upper and lower length of the mother volumes 
   const Float_t AliTRDgeometry::fgkZmax1   = 378.35; 
   const Float_t AliTRDgeometry::fgkZmax2   = 302.0; 
 
+  // Parameter of the BTR mother volumes 
   const Float_t AliTRDgeometry::fgkSheight =  74.0; 
   const Float_t AliTRDgeometry::fgkSwidth1 =  99.613;
   const Float_t AliTRDgeometry::fgkSwidth2 = 125.707;
@@ -129,45 +136,73 @@ ClassImp(AliTRDgeometry)
   const Float_t AliTRDgeometry::fgkSlenTR2 = 313.5; 
   const Float_t AliTRDgeometry::fgkSlenTR3 = 159.5;  
 
-  const Float_t AliTRDgeometry::fgkCheight =  11.0;  
-  const Float_t AliTRDgeometry::fgkCspace  =   1.6;
-  const Float_t AliTRDgeometry::fgkCathick =   1.0; 
-  const Float_t AliTRDgeometry::fgkCcthick =   1.0;
-  const Float_t AliTRDgeometry::fgkCaframe =   2.675; 
-  const Float_t AliTRDgeometry::fgkCcframe = AliTRDgeometry::fgkCheight 
-                                           - AliTRDgeometry::fgkCaframe;
+  // Height of different chamber parts
+  // Radiator
+  const Float_t AliTRDgeometry::fgkCraH    =   4.8; 
+  // Drift region
+  const Float_t AliTRDgeometry::fgkCdrH    =   3.0;
+  // Amplification region
+  const Float_t AliTRDgeometry::fgkCamH    =   0.7;
+  // Readout
+  const Float_t AliTRDgeometry::fgkCroH    =   2.0;
+  // Total height
+  const Float_t AliTRDgeometry::fgkCH      = AliTRDgeometry::fgkCraH
+                                           + AliTRDgeometry::fgkCdrH
+                                           + AliTRDgeometry::fgkCamH
+                                           + AliTRDgeometry::fgkCroH;  
+
+  // Vertical spacing of the chambers
+  const Float_t AliTRDgeometry::fgkVspace  =   2.1;
+
+  // Horizontal spacing of the chambers
+  const Float_t AliTRDgeometry::fgkHspace  =   2.0;
+
+  // Thicknesses of different parts of the chamber frame
+  // Lower aluminum frame
+  const Float_t AliTRDgeometry::fgkCalT    =   0.3;
+  // Lower G10 frame sides
+  const Float_t AliTRDgeometry::fgkCclsT   =   0.3;
+  // Lower G10 frame front
+  const Float_t AliTRDgeometry::fgkCclfT   =   1.0;
+  // Upper G10 frame
+  const Float_t AliTRDgeometry::fgkCcuT    =   0.9;
+  // Upper Al frame
+  const Float_t AliTRDgeometry::fgkCauT    =   1.5;
+
+  // Additional width of the readout chamber frames
+  const Float_t AliTRDgeometry::fgkCroW    =   0.9;
+
+  // Difference of outer chamber width and pad plane width
+  const Float_t AliTRDgeometry::fgkCpadW   =   1.0;
+  const Float_t AliTRDgeometry::fgkRpadW   =   1.5;
 
   //
   // Thickness of the the material layers
   //
   const Float_t AliTRDgeometry::fgkRaThick = 0.3646;  
   const Float_t AliTRDgeometry::fgkMyThick = 0.005;
-  const Float_t AliTRDgeometry::fgkXeThick = 3.5;
-  const Float_t AliTRDgeometry::fgkDrThick = 3.0;
-  const Float_t AliTRDgeometry::fgkAmThick = AliTRDgeometry::fgkXeThick 
-                                           - AliTRDgeometry::fgkDrThick;
+  const Float_t AliTRDgeometry::fgkDrThick = AliTRDgeometry::fgkCdrH;    
+  const Float_t AliTRDgeometry::fgkAmThick = AliTRDgeometry::fgkCamH;
+  const Float_t AliTRDgeometry::fgkXeThick = AliTRDgeometry::fgkDrThick
+                                           + AliTRDgeometry::fgkAmThick;
   const Float_t AliTRDgeometry::fgkCuThick = 0.001; 
   const Float_t AliTRDgeometry::fgkSuThick = 0.06; 
   const Float_t AliTRDgeometry::fgkFeThick = 0.0044; 
   const Float_t AliTRDgeometry::fgkCoThick = 0.02;
-//const Float_t AliTRDgeometry::fgkWaThick = 0.01;
   const Float_t AliTRDgeometry::fgkWaThick = 0.02;
 
   //
   // Position of the material layers
   //
-  const Float_t AliTRDgeometry::fgkRaZpos  = -1.74;
-  const Float_t AliTRDgeometry::fgkMyZpos  =  0.6550;
-  const Float_t AliTRDgeometry::fgkDrZpos  =  2.1600;
-  const Float_t AliTRDgeometry::fgkAmZpos  =  3.9100;
-  const Float_t AliTRDgeometry::fgkCuZpos  = -1.3370; 
+  const Float_t AliTRDgeometry::fgkRaZpos  = -1.50;
+  const Float_t AliTRDgeometry::fgkMyZpos  =  0.895;
+  const Float_t AliTRDgeometry::fgkDrZpos  =  2.4;
+  const Float_t AliTRDgeometry::fgkAmZpos  =  0.0;
+  const Float_t AliTRDgeometry::fgkCuZpos  = -0.9995;
   const Float_t AliTRDgeometry::fgkSuZpos  =  0.0000;
-//const Float_t AliTRDgeometry::fgkFeZpos  =  1.3053;
-//const Float_t AliTRDgeometry::fgkCoZpos  =  1.3175;
-//const Float_t AliTRDgeometry::fgkWaZpos  =  1.3325;
-  const Float_t AliTRDgeometry::fgkFeZpos  =  1.2853;
-  const Float_t AliTRDgeometry::fgkCoZpos  =  1.2975;
-  const Float_t AliTRDgeometry::fgkWaZpos  =  1.3175;
+  const Float_t AliTRDgeometry::fgkFeZpos  =  0.0322;
+  const Float_t AliTRDgeometry::fgkCoZpos  =  0.97;
+  const Float_t AliTRDgeometry::fgkWaZpos  =  0.99;
 
 //_____________________________________________________________________________
 AliTRDgeometry::AliTRDgeometry():AliGeometry()
@@ -195,17 +230,6 @@ void AliTRDgeometry::Init()
   //
   // Initializes the geometry parameter
   //
-
-  Int_t isect;
-
-  // The width of the chambers
-  fCwidth[0] =  99.6;
-  fCwidth[1] = 104.1;
-  fCwidth[2] = 108.5;
-  fCwidth[3] = 112.9;
-  fCwidth[4] = 117.4;
-  fCwidth[5] = 121.8;
-
   // The maximum number of pads
   // and the position of pad 0,0,0 
   // 
@@ -229,8 +253,44 @@ void AliTRDgeometry::Init()
   // closest to the readout !!!
   //
 
-  // The pad column (rphi-direction)  
-  SetNColPad(96);
+  Int_t icham;
+  Int_t iplan;
+  Int_t isect;
+
+  // The outer width of the chambers
+  fCwidth[0] =  95.6;
+  fCwidth[1] = 100.1;
+  fCwidth[2] = 104.5;
+  fCwidth[3] = 108.9;
+  fCwidth[4] = 113.4;
+  fCwidth[5] = 117.8;
+
+  // The outer lengths of the chambers
+  Float_t length[kNplan][kNcham]   = { { 123.5, 123.5, 110.0, 123.5, 123.5 }
+				     , { 131.0, 131.0, 110.0, 131.0, 131.0 }
+				     , { 134.5, 138.5, 110.0, 138.5, 134.5 }
+				     , { 142.0, 146.0, 110.0, 146.0, 142.0 }
+				     , { 142.0, 153.0, 110.0, 153.0, 142.0 }
+                                     , { 134.0, 160.5, 110.0, 160.5, 134.0 } };
+
+  for (icham = 0; icham < kNcham; icham++) {
+    for (iplan = 0; iplan < kNplan; iplan++) {
+      fClength[iplan][icham]   = length[iplan][icham];
+      fClengthPH[iplan][icham] = 0.0;
+      fClengthRH[iplan][icham] = 0.0;
+    }
+  }
+
+  // The pad size in column direction (rphi-direction)  
+  SetColPadSize(0,0.65);
+  SetColPadSize(1,0.68);
+  SetColPadSize(2,0.71);
+  SetColPadSize(3,0.74);
+  SetColPadSize(4,0.77);
+  SetColPadSize(5,0.80);
+
+  // The pad row (z-direction)
+  SetNRowPad();
 
   // The number of time bins. Default is 100 ns timbin size
   SetNTimeBin(15);
@@ -257,17 +317,75 @@ void AliTRDgeometry::Init()
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::SetNColPad(const Int_t npad)
+void AliTRDgeometry::SetNRowPad(const Int_t p, const Int_t c, const Int_t npad)
 {
   //
-  // Redefines the number of pads in column direction
+  // Redefines the number of pads in raw direction for
+  // a given plane and chamber number
   //
 
-  for (Int_t iplan = 0; iplan < fgkNplan; iplan++) {
-    fColMax[iplan]     = npad;
-    fColPadSize[iplan] = (fCwidth[iplan] - 2. * fgkCcthick) / fColMax[iplan];
-    fCol0[iplan]       = -fCwidth[iplan]/2. + fgkCcthick;
+  for (Int_t isect = 0; isect < fgkNsect; isect++) {
+
+    fRowMax[p][c][isect] = npad;  
+ 
+    fRowPadSize[p][c][isect] = (fClength[p][c] - 2.*fgkRpadW)
+ 	                     / ((Float_t) npad);
+
   }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDgeometry::SetNRowPad()
+{
+  //
+  // Defines the number of pads in row direction
+  //
+
+  Int_t isect;
+  Int_t icham;
+  Int_t iplan;
+
+  Int_t rowMax[kNplan][kNcham] = { { 16, 16, 12, 16, 16 }
+                                 , { 16, 16, 12, 16, 16 }
+                                 , { 16, 16, 12, 16, 16 }
+                                 , { 16, 16, 12, 16, 16 }
+                                 , { 14, 16, 12, 16, 14 }
+                                 , { 13, 16, 12, 16, 13 } };
+
+  for (isect = 0; isect < kNsect; isect++) {
+    for (icham = 0; icham < kNcham; icham++) {
+      for (iplan = 0; iplan < kNplan; iplan++) {
+
+        fRowMax[iplan][icham][isect]     = rowMax[iplan][icham];
+ 
+        fRowPadSize[iplan][icham][isect] = (fClength[iplan][icham] - 2.*fgkRpadW)
+ 	                                 / ((Float_t) rowMax[iplan][icham]);
+
+        Float_t row0 = fgkRpadW - fClength[iplan][0] 
+                                - fClength[iplan][1] 
+                                - fClength[iplan][2]/2.;
+        for (Int_t ic = 0; ic < icham; ic++) {
+          row0 += fClength[iplan][ic];
+	}
+        fRow0[iplan][icham][isect]       = row0;
+
+      }
+    }
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDgeometry::SetColPadSize(const Int_t p, const Float_t s)
+{
+  //
+  // Redefines the pad size in column direction
+  //
+
+  fColPadSize[p] = s;
+  fCol0[p]       = - fCwidth[p]/2. + fgkCpadW;
+  fColMax[p]     = ((Int_t) ((fCwidth[p] - 2. * fgkCpadW) / s)); 
 
 }
 
@@ -283,8 +401,8 @@ void AliTRDgeometry::SetNTimeBin(const Int_t nbin)
   fTimeMax     = nbin;
   fTimeBinSize = fgkDrThick / ((Float_t) fTimeMax);
   for (Int_t iplan = 0; iplan < fgkNplan; iplan++) {
-    fTime0[iplan]  = fgkRmin + fgkCcframe/2. + fgkDrZpos + 0.5 * fgkDrThick
-                             + iplan * (fgkCheight + fgkCspace);
+    fTime0[iplan]  = fgkRmin + fgkCraH + fgkCdrH
+                             + iplan * (fgkCH + fgkVspace);
   }
 
 }
@@ -293,153 +411,8 @@ void AliTRDgeometry::SetNTimeBin(const Int_t nbin)
 void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
 {
   //
-  // Create the TRD geometry
+  // Create TRD geometry
   //
-  // Author: Christoph Blume (C.Blume@gsi.de) 20/07/99
-  //
-  // The volumes:
-  //    TRD1-3     (Air)   --- The TRD mother volumes for one sector. 
-  //                           To be placed into the spaceframe.
-  //
-  //    UAFI(/M/O) (Al)    --- The aluminum frame of the inner(/middle/outer) chambers (readout)
-  //    UCFI(/M/O) (C)     --- The carbon frame of the inner(/middle/outer) chambers 
-  //                           (driftchamber + radiator)
-  //    UAII(/M/O) (Air)   --- The inner part of the readout of the inner(/middle/outer) chambers
-  //    UFII(/M/O) (Air)   --- The inner part of the chamner and radiator of the 
-  //                           inner(/middle/outer) chambers
-  //
-  // The material layers in one chamber:
-  //    UL03       (Rohacell) --- The radiator
-  //    UL04       (Mylar)    --- Entrance window to the driftvolume and HV-cathode
-  //    UL05       (Xe)       --- The driftvolume
-  //    UL06       (Xe)       --- The amplification region
-  //    
-  //    UL07       (Cu)       --- The pad plane
-  //    UL08       (G10)      --- The Nomex honeycomb support structure
-  //    UL09       (Cu)       --- FEE and signal lines
-  //    UL10       (Al)       --- The cooling devices
-  //    UL11       (Water)    --- The cooling water
-
-  const Int_t kNparCha = 3;
-
-  Float_t parDum[3];
-  Float_t parCha[kNparCha];
-
-  Float_t xpos, ypos, zpos;
-
-  // The aluminum frames - readout + electronics (Al)
-  // The inner chambers
-  gMC->Gsvolu("UAFI","BOX ",idtmed[1301-1],parDum,0);
-  // The middle chambers
-  gMC->Gsvolu("UAFM","BOX ",idtmed[1301-1],parDum,0);
-  // The outer chambers
-  gMC->Gsvolu("UAFO","BOX ",idtmed[1301-1],parDum,0);
-
-  // The inner part of the aluminum frames (Air)
-  // The inner chambers
-  gMC->Gsvolu("UAII","BOX ",idtmed[1302-1],parDum,0);
-  // The middle chambers
-  gMC->Gsvolu("UAIM","BOX ",idtmed[1302-1],parDum,0);
-  // The outer chambers
-  gMC->Gsvolu("UAIO","BOX ",idtmed[1302-1],parDum,0);
-
-  // The carbon frames - radiator + driftchamber (C)
-  // The inner chambers
-  gMC->Gsvolu("UCFI","BOX ",idtmed[1307-1],parDum,0);
-  // The middle chambers
-  gMC->Gsvolu("UCFM","BOX ",idtmed[1307-1],parDum,0);
-  // The outer chambers
-  gMC->Gsvolu("UCFO","BOX ",idtmed[1307-1],parDum,0);
-
-  // The inner part of the carbon frames (Air)
-  // The inner chambers
-  gMC->Gsvolu("UCII","BOX ",idtmed[1302-1],parDum,0);
-  // The middle chambers
-  gMC->Gsvolu("UCIM","BOX ",idtmed[1302-1],parDum,0);
-  // The outer chambers
-  gMC->Gsvolu("UCIO","BOX ",idtmed[1302-1],parDum,0);
-
-  // The material layers inside the chambers
-  parCha[0] = -1.;
-  parCha[1] = -1.;
-  // Rohacell layer (radiator)
-  parCha[2] = fgkRaThick/2;
-  gMC->Gsvolu("UL03","BOX ",idtmed[1315-1],parCha,kNparCha);
-  // Mylar layer (entrance window + HV cathode) 
-  parCha[2] = fgkMyThick/2;
-  gMC->Gsvolu("UL04","BOX ",idtmed[1308-1],parCha,kNparCha);
-  // Xe/Isobutane layer (drift volume) 
-  parCha[2] = fgkDrThick/2.;
-  gMC->Gsvolu("UL05","BOX ",idtmed[1309-1],parCha,kNparCha);
-  // Xe/Isobutane layer (amplification volume)
-  parCha[2] = fgkAmThick/2.;
-  gMC->Gsvolu("UL06","BOX ",idtmed[1309-1],parCha,kNparCha);
-  
-  // Cu layer (pad plane)
-  parCha[2] = fgkCuThick/2;
-  gMC->Gsvolu("UL07","BOX ",idtmed[1305-1],parCha,kNparCha);
-  // G10 layer (support structure)
-  parCha[2] = fgkSuThick/2;
-  gMC->Gsvolu("UL08","BOX ",idtmed[1313-1],parCha,kNparCha);
-  // Cu layer (FEE + signal lines)
-  parCha[2] = fgkFeThick/2;
-  gMC->Gsvolu("UL09","BOX ",idtmed[1305-1],parCha,kNparCha);
-  // Al layer (cooling devices)
-  parCha[2] = fgkCoThick/2;
-  gMC->Gsvolu("UL10","BOX ",idtmed[1301-1],parCha,kNparCha);
-  // Water layer (cooling)
-  parCha[2] = fgkWaThick/2;
-  gMC->Gsvolu("UL11","BOX ",idtmed[1314-1],parCha,kNparCha);
-
-  // Position the layers in the chambers
-  xpos = 0;
-  ypos = 0;
-
-  // Rohacell layer (radiator)
-  zpos = fgkRaZpos;
-  gMC->Gspos("UL03",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL03",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL03",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-  // Mylar layer (entrance window + HV cathode)   
-  zpos = fgkMyZpos;
-  gMC->Gspos("UL04",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL04",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL04",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-  // Xe/Isobutane layer (drift volume) 
-  zpos = fgkDrZpos;
-  gMC->Gspos("UL05",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL05",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL05",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-  // Xe/Isobutane layer (amplification volume)
-  zpos = fgkAmZpos;
-  gMC->Gspos("UL06",1,"UCII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL06",2,"UCIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL06",3,"UCIO",xpos,ypos,zpos,0,"ONLY");
-  // Cu layer (pad plane)
-  zpos = fgkCuZpos;
-  gMC->Gspos("UL07",1,"UAII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL07",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL07",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
-  // G10 layer (support structure)
-  zpos = fgkSuZpos;
-  gMC->Gspos("UL08",1,"UAII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL08",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL08",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
-  // Cu layer (FEE + signal lines)
-  zpos = fgkFeZpos; 
-  gMC->Gspos("UL09",1,"UAII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL09",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL09",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
-  // Al layer (cooling devices)
-  zpos = fgkCoZpos;
-  gMC->Gspos("UL10",1,"UAII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL10",2,"UAIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL10",3,"UAIO",xpos,ypos,zpos,0,"ONLY");
-  // Water layer (cooling)
-  zpos = fgkWaZpos;
-  gMC->Gspos("UL11",1,"UAII",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL11",1,"UAIM",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("UL11",1,"UAIO",xpos,ypos,zpos,0,"ONLY");
 
 }
 
@@ -525,6 +498,17 @@ Bool_t AliTRDgeometry::RotateBack(Int_t d, Float_t *rot, Float_t *pos) const
   pos[2] =  rot[2];
 
   return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDgeometry::GetDetectorSec(const Int_t p, const Int_t c) const
+{
+  //
+  // Convert plane / chamber into detector number for one single sector
+  //
+
+  return (p + c * fgkNplan);
 
 }
 

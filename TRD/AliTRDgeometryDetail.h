@@ -18,7 +18,7 @@ class AliTRDgeometryDetail : public AliTRDgeometryFull {
           void    CreateReadout(Int_t *idtmed);
           void    CreateCooling(Int_t *idtmed);
           void    PositionReadout(Int_t ipla, Int_t icha);
-          void    PositionCooling(Int_t ipla, Int_t icha);
+          void    PositionCooling(Int_t ipla, Int_t icha, Int_t idrotm);
           Int_t   IsVersion() const { return 2; };
           void    Init();
 

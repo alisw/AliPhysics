@@ -35,10 +35,13 @@ class AliTRDgeometry : public AliGeometry {
   static  Float_t  Zmax2()   { return fgkZmax2; };
 
   static  Float_t  Cwidcha() { return (fgkSwidth2 - fgkSwidth1) 
-                             / fgkSheight * (fgkCheight + fgkCspace); };
-  static  Float_t  Cheight() { return fgkCheight; };
-  static  Float_t  Cspace()  { return fgkCspace;  };
-  static  Float_t  Ccframe() { return fgkCcframe; };
+                             / fgkSheight * (fgkCH + fgkVspace); };
+  static  Float_t  Cheight() { return fgkCH;      };
+  static  Float_t  Cspace()  { return fgkVspace;  };
+  static  Float_t  CraHght() { return fgkCraH;    };
+  static  Float_t  CdrHght() { return fgkCdrH;    };
+  static  Float_t  CamHght() { return fgkCamH;    };
+  static  Float_t  CroHght() { return fgkCroH;    };
   static  Float_t  MyThick() { return fgkMyThick; };
   static  Float_t  DrThick() { return fgkDrThick; };
   static  Float_t  AmThick() { return fgkAmThick; };
@@ -47,8 +50,9 @@ class AliTRDgeometry : public AliGeometry {
   virtual void     SetPHOShole() = 0;
   virtual void     SetRICHhole() = 0;
 
-  virtual void     SetNRowPad(const Int_t p, const Int_t c, const Int_t npad) {};
-  virtual void     SetNColPad(const Int_t npad);
+  virtual void     SetNRowPad();
+  virtual void     SetNRowPad(const Int_t p, const Int_t c, const Int_t npad);
+  virtual void     SetColPadSize(const Int_t p, const Float_t s);
   virtual void     SetNTimeBin(const Int_t nbin);
   virtual void     SetExpandTimeBin(const Int_t nbefore, const Int_t nafter)
                                                                   { fTimeBefore = nbefore;
@@ -57,12 +61,15 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t   GetPHOShole() const = 0;
   virtual Bool_t   GetRICHhole() const = 0;
 
+  virtual Int_t    GetDetectorSec(const Int_t p, const Int_t) const;
   virtual Int_t    GetDetector(const Int_t p, const Int_t c, const Int_t s) const;
   virtual Int_t    GetPlane(const Int_t d)   const;
   virtual Int_t    GetChamber(const Int_t d) const;
   virtual Int_t    GetSector(const Int_t d)  const;
 
-          Float_t  GetChamberWidth(const Int_t p)           const { return fCwidth[p]; };
+          Float_t  GetChamberWidth(const Int_t p)                 const { return fCwidth[p];     };
+          Float_t  GetChamberLength(const Int_t p, const Int_t c) const { return fClength[p][c]; }; 
+
    
           Int_t    GetRowMax(const Int_t p, const Int_t c, const Int_t s)     
                                                             const { return fRowMax[p][c][s]; };
@@ -109,12 +116,25 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t fgkSlenTR2;                          // Length of the TRD-volume in spaceframe (BTR2)
   static const Float_t fgkSlenTR3;                          // Length of the TRD-volume in spaceframe (BTR3)
 
-  static const Float_t fgkCheight;                          // Height of the chambers
-  static const Float_t fgkCspace;                           // Vertical spacing of the chambers
-  static const Float_t fgkCaframe;                          // Height of the aluminum frame
-  static const Float_t fgkCcframe;                          // Height of the carbon frame
-  static const Float_t fgkCathick;                          // Thickness of the aluminum frame
-  static const Float_t fgkCcthick;                          // Thickness of the carbon frame
+  static const Float_t fgkCraH;                             // Height of the radiator part of the chambers
+  static const Float_t fgkCdrH;                             // Height of the drift region of the chambers
+  static const Float_t fgkCamH;                             // Height of the amplification region of the chambers
+  static const Float_t fgkCroH;                             // Height of the readout of the chambers
+  static const Float_t fgkCH;                               // Total height of the chambers
+
+  static const Float_t fgkVspace;                           // Vertical spacing of the chambers
+  static const Float_t fgkHspace;                           // Horizontal spacing of the chambers
+
+  static const Float_t fgkCalT;                             // Thickness of the lower aluminum frame
+  static const Float_t fgkCclsT;                            // Thickness of the lower G10 frame sides
+  static const Float_t fgkCclfT;                            // Thickness of the lower G10 frame front
+  static const Float_t fgkCcuT;                             // Thickness of the upper G10 frame
+  static const Float_t fgkCauT;                             // Thickness of the upper aluminum frame
+
+  static const Float_t fgkCroW;                             // Additional width of the readout chamber frames
+
+  static const Float_t fgkCpadW;                            // Difference of outer chamber width and pad plane width
+  static const Float_t fgkRpadW;                            // Difference of outer chamber width and pad plane width
 
   static const Float_t fgkRaThick;                          // Thickness of the radiator
   static const Float_t fgkMyThick;                          // Thickness of the mylar-layer
@@ -143,7 +163,10 @@ class AliTRDgeometry : public AliGeometry {
   Int_t                fTimeBefore;                         // Number of timebins before the drift region
   Int_t                fTimeAfter;                          // Number of timebins after the drift region
 
-  Float_t              fCwidth[kNplan];                     // Width of the chambers
+  Float_t              fCwidth[kNplan];                     // Outer widths of the chambers
+  Float_t              fClength[kNplan][kNcham];            // Outer lengths of the chambers
+  Float_t              fClengthPH[kNplan][kNcham];          // For sectors with holes for the PHOS
+  Float_t              fClengthRH[kNplan][kNcham];          // For sectors with holes for the RICH
 
   Float_t              fRow0[kNplan][kNcham][kNsect];       // Row-position of pad 0
   Float_t              fCol0[kNplan];                       // Column-position of pad 0
@@ -163,7 +186,7 @@ class AliTRDgeometry : public AliGeometry {
   Float_t              fRotB21[kNsect];                     // Matrix elements for the backward rotation
   Float_t              fRotB22[kNsect];                     // Matrix elements for the backward rotation
 
-  ClassDef(AliTRDgeometry,3)                                // TRD geometry base class
+  ClassDef(AliTRDgeometry,4)                                // TRD geometry base class
 
 };
 
