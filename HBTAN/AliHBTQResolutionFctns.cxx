@@ -32,6 +32,14 @@ AliHBTKtResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
  Rename("KtResolVsQInv","K_{t} Resolution vs. Q_{Inv}");
 }
 /******************************************************************/
+
+void AliHBTKtResolVsQInvFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+//returns values of the functiion  
+  y = partpair->GetKt() - trackpair->GetKt();
+  x = partpair->GetQInv();
+}
+/******************************************************************/
 /******************************************************************/
 /******************************************************************/
 ClassImp( AliHBTQInvResolVsQInvFctn )
@@ -42,6 +50,13 @@ AliHBTQInvResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 {
 //ctor
  Rename("QInvResolVsQInv","Q_{Inv} Resolution vs. Q_{Inv}");
+}
+/******************************************************************/
+void AliHBTQInvResolVsQInvFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+//returns values of the functiion  
+ y = partpair->GetQInv() - trackpair->GetQInv();
+ x = partpair->GetQInv();
 }
 /******************************************************************/
 /******************************************************************/
@@ -132,6 +147,14 @@ AliHBTQInvResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 //ctor
  Rename("QInvResolVsKt","Q_{Inv} Resolution vs. K_{t}");
 }
+/******************************************************************/
+
+void AliHBTQInvResolVsKtFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+ //returns values of the function
+ y = partpair->GetQInv() - trackpair->GetQInv();
+ x = partpair->GetKt();
+}
 
 /******************************************************************/
 /******************************************************************/
@@ -218,6 +241,14 @@ AliHBTQOutResolVsQOutFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 //ctor
  Rename("QOutResolVsQOut","Q_{Out} Resolution vs. Q_{Out} ");
 }
+/******************************************************************/
+
+void AliHBTQOutResolVsQOutFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+//returns values of the function
+  x = partpair->GetQOutCMSLC();
+  y = x - trackpair->GetQOutCMSLC();
+}
  
 /******************************************************************/
 /******************************************************************/
@@ -231,6 +262,14 @@ AliHBTQSideResolVsQSideFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 {
 //ctor
  Rename("QSideResolVsQSide","Q_{Side} Resolution vs. Q_{Side} ");
+}
+/******************************************************************/
+
+void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+//returns values of the function
+  x = partpair->GetQSideCMSLC(); 
+  y = x - trackpair->GetQSideCMSLC();
 }
 
 /******************************************************************/
@@ -246,8 +285,14 @@ AliHBTQLongResolVsQLongFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 //ctor
  Rename("QLongResolVsQLong","Q_{Long} Resolution vs. Q_{Long} ");
 }
+/******************************************************************/
 
-
+void AliHBTQLongResolVsQLongFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+//returns values of the function
+ x = partpair->GetQLongCMSLC(); 
+ y = x - trackpair->GetQLongCMSLC();
+}
 
 /******************************************************************/
 /******************************************************************/

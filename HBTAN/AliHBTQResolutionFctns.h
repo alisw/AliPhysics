@@ -54,12 +54,8 @@ class AliHBTKtResolVsQInvFctn: public AliHBTTwoPairFctn2D
    
    virtual ~AliHBTKtResolVsQInvFctn(){}
    
-   TH1* GetResult(){return fNumerator;}  
-   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
-    {
-     y = partpair->GetKt() - trackpair->GetKt();
-     x = partpair->GetQInv();
-    }
+   TH1* GetResult(){return this->fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTKtResolVsQInvFctn,1)
  };
 
@@ -74,12 +70,8 @@ class AliHBTQInvResolVsQInvFctn: public AliHBTTwoPairFctn2D
    
    virtual ~AliHBTQInvResolVsQInvFctn(){}
    
-   TH1* GetResult(){return fNumerator;}  
-   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
-    {
-     y = partpair->GetQInv() - trackpair->GetQInv();
-     x = partpair->GetQInv();
-    }
+   TH1* GetResult(){return this->fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTQInvResolVsQInvFctn,1)
  };
 
@@ -94,7 +86,7 @@ class AliHBTQOutResolVsQInvFctn: public AliHBTTwoPairFctn2D
    
    virtual ~AliHBTQOutResolVsQInvFctn(){}
    
-   TH1* GetResult(){return fNumerator;}  
+   TH1* GetResult(){return this->fNumerator;}  
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTQOutResolVsQInvFctn,1)
  };
@@ -109,7 +101,7 @@ class AliHBTQSideResolVsQInvFctn: public AliHBTTwoPairFctn2D
    virtual ~AliHBTQSideResolVsQInvFctn(){}
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair,  Double_t& x, Double_t& y);
-   TH1* GetResult(){return fNumerator;} 
+   TH1* GetResult(){return this->fNumerator;} 
    ClassDef(AliHBTQSideResolVsQInvFctn,1)
  };
 
@@ -123,7 +115,7 @@ class AliHBTQLongResolVsQInvFctn: public AliHBTTwoPairFctn2D
    virtual ~AliHBTQLongResolVsQInvFctn(){}
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
-   TH1* GetResult(){return fNumerator;} 
+   TH1* GetResult(){return this->fNumerator;} 
    ClassDef(AliHBTQLongResolVsQInvFctn,1)
  };
 
@@ -136,9 +128,8 @@ class AliHBTQInvResolVsKtFctn: public AliHBTTwoPairFctn2D
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
    virtual ~AliHBTQInvResolVsKtFctn(){};
 
-   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
-       {y = partpair->GetQInv() - trackpair->GetQInv();x = partpair->GetKt();}
-   TH1* GetResult(){return fNumerator;} 
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
+   TH1* GetResult(){return this->fNumerator;} 
    ClassDef(AliHBTQInvResolVsKtFctn,1)
  };
 /***********************************************************************/
@@ -149,7 +140,7 @@ class AliHBTQOutResolVsKtFctn: public AliHBTTwoPairFctn2D
    AliHBTQOutResolVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
    virtual ~AliHBTQOutResolVsKtFctn(){}
-   TH1* GetResult(){return GetNumerator();}
+   TH1* GetResult(){return this->GetNumerator();}
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTQOutResolVsKtFctn,1)
  };
@@ -161,7 +152,7 @@ class AliHBTQSideResolVsKtFctn: public AliHBTTwoPairFctn2D
    AliHBTQSideResolVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                             Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
    virtual ~AliHBTQSideResolVsKtFctn(){}
-   TH1* GetResult(){return GetNumerator();}
+   TH1* GetResult(){return this->GetNumerator();}
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTQSideResolVsKtFctn,1)
  };
@@ -175,7 +166,7 @@ class AliHBTQLongResolVsKtFctn: public AliHBTTwoPairFctn2D
    virtual ~AliHBTQLongResolVsKtFctn(){}
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
-   TH1* GetResult(){return fNumerator;}
+   TH1* GetResult(){return this->GetNumerator();}
    ClassDef(AliHBTQLongResolVsKtFctn,1)
  };
 /***********************************************************************/
@@ -187,10 +178,8 @@ class AliHBTQOutResolVsQOutFctn: public AliHBTTwoPairFctn2D
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
    virtual ~AliHBTQOutResolVsQOutFctn(){}
 
-   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
-    {x = partpair->GetQOutCMSLC();y = x - trackpair->GetQOutCMSLC();}
-   
-   TH1* GetResult(){return fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
+   TH1* GetResult(){return this->fNumerator;}  
    ClassDef(AliHBTQOutResolVsQOutFctn,1)
  };
 
@@ -204,10 +193,8 @@ class AliHBTQSideResolVsQSideFctn: public AliHBTTwoPairFctn2D
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
    virtual ~AliHBTQSideResolVsQSideFctn(){}
 
-   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
-     {x = partpair->GetQSideCMSLC(); y = x - trackpair->GetQSideCMSLC();}
-   
-   TH1* GetResult(){return fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
+   TH1* GetResult(){return this->fNumerator;}  
    ClassDef(AliHBTQSideResolVsQSideFctn,1)
  };
 
@@ -221,10 +208,8 @@ class AliHBTQLongResolVsQLongFctn: public AliHBTTwoPairFctn2D
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
    virtual ~AliHBTQLongResolVsQLongFctn(){}
 
-   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
-       {x = partpair->GetQLongCMSLC(); y = x - trackpair->GetQLongCMSLC();}
-   
-   TH1* GetResult(){return fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
+   TH1* GetResult(){return this->fNumerator;}  
    ClassDef(AliHBTQLongResolVsQLongFctn,1)
  };
 /***********************************************************************/
@@ -238,7 +223,7 @@ class AliHBTPairThetaResolVsQInvFctn: public AliHBTTwoPairFctn2D
    
    virtual ~AliHBTPairThetaResolVsQInvFctn(){}
    
-   TH1* GetResult(){return fNumerator;}  
+   TH1* GetResult(){return this->fNumerator;}  
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTPairThetaResolVsQInvFctn,1)
  };
@@ -253,7 +238,7 @@ class AliHBTPairThetaResolVsPairThetaFctn: public AliHBTTwoPairFctn2D
    
    virtual ~AliHBTPairThetaResolVsPairThetaFctn(){}
    
-   TH1* GetResult(){return fNumerator;}  
+   TH1* GetResult(){return this->fNumerator;}  
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTPairThetaResolVsPairThetaFctn,1)
  };
@@ -269,7 +254,7 @@ class AliHBTPairPhiResolVsQInvFctn: public AliHBTTwoPairFctn2D
    
    virtual ~AliHBTPairPhiResolVsQInvFctn(){}
    
-   TH1* GetResult(){return fNumerator;}  
+   TH1* GetResult(){return this->fNumerator;}  
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTPairPhiResolVsQInvFctn,1)
  };
@@ -284,7 +269,7 @@ class AliHBTPairThetaResolVsKtFctn: public AliHBTTwoPairFctn2D
    
    virtual ~AliHBTPairThetaResolVsKtFctn(){}
    
-   TH1* GetResult(){return fNumerator;}  
+   TH1* GetResult(){return this->fNumerator;}  
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTPairThetaResolVsKtFctn,1)
  };
@@ -299,7 +284,7 @@ class AliHBTPairPhiResolVsKtFctn: public AliHBTTwoPairFctn2D
    
    virtual ~AliHBTPairPhiResolVsKtFctn(){}
    
-   TH1* GetResult(){return fNumerator;}  
+   TH1* GetResult(){return this->fNumerator;}  
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTPairPhiResolVsKtFctn,1)
  };
@@ -314,7 +299,7 @@ class AliHBTPairPhiResolVsPairPhiFctn: public AliHBTTwoPairFctn2D
    
    virtual ~AliHBTPairPhiResolVsPairPhiFctn(){}
    
-   TH1* GetResult(){return fNumerator;}  
+   TH1* GetResult(){return this->fNumerator;}  
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTPairPhiResolVsPairPhiFctn,1)
  };
