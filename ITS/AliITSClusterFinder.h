@@ -43,7 +43,7 @@ class AliITSClusterFinder :public TObject{
     // Clears the debug flag so no debugging output will be generated
     void SetNoDebug(){fDebug=0;}
     // Returns the debug flag value
-    Bool_t GetDebug(Int_t level=1)const {return fDebug<=level;}
+    Bool_t GetDebug(Int_t level=1)const {return fDebug>=level;}
     //
     // Setters and Getters
     // segmentation

@@ -12,7 +12,7 @@
 #include <TObjArray.h> // used in inline function GetModule.
 #include <TBranch.h>   // used in inline function SetHitsAddressBranch
 
-#include "AliLoader.h"
+#include "AliRunLoader.h"
 #include "AliDetector.h"
 #include "AliITSDetType.h"
 
@@ -129,8 +129,7 @@ class AliITS : public AliDetector {
     void SetTreeAddressD(TTree *treeD);
     void Hits2SDigits(); // Turn hits into SDigits
     void Hits2PreDigits(){ // Turn hits into SDigits
-        HitsToPreDigits(fLoader->GetEvent(),
-            /*fLoader->GetRunLoader()->GetHeader()->GetEvent(),*/
+        HitsToPreDigits(fLoader->GetRunLoader()->GetEventNumber(),
                         0,-1," ",fOpt," ");};
     AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
     void SDigits2Digits(){SDigitsToDigits("All");} // Turn SDigits to Digits
@@ -189,7 +188,7 @@ class AliITS : public AliDetector {
     void AddRecPoint(const AliITSRecPoint &p);
     void HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
                  Option_t *add, Option_t *det, const char *filename);
-    void Digits2Reco(){DigitsToRecPoints(fLoader->GetEvent(),0,fOpt);};
+    void Digits2Reco(){DigitsToRecPoints(fLoader->GetRunLoader()->GetEventNumber(),0,fOpt);};
     void DigitsToRecPoints(Int_t evNumber,Int_t lastEntry,Option_t *det);
     void ResetRecPoints(){if(fRecPoints) fRecPoints->Clear();fNRecPoints = 0;};
     // Return pointer to rec points 

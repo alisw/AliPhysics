@@ -115,10 +115,12 @@ void AliITSClusterFinderSPD::FindRawClusters(Int_t module){
 
     AliITSdigitSPD *dig;
     Int_t ndig=0,i;
+    /*
     if(GetDebug(4)){
-        cout << "FindRawcluters"<<endl;
+        cout << "SPD - FindRawclusters"<<endl;
         scanf("%d",&ndig);
     } // end if GetDebug
+    */
     for(ndig=0; ndig<ndigits; ndig++) {
         dig= (AliITSdigitSPD*)GetDigit(ndig);
         digx[digitcount] = dig->GetCoord2()+1;  //starts at 1
