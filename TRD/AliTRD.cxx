@@ -15,17 +15,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TMath.h>
-#include <TRandom.h>
-#include <TVector.h>
-#include <TGeometry.h>
 #include <TNode.h>
-#include <TBRIK.h>
 #include <TPGON.h> 
 
 #include "AliTRD.h"
 #include "AliRun.h"
 
-#include "AliMC.h"
 #include "AliConst.h"
  
 ClassImp(AliTRD)
