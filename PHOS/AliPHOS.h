@@ -48,15 +48,24 @@ public:
   {return AliPHOSGeometry::GetInstance(GetTitle(),"") ;  }
   virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;  
-  Int_t GetRawFormatHighGainFactor() const { return fHighGainFactor ; }  
-  Int_t GetRawFormatHighGainOffset() const { return fHighGainOffset ; }  
+  // Raw Read Out
+  Double_t GetRawFormatCapa() const { return fgCapa ; }   
+  Double_t GetRawFormatHighCharge() const { return fHighCharge ; }  
+  Double_t GetRawFormatHighGain() const { return fHighGain ; }  
+  Double_t GetRawFormatHighLowGainFactor() const { return fHighLowGainFactor ; }  
+  Double_t GetRawFormatLowCharge() const { return ( fHighCharge *  fHighLowGainFactor ) ; }  
+  Double_t GetRawFormatLowGain() const { return ( fHighGain / fHighLowGainFactor ) ; }  
+  Int_t GetRawFormatLowGainOffset() const { return fLowGainOffset ; }  
+  Int_t GetRawFormatOrder() const { return fgOrder ; }   
   Int_t GetRawFormatTimeBins() const { return fkTimeBins ; }    
-  Double_t GetRawFormatTimeMax() const { return fTimeMax ; }   
-  Double_t GetRawFormatTimePeak() const { return fTimePeak ; }    
-  Double_t GetRawFormatTimeRes() const { return fTimeRes ; }   
+  Double_t GetRawFormatTimeMax() const { return fgTimeMax ; }   
+  Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
+  Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }   
+  static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
+  static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
+  //
   virtual AliLoader* MakeLoader(const char* topfoldername);
   AliPHOSQAChecker * QAChecker() {return fQATask;}  
-  static Double_t  RawResponseFunction(Double_t *x, Double_t *par) ; 
   virtual void    SetTreeAddress();   
   virtual TTree * TreeQA() const {return fTreeQA; } 
   virtual const TString Version() const {return TString(" ") ; } 
@@ -67,20 +76,23 @@ public:
 
 protected:
 
-  Bool_t  RawSampledResponse(const Float_t dtime, const Int_t damp, Int_t * adcH, Int_t * adcL) const ; 
+    Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
 
 
-  AliPHOSQAChecker * fQATask ; //! PHOS checkers container
-  TTree * fTreeQA ;            // the QA tree that contains the alarms
-  Int_t    fHighGainFactor ;   // High gain attenuation factor of the raw RO signal
-  Int_t    fHighGainOffset ;   // offset added to the module id to distinguish high and low gain data
-  static const Int_t fkTimeBins = 256 ;     // number of sampling bins of the raw RO signal  
-  Double_t fTimeMax ;          // maximum sampled time of the raw RO signal
-  Double_t fTimePeak ;         // peaking time of the raw RO signal
-  Double_t fTimeRes ;          // decay rime width of the raw RO signal 
-
-  ClassDef(AliPHOS,3) // Photon Spectrometer Detector (base class)
-
+  AliPHOSQAChecker * fQATask ;          //! PHOS checkers container
+  TTree * fTreeQA ;                     // the QA tree that contains the alarms
+  static Double_t fgCapa ;              // capacitor of the preamplifier for the raw RO signal
+  Double_t fHighCharge ;                // high charge (to convert energy to charge) for the raw RO signal
+  Double_t fHighGain ;                  // high gain for the raw RO signal
+  Double_t fHighLowGainFactor ;         // high to low gain factor for the raw RO signal
+  Int_t    fLowGainOffset ;             // to separate high from low gain in the DDL
+  static Int_t fgOrder ;                // order of the gamma function for the RO signal
+  static const Int_t fkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
+  static Double_t fgTimeMax ;           // maximum sampled time of the raw RO signal                             
+  static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
+  static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
+                                        
+  ClassDef(AliPHOS,4) // Photon Spectrometer Detector (base class)
 } ;
 
 #endif // ALIPHOS_H
