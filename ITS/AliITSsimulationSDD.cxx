@@ -1310,7 +1310,7 @@ void AliITSsimulationSDD::CreateHistograms(){
 	   sprintf(candNum,"%d",i+1);
 	   sddName->Append(candNum);
 	   (*fHis)[i] = new TH1F(sddName->Data(),"SDD maps",
-                              fMaxNofSamples,0.,(Float_t) fMaxNofSamples);
+                              fMaxNofSamples,(Axis_t)0.,(Axis_t) fMaxNofSamples);
 	   delete sddName;
       }
 
@@ -1364,7 +1364,7 @@ Float_t AliITSsimulationSDD::GetNoise(Float_t threshold) {
   // Returns the noise value
   if (!fHis) return 0.;
 
-  TH1F *noisehist = new TH1F("noisehist","noise",100,0.,threshold);
+  TH1F *noisehist = new TH1F("noisehist","noise",100,(Axis_t)0.,(Axis_t)threshold);
   Int_t i,k;
   for (i=0;i<fNofMaps;i++) {
     Int_t nOfBinsA = ((TH1F*)(*fHis)[i])->GetNbinsX();
@@ -1373,7 +1373,7 @@ Float_t AliITSsimulationSDD::GetNoise(Float_t threshold) {
       if (content < threshold) noisehist->Fill(content);
     }
   }
-  TF1 *gnoise = new TF1("gnoise","gaus",0.,threshold);
+  TF1 *gnoise = new TF1("gnoise","gaus",(Double_t)0.,(Double_t)threshold);
   noisehist->Fit("gnoise","RQ");
   noisehist->Draw();
   Float_t mnoise = gnoise->GetParameter(1);
