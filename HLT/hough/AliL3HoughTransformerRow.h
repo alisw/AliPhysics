@@ -7,9 +7,7 @@
 #include "AliL3HoughBaseTransformer.h"
 
 #define MAX_N_GAPS 5
-#define MAX_GAP_SIZE 4
 #define MIN_TRACK_LENGTH 70
-#define MAX_MISS_ROWS 2
 
 struct AliL3EtaRow {
   UChar_t fStartPad; //First pad in the cluster

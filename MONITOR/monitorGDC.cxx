@@ -140,10 +140,10 @@ int main(int argc, char** argv)
 	AliL3Hough *hough1 = new AliL3Hough();
 
 	hough1->SetThreshold(4);
-	hough1->SetTransformerParams(76,140,0.4,-1);
+	hough1->CalcTransformerParams(0.4);
 	hough1->SetPeakThreshold(70,-1);
 	//	printf("Pointer is %x\n",ptr);
-	hough1->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,3.82147);
+	hough1->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,0.0);
 	hough1->SetAddHistograms();
 	fBenchmark->Stop("Init");
 
@@ -151,10 +151,10 @@ int main(int argc, char** argv)
 	AliL3Hough *hough2 = new AliL3Hough();
 
 	hough2->SetThreshold(4);
-	hough2->SetTransformerParams(76,140,0.4,-1);
+	hough2->CalcTransformerParams(0.4);
 	hough2->SetPeakThreshold(70,-1);
 	//	printf("Pointer is %x\n",ptr);
-	hough2->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,3.82147);
+	hough2->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,0.0);
 	hough2->SetAddHistograms();
 	fBenchmark->Stop("Init");
 

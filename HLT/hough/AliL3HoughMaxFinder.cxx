@@ -676,19 +676,6 @@ struct AliL3PreYPeak
   Int_t fRightValue; // Neighbour values
 };
 
-struct AliL3Pre2DPeak
-{
-  Float_t fX; // X coordinate of the preak
-  Float_t fY; // Y coordinate of the preak
-  Float_t fSizeX; // Size of the peak
-  Float_t fSizeY; // Size of the peak
-  Int_t fStartX; // Start position of the peak
-  Int_t fStartY; // Start position of the peak
-  Int_t fEndX; // End position of the peak
-  Int_t fEndY; // End position of the peak
-  Float_t fWeight; // Weight assigned to the peak
-};
-
 void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_t ysize)
 {
   // Peak finder which is working over the Hough Space provided by the AliL3HoughTransformerRow class
@@ -715,11 +702,11 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
   AliL3PreYPeak **localmaxima = new AliL3PreYPeak*[hist->GetNbinsY()];
   
   Short_t *nmaxs = new Short_t[hist->GetNbinsY()];
+  memset(nmaxs,0,hist->GetNbinsY()*sizeof(Short_t));
   Int_t lastvalue=0,value=0;
-  for(Int_t ybin=ymin; ybin<=ymax; ybin++)
+  for(Int_t ybin=fNextRow[ymin]; ybin<=ymax; ybin = fNextRow[++ybin])
     {
       localmaxima[ybin-ymin] = new AliL3PreYPeak[nxbins-2];
-      nmaxs[ybin-ymin] = 0;
       lastvalue = 0;
       Bool_t found = 0;
       for(Int_t xbin=xmin; xbin<=xmax; xbin++)
@@ -867,133 +854,48 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
   
   for(Int_t i = 0; i < (nmaxima - 1); i++)
     {
-      if(maxima[i].fWeight < 0) continue;
+      //      if(maxima[i].fWeight < 0) continue;
       for(Int_t j = i + 1; j < nmaxima; j++)
 	{
-	  if(maxima[j].fWeight < 0) continue;
-	  Int_t xtrack1=0,xtrack2=0,ytrack1=0,ytrack2=0;
-	  Int_t deltax = 9999;
-	  for(Int_t ix1 = maxima[i].fStartX; ix1 <= maxima[i].fEndX; ix1++) {
-	    for(Int_t ix2 = maxima[j].fStartX; ix2 <= maxima[j].fEndX; ix2++) {
-	      if(abs(ix1 - ix2) < deltax) {
-		deltax = abs(ix1 - ix2);
-		xtrack1 = ix1;
-		xtrack2 = ix2;
-	      }
-	    }
-	  }
-	  Int_t deltay = 9999;
-	  for(Int_t iy1 = maxima[i].fStartY; iy1 <= maxima[i].fEndY; iy1++) {
-	    for(Int_t iy2 = maxima[j].fStartY; iy2 <= maxima[j].fEndY; iy2++) {
-	      if(abs(iy1 - iy2) < deltay) {
-		deltay = abs(iy1 - iy2);
-		ytrack1 = iy1;
-		ytrack2 = iy2;
-	      }
-	    }
-	  }
-	  Int_t firstrow1 = fTrackFirstRow[xtrack1 + nxbins*ytrack1];
-	  Int_t lastrow1 = fTrackLastRow[xtrack1 + nxbins*ytrack1];
-	  Int_t firstrow2 = fTrackFirstRow[xtrack1 + nxbins*ytrack1];
-	  Int_t lastrow2 = fTrackLastRow[xtrack1 + nxbins*ytrack1];
-	  Int_t firstrow,lastrow;
-	  if(firstrow1 < firstrow2)
-	    firstrow = firstrow2;
-	  else
-	    firstrow = firstrow1;
-
-	  if(lastrow1 > lastrow2)
-	    lastrow = lastrow2;
-	  else
-	    lastrow = lastrow1;
-	 
-	  AliL3HoughTrack track1;
-	  Float_t x1 = hist->GetPreciseBinCenterX(xtrack1);
-	  Float_t y1 = hist->GetPreciseBinCenterY(ytrack1);
-	  Float_t psi1 = atan((x1-y1)/(AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2()));
-	  Float_t kappa1 = 2.0*(x1*cos(psi1)-AliL3HoughTransformerRow::GetBeta1()*sin(psi1));
-	  track1.SetTrackParameters(kappa1,psi1,1);
-	  Float_t firsthit1[3];
-	  if(!track1.GetCrossingPoint(firstrow,firsthit1)) continue;
-	  Float_t lasthit1[3];
-	  if(!track1.GetCrossingPoint(lastrow,lasthit1)) continue;
-
-	  AliL3HoughTrack track2;
-	  Float_t x2 = hist->GetPreciseBinCenterX(xtrack2);
-	  Float_t y2 = hist->GetPreciseBinCenterY(ytrack2);
-	  Float_t psi2 = atan((x2-y2)/(AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2()));
-	  Float_t kappa2 = 2.0*(x2*cos(psi2)-AliL3HoughTransformerRow::GetBeta1()*sin(psi2));
-	  track2.SetTrackParameters(kappa2,psi2,1);
-	  Float_t firsthit2[3];
-	  if(!track2.GetCrossingPoint(firstrow,firsthit2)) continue;
-	  Float_t lasthit2[3];
-	  if(!track2.GetCrossingPoint(lastrow,lasthit2)) continue;
-	  
-	  Float_t padpitchlow = AliL3Transform::GetPadPitchWidth(AliL3Transform::GetPatch(firstrow));
-	  Float_t padpitchup = AliL3Transform::GetPadPitchWidth(AliL3Transform::GetPatch(lastrow));
-	  // check the distance between tracks at the edges
-#ifdef do_mc
-	  //	  cout<<"DEBUG Merge peaks "<<i<<" "<<j<<" "<<firsthit1[1]<<" "<<firsthit2[1]<<"     "<<lasthit1[1]<<" "<<lasthit2[1]<<endl;
-#endif
-	  //cvetan please check!!! I added a cast to Int_t
-	  if((fabs(firsthit1[1]-firsthit2[1]) < 3.0*padpitchlow) && (fabs(lasthit1[1]-lasthit2[1]) < 3.0*padpitchup)) {
-	    if(maxima[i].fSizeX*maxima[i].fSizeY > maxima[j].fSizeX*maxima[j].fSizeY)
-	      maxima[j].fWeight = -maxima[j].fWeight;
-	    if(maxima[i].fSizeX*maxima[i].fSizeY < maxima[j].fSizeX*maxima[j].fSizeY)
-	      maxima[i].fWeight = -maxima[i].fWeight;
-#ifdef do_mc
-	    //	    cout<<"Merge peaks "<<i<<" "<<j<<" "<<maxima[i].fWeight<<" "<<maxima[j].fWeight<<endl;
-#endif
-	  }
+	  //	  if(maxima[j].fWeight < 0) continue;
+	  MergeRowPeaks(&maxima[i],&maxima[j],5.0);
 	}
     }
 
   //merge tracks in neighbour eta slices
-  /*
-  for(Int_t i = 0; i < nmaxima; i++) {
-    if(maxima[i].fWeight > 0) {
-      fXPeaks[fNPeaks] = hist->GetPreciseBinCenterX(maxima[i].fX);
-      fYPeaks[fNPeaks] = hist->GetPreciseBinCenterY(maxima[i].fY);
-      fWeight[fNPeaks] = (Int_t)maxima[i].fWeight;
-#ifdef do_mc
-      cout<<"Final Peak found at: "<<maxima[i].fX<<" "<<maxima[i].fY<<" "<<" "<<fXPeaks[fNPeaks]<<" "<<fYPeaks[fNPeaks]<<" with weight "<<fWeight[fNPeaks]<<" and size "<<maxima[i].fSizeX<<" by "<<maxima[i].fSizeY<<endl;
-#endif
-      fNPeaks++;
-    }
-  }
-  */
-
   Int_t currentnpeaks = fNPeaks;
   for(Int_t i = 0; i < nmaxima; i++) {
     if(maxima[i].fWeight < 0) continue;
     Bool_t merged = kFALSE;
     for(Int_t j = fN1PeaksPrevEtaSlice; j < fN2PeaksPrevEtaSlice; j++) {
-      if(fWeight[j] < 0) continue;
-      if((fENDETAPeaks[j]-fSTARTETAPeaks[j]) >= 1) continue;
-      if((maxima[i].fStartX <= fENDXPeaks[j]+1) && (maxima[i].fEndX >= fSTARTXPeaks[j]-1)) {
-	if((maxima[i].fStartY <= fENDYPeaks[j]+1) && (maxima[i].fEndY >= fSTARTYPeaks[j]-1)) {
-	  //merge
-	  merged = kTRUE;
+      //      if(fWeight[j] < 0) continue;
+      // Merge only peaks with limited size in eta
+      if((fENDETAPeaks[j]-fSTARTETAPeaks[j]) >= 2) continue;
+      if((maxima[i].fStartX <= fENDXPeaks[j]+1) && (maxima[i].fEndX >= fSTARTXPeaks[j]-1) && (maxima[i].fStartY <= fENDYPeaks[j]+1) && (maxima[i].fEndY >= fSTARTYPeaks[j]-1)){
+	//merge
+	merged = kTRUE;
+	if(fWeight[j] > 0) {
 	  fXPeaks[fNPeaks] = (hist->GetPreciseBinCenterX(maxima[i].fX)+(fENDETAPeaks[j]-fSTARTETAPeaks[j]+1)*fXPeaks[j])/(fENDETAPeaks[j]-fSTARTETAPeaks[j]+2);
 	  fYPeaks[fNPeaks] = (hist->GetPreciseBinCenterY(maxima[i].fY)+(fENDETAPeaks[j]-fSTARTETAPeaks[j]+1)*fYPeaks[j])/(fENDETAPeaks[j]-fSTARTETAPeaks[j]+2);
-	  fWeight[fNPeaks] = (Int_t)maxima[i].fWeight + fWeight[j];
 	  fSTARTXPeaks[fNPeaks] = maxima[i].fStartX;
 	  fSTARTYPeaks[fNPeaks] = maxima[i].fStartY;
 	  fENDXPeaks[fNPeaks] = maxima[i].fEndX;
 	  fENDYPeaks[fNPeaks] = maxima[i].fEndY;
+
+	  fWeight[fNPeaks] = abs((Int_t)maxima[i].fWeight) + abs(fWeight[j]);
 	  fSTARTETAPeaks[fNPeaks] = fSTARTETAPeaks[j];
 	  fENDETAPeaks[fNPeaks] = fCurrentEtaSlice;
 	  fNPeaks++;
-	  fWeight[j] = -fWeight[j];
 	}
+	fWeight[j] = -abs(fWeight[j]);
       }
     }
     fXPeaks[fNPeaks] = hist->GetPreciseBinCenterX(maxima[i].fX);
     fYPeaks[fNPeaks] = hist->GetPreciseBinCenterY(maxima[i].fY);
     if(!merged)
-      fWeight[fNPeaks] = (Int_t)maxima[i].fWeight;
+      fWeight[fNPeaks] = abs((Int_t)maxima[i].fWeight);
     else
-      fWeight[fNPeaks] = -(Int_t)maxima[i].fWeight;
+      fWeight[fNPeaks] = -abs((Int_t)maxima[i].fWeight);
     fSTARTXPeaks[fNPeaks] = maxima[i].fStartX;
     fSTARTYPeaks[fNPeaks] = maxima[i].fStartY;
     fENDXPeaks[fNPeaks] = maxima[i].fEndX;
@@ -1001,12 +903,13 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
     fSTARTETAPeaks[fNPeaks] = fCurrentEtaSlice;
     fENDETAPeaks[fNPeaks] = fCurrentEtaSlice;
     fNPeaks++;
-  }  
+  }
+
   fN1PeaksPrevEtaSlice = currentnpeaks;    
   fN2PeaksPrevEtaSlice = fNPeaks;
 
-  for(Int_t i=0; i<hist->GetNbinsY(); i++)
-    delete [] localmaxima[i];
+  for(Int_t ybin=fNextRow[ymin]; ybin<=ymax; ybin = fNextRow[++ybin])
+    delete [] localmaxima[ybin-ymin];
 
   delete [] localmaxima;
   delete [] nmaxs;
@@ -1432,4 +1335,98 @@ Float_t AliL3HoughMaxFinder::GetYPeakSize(Int_t i) const
     }
   Float_t binwidth = fCurrentHisto->GetBinWidthY();
   return binwidth*(fENDYPeaks[i]-fSTARTYPeaks[i]+1);
+}
+
+Bool_t AliL3HoughMaxFinder::MergeRowPeaks(AliL3Pre2DPeak *maxima1, AliL3Pre2DPeak *maxima2, Float_t distance)
+{
+  // Check the distance between tracks corresponding to given Hough space peaks and if the
+  // distance is smaller than some threshold value marks the smaller peak as fake
+  AliL3Histogram *hist = fCurrentHisto;
+  Int_t nxbins = hist->GetNbinsX()+2;
+
+  Int_t xtrack1=0,xtrack2=0,ytrack1=0,ytrack2=0;
+  Int_t deltax = 9999;
+  for(Int_t ix1 = maxima1->fStartX; ix1 <= maxima1->fEndX; ix1++) {
+    for(Int_t ix2 = maxima2->fStartX; ix2 <= maxima2->fEndX; ix2++) {
+      if(abs(ix1 - ix2) < deltax) {
+	deltax = abs(ix1 - ix2);
+	xtrack1 = ix1;
+	xtrack2 = ix2;
+      }
+    }
+  }
+  Int_t deltay = 9999;
+  for(Int_t iy1 = maxima1->fStartY; iy1 <= maxima1->fEndY; iy1++) {
+    for(Int_t iy2 = maxima2->fStartY; iy2 <= maxima2->fEndY; iy2++) {
+      if(abs(iy1 - iy2) < deltay) {
+	deltay = abs(iy1 - iy2);
+	ytrack1 = iy1;
+	ytrack2 = iy2;
+      }
+    }
+  }
+  Int_t firstrow1 = fTrackFirstRow[xtrack1 + nxbins*ytrack1];
+  Int_t lastrow1 = fTrackLastRow[xtrack1 + nxbins*ytrack1];
+  Int_t firstrow2 = fTrackFirstRow[xtrack1 + nxbins*ytrack1];
+  Int_t lastrow2 = fTrackLastRow[xtrack1 + nxbins*ytrack1];
+  Int_t firstrow,lastrow;
+  if(firstrow1 < firstrow2)
+    firstrow = firstrow2;
+  else
+    firstrow = firstrow1;
+
+  if(lastrow1 > lastrow2)
+    lastrow = lastrow2;
+  else
+    lastrow = lastrow1;
+	 
+  AliL3HoughTrack track1;
+  Float_t x1 = hist->GetPreciseBinCenterX(xtrack1);
+  Float_t y1 = hist->GetPreciseBinCenterY(ytrack1);
+  Float_t psi1 = atan((x1-y1)/(AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2()));
+  Float_t kappa1 = 2.0*(x1*cos(psi1)-AliL3HoughTransformerRow::GetBeta1()*sin(psi1));
+  track1.SetTrackParameters(kappa1,psi1,1);
+  Float_t firsthit1[3];
+  if(!track1.GetCrossingPoint(firstrow,firsthit1)) return kFALSE;
+  Float_t lasthit1[3];
+  if(!track1.GetCrossingPoint(lastrow,lasthit1)) return kFALSE;
+
+  AliL3HoughTrack track2;
+  Float_t x2 = hist->GetPreciseBinCenterX(xtrack2);
+  Float_t y2 = hist->GetPreciseBinCenterY(ytrack2);
+  Float_t psi2 = atan((x2-y2)/(AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2()));
+  Float_t kappa2 = 2.0*(x2*cos(psi2)-AliL3HoughTransformerRow::GetBeta1()*sin(psi2));
+  track2.SetTrackParameters(kappa2,psi2,1);
+  Float_t firsthit2[3];
+  if(!track2.GetCrossingPoint(firstrow,firsthit2)) return kFALSE;
+  Float_t lasthit2[3];
+  if(!track2.GetCrossingPoint(lastrow,lasthit2)) return kFALSE;
+	  
+  Float_t padpitchlow = AliL3Transform::GetPadPitchWidth(AliL3Transform::GetPatch(firstrow));
+  Float_t padpitchup = AliL3Transform::GetPadPitchWidth(AliL3Transform::GetPatch(lastrow));
+  // check the distance between tracks at the edges
+  //  cout<<"Check "<<firsthit1[1]<<" "<<firsthit2[1]<<" "<<padpitchlow<<" "<<lasthit1[1]<<" "<<lasthit2[1]<<" "<<padpitchup<<" "<<xtrack1<<" "<<ytrack1<<" "<<xtrack2<<" "<<ytrack2<<endl;
+  if((fabs(firsthit1[1]-firsthit2[1])/padpitchlow + fabs(lasthit1[1]-lasthit2[1])/padpitchup) < distance) {
+    if(maxima1->fSizeX*maxima1->fSizeY > maxima2->fSizeX*maxima2->fSizeY)
+      maxima2->fWeight = -fabs(maxima2->fWeight);
+    if(maxima1->fSizeX*maxima1->fSizeY < maxima2->fSizeX*maxima2->fSizeY)
+      maxima1->fWeight = -fabs(maxima1->fWeight);
+    if(maxima1->fSizeX*maxima1->fSizeY == maxima2->fSizeX*maxima2->fSizeY) {
+      if(maxima1->fStartX > maxima2->fStartX)
+	maxima1->fStartX = maxima2->fStartX;
+      if(maxima1->fStartY > maxima2->fStartY)
+	maxima1->fStartY = maxima2->fStartY;
+      if(maxima1->fEndX < maxima2->fEndX)
+	maxima1->fEndX = maxima2->fEndX;
+      if(maxima1->fEndY < maxima2->fEndY)
+	maxima1->fEndY = maxima2->fEndY;
+      maxima1->fX = ((Float_t)maxima1->fStartX + (Float_t)maxima1->fEndX)/2.0;
+      maxima1->fY = ((Float_t)maxima1->fStartY + (Float_t)maxima1->fEndY)/2.0;
+      maxima1->fSizeX = (maxima1->fEndX - maxima1->fStartX + 1);
+      maxima1->fSizeY = (maxima1->fEndY - maxima1->fStartY + 1);
+      maxima2->fWeight = -fabs(maxima2->fWeight);
+    }
+    return kTRUE;
+  }
+  return kFALSE;
 }

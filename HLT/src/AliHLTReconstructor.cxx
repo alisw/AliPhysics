@@ -175,7 +175,7 @@ void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,
   AliL3Hough *hough = new AliL3Hough();
     
   hough->SetThreshold(4);
-  hough->SetTransformerParams(76,140,ptmin,-1);
+  hough->CalcTransformerParams(ptmin);
   hough->SetPeakThreshold(70,-1);
   hough->SetRunLoader(runLoader);
   hough->Init("./", kFALSE, 100, kFALSE,4,0,0,zvertex);

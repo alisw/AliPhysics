@@ -409,29 +409,55 @@ void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t ptmin,Int_t /*pa
 {
   // Setup the parameters for the Hough Transformer
 
-
-  Int_t mrow=79;
-  Double_t lineradius = sqrt(pow(AliL3Transform::Row2X(mrow),2) + pow(AliL3Transform::GetMaxY(mrow),2));
-  Double_t alpha1 = AliL3Transform::GetMaxY(mrow)/pow(lineradius,2);
-  Double_t kappa = 1*AliL3Transform::GetBField()*AliL3Transform::GetBFact()/ptmin;
+  Double_t lineradius = 1.0/(AliL3HoughTransformerRow::GetBeta1()*sqrt(1.0+tan(AliL3Transform::Pi()*10/180)*tan(AliL3Transform::Pi()*10/180)));
+  Double_t alpha1 = AliL3HoughTransformerRow::GetBeta1()*tan(AliL3Transform::Pi()*10/180);
+  Double_t kappa = 1*AliL3Transform::GetBField()*AliL3Transform::GetBFact()/(ptmin*0.9);
   Double_t psi = AliL3Transform::Deg2Rad(10) - asin(lineradius*kappa/2);
   //  cout<<"Calculated psi range "<<psi<<" in patch "<<patch<<endl;
-  AliL3HoughTrack track;
-  track.SetTrackParameters(kappa,psi,1);
-  Float_t hit[3];
-  Int_t mrow2 = 158;
-  track.GetCrossingPoint(mrow2,hit);
-  Double_t lineradius2 = sqrt(pow(AliL3Transform::Row2X(mrow2),2) + pow(AliL3Transform::GetMaxY(mrow2),2));
-  Double_t alpha2 = hit[1]/pow(lineradius2,2);
+  Double_t alpha2 = alpha1 - (AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2())*tan(psi);
   //  cout<<"Calculated alphas range "<<alpha1<<" "<<alpha2<<" in patch "<<patch<<endl;
 
   Int_t i=0;
   while(i < 6)
     {
-      fLowPt[i] = 1.15*alpha1;
+      fLowPt[i] = 1.1*alpha1;
       fNBinY[i] = ny;
       fNBinX[i] = nx;
-      fPhi[i] = 1.15*alpha2;
+      fPhi[i] = alpha2;
+      i++;
+    }
+}
+
+void AliL3Hough::CalcTransformerParams(Float_t ptmin)
+{
+  // Setup the parameters for the Row Hough Transformer
+  // Automatically adjusts the number of bins in X and Y in a way
+  // that the size of the hough bin is 2x (in X) and 2.5 (in Y) the
+  // size of the tpc pads
+
+  Double_t lineradius = 1.0/(AliL3HoughTransformerRow::GetBeta1()*sqrt(1.0+tan(AliL3Transform::Pi()*10/180)*tan(AliL3Transform::Pi()*10/180)));
+  Double_t alpha1 = AliL3HoughTransformerRow::GetBeta1()*tan(AliL3Transform::Pi()*10/180);
+  Double_t kappa = 1*AliL3Transform::GetBField()*AliL3Transform::GetBFact()/(ptmin*0.9);
+  Double_t psi = AliL3Transform::Deg2Rad(10) - asin(lineradius*kappa/2);
+  //  cout<<"Calculated psi range "<<psi<<endl;
+  Double_t alpha2 = alpha1 - (AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2())*tan(psi);
+  alpha1 *= 1.1;
+  //  cout<<"Calculated alphas range "<<alpha1<<" "<<alpha2<<endl;
+
+  Double_t sizex = 2.0*AliL3Transform::GetPadPitchWidthLow()*AliL3HoughTransformerRow::GetBeta1()*AliL3HoughTransformerRow::GetBeta1();
+  Double_t sizey = 2.5*AliL3Transform::GetPadPitchWidthUp()*AliL3HoughTransformerRow::GetBeta2()*AliL3HoughTransformerRow::GetBeta2();
+
+  Int_t nx = 2*(Int_t)(alpha1/sizex)+1;
+  Int_t ny = 2*(Int_t)(alpha2/sizey)+1;
+  //  cout<<"Calculated number of bins "<<nx<<" "<<ny<<endl;
+
+  Int_t i=0;
+  while(i < 6)
+    {
+      fLowPt[i] = alpha1;
+      fNBinY[i] = ny;
+      fNBinX[i] = nx;
+      fPhi[i] = alpha2;
       i++;
     }
 }
@@ -882,7 +908,7 @@ void AliL3Hough::PrepareForNextPatch(Int_t nextpatch)
 	    lastyvalue = maxvalue;
 	  }
 	UChar_t *tempnextrow = nextrow + endybin + 1;
-	memset(tempnextrow,(UChar_t)(ymax+1),ymax-endybin);
+	memset(tempnextrow,(UChar_t)(ymax+1),ymax-endybin+1);
       }
       else {
 	UChar_t lastyvalue = 0;
@@ -914,7 +940,7 @@ void AliL3Hough::PrepareForNextPatch(Int_t nextpatch)
 	    lastyvalue = maxvalue;
 	  }
 	UChar_t *tempnextrow = nextrow + endybin + 1;
-	memset(tempnextrow,(UChar_t)(ymax+1),ymax-endybin);
+	memset(tempnextrow,(UChar_t)(ymax+1),ymax-endybin+1);
       }
     }
 
@@ -973,7 +999,7 @@ void AliL3Hough::FindTrackCandidatesRow()
 	  if(hist->GetNEntries()==0) continue;
 	  fPeakFinder->SetHistogram(hist);
 	  fPeakFinder->SetEtaSlice(j);
-	  fPeakFinder->SetTrackLUTs(((AliL3HoughTransformerRow *)tr)->GetTrackNRows(),((AliL3HoughTransformerRow *)tr)->GetTrackFirstRow(),((AliL3HoughTransformerRow *)tr)->GetTrackLastRow());
+	  fPeakFinder->SetTrackLUTs(((AliL3HoughTransformerRow *)tr)->GetTrackNRows(),((AliL3HoughTransformerRow *)tr)->GetTrackFirstRow(),((AliL3HoughTransformerRow *)tr)->GetTrackLastRow(),((AliL3HoughTransformerRow *)tr)->GetNextRow(j));
 #ifdef do_mc
 	  LOG(AliL3Log::kInformational,"AliL3Hough::FindTrackCandidates()","")
 	    <<"Starting "<<j<<" etaslice"<<ENDLOG;

@@ -76,6 +76,7 @@ class AliL3Hough {
   void SetTransformerParams(Float_t ptres=0,Float_t ptmin=0,Float_t ptmax=0,Int_t ny=0,Int_t patch=-1);
   //{fPtRes=ptres;fNBinY=ny;fLowPt=ptmin;fUpperPt=ptmax;fPhi=psi;}
   void SetTransformerParams(Int_t nx,Int_t ny,Float_t lpt,Int_t patch);
+  void CalcTransformerParams(Float_t lpt);
   void SetTransformerParams(Int_t nx,Int_t ny,Float_t lpt,Float_t phi);
   //{fNBinX=nx;fNBinY=ny;fLowPt=lpt;fPhi=phi;}
   void SetThreshold(Int_t t=3,Int_t patch=-1);

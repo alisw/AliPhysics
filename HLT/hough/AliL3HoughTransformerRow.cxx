@@ -27,7 +27,7 @@ using namespace std;
 
 ClassImp(AliL3HoughTransformerRow)
 
-Float_t AliL3HoughTransformerRow::fgBeta1 = 1.0/AliL3Transform::Row2X(79);
+Float_t AliL3HoughTransformerRow::fgBeta1 = 1.0/AliL3Transform::Row2X(84);
 Float_t AliL3HoughTransformerRow::fgBeta2 = 1.0/(AliL3Transform::Row2X(158)*(1.0+tan(AliL3Transform::Pi()*10/180)*tan(AliL3Transform::Pi()*10/180)));
 
 AliL3HoughTransformerRow::AliL3HoughTransformerRow()

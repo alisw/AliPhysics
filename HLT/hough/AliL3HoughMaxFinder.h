@@ -19,6 +19,19 @@ struct AliL3AxisWindow
   Int_t fWeight; // weight
 };
 
+struct AliL3Pre2DPeak
+{
+  Float_t fX; // X coordinate of the preak
+  Float_t fY; // Y coordinate of the preak
+  Float_t fSizeX; // Size of the peak
+  Float_t fSizeY; // Size of the peak
+  Int_t fStartX; // Start position of the peak
+  Int_t fStartY; // Start position of the peak
+  Int_t fEndX; // End position of the peak
+  Int_t fEndY; // End position of the peak
+  Float_t fWeight; // Weight assigned to the peak
+};
+
 class AliL3HoughMaxFinder {
 
  public:
@@ -47,7 +60,7 @@ class AliL3HoughMaxFinder {
   void SetGradient(Float_t x,Float_t y) {fGradX=x; fGradY=y;}
   void SetThreshold(Int_t f) {fThreshold = f;}
   void SetHistogram(AliL3Histogram *hist) {fCurrentHisto = hist;}
-  void SetTrackLUTs(UChar_t *tracknrows, UChar_t *trackfirstrow, UChar_t *tracklastrow) {fTrackNRows = tracknrows; fTrackFirstRow = trackfirstrow; fTrackLastRow = tracklastrow;}
+  void SetTrackLUTs(UChar_t *tracknrows, UChar_t *trackfirstrow, UChar_t *tracklastrow, UChar_t *nextrow) {fTrackNRows = tracknrows; fTrackFirstRow = trackfirstrow; fTrackLastRow = tracklastrow; fNextRow = nextrow;}
   void SetEtaSlice(Int_t etaslice) {fCurrentEtaSlice = etaslice;}
   
   //Getters:
@@ -59,6 +72,9 @@ class AliL3HoughMaxFinder {
   Int_t GetStartEta(Int_t i) const;
   Int_t GetEndEta(Int_t i) const;
   Int_t GetEntries() const {return fNPeaks;}
+
+  //Method for merging of peaks produced by AliL3HoughTransfromerRow
+  Bool_t MergeRowPeaks(AliL3Pre2DPeak *maxima1, AliL3Pre2DPeak *maxima2,Float_t distance);
   
  private:
 
@@ -69,6 +85,7 @@ class AliL3HoughMaxFinder {
   UChar_t *fTrackNRows; //!
   UChar_t *fTrackFirstRow; //!
   UChar_t *fTrackLastRow; //!
+  UChar_t *fNextRow; //!
   
   Float_t fGradX; // Gradient threshold inside Peak Finder 
   Float_t fGradY; // Gradient threshold inside Peak Finder 
