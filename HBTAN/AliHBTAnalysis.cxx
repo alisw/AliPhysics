@@ -234,6 +234,7 @@ void AliHBTAnalysis::Process(Option_t* option)
               "Coherency check not passed. Maybe change the option?\n");
         return;
       }
+    Init();
     if (nonid) ProcessTracksAndParticlesNonIdentAnal();
     else ProcessTracksAndParticles();
     return;
@@ -246,6 +247,7 @@ void AliHBTAnalysis::Process(Option_t* option)
        Error("Process","There is no data to analyze.");
        return;
      }
+    Init();
     if (nonid) ProcessTracksNonIdentAnal();
     else ProcessTracks();
     return;
@@ -258,6 +260,7 @@ void AliHBTAnalysis::Process(Option_t* option)
        Error("Process","There is no data to analyze.");
        return;
      }
+    Init();
     if (nonid) ProcessParticlesNonIdentAnal();
     else ProcessParticles();
     return;
