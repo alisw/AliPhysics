@@ -1,13 +1,30 @@
-Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
+Int_t AliTOFanalyzeHits(Int_t numberOfEvents=0, Bool_t drawing=kFALSE)
 {
+
+  /////////////////////////////////////////////////////////////////////////
   //
-  // Analyzes the hits and fills QA-histograms 
+  // Analyzes TOF hits and fills QA-histograms
+  // and writes the histograms in the TOF_hitsQA.root file
+  //
   // Use case:
   // start aliroot
   // root [0] .L AliTOFanalyzeHits.C
   // root [1] AliTOFanalyzeHits()
   //
-  // Updated to the new I/O by: A. De Caro, C. Zampolli
+  // By default, it analyzes hits for all the events in the header file
+  // and does not draw the histograms filled
+  //
+  // If you want analyze hits only the 1th event
+  // you can use the following line:
+  //
+  // root[0] .L AliTOFanalyzeHits.C
+  // root[1] AliTOFanalyzeHits(1)
+  //
+  // Updated to the new I/O: C. Zampolli
+  //
+  // Report problems to decaro@sa.infn.it
+  //
+  /////////////////////////////////////////////////////////////////////////
 
   Int_t rc = 0;
   
@@ -54,39 +71,41 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
       delete gAlice;
       gAlice = 0x0;
     }
-  
+
   AliRunLoader *rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,"read");
   if (!rl)
     {
-      cerr<<"Can't load RunLoader from file"<<"!\n";
+      cerr<<"Can't load RunLoader from file! \n";
       rc = 1;
       return rc;
     }
-  
+
   rl->LoadgAlice();
   gAlice = rl->GetAliRun();
 
   if (!gAlice)
     {
-      cerr << "<AliTOFanalyzeHits> AliRun object not found on file\n ";
+      cerr << "<AliTOFanalyzeHits> AliRun object not found on file \n";
       rc = 2;
       return rc;
     }
 
+  rl->LoadHeader();
+
   // Get the pointer to the TOF detector
-  AliTOF *tof = (AliTOF *) gAlice->GetDetector("TOF");
   AliLoader *tofl = rl->GetLoader("TOFLoader");
+  AliTOF *tof = (AliTOF *) gAlice->GetDetector("TOF");
   if (tof == 0x0 || tofl == 0x0) {
-    cerr << "<AliTOFanalyzeHits> Can not find TOF or TOFLoader\n";
+    cerr << "<AliTOFanalyzeHits> Can not find TOF or TOFLoader \n";
     rc = 3;
     return rc;
   }
 
   Int_t countHits = 0;
 
-  rl->LoadHeader();
+  if (numberOfEvents==0) numberOfEvents=(Int_t)(rl->GetNumberOfEvents());
 
-  for (Int_t ievent=0; ievent<nevents; ievent++) {
+  for (Int_t ievent=0; ievent<numberOfEvents; ievent++) {
     printf ("Processing event %d \n", ievent);
     rl->GetEvent(ievent);
 
@@ -107,7 +126,7 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
     // (Number of primary particles creating a hit somewhere)
     Int_t nTrack = (Int_t) hitTree->GetEntries();
     cout << "<AliTOFanalyzeHits> Found " << nTrack 
-         << " primary particles with hits" << endl;
+         << " primary particles with hits \n";
 
     Int_t nPrimaryOnTof = 0;
     Int_t nSecondaryOnTof = 0;
@@ -155,23 +174,21 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
         Int_t padx   = hit->GetPadx();   // range [1-48]
         // it is QA, then I perform QA!
 
-	
         Bool_t isHitBad = (sector<0 || sector>17 || 
-			   plate<0 || plate>4 || 
-			   padz<0 || padz>1 || 
-			   padx<0 || padx>47 ||
-
+			    plate<0 || plate>4   || 
+			     padz<0 || padz>1    || 
+			     padx<0 || padx>47   ||
 			   ((strip<0 || strip>14) && plate == 2) ||
 			   ((strip<0 || strip>18) && (plate == 1 || plate == 3)) ||
 			   ((strip<0 || strip>19) && (plate == 0 || plate == 4)));
-	
+
 	if (isHitBad) {
           cout << "<AliTOFanalyzeHits>  strange hit found \n";
 	  cout << "sector = " << sector <<
-	    " plate = " << plate <<
-	    " strip = " << strip <<
-	    " padx = " << padx <<
-	    " padz = " << padz << endl;
+	          " plate = " << plate <<
+	          " strip = " << strip <<
+	          " padx = " << padx <<
+	          " padz = " << padz << endl;
 	  rc = 5;
 	  return rc;
         }
@@ -198,9 +215,9 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
         hstrip->Fill(strip);
         hpadx->Fill(padx);
         hpadz->Fill(padz);
-
+/*
         Int_t track = hit->Track();
-        TParticle *part = gAlice->Particle(track);
+        TParticle *part = gAlice->GetMCApp()->Particle(track);
 
         // getting MC info for the current track
         if (part->GetFirstMother()<0){
@@ -229,7 +246,7 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
 	  htofs->Fill(flightTime);
 	  htofmoms->Fill(tofmom);
         }
-
+*/
         // go to next hit
         hit = (AliTOFhitT0 *) tof->NextHit();
 
@@ -240,12 +257,12 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
     tofl->UnloadHits();
     rl->UnloadKinematics();
 
-    cout << "<AliTOFanalyzeHits> Found " << countHits << " hits in total" << endl;
-    cout << npion     << " primary pions reached the TOF detector"     << endl;
-    cout << nkaon     << " primary kaons reached the TOF detector"     << endl;
-    cout << nproton   << " primary protons reached the TOF detector"   << endl;
-    cout << nelectron << " primary electrons reached the TOF detector" << endl;
-    cout << nmuon     << " primary muons reached the TOF detector"     << endl;
+    cout << "<AliTOFanalyzeHits> Found " << countHits << " hits in total \n";
+    cout << npion     << " primary pions reached the TOF detector \n";
+    cout << nkaon     << " primary kaons reached the TOF detector \n";
+    cout << nproton   << " primary protons reached the TOF detector \n";
+    cout << nelectron << " primary electrons reached the TOF detector \n";
+    cout << nmuon     << " primary muons reached the TOF detector \n";
 
   }
 
@@ -324,7 +341,7 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
       delete gAlice;
       gAlice = 0x0;
     }
-  
+
   return rc;
 
 }

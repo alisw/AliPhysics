@@ -1,11 +1,17 @@
-Int_t AliTOFanalyzeDigits(Int_t ndump=15, Int_t iEvNum=0)
+Int_t AliTOFanalyzeDigits(Int_t ndump=0, Int_t numberOfEvents=0)
 {
+
+  /////////////////////////////////////////////////////////////////////////
   //
   // Analyzes the TOF digits and fills QA-histograms 
-  // report problems to pierella@bo.infn.it
-  // iEvNum=0 means all events in the file
+  // numberOfEvents=0 means all events in the file
+  //
   // Author: F. Pierella (Bologna University)
   // Updated to the new I/O by: A. De Caro, C. Zampolli
+  //
+  // Report problems to decaro@sa.infn.it
+  //
+  /////////////////////////////////////////////////////////////////////////
 
   Int_t rc = 0;
   
@@ -62,18 +68,14 @@ Int_t AliTOFanalyzeDigits(Int_t ndump=15, Int_t iEvNum=0)
       return rc;
     }
   
-  cout << "First " << ndump << " Digits found in TOF TreeD branch have:" << endl;
+  if (ndump) cout << "First " << ndump << " Digits found in TOF TreeD branch have: \n";
 
- if (iEvNum == 0) 
-    { 
-      rl->LoadHeader();
-      TTree *TE = rl->TreeE();
-      iEvNum = (Int_t)TE->GetEntries();
-    } 
+  rl->LoadHeader();
+  if (numberOfEvents == 0) numberOfEvents = (Int_t)(rl->GetNumberOfEvents());
   
   AliTOFdigit *tofdigit;  
 
-  for (Int_t ievent = 0; ievent < iEvNum; ievent++) {
+  for (Int_t ievent = 0; ievent < numberOfEvents; ievent++) {
     printf ("Processing event %d \n", ievent);
     rl->GetEvent(ievent);
     
@@ -126,9 +128,9 @@ Int_t AliTOFanalyzeDigits(Int_t ndump=15, Int_t iEvNum=0)
 	    }
 	  
 	  if(k<ndump){
-	    cout << k << "-th | " << "Sector " << sector << " | Plate " << plate << " | Strip " << strip << " | PadZ " << padz << " | PadX " << padx << endl;
-	    cout << k << "-th | ADC " << adc << " [bin] | TDC " << tdc << " [bin]" << endl;
-	    cout << "----------------------------------------------------"<< endl;
+	    cout << k << "-th | Sector " << sector << " | Plate " << plate << " | Strip " << strip << " | PadZ " << padz << " | PadX " << padx << endl;
+	    cout << k << "-th | ADC " << adc << " [bin] | TDC " << tdc << " [bin] \n";
+	    cout << "---------------------------------------------------- \n";
 	  }
 	  
 	  // filling digit volume histos
@@ -143,11 +145,12 @@ Int_t AliTOFanalyzeDigits(Int_t ndump=15, Int_t iEvNum=0)
       }
     
     tofl->UnloadDigits();
-    rl->UnloadHeader();
-    rl->UnloadgAlice();
   
   } // end loop on events
   
+  rl->UnloadHeader();
+  rl->UnloadgAlice();
+
   TFile *fout = new TFile("TOF_digitsQA.root","RECREATE");
   htdc->Write();
   hadc->Write();

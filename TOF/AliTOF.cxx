@@ -595,6 +595,15 @@ void AliTOF::ResetDigits ()
   AliDetector::ResetDigits ();
   //
 } 
+//____________________________________________
+void AliTOF::ResetSDigits ()
+{
+  //
+  // Reset number of sdigits and the sdigits array for this detector
+  fNSDigits = 0;
+  fSDigits = 0x0;
+  //
+} 
 //_____________________________________________________________________________
 void AliTOF::Init()
 {
@@ -710,29 +719,44 @@ AliTOFMerger*  AliTOF::Merger()
     return fMerger;
 }
 
-
 //---------------------------------------------------------------------
-
 void AliTOF::Hits2SDigits()
 {
 //
 // Use the TOF SDigitizer to make TOF SDigits
 //
-//
-  //#ifdef DEBUG
-  cout<<"ALiTOF::Hits2SDigits> start...\n";
-  //#endif
-  
-  //char * fileSDigits = 0 ;
-  const char * fileHeader = fLoader->GetRunLoader()->GetFileName().Data();
-  AliTOFSDigitizer * sd = new AliTOFSDigitizer(fileHeader) ;
 
-  sd->Exec("") ;
+  cout<<"AliTOF::Hits2SDigits> start...\n";
+  
+  const char * fileHeader = fLoader->GetRunLoader()->GetFileName().Data();
+  AliTOFSDigitizer * sd = new AliTOFSDigitizer(fileHeader);
   sd->Print("");
 
-//  delete sd ;
-  
+  sd->Exec("") ;
+
 }
+
+//---------------------------------------------------------------------
+void AliTOF::Hits2SDigits(Int_t evNumber1, Int_t evNumber2)
+{
+//
+// Use the TOF SDigitizer to make TOF SDigits
+//
+
+  if ((evNumber2-evNumber1)==1) 
+      cout << "<AliTOF::Hits2SDigits>: I am making sdigits for the " << evNumber1 << "th event \n";
+  else if ((evNumber2-evNumber1)>1)
+      cout << "<AliTOF::Hits2SDigits>: I am making sdigits for the events from the " 
+           << evNumber1 << "th to the " << evNumber2-1 << "th \n";
+ 
+  const char * fileHeader = fLoader->GetRunLoader()->GetFileName().Data();
+  AliTOFSDigitizer * sd = new AliTOFSDigitizer(fileHeader,evNumber1,evNumber2) ;
+  sd->Print("");
+
+  sd->Exec("") ;
+
+}
+
 //___________________________________________________________________________
 AliDigitizer* AliTOF::CreateDigitizer(AliRunDigitizer* manager)
 {

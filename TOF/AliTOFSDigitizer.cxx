@@ -25,7 +25,6 @@
 // Use case: see AliTOFhits2sdigits.C macro in the CVS
 //////////////////////////////////////////////////////////////////////////////
 
-
 #include <Riostream.h>
 #include <stdlib.h>
 
@@ -64,63 +63,70 @@ ClassImp(AliTOFSDigitizer)
 {
   // ctor
 
-  fRunLoader     = 0 ;
+  fRunLoader      = 0;
+  fTOFLoader      = 0;
 
-  fEvent1=0;
-  fEvent2=0;
-  ftail    = 0;
-  fSelectedSector=-1; //0; // AdC
-  fSelectedPlate =-1; //0; // AdC
+  fEvent1         = 0;
+  fEvent2         = 0;
+  ftail           = 0;
+  fSelectedSector = -1;
+  fSelectedPlate  = -1;
 }
-           
+
 //____________________________________________________________________________ 
-  AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("AliTOFSDigitizer","") 
+AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("AliTOFSDigitizer","")
 {
   ftail    = 0;
-  fSelectedSector=-1; //0; // AdC // by default we sdigitize all sectors
-  fSelectedPlate =-1; //0; // AdC // by default we sdigitize all plates in all sectors
-
+  fSelectedSector=-1; // by default we sdigitize all sectors
+  fSelectedPlate =-1; // by default we sdigitize all plates in all sectors
+  
   fHeadersFile = HeaderFile ; // input filename (with hits)
-  TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data() ) ;
-
-  //File was not opened yet
-  // open file and get alirun object
-  if(file == 0){
-      file =    TFile::Open(fHeadersFile.Data(),"update") ;
-      gAlice = (AliRun *) file->Get("gAlice") ;
+  TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data());
+  
+  //File was not opened yet open file and get alirun object
+  if (file == 0) {
+    file   = TFile::Open(fHeadersFile.Data(),"update") ;
+    gAlice = (AliRun *) file->Get("gAlice") ;
   }
   
   // add Task to //root/Tasks folder
   fRunLoader = AliRunLoader::Open(HeaderFile);//open session and mount on default event folder
   if (fRunLoader == 0x0)
-   {
-     Fatal("AliTOFSDigitizer","Event is not loaded. Exiting");
-     return;
-   }
+    {
+      Fatal("AliTOFSDigitizer","Event is not loaded. Exiting");
+      return;
+    }
 
   fRunLoader->LoadHeader();
-  if (nEvents<0) {
-    fEvent1=0;
-    fEvent2 = (Int_t)((fRunLoader->TreeE())->GetEntries());
-  } else {
-    fEvent1=evNumber1;
-    fEvent2=fEvent1+nEvents;
+  
+  if (evNumber1>=0) fEvent1 = evNumber1;
+  else fEvent1=0;
+  
+  if (nEvents==0) fEvent2 = (Int_t)(fRunLoader->GetNumberOfEvents());
+  else if (nEvents>0) fEvent2 = evNumber1+nEvents;
+  else fEvent2 = 1;
+  
+  if (!(fEvent2>fEvent1)) {
+    cout << " ERROR: fEvent2 = " << fEvent2 << " <= fEvent1 = " << fEvent1 << endl;
+    fEvent1 = 0;
+    fEvent2 = 1;
+    cout << " Correction: fEvent2 = " << fEvent2 << " <= fEvent1 = " << fEvent1 << endl;
   }
-
+  
   // init parameters for sdigitization
   InitParameters();
-
-  AliLoader* gime = fRunLoader->GetLoader("TOFLoader");
-  if (gime == 0x0)
-   {
-     Fatal("AliTOFSDigitizer","Can not find TOF loader in event. Exiting.");
-     return;
-   }
-  gime->PostSDigitizer(this);
+  
+  fTOFLoader = fRunLoader->GetLoader("TOFLoader");
+  if (fTOFLoader == 0x0)
+    {
+      Fatal("AliTOFSDigitizer","Can not find TOF loader in event. Exiting.");
+      return;
+    }
+  fTOFLoader->PostSDigitizer(this);
 }
 
 //____________________________________________________________________________ 
-  AliTOFSDigitizer::~AliTOFSDigitizer()
+AliTOFSDigitizer::~AliTOFSDigitizer()
 {
   // dtor
 }
@@ -129,7 +135,7 @@ ClassImp(AliTOFSDigitizer)
 void AliTOFSDigitizer::InitParameters()
 {
   // set parameters for detector simulation
-
+  
   fTimeResolution =0.120;
   fpadefficiency  =0.99 ;
   fEdgeEffect     = 2   ;
@@ -157,8 +163,8 @@ void AliTOFSDigitizer::InitParameters()
   fLogChargeSmearing=0.13;
   fTimeSmearing   =0.022;
   fAverageTimeFlag=0    ;
-  fTdcBin   = 50.;      // 1 TDC bin = 50 ps
-  fAdcBin   = 0.25;     // 1 ADC bin = 0.25 pC (or 0.03 pC)
+  fTdcBin   = 50.;     // 1 TDC bin = 50 ps
+  fAdcBin   = 0.25;    // 1 ADC bin = 0.25 pC (or 0.03 pC)
   fAdcMean  = 50.;     // ADC distribution mpv value for Landau (in bins)
                        // it corresponds to a mean value of ~100 bins
   fAdcRms   = 25.;     // ADC distribution rms value (in bins)
@@ -183,40 +189,13 @@ Double_t TimeWithTail(Double_t* x, Double_t* par)
 
 
 //____________________________________________________________________________
-void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) { 
+void AliTOFSDigitizer::Exec(Option_t *verboseOption) { 
 
-  fRunLoader->LoadgAlice();
-  //fRunLoader->LoadHeader();
-  fRunLoader->LoadKinematics();
-  gAlice = fRunLoader->GetAliRun();
-  
-  AliLoader* gime = fRunLoader->GetLoader("TOFLoader");
-  gime->LoadHits("read");
-  gime->LoadSDigits("recreate");
-  if(strstr(verboseOption,"tim") || strstr(verboseOption,"all"))
+  if (strstr(verboseOption,"tim") || strstr(verboseOption,"all"))
     gBenchmark->Start("TOFSDigitizer");
 
-  AliTOF *TOF = (AliTOF *) gAlice->GetDetector("TOF");
-
-  if (!TOF) {
-    Error("AliTOFSDigitizer","TOF not found");
-    return;
-  }
-
-  // is pointer to fSDigits non zero after changes?
-  cout<<"TOF fSDigits pointer:"<<TOF->SDigits()<<endl;
-
-  // recreate TClonesArray fSDigits - for backward compatibility
-  if (TOF->SDigits() == 0) {
-    TOF->CreateSDigitsArray();
-  } else {
-    TOF->RecreateSDigitsArray();
-  }
-
-  Int_t version=TOF->IsVersion();
-
   if (fEdgeTails) ftail = new TF1("tail",TimeWithTail,-2,2,3);
-
+  
   Int_t nselectedHits=0;
   Int_t ntotalsdigits=0;
   Int_t ntotalupdates=0;
@@ -226,41 +205,53 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
   Int_t nHitsFromSec=0;
   Int_t nlargeTofDiff=0;
 
-  if (strstr(allEvents,"all")){
-    fEvent1=0;
-    fEvent2= (Int_t) gAlice->TreeE()->GetEntries();
-  }
-
-  //Bool_t thereIsNotASelection=(fSelectedSector==0) && (fSelectedPlate==0); // AdC
   Bool_t thereIsNotASelection=(fSelectedSector==-1) && (fSelectedPlate==-1);
 
-  for (Int_t ievent = fEvent1; ievent < fEvent2; ievent++) {
-    cout << "------------------- "<< GetName() << " -------------" << endl ;
-    cout << "Sdigitizing event " << ievent << endl;
+  fRunLoader->LoadgAlice();
+  gAlice = fRunLoader->GetAliRun();
+
+  fRunLoader->LoadKinematics();
+  
+  AliTOF *TOF = (AliTOF *) gAlice->GetDetector("TOF");
+  
+  if (!TOF) {
+    Error("AliTOFSDigitizer","TOF not found");
+    return;
+  }
+  
+  fTOFLoader->LoadHits("read");
+  fTOFLoader->LoadSDigits("recreate");
+  
+  for (Int_t iEvent=fEvent1; iEvent<fEvent2; iEvent++) {
+    cout << "------------------- "<< GetName() << " ------------- \n";
+    cout << "Sdigitizing event " << iEvent << endl;
+
+    fRunLoader->GetEvent(iEvent);
+
+    TTree *TH = fTOFLoader->TreeH ();
+    if (!TH) return;
+
+    if (fTOFLoader->TreeS () == 0) fTOFLoader->MakeTree ("S");
+    
+    //Make branch for digits
+    TOF->MakeBranch("S");
+    
+    TOF->SetTreeAddress();
+
+    // recreate TClonesArray fSDigits - for backward compatibility
+    if (TOF->SDigits() == 0) {
+      TOF->CreateSDigitsArray();
+    } else {
+      TOF->RecreateSDigitsArray();
+    }
+
+    Int_t version=TOF->IsVersion();
 
     Int_t nselectedHitsinEv=0;
     Int_t ntotalsdigitsinEv=0;
     Int_t ntotalupdatesinEv=0;
     Int_t nnoisesdigitsinEv=0;
     Int_t nsignalsdigitsinEv=0;
-
-    fRunLoader->GetEvent(ievent);
-    TOF->SetTreeAddress();
-    TTree *TH = gime->TreeH ();
-    if (!TH)
-      return;
-    if (gime->TreeS () == 0)
-      gime->MakeTree ("S");
-
-      
-    //Make branches
-    char branchname[20];
-    sprintf (branchname, "%s", TOF->GetName ());
-    //Make branch for digits
-    TOF->MakeBranch("S");
-    
-    //Now made SDigits from hits
-
 
     TParticle *particle;
     //AliTOFhit *tofHit;
@@ -269,32 +260,26 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
     // create hit map
     AliTOFHitMap *hitMap = new AliTOFHitMap(TOF->SDigits());
 
-    // increase performances in terms of CPU time
-    //PH     TH->SetBranchStatus("*",0); // switch off all branches
-    //PH     TH->SetBranchStatus("TOF*",1); // switch on only TOF
-
     TBranch * tofHitsBranch = TH->GetBranch("TOF");
 
     Int_t ntracks = static_cast<Int_t>(TH->GetEntries());
     for (Int_t track = 0; track < ntracks; track++)
     {
       gAlice->ResetHits();
-      //PH      TH->GetEvent(track);
       tofHitsBranch->GetEvent(track);
       particle = gAlice->GetMCApp()->Particle(track);
       Int_t nhits = TOFhits->GetEntriesFast();
       // cleaning all hits of the same track in the same pad volume
       // it is a rare event, however it happens
 
-      Int_t previousTrack =-1; //0; // AdC
-      Int_t previousSector=-1; //0; // AdC
-      Int_t previousPlate =-1; //0; // AdC
-      Int_t previousStrip =-1; //0; // AdC
-      Int_t previousPadX  =-1; //0; // AdC
-      Int_t previousPadZ  =-1; //0; // AdC
+      Int_t previousTrack =-1;
+      Int_t previousSector=-1;
+      Int_t previousPlate =-1;
+      Int_t previousStrip =-1;
+      Int_t previousPadX  =-1;
+      Int_t previousPadZ  =-1;
 
-      for (Int_t hit = 0; hit < nhits; hit++)
-      {
+      for (Int_t hit = 0; hit < nhits; hit++) {
 	Int_t    vol[5];       // location for a digit
 	Float_t  digit[2];     // TOF digit variables
 	Int_t tracknum;
@@ -327,9 +312,9 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 	  Zpad = tofHit->GetDz();
 	  geantTime = tofHit->GetTof(); // unit [s]
 	}
-
+	
 	geantTime *= 1.e+09;  // conversion from [s] to [ns]
-	    
+	
 	// selection case for sdigitizing only hits in a given plate of a given sector
 	if(thereIsNotASelection || (vol[0]==fSelectedSector && vol[1]==fSelectedPlate)){
 	  
@@ -351,16 +336,11 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 	    
 	    nselectedHits++;
 	    nselectedHitsinEv++;
-	    if (particle->GetFirstMother() < 0){
-	      nHitsFromPrim++;
-	    } // counts hits due to primary particles
+	    if (particle->GetFirstMother() < 0) nHitsFromPrim++; // counts hits due to primary particles
 	    
-	    //Float_t xStrip=AliTOFConstants::fgkXPad*(vol[3]-0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad;
-	    //Float_t zStrip=AliTOFConstants::fgkZPad*(vol[4]-0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad;
-	    Float_t xStrip=AliTOFConstants::fgkXPad*(vol[3]+0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad; // AdC
-	    Float_t zStrip=AliTOFConstants::fgkZPad*(vol[4]+0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad; // AdC
+	    Float_t xStrip=AliTOFConstants::fgkXPad*(vol[3]+0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad;
+	    Float_t zStrip=AliTOFConstants::fgkZPad*(vol[4]+0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad;
 
-	    //cout << "geantTime " << geantTime << " [ns]" << endl;
 	    Int_t nActivatedPads = 0, nFiredPads = 0;
 	    Bool_t isFired[4] = {kFALSE, kFALSE, kFALSE, kFALSE};
 	    Float_t tofAfterSimul[4] = {0., 0., 0., 0.};
@@ -379,15 +359,14 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 		  
 		  Float_t landauFactor = gRandom->Landau(fAdcMean, fAdcRms); 
 		  digit[1] = (Int_t) (qInduced[indexOfPad] * landauFactor); // ADC bins (each bin -> 0.25 (or 0.03) pC)
-		  
+
 		  // recalculate the volume only for neighbouring pads
 		  if(indexOfPad){
-		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[4] = 0/*1*/ : vol[4] = 1/*2*/; // AdC
-		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[3] = nPlace[indexOfPad] - 1 : vol[3] = nPlace[indexOfPad] - AliTOFConstants::fgkNpadX - 1; // AdC
+		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[4] = 0 : vol[4] = 1;
+		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[3] = nPlace[indexOfPad] - 1 : vol[3] = nPlace[indexOfPad] - AliTOFConstants::fgkNpadX - 1;
 		  }
-		  
-		  // check if two sdigit are on the same pad; in that case we sum
-		  // the two or more sdigits
+		  // check if two sdigit are on the same pad;
+		  // in that case we sum the two or more sdigits
 		  if (hitMap->TestHit(vol) != kEmpty) {
 		    AliTOFSDigit *sdig = static_cast<AliTOFSDigit*>(hitMap->GetHit(vol));
 		    Int_t tdctime = (Int_t) digit[0];
@@ -419,24 +398,30 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
     } // end loop on ntracks
     
     delete hitMap;
-      
-    gime->TreeS()->Reset();
-    gime->TreeS()->Fill();
-    //gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
-    gime->WriteSDigits("OVERWRITE");
-
-    if(strstr(verboseOption,"all")){
-      cout << "----------------------------------------" << endl;
-      cout << "       <AliTOFSDigitizer>     " << endl;
-      cout << "After sdigitizing " << nselectedHitsinEv << " hits" << " in event " << ievent << endl;
+    
+    fTOFLoader->TreeS()->Reset();
+    fTOFLoader->TreeS()->Fill();
+    fTOFLoader->WriteSDigits("OVERWRITE");
+    
+    if (TOF->SDigits()) TOF->ResetSDigits();
+    
+    if (strstr(verboseOption,"all")) {
+      cout << "---------------------------------------- \n";
+      cout << "       <AliTOFSDigitizer>    \n";
+      cout << "After sdigitizing " << nselectedHitsinEv << " hits" << " in event " << iEvent << endl;
       //" (" << nHitsFromPrim << " from primaries and " << nHitsFromSec << " from secondaries) TOF hits, " 
-      cout << ntotalsdigitsinEv << " digits have been created " << endl;
-      cout << "(" << nsignalsdigitsinEv << " due to signals and " <<  nnoisesdigitsinEv << " due to border effect)" << endl;
-      cout << ntotalupdatesinEv << " total updates of the hit map have been performed in current event" << endl;
-      cout << "----------------------------------------" << endl;
+      cout << ntotalsdigitsinEv << " digits have been created \n";
+      cout << "(" << nsignalsdigitsinEv << " due to signals and " <<  nnoisesdigitsinEv << " due to border effect) \n";
+      cout << ntotalupdatesinEv << " total updates of the hit map have been performed in current event \n";
+      cout << "---------------------------------------- \n";
     }
 
   } //event loop on events
+
+    fTOFLoader->UnloadSDigits();
+    fTOFLoader->UnloadHits();
+    fRunLoader->UnloadKinematics();
+    fRunLoader->UnloadgAlice();
 
   // free used memory
   if (ftail){
@@ -446,54 +431,51 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
   
   nHitsFromSec=nselectedHits-nHitsFromPrim;
   if(strstr(verboseOption,"all")){
-    cout << "----------------------------------------" << endl;
-    cout << "----------------------------------------" << endl;
-    cout << "-----------SDigitization Summary--------" << endl;
-    cout << "       <AliTOFSDigitizer>     " << endl;
-    cout << "After sdigitizing " << nselectedHits << " hits" << endl;
-    cout << "in " << (fEvent2-fEvent1) << " events" << endl;
+    cout << "---------------------------------------- \n";
+    cout << "---------------------------------------- \n";
+    cout << "-----------SDigitization Summary-------- \n";
+    cout << "       <AliTOFSDigitizer>     \n";
+    cout << "After sdigitizing " << nselectedHits << " hits  \n";
+    cout << "in " << (fEvent2-fEvent1) << " events  \n";
 //" (" << nHitsFromPrim << " from primaries and " << nHitsFromSec << " from secondaries) TOF hits, " 
-    cout << ntotalsdigits << " sdigits have been created " << endl;
-    cout << "(" << nsignalsdigits << " due to signals and " <<  nnoisesdigits << " due to border effect)" << endl;
-    cout << ntotalupdates << " total updates of the hit map have been performed" << endl;
-    cout << "in " << nlargeTofDiff << " cases the time of flight difference is greater than 200 ps" << endl;
+    cout << ntotalsdigits << " sdigits have been created \n";
+    cout << "(" << nsignalsdigits << " due to signals and " 
+         <<  nnoisesdigits << " due to border effect) \n";
+    cout << ntotalupdates << " total updates of the hit map have been performed \n";
+    cout << "in " << nlargeTofDiff << " cases the time of flight difference is greater than 200 ps \n";
   }
 
 
   if(strstr(verboseOption,"tim") || strstr(verboseOption,"all")){
     gBenchmark->Stop("TOFSDigitizer");
-    cout << "AliTOFSDigitizer:" << endl ;
+    cout << "AliTOFSDigitizer: \n";
     cout << "   took " << gBenchmark->GetCpuTime("TOFSDigitizer") << " seconds in order to make sdigits " 
-	 <<  gBenchmark->GetCpuTime("TOFSDigitizer")/(fEvent2-fEvent1) << " seconds per event " << endl ;
-    cout << endl ;
+	 <<  gBenchmark->GetCpuTime("TOFSDigitizer")/(fEvent2-fEvent1) << " seconds per event \n";
+    cout << " +++++++++++++++++++++++++++++++++++++++++++++++++++  \n";
   }
 
-  Print("");
 }
 
 //__________________________________________________________________
 void AliTOFSDigitizer::Print(Option_t* /*opt*/)const
 {
-  cout << "------------------- "<< GetName() << " -------------" << endl ;
-
+  cout << "------------------- "<< GetName() << " ------------- \n";
 }
 
 //__________________________________________________________________
 void AliTOFSDigitizer::SelectSectorAndPlate(Int_t sector, Int_t plate)
 {
-  //Bool_t isaWrongSelection=(sector < 1) || (sector > AliTOFConstants::fgkNSectors) || (plate < 1) || (plate > AliTOFConstants::fgkNPlates);
-  Bool_t isaWrongSelection=(sector < 0) || (sector >= AliTOFConstants::fgkNSectors) || (plate < 0) || (plate >= AliTOFConstants::fgkNPlates); // AdC
+  Bool_t isaWrongSelection=(sector < 0) || (sector >= AliTOFConstants::fgkNSectors) || (plate < 0) || (plate >= AliTOFConstants::fgkNPlates);
   if(isaWrongSelection){
     cout << "You have selected an invalid value for sector or plate " << endl;
-    //cout << "The correct range for sector is [1,"<< AliTOFConstants::fgkNSectors <<"]" << endl;
-    //cout << "The correct range for plate  is [1,"<< AliTOFConstants::fgkNPlates  <<"]" << endl;
-    cout << "The correct range for sector is [0,"<< AliTOFConstants::fgkNSectors-1 <<"]\n"; // AdC
-    cout << "The correct range for plate  is [0,"<< AliTOFConstants::fgkNPlates-1  <<"]\n"; // AdC
-    cout << "By default we continue sdigitizing all hits in all plates of all sectors" << endl;
+    cout << "The correct range for sector is [0,"<< AliTOFConstants::fgkNSectors-1 <<"]\n";
+    cout << "The correct range for plate  is [0,"<< AliTOFConstants::fgkNPlates-1  <<"]\n";
+    cout << "By default we continue sdigitizing all hits in all plates of all sectors \n";
   } else {
     fSelectedSector=sector;
     fSelectedPlate =plate;
-    cout << "SDigitizing only hits in plate " << fSelectedPlate << " of the sector " << fSelectedSector << endl;
+    cout << "SDigitizing only hits in plate " << fSelectedPlate << " of the sector " 
+         << fSelectedSector << endl;
   }
 }
 

@@ -76,12 +76,14 @@ public:
   virtual AliTOFMerger* Merger();
 //  virtual void    Hits2Digits();   
   virtual void    Hits2SDigits();
+  virtual void    Hits2SDigits(Int_t evNumber1, Int_t evNumber2);
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager); 
   virtual void    Digits2Reco() {cout << "AliTOF::Digits2Reco()  dummy function called" << endl;}
           void    Digits2Raw (Int_t evNumber=0);
           void    Raw2Digits (Int_t evNumber=0);
   virtual void    ResetHits();
   virtual void    ResetDigits();
+  virtual void    ResetSDigits();
   TClonesArray *SDigits() const {return fSDigits;}
   TClonesArray *ReconParticles() const {return fReconParticles;}
   void RecreateSDigitsArray();

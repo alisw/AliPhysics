@@ -1,11 +1,25 @@
-Int_t AliTOFanalyzeSDigitsV2(Int_t ndump=15, Int_t iEvNum=0)
+Int_t AliTOFanalyzeSDigitsV2(Int_t ndump=0, Int_t iEvNum=-1, Int_t nEvent=0)
 {
+
+  /////////////////////////////////////////////////////////////////////////
   //
   // Analyzes the TOF sdigits and fills QA-histograms 
-  // report problems to pierella@bo.infn.it
-  // iEvNum=0 means all events in the file
+  // iEvNum=-1 and nEvent=0 means all events in the file
+  // 
+  // root[0] .L AliTOFanalyzeSDigitsV2.C
+  // root[1] AliTOFanalyzeSDigitsV2()
+  //
+  // If you want analyze only the sdigits in the 2th event
+  // (existing int the header file), see in the following:
+  //
+  // root[0] .L AliTOFanalyzeSDigitsV2.C
+  // root[1] AliTOFanalyzeSDigitsV2(0,2,1)
   //
   // Updated to the new I/O by: A. De Caro, C. Zampolli
+  //
+  // Report problems to: decaro@sa.infn.it
+  //
+  /////////////////////////////////////////////////////////////////////////
 
   Int_t rc = 0;
 
@@ -52,6 +66,8 @@ Int_t AliTOFanalyzeSDigitsV2(Int_t ndump=15, Int_t iEvNum=0)
       return rc;
     }
 
+  rl->LoadHeader();
+
   AliLoader *tofl = rl->GetLoader("TOFLoader");
   AliTOF *tof = (AliTOF *) rl->GetAliRun()->GetDetector("TOF");
 
@@ -62,35 +78,39 @@ Int_t AliTOFanalyzeSDigitsV2(Int_t ndump=15, Int_t iEvNum=0)
       return rc;
     }
   
-  cout << "First " << ndump << " SDigits found in TOF TreeS branch have:" << endl;
+  cout << "First " << ndump << " SDigits found in TOF TreeS branch have: \n";
 
-  if (iEvNum == 0)
-    {
-      rl->LoadHeader();
-      TTree *TE = rl->TreeE();
-      iEvNum = (Int_t)TE->GetEntries();
-    }
+  Int_t upperLimit;
+  Int_t bottomLimit;
+
+  if (iEvNum<0) bottomLimit=0;
+  else bottomLimit = iEvNum;
+
+  if (nEvent == 0) upperLimit = (Int_t)(rl->GetNumberOfEvents());
+  else upperLimit = nEvent+bottomLimit;
 
   AliTOFSDigit *tofsdigit;
   
-  for (Int_t ievent = 0; ievent < iEvNum; ievent++) {
-    printf ("Processing event %d \n", ievent);
+  for (Int_t ievent = bottomLimit; ievent < upperLimit; ievent++) {
+
     rl->GetEvent(ievent);
+    printf ("Processing event %d \n", ievent);
     
     // Get the pointer SDigit tree
-    tofl->LoadSDigits();
+    tofl->LoadSDigits("read");
     TTree *TS=tofl->TreeS();
     tof->SetTreeAddress();
     
     if(!TS)
       {
-	cout << "<AliTOFanalyzeSDigits> No TreeS found" << endl;
+	cout << "<AliTOFanalyzeSDigits> No TreeS found \n";
 	rc = 4;
 	return rc;
       }
     
     TClonesArray * TOFsdigits = new TClonesArray("AliTOFSDigit",1000);
-    TOFsdigits = tof->SDigits();
+    //TOFsdigits = tof->SDigits();
+    tof->SDigits();
     TOFsdigits = TS->GetBranch("TOF")->SetAddress(&TOFsdigits); 
 
     Int_t nEntries = TS->GetEntries(); 
@@ -120,15 +140,15 @@ Int_t AliTOFanalyzeSDigitsV2(Int_t ndump=15, Int_t iEvNum=0)
 	  
 
 	  if (isSDigitBad) {
-	    cout << "<AliTOFanalyzeSDigits>  strange sdigit found" << endl;
+	    cout << "<AliTOFanalyzeSDigits>  strange sdigit found \n";
 	    rc = 4;
 	    return rc;
 	  }
 	  
 	  if(k<ndump){
-	    cout << k << "-th | " << "Sector " << sector << " | Plate " << plate << " | Strip " << strip << " | PadZ " << padz << " | PadX " << padx << endl;
-	    cout << k << "-th | ADC " << firstADC << " [bin] | TDC " << firstTDC << " [bin]" << endl;
-	    cout << "----------------------------------------------------"<< endl;
+	    cout << k << "-th | Sector " << sector << " | Plate " << plate << " | Strip " << strip << " | PadZ " << padz << " | PadX " << padx << endl;
+	    cout << k << "-th | ADC " << firstADC << " [bin] | TDC " << firstTDC << " [bin] \n";
+	    cout << "---------------------------------------------------- \n";
 	  }
 	  
 	  // filling sdigit volume histos

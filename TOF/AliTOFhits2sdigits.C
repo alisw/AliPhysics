@@ -1,11 +1,9 @@
-void AliTOFhits2sdigits(Int_t firstEvent=0,Int_t nEvents=1) 
+void AliTOFhits2sdigits(Int_t evNumber1=-1, Int_t numberOfEvents=0)
 {
 
   /////////////////////////////////////////////////////////////////////////
   //
-  // Creates TOF summable digits from the hit information. 
-  //
-  // Report problems to pierella@bo.infn.it
+  // Creates TOF summable digits from the hits for all event in the header file
   //
   // Use case:
   // start root
@@ -13,7 +11,18 @@ void AliTOFhits2sdigits(Int_t firstEvent=0,Int_t nEvents=1)
   // root[0] .L AliTOFhits2sdigits.C
   // root[1] AliTOFhits2sdigits()
   //
+  // By default, it creates sdigits for all the events in the header file.
+  //
+  // If you want create sdigits only the 3th event (existing in the header file)
+  // you can use the following line:
+  //
+  // root[0] .L AliTOFhits2sdigits.C
+  // root[1] AliTOFhits2sdigits(3,1)
+  //
+  // Created by: F. Pierella
   // Updated to the new I/O: C. Zampolli
+  //
+  // Report problems to decaro@sa.infn.it
   //
   /////////////////////////////////////////////////////////////////////////
 
@@ -32,41 +41,33 @@ void AliTOFhits2sdigits(Int_t firstEvent=0,Int_t nEvents=1)
       gAlice = 0x0;
     }
   
-  // Create the TOF sdigitzer and sdigitize by default the first event
-  // (in fact by default Int_t firstEvent=0,Int_t nEvents=1)
-  AliTOFSDigitizer *sdigitizer = new AliTOFSDigitizer("galice.root",firstEvent,nEvents); // it is the same nevents numbering
+  // Create the TOF sdigitzer and sdigitize all events by default
+  AliTOFSDigitizer *sdigitizer = new AliTOFSDigitizer("galice.root",evNumber1,numberOfEvents);
 
   // Activate this line if you want to print the parameters
   // used in sdigitization
   // sdigitizer->PrintParameters();
 
-  // e.g. Activate this line if you want to sdigitize only hits from plate 3
-  // in sector 15
+  // e.g. Activate this line if you want to sdigitize only hits 
+  // with the plate number 3 and the sector number 15
   // pay attention that sector must be in the range [0,17]
   //                and plate  must be in the range [0,4]
   // by default we sdigitize hits of all plates in all sectors
   // sdigitizer->SelectSectorAndPlate(15,3);
 
-
-  // performs sdigitization of the above events with "all" verbose option
+  // performs sdigitization with "all" verbose option
   // "tim" option is also available for benchmarking only
-  //sdigitizer->Exec("all");  
 
-  // N.B.: in order to maintain the functionality to sdigitize 
-  // all events in current file add a second option
-   sdigitizer->Exec("all","all");
-  // the second "all" option overrides the previous settings for 
-  // lower and upper  bounds for event to sdigitize and allow
-  // the sdigitization for ALL events in fileNameHits
+  sdigitizer->Exec("all");
 
-   sdigitizer = 0x0;
-   delete sdigitizer;
-   
-   if (gAlice)
-     {
-       delete gAlice->GetRunLoader();
-       delete gAlice;
-       gAlice = 0x0;
-     }
-   
+  sdigitizer = 0x0;
+  delete sdigitizer;
+
+  if (gAlice)
+    {
+      delete gAlice->GetRunLoader();
+      delete gAlice;
+      gAlice = 0x0;
+    }
+
 }

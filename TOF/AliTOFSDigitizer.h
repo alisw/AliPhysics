@@ -13,6 +13,7 @@
 #include "TTask.h"
 #include "TString.h"
 class AliRunLoader;
+class AliLoader;
 
 class TF1;
 
@@ -20,19 +21,20 @@ class AliTOFSDigitizer: public TTask {
 
 public:
   AliTOFSDigitizer() ;          // ctor
-  AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1=0, Int_t nEvents=-1) ; // par ctor
+  //AliTOFSDigitizer(const char* HeaderFile) ; // par ctor
+  AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1=-1, Int_t nEvents=0) ; // par ctor
 
   virtual ~AliTOFSDigitizer() ; // dtor
 
-  virtual void  Exec(Option_t *verboseOption, Option_t *allEvents="noAll"); 
+  virtual void  Exec(Option_t *verboseOption); 
   void SetSDigitsFile(char * /*file*/ ) {;}
   
   void InitParameters();
   virtual void PrintParameters() const ;
-  virtual void  SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t geantTime, Int_t& nActivatedPads, Int_t& nFiredPads, Bool_t* isFired, Int_t* nPlace, Float_t* qInduced, Float_t* tofTime, Float_t& averageTime);
+  virtual void SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t geantTime, Int_t& nActivatedPads, Int_t& nFiredPads, Bool_t* isFired, Int_t* nPlace, Float_t* qInduced, Float_t* tofTime, Float_t& averageTime);
   virtual void Print(Option_t* opt) const ;
-  void  SetFirstEvent(Int_t event1)      {fEvent1=event1;}
-  void  SetSecondEvent(Int_t event2)     {fEvent2=event2;}
+  void  SetFirstEvent(Int_t event1)      {fEvent1 = event1;}
+  void  SetSecondEvent(Int_t event2)     {fEvent2 = event2;}
   Int_t GetFirstEvent()  const {return fEvent1;}
   Int_t GetSecondEvent() const {return fEvent2;}
   Int_t GetNEvents() const {return (fEvent2-fEvent1);}
@@ -107,7 +109,8 @@ private:
   Int_t   fEvent2;          // upper bound for events to sdigitize
   TF1     *ftail;           // pointer to formula for time with tail
   TString fHeadersFile;     // input file
-  AliRunLoader* fRunLoader;  //! Run Loader
+  AliRunLoader* fRunLoader; //! Run Loader
+  AliLoader* fTOFLoader;    //! Loader
   
 
   Int_t fSelectedSector;    // sector number for sdigitization
@@ -119,11 +122,11 @@ private:
   Float_t fpadefficiency;   // intrinsic pad efficiency, used if fEdgeEffect==0
   Int_t   fEdgeEffect;      // edge effects option
   Int_t   fEdgeTails;       // edge tails option
-  Float_t fHparameter;      // sensitive edge (to produce hits on the
-  // neighbouring pads) =0.7, new = 0.4 cm
+  Float_t fHparameter;      // sensitive edge (to produce hits on the neighbouring pads)
+                            //                 0.7 cm (old); 0.4 cm (new)
   Float_t fH2parameter;     // parameter to fit the efficiency
-  Float_t fKparameter;      // sensitive edge (going ahead towards the
-  // center no delay effects are suffered) =1.0, new = 0.5 cm
+  Float_t fKparameter;      // sensitive edge (going ahead towards the center
+                            // no delay effects are suffered) 1.0 cm (old); 0.5 cm (new)
   Float_t fK2parameter;     // parameter to fit the efficiency
   // Pad Efficiency and Resolution parameters
   Float_t fEffCenter;       // efficiency in the central region of the pad
