@@ -36,6 +36,7 @@ public:
   Double_t GetP() const;
   void GetPxPyPz(Double_t *p) const;
   void GetXYZ(Double_t *r) const;
+  Int_t GetSign() const {return (fRp[4]<0) ? 1 : -1;} 
 
   void GetInnerPxPyPz(Double_t *p) const;
   void GetInnerXYZ(Double_t *r) const;
