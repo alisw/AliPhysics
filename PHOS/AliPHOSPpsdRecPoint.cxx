@@ -34,6 +34,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliPHOSPpsdRecPoint.h"
 #include "AliRun.h"
+#include "AliPHOSIndexToObject.h"
 
 ClassImp(AliPHOSPpsdRecPoint)
 
@@ -49,7 +50,7 @@ AliPHOSPpsdRecPoint::AliPHOSPpsdRecPoint(void)
 }
 
 //____________________________________________________________________________
-void AliPHOSPpsdRecPoint::AddDigit(AliDigitNew & digit, Float_t Energy)
+void AliPHOSPpsdRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
 {
   // adds a digit to the digits list
   // and accumulates the total amplitude and the multiplicity 
@@ -72,7 +73,7 @@ void AliPHOSPpsdRecPoint::AddDigit(AliDigitNew & digit, Float_t Energy)
     delete [] tempo ;
   }
 
-  fDigitsList[fMulDigit++]  =  (int) &digit  ; 
+  fDigitsList[fMulDigit++]  =  digit.GetIndexInList() ; 
   fAmp += Energy ; 
 }
 
@@ -157,6 +158,8 @@ void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos)
 {
   // Calculates the local position in the PHOS-PPSD-module corrdinates
   
+  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
+
   if( fLocPos.X() < 1000000.) { //allready evaluated
    LPos = fLocPos ;
    return ;
@@ -173,7 +176,7 @@ void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos)
   Int_t iDigit;
 
   for(iDigit = 0; iDigit < fMulDigit; iDigit++) {
-    digit = (AliPHOSDigit *) fDigitsList[iDigit]; 
+    digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) ); 
  
     Float_t xi ;
     Float_t zi ;
@@ -199,9 +202,12 @@ Bool_t AliPHOSPpsdRecPoint::GetUp()
 {
   Int_t relid[4] ;
   
+  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
+
   AliPHOSGeometry * phosgeom = (AliPHOSGeometry *) fGeom ;
   
-  AliPHOSDigit *digit = (AliPHOSDigit *)fDigitsList[0] ; 
+  
+  AliPHOSDigit *digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[0]) ) ; 
   
   phosgeom->AbsToRelNumbering(digit->GetId(),relid);
   Bool_t up ;
@@ -256,18 +262,22 @@ void AliPHOSPpsdRecPoint::Print(Option_t * option)
   Float_t zi ;
   Int_t relid[4] ; 
 
+  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
-    digit = (AliPHOSDigit *) fDigitsList[iDigit];
-    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    phosgeom->RelPosInModule(relid, xi, zi);
-    cout << " Id = " << digit->GetId() ;  
-    cout << "  Phos mod = " << relid[0] ;  
-    cout << "  PPSD mod = " << relid[1] ;  
-    cout << "  x = " << xi ;  
-    cout << "  z = " << zi ;  
-    cout << "   Energy = " << digit->GetAmp() << endl ;
+    digit = please->GimeDigit( fDigitsList[iDigit] ) ; 
+    if (digit) {
+      phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+      phosgeom->RelPosInModule(relid, xi, zi);
+      cout << " Id = " << digit->GetId() ;  
+      cout << "  Phos mod = " << relid[0] ;  
+      cout << "  PPSD mod = " << relid[1] ;  
+      cout << "  x = " << xi ;  
+      cout << "  z = " << zi ;  
+      cout << "   Energy = " << digit->GetAmp() << endl ;
+    }
   }
   cout << "       Multiplicity    = " << fMulDigit  << endl ;
+  cout << "       Stored at position " << fIndexInList << endl ; 
 }
 
 

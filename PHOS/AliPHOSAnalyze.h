@@ -22,6 +22,7 @@
 #include "AliPHOSv0.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSPID.h"
+#include "AliPHOSIndexToObject.h"
 
 class AliPHOSAnalyze : public TObject {
 
@@ -44,14 +45,15 @@ public:
  
 private:
   
-  AliPHOSClusterizer * fClu ;       // a clusterizer 
-  Int_t fEvt ;                      // the evt number being processed 
-  AliPHOSGeometry * fGeom ;         // the PHOS Geometry object
-  AliPHOSv0 * fPHOS ;               // the PHOS object from the root file 
-  AliPHOSPID * fPID ;               // a particle identifier
-  AliPHOSReconstructioner * fRec ;  // a reconstructioner  
-  TFile * fRootFile ;               // the root file that contains the data
-  AliPHOSTrackSegmentMaker * fTrs ; // a tracksegmentmaker ;
+  AliPHOSClusterizer * fClu ;         // a clusterizer 
+  Int_t fEvt ;                        // the evt number being processed 
+  AliPHOSGeometry * fGeom ;           // the PHOS Geometry object
+  AliPHOSIndexToObject * fObjGetter ; // provides methods to retrieve objects from their index in a list
+  AliPHOSv0 * fPHOS ;                 // the PHOS object from the root file 
+  AliPHOSPID * fPID ;                 // a particle identifier
+  AliPHOSReconstructioner * fRec ;    // a reconstructioner  
+  TFile * fRootFile ;                 // the root file that contains the data
+  AliPHOSTrackSegmentMaker * fTrs ;   // a tracksegmentmaker ;
   TH1F * fhEmcDigit ;               // Histo of digit energies in the Emc 
   TH1F * fhVetoDigit ;              // Histo of digit energies in the Veto 
   TH1F * fhConvertorDigit ;         // Histo of digit energies in the Convertor

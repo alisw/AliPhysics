@@ -44,21 +44,23 @@ ClassImp(AliPHOSDigit)
 {
   // default ctor 
 
-  fNprimary = 0 ;  
-  fPrimary1 = -1 ; 
-  fPrimary2 = -1 ; 
-  fPrimary3 = -1 ;
+  fIndexInList = -1 ; 
+  fNprimary    = 0 ;  
+  fPrimary1    = -1 ; 
+  fPrimary2    = -1 ; 
+  fPrimary3    = -1 ;
 }
 
 //____________________________________________________________________________
-AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy) 
+AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index) 
 {  
   // ctor with all data 
 
-  fId         = id ;
-  fAmp        = DigEnergy ;
-  fPrimary1   = primary ;
-  fNprimary   = 1 ; 
+  fAmp         = DigEnergy ;
+  fId          = id ;
+  fIndexInList = index ; 
+  fPrimary1    = primary ;
+  fNprimary    = 1 ; 
 }
 
 //____________________________________________________________________________
@@ -66,12 +68,13 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
 {
   // copy ctor
   
-  fId       = digit.fId;
-  fAmp      = digit.fAmp ;
-  fNprimary = digit.fNprimary ;
-  fPrimary1 = digit.fPrimary1 ;
-  fPrimary2 = digit.fPrimary2 ;
-  fPrimary3 = digit.fPrimary3 ;
+  fAmp         = digit.fAmp ;
+  fId          = digit.fId;
+  fIndexInList = digit.fIndexInList ; 
+  fNprimary    = digit.fNprimary ;
+  fPrimary1    = digit.fPrimary1 ;
+  fPrimary2    = digit.fPrimary2 ;
+  fPrimary3    = digit.fPrimary3 ;
 }
 
 //____________________________________________________________________________
@@ -196,8 +199,8 @@ ostream& operator << ( ostream& out , const AliPHOSDigit & digit)
   out << "ID " << digit.fId << " Energy = " << digit.fAmp << endl 
       << "Primary 1 = " << digit.fPrimary1 << endl 
       << "Primary 2 = " << digit.fPrimary2 << endl 
-      << "Primary 3 = " << digit.fPrimary3 << endl ;
-
+      << "Primary 3 = " << digit.fPrimary3 << endl 
+      << "Position in list = " << digit.fIndexInList << endl ; 
   return out ;
 }
 

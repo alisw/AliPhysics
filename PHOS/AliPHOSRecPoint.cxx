@@ -32,8 +32,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSRecPoint.h"
-
-
+#include "AliPHOSIndexToObject.h"
 
 ClassImp(AliPHOSRecPoint)
 
@@ -162,10 +161,13 @@ Int_t AliPHOSRecPoint::GetPHOSMod()
   if(fPHOSMod > 0) 
     return fPHOSMod ;
 
+  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
+
   Int_t relid[4] ;
   
+  
   AliPHOSDigit * digit   ;
-  digit = (AliPHOSDigit *) fDigitsList[0] ;
+  digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[0]) ) ;
   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
 
   phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;

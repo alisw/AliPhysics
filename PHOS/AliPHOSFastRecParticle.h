@@ -45,6 +45,7 @@ public:
   virtual Int_t DistancetoPrimitive(Int_t px, Int_t py) ; 
   virtual void Draw(Option_t *option) ;  
   virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
+  Int_t GetIndexInList() const { return fIndexInList ; } 
   virtual Int_t * GetPrimaries(Int_t & number) ;
   Int_t GetType() { return fType ; } 
   TString Name() ; 
@@ -52,11 +53,13 @@ public:
   void Print() ; 
   void SetPrimary(Int_t index) { fPrimary = index ; }
   void SetType(Int_t type) { fType = type ; } 
+  void SetIndexInList(Int_t val) { fIndexInList = val ; } 
 
 protected:
 
-  Int_t fType ;    // particle type obtained by "virtual" reconstruction
-  Int_t fPrimary ; // (unique) primary particle index 
+  Int_t fIndexInList ; // the index of this RecParticle in the list stored in TreeR (to be set by analysis)
+  Int_t fPrimary ;     // (unique) primary particle index 
+  Int_t fType ;        // particle type obtained by "virtual" reconstruction
 
   ClassDef(AliPHOSFastRecParticle,1)  // Reconstructed Particle produced by the fast simulation 
 

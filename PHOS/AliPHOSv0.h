@@ -36,25 +36,22 @@ public:
   void           CreateGeometryforPHOS(void) ;                      // creates the PHOS geometry for GEANT
   void           CreateGeometryforPPSD(void) ;                      // creates the PPSD geometry for GEANT
   Int_t          Digitize(Float_t Energy);
-  RecPointsList* EmcClusters() {return fEmcClusters;}               // gets TClonesArray of cluster in the crystals 
   void           FinishEvent(void) ;                                // makes the digits from the hits 
   virtual AliPHOSGeometry * GetGeometry() { return fGeom ; }  
   virtual void   Init(void) ;                                       // does nothing
   Int_t IsVersion(void) const { return 0 ; }
   void           MakeBranch(Option_t* opt) ;
-  RecPointsList* PpsdClusters() { return fPpsdClusters ; }          // gets TClonesArray of clusters in the PPSD 
+  virtual RecPointsList* PpsdRecPoints() { return fPpsdClusters ; }          // gets Array of clusters in the PPSD 
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
-  RecParticlesList * RecParticles() { return fRecParticles ; }      // gets TClonesArray of reconstructed particles
   void           ResetClusters(){} ;
+  virtual void   ResetDigits() ; 
   void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {fReconstructioner = &Reconstructioner ;} 
   void           SetDigitThreshold(Float_t th) { fDigitThreshold = th ; } 
   virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
-  TrackSegmentsList *    TrackSegments(){return fTrackSegments ;}
   
 protected:
 
   Float_t fDigitThreshold ;                       // Threshold for the digit registration 
-  RecPointsList * fEmcClusters ;                  // The RecPoints (clusters) list in EMC 
   AliPHOSGeometry * fGeom ;                       // Geometry definition
   Int_t fNTmpHits ;                               //!  Used internally for digitalization
   Float_t fPinElectronicNoise  ;                  // Electronic Noise in the PIN
@@ -62,8 +59,6 @@ protected:
   AliPHOSReconstructioner * fReconstructioner ;   // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
   TClonesArray * fTmpHits ;                       //!  Used internally for digitalization 
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
-  TrackSegmentsList * fTrackSegments ;            // The TrackSegment list in PHOS
-  RecParticlesList * fRecParticles ;              // The reconstructed particles list in PHOS
 
   ClassDef(AliPHOSv0,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 

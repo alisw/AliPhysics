@@ -19,9 +19,7 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSDigit.h"
-
-typedef TClonesArray    RecPointsList ; 
-typedef TClonesArray    DigitsList ;   
+#include "AliPHOSRecPoint.h"
 
 class AliPHOSClusterizer : public TObject {
 

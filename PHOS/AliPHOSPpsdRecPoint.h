@@ -27,7 +27,7 @@ public:
   AliPHOSPpsdRecPoint() ;           // ctor   
   virtual ~AliPHOSPpsdRecPoint(){}  // dtor
 
-  void AddDigit(AliDigitNew & digit, Float_t Energy) ;
+  virtual void AddDigit(AliPHOSDigit & digit, Float_t Energy) ;
   Int_t   Compare(TObject * obj) ;                    // method to sort clusters
 
   Float_t GetDelta(void) {return fDelta ;}

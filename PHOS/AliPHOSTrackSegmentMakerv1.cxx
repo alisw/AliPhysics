@@ -158,7 +158,7 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * dl, RecPointsList *
   
   Int_t nEmcUnfolded = emcIn->GetEntries() ;
   for(index = emcStopedAt; index < nEmcUnfolded; index++){
-    emcRecPoint = (AliPHOSEmcRecPoint *) (*emcIn)[index] ;
+    emcRecPoint = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
 
     if(emcRecPoint->GetPHOSMod() != phosmod )  
        break ;
@@ -184,7 +184,7 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * dl, RecPointsList *
   emcStopedAt = index ;
 
   for(index = ppsdStopedAt; index < ppsdIn->GetEntries(); index++){
-    ppsdRecPoint = (AliPHOSPpsdRecPoint *) (*ppsdIn)[index] ;
+    ppsdRecPoint = (AliPHOSPpsdRecPoint *) ppsdIn->At(index) ;
     if(ppsdRecPoint->GetPHOSMod() != phosmod )   
       break ;
     if(ppsdRecPoint->GetUp() ) 
@@ -260,9 +260,9 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks(TObjArray * emcRecPoints, TObjArray 
       
       if(toofar) 
 	break ;	 
-      if(r < fR0) 
+      if(r < fR0){
 	new( (*linklowArray)[iLinkLow++]) AliPHOSLink(r, iEmcClu, iPpsdLow) ;
-      
+     }
       iPpsdLow++ ;
       
     }
@@ -275,9 +275,9 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks(TObjArray * emcRecPoints, TObjArray 
       
       if(toofar)
 	break ;	 
-      if(r < fR0) 
+      if(r < fR0) { 
 	new( (*linkupArray)[iLinkUp++]) AliPHOSLink(r, iEmcClu, iPpsdUp) ;
-      
+      }
       iPpsdUp++ ;
       
     }

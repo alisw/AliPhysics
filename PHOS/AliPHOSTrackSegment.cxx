@@ -36,24 +36,32 @@
 
 #include "AliPHOSTrackSegment.h" 
 #include "AliPHOSv0.h"
+#include "AliPHOSIndexToObject.h"
 
 ClassImp(AliPHOSTrackSegment)
 
 //____________________________________________________________________________
-AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , AliPHOSPpsdRecPoint * ppsdRP1,
-                  AliPHOSPpsdRecPoint * ppsdRP2  ) 
+AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , AliPHOSPpsdRecPoint * ppsdrp1,
+                  AliPHOSPpsdRecPoint * ppsdrp2  ) 
 {
   // ctor
 
   if( emc )   
-    fEmcRecPoint =  emc ;
+    fEmcRecPoint =  emc->GetIndexInList() ;
+  else 
+    fEmcRecPoint = -1 ;
 
-  if( ppsdRP1 )  
-    fPpsdUp = ppsdRP1 ;
+  if( ppsdrp1 )  
+    fPpsdUpRecPoint = ppsdrp1->GetIndexInList() ;
+ else 
+    fPpsdUpRecPoint = -1 ;
 
-  if( ppsdRP2  ) 
-    fPpsdLow = ppsdRP2 ;
+  if( ppsdrp2  ) 
+    fPpsdLowRecPoint = ppsdrp2->GetIndexInList() ;
+  else 
+    fPpsdLowRecPoint = -1 ;
 
+  fIndexInList = -1 ;
 }
 
 //____________________________________________________________________________
@@ -71,9 +79,10 @@ void AliPHOSTrackSegment::Copy(TObject & obj)
   // Copy of a track segment into another track segment
 
    TObject::Copy(obj) ;
-   ( (AliPHOSTrackSegment &)obj ).fEmcRecPointId = fEmcRecPointId ; 
-   ( (AliPHOSTrackSegment &)obj ).fPpsdLowId     = fPpsdLowId ; 
-   ( (AliPHOSTrackSegment &)obj ).fPpsdUpId      = fPpsdUpId ; 
+   ( (AliPHOSTrackSegment &)obj ).fEmcRecPoint     = fEmcRecPoint ; 
+   ( (AliPHOSTrackSegment &)obj ).fPpsdLowRecPoint = fPpsdLowRecPoint ; 
+   ( (AliPHOSTrackSegment &)obj ).fPpsdUpRecPoint  = fPpsdUpRecPoint ; 
+   ( (AliPHOSTrackSegment &)obj ).fIndexInList     = fIndexInList ; 
 }
 //____________________________________________________________________________
 Int_t AliPHOSTrackSegment::DistancetoPrimitive(Int_t px, Int_t py)
@@ -83,33 +92,41 @@ Int_t AliPHOSTrackSegment::DistancetoPrimitive(Int_t px, Int_t py)
   // The distance is computed in pixels units.
   
   Int_t div = 1 ;  
+  Int_t dist = 9999 ; 
+  
   TVector3 pos(0.,0.,0.) ;
   
-  fEmcRecPoint->GetLocalPosition( pos) ;
-  Float_t x =  pos.X() ;
-  Float_t y =  pos.Z() ;
-  if ( fPpsdLow ) {
-    fPpsdLow->GetLocalPosition( pos ) ;
-    x +=  pos.X() ;
-    y +=  pos.Z() ;
-    div++ ; 
-  }
-  if ( fPpsdUp ) {
-    fPpsdUp->GetLocalPosition( pos ) ;
-    x +=  pos.X() ;
-    y +=  pos.Z() ;
-    div++ ; 
-  }
-  x /= div ; 
-  y /= div ; 
+  AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
+  AliPHOSPpsdRecPoint * ppsdlrp = GetPpsdLowRecPoint() ; 
+  AliPHOSPpsdRecPoint * ppsdurp = GetPpsdUpRecPoint() ; 
+  
+  if ( emcrp != 0 ) {
+    emcrp->GetLocalPosition( pos) ;
+    Float_t x =  pos.X() ;
+    Float_t y =  pos.Z() ;
+    if ( ppsdlrp != 0 ) {
+      ppsdlrp->GetLocalPosition( pos ) ;
+      x +=  pos.X() ;
+      y +=  pos.Z() ;
+      div++ ; 
+    }
+    if ( ppsdurp != 0 ) {
+      ppsdurp->GetLocalPosition( pos ) ;
+      x +=  pos.X() ;
+      y +=  pos.Z() ;
+      div++ ; 
+    }
+    x /= div ; 
+    y /= div ; 
 
-   const Int_t kMaxDiff = 10;
-   Int_t pxm  = gPad->XtoAbsPixel(x);
-   Int_t pym  = gPad->YtoAbsPixel(y);
-   Int_t dist = (px-pxm)*(px-pxm) + (py-pym)*(py-pym);
-
-   if (dist > kMaxDiff) return 9999;
-   return dist;
+    const Int_t kMaxDiff = 10;
+    Int_t pxm  = gPad->XtoAbsPixel(x);
+    Int_t pym  = gPad->YtoAbsPixel(y);
+    dist = (px-pxm)*(px-pxm) + (py-pym)*(py-pym);
+    
+    if (dist > kMaxDiff) return 9999;
+  }
+  return dist;
 }
 
 //___________________________________________________________________________
@@ -131,6 +148,8 @@ void AliPHOSTrackSegment::ExecuteEvent(Int_t event, Int_t px, Int_t py)
  
   static TPaveText* textTS = 0 ;
   
+  AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
+
   if (!gPad->IsEditable()) 
     return;
   
@@ -141,7 +160,7 @@ void AliPHOSTrackSegment::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     if (!textTS) {
       
       TVector3 pos(0.,0.,0.) ;
-      fEmcRecPoint->GetLocalPosition(pos) ;
+      emcrp->GetLocalPosition(pos) ;
       textTS = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+5,pos.Z()+15,"") ;
       Text_t  line1[40] ;
       sprintf(line1,"See RecParticle for ID") ;
@@ -167,21 +186,47 @@ Float_t AliPHOSTrackSegment::GetDistanceInPHOSPlane()
 {
   // Calculates the distance between the EMC RecPoint and PPSD RecPoint
   
+  AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
+  AliPHOSPpsdRecPoint * ppsdlrp = GetPpsdLowRecPoint() ; 
+
   TVector3 vecEmc ;
-  fEmcRecPoint->GetLocalPosition(vecEmc) ;
+  emcrp->GetLocalPosition(vecEmc) ;
   
   TVector3 vecPpsd ;
-  if( fPpsdLow->GetMultiplicity() )  
-    fPpsdLow->GetLocalPosition(vecPpsd)  ; 
-  else { 
-    vecPpsd.SetX(10000.) ;
-  } 
-  vecEmc -= vecPpsd ;
-
+  if ( ppsdlrp !=0 ) {
+    if( ppsdlrp->GetMultiplicity() )  
+      ppsdlrp->GetLocalPosition(vecPpsd)  ; 
+    else { 
+      vecPpsd.SetX(10000.) ;
+    } 
+    vecEmc -= vecPpsd ;
+  }
   Float_t r = vecEmc.Mag();;
 
   return r ;
 }
+
+//____________________________________________________________________________
+AliPHOSEmcRecPoint * AliPHOSTrackSegment::GetEmcRecPoint() const 
+{
+  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ;
+  AliPHOSEmcRecPoint * rv = 0 ;
+  if (  fEmcRecPoint > -1 )
+    rv = (AliPHOSEmcRecPoint *)please->GimeRecPoint( fEmcRecPoint, TString("emc") );
+  
+  return rv ;
+
+}
+  
+//____________________________________________________________________________
+ Float_t AliPHOSTrackSegment::GetEnergy()
+{ 
+  // Returns energy in EMC
+  
+  AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
+  
+  return emcrp->GetTotalEnergy() ;
+}   
 
 //____________________________________________________________________________
 TVector3 AliPHOSTrackSegment::GetMomentumDirection() 
@@ -194,20 +239,25 @@ TVector3 AliPHOSTrackSegment::GetMomentumDirection()
   // However because of the poor position resolution of PPSD the direction is always taken as if we were 
   //  in case 1.
 
+
+  AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
+  // AliPHOSPpsdRecPoint * ppsdlrp = GetPpsdLowRecPoint() ; 
+  // AliPHOSPpsdRecPoint * ppsdurp = GetPpsdUpRecPoint() ; 
+
   TVector3 dir(0,0,0) ; 
   TMatrix mdummy ;
 
   TVector3 posEmc ;
-  fEmcRecPoint->GetGlobalPosition(posEmc, mdummy) ;
+  emcrp->GetGlobalPosition(posEmc, mdummy) ;
 
   // Correction for the depth of the shower starting point (TDR p 127) 
 
-  Float_t energy = fEmcRecPoint->GetEnergy() ; 
+  Float_t energy = emcrp->GetEnergy() ; 
   Float_t para = 0.925 ; 
   Float_t parb = 6.52 ; 
 
   TVector3 localpos ; 
-  fEmcRecPoint->GetLocalPosition(localpos) ; 
+  emcrp->GetLocalPosition(localpos) ; 
 
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ; 
   Float_t radius = geom->GetIPtoOuterCoverDistance() + geom->GetOuterBoxSize(1) ; 
@@ -223,7 +273,7 @@ TVector3 AliPHOSTrackSegment::GetMomentumDirection()
   TVector3 emcglobalpos ;
   TMatrix  dummy ;
 
-  fEmcRecPoint->GetGlobalPosition(emcglobalpos, dummy) ;
+  emcrp->GetGlobalPosition(emcglobalpos, dummy) ;
 
   emcglobalpos.SetX( emcglobalpos.X() - depthx ) ;  
   emcglobalpos.SetZ( emcglobalpos.Z() - depthz ) ;   
@@ -234,14 +284,14 @@ TVector3 AliPHOSTrackSegment::GetMomentumDirection()
 //   TVector3 ppsdlglobalpos ;
 //   TVector3 ppsduglobalpos ;
 
-//   if( fPpsdLow ){ // certainly a photon that has concerted
+//   if( fPpsdLowRecPoint ){ // certainly a photon that has concerted
         
-//     fPpsdLow->GetGlobalPosition(ppsdlglobalpos, mdummy) ; 
+//     fPpsdLowRecPoint->GetGlobalPosition(ppsdlglobalpos, mdummy) ; 
 //     dir = emcglobalpos -  ppsdlglobalpos ; 
      
-//     if( fPpsdUp ){ // nop looks like a charged
+//     if( fPpsdUpRecPoint ){ // nop looks like a charged
        
-//        fPpsdUp->GetGlobalPosition(ppsduglobalpos, mdummy) ; 
+//        fPpsdUpRecPoint->GetGlobalPosition(ppsduglobalpos, mdummy) ; 
 //        dir = ( dir +  emcglobalpos -  ppsduglobalpos ) * 0.5 ; 
 //      }
 //   }
@@ -258,14 +308,49 @@ TVector3 AliPHOSTrackSegment::GetMomentumDirection()
 }
 
 //____________________________________________________________________________
+Int_t AliPHOSTrackSegment:: GetPHOSMod(void) 
+{
+  
+  AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
+  
+  return emcrp->GetPHOSMod();  
+}
+
+//____________________________________________________________________________
+AliPHOSPpsdRecPoint * AliPHOSTrackSegment::GetPpsdLowRecPoint() const 
+{
+  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ;
+  AliPHOSPpsdRecPoint * rv = 0 ;
+
+  if ( fPpsdLowRecPoint > -1 )
+    rv = (AliPHOSPpsdRecPoint *)please->GimeRecPoint( fPpsdLowRecPoint, TString("ppsd") ) ;
+  
+  return rv ; 
+}
+
+//____________________________________________________________________________
+AliPHOSPpsdRecPoint * AliPHOSTrackSegment::GetPpsdUpRecPoint() const 
+{
+  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ;
+  AliPHOSPpsdRecPoint * rv = 0 ;
+ 
+  if ( fPpsdUpRecPoint > -1 )
+    rv =  (AliPHOSPpsdRecPoint *)please->GimeRecPoint( fPpsdUpRecPoint, TString("ppsd") ) ;
+
+  return rv ;
+}
+
+//____________________________________________________________________________
 Int_t *  AliPHOSTrackSegment::GetPrimariesEmc(Int_t & number) 
 { 
   // Retrieves the primary particle(s) at the origin of the EMC RecPoint
-  
+    
+  AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
+
   Int_t * rv = 0 ; 
   number = 0 ;
-  if ( fEmcRecPoint )
-    rv =  fEmcRecPoint->GetPrimaries(number) ; 
+  if ( emcrp )
+    rv =  emcrp->GetPrimaries(number) ; 
 
   return rv ; 
 }
@@ -275,10 +360,12 @@ Int_t *  AliPHOSTrackSegment::GetPrimariesPpsdLow(Int_t & number)
 { 
   // Retrieves the primary particle(s) at the origin of the lower PPSD RecPoint
   
+  AliPHOSPpsdRecPoint * ppsdlrp = GetPpsdLowRecPoint() ; 
+
   Int_t * rv = 0 ; 
   number = 0 ;
-  if ( fPpsdLow )
-    rv =  fPpsdLow->GetPrimaries(number) ; 
+  if ( ppsdlrp )
+    rv =  ppsdlrp->GetPrimaries(number) ; 
 
   return rv ; 
 }
@@ -288,10 +375,12 @@ Int_t *  AliPHOSTrackSegment::GetPrimariesPpsdUp(Int_t & number)
 { 
   // Retrieves the primary particle(s) at the origin of the upper PPSD  RecPoint
   
+  AliPHOSPpsdRecPoint * ppsdurp = GetPpsdUpRecPoint() ; 
+
   Int_t * rv = 0 ; 
   number = 0 ;
-  if ( fPpsdUp )
-    rv =  fPpsdUp->GetPrimaries(number) ; 
+  if ( ppsdurp )
+    rv =  ppsdurp->GetPrimaries(number) ; 
 
   return rv ; 
 }
@@ -300,26 +389,32 @@ Int_t *  AliPHOSTrackSegment::GetPrimariesPpsdUp(Int_t & number)
 void AliPHOSTrackSegment::GetPosition( TVector3 & pos ) 
 {  
   // Returns position of the EMC RecPoint
-
+  
+  AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
+ 
   TMatrix dummy ;
-  fEmcRecPoint->GetGlobalPosition(pos, dummy) ;
+  emcrp->GetGlobalPosition(pos, dummy) ;
 }
 
 
 //______________________________________________________________________________
 void AliPHOSTrackSegment::Paint(Option_t *)
 {
-  // Paint this ALiPHOSTrackSegment as a TMarker  with its current attributes
+  // Paint this AliPHOSTrackSegment as a TMarker  with its current attributes
+
+  AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
+  AliPHOSPpsdRecPoint * ppsdlrp = GetPpsdLowRecPoint() ; 
+  AliPHOSPpsdRecPoint * ppsdurp = GetPpsdUpRecPoint() ; 
 
   TVector3 posemc(999., 999., 999.) ;
   TVector3 posppsdl(999., 999., 999.) ;
   TVector3 posppsdu(999., 999., 999.) ;
   
-  fEmcRecPoint->GetLocalPosition(posemc) ;
-  if (fPpsdLow !=0 ) 
-    fPpsdLow->GetLocalPosition(posppsdl) ;
-  if (fPpsdUp !=0 ) 
-    fPpsdUp->GetLocalPosition(posppsdu) ;
+  emcrp->GetLocalPosition(posemc) ;
+  if (ppsdlrp !=0 ) 
+    ppsdlrp->GetLocalPosition(posppsdl) ;
+  if (ppsdurp !=0 ) 
+    ppsdurp->GetLocalPosition(posppsdu) ;
   
   Coord_t xemc   = posemc.X() ;
   Coord_t yemc   = posemc.Z() ;
@@ -378,28 +473,39 @@ void AliPHOSTrackSegment::Print()
 {
   // Print all information on this track Segment
   
-  cout << "--------AliPHOSTrackSegment-------- "<<endl ;
-  cout << "EMC Reconstructed Point: " << fEmcRecPoint << endl;
+  AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
+  AliPHOSPpsdRecPoint * ppsdlrp = GetPpsdLowRecPoint() ; 
+  AliPHOSPpsdRecPoint * ppsdurp = GetPpsdUpRecPoint() ; 
   
   TVector3 pos ;
   TMatrix dummy ;  
 
-  fEmcRecPoint->GetGlobalPosition( pos, dummy ) ;
- 
-  cout << "    position " << pos.X() << "   " << pos.Y() << "  " << pos.Z() << "      Energy " << fEmcRecPoint->GetTotalEnergy() << endl ;
-  cout << "PPSD Low Reconstructed Point: " << endl;
+  cout << "--------AliPHOSTrackSegment-------- "<<endl ;
+
+  if ( emcrp != 0 ) {
+    cout << "******** EMC Reconstructed Point: " << endl;
+    emcrp->Print() ; 
+    
+    emcrp->GetGlobalPosition( pos, dummy ) ;
+    
+    cout << " Global position " << pos.X() << "   " << pos.Y() << "  " << pos.Z() << "      Energy " << emcrp->GetTotalEnergy() << endl ;
+  }
   
-  if(fPpsdLow){
-    fPpsdLow->GetGlobalPosition( pos , dummy ) ;
+  if ( ppsdlrp != 0 ) {
+    cout << "******** PPSD Low Reconstructed Point: " << endl;
+    
+    ppsdlrp->Print() ; 
+    ppsdlrp->GetGlobalPosition( pos , dummy ) ;
     cout << "    position " << pos.X() << "   " << pos.Y() << "  " << pos.Z() << endl ;
   }
 
-  cout << "PPSD Up Reconstructed Point: " << endl;
-  
-  if(fPpsdUp ){
-    fPpsdUp->GetGlobalPosition( pos, dummy ) ;
-    cout << "    position " << pos.X() << "   " << pos.Y() << "  " << pos.Z()  << endl ;
-  }
-
+   if( ppsdurp != 0 ) {
+     cout << "******** PPSD Up Reconstructed Point: " << endl;
+     
+     ppsdurp->Print() ; 
+     ppsdurp->GetGlobalPosition( pos, dummy ) ;
+     cout << "    position " << pos.X() << "   " << pos.Y() << "  " << pos.Z()  << endl ;
+   }
+   
 }
 

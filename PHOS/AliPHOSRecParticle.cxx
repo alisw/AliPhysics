@@ -30,6 +30,7 @@
 
 #include "AliPHOSRecParticle.h"
 #include "TPad.h"
+#include "AliPHOSIndexToObject.h"
 
 ClassImp(AliPHOSRecParticle)
 
@@ -39,7 +40,8 @@ ClassImp(AliPHOSRecParticle)
 {
   // ctor
  
-  fPHOSTrackSegment = new AliPHOSTrackSegment(*ts) ; 
+  fPHOSTrackSegment = ts->GetIndexInList() ;
+  fIndexInList      = -1 ;
   Float_t kenergy   = ts->GetEnergy() ; 
   TVector3 momdir   = ts->GetMomentumDirection() ;
   fPx               = kenergy * momdir.X() ; 
@@ -54,8 +56,9 @@ ClassImp(AliPHOSRecParticle)
 {
   // copy ctor
 
-  fPHOSTrackSegment = new AliPHOSTrackSegment( *( rp.GetPHOSTrackSegment()) ) ; 
+  fPHOSTrackSegment = rp.fPHOSTrackSegment ; 
   fType             = rp.fType ; 
+  fIndexInList      = rp.fIndexInList ;
 
   fPdgCode     = rp.fPdgCode;
   fStatusCode  = rp.fStatusCode;
@@ -79,29 +82,20 @@ ClassImp(AliPHOSRecParticle)
 }
 
 //____________________________________________________________________________
- AliPHOSRecParticle::~AliPHOSRecParticle()
-{
-  // dtor
-
-  if(!fPHOSTrackSegment) {
-    delete fPHOSTrackSegment ;
-    fPHOSTrackSegment = 0 ; 
-  } 
-}
-
-//____________________________________________________________________________
 Int_t * AliPHOSRecParticle::GetPrimaries(Int_t & number) 
 {
   // Retrieves all the primary particles at the origine of this reconstructed particle
 
+  AliPHOSTrackSegment * ts = GetPHOSTrackSegment() ;
+
   Int_t emcnumber = 0 ; 
-  Int_t * emclist = fPHOSTrackSegment->GetPrimariesEmc(emcnumber) ;
+  Int_t * emclist = ts->GetPrimariesEmc(emcnumber) ;
   
-  Int_t ppsdlnumber = 0 ; 
-  Int_t * ppsdllist = fPHOSTrackSegment->GetPrimariesPpsdLow(ppsdlnumber) ;
+  Int_t ppsdlnumber = 0 ;
+  Int_t * ppsdllist = ts->GetPrimariesPpsdLow(ppsdlnumber) ;
  
   Int_t ppsdunumber = 0 ; 
-  Int_t * ppsdulist = fPHOSTrackSegment->GetPrimariesPpsdUp(ppsdunumber) ;
+  Int_t * ppsdulist = ts->GetPrimariesPpsdUp(ppsdunumber) ;
 
   number = emcnumber + ppsdlnumber + ppsdunumber ;
   Int_t * list   = new Int_t[number] ;
@@ -123,11 +117,22 @@ Int_t * AliPHOSRecParticle::GetPrimaries(Int_t & number)
     index++ ; 
   }
 
-  cout << "passed 6 " << endl;
-
   delete emclist ;
   delete ppsdllist ;
   delete ppsdulist ;
 
   return list ; 
 }
+
+//____________________________________________________________________________
+AliPHOSTrackSegment * AliPHOSRecParticle::GetPHOSTrackSegment() const 
+{
+  // Retrieves the PHOS track segment at the origine of this reconstructed particle
+
+  AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
+  return please->GimeTrackSegment( fPHOSTrackSegment ) ;
+
+}
+
+
+

@@ -19,6 +19,9 @@
 // --- AliRoot header files ---
 
 #include "AliRecPoint.h"
+#include "AliPHOSDigit.h"
+
+typedef TObjArray       RecPointsList ; 
 
 class AliPHOSRecPoint : public AliRecPoint {
 
@@ -26,22 +29,21 @@ public:
 
   AliPHOSRecPoint() ;                   // ctor         
   virtual ~AliPHOSRecPoint(){}          // dtor
-  virtual  void   AddDigit(AliDigitNew & digit, Float_t Energy) = 0 ; 
+  virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy) = 0 ; 
+  virtual Int_t   Compare(TObject * obj) {  assert(0==1) ; }   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
   virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
   virtual Int_t   GetPHOSMod(void) ;
   virtual Int_t * GetPrimaries(Int_t & number) ;
   virtual Bool_t  IsEmc(void){return kTRUE ;} 
+  virtual Bool_t  IsSortable() const { return kTRUE ; }  
   virtual void    Paint(Option_t * option="");
   virtual void    Print(Option_t * opt = "void") {} 
 
-  virtual Int_t   Compare(TObject * obj) {  assert(0==1) ; }   
-  virtual Bool_t  IsSortable() const { return kTRUE ; }  
-
 protected:
   
-  Int_t      fPHOSMod ; // PHOS Module number in which the RecPoint is found
+  Int_t fPHOSMod ;      // PHOS Module number in which the RecPoint is found
 
   ClassDef(AliPHOSRecPoint,1) // RecPoint for PHOS (Base Class)
  

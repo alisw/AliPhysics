@@ -30,7 +30,7 @@ class AliPHOSDigit : public AliDigitNew {
 public:
  
   AliPHOSDigit() ;
-  AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy) ;
+  AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index = -1) ;
   AliPHOSDigit(const AliPHOSDigit & digit) ;
   virtual ~AliPHOSDigit(){} 
 
@@ -47,11 +47,11 @@ public:
 
 private:
 
-  Int_t fPrimary1 ;          // first primary (because I do not know how to stream *fPrimary) 
-  Int_t fPrimary2 ;          // second primary (because I do not know how to stream *fPrimary) 
-  Int_t fPrimary3 ;          // third primary (because I do not know how to stream *fPrimary) 
+  Int_t fPrimary1 ;          // first primary (because objects in a TClonesArray bust have constant length) 
+  Int_t fPrimary2 ;          // second primary (because objects in a TClonesArray bust have constant lengt) 
+  Int_t fPrimary3 ;          // third primary (because objects in a TClonesArray bust have constant lengt) 
   Int_t fNprimary ;          // Number of primaries
-  
+    
   ClassDef(AliPHOSDigit,1)   // Digit in PHOS 
 
 } ;

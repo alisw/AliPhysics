@@ -51,6 +51,7 @@
 #include "AliPHOSDigit.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSRecParticle.h"
+#include "AliPHOSIndexToObject.h"
 
 ClassImp(AliPHOSAnalyze)
 
@@ -66,7 +67,7 @@ ClassImp(AliPHOSAnalyze)
 //____________________________________________________________________________
 AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
 {
-  // ctor: analyze events from root file: name
+  // ctor: analyze events from root file "name"
   
   Bool_t ok = OpenRootFile(name)  ; 
   if ( !ok ) {
@@ -85,7 +86,8 @@ AliPHOSAnalyze::~AliPHOSAnalyze()
 {
   // dtor
 
-  fRootFile->Close() ; 
+  if (fRootFile->IsOpen() ) 
+    fRootFile->Close() ; 
   delete fRootFile ; 
   fRootFile = 0 ; 
 
@@ -132,8 +134,8 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 
     // =========== Write the root file
 
-    fRootFile->Write() ;
-    
+    fRootFile->Close() ; 
+  
     // =========== Finish
 
     cout << "AnalyzeOneEvent > event # " << fEvt << " processed" << endl ;   
@@ -211,13 +213,13 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	  //=========== Do the reconstruction
 	  fPHOS->Reconstruction(fRec);
 	  //=========== Cluster in module
-	  TIter nextEmc(fPHOS->EmcClusters()  ) ;
+	  TIter nextEmc(fPHOS->EmcRecPoints()  ) ;
 	  while((emc = (AliPHOSEmcRecPoint *)nextEmc())) 
 	    {
 	      if ( emc->GetPHOSMod() == module )
 		{  
 		  fhEmcCluster->Fill(  emc->GetTotalEnergy()  ); 
-		  TIter nextPpsd( fPHOS->PpsdClusters()) ;
+		  TIter nextPpsd( fPHOS->PpsdRecPoints()) ;
 		  while((ppsd = (AliPHOSPpsdRecPoint *)nextPpsd())) 
 		    {
 		      if ( ppsd->GetPHOSMod() == module )
@@ -228,7 +230,7 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 		}
 	    }
 	  //=========== Cluster in module PPSD Down
-	  TIter nextPpsd(fPHOS->PpsdClusters() ) ;
+	  TIter nextPpsd(fPHOS->PpsdRecPoints() ) ;
 	  while((ppsd = (AliPHOSPpsdRecPoint *)nextPpsd())) 
 	    {
 	      if ( ppsd->GetPHOSMod() == module )
@@ -379,11 +381,17 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
       
       fPHOS  = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
       fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
+
     } // else !ok
   } // if fRootFile
   
   if ( ok ) {
     
+
+    //========== Initializes the Index to Object converter
+
+    fObjGetter = AliPHOSIndexToObject::GetInstance(fPHOS) ; 
+
     //========== Create the Clusterizer
 
     fClu =  new AliPHOSClusterizerv1() ; 
@@ -682,7 +690,9 @@ void AliPHOSAnalyze::DisplayRecPoints()
 
       //=========== Cluster in module
 
-      TClonesArray * emcRP = fPHOS->EmcClusters() ;
+      //      TClonesArray * emcRP = fPHOS->EmcClusters() ; 
+      TObjArray * emcRP = fPHOS->EmcRecPoints() ; 
+      
       etot = 0.; 
       Int_t totalnClusters = 0 ; 
       Int_t nClusters = 0 ;
@@ -715,7 +725,9 @@ void AliPHOSAnalyze::DisplayRecPoints()
  
       //=========== Cluster in module PPSD Down
 
-      TClonesArray * ppsdRP = fPHOS->PpsdClusters() ;
+      //      TClonesArray * ppsdRP = fPHOS->PpsdClusters() ;
+      TObjArray * ppsdRP = fPHOS->PpsdRecPoints() ;
+ 
       etot = 0.; 
       TIter nextPpsd(ppsdRP) ;
       AliPHOSPpsdRecPoint * ppsd ;
@@ -736,7 +748,8 @@ void AliPHOSAnalyze::DisplayRecPoints()
 
       //=========== Cluster in module PPSD Up
   
-      ppsdRP = fPHOS->PpsdClusters() ;
+      ppsdRP = fPHOS->PpsdRecPoints() ;
+     
       etot = 0.; 
       TIter nextPpsdUp(ppsdRP) ;
       while((ppsd = (AliPHOSPpsdRecPoint *)nextPpsdUp())) 

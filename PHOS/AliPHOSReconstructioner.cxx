@@ -60,19 +60,48 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
 } 
 
 //____________________________________________________________________________
- void AliPHOSReconstructioner::Make(TClonesArray * dl, RecPointsList * emccl, RecPointsList * ppsdl, 
+ void AliPHOSReconstructioner::Make(DigitsList * dl, RecPointsList * emccl, RecPointsList * ppsdl, 
 				     TrackSegmentsList * trsl, RecParticlesList * rpl)
 {
   // Launches the Reconstruction process in the sequence: Make the reconstructed poins (clusterize)
   //                                                      Make the track segments 
   //                                                      Make the reconstructed particles
 
+  Int_t index ; 
+  
   cout << "Start making reconstructed points (clusterizing)" << endl;
   fClusterizer->MakeClusters(dl, emccl, ppsdl);
 
-  cout << "Start making track segments" << endl;
-  fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;
+  // mark the position of the RecPoints in the array
+  AliPHOSEmcRecPoint * emcrp ; 
+  for (index = 0 ; index < emccl->GetEntries() ; index++) {
+    emcrp = (AliPHOSEmcRecPoint * )emccl->At(index) ; 
+    emcrp->SetIndexInList(index) ; 
+  }
 
+  AliPHOSPpsdRecPoint * ppsdrp ; 
+  for (index = 0 ; index < ppsdl->GetEntries() ; index++) {
+    ppsdrp = (AliPHOSPpsdRecPoint * )ppsdl->At(index) ; 
+    ppsdrp->SetIndexInList(index) ; 
+  }
+
+  cout << "Start making track segments" << endl;
+  fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;   
+
+  // mark the position of the TrackSegments in the array
+  AliPHOSTrackSegment * trs ; 
+  for (index = 0 ; index < trsl->GetEntries() ; index++) {
+    trs = (AliPHOSTrackSegment * )trsl->At(index) ; 
+    trs->SetIndexInList(index) ; 
+  }
+  
   cout << "Start making reconstructed particles" << endl;
   fPID->MakeParticles(trsl, rpl) ; 
+  
+  // mark the position of the RecParticles in the array
+  AliPHOSRecParticle * rp ; 
+  for (index = 0 ; index < rpl->GetEntries() ; index++) {
+    rp = (AliPHOSRecParticle * )rpl->At(index) ; 
+    rp->SetIndexInList(index) ; 
+  }
 }

@@ -5,7 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliPHOS ;
-#pragma link C++ class AliPHOSArray ;
 #pragma link C++ class AliPHOSClusterizer ;
 #pragma link C++ class AliPHOSClusterizerv1 ;
 #pragma link C++ class AliPHOSDigit ;
@@ -13,6 +12,7 @@
 #pragma link C++ class AliPHOSFastRecParticle ;
 #pragma link C++ class AliPHOSGeometry ;
 #pragma link C++ class AliPHOSHit ;
+#pragma link C++ class AliPHOSIndexToObject ;
 #pragma link C++ class AliPHOSLink ;
 #pragma link C++ class AliPHOSPpsdRecPoint ;
 #pragma link C++ class AliPHOSReconstructioner ;

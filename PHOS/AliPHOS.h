@@ -16,7 +16,9 @@
 
 #include "AliDetector.h"
 #include "AliPHOSGeometry.h" 
-
+#include "AliRecPoint.h"
+#include "AliPHOSTrackSegment.h"
+#include "AliPHOSRecParticle.h"
 
 class AliPHOS : public AliDetector {
 
@@ -27,7 +29,18 @@ class AliPHOS : public AliDetector {
   virtual ~AliPHOS() ; 
  
   virtual void CreateMaterials() ;               // defines the material of the detector
-  virtual AliPHOSGeometry *  GetGeometry() = 0 ; // hands the pointer to the unique geometry object
+  virtual AliPHOSGeometry * GetGeometry() = 0 ;  
+  RecPointsList* EmcRecPoints() {return fEmcClusters;}               // gets Array of cluster in the crystals 
+  RecParticlesList * RecParticles() { return fRecParticles ; }      // gets Array of reconstructed particles
+  TrackSegmentsList *    TrackSegments(){return fTrackSegments ;} // gets Array of track segments
+  virtual RecPointsList* PpsdRecPoints() = 0 ;        // gets Array of clusters in the PPSD 
+
+ protected:
+  
+  RecPointsList * fEmcClusters ;                  // The RecPoints (clusters) list in EMC 
+  TrackSegmentsList * fTrackSegments ;            // The TrackSegment list in PHOS
+  RecParticlesList * fRecParticles ;              // The reconstructed particles list in PHOS
+
 
   ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)
 

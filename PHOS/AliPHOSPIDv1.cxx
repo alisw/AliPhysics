@@ -33,6 +33,7 @@
 #include "AliPHOSPIDv1.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSRecParticle.h"
+#include "AliPHOSIndexToObject.h"
 
 ClassImp( AliPHOSPIDv1) 
 
@@ -49,13 +50,14 @@ void  AliPHOSPIDv1::MakeParticles(TrackSegmentsList * trsl, RecParticlesList * r
 
   while ( (tracksegment = (AliPHOSTrackSegment *)next()) ) {
     new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ;
-    rp = (AliPHOSRecParticle *)(*rpl)[index] ; 
+    rp = (AliPHOSRecParticle *)rpl->At(index) ; 
 
     // try to figure out the type of particle:
     //    1. just looking at the PPSD information 
-    if( tracksegment->GetPpsdUp() == 0 ) {     // Neutral
+    
+    if( tracksegment->GetPpsdUpRecPoint() == 0 ) {     // Neutral
       
-      if( tracksegment->GetPpsdLow() == 0 )    // Neutral  
+      if( tracksegment->GetPpsdLowRecPoint() == 0 )    // Neutral  
 	type = kNEUTRAL ;   
       else {    // check the shower profile       
 	AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ; 
@@ -70,7 +72,7 @@ void  AliPHOSPIDv1::MakeParticles(TrackSegmentsList * trsl, RecParticlesList * r
     } // Neutral
     else                            // Charged           
       type = kCHARGED ;   
-
+    
     //   2. from the shower profile analysis
     if ( type == kNEUTRAL ) { 
       AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ; 
@@ -86,10 +88,11 @@ void  AliPHOSPIDv1::MakeParticles(TrackSegmentsList * trsl, RecParticlesList * r
 
     //   3. from the shower dispersion 
     if (type == kCHARGED) { 
+      
       if( tracksegment->GetEmcRecPoint()->GetDispersion() > fCutOnDispersion)  // shower dispersion cut
 	type = kCHARGEDHADRON ;
-      else  
-	type = kELECTRON ; 
+	//     else  
+	//	type = kELECTRON ; 
     } 
     rp->SetType(type) ; 
     index++ ; 

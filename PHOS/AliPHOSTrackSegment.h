@@ -25,6 +25,8 @@
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
 
+typedef TClonesArray TrackSegmentsList ; 
+
 class AliPHOSTrackSegment : public TObject  {
 
 public:
@@ -39,30 +41,30 @@ public:
   virtual Int_t  DistancetoPrimitive(Int_t px, Int_t py);
   virtual void   Draw(Option_t * option="") ;
   virtual void   ExecuteEvent(Int_t event, Int_t px, Int_t py);
-  Float_t GetEnergy(){ return fEmcRecPoint->GetTotalEnergy() ;}   // Returns energy in EMC
+  Float_t GetEnergy() ;   // Returns energy in EMC
   
   Float_t GetDistanceInPHOSPlane(void) ;   // Computes in PHOS plane the relative position between EMC and PPSD clusters 
-  virtual Int_t  GetPHOSMod(void) {return fEmcRecPoint->GetPHOSMod();  }
+  virtual Int_t  GetPHOSMod(void) ; 
   TVector3 GetMomentumDirection() ;        // Returns the momentum direction
-  void GetPosition( TVector3 & pos ) ;     // Returns positions of hit
+  void    GetPosition( TVector3 & pos ) ;  // Returns positions of hit
   Int_t * GetPrimariesEmc(Int_t & number) ;
   Int_t * GetPrimariesPpsdLow(Int_t & number) ;
   Int_t * GetPrimariesPpsdUp(Int_t & number) ;
-  AliPHOSEmcRecPoint * GetEmcRecPoint() const { return fEmcRecPoint ; } 
-  AliPHOSPpsdRecPoint * GetPpsdLow() const { return fPpsdLow ; } 
-  AliPHOSPpsdRecPoint * GetPpsdUp() const { return fPpsdUp ; } 
-  virtual  void  Paint(Option_t * option="");
-  void Print() ;
-  
+  AliPHOSEmcRecPoint *   GetEmcRecPoint() const ;  
+  Int_t   GetIndexInList() const { return fIndexInList ; } 
+  AliPHOSPpsdRecPoint *   GetPpsdLowRecPoint() const ;
+  AliPHOSPpsdRecPoint *   GetPpsdUpRecPoint() const ; 
+  virtual void  Paint(Option_t * option="");
+  void    Print() ;
+  void    SetIndexInList(Int_t val) { fIndexInList = val ; } 
+ 
   
 private:
   
-  AliPHOSEmcRecPoint  * fEmcRecPoint ; //! The EMC reconstructed point
-  AliPHOSPpsdRecPoint * fPpsdLow ;     //! The PPSD reconstructed point from the lower layer
-  AliPHOSPpsdRecPoint * fPpsdUp ;      //! The PPSD reconstructed point from the upper layer
-  Int_t fEmcRecPointId ; // The EMC reconstructed point Id in the list
-  Int_t fPpsdLowId ;     // The PPSD reconstructed point from the lower layer Id in the list
-  Int_t fPpsdUpId ;      // The PPSD reconstructed point from the upper layer Id in the list
+  Int_t fEmcRecPoint ;     // The EMC reconstructed point index in array stored in TreeR/PHOSEmcRP
+  Int_t fIndexInList ;     // the index of this TrackSegment in the list stored in TreeR (to be set by analysis)
+  Int_t fPpsdLowRecPoint ; // The PPSD reconstructed point from the lower layer index in array stored in TreeR/PHOSPpsdRP
+  Int_t fPpsdUpRecPoint ;  // The PPSD reconstructed point from the upper layer index in array stored in TreeR/PHOSPpsdRP
 
   ClassDef(AliPHOSTrackSegment,1)  // Track segment in PHOS
 

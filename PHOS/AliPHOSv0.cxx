@@ -72,9 +72,14 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   fPinElectronicNoise = 0.010 ;
   fDigitThreshold      = 1. ;   // 1 GeV 
 
-  fHits   = new TClonesArray("AliPHOSHit",100) ;
-  gAlice->AddHitList(fHits) ; 
+  // We do not want to save in TreeH the raw hits
+  // fHits   = new TClonesArray("AliPHOSHit",100) ;
+  // gAlice->AddHitList(fHits) ; 
 
+  // But save the cumulated hits instead (need to create the branch myself)
+  // It is put in the Digit Tree because the TreeH is filled after each primary
+  // and the TreeD at the end of the event (branch is set in FinishEvent() ).
+  
   fTmpHits= new TClonesArray("AliPHOSHit",100) ;
 
   fNTmpHits = fNhits = 0 ;
@@ -109,7 +114,10 @@ AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *nam
   //     is used for the digitization part.
 
   fPinElectronicNoise = 0.010 ;
-  fHits   = new TClonesArray("AliPHOSHit",100) ;
+
+  // We do not want to save in TreeH the raw hits
+  //fHits   = new TClonesArray("AliPHOSHit",100) ;
+
   fDigits = new TClonesArray("AliPHOSDigit",100) ;
   fTmpHits= new TClonesArray("AliPHOSHit",100) ;
 
@@ -169,14 +177,14 @@ void AliPHOSv0::AddHit(Int_t primary, Int_t Id, Float_t * hits)
   // In any case, fills the fTmpHit TClonesArray (with "accumulated hits")
 
   newHit = new AliPHOSHit(primary, Id, hits) ;
-  TClonesArray &lhits = *fHits;
+
+  // We do not want to save in TreeH the raw hits 
+  //  TClonesArray &lhits = *fHits;
 
   for ( hitCounter = 0 ; hitCounter < fNTmpHits && !deja ; hitCounter++ ) {
     curHit = (AliPHOSHit*) ltmphits[hitCounter] ;
-    //    curHit2 = (AliPHOSHit*) lhits[hitCounter] ;  // ca plante dans PurifyKine !?
   if( *curHit == *newHit ) {
     *curHit = *curHit + *newHit ;
-    //    *curHit2 = *curHit2 + *newHit ;
     deja = kTRUE ;
     }
   }
@@ -184,9 +192,11 @@ void AliPHOSv0::AddHit(Int_t primary, Int_t Id, Float_t * hits)
   if ( !deja ) {
     new(ltmphits[fNTmpHits]) AliPHOSHit(*newHit) ;
     fNTmpHits++ ;
-    new(lhits[fNhits]) AliPHOSHit(*newHit) ;    // will be saved on disk
-    fNhits++ ;
   }
+
+  // We do not want to save in TreeH the raw hits 
+  //   new(lhits[fNhits]) AliPHOSHit(*newHit) ;    
+  //   fNhits++ ;
 
   // Please note that the fTmpHits array must survive up to the
   // end of the events, so it does not appear e.g. in ResetHits() (
@@ -1129,7 +1139,7 @@ Int_t AliPHOSv0::Digitize(Float_t Energy)
 {
   // Applies the energy calibration
   
-  Float_t fB = 100. ; // ; 100000000. ;
+  Float_t fB = 100000000. ;
   Float_t fA = 0. ;
   Int_t chan = Int_t(fA + Energy*fB ) ;
   return chan ;
@@ -1142,6 +1152,16 @@ void AliPHOSv0::FinishEvent()
   // Adds to the energy the electronic noise
   // Keeps digits with energy above fDigitThreshold
 
+  // Save the cumulated hits instead of raw hits (need to create the branch myself)
+  // It is put in the Digit Tree because the TreeH is filled after each primary
+  // and the TreeD at the end of the event.
+  if ( fTmpHits && gAlice->TreeD() ) {
+    char branchname[10] ;
+    sprintf(branchname, "%sCH", GetName()) ;
+    gAlice->TreeD()->Branch(branchname, &fTmpHits, fBufferSize) ; 
+  } else 
+    cout << "AliPHOSv0::AliPHOSv0: Failed to create branch PHOSCH in TreeD " << endl ;  
+  
   Int_t i ;
   Int_t relid[4];
   Int_t j ; 
@@ -1188,11 +1208,14 @@ void AliPHOSv0::FinishEvent()
     }
   }
   
+  fDigits->Compress() ;  
 
-  fDigits->Compress() ; 
-  fNTmpHits = 0 ;
-  fTmpHits->Delete();
-  
+  fNdigits =  fDigits->GetEntries() ; 
+  for (i = 0 ; i < fNdigits ; i++) { 
+    newdigit = (AliPHOSDigit *) fDigits->At(i) ; 
+    newdigit->SetIndexInList(i) ; 
+  }
+
 }
 
 //____________________________________________________________________________
@@ -1235,7 +1258,7 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
 void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 { 
   // 1. Reinitializes the existing RecPoint, TrackSegment, and RecParticles Lists and 
-  // 2. Creates a branch in TreeR for each list
+  // 2. Creates TreeR wit a branch for each list
   // 3. Steers the reconstruction processes
   // 4. Saves the 3 lists in TreeR
   // 5. Write the Tree to File
@@ -1245,16 +1268,24 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   char branchname[10] ;
 
   // 1.
+
+  gAlice->MakeTree("R") ; 
+  Int_t splitlevel = 0 ; 
   
   if (fEmcClusters) { 
     fEmcClusters->Delete() ; 
     delete fEmcClusters ;
     fEmcClusters = 0 ; 
   }
-  fEmcClusters= new RecPointsList("AliPHOSEmcRecPoint", 100) ;
+
+  //  fEmcClusters= new RecPointsList("AliPHOSEmcRecPoint", 100) ; if TClonesArray
+  fEmcClusters= new RecPointsList(100) ; 
+
   if ( fEmcClusters && gAlice->TreeR() ) {
-    sprintf(branchname,"%sERP",GetName()) ;
-    gAlice->TreeR()->Branch(branchname, &fEmcClusters, fBufferSize);
+    sprintf(branchname,"%sEmcRP",GetName()) ;
+    
+    // gAlice->TreeR()->Branch(branchname, &fEmcClusters, fBufferSize); if TClonesArray
+    gAlice->TreeR()->Branch(branchname, "TObjArray", &fEmcClusters, fBufferSize, splitlevel) ; 
   }
 
   if (fPpsdClusters) { 
@@ -1262,48 +1293,79 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
     delete fPpsdClusters ; 
     fPpsdClusters = 0 ; 
   }
-  fPpsdClusters = new RecPointsList("AliPHOSPpsdRecPoint", 100) ;
+
+  //  fPpsdClusters = new RecPointsList("AliPHOSPpsdRecPoint", 100) ; if TClonesArray
+  fPpsdClusters = new RecPointsList(100) ;
+
   if ( fPpsdClusters && gAlice->TreeR() ) {
-     sprintf(branchname,"%sPRP",GetName()) ;
-     gAlice->TreeR()->Branch(branchname, &fPpsdClusters, fBufferSize);
- }
+    sprintf(branchname,"%sPpsdRP",GetName()) ;
+     
+     // gAlice->TreeR()->Branch(branchname, &fPpsdClusters, fBufferSize); if TClonesArray
+    gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdClusters, fBufferSize, splitlevel);
+  }
 
   if (fTrackSegments) { 
    fTrackSegments->Delete() ; 
     delete fTrackSegments ; 
     fTrackSegments = 0 ; 
   }
+
   fTrackSegments = new TrackSegmentsList("AliPHOSTrackSegment", 100) ;
   if ( fTrackSegments && gAlice->TreeR() ) { 
     sprintf(branchname,"%sTS",GetName()) ;
     gAlice->TreeR()->Branch(branchname, &fTrackSegments, fBufferSize);
   }
 
- if (fRecParticles) {  
-   fRecParticles->Delete() ; 
+  if (fRecParticles) {  
+    fRecParticles->Delete() ; 
     delete fRecParticles ; 
     fRecParticles = 0 ; 
   }
   fRecParticles = new RecParticlesList("AliPHOSRecParticle", 100) ;
   if ( fRecParticles && gAlice->TreeR() ) { 
-    sprintf(branchname,"%sRP",GetName()) ;
-    gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize);
+     sprintf(branchname,"%sRP",GetName()) ;
+     gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize);
   }
   
   // 3.
 
   fReconstructioner->Make(fDigits, fEmcClusters, fPpsdClusters, fTrackSegments, fRecParticles);
 
-  // 4.
+  // 4. Expand or Shrink the arrays to the proper size
+  
+  Int_t size ;
+  
+  size = fEmcClusters->GetEntries() ;
+  fEmcClusters->Expand(size) ;
+ 
+  size = fPpsdClusters->GetEntries() ;
+  fPpsdClusters->Expand(size) ;
+
+  size = fTrackSegments->GetEntries() ;
+  fTrackSegments->Expand(size) ;
+
+  size = fRecParticles->GetEntries() ;
+  fRecParticles->Expand(size) ;
 
   gAlice->TreeR()->Fill() ;
  
   // 5.
 
   gAlice->TreeR()->Write() ;
-  
+   
 }
 
+//____________________________________________________________________________
+void AliPHOSv0::ResetDigits()
+{
+  // May sound strange, but cumulative hits are store in digits Tree
+
+  if(  fTmpHits ) {
+    fTmpHits->Delete();
+    fNTmpHits = 0 ;
+  }
+}
+  
 //____________________________________________________________________________
 void AliPHOSv0::StepManager(void)
 {

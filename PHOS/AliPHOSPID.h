@@ -20,10 +20,10 @@
 
 // --- AliRoot header files ---
 
-#include "AliPHOSTrackSegmentMaker.h"
+#include "AliPHOSTrackSegment.h"
+#include "AliPHOSRecParticle.h"
 
 
-typedef TClonesArray RecParticlesList ; 
 
 class AliPHOSPID : public TObject {
 

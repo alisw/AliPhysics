@@ -19,11 +19,9 @@
 // --- AliRoot header files ---
 
 #include "TObjArray.h"
-#include "AliPHOSClusterizer.h"
-#include "AliPHOSEmcRecPoint.h"
-#include "AliPHOSPpsdRecPoint.h"
-
-typedef TClonesArray TrackSegmentsList ;
+#include "AliPHOSDigit.h"
+#include "AliPHOSRecPoint.h"
+#include "AliPHOSTrackSegment.h"
 
 class  AliPHOSTrackSegmentMaker : public TObject {
 
