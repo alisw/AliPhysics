@@ -24,20 +24,23 @@
 ClassImp(AliCluster)
  
 //_____________________________________________________________________________
-AliCluster::AliCluster() {
+AliCluster::AliCluster(): 
+  fY(0), fZ(0), fSigmaY2(0), fSigmaZ2(0) 
+{
+  //
   //default constructor
+  //
   fTracks[0]=fTracks[1]=fTracks[2]=-3141593; 
-  fY=fZ=fSigmaY2=fSigmaZ2=0.;
 }
 
 //_____________________________________________________________________________
-AliCluster::AliCluster(Int_t *lab, Float_t *hit) {
-  //Creates a simulated cluster
+AliCluster::AliCluster(Int_t *lab, Float_t *hit): 
+  fY(hit[0]), fZ(hit[1]), fSigmaY2(hit[2]), fSigmaZ2(hit[3]) 
+{
+  //
+  // Creates a simulated cluster
+  //
   fTracks[0]  = lab[0];
   fTracks[1]  = lab[1];
   fTracks[2]  = lab[2];
-  fY          = hit[0];
-  fZ          = hit[1];
-  fSigmaY2    = hit[2];
-  fSigmaZ2    = hit[3];
 }
