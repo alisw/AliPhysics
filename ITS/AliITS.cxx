@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2001/02/02 23:57:28  nilsen
+Added include file that are no londer included in AliITSgeom.h
+
 Revision 1.30  2001/01/30 09:23:13  hristov
 Streamers removed (R.Brun)
 
@@ -577,18 +580,11 @@ void AliITS::Init(){
   //
   Int_t i;
 
-  cout << endl;
-  for(i=0;i<30;i++) cout << "*";cout << " ITS_INIT ";
-  for(i=0;i<30;i++) cout << "*";cout << endl;
 //
   SetDefaults();
-// TObjArray of TObjStrings
-//  for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId((fIdName->At(i))->GetName());
 // Array of TStrings
   for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId(fIdName[i]);
 //
-  for(i=0;i<70;i++) cout << "*";
-  cout << endl;
 }
 
 //_____________________________________________________________________________
@@ -683,7 +679,7 @@ void AliITS::MakeTreeC(Option_t *option)
      Int_t buffersize = 4000;
      char branchname[30];
 
-     char *det[3] = {"SPD","SDD","SSD"};
+     const char *det[3] = {"SPD","SDD","SSD"};
 
      // one branch for Clusters per type of detector
      Int_t i;
@@ -709,7 +705,7 @@ void AliITS::GetTreeC(Int_t event)
     char treeName[20];
     char branchname[30];
 
-    char *det[3] = {"SPD","SDD","SSD"};
+    const char *det[3] = {"SPD","SDD","SSD"};
 
     ResetClusters();
     if (fTreeC) {
@@ -757,7 +753,7 @@ void AliITS::MakeBranch(Option_t* option, char *file)
   //
   // one branch for digits per type of detector
   //
-   char *det[3] = {"SPD","SDD","SSD"};
+   const char *det[3] = {"SPD","SDD","SSD"};
 
    char digclass[40];
    char clclass[40];
@@ -811,7 +807,7 @@ void AliITS::SetTreeAddress()
   char branchname[30];
   AliDetector::SetTreeAddress();
 
-  char *det[3] = {"SPD","SDD","SSD"};
+  const char *det[3] = {"SPD","SDD","SSD"};
 
   TBranch *branch;
   TTree *treeD = gAlice->TreeD();

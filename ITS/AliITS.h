@@ -60,8 +60,10 @@ class AliITS : public AliDetector {
     virtual void   ResetRecPoints();
 
     // get geometry version - detailed (major) or coarse (minor)
-    void GetGeometryVersion(Int_t &a,Int_t &b) const 
-	           {a = fMajorVersion;b=fMinorVersion;return;}
+    virtual Int_t  GetMajorVersion(){return -1;}
+    virtual Int_t  GetMinorVersion(){return -1;}
+    void GetGeometryVersion(Int_t &a,Int_t &b) 
+	           {a = GetMajorVersion();b=GetMinorVersion();return;}
     virtual Int_t  IsVersion() const {return 1;}
     virtual Int_t  DistancetoPrimitive(Int_t px, Int_t py);
     virtual void   Init();
@@ -154,10 +156,7 @@ class AliITS : public AliDetector {
     Int_t       fIdN;          // the number of layers
     Int_t      *fIdSens;       //[fIdN] layer identifier
 //    TObjArray  *fIdName;       // array of volume Id names
-    TString  *fIdName;       //[fIdN] layer identifier
-    // Geometry and Stepmanager version numbers used.
-    Int_t fMajorVersion;      // detailed and coarse(minor) versions
-    Int_t fMinorVersion;      // detailed and coarse(minor) versions
+    TString    *fIdName;       //[fIdN] layer identifier
     //
     Int_t          fNDetTypes;   // Number of detector types
     TObjArray     *fDetTypes;    // List of detector types
