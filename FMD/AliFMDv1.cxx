@@ -26,7 +26,7 @@
 ClassImp(AliFMDv1)
  
 //_____________________________________________________________________________
-AliFMDv1::AliFMDv1() : AliFMD()
+AliFMDv1::AliFMDv1()
 {
   //
   // Defautl constructor for FMD version 1
@@ -40,6 +40,11 @@ AliFMDv1::AliFMDv1(const char *name, const char *title)
   //
   // Standard constructor for FMD version 1
   //
+  AliModule *start = gAlice->GetModule("START");
+  if(start) {
+    Error("ctor","This version of FMD is incompatible with START\n");
+    exit(1);
+  }
 }
  
 //_____________________________________________________________________________

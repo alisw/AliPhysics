@@ -20,11 +20,12 @@
 #include "AliRun.h"
 #include "AliFMDv0.h"
 #include "AliMC.h"
+#include "stdlib.h"
  
 ClassImp(AliFMDv0)
  
 //_____________________________________________________________________________
-AliFMDv0::AliFMDv0() : AliFMD()
+AliFMDv0::AliFMDv0()
 {
   //
   // Default constructor for FMD version 0
@@ -38,6 +39,11 @@ AliFMDv0::AliFMDv0(const char *name, const char *title)
   //
   // Standard constructor for FMD version 0
   //
+  AliModule *start = gAlice->GetModule("START");
+  if(start) {
+    Error("ctor","This version of FMD is incompatible with START\n");
+    exit(1);
+  }
 }
  
 //___________________________________________

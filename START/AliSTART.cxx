@@ -19,6 +19,7 @@
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+#include <stdlib.h>
 
 #include <TTUBE.h>
 #include <TNode.h>
@@ -33,7 +34,7 @@
 ClassImp(AliSTART)
  
 //_____________________________________________________________________________
-AliSTART::AliSTART(): AliDetector()
+AliSTART::AliSTART()
 {
   //
   // Default constructor for class AliSTART
@@ -49,6 +50,14 @@ AliSTART::AliSTART(const char *name, const char *title)
   // Standard constructor for START Detector
   //
  
+  AliModule *fmd = gAlice->GetModule("FMD");
+  if(fmd) {
+    Int_t fmdversion = fmd->IsVersion();
+    if(fmdversion==0 || fmdversion==1) {
+      Error("ctor","Versions 0 and 1 of FMD incompatible with START\n");
+      exit(1);
+    }
+  }
   //
   // Initialise Hit array
   fHits   = new TClonesArray("AliSTARThit",  405);
