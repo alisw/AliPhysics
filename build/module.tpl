@@ -142,12 +142,12 @@ ifndef ALIQUIET
 endif
 	  $(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(LIBS) $(@PACKAGE@ELIBS) $(EXEFLAGS) -o $@ 
 
-$(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH)
+$(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk
 ifndef ALIQUIET
 	 @echo "***** Creating $@ *****";	
 endif
 	 @(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-	 $(MUTE)rootcint -f $@ -c $(CINTFLAGS) $(@PACKAGE@INC) $^
+	 $(MUTE)rootcint -f $@ -c $(CINTFLAGS) $(@PACKAGE@INC) $(shell echo $^ | sed -e 's/@MODULE@\/module\.mk//')
 
 $(@PACKAGE@DO): $(@PACKAGE@DS)
 ifndef ALIQUIET
