@@ -41,13 +41,13 @@
 #include "AliConfig.h"
 #include "AliMagF.h"
 #include "AliRunDigitizer.h"
+#include "AliDigitizer.h"
 #include "AliHeader.h"
 
 #include "AliPMDcell.h"
 #include "AliPMDsdigit.h"
 #include "AliPMDdigit.h"
 #include "AliPMDDigitizer.h"
-#include "AliPMDClustering.h"
 #include "AliMC.h"
 
 ClassImp(AliPMDDigitizer)
@@ -67,6 +67,7 @@ AliPMDDigitizer::AliPMDDigitizer() :
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
   fCell(new TObjArray()),
   fPMDcell(0),
+  fDebug(0),
   fNsdigit(0),
   fNdigit(0),
   fDetNo(0),
@@ -90,6 +91,16 @@ AliPMDDigitizer::AliPMDDigitizer() :
     }
 
 }
+//____________________________________________________________________________
+AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager) 
+    :AliDigitizer(manager)
+{
+  // ctor which should be used
+
+  cerr<<"AliPMDDigitizer::AliPMDDigitizer"
+      <<"(AliRunDigitizer* manager) was processed"<<endl;
+}
+//____________________________________________________________________________
 AliPMDDigitizer::~AliPMDDigitizer()
 {
   // Default Destructor
@@ -113,6 +124,7 @@ AliPMDDigitizer::~AliPMDDigitizer()
 //
 // Member functions
 //
+//____________________________________________________________________________
 void AliPMDDigitizer::OpengAliceFile(const char *file, Option_t *option)
 {
   // Loads galice.root file and corresponding header, kinematics
@@ -169,8 +181,8 @@ void AliPMDDigitizer::OpengAliceFile(const char *file, Option_t *option)
       fPMDLoader->LoadSDigits("READ");
       fPMDLoader->LoadDigits("recreate");
     }
-
 }
+//____________________________________________________________________________
 void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 {
   // This reads the PMD Hits tree and assigns the right track number
@@ -199,7 +211,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   printf("Number of Particles = %d \n", nparticles);
   fRunLoader->GetEvent(ievt);
-  //  fPArray = gAlice->GetMCApp()->Particles();
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
   // Get pointers to Alice detectors and Hits containers
@@ -302,13 +313,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
-	      /*
-		edep       = fPMDHit->fEnergy;
-		Int_t vol1 = fPMDHit->fVolume[1]; // Column
-		Int_t vol2 = fPMDHit->fVolume[2]; // Row
-		Int_t vol3 = fPMDHit->fVolume[3]; // UnitModule
-		Int_t vol6 = fPMDHit->fVolume[6]; // SuperModule
-	      */
+	      
 	      edep       = fPMDHit->GetEnergy();
 	      Int_t vol1 = fPMDHit->GetVolume(1); // Column
 	      Int_t vol2 = fPMDHit->GetVolume(2); // Row
@@ -375,7 +380,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   Float_t deltaE      = 0.;
   Int_t   detno       = 0;
   Int_t   trno        = -1;
-  Int_t   cellno      = 0;
 
   for (Int_t idet = 0; idet < 2; idet++)
     {
@@ -385,7 +389,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	    {
 	      for (Int_t kcol = 0; kcol < fgkCol; kcol++)
 		{
-		  cellno = jrow*fgkCol + kcol;
 		  if (idet == 0)
 		    {
 		      deltaE = fPRE[ism][jrow][kcol];
@@ -400,7 +403,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		    }
 		  if (deltaE > 0.)
 		    {
-		      AddSDigit(trno,detno,ism,cellno,deltaE);
+		      AddSDigit(trno,detno,ism,jrow,kcol,deltaE);
 		    }
 		}
 	    }
@@ -413,6 +416,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 
   //  cout << " -------- End of Hits2SDigit ----------- " << endl;
 }
+//____________________________________________________________________________
 
 void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 {
@@ -440,7 +444,6 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   printf("Number of Particles = %d \n", nparticles);
   fRunLoader->GetEvent(ievt);
-  //  fPArray = gAlice->GetMCApp()->Particles();
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
   // Get pointers to Alice detectors and Hits containers
@@ -553,13 +556,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
-	      /*
-		edep       = fPMDHit->fEnergy;
-		Int_t vol1 = fPMDHit->fVolume[1]; // Column
-		Int_t vol2 = fPMDHit->fVolume[2]; // Row
-		Int_t vol3 = fPMDHit->fVolume[3]; // UnitModule
-		Int_t vol6 = fPMDHit->fVolume[6]; // SuperModule
-	      */
+
 	      edep       = fPMDHit->GetEnergy();
 	      Int_t vol1 = fPMDHit->GetVolume(1); // Column
 	      Int_t vol2 = fPMDHit->GetVolume(2); // Row
@@ -625,10 +622,10 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   TrackAssignment2Cell();
   ResetCell();
 
+  Float_t adc;
   Float_t deltaE = 0.;
   Int_t detno = 0;
   Int_t trno = 1;
-  Int_t cellno;
 
   for (Int_t idet = 0; idet < 2; idet++)
     {
@@ -638,7 +635,6 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	    {
 	      for (Int_t kcol = 0; kcol < fgkCol; kcol++)
 		{
-		  cellno = jrow*fgkCol + kcol;
 		  if (idet == 0)
 		    {
 		      deltaE = fPRE[ism][jrow][kcol];
@@ -653,7 +649,8 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		    }
 		  if (deltaE > 0.)
 		    {
-		      AddDigit(trno,detno,ism,cellno,deltaE);
+		      MeV2ADC(deltaE,adc);
+		      AddDigit(trno,detno,ism,jrow,kcol,adc);
 		    }
 		} // column loop
 	    } // row    loop
@@ -667,6 +664,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   
   //  cout << " -------- End of Hits2Digit ----------- " << endl;
 }
+//____________________________________________________________________________
 
 
 void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
@@ -692,7 +690,7 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
   fTreeD->Branch("PMDDigit", &fDigits, bufsize); 
 
   Int_t   trno, det, smn;
-  Int_t   cellno;
+  Int_t   irow, icol;
   Float_t edep, adc;
 
   Int_t nmodules = (Int_t) fTreeS->GetEntries();
@@ -708,11 +706,12 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 	  trno   = pmdsdigit->GetTrackNumber();
 	  det    = pmdsdigit->GetDetector();
 	  smn    = pmdsdigit->GetSMNumber();
-	  cellno = pmdsdigit->GetCellNumber();
+	  irow   = pmdsdigit->GetRow();
+	  icol   = pmdsdigit->GetColumn();
 	  edep   = pmdsdigit->GetCellEdep();
 
 	  MeV2ADC(edep,adc);
-	  AddDigit(trno,det,smn,cellno,adc);      
+	  AddDigit(trno,det,smn,irow,icol,adc);      
 	}
       fTreeD->Fill();
       ResetDigit();
@@ -720,7 +719,152 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
   fPMDLoader->WriteDigits("OVERWRITE");
   //  cout << " -------- End of SDigits2Digit ----------- " << endl;
 }
+//____________________________________________________________________________
+void AliPMDDigitizer::Exec(Option_t *option)
+{
+  // Does the event merging and digitization
 
+  fDebug = 0;
+  const char *cdeb = strstr(option,"deb");
+  if(cdeb)
+    {
+      cout << "**************** PMD Exec *************** " << endl;
+      fDebug = 1;
+    }
+  fDigits = new TClonesArray("AliPMDdigit", 1000);
+  
+  Int_t ninputs = fManager->GetNinputs();
+  if(fDebug)
+    {
+      cout << " Number of files = " << ninputs << endl;
+    }
+  ResetCellADC();
+
+  for (Int_t i = 0; i < ninputs; i++)
+    {
+      Int_t troffset = fManager->GetMask(i);
+      MergeSDigits(i, troffset);
+    }
+
+  fRunLoader = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
+  fPMDLoader = fRunLoader->GetLoader("PMDLoader");
+  if (fPMDLoader == 0x0)
+    {
+      cerr<<"AliPMDDigitizer::Exec : Can not find PMD or PMDLoader\n";
+    }
+  fPMDLoader->LoadDigits("recreate");
+  fTreeD = fPMDLoader->TreeD();
+  if (fTreeD == 0x0)
+    {
+      fPMDLoader->MakeTree("D");
+      fTreeD = fPMDLoader->TreeD();
+    }
+  Int_t bufsize = 16000;
+  fTreeD->Branch("PMDDigit", &fDigits, bufsize); 
+
+  Float_t adc;
+  Float_t deltaE = 0.;
+  Int_t detno = 0;
+  Int_t trno = 1;
+
+  for (Int_t idet = 0; idet < 2; idet++)
+    {
+      for (Int_t ism = 0; ism < fgkTotUM; ism++)
+	{
+	  for (Int_t jrow = 0; jrow < fgkRow; jrow++)
+	    {
+	      for (Int_t kcol = 0; kcol < fgkCol; kcol++)
+		{
+		  if (idet == 0)
+		    {
+		      deltaE = fPRE[ism][jrow][kcol];
+		      trno   = fPRETrackNo[ism][jrow][kcol];
+		      detno = 0;
+		    }
+		  else if (idet == 1)
+		    {
+		      deltaE = fCPV[ism][jrow][kcol];
+		      trno   = fCPVTrackNo[ism][jrow][kcol];
+		      detno = 1;
+		    }
+		  if (deltaE > 0.)
+		    {
+		      MeV2ADC(deltaE,adc);
+		      AddDigit(trno,detno,ism,jrow,kcol,adc);
+		    }
+		} // column loop
+	    } // row    loop
+	  fTreeD->Fill();
+	  ResetDigit();
+	} // supermodule loop
+    } // detector loop
+  ResetCellADC();
+
+  fPMDLoader->WriteDigits("OVERWRITE");  
+}
+//____________________________________________________________________________
+
+void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
+{
+  // merging sdigits
+  fRunLoader = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(filenumber));
+  fPMDLoader = fRunLoader->GetLoader("PMDLoader");
+  fPMDLoader->LoadSDigits("read");
+  fTreeS = fPMDLoader->TreeS();
+  AliPMDsdigit  *pmdsdigit;
+  TBranch *branch = fTreeS->GetBranch("PMDSDigit");
+  branch->SetAddress(&fSDigits);
+
+  Int_t   itrackno, idet, ism;
+  Int_t   ixp, iyp;
+  Float_t edep;
+  
+  Int_t nmodules = (Int_t) fTreeS->GetEntries();
+  if(fDebug)
+    {
+      cout << " nmodules = " << nmodules << endl;
+      cout << " tr offset = " << troffset << endl;
+    }
+  for (Int_t imodule = 0; imodule < nmodules; imodule++)
+    {
+      fTreeS->GetEntry(imodule); 
+      Int_t nentries = fSDigits->GetLast();
+      if(fDebug)
+	{
+	  cout << " nentries = " << nentries << endl;
+	}
+      for (Int_t ient = 0; ient < nentries+1; ient++)
+	{
+	  pmdsdigit = (AliPMDsdigit*)fSDigits->UncheckedAt(ient);
+	  itrackno  = pmdsdigit->GetTrackNumber();
+	  idet      = pmdsdigit->GetDetector();
+	  ism       = pmdsdigit->GetSMNumber();
+	  ixp       = pmdsdigit->GetRow();
+	  iyp       = pmdsdigit->GetColumn();
+	  edep      = pmdsdigit->GetCellEdep();
+
+	  if (idet == 0)
+	    {
+	      if (fPRE[ism][ixp][iyp] < edep)
+		{
+		  fPRETrackNo[ism][ixp][iyp] = troffset + itrackno;
+		}
+	      fPRE[ism][ixp][iyp] += edep;
+	    }
+	  else if (idet == 1)
+	    {
+	      if (fCPV[ism][ixp][iyp] < edep)
+		{
+		  fCPVTrackNo[ism][ixp][iyp] = troffset + itrackno;
+		}
+	      fCPV[ism][ixp][iyp] += edep;
+	    }
+	}
+    }
+
+}
+// ----------------------------------------------------------------------
 void AliPMDDigitizer::TrackAssignment2Cell()
 {
   // 
@@ -923,7 +1067,7 @@ void AliPMDDigitizer::TrackAssignment2Cell()
   // End of the cell id assignment
   //
 }
-
+//____________________________________________________________________________
 void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
 {
   // This converts the simulated edep to ADC according to the
@@ -932,32 +1076,37 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
   //
   adc = mev*1.;
 }
+//____________________________________________________________________________
 void AliPMDDigitizer::AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
-  Int_t cellnumber, Float_t adc)
+  Int_t irow, Int_t icol, Float_t adc)
 {
   // Add SDigit
   //
   TClonesArray &lsdigits = *fSDigits;
-  new(lsdigits[fNsdigit++]) AliPMDsdigit(trnumber,det,smnumber,cellnumber,adc);
+  new(lsdigits[fNsdigit++])  AliPMDsdigit(trnumber,det,smnumber,irow,icol,adc);
 }
+//____________________________________________________________________________
 
 void AliPMDDigitizer::AddDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
-  Int_t cellnumber, Float_t adc)
+  Int_t irow, Int_t icol, Float_t adc)
 {
   // Add Digit
   //
   TClonesArray &ldigits = *fDigits;
-  new(ldigits[fNdigit++]) AliPMDdigit(trnumber,det,smnumber,cellnumber,adc);
+  new(ldigits[fNdigit++]) AliPMDdigit(trnumber,det,smnumber,irow,icol,adc);
 }
+//____________________________________________________________________________
 
 void AliPMDDigitizer::SetZPosition(Float_t zpos)
 {
   fZPos = zpos;
 }
+//____________________________________________________________________________
 Float_t AliPMDDigitizer::GetZPosition() const
 {
   return fZPos;
 }
+//____________________________________________________________________________
 
 void AliPMDDigitizer::ResetCell()
 {
@@ -976,22 +1125,25 @@ void AliPMDDigitizer::ResetCell()
 	}
     }
 }
+//____________________________________________________________________________
 void AliPMDDigitizer::ResetSDigit()
 {
   // Clears SDigits
   fNsdigit = 0;
   if (fSDigits) fSDigits->Clear();
 }
+//____________________________________________________________________________
 void AliPMDDigitizer::ResetDigit()
 {
   // Clears Digits
   fNdigit = 0;
   if (fDigits) fDigits->Clear();
 }
+//____________________________________________________________________________
 
 void AliPMDDigitizer::ResetCellADC()
 {
-  // Clears individual cells edep
+  // Clears individual cells edep and track number
   for (Int_t i = 0; i < fgkTotUM; i++)
     {
       for (Int_t j = 0; j < fgkRow; j++)
@@ -1000,10 +1152,13 @@ void AliPMDDigitizer::ResetCellADC()
 	    {
 	      fCPV[i][j][k] = 0.; 
 	      fPRE[i][j][k] = 0.; 
+	      fPRETrackNo[i][j][k] = 0;
+	      fCPVTrackNo[i][j][k] = 0;
 	    }
 	}
     }
 }
+//____________________________________________________________________________
 
 void AliPMDDigitizer::UnLoad(Option_t *option)
 {

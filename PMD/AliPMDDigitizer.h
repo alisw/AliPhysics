@@ -10,6 +10,8 @@
 //                                                     //
 //-----------------------------------------------------//
 
+#include "AliDigitizer.h"
+
 class TClonesArray;
 class TFile;
 class TMath;
@@ -25,17 +27,18 @@ class AliDetector;
 class AliPMDhit;
 class AliHit;
 class AliHeader;
+class AliRunDigitizer;
 
 class AliPMDcell;
 class AliPMDsdigit;
 class AliPMDdigit;
-class AliPMDClustering;
 
-class AliPMDDigitizer
+class AliPMDDigitizer:public AliDigitizer
 {
  public:
 
   AliPMDDigitizer();
+  AliPMDDigitizer(AliRunDigitizer *manager);
   virtual ~AliPMDDigitizer();
 
   void OpengAliceFile(const char *file, Option_t *option);
@@ -43,19 +46,21 @@ class AliPMDDigitizer
   void Hits2SDigits(Int_t ievt);
   void Hits2Digits(Int_t ievt);
   void SDigits2Digits(Int_t ievt);
+  void Exec(Option_t *option);
+  void MergeSDigits(Int_t filenumber, Int_t troffset);
   void TrackAssignment2Cell();
   void MeV2ADC(Float_t mev, Float_t & adc) const;
   void AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
-		 Int_t cellnumber, Float_t adc);
+		 Int_t irow, Int_t icol, Float_t adc);
   void AddDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
-		Int_t cellnumber, Float_t adc);
+		Int_t irow, Int_t icol, Float_t adc);
   void  SetZPosition(Float_t zpos);
   Float_t GetZPosition() const;
   void ResetCell();
   void ResetSDigit();
   void ResetDigit();
   void ResetCellADC();
-  void UnLoad(Option_t * /* option */);
+  void UnLoad(Option_t * option);
 
  protected:
   AliRunLoader *fRunLoader;  // Pointer to Run Loader
@@ -78,6 +83,7 @@ class AliPMDDigitizer
   TObjArray    *fCell;       // List of pmd cells
   AliPMDcell   *fPMDcell;    // Pointer to a PMD cell
 
+  Int_t   fDebug;            // Debug switch
   Int_t   fNsdigit;          // Summable digits counter
   Int_t   fNdigit;           // Digits counter
   Int_t   fDetNo;            // Detector Number (0:PRE, 1:CPV)
@@ -94,7 +100,7 @@ class AliPMDDigitizer
   Int_t   fCPVTrackNo[fgkTotUM][fgkRow][fgkCol]; // CPV Array containing track number
 
 
-  ClassDef(AliPMDDigitizer,2)    // To digitize PMD Hits
+  ClassDef(AliPMDDigitizer,3)    // To digitize PMD Hits
 };
 #endif
 
