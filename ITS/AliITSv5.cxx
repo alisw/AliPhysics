@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2001/02/09 20:06:26  nilsen
+Fixed bug in distructor. Can't distroy fixxed length arrays. Thanks Peter.
+
 Revision 1.29  2001/02/09 00:05:31  nilsen
 Added fMajor/MinorVersion variables and made other changes to better make
 use of the new code changes in AliITSgeom related classes.
@@ -622,7 +625,7 @@ void AliITSv5::InitAliITSgeom(){
 //     Based on the geometry tree defined in Geant 3.21, this
 // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
 // sturture.
-    if(!((TGeant3*)gMC)) {
+    if(!(dynamic_cast<TGeant3*>(gMC))) {
 	Error("InitAliITSgeom",
 		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;
