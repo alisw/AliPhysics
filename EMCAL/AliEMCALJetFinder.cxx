@@ -16,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/01/21 15:47:18  morsch
+Bending radius correctly in cm.
+
 Revision 1.6  2002/01/21 12:53:50  morsch
 authors
 
@@ -54,13 +57,16 @@ Revision 1.3  2002/01/18 05:07:56  morsch
 #include "AliEMCALDigit.h"
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALHadronCorrection.h"
-#include "Ecommon.h"
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliMagFCM.h"
 #include "AliEMCAL.h"
 #include "AliHeader.h"
 #include "AliPDG.h"
+
+// Interface to FORTRAN
+#include "Ecommon.h"
+
 
 ClassImp(AliEMCALJetFinder)
 
@@ -71,10 +77,14 @@ AliEMCALJetFinder::AliEMCALJetFinder()
     fJets             = 0;
     fNjets            = 0;
     fLego             = 0;
+    fLegoB            = 0;
     fTrackList        = 0;
     fPtT              = 0;
     fEtaT             = 0;
     fPhiT             = 0;
+    fPtB              = 0;
+    fEtaB             = 0;
+    fPhiB             = 0;
     fHadronCorrector  = 0;
 }
 
@@ -91,12 +101,15 @@ AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
         fPhiCell[i] = 0.;
     }
     fLego = 0;
-    fTrackList = 0;
-    fTrackList = 0;
-    fPtT       = 0;
-    fEtaT      = 0;
-    fPhiT      = 0;
+    fTrackList  = 0;
+    fPtT        = 0;
+    fEtaT       = 0;
+    fPhiT       = 0;
+    fPtB        = 0;
+    fEtaB       = 0;
+    fPhiB       = 0;
     fHadronCorrector = 0;
+    fBackground = 0;
 //
     SetPtCut();
     SetMomentumSmearing();
@@ -443,7 +456,10 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
     fPtT       = new Float_t[npart];
     fEtaT      = new Float_t[npart];
     fPhiT      = new Float_t[npart];
+
     fNt        = npart;
+    fNtS  = 0;
+
     for (Int_t part = 2; part < npart; part++) {
 	TParticle *MPart = gAlice->Particle(part);
 	Int_t mpart   = MPart->GetPdgCode();
@@ -503,12 +519,13 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	part, mpart, child1, eta, phi, pT);
 //
 //
-// phi propagation 
+// phi propagation for hadronic correction
 
 	Bool_t curls = kFALSE;
 	Float_t dphi = PropagatePhi(pT, pdgP->Charge(), curls);
-	if (curls) continue;
-	phi += dphi;
+	if (fDebug) printf("\n Delta phi %f pT%f", dphi, pT);
+	if (curls && fDebug) printf("\n Track is curling %f", pT);
+	Float_t phiHC = phi + dphi;
 //
 // Momentum smearing goes here ...
 //
@@ -524,19 +541,23 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 //
 // Correction of Hadronic Energy goes here ...
 //
+	Float_t dpH = 0.;
+	
 	if (fHCorrection) {
 	    if (!fHadronCorrector)
 		Fatal("AliEMCALJetFinder",
 		    "Hadronic energy correction required but not defined !");
-	    Float_t dpH = fHadronCorrector->GetEnergy(p, eta, 7);
-	    p -= dpH;
+	    dpH = fHadronCorrector->GetEnergy(p, eta, 7);
 	}
 //
 //  More to do ? Just think about it !
 //
 	fTrackList[part] = 1;
-//  
+//
+	fNtS++;
+	
 	fLego->Fill(eta, phi, p);
+	if (fHCorrection) fLego->Fill(eta, phiHC, dpH);
     } // primary loop
     DumpLego();
 }
@@ -550,7 +571,11 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
     ResetMap();
     
     if (!fLego) BookLego();
-    if (flag == 0) fLego->Reset();
+//  Reset eta-phi map if needed
+    if (flag == 0)    fLego->Reset();
+//  Initialize from background event if available
+    if (fBackground)  InitFromBackground();
+    
 
 //
 // Access hit information    
@@ -689,8 +714,8 @@ void AliEMCALJetFinder::FillFromHitFlaggedTracks(Int_t flag)
 // Reset
     if (flag == 0) fLego->Reset();
 
-//Flag charged tracks passing through TPC which 
-//are associated to EMCAL Hits
+// Flag charged tracks passing through TPC which 
+// are associated to EMCAL Hits
     BuildTrackFlagTable();
 
 //
@@ -698,15 +723,17 @@ void AliEMCALJetFinder::FillFromHitFlaggedTracks(Int_t flag)
     TTree *treeH = gAlice->TreeH();
     Int_t ntracks = (Int_t) treeH->GetEntries();
 
-    if (fPtT)       delete[] fPtT;
-    if (fEtaT)      delete[] fEtaT;
-    if (fPhiT)      delete[] fPhiT;
-    
+    if (fPtT)       delete[] fPtT;   
+    if (fEtaT)      delete[] fEtaT;    
+    if (fPhiT)      delete[] fPhiT;   
+   
     fPtT       = new Float_t[ntracks];
     fEtaT      = new Float_t[ntracks];
     fPhiT      = new Float_t[ntracks];
-    fNt        = ntracks;
 
+    fNt   = ntracks;
+    fNtS  = 0;
+    
     for (Int_t track = 0; track < ntracks; track++) {
 	  TParticle *MPart = gAlice->Particle(track);
 	  Float_t pT    = MPart->Pt();
@@ -720,6 +747,7 @@ void AliEMCALJetFinder::FillFromHitFlaggedTracks(Int_t flag)
 
 	  if (track < 2) continue;	//Colliding particles?
 	  if (pT == 0 || pT < fPtCut) continue;
+	  fNtS++;
 	  fLego->Fill(eta, phi, pT);
 	}
       } // track loop
@@ -827,8 +855,8 @@ void AliEMCALJetFinder::BuildTrackFlagTable() {
 Int_t AliEMCALJetFinder
 ::SetTrackFlag(Float_t radius, Int_t code, Double_t charge) {
 
-    Int_t flag = 0; 
-    Int_t parton = 0; 
+    Int_t flag    = 0; 
+    Int_t parton  = 0; 
     Int_t neutral = 0;
     
     if (charge == 0) neutral = 1;
@@ -843,6 +871,46 @@ Int_t AliEMCALJetFinder
     return flag;
 }
 
+
+
+void AliEMCALJetFinder::SaveBackgroundEvent()
+{
+// Saves the eta-phi lego and the tracklist
+//
+    if (fLegoB) delete fLegoB;
+    
+    fLegoB = new TH2F(*fLego);
+    
+    if (fPtB)        delete[] fPtB;   
+    if (fEtaB)       delete[] fEtaB;    
+    if (fPhiB)       delete[] fPhiB;   
+    if (fTrackListB) delete[] fTrackListB;   
+   
+    fPtB          = new Float_t[fNtS];
+    fEtaB         = new Float_t[fNtS];
+    fPhiB         = new Float_t[fNtS];
+    fTrackListB   = new Int_t  [fNtS];
+
+    for (Int_t i = 0; i < fNt; i++) {
+	if (!fTrackList[i]) continue;
+	fPtB [fNtB]      = fPtT [i];
+	fEtaB[fNtB]      = fEtaT[i];
+	fPhiB[fNtB]      = fPhiT[i];
+	fTrackList[fNtB] = 1;
+	fNtB++;
+    }
+}
+
+void AliEMCALJetFinder::InitFromBackground()
+{
+//
+//    
+    if (fLego) delete fLego;
+    fLego = new TH2F(*fLegoB);
+}
+
+
+    
 void AliEMCALJetFinder::FindTracksInJetCone()
 {
 //
@@ -856,7 +924,7 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 	Float_t phij = JetPhiW(nj);	
 	Int_t   nT   = 0;           // number of associated tracks
 	
-// Loop over particles
+// Loop over particles in current event 
 	for (Int_t part = 0; part < fNt; part++) {
 	    if (!fTrackList[part]) continue;
 	    Float_t phi      = fPhiT[part];
@@ -869,7 +937,24 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 	    } // < ConeRadius ?
 	} // particle loop
 	
-	if (nT > 50) nT = 50;
+// Same for background event if available
+	Int_t nTB = 0;
+	if (fBackground) {
+	    for (Int_t part = 0; part < fNtB; part++) {
+		Float_t phi      = fPhiB[part];
+		Float_t eta      = fEtaB[part];
+		Float_t dr       = TMath::Sqrt((etaj-eta)*(etaj-eta) +
+					       (phij-phi)*(phij-phi));
+		if (dr < fConeRadius) {
+		    fTrackList[part] = nj+2;
+		    nTB++;
+		} // < ConeRadius ?
+	    } // particle loop
+	} // Background available ?
+	
+	Int_t nT0 = nT + nTB;
+	
+	if (nT0 > 50) nT0 = 50;
 	
 	Float_t* ptT  = new Float_t[nT];
 	Float_t* etaT = new Float_t[nT];
@@ -894,10 +979,35 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 		ptT [index] = fPtT [part];
 		etaT[index] = fEtaT[part];
 		phiT[index] = fPhiT[part];
-		iT++;		
+		iT++;
 	    } // particle associated
+	    if (iT > nT0) break;
 	} // particle loop
 	
+	if (fBackground) {
+	    for (Int_t part = 0; part < fNtB; part++) {
+		if (fTrackList[part] == nj+2) {
+		    Int_t index = 0;
+		    for (j=iT-1; j>=0; j--) {
+			if (fPtB[part] > ptT[j]) {
+			    index = j+1;
+			    break;
+			}
+		    }
+		    for (j=iT-1; j>=index; j--) {
+			ptT [j+1]  = ptT [j];
+			etaT[j+1]  = etaT[j];
+			phiT[j+1]  = phiT[j];
+		    }
+		    ptT [index] = fPtB [part];
+		    etaT[index] = fEtaB[part];
+		    phiT[index] = fPhiB[part];
+		    iT++;
+		} // particle associated
+		if (iT > nT0) break;
+	    } // particle loop
+	} // Background available ?
+
 	fJetT[nj]->SetTrackList(nT, ptT, etaT, phiT);
 	delete[] ptT;
 	delete[] etaT;
@@ -917,8 +1027,7 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
 //
 //
 // bending radies
-    Float_t rB = 333.56 * pt / b;
-    
+    Float_t rB = 333.56 * pt / b;  // [cm]
 //
 // check if particle is curling below EMCAL
     if (2.*rB < rEMCAL) {
