@@ -90,7 +90,8 @@ AliRoot3.01.tar.gz AliLibs3.01.tar.gz AliOffline3.01.tar.gz:
 	 	@cd $(ALICE) ; \
                 gtar cvfz $@ --exclude '*.o' --exclude '*Cint.*' \
                 --exclude '*/roothtml/*' --exclude '*/CVS' \
-		--exclude Make-depend `cat /tmp/saves` 
+		--exclude Make-depend --exclude '*html/gif' \
+                `cat /tmp/saves` 
 
 alidepend:
 		@for i in $(ALIROOT_DIRS) ; do \
