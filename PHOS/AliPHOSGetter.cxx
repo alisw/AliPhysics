@@ -177,7 +177,8 @@ AliPHOSGetter * AliPHOSGetter::GetInstance()
   // Returns the pointer of the unique instance already defined
   
   if ( fgObjGetter ) {
-    fFile->cd() ; 
+    if (fFile)   // not the case if fManager
+      fFile->cd() ; 
     return fgObjGetter ;
   }
   else {
@@ -1809,12 +1810,12 @@ void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
   TString sdname(sdigitsBranch->GetTitle()) ;
   sdname+=":" ;
   sdname+=filename ;
+  
   if(!SDigitizer(sdigitsBranch->GetTitle()) )
     PostSDigitizer(sdigitsBranch->GetTitle(),filename) ;
-
-  sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
-  sdigitizerBranch->GetEntry(0) ;
-  
+  //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+  //   sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
+  //   sdigitizerBranch->GetEntry(0) ;
 }    
 
 
