@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2000/09/18 10:41:35  morsch
+Add possibility to use nuclear structure functions from PDF library V8.
+
 Revision 1.23  2000/09/14 14:05:40  morsch
 dito
 
@@ -420,11 +423,16 @@ Bool_t AliGenPythia::KinematicSelection(TParticle *particle)
 
 //
 // rapidity cut
-    Float_t y = 0.5*TMath::Log((e+pz)/(e-pz));
-    if (y > fYMax || y < fYMin)
-    {
+    if (e==pz) {
+      return kFALSE;
+    }
+    else {
+      Float_t y = 0.5*TMath::Log((e+pz)/(e-pz));
+      if (y > fYMax || y < fYMin)
+        {
 //	printf("\n failed y cut %f %f %f \n",y,fYMin,fYMax);
-	return kFALSE;
+          return kFALSE;
+        }
     }
 
 //

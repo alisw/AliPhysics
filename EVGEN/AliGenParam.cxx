@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2000/10/02 21:28:06  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.22  2000/09/12 14:14:55  morsch
 Call fDecayer->ForceDecay() at the beginning of Generate().
 
@@ -340,6 +343,7 @@ void AliGenParam::Generate()
 	      wgtch=fChildWeight*fPtParaFunc(& ptd, &dummy);
 	  }
 	  xmt=sqrt(pt*pt+am*am);
+      if (TMath::Abs(ty)==1) ty=0;
 	  pl=xmt*ty/sqrt(1.-ty*ty);
 	  theta=TMath::ATan2(pt,pl);
 // Cut on theta
