@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2003/08/05 16:14:20  morsch
+Some problems with too big fluctuations corrected. (A. de Falco)
+
 Revision 1.1  2003/01/06 10:13:09  morsch
 First commit.
 
@@ -74,7 +77,7 @@ void AliFastMuonTrackingRes::Evaluate(Float_t   p,  Float_t  theta , Float_t   p
     Double_t meanphi    = fFastTracking->MeanPhi   (p, theta, phi, Int_t(fCharge));
     Double_t sigmaphi   = fFastTracking->SigmaPhi  (p, theta, phi, Int_t(fCharge));
     
-    if (sigmatheta<0 or sigmaphi<0) 
+    if (sigmatheta<0 || sigmaphi<0) 
       printf ("bin %d %d %d sigmatheta = %f, sigmaphi = %f\n",
 	      ip,itheta,iphi,sigmatheta,sigmaphi);
     // Components different from ip=0 have the RMS bigger than mean
