@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2001/02/14 18:22:26  cblume
+Change in the geometry of the padplane
+
 Revision 1.18  2001/01/26 19:56:57  hristov
 Major upgrade of AliRoot code
 
@@ -581,7 +584,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   // Number of track dictionary arrays
   const Int_t kNDict = AliTRDdigitsManager::kNDict;
 
-  Int_t   iRow, iCol, iTime;
+  Int_t   iRow, iCol, iTime, iPad;
   Int_t   iDict  = 0;
   Int_t   nBytes = 0;
 
@@ -861,7 +864,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
           // Add the signals
           Float_t signalOld[kNpad] = { 0.0, 0.0, 0.0 };
-          for (Int_t iPad = 0; iPad < kNpad; iPad++) {
+          for (iPad = 0; iPad < kNpad; iPad++) {
             Int_t colPos = colE + iPad - 1;
             if (colPos <        0) continue;
             if (colPos >= nColMax) break;
@@ -890,7 +893,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
           //    break;
           //  }
           //}
-          for (Int_t iPad = 0; iPad < kNpad; iPad++) {
+          for (iPad = 0; iPad < kNpad; iPad++) {
             Int_t colPos = colE + iPad - 1;
             if (colPos <        0) continue;
             if (colPos >= nColMax) break;
