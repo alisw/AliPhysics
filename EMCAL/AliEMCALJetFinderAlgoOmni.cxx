@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.7  2004/01/21 22:27:47  mhorner
+Cleaning up coding conventions
+
 Revision 1.6  2003/10/28 13:54:30  schutz
 Compilation warnings fixed
 
@@ -45,6 +48,7 @@ Changed hadron correction and added saving EMCAL and track contributions
 #include "AliEMCALJetFinderAlgo.h"
 #include "AliEMCALJetFinderAlgoOmni.h"
 #include "AliEMCALJetFinderAlgoUA1Unit.h"
+#include "AliEMCALGetter.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCAL.h"
 #include "AliEMCALDigit.h"
@@ -61,8 +65,10 @@ ClassImp(AliEMCALJetFinderAlgoOmni)
   //Default constructor
 if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 
+ AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
+ AliEMCALGeometry * geom = gime->EMCALGeometry();
   fNumIter           = 0;
-  fNumUnits          = 13824;     //Number of towers in EMCAL
+  fNumUnits          = geom->GetNTowers();     //Number of towers in EMCAL
   fESeed             = 5.0;       //Default value
   fConeRad           = 0.3;       //Default value
   fJetEMin           = 10.0;      //Default value
@@ -157,7 +163,10 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
          //	     AliEMCALGeometry* geom =  AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
          //     }else
          //    {
-     AliEMCALGeometry* geom =  AliEMCALGeometry::GetInstance("EMCAL_5655_21", "");
+
+     AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
+     AliEMCALGeometry * geom = gime->EMCALGeometry();
+
         //    }
          
      AliEMCALJetFinderAlgoUA1FillUnitFlagType_t option = flag;
@@ -477,7 +486,8 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
    {
      //Stores the resulting jet information in appropriate storage structure (TO BE DECIDED!!!!)
      if (fDebug>1) Info("StoreJetInfo","Storing Jet Information");
-     AliEMCALGeometry* geom =  AliEMCALGeometry::GetInstance("EMCAL_5655_21", "");
+     AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
+     AliEMCALGeometry * geom = gime->EMCALGeometry();
      //Store:
      //fJetESum is the final jet energy (background has been subtracted)
      //fJetEta is the final jet Eta
