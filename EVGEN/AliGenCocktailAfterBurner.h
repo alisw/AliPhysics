@@ -38,9 +38,12 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
     AliGenerator* GetCurrentGenerator();
     virtual void  SetActiveEventNumber(Int_t actev);
     Int_t GetActiveEventNumber() {return fActiveEvent;}
-    virtual Int_t GetNumberOfEvents() {return gAlice->GetEventsPerRun();}
+    virtual Int_t GetNumberOfEvents() {return gAlice->GetEventsPerRun() + fNBgEvents;}
 
     static AliMCProcess IntToMCProcess(Int_t no);
+    void SetNBgEvents(Int_t nbg=0){fNBgEvents = nbg;}
+
+
  protected:
     Int_t fNAfterBurners;       // Number of afterburners  
     TList  *fAfterBurnerEntries;// List of afterburners
@@ -59,7 +62,10 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
                               //are addressed to this event
     
     AliGenerator *fCurrentGenerator;      // Current event generator 
-    ClassDef(AliGenCocktailAfterBurner,1) // Particle cocktail generator a la SHAKER
+    Int_t fNBgEvents;
+    
+    ClassDef(AliGenCocktailAfterBurner,2) // Particle cocktail generator a la SHAKER
+                                          //background events added
 };
 
 inline  AliGenerator*  

@@ -57,6 +57,7 @@ AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()
     fGenerationDone = kFALSE;
     
     fActiveEvent = -1;  
+    fNBgEvents = 0;
 }
 /*********************************************************************/ 
 /*********************************************************************/ 
@@ -89,14 +90,10 @@ AddAfterBurner(AliGenerator *AfterBurner, char* Name, Float_t RateExp)
 	AfterBurner->SetMomentumRange(fPMin,fPMax);
     
     AfterBurner->SetYRange(fYMin,fYMax);
-    AfterBurner->
-	SetPhiRange(fPhiMin*180/TMath::Pi(),fPhiMax*180/TMath::Pi());
-    AfterBurner->
-	SetThetaRange(fThetaMin*180/TMath::Pi(),fThetaMax*180/TMath::Pi());
-    AfterBurner->
-	SetOrigin(fOrigin[0], fOrigin[1], fOrigin[2]);
-    AfterBurner->
-	SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
+    AfterBurner->SetPhiRange(fPhiMin*180/TMath::Pi(),fPhiMax*180/TMath::Pi());
+    AfterBurner->SetThetaRange(fThetaMin*180/TMath::Pi(),fThetaMax*180/TMath::Pi());
+    AfterBurner->SetOrigin(fOrigin[0], fOrigin[1], fOrigin[2]);
+    AfterBurner->SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
     AfterBurner->SetVertexSmear(fVertexSmear);
     AfterBurner->SetTrackingFlag(fTrackIt);    
 //
@@ -116,6 +113,12 @@ void AliGenCocktailAfterBurner::Init()
 {
 // Initialisation
     fGenerationDone = kFALSE;
+    if (fInternalStacks) //delete stacks
+     { 
+       fInternalStacks->SetOwner();
+       fInternalStacks->Delete(); //clean after previous generation cycle
+     }
+
     this->AliGenCocktail::Init(); 
     
     if (gDebug>0) cout<<"AliGenCocktailAfterBurner::Init"<<endl;
@@ -162,8 +165,8 @@ void AliGenCocktailAfterBurner::Generate()
       fCurrentEvent=0;
       Int_t numberOfEvents = gAlice->GetEventsPerRun();
       //Create stacks
-      fInternalStacks = new TObjArray(numberOfEvents); //Create array of internal stacks
-      for(i=0;i<numberOfEvents;i++) 
+      fInternalStacks = new TObjArray(numberOfEvents + fNBgEvents); //Create array of internal stacks
+      for(i=0;i<numberOfEvents + fNBgEvents;i++) 
        {	
         stack = new AliStack(10000);
         stack->Reset();
@@ -184,7 +187,7 @@ void AliGenCocktailAfterBurner::Generate()
         cout<<"Generator "<<igen<<"  : "<<entry->GetName()<<endl;
 /***********************************************/
 //First generator for all evenets, than second for all events, etc...
-        for(i=0;i<numberOfEvents;i++) 
+        for(i=0;i<numberOfEvents + fNBgEvents;i++) 
           {  
             cout<<"                  EVENT "<<i<<endl;
             stack = GetStack(i);
