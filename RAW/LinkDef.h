@@ -24,7 +24,6 @@
 #pragma link C++ class AliRawReaderDate+;
 #pragma link C++ class AliBitPacking+;
 #pragma link C++ class AliAltroBuffer+;
-#pragma link C++ class AliTPCBuffer160+;
 #pragma link C++ class AliTPCCompression+;
 #pragma link C++ class AliTPCHNode+;
 #pragma link C++ class AliTPCHTable+;

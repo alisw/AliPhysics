@@ -7,8 +7,7 @@ SRCS:=  AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
 	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
 	AliRawReaderDate.cxx \
 	AliBitPacking.cxx AliAltroBuffer.cxx \
-	AliTPCBuffer160.cxx AliTPCCompression.cxx \
-	AliTPCHNode.cxx AliTPCHTable.cxx \
+	AliTPCCompression.cxx AliTPCHNode.cxx AliTPCHTable.cxx \
 	AliAltroRawStream.cxx AliTPCRawStream.cxx \
 	AliITSRawStream.cxx AliITSRawStreamSPD.cxx \
 	AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx \
