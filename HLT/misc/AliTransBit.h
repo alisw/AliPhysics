@@ -3,7 +3,7 @@
 
 #include "AliL3RootTypes.h"
 
-class AliTransBit : public TObject {
+class AliTransBit {
 public:
   AliTransBit();
   virtual ~AliTransBit();

@@ -54,8 +54,9 @@ Int_t b0=10;  // original number of bits
 
 
 #include "AliTransBit.h"
-#include "TMath.h"
-#include "iostream.h"
+
+#include <iostream.h>
+#include <math.h>
 
 ClassImp(AliTransBit)
 ClassImp(AliTransBit_v1)
@@ -90,8 +91,8 @@ Double_t AliTransBit_v1::FindOptimumX0()
   //
   //find x0 for which derivation at xder1 is equal 1
   //
-  Int_t x0=TMath::Nint(TMath::Exp(fBit0*TMath::Log(2)));
-  Int_t x1=TMath::Nint(TMath::Exp(fBit1*TMath::Log(2)));
+  Int_t x0=(Int_t)rint(exp(fBit0*log(2)));
+  Int_t x1=(Int_t)rint(exp(fBit1*log(2)));
 
   fX0 = ((x1-2)*(x1-2)/2.)/(x0-x1-1);  //starting fX0
   Int_t digit=0;
@@ -117,8 +118,8 @@ void AliTransBit_v1::Update()
   //
   //construct lookup tables for loosy compresion from 
   if (fX0<1) fX0 = FindOptimumX0();  
-  Int_t x0=TMath::Nint(TMath::Exp(fBit0*TMath::Log(2)));
-  Int_t x1=TMath::Nint(TMath::Exp(fBit1*TMath::Log(2)));
+  Int_t x0=(Int_t)rint(exp(fBit0*log(2)));
+  Int_t x1=(Int_t)rint(exp(fBit1*log(2)));
   
   //fTable0 - conversion from bit0 coding to bit1 coding
   if (fTable0!=0) delete fTable0;
@@ -149,13 +150,13 @@ Double_t AliTransBit_v2::FindOptimumX0()
   const Float_t xder1=1;
   const Float_t dx=0.1;
 
-  Float_t x0=TMath::Exp(fBit0*TMath::Log(2));
-  Float_t x1=TMath::Exp(fBit1*TMath::Log(2));
+  Float_t x0=exp(fBit0*log(2));
+  Float_t x1=exp(fBit1*log(2));
   Float_t deriv = 0;
   Float_t x;
   for (x=x1;( (x>1)&&(deriv<1)) ;x-=dx)
     {
-      deriv = (x1-1)/( TMath::Log(1.+x0/x) *x *(1+xder1/x));
+      deriv = (x1-1)/( log(1.+x0/x) *x *(1+xder1/x));
     }
   x+=dx/2.;
   fX0 = x;
@@ -168,10 +169,10 @@ void AliTransBit_v2::Update()
   //
   //construct lookup tables for loosy compresion from 
   if (fX0<1) fX0 = FindOptimumX0();  
-  //Float_t x0=TMath::Nint(TMath::Exp(fBit0*TMath::Log(2)));
-  //Float_t x1=TMath::Nint(TMath::Exp(fBit1*TMath::Log(2)));
-  Int_t x0=TMath::Nint(TMath::Exp(fBit0*TMath::Log(2)));
-  Int_t x1=TMath::Nint(TMath::Exp(fBit1*TMath::Log(2)));
+  //Float_t x0=(Int_t)rint(exp(fBit0*log(2)));
+  //Float_t x1=(Int_t)rint(exp(fBit1*log(2)));
+  Int_t x0=(Int_t)rint(exp(fBit0*log(2)));
+  Int_t x1=(Int_t)rint(exp(fBit1*log(2)));
   
   //fTable0 - conversion from bit0 coding to bit1 coding
   if (fTable0!=0) delete fTable0;
@@ -185,8 +186,8 @@ void AliTransBit_v2::Update()
   Int_t i;
 
   for ( i=0; i<x0;i++)
-      fTable0[i] =TMath::Nint((x1-0.501)*TMath::Log(1.+Float_t(i)/fX0)/
-				 TMath::Log(1.+(x0-1)/fX0));
+      fTable0[i] =(Int_t)rint((x1-0.501)*log(1.+Float_t(i)/fX0)/
+				 log(1.+(x0-1)/fX0));
 
   Int_t old0=-1;
   Int_t old1=-1;
@@ -199,7 +200,7 @@ void AliTransBit_v2::Update()
 	old1 = new1;
       }
   }
-  fTable1[old1]=TMath::Nint((Float_t)(old0+x0)/2);
+  fTable1[old1]=(Int_t)rint((Float_t)(old0+x0)/2);
   
   return;
 }
