@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/05/17 05:49:39  fca
+Reset pointers to daughters
+
 Revision 1.1  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -482,7 +485,7 @@ void AliStack::FlagTrack(Int_t track)
 }
  
 //_____________________________________________________________________________
-void AliStack::KeepTrack(const Int_t track)
+void AliStack::KeepTrack(Int_t track)
 { 
   //
   // Flags a track to be kept
@@ -519,7 +522,7 @@ void  AliStack::ResetArrays(Int_t size)
 }
 
 //_____________________________________________________________________________
-void AliStack::SetHighWaterMark(const Int_t nt)
+void AliStack::SetHighWaterMark(Int_t nt)
 {
   //
   // Set high water mark for last track in event
