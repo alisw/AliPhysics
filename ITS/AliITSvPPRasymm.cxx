@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/03/13 21:18:44  barbera
+Some misleading comments removed
+
 Revision 1.22  2001/03/13 18:13:30  barbera
 Some mother volumes sligthly modified to eliminate an overlap with the absorber
 
@@ -853,6 +856,61 @@ void AliITSvPPRasymm::CreateGeometry(){
   // --- Define ghost volume containing the whole ITS (including services) 
   //     and fill it with air 
   
+/*
+  dgh[0] = 0.;
+  dgh[1] = 360.;
+  dgh[2] = 16.;
+  dgh[3] = -xltpc-5.-0.1;
+  dgh[4] = 46;   
+  dgh[5] = 85.;
+  dgh[6] = -xltpc;
+  dgh[7] = 46;   
+  dgh[8] = 85.;
+  dgh[9] = -xltpc;
+  dgh[10] = 46;  
+  dgh[11] = 56.1;
+  dgh[12] = -100.7;
+  dgh[13] = 46;  
+  dgh[14] = 56.1;
+  dgh[15] = -77.2;
+  dgh[16] = 46;  
+  dgh[17] = 56.1;
+  dgh[18] = -42;   
+  dgh[19] = 6;
+  dgh[20] = 56.1;
+  dgh[21] = -28;   
+  dgh[22] = 6;
+  dgh[23] = 56.1;    
+  dgh[24] = -26.2;  
+  dgh[25] = 3.295;
+  dgh[26] = 56.1; 
+  dgh[27] = 26.2;   
+  dgh[28] = 3.295;
+  dgh[29] = 56.1;
+  dgh[30] = 28;   
+  dgh[31] = 6;
+  dgh[32] = 56.1;
+  dgh[33] = 42;   
+  dgh[34] = 6;
+  dgh[35] = 56.1;  
+  dgh[36] = 77.2;
+  dgh[37] = 46;
+  dgh[38] = 56.1;
+  dgh[39] = 100.7;
+  dgh[40] = 46;  
+  dgh[41] = 56.1;
+  dgh[42] = xltpc;
+  dgh[43] = 62;     
+  dgh[44] = 62+4.;  
+  dgh[45] = xltpc;
+  dgh[46] = 62;     
+  dgh[47] = 85.;
+  dgh[48] = xltpc+4.+0.1;
+  dgh[49] = 62.4;
+  dgh[50] = 85.;
+  gMC->Gsvolu("ITSV", "PCON", idtmed[205], dgh, 51);
+*/
+
   dgh[0] = 0.;
   dgh[1] = 360.;
   dgh[2] = 12.;
@@ -892,8 +950,9 @@ void AliITSvPPRasymm::CreateGeometry(){
   dgh[36] = xltpc+4.+0.1;
   dgh[37] = 62.4;
   dgh[38] = 85.;
-
   gMC->Gsvolu("ITSV", "PCON", idtmed[205], dgh, 39);
+
+
   
   // --- Place the ghost volume in its mother volume (ALIC) and make it 
   //     invisible 
@@ -906,20 +965,32 @@ void AliITSvPPRasymm::CreateGeometry(){
   
   dgh[0] = 0.;
   dgh[1] = 360.;
-  dgh[2] = 4.;
+  dgh[2] = 8.;
   dgh[3] = -77.2;
   dgh[4] = 46.;
   dgh[5] = 56.;
-  dgh[6] = -40.;     
-  dgh[7] = 3.3;
+  dgh[6] = -42;    
+  dgh[7] = 6.005;
   dgh[8] = 56.;
-  dgh[9] = 40.;
-  dgh[10] = 3.3;
-  dgh[11] = 56.;
-  dgh[12] = 77.2;
-  dgh[13] = 46.;
+  dgh[9] = -28;    
+  dgh[10] = 6.005;
+  dgh[11] = 56.;  
+  dgh[12] = -26.2;   
+  dgh[13] = 3.3;
   dgh[14] = 56.;
-  gMC->Gsvolu("ITSD", "PCON", idtmed[205], dgh, 15);
+  dgh[15] = 26.2;    
+  dgh[16] = 3.3;
+  dgh[17] = 56.;
+  dgh[18] = 28;    
+  dgh[19] = 6.005;
+  dgh[20] = 56.;
+  dgh[21] = 42;    
+  dgh[22] = 6.005;
+  dgh[23] = 56.;
+  dgh[24] = 77.2;
+  dgh[25] = 46.;
+  dgh[26] = 56.;
+  gMC->Gsvolu("ITSD", "PCON", idtmed[205], dgh, 27);
   
   // --- Place the ghost volume in its mother volume (ITSV) and make it 
   //     invisible 
@@ -2504,14 +2575,14 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[1] = 360;
   dits[2] = 6;
   dits[3] = -77.2;
-  dits[4] = 45; 
-  dits[5] = 47.5;   
+  dits[4] = 46; 
+  dits[5] = 48.5;   
   dits[6] = -73.5;
-  dits[7] = 45;  
-  dits[8] = 47.5;   
+  dits[7] = 46;  
+  dits[8] = 48.5;   
   dits[9] = -72.7819;
-  dits[10] = 45;   
-  dits[11] = 46.2819;
+  dits[10] = 46;   
+  dits[11] = 47.2819;
   dits[12] = -59.5;
   dits[13] = 31.2181;
   dits[14] = 33;
@@ -2562,20 +2633,20 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[1] = 25;
   dits[2] = 5;
   dits[3] = -77.2+3;
-  dits[4] = 44.5;
-  dits[5] = 44.5;
+  dits[4] = 45.5;
+  dits[5] = 45.5;
   dits[6] = -69.7+3;
   dits[7] = 37;
-  dits[8] = 44.5;
+  dits[8] = 45.5;
   dits[9] = -68.5+3;
   dits[10] = 37;
-  dits[11] = 44.5;
+  dits[11] = 45.5;
   dits[12] = -68.5+4.8;  
   dits[13] = 37;
-  dits[14] = 44.5; 
+  dits[14] = 45.5; 
   dits[15] = -63.5+4.8;
   dits[16] = 37;
-  dits[17] = 44.5;   
+  dits[17] = 45.5;   
   gMC->Gsvolu("I215", "PCON", idtmed[294], dits, 18);  // SSD end-ladder elect.  
  
   dits[0] = 0;
