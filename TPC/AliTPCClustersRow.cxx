@@ -26,7 +26,8 @@
 #include <TClass.h>
 #include "AliClusters.h"
 #include "AliTPCClustersRow.h"
-#include "TDirectory.h"
+#include <TDirectory.h>
+#include <TClonesArray.h>
 
 
 const Int_t kDefSize = 1;  //defalut size

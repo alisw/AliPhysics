@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/30 12:07:50  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.1.2.1  2000/06/25 08:53:55  kowal2
 Splitted from AliTPCtracking
 
@@ -36,6 +39,7 @@ Splitted from AliTPCtracking
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
 #include <iostream.h>
+#include <TTree.h>
 
 void AliTPCclusterer::FindPeaks(Int_t k,Int_t max,
 AliBin *b,Int_t *idx,UInt_t *msk,Int_t& n) {

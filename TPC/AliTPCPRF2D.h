@@ -4,11 +4,12 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-////////////////////////////////////////////////
-//  Manager class for AliTPCPRF2D             //
-////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+//  Manager class for AliTPCPRF2D                               //
+//  This is to generate the 2-dimensional pad-response function //
+//////////////////////////////////////////////////////////////////
 #include "TObject.h"
-#include "TMath.h"
+
 class TF2;
 class TArrayF;
 class TH1F;

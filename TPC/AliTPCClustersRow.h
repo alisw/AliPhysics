@@ -9,16 +9,10 @@
 //  Manager class for TPC   clusters                   //
 ////////////////////////////////////////////////
 
-#include "AliDetector.h"
-#include "AliSegmentArray.h"
+
 #include "AliClusters.h"
 
-
-#include <TClonesArray.h>
-
-
-class TClonesArray;
-class TObjArray;
+class TObject;
 
 
 class AliTPCClustersRow : public AliClusters{
@@ -28,6 +22,13 @@ public:
 
 public:
   
-  ClassDef(AliTPCClustersRow,1) 
+  ClassDef(AliTPCClustersRow,1) // Cluster manager 
 };  
 #endif //ALITPCCLUSTERROW_H
+
+
+
+
+
+
+
