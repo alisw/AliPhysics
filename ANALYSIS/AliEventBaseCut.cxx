@@ -32,7 +32,11 @@ AliEventBaseCut::AliEventBaseCut(Double_t min, Double_t max, EEventCutProperty p
 
 Bool_t AliEventBaseCut::Rejected(AliAOD* aod) const
 {
-  if ( (GetValue(aod) < fMin) || (GetValue(aod) > fMax) ) return kTRUE;
+//Checks if value is in the range,
+// returns true if it is in the range, false otherwise
+  Double_t v = GetValue(aod);
+//  Info("Rejected","Value %f Min %f Max %f",v,fMin,fMax);
+  if ( ( v < fMin) || ( v > fMax) ) return kTRUE;
   return kFALSE;
 }
 /**********************************************************/

@@ -109,7 +109,7 @@ void AliEventCut::SetNChargedRange(Int_t min,Int_t max,Double_t etamin,Double_t 
 }
 /*********************************************************/
 
-void AliEventCut::SetVertexXRange(Int_t min,Int_t max)
+void AliEventCut::SetVertexXRange(Double_t min, Double_t max)
 {
   //Sets range of z coordinate of a primary vertex
   AliEventBaseCut* cut = FindCut(AliEventBaseCut::kPrimVertexXCut);
@@ -118,7 +118,7 @@ void AliEventCut::SetVertexXRange(Int_t min,Int_t max)
 }
 /*********************************************************/
 
-void AliEventCut::SetVertexYRange(Int_t min,Int_t max)
+void AliEventCut::SetVertexYRange(Double_t min, Double_t max)
 {
   //Sets range of z coordinate of a primary vertex
   AliEventBaseCut* cut = FindCut(AliEventBaseCut::kPrimVertexYCut);
@@ -127,7 +127,7 @@ void AliEventCut::SetVertexYRange(Int_t min,Int_t max)
 }
 /*********************************************************/
 
-void AliEventCut::SetVertexZRange(Int_t min,Int_t max)
+void AliEventCut::SetVertexZRange(Double_t min, Double_t max)
 {
   //Sets range of z coordinate of a primary vertex
   AliEventBaseCut* cut = FindCut(AliEventBaseCut::kPrimVertexZCut);

@@ -93,7 +93,7 @@ class AliNChargedCut: public AliEventBaseCut
 {
  public: 
    AliNChargedCut():AliEventBaseCut(0,0,kNChargedCut){}
-   AliNChargedCut(Double_t min, Double_t max, Double_t etamin = -10.0, Double_t etamax = 10.0):
+   AliNChargedCut(Int_t min, Int_t max, Double_t etamin = -10.0, Double_t etamax = 10.0):
        AliEventBaseCut(min,max,kNChargedCut),fEtaMin(etamin),fEtaMax(etamax){}
    virtual ~AliNChargedCut(){}
    
