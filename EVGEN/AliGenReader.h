@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+// Interface for reading events from files.
+// Realisations of this interface have to be used with AliGenExFile.
+// Author: andreas.morsch@cern.ch
+
 #include "TObject.h"
 
 class TParticle;
@@ -16,22 +20,20 @@ class AliGenReader : public TObject
     AliGenReader(const AliGenReader &reader)
 	:TObject(reader), fFileName(NULL), fCode(kPDG){reader.Copy(*this);}
     virtual ~AliGenReader(){;}
-    // Initialise 
-    virtual void Init() {}
-    // set file name of data file
     virtual void SetFileName(const Text_t *filname) {fFileName=filname;}
-    // Read
-    virtual Int_t NextEvent(){return 0;}
+    virtual void Init()                                                    = 0;
+    virtual Int_t NextEvent()                                              = 0;
+    virtual TParticle* NextParticle()                                      = 0;
+    virtual void RewindEvent()                                             = 0;
     enum Code_t {kPDG, kGEANT3};
     void SetParticleCode(Code_t code) {fCode = code;}
-    virtual TParticle* NextParticle(){return NULL;}
-    virtual void RewindEvent();
     AliGenReader & operator=(const AliGenReader & rhs);
- private:
-    void Copy(AliGenReader&) const;
+
  protected:
     const Text_t *fFileName;      // Name of file to read from
     Code_t        fCode;          // Particle code type
+ private:
+    void Copy(AliGenReader&) const;
     
     ClassDef(AliGenReader,1) //Generate particles from external file
 };

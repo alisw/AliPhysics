@@ -45,6 +45,8 @@ AliGenMC::AliGenMC()
     SetNumberOfAcceptedParticles();
     SetTarget();
     SetProjectile();
+    fParentSelect.Set(8);
+    fChildSelect.Set(8);
 }
 
 AliGenMC::AliGenMC(Int_t npart)
@@ -247,24 +249,26 @@ Bool_t AliGenMC::KinematicSelection(TParticle *particle, Int_t flag) const
 
 Bool_t AliGenMC::CheckAcceptanceGeometry(Int_t np, TClonesArray* particles)
 {
-  Bool_t Check ;  // All fPdgCodeParticleforAcceptanceCut particles are in in the fGeometryAcceptance acceptance
-  Int_t NumberOfPdgCodeParticleforAcceptanceCut=0;
-  Int_t NumberOfAcceptedPdgCodeParticleforAcceptanceCut=0;
+// Check the geometrical acceptance for particle.
+
+  Bool_t check ;  
+  Int_t numberOfPdgCodeParticleforAcceptanceCut = 0;
+  Int_t numberOfAcceptedPdgCodeParticleforAcceptanceCut = 0;
   TParticle * particle;
   Int_t i;
-  for (i=0; i<np; i++) {
+  for (i = 0; i < np; i++) {
     particle =  (TParticle *) particles->At(i);
     if( TMath::Abs( particle->GetPdgCode() ) == TMath::Abs( fPdgCodeParticleforAcceptanceCut ) ) {
-      NumberOfPdgCodeParticleforAcceptanceCut++;
-      if (fGeometryAcceptance->Impact(particle)) NumberOfAcceptedPdgCodeParticleforAcceptanceCut++;
+      numberOfPdgCodeParticleforAcceptanceCut++;
+      if (fGeometryAcceptance->Impact(particle)) numberOfAcceptedPdgCodeParticleforAcceptanceCut++;
     }   
   }
-  if ( NumberOfAcceptedPdgCodeParticleforAcceptanceCut > (fNumberOfAcceptedParticles-1) )
-    Check = kTRUE;
+  if ( numberOfAcceptedPdgCodeParticleforAcceptanceCut > (fNumberOfAcceptedParticles-1) )
+    check = kTRUE;
   else
-    Check = kFALSE;
+    check = kFALSE;
 
-  return Check;
+  return check;
 }
 
 Int_t AliGenMC::CheckPDGCode(Int_t pdgcode) const

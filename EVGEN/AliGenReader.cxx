@@ -14,6 +14,12 @@
  **************************************************************************/
 
 /* $Id$ */
+//
+// Interface for reading events from files.
+// Realisations of this interface have to be used with AliGenExFile.
+// NextEvent() loops over events 
+// and NextParticle() loops over particles. 
+// Author: andreas.morsch@cern.ch
 
 #include "AliGenReader.h"
 ClassImp(AliGenReader)
@@ -24,13 +30,6 @@ AliGenReader& AliGenReader::operator=(const  AliGenReader& rhs)
 // Assignment operator
     rhs.Copy(*this);
     return *this;
-}
-
-void AliGenReader::RewindEvent()
-{
-  // Go back to the first particle of the event.
-  // Need to be implemented in the implementation classes. Interface dies.
-  Fatal("AliGenReader::RewindEvent","\nMethod RewindEvent not present in the implementation class.\n");
 }
 
 void AliGenReader::Copy(AliGenReader&) const

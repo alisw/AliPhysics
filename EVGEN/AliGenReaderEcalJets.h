@@ -25,6 +25,7 @@ class AliGenReaderEcalJets : public AliGenReader
     // Read
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
+     virtual void RewindEvent(){;}
     AliGenReaderEcalJets & operator=(const AliGenReaderEcalJets & rhs);
  
  protected:

@@ -21,6 +21,7 @@ class AliGenReaderCwn : public AliGenReader
     // Read
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
+    virtual void RewindEvent(){;}
     AliGenReaderCwn & operator=(const AliGenReaderCwn & rhs);
  private:
     void Copy(AliGenReaderCwn&) const;
