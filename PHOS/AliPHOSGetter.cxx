@@ -1734,7 +1734,7 @@ Int_t AliPHOSGetter::ReadTreeH()
 }
 
 //____________________________________________________________________________ 
-void AliPHOSGetter::Track(Int_t itrack) 
+void AliPHOSGetter::Track(const Int_t itrack) 
 {
   // Read the first entry of PHOS branch in hit tree gAlice->TreeH()
 

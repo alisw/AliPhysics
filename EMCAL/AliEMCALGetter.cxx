@@ -3480,7 +3480,7 @@ Int_t AliEMCALGetter::ReadTreeH()
 
 //____________________________________________________________________________ 
 
-void AliEMCALGetter::Track(Int_t itrack)
+void AliEMCALGetter::Track(const Int_t itrack)
 
 {
 
