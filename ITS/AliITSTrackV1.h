@@ -17,7 +17,8 @@ class AliITSTrackV1 : public TObject {
 public:
 
   AliITSTrackV1();  // default constructor
-  AliITSTrackV1(AliTPCtrack &obj);  // copy constructor
+  AliITSTrackV1(const char *opt);  // Standard constructor
+  AliITSTrackV1(AliTPCtrack &obj);  // Standard constructor
   AliITSTrackV1(const AliITSTrackV1 &cobj);  // copy constructor
   AliITSTrackV1 &operator=(AliITSTrackV1 obj);  // operator =
   ~AliITSTrackV1(); // default destructor
@@ -140,8 +141,7 @@ public:
                                         // row index = layer-1; 
                                         // cols index = master coordinates of the clusters
 
-  Double_t        fFieldFactor;         // magnetic field factor													 
-													   
+  Double_t        fFieldFactor;         // magnetic field factor
   Double_t          fDv;                // radial impact parameter for vertex  constraint
   Double_t          fZv;                // longitudinal impact parameter for vertex constraint
   Double_t          fsigmaDv;           // sigma for Dv extraction

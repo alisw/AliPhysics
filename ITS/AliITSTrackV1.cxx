@@ -26,6 +26,24 @@ AliITSTrackV1::AliITSTrackV1() {
   flistCluster = 0;   
   fNumClustInTrack =0;
   fChi2=-1;
+  flabel =0;
+  fLayer = -1; 
+  fClusterInTrack = 0; 
+  frtrack=0.;
+  fnoclust=0;
+  fMass=0.13956995; //a pion by default
+  fFieldFactor = 0.0;
+   
+}
+AliITSTrackV1::AliITSTrackV1(const char *opt) {
+//Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it 
+// default constructor   
+ 
+  fTPCtrack = 0;
+  fC00=fC10=fC11=fC20=fC21=fC22=fC30=fC31=fC32=fC33=fC40=fC41=fC42=fC43=fC44=0.;
+  flistCluster = 0;   
+  fNumClustInTrack =0;
+  fChi2=-1;
   flabel =0; 
   fVertex.ResizeTo(3); 
   fErrorVertex.ResizeTo(3);
