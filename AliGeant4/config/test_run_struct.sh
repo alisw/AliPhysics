@@ -57,5 +57,22 @@ fi
 if [ -f g4.prim ]; then
   mv g4.prim "v"$VER"_test"$GEN""$VIS".prim"
 fi
+# rename gif lego plots if they were created
+if [ -f gcm2.gif ]; then
+  mv gcm2.gif "v"$VER"_gcm2.gif"
+fi
+if [ -f etar.gif ]; then
+  mv etar.gif "v"$VER"_etar.gif"
+fi
+if [ -f radl.gif ]; then
+  mv radl.gif "v"$VER"_radl.gif"
+fi
+if [ -f abso.gif ]; then
+  mv abso.gif "v"$VER"_abso.gif"
+fi
+# rename g4.prim if it was created
+if [ -f g4.prim ]; then
+  mv g4.prim "v"$VER"_test"$GEN""$VIS".prim"
+fi
 
 cd $CURDIR
