@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+
 //________________________________________________________________________
 // Initial JetFinder input object
 //
@@ -37,6 +38,14 @@ AliEMCALJetFinderInput::AliEMCALJetFinderInput()
 if (fDebug>0) Info("AliEMCALJetFinderInput","Beginning Constructor");	
 
 fInitialised = kFALSE;
+fNDigits = 96*144;     // This is the number of digits
+fNMaxDigits = fNDigits;
+fNMaxTracks = 3000;
+fNMaxParticles = 2000;
+fNMaxPartons = 4;
+fNTracks        = 0;
+fNPartons       = 0;
+fNParticles     = 0;
 
 }
 
@@ -48,17 +57,15 @@ fNMaxDigits = fNDigits;
 fNMaxTracks = 3000;
 fNMaxParticles = 2000;
 fNMaxPartons = 4;
-fDigitsArray	= new TClonesArray ("AliEMCALDigit",fNDigits);     // This is the digits array for the EMCAL
 for (Int_t i = 0; i < 96*144; i++)
 {
-    new((*fDigitsArray)[i]) AliEMCALDigit(0,0,i+1,0,1.0,-1);
-    ((AliEMCALDigit*)(*fDigitsArray)[i])->SetAmp(0);	// Default digit amplitude is zero
+	AliEMCALDigit tempdigit(0,0,i+1,0,1.0,-1);
+	tempdigit.SetAmp(0);
+//	 AliEMCALDigit(0,0,i+1,0,1.0,-1)
+	new(&fDigitsArray[i]) AliEMCALDigit(tempdigit);	// Default digit amplitude is zero
 }
-fTracksArray	= new TClonesArray("TParticle",fNMaxTracks);
 fNTracks	= 0;
-fPartonsArray	= new TClonesArray("AliEMCALParton",fNMaxPartons);
 fNPartons	= 0;
-fParticlesArray	= new TClonesArray ("TParticle",fNMaxParticles);
 fNParticles	= 0;
 fInitialised = kTRUE;
 }
@@ -67,20 +74,8 @@ fInitialised = kTRUE;
 AliEMCALJetFinderInput::~AliEMCALJetFinderInput()
 {
 // Destructor -
-// Deletes all memory allocated in TClonesArrays
 
 if (fDebug>0) Info("~AliEMCALJetFinderInput","Beginning Destructor");	
-if (fInitialised)
-{	
-	fDigitsArray->Delete();     
-	fTracksArray->Delete();
-	fPartonsArray->Delete();
-	fParticlesArray->Delete();
-	delete fDigitsArray;     
-	delete fTracksArray;
-	delete fPartonsArray;
-	delete fParticlesArray;
-}
 }
 
 void AliEMCALJetFinderInput::Reset(AliEMCALJetFinderResetType_t resettype)
@@ -94,29 +89,26 @@ if (fDebug>1) Info("Reset","Beginning Reset");
   if ( 	resettype == kResetData   ||	
 	resettype == kResetDigits ||
 	resettype == kResetAll   ){
-	  fDigitsArray->Delete();   
 	  for (Int_t i = 0; i < 96*144; i++)
 		  {
-		      	  new((*fDigitsArray)[i]) AliEMCALDigit(0,0,i+1,0,1.0);
-			  ((AliEMCALDigit*)(*fDigitsArray)[i])->SetAmp(0);	// Default digit amplitude is zero
+			AliEMCALDigit tempdigit(0,0,i+1,0,1.0,-1);
+			tempdigit.SetAmp(0);
+			new(&fDigitsArray[i]) AliEMCALDigit(tempdigit);	// Default digit amplitude is zero
 		  }
   }
   if (  resettype == kResetData   ||    
         resettype == kResetTracks ||
         resettype == kResetAll   ){
-	  fTracksArray->Delete();
 	  fNTracks = 0;
   }
  if (  resettype == kResetData    ||
        resettype == kResetPartons ||
        resettype == kResetAll   ){
-	 fPartonsArray->Delete();
 	 fNPartons=0;
  }
  if (  resettype == kResetData      ||
        resettype == kResetParticles ||
        resettype == kResetAll   ){
-	 fParticlesArray->Delete();
 	 fNParticles = 0;
  }
 
@@ -126,11 +118,11 @@ void AliEMCALJetFinderInput::AddEnergyToDigit(Int_t digitID,Int_t denergy)
 // Adds energy to the digit specified - Note these are tower IDs and
 // so start at 1!
 	  	
-if (fDebug>5) Info("AddEnergyToDigit","Beginning AddEnergyToDigit");
+if (fDebug>15) Info("AddEnergyToDigit","Beginning AddEnergyToDigit");
  if (!fInitialised) InitArrays();	
 
  Int_t amp = 0;
- AliEMCALDigit *mydigit = (AliEMCALDigit*)((*fDigitsArray)[digitID]);
+ AliEMCALDigit *mydigit = &fDigitsArray[digitID];
  amp = mydigit->GetAmp();
  mydigit->SetAmp(amp+denergy);
 }	
@@ -143,8 +135,9 @@ if (fDebug>5) Info("AddTrack","Beginning AddTrack");
  
  	if (!fInitialised) InitArrays();	
 	if (fNTracks < fNMaxTracks){  
-		new((*fTracksArray)[fNTracks]) TParticle(track);
+		new(&fTracksArray[fNTracks]) TParticle(track);
 		fNTracks++;
+		if (fDebug>5) Info("AddTracks","Added Tracks %i",fNTracks);	
 	}else
 	{
 		Error("AddTracks","Cannot AddTrack - maximum exceeded");
@@ -159,8 +152,9 @@ if (fDebug>5) Info("AddParton","Beginning AddParton");
 
  	if (!fInitialised) InitArrays();	
 	if (fNPartons < fNMaxPartons){  
-		new((*fPartonsArray)[fNPartons]) AliEMCALParton(*parton);
+		new(&fPartonsArray[fNPartons]) AliEMCALParton(*parton);
 		fNPartons++;
+		if (fDebug>5) Info("AddParton","Added Parton %i",fNPartons);	
 	}else
 	{
 		Error("AddParton","Cannot AddParton - maximum exceeded");
@@ -175,8 +169,9 @@ if (fDebug>5) Info("AddParticle","Beginning AddParticle");
 
  	if (!fInitialised) InitArrays();	
 	if (fNParticles < fNMaxParticles){  
-		new((*fParticlesArray)[fNParticles]) TParticle(*particle);
+		new(&fParticlesArray[fNParticles]) TParticle(*particle);
 		fNParticles++;
+		if (fDebug>5) Info("AddParticle","Added Particle %i",fNParticles);	
 	}else
 	{
 		Error("AddParticle","Cannot AddParticle - maximum exceeded");
@@ -189,40 +184,40 @@ AliEMCALDigit* AliEMCALJetFinderInput::GetDigit(Int_t digitID)
 {
 // Returns a pointer to an AliEMCALDigit with the given ID
 	
-if (fDebug>5) Info("GetDigit","Beginning GetDigit");
+if (fDebug>15) Info("GetDigit","Beginning GetDigit");
 
     if (digitID >= fNDigits) return 0;
-    return (AliEMCALDigit*)((*fDigitsArray)[digitID]);
+    return (AliEMCALDigit*)(&fDigitsArray[digitID]);
 }
 
 TParticle* AliEMCALJetFinderInput::GetTrack(Int_t trackID)
 {
 // Returns a pointer to a TParticle specified by the ID
 	
-if (fDebug>5) Info("GetTrack","Beginning GetTrack with trackID %i",trackID);
+if (fDebug>15) Info("GetTrack","Beginning GetTrack with trackID %i",trackID);
 
     if (trackID >= fNTracks) return 0;
-    return (TParticle*)((*fTracksArray)[trackID]);
+    return (TParticle*)(&fTracksArray[trackID]);
 }
 
 AliEMCALParton* AliEMCALJetFinderInput::GetParton(Int_t partonID)
 {
 // Returns a pointer to an AliEMCALParton  specified by the ID
 	
-if (fDebug>5) Info("GetParton","Beginning GetParton");
+if (fDebug>15) Info("GetParton","Beginning GetParton");
 
     if (partonID >= fNPartons) return 0;
-    return (AliEMCALParton*)((*fPartonsArray)[partonID]);
+    return (AliEMCALParton*)(&fPartonsArray[partonID]);
 }
 
 TParticle* AliEMCALJetFinderInput::GetParticle(Int_t particleID)
 {
 // Returns a pointer to a TParticle specified by the ID
 	
-if (fDebug>5) Info("GetParticle","Beginning GetParticle");
+if (fDebug>15) Info("GetParticle","Beginning GetParticle");
 
     if (particleID >= fNParticles) return 0;
-    return (TParticle*)((*fParticlesArray)[particleID]);
+    return (TParticle*)(&fParticlesArray[particleID]);
 }
 
 
