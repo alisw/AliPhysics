@@ -69,9 +69,11 @@ public:
 
   //Map access methods
   void  BuildMediaMap();
-  void  SetMediumFromName(const char* volName, int med);
+  void  SetMediumFromName(const char* volName, int med, int volid);
     //G4int GetRegionFromName(const char* volName) const;
   G4int GetMedium(int) const;
+  int CurrentVolID(int ir, int& copyNo);
+  int CurrentVolOffID(int ir, int off, int& copyNo);
     
 
 protected:
@@ -110,6 +112,7 @@ private:
     
   G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> > fRegionVolumeMap;
   G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> > fMediumVolumeMap;
+  G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> > fVolIdVolumeMap;
 
   G4std::map<G4Material*, FlukaMaterial*, G4std::less<G4Material*> > G4FlukaMaterialMap;
   G4std::map<G4Material*, FlukaCompound*, G4std::less<G4Material*> > G4FlukaCompoundMap;

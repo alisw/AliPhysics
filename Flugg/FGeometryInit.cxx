@@ -408,7 +408,7 @@ G4int FGeometryInit::GetMedium(int region) const
 }
 
 
-void  FGeometryInit::SetMediumFromName(const char* volName, int medium) 
+void  FGeometryInit::SetMediumFromName(const char* volName, int medium, int volid) 
  {
   char name4[5];
   char tmp[5];
@@ -432,7 +432,10 @@ void  FGeometryInit::SetMediumFromName(const char* volName, int medium)
 	    break;
 	}
     }
-    if (! strncmp(name4, tmp, 4)) fMediumVolumeMap[ptrVol] = medium;
+    if (! strncmp(name4, tmp, 4)) {
+	fMediumVolumeMap[ptrVol] = medium;
+	fVolIdVolumeMap[ptrVol]  = volid;
+    }
   }
 }
 
@@ -789,4 +792,40 @@ void FGeometryInit::PrintMagneticField(G4std::ostream& os) {
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "<== Flugg FGeometryInit::PrintMagneticField()" << G4endl;
 #endif
+}
+
+int FGeometryInit::CurrentVolID(int ir, int& copyNo)
+{
+    G4PhysicalVolumeStore * pVolStore = G4PhysicalVolumeStore::GetInstance();
+    G4VPhysicalVolume * physicalvol = (*pVolStore)[ir- 1];
+    copyNo =  physicalvol->GetCopyNo();
+    int id = fVolIdVolumeMap[physicalvol];
+    return id;
+}
+
+int FGeometryInit::CurrentVolOffID(int ir, int off, int& copyNo)
+{
+    if (off == 0) return CurrentVolID(ir, copyNo);
+    
+    G4PhysicalVolumeStore* pVolStore = G4PhysicalVolumeStore::GetInstance();
+    G4VPhysicalVolume*     physicalvol = (*pVolStore)[ir- 1];
+    G4VPhysicalVolume*     mother = physicalvol; 
+
+    int level = off;
+    while (level > 0) { 
+	if (mother) mother = mother->GetMother();
+	level--;
+    }
+    
+    int id;
+    
+    if (!mother) {
+	G4cout << "Flugg FGeometryInit::CurrentVolOffID mother not found" << G4endl;
+	id = -1;
+	copyNo = -1;
+    } else {
+	copyNo =  mother ->GetCopyNo();
+	id =  fVolIdVolumeMap[mother];
+    }
+    return id;
 }
