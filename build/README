@@ -80,12 +80,15 @@ HDRS:=$(SRCS:.cxx=.h)
 which is useful if there is a lot of files.
 
 If the library (or binary) uses include files in other directories
-than its own it should be specified in the variable EHDRS (for External
-headers). By default the Makefile.flat will look in $ALICE_ROOT,
-$ALICE_ROOT/MODULE (in this case $ALICE_ROOT/STEER), $ROOTSYS/inlude
-and in $ALICE_ROOT/include. If more include directories is needed it
-can be specified with the variable EINCLUDE. *DO NOT* put the -I flag
-it will be put automatically, just write the name of the directory.
+than its own it should be specified in the variable EHDRS (for
+External headers). By default the Makefile.flat will look in
+$ALICE_ROOT, $ALICE_ROOT/MODULE (in this case $ALICE_ROOT/STEER),
+$ROOTSYS/inlude and in $ALICE_ROOT/include. If more include
+directories is needed it can be specified with the variable
+EINCLUDE. *DO NOT* put the -I flag it will be put automatically, just
+write the name of the directory. To have extra parameters passed to
+the compiler (like macro defines) use the variable EDEFINE (see
+libAliGeant4 for an example).
 
 If the package exports any header files fo use by other libraries it can be put
 in the variable EXPORT. These files will be copied to	
@@ -137,6 +140,7 @@ CHDRS:=
 EINCLUDE:=
 ELIBS:=
 ELIBSDIR:=
+EDEFINE:=
 PACKFFLAGS:=
 PACKCXXFLAGS:=
 PACKCFLAGS:=

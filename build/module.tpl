@@ -30,7 +30,9 @@ endif
 @PACKAGE@EXPORTDEST:=$(patsubst %,$(EXPORTDIR)/%,$(EXPORT))
 
 
-#Extra include,libs etc.
+#Extra include,libs, defines etc.
+
+@PACKAGE@DEFINE:=$(EDEFINE)
 
 @PACKAGE@INC:=$(patsubst %,-I%,$(EINCLUDE)) -I@MODULE@
 
@@ -147,7 +149,7 @@ ifndef ALIQUIET
 	 @echo "***** Creating $@ *****";	
 endif
 	 @(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-	 $(MUTE)rootcint -f $@ -c $(CINTFLAGS) $(@PACKAGE@INC) $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) 
+	 $(MUTE)rootcint -f $@ -c $(@PACKAGE@DEFINE) $(CINTFLAGS) $(@PACKAGE@INC) $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) 
 
 $(@PACKAGE@DO): $(@PACKAGE@DS)
 ifndef ALIQUIET
@@ -167,7 +169,7 @@ ifndef ALIQUIET
 	@echo "***** Compiling $< *****";
 endif
 	@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-	$(MUTE)$(CXX) -c $(@PACKAGE@INC)   $< -o $@ $(@PACKAGE@CXXFLAGS)
+	$(MUTE)$(CXX) $(@PACKAGE@DEFINE) -c $(@PACKAGE@INC)   $< -o $@ $(@PACKAGE@CXXFLAGS)
 
 $(MODDIRO)/%.o: $(MODDIR)/%.F $(MODDIRO)/%.d 
 ifndef ALIQUIET
@@ -188,7 +190,7 @@ ifndef ALIQUIET
 	@echo "***** Compiling $< *****";
 endif
 	@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-	$(MUTE)$(CC) -c  $(@PACKAGE@INC)  $< -o $@   $(@PACKAGE@CFLAGS)
+	$(MUTE)$(CC) $(@PACKAGE@DEFINE) -c  $(@PACKAGE@INC)  $< -o $@   $(@PACKAGE@CFLAGS)
 
 $(@PACKAGE@DDEP): $(@PACKAGE@DS)
 ifndef ALIQUIET
@@ -202,7 +204,7 @@ ifndef ALIQUIET
 		@echo "***** Making dependencies for $< *****";
 endif
 		@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-		@share/alibtool depend "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC)  $<" > $@
+		@share/alibtool depend "$(@PACKAGE@DEFINE) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC)  $<" > $@
 $(MODDIRO)/%.d: $(MODDIRS)/%.f
 ifndef ALIQUIET
 		@echo "***** Making dependencies for $< *****";
@@ -220,4 +222,4 @@ ifndef ALIQUIET
 		@echo "***** Making dependencies for $< *****";
 endif
 		@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-		@share/alibtool depend "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC) $<" > $@
+		@share/alibtool depend "$(@PACKAGE@DEFINE) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC) $<" > $@
