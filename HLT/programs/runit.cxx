@@ -48,15 +48,16 @@ int main(int argc,char **argv)
   cf.InitSlice(0,0,0,ndigits-1,10000);
   cf.SetXYError(0.2);
   cf.SetZError(0.3);
+  cf.SetSTDOutput(kTRUE);
 
+  //Switch off deconvolution:
+  cf.SetDeconv(false);
+  
   //Allocate memory to store found spacepoints 
   AliL3MemHandler fpoints;
   AliL3SpacePointData *points=(AliL3SpacePointData*)fpoints.Allocate(10000*sizeof(AliL3SpacePointData));
   cf.SetOutputArray(points);
 
-  //Switch off deconvolution:
-  cf.SetDeconv(false);
-  
   //Give the data pointer to the cluster finder
   cf.Read(ndigits,digits);
 
