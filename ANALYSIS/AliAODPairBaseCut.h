@@ -17,6 +17,9 @@ class AliAODPairBaseCut: public TObject
       kHbtPairCutPropQInv, //Q invariant
       kHbtPairCutPropKt,
       kHbtPairCutPropKStar,
+      kHbtPairCutPropKStarOut,
+      kHbtPairCutPropKStarSide,
+      kHbtPairCutPropKStarLong,
       kHbtPairCutPropQSideLCMS,
       kHbtPairCutPropQOutLCMS,
       kHbtPairCutPropQLongLCMS,
@@ -108,6 +111,42 @@ class AliAODKStarCut: public AliAODPairBaseCut
   virtual Double_t  GetValue(AliAODPair* pair) const {return pair->GetKStar();}
 
   ClassDef(AliAODKStarCut,1)
+};
+/******************************************************************/
+
+class AliAODKStarOutCut: public AliAODPairBaseCut
+{
+ public:
+  AliAODKStarOutCut(Double_t min = 0.0, Double_t max = 0.0):AliAODPairBaseCut(min,max,kHbtPairCutPropKStarOut){}
+  virtual ~AliAODKStarOutCut(){}
+ protected:
+  virtual Double_t  GetValue(AliAODPair* pair) const {return pair->GetKStarOut();}
+
+  ClassDef(AliAODKStarOutCut,1)
+};
+/******************************************************************/
+class AliAODKStarSideCut: public AliAODPairBaseCut
+{
+ public:
+  AliAODKStarSideCut(Double_t min = 0.0, Double_t max = 0.0):AliAODPairBaseCut(min,max,kHbtPairCutPropKStarSide){}
+  virtual ~AliAODKStarSideCut(){}
+ protected:
+  virtual Double_t  GetValue(AliAODPair* pair) const {return pair->GetKStarSide();}
+
+  ClassDef(AliAODKStarSideCut,1)
+};
+
+/******************************************************************/
+
+class AliAODKStarLongCut: public AliAODPairBaseCut
+{
+ public:
+  AliAODKStarLongCut(Double_t min = 0.0, Double_t max = 0.0):AliAODPairBaseCut(min,max,kHbtPairCutPropKStarLong){}
+  virtual ~AliAODKStarLongCut(){}
+ protected:
+  virtual Double_t  GetValue(AliAODPair* pair) const {return pair->GetKStarLong();}
+
+  ClassDef(AliAODKStarLongCut,1)
 };
 /******************************************************************/
 

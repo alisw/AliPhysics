@@ -467,6 +467,16 @@ Double_t AliAODPair::GetGammaToLCMS()
 }
 /************************************************************************/
 
+Double_t AliAODPair::GetGammaToTransverse()
+{
+  //calculates gamma factor of the boost to LCMS
+  Double_t beta = 2.0*GetKt() / GetMt();
+  Double_t gamma = 1.0/TMath::Sqrt(1.0 - beta*beta);
+
+  return gamma;
+}
+/************************************************************************/
+
 Double_t AliAODPair::GetMt()
 {
   //Calculates transverse mass of the pair
@@ -623,4 +633,21 @@ void   AliAODPair::DeleteSecond()
 //Deletes second particle
   delete fPart2;
   fPart2 = 0x0;
+}
+
+void   AliAODPair::Print(Option_t* /*option*/) 
+{
+  if (fPart1) fPart1->Print();
+  if (fPart2) fPart2->Print();
+  
+  Info("Print","GetKStar() %f",GetKStar());
+  Info("Print","GetKt() %f",GetKt() );
+  Info("Print","QInv %f", GetQInv() );
+  Info("Print","GetQOutLCMS() %f",GetQOutLCMS() );
+  Info("Print","GetQSideLCMS %f",GetQSideLCMS() );
+  Info("Print","GetQLongLCMS() %f", GetQLongLCMS());
+  Info("Print","GetDeltaTheta() %f", GetDeltaTheta());
+  Info("Print","GetDeltaPhi() %f", GetDeltaPhi());
+  
+  
 }

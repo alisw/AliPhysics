@@ -262,6 +262,33 @@ void AliAODPairCut::SetKStarRange(Double_t min, Double_t max)
 }
 /**********************************************************/
 
+void AliAODPairCut::SetKStarOutRange(Double_t min, Double_t max)
+{
+  // set range of accepted KStar (invariant pair momentum difference (fourvector))
+  AliAODKStarOutCut* cut= (AliAODKStarOutCut*)FindCut(AliAODPairBaseCut::kHbtPairCutPropKStarOut);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliAODKStarOutCut(min,max);
+}
+/**********************************************************/
+
+void AliAODPairCut::SetKStarSideRange(Double_t min, Double_t max)
+{
+  // set range of accepted KStar (invariant pair momentum difference (fourvector))
+  AliAODKStarSideCut* cut= (AliAODKStarSideCut*)FindCut(AliAODPairBaseCut::kHbtPairCutPropKStarSide);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliAODKStarSideCut(min,max);
+}
+/**********************************************************/
+
+void AliAODPairCut::SetKStarLongRange(Double_t min, Double_t max)
+{
+  // set range of accepted KStar (invariant pair momentum difference (fourvector))
+  AliAODKStarLongCut* cut= (AliAODKStarLongCut*)FindCut(AliAODPairBaseCut::kHbtPairCutPropKStarLong);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliAODKStarLongCut(min,max);
+}
+/**********************************************************/
+
 void AliAODPairCut::SetAvSeparationRange(Double_t min, Double_t max)
 {
   //sets avarage separation cut ->Anti-Merging cut

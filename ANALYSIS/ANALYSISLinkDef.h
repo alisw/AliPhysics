@@ -70,6 +70,9 @@
 #pragma link C++ class AliAODQInvCut+;
 #pragma link C++ class AliAODKtCut+;
 #pragma link C++ class AliAODKStarCut+;
+#pragma link C++ class AliAODKStarOutCut+;
+#pragma link C++ class AliAODKStarSideCut+;
+#pragma link C++ class AliAODKStarLongCut+;
 #pragma link C++ class AliAODQSideLCMSCut+;
 #pragma link C++ class AliAODQOutLCMSCut+;
 #pragma link C++ class AliAODQLongLCMSCut+;

@@ -67,6 +67,7 @@ class AliAODPair: public TObject
    virtual Double_t GetDeltaPhi();
    
    virtual Double_t GetGammaToLCMS();
+   virtual Double_t GetGammaToTransverse();
    virtual Double_t GetPIDProb() const {return fPart1->GetPidProb()*fPart2->GetPidProb();}
    
    virtual Double_t GetRStar() ;
@@ -74,6 +75,9 @@ class AliAODPair: public TObject
    
    void   MirrorSecond();
    void   DeleteSecond();
+   
+   void   Print(Option_t* /*option*/ = "" ) ;
+   
  protected:
    AliVAODParticle* fPart1;  //pointer to first particle
    AliVAODParticle* fPart2;  //pointer to second particle

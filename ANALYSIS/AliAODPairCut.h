@@ -42,6 +42,9 @@ class AliAODPairCut: public TNamed
   void SetQInvRange(Double_t min, Double_t max);
   void SetKtRange(Double_t min, Double_t max);
   void SetKStarRange(Double_t min, Double_t max);
+  void SetKStarOutRange(Double_t min, Double_t max);
+  void SetKStarSideRange(Double_t min, Double_t max);
+  void SetKStarLongRange(Double_t min, Double_t max);
   void SetQOutLCMSRange(Double_t min, Double_t max);
   void SetQSideLCMSRange(Double_t min, Double_t max);
   void SetQLongLCMSRange(Double_t min, Double_t max);
