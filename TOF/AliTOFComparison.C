@@ -138,6 +138,9 @@ Int_t AliTOFComparison() {
    TH1F *hfl=new TH1F("hfl","Probability of mismatching",30,-1,1);
    hfl->SetFillColor(1); hfl->SetFillStyle(3013); hfl->SetLineWidth(2);
 
+   TCanvas *c1=new TCanvas("c1","",0,0,600,900);
+   c1->Divide(1,2);
+
    TFile *ef=TFile::Open("AliESDs.root");
    if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
 
@@ -220,9 +223,6 @@ Int_t AliTOFComparison() {
      hgl->SetMaximum(1.4);
      hgl->SetYTitle("Matching efficiency");
      hgl->SetXTitle("Tan(lambda)");
-
-     TCanvas *c1=new TCanvas("c1","",0,0,600,900);
-     c1->Divide(1,2);
 
      c1->cd(1);
 
