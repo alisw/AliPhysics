@@ -54,13 +54,10 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   //        GPS2 = 5 modules (EMC + PPSD)   
  
   // gets an instance of the geometry parameters class  
-   
-  if (strcmp(title,"") != 0 ) 
-    fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
-  if (fGeom!=0)  
-    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
-  else
-    cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
+
+  if (strcmp(GetTitle(),"") != 0 ) 
+    fGeom =  AliPHOSGeometry::GetInstance(GetTitle(), "") ; 
+
 }
 
 //____________________________________________________________________________
@@ -1009,6 +1006,11 @@ void AliPHOSv0::Init(void)
 
   // Here the PHOS initialisation code (if any!)
 
+  if (fGeom!=0)  
+    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+  else
+    cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
+  
   for(i=0;i<80;i++) printf("*");
   printf("\n");
   

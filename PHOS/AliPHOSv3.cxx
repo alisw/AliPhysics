@@ -48,8 +48,8 @@
 ClassImp(AliPHOSv3)
 
 //____________________________________________________________________________
-AliPHOSv3::AliPHOSv3(const char *name, const char *title):
-  AliPHOSv1(name,title)
+  AliPHOSv3::AliPHOSv3(const char *name, const char *title):
+AliPHOSv1(name,title)
 {
   // ctor 
 
@@ -61,6 +61,7 @@ AliPHOSv3::AliPHOSv3(const char *name, const char *title):
   // LightYield is obtained as a Poissonian distribution with a mean at 700000 photons per GeV fromValery Antonenko
   // PINEfficiency is 0.1875 from Odd Harald Odland work
   // k_0 is 0.0045 from Valery Antonenko 
+
 
   fLightYieldMean = 700000. ;
   fIntrinsicPINEfficiency = 0.1875 ;

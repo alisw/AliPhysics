@@ -49,12 +49,7 @@ AliPHOSv4::AliPHOSv4(const char *name, const char *title):
   // ctor
 
   // gets an instance of the geometry parameters class  
-   
-  if ( strcmp(title, "") != 0 ) 
-    fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
-  
-  if (fGeom != 0 ) {
-    cout << "AliPHOSv4 : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+     
     
     SetBigBox(0, fGeom->GetOuterBoxSize(0) ) ;
     SetBigBox(1, fGeom->GetOuterBoxSize(1) + fGeom->GetPPSDBoxSize(1) ) ; 
@@ -72,9 +67,6 @@ AliPHOSv4::AliPHOSv4(const char *name, const char *title):
     fPosParaB0 = 0.257 ;   
     fPosParaB1 = 0.137 ; 
     fPosParaB2 = 0.00619 ; 
-  }
-  else
-    cout << "AliPHOSv4 : PHOS geometry initialization failed !" << endl ;   
 }
 
 //____________________________________________________________________________

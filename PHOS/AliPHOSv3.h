@@ -34,8 +34,15 @@ public:
     // dtor
   } 
                             
-  virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
- 
+  virtual Int_t   IsVersion(void) const { 
+    // Gives the version number 
+    return 3 ; 
+  }
+  virtual TString Version(void){ 
+    // returns the version number 
+    return TString("v3") ; 
+  }   
+  virtual void   StepManager(void) ;    
   
 private:
   

@@ -57,7 +57,7 @@ AliPHOSv1::AliPHOSv1()
 
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1(const char *name, const char *title):
-  AliPHOSv0(name,title)
+AliPHOSv0(name,title) 
 {
   // ctor : title is used to identify the layout
   //        GPS2 = 5 modules (EMC + PPSD)   
@@ -86,7 +86,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
 
 
   fIshunt     =  1 ; // All hits are associated with primary particles
-    
+ 
 }
 
 //____________________________________________________________________________
@@ -127,7 +127,6 @@ AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *nam
   // Defining the PHOS Reconstructioner
  
  fReconstructioner = Reconstructioner ;
-
 
 }
 

@@ -49,7 +49,7 @@ public:
     return fGeom ; 
   }  
   virtual void   Init(void) ;                                        // does nothing
-  Int_t   IsVersion(void) const {
+  virtual Int_t  IsVersion(void) const {
     // Gives the version number 
     return 4 ; 
   }

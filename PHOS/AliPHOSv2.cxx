@@ -55,9 +55,10 @@ AliPHOSv2::AliPHOSv2()
 
 //____________________________________________________________________________
 AliPHOSv2::AliPHOSv2(const char *name, const char *title):
-  AliPHOSv1(name,title)
+AliPHOSv1(name,title)
 {
   // ctor
+  
    fHits= new TClonesArray("AliPHOSHit",1000) ;
 }
 

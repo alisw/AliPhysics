@@ -36,7 +36,10 @@ public:
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) ; 
   Int_t          Digitize(Float_t Energy);
   virtual void   FinishEvent(void) ;                               
-  Int_t IsVersion(void) const { return 1 ; }
+  virtual Int_t  IsVersion(void) const {
+    // Gives the version number 
+    return 1 ; 
+  }
   virtual void   MakeBranch(Option_t* opt) ;
   virtual  AliPHOSRecPoint::RecPointsList *  PpsdRecPoints() {
     // Getting list of PPSD RecPoints
