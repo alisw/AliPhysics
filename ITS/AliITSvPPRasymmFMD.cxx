@@ -920,37 +920,37 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     dgh[8] = 85.;
     dgh[9] = -ztpc;
     dgh[10] = 46;  
-    dgh[11] = rlim+6;
+    dgh[11] = rlim+7.5;
     dgh[12] = -97.5;
     dgh[13] = 46;  
-    dgh[14] = rlim+6;
+    dgh[14] = rlim+7.5;
     dgh[15] = -zmax;
     dgh[16] = 46;  
-    dgh[17] = rlim+6;
+    dgh[17] = rlim+7.5;
     dgh[18] = -48;   
     dgh[19] = 6;
-    dgh[20] = rlim+6;
+    dgh[20] = rlim+7.5;
     dgh[21] = -28.6;   
     dgh[22] = 6;
-    dgh[23] = rlim+6;    
+    dgh[23] = rlim+7.5;    
     dgh[24] = -27.6;  
     dgh[25] = 3.295;
-    dgh[26] = rlim+6; 
+    dgh[26] = rlim+7.5; 
     dgh[27] = 27.6;   
     dgh[28] = 3.295;
-    dgh[29] = rlim+6;
+    dgh[29] = rlim+7.5;
     dgh[30] = 28.6;   
     dgh[31] = 6;
-    dgh[32] = rlim+6;
+    dgh[32] = rlim+7.5;
     dgh[33] = 48;   
     dgh[34] = 6;
-    dgh[35] = rlim+6;  
+    dgh[35] = rlim+7.5;  
     dgh[36] = zmax;
     dgh[37] = 46;
-    dgh[38] = rlim+6;
+    dgh[38] = rlim+7.5;
     dgh[39] = 97.5;
     dgh[40] = 46;  
-    dgh[41] = rlim+6;
+    dgh[41] = rlim+7.5;
     dgh[42] = ztpc;
     dgh[43] = 62;     
     dgh[44] = 62+4.;  
@@ -1181,7 +1181,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
 	gMC->Gsvolu("I103", "BOX ", idtmed[254], di103, 3); // contains det 
                                                             // and chip layer 1
 	dits[0] = 0.793;
-	dits[1] = 0.475;  //0.685; 0.015
+	dits[1] = ddet1+dchip1+dbus+0.0025; 
 	dits[2] = 2.5;
 	gMC->Gsvolu("I105", "BOX ", idtmed[290], dits, 3);// end-ladder electr.
 
@@ -1622,7 +1622,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
      gMC->Gsvolu("I124", "TUBS", idtmed[253], dits, 5);  
 
      dits[0] = 0.793;
-     dits[1] = 0.475 ;  //0.685; 0.015
+     dits[1] = ddet1+dchip1+dbus+0.0025; 
      dits[2] = 2.5;
      gMC->Gsvolu("I105", "BOX ", idtmed[290], dits, 3);  
 
@@ -1887,16 +1887,16 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   dits[3] = -34.6; 
   dits[4] = 23.49;
   dits[5] = 28;
-  dits[6] = -23.65; 
+  dits[6] = -27.35; 
   dits[7] = 23.49;
   dits[8] = 28;
-  dits[9] = -23.65;  
+  dits[9] = -27.35;  
   dits[10] = 14.59; 
   dits[11] = 28;
-  dits[12] = 23.65;   
+  dits[12] = 27.35;   
   dits[13] = 14.59;
   dits[14] = 28;
-  dits[15] = 23.65;    
+  dits[15] = 27.35;    
   dits[16] = 23.49;
   dits[17] = 28;
   dits[18] = 34.6;  
@@ -4120,10 +4120,10 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   gMC->Gspos("I200",21,"IS02",0.0,0.0,0.0,idrotm[892],"ONLY");
   gMC->Gspos("I200",20,"IS02",0.0,0.0,0.0,idrotm[868],"ONLY");
   gMC->Gspos("I200",19,"IS02",0.0,0.0,0.0,idrotm[893],"ONLY");
-  gMC->Gspos("I098",1,"IS02",0.0,0.0,33.6,0,"ONLY");    
-  gMC->Gspos("I097",1,"IS02",0.0,0.0,26.6,0,"ONLY");    
-  gMC->Gspos("I097",2,"IS02",0.0,0.0,-26.6,idrotm[856],"ONLY");  
-  gMC->Gspos("I098",2,"IS02",0.0,0.0,-33.6,idrotm[856],"ONLY");  
+  gMC->Gspos("I098",1,"IS02",0.0,0.0,33.6,0,"MANY");    
+  gMC->Gspos("I097",1,"IS02",0.0,0.0,26.6,0,"MANY");    
+  gMC->Gspos("I097",2,"IS02",0.0,0.0,-26.6,idrotm[856],"MANY");  
+  gMC->Gspos("I098",2,"IS02",0.0,0.0,-33.6,idrotm[856],"MANY");  
   gMC->Gspos("I202",1,"IS02",12.1,0.0,33.84,0,"ONLY");
   gMC->Gspos("I202",6,"IS02",-6.05,-10.4789,33.84,idrotm[930],"ONLY");
   gMC->Gspos("I202",5,"IS02",-6.05,10.4789,33.84,idrotm[929],"ONLY");
@@ -4385,7 +4385,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   // -- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     UPPER PART
     
-  dgh[0] = 62.1; 
+  dgh[0] = 62.; 
   dgh[1] = 74.5;
   dgh[2] = 0.5;
   dgh[3] = 12.;
@@ -4396,7 +4396,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   // -- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     LOWER PART
   
-  dgh[0] = 62.1;  
+  dgh[0] = 62.;  
   dgh[1] = 74.5;
   dgh[2] = 0.5;
   dgh[3] = 192.;
@@ -4586,9 +4586,9 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   dgh[1] = 12.;         
   dgh[2] = 5.;         
   gMC->Gsvolu("ISR2", "BOX ", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR2", 1, "ALIC", -53.5, 0., -125.5, idrotm[199], "ONLY");
+  gMC->Gspos("ISR2", 1, "ITSV", -53.5, 0., -125.5, idrotm[199], "MANY");
   gMC->Gsvolu("ISR3", "BOX ", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR3", 1, "ALIC", 53.5, 0., -125.5, idrotm[199], "ONLY");  
+  gMC->Gspos("ISR3", 1, "ITSV", 53.5, 0., -125.5, idrotm[199], "MANY");  
   
   dgh[0] = 5.-2.;        
   dgh[1] = 12.-2.;         
@@ -4604,9 +4604,9 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   dgh[1] = 5.;         
   dgh[2] = 2.;         
   gMC->Gsvolu("ISR6", "TUBE", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR6", 1, "ALIC", 0., 54., -77., idrotm[199], "ONLY"); 
-  gMC->Gspos("ISR6", 2, "ALIC", 0., 54., 77., idrotm[199], "ONLY"); 
-  gMC->Gspos("ISR6", 3, "ALIC", 0., -54., 77., idrotm[199], "ONLY");                   
+  gMC->Gspos("ISR6", 1, "ITSV", 0., 54., -77., idrotm[199], "MANY"); 
+  gMC->Gspos("ISR6", 2, "ITSV", 0., 54., 77., idrotm[199], "MANY"); 
+  gMC->Gspos("ISR6", 3, "ITSV", 0., -54., 77., idrotm[199], "MANY");                   
 
   // --- Outputs the geometry tree in the EUCLID/CAD format 
   
