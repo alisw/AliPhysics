@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/03/29 06:57:45  kowal2
+Restored backward compatibility to use the hits from Dec. 2000 production.
+
 Revision 1.7  2001/10/21 19:04:55  hristov
 Several patches were done to adapt the barel reconstruction to the multi-event case. Some memory leaks were corrected. (Yu.Belikov)
 
@@ -136,6 +139,11 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of, Int_t e
     sprintf(cname,"TreeC_TPC_%d",eventn);
   }
   TTree *t = (TTree *)gDirectory->Get(dname);
+
+  if (!t) {
+    cerr<<"Input tree with "<<dname<<" not found"<<endl;
+    return;
+  }
 
   AliSimDigits digarr, *dummy=&digarr;
   t->GetBranch("Segment")->SetAddress(&dummy);
