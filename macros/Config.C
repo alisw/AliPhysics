@@ -112,7 +112,7 @@ AliHALL *HALL  = new AliHALL("HALL","Alice Hall");
 if(iFRAME) {
 //=================== FRAME parameters ============================
 
-AliFRAME *FRAME  = new AliFRAMEv0("FRAME","Space Frame");
+AliFRAME *FRAME  = new AliFRAMEv1("FRAME","Space Frame");
 
 }
 
