@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/02/09 06:55:38  barbera
+SPD option re-set to B. It was A by mistake
+
 Revision 1.10  2001/02/09 00:05:31  nilsen
 Added fMajor/MinorVersion variables and made other changes to better make
 use of the new code changes in AliITSgeom related classes.
@@ -247,8 +250,8 @@ void AliITSvPPRasymm::CreateGeometry(){
 //  Int_t thickness=1; // detector thickness = 100 um - chip thickness = 150 um
 //  Int_t option=1;    // option 'a' for det/chip/bus stacking
 
-  Int_t thickness = fMinorVersion/10;
-  Int_t option    = fMinorVersion - 10*thickness;
+  thickness = fMinorVersion/10;
+  option    = fMinorVersion - 10*thickness;
   
   Int_t *idtmed = fIdtmed->GetArray()-199;
 
