@@ -168,7 +168,9 @@ class AliTRDsimpleMC : public TVirtualMC {
 
   // Dynamic properties
   virtual void          TrackPosition(TLorentzVector& position) const;
+  virtual void          TrackPosition(Double_t &x, Double_t &y, Double_t &z) const;
   virtual void          TrackMomentum(TLorentzVector& momentum) const;
+  virtual void          TrackMomentum(Double_t &px, Double_t &py, Double_t &pz, Double_t &etot) const;
   virtual Double_t      TrackStep() const                                                 { return fTrackStep; };
   virtual Double_t      TrackLength() const                                               { return 0.0; };
   virtual Double_t      TrackTime() const                                                 { return 0.0; };

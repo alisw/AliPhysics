@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.4  2002/11/21 22:38:47  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.3  2002/10/14 14:57:44  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -263,6 +266,19 @@ void AliTRDsimpleMC::TrackPosition(TLorentzVector& position) const
 }
 
 //_____________________________________________________________________________
+void AliTRDsimpleMC::TrackPosition(Double_t &x, Double_t &y, Double_t &z) const
+{
+  //
+  // Track Position
+  //
+
+  x = fTrackX;
+  y = fTrackY;
+  z = fTrackZ;
+
+}
+
+//_____________________________________________________________________________
 void AliTRDsimpleMC::TrackMomentum(TLorentzVector& momentum) const
 {
   //
@@ -273,6 +289,20 @@ void AliTRDsimpleMC::TrackMomentum(TLorentzVector& momentum) const
   momentum[1] = fTrackPy;
   momentum[2] = fTrackPz;
   momentum[3] = fTrackEtot;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDsimpleMC::TrackMomentum(Double_t &px, Double_t &py, Double_t &pz, Double_t &etot) const
+{
+  //
+  // Track Momentum
+  //
+
+  px = fTrackPx;
+  py = fTrackPy;
+  pz = fTrackPz;
+  etot = fTrackEtot;
 
 }
 

@@ -355,7 +355,47 @@ void TFluka::TrackPosition(TLorentzVector& position) const
   TG4Globals:: Warning("TFluka::TrackPosition(..) is not implemented."); 
 } 
 
+void TFluka::TrackPosition(Double_t &x, Double_t &y, Double_t &z) const
+{ 
+  TG4Globals:: Warning("TFluka::TrackPosition(..) is not implemented."); 
+} 
+
+void TFluka::TrackPosition(Double_t &x, Double_t &y, Double_t &z) const
+{ 
+  TG4Globals:: Warning("TFluka::TrackPosition(..) is not implemented."); 
+} 
+
+void TFluka::TrackPosition(Double_t &x, Double_t &y, Double_t &z) const
+{ 
+  TG4Globals:: Warning("TFluka::TrackPosition(..) is not implemented."); 
+} 
+
+void TFluka::TrackPosition(Double_t &x, Double_t &y, Double_t &z) const
+{ 
+  TG4Globals:: Warning("TFluka::TrackPosition(..) is not implemented."); 
+} 
+
 void TFluka::TrackMomentum(TLorentzVector& momentum) const
+{ 
+  TG4Globals:: Warning("TFluka::TrackMomentum(..) is not implemented."); 
+} 
+
+void TFluka::TrackMomentum(Double_t &px, Double_t &py, Double_t &pz, Double_t &etot) const
+{ 
+  TG4Globals:: Warning("TFluka::TrackMomentum(..) is not implemented."); 
+} 
+
+void TFluka::TrackMomentum(Double_t &px, Double_t &py, Double_t &pz, Double_t &etot) const
+{ 
+  TG4Globals:: Warning("TFluka::TrackMomentum(..) is not implemented."); 
+} 
+
+void TFluka::TrackMomentum(Double_t &px, Double_t &py, Double_t &pz, Double_t &etot) const
+{ 
+  TG4Globals:: Warning("TFluka::TrackMomentum(..) is not implemented."); 
+} 
+
+void TFluka::TrackMomentum(Double_t &px, Double_t &py, Double_t &pz, Double_t &etot) const
 { 
   TG4Globals:: Warning("TFluka::TrackMomentum(..) is not implemented."); 
 } 
