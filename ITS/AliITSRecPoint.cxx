@@ -41,7 +41,7 @@ void AliITSRecPoint::Print(ostream *os){
     Int_t fmt;
 #endif
 #else
-#if defined __ICC || defined __ECC
+#if defined __ICC || defined __ECC || defined _xlc_
     ios::fmtflags fmt;
 #else
     Int_t fmt;

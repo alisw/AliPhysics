@@ -199,14 +199,14 @@ void AliITSgeomSDD::Print(ostream *os) const {
 // Standard output format for this class.
 ////////////////////////////////////////////////////////////////////////
     Int_t i;
-#if defined __GNUC__
+#if defined __GNUC__ 
 #if __GNUC__ > 2
     ios::fmtflags fmt;
 #else
     Int_t fmt;
 #endif
 #else
-#if defined __ICC || defined __ECC
+#if defined __ICC || defined __ECC || defined _xlc_
     ios::fmtflags fmt;
 #else
     Int_t fmt;
