@@ -15,6 +15,8 @@
 
 /*
 $Log$
+Revision 1.22  2001/01/26 20:00:53  hristov
+Major upgrade of AliRoot code
 Revision 1.20  2001/01/08 11:01:02  gosset
 Modifications used for addendum to Dimuon TDR (JP Cussonneau):
 *. MaxBendingMomentum to make both a segment and a track (default 500)
@@ -615,7 +617,7 @@ AliMUONHitForRec* AliMUONEventReconstructor::NewHitForRecFromGEANT(AliMUONHit* H
   // like in Fortran TRACKF_STAT.
   AliMUONHitForRec* hitForRec;
   Double_t bendCoor, nonBendCoor, radius;
-  Int_t chamber = Hit->fChamber - 1; // chamber(0...)
+  Int_t chamber = Hit->Chamber() - 1; // chamber(0...)
   // only in tracking chambers (fChamber starts at 1)
   if (chamber >= kMaxMuonTrackingChambers) return NULL;
   // only if hit is efficient (keep track for checking ????)
