@@ -16,7 +16,7 @@
 class AliGenHaloProtvino : public AliGenerator
 {
 public:
-    enum constants{kY1Day0, kY1Day70, kY2D0, kY2D10, kY3D90};
+    enum constants{kY1Day0, kY1Day70, kY2D0, kY2D10, kY3D90, kLHCPR674Startup, kLHCPR674Conditioned};
     AliGenHaloProtvino();
     AliGenHaloProtvino(Int_t npart);
     AliGenHaloProtvino(const AliGenHaloProtvino &HaloProtvino);
@@ -24,13 +24,12 @@ public:
     virtual void Init();
     virtual void SetFileName(TString filename) {fFileName=TString(filename);}
     virtual void Generate();
-    virtual Float_t GassPressureWeight(Float_t zPrimary);
+    virtual Float_t GasPressureWeight(Float_t zPrimary);
     virtual void SetSide(Int_t flag = 1) {fSide = flag;}
     virtual void SetNskip(Int_t nskip) {fNskip = nskip;}
     virtual void SetRunPeriod(Int_t t = kY3D90) {fRunPeriod = t;}
     virtual void SetTimePerEvent(Float_t t = 1.e-4) {fTimePerEvent = t;}
-    
-
+    virtual void Draw();
     AliGenHaloProtvino & operator=(const AliGenHaloProtvino & rhs);
 
 protected:
@@ -40,8 +39,11 @@ protected:
   Int_t    fRunPeriod;                  //   LHC Running Period
   Float_t  fTimePerEvent;               //   Time corresponding to one event [s]
   Int_t    fNskip;                      //   Number of entries to skip
-  Float_t  fZ1[21],    fZ2[21];         // ! z-positions for gas pressure tables
-  Float_t  fG1[21][5], fG2[21][5];      // ! gas pressures
+  Float_t* fZ1;                         // ! z-positions for gas pressure tables
+  Float_t* fZ2;                         // ! z-positions for gas pressure tables 
+  Float_t* fG1;                         // ! gas pressures
+  Float_t* fG2;                         // ! gas pressures
+  Int_t    fGPASize;                    // ! Size of arrays
  private:
   void Copy(TObject&) const;
   ClassDef(AliGenHaloProtvino,1)        //   LHC background boundary source (Protvino Group results)

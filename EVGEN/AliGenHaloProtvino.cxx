@@ -24,6 +24,8 @@
 #include <stdlib.h>
 
 #include <TDatabasePDG.h>
+#include <TCanvas.h>
+#include <TGraph.h>
 #include <TPDGCode.h>
 #include <TSystem.h>
 
@@ -94,53 +96,96 @@ void AliGenHaloProtvino::Init()
 //
 //
 //    Read file with gas pressure values
-    char *name;
-    
-    name = gSystem->ExpandPathName("$(ALICE_ROOT)/LHC/gasPressure.dat" );
+    char *name = 0;
+    if (fRunPeriod < 5) {
+	name = gSystem->ExpandPathName("$(ALICE_ROOT)/LHC/gasPressure.dat" );
+	fGPASize = 21;
+	fG1 = new Float_t[fGPASize];
+	fG2 = new Float_t[fGPASize];
+	fZ1 = new Float_t[fGPASize];
+	fZ2 = new Float_t[fGPASize];
+    } else if (fRunPeriod == 5) {
+	name = gSystem->ExpandPathName("$(ALICE_ROOT)/LHC/pressure_2003_startup.dat");
+	fGPASize = 18853;
+	fG1 = new Float_t[fGPASize];
+	fZ1 = new Float_t[fGPASize];
+    } else if (fRunPeriod ==6) {
+	name = gSystem->ExpandPathName("$(ALICE_ROOT)/LHC/pressure_2003_conditioned.dat");
+	fGPASize = 12719;
+	fG1 = new Float_t[fGPASize];
+	fZ1 = new Float_t[fGPASize];
+    } else {
+	Fatal("Init()", "No gas pressure file for given run period !");
+    }
+
+
     FILE* file = fopen(name, "r");
     Float_t z;
-    Int_t i, j;
-    
+    Int_t i;
+    Float_t p[5];    
+
+    const Float_t kCrossSection = 0.094e-28;      // m^2
+    const Float_t kFlux         = 1.e11 / 25.e-9; // protons/s
+    Float_t pFlux[5] = {0.2, 0.2, 0.3, 0.3, 1.0};
+
+    if (fRunPeriod < 5) {
 //
 //  Ring 1   
 // 
-    for (i = 0; i < 21; i++)
-    {
-	fscanf(file, "%f %f %f %f %f %f", &z, 
-	       &fG1[i][0], &fG1[i][1], &fG1[i][2], &fG1[i][3], &fG1[i][4]);
-	if (i > 0) {
-	    fZ1[i] = fZ1[i-1] + z;
-	} else {
-	    fZ1[i] = 20.;
+
+	for (i = 0; i < fGPASize; i++)
+	{
+	    fscanf(file, "%f %f %f %f %f %f", &z, &p[0], &p[1], &p[2] , &p[3], &p[4]);
+	    fG1[i] = p[fRunPeriod];
+	    
+	    if (i > 0) {
+		fZ1[i] = fZ1[i-1] + z;
+	    } else {
+		fZ1[i] = 20.;
+	    }
 	}
-  }
 //
 // Ring 2
 //
-    for (i = 0; i < 21; i++)
-    {
-	fscanf(file, "%f %f %f %f %f %f", &z, 
-	       &fG2[i][0], &fG2[i][1], &fG2[i][2], &fG2[i][3], &fG2[i][4]);
-	if (i > 0) {
-	    fZ2[i] = fZ2[i-1] + z;
-	} else {
-	    fZ2[i] = 20.;
+	for (i = 0; i < fGPASize; i++)
+	{
+	    fscanf(file, "%f %f %f %f %f %f", &z, &p[0], &p[1], &p[2] , &p[3], &p[4]);
+	    fG2[i] = p[fRunPeriod];
+	    if (i > 0) {
+		fZ2[i] = fZ2[i-1] + z;
+	    } else {
+		fZ2[i] = 20.;
+	    }
+	}
+//
+// Interaction rates
+//
+	for (i = 0; i < fGPASize; i++)  
+	{
+	    fG1[i] = fG1[i] * kCrossSection * pFlux[fRunPeriod] * kFlux; // 1/m/s 
+	    fG2[i] = fG2[i] * kCrossSection * pFlux[fRunPeriod] * kFlux; // 1/m/s
+	}
+
+    } else {
+	for (i = 0; i < fGPASize; i++) 
+	{
+	    fscanf(file, "%f %e %e %e %e %e", &z, &p[0], &p[1], &p[2], &p[3], &p[4]);
+	    z /= 1000.;
+	    fG1[i] = p[4] * kCrossSection * kFlux;             // 1/m/s
+	    // 1/3 of nominal intensity at startup
+	    if (fRunPeriod ==  kLHCPR674Startup) fG1[i] /= 3.;
+	    fZ1[i] = z;
 	}
     }
+    
+
+
+    
 //
 //  Transform into interaction rates
 //
-    const Float_t kCrossSection = 0.094e-28;     // m^2
-    Float_t pFlux[5] = {0.2, 0.2, 0.3, 0.3, 1.0};
 
-    for (j = 0; j <  5; j++) {
-	pFlux[j] *= 1.e11/25.e-9;
-	for (i = 0; i < 21; i++)  
-	{
-	    fG1[i][j] = fG1[i][j] * kCrossSection * pFlux[j]; // 1/m/s 
-	    fG2[i][j] = fG2[i][j] * kCrossSection * pFlux[j]; // 1/m/s
-	}
-    }
+
     
 
     Float_t sum1 = 0.;
@@ -149,8 +194,8 @@ void AliGenHaloProtvino::Init()
     for (Int_t i = 0; i < 300; i++) {
 	Float_t z = 20.+i*1.;
 	z*=100;
-	Float_t wgt1 = GassPressureWeight(z);
-	Float_t wgt2 = GassPressureWeight(-z);
+	Float_t wgt1 = GasPressureWeight(z);
+	Float_t wgt2 = GasPressureWeight(-z);
 //	printf("weight: %f %f %f %f %f \n", z, wgt1, wgt2, fZ1[20], fZ2[20]);
 	sum1 += wgt1;
 	sum2 += wgt2;
@@ -187,6 +232,7 @@ void AliGenHaloProtvino::Generate()
   
   Float_t zVertexOld = -1.e10;
   Int_t   nInt       = 0;        // Counts number of interactions
+  Float_t Wgt = 0.;
   
   while(1) {
 //
@@ -273,7 +319,7 @@ void AliGenHaloProtvino::Generate()
 
 //    Get statistical weight according to local gas-pressure
 //
-      fParentWeight=wgt[nprim]*GassPressureWeight(zPrimary[nprim]);
+      fParentWeight=wgt[nprim]*GasPressureWeight(zPrimary[nprim]);
 
       if (!fAnalog || gRandom->Rndm() < fParentWeight) {
 //    Pass parent particle
@@ -282,13 +328,12 @@ void AliGenHaloProtvino::Generate()
 	  KeepTrack(ntP);
 	  PushTrack(fTrackIt,ntP,ipart[nprim],p,origin,polar,t,kPNoProcess,nt,fParentWeight);
       }
-
       //
       // Both sides are considered
       //
 
       if (fSide > 1) {
-	  fParentWeight=wgt[nprim]*GassPressureWeight(-zPrimary[nprim]);
+	  fParentWeight=wgt[nprim]*GasPressureWeight(-zPrimary[nprim]);
 	  if (!fAnalog || gRandom->Rndm() < fParentWeight) {
 	      origin[2]  = -origin[2];
 	      originP[2] = -originP[2];
@@ -298,6 +343,8 @@ void AliGenHaloProtvino::Generate()
 	      PushTrack(fTrackIt,ntP,ipart[nprim],p,origin,polar,t,kPNoProcess,nt,fParentWeight);
 	  }
       }
+      Wgt += fParentWeight;
+      
       SetHighWaterMark(nt);
   }
   delete [] zPrimary;
@@ -308,7 +355,9 @@ void AliGenHaloProtvino::Generate()
   delete [] vx;      
   delete [] vy;      
   delete [] tx;      
-  delete [] ty;      
+  delete [] ty;     
+  printf("Total weight %f\n\n", Wgt);
+  
 }
  
 
@@ -321,40 +370,64 @@ AliGenHaloProtvino& AliGenHaloProtvino::operator=(const  AliGenHaloProtvino& rhs
 
 
 
-Float_t AliGenHaloProtvino::GassPressureWeight(Float_t zPrimary)
+Float_t AliGenHaloProtvino::GasPressureWeight(Float_t zPrimary)
 {
 //
 // Return z-dependent gasspressure weight = interaction rate [1/m/s].
 //
     Float_t weight = 0.;
-    zPrimary/=100.;        // m
-    Float_t zAbs = TMath::Abs(zPrimary);
-    if (zPrimary > 0.) 
-    {
-	if (zAbs > fZ1[20]) {
-	    weight = 2.e4;
+    zPrimary /= 100.;        // m
+    if (fRunPeriod < 5) {
+	Float_t zAbs = TMath::Abs(zPrimary);
+	if (zPrimary > 0.) 
+	{
+	    if (zAbs > fZ1[20]) {
+		weight = 2.e4;
+	    } else {
+		for (Int_t i = 1; i < 21; i++) {
+		    if (zAbs < fZ1[i]) {
+			weight = fG1[i];
+			break;
+		    }
+		}
+	    }
 	} else {
-	    for (Int_t i = 1; i < 21; i++) {
-		if (zAbs < fZ1[i]) {
-		    weight = fG1[i][fRunPeriod];
+	    if (zAbs > fZ2[20]) {
+		weight = 2.e4;
+	    } else {
+		for (Int_t i = 1; i < 21; i++) {
+		    if (zAbs < fZ2[i]) {
+		    weight = fG2[i];
 		    break;
+		    }
 		}
 	    }
 	}
     } else {
-	if (zAbs > fZ2[20]) {
-	    weight = 2.e4;
-	} else {
-	    for (Int_t i = 1; i < 21; i++) {
-		if (zAbs < fZ2[i]) {
-		    weight = fG2[i][fRunPeriod];
-		    break;
-		}
-	    }
-	}
+	Int_t index = TMath::BinarySearch(fGPASize, fZ1, zPrimary);
+	weight = fG1[index];
     }
     return weight;
 }
+
+void AliGenHaloProtvino::Draw()
+{
+// Draws the gas pressure distribution
+    Float_t z[400];
+    Float_t p[400];
+    
+    for (Int_t i = 0; i < 400; i++)
+    {
+	z[i] = -20000. + Float_t(i) * 100;
+	p[i] = GasPressureWeight(z[i]);
+    }
+    
+    TGraph*  gr = new TGraph(400, z, p);   
+    TCanvas* c1 = new TCanvas("c1","Canvas 1",400,10,600,700);
+    c1->cd();
+    gr->Draw("AL");
+}
+
 
 void AliGenHaloProtvino::Copy(TObject&) const
 {
