@@ -1144,11 +1144,11 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gsvolu("BBLL", "BOX ", kAir, bpar, 3); 
   gMC->Gspos("BBLL", 1, "BBLB", 0., 0., 0., 0, "ONLY"); 
 
-  dx = kBBMRin + kBBBdz/2.;
+  dx = kBBMRin + kBBBdz/2. + (bpar[1] + kBBBdd) * TMath::Sin(10. * kDegrad);
   dy = dx * TMath::Tan(10. * kDegrad) - kBBBdz/2./TMath::Cos(10. * kDegrad);
   gMC->Gspos("BBLB", 1, "BBCE", dx, dy, 0., idrotm[2052], "ONLY"); 
 
-  dx = kBBMRou - kBBBdz/2.;
+  dx = kBBMRou - kBBBdz/2. - (bpar[1] + kBBBdd) * TMath::Sin(10. * kDegrad);
   dy = dx * TMath::Tan(10. * kDegrad) - kBBBdz/2./TMath::Cos(10. * kDegrad);
  
   gMC->Gspos("BBLB", 2, "BBCE", dx, dy, 0., idrotm[2052], "ONLY");  

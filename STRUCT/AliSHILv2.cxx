@@ -209,13 +209,13 @@ void AliSHILv2::CreateGeometry()
 
   par0[69] = -dz+kZch52;
   par0[70] = 0.;
-  par0[71] = 30.+(kZch52-kZConeE)*TMath::Tan(kThetaOpenPbO);
+  par0[71] =  30.+(kZch52+4.-kZConeE)*TMath::Tan(kThetaOpenPbO);
 
 // end of cone
 
   par0[72] = -dz+kZvac10;
   par0[73] = 0.;
-  par0[74] = 30.+(kZvac10-kZConeE)*TMath::Tan(kThetaOpenPbO);
+  par0[74] = par0[71];
 
   par0[75] = -dz+kZvac10;
   par0[76] = 0.;
@@ -1571,13 +1571,13 @@ void AliSHILv2::CreateGeometry()
   dz=-(kZvac12-zstart)/2.+(kZRear-zstart)+cpar[0];
   gMC->Gspos("YCS1", 1, "YMOT", 0., 0., dz, 0, "ONLY");
 
-  cpar[0]=(kZvac4-kZch12)/2.;
-  cpar[1]=kR11;
-  cpar[2]=kZch12*TMath::Tan(kAccMin);
-  cpar[3]=kR11;
-  cpar[4]=(kZch12+2.*cpar[0])*TMath::Tan(kAccMin);
+  cpar[0]=(kZvac4-kZvac41)/2.;
+  cpar[1]=kR21;
+  cpar[2]=kZvac41*TMath::Tan(kAccMin);
+  cpar[3]=kR21;
+  cpar[4]=(kZvac41+2.*cpar[0])*TMath::Tan(kAccMin);
   gMC->Gsvolu("YCS3", "CONE", idtmed[kNiCuW], cpar, 5);
-  dz=-(kZvac12-zstart)/2.+(kZch12-zstart)+cpar[0];
+  dz=-(kZvac12-zstart)/2.+(kZvac41-zstart)+cpar[0];
   gMC->Gspos("YCS3", 1, "YMOT", 0., 0., dz, 0, "ONLY");
 
 
@@ -1585,7 +1585,7 @@ void AliSHILv2::CreateGeometry()
 
   cpar[0]=(kZch12-kZch11)/2.;
   cpar[1]=kR11;
-  cpar[2]=18.;
+  cpar[2]=17.9;
   cpar[3]=kR11;
   cpar[4]=17.9;
   gMC->Gsvolu("YCS2", "CONE", idtmed[kAir], cpar, 5);
