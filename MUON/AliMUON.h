@@ -21,7 +21,7 @@ class AliMUONResponse;
 class AliMUONHit;
 class AliMUONPadHit;
 class AliMUONRawCluster;
-class AliMUONClusterFinder;
+class AliMUONClusterFinderVS;
 class AliMUONReconstHit;
 class TVector;
 class TObjArray;
@@ -81,7 +81,7 @@ class AliMUON : public  AliDetector {
     virtual void   SetResponseModel(Int_t id, AliMUONResponse *response);
     virtual void   SetNsec(Int_t id, Int_t nsec);
 // Set Reconstruction Model
-    virtual void   SetReconstructionModel(Int_t id, AliMUONClusterFinder *reconstruction);
+    virtual void   SetReconstructionModel(Int_t id, AliMUONClusterFinderVS *reconstruction);
 // Set Stepping Parameters
     virtual void   SetMaxStepGas(Float_t p1);
     virtual void   SetMaxStepAlu(Float_t p1);

@@ -19,7 +19,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONSegmentationTriggerX.cxx AliMUONSegmentationTriggerY.cxx \
                AliMUONSegmentationV1.cxx AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx\
                AliMUONDisplay.cxx AliMUONPoints.cxx \
-               AliMUONClusterFinderVS.cxx AliMUONClusterFinder.cxx \
+               AliMUONClusterFinder.cxx AliMUONClusterFinderVS.cxx \
                AliMUONHitMap.cxx AliMUONHitMapA1.cxx \
 	       AliMUONHit.cxx AliMUONPadHit.cxx AliMUONDigit.cxx \
                AliMUONTransientDigit.cxx AliMUONRawCluster.cxx \
@@ -31,7 +31,8 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONTrack.cxx AliMUONTrackHit.cxx AliMUONTrackParam.cxx \
                AliMUONTriggerCircuit.cxx AliMUONTriggerLut.cxx \
                AliMUONGlobalTrigger.cxx AliMUONLocalTrigger.cxx \
-               AliMUONTriggerConstants.cxx  AliMUONConstants.cxx      
+               AliMUONTriggerConstants.cxx  AliMUONConstants.cxx \
+	       AliMUONClusterInput.cxx     
 
 # C++ Headers
 

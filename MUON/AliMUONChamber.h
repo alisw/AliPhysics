@@ -9,7 +9,7 @@
 #include "AliMUONSegmentation.h"
 #include "AliMUONResponse.h"
 
-class AliMUONClusterFinder;
+class AliMUONClusterFinderVS;
 //class AliMUONResponse ;
 //class AliMUONSegmentation ;
 
@@ -51,7 +51,7 @@ public TObject
       (*fSegmentation)[i-1] = thisSegmentation;
   }
 // Set Cluster reconstruction model  
-  virtual void    SetReconstructionModel(AliMUONClusterFinder *thisReconstruction) {
+  virtual void    SetReconstructionModel(AliMUONClusterFinderVS *thisReconstruction) {
       fReconstruction = thisReconstruction;
   }
 //  
@@ -64,7 +64,7 @@ public TObject
   }
   virtual TObjArray* ChamberSegmentation() {return fSegmentation;}
 //  Get pointer to cluster reconstruction model
-  virtual AliMUONClusterFinder* &ReconstructionModel(){return fReconstruction;}
+  virtual AliMUONClusterFinderVS* &ReconstructionModel(){return fReconstruction;}
 // Get number of segmentation sectors  
   virtual Int_t Nsec()              {return fnsec;}
 // Set number of segmented cathodes (1 or 2)  
@@ -119,9 +119,9 @@ public TObject
   Float_t frMin; // innermost sensitive radius
   Float_t frMax; // outermost sensitive radius
 
-  TObjArray            *fSegmentation;    // pointer to segmentation
-  AliMUONClusterFinder *fReconstruction;  // pointer to reconstruction
-  AliMUONResponse      *fResponse;        // pointer to response
+  TObjArray              *fSegmentation;    // pointer to segmentation
+  AliMUONClusterFinderVS *fReconstruction;  // pointer to reconstruction
+  AliMUONResponse        *fResponse;        // pointer to response
   ClassDef(AliMUONChamber,1) // Muon tracking and trigger chamber class
 };
 

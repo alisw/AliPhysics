@@ -8,43 +8,32 @@
 ////////////////////////////////////////////////
 //  MUON Cluster Finder Class                 //
 ////////////////////////////////////////////////
-#include "AliMUONHitMap.h"
+#include <TObject.h>
+#include "AliMUONHitMapA1.h"
+#include "AliMUONClusterInput.h"
 #include "TF1.h"
-#include "AliMUONClusterFinder.h"
-#include "AliMUONSegmentation.h"
 
-class AliMUONClusterFinderVS : 
- public AliMUONClusterFinder
+class AliMUONResponse;
+class AliMUONSegmentation;
+class TClonesArray;
+class AliMUONRawCluster;
+class AliMUONDigit;
+
+
+class AliMUONClusterFinderVS : public TObject 
 {
  public:
-    AliMUONClusterFinderVS
-	(AliMUONSegmentation *segmentation1, AliMUONSegmentation *segmentation2,
-	 AliMUONResponse *response,
-	 TClonesArray *digits1, TClonesArray *digits2,
-	 Int_t chamber);
     AliMUONClusterFinderVS();
     AliMUONClusterFinderVS(const AliMUONClusterFinderVS& clusterFinder);
     virtual ~AliMUONClusterFinderVS(){;}
-// Set segmentation model    
-    virtual void SetSegmentation(AliMUONSegmentation *seg1, AliMUONSegmentation *seg2)
-	{
-	fSegmentation[0]=seg1;
-	fSegmentation[1]=seg2;
-	}
-// Set pointer to digits
-    virtual void SetDigits(TClonesArray *MUONdigits1, TClonesArray *MUONdigits2);
-    
-// Get Segmentation
-    virtual AliMUONSegmentation*  Segmentation(Int_t i);
-// Get Number of Digits
-    virtual Int_t NDigits(Int_t i);
-// Get Digits
-    virtual TClonesArray* Digits(Int_t i);
-// Get HitMap
-    virtual AliMUONHitMap* HitMap(Int_t i);
-    
+// Decluster ?
+    virtual void SetDeclusterFlag(Int_t flag=1) {fDeclusterFlag =flag;}
+// Set max. cluster size ; bigger clusters will deconvoluted
+    virtual void SetClusterSize(Int_t clsize=5) {fClusterSize = clsize;}
+// Set max. number of pads per local cluster
+    virtual void SetNperMax(Int_t npermax=5) {fNperMax = npermax;}
 // Search for raw clusters
-    virtual void FindRawClusters();
+    virtual void  FindRawClusters();
 // Find cluster    
     virtual void  FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONRawCluster &c);
 // Decluster
@@ -53,41 +42,35 @@ class AliMUONClusterFinderVS :
     virtual void   SplitByLocalMaxima(AliMUONRawCluster *cluster);
     virtual void   FindLocalMaxima(AliMUONRawCluster *cluster);
     virtual void   Split(AliMUONRawCluster * cluster);
-    
 //  Perform Double Mathieson Fit
-    Bool_t DoubleMathiesonFit(AliMUONRawCluster *c, Int_t cath);
+    Bool_t  DoubleMathiesonFit(AliMUONRawCluster *c, Int_t cath);
     Float_t CombiDoubleMathiesonFit(AliMUONRawCluster *c);
     Float_t SingleMathiesonFit(AliMUONRawCluster *c, Int_t cath);
     Float_t CombiSingleMathiesonFit(AliMUONRawCluster *c);    
 //  Build up full cluster information    
     virtual void   FillCluster(AliMUONRawCluster *cluster, Int_t flag, Int_t cath);
     virtual void   FillCluster(AliMUONRawCluster *cluster, Int_t cath);
-    virtual void   FillCluster(AliMUONRawCluster *cluster) {
-	FillCluster(cluster,1,0);}
-    // Add a new raw cluster    
+    virtual void   FillCluster(AliMUONRawCluster *cluster) {FillCluster(cluster,1,0);}
+// Add a new raw cluster    
     virtual void AddRawCluster(const AliMUONRawCluster cluster);
-    
-    virtual void SetTracks(Int_t t1, Int_t t2) 
-	{
-	    fTrack[0]=t1;
-	    fTrack[1]=t2;
-	}
-    
-    virtual Bool_t TestTrack(Int_t t) {
-	if (fTrack[0]==-1 || fTrack[1]==-1) {
-	    return kTRUE;
-	} else if (t==fTrack[0] || t==fTrack[1]) {
-	    return kTRUE;
-	} else {
-	    return kFALSE;
-	}
-    }
-    //  Assignment operator
+//  Set tracks for debugging    
+    virtual void SetTracks(Int_t t1, Int_t t2) {fTrack[0]=t1; fTrack[1]=t2;}
+    virtual Bool_t TestTrack(Int_t t);
+//  Assignment operator
     AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
-protected:
-    TClonesArray*           fDigits2;            // Digits
-    Int_t                   fNdigits2;           // Number of Digits    
-    AliMUONHitMapA1*        fHitMap2;            // Hit Map
+
+ protected:
+    AliMUONClusterInput*    fInput;              // AliMUONClusterInput instance
+    AliMUONHitMapA1*        fHitMap[2];          // Hit Map cathode 1
+// Configuration    
+    Int_t                   fDeclusterFlag;      // flag for declusterin
+    Int_t                   fClusterSize;        // cluster size 
+    Int_t                   fNperMax;            // Maximum number of pads per peak
+// Current decluster result    
+    Int_t                   fMul[2];             // current multiplicity
+    Int_t                   fNPeaks;             // number of local maxima
+    Int_t                   fNRawClusters;       // Number of Raw Clusters
+// Local data store    
     AliMUONDigit*           fDig[100][2];        // current list of digits 
     Int_t                   fIx[100][2];         // current list of x-pad-coord.
     Int_t                   fIy[100][2];         // current list of y-pad-coord.
@@ -96,7 +79,6 @@ protected:
     Int_t                   fIndLocal[100][2];   // indices of local maxima
     Int_t                   fNLocal[2];          // Number of local maxima
     Int_t                   fQ[100][2];          // current list of charges
-    Int_t                   fMul[2];             // current multiplicity
 // Current Fit
     Double_t                 fXFit[2];         // x-coordinate
     Double_t                 fYFit[2];         // y-coordinate
@@ -114,6 +96,11 @@ protected:
     ClassDef(AliMUONClusterFinderVS,1) //Class for clustering and reconstruction of space points
 };
 #endif
+
+
+
+
+
 
 
 

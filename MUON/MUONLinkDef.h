@@ -46,6 +46,7 @@
 #pragma link C++ class  AliMUONTrackParam;
 #pragma link C++ class  AliMUONTriggerConstants;
 #pragma link C++ class  AliMUONConstants-;
+#pragma link C++ class  AliMUONClusterInput-;
 #endif
 
 

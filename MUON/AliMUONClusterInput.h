@@ -19,13 +19,20 @@ class AliMUONResponse;
 class AliMUONClusterInput : public TObject {
  public:
     static AliMUONClusterInput* Instance();
-//  Setters
+//  Configuration
     void SetDigits(Int_t chamber, TClonesArray* dig1, TClonesArray* dig2);
     void SetDigits(Int_t chamber, TClonesArray* dig);
     void SetCluster(AliMUONRawCluster* cluster);
 // Access functions
+    Int_t Chamber()  {return fChamber;}
     AliMUONDigit* Digit(Int_t cath, Int_t i) {return (AliMUONDigit*) (fDigits[cath]->UncheckedAt(i));}
+    TClonesArray* Digits(Int_t cath) {return fDigits[cath];}
+    Int_t NDigits(Int_t cath) {return fNDigits[cath];}
+    AliMUONSegmentation* Segmentation(Int_t cath)  {return fSegmentation[cath];}
+    AliMUONResponse* Response()  {return fResponse;}    
+// Fitting    
     TMinuit*      Fitter() {return fgMinuit;}
+// Current cluster information    
     Float_t       TotalCharge(Int_t cath) {return fChargeTot[cath];}
     Float_t       Charge(Int_t dig, Int_t cath) {return fCharge[dig][cath];}
     Int_t         Ix(Int_t dig, Int_t cath) {return fix[dig][cath];}
@@ -40,12 +47,15 @@ class AliMUONClusterInput : public TObject {
  protected:
     AliMUONClusterInput(){;}
  private:
-    static AliMUONClusterInput* fgClusterInput;
+    static AliMUONClusterInput* fgClusterInput; // singleton instance
     // Digits
     TClonesArray*        fDigits[2];       // ! Array of pointers to digits
+    Int_t                fNDigits[2];      // ! Number of digits
     AliMUONSegmentation* fSegmentation[2]; // ! Segmentation per cathode
     AliMUONResponse*     fResponse;        // ! Response
     Int_t                fNseg;            // ! number of cathode planes
+    Int_t                fChamber;         // ! Current chamber number
+    
     // Current cluster
     AliMUONRawCluster*   fCluster;         // ! current cluster
     Int_t                fNmul[2];         // ! current cluster multiplicity

@@ -14,6 +14,11 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.22  2000/06/28 08:06:10  morsch
+Avoid global variables in AliMUONClusterFinderVS by seperating the input data for the fit from the
+algorithmic part of the class. Input data resides inside the AliMUONClusterInput singleton.
+It also naturally takes care of the TMinuit instance.
+
 Revision 1.21  2000/06/27 08:54:41  morsch
 Problems with on constant array sizes (in hitMap, nmuon, xhit, yhit) corrected.
 
@@ -122,7 +127,7 @@ Log message added
 #include "AliMUONHitMapA1.h"
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONConstants.h"
-#include "AliMUONClusterFinder.h"
+#include "AliMUONClusterFinderVS.h"
 #include "AliMUONTriggerDecision.h"
 #include "AliRun.h"
 #include "AliMC.h"
@@ -787,7 +792,7 @@ void   AliMUON::SetResponseModel(Int_t id, AliMUONResponse *response)
     ((AliMUONChamber*) (*fChambers)[id])->SetResponseModel(response);
 }
 
-void   AliMUON::SetReconstructionModel(Int_t id, AliMUONClusterFinder *reconst)
+void   AliMUON::SetReconstructionModel(Int_t id, AliMUONClusterFinderVS *reconst)
 {
     ((AliMUONChamber*) (*fChambers)[id])->SetReconstructionModel(reconst);
 }
@@ -1386,7 +1391,7 @@ void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
     
     for (Int_t ich=0;ich<10;ich++) {
 	AliMUONChamber* iChamber=(AliMUONChamber*) (*fChambers)[ich];
-	AliMUONClusterFinder* rec = iChamber->ReconstructionModel();    
+	AliMUONClusterFinderVS* rec = iChamber->ReconstructionModel();    
 	gAlice->ResetDigits();
 	gAlice->TreeD()->GetEvent(lastEntry);
 	TClonesArray *muonDigits  = this->DigitsAddress(ich);
@@ -1415,9 +1420,6 @@ void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
 
 	if (rec) {	 
 	    AliMUONClusterInput::Instance()->SetDigits(ich, dig1, dig2);
-	    
-	    rec->SetDigits(dig1, dig2);
-	    rec->SetChamber(ich);
 	    rec->FindRawClusters();
 	}
 	dig1->Delete();

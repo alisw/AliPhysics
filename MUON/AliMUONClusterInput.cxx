@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.1  2000/06/28 08:06:10  morsch
+Avoid global variables in AliMUONClusterFinderVS by seperating the input data for the fit from the
+algorithmic part of the class. Input data resides inside the AliMUONClusterInput singleton.
+It also naturally takes care of the TMinuit instance.
+
 */
 #include "AliRun.h"
 #include "AliMUON.h"
@@ -47,8 +52,12 @@ AliMUONClusterInput* AliMUONClusterInput::Instance()
 void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig1, TClonesArray* dig2)
 {
 // Set pointer to digits with corresponding segmentations and responses (two cathode planes)
+    fChamber=chamber;
     fDigits[0]=dig1;
     fDigits[1]=dig2; 
+    fNDigits[0]=dig1->GetEntriesFast();
+    fNDigits[1]=dig2->GetEntriesFast();
+    
     AliMUON *pMUON;
     AliMUONChamber* iChamber;
 
@@ -79,6 +88,7 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig)
 void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
 {
 // Set the current cluster
+    printf("\n %p \n", cluster);
     fCluster=cluster;
     Float_t qtot;
     Int_t   i, cath, ix, iy;
@@ -190,6 +200,6 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cat
    return value;
 }
 
-
+void AliMUONClusterInput::Streamer(TBuffer &R__b) {} 
 
 
