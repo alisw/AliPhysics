@@ -205,7 +205,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
       if (fPMD) 
 	{
 	  npmd = fHits->GetEntriesFast();
-	  cout << " npmd = " << npmd << endl;
 	  for (int ipmd = 0; ipmd < npmd; ipmd++) 
 	    {
 	      fPMDHit = (AliPMDhit*) fHits->UncheckedAt(ipmd);
@@ -216,8 +215,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      fParticle = gAlice->GetMCApp()->Particle(trackno);
 	      trackpid  = fParticle->GetPdgCode();
 
-	      cout << " trackno = " << trackno << " track = " << track << endl;
-	      //cout << " trackpid = " << trackpid << endl;
 	      Int_t igatr = -999;
 	      Int_t ichtr = -999;
 	      Int_t igapid = -999;
@@ -226,9 +223,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      Int_t idmo = -999;
 
 	      TParticle*  mparticle = fParticle;
-	      Int_t jjnu = mparticle->GetFirstMother();
-	      cout << " Coming to this step - step 0 jjnu = " << jjnu << endl;
-	      
 	      Int_t tracknoOld=0, trackpidOld=0, statusOld = 0;
 	      if (mparticle->GetFirstMother() == -1)
 		{
