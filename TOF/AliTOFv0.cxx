@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  1999/10/16 19:30:05  fca
+Corrected Rotation Matrix and CVS log
+
 Revision 1.10  1999/10/15 15:35:20  fca
 New version for frame1099 with and without holes
 
@@ -213,7 +216,7 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
   Float_t zSenStrip;
   zSenStrip = StripWidth-2*DeadBound;//cm
 
-  par[0] = -1;
+  par[0] = xFLT*0.5;
   par[1] = yPad/2; 
   par[2] = StripWidth/2.;
   
@@ -221,7 +224,7 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
   gMC->Gsvolu("FSTR","BOX",idtmed[514],par,3);
 
   // Freon for non-sesitive boundaries
-  par[0] = -1;
+  par[0] = xFLT*0.5;
   par[1] = 0.110/2;
   par[2] = -1;
   gMC->Gsvolu("FNSF","BOX",idtmed[512],par,3);
@@ -247,7 +250,7 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
   gMC->Gspos("FGRL",2,"FSTR",0.,-ycoor,0.,0,"ONLY");
 
   // Freon sensitive layer
-  par[0] = -1;
+  par[0] = xFLT*0.5;
   par[1] = 0.110/2.;
   par[2] = zSenStrip/2.;
   gMC->Gsvolu("FCFC","BOX",idtmed[513],par,3);
@@ -257,9 +260,9 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
   gMC->Gsdvn("FLZ","FCFC", nz, 3); 
   gMC->Gsdvn("FLX","FLZ" , nx, 1); 
 
+
 ////  Positioning the Strips  (FSTR) in the FLT volumes  /////
 
- 
   // 3 (Central) Plate 
   Float_t t = zFLT1+zFLT2+zFLT3/2.+7.*2.5;//Half Width of Barrel
   Float_t zpos = 0;
@@ -336,10 +339,10 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
   }  while (zpos>-t+7.+last);
 
 printf("#######################################################\n");
-printf("     Distance from the bound of the FLT3: zFLT3- %f cm \n", zpos+(zSenStrip/2)/TMath::Cos(ang));
+printf("     Distance from the bound of the FLT3: %f cm \n", t+zpos-(zSenStrip/2)/TMath::Cos(ang));
      ang = atan(zpos/sqrt(2*t*t-zpos*zpos));
      zpos = zpos - zSenStrip/TMath::Cos(ang);
-printf("NEXT Distance from the bound of the FLT3: zFLT3- %f cm \n", zpos+(zSenStrip/2)/TMath::Cos(ang));
+printf("NEXT Distance from the bound of the FLT3: %f cm \n", t+zpos-(zSenStrip/2)/TMath::Cos(ang));
 printf("#######################################################\n");
 
 ////////// Layers after detector /////////////////

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  1999/10/16 19:30:05  fca
+Corrected Rotation Matrix and CVS log
+
 Revision 1.10  1999/10/15 15:35:20  fca
 New version for frame1099 with and without holes
 
@@ -213,7 +216,7 @@ void AliTOFv1::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
   Float_t zSenStrip;
   zSenStrip = StripWidth-2*DeadBound;//cm
 
-  par[0] = -1;
+  par[0] = xFLT/2;
   par[1] = yPad/2; 
   par[2] = StripWidth/2.;
   
@@ -221,7 +224,7 @@ void AliTOFv1::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
   gMC->Gsvolu("FSTR","BOX",idtmed[514],par,3);
 
   // Freon for non-sesitive boundaries
-  par[0] = -1;
+  par[0] = xFLT/2;
   par[1] = 0.110/2;
   par[2] = -1;
   gMC->Gsvolu("FNSF","BOX",idtmed[512],par,3);
