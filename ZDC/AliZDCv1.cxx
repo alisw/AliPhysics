@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/05/02 10:33:11  coppedis
+Modify tmaxfd in media definition
+
 Revision 1.19  2001/04/27 08:35:01  coppedis
 Remove some lines for proton acceptance studies
 
@@ -1026,7 +1029,7 @@ void AliZDCv1::CreateMaterials()
   Int_t   ifield = 0, isvolActive = 1, isvol = 0, inofld = 0;
   
   fieldm = 0.;
-  tmaxfd = 0.;
+  Float_t tmaxfd = 0.;
   AliMedium(1, "ZTANT", 1, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
 //  AliMedium(1, "ZW", 1, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(2, "ZBRASS",2, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
