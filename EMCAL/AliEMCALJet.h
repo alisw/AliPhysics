@@ -32,7 +32,7 @@ class AliEMCALJet : public TObject {
   Float_t HCEnergy() const  {return fHCEnergy;}
   Float_t Phi() const     {return fPhi;}
   Float_t Eta()  const    {return fEta;}
-  Int_t   TrackList(Float_t* pt, Float_t* eta, Float_t* phi, Int_t* pdg);
+  Int_t   TrackList(Float_t* pt, Float_t* eta, Float_t* phi, Int_t* pdg)const;
   Int_t   NTracks() const {return fNt;} 
   
 protected:
@@ -50,7 +50,7 @@ protected:
   Float_t  fEtaT[1000]; // Track eta
   Float_t  fPhiT[1000]; // Track phi
   Int_t    fPdgT[1000]; // Track pdg code
-  ClassDef(AliEMCALJet,7) // Jet for EMCAL
+  ClassDef(AliEMCALJet,8) // Jet for EMCAL
 
 } ;
 

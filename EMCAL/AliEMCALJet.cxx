@@ -59,7 +59,7 @@ void AliEMCALJet::SetTrackList(Int_t n, Float_t* pt, Float_t* eta, Float_t* phi,
 
 
 
-Int_t AliEMCALJet::TrackList(Float_t* pt, Float_t* eta, Float_t* phi, Int_t* pdg)
+Int_t AliEMCALJet::TrackList(Float_t* pt, Float_t* eta, Float_t* phi, Int_t* pdg) const
 {
 //
 // 
