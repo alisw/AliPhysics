@@ -1,8 +1,5 @@
-// @(#)alimdc:$Name$:$Id$
-// Author: Fons Rademakers  26/11/99
-
 /**************************************************************************
- * Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -16,49 +13,54 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// AliTagNullDB                                                         //
+// c interface to AliMDC                                                //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "AliTagNullDB.h"
+#include "mdc.h"
+#include "AliMDC.h"
 
-
-ClassImp(AliTagNullDB)
-
-
-//______________________________________________________________________________
-AliTagNullDB::AliTagNullDB(AliRawEventHeader *header) :
-   AliTagDB(header, "/dev/null")
+void* alimdcCreate(int compress, int filterMode, 
+		   const char* localRunDB, int rdbmsRunDB,
+		   const char* alienHostRunDB, const char* alienDirRunDB,
+		   double maxSizeTagDB, const char* fileNameTagDB)
 {
-   // Create tag db writing to /dev/null.
+// create an AliMDC object
+
+  return new AliMDC(compress, kFALSE, AliMDC::EFilterMode(filterMode), 
+		    localRunDB, rdbmsRunDB, alienHostRunDB, alienDirRunDB,
+		    maxSizeTagDB, fileNameTagDB);
 
 }
 
-//______________________________________________________________________________
-const char *AliTagNullDB::GetFileName() const
+int alimdcOpen(void* alimdc, int mode, const char* fileName)
 {
-   // Return /dev/null as filename.
+// open a new raw DB
 
-   return "/dev/null";
+  return ((AliMDC*)alimdc)->Open(AliMDC::EWriteMode(mode), fileName);
 }
 
-//______________________________________________________________________________
-void AliTagNullDB::Close()
+int alimdcProcessEvent(void* alimdc, void* event, int isIovecArray)
 {
-   // Close null tag DB.
+// process one event
 
-   if (!fTagDB) return;
+  return ((AliMDC*)alimdc)->ProcessEvent(event, isIovecArray);
+}
 
-   fTagDB->cd();
+int alimdcClose(void* alimdc)
+{
+// close the raw DB
 
-   // Write the tree.
-   fTree->Write();
+  return ((AliMDC*)alimdc)->Close();
+}
 
-   // Close DB, this also deletes the fTree
-   fTagDB->Close();
+void  alimdcDelete(void* alimdc)
+{
+// delete the AliMDC object
 
-   delete fTagDB;
-   fTagDB = 0;
+  delete (AliMDC*)alimdc;
 }

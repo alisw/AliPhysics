@@ -23,6 +23,8 @@
 #include <TSystem.h>
 #include <TError.h>
 
+#include <AliLog.h>
+
 #ifdef USE_SMI
 extern "C" {
    #include <smirtl.h>
@@ -105,26 +107,25 @@ static void SMI_handle_command()
 static void Usage(const char *prognam)
 {
 #ifdef USE_SMI
-      fprintf(stderr, "Usage: %s <sminame> <dbsize> <filter> <compmode> [date_file]\n",
+      fprintf(stderr, "Usage: %s <sminame> <dbsize> <tagdbsize> <filter> <compmode> [date_file]\n",
               prognam);
       fprintf(stderr, " <sminame> = name used by SMI\n");
 #else
-      fprintf(stderr, "Usage: %s <dbsize> <filter> <compmode> [date_file]\n",
+      fprintf(stderr, "Usage: %s <dbsize> <tagdbsize> <filter> <compmode> [date_file]\n",
               prognam);
 #endif
       fprintf(stderr, " <dbsize> = maximum raw DB size (in bytes)\n");
       fprintf(stderr, "    (precede by - to delete raw and tag databases on close)\n");
-      fprintf(stderr, " <filter> = state of 3rd level filter (0 or 1)\n");
+      fprintf(stderr, " <tagdbsize> = maximum tag DB size (in bytes, 0 for no tag DB)\n");
+      fprintf(stderr, "    (precede by - to switch off the run DB)\n");
+      fprintf(stderr, "    (precede by + to fill only the local run DB)\n");
+      fprintf(stderr, " <filter> = state of 3rd level filter (0: off, 1: transparent, 2: on)\n");
       fprintf(stderr, " <compmode> = compression level (see TFile)\n");
       fprintf(stderr, "    (precede by - to use RFIO, -0 is RFIO and 0 compression)\n");
       fprintf(stderr, "    (precede by + to use rootd, +0 is rootd and 0 compression)\n");
       fprintf(stderr, "    (precede by %% to use Castor/rootd, %%0 is Castor/rootd and 0 compression)\n");
       fprintf(stderr, "    (precede by @ to use /dev/null as sink)\n");
-#ifdef USE_EB
       fprintf(stderr, " [date_file] = optional input file (default reads from DATE EventBuffer)\n");
-#else
-      fprintf(stderr, " [date_file] = optional input file (default reads from pipe /tmp/alimdc.fifo)\n");
-#endif
       fprintf(stderr, "    (precede with - for endless loop on same file (use SIGUSR1 to stop)\n");
 }
 
@@ -137,97 +138,161 @@ int main(int argc, char **argv)
    gROOT->SetBatch();
 
    // Set custom error handler
+   AliLog::SetHandleRootMessages(kFALSE);
    SetErrorHandler(AliMDCErrorHandler);
 
-#ifdef USE_SMI
-    // Handle command line arguments
+   // Default file system locations
+#ifdef USE_EB
+   const char* rawDBFS[2] = { "/data1/mdc", "/data2/mdc" };
+   const char* tagDBFS    = "/data1/mdc/tags";
+   const char* runDBFS    = "/data1/mdc/meta";
+   const char* rfioFS     = "rfio:/castor/cern.ch/lcg/dc5";
+   const char* castorFS   = "castor:/castor/cern.ch/lcg/dc5";
+#else
+   const char* rawDBFS[2] = { "/tmp/mdc1", "/tmp/mdc2" };
+   const char* tagDBFS    = "/tmp/mdc1/tags";
+   const char* runDBFS    = "/tmp/mdc1/meta";
+   TString user(gSystem->Getenv("USER")[0] + TString("/") + 
+		gSystem->Getenv("USER"));
+   TString rfioStr("rfio:/castor/cern.ch/user/" + user);
+   const char* rfioFS     = rfioStr.Data();
+   TString castorStr("castor:/castor/cern.ch/user/" + user);
+   const char* castorFS   = castorStr.Data();
+#endif
+   const char* rootdFS    = "root://localhost//tmp/mdc1";
+   const char* alienHost  = "alien://aliens7.cern.ch:15000/?direct";
+   const char* alienDir   = "/alice_mdc/DC";
+
+   // User defined file system locations
+   if (gSystem->Getenv("ALIMDC_RAWDB1")) 
+     rawDBFS[0] = gSystem->Getenv("ALIMDC_RAWDB1");
+   if (gSystem->Getenv("ALIMDC_RAWDB2")) 
+     rawDBFS[1] = gSystem->Getenv("ALIMDC_RAWDB2");
+   if (gSystem->Getenv("ALIMDC_TAGDB")) 
+     tagDBFS = gSystem->Getenv("ALIMDC_TAGDB");
+   if (gSystem->Getenv("ALIMDC_RUNDB")) 
+     runDBFS = gSystem->Getenv("ALIMDC_RUNDB");
+   if (gSystem->Getenv("ALIMDC_RFIO")) 
+     rfioFS = gSystem->Getenv("ALIMDC_RFIO");
+   if (gSystem->Getenv("ALIMDC_CASTOR")) 
+     castorFS = gSystem->Getenv("ALIMDC_CASTOR");
+   if (gSystem->Getenv("ALIMDC_ROOTD")) 
+     rootdFS = gSystem->Getenv("ALIMDC_ROOTD");
+   if (gSystem->Getenv("ALIMDC_ALIENHOST")) 
+     alienHost = gSystem->Getenv("ALIMDC_ALIENHOST");
+   if (gSystem->Getenv("ALIMDC_ALIENDIR")) 
+    alienDir  = gSystem->Getenv("ALIMDC_ALIENDIR");
+
+   // Handle command line arguments
    if ((argc == 2 && (!strcmp(argv[1], "-?") || !strcmp(argv[1], "-help"))) ||
+#ifdef USE_SMI
+       argc > 7 || argc < 6) {
+#else
        argc > 6 || argc < 5) {
+#endif
       Usage(argv[0]);
       return 1;
    }
 
+   Int_t iarg = 1;
+#ifdef USE_SMI
    char smiobj[128];
-   strcpy(smiobj, argv[1]);
+   strcpy(smiobj, argv[iarg]);
    smi_attach(smiobj, SMI_handle_command);
    smi_volatile();
    smi_set_state("RUNNING");
-
-   for (int i = 1; i < argc-1; i++)
-      argv[i] = argv[i+1];
-   argc--;
-
-#else
-   // Handle command line arguments
-   if ((argc == 2 && (!strcmp(argv[1], "-?") || !strcmp(argv[1], "-help"))) ||
-       argc > 5 || argc < 4) {
-      Usage(argv[0]);
-      return 1;
-   }
+   iarg++;
 #endif
 
    AliMDC::EWriteMode wmode = AliMDC::kLOCAL;
-   Bool_t   useFilter = kFALSE, useLoop = kFALSE;
+   Int_t    filterMode = 0;
+   Bool_t   useLoop = kFALSE;
    Bool_t   delFiles = kFALSE;
-   Int_t    fd = -1, compress;
+   Bool_t   rdbmsRunDB = kTRUE;
+   Int_t    compress;
    Double_t maxFileSize;
+   Double_t maxTagSize;
+   const char* fs1 = NULL;
+   const char* fs2 = NULL;
 
    // no special arg checking so don't make errors
-   if (argv[1][0] == '-') {
+   if (argv[iarg][0] == '-') {
       delFiles = kTRUE;
-      maxFileSize = atoi(argv[1]+1);
+      maxFileSize = atoi(argv[iarg]+1);
    } else
-      maxFileSize = atoi(argv[1]);
+      maxFileSize = atoi(argv[iarg]);
    if (maxFileSize < 1000 || maxFileSize > 2.e9) {
       Error(argv[0], "unreasonable file size %f\n", maxFileSize);
       return 1;
    }
+   iarg++;
 
-   int filter = atoi(argv[2]);
-   if (filter != 0)
-      useFilter = kTRUE;
-
-   if (argv[3][0] == '-') {
-      wmode = AliMDC::kRFIO;
-      compress = atoi(argv[3]+1);
-   } else if (argv[3][0] == '+') {
-      wmode = AliMDC::kROOTD;
-      compress = atoi(argv[3]+1);
-   } else if (argv[3][0] == '%') {
-      wmode = AliMDC::kCASTOR;
-      compress = atoi(argv[3]+1);
-   } else if (argv[3][0] == '@') {
-      wmode = AliMDC::kDEVNULL;
-      compress = atoi(argv[3]+1);
+   if (argv[iarg][0] == '-') {
+      runDBFS = NULL;
+      rdbmsRunDB = kFALSE;
+      alienHost = alienDir = NULL;
+      maxTagSize = atoi(argv[iarg]+1);
+   } else if (argv[iarg][0] == '+') {
+      rdbmsRunDB = kFALSE;
+      alienHost = alienDir = NULL;
+      maxTagSize = atoi(argv[iarg]+1);
    } else
-      compress = atoi(argv[3]);
+      maxTagSize = atoi(argv[iarg]);
+   if (maxTagSize > 0 && (maxTagSize < 1000 || maxTagSize > 2.e9)) {
+      Error(argv[0], "unreasonable tag file size %f\n", maxTagSize);
+      return 1;
+   }
+   if (maxTagSize == 0) tagDBFS = NULL;
+   iarg++;
+
+   filterMode = atoi(argv[iarg]);
+   if (filterMode < 0 || filterMode > 2) {
+      Error(argv[0], "unreasonable filter mode %d\n", filterMode);
+      return 1;
+   }
+   iarg++;
+
+   if (argv[iarg][0] == '-') {
+      wmode = AliMDC::kRFIO;
+      compress = atoi(argv[iarg]+1);
+      fs1 = rfioFS;
+   } else if (argv[iarg][0] == '+') {
+      wmode = AliMDC::kROOTD;
+      compress = atoi(argv[iarg]+1);
+      fs1 = rootdFS;
+   } else if (argv[iarg][0] == '%') {
+      wmode = AliMDC::kCASTOR;
+      compress = atoi(argv[iarg]+1);
+      fs1 = castorFS;
+   } else if (argv[iarg][0] == '@') {
+      wmode = AliMDC::kDEVNULL;
+      compress = atoi(argv[iarg]+1);
+   } else {
+      compress = atoi(argv[iarg]);
+      fs1 = rawDBFS[0];
+      fs2 = rawDBFS[1];
+   }
    if (compress > 9) {
       Error(argv[0], "unreasonable compression mode %d\n", compress);
       return 1;
    }
+   iarg++;
 
-   if (argc == 5) {
-      char *file = argv[4];
-      if (argv[4][0] == '-') {
+   char* file = NULL;
+   if (iarg < argc) {
+      file = argv[iarg];
+      if (argv[iarg][0] == '-') {
          useLoop = kTRUE;
-         file = argv[4]+1;
-      }
-      if ((fd = open(file, O_RDONLY)) == -1) {
-         Error(argv[0], "cannot open input file %s", argv[4]);
-         return 1;
+         file = argv[iarg]+1;
       }
    }
 
    // Create MDC processor object and process input stream
-   AliMDC mdcproc(fd, compress, maxFileSize, useFilter, wmode, useLoop, delFiles);
+   AliMDC mdcproc(compress, delFiles, AliMDC::EFilterMode(filterMode), 
+		  runDBFS, rdbmsRunDB, alienHost, alienDir, 
+		  maxTagSize, tagDBFS);
 
-#ifdef USE_DEBUG
-   mdcproc.SetDebugLevel(3);
-#endif
-
-   Int_t result = 0;
-
-   result = mdcproc.Run();
+   Int_t result = mdcproc.Run(file, useLoop, wmode, maxFileSize, fs1, fs2);
 
    if (result == 0)
       Info(argv[0], "normal termination of run");

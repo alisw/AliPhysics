@@ -33,11 +33,6 @@
 #include "AliRawEvent.h"
 #include "AliRawEventHeader.h"
 #include "AliStats.h"
-#include "AliMDC.h"
-
-#ifdef USE_HLT
-#include "AliESD.h"
-#endif
 
 #include "AliRawDB.h"
 
@@ -47,20 +42,22 @@ ClassImp(AliRawDB)
 
 //______________________________________________________________________________
 AliRawDB::AliRawDB(AliRawEvent *event,
-#ifdef USE_HLT
 		   AliESD *esd, 
-#endif
-		   Double_t maxsize, Int_t compress,
-                   Bool_t create)
+		   Int_t compress,
+                   const char* fileName) :
+  fRawDB(NULL),
+  fTree(NULL),
+  fEvent(event),
+  fESDTree(NULL),
+  fESD(esd),
+  fCompress(compress),
+  fMaxSize(-1),
+  fFS1(""),
+  fFS2(""),
+  fDeleteFiles(kFALSE),
+  fStop(kFALSE)
 {
-   // Create a new raw DB containing at most maxsize bytes.
-
-   fEvent    = event;
-#ifdef USE_HLT
-   fESD      = esd;
-#endif
-   fMaxSize  = maxsize;
-   fCompress = compress;
+   // Create a new raw DB
 
    // Consistency check with DATE header file
 #ifdef ALI_DATE
@@ -71,8 +68,8 @@ AliRawDB::AliRawDB(AliRawEvent *event,
    }
 #endif
 
-   if (create) {
-      if (!Create())
+   if (fileName) {
+      if (!Create(fileName))
          MakeZombie();
    }
 }
@@ -127,7 +124,7 @@ const char *AliRawDB::GetFileName() const
    static TString fname;
    static Bool_t  fstoggle = kFALSE;
 
-   TString fs = fstoggle ? AliMDC::RawDBFS(1) : AliMDC::RawDBFS(0);
+   TString fs = fstoggle ? fFS2 : fFS1;
    TDatime dt;
 
    TString hostname = gSystem->HostName();
@@ -138,12 +135,11 @@ const char *AliRawDB::GetFileName() const
    if (!FSHasSpace(fs)) {
       while (1) {
          fstoggle = !fstoggle;
-         fs = fstoggle ? AliMDC::RawDBFS(1) : AliMDC::RawDBFS(0);
+         fs = fstoggle ? fFS2 : fFS1;
          if (FSHasSpace(fs)) break;
          Info("GetFileName", "sleeping 30 seconds before retrying...");
          gSystem->Sleep(30000);   // sleep for 30 seconds
-         if (AliMDC::Instance() && AliMDC::Instance()->StopLoop())
-            return 0;
+         if (fStop) return 0;
       }
    }
 
@@ -159,7 +155,31 @@ const char *AliRawDB::GetFileName() const
 }
 
 //______________________________________________________________________________
-Bool_t AliRawDB::Create()
+void AliRawDB::SetFS(const char* fs1, const char* fs2)
+{
+// set the file system location
+
+  fFS1 = fs1;
+  if (fs1 && !fFS1.Contains(":")) {
+    gSystem->ResetErrno();
+    gSystem->MakeDirectory(fs1);
+    if (gSystem->GetErrno() && gSystem->GetErrno() != EEXIST) {
+      SysError("SetFS", "mkdir %s", fs1);
+    }
+  }
+
+  fFS2 = fs2;
+  if (fs2) {
+    gSystem->ResetErrno();
+    gSystem->MakeDirectory(fs2);
+    if (gSystem->GetErrno() && gSystem->GetErrno() != EEXIST) {
+      SysError("SetFS", "mkdir %s", fs2);
+    }
+  }
+}
+
+//______________________________________________________________________________
+Bool_t AliRawDB::Create(const char* fileName)
 {
    // Create a new raw DB.
 
@@ -169,10 +189,10 @@ Bool_t AliRawDB::Create()
    Int_t retry = 0;
 
 again:
-   if (AliMDC::Instance() && AliMDC::Instance()->StopLoop())
-      return kFALSE;
+   if (fStop) return kFALSE;
 
-   const char *fname = GetFileName();
+   const char *fname = fileName;
+   if (!fname) fname = GetFileName();
    if (!fname) {
       Error("Create", "error getting raw DB file name");
       return kFALSE;
@@ -181,7 +201,7 @@ again:
    retry++;
 
    fRawDB = TFile::Open(fname, GetOpenOption(),
-                        Form("ALICE MDC%d raw DB", AliMDC::kMDC), fCompress,
+                        Form("ALICE MDC%d raw DB", kMDC), fCompress,
                         GetNetopt());
    if (!fRawDB) {
       if (retry < kMaxRetry) {
@@ -232,7 +252,7 @@ void AliRawDB::MakeTree()
 {
    // Create ROOT Tree object container.
 
-   fTree = new TTree("RAW", Form("ALICE MDC%d raw data tree", AliMDC::kMDC));
+   fTree = new TTree("RAW", Form("ALICE MDC%d raw data tree", kMDC));
    fTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
 
    Int_t bufsize = 256000;
@@ -241,14 +261,14 @@ void AliRawDB::MakeTree()
    Int_t split   = 0;
    fTree->Branch("rawevent", "AliRawEvent", &fEvent, bufsize, split);
 
-#ifdef USE_HLT
    // Create tree which will contain the HLT ESD information
 
-   fESDTree = new TTree("esdTree", Form("ALICE MDC%d HLT ESD tree", AliMDC::kMDC));
-   fESDTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
-   split   = 99;
-   fESDTree->Branch("ESD", "AliESD", &fESD, bufsize, split);
-#endif
+   if (fESD) {
+     fESDTree = new TTree("esdTree", Form("ALICE MDC%d HLT ESD tree", kMDC));
+     fESDTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
+     split   = 99;
+     fESDTree->Branch("ESD", "AliESD", &fESD, bufsize, split);
+   }
 
 }
 
@@ -263,14 +283,12 @@ void AliRawDB::Close()
 
    // Write the tree.
    fTree->Write();
-#ifdef USE_HLT
-   fESDTree->Write();
-#endif
+   if (fESDTree) fESDTree->Write();
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();
 
-   if (AliMDC::DeleteFiles()) {
+   if (fDeleteFiles) {
       gSystem->Unlink(fRawDB->GetName());
       delete fRawDB;
       fRawDB = 0;
@@ -283,6 +301,17 @@ void AliRawDB::Close()
 
    delete fRawDB;
    fRawDB = 0;
+}
+
+//______________________________________________________________________________
+Int_t AliRawDB::Fill()
+{
+   // Fill the trees and return the number of written bytes
+
+   Double_t bytes = fRawDB->GetBytesWritten();
+   fTree->Fill();
+   if (fESDTree) fESDTree->Fill();
+   return Int_t(fRawDB->GetBytesWritten() - bytes);
 }
 
 //______________________________________________________________________________
@@ -305,14 +334,14 @@ void AliRawDB::WriteStats(AliStats* stats)
 }
 
 //______________________________________________________________________________
-Bool_t AliRawDB::NextFile()
+Bool_t AliRawDB::NextFile(const char* fileName)
 {
    // Close te current file and open a new one.
    // Returns kFALSE in case opening failed.
 
    Close();
 
-   if (!Create()) return kFALSE;
+   if (!Create(fileName)) return kFALSE;
    return kTRUE;
 }
 

@@ -16,6 +16,10 @@
 #include <TObject.h>
 #endif
 
+#ifndef ROOT_TString
+#include <TString.h>
+#endif
+
 
 // Forward class declarations
 class AliStats;
@@ -25,18 +29,21 @@ class TFile;
 class AliRunDB : public TObject {
 
 public:
-   AliRunDB(Bool_t noLocalDB = kFALSE);
+   AliRunDB(const char* localFS, Bool_t rdbms = kFALSE, 
+	    const char* alienHost = NULL, const char* alienDir = NULL);
    ~AliRunDB() { Close(); }
 
    void Update(AliStats *stats);
+   void UpdateLocal(AliStats *stats);
    void UpdateRDBMS(AliStats *stats);
    void UpdateAliEn(AliStats *stats);
    void Close();
 
-   static void WriteStats(AliStats* stats);
-
 private:
    TFile  *fRunDB;     // run database
+   Bool_t  fRDBMS;     // flag for usage of central MySQL DB
+   TString fAlienHost; // alien host name
+   TString fAlienDir;  // alien directory
 
    AliRunDB(const AliRunDB& runDB);
    AliRunDB& operator = (const AliRunDB& runDB);

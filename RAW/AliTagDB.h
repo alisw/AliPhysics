@@ -24,6 +24,11 @@
 #include <TTree.h>
 #endif
 
+#ifndef ROOT_TString
+#include <TString.h>
+#endif
+
+
 
 // Forward class declarations
 class AliRawEventHeader;
@@ -32,16 +37,19 @@ class AliRawEventHeader;
 class AliTagDB : public TObject {
 
 public:
-   AliTagDB(AliRawEventHeader *header, Double_t maxsize, Bool_t create = kTRUE);
+   AliTagDB(AliRawEventHeader *header, const char* fileName = NULL);
    virtual ~AliTagDB() { Close(); }
 
-   Bool_t          Create();
+   Bool_t          Create(const char* fileName = NULL);
    virtual void    Close();
    void            Fill() { fTree->Fill(); }
    Bool_t          FileFull()
-            { return (fTagDB->GetBytesWritten() > fMaxSize) ? kTRUE : kFALSE; }
+            { return (fMaxSize >= 0) ? ((fTagDB->GetBytesWritten() > fMaxSize) ? kTRUE : kFALSE) : kFALSE; }
 
-   Bool_t          NextFile();
+   Bool_t          NextFile(const char* fileName = NULL);
+
+   void            SetMaxSize(Double_t maxSize) { fMaxSize = maxSize; }
+   void            SetFS(const char* fs);
 
    Double_t           GetBytesWritten() const { return fTagDB->GetBytesWritten(); }
    TFile             *GetDB() const { return fTagDB; }
@@ -55,6 +63,8 @@ protected:
    TTree             *fTree;      // tree use to store header
    AliRawEventHeader *fHeader;    // header via which data is stored
    Double_t           fMaxSize;   // maximum size in bytes of tag DB
+   TString            fFS;        // tag DB file system location
+   Bool_t             fDeleteFiles; // flag for deletion of files
 
    virtual const char *GetFileName() const;
 

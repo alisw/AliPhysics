@@ -7,22 +7,20 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-ESRCS:= AliMDC.cxx AliRawDB.cxx \
-	AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
-	AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
-	AliRunDB.cxx
+ESRCS:= AliHoughFilter.cxx
 
 SRCS:= alimdc_main.cxx ${ESRCS}
 
 HDRS:= $(ESRCS:.cxx=.h)
 
-DHDR:=MDCLinkDef.h 
+DHDR:=alimdcLinkDef.h 
+
+#EDEFINE+= -DUSE_EB
 
 EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp
-EDEFINE+= -DUSE_RDM -DUSE_HLT
 # -DUSE_DEBUG for alimdc debug printout
 
-ELIBS:=ESD STEER RAW TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp pythia6 pdf microcern
+ELIBS:=ESD RAW MDC STEER TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp pythia6 pdf microcern
 
 ifdef DATE_ROOT
 

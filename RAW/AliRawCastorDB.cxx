@@ -25,8 +25,6 @@
 #include <TSystem.h>
 #include <TUrl.h>
 
-#include "AliMDC.h"
-
 #include "AliRawCastorDB.h"
 
 
@@ -35,19 +33,13 @@ ClassImp(AliRawCastorDB)
 
 //______________________________________________________________________________
 AliRawCastorDB::AliRawCastorDB(AliRawEvent *event,
-#ifdef USE_HLT
 			       AliESD *esd,
-#endif
-			       Double_t maxsize, Int_t compress)
-   : AliRawDB(event,
-#ifdef USE_HLT
-	      esd,
-#endif
-	      maxsize, compress, kFALSE)
+			       Int_t compress,
+			       const char* fileName)
+   : AliRawDB(event, esd, compress, fileName)
 {
    // Create a new raw DB that will be accessed via CASTOR and rootd.
 
-#ifndef USE_RDM
    static int init = 0;
    // Set STAGE_POOL environment variable to current host
    if (!init) {
@@ -64,12 +56,8 @@ AliRawCastorDB::AliRawCastorDB(AliRawEvent *event,
          Error("AliRawRFIODB", "STAGE_HOST not set");
       init = 1;
    }
-#endif
 
-   if (!Create())
-      MakeZombie();
-   else
-      fRawDB->UseCache(50, 0x200000);  //0x100000 = 1MB)
+   if (fRawDB) fRawDB->UseCache(50, 0x200000);  //0x100000 = 1MB)
 }
 
 //______________________________________________________________________________
@@ -82,8 +70,9 @@ const char *AliRawCastorDB::GetFileName() const
 
    static TString fname;
 
-   TString fs  = AliMDC::CastorFS();
-   TString fsr = AliMDC::RFIOFS();
+   TString fs  = fFS1;
+   TString fsr = fs;
+   fsr.ReplaceAll("castor:", "rfio:");
    TDatime dt;
 
    // make a new subdirectory for each day
@@ -98,8 +87,8 @@ const char *AliRawCastorDB::GetFileName() const
       // directory does not exist, create it
       if (gSystem->mkdir(fsr, kTRUE) == -1) {
          Error("GetFileName", "cannot create dir %s, using %s", fsr.Data(),
-               AliMDC::RFIOFS());
-         fs = AliMDC::CastorFS();
+               fFS1.Data());
+         fs = fFS1;
       }
    }
    // FIXME: should check if fs is a directory
@@ -129,11 +118,12 @@ void AliRawCastorDB::Close()
 
    // Write the tree.
    fTree->Write();
+   if (fESDTree) fESDTree->Write();
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();
 
-   if (AliMDC::DeleteFiles()) {
+   if (fDeleteFiles) {
       TUrl u(fRawDB->GetName());
       gSystem->Exec(Form("rfrm %s", u.GetFile()));
    }

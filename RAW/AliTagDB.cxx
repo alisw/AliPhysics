@@ -22,9 +22,11 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
+#include <errno.h>
+
 #include <TSystem.h>
 
-#include "AliMDC.h"
+#include "AliRawDB.h"
 
 #include "AliTagDB.h"
 
@@ -33,15 +35,18 @@ ClassImp(AliTagDB)
 
 
 //______________________________________________________________________________
-AliTagDB::AliTagDB(AliRawEventHeader *header, Double_t maxsize, Bool_t create)
+AliTagDB::AliTagDB(AliRawEventHeader *header, const char* fileName) :
+  fTagDB(NULL),
+  fTree(NULL),
+  fHeader(header),
+  fMaxSize(-1),
+  fFS(""),
+  fDeleteFiles(kFALSE)
 {
    // Create tag DB.
 
-   fHeader   = header;
-   fMaxSize  = maxsize;
-
-   if (create) {
-      if (!Create())
+   if (fileName) {
+      if (!Create(fileName))
          MakeZombie();
    }
 }
@@ -64,12 +69,14 @@ AliTagDB& AliTagDB::operator = (const AliTagDB& /*tagDB*/)
 }
 
 //______________________________________________________________________________
-Bool_t AliTagDB::Create()
+Bool_t AliTagDB::Create(const char* fileName)
 {
    // Create a new tag DB.
 
-   fTagDB = new TFile(GetFileName(), "RECREATE",
-                      Form("ALICE MDC%d tag DB", AliMDC::kMDC), 1);
+   const char *name = fileName;
+   if (!name) name = GetFileName();
+   fTagDB = new TFile(name, "RECREATE",
+                      Form("ALICE MDC%d tag DB", AliRawDB::kMDC), 1);
    if (fTagDB->IsZombie()) {
       Error("Create", "error opening tag DB");
       fTagDB = 0;
@@ -77,7 +84,7 @@ Bool_t AliTagDB::Create()
    }
 
    // Create ROOT Tree object container
-   fTree = new TTree("TAG", Form("ALICE MDC%d header data tree", AliMDC::kMDC));
+   fTree = new TTree("TAG", Form("ALICE MDC%d header data tree", AliRawDB::kMDC));
    fTree->SetAutoSave(100000000);  // autosave when 100 Mbyte written
 
    Int_t bufsize = 32000;
@@ -102,7 +109,7 @@ void AliTagDB::Close()
    // Close DB, this also deletes the fTree
    fTagDB->Close();
 
-   if (AliMDC::DeleteFiles())
+   if (fDeleteFiles)
       gSystem->Unlink(fTagDB->GetName());
 
    delete fTagDB;
@@ -110,15 +117,30 @@ void AliTagDB::Close()
 }
 
 //______________________________________________________________________________
-Bool_t AliTagDB::NextFile()
+Bool_t AliTagDB::NextFile(const char* fileName)
 {
    // Close te current file and open a new one.
    // Returns kFALSE in case opening failed.
 
    Close();
 
-   if (!Create()) return kFALSE;
+   if (!Create(fileName)) return kFALSE;
    return kTRUE;
+}
+
+//______________________________________________________________________________
+void AliTagDB::SetFS(const char* fs)
+{
+// set the file system location
+
+  fFS = fs;
+  if (fs) {
+    gSystem->ResetErrno();
+    gSystem->MakeDirectory(fs);
+    if (gSystem->GetErrno() && gSystem->GetErrno() != EEXIST) {
+      SysError("SetFS", "mkdir %s", fs);
+    }
+  }
 }
 
 //______________________________________________________________________________
@@ -139,7 +161,7 @@ const char *AliTagDB::GetFileName() const
    // each file unique. The tags will be stored in the /data1/tags directory.
 
    static char fname[64];
-   const char *fs = AliMDC::TagDBFS();
+   const char *fs = fFS;
 
    // check that fs exists (crude check fails if fs is a file)
    gSystem->MakeDirectory(fs);

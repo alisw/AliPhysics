@@ -1,0 +1,27 @@
+#-*- Mode: Makefile -*-
+
+include HLT/hlt.conf
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+SRCS:=  AliMDC.cxx AliRawDB.cxx \
+	AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
+	AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
+	AliRunDB.cxx mdc.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+EHDRS:=$(shell root-config --incdir)/TH1F.h
+
+#EDEFINE+= -DUSE_EB
+
+EINCLUDE+=HLT/src HLT/hough HLT/comp
+
+DHDR:= MDCLinkDef.h 
+
+ifdef DATE_ROOT
+EINCLUDE+= ${DATE_COMMON_DEFS}
+endif

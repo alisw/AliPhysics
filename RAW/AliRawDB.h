@@ -24,42 +24,39 @@
 #include <TTree.h>
 #endif
 
+#ifndef ROOT_TString
+#include <TString.h>
+#endif
+
 
 // Forward class declarations
 class AliRawEvent;
 class AliStats;
 class TFile;
-
-#ifdef USE_HLT
 class AliESD;
-#endif
 
 class AliRawDB : public TObject {
 
 public:
    AliRawDB(AliRawEvent *event,
-#ifdef USE_HLT
 	    AliESD *esd,
-#endif
-	    Double_t maxsize, Int_t compress,
-            Bool_t create = kTRUE);
+	    Int_t compress,
+            const char* fileName = NULL);
    virtual ~AliRawDB() { Close(); }
 
    virtual const char *GetOpenOption() const { return "RECREATE"; }
    virtual Int_t       GetNetopt() const { return 0; }
-   virtual Bool_t      Create();
+   virtual Bool_t      Create(const char* fileName = NULL);
    virtual void        Close();
-   void                Fill() { fTree->Fill();
-#ifdef USE_HLT
-                                fESDTree->Fill();
-#endif
-                              }
-   Bool_t              FileFull() { return (fRawDB->GetBytesWritten() > fMaxSize) ?
-                                    kTRUE : kFALSE; }
+   Int_t               Fill();
 
    void         WriteStats(AliStats* stats);
 
-   Bool_t       NextFile();
+   void         SetMaxSize(Double_t maxSize) { fMaxSize = maxSize; }
+   void         SetFS(const char* fs1, const char* fs2 = NULL);
+   void         SetDeleteFiles(Bool_t deleteFiles = kTRUE) { fDeleteFiles = deleteFiles; }
+
+   Bool_t       NextFile(const char* fileName = NULL);
 
    Double_t     GetBytesWritten() const { return fRawDB->GetBytesWritten(); }
    TFile       *GetDB() const { return fRawDB; }
@@ -68,17 +65,22 @@ public:
    AliRawEvent *GetEvent() const { return fEvent; }
    Float_t      GetCompressionFactor() const;
    Int_t        GetCompressionMode() const { return fRawDB->GetCompressionLevel(); }
+   void         Stop() { fStop = kTRUE; }
+
+   enum {kMDC = 6};  // Which MDC is this...
 
 protected:
    TFile         *fRawDB;         // DB to store raw data
    TTree         *fTree;          // tree used to store raw data
    AliRawEvent   *fEvent;         // AliRawEvent via which data is stored
-#ifdef USE_HLT
    TTree         *fESDTree;       // tree for storing HLT ESD information
    AliESD        *fESD;           // pointer to HLT ESD object
-#endif
    Int_t          fCompress;      // compression mode (1 default)
    Double_t       fMaxSize;       // maximum size in bytes of the raw DB
+   TString        fFS1;           // first raw DB file system location
+   TString        fFS2;           // second raw DB file system location
+   Bool_t         fDeleteFiles;   // flag for deletion of files
+   Bool_t         fStop;          // stop execution (triggered by SIGUSR1)
 
    virtual const char *GetFileName() const;
    virtual Bool_t      FSHasSpace(const char *fs) const;

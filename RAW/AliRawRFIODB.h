@@ -19,10 +19,9 @@ class AliRawRFIODB : public AliRawDB {
 
 public:
    AliRawRFIODB(AliRawEvent *event,
-#ifdef USE_HLT
 		AliESD *esd,
-#endif
-		Double_t maxsize, Int_t compress);
+		Int_t compress,
+		const char* fileName = NULL);
    ~AliRawRFIODB() { Close(); }
 
    void Close();

@@ -16,6 +16,10 @@
 #include <TObject.h>
 #endif
 
+#ifndef ROOT_TObjArray
+#include <TObjArray.h>
+#endif
+
 #ifndef ROOT_TSysEvtHandler
 #include <TSysEvtHandler.h>
 #endif
@@ -25,41 +29,41 @@ class AliRawEvent;
 class AliRawEventHeader;
 class AliRawEquipmentHeader;
 class AliRawData;
-#ifdef USE_HLT
+class AliRawDB;
+class AliRunDB;
+class AliTagDB;
+class AliStats;
 class AliESD;
-#endif
 
 class AliMDC : public TObject {
 
 public:
    enum EWriteMode { kLOCAL, kRFIO, kROOTD, kCASTOR, kDEVNULL };
+   enum EFilterMode { kFilterOff, kFilterTransparent, kFilterOn };
+   enum EErrorCode { kFilterReject = 0, 
+		     kErrStartEndRun = -1, 
+		     kErrHeader = -2, 
+		     kErrHeaderSize = -3, 
+		     kErrSubHeader = -4, 
+		     kErrDataSize = -5, 
+		     kErrEquipmentHeader = -6, 
+		     kErrEquipment = -7 };
 
-   AliMDC(Int_t fd, Int_t compress, Double_t maxFileSize, Bool_t useFilter,
-          EWriteMode mode, Bool_t useLoop, Bool_t delFiles);
-   ~AliMDC() { fgInstance = NULL; }
+   AliMDC(Int_t compress, Bool_t deleteFiles, 
+	  EFilterMode filterMode = kFilterTransparent, 
+	  const char* localRunDB = NULL, Bool_t rdbmsRunDB = kFALSE,
+	  const char* alienHostRunDB = NULL, const char* alienDirRunDB = NULL,
+	  Double_t maxSizeTagDB = -1, const char* fileNameTagDB = NULL);
+   virtual ~AliMDC();
 
-   static AliMDC* Instance() {return fgInstance;}
+   Int_t      Open(EWriteMode mode, const char* fileName);
+   Int_t      ProcessEvent(void* event, Bool_t isIovecArray = kFALSE);
+   Int_t      Close();
 
-   Int_t  Run();
-   void   SetStopLoop() { fStopLoop = kTRUE; }
-   Bool_t StopLoop() const { return fStopLoop; }
-
-   void   SetDebugLevel(Int_t level) { fDebugLevel = level; }
-   Int_t  GetDebugLevel() const { return fDebugLevel; }
-
-   static Bool_t DeleteFiles() { return fgDeleteFiles; }
-
-   enum {kMDC = 6};  // Which MDC is this...
-
-   static const char* Fifo() {return fgkFifo;}
-   static const char* RawDBFS(Int_t i) {return fgkRawDBFS[i];}
-   static const char* TagDBFS() {return fgkTagDBFS;}
-   static const char* RunDBFS() {return fgkRunDBFS;}
-   static const char* RFIOFS() {return fgkRFIOFS;}
-   static const char* CastorFS() {return fgkCastorFS;}
-   static const char* RootdFS() {return fgkRootdFS;}
-   static const char* AlienHost() {return fgkAlienHost;}
-   static const char* AlienDir() {return fgkAlienDir;}
+   Int_t      Run(const char* inputFile, Bool_t loop,
+	          EWriteMode mode, Double_t maxFileSize, 
+		  const char* fs1 = NULL, const char* fs2 = NULL);
+   void       Stop();
 
 private:
    class AliMDCInterruptHandler : public TSignalHandler {
@@ -67,7 +71,7 @@ private:
      AliMDCInterruptHandler(AliMDC *mdc) : TSignalHandler(kSigUser1, kFALSE), fMDC(mdc) { }
      Bool_t Notify() {
        Info("Notify", "received a SIGUSR1 signal");
-       fMDC->SetStopLoop();
+       fMDC->Stop();
        return kTRUE;
      }
    private:
@@ -77,50 +81,31 @@ private:
      AliMDCInterruptHandler& operator=(const AliMDCInterruptHandler& handler);
    };
 
-   static AliMDC* fgInstance;  // singleton instance
+   AliRawEvent *fEvent;       // produced AliRawEvent
+   AliESD      *fESD;         // pointer to HLT ESD object
+   AliStats    *fStats;       // statistics
+   AliRawDB    *fRawDB;       // raw data DB
+   AliRunDB    *fRunDB;       // run DB
+   AliTagDB    *fTagDB;       // tag DB
+   Int_t        fCompress;    // compression factor used for raw output DB
+   Bool_t       fDeleteFiles; // flag for deletion of files
+   EFilterMode  fFilterMode;  // high level filter mode
+   TObjArray    fFilters;     // filter algorithms
+   Bool_t       fStop;        // stop execution (triggered by SIGUSR1)
 
-   Int_t      fFd;          // DATE input stream
-   Int_t      fCompress;    // compression factor used for raw output DB
-   Int_t      fNumEvents;   // number of events processed
-   Int_t      fDebugLevel;  // controls debug print-out
-   Double_t   fMaxFileSize; // maximum size of raw output DB
-   EWriteMode fWriteMode;   // write mode (local, rfio, rootd, castor, /dev/null)
-   Bool_t     fUseFifo;     // read from fifo, file otherwise
-   Bool_t     fUseEb;       // use event builder API instead of fifo
-   Bool_t     fUseFilter;   // use 3rd level trigger filter
-   Bool_t     fUseLoop;     // loop on input source (must be file)
-   Bool_t     fStopLoop;    // break from endless loop (triggered by SIGUSR1)
-
-   static Bool_t fgDeleteFiles;  // flag for deletion of files
-
-   static const Double_t fgkMaxTagFileSize;  // maximal size of tag DB
-
-   // Fixed file system locations for the different DB's
-   static const char* const fgkFifo;       // fifo
-   static const char* const fgkRawDBFS[2]; // raw DB
-   static const char* const fgkTagDBFS;    // tag DB
-   static const char* const fgkRunDBFS;    // run DB
-   static const char* const fgkRFIOFS;     // rfio
-   static const char* const fgkCastorFS;   // castor
-   static const char* const fgkRootdFS;    // rootd
-   static const char* const fgkAlienHost;  // alien host name
-   static const char* const fgkAlienDir;   // alien directory
+   // Filter names
+   enum {kNFilters = 1};
+   static const char* const fgkFilterName[kNFilters];
 
    AliMDC(const AliMDC& mdc);
    AliMDC& operator = (const AliMDC& mdc);
 
    Int_t     Read(const char *name) { return TObject::Read(name); }
-   Int_t     Read(void *buffer, Int_t length);
-   Int_t     ReadHeader(AliRawEventHeader &header, void *eb = 0);
+   Int_t     Read(Int_t fd, void *buffer, Int_t length);
+   Int_t     ReadHeader(AliRawEventHeader &header, char*& data);
    Int_t     ReadEquipmentHeader(AliRawEquipmentHeader &header,
-                                 Bool_t isSwapped, void *eb = 0);
-   Int_t     ReadRawData(AliRawData &raw, Int_t size, void *eb = 0);
-   Int_t     DumpEvent(Int_t toRead);
-   Int_t     Filter(
-#ifdef USE_HLT
-		    AliRawEvent *event,AliESD *esd
-#endif
-		    );
+                                 Bool_t isSwapped, char*& data);
+   Int_t     ReadRawData(AliRawData &raw, Int_t size, char*& data);
 
    ClassDef(AliMDC,0)  // MDC processor
 };

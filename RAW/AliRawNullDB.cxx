@@ -30,20 +30,13 @@ ClassImp(AliRawNullDB)
 
 //______________________________________________________________________________
 AliRawNullDB::AliRawNullDB(AliRawEvent *event,
-#ifdef USE_HLT
 			   AliESD *esd,
-#endif
-			   Double_t maxsize, Int_t compress)
-   : AliRawDB(event,
-#ifdef USE_HLT
-	      esd,
-#endif
-	      maxsize, compress, kFALSE)
+			   Int_t compress,
+			   const char* fileName)
+   : AliRawDB(event, esd, compress, fileName)
 {
    // Create a new raw DB that will wrtie to /dev/null.
 
-   if (!Create())
-      MakeZombie();
 }
 
 //______________________________________________________________________________
@@ -65,6 +58,7 @@ void AliRawNullDB::Close()
 
    // Write the tree.
    fTree->Write();
+   if (fESDTree) fESDTree->Write();
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();

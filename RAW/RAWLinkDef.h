@@ -10,6 +10,7 @@
 #pragma link C++ class AliRawEquipment;
 #pragma link C++ class AliRawData;
 #pragma link C++ class AliStats;
+#pragma link C++ class AliFilter;
 #pragma link C++ class AliRawReader+;
 #pragma link C++ class AliRawReaderFile+;
 #pragma link C++ class AliRawReaderRoot+;

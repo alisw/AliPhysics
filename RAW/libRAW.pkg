@@ -9,7 +9,7 @@ PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
 SRCS:=  AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
 	AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
-	AliStats.cxx \
+	AliStats.cxx AliFilter.cxx \
 	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
 	AliRawReaderDate.cxx AliRawReaderDateV3.cxx \
 	AliBitPacking.cxx AliAltroBuffer.cxx \
@@ -31,4 +31,4 @@ ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}
 endif
 
-EXPORT:=AliRawReader.h AliRawDataHeader.h AliAltroRawStream.h AliAltroBuffer.h AliBitPacking.h
+EXPORT:=AliRawReader.h AliRawDataHeader.h AliAltroRawStream.h AliAltroBuffer.h AliBitPacking.h AliFilter.h

@@ -31,7 +31,7 @@
 #include <TGrid.h>
 
 #include "AliStats.h"
-#include "AliMDC.h"
+#include "AliRawDB.h"
 
 #include "AliRunDB.h"
 
@@ -40,20 +40,22 @@ ClassImp(AliRunDB)
 
 
 //______________________________________________________________________________
-AliRunDB::AliRunDB(Bool_t noLocalDB)
+AliRunDB::AliRunDB(const char* localFS, Bool_t rdbms, 
+		   const char* alienHost, const char* alienDir) :
+  fRunDB(NULL),
+  fRDBMS(rdbms),
+  fAlienHost(alienHost),
+  fAlienDir(alienDir)
 {
    // Open run database, and get or create tree.
 
-   fRunDB = 0;
-
-   if (noLocalDB) return;
+   if (!localFS) return;
 
    // Get hostname
    char hostname[64], filename[64];
-   const char *fs = AliMDC::RunDBFS();
 
    // check that fs exists (crude check fails if fs is a file)
-   gSystem->MakeDirectory(fs);
+   gSystem->MakeDirectory(localFS);
 
    strcpy(hostname, gSystem->HostName());
 
@@ -61,12 +63,12 @@ AliRunDB::AliRunDB(Bool_t noLocalDB)
    if ((s = strchr(hostname, '.')))
       *s = 0;
 
-   sprintf(filename, "%s/%s_rundb.root", fs, hostname);
+   sprintf(filename, "%s/%s_rundb.root", localFS, hostname);
 
    if (!gSystem->AccessPathName(filename, kFileExists))
       fRunDB = new TFile(filename, "UPDATE");
    else
-      fRunDB = new TFile(filename, "CREATE", Form("ALICE MDC%d Run DB", AliMDC::kMDC));
+      fRunDB = new TFile(filename, "CREATE", Form("ALICE MDC%d Run DB", AliRawDB::kMDC));
 }
 
 //______________________________________________________________________________
@@ -88,6 +90,14 @@ AliRunDB& AliRunDB::operator = (const AliRunDB& /*runDB*/)
 
 //______________________________________________________________________________
 void AliRunDB::Update(AliStats *stats)
+{
+  UpdateLocal(stats);
+  UpdateRDBMS(stats);
+  UpdateAliEn(stats);
+}
+
+//______________________________________________________________________________
+void AliRunDB::UpdateLocal(AliStats *stats)
 {
    // Add stats object to database.
 
@@ -116,7 +126,7 @@ void AliRunDB::UpdateRDBMS(AliStats *stats)
 {
    // Add stats object to central MySQL DB.
 
-   if (!stats) return;
+   if (!stats || !fRDBMS) return;
 
    char sql[4096];
    char bt[25], et[25];
@@ -125,7 +135,7 @@ void AliRunDB::UpdateRDBMS(AliStats *stats)
    strcpy(et, stats->GetEndTime().AsSQLString());
 
    sprintf(sql, "INSERT INTO mdc%dcatalog VALUES (0, '%s', %d, "
-           "%d, %d, %d, %d, %d, %d, %.2f, '%s', '%s', '%s')", AliMDC::kMDC,
+           "%d, %d, %d, %d, %d, %d, %.2f, '%s', '%s', '%s')", AliRawDB::kMDC,
            stats->GetFileName(), (int)stats->GetFileSize(), stats->GetEvents(),
            stats->GetFirstRun(), stats->GetFirstEvent(), stats->GetLastRun(),
            stats->GetLastEvent(), stats->GetCompressionMode(),
@@ -145,7 +155,7 @@ void AliRunDB::UpdateRDBMS(AliStats *stats)
    TSQLResult *res = db->Query(sql);
 
    if (!res) {
-      Error("UpdateRDBMS", Form("insert into mdc%dcatalog failed", AliMDC::kMDC));
+      Error("UpdateRDBMS", Form("insert into mdc%dcatalog failed", AliRawDB::kMDC));
       printf("%s\n", sql);
    }
 
@@ -158,11 +168,11 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
 {
    // Record file in AliEn catalog.
 
-   if (!stats) return;
+   if (!stats || fAlienHost.IsNull()) return;
 
-   TGrid *g = TGrid::Connect(AliMDC::AlienHost(), "");
+   TGrid *g = TGrid::Connect(fAlienHost, "");
 
-   TString lfn = AliMDC::AlienDir();
+   TString lfn = fAlienDir;
    TDatime dt;
 
    // make a subdirectory for each day
@@ -175,7 +185,7 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
       // directory does not exist, create it
       if (g->Mkdir(lfn) == -1) {
          Error("UpdateAliEn", "cannot create directory %s", lfn.Data());
-         lfn = AliMDC::AlienDir();
+         lfn = fAlienDir;
       }
    }
    if (res) g->CloseResult(res);
@@ -204,14 +214,3 @@ void AliRunDB::Close()
    delete fRunDB;
 }
 
-
-//______________________________________________________________________________
-void AliRunDB::WriteStats(AliStats* stats)
-{
-   // Write stats also in the bookkeeping RunDB
-   AliRunDB *rundb = new AliRunDB(kTRUE);
-   rundb->Update(stats);
-   rundb->UpdateRDBMS(stats);
-   rundb->UpdateAliEn(stats);
-   delete rundb;
-}

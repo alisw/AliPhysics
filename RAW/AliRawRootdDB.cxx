@@ -24,8 +24,6 @@
 
 #include <TSystem.h>
 
-#include "AliMDC.h"
-
 #include "AliRawRootdDB.h"
 
 
@@ -34,22 +32,14 @@ ClassImp(AliRawRootdDB)
 
 //______________________________________________________________________________
 AliRawRootdDB::AliRawRootdDB(AliRawEvent *event,
-#ifdef USE_HLT
 			     AliESD *esd,
-#endif
-			     Double_t maxsize, Int_t compress)
-   : AliRawDB(event,
-#ifdef USE_HLT
-	      esd,
-#endif
-	      maxsize, compress, kFALSE)
+			     Int_t compress,
+			     const char* fileName)
+   : AliRawDB(event, esd, compress, fileName)
 {
    // Create a new raw DB that will be accessed via rootd daemon.
 
-   if (!Create())
-      MakeZombie();
-   else
-      fRawDB->UseCache(50, 0x200000);  //0x100000 = 1MB)
+   if (fRawDB) fRawDB->UseCache(50, 0x200000);  //0x100000 = 1MB)
 }
 
 //______________________________________________________________________________
@@ -62,7 +52,7 @@ const char *AliRawRootdDB::GetFileName() const
 
    static TString fname;
 
-   TString fs = AliMDC::RootdFS();
+   TString fs = fFS1;
    TDatime dt;
 
 #if 0
@@ -75,8 +65,8 @@ const char *AliRawRootdDB::GetFileName() const
       // directory does not exist, create it
       if (gSystem->mkdir(fs, kTRUE) == -1) {
          Error("GetFileName", "cannot create dir %s, using %s", fs.Data(),
-               AliMDC::RootdFS());
-         fs = AliMDC::RootdFS();
+               fFS1.Data());
+         fs = fFS1;
       }
    }
    // FIXME: should check if fs is a directory
@@ -107,13 +97,14 @@ void AliRawRootdDB::Close()
 
    // Write the tree.
    fTree->Write();
+   if (fESDTree) fESDTree->Write();
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();
 
 #if 0
    // can use services of TFTP
-   if (AliMDC::DeleteFiles())
+   if (fDeleteFiles)
       gSystem->Exec(Form("rfrm %s", fRawDB->GetName()));
 #endif
 
