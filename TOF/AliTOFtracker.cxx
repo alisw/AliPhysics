@@ -22,6 +22,7 @@
 // --         : Silvia.Arcelli@bo.infn.it
 //--------------------------------------------------------------------
 
+#include <Rtypes.h>
 #include "AliTOFtracker.h"
 #include "AliTOFtrack.h"
 #include "TClonesArray.h"
