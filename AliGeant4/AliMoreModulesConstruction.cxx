@@ -215,9 +215,6 @@ void AliMoreModulesConstruction::Construct()
     
     // create sensitive detectors
     CreateSensitiveDetectors(allLVSensitive);
-         // each single module construction can build sensitive detectors
-         // for all modules as all modules are in memory
-         // (volumes entities do not know to which module belong)
   
     for (i=0; i<nofModules; i++) {
       // set the detector frame (envelope)
