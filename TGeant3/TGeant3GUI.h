@@ -67,7 +67,7 @@ private:
    TGMenuBar          *fMenuBar;
    TGPopupMenu        *fMenuFile, *fMenuTest, *fMenuHelp;
    TGLayoutHints      *fMenuBarItemLayout, *fMenuBarHelpLayout, *fMenuBarLayout;
-   AliGuiGeomDialog   *fDialog;
+   AliGuiGeomDialog   *fDialog; //! no output please
    
 public:
    AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h);
@@ -137,7 +137,7 @@ class AliDrawVolume : public TObject
 public:
     AliDrawVolume(char* name);
     virtual ~AliDrawVolume(){;}
-    virtual void    Draw();
+    virtual void    Draw(Option_t * =0);
     virtual void    DrawSpec();
     virtual char*   Name();
     virtual void    SetParam(Int_t, Float_t);

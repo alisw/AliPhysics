@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  1999/11/10 16:53:35  fca
+The new geometry viewer from A.Morsch
+
 */
 
 /* 
@@ -76,7 +79,7 @@ ClassImp(AliGeant3GeometryGUI)
     fZq=geant3->Q();
     fGclink=geant3->Gclink();
 }
-void AliGeant3GeometryGUI::Streamer(TBuffer &R__b)
+void AliGeant3GeometryGUI::Streamer(TBuffer &)
 {
 ;
 }
@@ -84,7 +87,8 @@ void AliGeant3GeometryGUI::Streamer(TBuffer &R__b)
 void AliGeant3GeometryGUI::ReadGeometryTree()
 {
     char *vname;
-    char *namec, *tmp;
+    char /* *namec, */ *tmp;
+    char namec[30];
     const TGPicture* Folder     = gClient->GetPicture("folder_t.xpm");
     const TGPicture* OpenFolder = gClient->GetPicture("ofolder_t.xpm");
     const TGPicture* Document   = gClient->GetPicture("doc_t.xpm");
@@ -108,7 +112,8 @@ void AliGeant3GeometryGUI::ReadGeometryTree()
 	    Int_t ivol=TMath::Abs(Volume(i)->GetIdVolume());
 	    
 	    Int_t nch = NChildren(ivol);
-	    namec= ((TGeant3*)gMC)->VolName(ivol);
+//	    namec= ((TGeant3*)gMC)->VolName(ivol);
+	    strcpy(namec,((TGeant3*)gMC)->VolName(ivol));
 	    if (nch >= 0) {
 		printf("\n %s has %d children  \n ", namec,  nch);
 	    } else {
@@ -140,7 +145,8 @@ void AliGeant3GeometryGUI::ReadGeometryTree()
 	    
 	    if (nch < 0) {
 		Int_t icvol=Child(ivol,1);
-		namec= ((TGeant3*)gMC)->VolName(-icvol);
+//		namec= ((TGeant3*)gMC)->VolName(-icvol);
+		strcpy(namec,((TGeant3*)gMC)->VolName(-icvol));
 		tmp = new char[4];
 		strncpy(tmp,(char *) &namec, 4);
 		volume = new AliDrawVolume(namec);
@@ -166,7 +172,8 @@ void AliGeant3GeometryGUI::ReadGeometryTree()
 			}
 		    }
 		    if (!inList) {
-			namec=((TGeant3*)gMC)->VolName(icvol);
+//			namec=((TGeant3*)gMC)->VolName(icvol);
+			strcpy(namec,((TGeant3*)gMC)->VolName(icvol));
 			tmp = new char[4];
 			strncpy(tmp,(char *) &namec, 4);
 			volume = new AliDrawVolume(namec);
@@ -260,14 +267,14 @@ char* AliDrawVolume::Name()
 }
 
     
-void AliDrawVolume::Streamer(TBuffer &R__b)
+void AliDrawVolume::Streamer(TBuffer &)
 {
 ;
 }
 
 
 
-void AliDrawVolume::Draw()
+void AliDrawVolume::Draw(Option_t *)
 {
     gMC->Gsatt(fName,"seen", fSeen);
     
@@ -392,58 +399,40 @@ Float_t  AliDrawVolume::GetParam(Int_t ip)
     switch (ip) {
     case P_Theta:
 	return fTheta;
-	break;
     case P_Phi:
 	return fPhi;
-	break;
     case P_Psi:
 	return fPsi;
-	break;
     case P_U:
 	return fU;
-	break;
     case P_V:
 	return fV;
-	break;
     case P_Uscale:
 	return fUscale;
-	break;
     case P_Vscale:
 	return fVscale;
-	break;
     case P_Hide:
 	return Float_t(fHide);
-	break;
     case P_Shadow:
 	return Float_t(fShadow);
-	break;
     case P_Fill:
 	return Float_t(fFill);
-	break;
     case P_Seen:
 	return Float_t(fSeen);
-	break;
     case P_Clip:
 	return Float_t(fClip);
-	break;
     case P_ClipXmin:
 	return fClipXmin;
-	break;
     case P_ClipXmax:
 	return fClipXmax;
-	break;
     case P_ClipYmin:
 	return fClipYmin;
-	break;
     case P_ClipYmax:
 	return fClipYmax;
-	break;
     case P_ClipZmin:
 	return fClipZmin;
-	break;
     case P_ClipZmax:
 	return fClipZmax;
-	break;
     default:
 	return 0.;
     }
@@ -1121,7 +1110,7 @@ static Int_t   IRangeMin[7]  = {    0,     0,     0,    0,    0,   0,   0};
 static Int_t   IRangeMax[7]  = {36000, 36000, 36000, 2000, 2000, 10, 10};
 static Int_t   DefaultPos[7] = { 3000,  4000,     0, 1000, 1000,   1,   1};
 
-AliGUISliders::AliGUISliders(const TGWindow *p, const TGWindow *main,
+AliGUISliders::AliGUISliders(const TGWindow *p, const TGWindow *,
                          UInt_t w, UInt_t h) :
     TGCompositeFrame(p, w, h,kVerticalFrame)
 {
@@ -1211,7 +1200,7 @@ Bool_t AliGUISliders::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
        switch (GET_SUBMSG(msg)) {
        case kTE_TEXTCHANGED:
 	   Int_t idT=Int_t(parm1)-1;
-	   fHslider[idT]->SetPosition(atof(fTbh[idT]->GetString())*100);
+	   fHslider[idT]->SetPosition((Int_t)atof(fTbh[idT]->GetString())*100);
 	   gClient->NeedRedraw(fHslider[idT]);
 	   gCurrentVolume->SetParam(idT,atof(fTbh[idT]->GetString()));
 	   gCurrentVolume->Draw();
