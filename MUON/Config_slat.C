@@ -355,12 +355,8 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  Int_t station;
 // Default response
  AliMUONResponseV0* response0 = new AliMUONResponseV0;
- response0->SetSqrtKx3(0.7131);
- response0->SetKx2(1.0107);
- response0->SetKx4(0.4036);
- response0->SetSqrtKy3(0.7642);
- response0->SetKy2(0.9706);
- response0->SetKy4(0.3831);
+ response0->SetSqrtKx3AndDeriveKx2Kx4(0.7131);
+ response0->SetSqrtKy3AndDeriveKy2Ky4(0.7642);
  response0->SetPitch(0.25);
  response0->SetSigmaIntegration(10.);
  response0->SetChargeSlope(50);

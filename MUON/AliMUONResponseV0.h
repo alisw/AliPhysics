@@ -43,12 +43,16 @@ public AliMUONResponse {
     // Get anode cathode Pitch
     virtual void    SetPitch(Float_t p1) {fPitch=p1;};
     // Set Mathieson parameters
+    // Mathieson \sqrt{Kx3} and derived Kx2 and Kx4
+    virtual void SetSqrtKx3AndDeriveKx2Kx4(Float_t SqrtKx3);
     // Mathieson \sqrt{Kx3}
     virtual void    SetSqrtKx3(Float_t p1) {fSqrtKx3=p1;};
     // Mathieson Kx2
     virtual void    SetKx2(Float_t p1) {fKx2=p1;};
     // Mathieson Kx4
     virtual void    SetKx4(Float_t p1) {fKx4=p1;};
+    // Mathieson \sqrt{Ky3} and derived Ky2 and Ky4
+    virtual void SetSqrtKy3AndDeriveKy2Ky4(Float_t SqrtKy3);
     // Mathieson \sqrt{Ky3}
     virtual void    SetSqrtKy3(Float_t p1) {fSqrtKy3=p1;};
     // Mathieson Ky2
@@ -72,12 +76,12 @@ public AliMUONResponse {
     Float_t fSigmaIntegration;         // Number of sigma's used for charge distribution
     Int_t   fMaxAdc;                   // Maximum ADC channel
     Int_t   fZeroSuppression;          // Zero suppression threshold
-    Float_t fSqrtKx3;                  // Mathieson \Sqrt{Kx3)
+    Float_t fSqrtKx3;                  // Mathieson Sqrt(Kx3)
     Float_t fKx2;                      // Mathieson Kx2
-    Float_t fKx4;                      // Mathieson Kx4    
-    Float_t fSqrtKy3;                  // Mathieson \Sqrt{Kx3)
+    Float_t fKx4;                      // Mathieson Kx4 = Kx1/Kx2/Sqrt(Kx3)  
+    Float_t fSqrtKy3;                  // Mathieson Sqrt(Ky3)
     Float_t fKy2;                      // Mathieson Ky2
-    Float_t fKy4;                      // Mathieson Ky4
+    Float_t fKy4;                      // Mathieson Ky4 = Ky1/Ky2/Sqrt(Ky3)
     Float_t fPitch;                    // anode-cathode pitch
 };
 #endif

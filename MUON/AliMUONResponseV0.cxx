@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/25 10:41:52  morsch
+IntPH(..): Protec Log against random numbers equal to 0.
+
 Revision 1.3  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -33,7 +36,34 @@ AliMUONResponse code  from  AliMUONSegResV0.cxx
 #include <TRandom.h>
 
 
-ClassImp(AliMUONResponseV0)	
+ClassImp(AliMUONResponseV0)
+	
+  //__________________________________________________________________________
+void AliMUONResponseV0::SetSqrtKx3AndDeriveKx2Kx4(Float_t SqrtKx3)
+{
+  // Set to "SqrtKx3" the Mathieson parameter K3 ("fSqrtKx3")
+  // in the X direction, perpendicular to the wires,
+  // and derive the Mathieson parameters K2 ("fKx2") and K4 ("fKx4")
+  // in the same direction
+  fSqrtKx3 = SqrtKx3;
+  fKx2 = TMath::Pi() / 2. * (1. - 0.5 * fSqrtKx3);
+  Float_t cx1 = fKx2 * fSqrtKx3 / 4. / TMath::ATan(Double_t(fSqrtKx3));
+  fKx4 = cx1 / fKx2 / fSqrtKx3;
+}
+	
+  //__________________________________________________________________________
+void AliMUONResponseV0::SetSqrtKy3AndDeriveKy2Ky4(Float_t SqrtKy3)
+{
+  // Set to "SqrtKy3" the Mathieson parameter K3 ("fSqrtKy3")
+  // in the Y direction, along the wires,
+  // and derive the Mathieson parameters K2 ("fKy2") and K4 ("fKy4")
+  // in the same direction
+  fSqrtKy3 = SqrtKy3;
+  fKy2 = TMath::Pi() / 2. * (1. - 0.5 * fSqrtKy3);
+  Float_t cy1 = fKy2 * fSqrtKy3 / 4. / TMath::ATan(Double_t(fSqrtKy3));
+  fKy4 = cy1 / fKy2 / fSqrtKy3;
+}
+
 Float_t AliMUONResponseV0::IntPH(Float_t eloss)
 {
   // Calculate charge from given ionization energy loss
