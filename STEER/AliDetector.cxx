@@ -142,6 +142,12 @@ AliDetector::~AliDetector()
     delete fDigits;
     fDigits     = 0;
   }
+  // Delete track references
+  if (fTrackReferences) {
+    fTrackReferences->Delete();
+    delete fTrackReferences;
+    fTrackReferences     = 0;
+  }
   if (fDigitsFile) delete [] fDigitsFile;
 }
 
