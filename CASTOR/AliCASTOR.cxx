@@ -649,7 +649,7 @@ void AliCASTORv1::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliCASTORv1::DrawDetector()
+void AliCASTORv1::DrawModule()
 {
   //
   // Draw a shaded view of CASTOR version 1

@@ -20,7 +20,7 @@ public:
   virtual void  CreateMaterials() {}
   virtual Int_t IsVersion() const =0;
   Int_t         DistancetoPrimitive(Int_t px, Int_t py);
-  virtual void  DrawDetector()=0;
+  virtual void  DrawModule()=0;
   virtual void  StepManager()=0;
   
   ClassDef(AliCASTOR,1)  // CASTOR detector class
@@ -49,7 +49,7 @@ public:
   virtual void  CreateGeometry();
   virtual void  CreateMaterials();
   virtual void  Init();
-  virtual void  DrawDetector();
+  virtual void  DrawModule();
   virtual Int_t IsVersion() const {return 1;}
   virtual void  StepManager();
  

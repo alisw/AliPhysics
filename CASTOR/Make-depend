@@ -3,19 +3,51 @@
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 AliCASTOR.o: AliCASTOR.h /hdb2/offline/pro/include/AliDetector.h
-AliCASTOR.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
-AliCASTOR.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliCASTOR.o: /hdb2/offline/pro/include/AliModule.h
+AliCASTOR.o: /soft/root/include/TNamed.h /soft/root/include/TObject.h
+AliCASTOR.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
+AliCASTOR.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+AliCASTOR.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliCASTOR.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliCASTOR.o: /usr/include/gnu/stubs.h
+AliCASTOR.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliCASTOR.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliCASTOR.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliCASTOR.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliCASTOR.o: /soft/root/include/TBuffer.h /usr/include/string.h
+AliCASTOR.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
+AliCASTOR.o: /soft/root/include/TSeqCollection.h
+AliCASTOR.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
+AliCASTOR.o: /soft/root/include/TString.h /soft/root/include/TMath.h
+AliCASTOR.o: /soft/root/include/TRefCnt.h /soft/root/include/TClonesArray.h
+AliCASTOR.o: /soft/root/include/TObjArray.h /soft/root/include/TBrowser.h
+AliCASTOR.o: /soft/root/include/TBrowserImp.h /soft/root/include/TAttLine.h
+AliCASTOR.o: /soft/root/include/Gtypes.h /soft/root/include/Htypes.h
 AliCASTOR.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
-AliCASTOR.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
-AliCASTOR.o: /soft/root/include/TObject.h /soft/root/include/TNode.h
-AliCASTOR.o: /soft/root/include/TPGON.h /hdb2/offline/pro/include/AliRun.h
-AliCASTOR.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
-AliCASTOR.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
-AliCASTOR.o: /soft/root/include/TGeometry.h
+AliCASTOR.o: /soft/root/include/TArray.h /hdb2/offline/pro/include/AliHit.h
+AliCASTOR.o: /soft/root/include/TNode.h /soft/root/include/TShape.h
+AliCASTOR.o: /soft/root/include/TMaterial.h /soft/root/include/TAttFill.h
+AliCASTOR.o: /soft/root/include/X3DBuffer.h /soft/root/include/TPolyLine3D.h
+AliCASTOR.o: /soft/root/include/TRotMatrix.h /soft/root/include/TPGON.h
+AliCASTOR.o: /soft/root/include/TPCON.h /hdb2/offline/pro/include/AliRun.h
+AliCASTOR.o: /soft/root/include/TROOT.h /soft/root/include/TDirectory.h
+AliCASTOR.o: /soft/root/include/TDatime.h /soft/root/include/TStopwatch.h
+AliCASTOR.o: /soft/root/include/TTree.h /soft/root/include/TBranch.h
+AliCASTOR.o: /soft/root/include/TStringLong.h /soft/root/include/TCut.h
+AliCASTOR.o: /soft/root/include/TGeometry.h /soft/root/include/THashList.h
 AliCASTOR.o: /hdb2/offline/pro/include/AliHeader.h
 AliCASTOR.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
-AliCASTOR.o: /hdb2/offline/pro/include/AliMC.h
+AliCASTOR.o: /soft/root/include/TError.h /hdb2/offline/pro/include/AliMC.h
 AliCASTOR.o: /hdb2/offline/pro/include/AliGenerator.h
 AliCASTOR.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
 AliCASTOR.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
-AliCASTOR.o: /hdb2/offline/pro/include/AliConst.h /soft/root/include/TMath.h
+AliCASTOR.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
+AliCASTOR.o: /soft/root/include/TAttAxis.h /usr/local/include/g++/fstream.h
+AliCASTOR.o: /usr/local/include/g++/iostream.h
+AliCASTOR.o: /usr/local/include/g++/streambuf.h /soft/root/include/TLego.h
+AliCASTOR.o: /soft/root/include/TF1.h /soft/root/include/TFormula.h
+AliCASTOR.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
+AliCASTOR.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
+AliCASTOR.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliCASTOR.o: /soft/root/include/TArrayD.h
+AliCASTOR.o: /hdb2/offline/pro/include/AliConst.h
