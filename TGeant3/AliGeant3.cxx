@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2001/10/03 08:39:03  morsch
+Bug in user decay routine leading to segmentation violation corrected.
+
 Revision 1.18  2001/07/19 09:10:23  morsch
 In decays with AliDecayer put long-lived particles undecayed on the stack.
 
@@ -469,7 +472,7 @@ void gudcay()
     Int_t i,j;
 
 // Array to flag deselected particles
-    Int_t pFlag[200];
+    Int_t*  pFlag = new Int_t[np];
     for (i=0; i<np; i++) pFlag[i]=0;
 // Particle loop
     for (i=1; i < np; i++) 
@@ -483,7 +486,7 @@ void gudcay()
 // Deselect daughters of deselected particles
 // and jump skip the current particle
 	if (pFlag[i] == 1) {
-	    if (ipF >= 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
+	    if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
 	    continue;
 	} // deselected ??
 // Particles with long life-time are put on the stack for further tracking
@@ -492,7 +495,7 @@ void gudcay()
 	if (ks != 1) { 
 	    Double_t lifeTime = gMC->Decayer()->GetLifetime(kf);
 	    if (lifeTime > (Double_t) 1.e-15) {
-		if (ipF >= 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
+		if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
 	    } else{
 		continue;
 	    }
@@ -523,6 +526,7 @@ void gudcay()
 // increase stack counter
 	(geant3->Gcking()->ngkine)=index+1;
     }
+    delete[] pFlag;
 }
 
 //______________________________________________________________________
