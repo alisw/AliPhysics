@@ -847,13 +847,13 @@ TObject** AliPHOSGetter::ClusterizerRef(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliPHOSGetter::ClusterizerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::ClusterizerRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner not found!" << endl;
     abort() ;
   }        
         
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"WARNING: AliPHOSGetter::ClusterizerRef -> //" << fTasksFolder << "/Reconstructioner/PHOS" << endl; 
+    cerr <<"WARNING: AliPHOSGetter::ClusterizerRef -> //" << fTasksFolder->GetName() << "/Reconstructioner/PHOS" << endl; 
     abort() ; 
   }   
 
@@ -862,7 +862,7 @@ TObject** AliPHOSGetter::ClusterizerRef(const char * name) const
   TTask * task ;
   TTask * clu = 0 ;
   TString cluname(name) ;
-  cluname+=":clusterizer" ;
+  cluname+=":clu" ;
   while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
     if(taskname.BeginsWith(cluname)){
@@ -874,7 +874,7 @@ TObject** AliPHOSGetter::ClusterizerRef(const char * name) const
   if(clu) 
     return l->GetObjectRef(clu) ;
   else{
-    cerr << "ERROR: AliPHOSGetter::ClusterizerRef -> Task //" << fTasksFolder << "/Reconstructioner/clusterizer name not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::ClusterizerRef -> Task //" << fTasksFolder->GetName() << "/Reconstructioner/clusterizer " <<  name << " not found!" << endl;
     abort() ;
   }
 }
@@ -902,9 +902,18 @@ Bool_t AliPHOSGetter::PostClusterizer(const char * name) const
     tasks->Add(phos) ; 
   } 
 
-  AliPHOSClusterizerv1 * phoscl = new AliPHOSClusterizerv1() ;
+  TList * l = phos->GetListOfTasks() ;   
+  TIter it(l) ;
   TString clun(name) ;
-  clun+=":clusterizerv1" ; 
+  clun+=":clu" ; 
+  TTask * task ;
+  while((task = static_cast<TTask *>(it.Next()) )){
+    TString taskname(task->GetName()) ;
+    if(taskname.BeginsWith(clun))
+      return kTRUE ;
+  }
+
+  AliPHOSClusterizerv1 * phoscl = new AliPHOSClusterizerv1() ;
   phoscl->SetName(clun) ;
   phos->Add(phoscl) ;
   return kTRUE; 
@@ -1027,15 +1036,21 @@ Bool_t AliPHOSGetter::PostTrackSegmentMaker(const char * name) const
     tasks->Add(phos) ; 
   } 
 
-  AliPHOSTrackSegmentMakerv1 * phosts = 
-    dynamic_cast<AliPHOSTrackSegmentMakerv1*>(phos->GetListOfTasks()->FindObject(name)) ; 
-  if (!phosts) { 
-    phosts = new AliPHOSTrackSegmentMakerv1() ;
-    TString tsn(name);
-    tsn+=":tracksegmentmakerv1" ; 
-    phosts->SetName(tsn) ;
-    phos->Add(phosts) ;      
+  TList * l = phos->GetListOfTasks() ;   
+  TIter it(l) ;
+  TString tsn(name);
+  tsn+=":tsm" ; 
+  TTask * task ;
+  while((task = static_cast<TTask *>(it.Next()) )){
+    TString taskname(task->GetName()) ;
+    if(taskname.BeginsWith(tsn))
+      return kTRUE ;
   }
+  
+  AliPHOSTrackSegmentMakerv1 * phosts = new AliPHOSTrackSegmentMakerv1() ;
+  phosts->SetName(tsn) ;
+
+  phos->Add(phosts) ;      
   return kTRUE; 
   
 } 
@@ -1062,7 +1077,7 @@ TObject** AliPHOSGetter::TSMakerRef(const char * name) const
   TTask * task ;
   TTask * tsm = 0 ;
   TString tsmname(name) ;
-  tsmname+=":tracksegmentmaker" ;
+  tsmname+=":tsm" ;
   while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
     if(taskname.BeginsWith(tsmname)){
@@ -1535,6 +1550,7 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
     if (fDebug)
       cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find EmcRecPoints with title " 
 	   << fRecPointsTitle << endl ;
+ 
   } else { 
     if(!EmcRecPoints(fRecPointsTitle) ) 
       PostRecPoints(fRecPointsTitle) ;
@@ -1545,17 +1561,17 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
   if ( !phoscpvrpfound ) {
     if (fDebug)
       cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find CpvRecPoints with title " 
-	   << fRecPointsTitle << endl ;
+	   << fRecPointsTitle << endl ; 
   } else { 
     cpvbranch->SetAddress(CpvRecPointsRef(fRecPointsTitle)) ; 
     cpvbranch->GetEntry(0) ;
   }   
-
+  
   if ( !clusterizerfound ) {
     if (fDebug)
       cout << "WARNING: AliPHOSGetter::ReadTreeR -> Can not find Clusterizer with title " 
-	   << fRecPointsTitle << endl ;
-  } else {     
+	   << fRecPointsTitle << endl ; 
+  }  else { 
     if(!Clusterizer(fRecPointsTitle) )
       PostClusterizer(fRecPointsTitle) ;
     clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
@@ -1595,7 +1611,7 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
       PostTrackSegmentMaker(fTrackSegmentsTitle) ;
     tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
     tsmakerbranch->GetEntry(0) ;
-  }
+ }
   
   
   //------------ RecParticles ----------------------------
