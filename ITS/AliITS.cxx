@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.60  2001/10/04 22:38:10  nilsen
+Changes made to support PreDigits (SDigits) plus other helpful changes.
+
 Revision 1.59  2001/08/30 09:56:18  hristov
 The operator[] is replaced by At() or AddAt() in case of TObjArray.
 
@@ -1264,6 +1267,9 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     AliITSDetType    *iDetType = 0;
     AliITSmodule     *mod      = 0;
     Int_t id,module;
+
+    //m.b. : this change is nothing but a nice way to make sure
+    //the CPU goes up !
     for(module=0;module<geom->GetIndexMax();module++){
 	id       = geom->GetModuleType(module);
         if (!all && !det[id]) continue;
@@ -1276,9 +1282,8 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
 	} // end if !sim
 	mod      = (AliITSmodule *)fITSmodules->At(module);
 	sim->CreateFastRecPoints(mod,module,gRandom);
-	// fills all branches - wasted disk space
-	gAlice->TreeD()->Fill(); 
-	ResetDigits();
+	gAlice->TreeR()->Fill(); 
+	ResetRecPoints();
     } // end for module
 /*
     Int_t id,module;
