@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2003/01/14 10:50:18  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.18  2002/12/11 11:58:11  morsch
 Bug in formula for pi0 energy for decay corrected.
 
@@ -244,7 +247,7 @@ AliGenHIJINGpara::AliGenHIJINGpara(Int_t npart)
   // 
   // Standard constructor
   //
-    fName="HIGINGpara";
+    fName="HIJINGpara";
     fTitle="HIJING Parametrisation Particle Generator";
     fPtpi    =  0;
     fPtka    =  0;
