@@ -30,7 +30,7 @@ public:
   // Parameters that could be set for generation
   virtual void SetParticle(Int_t ipart) {fIpart=ipart;};
   virtual void SetMomentum(Float_t ptot) {fPMin=ptot; fPMax=ptot;};
-  virtual void SetDir(Float_t zpsrp, Float_t cosx, Float_t cosy, Float_t cosz)
+  virtual void SetDirection(Float_t zpsrp, Float_t cosx, Float_t cosy, Float_t cosz)
                 {fPseudoRapidity=zpsrp; fCosx=cosx; fCosy=cosy; fCosz=cosz;};
   virtual void SetFermi(Int_t Fflag) {fFermiflag=Fflag;};
   virtual void SetDiv(Float_t bmdiv, Float_t bmcra, Int_t iflcr) 
