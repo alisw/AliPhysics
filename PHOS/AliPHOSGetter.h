@@ -61,6 +61,9 @@ class AliPHOSGetter : public TObject {
   
   virtual ~AliPHOSGetter() ; 
   
+  void ListBranches(Int_t event=0) const ;
+  void NewBranch(TString name, Int_t event = 0) ; 
+  Bool_t AliPHOSGetter::NewFile(TString name) ;
   const Bool_t HasFailed() const { return fFailed ; }
   Bool_t PostPrimaries(void ) const ;  
   Bool_t PostHits(void ) const ;  
@@ -189,7 +192,6 @@ class AliPHOSGetter : public TObject {
 private:
   
   AliPHOSGetter(const char* headerFile, const char* branchTitle ="Default") ; 
-  void CreateWhiteBoard() const ; 
   TObject * ReturnO(TString what, TString name=0, TString file=0) const ; 
   const TTask * ReturnT(TString what,TString name=0) const ; 
   void DefineBranchTitles(char* branch, char* branchTitle) ;
