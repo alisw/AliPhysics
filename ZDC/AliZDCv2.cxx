@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/06/13 11:11:02  coppedis
+Minor changes
+
 Revision 1.2  2001/06/12 13:45:11  coppedis
 TDI in correct position and minor correction
 
@@ -1309,7 +1312,7 @@ void AliZDCv2::Hits2Digits(Int_t ntracks)
   
 }
 //_____________________________________________________________________________
- void AliZDCv2::MakeBranch(Option_t *opt, char *file)
+ void AliZDCv2::MakeBranch(Option_t *opt, const char *file)
 {
   //
   // Create a new branch in the current Root Tree
@@ -1329,8 +1332,8 @@ void AliZDCv2::Hits2Digits(Int_t ntracks)
     else fDigits = new TClonesArray ("AliZDCDigit",1000);
     char branchname[10];
     sprintf(branchname,"%s",GetName());
-    gAlice->MakeBranchInTree(gAlice->TreeD(), 
-                             branchname, &fDigits, fBufferSize, file) ;
+    MakeBranchInTree(gAlice->TreeD(), 
+                     branchname, &fDigits, fBufferSize, file) ;
     printf("* AliZDCv2::MakeBranch    * Making Branch %s for digits\n\n",branchname);
   }
        
