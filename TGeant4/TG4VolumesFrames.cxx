@@ -17,6 +17,7 @@
 #include <TGTextEntry.h>
 #include <TGComboBox.h>
 #include <TGLabel.h>
+#include <TGFrame.h>
 
 #include <G4LogicalVolumeStore.hh>
 #include <G4LogicalVolume.hh>
@@ -31,6 +32,8 @@ TG4VolumesFrames::TG4VolumesFrames( TGCompositeFrame* Parent, TGMainFrame* Actio
 //---> creates the volumes properties display frame
 //---> and plunges it into the main frame
    fCapFrame = new TGCompositeFrame(Parent, 60, 20, kHorizontalFrame);
+   ULong_t back= TGFrame::GetBlackPixel(); 
+   fCapFrame->ChangeBackground(back);
    fVolSubframe1 = new TGCompositeFrame(fCapFrame, 60, 20, kVerticalFrame);
    fVolFrameLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5);
 
@@ -129,7 +132,7 @@ void TG4VolumesFrames::SetVolumesComboEntries()
 
     G4LogicalVolumeStore* lComboEntries = G4LogicalVolumeStore::GetInstance();
 
-    G4int ig = lComboEntries->entries();
+    G4int ig = lComboEntries->size();
     G4String name;
     
     for (int ii=0; ii < ig; ii++)
@@ -157,7 +160,7 @@ void TG4VolumesFrames::DisplayVolumeCharacteristics()
 //-----> shows informations about a logical volume 
 
    G4LogicalVolumeStore* lComboEntries = G4LogicalVolumeStore::GetInstance();
-   G4int ientr = lComboEntries->entries();
+   G4int ientr = lComboEntries->size();
    G4int index = fVolumesCombo->GetSelected();
    
    G4cout << "\nThe clicked-on volumes entry has the index:  " << index << G4endl;
