@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2000/06/09 20:05:11  morsch
+Introduce possibility to chose magnetic field version 3: AliMagFDM + field02.dat
+
 Revision 1.36  2000/06/08 14:03:58  hristov
 Only one initializer for a default argument
 
@@ -497,13 +500,13 @@ void AliRun::FinishEvent()
   //  Int_t ievent = fHeader.GetEvent();
   //  char hname[30];
   //  sprintf(hname,"TreeK%d",ievent);
-  if (fTreeK) fTreeK->Write();
+  if (fTreeK) fTreeK->Write(0,TObject::kOverwrite);
   //  sprintf(hname,"TreeH%d",ievent);
-  if (fTreeH) fTreeH->Write();
+  if (fTreeH) fTreeH->Write(0,TObject::kOverwrite);
   //  sprintf(hname,"TreeD%d",ievent);
-  if (fTreeD) fTreeD->Write();
+  if (fTreeD) fTreeD->Write(0,TObject::kOverwrite);
   //  sprintf(hname,"TreeR%d",ievent);
-  if (fTreeR) fTreeR->Write();
+  if (fTreeR) fTreeR->Write(0,TObject::kOverwrite);
 
   ++fEvent;
 }
@@ -539,7 +542,7 @@ void AliRun::FinishRun()
     exit(1);
   }
   File->cd();
-  fTreeE->Write();
+  fTreeE->Write(0,TObject::kOverwrite);
   
   // Clean tree information
   if (fTreeK) {
@@ -851,6 +854,11 @@ void AliRun::InitMC(const char *setup)
   // Initialize the Alice setup
   //
 
+  if(fInitDone) {
+    Warning("Init","Cannot initialise AliRun twice!\n");
+    return;
+  }
+
   gROOT->LoadMacro(setup);
   gInterpreter->ProcessLine(fConfigFunction.Data());
 
@@ -894,6 +902,10 @@ void AliRun::InitMC(const char *setup)
    fGeometry->Write();
    
    fInitDone = kTRUE;
+
+   //
+   // Save stuff at the beginning of the file to avoid file corruption
+   Write();
 }
 
 //_____________________________________________________________________________
@@ -1106,24 +1118,29 @@ void AliRun::MakeTree(Option_t *option)
     fTreeK = new TTree(hname,"Kinematics");
     //  Create a branch for particles
     fTreeK->Branch("Particles",&fParticles,4000);
+    fTreeK->Write();
   }
   if (H && !fTreeH) {
     sprintf(hname,"TreeH%d",fEvent);
     fTreeH = new TTree(hname,"Hits");
     fTreeH->SetAutoSave(1000000000); //no autosave
+    fTreeH->Write();
   }
   if (D && !fTreeD) {
     sprintf(hname,"TreeD%d",fEvent);
     fTreeD = new TTree(hname,"Digits");
+    fTreeD->Write();
   }
   if (R && !fTreeR) {
     sprintf(hname,"TreeR%d",fEvent);
     fTreeR = new TTree(hname,"Reconstruction");
+    fTreeR->Write();
   }
   if (E && !fTreeE) {
     fTreeE = new TTree("TE","Header");
     //  Create a branch for Header
     fTreeE->Branch("Header","AliHeader",&header,4000);
+    fTreeE->Write();
   }
   //
   // Create a branch for hits/digits for each detector
