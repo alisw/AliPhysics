@@ -301,3 +301,4 @@
                 in RALICELinkDef.h. Note that the new schema evolution only works
                 correctly for ROOT version 3.02/07 and later.
 14-feb-2002 NvE Support for name tag introduced in AliSignal to indicate the kind of signal.
+                Missing comment lines added in SetName() and GetName() of AliCalorimeter and AliSignal.
