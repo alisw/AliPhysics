@@ -113,7 +113,7 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
       if ( fHeaderFile.Contains("_") ) {
 	cerr << "AliPHOSGetter::AliPHOSGetter -> Invalid file name (_ not allowed) " << fHeaderFile.Data() << endl ;
 	abort() ; 
-     }
+      }
       fFile = TFile::Open(fHeaderFile.Data(),"update") ; 
       if (!fFile->IsOpen()) {
 	cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot open " << fHeaderFile.Data() << endl ; 
@@ -140,7 +140,8 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
     else 
       cerr << "ERROR: AliPHOSGetter:AliPHOSGetter -> detector PHOS not found" << endl ;  
   }
-  
+  cout << "gAlice C " << gAlice << " " << gAlice->TreeH() << endl ; 
+
   fDebug=0;
 }
 //____________________________________________________________________________ 
@@ -214,6 +215,8 @@ AliPHOSGetter * AliPHOSGetter::GetInstance()
 AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
 					   const char* branchTitle)
 {
+  
+  cout << "headerFile " << headerFile << " | " << branchTitle << endl ;
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed 
 
@@ -229,14 +232,18 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
     else // another file than the existing one is required, scratch the getter
       fgObjGetter->~AliPHOSGetter() ;  // delete it already exists another version
   
+  cout << "bbbbb " << endl ;
   fgObjGetter = new AliPHOSGetter(headerFile,branchTitle) ; 
 
+  cout << "ccccc " << endl ;
   if (fgObjGetter->HasFailed() ) 
     fgObjGetter = 0 ; 
   
   // Posts a few item to the white board (folders)
   // fgObjGetter->CreateWhiteBoard() ;
   
+  cout << "end " << fgObjGetter->fHeaderFile.Data() << " | " << fgObjGetter->fBranchTitle.Data() << endl ; 
+
   if (fFile) 
     fFile->cd() ; 
   return fgObjGetter ; 
@@ -2051,7 +2058,7 @@ void AliPHOSGetter::ReadPrimaries()
 void AliPHOSGetter::Event(const Int_t event, const char* opt)
 {
   // Reads the content of all Tree's S, D and R
-
+  cout << "galice1 " << gAlice->TreeE() << " " <<  gAlice->TreeH() << endl ;
   if (event >= gAlice->TreeE()->GetEntries() ) {
     cerr << "ERROR: AliPHOSGetter::Event -> " << event << " not found in TreeE!" << endl ; 
     return ; 
@@ -2060,6 +2067,8 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
   Bool_t any = kFALSE ; 
   if (strstr(opt,"A") ) // do not check the title of the branches
     any = kTRUE; 
+
+  cout << "galice2 " << gAlice->TreeE() << " " <<  gAlice->TreeH() << endl ;
 
   gAlice->GetEvent(event) ; 
 
