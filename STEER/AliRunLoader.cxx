@@ -140,21 +140,27 @@ AliRunLoader::AliRunLoader(TFolder* topfolder):
  fUnixDirName(".")
 {
 //ctor
- if (!fgRunLoader) fgRunLoader = this;
  if(topfolder == 0x0)
   {
-    Fatal("AliRunLoader(TFolder*)","Parameter is NULL");
+    TString errmsg("Parameter is NULL");
+    Error("AliRunLoader(TFolder*)","%s",errmsg.Data());
+    throw errmsg;
     return;
   }
  
  TObject* obj = fEventFolder->FindObject(fgkRunLoaderName);
  if (obj)
   { //if it is, then sth. is going wrong... exits aliroot session
-    Fatal("AliRunLoader(const char*)",
-          "In Event Folder Named %s object named %s already exists. I am confused ...",
-           fEventFolder->GetName(),fgkRunLoaderName.Data());
+    TString errmsg("In Event Folder Named ");
+    errmsg+=fEventFolder->GetName();
+    errmsg+=" object named "+fgkRunLoaderName+" already exists. I am confused ...";
+
+    Error("AliRunLoader(const char*)","%s",errmsg.Data());
+    throw errmsg;
     return;//never reached
   }
+
+ if (!fgRunLoader) fgRunLoader = this;
    
  fEventFolder->Add(this);//put myself to the folder to accessible for all
   
@@ -413,7 +419,17 @@ AliRunLoader* AliRunLoader::Open
   {
     if (AliLoader::GetDebug()) 
       ::Info("AliRunLoader::Open","Creating new AliRunLoader. Folder name is %s",eventfoldername);
-    result = new AliRunLoader(eventfoldername);
+    try
+     {  
+       result = new AliRunLoader(eventfoldername);
+     }
+    catch (TString& errmsg)
+     {
+       ::Error("Open","AliRunLoader constrcutor has thrown exception: %s\n",errmsg.Data());
+       delete result;
+       delete gAliceFile;//close the file
+       return 0x0;
+     }
   }
  
 //procedure for extracting dir name from the file name 
@@ -606,7 +622,7 @@ Int_t AliRunLoader::LoadHeader()
  TTree* tree = dynamic_cast<TTree*>(fGAFile->Get(fgkHeaderContainerName));
  if (tree == 0x0)
   {
-    Fatal("LoadHeader","Can not find header tree named %s in file %s",
+    Error("LoadHeader","Can not find header tree named %s in file %s",
            fgkHeaderContainerName.Data(),fGAFile->GetName());
     return 2;
   }
