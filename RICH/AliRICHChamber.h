@@ -115,8 +115,8 @@ class AliRICHChamber : public TObject
 // Member function forwarding to the segmentation and response models
 //
 // Calculate pulse height from energy loss  
-    Float_t IntPH(Float_t eloss) {return fResponse->IntPH(eloss);}
-    Float_t IntPH()              {return fResponse->IntPH();}
+    Float_t IntPH(Float_t eloss, Float_t yhit) {return fResponse->IntPH(eloss,yhit);}
+    Float_t IntPH(Float_t yhit)              {return fResponse->IntPH(yhit);}
 //  
 // Ask segmentation if signal should be generated  
     Int_t   SigGenCond(Float_t x, Float_t y, Float_t z)
@@ -182,6 +182,16 @@ class AliRICHChamber : public TObject
     void   SetPitch(Float_t p)
 	{
 	    fResponse->SetPitch(p);
+	}
+
+    void   SetWireSag(Int_t p)
+	{
+	    fResponse->SetWireSag(p);
+	}
+
+    void   SetVoltage(Int_t p)
+	{
+	    fResponse->SetVoltage(p);
 	}
     
     void   SetPadSize(Float_t p1, Float_t p2)

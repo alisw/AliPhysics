@@ -44,8 +44,8 @@ public TObject {
     virtual Float_t EIonisation()                             =0;
     // Chamber response methods
     // Pulse height from scored quantity (eloss)
-    virtual Float_t IntPH(Float_t eloss)                       =0;
-    virtual Float_t IntPH()                                    =0;
+    virtual Float_t IntPH(Float_t eloss,Float_t yhit)          =0;
+    virtual Float_t IntPH(Float_t yhit)                        =0;
     // Charge disintegration
     virtual Float_t IntXY(AliSegmentation *)                   =0;
     virtual Int_t   FeedBackPhotons(Float_t *source, Float_t qtot) =0;
@@ -57,6 +57,9 @@ public TObject {
     virtual void   SetSqrtKy3(Float_t p1)                        =0;
     virtual void   SetKy2(Float_t p1)                            =0;
     virtual void   SetKy4(Float_t p1)                            =0;
+    // Wire sag
+    virtual void SetWireSag(Int_t p1)                            =0;
+    virtual void SetVoltage(Int_t p1)                          =0;
     ClassDef(AliRICHResponse,1)
 };
 

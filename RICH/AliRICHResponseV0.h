@@ -53,11 +53,14 @@ public AliRICHResponse {
     //  
     // Chamber response methods
     // Pulse height from scored quantity (eloss)
-    virtual Float_t IntPH(Float_t eloss);
-    virtual Float_t IntPH();
+    virtual Float_t IntPH(Float_t eloss, Float_t yhit);
+    virtual Float_t IntPH(Float_t yhit);
     // Charge disintegration
     virtual Float_t IntXY(AliSegmentation * segmentation);
     virtual Int_t   FeedBackPhotons(Float_t *source, Float_t qtot);
+    // Wire sag
+    virtual void SetWireSag(Int_t p1) {fWireSag=p1;};
+    virtual void SetVoltage(Int_t p1) {fVoltage=p1;};
 	protected:
     Float_t fChargeSlope;              // Slope of the charge distribution
     Float_t fChargeSpreadX;            // Width of the charge distribution in x
@@ -66,13 +69,15 @@ public AliRICHResponse {
     Float_t fAlphaFeedback;            // Feedback photons coefficient
     Float_t fEIonisation;              // Mean ionisation energy
     Float_t fMaxAdc;                   // Maximum ADC channel
-    Float_t fSqrtKx3;         // Mathieson parameters for x
-    Float_t fKx2;             // Mathieson parameters for x
-    Float_t fKx4;             // Mathieson parameters for x
-    Float_t fSqrtKy3;         // Mathieson parameters for y
-    Float_t fKy2;             // Mathieson parameters for y 
-    Float_t fKy4;             // Mathieson parameters for y
-    Float_t fPitch;           //anode-cathode pitch
+    Float_t fSqrtKx3;                  // Mathieson parameters for x
+    Float_t fKx2;                      // Mathieson parameters for x
+    Float_t fKx4;                      // Mathieson parameters for x
+    Float_t fSqrtKy3;                  // Mathieson parameters for y
+    Float_t fKy2;                      // Mathieson parameters for y 
+    Float_t fKy4;                      // Mathieson parameters for y
+    Float_t fPitch;                    // Anode-cathode pitch
+    Int_t   fWireSag;                  // Flag to turn on/off (0/1) wire sag
+    Int_t fVoltage;                  // Working voltage (2000, 2050, 2100, 2150)
     ClassDef(AliRICHResponseV0,1)
 };
 #endif
