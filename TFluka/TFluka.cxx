@@ -1343,7 +1343,7 @@ fin:
       // flag = 1 decays, secondaries processed
       // flag = 2 decays, no secondaries stored
       //gMC ->SetProcess("DCAY",1); // not available
-      else if ((strncmp(proc->GetName(),"DCAY",4) == 0) && proc->Flag() == 1) 
+      else if ((strncmp(proc->GetName(),"DCAY",4) == 0) && proc->Flag() == 0) 
 	  cout << "SetProcess for flag=" << proc->GetName() << " value=" << proc->Flag() << " not avaliable!" << endl;
       
       // delta-ray
