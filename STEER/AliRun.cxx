@@ -15,15 +15,6 @@
 
 /*
 $Log$
-Revision 1.69  2001/06/28 16:27:50  morsch
-AliReco() with user control of event range.
-
-Revision 1.68  2001/06/11 13:14:40  morsch
-SetAliGenEventHeader() method added.
-
-Revision 1.67  2001/06/07 18:24:50  buncic
-Removed compilation warning in AliConfig initialisation.
-
 Revision 1.66  2001/05/22 14:32:40  hristov
 Weird inline removed
 
@@ -203,6 +194,7 @@ Introduction of the Copyright and cvs Log
 #include <TFile.h>
 #include <TRandom.h>
 #include <TBRIK.h> 
+#include <TNode.h> 
 #include <TCint.h> 
 #include <TSystem.h>
 #include <TObjectTable.h>
@@ -211,7 +203,6 @@ Introduction of the Copyright and cvs Log
 #include <TROOT.h>
 #include <TBrowser.h>
 #include <TFolder.h>
-#include <TNode.h>
 
 #include "TParticle.h"
 #include "AliRun.h"
@@ -800,10 +791,10 @@ Int_t AliRun::GetEvent(Int_t event)
   ResetSDigits();
   
   // Delete Trees already connected
-  if (fTreeH) delete fTreeH;
-  if (fTreeD) delete fTreeD;
-  if (fTreeR) delete fTreeR;
-  if (fTreeS) delete fTreeS;
+  if (fTreeH) { delete fTreeH; fTreeH = 0;}
+  if (fTreeD) { delete fTreeD; fTreeD = 0;}
+  if (fTreeR) { delete fTreeR; fTreeR = 0;}
+  if (fTreeS) { delete fTreeS; fTreeS = 0;}
 
  // Create the particle stack
   if (fHeader) delete fHeader; 
@@ -812,15 +803,25 @@ Int_t AliRun::GetEvent(Int_t event)
   // Get header from file
   if(fTreeE) {
       fTreeE->SetBranchAddress("Header", &fHeader);
-      fTreeE->GetEntry(event);
-  }  
-  else 
-      Error("GetEvent","Cannot find Header Tree (TE)\n");
 
-  // Get the stack from the header
+      if (!fTreeE->GetEntry(event)) {
+	Error("GetEvent","Cannot find event:%d\n",event);
+	return -1;
+      }
+  }  
+  else {
+      Error("GetEvent","Cannot find Header Tree (TE)\n");
+      return -1;
+  }
+
+  // Get the stack from the header, set fStack to 0 if it 
+  // fails to get event
   if (fStack) delete fStack;
   fStack = fHeader->Stack();
-  fStack->GetEvent(event);
+  if (fStack) {
+    if (!fStack->GetEvent(event,0)) fStack = 0;
+  }
+
   //
   TFile *file = fTreeE->GetCurrentFile();
   char treeName[20];
@@ -980,7 +981,7 @@ void AliRun::InitMC(const char *setup)
 
    fMCQA = new AliMCQA(fNdets);
 
-   AliConfig::Instance();
+   AliConfig *config = AliConfig::Instance();
    //
    // Save stuff at the beginning of the file to avoid file corruption
    Write();
@@ -1424,17 +1425,12 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
 }
 
 //_____________________________________________________________________________
-void AliRun::RunReco(const char *selected, Int_t first, Int_t last)
+void AliRun::RunReco(const char *selected)
 {
   //
   // Main function to be called to reconstruct Alice event
-  // 
-   cout << "Found "<< gAlice->TreeE()->GetEntries() << "events" << endl;
-   Int_t nFirst = first;
-   Int_t nLast  = (last < 0)? (Int_t) gAlice->TreeE()->GetEntries() : last;
-   
-   for (Int_t nevent = nFirst; nevent <= nLast; nevent++) {
-     cout << "Processing event "<< nevent << endl;
+  //  
+   for (Int_t nevent=0; nevent<gAlice->TreeE()->GetEntries(); nevent++) {
      GetEvent(nevent);
      // MakeTree("R");
      Digits2Reco(selected);
@@ -1752,10 +1748,4 @@ TTree* AliRun::TreeK() {
   // Returns pointer to the TreeK array
   //
   return fStack->TreeK();
-}
-
-
-void AliRun::SetGenEventHeader(AliGenEventHeader* header)
-{
-    fHeader->SetGenEventHeader(header);
 }

@@ -69,11 +69,11 @@ AliStack::AliStack(Int_t size)
   fParticles      = new TClonesArray("TParticle",1000);
   fParticleMap    = new TObjArray(size);
   fParticleBuffer = 0;
-  fNtrack         =  0;
-  fNprimary      =  0;
+  fNtrack         = 0;
+  fNprimary       = 0;
   fCurrent        = -1;
   fCurrentPrimary = -1;
-  fTreeK          =  0;
+  fTreeK          = 0;
 }
 
 
@@ -88,11 +88,11 @@ AliStack::AliStack()
   fParticles      = new TClonesArray("TParticle",1000);
   fParticleMap    = new TObjArray(10000);
   fParticleBuffer = 0;
-  fNtrack         =  0;
+  fNtrack         = 0;
   fCurrent        = -1;
-  fNprimary      =  0;
+  fNprimary       = 0;
   fCurrentPrimary = -1;
-  fTreeK          =  0;
+  fTreeK          = 0;
 }
 
 
@@ -153,9 +153,9 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
   Float_t e=TMath::Sqrt(mass*mass+pmom[0]*pmom[0]+
 			pmom[1]*pmom[1]+pmom[2]*pmom[2]);
   
-//  printf("Loading  mass %f ene %f No %d ip %d parent %d done %d pos %f %f %f mom %f %f %f kS %d m \n",
-//  mass,e,fNtrack,pdg,parent,done,vpos[0],vpos[1],vpos[2],pmom[0],pmom[1],pmom[2],kS);
-
+//    printf("Loading  mass %f ene %f No %d ip %d parent %d done %d pos %f %f %f mom %f %f %f kS %d m \n",
+//	   mass,e,fNtrack,pdg,parent,done,vpos[0],vpos[1],vpos[2],pmom[0],pmom[1],pmom[2],kS);
+  
   TClonesArray &particles = *fParticles;
   TParticle* particle
    = new(particles[fLoadPoint++]) 
@@ -267,7 +267,7 @@ void AliStack::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
   
 
   TParticle* track = GetNextParticle();
-//  cout << "GetNextTrack():" << fCurrent << fNprimary << endl;
+//    cout << "GetNextTrack():" << fCurrent << fNprimary << endl;
 
   if(track) {
     mtrack=fCurrent;
@@ -286,7 +286,7 @@ void AliStack::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
     polar[2]=pol.Z();
     tof=track->T();
     track->SetBit(kDoneBit);
-    //cout << "Filled params" << endl;
+//      cout << "Filled params" << endl;
   }
   else 
     mtrack=-1;
@@ -468,7 +468,7 @@ void AliStack::FinishEvent()
 	 // To be removed later and replaced with break.
       if(!allFilled) allFilled = kTRUE;
     } 
-  //cout << "Nof particles: " << fNtrack << endl;
+//    cout << "Nof particles: " << fNtrack << endl;
   //Reset();   
 } 
 
@@ -555,7 +555,7 @@ TParticle* AliStack::Particle(Int_t i)
   // Return particle with specified ID
   
   if(!(*fParticleMap)[i]) {
-    Int_t nentries = fParticles->GetEntriesFast();
+    Int_t nentries = fParticles->GetEntries();
     // algorithmic way of getting entry index
     // (primary particles are filled after secondaries)
     Int_t entry;
@@ -739,7 +739,7 @@ void AliStack::MakeTree(Int_t event, const char *file)
   TBranch *branch=0;
   // Make Kinematics Tree
   char hname[30];
-  //    printf("\n MakeTree called %d", event);
+//    printf("\n MakeTree called %d", event);
   if (!fTreeK) {
     sprintf(hname,"TreeK%d",event);
     fTreeK = new TTree(hname,"Kinematics");
@@ -776,10 +776,11 @@ void AliStack::FinishRun()
 }
 
 //_____________________________________________________________________________
-void AliStack::GetEvent(Int_t event)
+Bool_t AliStack::GetEvent(Int_t event)
 {
 //
 // Get new event from TreeK
+
     // Reset/Create the particle stack
     if (fTreeK) delete fTreeK;
     
@@ -788,14 +789,18 @@ void AliStack::GetEvent(Int_t event)
     sprintf(treeName,"TreeK%d",event);
     fTreeK = (TTree*)gDirectory->Get(treeName);
 
-    if (fTreeK) fTreeK->SetBranchAddress("Particles", &fParticleBuffer);
-
-  else    
+    if (fTreeK) 
+      fTreeK->SetBranchAddress("Particles", &fParticleBuffer);
+    else {
       Error("GetEvent","cannot find Kine Tree for event:%d\n",event);
-//
-//    printf("\n primaries %d", fNprimary);
-//    printf("\n tracks    %d", fNtrack);    
-//
+      return kFALSE;
+    }
+//      printf("\n primaries %d", fNprimary);
+//      printf("\n tracks    %d", fNtrack);    
+      
     Int_t size = (Int_t)fTreeK->GetEntries();
     ResetArrays(size);
+    return kTRUE;
 }
+
+//----------------------------------------------------------------------
