@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.31  2000/10/02 21:28:08  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.30  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -416,7 +419,8 @@ void AliMUON::BuildGeometry()
 {
     TNode *node, *nodeF, *top, *nodeS;
     const int kColorMUON  = kBlue;
-    const int kColorMUON2 = kGreen; 
+    const int kColorMUON2 = kYellow;
+    const int kColorMUON3 = kBlue; 
     //
     top=gAlice->GetGeometry()->GetNode("alice");
 // MUON
@@ -439,7 +443,7 @@ void AliMUON::BuildGeometry()
     Float_t hole=102.;          // x-y hole around beam pipe for trig. chambers
     Float_t zscale;            // scaling parameter trigger chambers
     Float_t halfx, halfy;   
-    char nameChamber[9], nameSense[9], nameFrame[9], nameNode[8];
+    char nameChamber[9], nameSense[9], nameFrame[9], nameNode[9];
     char nameSense1[9], nameSense2[9];    
     for (Int_t i=0; i<7; i++) {
 	for (Int_t j=0; j<2; j++) {
@@ -462,7 +466,7 @@ void AliMUON::BuildGeometry()
 	    sprintf(nameSense1,"S1_MUON%d",id);
 	    sprintf(nameSense2,"S2_MUON%d",id);
 	    sprintf(nameFrame,"F_MUON%d",id);	
-	    if (i<5) {	                      // tracking chambers
+	    if (i<3) {	                      // tracking chambers
 		rmin = kDmin[i]/2.-3;
 		rmax = kDmax[i]/2.+3;
 		new TTUBE(nameChamber,"Mother","void",rmin,rmax,0.25,1.);
@@ -499,6 +503,62 @@ void AliMUON::BuildGeometry()
 		sprintf(nameNode,"MUON%d",600+id);   
 		nodeF = new TNode(nameNode,"Frame3",frMUON,0,-dr,0,rot270,"");
 		nodeF->SetLineColor(kColorMUON);
+	    } else if (i == 3 || i == 4) {
+		Int_t   npcb[7] = {7, 7, 6, 6, 5, 4, 3};
+		char nameSlat[9];
+		
+		Float_t xpos=4.;
+		Float_t ypos1=-0.75+20.;
+		Float_t ypos2= 0.75-20.;
+		
+		new TBRIK(nameChamber,"Mother","void",340,340,5.);
+		top->cd();
+		sprintf(nameNode,"MUON%d",100+id);
+		node = new TNode(nameNode,"Chambernode",nameChamber,0,0,zpos,"");
+		node->SetLineColor(kBlack);
+		fNodes->Add(node);
+		TNode* nodeSlat;
+		Int_t color;
+		
+		for (Int_t j=0; j<7; j++)
+		{
+		    printf("\n BuildGeometry %d", j);
+		    
+		    sprintf(nameSlat,"SLAT%d",100*id+j);
+		    new TBRIK(nameSlat,"Slat Module","void",20.*npcb[j],20.,0.25);
+		    node->cd();
+		    xpos=20.*npcb[j]+4;
+		    if (j==0) xpos+=30;
+
+		    color =  TMath::Even(j) ? kColorMUON2 : kColorMUON3;
+		    
+		    sprintf(nameNode,"SLAT%d",100*id+j);
+		    nodeSlat = 
+			new TNode(nameNode,"Slat Module",nameSlat,xpos,ypos1,0,"");
+		    nodeSlat->SetLineColor(color);
+
+		    node->cd();
+		    sprintf(nameNode,"SLAT%d",100*id+j+7);
+		    nodeSlat = 
+			new TNode(nameNode,"Slat Module",nameSlat,-xpos,ypos1,0,"");
+		    nodeSlat->SetLineColor(color);
+		    
+		    color =  TMath::Even(j) ? kColorMUON3 : kColorMUON2;
+		    sprintf(nameNode,"SLAT%d",100*id+j+14);
+		    nodeSlat = 
+			new TNode(nameNode,"Slat Module",nameSlat,xpos,ypos2,0,"");
+		    nodeSlat->SetLineColor(color);
+
+		    node->cd();
+		    sprintf(nameNode,"SLAT%d",100*id+j+21);
+		    nodeSlat = 
+			new TNode(nameNode,"Slat Module",nameSlat,-xpos,ypos2,0,"");
+		    nodeSlat->SetLineColor(color);
+		    
+		    ypos1+=38.5;
+		    ypos2-=38.5;
+		}
+		
 	    } else { 
 		zscale=zpos/kCz[5];
 		Float_t xsize=kDmin[i]*zscale;
@@ -882,10 +942,13 @@ void AliMUON::MakePadHits(Float_t xhit,Float_t yhit, Float_t zhit,
     clhits[0]=fNhits+1;
 //
 //
+//    if (idvol == 6) printf("\n ->Disintegration %f %f %f", xhit, yhit, eloss );
+    
+
     ((AliMUONChamber*) (*fChambers)[idvol])
 	->DisIntegration(eloss, tof, xhit, yhit, zhit, nnew, newclust);
     Int_t ic=0;
-    
+//    if (idvol == 6) printf("\n nnew  %d \n", nnew);
 //
 //  Add new clusters
     for (Int_t i=0; i<nnew; i++) {
@@ -1020,6 +1083,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	    {
 		Int_t   nch   = mHit->fChamber-1;  // chamber number
 		if (nch > AliMUONConstants::NCh()-1) continue;
+//		if (nch > 9) continue;
 		iChamber = &(pMUON->Chamber(nch));
                 // new 17.07.99
 		if (addBackground) {
@@ -1047,14 +1111,15 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 		    Int_t ipx      = mPad->fPadX;       // pad number on X
 		    Int_t ipy      = mPad->fPadY;       // pad number on Y
 		    Int_t iqpad    = Int_t(mPad->fQpad);// charge per pad
+//		    printf("\n Pad: %d %d %d %d", ipx, ipy, cathode,nch);
 //
 //
 		    
 		    if (cathode != (icat+1)) continue;
 		    // fill the info array
-		    Float_t thex, they, thez;
+//		    Float_t thex, they, thez;
 		    segmentation=iChamber->SegmentationModel(cathode);
-		    segmentation->GetPadC(ipx,ipy,thex,they,thez);
+//		    segmentation->GetPadC(ipx,ipy,thex,they,thez);
 //		    Float_t rpad=TMath::Sqrt(thex*thex+they*they);
 //		    if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
 
@@ -1095,8 +1160,8 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 			Int_t lastEntry=trlist->GetLast();
 			TVector *pTrack=(TVector*)trlist->At(lastEntry);
 			TVector &ptrk=*pTrack;
-			Int_t lastTrack=Int_t(ptrk(0));
-			Int_t lastCharge=Int_t(ptrk(1));
+			Int_t lastTrack  = Int_t(ptrk(0));
+			Int_t lastCharge = Int_t(ptrk(1));
 			if (lastTrack==track) {
 			    lastCharge+=iqpad;
 			    trlist->RemoveAt(lastEntry);
@@ -1112,8 +1177,8 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 			    for (Int_t tr=0;tr<nptracks;tr++) {
 				TVector *ppTrack=(TVector*)trlist->At(tr);
 				TVector &pptrk=*ppTrack;
-				trk[tr]=Int_t(pptrk(0));
-				chtrk[tr]=Int_t(pptrk(1));
+				trk[tr]   = Int_t(pptrk(0));
+				chtrk[tr] = Int_t(pptrk(1));
 			    }
 			} // end if nptracks
 		    } //  end if pdigit
@@ -1170,11 +1235,13 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 			Int_t iqpad    = Int_t(mPad->fQpad);// charge per pad
 
 			if (cathode != (icat+1)) continue;
-			Float_t thex, they, thez;
-			segmentation=iChamber->SegmentationModel(cathode);
-			segmentation->GetPadC(ipx,ipy,thex,they,thez);
-			Float_t rpad=TMath::Sqrt(thex*thex+they*they);
-			if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
+			printf("\n Pad: %d %d %d", ipx, ipy, cathode);
+			
+//			Float_t thex, they, thez;
+//			segmentation=iChamber->SegmentationModel(cathode);
+//			segmentation->GetPadC(ipx,ipy,thex,they,thez);
+//			Float_t rpad=TMath::Sqrt(thex*thex+they*they);
+//			if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
 			new((*pAddress)[countadr++]) TVector(2);
 			TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
 			trinfo(0)=-1;  // tag background
