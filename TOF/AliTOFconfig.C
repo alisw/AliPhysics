@@ -90,7 +90,7 @@ void Config()
     //gAlice->SetField(-999,2,2.);//Scale factor=2 ==> field=0.4T
 
     Int_t   iABSO = 1;
-    Int_t   iCASTOR = 1;
+    Int_t   iCRT = 0;
     Int_t   iDIPO = 1;
     Int_t   iFMD = 1;
     Int_t   iFRAME = 1;
@@ -287,11 +287,11 @@ void Config()
         AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
     }
 
-    if (iCASTOR)
+    if (iCRT)
     {
         //=================== CASTOR parameters ============================
 
-        AliCASTOR *CASTOR = new AliCASTORv1("CASTOR", "normal CASTOR");
+        AliCASTOR *CASTOR = new AliCRTv0("CRT", "normal CRT");
     }
 
     if (iTRD)
