@@ -139,8 +139,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
 {
   // ctor
   fManager = rd ; 
-  //  SetName(fManager->GetInputFolderName(0)) ;
-  // take title as name of stream 0
+  fEventFolderName = fManager->GetInputFolderName(0) ;
   SetTitle(dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetFileName(0));
   InitParameters() ; 
   Init() ; 
