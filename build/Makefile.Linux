@@ -32,7 +32,7 @@ LDFLAGS       = $(OPT)
 
 SHLD	      = $(LD)
 SOFLAGS       = -O2 -shared -Wl 
-SHLIB         = 
+SHLIB         = -lg2c
 SOEXT 	      = so
 
 # additional ROOT libraries

@@ -122,7 +122,7 @@ endif
 
 $(@PACKAGE@LIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 	  @echo "***** Linking library $@ *****"
-	  $(SHLD) $(SOFLAGS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB)  -o $@ $(@PACKAGE@O) $(@PACKAGE@DO)
+	  $(SHLD) $(SOFLAGS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS)  -o $@ $(@PACKAGE@O) $(@PACKAGE@DO) $(SHLIB)
  
 $(@PACKAGE@BIN):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 	  @echo "***** Makeing executable $@ *****"

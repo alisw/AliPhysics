@@ -7,9 +7,9 @@ EMCAL/module.mk:	EMCAL/libEMCAL.pkg
 EVGEN/module.mk:	EVGEN/libEVGEN.pkg
 FMD/module.mk:		FMD/libFMD.pkg
 GEANT321/module.mk:	GEANT321/libgeant321.pkg
-HIJING/module.mk:	HIJING/libhijing.pkg
+HIJING/module.mk:	HIJING/libhijing.pkg HIJING/libdummyhijing.pkg
 ITS/module.mk:		ITS/libITS.pkg
-MEVSIM/module.mk:	MEVSIM/libmevsim.pkg
+MEVSIM/module.mk:	MEVSIM/libmevsim.pkg MEVSIM/libdummymevsim.pkg
 MINICERN/module.mk:	MINICERN/libminicern.pkg
 MUON/module.mk:		MUON/libMUON.pkg
 PDF/moudle.mk:		PDF/libpdf.pkg
@@ -22,7 +22,7 @@ RICH/module.mk:		RICH/libRICH.pkg
 START/module.mk:	START/libSTART.pkg
 STEER/module.mk:	STEER/libSTEER.pkg
 STRUCT/module.mk:	STRUCT/libSTRUCT.pkg
-TGeant3/module.mk:	TGeant3/libTGeant3.pkg
+TGeant3/module.mk:	TGeant3/libTGeant3.pkg TGeant3/libTGeant3Dummy.pkg
 THijing/module.mk:	THijing/libTHijing.pkg
 TMEVSIM/module.mk:	TMEVSIM/libTMevSim.pkg
 TOF/module.mk:		TOF/libTOF.pkg
@@ -31,4 +31,4 @@ TRD/module.mk:		TRD/libTRD.pkg
 ZDC/module.mk:		ZDC/libZDC.pkg
 LHC/module.mk:		LHC/libLHC.pkg
 THbtp/module.mk:	THbtp/libTHbtp.pkg
-HBTP/module.mk:		HBTP/libHBTP.pkg 
+HBTP/module.mk:		HBTP/libHBTP.pkg HBTP/libdummyHBTP.pkg
