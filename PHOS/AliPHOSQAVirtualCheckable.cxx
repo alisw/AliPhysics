@@ -1,0 +1,152 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+//_________________________________________________________________________
+//  Abstract Class for a QA checkable    
+//
+//*-- Author :  Yves Schutz (SUBATECH) 
+//////////////////////////////////////////////////////////////////////////////
+
+// --- ROOT system ---
+
+#include "TClass.h"
+#include "TFolder.h"
+#include "TROOT.h"
+
+
+// --- Standard library ---
+
+#include <iostream.h>
+
+// --- AliRoot header files ---
+
+#include "AliPHOSQAVirtualCheckable.h"
+#include "AliPHOSQAChecker.h"
+#include "AliPHOSQAAlarm.h" 
+
+ClassImp(AliPHOSQAVirtualCheckable)
+
+
+//____________________________________________________________________________ 
+  AliPHOSQAVirtualCheckable::AliPHOSQAVirtualCheckable(const char * name) : TNamed(name, name) 
+{
+  // ctor, creates the task(s)
+  fChange = kFALSE ; 
+  // create a new folder that will hold the list of alarms
+  //  get the alice folder
+  TFolder * alice = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ;
+  //  the folder that contains the alarms for PHOS   
+  fAlarms = (TFolder*)alice->FindObject("folders/QAAlarms/PHOS");   
+  //  make it the owner of the objects that it contains
+  fAlarms->SetOwner() ;
+  //  add the alarms list to //YSAlice/folders/QAAlarms/PHOS
+  TList * alarms = new TList() ; // deleted when fAlarms is deleted
+  alarms->SetName(name) ; 
+  fAlarms->Add(alarms) ; 
+
+}
+
+//____________________________________________________________________________ 
+  AliPHOSQAVirtualCheckable::~AliPHOSQAVirtualCheckable()
+{
+  // ctor 
+  delete fAlarms ; 
+  delete fType ; 
+}
+
+//____________________________________________________________________________ 
+  void AliPHOSQAVirtualCheckable::AddChecker(AliPHOSQAChecker * ch)
+{
+  // Associates the checkable object with a task (that can be a list of tasks)
+    ch->AddCheckable(this) ; 
+    if (fChecker)
+      fChecker->Add(ch) ;
+    else 
+      fChecker = ch ; 
+}
+
+//____________________________________________________________________________ 
+  void AliPHOSQAVirtualCheckable::Alarms() const
+{
+  // Prints all the alarms 
+  TList * alarms = GetAlarms() ; 
+  if (alarms->IsEmpty() )
+    cout << " No alarms raised for checkable " << GetName() << endl ; 
+  else {
+    TIter next(alarms);
+    AliPHOSQAAlarm * alarm ; 
+    while ( (alarm = (AliPHOSQAAlarm*)next()) ) 
+      alarm->Print() ; 
+  }
+}
+
+//____________________________________________________________________________ 
+void AliPHOSQAVirtualCheckable::CheckMe() 
+{
+  // All the attached checkers will check this checkable
+
+  fChecker->CheckIt(this) ;
+}
+
+//____________________________________________________________________________ 
+void AliPHOSQAVirtualCheckable::RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message)
+{
+  // Raise an alarm and store it in the appropriate folder : //YSAlice/folders/QAAlarms/PHOS/..
+  // cout << message ; 
+  AliPHOSQAAlarm * alarm = new AliPHOSQAAlarm(time, checked, checker, message)  ;   
+  GetAlarms()->Add(alarm) ; 
+}
+
+//____________________________________________________________________________ 
+  void AliPHOSQAVirtualCheckable::RemoveChecker(AliPHOSQAChecker *ch)
+{
+  // Remove the specified checker from the list of tasks
+  // and the present checkable from the list of checkables of the specified checker
+  fChecker->Remove(ch) ;
+  fChecker->GetListOfCheckables()->Remove(this) ;
+  
+}
+
+
+//____________________________________________________________________________ 
+  void AliPHOSQAVirtualCheckable::ResetAlarms()
+{
+  // resets the list of alarms (delete the alarms from the list)
+  TList * alarms = GetAlarms() ; 
+  if (alarms->IsEmpty() )
+    cout << " No alarms raised for checkable " << GetName() << endl ; 
+  else {
+    alarms->Delete() ; 
+    cout << " Reset alarms for checkable " << GetName() << endl ; 
+  }
+}
+
+//____________________________________________________________________________ 
+  void AliPHOSQAVirtualCheckable::Status() const  
+{
+  // Tells which checkers are attached to this checkable
+  TList * list = fChecker->GetListOfTasks(); 
+  if (list->IsEmpty() )
+    cout << "No checkers are in use for " << GetName() << endl ;
+  else {    
+    cout << "The following checkers are in use for " << GetName() << endl ;
+    TIter next(list) ; 
+    AliPHOSQAChecker * checker ; 
+    while ( (checker = (AliPHOSQAChecker*)next() ) ) 
+      checker->Print() ; 
+  }
+}
