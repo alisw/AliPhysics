@@ -202,7 +202,13 @@ Bool_t AliRawReaderRoot::ReadMiniHeader()
     }
     fMiniHeader = (AliMiniHeader*) fPosition;
     fPosition += sizeof(AliMiniHeader);
-    CheckMiniHeader();
+    if (!CheckMiniHeader()) {
+      Warning("ReadMiniHeader", "skipping %d bytes", fEnd - fPosition);
+      fSubEvent->GetHeader()->Dump();
+      fCount = 0;
+      fPosition = fEnd;
+      continue;
+    }
     fCount = fMiniHeader->fSize;
     if (fPosition + fCount > fEnd) {  // check data size in mini header and sub event
       Error("ReadMiniHeader", "size in mini header exceeds event size!");
