@@ -998,9 +998,6 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gsvolu("BFII", "TUBE", kAir, tpar, 3);  
   gMC->Gspos("BFII", 1, "BFIR", 0., 0., 0., 0, "ONLY");  
 
-  dz = kBFMdz/2. -  kBFRdz / 2.;
-  gMC->Gspos("BFIR", 1, "BFMO", 0., 0., dz, 0, "ONLY");  
-
   //
   // Outer RING
   tpar[0] =  kBFMRou - kBFRdr;
