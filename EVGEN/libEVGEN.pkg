@@ -1,4 +1,4 @@
-SRCS=   AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
+SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenCocktail.cxx AliGenFLUKAsource.cxx \
 		AliGenLib.cxx \
                 AliGenMUONlib.cxx AliGenParam.cxx AliGenPythia.cxx \
@@ -12,7 +12,8 @@ SRCS=   AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliDecayer.cxx AliDecayerPythia.cxx \
                 AliGenMevSim.cxx AliMevSimParticle.cxx AliMevSimConfig.cxx \
 	        AliGenMC.cxx AliGenCocktailAfterBurner.cxx \
-         AliGenHBTprocessor.cxx 
+                AliGenHBTprocessor.cxx \
+		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx 
 
 # Headerfiels for this particular package (Path respect to own directory)
 HDRS= $(SRCS:.cxx=.h) 
