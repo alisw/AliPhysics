@@ -14,7 +14,7 @@ class AliFastEvent : public TObject {
     virtual ~AliFastEvent(){;}
     virtual void  SetMultiplicty(Int_t mul) 
 	{fMultiplicity = mul;}
-    virtual Int_t GetMultiplicty(Int_t mul) 
+    virtual Int_t GetMultiplicty() 
 	{return fMultiplicity;}
     virtual void SetVertex(const TArrayF &o) 
 	{

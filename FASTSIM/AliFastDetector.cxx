@@ -124,13 +124,13 @@ Bool_t  AliFastDetector::EvaluateAcceptance(AliFastParticle* part)
     return acc;
 }
 
-void    AliFastDetector::EvaluateResponse(AliFastParticle* part)
+void    AliFastDetector::EvaluateResponse(AliFastParticle* /*part*/)
 {
     ;
 }
 
 void AliFastDetector::
-AddSubdetector(AliFastDetector *Detector, char* Name)
+AddSubdetector(AliFastDetector *Detector, char* /*Name*/)
 {
 //
 //  Add detector to list   

@@ -234,7 +234,7 @@ Double_t AliFastGlauber::WSz(Double_t* x, Double_t* par)
     return y;
 }
 
-Double_t AliFastGlauber::WSta(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WSta(Double_t* x, Double_t* /*par*/)
 {
 //
 //  Thickness function 
@@ -261,7 +261,7 @@ Double_t AliFastGlauber::WStarfi(Double_t* x, Double_t* par)
 }
 
 
-Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* /*par*/)
 {
 //
 //  Overlap function
@@ -294,7 +294,7 @@ Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* par)
     return y;
 }
 
-Double_t AliFastGlauber::WSgeo(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WSgeo(Double_t* x, Double_t* /*par*/)
 {
 //
 //  Geometrical Cross-Section
@@ -321,7 +321,7 @@ Double_t AliFastGlauber::WSbinary(Double_t* x, Double_t* par)
     return y;
 }
 
-Double_t AliFastGlauber::WSN(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WSN(Double_t* x, Double_t* /*par*/)
 {
 //
 //  Number of hard processes per event

@@ -12,7 +12,7 @@ class AliFastMuonTriggerEff : public AliFastResponse {
     
  public:
     AliFastMuonTriggerEff();
-    AliFastMuonTriggerEff(char* Name, char* Title) {;}    
+    AliFastMuonTriggerEff(char* Name, char* Title):AliFastResponse(Name, Title) {;}    
     virtual ~AliFastMuonTriggerEff(){;}
     virtual void    Init();
     virtual void    Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi,
@@ -33,7 +33,7 @@ class AliFastMuonTriggerEff : public AliFastResponse {
     Float_t fDtheta;              // Delta_theta
     Int_t   fCut;                 // Cut type (low/high)
     Int_t   fZones;               // Total number of zones
-    const static Int_t   fSim=2;  // Number of pt extentions (internal use)
+    static const Int_t   fSim=2;  // Number of pt extentions (internal use)
     Float_t** fEffLow;            // Table for low-pt  cut bkg=0
     Float_t** fEffHigh;           // Table for high-pt cut bkg=0
     
