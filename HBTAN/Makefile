@@ -18,7 +18,8 @@ SRCS          = AliHBTAnalysis.cxx AliHBTFunction.cxx \
                 AliHBTCorrelFctn.cxx \
                 AliHBTReader.cxx AliHBTReaderTPC.cxx\
                 AliHBTQResolutionFctns.cxx AliHBTReaderPPprod.cxx\
-		AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx
+		AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx\
+		AliHBTReaderKineTree
 
 # Fortran sources
 
@@ -48,7 +49,7 @@ OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
-INCLUDES      = -I$(ALICE_ROOT)/TPC/ -I$(ALICE_ROOT)/CONTAINERS/
+INCLUDES      = -I$(ALICE_ROOT)/TPC/ -I$(ALICE_ROOT)/CONTAINERS/ -I$(ALICE_ROOT)/ITS/
 
 CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/ $(INCLUDES)
  
