@@ -567,7 +567,7 @@ void AliPHOSDigitizer::InitParameters()
 }
 
 //__________________________________________________________________
-void AliPHOSDigitizer::MixWith(const char* headerFile)
+void AliPHOSDigitizer::MixWith(const char* headerFile,const char* brname)
 {
   // Allows to produce digits by superimposing background and signal event.
   // It is assumed, that headers file with SIGNAL events is opened in 
@@ -598,16 +598,17 @@ void AliPHOSDigitizer::MixWith(const char* headerFile)
   // before it was ???? "Folders/RunMC/Event/Data/PHOS/SDigits" ; 
   path += headerFile ; 
   path += "/" ; 
-  path += GetName() ;
+  if(brname)
+     path += brname ; 
+  else
+    path += GetName() ;
   if ( gROOT->FindObjectAny(path.Data()) ) {
     Warning("MixWith", "Entry already exists, do not add\n" ) ;
     return;
   }
-  
   gime->PostSDigits(GetName(),headerFile) ;
-  
   // check if the requested file is already open or exist and if SDigits Branch exist
-  TFile * file = (TFile*)gROOT->FindObject(headerFile); 
+  TFile * file = (TFile*)gROOT->GetFile(headerFile); 
   if ( !file ) { 
     file = new TFile(headerFile, "READ") ; 
     if (!file) { 

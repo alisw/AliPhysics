@@ -68,7 +68,7 @@ public:
 
   //General
   const Int_t   GetDigitsInRun()  const { return fDigitsInRun ;}  
-  void    MixWith(const char* HeaderFile) ; // Add another one file to mix
+  void    MixWith(const char* HeaderFile,const char* brname = 0) ; // Add another one file to mix
   void    Print(Option_t* option)const ;
  
   AliPHOSDigitizer & operator = (const AliPHOSDigitizer & rvalue)  {
