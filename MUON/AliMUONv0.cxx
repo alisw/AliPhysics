@@ -93,7 +93,7 @@ void AliMUONv0::CreateGeometry()
      Float_t zpos1, zpos2, zfpos;
      Float_t dframep=3.; // Value for station 3 should be 6 ...
      Float_t dframep1=3.;
-     Bool_t frames=true;
+     Bool_t frames=kTRUE;
      
      
      Float_t dframez=0.9;

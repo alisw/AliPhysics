@@ -935,6 +935,7 @@ void AliMUONdisplay::LoadHits(Int_t chamber)
 // Loop on all detectors
 
    if (chamber > 10) return;
+   Int_t track;
 
    fChamber=chamber;
  
@@ -951,7 +952,7 @@ void AliMUONdisplay::LoadHits(Int_t chamber)
 
 
    Int_t nthits=0;
-    for (Int_t track=0; track<ntracks;track++) {
+    for (track=0; track<ntracks;track++) {
       gAlice->ResetHits();
       gAlice->TreeH()->GetEvent(track);
          TClonesArray *MUONhits  = MUON->Hits();
@@ -974,7 +975,7 @@ void AliMUONdisplay::LoadHits(Int_t chamber)
    // end old stuff
 
     Int_t nhold=0;
-    for (Int_t track=0; track<ntracks;track++) {
+    for (track=0; track<ntracks;track++) {
       gAlice->ResetHits();
       gAlice->TreeH()->GetEvent(track);
          TClonesArray *MUONhits  = MUON->Hits();

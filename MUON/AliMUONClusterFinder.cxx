@@ -463,9 +463,9 @@ void AliMUONClusterFinder::SplitByLocalMaxima(AliMUONRawCluster *c)
 	     cnew.fX=Float_t(xrec[j]);
 	     cnew.fY=Float_t(yrec[j]);
 	     if (j==0) {
-		 cnew.fQ=static_cast<Int_t>(gChargeTot*qfrac);
+		 cnew.fQ=Int_t(gChargeTot*qfrac);
 	     } else {
-		 cnew.fQ=static_cast<Int_t>(gChargeTot*(1-qfrac));
+		 cnew.fQ=Int_t(gChargeTot*(1-qfrac));
 	     }
 	     gSegmentation->SetHit(xrec[j],yrec[j]);
 	     for (i=0; i<mul; i++) {
@@ -483,7 +483,7 @@ void AliMUONClusterFinder::SplitByLocalMaxima(AliMUONRawCluster *c)
 	 }
      }
 
-     Bool_t fitted=true;
+     Bool_t fitted=kTRUE;
 
      if (NLocal !=2 || !fitted) {
  // Check if enough local clusters have been found,
@@ -855,7 +855,7 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
     count++;
     sprintf(canvasname,"c%d",count);
 
-    Int_t ns=101;
+    const Int_t ns=101;
     Float_t xg[ns], yg[ns], xrg[ns], yrg[ns];
     Float_t xsig[ns], ysig[ns];
    
@@ -1060,7 +1060,7 @@ Float_t DiscrCharge(Int_t i,Double_t *par)
 	}
 	gFirst=0;
 	//printf("\n sum of charge from DiscrCharge %f\n", qtot);
-	gChargeTot=static_cast<Int_t>(qtot);
+	gChargeTot=Int_t(qtot);
 	
     }
     gSegmentation->SetPad(gix[i], giy[i]);

@@ -344,7 +344,7 @@ public:
 
    Float_t GetRadius() {return TMath::Sqrt(fX*fX+fY*fY);}
 
-   Bool_t IsSortable() const {return true;}
+   Bool_t IsSortable() const {return kTRUE;}
    Int_t  Compare(TObject *obj);
    Int_t PhysicsContribution();
    static Int_t BinarySearch(Float_t r, TArrayF, Int_t from, Int_t upto);

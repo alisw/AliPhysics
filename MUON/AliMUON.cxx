@@ -103,7 +103,7 @@ Float_t type_of_call rndm() {return gRandom->Rndm();}
 // Static variables for the pad-hit iterator routines
 static Int_t sMaxIterPad=0;
 static Int_t sCurIterPad=0;
-static TTree *TH1;
+static TTree *TrH1;
 static TTree *TK1;
 static TClonesArray *fHits2;        //Listof hits for one track only
 static TClonesArray *fClusters2;    //List of clusters for one track only
@@ -206,24 +206,25 @@ AliMUON::~AliMUON()
 
     printf("Calling AliMUON destructor !!!\n");
     
+  Int_t i;
   fIshunt  = 0;
   delete fHits;
   delete fClusters;
   delete fTreeC;
 
-  for (Int_t i=0;i<10;i++) {
+  for (i=0;i<10;i++) {
       delete (*fDchambers)[i];
       fNdch[i]=0;
   }
   delete fDchambers;
 
-  for (Int_t i=0;i<10;i++) {
+  for (i=0;i<10;i++) {
       delete (*fRawClusters)[i];
       fNrawch[i]=0;
   }
   delete fRawClusters;
 
-  for (Int_t i=0;i<10;i++) {
+  for (i=0;i<10;i++) {
       delete (*fCathCorrel)[i];
       fNcorch[i]=0;
   }
@@ -722,8 +723,8 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
   
-    static Bool_t first=true;
-//    static TTree *TH1;
+    static Bool_t first=kTRUE;
+//    static TTree *TrH1;
     static TFile *File;
     char *Add = strstr(option,"Add");
     //char *listoftracks = strstr(opt,"listoftracks");
@@ -751,37 +752,37 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
 	    fHits2     = new TClonesArray("AliMUONhit",1000  );
 	    fClusters2 = new TClonesArray("AliMUONcluster",10000);
 	}	    
-	first=false;
+	first=kFALSE;
 	File->cd();
 	//File->ls();
 	// Get Hits Tree header from file
 	if(fHits2) fHits2->Clear();
 	if(fClusters2) fClusters2->Clear();
-	if(TH1) delete TH1;
-	TH1=0;
+	if(TrH1) delete TrH1;
+	TrH1=0;
 	
 	char treeName[20];
 	sprintf(treeName,"TreeH%d",bgr_ev);
-	TH1 = (TTree*)gDirectory->Get(treeName);
-        //printf("TH1 %p of treename %s for event %d \n",TH1,treeName,bgr_ev);
+	TrH1 = (TTree*)gDirectory->Get(treeName);
+        //printf("TrH1 %p of treename %s for event %d \n",TrH1,treeName,bgr_ev);
 	
-	if (!TH1) {
+	if (!TrH1) {
 	    printf("ERROR: cannot find Hits Tree for event:%d\n",bgr_ev);
 	}
 	// Set branch addresses
 	TBranch *branch;
 	char branchname[20];
 	sprintf(branchname,"%s",GetName());
-	if (TH1 && fHits2) {
-	    branch = TH1->GetBranch(branchname);
+	if (TrH1 && fHits2) {
+	    branch = TrH1->GetBranch(branchname);
 	    if (branch) branch->SetAddress(&fHits2);
 	}
-	if (TH1 && fClusters2) {
-	    branch = TH1->GetBranch("MUONCluster");
+	if (TrH1 && fClusters2) {
+	    branch = TrH1->GetBranch("MUONCluster");
 	    if (branch) branch->SetAddress(&fClusters2);
 	}
 // test
-	//Int_t ntracks1 =(Int_t)TH1->GetEntries();
+	//Int_t ntracks1 =(Int_t)TrH1->GetEntries();
 	//printf("background - ntracks1 - %d\n",ntracks1);
     }
     //
@@ -943,7 +944,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
 	// open the file with background
        
 	if (Add ) {
-	    ntracks =(Int_t)TH1->GetEntries();
+	    ntracks =(Int_t)TrH1->GetEntries();
 	    //printf("background - icat,ntracks1  %d %d\n",icat,ntracks);
 	    //printf("background - Start loop over tracks \n");     
 //
@@ -954,7 +955,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
 		if (fHits2)       fHits2->Clear();
 		if (fClusters2)   fClusters2->Clear();
 
-		TH1->GetEvent(track);
+		TrH1->GetEvent(track);
 //
 //   Loop over hits
 		AliMUONhit* mHit;
@@ -968,12 +969,12 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
 		    Int_t rmax = (Int_t)iChamber->ROuter();
                     Float_t xbgr=mHit->fX;
 		    Float_t ybgr=mHit->fY;
-		    Bool_t cond=false;
+		    Bool_t cond=kFALSE;
 		    
 		    for (Int_t imuon =0; imuon < nmuon[nch]; imuon++) {
 			Float_t dist= (xbgr-xhit[nch][imuon])*(xbgr-xhit[nch][imuon])
 			    +(ybgr-yhit[nch][imuon])*(ybgr-yhit[nch][imuon]);
-			if (dist<100) cond=true;
+			if (dist<100) cond=kTRUE;
 		    }
 		    if (!cond) continue;
 		    
@@ -1150,11 +1151,11 @@ void AliMUON::Digitise(Int_t nev,Int_t bgr_ev,Option_t *option,Option_t *opt,Tex
 	MUON->ResetDigits();
 	list->Delete();
 	//printf("Here\n");
-	for(Int_t i=0;i<10;++i) {
-	    if (HitMap[i]) {
-		hm=HitMap[i];
+	for(Int_t ii=0;ii<10;++ii) {
+	    if (HitMap[ii]) {
+		hm=HitMap[ii];
 		delete hm;
-		HitMap[i]=0;
+		HitMap[ii]=0;
 	    }
 	}
 	
@@ -1321,7 +1322,7 @@ void AliMUON::CathodeCorrelation(Int_t nev)
 // Loop on chambers and on clusters on the cathode plane with the highest
 // number of clusters
 
-    static Bool_t first=true;
+    static Bool_t first=kTRUE;
 
      AliMUONRawCluster  *mRaw1;
      AliMUONRawCluster  *mRaw2;
@@ -1346,7 +1347,7 @@ void AliMUON::CathodeCorrelation(Int_t nev)
      Float_t xrec2, yrec2;
      Float_t xd0, xdif, ydif;
      Float_t ysrch,xd,xmax,ymax;
-     Int_t ilow, iup, iraw1;
+     Int_t ilow, iup, iraw1, i;
      //
      Float_t xarray[50];
      Float_t xdarray[50];
@@ -1356,14 +1357,14 @@ void AliMUON::CathodeCorrelation(Int_t nev)
 
      // Int_t nraw[2], entry,cathode;
 
-     for (int i=0;i<50;i++) {
+     for (i=0;i<50;i++) {
          xdarray[i]=1100.;
          xarray[i]=0.;
          yarray[i]=0.;
          qarray[i]=0.;
          idx2[i]=-1;
      }
-     for (int i=0;i<4;i++) {
+     for (i=0;i<4;i++) {
           idx[i]=-1;
           xc2[i]=0.;
           yc2[i]=0.;
@@ -1508,17 +1509,17 @@ void AliMUON::CathodeCorrelation(Int_t nev)
 		 //if (idx[0] <0)  printf("iraw1 imax idx2[0] idx[0] %d %d %d %d\n",iraw1,imax,idx2[0],idx[0]);
                  AddCathCorrel(ich,idx,xc2,yc2);
 		 // reset
-                 for (int i=0;i<counter;i++) {
-		     xdarray[i]=1100.;
-		     xarray[i]=0.;
-		     yarray[i]=0.;
-		     qarray[i]=0.;
-		     idx2[i]=-1;
+                 for (Int_t ii=0;ii<counter;ii++) {
+		     xdarray[ii]=1100.;
+		     xarray[ii]=0.;
+		     yarray[ii]=0.;
+		     qarray[ii]=0.;
+		     idx2[ii]=-1;
 		 }
-                 for (int i=0;i<3;i++) {
-		     idx[i]=-1;
-		     xc2[i]=0.;
-		     yc2[i]=0.;
+                 for (Int_t iii=0;iii<3;iii++) {
+		     idx[iii]=-1;
+		     xc2[iii]=0.;
+		     yc2[iii]=0.;
 	         }
 	     } // iraw1
 	 }
@@ -1532,7 +1533,7 @@ void AliMUON::CathodeCorrelation(Int_t nev)
 // 
      if (first) {
          MakeTreeC("C");
-         first=false;
+         first=kFALSE;
      }
      TTree *TC=TreeC();
      TC->Fill();
@@ -1542,10 +1543,10 @@ void AliMUON::CathodeCorrelation(Int_t nev)
      static Int_t countev=0;
      Int_t countch=0;
 
-     for (int i=0;i<10;i++) {
-	   fCch= CathCorrelAddress(i);
+     for (Int_t ii=0;ii<10;ii++) {
+	   fCch= CathCorrelAddress(ii);
 	   Int_t ncor=fCch->GetEntriesFast();
-	   printf (" i, ncor %d %d \n",i,ncor);
+	   printf (" ii, ncor %d %d \n",ii,ncor);
            if (ncor>=2) countch++;
      }
 
@@ -1804,7 +1805,7 @@ void AliMUON::Reconst(Int_t &ifit, Int_t &idebug, Int_t bgd_ev, Int_t &nev, Int_
   //
   // open kine and hits tree of background file for reconstruction of geant hits 
   // call tracking fortran program
-  static Bool_t first=true;
+  static Bool_t first=kTRUE;
   static TFile *File;
   char *Add = strstr(option,"Add");
   
@@ -1816,31 +1817,31 @@ void AliMUON::Reconst(Int_t &ifit, Int_t &idebug, Int_t bgd_ev, Int_t &nev, Int_
       cout<<"I have opened "<<fFileName<<" file "<<endl;
       fHits2     = new TClonesArray("AliMUONhit",1000  );
       fParticles2 = new TClonesArray("GParticle",1000);
-      first=false;
+      first=kFALSE;
     }
     File->cd();
     if(fHits2) fHits2->Clear();
     if(fParticles2) fParticles2->Clear();
-    if(TH1) delete TH1;
-    TH1=0;
+    if(TrH1) delete TrH1;
+    TrH1=0;
     if(TK1) delete TK1;
     TK1=0;
     // Get Hits Tree header from file
     char treeName[20];
     sprintf(treeName,"TreeH%d",bgd_ev);
-    TH1 = (TTree*)gDirectory->Get(treeName);
-    if (!TH1) {
+    TrH1 = (TTree*)gDirectory->Get(treeName);
+    if (!TrH1) {
       printf("ERROR: cannot find Hits Tree for event:%d\n",bgd_ev);
     }
     // set branch addresses
     TBranch *branch;
     char branchname[30];
     sprintf(branchname,"%s",GetName());
-    if (TH1 && fHits2) {
-      branch = TH1->GetBranch(branchname);
+    if (TrH1 && fHits2) {
+      branch = TrH1->GetBranch(branchname);
       if (branch) branch->SetAddress(&fHits2);
     }
-    TH1->GetEntries();
+    TrH1->GetEntries();
     // get the Kine tree
     sprintf(treeName,"TreeK%d",bgd_ev);
     TK1 = (TTree*)gDirectory->Get(treeName);
@@ -2412,15 +2413,15 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
       } // if MUON
   } // track loop first file
 
-  if (TH1 && fHits2 ) { // if background file
-    ntracks =(Int_t)TH1->GetEntries();
+  if (TrH1 && fHits2 ) { // if background file
+    ntracks =(Int_t)TrH1->GetEntries();
     printf("Trackf_read - 2-nd file - ntracks %d\n",ntracks);
 
     //  Loop over tracks
     for (Int_t track=0; track<ntracks; track++) {
       
       if (fHits2) fHits2->Clear();
-      TH1->GetEvent(track);
+      TrH1->GetEvent(track);
 
       //  Loop over hits
       for (int i=0;i<fHits2->GetEntriesFast();i++) 
@@ -2469,7 +2470,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	  } // check limits (maxidg)
 	} // hit loop 
     } // track loop
-  } // if TH1
+  } // if TrH1
 
   ievr = nev;
   nhittot1 = maxidg ;
