@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/23 13:37:40  morsch
+Correct z-position of slat planes.
+
 Revision 1.4  2000/10/22 16:55:43  morsch
 Use only x-symmetry in global to local transformations and delegation.
 
@@ -38,6 +41,9 @@ Segmentation class for chambers built out of slats.
 #include "TObjArray.h"
 #include "AliRun.h"
 #include <TMath.h>
+#include <TBRIK.h>
+#include <TNode.h>
+#include <TGeometry.h>
 #include <iostream.h>
 
 //___________________________________________
@@ -424,7 +430,7 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
     printf("\n Initialise Segmentation Slat \n");
 //
 
-//    Initialize Slat modules
+// Initialize Slat modules
     Int_t islat, i;
     Int_t ndiv[4];
 // Pad division
@@ -472,6 +478,7 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
 // Set parent chamber number
     AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
     fChamber=&(pMUON->Chamber(chamber));
+    fId=chamber;
 }
 
 
@@ -508,6 +515,58 @@ CreateSlatModule()
 }
 
 
+void AliMUONSegmentationSlat::Draw(const char* opt) const
+{
+  if (!strcmp(opt,"eventdisplay")) { 
+    const int kColorMUON1 = kYellow;
+    const int kColorMUON2 = kBlue; 
+    //
+    //  Drawing Routines for example for Event Display
+    Int_t i,j;
+    Int_t npcb[15];
+    char nameChamber[9], nameSlat[9], nameNode[9];
+    
+    //
+    // Number of modules per slat
+    for (i=0; i<fNSlats; i++) {
+      npcb[i]=0;
+      for (j=0; j<4; j++) npcb[i]+=fPcb[i][j];
+    }  
+    //
+    TNode* top=gAlice->GetGeometry()->GetNode("alice");
+    sprintf(nameChamber,"C_MUON%d",fId+1);
+    new TBRIK(nameChamber,"Mother","void",340,340,5.);
+    top->cd();
+    sprintf(nameNode,"MUON%d",100+fId+1);
+    TNode* node = new TNode(nameNode,"Chambernode",nameChamber,0,0,fChamber->Z(),"");
+    
+    node->SetLineColor(kBlack);
+    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+    (pMUON->Nodes())->Add(node);
+    TNode* nodeSlat;
+    Int_t color;
+    
+    for (j=0; j<fNSlats; j++)
+      {
+	sprintf(nameSlat,"SLAT%d",100*fId+1+j);
+	Float_t dx = 20.*npcb[j];
+	Float_t dy = 20;
+	new TBRIK(nameSlat,"Slat Module","void",dx,20.,0.25);
+	node->cd();
+	color =  TMath::Even(j) ? kColorMUON1 : kColorMUON2;
+	
+	sprintf(nameNode,"SLAT%d",100*fId+1+j);
+	nodeSlat = 
+	  new TNode(nameNode,"Slat Module",nameSlat, dx+fXPosition[j],fYPosition[j]+dy,0,"");
+	nodeSlat->SetLineColor(color);
+	node->cd();
+	sprintf(nameNode,"SLAT%d",100*fId+1+j+fNSlats);
+	nodeSlat = 
+	  new TNode(nameNode,"Slat Module",nameSlat,-dx-fXPosition[j],fYPosition[j]+dy,0,"");
+	nodeSlat->SetLineColor(color);
+      }
+  }
+}
 
 
 

@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.8  2000/10/18 11:42:06  morsch
+- AliMUONRawCluster contains z-position.
+- Some clean-up of useless print statements during initialisations.
+
 Revision 1.7  2000/10/03 21:48:07  morsch
 Adopt to const declaration of some of the methods in AliSegmentation.
 
@@ -76,6 +80,7 @@ ClassImp(AliMUONSegmentationV0)
     fRmax=fChamber->ROuter();    
     fCorr=0;
     fZ=fChamber->Z();
+    fId=chamber;
 }
 
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/26 19:32:04  morsch
+Problem with iteration over y-pads for 2nd cathode corrected.
+
 Revision 1.4  2000/10/25 19:56:55  morsch
 Handle correctly slats with less than 3 segmentation zones.
 
@@ -37,6 +40,8 @@ Segmentation classes for bending and non bending plane slat modules (A. de Falco
 
 
 #include "AliMUONSegmentationSlatModule.h"
+#include "AliRun.h"
+#include "AliMUON.h"
 #include <TMath.h>
 #include <iostream.h>
 
@@ -384,8 +389,8 @@ void AliMUONSegmentationSlatModule::Init(Int_t chamber)
     fNpy=nPyPCB;
     fNpx=fNpxS[3];
 //
+    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
     fId = chamber;
-    
 }
 
 

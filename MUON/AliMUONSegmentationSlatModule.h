@@ -80,7 +80,6 @@ public AliMUONSegmentationV0 {
     //
     //  Geometry
     //
-    Int_t       fId;             // Id of this module
     Int_t       fNsec;           // Number of sectors
     TArrayI*    fNDiv;           // Pad size division
     TArrayF*    fDpxD;           // y pad width per sector

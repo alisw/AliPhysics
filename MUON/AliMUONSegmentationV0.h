@@ -155,9 +155,10 @@ dummy);
     Int_t fIwt;     // wire number
     Float_t fXt;    // x
     Float_t fYt;    // y
-    TF1*    fCorr;  // correction function
+    TF1*    fCorr;  // !correction function
     //
-    AliMUONChamber* fChamber; // Reference to mother chamber
+    AliMUONChamber* fChamber; // ! Reference to mother chamber
+    Int_t fId;                // Identifier
     Float_t fZ;               // z-position of chamber
 };
 #endif

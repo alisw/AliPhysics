@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.37  2000/10/26 09:53:37  pcrochet
+put back trigger chambers in the display (there was a problem in buildgeometry)
+
 Revision 1.36  2000/10/25 19:51:18  morsch
 Correct x-position of chambers.
 
@@ -433,11 +436,10 @@ void AliMUON::AddLocalTrigger(Int_t *localtr)
 //___________________________________________
 void AliMUON::BuildGeometry()
 {
-    TNode *node, *nodeF, *top, *nodeS;
-    const int kColorMUON  = kBlue;
+    TNode *node, *top, *nodeS;
     const int kColorMUON2 = kYellow;
-    const int kColorMUON3 = kBlue; 
-    //
+
+//
     top=gAlice->GetGeometry()->GetNode("alice");
 // MUON
 //
@@ -448,159 +450,36 @@ void AliMUON::BuildGeometry()
 //  outer diameter (Ylenght for trigger chamber -> active area)
     const Float_t kDmax[7]={183., 245., 346.,  520.,  520., 612., 612.};
 
-    TRotMatrix* rot000 = new TRotMatrix("Rot000"," ", 90,  0, 90, 90, 0, 0);
-    TRotMatrix* rot090 = new TRotMatrix("Rot090"," ", 90, 90, 90,180, 0, 0);
-    TRotMatrix* rot180 = new TRotMatrix("Rot180"," ", 90,180, 90,270, 0, 0);
-    TRotMatrix* rot270 = new TRotMatrix("Rot270"," ", 90,270, 90,  0, 0, 0);
-    
-    Float_t rmin, rmax, dx, dy, dz, dr, xpos, ypos, zpos;
+    Float_t xpos, ypos, zpos;
     Float_t dzc1=4.;           // tracking chambers
     Float_t dzc2=15.;          // trigger chambers
-    Float_t hole=102.;          // x-y hole around beam pipe for trig. chambers
+    Float_t hole=102.;         // x-y hole around beam pipe for trig. chambers
     Float_t zscale;            // scaling parameter trigger chambers
     Float_t halfx, halfy;   
-    char nameChamber[9], nameSense[9], nameFrame[9], nameNode[9];
+    char nameChamber[9], nameSense[9], nameNode[9];
     char nameSense1[9], nameSense2[9];    
     for (Int_t i=0; i<7; i++) {
 	for (Int_t j=0; j<2; j++) {
 	    Int_t id=2*i+j+1;
 	    if (i<5) {               // tracking chambers
-		if (j==0) {
-		    zpos=kCz[i]-dzc1;
-		} else {
-		    zpos=kCz[i]+dzc1;
-		}
+	      if (j==0) {
+		zpos=kCz[i]-dzc1;
+	      } else {
+		zpos=kCz[i]+dzc1;
+	      }
 	    } else {
-		if (j==0) {
-		    zpos=kCz[i];
-		} else {            
-		    zpos=kCz[i]+dzc2;
-		}
+	      if (j==0) {
+		zpos=kCz[i];
+	      } else {            
+		zpos=kCz[i]+dzc2;
+	      }
 	    }
 	    sprintf(nameChamber,"C_MUON%d",id);
 	    sprintf(nameSense,"S_MUON%d",id);
 	    sprintf(nameSense1,"S1_MUON%d",id);
 	    sprintf(nameSense2,"S2_MUON%d",id);
-	    sprintf(nameFrame,"F_MUON%d",id);	
-	    if (i<2) {	                      // tracking chambers
-		rmin = kDmin[i]/2.-3;
-		rmax = kDmax[i]/2.+3;
-		new TTUBE(nameChamber,"Mother","void",rmin,rmax,0.25,1.);
-		rmin = kDmin[i]/2.;
-		rmax = kDmax[i]/2.;
-		new TTUBE(nameSense,"Sens. region","void",rmin,rmax,0.25, 1.);
-		dx=(rmax-rmin)/2;
-		dy=3.;
-		dz=0.25;
-		TBRIK* frMUON = new TBRIK(nameFrame,"Frame","void",dx,dy,dz);
-		top->cd();
-		sprintf(nameNode,"MUON%d",100+id);
-		node = new TNode(nameNode,"ChamberNode",nameChamber,0,0,zpos,"");
-		node->SetLineColor(kColorMUON);
-		fNodes->Add(node);
-		node->cd();
-		sprintf(nameNode,"MUON%d",200+id);
-		node = new TNode(nameNode,"Sens. Region Node",nameSense,0,0,0,"");
-		node->SetLineColor(kColorMUON);
-		node->cd();
-		dr=dx+rmin;
-		sprintf(nameNode,"MUON%d",300+id);
-		nodeF = new TNode(nameNode,"Frame0",frMUON,dr, 0, 0,rot000,"");
-		nodeF->SetLineColor(kColorMUON);
-		node->cd();
-		sprintf(nameNode,"MUON%d",400+id);
-		nodeF = new TNode(nameNode,"Frame1",frMUON,0 ,dr,0,rot090,"");
-		nodeF->SetLineColor(kColorMUON);
-		node->cd();
-		sprintf(nameNode,"MUON%d",500+id);
-		nodeF = new TNode(nameNode,"Frame2",frMUON,-dr,0,0,rot180,"");
-		nodeF->SetLineColor(kColorMUON);
-		node  ->cd();
-		sprintf(nameNode,"MUON%d",600+id);   
-		nodeF = new TNode(nameNode,"Frame3",frMUON,0,-dr,0,rot270,"");
-		nodeF->SetLineColor(kColorMUON);
-	    } else if (i >= 2 && i <= 4) {
-		Int_t nslats;
-		Int_t npcb[7]={0, 0, 0, 0, 0, 0, 0};
-		if (i==2) {
-		    nslats = 4;
-		    npcb[0] = 3; npcb[1] = 4;  npcb[2] = 3; npcb[3] = 2;
-		} else if (i==3) {
-		    nslats = 6;
-		    npcb[0] = 4; npcb[1] = 5;  npcb[2] = 5; npcb[3] = 4;
-		    npcb[4] = 3; npcb[5] = 2;  
-		} else {
-		    nslats = 7;
-		    npcb[0] = 7; npcb[1] = 7;  npcb[2] = 6; npcb[3] = 6;
-		    npcb[4] = 5; npcb[5] = 4;  npcb[6] = 2;
-		}
-
-		char nameSlat[9];
-		
-		Float_t xpos=2.;
-		Float_t ypos1=-0.75+20.;
-		Float_t ypos2= 0.75-20.;
-		if (i!=2) {
-		    ypos1=ypos2=0.;
-		}
-		
-		new TBRIK(nameChamber,"Mother","void",340,340,5.);
-		top->cd();
-		sprintf(nameNode,"MUON%d",100+id);
-		node = new TNode(nameNode,"Chambernode",nameChamber,0,0,zpos,"");
-		node->SetLineColor(kBlack);
-		fNodes->Add(node);
-		TNode* nodeSlat;
-		Int_t color;
-		
-		for (Int_t j=0; j<nslats; j++)
-		{
-		    sprintf(nameSlat,"SLAT%d",100*id+j);
-		    new TBRIK(nameSlat,"Slat Module","void",20.*npcb[j],20.,0.25);
-		    node->cd();
-		    xpos=20.*npcb[j]+2;
-
-		    if (j==0 && i!=2) xpos+=37.5;
-		    if (j==0 && i==2) xpos+=40;
-
-		    color =  TMath::Even(j) ? kColorMUON2 : kColorMUON3;
-		    
-		    sprintf(nameNode,"SLAT%d",100*id+j);
-		    nodeSlat = 
-			new TNode(nameNode,"Slat Module",nameSlat,xpos,ypos1,0,"");
-		    nodeSlat->SetLineColor(color);
-
-		    node->cd();
-		    sprintf(nameNode,"SLAT%d",100*id+j+7);
-		    nodeSlat = 
-			new TNode(nameNode,"Slat Module",nameSlat,-xpos,ypos1,0,"");
-		    nodeSlat->SetLineColor(color);
-		    
-		    if (i==2 || (i!=2 && j!=0)) {
-
-			if (i==2) {
-			    color =  TMath::Even(j) ? kColorMUON3 : kColorMUON2;
-			} else {
-			    color =  TMath::Even(j) ? kColorMUON2 : kColorMUON3;
-			}
-			
-			
-			sprintf(nameNode,"SLAT%d",100*id+j+14);
-			nodeSlat = 
-			    new TNode(nameNode,"Slat Module",nameSlat,xpos,ypos2,0,"");
-			nodeSlat->SetLineColor(color);
-			
-			node->cd();
-			sprintf(nameNode,"SLAT%d",100*id+j+21);
-			nodeSlat = 
-			    new TNode(nameNode,"Slat Module",nameSlat,-xpos,ypos2,0,"");
-			nodeSlat->SetLineColor(color);
-		    }
-			
-		    ypos1+=38.5;
-		    ypos2-=38.5;
-		}
-		
+	    if (i <= 4) {
+	      this->Chamber(id-1).SegmentationModel(1)->Draw("eventdisplay");		
 	    } else { 
 		zscale=zpos/kCz[5];
 		Float_t xsize=kDmin[i]*zscale;

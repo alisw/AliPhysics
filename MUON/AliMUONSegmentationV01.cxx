@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/18 11:42:06  morsch
+- AliMUONRawCluster contains z-position.
+- Some clean-up of useless print statements during initialisations.
+
 Revision 1.9  2000/10/18 08:41:32  morsch
 Make NextPad() and MorePads() to iterate until the end.
 
@@ -57,6 +61,10 @@ AliMUONSegmentationV01 code  from  AliMUONSegResV01.cxx
 /////////////////////////////////////////////////////
 
 #include <TBox.h> 
+#include <TTUBE.h>
+#include <TBRIK.h>
+#include <TNode.h>  
+#include <TGeometry.h>  
 #include <TF1.h> 
 #include <TObjArray.h>
 #include <iostream.h>
@@ -192,6 +200,7 @@ void AliMUONSegmentationV01::Init(Int_t chamber)
     AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
     fChamber=&(pMUON->Chamber(chamber));
     fZ = fChamber->Z();
+    fId=chamber;
 }
 
 Int_t AliMUONSegmentationV01::Sector(Int_t ix, Int_t iy)
@@ -484,10 +493,69 @@ void AliMUONSegmentationV01::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) co
     y[2]=x[2];
 }
 
-void AliMUONSegmentationV01::Draw(const char *) const
+void AliMUONSegmentationV01::Draw(const char* opt) const
 {
+ 
 // Draws the segmentation zones
 //
+  if (!strcmp(opt,"eventdisplay")) { 
+    const int kColorMUON  = kBlue;
+
+    TRotMatrix* rot000 = new TRotMatrix("Rot000"," ", 90,  0, 90, 90, 0, 0);
+    TRotMatrix* rot090 = new TRotMatrix("Rot090"," ", 90, 90, 90,180, 0, 0);
+    TRotMatrix* rot180 = new TRotMatrix("Rot180"," ", 90,180, 90,270, 0, 0);
+    TRotMatrix* rot270 = new TRotMatrix("Rot270"," ", 90,270, 90,  0, 0, 0);
+
+    char nameChamber[9], nameSense[9], nameFrame[9], nameNode[9];
+    char nameSense1[9], nameSense2[9];    
+    TNode *node, *nodeF;
+ 
+    sprintf(nameChamber,"C_MUON%d",fId+1);
+    sprintf(nameSense,"S_MUON%d",fId+1);
+    sprintf(nameSense1,"S1_MUON%d",fId+1);
+    sprintf(nameSense2,"S2_MUON%d",fId+1);
+    sprintf(nameFrame,"F_MUON%d",fId+1);	
+
+    TNode* top=gAlice->GetGeometry()->GetNode("alice");
+
+    Float_t rmin = (*fRSec)[0]-3;
+    Float_t rmax = (*fRSec)[3]+3;
+    new TTUBE(nameChamber,"Mother","void",rmin,rmax,0.25,1.);
+    rmin = (*fRSec)[0];
+    rmax = (*fRSec)[3];
+    new TTUBE(nameSense,"Sens. region","void",rmin,rmax,0.25, 1.);
+    Float_t dx=(rmax-rmin)/2;
+    Float_t dy=3.;
+    Float_t dz=0.25;
+    TBRIK* frMUON = new TBRIK(nameFrame,"Frame","void",dx,dy,dz);
+    top->cd();
+    sprintf(nameNode,"MUON%d",100+fId+1);
+    node = new TNode(nameNode,"ChamberNode",nameChamber,0,0,fChamber->Z(),"");
+    node->SetLineColor(kColorMUON);
+    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+    (pMUON->Nodes())->Add(node);
+    node->cd();
+    sprintf(nameNode,"MUON%d",200+fId+1);
+    node = new TNode(nameNode,"Sens. Region Node",nameSense,0,0,0,"");
+    node->SetLineColor(kColorMUON);
+    node->cd();
+    Float_t dr=dx+rmin;
+    sprintf(nameNode,"MUON%d",300+fId+1);
+    nodeF = new TNode(nameNode,"Frame0",frMUON,dr, 0, 0,rot000,"");
+    nodeF->SetLineColor(kColorMUON);
+    node->cd();
+    sprintf(nameNode,"MUON%d",400+fId+1);
+    nodeF = new TNode(nameNode,"Frame1",frMUON,0 ,dr,0,rot090,"");
+    nodeF->SetLineColor(kColorMUON);
+    node->cd();
+    sprintf(nameNode,"MUON%d",500+fId+1);
+    nodeF = new TNode(nameNode,"Frame2",frMUON,-dr,0,0,rot180,"");
+    nodeF->SetLineColor(kColorMUON);
+    node  ->cd();
+    sprintf(nameNode,"MUON%d",600+fId+1);   
+    nodeF = new TNode(nameNode,"Frame3",frMUON,0,-dr,0,rot270,"");
+    nodeF->SetLineColor(kColorMUON);   
+  } else {
     TBox *box;
     
     Float_t dx=0.95/fCx[3][1]/2;
@@ -496,35 +564,35 @@ void AliMUONSegmentationV01::Draw(const char *) const
     Float_t xc=0.5;
     Float_t yc=0.5;
     
-    for (Int_t iy=1; iy<Npy(); iy++)
-    {
-	for (Int_t isec=0; isec<4; isec++) {
-	    if (isec==0) {
-		x0=0;
-		x1=fCx[isec][iy]*dx;
-	    } else {
-		x0=fCx[isec-1][iy]*dx;
-		x1=fCx[isec][iy]*dx;
-	    }
-	    y0=Float_t(iy-1)*dy;
-	    y1=y0+dy;
-	    box=new TBox(x0+xc,y0+yc,x1+xc,y1+yc);
-	    box->SetFillColor(isec+1);
-	    box->Draw();
-
-	    box=new TBox(-x1+xc,y0+yc,-x0+xc,y1+yc);
-	    box->SetFillColor(isec+1);
-	    box->Draw();
-
-	    box=new TBox(x0+xc,-y1+yc,x1+xc,-y0+yc);
-	    box->SetFillColor(isec+1);
-	    box->Draw();
-
-	    box=new TBox(-x1+xc,-y1+yc,-x0+xc,-y0+yc);
-	    box->SetFillColor(isec+1);
-	    box->Draw();
+    for (Int_t iy=1; iy<Npy(); iy++) {
+      for (Int_t isec=0; isec<4; isec++) {
+	if (isec==0) {
+	  x0=0;
+	  x1=fCx[isec][iy]*dx;
+	} else {
+	  x0=fCx[isec-1][iy]*dx;
+	  x1=fCx[isec][iy]*dx;
 	}
+	y0=Float_t(iy-1)*dy;
+	y1=y0+dy;
+	box=new TBox(x0+xc,y0+yc,x1+xc,y1+yc);
+	box->SetFillColor(isec+1);
+	box->Draw();
+	
+	box=new TBox(-x1+xc,y0+yc,-x0+xc,y1+yc);
+	box->SetFillColor(isec+1);
+	box->Draw();
+	
+	box=new TBox(x0+xc,-y1+yc,x1+xc,-y0+yc);
+	box->SetFillColor(isec+1);
+	box->Draw();
+	
+	box=new TBox(-x1+xc,-y1+yc,-x0+xc,-y0+yc);
+	box->SetFillColor(isec+1);
+	box->Draw();
+      }
     }
+  }
 }
 void AliMUONSegmentationV01::SetCorrFunc(Int_t isec, TF1* func)
 {

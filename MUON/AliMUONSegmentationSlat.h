@@ -111,7 +111,8 @@ public AliSegmentation {
     // Test points for auto calibration
     virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)  const {;}
     // Draw the segmentation zones
-    virtual void Draw(const char *opt = "") const {;}
+    virtual void Draw(const char *opt = "") const;
+
     
     // Function for systematic corrections
     // Set the correction function
@@ -138,7 +139,7 @@ public AliSegmentation {
  protected:
 
     AliMUONChamber*      fChamber;               // Parent Chamber
-    
+    Int_t                fId;                    // Identifier
     //
     //  Geometry
     //
@@ -160,11 +161,11 @@ public AliSegmentation {
     
     TArrayI*    fNDiv;                             // Pad size division
     // Slats
-    TObjArray*  fSlats;                           // Array of Slats
+    TObjArray*  fSlats;                            // Array of Slats
     // Proxy data
-    AliMUONSegmentationSlatModule* fCurrentSlat;  // Pointer to current slat
-    Int_t       fSlatIndex;                       // Current slat index
-    ClassDef(AliMUONSegmentationSlat,1)           // Segmentation for Muon Chamber built from Slat Modules
+    AliMUONSegmentationSlatModule* fCurrentSlat;   // Pointer to current slat
+    Int_t       fSlatIndex;                        // Current slat index
+    ClassDef(AliMUONSegmentationSlat,1)            // Segmentation for Muon Chamber built from Slat Modules
 };
 	
 
