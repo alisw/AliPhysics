@@ -28,7 +28,6 @@ void Config()
   gInterpreter->ProcessLine("CreateGeant4()");
 
   // Physics process control
-  // (in development)
   gMC ->SetProcess("DCAY",1);
   gMC ->SetProcess("PAIR",1);
   gMC ->SetProcess("COMP",1);
@@ -68,20 +67,24 @@ void Config()
   // --- Specify event type to be tracked through the ALICE setup
   // --- All positions are in cm, angles in degrees, and P and E in GeV
 
-  int nParticles;
+  Int_t nParticles;
   if (gSystem->Getenv("CONFIG_NPARTICLES")) 
     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
   else
-    nParticles = 500; 
+    nParticles = 100; 
+
 
   AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
   gener->SetMomentumRange(0,999);
   gener->SetPhiRange(0,360);
-  gener->SetThetaRange(0.,180.);
+  // Set pseudorapidity range from -8 to 8.
+  Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
+  Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+  gener->SetThetaRange(thmin, thmax);
   gener->SetOrigin(0,0,0);        //vertex position
   gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
   gener->Init();
-
+  //
   // Activate this line if you want the vertex smearing to happen
   // track by track
 
@@ -91,7 +94,7 @@ void Config()
   // Magnetic field
   // ============================= 
 
-  //?? gAlice->SetField(-999,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
+  //xx gAlice->SetField(-999,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
   // ============================= 
   // Alice modules
@@ -169,7 +172,7 @@ void Config()
   if(iFRAME) {
     //=================== FRAME parameters ============================
 
-    AliFRAME *FRAME  = new AliFRAMEv1("FRAME","Space Frame");
+    AliFRAME *FRAME  = new AliFRAMEv2("FRAME","Space Frame");
 
   }
 
@@ -188,7 +191,7 @@ void Config()
 
 
   if(iITS) {
-//=================== ITS parameters ============================
+    //=================== ITS parameters ============================
     //
     // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
     // almost all other detectors. This involves the fact that the ITS geometry
@@ -202,30 +205,29 @@ void Config()
     // Detailed geometries:         
     //
     //
-    //
     //AliITS *ITS  = new AliITSv5symm("ITS","Updated ITS TDR detailed version with symmetric services");
     //
-    AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
+    //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     //
-    //AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
-    //ITS->SetMinorVersion(2);
-    //ITS->SetReadDet(kFALSE);
-    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");
-    //ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
-    //ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
-    //ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
-    //ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
-    //ITS->SetRails(1);		   // 1 --> rails in ; 0 --> rails out
-    //ITS->SetCoolingFluid(1);	   // 1 --> water ; 0 --> freon
+    AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
+    ITS->SetMinorVersion(2);					 // don't touch this parameter if you're not an ITS developer
+    ITS->SetReadDet(kFALSE);					 // don't touch this parameter if you're not an ITS developer
+    //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
+    ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+    ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+    ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
+    ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
+    ITS->SetRails(1);	     // 1 --> rails in ; 0 --> rails out
+    ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
     //
     //AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
-    //ITS->SetMinorVersion(2);                                      
-    //ITS->SetReadDet(kFALSE);
-    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det");
-    //ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
-    //ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
-    //ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
-    //ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    //ITS->SetMinorVersion(2);                                       // don't touch this parameter if you're not an ITS developer
+    //ITS->SetReadDet(kFALSE);                                       // don't touch this parameter if you're not an ITS developer
+    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det"); // don't touch this parameter if you're not an ITS developer
+    //ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+    //ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+    //ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
+    //ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
     //ITS->SetRails(1);              // 1 --> rails in ; 0 --> rails out
     //ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
     //
@@ -234,12 +236,11 @@ void Config()
     // for reconstruction !):
     //                                                     
     //
-    //
-    //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS coarse version with asymmetric services");
+    //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version with asymmetric services");
     //ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
     //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
     //
-    //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS coarse version with symmetric services");
+    //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version with symmetric services");
     //ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
     //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
     //                      
@@ -255,7 +256,6 @@ void Config()
     //
     ITS->SetEUCLID(0);  
   }
-
 
   if(iTPC) {
     //============================ TPC parameters ================================
@@ -326,7 +326,11 @@ void Config()
   if(iFMD) {
     //=================== FMD parameters ============================
 
-    AliFMD *FMD  = new AliFMDv0("FMD","normal FMD");
+    AliFMD *FMD  = new AliFMDv1("FMD","normal FMD");
+    FMD->SetRingsSi1(128);
+    FMD->SetRingsSi2(64);
+    FMD->SetSectorsSi1(20);
+    FMD->SetSectorsSi2(24);
   }
 
   if(iMUON) {
@@ -360,4 +364,8 @@ void Config()
 
   } // end (!isSetInteractively)
 
+}
+
+Float_t EtaToTheta(Float_t arg){
+  return (180./TMath::Pi())*2.*atan(exp(-arg));
 }
