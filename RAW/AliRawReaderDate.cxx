@@ -493,7 +493,7 @@ Bool_t AliRawReaderDate::NextEvent()
   };
 
   fEvent = NULL;
-#ifdef ALI_DATE
+#endif
 
   return kFALSE;
 }
