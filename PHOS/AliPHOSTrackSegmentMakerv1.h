@@ -27,7 +27,7 @@ class  AliPHOSTrackSegmentMakerv1 : public AliPHOSTrackSegmentMaker {
 public:
 
   AliPHOSTrackSegmentMakerv1() ;                     
-  AliPHOSTrackSegmentMakerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName);
+  AliPHOSTrackSegmentMakerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
   AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegmentMakerv1 & tsm) : AliPHOSTrackSegmentMaker(tsm) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention

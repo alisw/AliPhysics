@@ -92,7 +92,7 @@ ClassImp(AliEMCALDigitizer)
 
 //____________________________________________________________________________ 
 AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolderName):
-  AliDigitizer("EMCAL"+AliConfig::fgkDigitizerTaskName, alirunFileName),
+  AliDigitizer("EMCAL"+AliConfig::Instance()->GetDigitizerTaskName(), alirunFileName),
   fInputFileNames(0), fEventNames(0), fEventFolderName(eventFolderName)
 {
   // ctor
@@ -126,7 +126,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d) : AliDigitizer
 
 //____________________________________________________________________________ 
 AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
- AliDigitizer(rd,"EMCAL"+AliConfig::fgkDigitizerTaskName),
+ AliDigitizer(rd,"EMCAL"+AliConfig::Instance()->GetDigitizerTaskName()),
  fEventFolderName(0)
 {
   // ctor Init() is called by RunDigitizer
@@ -503,7 +503,7 @@ void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
   // looking for the file which contains SDigits
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   TString fileName( gime->GetSDigitsFileName() ) ; 
-    if ( eventFolderName != AliConfig::fgkDefaultEventFolderName) // only if not the default folder name 
+    if ( eventFolderName != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
       fileName = fileName.ReplaceAll(".root", "") + "_" + eventFolderName + ".root" ;
     if ( (gSystem->AccessPathName(fileName)) ) { 
       Error("MixWith", "The file %s does not exist!", fileName.Data()) ;
@@ -545,7 +545,7 @@ void AliEMCALDigitizer::Print()const
       tempo += index ;
       AliEMCALGetter * gime = AliEMCALGetter::Instance(fInputFileNames[index], tempo) ; 
       TString fileName( gime->GetSDigitsFileName() ) ; 
-      if ( fEventNames[index] != AliConfig::fgkDefaultEventFolderName) // only if not the default folder name 
+      if ( fEventNames[index] != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
 	fileName = fileName.ReplaceAll(".root", "") + "_" + fEventNames[index]  + ".root" ;
       printf ("Adding SDigits from %s %s\n", fInputFileNames[index].Data(), fileName.Data()) ; 
     }

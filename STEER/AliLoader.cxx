@@ -282,7 +282,7 @@ TFolder* AliLoader::GetDataFolder()
 //returns the folder speciofic to given detector e.g. /Folders/Event/Data/
  if (!fDataFolder)
   {
-   fDataFolder =  dynamic_cast<TFolder*>(GetEventFolder()->FindObject(AliConfig::fgkDataFolderName));
+   fDataFolder =  dynamic_cast<TFolder*>(GetEventFolder()->FindObject(AliConfig::Instance()->GetDataFolderName()));
    
    if (!fDataFolder)
     {
@@ -300,7 +300,7 @@ TFolder* AliLoader::GetTasksFolder()
 //Returns pointer to Folder with Alice Tasks
  if (!fTasksFolder)
   {
-   fTasksFolder =  dynamic_cast<TFolder*>(GetTopFolder()->FindObject(AliConfig::fgkTasksFolderName));
+   fTasksFolder =  dynamic_cast<TFolder*>(GetTopFolder()->FindObject(AliConfig::GetTasksFolderName()));
    
    if (!fTasksFolder)
     {

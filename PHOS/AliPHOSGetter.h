@@ -62,7 +62,7 @@ public:
   
   //=========== Instantiators ================
   static AliPHOSGetter * Instance(const char* headerFile,
-				  const char* version = AliConfig::fgkDefaultEventFolderName,
+				  const char* version = AliConfig::GetDefaultEventFolderName(),
 				  Option_t * openingOption = "READ" ) ; 
   static AliPHOSGetter * Instance() ; 
   
@@ -190,7 +190,7 @@ public:
 private:
   
   AliPHOSGetter(const char* headerFile,
-		const char* version = AliConfig::fgkDefaultEventFolderName,
+		const char* version = AliConfig::GetDefaultEventFolderName(),
 		Option_t * openingOption = "READ") ;
   
   Int_t ReadTreeD(void) ;

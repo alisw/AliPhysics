@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+//
+// General configuration class for folders
+//
+
 #include <TMCProcess.h>
 #include <TStopwatch.h>
 #include <TError.h>

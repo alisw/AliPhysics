@@ -131,10 +131,10 @@ void AliPMDDigitizer::OpengAliceFile(const char *file, Option_t *option)
   // hits and sdigits or digits depending on the option
   //
 
-  TString evfoldname = AliConfig::fgkDefaultEventFolderName;
+  TString evfoldname = AliConfig::GetDefaultEventFolderName();
   fRunLoader = AliRunLoader::GetRunLoader(evfoldname);
   if (!fRunLoader)
-    fRunLoader = AliRunLoader::Open(file,AliConfig::fgkDefaultEventFolderName,
+    fRunLoader = AliRunLoader::Open(file,AliConfig::GetDefaultEventFolderName(),
 				    "UPDATE");
   
   if (!fRunLoader)

@@ -389,9 +389,9 @@ void AliPHOS::FillESD(AliESD* esd) const
   for (index = 0; index < taskslist->GetSize(); index++) {
     task = dynamic_cast<TTask *>(taskslist->At(index)) ; 
     name = task->GetName() ; 
-    if ( name.Contains(AliConfig::fgkReconstructionerTaskName))
+    if ( name.Contains(AliConfig::Instance()->GetReconstructionerTaskName()))
       task->SetActive(kFALSE) ; 
-    if ( name.Contains(AliConfig::fgkTrackerTaskName))
+    if ( name.Contains(AliConfig::Instance()->GetTrackerTaskName()))
       (dynamic_cast<AliPHOSTrackSegmentMaker *> (task))->SetESD(esd) ; 
   }
   rec->SetEventRange(0, -1) ; // do all the events
@@ -477,7 +477,7 @@ void AliPHOS::Reconstruct() const
   for (index = 0; index < taskslist->GetSize(); index++) {
     task = dynamic_cast<TTask *>(taskslist->At(index)) ; 
     name = task->GetName() ; 
-    if ( !name.Contains(AliConfig::fgkReconstructionerTaskName))
+    if ( !name.Contains(AliConfig::Instance()->GetReconstructionerTaskName()))
       task->SetActive(kFALSE) ; 
   }
   rec->SetEventRange(0, -1) ; // do all the events

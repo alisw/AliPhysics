@@ -31,7 +31,7 @@ class AliEMCALPID : public TTask {
  public:
 
   AliEMCALPID() ;          // ctor            
-  AliEMCALPID(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
+  AliEMCALPID(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;
   AliEMCALPID(const AliEMCALPID & pid):TTask(pid) {;} 
   virtual ~AliEMCALPID() ; // dtor
 

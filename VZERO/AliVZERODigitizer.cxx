@@ -100,7 +100,7 @@ void AliVZERODigitizer::OpengAliceFile(const char *file)
   // Loads galice.root file and corresponding header, kinematics
   // hits and  digits 
   
-  fRunLoader = AliRunLoader::Open(file,AliConfig::fgkDefaultEventFolderName,
+  fRunLoader = AliRunLoader::Open(file,AliConfig::GetDefaultEventFolderName(),
                                   "UPDATE");
   
   if (!fRunLoader)

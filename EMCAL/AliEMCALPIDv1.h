@@ -30,7 +30,7 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
  public:
   
   AliEMCALPIDv1() ;          // ctor            
-  AliEMCALPIDv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
+  AliEMCALPIDv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;
   AliEMCALPIDv1(const AliEMCALPIDv1 & pid) ;          // cpy ctor            
 
   virtual ~AliEMCALPIDv1() ; // dtor

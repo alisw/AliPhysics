@@ -72,8 +72,9 @@ ClassImp(AliEMCALSDigitizer)
 }
 
 //____________________________________________________________________________ 
-AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName, const char * eventFolderName):
-  TTask("EMCAL"+AliConfig::fgkSDigitizerTaskName, alirunFileName),
+AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName, 
+				       const char * eventFolderName):
+  TTask("EMCAL"+AliConfig::Instance()->GetSDigitizerTaskName(), alirunFileName),
   fEventFolderName(eventFolderName)
 {
   // ctor

@@ -32,7 +32,7 @@ class  AliPHOSTrackSegmentMaker : public TTask {
 public:
 
   AliPHOSTrackSegmentMaker();
-  AliPHOSTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;                     
+  AliPHOSTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;                     
   AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) : TTask(tsmaker) { ; } 
   virtual ~ AliPHOSTrackSegmentMaker() ;
 

@@ -26,7 +26,7 @@ class AliPHOSSDigitizer: public TTask {
 
 public:
   AliPHOSSDigitizer() ;          // ctor
-  AliPHOSSDigitizer(const char * alirunFileName, const char * eventFolderName = AliConfig::fgkDefaultEventFolderName) ; 
+  AliPHOSSDigitizer(const char * alirunFileName, const char * eventFolderName = AliConfig::GetDefaultEventFolderName()) ; 
   AliPHOSSDigitizer(const AliPHOSSDigitizer & sd) ; // cpy ctor
   virtual ~AliPHOSSDigitizer(); // dtor
 

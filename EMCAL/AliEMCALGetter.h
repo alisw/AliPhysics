@@ -63,7 +63,7 @@ class AliEMCALGetter : public TObject {
   
   //=========== Instantiators ================
   static AliEMCALGetter * Instance(const char* headerFile,
-				  const char* version = AliConfig::fgkDefaultEventFolderName,
+				  const char* version = AliConfig::GetDefaultEventFolderName(),
 				  Option_t * openingOption = "READ" ) ; 
   static AliEMCALGetter * Instance() ; 
 
@@ -189,7 +189,7 @@ class AliEMCALGetter : public TObject {
 private:
   
   AliEMCALGetter(const char* headerFile,
-		const char* version = AliConfig::fgkDefaultEventFolderName,
+		const char* version = AliConfig::GetDefaultEventFolderName(),
 		Option_t * openingOption = "READ") ;
 
   Int_t ReadTreeD(void) ;

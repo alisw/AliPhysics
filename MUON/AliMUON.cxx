@@ -448,7 +448,7 @@ void AliMUON::Hits2SDigits()
   // Adaption of AliMUONSDigitizerv1 to be excuted by the AliSimulation framework
   AliRunLoader* runLoader = fLoader->GetRunLoader();
   AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
-  manager->SetInputStream(0,runLoader->GetFileName(),AliConfig::fgkDefaultEventFolderName);
+  manager->SetInputStream(0,runLoader->GetFileName(),AliConfig::GetDefaultEventFolderName());
   AliMUONDigitizer * dMUON   = new AliMUONSDigitizerv1(manager);
   fLoader->LoadHits("READ");
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {

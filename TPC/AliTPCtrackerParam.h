@@ -48,7 +48,7 @@ class AliTPCtrackerParam:
   /////////////////////////////////////////////////////////////////////////
  public:
   AliTPCtrackerParam(Int_t coll=0, Double_t Bz=0.4, Int_t n=1,
-		     const char* evfoldname = AliConfig::fgkDefaultEventFolderName);
+		     const char* evfoldname = AliConfig::GetDefaultEventFolderName());
   virtual ~AliTPCtrackerParam();
 
   // this function performs the parameterized tracking

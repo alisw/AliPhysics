@@ -449,7 +449,7 @@ AliRunLoader* AliSimulation::LoadRun() const
   while (AliRunLoader::GetRunLoader()) delete AliRunLoader::GetRunLoader();
   AliRunLoader* runLoader = 
     AliRunLoader::Open(fGAliceFileName.Data(), 
-		       AliConfig::fgkDefaultEventFolderName, "UPDATE");
+		       AliConfig::GetDefaultEventFolderName(), "UPDATE");
   if (!runLoader) {
     Error("LoadRun", "no run loader found in file %s", 
 	  fGAliceFileName.Data());

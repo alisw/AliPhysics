@@ -90,8 +90,10 @@ ClassImp(AliPHOSDigitizer)
 }
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName, TString eventFolderName):
-  AliDigitizer("PHOS"+AliConfig::fgkDigitizerTaskName, alirunFileName),
+AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName, 
+				   TString eventFolderName):
+  AliDigitizer("PHOS"+AliConfig::Instance()->GetDigitizerTaskName(), 
+	       alirunFileName), 
   fInputFileNames(0), fEventNames(0), fEventFolderName(eventFolderName)
 {
   // ctor
@@ -127,7 +129,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d)
 
 //____________________________________________________________________________ 
 AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd):
- AliDigitizer(rd,"PHOS"+AliConfig::fgkDigitizerTaskName),
+ AliDigitizer(rd,"PHOS"+AliConfig::Instance()->GetDigitizerTaskName()),
  fEventFolderName(0)
 {
   // ctor Init() is called by RunDigitizer
@@ -569,7 +571,7 @@ void AliPHOSDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
   // looking for the file which contains SDigits
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   TString fileName( gime->GetSDigitsFileName() ) ; 
-    if ( eventFolderName != AliConfig::fgkDefaultEventFolderName) // only if not the default folder name 
+    if ( eventFolderName != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
       fileName = fileName.ReplaceAll(".root", "") + "_" + eventFolderName + ".root" ;
     if ( (gSystem->AccessPathName(fileName)) ) { 
       Error("MixWith", "The file %s does not exist!", fileName.Data()) ;
@@ -611,7 +613,7 @@ void AliPHOSDigitizer::Print()const
       tempo += index ;
       AliPHOSGetter * gime = AliPHOSGetter::Instance(fInputFileNames[index], tempo) ; 
       TString fileName( gime->GetSDigitsFileName() ) ; 
-      if ( fEventNames[index] != AliConfig::fgkDefaultEventFolderName) // only if not the default folder name 
+      if ( fEventNames[index] != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
 	fileName = fileName.ReplaceAll(".root", "") + "_" + fEventNames[index]  + ".root" ;
       printf ("Adding SDigits from %s %s\n", fInputFileNames[index].Data(), fileName.Data()) ; 
     }

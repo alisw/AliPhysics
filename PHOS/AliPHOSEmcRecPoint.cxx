@@ -227,7 +227,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t) const
 
   
   //try to get run loader from default event folder
-  AliRunLoader* rn = AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
+  AliRunLoader* rn = AliRunLoader::GetRunLoader(AliConfig::GetDefaultEventFolderName());
   if (rn == 0x0) 
     {
       Error("ExecuteEvent","Can not find Run Loader in Default Event Folder");

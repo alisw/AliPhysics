@@ -75,8 +75,9 @@ ClassImp(AliPHOSSDigitizer)
 }
 
 //____________________________________________________________________________ 
-AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName, const char * eventFolderName):
-  TTask("PHOS"+AliConfig::fgkSDigitizerTaskName, alirunFileName),
+AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName, 
+				     const char * eventFolderName):
+  TTask("PHOS"+AliConfig::Instance()->GetSDigitizerTaskName(), alirunFileName),
   fEventFolderName(eventFolderName)
 {
 

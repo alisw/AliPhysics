@@ -51,7 +51,7 @@ AliStack::AliStack():
   fCurrentPrimary(-1),
   fHgwmk(0),
   fLoadPoint(0),
-  fEventFolderName(AliConfig::fgkDefaultEventFolderName)
+  fEventFolderName(AliConfig::GetDefaultEventFolderName())
 {
   //
   // Default constructor

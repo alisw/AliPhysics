@@ -27,7 +27,7 @@ class AliEMCALSDigitizer: public TTask {
 
 public:
   AliEMCALSDigitizer() ;          // ctor
-  AliEMCALSDigitizer(const char * alirunFileName, const char * eventFolderName = AliConfig::fgkDefaultEventFolderName) ; 
+  AliEMCALSDigitizer(const char * alirunFileName, const char * eventFolderName = AliConfig::GetDefaultEventFolderName()) ; 
   AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) ;
   virtual ~AliEMCALSDigitizer(); // dtor
 

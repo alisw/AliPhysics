@@ -454,7 +454,7 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
   // To make the list of hits to be reconstructed,
   // either from the GEANT hits or from the raw clusters
   // according to the parameter set for the reconstructor
-//   TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
+//   TString evfoldname = AliConfig::GetDefaultEventFolderName();//to be interfaced properly
   
 //   AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
 //   if (rl == 0x0)
@@ -748,7 +748,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
   TClonesArray *rawclusters;
   if (fPrintLevel >= 1) cout << "enter AddHitsForRecFromRawClusters" << endl;
 
-//   TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
+//   TString evfoldname = AliConfig::GetDefaultEventFolderName();//to be interfaced properly
 //   AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
 //   if (rl == 0x0)
 //    {

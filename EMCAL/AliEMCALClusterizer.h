@@ -25,7 +25,7 @@ class AliEMCALClusterizer : public TTask {
 public:
 
   AliEMCALClusterizer() ;        // default ctor
-  AliEMCALClusterizer(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
+  AliEMCALClusterizer(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;
   virtual ~AliEMCALClusterizer() ; // dtorEM
 
   virtual Float_t GetTowerClusteringThreshold()const {Warning("GetTowerClusteringThreshold", "Not Defined") ; return 0. ; }

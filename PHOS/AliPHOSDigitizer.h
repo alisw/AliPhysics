@@ -30,7 +30,7 @@ class AliPHOSDigitizer: public AliDigitizer {
 
 public:
   AliPHOSDigitizer() ;          // ctor
-  AliPHOSDigitizer(TString alirunFileNameFile, TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ; 
+  AliPHOSDigitizer(TString alirunFileNameFile, TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ; 
   AliPHOSDigitizer(const AliPHOSDigitizer & dtizer) ;
   AliPHOSDigitizer(AliRunDigitizer * manager) ;
   virtual ~AliPHOSDigitizer() ;       
@@ -70,7 +70,7 @@ public:
   //General
   Int_t   GetDigitsInRun()  const { return fDigitsInRun ;}  
   void    MixWith(TString alirunFileName, 
-		  TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ; // Add another one file to mix
+		  TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ; // Add another one file to mix
   void    Print()const ;
  
   AliPHOSDigitizer & operator = (const AliPHOSDigitizer & /*rvalue*/)  {

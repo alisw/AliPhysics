@@ -329,7 +329,7 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
     }
     else { 
       AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
-      if ( strstr(version, AliConfig::fgkDefaultEventFolderName) ) // false in case of merging
+      if ( strstr(version, AliConfig::GetDefaultEventFolderName()) ) // false in case of merging
 	delete rl ; 
       fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;      
     }
@@ -710,7 +710,7 @@ Bool_t AliEMCALGetter::VersionExists(TString & opt) const
   if ( opt == "sdigits") {
     // add the version name to the root file name
     TString fileName( EmcalLoader()->GetSDigitsFileName() ) ; 
-    if (version != AliConfig::fgkDefaultEventFolderName) // only if not the default folder name 
+    if (version != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
       fileName = fileName.ReplaceAll(".root", "") + "_" + version + ".root" ;
     if ( !(gSystem->AccessPathName(fileName)) ) { 
       Warning("VersionExists", "The file %s already exists", fileName.Data()) ;
@@ -722,7 +722,7 @@ Bool_t AliEMCALGetter::VersionExists(TString & opt) const
   if ( opt == "digits") {
     // add the version name to the root file name
     TString fileName( EmcalLoader()->GetDigitsFileName() ) ; 
-    if (version != AliConfig::fgkDefaultEventFolderName) // only if not the default folder name 
+    if (version != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
       fileName = fileName.ReplaceAll(".root", "") + "_" + version + ".root" ;
     if ( !(gSystem->AccessPathName(fileName)) ) {
       Warning("VersionExists", "The file %s already exists", fileName.Data()) ;  

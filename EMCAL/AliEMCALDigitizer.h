@@ -31,7 +31,7 @@ class AliEMCALDigitizer: public AliDigitizer {
 
 public:
   AliEMCALDigitizer() ;          // ctor
-  AliEMCALDigitizer(TString alirunFileNameFile, TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;  
+  AliEMCALDigitizer(TString alirunFileNameFile, TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;  
   AliEMCALDigitizer(const AliEMCALDigitizer & dtizer) ;
   AliEMCALDigitizer(AliRunDigitizer * manager) ;
   virtual ~AliEMCALDigitizer() ;       
@@ -53,7 +53,7 @@ public:
   //General
   Int_t   GetDigitsInRun()  const { return fDigitsInRun; } 
   void  MixWith(TString alirunFileName, 
-		TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ; // Add another one file to mix
+		TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ; // Add another one file to mix
   void  Print()const ;
  
   AliEMCALDigitizer & operator = (const AliEMCALDigitizer & /*rvalue*/)  {

@@ -120,7 +120,7 @@ Bool_t AliTRDclusterizer::Open(const Char_t *name, Int_t nEvent)
   //
   // Opens the AliROOT file. Output and input are in the same file
   //
-  TString evfoldname = AliConfig::fgkDefaultEventFolderName;
+  TString evfoldname = AliConfig::GetDefaultEventFolderName();
   fRunLoader = AliRunLoader::GetRunLoader(evfoldname);
   if (!fRunLoader)
     fRunLoader = AliRunLoader::Open(name);

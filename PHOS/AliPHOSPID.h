@@ -32,7 +32,7 @@ class AliPHOSPID : public TTask {
  public:
 
   AliPHOSPID() ;          // ctor            
-  AliPHOSPID (const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
+  AliPHOSPID (const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;
   AliPHOSPID(const AliPHOSPID & pid) : TTask(pid) {;} 
   virtual ~AliPHOSPID() ; // dtor
 

@@ -152,7 +152,7 @@ class AliEMCALLoader : public AliLoader {
   /************    T A S K S      **************/
   /*********************************************/
   // 
-  //  AliEMCALSDigitizer*  EMCALSDigitizer(TString name = AliConfig::fgkDefaultEventFolderName);
+  //  AliEMCALSDigitizer*  EMCALSDigitizer(TString name = AliConfig::GetDefaultEventFolderName());
   //AliEMCALDigitizer*   EMCALDigitizer()  { return  dynamic_cast<AliEMCALDigitizer*>(Digitizer()) ;}
 
   AliEMCALClusterizer* Clusterizer ()  {return dynamic_cast<AliEMCALClusterizer*>(Reconstructioner()) ;}

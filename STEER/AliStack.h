@@ -22,7 +22,7 @@ class AliStack : public TVirtualMCStack
 {
   public:
     // creators, destructors
-    AliStack(Int_t size, const char* evfoldname = AliConfig::fgkDefaultEventFolderName);
+    AliStack(Int_t size, const char* evfoldname = AliConfig::GetDefaultEventFolderName());
     AliStack();
     AliStack(const AliStack& st);
     virtual ~AliStack();

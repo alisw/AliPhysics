@@ -46,8 +46,9 @@ ClassImp(AliEMCALPID)
 
 
 //____________________________________________________________________________
-AliEMCALPID::AliEMCALPID(const TString alirunFileName, const TString eventFolderName)
-:TTask("EMCAL"+AliConfig::fgkPIDTaskName, alirunFileName), fEventFolderName(eventFolderName)
+AliEMCALPID::AliEMCALPID(const TString alirunFileName, const TString eventFolderName):
+  TTask("EMCAL"+AliConfig::Instance()->GetPIDTaskName(), alirunFileName),
+  fEventFolderName(eventFolderName)
 {
   // ctor
   fFirstEvent = 0 ; 

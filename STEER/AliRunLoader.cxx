@@ -23,7 +23,7 @@
 // When RunLoader is read from the file it does not connect to      //
 // the folder structure automatically. It must be connected         //
 // (mounted) manualy. Default event folder is defined by            //
-// AliConfig::fgkDefaultEventFolderName                             //
+// AliConfig::GetDefaultEventFolderName()                           //
 // but can be mounted elsewhere. Usefull specially in merging case, //
 // when more than pone session needs to be loaded                   //
 //                                                                  //

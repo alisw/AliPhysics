@@ -46,7 +46,7 @@
 
 ClassImp(AliPHOSEvalRecPoint)
 
-  AliPHOSEvalRecPoint::AliPHOSEvalRecPoint(): fEventFolderName(AliConfig::fgkDefaultEventFolderName)
+  AliPHOSEvalRecPoint::AliPHOSEvalRecPoint(): fEventFolderName(AliConfig::GetDefaultEventFolderName())
 {
   // default ctor
   fParent=-333;
@@ -84,7 +84,7 @@ AliPHOSEvalRecPoint::AliPHOSEvalRecPoint(Bool_t cpv, AliPHOSEvalRecPoint* parent
   
 }
 
-AliPHOSEvalRecPoint::AliPHOSEvalRecPoint(Int_t i, Bool_t cpv) : fEventFolderName(AliConfig::fgkDefaultEventFolderName)
+AliPHOSEvalRecPoint::AliPHOSEvalRecPoint(Int_t i, Bool_t cpv) : fEventFolderName(AliConfig::GetDefaultEventFolderName())
 {
   // ctor
   fChi2Dof=-111;

@@ -26,7 +26,7 @@ class  AliEMCALTrackSegmentMakerv1 : public AliEMCALTrackSegmentMaker {
 public:
 
   AliEMCALTrackSegmentMakerv1() ;                     
-  AliEMCALTrackSegmentMakerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName);                  
+  AliEMCALTrackSegmentMakerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());                  
   AliEMCALTrackSegmentMakerv1(const AliEMCALTrackSegmentMakerv1 & tsm):AliEMCALTrackSegmentMaker(tsm) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention

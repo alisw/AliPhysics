@@ -224,8 +224,8 @@ void AliMpSectorPainter::Paint(Option_t* /*option*/)
 		   pos.X()+dim.X(),pos.Y()+dim.Y());
 	  
     if (iRow>0){
-      gPad->DrawLine(pos.X()-dim.X(),pos.Y()-dim.Y(),lx1,pos.Y()-dim.Y());
-      gPad->DrawLine(pos.X()+dim.X(),pos.Y()-dim.Y(),lx2,pos.Y()-dim.Y());
+      gPad->PaintLine(pos.X()-dim.X(),pos.Y()-dim.Y(),lx1,pos.Y()-dim.Y());
+      gPad->PaintLine(pos.X()+dim.X(),pos.Y()-dim.Y(),lx2,pos.Y()-dim.Y());
     }
     lx1=pos.X()-dim.X();
     lx2=pos.X()+dim.X();
@@ -236,12 +236,12 @@ void AliMpSectorPainter::Paint(Option_t* /*option*/)
   AliMpRow *row = fSector->GetRow(0);
   TVector2 pos,dim;
   gr->RealToPad(row->Position(),row->Dimensions(),pos,dim);
-  gPad->DrawLine(pos.X()-dim.X(),pos.Y()-dim.Y(),
+  gPad->PaintLine(pos.X()-dim.X(),pos.Y()-dim.Y(),
 		 pos.X()+dim.X(),pos.Y()-dim.Y());
   
   row = fSector->GetRow(fSector->GetNofRows()-1);
   gr->RealToPad(row->Position(),row->Dimensions(),pos,dim);
-  gPad->DrawLine(pos.X()-dim.X(),pos.Y()+dim.Y(),
+  gPad->PaintLine(pos.X()-dim.X(),pos.Y()+dim.Y(),
 		 pos.X()+dim.X(),pos.Y()+dim.Y());
 
   gr->Pop();

@@ -90,7 +90,7 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
   }
   
   // add Task to //root/Tasks folder
-  TString evfoldname = AliConfig::fgkDefaultEventFolderName;
+  TString evfoldname = AliConfig::GetDefaultEventFolderName();
   fRunLoader = AliRunLoader::GetRunLoader(evfoldname);
   if (!fRunLoader)
     fRunLoader = AliRunLoader::Open(HeaderFile);//open session and mount on default event folder

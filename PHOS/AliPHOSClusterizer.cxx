@@ -41,8 +41,10 @@ ClassImp(AliPHOSClusterizer)
 }
 
 //____________________________________________________________________________
-AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName, const TString eventFolderName):
-  TTask("PHOS"+AliConfig::fgkReconstructionerTaskName, alirunFileName), fEventFolderName(eventFolderName)
+AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName, 
+				       const TString eventFolderName):
+  TTask("PHOS"+AliConfig::Instance()->GetReconstructionerTaskName(), 
+	alirunFileName), fEventFolderName(eventFolderName)
 {
   // ctor
  

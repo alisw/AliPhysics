@@ -225,7 +225,7 @@ Int_t AliHBTReaderITSv2::OpenNextFile()
      return 1;
    }
   filename = filename +"/"+ fFileName;
-  fRunLoader = AliRunLoader::Open(filename,AliConfig::fgkDefaultEventFolderName);
+  fRunLoader = AliRunLoader::Open(filename,AliConfig::GetDefaultEventFolderName());
   if( fRunLoader == 0x0)
    {
      DoOpenError("Can not open session.");

@@ -54,7 +54,7 @@ class AliRunLoader: public TNamed
     virtual ~AliRunLoader();
     
     static AliRunLoader* Open(const char* filename = "galice.root",
-                              const char* eventfoldername = AliConfig::fgkDefaultEventFolderName,
+                              const char* eventfoldername = AliConfig::GetDefaultEventFolderName(),
 	          Option_t* option = "READ");
 
     Int_t       GetEventNumber() const {return fCurrentEvent;}
@@ -125,7 +125,7 @@ class AliRunLoader: public TNamed
     void        AddLoader(AliDetector* det);
     AliLoader*  GetLoader(const char* detname) const;
     AliLoader*  GetLoader(AliDetector* det) const;
-    Int_t       SetEventFolderName(const TString& name = AliConfig::fgkDefaultEventFolderName);//sets top folder name for this run; of alread
+    Int_t       SetEventFolderName(const TString& name = AliConfig::GetDefaultEventFolderName());//sets top folder name for this run; of alread
     void        CleanFolders();//removes all abjects from folder structure
     void        CleanDetectors();
     void        CleanKinematics(){Clean(fgkKineContainerName);}

@@ -24,7 +24,7 @@ class AliPHOSClusterizer : public TTask {
 public:
 
   AliPHOSClusterizer() ;        // default ctor
-  AliPHOSClusterizer(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
+  AliPHOSClusterizer(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;
   AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) : TTask(clusterizer) { ; }
   virtual ~AliPHOSClusterizer() ; // dtor
   virtual Float_t GetEmcClusteringThreshold()const {Warning("GetEmcClusteringThreshold", "Not Defined" ) ; return 0. ; }  

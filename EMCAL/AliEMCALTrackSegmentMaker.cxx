@@ -41,8 +41,10 @@ ClassImp( AliEMCALTrackSegmentMaker)
 }
 
 //____________________________________________________________________________
-AliEMCALTrackSegmentMaker::AliEMCALTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName):
-  TTask("EMCAL"+AliConfig::fgkTrackerTaskName, alirunFileName), fEventFolderName(eventFolderName)
+AliEMCALTrackSegmentMaker::AliEMCALTrackSegmentMaker(const TString alirunFileName,
+						     const TString eventFolderName):
+  TTask("EMCAL"+AliConfig::Instance()->GetTrackerTaskName(), alirunFileName),
+  fEventFolderName(eventFolderName)
 {
   // ctor
 

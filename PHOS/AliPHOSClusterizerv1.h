@@ -32,7 +32,7 @@ class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
 public:
   
   AliPHOSClusterizerv1() ;         
-  AliPHOSClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName);
+  AliPHOSClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
   AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clu) : AliPHOSClusterizer(clu) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention

@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+//
+// Class to name the folders
+// This class contains 
+// the names of the top level folders
+// 
+
 #include <TNamed.h>
 class TDatabasePDG;
 class TFolder;
@@ -49,6 +55,9 @@ public:
   TFolder*              GetConstFolder(){return fConstFolder;}
 
   static const TString& GetModulesFolderName(){return fgkModuleFolderName;}
+  static const TString& GetDefaultEventFolderName()
+    {return fgkDefaultEventFolderName;}
+  static const TString& GetTasksFolderName() {return fgkTasksFolderName;}
   
   TString               GetQATaskName() const; //returns path to QA tasks
   TString               GetDigitizerTaskName () const;
@@ -61,7 +70,8 @@ public:
   const TString&        GetQAFolderName() const; //returns path to folder with QA output
   
   const TString&        GetDataFolderName() const;//returns name of data folder
-  
+
+private:  
   static const TString  fgkTopFolderName; //name of top AliRoot folder
  
   static const TString  fgkDefaultEventFolderName; //name of event folder
@@ -89,7 +99,6 @@ public:
   static const TString  fgkGeneratorsFolderName;   //name of generator folder
   static const TString  fgkVirtualMCFolderName;    //name of virtual MC folder
 
-private:
   AliConfig(const char * name, const char * title );
   AliConfig(const AliConfig&);
   AliConfig& operator=(const AliConfig&);

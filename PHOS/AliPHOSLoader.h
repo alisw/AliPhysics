@@ -156,7 +156,7 @@ public:
   /************    T A S K S      **************/
   /*********************************************/
   // 
-  //  AliPHOSSDigitizer*  PHOSSDigitizer(TString name = AliConfig::fgkDefaultEventFolderName);
+  //  AliPHOSSDigitizer*  PHOSSDigitizer(TString name = AliConfig::GetDefaultEventFolderName());
   //AliPHOSDigitizer*   PHOSDigitizer()  { return  dynamic_cast<AliPHOSDigitizer*>(Digitizer()) ;}
 
   AliPHOSClusterizer* Clusterizer () const {return dynamic_cast<AliPHOSClusterizer*>(Reconstructioner()) ;}

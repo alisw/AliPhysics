@@ -35,7 +35,7 @@ class AliEMCALClusterizerv1 : public AliEMCALClusterizer {
 public:
   
   AliEMCALClusterizerv1() ;         
-  AliEMCALClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName);
+  AliEMCALClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
   virtual ~AliEMCALClusterizerv1()  ;
   
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 

@@ -29,7 +29,7 @@ class  AliEMCALTrackSegmentMaker : public TTask {
 public:
 
   AliEMCALTrackSegmentMaker() ;                     
-  AliEMCALTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;                       
+  AliEMCALTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;                       
   AliEMCALTrackSegmentMaker(const AliEMCALTrackSegmentMaker & tsmaker):TTask(tsmaker) { ; } 
   virtual ~ AliEMCALTrackSegmentMaker() ;
 

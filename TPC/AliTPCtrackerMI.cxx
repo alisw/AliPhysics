@@ -276,9 +276,9 @@ void AliTPCtrackerMI::SetIO()
 {
   //
   fNewIO   =  kTRUE;
-  fInput   =  AliRunLoader::GetTreeR("TPC", kFALSE,AliConfig::fgkDefaultEventFolderName);
+  fInput   =  AliRunLoader::GetTreeR("TPC", kFALSE,AliConfig::GetDefaultEventFolderName());
   
-  fOutput  =  AliRunLoader::GetTreeT("TPC", kTRUE,AliConfig::fgkDefaultEventFolderName);
+  fOutput  =  AliRunLoader::GetTreeT("TPC", kTRUE,AliConfig::GetDefaultEventFolderName());
   if (fOutput){
     AliTPCtrack *iotrack= new AliTPCtrack;
     fOutput->Branch("tracks","AliTPCtrack",&iotrack,32000,100);
