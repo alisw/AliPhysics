@@ -34,6 +34,7 @@
 #include <TF1.h>
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TMath.h>
 #include "AliMC.h"
 
 ClassImp(AliGenParam)
@@ -47,7 +48,6 @@ ClassImp(AliGenParam)
   //End_Html
 
 //____________________________________________________________
-//____________________________________________________________
 AliGenParam::AliGenParam()
 {
 // Deafault constructor
@@ -60,7 +60,7 @@ AliGenParam::AliGenParam()
 
 
 }
-
+//____________________________________________________________
 AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Int_t param, char* tname):AliGenMC(npart)
 {
 // Constructor using number of particles parameterisation id and library
@@ -78,15 +78,13 @@ AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Int_t param, char* t
     SetForceDecay();
     SetDeltaPt(); 
 }
-
 //____________________________________________________________
-
-AliGenParam::AliGenParam(Int_t npart, Int_t param, char* tname):AliGenMC(npart)
+AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char* name):AliGenMC(npart)
 {
 // Constructor using parameterisation id and number of particles
 //
-    fName = "Param";
-    fTitle= "Particle Generator using pT and y parameterisation";
+  fName = name;
+  fTitle= "Particle Generator using pT and y parameterisation";
       
     AliGenLib* pLibrary = new AliGenMUONlib();
  
@@ -108,6 +106,7 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param, char* tname):AliGenMC(npart)
     SetChildThetaRange(); 
     SetDeltaPt(); 
 }
+//____________________________________________________________
 
 AliGenParam::AliGenParam(Int_t npart, Int_t param,
                          Double_t (*PtPara) (Double_t*, Double_t*),
@@ -169,6 +168,7 @@ void AliGenParam::Init()
     char name[256];
     sprintf(name, "pt-parameterisation for %s", GetName());
     
+    if (fPtPara) fPtPara->Delete();
     fPtPara = new TF1(name, fPtParaFunc, fPtMin, fPtMax,0);
 //  Set representation precision to 10 MeV
     Int_t npx= Int_t((fPtMax - fPtMin) / fDeltaPt);
@@ -176,6 +176,7 @@ void AliGenParam::Init()
     fPtPara->SetNpx(npx);
 
     sprintf(name, "y-parameterisation  for %s", GetName());
+    if (fYPara) fYPara->Delete();
     fYPara  = new TF1(name, fYParaFunc, fYMin, fYMax, 0);
     
     sprintf(name, "pt-for-%s", GetName());
@@ -228,7 +229,9 @@ void AliGenParam::Generate()
 //
 //
 //  Reinitialize decayer
-    fDecayer->Init();
+  fDecayer->SetForceDecay(fForceDecay);
+  fDecayer->Init();
+
 //
   Float_t polar[3]= {0,0,0};  // Polarisation of the parent particle (for GEANT tracking)
   Float_t origin0[3];         // Origin of the generated parent particle (for GEANT tracking)
@@ -261,7 +264,7 @@ void AliGenParam::Generate()
   while (ipa<fNpart) {
       while(1) {
 //
-// particle type
+// particle type 
 	  Int_t iPart = fIpParaFunc(fRandom);
 	  fChildWeight=(fDecayer->GetPartialBranchingRatio(iPart))*fParentWeight;	   
 	  TParticlePDG *particle = pDataBase->GetParticle(iPart);
@@ -459,6 +462,20 @@ void AliGenParam::Generate()
   } // event loop
   SetHighWaterMark(nt);
 }
+//____________________________________________________________________________________
+Float_t AliGenParam::GetRelativeArea(Float_t ptMin, Float_t ptMax, Float_t yMin, Float_t yMax, Float_t phiMin, Float_t phiMax)
+{
+//
+// Normalisation for selected kinematic region
+//
+  Float_t ratio =  
+    fPtPara->Integral(ptMin,ptMax) / fPtPara->Integral( fPtPara->GetXmin(), fPtPara->GetXmax()) *
+    fYPara->Integral(yMin,yMax)/fYPara->Integral(fYPara->GetXmin(),fYPara->GetXmax())   *
+    (phiMax-phiMin)/360.;
+  return TMath::Abs(ratio);
+}
+
+//____________________________________________________________________________________
 
 void AliGenParam::Draw( const char * /*opt*/)
 {

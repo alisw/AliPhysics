@@ -6,7 +6,7 @@
 /* $Id$ */
 
 //
-// Class to generate particles from using paramtrized pT and y distributions.
+// Class to generate particles from using parametrized pT and y distributions.
 // Distributions are obtained from pointer to object of type AliGenLib.
 // (For example AliGenMUONlib)
 //
@@ -27,7 +27,7 @@ class AliGenParam : public AliGenMC
  public:
     AliGenParam();
     AliGenParam(Int_t npart, AliGenLib * Library, Int_t param, char* tname = 0);
-    AliGenParam(Int_t npart, Int_t param, char* tname = 0);
+    AliGenParam(Int_t npart, Int_t param, const char* tname = 0, const char* name = 0);
     AliGenParam(Int_t npart, Int_t param,
 		Double_t (*PtPara)(Double_t*, Double_t*),
 		Double_t (*YPara )(Double_t*, Double_t*),
@@ -44,6 +44,10 @@ class AliGenParam : public AliGenMC
     virtual void SetDeltaPt(Float_t delta=0.01) {fDeltaPt = delta;}
     virtual void SetDecayer(AliDecayer* decayer) {fDecayer = decayer;}
     virtual void Draw(const char * opt);
+    TF1 *  GetPt() { return fPtPara;}
+    TF1 *  GetY() {return fYPara;}
+    Float_t GetRelativeArea(Float_t ptMin, Float_t ptMax, Float_t yMin, Float_t yMax, Float_t phiMin, Float_t phiMax);
+
     AliGenParam & operator=(const AliGenParam & rhs);
  protected:
     Double_t (*fPtParaFunc)(Double_t*, Double_t*); //! Pointer to Pt parametrisation function
