@@ -319,7 +319,7 @@ const Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * 
   Float_t deltaX = TMath::Abs(GetDistance(emc, cpv,  "X"));
   Float_t deltaZ = TMath::Abs(GetDistance(emc, cpv,  "Z"));
        
-  if((deltaX>sigX*(EffPur+1))|(deltaZ>sigZ*(EffPur+1)))
+  if((deltaX>sigX*(EffPur+1)) || (deltaZ>sigZ*(EffPur+1)))
     return 1;//Neutral
   else
     return 0;//Charged

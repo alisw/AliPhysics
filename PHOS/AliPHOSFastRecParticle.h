@@ -117,8 +117,9 @@ class AliPHOSFastRecParticle : public TParticle {
 
   Bool_t IsFastChargedEM()  {
     Bool_t pid=kFALSE ;
-    if((TestPIDBit(8)||TestPIDBit(7)||TestPIDBit(6))&&
-       TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3))//TOF
+    if( (TestPIDBit(8)||TestPIDBit(7)||TestPIDBit(6))&& //  PCA
+        (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  TOF
+       !(TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0)))  // !CPV
       pid = kTRUE ;
     return pid ;
   }
