@@ -41,7 +41,7 @@ public:
   void SetTPCpid(const Double_t *p);
   void GetTPCpid(Double_t *p) const;
   Float_t GetTPCsignal() const {return fTPCsignal;}
-  Int_t GetTPCclusters(UInt_t *idx) const;
+  Int_t GetTPCclusters(Int_t *idx) const;
 
   void SetITSpid(const Double_t *p);
   void GetITSpid(Double_t *p) const;
