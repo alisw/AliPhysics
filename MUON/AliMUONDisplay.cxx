@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/05/16 14:57:17  alibrary
+New files for folders and Stack
+
 Revision 1.14  2001/04/05 08:30:48  gosset
 Cleaning: suppression of Cpoints and (R2points + CoG2)
 Correction: TreeR->GetEvent(0) for raw clusters
@@ -299,7 +302,6 @@ AliMUONDisplay::AliMUONDisplay(Int_t size)
     Float_t dxtr     = 0.15;
     Float_t dytr     = 0.45;
     fTrigPad = new TPad("trigger", "range and mode pad",0,0,dxtr,dytr);
-    fTrigPad->SetEditable(kFALSE);
     fTrigPad->Draw();
     fTrigPad->cd();
     fTrigPad->SetFillColor(22);
@@ -325,6 +327,8 @@ AliMUONDisplay::AliMUONDisplay(Int_t size)
     AppendPad(); // append display object as last object to force selection
     
     fCanvas->cd();
+    fTrigPad->SetEditable(kFALSE);
+    fButtons->SetEditable(kFALSE);
     fCanvas->Update();
     fNextCathode = kFALSE; 
 }
@@ -367,7 +371,6 @@ void AliMUONDisplay::DisplayButtons()
 
 
     fButtons = new TPad("buttons", "newpad",0,0.45,0.15,1);
-    fButtons->SetEditable(kFALSE);
     fButtons->Draw();
     fButtons->SetFillColor(38);
     fButtons->SetBorderSize(2);
