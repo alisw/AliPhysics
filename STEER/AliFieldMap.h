@@ -38,9 +38,9 @@ public:
     }
 
     Bool_t Inside(Float_t x, Float_t y, Float_t z) const
-	{ return (x > fXbeg && x <= fXend &&
-		  y > fYbeg && y <= fYend &&
-		  z > fZbeg && z <= fZend);
+	{ return (x > fXbeg && x < fXend &&
+		  y > fYbeg && y < fYend &&
+		  z > fZbeg && z < fZend);
 	}
     Float_t Xmin()  const {return fXbeg;}
     Float_t Xmax()  const {return fXend;}
