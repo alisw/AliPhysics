@@ -146,7 +146,6 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   TClonesArray * digits = gime->Digits(GetName()) ; 
-  AliPHOSSDigitizer * sdiz = gime->SDigitizer(GetName()) ; 
 
   digits->Clear() ;
 
@@ -164,8 +163,6 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 
   digits->Expand(nCPV) ;
 
-
-  // sdigitize random gaussian noise and add it to all cells (EMCA+CPV+PPSD) 
   // get first the sdigitizer from the tasks list (must have same name as the digitizer)
   const AliPHOSSDigitizer * sDigitizer = gime->SDigitizer(GetName()); 
   if ( !sDigitizer) {
@@ -352,7 +349,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   for (i = 0 ; i < ndigits ; i++) { 
     AliPHOSDigit * digit = (AliPHOSDigit *) digits->At(i) ; 
     digit->SetIndexInList(i) ;     
-    Float_t energy = sdiz->Calibrate(digit->GetAmp()) ;
+    Float_t energy = sDigitizer->Calibrate(digit->GetAmp()) ;
     digit->SetAmp(DigitizeEnergy(energy,digit->GetId()) ) ;
   }
 
@@ -376,7 +373,7 @@ void AliPHOSDigitizer::Exec(Option_t *option)
 { 
   // Managing method
 
-  if( strcmp(GetName(), "") == 0 )    
+  if(strcmp(GetName(), "") == 0 )   
     Init() ;
   
   if (strstr(option,"print")) {
@@ -512,10 +509,13 @@ Bool_t AliPHOSDigitizer::Init()
 
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
     
-  SetName("Default") ;
-
-  if( strcmp(GetTitle(), "") == 0 )
+  if(fARD)
+    SetTitle("aliroot") ;
+  else
     SetTitle("galice.root") ;
+
+  if( strcmp(GetName(), "") == 0 )
+    SetName("Default") ;
   
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), GetName()) ; 
   if ( gime == 0 ) {
