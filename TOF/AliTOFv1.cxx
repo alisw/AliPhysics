@@ -15,6 +15,10 @@
 
 /*
 $Log$
+
+Revision 1.26  2001/11/13 14:36:40  vicinanz
+Updated check for ppad[1] range
+
 Revision 1.24  2001/09/27 10:39:20  vicinanz
 SDigitizer and Merger added
 
@@ -1046,8 +1050,10 @@ void AliTOFv1::StepManager()
  
     gMC->Gmtod(xm,xpad,1);
     gMC->Gmtod(pm,ppad,2);
+
     if(ppad[1]>1.) ppad[1]=1.;
     if(ppad[1]<-1.) ppad[1]=-1.;
+
     incidenceAngle = TMath::ACos(ppad[1])*kRaddeg;
 
     z = pos[2];

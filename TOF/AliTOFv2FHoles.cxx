@@ -1023,8 +1023,7 @@ void AliTOFv2FHoles::StepManager()
  
     gMC->Gmtod(xm,xpad,1);
     gMC->Gmtod(pm,ppad,2);
-    if(ppad[1]>1.) ppad[1]=1.;
-    if(ppad[1]<-1.) ppad[1]=-1.;
+
     incidenceAngle = TMath::ACos(ppad[1])*kRaddeg;
 
     z = pos[2];

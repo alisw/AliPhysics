@@ -50,7 +50,7 @@ public:
   virtual void    SetTreeAddress();
   virtual void    AddHit(Int_t track, Int_t* vol, Float_t* hits);
   virtual void    AddDigit(Int_t* tracks, Int_t* vol, Float_t* digits);
-  virtual void    AddSDigit(Int_t* tracks, Int_t* vol, Float_t* digits);
+  virtual void    AddSDigit(Int_t tracknum, Int_t* vol, Float_t* digits);
   virtual void    CreateGeometry();
   virtual void    CreateMaterials();
   virtual void    Init();
@@ -74,7 +74,6 @@ public:
   virtual void    SetMerger(AliTOFMerger* merger);
   virtual AliTOFMerger* Merger();
 //  virtual void    Hits2Digits();   
-  virtual void    TOFHits2SDigits();
   virtual void    Hits2SDigits();
   virtual void    Digits2Reco() {cout << "AliTOF::Digits2Reco()  dummy function called" << endl;}
           void    Digits2Raw (Int_t evNumber=0);
