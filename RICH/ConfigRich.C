@@ -2,8 +2,8 @@ const static Int_t   iRICH  =  3;//0-1-3
 const static Bool_t  IsRichUp=kFALSE;
 const static Int_t   kEventsPerFile=50;
 
-enum  EGenTypes {kGun0,kGun1,kGun7,kPP7};
-const static EGenTypes kGen=kGun7;
+enum  EGenTypes {kGun0,kGun1,kGun7,kPP7,kPara};
+const static EGenTypes kGen=kPara;
 
 Int_t   iPIPE  =  0;//central before RICH
 Int_t   iITS   =  0;
@@ -58,6 +58,7 @@ void Config()
         case kGun7:         Gun7(pid=kProton);                       break;
         case kGun1:         Gun1(n=1,pid=kPiPlus,p=4,chamber=4);     break;
         case kGun0:         Gun1(n=1,pid=kNeutron,p=4,chamber=4);    break;
+        case kPara:         Para();                                  break;
         default:            Fatal("Config","No generator");          break;
   }  
   ::Info("kir","Stop.");
