@@ -227,9 +227,6 @@ void AliMoreModulesConstruction::Construct()
         // construct G3 geometry
         module->CreateGeometry();
         
-        // construct geometry for display
-        module->BuildGeometry();
-
         if (writeGeometry) 
           pGeometryManager->CloseOutFile();
       }	
@@ -256,6 +253,9 @@ void AliMoreModulesConstruction::Construct()
 
       // build sensitive detectors table
       fModuleConstructionVector[i]->GetAliModule()->Init();
+
+      // construct geometry for display
+      fModuleConstructionVector[i]->GetAliModule()->BuildGeometry();
     }  
 
     // reset TG4GeometryManager 

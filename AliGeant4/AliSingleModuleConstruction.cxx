@@ -264,9 +264,6 @@ void AliSingleModuleConstruction::Construct()
     // construct G3 geometry
     fAliModule->CreateGeometry();
         
-    // construct geometry for display
-    fAliModule->BuildGeometry();
-
     if (fWriteGeometry) 
       pGeometryManager->CloseOutFile();
   }  
@@ -284,6 +281,9 @@ void AliSingleModuleConstruction::Construct()
 
   // build sensitive detectors table
   fAliModule->Init();
+
+  // construct geometry for display
+  fAliModule->BuildGeometry();
 
   // reset TG4GeometryManager 
   pGeometryManager->ClearG3Tables();
