@@ -18,6 +18,7 @@ class TG3Units
 
     // static get methods
     static G4double Length(); 
+    static G4double Angle(); 
     static G4double Time(); 
     static G4double Charge(); 
     static G4double Energy(); 
@@ -33,6 +34,7 @@ class TG3Units
   private:
     // static data members  
     static const G4double fgkLength;       //G3 length unit 
+    static const G4double fgkAngle;        //G3 angle unit 
     static const G4double fgkTime;         //G3 time unit 
     static const G4double fgkCharge;       //G3 charge unit  
     static const G4double fgkEnergy;       //G3 energy unit  
@@ -45,6 +47,7 @@ class TG3Units
 // inline methods
 
 inline G4double TG3Units::Length() { return fgkLength; }
+inline G4double TG3Units::Angle()  { return fgkAngle; }
 inline G4double TG3Units::Time()   { return fgkTime; }
 inline G4double TG3Units::Charge() { return fgkCharge; }
 inline G4double TG3Units::Energy() { return fgkEnergy; }

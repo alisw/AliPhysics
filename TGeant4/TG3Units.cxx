@@ -8,6 +8,7 @@
 // static const data members
 
 const G4double TG3Units::fgkLength  = cm;
+const G4double TG3Units::fgkAngle   = deg;
 const G4double TG3Units::fgkTime    = s;
 const G4double TG3Units::fgkCharge  = eplus;
 const G4double TG3Units::fgkEnergy  = GeV;
