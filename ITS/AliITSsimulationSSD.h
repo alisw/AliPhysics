@@ -6,8 +6,6 @@
 
 #include "AliITSsimulation.h"
 
-class ostream;
-class istream;
 class AliITSMapA2;
 class AliITSdcsSSD;
 class AliITSsegmentationSSD;

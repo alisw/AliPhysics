@@ -17,14 +17,13 @@
 // the information needed to do the coordinate transformation are kept in
 // a specialized structure for ease of implementation.
 /////////////////////////////////////////////////////////////////////////
+#include <iostream.h>
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TVector.h>
 
 #include "AliITSgeomMatrix.h"
 
-class ofstream;
-class ifstream;
 
 typedef enum {kSPD=0, kSDD=1, kSSD=2, kSSDp=3,kSDDp=4} AliITSDetector;
 
