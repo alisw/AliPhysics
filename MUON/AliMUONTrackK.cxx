@@ -26,6 +26,7 @@
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliMUONEventReconstructor.h"
+#include "AliMagF.h"
 #include "AliMUONSegment.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONRawCluster.h"
@@ -66,15 +67,14 @@ extern "C" {
   void type_of_call extrap_onestep_rungekutta
   (Double_t &Charge, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
 
-  void type_of_call gufld_double(Double_t *Position, Double_t *Field);
-    /*  void type_of_call gufld_double(Double_t *Position, Double_t *Field) {
-    // interface to "gAlice->Field()->Field" for arguments in double precision
+  void type_of_call gufld_double(Double_t *Position, Double_t *Field) {
+    //interface to "gAlice->Field()->Field" for arguments in double precision
     Float_t x[3], b[3];
     x[0] = Position[0]; x[1] = Position[1]; x[2] = Position[2];
     gAlice->Field()->Field(x, b);
     Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
   }
-    */
+    
 }
 
 Int_t AliMUONTrackK::fgDebug = -1;
