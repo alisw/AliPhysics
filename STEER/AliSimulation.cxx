@@ -208,7 +208,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 
   // reopen the run loader
   if (fRunLoader) delete fRunLoader;
-  fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
+  fRunLoader = AliRunLoader::Open(fGAliceFileName.Data(),AliConfig::fgkDefaultEventFolderName,"UPDATE");
   if (!fRunLoader) {
     Error("Run", "no run loader found in file %s", 
 	  fGAliceFileName.Data());
