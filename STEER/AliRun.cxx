@@ -645,7 +645,7 @@ Int_t AliRun::GetEvent(Int_t event)
   sprintf(treeName,"TreeD%d",event);
   fTreeD = (TTree*)gDirectory->Get(treeName);
   if (!fTreeD) {
-    printf("WARNING: cannot find Digits Tree for event:%d\n",event);
+    Warning("GetEvent","cannot find Digits Tree for event:%d\n",event);
   }
   
   
@@ -1443,7 +1443,7 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
   lun=fopen(filtmp,"r");
   delete [] filtmp;
   if(!lun) {
-    printf(" *** GREUCL *** Could not open file %s\n",filnam);
+    Error("ReadEuclid","Could not open file %s\n",filnam);
     return;
   }
   //* --- definition of rotation matrix 0 ---  
@@ -1527,7 +1527,7 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
   flag=0;
   for(i=1;i<=nvol;i++) {
     if (istop[i] && flag) {
-      printf(" *** GREUCL *** warning: %s is another possible top volume\n",volst[i]);
+      Warning("ReadEuclid"," %s is another possible top volume\n",volst[i]);
     }
     if (istop[i] && !flag) {
       strcpy(topvol,volst[i]);
@@ -1536,7 +1536,7 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
     }
   }
   if (!flag) {
-    printf("*** GREUCL *** warning: top volume not found\n");
+    Warning("ReadEuclid","top volume not found\n");
   }
   fclose (lun);
   //*
@@ -1546,7 +1546,7 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
   return;
   //*
   L20:
-  printf(" *** GREUCL *** reading error or premature end of file\n");
+  Error("ReadEuclid","reading error or premature end of file\n");
 }
 
 //_____________________________________________________________________________
