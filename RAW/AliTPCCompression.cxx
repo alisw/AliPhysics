@@ -793,7 +793,7 @@ Int_t AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTa
   Double_t code;
   UChar_t codeLen;
   ifstream fTable;  
-  char filename[15];
+  char filename[256];
   //The following for loop is used to generate the Huffman trees acording to the tables
   //loop over the tables
   for(Int_t k=0;k<NumTables;k++){
