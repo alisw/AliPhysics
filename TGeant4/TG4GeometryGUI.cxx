@@ -14,6 +14,7 @@
 #include "TG4GeometryGUI.h"
 #include "TG4GuiVolume.h"
 #include "TG4MainFrame.h"
+#include "TG4ListTreeFrame.h"
 #include "TG4VolumesFrames.h"
 #include "TG4MaterialsFrames.h"
 #include "TG4Globals.h"
@@ -92,7 +93,8 @@ void TG4GeometryGUI::ReadGeometryTree()
 
     G4String vname = top->GetName();
     volume = new TG4GuiVolume( vname, top);//--->TObject
-    itemi = fPanel->AddItem(volume,0,vname, kOpenFolder, kFolder);
+    itemi = fPanel->GetListTreeFrame()
+      ->AddItem(volume,0,vname, kOpenFolder, kFolder);
  
     RegisterLogicalVolume( top, itemi);
     
@@ -138,7 +140,8 @@ TG4StringSet     lVolumeNames;     //set of names of solids
     if ( (lVolumeNames.find(vname)) == (lVolumeNames.end()) ) {
 
       volume = new TG4GuiVolume( vname, lDaughter);
-      itemi = fPanel->AddItem(volume, itemv, vname, kOpenFolder, kFolder);
+      itemi = fPanel->GetListTreeFrame()
+        ->AddItem(volume, itemv, vname, kOpenFolder, kFolder);
       
       itemi->SetUserData(volume);
       

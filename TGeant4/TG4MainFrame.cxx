@@ -18,7 +18,6 @@
 #include "TG4GuiVolume.h"
 #include "TG4Globals.h"
 
-#include <TGListTree.h>
 #include <TGTab.h>
 #include <TGMenu.h>
 #include <TApplication.h>
@@ -66,18 +65,14 @@ TG4MainFrame::TG4MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
    AddFrame(fTab, lTabLayout);
 
 //------->Frame for ListTree of logical volumes
-   TGCompositeFrame* tf = fTab->AddTab("Volumes");
-   flistTreeFrame = new TG4ListTreeFrame( tf, this);
-   fVolumesListTree=flistTreeFrame->GetVolumesListTree();
+   flistTreeFrame = new TG4ListTreeFrame( fTab, this);
 
 //----->Frame for volumes properties
-   tf = fTab->AddTab("Volumes Properties");
-   fvolumesFrames = new TG4VolumesFrames( tf, this);
+   fvolumesFrames = new TG4VolumesFrames( fTab, this);
 
 
 //----->Frame for materials properties
-   tf = fTab->AddTab("Materials Properties");
-   fmaterialsFrames = new TG4MaterialsFrames( tf, this);
+   fmaterialsFrames = new TG4MaterialsFrames( fTab, this);
 
 //----->Window name and final mapping
    SetWindowName("ALICE Geant4 Browser");
@@ -122,7 +117,6 @@ TG4MainFrame::~TG4MainFrame()
    delete fMenuBar;
    delete fTab;
 
-   delete fVolumesListTree;
    delete flistTreeFrame;
    delete fvolumesFrames;   
    delete fmaterialsFrames;
@@ -140,12 +134,10 @@ TG4MaterialsFrames* TG4MainFrame::GetMaterialsFrames() const
    return fmaterialsFrames;
 }
 
-TGListTreeItem*  TG4MainFrame::
-AddItem(TObject* obj, TGListTreeItem* parent, const char* name, 
-                       const TGPicture* open, const TGPicture* closed)
+TG4ListTreeFrame* TG4MainFrame::GetListTreeFrame() const
 {
-//----->Add item to the list tree
-    return fVolumesListTree->AddItem(parent, name, obj, open, closed);
+//---> For use in TG4GeometryGUI
+   return flistTreeFrame;
 }
 
 void TG4MainFrame::CloseWindow()
@@ -187,7 +179,7 @@ const char *editortxt =
 
 
 //=================================================================
-//----->Process messages to widgets
+//----->Process messages from widgets
     switch (GET_MSG(msg)) {
     
     case kC_TEXTENTRY:
@@ -276,48 +268,9 @@ const char *editortxt =
 
 //----->case Handle volumes ListTree
     case kC_LISTTREE:
-	switch (GET_SUBMSG(msg)) {
-
-//----->Cases to Handle mouse click
-   //-->case 1 
-	case kCT_ITEMCLICK: 
-    //---> Button 1: Select volume
-            if (parm1 == kButton1){
-	    TGListTreeItem* item = fVolumesListTree->GetSelected();
-             if (item) {
-	     
-	     TG4GuiVolume* volume=((TG4GuiVolume*) item->GetUserData());   
-	     G4LogicalVolume* lvolume = volume->GetLogicalVolume();
-
-	      if  ( lvolume ) {
-	       G4cout << "The selected logical volume name is   " 
-	            << lvolume->GetName() << G4endl;
-		  };
-	      };
-	    }; 
-	      
-    //---> Button 3: Draw Volume
-            if (parm1 == kButton3){
-             TGListTreeItem* item = fVolumesListTree->GetSelected();
-	     if (item){
-                flistTreeFrame->DrawSelectedVolume(item);};
-	    }; 
-		  
-	    break;
-
-   //-->case 2	    
-	case kCT_ITEMDBLCLICK:
-	    if (parm1 == kButton1) {
-		if (fVolumesListTree->GetSelected() != 0) {
-		    gClient->NeedRedraw(fVolumesListTree);
-		};
-	    };
-	    break;
-   //-->default for GET_SUBMSG	    
-	default:
-	    break;
-	}
+        flistTreeFrame->ProcessSubMessage( msg, parm1);    
 	break;
+
 //---->default for GET_MSG	
     default:
 	break;

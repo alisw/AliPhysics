@@ -2,6 +2,7 @@
 // Category: interfaces
 //
 // Author: D. Adamova
+//
 //======================================================
 //
 //------------TG4ListTreeFrame.h--------------------------------//
@@ -18,16 +19,20 @@
 class TGListTreeItem;
 class TGListTree;
 class TGCanvas;
-
+class TGTab;
+class TGPicture;
 
 class TG4ListTreeFrame : public TObject {
 public:   
 
-    TG4ListTreeFrame( TGCompositeFrame* parent, TGMainFrame* actionFrame);
+    TG4ListTreeFrame( TGTab* tab, TGMainFrame* actionFrame);
     virtual ~TG4ListTreeFrame();
 
-    TGListTree* GetVolumesListTree() const;    
+    Bool_t ProcessSubMessage(Long_t msg, Long_t parm1);  
     void DrawSelectedVolume(TGListTreeItem* item);
+    TGListTreeItem*
+        AddItem(TObject* obj, TGListTreeItem* parent,const char* name,
+                const TGPicture* open, const TGPicture* closed);    
 //---------------------------------------------------------------------------
 
 protected:
