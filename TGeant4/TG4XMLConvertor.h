@@ -29,10 +29,13 @@ class TG4XMLConvertor : public TG4VXMLConvertor
     virtual ~TG4XMLConvertor();
 
     // methods
+    virtual void OpenMaterials(const G4String& version, const G4String& date, 
+            const G4String& author, const G4String dtdVersion);
     virtual void OpenSection(const G4String& name, const G4String& version,
 	    const G4String& date, const G4String& author,
             const G4String& topVolume);
     virtual void OpenComposition(const G4String& name);
+    virtual void CloseMaterials();
     virtual void CloseSection();
     virtual void CloseComposition();
 
@@ -44,6 +47,8 @@ class TG4XMLConvertor : public TG4VXMLConvertor
                                G4String solidName, G4ThreeVector position,
 			       const G4RotationMatrix* rotation); 
     virtual void WriteEmptyLine();
+    virtual void IncreaseIndention();
+    virtual void DecreaseIndention();
 
   private:
     //methods
@@ -59,10 +64,12 @@ class TG4XMLConvertor : public TG4VXMLConvertor
     static const G4int fgkMaxMaterialNameLength;
 
     // data members
-    G4std::ofstream&  fOutFile;       //output file
-    TG4StringSet      fMaterialNames; //set of names of materials 
-    TG4StringSet      fSolidNames;    //set of names of solids
-    G4String          fIndention;     //indention string
+    G4std::ofstream&  fOutFile;          //output file
+    TG4StringSet      fMaterialNames;    //set of names of materials 
+    TG4StringSet      fSolidNames;       //set of names of solids
+    TG4RotationMatrixVector  fRotations; // vector of rot matrices
+    const G4String    fBasicIndention;   //basic indention 
+    G4String          fIndention;        //indention string
 };
 
 #endif //TG4_XML_CONVERTOR_H
