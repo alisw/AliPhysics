@@ -40,6 +40,8 @@ class AliGenPythia : public AliGenerator
     virtual Float_t GetXsection() {return fXsection;}
     // Check PDG code
     virtual Int_t   CheckPDGCode(Int_t pdgcode);
+    virtual void    FinishRun();
+    
     // Assignment Operator
     AliGenPythia & operator=(const AliGenPythia & rhs);
  protected:
