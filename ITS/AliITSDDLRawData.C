@@ -10,9 +10,10 @@ AddDigit in the class AliITSsimulationSDD
 //if( fResponse->Do10to8() ) signal = Convert8to10( signal ); 
 In this way the amplitude value for signal coming from SDD takes only 8 bits and not 10.
 */
+//DigitsFile is the input file that contains digits
 
-void AliITSDDLRawData(char* DigitsFile="galice.root"){
-  #ifdef __NOCOMPILED__
+void AliITSDDLRawData(char* DigitsFile="galiceD.root"){
+#ifdef __NOCOMPILED__
   if (gClassTable->GetID("AliRun") < 0) {
     gROOT->LoadMacro("loadlibs.C");
     loadlibs();
@@ -26,67 +27,86 @@ void AliITSDDLRawData(char* DigitsFile="galice.root"){
 #ifdef __NOCOMPILED__
   }
 #endif
-  // Connect the Root input file containing Geometry, Kine and Hits
-  // galice.root file by default
-  char* filename="galice.root";
-  // TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(DigitsFile);
   if (!file){
-    //    file = new TFile(filename);
     file = new TFile(DigitsFile);
-    cout<<"NEW FILE CREATED !!!"<<endl;
   }//end if
   file->ls();
+
   // Get AliRun object from file
-  if (!gAlice) {
-    gAlice = (AliRun*)file->Get("gAlice");
-    if (gAlice)cout<<"AliRun object found on file "<<filename<<endl;
-    if(!gAlice){
-      cout<<"Can't access AliRun object on file "<<filename<<endl;
-      cout<<"Macro execution stopped!!!"<<endl;
-    }
-  }
-  //  gAlice->SetTreeDFileName("digits.root");
-  gAlice->SetTreeDFileName(DigitsFile);
-  Int_t nparticles = gAlice->GetEvent(0);
-  // 
-  // ITS
-  AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
-  Int_t nmodules;
-  ITS->InitModules(-1,nmodules);
-
-  cout<<"Number of ITS modules= "<<nmodules<<endl;
-  //cout<<"Filling modules... It takes a while, now. Please be patient"<<endl;
-  //ITS->FillModules(0,0,nmodules," "," ");
-  //cout<<"ITS modules .... DONE!"<<endl;
-  // DIGITS
-  TTree *TD = gAlice->TreeD();
-
-  AliITSDDLRawData *util=new AliITSDDLRawData();
-  TStopwatch timer;
+    if (!gAlice){
+      gAlice = (AliRun*)file->Get("gAlice");
+      if (gAlice)cout<<"AliRun object found on file "<<DigitsFile<<endl;
+      if(!gAlice){
+	cout<<"Can't access AliRun object on file "<<DigitsFile<<endl;
+	cout<<"Macro execution stopped!!!"<<endl;
+	exit(1);
+      }//end if
+    }//end if 
+    gAlice->SetTreeDFileName(DigitsFile);
+    //  Long_t nparticles = gAlice->GetEvent(0);
   
-  //SILICON PIXEL DETECTOR
-  cout<<"Formatting data for SPD"<<endl;
-  timer.Start();
-  util->RawDataSPD(ITS,TD);
-  timer.Stop();
-  timer.Print();
-  //util->TestFormat();
+    //Int_t nparticles = gAlice->GetEvent(0);
+    // 
+    // ITS
+    AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
+    Int_t nmodules;
+    ITS->InitModules(-1,nmodules);
+    cout<<"Number of ITS modules= "<<nmodules<<endl;
+    //cout<<"Filling modules... It takes a while, now. Please be patient"<<endl;
+    //ITS->FillModules(0,0,nmodules," "," ");
+    //cout<<"ITS modules .... DONE!"<<endl;
+    // DIGITS
     
-  //SILICON DRIFT DETECTOR
-  cout<<"Formatting data for SDD"<<endl;
-  timer.Start();
-  util->RawDataSDD(ITS,TD);
-  timer.Stop();
-  timer.Print();
-  
-  //SILICON STRIP DETECTOR
-  cout<<"Formatting data for SSD"<<endl;
-  timer.Start();
-  util->RawDataSSD(ITS,TD);
-  timer.Stop();
-  timer.Print();
-  
-  delete util;
-  return;
+    
+    TTree* TD = (TTree*)file->Get("TreeD0");
+    if (TD == 0x0){
+      ::Error("DDLRawData","Can not find tree with ITS digits");
+      return;
+    }//end if
+    ITS->SetTreeAddressD(TD);
+    
+    
+    //TTree *TD = gAlice->TreeD();
+    
+    AliITSDDLRawData *util=new AliITSDDLRawData();
+    //Verbose level
+    // 0: Silent
+    // 1: cout messages
+    // 2: txt files with digits 
+    //BE CAREFUL, verbose level 2 MUST be used only for debugging and
+    //it is highly suggested to use this mode only for debugging digits files
+    //reasonably small, because otherwise the size of the txt files can reach
+    //quickly several MB wasting time and disk space.
+    util->SetVerbose(0);
+    TStopwatch timer;
+    
+    //SILICON PIXEL DETECTOR
+    cout<<"Formatting data for SPD"<<endl;
+    timer.Start();
+    util->RawDataSPD(ITS,TD);
+    //  util->RawDataSPD(ITS,TD,20);
+    timer.Stop();
+    timer.Print();
+    //ONLY FOR DEBUGGING 
+    util->TestFormat();
+    
+    //SILICON DRIFT DETECTOR
+    cout<<"Formatting data for SDD"<<endl;
+    timer.Start();
+    //util->RawDataSDD(ITS,TD,12);
+    util->RawDataSDD(ITS,TD);
+    timer.Stop();
+    timer.Print();
+    
+    //SILICON STRIP DETECTOR
+    cout<<"Formatting data for SSD"<<endl;
+    timer.Start();
+    //util->RawDataSSD(ITS,TD,16);
+    util->RawDataSSD(ITS,TD);
+    timer.Stop();
+    timer.Print();
+    
+    delete util;
+    return;
 }

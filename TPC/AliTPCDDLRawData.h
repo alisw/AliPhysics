@@ -11,7 +11,7 @@
 
 class AliTPCDDLRawData:public TObject{
  public:
-  AliTPCDDLRawData(){;}//default constructor
+  AliTPCDDLRawData(){fVerbose=0;}//default constructor
   virtual ~AliTPCDDLRawData(){;}//destructor
   AliTPCDDLRawData(const AliTPCDDLRawData &source); // copy constructor
   AliTPCDDLRawData& operator=(const AliTPCDDLRawData &source); // ass. op.
@@ -25,7 +25,9 @@ class AliTPCDDLRawData:public TObject{
   void RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp=0);
   //This method is used to construct an Altro format file starting from
   //the slices compressed or uncompressed
+  void SetVerbose(Int_t Verbose){fVerbose=Verbose;}
  private:
+  Int_t fVerbose;         //Verbose level 0:Silent, 1: cout msg, 2:txt files for debugging
   ClassDef(AliTPCDDLRawData,1)
 };
     

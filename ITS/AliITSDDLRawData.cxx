@@ -12,7 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
 /* $Id$ */
+
 
 //This class contains all the necessary methods to create the Raw Data
 //files (slides) for the ITS data challenges for:
@@ -37,6 +39,7 @@ AliITSDDLRawData::AliITSDDLRawData(){
   //Default constructor
   fIndex=-1;
   fHalfStaveModule=-1;
+  fVerbose=0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -45,6 +48,7 @@ AliITSDDLRawData::AliITSDDLRawData(const AliITSDDLRawData &source){
   //Copy Constructor
   this->fIndex=source.fIndex;
   this->fHalfStaveModule=source.fHalfStaveModule;
+  this->fVerbose=source.fVerbose;
   return;
 }
 
@@ -54,6 +58,7 @@ AliITSDDLRawData& AliITSDDLRawData::operator=(const AliITSDDLRawData &source){
   //Assigment operator
   this->fIndex=source.fIndex;
   this->fHalfStaveModule=source.fHalfStaveModule;
+  this->fVerbose=source.fVerbose;
   return *this;
 }
 
@@ -61,7 +66,7 @@ AliITSDDLRawData& AliITSDDLRawData::operator=(const AliITSDDLRawData &source){
 //STRIP 
 //
 
-void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod, ULong_t *buf){
+void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR,Int_t ddl,ULong_t *buf){
   //This method packs the SSD digits in a proper 32 bits structure
   Int_t ix;
   Int_t iz;
@@ -70,13 +75,19 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
   ULong_t baseWord;
   Int_t ndigits = ITSdigits->GetEntries();
   AliITSdigit *digs;
+  ofstream ftxt;
   if(ndigits){
+    if (fVerbose==2){
+      ftxt.open("SSDdigits.txt",ios::app);
+    }
     for (Int_t digit=0;digit<ndigits;digit++) {
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
       iz=digs->fCoord1;  // If iz==0, N side and if iz=1 P side
       ix=digs->fCoord2;  // Strip Numbar
       is=digs->fSignal;  // ADC Signal
       // cout<<" Module:"<<mod-500<<" N/P side:"<<iz<<" Strip Number:"<<ix<<" Amplidute:"<<is-1<<endl;
+      if (fVerbose==2)
+	ftxt<<"DDL:"<<ddl<<" Mod: "<<modR<<" N/P: "<<iz<<" Strip: "<<ix<<" Value: "<<is-1<<endl;
       baseWord=0;
       word=is-1;
       PackWord(baseWord,word,0,9);//ADC data
@@ -90,6 +101,8 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
       buf[fIndex]=baseWord;
     }//end for
   }//end if
+  if (fVerbose==2)
+    ftxt.close();
   return;
 }//end GetDigitsSSD
 
@@ -97,7 +110,7 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
 //Silicon Drift Detector
 //
 
-void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod, ULong_t *buf){  
+void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR,Int_t ddl,ULong_t *buf){  
   //This method packs the SSD digits in a proper 32 bits structure
   Int_t ix;
   Int_t iz;
@@ -106,13 +119,18 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
   ULong_t baseWord;
   Int_t ndigits = ITSdigits->GetEntries();
   AliITSdigit *digs;
+  ofstream ftxt;
   if(ndigits){
     //cout<<"Mudule "<<mod<<" number of digits "<<ndigits<<endl;
+    if (fVerbose==2)
+      ftxt.open("SDDdigits.txt",ios::app);
     for (Int_t digit=0;digit<ndigits;digit++) {
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
       iz=digs->fCoord1;  // Anode
       ix=digs->fCoord2;  // Time
       is=digs->fSignal;  // ADC Signal
+      if (fVerbose==2)
+	ftxt<<"DDL:"<<ddl<<" MID:"<<modR<<" An:"<<iz<<" T:"<<ix<<" A:"<<is<<endl;
       //      cout<<"Amplitude value:"<<is<<" Time Bucket:"<<ix<<" Anode:"<<iz<<endl;
       if (is>255){cout<<"WARNING (!) bits words is needed)!!!\n";}
       baseWord=0;
@@ -142,6 +160,8 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
       buf[fIndex]=baseWord;
     }//end for
   }//end if
+  if(fVerbose==2)
+    ftxt.close();
   return;
 }//end GetDigitsSDD
 
@@ -149,8 +169,11 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
 //PIXEL 
 //
 
-void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod, ULong_t *buf){
-  //This method packs the SPD digits in a proper 32 strucure
+void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl, ULong_t *buf){
+  //This method packs the SPD digits in a proper 32 structure
+  //Since data is zero suppressed,the coordinates for the chip having zero digits 
+  //doesn't get listed in the galice.root file. However the SPD format requires 
+  //the empty chip to be written with chip header and chip trailer.
   Int_t ix;
   Int_t iz;
   Int_t chipNo=0;
@@ -163,24 +186,28 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
   AliITSdigit *digs;
   fHalfStaveModule++;    //It's a private variable used to distinguish between the firs  
                          //and the second module of an Half Stave Module
+  ofstream ftxt;
   if(ndigits){
     //loop over digits
+    if (fVerbose==2)
+      ftxt.open("SPDdigits.txt",ios::app);
     for (Int_t digit=0;digit<ndigits;digit++){
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
       /*---------------------------------------------------------------------------
        *     Each module contains 5 read out chips of 256 rows and 32 columns.
-       *     So, the cell number in Z direction varies from 1 to 160.  Therefore,
+       *     So, the cell number in Z direction varies from 0 to 159.  Therefore,
        *     to get the chip address (0 to 4), we need to divide column number by 32.
        *     ---------------------------------------------------------------------*/
       iz=digs->fCoord1;  // Cell number in Z direction 
       ix=digs->fCoord2;  // Cell number in X direction
       chipNo=iz/32;
+      if(fVerbose==2)
+	ftxt<<"DDL:"<<ddl<<" Mod:"<<mod<<" Row:"<<ix<<" Col:"<<iz<<endl;
       hitRow=iz-chipNo*32;
       if(fHalfStaveModule){
 	chipNo+=5;
 	fHalfStaveModule=-1;
       }//end if
-      //cout<<"Chip number of the current digit:"<<chipNo<<" Row:"<<hitRow<<" Column:"<<ix<<endl;
       if(previousChip==-1){
 	//loop over chip without digits 
 	//Even if there aren't digits for a given chip 
@@ -191,23 +218,26 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
 	  else
 	    WriteChipHeader(i,(mod/2),baseWord);
 	  WriteChipTrailer(buf,chipHitCount,baseWord);
+	  chipHitCount=0;
 	}//end for
-	previousChip=chipNo;
 	WriteChipHeader(chipNo,(mod/2),baseWord);
 	chipHitCount++;
 	WriteHit(buf,ix,hitRow,baseWord);
+	previousChip=chipNo;
       }//end if
       else{
-	chipHitCount++;
 	if(previousChip!=chipNo){
-	  WriteChipTrailer(buf,chipHitCount-1,baseWord);
+	  WriteChipTrailer(buf,chipHitCount,baseWord);
+	  chipHitCount=0;
 	  for(Int_t i=previousChip+1;i<chipNo;i++){
 	    WriteChipHeader(i,(mod/2),baseWord);
 	    WriteChipTrailer(buf,0,baseWord);
+	    chipHitCount=0;
 	  }//end for
 	  WriteChipHeader(chipNo,(mod/2),baseWord);
 	  previousChip=chipNo;
 	}//end if
+	chipHitCount++;
 	WriteHit(buf,ix,hitRow,baseWord);
       }//end else
     }//end for
@@ -216,9 +246,11 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
     Int_t end=4;
     if(chipNo>4)end+=5;
     WriteChipTrailer(buf,chipHitCount,baseWord);
+    chipHitCount=0;
     for(Int_t i=chipNo+1;i<=end;i++){
       WriteChipHeader(i,(mod/2),baseWord);
       WriteChipTrailer(buf,0,baseWord);
+      chipHitCount=0;
     }//end for
   }//end if
   else{
@@ -231,8 +263,11 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
     for(Int_t i=0;i<5;i++){
       WriteChipHeader(chipNo+i,(mod/2),baseWord);
       WriteChipTrailer(buf,chipHitCount,baseWord);
+      chipHitCount=0;
     }//end for
   }//end else 
+  if(fVerbose==2)
+    ftxt.close();
   return;
 }//end GetDigitsSPD
 
@@ -311,7 +346,8 @@ Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 					 {74,75,78,79,226,227,230,231,234,235,238,239}};
   Int_t ddlsPerFile=kDDLsNumber/LDCsNumber;
   if(kDDLsNumber%LDCsNumber)ddlsPerFile++;
-  cout<<"Number of DDL per File: "<<ddlsPerFile<<endl;
+  if(fVerbose)
+    cout<<"Number of DDL per File: "<<ddlsPerFile<<endl;
   Int_t subd=0;
   Int_t countDDL=0;
   Int_t sliceNumber=1;
@@ -356,7 +392,7 @@ Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
       nbytes += TD->GetEvent(mapSPD[i][mod]);
       //For each Module, buf contains the array of data words in Binary format	  
       //fIndex gives the number of 32 bits words in the buffer for each module
-      GetDigitsSPD(digitsInITS,mapSPD[i][mod],buf);
+      GetDigitsSPD(digitsInITS,mapSPD[i][mod],i,buf);
       outfile.write((char *)buf,((fIndex+1)*sizeof(ULong_t)));
       for(Int_t i=0;i<(fIndex+1);i++){
 	buf[i]=0;
@@ -578,8 +614,9 @@ Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 
 
   Int_t ddlsPerFile=kDDLsNumber/LDCsNumber;
-  if(20%LDCsNumber)ddlsPerFile++;
-  cout<<"Number of DDL per File: "<<ddlsPerFile<<endl;
+  if(kDDLsNumber%LDCsNumber)ddlsPerFile++;
+  if(fVerbose)
+    cout<<"Number of DDL per File: "<<ddlsPerFile<<endl;
   Int_t subd=2;          //SSD
   Int_t countDDL=0;
   Int_t sliceNumber=1;
@@ -626,7 +663,7 @@ Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 	nbytes += TD->GetEvent(mapSSD[i][mod]);
 	//For each Module, buf contains the array of data words in Binary format	  
 	//fIndex gives the number of 32 bits words in the buffer for each module
-	GetDigitsSSD(digitsInITS,mod,buf);
+	GetDigitsSSD(digitsInITS,mod,mapSSD[i][mod],i,buf);
 	outfile.write((char *)buf,((fIndex+1)*sizeof(ULong_t)));
 	for(Int_t i=0;i<(fIndex+1);i++){
 	  buf[i]=0;
@@ -682,7 +719,8 @@ Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
   
   Int_t ddlsPerFile=kDDLsNumber/LDCsNumber;
   if(kDDLsNumber%LDCsNumber)ddlsPerFile++;
-  cout<<"Number of DDL per File: "<<ddlsPerFile<<endl;
+  if(fVerbose)
+    cout<<"Number of DDL per File: "<<ddlsPerFile<<endl;
   Int_t subd=1;
   Int_t countDDL=0;
   Int_t sliceNumber=1;
@@ -728,7 +766,7 @@ Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 	//For each Module, buf contains the array of data words in Binary format	  
 	//fIndex gives the number of 32 bits words in the buffer for each module
 	//	cout<<"MODULE NUMBER:"<<mapSDD[i][mod]<<endl;
-	GetDigitsSDD(digitsInITS,mod,buf);
+	GetDigitsSDD(digitsInITS,mod,mapSDD[i][mod],i,buf);
 	outfile.write((char *)buf,((fIndex+1)*sizeof(ULong_t)));
 	for(Int_t i=0;i<(fIndex+1);i++){
 	  buf[i]=0;
@@ -783,7 +821,8 @@ void AliITSDDLRawData::ReadChipHeader(Int_t &ChipAddr,Int_t &EventCnt,ULong_t Ba
   ChipAddr=(Int_t)temp;
   UnpackWord(BaseWord,4,10,temp);
   EventCnt=(Int_t)temp;
-  cout<<"Chip: "<<ChipAddr<<" Half Stave module:"<<EventCnt<<endl;
+  if(fVerbose)
+    cout<<"Chip: "<<ChipAddr<<" Half Stave module:"<<EventCnt<<endl;
   return;
 }//end ReadChipHeader
 
@@ -793,7 +832,7 @@ void  AliITSDDLRawData::WriteChipTrailer(ULong_t *buf,Int_t ChipHitCount,ULong_t
   //This method writes a chip trailer
   //pixel fill word
   if((ChipHitCount%2)!=0){
-    PackWord(BaseWord,0xFECD,0,15);
+    PackWord(BaseWord,0xFEDC,0,15);
   }
   PackWord(BaseWord,ChipHitCount,16,28);
   PackWord(BaseWord,0x0,30,31);
@@ -860,91 +899,65 @@ void AliITSDDLRawData::TestFormat(){
       //cout<<"Block Size: "<<size<<endl;
       size=miniHeader[0];
       UnpackWord(miniHeader[2],16,31,ddlsNumber);
-      ftxt<<"DDL NUMBER:"<<ddlsNumber<<endl;
+      //ftxt<<"DDL NUMBER:"<<ddlsNumber<<endl;
       ULong_t word=0;
-      ULong_t code=0;
-      ULong_t decoded1,decoded2=0;
+      ULong_t codeH,codeL=0;
+      ULong_t chip=0;
+      ULong_t half=0;
+      ULong_t col=0;
+      ULong_t row=0;
+      Int_t moduleID=0;
+      ULong_t hitscount=0;
+      Int_t previous=-1;
       for(ULong_t j=0;j<(size/4);j++){
 	f.read((char*)(&word),sizeof(word)); //32 bits word
-	code=0;
-	UnpackWord(word,14,15,code);
-	DecodeWord(code,word,0,decoded1,decoded2);
-	switch (code){
-	case 0://trailer
-	  ftxt<<"Number of Hit:"<<decoded1<<endl;
-	  break;
-	case 1://header
-	  ftxt<<"Half Stave Number:"<<decoded1<<" Chip Number:"<<decoded2<<endl;
-	  break;
-	case 2://hit
-	  ftxt<<"Row:"<<decoded1<<" Column:"<<decoded2<<endl;
-	  break;
-	case 3://fill word
-	  break;
-	}//end switch
-	code=0;
-	UnpackWord(word,30,31,code);
-	DecodeWord(code,word,1,decoded1,decoded2);
-	switch (code){
-	case 0://trailer
-	  ftxt<<"Number of Hit:"<<decoded1<<endl;
-	  break;
-	case 1://header
-	  ftxt<<"Half Stave Number:"<<decoded1<<" Chip Number:"<<decoded2<<endl;
-	  break;
-	case 2://hit
-	  ftxt<<"Row:"<<decoded1<<" Column:"<<decoded2<<endl;
-	  break;
-	case 3://fill word
-	  break;
-	}//end switch
+	UnpackWord(word,30,31,codeH);
+	UnpackWord(word,14,15,codeL);
+	if ((codeH==2)&&(codeL==1)){
+	  UnpackWord(word,0,3,chip);
+	  UnpackWord(word,4,10,half);
+	  moduleID=half*2+chip/5;
+	  if (moduleID!=previous){
+	    if (hitscount){
+	      previous=moduleID;
+	      hitscount=0;
+	    }
+	  }
+	  chip=chip%5;
+	  row=col=0;
+	  UnpackWord(word,21,28,row);
+	  UnpackWord(word,16,20,col); 
+	  col=col+32*chip;
+	  hitscount++;
+	  ftxt<<"DDL:"<<ddlsNumber<<" Mod:"<<moduleID<<" Row:"<<row<<" Col:"<<col<<endl;
+	}//end if
+	else if ((codeH==2)&&(codeL==2)){
+	  row=col=0;
+	  UnpackWord(word,5,12,row);
+	  UnpackWord(word,0,4,col);
+	  col=col+32*chip;
+	  ftxt<<"DDL:"<<ddlsNumber<<" Mod:"<<moduleID<<" Row:"<<row<<" Col:"<<col<<endl;
+	  row=col=0;
+	  UnpackWord(word,21,28,row);
+	  UnpackWord(word,16,20,col); 
+	  col=col+32*chip;
+	  ftxt<<"DDL:"<<ddlsNumber<<" Mod:"<<moduleID<<" Row:"<<row<<" Col:"<<col<<endl;
+	  hitscount++;
+	  hitscount++;
+	}//end else if
+	else if ((codeH==0)&&(codeL==2)){
+	  row=col=0;
+	  UnpackWord(word,5,12,row);
+	  UnpackWord(word,0,4,col);
+	  col=col+32*chip;
+	  hitscount++;
+	  ftxt<<"DDL:"<<ddlsNumber<<" Mod:"<<moduleID<<" Row:"<<row<<" Col:"<<col<<endl;
+	}//end else if
       }//end for
     }//end while
     f.clear();
     f.close();
   }//end for
   ftxt.close();
-  return;
-}
-
-void AliITSDDLRawData::DecodeWord(ULong_t Code,ULong_t BaseWord,Int_t FirstHalf,ULong_t &Decoded1,ULong_t &Decoded2){
-  //FirstHalf=0 ==>bits from 0 to 15
-  //FirstHalf=1 ==>bits from 16 to 31
-  if(!FirstHalf){
-    switch (Code){
-    case 0://trailer
-      UnpackWord(BaseWord,0,12,Decoded1);
-      break;
-    case 1://header
-      UnpackWord(BaseWord,4,10,Decoded1);
-      UnpackWord(BaseWord,0,3,Decoded2);
-      break;
-    case 2://hit
-      UnpackWord(BaseWord,5,12,Decoded1);
-      UnpackWord(BaseWord,0,4,Decoded2);
-      break;//fill word
-    case 3:
-      UnpackWord(BaseWord,0,13,Decoded1);
-      break;
-    }//end switch
-  }
-  else{
-    switch (Code){
-    case 0://trailer
-      UnpackWord(BaseWord,16,28,Decoded1);
-      break;
-    case 1://header
-      UnpackWord(BaseWord,20,26,Decoded1);
-      UnpackWord(BaseWord,16,19,Decoded2);
-      break;
-    case 2://hit
-      UnpackWord(BaseWord,21,28,Decoded1);
-      UnpackWord(BaseWord,16,20,Decoded2);
-      break;
-    case 3://fill word
-      UnpackWord(BaseWord,16,29,Decoded1);
-      break;
-    }//end switch
-  }
   return;
 }

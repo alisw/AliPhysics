@@ -41,6 +41,7 @@ AliTPCBuffer::AliTPCBuffer(const char* fileName){
   // tree=new TTree("tree","Values");
   fNumberOfDigits=0;
   fVerbose=0;
+  remove("TPCdigits.txt");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -131,20 +132,39 @@ void AliTPCBuffer::WriteRowBinary(Int_t eth,AliSimDigits *digrow,Int_t minPad,In
   data.SubSec=SubSec;
   data.Row=row;
   digrow->First();
+  Int_t padID=-1;
+  Int_t ddlNumber=0;
+  ofstream ftxt;
+  if (fVerbose==2){
+    ftxt.open("TPCdigits.txt",ios::app);
+    if(sec<36)
+      ddlNumber=sec*2+SubSec;
+    else
+      ddlNumber=72+(sec-36)*4+SubSec;
+  }//end if
   do{
-    data.Dig=digrow->CurrentDigit(); //adc
-    data.Time=digrow->CurrentRow(); //time
-    data.Pad =digrow->CurrentColumn(); // pad 
+    data.Dig=digrow->CurrentDigit();    //adc
+    data.Time=digrow->CurrentRow();     //time
+    data.Pad =digrow->CurrentColumn();  // pad 
+    if(fVerbose==2)
+      if (padID!=data.Pad){
+	ftxt<<"S:"<<data.Sec<<" DDL:"<<ddlNumber<<" R:"<<data.Row<<" P:"<<data.Pad<<endl;
+	padID=data.Pad;
+      }//end if
     if(data.Dig>eth){
       switch (flag){
       case 0:{
 	fNumberOfDigits++;
 	f.write((char*)(&data),sizeof(data));
+	if(fVerbose==2)
+	  ftxt<<"A:"<<data.Dig<<" T:"<<data.Time<<endl; 
 	break;
       }//end case 0
       case 1:{
 	if((data.Pad>=minPad)&&(data.Pad<=maxPad)){
 	  f.write((char*)(&data),sizeof(data));
+	  if(fVerbose==2)
+	    ftxt<<"A:"<<data.Dig<<" T:"<<data.Time<<endl; 
 	  fNumberOfDigits++;
 	}
 	break;
@@ -152,6 +172,8 @@ void AliTPCBuffer::WriteRowBinary(Int_t eth,AliSimDigits *digrow,Int_t minPad,In
       case 2:{
 	if((data.Pad<minPad)||(data.Pad>maxPad)){
 	  f.write((char*)(&data),sizeof(data));
+	  if(fVerbose==2)
+	    ftxt<<"A:"<<data.Dig<<" T:"<<data.Time<<endl; 
 	  fNumberOfDigits++;
 	}
 	break;
@@ -159,6 +181,8 @@ void AliTPCBuffer::WriteRowBinary(Int_t eth,AliSimDigits *digrow,Int_t minPad,In
       };//end switch
     }//end if
   }while (digrow->Next());
+  if (fVerbose==2)
+    ftxt.close();
   return;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

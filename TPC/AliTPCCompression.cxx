@@ -12,7 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
 /* $Id$ */
+
 
 // This class contains the implementation of the 
 // compression and decompression algorithms 
@@ -256,6 +258,66 @@ Int_t AliTPCCompression::StoreTables(AliTPCHTable* table[],const Int_t NumTable)
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////
+Int_t AliTPCCompression::CreateTableFormula(Double_t beta,ULong_t  M,Int_t dim,Int_t Type){
+  // Type = 0 for Bunch length
+  // Type = 1 for Time Gap
+  ULong_t freq;
+  Double_t sum=0;
+  Double_t min=10;
+  Double_t alpha=0;
+  Double_t A=0;
+  AliTPCHTable *Table=new AliTPCHTable(dim);
+  
+  freq=1;
+  Double_t FreqArray[1024];
+  for(Int_t i=0;i<1024;i++){
+    FreqArray[i]=0;
+  }
+  alpha=M*0.000000602+0.0104;
+  if (fVerbose)
+    cout<<"alpha "<<alpha<<endl;
+  for(Int_t x=0;x<dim;x++){
+    if (Type==1)
+      FreqArray[x]=TMath::Power((x+1),-beta)*TMath::Exp(-alpha*(x+1));
+    else
+      FreqArray[x]=TMath::Power((x+1),-beta);
+    sum+=FreqArray[x];
+    if (FreqArray[x]<min)min=FreqArray[x];
+  }//end for
+  if (fVerbose)
+    cout<<"Minimun Value "<<min<<endl;
+  A=1/sum;
+  if (fVerbose)
+    cout<<"A Value: "<<A<<endl;
+  for(Int_t x=0;x<dim;x++){
+    if (Type==0)//Bunch length
+      if (x>=3)//minimum bunch length
+	Table->SetValFrequency(x,A*FreqArray[x]*1000);
+      else
+	Table->SetValFrequency(x,0);
+    else //Time table
+      Table->SetValFrequency(x,A*FreqArray[x]);
+  }
+  Table->BuildHTable();
+  ofstream fTable;
+  char filename[15];
+  sprintf(filename,"Table%d.dat",Type); 
+  fTable.open(filename,ios::binary);
+  Int_t dimTable=Table->Size();
+  //Table dimension is written into a file
+  fTable.write((char*)(&dimTable),sizeof(Int_t));
+  //One table is written into a file
+  for(Int_t i=0;i<dimTable;i++){
+    UChar_t CodeLen=Table->CodeLen()[i];
+    Double_t Code=Table->Code()[i];
+    fTable.write((char*)(&CodeLen),sizeof(UChar_t));
+    fTable.write((char*)(&Code),sizeof(Double_t));
+  } //end for
+  fTable.close();
+  delete Table;
+  return 0;
+}
+////////////////////////////////////////////////////////////////////////////////////////
 Int_t AliTPCCompression::CreateTables(const char* fSource,const Int_t NumTables){
   //Tables manager
   /*
@@ -269,7 +331,10 @@ Int_t AliTPCCompression::CreateTables(const char* fSource,const Int_t NumTables)
   Int_t n=10;// 10 bits per symbol 
   AliTPCHTable ** table = new AliTPCHTable*[NumTables];
   //The table is inizialized with the rigth number of rows 
-  for(Int_t i=0;i<NumTables;i++){table[i]=new  AliTPCHTable((Int_t)(TMath::Power(2,n)));}
+  for(Int_t i=0;i<NumTables;i++){
+    table[i]=new  AliTPCHTable((Int_t)(TMath::Power(2,n)));
+    table[i]->SetVerbose(fVerbose);
+  }
   //The frequencies are calculated and the tables are filled
   if (fVerbose)
     cout<<"Filling tables...\n";
@@ -301,6 +366,14 @@ Int_t AliTPCCompression::CreateTables(const char* fSource,const Int_t NumTables)
  
   if (fVerbose)
     cout<<"Tables filled \n";
+  
+  //Frequencies normalization
+  table[0]->NormalizeFrequencies();
+  table[1]->NormalizeFrequencies();
+  table[2]->NormalizeFrequencies();
+  table[3]->NormalizeFrequencies();
+  table[4]->NormalizeFrequencies();
+  
   //Tables are saved in a sequence of text file and using the macro Histo.C is it possible to get
   //a series of histograms rappresenting the frequency distribution
   table[0]->StoreFrequencies("BunchLenFreq.txt");
@@ -366,6 +439,7 @@ Int_t AliTPCCompression::RetrieveTables(AliTPCHTable* table[],Int_t NumTable){
 #else
     fTable.open(filename);
 #endif
+    if(!fTable){cout<<"File doesn't exist:"<<filename<<endl; exit(1);}
     fTable.read((char*)(&dim),sizeof(Int_t));
     if (fVerbose)
       cout<<"Table dimension: "<<dim<<endl;
@@ -384,6 +458,59 @@ Int_t AliTPCCompression::RetrieveTables(AliTPCHTable* table[],Int_t NumTable){
   //At this point the trees are been built
   return 0;
 }
+
+Int_t AliTPCCompression::CreateTablesFromTxtFiles(Int_t NumTable){
+  //This method creates a set of binary tables, needed by the Huffman
+  //algorith, starting from a set of frequencies tables stored in form of
+  //txt files
+  if (fVerbose)
+    cout<<"Retrieving frequencies from txt files \n";
+  ifstream fTable;  
+  char filename[15];
+  //Tables are read from the files (Each codeword has been "Mirrored")
+  AliTPCHTable **table = new AliTPCHTable*[NumTable];
+  for(Int_t k=0;k<NumTable;k++){
+    sprintf(filename,"Table%d.txt",k); 
+    cout<<filename<<endl;
+    fTable.open(filename);
+    if(!fTable){cout<<"File doesn't exist: "<<filename<<endl; exit(1);}
+    Int_t symbol=0;
+    Double_t freq=0;
+    table[k]=new AliTPCHTable(1024);
+    while(!fTable.eof()){
+      fTable>>freq;
+      if (fTable.good()){
+        if (freq<0){
+	  cout<<"Frequency cannot be negative !!!\n";
+	  exit(1);
+	}
+	table[k]->SetValFrequency(symbol,freq);
+      }
+      symbol++;
+    }//end while
+    fTable.clear();
+    fTable.close();
+  }//end for
+  fStat.open("Statistics",ios::app);
+  fStat<<endl;
+  fStat<<"----------------- ENTROPY for external txt tables --------------------------"<<endl;
+  fStat<<"Entropy of Bunch length table......."<<table[0]->GetEntropy()<<endl;
+  fStat<<"Entropy of Time bin table..........."<<table[1]->GetEntropy()<<endl;
+  fStat<<"Entropy of one Sample bunch table..."<<table[2]->GetEntropy()<<endl;
+  fStat<<"Entropy of Central Sample table....."<<table[3]->GetEntropy()<<endl;
+  fStat<<"Entropy Border Samples table........"<<table[4]->GetEntropy()<<endl;
+  fStat.close();
+  for(Int_t k=0;k<NumTable;k++){
+    table[k]->BuildHTable();
+  }//end for
+  //The tables are saved ad binary files
+  StoreTables(table,NumTable);  
+  //The tables stored in memory are deleted; 
+  for(Int_t i=0;i<NumTable;i++)delete table[i];
+  delete [] table;
+  return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 /*                               COMPRESSION                                          */
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -706,21 +833,31 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
   Double_t ratio=(dimension/fillWords)*100;
   fStat<<"Compression ratio (Compressed/Uncompressed)..."<<ratio<<"%"<<endl;
   fStat<<endl;
-  fStat<<"Bunch length size in bytes......"<<(ULong_t)TMath::Ceil(stat[0]/8)<<" Comppression.."<<(stat[0]/numElem[0])*10<<"%"<<endl;
-  
-  fStat<<"Time gap size in bytes.........."<<(ULong_t)TMath::Ceil(stat[1]/8)<<" Comppression.."<<(stat[1]/numElem[1])*10<<"%"<<endl;
-  fStat<<"Amplitude values in bytes......."<<(ULong_t)TMath::Ceil((stat[2]+stat[3]+stat[4])/8)<<" Comppression.."<<
-    ((stat[2]+stat[3]+stat[4])/(numElem[2]+numElem[3]+numElem[4]))*10<<"%"<<endl;
+  if (numElem[0])
+    fStat<<"Bunch length size in bytes......"<<(ULong_t)TMath::Ceil(stat[0]/8)<<" Comppression.."<<(stat[0]/numElem[0])*10<<"%"<<endl;
+  if (numElem[1])  
+    fStat<<"Time gap size in bytes.........."<<(ULong_t)TMath::Ceil(stat[1]/8)<<" Comppression.."<<(stat[1]/numElem[1])*10<<"%"<<endl;
+  if (numElem[2]+numElem[3]+numElem[4])  
+    fStat<<"Amplitude values in bytes......."<<(ULong_t)TMath::Ceil((stat[2]+stat[3]+stat[4])/8)<<" Comppression.."<<
+      ((stat[2]+stat[3]+stat[4])/(numElem[2]+numElem[3]+numElem[4]))*10<<"%"<<endl;
+  if (numElem[2])
   fStat<<"     One Samples in bytes............"<<(ULong_t)TMath::Ceil(stat[2]/8)<<" Comppression.."<<(stat[2]/numElem[2])*10<<"%"<<endl;
+  if (numElem[3])
   fStat<<"     Central Samples size in bytes..."<<(ULong_t)TMath::Ceil(stat[3]/8)<<" Comppression.."<<(stat[3]/numElem[3])*10<<"%"<<endl;
+  if (numElem[4])
   fStat<<"     Border Samples size in bytes...."<<(ULong_t)TMath::Ceil(stat[4]/8)<<" Comppression.."<<(stat[4]/numElem[4])*10<<"%"<<endl;
   fStat<<endl;
   fStat<<"Average number of bits per word"<<endl;
-  fStat<<"Bunch length ......"<<stat[0]/numElem[0]<<endl;
-  fStat<<"Time gap .........."<<stat[1]/numElem[1]<<endl;
-  fStat<<"One Samples........"<<stat[2]/numElem[2]<<endl;
-  fStat<<"Central Samples ..."<<stat[3]/numElem[3]<<endl;
-  fStat<<"Border Samples....."<<stat[4]/numElem[4]<<endl;
+  if (numElem[0])
+    fStat<<"Bunch length ......"<<stat[0]/numElem[0]<<endl;
+  if (numElem[1])
+    fStat<<"Time gap .........."<<stat[1]/numElem[1]<<endl;
+  if (numElem[2])
+    fStat<<"One Samples........"<<stat[2]/numElem[2]<<endl;
+  if (numElem[3])
+    fStat<<"Central Samples ..."<<stat[3]/numElem[3]<<endl;
+  if (numElem[4])
+    fStat<<"Border Samples....."<<stat[4]/numElem[4]<<endl;
   fStat.close();
   return 0;
 }
@@ -927,7 +1064,7 @@ Int_t AliTPCCompression::DecompressData(Int_t NumTables,const char* fname,char* 
 #else
   f.open(fname,ios::in);
 #endif
-  if(!f){cout<<"File doesn't exist\n";return -1;}
+  if(!f){cout<<"File doesn't exist:"<<fname<<endl;;return -1;}
   AliTPCHNode ** rootNode = new AliTPCHNode*[NumTables];
   //Creation of the Huffman trees
   CreateTrees(rootNode,NumTables);
@@ -1010,7 +1147,7 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
 #else
   f.open(fname,ios::in);
 #endif
-  if(!f){cout<<"File doesn't exist\n";return -1;}
+  if(!f){cout<<"File doesn't exist:"<<fname<<endl;;return -1;}
   //to go to the end of the file
   f.seekg(0,ios::end);
   //to get the file dimension in byte
@@ -1090,8 +1227,9 @@ void AliTPCCompression::ReadAltroFormat(char* fileOut,char* fileIn)const{
   AliTPCBuffer160 buff(fileIn,0);
   Int_t numWords,padNum,rowNum,secNum=0;
   Int_t value=0;
+  if (fVerbose) cout<<"Creating a txt file from an Altro Format file"<<endl;
   while(buff.ReadTrailerBackward(numWords,padNum,rowNum,secNum) !=-1 ){
-    ftxt<<"W:"<<numWords<<" P:"<<padNum<<" R:"<<rowNum<<" S:"<<secNum<<endl;
+    ftxt<<"S:"<<secNum<<" R:"<<rowNum<<" P:"<<padNum<<" W:"<<numWords<<endl;
     if (numWords%4){
       for(Int_t j=0;j<(4-numWords%4);j++){
 	value=buff.GetNextBackWord();

@@ -30,7 +30,7 @@ public:
   ULong_t GetDigNumber()const{return fNumberOfDigits;}
   void    SetVerbose(Int_t val){fVerbose=val;}
 private:
-  Int_t fVerbose; //Verbosity level: 0-silent, not 0-all printout
+  Int_t fVerbose; //Verbosity level: 0-silent, 1:cout msg, 2: txt files for checking
   fstream f;      //The IO file name
   //TFile *fout;
   //TTree *tree;

@@ -24,13 +24,15 @@ class AliITSDDLRawData:public TObject{
   Int_t RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber=2);
   // This method generates the files with the Silicon pixel detector data
   void  TestFormat();
-  //A debugging method used to test the files generated for the SPD.
+  // A debugging method used to test the files generated for the SPD.
+  void SetVerbose(Int_t Verbose){fVerbose=Verbose;}
+  // To set the verbose level
  private: 
-  void  GetDigitsSPD(TClonesArray *ITSdigits, Int_t mod, ULong_t *buf);
+  void  GetDigitsSPD(TClonesArray *ITSdigits, Int_t mod,Int_t ddl,ULong_t *buf);
   //This method formats and stores in buf all the digits of a SPD module
-  void  GetDigitsSDD(TClonesArray *ITSdigits, Int_t mod, ULong_t *buf);
+  void  GetDigitsSDD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,ULong_t *buf);
   //This method formats and stores in buf all the digits of a SDD module
-  void  GetDigitsSSD(TClonesArray *ITSdigits, Int_t mod, ULong_t *buf);
+  void  GetDigitsSSD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,ULong_t *buf);
   //This method formats and stores in buf all the digits of a SSD module
   void  PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit, Int_t StopBit);
   //This method stores the value of the variable Word of StopBit-StartBit+1 bits 
@@ -45,9 +47,8 @@ class AliITSDDLRawData:public TObject{
   //Silicon pixel detector data format
   void  ReadChipHeader(Int_t &ChipAddr,Int_t &EventCnt,ULong_t BaseWord);
   void  ReadChipTrailer(Int_t &ChipHitCount,ULong_t BaseWord);
-  void  DecodeWord(ULong_t Code,ULong_t BaseWord,Int_t FirstHalf,ULong_t &Decoded1,ULong_t &Decoded2);
   //Methods used for reading and dubugging SPD data files
-
+  Int_t fVerbose;            //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
   Long_t fIndex;             //number of 32 words to be stored into the output file
   Int_t fHalfStaveModule;     //first or second half of an Half Stave module
   ClassDef(AliITSDDLRawData,1)

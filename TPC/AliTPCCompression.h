@@ -34,6 +34,8 @@ class AliTPCCompression:public TObject{
   //This method is used to compute the frequencies of the symbols in the source file
   Int_t  CreateTables(const char* fSource,const Int_t NumTables);
   //This method is used to create and store the tables 
+  Int_t CreateTableFormula(Double_t beta,ULong_t  M,Int_t dim,Int_t Type);
+  //This method is used to create and store the Bunch length or Time Gap Table using a formula
   void   SetVerbose(Int_t val){fVerbose=val;}
   //This method is used to set up the verbose level
   //   0 ==> No output messages are displayed
@@ -42,7 +44,8 @@ class AliTPCCompression:public TObject{
   void   ReadAltroFormat(char* fileOut,char* fileIn)const;
   //This method is used to read an Altro file and generate a text file containing the same information
   //It's is useful for debugging
-
+  Int_t  CreateTablesFromTxtFiles(Int_t NumTable);
+  //This method creates a set of binary tables starting from a set of txt tables
  private:
   Int_t   StoreTables(AliTPCHTable* table[],const Int_t NumTable);
   //This method is used to store an array of tables in a sequence of binary files

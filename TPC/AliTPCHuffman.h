@@ -71,6 +71,7 @@ class AliTPCHTable: public TObject{
   void       SetVerbose(Int_t val){fVerbose=val;}
   //Method to set directly a frequency 
   Int_t      SetValFrequency(const Int_t Val,Double_t Value);
+  Int_t      NormalizeFrequencies();
  private:
   //This method executes the pre-order visit of an Huffman tree and calculates the 
   //codeword for each leaf

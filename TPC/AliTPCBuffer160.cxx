@@ -56,7 +56,7 @@ AliTPCBuffer160::AliTPCBuffer160(const char* fileName,Int_t flag){
 #else
     f.open(fileName,ios::in);
 #endif
-    if(!f){cout<<"File doesn't exist\n";exit(-1);}
+    if(!f){cout<<"File doesn't exist:"<<fileName<<endl;;exit(-1);}
     fShift=0;
     //To get the file dimension (position of the last element in term of bytes)
     f.seekg(0, ios::end);
@@ -162,6 +162,23 @@ Int_t AliTPCBuffer160::GetNextBackWord(){
       fFilePosition-=sizeof(ULong_t)*5;
       f.seekg(fFilePosition);
       f.read((char*)fBuffer,sizeof(ULong_t)*5);
+      
+      //cout<<"Buffer letto"<<endl;
+      /*
+      char* tt=(char*)fBuffer;
+      for(Int_t ii=0;ii<20;ii++){
+	cout<<hex;
+	cout<<ii<<"==> "<<(Int_t)*tt<<endl;
+	cout<<dec;
+	tt++;
+      }
+      cout<<0<<" --- "<<hex<<fBuffer[0]<<dec<<endl;
+      cout<<1<<" --- "<<hex<<fBuffer[1]<<dec<<endl;
+      cout<<2<<" --- "<<hex<<fBuffer[2]<<dec<<endl;
+      cout<<3<<" --- "<<hex<<fBuffer[3]<<dec<<endl;
+      cout<<4<<" --- "<<hex<<fBuffer[4]<<dec<<endl;
+      cout<<"Fine ULong_t"<<endl;
+      */
       fCurrentCell=4;
       fShift=22;
       fMaskBackward=0xFF;

@@ -22,6 +22,18 @@ void AliTPCDDL(char* FileName,Int_t eth=0){
   sprintf(cname,"TreeD_75x40_100x60_150x60_%d",eventn);
   digarr->ConnectTree(cname);
   AliTPCBuffer *b=new AliTPCBuffer("AliTPCDDL.dat");
+
+  //Verbose level
+  // 0: Silent
+  // 1: cout messages
+  // 2: txt files with digits 
+  //BE CAREFUL, verbose level 2 MUST be used only for debugging and
+  //it is highly suggested to use this mode only for debugging digits files
+  //reasonably small, because otherwise the size of the txt files can reach
+  //quickly several MB wasting time and disk space.
+  b->SetVerbose(0);
+
+
   Int_t nrows=Int_t(digarr->GetTree()->GetEntries());
   cout<<"Number of entries "<<nrows<<endl;
   Int_t PSector=-1;
