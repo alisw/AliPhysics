@@ -98,13 +98,21 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
     Int_t dummy ; 
     AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
     Int_t emcRPindex = ((AliPHOSTrackSegment*)gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
-    Int_t primaryindex = ((AliPHOSEmcRecPoint*)gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy)[index] ; 
-//     if (primaryindex >= 10000000) { // it comes from backgroundfile 
-//       if (fDebug) 
-// 	Warning("GetPrimary","-> not a signal primary") ;
-//       return 0 ; 
-//     } else 
-      return gime->Primary(primaryindex) ; 
+    Int_t *list = static_cast<AliPHOSEmcRecPoint*>(gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy) ;
+    Int_t primaryindex ;
+    if(index<dummy)
+      primaryindex = list[index] ;
+    else{
+      if (fDebug)	    
+        printf("No primary number %d in list \n",index) ;
+      return 0 ;
+    }
+    if(primaryindex>4999999){
+	if (fDebug)
+           printf("No method to extract primaries from background!\n") ;
+      return 0 ;
+    }
+    return gime->Primary(primaryindex) ; 
   } 
   return 0 ; 
 }
