@@ -35,9 +35,8 @@ AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
   fEvent      =  digits[0];  
 }
 
-AliVZEROdigit::AliVZEROdigit(Int_t eventnumber, Int_t cellnumber, Int_t adc)
+AliVZEROdigit::AliVZEROdigit(Int_t cellnumber, Int_t adc)
 {  
-  fEvent      = eventnumber; 
   fCellNumber = cellnumber;
   fADC        = adc;
 }

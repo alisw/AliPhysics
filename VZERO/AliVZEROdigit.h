@@ -13,7 +13,7 @@ class AliVZEROdigit: public AliDigit  {
  public:
     AliVZEROdigit();
     AliVZEROdigit(Int_t* tracks, Int_t* digits);
-    AliVZEROdigit(Int_t /* eventnumber */, Int_t /* cellnumber */, Int_t /* adc */);
+    AliVZEROdigit(Int_t /* cellnumber */, Int_t /* adc */);
     virtual ~AliVZEROdigit() {};
     Int_t   CellNumber()  const {return fCellNumber;}    
     Int_t   ADC() const {return fADC;}
