@@ -2111,6 +2111,12 @@ void AliTPC::SetSens(Int_t sens)
 
   fSens = sens;
 }
+ 
+void AliTPC::SetSide(Float_t side)
+{
+  fSide = side;
+ 
+}
 
 //_____________________________________________________________________________
 void AliTPC::Streamer(TBuffer &R__b)

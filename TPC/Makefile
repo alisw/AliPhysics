@@ -10,7 +10,8 @@ PACKAGE = TPC
 # C++ sources
 
 SRCS          = AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
-		AliTPCD.cxx AliTPCPRF2D.cxx AliTPCRF1D.cxx AliTPCParam.cxx
+		AliTPCD.cxx AliTPCPRF2D.cxx AliTPCRF1D.cxx AliTPCParam.cxx \
+		AliTPCv3.cxx
 
 # C++ Headers
 

@@ -8,6 +8,7 @@
 #pragma link C++ class  AliTPCv0;
 #pragma link C++ class  AliTPCv1;
 #pragma link C++ class  AliTPCv2;
+#pragma link C++ class  AliTPCv3;
 #pragma link C++ class  AliTPChit;
 #pragma link C++ class  AliTPCdigit;
 #pragma link C++ class  AliTPCcluster;
@@ -40,3 +41,4 @@
 
 
 #endif
+
