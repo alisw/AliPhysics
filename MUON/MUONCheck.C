@@ -46,7 +46,7 @@
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
-#ENDIF
+#endif
 
 void MUONkine(char * filename="galice.root")
 {
