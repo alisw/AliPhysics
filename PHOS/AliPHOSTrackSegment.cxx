@@ -188,6 +188,23 @@ TVector3 AliPHOSTrackSegment::GetMomentumDirection()
   TVector3 posEmc ;
   fEmcRecPoint->GetGlobalPosition(posEmc, mdummy) ;
 
+  // need to correct here for the depth of the shower start point (TDR p 127) ?
+
+  Float_t energy = fEmcRecPoint->GetEnergy() ; 
+  Float_t para = 0.925 ; 
+  Float_t parb = 6.52 ; 
+
+  TVector3 localpos ; 
+  fEmcRecPoint->GetLocalPosition(localpos) ; 
+
+  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ; 
+  Float_t radius = geom->GetIPtoOuterCoverDistance() + geom->GetOuterBoxSize(1) ; 
+  Float_t incidencephi = TMath::ATan(localpos.X() / radius) ; 
+  Float_t incidencetheta = TMath::ATan(localpos.Z() / radius) ;
+ 
+  Float_t depthx = - ( para * TMath::Log(energy) + parb ) * TMath::Sin(incidencephi) ; 
+  Float_t depthz = - ( para * TMath::Log(energy) + parb ) * TMath::Sin(incidencetheta) ; 
+  
   TVector3 posPpsdl ;
   TVector3 posPpsdup ;
  
@@ -206,9 +223,9 @@ TVector3 AliPHOSTrackSegment::GetMomentumDirection()
 //   else 
     tempo = posEmc ; 
     
-  dir.SetX( tempo.X() ) ;  // assumes that a neutral comes from the vertex
+  dir.SetX( tempo.X() + depthx ) ;  // assumes that a neutral comes from the vertex
   dir.SetY( tempo.Y() ) ;  
-  dir.SetZ( -tempo.Z() ) ; 
+  dir.SetZ( -tempo.Z() - depthz ) ; 
   
   dir.SetMag(1.) ;
   return dir ;  
