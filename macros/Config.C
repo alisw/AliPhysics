@@ -59,24 +59,24 @@ gener->Init();
 
 gAlice->SetField(-999,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
-Int_t iMAG=1;
-Int_t iITS=1;
-Int_t iTPC=1;
-Int_t iTOF=1;
+Int_t iMAG=0;
+Int_t iITS=0;
+Int_t iTPC=0;
+Int_t iTOF=0;
 Int_t iRICH=1;
 Int_t iZDC=0;
-Int_t iCASTOR=1;
-Int_t iTRD=1;
-Int_t iABSO=1;
-Int_t iDIPO=1;
-Int_t iHALL=1;
-Int_t iFRAME=1;
-Int_t iSHIL=1;
-Int_t iPIPE=1;
-Int_t iFMD=1;
-Int_t iMUON=1;
-Int_t iPHOS=1;
-Int_t iPMD=1;
+Int_t iCASTOR=0;
+Int_t iTRD=0;
+Int_t iABSO=0;
+Int_t iDIPO=0;
+Int_t iHALL=0;
+Int_t iFRAME=0;
+Int_t iSHIL=0;
+Int_t iPIPE=0;
+Int_t iFMD=0;
+Int_t iMUON=0;
+Int_t iPHOS=0;
+Int_t iPMD=0;
 Int_t iSTART=0;
 
 //=================== Alice BODY parameters =============================
@@ -184,40 +184,55 @@ AliTOF *TOF  = new AliTOFv1("TOF","normal TOF");
 
 if(iRICH) {
 //=================== RICH parameters ===========================
-
-  AliRICH *RICH  = new AliRICHv0("RICH","normal RICH");
-
-  RICH->SetSMAXAR(0.03);
-  RICH->SetSMAXAL(-1);
+    AliRICH *RICH  = new AliRICHv0("RICH","normal RICH");
+    
 //
 // Version 0
 // Default Segmentation
-  AliRICHsegmentationV0* RsegV0 = new AliRICHsegmentationV0;
-  RsegV0->SetPADSIZ(.8, .8);
-  RsegV0->SetDAnod(0.8/3);
-// Default response
-  AliRICHresponseV0* Rresponse0 = new AliRICHresponseV0;
-  AliRICHresponseCkv* RresponseCkv = new AliRICHresponseCkv;
-
-//------------------------Chambers 0-6 ----------------------------
+    AliRICHSegmentationV0* SegmentationV0 = new AliRICHSegmentationV0;
+//
+//  Segmentation parameters
+    SegmentationV0->SetPadSize(0.84,0.80);
+    SegmentationV0->SetDAnod(0.84/2);
+//
+//  Geometry parameters
+    AliRICHGeometry* GeometryV0 = new AliRICHGeometryV0;
+    GeometryV0->SetGapThickness(7.6);
+    GeometryV0->SetProximityGapThickness(.4);
+    GeometryV0->SetQuartzLength(131);
+    GeometryV0->SetQuartzWidth(126.2);
+    GeometryV0->SetQuartzThickness(.5);
+    GeometryV0->SetOuterFreonLength(131);
+    GeometryV0->SetOuterFreonWidth(40.3);
+    GeometryV0->SetInnerFreonLength(131);
+    GeometryV0->SetInnerFreonWidth(40.3);
+    GeometryV0->SetFreonThickness(1);
+//
+//  Response parameters
+    AliRICHResponseV0*  Rresponse0   = new AliRICHResponseV0;
+    Rresponse0->SetSigmaIntegration(5.);
+    Rresponse0->SetChargeSlope(41.);
+    Rresponse0->SetChargeSpread(0.18, 0.18);
+    Rresponse0->SetMaxAdc(1024);
+    Rresponse0->SetAlphaFeedback(0.05);
+    Rresponse0->SetEIonisation(26.e-9);
+    Rresponse0->SetSqrtKx3(0.77459667);
+    Rresponse0->SetKx2(0.962);
+    Rresponse0->SetKx4(0.379);
+    Rresponse0->SetSqrtKy3(0.77459667);
+    Rresponse0->SetKy2(0.962);
+    Rresponse0->SetKy4(0.379);
+    Rresponse0->SetPitch(0.25);
+//
+//      
   for (Int_t i=0; i<7; i++) {
-    RICH->SetSegmentationModel(i, 1, RsegV0);
-    RICH->SetResponseModel(i, mip     , Rresponse0);
-    RICH->SetResponseModel(i, cerenkov, RresponseCkv);
-    RICH->Chamber(i).SetRSIGM(5.);
-    RICH->Chamber(i).SetMUCHSP(43.);
-    RICH->Chamber(i).SetMUSIGM(0.18, 0.18);
-    RICH->Chamber(i).SetMAXADC( 1024);
-    RICH->Chamber(i).SetSqrtKx3(0.77459667);
-    RICH->Chamber(i).SetKx2(0.962);
-    RICH->Chamber(i).SetKx4(0.379);
-    RICH->Chamber(i).SetSqrtKy3(0.77459667);
-    RICH->Chamber(i).SetKy2(0.962);
-    RICH->Chamber(i).SetKy4(0.379);
-    RICH->Chamber(i).SetPitch(0.25);
+    RICH->SetGeometryModel(i,GeometryV0);
+    RICH->SetSegmentationModel(i, SegmentationV0);
+    RICH->SetResponseModel(i, Rresponse0);
     RICH->SetNsec(i,1);
   }
 }
+
 
 if(iZDC) {
 //=================== ZDC parameters ============================
