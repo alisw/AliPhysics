@@ -5,6 +5,7 @@
 # Author: Constantin Loizides #                    
 ###############################
 
+
 ifndef TOPDIR
 TOPDIR = `pwd`/..
 endif
@@ -12,6 +13,8 @@ endif
 include $(TOPDIR)/Makefile.conf
 
 DEFSTR = -Dno_root
+INCLUDES = -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(TOPDIR)/misc
+LIBS = -L$(LIBDIR) -lAliL3 -lAliL3Hough -lAliL3Comp -lAliL3Misc 
 
 ROOTCFLAGS := $(shell root-config --cflags)
 ROOTLIBS   := $(shell root-config --libs)
@@ -19,20 +22,23 @@ ROOTGLIBS  := $(shell root-config --glibs)
 
 ifeq ($(USEPACKAGE),ROOT) 
 DEFSTR = -Duse_root
-INCLUDES = -I$(ROOTSYS)/include 
+INCLUDES += -I$(ROOTSYS)/include 
 RLIBS = $(ROOTLIBS) -lMinuit -lEG 
+LIBS += $(RLIBS)
 endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
 DEFSTR = -Duse_aliroot
 ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lCONTAINERS -lTPC -lSTEER
 #ALICELIBS := $(shell aliroot-config --libs)
-INCLUDES = -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
+INCLUDES += -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
 RLIBS = $(ROOTLIBS) -lMinuit -lEG
+LIBS += $(ALICELIBS)
 endif
 
-#Save the particle id's
-#DEFSTR += -Ddo_mc
+ifdef DO_MC
+DEFSTR += -Ddo_mc
+endif
 
 #Use logging classes
 ifndef NOLOGGING
@@ -45,14 +51,13 @@ else
 INCLUDES += -I/prog/alice/level3/kip/MLUC/include
 MLUCLIBS += -L/prog/alice/level3/kip/MLUC/lib/linux-i386 -lMLUC
 endif
+LIBS += $(MLUCLIBS)
 endif
 
-INCLUDES += -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(TOPDIR)/misc
-LIBS = -L$(LIBDIR) -lAliL3 -lAliL3Hough -lAliL3Comp -lAliL3Misc $(MLUCLIBS) $(ALICELIBS) $(RLIBS)
+DEFSTR += $(EXTRADEF)
 
-CXXFLAGS = -O2 -Wall -ggdb $(INCLUDES)
-LDFLAGS  = -O2 $(LIBS)
-
+CXXFLAGS = -O2 -Wall -ggdb $(EXTRACXXFLAGS) $(INCLUDES)
+LDFLAGS  = -O2 $(EXTRALDFLAGS) $(LIBS)
 
 PRGS	= runit read speedtest convbin gettransform runvhdlcf
 
@@ -81,20 +86,6 @@ speedtest : speedtest.cxx
 
 clean :
 	rm -f *.o $(PRGS)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
