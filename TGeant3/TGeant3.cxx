@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.48  2001/04/04 11:47:56  morsch
+- muon and tau neutrinos added to g3 particle list (needed for D,B decays).
+- some (up to now harmless) bugs in Gspart calls corrected.
+
 Revision 1.47  2001/03/20 06:36:29  alibrary
 100 parameters now allowed for geant shapes
 
@@ -24,14 +28,6 @@ Last updates on the right version (1.44).
 
 Revision 1.45  2000/12/21 16:49:56  morsch
 Adding particles to the PDG database delegated to AliPDG.
-
-$Log$
-Revision 1.47  2001/03/20 06:36:29  alibrary
-100 parameters now allowed for geant shapes
-
-Revision 1.46  2000/12/21 17:35:05  morsch
-Last updates on the right version (1.44).
-(1.45) does not compile.
 
 Revision 1.44  2000/12/20 09:46:51  alibrary
 dlsym not supported on HP, reverting to gcomad
@@ -1020,17 +1016,20 @@ void TGeant3::DefineParticles()
   Gspart(70, "Upsilon(3S)", 3, 10.3553, 0., 0.);
   fPDGCode[fNPDGCodes++]=30553;        // 70 = Upsilon(3S)
 
-  Gspart(71, "Neutrino (mu)",      3, 0., 0., 1.e20);
-  fPDGCode[fNPDGCodes++]=14;        // 71 = muon neutrino 
+  Gspart(71, "Anti Neutrino (e)",       3, 0., 0., 1.e20);
+  fPDGCode[fNPDGCodes++]=-12;          // 71 = anti electron neutrino 
 
-  Gspart(72, "Anti Neutrino (mu)", 3, 0., 0., 1.e20);
-  fPDGCode[fNPDGCodes++]=-14;       // 72 = anti muon neutrino
+  Gspart(72, "Neutrino (mu)",           3, 0., 0., 1.e20);
+  fPDGCode[fNPDGCodes++]=14;           // 72 = muon neutrino 
 
-  Gspart(73, "Neutrino (tau)",     3, 0., 0., 1.e20);
-  fPDGCode[fNPDGCodes++]=16;        // 73 = tau neutrino 
+  Gspart(73, "Anti Neutrino (mu)", 3, 0., 0., 1.e20);
+  fPDGCode[fNPDGCodes++]=-14;          // 73 = anti muon neutrino
 
-  Gspart(74, "Anti Neutrino (tau)",3, 0., 0., 1.e20);
-  fPDGCode[fNPDGCodes++]=-16;        // 74 = anti tau neutrino
+  Gspart(74, "Neutrino (tau)",     3, 0., 0., 1.e20);
+  fPDGCode[fNPDGCodes++]=16;           // 74 = tau neutrino 
+
+  Gspart(75, "Anti Neutrino (tau)",3, 0., 0., 1.e20);
+  fPDGCode[fNPDGCodes++]=-16;          // 75 = anti tau neutrino
 
 /* --- Define additional decay modes --- */
 /* --- omega(783) --- */
