@@ -85,35 +85,96 @@ AliV0vertex::AliV0vertex(const AliITStrackV2 &n, const AliITStrackV2 &p) {
 
   fChi2=7.;   
 }
-
-void AliV0vertex::ChangeMassHypothesis(Int_t code) {
+/*
+Double_t AliV0vertex::ChangeMassHypothesis(Int_t code) {
   //--------------------------------------------------------------------
   // This function changes the mass hypothesis for this V0
+  // and returns the "kinematical quality" of this hypothesis 
   //--------------------------------------------------------------------
-  Double_t nmass, pmass;
+  Double_t nmass=0.13957, pmass=0.13957, mass=0.49767, des=0;
+
+  fPdgCode=code;
 
   switch (code) {
   case kLambda0:
-    nmass=0.13957; pmass=0.93827; break;
+    nmass=0.13957; pmass=0.93827; mass=1.1157; des=0.9437-0.1723; break;
   case kLambda0Bar:
-    pmass=0.13957; nmass=0.93827; break;
+    pmass=0.13957; nmass=0.93827; mass=1.1157; des=0.1723-0.9437; break;
   case kK0Short: 
-    nmass=0.13957; pmass=0.13957; break;
+    break;
   default:
     cerr<<"AliV0vertex::ChangeMassHypothesis: ";
     cerr<<"invalide PDG code ! Assuming K0s...\n";
-    nmass=0.13957; pmass=0.13957; break;
+    fPdgCode=kK0Short;
+    break;
   }
 
-  Double_t px1=fNmom[0], py1=fNmom[1], pz1=fNmom[2]; 
-  Double_t px2=fPmom[0], py2=fPmom[1], pz2=fPmom[2];
+  Double_t pxn=fNmom[0], pyn=fNmom[1], pzn=fNmom[2]; 
+  Double_t pxp=fPmom[0], pyp=fPmom[1], pzp=fPmom[2];
 
-  Double_t e1=TMath::Sqrt(nmass*nmass + px1*px1 + py1*py1 + pz1*pz1);
-  Double_t e2=TMath::Sqrt(pmass*pmass + px2*px2 + py2*py2 + pz2*pz2);
-  fEffMass=TMath::Sqrt((e1+e2)*(e1+e2)-
-    (px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
+  Double_t en=TMath::Sqrt(nmass*nmass + pxn*pxn + pyn*pyn + pzn*pzn);
+  Double_t ep=TMath::Sqrt(pmass*pmass + pxp*pxp + pyp*pyp + pzp*pzp);
+  Double_t pxl=pxn+pxp, pyl=pyn+pyp, pzl=pzn+pzp;
+  Double_t pl=TMath::Sqrt(pxl*pxl + pyl*pyl + pzl*pzl);
+
+  fEffMass=TMath::Sqrt((en+ep)*(en+ep)-pl*pl);
+
+  Double_t gamma=(en+ep)/mass, betagamma=pl/mass;
+  Double_t pln=(pxn*pxl + pyn*pyl + pzn*pzl)/pl;
+  Double_t plp=(pxp*pxl + pyp*pyl + pzp*pzl)/pl;
+  Double_t plps=gamma*plp - betagamma*ep;
+
+  Double_t diff=2*gamma*plps + betagamma*des;
+
+  return (plp-pln-diff);
   
+}
+*/
+Double_t AliV0vertex::ChangeMassHypothesis(Int_t code) {
+  //--------------------------------------------------------------------
+  // This function changes the mass hypothesis for this V0
+  // and returns the "kinematical quality" of this hypothesis 
+  //--------------------------------------------------------------------
+  Double_t nmass=0.13957, pmass=0.13957, mass=0.49767, ps=0.206;
+
   fPdgCode=code;
+
+  switch (code) {
+  case kLambda0:
+    nmass=0.13957; pmass=0.93827; mass=1.1157; ps=0.101; break;
+  case kLambda0Bar:
+    pmass=0.13957; nmass=0.93827; mass=1.1157; ps=0.101; break;
+  case kK0Short: 
+    break;
+  default:
+    cerr<<"AliV0vertex::ChangeMassHypothesis: ";
+    cerr<<"invalide PDG code ! Assuming K0s...\n";
+    fPdgCode=kK0Short;
+    break;
+  }
+
+  Double_t pxn=fNmom[0], pyn=fNmom[1], pzn=fNmom[2]; 
+  Double_t pxp=fPmom[0], pyp=fPmom[1], pzp=fPmom[2];
+
+  Double_t en=TMath::Sqrt(nmass*nmass + pxn*pxn + pyn*pyn + pzn*pzn);
+  Double_t ep=TMath::Sqrt(pmass*pmass + pxp*pxp + pyp*pyp + pzp*pzp);
+  Double_t pxl=pxn+pxp, pyl=pyn+pyp, pzl=pzn+pzp;
+  Double_t pl=TMath::Sqrt(pxl*pxl + pyl*pyl + pzl*pzl);
+
+  fEffMass=TMath::Sqrt((en+ep)*(en+ep)-pl*pl);
+
+  Double_t beta=pl/(en+ep);
+  Double_t pln=(pxn*pxl + pyn*pyl + pzn*pzl)/pl;
+  Double_t plp=(pxp*pxl + pyp*pyl + pzp*pzl)/pl;
+
+  Double_t pt2=pxp*pxp + pyp*pyp + pzp*pzp - plp*plp;
+
+  Double_t a=(plp-pln)/(plp+pln);
+  a -= (pmass*pmass-nmass*nmass)/(mass*mass);
+  a = 0.25*beta*beta*mass*mass*a*a + pt2;
+
+  return (a - ps*ps);
+  
 }
 
 void AliV0vertex::GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const {

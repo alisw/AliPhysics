@@ -26,7 +26,7 @@ public:
   AliCascadeVertex();
   AliCascadeVertex(const AliV0vertex &vtx, const AliITStrackV2 &trk);
 
-  void ChangeMassHypothesis(Int_t code=kXiMinus); 
+  Double_t ChangeMassHypothesis(Double_t &v0q, Int_t code=kXiMinus); 
 
   Int_t GetPdgCode() const {return fPdgCode;}
   Double_t GetEffMass() const {return fEffMass;}
@@ -34,8 +34,19 @@ public:
   void GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void GetXYZ(Double_t &x, Double_t &y, Double_t &z) const;
   Double_t GetD(Double_t x0=0.,Double_t y0=0.,Double_t z0=0.) const;
-  void GetV0labels(Int_t &n, Int_t &p) const {n=fV0lab[0]; p=fV0lab[1];}
-  Int_t GetBachelorLabel() const {return fBachLab;}
+
+  void GetNPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const {
+     px=fV0mom[0][0]; py=fV0mom[0][1]; pz=fV0mom[0][2];
+  }
+  Int_t GetNlabel() const {return fV0lab[0];}
+  void GetPPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const {
+     px=fV0mom[1][0]; py=fV0mom[1][1]; pz=fV0mom[1][2];
+  }
+  Int_t GetPlabel() const {return fV0lab[1];}
+  void GetBPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const {
+     px=fBachMom[0]; py=fBachMom[1]; pz=fBachMom[2];
+  }
+  Int_t GetBlabel() const {return fBachLab;}
 
 private: 
   Int_t fPdgCode;           // reconstructed cascade type (PDG code)
@@ -45,7 +56,7 @@ private:
   Double_t fPosCov[6];      // covariance matrix of the vertex position
 
   Int_t fV0lab[2];          // labels of the V0 daughter tracks
-  Double_t fV0mom[3];       // V0 momentum (global)
+  Double_t fV0mom[2][3];    // V0 daughters' momenta (global)
   Double_t fV0momCov[6];    // covariance matrix of the V0 momentum.
 
   Int_t fBachLab;           // label of the bachelor track

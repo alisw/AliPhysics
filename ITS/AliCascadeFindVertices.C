@@ -19,14 +19,14 @@ Int_t AliCascadeFindVertices() {
    if (!file->IsOpen()) {
       cerr<<"Can't open AliV0vertices.root !\n";return 3;
    }
-   Double_t cuts[]={33.,  // max. allowed chi2
-                    0.015,// min. allowed V0 impact parameter 
-                    0.05, // window around the Lambda mass 
-                    0.015,// min. allowed track impact parameter 
-                    0.060,// max. allowed DCA between a V0 and a track
-                    0.997,// max. allowed cosine of the cascade pointing angle
-                    0.9,  // min. radius of the fiducial volume
-                    2.9   // max. radius of the fiducial volume
+   Double_t cuts[]={33.,    // max. allowed chi2
+                    0.05,   // min. allowed V0 impact parameter 
+                    0.008,  // window around the Lambda mass 
+                    0.035,  // min. allowed bachelor's impact parameter 
+                    0.10,   // max. allowed DCA between a V0 and a track
+                    0.9985, // max. allowed cosine of the cascade pointing angle
+                    0.9,    // min. radius of the fiducial volume
+                    2.9     // max. radius of the fiducial volume
                    };
    TStopwatch timer;
    AliCascadeVertexer *vertexer=new AliCascadeVertexer(cuts);

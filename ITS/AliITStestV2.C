@@ -37,5 +37,17 @@ Int_t AliITStestV2(Char_t SlowOrFast='s') {
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSComparisonV2.C");
    if (rc=AliITSComparisonV2()) return rc;
 
+   gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliV0FindVertices.C");
+   if (rc=AliV0FindVertices()) return rc;
+
+   gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliV0Comparison.C");
+   if (rc=AliV0Comparison()) return rc;
+
+   gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliCascadeFindVertices.C");
+   if (rc=AliCascadeFindVertices()) return rc;
+
+   gROOT->ProcessLine(".L $(ALICE_ROOT)/ITS/AliCascadeComparison.C+");
+   if (rc=AliCascadeComparison()) return rc;
+
    return rc;
 }

@@ -45,12 +45,26 @@ Int_t AliCascadeComparison(Int_t code=3312) {
    cerr<<"Doing comparison...\n";
 
    const Double_t cascadeWindow=0.05, cascadeWidth=0.015; 
-   Double_t cascadeMass=0.5;
+   Double_t ptncut=0.12, ptpcut=0.33, kine0cut=0.003;
+   Double_t ptbcut=0.11, kinecut=0.002;
+   Double_t cascadeMass=1.32131;
    switch (code) {
    case kXiMinus:
-   case kXiPlusBar:    cascadeMass=1.32131; break;
+        break;
+   case kXiPlusBar:
+        ptncut=0.33; ptpcut=0.12;
+        break;
    case kOmegaMinus: 
-   case kOmegaPlusBar: cascadeMass=1.67245; break;
+        cascadeMass=1.67245;
+        kine0cut=0.001;
+        ptbcut=0.22; kinecut=0.006;
+        break; 
+   case kOmegaPlusBar:
+        cascadeMass=1.67245; 
+        kine0cut=0.001;
+        ptncut=0.33; ptpcut=0.12;
+        ptbcut=0.22; kinecut=0.006;
+        break;
    default: cerr<<"Invalid PDG code !\n"; return 1;
    }
 
@@ -131,21 +145,38 @@ Int_t AliCascadeComparison(Int_t code=3312) {
 
    Double_t mmin=cascadeMass-cascadeWindow, mmax=cascadeMass+cascadeWindow;
    TH1F *cs =new TH1F("cs","Cascade Effective Mass",40, mmin, mmax);
-   cs->SetXTitle("(GeV)"); cs->SetFillColor(6);
+   cs->SetXTitle("(GeV)");
+   cs->SetLineColor(4); cs->SetLineWidth(4);
+   TH1F *csf =new TH1F("csf","Fake Cascade Effective Mass",40, mmin, mmax);
+   csf->SetXTitle("(GeV)"); csf->SetFillColor(6);
 
    Double_t pxg=0.,pyg=0.,ptg=0.;
    Int_t nlab=-1, plab=-1, blab=-1;
    Int_t i;
    for (i=0; i<nentr; i++) {
        AliCascadeVertex *cascade=(AliCascadeVertex*)carray.UncheckedAt(i);
-       cascade->GetV0labels(nlab,plab); 
-       nlab=TMath::Abs(nlab); plab=TMath::Abs(plab);
-       blab=TMath::Abs(cascade->GetBachelorLabel());
+       nlab=TMath::Abs(cascade->GetNlabel()); 
+       plab=TMath::Abs(cascade->GetPlabel());
+       blab=TMath::Abs(cascade->GetBlabel());
 
-       cascade->ChangeMassHypothesis(code);
+       /** Kinematical cuts **/
+       Double_t pxn,pyn,pzn; cascade->GetNPxPyPz(pxn,pyn,pzn); 
+       Double_t ptn=TMath::Sqrt(pxn*pxn + pyn*pyn);
+       if (ptn < ptncut) continue;
+       Double_t pxp,pyp,pzp; cascade->GetPPxPyPz(pxp,pyp,pzp); 
+       Double_t ptp=TMath::Sqrt(pxp*pxp + pyp*pyp);
+       if (ptp < ptpcut) continue;
+       Double_t pxb,pyb,pzb; cascade->GetBPxPyPz(pxb,pyb,pzb); 
+       Double_t ptb=TMath::Sqrt(pxb*pxb + pyb*pyb);
+       if (ptb < ptbcut) continue;
+       Double_t kine0;
+       Double_t kine=cascade->ChangeMassHypothesis(kine0,code);
+       if (TMath::Abs(kine0)>kine0cut) continue;
+       //if (TMath::Abs(kine)>kinecut) continue;
 
        Double_t mass=cascade->GetEffMass();
        cs->Fill(mass);
+       csf->Fill(mass);
 
        if (TMath::Abs(mass-cascadeMass)>cascadeWidth) continue;
 
@@ -165,6 +196,7 @@ Int_t AliCascadeComparison(Int_t code=3312) {
           cerr<<"Fake cascade: ("<<nlab<<","<<plab<<","<<blab<<")\n";
           continue;
        }
+       csf->Fill(mass,-1);
 
        pxg=gc[j].px; pyg=gc[j].py; ptg=TMath::Sqrt(pxg*pxg+pyg*pyg);
        Double_t phig=TMath::ATan2(pyg,pxg), phi=TMath::ATan2(py,px);
@@ -264,9 +296,9 @@ Int_t AliCascadeComparison(Int_t code=3312) {
 
    c2->cd(2);
    gPad->SetFillColor(42); gPad->SetFrameFillColor(10);
-   cs->SetXTitle("(GeV/c)"); 
    //cs->Fit("gaus","","",cascadeMass-cascadeWidth,cascadeMass+cascadeWidth);
    cs->Draw();
+   csf->Draw("same");
    Double_t max=cs->GetMaximum();
    TLine *line3 = 
       new TLine(cascadeMass-cascadeWidth,0.,cascadeMass-cascadeWidth,max);

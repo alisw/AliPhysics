@@ -15,8 +15,8 @@ Int_t AliV0FindVertices() {
    if (!in->IsOpen()) {cerr<<"Can't open AliITStracksV2.root !\n"; return 2;}
 
    Double_t cuts[]={33,  // max. allowed chi2
-                    0.12,// min. allowed negative daughter's impact parameter 
-                    0.06,// min. allowed positive daughter's impact parameter 
+                    0.16,// min. allowed negative daughter's impact parameter 
+                    0.05,// min. allowed positive daughter's impact parameter 
                     0.080,// max. allowed DCA between the daughter tracks
                     0.998,// max. allowed cosine of V0's pointing angle
                     0.9,  // min. radius of the fiducial volume

@@ -38,12 +38,18 @@ Int_t good_vertices(GoodVertex *gt, Int_t max);
 Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
    cerr<<"Doing comparison...\n";
 
-   const Double_t V0window=0.05, V0width=0.015; 
-   Double_t V0mass=0.5;
+   const Double_t V0window=0.05;
+   Double_t ptncut=0.13, ptpcut=0.13, kinecut=0.03; 
+   Double_t V0mass=0.497672, V0width=0.020;
    switch (code) {
-   case kK0Short:    V0mass=0.497672; break;
-   case kLambda0:    V0mass=1.115683; break;
-   case kLambda0Bar: V0mass=1.115683; break;
+   case kK0Short: 
+        break;
+   case kLambda0:    
+        V0mass=1.115683; V0width=0.015; ptpcut=0.50; kinecut=0.002; 
+        break;
+   case kLambda0Bar: 
+        V0mass=1.115683; V0width=0.015; ptncut=0.50; kinecut=0.002;
+        break;
    default: cerr<<"Invalid PDG code !\n"; return 1;
    }
 
@@ -122,7 +128,10 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
 
    Double_t mmin=V0mass-V0window, mmax=V0mass+V0window;
    TH1F *v0s =new TH1F("v0s","V0s Effective Mass",40, mmin, mmax);
-   v0s->SetXTitle("(GeV)"); v0s->SetFillColor(6);
+   v0s->SetXTitle("(GeV)");
+   v0s->SetLineColor(4); v0s->SetLineWidth(4);
+   TH1F *v0sf =new TH1F("v0sf","Fake V0s Effective Mass",40, mmin, mmax);
+   v0sf->SetXTitle("(GeV)"); v0sf->SetFillColor(6);
 
 
    Double_t pxg=0.,pyg=0.,ptg=0.;
@@ -133,10 +142,19 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
        nlab=TMath::Abs(vertex->GetNlabel());
        plab=TMath::Abs(vertex->GetPlabel());
 
-       vertex->ChangeMassHypothesis(code);
+       /** Kinematical cuts **/
+       Double_t pxn,pyn,pzn; vertex->GetNPxPyPz(pxn,pyn,pzn); 
+       Double_t ptn=TMath::Sqrt(pxn*pxn + pyn*pyn);
+       if (ptn < ptncut) continue;
+       Double_t pxp,pyp,pzp; vertex->GetPPxPyPz(pxp,pyp,pzp); 
+       Double_t ptp=TMath::Sqrt(pxp*pxp + pyp*pyp);
+       if (ptp < ptpcut) continue;
+       Double_t kine=vertex->ChangeMassHypothesis(code);
+       //if (TMath::Abs(kine)>kinecut) continue;
 
        Double_t mass=vertex->GetEffMass();
        v0s->Fill(mass);
+       v0sf->Fill(mass);
 
        Int_t j;
        for (j=0; j<ngood; j++) {
@@ -155,6 +173,7 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
           cerr<<"Fake vertex: ("<<nlab<<","<<plab<<")\n";
           continue;
        }
+       v0sf->Fill(mass,-1);
 
        pxg=gv[j].px; pyg=gv[j].py; ptg=TMath::Sqrt(pxg*pxg+pyg*pyg);
        Double_t phig=TMath::ATan2(pyg,pxg), phi=TMath::ATan2(py,px);
@@ -254,8 +273,9 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
 
    c2->cd(2);
    gPad->SetFillColor(42); gPad->SetFrameFillColor(10);
-   v0s->SetXTitle("(GeV/c)"); 
-   v0s->Fit("gaus","","",V0mass-V0width,V0mass+V0width);
+   //v0s->Fit("gaus","","",V0mass-V0width,V0mass+V0width);
+   v0s->Draw();
+   v0sf->Draw("same");
    Double_t max=v0s->GetMaximum();
    TLine *line3 = new TLine(V0mass-V0width,0.,V0mass-V0width,max);
    line3->Draw("same");
