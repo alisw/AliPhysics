@@ -15,7 +15,7 @@ class AliArrayS;
 class AliTPChit;
 class AliTPCTempHitInfoV2;
 class AliTPCCurrentHitV2;
-
+class AliHit;
 
 class AliTrackHitsParamV2 : public TObject {
 public:
@@ -52,7 +52,7 @@ public:
  
   Bool_t First(); //set current hit to first hit 
   Bool_t Next();  //set current hit to next
-  AliTPChit * GetHit();
+  AliHit * GetHit();
   AliTrackHitsParamV2 * GetParam();
 
   TClonesArray * GetArray(){return fArray;}
@@ -75,12 +75,21 @@ public:
   Int_t *  fVolumes;    //[fNVolumes] list of volumes
   AliTPCTempHitInfoV2 * fTempInfo; //!information about track
   AliTPCCurrentHitV2  * fCurrentHit; //!information about current hit 
+  AliHit * fHit;                     //! current hit information
   static const Double_t fgkPrecision;  //precision 
   static const Double_t fgkPrecision2;  //precision
   static Int_t fgCounter1;
   static Int_t fgCounter2;  
   ClassDef(AliTPCTrackHitsV2,1) 
 };
+
+struct AliTPCCurrentHitV2 {
+  UInt_t   fParamIndex;//  - current param pointer
+  UInt_t   fStackIndex; // - current hit stack index
+  Double_t fR;   //current Radius
+  Bool_t  fStatus; //current status    
+};   
+
 
 
 #endif //ALITPCTRACKHITSV2_H
