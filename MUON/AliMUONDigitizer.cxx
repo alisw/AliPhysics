@@ -516,13 +516,21 @@ void AliMUONDigitizer::InitArrays()
 
     } else {
       for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
+
+	Int_t idDE = 100*(i+1);// central DE = max # of pads ?
+	if (i == 4 || i == 5) //St3
+	  idDE += 4;
+
+	if (i > 5)
+	  idDE += 5;// DE for max # of pads in St45 and Trigger Station
+
 	AliDebug(4,Form( "Creating hit map for chamber %d, cathode 1.", i+1));
 	AliMUONChamber* chamber = &(fMUON->Chamber(i));
 	AliMUONGeometrySegmentation* c1Segmentation = chamber->SegmentationModel2(1); // Cathode plane 1
-	fHitMap[i] = new AliMUONHitMapA1(101,c1Segmentation, fTDList); // put idDE = 100 maybe # pads max ?
+	fHitMap[i] = new AliMUONHitMapA1(idDE,c1Segmentation, fTDList); 
 	AliDebug(4,Form( "Creating hit map for chamber %d, cathode 2.", i+1));
 	AliMUONGeometrySegmentation* c2Segmentation = chamber->SegmentationModel2(2); // Cathode plane 2
-	fHitMap[i+AliMUONConstants::NCh()] = new AliMUONHitMapA1(101,c2Segmentation, fTDList);
+	fHitMap[i+AliMUONConstants::NCh()] = new AliMUONHitMapA1(idDE,c2Segmentation, fTDList);
       }
     }
 }
