@@ -346,9 +346,10 @@ class TFluka : public TVirtualMC {
   Int_t GetMaterialIndex(Int_t idmat) const {return fMaterials[idmat];}
   TObjArray *GetFlukaMaterials();
   private:
+  void PrintHeader();
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &) {return (*this);}
-
+  
   
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
   Int_t   fNEvent;         //Current event number

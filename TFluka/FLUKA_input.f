@@ -30,6 +30,30 @@
       RETURN
  9999 END
 
+      SUBROUTINE FLUKA_OPENOUT(IOUNIT,FILNAM)
+*
+*----------------------------------------------------------------------*
+* Opens a file with a given unit number
+*
+*
+* IOUNIT: Input unit to be assiged to the file
+* FILNAM: Name of the file
+*
+*----------------------------------------------------------------------*
+*
+
+      IMPLICIT NONE
+      INTEGER IOUNIT
+      CHARACTER*(*) FILNAM
+
+      PRINT *, '==> FLUKA_OPENOUT(',IOUNIT,',',FILNAM,')'
+
+      OPEN (UNIT=IOUNIT, FILE=FILNAM, STATUS="UNKNOWN")
+
+      PRINT *, '<== FLUKA_OPENOUT(',IOUNIT,',',FILNAM,')'
+
+      RETURN
+ 9999 END
 
 
 *

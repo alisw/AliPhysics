@@ -64,6 +64,7 @@
 #ifndef WIN32 
 # define flukam  flukam_
 # define fluka_openinp fluka_openinp_
+# define fluka_openout fluka_openout_
 # define fluka_closeinp fluka_closeinp_
 # define mcihad mcihad_
 # define mpdgha mpdgha_
@@ -71,6 +72,7 @@
 #else 
 # define flukam  FLUKAM
 # define fluka_openinp FLUKA_OPENINP
+# define fluka_openout FLUKA_OPENOUT
 # define fluka_closeinp FLUKA_CLOSEINP
 # define mcihad MCIHAD
 # define mpdgha MPDGHA
@@ -85,6 +87,7 @@ extern "C"
   void type_of_call flukam(const int&);
   void type_of_call newplo();
   void type_of_call fluka_openinp(const int&, DEFCHARA);
+  void type_of_call fluka_openout(const int&, DEFCHARA);
   void type_of_call fluka_closeinp(const int&);
   int  type_of_call mcihad(const int&);
   int  type_of_call mpdgha(const int&);
@@ -153,6 +156,7 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fStopEvent = 0;
    fStopRun   = 0;
    fNEvent    = 0;
+   PrintHeader();
 }
 
 //______________________________________________________________________________ 
@@ -267,6 +271,7 @@ void TFluka::BuildPhysics() {
     const char* fname = fInputFileName;
     
     fluka_openinp(lunin, PASSCHARA(fname));
+    fluka_openout(11, PASSCHARA("fluka.out"));
     
     if (fVerbosityLevel >=2)
 	cout << "\t* Calling flukam..." << endl;
@@ -1910,6 +1915,20 @@ void TFluka::Gfpart(Int_t pdg, char* name, Int_t& type, Float_t& mass, Float_t& 
     mass   = ParticleMass(pdg);
     charge = ParticleCharge(pdg);
     tlife  = ParticleLifeTime(pdg);
+}
+
+void TFluka::PrintHeader()
+{
+    //
+    // Print a header
+    printf("\n");
+    printf("\n");    
+    printf("------------------------------------------------------------------------------\n");
+    printf("- You are using the TFluka Virtual Monte Carlo Interface to FLUKA.           -\n");    
+    printf("- Please see the file fluka.out for FLUKA output and licensing information.  -\n");    
+    printf("------------------------------------------------------------------------------\n");
+    printf("\n");
+    printf("\n");    
 }
 
 
