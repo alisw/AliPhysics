@@ -15,31 +15,17 @@ class AliZDCv2 : public AliZDC {
 public:
   AliZDCv2();
   AliZDCv2(const char *name, const char *title);
-  virtual      ~AliZDCv2() {}
+  virtual  ~AliZDCv2() {}
   virtual void  CreateGeometry();
   virtual void  CreateBeamLine();
   virtual void  CreateZDC();
   virtual void  CreateMaterials();
-  Int_t         Digitize(Int_t Det, Int_t Quad, Int_t Light);
-  virtual void  SDigits2Digits();
-  virtual void  Hits2Digits(Int_t ntracks = 0);
-  virtual void  MakeBranch(Option_t* opt, const char *file=0);
   virtual Int_t IsVersion() const {return 1;}
   virtual void  DrawModule();
   virtual void  Init();
   virtual void  InitTables();
   virtual void  StepManager();
   
-//  // Digitization parameters setters and getters
-//  // PM gain
-//  void SetPMGain(Int_t Det, Int_t PMDet, Int_t PMGain)
-//       {fPMGain[Det][PMDet] = PMGain;}
-//  Float_t GetPMGain(Int_t Det, Int_t PMDet)
-//       {return fPMGain[Det][PMDet];}
-//  // Conversion factor from charge to ADC channels
-//  //   F = 1.6E-19 / Resolution [Coulomb/ch]
-//  void SetADCRes(Int_t ADCRes) {fADCRes =  ADCRes;}
-//  Float_t GetADCRes() {return fADCRes;}
  
 protected:
 
@@ -74,14 +60,10 @@ protected:
   // NB -> parameters used in CreateZDC() and in StepManager()
   // (other parameters are defined in CreateZDC())
   Float_t fPosZEM[3]; // Position of EM detector
+  Float_t fZEMLength; // ZEM length
   
   // Parameters for tracking studies
 //  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected;
-  
-  
-//  // Parameters for conversion of light yield in ADC channels
-//  Float_t fPMGain[3][5];      // PM gain
-//  Float_t fADCRes;            // ADC conversion factor
   
    ClassDef(AliZDCv2,1)  // Zero Degree Calorimeter version 1
 }; 
