@@ -130,26 +130,17 @@ void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl)
   // Copies the digits with energy above thershold and sorts the list
   // according to increasing Id number
 
-  Int_t relid[4] ;  
-  
   TIter next(dl) ; 
   AliPHOSDigit * digit ;
   
   while ( (digit = (AliPHOSDigit *)next()) ) { 
-
-    Int_t id    = digit->GetId() ; 
     Float_t ene = Calibrate(digit->GetAmp()) ; 
-    fGeom->AbsToRelNumbering(id, relid) ;
-    if(relid[1]==0){ // EMC
-      if ( ene > fEmcEnergyThreshold )
-	tl->Add(digit) ;
-    }
-
-    else { //Ppsd
-      if ( ene > fPpsdEnergyThreshold )
-	tl->Add(digit) ; 
-    }
-
+    if      ( IsInEmc  (digit) && ene > fEmcEnergyThreshold  )
+      tl->Add(digit) ;
+    else if ( IsInPpsd (digit) && ene > fPpsdEnergyThreshold )
+      tl->Add(digit) ;
+    else if ( IsInCpv  (digit) && ene > fCpvEnergyThreshold  )
+      tl->Add(digit) ;
   }
   tl->Sort() ; 
 }
@@ -235,10 +226,11 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 
     AliPHOSDigit ** clusterdigitslist = new AliPHOSDigit*[dl->GetEntries()] ;   
     Int_t index ;
+
     if (( IsInEmc (digit) && Calibrate(digit->GetAmp()) > fEmcClusteringThreshold  ) || 
         ( IsInPpsd(digit) && Calibrate(digit->GetAmp()) > fPpsdClusteringThreshold ) ||
         ( IsInCpv (digit) && Calibrate(digit->GetAmp()) > fCpvClusteringThreshold  ) ) {
-  
+      
       Int_t iDigitInCluster = 0 ; 
 
       if  ( IsInEmc(digit) ) {   

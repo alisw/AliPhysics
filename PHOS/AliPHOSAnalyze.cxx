@@ -319,14 +319,14 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
       fClu->SetEmcEnergyThreshold(0.05) ; 
       fClu->SetEmcClusteringThreshold(0.20) ; 
       fClu->SetLocalMaxCut(0.03) ;
-      if      (strcmp(fGeom->GetName(),"GPS2") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
+      if (strcmp(fGeom->GetName(),"GPS2") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
 	fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
 	fClu->SetPpsdClusteringThreshold(0.0000001) ; 
       }
-      else if (strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
+      if (strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
 	fClu->SetLocalMaxCutCPV(0.03) ;
 	fClu->SetLogWeightCutCPV(4.0) ;
-	fClu->SetCpvEnergyThreshold(0.2) ;
+	fClu->SetCpvEnergyThreshold(0.09) ;
       }
       fClu->SetCalibrationParameters(0., 0.00000001) ; 
       
