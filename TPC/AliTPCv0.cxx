@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/05/08 16:03:06  kowal2
+Geometry update according to the latest technical spec.
+
 Revision 1.25  2001/04/27 15:23:06  kowal2
 Correct materian in the central part of the inner containment vessel
 
@@ -1655,7 +1658,10 @@ void AliTPCv0::Init()
   //
   // Initialise Time Projection Chamber version 0
   //
-  printf("TPC version 0 initialized\n");
+ 
+  printf("%s: *** TPC version 0 initialized***\n",ClassName()); 
+
+  //  printf("TPC version 0 initialized\n");
 }
 
 //_____________________________________________________________________________

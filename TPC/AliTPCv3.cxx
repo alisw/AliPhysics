@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2001/05/08 16:03:06  kowal2
+Geometry update according to the latest technical spec.
+
 Revision 1.26  2001/04/27 15:23:07  kowal2
 Correct materian in the central part of the inner containment vessel
 
@@ -1689,8 +1692,12 @@ void AliTPCv3::Init()
 
   gMC->Gstpar(idtmed[2],"LOSS",5);
 
-  printf("*** TPC version 3 initialized ***\n");
-  printf("Maximum number of steps = %d\n",gMC->GetMaxNStep());
+  printf("%s: *** TPC version 3 initialized***\n",ClassName());
+
+  printf("%s: Maximum number of steps = %d\n",ClassName(),gMC->GetMaxNStep());
+
+  // printf("*** TPC version 3 initialized ***\n");
+  // printf("Maximum number of steps = %d\n",gMC->GetMaxNStep());
 
   //
   

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2001/05/08 16:03:06  kowal2
+Geometry update according to the latest technical spec.
+
 Revision 1.28  2001/04/27 15:23:07  kowal2
 Correct materian in the central part of the inner containment vessel
 
@@ -1787,7 +1790,9 @@ void AliTPCv1::Init()
   fIdLSec=gMC->VolId("TPLS"); // lower sector
   fIdUSec=gMC->VolId("TPUS"); // upper sector
 
-  printf("TPC version 1 initialized\n");
+  printf("%s: *** TPC version 1 initialized***\n",ClassName());
+
+  // printf("TPC version 1 initialized\n");
 }
 
 //_____________________________________________________________________________
