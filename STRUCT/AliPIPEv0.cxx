@@ -658,7 +658,7 @@ void AliPIPEv0::CreateGeometry()
 // --- Place the PIPE ghost volume (QBPM) in its mother volume (ALIC)
 //    by rotating it to 180 deg. and make it invisible
 // 
-    gMC->Gspos("QBPM",1,"ALIC",0,0,0,idrotm[2013], "ONLY");
+    gMC->Gspos("QBPM",1,"ALIC", 0, 0, 0, 0, "ONLY");
     gMC->Gsbool("QBPM", "L3DX");
     gMC->Gsbool("QBPM", "L3O3");
     gMC->Gsbool("QBPM", "L3O4");
