@@ -283,7 +283,7 @@ void Config()
     {
         //=================== ZDC parameters ============================
 
-        AliZDC *ZDC = new AliZDCv1("ZDC", "normal ZDC");
+        AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
     }
 
     if (iCASTOR)
