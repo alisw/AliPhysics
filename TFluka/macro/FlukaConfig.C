@@ -102,26 +102,26 @@ void Config()
 
   cout << "\t* Defining which detectors to load..." << endl;
   
-  Int_t   iABSO = 0;
-  Int_t   iCRT = 0;
-  Int_t   iDIPO = 0;
-  Int_t   iFMD = 0;
-  Int_t   iFRAME = 0;
-  Int_t   iHALL = 0;
-  Int_t   iITS = 0;
-  Int_t   iMAG = 0;
-  Int_t   iMUON = 0;
-  Int_t   iPHOS = 0;
-  Int_t   iPIPE = 0;
-  Int_t   iPMD = 0;
-  Int_t   iRICH = 0;
-  Int_t   iSHIL = 0;
-  Int_t   iSTART = 0;
-  Int_t   iTOF = 0;
+  Int_t   iABSO = 1;
+  Int_t   iCRT = 0; //Not good ?
+  Int_t   iDIPO = 1;
+  Int_t   iFMD = 1;
+  Int_t   iFRAME = 1;
+  Int_t   iHALL = 1;
+  Int_t   iITS = 1;
+  Int_t   iMAG = 1;
+  Int_t   iMUON = 1; //Not good (newFlagLttc=10000 is outside array bounds)
+  Int_t   iPHOS = 1;
+  Int_t   iPIPE = 1;
+  Int_t   iPMD = 0;   //Not good (too many regions)
+  Int_t   iRICH = 1;  //Not good (no tracking with FRAME)
+  Int_t   iSHIL = 1;  //Not good (no tracking) (it works alone)
+  Int_t   iSTART = 1; //Not good (no tracking) (it works alone)
+  Int_t   iTOF = 1;   //Not good (no tracking) (newFlagLttc=10000 is outside array bounds if alone)
   Int_t   iTPC = 1;
-  Int_t   iTRD = 0;
-  Int_t   iZDC = 0;
-  Int_t   iEMCAL = 0;
+  Int_t   iTRD = 1;   //Not good (no tracking) (Crash alone with FRAME)
+  Int_t   iZDC = 1;   //Needs SHIL and others
+  Int_t   iEMCAL = 0; //Not good (Crash)
   
   cout << "\t* Creating the detectors ..." << endl;
   //=================== Alice BODY parameters =============================
