@@ -15,6 +15,10 @@
  
 /*
 $Log$
+Revision 1.2  2002/01/31 18:52:09  nilsen
+Minor change to allow the use of files that are already open. grun.C macro
+that also does ITS digitizationa and Reconstruction all in one go.
+
 Revision 1.1  2002/01/30 22:20:22  nilsen
 New TTask based method to do Digits To clusters. Works with files of multiple
 events in the file. Macro added to show how to use. Also the changes made
@@ -80,7 +84,10 @@ AliITSreconstruction::AliITSreconstruction(const char* filename){
 	if(fFile) fFile->Close();
 	fFile = new TFile(fFilename.Data(),"UPDATE");
 	//
-	if(gAlice) delete gAlice;
+        if(gAlice) {
+          delete gAlice;
+          gAlice = 0;
+        }   
 	gAlice = (AliRun*)fFile->Get("gAlice");
 	if(!gAlice) {
 	    cout << "gAlice not found on file. Aborting." << endl;
