@@ -1,7 +1,9 @@
+void AliceHelp(){
 ////////////////////////////////////////////////////
 //            H O W  to run  A l i R o o t        //
 ////////////////////////////////////////////////////
 
+  /*
  To execute the Alice simulation program, type aliroot.
  This starts AliRoot in interactive mode by default.
  After a few seconds, you get the Root prompt.
@@ -56,3 +58,5 @@
 
  When you want to leave gAlice type the command ".q"
     Root > .q
+  */
+}

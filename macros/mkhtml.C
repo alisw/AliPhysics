@@ -8,6 +8,8 @@ void mkhtml (char *macro=0, Int_t force=0) {
   // gROOT->LoadMacro("loadlibs.C");
   // loadlibs();
   THtml html;
+  TStopwatch timer;
+  timer.Start();
   if(macro) {
     gROOT->LoadMacro(macro);
     html.Convert(macro,"Example Macro");
@@ -15,4 +17,6 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libRALICE");
     html.MakeAll(force);
   }
+  timer.Stop();
+  timer.Print();
 }

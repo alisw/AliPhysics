@@ -1,4 +1,4 @@
-{
+void ecut() {
 
 //Begin_Html
 /*

@@ -1,4 +1,4 @@
-{
+void html() {
 // to run this macro, you must have the correct .rootrc file
 // in your galice directory.
 // The gAlice classes summary documentation go to directory html
