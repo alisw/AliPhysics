@@ -104,7 +104,7 @@ class AliHBTWeightTheorQtFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFu
     Double_t GetValue(AliHBTPair* partpair) const
       { return partpair->GetQt();} 
 
-    ClassDef(AliHBTWeightTheorQtFctn,2)
+    ClassDef(AliHBTWeightTheorQtFctn,1)
 };
 
 /*************************************************************/

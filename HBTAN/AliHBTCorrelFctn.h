@@ -131,7 +131,7 @@ class AliHBTQtCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunctio
  protected:
    Double_t GetValue(AliHBTPair * pair) const {return pair->GetQt();}
  private:  
-    ClassDef(AliHBTQtCorrelFctn,2)
+    ClassDef(AliHBTQtCorrelFctn,1)
 };
 /*************************************************************************************/ 
 
