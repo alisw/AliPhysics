@@ -16,67 +16,68 @@ ClassImp(AliL3Compress)
 
 AliL3Compress::AliL3Compress()
 {
-  
+  fTracks=0;
 }
 
 AliL3Compress::~AliL3Compress()
 {
-  
+  if(fTracks)
+    delete fTracks;
 }
 
-void AliL3Compress::Write2File(AliL3TrackArray *tracks)
+void AliL3Compress::WriteFile(AliL3TrackArray *tracks,Char_t *filename)
 {
-  FILE *file = fopen("data.raw","w");
+  FILE *file = fopen(filename,"w");
   Short_t ntracks = tracks->GetNTracks();
-  cout<<"Writing "<<ntracks<<" tracks to file"<<endl;
-  //Write the number of tracks at the beginning:
-  //fwrite(&ntracks,sizeof(Short_t),1,file);
-  
+  //cout<<"Writing "<<ntracks<<" tracks to file"<<endl;
+    
+  Int_t count=0;
+  AliL3ClusterModel *clusters=0;
+  AliL3TrackModel *model=0;
   for(Int_t i=0; i<ntracks; i++)
     {
       AliL3ModelTrack *track = (AliL3ModelTrack*)tracks->GetCheckedTrack(i);
       if(!track) continue;
-      AliL3TrackModel *model = track->GetModel();
-      cout<<"Writing "<<model->fFirstPointX<<endl;
+      model = track->GetModel();
+      if(model->fNClusters==0) continue;
+      clusters = track->GetClusters();
+      //cout<<"Writing "<<(int)model->fNClusters<<" clusters"<<endl;
       if(fwrite(model,sizeof(AliL3TrackModel),1,file)!=1) break;
-      for(Int_t j=0; j<model->fNClusters; j++)
-	{
-	  AliL3ClusterModel *cl = track->GetClusterModel(j);
-	  fwrite(cl,sizeof(AliL3ClusterModel),1,file);
-	}
+      //cout<<"Writing "<<(int)model->fNClusters<<" clusters to file"<<endl;
+      if(fwrite(clusters,model->fNClusters*sizeof(AliL3ClusterModel),1,file)!=1) break;
+      count++;
     }
+  cout<<"Wrote "<<count<<" tracks "<<endl;
   fclose(file);
 }
 
-void AliL3Compress::ReadFile()
+void AliL3Compress::ReadFile(Char_t *filename)
 {
-  FILE *file = fopen("data.raw","r");
+  FILE *file = fopen(filename,"r");
   
-  AliL3TrackArray *tracks = new AliL3TrackArray("AliL3ModelTrack");
-  Int_t ntracks=0;
+  if(fTracks)
+    delete fTracks;
+  fTracks = new AliL3TrackArray("AliL3ModelTrack");
   
   while(!feof(file))
     {
-      AliL3ModelTrack *track = (AliL3ModelTrack*)tracks->NextTrack();
+      AliL3ModelTrack *track = (AliL3ModelTrack*)fTracks->NextTrack();
       track->Init(0,0);
       AliL3TrackModel *model = track->GetModel();
       AliL3ClusterModel *clusters = track->GetClusters();
       if(fread(model,sizeof(AliL3TrackModel),1,file)!=1) break;
-      cout<<"Read model "<<model->fFirstPointX<<endl;
       if(fread(clusters,(model->fNClusters)*sizeof(AliL3ClusterModel),1,file)!=1) break;
-      ntracks++;
     }
   
-  delete tracks;
-  cout<<"Read "<<ntracks<<" tracks from file"<<endl;
+  cout<<"Read "<<fTracks->GetNTracks()<<" tracks from file"<<endl;
   fclose(file);
 }
 
-void AliL3Compress::CompressFile()
+void AliL3Compress::CompressFile(Char_t *infile,Char_t *outfile)
 {
   
-  BIT_FILE *output = OpenOutputBitFile("test.raw");
-  FILE *input = fopen("data.raw","r");
+  BIT_FILE *output = OpenOutputBitFile(outfile);
+  FILE *input = fopen(infile,"r");
 
   AliL3TrackModel track;
   AliL3ClusterModel cluster;
@@ -85,15 +86,19 @@ void AliL3Compress::CompressFile()
   while(!feof(input))
     {
       if(fread(&track,sizeof(AliL3TrackModel),1,input)!=1) break;
-      cout<<"Writing "<<sizeof(AliL3TrackModel)<<endl;
+      
+      if(output->mask != 0x80) //Write the current byte to file.
+	{
+	  if(putc(output->rack,output->file )!=output->rack)
+	    cerr<<"AliL3Compress::ComressFile : Error writing to bitfile"<<endl;
+	  output->mask=0x80;
+	}
       fwrite(&track,sizeof(AliL3TrackModel),1,output->file);
-      Int_t bitcount=0;
       for(Int_t i=0; i<track.fNClusters; i++)
 	{
 	  if(fread(&cluster,sizeof(AliL3ClusterModel),1,input)!=1) break;
-	  Int_t flag = cluster.fPresent;
+	  Int_t flag = (Int_t)cluster.fPresent;
 	  OutputBit(output,flag);
-	  bitcount++;
 	  if(!flag) continue;
 	  temp = (Int_t)cluster.fDTime;
 	  if(temp<0)
@@ -107,46 +112,60 @@ void AliL3Compress::CompressFile()
 	  else
 	    OutputBit(output,1);
 	  OutputBits(output,abs(temp),8);
-	  bitcount+=8;
 	  temp = (Int_t)cluster.fDCharge;
 	  OutputBits(output,temp,10);
-	  bitcount+=10;
 	  
 	  //Short_t temp=(Short_t)cluster.fDTime;
-	  cout<<"flag "<<(int)flag<<" dtime "<<(int)cluster.fDTime<<" dpad "<<(int)cluster.fDPad<<" charge "<<cluster.fDCharge<<endl;
+	  // cout<<"flag "<<(int)flag<<" dtime "<<(int)cluster.fDTime<<" dpad "<<(int)cluster.fDPad<<" charge "<<cluster.fDCharge<<endl;
 	}
       
     }
-
+  
   fclose(input);
   CloseOutputBitFile(output);
 }
 
-void AliL3Compress::ExpandFile()
+void AliL3Compress::ExpandFile(Char_t *infile,Char_t *outfile)
 {
-  BIT_FILE *input = OpenInputBitFile("test.raw");
+  BIT_FILE *input = OpenInputBitFile(infile);
+  FILE *output = fopen(outfile,"w");
+
+  AliL3TrackModel trackmodel;
+  AliL3ClusterModel *clusters=0;
   
-  AliL3TrackModel track;
-  AliL3ClusterModel cluster;
-  
-  fread(&track,sizeof(AliL3TrackModel),1,input->file);
-  for(Int_t i=0; i<track.fNClusters; i++)
+  while(!feof(input->file))
     {
-      Int_t temp,sign;
-      temp = InputBit(input);
-      if(!temp) break;
-      sign=InputBit(input);
-      temp = InputBits(input,8);
-      if(!sign)
-	temp*=-1;
-      cout<<"Dtime "<<temp;
-      sign=InputBit(input);
-      temp = InputBits(input,8);
-      if(!sign)
-	temp*=-1;
-      cout<<" DPad "<<temp;
-      temp=InputBits(input,10);
-      cout<<" Charge "<<temp<<endl;
+      
+      if(fread(&trackmodel,sizeof(AliL3TrackModel),1,input->file)!=1) break;
+      fwrite(&trackmodel,sizeof(AliL3TrackModel),1,output);
+      input->mask=0x80;//make sure we read a new byte from file.
+      clusters = new AliL3ClusterModel[(trackmodel.fNClusters)];
+      for(Int_t i=0; i<trackmodel.fNClusters; i++)
+	{
+	  Int_t temp,sign;
+	  temp = InputBit(input);
+	  if(!temp) 
+	    {
+	      clusters[i].fPresent=kFALSE;
+	      continue;
+	    }
+	  clusters[i].fPresent=kTRUE;
+	  sign=InputBit(input);
+	  temp = InputBits(input,8);
+	  if(!sign)
+	    temp*=-1;
+	  clusters[i].fDTime = temp;
+	  sign=InputBit(input);
+	  temp = InputBits(input,8);
+	  if(!sign)
+	    temp*=-1;
+	  clusters[i].fDPad = temp;
+	  temp=InputBits(input,10);
+	  clusters[i].fDCharge = temp;
+	}
+      fwrite(clusters,(trackmodel.fNClusters)*sizeof(AliL3ClusterModel),1,output);
+      delete [] clusters;
     }
+  fclose(output);
   CloseInputBitFile(input);
 }

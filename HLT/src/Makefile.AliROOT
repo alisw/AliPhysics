@@ -1,4 +1,4 @@
-############################### TPC Makefile ##################################
+############################### HLT Makefile ##################################
 
 # Include machine specific definitions
 
@@ -43,7 +43,7 @@ OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
-CXXFLAGS      = $(CXXOPTS) -g -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/  -I$(ALICE_ROOT)/TPC  -I$(ALICE_ROOT)/CONTAINERS -I$(HOME)/level3code/hough/
+CXXFLAGS      = $(CXXOPTS) -g -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/  -I$(ALICE_ROOT)/TPC  -I$(ALICE_ROOT)/CONTAINERS -I$(HOME)/level3code/hough/ -I$(HOME)/level3code/comp/ 
 
 #CXXFLAGS      = $(CXXOPTS) -g -Wall -I$(ROOTSYS)/include -I. -I $(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/include/ -DCOMPILING
  

@@ -4,6 +4,8 @@
 #include <TObject.h>
 #include <TGeometry.h>
 
+#include "AliL3RootTypes.h"
+
 class AliL3SpacePointData;
 class AliL3TrackArray;
 class AliL3Transform;

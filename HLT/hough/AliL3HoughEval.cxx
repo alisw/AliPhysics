@@ -1,10 +1,14 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
 #include <math.h>
+#include <iostream.h>
+#ifdef use_root
 #include <TH1.h>
 #include <TFile.h>
-
+#endif
 #include "AliL3MemHandler.h"
 #include "GetGoodParticles.h"
 #include "AliL3TrackArray.h"
@@ -94,7 +98,9 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
   
   Int_t total_charge=0;//total charge along the road
   Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
-  
+
+
+  //Check if the track is leaving the sector at some point
   Float_t maxrow=300;
   Double_t angle=Pi/18;
   track->CalculateEdgePoint(angle);
@@ -121,6 +127,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
       fTransform->Slice2Sector(fSlice,padrow,sector,row);
       fTransform->Local2Raw(xyz,sector,row);
       npixs=0;
+      
       
       //Get the timebins for this pad
       AliL3DigitRowData *tempPt = fRowPointers[prow];
@@ -312,9 +319,10 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
   
 }
 
+#ifdef use_root
 void AliL3HoughEval::CompareMC(AliL3TrackArray *tracks,Char_t *trackfile,Int_t threshold)
 {
-  
+  /*  
   struct GoodTrack goodtracks[15000];
   Int_t nt=0;
   ifstream in(trackfile);
@@ -408,6 +416,7 @@ void AliL3HoughEval::CompareMC(AliL3TrackArray *tracks,Char_t *trackfile,Int_t t
   
   delete [] particles;
   delete [] ftracks;
-  
+  */  
 }
 
+#endif

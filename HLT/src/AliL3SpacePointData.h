@@ -10,6 +10,7 @@ struct AliL3SpacePointData{
     UChar_t fPadRow;
     Float_t fXYErr;
     Float_t fZErr;
+  UInt_t fCharge;
 };
 typedef struct AliL3SpacePointData AliL3SpacePointData;
 

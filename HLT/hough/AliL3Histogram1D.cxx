@@ -1,6 +1,9 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV
 
+#include <string.h>
 #include "AliL3Logging.h"
 #include "AliL3Histogram1D.h"
 
@@ -37,8 +40,9 @@ AliL3Histogram1D::AliL3Histogram1D(Char_t *name,Char_t *id,Int_t nxbin,Double_t 
   fEntries = 0;
   fXmin = xmin;
   fXmax = xmax;
-  
+#ifdef use_root
   fRootHisto = 0;
+#endif
   fThreshold = 0;
   
   fContent = new Double_t[fNcells];

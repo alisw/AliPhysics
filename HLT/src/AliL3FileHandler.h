@@ -3,15 +3,16 @@
 
 #include "AliTPCParam.h"
 #include "AliL3MemHandler.h"
+#include "AliSimDigits.h"
 #include <TObject.h>
 #include <TFile.h>
+#include <TTree.h>
 #include <stdio.h>
+
 class AliL3SpacePointData;
 class AliL3DigitRowData;
 class AliL3TrackSegmentData;
 class AliL3TrackArray;
-class AliSimDigits;
-class TTree;
 
 class AliL3FileHandler:public AliL3MemHandler{
  private:

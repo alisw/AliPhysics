@@ -9,18 +9,20 @@ class AliL3TrackArray;
 class AliL3Compress {
   
  private:
-  
+  AliL3TrackArray *fTracks; //!
   
   
  public:
   AliL3Compress();
   virtual ~AliL3Compress();
   
-  void Write2File(AliL3TrackArray *tracks);
-  void ReadFile();
-  void CompressFile();
-  void ExpandFile();
-
+  void WriteFile(AliL3TrackArray *tracks,Char_t *filename);
+  void ReadFile(Char_t *filename);
+  void CompressFile(Char_t *infile,Char_t *outfile);
+  void ExpandFile(Char_t *infile,Char_t *outfile);
+  
+  AliL3TrackArray *GetTracks() {return fTracks;}
+  
   ClassDef(AliL3Compress,1) 
 
 };

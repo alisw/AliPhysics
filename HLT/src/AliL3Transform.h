@@ -34,7 +34,9 @@ class AliL3Transform {
 
   Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
   Double_t GetPadPitchWidthUp() {return fPadPitchWidthUp;}
-
+  Double_t GetPadPitchWidth(Int_t patch) {if(patch<=2) return fPadPitchWidthLow; else return fPadPitchWidthUp;}
+  Double_t GetZWidth() {return fZWidth;}
+  
   Bool_t Slice2Sector(Int_t slice, Int_t slicerow, Int_t & sector, Int_t &row) const;
 
   Bool_t Sector2Slice(Int_t & slice, Int_t  sector) const;

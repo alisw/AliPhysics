@@ -5,8 +5,6 @@
 
 
 #include <string.h>
-#include <TCanvas.h>
-#include <TFile.h>
 
 #include "AliL3HoughMerger.h"
 #include "AliL3HoughIntMerger.h"
@@ -16,14 +14,18 @@
 #include "AliL3Hough.h"
 #include "AliL3HoughTransformer.h"
 #include "AliL3HoughMaxFinder.h"
+#ifdef use_aliroot
 #include "AliL3FileHandler.h"
+#else
+#include "AliL3MemHandler.h"
+#endif
 #include "AliL3DigitData.h"
 #include "AliL3HoughEval.h"
 #include "AliL3Transform.h"
 #include "AliL3Defs.h"
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"
-#include "AliL3Benchmark.h"
+
 
 //_____________________________________________________________
 // AliL3Hough
@@ -97,7 +99,11 @@ void AliL3Hough::Init()
 {
   fNPatches = NPatches;
   fHoughTransformer = new AliL3HoughTransformer*[fNPatches];
+#ifdef use_aliroot
   fMemHandler = new AliL3FileHandler*[fNPatches];
+#else
+  fMemHandler = new AliL3MemHandler*[fNPatches];
+#endif
   fTracks = new AliL3TrackArray*[fNPatches];
   fEval = new AliL3HoughEval*[fNPatches];
   for(Int_t i=0; i<fNPatches; i++)
@@ -107,9 +113,14 @@ void AliL3Hough::Init()
       fHoughTransformer[i]->SetThreshold(3);
       fEval[i] = new AliL3HoughEval();
       fTracks[i] = new AliL3TrackArray("AliL3HoughTrack");
+#ifdef use_aliroot
       fMemHandler[i] = new AliL3FileHandler();
       if(!fBinary)
 	fMemHandler[i]->SetAliInput(fPath);
+#else
+      fMemHandler[i] = new AliL3MemHandler();
+#endif
+      
     }
   fPeakFinder = new AliL3HoughMaxFinder("KappaPhi");
   fMerger = new AliL3HoughMerger(fNPatches);
@@ -129,8 +140,6 @@ void AliL3Hough::Process(Int_t minslice,Int_t maxslice)
 	AddAllHistograms();
       FindTrackCandidates();
       Evaluate();
-      if(fWriteDigits)
-	WriteDigits();
       fGlobalMerger->FillTracks(fTracks[0],i);
     }
   
@@ -156,8 +165,12 @@ void AliL3Hough::ReadData(Int_t slice)
 	}
       else //read data from root file
 	{
+#ifdef use_aliroot
 	  fMemHandler[i]->Init(slice,i,NRows[i]);
 	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliDigits2Memory(ndigits); 
+#else
+	  cerr<<"You cannot read from rootfile now"<<endl;
+#endif
 	}
       fHoughTransformer[i]->SetInputData(ndigits,digits);
     }
@@ -168,15 +181,10 @@ void AliL3Hough::Transform()
   //Transform all data given to the transformer within the given slice
   //(after ReadData(slice))
 
-  Double_t initTime,finalTime;
   for(Int_t i=0; i<fNPatches; i++)
     {
       fHoughTransformer[i]->Reset();//Reset the histograms
-      initTime = AliL3Benchmark::GetCpuTime();
       fHoughTransformer[i]->TransformCircle();
-      finalTime = AliL3Benchmark::GetCpuTime();
-      LOG(AliL3Log::kInformational,"AliL3Hough::Transform","Timing")
-	<<AliL3Log::kDec<<"Transform finished in "<<(finalTime-initTime)*1000<<"ms"<<ENDLOG;
     }
 }
 
@@ -369,19 +377,20 @@ void AliL3Hough::EvaluateWithEta()
       fEval[i]->FindEta(fTracks[0]);
     }
   fMerger->FillTracks(fTracks[0],0);
-  fMerger->MergeEtaSlices(0);
 }
 
-void AliL3Hough::WriteTracks()
+void AliL3Hough::WriteTracks(Char_t *path)
 {
   AliL3MemHandler *mem = new AliL3MemHandler();
-  mem->SetBinaryOutput("tracks.raw");
+  Char_t fname[100];
+  sprintf(fname,"%s/tracks.raw",path);
+  mem->SetBinaryOutput(fname);
   mem->TrackArray2Binary(fTracks[0]);
   mem->CloseBinaryOutput();
   delete mem;
   
 }
-
+#ifdef use_aliroot
 void AliL3Hough::WriteDigits(Char_t *outfile)
 {
   //Write the current data to a new rootfile.
@@ -393,3 +402,4 @@ void AliL3Hough::WriteDigits(Char_t *outfile)
     }
   
 }
+#endif

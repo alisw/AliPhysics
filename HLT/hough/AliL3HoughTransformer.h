@@ -7,7 +7,7 @@ class AliL3Transform;
 class AliL3Histogram;
 class AliL3DigitRowData;
 
-class AliL3HoughTransformer : public TObject {
+class AliL3HoughTransformer {
   
  private:
 

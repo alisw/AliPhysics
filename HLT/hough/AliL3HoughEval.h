@@ -11,7 +11,7 @@ class AliL3DigitRowData;
 class AliL3Histogram;
 class AliL3Histogram1D;
 
-class AliL3HoughEval : public TObject {
+class AliL3HoughEval {
   
  private:
 
@@ -40,7 +40,9 @@ class AliL3HoughEval : public TObject {
   void GenerateLUT();
   void DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist);
   Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Bool_t remove=kFALSE);
+#ifdef use_root
   void CompareMC(AliL3TrackArray *tracks,Char_t *goodtracks="good_tracks",Int_t treshold=0);
+#endif
   void FindEta(AliL3TrackArray *tracks);
   
   //Getters

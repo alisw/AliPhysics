@@ -18,10 +18,11 @@ HOUGHOBJDIR = $(HOUGHDIR)/tgt_Linux
 
 SRC	= AliL3Track.cxx AliL3Vertex.cxx AliL3Transform.cxx AliL3TrackArray.cxx \
 	  AliL3MemHandler.cxx AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx \
-	  AliL3ConfMapTrack.cxx AliL3ConfMapFit.cxx
+	  AliL3ConfMapTrack.cxx AliL3ConfMapFit.cxx AliL3Merger.cxx
 
 HOUGH	= AliL3Histogram1D.cxx AliL3Histogram.cxx AliL3HoughEval.cxx \
-          AliL3HoughMaxFinder.cxx AliL3HoughTrack.cxx AliL3HoughTransformer.cxx 
+          AliL3HoughMaxFinder.cxx AliL3HoughTrack.cxx AliL3HoughTransformer.cxx \
+	  AliL3Hough.cxx AliL3HoughMerger.cxx AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx
 
 SRCOBJS	= $(patsubst %.cxx,$(SRCOBJDIR)/%.o,$(SRC))
 

@@ -110,7 +110,7 @@ Bool_t AliL3MemHandler::SetBinaryInput(char *name){
   fInBinary = fopen(name,"r");
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::SetBinaryInput","File Open")
-    <<"Pointer to File = 0x0 "<<ENDLOG;
+      <<"Error opening file "<<name<<ENDLOG;
     return kFALSE;
   }
   return kTRUE;

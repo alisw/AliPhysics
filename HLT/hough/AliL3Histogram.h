@@ -2,8 +2,9 @@
 #define ALIL3_HISTOGRAM
 
 #include "AliL3RootTypes.h"
+#ifdef use_root
 #include <TH2.h>
-
+#endif
 
 class AliL3Histogram {
   

@@ -15,7 +15,7 @@ struct AxisWindow
   Int_t weight;
 };
 
-class AliL3HoughMaxFinder : public TObject {
+class AliL3HoughMaxFinder {
   
  private:
 

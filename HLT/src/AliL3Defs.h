@@ -6,6 +6,7 @@
 const Int_t NPatches = 6;
 const Int_t NRowsSlice = 176;
 const Int_t NRows[6][2] = {{0,31},{32,63},{64,91},{92,119},{120,143},{144,175}};
+const Int_t NumRows[6] = {32,32,28,28,24,32};
 //const Int_t NRows[6][2] = {{ 0, 175},{0,0},{0,0},{0,0},{0,0},{0,0}};
 const Double_t Pi = 3.14159265358979323846;
 const Double_t ToRad = Pi/180.;

@@ -60,7 +60,7 @@ void AliL3HoughMaxFinder::FindAbsMaxima(Int_t &max_xbin,Int_t &max_ybin)
   Int_t ymin = hist->GetFirstYbin();
   Int_t ymax = hist->GetLastYbin();  
   Int_t bin;
-  Stat_t value,max_value=0;
+  Double_t value,max_value=0;
 
   for(Int_t xbin=xmin; xbin<=xmax; xbin++)
     {
@@ -87,7 +87,7 @@ AliL3TrackArray *AliL3HoughMaxFinder::FindBigMaxima(AliL3Histogram *hist)
   Int_t ymin = hist->GetFirstYbin();
   Int_t ymax = hist->GetLastYbin();
   Int_t bin[25],bin_index;
-  Stat_t value[25];
+  Double_t value[25];
   
   AliL3TrackArray *tracks = new AliL3TrackArray("AliL3HoughTrack");
   AliL3HoughTrack *track;
@@ -142,7 +142,7 @@ AliL3TrackArray *AliL3HoughMaxFinder::FindMaxima(AliL3Histogram *hist,Int_t *row
   Int_t ymin = hist->GetFirstYbin();
   Int_t ymax = hist->GetLastYbin();
   Int_t bin[9],track_counter=0;
-  Stat_t value[9];
+  Double_t value[9];
   
   AliL3TrackArray *tracks = new AliL3TrackArray("AliL3HoughTrack");
   AliL3HoughTrack *track;
@@ -626,7 +626,7 @@ void AliL3HoughMaxFinder::FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t *weigh
 	      Int_t bin = fCurrentHisto->GetBin(j,k);
 	      ytop += (fCurrentHisto->GetBinCenterY(k))*(fCurrentHisto->GetBinContent(bin));
 	      ybutt += fCurrentHisto->GetBinContent(bin);
-	      w+=fCurrentHisto->GetBinContent(bin);
+	      w+=(Int_t)fCurrentHisto->GetBinContent(bin);
 	    }
 	}
       
@@ -865,8 +865,8 @@ void AliL3HoughMaxFinder::FindPeak(Int_t t1,Double_t t2,Int_t t3,Float_t &kappa,
 
 
   //Find the weight:
-  bin = hist->FindBin(x_peak,y_peak);
-  Int_t weight = (Int_t)hist->GetBinContent(bin);
+  //bin = hist->FindBin(x_peak,y_peak);
+  //Int_t weight = (Int_t)hist->GetBinContent(bin);
 
   //AliL3HoughTrack *track = new AliL3HoughTrack();
   //track->SetTrackParameters(x_peak,y_peak,weight);

@@ -13,8 +13,9 @@
 #include <TGeometry.h>
 #include <TShape.h>
 #include <TParticle.h>
+#include <TFile.h>
 
-#include "AliL3Evaluate.h"
+#include "AliL3Display.h"
 #ifdef use_aliroot
 #include "AliRun.h"
 #include "AliSimDigits.h"
@@ -24,9 +25,9 @@
 #include "AliL3Track.h"
 #include "AliL3TrackArray.h"
 #include "AliL3SpacePointData.h"
-#include "AliL3FileHandler.h"
+#include "AliL3MemHandler.h"
 #include "AliL3Logging.h"
-#include "AliL3Display.h"
+
 
 //_____________________________________________________________
 // AliL3Display
@@ -74,12 +75,12 @@ void AliL3Display::Setup(Char_t *trackfile,Char_t *path)
   //Read in the hit and track information from produced files.
   
   Char_t fname[256];
-  AliL3FileHandler *clusterfile[36][6];
+  AliL3MemHandler *clusterfile[36][6];
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
     {
       for(Int_t p=0; p<6; p++)
 	{
-	  clusterfile[s][p] = new AliL3FileHandler();
+	  clusterfile[s][p] = new AliL3MemHandler();
 	  sprintf(fname,"%spoints_%d_%d.raw",path,s,p);
 	  if(!clusterfile[s][p]->SetBinaryInput(fname))
 	    {
@@ -96,7 +97,7 @@ void AliL3Display::Setup(Char_t *trackfile,Char_t *path)
     }
   
   
-  AliL3FileHandler *tfile = new AliL3FileHandler();
+  AliL3MemHandler *tfile = new AliL3MemHandler();
   if(!tfile->SetBinaryInput(trackfile))
     {
       LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")

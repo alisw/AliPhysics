@@ -1,6 +1,8 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
+#include <math.h>
+#include <stdlib.h>
 #include "AliL3Logging.h"
 #include "AliL3Defs.h"
 #include "AliL3Transform.h"

@@ -5,10 +5,6 @@
 
 #include <math.h>
 #include <iostream.h>
-#include <TObject.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <stdio.h>
 
 #include "AliL3Transform.h"
 #include "AliL3Logging.h"
@@ -19,8 +15,6 @@
 #include "AliTPCClustersArray.h"
 #include "AliTPCcluster.h"
 #include "AliTPCClustersRow.h"
-#include "AliTPCParam.h"
-#include "AliSimDigits.h"
 
 #include "AliL3DigitData.h"
 #include "AliL3TrackSegmentData.h"

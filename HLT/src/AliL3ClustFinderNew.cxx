@@ -318,6 +318,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 	    <<AliL3Log::kDec<<"Too many clusters"<<ENDLOG;
 	  return;
 	  }  
+      fSpacePointData[counter].fCharge = list[j].fTotalCharge;
       fSpacePointData[counter].fX = xyz[0];
       fSpacePointData[counter].fY = xyz[1];
       fSpacePointData[counter].fZ = xyz[2];

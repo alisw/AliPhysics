@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ULI
 
@@ -7,6 +9,7 @@
 #include "AliL3Logging.h"
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"
+#include "AliL3ModelTrack.h"
 #include "AliL3ConfMapTrack.h"
 #include "AliL3TrackSegmentData.h"
 #include "AliL3Transform.h"
@@ -47,6 +50,7 @@ AliL3TrackArray::AliL3TrackArray(char* tracktype,Int_t ntrack){
   if(strcmp(tracktype,"AliL3Track")==0) fTrackType='t';
   if(strcmp(tracktype,"AliL3ConfMapTrack")==0) fTrackType='c';
   if(strcmp(tracktype,"AliL3HoughTrack")==0) fTrackType='h';
+  if(strcmp(tracktype,"AliL3ModelTrack")==0) fTrackType='m';
   SetSize(ntrack);
 }
 
@@ -58,6 +62,7 @@ AliL3TrackArray::AliL3TrackArray(char* tracktype){
   if(strcmp(tracktype,"AliL3Track")==0) fTrackType='t';
   if(strcmp(tracktype,"AliL3ConfMapTrack")==0) fTrackType='c';
   if(strcmp(tracktype,"AliL3HoughTrack")==0) fTrackType='h';
+  if(strcmp(tracktype,"AliL3ModelTrack")==0) fTrackType='m';
   SetSize();
 }
 
@@ -106,6 +111,12 @@ Bool_t AliL3TrackArray::SetSize(Int_t newsize){
           fIsPresent[i] = kTRUE;
         }
         break;
+       case 'm':
+        for(Int_t i=0;i<fSize;i++){
+          fTrack[i]   = new AliL3ModelTrack();
+          fIsPresent[i] = kTRUE;
+        }
+        break;
       default: 
         return kFALSE;
     }
@@ -146,6 +157,12 @@ Bool_t AliL3TrackArray::SetSize(Int_t newsize){
         fIsPresent[i] = kTRUE;
       }
       break;
+    case 'm':
+      for(Int_t i=fSize;i<newsize;i++){
+        fTrack[i]   = new AliL3ModelTrack();
+        fIsPresent[i] = kTRUE;
+      }
+      break;
     default: 
       return kFALSE;
   }
@@ -170,7 +187,7 @@ void AliL3TrackArray::Remove(Int_t track){
 void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr){
   //Read tracks from shared memory (or memory)
   AliL3TrackSegmentData *trs = tr;
-  for(Int_t i=0; i<ntracks; i++){
+   for(Int_t i=0; i<ntracks; i++){
     AliL3Track *track = NextTrack(); 
     track->SetPt(trs->fPt);
     track->SetPsi(trs->fPsi);

@@ -144,7 +144,7 @@ void AliLevel3::Init(){
     fRow[1][1] = 77;
     fRow[2][0] = 78;
     fRow[2][1] = 109;
-    fRow[3][0] = 110;
+    fRow[3][0] = 110; 
     fRow[3][1] = 141;
     fRow[4][0] = 142;
     fRow[4][1] = 175;   // last row
@@ -255,11 +255,14 @@ void AliLevel3::ProcessSlice(Int_t slice){
   Bool_t UseCF = kFALSE;
 #ifdef use_aliroot
   UseCF = fFileHandler->IsDigit();
+#else
+  if(fUseBinary)
+    UseCF = kTRUE; //In case you are not using aliroot
 #endif
   const Int_t maxpoints=100000;
   const Int_t pointsize = maxpoints * sizeof(AliL3SpacePointData);
   AliL3MemHandler *memory = new AliL3MemHandler();
-
+  
   fTrackMerger->Reset();
   fTrackMerger->SetTransformer(fTransformer);
   fTrackMerger->SetRows(fRow[0]);
@@ -274,10 +277,10 @@ void AliLevel3::ProcessSlice(Int_t slice){
       if(fUseBinary){
         if(!fDoRoi){ 
           if(1){     //Binary to Memory
-            fFileHandler->Free();
+	    fFileHandler->Free();
             sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
-            if(!fFileHandler->SetBinaryInput(name)) return;
-            digits= (AliL3DigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
+	    if(!fFileHandler->SetBinaryInput(name)) return;
+	    digits= (AliL3DigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
             fFileHandler->CloseBinaryInput(); 
           }
 
@@ -496,8 +499,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
   }
   fBenchmark->Start("Patch Merger");
 //  fTrackMerger->SlowMerge();
-  fTrackMerger->AddAllTracks();
-  //fTrackMerger->Merge();
+  //fTrackMerger->AddAllTracks();
+  fTrackMerger->Merge();
   fBenchmark->Stop("Patch Merger");
   /*
   //write merged tracks

@@ -41,7 +41,8 @@ class AliL3Modeller {
   Int_t fPatch;
   
   void CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigmaZ2);
-  
+  void FillZeros(AliL3DigitRowData *digPt,Digit *row);
+
  public:
   
   AliL3Modeller();
@@ -51,9 +52,11 @@ class AliL3Modeller {
   void Process();
   void CheckForOverlaps();
   void CalculateCrossingPoints();
-
+  void WriteRemaining(Char_t *output);
+  
   void SetInputData(AliL3DigitRowData *digits) {fRowData = digits;}
   
+  AliL3TrackArray *GetTracks() {return fTracks;}
     
   ClassDef(AliL3Modeller,1) //Modeller class
     

@@ -131,7 +131,7 @@ void test(char *file="/prog/alice/data/Rawdata/1_patch/pp/event_0/",bool bin=tru
   road->Draw("same");
 } 
 
-void process(char *digitfile="/prog/alice/data/Rawdata/1_patch/pp/event_0/",bool bin=true,char *trackfile="good_tracks")
+void process(char *digitfile="/prog/alice/data/Rawdata/6_patch/hg_42105_s1-3/",bool bin=true,char *trackfile="good_tracks")
 {
   AliL3Logger l;
   //  l.UnSet(AliL3Logger::kDebug);
@@ -140,6 +140,8 @@ void process(char *digitfile="/prog/alice/data/Rawdata/1_patch/pp/event_0/",bool
   //l.UseStdout();
   l.UseStream();
   
+  transform = new AliL3Transform();
+
   double torad = 3.1415/180;
   int slice=1;
   a = new AliL3Hough(digitfile,bin,100);
@@ -148,9 +150,9 @@ void process(char *digitfile="/prog/alice/data/Rawdata/1_patch/pp/event_0/",bool
   a->Transform();
   a->AddAllHistograms();
   a->FindTrackCandidates();
-  // a->Evaluate(2);
-  a->WriteTracks();
-  return;
+  a->Evaluate(2);
+  a->WriteTracks("../comp/");
+
   //a->MergePatches();
 
   //a->MergeInternally();
@@ -160,12 +162,19 @@ void process(char *digitfile="/prog/alice/data/Rawdata/1_patch/pp/event_0/",bool
   tracks = (AliL3TrackArray*)a->GetTracks(0);
   //a->GetEval(0)->CompareMC(tracks,"good_tracks_hg4000_s1");
  
+  float xyz[3];
+  int row=0;
   for(int i=0; i<tracks->GetNTracks(); i++)
     {
       AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
       if(!track) continue;
-      printf("found pt %f phi0 %f eta %f weight %d rowange %d %d\n",track->GetPt(),track->GetPhi0(),track->GetEta(),track->GetWeight(),track->GetFirstRow(),track->GetLastRow());
+      track->GetCrossingPoint(row,xyz);
+      transform->Local2Raw(xyz,1,row);
+      cout<<"Recon. pad "<<(int)xyz[1]<<" time "<<(int)xyz[2]<<endl;
+      cout<<"Pt "<<track->GetPt()<<" phi "<<track->GetPhi0()<<" charge "<<track->GetCharge()<<endl;
     }
+  
+  delete transform;
   return;
 
 }
