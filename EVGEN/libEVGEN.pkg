@@ -1,48 +1,36 @@
 FSRCS= PartEloss/integralgauss.f  PartEloss/read.f PartEloss/readca3.f
 SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
-		AliGenCocktail.cxx AliGenFLUKAsource.cxx \
+		AliGenCocktail.cxx AliGenCocktailAfterBurner.cxx AliGenFLUKAsource.cxx \
 		AliGenLib.cxx \
-                AliGenMUONlib.cxx AliGenParam.cxx AliGenPythia.cxx \
-                AliPythia.cxx AliDimuCombinator.cxx AliGenHalo.cxx \
+                AliGenMUONlib.cxx AliGenParam.cxx\
+                AliDimuCombinator.cxx AliGenHalo.cxx \
                 AliGenHaloProtvino.cxx \
                 AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx \
 		AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
 		AliGenGSIlib.cxx AliGenPMDlib.cxx\
-	        AliGenHijing.cxx \
-		AliGenHijingEventHeader.cxx AliGenPythiaEventHeader.cxx \
-		AliDecayerPythia.cxx \
-                AliGenMevSim.cxx AliMevSimParticle.cxx AliMevSimConfig.cxx \
-	        AliGenMC.cxx AliGenCocktailAfterBurner.cxx \
-                AliGenHBTprocessor.cxx \
+	        AliGenMC.cxx\
 		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx \
                 AliGenReaderEcalHijing.cxx AliGenReaderEcalJets.cxx\
 		AliGenHIJINGparaBa.cxx AliGeVSimParticle.cxx AliGenGeVSim.cxx\
 		AliGenThetaSlice.cxx AliGenSTRANGElib.cxx AliGenBeamGas.cxx\
 		AliGenAfterBurnerFlow.cxx \
-		AliPartonicEnergyLoss.cxx AliGenHerwig.cxx \
+		AliPartonicEnergyLoss.cxx\
 		AliStructFuncType.cxx AliGenGrayParticles.cxx \
-  	        AliGenGeVSimEventHeader.cxx AliGenEpEmv1.cxx \
-		AliGrayParticleModel.cxx AliGenPythiaJets.cxx
+  	        AliGenGeVSimEventHeader.cxx\
+		AliGrayParticleModel.cxx
 
 # Headerfiles for this particular package (Path respect to own directory)
 HDRS= $(SRCS:.cxx=.h) 
 
 # Headerfiles otherwise needed (Full pathname required)
 
-EHDRS = $(ALICE_ROOT)/include/THijing.h \
-$(ALICE_ROOT)/include/TMevSimPartTypeParams.h\
-$(ALICE_ROOT)/include/TMevSimConverter.h\
-$(ALICE_ROOT)/include/THBTprocessor.h\
-$(ALICE_ROOT)/include/MevSimCommon.h\
-$(ALICE_ROOT)/include/HBTprocCOMMON.h\
-$(ALICE_ROOT)/include/TEpEmGen.h\
-$(ROOTSYS)/include/TF1.h\
+EHDRS = $(ROOTSYS)/include/TF1.h\
 $(ROOTSYS)/include/TChain.h\
 $(ROOTSYS)/include/TParticle.h
 
 DHDR:=EVGENLinkDef.h
 
-EXPORT:=AliPythia.h AliDecayer.h AliDecayerPythia.h AliGenHijingEventHeader.h
+EXPORT:=AliDecayer.h AliGenMC.h AliStructFuncType.h AliGenCocktailAfterBurner.h
 
 
 

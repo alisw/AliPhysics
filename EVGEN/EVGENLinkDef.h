@@ -10,7 +10,6 @@
 
 #pragma link C++ typedef AliDecayer;
 
-#pragma link C++ enum   Process_t;
 #pragma link C++ enum   Decay_t;
 #pragma link C++ enum   StrucFunc_t;
 #pragma link C++ enum   Weighting_t;
@@ -20,14 +19,12 @@
 #pragma link C++ class  AliGenBox+;
 #pragma link C++ class  AliGenThetaSlice+;
 #pragma link C++ class  AliGenParam+;
-#pragma link C++ class  AliGenPythia+;
 #pragma link C++ class  AliGenCocktail+;
 #pragma link C++ class  AliGenCocktailAfterBurner+;
 #pragma link C++ class  AliGenCocktailEntry+;
 #pragma link C++ class  AliGenExtFile+;
 #pragma link C++ class  AliGenScan+;
 #pragma link C++ class  AliGenDoubleScan+;
-#pragma link C++ class  AliPythia+;
 #pragma link C++ class  AliGenLib+;
 #pragma link C++ class  AliGenMUONlib+;
 #pragma link C++ class  AliGenFLUKAsource+;
@@ -38,16 +35,7 @@
 #pragma link C++ class  AliGenGSIlib+;
 #pragma link C++ class  AliGenPMDlib+;
 #pragma link C++ class  AliGenSTRANGElib+;
-#pragma link C++ class  AliGenHijingEventHeader+;
-#pragma link C++ class  AliGenHerwig+;
-#pragma link C++ class  AliGenPythiaEventHeader+;
-#pragma link C++ class  AliGenHijing+;
-#pragma link C++ class  AliDecayerPythia+;
-#pragma link C++ class  AliMevSimConfig+;
-#pragma link C++ class  AliMevSimParticle+;
-#pragma link C++ class  AliGenMevSim+;
 #pragma link C++ class  AliGenMC+;
-#pragma link C++ class  AliGenHBTprocessor+;
 #pragma link C++ class  AliGenReader+;
 #pragma link C++ class  AliGenReaderCwn++;
 #pragma link C++ class  AliGenReaderTreeK++;
@@ -61,9 +49,8 @@
 #pragma link C++ class  AliPartonicEnergyLoss+;
 #pragma link C++ class  AliStructFuncType+;
 #pragma link C++ class  AliGenGrayParticles+;
-#pragma link C++ class  AliGenEpEmv1+;
 #pragma link C++ class  AliGrayParticleModel+;
-#pragma link C++ class  AliGenPythiaJets+;
+
 #endif
 
 
