@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.2  2003/01/26 14:35:15  nilsen
+Some more geometry interface functions added and a start at the SSD support
+cone geometry. Committed to allow easy updates of partical work between authors.
+
 Revision 1.1  2003/01/20 23:32:49  nilsen
 New ITS geometry. Only a Skeleton for now.
 
@@ -1102,22 +1106,243 @@ void AliITSv11::Element(Int_t imat,const char* name,Int_t z,Double_t dens,
     delete[] name2;
 }
 //______________________________________________________________________
-void AliITSv11::SSDCone(Double_t zShift){
+void AliITSv11::MixtureByWeight(Int_t imat,const char* name,Int_t *z,
+				Double_t *w,Double_t dens,Int_t n,Int_t istd){
+    // Defines a Geant material by a set of elements and weights, and sets 
+    // its Geant medium proporties. The average atomic A is assumed to be 
+    // given by their natural abundances. Things like the radiation length 
+    // are calculated for you.
+    // Inputs:
+    //    Int_t imat       Material number.
+    //    const char* name Material name. No need to add a $ at the end.
+    //    Int_t *z         Array of The elemental numbers.
+    //    Double_t *w      Array of relative weights.
+    //    Double_t dens    The density of the material [g/cm^3].
+    //    Int_t n          the number of elements making up the mixture.
+    //    Int_t istd       Defines which standard set of transport parameters
+    //                     which should be used.   
+    // Output:
+    //     none.
+    // Return:
+    //     none.
+    Float_t rad,*Z,*A,tmax,stemax,deemax,epsilon;
+    char *name2;
+    Int_t len,i;
+    Z = new Float_t[n];
+    A = new Float_t[n];
+
+    len = strlng(name)+1;
+    name2 = new char[len];
+    strncpy(name2,name,len-1);
+    name2[len-1] = '\0';
+    name2[len-2] = '$';
+    for(i=0;i<n;i++){Z[i] = (Float_t)z[i];A[i] = (Float_t)GetA(z[i]);
+                     W[i] = (Float_t)w[i]}
+    rad = GetRadLength(z)/dens;
+    AliMixture(imat,name2,A,Z,dens,n,W);
+    tmax    = GetStandardTheataMax(istd);    // degree
+    stemax  = GetStandardMaxStepSize(istd);  // cm
+    deemax  = GetStandardEfraction(istd);     // #
+    epsilon = GetStandardEpsilon(istd);
+    AliMedium(imat,name2,imat,0,gAlice->Field()->Integ(),
+	      gAlice->Field()->Max(),tmax,stemax,deemax,epsilon,0.0);
+    delete[] name2;
+}
+//______________________________________________________________________
+void AliITSv11::MixtureByNumber(Int_t imat,const char* name,Int_t *z,
+				Int_t *w,Double_t dens,Int_t n,Int_t istd){
+    // Defines a Geant material by a set of elements and number, and sets 
+    // its Geant medium proporties. The average atomic A is assumed to be 
+    // given by their natural abundances. Things like the radiation length 
+    // are calculated for you.
+    // Inputs:
+    //    Int_t imat       Material number.
+    //    const char* name Material name. No need to add a $ at the end.
+    //    Int_t *z         Array of The elemental numbers.
+    //    Int_t_t *w       Array of relative number.
+    //    Double_t dens    The density of the material [g/cm^3].
+    //    Int_t n          the number of elements making up the mixture.
+    //    Int_t istd       Defines which standard set of transport parameters
+    //                     which should be used.   
+    // Output:
+    //     none.
+    // Return:
+    //     none.
+    Float_t rad,*Z,*A,tmax,stemax,deemax,epsilon;
+    char *name2;
+    Int_t len,i;
+    Z = new Float_t[n];
+    A = new Float_t[n];
+
+    len = strlng(name)+1;
+    name2 = new char[len];
+    strncpy(name2,name,len-1);
+    name2[len-1] = '\0';
+    name2[len-2] = '$';
+    for(i=0;i<n;i++){Z[i] = (Float_t)z[i];A[i] = (Float_t)GetA(z[i]);
+                     W[i] = (Float_t)w[i]}
+    rad = GetRadLength(z)/dens;
+    AliMixture(imat,name2,A,Z,dens,-n,W);
+    tmax    = GetStandardTheataMax(istd);    // degree
+    stemax  = GetStandardMaxStepSize(istd);  // cm
+    deemax  = GetStandardEfraction(istd);     // #
+    epsilon = GetStandardEpsilon(istd);
+    AliMedium(imat,name2,imat,0,gAlice->Field()->Integ(),
+	      gAlice->Field()->Max(),tmax,stemax,deemax,epsilon,0.0);
+    delete[] name2;
+//______________________________________________________________________
+void AliITSv11::SSDConeDetail(TVector3 &tran,const char moth[3],Int_t mat0){
     // Defines the volumes and materials for the ITS SSD Support cone.
     // Based on drawings ALR-0767 and ALR-0767/3. Units are in mm.
-    // Inputs: 
+    // Inputs:
+    //   Double_t zShift  The z shift to be applied to the final volume.
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    Double_t th = 13.0; //mm, Thickness of Rohacell+carbon fiber
+    Double_t ct=1.5; //mm, Carbon finber thickness
+    Double_t r=15.0; // mm, Radius of curvature.
+    Double_t tc=51.0; // angle of SSD cone [degrees].
+    Double_t sintc=Sind(tc),costc=Cosd(tc),tantc=Tand(tc);
+    Double_t z0=0.0,Routmax=0.5*985.,Routmin=0.5*945.,Rholemax=0.5*890.;
+    Double_t Rholemin=0.5*740.,Rin=0.5*560.;
+    Int_t nspoaks=12,ninscrews=40,npost=4;
+    Int_t SSDcf=man0+1; // SSD support cone Carbon Fiber materal number.
+    Int_t SSDfs=mat0+2; // SSD support cone inserto stesalite 4411w.
+    Int_t SSDfo=mat0+3; // SSD support cone foam, Rohacell 50A.
+    Int_t SSDsw=mat0+4; // SSD support cone screw material,Stainless steal
+    Double_t t; // some general angle [degrees].
+    Double_t phi0=0.0,dphi=360.0;
+    Int_t i,j,n,nz,nrad=0;
+
+    SetScalemm();
+    // Lets start with the upper left outer carbon fiber surface.
+    // Between za[2],rmaxa[2] and za[4],rmaxa[4] there is a curved section
+    // given by rmaxa = rmaxa[2]-r*Sind(t) for 0<=t<=tc and 
+    // za = za[2] + r*Cosd(t) for 0<=t<=tc. Simularly between za[1],rmina[1
+    // and za[3],rmina[3] there is a curve section given by
+    // rmina = rmina[1]-r*Sind(t) for 0<=t<=tc and za = za[1]+r&Sind(t)
+    // for t<=0<=tc. These curves have been replaced by straight lines
+    // between the equivelent points for simplicity.
+    Double_t dza = th/sintc-(Routmax-Routmin)/tantc;
+    if(dza<=0){ // The number or order of the points are in error for a proper
+	// call to pcons!
+	Error("SSDcone","The definition of the points for a call to PCONS is"
+	      " in error. abort.");
+	return;
+    } // end if
+    nz = 7;
+    Double_t *za    = new Double_t[nz];
+    Double_t *rmina = new Double_t[nz];
+    Double_t *rmaxa = new Double_t[nz];
+    za[0]    = z0;
+    rmina[0] = Routmin;
+    rmaxa[0] = Routmax;
+    za[1]    = za[0]+13.5-5.0 - dza; // za[2] - dza.
+    rmina[1] = rmina[0];
+    rmaxa[1] =rmaxa[0];
+    za[2]    = za[0]+13.5-5.0; // From Drawing ALR-0767 and ALR-0767/3
+    rmaxa[2] = rmaxa[0];
+    za[3]    = za[1]+rc*sintc;
+    rmina[3] = rmina[1]-rc*sintc;
+    rmina[2] = rmina[1]+(rmina[3]-rmina[1])*(za[2]-za[1])/(za[3]-za[1]);
+    za[4]    = za[2]+rc*sintc;
+    rmaxa[4] = rmaxa[2]-rc*sintc;
+    rmaxa[3] = rmaxa[2]+(rmaxa[4]-rmaxa[2])*(za[3]-za[2])/(za[4]-za[2]);
+    rmina[5] = Rholemax;
+    za[5]    = za[3]+(za[4]-za[3])*(rmina[5]-rmina[3])/(rmina[4]-rmina[3]);
+    rmina[4] = rmina[3]+(rmina[5]-rmina[3])*(za[4]-za[3])/(za[5]-za[3]);
+    za[6]    = th/sinth+za[5];
+    rmina[6] = Rholemax;
+    rmaxa[6] = rmina[6];
+    rmaxa[5] = rmaxa[4]+(rmaxa[6]-rmaxa[4])*(za[5]-za[4])/(za[6]-za[4]);
+    //
+    PolyCone("SCA","SSD Suport cone Carbon Fiber Surface outer left",
+	     phi0,dphi,nz,*z,*rmin,*rmax,SSDcf);
+    Pos("SCA",1,moth,trans.x(),trans.y(),trans.z(),0);
+    XMatrix(1,180.0);
+    Pos("SCA",2,moth,trans.x(),trans.y(),-trans.z(),1);
+    Za[0] = 1.; Wa[0] = ; // Hydrogen Content
+    Za[1] = 6.; Wa[1] = ; // Carbon Content
+    MixtureByWeight(SSDcf,"Carbon Fiber for SSD support cone",Z,W,dens,2);
+    //
+    // Now lets define the Inserto Stesalite 4411w material volume.
+    nz = 6;
+    Double_t *zb    = new Double_t[nz];
+    Double_t *rminb = new Double_t[nz];
+    Double_t *rmaxb = new Double_t[nz];
+    zb[0] = z0;
+    rminb[0] = rmina[0]+ct;
+    rmaxb[0] = rmaxa[0]-ct;
+    zb[1] = za[1];
+    rminb[1] = rminb[0];
+    rmaxb[1] = rmaxb[0];
+    zb[2] = za[2];
+    rmaxb[2] = rmaxb[1];
+    zb[3] = za[4] - ct/sintc;
+    rmaxb[3] = rmaxb[2] - (rc-ct)*sintc;
+    zb[4] = za[3]+ct/sintc;
+    rminb[4] = rminb[1]-(rc-ct)*sintc;
+    rminb[2] = rminb[1]+(rminb[4]-rminb[1])*(zb[2]-zb[1])/(zb[4]-zb[1]);
+    rminb[3] = rminb[1]+(rminb[4]-rminb[1])*(zb[3]-zb[1])/(zb[4]-zb[1]);
+    zb[5] = zb[4]+(ct-2.*ct)/sintc;
+    rminb[5] = rminb[4]+(ct-2.*ct)*tantc;
+    rmaxb[5] = rminb[5];
+    rmaxb[4] = rmaxb[3]+(rmaxb[5]-rmaxb[3])*(zb[4]-zb[3])/(zb[5]-zb[3]);
+    PolyCone("SCB","SSD Suport cone Inserto Stesalite left edge",
+	     phi0,dphi,nz,*zb,*rminb,*rmaxb,SSDfs);
+    Pos("SCB",1,"SCA",0.0,.0,0.0,0);
+    Za[0] = 1.; Wa[0] = ; // Hydrogen Content
+    Za[1] = 6.; Wa[1] = ; // Carbon Content
+    MixtureByWeight(SSDfs,"Inserto stealite 4411w for SSD support cone",
+		    Z,W,dens,3);
+    //
+    // Now lets define the Rohacell foam material volume.
+    nz = 4;
+    Double_t *zc    = new Double_t[nz];
+    Double_t *rminc = new Double_t[nz];
+    Double_t *rmaxc = new Double_t[nz];
+    zc[0] = zb[4];
+    rminc[0] = rminb[4];
+    rmaxc[0] = rmminc[0];
+    zc[1] = zb[5];
+    rmaxc[1] = rminb[5];
+    zc[2] = za[5] + ct/sintc;
+    rminc[2] = rmina[5];
+    rminc[1] = rminc[0] +(rminc[2]-rminc[0]*(zc[1]-zc[0])/(zc[2]-zc[0]);
+    zc[3] = za[6] - ct/sintc;
+    rminc[3] = rmina[6];
+    rmaxc[3] = rminc[3];
+    rmaxc[2] = rmaxc[1]+(rmaxc[3]-rmaxc[1])*(zc[2]-zc[1])/(zc[3]-zc[1]);
+    PolyCone("SCC","SSD Suport cone Rohacell foam left edge",
+	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDfs);
+    Pos("SCC",1,"SCA",0.0,.0,0.0,0);
+    Za[0] = 1.; Wa[0] = ; // Hydrogen Content
+    Za[1] = 6.; Wa[1] = ; // Carbon Content
+    MixtureByWeight(SSDfo,"Foam core (Rohacell 50A) for SSD support cone",
+		    Z,W,dens,3);
+}
+//______________________________________________________________________
+void AliITSv11::SSDConeDetail(TVector3 &tran,const char moth[3]){
+    // Defines the volumes and materials for the ITS SSD Support cone.
+    // Based on drawings ALR-0767 and ALR-0767/3. Units are in mm.
+    // Inputs:
     //   Double_t zShift  The z shift to be applied to the final volume.
     // Outputs:
     //   none.
     // Return:
     //   none.
     Double_t *za,*rmina,*rmaxa,phi0=0.0,dphi=360.0;
-    Int_t i,n,nz,nrad=0;
-    Double_t Cthick=1.5; //mm, Carbon finber thickness
+    Int_t i,j,n,nz,nrad=0;
+    Double_t ct = 13.0; //mm, Thickness of Rohacell+carbon fiber
+    Double_t cthick=1.5; //mm, Carbon finber thickness
     Double_t r=15.0; // mm, Radius of curvature.
     Double_t tc=51.0; // angle of SSD cone [degrees].
     Double_t t; // some general angle [degrees].
     Int_t SSDcf=; // SSD support cone Carbon Fiber materal number.
+    Int_t SSDfs=; // SSD support cone inserto stesalite 4411w.
+    Int_t SSDfo=; // SSD support cone foam, Rohacell 50A.
 
     SetScalemm();
     // Lets start with the upper left outer carbon fiber surface.
@@ -1125,47 +1350,334 @@ void AliITSv11::SSDCone(Double_t zShift){
     za    = new Double_t[nz];
     rmina = new Double_t[nz];
     rmaxa = new Double_t[nz];
-
+    //
     za[0] = 0.0;
     rmaxa[0] = 985./2.;
-    rmina[0] = rmaxa[0] - Cthick;
+    rmina[0] = rmaxa[0] - cthick;
+    //
     za[1] = 13.5 - 5.0; // The original size of 13.5 (ALR-0767) is milled down
     rmaxa[1] = rmaxa[0]; // by 5mm to give a well defined reference surface 
     rmina[1] = rmina[0]; // (ALR-0767/3).
     // The curved section is given by the following fomula
-    // rmax = r*Sind(90.-t)+rmaxa[0]-r for 0<=t<=tc.
-    // rmin = (r-Cthick)*Sind(90.-t)+rmina[0]-(r-Cthick) for 0<=t<=tc.
-    // z = r*Cosd(90.-t)+za[1] for 0<=t<=tc.
-    za[2] = (r-Cthick)*Cosd(90.-tc)+za[1];
-    rmina[2] = (r-Cthick)*Sind(90.0-tc)+rmaxa[0]-(r-Cthick);
-    t = 90.0 - ACosd((za[2]-za[1])/r); // angle for rmax
-    rmaxa[2] = r*Sind(90.-t)+rmaxa[0]-r;
-    rmaxa[3] = r*Sind(90.0-tc)+rmaxa[0]-r;
-    za[3] =r*Cosd(90.-tc)+za[1];
+    // rmax = -r*Sind(t)+rmaxa[1] for 0<=t<=tc. Outer curve.
+    // rmin = -(r-cthick)*Sind(t)+rmina[1] for 0<=t<=tc. Inner curve.
+    // zout = r*Cosd(t)+za[1] for 0<=t<=tc. Outer curve.
+    // zin  = (r-cthick)*Sind(t)+za[1] for 0<=t<=tx. Inner curve.
+    // We will only use a straight line between the beggining and ending points
+    // of the arch (for now at least).
+    za[2] = (r-cthick)*Sind(tc)+za[1];
+    rmina[2] = -(r-cthick)*Sind(tc)+rmina[1];
+    rmaxa[2] = za[1]+(r-cthick)*Sind(tc);
+    //
+    za[3] = r*Sind(tc)+za[1];
+    rmaxa[3] = -r*Sind(tc)+rmaxa[1];
     // angled section. surface is given by the following equations
-    // R = -Tand(tc)*Z + rmaxa[3] or rmina[2]
-    rmina[3] = -Tand(tc)*za[3] + rmina[2];
-    // Point of whole. Whole surface has fixed radius = 890.0/2 mm
-    rmina[4] = 890.0/2.+Cthick ; // Inner whole surface radius (ALR-0767)
-    za[4] = (rmina[4] - rmina[2])/(-Tand(tc));
-    rmaxa[4] = -Tand(tc)*za[4]+rmaxa[3];
+    // Rout = -Tand(tc)*(z-za[3]) + rmaxa[3], outer surface.
+    // Rin  = -Tand(tx)*(z-za[2]) + rmina2], inner surface.
+    rmina[3] = -Tand(tc)*(za[3]-za[2]) + rmina[2];
+    // Point of whole. Whole surface has fixed radius = 890.0/2 +cthick mm
+    // exclude carbon fiber covering whole.
+    rmina[4] = 890.0/2.+cthick ; // Inner whole surface radius (ALR-0767)
+    za[4] = (rmina[4] - rmina[2])/(-Tand(tc)) + za[2];
+    rmaxa[4] = -Tand(tc)*(za[4]-za[3])+rmaxa[3];
     //
     rmaxa[5] = rmina[4];
     rmina[5] = rmina[4];
-    za[5] = (rmaxa[5] - rmaxa[3])/(-Tand(tc));
-    PolyCone("SCAA","SSD Suport cone Carbon Fiber Surface outer left",
-	     phi0,dphi,nz,*z,*rmin,*rmax,SSDcf);
-    Za[0] = 1.; Wa[0] = ; // Hydrogen Content
-    Za[1] = 6.; Wa[0] = ; // Carbon Content
-    MixtureByWeight(SSDcf,"Carbon Fiber for SSD support cone",Z,W,dens,3);
-    // Now for the Filler in the mounting regions Upper left first
-    zb[0]    = za[0];
-    rmaxb[0] = rmina[0];
-    rminb[0] = 945./2.-Cthick;
+    za[5] = (rmaxa[5] - rmaxa[3])/(-Tand(tc)) +za[3];
     //
+    PolyCone("SCA","SSD Suport cone Carbon Fiber Surface outer left",
+	     phi0,dphi,nz,*z,*rmin,*rmax,SSDcf);
+    Pos("SCA",1,moth,trans.x(),trans.y(),trans.z(),0);
+    XMatrix(1,180.0);
+    Pos("SCA",2,moth,trans.x(),trans.y(),-trans.z(),1);
+    Za[0] = 1.; Wa[0] = ; // Hydrogen Content
+    Za[1] = 6.; Wa[1] = ; // Carbon Content
+    MixtureByWeight(SSDcf,"Carbon Fiber for SSD support cone",Z,W,dens,2);
+    //====================================================================
+    // Now for the upper left inner carbon fiber suface.
+    // Start by working backwards
+    nz = 6;
+    zd    = new Double_t[nz];
+    rmind = new Double_t[nz];
+    rmaxd = new Double_t[nz];
+    // The two surfaces of this carbon fiber inner layer are given by
+    // Rout = -Tand(tc)*(z-za[3])+rmaxa[3]-ct/cosd(tc)
+    // Rin  = -Tand(tc)*(z-za[3])+rmaxa[3]-(ct-cthick)/Cosd(tc)
+    rmind[4] = rmina[4]; // Stop at the same radii as part a.
+    zd[4] = (rmind[4]-rmaxa[3]+ct/Cosd(tc))/(-Tand(tc)) + za[3];
+    rmaxd[4] = -Tand(tc)*(zd[4]-za[3])+rmaxa[3]-(ct-cthick)/Cosd(tc);
+    //
+    rmind[5] = rmina[4]; // Stop at the same radii as part a.
+    rmaxd[5] = rmind[5];
+    zd[5] = (rmind[5]-rmaxa[3]+(ct-cthick)/Cosd(tc))/(-Tand(tc)) + za[3];
+    // The other easy point is the very beginning.
+    zd[0]    = za[0]; // same staring z as with the outer suface.
+    rmind[0] = 945./2.;
+    rmaxd[0] = rmind[0]+cthick;
+    // The rest of this volume is defined by the lines || z axis starting
+    // at zd[0] and rmind[0]/rmaxd[0], and the lines representing the
+    // slopped surfaces defined above plus the curved sections connecting
+    // the two (covering tc degrees of arc and having a radius of r mm).
+    // The coordinate zd[1] is defined as the z coordinate of the point
+    // of intersection between the line R=rmind[0]-r and the line
+    // R=-Tand(tc)*(z-za[3])+rmaxa[3]-(ct+r)/Cosd(ct).
+    zd[1] = (rmaxa[3]+r-rmind[0])/Tand(tc)-(ct+r)/Sind(tc)+za[3];
+    rmind[1] = rmind[0];
+    rmaxd[1] = rmaxd[0];
+    //
+    zd[2] = zd[1] + r*Sind(tc);
+    rmind[2] = rmind[1] - r*Sind(rc);
+    //
+    zd[3] = zd[1] + (r+cthick)*Sind(tc);
+    rmax[3] = rmax[1] - (r+cthick)*Sind(tc);
+    // Get rmax[2] and rmin[3] from the line segments replacing the arc.
+    rmax[2] = rmaxd[1]+(rmaxd[3]-rmaxd[1])*(zd[2]-zd[1])/(zd[3]-zd[1]);
+    rmin[3] = rmind[2]+(rmind[4]-rmind[2])*(zd[3]-zd[2])/(zd[4]-dz[2]);
+    //
+    PolyCone("SCD","SSD Suport cone Carbon Fiber Surface inner left",
+	     phi0,dphi,nz,*zd,*rmind,*rmaxd,SSDcf);
+    Pos("SCD",1,moth,trans.x(),trans.y(),trans.z(),0);
+    Pos("SCD",2,moth,trans.x(),trans.y(),-trans.z(),1);
+    //================================================================
+    // Now for the fill between these two volumes. There are two different
+    // materials. The line separating them goes through the points
+    // zd[2],rmind[2] and zd[3],rmaxd[3]. Starting with the Inserto Stesalite
+    // 4411w material.
+    nz = 6;
+    zb    = new Double_t[nz];
+    rminb = new Double_t[nz];
+    rmaxb = new Double_t[nz];
+    //
+    zb[0] = za[0];
+    rminb[0] = rmaxd[0];
+    rmaxb[0] = rmina[0];
+    //
+    zb[1] = zd[1];
+    rminb[1] = rmaxd[1];
     rmaxb[1] = rmina[1];
-
+    //
+    zb[2] = za[1];
+    rmaxb[2] = rmina[1];
+    rminb[2] = rmaxd[2]+(rmaxd[3]-rmaxd[2])*(zb[2]-zd[2])/(zd[3]-zd[2]);
+    //
+    zb[3] = za[2];
+    rmaxb[3] = rmina[2];
+    rminb[3] =  rmaxd[2]+(rmaxd[3]-rmaxd[2])*(zb[3]-zd[2])/(zd[3]-zd[2]);
+    //
+    zb[4] = zd[2];
+    rminb[4] = rmind[2];
+    rmaxb[4] = rmina[2]+(rmina[3]-rmina[2])*(zb[4]-za[2])/(za[3]-za[2]);
+    //
+    zb[5] = zb[4]+(ct-2.*cthick)*Sind(tc);
+    rminb[5] = rmina[2]-(rmina[3]-rmina[2])*(zb[5]-za[2])/(za[3]-za[2]);
+    rmaxb[5] = rminb[5];
+    //
+    PolyCone("SCB","SSD Suport cone Inserto Stesalite left edge",
+	     phi0,dphi,nz,*zb,*rminb,*rmaxb,SSDfs);
+    Pos("SCB",1,moth,trans.x(),trans.y(),trans.z(),0);
+    Pos("SCB",2,moth,trans.x(),trans.y(),-trans.z(),1);
+    Za[0] = 1.; Wa[0] = ; // Hydrogen Content
+    Za[1] = 6.; Wa[1] = ; // Carbon Content
+    MixtureByWeight(SSDfs,"Inserto stealite 4411w for SSD support cone",
+		    Z,W,dens,3);
+    //================================================================
+    // Now for the section filled with Roacell foam.
+    nz = 4;
+    zc    = new Double_t[nz];
+    rminc = new Double_t[nz];
+    rmaxc = new Double_t[nz];
+    zc[0] = zb[4];
+    rminc[0] = rminb[4];
+    rmaxc[0] = rminc[0];
+    //
+    zc[1] = zb[5];
+    rminc[1] = rmaxd[2]+(rmaxd[3]-rmaxd[2])*(zc[1]-zd[2])/(zd[3]-zd[2]);;
+    rmaxc[1] = rminb[5];
+    //
+    zc[2] = zd[5];
+    rminc[2] = rmaxd[5];
+    rmaxc[2] = rmina[2]+(rmina[3]-rmina[2])*(zc[2]-za[2])/(za[3]-za[2]);
+    //
+    zc[3] = za[4];
+    rminc[3] = rmina[4];
+    rmaxc[3] = rmina[4];
+    //
+    PolyCone("SCC","SSD Suport cone Inserto foam left edge",
+	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDfo);
+    Pos("SCC",1,moth,trans.x(),trans.y(),trans.z(),0);
+    Pos("SCC",2,moth,trans.x(),trans.y(),-trans.z(),1);
+    Za[0] = 1.; Wa[0] = ; // Hydrogen Content
+    Za[1] = 6.; Wa[1] = ; // Carbon Content
+    MixtureByWeight(SSDfo,"Foam core (Rohacell 50A) for SSD support cone",
+		    Z,W,dens,3);
+    //=================================================================
+    // now for the part of the SSD cone which has the wholes in it.
+    // We now define the spoaks. Start with outer carbon fiber surface
+    // Follows the same surface as the sloped part of SCA.
+    // The Spoaks have a radius matching them to the holes. This radius (in 
+    // phi) can not be reproduce.
+    Double_t sdr = 0.5*(890.-740.)+2*cthick; // length of spoak section
+    // including the carbon finber thickness covering the opening (ALR-0767).
+    phi0 = 12.5; // starting phi of spoak (centered about phi0=0).
+    dphi =  5.0; // From (ALR-0767).
+    ze    = new Double_t[nz];
+    rmine = new Double_t[nz];
+    rmaxe = new Double_t[nz];
+    //
+    ze[0] = za[4];
+    rmine[0] = rmina[4];
+    rmaxe[0] = rmine[0];
+    //
+    ze[1] = za[5];
+    rmaxe[1] = rmina[5];
+    rmine[1] = rmina[2]-(rmina[4]-rmina[2])*(ze[1]-za[2])/(za[4]-za[2]);
+    //
+    rmine[2] = rmine[0] - sdr;
+    ze[2] = za[2]+(rmina[2]-rmine[2])*(za[4]-za[2])/(rmina[4]-rmina[2]);
+    rmaxe[2] = rmaxa[3]-(rmaxa[5]-rmaxa[3])*(ze[2]-za[3])/(za[5]-za[3]);
+    //
+    rmine[3] = rmine[2];
+    ze[3] = za[3]+(rmaxa[3]-rmine[3])*(za[5]-za[3])/(rmaxa[5]-rmaxa[3]);
+    rmaxe[3] = rmine[2];
+    //
+    PolyCone("SCE","SSD Suport cone carbon fiber outer surface of spoak face",
+	     phi0,dphi,nz,*ze,*rmine,*rmaxe,SSDcf);
+    Pos("SCE",1,moth,trans.x(),trans.y(),trans.z(),0); // place first copy
+    for(i=1;i<12;i++){ // There are 12 spoaks around.
+	ZMatrix(1+i,((Double_t)i)*360./12.);
+	Pos("SCE",i+1,moth,trans.x(),trans.y(),trans.z(),1+i);
+    } // end for i
+    // Other side.
+    Pos("SCE",1,moth,trans.x(),trans.y(),-trans.z(),1); // place first copy
+    for(i=1;i<12;i++){ // There are 12 spoaks around.
+	Matrix(13+i,180.0,0.0,((Double_t)i)*360./12.); // ??????????
+	Pos("SCE",i+1,moth,trans.x(),trans.y(),-trans.z(),13+i);
+    } // end for i
+    //
+    //Now for the inner carbon fiber surface.
+    zf    = new Double_t[nz];
+    rminf = new Double_t[nz];
+    rmaxf = new Double_t[nz];
+    //
+    zf[0] = zd[4];
+    rminf[0] = rmind[5];
+    rmaxf[0] = rmine[0];
+    //
+    zf[1] = zd[5];
+    rmaxf[1] = rmind[5];
+    rminf[1] = rmind[2]-(rmind[4]-rmind[2])*(zf[1]-zd[2])/(zd[4]-zd[2]);
+    //
+    rminf[2] = rmine[0] - sdr;
+    zf[2] = zd[2]+(rmind[2]-rminf[2])*(zd[4]-zd[2])/(rmind[4]-rmind[2]);
+    rmaxf[2] = rmaxd[3]-(rmaxd[5]-rmaxd[3])*(zf[2]-zd[3])/(zd[5]-zd[3]);
+    //
+    rminf[3] = rmine[2];
+    zf[3] = zd[3]+(rmaxd[3]-rminf[3])*(zd[5]-zd[3])/(rmaxd[5]-rmaxd[3]);
+    rmaxf[3] = rmine[2];
+    //
+    PolyCone("SCF","SSD Suport cone carbon fiber inner surface of spoak face",
+	     phi0,dphi,nz,*zf,*rminf,*rmaxf,SSDcf);
+    Pos("SCF",1,moth,trans.x(),trans.y(),trans.z(),0); // place first copy
+    for(i=1;i<12;i++){ // There are 12 spoaks around.
+	Pos("SCF",i+1,moth,trans.x(),trans.y(),trans.z(),1+i);
+    } // end for i
+    // Other side.
+    Pos("SCF",1,moth,trans.x(),trans.y(),-trans.z(),1); // place first copy
+    for(i=1;i<12;i++){ // There are 12 spoaks around.
+	Pos("SCF",i+1,moth,trans.x(),trans.y(),-trans.z(),13+i);
+    } // end for i
+    //
+    // Now for the foam filling of this spoak
+    zg    = new Double_t[nz];
+    rming = new Double_t[nz];
+    rmaxg = new Double_t[nz];
+    //
+    phi0 = phi0+cthick/(0.25*(890.+740.));// Make space for Carbon fiber
+    dphi = dphi-cthick/(0.25*(890.+740.));// covering hole on both sides.
+    // thickness of this covering ic cthick. As given above it varies allong
+    // the length of the spoak. No other solusion
+    //
+    zg[0] = zf[1];
+    rming[0] = rmaxf[1];
+    rmaxg[0] = rming[0];
+    //
+    zg[1] = ze[0];
+    rmaxg[1] = rmine[0];
+    rming[1] = rmind[2]-(rmind[4]-rmind[2])*(zg[1]-zd[2])/(zd[4]-zd[2]);
+    //
+    rming[2] = rminf[3];
+    zg[2] = zd[2]+(rmind[2]-rming[2])*(zd[4]-zd[2])/(rmind[4]-rmind[2]);
+    rmaxg[2] = rmaxd[3]-(rmaxd[5]-rmaxd[3])*(zg[2]-zd[3])/(zd[5]-zd[3]);
+    //
+    rming[3] = rmine[2];
+    zg[3] = zd[3]+(rmaxd[3]-rming[3])*(zd[5]-zd[3])/(rmaxd[5]-rmaxd[3]);
+    rmaxg[3] = rming[3];
+    //
+    PolyCone("SCG","SSD Suport cone spoak foam filling",
+	     phi0,dphi,nz,*zg,*rming,*rmaxg,SSDfo);
+    Pos("SCG",1,moth,trans.x(),trans.y(),trans.z(),0); // place first copy
+    for(i=1;i<12;i++){ // There are 12 spoaks around.
+	Pos("SCG",i+1,moth,trans.x(),trans.y(),trans.z(),1+i);
+    } // end for i
+    // Other side.
+    Pos("SCG",1,moth,trans.x(),trans.y(),-trans.z(),1); // place first copy
+    for(i=1;i<12;i++){ // There are 12 spoaks around.
+	Pos("SCG",i+1,moth,trans.x(),trans.y(),-trans.z(),13+i);
+    } // end for i
+    //============================================================
+    // now for the carbon fiber covering the top of this hole.
+    nz = 4;
+    zh    = new Double_t[nz];
+    rminh = new Double_t[nz];
+    rmaxh = new Double_t[nz];
+    //
+    phi0= -12.5;
+    dphi=  25.0;
+    //
+    rmaxh[0]=rmaxa[5];
+    rminh[0]=rmaxh[0]-cthick;
+    zh[0]=;
+    //
+    rmaxh[1]=rmaxh[0];
+    rminh[1]=rminh[0];
+    zh[1] = ;
+    //
+    PolyCone("SCI","SSD Suport cone carbon fiber inner top surface of hole",
+	     phi0,dphi,nz,*zi,*rmini,*rmaxi,SSDcf);
+    //Pos("SCI",1,moth,trans.x(),trans.y(),trans.z(),0);
+    //Pos("SCI",2,moth,trans.x(),trans.y(),-trans.z(),1);
+    //
+    // now for the carbon fiber covering the bottom of this hole.
+    nz = 4;
+    zj    = new Double_t[nz];
+    rminj = new Double_t[nz];
+    rmaxj = new Double_t[nz];
+    //
+    rmaxj[0]=rmaxe[4];
+    rminj[0]=rmaxj[0]-cthick;
+    zj[0]=;
+    //
+    rmaxj[1]=rmaxj[0];
+    rminj[1]=rminj[0];
+    zj[1]= ;
+    //
+    PolyCone("SCJ","SSD Suport cone carbon fiber inner bottom surface of hole",
+	     phi0,dphi,nz,*zi,*rmini,*rmaxi,SSDcf);
+    //Pos("SCJ",1,moth,trans.x(),trans.y(),trans.z(),0);
+    //Pos("SCJ",2,moth,trans.x(),trans.y(),-trans.z(),1);
+    //
+    //Now for the carbon fiber on the sides of the spoakes.
+    //==============================================================
     delete[] za;delete[] rmina;delete[] rmaxa;
+    delete[] zb;delete[] rminb;delete[] rmaxb;
+    delete[] zc;delete[] rminc;delete[] rmaxc;
+    delete[] zd;delete[] rmind;delete[] rmaxd;
+    delete[] ze;delete[] rmine;delete[] rmaxe;
+    delete[] zf;delete[] rminf;delete[] rmaxf;
+    delete[] zg;delete[] rming;delete[] rmaxg;
+    delete[] zh;delete[] rminh;delete[] rmaxh;
+    delete[] zi;delete[] rmini;delete[] rmaxi;
+    delete[] zj;delete[] rminj;delete[] rmaxj;
     // Set back to cm default scale before exiting.
     SetScalecm();
     return;

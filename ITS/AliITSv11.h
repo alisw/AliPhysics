@@ -195,6 +195,12 @@ class AliITSv11 : public AliITS {
 	Matrix(irot,2,thet);}
     // Define Element material and medium
     void Element(Int_t imat,const char *name,Int_t z,Double_t dens,Int_t istd);
+    // Define Material by constituant weights
+    void MixtureByWeight(Int_t imat,const char *name,Int_t *z,Doule_t *w,
+			 Double_t dens,Int_t nelments,Int_t istd);
+    // Define Material by constituant relative number
+    void MixtureByNumber(Int_t imat,const char *name,Int_t *z,Imt_t *i,
+			 Double_t dens,Int_t nelments,Int_t istd);
     // Returns standard radiation lenghts of elements.
     Float_t GetRadLength(Int_t z);
     // Returns natrual abundance atomic mass numbers for a given element
