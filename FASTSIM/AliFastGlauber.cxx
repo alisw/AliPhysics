@@ -438,7 +438,7 @@ Double_t AliFastGlauber::WPathLength0(Double_t* x, Double_t* par)
 	r  += dr;
     } // radial steps
 //
-//  My length definition (is exact for hard sphere)
+//  My length definition (is exact for hard disk)
     return (2. * rw / w);
 }
 
@@ -578,8 +578,10 @@ Double_t AliFastGlauber::WEnergyDensity(Double_t* x, Double_t* par)
 //
     Double_t b     = x[0];
     Double_t rA    = par[0];
-    
-    Double_t saa   = (TMath::Pi() - 2. * TMath::ASin(b/ 2./ rA)) * rA * rA - b * TMath::Sqrt(rA * rA - b * b/ 4.);
+//
+//  Attention: area of transverse reaction zone in hard-sphere approximation !     
+    Double_t saa   = (TMath::Pi() - 2. * TMath::ASin(b/ 2./ rA)) * rA * rA 
+	- b * TMath::Sqrt(rA * rA - b * b/ 4.);
     Double_t taa   = fWStaa->Eval(b);
     
     return (taa/saa);
@@ -709,5 +711,5 @@ Double_t AliFastGlauber::Binaries(Double_t b)
     // Return number of binary collisions normalized to 1 at b=0
     //
     
-    return fWSN->Eval(b)/fWSN->Eval(0.);
+    return fWSN->Eval(b)/fWSN->Eval(0.001);
 }
