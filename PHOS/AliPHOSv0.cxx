@@ -914,9 +914,9 @@ void AliPHOSv0::CreateGeometryforPHOS()
   
   gMC->Gsvolu("PUCP", "BOX ", idtmed[701], dpucp,3) ;
   
-  yO = (  fGeom->GetAirFilledBoxSize(1) -  fGeom->GetUpperCoolingPlateThickness() ) / 2. 
-       - ( fGeom->GetIPtoCrystalSurface() - fGeom->GetIPtoOuterCoverDistance() - fGeom->GetModuleBoxThickness()
-           - fGeom->GetUpperPlateThickness() - fGeom->GetSecondUpperPlateThickness() - fGeom->GetUpperCoolingPlateThickness() ) ; 
+  yO = fGeom->GetAirFilledBoxSize(1) / 2. 
+    -( fGeom->GetIPtoCrystalSurface()  - fGeom->GetIPtoOuterCoverDistance()    - fGeom->GetModuleBoxThickness()
+      -fGeom->GetUpperPlateThickness() - fGeom->GetSecondUpperPlateThickness() - fGeom->GetUpperCoolingPlateThickness() ) ; 
   
   gMC->Gspos("PUCP", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
 
