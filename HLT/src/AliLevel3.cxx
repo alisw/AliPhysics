@@ -262,7 +262,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
           if(0){     //Binary to Memory
             fFileHandler->Free();
             sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
-            fFileHandler->SetBinaryInput(name);
+            if(!fFileHandler->SetBinaryInput(name)) return;
             digits= (AliL3DigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
             fFileHandler->CloseBinaryInput(); 
           }
@@ -270,7 +270,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
           if(1){     //Binary to Memory with Benchmark 
             fFileHandler->Free();
             sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
-            memory->SetBinaryInput(name);
+            if(!memory->SetBinaryInput(name)) return;
             UInt_t compsize=memory->GetFileSize();
             UInt_t *comp=(UInt_t *)memory->Allocate(compsize);
             memory->CompBinary2CompMemory(ndigits,comp);
@@ -289,7 +289,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
             fFileHandler->SetRandomCluster(100);
             fFileHandler->SetNGenerate(100);
             sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
-            memory->SetBinaryInput(name);
+            if(!memory->SetBinaryInput(name)) return;
             UInt_t compsize=memory->GetFileSize();
             UInt_t *comp=(UInt_t *)memory->Allocate(compsize);
             memory->CompBinary2CompMemory(ndigits,comp);
@@ -309,7 +309,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
           Int_t sli[2]={0,0};
           fFileHandler->SetROI(fEta,sli);
           sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
-          memory->SetBinaryInput(name);
+          if(!memory->SetBinaryInput(name)) return;
           UInt_t compsize=memory->GetFileSize();
           UInt_t *comp=(UInt_t *)memory->Allocate(compsize);
           memory->CompBinary2CompMemory(ndigits,comp);
@@ -370,7 +370,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
       if(fUseBinary){//Binary to Memory
         memory->Free();
         sprintf(name,"/%spoints_%d_%d.raw",fPath,slice,patch);
-        memory->SetBinaryInput(name);
+        if(!memory->SetBinaryInput(name)) return;
         points = (AliL3SpacePointData *) memory->Allocate();
         memory->Binary2Memory(npoints,points);
         memory->CloseBinaryInput();
