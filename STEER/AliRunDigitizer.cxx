@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/07/16 13:47:53  jchudoba
+Add methods to get access to names of files used in merging.
+
 Revision 1.16  2002/06/07 09:18:47  jchudoba
 Changes to enable merging of ITS fast rec points. Although this class should be responsible for a creation of digits only, other solutions would be more complicated.
 
@@ -226,6 +229,10 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb) : TTask("AliR
 AliRunDigitizer::~AliRunDigitizer() {
 // dtor
 
+// do not delete subtasks, let the creator delete them
+  if (GetListOfTasks()) 
+    GetListOfTasks()->Clear("nodelete");
+  
   if (fInputStreams) {
     delete fInputStreams;
     fInputStreams = 0;
