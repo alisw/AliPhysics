@@ -1,5 +1,5 @@
 SRCS:=  AliTPCLoader.cxx\
-        AliTPCClusterFinder.cxx  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
+        AliTPCClusterFinder.cxx AliTPC.cxx AliTPCv0.cxx AliTPCv1.cxx AliTPCv2.cxx  \
         AliTPCv3.cxx AliDetectorParam.cxx AliTPCParam.cxx \
         AliTPCParamSR.cxx AliTPCParamCR.cxx  AliTPCPRF2D.cxx \
         AliTPCRF1D.cxx \
@@ -15,9 +15,9 @@ SRCS:=  AliTPCLoader.cxx\
 	AliTPCclustererMI.cxx AliTPCclusterMI.cxx  AliTPCtrackerMI.cxx \
 	AliTPCpolyTrack.cxx \
 	AliTPCBuffer.cxx AliTPCDDLRawData.cxx \
-	AliTPCPid.cxx AliTPCtrackPid.cxx AliTPCpidESD.cxx
-HDRS:= $(SRCS:.cxx=.h)
+	AliTPCtrackPid.cxx AliTPCpidESD.cxx
 
+HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= TPCLinkDef.h
 

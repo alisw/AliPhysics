@@ -24,7 +24,6 @@
 
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
-#include "../ITS/AliITStrackV2.h"
 
 ClassImp(AliESDtrack)
 
@@ -32,8 +31,8 @@ ClassImp(AliESDtrack)
 AliESDtrack::AliESDtrack() : 
 fFlags(0), 
 fITSncls(0),
-fTPCncls(0),
-fVertex(kFALSE)
+fVertex(kFALSE),
+fTPCncls(0)
 {
   //
   // The default ESD constructor 
@@ -108,30 +107,26 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
   
   if (flags == kITSin)
    {
-     AliITStrackV2* itstrack = dynamic_cast<AliITStrackV2*>(t);
-     if (itstrack)
-      {
-        itstrack->PropagateTo(3.,0.0028,65.19);
-        itstrack->PropagateToVertex();
-        
-        Double_t ralpha=t->GetAlpha();
-        Double_t rx;      // X-coordinate of the track reference plane 
-        Double_t rp[5];   // external track parameters  
-        t->GetExternalParameters(rx,rp);
-   
-        Double_t phi=TMath::ASin(rp[2]) + ralpha;
-        Double_t pt=1./TMath::Abs(rp[4]);
-        Double_t r=TMath::Sqrt(rx*rx + rp[0]*rp[0]);
-        
-        fVertexX=r*TMath::Cos(phi); 
-        fVertexY=r*TMath::Sin(phi); 
-        fVertexZ=rp[1]; 
-        
-        fVertexPx = pt*TMath::Cos(phi); 
-        fVertexPy = pt*TMath::Sin(phi); 
-        fVertexPz = pt*rp[3]; 
-        fVertex = kTRUE;
-      }
+     t->PropagateTo(3.,0.0028,65.19);
+     t->PropagateToPrimVertex(0.,0.);
+
+     Double_t ralpha=t->GetAlpha();
+     Double_t rx;      // X-coordinate of the track reference plane 
+     Double_t rp[5];   // external track parameters  
+     t->GetExternalParameters(rx,rp);
+
+     Double_t phi=TMath::ASin(rp[2]) + ralpha;
+     Double_t pt=1./TMath::Abs(rp[4]);
+     Double_t r=TMath::Sqrt(rx*rx + rp[0]*rp[0]);
+
+     fVertexX=r*TMath::Cos(phi); 
+     fVertexY=r*TMath::Sin(phi); 
+     fVertexZ=rp[1]; 
+
+     fVertexPx = pt*TMath::Cos(phi); 
+     fVertexPy = pt*TMath::Sin(phi);
+     fVertexPz = pt*rp[3]; 
+     fVertex = kTRUE;
    }
   
   return kTRUE;

@@ -1,0 +1,8 @@
+SRCS:=  AliTPCPid.cxx
+HDRS:= $(SRCS:.cxx=.h)
+
+
+DHDR:= TPCBarrelLinkDef.h
+
+EINCLUDE:= CONTAINERS RAW
+

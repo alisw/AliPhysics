@@ -83,6 +83,9 @@ public:
   virtual Double_t GetPredictedChi2(const AliCluster *) const {return 0.;}
   virtual 
     Int_t PropagateTo(Double_t /*xr*/, Double_t /*x0*/, Double_t /*rho*/) {return 0;}
+  virtual
+    Int_t PropagateToPrimVertex(Double_t /*x0*/,Double_t /*rho*/){return 0;}
+    
   virtual Int_t Update(const AliCluster*, Double_t /*chi2*/, UInt_t) {return 0;}
 
   static void SetConvConst(Double_t cc) {fgConvConst=cc;}

@@ -18,6 +18,8 @@ void loadlibs ()
   gSystem->Load("libEVGEN");
   gSystem->Load("libAliPythia6");
 
+  gSystem->Load("libRAW");
+
   gSystem->Load("libSTRUCT");
   gSystem->Load("libPHOS");
   gSystem->Load("libMUON");
@@ -34,7 +36,8 @@ void loadlibs ()
   // The following lines have to be commented on Darwin
   // for the moment due to cross dependencies
   gSystem->Load("libTPC");
+  gSystem->Load("libITS");
+  gSystem->Load("libTPCBarrel");
   gSystem->Load("libTRD");
   gSystem->Load("libTOF");
-  gSystem->Load("libITS");
 }

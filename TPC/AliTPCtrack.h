@@ -42,6 +42,7 @@ public:
   AliTPCtrack(const AliTPCtrack& t);
   virtual ~AliTPCtrack() {}
   Int_t PropagateToVertex(Double_t x0=36.66,Double_t rho=1.2e-3);
+  Int_t PropagateToPrimVertex(Double_t x0,Double_t rho){return PropagateToVertex(x0,rho);}
   Int_t Rotate(Double_t angle);
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}
 
