@@ -25,6 +25,7 @@
 #include <AliESDtrack.h>
 #include <AliESD.h>
 
+
 #include "AliEventCut.h"
 #include "AliReader.h"
 #include "AliVAODParticle.h"
@@ -59,6 +60,7 @@ Int_t AliRunAnalysis::Run()
      Error("Run","Reader is not set");
      return 1;
    }
+  TDirectory* cwd = gDirectory; 
  /******************************/ 
  /*  Init Event                */ 
  /******************************/ 
@@ -95,6 +97,7 @@ Int_t AliRunAnalysis::Run()
  /******************************/ 
  /*  Finish Event              */ 
  /******************************/ 
+ if (cwd) cwd->cd();
  for (Int_t an = 0; an < fAnalysies.GetEntries(); an++)
   {
       AliAnalysis* analysis = (AliAnalysis*)fAnalysies.At(an);
