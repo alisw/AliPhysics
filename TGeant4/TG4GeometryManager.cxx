@@ -948,9 +948,6 @@ G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
   // set the first entry in the G3Vol table
   Ggclos();
   G3VolTableEntry* first = G3Vol.GetFirstVTE();
-  
-  // close g3calls.dat
-  if (fWriteGeometry) fOutputManager->CloseFile();  
 
   // create G4 geometry
   G3toG4BuildTree(first,0);  
@@ -1045,6 +1042,15 @@ void TG4GeometryManager::OpenOutFile(G4String filePath)
 // ---
 
   fOutputManager->OpenFile(filePath);
+}
+
+ 
+void TG4GeometryManager::CloseOutFile()
+{ 
+// Closes output file.
+// ---
+
+  fOutputManager->CloseFile();
 }
 
  
