@@ -34,7 +34,7 @@ Int_t   TGeant3::CurrentVolOff(Int_t, Text_t*, Int_t&) const {return 0;}
 void    TGeant3::TrackPosition(Float_t*) const {}
 void    TGeant3::TrackMomentum(Float_t*) const {}
 Int_t   TGeant3::VolId(Text_t*) const {return 0;}
-char*   TGeant3::VolName(Int_t ) const {return 0;}
+const char*   TGeant3::VolName(Int_t ) const {return 0;}
 Float_t TGeant3::TrackCharge() const {return 0;}
 Float_t TGeant3::TrackMass() const {return 0;}
 Bool_t  TGeant3::TrackInside() const {return 0;}

@@ -9,7 +9,7 @@ PACKAGE = TGeant3
 
 # FORTRAN sources
 
-FSRCS	     = GeantPatch.F  galicef.F
+FSRCS	     = galicef.F
 
 # C++ sources
 

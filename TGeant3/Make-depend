@@ -3,34 +3,11 @@
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 TGeant3.o: TGeant3.h /hdb2/offline/pro/include/AliMC.h
-TGeant3.o: /soft/root/include/TNamed.h /soft/root/include/TObject.h
-TGeant3.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
-TGeant3.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
-TGeant3.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+TGeant3.o: /soft/root/include/TNamed.h /soft/root/include/TROOT.h THIGZ.h
+TGeant3.o: /soft/root/include/TCanvas.h /usr/include/ctype.h
 TGeant3.o: /usr/include/features.h /usr/include/sys/cdefs.h
-TGeant3.o: /usr/include/gnu/stubs.h
-TGeant3.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
-TGeant3.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
-TGeant3.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
-TGeant3.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
-TGeant3.o: /soft/root/include/TBuffer.h /usr/include/string.h
-TGeant3.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
-TGeant3.o: /soft/root/include/TSeqCollection.h
-TGeant3.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
-TGeant3.o: /soft/root/include/TString.h /soft/root/include/TMath.h
-TGeant3.o: /soft/root/include/TRefCnt.h /soft/root/include/TROOT.h
-TGeant3.o: /soft/root/include/TDirectory.h /soft/root/include/TDatime.h
-TGeant3.o: /soft/root/include/Htypes.h THIGZ.h /soft/root/include/TCanvas.h
-TGeant3.o: /soft/root/include/TPad.h /soft/root/include/TVirtualPad.h
-TGeant3.o: /soft/root/include/TAttPad.h /soft/root/include/Gtypes.h
-TGeant3.o: /soft/root/include/TFrame.h /soft/root/include/TWbox.h
-TGeant3.o: /soft/root/include/TBox.h /soft/root/include/TAttLine.h
-TGeant3.o: /soft/root/include/TAttFill.h /soft/root/include/TGXW.h
-TGeant3.o: /soft/root/include/TAttText.h /soft/root/include/TAttMarker.h
-TGeant3.o: /soft/root/include/GuiTypes.h /soft/root/include/Buttons.h
-TGeant3.o: /soft/root/include/TAttCanvas.h /soft/root/include/TCanvasImp.h
-TGeant3.o: /usr/include/ctype.h /usr/include/endian.h /usr/include/bytesex.h
-TGeant3.o: /hdb2/offline/pro/include/AliCallf77.h
+TGeant3.o: /usr/include/gnu/stubs.h /usr/include/endian.h
+TGeant3.o: /usr/include/bytesex.h /hdb2/offline/pro/include/AliCallf77.h
 TPaveTree.o: /usr/local/include/g++/fstream.h
 TPaveTree.o: /usr/local/include/g++/iostream.h
 TPaveTree.o: /usr/local/include/g++/streambuf.h
@@ -39,120 +16,36 @@ TPaveTree.o: /usr/include/gnu/types.h /usr/include/features.h
 TPaveTree.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
 TPaveTree.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
 TPaveTree.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
-TPaveTree.o: /soft/root/include/TROOT.h /soft/root/include/TDirectory.h
-TPaveTree.o: /soft/root/include/TDatime.h /soft/root/include/Htypes.h
-TPaveTree.o: /soft/root/include/TVirtualPad.h /soft/root/include/TAttPad.h
-TPaveTree.o: /soft/root/include/Gtypes.h /soft/root/include/TFrame.h
-TPaveTree.o: /soft/root/include/TWbox.h /soft/root/include/TBox.h
-TPaveTree.o: /soft/root/include/TAttLine.h /soft/root/include/TAttFill.h
-TPaveTree.o: /soft/root/include/TGXW.h /soft/root/include/TAttText.h
-TPaveTree.o: /soft/root/include/TAttMarker.h /soft/root/include/GuiTypes.h
+TPaveTree.o: /soft/root/include/TROOT.h /soft/root/include/TVirtualPad.h
 TPaveTree.o: /soft/root/include/Buttons.h TPaveTree.h
-TPaveTree.o: /soft/root/include/TPaveLabel.h /soft/root/include/TPave.h
-TPaveTree.o: /soft/root/include/TString.h /usr/include/string.h
-TPaveTree.o: /soft/root/include/TMath.h /soft/root/include/TRefCnt.h
-TPaveTree.o: TGeant3.h /hdb2/offline/pro/include/AliMC.h
-TPaveTree.o: /soft/root/include/TNamed.h /soft/root/include/TObject.h
-TPaveTree.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
-TPaveTree.o: /usr/include/stdio.h /usr/include/stdio_lim.h
-TPaveTree.o: /soft/root/include/DllImport.h /soft/root/include/Varargs.h
-TPaveTree.o: /soft/root/include/TStorage.h /soft/root/include/TBuffer.h
-TPaveTree.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
-TPaveTree.o: /soft/root/include/TSeqCollection.h
-TPaveTree.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
-THIGZ.o: /soft/root/include/TROOT.h /soft/root/include/TDirectory.h
-THIGZ.o: /soft/root/include/TDatime.h /soft/root/include/Htypes.h THIGZ.h
-THIGZ.o: /soft/root/include/TCanvas.h /soft/root/include/TPad.h
-THIGZ.o: /soft/root/include/TVirtualPad.h /soft/root/include/TAttPad.h
-THIGZ.o: /soft/root/include/Gtypes.h /soft/root/include/TFrame.h
-THIGZ.o: /soft/root/include/TWbox.h /soft/root/include/TBox.h
-THIGZ.o: /soft/root/include/TAttLine.h /soft/root/include/TAttFill.h
-THIGZ.o: /soft/root/include/TGXW.h /soft/root/include/TAttText.h
-THIGZ.o: /soft/root/include/TAttMarker.h /soft/root/include/GuiTypes.h
-THIGZ.o: /soft/root/include/Buttons.h /soft/root/include/TAttCanvas.h
-THIGZ.o: /soft/root/include/TCanvasImp.h TGeant3.h
-THIGZ.o: /hdb2/offline/pro/include/AliMC.h /soft/root/include/TNamed.h
-THIGZ.o: /soft/root/include/TObject.h /soft/root/include/Rtypes.h
-THIGZ.o: /soft/root/include/RConfig.h /usr/include/stdio.h
-THIGZ.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
-THIGZ.o: /usr/include/gnu/types.h /usr/include/features.h
+TPaveTree.o: /soft/root/include/TPaveLabel.h TGeant3.h
+TPaveTree.o: /hdb2/offline/pro/include/AliMC.h /soft/root/include/TNamed.h
+THIGZ.o: /soft/root/include/TROOT.h THIGZ.h /soft/root/include/TCanvas.h
+THIGZ.o: TGeant3.h /hdb2/offline/pro/include/AliMC.h
+THIGZ.o: /soft/root/include/TNamed.h /soft/root/include/TGraph.h
+THIGZ.o: /soft/root/include/TColor.h /soft/root/include/TLine.h
+THIGZ.o: /soft/root/include/TPolyLine.h /soft/root/include/TPolyMarker.h
+THIGZ.o: /soft/root/include/TPaveLabel.h /soft/root/include/TText.h
+THIGZ.o: /soft/root/include/Rtypes.h /hdb2/offline/pro/include/AliCallf77.h
+THIGZ.o: TPaveTree.h /usr/include/string.h /usr/include/features.h
 THIGZ.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
 THIGZ.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
-THIGZ.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
-THIGZ.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
-THIGZ.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
-THIGZ.o: /soft/root/include/TBuffer.h /usr/include/string.h
-THIGZ.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
-THIGZ.o: /soft/root/include/TSeqCollection.h /soft/root/include/TCollection.h
-THIGZ.o: /soft/root/include/TIterator.h /soft/root/include/TString.h
-THIGZ.o: /soft/root/include/TMath.h /soft/root/include/TRefCnt.h
-THIGZ.o: /soft/root/include/TGraph.h /soft/root/include/TColor.h
-THIGZ.o: /soft/root/include/TLine.h /soft/root/include/TPolyLine.h
-THIGZ.o: /soft/root/include/TPolyMarker.h /soft/root/include/TPaveLabel.h
-THIGZ.o: /soft/root/include/TPave.h /soft/root/include/TText.h
-THIGZ.o: /hdb2/offline/pro/include/AliCallf77.h TPaveTree.h
 THIGZ.o: /usr/include/ctype.h /usr/include/endian.h /usr/include/bytesex.h
 gucode.o: /hdb2/offline/pro/include/AliCallf77.h TGeant3.h
 gucode.o: /hdb2/offline/pro/include/AliMC.h /soft/root/include/TNamed.h
-gucode.o: /soft/root/include/TObject.h /soft/root/include/Rtypes.h
-gucode.o: /soft/root/include/RConfig.h /usr/include/stdio.h
-gucode.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
-gucode.o: /usr/include/gnu/types.h /usr/include/features.h
-gucode.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-gucode.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
-gucode.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
-gucode.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
-gucode.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
-gucode.o: /soft/root/include/TBuffer.h /usr/include/string.h
-gucode.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
-gucode.o: /soft/root/include/TSeqCollection.h
-gucode.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
-gucode.o: /soft/root/include/TString.h /soft/root/include/TMath.h
-gucode.o: /soft/root/include/TRefCnt.h /hdb2/offline/pro/include/AliRun.h
-gucode.o: /soft/root/include/TROOT.h /soft/root/include/TDirectory.h
-gucode.o: /soft/root/include/TDatime.h /soft/root/include/Htypes.h
-gucode.o: /soft/root/include/TBrowser.h /soft/root/include/TBrowserImp.h
+gucode.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+gucode.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
 gucode.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
-gucode.o: /soft/root/include/TObjArray.h /soft/root/include/TClonesArray.h
-gucode.o: /soft/root/include/TAttLine.h /soft/root/include/TAttFill.h
-gucode.o: /soft/root/include/TAttMarker.h /soft/root/include/TBranch.h
-gucode.o: /soft/root/include/TStringLong.h /soft/root/include/TCut.h
-gucode.o: /soft/root/include/TGeometry.h /soft/root/include/THashList.h
-gucode.o: /hdb2/offline/pro/include/AliModule.h /soft/root/include/TArrayI.h
-gucode.o: /soft/root/include/TArray.h /hdb2/offline/pro/include/AliHit.h
+gucode.o: /soft/root/include/TGeometry.h
+gucode.o: /hdb2/offline/pro/include/AliModule.h
+gucode.o: /soft/root/include/TClonesArray.h /soft/root/include/TAttLine.h
+gucode.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+gucode.o: /hdb2/offline/pro/include/AliHit.h /soft/root/include/TObject.h
 gucode.o: /hdb2/offline/pro/include/AliHeader.h
 gucode.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
-gucode.o: /soft/root/include/TError.h
 gucode.o: /hdb2/offline/pro/include/AliGenerator.h
 gucode.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
 gucode.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
-gucode.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
-gucode.o: /soft/root/include/TAttAxis.h /soft/root/include/Gtypes.h
-gucode.o: /usr/local/include/g++/fstream.h /usr/local/include/g++/iostream.h
-gucode.o: /usr/local/include/g++/streambuf.h /soft/root/include/TLego.h
-gucode.o: /soft/root/include/TF1.h /soft/root/include/TFormula.h
-gucode.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
-gucode.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
-gucode.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
-gucode.o: /soft/root/include/TArrayD.h
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/pilot.h
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gcbank.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gclink.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gcjloc.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gconsp.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gcmate.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gccuts.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gckine.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gcmulo.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gcphys.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gctrak.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gcflag.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gcnum.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gcstak.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gctmed.inc
-GeantPatch.o: /hdb2/offline/pro/GEANT321/geant321/gcunit.inc sckine.inc
-galicef.o: /hdb2/offline/pro/GEANT321/geant321/gcbank.inc
-galicef.o: /hdb2/offline/pro/GEANT321/geant321/gclink.inc
 galicef.o: /hdb2/offline/pro/GEANT321/geant321/gcunit.inc
 galicef.o: /hdb2/offline/pro/GEANT321/geant321/gcmutr.inc
 galicef.o: /hdb2/offline/pro/GEANT321/geant321/gcgobj.inc

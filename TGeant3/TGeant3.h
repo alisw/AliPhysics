@@ -428,7 +428,7 @@ public:
   Int_t CurrentVol(Text_t *name, Int_t &copy) const;
   Int_t CurrentVolOff(Int_t off, Text_t *name, Int_t &copy) const;
   Int_t VolId(Text_t *name) const;
-  char* VolName(Int_t id) const;
+  const char* VolName(Int_t id) const;
   void  TrackPosition(Float_t *xyz) const;
   void  TrackMomentum(Float_t *xyz) const;  
   Int_t Nvolumes() const;

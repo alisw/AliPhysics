@@ -616,7 +616,7 @@ Int_t TGeant3::Nvolumes() const
 }
 
 //_____________________________________________________________________________
-char* TGeant3::VolName(Int_t id) const
+const char* TGeant3::VolName(Int_t id) const
 {
   //
   // Return the volume name given the volume identifier
