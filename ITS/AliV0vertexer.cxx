@@ -111,7 +111,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
 
         //if (cost < (5*fCPAmax-0.9-TMath::Sqrt(r2)*(fCPAmax-1))/4.1) continue;
          if (cost < fCPAmax) continue;
-
+	 vertex.SetDcaDaughters(dca);
          //vertex.ChangeMassHypothesis(); //default is Lambda0 
 
          event->AddV0(&vertex);
@@ -215,7 +215,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(TTree *tTree, TTree *vTree) {
 
         //if (cost < (5*fCPAmax-0.9-TMath::Sqrt(r2)*(fCPAmax-1))/4.1) continue;
          if (cost < fCPAmax) continue;
-
+	 vertex.SetDcaDaughters(dca);
          //vertex.ChangeMassHypothesis(); //default is Lambda0 
 
          ioVertex=&vertex; vTree->Fill();
