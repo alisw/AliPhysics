@@ -78,7 +78,7 @@ void AliDetSwitchVector::Add(AliDetSwitch* detSwitch)
 // ---
 
   fDetSwitchVector.push_back(detSwitch);
-  fMessenger.SetCandidates();
+  fMessenger.Update();
 }  
   
 //_____________________________________________________________________________
