@@ -1,7 +1,7 @@
 enum gentype_t {hijing, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan, doublescan};
 
 gentype_t gentype=gun;
-ntracks=20;
+ntracks=1;
 
 void Config()
 {
@@ -15,7 +15,7 @@ TFile *rootfile = new TFile("galice.root","recreate");
 rootfile->SetCompressionLevel(2);
 TGeant3 *geant3 = (TGeant3*)gMC;
 
-geant3->Grndmq(0,0,5," ");
+//geant3->Grndmq(0,0,5," ");
  
 //=======================================================================
 // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
@@ -59,8 +59,8 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*********************************************
      AliGenFixed *gener = new AliGenFixed(ntracks);
      gener->SetMomentum(3);
-     gener->SetPhiRange(88);
-     gener->SetThetaRange(90);
+     gener->SetPhiRange(90);
+     gener->SetThetaRange(92);
      gener->SetOrigin(0,0,0);                 //vertex position
      gener->SetPart(kPiPlus);                 //GEANT particle type
      break;
@@ -370,7 +370,7 @@ if(iRICH) {
     AliRICHSegmentationV1* Segmentation = new AliRICHSegmentationV1;
 //
 //  Segmentation parameters
-    Segmentation->SetPadSize(0.8,0.84);
+    Segmentation->SetPadSize(0.84,0.8);
     Segmentation->SetDAnod(0.84/2);
 
 //  Geometry parameters
@@ -407,7 +407,6 @@ if(iRICH) {
     RICH->SetGeometryModel(i,Geometry);
     RICH->SetSegmentationModel(i, Segmentation);
     RICH->SetResponseModel(i, Response);
-    RICH->SetNsec(i,1);
   }  
   RICH->SetDebugLevel(0);
 }
