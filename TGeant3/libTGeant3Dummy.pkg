@@ -1,0 +1,7 @@
+SRCS:=  TGeant3Dummy.cxx
+
+HDRS:= TGeant3.h
+
+DHDR:=TGeant3LinkDef.h
+
+
