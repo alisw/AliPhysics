@@ -60,7 +60,9 @@ AliGenCocktail::~AliGenCocktail()
 {
 // Destructor
     delete fEntries;
-    delete fHeader;
+    fEntries = 0;
+    //    delete fHeader; // It is removed in AliRunLoader
+    fHeader = 0;
 }
 
 void AliGenCocktail::
@@ -105,7 +107,11 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     
      fEntries->Add(entry);
      fNGenerators++;
- }
+     flnk1 = 0;
+     flnk2 = 0;
+     fRandom  = kFALSE;
+     fHeader  = 0;
+}
 
   void AliGenCocktail::Init()
 {
