@@ -1541,7 +1541,8 @@ TH2F* AliCalorimeter::DrawModules(Float_t thresh,Int_t mode)
    col=float(m->GetColumn());
    dead=m->GetDeadValue();
    signal=0;
-   if (!dead) signal=GetSignal(row,col,mode);
+   if (!dead) signal=GetSignal(static_cast<Int_t>(row),
+			       static_cast<Int_t>(col),mode);
    if (signal>thresh) fHmodules->Fill(col,row,signal);
   }
  }
