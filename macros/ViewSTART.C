@@ -1,9 +1,9 @@
 void ViewSTART()
 {
-   gMC->Gsatt("STRT","seen",0);
-   gMC->Gsatt("INST","seen",0);
-   gMC->Gsatt("PMT","seen",1);
-   gMC->Gsatt("DIVI","seen",1);
+  //   gMC->Gsatt("STRT","seen",0);
+   gMC->Gsatt("0IN","seen",0);
+   gMC->Gsatt("0PM","seen",1);
+   gMC->Gsatt("0DI","seen",1);
 }
 
 
