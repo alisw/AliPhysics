@@ -79,7 +79,7 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
 
   // But save the cumulated hits instead (need to create the branch myself)
   // It is put in the Digit Tree because the TreeH is filled after each primary
-  // and the TreeD at the end of the event (branch is set in FinishEvent() ).
+ // and the TreeD at the end of the event (branch is set in FinishEvent() ).
   
   fTmpHits= new TClonesArray("AliPHOSHit",1000) ;
 

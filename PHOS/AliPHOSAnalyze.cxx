@@ -89,7 +89,7 @@ AliPHOSAnalyze::AliPHOSAnalyze(const AliPHOSAnalyze & ana)
 }
 
 //____________________________________________________________________________
-AliPHOSAnalyze::Copy(TObject & obj)
+void AliPHOSAnalyze::Copy(TObject & obj)
 {
   // copy an analysis into an other one
   TObject::Copy(obj) ;
