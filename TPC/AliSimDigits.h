@@ -12,6 +12,8 @@
 #include "TError.h"
 #include   "AliArrayI.h"
 #include   "AliArrayS.h"
+#include   "AliDigits.h"
+
 class AliH2F;
 
 
