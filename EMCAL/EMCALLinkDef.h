@@ -50,5 +50,5 @@
 #pragma link C++ class AliEMCALPID+;		
 #pragma link C++ class AliEMCALPIDv1+;
 #pragma link C++ class AliEMCALLoader+;	
-#pragma link C++ class AliEMCALReconstructioner+;
+#pragma link C++ class AliEMCALReconstructor+;
 #endif

@@ -38,14 +38,12 @@ class AliEMCAL : public AliDetector {
   void Copy(AliEMCAL & emcal) ; 
   virtual void  CreateMaterials() ;   
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
-  virtual void  FillESD(AliESD* esd) const ; 
   virtual void  FinishRun() {}                  
   virtual AliEMCALGeometry * GetGeometry() const 
   {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
   virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;   
   virtual AliLoader* MakeLoader(const char* topfoldername);
-  virtual void Reconstruct() const; 
   virtual void SetTreeAddress() ;              
   virtual const TString Version() const {return TString(" ") ; }   
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/)  {

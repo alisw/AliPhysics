@@ -42,7 +42,6 @@ class TFile;
 #include "AliRun.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALDigitizer.h"
-#include "AliEMCALReconstructioner.h"
 
 ClassImp(AliEMCAL)
 //____________________________________________________________________________
@@ -156,23 +155,7 @@ void AliEMCAL::CreateMaterials()
   gMC->Gstpar(idtmed[1601],"BCUTE",0.0001) ;
 
 }
-
-//____________________________________________________________________________
-void AliEMCAL::FillESD(AliESD* esd) const 
-{
-  // Fill the ESD with all RecParticles
-  AliEMCALGetter *gime = AliEMCALGetter::Instance( (fLoader->GetRunLoader()->GetFileName()).Data() );
-  gime->Event(gime->EventNumber(), "P") ; 
-  TClonesArray *recParticles = gime->RecParticles();
-  Int_t nOfRecParticles = recParticles->GetEntries();
-  for (Int_t recpart=0; recpart<nOfRecParticles; recpart++) {
-    AliESDCaloTrack *ct = new AliESDCaloTrack((AliEMCALRecParticle*)recParticles->At(recpart));
-    esd->AddCaloTrack(ct);
-    delete ct;
-  }
-}       
-
-
+      
 //____________________________________________________________________________
 void AliEMCAL::Hits2SDigits()  
 { 
@@ -182,14 +165,6 @@ void AliEMCAL::Hits2SDigits()
     new AliEMCALSDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
   emcalDigitizer->SetEventRange(0, -1) ; // do all the events
   emcalDigitizer->ExecuteTask() ;
-}
-
-//____________________________________________________________________________
-void AliEMCAL::Reconstruct() const 
-{ 
-  AliEMCALReconstructioner * rec = new AliEMCALReconstructioner((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
-  rec->SetEventRange(0, -1) ; // do all the events  
-  rec->ExecuteTask() ; 
 }
 
 //____________________________________________________________________________
