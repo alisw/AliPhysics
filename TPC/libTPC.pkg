@@ -9,7 +9,7 @@ SRCS:=  AliTPCClusterFinder.cxx  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      A
         AliTPCcluster.cxx AliTPCclusterer.cxx \
         AliTPCtrack.cxx AliTPCtracker.cxx \
 	AliTPCTrackHits.cxx\
-
+	AliTPCDigitizer.cxx\
 
 HDRS:= $(SRCS:.cxx=.h)
 
