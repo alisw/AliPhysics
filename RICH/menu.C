@@ -80,17 +80,17 @@ void D_C()
 void Show()
 {  
   cout<<endl;
-  al->LoadHeader();  al->LoadKinematics();
-  
-  rl->LoadHits();  
-    Bool_t isSdigits=!rl->LoadSDigits();  
-      Bool_t isClusters=!rl->LoadRecPoints();
-        Bool_t isDigits=!rl->LoadDigits();//loaders
-  
+//load all trees  
+  al->LoadHeader(); 
+    al->LoadKinematics();  
+      rl->LoadHits();  
+        Bool_t isSdigits=!rl->LoadSDigits();  
+          Bool_t isClusters=!rl->LoadRecPoints();
+            Bool_t isDigits=!rl->LoadDigits();//loaders
   cout<<endl;  cout<<endl;  
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
     Int_t iNparticles=a->GetEvent(iEventN);
-    Int_t iNprims=rl->TreeH()->GetEntries();
+    Int_t iNprims=al->Stack()->GetNprimary();
     
     Int_t iTotalHits=0;
     for(Int_t iPrimN=0;iPrimN<iNprims;iPrimN++){//prims loop
@@ -121,13 +121,13 @@ void Show()
     }
     cout<<endl;
   }//events loop
-    
+//unload all trees    
   rl->UnloadHits();  
     if(isSdigits) rl->UnloadSDigits(); 
       if(isDigits) rl->UnloadDigits(); 
         if(isClusters) rl->UnloadRecPoints();
-  al->UnloadHeader();
-  al->UnloadKinematics();
+          al->UnloadHeader();
+            al->UnloadKinematics();
   
   TVector counters=r->Counters();
   
@@ -257,6 +257,7 @@ void TestSeg()
   AliRICHDisplFast::DrawSectors();
   
   TLatex t; t.SetTextSize(0.02);
+  t.DrawText(0,140,"View from interaction point");
   t.DrawLatex(p.PcSizeX()+10,120,Form("Pc  %6.2fx%6.2fcm %3ix%3ipads",p.PcSizeX()    ,p.PcSizeY(),    p.NpadsX()   ,p.NpadsY()));
   t.DrawLatex(p.PcSizeX()+10,115,Form("Sec %6.2fx%5.2fcm %3ix%2ipads",p.SectorSizeX(),p.SectorSizeY(),p.NpadsXsec(),p.NpadsYsec()));
   t.DrawLatex(p.PcSizeX()+10,110,Form("Pad %6.2fx%4.2fcm DeadZone %6.2fcm",p.PadSizeX()   ,p.PadSizeY(),p.DeadZone()));
@@ -364,9 +365,10 @@ void TestSeg()
         pChamber->SetMarkerSize(1);
         pChamber->SetMarkerColor(iChamberN);
       }//step loop
-    pChamber->Draw();      
+    pChamber->Draw();  
+    t.SetNDC();t.SetTextColor(iChamberN); t.DrawText(0.1,iChamberN*0.1,Form("Chamber %i",iChamberN));    
   }//chamber loop   
-  gPad->GetView()->RotateView(270,30);
+  gPad->GetView()->RotateView(94,45);
 }//void TestSeg()
 //__________________________________________________________________________________________________
 void TestMenu()
