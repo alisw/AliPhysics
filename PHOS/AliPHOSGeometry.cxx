@@ -513,7 +513,7 @@ void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) const
     
     pos.SetX(x) ;
     pos.SetZ(z) ;
-    pos.SetY( TMath::Sqrt(x*x + z*z + y0*y0) ) ; 
+    pos.SetY(- TMath::Sqrt(x*x + z*z + y0*y0) ) ; 
     
     
     
@@ -526,7 +526,9 @@ void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) const
     
     TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
     
+    cout << "before X,Y,Z " << pos.X() << endl << pos.Y() << endl << pos.Z() << endl;
     pos.Transform(rot) ; // rotate the baby 
+    cout << "X,Y,Z " << pos.X() << endl << pos.Y() << endl << pos.Z() << endl;
   }
   else {
     pos.SetX(0.);
