@@ -14,7 +14,10 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
    if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
-   } 
+   } else {
+      delete gAlice;
+      gAlice=0;
+   }
 
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
@@ -46,8 +49,12 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
 
    // SDD
    // SDD compression param: 2 fDecrease, 2fTmin, 2fTmax or disable, 2 fTolerance
+   Float_t baseline = 10.;
+   Float_t noise = 1.75;
 
-   Int_t cp[8]={0,0,0,0,0,0,0,0};
+   Float_t fCutAmp = baseline + 2.*noise;
+   Int_t cp[8]={0,0,fCutAmp,fCutAmp,0,0,0,0}; //1D
+
 
    AliITSDetType *iDetType=ITS->DetType(1);
    AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
@@ -55,11 +62,14 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
          res1=new AliITSresponseSDD();
          ITS->SetResponseModel(1,res1);
    }
-   res1->SetZeroSupp("2D");
-   //res1->SetZeroSupp("1D");
-   res1->SetNoiseParam(0.,0.);
-   res1->SetCompressParam(cp);
+   //res1->SetZeroSupp("2D");
+   res1->SetZeroSupp("1D");
+   res1->SetNoiseParam(noise,baseline);
+   res1->SetDo10to8(kTRUE);
    res1->SetMinVal(4);
+   res1->SetCompressParam(cp);
+   res1->SetDiffCoeff(3.6,40.);
+   res1->SetMagicValue(96.95);
 
    AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->GetSegmentationModel();
    if (!seg1) {
@@ -68,6 +78,9 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
    }
 
    AliITSsimulationSDD *sim1=new AliITSsimulationSDD(seg1,res1);
+   sim1->SetDoFFT(1);
+   sim1->SetCheckNoise(kFALSE);
+
    ITS->SetSimulationModel(1,sim1);
    
    
@@ -80,9 +93,9 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
    AliITSsimulationSPD *sim0=new AliITSsimulationSPD(seg0,res0);
    ITS->SetSimulationModel(0,sim0);
    // test
-   printf("SPD dimensions %f %f \n",seg0->Dx(),seg0->Dz());
-   printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
-   printf("SPD pitches %d %d \n",seg0->Dpz(0),seg0->Dpx(0));
+   //printf("SPD dimensions %f %f \n",seg0->Dx(),seg0->Dz());
+   //printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
+   //printf("SPD pitches %d %d \n",seg0->Dpz(0),seg0->Dpx(0));
    // end test
 
 
@@ -109,11 +122,15 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
        if (nev < evNumber1) continue;
        if (nparticles <= 0) return;
 
-       Int_t nbgr_ev=Int_t(nev/nsignal);
-       //printf("nbgr_ev %d\n",nbgr_ev);
+       Int_t nbgr_ev=0;
+       if(nsignal) nbgr_ev=Int_t(nev/nsignal);
        ITS->HitsToDigits(nev,nbgr_ev,size," ","All"," ");
-       //ITS->HitsToDigits(nev,nbgr_ev,size," ","SDD"," ");
    } // event loop 
+
+   delete sim0;
+   delete sim1;
+   delete sim2;
+
 
    file->Close();
 }

@@ -56,11 +56,16 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    AliITSClusterFinderSPD *rec0=new AliITSClusterFinderSPD(seg0,dig0,recp0);
    ITS->SetReconstructionModel(0,rec0);
    // test
-   printf("SPD dimensions %f %f \n",seg0->Dx(),seg0->Dz());
-   printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
+   //printf("SPD dimensions %f %f \n",seg0->Dx(),seg0->Dz());
+   //printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
 
 
    // SDD
+
+   Float_t baseline = 10.;
+   Float_t noise = 1.67;
+   Int_t thres = (Int_t)(baseline+3*noise);
+   printf("thresh %d\n",thres);
 
    AliITSDetType *iDetType=ITS->DetType(1);
    AliITSgeom *geom = ITS->GetITSgeom();
@@ -69,13 +74,21 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    if (!seg1) seg1 = new AliITSsegmentationSDD(geom);
    AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
    if (!res1) res1=new AliITSresponseSDD();
-   res1->SetNoiseParam(0.,0.);
+   res1->SetNoiseParam(noise,baseline);
+   Float_t n,b;
+   res1->GetNoiseParam(n,b);
+    printf("SDD: noise baseline %f %f zs option %s data type %s\n",n,b,res1->ZeroSuppOption(),res1->DataType());
+   printf("SDD: DriftSpeed %f TopValue %f\n",res1->DriftSpeed(),res1->MagicValue());
+   Float_t dif0,dif1;
+   res1->DiffCoeff(dif0,dif1);
+   printf("SDD: dif0 %f dif1 %f\n",dif0,dif1);
    TClonesArray *dig1  = ITS->DigitsAddress(1);
    TClonesArray *recp1  = ITS->ClustersAddress(1);
    AliITSClusterFinderSDD *rec1=new AliITSClusterFinderSDD(seg1,res1,dig1,recp1);
+   rec1->SetMinNCells(6);
+   rec1->SetTimeCorr(70.);
+   rec1->SetCutAmplitude(thres);
    ITS->SetReconstructionModel(1,rec1);
-
-
 
    // SSD
 
@@ -86,8 +99,8 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2,recp2);
    ITS->SetReconstructionModel(2,rec2);
    // test
-   printf("SSD dimensions %f %f \n",seg2->Dx(),seg2->Dz());
-   printf("SSD nstrips %d %d \n",seg2->Npz(),seg2->Npx());
+   //printf("SSD dimensions %f %f \n",seg2->Dx(),seg2->Dz());
+   //printf("SSD nstrips %d %d \n",seg2->Npz(),seg2->Npx());
 
 
 
@@ -110,6 +123,10 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
        Int_t last_entry=1;
        ITS->DigitsToRecPoints(nev,last_entry,"All");
    } // event loop 
+
+   delete rec0;
+   delete rec1;
+   delete rec2;
 
    file->Close();
 }
