@@ -31,22 +31,22 @@ public:
   ~AliEMCALJetFinderAlgoUA1Hybrid();
   void InitUnitArray();                      
   void SetNumUnits(Int_t numUnits)           {fNumUnits = numUnits;}
-  Int_t GetNumUnits()                        {return fNumUnits;}
+  Int_t GetNumUnits() const                  {return fNumUnits;}
   void SetJetESeed(Float_t eSeed)            {fESeed = eSeed;}
-  Float_t GetJetESeed()                      {return fESeed;}
+  Float_t GetJetESeed() const                {return fESeed;}
   void SetConeRad(Float_t coneRad)           {fConeRad = coneRad;}
-  Float_t GetConeRad()                       {return fConeRad;}
+  Float_t GetConeRad() const                 {return fConeRad;}
   void SetJetEMin(Float_t jetEMin)           {fJetEMin = jetEMin;}
-  Float_t GetJetEMin()                       {return fJetEMin;}
+  Float_t GetJetEMin() const                 {return fJetEMin;}
   void SetEtMin(Float_t etMin)               {fEtMin = etMin;}
-  Float_t GetEtMin()                         {return fEtMin;}
+  Float_t GetEtMin()  const                  {return fEtMin;}
   void SetMinMove(Float_t minMove)           {fMinMove = minMove;}
   void SetMaxMove(Float_t maxMove)           {fMaxMove = maxMove;}
   void SetBGMaxMove(Float_t bgMaxMove)       {fBGMaxMove = bgMaxMove;}
   void SetPtCut(Float_t ptCut)               {fPtCut = ptCut;}
-  Float_t GetPtCut()                         {return fPtCut;}
+  Float_t GetPtCut()  const                  {return fPtCut;}
   void SetHadronCorrection(AliEMCALHadronCorrectionv1 *hadCorr) {fHadCorr = hadCorr;}
-  AliEMCALHadronCorrectionv1* GetHadronCorrection() {return fHadCorr;}
+  AliEMCALHadronCorrectionv1* GetHadronCorrection() const {return fHadCorr;}
   void SetJetFindingParameters(Int_t numUnits, Float_t eSeed, Float_t coneRad, Float_t jetEMin, Float_t etMin, 
                                Float_t minMove, Float_t maxMove, Float_t bgMaxMove); 
   void SetJetFindingParameters(Int_t numUnits, Float_t eSeed, Float_t coneRad, Float_t jetEMin, Float_t etMin);
@@ -98,7 +98,7 @@ protected:
   Int_t             fNumJets;          //Number of jets in an event
   Bool_t            fArrayInitialised; //To check that array of units is initialised
 
-  ClassDef(AliEMCALJetFinderAlgoUA1Hybrid,1)
+  ClassDef(AliEMCALJetFinderAlgoUA1Hybrid,2)
 
 };
 #endif
