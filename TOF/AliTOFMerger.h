@@ -7,6 +7,7 @@
 // #include "AliMergable.h"
 #include "TRandom.h"
 #include "AliDetector.h"
+#include "AliTOF.h"
 
 typedef enum {kDigitize=0, kMerge = 1} MergeMode_t;
 
@@ -22,10 +23,9 @@ class AliTOFMerger {
   
   // Do the main work
   void Digitise() ;
-  //  Int_t PutEdgeEffect(Int_t charge){return (Int_t)(gRandom->Gaus(charge,500));}
   TClonesArray *SDigits() const {return fSDigits;}
  
-  //  void ReadDigit(Int_t a[][30][150], Int_t);
+  void ReadWriteDigit(Int_t);
   
   // Setters -> Later Communication with gAlice 
   void SetSignalEventNumber(Int_t i)     {fEvNrSig = i;}
@@ -34,7 +34,6 @@ class AliTOFMerger {
   void SetSignalFileName(char* file)     {fFnSig = file;}        
   void SetMode(MergeMode_t mode) {fMerge = mode;}
 
-	
     enum {kBgTag = -1};
       
  private:    
@@ -45,6 +44,7 @@ class AliTOFMerger {
  private:
     TClonesArray *fDigits;               // ! array with digits
     TClonesArray *fSDigits      ; // List of summable digits
+    Int_t fNDigits;                 // number of digits
     Int_t fEvNrSig;                 // signal     event number
     Int_t fEvNrBgr;                 // background event number    
     MergeMode_t fMerge;             // merging type kDigitize, kMerge
@@ -55,6 +55,4 @@ class AliTOFMerger {
     ClassDef(AliTOFMerger,0)
 };    
 #endif
-
-
 
