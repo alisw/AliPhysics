@@ -29,7 +29,7 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
 public:
 
   AliPHOSPIDv1() ;          // ctor            
-  AliPHOSPIDv1(const char* headerFile, const char * tsBranch = 0) ;
+  AliPHOSPIDv1(const char* headerFile, const char * tsBranch = "Default") ;
   virtual ~AliPHOSPIDv1() ; // dtor
 
   virtual void Exec(Option_t * option);
