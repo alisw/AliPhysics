@@ -158,7 +158,7 @@ void AliTPCv2::CreateGeometry()
   //
 
   dm[3]=-283.7;
-  dm[4]=65.6;
+  dm[4]=77.017;
   dm[5]=278.;
 
   //
@@ -200,7 +200,7 @@ void AliTPCv2::CreateGeometry()
   //
 
   dm[24]=283.7;
-  dm[25]=65.6;
+  dm[25]=77.017;
   dm[26]=278.;
   
   gMC->Gsvolu("TPC ","PCON",idtmed[0],dm,27);
