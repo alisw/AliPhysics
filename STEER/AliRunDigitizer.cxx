@@ -598,7 +598,7 @@ AliRunLoader* AliRunDigitizer::GetOutRunLoader()
 }
 //_______________________________________________________________________
 
-TString AliRunDigitizer::GetInputFileName(const Int_t input, const Int_t order) const 
+TString AliRunDigitizer::GetInputFileName(Int_t input, Int_t order) const 
 {
 // returns file name of the order-th file in the input stream input
 // returns empty string if such file does not exist

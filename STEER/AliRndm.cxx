@@ -56,7 +56,7 @@ void AliRndm::Copy(AliRndm&) const
 
 
 //_____________________________________________________________________________
-void AliRndm::Rndm(Float_t* array, const Int_t size) const
+void AliRndm::Rndm(Float_t* array, Int_t size) const
 {
   //
   // Return an array of n random numbers uniformly distributed 
