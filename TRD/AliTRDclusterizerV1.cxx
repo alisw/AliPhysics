@@ -1,0 +1,416 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/*
+$Log$
+*/
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// TRD cluster finder for the slow simulator. 
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+#include <TF1.h>
+
+#include "AliTRDclusterizerV1.h"
+#include "AliTRDmatrix.h"
+#include "AliTRDgeometry.h"
+#include "AliTRDdigitizer.h"
+#include "AliTRDrecPoint.h"
+#include "AliTRDdataArray.h"
+
+ClassImp(AliTRDclusterizerV1)
+
+//_____________________________________________________________________________
+AliTRDclusterizerV1::AliTRDclusterizerV1():AliTRDclusterizer()
+{
+  //
+  // AliTRDclusterizerV1 default constructor
+  //
+
+  fDigitsArray = NULL;
+
+}
+
+//_____________________________________________________________________________
+AliTRDclusterizerV1::AliTRDclusterizerV1(const Text_t* name, const Text_t* title)
+                    :AliTRDclusterizer(name,title)
+{
+  //
+  // AliTRDclusterizerV1 default constructor
+  //
+
+  fDigitsArray = NULL;
+
+  Init();
+
+}
+
+//_____________________________________________________________________________
+AliTRDclusterizerV1::~AliTRDclusterizerV1()
+{
+
+  if (fDigitsArray) {
+    fDigitsArray->Delete();
+    delete fDigitsArray;
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDclusterizerV1::Init()
+{
+  //
+  // Initializes the cluster finder
+  //
+
+  // The default parameter for the clustering
+  fClusMaxThresh = 5.0;
+  fClusSigThresh = 2.0;
+  fClusMethod    = 1;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDclusterizerV1::ReadDigits()
+{
+  //
+  // Reads the digits arrays from the input aliroot file
+  //
+
+  if (!fInputFile) {
+    printf("AliTRDclusterizerV1::ReadDigits -- ");
+    printf("No input file open\n");
+    return kFALSE;
+  }
+
+  // Create a new segment array for the digits 
+  fDigitsArray = new AliTRDsegmentArray(kNsect*kNplan*kNcham);
+
+  // Read in the digit arrays
+  return (fDigitsArray->LoadArray("TRDdigits"));  
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDclusterizerV1::MakeCluster()
+{
+  //
+  // Generates the cluster.
+  //
+
+  Int_t row, col, time;
+
+  // Get the pointer to the detector class and check for version 1
+  AliTRD *TRD = (AliTRD*) gAlice->GetDetector("TRD");
+  if (TRD->IsVersion() != 1) {
+    printf("AliTRDclusterizerV1::MakeCluster -- ");
+    printf("TRD must be version 1 (slow simulator).\n");
+    return kFALSE; 
+  }
+
+  // Get the geometry
+  AliTRDgeometry *Geo = TRD->GetGeometry();
+
+  printf("AliTRDclusterizerV1::MakeCluster -- ");
+  printf("Start creating clusters.\n");
+
+  AliTRDdataArray *Digits;
+
+  // Parameters
+  Float_t maxThresh        = fClusMaxThresh;   // threshold value for maximum
+  Float_t signalThresh     = fClusSigThresh;   // threshold value for digit signal
+  Int_t   clusteringMethod = fClusMethod;      // clustering method option (for testing)
+
+  // Iteration limit for unfolding procedure
+  const Float_t epsilon = 0.01;             
+
+  const Int_t   nClus   = 3;  
+  const Int_t   nSig    = 5;
+
+  Int_t chamBeg = 0;
+  Int_t chamEnd = kNcham;
+  if (TRD->GetSensChamber() >= 0) {
+    chamBeg = TRD->GetSensChamber();
+    chamEnd = chamEnd + 1;
+  }
+  Int_t planBeg = 0;
+  Int_t planEnd = kNplan;
+  if (TRD->GetSensPlane()   >= 0) {
+    planBeg = TRD->GetSensPlane();
+    planEnd = planBeg + 1;
+  }
+  Int_t sectBeg = 0;
+  Int_t sectEnd = kNsect;
+  if (TRD->GetSensSector()  >= 0) {
+    sectBeg = TRD->GetSensSector();
+    sectEnd = sectBeg + 1;
+  }
+
+  // *** Start clustering *** in every chamber
+  for (Int_t icham = chamBeg; icham < chamEnd; icham++) {
+    for (Int_t iplan = planBeg; iplan < planEnd; iplan++) {
+      for (Int_t isect = sectBeg; isect < sectEnd; isect++) {
+
+        Int_t idet = Geo->GetDetector(iplan,icham,isect);
+
+        Int_t nClusters = 0;
+        printf("AliTRDclusterizerV1::MakeCluster -- ");
+        printf("Analyzing chamber %d, plane %d, sector %d.\n"
+               ,icham,iplan,isect);
+
+        Int_t   nRowMax  = Geo->GetRowMax(iplan,icham,isect);
+        Int_t   nColMax  = Geo->GetColMax(iplan);
+        Int_t   nTimeMax = Geo->GetTimeMax();
+
+        // Create a detector matrix to keep maxima
+        AliTRDmatrix *digitMatrix  = new AliTRDmatrix(nRowMax,nColMax,nTimeMax
+                                                     ,isect,icham,iplan);
+        // Create a matrix to contain maximum flags
+        AliTRDmatrix *maximaMatrix = new AliTRDmatrix(nRowMax,nColMax,nTimeMax
+                                                     ,isect,icham,iplan);
+
+        // Read in the digits
+        Digits = (AliTRDdataArray *) fDigitsArray->At(idet);
+
+        // Loop through the detector pixel
+        for (time = 0; time < nTimeMax; time++) {
+          for ( col = 0;  col <  nColMax;  col++) {
+            for ( row = 0;  row <  nRowMax;  row++) {
+
+              Int_t signal = Digits->GetData(row,col,time);
+              Int_t index  = Digits->GetIndex(row,col,time);
+
+              // Fill the detector matrix
+              if (signal > signalThresh) {
+	        // Store the signal amplitude
+                digitMatrix->SetSignal(row,col,time,signal);
+	        // Store the digits number
+                digitMatrix->AddTrack(row,col,time,index);
+              }
+
+	    }
+	  }
+	}
+
+        // Loop chamber and find maxima in digitMatrix
+        for ( row = 0;  row <  nRowMax;  row++) {
+          for ( col = 1;  col <  nColMax;  col++) {
+            for (time = 0; time < nTimeMax; time++) {
+
+              if (digitMatrix->GetSignal(row,col,time) 
+                  < digitMatrix->GetSignal(row,col - 1,time)) {
+                // really maximum?
+                if (col > 1) {
+                  if (digitMatrix->GetSignal(row,col - 2,time)
+                      < digitMatrix->GetSignal(row,col - 1,time)) {
+                    // yes, so set maximum flag
+                    maximaMatrix->SetSignal(row,col - 1,time,1);
+                  }
+                  else maximaMatrix->SetSignal(row,col - 1,time,0);
+                }
+              }
+
+            }   // time
+          }     // col
+        }       // row
+
+        // now check maxima and calculate cluster position
+        for ( row = 0;  row <  nRowMax;  row++) {
+          for ( col = 1;  col <  nColMax;  col++) {
+            for (time = 0; time < nTimeMax; time++) {
+
+              if ((maximaMatrix->GetSignal(row,col,time) > 0)
+                  && (digitMatrix->GetSignal(row,col,time) > maxThresh)) {
+
+                // Ratio resulting from unfolding
+                Float_t ratio                =  0;    
+                // Signals on max and neighbouring pads
+                Float_t padSignal[nSig]      = {0};   
+                // Signals from cluster
+                Float_t clusterSignal[nClus] = {0};
+                // Cluster pad info
+                Float_t clusterPads[nClus]   = {0};   
+                // Cluster digit info
+                Int_t   clusterDigit[nClus]  = {0};
+
+                for (Int_t iPad = 0; iPad < nClus; iPad++) {
+                  clusterSignal[iPad] = digitMatrix->GetSignal(row,col-1+iPad,time);
+                  clusterDigit[iPad]  = digitMatrix->GetTrack(row,col-1+iPad,time,0);
+                }
+
+                // neighbouring maximum on right side?
+                if (col < nColMax - 2) {
+                  if (maximaMatrix->GetSignal(row,col + 2,time) > 0) {
+
+                    for (Int_t iPad = 0; iPad < 5; iPad++) {
+                      padSignal[iPad] = digitMatrix->GetSignal(row,col-1+iPad,time);
+                    }
+
+                    // unfold:
+                    ratio = Unfold(epsilon, padSignal);
+
+                    // set signal on overlapping pad to ratio
+                    clusterSignal[2] *= ratio;
+
+                  }
+                }
+                
+		// Calculate the position of the cluster
+                switch (clusteringMethod) {
+                case 1:
+                  // method 1: simply center of mass
+                  clusterPads[0] = row + 0.5;
+                  clusterPads[1] = col - 0.5 + (clusterSignal[2] - clusterSignal[0]) /
+                                   (clusterSignal[1] + clusterSignal[2] + clusterSignal[3]);
+                  clusterPads[2] = time + 0.5;
+
+                  nClusters++;
+                  break;
+                case 2:
+                  // method 2: integral gauss fit on 3 pads
+                  TH1F *hPadCharges = new TH1F("hPadCharges", "Charges on center 3 pads"
+	                                                    , 5, -1.5, 3.5);
+                  for (Int_t iCol = -1; iCol <= 3; iCol++) {
+                    if (clusterSignal[iCol] < 1) clusterSignal[iCol] = 1;
+                    hPadCharges->Fill(iCol, clusterSignal[iCol]);
+                  }
+                  hPadCharges->Fit("gaus", "IQ", "SAME", -0.5, 2.5);
+                  TF1     *fPadChargeFit = hPadCharges->GetFunction("gaus");
+                  Double_t  colMean = fPadChargeFit->GetParameter(1);
+
+                  clusterPads[0] = row + 0.5;
+                  clusterPads[1] = col - 1.5 + colMean;
+                  clusterPads[2] = time + 0.5;
+
+                  delete hPadCharges;
+
+                  nClusters++;
+                  break;
+                }
+
+                Float_t clusterCharge =   clusterSignal[0]
+                                        + clusterSignal[1]
+                                        + clusterSignal[2];
+
+                // Add the cluster to the output array 
+                TRD->AddRecPoint(clusterPads,clusterDigit,idet,clusterCharge);
+
+              }
+            }  // time
+          }    // col
+        }      // row
+
+        printf("AliTRDclusterizerV1::MakeCluster -- ");
+        printf("Number of clusters found: %d\n",nClusters);
+
+        delete digitMatrix;
+        delete maximaMatrix;
+
+      }          // isect
+    }            // iplan
+  }              // icham
+
+  printf("AliTRDclusterizerV1::MakeCluster -- ");
+  printf("Total number of points found: %d\n"
+        ,TRD->RecPoints()->GetEntries());
+
+  // Get the pointer to the cluster branch
+  TTree *ClusterTree = gAlice->TreeR(); 
+
+  // Fill the cluster-branch
+  printf("AliTRDclusterizerV1::MakeCluster -- ");
+  printf("Fill the cluster tree.\n");
+  ClusterTree->Fill();
+  printf("AliTRDclusterizerV1::MakeCluster -- ");
+  printf("Done.\n");
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Float_t* padSignal)
+{
+  //
+  // Method to unfold neighbouring maxima.
+  // The charge ratio on the overlapping pad is calculated
+  // until there is no more change within the range given by eps.
+  // The resulting ratio is then returned to the calling method.
+  //
+
+  Int_t   itStep            = 0;      // count iteration steps
+
+  Float_t ratio             = 0.5;    // start value for ratio
+  Float_t prevRatio         = 0;      // store previous ratio
+
+  Float_t newLeftSignal[3]  = {0};    // array to store left cluster signal
+  Float_t newRightSignal[3] = {0};    // array to store right cluster signal
+
+  // start iteration:
+  while ((TMath::Abs(prevRatio - ratio) > eps) && (itStep < 10)) {
+
+    itStep++;
+    prevRatio = ratio;
+
+    // cluster position according to charge ratio
+    Float_t maxLeft  = (ratio*padSignal[2] - padSignal[0]) /
+                       (padSignal[0] + padSignal[1] + ratio*padSignal[2]);
+    Float_t maxRight = (padSignal[4] - (1-ratio)*padSignal[2]) /
+                       ((1-ratio)*padSignal[2] + padSignal[3] + padSignal[4]);
+
+    // set cluster charge ratio
+    Float_t ampLeft  = padSignal[1];
+    Float_t ampRight = padSignal[3];
+
+    // apply pad response to parameters
+    newLeftSignal[0] = ampLeft*PadResponse(-1 - maxLeft);
+    newLeftSignal[1] = ampLeft*PadResponse( 0 - maxLeft);
+    newLeftSignal[2] = ampLeft*PadResponse( 1 - maxLeft);
+
+    newRightSignal[0] = ampRight*PadResponse(-1 - maxRight);
+    newRightSignal[1] = ampRight*PadResponse( 0 - maxRight);
+    newRightSignal[2] = ampRight*PadResponse( 1 - maxRight);
+
+    // calculate new overlapping ratio
+    ratio = newLeftSignal[2]/(newLeftSignal[2] + newRightSignal[0]);
+
+  }
+
+  return ratio;
+
+}
+
+//_____________________________________________________________________________
+Float_t AliTRDclusterizerV1::PadResponse(Float_t x)
+{
+  //
+  // The pad response for the chevron pads. 
+  // We use a simple Gaussian approximation which should be good
+  // enough for our purpose.
+  //
+
+  // The parameters for the response function
+  const Float_t aa  =  0.8872;
+  const Float_t bb  = -0.00573;
+  const Float_t cc  =  0.454;
+  const Float_t cc2 =  cc*cc;
+
+  Float_t pr = aa * (bb + TMath::Exp(-x*x / (2. * cc2)));
+
+  return (pr);
+
+}
