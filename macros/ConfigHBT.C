@@ -1,3 +1,48 @@
+// One can use the configuration macro in compiled mode by
+// root [0] gSystem->Load("libgeant321");
+// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
+// root [0] .x grun.C(1,"ConfigHBT.C++")
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TRandom.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+#include <TGeant3.h>
+#include "STEER/AliRunLoader.h"
+#include "STEER/AliRun.h"
+#include "STEER/AliConfig.h"
+#include "PYTHIA6/AliDecayerPythia.h"
+#include "EVGEN/AliGenCocktailAfterBurner.h"
+#include "TMEVSIM/AliMevSimConfig.h"
+#include "TMEVSIM/AliMevSimParticle.h"
+#include "TMEVSIM/AliGenMevSim.h"
+#include "THbtp/AliGenHBTprocessor.h"
+#include "STRUCT/AliBODY.h"
+#include "STRUCT/AliMAG.h"
+#include "STRUCT/AliABSOv0.h"
+#include "STRUCT/AliDIPOv2.h"
+#include "STRUCT/AliHALL.h"
+#include "STRUCT/AliFRAMEv2.h"
+#include "STRUCT/AliSHILv2.h"
+#include "STRUCT/AliPIPEv0.h"
+#include "ITS/AliITSvPPRasymm.h"
+#include "TPC/AliTPCv2.h"
+#include "TOF/AliTOFv2.h"
+#include "RICH/AliRICHv1.h"
+#include "ZDC/AliZDCv1.h"
+#include "TRD/AliTRDv1.h"
+#include "FMD/AliFMDv1.h"
+#include "MUON/AliMUONv1.h"
+#include "PHOS/AliPHOSv1.h"
+#include "PMD/AliPMDv1.h"
+#include "START/AliSTARTv1.h"
+#include "EMCAL/AliEMCALv1.h"
+#include "CRT/AliCRTv1.h"
+#include "VZERO/AliVZEROv2.h"
+#endif
+
 void Config()
 {
     // Set Random Number seed
@@ -5,21 +50,17 @@ void Config()
 
     new     TGeant3("C++ Interface to Geant3");
 
-    if (!gSystem->Getenv("CONFIG_FILE"))
-    {
-        cout<<"Config.C: Creating Run Loader ..."<<endl;
-        AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,
+    cout<<"Config.C: Creating Run Loader ..."<<endl;
+    AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,
                                               "recreate");
-        if (rl == 0x0)
-         {
-           gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
-           return;
-         }
-        rl->SetCompressionLevel(2);
-        rl->SetNumberOfEventsPerFile(6);        
-        gAlice->SetRunLoader(rl);
-    }
-
+    if (rl == 0x0)
+      {
+	gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+	return;
+      }
+    rl->SetCompressionLevel(2);
+    rl->SetNumberOfEventsPerFile(6);        
+    gAlice->SetRunLoader(rl);
 
     //
     // Set External decayer
