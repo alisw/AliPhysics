@@ -123,7 +123,7 @@ inline void AliL3HoughTransformerLUT::AddCurveToHistogram(Int_t new_eta_index)
   Float_t r2=fX*fX+fY*fY;
   for(Int_t b=0; b<fNPhi0; b++){
     Float_t kappa=(fY*fLUT2cosphi0[b]-fX*fLUT2sinphi0[b])/r2;
-    hist->Fill(kappa,fLUTphi0[b],fAccCharge);
+    hist->Fill(kappa,b+1,fAccCharge);
     //cout << kappa << " " << fLUTphi0[b] << " " << fAccCharge << endl;
   }
 

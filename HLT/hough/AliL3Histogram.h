@@ -9,8 +9,6 @@
 #include <TH2.h>
 #endif
 
-class ostream;
-
 class AliL3Histogram {
   
  private:
@@ -47,6 +45,9 @@ class AliL3Histogram {
   
   void Reset();
   virtual void Fill(Double_t x,Double_t y,Int_t weight=1);
+  virtual void Fill(Double_t x,Int_t ybin,Int_t weight=1);
+  virtual void Fill(Int_t xbin,Double_t y,Int_t weight=1);
+  virtual void Fill(Int_t xbin,Int_t ybin,Int_t weight=1);
   virtual Int_t FindBin(Double_t x,Double_t y) const;
   virtual Int_t FindXbin(Double_t x) const;
   virtual Int_t FindYbin(Double_t y) const;
@@ -62,7 +63,7 @@ class AliL3Histogram {
   virtual void Draw(Char_t *option="hist");
   virtual void Print() {};
 
-  friend ostream& operator<< (ostream &o, const AliL3Histogram &h);
+  friend ofstream& operator<< (ofstream &o, const AliL3Histogram &h);
 
 #ifdef use_root
   TH2F *GetRootHisto();

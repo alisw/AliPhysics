@@ -3,8 +3,6 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include <ostream.h>
-
 #include "AliL3StandardIncludes.h"
 
 #include "AliL3Logging.h"
@@ -96,8 +94,45 @@ void AliL3Histogram::Reset()
 void AliL3Histogram::Fill(Double_t x,Double_t y,Int_t weight)
 {
   Int_t bin = FindBin(x,y);
+#ifdef _IFON_
   if(bin < 0)
     return;
+#endif
+  
+  AddBinContent(bin,weight);
+}
+
+void AliL3Histogram::Fill(Double_t x,Int_t ybin,Int_t weight)
+{
+  Int_t xbin = FindXbin(x);
+  Int_t bin = GetBin(xbin,ybin);
+#ifdef _IFON_
+  if(bin < 0)
+    return;
+#endif
+  
+  AddBinContent(bin,weight);
+}
+
+void AliL3Histogram::Fill(Int_t xbin,Double_t y,Int_t weight)
+{
+  Int_t ybin = FindYbin(y);
+  Int_t bin = GetBin(xbin,ybin);
+#ifdef _IFON_
+  if(bin < 0)
+    return;
+#endif
+  
+  AddBinContent(bin,weight);
+}
+
+void AliL3Histogram::Fill(Int_t xbin,Int_t ybin,Int_t weight)
+{
+  Int_t bin = GetBin(xbin,ybin);
+#ifdef _IFON_
+  if(bin < 0)
+    return;
+#endif
   
   AddBinContent(bin,weight);
 }
@@ -106,8 +141,10 @@ Int_t AliL3Histogram::FindBin(Double_t x,Double_t y) const
 {
   Int_t xbin = FindXbin(x);
   Int_t ybin = FindYbin(y);
+#ifdef _IFON_
   if(!xbin || !ybin)
     return -1;
+#endif
   
   return GetBin(xbin,ybin);
 }
@@ -155,8 +192,11 @@ Int_t AliL3Histogram::GetBinContent(Int_t bin) const
 void AliL3Histogram::SetBinContent(Int_t xbin,Int_t ybin,Int_t value)
 {
   Int_t bin = GetBin(xbin,ybin);
+#ifdef _IFON_
   if(bin == 0) 
     return;
+#endif
+
   SetBinContent(bin,value);
 }
 
@@ -178,8 +218,11 @@ void AliL3Histogram::SetBinContent(Int_t bin,Int_t value)
 void AliL3Histogram::AddBinContent(Int_t xbin,Int_t ybin,Int_t weight)
 {
   Int_t bin = GetBin(xbin,ybin);
+#ifdef _IFON_
   if(bin == 0)
     return;
+#endif
+
   AddBinContent(bin,weight);
 }
 
@@ -214,6 +257,7 @@ void AliL3Histogram::Add(AliL3Histogram *h1,Double_t weight)
 	"Mismatch in the number of bins "<<ENDLOG;
       return;
     }
+
   if(h1->GetFirstXbin()!=fFirstXbin || h1->GetLastXbin()!=fLastXbin ||
      h1->GetFirstYbin()!=fFirstYbin || h1->GetLastYbin()!=fLastYbin)
     {
@@ -284,7 +328,7 @@ void AliL3Histogram::CreateRootHisto()
   cerr<<"AliL3Histogram::CreateRootHisto : You need to compile with ROOT in order to create ROOT histogram"<<endl;
 }
 
-ostream& operator<<(ostream &o, const AliL3Histogram &h)
+ofstream& operator<<(ofstream &o, const AliL3Histogram &h)
 {
   for(Int_t xbin=h.GetFirstXbin(); xbin<=h.GetLastXbin(); xbin++)
     {

@@ -3,8 +3,6 @@
 // Author: Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
 //*-- Copyright &copy ALICE HLT Group
 
-#include <iostream.h>
-
 #include "AliL3RootTypes.h"
 #include "AliL3StandardIncludes.h"
 #include "AliL3Logging.h"
