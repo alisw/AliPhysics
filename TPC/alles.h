@@ -9,8 +9,6 @@
 #include <TTUBS.h>
 #include <TObjectTable.h>
 #include <Riostream.h>
-#include <Riostream.h>
-#include "AliMC.h"
 #include <TFile.h>
 #include <TStyle.h>
 #include <TCanvas.h>

@@ -10,15 +10,16 @@
 //  Simple TRD Monte Carlo class                                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include "TMCProcess.h"
+#include "TVirtualMC.h"
  
-#include "AliMC.h"
-#include "AliMCProcess.h"
 #include "AliDecayer.h"
 
 class AliTRDv1;
 class AliTRDparameter;
  
-class AliTRDsimpleMC : public AliMC {
+class AliTRDsimpleMC : public TVirtualMC {
  
  public:     
 
@@ -194,7 +195,7 @@ class AliTRDsimpleMC : public AliMC {
   virtual void          GetSecondary(Int_t isec, Int_t& particleId, 
                                      TLorentzVector& position, 
                                      TLorentzVector& momentum)                            { };
-  virtual AliMCProcess  ProdProcess(Int_t isec) const                                     { return kPNoProcess; }; 
+  virtual TMCProcess  ProdProcess(Int_t isec) const                                     { return kPNoProcess; }; 
   virtual Int_t         StepProcesses(TArrayI &proc) const                                { return 0; };
 
   //

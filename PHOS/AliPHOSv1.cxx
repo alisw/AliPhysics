@@ -50,7 +50,6 @@
 #include "AliPHOSCPVDigit.h"
 #include "AliRun.h"
 #include "AliConst.h"
-#include "AliMC.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSQAIntCheckable.h"
 #include "AliPHOSQAFloatCheckable.h"

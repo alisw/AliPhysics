@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.3.6.2  2002/07/24 10:09:30  alibrary
 Updating VirtualMC
 
@@ -41,7 +44,7 @@ Add detailed geometry and simple simulator
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliMC.h"
+#include "TVirtualMC.h"
 
 #include "AliTRDgeometryDetail.h"
 #include "AliTRDparameter.h"

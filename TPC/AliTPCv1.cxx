@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2002/10/23 07:17:34  alibrary
+Introducing Riostream.h
+
 Revision 1.30  2001/06/12 07:07:41  kowal2
 New files for folder and stack
 
@@ -126,7 +129,6 @@ Introduction of the Copyright and cvs Log
 #include <Riostream.h>
 #include "TLorentzVector.h"
 
-#include "AliMC.h"
 #include "AliConst.h"
 
 #include "AliTPCParam.h"

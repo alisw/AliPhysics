@@ -33,7 +33,6 @@
 #include "AliTOF.h"
 #include "AliTOFdigit.h"
 #include "AliRun.h"
-#include "AliMC.h"
 
 ClassImp(AliTOFdigit)
 

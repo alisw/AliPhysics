@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.63  2002/11/04 09:02:52  morsch
+  Further corrcetions on Fresnel and Grid losses.
+
   Revision 1.62  2002/10/31 08:44:04  morsch
   Problems with rotated RICH solved:
   Detector response (fresnel reflection, grid absorption ...) has to be
@@ -216,7 +219,6 @@
 #include "AliRICHDigitizer.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliConst.h"
 #include "AliPDG.h"

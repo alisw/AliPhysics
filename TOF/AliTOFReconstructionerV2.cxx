@@ -35,7 +35,6 @@
 #include "TVirtualMC.h"
 
 #include "AliDetector.h"
-#include "AliMC.h"
 #include "AliRun.h"
 #include "AliTOF.h"
 #include "AliTOFDigitMap.h"

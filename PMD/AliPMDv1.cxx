@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.17  2002/10/23 07:36:35  alibrary
+Introducing Riostream.h
+
 Revision 1.16  2001/05/21 17:44:04  hristov
 Backslash to continue strings
 
@@ -46,7 +49,6 @@ AliPMDv0 coarse geometry and AliPMDv1 detailed simulation, completely revised ve
 
 #include "AliPMDv1.h"
 #include "AliRun.h"
-#include "AliMC.h" 
 #include "AliConst.h" 
 #include "AliMagF.h" 
 #include "Riostream.h"

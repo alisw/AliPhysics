@@ -42,7 +42,6 @@
 #include "AliPHOSGetter.h"
 #include "AliRun.h"
 #include "AliConst.h"
-#include "AliMC.h"
 
 ClassImp(AliPHOSv4)
 

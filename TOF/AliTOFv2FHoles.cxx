@@ -53,7 +53,6 @@
 #include <TLorentzVector.h>
 #include "TObject.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliConst.h"
 
@@ -844,10 +843,8 @@ void AliTOFv2FHoles::DrawDetectorModules()
 // Draw a shaded view of the TOF detector version 2
 //
  
- AliMC* pMC = AliMC::GetMC();
- 
 //Set ALIC mother transparent
- pMC->Gsatt("ALIC","SEEN",0);
+ gMC->Gsatt("ALIC","SEEN",0);
 
 //
 //Set volumes visible
@@ -917,10 +914,8 @@ void AliTOFv2FHoles::DrawDetectorStrips()
 // Draw a shaded view of the TOF strips for version 2
 //
  
- AliMC* pMC = AliMC::GetMC();
- 
 //Set ALIC mother transparent
- pMC->Gsatt("ALIC","SEEN",0);
+ gMC->Gsatt("ALIC","SEEN",0);
 
 //
 //Set volumes visible 

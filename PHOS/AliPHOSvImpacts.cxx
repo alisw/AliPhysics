@@ -35,7 +35,6 @@
 // --- AliRoot header files ---
 
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliPHOSvImpacts.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSImpact.h"

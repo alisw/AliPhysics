@@ -35,7 +35,6 @@ class TFile;
 
 // --- AliRoot header files ---
 #include "AliPHOS.h"
-#include "AliMC.h"
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliPHOSGeometry.h"

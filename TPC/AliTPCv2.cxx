@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.43  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.40.6.2  2002/07/24 10:09:01  alibrary
 Updating VirtualMC
 
@@ -152,7 +155,6 @@ Introduction of the Copyright and cvs Log
 #include "AliTPCv2.h"
 #include "AliTPCDigitsArray.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
 #include "AliPDG.h"
 #include "AliTPCParam.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/10/31 17:45:35  cblume
+New chamber geometry
+
 Revision 1.8  2002/02/11 14:21:16  cblume
 Update of the geometry. Get rid of MANY
 
@@ -65,7 +68,7 @@ Add new TRD classes
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliMC.h"
+#include "TVirtualMC.h"
 
 #include "AliTRDgeometryFull.h"
 

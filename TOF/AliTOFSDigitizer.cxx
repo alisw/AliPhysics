@@ -50,7 +50,6 @@
 #include "AliTOFSDigitizer.h"
 #include "AliRun.h"
 #include "AliDetector.h"
-#include "AliMC.h"
 
 
 ClassImp(AliTOFSDigitizer)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/11/06 17:19:41  cblume
+Add detailed geometry and simple simulator
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,7 +32,6 @@ $Log$
 #include <TMath.h>
 
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
 
 #include "AliTRDv2.h"

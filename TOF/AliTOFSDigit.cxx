@@ -36,7 +36,6 @@
 #include "AliTOFSDigit.h"
 #include "AliTOFConstants.h"
 #include "AliRun.h"
-#include "AliMC.h"
 
 ClassImp(AliTOFSDigit)
 

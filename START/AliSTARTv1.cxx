@@ -35,14 +35,11 @@
 
 #include "AliSTARTv1.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliSTARThit.h"
 
 #include <Riostream.h>
-#include <Riostream.h>
 
-//#include "TGeant3.h"
 #include <stdlib.h>
 
 ClassImp(AliSTARTv1)

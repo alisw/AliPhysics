@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.3  2002/10/14 14:57:44  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.1.8.1  2002/07/24 10:09:31  alibrary
 Updating VirtualMC
 
@@ -46,7 +49,7 @@ Add detailed geometry and simple simulator
 ClassImp(AliTRDsimpleMC)
  
 //_____________________________________________________________________________
-AliTRDsimpleMC::AliTRDsimpleMC():AliMC()
+AliTRDsimpleMC::AliTRDsimpleMC()
 {                       
   //
   // AliTRDsimpleMC default constructor
@@ -76,7 +79,7 @@ AliTRDsimpleMC::AliTRDsimpleMC():AliMC()
 
 //_____________________________________________________________________________
 AliTRDsimpleMC::AliTRDsimpleMC(const char *name, const char *title)
-               :AliMC(name,title)
+               :TVirtualMC(name,title)
 {                       
   //
   // AliTRDsimpleMC default constructor

@@ -67,7 +67,6 @@
 #include "AliTOFv4T0.h"
 #include "AliRun.h"
 #include "AliDetector.h"
-#include "AliMC.h"
 
 #include "TH1.h"
 #include "TFile.h"

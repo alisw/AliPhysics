@@ -45,7 +45,6 @@
 #include "AliPHOSv0.h"
 #include "AliRun.h"
 #include "AliConst.h"
-#include "AliMC.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSGetter.h"
 

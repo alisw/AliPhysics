@@ -55,7 +55,6 @@
 // #include "../TPC/AliTPC.h"
 #include "AliRun.h"
 #include "AliDetector.h"
-#include "AliMC.h"
 
 #include "TTask.h"
 #include "TBenchmark.h"

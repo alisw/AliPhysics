@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.10  2002/10/14 14:57:32  hristov
+  Merging the VirtualMC branch to the main development branch (HEAD)
+
   Revision 1.9.6.1  2002/06/10 15:12:46  hristov
   Merged with v3-08-02
 
@@ -50,7 +53,6 @@
 #include "AliRICHResponseV0.h"
 #include "AliSegmentation.h"
 #include "AliRun.h"
-#include "AliMC.h"
 
 #include <TMath.h>
 #include <TRandom.h>

@@ -15,7 +15,6 @@
 
 #include "AliRICHv3.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 
 #include "AliConst.h"

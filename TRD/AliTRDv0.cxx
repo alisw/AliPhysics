@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2002/02/20 14:01:40  hristov
+Compare a TString with a string, otherwise the conversion cannot be done on Sun
+
 Revision 1.20  2002/02/13 16:58:37  cblume
 Bug fix reported by Jiri. Make atoi input zero terminated in StepManager()
 
@@ -83,7 +86,6 @@ Introduction of the Copyright and cvs Log
 #include <TLorentzVector.h>
 
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
   
 #include "AliTRDv0.h"

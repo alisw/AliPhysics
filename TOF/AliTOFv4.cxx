@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/10/22 14:26:28  alibrary
+Introducing Riostream.h
+
 Revision 1.19  2002/10/14 14:57:42  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -121,7 +124,6 @@ Introduction of the Copyright and cvs Log
 #include <TLorentzVector.h>
 #include "TObject.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
 
  
@@ -883,10 +885,9 @@ void AliTOFv4::DrawDetectorModules()
 // Draw a shaded view of the TOF detector version 4
 //
  
- AliMC* pMC = AliMC::GetMC();
  
 //Set ALIC mother transparent
- pMC->Gsatt("ALIC","SEEN",0);
+ gMC->Gsatt("ALIC","SEEN",0);
 
 //
 //Set volumes visible
@@ -956,10 +957,8 @@ void AliTOFv4::DrawDetectorStrips()
 // Draw a shaded view of the TOF strips for version 4
 //
  
- AliMC* pMC = AliMC::GetMC();
- 
 //Set ALIC mother transparent
- pMC->Gsatt("ALIC","SEEN",0);
+ gMC->Gsatt("ALIC","SEEN",0);
 
 //
 //Set volumes visible 

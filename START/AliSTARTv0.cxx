@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2002/10/22 15:40:19  alibrary
+Introducing Riostream.h
+
 Revision 1.14  2001/10/19 05:29:38  alla
 bug in meduim fixed
 
@@ -68,14 +71,11 @@ Introduction of the Copyright and cvs Log
 
 #include "AliSTARTv0.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliSTARThit.h"
 
 #include <Riostream.h>
-#include <Riostream.h>
 
-//#include "TGeant3.h"
 #include <stdlib.h>
 
 ClassImp(AliSTARTv0)

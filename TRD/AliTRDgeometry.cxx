@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2002/11/21 16:09:44  cblume
+Change fgkRpadW to 1.0 cm for new pad plane
+
 Revision 1.20  2002/10/31 17:45:35  cblume
 New chamber geometry
 
@@ -128,11 +131,9 @@ Add new TRD classes
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliMC.h"
 
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
-#include "AliMC.h"
 
 ClassImp(AliTRDgeometry)
 

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.11  2002/10/22 15:40:19  alibrary
+Introducing Riostream.h
+
 Revision 1.10  2002/10/14 14:57:32  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -54,7 +57,6 @@ Vertex reconstruction
 #include "AliSTARThit.h"
 #include "AliSTART.h"
 #include "AliRun.h"
-#include "AliMC.h"
 
 //#include "TTree.h"
 #include "TDirectory.h"

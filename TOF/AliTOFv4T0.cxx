@@ -38,6 +38,7 @@
 
 #include <Riostream.h>
 #include <stdlib.h>
+#include "TVirtualMC.h"
 
 #include "AliTOFv4T0.h"
 #include "TBRIK.h"
@@ -46,7 +47,6 @@
 #include <TLorentzVector.h>
 #include "TObject.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
 
  
@@ -808,10 +808,8 @@ void AliTOFv4T0::DrawDetectorModules()
 // Draw a shaded view of the TOF detector version 4
 //
  
- AliMC* pMC = AliMC::GetMC();
- 
-//Set ALIC mother transparent
- pMC->Gsatt("ALIC","SEEN",0);
+ //Set ALIC mother transparent
+  gMC->Gsatt("ALIC","SEEN",0);
 
 //
 //Set volumes visible
@@ -881,10 +879,8 @@ void AliTOFv4T0::DrawDetectorStrips()
   // Draw a shaded view of the TOF strips for version 4
   //
   
-  AliMC* pMC = AliMC::GetMC();
- 
   //Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   
   //
   //Set volumes visible 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2002/01/23 09:36:52  morsch
+Don't use shunting if you don't want it !
+
 Revision 1.15  2001/05/16 14:57:19  alibrary
 New files for folders and Stack
 
@@ -82,7 +85,6 @@ Introduction of the Copyright and cvs Log
 
 #include "AliPMD.h"
 #include "AliRun.h"
-#include "AliMC.h" 
 #include "AliConst.h" 
 #include "AliPMDRecPoint.h"
   

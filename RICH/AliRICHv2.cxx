@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.10  2002/10/22 16:28:21  alibrary
+  Introducing Riostream.h
+
   Revision 1.9  2002/10/14 14:57:32  hristov
   Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -95,7 +98,6 @@
 #include "AliRICHv2.h"
 #include "AliRICHHit.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "Riostream.h"
 #include "AliConst.h" 
 #include "AliPDG.h" 
