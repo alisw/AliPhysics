@@ -44,6 +44,7 @@ class AliHBTReader: public TNamed
     void                 SetEventBuffering(Bool_t flag){fBufferEvents = flag;}
     void          SetBlend(Bool_t flag = kTRUE){fBlend=flag;}
     virtual Int_t GetNumberOfDirs() const {return (fDirs)?fDirs->GetEntries():0;}
+    void          ReadEventsFromTo(Int_t first,Int_t last){fFirst = first; fLast = last;}
   protected:
     
     TObjArray*    fCuts;//array with particle cuts
@@ -64,6 +65,10 @@ class AliHBTReader: public TNamed
     Bool_t        fBufferEvents;//flag indicating if the data should be bufferred
     
     Bool_t        fBlend;// flag indicating if randomly change positions of the particles after reading
+    
+    Int_t         fFirst;//first event to return (all are before are skipped)
+    Int_t         fLast;//last
+    
     virtual Int_t ReadNext() = 0; //this methods reads next event and put result in fTracksEvent and/or fParticlesEvent
     Bool_t Pass(AliHBTParticle*);
     Bool_t Pass(Int_t pid);

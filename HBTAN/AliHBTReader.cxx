@@ -26,7 +26,10 @@ AliHBTReader::AliHBTReader():
  fParticles(0x0),
  fTracks(0x0),
  fIsRead(kFALSE),
- fBufferEvents(kFALSE)
+ fBufferEvents(kFALSE),
+ fBlend(kFALSE),
+ fFirst(0),
+ fLast(0)
 {
 //constructor
 }
@@ -43,7 +46,10 @@ AliHBTReader::AliHBTReader(TObjArray* dirs):
  fParticles(0x0),
  fTracks(0x0),
  fIsRead(kFALSE),
- fBufferEvents(kFALSE)
+ fBufferEvents(kFALSE),
+ fBlend(kFALSE),
+ fFirst(0),
+ fLast(0)
 {
 //ctor with array of directories to read as parameter
 }
@@ -65,17 +71,22 @@ AliHBTReader::~AliHBTReader()
 Int_t AliHBTReader::Next()
 {
 //moves to next event
-  if ( ReadNext() == kTRUE)
-     return kTRUE;
+  if ((fNEventsRead > fLast) && (fLast > 0) )
+   
+  do
+   {
+    if ( ReadNext() == kTRUE)
+      return kTRUE;
+   }while (fNEventsRead < fFirst);
   
   if (fBlend) Blend();
   
   if (fBufferEvents)
    {
      if ( ReadsTracks() && fTracksEvent) 
-       fTracks->SetEvent(fNEventsRead-1,fTracksEvent);
+       fTracks->SetEvent(fNEventsRead-1-fFirst,fTracksEvent);
      if ( ReadsParticles() && fParticlesEvent)
-       fParticles->SetEvent(fNEventsRead-1,fParticlesEvent);
+       fParticles->SetEvent(fNEventsRead-1-fFirst,fParticlesEvent);
    }
   return kFALSE;
 }
