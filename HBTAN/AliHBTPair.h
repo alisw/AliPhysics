@@ -58,7 +58,9 @@ class AliHBTPair: public TObject
    virtual Double_t GetDeltaPhi();
    
    virtual Double_t GetGammaToCMSLC();
-   Double_t GetWeight();
+   virtual Double_t GetWeight();
+   virtual Double_t GetPIDProb() const {return fPart1->GetPidProb()*fPart2->GetPidProb();}
+   
  protected:
    AliHBTParticle* fPart1;  //pointer to first particle
    AliHBTParticle* fPart2;  //pointer to second particle

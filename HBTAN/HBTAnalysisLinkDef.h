@@ -39,11 +39,12 @@
 
 #pragma link C++ class AliHBTParticleCut-;
 #pragma link C++ class AliHBTEmptyParticleCut-;
+#pragma link C++ class AliHbtBaseCut+;
+
 #pragma link C++ class AliHBTPairCut-;
 #pragma link C++ class AliHBTEmptyPairCut-;
-
-#pragma link C++ class AliHbtBaseCut+;
 #pragma link C++ class AliHbtBasePairCut+;
+
 #pragma link C++ class AliHBTQInvCut+;
 #pragma link C++ class AliHBTKtCut+;
 #pragma link C++ class AliHBTKStarCut+;
@@ -169,6 +170,12 @@
 #pragma link C++ class AliHBTMonThetaResolutionVsPtFctn+;
 #pragma link C++ class AliHBTMonPhiResolutionVsPhiFctn+;
 #pragma link C++ class AliHBTMonThetaResolutionVsThetaFctn+;
+
+
+#pragma link C++ class AliHBTMonPIDPurityVsPtFctn+;
+#pragma link C++ class AliHBTMonPIDContaminationVsPtFctn+;
+#pragma link C++ class AliHBTPairPIDProbVsQInvFctn+;
+#pragma link C++ class AliHBTPairPIDProbVsQOutSQideQLongFctn+;
 
 #pragma link C++ class AliHBTTwoTrackEffFctn+;
 #pragma link C++ class AliHBTTwoTrackEffFctnPtThetaPhi+;
