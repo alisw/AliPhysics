@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.65  2001/05/21 17:22:51  buncic
+Fixed problem with missing AliConfig while reading galice.root
+
 Revision 1.64  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -1261,7 +1264,7 @@ void AliRun::MakeTree(Option_t *option, const char *file)
 }
 
 //_____________________________________________________________________________
-inline TParticle* AliRun::Particle(Int_t i)
+TParticle* AliRun::Particle(Int_t i)
 {
     return fStack->Particle(i);
 }
