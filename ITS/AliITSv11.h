@@ -105,17 +105,26 @@ class AliITSv11 : public AliITS {
     void SSDCone(TGeoVolume *Moth);
     Double_t RmaxFrom2Points(TGeoPcon *p,Int_t i1,Int_t i2,Double_t z);
     Double_t RminFrom2Points(TGeoPcon *p,Int_t i1,Int_t i2,Double_t z);
-    Double_t RFrom2Points(Double_t *p,Double_t *Z,Int_t i1,Int_t i2,Double_t z);
+    Double_t RFrom2Points(Double_t *p,Double_t *Z,Int_t i1,Int_t i2,
+					 Double_t z);
     Double_t Zfrom2MinPoints(TGeoPcon *p,Int_t i1,Int_t i2,Double_t r);
     Double_t Zfrom2MaxPoints(TGeoPcon *p,Int_t i1,Int_t i2,Double_t r);
-    Double_t Zfrom2Points(Double_t *Z,Double_t *p,Int_t i1,Int_t i2,Double_t r);
-    Double_t RmaxFromZpCone(TGeoPcon *p,Double_t tc,Double_t z,Double_t th=0.0);
-    Double_t RmaxFromZpCone(Double_t *Rmax,Double_t *Z,Double_t tc,Double_t z,Double_t th=0.0);
-    Double_t RminFromZpCone(TGeoPcon *p,Double_t tc,Double_t z,Double_t th=0.0);
-    Double_t RminFromZpCone(Double_t *Rmin,Double_t *Z,Double_t tc,Double_t z,Double_t th=0.0);
-    Double_t ZFromRmaxpCone(TGeoPcon *p,Double_t tc,Double_t r,Double_t th=0.0);
-    Double_t ZFromRmaxpCone(Double_t *GetRmax,Double_t *GetZ,Double_t tc,Double_t r,Double_t th=0.0);
-    Double_t ZFromRminpCone(TGeoPcon *p,Double_t tc,Double_t r,Double_t th=0.0);
+    Double_t Zfrom2Points(Double_t *Z,Double_t *p,Int_t i1,Int_t i2,
+					 Double_t r);
+    Double_t RmaxFromZpCone(TGeoPcon *p,Double_t tc,Double_t z,
+					   Double_t th=0.0);
+    Double_t RmaxFromZpCone(Double_t *Rmax,Double_t *Z,Double_t tc,
+					   Double_t z,Double_t th=0.0);
+    Double_t RminFromZpCone(TGeoPcon *p,Double_t tc,Double_t z,
+					   Double_t th=0.0);
+    Double_t RminFromZpCone(Double_t *Rmin,Double_t *Z,Double_t tc,
+					   Double_t z,Double_t th=0.0);
+    Double_t ZFromRmaxpCone(TGeoPcon *p,Double_t tc,Double_t r,
+					   Double_t th=0.0);
+    Double_t ZFromRmaxpCone(Double_t *GetRmax,Double_t *GetZ,Double_t tc,
+					   Double_t r,Double_t th=0.0);
+    Double_t ZFromRminpCone(TGeoPcon *p,Double_t tc,Double_t r,
+					   Double_t th=0.0);
     void RadiusOfCurvature(Double_t rc,Double_t theta0,Double_t z0,
 			   Double_t r0,Double_t theta1,Double_t &z1,
 			   Double_t &r1);
