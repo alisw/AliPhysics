@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/06/22 14:11:17  morsch
+Back to official z-positions of rings.
+
 Revision 1.3  2001/06/22 12:02:20  morsch
 Ring locations matching TRD module positions.
 
@@ -70,7 +73,7 @@ void AliFRAMEv2::CreateGeometry()
 */
 //End_Html
 
-  Int_t idrotm[2199];
+  Int_t idrotm[2299];
   Int_t *idtmed = fIdtmed->GetArray()-1999;
 //
 // The Space frame
@@ -98,9 +101,9 @@ void AliFRAMEv2::CreateGeometry()
   Float_t dwh    = 0.96;
 
 // 
-  Float_t dymod[3] = {70., 224., 341.};
+  Float_t dymodU[3] = {70.0, 224.0, 341.};
 //  new ?
-//  Float_t dymod[3] = {59.5, 178.5, 341.};
+  Float_t dymodL[3] = {54.0, 178.5, 341.};
 
 //
 // Frame mother volume
@@ -185,7 +188,7 @@ void AliFRAMEv2::CreateGeometry()
 //
   Float_t h, d, dq, x, theta;
   
-  h  = (dymod[1]-dymod[0]-2.*dol)*.999;
+  h  = (dymodU[1]-dymodU[0]-2.*dol)*.999;
   d  = 2.*dol;
   dq = h*h+dz*dz;
 
@@ -223,7 +226,7 @@ void AliFRAMEv2::CreateGeometry()
         //\\
        //  \\
 */
-  h  = (2.*dymod[0]-2.*dol)*.999;
+  h  = (2.*dymodU[0]-2.*dol)*.999;
 // 
 // Mother volume
 //
@@ -301,7 +304,7 @@ void AliFRAMEv2::CreateGeometry()
 
   Float_t ddx, ddz, drx, drz, rtheta;
 
-  AliMatrix(idrotm[2198], -theta+180, 0.0, 90.0, 90.0, 90.-theta, 0.0);
+  AliMatrix(idrotm[2001], -theta+180, 0.0, 90.0, 90.0, 90.-theta, 0.0);
   rtheta = (90.-theta)*kdeg2rad;
   ddx = -ddx0-dol*TMath::Tan(theta2);
   ddz = -dol;
@@ -310,21 +313,21 @@ void AliFRAMEv2::CreateGeometry()
   drz = -TMath::Sin(rtheta) * ddx +TMath::Cos(rtheta) *ddz-pbox[2];
   gMC->Gspos("B051", 1, "BM49", 
 	     drx, 0.0, drz,
-	     idrotm[2198], "ONLY");
+	     idrotm[2001], "ONLY");
 
-  AliMatrix(idrotm[2197], -theta, 0.0, 90.0, 90.0, 270.-theta, 0.0);
+  AliMatrix(idrotm[2002], -theta, 0.0, 90.0, 90.0, 270.-theta, 0.0);
   rtheta = (270.-theta)*kdeg2rad;
   
   drx =  TMath::Cos(rtheta) * ddx +  TMath::Sin(rtheta) * ddz-pbox[0];
   drz = -TMath::Sin(rtheta) * ddx +  TMath::Cos(rtheta) * ddz+pbox[2];
   gMC->Gspos("B051", 2, "BM49", 
 	     drx, 0.0, drz,
-	     idrotm[2197], "ONLY");
+	     idrotm[2002], "ONLY");
 
 //
 // Diagonal bars (3) 
 //
-  h  = ((dymod[2]-dymod[1])-2.*dol)*.999;
+  h  = ((dymodU[2]-dymodU[1])-2.*dol)*.999;
   dq = h*h+dz*dz;
   x  =  TMath::Sqrt((dz*dz-d*d)/dq + d*d*h*h/dq/dq)+d*h/dq;
   theta = krad2deg * TMath::ACos(x);
@@ -354,43 +357,43 @@ void AliFRAMEv2::CreateGeometry()
 // Matrices have been imported from Euclid. Some simplification
 // seems possible
 //
-  AliMatrix(idrotm[2121],   0.0, 0.0, 90.0, 130.0, 90.0,  40.0);
-  AliMatrix(idrotm[2123], 180.0, 0.0, 90.0, 130.0, 90.0,  40.0);
-  AliMatrix(idrotm[2125], 180.0, 0.0, 90.0, 150.0, 90.0, 240.0);
-  AliMatrix(idrotm[2130],   0.0, 0.0, 90.0, 150.0, 90.0, 240.0);
-  AliMatrix(idrotm[2128],   0.0, 0.0, 90.0, 170.0, 90.0,  80.0);
-  AliMatrix(idrotm[2135], 180.0, 0.0, 90.0, 190.0, 90.0, 280.0);
-  AliMatrix(idrotm[2141], 180.0, 0.0, 90.0, 170.0, 90.0,  80.0);
-  AliMatrix(idrotm[2131],   0.0, 0.0, 90.0, 190.0, 90.0, 280.0);
-  AliMatrix(idrotm[2101],   0.0, 0.0, 90.0, 350.0, 90.0, 260.0);
-  AliMatrix(idrotm[2106], 180.0, 0.0, 90.0, 350.0, 90.0, 260.0);
-  AliMatrix(idrotm[2096], 180.0, 0.0, 90.0,  10.0, 90.0, 100.0);
-  AliMatrix(idrotm[2098],   0.0, 0.0, 90.0,  10.0, 90.0, 100.0);
-  AliMatrix(idrotm[2108],   0.0, 0.0, 90.0,  30.0, 90.0, 300.0);
-  AliMatrix(idrotm[2111], 180.0, 0.0, 90.0,  30.0, 90.0, 300.0);
-  AliMatrix(idrotm[2113], 180.0, 0.0, 90.0,  50.0, 90.0, 140.0);
-  AliMatrix(idrotm[2118],   0.0, 0.0, 90.0,  50.0, 90.0, 140.0);
+  AliMatrix(idrotm[2003],   0.0, 0.0, 90.0, 130.0, 90.0,  40.0);
+  AliMatrix(idrotm[2004], 180.0, 0.0, 90.0, 130.0, 90.0,  40.0);
+  AliMatrix(idrotm[2005], 180.0, 0.0, 90.0, 150.0, 90.0, 240.0);
+  AliMatrix(idrotm[2006],   0.0, 0.0, 90.0, 150.0, 90.0, 240.0);
+  AliMatrix(idrotm[2007],   0.0, 0.0, 90.0, 170.0, 90.0,  80.0);
+  AliMatrix(idrotm[2008], 180.0, 0.0, 90.0, 190.0, 90.0, 280.0);
+  AliMatrix(idrotm[2009], 180.0, 0.0, 90.0, 170.0, 90.0,  80.0);
+  AliMatrix(idrotm[2010],   0.0, 0.0, 90.0, 190.0, 90.0, 280.0);
+  AliMatrix(idrotm[2011],   0.0, 0.0, 90.0, 350.0, 90.0, 260.0);
+  AliMatrix(idrotm[2012], 180.0, 0.0, 90.0, 350.0, 90.0, 260.0);
+  AliMatrix(idrotm[2013], 180.0, 0.0, 90.0,  10.0, 90.0, 100.0);
+  AliMatrix(idrotm[2014],   0.0, 0.0, 90.0,  10.0, 90.0, 100.0);
+  AliMatrix(idrotm[2015],   0.0, 0.0, 90.0,  30.0, 90.0, 300.0);
+  AliMatrix(idrotm[2016], 180.0, 0.0, 90.0,  30.0, 90.0, 300.0);
+  AliMatrix(idrotm[2017], 180.0, 0.0, 90.0,  50.0, 90.0, 140.0);
+  AliMatrix(idrotm[2018],   0.0, 0.0, 90.0,  50.0, 90.0, 140.0);
 
-  AliMatrix(idrotm[2115], 180.0, 0.0, 90.0, 130.0, 90.0, 220.0);
-  AliMatrix(idrotm[2112], 180.0, 0.0, 90.0, 50.0, 90.0, 320.0);
-  AliMatrix(idrotm[2124], 180.0, 0.0, 90.0, 150.0, 90.0, 60.0);
-  AliMatrix(idrotm[2103], 180.0, 0.0, 90.0, 30.0, 90.0, 120.0);
-  AliMatrix(idrotm[2140], 180.0, 0.0, 90.0, 170.0, 90.0, 260.0);
-  AliMatrix(idrotm[2133], 180.0, 0.0, 90.0, 190.0, 90.0, 100.0);
-  AliMatrix(idrotm[2104], 180.0, 0.0, 90.0, 350.0, 90.0, 80.0);
-  AliMatrix(idrotm[2095], 180.0, 0.0, 90.0, 10.0, 90.0, 280.0);
+  AliMatrix(idrotm[2019], 180.0, 0.0, 90.0, 130.0, 90.0, 220.0);
+  AliMatrix(idrotm[2020], 180.0, 0.0, 90.0, 50.0, 90.0, 320.0);
+  AliMatrix(idrotm[2021], 180.0, 0.0, 90.0, 150.0, 90.0, 60.0);
+  AliMatrix(idrotm[2022], 180.0, 0.0, 90.0, 30.0, 90.0, 120.0);
+  AliMatrix(idrotm[2023], 180.0, 0.0, 90.0, 170.0, 90.0, 260.0);
+  AliMatrix(idrotm[2024], 180.0, 0.0, 90.0, 190.0, 90.0, 100.0);
+  AliMatrix(idrotm[2025], 180.0, 0.0, 90.0, 350.0, 90.0, 80.0);
+  AliMatrix(idrotm[2026], 180.0, 0.0, 90.0, 10.0, 90.0, 280.0);
   
-  AliMatrix(idrotm[2119], 0.0, 0.0, 90.0, 50.0, 90.0, 320.0);
-  AliMatrix(idrotm[2139], 0.0, 0.0, 90.0, 150.0, 90.0, 60.0); 
-  AliMatrix(idrotm[2107], 0.0, 0.0, 90.0, 30.0, 90.0, 120.0);
-  AliMatrix(idrotm[2099], 0.0, 0.0, 90.0, 10.0, 90.0, 280.0);
-  AliMatrix(idrotm[2129], 0.0, 0.0, 90.0, 170.0, 90.0, 260.0);
-  AliMatrix(idrotm[2144], 0.0, 0.0, 90.0, 190.0, 90.0, 100.0);
-  AliMatrix(idrotm[2100], 0.0, 0.0, 90.0, 350.0, 90.0, 80.0);
+  AliMatrix(idrotm[2027], 0.0, 0.0, 90.0, 50.0, 90.0, 320.0);
+  AliMatrix(idrotm[2028], 0.0, 0.0, 90.0, 150.0, 90.0, 60.0); 
+  AliMatrix(idrotm[2029], 0.0, 0.0, 90.0, 30.0, 90.0, 120.0);
+  AliMatrix(idrotm[2030], 0.0, 0.0, 90.0, 10.0, 90.0, 280.0);
+  AliMatrix(idrotm[2031], 0.0, 0.0, 90.0, 170.0, 90.0, 260.0);
+  AliMatrix(idrotm[2032], 0.0, 0.0, 90.0, 190.0, 90.0, 100.0);
+  AliMatrix(idrotm[2033], 0.0, 0.0, 90.0, 350.0, 90.0, 80.0);
   
   Float_t rd =  410.56;
-  dz = (dymod[1]+dymod[0])/2.;
-  Float_t dz2 =  (dymod[1]+dymod[2])/2.;
+  dz = (dymodU[1]+dymodU[0])/2.;
+  Float_t dz2 =  (dymodU[1]+dymodU[2])/2.;
 
 //
 //  phi = 40
@@ -399,18 +402,18 @@ void AliFRAMEv2::CreateGeometry()
   dx = rd * TMath::Sin(phi*kdeg2rad);
   dy = rd * TMath::Cos(phi*kdeg2rad);
   
-  gMC->Gspos("B047", 1, "B076", -dx,  dy,  dz, idrotm[2123], "ONLY");
-  gMC->Gspos("B047", 2, "B076", -dx,  dy, -dz, idrotm[2121], "ONLY");
-  gMC->Gspos("B047", 3, "B076",  dx,  dy,  dz, idrotm[2113], "ONLY");
-  gMC->Gspos("B047", 4, "B076",  dx,  dy, -dz, idrotm[2118], "ONLY");
+  gMC->Gspos("B047", 1, "B076", -dx,  dy,  dz, idrotm[2004], "ONLY");
+  gMC->Gspos("B047", 2, "B076", -dx,  dy, -dz, idrotm[2003], "ONLY");
+  gMC->Gspos("B047", 3, "B076",  dx,  dy,  dz, idrotm[2017], "ONLY");
+  gMC->Gspos("B047", 4, "B076",  dx,  dy, -dz, idrotm[2018], "ONLY");
 
-  gMC->Gspos("B045", 1, "B076", -dx,  dy,  dz2, idrotm[2115], "ONLY");
-  gMC->Gspos("B045", 2, "B076", -dx,  dy, -dz2, idrotm[2121], "ONLY"); // ?
-  gMC->Gspos("B045", 3, "B076",  dx,  dy,  dz2, idrotm[2112], "ONLY");
-  gMC->Gspos("B045", 4, "B076",  dx,  dy, -dz2, idrotm[2119], "ONLY");
+  gMC->Gspos("B045", 1, "B076", -dx,  dy,  dz2, idrotm[2019], "ONLY");
+  gMC->Gspos("B045", 2, "B076", -dx,  dy, -dz2, idrotm[2003], "ONLY"); // ?
+  gMC->Gspos("B045", 3, "B076",  dx,  dy,  dz2, idrotm[2020], "ONLY");
+  gMC->Gspos("B045", 4, "B076",  dx,  dy, -dz2, idrotm[2027], "ONLY");
 
-  gMC->Gspos("BM49", 1, "B076",  dx,  dy,  0., idrotm[2112], "ONLY");
-  gMC->Gspos("BM49", 2, "B076", -dx,  dy,  0., idrotm[2115], "ONLY");
+  gMC->Gspos("BM49", 1, "B076",  dx,  dy,  0., idrotm[2020], "ONLY");
+  gMC->Gspos("BM49", 2, "B076", -dx,  dy,  0., idrotm[2019], "ONLY");
 
 //
 //  phi = 60
@@ -419,18 +422,18 @@ void AliFRAMEv2::CreateGeometry()
   phi = 60;
   dx = rd * TMath::Sin(phi*kdeg2rad);
   dy = rd * TMath::Cos(phi*kdeg2rad);
-  gMC->Gspos("B047", 5, "B076", -dx,  dy,  dz, idrotm[2125], "ONLY");
-  gMC->Gspos("B047", 6, "B076", -dx,  dy, -dz, idrotm[2130], "ONLY");
-  gMC->Gspos("B047", 7, "B076",  dx,  dy,  dz, idrotm[2111], "ONLY");
-  gMC->Gspos("B047", 8, "B076",  dx,  dy, -dz, idrotm[2108], "ONLY");
+  gMC->Gspos("B047", 5, "B076", -dx,  dy,  dz, idrotm[2005], "ONLY");
+  gMC->Gspos("B047", 6, "B076", -dx,  dy, -dz, idrotm[2006], "ONLY");
+  gMC->Gspos("B047", 7, "B076",  dx,  dy,  dz, idrotm[2016], "ONLY");
+  gMC->Gspos("B047", 8, "B076",  dx,  dy, -dz, idrotm[2015], "ONLY");
 
-  gMC->Gspos("B045", 5, "B076", -dx,  dy,  dz2, idrotm[2124], "ONLY");
-  gMC->Gspos("B045", 6, "B076", -dx,  dy, -dz2, idrotm[2139], "ONLY");
-  gMC->Gspos("B045", 7, "B076",  dx,  dy,  dz2, idrotm[2103], "ONLY");
-  gMC->Gspos("B045", 8, "B076",  dx,  dy, -dz2, idrotm[2107], "ONLY");
+  gMC->Gspos("B045", 5, "B076", -dx,  dy,  dz2, idrotm[2021], "ONLY");
+  gMC->Gspos("B045", 6, "B076", -dx,  dy, -dz2, idrotm[2028], "ONLY");
+  gMC->Gspos("B045", 7, "B076",  dx,  dy,  dz2, idrotm[2022], "ONLY");
+  gMC->Gspos("B045", 8, "B076",  dx,  dy, -dz2, idrotm[2029], "ONLY");
 
-  gMC->Gspos("BM49", 3, "B076",  dx,  dy,  0., idrotm[2103], "ONLY");
-  gMC->Gspos("BM49", 4, "B076", -dx,  dy,  0., idrotm[2124], "ONLY");
+  gMC->Gspos("BM49", 3, "B076",  dx,  dy,  0., idrotm[2022], "ONLY");
+  gMC->Gspos("BM49", 4, "B076", -dx,  dy,  0., idrotm[2021], "ONLY");
 //
 //  phi = 80
 //
@@ -438,30 +441,30 @@ void AliFRAMEv2::CreateGeometry()
   phi = 80;
   dx = rd * TMath::Sin(phi*kdeg2rad);
   dy = rd * TMath::Cos(phi*kdeg2rad);
-  gMC->Gspos("B047",  9, "B076", -dx,  dy,  dz, idrotm[2141], "ONLY");
-  gMC->Gspos("B047", 10, "B076", -dx,  dy, -dz, idrotm[2128], "ONLY");
-  gMC->Gspos("B047", 11, "B076",  dx,  dy,  dz, idrotm[2096], "ONLY");
-  gMC->Gspos("B047", 12, "B076",  dx,  dy, -dz, idrotm[2098], "ONLY");
+  gMC->Gspos("B047",  9, "B076", -dx,  dy,  dz, idrotm[2009], "ONLY");
+  gMC->Gspos("B047", 10, "B076", -dx,  dy, -dz, idrotm[2007], "ONLY");
+  gMC->Gspos("B047", 11, "B076",  dx,  dy,  dz, idrotm[2013], "ONLY");
+  gMC->Gspos("B047", 12, "B076",  dx,  dy, -dz, idrotm[2014], "ONLY");
 
-  gMC->Gspos("B047", 13, "B076", -dx, -dy,  dz, idrotm[2135], "ONLY");
-  gMC->Gspos("B047", 14, "B076", -dx, -dy, -dz, idrotm[2131], "ONLY");
-  gMC->Gspos("B047", 15, "B076",  dx, -dy,  dz, idrotm[2106], "ONLY");
-  gMC->Gspos("B047", 16, "B076",  dx, -dy, -dz, idrotm[2101], "ONLY");
+  gMC->Gspos("B047", 13, "B076", -dx, -dy,  dz, idrotm[2008], "ONLY");
+  gMC->Gspos("B047", 14, "B076", -dx, -dy, -dz, idrotm[2010], "ONLY");
+  gMC->Gspos("B047", 15, "B076",  dx, -dy,  dz, idrotm[2012], "ONLY");
+  gMC->Gspos("B047", 16, "B076",  dx, -dy, -dz, idrotm[2011], "ONLY");
 
-  gMC->Gspos("B045",  9, "B076", -dx,  dy,  dz2, idrotm[2140], "ONLY");
-  gMC->Gspos("B045", 10, "B076", -dx,  dy, -dz2, idrotm[2129], "ONLY");
-  gMC->Gspos("B045", 11, "B076",  dx,  dy,  dz2, idrotm[2095], "ONLY");
-  gMC->Gspos("B045", 12, "B076",  dx,  dy, -dz2, idrotm[2099], "ONLY");
+  gMC->Gspos("B045",  9, "B076", -dx,  dy,  dz2, idrotm[2023], "ONLY");
+  gMC->Gspos("B045", 10, "B076", -dx,  dy, -dz2, idrotm[2031], "ONLY");
+  gMC->Gspos("B045", 11, "B076",  dx,  dy,  dz2, idrotm[2026], "ONLY");
+  gMC->Gspos("B045", 12, "B076",  dx,  dy, -dz2, idrotm[2030], "ONLY");
 
-  gMC->Gspos("B045", 13, "B076", -dx, -dy,  dz2, idrotm[2133], "ONLY");
-  gMC->Gspos("B045", 14, "B076", -dx, -dy, -dz2, idrotm[2144], "ONLY");
-  gMC->Gspos("B045", 15, "B076",  dx, -dy,  dz2, idrotm[2104], "ONLY");
-  gMC->Gspos("B045", 16, "B076",  dx, -dy, -dz2, idrotm[2100], "ONLY");
+  gMC->Gspos("B045", 13, "B076", -dx, -dy,  dz2, idrotm[2024], "ONLY");
+  gMC->Gspos("B045", 14, "B076", -dx, -dy, -dz2, idrotm[2032], "ONLY");
+  gMC->Gspos("B045", 15, "B076",  dx, -dy,  dz2, idrotm[2025], "ONLY");
+  gMC->Gspos("B045", 16, "B076",  dx, -dy, -dz2, idrotm[2033], "ONLY");
 
-  gMC->Gspos("BM49", 5, "B076",  dx,  dy,  0., idrotm[2095], "ONLY");
-  gMC->Gspos("BM49", 6, "B076", -dx,  dy,  0., idrotm[2140], "ONLY");
-  gMC->Gspos("BM49", 7, "B076",  dx, -dy,  0., idrotm[2104], "ONLY");
-  gMC->Gspos("BM49", 8, "B076", -dx, -dy,  0., idrotm[2133], "ONLY");
+  gMC->Gspos("BM49", 5, "B076",  dx,  dy,  0., idrotm[2026], "ONLY");
+  gMC->Gspos("BM49", 6, "B076", -dx,  dy,  0., idrotm[2023], "ONLY");
+  gMC->Gspos("BM49", 7, "B076",  dx, -dy,  0., idrotm[2025], "ONLY");
+  gMC->Gspos("BM49", 8, "B076", -dx, -dy,  0., idrotm[2024], "ONLY");
 
 
 // The internal frame
@@ -484,8 +487,6 @@ void AliFRAMEv2::CreateGeometry()
   }
 
   Int_t mod[18] = {1, 1, 1, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 1, 1};
-  Int_t rot1[18] = {53, 52, 49, 69, 30, 71, 64, 83, 81, 151, 150, 145, 146, 147, 148, 149, 60, 51};
-  Int_t rot2[18] = {23, 22, 21, 24, 14, 20, 136, 137, 36, 28, 67, 25, 50, 26, 27, 29, 138, 2};
   
   
   Float_t r      = 341.8;
@@ -502,8 +503,8 @@ void AliFRAMEv2::CreateGeometry()
       dy = -TMath::Cos(phi*kdeg2rad)*r;
       modcount[mod[i]]++;
       
-      AliMatrix(idrotm[2000+rot1[i]],  90.0, phi, 0., 0., 90., phi2);  
-      gMC->Gspos(module[mod[i]], modcount[mod[i]], "B077", dx, dy, 0., idrotm[2000+rot1[i]], "ONLY");
+      AliMatrix(idrotm[2034+i],  90.0, phi, 0., 0., 90., phi2);  
+      gMC->Gspos(module[mod[i]], modcount[mod[i]], "B077", dx, dy, 0., idrotm[2034+i], "ONLY");
 //
 //    Position elements of outer Frame
 //
@@ -511,18 +512,18 @@ void AliFRAMEv2::CreateGeometry()
       dy = -TMath::Cos(phi*kdeg2rad)*rout1;
       for (j = 0; j < 3; j++)
       {
-	  dz = dymod[j];
-	  gMC->Gspos("B042", 6*i+2*j+1, "B076", dx, dy,  dz, idrotm[2000+rot1[i]], "ONLY");	  
-	  gMC->Gspos("B042", 6*i+2*j+2, "B076", dx, dy, -dz, idrotm[2000+rot1[i]], "ONLY");	  
+	  dz = dymodU[j];
+	  gMC->Gspos("B042", 6*i+2*j+1, "B076", dx, dy,  dz, idrotm[2034+i], "ONLY");	  
+	  gMC->Gspos("B042", 6*i+2*j+2, "B076", dx, dy, -dz, idrotm[2034+i], "ONLY");	  
       }
 
       phi = i*20.+10;
       phi2 = 270+phi;
-      AliMatrix(idrotm[2000+rot2[i]],  90.0, phi, 90., phi2, 0., 0.);  
+      AliMatrix(idrotm[2052+i],  90.0, phi, 90., phi2, 0., 0.);  
 
       dx =  TMath::Sin(phi*kdeg2rad)*rout2;
       dy = -TMath::Cos(phi*kdeg2rad)*rout2;
-      gMC->Gspos("B033", i+1, "B076", dx, dy,  0., idrotm[2000+rot2[i]], "ONLY");	  
+      gMC->Gspos("B033", i+1, "B076", dx, dy,  0., idrotm[2052+i], "ONLY");	  
 //
   }
 // Internal Frame rings
@@ -551,39 +552,114 @@ void AliFRAMEv2::CreateGeometry()
 // h x w x s = 60x40x4 
 // (attention: element is are half bars, "U" shaped)  
 //
+  dz  = 106.2;
+  d   = 2.*dwl;
+  h   = dymodU[0]-dymodL[0];
+  dq  = h*h+dz*dz;
+
+  x  =  TMath::Sqrt((dz*dz-d*d)/dq + d*d*h*h/dq/dq)+d*h/dq;
   
+  theta = TMath::ACos(x);
+  Float_t thetaP = (TMath::Pi()-theta)*krad2deg;
+  
+  ptrap[0]  = dz/2.;
+  ptrap[1]  = thetaP;
+  ptrap[2]  =  0.;
+  ptrap[3]  =  dwh;
+  ptrap[4]  =  dwl/cos(theta);
+  ptrap[5]  = ptrap[4];
+  ptrap[6]  = 0;
+  ptrap[7]  = ptrap[3];
+  ptrap[8]  = ptrap[4];
+  ptrap[9]  = ptrap[4];
+  ptrap[10] = 0;
+  gMC->Gsvolu("B063", "TRAP", kSteel, ptrap, 11);
+  ptrap[3]  =  dwh - 0.2;
+  ptrap[4]  =  (dwl-0.4)/cos(theta);
+  ptrap[5]  = ptrap[4];
+  ptrap[7]  = ptrap[3];
+  ptrap[8]  = ptrap[4];
+  ptrap[9]  = ptrap[4];
+  gMC->Gsvolu("B064", "TRAP", kAir, ptrap, 11);
+  gMC->Gspos("B064", 1, "B063", 0.0, -0.2, 0., 0, "ONLY");
+
+
+  h  = 106.2;
+  d  = 2.*dwl;
+  dz = dymodU[1]-dymodL[1];
+  dq = h*h+dz*dz;
+
+  x  =  TMath::Sqrt((dz*dz-d*d)/dq + d*d*h*h/dq/dq)+d*h/dq;
+  
+
+  theta = krad2deg * TMath::ACos(x);
+  
+  ptrap[0]  = dz/2.;
+  ptrap[1]  = theta;
+  ptrap[2]  =  0.;
+  ptrap[3]  =  dwh;
+  ptrap[4]  =  dwl/x;
+  ptrap[5]  = ptrap[4];
+  ptrap[6]  = 0;
+  ptrap[7]  = ptrap[3];
+  ptrap[8]  = ptrap[4];
+  ptrap[9]  = ptrap[4];
+  ptrap[10] = 0;
+  gMC->Gsvolu("B163", "TRAP", kSteel, ptrap, 11);
+  ptrap[3]  =  dwh - 0.2;
+  ptrap[4]  =  (dwl-0.4)/x;
+  ptrap[5]  = ptrap[4];
+  ptrap[7]  = ptrap[3];
+  ptrap[8]  = ptrap[4];
+  ptrap[9]  = ptrap[4];
+  gMC->Gsvolu("B164", "TRAP", kAir, ptrap, 11);
+  gMC->Gspos("B164", 1, "B163", 0.0, -0.2, 0., 0, "ONLY");
+ 
+ 
   pbox[0] = dwh;
   pbox[1] = dwl;
   pbox[2] = (iFrH-ringH-longH)/2.;
-  gMC->Gsvolu("B063", "BOX ", kSteel, pbox, 3);
+  gMC->Gsvolu("B263", "BOX ", kSteel, pbox, 3);
   pbox[0] = dwh-0.2;
   pbox[1] = dwl-0.4;
   
-  gMC->Gsvolu("B064", "BOX ", kAir, pbox, 3);
-  gMC->Gspos("B064", 1, "B063", 0.2, 0., 0., 0, "ONLY");
+  gMC->Gsvolu("B264", "BOX ", kAir, pbox, 3);
+  gMC->Gspos("B264", 1, "B263", 0.2, 0., 0., 0, "ONLY");
+
   
-  AliMatrix(idrotm[2013],  90.0,   0.0,  90.0, 270.0,   0.0,   0.0);  
-  AliMatrix(idrotm[2001], 100.0,   0.0,  90.0, 270.0,  10.0,   0.0);
-  AliMatrix(idrotm[2003], 100.0,   0.0,  90.0,  90.0,  10.0,   0.0);
-  AliMatrix(idrotm[2011], 100.0, 180.0,  90.0, 270.0,  10.0, 180.0);
-  AliMatrix(idrotm[2017], 100.0, 180.0,  90.0,  90.0,  10.0, 180.0);
-  AliMatrix(idrotm[2006],  10.0,   0.0,  80.0, 180.0,  90.0,  90.0);
-  AliMatrix(idrotm[2010],  10.0,   0.0,  80.0, 180.0,  90.0, 270.0);
-  AliMatrix(idrotm[2012],  10.0, 180.0,  80.0,   0.0,  90.0,  90.0);
-  AliMatrix(idrotm[2018],  10.0, 180.0,  80.0,   0.0,  90.0, 270.0);
-  AliMatrix(idrotm[2007], 170.0, 180.0,  80.0, 180.0,  90.0,  90.0);
-  AliMatrix(idrotm[2009], 170.0, 180.0,  80.0, 180.0,  90.0, 270.0);
-  AliMatrix(idrotm[2016], 170.0,   0.0,  80.0,   0.0,  90.0,  90.0);
-  AliMatrix(idrotm[2015], 170.0,   0.0,  80.0,   0.0,  90.0, 270.0);
-  AliMatrix(idrotm[2004], 170.0,   0.0,  90.0,  90.0,  80.0,   0.0);
-  AliMatrix(idrotm[2005], 170.0, 180.0,  90.0,  90.0,  80.0, 180.0);
-  AliMatrix(idrotm[2019],  90.0, 180.0,  90.0,  90.0,   0.0,   0.0);
+  AliMatrix(idrotm[2070],  90.0,   0.0,  90.0, 270.0,   0.0,   0.0);  
+//
+  AliMatrix(idrotm[2071], 100.0,   0.0,  90.0, 270.0,  10.0,   0.0);
+  AliMatrix(idrotm[2072], 100.0,   0.0,  90.0,  90.0,  10.0,   0.0);
+  AliMatrix(idrotm[2073], 100.0, 180.0,  90.0, 270.0,  10.0, 180.0);
+  AliMatrix(idrotm[2074], 100.0, 180.0,  90.0,  90.0,  10.0,  180.0);
+//
+  AliMatrix(idrotm[2075],  10.0,   0.0,  80.0, 180.0,  90.0,  90.0);
+  AliMatrix(idrotm[2076],  10.0,   0.0,  80.0, 180.0,  90.0, 270.0);
+  AliMatrix(idrotm[2077],  10.0, 180.0,  80.0,   0.0,  90.0,  90.0);
+  AliMatrix(idrotm[2078],  10.0, 180.0,  80.0,   0.0,  90.0, 270.0);
+//
+  AliMatrix(idrotm[2079], 170.0, 180.0,  80.0, 180.0,  90.0,  90.0);
+  AliMatrix(idrotm[2080], 170.0, 180.0,  80.0, 180.0,  90.0, 270.0);
+  AliMatrix(idrotm[2081], 170.0,   0.0,  80.0,   0.0,  90.0,  90.0);
+  AliMatrix(idrotm[2082], 170.0,   0.0,  80.0,   0.0,  90.0, 270.0);
+
+//
+  AliMatrix(idrotm[2083], 170.0,   0.0,  90.0,  90.0,  80.0,   0.0);
+  AliMatrix(idrotm[2084], 170.0, 180.0,  90.0,  90.0,  80.0, 180.0);
+  AliMatrix(idrotm[2085],  90.0, 180.0,  90.0,  90.0,   0.0,   0.0);
+//
+  AliMatrix(idrotm[2086],  90.0,  90.0, 100.0,    0.,  170.0,  180.0);
+  AliMatrix(idrotm[2087],  90.0,  90.0, 100.0,    0.,   10.0,    0.0);
+  AliMatrix(idrotm[2088],  90.0,  90.0,  80.0,    0.,  170.0,    0.0);
+  AliMatrix(idrotm[2089],  90.0,  90.0,  80.0,    0.,  -10.0,    0.0);
+
 //
 // web frame diagonal (outer)
 //  
   h  = 106.2;
   d  = 2.*dwl;
-  dz = dymod[2]-dymod[1]-2.*dwl;
+  dz = dymodL[2]-dymodU[1]-dwl;
   dq = h*h+dz*dz;
 
   x  =  TMath::Sqrt((dz*dz-d*d)/dq + d*d*h*h/dq/dq)+d*h/dq;
@@ -615,14 +691,14 @@ void AliFRAMEv2::CreateGeometry()
 //
 // web frame diagonal (inner)
 //
-  dz = dymod[1]-dymod[0]-2.*dwl;
+  dz = dymodL[1]-dymodU[0];
   dq = h*h+dz*dz;
-   x  =  TMath::Sqrt((dz*dz-d*d)/dq + d*d*h*h/dq/dq)+d*h/dq;
+  x  =  TMath::Sqrt((dz*dz-d*d)/dq + d*d*h*h/dq/dq)+d*h/dq;
   
 
   theta = krad2deg * TMath::ACos(x);
   
-  ptrap[0]  = (dymod[1]-dymod[0]-2.*dwl)/2.;
+  ptrap[0]  = (dymodL[1]-dymodU[0])/2.;
   ptrap[1]  = theta;
   ptrap[2]  =  0.;
   ptrap[3]  =  dwh;
@@ -650,35 +726,54 @@ void AliFRAMEv2::CreateGeometry()
   {
 // ring bars
       for (jmod = 0; jmod<3; jmod++) {
-	  gMC->Gspos("B072", 6*i+jmod+1, module[jmod], 0,  dymod[i], dz, 0, "ONLY");
-	  gMC->Gspos("B072", 6*i+jmod+4, module[jmod], 0, -dymod[i], dz, idrotm[2013], "ONLY");      
+	  gMC->Gspos("B072", 6*i+jmod+1, module[jmod], 0,  dymodL[i], dz, 0, "ONLY");
+	  gMC->Gspos("B072", 6*i+jmod+4, module[jmod], 0, -dymodL[i], dz, idrotm[2070], "ONLY");      
 
 // 0-deg web
-	  gMC->Gspos("B063", 12*i+jmod+1,  module[jmod],  60.0732,  dymod[i], 4.6669, idrotm[2003], "ONLY");
-	  gMC->Gspos("B063", 12*i+jmod+4,  module[jmod],  60.0732, -dymod[i], 4.6669, idrotm[2001], "ONLY");      
-	  gMC->Gspos("B063", 12*i+jmod+7,  module[jmod], -60.0732,  dymod[i], 4.6669, idrotm[2017], "ONLY");
-	  gMC->Gspos("B063", 12*i+jmod+10, module[jmod], -60.0732, -dymod[i], 4.6669, idrotm[2011], "ONLY");      
+	  if (i==2) {
+	      gMC->Gspos("B263", 12*i+jmod+1,  module[jmod],  60.0732,  dymodU[i], 4.6669, idrotm[2072], "ONLY");
+	      gMC->Gspos("B263", 12*i+jmod+4,  module[jmod],  60.0732, -dymodU[i], 4.6669, idrotm[2071], "ONLY");      
+	      gMC->Gspos("B263", 12*i+jmod+7,  module[jmod], -60.0732,  dymodU[i], 4.6669, idrotm[2074], "ONLY");
+	      gMC->Gspos("B263", 12*i+jmod+10, module[jmod], -60.0732, -dymodU[i], 4.6669, idrotm[2073], "ONLY");      
+	  }
       }
   }
   
 // outer diagonal web
 
-  dy = (dymod[2]+dymod[1])/2.;
+  dy = (dymodU[0]+dymodL[0])/2.;
   for (jmod = 0; jmod<3; jmod++) {
-      gMC->Gspos("B065", 4*jmod+1, module[jmod],  60.0732,   dy, 4.6669, idrotm[2010], "ONLY");
-      gMC->Gspos("B065", 4*jmod+2, module[jmod],  60.0732,  -dy, 4.6669, idrotm[2006], "ONLY");
-      gMC->Gspos("B065", 4*jmod+3, module[jmod], -60.0732,   dy, 4.6669, idrotm[2018], "ONLY");
-      gMC->Gspos("B065", 4*jmod+4, module[jmod], -60.0732,  -dy, 4.6669, idrotm[2012], "ONLY");
+      gMC->Gspos("B063", 4*jmod+1, module[jmod],  60.0732,   dy, 4.6669, idrotm[2086], "ONLY");
+      gMC->Gspos("B063", 4*jmod+2, module[jmod],  60.0732,  -dy, 4.6669, idrotm[2087], "ONLY");
+      gMC->Gspos("B063", 4*jmod+3, module[jmod], -60.0732,   dy, 4.6669, idrotm[2088], "ONLY");
+      gMC->Gspos("B063", 4*jmod+4, module[jmod], -60.0732,  -dy, 4.6669, idrotm[2089], "ONLY");
+  }
+
+  dy = (dymodU[1]+dymodL[1])/2.;
+  for (jmod = 0; jmod<3; jmod++) {
+      gMC->Gspos("B163", 4*jmod+1, module[jmod],  60.0732,   dy, 4.6669, idrotm[2080], "ONLY");
+      gMC->Gspos("B163", 4*jmod+2, module[jmod],  60.0732,  -dy, 4.6669, idrotm[2079], "ONLY");
+      gMC->Gspos("B163", 4*jmod+3, module[jmod], -60.0732,   dy, 4.6669, idrotm[2082], "ONLY");
+      gMC->Gspos("B163", 4*jmod+4, module[jmod], -60.0732,  -dy, 4.6669, idrotm[2081], "ONLY");
+  }
+
+
+  dy = (dymodL[2]+dymodU[1])/2.-dwl/2.;
+  for (jmod = 0; jmod<3; jmod++) {
+      gMC->Gspos("B065", 4*jmod+1, module[jmod],  60.0732,   dy, 4.6669, idrotm[2076], "ONLY");
+      gMC->Gspos("B065", 4*jmod+2, module[jmod],  60.0732,  -dy, 4.6669, idrotm[2075], "ONLY");
+      gMC->Gspos("B065", 4*jmod+3, module[jmod], -60.0732,   dy, 4.6669, idrotm[2078], "ONLY");
+      gMC->Gspos("B065", 4*jmod+4, module[jmod], -60.0732,  -dy, 4.6669, idrotm[2077], "ONLY");
   }
   
 
-  dy = (dymod[1]+dymod[0])/2.;
+  dy = (dymodL[1]+dymodU[0])/2.;
 
   for (jmod = 0; jmod<3; jmod++) {
-      gMC->Gspos("B067", 4*jmod+1, module[jmod],  60.0732,   dy, 4.6669, idrotm[2009], "ONLY");
-      gMC->Gspos("B067", 4*jmod+2, module[jmod],  60.0732,  -dy, 4.6669, idrotm[2007], "ONLY");
-      gMC->Gspos("B067", 4*jmod+3, module[jmod], -60.0732,   dy, 4.6669, idrotm[2015], "ONLY");
-      gMC->Gspos("B067", 4*jmod+4, module[jmod], -60.0732,  -dy, 4.6669, idrotm[2016], "ONLY");
+      gMC->Gspos("B067", 4*jmod+1, module[jmod],  60.0732,   dy, 4.6669, idrotm[2076], "ONLY");
+      gMC->Gspos("B067", 4*jmod+2, module[jmod],  60.0732,  -dy, 4.6669, idrotm[2075], "ONLY");
+      gMC->Gspos("B067", 4*jmod+3, module[jmod], -60.0732,   dy, 4.6669, idrotm[2078], "ONLY");
+      gMC->Gspos("B067", 4*jmod+4, module[jmod], -60.0732,  -dy, 4.6669, idrotm[2077], "ONLY");
   }
  
 // longitudinal bars (TPC rails attached)
@@ -736,8 +831,8 @@ void AliFRAMEv2::CreateGeometry()
   dz = -iFrH/2.+ringH+longH/2.;
 
   for (jmod = 0; jmod<3; jmod++) {
-      gMC->Gspos("BA59", 2*jmod+1, module[jmod],  49.6476, 0.0, dz, idrotm[2005], "ONLY");
-      gMC->Gspos("BA59", 2*jmod+2, module[jmod], -49.6476, 0.0, dz, idrotm[2004], "ONLY");
+      gMC->Gspos("BA59", 2*jmod+1, module[jmod],  49.6476, 0.0, dz, idrotm[2084], "ONLY");
+      gMC->Gspos("BA59", 2*jmod+2, module[jmod], -49.6476, 0.0, dz, idrotm[2083], "ONLY");
   }
 //
 //
@@ -756,7 +851,7 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gsvolu("B056", "TRAP", kSteel, ptrap, 11);
   for (jmod = 0; jmod<3; jmod++) {
       gMC->Gspos("B056", 2*jmod+1, module[jmod],  61.9607, 0.0, 27.2, 0           , "ONLY");
-      gMC->Gspos("B056", 2*jmod+2, module[jmod], -61.9607, 0.0, 27.2, idrotm[2019], "ONLY");
+      gMC->Gspos("B056", 2*jmod+2, module[jmod], -61.9607, 0.0, 27.2, idrotm[2085], "ONLY");
   }
 //
 // Mother volumes for TRD and TOF 
