@@ -4,7 +4,7 @@ AliRoot
 ########################### Pre-release version ###############################
 ########################### Use at your onw risk ##############################
 
-Last update Tue Apr 27 07:56 1988 - Federico Carminati
+Last update Mon Jun  7 11:49:05 - Federico Carminati
 
 This is the Version 3.01 of the ALICE simulation and reconstruction
 software. This code will be released after the May ALICE Offline
@@ -63,6 +63,34 @@ $ aliroot
 root [1] .x menu.C
 
 
+Notice for Linux users
+======================
+
+AliRoot requires the compiler system egcs 1.1.1 or later. Unfortunately the 
+location of the include files is dependent on the compiler version on Linux.
+While g++ knows the location of the files relative to its own version, but 
+this is not the case for the makedepend, that should be told where include
+files are. This is accomplished by the DEPINC variable in the file
+$ALIROOT/conf.
+
+In case several error message appear during the make phase, complaining for
+include files not found, the list of include directories in DEPINC should
+be compared with the standard list of the compiler, that can be found out
+with the following commands:
+
+touch dummy.cxx
+g++ -v dummy.cxx
+
+and looking at the output between the lines:
+
+#include <...> search starts here:
+.
+.
+.
+.
+End of search list.
+
+
 List of changes
 ===============
 
@@ -116,3 +144,8 @@ Fri Apr  9 08:06:21 CEST 1999 =================================================
 -------------------------------------------------------------------------------
 Restructuration of TGeant3. Common addresses are now returned by access
 functions and they are all private.
+
+Fri Apr 20 08:06:21 CEST 1999 =================================================
+
+-------------------------------------------------------------------------------
+Introduction of the cvs repository. Now all changes are maintained via cvs.
