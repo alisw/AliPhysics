@@ -48,18 +48,12 @@ class TG4GeometryServices
     Int_t NofG3Volumes() const; 
     Int_t NofG4LogicalVolumes() const; 
     Int_t NofG4PhysicalVolumes() const; 
-    Int_t NofSensitiveDetectors() const; 
 
-    G4int GetVolumeID(const G4String& volumeName) const;
-    G4int GetVolumeID(G4LogicalVolume* volume) const;
-    G4String GetVolumeName(G4int volumeId) const;
-    G4LogicalVolume* GetLogicalVolume(G4int volumeId) const;
     G4bool IsG3Volume(const G4String& lvName) const;
     const G4String& GetMapSecond(const G4String& name);
 
           // materials
     G4int GetMediumId(G4Material* material) const;    
-    G4int GetMediumId(G4int volumeId) const;    
     G4double GetEffA(G4Material* material) const;
     G4double GetEffZ(G4Material* material) const;
 
