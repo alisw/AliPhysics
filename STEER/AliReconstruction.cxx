@@ -373,8 +373,10 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
   Double_t vtxPos[3] = {0, 0, 0};
   Double_t vtxErr[3] = {0.07, 0.07, 0.1};
   TArrayF mcVertex(3); 
-  fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(mcVertex);
-  for (Int_t i = 0; i < 3; i++) vtxPos[i] = mcVertex[i];
+  if (fRunLoader->GetHeader() && fRunLoader->GetHeader()->GenEventHeader()) {
+    fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(mcVertex);
+    for (Int_t i = 0; i < 3; i++) vtxPos[i] = mcVertex[i];
+  }
 
   if (fITSVertexer) {
     Info("RunVertexFinder", "running the ITS vertex finder");
