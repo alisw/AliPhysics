@@ -1,7 +1,7 @@
 ########################## General Macros #####################################
 
 $(SLIBRARY):
-		@echo "Generating $@ for $(PACKAGE)..."
+		@echo "Generating $@"
 		@[ -d $(dir $@) ] || mkdir $(dir $@)
 		@rm -f $@
                 ifeq ($(PLATFORM),aix)
@@ -12,29 +12,25 @@ $(SLIBRARY):
 		   $(SHLD) $(SOFLAGS) $(LDFLAGS) $(patsubst tgt_$(ALICE_TARGET)/%,%,$(filter-out dirs,$^)) $(SHLIB) -o $@
                 endif
 		@chmod 555 $@
-		@echo "$@ done"
 
 
 $(ALIBRARY):	
-		@echo "Generating $@ for $(PACKAGE)..."
+		@echo "Generating $@"
 		@[ -d $(dir $@) ] || mkdir $(dir $@)
 		@rm -f $@
 		@ar rv $@ $^
-		@echo "$@ done"
  
 $(PROGRAM):	
-		@echo "Generating $@ for $(PACKAGE)..."
+		@echo "Generating $@"
 		@[ -d $(dir $@) ] || mkdir $(dir $@)
 		@rm -f $@
 		@$(LD) $(LDFLAGS) $^ $(LIBS) -o $@
-		@echo "$@ done"
  
 headers:	$(patsubst %,$(ALICE_ROOT)/include/%,$(HEADERS))
 
 $(DICT):
-		@echo "Generating $@ for $(PACKAGE)..."
+		@echo "Generating $@"
 		@rootcint -f $@ -c -I$(ALICE_ROOT)/include $^
-		@echo "$@ done"
  
 depend:
 		@$(MAKEDEPEND) -ftgt_$(ALICE_TARGET)/Make-depend -ptgt_$(ALICE_TARGET)/ -- $(CXXFLAGS) $(DEPINC) -- $^
