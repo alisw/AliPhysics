@@ -396,7 +396,7 @@ void AliGenTPHIC::SetProcess       (Int_t   proc  )
   return fTPHICgen->GetXSTOTE();
 }
 
-void AliGenTPHIC::Copy(AliGenTPHIC&) const
+void AliGenTPHIC::Copy(TObject&) const
 {
     //
     // Copy 

@@ -97,7 +97,7 @@ C          THETAB               = sbottom mixing angle
       REAL AMZISS(4)
       EQUIVALENCE (AMZISS(1),AMZ1SS)
       SAVE /SSPAR/
-      REAL pgam1(4),pgam2(4),xpar(10),ypar(6)
+      REAL xpar(10),ypar(6)
       INTEGER ipar(2)
       INTEGER pycomp
       REAL*8 ggrnd
@@ -445,7 +445,7 @@ CDECK  ID>, GGRUN.
       COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
       DOUBLE PRECISION PMAS,PARF,VCKM
       SAVE  /PYDAT2/
-      REAL pgam1(4),pgam2(4),pev(4,10)
+      REAL pgam1(4),pgam2(4)
       REAL p3(4), p4(4)
       REAL*8 dbetaz
       REAL*8 ggrnd
@@ -1160,17 +1160,16 @@ C***********************************************************************
       REAL      xmres,xgres
       LOGICAL   lres,lwate
 C
-      REAL       alpha,pi,wlum,weight
+      REAL       alpha,pi
       PARAMETER (alpha=1./137.036,pi=3.14159265)
 C
       REAL ptag1(10),ptag2(10),pgam1(10),pgam2(10),wt
-      REAL amas,wsq,q1sq,q2sq
+      REAL amas,wsq
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      REAL*4  xmin,xmax,ymin,ymax,gmma,y3,xm,q0,qs,qs1,qs2
-      REAL*8  pa(5),pb(5),p1(5),p2(5),p3(5)
+      REAL*4  y3,xm,q0,qs,qs1,qs2
+      REAL*8  pa(5),pb(5)
 C
-      REAL*8 ph1,ph2,ak1,ak2,qk1,qk2,q1,q2,q3,e1,e2,e3
-      REAL*8 y,y1,y2,phi,pi2,pae,aeq,beq,wps,tm3,dts,wpt
+      REAL*8  pi2
 C
       LOGICAL     lstr
       DATA q0,pi2,lstr /  0.060, 6.28318530718 d0, .false. /
