@@ -424,6 +424,7 @@ D    &              SCADOT
          CALL PushCerenkovPhoton(PXCR, PYCR, PZCR, EPHSMP, XTRKCR, 
      &        YTRKCR , ZTRKCR, ATRKCR, POX, POY, POZ, WTRACK, ITFL)
          NPROD = NPROD + 1
+         CALL UserSteppingCKV(NPROD, MREG, XTRKCR, YTRKCR, ZTRKCR)
 *
 *
 *
@@ -460,7 +461,6 @@ D    &              SCADOT
 *  |
 *  +-------------------------------------------------------------------*
  7000 CONTINUE
-      CALL UserSteppingCKV(NPROD, MREG, XTRKCR, YTRKCR, ZTRKCR)
       RETURN
 *=== End of subroutine Crnkvp =========================================*
       END
