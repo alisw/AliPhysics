@@ -113,11 +113,9 @@ Int_t iPMD=1;
 Int_t iSTART=0;
 
     // Exclude detectors that do not work with Geant4
-      iRICH=0; 
       iCASTOR=0;
     // Detectors with temporary problem
-      iMUON=0;
-      iFMD=0;
+      iZDC=0;
 
 // From G3 Config.C
 // Without any modification 
