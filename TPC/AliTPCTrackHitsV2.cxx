@@ -599,7 +599,7 @@ void AliTPCTrackHitsV2::AddVolume(Int_t volume)
   //
   //add volumes to tthe list of volumes
   Int_t * volumes = new Int_t[fNVolumes+1];
-  if (fVolumes) memcpy(volumes,fVolumes,(fNVolumes+1)*sizeof(Int_t));
+  if (fVolumes) memcpy(volumes,fVolumes,(fNVolumes)*sizeof(Int_t));
   volumes[fNVolumes]=volume;
   fNVolumes++;
   if (fVolumes) delete []fVolumes;
