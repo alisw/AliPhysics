@@ -112,6 +112,7 @@ class AliITSvPPRasymm : public AliITS {
     Float_t  fChip2;	      // thickness of chip in SPD layer 2   
     Int_t    fRails;          // flag to switch rails on (=1) and off (=0)
     Int_t    fFluid;          // flag to switch between water (=1) and freon (=0)
+    Int_t fIDMother;          //! ITS Mother Volume id.
 
     ClassDef(AliITSvPPRasymm,1)  //Hits manager for set:ITS version 8 
                                  // PPR detailed Geometry asymmetric

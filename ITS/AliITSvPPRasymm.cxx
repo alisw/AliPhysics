@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.56  2002/05/10 22:30:27  nilsen
+fix to use default paramters for the SDD response.
+
 Revision 1.55  2002/04/13 22:21:12  nilsen
 New default value of noise for SDD simulations introduced.
 
@@ -212,6 +215,7 @@ New ITS detailed geometry to be used for the PPR
 #include "AliConst.h"
 #include "AliGeant3.h"
 #include "AliITSGeant3Geometry.h"
+#include "AliTrackReference.h"
 #include "AliITShit.h"
 #include "AliITS.h"
 #include "AliITSvPPRasymm.h"
@@ -24522,6 +24526,38 @@ void AliITSvPPRasymm::CreateGeometry(){
 //    This routine defines and Creates the geometry for version 6 of the ITS.
 ////////////////////////////////////////////////////////////////////////
   
+
+//Begin_Html
+/*
+<img src="picts/ITS/ITS_full_vPPRasymm.jpg">
+</pre>
+<br clear=left>
+<font size=+2 color=red>
+<p>This shows the full ITS geometry.
+</font>
+
+<img src="picts/ITS/ITS_SPD_Barrel_vPPRasymm.jpg">
+</pre>
+<br clear=left>
+<font size=+2 color=red>
+<p>This shows the full SPD Barrel of the ITS geometry.
+</font>
+
+<img src="picts/ITS/ITS_SDD_Barrel_vPPRasymm.jpg">
+</pre>
+<br clear=left>
+<font size=+2 color=red>
+<p>This shows the full SDD Barrel of the ITS geometry.
+</font>
+
+<img src="picts/ITS/ITS_SSD_Barrel_vPPRasymm.jpg">
+</pre>
+<br clear=left>
+<font size=+2 color=red>
+<p>This shows the full SSD Barrel of the ITS geometry.
+</font>
+*/
+//End_Html
   //INNER RADII OF THE SILICON LAYERS 
   // Float_t rl[6]    = { 3.8095,7.,15.,24.,38.1,43.5765 };   
   //THICKNESSES OF LAYERS (in % radiation length)
@@ -29161,6 +29197,7 @@ void AliITSvPPRasymm::Init(){
 //
     for(i=0;i<72;i++) cout << "*";
     cout << endl;
+    fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
 }
 //_____________________________________________________________________________
 void AliITSvPPRasymm::SetDefaults(){
@@ -29311,96 +29348,127 @@ void AliITSvPPRasymm::StepManager(){
 // value except 1, the default behavior, then no such file is created nor
 // it the extra variables and the like used in the printing allocated.
 ////////////////////////////////////////////////////////////////////////
-  Int_t         copy, id;
-  Int_t          copy1,copy2;  
-  Float_t       hits[8];
-  Int_t         vol[4];
-  TLorentzVector position, momentum;
-  TClonesArray &lhits = *fHits;
-  //
-  // Track status
-  vol[3] = 0;
-  if(gMC->IsTrackInside())      vol[3] +=  1;
-  if(gMC->IsTrackEntering())    vol[3] +=  2;
-  if(gMC->IsTrackExiting())     vol[3] +=  4;
-  if(gMC->IsTrackOut())         vol[3] +=  8;
-  if(gMC->IsTrackDisappeared()) vol[3] += 16;
-  if(gMC->IsTrackStop())        vol[3] += 32;
-  if(gMC->IsTrackAlive())       vol[3] += 64;
-  //
-  // Fill hit structure.
-  if(!(gMC->TrackCharge())) return;
-  //
-  // Only entering charged tracks
-  if((id = gMC->CurrentVolID(copy)) == fIdSens[0]) {
-      vol[0] = 1;
-      id = gMC->CurrentVolOffID(2,copy);
-      //detector copy in the ladder = 1<->4  (ITS1 < I101 < I103 < I10A)
-      vol[1] = copy;
-      gMC->CurrentVolOffID(3,copy1);
-      //ladder copy in the module   = 1<->2  (I10A < I12A)
-      gMC->CurrentVolOffID(4,copy2);
-      //module copy in the layer    = 1<->10 (I12A < IT12)
-      vol[2] = copy1+(copy2-1)*2;//# of ladders in one module  = 2
-  } else if(id == fIdSens[1]){
-      vol[0] = 2;
-      id = gMC->CurrentVolOffID(2,copy);
-      //detector copy in the ladder = 1<->4  (ITS2 < I1D1 < I1D3 < I20A)
-      vol[1] = copy;
-      gMC->CurrentVolOffID(3,copy1);
-      //ladder copy in the module   = 1<->4  (I20A < I12A)
-      gMC->CurrentVolOffID(4,copy2);
-      //module copy in the layer    = 1<->10 (I12A < IT12)
-      vol[2] = copy1+(copy2-1)*4;//# of ladders in one module  = 4
-  } else if(id == fIdSens[2]){
-      vol[0] = 3;
-      id = gMC->CurrentVolOffID(1,copy);
-      //detector copy in the ladder = 1<->6  (ITS3 < I302 < I004)
-      vol[1] = copy;
-      id = gMC->CurrentVolOffID(2,copy);
-      //ladder copy in the layer    = 1<->14 (I004 < IT34)
-      vol[2] = copy;
-  } else if(id == fIdSens[3]){
-      vol[0] = 4;
-      id = gMC->CurrentVolOffID(1,copy);
-      //detector copy in the ladder = 1<->8  (ITS4 < I402 < I005)
-      vol[1] = copy;
-      id = gMC->CurrentVolOffID(2,copy);
-      //ladder copy in the layer    = 1<->22 (I005 < IT34))
-      vol[2] = copy;
-  }else if(id == fIdSens[4]){
-      vol[0] = 5;
-      id = gMC->CurrentVolOffID(1,copy);
-      //detector copy in the ladder = 1<->22  (ITS5 < I562 < I565)
-      vol[1] = copy;
-      id = gMC->CurrentVolOffID(2,copy);
-     //ladder copy in the layer    = 1<->34 (I565 < IT56)
-      vol[2] = copy;
-  }else if(id == fIdSens[5]){
-      vol[0] = 6;
-      id = gMC->CurrentVolOffID(1,copy);
-      //detector copy in the ladder = 1<->25  (ITS6 < I566 < I569)
-      vol[1] = copy;
-      id = gMC->CurrentVolOffID(2,copy);
-      //ladder copy in the layer = 1<->38 (I569 < IT56)
-      vol[2] = copy;
-  } else {
-      return; // not an ITS volume?
-  } // end if/else if (gMC->CurentVolID(copy) == fIdSens[i])
-//
-  gMC->TrackPosition(position);
-  gMC->TrackMomentum(momentum);
-  hits[0]=position[0];
-  hits[1]=position[1];
-  hits[2]=position[2];
-  hits[3]=momentum[0];
-  hits[4]=momentum[1];
-  hits[5]=momentum[2];
-  hits[6]=gMC->Edep();
-  hits[7]=gMC->TrackTime();
-  // Fill hit structure with this new hit.
-  new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+    Int_t         copy, id;
+    TLorentzVector position, momentum;
+    static TLorentzVector position0;
+    static Int_t stat0=0;
+    if((id=gMC->CurrentVolID(copy) == fIDMother)&&
+       (gMC->IsTrackEntering()||gMC->IsTrackExiting())){
+	gMC->TrackPosition(position); // Get Position
+	gMC->TrackMomentum(momentum); // Get Momentum
+	copy = fTrackReferences->GetEntriesFast();
+	TClonesArray &lTR = *fTrackReferences;
+	// Fill TrackReference structure with this new TrackReference.
+	AliTrackReference *tr = new(lTR[copy]) AliTrackReference();
+	tr->SetTrack(gAlice->CurrentTrack());
+	tr->SetPosition(position.X(),position.Y(),position.Z());
+	tr->SetMomentum(momentum.Px(),momentum.Py(),momentum.Pz());
+	tr->SetLength(gMC->TrackLength());
+    } // if Outer ITS mother Volume
+    if(!(this->IsActive())){
+	return;
+    } // end if !Active volume.
+    Int_t   copy1,copy2;  
+//    Float_t hits[8];
+    Int_t   vol[5];
+    TClonesArray &lhits = *fHits;
+    //
+    // Track status
+    vol[3] = 0;
+    vol[4] = 0;
+    if(gMC->IsTrackInside())      vol[3] +=  1;
+    if(gMC->IsTrackEntering())    vol[3] +=  2;
+    if(gMC->IsTrackExiting())     vol[3] +=  4;
+    if(gMC->IsTrackOut())         vol[3] +=  8;
+    if(gMC->IsTrackDisappeared()) vol[3] += 16;
+    if(gMC->IsTrackStop())        vol[3] += 32;
+    if(gMC->IsTrackAlive())       vol[3] += 64;
+    //
+    // Fill hit structure.
+    if(!(gMC->TrackCharge())) return;
+    //
+    // Only entering charged tracks
+    if((id = gMC->CurrentVolID(copy)) == fIdSens[0]) {
+	vol[0] = 1;
+	id = gMC->CurrentVolOffID(2,copy);
+	//detector copy in the ladder = 1<->4  (ITS1 < I101 < I103 < I10A)
+	vol[1] = copy;
+	gMC->CurrentVolOffID(3,copy1);
+	//ladder copy in the module   = 1<->2  (I10A < I12A)
+	gMC->CurrentVolOffID(4,copy2);
+	//module copy in the layer    = 1<->10 (I12A < IT12)
+	vol[2] = copy1+(copy2-1)*2;//# of ladders in one module  = 2
+    } else if(id == fIdSens[1]){
+	vol[0] = 2;
+	id = gMC->CurrentVolOffID(2,copy);
+	//detector copy in the ladder = 1<->4  (ITS2 < I1D1 < I1D3 < I20A)
+	vol[1] = copy;
+	gMC->CurrentVolOffID(3,copy1);
+	//ladder copy in the module   = 1<->4  (I20A < I12A)
+	gMC->CurrentVolOffID(4,copy2);
+	//module copy in the layer    = 1<->10 (I12A < IT12)
+	vol[2] = copy1+(copy2-1)*4;//# of ladders in one module  = 4
+    } else if(id == fIdSens[2]){
+	vol[0] = 3;
+	id = gMC->CurrentVolOffID(1,copy);
+	//detector copy in the ladder = 1<->6  (ITS3 < I302 < I004)
+	vol[1] = copy;
+	id = gMC->CurrentVolOffID(2,copy);
+	//ladder copy in the layer    = 1<->14 (I004 < IT34)
+	vol[2] = copy;
+    } else if(id == fIdSens[3]){
+	vol[0] = 4;
+	id = gMC->CurrentVolOffID(1,copy);
+	//detector copy in the ladder = 1<->8  (ITS4 < I402 < I005)
+	vol[1] = copy;
+	id = gMC->CurrentVolOffID(2,copy);
+	//ladder copy in the layer    = 1<->22 (I005 < IT34))
+	vol[2] = copy;
+    }else if(id == fIdSens[4]){
+	vol[0] = 5;
+	id = gMC->CurrentVolOffID(1,copy);
+	//detector copy in the ladder = 1<->22  (ITS5 < I562 < I565)
+	vol[1] = copy;
+	id = gMC->CurrentVolOffID(2,copy);
+	//ladder copy in the layer    = 1<->34 (I565 < IT56)
+	vol[2] = copy;
+    }else if(id == fIdSens[5]){
+	vol[0] = 6;
+	id = gMC->CurrentVolOffID(1,copy);
+	//detector copy in the ladder = 1<->25  (ITS6 < I566 < I569)
+	vol[1] = copy;
+	id = gMC->CurrentVolOffID(2,copy);
+	//ladder copy in the layer = 1<->38 (I569 < IT56)
+	vol[2] = copy;
+    } else {
+	return; // not an ITS volume?
+    } // end if/else if (gMC->CurentVolID(copy) == fIdSens[i])
+    //
+    gMC->TrackPosition(position);
+    gMC->TrackMomentum(momentum);
+/*
+    hits[0]=position[0];
+    hits[1]=position[1];
+    hits[2]=position[2];
+    hits[3]=momentum[0];
+    hits[4]=momentum[1];
+    hits[5]=momentum[2];
+    hits[6]=gMC->Edep();
+    hits[7]=gMC->TrackTime();
+*/
+    vol[4] = stat0;
+    if(gMC->IsTrackEntering()){
+	position0 = position;
+	stat0 = vol[3];
+    } // end if IsEntering
+    // Fill hit structure with this new hit.
+//    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,
+				   gMC->Edep(),gMC->TrackTime(),position,
+				   position0,momentum);
+    //
+    position0 = position;
+    stat0 = vol[3];
 
-  return;
-
+    return;
 }
