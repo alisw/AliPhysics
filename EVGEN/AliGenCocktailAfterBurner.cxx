@@ -50,7 +50,6 @@ AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()
     fGenerationDone = kFALSE;
     
     fActiveEvent = -1;  
-    fNParticles = -1;
 }
 
 
@@ -92,6 +91,9 @@ AddAfterBurner(AliGenerator *AfterBurner, char* Name, Float_t RateExp)
 	new AliGenCocktailEntry(AfterBurner, Name, RateExp);
     fAfterBurnerEntries->Add(entry);
     fNAfterBurners++;
+//
+    SetNumberOfEvents(gAlice->GetEventsPerRun());
+    
 }
 
 void AliGenCocktailAfterBurner::Init()

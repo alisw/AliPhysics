@@ -38,20 +38,26 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
     AliGenerator* GetCurrentGenerator();
     virtual void  SetActiveEventNumber(Int_t actev);
     Int_t GetActiveEventNumber() {return fActiveEvent;}
+    virtual void SetNumberOfEvents(Int_t n)   {fNumberOfEvents=n;}
+    virtual Int_t GetNumberOfEvents() {return fNumberOfEvents;}
+
     static AliMCProcess IntToMCProcess(Int_t no);
  protected:
-    Int_t fNAfterBurners; 
-    TList  *fAfterBurnerEntries;
+    Int_t fNAfterBurners;       // Number of afterburners  
+    TList  *fAfterBurnerEntries;// List of afterburners
     Bool_t fGenerationDone;
-    TObjArray *fInternalStacks; // ! List of internal stacks
-    Int_t fCurrentEvent; //  Number of current event/stack
+    TObjArray *fInternalStacks; //! List of internal stacks
+    Int_t fCurrentEvent;        //  Number of current event/stack
     
+    Int_t fNumberOfEvents;      // Number of events to process
+
+    AliStack* fActiveStack;   //! pointer to the current stack
+    Int_t fActiveEvent;       //HBT Processor needs more then one event to do correlations
+                              //Due to complications in fortran, it first calls C routine
+                              //that sets the active event to be read. All alihbtp_gettrack
+                              //are addressed to this event
     
-    AliStack* fActiveStack; // ! pointer to the current stack
-    Int_t fActiveEvent;
-   
-    AliGenerator *fCurrentGenerator;
-    
+    AliGenerator *fCurrentGenerator;      // Current event generator 
     ClassDef(AliGenCocktailAfterBurner,1) // Particle cocktail generator a la SHAKER
 };
 
