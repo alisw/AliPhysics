@@ -21,6 +21,7 @@
 // For converting 10 bit data files to 8 bit data files, do:
 //
 // AliL3MemHandler *file = new AliL3DataHandler();
+// file->Init(slice,patch);
 // file->SetBinaryInput(inputfile);    //10 bit data file
 // file->SetBinaryOutput(outputfile);  //8 bit data file
 // file->Convert10to8Bit();
@@ -88,6 +89,7 @@ void AliL3DataHandler::Convert10to8Bit()
   fBitTransformer->Update();
   
   AliL3MemHandler *memory = new AliL3MemHandler();
+  memory->Init(fSlice,fPatch);
   memory->SetBinaryInput(fInBinary);
   UInt_t nrow;
   AliL3DigitRowData *data = (AliL3DigitRowData*)memory->CompBinary2Memory(nrow);
@@ -578,7 +580,7 @@ Bool_t AliL3DataHandler::CompBinary2CompMemory(UInt_t &nrow,Byte_t *comp)
 Bool_t AliL3DataHandler::CompMemory2CompBinary(UInt_t nrow,Byte_t *comp,UInt_t size)
 {
   //Write RLE data in comp to binary file.
-  //In order to extinguish these files from 10 bit data, 
+  //In order to distinguish these files from 10 bit data, 
   //a zero is written to the beginning of the file.
 
   Byte_t length = (Byte_t)nrow;
