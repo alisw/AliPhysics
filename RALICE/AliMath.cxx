@@ -283,13 +283,24 @@ Double_t AliMath::Erfc(Double_t x)
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::Prob(Double_t chi2,Int_t ndf)
+Double_t AliMath::Prob(Double_t chi2,Int_t ndf,Int_t mode)
 {
 // Computation of the probability for a certain Chi-squared (chi2)
 // and number of degrees of freedom (ndf).
 //
-// Calculations are based on the incomplete gamma function P(a,x),
-// where a=ndf/2 and x=chi2/2.
+// According to the value of the parameter "mode" various algorithms
+// can be selected.
+//
+// mode = 0 : Calculations are based on the incomplete gamma function P(a,x),
+//            where a=ndf/2 and x=chi2/2.
+//
+//        1 : Same as for mode=0. However, in case ndf=1 an exact expression
+//            based on the error function Erf() is used.
+//
+//        2 : Same as for mode=0. However, in case ndf>30 a Gaussian approximation
+//            is used instead of the gamma function.
+//
+// When invoked as Prob(chi2,ndf) the default mode=1 is used.
 //
 // P(a,x) represents the probability that the observed Chi-squared
 // for a correct model should be less than the value chi2.
@@ -313,28 +324,33 @@ Double_t AliMath::Prob(Double_t chi2,Int_t ndf)
    return 1;
   }
  }
+
+ Double_t v=-1.;
+
+ switch (mode)
+ {
+  case 1: // Exact expression for ndf=1 as alternative for the gamma function
+   if (ndf==1) v=1.-Erf(sqrt(chi2)/sqrt(2.));
+   break;
  
-// Alternative which is exact
-// This code may be activated in case the gamma function gives problems
-// if (ndf==1)
-// {
-//  Double_t v=1.-Erf(sqrt(chi2)/sqrt(2.));
-//  return v;
-// }
+  case 2: // Gaussian approximation for large ndf (i.e. ndf>30) as alternative for the gamma function
+   if (ndf>30)
+   {
+    Double_t q=sqrt(2.*chi2)-sqrt(double(2*ndf-1));
+    if (q>0.) v=0.5*(1.-Erf(q/sqrt(2.)));
+   }
+   break;
+ }
  
-// Gaussian approximation for large ndf
-// This code may be activated in case the gamma function shows a problem
-// Double_t q=sqrt(2.*chi2)-sqrt(double(2*ndf-1));
-// if (n>30 && q>0.)
-// {
-//  Double_t v=0.5*(1.-Erf(q/sqrt(2.)));
-//  return v;
-// }
- 
- // Evaluate the incomplete gamma function
- Double_t a=double(ndf)/2.;
- Double_t x=chi2/2.;
- return (1.-Gamma(a,x));
+ if (v<0.)
+ {
+  // Evaluate the incomplete gamma function
+  Double_t a=double(ndf)/2.;
+  Double_t x=chi2/2.;
+  v=1.-Gamma(a,x);
+ }
+
+ return v;
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliMath::BesselI0(Double_t x)

@@ -446,3 +446,6 @@
 21-nov-2003 NvE Variable names of type "const" started with the character "k" in various
                 memberfunctions of AliMath in order to comply with the strict Alice
                 coding conventions.
+22-nov-2003 NvE Support for various computation modes introduced in AliMath::Prob.
+23-nov-2003 NvE New memberfunctions GetBetaVector(), GetBeta() and GetGamma() introduced in Ali4Vector.
+03-dec-2003 NvE Message removed from AliEvent::GetDevice in case there are no devices present.

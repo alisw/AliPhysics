@@ -51,6 +51,9 @@ class Ali4Vector
   Ali3Vector GetVecTrans();                         // Provide transverse vector part w.r.t. z-axis
   Ali3Vector GetVecLong();                          // Provide longitudinal vector part w.r.t. z-axis
   Double_t GetPseudoRapidity();                     // Provide pseudorapidity of vector part w.r.t z-axis
+  Ali3Vector GetBetaVector();                       // Provide the beta 3-vector
+  Double_t GetBeta();                               // Provide the norm of the beta 3-vector, i.e. v/c
+  Double_t GetGamma();                              // Provide the Lorentz gamma factor
 
  protected:
   Double_t fV2;      // The Lorentz invariant (v^i*v_i)
@@ -63,6 +66,6 @@ class Ali4Vector
   Double_t GetScaTrans(); // Provide "transverse value" of scalar part w.r.t. z-axis
   Double_t GetScaLong();  // Provide "longitudinal value" of scalar part w.r.t. z-axis
 
- ClassDef(Ali4Vector,5) // Handling of Lorentz 4-vectors in various reference frames.
+ ClassDef(Ali4Vector,6) // Handling of Lorentz 4-vectors in various reference frames.
 };
 #endif

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.14 2003/10/26 14:53:44 nick Exp $
+// $Id: AliEvent.cxx,v 1.15 2003/11/21 14:20:10 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -201,7 +201,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2003/10/26 14:53:44 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2003/11/21 14:20:10 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -603,7 +603,6 @@ TObject* AliEvent::GetDevice(Int_t i)
 
  if (!fDevices)
  {
-  cout << " *AliEvent::GetDevice* No devices present." << endl;
   return 0;
  }
  else
@@ -627,7 +626,6 @@ TObject* AliEvent::GetDevice(TString name)
 // Return the device with name tag "name"
  if (!fDevices)
  {
-  cout << " *" << ClassName() << "::GetDevice* No devices present." << endl;
   return 0;
  }
  else

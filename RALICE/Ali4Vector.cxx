@@ -820,3 +820,50 @@ Double_t Ali4Vector::GetPseudoRapidity()
  return eta;
 }
 ///////////////////////////////////////////////////////////////////////////
+Ali3Vector Ali4Vector::GetBetaVector()
+{
+// Provide the beta 3-vector corresponding to this 4-vector.
+ Ali3Vector beta;
+ if (fabs(fV0)>0.) beta=fV/fV0;
+ if (fabs(fDv0)>0.)
+ {
+  Double_t vecv[3],errv[3],errb[3];
+  Double_t sqerr=0;
+  fV.GetVector(vecv,"car");
+  fV.GetErrors(errv,"car");
+  for (Int_t i=0; i<3; i++)
+  {
+   sqerr=pow((errv[i]/fV0),2)+pow((vecv[i]*fDv0/(fV0*fV0)),2);
+   errb[i]=sqrt(sqerr);
+  }
+  beta.SetErrors(errb,"car");
+ }
+ return beta;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t Ali4Vector::GetBeta()
+{
+// Provide the beta value (i.e. v/c) corresponding to this 4-vector.
+ Ali3Vector beta=GetBetaVector();
+ Double_t val=beta.GetNorm();
+ fDresult=beta.GetResultError();
+ return val;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t Ali4Vector::GetGamma()
+{
+// Provide the Lorentz gamma factor corresponding to this 4-vector.
+// In case the gamma factor is infinite a value of -1 is returned.
+ Double_t gamma=-1;
+ fDresult=0;
+ Double_t inv=sqrt(fabs(fV2));
+ if (inv>0.)
+ {
+  Double_t dinv=fDv2/(2.*inv);
+  gamma=fV0/inv;
+  Double_t sqerr=pow((fDv0/inv),2)+pow((fV0*dinv/fV2),2);
+  fDresult=sqrt(sqerr);
+ }
+ return gamma;
+}
+///////////////////////////////////////////////////////////////////////////
