@@ -49,7 +49,7 @@ enum PprRun_t
     kHijing_per1,  kHijing_per2, kHijing_per3, kHijing_per4,  kHijing_per5,
     kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj200, 
     kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj200,
-    kHijing_pA, kPythia6
+    kHijing_pA, kPythia6, kPythia6Jets
 };
 
 enum PprGeo_t 
@@ -73,7 +73,7 @@ enum PprMag_t
 static PprRun_t srun = kPythia6;
 static PprGeo_t sgeo = kHoles;
 static PprRad_t srad = kGluonRadiation;
-static PprMag_t smag = k4kG;
+static PprMag_t smag = k5kG;
 
 // Comment line 
 static TString  comment;
@@ -202,6 +202,7 @@ void Config()
     
 // Field (L3 0.4 T)
     AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., smag);
+    field->SetL3ConstField(0); //Using const. field in the barrel
     rl->CdGAFile();
     gAlice->SetField(field);    
 //
@@ -830,6 +831,23 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetStrucFunc(kCTEQ4L);   
         gener->SetProcess(kPyMb);
         gener->SetEnergyCMS(14000.);
+	gGener=gener;
+      }
+    case kPythia6Jets:
+      {
+        gener = new AliGenPythia(-1);
+	gener->SetEnergyCMS(5500.);//        Centre of mass energy
+	gener->SetProcess(kPyJets);//        Process type
+	gener->SetJetEtaRange(-0.5, 0.5);//  Final state kinematic cuts
+	gener->SetJetPhiRange(0., 360.);
+	gener->SetJetEtRange(10., 1000.);
+	gener->SetGluonRadiation(1,1);
+	//    gener->SetPtKick(0.);
+	//   Structure function
+	gener->SetStrucFunc(kCTEQ4L);
+	gener->SetPtHard(86., 104.);// Pt transfer of the hard scattering
+	gener->SetPycellParameters(2., 274, 432, 0., 4., 5., 1.0);
+	gener->SetForceDecay(kAll);//  Decay type (semielectronic, etc.)
 	gGener=gener;
       }
     break;
