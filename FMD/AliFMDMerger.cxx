@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/10/21 18:36:31  hristov
+Several pointers were set to zero in the default constructors to avoid memory management problems
+
 Revision 1.2  2001/09/24 16:41:15  hristov
 New version of FMD code (A.Maevskaia)
 
@@ -49,8 +52,8 @@ AliMUONMerger prototype to be called by the merge manager.
 #include "AliPDG.h"
 
 #include <stdlib.h>
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 
 ClassImp(AliFMDMerger)
 

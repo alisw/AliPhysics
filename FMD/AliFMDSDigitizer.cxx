@@ -46,8 +46,8 @@
 #include "TROOT.h"
 #include "TFolder.h"
 #include <stdlib.h>
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 
 ClassImp(AliFMDSDigitizer)
 

@@ -33,8 +33,8 @@
 #include "AliFMDv0.h"
 #include "AliRun.h"
 #include "AliMC.h"
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 #include "AliRndm.h"
 #include "AliMagF.h"
 #include "AliFMDhit.h"

@@ -30,7 +30,7 @@
 
 // --- Standard library ---
 #include <stdlib.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 // --- AliRoot header files ---
 
