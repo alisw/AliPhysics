@@ -161,7 +161,8 @@ void Config()
 
   if (iFRAME) {
     //=================== FRAME parameters ============================
-    AliFRAME *FRAME  = new AliFRAMEv1("FRAME","Space Frame");
+    AliFRAMEv2 *FRAME  = new AliFRAMEv2("FRAME","Space Frame");
+    FRAME->SetHoles(0);
   }
 
   if (iSHIL) {

@@ -825,28 +825,30 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	  // Stupid patch to take care of TR photons that are absorbed
 	  // outside the chamber volume. A real fix would actually need
 	  // a more clever implementation of the TR hit generation
-          Float_t zz = xyz[2] - row0;
-          if ((zz < 0.0) || (zz > rowPadSize*nRowMax)) {
-            if (iEl == 0) {
-              printf("<AliTRDdigitizer::MakeDigits> ");
-              printf("Hit outside of sensitive volume, row (Q = %d)\n",((Int_t) q));
+          if (q < 0.0) {
+            Float_t zz = xyz[2] - row0;
+            if ((zz < 0.0) || (zz > rowPadSize*nRowMax)) {
+              if (iEl == 0) {
+                printf("<AliTRDdigitizer::MakeDigits> ");
+                printf("Hit outside of sensitive volume, row (Q = %d)\n",((Int_t) q));
+                //printf("zz=%f, xyz=%f, row0=%f, max=%f\n",zz,xyz[2],row0,rowPadSize*nRowMax);
+	      }
+              continue;
 	    }
-            continue;
-	  }
-          Int_t tt = ((Int_t) (10*(driftlength + 2.0*kAmWidth)));
-          if (tt < 0) {
-            if (iEl == 0) {
-              printf("<AliTRDdigitizer::MakeDigits> ");
-              printf("Hit outside of sensitive volume, time (Q = %d)\n",((Int_t) q));
+            Int_t tt = ((Int_t) (10*(driftlength + 2.0*kAmWidth)));
+            if (tt < 0) {
+              if (iEl == 0) {
+                printf("<AliTRDdigitizer::MakeDigits> ");
+                printf("Hit outside of sensitive volume, time (Q = %d)\n",((Int_t) q));
+	      }
+              continue;
 	    }
-            continue;
 	  }
 
           // Electron attachment
           if (fPar->ElAttachOn()) {
-            if (gRandom->Rndm() < (driftlengthL * elAttachProp)) 
-              continue;
-          }
+            if (gRandom->Rndm() < (driftlengthL * elAttachProp)) continue;
+	  }
 
           // Apply the diffusion smearing
           if (fPar->DiffusionOn()) {
@@ -855,7 +857,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
           // Apply E x B effects (depends on drift direction)
           if (fPar->ExBOn()) { 
-            if (!(fPar->ExB(driftlength+kAmWidth,xyz))) continue;   
+            if (!(fPar->ExB(driftlength+kAmWidth,xyz))) continue;
 	  }
 
 	  // Apply the drift time correction
@@ -873,14 +875,14 @@ Bool_t AliTRDdigitizer::MakeDigits()
           // The pad row (z-direction)
           Float_t rowDist   = xyz[2] - row0;
           Int_t   rowE      = ((Int_t) (rowDist * divideRow));
-          if ((rowE < 0) || (rowE >= nRowMax)) continue;   
+          if ((rowE < 0) || (rowE >= nRowMax)) continue;
           Float_t rowOffset = ((((Float_t) rowE) + 0.5) * rowPadSize) - rowDist;
 
           // The pad column (rphi-direction)
           Float_t col0tilt  = fPar->Col0Tilted(col0,rowOffset,plane);
           Float_t colDist   = xyz[1] - col0tilt;
           Int_t   colE      = ((Int_t) (colDist * divideCol));
-          if ((colE < 0) || (colE >= nColMax)) continue;   
+          if ((colE < 0) || (colE >= nColMax)) continue;
           Float_t colOffset = ((((Float_t) colE) + 0.5) * colPadSize) - colDist;    
 
           // The time bin (negative for hits in the amplification region)
@@ -938,6 +940,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
             Float_t time         = (iTimeBin - timeE) * timeBinSize + timeOffset;
             if (fPar->TRFOn()) {
               timeResponse = fPar->TimeResponse(time);
+              //printf("iTimeBin = %d, time = %f, timeResponse = %f\n"
+	      //	     ,iTimeBin,time,timeResponse);
 	    }
             if (fPar->CTOn()) {
               crossTalk    = fPar->CrossTalk(time);
@@ -1569,23 +1573,27 @@ void AliTRDdigitizer::DeConvExp(Double_t *source, Double_t *target
 
   Double_t rates[2];
   Double_t coefficients[2];
+  Double_t Dt = 0.100;  // time bin width [mus] for 10 MHz sampling frequence
 
   /* initialize (coefficient = alpha, rates = lambda) */
   
+  rates[0] = 0.7680;
+  rates[1] = 0.0995;
+
+  rates[0] = TMath::Exp(-Dt/(rates[0]));
+  rates[1] = TMath::Exp(-Dt/(rates[1]));
+
+  // dummy initialization
+  coefficients[0] = 0.0000;
+  coefficients[1] = 0.0000;
+
   if( nexp == 1 ) {
-    rates[0] = 0.466998;
-    /* no rescaling */
-    coefficients[0] = 1.0;
+    coefficients[0] = 0.0844;
+    coefficients[1] = 0.0000;
   }
   if( nexp == 2 ) {
-    rates[0] = 0.8988162;
-    coefficients[0] = 0.11392069;
-    rates[1] = 0.3745688;
-    coefficients[1] = 0.8860793;
-    /* no rescaling */
-    Float_t sumc = coefficients[0]+coefficients[1];
-    coefficients[0] /= sumc;
-    coefficients[1] /= sumc;
+    coefficients[0] = 0.1445;
+    coefficients[1] = 0.7524;
   }
       
   Int_t i, k;

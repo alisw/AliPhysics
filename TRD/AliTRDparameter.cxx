@@ -346,7 +346,7 @@ void AliTRDparameter::Init()
   SetNRowPad();
 
   // The number of time bins. Default is 100 ns timbin size
-  SetNTimeBin(20);
+  SetNTimeBin(18);
 
   // Additional time bins before and after the drift region.
   // Default is to only sample the drift region
@@ -368,7 +368,7 @@ void AliTRDparameter::Init()
   fADCbaseline    = 0;
 
   // The drift velocity (cm / mus)
-  fDriftVelocity  = 1.5;
+  fDriftVelocity  = 1.62;
 
   // Diffusion on
   fDiffusionOn    = 1;
@@ -393,7 +393,7 @@ void AliTRDparameter::Init()
   fTCOn           = 1;
   
   // The number of exponentials
-  fTCnexp         = 2;
+  fTCnexp         = 1;
 
   // The pad coupling factor
   //fPadCoupling    = 0.3;
@@ -414,7 +414,10 @@ void AliTRDparameter::Init()
   SetTiltingAngle(2.0);
 
   // The magnetic field strength in Tesla
-  fField           = 0.4;
+  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  Double_t b[3];
+  gAlice->Field(x,b);  // b[] is in kilo Gauss
+  fField = b[2] * 0.1; // Tesla
 
   //
   // ----------------------------------------------------------------------------
@@ -537,7 +540,10 @@ void AliTRDparameter::SetNRowPad()
         for (Int_t ic = 0; ic < icham; ic++) {
           row0 += fGeo->GetChamberLength(iplan,ic);
         }
-        fRow0[iplan][icham][isect]       = row0;
+
+        fRow0[iplan][icham][isect]          = row0;
+	// For new chamber ordering
+        //fRow0[iplan][kNcham-icham-1][isect] = row0;
 
       }
     }
@@ -753,7 +759,8 @@ Float_t AliTRDparameter::TimeResponse(Float_t time) const
   // Applies the preamp shaper time response
   //
 
-  Int_t iBin = ((Int_t) ((time - fTRFlo) / fTRFwid)); 
+  Int_t iBin = ((Int_t) ((time) / fTRFwid));
+  //Int_t iBin = ((Int_t) ((time - fTRFlo) / fTRFwid)); 
   if ((iBin >= 0) && (iBin < fTRFbin)) {
     return fTRFsmp[iBin];
   }
