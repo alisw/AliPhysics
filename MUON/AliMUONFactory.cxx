@@ -65,9 +65,10 @@ void AliMUONFactory::BuildCommon()
 	fResponse0->SetSqrtKy3AndDeriveKy2Ky4(0.7642); // sqrt(0.5840)
 	fResponse0->SetPitch(0.25); // anode-cathode distance
 	fResponse0->SetSigmaIntegration(10.);
-	fResponse0->SetChargeSlope(50);
+	fResponse0->SetChargeSlope(10);
 	fResponse0->SetChargeSpread(0.18, 0.18);
 	fResponse0->SetMaxAdc(4096);
+	fResponse0->SetSaturation(3000);
 	fResponse0->SetZeroSuppression(6);
 }	
 	
@@ -92,6 +93,7 @@ void AliMUONFactory::BuildStation1()
 	// assumed proportionality to anode-cathode distance for ChargeSpread
 	responseSt1->SetChargeSpread(0.144, 0.144);
 	responseSt1->SetMaxAdc(4096);
+	responseSt1->SetSaturation(3000);
 	responseSt1->SetZeroSuppression(6);
 	
         //--------------------------------------------------------

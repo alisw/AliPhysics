@@ -53,7 +53,7 @@ Float_t AliMUONResponseV0::IntPH(Float_t eloss)
 {
   // Calculate charge from given ionization energy loss
   Int_t nel;
-  nel= Int_t(eloss*1.e9/32.);
+  nel= Int_t(eloss*1.e9/27.4);
   Float_t charge=0;
   if (nel == 0) nel=1;
   for (Int_t i=1;i<=nel;i++) {
@@ -98,11 +98,13 @@ Int_t  AliMUONResponseV0::DigitResponse(Int_t digit, AliMUONTransientDigit* /*wh
 //     Float_t meanNoise = gRandom->Gaus(1, 0.2);
     // correct noise for slat chambers;
     // one more field to add to AliMUONResponseV0 to allow different noises ????
-    Float_t meanNoise = gRandom->Gaus(1.5, 0.2);
-    Float_t noise     = gRandom->Gaus(0, meanNoise);
+    Float_t meanNoise = gRandom->Gaus(1., 0.2);
+    Float_t noise     = gRandom->Gaus(0., meanNoise);
     digit+=(Int_t)noise; 
-    if ( digit <= ZeroSuppression()) digit = 0;
-    if ( digit >  MaxAdc())          digit=MaxAdc();
+    if ( digit <= ZeroSuppression()) digit = 0.;
+    // if ( digit >  MaxAdc())          digit=MaxAdc();
+    if ( digit >  Saturation())          digit=Saturation();
+
     return digit;
 }
 

@@ -1672,8 +1672,8 @@ void AliMUONv1::StepManager()
 
    if( gMC->IsTrackEntering() ) {
      Float_t theta = fTrackMomentum.Theta();
-     if ( (theta>=10) ) gMC->SetMaxStep(fStepMaxInActiveGas);
-   }
+     if ((TMath::Pi()-theta)*kRaddeg>=15.) gMC->SetMaxStep(fStepMaxInActiveGas); // We use Pi-theta because z is negative
+  }
 
 //  if (GetDebug()) {
 //     Float_t z = ( (AliMUONChamber*)(*fChambers)[idvol])->Z() ;
@@ -1727,9 +1727,9 @@ void AliMUONv1::StepManager()
     Float_t SigmaEffect_thetadegrees;
     Float_t ELossParticle_ELossMip;
     Float_t YAngleEffect=0.;
-    Float_t theta_wires      =  TMath::Abs( TMath::ASin( TMath::Sin(theta) * TMath::Sin(phi) ) );
-    
-    if ( (Beta_x_Gamma >3.2)   &&  (theta_wires*kRaddeg<=10) ) {
+    Float_t theta_wires      =  TMath::Abs( TMath::ASin( TMath::Sin(TMath::Pi()-theta) * TMath::Sin(phi) ) );// We use Pi-theta because z is negative
+
+    if ( (Beta_x_Gamma >3.2)   &&  (theta_wires*kRaddeg<=15.) ) {
       Beta_x_Gamma=TMath::Log(Beta_x_Gamma);
       ELossParticle_ELossMip = fElossRatio->Eval(Beta_x_Gamma);
       // 10 degrees is a reference for a model (arbitrary)
@@ -1737,7 +1737,7 @@ void AliMUONv1::StepManager()
       // Angle with respect to the wires assuming that chambers are perpendicular to the z axis.
       SigmaEffect_thetadegrees =  SigmaEffect_10degrees/fAngleEffectNorma->Eval(theta_wires*kRaddeg);  // For 5mm gap  
       if ( (iChamber==1)  ||  (iChamber==2) )  
-	SigmaEffect_thetadegrees/=(1.09833e+00+1.70000e-02*theta_wires*kRaddeg); // The gap is different (4mm)
+	SigmaEffect_thetadegrees/=(1.09833e+00+1.70000e-02*(theta_wires*kRaddeg)); // The gap is different (4mm)
       YAngleEffect=1.e-04*gRandom->Gaus(0,SigmaEffect_thetadegrees); // Error due to the angle effect in cm
     }
     
@@ -1757,7 +1757,7 @@ void AliMUONv1::StepManager()
   }
 }
 
-//___________________________________________
+//__________________________________________
 void AliMUONv1::StepManagerOld()
 {
   Int_t          copy, id;
