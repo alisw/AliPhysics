@@ -23,6 +23,7 @@
 #pragma link C++ class  AliGenCocktailEntry;
 #pragma link C++ class  AliGenExtFile;
 #pragma link C++ class  AliGenScan;
+#pragma link C++ class  AliGenDoubleScan;
 #pragma link C++ class  AliPythia;
 #pragma link C++ class  AliGenMUONlib;
 #pragma link C++ class  AliGenFLUKAsource;
