@@ -8,9 +8,11 @@
 #include "TH2.h"
 #include "TH1.h"
 #include "TFile.h"
+#include "TTree.h"
 #include "TRandom.h"
 #include "TObjectTable.h"
-#include "AliPHOSIndexToObject.h"
+#include "AliRun.h"
+#include "AliPHOSGetter.h"
 #include "AliPHOSRecParticle.h"
 #include "TLorentzVector.h"
 #include "TGraphErrors.h"
@@ -18,6 +20,7 @@
 
 TObjectTable * gObjectTable;
 TRandom * gRandom;
+AliRun * gAlice;
 
 
 void AnaMinv(char * filename)
@@ -37,7 +40,7 @@ void AnaMinv(char * filename)
   TH1F * h_DeltaR   = new TH1F("h_DeltaR","Delta R",400,0,4);
   TH1F * h_Asymmetry= new TH1F("h_Asymmetry","Asymmetry",400, -2., 2.);
 
-  AliPHOSIndexToObject * RecData = AliPHOSIndexToObject::GetInstance(filename)  ;
+  AliPHOSGetter * RecData = AliPHOSGetter::GetInstance(filename,"Gines")  ;
  
   AliPHOSRecParticle * RecParticle1;
   AliPHOSRecParticle * RecParticle2;
@@ -53,21 +56,21 @@ void AnaMinv(char * filename)
   TLorentzVector P_photon1, P_photon2, P_photonMixed1, P_photonMixed2 ;
   Float_t average_multiplicity = 0.;
 
-  for(iEvent=0; iEvent<RecData->GetMaxEvent(); iEvent++)
+  for(iEvent=0; iEvent<gAlice->TreeE()->GetEntries(); iEvent++)
     //  for(iEvent=0; iEvent<1000; iEvent++)
     {
       //     if (iEvent==2) gObjectTable->Print();
       //if (iEvent==15) gObjectTable->Print();
-      RecData->GetEvent(iEvent);
+      RecData->Event(iEvent);
       printf(">>> Event %d \n",iEvent);
-      nRecParticle=RecData->GimeNRecParticles();
-      average_multiplicity += ((Float_t) (nRecParticle) ) / ( (Float_t)RecData->GetMaxEvent() ) ;
+      nRecParticle=RecData->NRecParticles();
+      average_multiplicity += ((Float_t) (nRecParticle) ) / ( (Float_t)gAlice->TreeE()->GetEntries() ) ;
       // Construction de la masse invariante des pairs
       if (nRecParticle > 1) 
 	{
 	  for(iRecParticle1=0; iRecParticle1<nRecParticle; iRecParticle1++)
 	    {
-	      RecParticle1 = (AliPHOSRecParticle *)  RecData->GimeRecParticle(iRecParticle1);
+	      RecParticle1 = (AliPHOSRecParticle *)  RecData->RecParticle(iRecParticle1);
 	      RecParticle1->Momentum(P_photon1);
 
 	      h_Pseudoeta->Fill(P_photon1.PseudoRapidity());
@@ -78,7 +81,7 @@ void AnaMinv(char * filename)
 	 
  	      for(iRecParticle2=iRecParticle1+1; iRecParticle2<nRecParticle; iRecParticle2++)
  		{
- 		  RecParticle2 = (AliPHOSRecParticle *)  RecData->GimeRecParticle(iRecParticle2);
+ 		  RecParticle2 = (AliPHOSRecParticle *)  RecData->RecParticle(iRecParticle2);
  		  RecParticle2->Momentum(P_photon2); 
 		  Asymmetry = TMath::Abs((P_photon1.E()-P_photon2.E())/(P_photon1.E()+P_photon2.E()));
   		  if ( (P_photon1 != P_photon2) && 
@@ -99,7 +102,7 @@ void AnaMinv(char * filename)
 	}
     }
   printf(">>> Average Multiplicity is %f \n",average_multiplicity);
-  Int_t Background = (Int_t)  (RecData->GetMaxEvent() * average_multiplicity * (average_multiplicity-1.)/2.) ;
+  Int_t Background = (Int_t)  (gAlice->TreeE()->GetEntries() * average_multiplicity * (average_multiplicity-1.)/2.) ;
   printf(">>> Background is %d \n",Background);
 
   Double_t Pt_Mixed1, Pt_Mixed2;
