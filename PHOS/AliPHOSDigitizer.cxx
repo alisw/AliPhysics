@@ -121,10 +121,8 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard)
 {
   // ctor
   fARD = ard ;
-  SetName("Default");
-  SetTitle("aliroot") ;
-  Init() ;
-  
+  SetName("");     //Will call init in the digitizing
+  SetTitle("aliroot") ;  
 }
 
 //____________________________________________________________________________ 
@@ -145,9 +143,6 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   //  then adds contributions from SDigits. 
   // This design avoids scanning over the list of digits to add 
   // contribution to new SDigits only.
-
-  if( strcmp(GetName(), "") == 0 )
-    Init() ;
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   TClonesArray * digits = gime->Digits(GetName()) ; 
@@ -446,7 +441,7 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     if(fARD){
       Int_t input ;
       for(input = 0 ; input < fARD->GetNinputs(); input ++){
-	TTree * treeS = fARD->GetInputTreeS(input) ;
+  	TTree * treeS = fARD->GetInputTreeS(input) ;
 	if(!treeS){
 	  cerr << "AliPHOSDigitizer -> No Input " << endl ;
 	  return ;
@@ -516,19 +511,12 @@ Bool_t AliPHOSDigitizer::Init()
   fNADCcpv = (Int_t) TMath::Power(2,12);      // number of channels in CPV ADC
 
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
-
-  // Makes all memory allocations
-  // Adds Digitizer task to the folder of PHOS tasks
-
-   //============================================================= YS
-  //  The initialisation is now done by AliPHOSGetter
     
+  SetName("Default") ;
+
   if( strcmp(GetTitle(), "") == 0 )
     SetTitle("galice.root") ;
   
-  // the SDigits name is stored by AliPHOSGetter as the name of the TClones Array 
-  // //YSAlice/WhiteBoard/SDigits/PHOS/headerFile/branchname and has branchTitle as title.    
-    
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), GetName()) ; 
   if ( gime == 0 ) {
     cerr << "ERROR: AliPHOSDigitizer::Init -> Could not obtain the Getter object !" << endl ; 
@@ -537,12 +525,12 @@ Bool_t AliPHOSDigitizer::Init()
   
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
   fEmcCrystals = geom->GetNModules() *  geom->GetNCristalsInModule() ;
-     
+  
   // create a folder on the white board //YSAlice/WhiteBoard/Digits/PHOS/headerFile/digitsTitle
   gime->PostDigits(GetName() ) ;   
   
   //add Task to //YSAlice/tasks/Digitizer/PHOS
-    gime->PostDigitizer(this) ;
+  gime->PostDigitizer(this) ;
   
   //Mark that we will use current header file
   if(!fARD){

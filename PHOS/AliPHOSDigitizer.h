@@ -15,7 +15,6 @@
 
 
 // --- ROOT system ---
-#include "TTask.h"
 #include "TObjString.h"
 class TArrayI ;
 // --- Standard library ---
@@ -25,7 +24,7 @@ class TArrayI ;
 class AliPHOSSDigitizer ;
 class AliRunDigitizer ;
 
-class AliPHOSDigitizer: public TTask {
+class AliPHOSDigitizer: public AliDigitizer {
 
 public:
   AliPHOSDigitizer() ;          // ctor

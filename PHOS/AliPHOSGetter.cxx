@@ -117,21 +117,21 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
       }
       
       gAlice = static_cast<AliRun *>(file->Get("gAlice")) ;
-      
-      if (!gAlice) {
-	cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot find gAlice in " << fHeaderFile.Data() << endl ; 
-	abort() ; 
-      }
-      if (!PHOS()) {
-	if (fDebug)
-	  cout << "INFO: AliPHOSGetter -> Posting PHOS to Folders" << endl ; 
-	AliConfig * conf = AliConfig::Instance() ; 
-	conf->Add(static_cast<AliDetector*>(gAlice->GetDetector("PHOS"))) ; 
- 	conf->Add(static_cast<AliModule*>(gAlice->GetDetector("PHOS"))) ; 
-     }
     }
-
   }
+
+  if (!gAlice) {
+    cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot find gAlice in " << fHeaderFile.Data() << endl ; 
+    abort() ; 
+  }
+  if (!PHOS()) {
+    if (fDebug)
+      cout << "INFO: AliPHOSGetter -> Posting PHOS to Folders" << endl ; 
+    AliConfig * conf = AliConfig::Instance() ; 
+    conf->Add(static_cast<AliDetector*>(gAlice->GetDetector("PHOS"))) ; 
+    conf->Add(static_cast<AliModule*>(gAlice->GetDetector("PHOS"))) ; 
+  }
+  
   fDebug=0;
 }
 //____________________________________________________________________________ 
@@ -276,7 +276,7 @@ Bool_t AliPHOSGetter::PostSDigits(const char * name, const char * headerFile) co
       cerr <<"INFO: AliPHOSGetter::Post S -> Folder " << subdir 
 	   << " already exists!" << endl ;  
   }else{
-    TClonesArray * sdigits = new TClonesArray("AliPHOSDigit",1000) ;
+    TClonesArray * sdigits = new TClonesArray("AliPHOSDigit",1) ;
     sdigits->SetName(name) ;
     phosSubFolder->Add(sdigits) ;
   }
@@ -1450,8 +1450,7 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
     if(fHeaderFile.CompareTo(folder->GetName()) == 0 ) 
       treeS=gAlice->TreeS() ;
     else{
-     cout << " AliPHOSGetter::ReadTreeS 2 " <<  folder->GetName() << endl ; 
-     file = static_cast<TFile*>(gROOT->GetFile(folder->GetName())); 
+      file = static_cast<TFile*>(gROOT->GetFile(folder->GetName())); 
       file->cd() ;
       
       // Get SDigits Tree header from file
@@ -1557,15 +1556,15 @@ void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
     PostSDigits(sdigitsBranch->GetTitle(),filename) ;
 
   sdigitsBranch->SetAddress(SDigitsRef(sdigitsBranch->GetTitle(),filename)) ;
+  sdigitsBranch->GetEntry(0) ;
   
   TString sdname(sdigitsBranch->GetTitle()) ;
   sdname+=":" ;
   sdname+=filename ;
   if(!SDigitizer(sdigitsBranch->GetTitle()) )
     PostSDigitizer(sdigitsBranch->GetTitle(),filename) ;
+
   sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
-  
-  sdigitsBranch->GetEntry(0) ;
   sdigitizerBranch->GetEntry(0) ;
   
 }    
@@ -1673,7 +1672,7 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
   if( strstr(opt,"Q") )
     ReadTreeQA() ;
 
-  //  if( strstr(opt,"P") )
+  if( strstr(opt,"P") || (strcmp(opt,"")==0) )
     ReadPrimaries() ;
 
 }
