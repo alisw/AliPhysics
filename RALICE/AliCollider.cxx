@@ -1,4 +1,19 @@
-// $Id: AliCollider.cxx,v 1.2 2002/11/29 13:54:52 nick Exp $
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+// $Id: AliCollider.cxx,v 1.3 2002/12/02 15:10:37 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
@@ -89,7 +104,7 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date: 2002/11/29 13:54:52 $ Utrecht University
+//- Modified: NvE $Date: 2002/12/02 15:10:37 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"
@@ -386,7 +401,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
   }
 
   // Determine the number of nucleon-nucleon collisions
-  Int_t ncol=npt/2.;
+  Int_t ncol=npt/2;
   if (npt%2 && fRan.Uniform()>0.5) ncol+=1;
 
   // Determine the number of the various types of N+N interactions

@@ -1,7 +1,9 @@
 #ifndef ALICOLLIDER_H
 #define ALICOLLIDER_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-// $Id: AliCollider.h,v 1.1 2002/11/27 21:25:52 nick Exp $
+// $Id: AliCollider.h,v 1.2 2002/12/02 15:10:37 nick Exp $
 
 #include "Riostream.h"
 #include "TPythia6.h"

@@ -324,3 +324,6 @@
 02-dec-2002 NvE Facility for user defined projectile and target particle ID introduced in
                 AliEvent and projectile/target information provided in the AliCollider created
                 event structure.
+11-dec-2002 NvE Copyright notice added into AliCollider.h and AliCollider.cxx.
+                Also small (integer division) modification made in AliCollider.cxx
+                to prevent an innocent warning of the g++ compiler under Linux.
