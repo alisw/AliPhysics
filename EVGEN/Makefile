@@ -17,7 +17,7 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
                 AliGenHaloProtvino.cxx \
                 AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx \
 		AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
-		AliGenGSIlib.cxx AliGenPMDlib.cxx\
+		AliGenGSIlib.cxx AliGenPMDlib.cxx AliGenSTRANGElib.cxx \
 	        AliGenHijing.cxx \
 		AliGenHijingEventHeader.cxx AliGenPythiaEventHeader.cxx \
 		AliDecayer.cxx AliDecayerPythia.cxx \

@@ -33,6 +33,7 @@
 #pragma link C++ class  AliGenPHOSlib+;
 #pragma link C++ class  AliGenGSIlib+;
 #pragma link C++ class  AliGenPMDlib+;
+#pragma link C++ class  AliGenSTRANGElib+;
 #pragma link C++ class  AliGenHijingEventHeader+;
 #pragma link C++ class  AliGenPythiaEventHeader+;
 #pragma link C++ class  AliGenHijing+;
