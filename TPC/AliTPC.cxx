@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.48  2001/11/24 16:10:21  kowal2
+Faster algorithms.
+
 Revision 1.47  2001/11/19 10:25:34  kowal2
 Nearest integer instead of integer when converting to ADC counts
 
@@ -1624,6 +1627,7 @@ void AliTPC::Hits2SDigits()
   Int_t eventnumber = gAlice->GetEvNumber();
 
   if(fDefaults == 0) SetDefaults();
+  GenerNoise(500000); //create table with noise
 
   //setup TPCDigitsArray 
 
