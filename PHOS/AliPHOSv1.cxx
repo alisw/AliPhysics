@@ -120,9 +120,9 @@ AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *nam
   fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
 
   if (fGeom->IsInitialized() ) 
-    cout << "AliPHOSv1 : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
   else
-   cout << "AliPHOSv1 : PHOS geometry initialization failed !" << endl ;   
+   cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
 
   // Defining the PHOS Reconstructioner
  

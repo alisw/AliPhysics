@@ -28,8 +28,7 @@ class AliPHOSv4 : public AliPHOS {
 
 public:
 
-  AliPHOSv4(void) ;
-  AliPHOSv4(const char *name, const char *title="") ;
+  AliPHOSv4(const char *name="PHOS", const char *title="") ;
   AliPHOSv4(const AliPHOSv4 & fast) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
@@ -37,13 +36,24 @@ public:
   }
   virtual ~AliPHOSv4(void) ;
 
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
+    // useless since there are no hits
+    assert(0==1) ; 
+  }
   void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
   virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
   virtual void   CreateGeometry(void) ;                              // creates the geometry for GEANT
   Float_t        GetBigBox(Int_t index) ;                             
-  virtual AliPHOSGeometry * GetGeometry() { return fGeom ; }  
+  virtual AliPHOSGeometry * GetGeometry() {
+    // gets the pointer to the AliPHOSGeometry unique instance  
+    return fGeom ; 
+  }  
   virtual void   Init(void) ;                                        // does nothing
-  Int_t   IsVersion(void) const { return -1 ; }
+  Int_t   IsVersion(void) const {
+    // Gives the version number 
+    return 4 ; 
+  }
+
   void    MakeBranch(Option_t* opt) ;
   Double_t MakeEnergy(const Double_t energy) ;                       // makes the detected energy    
   TVector3 MakePosition(const Double_t energy, const TVector3 pos, const Double_t th, const Double_t ph) ; 
@@ -58,6 +68,10 @@ public:
   Double_t     SigmaE(Double_t energy) ;    // calulates the energy resolution at a given Energy                           
   Double_t     SigmaP(Double_t energy, Int_t inc) ; // calulates the position resolution at a given Energy at a given incidence                           
   virtual void StepManager(void) ;          // does the tracking through PHOS and a preliminary digitalization
+  virtual TString Version(void){ 
+    // As IsVersion
+    return TString("v4") ; 
+  }
 
   AliPHOSv4 & operator = (const AliPHOSv4 & rvalue)  {
     // assignement operator requested by coding convention

@@ -58,9 +58,9 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
 
   if (fGeom->IsInitialized() ) 
-    cout << "AliPHOSv0 : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
   else
-   cout << "AliPHOSv0 : PHOS geometry initialization failed !" << endl ;   
+    cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
 
 }
 

@@ -389,7 +389,6 @@ void AliPHOSGeometry::InitPPSD(void)
 AliPHOSGeometry *  AliPHOSGeometry::GetInstance() 
 { 
   // Returns the pointer of the unique instance
-  
   return (AliPHOSGeometry *) fgGeom ; 
 }
 

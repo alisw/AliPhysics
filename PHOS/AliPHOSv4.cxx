@@ -43,15 +43,6 @@
 ClassImp(AliPHOSv4)
 
 //____________________________________________________________________________
-AliPHOSv4::AliPHOSv4()
-{
-  // ctor
-
-  fFastRecParticles = 0 ; 
-  fNRecParticles = 0 ; 
-}
-
-//____________________________________________________________________________
 AliPHOSv4::AliPHOSv4(const char *name, const char *title):
   AliPHOS(name,title)
 {
@@ -62,9 +53,9 @@ AliPHOSv4::AliPHOSv4(const char *name, const char *title):
   fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
 
   if (fGeom->IsInitialized() ) 
-    cout << "AliPHOSv4 : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
   else
-    cout << "AliPHOSv4 : PHOS geometry initialization failed !" << endl ;   
+    cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
   
   SetBigBox(0, fGeom->GetOuterBoxSize(0) ) ;
   SetBigBox(1, fGeom->GetOuterBoxSize(1) + fGeom->GetPPSDBoxSize(1) ) ; 

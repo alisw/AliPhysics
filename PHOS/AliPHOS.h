@@ -25,9 +25,8 @@ class AliPHOS : public AliDetector {
 
  public:
 
-  AliPHOS(const char* name, const char* title): AliDetector(name,title) {} 
-  AliPHOS() : AliDetector() {
-    // default ctor
+  AliPHOS(const char* name="PHOS", const char* title=""): AliDetector(name,title) {
+    // ctor  
   } 
   AliPHOS(const AliPHOS & phos) {
     // cpy ctor: no implementation yet
@@ -39,14 +38,17 @@ class AliPHOS : public AliDetector {
     // do not used this definition but the one below
     assert(0==1) ; 
   }
-  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ; 
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
   virtual  void  CreateMaterials() ;                     
   virtual  AliPHOSRecPoint::RecPointsList *  EmcRecPoints() {
     // Getting list of RecPoints
     return fEmcRecPoints ;
   }
-  virtual  AliPHOSGeometry * GetGeometry() = 0 ;
-  virtual  AliPHOSRecPoint::RecPointsList * PpsdRecPoints()=0;
+  virtual  AliPHOSGeometry * GetGeometry() = 0 ;  
+  virtual  AliPHOSRecPoint::RecPointsList * PpsdRecPoints() {
+    // to be redefined when ppsd is present
+    return 0 ;
+  } 
   virtual void  SetTreeAddress();                
   virtual  AliPHOSRecParticle::RecParticlesList *  RecParticles() {
     // Getting list of RecParticles

@@ -49,7 +49,7 @@ public:
   void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {
     // sets the reconstructionner object to be used
     fReconstructioner = &Reconstructioner ;
-  } 
+  }  
   void           SetDigitThreshold(Float_t th) { fDigitThreshold = th ; } 
   virtual void   SetTreeAddress(); 
   virtual void   StepManager(void) ;                              
