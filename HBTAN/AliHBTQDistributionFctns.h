@@ -27,7 +27,7 @@ class AliHBTQOutDistributionVsQInvFctn;    //QOutLCMS   Distribution Vs   QInv
 class AliHBTQSideDistributionVsQInvFctn;   //QSideLCMS  Distribution Vs   QInv
 class AliHBTQLongDistributionVsQInvFctn;   //QLongLCMS  Distribution Vs   QInv
 class AliHBTPtDiffDistributionVsQInvFctn;
-
+class AliHBTRStarDistribution;
 #include "AliHBTFunction.h"
 
 /***********************************************************************/
@@ -173,4 +173,39 @@ class AliHBTPtDiffDistributionVsQInvFctn: public AliHBTOnePairFctn2D
 /***********************************************************************/
 /***********************************************************************/
 
+class AliHBTRStarDistribution: public AliHBTOnePairFctn1D
+{
+  public:
+    AliHBTRStarDistribution(Int_t nXbins = 500, Double_t maxXval = 5e-11, Double_t minXval = 0.);
+    virtual ~AliHBTRStarDistribution(){}
+    TH1* GetResult(){return this->GetNumerator();}
+  protected:
+    Double_t GetValue(AliHBTPair* partpair) const
+    {
+      return partpair->GetRStar();
+    }
+   
+  private:
+   ClassDef(AliHBTRStarDistribution,1)
+};
+
+/***********************************************************************/
+/***********************************************************************/
+
+class AliHBTRDistribution: public AliHBTOnePairFctn1D
+{
+  public:
+    AliHBTRDistribution(Int_t nXbins = 500, Double_t maxXval = 5e-11, Double_t minXval = 0.);
+    virtual ~AliHBTRDistribution(){}
+    TH1* GetResult(){return this->GetNumerator();}
+  protected:
+    Double_t GetValue(AliHBTPair* partpair) const
+    {
+      return partpair->GetR();
+    }
+   
+  private:
+   ClassDef(AliHBTRDistribution,1)
+};
 #endif
+

@@ -119,9 +119,33 @@ AliHBTPtDiffDistributionVsQInvFctn::AliHBTPtDiffDistributionVsQInvFctn(Int_t nXb
 }
 /******************************************************************/
 /******************************************************************/
+
+ClassImp(AliHBTRStarDistribution)
+
+
+AliHBTRStarDistribution::AliHBTRStarDistribution(Int_t nXbins, Double_t maxXval, Double_t minXval):
+ AliHBTOnePairFctn1D(nXbins,maxXval,minXval)
+{
+//ctor
+ Rename("RStarDistribution","R^{*} distribution");
+}
+
 /******************************************************************/
 /******************************************************************/
 
+ClassImp(AliHBTRDistribution)
+
+AliHBTRDistribution x;
+
+AliHBTRDistribution::AliHBTRDistribution(Int_t nXbins, Double_t maxXval, Double_t minXval):
+ AliHBTOnePairFctn1D(nXbins,maxXval,minXval)
+{
+//ctor
+ Rename("RDistribution","R (distance between creation points) distribution ");
+}
 
 
-
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
