@@ -1,52 +1,97 @@
-SRCS          = AliITS.cxx AliITSvSPD02.cxx \
-      	    	AliITSvPPRcoarseasymm.cxx \
-      	 	AliITSvPPRasymmFMD.cxx\
-      		AliITShit.cxx AliITSDetType.cxx \
-		AliITSgeom.cxx AliITSgeomMatrix.cxx \
-	        AliITSgeomSPD.cxx AliITSgeomSDD.cxx \
-		AliITSgeomSSD.cxx AliITSmodule.cxx \
-                AliITSGeant3Geometry.cxx AliITSLoader.cxx\
+SRCS = 	AliITS.cxx \
+		AliITSvSPD02.cxx \
+		AliITSvPPRcoarseasymm.cxx \
+		AliITSvPPRasymmFMD.cxx \
+		AliITShit.cxx \
+		AliITSDetType.cxx \
+		AliITSgeom.cxx \
+		AliITSgeomMatrix.cxx \
+		AliITSgeomSPD.cxx \
+		AliITSgeomSDD.cxx \
+		AliITSgeomSSD.cxx \
+		AliITSmodule.cxx \
+		AliITSGeant3Geometry.cxx \
+		AliITSLoader.cxx \
 		AliITSsimulationFastPoints.cxx \
-		AliITSsimulationFastPointsV0.cxx AliITSsimulation.cxx \
-		AliITSsimulationSPD.cxx AliITSsimulationSPDdubna.cxx \
-		AliITSsimulationSDD.cxx AliITSTableSSD.cxx \
-		AliITSetfSDD.cxx AliITSsimulationSSD.cxx AliITSdcsSSD.cxx \
-		AliITSdigit.cxx AliITSRawCluster.cxx AliITSRecPoint.cxx \
-                AliITSdigitSPD.cxx AliITSdigitSDD.cxx \
-                AliITSTransientDigit.cxx AliITSdigitSSD.cxx \
-		AliITSMap.cxx AliITSMapA1.cxx AliITSMapA2.cxx \
-		AliITSpList.cxx AliITSpListItem.cxx \
-		AliITSsegmentation.cxx AliITSsegmentationSPD.cxx \
-		AliITSsegmentationSDD.cxx AliITSsegmentationSSD.cxx\
-		AliITSresponse.cxx AliITSresponseSPD.cxx \
+		AliITSsimulationFastPointsV0.cxx \
+		AliITSsimulation.cxx \
+		AliITSsimulationSPD.cxx \
+		AliITSsimulationSPDdubna.cxx \
+		AliITSsimulationSDD.cxx \
+		AliITSTableSSD.cxx \
+		AliITSetfSDD.cxx \
+		AliITSsimulationSSD.cxx \
+		AliITSdcsSSD.cxx \
+		AliITSdigit.cxx \
+		AliITSRawCluster.cxx \
+		AliITSRecPoint.cxx \
+		AliITSdigitSPD.cxx \
+		AliITSdigitSDD.cxx \
+		AliITSTransientDigit.cxx \
+		AliITSdigitSSD.cxx \
+		AliITSMap.cxx \
+		AliITSMapA1.cxx \
+		AliITSMapA2.cxx \
+		AliITSpList.cxx \
+		AliITSpListItem.cxx \
+		AliITSsegmentation.cxx \
+		AliITSsegmentationSPD.cxx \
+		AliITSsegmentationSDD.cxx \
+		AliITSsegmentationSSD.cxx\
+		AliITSresponse.cxx \
+		AliITSresponseSPD.cxx \
 		AliITSresponseSPDdubna.cxx \
-		AliITSresponseSDD.cxx AliITSresponseSSD.cxx \
-		AliITSClusterFinder.cxx AliITSClusterFinderSPD.cxx \
+		AliITSresponseSDD.cxx \
+		AliITSresponseSSD.cxx \
+		AliITSClusterFinder.cxx \
+		AliITSClusterFinderSPD.cxx \
 		AliITSClusterFinderSPDdubna.cxx \
-		AliITSClusterFinderSDD.cxx AliITSRawData.cxx \
-		AliITSHuffman.cxx AliITSClusterFinderSSD.cxx \
-		AliITSclusterSSD.cxx AliITSpackageSSD.cxx \
-		AliITSstatistics.cxx AliITSstatistics2.cxx \
-                AliITSTrackV1.cxx AliITSIOTrack.cxx \
-		AliITSRad.cxx AliITSTrackerV1.cxx\
-		AliITSvtest.cxx	AliITSStrLine.cxx\
-                AliITSclustererV2.cxx \
-                AliITSclusterV2.cxx AliITStrackV2.cxx AliITStrackerV2.cxx \
-		AliITSVertexer.cxx AliITSVertexerIons.cxx \
-                AliITSVertexerPPZ.cxx AliITSVertexerTracks.cxx\
-                AliITSVertexerZ.cxx \
-                AliV0vertex.cxx AliV0vertexer.cxx \
-                AliITSPid.cxx AliITStrackV2Pid.cxx AliCascadeVertex.cxx \
-                AliCascadeVertexer.cxx \
-                AliITSsDigitize.cxx AliITSDigitizer.cxx \
-	        AliITSreconstruction.cxx \
-	        AliITSFindClustersV2.cxx \
-	        AliITSRiemannFit.cxx \
+		AliITSClusterFinderSDD.cxx \
+		AliITSRawData.cxx \
+		AliITSHuffman.cxx \
+		AliITSClusterFinderSSD.cxx \
+		AliITSclusterSSD.cxx \
+		AliITSpackageSSD.cxx \
+		AliITSstatistics.cxx \
+		AliITSstatistics2.cxx \
+		AliITSTrackV1.cxx \
+		AliITSIOTrack.cxx \
+		AliITSRad.cxx \
+		AliITSTrackerV1.cxx \
+		AliITSvtest.cxx	\
+		AliITSStrLine.cxx \
+		AliITSclustererV2.cxx \
+		AliITSclusterV2.cxx \
+		AliITStrackV2.cxx \
+		AliITStrackerV2.cxx \
+		AliITSVertexer.cxx \
+		AliITSVertexerIons.cxx \
+		AliITSVertexerPPZ.cxx \
+		AliITSVertexerTracks.cxx \
+		AliITSVertexerZ.cxx \
+		AliV0vertex.cxx \
+		AliV0vertexer.cxx \
+		AliITSPid.cxx \
+		AliITStrackV2Pid.cxx \
+		AliCascadeVertex.cxx \
+		AliCascadeVertexer.cxx \
+		AliITSsDigitize.cxx \
+		AliITSDigitizer.cxx \
+		AliITSreconstruction.cxx \
+		AliITSFindClustersV2.cxx \
+		AliITSRiemannFit.cxx \
 		AliITSFDigitizer.cxx \
-                AliITSclusterTable.cxx AliITStrackSA.cxx AliITStrackerSA.cxx \
+		AliITSclusterTable.cxx \
+		AliITStrackSA.cxx \
+		AliITStrackerSA.cxx \
+		AliITSNeuralPoint.cxx \
+		AliITSNeuralTrack.cxx \
+		AliITSNeuralTracker.cxx \
 		AliITSVertexerFast.cxx \
-		AliITSDDLRawData.cxx AliITSpidESD.cxx \
-                AliITSRawClusterSPD.cxx AliITSRawClusterSDD.cxx \
+		AliITSDDLRawData.cxx \
+		AliITSpidESD.cxx \
+		AliITSRawClusterSPD.cxx \
+		AliITSRawClusterSDD.cxx \
 		AliITSRawClusterSSD.cxx \
 #		AliITSBaseGeometry.cxx \
 #		AliITSv11.cxx \
