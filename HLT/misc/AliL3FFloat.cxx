@@ -28,26 +28,37 @@
 //</pre>
  */
 
-
 ClassImp(AliL3FFloat)
 
-Int_t AliL3FFloat::fDigits =  DEFDIG;
-Int_t AliL3FFloat::fMax = DEFMAX;
-Int_t AliL3FFloat::fMin = DEFMIN;
+Int_t AliL3FFloat::fDigits = DEFDIG;
+Int_t AliL3FFloat::fMax    = DEFMAX;
+Int_t AliL3FFloat::fMin    = DEFMIN;
+Char_t AliL3FFloat::fQuery[10] = "%.2f";
 
-Int_t AliL3FFloat::fN = 0;
-Int_t AliL3FFloat::fNRounded = 0;
-Int_t AliL3FFloat::fNOpAdds = 0;
-Int_t AliL3FFloat::fNOpMults = 0;
-Int_t AliL3FFloat::fNOpDivs = 0;
-Int_t AliL3FFloat::fNOpSubs = 0;
-Int_t AliL3FFloat::fNOverFlow = 0;
+#ifdef CALCSTATS
+Int_t AliL3FFloat::fN          = 0;
+Int_t AliL3FFloat::fNRounded   = 0;
+Int_t AliL3FFloat::fNOpAdds    = 0;
+Int_t AliL3FFloat::fNOpMults   = 0;
+Int_t AliL3FFloat::fNOpDivs    = 0;
+Int_t AliL3FFloat::fNOpSubs    = 0;
+Int_t AliL3FFloat::fNOverFlow  = 0;
 Int_t AliL3FFloat::fNUnderFlow = 0;
+Double_t AliL3FFloat::fNDiff   = 0;
+#endif
+
+
+AliL3FFloat::~AliL3FFloat()
+{
+#ifdef CALCSTATS
+  fNDiff+=fabs(fVal-fExactVal);
+#endif
+}
 
 ostream& operator<<(ostream &os, const AliL3FFloat &f) 
 {
   //  os << (Double_t)f << endl; 
-  os << (Double_t)f << "(" << f.fExactVal << ")" << endl; 
+  os << (Double_t)f << "(" << f.fExactVal << ")"; 
   return os;
 }
 
@@ -82,7 +93,7 @@ AliL3FFloat operator + (const AliL3FFloat &f)
 AliL3FFloat operator - (const AliL3FFloat &f1,const AliL3FFloat &f2)
 {
   AliL3FFloat r(f1); 
-  r+=f2; 
+  r-=f2; 
   return r;
 }
 
@@ -113,7 +124,35 @@ AliL3FFloat operator * (const AliL3FFloat &f1,const AliL3FFloat &f2)
   return r;
 }
 
+AliL3FFloat operator * (const AliL3FFloat &f1,const Double_t f2)
+{
+  AliL3FFloat r(f1); 
+  r*=f2; 
+  return r;
+}
+
+AliL3FFloat operator * (const Double_t f1,const AliL3FFloat &f2)
+{
+  AliL3FFloat r(f1); 
+  r*=f2; 
+  return r;
+}
+
 AliL3FFloat operator / (const AliL3FFloat &f1,const AliL3FFloat &f2)
+{
+  AliL3FFloat r(f1); 
+  r/=f2; 
+  return r;
+}
+
+AliL3FFloat operator / (const AliL3FFloat &f1,const Double_t f2)
+{
+  AliL3FFloat r(f1); 
+  r/=f2; 
+  return r;
+}
+
+AliL3FFloat operator / (const Double_t f1,const AliL3FFloat &f2)
 {
   AliL3FFloat r(f1); 
   r/=f2; 
@@ -125,7 +164,9 @@ AliL3FFloat& AliL3FFloat::operator += (const AliL3FFloat &f)
   Double_t ev=fExactVal+f.GetExactVal();
   Set(fVal+(Double_t)f); 
   fExactVal=ev;
+#ifdef CALCSTATS
   fNOpAdds++; 
+#endif
   return *this;
 }
 
@@ -134,7 +175,9 @@ AliL3FFloat& AliL3FFloat::operator += (const Double_t f)
   Double_t ev=fExactVal+f;
   Set(fVal+Round(f));   
   fExactVal=ev;
+#ifdef CALCSTATS
   fNOpAdds++; 
+#endif
   return *this;
 }
 
@@ -143,7 +186,9 @@ AliL3FFloat& AliL3FFloat::operator -= (const AliL3FFloat &f)
   Double_t ev=fExactVal-f.GetExactVal();
   Set(fVal-(Double_t)f);
   fExactVal=ev;
+#ifdef CALCSTATS
   fNOpSubs++; 
+#endif
   return *this;
 }
 
@@ -152,7 +197,9 @@ AliL3FFloat& AliL3FFloat::operator -= (const Double_t f)
   Double_t ev=fExactVal-f;
   Set(fVal-Round(f)); 
   fExactVal=ev;
+#ifdef CALCSTATS
   fNOpSubs++; 
+#endif
   return *this;
 }
 
@@ -161,7 +208,9 @@ AliL3FFloat& AliL3FFloat::operator *= (const AliL3FFloat &f)
   Double_t ev=fExactVal*f.GetExactVal();
   Set(fVal*(Double_t)f);
   fExactVal=ev;
+#ifdef CALCSTATS
   fNOpMults++;
+#endif
   return *this;
 }
 
@@ -170,7 +219,9 @@ AliL3FFloat& AliL3FFloat::operator *= (const Double_t f)
   Double_t ev=fExactVal*f;
   Set(fVal*Round(f));   
   fExactVal=ev;
+#ifdef CALCSTATS
   fNOpMults++;
+#endif
   return *this;
 }
 
@@ -179,7 +230,9 @@ AliL3FFloat& AliL3FFloat::operator /= (const AliL3FFloat &f)
   Double_t ev=fExactVal/f.GetExactVal();
   Set(fVal/(Double_t)f);
   fExactVal=ev;
+#ifdef CALCSTATS
   fNOpDivs++; 
+#endif
   return *this;
 }
 
@@ -188,50 +241,75 @@ AliL3FFloat& AliL3FFloat::operator /= (const Double_t f)
   Double_t ev=fExactVal/f;
   Set(fVal/Round(f));   
   fExactVal=ev;
+#ifdef CALCSTATS
   fNOpDivs++; 
+#endif
   return *this;
 }
 
-void AliL3FFloat::Set(Double_t val)
+inline void AliL3FFloat::Set(Double_t val)
 {
   fVal=Round(val);
   fExactVal=val;
   CheckBounds();
+#ifdef CALCSTATS
   fN++;
+#endif
 }
 
-void AliL3FFloat::Set(AliL3FFloat &f)
+inline void AliL3FFloat::Set(AliL3FFloat &f)
 {
   fVal=(Double_t)f;
   fExactVal=f.GetExactVal();
   CheckBounds();
+#ifdef CALCSTATS
   fN++;
+#endif
 }
 
-Double_t AliL3FFloat::Round(Double_t val)
+#ifdef FASTWITHROUNDINDERROS
+inline Double_t AliL3FFloat::Round(Double_t val)
 {
   Int_t dummy=Int_t(fDigits*val);
   Double_t ret=(Double_t)(dummy)/fDigits;
+#ifdef CALCSTATS
   if(ret!=val) fNRounded++;
+#endif
   return ret;
 }
+#else
+inline Double_t AliL3FFloat::Round(Double_t val)
+{
+  static Char_t strnum[100];
+  sprintf(strnum,fQuery,val);
+  Double_t ret=atof(strnum);
+#ifdef CALCSTATS
+  if(ret!=val) fNRounded++;
+#endif
+  return ret;
+}
+#endif
 
-Bool_t AliL3FFloat::CheckUpperBound()
+inline Bool_t AliL3FFloat::CheckUpperBound()
 {
   if(fVal>fMax){
     fVal=fMax;
+#ifdef CALCSTATS
     fNOverFlow++;
+#endif
     return kFALSE;
   }
 
   return kTRUE;
 }
 
-Bool_t AliL3FFloat::CheckLowerBound()
+inline Bool_t AliL3FFloat::CheckLowerBound()
 {
   if(fVal<fMin){
     fVal=fMin;
+#ifdef CALCSTATS
     fNUnderFlow++;
+#endif
     return kFALSE;
   }
 
@@ -241,11 +319,15 @@ Bool_t AliL3FFloat::CheckLowerBound()
 void AliL3FFloat::SetParams(Int_t dig,Int_t min,Int_t max)
 {
   fDigits=dig;
+  Int_t prec=0;
+  if(fDigits>0) prec=(Int_t)log10(fDigits);
+  sprintf(fQuery,"%%.%df",prec);
   fMin=min;
   fMax=max;
 }
 
 void AliL3FFloat::PrintStat(){
+#ifdef CALCSTATS
   cout << "fN:            " << fN << endl;
   cout << "fNRounded:     " << fNRounded << endl;
   cout << "fNOpAdds:      " << fNOpAdds << endl;
@@ -254,4 +336,9 @@ void AliL3FFloat::PrintStat(){
   cout << "fNOpDivs:      " << fNOpDivs << endl;
   cout << "fNOpOverFlow:  " << fNOverFlow << endl;
   cout << "fNOpUnderFlow: " << fNUnderFlow << endl;
+  if(fN) cout << "fNDiff:        " << fNDiff/fN << endl;
+#else
+  cerr << "Not compiled with #define CALCSTATS!" << endl;
+#endif
+
 }
