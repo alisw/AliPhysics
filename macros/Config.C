@@ -164,7 +164,7 @@ AliTPCParam *param = &(paramd->GetParam());
 
 // Set geometrical parameters
 
-param->SetSectorAngles(20.,0.,20.,0.);
+param->SetSectorAngles(20.,10.,20.,10.);
 param->SetInnerRadiusLow(83.9);
 param->SetInnerRadiusUp(141.3);
 param->SetOuterRadiusLow(146.9);
