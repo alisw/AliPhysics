@@ -296,8 +296,6 @@ SYSTEM=`uname`
 if [ "$SYSTEM" = "HP-UX" ]; then
   export G4SYSTEM="HP-aCC"
   #export G4USE_OSPACE=1      # compiling with Object Space STL
-  export G4NO_STD_NAMESPACE=1 # required when compiling with native STL
-                              # (check if needed for geant4.2.0)
 fi  
 if [ "$SYSTEM" = "Linux" ]; then
   export G4SYSTEM="Linux-g++"
@@ -620,12 +618,8 @@ if [ $AG4_OPACS ]; then
   #
   export G4VIS_BUILD_OPENGLX_DRIVER=1
   export G4VIS_USE_OPENGLX=1
-  if [ `uname` = "Linux" ]; then
-    export OGLHOME=/usr/local
-    export OGLLIBS="-L$OGLHOME/lib -lMesaGLU -lMesaGL"
-  else
-    export OGLHOME=$LHCXX_BASE/OpenGL/pro
-  fi
+  export OGLHOME=/usr/local
+  export OGLLIBS="-L$OGLHOME/lib -lMesaGLU -lMesaGL"
     
   #
   # OPACS
