@@ -19,7 +19,7 @@ class AliL3TrackMerger;
 class AliL3GlobalMerger;
 class TDirectory;
 class AliL3Transform;
-class AliL3ClustFinder;
+class AliL3ClustFinderNew;
 class AliL3Merger;
 class AliL3InterMerger;
 #ifdef use_aliroot
@@ -40,7 +40,7 @@ class AliLevel3 : public TObject {
   AliL3TrackMerger *fTrackMerger; //!
   AliL3GlobalMerger *fGlobalMerger; //!
   AliL3InterMerger *fInterMerger; //!
-  AliL3ClustFinder *fClusterFinder; //! 
+  AliL3ClustFinderNew *fClusterFinder; //! 
   #ifdef use_aliroot
   AliL3FileHandler *fFileHandler; //!
   #else

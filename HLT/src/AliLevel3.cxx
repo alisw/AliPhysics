@@ -19,7 +19,7 @@
 #include "AliL3ConfMapPoint.h"
 #include "AliL3ConfMapTrack.h"
 #include "AliL3Transform.h"
-#include "AliL3ClustFinder.h"
+#include "AliL3ClustFinderNew.h"
 #include "AliL3DigitData.h"
 #include "AliL3TrackArray.h"
 #include "AliL3MemHandler.h"
@@ -347,7 +347,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
 
       points = (AliL3SpacePointData *) memory->Allocate(pointsize);
   
-      fClusterFinder = new AliL3ClustFinder(fTransformer);
+      fClusterFinder = new AliL3ClustFinderNew(fTransformer);
       fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1]
                                                                ,maxpoints);
       fClusterFinder->SetXYError(0.1);
