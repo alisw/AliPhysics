@@ -217,7 +217,7 @@ void AliGenHaloProtvino::Generate()
   Float_t amass;
   //
   Int_t ncols, nt;
-  Int_t nskip = 0;
+  static Int_t nskip = 0;
   Int_t nread = 0;
 
   Float_t* zPrimary = new Float_t [fNpart];
