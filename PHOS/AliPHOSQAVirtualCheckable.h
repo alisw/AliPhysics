@@ -30,7 +30,10 @@ class AliPHOSQAVirtualCheckable : public TNamed {
 
 public:
 
-  AliPHOSQAVirtualCheckable(){}           // default ctor not to be used
+  AliPHOSQAVirtualCheckable(){
+    fAlarms = 0 ;
+    fChecker = 0 ;
+  }           // default ctor not to be used
   AliPHOSQAVirtualCheckable(const char * name) ;          // ctor
   AliPHOSQAVirtualCheckable(AliPHOSQAVirtualCheckable& obj) {assert(0==1);}
   virtual ~AliPHOSQAVirtualCheckable() ; // dtor

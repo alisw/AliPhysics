@@ -28,7 +28,10 @@ class AliPHOSQAChecker : public TTask {
 
 public:
 
-  AliPHOSQAChecker(){} ;          // default ctor (not to be used)
+  AliPHOSQAChecker(){
+    fCheckable = 0 ;
+    fCheckablesList = 0 ;    
+  } ;          // default ctor (not to be used)
   AliPHOSQAChecker(const char * name, const char * title) ; // ctor
   AliPHOSQAChecker(AliPHOSQAChecker& obj) {assert(0==1);}
   virtual ~AliPHOSQAChecker() ; // dtor

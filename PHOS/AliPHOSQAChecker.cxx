@@ -44,9 +44,9 @@ ClassImp(AliPHOSQAChecker)
   TTask * aliceQA  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/QA") ; 
   TTask * phosQA   = (TTask*)aliceQA->GetListOfTasks()->FindObject("PHOS") ;
   if (phosQA)  // PHOS QA Tasks container exists
-   phosQA->Add(this) ;
-   else    // create //YSAlice/tasks/QA/PHOS
-     aliceQA->Add(this) ; 
+    phosQA->Add(this) ;
+  else    // create //YSAlice/tasks/QA/PHOS
+    aliceQA->Add(this) ; 
   
   fCheckablesList = new TList() ; 
 }
