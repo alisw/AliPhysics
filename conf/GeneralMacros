@@ -42,7 +42,7 @@ depend:
 		@$(MAKEDEPEND) -fMake-depend -- $(CXXFLAGS) $(DEPINC) -- $^
 
 Make-depend:
-		@cp $(ALICE_ROOT)/conf/Make-depend ./
+		@cp $(ALICE_ROOT)/conf/Makedepend ./Make-depend
 
 macroclean:
 		@rm -f $(TOCLEAN) *~ \#*
