@@ -51,27 +51,34 @@
 #include "AliRun.h"
 #include "AliPHOSIndexToObject.h"
 #include "AliPHOSDigitizer.h"
+#include "AliPHOSSDigitizer.h"
 #include "AliPHOSClusterizer.h"
+#include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegmentMaker.h"
+#include "AliPHOSTrackSegmentMakerv1.h"
+#include "AliPHOSTrackSegment.h"
 #include "AliPHOSPID.h" 
+#include "AliPHOSPIDv1.h" 
 
 ClassImp(AliPHOSIndexToObject)
   
   AliPHOSIndexToObject * AliPHOSIndexToObject::fgObjGetter = 0 ; 
 
 //____________________________________________________________________________ 
-AliPHOSIndexToObject::AliPHOSIndexToObject(char* headerFile,char* branch,char* branchTitle )
+AliPHOSIndexToObject::AliPHOSIndexToObject(const char* headerFile,const char* branch,const char* branchTitle )
 {
   //Initiate all lists
   fEvent = 0 ;
 
-  fDigits = new TClonesArray("AliPHOSDigit",100) ;
+  fSDigits = new TClonesArray("AliPHOSDigit",100) ;
+  fDigits  = new TClonesArray("AliPHOSDigit",100) ;
   fEmcRecPoints = new TObjArray(100) ;
   fCpvRecPoints = new TObjArray(100) ;
   fTS = new TClonesArray("AliPHOSTrackSegment",100) ;
   fRecParticles = new TClonesArray("AliPHOSRecParticle",100) ;
   fPrimaries = new TObjArray(1) ;
 
+  fSDigitizer = 0 ;
   fDigitizer = 0 ;
   fClusterizer = 0 ;
   fTSMaker = 0 ;
@@ -91,54 +98,173 @@ AliPHOSIndexToObject::AliPHOSIndexToObject(char* headerFile,char* branch,char* b
 
   fMaxEvent = (Int_t) gAlice->TreeE()->GetEntries() ;
 
-  char * dummyfile = 0 ;
+  DefineBranchTitles(branch,branchTitle) ;
 
-  gAlice->GetEvent(fEvent) ;
+  //Now read all data from trees
+  fEvent = -1 ;
+  GetEvent(0) ;
 
-  Bool_t isRead = kFALSE;
-  //now read branches 
-  if((strcmp(branch,"PHOSRP")==0) || (strcmp(branch,"PHOSPID")==0)){
-    ReadRecParticles(branchTitle) ;  //first read RecPartcles and branche TS from which they are made
-    ReadTS(dummyfile);              //read TS from which made RecParticles above
-    ReadRecPoints(dummyfile) ;     //RecPoints from which TS above made
-    ReadDigits(dummyfile) ;         //digits. from whic RecPoints made
-    isRead= kTRUE ;
+}
+//____________________________________________________________________________ 
+void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const char* branchTitle){
+
+  gAlice->GetEvent(0) ;
+  //Read all reconstruction classes to extract titles of 
+  //branches, constituing "reconstruction branch"
+  AliPHOSPID * pids[50];  // here AliPHOSPID's will be stored
+  Int_t ipids = 0 ;
+  AliPHOSTrackSegmentMaker * tsms[50] ; 
+  Int_t itsms = 0 ;
+  AliPHOSClusterizer * clus[50] ;   
+  Int_t iclus = 0 ;
+  AliPHOSDigitizer * digs[50]; 
+  Int_t idigs = 0 ;
+  AliPHOSSDigitizer * sdigs[50];
+  Int_t isdigs = 0 ;
+  
+  //read TreeR
+  TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
+  Int_t ibranch;
+  TBranch * branch ;
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+    branch=(TBranch *) branches->At(ibranch) ;
+    if( (strcmp(branch->GetName(),"AliPHOSPID") == 0) ){
+      pids[ipids] =  new  AliPHOSPIDv1() ;
+      branch->SetAddress(& (pids[ipids])) ;
+      ipids++ ;
+    }
+    if( (strcmp(branch->GetName(),"AliPHOSTrackSegmentMaker") == 0) ){
+      tsms[itsms] = new  AliPHOSTrackSegmentMakerv1() ;
+      branch->SetAddress(&(tsms[itsms])) ;
+      itsms++ ;
+    }
+    if( (strcmp(branch->GetName(),"AliPHOSClusterizer") == 0) ){
+      clus[iclus] = new  AliPHOSClusterizerv1() ;
+      branch->SetAddress(&(clus[iclus])) ;
+      iclus++ ;
+    }
+  }
+  gAlice->TreeR()->GetEvent(0) ;
+
+
+  //read TreeD
+  branches = gAlice->TreeD()->GetListOfBranches() ;
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+    branch=(TBranch *) branches->At(ibranch) ;
+    if( (strcmp(branch->GetName(),"AliPHOSDigitizer") == 0) ){
+      digs[idigs] = new  AliPHOSDigitizer() ;
+      branch->SetAddress(&(digs[idigs])) ;
+      idigs++ ;
+    }
+  }
+  gAlice->TreeD()->GetEvent(0) ;
+
+  //read TreeS
+  branches = gAlice->TreeS()->GetListOfBranches() ;
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+    branch=(TBranch *) branches->At(ibranch) ;
+    if( (strcmp(branch->GetName(),"AliPHOSSDigitizer") == 0) ){
+      sdigs[isdigs] = new  AliPHOSSDigitizer() ;
+      branch->SetAddress(&(sdigs[isdigs])) ;
+      isdigs++ ;
+    }
+  }
+  gAlice->TreeS()->GetEvent(0) ;
+
+  //now choose among read Reconstruction classes those,
+  //which constituite "reconstruction branch"
+  Bool_t pidDefined = kFALSE ;
+  Bool_t tsmDefined = kFALSE ;
+  Bool_t cluDefined = kFALSE ;
+  Bool_t digDefined = kFALSE ;
+  Bool_t sdigDefined = kFALSE ;
+
+  Int_t index ;
+  //First, go from the end (RecParticles) to the beginning(SDigits)
+  if((strcmp(startBranch,"PHOSRP") == 0)||(strcmp(startBranch,"AliPHOSPID") == 0)){
+    fRPTitle = branchTitle ;
+    for(index = 0; index < ipids ; index++){
+      if(fRPTitle.CompareTo(((AliPHOSPID*)pids[index])->GetRecParticlesBranch())== 0){
+	pidDefined = kTRUE ;
+	fTSTitle =((AliPHOSPID*)pids[index])->GetTrackSegmentsBranch() ; 
+      }
+    }
+  }
+  if((strcmp(startBranch,"PHOSTS") == 0)||(strcmp(startBranch,"AliPHOSTrackSegmentMaker") == 0)|| pidDefined ) {
+    if(!pidDefined)
+      fTSTitle = branchTitle ;
+    for(index = 0; index < itsms ; index++)
+      if(fTSTitle.CompareTo(((AliPHOSTrackSegmentMaker*)tsms[index])->GetTrackSegmentsBranch())== 0){
+	tsmDefined = kTRUE ;
+	fRecPointsTitle =((AliPHOSTrackSegmentMaker*)tsms[index])->GetRecPointsBranch() ;
+      }
+  }
+  if((strcmp(startBranch,"PHOSEmcRP") == 0) || 
+     (strcmp(startBranch,"PHOSCpvRP") == 0) ||
+     (strcmp(startBranch,"AliPHOSClusterizer") == 0)  || tsmDefined ) {
+    if(!tsmDefined)
+      fRecPointsTitle = branchTitle ;
+    for(index = 0; index < iclus ; index++)
+      if(fRecPointsTitle.CompareTo(((AliPHOSClusterizer*)clus[index])->GetRecPointsBranch())== 0){
+	cluDefined = kTRUE ;
+	fDigitsTitle =((AliPHOSClusterizer*)clus[index])->GetDigitsBranch() ;
+      }
+  }
+  if((strcmp(startBranch,"PHOS") == 0) || (strcmp(startBranch,"AliPHOSDigitizer") == 0) ||cluDefined ) {
+    if(!cluDefined)
+      fDigitsTitle = branchTitle ; 
+    for(index = 0; index < idigs ; index++)
+      if(fDigitsTitle.CompareTo(((AliPHOSDigitizer*)digs[index])->GetDigitsBranch())== 0){
+	digDefined = kTRUE ;
+	fSDigitsTitle =((AliPHOSDigitizer*)digs[index])->GetSDigitsBranch() ;
+      }
+  }
+  for(index = 0; index < idigs ; index++)
+    if(fSDigitsTitle.CompareTo(((AliPHOSSDigitizer*)sdigs[index])->GetSDigitsBranch())== 0)
+      sdigDefined = kTRUE ;
+  
+  if(!sdigDefined){
+    cout << "Can not define titles of branches " << endl ;
+    cout << endl ;
+  }
+
+  //Now we go in the inverse direction: from sdigits to recparticles - for the 
+  //case, if we started decending not from RecParticles, but e.g. from digits
+
+  if( !cluDefined ) {
+    for(index = 0; index < iclus ; index++)
+      if(fDigitsTitle.CompareTo(((AliPHOSClusterizer*)clus[index])->GetDigitsBranch())== 0){
+	cluDefined = kTRUE ;
+	fRecPointsTitle =((AliPHOSClusterizer*)clus[index])->GetRecPointsBranch() ;
+      }
+  }
+  if(! tsmDefined ) {
+    for(index = 0; index < itsms ; index++)
+      if(fRecPointsTitle.CompareTo(((AliPHOSTrackSegmentMaker*)tsms[index])->GetRecPointsBranch())== 0){
+	tsmDefined = kTRUE ;
+	fTSTitle =((AliPHOSTrackSegmentMaker*)tsms[index])->GetTrackSegmentsBranch() ;
+      }
+  }
+  if(!pidDefined){
+    for(index = 0; index < ipids ; index++)
+      if(fTSTitle.CompareTo(((AliPHOSPID*)pids[index])->GetTrackSegmentsBranch())== 0){
+	pidDefined = kTRUE ;
+	fRPTitle = ((AliPHOSPID*)pids[index])->GetRecParticlesBranch() ;
+      }
   }
   
-  if((strcmp(branch,"PHOSTS")==0) || (strcmp(branch,"PHOSTSMaker")==0)){
-    ReadTS(branchTitle);            //read TS and branch of RecPoints from which they are made
-    ReadRecPoints(dummyfile) ;     //recpoints abd branch of digits
-    ReadDigits(dummyfile) ;       //digits and branch of Primaries
-    ReadRecParticles(dummyfile) ;  //posiible completion of TS
-    isRead= kTRUE ;
-  }
-
-  if((strcmp(branch,"PHOSEmcRP")==0)|| (strcmp(branch,"PHOSCpvRP")==0) || 
-     (strcmp(branch,"PHOSClusterizer")==0)){
-    ReadRecPoints(branchTitle) ;    //RecPoints and Digits branch filename
-    ReadDigits(dummyfile) ;        //digits and primary file name
-    ReadTS(dummyfile);             //possible completion of RecPoints
-    ReadRecParticles(dummyfile) ;  //possible completion of TS
-    isRead= kTRUE ;
-  }
-
-  if((strcmp(branch,"PHOS")==0) || (strcmp(branch,"PHOSDigitizer")==0)){
-    ReadDigits(branchTitle) ;
-    ReadRecPoints(dummyfile) ;
-    ReadTS(dummyfile);
-    ReadRecParticles(dummyfile) ;
-    isRead= kTRUE ;
-  }
-
-  if(!isRead){
-    cout << "AliPHOSIndexToObject: wrong branch name specified: " << branch << endl ;
-    cout << "   avalilable names are `PHOSRP', `PHOSPID'"<<endl ;
-    cout << "                        `PHOSTS', `PHOSTSMaker'"<<endl ;
-    cout << "                        `PHOSEmcRP', `PHOSCpvRP', `PHOSClusterizer'"<< endl ;
-    cout << "                        `PHOS' and `PHOSDigitizer'"<< endl ;
-  }
-  ReadPrimaries() ; // should be called when digits are already read 
-
+  //delete created objects
+  for(index = 0; index < ipids ; index++)
+    delete pids[index] ;
+  for(index = 0; index < itsms ; index++)
+    delete tsms[index] ;
+  for(index = 0; index < iclus ; index++)
+    delete clus[index] ;
+  for(index = 0; index < idigs ; index++) 
+    delete digs[index] ;
+  for(index = 0; index < isdigs ; index++) 
+    delete sdigs[index] ;
+  
 }
 //____________________________________________________________________________ 
 AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance()
@@ -155,10 +281,26 @@ AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance()
 }
 
 //____________________________________________________________________________ 
-AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance(char* headerFile,char* branch,char* branchTitle)
+AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance(const char* headerFile,
+							 const char* branch,
+							 const char* branchTitle)
 {
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed 
+
+  if(strcmp(branch,"PHOSRP") && strcmp(branch,"AliPHOSPID") &&
+     strcmp(branch,"PHOSTS") && strcmp(branch,"AliPHOSTrackSegmentMaker") && 
+     strcmp(branch,"PHOSEmcRP") && strcmp(branch,"PHOSCpvRP") && strcmp(branch,"AliPHOSClusterizer") &&
+     strcmp(branch,"PHOS") && strcmp(branch,"AliPHOSDigitizer") ){
+    
+    cout << "AliPHOSIndexToObject: wrong branch name specified: " << branch << endl ;
+    cout << "   avalilable names are `PHOSRP', `AliPHOSPID'"<<endl ;
+    cout << "                        `PHOSTS', `AliPHOSTrackSegmentMaker'"<<endl ;
+    cout << "                        `PHOSEmcRP', `PHOSCpvRP', `AliPHOSClusterizer'"<< endl ;
+    cout << "                        `PHOS' and `AliPHOSDigitizer'"<< endl ;
+    return 0 ;
+  }
+
 
   if ( fgObjGetter )      // delete it if already exists
     delete fgObjGetter ; 
@@ -173,9 +315,11 @@ AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance(char* headerFile,char* 
 TParticle * AliPHOSIndexToObject::GimePrimary(Int_t index)
 {
   
+  if(index < 0) 
+    return 0 ;
   
-  Int_t primaryList = (Int_t) (TMath::Ceil(index/10000000.) ) - 1 ;
-  Int_t primaryIndex = index - primaryList*10000000 ; 
+  Int_t primaryIndex = index % 10000000 ; 
+  Int_t primaryList = (Int_t ) ((index-primaryIndex)/10000000.)  ;
   
   if ( primaryList > 0  ) {
     cout << " IndexToObject does not support currently Mixing of primary " << endl ;
@@ -188,483 +332,204 @@ TParticle * AliPHOSIndexToObject::GimePrimary(Int_t index)
 }
 
 //____________________________________________________________________________ 
-Bool_t AliPHOSIndexToObject::ReadRecParticles(char * branchTitle){
-
-  if(gAlice->TreeR()==0)
-    return kFALSE ;
+void AliPHOSIndexToObject::ReadTreeD(){
   
-  if(fPID) // already read
-    branchTitle = fPID->GetRecParticlesBranch() ;
-
-
-  if(branchTitle){ // we should read a specific branch
-    TBranch * pidBranch = 0;
-    TBranch * rpBranch = 0;
-    
-    TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
-    Int_t ibranch;
-    Bool_t pidNotFound = kTRUE ;
-    Bool_t rpNotFound = kTRUE ;
-    
-    for(ibranch = 0;(ibranch <branches->GetEntries())&&(pidNotFound||rpNotFound);ibranch++){
-
-      if(pidNotFound){
-	pidBranch=(TBranch *) branches->At(ibranch) ;
-	if( (strcmp(branchTitle,pidBranch->GetTitle())==0 ) &&
-	    (strcmp(pidBranch->GetName(),"AliPHOSPID") == 0) )
-	  pidNotFound = kFALSE ;
-      }
-      if(rpNotFound){
-	rpBranch=(TBranch *) branches->At(ibranch) ;
-	if( (strcmp(branchTitle,rpBranch->GetTitle())==0 ) &&
-	    (strcmp(rpBranch->GetName(),"PHOSRP") == 0) )
-	  rpNotFound = kFALSE ;
-      }
-    }
-    
-    if(pidNotFound ||rpNotFound ){
-      cout << "AliPHOSIndexToObject error" << endl ;
-      cout << "     Can't find Branch with PID and RecParticles " ;
-      return kFALSE ;
-    }
-    
-    pidBranch->SetAddress(&fPID) ;
-    rpBranch->SetAddress(&fRecParticles) ;
-    gAlice->TreeR()->GetEvent(0) ;    
+  if(gAlice->TreeD()== 0){
+    cout << "AliPHOSIndexToObject : can not read TreeD " << endl;
+    return ;
   }
-  else{ //we Should read any branch and print warning if there are other possibilities
-    if(fTSMaker){//if TrackSegments already read, we should read RecParticles Made from it
-      TBranch * pidBranch = 0;
-      TBranch * rpBranch = 0;
-    
-      TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
-
-      Int_t branchRead = 0;
-      Bool_t allNotFound = kTRUE ;
-      while(allNotFound){
-	Bool_t pidNotFound = kTRUE ;
-	Bool_t rpNotFound = kTRUE ;
-	Int_t ibranch ;
-	for(ibranch = branchRead;(ibranch <branches->GetEntries() )&& pidNotFound;ibranch++){
-	  pidBranch=(TBranch *) branches->At(ibranch) ;
-	  if(strcmp(pidBranch->GetName(),"AliPHOSPID") == 0) 
-	    pidNotFound = kFALSE ;
-	}
-	branchRead = ibranch +1 ; 
-	for(ibranch = 0 ;(ibranch <branches->GetEntries() )&& rpNotFound;ibranch++){
-	  rpBranch=(TBranch *) branches->At(ibranch) ;
-	  if( (strcmp(pidBranch->GetTitle(),rpBranch->GetTitle())==0 ) &&
-	      (strcmp(rpBranch->GetName(),"PHOSRP") == 0) )
-	    rpNotFound = kFALSE ;
-	}
-	
-	if(pidNotFound ||rpNotFound ){
-	  cout << "AliPHOSIndexToObject error" << endl ;
-	  cout << "     Can't find Branch with PID and RecParticles " ;
-	  return kFALSE ;
-	}
-    
-	pidBranch->SetAddress(&fPID) ;
-	rpBranch->SetAddress(&fRecParticles) ;
-	gAlice->TreeR()->GetEvent(0) ;    
-	
-	if(strcmp(fTSMaker->GetTrackSegmentsBranch(),fPID->GetTrackSegmentsBranch()) == 0)
-	  allNotFound = kFALSE ;
-      }
-    }
-    else{//we read any (first) recparticles
-      TBranch * pidBranch = 0;
-      TBranch * rpBranch = 0;
-      TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
-
-      Bool_t pidNotFound = kTRUE ;
-      Bool_t rpNotFound = kTRUE ;
-      Int_t ibranch ;
-      for(ibranch = 0;(ibranch <branches->GetEntries() )&& pidNotFound;ibranch++){
-	pidBranch=(TBranch *) branches->At(ibranch) ;
-	if(strcmp(pidBranch->GetName(),"AliPHOSPID") == 0) 
-	  pidNotFound = kFALSE ;
-      }
-      for(ibranch = 0 ;(ibranch <branches->GetEntries() )&& rpNotFound;ibranch++){
-	rpBranch=(TBranch *) branches->At(ibranch) ;
-	if( (strcmp(pidBranch->GetTitle(),rpBranch->GetTitle())==0 ) &&
-	    (strcmp(rpBranch->GetName(),"PHOSRP") == 0) )
-	  rpNotFound = kFALSE ;
-      }
-      
-      if(pidNotFound ||rpNotFound ){
-	cout << "AliPHOSIndexToObject worning: " << endl ;
-	cout << "     Can't find Branch with PID and RecParticles " << endl;
-	return kFALSE ;
-      }
-      
-      pidBranch->SetAddress(&fPID) ;
-      rpBranch->SetAddress(&fRecParticles) ;
-      gAlice->TreeR()->GetEvent(0) ;    
-      
-    }
-  }
-  return kTRUE ;
-}
-//____________________________________________________________________________ 
-Bool_t AliPHOSIndexToObject::ReadTS(char * branchTitle){
-
-  if(gAlice->TreeR()==0)
-    return kFALSE ;
-
-  if(fPID)//if RecParticles already read, we should read TS from which they are made
-    branchTitle= fPID->GetTrackSegmentsBranch() ;
   
-  if(branchTitle){   // we should read a specific branch
-    
-    TBranch * tsMakerBranch = 0;
-    TBranch * tsBranch = 0;
-    
-    TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
-    Int_t ibranch;
-    Bool_t tsMakerNotFound = kTRUE ;
-    Bool_t tsNotFound = kTRUE ;
-    
-    for(ibranch = 0;(ibranch <branches->GetEntries())&&(tsMakerNotFound||tsNotFound);ibranch++){
-      if(tsMakerNotFound){
-	tsMakerBranch=(TBranch *) branches->At(ibranch) ;
-	if( strcmp(branchTitle,tsMakerBranch->GetTitle())==0 )
-	  if( strcmp(tsMakerBranch->GetName(),"AliPHOSTrackSegmentMaker") == 0) 
-	    tsMakerNotFound = kFALSE ;
-      }
-      if(tsNotFound){
-	tsBranch=(TBranch *) branches->At(ibranch) ;
-	if( strcmp(branchTitle,tsBranch->GetTitle())==0 )
-	  if( strcmp(tsBranch->GetName(),"PHOSTS") == 0) 
-	    tsNotFound = kFALSE ;
-      }
-    }
-    
-    if(tsMakerNotFound ||tsNotFound ){
-      cout << "AliPHOSIndexToObject error" << endl ;
-      cout << "       Can't find Branch with TrackSegmentMaker and TrackSegments " ;
-      cout << "       Do nothing" <<endl  ;
-      return kFALSE ;
-    }
-    
-    tsMakerBranch->SetAddress(&fTSMaker) ;
-    tsBranch->SetAddress(&fTS) ;
-    gAlice->TreeR()->GetEvent(0) ;
-    
-  }
-  else{ 
-    if(fClusterizer){//Clusterizer aready read, 
-                     //we should read TrackSegments made from these RecPoints
-
-      Int_t branchRead = 0 ; 
-      TBranch * tsMakerBranch = 0;
-      TBranch * tsBranch = 0;
-    
-      TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
-      Int_t ibranch;
-      Bool_t allNotFound = kTRUE ;
-      while(allNotFound){
-	Bool_t tsMakerNotFound = kTRUE ;
-	Bool_t tsNotFound = kTRUE ;
-	
-	for(ibranch = branchRead;(ibranch <branches->GetEntries())&&(tsMakerNotFound);ibranch++){
-	  tsMakerBranch=(TBranch *) branches->At(ibranch) ;
-	  if( strcmp(tsMakerBranch->GetName(),"AliPHOSTrackSegmentMaker") == 0) 
-	    tsMakerNotFound = kFALSE ;
-	}
-	branchRead = ibranch++ ;
-	for(ibranch = 0 ;(ibranch <branches->GetEntries())&&(tsNotFound);ibranch++){
-	  tsBranch=(TBranch *) branches->At(ibranch) ;
-	  if( (strcmp(tsBranch->GetName(),"PHOSTS") == 0) && 
-	      (strcmp(tsBranch->GetName(),tsMakerBranch->GetTitle())==0))
-	    tsNotFound = kFALSE ;
-	}
-	
-	branchRead = ibranch++ ;
-	
-	if(tsMakerNotFound ||tsNotFound ){
-	  cout << "AliPHOSIndexToObject error" << endl ;
-	  cout << "       Can't find Branch with TrackSegmentMaker and TrackSegments " ;
-	  cout << "       Do nothing" <<endl  ;
-	  return kFALSE ;
-	}
-	
-	tsMakerBranch->SetAddress(&fTSMaker) ;
-	tsBranch->SetAddress(&fTS) ;
-	gAlice->TreeR()->GetEvent(0) ;
-	
-	if(strcmp(fTSMaker->GetRecPointsBranch(),fClusterizer->GetRecPointsBranch()) == 0)
-	  allNotFound = kFALSE ;
-      }
-      
-    }
-    else{//Neither Title,neither fPID, neither fClusterizer: we read any (first) occurence
-      TBranch * tsMakerBranch = 0;
-      TBranch * tsBranch = 0;    
-      TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
-      Bool_t tsMakerNotFound = kTRUE ;
-      Bool_t tsNotFound = kTRUE ;
-      Int_t ibranch ;
-      for(ibranch =  0;(ibranch <branches->GetEntries())&& tsMakerNotFound;ibranch++){
-	tsMakerBranch=(TBranch *) branches->At(ibranch) ;
-	if( strcmp(tsMakerBranch->GetName(),"AliPHOSTrackSegmentMaker") == 0) 
-	  tsMakerNotFound = kFALSE ;
-      }
-      for(ibranch = 0 ;(ibranch <branches->GetEntries())&&(tsNotFound);ibranch++){
-	tsBranch=(TBranch *) branches->At(ibranch) ;
-	if( (strcmp(tsBranch->GetName(),"PHOSTS") == 0) && 
-	    (strcmp(tsBranch->GetName(),tsMakerBranch->GetTitle())==0))
-	  tsNotFound = kFALSE ;
-      }	
-      if(tsMakerNotFound ||tsNotFound ){
-	cout << "AliPHOSIndexToObject error" << endl ;
-	cout << "       Can't find Branch with TrackSegmentMaker and TrackSegments " ;
-	cout << "       Do nothing" <<endl  ;
-	return kFALSE ;
-      }
-      
-      tsMakerBranch->SetAddress(&fTSMaker) ;
-      tsBranch->SetAddress(&fTS) ;
-      gAlice->TreeR()->GetEvent(0) ;     
-    }
-  }
-
-  return kTRUE ;  
-}
-//____________________________________________________________________________ 
-Bool_t AliPHOSIndexToObject::ReadRecPoints(char * branchTitle){
+  TBranch * digitsBranch = 0;
+  TBranch * digitizerBranch = 0;
   
-  if(gAlice->TreeR() == 0)
-    return kFALSE ;
-
-  if(fTSMaker) //if TrackSegment maker already read, read corresponding branches
-    branchTitle = fTSMaker->GetRecPointsBranch() ;
-
-  if(branchTitle){ // we should read a specific branch
-    TBranch * emcBranch = 0;
-    TBranch * cpvBranch = 0;
-    TBranch * clusterizerBranch = 0;
-    
-    TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
-    Int_t ibranch;
-    Bool_t emcNotFound = kTRUE ;
-    Bool_t cpvNotFound = kTRUE ;  
-    Bool_t clusterizerNotFound = kTRUE ;
-    
-    for(ibranch = 0;((ibranch < branches->GetEntries())&&(emcNotFound ||cpvNotFound || clusterizerNotFound)) ;ibranch++){
-      if(emcNotFound){
-	emcBranch=(TBranch *) branches->At(ibranch) ;
-	if( (strcmp(emcBranch->GetTitle(),branchTitle) == 0) && 
-	    (strcmp(emcBranch->GetName(),"PHOSEmcRP") == 0) )
-	  emcNotFound = kFALSE ;
-      }
-      if(cpvNotFound){
-	cpvBranch=(TBranch *) branches->At(ibranch) ;
-	if( (strcmp(cpvBranch->GetTitle(),branchTitle) == 0) &&
-	    (strcmp(cpvBranch->GetName(),"PHOSCpvRP") == 0) )
-	  cpvNotFound = kFALSE ;
-      }
-      if(clusterizerNotFound){
-	clusterizerBranch = (TBranch *) branches->At(ibranch) ;
-	if( (strcmp(clusterizerBranch->GetTitle(),branchTitle) == 0) &&
-	    (strcmp(clusterizerBranch->GetName(),"AliPHOSClusterizer") == 0) )
-	  clusterizerNotFound = kFALSE ;
-      }
-      
-    }
-    
-    if(clusterizerNotFound || emcNotFound || cpvNotFound){
-      cout << "AliPHOSIndexToObject error" << endl ;
-      cout << "       Can't find Branch with RecPoints or Clusterizer " << endl ;
-      return kFALSE ;
-    }
-    
-    emcBranch->SetAddress(&fEmcRecPoints) ;
-    cpvBranch->SetAddress(&fCpvRecPoints) ;
-    clusterizerBranch->SetAddress(&fClusterizer) ;
-    gAlice->TreeR()->GetEvent(0) ;
-  }
-  else{ //no specific branch
-    if(fDigitizer){//Digitizer aready read, 
-                   //we should read RecPoints made from these Digits
-      TBranch * emcBranch = 0;
-      TBranch * cpvBranch = 0;
-      TBranch * clusterizerBranch = 0;
-      
-      TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
-      Int_t branchRead = 0;
-      Bool_t allNotFound = kTRUE ;
-      while(allNotFound){
-	Bool_t emcNotFound = kTRUE ;
-	Bool_t cpvNotFound = kTRUE ;  
-	Bool_t clusterizerNotFound = kTRUE ;
-	Int_t ibranch ;
-	for(ibranch = branchRead;ibranch < branches->GetEntries();ibranch++){
-	  emcBranch=(TBranch *) branches->At(ibranch) ;
-	  if( strcmp(emcBranch->GetName(),"PHOSEmcRP") == 0)
-	    emcNotFound = kFALSE ;
-	}
-	branchRead = ibranch + 1 ;
-	for(ibranch =  0 ;ibranch < branches->GetEntries();ibranch++){
-	  cpvBranch=(TBranch *) branches->At(ibranch) ;
-	  if( (strcmp(cpvBranch->GetTitle(),emcBranch->GetTitle()) == 0) &&
-	      (strcmp(cpvBranch->GetName(),"PHOSCpvRP") == 0) )
-	    cpvNotFound = kFALSE ;
-	}
-	for(ibranch = 0 ;ibranch < branches->GetEntries();ibranch++){
-	  clusterizerBranch = (TBranch *) branches->At(ibranch) ;
-	  if( (strcmp(clusterizerBranch->GetTitle(),emcBranch->GetTitle()) == 0) &&
-	      (strcmp(clusterizerBranch->GetName(),"AliPHOSClusterizer") == 0) )
-	    clusterizerNotFound = kFALSE ;
-	}
-	
-	if(clusterizerNotFound || emcNotFound || cpvNotFound){
-	  cout << "AliPHOSIndexToObject error" << endl ;
-	  cout << "       Can't find Branch with RecPoints or Clusterizer " << endl ;
-	  return kFALSE ;
-	}
-    
-	emcBranch->SetAddress(&fEmcRecPoints) ;
-	cpvBranch->SetAddress(&fCpvRecPoints) ;
-	clusterizerBranch->SetAddress(&fClusterizer) ;
-	gAlice->TreeR()->GetEvent(0) ;
-	
-	if(strcmp(fClusterizer->GetDigitsBranch(),fDigitizer->GetDigitsBranch())== 0)
-	  allNotFound = kFALSE ;
-      }
-    }
-    else{//Neither Title, Neither TSMaker, Neither Digits: we read any (first) RecPoints
-      TBranch * emcBranch = 0;
-      TBranch * cpvBranch = 0;
-      TBranch * clusterizerBranch = 0;
-      TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
-      Bool_t emcNotFound = kTRUE ;
-      Bool_t cpvNotFound = kTRUE ;  
-      Bool_t clusterizerNotFound = kTRUE ;
-      Int_t ibranch ;
-      for(ibranch = 0 ;ibranch < branches->GetEntries();ibranch++){
-	emcBranch=(TBranch *) branches->At(ibranch) ;
-	if( strcmp(emcBranch->GetName(),"PHOSEmcRP") == 0)
-	  emcNotFound = kFALSE ;
-      }
-      for(ibranch = 0 ;ibranch < branches->GetEntries();ibranch++){
-	cpvBranch=(TBranch *) branches->At(ibranch) ;
-	if( (strcmp(cpvBranch->GetTitle(),emcBranch->GetTitle()) == 0) &&
-	    (strcmp(cpvBranch->GetName(),"PHOSCpvRP") == 0) )
-	  cpvNotFound = kFALSE ;
-      }
-      for(ibranch = 0;ibranch < branches->GetEntries();ibranch++){
-	clusterizerBranch = (TBranch *) branches->At(ibranch) ;
-	if( (strcmp(clusterizerBranch->GetTitle(),emcBranch->GetTitle()) == 0) &&
-	    (strcmp(clusterizerBranch->GetName(),"AliPHOSClusterizer") == 0) )
-	  clusterizerNotFound = kFALSE ;
-      }
-      
-      if(clusterizerNotFound || emcNotFound || cpvNotFound){
-	cout << "AliPHOSIndexToObject error" << endl ;
-	cout << "       Can't find Branch with RecPoints or Clusterizer " << endl ;
-	return kFALSE ;
-      }
-      
-      emcBranch->SetAddress(&fEmcRecPoints) ;
-      cpvBranch->SetAddress(&fCpvRecPoints) ;
-      clusterizerBranch->SetAddress(&fClusterizer) ;
-      gAlice->TreeR()->GetEvent(0) ;
-    }
-  }
-
-  return kTRUE ;
-}
-//____________________________________________________________________________ 
-Bool_t AliPHOSIndexToObject::ReadDigits(char * branchTitle){
-
-  if(gAlice->TreeD()== 0)
-    return kFALSE ;
-
-
+  TObjArray * branches = gAlice->TreeD()->GetListOfBranches() ;
+  Int_t ibranch;
+  Bool_t phosNotFound = kTRUE ;
+  Bool_t digitizerNotFound = kTRUE ;
   
-  //if RecPoints are already read, we should read Digits from which they are made
-  if(fClusterizer)
-    branchTitle = fClusterizer->GetDigitsBranch() ;
-  
-  if(branchTitle){ // we should read a specific branch
-    TBranch * digitsBranch = 0;
-    TBranch * digitizerBranch = 0;
-
-    TObjArray * branches = gAlice->TreeD()->GetListOfBranches() ;
-    Int_t ibranch;
-    Bool_t phosNotFound = kTRUE ;
-    Bool_t digitizerNotFound = kTRUE ;
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
     
-    for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
-      
-      if(phosNotFound){
-	digitsBranch=(TBranch *) branches->At(ibranch) ;
-	if( (strcmp(digitsBranch->GetTitle(),branchTitle)==0 ) &&
-	    (strcmp(digitsBranch->GetName(),"PHOS") == 0) )
-	  phosNotFound = kFALSE ;
-      }
-      if(digitizerNotFound){
-	digitizerBranch = (TBranch *) branches->At(ibranch) ;
-	if( (strcmp(digitizerBranch->GetTitle(),branchTitle) == 0) && 
-	    (strcmp(digitizerBranch->GetName(),"AliPHOSDigitizer") == 0) )
-	  digitizerNotFound = kFALSE ;
-      } 
-    }
-    
-    if(digitizerNotFound || phosNotFound){
-      cout << "AliPHOSIndexToObject error: " << endl ;
-      cout << "       Can't find Branch with Digits or Digitizer "<< endl ; ;
-      return kFALSE ;
-    }
-    
-    digitsBranch->SetAddress(&fDigits) ;
-    digitizerBranch->SetAddress(&fDigitizer) ;
-  
-  }
-  else{ //we should read any branch and print warning if there are other possibilities
-    TBranch * digitsBranch = 0;
-    TBranch * digitizerBranch = 0;
-    
-    TObjArray * branches = gAlice->TreeD()->GetListOfBranches() ;
-    Int_t ibranch;
-    Bool_t phosNotFound = kTRUE ;
-    Bool_t digitizerNotFound = kTRUE ;
-    
-    for(ibranch = 0;(ibranch <branches->GetEntries())&& phosNotFound ;ibranch++){
+    if(phosNotFound){
       digitsBranch=(TBranch *) branches->At(ibranch) ;
-      if(strcmp(digitsBranch->GetName(),"PHOS") == 0) 
+      if( (strcmp(digitsBranch->GetTitle(),fDigitsTitle)==0 ) &&
+	  (strcmp(digitsBranch->GetName(),"PHOS") == 0) )
 	phosNotFound = kFALSE ;
     }
-    for(ibranch = 0;(ibranch <branches->GetEntries())&& digitizerNotFound ;ibranch++){
+    if(digitizerNotFound){
       digitizerBranch = (TBranch *) branches->At(ibranch) ;
-      if( (strcmp(digitizerBranch->GetTitle(),digitsBranch->GetTitle()) == 0) && 
+      if( (strcmp(digitizerBranch->GetTitle(),fDigitsTitle) == 0) && 
 	  (strcmp(digitizerBranch->GetName(),"AliPHOSDigitizer") == 0) )
 	digitizerNotFound = kFALSE ;
     } 
-    
-    if(digitizerNotFound || phosNotFound){
-      cout << "AliPHOSIndexToObject error: " << endl ;
-      cout << "       Can't find Branch with Digits or Digitizer "<< endl ; ;
-      return kFALSE ;
-    }
-    
-    digitsBranch->SetAddress(&fDigits) ;
-    digitizerBranch->SetAddress(&fDigitizer) ;
-        
   }
-
+    
+  if(digitizerNotFound || phosNotFound){
+    cout << "AliPHOSIndexToObject error: " << endl ;
+    cout << "       Can't find Branch with Digits or Digitizer "<< endl ; ;
+    return  ;
+  }
+  
+  digitsBranch->SetAddress(&fDigits) ;
+  digitizerBranch->SetAddress(&fDigitizer) ;
+  
   gAlice->TreeD()->GetEvent(0) ;
-
-  return kTRUE ;
+  
 }
 //____________________________________________________________________________ 
-Bool_t AliPHOSIndexToObject::ReadPrimaries(){
-  //read specific branches of primaries
+void AliPHOSIndexToObject::ReadTreeS(){
+  
+  if(gAlice->TreeS()== 0){
+    cout <<   "AliPHOSIndexToObject: can not read TreeS " << endl ;
+    return ;
+  }
+  
+  TBranch * sdigitsBranch = 0;
+  TBranch * sdigitizerBranch = 0;
+  
+  TObjArray * branches = gAlice->TreeS()->GetListOfBranches() ;
+  Int_t ibranch;
+  Bool_t phosNotFound = kTRUE ;
+  Bool_t sdigitizerNotFound = kTRUE ;
+  
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+    
+    if(phosNotFound){
+      sdigitsBranch=(TBranch *) branches->At(ibranch) ;
+      if( (strcmp(sdigitsBranch->GetTitle(),fSDigitsTitle)==0 ) &&
+	  (strcmp(sdigitsBranch->GetName(),"PHOS") == 0) )
+	phosNotFound = kFALSE ;
+    }
+    if(sdigitizerNotFound){
+      sdigitizerBranch = (TBranch *) branches->At(ibranch) ;
+      if( (strcmp(sdigitizerBranch->GetTitle(),fSDigitsTitle) == 0) && 
+	  (strcmp(sdigitizerBranch->GetName(),"AliPHOSSDigitizer") == 0) )
+	sdigitizerNotFound = kFALSE ;
+    } 
+  }
+  
+  if(sdigitizerNotFound || phosNotFound){
+    cout << "AliPHOSIndexToObject error: " << endl ;
+    cout << "       Can't find Branch with SDigits or SDigitizer "<< endl ; ;
+    return ;
+  }
+  
+  sdigitsBranch->SetAddress(&fSDigits) ;
+  sdigitizerBranch->SetAddress(&fSDigitizer) ;
+  
+  gAlice->TreeS()->GetEvent(0) ;
+  
+}
+//____________________________________________________________________________ 
+void AliPHOSIndexToObject::ReadTreeR(){
+  
+  if(gAlice->TreeR()== 0){
+    cout <<   "AliPHOSIndexToObject: can not read TreeR " << endl ;
+    return ;
+  }
 
-//   //Check, is it necessary to open new files
-//   TArrayI* events = fDigitizer->GetCurrentEvents() ; 
-//   TClonesArray * filenames = fDigitizer->GetHeadersFiles() ;
+  TBranch * pidBranch = 0;
+  TBranch * rpBranch = 0;
+  TBranch * tsMakerBranch = 0;
+  TBranch * tsBranch = 0;
+  TBranch * emcBranch = 0;
+  TBranch * cpvBranch = 0;
+  TBranch * clusterizerBranch = 0;
+  
+  TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
+  Int_t ibranch;
+  Bool_t pidNotFound = kTRUE ;
+  Bool_t rpNotFound = kTRUE ;
+  Bool_t tsMakerNotFound = kTRUE ;
+  Bool_t tsNotFound = kTRUE ;
+  Bool_t emcNotFound = kTRUE ;
+  Bool_t cpvNotFound = kTRUE ;  
+  Bool_t clusterizerNotFound = kTRUE ;
+  
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+    
+    if(pidNotFound){
+      pidBranch=(TBranch *) branches->At(ibranch) ;
+      if( (fRPTitle.CompareTo(pidBranch->GetTitle())==0 ) &&
+	  (strcmp(pidBranch->GetName(),"AliPHOSPID") == 0) )
+	pidNotFound = kFALSE ;
+    }
+    if(rpNotFound){
+      rpBranch=(TBranch *) branches->At(ibranch) ;
+      if( (fRPTitle.CompareTo(rpBranch->GetTitle())==0 ) &&
+	  (strcmp(rpBranch->GetName(),"PHOSRP") == 0) )
+	rpNotFound = kFALSE ;
+    }
+    if(tsMakerNotFound){
+      tsMakerBranch=(TBranch *) branches->At(ibranch) ;
+      if( fTSTitle.CompareTo(tsMakerBranch->GetTitle())==0 )
+	if( strcmp(tsMakerBranch->GetName(),"AliPHOSTrackSegmentMaker") == 0) 
+	  tsMakerNotFound = kFALSE ;
+    }
+    if(tsNotFound){
+      tsBranch=(TBranch *) branches->At(ibranch) ;
+      if( fTSTitle.CompareTo(tsBranch->GetTitle())==0 )
+	if( strcmp(tsBranch->GetName(),"PHOSTS") == 0) 
+	  tsNotFound = kFALSE ;
+    }  
+    if(emcNotFound){
+      emcBranch=(TBranch *) branches->At(ibranch) ;
+      if( (fRecPointsTitle.CompareTo(emcBranch->GetTitle()) == 0) && 
+	  (strcmp(emcBranch->GetName(),"PHOSEmcRP") == 0) )
+	emcNotFound = kFALSE ;
+    }
+    if(cpvNotFound){
+      cpvBranch=(TBranch *) branches->At(ibranch) ;
+      if( (fRecPointsTitle.CompareTo(cpvBranch->GetTitle()) == 0) &&
+	  (strcmp(cpvBranch->GetName(),"PHOSCpvRP") == 0) )
+	cpvNotFound = kFALSE ;
+    }
+    if(clusterizerNotFound){
+      clusterizerBranch = (TBranch *) branches->At(ibranch) ;
+      if( (fRecPointsTitle.CompareTo(clusterizerBranch->GetTitle()) == 0) &&
+	  (strcmp(clusterizerBranch->GetName(),"AliPHOSClusterizer") == 0) )
+	clusterizerNotFound = kFALSE ;
+    }
+  }
+
+  if(pidNotFound ||rpNotFound ){
+    cout << "AliPHOSIndexToObject error" << endl ;
+    cout << "     Can't find Branch with PID and RecParticles " ;
+    return  ;
+  }
+  if(tsMakerNotFound ||tsNotFound ){
+    cout << "AliPHOSIndexToObject error" << endl ;
+    cout << "       Can't find Branch with TrackSegmentMaker and TrackSegments " ;
+    cout << "       Do nothing" <<endl  ;
+    return ;
+  }
+  if(clusterizerNotFound || emcNotFound || cpvNotFound){
+    cout << "AliPHOSIndexToObject error" << endl ;
+    cout << "       Can't find Branch with RecPoints or Clusterizer " << endl ;
+    return ;
+  }
+
+  emcBranch->SetAddress(&fEmcRecPoints) ;
+  cpvBranch->SetAddress(&fCpvRecPoints) ;
+  clusterizerBranch->SetAddress(&fClusterizer) ;
+  
+  tsMakerBranch->SetAddress(&fTSMaker) ;
+  tsBranch->SetAddress(&fTS) ;
+    
+  pidBranch->SetAddress(&fPID) ;
+  rpBranch->SetAddress(&fRecParticles) ;
+  
+  gAlice->TreeR()->GetEvent(0) ;    
+
+}
+//____________________________________________________________________________ 
+void AliPHOSIndexToObject::ReadPrimaries(){
+  //read specific branches of primaries
+  
+  fNPrimaries = gAlice->GetNtrack();
+  
+  //   //Check, is it necessary to open new files
+  //   TArrayI* events = fDigitizer->GetCurrentEvents() ; 
+  //   TClonesArray * filenames = fDigitizer->GetHeadersFiles() ;
 //   Int_t input ;
 //   for(input = 0; input < filenames->GetEntriesFast(); input++){
 
@@ -729,23 +594,27 @@ Bool_t AliPHOSIndexToObject::ReadPrimaries(){
 
 //   //scan over opened files and read corresponding TreeK##
 
-  return kTRUE ;
+  return ;
 }
 //____________________________________________________________________________ 
 void AliPHOSIndexToObject::GetEvent(Int_t event){
   if(event == fEvent) // do nothing
     return ;
     
-  if(event > fMaxEvent)
+  if(event > fMaxEvent){
+    cout << "There is no such event " << event << " total # of events " << fMaxEvent << endl ;
     return ;
+  }
 
   fEvent = event ;
   gAlice->GetEvent(fEvent) ;
   
-  ReadRecParticles(fPID->GetRecParticlesBranch()) ;
-  ReadTS(fTSMaker->GetTrackSegmentsBranch()) ;
-  ReadRecPoints(fClusterizer->GetRecPointsBranch()) ;
-  ReadDigits(fDigitizer->GetDigitsBranch()) ;
+  ReadTreeS() ;
+  ReadTreeD() ;
+  ReadTreeR() ;
   ReadPrimaries() ;
+
+  
+
 }
 
