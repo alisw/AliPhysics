@@ -324,9 +324,22 @@ void AliPHOSPIDv1::InitParameters()
   fZcharged[3] =-4.68e-2 ;  fZcharged[4] =-9.21e-3 ; fZcharged[5] = 4.91e-2 ;//mean
   fZcharged[6] = 1.425   ;  fZcharged[7] =-5.90e-2 ; fZcharged[8] = 5.07e-2 ;//sigma
   
+  //Threshold to differentiate between charged and neutral
+  fChargedNeutralThreshold = 1e-5;
+
+  //Weight to hadrons recontructed energy
+
+  fERecWeightPar[0] = 0.32 ; 
+  fERecWeightPar[1] = 3.8  ;
+  fERecWeightPar[2] = 5.4E-3 ; 
+  fERecWeightPar[3] = 5.6E-2 ;
+  fERecWeight = new TFormula("Weight for hadrons" , "[0]*exp(-x*[1])+[2]*exp(-x*[3])") ; 
+  fERecWeight ->SetParameters(fERecWeightPar[0],fERecWeightPar[1] ,fERecWeightPar[2] ,fERecWeightPar[3]) ; 
+
+
   for (Int_t i =0; i<  AliPID::kSPECIESN ; i++)
     fInitPID[i] = 1.;
-  
+ 
 }
 
 //________________________________________________________________________
@@ -727,13 +740,9 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
   //  in case 1.
 
   TVector3 dir(0,0,0) ; 
-  
-  TVector3 emcglobalpos ;
   TMatrix  dummy ;
   
-  emc->GetGlobalPosition(emcglobalpos, dummy) ;
-
-  dir = emcglobalpos ;  
+  emc->GetGlobalPosition(dir, dummy) ;
 
   //account correction to the position of IP
   Float_t xo,yo,zo ; //Coordinates of the origin
@@ -865,13 +874,14 @@ void  AliPHOSPIDv1::MakePID()
   Double_t * stof[kSPECIES] ;
   Double_t * sdp [kSPECIES]  ;
   Double_t * scpv[kSPECIES] ;
-  
+  Double_t * sw  [kSPECIES] ;
   //Info("MakePID","Begin MakePID"); 
   
   for (Int_t i =0; i< kSPECIES; i++){
     stof[i] = new Double_t[nparticles] ;
     sdp [i] = new Double_t[nparticles] ;
     scpv[i] = new Double_t[nparticles] ;
+    sw  [i] = new Double_t[nparticles] ;
   }
   
 
@@ -897,13 +907,10 @@ void  AliPHOSPIDv1::MakePID()
     // ############Tof#############################
 
     //    Info("MakePID", "TOF");
-    Float_t en   = emc->GetEnergy();    
+    Float_t  en   = emc->GetEnergy();    
     Double_t time = emc->GetTime() ;
     //    cout<<">>>>>>>Energy "<<en<<"Time "<<time<<endl;
-    //Conversion Electrons initial population. TO BE REMOVED
-    fInitPID[AliPID::kEleCon]   = 0. ;
-
-    
+   
     // now get the signals probability
     // s(pid) in the Bayesian formulation
     
@@ -927,9 +934,9 @@ void  AliPHOSPIDv1::MakePID()
       Double_t pTofKaon = 0;
 
       if(time < fTkaonl[1])
-	pTofKaon = fTFkaong      ->Eval(time) ; //gaus distribution
+	pTofKaon = fTFkaong  ->Eval(time) ; //gaus distribution
       else 
-	pTofKaon = fTFkaonl      ->Eval(time) ;  //landau distribution
+	pTofKaon = fTFkaonl  ->Eval(time) ; //landau distribution
 
       Double_t pTofNucleon = 0;
 
@@ -937,16 +944,18 @@ void  AliPHOSPIDv1::MakePID()
 	pTofNucleon = fTFhhadrong   ->Eval(time) ; //gaus distribution
       else
 	pTofNucleon = fTFhhadronl   ->Eval(time) ; //landau distribution
-      //We assing the same prob to charged hadrons, sum is the average prob
-      Double_t pTofNeHadron =  (pTofPion + pTofKaon + pTofNucleon)/2. ;
       //We assing the same prob to neutral hadrons, sum is the average prob
-      Double_t pTofChHadron =  (pTofKaon + pTofNucleon)/3. ;
+      Double_t pTofNeHadron =  (pTofKaon + pTofNucleon)/2. ;
+      //We assing the same prob to charged hadrons, sum is the average prob
+      Double_t pTofChHadron =  (pTofPion + pTofKaon + pTofNucleon)/3. ;
 
-      stof[AliPID::kPhoton][index]   = fTFphoton     ->Eval(time) ; //gaus distribution
-      stof[AliPID::kEleCon][index]   = stof[AliPID::kPhoton][index] ; // a conversion electron has the photon ToF
+      stof[AliPID::kPhoton][index]   = fTFphoton     ->Eval(time) ; 
+      //gaus distribution
+      stof[AliPID::kEleCon][index]   = stof[AliPID::kPhoton][index] ; 
+      //a conversion electron has the photon ToF
       stof[AliPID::kMuon][index]     = stof[AliPID::kPhoton][index] ;
  
-      stof[AliPID::kElectron][index] = pTofPion  ;                               
+      stof[AliPID::kElectron][index] = pTofPion  ;                             
 
       stof[AliPID::kPion][index]     =  pTofChHadron ; 
       stof[AliPID::kKaon][index]     =  pTofChHadron ;
@@ -981,7 +990,8 @@ void  AliPHOSPIDv1::MakePID()
       sdp[AliPID::kNeutron][index]  = sdp[AliPID::kPion][index]  ;
       sdp[AliPID::kEleCon][index]   = sdp[AliPID::kPhoton][index]; 
       sdp[AliPID::kKaon0][index]    = sdp[AliPID::kPion][index]  ; 
-      sdp[AliPID::kMuon][index]     = fDFmuon ->Eval(dispersion) ; //landau distribution
+      sdp[AliPID::kMuon][index]     = fDFmuon ->Eval(dispersion) ; 
+      //landau distribution
     }
     
 //      Info("MakePID","multiplicity %d, dispersion %f", emc->GetMultiplicity(), dispersion);
@@ -991,10 +1001,10 @@ void  AliPHOSPIDv1::MakePID()
 
     //########## CPV-EMC  Distance#######################
     //     Info("MakePID", "Distance");
-    //    Float_t distance = GetDistance(emc, cpv,  "R") ;
+
     Float_t x             = TMath::Abs(GetDistance(emc, cpv,  "X")) ;
     Float_t z             = GetDistance(emc, cpv,  "Z") ;
-    //    Info("MakePID", "Distance %f", distance);
+   
     Double_t pcpv         = 0 ;
     Double_t pcpvneutral  = 0. ;
    
@@ -1016,7 +1026,7 @@ void  AliPHOSPIDv1::MakePID()
     else
       pcpv = pcpvcharged ;
     
-    if(pcpv < 1e-7)
+    if(pcpv < fChargedNeutralThreshold)
       {
 	pcpvneutral  = 1. ;
 	pcpvcharged  = 0. ;
@@ -1064,6 +1074,21 @@ void  AliPHOSPIDv1::MakePID()
       sdp [AliPID::kMuon][index]     =  0 ;
     }
 
+    //Weight to apply to hadrons due to energy reconstruction
+
+    Float_t weight = fERecWeight ->Eval(en) ;
+ 
+    sw[AliPID::kPhoton][index]   = 1. ;
+    sw[AliPID::kElectron][index] = 1. ;
+    sw[AliPID::kPion][index]     = weight ; 
+    sw[AliPID::kKaon][index]     = weight ; 
+    sw[AliPID::kProton][index]   = weight ;
+    sw[AliPID::kNeutron][index]  = weight ;
+    sw[AliPID::kEleCon][index]   = 1. ; 
+    sw[AliPID::kKaon0][index]    = weight ; 
+    sw[AliPID::kMuon][index]     = weight ; 
+    sw[AliPID::kPi0][index]      = 1. ;
+
 //     if(en > 0.5){
 //       cout<<"######################################################"<<endl;
 //       //cout<<"MakePID: energy "<<en<<", tof "<<time<<", distance "<<distance<<", dispersion "<<dispersion<<endl ;
@@ -1110,18 +1135,28 @@ void  AliPHOSPIDv1::MakePID()
     Int_t jndex ;
     Double_t wn = 0.0 ; 
     for (jndex = 0 ; jndex < kSPECIES ; jndex++) 
-      wn += stof[jndex][index] * sdp[jndex][index]  * scpv[jndex][index] * fInitPID[jndex] ;
+      wn += stof[jndex][index] * sdp[jndex][index]  * scpv[jndex][index] * sw[jndex][index] * fInitPID[jndex] ;
    
     //    cout<<"*************wn "<<wn<<endl;
     AliPHOSRecParticle * recpar = gime->RecParticle(index) ;  
     if (TMath::Abs(wn)>0)
       for (jndex = 0 ; jndex < kSPECIES ; jndex++) {
+
+// 	if(recpar->IsEleCon()){
+// 	 fInitPID[AliPID::kEleCon]   = 1. ;
+// 	 fInitPID[AliPID::kPhoton]   = 0. ;
+// 	}
+// 	else{
+// 	 fInitPID[AliPID::kEleCon]   = 0. ;
+// 	 fInitPID[AliPID::kPhoton]   = 1. ;
+// 	}
+	fInitPID[AliPID::kEleCon]   = 0. ;
 	//cout<<"jndex "<<jndex<<" wn "<<wn<<" SetPID * wn"
 	//<<stof[jndex][index] * sdp[jndex][index] * pid[jndex]  << endl;
 	//cout<<" tof "<<stof[jndex][index] << " disp " <<sdp[jndex][index] << " pid "<< fInitPID[jndex] << endl;
 //  	cout<<"Particle "<<jndex<<"  final prob * wn   "
 //  	    <<stof[jndex][index] * sdp[jndex][index] * scpv[jndex][index] * fInitPID[jndex] <<"  wn  "<< wn<<endl;
-	recpar->SetPID(jndex, stof[jndex][index] * sdp[jndex][index] * 
+	recpar->SetPID(jndex, stof[jndex][index] * sdp[jndex][index] * sw[jndex][index] *
 		       scpv[jndex][index] * fInitPID[jndex] / wn) ; 
 // 	cout<<"final prob "<<stof[jndex][index] * sdp[jndex][index] * scpv[jndex][index] * fInitPID[jndex] / wn<<endl;
 	//recpar->SetPID(jndex, stof[jndex][index] * fInitPID[jndex] / wn) ; 
@@ -1133,8 +1168,9 @@ void  AliPHOSPIDv1::MakePID()
   
     for (Int_t i =0; i< kSPECIES; i++){
       delete [] stof[i];
-      delete [] sdp[i];
+      delete [] sdp [i];
       delete [] scpv[i];
+      delete [] sw  [i];
     }
   //  Info("MakePID","End MakePID"); 
 }

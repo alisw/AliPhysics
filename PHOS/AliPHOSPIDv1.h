@@ -30,7 +30,7 @@ class AliPHOSClusterizerv1 ;
 class AliPHOSTrackSegmentMakerv1 ;
 
 #include "AliPHOSPID.h"
-#include "AliESDtrack.h"
+#include "AliPID.h"
 class  AliPHOSPIDv1 : public AliPHOSPID {
   
 public:
@@ -66,6 +66,9 @@ public:
   Float_t GetCpv2EmcDistanceCut  (TString axis, Float_t e)   const ;
   Float_t GetEllipseParameter    (TString particle, TString param, Float_t e) const;
 
+  Double_t GetThresholdChargedNeutral () const {return  fChargedNeutralThreshold;}
+
+
   //Do bayesian PID
   void SetBayesianPID(Bool_t set){ fBayesian = set ;}
 
@@ -76,6 +79,9 @@ public:
   void SetParameterToCalculateEllipse(TString particle, TString param, Int_t i, Float_t value) ;
   void SetParameterPhotonBoundary(Int_t i, Float_t param);
   void SetParameterPi0Boundary   (Int_t i, Float_t param);
+
+  void SetThresholdChargedNeutral (Double_t th) {fChargedNeutralThreshold = th;}
+
 
   //Switch to "on flyght" mode, without writing to TreeR and file  
   void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
@@ -176,6 +182,9 @@ private:
 /*   Double_t fCPVchargedg[9] ;         // gaussian emc-cpv distance response for charged part (no elect) */
 /*   Double_t fCPVchargedl[9] ;         // landau emc-cpv distance response for charged part (no elect) */
 
+  Double_t fERecWeightPar[4] ;  // gaussian tof response for photon
+  TFormula * fERecWeight ;      // the formula   
+  Double_t fChargedNeutralThreshold ;  //Threshold to differentiate between charged and neutral
   ClassDef( AliPHOSPIDv1,11)  // Particle identifier implementation version 1
 
 };
