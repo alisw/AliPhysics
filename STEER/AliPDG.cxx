@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/12/21 16:48:39  morsch
+AliPDG class, first commit.
+
 */
 
 // Class to encapsulate the ALICE updates to TDatabasePDG.h
@@ -52,6 +55,20 @@ ClassImp(AliPDG)
     
     pdgDB->AddParticle("B(s)*0 bar","B(s)*0 bar",
 		       5.4163, kTRUE, 0.047, -0.,"Meson", -533);
+
+    pdgDB->AddParticle("B(c)+","B(c)+",
+		       6.594, kTRUE, 0.047, +1.,"Meson",  541);
+    
+    pdgDB->AddParticle("B(c)- bar","B(c)-",
+		       6.594, kTRUE, 0.047, -1.,"Meson", -541);
+
+    pdgDB->AddParticle("B(c)*+","B(c)*+",
+		       6.602, kTRUE, 0.047, +1.,"Meson",  543);
+    
+    pdgDB->AddParticle("B(c)*- bar","B(c)*-",
+		       6.602, kTRUE, 0.047, -1.,"Meson", -543);
+
+
     
 // Charmed baryons
 // 
