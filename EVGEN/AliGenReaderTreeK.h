@@ -23,7 +23,7 @@ class AliGenReaderTreeK : public AliGenReader
     // Read
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
-    AliGenReaderTreeK & operator=(const AliGenReader & rhs);
+    AliGenReaderTreeK & operator=(const AliGenReader & rhs){return *this;}
  protected:
     Int_t             fNcurrent;          // points to the next entry
     Int_t             fNparticle;         // Next particle in list

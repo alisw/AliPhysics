@@ -20,7 +20,7 @@ class AliGenReaderCwn : public AliGenReader
     // Read
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
-    AliGenReaderCwn & operator=(const AliGenReader & rhs);
+    AliGenReaderCwn & operator=(const AliGenReader & rhs){return *this;}
  protected:
     Int_t             fNcurrent;      // points to the next entry
     Int_t             fNparticle;     // particle number in event
