@@ -130,7 +130,7 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
   SetMass(t.GetMass());
   SetNumberOfClusters(0);
 
-  fdEdx=0;
+  fdEdx=t.GetdEdx();
 
   fLhElectron = 0.0;
   fNWrong = 0;
@@ -191,7 +191,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
     fIndexBackup[i]=0;
     fIndex[i] = 0; //MI store indexes
   }
-  fdEdx=0;
+  fdEdx=t.GetTRDsignal();
 
   fLhElectron = 0.0;
   fNWrong = 0;
