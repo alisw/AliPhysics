@@ -84,7 +84,7 @@ AliRoot3.01.tar.gz AliLibs3.01.tar.gz AliOffline3.01.tar.gz:
 		@rm -f `find . -name '*~' -print` \
                        `find . -name '*.bak' -print` \
                        `find . -name '.*~' -print` \
-		       `find . -name '*\#*' -print 
+		       `find . -name '*\#*' -print` 
 		@rm -f /tmp/saves
 		@ls -1d $^ | sed -e "s/^/$(ALICE_LEVEL)\//" > /tmp/saves
 	 	@cd $(ALICE) ; \
