@@ -12,9 +12,9 @@ class AliL3Display : public TObject {
 
  private:
   TGeometry *fGeom;
-  AliL3SpacePointData *fClusters[36][5]; //!
+  AliL3SpacePointData *fClusters[36][6]; //!
   AliL3TrackArray *fTracks; //!
-  UInt_t fNcl[36][5];
+  UInt_t fNcl[36][6];
   AliL3Transform *fTransform; //!
 
   Int_t fMinSlice;

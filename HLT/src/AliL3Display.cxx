@@ -333,7 +333,7 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
   
   TFile *file = new TFile(digitsFile);
   AliTPCParam *param = (AliTPCParam*)file->Get("75x40_100x60");
-  TTree *TD=(TTree*)file->Get("TreeD_75x40_100x60");
+  TTree *TD=(TTree*)file->Get("TreeD_75x40_100x60_0");
   AliSimDigits da, *digits=&da;
   TD->GetBranch("Segment")->SetAddress(&digits); //Return pointer to branch segment.
   AliL3Transform *transform = new AliL3Transform();
