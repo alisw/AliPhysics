@@ -319,3 +319,4 @@
 25-nov-2002 NvE User defined particle id code introduced in AliTrack.
 27-nov-2002 NvE New class AliCollider introduced and RALICEHeaders.h and RALICELinkdef.h
                 updated accordingly.
+29-nov-2002 NvE Typo corrected in AliCollider.cxx.

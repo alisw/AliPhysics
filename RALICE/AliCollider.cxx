@@ -1,9 +1,9 @@
-// $Id$
+// $Id: AliCollider.cxx,v 1.1 2002/11/27 21:25:52 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
 // Pythia based universal physics event generator.
-// This event class is derived from TPythia6 and has some extensions to
+// This class is derived from TPythia6 and has some extensions to
 // support also generation of nucleus-nucleus interactions and to allow
 // investigation of the effect of detector resolving power.
 // Furthermore, the produced event information is provided in a format
@@ -89,7 +89,7 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date$ Utrecht University
+//- Modified: NvE $Date: 2002/11/27 21:25:52 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"
@@ -391,7 +391,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
    if (rndm<=fFracpp) // p+p interaction
    {
     ncols[0]++;
-    if (maxa=2)
+    if (maxa==2)
     {
      at--;
      zt--;
@@ -405,7 +405,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
    if (rndm>fFracpp && rndm<=(fFracpp+fFracnp)) // n+p interaction
    {
     ncols[1]++;
-    if (maxa=2)
+    if (maxa==2)
     {
      at--;
      zt--;
@@ -418,7 +418,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
    if (rndm>(fFracpp+fFracnp) && rndm<=(fFracpp+fFracnp+fFracpn)) // p+n interaction
    {
     ncols[2]++;
-    if (maxa=2)
+    if (maxa==2)
     {
      at--;
     } 
@@ -431,7 +431,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
    if (rndm>(fFracpp+fFracnp+fFracpn)) // n+n interaction
    {
     ncols[3]++; 
-    if (maxa=2)
+    if (maxa==2)
     {
      at--;
     } 
