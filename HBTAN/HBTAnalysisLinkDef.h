@@ -26,20 +26,20 @@
 #pragma link C++ class AliHbtBaseCut+;
 #pragma link C++ class AliHbtBasePairCut+;
 #pragma link C++ class AliHBTQInvCut+;
-
-#pragma link C++ class  AliHBTMomentumCut+;
-#pragma link C++ class  AliHBTPtCut+;
-#pragma link C++ class  AliHBTEnergyCut+;
-#pragma link C++ class  AliHBTRapidityCut+;
-#pragma link C++ class  AliHBTPseudoRapidityCut+;
-#pragma link C++ class  AliHBTPxCut+;
-#pragma link C++ class  AliHBTPyCut+;
-#pragma link C++ class  AliHBTPzCut+;
-#pragma link C++ class  AliHBTPhiCut+;
-#pragma link C++ class  AliHBTThetaCut+;
-#pragma link C++ class  AliHBTVxCut+;
-#pragma link C++ class  AliHBTVyCut+;
-#pragma link C++ class  AliHBTVzCut+;
+#pragma link C++ class AliHBTKtCut+;
+#pragma link C++ class AliHBTMomentumCut+;
+#pragma link C++ class AliHBTPtCut+;
+#pragma link C++ class AliHBTEnergyCut+;
+#pragma link C++ class AliHBTRapidityCut+;
+#pragma link C++ class AliHBTPseudoRapidityCut+;
+#pragma link C++ class AliHBTPxCut+;
+#pragma link C++ class AliHBTPyCut+;
+#pragma link C++ class AliHBTPzCut+;
+#pragma link C++ class AliHBTPhiCut+;
+#pragma link C++ class AliHBTThetaCut+;
+#pragma link C++ class AliHBTVxCut+;
+#pragma link C++ class AliHBTVyCut+;
+#pragma link C++ class AliHBTVzCut+;
 
 
 #pragma link C++ class AliHBTReader+;
@@ -47,6 +47,11 @@
 #pragma link C++ class AliHBTReaderPPprod+;
 
 #pragma link C++ class AliHBTQInvCorrelFctn+;
+
+#pragma link C++ class AliHBTQOutCMSLCCorrelFctn+;
+#pragma link C++ class AliHBTQLongCMSLCCorrelFctn+;
+#pragma link C++ class AliHBTQSideCMSLCCorrelFctn+;
+
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
 
 #pragma link C++ class AliHBTQOutResolVSQInvFctn+;
