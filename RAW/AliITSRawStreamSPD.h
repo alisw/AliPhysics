@@ -35,6 +35,9 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number
 
     UShort_t         fData;         // data read for file
+    Int_t            fDDLNumber;    // current DDL number
+    Int_t            fEventNumber;  // event trigger number
+    Int_t            fModuleNumber; // sequential module number
     UInt_t           fOffset;       // offset for cell column
     UInt_t           fHitCount;     // counter of hits
 

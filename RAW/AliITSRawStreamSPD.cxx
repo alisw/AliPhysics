@@ -52,7 +52,13 @@ const Int_t AliITSRawStreamSPD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
 
 
 AliITSRawStreamSPD::AliITSRawStreamSPD(AliRawReader* rawReader) :
-  AliITSRawStream(rawReader)
+  AliITSRawStream(rawReader),
+  fData(0),
+  fDDLNumber(-1),
+  fEventNumber(-1),
+  fModuleNumber(-1),
+  fOffset(0),
+  fHitCount(0)
 {
 // create an object to read ITS SPD raw digits
 
@@ -68,23 +74,40 @@ Bool_t AliITSRawStreamSPD::Next()
   fPrevModuleID = fModuleID;
   while (fRawReader->ReadNextShort(fData)) {
   
-    if ((fData & 0xE000) == 0x6000) {           // header
+    if ((fData & 0xC000) == 0x4000) {           // header
       fHitCount = 0;
-      UShort_t halfStave = (fData >> 4) & 0x007F;
+      UShort_t eventNumber = (fData >> 4) & 0x007F;
+      if (fEventNumber < 0) {
+	fEventNumber = eventNumber;
+      } else if (eventNumber != fEventNumber) {
+	Warning("Next", "mismatching event numbers: %d != %d", 
+		eventNumber, fEventNumber);
+      }
       UShort_t chipAddr = fData & 0x000F;
-      fModuleID = 2 * halfStave;
-      if (chipAddr >= 5) fModuleID++;
+      if (fRawReader->GetDDLID() != fDDLNumber) {
+	fModuleNumber = -1;
+	fDDLNumber = fRawReader->GetDDLID();
+      }
+      if ((chipAddr == 5) || (chipAddr == 0)) {
+	fModuleNumber++;
+	while (fRawReader->TestBlockAttribute(fModuleNumber/2)) fModuleNumber++;
+      }
+      if (fDDLNumber < kDDLsNumber) {
+	fModuleID = fgkDDLModuleMap[fDDLNumber][fModuleNumber];
+      } else {
+	fModuleID = fModuleNumber;
+      }
       fOffset = 32 * (chipAddr % 5);
-    } else if ((fData & 0xE000) == 0x0000) {    // trailer
+    } else if ((fData & 0xC000) == 0x0000) {    // trailer
       UShort_t hitCount = fData & 0x1FFF;
-      if (hitCount != fHitCount) Error("Next", "wrong number of hits!");
+      if (hitCount != fHitCount) Error("Next", "wrong number of hits: %d != %d", fHitCount, hitCount);
     } else if ((fData & 0xC000) == 0x8000) {    // pixel hit
       fHitCount++;
       fCoord1 = (fData & 0x001F) + fOffset;
       fCoord2 = (fData >> 5) & 0x00FF;
       return kTRUE;
     } else {                                    // fill word
-      if (fData != 0xFEDC) Error("Next", "wrong fill word!");
+      if ((fData & 0xC000) != 0xC000) Error("Next", "wrong fill word!");
     }
 
   }
