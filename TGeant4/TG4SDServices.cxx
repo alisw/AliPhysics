@@ -12,6 +12,7 @@
 #include <G4LogicalVolumeStore.hh>
 #include <G4LogicalVolume.hh>
 #include <G4Material.hh>
+#include <g4std/iomanip>
 
 TG4SDServices* TG4SDServices::fgInstance = 0;
 
@@ -64,7 +65,7 @@ void TG4SDServices::PrintStatistics(G4bool open, G4bool close) const
   
   if (open)  TG4Globals::PrintStars(true);
      
-   G4cout << "          " << NofSensitiveDetectors()  
+   G4cout << "          " << G4std::setw(5) << NofSensitiveDetectors()  
 	                  << " sensitive detectors" << G4endl;
 
   if (close) TG4Globals::PrintStars(false);
