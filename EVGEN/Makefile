@@ -24,12 +24,13 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 
 HDRS          = $(SRCS:.cxx=.h) $(ALICE_ROOT)/include/THijing.h \
 		$(ROOTSYS)/include/TF1.h $(ROOTSYS)/include/TChain.h \
+		$(ROOTSYS)/include/TParticle.h \
 		EVGENLinkDef.h
 
 # Library dictionary
 
 DICT          = EVGENCint.cxx
-DICTH         = $(DICT:.cxx=.h)
+DICTH         = $(DICT:.cxx=.h) 
 DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs

@@ -17,7 +17,7 @@ SRCS          = AliZDC.cxx AliZDCv1.cxx AliZDCHit.cxx AliZDCDigit.cxx AliGenZDC.
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) ZDCLinkDef.h
+HDRS          = $(SRCS:.cxx=.h) $(ROOTSYS)/include/TClonesArray.h ZDCLinkDef.h
 
 # Library dictionary
 
