@@ -27,6 +27,4 @@
 #pragma link C++ class  AliRICHdisplay;
 #pragma link C++ class  AliRICHHitMap;
 #pragma link C++ class  AliRICHHitMapA1;
-#pragma link C++ class  Bin-;
-#pragma link C++ class  PreCluster-;
 #endif
