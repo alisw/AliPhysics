@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.1.4.3  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.4.2  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.5  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.4  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -38,14 +47,14 @@ Add new TRD classes
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include  <TROOT.h>
+#include <TROOT.h>
 #include <TTree.h>
-#include "TClonesArray.h"
-#include "TDirectory.h"
-#include "AliTRDarrayI.h"
-#include "TError.h"
-#include "TClass.h"
+#include <TClonesArray.h>
+#include <TDirectory.h>
+#include <TError.h>
+#include <TClass.h>
 
+#include "AliTRDarrayI.h"
 #include "AliTRDsegmentID.h"
 #include "AliTRDsegmentArrayBase.h"
 
@@ -63,6 +72,7 @@ AliTRDsegmentArrayBase::AliTRDsegmentArrayBase():TNamed()
   fTreeIndex = 0;
   fTree      = 0;
   fClass     = 0;
+  fBranch    = 0;
 
 }
 
@@ -80,6 +90,7 @@ AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(Text_t *classname, Int_t n)
   fTreeIndex = 0;
   fTree      = 0;
   fClass     = 0;
+  fBranch    = 0;
 
   SetClass(classname);
 
@@ -452,7 +463,7 @@ const AliTRDsegmentID * AliTRDsegmentArrayBase::operator[](Int_t i)
 }
 
 //_____________________________________________________________________________
-const AliTRDsegmentID *AliTRDsegmentArrayBase::At(Int_t i)
+const AliTRDsegmentID *AliTRDsegmentArrayBase::At(Int_t i) const
 {
   //
   // Returns a segment with the given index <i>

@@ -14,7 +14,7 @@ void slowDigitsAna() {
   }
 
   // Input file name
-  Char_t *alifile = "galice_d_v1.root"; 
+  Char_t *alifile = "galice.root"; 
 
   // Event number
   Int_t   nEvent  = 0;
@@ -66,7 +66,7 @@ void slowDigitsAna() {
   DigitsManager->ReadDigits();
 
   // Define the detector matrix for one chamber
-  const Int_t iSec = 17;
+  const Int_t iSec = 11;
   const Int_t iCha = 2;
   const Int_t iPla = 0;
   Int_t  rowMax = TRDgeometry->GetRowMax(iPla,iCha,iSec);
@@ -90,15 +90,6 @@ void slowDigitsAna() {
         track = DigitsManager->GetTrack(0,row,col,time,iDet);
         
         TRDmatrix->SetSignal(row,col,time,Digit->GetAmp());
-        if (track == 96) {
-          cout << "-------------------------------------" << endl;
-          cout << " track = " << track << endl;
-          cout << " iRow = "  << row
-               << " iCol = "  << col 
-               << " iTime = " << time << endl;
-          cout << " adc = " << Digit->GetAmp() << endl;
-          Digit->Dump();
-	}
 
         delete Digit;
 

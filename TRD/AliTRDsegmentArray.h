@@ -5,12 +5,13 @@
 
 /* $Id$ */
 
+#include "AliTRDsegmentArrayBase.h"
+
 ////////////////////////////////////////////////////////
 //  Array for TRD detector segments containing digits //
 ////////////////////////////////////////////////////////
 
-#include "AliTRDsegmentArrayBase.h"
-#include "AliTRDdataArray.h"
+class AliTRDdataArray;
 
 //_____________________________________________________________________________
 class AliTRDsegmentArray : public AliTRDsegmentArrayBase {
@@ -29,8 +30,8 @@ class AliTRDsegmentArray : public AliTRDsegmentArrayBase {
   virtual Bool_t           LoadArray(const Char_t *branchname);
   virtual Bool_t           StoreArray(const Char_t *branchname);
 
-  virtual AliTRDdataArray *GetDataArray(Int_t det);
-  virtual AliTRDdataArray *GetDataArray(Int_t sec, Int_t cha, Int_t pla);
+  virtual AliTRDdataArray *GetDataArray(Int_t det) const;
+  virtual AliTRDdataArray *GetDataArray(Int_t sec, Int_t cha, Int_t pla) const;
 
  protected:
 

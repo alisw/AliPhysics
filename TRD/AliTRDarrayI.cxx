@@ -15,6 +15,28 @@
 
 /*
 $Log$
+
+Revision 1.1.4.3  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.4.2  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.4  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
+Revision 1.3  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
+Revision 1.1.4.1  2000/05/08 14:35:54  cblume
+Update
+
+Revision 1.4  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.3  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -64,7 +86,6 @@ void AliTRDarrayI::Copy(TObject &a)
   TArrayI::Copy(((TArrayI &) a));
 
 }
-
 
 //_____________________________________________________________________________
 void AliTRDarrayI::Expand(Int_t n)

@@ -10,13 +10,11 @@
 //  Manages the TRD digits                                 //
 /////////////////////////////////////////////////////////////
 
-#include "TObject.h"
+#include <TObject.h>
 
-#include "AliTRDsegmentArray.h"
-#include "AliTRDdataArrayI.h"
-#include "AliTRDdigit.h"
-
-const Int_t  kNDict = 3;
+class AliTRDsegmentArray;
+class AliTRDdataArrayI;
+class AliTRDdigit;
 
 class AliTRDdigitsManager : public TObject {
 
@@ -34,18 +32,24 @@ class AliTRDdigitsManager : public TObject {
 
   virtual void                SetRaw();
 
-  virtual Bool_t              IsRaw()                { return fIsRaw;         };
-  virtual AliTRDsegmentArray *GetDigits()            { return fDigits;        };
-  virtual AliTRDsegmentArray *GetDictionary(Int_t i) { return fDictionary[i]; };
+  virtual Bool_t              IsRaw() const                { return fIsRaw;         };
+  static  Int_t               NDict()                      { return fgkNDict;       }; 
 
-          AliTRDdigit        *GetDigit(Int_t row, Int_t col, Int_t time, Int_t det);
-          Int_t               GetTrack(Int_t track, Int_t row, Int_t col, Int_t time, Int_t det);
+  virtual AliTRDsegmentArray *GetDigits() const            { return fDigits;        };
+  virtual AliTRDsegmentArray *GetDictionary(Int_t i) const { return fDictionary[i]; };
 
-          AliTRDdataArrayI   *GetDigits(Int_t det);
-          AliTRDdataArrayI   *GetDictionary(Int_t det, Int_t i);
-          Int_t               GetTrack(Int_t track, AliTRDdigit *Digit);
+          AliTRDdigit        *GetDigit(Int_t row, Int_t col, Int_t time, Int_t det) const;
+          Int_t               GetTrack(Int_t track, Int_t row, Int_t col
+                                     , Int_t time, Int_t det) const;
+
+          AliTRDdataArrayI   *GetDigits(Int_t det) const;
+          AliTRDdataArrayI   *GetDictionary(Int_t det, Int_t i) const;
+          Int_t               GetTrack(Int_t track, AliTRDdigit *Digit) const;
 
  protected:
+
+  enum { kNDict = 3 };
+  static const Int_t  fgkNDict;            //  Number of track dictionary arrays
 
   AliTRDsegmentArray *fDigits;             //! Digits data Array
   AliTRDsegmentArray *fDictionary[kNDict]; //! Track dictionary data array

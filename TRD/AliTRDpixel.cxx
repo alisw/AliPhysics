@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.3.2.2  2000/10/17 02:27:34  cblume
+Get rid of global constants
+
+Revision 1.3.2.1  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.5  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.4  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -38,6 +47,11 @@ Introduction of the Copyright and cvs Log
 #include "AliTRDpixel.h"
 
 ClassImp(AliTRDpixel)
+
+//_____________________________________________________________________________
+
+  // Maximal number of stored tracks
+  const Int_t AliTRDpixel::fgkNTrackPixel = kNTrackPixel;
 
 //_____________________________________________________________________________
 AliTRDpixel::AliTRDpixel():TObject()
@@ -70,7 +84,7 @@ void AliTRDpixel::Copy(TObject &p)
   //
 
   ((AliTRDpixel &) p).fSignal = fSignal;
-  for (Int_t iTrackPixel = 0; iTrackPixel < kTrackPixel; iTrackPixel++) {
+  for (Int_t iTrackPixel = 0; iTrackPixel < kNTrackPixel; iTrackPixel++) {
     ((AliTRDpixel &) p).fTrack[iTrackPixel] = fTrack[iTrackPixel];
   }
 

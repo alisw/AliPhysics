@@ -15,6 +15,36 @@
 
 /*
 $Log$
+Revision 1.1.4.6  2000/10/16 01:16:53  cblume
+Changed timebin 0 to be the one closest to the readout
+
+Revision 1.1.4.5  2000/10/15 23:40:01  cblume
+Remove AliTRDconst
+
+Revision 1.1.4.4  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.4.3  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.1.4.2  2000/09/22 14:49:49  cblume
+Adapted to tracking code
+
+Revision 1.5  2000/10/02 21:28:19  fca
+Removal of useless dependecies via forward declarations
+
+Revision 1.4  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
+Revision 1.3  2000/06/07 16:27:01  cblume
+Try to remove compiler warnings on Sun and HP
+
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
+Revision 1.1.4.1  2000/05/08 15:08:41  cblume
+Replace AliTRDcluster by AliTRDrecPoint
+
 Revision 1.4  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -48,9 +78,12 @@ Add new TRD classes
 
 #include <TRandom.h>
 #include <TTree.h>
+ 
+#include "AliRun.h"
 
+#include "AliTRD.h"
 #include "AliTRDclusterizerV0.h"
-#include "AliTRDconst.h"
+#include "AliTRDhit.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDrecPoint.h"
 
@@ -101,7 +134,7 @@ void AliTRDclusterizerV0::Init()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDclusterizerV0::MakeCluster()
+Bool_t AliTRDclusterizerV0::MakeClusters()
 {
   //
   // Generates the cluster
@@ -137,9 +170,9 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
   Int_t nTrack = (Int_t) hitTree->GetEntries();
 
   // Loop through all the chambers
-  for (Int_t icham = 0; icham < kNcham; icham++) {
-    for (Int_t iplan = 0; iplan < kNplan; iplan++) {
-      for (Int_t isect = 0; isect < kNsect; isect++) {
+  for (Int_t icham = 0; icham < AliTRDgeometry::Ncham(); icham++) {
+    for (Int_t iplan = 0; iplan < AliTRDgeometry::Nplan(); iplan++) {
+      for (Int_t isect = 0; isect < AliTRDgeometry::Nsect(); isect++) {
 
         Int_t   nColMax     = geo->GetColMax(iplan);
         Float_t row0        = geo->GetRow0(iplan,icham,isect);
@@ -274,12 +307,13 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
 	  // Transform into local coordinates
           smear[0] = (Int_t) ((smear[0] -  row0) /  rowPadSize);
           smear[1] = (Int_t) ((smear[1] -  col0) /  colPadSize);
-          smear[2] = (Int_t) ((smear[2] - time0) / timeBinSize);
+          smear[2] = (Int_t) ((time0 - smear[2]) / timeBinSize);
 
           // Add the smeared cluster to the output array 
           Int_t detector  = recPoint1->GetDetector();
           Int_t digits[3] = {0};
-          trd->AddRecPoint(smear,digits,detector,0.0);
+	  Int_t tr[9] = {-1}; 
+          trd->AddRecPoint(smear,digits,detector,0.0,tr);
 
 	}
 

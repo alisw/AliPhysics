@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.1.4.3  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.4.2  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.5  2000/10/02 21:28:19  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.4  2000/06/27 13:08:50  cblume
 Changed to Copy(TObject &A) to appease the HP-compiler
 
@@ -39,6 +48,8 @@ Add new TRD classes
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TTree.h>
+
+#include "AliRun.h"
 
 #include "AliTRD.h"
 #include "AliTRDgeometry.h"
@@ -180,7 +191,7 @@ Bool_t AliTRDsegmentArray::StoreArray(const Char_t *branchname)
 }
 
 //_____________________________________________________________________________
-AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t det)
+AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t det) const
 {
   //
   // Returns the data array for a given detector
@@ -191,7 +202,8 @@ AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t det)
 }
 
 //_____________________________________________________________________________
-AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t pla, Int_t cha, Int_t sec)
+AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t pla
+                                                , Int_t cha, Int_t sec) const
 {
   //
   // Returns the data array for a given detector

@@ -5,13 +5,13 @@
 
 /* $Id$ */
 
-#include "AliTRD.h"
-#include "AliTRDdigitsManager.h"
 #include "AliTRDclusterizer.h"
 
 ///////////////////////////////////////////////////////
 //  Finds and handles cluster (slow simulation)      //
 ///////////////////////////////////////////////////////
+
+class AliTRDdigitsManager;
 
 class AliTRDclusterizerV1 : public AliTRDclusterizer {
 
@@ -25,16 +25,16 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
 
   virtual void    Copy(TObject &c);
   virtual void    Init();
-  virtual Bool_t  MakeCluster();
+  virtual Bool_t  MakeClusters();
   virtual Bool_t  ReadDigits();
 
   virtual void    SetClusMaxThresh(Float_t thresh)          { fClusMaxThresh = thresh; };
   virtual void    SetClusSigThresh(Float_t thresh)          { fClusSigThresh = thresh; };
   virtual void    SetClusMethod(Int_t meth)                 { fClusMethod    = meth;   };
 
-  virtual Float_t GetClusMaxThresh()                        { return fClusMaxThresh; };
-  virtual Float_t GetClusSigThresh()                        { return fClusSigThresh; };
-  virtual Int_t   GetClusMethod()                           { return fClusMethod;    };
+  virtual Float_t GetClusMaxThresh() const                  { return fClusMaxThresh; };
+  virtual Float_t GetClusSigThresh() const                  { return fClusSigThresh; };
+  virtual Int_t   GetClusMethod() const                     { return fClusMethod;    };
 
  protected:
 

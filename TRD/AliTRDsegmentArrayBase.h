@@ -9,9 +9,7 @@
 //  Manager class for a general Alice segment // 
 ////////////////////////////////////////////////
 
-#include "TNamed.h"
-#include "TError.h"
-#include "TObjArray.h"
+#include <TNamed.h>
 
 class TTree;
 class TBranch;
@@ -29,7 +27,7 @@ class AliTRDsegmentArrayBase: public TNamed {
   virtual ~AliTRDsegmentArrayBase();
   AliTRDsegmentArrayBase &operator=(const AliTRDsegmentArrayBase &a);
  
-  const AliTRDsegmentID *At(Int_t i); 
+  const AliTRDsegmentID *At(Int_t i) const; 
   const AliTRDsegmentID *operator[](Int_t i); 
 
           Bool_t           AddSegment(AliTRDsegmentID *segment);
@@ -47,8 +45,8 @@ class AliTRDsegmentArrayBase: public TNamed {
 
           Bool_t           SetClass(Text_t *classname);
  
-          TClass          *GetClass() { return fClass; };
-          TTree           *GetTree()  { return fTree;  };   
+          TClass          *GetClass() const { return fClass; };
+          TTree           *GetTree() const  { return fTree;  };   
 
  protected:
 

@@ -13,22 +13,22 @@
 
 //_____________________________________________________________________________
 class AliTRDhit : public AliHit {
- 
+
  public:
 
   AliTRDhit();
-  AliTRDhit(Int_t shunt, Int_t track, Int_t *det, Float_t *hits);
+  AliTRDhit(Int_t shunt, Int_t track, Int_t det, Float_t *hits, Int_t q);
   virtual ~AliTRDhit();
 
-          Int_t   GetDetector() { return fDetector; };
-          Float_t GetCharge()   { return fQ;        };
+          Int_t GetDetector() const { return fDetector; };
+          Int_t GetCharge() const   { return fQ;        };
 
  protected:
 
-  Int_t        fDetector;   // TRD detector number
-  Float_t      fQ;          // Charge created by a hit (slow simulator only)
- 
-  ClassDef(AliTRDhit,2)     // Hit for the Transition Radiation Detector
+  UShort_t     fDetector;   // TRD detector number
+  Short_t      fQ;          // Charge created by a hit. TR signals are negative.
+
+  ClassDef(AliTRDhit,3)     // Hit for the Transition Radiation Detector
 
 };
 

@@ -12,9 +12,11 @@
 // Energy spectrum of the delta-rays 
 Double_t Ermilova(Double_t *x, Double_t *par);
  
-#include <TF1.h> 
-
 #include "AliTRD.h"
+
+class TF1;
+
+class AliTRDsim;
 
 //_____________________________________________________________________________
 class AliTRDv1 : public AliTRD {
@@ -27,22 +29,27 @@ class AliTRDv1 : public AliTRD {
   virtual ~AliTRDv1();
   AliTRDv1 &operator=(const AliTRDv1 &trd);
 
-  virtual void    Copy(TObject &trd);
-  virtual void    CreateGeometry();
-  virtual void    CreateMaterials();
-  virtual Int_t   IsVersion() const    { return 1; };
-  virtual void    StepManager();
-  virtual void    Init();
+  virtual void       Copy(TObject &trd);
+  virtual void       CreateGeometry();
+  virtual void       CreateMaterials();
+  virtual void       CreateTRhit(Int_t det);
+  virtual Int_t      IsVersion() const          { return 1; };
+  virtual void       StepManager();
+  virtual void       Init();
 
-          void    SetSensPlane(Int_t iplane = 0);
-          void    SetSensChamber(Int_t ichamber = 0);
-          void    SetSensSector(Int_t isector);
-          void    SetSensSector(Int_t isector, Int_t nsector);
+          void       SetSensPlane(Int_t iplane = 0);
+          void       SetSensChamber(Int_t ichamber = 0);
+          void       SetSensSector(Int_t isector);
+          void       SetSensSector(Int_t isector, Int_t nsector);
 
-          Int_t   GetSensPlane()       { return fSensPlane;       };
-          Int_t   GetSensChamber()     { return fSensChamber;     };
-          Int_t   GetSensSector()      { return fSensSector;      };
-          Int_t   GetSensSectorRange() { return fSensSectorRange; };
+          AliTRDsim *CreateTR();
+
+          Int_t      GetSensPlane() const       { return fSensPlane;       };
+          Int_t      GetSensChamber() const     { return fSensChamber;     };
+          Int_t      GetSensSector() const      { return fSensSector;      };
+          Int_t      GetSensSectorRange() const { return fSensSectorRange; };
+
+          AliTRDsim *GetTR() const              { return fTR;              };
 
  protected:
 
@@ -57,6 +64,8 @@ class AliTRDv1 : public AliTRD {
   Int_t        fSensChamber;            // Sensitive detector chamber
   Int_t        fSensSector;             // Sensitive detector sector 
   Int_t        fSensSectorRange;        // Sensitive detector range
+
+  AliTRDsim   *fTR;                     // TR simulator
 
  private:
 

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.2.2  2000/09/18 13:41:29  cblume
+Changed fDetector to UShort and fQ to Short_t. Use customized streamer
+
+Revision 1.4  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.3  2000/06/07 16:25:37  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -46,21 +52,24 @@ AliTRDhit::AliTRDhit():AliHit()
 }
 
 //_____________________________________________________________________________
-AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t *det, Float_t *hits)
+AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t det
+                   , Float_t *hits, Int_t q)
           :AliHit(shunt, track)
 {
   //
   // Create a TRD hit
   //
 
-  // Store volume hierarchy
-  fDetector = det[0];
+  // Store detector number
+  fDetector = (UShort_t) det;
 
-  // Store position and charge
+  // Store position 
   fX        = hits[0];
   fY        = hits[1];
   fZ        = hits[2];
-  fQ        = hits[3];
+
+  // Store the charge
+  fQ        = (Short_t) q;
 
 }
 
@@ -70,5 +79,27 @@ AliTRDhit::~AliTRDhit()
   //
   // AliTRDhit destructor
   //
+
+}
+
+//_____________________________________________________________________________
+void AliTRDhit::Streamer(TBuffer &R__b)
+{
+  //
+  // Stream an object of class AliTRDhit.
+  //
+
+  if (R__b.IsReading()) {
+    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
+    AliHit::Streamer(R__b);
+    R__b >> fDetector;
+    R__b >> fQ;
+  } 
+  else {
+    R__b.WriteVersion(AliTRDhit::IsA());
+    AliHit::Streamer(R__b);
+    R__b << fDetector;
+    R__b << fQ;
+  }
 
 }

@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.14.2.3  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.14.2.2  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.14.2.1  2000/09/18 13:48:18  cblume
+Adapt to new AliTRDhit
+
+Revision 1.16  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.15  2000/06/07 16:25:37  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -60,6 +72,7 @@ Introduction of the Copyright and cvs Log
 #include "AliConst.h"
   
 #include "AliTRDv0.h"
+#include "AliTRDhit.h"
 #include "AliTRDgeometry.h"
 
 ClassImp(AliTRDv0)
@@ -172,8 +185,8 @@ void AliTRDv0::StepManager()
   Int_t   iIdSens, icSens; 
   Int_t   iIdChamber, icChamber;
 
-  Float_t hits[4];
-  Int_t   det[1];
+  Float_t hits[3];
+  Int_t   det;
 
   TLorentzVector p;
   TClonesArray  &lhits = *fHits;
@@ -191,8 +204,6 @@ void AliTRDv0::StepManager()
 
       gMC->TrackPosition(p);
       for (Int_t i = 0; i < 3; i++) hits[i] = p[i];
-      // No charge created
-      hits[3] = 0;
 
       // The sector number (0 - 17)
       // The numbering goes clockwise and starts at y = 0
@@ -219,12 +230,13 @@ void AliTRDv0::StepManager()
 
       // The plane number (0 - 5)
       pla = icChamber - TMath::Nint((Float_t) (icChamber / 7)) * 6 - 1;
+      det = fGeometry->GetDetector(pla,cha,sec);
 
-      det[0] = fGeometry->GetDetector(pla,cha,sec);
       new(lhits[fNhits++]) AliTRDhit(fIshunt
                                     ,gAlice->CurrentTrack()
                                     ,det
-                                    ,hits);
+                                    ,hits
+                                    ,0);
 
     }
 

@@ -15,6 +15,21 @@
 
 /*
 $Log$
+Revision 1.17.2.5  2000/10/15 23:40:01  cblume
+Remove AliTRDconst
+
+Revision 1.17.2.4  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.17.2.3  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.17.2.2  2000/09/18 13:50:17  cblume
+Include TR photon generation and adapt to new AliTRDhit
+
+Revision 1.22  2000/06/27 13:08:50  cblume
+Changed to Copy(TObject &A) to appease the HP-compiler
+
 Revision 1.21  2000/06/09 11:10:07  cblume
 Compiler warnings and coding conventions, next round
 
@@ -75,17 +90,19 @@ Introduction of the Copyright and cvs Log
 #include <TMath.h>
 #include <TVector.h>
 #include <TRandom.h>
+#include <TF1.h>
 
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliConst.h"
 
 #include "AliTRDv1.h"
+#include "AliTRDhit.h"
 #include "AliTRDmatrix.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDsim.h"
 
 ClassImp(AliTRDv1)
-
  
 //_____________________________________________________________________________
 AliTRDv1::AliTRDv1():AliTRD()
@@ -107,6 +124,7 @@ AliTRDv1::AliTRDv1():AliTRD()
   fSensSectorRange =  0;
 
   fDeltaE          = NULL;
+  fTR              = NULL;
 
 }
 
@@ -131,6 +149,7 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   fSensSectorRange =  0;
 
   fDeltaE          = NULL;
+  fTR              = NULL;
 
   SetBufferSize(128000);
 
@@ -155,6 +174,7 @@ AliTRDv1::~AliTRDv1()
   //
 
   if (fDeltaE) delete fDeltaE;
+  if (fTR)     delete fTR;
 
 }
  
@@ -189,7 +209,8 @@ void AliTRDv1::Copy(TObject &trd)
   ((AliTRDv1 &) trd).fSensSector      = fSensSector;
   ((AliTRDv1 &) trd).fSensSectorRange = fSensSectorRange;
 
-  ((AliTRDv1 &) trd).fDeltaE          = NULL;
+  fDeltaE->Copy(*((AliTRDv1 &) trd).fDeltaE);
+  fTR->Copy(*((AliTRDv1 &) trd).fTR);
 
 }
 
@@ -222,6 +243,103 @@ void AliTRDv1::CreateMaterials()
 }
 
 //_____________________________________________________________________________
+void AliTRDv1::CreateTRhit(Int_t det)
+{
+  //
+  // Creates an electron cluster from a TR photon.
+  // The photon is assumed to be created a the end of the radiator. The 
+  // distance after which it deposits its energy takes into account the 
+  // absorbtion of the entrance window and of the gas mixture in drift
+  // volume.
+  //
+
+  // PDG code electron
+  const Int_t   kPdgElectron = 11;
+
+  // Ionization energy
+  const Float_t kWion        = 22.04;
+
+  // Maximum number of TR photons per track
+  const Int_t   kNTR         = 50;
+
+  TLorentzVector mom, pos;
+  TClonesArray  &lhits = *fHits;
+
+  // Create TR only for electrons 
+  Int_t iPdg = gMC->TrackPid();
+  if (TMath::Abs(iPdg) != kPdgElectron) return;
+
+  // Create TR at the entrance of the chamber
+  if (gMC->IsTrackEntering()) {
+
+    Float_t eTR[kNTR];
+    Int_t   nTR;
+
+    // Create TR photons
+    gMC->TrackMomentum(mom);
+    Float_t pTot = mom.Rho();
+    fTR->CreatePhotons(iPdg,pTot,nTR,eTR);
+    if (nTR > kNTR) {
+      printf("AliTRDv1::CreateTRhit -- ");
+      printf("Boundary error: nTR = %d, kNTR = %d\n",nTR,kNTR);
+      exit(1);
+    }
+
+    // Loop through the TR photons
+    for (Int_t iTR = 0; iTR < nTR; iTR++) {
+
+      Float_t energyMeV = eTR[iTR] * 0.001;
+      Float_t energyeV  = eTR[iTR] * 1000.0;
+      Float_t absLength = 0;
+      Float_t sigma     = 0;
+
+      // Take the absorbtion in the entrance window into account
+      Double_t muMy = fTR->GetMuMy(energyMeV);
+      sigma = muMy * fFoilDensity;
+      absLength = gRandom->Exp(sigma);
+      if (absLength < AliTRDgeometry::MyThick()) continue;
+
+      // The absorbtion cross sections in the drift gas
+      if (fGasMix == 1) {
+        // Gas-mixture (Xe/CO2)
+        Double_t muXe = fTR->GetMuXe(energyMeV);
+        Double_t muCO = fTR->GetMuCO(energyMeV);
+        sigma = (0.90 * muXe + 0.10 * muCO) * fGasDensity;
+      }
+      else {
+        // Gas-mixture (Xe/Isobutane) 
+        Double_t muXe = fTR->GetMuXe(energyMeV);
+        Double_t muBu = fTR->GetMuBu(energyMeV);
+        sigma = (0.97 * muXe + 0.03 * muBu) * fGasDensity;
+      }
+
+      // The distance after which the energy of the TR photon
+      // is deposited.
+      absLength = gRandom->Exp(sigma);
+      if (absLength > AliTRDgeometry::DrThick()) continue;
+
+      // The position of the absorbtion
+      Float_t posHit[3];
+      gMC->TrackPosition(pos);
+      posHit[0] = pos[0] + mom[0] / pTot * absLength;
+      posHit[1] = pos[1] + mom[1] / pTot * absLength;
+      posHit[2] = pos[2] + mom[2] / pTot * absLength;      
+
+      // Create the charge 
+      Int_t q = ((Int_t) (energyeV / kWion));
+
+      // Add the hit to the array. TR photon hits are marked 
+      // by negative charge
+      new(lhits[fNhits++]) AliTRDhit(fIshunt,gAlice->CurrentTrack()
+                                    ,det,posHit,-q);
+
+    }
+
+  }
+
+}
+
+//_____________________________________________________________________________
 void AliTRDv1::Init() 
 {
   //
@@ -239,10 +357,15 @@ void AliTRDv1::Init()
     if (fSensSector  >= 0) {
       Int_t sens1  = fSensSector;
       Int_t sens2  = fSensSector + fSensSectorRange;
-            sens2 -= ((Int_t) (sens2 / kNsect)) * kNsect;
+            sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) 
+                   * AliTRDgeometry::Nsect();
       printf("          Only sectors %d - %d are sensitive\n",sens1,sens2-1);
     }
   }
+  if (fTR) 
+    printf("          TR simulation on\n");
+  else
+    printf("          TR simulation off\n");
   printf("\n");
 
   // First ionization potential (eV) for the gas mixture (90% Xe + 10% CO2)
@@ -252,7 +375,7 @@ void AliTRDv1::Init()
   // Ermilova distribution for the delta-ray spectrum
   Float_t poti = TMath::Log(kPoti);
   Float_t eEnd = TMath::Log(kEend);
-  fDeltaE  = new TF1("deltae",Ermilova,poti,eEnd,0);
+  fDeltaE = new TF1("deltae",Ermilova,poti,eEnd,0);
 
   // Identifier of the sensitive volume (drift region)
   fIdSens     = gMC->VolId("UL05");
@@ -264,6 +387,18 @@ void AliTRDv1::Init()
 
   for (Int_t i = 0; i < 80; i++) printf("*");
   printf("\n");
+
+}
+
+//_____________________________________________________________________________
+AliTRDsim *AliTRDv1::CreateTR()
+{
+  //
+  // Enables the simulation of TR
+  //
+
+  fTR = new AliTRDsim();
+  return fTR;
 
 }
 
@@ -367,17 +502,16 @@ void AliTRDv1::StepManager()
   Int_t    pla = 0;
   Int_t    cha = 0;
   Int_t    sec = 0;
+  Int_t    det = 0;
   Int_t    iPdg;
+  Int_t    qTot;
 
-  Int_t    det[1];
-
-  Float_t  hits[4];
+  Float_t  hits[3];
   Float_t  random[1];
   Float_t  charge;
   Float_t  aMass;
 
   Double_t pTot;
-  Double_t qTot;
   Double_t eDelta;
   Double_t betaGamma, pp;
 
@@ -424,14 +558,13 @@ void AliTRDv1::StepManager()
       eDelta = TMath::Max(eDelta,0.0);
 
       // The number of secondary electrons created
-      qTot = (Double_t) ((Int_t) (eDelta / kWion) + 1);
+      qTot = ((Int_t) (eDelta / kWion) + 1);
 
       // The hit coordinates and charge
       gMC->TrackPosition(pos);
       hits[0] = pos[0];
       hits[1] = pos[1];
       hits[2] = pos[2];
-      hits[3] = qTot;
 
       // The sector number (0 - 17)
       // The numbering goes clockwise and starts at y = 0
@@ -467,7 +600,8 @@ void AliTRDv1::StepManager()
         if (fSensSector  >= 0) {
           Int_t sens1  = fSensSector;
           Int_t sens2  = fSensSector + fSensSectorRange;
-                sens2 -= ((Int_t) (sens2 / kNsect)) * kNsect;
+                sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) 
+                       * AliTRDgeometry::Nsect();
           if (sens1 < sens2) {
             if ((sec < sens1) || (sec >= sens2)) addthishit = 0;
 	  }
@@ -480,11 +614,16 @@ void AliTRDv1::StepManager()
       // Add this hit
       if (addthishit) {
 
-        det[0] = fGeometry->GetDetector(pla,cha,sec);
+        det = fGeometry->GetDetector(pla,cha,sec);
+
+        // Create the electron cluster from TR photons
+        if (fTR) CreateTRhit(det);
+
         new(lhits[fNhits++]) AliTRDhit(fIshunt
                                       ,gAlice->CurrentTrack()
                                       ,det
-                                      ,hits);
+                                      ,hits
+                                      ,qTot);
 
         // The energy loss according to Bethe Bloch
         gMC->TrackMomentum(mom);

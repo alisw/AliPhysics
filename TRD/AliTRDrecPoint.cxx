@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.1.4.2  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.1.4.1  2000/09/22 14:50:39  cblume
+Adapted to tracking code
+
+Revision 1.3  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.2  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -28,6 +37,8 @@ Add new TRD classes
 //  TRD reconstructed point                                                  //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include "AliRun.h"
 
 #include "AliTRDgeometry.h"
 #include "AliTRDrecPoint.h"
@@ -118,4 +129,111 @@ void AliTRDrecPoint::SetLocalPosition(TVector3 &pos)
   fLocPosM->operator()(2,2) = ((AliTRDgeometry *) fGeom)->GetTimeBinSize() 
                             / kSq12;
 
+  //  printf("rec. point: row = %f, col = %f, time = %f \n",
+  //           fLocPos[0],fLocPos[1],fLocPos[2]); 
+
 }
+
+//_____________________________________________________________________________
+void AliTRDrecPoint::SetTrackingYZ(Float_t sigmaY, Float_t sigmaZ)
+{
+ //
+ // Sets the position of the point in the local coordinate system
+ // of tracking sector
+ //
+
+ Int_t plane = ((AliTRDgeometry *) fGeom)->GetPlane(fDetector);
+ Int_t chamber = ((AliTRDgeometry *) fGeom)->GetChamber(fDetector);
+ Int_t sector = ((AliTRDgeometry *) fGeom)->GetSector(fDetector);
+
+
+ // Set the position
+
+  Float_t   padRow    = fLocPos[0];             // Pad Row position
+  Float_t   padCol    = fLocPos[1];             // Pad Column position
+
+  Float_t   col0 = ((AliTRDgeometry *) fGeom)->GetCol0(plane);
+  Float_t   row0 = ((AliTRDgeometry *) fGeom)->GetRow0(plane,chamber,sector);
+
+  //  Float_t   offset = 0.5 * ((AliTRDgeometry *) fGeom)->GetChamberWidth(plane);
+
+  fY = - (col0 + padCol * ((AliTRDgeometry *) fGeom)->GetColPadSize());
+
+  fZ = row0  + padRow * ((AliTRDgeometry *) fGeom)->GetRowPadSize();
+
+  //  fSigmaY = sigmaY * sigmaY;
+  //  fSigmaZ = sigmaZ * sigmaZ;
+
+  fSigmaY2 = 0.05 * 0.05;
+
+  fSigmaZ2 = ((AliTRDgeometry *) fGeom)->GetRowPadSize() *
+             ((AliTRDgeometry *) fGeom)->GetRowPadSize() / 12.;
+}                                    
+
+//_____________________________________________________________________________
+void AliTRDrecPoint::AddTrackIndex(Int_t *track)
+{
+ // Adds track index. Currently assumed that track is an array of
+ // size 9, and up to 3 track indexes are stored in fTracks[3].
+ // Indexes are sorted according to:
+ //  1) index of max number of appearances is stored first
+ //  2) if two or more indexes appear equal number of times, the lowest
+ //     ones are stored first;
+
+  const Int_t size = 9;
+
+  Int_t entries[size][2], i, j, index;
+
+  Bool_t index_added;
+
+  for (i=0; i<size; i++) {
+    entries[i][0]=-1;
+    entries[i][1]=0;
+  }
+
+
+  for (Int_t k=0; k<size; k++) {
+    index=track[k];
+    index_added=false; j=0;
+    if (index >= 0) {
+      while ( (!index_added) && ( j < size ) ) {
+        if ((entries[j][0]==index) || (entries[j][1]==0)) {
+          entries[j][0]=index;
+          entries[j][1]=entries[j][1]+1;
+          index_added=true;
+        }
+        j++;
+      }
+    }
+  }                   
+
+  // sort by number of appearances and index value
+  Int_t swap=1, tmp0, tmp1;
+  while ( swap > 0) {
+    swap=0;
+    for(i=0; i<(size-1); i++) {
+      if ((entries[i][0] >= 0) && (entries[i+1][0] >= 0)) {
+        if ((entries[i][1] < entries[i+1][1]) ||
+            ((entries[i][1] == entries[i+1][1]) &&
+             (entries[i][0] > entries[i+1][0]))) {
+               tmp0=entries[i][0];
+               tmp1=entries[i][1];
+               entries[i][0]=entries[i+1][0];
+               entries[i][1]=entries[i+1][1];
+               entries[i+1][0]=tmp0;
+               entries[i+1][1]=tmp1;
+               swap++;
+        }
+      }
+    }
+  }
+
+  // set track indexes
+
+  for(i=0; i<3; i++) {
+    fTracks[i] = entries[i][0];
+  }
+
+  return;
+
+}                    

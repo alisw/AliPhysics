@@ -14,7 +14,7 @@ void slowClusterCreate() {
   }
 
   // Input (and output) file name
-  Char_t *alifile = "galice_r_v1.root";
+  Char_t *alifile = "galice.root";
 
   // Create the clusterizer
   AliTRDclusterizerV1 *Clusterizer = 
@@ -26,11 +26,14 @@ void slowClusterCreate() {
   // Load the digits
   Clusterizer->ReadDigits();
 
+  // Clean output branch
+  Clusterizer->WriteClusters(-2);
+ 
   // Find the cluster
-  Clusterizer->MakeCluster();
+  Clusterizer->MakeClusters();
 
   // Write the cluster into the input file
-  Clusterizer->WriteCluster();
+  Clusterizer->WriteClusters(-1);
 
   // Save the clusterizer class in the AliROOT file
   Clusterizer->Write();

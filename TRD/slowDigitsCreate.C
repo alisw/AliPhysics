@@ -14,13 +14,14 @@ void slowDigitsCreate() {
   }
 
   // Input (and output) file name
-  Char_t *alifile = "galice_d_v1.root"; 
+  Char_t *alifile = "galice.root"; 
 
   // Create the TRD digitzer 
   AliTRDdigitizer *Digitizer = new AliTRDdigitizer("digitizer","Digitizer class");
 
   // Set the parameter
   Digitizer->SetDiffusion();
+  Digitizer->SetVerbose(1);
   //Digitizer->SetExB();
   //Digitizer->SetElAttach();
   //Digitizer->SetAttachProb();

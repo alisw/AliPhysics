@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.1.2.5  2000/10/17 02:27:34  cblume
+Get rid of global constants
+
+Revision 1.1.2.4  2000/10/15 23:40:01  cblume
+Remove AliTRDconst
+
+Revision 1.1.2.3  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.2.2  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
 Revision 1.5  2000/06/09 11:10:07  cblume
 Compiler warnings and coding conventions, next round
 
@@ -38,15 +50,23 @@ Add new class AliTRDdigitsManager
 //  AliTRDdataArray objects.                                                 //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
-#include <TTree.h>
+ 
+#include <TTree.h>                                                              
 
 #include "AliRun.h"
 
 #include "AliTRDdigitsManager.h"
-#include "AliTRDconst.h"
+#include "AliTRDsegmentArray.h"
+#include "AliTRDdataArrayI.h"
+#include "AliTRDdigit.h"
+#include "AliTRDgeometry.h"
 
 ClassImp(AliTRDdigitsManager)
+
+//_____________________________________________________________________________
+
+  // Number of track dictionary arrays
+  const Int_t AliTRDdigitsManager::fgkNDict = kNDict;
 
 //_____________________________________________________________________________
 AliTRDdigitsManager::AliTRDdigitsManager():TObject()
@@ -57,10 +77,11 @@ AliTRDdigitsManager::AliTRDdigitsManager():TObject()
 
   fIsRaw = kFALSE;
 
-  fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",kNdet);
+  fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",AliTRDgeometry::Ndet());
 
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-    fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI",kNdet);
+    fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
+                                               ,AliTRDgeometry::Ndet());
   }
 
 }
@@ -114,7 +135,7 @@ void AliTRDdigitsManager::SetRaw()
 
   fIsRaw = kTRUE;
 
-  fDigits->SetBit(kRawDigit);
+  fDigits->SetBit(AliTRDdigit::RawDigit());
   
 }
 
@@ -198,7 +219,7 @@ Bool_t AliTRDdigitsManager::ReadDigits()
     status = fDictionary[iDict]->LoadArray(branchname);
   }  
 
-  if (fDigits->TestBit(kRawDigit)) {
+  if (fDigits->TestBit(AliTRDdigit::RawDigit())) {
     fIsRaw = kTRUE;
   }
   else {
@@ -243,7 +264,7 @@ Bool_t AliTRDdigitsManager::WriteDigits()
 
 //_____________________________________________________________________________
 AliTRDdigit *AliTRDdigitsManager::GetDigit(Int_t row, Int_t col
-                                         , Int_t time, Int_t det)
+                                         , Int_t time, Int_t det) const
 {
   // 
   // Creates a single digit object 
@@ -266,7 +287,7 @@ AliTRDdigit *AliTRDdigitsManager::GetDigit(Int_t row, Int_t col
 //_____________________________________________________________________________
 Int_t AliTRDdigitsManager::GetTrack(Int_t track
                                   , Int_t row, Int_t col, Int_t time
-                                  , Int_t det)
+                                  , Int_t det) const
 {
   // 
   // Returns the MC-track numbers from the dictionary.
@@ -285,7 +306,7 @@ Int_t AliTRDdigitsManager::GetTrack(Int_t track
 }
 
 //_____________________________________________________________________________
-AliTRDdataArrayI *AliTRDdigitsManager::GetDigits(Int_t det) 
+AliTRDdataArrayI *AliTRDdigitsManager::GetDigits(Int_t det) const
 {
   //
   // Returns the digits array for one detector
@@ -296,7 +317,7 @@ AliTRDdataArrayI *AliTRDdigitsManager::GetDigits(Int_t det)
 }
 
 //_____________________________________________________________________________
-AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i) 
+AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i) const
 {
   //
   // Returns the dictionary for one detector
@@ -307,7 +328,7 @@ AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit *Digit)
+Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit *Digit) const
 {
   // 
   // Returns the MC-track numbers from the dictionary for a given digit

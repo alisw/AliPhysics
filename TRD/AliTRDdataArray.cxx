@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.1.4.3  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.4.2  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.6  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.5  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -244,7 +253,7 @@ void AliTRDdataArray::Reset()
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdataArray::GetIdx1(Int_t row, Int_t col)
+Int_t AliTRDdataArray::GetIdx1(Int_t row, Int_t col) const
 {
   //
   // Maps the two-dimensional row/column plane into an one-dimensional array.
@@ -269,7 +278,7 @@ Int_t AliTRDdataArray::GetIdx1(Int_t row, Int_t col)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdataArray::GetIndex(Int_t row, Int_t col, Int_t time)
+Int_t AliTRDdataArray::GetIndex(Int_t row, Int_t col, Int_t time) const
 {
   //
   // Maps the row/column/time into one number

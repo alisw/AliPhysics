@@ -20,13 +20,21 @@ SRCS          = AliTRD.cxx AliTRDv0.cxx AliTRDv1.cxx             \
                 AliTRDclusterizerV1.cxx AliTRDrecPoint.cxx       \
                 AliTRDsegmentArray.cxx AliTRDdataArray.cxx       \
                 AliTRDdataArrayI.cxx AliTRDdataArrayF.cxx        \
-                AliTRDdigitsManager.cxx                          \
+                AliTRDdigitsManager.cxx AliTRDsim.cxx            \
                 AliTRDsegmentID.cxx AliTRDsegmentArrayBase.cxx   \
-                AliTRDarrayI.cxx AliTRDarrayF.cxx
+                AliTRDarrayI.cxx AliTRDarrayF.cxx                \
+                AliTRDpoints.cxx AliTRDtimeBin.cxx               \
+                AliTRDtrackingSector.cxx                         \
+                AliTRDtrack.cxx AliTRDtracker.cxx                \
+                AliTRDcluster.cxx         
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) TRDLinkDef.h
+HDRS          = $(SRCS:.cxx=.h)                \
+                $(ROOTSYS)/include/TF1.h       \
+                $(ROOTSYS)/include/TFile.h     \
+                $(ROOTSYS)/include/TObjArray.h \
+                TRDLinkDef.h
 
 # Library dictionary
 

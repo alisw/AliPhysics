@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.4.2.5  2000/10/17 02:27:34  cblume
+Get rid of global constants
+
+Revision 1.4.2.4  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.4.2.3  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.8  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.7  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -47,7 +59,14 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TObjArray.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TStyle.h>
+#include <TCanvas.h>
+
 #include "AliTRDmatrix.h"
+#include "AliTRDpixel.h"
 
 ClassImp(AliTRDmatrix)
 
@@ -428,7 +447,7 @@ Bool_t AliTRDmatrix::AddTrack(Int_t iRow, Int_t iCol, Int_t iTime, Int_t track)
   if (!(pixel)) return kTRUE;
 
   Bool_t trackSet = kFALSE;
-  for (Int_t i = 0; i < kTrackPixel; i++) {
+  for (Int_t i = 0; i < AliTRDpixel::NTrackPixel(); i++) {
     if (pixel->GetTrack(i) == track) {
       trackSet = kTRUE;
       break;
@@ -460,7 +479,7 @@ void AliTRDmatrix::SetTrack(Int_t iRow, Int_t iCol, Int_t iTime
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDmatrix::GetSignal(Int_t iRow, Int_t iCol, Int_t iTime)
+Float_t AliTRDmatrix::GetSignal(Int_t iRow, Int_t iCol, Int_t iTime) const
 {
   //
   // Returns the amplitude of the signal for one specific pixel
@@ -477,13 +496,14 @@ Float_t AliTRDmatrix::GetSignal(Int_t iRow, Int_t iCol, Int_t iTime)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDmatrix::GetTrack(Int_t iRow, Int_t iCol, Int_t iTime, Int_t iTrack)
+Int_t AliTRDmatrix::GetTrack(Int_t iRow, Int_t iCol, Int_t iTime
+                           , Int_t iTrack) const 
 {
   //
   // Returns the numbers of the tracks passing through one specific pixel
   //
 
-  if ((iTrack < 0) || (iTrack >= kTrackPixel)) {
+  if ((iTrack < 0) || (iTrack >= AliTRDpixel::NTrackPixel())) {
     printf("AliTRDmatrix::GetTrack -- ");
     printf("Index out of bounds (%d)\n",iTrack);
     return -1;
@@ -500,7 +520,7 @@ Int_t AliTRDmatrix::GetTrack(Int_t iRow, Int_t iCol, Int_t iTime, Int_t iTrack)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDmatrix::GetIndex(Int_t iRow, Int_t iCol, Int_t iTime)
+Int_t AliTRDmatrix::GetIndex(Int_t iRow, Int_t iCol, Int_t iTime) const
 {
 
   if ((iRow  >= 0) && (iRow  < fRow ) &&
@@ -515,7 +535,7 @@ Int_t AliTRDmatrix::GetIndex(Int_t iRow, Int_t iCol, Int_t iTime)
 }
 
 //_____________________________________________________________________________
-AliTRDpixel *AliTRDmatrix::GetPixel(Int_t iRow, Int_t iCol, Int_t iTime)
+AliTRDpixel *AliTRDmatrix::GetPixel(Int_t iRow, Int_t iCol, Int_t iTime) const
 {
 
   Int_t iPixel = GetIndex(iRow,iCol,iTime);

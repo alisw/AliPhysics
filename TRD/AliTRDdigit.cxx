@@ -1,3 +1,5 @@
+
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,6 +17,18 @@
 
 /*
 $Log$
+Revision 1.1.2.4  2000/10/17 02:27:34  cblume
+Get rid of global constants
+
+Revision 1.1.2.3  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.2.2  2000/09/22 14:42:05  cblume
+Changed data members to UShort_t
+
+Revision 1.4  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.3  2000/06/07 16:25:37  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -37,15 +51,20 @@ Introduce raw digit bit flag and DecodeAmp()
 ClassImp(AliTRDdigit)
 
 //_____________________________________________________________________________
+  
+  // Marks a raw digit
+  const UInt_t AliTRDdigit::fgkRawDigit = 0x00000001; 
+
+//_____________________________________________________________________________
 AliTRDdigit::AliTRDdigit():AliDigitNew()
 {
   //
   // Default constructor
   //
 
-  fRow       = 0;
-  fCol       = 0;
-  fTime      = 0;
+  fRow  = 0;
+  fCol  = 0;
+  fTime = 0;
 
 }
 
@@ -67,7 +86,7 @@ AliTRDdigit::AliTRDdigit(Bool_t isRaw, Int_t *digits, Int_t *amp):AliDigitNew()
   // Store the signal amplitude
   fAmp  = amp[0];
 
-  if (isRaw) SetBit(kRawDigit);
+  if (isRaw) SetBit(fgkRawDigit);
 
 }
 
@@ -77,5 +96,40 @@ AliTRDdigit::~AliTRDdigit()
   //
   // AliTRDdigit destructor
   //
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDdigit::DecodeAmp() const
+{
+  //
+  // Decodes the digit amplitude
+  //
+
+  return 0;
+
+}
+
+//______________________________________________________________________________
+void AliTRDdigit::Streamer(TBuffer &R__b)
+{
+  //
+  // Stream an object of class AliTRDdigit.
+  //
+
+  if (R__b.IsReading()) {
+    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
+    AliDigitNew::Streamer(R__b);
+    R__b >> fRow;
+    R__b >> fCol;
+    R__b >> fTime;
+  } 
+  else {
+    R__b.WriteVersion(AliTRDdigit::IsA());
+    AliDigitNew::Streamer(R__b);
+    R__b << fRow;
+    R__b << fCol;
+    R__b << fTime;
+  }
 
 }

@@ -7,8 +7,6 @@
 
 #include "AliDigitNew.h"
 
-const UInt_t kRawDigit = 0x00000001;
-
 //_____________________________________________________________________________
 class AliTRDdigit : public AliDigitNew {
 
@@ -18,24 +16,28 @@ class AliTRDdigit : public AliDigitNew {
   AliTRDdigit(Bool_t isRaw, Int_t *digits, Int_t *amp);
   virtual ~AliTRDdigit();
 
-          Int_t GetAmp() const    { if (TestBit(kRawDigit))
-                                      return DecodeAmp();
-                                    else
-                                      return fAmp; };
-          Int_t GetDetector()     { return fId;   };
-          Int_t GetRow()          { return fRow;  };
-          Int_t GetCol()          { return fCol;  };
-          Int_t GetTime()         { return fTime; };
+  static  UInt_t RawDigit()          { return fgkRawDigit; };
 
-          Int_t DecodeAmp() const { return 0;     };
+          Int_t  GetAmp() const      { if (TestBit(fgkRawDigit))
+                                         return DecodeAmp();
+                                       else
+                                         return fAmp; };
+          Int_t  GetDetector() const { return fId;   };
+          Int_t  GetRow() const      { return fRow;  };
+          Int_t  GetCol() const      { return fCol;  };
+          Int_t  GetTime() const     { return fTime; };
+
+  virtual Int_t  DecodeAmp() const;
 
  protected:
 
-  Int_t        fRow;              // Pad row number
-  Int_t        fCol;              // Pad col number
-  Int_t        fTime;             // Time bucket
+  static const UInt_t fgkRawDigit; // Marks a raw digit
 
-  ClassDef(AliTRDdigit,1)         // Digit for the TRD
+  UShort_t     fRow;               // Pad row number
+  UShort_t     fCol;               // Pad col number
+  UShort_t     fTime;              // Time bucket
+
+  ClassDef(AliTRDdigit,2)          // Digit for the TRD
 
 };
 

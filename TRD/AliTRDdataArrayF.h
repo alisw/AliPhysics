@@ -16,6 +16,8 @@
 //                                                         //
 /////////////////////////////////////////////////////////////
 
+class AliTRDarrayF;
+
 class AliTRDdataArrayF : public AliTRDdataArray {
 
  public:
@@ -38,8 +40,8 @@ class AliTRDdataArrayF : public AliTRDdataArray {
           void    SetData(Int_t row, Int_t col, Int_t time, Float_t value);
   virtual void    SetThreshold(Float_t threshold) { fThreshold = threshold; };
 
-  virtual Float_t GetData(Int_t row, Int_t col, Int_t time);
-  virtual Float_t GetThreshold()                  { return fThreshold;  };
+  virtual Float_t GetData(Int_t row, Int_t col, Int_t time) const;
+  virtual Float_t GetThreshold() const            { return fThreshold;  };
 
   virtual Int_t   GetSize();
   virtual Int_t   GetDataSize(); 
@@ -48,9 +50,9 @@ class AliTRDdataArrayF : public AliTRDdataArray {
  protected:
 
   inline  void    SetDataFast(Int_t idx1, Int_t idx2, Float_t value); 
-  inline  Float_t GetDataFast(Int_t idx1, Int_t idx2); 
+  inline  Float_t GetDataFast(Int_t idx1, Int_t idx2) const; 
 
-  Float_t         GetData1(Int_t idx1, Int_t idx2); 
+  Float_t         GetData1(Int_t idx1, Int_t idx2) const; 
   void            Expand1(); 
   void            Compress1(); 
   void            Expand2();

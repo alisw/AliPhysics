@@ -15,6 +15,21 @@
 
 /*
 $Log$
+Revision 1.1.4.5  2000/10/15 23:40:01  cblume
+Remove AliTRDconst
+
+Revision 1.1.4.4  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.4.3  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.1.4.2  2000/09/22 14:49:49  cblume
+Adapted to tracking code
+
+Revision 1.8  2000/10/02 21:28:19  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.7  2000/06/27 13:08:50  cblume
 Changed to Copy(TObject &A) to appease the HP-compiler
 
@@ -46,13 +61,19 @@ Add new TRD classes
 
 #include <TF1.h>
 #include <TTree.h>
+#include <TH1.h>
 
+#include "AliRun.h"
+
+#include "AliTRD.h"
 #include "AliTRDclusterizerV1.h"
 #include "AliTRDmatrix.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDdigitizer.h"
 #include "AliTRDrecPoint.h"
 #include "AliTRDdataArrayF.h"
+#include "AliTRDdataArrayI.h"
+#include "AliTRDdigitsManager.h"
 
 ClassImp(AliTRDclusterizerV1)
 
@@ -166,7 +187,7 @@ Bool_t AliTRDclusterizerV1::ReadDigits()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDclusterizerV1::MakeCluster()
+Bool_t AliTRDclusterizerV1::MakeClusters()
 {
   //
   // Generates the cluster.
@@ -189,6 +210,9 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
   printf("Start creating clusters.\n");
 
   AliTRDdataArrayI *digits;
+  AliTRDdataArrayI *track0;
+  AliTRDdataArrayI *track1;
+  AliTRDdataArrayI *track2; 
 
   // Parameters
   Float_t maxThresh        = fClusMaxThresh;   // threshold value for maximum
@@ -202,19 +226,19 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
   const Int_t   kNsig    = 5;
 
   Int_t chamBeg = 0;
-  Int_t chamEnd = kNcham;
+  Int_t chamEnd = AliTRDgeometry::Ncham();
   if (trd->GetSensChamber()  >= 0) {
     chamBeg = trd->GetSensChamber();
     chamEnd = chamBeg + 1;
   }
   Int_t planBeg = 0;
-  Int_t planEnd = kNplan;
+  Int_t planEnd = AliTRDgeometry::Nplan();
   if (trd->GetSensPlane()    >= 0) {
     planBeg = trd->GetSensPlane();
     planEnd = planBeg + 1;
   }
   Int_t sectBeg = 0;
-  Int_t sectEnd = kNsect;
+  Int_t sectEnd = AliTRDgeometry::Nsect();
 
   // *** Start clustering *** in every chamber
   for (Int_t icham = chamBeg; icham < chamEnd; icham++) {
@@ -224,7 +248,8 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
         if (trd->GetSensSector() >= 0) {
           Int_t sens1 = trd->GetSensSector();
           Int_t sens2 = sens1 + trd->GetSensSectorRange();
-          sens2 -= ((Int_t) (sens2 / kNsect)) * kNsect;
+          sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) 
+                 * AliTRDgeometry::Nsect();
           if (sens1 < sens2) {
             if ((isect < sens1) || (isect >= sens2)) continue;
 	  }
@@ -251,8 +276,15 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
         AliTRDmatrix *maximaMatrix = new AliTRDmatrix(nRowMax,nColMax,nTimeMax
                                                      ,isect,icham,iplan);
 
+        // Create a matrix for track indexes
+        AliTRDmatrix *trackMatrix  = new AliTRDmatrix(nRowMax,nColMax,nTimeMax
+                                                     ,isect,icham,iplan);
+
         // Read in the digits
         digits = fDigitsManager->GetDigits(idet);
+        track0 = fDigitsManager->GetDictionary(idet,0);
+        track1 = fDigitsManager->GetDictionary(idet,1);
+        track2 = fDigitsManager->GetDictionary(idet,2); 
 
         // Loop through the detector pixel
         for (time = 0; time < nTimeMax; time++) {
@@ -261,6 +293,10 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
 
               Int_t signal = digits->GetData(row,col,time);
               Int_t index  = digits->GetIndex(row,col,time);
+              Int_t t[3] = {-1};
+              t[0] = track0->GetData(row,col,time) - 1;
+              t[1] = track1->GetData(row,col,time) - 1;
+              t[2] = track2->GetData(row,col,time) - 1;  
 
               // Fill the detector matrix
               if (signal > signalThresh) {
@@ -268,8 +304,10 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                 digitMatrix->SetSignal(row,col,time,signal);
 	        // Store the digits number
                 digitMatrix->AddTrack(row,col,time,index);
+                for(Int_t i = 0; i < 3; i++) {
+                  trackMatrix->AddTrack(row,col,time,t[i]);
+                }      
               }
-
 	    }
 	  }
 	}
@@ -314,11 +352,17 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                 Float_t clusterPads[kNclus]   = {0};   
                 // Cluster digit info
                 Int_t   clusterDigit[kNclus]  = {0};
+                // Cluster MC tracks info
+                const Int_t nt = kNclus*3;
+                Int_t clusterTracks[nt] = {-1};   
 
                 Int_t iPad;
                 for (iPad = 0; iPad < kNclus; iPad++) {
                   clusterSignal[iPad] = digitMatrix->GetSignal(row,col-1+iPad,time);
                   clusterDigit[iPad]  = digitMatrix->GetTrack(row,col-1+iPad,time,0);
+                  for (Int_t j = 0; j < 3; j++) {
+                    clusterTracks[iPad*3+j] = trackMatrix->GetTrack(row,col-1+iPad,time,j);
+                  }  
                 }
 
                 // neighbouring maximum on right side?
@@ -343,9 +387,26 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                 case 1:
                   // method 1: simply center of mass
                   clusterPads[0] = row + 0.5;
-                  clusterPads[1] = col - 0.5 + (clusterSignal[2] - clusterSignal[0]) /
+                  clusterPads[1] = col + 0.5 + (clusterSignal[2] - clusterSignal[0]) /
                                    (clusterSignal[0] + clusterSignal[1] + clusterSignal[2]);
                   clusterPads[2] = time + 0.5;
+
+
+/*		  printf("col = %d, left = %f, center = %f, right = %f, 
+                         final =%f \n", col, 
+                         digitMatrix->GetSignal(row,col-1,time),
+                         digitMatrix->GetSignal(row,col,time),
+                         digitMatrix->GetSignal(row,col+1,time),
+                         clusterPads[1]);
+
+		  printf("col = %d, sig(0) = %f, sig(1) = %f, sig(2) = %f, 
+                         final =%f \n", col, 
+                         clusterSignal[0],
+                         clusterSignal[1],
+                         clusterSignal[2],
+                         clusterPads[1]);
+
+*/
 
                   nClusters++;
                   break;
@@ -376,7 +437,7 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                                         + clusterSignal[2];
 
                 // Add the cluster to the output array 
-                trd->AddRecPoint(clusterPads,clusterDigit,idet,clusterCharge);
+                trd->AddRecPoint(clusterPads,clusterDigit,idet,clusterCharge,clusterTracks);
 
               }
             }  // time
@@ -386,24 +447,28 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
         printf("AliTRDclusterizerV1::MakeCluster -- ");
         printf("Number of clusters found: %d\n",nClusters);
 
+	WriteClusters(idet);
+	trd->ResetRecPoints();
+
         delete digitMatrix;
         delete maximaMatrix;
+        delete trackMatrix;
 
       }          // isect
     }            // iplan
   }              // icham
 
-  printf("AliTRDclusterizerV1::MakeCluster -- ");
-  printf("Total number of points found: %d\n"
-        ,trd->RecPoints()->GetEntries());
+//   printf("AliTRDclusterizerV1::MakeCluster -- ");
+//   printf("Total number of points found: %d\n"
+//         ,trd->RecPoints()->GetEntries());
 
-  // Get the pointer to the cluster branch
-  TTree *clusterTree = gAlice->TreeR(); 
+//   // Get the pointer to the cluster branch
+//   TTree *clusterTree = gAlice->TreeR(); 
 
-  // Fill the cluster-branch
-  printf("AliTRDclusterizerV1::MakeCluster -- ");
-  printf("Fill the cluster tree.\n");
-  clusterTree->Fill();
+//   // Fill the cluster-branch
+//   printf("AliTRDclusterizerV1::MakeCluster -- ");
+//   printf("Fill the cluster tree.\n");
+//   clusterTree->Fill();
   printf("AliTRDclusterizerV1::MakeCluster -- ");
   printf("Done.\n");
 

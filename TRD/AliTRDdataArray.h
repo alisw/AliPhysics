@@ -6,14 +6,14 @@
 
 /* $Id$ */
  
-#include   "AliTRDarrayI.h"
-#include   "AliTRDarrayF.h"
 #include   "AliTRDsegmentID.h"
 
 /////////////////////////////////////////////////////////////
 //  General container for data from TRD detector segments  //
 //  Adapted from AliDigits, origin M.Ivanov                //
 /////////////////////////////////////////////////////////////
+
+class AliTRDarrayI;
 
 class AliTRDdataArray : public AliTRDsegmentID {
 
@@ -29,15 +29,14 @@ class AliTRDdataArray : public AliTRDsegmentID {
   virtual void   Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
   virtual void   Reset();
 
-  virtual Int_t  GetNRow()                     { return fNrow;       };
-  virtual Int_t  GetNCol()                     { return fNcol;       };
-  virtual Int_t  GetNtime()                    { return fNtime;      };
-
-          Int_t  GetIndex(Int_t row, Int_t col, Int_t time);
+  virtual Int_t  GetNRow() const               { return fNrow;       };
+  virtual Int_t  GetNCol() const               { return fNcol;       };
+  virtual Int_t  GetNtime() const              { return fNtime;      };
+          Int_t  GetIndex(Int_t row, Int_t col, Int_t time) const;
 
  protected:
 
-          Int_t  GetIdx1(Int_t row, Int_t col);
+          Int_t  GetIdx1(Int_t row, Int_t col) const;
   inline  Bool_t CheckBounds(const char *where, Int_t idx1, Int_t idx2);
   inline  Bool_t OutOfBoundsError(const char *where, Int_t idx1, Int_t idx2);
  

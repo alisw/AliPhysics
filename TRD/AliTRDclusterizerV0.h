@@ -5,7 +5,6 @@
 
 /* $Id$ */
 
-#include "AliTRD.h"
 #include "AliTRDclusterizer.h"
 
 ///////////////////////////////////////////////////////
@@ -21,13 +20,13 @@ class AliTRDclusterizerV0 : public AliTRDclusterizer {
   virtual ~AliTRDclusterizerV0();
 
   virtual void    Init();
-  virtual Bool_t  MakeCluster();
+  virtual Bool_t  MakeClusters();
   
   virtual void    SetRphiSigma(Float_t sigma) { fRphiSigma = sigma; };
   virtual void    SetRphiDist(Float_t dist)   { fRphiDist  = dist;  };
 
-  virtual Float_t GetRphiSigma()              { return fRphiSigma;  };
-  virtual Float_t GetRphiDist()               { return fRphiDist;   };
+  virtual Float_t GetRphiSigma() const        { return fRphiSigma;  };
+  virtual Float_t GetRphiDist()  const        { return fRphiDist;   };
 
  protected:
 

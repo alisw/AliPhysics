@@ -12,17 +12,19 @@ class AliTRDgeometryFull : public AliTRDgeometry {
  public:
 
   AliTRDgeometryFull();
-  ~AliTRDgeometryFull();
+  virtual ~AliTRDgeometryFull();
 
           void    CreateGeometry(Int_t *idtmed);
-          Int_t   IsVersion() const { return 1; };
+          Int_t   IsVersion() const   { return 1; };
           void    Init();
 
-          void    SetPHOShole()     { fPHOShole = kTRUE; };
-          void    SetRICHhole()     { fRICHhole = kTRUE; };
+          void    SetPHOShole()       { fPHOShole = kTRUE; };
+          void    SetRICHhole()       { fRICHhole = kTRUE; };
 
-          Bool_t  GetPHOShole()     { return fPHOShole;  };
-          Bool_t  GetRICHhole()     { return fRICHhole;  };
+  virtual void    SetRowPadSize(Float_t size);
+
+          Bool_t  GetPHOShole() const { return fPHOShole;  };
+          Bool_t  GetRICHhole() const { return fRICHhole;  };
 
  protected:
 

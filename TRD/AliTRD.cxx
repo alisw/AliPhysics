@@ -15,6 +15,37 @@
 
 /*
 $Log$
+
+Revision 1.17.2.6  2000/10/15 23:29:08  cblume
+Introduced more detailed geometry for the display
+
+Revision 1.17.2.5  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.17.2.4  2000/10/04 16:34:57  cblume
+Replace include files by forward declarations
+
+Revision 1.17.2.3  2000/09/22 14:45:17  cblume
+Included changes for the tracking
+
+Revision 1.17.2.2  2000/09/18 13:25:13  cblume
+Included LoadPoints() method to display the TR photons
+
+Revision 1.22  2000/10/02 21:28:19  fca
+Removal of useless dependecies via forward declarations
+
+Revision 1.21  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
+Revision 1.20  2000/06/08 18:32:57  cblume
+Make code compliant to coding conventions
+
+Revision 1.19  2000/06/07 16:25:37  cblume
+Try to remove compiler warnings on Sun and HP
+
+Revision 1.18  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.21  2000/06/09 11:10:07  cblume
 Compiler warnings and coding conventions, next round
 
@@ -71,21 +102,26 @@ Introduction of the Copyright and cvs Log
 
 #include <TMath.h>
 #include <TNode.h>
-#include <TPGON.h> 
 #include <TGeometry.h>
-#include <TTree.h>
+#include <TTree.h>                                                              
+#include <TPGON.h> 
 
-#include "AliTRD.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliDigit.h"
+#include "AliMagF.h"
+#include "AliMC.h"                                                              
+ 
+#include "AliTRD.h"
+#include "AliTRDhit.h"
+#include "AliTRDpoints.h"
+#include "AliTRDdigit.h"
 #include "AliTRDdigitizer.h"
 #include "AliTRDclusterizer.h"
 #include "AliTRDgeometryHole.h"
 #include "AliTRDgeometryFull.h"
 #include "AliTRDrecPoint.h"
-#include "AliMagF.h"
-#include "AliMC.h"
- 
+
 ClassImp(AliTRD)
  
 //_____________________________________________________________________________
@@ -104,6 +140,12 @@ AliTRD::AliTRD()
   fNRecPoints  = 0;
 
   fGeometry    = 0;
+
+  fGasDensity  = 0;
+  fFoilDensity = 0;
+
+  fDrawTR      = 0;
+  fDisplayType = 0; 
 
 }
  
@@ -138,18 +180,24 @@ AliTRD::AliTRD(const char *name, const char *title)
   }
 
   // Allocate the hit array
-  fHits       = new TClonesArray("AliTRDhit"     ,405);
+  fHits        = new TClonesArray("AliTRDhit"     ,405);
   gAlice->AddHitList(fHits);
 
   // Allocate the digits array
-  fDigits     = 0;
+  fDigits      = 0;
 
   // Allocate the rec point array
-  fRecPoints  = new TObjArray(400);
-  fNRecPoints = 0;
+  fRecPoints   = new TObjArray(400);
+  fNRecPoints  = 0;
    
-  fIshunt = 0;
-  fGasMix = 0;
+  fIshunt      = 0;
+  fGasMix      = 0;
+
+  fGasDensity  = 0;
+  fFoilDensity = 0;
+
+  fDrawTR      = 0;
+  fDisplayType = 0;
 
   SetMarkerColor(kWhite);   
 
@@ -182,12 +230,13 @@ AliTRD::~AliTRD()
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddRecPoint(Float_t *pos, Int_t *digits, Int_t det, Float_t amp)
+void AliTRD::AddRecPoint(Float_t *pos, Int_t *digits, Int_t det, Float_t amp
+                       , Int_t *tracks)
 {
   //
   // Add a reconstructed point for the TRD
   //
-  
+
   AliTRDrecPoint *recPoint = new AliTRDrecPoint();
   TVector3        posVec(pos[0],pos[1],pos[2]);
   recPoint->SetLocalPosition(posVec);
@@ -197,6 +246,9 @@ void AliTRD::AddRecPoint(Float_t *pos, Int_t *digits, Int_t det, Float_t amp)
     recPoint->AddDigit(digits[iDigit]);
   }
 
+  recPoint->AddTrackIndex(tracks);
+
+  recPoint->SetTrackingYZ(0.,0.);  // variance values set inside
   fRecPoints->Add(recPoint);
 
 }
@@ -214,14 +266,14 @@ void AliTRD::AddDigit(Int_t *digits, Int_t *amp)
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddHit(Int_t track, Int_t *det, Float_t *hits)
+void AliTRD::AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q)
 {
   //
   // Add a hit for the TRD
   //
 
   TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliTRDhit(fIshunt,track,det,hits);
+  new(lhits[fNhits++]) AliTRDhit(fIshunt,track,det,hits,q);
 
 }
 
@@ -234,23 +286,68 @@ void AliTRD::BuildGeometry()
 
   TNode *node, *top;
   TPGON *pgon;
+
+  Float_t rmin, rmax;
+  Float_t zmax1, zmax2;
+ 
   const Int_t kColorTRD = 46;
   
   // Find the top node alice
   top = gAlice->GetGeometry()->GetNode("alice");
   
-  pgon = new TPGON("S_TRD","TRD","void",0,360,kNsect,4);
-  Float_t ff    = TMath::Cos(kDegrad * 180 / kNsect);
-  Float_t rrmin = kRmin / ff;
-  Float_t rrmax = kRmax / ff;
-  pgon->DefineSection(0,-kZmax1,rrmax,rrmax);
-  pgon->DefineSection(1,-kZmax2,rrmin,rrmax);
-  pgon->DefineSection(2, kZmax2,rrmin,rrmax);
-  pgon->DefineSection(3, kZmax1,rrmax,rrmax);
-  top->cd();
-  node = new TNode("TRD","TRD","S_TRD",0,0,0,"");
-  node->SetLineColor(kColorTRD);
-  fNodes->Add(node);
+  switch (fDisplayType) {
+
+  case 0:
+
+    pgon = new TPGON("S_TRD","TRD","void",0,360,AliTRDgeometry::Nsect(),4);
+    rmin = AliTRDgeometry::Rmin();
+    rmax = AliTRDgeometry::Rmax();
+    pgon->DefineSection(0,-AliTRDgeometry::Zmax1(),rmax,rmax);
+    pgon->DefineSection(1,-AliTRDgeometry::Zmax2(),rmin,rmax);
+    pgon->DefineSection(2, AliTRDgeometry::Zmax2(),rmin,rmax);
+    pgon->DefineSection(3, AliTRDgeometry::Zmax1(),rmax,rmax);
+    top->cd();
+    node = new TNode("TRD","TRD","S_TRD",0,0,0,"");
+    node->SetLineColor(kColorTRD);
+    fNodes->Add(node);
+
+    break;
+
+  case 1:
+
+    Float_t slope = (AliTRDgeometry::Zmax1() - AliTRDgeometry::Zmax2())
+                  / (AliTRDgeometry::Rmax()  - AliTRDgeometry::Rmin());
+
+    rmin  = AliTRDgeometry::Rmin() + AliTRDgeometry::RaThick();
+    rmax  = rmin + AliTRDgeometry::DrThick();
+    zmax2 = AliTRDgeometry::Zmax2() + slope * AliTRDgeometry::RaThick();
+    zmax1 = zmax2 + slope * AliTRDgeometry::DrThick();
+    Char_t name[7];
+
+    for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+
+      sprintf(name,"S_TRD%d",iPlan);
+      pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
+      pgon->DefineSection(0,-zmax1,rmax,rmax);
+      pgon->DefineSection(1,-zmax2,rmin,rmax);
+      pgon->DefineSection(2, zmax2,rmin,rmax);
+      pgon->DefineSection(3, zmax1,rmax,rmax);
+      top->cd();
+      node = new TNode("TRD","TRD",name,0,0,0,"");
+      node->SetLineColor(kColorTRD);
+      fNodes->Add(node);
+
+      Float_t height = AliTRDgeometry::Cheight() + AliTRDgeometry::Cspace(); 
+      rmin  = rmin  + height;
+      rmax  = rmax  + height;
+      zmax1 = zmax1 + slope * height;
+      zmax2 = zmax2 + slope * height;
+
+    }
+
+    break;
+
+  };
 
 }
  
@@ -261,10 +358,14 @@ void AliTRD::Copy(TObject &trd)
   // Copy function
   //
 
-  ((AliTRD &) trd).fGasMix     = fGasMix;
-  ((AliTRD &) trd).fGeometry   = fGeometry;
-  ((AliTRD &) trd).fRecPoints  = fRecPoints;
-  ((AliTRD &) trd).fNRecPoints = fNRecPoints;
+  ((AliTRD &) trd).fGasMix      = fGasMix;
+  ((AliTRD &) trd).fGeometry    = fGeometry;       
+  ((AliTRD &) trd).fRecPoints   = fRecPoints;
+  ((AliTRD &) trd).fNRecPoints  = fNRecPoints;
+  ((AliTRD &) trd).fGasDensity  = fGasDensity;
+  ((AliTRD &) trd).fFoilDensity = fFoilDensity;
+  ((AliTRD &) trd).fDrawTR      = fDrawTR;
+  ((AliTRD &) trd).fDisplayType = fDisplayType;
 
   //AliDetector::Copy(trd);
 
@@ -344,7 +445,8 @@ void AliTRD::CreateMaterials()
   Float_t stmin  = -0.001;
   
   Float_t absl, radl, d, buf[1];
-  Float_t agm[2], dgm, zgm[2], wgm[2];
+  Float_t agm[2], zgm[2], wgm[2];
+  Float_t dgm1, dgm2;
   Int_t   nbuf;
   
   //////////////////////////////////////////////////////////////////////////
@@ -375,8 +477,8 @@ void AliTRD::CreateMaterials()
   // Create gas mixture 
   wgm[0] = fxc;
   wgm[1] = 1. - fxc;
-  dgm    = wgm[0] * dxe + wgm[1] * dco;
-  AliMixture(10, "Gas mixture 1$", agm, zgm, dgm,  2, wgm);
+  dgm1   = wgm[0] * dxe + wgm[1] * dco;
+  AliMixture(10, "Gas mixture 1$", agm, zgm, dgm1,  2, wgm);
   // Xe/Isobutane-mixture
   // Get properties of Xe 
   gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
@@ -385,8 +487,8 @@ void AliTRD::CreateMaterials()
   // Create gas mixture 
   wgm[0] = fxi;
   wgm[1] = 1. - fxi;
-  dgm    = wgm[0] * dxe + wgm[1] * dis;
-  AliMixture(11, "Gas mixture 2$", agm, zgm, dgm,  2, wgm);
+  dgm2   = wgm[0] * dxe + wgm[1] * dis;
+  AliMixture(11, "Gas mixture 2$", agm, zgm, dgm2,  2, wgm);
  
   //////////////////////////////////////////////////////////////////////////
   //     Tracking Media Parameters 
@@ -441,6 +543,13 @@ void AliTRD::CreateMaterials()
   // Cooling water
   AliMedium(14, "Water$",     13, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
+
+  // Save the density values for the TRD absorbtion
+  fFoilDensity = dmy;
+  if (fGasMix == 1)
+    fGasDensity = dgm1;
+  else
+    fGasDensity = dgm2;
 
 }
 
@@ -550,24 +659,160 @@ void AliTRD::Init()
 }
 
 //_____________________________________________________________________________
+void AliTRD::LoadPoints(Int_t track)
+{
+  //
+  // Store x, y, z of all hits in memory.
+  // Hit originating from TR photons are given a different color
+  //
+
+  if (!fDrawTR) {
+    AliDetector::LoadPoints(track);
+    return;
+  }
+
+  if (fHits == 0) return;
+
+  Int_t nhits  = fHits->GetEntriesFast();
+  if (nhits == 0) return;
+
+  Int_t tracks = gAlice->GetNtrack();
+  if (fPoints == 0) fPoints = new TObjArray(tracks);
+
+  AliTRDhit *ahit;
+  
+  Int_t    *ntrkE = new Int_t[tracks];
+  Int_t    *ntrkT = new Int_t[tracks];
+  Int_t    *limiE = new Int_t[tracks];
+  Int_t    *limiT = new Int_t[tracks];
+  Float_t **coorE = new Float_t*[tracks];
+  Float_t **coorT = new Float_t*[tracks];
+  for(Int_t i = 0; i < tracks; i++) {
+    ntrkE[i] = 0;
+    ntrkT[i] = 0;
+    coorE[i] = 0;
+    coorT[i] = 0;
+    limiE[i] = 0;
+    limiT[i] = 0;
+  }
+  
+  AliTRDpoints  *points = 0;
+  Float_t       *fp     = 0;
+  Int_t          trk;
+  Int_t          chunk  = nhits / 4 + 1;
+
+  // Loop over all the hits and store their position
+  for (Int_t hit = 0; hit < nhits; hit++) {
+
+    ahit = (AliTRDhit *) fHits->UncheckedAt(hit);
+
+    // dEdx hits
+    if (ahit->GetCharge() >= 0) {
+
+      trk = ahit->GetTrack();
+      if (ntrkE[trk] == limiE[trk]) {
+        // Initialise a new track
+        fp = new Float_t[3*(limiE[trk]+chunk)];
+        if (coorE[trk]) {
+          memcpy(fp,coorE[trk],sizeof(Float_t)*3*limiE[trk]);
+          delete [] coorE[trk];
+        }
+        limiE[trk] += chunk;
+        coorE[trk]  = fp;
+      } 
+      else {
+        fp = coorE[trk];
+      }
+      fp[3*ntrkE[trk]  ] = ahit->X();
+      fp[3*ntrkE[trk]+1] = ahit->Y();
+      fp[3*ntrkE[trk]+2] = ahit->Z();
+      ntrkE[trk]++;
+
+    }
+    // TR photon hits
+    else {
+
+      trk = ahit->GetTrack();
+      if (ntrkT[trk] == limiT[trk]) {
+        // Initialise a new track
+        fp = new Float_t[3*(limiT[trk]+chunk)];
+        if (coorT[trk]) {
+          memcpy(fp,coorT[trk],sizeof(Float_t)*3*limiT[trk]);
+          delete [] coorT[trk];
+        }
+        limiT[trk] += chunk;
+        coorT[trk]  = fp;
+      } 
+      else {
+        fp = coorT[trk];
+      }
+      fp[3*ntrkT[trk]  ] = ahit->X();
+      fp[3*ntrkT[trk]+1] = ahit->Y();
+      fp[3*ntrkT[trk]+2] = ahit->Z();
+      ntrkT[trk]++;
+
+    }
+
+  }
+
+  for (trk = 0; trk < tracks; ++trk) {
+
+    if (ntrkE[trk] || ntrkT[trk]) {
+
+      points = new AliTRDpoints();
+      points->SetDetector(this);
+      points->SetParticle(trk);
+
+      // Set the dEdx points
+      if (ntrkE[trk]) {
+        points->SetMarkerColor(GetMarkerColor());
+        points->SetMarkerSize(GetMarkerSize());
+        points->SetPolyMarker(ntrkE[trk],coorE[trk],GetMarkerStyle());
+        delete [] coorE[trk];
+        coorE[trk] = 0;
+      }
+
+      // Set the TR photon points
+      if (ntrkT[trk]) {
+        points->SetTRpoints(ntrkT[trk],coorT[trk]);
+        delete [] coorT[trk];
+        coorT[trk] = 0;
+      }
+
+      fPoints->AddAt(points,trk);
+
+    }
+
+  }
+
+  delete [] coorE;
+  delete [] coorT;
+  delete [] ntrkE;
+  delete [] ntrkT;
+  delete [] limiE;
+  delete [] limiT;
+
+}
+
+//_____________________________________________________________________________
 void AliTRD::MakeBranch(Option_t* option)
 {
   //
   // Create Tree branches for the TRD digits and cluster.
   //
 
-  Int_t  buffersize = 4000;
-  Char_t branchname[15];
+  //Int_t  buffersize = 4000;
+  //Char_t branchname[15];
 
   AliDetector::MakeBranch(option);
 
-  Char_t *r = strstr(option,"R");
-  sprintf(branchname,"%srecPoints",GetName());
-  if (fRecPoints && gAlice->TreeR() && r) {
-    gAlice->TreeR()->Branch(branchname,fRecPoints->IsA()->GetName()
-                           ,&fRecPoints,buffersize,0);
-    printf("* AliTRD::MakeBranch * Making Branch %s for points in TreeR\n",branchname);
-  }
+  //Char_t *r = strstr(option,"R");
+  //sprintf(branchname,"%srecPoints",GetName());
+  //if (fRecPoints && gAlice->TreeR() && r) {
+  //  gAlice->TreeR()->Branch(branchname,fRecPoints->IsA()->GetName()
+  //                         ,&fRecPoints,buffersize,0);
+  //  printf("* AliTRD::MakeBranch * Making Branch %s for points in TreeR\n",branchname);
+  //}
 
 }
 
@@ -578,8 +823,11 @@ void AliTRD::ResetRecPoints()
   // Reset number of reconstructed points and the point array
   //
 
-  fNRecPoints = 0;
-  if (fRecPoints) fRecPoints->Delete();
+  if(fRecPoints) {
+    fNRecPoints = 0;
+    Int_t nentr = fRecPoints->GetEntriesFast();
+    for(Int_t i = 0; i < nentr; i++) delete fRecPoints->RemoveAt(i);
+  }
 
 }
 
@@ -624,6 +872,28 @@ void AliTRD::SetGasMix(Int_t imix)
   }
 
   fGasMix = imix;
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::SetPHOShole()
+{
+  //
+  // Selects a geometry with a hole in front of the PHOS
+  //
+
+  fGeometry->SetPHOShole();
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::SetRICHhole()
+{
+  //
+  // Selects a geometry with a hole in front of the RICH
+  //
+
+  fGeometry->SetRICHhole();
 
 }
 

@@ -6,15 +6,16 @@
 /* $Id$ */
 
 #include <TNamed.h>
-#include <TFile.h>
-#include <TF1.h>
 
-#include "AliHit.h" 
-#include "AliTRDdigit.h"
-#include "AliTRDconst.h"
-#include "AliTRDgeometry.h"
+// Time response function of the preamp
+Double_t TRFlandau(Double_t *x, Double_t *par);
 
+class TFile;
+class TF1;
+
+class AliTRD;
 class AliTRDdigitsManager;
+class AliTRDgeometry;
 
 ///////////////////////////////////////////////////////
 //  Produces digits from the hits information        //
@@ -35,36 +36,45 @@ class AliTRDdigitizer : public TNamed {
   virtual Bool_t       Open(const Char_t *name, Int_t nEvent = 0);
   virtual Bool_t       MakeDigits();
   virtual Bool_t       WriteDigits();
+  virtual Bool_t       InitDetector();
 
-  virtual void         SetGasGain(Float_t gasgain)     { fGasGain       = gasgain;  };
-  virtual void         SetNoise(Float_t noise)         { fNoise         = noise;    };
-  virtual void         SetChipGain(Float_t chipgain)   { fChipGain      = chipgain; };
-  virtual void         SetADCoutRange(Float_t range)   { fADCoutRange   = range;    };
-  virtual void         SetADCinRange(Float_t range)    { fADCinRange    = range;    };
-  virtual void         SetADCthreshold(Int_t thresh)   { fADCthreshold  = thresh;   };
-  virtual void         SetDiffusion(Int_t diffOn = 1)  { fDiffusionOn   = diffOn;   };
-  virtual void         SetDiffusionT(Float_t diff)     { fDiffusionT    = diff;     };
-  virtual void         SetDiffusionL(Float_t diff)     { fDiffusionL    = diff;     };
-  virtual void         SetElAttach(Int_t elOn = 1)     { fElAttachOn    = elOn;     };
-  virtual void         SetElAttachProp(Float_t prop)   { fElAttachProp  = prop;     };
-  virtual void         SetExB(Int_t exbOn = 1)         { fExBOn         = exbOn;    };
-  virtual void         SetLorentzAngle(Float_t angle)  { fLorentzAngle  = angle;    };
-  virtual void         SetPadResponse(TF1 *PRF)        { if (fPRF) delete fPRF;
-                                                         fPRF           = PRF;      };
+  virtual void         SetGasGain(Float_t gasgain)      { fGasGain       = gasgain;  };
+  virtual void         SetNoise(Float_t noise)          { fNoise         = noise;    };
+  virtual void         SetChipGain(Float_t chipgain)    { fChipGain      = chipgain; };
+  virtual void         SetADCoutRange(Float_t range)    { fADCoutRange   = range;    };
+  virtual void         SetADCinRange(Float_t range)     { fADCinRange    = range;    };
+  virtual void         SetADCthreshold(Int_t thresh)    { fADCthreshold  = thresh;   };
+  virtual void         SetDiffusion(Int_t diffOn = 1)   { fDiffusionOn   = diffOn;   };
+  virtual void         SetDiffusionT(Float_t diff)      { fDiffusionT    = diff;     };
+  virtual void         SetDiffusionL(Float_t diff)      { fDiffusionL    = diff;     };
+  virtual void         SetElAttach(Int_t elOn = 1)      { fElAttachOn    = elOn;     };
+  virtual void         SetElAttachProp(Float_t prop)    { fElAttachProp  = prop;     };
+  virtual void         SetExB(Int_t exbOn = 1)          { fExBOn         = exbOn;    };
+  virtual void         SetOmegaTau(Float_t ot)          { fOmegaTau      = ot;       };
+  virtual void         SetPadResponse(Int_t prfOn = 1)  { fPRFOn         = prfOn;    };
+  virtual void         SetPRF(TF1 *prf);
+  virtual void         SetTimeResponse(Int_t trfOn = 1) { fTRFOn         = trfOn;    };
+  virtual void         SetTRF(TF1 *trf);
+  virtual void         SetDriftVelocity(Float_t v)      { fDriftVelocity = v;        };
+  virtual void         SetCompress(Int_t c = 1)         { fCompress      = c;        };
+  virtual void         SetVerbose(Int_t v = 1)          { fVerbose       = v;        };
 
-  AliTRDdigitsManager *Digits()                        { return fDigits;        };
+  AliTRDdigitsManager *Digits() const                   { return fDigits;            };
 
-  virtual Float_t      GetGasGain()                    { return fGasGain;       };
-  virtual Float_t      GetNoise()                      { return fNoise;         };
-  virtual Float_t      GetChipGain()                   { return fChipGain;      };
-  virtual Float_t      GetADCoutRange()                { return fADCoutRange;   };
-  virtual Float_t      GetADCinRange()                 { return fADCinRange;    };
-  virtual Int_t        GetADCthreshold()               { return fADCthreshold;  };
-  virtual Float_t      GetDiffusionT()                 { return fDiffusionT;    };
-  virtual Float_t      GetDiffusionL()                 { return fDiffusionL;    };
-  virtual Float_t      GetElAttachProp()               { return fElAttachProp;  };
-  virtual Float_t      GetLorentzAngle()               { return fLorentzAngle;  };
-  virtual TF1         *GetPadResponse()                { return fPRF;           };
+  virtual Float_t      GetGasGain() const               { return fGasGain;           };
+  virtual Float_t      GetNoise() const                 { return fNoise;             };
+  virtual Float_t      GetChipGain() const              { return fChipGain;          };
+  virtual Float_t      GetADCoutRange() const           { return fADCoutRange;       };
+  virtual Float_t      GetADCinRange() const            { return fADCinRange;        };
+  virtual Int_t        GetADCthreshold() const          { return fADCthreshold;      };
+  virtual Float_t      GetDiffusionT() const            { return fDiffusionT;        };
+  virtual Float_t      GetDiffusionL() const            { return fDiffusionL;        };
+  virtual Float_t      GetElAttachProp() const          { return fElAttachProp;      };
+  virtual Float_t      GetOmegaTau() const              { return fOmegaTau;          };
+  virtual TF1         *GetPadResponse() const           { return fPRF;               };
+  virtual TF1         *GetTimeResponse() const          { return fTRF;               };
+  virtual Float_t      GetDriftVelocity() const         { return fDriftVelocity;     };
+  virtual Bool_t       GetCompress() const              { return fCompress;          };
 
  protected:
 
@@ -87,16 +97,31 @@ class AliTRDdigitizer : public TNamed {
   Int_t                fElAttachOn;      // Switch for the electron attachment
   Float_t              fElAttachProp;    // Propability for electron attachment (for 1m)
   Int_t                fExBOn;           // Switch for the ExB effects
-  Float_t              fLorentzAngle;    // Lorentz angle 
+  Float_t              fOmegaTau;        // Tangens of the Lorentz angle 
   Float_t              fLorentzFactor;   // Factor due to Lorentz force
+  Int_t                fPRFOn;           // Switch for the pad response
   TF1                 *fPRF;             // Pad response function
+  Int_t                fTRFOn;           // Switch for the time response
+  TF1                 *fTRF;             // Time response function of the shaper
+  Float_t             *fTRFint;          //!Integrated time response
+  Int_t                fTRFbin;          // Number of bins for the TRF
+  Float_t              fTRFlo;           // Lower boundary of the TRF
+  Float_t              fTRFhi;           // Higher boundary of the TRF
+  Float_t              fTRFwid;          // Bin width of the integrated TRF
+  Float_t              fDriftVelocity;   // Drift velocity (cm / mus)
+  Bool_t               fCompress;        // Switch to keep only compressed data in memory
+  Int_t                fVerbose;         // Sets the verbose level
 
  private:
 
-  virtual Int_t       Diffusion(Float_t driftlength, Float_t *xyz);
-  virtual Int_t       ExB(Float_t driftlength, Float_t *xyz);  
-  
-  ClassDef(AliTRDdigitizer,1)            // Produces TRD-Digits
+  virtual Int_t        Diffusion(Float_t driftlength, Float_t *xyz);
+  virtual Int_t        ExB(Float_t driftlength, Float_t *xyz);  
+  virtual Int_t        PadResponse(Float_t signal, Float_t dist, Float_t *pad);
+  virtual Float_t      TimeResponse(Float_t time);  
+  virtual Bool_t       CheckDetector(Int_t plane, Int_t chamber, Int_t sector);
+  virtual void         IntegrateTRF();
+
+  ClassDef(AliTRDdigitizer,2)            // Produces TRD-Digits
 
 };
 

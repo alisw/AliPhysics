@@ -6,13 +6,10 @@
 /* $Id$ */
 
 #include <TObject.h>
-#include <TObjArray.h>
-#include <TH2.h>
-#include <TH3.h>
-#include <TStyle.h>
-#include <TCanvas.h>
 
-#include "AliTRDpixel.h"
+class TObjArray;
+
+class AliTRDpixel;
 
 ///////////////////////////////////////////////////////
 //  Stores the pixel-information of one TRD chamber  //
@@ -44,17 +41,17 @@ public:
   virtual void         SetTrack(Int_t iRow, Int_t iCol, Int_t iTime
                               , Int_t iTrack, Int_t track);
 
-  virtual Float_t      GetSignal(Int_t iRow, Int_t iCol, Int_t iTime);
-  virtual Int_t        GetTrack(Int_t iRow, Int_t iCol, Int_t iTime, Int_t iTrack);
+  virtual Float_t      GetSignal(Int_t iRow, Int_t iCol, Int_t iTime) const;
+  virtual Int_t        GetTrack(Int_t iRow, Int_t iCol, Int_t iTime, Int_t iTrack) const;
 
-  virtual Int_t        GetSector()  { return fSector;  };
-  virtual Int_t        GetChamber() { return fChamber; };
-  virtual Int_t        GetPlane()   { return fPlane;   };
+  virtual Int_t        GetSector() const  { return fSector;  };
+  virtual Int_t        GetChamber() const { return fChamber; };
+  virtual Int_t        GetPlane() const   { return fPlane;   };
 
 protected:
 
-  virtual Int_t        GetIndex(Int_t iRow, Int_t iCol, Int_t iTime);
-  virtual AliTRDpixel *GetPixel(Int_t iRow, Int_t iCol, Int_t iTime);
+  virtual Int_t        GetIndex(Int_t iRow, Int_t iCol, Int_t iTime) const;
+  virtual AliTRDpixel *GetPixel(Int_t iRow, Int_t iCol, Int_t iTime) const;
 
   Int_t         fRow;            // Number of pad-rows
   Int_t         fCol;            // Number of pad-columns

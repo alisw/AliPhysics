@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.1.2.3  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.2.2  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.5  2000/06/27 13:08:50  cblume
+Changed to Copy(TObject &A) to appease the HP-compiler
+
 Revision 1.4  2000/06/09 11:10:07  cblume
 Compiler warnings and coding conventions, next round
 
@@ -37,6 +46,8 @@ Add new data array classes
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDdataArrayF.h"
+#include "AliTRDarrayI.h"
+#include "AliTRDarrayF.h"
 
 ClassImp(AliTRDdataArrayF)
 
@@ -83,6 +94,7 @@ AliTRDdataArrayF::~AliTRDdataArrayF()
   //
 
   if (fElements) fElements->Delete();
+  delete fElements;
   
 }
 
@@ -153,7 +165,7 @@ Int_t AliTRDdataArrayF::GetSize()
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdataArrayF::GetDataSize()
+Int_t AliTRDdataArrayF::GetDataSize() 
 {
   //
   // Returns the size of only the data part
@@ -167,7 +179,7 @@ Int_t AliTRDdataArrayF::GetDataSize()
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdataArrayF::GetOverThreshold(Float_t threshold)
+Int_t AliTRDdataArrayF::GetOverThreshold(Float_t threshold) 
 {
   //
   // Returns the number of entries over threshold
@@ -189,7 +201,7 @@ Int_t AliTRDdataArrayF::GetOverThreshold(Float_t threshold)
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDdataArrayF::GetData(Int_t row, Int_t col, Int_t time)
+Float_t AliTRDdataArrayF::GetData(Int_t row, Int_t col, Int_t time) const
 {
   //
   // Returns the data value at a given position of the array
@@ -279,7 +291,7 @@ void AliTRDdataArrayF::Expand()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdataArrayF::First()
+Bool_t AliTRDdataArrayF::First() 
 {
   //
   // Returns the position of the first valid data value
@@ -463,7 +475,7 @@ void AliTRDdataArrayF::Compress2()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdataArrayF::First0()
+Bool_t AliTRDdataArrayF::First0() 
 {
   //
   // Returns the first entry for a buffer of type 0
@@ -510,7 +522,7 @@ Bool_t AliTRDdataArrayF::Next0()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdataArrayF::First1()
+Bool_t AliTRDdataArrayF::First1() 
 {
   //
   // Returns the first entry for a buffer of type 1
@@ -544,7 +556,7 @@ Bool_t AliTRDdataArrayF::First1()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdataArrayF::Next1()
+Bool_t AliTRDdataArrayF::Next1() 
 {
   //
   // Returns the next entry for a buffer of type 1
@@ -576,7 +588,7 @@ Bool_t AliTRDdataArrayF::Next1()
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDdataArrayF::GetData1(Int_t idx1, Int_t idx2)
+Float_t AliTRDdataArrayF::GetData1(Int_t idx1, Int_t idx2) const
 {
   //
   // Returns the value at a given position of the array
@@ -613,7 +625,7 @@ Float_t AliTRDdataArrayF::GetData1(Int_t idx1, Int_t idx2)
 }
 
 //____________________________________________________________________________
-Float_t AliTRDdataArrayF::GetDataFast(Int_t idx1, Int_t idx2)
+Float_t AliTRDdataArrayF::GetDataFast(Int_t idx1, Int_t idx2) const
 {
   //
   // Returns the value at a given position in the array
@@ -676,3 +688,4 @@ AliTRDdataArrayF &AliTRDdataArrayF::operator=(const AliTRDdataArrayF &a)
   return *this;
 
 }
+

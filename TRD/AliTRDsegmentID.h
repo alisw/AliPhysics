@@ -10,7 +10,7 @@
 //     Base class for a detector segment      // 
 ////////////////////////////////////////////////
 
-#include "TObject.h"
+#include <TObject.h>
 
 class AliTRDsegmentID : public TObject {
 
@@ -20,7 +20,7 @@ class AliTRDsegmentID : public TObject {
   AliTRDsegmentID(Int_t index);
   virtual ~AliTRDsegmentID();
 
-          Int_t  GetID()            { return fSegmentID;    }
+          Int_t  GetID() const      { return fSegmentID;    }
   virtual Int_t  GetSize()          { return sizeof(*this); }
 
           void   SetID(Int_t index) { fSegmentID = index;} 

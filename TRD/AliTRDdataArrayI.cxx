@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.1.2.3  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.2.2  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.5  2000/06/27 13:08:50  cblume
+Changed to Copy(TObject &A) to appease the HP-compiler
+
 Revision 1.4  2000/06/09 11:10:07  cblume
 Compiler warnings and coding conventions, next round
 
@@ -37,6 +46,7 @@ Add new data array classes
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDdataArrayI.h"
+#include "AliTRDarrayI.h"
 
 ClassImp(AliTRDdataArrayI)
 
@@ -83,6 +93,7 @@ AliTRDdataArrayI::~AliTRDdataArrayI()
   //
 
   if (fElements) fElements->Delete();
+  delete fElements;
   
 }
 
@@ -189,7 +200,7 @@ Int_t AliTRDdataArrayI::GetOverThreshold(Int_t threshold)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdataArrayI::GetData(Int_t row, Int_t col, Int_t time)
+Int_t AliTRDdataArrayI::GetData(Int_t row, Int_t col, Int_t time) const
 {
   //
   // Returns the data value at a given position of the array
@@ -484,7 +495,7 @@ Bool_t AliTRDdataArrayI::First0()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdataArrayI::Next0()
+Bool_t AliTRDdataArrayI::Next0() 
 {
   //
   // Returns the next entry for a buffer of type 0
@@ -509,7 +520,7 @@ Bool_t AliTRDdataArrayI::Next0()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdataArrayI::First1()
+Bool_t AliTRDdataArrayI::First1() 
 {
   //
   // Returns the first entry for a buffer of type 1
@@ -543,7 +554,7 @@ Bool_t AliTRDdataArrayI::First1()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdataArrayI::Next1()
+Bool_t AliTRDdataArrayI::Next1() 
 {
   //
   // Returns the next entry for a buffer of type 1
@@ -575,7 +586,7 @@ Bool_t AliTRDdataArrayI::Next1()
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdataArrayI::GetData1(Int_t idx1, Int_t idx2)
+Int_t AliTRDdataArrayI::GetData1(Int_t idx1, Int_t idx2) const
 {
   //
   // Returns the value at a given position of the array
@@ -612,7 +623,7 @@ Int_t AliTRDdataArrayI::GetData1(Int_t idx1, Int_t idx2)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdataArrayI::GetDataFast(Int_t idx1, Int_t idx2)
+Int_t AliTRDdataArrayI::GetDataFast(Int_t idx1, Int_t idx2) const
 {
   //
   // Returns the value at a given position in the array
