@@ -443,9 +443,13 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 
 //____________________________________________________________________________
 void AliPHOSv1::ResetHits() 
-{ 
+{              
   // Reset hit tree for CPV in IHEP geometry
   // Yuri Kharlov, 28 September 2000
+
+
+  fTmpHits->Clear() ;
+  fNTmpHits = 0;
 
   AliDetector::ResetHits();
   if ( strcmp(fGeom->GetName(),"IHEP") == 0 ) {
