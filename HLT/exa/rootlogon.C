@@ -43,7 +43,7 @@
   gSystem->Load("runtracker_C.so");
   gErrorIgnoreLevel=saveErrIgLevel;
 
-  gSystem->SetIncludePath(" -D do_mc -I$ALIHLT_TOPDIR/hough -I$ALIHLT_TOPDIR/src -I$ALIHLT_TOPDIR/comp -I$ALIHLT_TOPDIR/misc -I$ALICE_ROOT/include/ -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER ");
+  gSystem->SetIncludePath(" -DROWHOUGHPARAMS -Duse_reconstruction -Duse_newio -D do_mc -I$ALIHLT_TOPDIR/hough -I$ALIHLT_TOPDIR/src -I$ALIHLT_TOPDIR/comp -I$ALIHLT_TOPDIR/misc -I$ALICE_ROOT/include/ -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER ");
 
   gStyle->SetStatColor(10);
   gStyle->SetStatBorderSize(1);
