@@ -25,6 +25,20 @@
 
 ClassImp(AliITSMapA1)
 
+AliITSMapA1::AliITSMapA1()
+{
+  // default constructor
+  fSegmentation = 0;
+  fNpz=0;
+  fNpx=0;
+  fMaxIndex=0;         
+  
+  fHitMap = 0;
+  fObjects = 0;
+  fNobjects = 0;
+  fMapThreshold=0;
+}
+
 AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg)
 {
   //constructor
@@ -35,12 +49,15 @@ AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg)
   
   fHitMap = new Int_t[fMaxIndex];
   fObjects = 0;
+  fNobjects = 0;
+  fMapThreshold=0;
   ClearMap();
 }
 
 AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj)
 {
   //constructor
+  fNobjects = 0;
   fSegmentation = seg;
   fNpz=fSegmentation->Npz();
   fNpx=fSegmentation->Npx();
@@ -49,6 +66,23 @@ AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj)
   fHitMap = new Int_t[fMaxIndex];
   fObjects =  obj;
   if (fObjects) fNobjects = fObjects->GetEntriesFast();
+  fMapThreshold=0;
+  ClearMap();
+}
+
+AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj, Int_t thr)
+{
+  //constructor
+  fNobjects = 0;
+  fSegmentation = seg;
+  fNpz=fSegmentation->Npz();
+  fNpx=fSegmentation->Npx();
+  fMaxIndex=fNpz*fNpx+fNpx;             // 2 halves of detector
+  
+  fHitMap = new Int_t[fMaxIndex];
+  fObjects =  obj;
+  if (fObjects) fNobjects = fObjects->GetEntriesFast();
+  fMapThreshold=thr;
   ClearMap();
 }
 
@@ -69,6 +103,7 @@ AliITSMapA1::AliITSMapA1(const AliITSMapA1 &source){
   this->fNobjects = source.fNobjects;
   this->fMaxIndex = source.fMaxIndex;
   this->fHitMap = source.fHitMap;
+  this->fMapThreshold = source.fMapThreshold;
   return;
 }
 
@@ -83,6 +118,7 @@ AliITSMapA1&
   this->fNobjects = source.fNobjects;
   this->fMaxIndex = source.fMaxIndex;
   this->fHitMap = source.fHitMap;
+  this->fMapThreshold = source.fMapThreshold;
   return *this;
 }
 
@@ -104,8 +140,10 @@ Int_t AliITSMapA1::CheckedIndex(Int_t iz, Int_t ix)
 {
   //check boundaries and return an index in array
   Int_t index=fNpx*iz+ix;
-  if (index > fMaxIndex) {
-    printf("\n \n \n Try to read/write outside array !!!! \n \n %d %d %d %d %d %d",iz,ix, fMaxIndex, index, fNpz, fNpx);
+
+  //if (index > fMaxIndex) {
+  if (index > fMaxIndex || index < 0) {
+    printf("\n \n \n Try to read/write outside array !!!! \n \n %d %d %d %d %d %d \n",iz,ix, fMaxIndex, index, fNpz, fNpx);
     // force crash
     return  -1;
   } else {
@@ -117,13 +155,17 @@ Int_t AliITSMapA1::CheckedIndex(Int_t iz, Int_t ix)
 void  AliITSMapA1::FillMap()
 {
   // fill array with digits indices
+
+  //printf("fMapThreshold %d\n",fMapThreshold);
   Int_t ndigits = fObjects->GetEntriesFast();
   if (!ndigits) return;
   
   AliITSdigit *dig;
   for (Int_t ndig=0; ndig<ndigits; ndig++) {
     dig = (AliITSdigit*)fObjects->UncheckedAt(ndig);
-    SetHit(dig->fCoord1,dig->fCoord2,ndig);
+    if(dig->fSignal > fMapThreshold) {
+      SetHit(dig->fCoord1,dig->fCoord2,ndig);
+    }
   }
   
 }
@@ -144,14 +186,14 @@ void AliITSMapA1::FlagHit(Int_t iz, Int_t ix)
 {
   // flag an entry in array
   fHitMap[CheckedIndex(iz, ix)]=
-    -TMath::Abs(fHitMap[CheckedIndex(iz, ix)]);
+      -TMath::Abs(fHitMap[CheckedIndex(iz, ix)]);
+
 }
 
 Int_t AliITSMapA1::GetHitIndex(Int_t iz, Int_t ix)
 {
   // return the digit index from a specific entry in array
-  if (fHitMap[CheckedIndex(iz, ix)]) return TMath::Abs(fHitMap[CheckedIndex(iz, ix)])-1;
-  else  return 0;
+  return TMath::Abs(fHitMap[CheckedIndex(iz, ix)])-1;
 }
 
 TObject* AliITSMapA1::GetHit(Int_t iz, Int_t ix)
@@ -165,14 +207,19 @@ TObject* AliITSMapA1::GetHit(Int_t iz, Int_t ix)
 Double_t AliITSMapA1::GetSignal(Int_t iz, Int_t ix)
 {
   // get a pad signal 
+  Double_t signal;
   AliITSdigit *dig = (AliITSdigit*)GetHit(iz,ix);
-  return (Double_t)dig->fSignal;
+  if(dig) signal=(Double_t)dig->fSignal;
+  else signal=0.;
+  return signal;
 
 }
 
 FlagType AliITSMapA1::TestHit(Int_t iz, Int_t ix)
 {
   // check whether the digit has already been flagged
+
+  if (CheckedIndex(iz, ix) < 0) return kEmpty;
   Int_t inf=fHitMap[CheckedIndex(iz, ix)]; 
   if (inf < 0) {
       return kUsed;
