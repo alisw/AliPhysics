@@ -34,5 +34,7 @@ MICROCERN/module.mk: MICROCERN/libmicrocern.pkg
 HERWIG/module.mk:    HERWIG/libherwig.pkg HERWIG/libdummyherwig.pkg
 TFluka/module.mk:    TFluka/libTFluka.pkg
 VZERO/module.mk:     VZERO/libVZERO.pkg
-AliGeant4/module.mk: AliGeant4/libAliGeant4.pkg
+EPEMGEN/module.mk:   EPEMGEN/libepemgen.pkg
+TEPEMGEN/module.mk:  TEPEMGEN/libTEPEMGEN.pkg
+
 
