@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/03/29 06:57:45  kowal2
+Restored backward compatibility to use the hits from Dec. 2000 production.
+
 Revision 1.13  2002/03/18 17:59:13  kowal2
 Chnges in the pad geometry - 3 pad lengths introduced.
 
@@ -330,14 +333,14 @@ void AliTPCParam::SetDefault()
   const static Int_t    kNInnerWiresPerPad = 3;
   const static Int_t    kInnerDummyWire = 2;
   const static Float_t  kInnerWWPitch = 0.25;
-  const static Float_t  kRInnerFirstWire = 84.475;
-  const static Float_t  kRInnerLastWire = 132.475;
+  const static Float_t  kRInnerFirstWire = 84.445;
+  const static Float_t  kRInnerLastWire = 132.445;
   const static Float_t  kInnerOffWire = 0.5;
   const static Int_t    kNOuter1WiresPerPad = 4;
   const static Int_t    kNOuter2WiresPerPad = 6;
   const static Float_t  kOuterWWPitch = 0.25;  
-  const static Float_t  kROuterFirstWire = 134.225;
-  const static Float_t  kROuterLastWire = 246.975;
+  const static Float_t  kROuterFirstWire = 134.305;
+  const static Float_t  kROuterLastWire = 247.055;
   const static Int_t    kOuterDummyWire = 2;
   const static Float_t  kOuterOffWire = 0.5;
   //
