@@ -36,9 +36,13 @@ ClassImp(AliEMCALJetFinder)
 AliEMCALJetFinder::AliEMCALJetFinder()
 {
 // Default constructor
-    fJets  = 0;
-    fNjets = 0;
-    fLego  = 0;
+    fJets      = 0;
+    fNjets     = 0;
+    fLego      = 0;
+    fTrackList = 0;
+    fPtT       = 0;
+    fEtaT      = 0;
+    fPhiT      = 0;
 }
 
 AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
@@ -54,6 +58,11 @@ AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
         fPhiCell[i] = 0.;
     }
     fLego = 0;
+    fTrackList = 0;
+    fTrackList = 0;
+    fPtT       = 0;
+    fEtaT      = 0;
+    fPhiT      = 0;
 }
 
 
@@ -69,6 +78,7 @@ AliEMCALJetFinder::~AliEMCALJetFinder()
 	delete fJets;
     }
 }
+
 
 
 
@@ -123,6 +133,14 @@ void AliEMCALJetFinder::Find()
     jet_finder_ua1(fNcell, fNtot, fEtCell, fEtaCell, fPhiCell, 
 		   min_move, max_move, mode, prec_bg, ierror);
     // Write result to output
+    Int_t njet = Njets();
+    for (Int_t nj=0; nj<njet; nj++)
+    {
+	fJetT[nj] = new AliEMCALJet(JetEnergy(nj),
+				    JetPhiW(nj),
+				    JetEtaW(nj));
+    }
+    FindTracksInJetCone();
     WriteJets();
 }
 
@@ -175,6 +193,7 @@ void AliEMCALJetFinder::SetConeRadius(Float_t par)
 {
 // Set jet cone radius
     EMCALJETPARAM.coneRad = par;
+    fConeRadius = par;
 }
 
 void AliEMCALJetFinder::SetEtSeed(Float_t par)
@@ -193,6 +212,12 @@ void AliEMCALJetFinder::SetMinCellEt(Float_t par)
 {
 // Set et cut per cell
     EMCALJETPARAM.etMin = par;
+}
+
+void AliEMCALJetFinder::SetPtCut(Float_t par)
+{
+// Set pT cut on charged tracks
+    fPtCut = par;
 }
 
 
@@ -261,14 +286,12 @@ void AliEMCALJetFinder::WriteJets()
 				 file);
     }
     Int_t njet = Njets();
-    for (Int_t nj=0; nj<njet; nj++)
+    for (Int_t nj = 0; nj < njet; nj++)
     {
-	AliEMCALJet* jet = new AliEMCALJet(JetEnergy(nj),
-					   JetPhiW(nj),
-					   JetEtaW(nj));
-	AddJet(*jet);
-	delete jet;
+	AddJet(*fJetT[nj]);
+	delete fJetT[nj];
     }
+
     Int_t nev = gAlice->GetHeader()->GetEvent();
     gAlice->TreeR()->Fill();
     char hname[30];
@@ -352,21 +375,43 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 //
 // Access particle information    
     Int_t npart = (gAlice->GetHeader())->GetNprimary();
-    for (Int_t part=2; part<npart; part++) {
+// Create track list
+//
+// 0: not selected
+// 1: selected for jet finding
+// 2: inside jet
+// ....
+    if (fTrackList) delete[] fTrackList;
+    if (fPtT)       delete[] fPtT;
+    if (fEtaT)      delete[] fEtaT;
+    if (fPhiT)      delete[] fPhiT;
+    
+    fTrackList = new Int_t  [npart];
+    fPtT       = new Float_t[npart];
+    fEtaT      = new Float_t[npart];
+    fPhiT      = new Float_t[npart];
+    fNt        = npart;
+
+    for (Int_t part = 0; part < npart; part++) {
 	TParticle *MPart = gAlice->Particle(part);
 	Int_t mpart   = MPart->GetPdgCode();
 	Int_t child1  = MPart->GetFirstDaughter();
 	Float_t pT    = MPart->Pt();
 	Float_t phi   = MPart->Phi();
-	Float_t theta = MPart->Theta();
-	Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
+	Float_t eta   = MPart->Eta();
 //	if (part == 6 || part == 7)
 //	{
 //	    printf("\n Simulated Jet (pt, eta, phi): %d %f %f %f", 
 //		   part-5, pT, eta, phi);
 //	}
-	    
-	if (pT == 0.) continue;
+	
+	fTrackList[part] = 0;
+	fPtT[part]       = pT;
+	fEtaT[part]      = eta;
+	fPhiT[part]      = phi;
+
+	if (part < 2) continue;
+	if (pT == 0 || pT < fPtCut) continue;
 // charged or neutral 
 	if (ich == 0) {
 	    TParticlePDG* pdgP = MPart->GetPDG();
@@ -383,6 +428,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	if (child1 >= 0 && child1 < npart) continue;
 //	printf("\n sel:%5d %5d %5d %8.2f %8.2f %8.2f", 
 //	part, mpart, child1, eta, phi, pT);
+	fTrackList[part] = 1;
 	fLego->Fill(eta, phi, pT);
     } // primary loop
     DumpLego();
@@ -430,10 +476,10 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 //	    Int_t   index  =    mHit->GetId();     // cell index
 //	    Float_t eta, phi;
 //	    geom->EtaPhiFromIndex(index,  eta, phi);
-	    Float_t r     = TMath::Sqrt(x*x+y*y);
-	    Float_t theta = TMath::ATan2(r,z);
-	    Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
-	    Float_t phi   = TMath::ATan2(y,x);
+	    Float_t r      = TMath::Sqrt(x*x+y*y);
+	    Float_t theta  = TMath::ATan2(r,z);
+	    Float_t eta    = -TMath::Log(TMath::Tan(theta/2.));
+	    Float_t phi    = TMath::ATan2(y,x);
 	    fLego->Fill(eta, phi, eloss);
 //	    if (eloss > 1.) printf("\nx,y,z %f %f %f %f %f", 
 //	    r, z, eta, phi, eloss);
@@ -442,6 +488,51 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
     } // Track Loop
     DumpLego();
 }
+
+void AliEMCALJetFinder::FindTracksInJetCone()
+{
+//
+//  Build list of tracks inside jet cone
+//
+//  Loop over jets
+    Int_t njet = Njets();
+    for (Int_t nj = 0; nj < njet; nj++)
+    {
+	Float_t etaj = JetEtaW(nj);
+	Float_t phij = JetPhiW(nj);	
+	Int_t   nT   = 0;           // number of associated tracks
+	
+// Loop over particles
+	for (Int_t part = 0; part < fNt; part++) {
+	    if (!fTrackList[part]) continue;
+	    Float_t phi      = fPhiT[part];
+	    Float_t eta      = fEtaT[part];
+	    Float_t dr       = TMath::Sqrt((etaj-eta)*(etaj-eta) +
+					   (phij-phi)*(phij-phi));
+	    if (dr < fConeRadius) {
+		fTrackList[part] = nj+2;
+		nT++;
+	    } // < ConeRadius ?
+	} // particle loop
+	Float_t* ptT  = new Float_t[nT];
+	Float_t* etaT = new Float_t[nT];
+	Float_t* phiT = new Float_t[nT];
+	Int_t    iT   = 0;
+	for (Int_t part = 0; part < fNt; part++) {
+	    if (fTrackList[part] == nj+2) {
+		ptT [iT] = fPtT [part];
+		etaT[iT] = fEtaT[part];
+		phiT[iT] = fPhiT[part];
+		iT++;
+	    } // particle associated
+	} // particle loop
+	fJetT[nj]->SetTrackList(nT, ptT, etaT, phiT);
+	delete[] ptT;
+	delete[] etaT;
+	delete[] phiT;
+    } // jet loop loop
+}
+
 
 
 void hf1(Int_t& id, Float_t& x, Float_t& wgt)
