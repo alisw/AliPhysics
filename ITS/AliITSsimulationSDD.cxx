@@ -366,12 +366,10 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
       Int_t nOfSplits = 5;
       if(fFlag) nOfSplits = 1;
       // Deposited energy in keV
-      Float_t avpath = 0.;
-      Float_t avanod = 0.;
       Float_t depEnergy = kconv*hit->GetIonization()/nOfSplits;
       AliITShit *hit1 = 0;
       Float_t xL1[3];
-      if(fFlag && depEnergy != 0.) continue;
+      if(fFlag && (depEnergy != 0.)) continue;
       if(depEnergy == 0.) {	
 	  ii++;
 	  hit1 = (AliITShit*) fHits->At(ii);
@@ -403,9 +401,6 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
 	Float_t avAnode = 
                 xL[2]+(xL1[2]-xL[2])*((kk+0.5)/((Float_t) nOfSplits));
 	Float_t driftPath = 10000.*avDrft;
-	  
-	avpath = xL1[0];
-	avanod = xL1[2];
 
 	Int_t iWing = 2;
 	if(driftPath < 0) {
