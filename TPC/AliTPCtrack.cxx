@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2003/02/19 08:49:46  hristov
+Track time measurement (S.Radomski)
+
 Revision 1.16  2003/02/06 11:11:36  kowal2
 Added a few get methods by Jiri Chudoba
 
@@ -450,5 +453,4 @@ Double_t AliTPCtrack::Phi() const {
   return phi;
 }
 ////////////////////////////////////////////////////////////////////////
-
 
