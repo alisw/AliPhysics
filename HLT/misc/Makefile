@@ -7,7 +7,7 @@
 ###########################
 
 ifndef TOPDIR
-TOPDIR = `pwd`/..
+TOPDIR = $(shell pwd)/..
 endif
 
 include $(TOPDIR)/Makefile.conf
