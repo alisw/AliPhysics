@@ -1,4 +1,5 @@
 // $Id$
+// Category: geometry
 
 #ifndef ALI_MODULE_TYPE_H
 #define ALI_MODULE_TYPE_H
