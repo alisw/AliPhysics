@@ -1233,539 +1233,196 @@ void AliMUONv1::CreateGeometry()
  }
  
 
-///////////////////////////////////////
-// GEOMETRY FOR THE TRIGGER CHAMBERS //
-///////////////////////////////////////
+//********************************************************************
+//                            Trigger                               **
+//******************************************************************** 
 
-// 03/00 P. Dupieux : introduce a slighly more realistic  
-//                    geom. of the trigger readout planes with
-//                    2 Zpos per trigger plane (alternate
-//                    between left and right of the trigger)  
+ /* 
+    zpos1 and zpos2 are the middle of the first and second
+    planes of station 1 (+1m for second station):
+    zpos1=(zpos1m+zpos1p)/2=(15999+16071)/2=16035 mm, thick/2=40 mm
+    zpos2=(zpos2m+zpos2p)/2=(16169+16241)/2=16205 mm, thick/2=40 mm
+    zposxm and zposxp= middles of gaz gaps within a detection plane
+    rem: the total thickness accounts for 1 mm of al on both
+    side of the RPCs (see zpos1 and zpos2)
+ */
 
-//  Parameters of the Trigger Chambers
-
-// DP03-01 introduce dead zone of +/- 2 cm arround x=0 (as in TDR, fig3.27)    		
-     const Float_t kDXZERO=2.; 
-     const Float_t kXMC1MIN=34.;       
-     const Float_t kXMC1MED=51.;                                
-     const Float_t kXMC1MAX=272.;                               
-     const Float_t kYMC1MIN=34.;                              
-     const Float_t kYMC1MAX=51.;                              
-     const Float_t kRMIN1=50.;
-// DP03-01     const Float_t kRMAX1=62.;
-     const Float_t kRMAX1=64.;
-     const Float_t kRMIN2=50.;
-// DP03-01      const Float_t kRMAX2=66.;
-     const Float_t kRMAX2=68.;
-
-//   zposition of the middle of the gas gap in mother vol 
-     const Float_t kZMCm=-3.6;
-     const Float_t kZMCp=+3.6;
-
-
-// TRIGGER STATION 1 - TRIGGER STATION 1 - TRIGGER STATION 1
-
-     // iChamber 1 and 2 for first and second chambers in the station
-     // iChamber (first chamber) kept for other quanties than Z,
-     // assumed to be the same in both chambers
-     iChamber1 = iChamber = (AliMUONChamber*) (*fChambers)[10];
-     iChamber2 =(AliMUONChamber*) (*fChambers)[11]; 
-
-     // 03/00 
-     // zpos1 and zpos2 are now the middle of the first and second
-     // plane of station 1 : 
-     // zpos1=(16075+15995)/2=16035 mm, thick/2=40 mm
-     // zpos2=(16225+16145)/2=16185 mm, thick/2=40 mm
-     //
-     // zpos1m=15999 mm , zpos1p=16071 mm (middles of gas gaps)
-     // zpos2m=16149 mm , zpos2p=16221 mm (middles of gas gaps)
-     // rem : the total thickness accounts for 1 mm of al on both 
-     // side of the RPCs (see zpos1 and zpos2), as previously
-
-     zpos1=iChamber1->Z();
-     zpos2=iChamber2->Z();
-
-
-// Mother volume definition     
-     tpar[0] = iChamber->RInner(); 
-     tpar[1] = iChamber->ROuter();
-     tpar[2] = 4.0;    
-     gMC->Gsvolu("SM11", "TUBE", idAir, tpar, 3);
-     gMC->Gsvolu("SM12", "TUBE", idAir, tpar, 3);
-     
-// Definition of the flange between the beam shielding and the RPC 
-     tpar[0]= kRMIN1;
-     tpar[1]= kRMAX1;
-     tpar[2]= 4.0;
-   
-     gMC->Gsvolu("SF1A", "TUBE", idAlu1, tpar, 3);     //Al
-     gMC->Gspos("SF1A", 1, "SM11", 0., 0., 0., 0, "MANY");
-      
-     gMC->Gsvolu("SF3A", "TUBE", idAlu1, tpar, 3);     //Al
-     gMC->Gspos("SF3A", 1, "SM12", 0., 0., 0., 0, "MANY");
-
-
-// FIRST PLANE OF STATION 1
-
-//   ratios of zpos1m/zpos1p and inverse for first plane
-     Float_t zmp=(zpos1-3.6)/(zpos1+3.6);
-     Float_t zpm=1./zmp;
-   
-
-// Definition of prototype for chambers in the first plane     
-          
-     tpar[0]= 0.;
-     tpar[1]= 0.;
-     tpar[2]= 0.;
-          
-     gMC->Gsvolu("SC1A", "BOX ", idAlu1, tpar, 0);           //Al    
-     gMC->Gsvolu("SB1A", "BOX ", idtmed[1107], tpar, 0);     //Bakelite 
-     gMC->Gsvolu("SG1A", "BOX ", idtmed[1106], tpar, 0);     //Gas streamer
-
-// chamber type A
-     tpar[0] = -1.;
-     tpar[1] = -1.;
-     
-// DP03-01     const Float_t kXMC1A=kXMC1MED+(kXMC1MAX-kXMC1MED)/2.;
-     const Float_t kXMC1A=kDXZERO+kXMC1MED+(kXMC1MAX-kXMC1MED)/2.;
-     const Float_t kYMC1Am=0.;
-     const Float_t kYMC1Ap=0.;
-          
-     tpar[2] = 0.1;    
-     gMC->Gsposp("SG1A", 1, "SB1A", 0., 0., 0., 0, "ONLY",tpar,3);
-     tpar[2] = 0.3;
-     gMC->Gsposp("SB1A", 1, "SC1A", 0., 0., 0., 0, "ONLY",tpar,3);
-
-     tpar[2] = 0.4;
-     tpar[0] = (kXMC1MAX-kXMC1MED)/2.;
-     tpar[1] = kYMC1MIN;
-
-     gMC->Gsposp("SC1A", 1, "SM11",kXMC1A,kYMC1Am,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 2, "SM11",-kXMC1A,kYMC1Ap,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsbool("SC1A", "SF1A");
-     
-//  chamber type B    
-     Float_t tpar1save=tpar[1];
-     Float_t y1msave=kYMC1Am;
-     Float_t y1psave=kYMC1Ap;
+// vertical gap between right and left chambers (kDXZERO*2=4cm)
+ const Float_t kDXZERO=2.; 
+// main distances for chamber definition in first plane/first station
+ const Float_t kXMIN=34.;       
+ const Float_t kXMED=51.;                                
+ const Float_t kXMAX=272.; 
+// kXMAX will become 255. in real life. segmentation to be updated accordingly
+// (see fig.2-4 & 2-5 of Local Trigger Board PRR)
+ const Float_t kYMIN=34.;                              
+ const Float_t kYMAX=51.;                              
+// inner/outer radius of flange between beam shield. and chambers (1/station)
+ const Float_t kRMIN[2]={50.,50.};
+ const Float_t kRMAX[2]={64.,68.};
+// z position of the middle of the gas gap in mother vol 
+ const Float_t kZm=-3.6;
+ const Float_t kZp=+3.6;     
  
-     tpar[0] = (kXMC1MAX-kXMC1MIN)/2.;
-     tpar[1] = (kYMC1MAX-kYMC1MIN)/2.;
-     
-// DP03-01     const Float_t kXMC1B=kXMC1MIN+tpar[0];
-     const Float_t kXMC1B=kDXZERO+kXMC1MIN+tpar[0];
-     const Float_t kYMC1Bp=(y1msave+tpar1save)*zpm+tpar[1];
-     const Float_t kYMC1Bm=(y1psave+tpar1save)*zmp+tpar[1];
+ iChamber1 = (AliMUONChamber*) (*fChambers)[10];     
+ zpos1 = iChamber1->Z();
 
-     gMC->Gsposp("SC1A", 3, "SM11",kXMC1B,kYMC1Bp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 4, "SM11",-kXMC1B,kYMC1Bm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 5, "SM11",kXMC1B,-kYMC1Bp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 6, "SM11",-kXMC1B,-kYMC1Bm,kZMCm, 0, "ONLY", tpar, 3);
-     
-//  chamber type C  (end of type B !!)      
-     tpar1save=tpar[1];
-     y1msave=kYMC1Bm;
-     y1psave=kYMC1Bp;
-
-     tpar[0] = kXMC1MAX/2;
-     tpar[1] = kYMC1MAX/2;
-     
-
-// DP03-01     const Float_t kXMC1C=tpar[0];
-     const Float_t kXMC1C=kDXZERO+tpar[0];
-// warning : same Z than type B
-     const Float_t kYMC1Cp=(y1psave+tpar1save)*1.+tpar[1];
-     const Float_t kYMC1Cm=(y1msave+tpar1save)*1.+tpar[1];
-     
-     gMC->Gsposp("SC1A", 7, "SM11",kXMC1C,kYMC1Cp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 8, "SM11",-kXMC1C,kYMC1Cm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 9, "SM11",kXMC1C,-kYMC1Cp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 10, "SM11",-kXMC1C,-kYMC1Cm,kZMCm, 0, "ONLY", tpar, 3);
-     
-//  chamber type D, E and F (same size)        
-     tpar1save=tpar[1];
-     y1msave=kYMC1Cm;
-     y1psave=kYMC1Cp;
-
-     tpar[0] = kXMC1MAX/2.;
-     tpar[1] = kYMC1MIN;
-     
-// DP03-01     const Float_t kXMC1D=tpar[0];
-     const Float_t kXMC1D=kDXZERO+tpar[0];
-     const Float_t kYMC1Dp=(y1msave+tpar1save)*zpm+tpar[1];
-     const Float_t kYMC1Dm=(y1psave+tpar1save)*zmp+tpar[1];
-     
-     gMC->Gsposp("SC1A", 11, "SM11",kXMC1D,kYMC1Dm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 12, "SM11",-kXMC1D,kYMC1Dp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 13, "SM11",kXMC1D,-kYMC1Dm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 14, "SM11",-kXMC1D,-kYMC1Dp,kZMCp, 0, "ONLY", tpar, 3);
-
-
-     tpar1save=tpar[1];
-     y1msave=kYMC1Dm;
-     y1psave=kYMC1Dp;
-     const Float_t kYMC1Ep=(y1msave+tpar1save)*zpm+tpar[1];
-     const Float_t kYMC1Em=(y1psave+tpar1save)*zmp+tpar[1];
-     
-     gMC->Gsposp("SC1A", 15, "SM11",kXMC1D,kYMC1Ep,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 16, "SM11",-kXMC1D,kYMC1Em,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 17, "SM11",kXMC1D,-kYMC1Ep,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 18, "SM11",-kXMC1D,-kYMC1Em,kZMCm, 0, "ONLY", tpar, 3);
-
-     tpar1save=tpar[1];
-     y1msave=kYMC1Em;
-     y1psave=kYMC1Ep;
-     const Float_t kYMC1Fp=(y1msave+tpar1save)*zpm+tpar[1];
-     const Float_t kYMC1Fm=(y1psave+tpar1save)*zmp+tpar[1];
-    
-     gMC->Gsposp("SC1A", 19, "SM11",kXMC1D,kYMC1Fm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 20, "SM11",-kXMC1D,kYMC1Fp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 21, "SM11",kXMC1D,-kYMC1Fm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC1A", 22, "SM11",-kXMC1D,-kYMC1Fp,kZMCp, 0, "ONLY", tpar, 3);
-
-// Positioning first plane in ALICE     
-     gMC->Gspos("SM11", 1, "ALIC", 0., 0., zpos1, 0, "ONLY");
-
-// End of geometry definition for the first plane of station 1
-
-
-
-// SECOND PLANE OF STATION 1 : proj ratio = zpos2/zpos1
-
-     const Float_t kZ12=zpos2/zpos1;
-      
-// Definition of prototype for chambers in the second plane of station 1    
-          
-     tpar[0]= 0.;
-     tpar[1]= 0.;
-     tpar[2]= 0.;
-          
-     gMC->Gsvolu("SC2A", "BOX ", idAlu1, tpar, 0);           //Al    
-     gMC->Gsvolu("SB2A", "BOX ", idtmed[1107], tpar, 0);     //Bakelite 
-     gMC->Gsvolu("SG2A", "BOX ", idtmed[1106], tpar, 0);     //Gas streamer
-
-// chamber type A
-     tpar[0] = -1.;
-     tpar[1] = -1.;
-     
-     const Float_t kXMC2A=kXMC1A*kZ12;
-     const Float_t kYMC2Am=0.;
-     const Float_t kYMC2Ap=0.;
-          
-     tpar[2] = 0.1;    
-     gMC->Gsposp("SG2A", 1, "SB2A", 0., 0., 0., 0, "ONLY",tpar,3);
-     tpar[2] = 0.3;
-     gMC->Gsposp("SB2A", 1, "SC2A", 0., 0., 0., 0, "ONLY",tpar,3);
-
-     tpar[2] = 0.4;
-     tpar[0] = ((kXMC1MAX-kXMC1MED)/2.)*kZ12;
-     tpar[1] = kYMC1MIN*kZ12;
-
-     gMC->Gsposp("SC2A", 1, "SM12",kXMC2A,kYMC2Am,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 2, "SM12",-kXMC2A,kYMC2Ap,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsbool("SC2A", "SF3A");
-     
-
-//  chamber type B    
-
-     tpar[0] = ((kXMC1MAX-kXMC1MIN)/2.)*kZ12;
-     tpar[1] = ((kYMC1MAX-kYMC1MIN)/2.)*kZ12;
-     
-     const Float_t kXMC2B=kXMC1B*kZ12;
-     const Float_t kYMC2Bp=kYMC1Bp*kZ12;
-     const Float_t kYMC2Bm=kYMC1Bm*kZ12;
-     gMC->Gsposp("SC2A", 3, "SM12",kXMC2B,kYMC2Bp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 4, "SM12",-kXMC2B,kYMC2Bm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 5, "SM12",kXMC2B,-kYMC2Bp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 6, "SM12",-kXMC2B,-kYMC2Bm,kZMCm, 0, "ONLY", tpar, 3);
-
-     
-//  chamber type C   (end of type B !!)     
-
-     tpar[0] = (kXMC1MAX/2)*kZ12;
-     tpar[1] = (kYMC1MAX/2)*kZ12;
-     
-     const Float_t kXMC2C=kXMC1C*kZ12;
-     const Float_t kYMC2Cp=kYMC1Cp*kZ12;
-     const Float_t kYMC2Cm=kYMC1Cm*kZ12;     
-     gMC->Gsposp("SC2A", 7, "SM12",kXMC2C,kYMC2Cp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 8, "SM12",-kXMC2C,kYMC2Cm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 9, "SM12",kXMC2C,-kYMC2Cp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 10, "SM12",-kXMC2C,-kYMC2Cm,kZMCm, 0, "ONLY", tpar, 3);
-     
-//  chamber type D, E and F (same size)        
-
-     tpar[0] = (kXMC1MAX/2.)*kZ12;
-     tpar[1] = kYMC1MIN*kZ12;
-     
-     const Float_t kXMC2D=kXMC1D*kZ12;
-     const Float_t kYMC2Dp=kYMC1Dp*kZ12;
-     const Float_t kYMC2Dm=kYMC1Dm*kZ12;     
-     gMC->Gsposp("SC2A", 11, "SM12",kXMC2D,kYMC2Dm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 12, "SM12",-kXMC2D,kYMC2Dp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 13, "SM12",kXMC2D,-kYMC2Dm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 14, "SM12",-kXMC2D,-kYMC2Dp,kZMCp, 0, "ONLY", tpar, 3);
-
-     const Float_t kYMC2Ep=kYMC1Ep*kZ12;
-     const Float_t kYMC2Em=kYMC1Em*kZ12;
-     gMC->Gsposp("SC2A", 15, "SM12",kXMC2D,kYMC2Ep,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 16, "SM12",-kXMC2D,kYMC2Em,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 17, "SM12",kXMC2D,-kYMC2Ep,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 18, "SM12",-kXMC2D,-kYMC2Em,kZMCm, 0, "ONLY", tpar, 3);
-
-
-     const Float_t kYMC2Fp=kYMC1Fp*kZ12;
-     const Float_t kYMC2Fm=kYMC1Fm*kZ12;
-     gMC->Gsposp("SC2A", 19, "SM12",kXMC2D,kYMC2Fm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 20, "SM12",-kXMC2D,kYMC2Fp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 21, "SM12",kXMC2D,-kYMC2Fm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC2A", 22, "SM12",-kXMC2D,-kYMC2Fp,kZMCp, 0, "ONLY", tpar, 3);
-
-// Positioning second plane of station 1 in ALICE     
-     
-     gMC->Gspos("SM12", 1, "ALIC", 0., 0., zpos2, 0, "ONLY");
-
-// End of geometry definition for the second plane of station 1
-
-
-
-// TRIGGER STATION 2 - TRIGGER STATION 2 - TRIGGER STATION 2    
-
-     // 03/00 
-     // zpos3 and zpos4 are now the middle of the first and second
-     // plane of station 2 : 
-     // zpos3=(17075+16995)/2=17035 mm, thick/2=40 mm
-     // zpos4=(17225+17145)/2=17185 mm, thick/2=40 mm
-     //
-     // zpos3m=16999 mm , zpos3p=17071 mm (middles of gas gaps)
-     // zpos4m=17149 mm , zpos4p=17221 mm (middles of gas gaps)
-     // rem : the total thickness accounts for 1 mm of al on both 
-     // side of the RPCs (see zpos3 and zpos4), as previously
-     iChamber1 = iChamber = (AliMUONChamber*) (*fChambers)[12];
-     iChamber2 =(AliMUONChamber*) (*fChambers)[13];
-     Float_t zpos3=iChamber1->Z();
-     Float_t zpos4=iChamber2->Z();
-
-
-// Mother volume definition     
-     tpar[0] = iChamber->RInner(); 
-     tpar[1] = iChamber->ROuter();
-     tpar[2] = 4.0;    
+// ratio of zpos1m/zpos1p and inverse for first plane
+ Float_t zmp=(zpos1-3.6)/(zpos1+3.6);
+ Float_t zpm=1./zmp;
  
-     gMC->Gsvolu("SM21", "TUBE", idAir, tpar, 3);
-     gMC->Gsvolu("SM22", "TUBE", idAir, tpar, 3);
-     
-// Definition of the flange between the beam shielding and the RPC 
-//  ???? interface shielding
-
-     tpar[0]= kRMIN2;
-     tpar[1]= kRMAX2;
-     tpar[2]= 4.0;
-   
-     gMC->Gsvolu("SF2A", "TUBE", idAlu1, tpar, 3);            //Al
-     gMC->Gspos("SF2A", 1, "SM21", 0., 0., 0., 0, "MANY");
-
-     gMC->Gsvolu("SF4A", "TUBE", idAlu1, tpar, 3);            //Al
-     gMC->Gspos("SF4A", 1, "SM22", 0., 0., 0., 0, "MANY");
-    
-
-
-// FIRST PLANE OF STATION 2 : proj ratio = zpos3/zpos1
-
-     const Float_t kZ13=zpos3/zpos1; 
-
-// Definition of prototype for chambers in the first plane of station 2       
-     tpar[0]= 0.;
-     tpar[1]= 0.;
-     tpar[2]= 0.;
-          
-     gMC->Gsvolu("SC3A", "BOX ", idAlu1, tpar, 0);           //Al  
-     gMC->Gsvolu("SB3A", "BOX ", idtmed[1107], tpar, 0);     //Bakelite 
-     gMC->Gsvolu("SG3A", "BOX ", idtmed[1106], tpar, 0);     //Gas streamer
-
-
+ Int_t icount=0; // chamber counter (0 1 2 3)
+ 
+ for (Int_t istation=0; istation<2; istation++) { // loop on stations	 
+     for (Int_t iplane=0; iplane<2; iplane++) {	  // loop on detection planes
+	 
+	 Int_t iVolNum=1; // counter Volume Number
+	 icount = Int_t(iplane*TMath::Power(2,0))+
+	     Int_t(istation*TMath::Power(2,1));
+	 
+	 char volPlane[5]; 
+	 sprintf(volPlane,"SM%d%d",istation+1,iplane+1);
+	 
+	 iChamber = (AliMUONChamber*) (*fChambers)[10+icount];
+	 Float_t zpos = iChamber->Z();	     
+	 
+// mother volume 
+	 tpar[0] = iChamber->RInner(); 
+	 tpar[1] = iChamber->ROuter(); 
+	 tpar[2] = 4.0;    
+	 gMC->Gsvolu(volPlane,"TUBE",idAir,tpar,3);
+	 
+// Flange between beam shielding and RPC 
+	 tpar[0]= kRMIN[istation];
+	 tpar[1]= kRMAX[istation];
+	 tpar[2]= 4.0;
+	 
+	 char volFlange[5];
+	 sprintf(volFlange,"SF%dA",icount+1);	 
+	 gMC->Gsvolu(volFlange,"TUBE",idAlu1,tpar,3);     //Al
+	 gMC->Gspos(volFlange,1,volPlane,0.,0.,0.,0,"MANY");
+	 
+// scaling factor
+	 Float_t zRatio = zpos / zpos1;
+	 
+// chamber prototype
+	 tpar[0]= 0.;
+	 tpar[1]= 0.;
+	 tpar[2]= 0.;
+	 
+	 char volAlu[5]; // Alu
+	 char volBak[5]; // Bakelite
+	 char volGaz[5]; // Gas streamer
+	 
+	 sprintf(volAlu,"SC%dA",icount+1);
+	 sprintf(volBak,"SB%dA",icount+1);
+	 sprintf(volGaz,"SG%dA",icount+1);
+	 
+	 gMC->Gsvolu(volAlu,"BOX",idAlu1,tpar,0);           // Al
+	 gMC->Gsvolu(volBak,"BOX",idtmed[1107],tpar,0);     // Bakelite
+	 gMC->Gsvolu(volGaz,"BOX",idtmed[1106],tpar,0);     // Gas streamer
+	 
 // chamber type A
-     tpar[0] = -1.;
-     tpar[1] = -1.;
-     
-     const Float_t kXMC3A=kXMC1A*kZ13;
-     const Float_t kYMC3Am=0.;
-     const Float_t kYMC3Ap=0.;
-          
-     tpar[2] = 0.1;    
-     gMC->Gsposp("SG3A", 1, "SB3A", 0., 0., 0., 0, "ONLY",tpar,3);
-     tpar[2] = 0.3;
-     gMC->Gsposp("SB3A", 1, "SC3A", 0., 0., 0., 0, "ONLY",tpar,3);
+	 tpar[0] = -1.;
+	 tpar[1] = -1.;
+	 
+	 Float_t xA=(kDXZERO+kXMED+(kXMAX-kXMED)/2.)*zRatio;
+	 Float_t yAm=0.;
+	 Float_t yAp=0.;
+	 
+	 tpar[2] = 0.1;    
+	 gMC->Gsposp(volGaz,1,volBak,0.,0.,0.,0,"ONLY",tpar,3);
+	 tpar[2] = 0.3;
+	 gMC->Gsposp(volBak,1,volAlu,0.,0.,0.,0,"ONLY",tpar,3);
+	 
+	 tpar[2] = 0.4;
+	 tpar[0] = ((kXMAX-kXMED)/2.)*zRatio;
+	 tpar[1] = kYMIN*zRatio;
+	 
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xA,yAm,kZm,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xA,yAp,kZp,0,"ONLY",tpar,3);
+	 gMC->Gsbool(volAlu,volFlange);
+	 
+// chamber type B    
+	 Float_t tpar1save=tpar[1];
+	 Float_t y1msave=yAm;
+	 Float_t y1psave=yAp;
+	 
+	 tpar[0] = ((kXMAX-kXMIN)/2.) * zRatio;
+	 tpar[1] = ((kYMAX-kYMIN)/2.) * zRatio;
+	 
+	 Float_t xB=(kDXZERO+kXMIN)*zRatio+tpar[0];
+	 Float_t yBp=(y1msave+tpar1save)*zpm+tpar[1];
+	 Float_t yBm=(y1psave+tpar1save)*zmp+tpar[1];	 
 
-     tpar[2] = 0.4;
-     tpar[0] = ((kXMC1MAX-kXMC1MED)/2.)*kZ13;
-     tpar[1] = kYMC1MIN*kZ13;
-     gMC->Gsposp("SC3A", 1, "SM21",kXMC3A,kYMC3Am,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 2, "SM21",-kXMC3A,kYMC3Ap,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsbool("SC3A", "SF2A");
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xB, yBp,kZp,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xB, yBm,kZm,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xB,-yBp,kZp,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xB,-yBm,kZm,0,"ONLY",tpar,3);
+	 
+// chamber type C (note : same Z than type B)
+	 tpar1save=tpar[1];
+	 y1msave=yBm;
+	 y1psave=yBp;
+	 
+	 tpar[0] = (kXMAX/2)*zRatio;
+	 tpar[1] = (kYMAX/2)*zRatio;
+	 
+	 Float_t xC=kDXZERO*zRatio+tpar[0];
+	 Float_t yCp=(y1psave+tpar1save)*1.+tpar[1];
+	 Float_t yCm=(y1msave+tpar1save)*1.+tpar[1];
+	 
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xC, yCp,kZp,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xC, yCm,kZm,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xC,-yCp,kZp,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xC,-yCm,kZm,0,"ONLY",tpar,3);
+	 	 
+// chamber type D, E and F (same size)        
+	 tpar1save=tpar[1];
+	 y1msave=yCm;
+	 y1psave=yCp;
+	 
+	 tpar[0] = (kXMAX/2.)*zRatio;
+	 tpar[1] =  kYMIN*zRatio;
+	 
+	 Float_t xD=kDXZERO*zRatio+tpar[0];
+	 Float_t yDp=(y1msave+tpar1save)*zpm+tpar[1];
+	 Float_t yDm=(y1psave+tpar1save)*zmp+tpar[1];
+	 
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xD, yDm,kZm,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xD, yDp,kZp,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xD,-yDm,kZm,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xD,-yDp,kZp,0,"ONLY",tpar,3);
+	 
+	 tpar1save=tpar[1];
+	 y1msave=yDm;
+	 y1psave=yDp;
+	 Float_t yEp=(y1msave+tpar1save)*zpm+tpar[1];
+	 Float_t yEm=(y1psave+tpar1save)*zmp+tpar[1];
+	 
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xD, yEp,kZp,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xD, yEm,kZm,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xD,-yEp,kZp,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xD,-yEm,kZm,0,"ONLY",tpar,3);
+	 
+	 tpar1save=tpar[1];
+	 y1msave=yEm;
+	 y1psave=yEp;
+	 Float_t yFp=(y1msave+tpar1save)*zpm+tpar[1];
+	 Float_t yFm=(y1psave+tpar1save)*zmp+tpar[1];
+	 
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xD, yFm,kZm,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xD, yFp,kZp,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane, xD,-yFm,kZm,0,"ONLY",tpar,3);
+	 gMC->Gsposp(volAlu,iVolNum++,volPlane,-xD,-yFp,kZp,0,"ONLY",tpar,3);
 
-     
-//  chamber type B    
-     tpar[0] = ((kXMC1MAX-kXMC1MIN)/2.)*kZ13;
-     tpar[1] = ((kYMC1MAX-kYMC1MIN)/2.)*kZ13;
-     
-     const Float_t kXMC3B=kXMC1B*kZ13;
-     const Float_t kYMC3Bp=kYMC1Bp*kZ13;
-     const Float_t kYMC3Bm=kYMC1Bm*kZ13;
-     gMC->Gsposp("SC3A", 3, "SM21",kXMC3B,kYMC3Bp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 4, "SM21",-kXMC3B,kYMC3Bm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 5, "SM21",kXMC3B,-kYMC3Bp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 6, "SM21",-kXMC3B,-kYMC3Bm,kZMCm, 0, "ONLY", tpar, 3);
-
-     
-//  chamber type C  (end of type B !!)      
-     tpar[0] = (kXMC1MAX/2)*kZ13;
-     tpar[1] = (kYMC1MAX/2)*kZ13;
-     
-     const Float_t kXMC3C=kXMC1C*kZ13;
-     const Float_t kYMC3Cp=kYMC1Cp*kZ13;
-     const Float_t kYMC3Cm=kYMC1Cm*kZ13;     
-     gMC->Gsposp("SC3A", 7, "SM21",kXMC3C,kYMC3Cp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 8, "SM21",-kXMC3C,kYMC3Cm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 9, "SM21",kXMC3C,-kYMC3Cp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 10, "SM21",-kXMC3C,-kYMC3Cm,kZMCm, 0, "ONLY", tpar, 3);
-     
-
-//  chamber type D, E and F (same size)         
-
-     tpar[0] = (kXMC1MAX/2.)*kZ13;
-     tpar[1] = kYMC1MIN*kZ13;
-     
-     const Float_t kXMC3D=kXMC1D*kZ13;
-     const Float_t kYMC3Dp=kYMC1Dp*kZ13;
-     const Float_t kYMC3Dm=kYMC1Dm*kZ13;          
-     gMC->Gsposp("SC3A", 11, "SM21",kXMC3D,kYMC3Dm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 12, "SM21",-kXMC3D,kYMC3Dp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 13, "SM21",kXMC3D,-kYMC3Dm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 14, "SM21",-kXMC3D,-kYMC3Dp,kZMCp, 0, "ONLY", tpar, 3);
-
-     const Float_t kYMC3Ep=kYMC1Ep*kZ13;
-     const Float_t kYMC3Em=kYMC1Em*kZ13;
-     gMC->Gsposp("SC3A", 15, "SM21",kXMC3D,kYMC3Ep,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 16, "SM21",-kXMC3D,kYMC3Em,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 17, "SM21",kXMC3D,-kYMC3Ep,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 18, "SM21",-kXMC3D,-kYMC3Em,kZMCm, 0, "ONLY", tpar, 3);
-
-     const Float_t kYMC3Fp=kYMC1Fp*kZ13;
-     const Float_t kYMC3Fm=kYMC1Fm*kZ13;
-     gMC->Gsposp("SC3A", 19, "SM21",kXMC3D,kYMC3Fm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 20, "SM21",-kXMC3D,kYMC3Fp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 21, "SM21",kXMC3D,-kYMC3Fm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC3A", 22, "SM21",-kXMC3D,-kYMC3Fp,kZMCp, 0, "ONLY", tpar, 3);
-       
-
-// Positioning first plane of station 2 in ALICE
-     
-     gMC->Gspos("SM21", 1, "ALIC", 0., 0., zpos3, 0, "ONLY");
-
-// End of geometry definition for the first plane of station 2
-
-
-
-
-// SECOND PLANE OF STATION 2 : proj ratio = zpos4/zpos1
-
-     const Float_t kZ14=zpos4/zpos1;
-     
-// Definition of prototype for chambers in the second plane of station 2    
-          
-     tpar[0]= 0.;
-     tpar[1]= 0.;
-     tpar[2]= 0.;
-          
-     gMC->Gsvolu("SC4A", "BOX ", idAlu1, tpar, 0);           //Al      
-     gMC->Gsvolu("SB4A", "BOX ", idtmed[1107], tpar, 0);     //Bakelite 
-     gMC->Gsvolu("SG4A", "BOX ", idtmed[1106], tpar, 0);     //Gas streamer
-
-// chamber type A
-     tpar[0] = -1.;
-     tpar[1] = -1.;
-     
-     const Float_t kXMC4A=kXMC1A*kZ14;
-     const Float_t kYMC4Am=0.;
-     const Float_t kYMC4Ap=0.;
-          
-     tpar[2] = 0.1;    
-     gMC->Gsposp("SG4A", 1, "SB4A", 0., 0., 0., 0, "ONLY",tpar,3);
-     tpar[2] = 0.3;
-     gMC->Gsposp("SB4A", 1, "SC4A", 0., 0., 0., 0, "ONLY",tpar,3);
-
-     tpar[2] = 0.4;
-     tpar[0] = ((kXMC1MAX-kXMC1MED)/2.)*kZ14;
-     tpar[1] = kYMC1MIN*kZ14;
-     gMC->Gsposp("SC4A", 1, "SM22",kXMC4A,kYMC4Am,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 2, "SM22",-kXMC4A,kYMC4Ap,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsbool("SC4A", "SF4A");
-     
-
-//  chamber type B    
-     tpar[0] = ((kXMC1MAX-kXMC1MIN)/2.)*kZ14;
-     tpar[1] = ((kYMC1MAX-kYMC1MIN)/2.)*kZ14;
-     
-     const Float_t kXMC4B=kXMC1B*kZ14;
-     const Float_t kYMC4Bp=kYMC1Bp*kZ14;
-     const Float_t kYMC4Bm=kYMC1Bm*kZ14;
-     gMC->Gsposp("SC4A", 3, "SM22",kXMC4B,kYMC4Bp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 4, "SM22",-kXMC4B,kYMC4Bm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 5, "SM22",kXMC4B,-kYMC4Bp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 6, "SM22",-kXMC4B,-kYMC4Bm,kZMCm, 0, "ONLY", tpar, 3);
-
-     
-//  chamber type C   (end of type B !!)      
-     tpar[0] =(kXMC1MAX/2)*kZ14;
-     tpar[1] =  (kYMC1MAX/2)*kZ14;
-     
-     const Float_t kXMC4C=kXMC1C*kZ14;
-     const Float_t kYMC4Cp=kYMC1Cp*kZ14;
-     const Float_t kYMC4Cm=kYMC1Cm*kZ14;     
-     gMC->Gsposp("SC4A", 7, "SM22",kXMC4C,kYMC4Cp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 8, "SM22",-kXMC4C,kYMC4Cm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 9, "SM22",kXMC4C,-kYMC4Cp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 10, "SM22",-kXMC4C,-kYMC4Cm,kZMCm, 0, "ONLY", tpar, 3);
-
-     
-//  chamber type D, E and F (same size)      
-     tpar[0] = (kXMC1MAX/2.)*kZ14;
-     tpar[1] =  kYMC1MIN*kZ14;
-     
-     const Float_t kXMC4D=kXMC1D*kZ14;
-     const Float_t kYMC4Dp=kYMC1Dp*kZ14;
-     const Float_t kYMC4Dm=kYMC1Dm*kZ14;          
-     gMC->Gsposp("SC4A", 11, "SM22",kXMC4D,kYMC4Dm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 12, "SM22",-kXMC4D,kYMC4Dp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 13, "SM22",kXMC4D,-kYMC4Dm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 14, "SM22",-kXMC4D,-kYMC4Dp,kZMCp, 0, "ONLY", tpar, 3);
-
-     const Float_t kYMC4Ep=kYMC1Ep*kZ14;
-     const Float_t kYMC4Em=kYMC1Em*kZ14;          
-     gMC->Gsposp("SC4A", 15, "SM22",kXMC4D,kYMC4Ep,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 16, "SM22",-kXMC4D,kYMC4Em,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 17, "SM22",kXMC4D,-kYMC4Ep,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 18, "SM22",-kXMC4D,-kYMC4Em,kZMCm, 0, "ONLY", tpar, 3);
-
-     const Float_t kYMC4Fp=kYMC1Fp*kZ14;
-     const Float_t kYMC4Fm=kYMC1Fm*kZ14;          
-     gMC->Gsposp("SC4A", 19, "SM22",kXMC4D,kYMC4Fm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 20, "SM22",-kXMC4D,kYMC4Fp,kZMCp, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 21, "SM22",kXMC4D,-kYMC4Fm,kZMCm, 0, "ONLY", tpar, 3);
-     gMC->Gsposp("SC4A", 22, "SM22",-kXMC4D,-kYMC4Fp,kZMCp, 0, "ONLY", tpar, 3);
-     
-
-// Positioning second plane of station 2 in ALICE
-     
-     gMC->Gspos("SM22", 1, "ALIC", 0., 0., zpos4, 0, "ONLY");
-
-// End of geometry definition for the second plane of station 2
-
-// End of trigger geometry definition
+// Positioning plane in ALICE     
+	 gMC->Gspos(volPlane,1,"ALIC",0.,0.,zpos,0,"ONLY");
+	 
+     } // end loop on detection planes
+ } // end loop on stations
 
 }
-
 
  
 //___________________________________________
