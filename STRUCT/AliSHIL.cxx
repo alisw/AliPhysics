@@ -116,65 +116,65 @@ void AliSHIL::CreateMaterials()
   
   // --- Define the various materials for GEANT --- 
   //     Aluminum 
-  AliMaterial(9,  "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(29, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(49, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(9,  "ALU1      ", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(29, "ALU2      ", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(49, "ALU3      ", 26.98, 13., 2.7, 8.9, 37.2);
   
   //     Iron 
-  AliMaterial(10, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(30, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(50, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(10, "IRON1     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(30, "IRON2     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(50, "IRON3     ", 55.85, 26., 7.87, 1.76, 17.1);
 
   //
   //     Copper
-  AliMaterial(11, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
-  AliMaterial(31, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
-  AliMaterial(51, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(11, "COPPER1   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(31, "COPPER2   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(51, "COPPER3   ", 63.55, 29., 8.96, 1.43, 15.1);
   
   //     Tungsten 
-  AliMaterial(12, "TUNGSTEN$ ", 183.85, 74., 19.3, .35, 10.3);
-  AliMaterial(32, "TUNGSTEN$ ", 183.85, 74., 19.3, .35, 10.3);
-  AliMaterial(52, "TUNGSTEN$ ", 183.85, 74., 19.3, .35, 10.3);
+  AliMaterial(12, "TUNGSTEN1 ", 183.85, 74., 19.3, .35, 10.3);
+  AliMaterial(32, "TUNGSTEN2 ", 183.85, 74., 19.3, .35, 10.3);
+  AliMaterial(52, "TUNGSTEN3 ", 183.85, 74., 19.3, .35, 10.3);
   
   //     Lead 
-  AliMaterial(13, "LEAD$     ", 207.19, 82., 11.35, .56, 18.5);
-  AliMaterial(33, "LEAD$     ", 207.19, 82., 11.35, .56, 18.5);
-  AliMaterial(53, "LEAD$     ", 207.19, 82., 11.35, .56, 18.5);
+  AliMaterial(13, "LEAD1     ", 207.19, 82., 11.35, .56, 18.5);
+  AliMaterial(33, "LEAD2     ", 207.19, 82., 11.35, .56, 18.5);
+  AliMaterial(53, "LEAD3     ", 207.19, 82., 11.35, .56, 18.5);
   
   //     Air 
-  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
-  AliMixture(35, "AIR$      ", aAir, zAir, dAir, 4, wAir);
-  AliMixture(55, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(15, "AIR1      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR2      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(55, "AIR3      ", aAir, zAir, dAir, 4, wAir);
 
   //     Vacuum 
-  AliMixture(16, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
-  AliMixture(36, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
-  AliMixture(56, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(16, "VACUUM1 ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(36, "VACUUM2 ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(56, "VACUUM3 ", aAir, zAir, dAir1, 4, wAir);
   
   //     Stainless Steel 
-  AliMixture(19, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
-  AliMixture(39, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
-  AliMixture(59, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(19, "STAINLESS STEEL1", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(39, "STAINLESS STEEL2", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(59, "STAINLESS STEEL3", asteel, zsteel, 7.88, 4, wsteel);
   
   //     Lead/Tungsten 
-  AliMixture(20, "LEAD/TUNGSTEN$", apbw, zpbw, 15.325, 2, wpbw);
-  AliMixture(40, "LEAD/TUNGSTEN$", apbw, zpbw, 15.325, 2, wpbw);
-  AliMixture(60, "LEAD/TUNGSTEN$", apbw, zpbw, 15.325, 2, wpbw);
+  AliMixture(20, "LEAD/TUNGSTEN1", apbw, zpbw, 15.325, 2, wpbw);
+  AliMixture(40, "LEAD/TUNGSTEN2", apbw, zpbw, 15.325, 2, wpbw);
+  AliMixture(60, "LEAD/TUNGSTEN3", apbw, zpbw, 15.325, 2, wpbw);
 
   //     Ni-W-Cu 
-  AliMixture(21, "Ni-W-Cu$", aniwcu, zniwcu, 18.78, 3, wniwcu);
-  AliMixture(41, "Ni-W-Cu$", aniwcu, zniwcu, 18.78, 3, wniwcu);
-  AliMixture(61, "Ni-W-Cu$", aniwcu, zniwcu, 18.78, 3, wniwcu);
+  AliMixture(21, "Ni-W-Cu1", aniwcu, zniwcu, 18.78, 3, wniwcu);
+  AliMixture(41, "Ni-W-Cu2", aniwcu, zniwcu, 18.78, 3, wniwcu);
+  AliMixture(61, "Ni-W-Cu3", aniwcu, zniwcu, 18.78, 3, wniwcu);
 
   //     Concrete 
-  AliMixture(17, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
-  AliMixture(37, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
-  AliMixture(57, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
+  AliMixture(17, "CONCRETE1", aconc, zconc, 2.35, 10, wconc);
+  AliMixture(37, "CONCRETE2", aconc, zconc, 2.35, 10, wconc);
+  AliMixture(57, "CONCRETE3", aconc, zconc, 2.35, 10, wconc);
 
   //     Insulation powder 
-  AliMixture(14, "INSULATION$", ains, zins, 0.41, 4, wins);
-  AliMixture(34, "INSULATION$", ains, zins, 0.41, 4, wins);
-  AliMixture(54, "INSULATION$", ains, zins, 0.41, 4, wins);
+  AliMixture(14, "INSULATION1", ains, zins, 0.41, 4, wins);
+  AliMixture(34, "INSULATION2", ains, zins, 0.41, 4, wins);
+  AliMixture(54, "INSULATION3", ains, zins, 0.41, 4, wins);
   
   // **************** 
   //     Defines tracking media parameters. 
@@ -243,9 +243,9 @@ void AliSHIL::CreateMaterials()
   AliMedium(61, "Ni/W3           ", 61, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
 //    Concrete 
-  AliMedium(17, "CC_C0           ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(37, "CC_C1           ", 37, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(57, "CC_C2           ", 57, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(17, "CC_C0           ", 17, 0, 0,      sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(37, "CC_C1           ", 37, 0, 0,      sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(57, "CC_C2           ", 57, 0, 0,      sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
 }
 

@@ -281,9 +281,8 @@ void AliHALL::CreateMaterials()
   //
   // Create materials for the experimental hall
   //
-  
-
-  Int_t   isxfld = gAlice->Field()->Integ();
+    
+  Int_t   isxfld = 0;
   Float_t sxmgmx = gAlice->Field()->Max();
   
   Float_t aconc[10] = { 1.,12.01,15.994,22.99,24.305,26.98,28.086,39.1,40.08,55.85 };
