@@ -25,9 +25,9 @@ class AliTRDpidLQ : public AliTRDpid {
                                        , const Float_t maxmom);
   virtual Bool_t        FillSpectra(const AliTRDtrack *t);
 
-  inline  Int_t         GetIndex(const AliTRDtrack *t);
-  inline  Int_t         GetIndex(const Int_t imom, const Int_t ipid);
-  inline  Int_t         GetIndex(const Float_t mom, const Int_t ipid);
+  Int_t         GetIndex(const AliTRDtrack *t);
+  Int_t         GetIndex(const Int_t imom, const Int_t ipid);
+  Int_t         GetIndex(const Float_t mom, const Int_t ipid);
 
           TObjArray*    GetHist() const                     { return fHist;        };
 

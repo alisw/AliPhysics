@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/11/06 17:19:41  cblume
+Add detailed geometry and simple simulator
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -180,8 +183,8 @@ Bool_t AliTRDpidLQ::AssignLikelihood(AliTRDtrack *t)
   //
 
   const Int_t kNpla = AliTRDgeometry::Nplan();
-  Float_t charge[kNpla];
-  Int_t   nCluster[kNpla];
+  Float_t * charge = new Float_t[kNpla];
+  Int_t   * nCluster = new Int_t[kNpla];
 
   Float_t  lhPi = 0;
   Float_t  lhEl = 0;
@@ -235,11 +238,17 @@ Bool_t AliTRDpidLQ::AssignLikelihood(AliTRDtrack *t)
     }
   }
   else {
+    delete [] charge;
+    delete [] nCluster;
     return kTRUE;
   }
 
   pSum = pEl + pPi;
-  if (pSum <= 0) return kFALSE;
+  if (pSum <= 0) {
+    delete [] charge;
+    delete [] nCluster;
+    return kFALSE;
+  }
   lhEl = pEl / pSum;
   lhPi = pPi / pSum;
 
@@ -248,6 +257,8 @@ Bool_t AliTRDpidLQ::AssignLikelihood(AliTRDtrack *t)
   // Assign the likelihoods 
   t->SetLikelihoodElectron(lhEl);
 
+  delete [] charge;
+  delete [] nCluster;
   return kTRUE;  
 
 }
@@ -340,13 +351,17 @@ Bool_t AliTRDpidLQ::FillSpectra(const AliTRDtrack *t)
 
   if (isnan(t->GetP())) return kFALSE;
 
-  Float_t charge[kNpla];
-  Int_t   nCluster[kNpla];
+  Float_t * charge = new Float_t[kNpla];
+  Int_t   * nCluster = new Int_t[kNpla];
   Float_t mom  = t->GetP();
   Int_t   ipid = MCpid(t);
   TH1F   *hTmp = NULL;
 
-  if (!SumCharge(t,charge,nCluster)) return kFALSE;
+  if (!SumCharge(t,charge,nCluster)) {
+    delete [] charge;
+    delete [] nCluster;
+    return kFALSE;
+  }
 
   Int_t index = GetIndex(mom,ipid);
   if (index > -1) {
@@ -359,6 +374,8 @@ Bool_t AliTRDpidLQ::FillSpectra(const AliTRDtrack *t)
     }
   }  
 
+  delete [] charge;
+  delete [] nCluster;
   return kTRUE;
 
 }

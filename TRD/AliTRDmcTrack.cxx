@@ -72,7 +72,7 @@ AliTRDmcTrack::AliTRDmcTrack(Int_t label, Bool_t primary, Float_t mass
 
 //_____________________________________________________________________________
 void AliTRDmcTrack::GetPxPyPz(Double_t& px, Double_t& py, Double_t& pz, 
-                              Int_t opt = 0) const 
+                              Int_t opt) const 
 {
   //
   // Returns momentum components at the entrance (opt >= 0), or
@@ -104,7 +104,7 @@ void AliTRDmcTrack::GetPxPyPz(Double_t& px, Double_t& py, Double_t& pz,
 
 //_____________________________________________________________________________
 void AliTRDmcTrack::GetPlanePxPyPz(Double_t& px, Double_t& py, Double_t& pz, 
-                                   Int_t plane, Int_t opt = 0) const 
+                                   Int_t plane, Int_t opt) const 
 {
   //
   // Returns momentum components at the entrance (opt >= 0), or
