@@ -160,7 +160,7 @@ G4double TG4SpecialCuts::PostStepGetPhysicalInteractionLength(
 }
 
 G4VParticleChange* TG4SpecialCuts::PostStepDoIt(const G4Track& track, 
-                                                const G4Step&)
+                                                const G4Step& step)
 {
 // Kills the current particle, if requested by G4UserLimits.
 // ---

@@ -805,8 +805,8 @@ Int_t TG4GeometryManager::Gsvolu(const char *name, const char *shape,
 } 
 
 
-void TG4GeometryManager::WriteEuclid(const char* filnam, const char* topvol,
-	  Int_t number, Int_t nlevel)
+void TG4GeometryManager::WriteEuclid(const char* fileName, 
+          const char* topVolName, Int_t number, Int_t nlevel)
 {
 //  Geant3 desription:
 //  ==================

@@ -41,7 +41,7 @@ class TG4StepManager
     void SetSteppingManager(G4SteppingManager* manager); // G4 specific
     void SetMaxStep(Float_t step);
     void SetMaxNStep(Int_t maxNofSteps);  //??
-    void SetUserDecay(Int_t);  //NEW
+    void SetUserDecay(Int_t pdg);  //NEW
     
     // get methods
     G4Step* GetStep() const;                              // G4 specific
@@ -99,7 +99,8 @@ class TG4StepManager
 
   private:
     // methods
-    void SetTLorentzVector(G4ThreeVector, G4double, TLorentzVector&) const;
+    void SetTLorentzVector(G4ThreeVector xyz, G4double t, 
+                           TLorentzVector& lv) const;
     
     // static data members
     static TG4StepManager*  fgInstance;   //this instance

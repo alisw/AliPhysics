@@ -30,7 +30,8 @@ class TG4SpecialCuts: public G4UserSpecialCuts
     virtual G4double PostStepGetPhysicalInteractionLength(
                        const G4Track& track, G4double previousStepSize,
                        G4ForceCondition* condition);
-    virtual G4VParticleChange* PostStepDoIt(const G4Track& , const G4Step&);
+    virtual G4VParticleChange* PostStepDoIt(const G4Track& track, 
+                       const G4Step& step);
 			    
   protected:
     TG4SpecialCuts();		   

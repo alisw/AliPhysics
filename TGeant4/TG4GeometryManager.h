@@ -92,7 +92,8 @@ class TG4GeometryManager
                          const char *konly, Float_t *upar, Int_t np); 
         
     // Euclid		       
-    void WriteEuclid(const char*, const char*, Int_t, Int_t); //new
+    void WriteEuclid(const char* fileName, const char* topVolName, 
+                         Int_t number, Int_t nlevel); //new
 		               
     // get methods
     Int_t VolId(const Text_t* volName) const;                
