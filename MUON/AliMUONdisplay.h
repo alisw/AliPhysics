@@ -80,7 +80,7 @@ public:
    
    virtual void      DrawTitle(Option_t *option="");
    virtual void      DrawView(Float_t theta, Float_t phi, Float_t psi=0);
-   virtual void      DrawP(Float_t,Float_t,Float_t,Float_t,Float_t,Int_t);
+   virtual void      DrawP(Float_t,Float_t,Float_t,Float_t,Float_t,Int_t){}
    virtual void      ExecuteEvent(Int_t event, Int_t px, Int_t py);
    Int_t             GetZoomMode() {return fZoomMode;}
    Int_t             GetChamber() {return fChamber;}
