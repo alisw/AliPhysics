@@ -27,19 +27,22 @@
 #include "TFile.h"
 #include "TROOT.h"
 #include "TFolder.h"
-#include <Riostream.h>
 
 // --- Standard library ---
 #include <stdlib.h>
+#include <iostream.h>
 
 // --- AliRoot header files ---
 
 #include "AliFMDdigit.h"
+#include "AliFMDhit.h"
 #include "AliFMDReconstParticles.h"
 #include "AliFMD.h"
 #include "AliFMDv1.h"
 #include "AliFMDReconstruction.h"
 #include "AliRun.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
 ClassImp(AliFMDReconstruction)
 
         
@@ -73,59 +76,57 @@ AliFMDReconstruction::~AliFMDReconstruction()
 
 void AliFMDReconstruction::Exec(Option_t *option) 
 { 
-  printf (" AliFMDReconstruction starting \n");
  //Collects all digits in the same active volume into number of particles
-  
+  cout<<"\nStart AliFMDReconstruction::Exec(...)"<<endl;
   Int_t const NumVolums=5;
   Int_t const NumSectors=40;
   Int_t const NumRings=768;
   Int_t PadADC[10][50][800];
+  Float_t eta, etain,etaout,rad,theta;
   Int_t ivol, iSector, iRing;
-  Int_t Ne1; 
-  //Int_t NumberOfRings[5]=  {256,128,256,128,256};
+  Float_t rin[5]={4.2,15.4,4.2,15.4,4.2};
+  Float_t rout[5]={17.4,28.4,17.4,28.4,17.4};
+  Float_t z[5]={62.8, 75.2, -83.4, -75.2, -340.};
+  Int_t NumberOfRings[5]={768,384,768,384,768};
   Int_t NumberOfSectors[5]=  {20,40,20,40,20};
+  Int_t NumberOfEtaIntervals[5];
   // number of ring for boundary 0.1 eta
-   Int_t EtaIntervalInner []=
-      {0, 55, 110, 165, 221, 276, 331, 386, 442,
-	497, 552, 607, 663, 718, 767 };
-   /*
-     {0,  18, 36,   55,  73,
-      92, 110, 128, 147, 165,
-      184, 202, 221, 239, 255};*/
-   Int_t  EtaIntervalOuter []=  //{0, 21, 43, 65, 86, 108, 127};
-     {0, 65, 130, 195, 260, 325, 383};
- Int_t EtaInterval[20];
-  
+  TBranch *brDigits=0;
 
-  Int_t size_EtaIntervalInner=sizeof (EtaIntervalInner)/sizeof(EtaIntervalInner[0]);
-
-  Int_t size_EtaIntervalOuter=sizeof (EtaIntervalOuter)/sizeof(EtaIntervalOuter[0]);
-
-  AliFMD * FMD = (AliFMD *) gAlice->GetDetector("FMD");  
+  AliFMD * FMD = (AliFMD *) gAlice->GetDetector("FMD");
   TClonesArray *fReconParticles=FMD->ReconParticles();
   if(fNevents == 0) fNevents=(Int_t)gAlice->TreeE()->GetEntries(); 
+  cout<<" fNevents "<<fNevents<<endl;
   for(Int_t ievent=0;ievent<fNevents;ievent++)
     { 
+      cout<<" ievent "<<ievent<<endl;
       for (Int_t i=0; i<NumVolums; i++)
 	for(Int_t j=0; j<NumSectors; j++)
 	  for(Int_t ij=0; ij<NumRings; ij++)
 	    PadADC[i][j][ij]=0;                    //zhachem ???
       gAlice->GetEvent(ievent) ;
       if(gAlice->TreeH()==0) return; 
+      if(gAlice->TreeD()==0) return;
+	brDigits=gAlice->TreeD()->GetBranch("FMD");
+	if (!brDigits){
+	  cerr<<"EXEC Branch FMD digits not found"<<endl;
+        return;
+      } 
+ 
       if(gAlice->TreeR()==0) gAlice->MakeTree("R");
       //Make branches
-      AliFMDdigit  *fmdDigit;
       FMD->MakeBranch("R");
+
       
       Int_t zeroADC=1;
-      // Int_t  threshold_array_size=30;
-
-      // cout<<" AliFMDdigit "<<AliFMDdigit<<endl;
-      if (FMD)
+ 
+      AliFMDdigit  *fmdDigit;
+       if (FMD)
 	{
 	  gAlice->TreeD()->GetEvent(0); 
 	  TClonesArray *FMDdigits=FMD->Digits();
 	  Int_t nDigits=FMDdigits->GetEntries();
+	  cout<<" nDigits "<<nDigits<<endl;
 	   Int_t RecParticles[6];
 	   Int_t nRecPart=0 ;
 	   Int_t ZeroPads=0;
@@ -147,52 +148,44 @@ void AliFMDReconstruction::Exec(Option_t *option)
 	     } //digit loop
 	   Int_t Rmin=0; Int_t Rmax=0; //To avoid warning
 	   Int_t Smin=0; Int_t Smax=0; //To avoid warning
-		   
-	   for (ivol=1; ivol<=NumVolums; ivol++)
+	   AliHeader *header = gAlice->GetHeader();
+	   AliGenEventHeader* genHeader = header->GenEventHeader();
+	   TArrayF *o = new TArrayF(3); 
+	   genHeader->PrimaryVertex(*o);
+	   Float_t zVertex=o->At(2);
+ 	   for (ivol=0; ivol<NumVolums; ivol++)
 	     {
-	       if (ivol==1||ivol==3||ivol==5)
+	       Float_t realZ=zVertex+z[ivol];
+	       theta=TMath::ATan(rin[ivol]/TMath::Abs(realZ));
+	       etain = - TMath::Log( TMath::Tan(theta/2.));
+	       theta=TMath::ATan(rout[ivol]/TMath::Abs(realZ));
+	       etaout=- TMath::Log( TMath::Tan(theta/2.));
+	       NumberOfEtaIntervals[ivol]=Int_t ((etain-etaout)*10);
+	       eta=etain;
+	       for (Int_t e1=0;e1<=NumberOfEtaIntervals[ivol];e1++) 
 		 {
-		   Ne1=size_EtaIntervalInner;
-		   for(Int_t ieta=0; ieta<Ne1; ieta++)
-		     EtaInterval[ieta]=EtaIntervalInner[ieta];
-		 }
-	       if (ivol==2||ivol==4)
-		 {
-		   Ne1=size_EtaIntervalOuter;
-		   for( Int_t ieta=0; ieta<Ne1; ieta++)
-		     EtaInterval[ieta]=EtaIntervalOuter[ieta];
-		 }
-
-
-		   for (Int_t e1=0;e1<Ne1-1;e1++) // vol<=NumVolums
-		     {
-		       Rmin=EtaInterval[e1];
-		   Rmax=EtaInterval[e1+1];
+		   theta = 2.*TMath::ATan (TMath::Exp (-eta));
+		   Float_t radmin = TMath::Abs(realZ) * (TMath::Tan (theta));
+		   Rmin= Int_t ( (radmin-rin[ivol])*NumberOfRings[ivol]/(rout[ivol]-rin[ivol]));
+		   eta=eta-0.1;
+		   theta = 2.*TMath::ATan (TMath::Exp (-eta));
+		   rad = TMath::Abs(realZ) * (TMath::Tan (theta));
+		   Rmax=Int_t( (rad-rin[ivol])*NumberOfRings[ivol]/(rout[ivol]-rin[ivol]));
 		   ZeroPads=0;
 		   Smin=0;
-		   Smax=NumberOfSectors[ivol-1]; 
+		   Smax=NumberOfSectors[ivol]; 
 		   for (Int_t iring=Rmin; iring<Rmax; iring++) 
 		     {
 		       NumberOfPads=(Rmax-Rmin)*(Smax-Smin);
 		       for 
 			 (Int_t isector=1;
-			  isector<=NumberOfSectors[ivol-1]; 
+			  isector<=NumberOfSectors[ivol]; 
 			  isector++) 
-			 if(PadADC[ivol-1][isector-1][iring-1]<zeroADC)
+			 if(PadADC[ivol][isector-1][iring-1]<zeroADC)
 			   ZeroPads++;
 		     } //ring
-		   /*
-		   cout<<"\nRmin="<<Rmin;
-		   cout<<"\nRmax="<<Rmax;
-		   cout<<"\nSmin="<<Smin;
-		   cout<<"\nSmax="<<Smax;
-	       
-		   cout<<"\nvolume "<<ivol<<" zero "<<ZeroPads<<
-		     " NumberOfPads "<<NumberOfPads<<endl;
-		   */
 		   Float_t zerosRatio= 
 		     (Float_t)ZeroPads/(Float_t)NumberOfPads;
-		   //  cout<<"\nzerosRatio="<<zerosRatio;		      
 		   RecParticles[0]=ivol;
 		   RecParticles[1]=Smin;
 		   RecParticles[2]=Smax;
@@ -201,24 +194,22 @@ void AliFMDReconstruction::Exec(Option_t *option)
 		   if (zerosRatio>0.1 ||(ivol==2||ivol==4))
 		     RecParticles[5]=
 		       Determination_by_Poisson
-		       (PadADC,ivol,Rmin,Rmax,Smin,Smax);
+		       (PadADC,ivol+1,Rmin,Rmax,Smin,Smax);
 		   else
 		     RecParticles[5]=
 		       Determination_by_thresholds
-		       (PadADC,ivol,Rmin,Rmax,Smin,Smax);
-		   //  cout<<" nDeterm "<<RecParticles[5]<<endl;
+		       (PadADC,ivol+1,Rmin,Rmax,Smin,Smax);
 		   new((*fReconParticles)[nRecPart++]) 
 		 AliFMDReconstParticles(RecParticles);   	       
-	} // eta
-    } // volume
+		 } // eta
+	     } // volume
 	   
-	   // if(zerosRatio<0.01) Determination_by_counting (ZeroPads) ;	   
 	}//if FMD
-      gAlice->TreeR()->Reset();
-      gAlice->TreeR()->Fill(); 
-      gAlice->TreeR()->Write(0,TObject::kOverwrite);
+       gAlice->TreeR()->Reset();
+       gAlice->TreeR()->Fill(); 
+       gAlice->TreeR()->Write(0,TObject::kOverwrite);
     } //event loop
-  // cout<<"\nAliFMDReconstruction::Exec finished"<<endl;
+  cout<<"\nAliFMDReconstruction::Exec finished"<<endl;
 };
 
 //------------------------------------------------------------
@@ -226,6 +217,7 @@ Int_t AliFMDReconstruction::Determination_by_thresholds
 (Int_t PadADC[][50][800],Int_t volume, Int_t Rmin, Int_t Rmax, 
  Int_t Smin, Int_t Smax)
 {
+  cout<<"\nStart threshold method\n";
   
   Int_t thresholdInner[30]={
     0,     14,  28,    42,   57,     
@@ -264,7 +256,7 @@ Int_t AliFMDReconstruction::Determination_by_thresholds
 	    }; //threshold_array_size
 	}; //iring
     }; //sector
-  // cout<<"\nEnd threshol method"<<endl;
+  cout<<"\nEnd threshol method"<<endl;
   return NumPart;
 }
 
@@ -275,6 +267,7 @@ Int_t AliFMDReconstruction::Determination_by_Poisson (Int_t PadADC[][50][800],
 					   Int_t vol, Int_t rmin, Int_t rmax, 
 					   Int_t secmin, Int_t secmax)
 {
+  //  cout<<"\nStart Poisson method";
   Int_t threshold_adc=1;   
   Int_t zeropads=0;
   for (Int_t i=rmin;i<rmax;i++)
@@ -293,6 +286,7 @@ Int_t AliFMDReconstruction::Determination_by_Poisson (Int_t PadADC[][50][800],
 };
 
 //------------------------------------------------------------------
+
 
 
 
