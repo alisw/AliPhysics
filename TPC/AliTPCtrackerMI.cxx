@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.18  2003/10/17 15:42:14  kowal2
+Back to the previous version. The warning was erronously generated
+by the compiler
+
 Revision 1.17  2003/10/17 12:28:02  kowal2
 Removed "always true" comparison
 
@@ -1703,7 +1707,7 @@ Int_t AliTPCtrackerMI::FollowToNextCluster(AliTPCseed & t, Int_t nr) {
 
   if (t.fCurrentCluster) {
     t.fRow = nr; 
-    Bool_t accept = AcceptCluster(&t,t.fCurrentCluster,1.);
+    Int_t accept = AcceptCluster(&t,t.fCurrentCluster,1.);
     
     if (t.fCurrentCluster->IsUsed(10)){
       //
