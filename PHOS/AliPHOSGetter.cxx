@@ -565,8 +565,19 @@ const Bool_t AliPHOSGetter::PostSDigits(const char * name, const char * headerFi
     phosFolder = fSDigitsFolder->AddFolder("PHOS", "SDigits from PHOS") ; 
   }    
 
+  
   TString subdir(headerFile) ;
-  subdir.ReplaceAll("/","_") ; 
+  if(fToSplit){
+    subdir.Remove(subdir.Last('/')+1,subdir.Length()) ;
+    subdir.ReplaceAll("/","_") ; 
+    subdir+="PHOS.SDigits." ;
+    if(name && (strcmp(name,"Default")!=0)){
+      subdir+=name ;
+      subdir+="." ;
+    }
+    subdir+="root" ;
+  }
+    
   TFolder * phosSubFolder = dynamic_cast<TFolder*>(phosFolder->FindObject(subdir)) ; 
   if ( !phosSubFolder ) 
     phosSubFolder = phosFolder->AddFolder(subdir, ""); 
@@ -582,7 +593,7 @@ const Bool_t AliPHOSGetter::PostSDigits(const char * name, const char * headerFi
   return kTRUE;
 } 
 //____________________________________________________________________________ 
-TObject** AliPHOSGetter::SDigitsRef(const char * name, const char * file) const 
+TObject** AliPHOSGetter::SDigitsRef(const char * name, const char * foldername) const 
 {  //------- SDigits ----------------------
   
   // the hierarchy is //Folders/RunMC/Event/Data/PHOS/SDigits/filename/SDigits
@@ -591,19 +602,17 @@ TObject** AliPHOSGetter::SDigitsRef(const char * name, const char * file) const
     Fatal("SDigitsRef", "Folder //%s not found !", fSDigitsFolder) ;
   }    
  
-  TFolder * phosFolder = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject("PHOS")) ;
+  TFolder * phosFolder = static_cast<TFolder *>(fSDigitsFolder->FindObject("PHOS")) ;
   if ( !phosFolder ) {
     Fatal("SDigitsRef", "Folder //%s/PHOS not found !", fSDigitsFolder) ;
   }
 
   TFolder * phosSubFolder = 0 ;
-  if(file)
-    phosSubFolder = dynamic_cast<TFolder *>(phosFolder->FindObject(file)) ;
-  else
-    phosSubFolder = dynamic_cast<TFolder *>(phosFolder->FindObject(fHeaderFile)) ;
+
+  phosSubFolder = dynamic_cast<TFolder *>(phosFolder->FindObject(foldername)) ;
   
   if(!phosSubFolder) {
-    Fatal("SDigitsRef", "Folder //Folders/RunMC/Event/Data/PHOS/%s not found !", file) ;
+    Fatal("SDigitsRef", "Folder //Folders/RunMC/Event/Data/PHOS/%s not found !", foldername) ;
   }
 
   TObject * dis = phosSubFolder->FindObject(name) ;
@@ -1964,10 +1973,7 @@ Int_t AliPHOSGetter::ReadTreeS(const Int_t event)
   TTree * treeS = 0;
   while ( (folder = static_cast<TFolder*>(next())) ) {
     TString fileName("") ;
-    if(fToSplit)
-      fileName = folder->GetTitle() ;
-    else
-      fileName = folder->GetName() ; 
+    fileName = folder->GetName() ; 
     fileName.ReplaceAll("_","/") ; 
     file = static_cast<TFile*>(gROOT->GetFile(fileName)); 
     if(!file) 
@@ -2009,8 +2015,11 @@ Int_t AliPHOSGetter::ReadTreeS(const Int_t event)
       return 2; 
     }   
     
-    if ( !folder->FindObject(fSDigitsTitle) )  
-      PostSDigits(fSDigitsTitle,folder->GetName()) ;
+    if ( !folder->FindObject(fSDigitsTitle) ){  
+      TClonesArray * sdigits = new TClonesArray("AliPHOSDigit",1) ;
+      sdigits->SetName(fSDigitsTitle) ;
+      folder->Add(sdigits) ;
+    }
 
     ((TClonesArray*) (*SDigitsRef(fSDigitsTitle,folder->GetName())))->Clear() ;
     sdigitsBranch->SetAddress(SDigitsRef(fSDigitsTitle,folder->GetName())) ;
@@ -2071,7 +2080,7 @@ void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
   if (!folder || !(folder->FindObject(sdigitsBranch->GetTitle()) ) )
     PostSDigits(sdigitsBranch->GetTitle(),filename) ;
 
-  sdigitsBranch->SetAddress(SDigitsRef(sdigitsBranch->GetTitle(),filename)) ;
+  sdigitsBranch->SetAddress(SDigitsRef(sdigitsBranch->GetTitle(),folder->GetName())) ;
   sdigitsBranch->GetEntry(0) ;
   
   TString sdname(sdigitsBranch->GetTitle()) ;
@@ -2161,6 +2170,8 @@ TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const
 
   if ( file.IsNull() ) 
     file = fHeaderFile ; 
+  if( name.IsNull() )
+    name = fBranchTitle ;
 
   TFolder * folder = 0 ;
   TObject * phosO  = 0 ; 
@@ -2178,7 +2189,16 @@ TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const
       phosO  = dynamic_cast<TObject *>(folder->FindObject("Hits")) ;  
   }
   else if ( what.CompareTo("SDigits") == 0 ) {
-    file.ReplaceAll("/","_") ; 
+    if(fToSplit){
+      file.Remove(file.Last('/')+1,file.Length()-file.Last('/')-1) ;
+      file.ReplaceAll("/","_") ; 
+      file+="PHOS.SDigits." ;
+      if(name && (strcmp(name,"Default")!=0)){
+	file+=name ;
+	file+="." ;
+      }
+      file+="root" ;
+    }
     TString path = "PHOS/" + file  ;
     folder = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject(path.Data())) ; 
     if (folder) { 
@@ -2639,7 +2659,8 @@ void AliPHOSGetter::SetTitle(const char * branchTitle )
     fRecParticlesFileName += "root" ; 
     fTrackSegmentsFileName+= "root" ; 
   }else{
-    fSDigitsFileName       = "" ; 
+    fSDigitsFileName       = fHeaderFile ;
+
     fDigitsFileName        = "" ; 
     fRecPointsFileName     = "" ; 
     fRecParticlesFileName  = "" ; 
@@ -2653,12 +2674,10 @@ void AliPHOSGetter::SetTitle(const char * branchTitle )
   phosFolder = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("PHOS")) ;
   if ( !phosFolder ) 
     phosFolder = fSDigitsFolder->AddFolder("PHOS", "SDigits from PHOS") ; 
-  
-  //Make folder for SDigits
-  TString subdir(fHeaderFile) ;
-  subdir.ReplaceAll("/","_") ;
-  phosFolder->AddFolder(subdir, fSDigitsFileName.Data());
 
+  //Make folder for SDigits
+  fSDigitsFileName.ReplaceAll("/","_") ;
+  phosFolder->AddFolder(fSDigitsFileName.Data(),"");
 
   phosFolder  = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("PHOS")) ;
   if ( !phosFolder ) 
@@ -2668,7 +2687,6 @@ void AliPHOSGetter::SetTitle(const char * branchTitle )
   if ( !phosFolder )
     phosFolder = fRecoFolder->AddFolder("PHOS", "Reconstructed data from PHOS") ;  
   
-
 }
 //____________________________________________________________________________ 
 void AliPHOSGetter::CloseSplitFiles(void){
