@@ -1,0 +1,42 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:03:26  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE BNDTST (N,X,XLOW,XHI,BNDTOL,NFREE,IFREE,NACTV,IACTV,XAL
+     1TER)
+      INTEGER N, NFREE, NACTV
+      INTEGER IFREE(N), IACTV(N)
+      LOGICAL XALTER
+      DOUBLE PRECISION BNDTOL
+      DOUBLE PRECISION X(N), XLOW(N), XHI(N)
+      INTEGER I
+CMM   DOUBLE PRECISION DABS, XDENOM
+      DOUBLE PRECISION       XDENOM
+      XALTER=.FALSE.
+      NFREE=0
+      NACTV=0
+      DO 30 I=1,N
+      XDENOM=1.0D+0+ABS(XHI(I))
+      IF((X(I)-XHI(I))/XDENOM.GE.(-BNDTOL)) GOTO 10
+      XDENOM=1.0D+0+ABS(XLOW(I))
+      IF((X(I)-XLOW(I))/XDENOM.LE.BNDTOL) GOTO 20
+      NFREE=NFREE+1
+      IFREE(NFREE)=I
+      GOTO 30
+ 10   X(I)=XHI(I)
+      XALTER=.TRUE.
+      NACTV=NACTV+1
+      IACTV(NACTV)=-I
+      GOTO 30
+ 20   X(I)=XLOW(I)
+      XALTER=.TRUE.
+      NACTV=NACTV+1
+      IACTV(NACTV)=I
+ 30   CONTINUE
+      RETURN
+      END

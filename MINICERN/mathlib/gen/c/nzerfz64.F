@@ -1,0 +1,93 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:01:53  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      FUNCTION NZERFZ(F,ZP,N)
+C
+#include "gen/impc64.inc"
+C
+      CHARACTER*(*) NAME
+      PARAMETER(NAME='NZERFZ')
+#include "gen/def64.inc"
+     + W,X,R,EPS,CST,CONST,R1,HF
+      DIMENSION ZP(*),W(12),X(12)
+
+      PARAMETER (PI = 3.14159 26535 89793 24D0)
+#if defined(CERNLIB_CRAY)
+      PARAMETER (I = (0E0,1E0))
+#endif
+#if !defined(CERNLIB_CRAY)
+      PARAMETER (I = (0D0,1D0))
+#endif
+      PARAMETER ( CPI2 = 2*PI*I)
+      PARAMETER (R1 = 1, HF = R1/2, DZ = (1+I)*1D-8)
+      PARAMETER (EPS = 1D-4, CST = 0.005D0, NFMAX = 200000)
+
+      DATA X( 1) /9.6028985649753623D-1/, W( 1) /1.0122853629037626D-1/
+      DATA X( 2) /7.9666647741362674D-1/, W( 2) /2.2238103445337447D-1/
+      DATA X( 3) /5.2553240991632899D-1/, W( 3) /3.1370664587788729D-1/
+      DATA X( 4) /1.8343464249564980D-1/, W( 4) /3.6268378337836198D-1/
+      DATA X( 5) /9.8940093499164993D-1/, W( 5) /2.7152459411754095D-2/
+      DATA X( 6) /9.4457502307323258D-1/, W( 6) /6.2253523938647893D-2/
+      DATA X( 7) /8.6563120238783174D-1/, W( 7) /9.5158511682492785D-2/
+      DATA X( 8) /7.5540440835500303D-1/, W( 8) /1.2462897125553387D-1/
+      DATA X( 9) /6.1787624440264375D-1/, W( 9) /1.4959598881657673D-1/
+      DATA X(10) /4.5801677765722739D-1/, W(10) /1.6915651939500254D-1/
+      DATA X(11) /2.8160355077925891D-1/, W(11) /1.8260341504492359D-1/
+      DATA X(12) /9.5012509837637440D-2/, W(12) /1.8945061045506850D-1/
+
+      H=0
+      DO 10 J = 1,N
+      NF=0
+      A=ZP(J)
+      IF(J .LT. N) THEN
+       B=ZP(J+1)
+      ELSE
+       B=ZP(1)
+      ENDIF
+      IF(B .EQ. A) GO TO 10
+      CONST=CST/ABS(B-A)
+      BB=A
+    1 AA=BB
+      BB=B
+    2 C1=HF*(BB+AA)
+      C2=HF*(BB-AA)
+      S8=0
+      DO 3 K = 1,4
+      U=C2*X(K)
+      FPP=F(C1+U+DZ)
+      FPM=F(C1+U-DZ)
+      FMP=F(C1-U+DZ)
+      FMM=F(C1-U-DZ)
+    3 S8=S8+W(K)*(((FPP-FPM)/DZ)/(FPP+FPM)+((FMP-FMM)/DZ)/(FMP+FMM))
+      S16=0
+      DO 4 K = 5,12
+      U=C2*X(K)
+      FPP=F(C1+U+DZ)
+      FPM=F(C1+U-DZ)
+      FMP=F(C1-U+DZ)
+      FMM=F(C1-U-DZ)
+    4 S16=S16+W(K)*(((FPP-FPM)/DZ)/(FPP+FPM)+((FMP-FMM)/DZ)/(FMP+FMM))
+      S16=C2*S16
+      NF=NF+48
+      IF(ABS(S16-C2*S8) .LE. EPS*(1+ABS(S16))) THEN
+       H=H+S16
+       IF(BB .NE. B) GO TO 1
+      ELSE
+       BB=C1
+       IF(1+CONST*ABS(C2) .NE. 1 .AND. NF .LE. NFMAX) GO TO 2
+       R=0
+       CALL MTLPRT(NAME,'C210.1','PROBLEMS WITH INTEGRATION,'//
+     +             'POLYGON TOO NEAR TO A ZERO OR SINGULARITY ?')
+       GO TO 99
+      ENDIF
+   10 CONTINUE
+      R=H/CPI2
+   99 NZERFZ=NINT(ABS(R))
+      RETURN
+      END

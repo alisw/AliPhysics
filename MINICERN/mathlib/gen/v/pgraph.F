@@ -1,0 +1,144 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:57  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE PGRAPH(WEIT, EDGES, NODES, SET, SETPTR, NPTR)
+      INTEGER EDGES, TABNR, ONETWO, TWOONE, SETPTR
+      INTEGER CHOICE
+      INTEGER SETT(652)
+      INTEGER WEIT(652,2)
+      INTEGER SET(96)
+      INTEGER WSET(96)
+      INTEGER VSET(96)
+      INTEGER TEIT(652,2)
+      INTEGER LTEIT(96)
+      INTEGER LSETT(96)
+      COMMON /BITSXB/ NBITPW, NBYTPW
+      IF(NPTR.GT.0) GO TO CHOICE,(10,20)
+      LWEIT = EDGES
+      TABNR = 1
+      LTEIT(1) = 0
+      LSETT(1) = 0
+      K1 = 0
+      LWSET = 0
+      LVSET = 0
+888   CONTINUE
+      MAX = 0
+      NODE = 0
+      DO 60 L = 1,NODES
+      NODEFQ = 0
+      DO 1 K = 1,LWEIT
+      IF(IGET(WEIT(1,1), K) .EQ. L) NODEFQ = NODEFQ + 1
+      IF(IGET(WEIT(1,2), K) .EQ. L) NODEFQ = NODEFQ + 1
+1     CONTINUE
+      IF(MAX .GE. NODEFQ) GO TO 60
+      MAX = NODEFQ
+      NODE = L
+60    CONTINUE
+C
+C ***   STEP2
+C
+      LVSET = LVSET + 1
+      VSET(LVSET) = NODE
+C
+C ***   STEP 3 + 4
+C
+      K1 = 0
+      K2 = 0
+      DO 2 I = 1,LWEIT
+      DO 3 ONETWO = 1,2
+      IF(IGET(WEIT(1,ONETWO), I) .NE. NODE) GO TO 3
+      TWOONE = 3 - ONETWO
+      LWSET = LWSET + 1
+      WSET(LWSET) = IGET(WEIT(1,TWOONE), I)
+      K2 = K2 + 1
+      GO TO 2
+3     CONTINUE
+      IND = LTEIT(TABNR) + 1 + K1
+      CALL TUP(TEIT(1,1), IND, IGET(WEIT(1,1), I))
+      CALL TUP(TEIT(1,2), IND, IGET(WEIT(1,2), I))
+      K1 = K1 + 1
+2     CONTINUE
+      IF(K1 .EQ. 0) GO TO 300
+      IND = LSETT(TABNR) + 1
+      DO 51 I = 1,LVSET
+      CALL TUP(SETT, IND, VSET(I))
+51    IND = IND + 1
+C
+C ***   STEP 5
+C
+      TABNR = TABNR + 1
+      LSETT(TABNR) = LSETT(TABNR - 1) + LVSET
+      LTEIT(TABNR) = LTEIT(TABNR - 1) + K1
+      IEND = LTEIT(TABNR)
+      IANF = LTEIT(TABNR - 1) + 1
+      K1 = 0
+      JANF = LWSET - K2 + 1
+      DO 200 I = IANF, IEND
+      DO 22 L = JANF,LWSET
+      DO 21 ONETWO = 1,2
+      IF(IGET(TEIT(1,ONETWO), I) .EQ. WSET(L)) GO TO 200
+21    CONTINUE
+22    CONTINUE
+      K1 = K1 + 1
+      CALL TUP(WEIT(1,1), K1, IGET(TEIT(1,1), I))
+      CALL TUP(WEIT(1,2), K1, IGET(TEIT(1,2), I))
+200   CONTINUE
+      IF(K1 .EQ. 0) GO TO 10
+      DO 50 I = 1,LWSET
+50    VSET(I) = WSET(I)
+      LVSET = LWSET
+      LWEIT = K1
+      GO TO 888
+C
+C   THE STATEMENTS 300 ... 20 RETURN THE SOLUTIONS IN V AND W.
+C   BEFORE RETURNING, HOWEVER, THE 'COMPLEMENT' OF THE SOLUTION IS
+C   COMPUTED (= ALL NODES OF THE GRAPH NOT CONTAINED IN THE SOLUTION)
+C   AND STORED INTO 'SET', FOLLOWED BY THE ACTUAL(CONFER ALGORITHM OF
+C   S.R. DAS) SOLUTION.
+C
+300   CONTINUE
+      CALL TREVNI(VSET, LVSET, SET, NODES, SETPTR)
+      NPTR = SETPTR
+      DO 41 I = 1,LVSET
+      NPTR = NPTR + 1
+41    SET(NPTR) = VSET(I)
+      ASSIGN 10 TO CHOICE
+      RETURN
+10    CONTINUE
+      CALL TREVNI(WSET, LWSET, SET, NODES, SETPTR)
+      NPTR = SETPTR
+      DO 40 I = 1,LWSET
+      NPTR = NPTR + 1
+40    SET(NPTR) = WSET(I)
+      ASSIGN 20 TO CHOICE
+      RETURN
+20    CONTINUE
+C
+C ***   STEP 6
+C
+      IF(TABNR .EQ. 1) GO TO 999
+      LWEIT = LTEIT(TABNR) - LTEIT(TABNR - 1)
+      LWSET = LSETT(TABNR) - LSETT(TABNR - 1)
+      LVSET = LWSET
+      TABNR = TABNR - 1
+      IND = LTEIT(TABNR) + 1
+      DO 31 I = 1,LWEIT
+      CALL TUP(WEIT(1,1), I, IGET(TEIT(1,1), IND))
+      CALL TUP(WEIT(1,2), I, IGET(TEIT(1,2), IND))
+31    IND = IND + 1
+      IND = LSETT(TABNR) + 1
+      DO 32 I = 1,LWSET
+      IX = IGET(SETT, IND)
+      WSET(I) = IX
+      VSET(I) = IX
+32    IND = IND + 1
+      GO TO 888
+999   NPTR = 0
+      RETURN
+      END

@@ -1,0 +1,85 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:17  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE EPDCHK(XDATA,YDATA,UDATA,NPTS)
+C
+      DIMENSION XDATA(500),YDATA(500),UDATA(500),NT3(780),UT3(780),
+     1NT4(780),HT4(780,4),KT4(780),NT5(390,2)
+      COMMON  C5     , C95    , NT3    , UT3    , NT4    , HT4
+      COMMON  KT4    , NT5    , NE3    , NE4    , NE5    , NC
+      COMMON  NR     , KODBAS , DX     , DY
+      DO 30 IN=1,NE4
+      DO 20 INN=1,4
+      IF(HT4(IN,INN))5,20,5
+    5 GO TO (6,7,8,9),INN
+    6 N=NT4(IN)+1
+      GO TO 10
+    7 N=NT4(IN)+NC
+      GO TO 10
+    8 N=NT4(IN)-1
+      GO TO 10
+    9 N=NT4(IN)-NC
+   10 DO 11 J1=1,NE3
+      IF(NT3(J1)-N)11,20,11
+   11 CONTINUE
+      DO 12 J2=1,NE4
+      IF(NT4(J2)-N)12,20,12
+   12 CONTINUE
+      DO 14 J3=1,NE5
+      IF(N-NT5(J3,1))14,20,13
+   13 IF(NT5(J3,2)-N)14,20,20
+   14 CONTINUE
+      DO 15 K=1,4
+      IF(HT4(IN,K))15,16,15
+   15 CONTINUE
+   17 WRITE(6,100)NT4(IN),N
+      STOP
+C---------
+   16 M=NT4(IN)
+      YM=((M-1)/NC)*DY
+      Q=MOD(M-1,NC)
+      XM=Q*DX
+      GO TO (21,40,21,40),INN
+   21 DO 26 IP=1,NPTS
+      IF(ABS(YDATA(IP)-YM)-.003*DY)22,26,26
+   22 RHO=(XDATA(IP)-XM)/DX
+      IF(INN-1)23,24,23
+   23 RHO=-RHO
+   24 IF(RHO)26,25,25
+   25 IF(1.0-RHO)26,27,27
+   26 CONTINUE
+      GO TO 17
+   40 DO 46 IP=1,NPTS
+      IF(ABS(XDATA(IP)-XM)-.003*DX)42,46,46
+   42 RHO=(YDATA(IP)-YM)/DY
+      IF(INN-2)43,44,43
+   43 RHO=-RHO
+   44 IF(RHO)46,45,45
+   45 IF(1.0-RHO)46,27,27
+   46 CONTINUE
+      GO TO 17
+   27 IF(C5-RHO)52,52,50
+   50 NE3=NE3+1
+      NT3(NE3)=M
+      UT3(NE3)=UDATA(IP)
+      NT4(IN)=0
+      GO TO 30
+   52 NE3=NE3+1
+      NT3(NE3)=N
+      UT3(NE3)=UDATA(IP)
+      IF(RHO-C95)54,54,53
+   53 RHO=1.0
+   54 HT4(IN,INN)=RHO
+   20 CONTINUE
+   30 CONTINUE
+      RETURN
+  100 FORMAT('0 POINT NUMBER',I5,' HAS NEIGHBOUR-POINT NUMBER',I5,
+     1'FOR WHICH'/' NO BOUNDARY VALUE OR FINITE DIFFERENCE EQUATION',
+     2' IS AVAILABLE')
+      END

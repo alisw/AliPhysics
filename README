@@ -1,0 +1,118 @@
+AliRoot
+-------
+
+########################### Pre-release version ###############################
+########################### Use at your onw risk ##############################
+
+Last update Tue Apr 27 07:56 1988 - Federico Carminati
+
+This is the Version 3.01 of the ALICE simulation and reconstruction
+software. This code will be released after the May ALICE Offline
+Meeting. It is intended to offer a general purpose framework for ALICE
+simulation and reconstruction. The program should not be considered
+complete, and we are relying on the feed-back from users to correct bugs
+and provide improvements.
+
+The simulation program is based on GEANT3.21. A special version of the
+GEANT library and a mini-CERN Library are needed to run this code.
+
+Installation
+------------
+
+- Install ROOT and define the ROOTSYS symbol correctly.
+
+- Decide in which directory you will install the ALICE sofware. We will
+indicate it with <directory>
+
+- Define the following global variables in the login script
+
+ALICE			= <directory>
+ALICE_LEVEL		= pro
+ALICE_ROOT		= $ALICE/$ALICE_LEVEL
+ALICE_TARGET		= `uname`
+LD_LIBRARY_PATH 	= $LD_LIBRARY_PATH\:$ALICE_ROOT/lib (on all systems)
+SHLIB_PATH		= $SHLIB_PATH\:$ALICE_ROOT/lib (on hpux)
+PATH			= $PATH\:$ALICE_ROOT/bin
+
+At this point you should logout, login again and check that the symbols are
+set correctly
+
+- Get the file /afs/cern.ch/alice/offline/AliOffline3.01.tar.gz
+
+- Unpack it with
+
+$ cd $ALICE
+$ gtar xvfz AliOffline3.01.tar.gz
+
+- install the CERN library part
+
+$ cd $ALICE_ROOT
+$ gmake cernlibs
+
+- Install the ALICE specific software
+
+$ cd $ALICE_ROOT
+$ gmake
+
+- Copy the file $ALICE_ROOT/.rootrc to your home directory
+
+- run the code
+
+$ aliroot
+
+root [1] .x menu.C
+
+
+List of changes
+===============
+
+Sun Mar 21 12:38:38 CET 1999 ==================================================
+
+-------------------------------------------------------------------------------
+AliRun.cxx
+removed AliDetector::FinishEvent call from AliRun::FinishRun
+
+-------------------------------------------------------------------------------
+Makefile.hpux
+added +Onolimit to the optimisation on the hp to avoid warning messages
+
+-------------------------------------------------------------------------------
+TOPDIR changed to ALITOP as it should be in this README file. 
+
+Wed Mar 24 15:44:49 CET 1999 ==================================================
+
+-------------------------------------------------------------------------------
+SGI Makefile corrected
+
+-------------------------------------------------------------------------------
+Make-macros corrected to include the ITS*.det files in the distribution
+
+-------------------------------------------------------------------------------
+Code of PHOSv2 introduced, thanks to M. Volkov
+
+Thu Mar 25 21:19:52 CET 1999 ==================================================
+
+-------------------------------------------------------------------------------
+Change the load order in Make-macros
+
+Wed Apr  7 09:25:51 CEST 1999 =================================================
+
+-------------------------------------------------------------------------------
+AliTPC.cxx, AliTPCv2.cxx, AliTPCSecGeo.h, GeantPatch.F
+
+The drift gas parameters updated using the recent numbers from A.Sharma.
+M.Kowalski
+
+Thu Apr  8 16:08:12 CEST 1999 =================================================
+
+-------------------------------------------------------------------------------
+Slight changes to M.Volkov files to correct some syntactical problems
+
+-------------------------------------------------------------------------------
+Changed common_ to G..._t in TGeant3.h to be compatible with P.Murat, CDF.
+
+Fri Apr  9 08:06:21 CEST 1999 =================================================
+
+-------------------------------------------------------------------------------
+Restructuration of TGeant3. Common addresses are now returned by access
+functions and they are all private.

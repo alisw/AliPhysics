@@ -1,0 +1,36 @@
+//void ViewPMD()
+{
+   gMC->Gsatt("DP21","seen",0);
+   gMC->Gsatt("DP22","seen",0);
+   gMC->Gsatt("DS21","seen",1);
+   gMC->Gsatt("DS22","seen",1);
+   gMC->Gsatt("DW21","seen",0);
+   gMC->Gsatt("DV21","seen",0);
+   gMC->Gsatt("DP11","seen",0);
+   gMC->Gsatt("DP12","seen",0);
+   gMC->Gsatt("DS11","seen",1);
+   gMC->Gsatt("DS12","seen",1);
+   gMC->Gsatt("DW11","seen",0);
+   gMC->Gsatt("DV11","seen",0);
+   gMC->Gsatt("DP13","seen",0);
+   gMC->Gsatt("DP14","seen",0);
+   gMC->Gsatt("DS13","seen",1);
+   gMC->Gsatt("DS14","seen",1);
+   gMC->Gsatt("DW12","seen",0); 
+   gMC->Gsatt("DV12","seen",0);
+   gMC->Gsatt("DP15","seen",0);
+   gMC->Gsatt("DP16","seen",0);
+   gMC->Gsatt("DS15","seen",1);
+   gMC->Gsatt("DS16","seen",1);
+   gMC->Gsatt("DW13","seen",0);
+   gMC->Gsatt("DV13","seen",0);
+   gMC->Gsatt("DPPB","seen",1);
+   gMC->Gsatt("DPW ","seen",1); 
+   gMC->Gsatt("DPFE","seen",1);
+   gMC->Gsatt("DM21","seen",1);
+   gMC->Gsatt("DM11","seen",1);
+   gMC->Gsatt("DM12","seen",1);
+   gMC->Gsatt("DM13","seen",1);
+   gMC->Gsatt("DPMD","seen",0);
+   gMC->Gsatt("DIQU","seen",0);
+}

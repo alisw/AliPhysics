@@ -1,0 +1,41 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:03:26  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE BFGS (N,NADIM,AHESS,EPSMCH,G,GNEW,P,ALPHA,Y)
+      INTEGER N, NADIM
+      DOUBLE PRECISION EPSMCH, ALPHA
+      DOUBLE PRECISION AHESS(NADIM, N), G(N), GNEW(N), P(N), Y(N)
+      INTEGER I, IFAIL, IP1, J, NM1
+      DOUBLE PRECISION CONST, DVDOT, GTP, YTP
+      DO 10 I=1,N
+      Y(I)=GNEW(I)-G(I)
+ 10   CONTINUE
+      YTP=DVDOT(N,Y,P)
+      IF(YTP.LE.0.0D+0) RETURN
+      GTP=DVDOT(N,G,P)
+      CONST=ALPHA*YTP
+      IF(CONST.LT.1.0D-10) RETURN
+      CONST=1.0D+0/CONST
+      CALL MODCHL(N,NADIM,AHESS,CONST,Y,IFAIL)
+      IF(GTP.GE.0.0D+0) RETURN
+      CONST=1.0D+0/SQRT(-GTP)
+      DO 20 I=1,N
+      Y(I)=G(I)*CONST
+ 20   CONTINUE
+      CALL NMDCHL(N,NADIM,AHESS,EPSMCH,Y,P)
+      NM1=N-1
+      IF(NM1.EQ.0) RETURN
+      DO 40 I=1,NM1
+      IP1=I+1
+      DO 30 J=IP1,N
+      AHESS(I,J)=AHESS(J,I)
+ 30   CONTINUE
+ 40   CONTINUE
+      RETURN
+      END

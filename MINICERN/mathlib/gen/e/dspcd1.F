@@ -1,0 +1,101 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:25  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE DSPCD1(K,M,NDER,T,C,D,NERR)
+
+#include "gen/imp64.inc"
+      DIMENSION T(*),C(*),D(*)
+      CHARACTER NAME*(*)
+      CHARACTER*80 ERRTXT
+      PARAMETER (NAME = 'DSPCD1')
+
+************************************************************************
+*   NORBAS, VERSION: 15.03.1993
+************************************************************************
+*
+*   DSPCD1 COMPUTES FROM GIVEN COEFFICIENTS  C(1),...,C(M-K-1)  OF A
+*   POLYNOMIAL SPLINE  S(X)  IN B-SPLINE REPRESENTATION
+*
+*          S(X) =  SUMME(I=1,...,M-K-1)  C(I) * B(I,K)(X)
+*
+*   THE CORRESPONDING COEFFICIENTS  D(1),...,D(M-K-NDER-1)  OF THE
+*   NDER-TH DERIVATIVE OF S(X).
+*
+*   THE FUNCTIONS  B(I,K)(X)  ARE NORMALIZED B-SPLINES OF DEGREE  K
+*   (0<= K <= 25)  WITH INDEX  I  (1 <= I <= M-K-1) OVER A SET OF
+*   SPLINE-KNOTS
+*              T(1),T(2), ... ,T(M)    ( M >= 2*K+2 )
+*   (KNOTS IN ASCENDING ORDER, WITH MULTIPLICITIES NOT GREATER
+*   THAN  K+1).
+*   THE FUNCTION VALUE OF THE NORMALIZED B-SPLINE  B(I,K)(X)  IS
+*   IDENTICALLY ZERO OUTSIDE THE INTERVAL  T(I) <= X < T(I+K+1).
+*   THE NORMALIZATION OF  N(X) = B(I,K)(X)  IS SUCH THAT THE INTGRAL OF
+*   N(X)  OVER THE WHOLE X-RANGE EQUALS
+*                  ( T(I+K+1) - T(I) ) / (K+1)  .
+*
+*   PARAMETERS:
+*
+*   K     (INTEGER) DEGREE (= ORDER - 1) OF B-SPLINES.
+*   M     (INTEGER) NUMBER OF KNOTS FOR THE B-SPLINES.
+*   NDER  (INTEGER) ORDER OF DERIVATIVE
+*   T     (DOUBLE PRECISION) ARRAY OF AT LEAST ORDER M CONTAINING THE
+*         KNOTS, ON ENTRY.
+*   C     (DOUBLE PRECISION) ARRAY OF AT LEAST ORDER  M-K-1. ON ENTRY
+*         C(1),...,C(M-K-1)  MUST CONTAIN THE COEFFICIENTS OF THE
+*         POLYNOMIAL SPLINE  S(X)  IN B-SPLINE REPRESENTATION.
+*   D     (DOUBLE PRECISION) ARRAY OF AT LEAST ORDER  M-K-1.
+*         ON EXIT  D(1),...,D(M-K-NDER-1)  CONTAIN THE COEFFICIENTS
+*         OF THE NDER-TH DERIVATIVE OF  S(X) IN B-SPLINE REPRESENTATION.
+*         (THE REMAINING ARRAY ELEMENTS D(M-K-NDER),...,D(M-K-1) ARE
+*         USED AS WORKING SPACE).
+*   NERR  (INTEGER) ERROR INDICATOR. ON EXIT:
+*         = 0: NO ERROR DETECTED
+*         = 1: AT LEAST ONE OF THE CONSTANTS  K , M , NDER  IS ILLEGAL
+*
+*   ERROR MESSAGES:
+*
+*   IF ONE OF THE FOLLOWING RELATION IS SATISFIED BY THE CHOSEN INPUT-
+*   PARAMETERS THE PROGRAM RETURNS, AND AN ERROR MESSAGE IS PRINTED:
+*     K < 0      OR    K > 25    OR
+*     M < 2*K+2  OR
+*     NDER < 1   OR    NDER > K .
+*
+************************************************************************
+
+      PARAMETER (Z0 = 0)
+
+      NERR=1
+      IF(K .LT. 0 .OR. K .GT. 25) THEN
+       WRITE(ERRTXT,101) 'K',K
+       CALL MTLPRT(NAME,'E210.1',ERRTXT)
+      ELSEIF(M .LT. 2*K+2) THEN
+       WRITE(ERRTXT,101) 'M',M
+       CALL MTLPRT(NAME,'E210.2',ERRTXT)
+      ELSEIF(NDER .LT. 1 .OR. NDER .GT. K) THEN
+       WRITE(ERRTXT,101) 'NDER',NDER
+       CALL MTLPRT(NAME,'E210.5',ERRTXT)
+      ELSE
+       NERR=0
+       CALL DVCPY(M-K-1,C(1),C(2),D(1),D(2))
+       DO 10 J = 1,NDER
+       A=K-J+1
+       DO 10 I = 1,M-K-1-J
+       DIF=T(I+K+1)-T(I+J)
+       D0=Z0
+       IF(DIF .NE. 0) D0=A*(D(I+1)-D(I))/DIF
+   10  D(I)=D0
+      ENDIF
+
+      RETURN
+
+  101 FORMAT(1X,A5,' =',I6,'   NOT IN RANGE')
+      END
+
+
+

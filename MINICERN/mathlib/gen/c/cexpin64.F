@@ -1,0 +1,171 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:06  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+#if !defined(CERNLIB_DOUBLE)
+      FUNCTION CEXPIN(Z)
+#endif
+#if defined(CERNLIB_DOUBLE)
+      FUNCTION WEXPIN(Z)
+#endif
+#include "gen/impc64.inc"
+#include "gen/def64.inc"
+     +      AC,BC,CC,DC,CE,W,X,EPS,CONST,Z1,HF,HC,ZR,ZI,R1,R2,R3,R4
+      CHARACTER NAME*(*)
+#if !defined(CERNLIB_DOUBLE)
+      PARAMETER (NAME = 'CEXPIN')
+#endif
+#if defined(CERNLIB_DOUBLE)
+      PARAMETER (NAME = 'CEXPIN/WEXPIN')
+#endif
+      PARAMETER (EPS = 1D-13)
+      PARAMETER (CE = 0.57721 56649 01532 86D0)
+      PARAMETER (Z1 = 1, HF = Z1/2, HC = 0.005D0)
+      PARAMETER (R1 = Z1/7, R2 = Z1/5, R3 = Z1/15, R4 = Z1/12)
+
+
+      DIMENSION AC(10),BC(10),CC(16),DC(16),W(12),X(12)
+
+#if defined(CERNLIB_QF2C)
+#include "gen/gcmpfun.inc"
+#endif
+
+      DATA AC( 1) /0.20502 08456 77917 066D  0/
+      DATA AC( 2) /0.39390 75193 16296 552D -1/
+      DATA AC( 3) /0.34858 23655 29237 912D -2/
+      DATA AC( 4) /0.29317 75506 14266 489D -3/
+      DATA AC( 5) /0.13754 73570 29922 394D -4/
+      DATA AC( 6) /0.60964 46174 77455 800D -6/
+      DATA AC( 7) /0.14447 18655 00891 748D -7/
+      DATA AC( 8) /0.30430 04327 31332 247D -9/
+      DATA AC( 9) /0.22059 38908 74765 263D-11/
+      DATA AC(10) /0.49848 28058 16872 883D-14/
+
+      DATA BC( 1) /0.45502 08456 77917 066D  0/
+      DATA BC( 2) /0.97590 40779 55533 663D -1/
+      DATA BC( 3) /0.13021 15639 98519 948D -1/
+      DATA BC( 4) /0.11999 11137 74704 761D -2/
+      DATA BC( 5) /0.80015 09559 21661 460D -4/
+      DATA BC( 6) /0.39222 83073 88575 923D -5/
+      DATA BC( 7) /0.14003 62118 96032 452D -6/
+      DATA BC( 8) /0.34984 41348 05290 456D -8/
+      DATA BC( 9) /0.55465 89453 73869 458D-10/
+      DATA BC(10) /0.42591 33901 24021 430D-12/
+
+      DATA CC( 1) /                271D0/
+      DATA CC( 2) /              32370D0/
+      DATA CC( 3) /           22 52698D0/
+      DATA CC( 4) /         1017 37272D0/
+      DATA CC( 5) /        31439 23848D0/
+      DATA CC( 6) /      6 83085 03120D0/
+      DATA CC( 7) /    105 58823 22000D0/
+      DATA CC( 8) /   1161 90773 74080D0/
+      DATA CC( 9) /   9018 57120 59520D0/
+      DATA CC(10) /  48411 83190 41280D0/
+      DATA CC(11) /1 73907 98760 38400D0/
+      DATA CC(12) /3 96823 48312 32000D0/
+      DATA CC(13) /5 28572 15615 23200D0/
+      DATA CC(14) /3 54121 43251 96800D0/
+      DATA CC(15) /  86771 81624 83200D0/
+      DATA CC(16) /   2092 27898 88000D0/
+
+      DATA DC( 1) /                272D0/
+      DATA DC( 2) /              32640D0/
+      DATA DC( 3) /           22 84800D0/
+      DATA DC( 4) /         1039 58400D0/
+      DATA DC( 5) /        32435 02080D0/
+      DATA DC( 6) /      7 13570 45760D0/
+      DATA DC( 7) /    112 13250 04800D0/
+      DATA DC( 8) /   1261 49063 04000D0/
+      DATA DC( 9) /  10091 92504 32000D0/
+      DATA DC(10) /  56514 78024 19200D0/
+      DATA DC(11) /2 15783 70637 82400D0/
+      DATA DC(12) /5 39459 26594 56000D0/
+      DATA DC(13) /8 29937 33222 40000D0/
+      DATA DC(14) /7 11374 85619 20000D0/
+      DATA DC(15) /2 84549 94247 68000D0/
+      DATA DC(16) /  35568 74280 96000D0/
+
+      DATA X( 1) /9.6028985649753623D-1/, W( 1) /1.0122853629037626D-1/
+      DATA X( 2) /7.9666647741362674D-1/, W( 2) /2.2238103445337447D-1/
+      DATA X( 3) /5.2553240991632899D-1/, W( 3) /3.1370664587788729D-1/
+      DATA X( 4) /1.8343464249564980D-1/, W( 4) /3.6268378337836198D-1/
+      DATA X( 5) /9.8940093499164993D-1/, W( 5) /2.7152459411754095D-2/
+      DATA X( 6) /9.4457502307323258D-1/, W( 6) /6.2253523938647893D-2/
+      DATA X( 7) /8.6563120238783174D-1/, W( 7) /9.5158511682492785D-2/
+      DATA X( 8) /7.5540440835500303D-1/, W( 8) /1.2462897125553387D-1/
+      DATA X( 9) /6.1787624440264375D-1/, W( 9) /1.4959598881657673D-1/
+      DATA X(10) /4.5801677765722739D-1/, W(10) /1.6915651939500254D-1/
+      DATA X(11) /2.8160355077925891D-1/, W(11) /1.8260341504492359D-1/
+      DATA X(12) /9.5012509837637440D-2/, W(12) /1.8945061045506850D-1/
+
+#if !defined(CERNLIB_QF2C)
+#include "gen/gcmpfun.inc"
+#endif
+
+      F(T)=(1-EXP(-T))/T
+
+      ZI=ABS(GIMAG(Z))
+      ZR=Z
+      IF(ZR .GE. -5 .AND. (R1*(ZR-1))**2+(R2*ZI)**2 .LE. 1) THEN
+       G=AC(10)
+       H=BC(10)
+       DO 1 K = 9,1,-1
+       G=G*Z+AC(K)
+    1  H=H*Z+BC(K)
+       H=((1+G*Z)/(1+H*Z))*Z
+      ELSEIF(ZI .GE. 12 .OR.
+     1       ZR .GT. -12 .AND. (R3*(ZR+12))**2+(R4*ZI)**2 .GE. 1) THEN
+       G=Z+CC(1)
+       H=Z+DC(1)
+       DO 2 K = 2,16
+       G=G*Z+CC(K)
+    2  H=H*Z+DC(K)
+       H=(G/H)*EXP(-Z)/Z+LOG(Z)+CE
+      ELSE
+       H=0
+       CONST=HC/ABS(Z)
+       BB=0
+   11  AA=BB
+       BB=Z
+   12  C1=HF*(BB+AA)
+       C2=HF*(BB-AA)
+       S8=0
+       DO 13 K = 1,4
+       U=C2*X(K)
+   13  S8=S8+W(K)*(F(C1+U)+F(C1-U))
+       S16=0
+       DO 14 K = 5,12
+       U=C2*X(K)
+   14  S16=S16+W(K)*(F(C1+U)+F(C1-U))
+       S16=C2*S16
+       IF(ABS(S16-C2*S8) .LE. EPS*(1+ABS(S16))) THEN
+        H=H+S16
+        IF(BB .NE. Z) GO TO 11
+       ELSE
+        BB=C1
+        IF(1+CONST*ABS(C2) .NE. 1) GO TO 12
+        H=0
+        CALL MTLPRT(NAME,'C338.1','TOO HIGH ACCURACY REQUIRED')
+#if !defined(CERNLIB_DOUBLE)
+        CEXPIN=0.
+#endif
+#if defined(CERNLIB_DOUBLE)
+        WEXPIN=0.
+#endif
+        RETURN
+       END IF
+      ENDIF
+#if !defined(CERNLIB_DOUBLE)
+      CEXPIN=H
+#endif
+#if defined(CERNLIB_DOUBLE)
+      WEXPIN=H
+#endif
+      RETURN
+      END

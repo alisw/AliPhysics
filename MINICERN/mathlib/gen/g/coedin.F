@@ -1,0 +1,50 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:47  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE COEDIN(RKA,BE2,J)
+C
+C     COEDIN COMPUTES THE FOURIER COEFFICIENTS FOR THE INVERSE OF
+C     THE CONDITIONAL CUMULATIVE DISTRIBUTION FUNCTION OF THE
+C     VAVILOV DISTRIBUTION
+C
+      DIMENSION C(1001)
+      COMMON /ONE/ TR
+      COMMON /VAVILA/ B(200),S,TT
+      COMMON /VAVILI/ T0,T1,T,OMEGA
+      COMMON /FORFCN/ SS,LFCN
+      DATA PI/3.1415926535898/
+C
+      LU=ABS(J)
+      CALL COEDIS(RKA,BE2,1,J)
+C
+      SS=0.99
+      IF(RKA .GE. 0.04) SS=0.995
+      LFCN=2
+      CALL VAVZRO(T0,T1,TR,RKA,BE2,LU)
+      IF(J .GT. 0) WRITE(J,4) TR
+      S=DISVAV(TR,1)
+      TT=TR-T0
+      STEP=TT/1000.
+      STEP2=2.0*STEP
+C
+      DO 1 I = 1,1001
+    1 C(I)=DISVAV(T0+STEP*(I-1),1)
+C
+      DO 2 K = 1,200
+      K1=201-K
+      Z1=PI*K
+      Z=Z1/S
+      BK=0.5*(COS(Z*C(1))+COS(Z*C(1001)))
+      DO 3 I = 2,1000
+    3 BK=BK+COS(Z*C(I))
+    2 B(K1)=STEP2*BK/Z1
+    4 FORMAT(10X,'T PRIME =',F10.4)
+      RETURN
+C
+      END

@@ -1,0 +1,57 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:50  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE FINDEM(F,NUMBCS,CONTUR)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C   PURPOSE                                                            C
+C     TO FIND REASONABLE CONTOUR VALUES FOR A USER WHO HAS NOT         C
+C     ALREADY MADE UP HIS MIND. (AUXILIARY TO CONT.)                   C
+C   USAGE                                                              C
+C     CALL FINDEM(F,NUMBCS,CONTUR)                                     C
+C   PARAMETERS                                                         C
+C     F      - THE FUNCTION TO BE PLOTTED BY CONT                      C
+C     NUMBCS - THE DESIRED NUMBER OF CONTOURS                          C
+C     CONTUR - AN ARRAY INTO WHICH THE CONTOUR VALUES WILL BE RETURNED.C
+C     THE CHOSEN NAME FOR F MUST APPEAR IN AN EXTERNAL STATEMENT IN    C
+C     THE PROGRAM CALLING FINDEM.                                      C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      EXTERNAL F
+      DIMENSION CONTUR(10)
+      COMMON /J509C1/XBL,YBL,XUR,YUR,NX(6),NY(6),LETT1,LETT2,LINE1,LINE2
+C=======================================================================
+      IF(1.LE.NUMBCS .AND. NUMBCS.LE.10)GO TO 10
+      WRITE(6,1010)NUMBCS
+      RETURN
+   10 CONTINUE
+      CALL J509BD
+      FMIN = F(XBL,YBL)
+      FMAX=FMIN
+      XVAL = XBL
+      DXVAL = 2.*(XUR-XBL)/(LETT2-LETT1)
+      YVAL = YBL
+      DYVAL = 2.*(YUR-YBL)/(LINE2-LINE1)
+      DO 30 LETT= LETT1,LETT2,2
+      XVAL = XVAL + DXVAL
+      YVAL = YBL
+      DO 20 LINE= LINE1,LINE2,2
+      YVAL = YVAL + DYVAL
+      FNOW = F(XVAL,YVAL)
+      IF(FNOW .LT. FMIN)FMIN=FNOW
+      IF(FNOW .GT. FMAX)FMAX=FNOW
+   20 CONTINUE
+   30 CONTINUE
+      SPAN=FMAX-FMIN
+      CFIRST=FMIN+0.05*SPAN
+      CLAST=FMAX-0.05*SPAN
+      STEP=(CLAST-CFIRST)/(NUMBCS-1)
+      DO 40 NUMBC=1,NUMBCS
+   40 CONTUR(NUMBC)=CFIRST+(NUMBC-1)*STEP
+      RETURN
+ 1010 FORMAT(' HOW MANY CONTOURS DID YOU WANT---',I10,'---(FINDEM)')
+      END

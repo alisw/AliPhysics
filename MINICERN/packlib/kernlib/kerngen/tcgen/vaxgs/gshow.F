@@ -1,0 +1,23 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/02/15 17:49:59  mclareni
+* Kernlib
+*
+*
+      SUBROUTINE GSHOW (LUN)
+C
+C CERN PROGLIB# Z001    GSHOW           .VERSION KERNVAX  1.11  820212
+C ORIG. 12/02/82 JZ
+C
+C--   STORE PAM TITLE INTO /SLATE/ FOR PRINTING BY GSHOWF
+C
+      COMMON /SLATE/ CH(40)
+C
+      CALL UBLOW(
+     + 40HKERNVAX  2.47  1995/07/18 13.58     CERN
+     +,  CH,40)
+      CALL GSHOWF (LUN)
+      RETURN
+      END

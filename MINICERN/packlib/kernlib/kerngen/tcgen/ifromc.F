@@ -1,0 +1,28 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/02/15 17:49:47  mclareni
+* Kernlib
+*
+*
+#include "kerngen/pilot.h"
+      FUNCTION IFROMC(CH)
+C
+C CERN PROGLIB# M431    IFROMC          .VERSION KERNFOR  4.13  860226
+C ORIG. 10/02/86 M.METCALF
+C
+C   TO CONVERT 1 TO 4 CHARACTERS TO A PACKED ASCII INTEGER FORM
+C   ANSI FORTRAN
+C
+      CHARACTER*(*) CH
+      PARAMETER (IBLANK = 32*(1+256*(1+256*(1+256))) )
+      IFROMC = IBLANK
+      LENCH = LEN(CH)
+      DO 1 IC = 1, MIN(LENCH,4)
+         CALL CHTOI(CH(IC:IC), IVAL, *999)
+         IFROMC = ISHFT(IFROMC, 8) + IVAL
+    1 CONTINUE
+      IF (LENCH.LT.4) IFROMC = ISHFTC(IFROMC, 8*(4-LENCH), 32)
+  999 RETURN
+      END

@@ -1,0 +1,41 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:28  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+#if defined(CERNLIB_QUAD)
+#if !defined(CERNLIB_DOUBLE)
+      SUBROUTINE DCHECF(F,A,B,EPS,C,NC,DELTA)
+#endif
+#if defined(CERNLIB_DOUBLE)
+      SUBROUTINE QCHECF(F,A,B,EPS,C,NC,DELTA)
+#endif
+C         TO COMPUTE THE COEFFICIENTS IN A CHEBYSHEV EXPANSION
+C         F(X)=C(0)+C(1)*T1(X)+ ... +C(M)*TM(X) (A <= X <= B)
+C         WHERE TK(X) IS THE CHEBYSHEV POLYNOMIAL OF ORDER K
+C
+C    F       = FUNCTION ROUTINE FOR THE FUNCTION F(X).
+C    A       = LOWER BOUNDARY
+C    B       = UPPER BOUNDARY
+C    EPS     = ACCURACY REQUIRED
+C    C       = ARRAY FOR THE COMPUTED CHEBYSHEV COEFFICIENTS
+C    NC      = NUMBER OF CHEBYSHEV COEFFICIENTS COMPUTED
+C    DELTA   = ACCURACY OBTAINED FOR THE APPROXIMATION
+
+#include "gen/imp128.inc"
+C
+      CHARACTER NAME*(*)
+#if defined(CERNLIB_DOUBLE)
+      PARAMETER (NAME = 'QCHECF')
+      PARAMETER (PI = 3.14159 26535 89793 23846 26433 832795Q0)
+#endif
+#if !defined(CERNLIB_DOUBLE)
+      PARAMETER (NAME = 'DCHECF')
+      PARAMETER (PI = 3.14159 26535 89793 23846 26433 83D0)
+#endif
+#include "e406cod.inc"
+#endif

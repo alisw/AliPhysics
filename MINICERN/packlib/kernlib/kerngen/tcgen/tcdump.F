@@ -1,0 +1,74 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/02/15 17:49:50  mclareni
+* Kernlib
+*
+*
+#include "kerngen/pilot.h"
+      SUBROUTINE TCDUMP (LABEL,IA,NW,IND)
+C
+C CERN PROGLIB# N203    TCDUMP          .VERSION KERNFOR  3.14  811130
+C ORIG. 01/08/69
+C
+      DIMENSION IA(99),IFM(3),IDN(3)
+C
+C
+      CALL UBLOW (  IND,IDN,3)
+      CALL UBLOW (3HIFH,IFM,3)
+      DO 12 J=1,3
+      IF (IUCOMP(IFM(J),IDN,3).EQ.0)  IFM(J)=0
+   12 CONTINUE
+C
+      PRINT 9020,LABEL
+      JB= 0
+      LBASE=LOCF(IA(1)) -1
+C
+   20 JA= JB+1
+      N=IUSAME (IA,JA,NW,5,LOC)
+      IF (LOC.GT.JA) GO TO 30
+C
+C----              NEXT LINE
+   25 NL=N/5
+      N5=5*NL
+      JB= JA+N5-1
+      LOCFF=LBASE + JA
+      PRINT 9024, LOCFF,JA,JA,JB,IA(JA),N5,NL
+      IF (JB.LT.NW) GO TO 20
+      RETURN
+C
+C--                DUMP 5 WORDS
+   30 JB= MIN(JA+4,NW)
+      LOCFF=LBASE + JA
+      PRINT 9030,LOCFF,JA,JA,(IA(J),J=JA,JB)
+      IF (IFM(1).NE.0)  PRINT 9031, (IA(J),J=JA,JB)
+      IF (IFM(2).NE.0)  PRINT 9032, (IA(J),J=JA,JB)
+      IF (IFM(3).NE.0)  PRINT 9033, (IA(J),J=JA,JB)
+C
+      JA=JB+1
+      IF (JA.LT.LOC) GO TO 30
+      IF (JB.EQ.NW) RETURN
+      N=N+LOC-JA
+      IF (N.LT.5) GO TO 20
+      GO TO 25
+C
+ 9020 FORMAT (5H0DUMP,A12,5X,30(1H-))
+#if !defined(CERNLIB_HEX)
+ 9024 FORMAT(1X,O6,2X,O5,I6,8H   UNTIL,I6,14X,11HALL CONTAIN,O24,11X,
+     + I5,6H WORDS,I5,6H LINES/1X)
+#endif
+#if defined(CERNLIB_HEX)
+ 9024 FORMAT(1X,Z6,2X,Z5,I6,8H   UNTIL,I6,14X,11HALL CONTAIN,Z24,11X,
+     + I5,6H WORDS,I5,6H LINES/1X)
+#endif
+#if !defined(CERNLIB_HEX)
+ 9030 FORMAT (1X,O6,2X,O5,I6,5O21)
+#endif
+#if defined(CERNLIB_HEX)
+ 9030 FORMAT (1X,Z6,2X,Z5,I6,5Z21)
+#endif
+ 9031 FORMAT (20X,5(11X,I10))
+ 9032 FORMAT (20X,5E21.6)
+ 9033 FORMAT (10X,5A21)
+      END

@@ -1,0 +1,53 @@
+##### DEPENDENCIES #####
+ 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+AliFMD.o: /soft/root/include/TTUBE.h /soft/root/include/TNode.h
+AliFMD.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliFMD.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliFMD.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliFMD.o: /soft/root/include/TGeometry.h
+AliFMD.o: /hdb2/offline/pro/include/AliDetector.h /soft/root/include/TNamed.h
+AliFMD.o: /soft/root/include/TClonesArray.h /soft/root/include/TAttLine.h
+AliFMD.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliFMD.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliFMD.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliHeader.h
+AliFMD.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliFMD.o: /hdb2/offline/pro/include/AliMC.h
+AliFMD.o: /hdb2/offline/pro/include/AliGenerator.h
+AliFMD.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliFMD.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliFMD.o: AliFMD.h /hdb2/offline/pro/include/TGeant3.h
+AliFMDv0.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliFMDv0.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliFMDv0.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliFMDv0.o: /soft/root/include/TGeometry.h
+AliFMDv0.o: /hdb2/offline/pro/include/AliDetector.h
+AliFMDv0.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliFMDv0.o: /soft/root/include/TAttLine.h /soft/root/include/TAttMarker.h
+AliFMDv0.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
+AliFMDv0.o: /hdb2/offline/pro/include/AliHit.h /soft/root/include/TObject.h
+AliFMDv0.o: /hdb2/offline/pro/include/AliHeader.h
+AliFMDv0.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliFMDv0.o: /hdb2/offline/pro/include/AliMC.h
+AliFMDv0.o: /hdb2/offline/pro/include/AliGenerator.h
+AliFMDv0.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliFMDv0.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliFMDv0.o: AliFMDv0.h AliFMD.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliFMDv1.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliFMDv1.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliFMDv1.o: /soft/root/include/TGeometry.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliDetector.h
+AliFMDv1.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliFMDv1.o: /soft/root/include/TAttLine.h /soft/root/include/TAttMarker.h
+AliFMDv1.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliHit.h /soft/root/include/TObject.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliHeader.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliMC.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliGenerator.h
+AliFMDv1.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliFMDv1.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliFMDv1.o: AliFMDv1.h AliFMD.h /hdb2/offline/pro/include/AliConst.h
+AliFMDv1.o: /soft/root/include/TMath.h

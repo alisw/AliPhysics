@@ -1,0 +1,40 @@
+# Which Machine 
+PLATFORM      = hpux
+
+# The compilers
+CXX           = CC
+F77	      = f77
+
+# Global optimisation
+OPT	      = -O +Onolimit
+OPT           = -g
+
+# Shared library suffix
+SL	      = sl
+
+# The options
+CXXOPTS       = +a1 +z  
+COPT          = $(OPT)
+FOPT          = $(OPT) +ppu +Z
+
+# CERNLIB defines
+
+CLIBDEFS      = -DCERNLIB_HPUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      = +z -Ae 
+CLIBFOPT      = -WF,-P
+
+# Additional directories for dependencies
+
+DEPINC	      = -I /opt/CC/include/CC/
+
+LD            = CC
+LDFLAGS       = $(OPT) +a1 -z
+SOFLAGS       = -b /usr/lib/libm.sl 
+
+G3LIBS        = -lgeant321
+CLIBS         = -lminicern
+
+LIBS          = $(ROOTLIBS) -lNew -lm
+GLIBS         = $(ROOTLIBS) $(ROOTGLIBS) -L/usr/lib/X11R6 -L/usr/local/lib \
+                -lX11 -lm -ldld 

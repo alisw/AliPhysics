@@ -1,0 +1,143 @@
+##### DEPENDENCIES #####
+ 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+AliPHOS.o: /soft/root/include/TH1.h /soft/root/include/TRandom.h
+AliPHOS.o: /soft/root/include/TFile.h /soft/root/include/TTree.h
+AliPHOS.o: /soft/root/include/TBRIK.h /soft/root/include/TNode.h
+AliPHOS.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+AliPHOS.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliPHOS.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliPHOS.o: /usr/include/gnu/stubs.h
+AliPHOS.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliPHOS.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliPHOS.o: /usr/include/stdio_lim.h /usr/include/string.h
+AliPHOS.o: /usr/include/stdlib.h /usr/include/sys/types.h /usr/include/time.h
+AliPHOS.o: /usr/include/endian.h /usr/include/bytesex.h
+AliPHOS.o: /usr/include/sys/select.h /usr/include/selectbits.h
+AliPHOS.o: /usr/include/alloca.h AliPHOS.h ./CLHEP/Vector/ThreeVector.h
+AliPHOS.o: CLHEP/config/CLHEP.h
+AliPHOS.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/limits.h
+AliPHOS.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/syslimits.h
+AliPHOS.o: /usr/include/math.h /usr/include/huge_val.h
+AliPHOS.o: /usr/include/mathcalls.h
+AliPHOS.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/float.h
+AliPHOS.o: CLHEP/config/CLHEP-default.h /usr/local/include/g++/iostream.h
+AliPHOS.o: /usr/local/include/g++/streambuf.h CLHEP/Vector/ThreeVector.icc
+AliPHOS.o: ./CLHEP/Vector/LorentzVector.h CLHEP/Vector/Rotation.h
+AliPHOS.o: CLHEP/Vector/Rotation.icc CLHEP/Vector/LorentzVector.icc
+AliPHOS.o: /soft/root/include/TArray.h /soft/root/include/TH2.h
+AliPHOS.o: /hdb2/offline/pro/include/AliDetector.h
+AliPHOS.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliPHOS.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliPHOS.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliPHOS.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliPHOS.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliRun.h
+AliPHOS.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliPHOS.o: /soft/root/include/TStopwatch.h /soft/root/include/TGeometry.h
+AliPHOS.o: /hdb2/offline/pro/include/AliHeader.h
+AliPHOS.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliPHOS.o: /hdb2/offline/pro/include/AliMC.h
+AliPHOS.o: /hdb2/offline/pro/include/AliGenerator.h
+AliPHOS.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliPHOS.o: /hdb2/offline/pro/include/AliLego.h
+AliPHOS.o: /hdb2/offline/pro/include/TGeant3.h
+AliPHOSv0.o: /soft/root/include/TH1.h /soft/root/include/TRandom.h
+AliPHOSv0.o: /soft/root/include/TFile.h /soft/root/include/TTree.h
+AliPHOSv0.o: /soft/root/include/TBRIK.h /soft/root/include/TNode.h
+AliPHOSv0.o: AliPHOSv0.h AliPHOS.h ./CLHEP/Vector/ThreeVector.h
+AliPHOSv0.o: CLHEP/config/CLHEP.h /usr/include/stdlib.h
+AliPHOSv0.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliPHOSv0.o: /usr/include/gnu/stubs.h
+AliPHOSv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliPHOSv0.o: /usr/include/sys/types.h /usr/include/gnu/types.h
+AliPHOSv0.o: /usr/include/time.h /usr/include/endian.h /usr/include/bytesex.h
+AliPHOSv0.o: /usr/include/sys/select.h /usr/include/selectbits.h
+AliPHOSv0.o: /usr/include/alloca.h
+AliPHOSv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/limits.h
+AliPHOSv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/syslimits.h
+AliPHOSv0.o: /usr/include/math.h /usr/include/huge_val.h
+AliPHOSv0.o: /usr/include/mathcalls.h
+AliPHOSv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/float.h
+AliPHOSv0.o: CLHEP/config/CLHEP-default.h /usr/local/include/g++/iostream.h
+AliPHOSv0.o: /usr/local/include/g++/streambuf.h
+AliPHOSv0.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
+AliPHOSv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliPHOSv0.o: CLHEP/Vector/ThreeVector.icc ./CLHEP/Vector/LorentzVector.h
+AliPHOSv0.o: CLHEP/Vector/Rotation.h CLHEP/Vector/Rotation.icc
+AliPHOSv0.o: CLHEP/Vector/LorentzVector.icc /soft/root/include/TArray.h
+AliPHOSv0.o: /soft/root/include/TH2.h /hdb2/offline/pro/include/AliDetector.h
+AliPHOSv0.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliPHOSv0.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliPHOSv0.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliPHOSv0.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliPHOSv0.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliRun.h
+AliPHOSv0.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliPHOSv0.o: /soft/root/include/TStopwatch.h /soft/root/include/TGeometry.h
+AliPHOSv0.o: /hdb2/offline/pro/include/AliHeader.h
+AliPHOSv0.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliPHOSv0.o: /hdb2/offline/pro/include/AliMC.h
+AliPHOSv0.o: /hdb2/offline/pro/include/AliGenerator.h
+AliPHOSv0.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliPHOSv0.o: /hdb2/offline/pro/include/AliLego.h
+AliPHOSv0.o: /hdb2/offline/pro/include/AliConst.h /soft/root/include/TMath.h
+AliPHOSv1.o: /soft/root/include/TH1.h /soft/root/include/TRandom.h
+AliPHOSv1.o: /soft/root/include/TFile.h /soft/root/include/TTree.h
+AliPHOSv1.o: /soft/root/include/TBRIK.h /soft/root/include/TNode.h
+AliPHOSv1.o: AliPHOSv1.h AliPHOS.h ./CLHEP/Vector/ThreeVector.h
+AliPHOSv1.o: CLHEP/config/CLHEP.h /usr/include/stdlib.h
+AliPHOSv1.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliPHOSv1.o: /usr/include/gnu/stubs.h
+AliPHOSv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliPHOSv1.o: /usr/include/sys/types.h /usr/include/gnu/types.h
+AliPHOSv1.o: /usr/include/time.h /usr/include/endian.h /usr/include/bytesex.h
+AliPHOSv1.o: /usr/include/sys/select.h /usr/include/selectbits.h
+AliPHOSv1.o: /usr/include/alloca.h
+AliPHOSv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/limits.h
+AliPHOSv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/syslimits.h
+AliPHOSv1.o: /usr/include/math.h /usr/include/huge_val.h
+AliPHOSv1.o: /usr/include/mathcalls.h
+AliPHOSv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/float.h
+AliPHOSv1.o: CLHEP/config/CLHEP-default.h /usr/local/include/g++/iostream.h
+AliPHOSv1.o: /usr/local/include/g++/streambuf.h
+AliPHOSv1.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
+AliPHOSv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliPHOSv1.o: CLHEP/Vector/ThreeVector.icc ./CLHEP/Vector/LorentzVector.h
+AliPHOSv1.o: CLHEP/Vector/Rotation.h CLHEP/Vector/Rotation.icc
+AliPHOSv1.o: CLHEP/Vector/LorentzVector.icc /soft/root/include/TArray.h
+AliPHOSv1.o: /soft/root/include/TH2.h /hdb2/offline/pro/include/AliDetector.h
+AliPHOSv1.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliPHOSv1.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliPHOSv1.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliPHOSv1.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliPHOSv1.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliRun.h
+AliPHOSv1.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliPHOSv1.o: /soft/root/include/TStopwatch.h /soft/root/include/TGeometry.h
+AliPHOSv1.o: /hdb2/offline/pro/include/AliHeader.h
+AliPHOSv1.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliPHOSv1.o: /hdb2/offline/pro/include/AliMC.h
+AliPHOSv1.o: /hdb2/offline/pro/include/AliGenerator.h
+AliPHOSv1.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliPHOSv1.o: /hdb2/offline/pro/include/AliLego.h
+AliPHOSv1.o: /hdb2/offline/pro/include/TGeant3.h
+libPHOSdummy.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+libPHOSdummy.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+libPHOSdummy.o: /usr/include/features.h /usr/include/sys/cdefs.h
+libPHOSdummy.o: /usr/include/gnu/stubs.h
+libPHOSdummy.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+libPHOSdummy.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+libPHOSdummy.o: /usr/include/stdio_lim.h
+utils/prob.o: /usr/include/math.h /usr/include/features.h
+utils/prob.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+utils/prob.o: /usr/include/huge_val.h /usr/include/mathcalls.h
+utils/prob.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/float.h
+utils/prob.o: /usr/include/stdlib.h
+utils/prob.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+utils/prob.o: /usr/include/sys/types.h /usr/include/gnu/types.h
+utils/prob.o: /usr/include/time.h /usr/include/endian.h
+utils/prob.o: /usr/include/bytesex.h /usr/include/sys/select.h
+utils/prob.o: /usr/include/selectbits.h /usr/include/alloca.h
+utils/prob.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+utils/prob.o: /usr/include/_G_config.h
+utils/prob.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+utils/prob.o: /usr/include/stdio_lim.h

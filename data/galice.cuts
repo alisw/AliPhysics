@@ -1,0 +1,281 @@
+*******************************************
+*                                         *
+* Special Cuts to Opimize Tracking Speed  *
+*                                         *
+*******************************************
+*  ---  GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA
+*  ---  ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL
+
+* TPC (TPC: 400-499)
+* ==================
+
+400 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.  -1 -1 -1 1 1 1 3 1 1 1 1
+402 1e-5 1e-5 1e-3 1e-3 1e-5 1e-5 1e-5 1e-5 1e-5 -1. 1 1 1 1 1 1 3 1 1 1 1
+403 1e-5 1e-5 1e-3 1e-3 1e-5 1e-5 1e-5 1e-5 1e-5 -1. 1 1 1 1 1 1 3 1 1 1 1 
+404 1e-5 1e-5 1e-3 1e-3 1e-5 1e-5 1e-5 1e-5 1e-5 -1. 1 1 1 1 1 1 -1 1 1 1 1 
+405 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+406 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+408 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+409 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+499 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+
+* RICH (RICH: 1000-1099)
+* ======================
+*
+* Quarz Window        (>1000 keV delta-electrons)
+1003 -1. -1. -1. -1. -1. -1. -1. 1.e6
+* Freon Radiator      (> 500 keV delta-electrons)
+1004 -1. -1. -1. -1. -1. -1. -1. 5.e6
+* Methane Gap         (> 100 keV delta-electrons)
+1005 -1. -1. -1. -1. -1. -1. -1. 1.e6
+* Sensitive Volume    (>  50 keV delta-electrons)
+1009 -1. -1. -1. -1. -1. -1. -1. 5.e6
+
+* Front Absorber (ABSO: 1600-1699)
+* ================================
+
+* CARBON
+* ^^^^^^
+* unshielded
+1606 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1626 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1646 1.e-3 1.e-2 1.e-2 1.e-3
+
+* ALUMINUM
+* ^^^^^^^^
+* unshielded
+1609 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1629 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1649 1.e-3 1.e-2 1.e-2 1.e-3
+
+* IRON
+* ^^^^
+* unshielded
+1610 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1630 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1650 1.e-3 1.e-2 1.e-2 1.e-3
+
+* TUNGSTEN
+* ^^^^^^^^
+* unshielded
+1612 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1632 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1652 1.e-3 1.e-2 1.e-2 1.e-3
+
+* LEAD
+* ^^^^
+* unshielded
+1613 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1633 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1653 1.e-3 1.e-2 1.e-2 1.e-3
+
+* Air
+* ^^^
+* unshielded
+1615 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1635 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1655 1.e-3 1.e-2 1.e-2 1.e-3
+
+* VACUUM
+* ^^^^^^
+* unshielded
+1616 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1636 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1656 1.e-3 1.e-2 1.e-2 1.e-3
+
+* CONCRETE
+* ^^^^^^^^
+* unshielded
+1617 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1637 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1657 1.e-3 1.e-2 1.e-2 1.e-3
+
+* POLY CH_2
+* ^^^^^^^^^
+* unshielded
+1618 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1638 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1658 1.e-3 1.e-2 1.e-2 1.e-3
+
+* STEEL
+* ^^^^^
+* unshielded
+1619 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1639 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1659 1.e-3 1.e-2 1.e-2 1.e-3
+
+* Beam Shield (SHIL: 1700-1799)
+* =============================
+
+* ALUMINUM
+* ^^^^^^^^
+* unshielded
+1709 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1729 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1749 1.e-3 1.e-2 1.e-2 1.e-3
+
+* IRON
+* ^^^^
+* unshielded
+1710 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1730 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1750 1.e-3 1.e-2 1.e-2 1.e-3
+
+* TUNGSTEN
+* ^^^^^^^^
+* unshielded
+1712 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1732 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1752 1.e-3 1.e-2 1.e-2 1.e-3
+
+* LEAD
+* ^^^^
+* unshielded
+1713 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1733 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1753 1.e-3 1.e-2 1.e-2 1.e-3
+
+* Air
+* ^^^
+* unshielded
+1715 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1735 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1755 1.e-3 1.e-2 1.e-2 1.e-3
+
+* VACUUM
+* ^^^^^^
+* unshielded
+1716 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1736 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1756 1.e-3 1.e-2 1.e-2 1.e-3
+
+* STEEL
+* ^^^^^
+* unshielded
+1719 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1739 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1759 1.e-3 1.e-2 1.e-2 1.e-3
+
+
+* L3 Magnet (MAG: 300-301)
+* ========================
+
+* ALUMINUM
+* ^^^^^^^^
+* unshielded
+309 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+329 1.e-3 1.e-2 1.e-2 1.e-3
+
+* IRON
+* ^^^^
+* unshielded
+310 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+330 1.e-3 1.e-2 1.e-2 1.e-3
+
+* Air
+* ^^^
+* unshielded
+315 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+335 1.e-3 1.e-2 1.e-2 1.e-3
+
+
+* Hall (HALL: 1900-1999)
+* ======================
+
+* IRON
+* ^^^^
+* unshielded
+1910 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1930 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1950 1.e-3 1.e-2 1.e-2 1.e-3
+
+* Air
+* ^^^
+* unshielded
+1915 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+1935 1.e-3 1.e-2 1.e-2 1.e-3
+* very shielded
+1955 1.e-3 1.e-2 1.e-2 1.e-3
+
+* CONCRETE
+* ^^^^^^^^
+* close
+1917 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* far
+1937 1.e-3 1.e-2 1.e-2 1.e-3
+* very far
+1957 1.e-3 1.e-2 1.e-2 1.e-3
+
+
+* Beam Pipe (PIPE: 2000-2099)
+* ===========================
+
+* Beryllium
+* ^^^^^^^^^
+2005 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+
+* Air
+* ^^^
+2015 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+
+* Vacuum
+* ^^^^^^
+2016 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+
+* Steel
+* ^^^^^
+2019 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+
+
+* Space Frame (FRAME: 1200-1299)
+* ==============================
+
+* Air
+* ^^^
+1215 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+
+* Steel
+* ^^^^^
+1219 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+
+

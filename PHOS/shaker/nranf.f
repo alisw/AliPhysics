@@ -1,0 +1,13 @@
+      SUBROUTINE NRAN(VECTOR,N)
+      DIMENSION VECTOR(N)
+      DO 100 I=1,N
+      VECTOR(I) = RNDM(I)
+  100 CONTINUE
+      RETURN
+      ENTRY NRANIN (V)
+      CALL RDMIN(V)
+      RETURN
+      ENTRY NRANUT (V)
+      CALL RDMOUT(V)
+      RETURN
+      END

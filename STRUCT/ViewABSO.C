@@ -1,0 +1,26 @@
+//void ViewABSO()
+{
+   gMC->Gsatt("ABSM","seen",1);
+   gMC->Gsatt("ANOS","seen",1);
+   gMC->Gsatt("ASST","seen",1);
+   gMC->Gsatt("AWFS","seen",1);
+   gMC->Gsatt("APBS","seen",1);
+   gMC->Gsatt("APOL","seen",1);
+   gMC->Gsatt("AWI1","seen",1);
+   gMC->Gsatt("AWI2","seen",1);
+   gMC->Gsatt("ACON","seen",1);
+   gMC->Gsatt("ARE1","seen",1);
+   gMC->Gsatt("ARE2","seen",1);
+   gMC->Gsatt("ARE3","seen",1);
+   gMC->Gsatt("ARE4","seen",1);
+   gMC->Gsatt("ARE5","seen",1);
+   gMC->Gsatt("ARE6","seen",1);
+   gMC->Gsatt("ARE7","seen",1);
+   gMC->Gsatt("ARIN","seen",1);
+   gMC->Gsatt("AATU","seen",1);
+   gMC->Gsatt("ATUB","seen",1);
+   gMC->Gsatt("AAT1","seen",1);
+   gMC->Gsatt("ATU1","seen",1);
+   gMC->Gsatt("ASUP","seen",1);
+   gMC->Gsatt("AF63","seen",1);
+}

@@ -1,0 +1,42 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:18  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE EPDITR(BETA,DMAX,UCORR,ICORR,GNORM)
+C
+C     THE EXTRAPOLATED-LIEBMANN ITERATION
+C
+      DIMENSION DUM1(7025),UMAT(3250),DUM2(20),NUMPT(2900),DIFCO(2900,5)
+      COMMON  DUM1   , NC     , NR     , KODBAS , DX     , DY
+      COMMON  JOBNUM , UMAT   , NEQU   , DUM2   , NUMPT  , DIFCO
+      DMAX=0
+      GNORM=0
+      DO 2 I=1,NEQU
+      J=NUMPT(I)
+      K=J+NC
+      L=J-NC
+      RES=DIFCO(I,5)-UMAT(J)
+      IF(DIFCO(I,1))22,21,22
+   22 RES=RES+DIFCO(I,1)*UMAT(J+1)
+   21 IF(DIFCO(I,2))24,23,24
+   24 RES=RES+DIFCO(I,2)*UMAT(K)
+   23 IF(DIFCO(I,3))26,25,26
+   26 RES=RES+DIFCO(I,3)*UMAT(J-1)
+   25 IF(DIFCO(I,4))28,27,28
+   28 RES=RES+DIFCO(I,4)*UMAT(L)
+   27 CONTINUE
+      DELTA=BETA*RES
+      UMAT(J)=UMAT(J)+DELTA
+      GNORM=GNORM+ABS(DELTA)
+      IF(ABS(DELTA)-DMAX)2,2,1
+    1 DMAX=ABS(DELTA)
+      UCORR=UMAT(J)
+      ICORR=I
+    2 CONTINUE
+      RETURN
+      END

@@ -1,0 +1,33 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:03:26  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE GRDCMP (N,NCOMP,INDEX,X,FVAL,DELTA,XHI,XTEMP,GRAD)
+      INTEGER N, NCOMP
+      INTEGER INDEX(NCOMP)
+      DOUBLE PRECISION FVAL, DELTA
+      DOUBLE PRECISION X(N), XHI(N), XTEMP(N), GRAD(NCOMP)
+      INTEGER I, II
+      DOUBLE PRECISION DELX, DFUN, FDIF, FTEMP
+CMM   INTEGER IABS
+      IF(NCOMP.LE.0) RETURN
+      DO 10 I=1,N
+      XTEMP(I)=X(I)
+ 10   CONTINUE
+      DO 20 I=1,NCOMP
+      DELX=DELTA
+      II=ABS(INDEX(I))
+      IF((X(II)+DELTA).GT.XHI(II)) DELX=-DELTA
+      XTEMP(II)=X(II)+DELX
+      FTEMP=DFUN(N,XTEMP)
+      XTEMP(II)=X(II)
+      FDIF=(FTEMP-FVAL)/DELX
+      GRAD(I)=FDIF
+ 20   CONTINUE
+      RETURN
+      END

@@ -1,0 +1,40 @@
+# Which Machine 
+PLATFORM      = alpha
+
+# The compilers
+CXX           = cxx
+F77	      = f77
+
+# Global optimisation
+OPT	      = -O
+OPT           = -g
+
+# Shared library suffix
+SL	      = so
+
+# The options
+CXXOPTS       = -I/usr/include
+COPT          = $(OPT)
+FOPT          = $(OPT) -nofor_main
+
+# CERNLIB defines
+
+CLIBDEFS      = -DCERNLIB_DECS -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      = 
+CLIBFOPT      = -I.
+
+# Additional directories for dependencies
+
+DEPINC	      = -I/usr/include/cxx
+
+LD            = cxx
+LDFLAGS       = $(OPT)
+SOFLAGS       = -b
+SHFLIB        = -lUfor -lfor -lFutil -lm
+
+G3LIBS        = -lgeant321
+CLIBS         = -lminicern
+
+LIBS          = $(ROOTLIBS) -lNew -lm
+GLIBS         = $(ROOTLIBS) $(ROOTGLIBS)  -lXm -lXt -lX11 -lm -lPW

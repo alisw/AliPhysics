@@ -1,0 +1,200 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.4  1997/09/04 12:10:28  mclareni
+* Remove non NT mod introduced with NT mods, the test and Sigma fail
+*
+* Revision 1.3  1997/09/02 16:09:37  mclareni
+* WINNT corrections
+*
+* Revision 1.2  1997/04/07 10:01:01  mclareni
+* Mods for winnt
+*
+* Revision 1.1.1.1.2.1  1997/01/21 11:26:01  mclareni
+* All mods for Winnt 96a on winnt branch
+*
+* Revision 1.1.1.1  1996/04/01 15:02:06  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+#if !defined(CERNLIB_DOUBLE)
+      FUNCTION REXPIN(X)
+#endif
+#if defined(CERNLIB_DOUBLE)
+      FUNCTION DEXPIN(X)
+#include "gen/imp64.inc"
+#endif
+      LOGICAL LEX
+      CHARACTER NAME*(*),NAMEE*(*)
+#if !defined(CERNLIB_DOUBLE)
+      PARAMETER (NAME = 'REXPIN', NAMEE = 'REXPIE')
+#endif
+#if defined(CERNLIB_DOUBLE)
+      PARAMETER (NAME = 'REXPIN/DEXPIN', NAMEE = 'REXPIE/DEXPIE')
+#endif
+      DIMENSION P1(5),Q1(5),P2(7),Q2(7),P3(7),Q3(7),P4(8),Q4(8)
+      DIMENSION A1(8),B1(8),A2(8),B2(8),A3(8),B3(8)
+
+      PARAMETER (Z1 = 1, R3 = -2*Z1/3, X0 = 0.37250 74107 81366 63D0)
+      DATA P1
+     1/+4.29312 52343 20972 6D+0, +3.98941 53870 32106 6D+1,
+     2 +2.92525 18866 92054 9D+2, +4.25696 82638 59170 3D+2,
+     3 -4.34981 43832 95212 0D+2/
+      DATA Q1
+     1/+1.00000 00000 00000 0D+0, +1.88992 88395 00296 9D+1,
+     2 +1.50950 38744 25130 9D+2, +5.68052 52718 98695 5D+2,
+     3 +7.53585 64359 84293 2D+2/
+      DATA P2
+     1/+4.30967 83946 93887 8D-1, +6.90522 52278 44435 7D+0,
+     2 +2.30192 55939 13334 6D+1, +2.43784 08879 13167 3D+1,
+     3 +9.04161 55694 63286 6D+0, +9.99979 57705 15949 7D-1,
+     4 +4.65627 10797 50956 60D-7/
+      DATA Q2
+     1/+1.03400 13040 48739 8D-1, +3.31909 21359 33016 0D+0,
+     2 +2.04494 78501 37941 7D+1, +4.12807 84189 14243 4D+1,
+     3 +3.24264 21069 51380 5D+1, +1.00411 64382 90544 8D+1,
+     4 +1.00000 00000 00000 0D+0/
+      DATA P3
+     1/-5.66575 20653 38687 4D+0, -5.45374 15888 31328 7D+2,
+     2 -1.29885 68874 64841 0D+3, -8.95927 95777 29368 1D+2,
+     3 -2.41055 82709 70148 5D+2, -2.66271 06043 18114 5D+1,
+     4 -9.99999 99999 84469 1D-1/
+      DATA Q3
+     1/+6.31657 48328 08002 3D+2, +2.40401 71322 59089 5D+3,
+     2 +2.77761 94950 91629 6D+3, +1.33278 53774 82572 3D+3,
+     3 +2.92310 03938 85332 5D+2, +2.86271 06042 21919 0D+1,
+     4 +1.00000 00000 00000 0D+0/
+      DATA P4
+     1/-8.66937 33995 10695 6D+0, -5.49142 26552 10851 5D+2,
+     2 -4.21001 61535 70699 3D+3, -2.49301 39345 86475 9D+5,
+     3 -1.19623 66934 92468 7D+5, -2.21744 62775 88453 8D+7,
+     4 +3.89280 42131 12014 1D+6, -3.91546 07380 90955 5D+8/
+      DATA Q4
+     1/+3.41718 75000 00000 0D+1, -1.60708 92658 72208 5D+3,
+     2 +3.57300 29805 85081 1D+4, -4.83547 43616 21635 1D+5,
+     3 +4.28559 62461 17490 4D+6, -2.49033 37574 05403 3D+7,
+     4 +8.91925 76757 56121 1D+7, -1.65254 29972 52109 1D+8/
+      DATA A1
+     1/-2.18086 38152 07237 1D+0, -2.19010 23385 48806 9D+1,
+     2 +9.30816 38566 21651 5D+0, +2.50762 81129 35598 3D+1,
+     3 -3.31842 53199 72211 2D+1, +6.01217 99083 00804 8D+1,
+     4 -4.32531 13287 81345 8D+1, +1.00443 10922 80779 1D+0/
+      DATA B1
+     1/+0.00000 00000 00000 0D+0, +3.93707 70185 27150 0D+0,
+     2 +3.00892 64837 29152 0D+2, -6.25041 16167 18755 4D+0,
+     3 +1.00367 43951 67257 7D+3, +1.43256 73812 19376 0D+1,
+     4 +2.73624 11988 93280 6D+3, +5.27468 85196 29078 5D-1/
+      DATA A2
+     1/-3.48334 65360 28526 1D+0, -1.86545 45488 33988 4D+1,
+     2 -8.28561 99414 06413 2D+0, -3.23467 33030 54034 6D+1,
+     3 +1.79601 68876 92516 4D+1, +1.75656 31546 96144 2D+0,
+     4 -1.95022 32128 96598 2D+0, +9.99994 29607 47082 9D-1/
+      DATA B2
+     1/+0.00000 00000 00000 0D+0, +6.95000 65588 74339 8D+1,
+     2 +5.72837 19383 73237 2D+1, +2.57776 38423 84398 7D+1,
+     3 +7.60761 14800 77345 8D+2, +2.89516 72792 51350 5D+1,
+     4 -3.43942 26689 98699 7D+0, +1.00083 86740 26391 2D+0/
+      DATA A3
+     1/-5.31686 62349 44816 2D+1, +8.91263 82257 37077 5D+0,
+     2 -1.39381 36036 44050 7D+0, -3.08336 26905 17627 0D+1,
+     3 -7.49289 16779 28844 3D+0, -5.00140 34551 59243 5D+0,
+     4 -3.00000 01678 20851 8D+0, +1.00000 00000 00583 9D+0/
+      DATA B3
+     1/+0.00000 00000 00000 0D+0, +1.04745 36265 24683 0D+3,
+     2 -6.74704 58046 58324 3D+0, +2.95999 39948 68313 3D+2,
+     3 -4.31325 83614 66279 6D+0, -7.90404 99229 89255 1D+0,
+     4 -2.99996 43294 44464 6D+0, +1.99999 99992 41308 9D+0/
+
+#if !defined(CERNLIB_DOUBLE)
+       ENTRY EXPINT
+#endif
+       LEX=.FALSE.
+       GO TO 9
+
+#if !defined(CERNLIB_DOUBLE)
+       ENTRY REXPIE
+#endif
+#if defined(CERNLIB_DOUBLE)
+#  ifdef CERNLIB_MSSTDCALL
+       ENTRY DEXPIE(x)
+#  else
+       ENTRY DEXPIE
+#  endif
+#endif
+       LEX=.TRUE.
+
+    9 IF(X .LE. -24) THEN
+       AP=A3(1)-X
+       DO 1 I = 2,7
+    1  AP=A3(I)-X+B3(I)/AP
+       H=(1-(A3(8)+B3(8)/AP)/X)/X
+       IF(.NOT.LEX) H=EXP(-X)*H
+      ELSE IF(X .LE. -12) THEN
+       AP=A2(1)-X
+       DO 2 I = 2,7
+    2  AP=A2(I)-X+B2(I)/AP
+       H=(A2(8)+B2(8)/AP)/X
+       IF(.NOT.LEX) H=EXP(-X)*H
+      ELSE IF(X .LE. -6) THEN
+       AP=A1(1)-X
+       DO 3 I = 2,7
+    3  AP=A1(I)-X+B1(I)/AP
+       H=(A1(8)+B1(8)/AP)/X
+       IF(.NOT.LEX) H=EXP(-X)*H
+      ELSE IF(X .LT. 0) THEN
+       V=R3*X-2
+       BP=0
+       DP=P4(1)
+       DO 4 I = 2,8
+       AP=BP
+       BP=DP
+    4  DP=P4(I)-AP+V*BP
+       BQ=0
+       DQ=Q4(1)
+       DO 14 I = 2,8
+       AQ=BQ
+       BQ=DQ
+   14  DQ=Q4(I)-AQ+V*BQ
+       H=-LOG(-X/X0)+(X+X0)*(DP-AP)/(DQ-AQ)
+       IF(LEX) H=EXP(X)*H
+      ELSE IF(X .EQ. 0) THEN
+       H=0
+       IF(.NOT.LEX) CALL MTLPRT(NAME ,'C337.1','ARGUMENT X = 0')
+       IF(     LEX) CALL MTLPRT(NAMEE,'C337.1','ARGUMENT X = 0')
+      ELSE IF(X .LT. 1) THEN
+       AP=P1(1)
+       AQ=Q1(1)
+       DO 5 I = 2,5
+       AP=P1(I)+X*AP
+    5  AQ=Q1(I)+X*AQ
+       H=-LOG(X)+AP/AQ
+       IF(LEX) H=EXP(X)*H
+      ELSE IF(X .LE. 4) THEN
+       Y=1/X
+       AP=P2(1)
+       AQ=Q2(1)
+       DO 6 I = 2,7
+       AP=P2(I)+Y*AP
+    6  AQ=Q2(I)+Y*AQ
+       H=AP/AQ
+       IF(.NOT.LEX) H=EXP(-X)*H
+      ELSE
+       Y=1/X
+       AP=P3(1)
+       AQ=Q3(1)
+       DO 7 I = 2,7
+       AP=P3(I)+Y*AP
+    7  AQ=Q3(I)+Y*AQ
+       H=Y*(1+Y*AP/AQ)
+       IF(.NOT.LEX) H=EXP(-X)*H
+      END IF
+#if !defined(CERNLIB_DOUBLE)
+      REXPIN=H
+#endif
+#if defined(CERNLIB_DOUBLE)
+      DEXPIN=H
+#endif
+      RETURN
+      END

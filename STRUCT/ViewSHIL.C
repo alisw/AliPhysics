@@ -1,0 +1,30 @@
+//void ViewSHIL()
+{
+   gMC->Gsatt("YMOT","seen",1);
+   gMC->Gsatt("YMS1","seen",1);
+   gMC->Gsatt("YSH1","seen",1);
+   gMC->Gsatt("YAC1","seen",1);
+   gMC->Gsatt("YAC2","seen",1);
+   gMC->Gsatt("YSC1","seen",1);
+   gMC->Gsatt("YSC2","seen",1);
+   gMC->Gsatt("YMB1","seen",1);
+   gMC->Gsatt("YBS1","seen",1);
+   gMC->Gsatt("YMS2","seen",1);
+   gMC->Gsatt("YSH2","seen",1);
+   gMC->Gsatt("YMB2","seen",1);
+   gMC->Gsatt("YBS2","seen",1);
+   gMC->Gsatt("YMS3","seen",1);
+   gMC->Gsatt("YSH3","seen",1);
+   gMC->Gsatt("YMB3","seen",1);
+   gMC->Gsatt("YBS3","seen",1);
+   gMC->Gsatt("YMB5","seen",1);
+   gMC->Gsatt("YBS5","seen",1);
+   gMC->Gsatt("YNW1","seen",1);
+   gMC->Gsatt("YMB6","seen",1);
+   gMC->Gsatt("YBS6","seen",1);
+   gMC->Gsatt("YMS4","seen",1);
+   gMC->Gsatt("YSH4","seen",1);
+   gMC->Gsatt("YNW2","seen",1);
+   gMC->Gsatt("YMB4","seen",1);
+   gMC->Gsatt("YBS4","seen",1);
+}

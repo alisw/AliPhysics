@@ -1,0 +1,122 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:01:54  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+#if !defined(CERNLIB_IBM)
+#if defined(CERNLIB_DOUBLE)
+      FUNCTION DLGAMA(X)
+C
+#include "gen/imp64.inc"
+C
+      CHARACTER*(*) NAME
+      PARAMETER(NAME='ALGAMA/DLGAMA')
+#endif
+#if !defined(CERNLIB_DOUBLE)
+      FUNCTION ALGAMA(X)
+C
+      CHARACTER*(*) NAME
+      PARAMETER(NAME='ALGAMA')
+#endif
+C
+      DIMENSION P1(7),Q1(7),P2(7),Q2(7),P3(7),Q3(7),C(5)
+
+      PARAMETER (Z1 = 1, HF = Z1/2, HF1 = 1+HF)
+      CHARACTER*80 ERRTXT
+      DATA P1
+     1/+3.84287 36567 45991D+0, +5.27068 93753 00983D+1,
+     2 +5.55840 45723 51531D+1, -2.15135 13573 72570D+2,
+     3 -2.45872 61722 29242D+2, -5.75008 93603 04123D+1,
+     4 -2.33590 98949 51284D+0/
+      DATA Q1
+     1/+1.00000 00000 00000D+0, +3.37330 47907 07074D+1,
+     2 +1.93877 84034 37713D+2, +3.08829 54973 42428D+2,
+     3 +1.50068 39064 89095D+2, +2.01068 51344 33395D+1,
+     4 +4.57174 20282 50299D-1/
+      DATA P2
+     1/+4.87402 01396 83863 6D+0, +2.48845 25168 57407 6D+2,
+     2 +2.17973 66058 89591 5D+3, +3.79751 24011 52511 8D+3,
+     3 -1.97780 70769 84164 6D+3, -3.69298 34005 59128 2D+3,
+     4 -5.60177 73537 80387 7D+2/
+      DATA Q2
+     1/+1.00000 00000 00000 0D+0, +9.50999 17418 20893 8D+1,
+     2 +1.56120 45277 92863 5D+3, +7.23400 87928 94807 1D+3,
+     3 +1.04595 76594 05895 9D+4, +4.16994 15153 20023 1D+3,
+     4 +2.76785 83623 80410 1D+2/
+      DATA P3
+     1/-6.88062 40094 59425D+3, -4.30699 69819 57098D+5,
+     2 -4.75045 94653 43956D+6, -2.94234 45930 32234D+6,
+     3 +3.63218 04931 54257D+7, -3.35677 82814 54576D+6,
+     4 -2.48043 69488 28593D+7/
+      DATA Q3
+     1/+1.00000 00000 00000D+0, -1.42168 29839 65146D+3,
+     2 -1.55528 90280 85353D+5, -3.41525 17108 01107D+6,
+     3 -2.09696 23255 80444D+7, -3.45441 75093 34395D+7,
+     4 -9.16055 82863 71317D+6/
+      DATA C
+     1/ 1.12249 21356 561D-1,  7.95916 92961 204D-2,
+     1 -1.70877 94611 020D-3,  9.18938 53320 467D-1,
+     2  1.34699 05627 879D+0/
+
+
+#if defined(CERNLIB_DOUBLE)
+      ENTRY DLOGAM(X)
+#endif
+#if !defined(CERNLIB_DOUBLE)
+      ENTRY ALOGAM(X)
+#endif
+
+      IF(X .LE. 0) THEN
+       H=0
+       WRITE(ERRTXT,101) X
+       CALL MTLPRT(NAME,'C304.1',ERRTXT)
+      ELSE IF(X .EQ. 1 .OR. X .EQ. 2) THEN
+       H=0
+      ELSE IF(X .LE. HF) THEN
+       Y=X+1
+       AP=P1(1)
+       AQ=Q1(1)
+       DO 2 I = 2,7
+       AP=P1(I)+Y*AP
+    2  AQ=Q1(I)+Y*AQ
+       H=-LOG(X)+X*AP/AQ
+      ELSE IF(X .LE. HF1) THEN
+       AP=P1(1)
+       AQ=Q1(1)
+       DO 3 I = 2,7
+       AP=P1(I)+X*AP
+    3  AQ=Q1(I)+X*AQ
+       H=(X-1)*AP/AQ
+      ELSE IF(X .LE. 4) THEN
+       AP=P2(1)
+       AQ=Q2(1)
+       DO 4 I = 2,7
+       AP=P2(I)+X*AP
+    4  AQ=Q2(I)+X*AQ
+       H=(X-2)*AP/AQ
+      ELSE IF(X .LE. 12) THEN
+       AP=P3(1)
+       AQ=Q3(1)
+       DO 5 I = 2,7
+       AP=P3(I)+X*AP
+    5  AQ=Q3(I)+X*AQ
+       H=AP/AQ
+      ELSE
+       Y=1/X**2
+       H=(X-HF)*LOG(X)-X+C(4)+(C(1)+Y*(C(2)+Y*C(3)))/
+     1                                        ((C(5)+Y)*X)
+      ENDIF
+#if defined(CERNLIB_DOUBLE)
+      DLGAMA=H
+#endif
+#if !defined(CERNLIB_DOUBLE)
+      ALGAMA=H
+#endif
+      RETURN
+  101 FORMAT('NON-POSITIVE ARGUMENT  X = ',1P,E15.6)
+      END
+#endif

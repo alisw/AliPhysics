@@ -1,0 +1,10 @@
+      PROGRAM JETTST
+C
+      EXTERNAL LUDATA,PYDATA
+
+      MPAR = 1
+C
+      CALL LUTEST(MPAR)
+      CALL PYTEST(MPAR)
+C
+      END

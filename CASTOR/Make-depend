@@ -1,0 +1,21 @@
+##### DEPENDENCIES #####
+ 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+AliCASTOR.o: AliCASTOR.h /hdb2/offline/pro/include/AliDetector.h
+AliCASTOR.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliCASTOR.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliCASTOR.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliCASTOR.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliCASTOR.o: /soft/root/include/TObject.h /soft/root/include/TNode.h
+AliCASTOR.o: /soft/root/include/TPGON.h /hdb2/offline/pro/include/AliRun.h
+AliCASTOR.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliCASTOR.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliCASTOR.o: /soft/root/include/TGeometry.h
+AliCASTOR.o: /hdb2/offline/pro/include/AliHeader.h
+AliCASTOR.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliCASTOR.o: /hdb2/offline/pro/include/AliMC.h
+AliCASTOR.o: /hdb2/offline/pro/include/AliGenerator.h
+AliCASTOR.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliCASTOR.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliCASTOR.o: /hdb2/offline/pro/include/AliConst.h /soft/root/include/TMath.h

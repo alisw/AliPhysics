@@ -1,0 +1,191 @@
+// -*- C++ -*-
+// $Id$
+// ---------------------------------------------------------------------------
+//
+// This file is a part of the CLHEP - a Class Library for High Energy Physics.
+// 
+// This is the definitions of the inline member functions of the
+// HepLorentzVector class.
+//
+
+#ifdef HEP_DEBUG_INLINE
+#define inline
+#endif
+
+inline HepDouble HepLorentzVector::x() const { return pp.x(); }
+inline HepDouble HepLorentzVector::y() const { return pp.y(); }
+inline HepDouble HepLorentzVector::z() const { return pp.z(); }
+inline HepDouble HepLorentzVector::t() const { return ee; }
+
+inline HepLorentzVector::
+HepLorentzVector(HepDouble x, HepDouble y, HepDouble z, HepDouble t)
+  : pp(x, y, z), ee(t) {}
+
+inline HepLorentzVector::HepLorentzVector(const Hep3Vector & p, HepDouble e)
+  : pp(p), ee(e) {}
+
+inline HepLorentzVector::HepLorentzVector(const HepLorentzVector & p)
+  : pp(p.x(), p.y(), p.z()), ee(p.t()) {}
+
+inline HepLorentzVector::~HepLorentzVector() {}
+
+inline HepLorentzVector::operator Hep3Vector () const { return pp; }
+inline HepLorentzVector::operator Hep3Vector & () { return pp; }
+
+inline void HepLorentzVector::setX(HepDouble a) { pp.setX(a); } 
+inline void HepLorentzVector::setY(HepDouble a) { pp.setY(a); }
+inline void HepLorentzVector::setZ(HepDouble a) { pp.setZ(a); }
+inline void HepLorentzVector::setT(HepDouble a) { ee = a;}
+
+inline HepDouble HepLorentzVector::px() const { return pp.x(); }
+inline HepDouble HepLorentzVector::py() const { return pp.y(); }
+inline HepDouble HepLorentzVector::pz() const { return pp.z(); }
+inline HepDouble HepLorentzVector::e()  const { return ee; }
+
+inline void HepLorentzVector::setPx(HepDouble a) { pp.setX(a); } 
+inline void HepLorentzVector::setPy(HepDouble a) { pp.setY(a); }
+inline void HepLorentzVector::setPz(HepDouble a) { pp.setZ(a); }
+inline void HepLorentzVector::setE(HepDouble a)  { ee = a;}
+
+inline Hep3Vector HepLorentzVector::vect() const { return pp; } 
+inline void HepLorentzVector::setVect(const Hep3Vector &p) { pp = p; } 
+
+inline HepDouble HepLorentzVector::theta() const { return pp.theta(); }
+inline HepDouble HepLorentzVector::cosTheta() const { return pp.cosTheta(); }
+inline HepDouble HepLorentzVector::phi() const { return pp.phi(); }
+inline HepDouble HepLorentzVector::rho() const { return pp.mag(); }
+
+inline void HepLorentzVector::setTheta(HepDouble a) { pp.setTheta(a); }
+inline void HepLorentzVector::setPhi(HepDouble a) { pp.setPhi(a); }
+inline void HepLorentzVector::setRho(HepDouble a) { pp.setMag(a); }
+
+inline HepDouble HepLorentzVector::operator () (int i) const {
+  if (i==3) { return ee; } else { return pp(i); }
+}
+
+inline HepLorentzVector &
+HepLorentzVector::operator = (const HepLorentzVector & q) {
+  pp = q.vect();
+  ee = q.t();
+  return *this;
+}
+
+inline HepLorentzVector
+HepLorentzVector::operator + (const HepLorentzVector & q) const {
+  return HepLorentzVector(x()+q.x(), y()+q.y(), z()+q.z(), t()+q.t());
+}
+
+inline HepLorentzVector &
+HepLorentzVector::operator += (const HepLorentzVector & q) {
+  pp += q.vect();
+  ee += q.t();
+  return *this;
+}
+
+inline HepLorentzVector
+HepLorentzVector::operator - (const HepLorentzVector & q) const {
+  return HepLorentzVector(x()-q.x(), y()-q.y(), z()-q.z(), t()-q.t());
+}
+
+inline HepLorentzVector &
+HepLorentzVector::operator -= (const HepLorentzVector & q) {
+  pp -= q.vect();
+  ee -= q.t();
+  return *this;
+}
+
+inline HepLorentzVector HepLorentzVector::operator - () const {
+  return HepLorentzVector(-x(), -y(), -z(), -t());
+}
+
+inline HepBoolean
+HepLorentzVector::operator == (const HepLorentzVector & q) const {
+  return (vect()==q.vect() && t()==q.t());
+}
+
+inline HepBoolean
+HepLorentzVector::operator != (const HepLorentzVector & q) const {
+  return (vect()!=q.vect() || t()!=q.t());
+}
+
+inline HepDouble HepLorentzVector::perp2() const {
+  return pp.perp2();
+} 
+
+inline HepDouble HepLorentzVector::perp() const {
+  return pp.perp();
+}
+
+inline HepDouble HepLorentzVector::perp2(const Hep3Vector &v) const {
+  return pp.perp2(v);
+}
+
+inline HepDouble HepLorentzVector::perp(const Hep3Vector &v) const {
+  return pp.perp(v);
+}
+
+inline HepDouble HepLorentzVector::angle(const Hep3Vector &v) const {
+  return pp.angle(v);
+}
+
+inline HepDouble HepLorentzVector::mag2() const {
+  return t()*t() - pp.mag2();
+}
+
+inline HepDouble HepLorentzVector::mag() const {
+  HepDouble mm = mag2();
+  return mm < 0.0 ? -sqrt(-mm) : sqrt(mm);
+}
+
+inline HepDouble HepLorentzVector::m2() const { return mag2(); }
+inline HepDouble HepLorentzVector::m() const { return mag(); }
+
+
+inline HepDouble HepLorentzVector::dot(const HepLorentzVector & q) const {
+  return t()*q.t() - z()*q.z() - y()*q.y() - x()*q.x();
+}
+
+inline HepDouble
+HepLorentzVector::operator * (const HepLorentzVector & q) const {
+  return dot(q);
+}
+
+inline HepDouble HepLorentzVector::plus() const {
+  return t() + z();
+}
+
+inline HepDouble HepLorentzVector::minus() const {
+  return t() - z();
+}
+
+inline Hep3Vector HepLorentzVector::boostVector() const {
+  return Hep3Vector(x()/t(), y()/t(), z()/t());
+}
+
+inline void HepLorentzVector::boost(const Hep3Vector & b){
+  boost(b.x(), b.y(), b.z());
+}
+
+inline void HepLorentzVector::rotateX(HepDouble a) { pp.rotateX(a); }
+inline void HepLorentzVector::rotateY(HepDouble a) { pp.rotateY(a); }
+inline void HepLorentzVector::rotateZ(HepDouble a) { pp.rotateZ(a); }
+inline void HepLorentzVector::rotateUz(Hep3Vector &v) { pp.rotateUz(v); }
+inline void HepLorentzVector::rotate(HepDouble a, const Hep3Vector &v) {
+ pp.rotate(a,v);
+}
+
+inline HepLorentzVector &
+HepLorentzVector::operator *= (const HepRotation & m) {
+  pp *= m;
+  return *this;
+}
+
+inline HepLorentzVector &
+HepLorentzVector::transform(const HepRotation & m) {
+  pp.transform(m);
+  return *this;
+}
+
+#ifdef HEP_DEBUG_INLINE
+#undef inline
+#endif

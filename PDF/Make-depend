@@ -1,0 +1,331 @@
+##### DEPENDENCIES #####
+ 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+spdf/abfkw1.o: pdf/pilot.h pdf/expdp.inc
+spdf/abfkw2.o: pdf/pilot.h pdf/expdp.inc
+spdf/abfkw3.o: pdf/pilot.h pdf/expdp.inc
+spdf/acfgp1.o: pdf/pilot.h pdf/expdp.inc
+spdf/acfgp2.o: pdf/pilot.h pdf/expdp.inc
+spdf/afcplu.o: pdf/pilot.h
+spdf/afgetfv.o: pdf/pilot.h pdf/expdp.inc
+spdf/afgin2.o: pdf/pilot.h
+spdf/afgint.o: pdf/pilot.h
+spdf/afpolin.o: pdf/pilot.h
+spdf/afratin.o: pdf/pilot.h
+spdf/alphas2.o: pdf/pilot.h pdf/impdp.inc pdf/w5051p1.inc pdf/w5051p2.inc
+spdf/alphas2.o: pdf/w5051p7.inc pdf/w50510.inc pdf/w50511.inc pdf/expdp.inc
+spdf/alphas2.o: pdf/w50512.inc pdf/w50513.inc pdf/w50515.inc pdf/w50516.inc
+spdf/alphas2.o: pdf/w50517.inc pdf/w50519.inc pdf/w505120.inc pdf/w505121.inc
+spdf/alphas2.o: pdf/expdp.inc pdf/w50511c.inc
+spdf/augetfv.o: pdf/pilot.h
+spdf/aurgam.o: pdf/pilot.h
+spdf/aurpi1.o: pdf/pilot.h pdf/expdp.inc
+spdf/aurpi2.o: pdf/pilot.h pdf/expdp.inc
+spdf/aurpi3.o: pdf/pilot.h pdf/expdp.inc
+spdf/aurpr.o: pdf/pilot.h pdf/expdp.inc
+spdf/bbeta.o: pdf/pilot.h pdf/expdp.inc
+spdf/beta.o: pdf/pilot.h
+spdf/bxf3.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/bxglue.o: pdf/pilot.h pdf/impdp.inc
+spdf/bxqbar.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq1opd.o: pdf/pilot.h pdf/expdp.inc
+spdf/ctq1opf.o: pdf/pilot.h
+spdf/ctq1pd.o: pdf/pilot.h pdf/expdp.inc
+spdf/ctq1pf.o: pdf/pilot.h
+spdf/ctq2opd.o: pdf/pilot.h pdf/expdp.inc
+spdf/ctq2opf.o: pdf/pilot.h
+spdf/ctq2ops.o: pdf/pilot.h
+spdf/ctq2ppd.o: pdf/pilot.h pdf/expdp.inc
+spdf/ctq2ppf.o: pdf/pilot.h
+spdf/ctq2pps.o: pdf/pilot.h
+spdf/ctq3pd.o: pdf/pilot.h pdf/expdp.inc
+spdf/ctq3pds.o: pdf/pilot.h
+spdf/ctq3pf.o: pdf/pilot.h
+spdf/ctq4Fn.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq4PnX.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq4RA1.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq4RA2.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq4RA4.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq4RA5.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq4RD.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq4RHJ.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq4RL.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq4RM.o: pdf/pilot.h pdf/impdp.inc
+spdf/ctq4RlQ.o: pdf/pilot.h pdf/impdp.inc
+spdf/dbfint.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/dflm1.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/dflm2.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/dflm3.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/dflm4.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/dflm5.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/dflm6.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/dflm7.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/dflm8.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/dflm9.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/dgpho1.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/dgpho2.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/dgpho3.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/dgpho4.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/dopho1.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/dopho2.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/dpolin.o: pdf/pilot.h pdf/impdp.inc
+spdf/fxaver.o: pdf/pilot.h
+spdf/fxg160.o: pdf/pilot.h
+spdf/fxg260.o: pdf/pilot.h
+spdf/fxg360.o: pdf/pilot.h
+spdf/fxghar.o: pdf/pilot.h
+spdf/fxgsof.o: pdf/pilot.h
+spdf/fxnlla.o: pdf/pilot.h
+spdf/fxvhar.o: pdf/pilot.h
+spdf/fxvsof.o: pdf/pilot.h
+spdf/gamfun.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/gammado.o: pdf/pilot.h
+spdf/ghrdv.o: pdf/pilot.h
+spdf/ghrgl.o: pdf/pilot.h
+spdf/ghruv.o: pdf/pilot.h
+spdf/ghrxi.o: pdf/pilot.h
+spdf/ghrxs.o: pdf/pilot.h
+spdf/gr94fv.o: pdf/pilot.h
+spdf/gr94fw.o: pdf/pilot.h
+spdf/gr94fws.o: pdf/pilot.h
+spdf/grsf1.o: pdf/pilot.h pdf/impdp.inc
+spdf/grsf2.o: pdf/pilot.h pdf/impdp.inc
+spdf/grsgalo.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/grsvh1.o: pdf/pilot.h pdf/impdp.inc
+spdf/grsvh2.o: pdf/pilot.h pdf/impdp.inc
+spdf/grsvl1.o: pdf/pilot.h pdf/impdp.inc
+spdf/grsvl2.o: pdf/pilot.h pdf/impdp.inc
+spdf/grv94di.o: pdf/pilot.h pdf/expdp.inc
+spdf/grv94ho.o: pdf/pilot.h pdf/expdp.inc
+spdf/grv94lo.o: pdf/pilot.h pdf/expdp.inc
+spdf/grvfgp.o: pdf/pilot.h
+spdf/grvfqbp.o: pdf/pilot.h
+spdf/grvfv.o: pdf/pilot.h
+spdf/grvfvp.o: pdf/pilot.h
+spdf/grvfw.o: pdf/pilot.h
+spdf/grvfws.o: pdf/pilot.h
+spdf/grvgah0.o: pdf/pilot.h pdf/expdp.inc
+spdf/grvgaho.o: pdf/pilot.h pdf/expdp.inc
+spdf/grvgalo.o: pdf/pilot.h pdf/expdp.inc
+spdf/grvgf.o: pdf/pilot.h
+spdf/grvgfs.o: pdf/pilot.h
+spdf/grvho.o: pdf/pilot.h pdf/expdp.inc
+spdf/grvlo.o: pdf/pilot.h pdf/expdp.inc
+spdf/grvpiho.o: pdf/pilot.h pdf/expdp.inc
+spdf/grvpilo.o: pdf/pilot.h pdf/expdp.inc
+spdf/gs2xcor.o: pdf/pilot.h
+spdf/gs96ho.o: pdf/pilot.h pdf/impdp.inc
+spdf/gs96lo.o: pdf/pilot.h pdf/impdp.inc
+spdf/gsxcor.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/hmrs1eb.o: pdf/pilot.h pdf/impdp.inc
+spdf/hmrs2eb.o: pdf/pilot.h pdf/impdp.inc
+spdf/hmrs3eb.o: pdf/pilot.h pdf/impdp.inc
+spdf/hmrsgeb.o: pdf/pilot.h pdf/impdp.inc
+spdf/kmrseb.o: pdf/pilot.h pdf/impdp.inc
+spdf/kmrsgeb.o: pdf/pilot.h pdf/impdp.inc
+spdf/mrsdshd.o: pdf/pilot.h pdf/impdp.inc
+spdf/mrsdshp.o: pdf/pilot.h pdf/impdp.inc
+spdf/mrseb.o: pdf/pilot.h pdf/impdp.inc
+spdf/mrsebp.o: pdf/pilot.h pdf/impdp.inc
+spdf/newdo1.o: pdf/pilot.h pdf/expdp.inc
+spdf/pdfset.o: pdf/pilot.h pdf/impdp.inc pdf/w5051p0.inc pdf/w5051p1.inc
+spdf/pdfset.o: pdf/w5051p2.inc pdf/w5051p3.inc pdf/w5051p7.inc pdf/w50510.inc
+spdf/pdfset.o: pdf/w50511.inc pdf/expdp.inc pdf/w50512.inc pdf/w50513.inc
+spdf/pdfset.o: pdf/w50514.inc pdf/w50514w.inc pdf/w50515.inc pdf/w50516.inc
+spdf/pdfset.o: pdf/w50517.inc pdf/w50518.inc pdf/w50519.inc pdf/w505110.inc
+spdf/pdfset.o: pdf/w505120.inc pdf/w505121.inc pdf/w505122.inc pdf/expdp.inc
+spdf/pdfset.o: pdf/w50511c.inc
+spdf/pdfsta.o: pdf/pilot.h pdf/impdp.inc pdf/w5051p2.inc pdf/w5051p7.inc
+spdf/pdfsta.o: pdf/w50510.inc pdf/w50511.inc pdf/expdp.inc pdf/w50512.inc
+spdf/pdfsta.o: pdf/w50513.inc pdf/w50514.inc pdf/w50515.inc pdf/w50517.inc
+spdf/pdfsta.o: pdf/w505110.inc pdf/w505122.inc
+spdf/pdfvers.o: pdf/pilot.h pdf/w5051p7.inc pdf/w50516.inc pdf/w50517.inc
+spdf/pdxmt.o: pdf/pilot.h pdf/impdp.inc
+spdf/pdzxmt.o: pdf/pilot.h pdf/w50511.inc pdf/expdp.inc pdf/expdp.inc
+spdf/pftopdg.o: pdf/pilot.h pdf/expdp.inc
+spdf/phlac1.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/phlac2.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/phlac3.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/rxdv.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/rxglue.o: pdf/pilot.h pdf/impdp.inc
+spdf/rxqbar.o: pdf/pilot.h pdf/impdp.inc
+spdf/rxud.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sasan1.o: pdf/pilot.h
+spdf/sasano.o: pdf/pilot.h
+spdf/sasbeh.o: pdf/pilot.h
+spdf/sasdir.o: pdf/pilot.h
+spdf/sasgam1.o: pdf/pilot.h
+spdf/sasgam2.o: pdf/pilot.h
+spdf/sasvm1.o: pdf/pilot.h
+spdf/sasvmd.o: pdf/pilot.h
+spdf/seadis.o: pdf/pilot.h
+spdf/sfabfow.o: pdf/pilot.h pdf/expdp.inc
+spdf/sfafg1.o: pdf/pilot.h pdf/expdp.inc
+spdf/sfbma.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfbmb.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfctq11.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq12.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq13.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq14.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq15.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq21.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq22.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq23.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq24.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq25.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq26.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq31.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq32.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq33.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq41.o: pdf/pilot.h pdf/impdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq42.o: pdf/pilot.h pdf/impdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq43.o: pdf/pilot.h pdf/impdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq44.o: pdf/pilot.h pdf/impdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq45.o: pdf/pilot.h pdf/impdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq46.o: pdf/pilot.h pdf/impdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq47.o: pdf/pilot.h pdf/impdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq48.o: pdf/pilot.h pdf/impdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfctq49.o: pdf/pilot.h pdf/impdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfdisa.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfdisd0.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfdisdm.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfdish.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfdiss0.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfdsqa.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfehlq1.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfehlq2.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfgrvh.o: pdf/pilot.h pdf/expdp.inc
+spdf/sfgrvl.o: pdf/pilot.h pdf/expdp.inc
+spdf/sfgsho.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sfgslo1.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sfgslo2.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sfkbmr2.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfkbmr5.o: pdf/pilot.h pdf/impdp.inc
+spdf/sflacg1.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sflacg2.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sflacg3.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sfmfap.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmfr1.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sfmfr2.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sfmrsd0.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmrsdm.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmrsg.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmrsj.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmrss0.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfms105.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfms110.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfms115.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfms120.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfms125.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfms130.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsap.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsba.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsbb0.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsbd0.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsbdm.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsbh.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsbs0.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsfa.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsfg.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsjp.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsqa.o: pdf/pilot.h pdf/impdp.inc
+spdf/sfmsr1.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sfmsr2.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sfmsr3.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sfmsr4.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/sfmt10.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfmt11.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfmtu1.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfmtu2.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfmtu3.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfmtu4.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfmtu5.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfmtu6.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfmtu7.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfmtu8.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfmtu9.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfsas11.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfsas12.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfsas13.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfsas14.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfsas21.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfsas22.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfsas23.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfsas24.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/sfwhi1.o: pdf/pilot.h pdf/expdp.inc
+spdf/sfwhi2.o: pdf/pilot.h pdf/expdp.inc
+spdf/sfwhi3.o: pdf/pilot.h pdf/expdp.inc
+spdf/sfwhi4.o: pdf/pilot.h pdf/expdp.inc
+spdf/sfwhi5.o: pdf/pilot.h pdf/expdp.inc
+spdf/sfwhi6.o: pdf/pilot.h pdf/expdp.inc
+spdf/smrsp31.o: pdf/pilot.h pdf/impdp.inc
+spdf/smrsp32.o: pdf/pilot.h pdf/impdp.inc
+spdf/smrsp33.o: pdf/pilot.h pdf/impdp.inc
+spdf/smrspi.o: pdf/pilot.h pdf/impdp.inc
+spdf/srctq21.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/srctq22.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/srctq23.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/srctq24.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/srctq25.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/srctq26.o: pdf/pilot.h pdf/expdp.inc pdf/w50511.inc pdf/expdp.inc
+spdf/strbebc.o: pdf/pilot.h pdf/expdp.inc
+spdf/strbep.o: pdf/pilot.h pdf/impdp.inc
+spdf/strcbp.o: pdf/pilot.h pdf/impdp.inc
+spdf/strcep.o: pdf/pilot.h pdf/impdp.inc
+spdf/strdo1.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/strdo2.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/strghr.o: pdf/pilot.h pdf/expdp.inc
+spdf/strh1b.o: pdf/pilot.h pdf/impdp.inc
+spdf/strh1e.o: pdf/pilot.h pdf/impdp.inc
+spdf/strh2b.o: pdf/pilot.h pdf/impdp.inc
+spdf/strh2e.o: pdf/pilot.h pdf/impdp.inc
+spdf/strh3b.o: pdf/pilot.h pdf/impdp.inc
+spdf/strh3b1.o: pdf/pilot.h pdf/impdp.inc
+spdf/strh3b3.o: pdf/pilot.h pdf/impdp.inc
+spdf/strh3e.o: pdf/pilot.h pdf/impdp.inc
+spdf/strh3em.o: pdf/pilot.h pdf/impdp.inc
+spdf/strh3ep.o: pdf/pilot.h pdf/impdp.inc
+spdf/strkb0.o: pdf/pilot.h pdf/impdp.inc
+spdf/strkb02.o: pdf/pilot.h pdf/impdp.inc
+spdf/strkb03.o: pdf/pilot.h pdf/impdp.inc
+spdf/strkb04.o: pdf/pilot.h pdf/impdp.inc
+spdf/strkb05.o: pdf/pilot.h pdf/impdp.inc
+spdf/strkb0o.o: pdf/pilot.h pdf/impdp.inc
+spdf/strkbm.o: pdf/pilot.h pdf/impdp.inc
+spdf/strmrs1.o: pdf/pilot.h pdf/impdp.inc
+spdf/strmrs2.o: pdf/pilot.h pdf/impdp.inc
+spdf/strmrs3.o: pdf/pilot.h pdf/impdp.inc
+spdf/strowp1.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/strowp2.o: pdf/pilot.h pdf/impdp.inc pdf/expdp.inc
+spdf/strpriv.o: pdf/pilot.h pdf/impdp.inc pdf/w5051p7.inc pdf/w50517.inc
+spdf/strpriv.o: pdf/w50516.inc
+spdf/strucb.o: pdf/pilot.h pdf/impdp.inc
+spdf/struce.o: pdf/pilot.h pdf/impdp.inc
+spdf/strucor.o: pdf/pilot.h pdf/impdp.inc
+spdf/structf.o: pdf/pilot.h pdf/impdp.inc
+spdf/structm.o: pdf/pilot.h pdf/impdp.inc pdf/w5051p1.inc pdf/w5051p2.inc
+spdf/structm.o: pdf/w5051p7.inc pdf/w50510.inc pdf/w50511.inc pdf/expdp.inc
+spdf/structm.o: pdf/w50512.inc pdf/w50513.inc pdf/w50514.inc pdf/w50514w.inc
+spdf/structm.o: pdf/w50515.inc pdf/w50516.inc pdf/w50517.inc pdf/w50519.inc
+spdf/structm.o: pdf/w505120.inc pdf/w505121.inc pdf/expdp.inc pdf/w50511c.inc
+spdf/structp.o: pdf/pilot.h pdf/impdp.inc pdf/w5051p1.inc pdf/w5051p2.inc
+spdf/structp.o: pdf/w5051p7.inc pdf/w50510.inc pdf/w50511.inc pdf/expdp.inc
+spdf/structp.o: pdf/w50512.inc pdf/w50513.inc pdf/w50514.inc pdf/w50514w.inc
+spdf/structp.o: pdf/w50515.inc pdf/w50516.inc pdf/w50517.inc pdf/w50519.inc
+spdf/structp.o: pdf/w505120.inc pdf/w505121.inc pdf/expdp.inc pdf/w50511c.inc
+spdf/v3.o: pdf/pilot.h
+spdf/valdis.o: pdf/pilot.h
+spdf/wate32.o: pdf/pilot.h pdf/expdp.inc
+spdf/whit1g.o: pdf/pilot.h
+spdf/whit1q.o: pdf/pilot.h
+spdf/whit2g.o: pdf/pilot.h
+spdf/whit2q.o: pdf/pilot.h
+spdf/whit3g.o: pdf/pilot.h
+spdf/whit3q.o: pdf/pilot.h
+spdf/whit4g.o: pdf/pilot.h
+spdf/whit4q.o: pdf/pilot.h
+spdf/whit5g.o: pdf/pilot.h
+spdf/whit5q.o: pdf/pilot.h
+spdf/whit6g.o: pdf/pilot.h
+spdf/whit6q.o: pdf/pilot.h

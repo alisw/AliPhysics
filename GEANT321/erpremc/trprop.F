@@ -1,0 +1,287 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/03/06 15:37:35  mclareni
+* Add geane321 source directories
+*
+*
+*      MODIFIED FOR MAGFIELD GRADIENT 02-APR-82
+#include "geant321/pilot.h"
+*CMZ :  3.21/02 29/03/94  15.41.49  by  S.Giani
+*-- Author :
+C
+      SUBROUTINE TRPROP(X1,P1,H1,X2,P2,H2,CH,XL,R,MVAR,IFLAG,ITRAN,IERR)
+C
+C *** ERROR PROPAGATION ALONG A PARTICLE TRAJECTORY IN A MAGNETIC FIELD
+C     ROUTINE ASSUMES THAT IN THE INTERVAL (X1,X2) THE QUANTITIES 1/P
+C     AND (HX,HY,HZ) ARE RATHER CONSTANT. DELTA(PHI) MUST NOT BE TOO LARGE
+C
+C     Authors: A. Haas and W. Wittek
+C
+C *** IFLAG  =  -1   INITIALIZATION, TRANSFORMATION OF ERROR MATRIX FROM
+C                    EXTERNAL TO SC VARIABLES
+C            =   0   ERROR PROPAGATION FROM X1 TO X2
+C            =   1   TRANSFORMATION OF ERROR MATRIX FROM SC TO
+C                    EXTERNAL VARIABLES
+C
+C     ITRAN          USED FOR IFLAG = 0 OR 1 ONLY
+C            =   0   TRANSFORMATION MATRIX IS UPDATED ,BUT ERROR MATRIX IS NOT
+C                    TRANSFORMED
+C           =    1   TRANSF. MATRIX IS UPDATED  AND ERROR MATRIX IS TRANSFORMED
+C
+C     MVAR           SPECIFIES TYPE OF EXTERNAL VARIABLES
+C            =   0   ( 1/P,LAMBDA,PHI,YT, ZT ;   SC   )
+C            =   1   ( 1/P,  Y',  Z',  Y,  Z ; SPLINE )
+C
+C *** X1, P1, H1     X,Y,Z COMPONENTS OF POSITION, MOMENTUM AND MAGNETIC   INPUT
+C                    FIELD VECTOR/GRADIENT AT STARTING POINT OF INTERVAL
+C     X2, P2, H2     ......  AT END POINT OF INTERVAL                      INPUT
+C     CH             CHARGE OF PARTICLE                                    INPUT
+C     XL             PATHLENGTH FROM X1 TO X2   ( NEGATIVE IF OPPOSITE
+C                    TO ACTUAL MOVEMENT OF PARTICLE )                      INPUT
+C     R              ERROR MATRIX  (TRIANGLE)                       INPUT/OUTPUT
+C     B              5 * 5 TRANSFORMATION MATRIX FOR ERRORS IN
+C                    SC VARIABLES                                         OUTPUT
+C
+C *** IERR   =  1    ILLEGAL VALUE OF MVAR                                OUTPUT
+C               2    MOMENTUM IS ZERO
+C               3    H*ALFA/P AT X1 AND X2 DIFFER TOO MUCH
+C                    OR DELTA PHI IS TOO LARGE
+C               4    PARTICLE MOVES IN Z - DIRECTION
+C
+#if !defined(CERNLIB_SINGLE)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      REAL  X1,P1,H1,X2,P2,H2,R,CH,PS,PC,XL,SPX
+#endif
+#include "geant321/trcom3.inc"
+#include "geant321/gcunit.inc"
+      DIMENSION X1(3),P1(3),H1(9),X2(3),P2(3),H2(9)
+      DIMENSION R(15),PS(3),PC(3),HN(9)
+C
+      SAVE INIT,DELHP6,CFACT8
+*
+      DATA INIT/0/
+#if defined(CERNLIB_SINGLE)
+      DATA DELHP6/300./,DELFI6/0.1/
+      DATA CFACT8 / 2.997925 E-4 /
+#endif
+#if !defined(CERNLIB_SINGLE)
+      DATA DELHP6/300.D0/,DELFI6/0.1D0/
+      DATA CFACT8 / 2.997925 D-4 /
+#endif
+C
+      IERR=0
+      IF(IFLAG) 10, 20, 80
+C
+C *** TRANSFORM ERROR MATRIX FROM EXTERNAL TO INTERNAL VARIABLES;
+C
+   10 NEW=1
+      IF(MVAR.NE.1) GO TO 11
+      PA1=SQRT(P1(1)**2+P1(2)**2+P1(3)**2)
+      IF(PA1.EQ.0.) GO TO 902
+      PS(1)=1./PA1
+      IF(P1(1).EQ.0.) GO TO 904
+      PS(2)=P1(2)/P1(1)
+      PS(3)=P1(3)/P1(1)
+      SPX=1.
+      IF(P1(1).LT.0.) SPX=-1.
+      CALL TRSPSC(PS,R,PC,R,H1,CH,IERR,SPX)
+      GO TO 19
+C
+   11 IF(MVAR.NE.0) GO TO 901
+   19 GO TO 900
+C
+C *** ERROR PROPAGATION ON A HELIX ASSUMING SC VARIABLES
+ 
+C
+   20 PA1=SQRT(P1(1)**2+P1(2)**2+P1(3)**2)
+      PA2=SQRT(P2(1)**2+P2(2)**2+P2(3)**2)
+      IF(PA1*PA2.EQ.0.) GO TO 902
+      PM1=1./PA1
+      PM2=1./PA2
+C
+      TN(1)=P1(1)+P2(1)
+      TN(2)=P1(2)+P2(2)
+      TN(3)=P1(3)+P2(3)
+      PM12=1./SQRT(TN(1)**2+TN(2)**2+TN(3)**2)
+      TN(1)=TN(1)*PM12
+      TN(2)=TN(2)*PM12
+      TN(3)=TN(3)*PM12
+C
+      SINL=TN(3)
+      COSL=SQRT(ABS(1.-SINL**2))
+      IF(COSL.EQ.0.) GO TO 904
+      COSL1=1./COSL
+      SINP=TN(2)*COSL1
+      COSP=TN(1)*COSL1
+C
+C *** DEFINE TRANSFORMATION MATRIX BETWEEN X1 AND X2 FOR
+C *** NEUTRAL PARTICLE OR FIELDFREE REGION
+C
+      DO 26 I=1,5
+         DO 15 K=1,5
+            A(I,K)=0.
+   15    CONTINUE
+         A(I,I)=1.
+   26 CONTINUE
+      A(4,3)=XL*COSL
+      A(5,2)=XL
+C
+      IF(CH.EQ.0.) GO TO 45
+      HA1=SQRT(H1(1)**2+H1(2)**2+H1(3)**2)
+      HA2=SQRT(H2(1)**2+H2(2)**2+H2(3)**2)
+      HAM1=HA1*PM1
+      HAM2=HA2*PM2
+      HAMX = MAX(HAM1,HAM2)
+      IF(HAMX.EQ.0.) GO TO 45
+C
+C *** DEFINE AVERAGE MAGNETIC FIELD AND GRADIENT
+C
+      PM12=(PM1+PM2)*0.5
+      P12=1./(2.*PM12)
+      HN(1)=(H1(1)*PM1+H2(1)*PM2)*P12*CH*CFACT8
+      HN(2)=(H1(2)*PM1+H2(2)*PM2)*P12*CH*CFACT8
+      HN(3)=(H1(3)*PM1+H2(3)*PM2)*P12*CH*CFACT8
+      HN(4)=(H1(4)*PM1+H2(4)*PM2)*P12*CH*CFACT8
+      HN(5)=(H1(5)*PM1+H2(5)*PM2)*P12*CH*CFACT8
+      HN(6)=(H1(6)*PM1+H2(6)*PM2)*P12*CH*CFACT8
+      HN(7)=(H1(7)*PM1+H2(7)*PM2)*P12*CH*CFACT8
+      HN(8)=(H1(8)*PM1+H2(8)*PM2)*P12*CH*CFACT8
+      HN(9)=(H1(9)*PM1+H2(9)*PM2)*P12*CH*CFACT8
+C
+      B0=HN(1)*COSP+HN(2)*SINP
+      B2=-HN(1)*SINP+HN(2)*COSP
+      B3=-B0*SINL+HN(3)*COSL
+      TGL=SINL*COSL1
+C
+C
+C *** CHECK WHETHER H*ALFA/P IS TOO DIFFERENT AT X1 AND X2
+C     AND WHETHER CHANGE OF TRACK DIRECTION DUE TO MAG.FIELD IS TOO LARGE
+C
+C
+      IF(HA2.EQ.0.) GO TO 29
+ 
+      GAM=(H2(1)*TN(1)+H2(2)*TN(2)+H2(3)*TN(3))/HA2
+      GO TO 28
+   29 GAM=(H1(1)*TN(1)+H1(2)*TN(2)+H1(3)*TN(3))/HA1
+   28 CONTINUE
+      ALFA=SQRT(ABS(1.-GAM**2))
+C
+      DH2=(H1(1)*PM1-H2(1)*PM2)**2+
+     1    (H1(2)*PM1-H2(2)*PM2)**2+
+     1    (H1(3)*PM1-H2(3)*PM2)**2
+      IF(DH2*ALFA**2.GT.DELHP6**2) GO TO 903
+      ALFAQ=-ALFA*CFACT8*(HAM1+HAM2)*0.5
+      DFI=ABS(XL*ALFAQ)
+      IF(DFI.GT.DELFI6) GO TO 903
+C
+C *** COMPLETE TRANSFORMATION MATRIX BETWEEN ERRORS AT X1 AND X2
+C *** TAKING INTO ACCOUNT  FIELD GRADIENT PERPENDICULAR TO TRACK
+C
+   30 COSP2=COSP*COSP
+      SINP2=SINP*SINP
+      COSIP=COSP*SINP
+C
+      G22=SINP2*HN(9)+COSP2*HN(8)-2.0*COSIP*HN(7)
+      G33=SINL*SINL*(COSP2*HN(9)+SINP2*HN(8)+2.0*COSIP*HN(7))
+     ++COSL*(COSL*HN(6)-2.0*SINL*(COSP*HN(4)+SINP*HN(5)))
+      G23=SINL*(COSIP*(HN(9)-HN(8))+(SINP2-COSP2)*HN(7))
+     ++COSL*(COSP*HN(5)-SINP*HN(4))
+C
+      A(2,1)=XL*B2
+      A(2,3)=-B0*XL*PM12
+      A(2,4)=(B2*B3*PM12+G22)*XL*PM12
+      A(2,5)=(-B2*B2*PM12+G23)*XL*PM12
+C
+      A(3,1)=-XL*B3*COSL1
+      A(3,2)=B0*XL*PM12*COSL1**2
+      A(3,3)=1.+TGL*B2*XL*PM12
+      A(3,4)=(-B3*B3*PM12-G23)*XL*PM12*COSL1
+      A(3,5)=(B3*B2*PM12-G33)*XL*PM12*COSL1
+C
+      A(4,5)=-B3*TGL*XL*PM12
+      A(5,4)=B3*TGL*XL*PM12
+C
+   45 CONTINUE
+C
+C *** NEW = 0  TRANSFORMATION MATRIX IS UPDATED
+C           1  TRANSFORMATION MATRIX IS INITIALIZED
+C
+      IF(NEW.EQ.0) GO TO 23
+      NEW=0
+      DO 25 I=1,5
+         DO 24 K=1,5
+            B(I,K)=A(I,K)
+   24    CONTINUE
+   25 CONTINUE
+      GO TO 27
+   23 CONTINUE
+C
+      CALL XMM55(A,B,B)
+C
+   27 CONTINUE
+   80 IF(ITRAN.EQ.0) GO TO 90
+C
+C
+      J=0
+      DO 22 I=1,5
+         DO 21 K=I,5
+            J=J+1
+            S(J)=R(J)
+   21    CONTINUE
+   22 CONTINUE
+C
+C
+C *** TRANSFORM ERROR MATRIX
+C
+      CALL SSMT5T(B,S,S)
+C
+      NEW=1
+ 
+      J=0
+      DO 41 I=1,5
+         DO 40 K=I,5
+            J=J+1
+            R(J)=S(J)
+   40    CONTINUE
+   41 CONTINUE
+C
+   90 IF(IFLAG.LE.0) GO TO 900
+C
+C
+C *** TRANSFORM ERROR MATRIX FROM INTERNAL TO EXTERNAL VARIABLES;
+C
+C
+      NEW=1
+      IF(MVAR.NE.1) GO TO 91
+      PC(1)=PM2
+      PC(2)=ASIN(P2(3)*PC(1))
+      IF (ABS (P2(1)) .LT. 1.E-30) P2(1) = 1.E-30
+      PC(3) = ATAN2 (P2(2),P2(1))
+      CALL TRSCSP(PC,R,PS,R,H2,CH,IERR,SPX)
+      GO TO 900
+C
+   91 IF(MVAR.NE.0) GO TO 901
+      GO TO 900
+C
+C *** ERROR EXITS
+C
+  901 IERR=1
+      GO TO 999
+  902 IERR=2
+      GO TO 999
+  903 IERR=3
+      IF(INIT.NE.0) GO TO 30
+C     WRITE (LOUT, 998) DH2,DFI,ALFA,XL
+C 998 FORMAT(1H0,48H *** S/R TRPROP   DELTA(H*ALFA/P)  OR DELTA(PHI),5X
+C    1,22HEXCEEDS TOLERANCE     /1H0,4E12.5//16H **********    ,
+C    251HATTENTION !   NO FURTHER WARNINGS WILL BE GIVEN    ///)
+      INIT=1
+      GO TO 30
+  904 IERR=4
+  999 WRITE (LOUT, 1000) IERR
+ 1000 FORMAT(1H ,' *** S/R ERPROP   IERR =',I5)
+C
+  900 RETURN
+      END

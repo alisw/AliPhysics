@@ -1,0 +1,40 @@
+# Which Machine 
+PLATFORM      = linux
+
+# The compilers
+CXX           = echo $*.cxx ; g++
+F77	      = echo $*.F ; g77
+CC	      = echo $*.c ; gcc
+
+# Global optimisation
+OPT           = -g
+
+# Shared library suffix
+SL	      = so
+
+# The options
+CXXOPTS       = -Wall -fPIC  -fno-rtti -fno-exceptions
+COPT	      = $(OPT)
+FOPT	      = $(OPT) -fno-second-underscore
+
+# CERNLIB defines
+
+CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      =
+
+# Additional directories for dependencies
+
+DEPINC        = -I/usr/local/include/g++ -I/usr/local/include \
+		-I/usr/local/i686-pc-linux-gnu/include \
+		-I/usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include
+		
+LD            = g++
+LDFLAGS       = $(OPT)
+SOFLAGS       = -Wl,-soname,$(notdir $@) -shared 
+SHLIB         = -lg2c
+
+LIBS          = $(ROOTLIBS) -lm -ldl -rdynamic
+GLIBS         = $(ROOTLIBS) $(ROOTGLIBS) -L/usr/X11R6/lib -lX11 -lg2c -ldl -lcrypt -rdynamic
+

@@ -1,0 +1,104 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/02/15 17:49:50  mclareni
+* Kernlib
+*
+*
+#include "kerngen/pilot.h"
+#if !defined(CERNLIB_TCGEN)
+      SUBROUTINE SORTX(MX,NC,NR,NCS,NK)
+C
+C CERN PROGLIB# M106    SORTX           .VERSION KERNFOR  1.0   661115
+C ORIG. 15/11/66 CL
+C
+      DIMENSION MX(2),NK(2,2)
+      COMMON/SLATE/I,I1,I2,I3,IC,IR,ICMX,N1,N2,N3,N4,N5,NKI,NKI1,NKI2,
+     1   NCSORT,NRM1,INK,JNK,NHELP,NKIP1,XQX(19)
+C
+      NCSORT=IABS(NCS)
+      IF(NR.LE.1.OR.NCSORT.GT.NC.OR.NCSORT.LE.0) GO TO 1000
+      NK(1,1)=NCSORT
+      DO 1 I=2,NR
+    1 NK(1,I)=NK(1,I-1)+NC
+      I3=0
+      NRM1=NR-1
+      INK=1
+C
+C--                MAIN PROGRAM (PASSES N1,N2, AND N3 TO MERGE)
+C
+  100 JNK=3-INK
+      N3=0
+C
+  101 N1=N3+1
+      IF(N1.GT.NRM1) GO TO 113
+      DO 103  I=N1,NRM1
+      NKI=NK(INK,I)
+      NKIP1=NK(INK,I+1)
+      IF (MX(NKIP1).LT.MX(NKI)) GO TO 104
+  103 CONTINUE
+  113 N3=NR
+      N4=N1
+      N5=NR
+      GO TO 206
+C
+  104 N2=I+1
+      IF (N2.GT.NRM1) GO TO 116
+      DO 106  I=N2,NRM1
+      NKI=NK(INK,I)
+      NKIP1=NK(INK,I+1)
+      IF(MX(NKIP1).LT.MX(NKI))  GO TO 107
+  106 CONTINUE
+  116 I=NR
+C
+  107 N3=I
+C
+C--                MERGE SEQUENCE (STRINGS N1-(N2-1), N2-N3)
+C
+      I1=N1
+      I2=N2
+      DO 203  I3=N1,N3
+      NKI1=NK(INK,I1)
+      NKI2=NK(INK,I2)
+      IF(MX(NKI2).LT.MX(NKI1)) GO TO 202
+      NK(JNK,I3)=NKI1
+      I1=I1+1
+      IF(N2-I1) 204,204,203
+  202 NK(JNK,I3)=NKI2
+      I2=I2+1
+      IF ((N3+1).LE.I2) GO TO 205
+  203 CONTINUE
+      GO TO 208
+C
+  204 N4=I2
+      N5=N3
+      GO TO 206
+C
+  205 N4=I1
+      N5=N2-1
+  206 DO 207  I=N4,N5
+      I3=I3+1
+  207 NK(JNK,I3)=NK(INK,I)
+      IF(NR.GT.N3) GO TO 101
+  208 INK=JNK
+      IF (N1.NE.1) GO TO 100
+C
+C--                FINAL PERMUTATION PROGRAM
+C
+      JNK=3-INK
+      DO 302  IC=1,NC
+      DO 301  IR=1,NR
+      ICMX=NK(INK,IR)+IC-NCSORT
+  301 NK(JNK,IR)=MX(ICMX)
+      ICMX=IC
+      DO 302  IR=1,NR
+      IF (NCS.GE.0) GO TO 303
+      NHELP=NR-IR+1
+      MX(ICMX)=NK(JNK,NHELP)
+      GO TO 302
+  303 MX(ICMX)=NK(JNK,IR)
+  302 ICMX=ICMX+NC
+ 1000 RETURN
+      END
+#endif

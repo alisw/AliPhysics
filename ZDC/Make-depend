@@ -1,0 +1,32 @@
+##### DEPENDENCIES #####
+ 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+AliZDC.o: /soft/root/include/TBRIK.h /soft/root/include/TNode.h AliZDC.h
+AliZDC.o: /hdb2/offline/pro/include/AliDetector.h /soft/root/include/TNamed.h
+AliZDC.o: /soft/root/include/TClonesArray.h /soft/root/include/TBrowser.h
+AliZDC.o: /soft/root/include/TAttLine.h /soft/root/include/TAttMarker.h
+AliZDC.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
+AliZDC.o: /hdb2/offline/pro/include/AliHit.h /soft/root/include/TObject.h
+AliZDC.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliZDC.o: /soft/root/include/TList.h /soft/root/include/TStopwatch.h
+AliZDC.o: /soft/root/include/TTree.h /soft/root/include/TGeometry.h
+AliZDC.o: /hdb2/offline/pro/include/AliHeader.h
+AliZDC.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliZDC.o: /hdb2/offline/pro/include/AliMC.h
+AliZDC.o: /hdb2/offline/pro/include/AliGenerator.h
+AliZDC.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliZDC.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliZDC.o: /hdb2/offline/pro/include/AliCallf77.h
+AliZDC.o: /hdb2/offline/pro/include/AliConst.h /soft/root/include/TMath.h
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gconsp.inc zdc_common.inc
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gcflag.inc
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gckine.inc
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gcvolu.inc
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gcking.inc
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gckmax.inc
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gcnum.inc
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gctrak.inc
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gctmed.inc
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gcmate.inc
+AliZDCf.o: /hdb2/offline/pro/GEANT321/geant321/gcsets.inc

@@ -1,0 +1,98 @@
+// -*- C++ -*-
+// $Id$
+// ---------------------------------------------------------------------------
+//
+// This file is a part of the CLHEP - a Class Library for High Energy Physics.
+// 
+// This is the definitions of the inline member functions of the
+// HepRotation class
+//
+
+#ifdef HEP_DEBUG_INLINE
+#define inline
+#endif
+
+inline HepRotation::HepRotation()
+: rxx(1.0), rxy(0.0), rxz(0.0), ryx(0.0), ryy(1.0), ryz(0.0),
+  rzx(0.0), rzy(0.0), rzz(1.0) {}
+
+inline HepRotation::HepRotation(const HepRotation & m)
+: rxx(m.rxx), rxy(m.rxy), rxz(m.rxz), ryx(m.ryx), ryy(m.ryy), ryz(m.ryz),
+  rzx(m.rzx), rzy(m.rzy), rzz(m.rzz) {}
+
+inline HepRotation::HepRotation(HepDouble mxx, HepDouble mxy, HepDouble mxz,
+			 HepDouble myx, HepDouble myy, HepDouble myz,
+			 HepDouble mzx, HepDouble mzy, HepDouble mzz)
+: rxx(mxx), rxy(mxy), rxz(mxz), ryx(myx), ryy(myy), ryz(myz),
+  rzx(mzx), rzy(mzy), rzz(mzz) {}
+
+inline HepDouble HepRotation::xx() const { return rxx; }
+inline HepDouble HepRotation::xy() const { return rxy; }
+inline HepDouble HepRotation::xz() const { return rxz; }
+inline HepDouble HepRotation::yx() const { return ryx; }
+inline HepDouble HepRotation::yy() const { return ryy; }
+inline HepDouble HepRotation::yz() const { return ryz; }
+inline HepDouble HepRotation::zx() const { return rzx; }
+inline HepDouble HepRotation::zy() const { return rzy; }
+inline HepDouble HepRotation::zz() const { return rzz; }
+
+inline HepRotation & HepRotation::operator = (const HepRotation & m) {
+  rxx = m.rxx;
+  rxy = m.rxy;
+  rxz = m.rxz;
+  ryx = m.ryx;
+  ryy = m.ryy;
+  ryz = m.ryz;
+  rzx = m.rzx;
+  rzy = m.rzy;
+  rzz = m.rzz;
+  return *this;
+}
+
+inline HepBoolean HepRotation::operator == (const HepRotation& m) const {
+  return (rxx == m.rxx && rxy == m.rxy && rxz == m.rxz &&
+          ryx == m.ryx && ryy == m.ryy && ryz == m.ryz &&
+          rzx == m.rzx && rzy == m.rzy && rzz == m.rzz) ? true : false;
+} 
+
+inline HepBoolean HepRotation::operator != (const HepRotation &m) const {
+  return (rxx != m.rxx || rxy != m.rxy || rxz != m.rxz ||
+          ryx != m.ryx || ryy != m.ryy || ryz != m.ryz ||
+          rzx != m.rzx || rzy != m.rzy || rzz != m.rzz) ? true : false;
+}
+
+inline HepBoolean HepRotation::isIdentity() const {
+  return  (rxx == 1.0 && rxy == 0.0 && rxz == 0.0 &&
+           ryx == 0.0 && ryy == 1.0 && ryz == 0.0 &&
+           rzx == 0.0 && rzy == 0.0 && rzz == 1.0) ? true : false;
+}
+
+inline Hep3Vector HepRotation::operator * (const Hep3Vector & p) const {
+  return Hep3Vector(rxx*p.x() + rxy*p.y() + rxz*p.z(),
+		    ryx*p.x() + ryy*p.y() + ryz*p.z(),
+		    rzx*p.x() + rzy*p.y() + rzz*p.z());
+}
+
+inline HepRotation & HepRotation::operator *= (const HepRotation & m) {
+  return *this = operator * (m);
+}
+
+inline HepRotation & HepRotation::transform(const HepRotation & m) {
+  return *this = m.operator * (*this);
+}
+
+inline HepRotation HepRotation::inverse() const {
+  return HepRotation(rxx, ryx, rzx, rxy, ryy, rzy, rxz, ryz, rzz);
+}
+
+inline HepRotation & HepRotation::invert() {
+  return *this=inverse();
+}
+
+inline HepRotation & HepRotation::rotate(HepDouble psi, const Hep3Vector * p) {
+  return rotate(psi, *p);
+}
+
+#ifdef HEP_DEBUG_INLINE
+#undef inline
+#endif

@@ -1,0 +1,30 @@
+#ifndef TPCv1_H
+#define TPCv1_H
+////////////////////////////////////////////////
+//  Version 1 for TPC                         //
+////////////////////////////////////////////////
+ 
+#include "AliTPC.h"
+
+class AliTPCv1 : public AliTPC {
+
+public:
+  AliTPCv1() {}
+  AliTPCv1(const char *name, const char *title);
+  virtual      ~AliTPCv1() {}
+  virtual void  CreateGeometry();
+  virtual void  CreateMaterials();
+  virtual void  Init();
+  virtual Int_t IsVersion() const {return 1;}
+  virtual void  StepManager();
+  virtual void  DrawDetector();
+
+protected:
+  Int_t fIdSens1;    //First  sensitive volume identifier
+  Int_t fIdSens2;    //Second sensitive volume identifier
+  
+  ClassDef(AliTPCv1,1)  // Time Projection Chamber version 1
+};
+
+#endif
+

@@ -1,0 +1,38 @@
+##### RULES #####
+ 
+.SUFFIXES: .cxx
+ 
+.cxx.o:
+	@$(CXX) $(OPT) $(CXXFLAGS) -c $*.cxx -o $*.o
+.c.o:
+	@$(CC) $(CFLAGS) -c $*.c -o $*.o
+.f.o:
+	@$(F77) $(FFLAGS) -c $*.f -o $*.o
+.F.o:
+	@$(F77) $(FFLAGS) -c $*.F -o $*.o
+ 
+# Which makedepend
+MAKEDEPEND    = $(ROOTSYS)/bin/rmkdepend
+
+# Root libraries
+ 
+ROOTLIBS      = -L$(ROOTSYS)/lib -lBase -lCint -lClib -lCont -lFunc -lGraf \
+                -lGraf3d -lHist -lHtml -lMeta -lMinuit -lNet -lPostscript \
+                -lProof -lRint -lTree -lUnix -lZip -lMatrix -lMeta -lPhysics
+
+# Alice libraries
+
+ALILIBS	      = -L$(ALICE_ROOT)/lib -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
+                -lITS -lPHOSdummy -lPHOS -lCASTOR -lRICH -lZDC -lSTRUCT \
+                -lTGeant3 -lEVGEN -lSTEER
+
+# Graphic libraries
+
+ROOTGLIBS     = -lGpad -lGui -lGX11 -lX3d  -lXpm
+ 
+# CERN Libraries 
+
+CLIBS         = -lminicern
+G3LIBS        = -lgeant321
+
+ 

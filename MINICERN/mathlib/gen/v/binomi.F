@@ -1,0 +1,30 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:55  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE BINOMI(NTOT,P,N,IERROR)
+C    BINOMIAL GENERATOR
+C    CODED FROM LOS ALAMOS REPORT      LA-5061-MS
+C    PROB(N)=FACT(NTOT)*P**N*(1.-P)**(NTOT-N)/(FACT(N)*FACT(NTOT-N))
+C        WHERE FACT(N) STANDS FOR FACTORIAL OF N
+C    ON RETURN IERROR.EQ.0 NORMALLY
+C              IERROR.EQ.1 IF P.LE.0. OR P.GE.1.
+C
+      IF(P.GT.0. .AND. P.LT.1.) GO TO 100
+      IERROR=1
+      GO TO 999
+  100 CONTINUE
+      IERROR=0
+      N=0
+      DO 200 I=1,NTOT
+      IF(RNDM(N).GT.P) GO TO 200
+      N=N+1
+  200 CONTINUE
+  999 CONTINUE
+      RETURN
+      END

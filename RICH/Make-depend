@@ -1,0 +1,22 @@
+##### DEPENDENCIES #####
+ 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+AliRICH.o: /soft/root/include/TBRIK.h /soft/root/include/TNode.h
+AliRICH.o: /soft/root/include/TRandom.h /soft/root/include/TClass.h AliRICH.h
+AliRICH.o: /hdb2/offline/pro/include/AliDetector.h
+AliRICH.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliRICH.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliRICH.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliRICH.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliRICH.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliRun.h
+AliRICH.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliRICH.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliRICH.o: /soft/root/include/TGeometry.h
+AliRICH.o: /hdb2/offline/pro/include/AliHeader.h
+AliRICH.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliRICH.o: /hdb2/offline/pro/include/AliMC.h
+AliRICH.o: /hdb2/offline/pro/include/AliGenerator.h
+AliRICH.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliRICH.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliRICH.o: /hdb2/offline/pro/include/TGeant3.h

@@ -1,0 +1,30 @@
+
+              KERNLIB 
+
+---------------------------------------------------------------------
+
+The directories have he following contents:
+
+ccgen     General C routines
+ccgencf   the CF package of C routines
+ccgenu    utility C routines used by CCGEN or CCGENCF
+ccgenci   CIO package(Z311), Unix only.
+
+xvect     XIN / XOUT routines
+
+tcgen     all standard Fortran routines for KERNLIB,
+          except: the ones found on KERNNUM Pam
+                  the ones found also in ccgen, these are in tcgenc
+                  the ones also in vms/vmsmlan, these are in tcgens
+
+tcgenc    continuation of tcgen, has routines which are also in ccgen.
+          
+tcgens    continuation of tcgen, has routines which are also in vms/vmsmlan
+
+obsolete/kernfor/tcnum     routines inherited from KERNNUM to make sure that
+          GENSEC remains complete; this is not to be used for making
+          a complete KERNLIB on machines where KERNNUM is ready;
+
+obsolete/tcgenr    obsolete GENSEC routines
+
+

@@ -1,0 +1,77 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1995/10/24 10:21:58  cernlib
+* Geant
+*
+*
+#include "geant321/pilot.h"
+*CMZ :  3.21/04 23/02/95  14.46.01  by  S.Giani
+*-- Author :
+      SUBROUTINE SECL11(FSE,IFSE,EX,U,E)
+C       THIS ROUTINE SAMPLES AN EXIT ENERGY FROM
+C       AN ENERGY DEPENDENT WATT SPECTRUM
+#include "geant321/minput.inc"
+      DIMENSION FSE(*),IFSE(*)
+      SAVE
+      IP=1
+      NR=IFSE(IP)
+      NE=IFSE(IP+1)
+      IP=2*NR+1
+      EMAX=E-U
+C       DETERMINE A
+      DO 10 I=1,NE
+         IP=IP+2
+         IF(E.LE.FSE(IP))GO TO 20
+   10 CONTINUE
+      GO TO 30
+   20 IF(I.EQ.1)GO TO 40
+C       DETERMINE THE INTERPOLATING SCHEME
+      CALL INTSCH(IFSE,I,IS,NR)
+      E1=FSE(IP-2)
+      E2=FSE(IP)
+      T1=FSE(IP-1)
+      T2=FSE(IP+1)
+      CALL INTERP(E,A,E1,T1,E2,T2,IS)
+      GO TO 50
+C       INCIDENT ENERGY IS ABOVE THE LAST INCIDENT ENERGY GIVEN
+C       USE THE LAST DISTRIBUTION
+   30 IP=2+2*NR+2*NE
+      A=FSE(IP)
+      GO TO 50
+C       INCIDENT ENERGY IS BELOW THE FIRST INCIDENT ENERGY GIVEN
+C       USE THE FIRST DISTRIBUTION
+   40 A=FSE(4+2*NR)
+C       DETERMINE B
+   50 IP=3+2*NR+2*NE
+      NR1=IFSE(IP)
+      NF=IFSE(IP+1)
+      IP=2*NR+2*NE+2*NR1+3
+      DO 60  I=1,NF
+         IP=IP+2
+         IF(E.LE.FSE(IP))GO TO 70
+   60 CONTINUE
+      GO TO 80
+   70 IF(I.EQ.1)GO TO 90
+      CALL INTSCH(IFSE(2*NR+2*NE+3),I,IS,NR1)
+      E1=FSE(IP-2)
+      E2=FSE(IP)
+      T1=FSE(IP-1)
+      T2=FSE(IP+1)
+      CALL INTERP(E,B,E1,T1,E2,T2,IS)
+      GO TO 100
+   80 IP=2*NR+2*NF+2*NE+2*NR1+4
+      B=FSE(IP)
+      GO TO 100
+   90 B=FSE(IP+1)
+C       SELECT THE EXIT ENERGY FROM THE WATT SPECTRUM
+  100 EX=FISRNF(A,B)
+      IF(EX.LE.EMAX)RETURN
+#if defined(CERNLIB_MDEBUG)
+      WRITE(IOUT,10000)EX,EMAX
+10000 FORMAT(' MICAP: WARNING-EX,EMAX=',1P2E13.5,' IN SECL11')
+#endif
+      EX=EMAX
+      RETURN
+      END

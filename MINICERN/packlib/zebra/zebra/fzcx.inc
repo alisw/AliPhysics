@@ -1,0 +1,25 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/03/06 10:46:54  mclareni
+* Zebra
+*
+*
+#ifndef CERNLIB_ZEBRA_FZCX_INC
+#define CERNLIB_ZEBRA_FZCX_INC
+*
+*
+* fzcx.inc
+*
+      COMMON /FZCX/  LUNX,LUNNX,IXDIVX,LTEMPX,IEVFLX
+     +,              MSTATX,MEDIUX,IFIFOX,IDAFOX,IACMOX,IUPAKX
+     +,              IADOPX,IACTVX,INCBPX,LOGLVX,MAXREX
+     +,              NWFILX,ISTENX,LTEXTX,ICOPYX
+     +,              LBPARX,L4STOX,L4STAX,L4CURX,L4ENDX
+     +,              MODTBX,JFLGAX,IOPTXD,IOPTXI,IOPTXS,IOPTXZ,IOPTXM
+     +,              IOPTXL,IOPTXN,IOPTXP,IOPTXF,IOPTXT,IOPTXV(2)
+     +,              IDX(2),IPILX(4),NWTXX,NWSEGX,NWTABX,NWBKX,LENTRX
+     +,              NWUHCX,IOCHX(16),NWUHX,NWIOX,LUHEAX,JRUNX
+
+#endif

@@ -1,0 +1,31 @@
+//void ViewMUON()
+{
+   gMC->Gsatt("CH1A","seen",1);
+   gMC->Gsatt("CH1G","seen",0);
+   gMC->Gsatt("CH2A","seen",1);
+   gMC->Gsatt("CH2G","seen",0);
+   gMC->Gsatt("CH3A","seen",1);
+   gMC->Gsatt("CH3G","seen",0);
+   gMC->Gsatt("CH4A","seen",1);
+   gMC->Gsatt("CH4G","seen",0);
+   gMC->Gsatt("CH5A","seen",1);
+   gMC->Gsatt("CH5G","seen",0);
+   gMC->Gsatt("CH6A","seen",1);
+   gMC->Gsatt("CH6G","seen",0);
+   gMC->Gsatt("CH7A","seen",1);
+   gMC->Gsatt("CH7G","seen",0);
+   gMC->Gsatt("CH8A","seen",1);
+   gMC->Gsatt("CH8G","seen",0);
+   gMC->Gsatt("CH9A","seen",1);
+   gMC->Gsatt("CH9G","seen",0);
+   gMC->Gsatt("C10A","seen",1);
+   gMC->Gsatt("C10G","seen",0);
+   gMC->Gsatt("MC11","seen",1);
+   gMC->Gsatt("M11G","seen",0);
+   gMC->Gsatt("MC12","seen",1);
+   gMC->Gsatt("M12G","seen",0);
+   gMC->Gsatt("MC13","seen",1);
+   gMC->Gsatt("M13G","seen",0);
+   gMC->Gsatt("MC14","seen",1);
+   gMC->Gsatt("M14G","seen",0);
+}

@@ -1,0 +1,47 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:19  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE SYNT (MP,N,IBCX,POT)
+      COMMON/FW1/W1(774)/FW2/W2(100)
+      DIMENSION POT(MP,N)
+      M=MP-1
+      MD=MP+M
+      AX=(1./LOG10(2.))+.01
+      XM=M
+      AM=AX*LOG10(XM)
+      IM=INT(AM)
+      IBC=IBCX+3
+      IF(IBCX.EQ.4) GO TO 400
+C
+C   THE RFT ROUTINE IS A MODIFIED
+C   VERSION OF HOCKNEY FAST FOURIER
+C   TRANSFORM PACKAGE AND CORRESPONDS TO
+C   ISELIN LIBRARY PROGRAM D 700
+C
+      DO 1 J=1,N
+ 1    CALL RFT(IM,POT(1,J),1,POT(1,J),1,IBC)
+      RETURN
+C
+C   THE MFT ROUTINE IS USED FOR
+C   THE FOURTH TYPE OF BOUNDARY
+C   CONDITION ALONG X
+C
+ 400  DO 2 J=1,N
+      DO 3 I=1,MP
+ 3    W1(I)=POT(I,J)
+C
+      CALL MFT(MP,MD,W1,W1(MP+1),W1(4*MP+1),2)
+C
+      DO 4 I=1,MP
+ 4    POT(I,J)=W1(I+MP)
+ 2    CONTINUE
+      WRITE(6,1008)(POT(I,1),I=1,MP)
+ 1008 FORMAT(7E11.4)
+      RETURN
+      END

@@ -1,0 +1,104 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1995/10/24 10:21:58  cernlib
+* Geant
+*
+*
+#include "geant321/pilot.h"
+*CMZ :  3.21/02 29/03/94  15.41.48  by  S.Giani
+*-- Author :
+      SUBROUTINE PARTXS(D,LD,E,SIGTOT,EP)
+C       THIS ROUTINE SAMPLES FROM THE FILE 12 OR 13 PHOTON
+C       PRODUCTION PARTIAL DISTRIBUTIONS TO OBTAIN THE EXIT
+C       PHOTON ENERGY FROM A NEUTRON REACTION
+#include "geant321/minput.inc"
+      DIMENSION D(*),LD(*)
+      SAVE
+C       INITIALIZE THE VALUES USED IN THE SELECTION PROCESS
+C       THE VALUE (II) IS A POINTER
+      ITRY1=0
+   10 R=FLTRNF(0)
+      SUM=0.0
+      NH=0
+      NL=0
+      II=0
+C       SET THE NUMBER OF PARTIAL DISTRIBUTIONS (NK) AND THE NUMBER
+C       OF POINTS PER PARTIAL DISTRIBUTION (NP)
+      NK=LD(II+1)
+      NP=LD(II+2)
+      II=II+2
+C       DETERMINE WHICH POINTS (NL) AND (NH) BOUND THE INCIDENT
+C       NEUTRON ENERGY
+      DO 20 N=1,NP
+         IF(E.LE.D(II+N))GO TO 40
+   20 CONTINUE
+C       THE INCIDENT NEUTRON ENERGY IS GREATER THAN THE LAST ENERGY
+C       POINT OF THE PARTIAL DISTRIBUTIONS, THEREFORE USE THE LAST
+C       ENERGY POINT OF THE PARTIAL DISTRIBUTION TO SAMPLE FROM
+      NH=NP
+      II=II+NP
+      DO 30 K=1,NK
+         EP=D(II+1)
+         LP=LD(II+2)
+         A=D(II+3)
+         LF=LD(II+4)
+         IF(LP.EQ.2)EP=EP+(A/(A+1))*E
+         II=II+4
+         SIG=D(II+NH)
+         SUM=SUM+SIG/SIGTOT
+         IF(EP.EQ.0.0)GO TO 100
+         IF(R.LE.SUM)GO TO 100
+         II=II+NP
+   30 CONTINUE
+      GO TO 80
+   40 IF(N.EQ.1)GO TO 60
+C       THE INCIDENT NEUTRON ENERGY IS BOUNDED BY THE ENEGY POINTS
+C       (NL) AND (NH) OF THE PARTIAL DISTRIBUTIONS, THEREFORE USE
+C       LINEAR INTERPOLATION
+      NH=N
+      NL=N-1
+      EH=D(II+NH)
+      EL=D(II+NL)
+      II=II+NP
+      DO 50 K=1,NK
+         EP=D(II+1)
+         LP=LD(II+2)
+         A=D(II+3)
+         LF=LD(II+4)
+         IF(LP.EQ.2)EP=EP+(A/(A+1))*E
+         II=II+4
+         SIG=D(II+NL)+(E-EL)*(D(II+NH)-D(II+NL))/(EH-EL)
+         SUM=SUM+SIG/SIGTOT
+         IF(EP.EQ.0.0)GO TO 100
+         IF(R.LE.SUM)GO TO 100
+         II=II+NP
+   50 CONTINUE
+      GO TO 80
+C       THE INCIDENT NEUTRON ENERGY IS LESS THAN THE FIRST ENERGY
+C       POINT OF THE PARTIAL DISTRIBUTIONS, THEREFORE USE THE FIRST
+C       ENERGY POINT OF THE PARTIAL DISTRIBUTION TO SAMPLE FROM
+   60 NL=N
+      II=II+NP
+      DO 70 K=1,NK
+         EP=D(II+1)
+         LP=LD(II+2)
+         A=D(II+3)
+         LF=LD(II+4)
+         IF(LP.EQ.2)EP=EP+(A/(A+1))*E
+         II=II+4
+         SIG=D(II+NL)
+         SUM=SUM+SIG/SIGTOT
+         IF(EP.EQ.0.0)GO TO 100
+         IF(R.LE.SUM)GO TO 100
+         II=II+NP
+   70 CONTINUE
+C retry with new R if SUM != 0
+   80 IF(SUM.EQ.0.0) GOTO 90
+      ITRY1 = ITRY1 + 1
+      IF(ITRY1.LE.2) GOTO 10
+C no success set EP = 0
+   90 EP = 0.0
+  100 RETURN
+      END

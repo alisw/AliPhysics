@@ -1,0 +1,24 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:14  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+C This will be TRIINT,IF=DOUBLE and TRIINT64,IF=-DOUBLE
+      FUNCTION RTRINT(F,NSD,NPT,EPS,X1,Y1,X2,Y2,X3,Y3)
+C
+C     INTEGRATION OVER A TRIANGLE USING A 7-, 25- OR 64-POINT FORMULA,
+C     WITH OR WITHOUT SUBDIVISION OF THE TRIANGLE.
+C
+      CHARACTER NAME*(*)
+      CHARACTER*80 ERRTXT
+      PARAMETER (NAME = 'RTRINT')
+#include "triintcod.inc"
+
+   99 RTRINT=H
+      RETURN
+  101 FORMAT('INCORRECT NUMBER OF POINTS =',I5)
+      END

@@ -1,0 +1,137 @@
+##### DEPENDENCIES #####
+ 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+AliDetector.o: AliDetector.h /soft/root/include/TNamed.h
+AliDetector.o: /soft/root/include/TClonesArray.h
+AliDetector.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliDetector.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliDetector.o: /soft/root/include/Gtypes.h ./AliHit.h
+AliDetector.o: /soft/root/include/TObject.h AliRun.h
+AliDetector.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliDetector.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliDetector.o: /soft/root/include/TGeometry.h AliHeader.h AliMagF.h
+AliDetector.o: /soft/root/include/TVector.h AliMC.h AliGenerator.h
+AliDetector.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliDetector.o: AliLego.h /soft/root/include/TH2.h AliPoints.h
+AliDetector.o: /soft/root/include/TPolyMarker3D.h GParticle.h
+AliDetector.o: /soft/root/include/TMath.h /soft/root/include/TClass.h
+AliDetector.o: /soft/root/include/TNode.h /soft/root/include/TRandom.h
+AliHeader.o: AliHeader.h /soft/root/include/TObject.h /usr/include/stdio.h
+AliHeader.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
+AliHeader.o: /usr/include/gnu/types.h /usr/include/features.h
+AliHeader.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+AliHeader.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliHeader.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliHeader.o: /usr/include/stdio_lim.h
+AliMagF.o: AliMagF.h /soft/root/include/TNamed.h /soft/root/include/TVector.h
+AliMagF.o: /soft/root/include/TSystem.h /usr/include/stdio.h
+AliMagF.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
+AliMagF.o: /usr/include/gnu/types.h /usr/include/features.h
+AliMagF.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+AliMagF.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliMagF.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliMagF.o: /usr/include/stdio_lim.h /usr/include/stdlib.h
+AliMagF.o: /usr/include/sys/types.h /usr/include/time.h /usr/include/endian.h
+AliMagF.o: /usr/include/bytesex.h /usr/include/sys/select.h
+AliMagF.o: /usr/include/selectbits.h /usr/include/alloca.h
+GParticle.o: GParticle.h /soft/root/include/TObject.h
+GParticle.o: /soft/root/include/TMath.h
+AliDigit.o: AliDigit.h /soft/root/include/TObject.h GParticle.h
+AliDigit.o: /soft/root/include/TMath.h
+AliHit.o: ./AliHit.h /soft/root/include/TObject.h GParticle.h
+AliHit.o: /soft/root/include/TMath.h AliRun.h /soft/root/include/TROOT.h
+AliHit.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliHit.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliHit.o: /soft/root/include/TGeometry.h AliDetector.h
+AliHit.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliHit.o: /soft/root/include/TAttLine.h /soft/root/include/TAttMarker.h
+AliHit.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
+AliHit.o: AliHeader.h AliMagF.h /soft/root/include/TVector.h AliMC.h
+AliHit.o: AliGenerator.h /soft/root/include/TArrayF.h
+AliHit.o: /soft/root/include/TGenerator.h AliLego.h /soft/root/include/TH2.h
+AliPoints.o: AliPoints.h /soft/root/include/TPolyMarker3D.h AliDetector.h
+AliPoints.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliPoints.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliPoints.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliPoints.o: /soft/root/include/Gtypes.h ./AliHit.h
+AliPoints.o: /soft/root/include/TObject.h GParticle.h
+AliPoints.o: /soft/root/include/TMath.h AliRun.h /soft/root/include/TROOT.h
+AliPoints.o: /soft/root/include/TList.h /soft/root/include/TStopwatch.h
+AliPoints.o: /soft/root/include/TTree.h /soft/root/include/TGeometry.h
+AliPoints.o: AliHeader.h AliMagF.h /soft/root/include/TVector.h AliMC.h
+AliPoints.o: AliGenerator.h /soft/root/include/TArrayF.h
+AliPoints.o: /soft/root/include/TGenerator.h AliLego.h
+AliPoints.o: /soft/root/include/TH2.h /soft/root/include/TPad.h
+AliPoints.o: /soft/root/include/TView.h
+AliDisplay.o: /soft/root/include/TROOT.h /soft/root/include/TTree.h
+AliDisplay.o: /soft/root/include/TButton.h /soft/root/include/TCanvas.h
+AliDisplay.o: /soft/root/include/TView.h /soft/root/include/TText.h
+AliDisplay.o: /soft/root/include/TPolyMarker3D.h
+AliDisplay.o: /soft/root/include/TPaveLabel.h /soft/root/include/TPaveText.h
+AliDisplay.o: /soft/root/include/TList.h /soft/root/include/TDiamond.h
+AliDisplay.o: /soft/root/include/TNode.h /soft/root/include/TArc.h
+AliDisplay.o: /soft/root/include/TTUBE.h /soft/root/include/TSlider.h
+AliDisplay.o: /soft/root/include/TSliderBox.h /soft/root/include/TGaxis.h
+AliDisplay.o: /soft/root/include/TGXW.h /soft/root/include/TMath.h
+AliDisplay.o: /soft/root/include/X3DBuffer.h /soft/root/include/DllImport.h
+AliDisplay.o: AliRun.h /soft/root/include/TBrowser.h
+AliDisplay.o: /soft/root/include/TStopwatch.h /soft/root/include/TGeometry.h
+AliDisplay.o: AliDetector.h /soft/root/include/TNamed.h
+AliDisplay.o: /soft/root/include/TClonesArray.h /soft/root/include/TAttLine.h
+AliDisplay.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliDisplay.o: /soft/root/include/Gtypes.h ./AliHit.h
+AliDisplay.o: /soft/root/include/TObject.h AliHeader.h AliMagF.h
+AliDisplay.o: /soft/root/include/TVector.h AliMC.h AliGenerator.h
+AliDisplay.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliDisplay.o: AliLego.h /soft/root/include/TH2.h AliDisplay.h AliPoints.h
+AliDisplay.o: GParticle.h
+AliMC.o: AliMC.h /soft/root/include/TNamed.h
+AliRun.o: /soft/root/include/TFile.h /soft/root/include/TRandom.h
+AliRun.o: /soft/root/include/TBRIK.h /soft/root/include/TNode.h AliMC.h
+AliRun.o: /soft/root/include/TNamed.h /soft/root/include/TCint.h
+AliRun.o: /soft/root/include/TSystem.h /usr/include/stdio.h
+AliRun.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
+AliRun.o: /usr/include/gnu/types.h /usr/include/features.h
+AliRun.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+AliRun.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliRun.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliRun.o: /usr/include/stdio_lim.h GParticle.h /soft/root/include/TObject.h
+AliRun.o: /soft/root/include/TMath.h AliRun.h /soft/root/include/TROOT.h
+AliRun.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliRun.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliRun.o: /soft/root/include/TGeometry.h AliDetector.h
+AliRun.o: /soft/root/include/TClonesArray.h /soft/root/include/TAttLine.h
+AliRun.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliRun.o: /soft/root/include/Gtypes.h ./AliHit.h AliHeader.h AliMagF.h
+AliRun.o: /soft/root/include/TVector.h AliGenerator.h
+AliRun.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliRun.o: AliLego.h /soft/root/include/TH2.h AliDisplay.h AliCallf77.h
+AliRun.o: /usr/include/stdlib.h /usr/include/sys/types.h /usr/include/time.h
+AliRun.o: /usr/include/endian.h /usr/include/bytesex.h
+AliRun.o: /usr/include/sys/select.h /usr/include/selectbits.h
+AliRun.o: /usr/include/alloca.h /usr/include/string.h
+AliGenerator.o: AliGenerator.h /soft/root/include/TNamed.h
+AliGenerator.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliGenerator.o: AliRun.h /soft/root/include/TROOT.h
+AliGenerator.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliGenerator.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliGenerator.o: /soft/root/include/TGeometry.h AliDetector.h
+AliGenerator.o: /soft/root/include/TClonesArray.h
+AliGenerator.o: /soft/root/include/TAttLine.h /soft/root/include/TAttMarker.h
+AliGenerator.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
+AliGenerator.o: ./AliHit.h /soft/root/include/TObject.h AliHeader.h AliMagF.h
+AliGenerator.o: /soft/root/include/TVector.h AliMC.h AliLego.h
+AliGenerator.o: /soft/root/include/TH2.h
+AliLego.o: /soft/root/include/TMath.h /hdb2/offline/pro/include/TGeant3.h
+AliLego.o: AliMC.h /soft/root/include/TNamed.h AliRun.h
+AliLego.o: /soft/root/include/TROOT.h /soft/root/include/TBrowser.h
+AliLego.o: /soft/root/include/TList.h /soft/root/include/TStopwatch.h
+AliLego.o: /soft/root/include/TTree.h /soft/root/include/TGeometry.h
+AliLego.o: AliDetector.h /soft/root/include/TClonesArray.h
+AliLego.o: /soft/root/include/TAttLine.h /soft/root/include/TAttMarker.h
+AliLego.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
+AliLego.o: ./AliHit.h /soft/root/include/TObject.h AliHeader.h AliMagF.h
+AliLego.o: /soft/root/include/TVector.h AliGenerator.h
+AliLego.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliLego.o: AliLego.h /soft/root/include/TH2.h AliConst.h

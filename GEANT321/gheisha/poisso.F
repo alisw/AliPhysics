@@ -1,0 +1,60 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1995/10/24 10:20:59  cernlib
+* Geant
+*
+*
+#include "geant321/pilot.h"
+*CMZ :  3.21/02 29/03/94  15.41.38  by  S.Giani
+*-- Author :
+      SUBROUTINE POISSO(XAV,IRAN)
+C
+C *** GENERATION OF POISSON DISTRIBUTION ***
+C *** NVE 16-MAR-1988 CERN GENEVA ***
+C
+      DIMENSION RNDM(1)
+C ORIGIN : H.FESEFELDT (27-OCT-1983)
+C
+C --- USE NORMAL DISTRIBUTION FOR <X> > 9.9 ---
+      IF(XAV.GT.9.9) GOTO 2
+C
+      MM=IFIX(5.*XAV)
+      IRAN=0
+      IF(MM.LE.0) GOTO 3
+      R=EXP(-XAV)
+      CALL GRNDM(RNDM,1)
+      RAN1=RNDM(1)
+      IF(RAN1.LE.R) RETURN
+      RR=R
+      DO 1 I=1,MM
+      IRAN=IRAN+1
+      IF(I.LE.5) RRR=XAV**I/NFAC(I)
+C** STIRLING' S FORMULA FOR LARGE NUMBERS
+      IF(I.GT.5) RRR=EXP(I*LOG(XAV)-(I+0.5)*LOG(I*1.)+I-0.9189385)
+      RR=RR+R*RRR
+      IF(RAN1.LE.RR) RETURN
+    1 CONTINUE
+      RETURN
+C** NORMAL DISTRIBUTION WITH SIGMA**2 = <X>
+    2 CALL NORMAL(RAN1)
+      RAN1=XAV+RAN1*SQRT(XAV)
+      IRAN=IFIX(RAN1)
+      IF(IRAN.LT.0) IRAN=0
+      RETURN
+C** FOR VERY SMALL XAV TRY IRAN=1,2,3
+    3 P1=XAV*EXP(-XAV)
+      P2=XAV*P1/2.
+      P3=XAV*P2/3.
+      CALL GRNDM(RNDM,1)
+      RAN=RNDM(1)
+      IRAN=3
+      IF(RAN.LT.P3) RETURN
+      IRAN=2
+      IF(RAN.LT.P2) RETURN
+      IRAN=1
+      IF(RAN.LT.P1) RETURN
+      IRAN=0
+      RETURN
+      END

@@ -1,0 +1,54 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/02/15 17:50:41  mclareni
+* Kernlib
+*
+*
+      SUBROUTINE TIMEL (TRES)
+C
+C CERN PROGLIB# Z007    TIMEL           .VERSION KERNVAX  2.44  931108
+C ORIG. 27/07/82, corr. oct 92, TIMEST added, FCA
+C
+      INTEGER*2                   LENG,IREQ
+      COMMON /SLATE/ ITIME,XX(6), LENG,IREQ,IADR,NORET,ISLATE(30)
+
+      LOGICAL IFBATCH
+      PARAMETER    (JPI$_CPULIM = '040D'X)
+      PARAMETER    (JPI$_CPUTIM = '0407'X)
+      PARAMETER    (TSTMAX      = 2.**31*.01)
+
+      DATA ITIMST  /'7FFF FFFF'X/
+      DATA ITIMDF  /99900/
+
+      ITIME= 0
+      LENG = 4
+      IREQ = JPI$_CPULIM
+      IADR = %LOC(ITIME)
+      NORET= 0
+      ISLATE(1) = 0
+      CALL SYS$GETJPI (,,,LENG,,,)
+      IF (ITIME.EQ.0) ITIME=ITIMST
+      IF (IFBATCH()) ITIMDF=ITIMST
+
+      ITIME = MIN(ITIME,ITIMST,ITIMDF)
+
+      ITL  = ITIME
+      IREQ = JPI$_CPUTIM
+      CALL SYS$GETJPI (,,,LENG,,,)
+
+      TRES = FLOAT(ITL-ITIME) / 100.
+C---  Block TIMEST if called after TIMEL
+      ITIMST=ITIMDF
+      RETURN
+
+      ENTRY TIMEST(TIMLIM)
+
+      IF (ITIMST.EQ.ITIMDF) GO TO 999
+      IF (TIMLIM.GT.TSTMAX) GO TO 81
+      ITIMST = TIMLIM*100.
+   81 ITIMDF = ITIMST
+
+  999 RETURN
+      END

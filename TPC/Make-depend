@@ -1,0 +1,114 @@
+##### DEPENDENCIES #####
+ 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+AliTPC.o: /soft/root/include/TMath.h /soft/root/include/TRandom.h
+AliTPC.o: /soft/root/include/TVector.h /soft/root/include/TGeometry.h
+AliTPC.o: /soft/root/include/TNode.h /soft/root/include/TTUBS.h
+AliTPC.o: /soft/root/include/TObjectTable.h
+AliTPC.o: /hdb2/offline/pro/include/GParticle.h /soft/root/include/TObject.h
+AliTPC.o: AliTPC.h /hdb2/offline/pro/include/AliDetector.h
+AliTPC.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliTPC.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliTPC.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliTPC.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliTPC.o: /hdb2/offline/pro/include/AliDigit.h AliTPCSecGeo.h
+AliTPC.o: /soft/root/include/TMatrix.h /hdb2/offline/pro/include/AliRun.h
+AliTPC.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliTPC.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliTPC.o: /hdb2/offline/pro/include/AliHeader.h
+AliTPC.o: /hdb2/offline/pro/include/AliMagF.h
+AliTPC.o: /hdb2/offline/pro/include/AliMC.h
+AliTPC.o: /hdb2/offline/pro/include/AliGenerator.h
+AliTPC.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliTPC.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliTPC.o: /usr/local/include/g++/iostream.h
+AliTPC.o: /usr/local/include/g++/streambuf.h /usr/local/include/g++/libio.h
+AliTPC.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliTPC.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliTPC.o: /usr/include/gnu/stubs.h
+AliTPC.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliTPC.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliTPC.o: /usr/local/include/g++/fstream.h
+AliTPCv0.o: /soft/root/include/TMath.h /soft/root/include/TGeometry.h
+AliTPCv0.o: /soft/root/include/TNode.h /soft/root/include/TTUBE.h AliTPCv0.h
+AliTPCv0.o: AliTPC.h /hdb2/offline/pro/include/AliDetector.h
+AliTPCv0.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliTPCv0.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliTPCv0.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliTPCv0.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliTPCv0.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliDigit.h
+AliTPCv0.o: AliTPCSecGeo.h /soft/root/include/TMatrix.h
+AliTPCv0.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliTPCv0.o: /soft/root/include/TList.h /soft/root/include/TStopwatch.h
+AliTPCv0.o: /soft/root/include/TTree.h /hdb2/offline/pro/include/AliHeader.h
+AliTPCv0.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliTPCv0.o: /hdb2/offline/pro/include/AliMC.h
+AliTPCv0.o: /hdb2/offline/pro/include/AliGenerator.h
+AliTPCv0.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliTPCv0.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliTPCv0.o: /usr/local/include/g++/iostream.h
+AliTPCv0.o: /usr/local/include/g++/streambuf.h /usr/local/include/g++/libio.h
+AliTPCv0.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliTPCv0.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliTPCv0.o: /usr/include/gnu/stubs.h
+AliTPCv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliTPCv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliTPCv0.o: /usr/local/include/g++/fstream.h
+AliTPCv0.o: /hdb2/offline/pro/include/AliConst.h
+AliTPCv1.o: /soft/root/include/TMath.h /soft/root/include/TGeometry.h
+AliTPCv1.o: /soft/root/include/TNode.h /soft/root/include/TBRIK.h
+AliTPCv1.o: /soft/root/include/TTUBE.h AliTPCv1.h AliTPC.h
+AliTPCv1.o: /hdb2/offline/pro/include/AliDetector.h
+AliTPCv1.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliTPCv1.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliTPCv1.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliTPCv1.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliTPCv1.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliDigit.h
+AliTPCv1.o: AliTPCSecGeo.h /soft/root/include/TMatrix.h
+AliTPCv1.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliTPCv1.o: /soft/root/include/TList.h /soft/root/include/TStopwatch.h
+AliTPCv1.o: /soft/root/include/TTree.h /hdb2/offline/pro/include/AliHeader.h
+AliTPCv1.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliTPCv1.o: /hdb2/offline/pro/include/AliMC.h
+AliTPCv1.o: /hdb2/offline/pro/include/AliGenerator.h
+AliTPCv1.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliTPCv1.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliTPCv1.o: /usr/local/include/g++/iostream.h
+AliTPCv1.o: /usr/local/include/g++/streambuf.h /usr/local/include/g++/libio.h
+AliTPCv1.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliTPCv1.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliTPCv1.o: /usr/include/gnu/stubs.h
+AliTPCv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliTPCv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliTPCv1.o: /usr/local/include/g++/fstream.h
+AliTPCv1.o: /hdb2/offline/pro/include/AliConst.h
+AliTPCv2.o: /soft/root/include/TMath.h /soft/root/include/TGeometry.h
+AliTPCv2.o: AliTPCv2.h AliTPC.h /hdb2/offline/pro/include/AliDetector.h
+AliTPCv2.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliTPCv2.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliTPCv2.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliTPCv2.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliTPCv2.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliDigit.h
+AliTPCv2.o: AliTPCSecGeo.h /soft/root/include/TMatrix.h
+AliTPCv2.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliTPCv2.o: /soft/root/include/TList.h /soft/root/include/TStopwatch.h
+AliTPCv2.o: /soft/root/include/TTree.h /hdb2/offline/pro/include/AliHeader.h
+AliTPCv2.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliTPCv2.o: /hdb2/offline/pro/include/AliMC.h
+AliTPCv2.o: /hdb2/offline/pro/include/AliGenerator.h
+AliTPCv2.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliTPCv2.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliTPCv2.o: /usr/local/include/g++/iostream.h
+AliTPCv2.o: /usr/local/include/g++/streambuf.h /usr/local/include/g++/libio.h
+AliTPCv2.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliTPCv2.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliTPCv2.o: /usr/include/gnu/stubs.h
+AliTPCv2.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliTPCv2.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliTPCv2.o: /usr/local/include/g++/fstream.h
+AliTPCv2.o: /hdb2/offline/pro/include/AliConst.h /usr/include/stdlib.h
+AliTPCv2.o: /usr/include/sys/types.h /usr/include/time.h
+AliTPCv2.o: /usr/include/endian.h /usr/include/bytesex.h
+AliTPCv2.o: /usr/include/sys/select.h /usr/include/selectbits.h
+AliTPCv2.o: /usr/include/alloca.h

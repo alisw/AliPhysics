@@ -1,0 +1,110 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:11  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+#if defined(CERNLIB_DOUBLE)
+      FUNCTION DELIKC(AK)
+C
+#include "gen/imp64.inc"
+C
+      CHARACTER*(*) NAMEK,NAMEE
+      PARAMETER(NAMEK='RELIKC/DELIKC',NAMEE='RELIEC/DELIEC')
+#endif
+#if !defined(CERNLIB_DOUBLE)
+      FUNCTION RELIKC(AK)
+C
+      CHARACTER*(*) NAMEK,NAMEE
+      PARAMETER(NAMEK='RELIKC',NAMEE='RELIEC')
+#endif
+      CHARACTER*80 ERRTXT
+C
+C     Based on
+C      W.J. Cody, Chebyshev approximations for the complete elliptic
+C      integrals K and E, Math. Comp. l9 (1965) 105-112
+C
+      DIMENSION A(8),B(8),P(8),Q(8)
+
+      PARAMETER (Z1 = 1, HF = Z1/2, C = 1.38629 43611 19890 6D0)
+      DATA A
+     1/6.49984 43329 39018 0D-4, 6.69055 09906 89793 6D-3,
+     2 1.38556 01247 15656 0D-2, 1.12089 18554 64409 2D-2,
+     3 9.65875 79861 75311 3D-3, 1.49789 88178 70462 9D-2,
+     4 3.08855 73486 75269 4D-2, 9.65735 90797 58901 8D-2/
+      DATA B
+     1/1.50491 81783 60188 3D-4, 3.18313 09927 86288 6D-3,
+     2 1.41053 80776 15804 8D-2, 2.71898 61116 78825 0D-2,
+     3 3.70683 98934 15542 2D-2, 4.88180 58565 40395 2D-2,
+     4 7.03124 26464 62736 1D-2, 1.24999 99994 11792 3D-1/
+      DATA P
+     1/7.09809 64089 98722 9D-4, 7.33561 64974 29036 5D-3,
+     2 1.53771 02528 55201 9D-2, 1.30341 46073 73143 2D-2,
+     3 1.25105 92410 84464 4D-2, 2.18762 20647 18619 8D-2,
+     4 5.68056 57874 69535 8D-2, 4.43147 18112 15580 6D-1/
+      DATA Q
+     1/1.64272 10797 04802 5D-4, 3.48386 79435 89649 2D-3,
+     2 1.55251 29948 04072 1D-2, 3.03027 47728 41284 8D-2,
+     3 4.23828 07456 94790 0D-2, 5.85828 39536 55902 4D-2,
+     4 9.37499 20249 68011 3D-2, 2.49999 99993 61762 2D-1/
+
+#if defined(CERNLIB_DOUBLE)
+      ENTRY DELLIK(AK)
+#endif
+#if !defined(CERNLIB_DOUBLE)
+      ENTRY ELLICK(AK)
+#endif
+
+      U=AK**2
+      IF(U .LT. 1) THEN
+       Y=1-U
+       PA=A(1)
+       PB=B(1)
+       DO 1 I = 2,8
+       PA=PA*Y+A(I)
+    1  PB=PB*Y+B(I)
+       H=C+PA*Y-LOG(Y)*(HF+PB*Y)
+      ELSE
+       H=0
+       WRITE(ERRTXT,105) AK
+       CALL MTLPRT(NAMEK,'C347.5',ERRTXT)
+      ENDIF
+      GO TO 9
+
+#if defined(CERNLIB_DOUBLE)
+      ENTRY DELIEC(AK)
+      ENTRY DELLIE(AK)
+#endif
+#if !defined(CERNLIB_DOUBLE)
+      ENTRY RELIEC(AK)
+      ENTRY ELLICE(AK)
+#endif
+
+      U=AK**2
+      IF(U .LT. 1) THEN
+       Y=1-U
+       PA=P(1)
+       PB=Q(1)
+       DO 2 I = 2,8
+       PA=PA*Y+P(I)
+    2  PB=PB*Y+Q(I)
+       H=1+(PA-LOG(Y)*PB)*Y
+      ELSE IF(U .EQ. 1) THEN
+       H=1
+      ELSE
+       H=0
+       WRITE(ERRTXT,105) AK
+       CALL MTLPRT(NAMEE,'C347.6',ERRTXT)
+      ENDIF
+#if defined(CERNLIB_DOUBLE)
+    9 DELIKC=H
+#endif
+#if !defined(CERNLIB_DOUBLE)
+    9 RELIKC=H
+#endif
+      RETURN
+  105 FORMAT('ILLEGAL  AK = ',1P,D15.8)
+      END

@@ -1,0 +1,40 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:11  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+#if defined(CERNLIB_DOUBLE)
+      FUNCTION RELI1C(AKP)
+      IMPLICIT DOUBLE PRECISION (D)
+
+      SROUND(D)=D+(D-SNGL(D))
+      RELI1C=SROUND(DELI1C(DBLE(AKP)))
+      RETURN
+
+      ENTRY RELI2C(AKP,A,B)
+      RELI2C=SROUND(DELI2C(DBLE(AKP),DBLE(A),DBLE(B)))
+      RETURN
+
+      ENTRY RELI3C(AKP,AK2,P)
+      RELI3C=SROUND(DELI3C(DBLE(AKP),DBLE(AK2),DBLE(P)))
+      RETURN
+
+      ENTRY RELIGC(AKP,P,A,B)
+      RELIGC=SROUND(DELIGC(DBLE(AKP),DBLE(P),DBLE(A),DBLE(B)))
+      RETURN
+
+      ENTRY RELIKC(AK)
+      ENTRY ELLICK(AK)
+      RELIKC=SROUND(DELIKC(DBLE(AK)))
+      RETURN
+
+      ENTRY RELIEC(AK)
+      ENTRY ELLICE(AK)
+      RELIEC=SROUND(DELIEC(DBLE(AK)))
+      RETURN
+      END
+#endif

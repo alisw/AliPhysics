@@ -1,0 +1,24 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:38  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE EISCH1(NM,N,AR,AI,WR,ZR,ZI,IERR,WORK)
+C     ALL EIGENVALUES AND CORRESPONDING EIGENVECTORS OF A COMPLEX
+C     HERMITIAN MATRIX
+C
+      DIMENSION AR(NM,NM),AI(NM,NM),WR(N),ZR(NM,NM),ZI(NM,NM),WORK(1)
+      CALL HTRIDI(NM,N,AR,AI,WR,ZI,ZI,WORK)
+      DO 100 I=1,N
+      DO 50 J=1,N
+   50 ZR(I,J)=0.0
+  100 ZR(I,I)=1.0
+      CALL TQL2(NM,N,WR,ZI,ZR,IERR)
+      IF(IERR.NE.0) RETURN
+      CALL HTRIBK(NM,N,AR,AI,WORK,N,ZR,ZI)
+      RETURN
+      END

@@ -1,0 +1,116 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:03:25  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      REAL FUNCTION QUAD(D,DEG,LOWER,UPPER,FUN)
+      INTEGER D,DEG
+      REAL LOWER(D),UPPER(D),FUN
+      EXTERNAL FUN
+      INTEGER D0,DP1,TWOD,PT,NPTS,TIMES,KMAX
+      REAL X(10,202),Y(10),Z(10),R
+      DOUBLE PRECISION SUM0,SUM1,SUM2,B0,B1,B2
+      REAL PI,TWOPI
+      DATA PI,TWOPI /3.14159E+0,6.28319E+0/
+      DATA D0 /0/
+      IF(D.EQ.D0) GOTO 130
+      D0=D
+      SQ23=SQRT(2.0E+0/3.0E+0)
+      SQ13I=1.0E+0/SQRT(3.0E+0)
+      DP1=D+1
+      TWOD=2*D
+      KMAX=D/2
+      DO 20 K=1,KMAX
+      DO 10 J=1,DP1
+      I=J-1
+      X(2*K-1,J)=SQ23*COS(TWOPI*I*K/DP1)
+      X(2*K,J)=SQ23*SIN(TWOPI*I*K/DP1)
+ 10   CONTINUE
+ 20   CONTINUE
+      IF(MOD(D,2).NE.1) GOTO 40
+      DO 30 I=1,DP1
+      X(D,I)=-SQ13I*(-1)**I
+ 30   CONTINUE
+ 40   DO 60 K=1,KMAX
+      DO 50 I=1,TWOD
+      X(2*K-1,I+DP1)=SQ23*COS((2*K-1)*I*PI/D)
+      X(2*K,I+DP1)=SQ23*SIN((2*K-1)*I*PI/D)
+ 50   CONTINUE
+ 60   CONTINUE
+      IF(MOD(D,2).NE.1) GOTO 80
+      DO 70 I=1,TWOD
+      X(D,I+DP1)=SQ13I*(-1)**I
+ 70   CONTINUE
+ 80   I=1
+      GOTO 100
+ 90   I=I+1
+ 100  IF((I).GT.(DP1+TWOD)) GOTO 120
+      DO 110 J=1,D
+      X(J,I)=0.5E+0*(X(J,I)+1.0E+0)
+ 110  CONTINUE
+      GOTO 90
+ 120  R=0.5E+0*SQRT(3.0E+0/5.0E+0)
+      B0=(25.0E+0*D**2-115.0E+0*D+162.0E+0)/162.0E+0
+      B1=(70.0E+0-25.0E+0*D)/162.0E+0
+      B2=25.0E+0/324.0E+0
+ 130  IF(DEG.NE.2) GOTO 140
+      PT=0
+      NPTS=DP1
+      GOTO 180
+ 140  IF(DEG.NE.3) GOTO 150
+      PT=DP1
+      NPTS=TWOD
+      GOTO 180
+ 150  IF(DEG.NE.5) GOTO 160
+      GOTO 210
+ 160  WRITE(6,170) DEG
+ 170  FORMAT(' ILLEGAL DEGREE =',G13.5)
+      STOP
+ 180  QUAD=0.0E+0
+      DO 200 I=1,NPTS
+      DO 190 J=1,D
+      Y(J)=(UPPER(J)-LOWER(J))*X(J,I+PT)+LOWER(J)
+ 190  CONTINUE
+      QUAD=QUAD+FUN(D,Y)
+ 200  CONTINUE
+      QUAD=QUAD/NPTS
+      RETURN
+ 210  SUM0=0.0E+0
+      SUM1=SUM0
+      SUM2=SUM1
+      DO 220 J=1,D
+      Y(J)=0.5E+0*(UPPER(J)+LOWER(J))
+ 220  CONTINUE
+      SUM0=FUN(D,Y)
+      DO 230 J=1,D
+      Z(J)=(UPPER(J)-LOWER(J))*R
+ 230  CONTINUE
+      DO 240 I=1,D
+      Y(I)=Y(I)+Z(I)
+      SUM1=SUM1+FUN(D,Y)
+      Y(I)=Y(I)-2.0E+0*Z(I)
+      SUM1=SUM1+FUN(D,Y)
+      Y(I)=Y(I)+Z(I)
+ 240  CONTINUE
+      DO 270 I=2,D
+      Y(I)=Y(I)+Z(I)
+      JMAX=I-1
+      DO 260 TIMES=1,2
+      DO 250 J=1,JMAX
+      Y(J)=Y(J)+Z(J)
+      SUM2=SUM2+FUN(D,Y)
+      Y(J)=Y(J)-2.0E+0*Z(J)
+      SUM2=SUM2+FUN(D,Y)
+      Y(J)=Y(J)+Z(J)
+ 250  CONTINUE
+      Y(I)=Y(I)-2.0E+0*Z(I)
+ 260  CONTINUE
+      Y(I)=Y(I)+3.0E+0*Z(I)
+ 270  CONTINUE
+      QUAD=B0*SUM0+B1*SUM1+B2*SUM2
+      RETURN
+      END

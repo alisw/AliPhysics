@@ -1,0 +1,202 @@
+// -*- C++ -*-
+// $Id$
+// ---------------------------------------------------------------------------
+//
+// This file is a part of the CLHEP - a Class Library for High Energy Physics.
+// 
+// This is the definitions of the inline member functions of the
+// Hep3Vector class.
+//
+
+#ifdef HEP_DEBUG_INLINE
+#define inline
+#endif
+
+inline Hep3Vector::Hep3Vector(HepDouble x, HepDouble y, HepDouble z)
+: dx(x), dy(y), dz(z) {}
+
+inline HepDouble Hep3Vector::x() const {
+  return dx;
+}
+
+inline HepDouble Hep3Vector::y() const {
+  return dy;
+}
+
+inline HepDouble Hep3Vector::z() const {
+  return dz;
+}
+
+inline void Hep3Vector::setX(HepDouble x) {
+  dx = x;
+}
+
+inline void Hep3Vector::setY(HepDouble y) {
+  dy = y;
+}
+
+inline void Hep3Vector::setZ(HepDouble z) {
+  dz = z;
+}
+
+inline Hep3Vector::Hep3Vector(const Hep3Vector & p)
+: dx(p.x()), dy(p.y()), dz(p.z()) {}
+
+inline Hep3Vector::~Hep3Vector() {}
+
+inline Hep3Vector & Hep3Vector::operator = (const Hep3Vector & p) {
+  dx = p.x();
+  dy = p.y();
+  dz = p.z();
+  return *this;
+}
+
+inline HepBoolean Hep3Vector::operator == (const Hep3Vector& v) const {
+  return (v.x()==x() && v.y()==y() && v.z()==z()) ? true : false;
+}
+
+inline HepBoolean Hep3Vector::operator != (const Hep3Vector& v) const {
+  return (v.x()!=x() || v.y()!=y() || v.z()!=z()) ? true : false;
+}
+
+inline Hep3Vector& Hep3Vector::operator += (const Hep3Vector & p) {
+  dx += p.x();
+  dy += p.y();
+  dz += p.z();
+  return *this;
+}
+
+inline Hep3Vector& Hep3Vector::operator -= (const Hep3Vector & p) {
+  dx -= p.x();
+  dy -= p.y();
+  dz -= p.z();
+  return *this;
+}
+
+inline Hep3Vector Hep3Vector::operator - () const {
+  return Hep3Vector(-dx, -dy, -dz);
+}
+
+inline Hep3Vector& Hep3Vector::operator *= (HepDouble a) {
+  dx *= a;
+  dy *= a;
+  dz *= a;
+  return *this;
+}
+
+inline HepDouble Hep3Vector::dot(const Hep3Vector & p) const {
+  return dx*p.x() + dy*p.y() + dz*p.z();
+}
+
+inline Hep3Vector Hep3Vector::cross(const Hep3Vector & p) const {
+  return Hep3Vector(dy*p.z()-p.y()*dz, dz*p.x()-p.z()*dx, dx*p.y()-p.x()*dy);
+}
+
+inline HepDouble Hep3Vector::mag2() const {
+  return dx*dx + dy*dy + dz*dz;
+}
+
+inline HepDouble Hep3Vector::mag() const {
+  return sqrt(mag2());
+}
+
+inline Hep3Vector Hep3Vector::unit() const {
+  HepDouble tot = mag2();
+  Hep3Vector p(*this);
+  return tot > 0.0 ? p *= (1.0/sqrt(tot)) : p;
+}
+
+inline Hep3Vector Hep3Vector::orthogonal() const {
+  HepDouble x = abs(dx), y = abs(dy), z = abs(dz);
+  if (x < y) {
+    return x < z ? Hep3Vector(0,dz,-dy) : Hep3Vector(dy,-dx,0);
+  }else{
+    return y < z ? Hep3Vector(-dz,0,dx) : Hep3Vector(dy,-dx,0);
+  }
+}
+
+inline HepDouble Hep3Vector::perp2() const {
+  return dx*dx + dy*dy;
+}
+
+inline HepDouble Hep3Vector::perp() const {
+  return sqrt(perp2());
+}
+
+inline HepDouble Hep3Vector::perp2(const Hep3Vector & p)  const {
+  HepDouble tot = p.mag2();
+  return tot > 0.0 ? mag2()-sqr(dot(p))/tot : mag2();
+}
+
+inline HepDouble Hep3Vector::perp(const Hep3Vector & p) const {
+  return sqrt(perp2(p));
+}
+
+inline HepDouble Hep3Vector::phi() const {
+  return dx == 0.0 && dy == 0.0 ? 0.0 : atan2(dy,dx);
+}
+
+inline HepDouble Hep3Vector::theta() const {
+  return dx == 0.0 && dy == 0.0 && dz == 0.0 ? 0.0 : atan2(perp(),dz);
+}
+
+inline HepDouble Hep3Vector::cosTheta() const {
+  HepDouble ptot = mag();
+  return ptot == 0.0 ? 1.0 : dz/ptot;
+}
+
+inline HepDouble Hep3Vector::angle(const Hep3Vector & q) const {
+  HepDouble ptot2 = mag2()*q.mag2();
+  return ptot2 <= 0.0 ? 0.0 : acos(dot(q)/sqrt(ptot2));
+}
+
+inline void Hep3Vector::setMag(HepDouble ma){
+  HepDouble th = theta();
+  HepDouble ph = phi();
+
+  setX(ma*sin(th)*cos(ph));
+  setY(ma*sin(th)*sin(ph));
+  setZ(ma*cos(th));
+}
+
+inline void Hep3Vector::setTheta(HepDouble th){
+  HepDouble ma   = mag();
+  HepDouble ph   = phi();
+
+  setX(ma*sin(th)*cos(ph));
+  setY(ma*sin(th)*sin(ph));
+  setZ(ma*cos(th));
+}
+
+inline void Hep3Vector::setPhi(HepDouble ph){
+  HepDouble ma   = mag();
+  HepDouble th   = theta();
+
+  setX(ma*sin(th)*cos(ph));
+  setY(ma*sin(th)*sin(ph));
+  setZ(ma*cos(th));
+}
+
+inline Hep3Vector operator + (const Hep3Vector & a, const Hep3Vector & b) {
+  return Hep3Vector(a.x() + b.x(), a.y() + b.y(), a.z() + b.z());
+}
+
+inline Hep3Vector operator - (const Hep3Vector & a, const Hep3Vector & b) {
+  return Hep3Vector(a.x() - b.x(), a.y() - b.y(), a.z() - b.z());
+}
+
+inline Hep3Vector operator * (const Hep3Vector & p, HepDouble a) {
+  return Hep3Vector(a*p.x(), a*p.y(), a*p.z());
+}
+
+inline Hep3Vector operator * (HepDouble a, const Hep3Vector & p) {
+  return Hep3Vector(a*p.x(), a*p.y(), a*p.z());
+}
+
+inline HepDouble operator * (const Hep3Vector & a, const Hep3Vector & b) {
+  return a.dot(b);
+}
+
+#ifdef HEP_DEBUG_INLINE
+#undef inline
+#endif

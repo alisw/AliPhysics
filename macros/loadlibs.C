@@ -1,0 +1,22 @@
+void loadlibs () 
+{
+  gSystem->Load("$(ROOTSYS)/lib/libEG");
+  gSystem->Load("$(ALICE_ROOT)/lib/libSTEER");
+  gSystem->Load("$(ALICE_ROOT)/lib/libTGeant3Dummy");
+  gSystem->Load("$(ALICE_ROOT)/lib/libdummypythia");
+  gSystem->Load("$(ROOTSYS)/lib/libEGPythia");
+  gSystem->Load("$(ALICE_ROOT)/lib/libEVGEN");
+  gSystem->Load("$(ALICE_ROOT)/lib/libFMD");
+  gSystem->Load("$(ALICE_ROOT)/lib/libMUON");
+  gSystem->Load("$(ALICE_ROOT)/lib/libPHOSdummy");
+  gSystem->Load("$(ALICE_ROOT)/lib/libPHOS");
+  gSystem->Load("$(ALICE_ROOT)/lib/libPMD");
+  gSystem->Load("$(ALICE_ROOT)/lib/libRICH");
+  gSystem->Load("$(ALICE_ROOT)/lib/libSTRUCT");
+  gSystem->Load("$(ALICE_ROOT)/lib/libTOF");
+  gSystem->Load("$(ALICE_ROOT)/lib/libTPC");
+  gSystem->Load("$(ALICE_ROOT)/lib/libTRD");
+  gSystem->Load("$(ALICE_ROOT)/lib/libZDC");
+  gSystem->Load("$(ALICE_ROOT)/lib/libITS");
+  gSystem->Load("$(ALICE_ROOT)/lib/libCASTOR");
+}

@@ -1,0 +1,40 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:03:27  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE SHRNK (N,NADIM,AHESS,IOUT,VEC)
+      INTEGER N, NADIM, IOUT
+      DOUBLE PRECISION AHESS(NADIM, N), VEC(N)
+      INTEGER I, IFAIL, IM1, IOM1, J, NM1
+      DOUBLE PRECISION GAMMA
+      IF(N.EQ.IOUT.OR.N.EQ.1) RETURN
+      IF(IOUT.EQ.1) GOTO 20
+      IOM1=IOUT-1
+      DO 10 I=1,IOM1
+      VEC(I)=0.0D+0
+ 10   CONTINUE
+ 20   NM1=N-1
+      GAMMA=AHESS(IOUT,IOUT)
+      DO 30 I=IOUT,NM1
+      VEC(I)=AHESS(I+1,IOUT)
+      AHESS(I,I)=AHESS(I+1,I+1)
+ 30   CONTINUE
+      DO 50 I=IOUT,NM1
+      IM1=I-1
+      IF(IM1.EQ.0) GOTO 50
+      DO 40 J=1,IM1
+      AHESS(I,J)=AHESS(I+1,J)
+ 40   CONTINUE
+ 50   CONTINUE
+      CALL MODCHL(NM1,NADIM,AHESS,GAMMA,VEC,IFAIL)
+      AHESS(N,N)=0.0D+0
+      DO 60 J=1,NM1
+      AHESS(N,J)=0.0D+0
+ 60   CONTINUE
+      RETURN
+      END

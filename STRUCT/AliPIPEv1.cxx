@@ -1,0 +1,316 @@
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Beam pipe class                                                          //
+//                                                                           //
+//Begin_Html
+/*
+<img src="gif/AliPIPEClass.gif">
+*/
+//End_Html
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+#include "AliPIPEv1.h"
+#include "AliRun.h"
+#include "AliMC.h"
+ 
+ClassImp(AliPIPEv1)
+ 
+//_____________________________________________________________________________
+AliPIPEv1::AliPIPEv1() : AliPIPE()
+{
+  //
+  // Default constructor for beam pipe
+  //
+}
+ 
+//_____________________________________________________________________________
+AliPIPEv1::AliPIPEv1(const char *name, const char *title)
+       : AliPIPE(name,title)
+{
+  //
+  // Standard constructor for beam pipe
+  //
+}
+ 
+//_____________________________________________________________________________
+void AliPIPEv1::CreateGeometry()
+{
+  //
+  // Create Beam Pipe geometry
+  //
+  //Begin_Html
+  /*
+    <img src="gif/AliPIPE.gif">
+  */
+  //End_Html
+  //Begin_Html
+  /*
+    <img src="gif/AliPIPETree.gif">
+  */
+  //End_Html
+
+  AliMC* pMC = AliMC::GetMC();
+  
+  Float_t tpar[3], dzmo, zpos, abs_d, abs_l;
+  Float_t r2, dr;
+
+  const Double_t z_flange = 150;
+  
+  Int_t *idtmed = gAlice->Idtmed();
+  
+  
+  abs_d   = 90.;  // DEFINES DRIFT LENGTH 
+  //z_nose  = 102.;
+  //z_cone  = 285.;
+  //theta1  = 24.;  // 1. angle defining the front absorber 
+  //theta2  = 5.;   // 2. angle defining the front absorbe 
+  //acc_max = 9.;   // ANGLE POLAIRE MAXIMUM 
+  //acc_min = 2.;   // ANGLE POLAIRE MINIMUM DE DETECTION 
+  abs_l   = 503.;
+  //d_steel = 1.;   // THICKNESS OF STEEL SUPPORT 
+  //d_poly  = 7.5;
+  //d_pb    = 2.5;
+  //abs_cc  = 315.; // DEFINES LENGTH OF CARBON 
+  //abs_c   = 358.;
+  //abs_s   = 150.; // DEFINES W-SHIELD LENGTH 
+  //abs_n   = 80.;  // START OF NOSE 
+  //r_abs   = 4.;
+  //r_pb    = .1;
+  //epsilon = .01;
+  //theta_r = 3.;
+  //d_rear  = 35.;
+  //theta_open = .75;
+  
+  //z_l3      = 700.;
+  //zmag_in   = 725.;
+  //zmag_out  = 1225.;
+  //zfil_in   = 1471.;
+  //zfil_out  = 1591.;
+  //zcon_in   = 1900.;
+  //zcon_out  = 2e3;
+  //zcone_e   = 859.0875;
+  //spec_l    = 1800.;
+  //zplug_in  = 1780.;
+  //zplug_out = 1900.;
+  
+  //     Chamber position 
+  //      CZ1=515.5 
+  //cz1 = 511.;
+  //cz2 = 686.;
+  //cz3 = 971.;
+  //cz4 = 1245.;
+  //cz5 = 1445.;
+  //cz6 = 1610.;
+  //cz7 = 1710.;
+  
+  
+  //     the mother of all beam pipes 
+  
+  tpar[0] = 0.;
+  tpar[1] = 3.;
+  tpar[2] = (abs_d + 700.) / 2.;
+  dzmo = tpar[2] - abs_d;
+  pMC->Gsvolu("QQMO", "TUBE", idtmed[2015], tpar, 3);
+  pMC->Gspos("QQMO", 1, "ALIC", 0., 0., -dzmo, 0, "ONLY");
+  
+  //       BEAM PIPE IN DRIFT SPACE 
+  
+  //     -30-z_flange 
+  tpar[0] = 0.;
+  tpar[1] = 3.;
+  tpar[2] = 30;
+  pMC->Gsvolu("QDT1", "TUBE", idtmed[2015], tpar, 3);
+  
+  tpar[0] = 2.9;
+  pMC->Gsvolu("QTB1", "TUBE", idtmed[2004], tpar, 3);
+  pMC->Gspos("QTB1", 1, "QDT1", 0., 0., 0., 0, "ONLY");
+  pMC->Gspos("QDT1", 1, "QQMO", 0., 0., dzmo, 0, "ONLY");
+  
+  
+  //     30-90 
+  tpar[0] = 0.;
+  tpar[1] = 3.;
+  tpar[2] = 30.;
+  pMC->Gsvolu("QDT2", "TUBE", idtmed[2015], tpar, 3);
+  
+  tpar[0] = 2.9;
+  pMC->Gsvolu("QTB2", "TUBE", idtmed[2004], tpar, 3);
+  pMC->Gspos("QTB2", 1, "QDT2", 0., 0., 0.,   0, "ONLY");
+  pMC->Gspos("QDT2", 1, "QQMO", 0., 0., dzmo, 0, "ONLY");
+  
+  //       beam pipe outside absorber on the left side 
+  
+  
+  
+  //     -30 - Z_FLANGE 
+  tpar[0] = 0.;
+  tpar[1] = 3.;
+  tpar[2] = (z_flange - 30)/2;
+  pMC->Gsvolu("QDT5", "TUBE", idtmed[2015], tpar, 3);
+  
+  tpar[0] = 2.9;
+  zpos    = -30. - tpar[2] + dzmo;
+  pMC->Gsvolu("QTB5", "TUBE", idtmed[2004], tpar, 3);
+  pMC->Gspos("QTB5", 1, "QDT5", 0., 0., 0.,   0, "ONLY");
+  pMC->Gspos("QDT5", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  
+  //     STRAIGHT STEEL PIECE 
+  
+  zpos    = -z_flange;
+  r2      = 2.9;
+  dr      = .015;
+  tpar[0] = 0.;
+  tpar[1] = r2 + dr;
+  tpar[2] = (zpos + 700.) / 2.;
+  pMC->Gsvolu("QDT7", "TUBE", idtmed[2015], tpar, 3);
+  tpar[0] = r2;
+  pMC->Gsvolu("QTB7", "TUBE", idtmed[2018], tpar, 3);
+  pMC->Gspos("QTB7", 1, "QDT7", 0., 0., 0.,   0, "ONLY");
+  zpos = zpos - tpar[2] + dzmo;
+  pMC->Gspos("QDT7", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  
+  //     flange dn 63 
+  
+  tpar[0] = 3.;
+  tpar[1] = 5.7;
+  tpar[2] = 2.;
+  pMC->Gsvolu("QN63", "TUBE", idtmed[2018], tpar, 3);
+  zpos = tpar[2] - z_flange;
+  pMC->Gspos("QN63", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+  
+  
+  //     Replace Absorber or Shield by Beam-Pipe 
+  //     in case they are not selected 
+  
+  if (gAlice->GetDetector("ABSO") == 0) {
+    
+    pMC->Gspos("QN63", 2, "ALIC", 0., 0., z_flange, 0, "ONLY");
+    r2      = 2.9;
+    dr      = .1;
+    tpar[0] = 0.;
+    tpar[1] = r2 + dr;
+    tpar[2] = (z_flange - abs_d) / 2.;
+    pMC->Gsvolu("QDT8", "TUBE", idtmed[2015], tpar, 3);
+    tpar[0] = r2;
+    pMC->Gsvolu("QTB8", "TUBE", idtmed[2004], tpar, 3);
+    pMC->Gspos("QTB8", 1, "QDT8", 0., 0., 0., 0, "ONLY");
+    zpos    = abs_d + tpar[2];
+    pMC->Gspos("QDT8", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+    dr      = .015;
+    tpar[0] = 0.;
+    tpar[1] = r2 + dr;
+    tpar[2] = (abs_l - z_flange) / 2.;
+    pMC->Gsvolu("QDTS", "TUBE", idtmed[2015], tpar, 3);
+    tpar[0] = r2;
+    pMC->Gsvolu("QTBS", "TUBE", idtmed[2018], tpar, 3);
+    pMC->Gspos("QTBS", 1, "QDTS", 0., 0., 0., 0, "ONLY");
+    zpos = tpar[2] + z_flange;
+    pMC->Gspos("QDTS", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+  }
+  if (gAlice->GetDetector("SHIL") == 0) {
+    r2      = 2.9;
+    dr      = .015;
+    tpar[0] = 0.;
+    tpar[1] = r2 + dr;
+    tpar[2] = (700. - abs_l) / 2.;
+    pMC->Gsvolu("QDT9", "TUBE", idtmed[2015], tpar, 3);
+    tpar[0] = r2;
+    pMC->Gsvolu("QTB9", "TUBE", idtmed[2018], tpar, 3);
+    pMC->Gspos("QTB9", 1, "QDT9", 0., 0., 0., 0, "ONLY");
+    zpos = abs_l + tpar[2];
+    pMC->Gspos("QDT9", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+  }
+}
+
+//_____________________________________________________________________________
+void AliPIPEv1::DrawDetector()
+{
+  //
+  // Draw a shaded view of the Beam Pipe
+  //
+
+  AliMC* pMC = AliMC::GetMC();
+
+  // Set everything unseen
+  pMC->Gsatt("*", "seen", -1);
+  // 
+  // Set ALIC mother transparent
+  pMC->Gsatt("ALIC","SEEN",0);
+  //
+  // Set the volumes visible
+  pMC->Gsatt("QQMO","seen",1);
+  pMC->Gsatt("QDT1","seen",1);
+  pMC->Gsatt("QTB1","seen",1);
+  pMC->Gsatt("QDT2","seen",1);
+  pMC->Gsatt("QTB2","seen",1);
+  pMC->Gsatt("QDT5","seen",1);
+  pMC->Gsatt("QTB5","seen",1);
+  pMC->Gsatt("QDT7","seen",1);
+  pMC->Gsatt("QTB7","seen",1);
+  pMC->Gsatt("QN63","seen",1);
+  //
+  pMC->Gdopt("hide", "on");
+  pMC->Gdopt("shad", "on");
+  pMC->Gsatt("*", "fill", 7);
+  pMC->SetClipBox(".");
+  pMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
+  pMC->DefaultRange();
+  pMC->Gdraw("alic", 40, 30, 0, 3, 5, .04, .04);
+  pMC->Gdhead(1111, "Beam Pipe");
+  pMC->Gdman(16, 6, "MAN");
+  pMC->Gdopt("hide","off");
+}
+
+//_____________________________________________________________________________
+void AliPIPEv1::CreateMaterials()
+{
+  //
+  // Create materials for beam pipe
+  //
+
+  Int_t   ISXFLD = gAlice->Field()->Integ();
+  Float_t SXMGMX = gAlice->Field()->Max();
+  
+  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
+  Float_t zsteel[4] = { 26.,24.,28.,14. };
+  Float_t wsteel[4] = { .715,.18,.1,.005 };
+  
+  Float_t epsil, stmin, tmaxfd, deemax, stemax;
+  
+  //     STEEL 
+  
+  
+  // --- Define the various materials for GEANT --- 
+  AliMaterial(5, "BERILLIUM$", 9.01, 4., 1.848, 35.3, 36.7);
+  AliMaterial(16, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
+  AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
+  AliMixture(19, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
+  
+  // **************** 
+  //     Defines tracking media parameters. 
+  //     Les valeurs sont commentees pour laisser le defaut 
+  //     a GEANT (version 3-21, page CONS200), f.m. 
+  epsil  = .001;  // Tracking precision, 
+  stemax = -1.;   // Maximum displacement for multiple scat 
+  tmaxfd = -20.;  // Maximum angle due to field deflection 
+  deemax = -.3;   // Maximum fractional energy loss, DLS 
+  stmin  = -.8;
+  
+  //    Air 
+  
+  AliMedium(2015, "AIR_L3_US", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  //    Beryllium 
+  
+  AliMedium(2005, "BE_L3_US", 5, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  //    Vacuum 
+  
+  AliMedium(2016, "VA_L3_US", 16, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  //    Steel 
+  
+  AliMedium(2019, "ST_L3_US", 19, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+}
+

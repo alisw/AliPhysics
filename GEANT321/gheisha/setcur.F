@@ -1,0 +1,56 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1995/10/24 10:20:59  cernlib
+* Geant
+*
+*
+#include "geant321/pilot.h"
+*CMZ :  3.21/02 29/03/94  15.41.38  by  S.Giani
+*-- Author :
+      SUBROUTINE SETCUR(NTR)
+C
+C *** STORAGE OF CURRENT TRACK PARAMETERS ***
+C *** NVE 16-MAR-1988 CERN GENEVA ***
+C
+C ORIGIN : H.FESEFELDT (26-JAN-1984)
+C
+#include "geant321/s_defcom.inc"
+      DIMENSION RNDM(1)
+C
+      CALL LENGTX(NTR,P)
+      AMAS=PV(5,NTR)
+      AMASQ=AMAS*AMAS
+      NCH=PV(6,NTR)
+      TOF=PV(7,NTR)
+      IPART=IFIX(PV(8,NTR)+0.1)
+      IF(PV(10,NTR).NE.0.) USERW=PV(10,NTR)
+      PX=0.
+      PY=0.
+      PZ=0.
+      IF(P.LT.1.E-10) GOTO 4
+      PX=PV(1,NTR)/P
+      PY=PV(2,NTR)/P
+      PZ=PV(3,NTR)/P
+    4 EN=PV(4,NTR)
+      EK=EN-ABS(AMAS)
+      SINL=PZ
+      COSL=SQRT(ABS(1.-SINL*SINL))
+      IF(ABS(COSL).LT.1.E-10) GOTO 1
+      SINP=PY/COSL
+      COSP=PX/COSL
+      GOTO 2
+    1 CALL GRNDM(RNDM,1)
+      PHI=RNDM(1)*TWPI
+      SINP=SIN(PHI)
+      COSP=COS(PHI)
+    2 IF(NPRT(3).OR.NPRT(4).OR.NPRT(5))
+     *WRITE(NEWBCD,1001) XEND,YEND,ZEND,RCA,RCE,AMAS,NCH,TOF,PX,PY,PZ,
+     *USERW,INTCT,P,EN,EK,AMASQ,DELTN,ITK,NTK,IPART,IND,LCALO,ICEL,
+     *SINL,COSL,SINP,COSP
+      RETURN
+ 1001 FORMAT(1H ,'TRACK PARAMETER CHANGED:',3F8.2,1X,2F7.0,1X,F8.3,1X,
+     *F3.0,1X,F6.0,1X,3F6.3,1X,F10.0,1X,F5.0/10X,4F8.3,1X,F8.5,1X,6I5,
+     *4F8.3)
+      END

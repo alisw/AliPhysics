@@ -1,0 +1,86 @@
+##### DEPENDENCIES #####
+ 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+AliTOF.o: AliTOF.h /hdb2/offline/pro/include/AliDetector.h
+AliTOF.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliTOF.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliTOF.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliTOF.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliTOF.o: /soft/root/include/TObject.h /soft/root/include/TNode.h
+AliTOF.o: /soft/root/include/TTUBE.h /soft/root/include/TBRIK.h
+AliTOF.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliTOF.o: /soft/root/include/TList.h /soft/root/include/TStopwatch.h
+AliTOF.o: /soft/root/include/TTree.h /soft/root/include/TGeometry.h
+AliTOF.o: /hdb2/offline/pro/include/AliHeader.h
+AliTOF.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliTOF.o: /hdb2/offline/pro/include/AliMC.h
+AliTOF.o: /hdb2/offline/pro/include/AliGenerator.h
+AliTOF.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliTOF.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliTOF.o: /hdb2/offline/pro/include/AliConst.h /soft/root/include/TMath.h
+AliTOFv0.o: AliTOFv0.h AliTOF.h /hdb2/offline/pro/include/AliDetector.h
+AliTOFv0.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliTOFv0.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliTOFv0.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliTOFv0.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliTOFv0.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliRun.h
+AliTOFv0.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliTOFv0.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliTOFv0.o: /soft/root/include/TGeometry.h
+AliTOFv0.o: /hdb2/offline/pro/include/AliHeader.h
+AliTOFv0.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliTOFv0.o: /hdb2/offline/pro/include/AliMC.h
+AliTOFv0.o: /hdb2/offline/pro/include/AliGenerator.h
+AliTOFv0.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliTOFv0.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliTOFv0.o: /hdb2/offline/pro/include/AliConst.h /soft/root/include/TMath.h
+AliTOFv1.o: AliTOFv1.h AliTOF.h /hdb2/offline/pro/include/AliDetector.h
+AliTOFv1.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliTOFv1.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliTOFv1.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliTOFv1.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliTOFv1.o: /soft/root/include/TObject.h /hdb2/offline/pro/include/AliRun.h
+AliTOFv1.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliTOFv1.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliTOFv1.o: /soft/root/include/TGeometry.h
+AliTOFv1.o: /hdb2/offline/pro/include/AliHeader.h
+AliTOFv1.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliTOFv1.o: /hdb2/offline/pro/include/AliMC.h
+AliTOFv1.o: /hdb2/offline/pro/include/AliGenerator.h
+AliTOFv1.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliTOFv1.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliTOFv1.o: /hdb2/offline/pro/include/AliConst.h /soft/root/include/TMath.h
+AliTOFv2.o: AliTOFv2.h AliTOF.h /hdb2/offline/pro/include/AliDetector.h
+AliTOFv2.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliTOFv2.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliTOFv2.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliTOFv2.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliTOFv2.o: /soft/root/include/TObject.h /soft/root/include/TNode.h
+AliTOFv2.o: /soft/root/include/TTUBE.h /hdb2/offline/pro/include/AliRun.h
+AliTOFv2.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliTOFv2.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliTOFv2.o: /soft/root/include/TGeometry.h
+AliTOFv2.o: /hdb2/offline/pro/include/AliHeader.h
+AliTOFv2.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliTOFv2.o: /hdb2/offline/pro/include/AliMC.h
+AliTOFv2.o: /hdb2/offline/pro/include/AliGenerator.h
+AliTOFv2.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliTOFv2.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliTOFv2.o: /hdb2/offline/pro/include/AliConst.h /soft/root/include/TMath.h
+AliTOFv3.o: AliTOFv3.h AliTOF.h /hdb2/offline/pro/include/AliDetector.h
+AliTOFv3.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
+AliTOFv3.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliTOFv3.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliTOFv3.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
+AliTOFv3.o: /soft/root/include/TObject.h /soft/root/include/TNode.h
+AliTOFv3.o: /soft/root/include/TTUBE.h /hdb2/offline/pro/include/AliRun.h
+AliTOFv3.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliTOFv3.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliTOFv3.o: /soft/root/include/TGeometry.h
+AliTOFv3.o: /hdb2/offline/pro/include/AliHeader.h
+AliTOFv3.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
+AliTOFv3.o: /hdb2/offline/pro/include/AliMC.h
+AliTOFv3.o: /hdb2/offline/pro/include/AliGenerator.h
+AliTOFv3.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
+AliTOFv3.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h

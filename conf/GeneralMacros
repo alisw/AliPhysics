@@ -1,0 +1,46 @@
+########################## General Macros #####################################
+
+$(SLIBRARY):
+		@echo "Generating $@ for $(PACKAGE)..."
+		@rm -f $@
+                ifeq ($(PLATFORM),aix)
+		   @$(SHLD) -o $@ $(LIBS) -p 0 $^
+                else
+                   ifeq ($(PLATFORM),alpha)
+		      @$(SHLD) -msym -o $@ $^ -lcxxstd -lcxx -lexc -lots -lc
+                   else
+		      @$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(SHLIB) -o $@
+                   endif
+                endif
+		@chmod 555 $@
+		@echo "$@ done"
+
+
+$(ALIBRARY):
+		@echo "Generating $@ for $(PACKAGE)..."
+		@rm -f $@
+		@ar rv $@ $^
+		@echo "$@ done"
+ 
+$(PROGRAM):
+		@echo "Generating $@ for $(PACKAGE)..."
+		@rm -f $@
+		@$(LD) $(LDFLAGS) $^ $(LIBS) -o $@
+		@echo "$@ done"
+ 
+headers:	$(patsubst %,$(ALICE_ROOT)/include/%,$(HEADERS))
+
+$(patsubst %,$(ALICE_ROOT)/include/%,$(HEADERS)) : $(ALICE_ROOT)/include/% : %
+		@cp -p $^ $@
+
+$(DICT):
+		@echo "Generating $@ for $(PACKAGE)..."
+		@rootcint -f $@ -c -I$(ALICE_ROOT)/include $^
+		@echo "$@ done"
+ 
+depend:
+		@$(MAKEDEPEND) -fMake-depend -- $(CXXFLAGS) $(DEPINC) -- $^
+
+macroclean:
+		@rm -f $(TOCLEAN) *~ \#*
+

@@ -1,0 +1,173 @@
+*
+* $Id$
+*
+* $Log$
+* Revision 1.1.1.1  1996/04/01 15:02:25  mclareni
+* Mathlib gen
+*
+*
+#include "gen/pilot.h"
+      SUBROUTINE DSPAP2(KX,KY,MX,MY,NX,NY,XI,YI,ZI,NDIMZ,
+     +                  KNOT,TX,TY,C,NDIMC,W,NW,NERR)
+
+#include "gen/imp64.inc"
+      DIMENSION XI(*),YI(*),ZI(NDIMZ,*),TX(*),TY(*),W(*),C(NDIMC,*)
+      CHARACTER NAME*(*)
+      CHARACTER*80 ERRTXT
+      PARAMETER (NAME = 'DSPAP2')
+
+************************************************************************
+*   NORBAS, VERSION: 15.03.1993
+************************************************************************
+*
+*   DSPAP2 COMPUTES THE COEFFICIENTS
+*          C(I,J)   (I=1,...,NCX , J=1,...,NCY)
+*   OF A TWO-DIMENSIONAL POLYNOMIAL APPROXIMATION SPLINE  Z = S(X,Y)  IN
+*   REPRESENTATION OF NORMALIZED TWO-DIMENSIONAL B-SPLINES  B(I,J)(X,Y)
+*
+*     S(X,Y) = SUMME(I=1,...,NCX)
+*              SUMME(J=1,...,NCY)  C(I,J) * B(I,J)(X,Y)
+*
+*   TO A USER SUPPLIED DATA SET
+*
+*     (XI(I),YI(J),ZI(I,J))       (I=1,...,NX , J=1,...,NY)
+*
+*   OF A FUNCTION  Z = F(X,Y) , I.E.
+*
+*     S(XI(I),YI(J)) = Z(I,J)     (I=1,...,NX , J=1,...,NY) .
+*
+*   THE TWO-DIMENSIONAL B-SPLINES  B(I,J)(X,Y)  ARE THE PRODUCT OF TWO
+*   ONE-DIMENSIONAL B-SPLINES  BX , BY
+*          B(I,J)(X,Y) = BX(I,KX)(X) * BY(J,KY)(Y)
+*   OF DEGREE  KX AND KY ( 0 <= KX , KY <= 25 )   WITH INDICES  I , J
+*   ( 1 <= I <= NX , 1 <= J <= NY ) OVER TWO SETS OF SPLINE-KNOTS
+*       TX(1),TX(2),...,TX(MX)     ( MX = NCX+KX+1 )
+*       TY(1),TY(2),...,TY(MY)     ( MY = NCY+KY+1 ) ,
+*   RESPECTIVELY.
+*   FOR FURTHER DETAILS TO THE ONE- AND TWO-DIMENSIONAL NORMALIZED
+*   B-SPLINES SEE THE COMMENTS TO  DSPNB1  AND  DSPNB2.
+*
+*   PARAMETERS:
+*
+*   NX    (INTEGER) NUMBER OF APPROXIMATION POINTS IN X-DIRECTION :
+*         XI(I) ,  I=1,...,NX .
+*   NY    (INTEGER) NUMBER OF APPROXIMATION POINTS IN Y-DIRECTION :
+*         YI(J) ,  J=1,...,NY .
+*   MX    (INTEGER) NUMBER OF KNOTS IN X-DIRECTION .
+*   MY    (INTEGER) NUMBER OF KNOTS IN Y-DIRECTION .
+*   KX    (INTEGER) DEGREE OF ONE-DIMENSIONAL B-SPLINES IN X-DIRECTION
+*         OVER THE SET OF KNOTS  TX.
+*   KY    (INTEGER) DEGREE OF ONE-DIMENSIONAL B-SPLINES IN Y-DIRECTION
+*         OVER THE SET OF KNOTS  TY.
+*   NDIMC (INTEGER) DECLARED FIRST DIMENSION OF ARRAY  C  IN THE
+*         CALLING PROGRAM, WITH  NDIMC >= (MX-KX-1) .
+*   NDIMZ (INTEGER) DECLARED FIRST DIMENSION OF ARRAY  ZI  IN THE
+*         CALLING PROGRAM, WITH  NDIMZ >= NX.
+*   XI    (DOUBLE PRECISION) ARRAY OF AT LEAST ORDER NX .
+*         XI MUST CONTAIN THE APPROXIMATION POINTS IN X-DIRECTION IN
+*         ASCENDING ORDER, ON ENTRY.
+*   YI    (DOUBLE PRECISION) ARRAY OF AT LEAST ORDER NY .
+*         YI MUST CONTAIN THE APPROXIMATION POINTS IN Y-DIRECTION IN
+*         ASCENDING ORDER, ON ENTRY.
+*   ZI    (DOUBLE PRECISION) ARRAY OF ORDER  (NDIMZ , >= NY) .
+*         ON ENTRY ZI MUST CONTAIN THE GIVEN FUNCTION VALUES
+*           Z(I,J)  AT THE APPROXIMATION POINTS  (X(I),Y(J))
+*                            ( I=1,...,NX , J=1,...,NY ).
+*   KNOT  (INTEGER) PARAMETER FOR STEERING THE CHOICE OF KNOTS.
+*         ON ENTRY:
+*         = 1 : KNOTS ARE COMPUTED BY  DSPAP2  IN THE FOLLOWING WAY:
+*               TX(J) = XI(1) ,                J = 1,...,KX+1
+*               TX(J) = XI(1)+(J-KX-1)*(XI(NX)-XI(1))/(NCX-KX) ,
+*                                              J = KX+2,...,NCX
+*               TX(NCX+J) = XI(NX) ,           J = 1,...,KX+1
+*         = 2 : KNOTS ARE COMPUTED BY  DSPAP2  IN THE FOLLOWING WAY:
+*               TX(J) = XI(1) ,                J = 1,...,KX+1
+*               TX(J) = (XI(NX*(J-KX-2)/NCX+1)+XI(NX*J/NCX))/2 ,
+*                                              J = KX+2,...,NCX
+*               TX(NCX+J) = XI(NX) ,           J = 1,...,KX+1
+*         OTHERWISE KNOTS ARE USER SUPPLIED. RECOMMENDED CHOICE :
+*               TX(1) <= ... <= TX(KX+1) <= XI(1)
+*               XI(1) < TX(KX+2) < ... < TX(NX) < XI(NX)
+*               XI(NX) <= TX(NX+1) <= ... <= TX(NX+KX+1)
+*         IN ALL CASES THE SAME CHOICE IS USED FOR KNOTS  TY  IN
+*         Y-DIRECTION .
+*   TX    (DOUBLE PRECISION) ARRAY OF AT LEAST ORDER MX.
+*         IF THE INPUT VALUE OF THE PARAMETER KNOT IS  1 OR 2  THE
+*         KNOTS ARE COMPUTED BY  DSPAP2  AND THEY ARE GIVEN IN THE
+*         ARRAY TX, ON EXIT.
+*         IN THE OTHER CASES THE ARRAY  TX  MUST CONTAIN THE USER
+*         SUPPLIED KNOTS IN X-DIRECTION, ON ENTRY.
+*   TY    (DOUBLE PRECISION) ARRAY OF AT LEAST ORDER MY.
+*         IF THE INPUT VALUE OF THE PARAMETER KNOT IS  1 OR 2  THE
+*         KNOTS ARE COMPUTED BY  DSPAP2  AND THEY ARE GIVEN IN THE
+*         ARRAY TY, ON EXIT.
+*         IN THE OTHER CASES THE ARRAY  TY  MUST CONTAIN THE USER
+*         SUPPLIED KNOTS IN Y-DIRECTION, ON ENTRY.
+*   W     (DOUBLE PRECISION) WORKING ARRAY OF AT LEAST ORDER NW .
+*   NW    (INTEGER) ORDER OF WORKING ARRAY W .
+*         NW >= N*(NC+6)+NC*(NC+1),
+*         WITH  N=NX*NY , NC=NCX*NCY=(MX-KX-1)*(MY-KY-1)
+*         FOR GOOD PERFORMANCE,  NW  SHOULD GENERALLY BE LARGER.
+*   C     (DOUBLE PRECISION) ARRAY OF ORDER (NDIMC, >= MY-KY-1).
+*         ON EXIT  C(I,J)  CONTAINS THE (I,J)-TH COEFFICIENT OF THE
+*         TWO-DIMENSIONAL B-SPLINE REPRESENTATION OF  S(X,Y) .
+*   NERR  (INTEGER) ERROR INDICATOR. ON EXIT:
+*         = 0: NO ERROR DETECTED
+*         = 1: AT LEAST ONE OF THE CONSTANTS  KX , KY , NX , NY , MX ,MY
+*              IS ILLEGAL
+*
+*   ERROR MESSAGES:
+*
+*   IF ONE OF THE FOLLOWING RELATION IS SATISFIED BY THE CHOSEN INPUT-
+*   PARAMETERS THE PROGRAM RETURNS, AND AN ERROR MESSAGE IS PRINTED:
+*     KX < 0         OR    KX > 25      OR
+*     KY < 0         OR    KY > 25      OR
+*     MX < 2*KX+2    OR    MY < 2*KY+2  OR
+*     NX < MX-KX-1   OR    NY < MY-KY-1 .
+*
+************************************************************************
+
+      NERR=1
+      IF(KX .LT. 0 .OR. KX .GT. 25) THEN
+       WRITE(ERRTXT,101) 'KX',KX
+       CALL MTLPRT(NAME,'E210.1',ERRTXT)
+      ELSEIF(KY .LT. 0 .OR. KY .GT. 25) THEN
+       WRITE(ERRTXT,101) 'KY',KY
+       CALL MTLPRT(NAME,'E210.1',ERRTXT)
+      ELSEIF(MX .LT. 2*KX+2) THEN
+       WRITE(ERRTXT,101) 'MX',MX
+       CALL MTLPRT(NAME,'E210.2',ERRTXT)
+      ELSEIF(MY .LT. 2*KY+2) THEN
+       WRITE(ERRTXT,101) 'MY',MY
+       CALL MTLPRT(NAME,'E210.2',ERRTXT)
+      ELSEIF(NX .LT. MX-KX-1) THEN
+       WRITE(ERRTXT,101) 'NX',NX
+       CALL MTLPRT(NAME,'E210.4',ERRTXT)
+      ELSEIF(NY .LT. MY-KY-1) THEN
+       WRITE(ERRTXT,101) 'NY',NY
+       CALL MTLPRT(NAME,'E210.4',ERRTXT)
+      ELSE
+
+       NCX=MX-KX-1
+       NCY=MY-KY-1
+       NC=NCX*NCY
+       N=NX*NY
+       M1=1
+       M2=M1+N*NC
+       M3=M2+NC
+       M4=M3+NC*NC
+       M5=M4+N
+       LW=NW-M5+1
+
+       CALL SPLAS2(N,NC,NCX,NCY,NX,NY,MX,MY,KX,KY,NDIMC,NDIMZ,XI,YI,ZI,
+     +             KNOT,TX,TY,W(M1),W(M2),W(M3),W(M4),W(M5),LW,C,NERR)
+
+      ENDIF
+
+      RETURN
+
+  101 FORMAT(1X,A5,' =',I6,'   NOT IN RANGE')
+      END
+
+
+
