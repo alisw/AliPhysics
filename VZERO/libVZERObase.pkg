@@ -1,0 +1,13 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+SRCS= \
+AliVZEROLoader.cxx \
+AliVZEROdigit.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:=VZERObaseLinkDef.h
+
+EINCLUDE:= $(ALICE)/geant3/TGeant3 STRUCT STEER CONTAINERS RAW
+
