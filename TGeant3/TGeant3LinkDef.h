@@ -18,6 +18,7 @@
 #pragma link C++ class  AliGUIMaterial-;
 #pragma link C++ class  AliGUIMedium-;
 
+
 #pragma link C++ class Quest_t; 
 #pragma link C++ class Gcbank_t;
 #pragma link C++ class Gclink_t; 
