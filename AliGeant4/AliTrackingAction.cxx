@@ -128,6 +128,8 @@ void AliTrackingAction::PreTrackingAction(const G4Track* aTrack)
     G4String origin = "secondary"; 
     SaveParticle(aTrack, origin);
   }
+  
+  gAlice->PreTrack();
 }
 
 void AliTrackingAction::PostTrackingAction(const G4Track* aTrack)
@@ -136,6 +138,8 @@ void AliTrackingAction::PostTrackingAction(const G4Track* aTrack)
 // ---
 
   fTrackCounter++;
+
+  gAlice->PostTrack();
 }
 
 void AliTrackingAction::SaveAndDestroyTrack()
