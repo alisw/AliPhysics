@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/07/26 15:10:57  morsch
+Helper class to write geometry in ALIFE format in parallel with Geant geometry definition.
+
 */
 
 #include <AliALIFE.h>
@@ -160,7 +163,7 @@ void AliALIFE::OnionCylinder(Float_t* r, Int_t nr, Float_t zmin, Float_t zmax,
 	    fprintf(fFile2,"+%5s-%5s+%5s\n", nameZou, nameZin, nameRou);
 	}
 	fprintf(fFile2,"\n");
-	nameRin=nameRou;
+	strcpy(nameRin,nameRou);
     }
 }
 
@@ -368,7 +371,7 @@ void AliALIFE::OnionCone (Float_t* r1, Float_t* r2, Int_t nr,
 	    hasInner=kTRUE;
 	}
 	fprintf(fFile2,"\n");        
-	nameCin=nameCou;
+	strcpy(nameCin,nameCou);
     }
 }
 
@@ -392,7 +395,7 @@ void AliALIFE::PolyCone(Float_t* rmin, Float_t* rmax, Float_t* z,
 void AliALIFE::OnionPolyCone(Float_t** r, Float_t* z,
 			     Int_t nr, Int_t nz,
 			     Float_t pos[3], 
-			     char** Materials, char** Fields=0, char** Cuts)
+			     char** Materials, char** Fields, char** Cuts)
 {
 //
 // Concentric PCONS
