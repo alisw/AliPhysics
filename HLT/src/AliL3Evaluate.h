@@ -26,7 +26,7 @@ class AliL3Evaluate : public TObject {
 
   TFile *fMCFile;
   TFile *fMCclusterfile;  //If you run the fast simulator.
-  TClonesArray *fParticles;
+  TObjArray *fParticles;
   AliL3TrackArray *fTracks; //!
   AliTPCParam *fParam;
   AliL3SpacePointData *fClusters[36][5]; //!
@@ -39,10 +39,13 @@ class AliL3Evaluate : public TObject {
   Int_t fRowid[36][174];
   Int_t fMinPointsOnTrack;  //Minimum points on track to be considered.
   Bool_t fIsSlow;
+  Bool_t fNoOverlap;
   Int_t fNFastPoints;
   UInt_t *fMcIndex;//!
   Int_t *fMcId;//!
-  
+  Int_t fGoodFound;
+  Int_t fGoodGen;
+
   //Histograms
   TNtuple *fNtuppel;
   TH1F *fPtRes;
@@ -89,6 +92,9 @@ class AliL3Evaluate : public TObject {
   TH1F *GetPtRes() {return fPtRes;}
 
   void SetMinPoints(Int_t f) {fMinPointsOnTrack = f;}
+  void DoSingleTracks() {fNoOverlap = kTRUE;}
+  Int_t GetNGoodTracks() {return fGoodGen;}
+  Int_t GetNFoundTracks() {return fGoodFound;}
   
   TNtuple *CalculateResiduals();
   TNtuple *EvaluatePoints();

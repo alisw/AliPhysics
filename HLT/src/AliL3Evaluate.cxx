@@ -40,6 +40,7 @@ AliL3Evaluate::AliL3Evaluate()
   fMcId = 0;
   fMinSlice=0;
   fMaxSlice=0;
+  fTransform = new AliL3Transform();
 }
 
 AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
@@ -60,7 +61,7 @@ AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
   
   fMinSlice = slice[0];
   fMaxSlice = slice[1];
-
+  fNoOverlap = kFALSE;
 }
 
 AliL3Evaluate::AliL3Evaluate(Int_t *slice)
@@ -103,6 +104,8 @@ void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
 {
   //Read in the hit and track information from produced files.
   
+  fGoodFound = 0;
+  fGoodGen = 0;
   Char_t fname[256];
   AliL3FileHandler *clusterfile[36][5];
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
@@ -126,8 +129,7 @@ void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
 	}
     }
 
-  return;
-
+  
   AliL3FileHandler *tfile = new AliL3FileHandler();
   if(!tfile->SetBinaryInput(trackfile)){
     LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
@@ -289,6 +291,9 @@ TObjArray *AliL3Evaluate::DefineGoodTracks(Int_t slice,Int_t *padrow,Int_t good_
 	  Int_t idx0=fDigits->GetTrackID(it,ip,0); 
 	  Int_t idx1=fDigits->GetTrackID(it,ip,1);
 	  Int_t idx2=fDigits->GetTrackID(it,ip,2);
+	  if(fNoOverlap)
+	    if(idx1>=0 || idx2>=0) //more than 1 track produced this digit
+	      continue;
 	  if (idx0>=0 && dig>=zero) count[idx0]+=1;
 	  if (idx1>=0 && dig>=zero) count[idx1]+=1;
 	  if (idx2>=0 && dig>=zero) count[idx2]+=1;
@@ -309,10 +314,10 @@ TObjArray *AliL3Evaluate::DefineGoodTracks(Int_t slice,Int_t *padrow,Int_t good_
       return 0;
     }
   
-  Float_t torad=TMath::Pi()/180;
+  //Float_t torad=TMath::Pi()/180;
   
-  Float_t phi_min = slice*20 - 10;
-  Float_t phi_max = slice*20 + 10;
+  //  Float_t phi_min = slice*20 - 10;
+  //Float_t phi_max = slice*20 + 10;
   TObjArray *good_part = new TObjArray();
   
   for(Int_t i=0; i<fParticles->GetEntriesFast(); i++)
@@ -322,22 +327,23 @@ TObjArray *AliL3Evaluate::DefineGoodTracks(Int_t slice,Int_t *padrow,Int_t good_
      if(good[i] < good_number) {continue;}
      
      Double_t ptg=p->Pt(),pxg=p->Px(),pyg=p->Py(),pzg=p->Pz();
-     Double_t phi_part = TMath::ATan2(pyg,pxg);
-     if (phi_part < 0) phi_part += 2*TMath::Pi();
-     
-
+     //Double_t phi_part = TMath::ATan2(pyg,pxg);
+     // if (phi_part < 0) phi_part += 2*TMath::Pi();
      //if(phi_part < phi_min*torad || phi_part > phi_max*torad) {continue;}
      if(ptg<0.100) continue;
      if(fabs(pzg/ptg)>0.999) {continue;}
+     //if(ptg < 4.5 || ptg > 5.5) continue;
+     printf("ptg %f\n",ptg);
+     fGoodGen++;
      Int_t entries = good_part->GetEntriesFast();
      good_part->AddLast(p);
      particle_id[entries] = i;
    }
   delete [] good;
   LOG(AliL3Log::kInformational,"AliL3Evaluate::DefineGoodTracks","NPart")
-  <<AliL3Log::kDec<<"Found "<<good_part->GetEntriesFast()
-  <<" good Particles (Tracks) out of "<<fParticles->GetEntriesFast()<<ENDLOG;
-
+    <<AliL3Log::kDec<<"Found "<<good_part->GetEntriesFast()
+    <<" good Particles (Tracks) out of "<<fParticles->GetEntriesFast()<<ENDLOG;
+  
   return good_part;
 }
 
@@ -366,7 +372,9 @@ void AliL3Evaluate::EvaluateSlice(Int_t slice,Int_t min_points,Int_t good_number
   Int_t row[2] = {0,173};
   Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
   TObjArray *good_particles = DefineGoodTracks(slice,row,good_number,particle_id);
+
   SetMinPoints(min_points);
+  
   AssignIDs();
   CreateHistos();
   FillEffHistos(good_particles,particle_id);
@@ -383,7 +391,7 @@ void AliL3Evaluate::EvaluateGlobal(Int_t min_points,Int_t good_number)
   Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
   SetMinPoints(min_points);
   AssignIDs();
-  CreateHistos();
+  CreateHistos(20,0,5);
   for(Int_t slice=fMinSlice;slice<=fMaxSlice;slice++){
     TObjArray *good_particles = DefineGoodTracks(slice,row,good_number,particle_id);
     FillEffHistos(good_particles,particle_id);
@@ -404,6 +412,10 @@ void AliL3Evaluate::AssignIDs()
       AliL3Track *track = (AliL3Track*)fTracks->GetCheckedTrack(i);
       if(!track) continue; 
       if(track->GetNumberOfPoints() < fMinPointsOnTrack) break;
+      
+      if(track->GetPt() < 4.5 || track->GetPt() > 5.5) continue;
+      
+      fGoodFound++;
       Int_t tID = GetMCTrackLabel(track);
       track->SetMCid(tID);
       printf("track %i id %d\n",i,tID);
@@ -424,7 +436,7 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
   UInt_t *hitnum = track->GetHitNumbers();  
   UInt_t id;
     
-  Int_t **  trackID = GetClusterIDs(track);
+  Int_t **trackID = GetClusterIDs(track);
 
   Int_t lab=123456789;
   for (i=0; i<num_of_clusters; i++) 
@@ -537,7 +549,6 @@ Int_t **AliL3Evaluate::GetClusterIDs(AliL3Track *track)
       if(fIsSlow)
 	{
 	  Int_t p = fRowid[slice][padrow];
-	  
 	  if(!fDigitsTree->GetEvent(p)) 
 	    LOG(AliL3Log::kError,"AliL3Evaluate::GetClusterIDs","Digits Tree")
 	      <<"Error reading digits tree"<<ENDLOG;
@@ -803,13 +814,13 @@ TNtuple *AliL3Evaluate::EvaluatePoints()
   Int_t good_number=173;
   Int_t row[2] = {0,173};
   UInt_t id;
-
+  //Float_t yres_local;
   for(Int_t slice=fMinSlice; slice<=fMaxSlice; slice++)
     {
       Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
       TObjArray *good_particles = DefineGoodTracks(slice,row,good_number,particle_id);
       
-      Float_t xyz_cl[3],cross_points[2];
+      Float_t xyz_cl[3],cross_points[3];
       Int_t padrow,prev_row=-1,p;
       Int_t *trackID = new Int_t[3];
       
@@ -837,7 +848,7 @@ TNtuple *AliL3Evaluate::EvaluatePoints()
 		  
 		  Int_t se,ro;
 		  fTransform->Slice2Sector(slice,padrow,se,ro);
-		  fTransform->Local2Raw(xyz_cl,se,ro);
+		  fTransform->Global2Raw(xyz_cl,se,ro);
 		  //printf("slice %d padrow %d\n",slice,padrow);
 		  if(padrow!=prev_row)
 		    {
@@ -877,10 +888,12 @@ TNtuple *AliL3Evaluate::EvaluatePoints()
 		  if(particle_id[i]!=trackID[0] && particle_id[i]!=trackID[1] && particle_id[i]!=trackID[2]) continue;
 		  fTransform->Raw2Local(xyz_cl,se,ro,xyz_cl[1],xyz_cl[2]);
 		  Float_t yres = xyz_cl[1]-cross_points[1];
+		  
 		  //printf("Found match ID %d on row %d\n",particle_id[i],padrow);
 		  //printf("Difference in y %f %f %f\n",yres,xyz_cl[1],cross_points[1]);
 		  
 		  ntuppel->Fill(yres,part->Pt(),padrow,xyz_cl[2],slice);
+		  
 		}
 	    }
 	}
@@ -969,6 +982,12 @@ Bool_t AliL3Evaluate::GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t
   Double_t radius = 1/fabs(kappa);
   if(part->GetPdgCode() > 0) kappa = -kappa;
   
+  Int_t charg;
+  if(kappa>0)
+    charg=-1;
+  else
+    charg=1;
+  
   Float_t angl[1] = {part->Phi()};
   
   fTransform->Global2LocalAngle(angl,slice);
@@ -995,6 +1014,20 @@ Bool_t AliL3Evaluate::GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t
   Double_t y2 = yc - aa2;
   xyz[1] = y1;
   if(fabs(y2) < fabs(y1)) xyz[1] = y2;
+
+  Double_t tgl = part->Pz()/part->Pt();
+
+  Double_t yHit = xyz[1];
+  Double_t angle1 = atan2((yHit - yc),(xHit - xc));
+  if(angle1 < 0) angle1 += 2.*Pi;
+  Double_t angle2 = atan2((0 - yc),(0 - xc));
+  if(angle2 < 0) angle2 += 2.*Pi;
+  Double_t diff_angle = angle1 - angle2;
+  diff_angle = fmod(diff_angle,2*Pi);
+  if((charg*diff_angle) > 0) diff_angle = diff_angle - charg*2.*Pi;
+  Double_t s_tot = fabs(diff_angle)*radius;
+  Double_t zHit = 0 + s_tot*tgl;
+  xyz[2] = zHit;
 
   return true;
 }
