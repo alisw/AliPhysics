@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2000/10/02 21:28:18  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.24  2000/08/28 10:02:30  kowal2
 Corrected bug in the StepManager
 
@@ -150,7 +153,7 @@ void AliTPCv2::CreateGeometry()
 
   Int_t nRotMat = 0;
 
-  Int_t i,ifl1,ifl2=0;
+  Int_t i,ifl1=0;
 
   // number of sectors
 
@@ -175,33 +178,26 @@ void AliTPCv2::CreateGeometry()
     ifl1 = 1;
   }
 
+  if (ifl1 == 0) {
+    printf("*** ERROR: AT LEAST ONE LOWER SECTOR MUST BE SPECIFIED ***\n");
+    printf("!!! PROGRAM STOPPED !!!\n");
+    exit(1);
+  }
+
   if (fSecAU >= 0) {
-    ifl2 = 0;
     
     for (i = 0; i < 12; ++i) {
       if (fSecUps[i] > 2*nInnerSector-1 && 
           fSecUps[i] < 2*(nInnerSector+nOuterSector)) {
-	ifl2 = 1;
 	printf("*** SECTOR %d selected\n",fSecUps[i]);
       }
     }
     
   } else {
     printf("*** ALL UPPER SECTORS SELECTED ***\n");
-    ifl1 = 1;
   }
   
-  if (ifl1 == 0 && ifl2 == 0) {
-    printf("*** ERROR: AT LEAST ONE SECTOR MUST BE SPECIFIED ***\n");
-    printf("!!! PROGRAM STOPPED !!!\n");
-    exit(1);
-  }
-  
-  if ((fSecAL < 0 || fSecAU < 0) && fSens >= 0) {
-    printf("** ERROR: STRIPS CANNOT BE SPECIFIED FOR ALL SECTORS **\n");
-    printf("!!! PROGRAM STOPPED !!!\n");
-    exit(1);
-  }
+ 
 
   //--------------------------------------------------------------------
 
@@ -1538,9 +1534,7 @@ void AliTPCv2::CreateGeometry()
   gMC->Gsvolu("TPUS", "TRD1", idtmed[2], dm, 4); // sensitive
 
 
-  // if sensitive strips selected
 
-  if(fSens >= 0){
 
     gMC->Gsvolu("TPSS","TRD1",idtmed[2],dm,0); // sensitive
 
@@ -1551,11 +1545,15 @@ void AliTPCv2::CreateGeometry()
 
     // inner sector
 
-    nofStrips = fTPCParam->GetNRowLow();
+
+    // if all lower sectors selected define only 1 strip
+
+    nofStrips=((fSecAL <0)||(fSecAL>=0 && fSens<0)) ? 1 : fTPCParam->GetNRowLow(); 
     deadSpace = fTPCParam->GetInnerWireMount();
 
     dm[2] = 0.5*(250. - 0.3);
     dm[3] = 0.5 * stripThick;  
+
 
     for(nstr=0;nstr<nofStrips;nstr++){
 
@@ -1569,9 +1567,12 @@ void AliTPCv2::CreateGeometry()
     
       gMC->Gsposp("TPSS", nstr+1, "TPLS", 0., 0., zs, 0, "ONLY", dm, 4);
 
-      gMC->Gsord("TPLS",3);
 
     }
+
+    // strips only if several upper sectors selected end fSens > 0
+
+    if(fSecAU >=0 && fSens >0){
 
     Int_t nsSave = nofStrips;
 
@@ -1582,6 +1583,7 @@ void AliTPCv2::CreateGeometry()
 
     dm[2] = 0.5*(250. - 0.3);
     dm[3] = 0.5 * stripThick;
+
   
     for(nstr=0;nstr<nofStrips;nstr++){
     
@@ -1596,7 +1598,7 @@ void AliTPCv2::CreateGeometry()
       gMC->Gsposp("TPSS", nstr+1+nsSave, "TPUS", 0., 0., zs, 0, "ONLY", dm, 4);
 
      }    
-  } // if strips
+    }
 
   //-------------------------------------------------------
   //  positioning of the empty spaces into the main wheel
@@ -1870,8 +1872,8 @@ void AliTPCv2::CreateGeometry()
   gMC->Gspos("TSSW",2,"TPC ",0.,0.,-278.7,0,"ONLY");
 
   gMC->Gsord("TPMW",6);
-  gMC->Gsord("TPLS",3);
-  gMC->Gsord("TPUS",3);
+  if(fSecAL >=0)  gMC->Gsord("TPLS",3);
+  if(fSecAU >=0 && fSens >0)  gMC->Gsord("TPUS",3);
   gMC->Gsord("TDGN",6);
   gMC->Gsord("TSSW",6);
   gMC->Gsord("TSWC",6);
@@ -2014,8 +2016,12 @@ void AliTPCv2::Init()
   Int_t *idtmed = fIdtmed->GetArray();
   
   AliTPC::Init();
-  fIdSens=gMC->VolId("TPSS"); // sensitive strips (not always used)
-  fIdLSec=gMC->VolId("TPLS"); // lower sector
+
+
+  
+  fIdSens=gMC->VolId("TPSS");  
+
+  fIdLSec=gMC->VolId("TPLS"); // lower sector 
   fIdUSec=gMC->VolId("TPUS"); // upper sector
 
   gMC->SetMaxNStep(30000); // max. number of steps increased
