@@ -214,17 +214,19 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
 	else 
 	  preShowerFactor = 1 ; 
 	
-	if( hit->GetEnergy() > fPrimThreshold)
-	  curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
+	if( hit->GetEnergy() > fPrimThreshold)//{
+	curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
 					  hit->GetIparent(),Layer2TowerID(hit->GetId(),hit->IsInPreShower()), 
 					  Digitize( hit->GetEnergy() * preShowerFactor ) , 
 					  hit->GetTime()) ;
-        else
+        //cout << "Sdigitizer > Threshold Hit Primary = " << hit->GetPrimary() << "Digit Primary = "<< curSDigit->GetPrimary(1) << endl ;}
+	else //{
 	  curSDigit =  new AliEMCALDigit( -1               , 
 					  -1               ,
 					  Layer2TowerID(hit->GetId(),hit->IsInPreShower()), 
 					  Digitize( hit->GetEnergy() * preShowerFactor ) , 
 					  hit->GetTime() ) ;	
+	 // cout << "SDigitizer < threshold Hit Primary = " << hit->GetPrimary() << "Digit Primary = "<< curSDigit->GetPrimary(1) << endl ;}
 	Int_t check = 0 ;
 	for(check= 0; check < nSdigits ; check++) {
           sdigit = (AliEMCALDigit *)sdigits->At(check);
@@ -249,7 +251,9 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
       //  Int_t i ;
      const AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
      
-     Int_t lastPreShowerIndex = nSdigits - 1 ; 
+     Int_t lastPreShowerIndex = nSdigits - 1 ;
+     if (!(dynamic_cast<AliEMCALDigit *>(sdigits->At(lastPreShowerIndex))->IsInPreShower()))
+       lastPreShowerIndex = -2; 
      Int_t firstPreShowerIndex = -1 ; 
      Int_t index ; 
      AliEMCALDigit * sdigit = 0 ;
@@ -285,15 +289,21 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
 	lastIndex++ ; 
       }
     }
-
+    
     sdigits->Sort() ;
-     for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
-	sdigit->SetIndexInList(i) ;     
-      }
-      
-      if(gAlice->TreeS() == 0)
+    Int_t NPrimarymax = -1 ; 
+    for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
+      sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(i)) ;
+      sdigit->SetIndexInList(i) ;
+    }
+    
+    for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
+	 if (((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) > NPrimarymax)
+	   NPrimarymax = ((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) ;
+       }
+       if(gAlice->TreeS() == 0)
 	gAlice->MakeTree("S") ;
-      
+      cout << " AliEMCALSDigitizer:: NPrimaryMax = " << NPrimarymax << endl;
       
       
       
@@ -437,21 +447,37 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option){
   }
 }
 //________________________________________________________________________
-Int_t AliEMCALSDigitizer::Layer2TowerID(Int_t s, Bool_t preshower)
-{
+Int_t AliEMCALSDigitizer::Layer2TowerID(Int_t ihit, Bool_t preshower){
+  // Method to Transform from Hit Id to Digit Id
+  // This function should be one to one
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;
   const AliEMCALGeometry * geom = gime->EMCALGeometry();
-  Int_t a  = (s/geom->GetNPhi())%geom->GetNZ()+1; // Phi Tower Index
-  Int_t b = (s-1)%(geom->GetNPhi())+1; //Eta Tower Index
-  Int_t t = -10;
+  Int_t ieta  = (ihit/geom->GetNPhi())%geom->GetNZ(); // eta Tower Index
+  Int_t iphi = (ihit-1)%(geom->GetNPhi())+1; //phi Tower Index
+  Int_t it = -10;
+  Int_t ipre = 0;
 
-if (a > 0 && b > 0)
-{
-  t = a*b + preshower*geom->GetNPhi()*geom->GetNZ();
-  return t;
+  if (preshower)ipre = 1;
+  if (iphi > 0 && ieta >= 0){
+    it = iphi+ieta*geom->GetNPhi() + ipre*geom->GetNPhi()*geom->GetNZ();
+    return it;
+  }else{
+    cerr << " AliEMCALSDigitizer::Layer2TowerID() -- there is an error "<< endl << "Eta number = "
+	 << ieta << "Phi number = " << iphi << endl ;
+    return it;
+  } // end if iphi>0 && ieta>0
 }
-else
-{cerr << " AliEMCALSDigitizer::Layer2TowerID() -- there is an error "<< endl << "Phi number = "
-      << b << "Eta number = " << a << endl ;
-return t;}
+//_______________________________________________________________________________________
+void AliEMCALSDigitizer::TestTowerID(void)
+{
+  Int_t j;
+
+  Bool_t preshower = kFALSE;
+  for (j = 0 ; j < 10 ; j++){  // loop over hit id
+    Int_t i;
+   for (i = 0 ; i <= 2 ; i++){  // loop over 
+     Int_t k = i*96*144+j*144+1;
+      cout << " Hit Index = " << k << "   " << j*10 << "   TOWERID = " <<  Layer2TowerID(k, preshower) << endl ;
+    }
+  }
 }

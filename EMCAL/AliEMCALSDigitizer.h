@@ -29,7 +29,8 @@ public:
 
   Float_t  Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
   Int_t    Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
-
+  
+  void TestTowerID(void) ;
   virtual void  Exec(Option_t *option); 
   
   Float_t  GetPedestalParameter()const {return fA;}
