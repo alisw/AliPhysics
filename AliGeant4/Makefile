@@ -22,6 +22,7 @@ TARGET  = aligeant4
 # C++ sources
 
 SRCS           = $(wildcard *.cxx)
+SRCS          := $(filter-out $(TARGET).cxx,$(SRCS))
 
 # C++ Headers
 
@@ -45,9 +46,8 @@ POBJ          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(PSRC))
 
 # C++ compilation flags
 
-CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/ \
-		-I$(ALICE_ROOT)/TGeant4/
- 
+CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include \
+	        -I$(ALICE_ROOT)/TGeant4       
 
 ##### TARGETS #####
  
