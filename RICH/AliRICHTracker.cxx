@@ -102,15 +102,17 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
 
   for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
     TParticle *pParticle = pStack->Particle(iTrackN);
-    if(pParticle->GetMother(0)!=-1) continue; //consider only primaries
-    if(pParticle->GetPDG()->Charge()==0) continue; //to avoid photons from stack...
+    AliDebug(1,Form("Track %i is a %s with charge %i and momentum %f",
+            iTrackN,pParticle->GetPDG()->GetName(),Int_t(pParticle->GetPDG()->Charge()),pParticle->P()));
+//    if(pParticle->GetMother(0)!=-1) continue; //consider only primaries
+    if(pParticle->GetPDG()->Charge()==0||TMath::Abs(Int_t(pParticle->GetPDG()->Charge()))!=3) continue; //to avoid photons from stack...
     hnvec[0]=pParticle->P();
     hnvec[1]=pParticle->GetPDG()->Charge();
     hnvec[2]=pParticle->Theta();
     hnvec[3]=pParticle->Phi();
     p0.SetMagThetaPhi(pParticle->P(),pParticle->Theta(),pParticle->Phi());
     x0.SetXYZ(pParticle->Vx(),pParticle->Vy(),pParticle->Vz());
-    AliRICHHelix helix(x0,p0,Int_t(pParticle->GetPDG()->Charge()/3+0.1),b);   
+    AliRICHHelix helix(x0,p0,TMath::Sign(1,(Int_t)pParticle->GetPDG()->Charge()),b);   
     Int_t iChamber=helix.RichIntersect(pRich->P());        
     AliDebug(1,Form("intersection with %i chamber found",iChamber));
     if(!iChamber) continue;// no intersection with RICH found
