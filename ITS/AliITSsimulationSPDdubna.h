@@ -5,12 +5,9 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliITSsimulation.h"
+#include "AliITSresponseSPDdubna.h"
+#include "AliITSsegmentationSPD.h"
 
-class AliITSMapA2;
-class AliITSsegmentation;
-class AliITSresponse;
-class AliITSsegmentationSPD;
-class AliITSresponseSPDdubna;
 class AliITSmodule;
 
 //-------------------------------------------------------------------
@@ -20,48 +17,54 @@ class AliITSsimulationSPDdubna : public AliITSsimulation {
     AliITSsimulationSPDdubna();
     AliITSsimulationSPDdubna(AliITSsegmentation *seg, AliITSresponse *res);
     virtual ~AliITSsimulationSPDdubna();
-    AliITSsimulationSPDdubna(const AliITSsimulationSPDdubna &source); // copy constructor
-    AliITSsimulationSPDdubna& operator=(const AliITSsimulationSPDdubna &source); // ass. operator
+    // copy constructor
+    AliITSsimulationSPDdubna(const AliITSsimulationSPDdubna &source); 
+     // ass. operator
+    AliITSsimulationSPDdubna& operator=(const AliITSsimulationSPDdubna &s);
+    // Initilizes the variables
+    void Init(AliITSsegmentation *seg, AliITSresponse *resp);
 
     void InitSimulationModule(Int_t module, Int_t event);
     void SDigitiseModule(AliITSmodule *mod, Int_t mask, Int_t event);
-    void WriteSDigits(AliITSpList *pList);
+    void WriteSDigits();
     void FinishSDigitiseModule();
-    void SDigitsToDigits(Int_t module, AliITSpList *pList);
+    void SDigitsToDigits();
     void DigitiseModule(AliITSmodule *mod,Int_t module,Int_t dummy);
-    void UpdateMapSignal(Int_t i, Int_t j, Int_t trk, Int_t ht,
-			 Int_t module, Double_t signal, AliITSpList *pList);
-    void UpdateMapNoise(Int_t ix, Int_t iz, Int_t module,
-			Double_t sig, Float_t noise, AliITSpList *pList);
-    void HitToDigit(AliITSmodule *mod,Int_t module,Int_t dummy);
-    void HitToSDigit(AliITSmodule *mod, Int_t module, Int_t dummy,
-		     AliITSpList *pList);
-    void HitToSDigitOld(AliITSmodule *mod, Int_t module, Int_t dummy,
-			AliITSpList *pList);
-    void ChargeToSignal(AliITSpList *pList);
+    void UpdateMapSignal(Int_t i,Int_t j,Int_t trk,Int_t ht,Double_t signal);
+    void UpdateMapNoise(Int_t ix,Int_t iz,Float_t noise);
+    void HitToDigit(AliITSmodule *mod);
+    void HitToSDigit(AliITSmodule *mod);
+    void HitToSDigitOld(AliITSmodule *mod);
+    void ChargeToSignal();
     void CreateHistograms();
     void ResetHistograms();
-    TObjArray*  GetHistArray() {// get hist array
-	return fHis;}
+    TObjArray*  GetHistArray() {return fHis;}// get hist array
 
  private:
-    void SpreadCharge(Double_t x0,Double_t y0,Double_t z0,Int_t ix0,Int_t iz0,
-		      Double_t el,Double_t sig,Int_t t,Int_t ti,Int_t hi,
-		      Int_t mod);
+    void SpreadCharge(Double_t x0,Double_t z0,Int_t ix0,Int_t iz0,
+		      Double_t el,Double_t sig,Int_t t,Int_t hi);
     AliITSsegmentationSPD* GetSeg(){ // Return pointer to Segmentation class
 	return (AliITSsegmentationSPD*)fSegmentation;}
     AliITSresponseSPDdubna* GetResp(){ // Return pointer to Responce class
 	return (AliITSresponseSPDdubna*)fResponse;}
-    Double_t * CreateFindCellEdges(Double_t x0,Double_t x1,Double_t z0,
-				   Double_t z1,Int_t &n);
+    //Double_t * CreateFindCellEdges(Double_t x0,Double_t x1,Double_t z0,
+    //                               Double_t z1,Int_t &n);
+    void SetCoupling(Int_t row,Int_t col,Int_t ntrack,Int_t idhit);
+    void SetCouplingOld(Int_t row, Int_t col,Int_t ntrack,Int_t idhit);
+    // Getters for data kept in fSegmentation and fResponse.
+    // Returns the Threshold in electrons
+    Double_t GetThreshold(){ return GetResp()->GetThreshold();}
+    // Returns the couplings Columb and Row.
+    void GetCouplings(Float_t &cc,Float_t &cr){
+	((AliITSresponseSPDdubna*)GetResp())->GetNoiseParam(cc,cr);}
+    // Returns the number of pixels in x
+    Int_t GetNPixelsX(){return GetSeg()->Npx();}
+    // Returns the number of pixels in z
+    Int_t GetNPixelsZ(){return GetSeg()->Npz();}
 
-    AliITSMapA2  *fMapA2;        //! MapA2
-    Float_t      fNoise;         //! Noise
-    Float_t      fBaseline;      //! Baseline
-    Int_t        fNPixelsX;      //! NPixelsX
-    Int_t        fNPixelsZ;      //! NPixelsZ
+    ClassDef(AliITSsimulationSPDdubna,2)  // Simulation of SPD clusters
+
     TObjArray    *fHis;          //! just in case for histogramming
 
-    ClassDef(AliITSsimulationSPDdubna,1)  // Simulation of SPD clusters
 };
 #endif 

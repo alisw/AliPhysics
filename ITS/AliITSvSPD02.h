@@ -52,6 +52,9 @@ class AliITSvSPD02 : public AliITS{
     virtual void   SetThicknessChip2(Float_t v=300.){
          // Set chip thickness in layer 2
          fChip2 = v;}
+    // Replacement default simulation initilization.
+    virtual void SetDefaultSimulation();
+
  private:  
     void InitAliITSgeom();
     Bool_t fGeomDetOut;       // Flag to write .det file out
