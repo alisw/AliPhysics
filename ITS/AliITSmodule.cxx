@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/02 16:32:57  barbera
+Forward declarations added and formatting
+
 Revision 1.3.4.8  2000/10/02 15:55:26  barbera
 Forward declarations added and formatting
 
@@ -48,6 +51,7 @@ Introduction of the Copyright and cvs Log
 
 #include <TArrayI.h>
 
+#include <stdlib.h>
 
 #include "AliRun.h"
 #include "AliITS.h"

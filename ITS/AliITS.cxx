@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2000/10/02 21:28:08  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.20  2000/10/02 16:31:39  barbera
 General code clean-up
 
@@ -129,6 +132,7 @@ the AliITS class.
 #include "AliITSRecPoint.h"
 #include "AliITSRawCluster.h"
 #include "AliMC.h"
+#include "stdlib.h"
 
 const Int_t AliITS::fgkNTYPES=3;
 

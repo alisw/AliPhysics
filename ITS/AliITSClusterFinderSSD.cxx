@@ -46,6 +46,9 @@ Automatic combination routines improved (traps)
 #include "AliITSpackageSSD.h"
 #include "AliITSsegmentation.h"
 
+const Bool_t AliITSClusterFinderSSD::fgkSIDEP=kTRUE;
+const Bool_t AliITSClusterFinderSSD::fgkSIDEN=kFALSE;
+
 const Int_t debug=0;
 
 ClassImp(AliITSClusterFinderSSD)

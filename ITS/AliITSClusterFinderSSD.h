@@ -141,8 +141,8 @@ public:
   Float_t fPNsignalRatio;
 
     
-  static const Bool_t fgkSIDEP=kTRUE;
-  static const Bool_t fgkSIDEN=kFALSE;
+  static const Bool_t fgkSIDEP;
+  static const Bool_t fgkSIDEN;
 
 
   Int_t fSFF;              //forward stepping factor 
