@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.33  2003/11/03 14:33:26  hristov
+Correct initialization of static data members
+
 Revision 1.32  2003/11/03 11:53:05  bnandi
 global variables are removed
 
@@ -143,16 +146,11 @@ void AliPMDv1::CreateSupermodule()
   Int_t ihrotm,irotdm;
   Float_t xb, yb, zb;
 
-  //  const Float_t kroot3by2 = TMath::Sqrt(3.) /2.; 
-  //  const Float_t kroot3 = TMath::Sqrt(3.); 
-
   Int_t *idtmed = fIdtmed->GetArray()-599;
  
   AliMatrix(ihrotm, 90., 30.,   90.,  120., 0., 0.);
   AliMatrix(irotdm, 90., 180.,  90.,  270., 180., 0.);
  
-  //  gAliZdist = TMath::Abs(gAliZdist1);
-
   // First create the sensitive medium of a hexagon cell (ECAR)
   // Inner hexagon filled with gas (Ar+CO2)
   
@@ -179,7 +177,7 @@ void AliPMDv1::CreateSupermodule()
 
   // Place  inner hex (sensitive volume) inside outer hex (copper)
   
-  gMC->Gsposp("ECAR", 1, "ECCU", 0., 0., 0., 0, "ONLY", hexd2, 10);
+  gMC->Gspos("ECAR", 1, "ECCU", 0., 0., 0., 0, "ONLY");
   
   // Now create Rectangular TWO strips (EST1, EST2) 
   // of 1 column and 48 or 96 cells length
@@ -209,28 +207,26 @@ void AliPMDv1::CreateSupermodule()
   zb = 0.;
   xb = -(dbox1[0]) + fgkCellRadius; 
   for (i = 1; i <= fgkNcolUM1; ++i) 
-	{
-	  number = i;
-	  gMC->Gsposp("ECCU", number, "EST1", xb,yb,zb, ihrotm, "ONLY", hexd1,10);
-	  xb += (fgkCellRadius*2.);
-	}
+    {
+      number = i;
+      gMC->Gspos("ECCU", number, "EST1", xb,yb,zb, ihrotm, "ONLY");
+      xb += (fgkCellRadius*2.);
+    }
   // Place hexagonal cells ECCU placed inside EST2 
-      yb = 0.; 
-      zb = 0.;
-      xb = -(dbox2[0]) + fgkCellRadius; 
-      for (i = 1; i <= fgkNcolUM2; ++i) 
-	{
-	  number = i;
-	  gMC->Gsposp("ECCU", number, "EST2", xb,yb,zb, ihrotm, "ONLY", hexd1,10);
-	  xb += (fgkCellRadius*2.);
-	}
-
-
+  yb = 0.; 
+  zb = 0.;
+  xb = -(dbox2[0]) + fgkCellRadius; 
+  for (i = 1; i <= fgkNcolUM2; ++i) 
+    {
+      number = i;
+      gMC->Gspos("ECCU", number, "EST2", xb,yb,zb, ihrotm, "ONLY");
+      xb += (fgkCellRadius*2.);
+    }
 
   // 2 types of rectangular shaped unit modules EUM1 and EUM2 (defined by BOX) 
-
+  
   // Create EUM1
-
+  
   Float_t dbox3[3];
   dbox3[0] = dbox1[0]+fgkCellRadius/2.;
   dbox3[1] = (dbox1[1]*fgkNrowUM1)-(fgkCellRadius*fgkSqroot3*(fgkNrowUM1-1)/6.); 
@@ -240,20 +236,20 @@ void AliPMDv1::CreateSupermodule()
   gMC->Gsatt("EUM1", "SEEN", 1);
   
   // Place rectangular strips EST1 inside EUM1 unit module
-
+  
   yb = -dbox3[1]+dbox1[1];  
   for (j = 1; j <= fgkNrowUM1; ++j)  
     {
       if(j%2 == 0)
 	{
-      xb = fgkCellRadius/2.0;
+	  xb = fgkCellRadius/2.0;
 	}
       else
 	{
 	  xb = -fgkCellRadius/2.0;
 	}
       number = j;
-      gMC->Gsposp("EST1",number, "EUM1", xb, yb , 0. , 0, "MANY",dbox1,3);
+      gMC->Gspos("EST1",number, "EUM1", xb, yb , 0. , 0, "MANY");
       yb = (-dbox3[1]+dbox1[1])+j*1.0*fgkCellRadius*fgkSqroot3;
     }
 
@@ -263,25 +259,25 @@ void AliPMDv1::CreateSupermodule()
   dbox4[0] = dbox2[0] + fgkCellRadius/2.;
   dbox4[1] =(dbox2[1]*fgkNrowUM2)-(fgkCellRadius*fgkSqroot3*(fgkNrowUM2-1)/6.); 
   dbox4[2] = dbox3[2];
-
+  
   gMC->Gsvolu("EUM2","BOX", idtmed[698], dbox4, 3);
   gMC->Gsatt("EUM2", "SEEN", 1);
-
+  
   // Place rectangular strips EST2 inside EUM2 unit module
-
+  
   yb = -dbox4[1]+dbox2[1]; 
   for (j = 1; j <= fgkNrowUM2; ++j) 
-      {
+    {
       if(j%2 == 0)
 	{
-      xb = fgkCellRadius/2.0;
+	  xb = fgkCellRadius/2.0;
 	}
       else
 	{
 	  xb = -fgkCellRadius/2.0;
 	}
       number = j;
-      gMC->Gsposp("EST2",number, "EUM2", xb, yb , 0. , 0, "MANY",dbox2,3);
+      gMC->Gspos("EST2",number, "EUM2", xb, yb , 0. , 0, "MANY");
       yb = (-dbox4[1]+dbox2[1])+j*1.0*fgkCellRadius*fgkSqroot3;
     }
 
@@ -295,10 +291,10 @@ void AliPMDv1::CreateSupermodule()
   dboxSM1[0] = 3.0*dbox3[0]+(2.0*0.025);
   dboxSM1[1] = 2.0*dbox3[1]+0.025;
   dboxSM1[2] = fgkCellDepth/2.;
-
+  
   gMC->Gsvolu("ESMA","BOX", idtmed[698], dboxSM1, 3);
   gMC->Gsatt("ESMA", "SEEN", 1);
-
+  
   //Position the 6 unit modules in EMSA
   Float_t xa1,xa2,xa3,ya1,ya2; 
   xa1 = -dboxSM1[0] + dbox3[0];
@@ -307,12 +303,12 @@ void AliPMDv1::CreateSupermodule()
   ya1 = dboxSM1[1]  - dbox3[1];
   ya2 = -dboxSM1[1] + dbox3[1];
   
-  gMC->Gsposp("EUM1", 1, "ESMA", xa1, ya1, 0., 0, "ONLY",dbox3,3);
-  gMC->Gsposp("EUM1", 2, "ESMA", xa2, ya1, 0., 0, "ONLY",dbox3,3);
-  gMC->Gsposp("EUM1", 3, "ESMA", xa3, ya1, 0., 0, "ONLY",dbox3,3);
-  gMC->Gsposp("EUM1", 4, "ESMA", xa1, ya2, 0., 0, "ONLY",dbox3,3);
-  gMC->Gsposp("EUM1", 5, "ESMA", xa2, ya2, 0., 0, "ONLY",dbox3,3);
-  gMC->Gsposp("EUM1", 6, "ESMA", xa3, ya2, 0., 0, "ONLY",dbox3,3);
+  gMC->Gspos("EUM1", 1, "ESMA", xa1, ya1, 0., 0, "ONLY");
+  gMC->Gspos("EUM1", 2, "ESMA", xa2, ya1, 0., 0, "ONLY");
+  gMC->Gspos("EUM1", 3, "ESMA", xa3, ya1, 0., 0, "ONLY");
+  gMC->Gspos("EUM1", 4, "ESMA", xa1, ya2, 0., 0, "ONLY");
+  gMC->Gspos("EUM1", 5, "ESMA", xa2, ya2, 0., 0, "ONLY");
+  gMC->Gspos("EUM1", 6, "ESMA", xa3, ya2, 0., 0, "ONLY");
 
 
   // volume for SUPERMODULE ESMB 
@@ -333,14 +329,13 @@ void AliPMDv1::CreateSupermodule()
   yb2 = 0.; 
   yb3 = -dboxSM2[1]+dbox4[1];
   
-  gMC->Gsposp("EUM2", 1, "ESMB", xb1, yb1, 0., 0, "ONLY",dbox4,3);
-  gMC->Gsposp("EUM2", 2, "ESMB", xb2, yb1, 0., 0, "ONLY",dbox4,3);
-  gMC->Gsposp("EUM2", 3, "ESMB", xb1, yb2, 0., 0, "ONLY",dbox4,3);
-  gMC->Gsposp("EUM2", 4, "ESMB", xb2, yb2, 0., 0, "ONLY",dbox4,3);
-  gMC->Gsposp("EUM2", 5, "ESMB", xb1, yb3, 0., 0, "ONLY",dbox4,3);
-  gMC->Gsposp("EUM2", 6, "ESMB", xb2, yb3, 0., 0, "ONLY",dbox4,3);
-
-
+  gMC->Gspos("EUM2", 1, "ESMB", xb1, yb1, 0., 0, "ONLY");
+  gMC->Gspos("EUM2", 2, "ESMB", xb2, yb1, 0., 0, "ONLY");
+  gMC->Gspos("EUM2", 3, "ESMB", xb1, yb2, 0., 0, "ONLY");
+  gMC->Gspos("EUM2", 4, "ESMB", xb2, yb2, 0., 0, "ONLY");
+  gMC->Gspos("EUM2", 5, "ESMB", xb1, yb3, 0., 0, "ONLY");
+  gMC->Gspos("EUM2", 6, "ESMB", xb2, yb3, 0., 0, "ONLY");
+  
   // Make a 3mm thick G10 Base plate for ESMA
   Float_t dboxG1a[3];
   dboxG1a[0] = dboxSM1[0]; 
@@ -386,25 +381,25 @@ void AliPMDv1::CreateSupermodule()
 
   Float_t zbpa,zpcba1,zpcba2,zsma; 
   zpcba1 = - dboxAlla[2]+fgkThPCB/2.0;
-  gMC->Gsposp("EPCA", 1, "EFPA", 0., 0., zpcba1, 0, "ONLY",dboxG2a,3);
+  gMC->Gspos("EPCA", 1, "EFPA", 0., 0., zpcba1, 0, "ONLY");
   zsma = zpcba1+dboxSM1[2];
-  gMC->Gsposp("ESMA", 1, "EFPA", 0., 0., zsma, 0, "ONLY",dboxSM1,3);
+  gMC->Gspos("ESMA", 1, "EFPA", 0., 0., zsma, 0, "ONLY");
   zpcba2 = zsma+fgkThPCB/2.0;
-  gMC->Gsposp("EPCA", 2, "EFPA", 0., 0., zpcba2, 0, "ONLY",dboxG2a,3);
+  gMC->Gspos("EPCA", 2, "EFPA", 0., 0., zpcba2, 0, "ONLY");
   zbpa = zpcba2+fgkThAir+fgkThBase/2.0;
-  gMC->Gsposp("EBPA", 1, "EFPA", 0., 0., zbpa, 0, "ONLY",dboxG1a,3);
+  gMC->Gspos("EBPA", 1, "EFPA", 0., 0., zbpa, 0, "ONLY");
 
   // Now place everything in EFCA for CPV
 
   Float_t zbpa2,zpcba12,zpcba22,zsma2; 
   zbpa2 = - dboxAlla2[2]+fgkThBase/2.0;
-  gMC->Gsposp("EBPA", 1, "EFCA", 0., 0., zbpa2, 0, "ONLY",dboxG1a,3);
+  gMC->Gspos("EBPA", 1, "EFCA", 0., 0., zbpa2, 0, "ONLY");
   zpcba12 = zbpa2+fgkThAir+fgkThPCB/2.0;
-  gMC->Gsposp("EPCA", 1, "EFCA", 0., 0., zpcba12, 0, "ONLY",dboxG2a,3);
+  gMC->Gspos("EPCA", 1, "EFCA", 0., 0., zpcba12, 0, "ONLY");
   zsma2 = zpcba12+dboxSM1[2];
-  gMC->Gsposp("ESMA", 1, "EFCA", 0., 0., zsma2, 0, "ONLY",dboxSM1,3);
+  gMC->Gspos("ESMA", 1, "EFCA", 0., 0., zsma2, 0, "ONLY");
   zpcba22 = zsma2+fgkThPCB/2.0;
-  gMC->Gsposp("EPCA", 2, "EFCA", 0., 0., zpcba22, 0, "ONLY",dboxG2a,3);
+  gMC->Gspos("EPCA", 2, "EFCA", 0., 0., zpcba22, 0, "ONLY");
 
 
 
@@ -425,7 +420,6 @@ void AliPMDv1::CreateSupermodule()
 
   gMC->Gsvolu("EPCB","BOX", idtmed[607], dboxG2b, 3);
   gMC->Gsatt("EPCB", "SEEN", 1);
-
 
   // Make a Full module EFPB of AIR to place EBPB, 
   //1mm AIR, EPCB, ESMB,EPCB for PMD
@@ -452,26 +446,26 @@ void AliPMDv1::CreateSupermodule()
 
   Float_t zbpb,zpcbb1,zpcbb2,zsmb; 
   zpcbb1 = - dboxAllb[2]+fgkThPCB/2.0;
-  gMC->Gsposp("EPCB", 1, "EFPB", 0., 0., zpcbb1, 0, "ONLY",dboxG2b,3);
+  gMC->Gspos("EPCB", 1, "EFPB", 0., 0., zpcbb1, 0, "ONLY");
   zsmb = zpcbb1+dboxSM2[2];
-  gMC->Gsposp("ESMB", 1, "EFPB", 0., 0., zsmb, 0, "ONLY",dboxSM2,3);
+  gMC->Gspos("ESMB", 1, "EFPB", 0., 0., zsmb, 0, "ONLY");
   zpcbb2 = zsmb+fgkThPCB/2.0;
-  gMC->Gsposp("EPCB", 2, "EFPB", 0., 0., zpcbb2, 0, "ONLY",dboxG2b,3);
+  gMC->Gspos("EPCB", 2, "EFPB", 0., 0., zpcbb2, 0, "ONLY");
   zbpb = zpcbb2+fgkThAir+fgkThBase/2.0;
-  gMC->Gsposp("EBPB", 1, "EFPB", 0., 0., zbpb, 0, "ONLY",dboxG1b,3);
+  gMC->Gspos("EBPB", 1, "EFPB", 0., 0., zbpb, 0, "ONLY");
 
 
   // Now place everything in EFCB for CPV
 
   Float_t zbpb2,zpcbb12,zpcbb22,zsmb2; 
   zbpb2 = - dboxAllb2[2]+fgkThBase/2.0;
-  gMC->Gsposp("EBPB", 1, "EFCB", 0., 0., zbpb2, 0, "ONLY",dboxG1b,3);
+  gMC->Gspos("EBPB", 1, "EFCB", 0., 0., zbpb2, 0, "ONLY");
   zpcbb12 = zbpb2+0.1+fgkThPCB/2.0;
-  gMC->Gsposp("EPCB", 1, "EFCB", 0., 0., zpcbb12, 0, "ONLY",dboxG2b,3);
+  gMC->Gspos("EPCB", 1, "EFCB", 0., 0., zpcbb12, 0, "ONLY");
   zsmb2 = zpcbb12+dboxSM2[2];
-  gMC->Gsposp("ESMB", 1, "EFCB", 0., 0., zsmb2, 0, "ONLY",dboxSM2,3);
+  gMC->Gspos("ESMB", 1, "EFCB", 0., 0., zsmb2, 0, "ONLY");
   zpcbb22 = zsmb2+fgkThPCB/2.0;
-  gMC->Gsposp("EPCB", 2, "EFCB", 0., 0., zpcbb22, 0, "ONLY",dboxG2b,3);
+  gMC->Gspos("EPCB", 2, "EFCB", 0., 0., zpcbb22, 0, "ONLY");
 
 
   // Master MODULE EMPA of aluminum for PMD
@@ -492,8 +486,8 @@ void AliPMDv1::CreateSupermodule()
 
 
   //Position EFMA inside EMMA for PMD and CPV
-  gMC->Gsposp("EFPA", 1, "EMPA", 0., 0., 0., 0, "ONLY",dboxAlla,3);
-  gMC->Gsposp("EFCA", 1, "EMCA", 0., 0., 0., 0, "ONLY",dboxAlla2,3);
+  gMC->Gspos("EFPA", 1, "EMPA", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("EFCA", 1, "EMCA", 0., 0., 0., 0, "ONLY");
 
 
   // Master MODULE EMPB of aluminum for PMD
@@ -512,12 +506,9 @@ void AliPMDv1::CreateSupermodule()
   gMC->Gsvolu("EMCB","BOX", idtmed[603], fDboxmm22, 3);
   gMC->Gsatt("EMCB", "SEEN", 1);
 
- 
   //Position EFMB inside EMMB
-  gMC->Gsposp("EFPB", 1, "EMPB", 0., 0., 0., 0, "ONLY",dboxAllb,3);
-  gMC->Gsposp("EFCB", 1, "EMCB", 0., 0., 0., 0, "ONLY",dboxAllb2,3);
-
-
+  gMC->Gspos("EFPB", 1, "EMPB", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("EFCB", 1, "EMCB", 0., 0., 0., 0, "ONLY");
 }
  
 //_____________________________________________________________________________
@@ -572,20 +563,81 @@ void AliPMDv1::CreatePMD()
   gMC->Gsvolu("EFEB","BOX", idtmed[618], dboxFeb, 3);
   gMC->Gsatt ("EFEB", "SEEN", 0);
 
-
-  // Gaspmd, the dimension of RECTANGULAR mother volume of PMD,
-
-  Float_t gaspmd[3] = {81.5,94.5,7.};
-  gaspmd[0] = fSMLengthax + fSMLengthbx;
-  gaspmd[1] = fSMLengthay + fSMLengthby;
-
-  gMC->Gsvolu("EPMD", "BOX", idtmed[698], gaspmd, 3);
-  gMC->Gsatt("EPMD", "SEEN", 1);
-
   AliMatrix(irotdm, 90., 0.,  90.,  90., 180., 0.);
-   
   AliMatrix(jhrot12, 90., 180., 90., 270., 0., 0.);
   AliMatrix(jhrot13, 90., 240., 90., 330., 0., 0.);
+
+  // Gaspmd, the dimension of RECTANGULAR mother volume of PMD,
+  // Four mother volumes EPM1,EPM2 for A-type and 
+  // volumes EPM3 and EPM4 for B-type. Four to create a hole
+  // and avoid overlap with beam pipe
+
+  Float_t gaspmd[3];
+  gaspmd[0] = fDboxmm1[0];
+  gaspmd[1] = fDboxmm1[1];
+  gaspmd[2] = 7.0; // for the entire detector, including connectors etc
+
+  gMC->Gsvolu("EPM1", "BOX", idtmed[698], gaspmd, 3);
+  gMC->Gsatt("EPM1", "SEEN", 1);
+  gMC->Gsvolu("EPM2", "BOX", idtmed[698], gaspmd, 3);
+  gMC->Gsatt("EPM2", "SEEN", 1);
+
+  //Complete detector for Type A
+  //Position Super modules type A for both CPV and PMD in EPMD  
+  Float_t zpsa,zpba,zfea,zcva; 
+
+  // zpsa = - gaspmd[2] + fSMthick/2.;
+  // -2.5 is given to place PMD at -361.5 
+  // BM : In future after putting proper electronics
+  // -2.5 will be replaced by -gaspmd[2]
+  zpsa = -2.5 + fSMthick/2.;
+
+  gMC->Gspos("EMPA", 1, "EPM1", 0., 0., zpsa, 0, "ONLY");
+  gMC->Gspos("EMPA", 2, "EPM2", 0., 0., zpsa, jhrot12, "ONLY");
+  zpba=zpsa+fSMthick/2.+dboxPba[2];
+  gMC->Gspos("EPBA", 1, "EPM1", 0., 0., zpba, 0, "ONLY");
+  gMC->Gspos("EPBA", 2, "EPM2", 0., 0., zpba, 0, "ONLY");
+  zfea=zpba+dboxPba[2]+dboxFea[2];
+  gMC->Gspos("EFEA", 1, "EPM1", 0., 0., zfea, 0, "ONLY");
+  gMC->Gspos("EFEA", 2, "EPM2", 0., 0., zfea, 0, "ONLY");
+  zcva=zfea+dboxFea[2]+fSMthick/2.;
+  gMC->Gspos("EMCA", 1, "EPM1", 0., 0., zcva, 0, "ONLY");
+  gMC->Gspos("EMCA", 2, "EPM2", 0., 0., zcva, jhrot12, "ONLY");
+ 
+  gaspmd[0] = fDboxmm2[0];
+  gaspmd[1] = fDboxmm2[1];
+  gaspmd[2] = 7.0; // for the entire detector, including connectors etc
+
+  gMC->Gsvolu("EPM3", "BOX", idtmed[698], gaspmd, 3);
+  gMC->Gsatt("EPM3", "SEEN", 1);
+  gMC->Gsvolu("EPM4", "BOX", idtmed[698], gaspmd, 3);
+  gMC->Gsatt("EPM4", "SEEN", 1);
+
+  //Complete detector for Type B
+  //Position Super modules type B for both CPV and PMD in EPMD  
+  Float_t zpsb,zpbb,zfeb,zcvb; 
+  // zpsb = - gaspmd[2] + fSMthick/2.;
+  // -2.5 is given to place PMD at -361.5 
+  // BM: In future after putting proper electronics
+  // -2.5 will be replaced by -gaspmd[2]
+
+  zpsb = -2.5 + fSMthick/2.; 
+  gMC->Gspos("EMPB", 3, "EPM3", 0., 0., zpsb, 0, "ONLY");
+  gMC->Gspos("EMPB", 4, "EPM4", 0., 0., zpsb, jhrot12, "ONLY");
+  zpbb=zpsb+fSMthick/2.+dboxPbb[2];
+  gMC->Gspos("EPBB", 3, "EPM3", 0., 0., zpbb, 0, "ONLY");
+  gMC->Gspos("EPBB", 4, "EPM4", 0., 0., zpbb, 0, "ONLY");
+  zfeb=zpbb+dboxPbb[2]+dboxFeb[2];
+  gMC->Gspos("EFEB", 3, "EPM3", 0., 0., zfeb, 0, "ONLY");
+  gMC->Gspos("EFEB", 4, "EPM4", 0., 0., zfeb, 0, "ONLY");
+  zcvb=zfeb+dboxFeb[2]+fSMthick/2.;
+  gMC->Gspos("EMCB", 3, "EPM3", 0., 0., zcvb, 0, "ONLY");
+  gMC->Gspos("EMCB", 4, "EPM4", 0., 0., zcvb, jhrot12, "ONLY");
+  
+  // --- Place the EPMD in ALICE 
+  xp = 0.;
+  yp = 0.;
+  zp = fgkZdist;
 
   Float_t xsma,ysma;
   Float_t xsmb,ysmb;
@@ -594,48 +646,11 @@ void AliPMDv1::CreatePMD()
   xsmb = -fSMLengthax;
   ysmb = -fSMLengthay;
 
-  //Complete detector for Type A
-  //Position Super modules type A for both CPV and PMD in EPMD  
-  Float_t zpsa,zpba,zfea,zcva; 
-
-  zpsa = - gaspmd[2] + fSMthick/2.;
-
-  gMC->Gsposp("EMPA", 1, "EPMD", xsma, ysma, zpsa, 0, "ONLY",fDboxmm1,3);
-  gMC->Gsposp("EMPA", 2, "EPMD", -xsma, -ysma, zpsa, jhrot12, "ONLY",fDboxmm1,3);
-  zpba=zpsa+fSMthick/2.+dboxPba[2];
-  gMC->Gsposp("EPBA", 1, "EPMD", xsma, ysma, zpba, 0, "ONLY",dboxPba,3);
-  gMC->Gsposp("EPBA", 2, "EPMD", -xsma, -ysma, zpba, 0, "ONLY",dboxPba,3);
-  zfea=zpba+dboxPba[2]+dboxFea[2];
-  gMC->Gsposp("EFEA", 1, "EPMD", xsma, ysma, zfea, 0, "ONLY",dboxFea,3);
-  gMC->Gsposp("EFEA", 2, "EPMD", -xsma, -ysma, zfea, 0, "ONLY",dboxFea,3);
-  zcva=zfea+dboxFea[2]+fSMthick/2.;
-  gMC->Gsposp("EMCA", 1, "EPMD", xsma, ysma, zcva, 0, "ONLY",fDboxmm12,3);
-  gMC->Gsposp("EMCA", 2, "EPMD", -xsma,-ysma, zcva, jhrot12, "ONLY",fDboxmm12,3);
- 
-  //Complete detector for Type B
-  //Position Super modules type B for both CPV and PMD in EPMD  
-  Float_t zpsb,zpbb,zfeb,zcvb; 
-  zpsb = - gaspmd[2] + fSMthick/2.;
-  
-  gMC->Gsposp("EMPB", 3, "EPMD", xsmb, ysmb, zpsb, 0, "ONLY",fDboxmm2,3);
-  gMC->Gsposp("EMPB", 4, "EPMD", -xsmb, -ysmb, zpsb, jhrot12, "ONLY",fDboxmm2,3);
-  zpbb=zpsb+fSMthick/2.+dboxPbb[2];
-  gMC->Gsposp("EPBB", 3, "EPMD", xsmb, ysmb, zpbb, 0, "ONLY",dboxPbb,3);
-  gMC->Gsposp("EPBB", 4, "EPMD", -xsmb, -ysmb, zpbb, 0, "ONLY",dboxPbb,3);
-  zfeb=zpbb+dboxPbb[2]+dboxFeb[2];
-  gMC->Gsposp("EFEB", 3, "EPMD", xsmb, ysmb, zfeb, 0, "ONLY",dboxFeb,3);
-  gMC->Gsposp("EFEB", 4, "EPMD", -xsmb, -ysmb, zfeb, 0, "ONLY",dboxFeb,3);
-  zcvb=zfeb+dboxFeb[2]+fSMthick/2.;
-  gMC->Gsposp("EMCB", 3, "EPMD", xsmb, ysmb, zcvb, 0, "ONLY",fDboxmm22,3);
-  gMC->Gsposp("EMCB", 4, "EPMD", -xsmb,-ysmb, zcvb, jhrot12, "ONLY",fDboxmm22,3);
-  
-  // --- Place the EPMD in ALICE 
-  xp = 0.;
-  yp = 0.;
-  zp = fgkZdist;
-
   //Position Full PMD in ALICE   
-  gMC->Gsposp("EPMD", 1, "ALIC", xp,yp,zp, 0, "ONLY",gaspmd,3);
+  gMC->Gspos("EPM1", 1, "ALIC", xsma,ysma,zp, 0, "ONLY");
+  gMC->Gspos("EPM2", 1, "ALIC", -xsma,-ysma,zp, 0, "ONLY");
+  gMC->Gspos("EPM3", 1, "ALIC", xsmb,ysmb,zp, 0, "ONLY");
+  gMC->Gspos("EPM4", 1, "ALIC", -xsmb,-ysmb,zp, 0, "ONLY");
 
 }
 
