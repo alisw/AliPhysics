@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/10/04 15:20:12  fca
+Correct syntax accepted by g++ but not standard for static members, remove minor warnings
+
 Revision 1.2  1999/09/29 09:24:20  fca
 Introduction of the Copyright and cvs Log
 
@@ -290,8 +293,8 @@ void AliITSmoduleSSD::HitToDigit(Int_t hitNo) {
         EP = gRandom->Landau(fGainP*l, l*10);
         EN = gRandom->Landau(fGainN*l, l*10);
         
-        sP = kSigmaP * sqrt(i);
-        sN = kSigmaN * sqrt(kSteps-i);
+        sP = kSigmaP * sqrt((Float_t) i);
+        sN = kSigmaN * sqrt((Float_t)(kSteps-i));
 
         sP = (i<3 && dsP>0.3 && dsP<0.7)? 0.02 : sP;
         sN = (i>7 && dsN>0.3 && dsN<0.7)? 0.02 : sN;         
