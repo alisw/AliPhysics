@@ -1,11 +1,12 @@
 # Sources
 SRCS:=  TFluka.cxx TFlukaMCGeometry.cxx TFlukaCerenkov.cxx \
+	TFlukaConfigOption.cxx \
         magfld.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx \
 	endraw.cxx sodraw.cxx usdraw.cxx stupre.cxx stuprf.cxx \
 	abscff.cxx dffcff.cxx queffc.cxx rflctv.cxx rfrndx.cxx
 
 # Headers
-HDRS:= TFluka.h TFlukaMCGeometry.h TFlukaCerenkov.h
+HDRS:= TFluka.h TFlukaMCGeometry.h TFlukaCerenkov.h TFlukaConfigOption.h
 
 FSRCS:= FLUKA_input.f crnkvp.f
 

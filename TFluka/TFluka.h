@@ -272,12 +272,6 @@ class TFluka : public TVirtualMC {
   TString GetInputFileName() const {return fInputFileName;}
   void SetInputFileName(const char* n) {fInputFileName = n;}
 
-  // - SetProcess and SetCut
-  Int_t GetProcessNb() const {return fNbOfProc;}
-  void SetProcessNb(Int_t l) {fNbOfProc = l;}
-  Int_t GetCutNb() const {return fNbOfProc;}
-  void SetCutNb(Int_t l) {fNbOfCut = l;}
-
   // - Verbosity level
   Int_t GetVerbosityLevel() const {return fVerbosityLevel;}
   void SetVerbosityLevel(Int_t l) {fVerbosityLevel = l;}
@@ -336,7 +330,11 @@ class TFluka : public TVirtualMC {
   
   Int_t GetMaterialIndex(Int_t idmat) const {return fMaterials[idmat];}
   TObjArray *GetFlukaMaterials();
+  //
+  // Fluka specific scoring options
+  //
 
+  Bool_t  SetFlukaScoringOption(Float_t what[12], const char* sdum) {return kTRUE;}
       
  private:
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
@@ -363,15 +361,6 @@ class TFluka : public TVirtualMC {
   Int_t    fDummyBoundary;    // Flag for crossing dummy boundaries
   Bool_t   fStopped;          // Flag for stopping 
   
-  //variables for SetProcess and SetCut
-  Int_t    fNbOfProc;                // Current number of processes 
-  Int_t    fProcessValue[10000];     // User values assigned to processes
-  Int_t    fProcessMaterial[10000];  // Materials assigned to user settings
-  Char_t   fProcessFlag[10000][5];   // User flags assigned to processes
-  Int_t    fNbOfCut;                 // Current number of cuts
-  Double_t fCutValue[10000];         // User values assigned to cuts
-  Char_t   fCutFlag[10000][7];       // User flags assigned to cuts
-  Int_t    fCutMaterial[10000];      // Materials assigned to cuts
 
   //Geometry through TGeo
   Int_t*               fMaterials;         //!Array of indices
@@ -380,6 +369,11 @@ class TFluka : public TVirtualMC {
   TFlukaMCGeometry    *fGeom;               // TGeo-FLUKA interface
   TGeoMCGeometry      *fMCGeo;              // Interface to TGeo builder
 
+  // SetProcess, SetCut and user Scoring dynamic storage
+  TObjArray* fProcesses;             // List of processes
+  TObjArray* fCuts;                  // List of cuts
+  TObjArray* fUserScore;             // List of user scoring options
+  
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
 };
 
