@@ -79,20 +79,28 @@ AliHBTPositionRandomizer& AliHBTPositionRandomizer::operator=(const AliHBTPositi
 }
 /*********************************************************************/
 
-AliAOD* AliHBTPositionRandomizer::GetEventSim() 
+AliAOD* AliHBTPositionRandomizer::GetEventSim() const
 {
  // gets from fReader and randomizes current particle event
- if (fReader == 0x0) return 0x0;
+ if (fReader == 0x0) 
+  {
+    Error("GetEventSim","Reader is null");
+    return 0x0;
+  } 
  AliAOD *e =  fReader->GetEventSim();
  if (e->IsRandomized() == kFALSE) Randomize(e);
  return e;
 }
 /*********************************************************************/
 
-AliAOD* AliHBTPositionRandomizer::GetEventRec() 
+AliAOD* AliHBTPositionRandomizer::GetEventRec() const
 {
  // gets from fReader and randomizes current track event
- if (fReader == 0x0) return 0x0;
+ if (fReader == 0x0) 
+  {
+    Error("GetEventRec","Reader is null");
+    return 0x0;
+  }  
  AliAOD *e =  fReader->GetEventRec();
  if (fRandomizeTracks) if (e->IsRandomized() == kFALSE) Randomize(e);
  return e;

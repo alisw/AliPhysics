@@ -32,8 +32,8 @@ class AliHBTPositionRandomizer: public AliReader
    Bool_t ReadsRec() const {return (fReader)?fReader->ReadsRec():kFALSE;}
    Bool_t ReadsSim() const {return (fReader)?fReader->ReadsSim():kFALSE;}
    
-   AliAOD* GetEventSim() ;
-   AliAOD* GetEventRec() ;
+   AliAOD* GetEventSim() const ;
+   AliAOD* GetEventRec() const ;
 
    AliAOD* GetEventSim(Int_t n);
    AliAOD* GetEventRec(Int_t n){return (fReader)?fReader->GetEventRec(n):0x0;}
