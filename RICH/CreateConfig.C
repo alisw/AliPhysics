@@ -6,16 +6,18 @@ public:
                    kPMD=8192,kDIPO=16384,kEMCAL=32768,kVZERO=65536,kMUON=131072,kZDC=262144,kSHILD=524288};
   enum EProcesses {kDCAY=1,kPAIR=2,kCOMP=4,kPHOT=8,kPFIS=16,kDRAY=32,kANNI=64,kBREM=128,kMUNU=256,kCKOV=512,kHADR=1024,kLOSS=2048,kMULS=4096,
                    kRAYL=8192};
-  enum EGenTypes  {kGun1,kGun7,kHijing,kHijingPara};
-      KirConfig();
-     ~KirConfig()    {Info("ctor","");fMain->CleanUp(); delete fMain;}
-  void   AddDetector(Int_t id)          {fDetectors+=id;}
-  void   RemoveDetector(Int_t id)       {fDetectors-=id;}
-  void   AddProcess(Int_t id)           {fProcesses+=id;}
-  void   RemoveProcess(Int_t id)        {fProcesses-=id;}
-  Bool_t IsDetectorOn(Int_t id)    const{return fDetectors&id;}
-  Bool_t IsProcessOn(Int_t id)     const{return fProcesses&id;}
-  void   CreateConfigFile();
+  enum EGenTypes  {kGun1,kGun7,kPythia7,kHijing,kHijingPara};
+  
+          KirConfig(const char*sFileName);
+         ~KirConfig()                    {Info("ctor","");fMain->Cleanup(); delete fMain;}
+  void    AddDetector(Int_t id)          {fDetectors+=id;}
+  void    RemoveDetector(Int_t id)       {fDetectors-=id;}
+  void    AddProcess(Int_t id)           {fProcesses+=id;}
+  void    RemoveProcess(Int_t id)        {fProcesses-=id;}
+  Bool_t  IsDetectorOn(Int_t id)    const{return fDetectors&id;}
+  Bool_t  IsProcessOn(Int_t id)     const{return fProcesses&id;}
+  Float_t Eta2Theta(Float_t arg)    const{return (180./TMath::Pi())*2.*TMath::ATan(TMath::Exp(-arg));}
+  void    CreateConfigFile();
 protected:
   TGMainFrame  *fMain;//main window poiter
   TGComboBox   *fRichVersionCombo;
@@ -23,11 +25,12 @@ protected:
   TGComboBox   *fGenTypeCombo,*fPartIdCombo,*fMomCombo;
   Int_t         fDetectors;
   Int_t         fProcesses;
+  char         *fFileName;
 };//class KirConfig
 	 
-
-KirConfig::KirConfig()
+KirConfig::KirConfig(const char *sFileName)
 {   
+  fFileName=sFileName;
 // Create main frame       
   fMain=new TGMainFrame(gClient->GetRoot(),500,400);
 //  fMain->Connect("CloseWindow()","KirConfig",this,"CloseWindow()");   
@@ -36,19 +39,15 @@ KirConfig::KirConfig()
   pHorFrame->AddFrame(pVerFrame=new TGVerticalFrame(pHorFrame,100,200));  
   pVerFrame->AddFrame(pRichGrpFrm=new TGGroupFrame(pHorFrame,"RICH"));
   pRichGrpFrm->AddFrame(fRichVersionCombo=new TGComboBox(pRichGrpFrm,100));
-  fRichVersionCombo->AddEntry("version 0",0);
-  fRichVersionCombo->AddEntry("version 1",1);
-  fRichVersionCombo->AddEntry("version 3",3);
-  fRichVersionCombo->Select(3);
-  fRichVersionCombo->Resize(140,20);
+  fRichVersionCombo->AddEntry("version 0",0);  fRichVersionCombo->AddEntry("version 1",1);  fRichVersionCombo->AddEntry("version 3",3);
+  fRichVersionCombo->Select(1);  fRichVersionCombo->Resize(140,20);
   pRichGrpFrm->AddFrame(fRichTopChkBtn=new TGCheckButton(pRichGrpFrm,"Rotate to Top?"));
 //Generator  
   pVerFrame->AddFrame(pGenGrpFrm=new TGGroupFrame(pHorFrame,"Generator"));
   pGenGrpFrm->AddFrame(fGenTypeCombo=new TGComboBox(pGenGrpFrm,100));
-  fGenTypeCombo->AddEntry("gun to central chamber",kGun1);
-  fGenTypeCombo->AddEntry("gun to all chambers",kGun7);
-  fGenTypeCombo->AddEntry("HIJING",kHijing);
-  fGenTypeCombo->AddEntry("parametrized HIJING",kHijingPara);
+  fGenTypeCombo->AddEntry("gun to central chamber",kGun1);  fGenTypeCombo->AddEntry("gun to all chambers",kGun7);
+  fGenTypeCombo->AddEntry("7 guns on top of Pythia",kPythia7);
+  fGenTypeCombo->AddEntry("HIJING",kHijing);                fGenTypeCombo->AddEntry("parametrized HIJING",kHijingPara);
   fGenTypeCombo->Select(kGun1);
   fGenTypeCombo->Resize(160,20);
   
@@ -74,8 +73,8 @@ KirConfig::KirConfig()
   fMomCombo->Resize(160,20);
 // Magnetic Field
   pVerFrame->AddFrame(pFldGrpFrm=new TGGroupFrame(pHorFrame,"Magnetic Field"));
-  pFldGrpFrm->AddFrame(fMagFldChkBtn=new TGCheckButton(pFldGrpFrm,"On/Off?"));
-  fMagFldChkBtn->SetState(kButtonDown);
+  pFldGrpFrm->AddFrame(fMagFldChkBtn=new TGCheckButton(pFldGrpFrm,"On/Off"));
+  fMagFldChkBtn->SetState(kButtonUp);
 //Detectors
   pHorFrame->AddFrame(pDetButGrp=new TGButtonGroup(pHorFrame,"Detectors"));
   pDetButGrp->Connect("Pressed(Int_t)","KirConfig",this,"AddDetector(Int_t)");
@@ -104,24 +103,25 @@ KirConfig::KirConfig()
   pHorFrame->AddFrame(pProcButGrp=new TGButtonGroup(pHorFrame,"Processes"));
   pProcButGrp->Connect("Pressed(Int_t)","KirConfig",this,"AddProcess(Int_t)");
   pProcButGrp->Connect("Released(Int_t)","KirConfig",this,"RemoveProcess(Int_t)");
-  new TGCheckButton(pProcButGrp,"DCAY",kDCAY));  pProcButGrp->SetButton(kDCAY);       
-  new TGCheckButton(pProcButGrp,"PAIR",kPAIR));  pProcButGrp->SetButton(kPAIR);       
-  new TGCheckButton(pProcButGrp,"COMP",kCOMP));  pProcButGrp->SetButton(kCOMP);
+  new TGCheckButton(pProcButGrp,"DCAY decay",kDCAY));  pProcButGrp->SetButton(kDCAY);       
+  new TGCheckButton(pProcButGrp,"PAIR pair production",kPAIR));  pProcButGrp->SetButton(kPAIR);       
+  new TGCheckButton(pProcButGrp,"COMP Compton",kCOMP));  pProcButGrp->SetButton(kCOMP);
   new TGCheckButton(pProcButGrp,"PHOT",kPHOT));  pProcButGrp->SetButton(kPHOT);
-  new TGCheckButton(pProcButGrp,"PFIS",kPFIS));  
-  new TGCheckButton(pProcButGrp,"DRAY",kDRAY));  
-  new TGCheckButton(pProcButGrp,"ANNI",kANNI));  pProcButGrp->SetButton(kANNI);       
-  new TGCheckButton(pProcButGrp,"BREM",kBREM));  pProcButGrp->SetButton(kBREM);       
+  new TGCheckButton(pProcButGrp,"PFIS Photofission",kPFIS));  
+  new TGCheckButton(pProcButGrp,"DRAY delta electrons",kDRAY));  
+  new TGCheckButton(pProcButGrp,"ANNI annihilation",kANNI));  pProcButGrp->SetButton(kANNI);       
+  new TGCheckButton(pProcButGrp,"BREM Bremstraslung",kBREM));  pProcButGrp->SetButton(kBREM);       
   new TGCheckButton(pProcButGrp,"MUNU",kMUNU));  pProcButGrp->SetButton(kMUNU);       
-  new TGCheckButton(pProcButGrp,"CKOV",kCKOV));  pProcButGrp->SetButton(kCKOV);       
-  new TGCheckButton(pProcButGrp,"HADR",kHADR));  pProcButGrp->SetButton(kHADR);       
+  new TGCheckButton(pProcButGrp,"CKOV Cerenkovs",kCKOV));  pProcButGrp->SetButton(kCKOV);       
+  new TGCheckButton(pProcButGrp,"HADR Hadronic interactions ",kHADR));  pProcButGrp->SetButton(kHADR);       
   new TGCheckButton(pProcButGrp,"LOSS",kLOSS));  pProcButGrp->SetButton(kLOSS);       
   new TGCheckButton(pProcButGrp,"MULS",kMULS));  pProcButGrp->SetButton(kMULS);       
   new TGCheckButton(pProcButGrp,"RAYL",kRAYL));  pProcButGrp->SetButton(kRAYL);       
-    
+//File    
   fMain->AddFrame(pFileHorFrm=new TGHorizontalFrame(fMain,100,200));
   pFileHorFrm->AddFrame(pCreateBtn=new TGTextButton(pFileHorFrm,"Create"));
   pCreateBtn->Connect("Clicked()","KirConfig",this,"CreateConfigFile()");                                 
+  pFileHorFrm->AddFrame(new TGLabel(pFileHorFrm,Form(" config file as %s",fFileName)));  
   
   fMain->MapSubwindows();   
   fMain->Layout();
@@ -131,8 +131,7 @@ KirConfig::KirConfig()
           
 void KirConfig::CreateConfigFile()
 {   
-  char *sName="ConfigRich.C";
-  FILE *fp=fopen(sName,"w"); if(!fp){Info("CreateConfigFile","Cannot open output file:%sn",sName);return;}
+  FILE *fp=fopen(fFileName,"w"); if(!fp){Info("CreateConfigFile","Cannot open output file:%sn",fFileName);return;}
   
   fprintf(fp,"void Config()\n");
   fprintf(fp,"{\n");
@@ -188,14 +187,41 @@ void KirConfig::CreateConfigFile()
   }
 //Generator
   switch(fGenTypeCombo->GetSelected()){
-    case kHijingPara:   fprintf(fp,"  pGenerator->AddGenerator(new AliGenHIJINGpara(85700),\"HIJING para\",1);\n");  break;
-    case kGun7:   break;
+    case kHijingPara: 
+      fprintf(fp,"  AliGenHIJINGpara *pGen=new AliGenHIJINGpara(91100);\n");
+      fprintf(fp,"  pGen->SetMomentumRange(0,999); pGen->SetPhiRange(0,360); pGen->SetThetaRange(%f,%f);\n",Eta2Theta(8),Eta2Theta(-8));
+      fprintf(fp,"  pGen->SetOrigin(0,0,0);  pGen->SetSigma(0,0,0);\n");
+      fprintf(fp,"  pGen->Init();\n");
+    break;
     case kGun1:     
       fprintf(fp,"  AliGenFixed *pGen=new AliGenFixed(1);\n");  
       fprintf(fp,"  pGen->SetPart(%i); pGen->SetMomentum(%3.1f); pGen->SetOrigin(0,0,0);\n",fPartIdCombo->GetSelected(),float(fMomCombo->GetSelected())/10);  
       fprintf(fp,"  pGen->SetPhiRange(pRICH->C(4)->PhiD()); pGen->SetThetaRange(pRICH->C(4)->ThetaD()-2);\n");            
       fprintf(fp,"  pGen->Init();\n");
-      break;    
+    break;    
+    case kGun7:   
+      fprintf(fp,"  AliGenCocktail *pCocktail=new AliGenCocktail();\n");
+      fprintf(fp,"  for(int i=1;i<=7;i++){\n");
+      fprintf(fp,"    AliGenFixed *pFixed=new AliGenFixed(1);\n");
+      fprintf(fp,"    pFixed->SetPart(%i); pFixed->SetMomentum(2.5+i*0.4); pFixed->SetOrigin(0,0,0);\n",fPartIdCombo->GetSelected());
+      fprintf(fp,"    pFixed->SetPhiRange(gRICH->C(i)->PhiD()); pFixed->SetThetaRange(gRICH->C(i)->ThetaD()-2);\n");                             
+      fprintf(fp,"    pCocktail->AddGenerator(pFixed,Form(\"Fixed %i\",i),1);\n  }\n");  
+      fprintf(fp,"  pCocktail->Init();\n");
+    break;
+    case kPythia7:      
+      fprintf(fp,"  AliGenCocktail *pCocktail=new AliGenCocktail();\n");
+      fprintf(fp,"  for(int i=1;i<=7;i++){\n");
+      fprintf(fp,"    AliGenFixed *pFixed=new AliGenFixed(1);\n");
+      fprintf(fp,"    pFixed->SetPart(%i); pFixed->SetMomentum(2.5+i*0.4); pFixed->SetOrigin(0,0,0);\n",fPartIdCombo->GetSelected());
+      fprintf(fp,"    pFixed->SetPhiRange(gRICH->C(i)->PhiD()); pFixed->SetThetaRange(gRICH->C(i)->ThetaD()-2);\n");                             
+      fprintf(fp,"    pCocktail->AddGenerator(pFixed,Form(\"Fixed %i\",i),1);\n  }\n");  
+      fprintf(fp,"  AliGenPythia *pPythia = new AliGenPythia(-1);\n");
+      fprintf(fp,"  pPythia->SetMomentumRange(0,999999); pPythia->SetPhiRange(20,80); pPythia->SetThetaRange(75,115);\n");
+      fprintf(fp,"  pPythia->SetYRange(-12,12);  pPythia->SetPtRange(0,1000);  pPythia->SetStrucFunc(kCTEQ4L);\n");
+      fprintf(fp,"  pPythia->SetProcess(kPyMb);  pPythia->SetEnergyCMS(14000);\n");      
+      fprintf(fp,"  pCocktail->AddGenerator(pPythia,\"Pythia\",1);\n");  
+      fprintf(fp,"  pCocktail->Init();\n");
+    break;  
   }
 //Other detectors                  
   if(IsDetectorOn(kMAG))  fprintf(fp,"\n  new AliMAG(\"MAG\",\"Magnet\");\n");
@@ -234,13 +260,14 @@ void KirConfig::CreateConfigFile()
 
   fprintf(fp,"\n  ::Info(\"RICH private config\",\"Stop\");\n"); 
   fprintf(fp,"}\n");
-  fclose(fp);
-  gApplication->Terminate(0);
+  fclose(fp);  
+  
+//  fMain->CloseWindow();
 }//CreateConfigFile
 
 KirConfig *p;
 void CreateConfig()
 {
-   p=new KirConfig;
+   p=new KirConfig("Config.C");
 }   
 

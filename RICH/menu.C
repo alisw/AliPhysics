@@ -1,3 +1,43 @@
+//__________________________________________________________________________________________________
+void H_SD()
+{
+  Info("H_SD","Start.");
+  
+  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
+    al->GetEvent(iEventN);
+  
+    if(!rl->TreeH()) rl->LoadHits();  al->LoadHeader(); al->LoadKinematics();//from
+    if(!rl->TreeS()) rl->MakeTree("S");    r->MakeBranch("S");//to
+          
+    for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
+      rl->TreeH()->GetEntry(iPrimN);
+      for(Int_t iHitN=0;iHitN<r->Hits()->GetEntries();iHitN++){//hits loop  ???
+        AliRICHhit *pHit=r->Hits()->At(iHitN);        
+        
+        TVector2 x2 = r->Param()->ShiftToWirePos(r->C(pHit->C())->Glob2Loc(pHit->OutX3()));        
+        
+        Int_t iTotQdc=r->Param()->TotQdc(x2,pHit->Eloss());
+        
+        Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
+        r->Param()->Loc2Area(x2,iPadXmin,iPadYmin,iPadXmax,iPadYmax);
+        cout<<"left-down=("<<iPadXmin<<","<<iPadYmin<<") right-up=("<<iPadXmax<<','<<iPadYmax<<')'<<endl;
+        for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)
+          for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
+            Double_t padQdc=iTotQdc*r->Param()->FracQdc(x2,iPadX,iPadY);
+            cout<<padQdc<<endl;
+            if(padQdc>0.1) r->AddSDigit(pHit->C(),iPadX,iPadY,padQdc,al->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
+          }            
+      }//hits loop
+    }//prims loop
+    rl->TreeS()->Fill();
+    rl->WriteSDigits("OVERWRITE");
+  }//events loop
+  
+  rl->UnloadHits(); al->UnloadHeader(); al->UnloadKinematics();
+  rl->UnloadSDigits();  
+  Info("H_SD","Stop.");  
+}//H_SD()
+//__________________________________________________________________________________________________
 
 Int_t countContrib[7][3];
 
@@ -75,7 +115,7 @@ void ControlPlots()
 void MainTrank()
 {
   TStopwatch sw;TDatime time;
-  OLD_S_SD(); SD_D();   AliRICHClusterFinder *z=new AliRICHClusterFinder(r); z->Exec();//delete z;  
+  H_SD(); SD_D();   AliRICHClusterFinder *z=new AliRICHClusterFinder(r); z->Exec();//delete z;  
   cout<<"\nInfo in <MainTrank>: Start time: ";time.Print();
     cout<<"Info in <MainTrank>: Stop  time: ";time.Set();  time.Print();
     cout<<"Info in <MainTrank>: Time  used: ";sw.Print();
@@ -205,42 +245,6 @@ void OLD_S_SD()
   Info("OLD_S_SD","Stop.");    
 }//OLD_S_SD()
 //__________________________________________________________________________________________________
-void H_SD()
-{
-  Info("H_SD","Start.");
-  
-  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    al->GetEvent(iEventN);
-  
-    if(!rl->TreeH()) rl->LoadHits();//from
-    if(!rl->TreeS()) rl->MakeTree("S");    r->MakeBranch("S");//to
-      
-    for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
-      rl->TreeH()->GetEntry(iPrimN);
-      for(Int_t iHitN=0;iHitN<r->Hits()->GetEntries();iHitN++){//hits loop  ???
-        AliRICHhit *pHit=r->Hits()->At(iHitN);        
-        Int_t sector;
-        Int_t iTotQdc=r->Param()->Loc2TotQdc(pHit->OutX3(),pHit->Eloss(),pHit->Pid(),sector);
-        
-        Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
-        r->Param()->Loc2Area(pHit->OutX3(),iPadXmin,iPadYmin,iPadXmax,iPadYmax);
-        cout<<"left-down=("<<iPadXmin<<","<<iPadYmin<<") right-up=("<<iPadXmax<<','<<iPadYmax<<')'<<endl;
-        for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)
-          for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
-            Double_t padQdc=iTotQdc*r->Param()->Loc2PadFrac(pHit->OutX3(),iPadX,iPadY);
-            if(padQdc>0.1)r->AddSDigit(pHit->C(),iPadX,iPadY,padQdc,pHit->GetTrack());
-          }            
-      }//hits loop
-    }//prims loop
-    rl->TreeS()->Fill();
-    rl->WriteSDigits("OVERWRITE");
-  }//events loop
-  
-  rl->UnloadHits();
-  rl->UnloadSDigits();  
-  Info("H_SD","Stop.");  
-}//H_SD()
-//__________________________________________________________________________________________________
 void SD_D()
 {
   Info("SD_D","Start.");  
@@ -369,7 +373,7 @@ Bool_t ReadAlice()
     Error("ReadAlice","galice.root broken, removing all this garbage then init new one");
     new AliRun("gAlice","Alice experiment system");
     gAlice->SetDebug(-1);
-    gAlice->Init("ConfigRich.C");
+    gAlice->Init("Config.C");
     r=(AliRICH*)gAlice->GetDetector("RICH");
     return kFALSE;
   }
@@ -455,13 +459,20 @@ void PrintGeo(Float_t rotDeg=0)
   delete p;
 }//PrintGeo()
 //__________________________________________________________________________________________________
+
+Double_t Gain(Double_t *x,Double_t *par)
+{
+  return AliRICHParam::GainSag(x[0],par[0]);
+}
+
 void TestResponse()
 {
   TCanvas *pC=new TCanvas("c","Amplification test",900,800);
   pC->Divide(1,2);
   pC->cd(1);
-  TF1 *pF1=new TF1("f1","9e-6*pow(x,4)+2e-7*pow(x,3)-0.0316*pow(x,2)-3e-4*x+25.367",-70,70);
-  pF1->Draw();
+  TF1 *pF1=new TF1("f1",Gain,-70,70,1);  pF1->SetParameters(1,1);pF1->SetParNames("Sector");
+  TF1 *pF2=new TF1("f2",Gain,-70,70,1);  pF2->SetParameters(2,1);pF2->SetParNames("Sector");
+  pF1->Draw();pF2->Draw("same");
   
   pC->cd(2);
   
@@ -474,19 +485,18 @@ void TestResponse()
   Double_t deltay=AliRICHParam::SectorSizeY()/nPoints;
   
   for(int i=0;i<nPoints;i++){
-    apH[i]=new TH1F(Form("h%i",i),"Qdc for Photon;QDC;Counts",1000,0,1000); apH[i]->SetLineColor(i);
+    apH[i]=new TH1F(Form("h%i",i),"Qdc for Photon;QDC;Counts",500,0,500); apH[i]->SetLineColor(i);
     pStack->Add(apH[i]);                 
     pLeg->AddEntry(apH[i],Form("@(0,%5.2f->%5.2f)",starty+i*deltay,starty+i*deltay-AliRICHParam::SectorSizeY()/2));
   }
         
   
-  TVector3 x3(0,0,0);  
-  Int_t sector=10;
+  TVector2 x2(0,0);  
 //  AliRICHParam::ResetWireSag();
   for(Int_t i=0;i<10000;i++){//events loop
     for(int j=0;j<nPoints;j++){
-      x3.SetY(starty-j*deltay);
-      apH[j]->Fill(AliRICHParam::Loc2TotQdc(x3,400e-9,500000,sector));
+      x2.Set(0,starty-j*deltay);
+      apH[j]->Fill(AliRICHParam::TotQdc(x2,0));
     }
   }
   pStack->Draw("nostack");
@@ -496,49 +506,21 @@ void TestResponse()
 void TestSD()
 {
   Info("TestSD","Creating test sdigits.");
-  rl->MakeTree("S");r->MakeBranch("S");
+  TVector3 hit(426.55,246.28,17.21);        
+  TVector2 x2=r->C(4)->Glob2Loc(hit);        
+  Int_t iTotQdc=r->Param()->TotQdc(x2,624e-9);        
+  Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
+  Int_t padx,pady;
+  Int_t sec=r->Param()->Loc2Pad(x2,padx,pady);
+  r->Param()->Loc2Area(x2,iPadXmin,iPadYmin,iPadXmax,iPadYmax);
+  Info("TestSD","Initial hit (%7.2f,%7.2f,%7.2f)->(%7.2f,%7.2f)->(%4i,%4i,%4i) gives %i charge",
+                          hit.X(),hit.Y(),hit.Z(),x2.X(),x2.Y(),sec,padx,pady,iTotQdc);
   
-    for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    al->GetEvent(iEventN);
-  
-    if(!rl->TreeH()) rl->LoadHits();//from
-    if(!rl->TreeS()) rl->MakeTree("S");    r->MakeBranch("S");//to
-      
-    for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
-      rl->TreeH()->GetEntry(iPrimN);
-      for(Int_t iHitN=0;iHitN<3;iHitN++){//hits loop  ???
-        AliRICHhit *pHit=r->Hits()->At(iHitN);        
-        TVector3 globX3(pHit->X(),pHit->Y(),pHit->Z());        
-        TVector3 locX3=r->C(pHit->C())->Glob2Loc(globX3);
-        
-        Int_t sector;
-        Int_t iTotQdc=r->Param()->Loc2TotQdc(locX3,pHit->Eloss(),pHit->Pid(),sector);
-        
-        Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
-        r->Param()->Loc2Area(locX3,iPadXmin,iPadYmin,iPadXmax,iPadYmax);
-        cout<<"left-down=("<<iPadXmin<<","<<iPadYmin<<") right-up=("<<iPadXmax<<','<<iPadYmax<<')'<<endl;
-        for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)
-          for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
-            Float_t iPadQdc=iTotQdc*r->Param()->Loc2PadFrac(locX3,iPadX,iPadY);
-            Int_t padx,pady; r->Param()->Loc2Pad(locX3.X(),locX3.Y(),padx,pady);
-            cout<<"hit="<<iHitN<<" ("<<locX3.X()<<','<<locX3.Y()<<")("<<padx<<','<<pady<<") cur pad("<<iPadX<<","<<iPadY<<") qtot="<<iTotQdc<<" qfrac="<<r->Param()->Loc2PadFrac(locX3,iPadX,iPadY)<<endl;
-          }
-//            r->AddSDigit(pHit->C(),padx,pady,r->Param()->Local2PadQdc(localX3,padx,pady),pHit->GetTrack());
-      }//hits loop
-    }//prims loop
-    rl->TreeS()->Fill();
-    rl->WriteSDigits("OVERWRITE");
-  }//events loop
-  
-  rl->UnloadHits();
-  rl->UnloadSDigits();  
-
-  rl->TreeS()->Fill();
-  rl->WriteSDigits("OVERWRITE");
-  rl->UnloadSDigits();
-  cout<<endl;r->Sdigits()->Print();
-  r->ResetSDigits();
-  Info("TestSdigits","Stop.");
+  cout<<"left-down=("<<iPadXmin<<","<<iPadYmin<<") right-up=("<<iPadXmax<<','<<iPadYmax<<')'<<endl;
+  for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)
+    for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++)
+       cout<<r->Param()->FracQdc(x2,iPadX,iPadY)<<endl;
+  Info("TestSD","Stop.");
 }//void TestSdigits()
 //__________________________________________________________________________________________________
 void TestC()
@@ -564,104 +546,63 @@ void TestC()
 void TestSeg()
 {
   AliRICHParam *p=r->Param();
-  Int_t padx,pady;
+  Int_t padx,pady,sec;
   Double_t x,y;
-  Double_t dz=p->DeadZone();
-  Double_t sx=p->SectorSizeX(); Double_t sy=p->SectorSizeY();  Double_t px=p->PcSizeX(); Double_t py=p->PcSizeY();
-  cout<<endl;
-  Info("  1-  1","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-px/2    , -py/2        ,padx,pady),padx,pady);
-  Info(" 48-  1","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-sx/2-dz , -py/2        ,padx,pady),padx,pady);
-  Info(" 49-  1","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-sx/2    , -py/2        ,padx,pady),padx,pady);
-  Info(" 96-  1","sec=%i padx=%3i pady=%3i",p->Loc2Pad( sx/2    , -py/2        ,padx,pady),padx,pady);
-  Info(" 97-  1","sec=%i padx=%3i pady=%3i",p->Loc2Pad( sx/2+dz , -py/2        ,padx,pady),padx,pady);
-  Info("144-  1","sec=%i padx=%3i pady=%3i",p->Loc2Pad( px/2    , -py/2        ,padx,pady),padx,pady);
-  cout<<endl;
-  Info("  1- 80","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-px/2    , -dz/2        ,padx,pady),padx,pady);
-  Info(" 48- 80","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-sx/2-dz , -dz/2        ,padx,pady),padx,pady);
-  Info(" 49- 80","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-sx/2    , -dz/2        ,padx,pady),padx,pady);
-  Info(" 96- 80","sec=%i padx=%3i pady=%3i",p->Loc2Pad( sx/2    , -dz/2        ,padx,pady),padx,pady);
-  Info(" 97- 80","sec=%i padx=%3i pady=%3i",p->Loc2Pad( sx/2+dz , -dz/2        ,padx,pady),padx,pady);
-  Info("144- 80","sec=%i padx=%3i pady=%3i",p->Loc2Pad( px/2    , -dz/2        ,padx,pady),padx,pady);
-  cout<<endl;
-  Info("  1- 81","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-px/2    ,  dz/2        ,padx,pady),padx,pady);
-  Info(" 48- 81","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-sx/2-dz ,  dz/2        ,padx,pady),padx,pady);
-  Info(" 49- 81","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-sx/2    ,  dz/2        ,padx,pady),padx,pady);
-  Info(" 96- 81","sec=%i padx=%3i pady=%3i",p->Loc2Pad( sx/2    ,  dz/2        ,padx,pady),padx,pady);
-  Info(" 97- 81","sec=%i padx=%3i pady=%3i",p->Loc2Pad( sx/2+dz ,  dz/2        ,padx,pady),padx,pady);
-  Info("144- 81","sec=%i padx=%3i pady=%3i",p->Loc2Pad( px/2    ,  dz/2        ,padx,pady),padx,pady);
-  cout<<endl;
-  Info("  1-160","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-px/2    ,  py/2        ,padx,pady),padx,pady);
-  Info(" 48-160","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-sx/2-dz ,  py/2        ,padx,pady),padx,pady);
-  Info(" 49-160","sec=%i padx=%3i pady=%3i",p->Loc2Pad(-sx/2    ,  py/2        ,padx,pady),padx,pady);
-  Info(" 96-160","sec=%i padx=%3i pady=%3i",p->Loc2Pad( sx/2    ,  py/2        ,padx,pady),padx,pady);
-  Info(" 97-160","sec=%i padx=%3i pady=%3i",p->Loc2Pad( sx/2+dz ,  py/2        ,padx,pady),padx,pady);
-  Info("144-160","sec=%i padx=%3i pady=%3i",p->Loc2Pad( px/2    ,  py/2        ,padx,pady),padx,pady);  
-  cout<<endl;
-  Info(" 73-160","sec=%i padx=%3i pady=%3i",p->Loc2Pad(    0    ,  py/2      ,padx,pady),padx,pady);    
-  Info(" 73- 81","sec=%i padx=%3i pady=%3i",p->Loc2Pad(    0    ,  dz/2      ,padx,pady),padx,pady);    
-  Info("0-0dead","sec=%i padx=%3i pady=%3i",p->Loc2Pad(    0    ,   0        ,padx,pady),padx,pady);    
-  Info(" 73- 80","sec=%i padx=%3i pady=%3i",p->Loc2Pad(    0    , -dz/2      ,padx,pady),padx,pady);    
-  Info(" 73-  1","sec=%i padx=%3i pady=%3i",p->Loc2Pad(    0    , -py/2      ,padx,pady),padx,pady);    
-  cout<<endl;
-  p->Pad2Loc(padx=  1,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 48,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 49,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 96,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 97,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx=144,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  cout<<endl;
-  p->Pad2Loc(padx=  1,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 48,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 49,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 96,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 97,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx=144,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  cout<<endl;
-  p->Pad2Loc(padx=  1,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 48,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 49,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 96,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 97,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx=144,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  cout<<endl;
-  p->Pad2Loc(padx=  1,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 48,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 49,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 96,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx= 97,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
-  p->Pad2Loc(padx=144,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  Double_t eps=0.0000001;
+  Double_t x1=-0.5*p->PcSizeX()+eps; Double_t x2=-0.5*p->SectorSizeX()-p->DeadZone()-eps; Double_t x3=-0.5*p->SectorSizeX()+eps;
+  Double_t x6= 0.5*p->PcSizeX()-eps; Double_t x5= 0.5*p->SectorSizeX()+p->DeadZone()+eps; Double_t x4= 0.5*p->SectorSizeX()-eps;
+  Double_t y1=-0.5*p->PcSizeY()+eps; Double_t y2=-0.5*p->DeadZone()-eps;
+  Double_t y4= 0.5*p->PcSizeY()-eps; Double_t y3= 0.5*p->DeadZone()+eps;
+  TVector2 v2;
+  
+  AliRICHParam::Print();
+  
+  sec=p->Loc2Pad(TVector2(x= 0,y=y1),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 73-  1","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x= 0,y=y2),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 73- 80","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x= 0,y= 0),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" dead  ","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x= 0,y=y3),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 73- 81","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x= 0,y=y4),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 73-160","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)\n",x,y,sec,padx,pady,v2.X(),v2.Y());
+
+  sec=p->Loc2Pad(TVector2(x=x1,y=y4),padx,pady); v2=p->Pad2Loc(padx,pady); Info("  1-160","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x2,y=y4),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 48-160","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x3,y=y4),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 49-160","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x4,y=y4),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 96-160","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x5,y=y4),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 97-160","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x6,y=y4),padx,pady); v2=p->Pad2Loc(padx,pady); Info("144-160","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)\n",x,y,sec,padx,pady,v2.X(),v2.Y());
+  
+  sec=p->Loc2Pad(TVector2(x=x1,y=y3),padx,pady); v2=p->Pad2Loc(padx,pady); Info("  1- 81","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x2,y=y3),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 48- 81","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x3,y=y3),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 49- 81","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x4,y=y3),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 96- 81","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x5,y=y3),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 97- 81","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x6,y=y3),padx,pady); v2=p->Pad2Loc(padx,pady); Info("144- 81","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)\n",x,y,sec,padx,pady,v2.X(),v2.Y());
+  
+  sec=p->Loc2Pad(TVector2(x=x1,y=y2),padx,pady); v2=p->Pad2Loc(padx,pady); Info("  1- 80","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x2,y=y2),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 48- 80","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x3,y=y2),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 49- 80","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x4,y=y2),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 96- 80","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x5,y=y2),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 97- 80","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x6,y=y2),padx,pady); v2=p->Pad2Loc(padx,pady); Info("144- 80","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)\n",x,y,sec,padx,pady,v2.X(),v2.Y());
+  
+  sec=p->Loc2Pad(TVector2(x=x1,y=y1),padx,pady); v2=p->Pad2Loc(padx,pady); Info("  1-  1","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x2,y=y1),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 48-  1","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x3,y=y1),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 49-  1","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x4,y=y1),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 96-  1","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x5,y=y1),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 97-  1","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
+  sec=p->Loc2Pad(TVector2(x=x6,y=y1),padx,pady); v2=p->Pad2Loc(padx,pady); Info("144-  1","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)\n",x,y,sec,padx,pady,v2.X(),v2.Y());
+   
 }//void TestSeg()
 //__________________________________________________________________________________________________
 void TestMenu()
 {
   TControlBar *pMenu = new TControlBar("vertical","RICH test");
   pMenu->AddButton("Test segmentation",  "TestSeg()",         "Test AliRICHParam segmentation methods");
-  pMenu->AddButton("Test transform",     "TestTransform()",   "Test ALiRICHChamber methods");
   pMenu->AddButton("Test response",      "TestResponse()",    "Test AliRICHParam response methods");
   pMenu->AddButton("Test sdigits",       "TestSD()",          "Create test set of sdigits");
-  pMenu->AddButton("Test digits OLD",    "TestDigitsOLD()",   "Create test set of OLD digits");
   pMenu->AddButton("Test clusters",      "TestC()",           "Create test set of clusters");
+  pMenu->AddButton("Test digits OLD",    "TestDigitsOLD()",   "Create test set of OLD digits");
   pMenu->Show();  
 }//TestMenu()
-//__________________________________________________________________________________________________
-void GeoMenu()
-{
-  TControlBar *pMenu = new TControlBar("vertical","RICH draw");
-  pMenu->AddButton("RICH Isometry", "gMC->Gdraw(\"ALIC\", 60,40,0, 10,10, 0.008,0.008)","Draws ALIC volume in isometry");
-  pMenu->AddButton("RICH Front XY", "gMC->Gdraw(\"ALIC\", 0,0,0, 10,10, 0.01,0.01)","Draws ALIC volume in XY view");
-  pMenu->AddButton("RICH Side YZ",  "gMC->Gdraw(\"ALIC\",90,180, 0, 10,10, 0.01,0.01)","Draws ALIC volume in YZ view");
-  pMenu->AddButton("RICH Top XZ",   "gMC->Gdraw(\"ALIC\",90, 90, 0, 10,10, 0.01,0.01)","Draws ALIC volume in XZ view");
-  pMenu->AddButton("Module Isometry","gMC->Gdraw(\"SRIC\", 30,60,0, 10,10, 0.1,0.1)","Draws SRIC volume in isometry");
-  pMenu->AddButton("Module Front XY","gMC->Gdraw(\"SRIC\", 0,0,0, 10,10, 0.1,0.1)","Draws SRIC volume in XY view");
-  pMenu->AddButton("Module Top XZ", "gMC->Gdraw(\"SRIC\",90, 90, 0, 10,10, 0.1,0.1)","Draws SRIC volume in XZ view");
-  pMenu->AddButton("ALICE Tree", "((TGeant3*)gMC)->Gdtree(\"ALIC\")","Draws ALICE tree");      
-  pMenu->AddButton("RICH Tree",  "((TGeant3*)gMC)->Gdtree(\"RICH\")","Draws RICH tree");      
-  pMenu->AddButton("Geo test",  "GeoTest()",   "Draw RICH geo as a macro");
-  pMenu->AddButton("Print ref", "PrintGeo()",  "Print RICH chambers default position");
-  pMenu->AddButton("AliRICH::Print", "r->Print();", "Print RICH chambers default position");
-  pMenu->AddButton("Test transform","TestTransform()","Test L2G and G2L methods");
-  pMenu->Show();  
-}//GeoMenu()
 //__________________________________________________________________________________________________
 void menu()
 { 
@@ -670,23 +611,22 @@ void menu()
   if(ReadAlice()){//it's from file, reconstruct
     pMenu->AddButton("hits->sdigits->digits->clusters","MainTrank()","Convert");
     
-    pMenu->AddButton("hits->sdigits",    "H_SD()",       "Perform first phase conversion");
-    pMenu->AddButton("sdigits->digits",  "SD_D()",       "Perform first phase conversion");
-    pMenu->AddButton("digits->clusters", "D_C()",        "Perform first phase conversion");
-    pMenu->AddButton("clusters->recos", "C_R()",         "Perform first phase conversion");
+    pMenu->AddButton("hits->sdigits"    ,"H_SD()" ,"AliRICH::Hits2SDigits");
+    pMenu->AddButton("sdigits->digits"  ,"SD_D()" ,"AliRICHDigitizer");
+    pMenu->AddButton("digits->clusters" ,"D_C()"  ,"AliRICHClusterFinder");
+    pMenu->AddButton("clusters->recos"  ,"C_R()"  ,"AliRICHRecon");
 
-    pMenu->AddButton("Show","Show()","Shows the structure of events in files");
+    pMenu->AddButton("Show",            "Show()","Shows the structure of events in files");
+    pMenu->AddButton("Display Fast",    "DisplFast()",           "Display Fast");
+    pMenu->AddButton("Control Plots",   "ControlPlots()",        "Display some control histograms");
     pMenu->AddButton("OLD specials->sdigits",          "OLD_S_SD()",       "Perform first phase converstion");
     
   }else{//it's aliroot, simulate
     pMenu->AddButton("Run",         "a->Run(1)",       "Process!");
+    pMenu->AddButton("Geo GUI", "new G3GeometryGUI;","Create instance of G4GeometryGUI"); 
   }
-  pMenu->AddButton("Geo submenu",     "GeoMenu()",            "Shows geomentry submenu");
-  pMenu->AddButton("Geo GUI", "new G3GeometryGUI;","Create instance of G4GeometryGUI"); 
   pMenu->AddButton("Test submenu",    "TestMenu()",            "Shows test submenu");
   pMenu->AddButton("Browser",         "new TBrowser;",         "Start ROOT TBrowser");
-  pMenu->AddButton("Display Fast",    "DisplFast()",           "Display Fast");
-  pMenu->AddButton("Control Plots",   "ControlPlots()",        "Display some control histograms");
   pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
   pMenu->AddButton("Debug OFF",    "DebugOFF();",   "Switch debug on-off");   
   pMenu->AddButton("Quit",            ".q",                    "Close session");
