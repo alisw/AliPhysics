@@ -26,6 +26,8 @@ class TParticle ;
 
 // --- AliRoot header files ---
 
+class AliPHOS ;
+class AliPHOSGeometry ;
 class AliPHOSDigit ;
 class AliPHOSDigitizer ;
 class AliPHOSSDigitizer ;
@@ -58,8 +60,9 @@ class AliPHOSIndexToObject : public TObject {
   void  GetEvent(Int_t event) ; // reads event from file 
   Int_t GetEventNumber(){ return fEvent; }
   Int_t GetMaxEvent()   { return fMaxEvent;}
-  
-  static AliPHOSIndexToObject * GetInstance(const char* headerFile,const char* branch = "PHOSRP",
+  AliPHOSGeometry * GetPHOSGeometry() const  ; 
+  AliPHOS * GetPHOS() const ;  
+ static AliPHOSIndexToObject * GetInstance(const char* headerFile,const char* branch = "PHOSRP",
 					    const char* branchTitle =0 ) ; 
   static AliPHOSIndexToObject * GetInstance() ; 
   

@@ -48,6 +48,7 @@
 #include "TTree.h"
 #include "TROOT.h"
 #include "TObjString.h"
+#include "TFolder.h"
 
 // --- Standard library ---
 #include <iostream.h>
@@ -56,6 +57,7 @@
 
 #include "AliRun.h"
 #include "AliPHOSIndexToObject.h"
+#include "AliPHOS.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSClusterizer.h"
@@ -64,7 +66,8 @@
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSPID.h" 
-#include "AliPHOSPIDv1.h" 
+#include "AliPHOSPIDv1.h"
+ 
 
 ClassImp(AliPHOSIndexToObject)
   
@@ -101,6 +104,16 @@ AliPHOSIndexToObject::AliPHOSIndexToObject(const char* headerFile,const char* br
       file = new TFile(fHeaderFile.Data(),"update") ;
     gAlice = (AliRun *) file->Get("gAlice") ;
   }
+
+  // Posts a few item to the white board (folders)
+
+  TFolder * aliceF = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ;
+  AliPHOS * phos   = GetPHOS() ;
+ 
+  // -- the geometry
+  TFolder * geomF  = (TFolder*)aliceF->FindObject("folders/Geometry/PHOS") ; 
+  AliPHOSGeometry * geom = phos->GetGeometry() ;  
+  geomF->Add(geom) ; 
 
   fMaxEvent = (Int_t) gAlice->TreeE()->GetEntries() ;
 
@@ -281,6 +294,7 @@ void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const cha
     delete sdigs[index] ;
   
 }
+
 //____________________________________________________________________________ 
 AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance()
 {
@@ -325,6 +339,24 @@ AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance(const char* headerFile,
   return fgObjGetter ; 
   
 }
+
+//____________________________________________________________________________ 
+  AliPHOSGeometry *  AliPHOSIndexToObject::GetPHOSGeometry() const 
+{
+  // retrieves the geometr from the folder
+
+  TFolder * aliceF = (TFolder *)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ; 
+  TString path("folders/Geometry/PHOS/") ;
+  path += GetPHOS()->GetTitle() ;
+  return (AliPHOSGeometry*)aliceF->FindObject(path.Data()) ; 
+}
+
+//____________________________________________________________________________ 
+  AliPHOS * AliPHOSIndexToObject::GetPHOS() const 
+{
+  // returns the PHOS object 
+  return ( (AliPHOS*)gAlice->GetDetector("PHOS") ); 
+}  
 
 //____________________________________________________________________________ 
 TParticle * AliPHOSIndexToObject::GimePrimary(Int_t index) const
